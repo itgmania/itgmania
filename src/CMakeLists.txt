@@ -501,6 +501,8 @@ if(WITH_OGG)
   endif()
 endif()
 
+list(APPEND SMDATA_LINK_LIB "ixwebsocket")
+
 if(WIN32)
   list(APPEND SMDATA_LINK_LIB
               # The misc libraries are here.

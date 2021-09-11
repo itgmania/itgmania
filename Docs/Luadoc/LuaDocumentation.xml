@@ -3552,6 +3552,58 @@ end
 		Returns a string array of the currently displayed sections in the MusicWheel.
 	</Function>
 </Class>
+<Class name='NetworkManager'>
+	<Description>
+		This singleton is accessible to Lua via <code>NETWORK</code>.<br />
+		By default, access to the network is disabled for all target hosts. It can be enabled by setting <code>HttpEnabled=1</code> in the preferences. Individual hosts have to be added to <code>HttpAllowHosts</code> as a comma separated list to allow access.
+	</Description>
+	<Function name='IsUrlAllowed' return='bool' arguments='string url'>
+		Returns true if access to <code>url</code> is allowed.
+	</Function>
+	<Function name='HttpRequest' return='void' arguments='table params'>
+		Performs an HTTP request.<br />
+		Usage example:
+<pre><code>
+NETWORK:HttpRequest{
+	url="https://api.example.com",
+	method="GET",                           -- default: "GET"
+	body="",                                -- default: ""
+	multipartBoundary="",                   -- default: ""
+	headers={                               -- default: {}
+		["Accept-Language"]="en-US",
+		["Cookie"]="sessionId=42",
+	},
+	connectTimeout=3,                       -- default: 60
+	transferTimeout=10,                     -- default: 1800
+	onResponse=function(response)           -- default: no callback
+		...
+	end,
+}
+</code></pre>
+	Everything but <code>url</code> is optional. Supported methods are <code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>PATCH</code>, <code>DELETE</code> and <code>HEAD</code>.<br />
+	A response looks like this:
+<pre><code>
+{
+	statusCode=200,
+	headers={
+		["Content-Type"]="application/json",
+		["Cache-Control"]="max-age=172800",
+		["Server"]="Apache",
+	},
+	body="{...}"
+	uploadSize=204,
+	downloadSize=216,
+}
+</code></pre>
+	In case of an error the callback is called with a structure like this:
+<pre><code>
+{
+	error="HttpErrorCode_Blocked",
+	errorMessage="access to https://api.example.com is not allowed",
+}
+</code></pre>
+	</Function>
+</Class>
 <Class name='NoteSkinManager'>
 	<Description>
 		This singleton is accessible to Lua via <code>NOTESKIN</code>.
