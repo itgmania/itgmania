@@ -3603,6 +3603,12 @@ NETWORK:HttpRequest{
 }
 </code></pre>
 	</Function>
+	<Function name='UrlEncode' return='string' arguments='string value'>
+		Returns the URL encoded representation of <code>value</code>.
+	</Function>
+	<Function name='EncodeQueryParameters' return='string' arguments='table query'>
+		Returns the <code>query</code> encoded as a query string. Keys and values are automatically URL encoded.
+	</Function>
 </Class>
 <Class name='NoteSkinManager'>
 	<Description>

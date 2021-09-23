@@ -1110,6 +1110,8 @@
 		<Class name='NetworkManager'>
 			<Function name='IsUrlAllowed'/>
 			<Function name='HttpRequest'/>
+			<Function name='UrlEncode'/>
+			<Function name='EncodeQueryParameters'/>
 		</Class>
 		<Class name='NCSplineHandler'>
 			<Function name='get_spline'/>

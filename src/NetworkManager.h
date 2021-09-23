@@ -5,8 +5,8 @@
 #include "StdString.h"
 
 #include <functional>
-#include <map>
 #include <string>
+#include <unordered_map>
 
 #include <ixwebsocket/IXHttp.h>
 #include <ixwebsocket/IXHttpClient.h>
@@ -50,7 +50,7 @@ struct HttpRequestArgs
 	std::string method = ix::HttpClient::kGet;
 	std::string body;
 	std::string multipartBoundary;
-	std::map<string, string> headers;
+	std::unordered_map<std::string, std::string> headers;
 	int connectTimeout = -1;
 	int transferTimeout = -1;
 	std::function<void(const ix::HttpResponsePtr& response)> onResponse = [](const ix::HttpResponsePtr& response) {};
@@ -64,6 +64,8 @@ public:
 
 	bool IsUrlAllowed(const std::string& url);
 	void HttpRequest(const HttpRequestArgs& args);
+	std::string UrlEncode(const std::string& value);
+	std::string EncodeQueryParameters(const std::unordered_map<std::string, std::string>& query);
 
 	// Lua
 	void PushSelf(lua_State *L);

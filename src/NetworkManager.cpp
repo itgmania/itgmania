@@ -10,6 +10,7 @@
 #include <ixwebsocket/IXUrlParser.h>
 
 #include <algorithm>
+#include <unordered_map>
 #include <vector>
 
 
@@ -113,6 +114,16 @@ void NetworkManager::HttpRequest(const HttpRequestArgs& args)
 	}
 
 	this->httpClient.performRequest(req, args.onResponse);
+}
+
+std::string NetworkManager::UrlEncode(const std::string& value)
+{
+	return this->httpClient.urlEncode(value);
+}
+
+std::string NetworkManager::EncodeQueryParameters(const std::unordered_map<std::string, std::string>& query)
+{
+	return this->httpClient.serializeHttpParameters(query);
 }
 
 
@@ -306,10 +317,60 @@ public:
 		return 1;
 	}
 
+	static int UrlEncode(T* p, lua_State *L)
+	{
+		std::string url = SArg(1);
+
+		std::string encoded = p->UrlEncode(url);
+
+		lua_pushstring(L, encoded.c_str());
+		return 1;
+	}
+
+	static int EncodeQueryParameters(T* p, lua_State *L)
+	{
+		std::unordered_map<std::string, std::string> query;
+
+		if (lua_istable(L, 1))
+		{
+			lua_pushnil(L);
+			while(lua_next(L, -2) != 0)
+			{
+				if (!lua_isstring(L, -2))
+				{
+					luaL_error(L, "parameter keys must be strings");
+				}
+
+				if (!lua_isstring(L, -1))
+				{
+					luaL_error(L, "parameter values must be strings");
+				}
+
+				std::string key = lua_tostring(L, -2);
+				std::string value = lua_tostring(L, -1);
+
+				query[key] = value;
+
+				lua_pop(L, 1);
+			}
+		}
+		else
+		{
+			luaL_error(L, "query must be a table");
+		}
+
+		std::string encoded = p->EncodeQueryParameters(query);
+
+		lua_pushstring(L, encoded.c_str());
+		return 1;
+	}
+
 	LunaNetworkManager()
 	{
 		ADD_METHOD(IsUrlAllowed);
 		ADD_METHOD(HttpRequest);
+		ADD_METHOD(UrlEncode);
+		ADD_METHOD(EncodeQueryParameters);
 	}
 
 private:
