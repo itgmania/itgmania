@@ -10,6 +10,7 @@
 #include <ixwebsocket/IXUrlParser.h>
 
 #include <algorithm>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -94,7 +95,7 @@ bool NetworkManager::IsUrlAllowed(const std::string& url)
 	return std::find(allowedHosts.begin(), allowedHosts.end(), host) != allowedHosts.end();
 }
 
-void NetworkManager::HttpRequest(const HttpRequestArgs& args)
+HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args)
 {
 	ix::HttpRequestArgsPtr req = this->httpClient.createRequest(args.url, args.method);
 	req->body = args.body;
@@ -114,6 +115,8 @@ void NetworkManager::HttpRequest(const HttpRequestArgs& args)
 	}
 
 	this->httpClient.performRequest(req, args.onResponse);
+
+	return std::make_shared<HttpRequestFuture>(req);
 }
 
 std::string NetworkManager::UrlEncode(const std::string& value)
@@ -126,9 +129,42 @@ std::string NetworkManager::EncodeQueryParameters(const std::unordered_map<std::
 	return this->httpClient.serializeHttpParameters(query);
 }
 
+int HttpRequestFuture::gc(lua_State *L)
+{
+	void *udata = luaL_checkudata(L, 1, "HttpRequestFuture");
+	auto futptr = static_cast<HttpRequestFuturePtr*>(udata);
+	futptr->~shared_ptr();
+	return 0;
+}
+
+int HttpRequestFuture::Cancel(lua_State *L)
+{
+	void *udata = luaL_checkudata(L, 1, "HttpRequestFuture");
+	auto fut = *static_cast<HttpRequestFuturePtr*>(udata);
+	fut->args->cancel = true;
+	return 0;
+}
+
 
 // lua start
 #include "LuaBinding.h"
+
+static void registerHttpRequestMetatable(lua_State *L)
+{
+	const luaL_Reg HttpRequest_meta[] = {
+		{"__gc", HttpRequestFuture::gc},
+		{"Cancel", HttpRequestFuture::Cancel},
+		{NULL, NULL},
+	};
+
+	luaL_newmetatable(L, "HttpRequestFuture");
+	luaL_register(L, NULL, HttpRequest_meta);
+	lua_pushvalue(L, -1);
+	lua_setfield(L, -2, "__index");
+	lua_pop(L, 1);
+}
+
+REGISTER_WITH_LUA_FUNCTION(registerHttpRequestMetatable)
 
 /** @brief Allow Lua to have access to the NetworkManager. */
 class LunaNetworkManager: public Luna<NetworkManager>
@@ -302,7 +338,13 @@ public:
 
 		if (p->IsUrlAllowed(args.url))
 		{
-			p->HttpRequest(args);
+			auto fut = p->HttpRequest(args);
+
+			void *vp = lua_newuserdata(L, sizeof(std::shared_ptr<HttpRequestFuture>));
+			new(vp) std::shared_ptr<::HttpRequestFuture>(fut);
+			luaL_getmetatable(L, "HttpRequestFuture");
+			lua_setmetatable(L, -2);
+			return 1;
 		}
 		else
 		{
@@ -311,10 +353,8 @@ public:
 			{
 				handleUrlForbidden(L, args.url, onResponseRef);
 			}
+			return 0;
 		}
-
-		lua_pushnil(L);
-		return 1;
 	}
 
 	static int UrlEncode(T* p, lua_State *L)
@@ -415,6 +455,7 @@ private:
 			case ix::HttpErrorCode::TooManyRedirects:	LuaHelpers::Push(L, HttpErrorCode_TooManyRedirects); break;
 			case ix::HttpErrorCode::ChunkReadError:		LuaHelpers::Push(L, HttpErrorCode_ChunkReadError); break;
 			case ix::HttpErrorCode::CannotReadBody:		LuaHelpers::Push(L, HttpErrorCode_CannotReadBody); break;
+			case ix::HttpErrorCode::Cancelled:		LuaHelpers::Push(L, HttpErrorCode_Cancelled); break;
 			default:					LuaHelpers::Push(L, HttpErrorCode_UnknownError); break;
 		}
 		lua_setfield(L, -2, "error");

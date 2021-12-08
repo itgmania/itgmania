@@ -5,6 +5,7 @@
 #include "StdString.h"
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -36,6 +37,7 @@ enum HttpErrorCode
 	HttpErrorCode_TooManyRedirects,
 	HttpErrorCode_ChunkReadError,
 	HttpErrorCode_CannotReadBody,
+	HttpErrorCode_Cancelled,
 
 	NUM_HttpErrorCode,
 	HttpErrorCode_Invalid,
@@ -56,6 +58,20 @@ struct HttpRequestArgs
 	std::function<void(const ix::HttpResponsePtr& response)> onResponse = [](const ix::HttpResponsePtr& response) {};
 };
 
+class HttpRequestFuture
+{
+public:
+	HttpRequestFuture(ix::HttpRequestArgsPtr& args) : args(args) {};
+
+	static int gc(lua_State *L);
+	static int Cancel(lua_State *L);
+
+private:
+	ix::HttpRequestArgsPtr args;
+};
+
+typedef std::shared_ptr<HttpRequestFuture> HttpRequestFuturePtr;
+
 class NetworkManager
 {
 public:
@@ -63,7 +79,7 @@ public:
 	~NetworkManager();
 
 	bool IsUrlAllowed(const std::string& url);
-	void HttpRequest(const HttpRequestArgs& args);
+	HttpRequestFuturePtr HttpRequest(const HttpRequestArgs& args);
 	std::string UrlEncode(const std::string& value);
 	std::string EncodeQueryParameters(const std::unordered_map<std::string, std::string>& query);
 

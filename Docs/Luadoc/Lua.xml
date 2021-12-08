@@ -2051,6 +2051,9 @@
 			<Function name='GetHeld'/>
 			<Function name='GetActive'/>
 		</Class>
+		<Class name='HttpRequestFuture'>
+			<Function name='Cancel'/>
+		</Class>
 		<Class base='ActorFrame' name='TextBanner'>
 			<Function name='Load'/>
 			<Function name='SetFromSong'/>
@@ -2498,6 +2501,7 @@
 			<EnumValue name='&apos;HttpErrorCode_TooManyRedirects&apos;' value='13'/>
 			<EnumValue name='&apos;HttpErrorCode_ChunkReadError&apos;' value='14'/>
 			<EnumValue name='&apos;HttpErrorCode_CannotReadBody&apos;' value='15'/>
+			<EnumValue name='&apos;HttpErrorCode_Cancelled&apos;' value='16'/>
 		</Enum>
 		<Enum name='ImageCacheMode'>
 			<EnumValue name='&apos;ImageCacheMode_Off&apos;' value='0'/>

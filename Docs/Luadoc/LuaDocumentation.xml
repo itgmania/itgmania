@@ -3560,7 +3560,7 @@ end
 	<Function name='IsUrlAllowed' return='bool' arguments='string url'>
 		Returns true if access to <code>url</code> is allowed.
 	</Function>
-	<Function name='HttpRequest' return='void' arguments='table params'>
+	<Function name='HttpRequest' return='HttpRequestFuture' arguments='table params'>
 		Performs an HTTP request.<br />
 		Usage example:
 <pre><code>
@@ -6208,6 +6208,12 @@ local spr = Def.Sprite{
 	</Function>
 	<Function name='GetActive' return='bool' arguments=''>
 		Returns true if the note was initiated.
+	</Function>
+</Class>
+<Class name='HttpRequestFuture'>
+	<Function name='Cancel' return='void' arguments=''>
+                Cancels the running HTTP request. Does nothing if the request
+                has already completed.
 	</Function>
 </Class>
 <Class name='TextBanner' grouping='Actor'>
