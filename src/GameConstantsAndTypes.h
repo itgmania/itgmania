@@ -294,9 +294,11 @@ enum TimingWindow
 	TW_Hold,
 	TW_Roll,
 	TW_Checkpoint,
-	NUM_TimingWindow
+	NUM_TimingWindow,
+	TimingWindow_Invalid,
 };
 const RString& TimingWindowToString( TimingWindow tw );
+LuaDeclareType( TimingWindow );
 
 /** @brief The list of score events that can take place while playing. */
 enum ScoreEvent

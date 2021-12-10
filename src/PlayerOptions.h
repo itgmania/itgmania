@@ -9,6 +9,8 @@ struct lua_State;
 
 #define ONE( arr ) { for( unsigned Z = 0; Z < ARRAYLEN(arr); ++Z ) arr[Z]=1.0f; }
 
+#include <set>
+
 #include "GameConstantsAndTypes.h"
 #include "PlayerNumber.h"
 #include "PrefsManager.h"
@@ -397,6 +399,12 @@ public:
 
 	/** @brief The Visual Delay additionally applied on a per-player basis in ms. */
 	float	m_fVisualDelay;
+
+	/** @brief The TimingWindow that can be disabled. Valid values are only W1-W5.
+     *  Other values are ignore.
+	 *  We use a set instead of unordered_set because we want the ordering so that 
+	 *  the generated player options string is consistent. */
+	std::set<TimingWindow> m_twDisabledWindows;
 
 	void NextAccel();
 	void NextEffect();

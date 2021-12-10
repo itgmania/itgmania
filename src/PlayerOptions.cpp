@@ -10,6 +10,7 @@
 #include "Style.h"
 #include "CommonMetrics.h"
 #include <float.h>
+#include <sstream>
 
 static const char *LifeTypeNames[] = {
 	"Bar",
@@ -96,6 +97,7 @@ void PlayerOptions::Init()
 	m_bCosecant = false;
 	m_sNoteSkin = "";
 	m_fVisualDelay = 0.0f;
+	m_twDisabledWindows.clear();
 	ZERO( m_fMovesX );		ONE( m_SpeedfMovesX );
 	ZERO( m_fMovesY );		ONE( m_SpeedfMovesY );
 	ZERO( m_fMovesZ );		ONE( m_SpeedfMovesZ );
@@ -187,6 +189,7 @@ void PlayerOptions::Approach( const PlayerOptions& other, float fDeltaSeconds )
 	DO_COPY( m_MinTNSToHideNotes );
 	DO_COPY( m_sNoteSkin );
 	DO_COPY( m_fVisualDelay );
+	DO_COPY( m_twDisabledWindows );
 #undef APPROACH
 #undef DO_COPY
 }
@@ -564,6 +567,20 @@ void PlayerOptions::GetMods( vector<RString> &AddTo, bool bForceNoteSkin ) const
 		// Note that we don't process sub-millisecond visual delay.
 		AddTo.push_back( ssprintf("%.0fms VisualDelay", m_fVisualDelay * 1000.0f) );
 	}
+
+	if (!m_twDisabledWindows.empty()) {
+		std::stringstream ss;
+		ss << "No ";
+		for (auto it=m_twDisabledWindows.begin(); it != m_twDisabledWindows.end(); ++it) {
+			if (it != m_twDisabledWindows.begin()) {
+				ss << "/";
+			}
+			ss << TimingWindowToString(*it).c_str();
+		}
+
+		// Final string will be something like "No W4/W5"
+		AddTo.push_back(ss.str());
+	}
 }
 
 /* Options are added to the current settings; call Init() beforehand if
@@ -644,6 +661,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	const bool on = (level > 0.5f);
 
 	static Regex mult("^([0-9]+(\\.[0-9]+)?)x$");
+	static Regex disabledWindows("(w[1-5])/{0,1}");
 	vector<RString> matches;
 	if( mult.Compare(sBit, matches) )
 	{
@@ -1142,6 +1160,20 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	else if( sBit == "zbuffer" )				m_bZBuffer = on;
 	else if( sBit == "cosecant" )				m_bCosecant = on;
 	else if( sBit == "visualdelay" )			m_fVisualDelay = level;
+	else if( disabledWindows.Compare(sBit, matches)) {
+		for (auto& match : matches) {
+			static std::map<RString, TimingWindow> name_to_window = {
+				{"w1", TW_W1},
+				{"w2", TW_W2},
+				{"w3", TW_W3},
+				{"w4", TW_W4},
+				{"w5", TW_W5},
+			};
+			if (name_to_window.find(match) != name_to_window.end()) {
+				m_twDisabledWindows.insert(name_to_window[match]);
+			}
+		}
+	}
 	// deprecated mods/left in for compatibility
 	else if( sBit == "converge" )				SET_FLOAT( fScrolls[SCROLL_CENTERED] )
 	// end of the list
@@ -1395,6 +1427,7 @@ bool PlayerOptions::operator==( const PlayerOptions &other ) const
 		return false;
 	}
 	COMPARE(m_fVisualDelay);
+	COMPARE(m_twDisabledWindows); // != is defined correctly for ordered sets.
 	for( int i = 0; i < PlayerOptions::NUM_ACCELS; ++i )
 		COMPARE(m_fAccels[i]);
 	for( int i = 0; i < PlayerOptions::NUM_EFFECTS; ++i )
@@ -1461,6 +1494,7 @@ PlayerOptions& PlayerOptions::operator=(PlayerOptions const& other)
 	CPY(m_bZBuffer);
 	CPY(m_bCosecant);
 	CPY(m_fVisualDelay);
+	CPY(m_twDisabledWindows);
 	CPY_SPEED(fDark);
 	CPY_SPEED(fBlind);
 	CPY_SPEED(fCover);
@@ -1693,6 +1727,7 @@ RString PlayerOptions::GetSavedPrefsString() const
 	SAVE( m_bMuteOnError );
 	SAVE( m_sNoteSkin );
 	SAVE( m_fVisualDelay );
+	SAVE( m_twDisabledWindows );
 #undef SAVE
 	return po_prefs.GetString();
 }
@@ -1741,6 +1776,7 @@ void PlayerOptions::ResetPrefs( ResetPrefsType type )
 	// Don't clear this.
 	// CPY( m_sNoteSkin );
 	CPY(m_fVisualDelay);
+	CPY(m_twDisabledWindows);
 #undef CPY
 }
 
@@ -1990,6 +2026,44 @@ public:
 	ENUM_INTERFACE(MinTNSToHideNotes, MinTNSToHideNotes, TapNoteScore);
 
 	FLOAT_NO_SPEED_INTERFACE(VisualDelay, VisualDelay, true);
+
+	static int DisableTimingWindow(T* p, lua_State* L)
+	{
+		int original_top= lua_gettop(L);
+		if (original_top >= 1 && !lua_isnil(L, 1))
+		{
+			// Insert the specified TNS into the disabled windows set.
+			p->m_twDisabledWindows.insert(Enum::Check<TimingWindow>(L, 1));
+		}
+		// Construct a new table indicating all of the disabled windows.
+		lua_newtable( L );
+		for (TimingWindow window : p->m_twDisabledWindows)
+		{
+			Enum::Push(L, window);
+		}
+		OPTIONAL_RETURN_SELF(original_top);
+		return 1;
+	}
+
+	static int ResetDisabledTimingWindows(T* p, lua_State* L)
+	{
+		int original_top= lua_gettop(L);
+		p->m_twDisabledWindows.clear();
+		OPTIONAL_RETURN_SELF(original_top);
+		return 1;
+	}
+
+	static int GetDisabledTimingWindows(T* p, lua_State* L)
+	{
+		int original_top= lua_gettop(L);
+		lua_newtable( L );
+		for (TimingWindow window : p->m_twDisabledWindows)
+		{
+			Enum::Push(L, window);
+		}
+		OPTIONAL_RETURN_SELF(original_top);
+		return 1;
+	}
 
 	// NoteSkins
 	static int NoteSkin(T* p, lua_State* L)
@@ -2509,11 +2583,14 @@ public:
 		ADD_MULTICOL_METHOD(Bumpy);
 		ADD_MULTICOL_METHOD(Reverse);
 
-
 		ADD_METHOD(NoteSkin);
 		ADD_METHOD(FailSetting);
 		ADD_METHOD(MinTNSToHideNotes);
 		ADD_METHOD(VisualDelay);
+
+		ADD_METHOD(DisableTimingWindow);
+		ADD_METHOD(ResetDisabledTimingWindows);
+		ADD_METHOD(GetDisabledTimingWindows);
 
 		// Speed
 		ADD_METHOD( CMod );
