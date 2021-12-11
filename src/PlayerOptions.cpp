@@ -661,7 +661,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	const bool on = (level > 0.5f);
 
 	static Regex mult("^([0-9]+(\\.[0-9]+)?)x$");
-	static Regex disabledWindows("(w[1-5])/{0,1}");
+	static Regex disabledWindows("(w[1-5])");
 	vector<RString> matches;
 	if( mult.Compare(sBit, matches) )
 	{
@@ -1122,56 +1122,67 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	{
 	    if (sBit.find("x") != sBit.npos)
 	    {
-		for (int i=0; i<16; i++)
-		{
-		    sMod = ssprintf( "movex%d", i+1 );
-		    if( sBit == sMod)
-		    {
-			SET_FLOAT( fMovesX[i] )
-			break;
-		    }
-		}
+			for (int i=0; i<16; i++)
+			{
+				sMod = ssprintf( "movex%d", i+1 );
+				if( sBit == sMod)
+				{
+				SET_FLOAT( fMovesX[i] )
+				break;
+				}
+			}
 	    }
 	    else if (sBit.find("y") != sBit.npos)
 	    {
-		for (int i=0; i<16; i++)
-		{
-		    sMod = ssprintf( "movey%d", i+1 );
-		    if( sBit == sMod)
-		    {
-			SET_FLOAT( fMovesY[i] )
-			break;
-		    }
-		}
+			for (int i=0; i<16; i++)
+			{
+				sMod = ssprintf( "movey%d", i+1 );
+				if( sBit == sMod)
+				{
+				SET_FLOAT( fMovesY[i] )
+				break;
+				}
+			}
 	    }
 	    else if (sBit.find("z") != sBit.npos)
 	    {
-		for (int i=0; i<16; i++)
-		{
-		    sMod = ssprintf( "movez%d", i+1 );
-		    if( sBit == sMod)
-		    {
-			SET_FLOAT( fMovesZ[i] )
-			break;
-		    }
-		}
+			for (int i=0; i<16; i++)
+			{
+				sMod = ssprintf( "movez%d", i+1 );
+				if( sBit == sMod)
+				{
+				SET_FLOAT( fMovesZ[i] )
+				break;
+				}
+			}
 	    }
 	}
 	else if( sBit == "zbuffer" )				m_bZBuffer = on;
 	else if( sBit == "cosecant" )				m_bCosecant = on;
 	else if( sBit == "visualdelay" )			m_fVisualDelay = level;
-	else if( disabledWindows.Compare(sBit, matches)) {
-		for (auto& match : matches) {
-			static std::map<RString, TimingWindow> name_to_window = {
-				{"w1", TW_W1},
-				{"w2", TW_W2},
-				{"w3", TW_W3},
-				{"w4", TW_W4},
-				{"w5", TW_W5},
-			};
-			if (name_to_window.find(match) != name_to_window.end()) {
-				m_twDisabledWindows.insert(name_to_window[match]);
+	else if( level == 0 && disabledWindows.Compare(sBit)) // "No w1" etc.
+	{	
+		static std::map<RString, TimingWindow> nameToWindow = {
+			{"w1", TW_W1},
+			{"w2", TW_W2},
+			{"w3", TW_W3},
+			{"w4", TW_W4},
+			{"w5", TW_W5},
+		};
+		// We come into this condition if there is at least a single window present but there may be more.
+		// To get all of the windows, we go through in a loop to extract all of them.
+		static Regex allDisabledWindows("(w[1-5])(.*)$");
+		RString input = sBit;
+		while (true)
+		{
+			if (!allDisabledWindows.Compare(input, matches))
+				break;
+
+			if (nameToWindow.find(matches[0]) != nameToWindow.end())
+			{
+				m_twDisabledWindows.insert(nameToWindow[matches[0]]);
 			}
+			input = matches[1];
 		}
 	}
 	// deprecated mods/left in for compatibility
@@ -2032,7 +2043,7 @@ public:
 		int original_top= lua_gettop(L);
 		if (original_top >= 1 && !lua_isnil(L, 1))
 		{
-			// Insert the specified TNS into the disabled windows set.
+			// Insert the specified TimingWindow into the disabled windows set.
 			p->m_twDisabledWindows.insert(Enum::Check<TimingWindow>(L, 1));
 		}
 		// Construct a new table indicating all of the disabled windows.
@@ -2057,9 +2068,12 @@ public:
 	{
 		int original_top= lua_gettop(L);
 		lua_newtable( L );
+		int i = 0;
 		for (TimingWindow window : p->m_twDisabledWindows)
 		{
 			Enum::Push(L, window);
+			lua_rawseti( L, -2, i+1 );
+			++i;
 		}
 		OPTIONAL_RETURN_SELF(original_top);
 		return 1;
