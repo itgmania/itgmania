@@ -3915,6 +3915,11 @@ a,b = options:Boost(5)
 	</Function>
 	<Function name='Dizzy' return='float, float' arguments='float value, float approach_speed'> </Function>
 	<Function name='DizzyHolds' return='bool' arguments='bool value'> </Function>
+	<Function name='DisableTimingWindow' return='{TimingWindow}' arguments='TimingWindow tw'>
+		Selectively disable specific timing windows for a player. <br />
+		Valid values are <code>W1</code> to <code>W5</code> as defined in the <Link class='ENUM' function='TimingWindow' /> enum. <br />
+		Returns a table of <code>TimingWindow</code> with the set of disabled windows after the function call.
+	</Function>
 	<Function name='Distant' return='float, float' arguments='float value, float approach_speed'>
 		If the player is using Distant (zero skew and positive tilt), returns the value of tilt and its approach_speed.<br />
 		Returns nil otherwise.<br />
@@ -3960,6 +3965,9 @@ a,b = options:Boost(5)
 	</Function>
 	<Function name='Flip' return='float, float' arguments='float value, float approach_speed'> </Function>
 	<Function name='Floored' return='bool' arguments='bool value'> </Function>
+	<Function name='GetDisabledTimingWindows' return='{TimingWindow}' arguments=''>
+		Returns a table of the currently disabled <Link class='ENUM' function='TimingWindow' />s for the player.
+	</Function>
 	<Function name='GetStepAttacks' return='bool' arguments=''>
 		Returns true if step attacks or random attacks are enabled.
 	</Function>
@@ -4065,6 +4073,9 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Function name='RandAttack' return='float, float' arguments='float value, float approach_speed'> </Function>
 	<Function name='RandomSpeed' return='float, float' arguments='float value, float approach_speed'> </Function>
 	<Function name='RandomVanish' return='float, float' arguments='float value, float approach_speed'> </Function>
+	<Function name='ResetDisabledTimingWindows' return='' arguments=''>
+		Re-enable all <Link class='ENUM' function='TimingWindow' />s that may have previously been disabled.
+	</Function>
 	<Function name='Reverse' return='float, float' arguments='float value, float approach_speed'> </Function>
 	<Function name='Reversen' return= 'float, float' arguments='float value, float approach_speed'>
 		Use 1-16 in place of 'n' to apply Reverse on a specific column.
@@ -4164,6 +4175,11 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Function name='Twister' return='bool' arguments='bool value'> </Function>
 	<Function name='UsingReverse' return='bool' arguments=''>
 		Returns <code>true</code> if the player is using reverse. (equivalent to <code>GetReverse() == 1.0</code>)
+	</Function>
+	<Function name='VisualDelay' return='' arguments='float'>
+		The time in seconds to adjust a player's visual delay by.<br />
+		Negative values will shift the arrows up, while positive values will push them down.<br />
+		Sub-millisecond visual delay values are not saved and are instead rounded to the closest millisecond.
 	</Function>
 	<Function name='Wave' return='float, float' arguments='float value, float approach_speed'> </Function>
 	<Function name='WavePeriod' return='float, float' arguments='float value, float approach_speed'> </Function>

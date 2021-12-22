@@ -104,7 +104,7 @@ static const float StepSearchDistance = 1.0f;
 
 void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut )
 {
-	sNameOut = "TimingWindowSeconds" + TimingWindowToString( (TimingWindow)i );
+	sNameOut = "TimingWindowSeconds" + TimingWindowToString( static_cast<TimingWindow>(i) );
 	switch( i )
 	{
 		case TW_W1:
@@ -1003,15 +1003,15 @@ void Player::Update( float fDeltaTime )
 	{
 		float largestWindow = 0.0f;
 		const auto &disabledWindows = m_pPlayerState->m_PlayerOptions.GetCurrent().m_twDisabledWindows;
-		if (disabledWindows.find(TW_W1) == disabledWindows.end())
+		if (!disabledWindows[TW_W1])
 			largestWindow = max(largestWindow, GetWindowSeconds(TW_W1));
-		if (disabledWindows.find(TW_W2) == disabledWindows.end())
+		if (!disabledWindows[TW_W2])
 			largestWindow = max(largestWindow, GetWindowSeconds(TW_W2));
-		if (disabledWindows.find(TW_W3) == disabledWindows.end())
+		if (!disabledWindows[TW_W3])
 			largestWindow = max(largestWindow, GetWindowSeconds(TW_W3));
-		if (disabledWindows.find(TW_W4) == disabledWindows.end())
+		if (!disabledWindows[TW_W4])
 			largestWindow = max(largestWindow, GetWindowSeconds(TW_W4));
-		if (disabledWindows.find(TW_W5) == disabledWindows.end())
+		if (!disabledWindows[TW_W5])
 			largestWindow = max(largestWindow, GetWindowSeconds(TW_W5));
 
 		// We have to check the unjudged notes that are within the
@@ -2272,15 +2272,15 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 				{
 					// Set it to the first non-disabled window.
 					const auto &disabledWindows = m_pPlayerState->m_PlayerOptions.GetCurrent().m_twDisabledWindows;
-					if (disabledWindows.find(TW_W1) == disabledWindows.end())
+					if (!disabledWindows[TW_W1])
 						score = TNS_W1;
-					else if (disabledWindows.find(TW_W2) == disabledWindows.end())
+					else if (!disabledWindows[TW_W2])
 						score = TNS_W2;
-					else if (disabledWindows.find(TW_W3) == disabledWindows.end())
+					else if (!disabledWindows[TW_W3])
 						score = TNS_W3;
-					else if (disabledWindows.find(TW_W4) == disabledWindows.end())
+					else if (!disabledWindows[TW_W4])
 						score = TNS_W4;
-					else if (disabledWindows.find(TW_W5) == disabledWindows.end())
+					else if (!disabledWindows[TW_W5])
 						score = TNS_W5;
 				
 					break;
@@ -2290,11 +2290,11 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 				if( (pTN->type == TapNoteType_Lift) == bRelease )
 				{
 					const auto &disabledWindows = m_pPlayerState->m_PlayerOptions.GetCurrent().m_twDisabledWindows;
-					if(	 fSecondsFromExact <= GetWindowSeconds(TW_W1) && disabledWindows.find(TW_W1) == disabledWindows.end())	score = TNS_W1;
-					else if( fSecondsFromExact <= GetWindowSeconds(TW_W2) && disabledWindows.find(TW_W2) == disabledWindows.end())	score = TNS_W2;
-					else if( fSecondsFromExact <= GetWindowSeconds(TW_W3) && disabledWindows.find(TW_W3) == disabledWindows.end())	score = TNS_W3;
-					else if( fSecondsFromExact <= GetWindowSeconds(TW_W4) && disabledWindows.find(TW_W4) == disabledWindows.end())	score = TNS_W4;
-					else if( fSecondsFromExact <= GetWindowSeconds(TW_W5) && disabledWindows.find(TW_W5) == disabledWindows.end())	score = TNS_W5;
+					if(	fSecondsFromExact <= GetWindowSeconds(TW_W1) && !disabledWindows[TW_W1] )	score = TNS_W1;
+					else if( fSecondsFromExact <= GetWindowSeconds(TW_W2) && !disabledWindows[TW_W2] )	score = TNS_W2;
+					else if( fSecondsFromExact <= GetWindowSeconds(TW_W3) && !disabledWindows[TW_W3] )	score = TNS_W3;
+					else if( fSecondsFromExact <= GetWindowSeconds(TW_W4) && !disabledWindows[TW_W4] )	score = TNS_W4;
+					else if( fSecondsFromExact <= GetWindowSeconds(TW_W5) && !disabledWindows[TW_W5] )	score = TNS_W5;
 				}
 				break;
 			}
@@ -2304,30 +2304,14 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 		case PC_AUTOPLAY:
 		{
 			score = PlayerAI::GetTapNoteScore(m_pPlayerState);
-			const auto& disabledWindows = m_pPlayerState->m_PlayerOptions.GetCurrent().m_twDisabledWindows;
-			for (int i = score; i >= TNS_W5; i--)
-			{
-				TapNoteScore cur_score = (TapNoteScore)i;
-				// Downgrade the TapNoteScore if that specific window is disabled.
-				if (cur_score == TNS_W1 && disabledWindows.find(TW_W1) == disabledWindows.end())
-					score = TNS_W2;
-				else if (cur_score == TNS_W2 && disabledWindows.find(TW_W2) == disabledWindows.end())
-					score = TNS_W3;
-				else if (cur_score == TNS_W3 && disabledWindows.find(TW_W3) == disabledWindows.end())
-					score = TNS_W4;
-				else if (cur_score == TNS_W4 && disabledWindows.find(TW_W4) == disabledWindows.end())
-					score = TNS_W5;
-				else if (cur_score == TNS_W5 && disabledWindows.find(TW_W5) == disabledWindows.end())
-					score = TNS_None;
-			}
 
 			/* XXX: This doesn't make sense.
 			 * Step should only be called in autoplay for hit notes. */
 #if 0
-			 // GetTapNoteScore always returns TNS_W1 in autoplay.
-			 // If the step is far away, don't judge it.
-			if (m_pPlayerState->m_PlayerController == PC_AUTOPLAY &&
-				fSecondsFromExact > GetWindowSeconds(TW_W5))
+			// GetTapNoteScore always returns TNS_W1 in autoplay.
+			// If the step is far away, don't judge it.
+			if( m_pPlayerState->m_PlayerController == PC_AUTOPLAY &&
+				fSecondsFromExact > GetWindowSeconds(TW_W5) )
 			{
 				score = TNS_None;
 				break;
@@ -2336,36 +2320,36 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 
 			// TRICKY:  We're asking the AI to judge mines. Consider TNS_W4 and
 			// below as "mine was hit" and everything else as "mine was avoided"
-			if (pTN->type == TapNoteType_Mine)
+			if ( pTN->type == TapNoteType_Mine )
 			{
 				// The CPU hits a lot of mines. Only consider hitting the
 				// first mine for a row. We know we're the first mine if 
 				// there are are no mines to the left of us.
-				for (int t = 0; t < col; t++)
+				for ( int t=0; t<col; t++ )
 				{
-					if (m_NoteData.GetTapNote(t, iRowOfOverlappingNoteOrRow).type == TapNoteType_Mine)	// there's a mine to the left of us
+					if( m_NoteData.GetTapNote(t, iRowOfOverlappingNoteOrRow).type == TapNoteType_Mine )	// there's a mine to the left of us
 						return;	// avoid
 				}
 
 				// The CPU hits a lot of mines. Make it less likely to hit 
 				// mines that don't have a tap note on the same row.
-				bool bTapsOnRow = m_NoteData.IsThereATapOrHoldHeadAtRow(iRowOfOverlappingNoteOrRow);
+				bool bTapsOnRow = m_NoteData.IsThereATapOrHoldHeadAtRow( iRowOfOverlappingNoteOrRow );
 				TapNoteScore get_to_avoid = bTapsOnRow ? TNS_W3 : TNS_W4;
 
-				if (score >= get_to_avoid)
+				if  (score >= get_to_avoid )
 					return;	// avoided
 				else
 					score = TNS_HitMine;
 			}
 
-			if (pTN->type == TapNoteType_Attack && score > TNS_W4)
+			if ( pTN->type == TapNoteType_Attack && score > TNS_W4 )
 				score = TNS_W2; // sentinel
 
 			/* AI will generate misses here. Don't handle a miss like a regular
 			 * note because we want the judgment animation to appear delayed.
 			 * Instead, return early if AI generated a miss, and let
 			 * UpdateTapNotesMissedOlderThan() detect and handle the misses. */
-			if (score == TNS_Miss)
+			if ( score == TNS_Miss )
 				return;
 
 			// Put some small, random amount in fNoteOffset so that demonstration 
@@ -2383,7 +2367,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 				float fWindowW5 = GetWindowSeconds(TW_W5);
 
 				// W1 is the top judgment, there is no overlap.
-				if (score == TNS_W1)
+				if ( score == TNS_W1 )
 					fNoteOffset = randomf(-fWindowW1, fWindowW1);
 				else
 				{
@@ -2391,25 +2375,25 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 					float fLowerBound = 0.0f; // negative upper limit
 					float fUpperBound = 0.0f; // positive lower limit
 					float fCompareWindow = 0.0f; // filled in here:
-					if (score == TNS_W2)
+					if ( score == TNS_W2 )
 					{
 						fLowerBound = -fWindowW1;
 						fUpperBound = fWindowW1;
 						fCompareWindow = fWindowW2;
 					}
-					else if (score == TNS_W3)
+					else if ( score == TNS_W3 )
 					{
 						fLowerBound = -fWindowW2;
 						fUpperBound = fWindowW2;
 						fCompareWindow = fWindowW3;
 					}
-					else if (score == TNS_W4)
+					else if ( score == TNS_W4 )
 					{
 						fLowerBound = -fWindowW3;
 						fUpperBound = fWindowW3;
 						fCompareWindow = fWindowW4;
 					}
-					else if (score == TNS_W5)
+					else if ( score == TNS_W5 )
 					{
 						fLowerBound = -fWindowW4;
 						fUpperBound = fWindowW4;
@@ -2418,7 +2402,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 					float f1 = randomf(-fCompareWindow, fLowerBound);
 					float f2 = randomf(fUpperBound, fCompareWindow);
 
-					if (randomf() * 100 >= 50)
+					if(randomf() * 100 >= 50)
 						fNoteOffset = f1;
 					else
 						fNoteOffset = f2;

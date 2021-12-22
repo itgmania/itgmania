@@ -97,7 +97,7 @@ void PlayerOptions::Init()
 	m_bCosecant = false;
 	m_sNoteSkin = "";
 	m_fVisualDelay = 0.0f;
-	m_twDisabledWindows.clear();
+	m_twDisabledWindows.reset();
 	ZERO( m_fMovesX );		ONE( m_SpeedfMovesX );
 	ZERO( m_fMovesY );		ONE( m_SpeedfMovesY );
 	ZERO( m_fMovesZ );		ONE( m_SpeedfMovesZ );
@@ -568,14 +568,19 @@ void PlayerOptions::GetMods( vector<RString> &AddTo, bool bForceNoteSkin ) const
 		AddTo.push_back( ssprintf("%.0fms VisualDelay", m_fVisualDelay * 1000.0f) );
 	}
 
-	if (!m_twDisabledWindows.empty()) {
+	if (m_twDisabledWindows.count() != 0) {
 		std::stringstream ss;
+		bool is_first = true;
 		ss << "No ";
-		for (auto it=m_twDisabledWindows.begin(); it != m_twDisabledWindows.end(); ++it) {
-			if (it != m_twDisabledWindows.begin()) {
-				ss << "/";
+		for (int i=TW_W1; i != TW_W5; ++i) {
+			if (m_twDisabledWindows[i]) {
+				if (!is_first) {
+					ss << "/";
+				} else {
+					is_first = true;
+				}
+				ss << TimingWindowToString(static_cast<TimingWindow>(i)).c_str();
 			}
-			ss << TimingWindowToString(*it).c_str();
 		}
 
 		// Final string will be something like "No W4/W5"
@@ -1162,13 +1167,6 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	else if( sBit == "visualdelay" )			m_fVisualDelay = level;
 	else if( level == 0 && disabledWindows.Compare(sBit)) // "No w1" etc.
 	{	
-		static std::map<RString, TimingWindow> nameToWindow = {
-			{"w1", TW_W1},
-			{"w2", TW_W2},
-			{"w3", TW_W3},
-			{"w4", TW_W4},
-			{"w5", TW_W5},
-		};
 		// We come into this condition if there is at least a single window present but there may be more.
 		// To get all of the windows, we go through in a loop to extract all of them.
 		static Regex allDisabledWindows("(w[1-5])(.*)$");
@@ -1178,9 +1176,11 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 			if (!allDisabledWindows.Compare(input, matches))
 				break;
 
-			if (nameToWindow.find(matches[0]) != nameToWindow.end())
+			TimingWindow tw;
+			bool ret = StringConversion::FromString(matches[0].MakeUpper(), tw);
+			if (ret && TW_W1 <= tw && tw <= TW_W5)
 			{
-				m_twDisabledWindows.insert(nameToWindow[matches[0]]);
+				m_twDisabledWindows.set(tw);
 			}
 			input = matches[1];
 		}
@@ -2044,13 +2044,17 @@ public:
 		if (original_top >= 1 && !lua_isnil(L, 1))
 		{
 			// Insert the specified TimingWindow into the disabled windows set.
-			p->m_twDisabledWindows.insert(Enum::Check<TimingWindow>(L, 1));
+			p->m_twDisabledWindows.set(Enum::Check<TimingWindow>(L, 1));
 		}
 		// Construct a new table indicating all of the disabled windows.
 		lua_newtable( L );
-		for (TimingWindow window : p->m_twDisabledWindows)
-		{
-			Enum::Push(L, window);
+		int j = 0;
+		for (int i=TW_W1; i != TW_W5; ++i) {
+			if (p->m_twDisabledWindows[i]) {
+				Enum::Push(L, static_cast<TimingWindow>(i));
+				lua_rawseti( L, -2, j+1 );
+				++j;
+			}
 		}
 		OPTIONAL_RETURN_SELF(original_top);
 		return 1;
@@ -2059,7 +2063,7 @@ public:
 	static int ResetDisabledTimingWindows(T* p, lua_State* L)
 	{
 		int original_top= lua_gettop(L);
-		p->m_twDisabledWindows.clear();
+		p->m_twDisabledWindows.reset();
 		OPTIONAL_RETURN_SELF(original_top);
 		return 1;
 	}
@@ -2068,14 +2072,14 @@ public:
 	{
 		int original_top= lua_gettop(L);
 		lua_newtable( L );
-		int i = 0;
-		for (TimingWindow window : p->m_twDisabledWindows)
-		{
-			Enum::Push(L, window);
-			lua_rawseti( L, -2, i+1 );
-			++i;
+		int j = 0;
+		for (int i=TW_W1; i != TW_W5; ++i) {
+			if (p->m_twDisabledWindows[i]) {
+				Enum::Push(L, static_cast<TimingWindow>(i));
+				lua_rawseti( L, -2, j+1 );
+				++j;
+			}
 		}
-		OPTIONAL_RETURN_SELF(original_top);
 		return 1;
 	}
 

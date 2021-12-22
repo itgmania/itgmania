@@ -1248,6 +1248,7 @@
 			<Function name='DigitalZSteps'/>
 			<Function name='Dizzy'/>
 			<Function name='DizzyHolds'/>
+			<Function name='DisableTimingWindow'/>
 			<Function name='Distant'/>
 			<Function name='DrainSetting'/>
 			<Function name='DrawSize'/>
@@ -1267,6 +1268,7 @@
 			<Function name='Flip'/>
 			<Function name='Floored'/>
 			<Function name='FromString'/>
+			<Function name='GetDisabledTimingWindows'/>
 			<Function name='GetReversePercentForColumn'/>
 			<Function name='GetStepAttacks'/>
 			<Function name='IsEasierForSongAndSteps'/>
@@ -1319,6 +1321,7 @@
 			<Function name='RandAttack'/>
 			<Function name='RandomSpeed'/>
 			<Function name='RandomVanish'/>
+			<Function name='ResetDisabledTimingWindows'/>
 			<Function name='Reverse'/>
 			<Function name='Reversen'/>
 			<Function name='Right'/>
@@ -1368,6 +1371,7 @@
 			<Function name='Twirl'/>
 			<Function name='Twister'/>
 			<Function name='UsingReverse'/>
+			<Function name='VisualDelay'/>
 			<Function name='Wave'/>
 			<Function name='WavePeriod'/>
 			<Function name='Wide'/>
