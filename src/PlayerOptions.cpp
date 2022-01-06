@@ -2046,16 +2046,6 @@ public:
 			// Insert the specified TimingWindow into the disabled windows set.
 			p->m_twDisabledWindows.set(Enum::Check<TimingWindow>(L, 1));
 		}
-		// Construct a new table indicating all of the disabled windows.
-		lua_newtable( L );
-		int j = 0;
-		for (int i=TW_W1; i != TW_W5; ++i) {
-			if (p->m_twDisabledWindows[i]) {
-				Enum::Push(L, static_cast<TimingWindow>(i));
-				lua_rawseti( L, -2, j+1 );
-				++j;
-			}
-		}
 		OPTIONAL_RETURN_SELF(original_top);
 		return 1;
 	}

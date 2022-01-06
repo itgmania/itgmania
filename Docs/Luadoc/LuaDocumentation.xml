@@ -3915,10 +3915,9 @@ a,b = options:Boost(5)
 	</Function>
 	<Function name='Dizzy' return='float, float' arguments='float value, float approach_speed'> </Function>
 	<Function name='DizzyHolds' return='bool' arguments='bool value'> </Function>
-	<Function name='DisableTimingWindow' return='{TimingWindow}' arguments='TimingWindow tw'>
+	<Function name='DisableTimingWindow' return='' arguments='TimingWindow tw'>
 		Selectively disable specific timing windows for a player. <br />
-		Valid values are <code>W1</code> to <code>W5</code> as defined in the <Link class='ENUM' function='TimingWindow' /> enum. <br />
-		Returns a table of <code>TimingWindow</code> with the set of disabled windows after the function call.
+		Valid values are <code>W1</code> to <code>W5</code> as defined in the <Link class='ENUM' function='TimingWindow' /> enum.
 	</Function>
 	<Function name='Distant' return='float, float' arguments='float value, float approach_speed'>
 		If the player is using Distant (zero skew and positive tilt), returns the value of tilt and its approach_speed.<br />
