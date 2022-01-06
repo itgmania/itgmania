@@ -9,6 +9,8 @@ struct lua_State;
 
 #define ONE( arr ) { for( unsigned Z = 0; Z < ARRAYLEN(arr); ++Z ) arr[Z]=1.0f; }
 
+#include <bitset>
+
 #include "GameConstantsAndTypes.h"
 #include "PlayerNumber.h"
 #include "PrefsManager.h"
@@ -397,6 +399,11 @@ public:
 
 	/** @brief The Visual Delay additionally applied on a per-player basis in ms. */
 	float	m_fVisualDelay;
+
+	/** @brief The TimingWindow that can be disabled.
+	 *  Valid values are only W1-W5 which map to indices 0-5 respectively.
+     *  Other values are ignored. */
+	std::bitset<5> m_twDisabledWindows;
 
 	void NextAccel();
 	void NextEffect();

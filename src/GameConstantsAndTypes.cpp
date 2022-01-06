@@ -283,6 +283,8 @@ static const char *TimingWindowNames[] = {
 	"Checkpoint"
 };
 XToString( TimingWindow );
+LuaXType( TimingWindow );
+StringToX( TimingWindow );
 
 static const char *ScoreEventNames[] = {
 	"CheckpointHit",
