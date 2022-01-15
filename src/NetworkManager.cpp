@@ -129,7 +129,7 @@ std::string NetworkManager::EncodeQueryParameters(const std::unordered_map<std::
 	return this->httpClient.serializeHttpParameters(query);
 }
 
-int HttpRequestFuture::gc(lua_State *L)
+int HttpRequestFuture::collect(lua_State *L)
 {
 	void *udata = luaL_checkudata(L, 1, "HttpRequestFuture");
 	auto futptr = static_cast<HttpRequestFuturePtr*>(udata);
@@ -152,7 +152,7 @@ int HttpRequestFuture::Cancel(lua_State *L)
 static void registerHttpRequestMetatable(lua_State *L)
 {
 	const luaL_Reg HttpRequest_meta[] = {
-		{"__gc", HttpRequestFuture::gc},
+		{"__gc", HttpRequestFuture::collect},
 		{"Cancel", HttpRequestFuture::Cancel},
 		{NULL, NULL},
 	};

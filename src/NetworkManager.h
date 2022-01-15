@@ -63,7 +63,7 @@ class HttpRequestFuture
 public:
 	HttpRequestFuture(ix::HttpRequestArgsPtr& args) : args(args) {};
 
-	static int gc(lua_State *L);
+	static int collect(lua_State *L);
 	static int Cancel(lua_State *L);
 
 private:
