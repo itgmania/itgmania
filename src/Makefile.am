@@ -594,6 +594,7 @@ LuaBinding.cpp LuaBinding.h \
 LuaManager.cpp LuaManager.h LightsManager.cpp LightsManager.h \
 MemoryCardManager.cpp MemoryCardManager.h \
 MessageManager.cpp MessageManager.h NetworkSyncManager.cpp NetworkSyncManager.h \
+NetworkManager.cpp NetworkManager.h \
 NoteSkinManager.cpp NoteSkinManager.h \
 PrefsManager.cpp PrefsManager.h ProfileManager.cpp ProfileManager.h ScreenManager.cpp \
 ScreenManager.h SongManager.cpp SongManager.h \

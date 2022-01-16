@@ -61,6 +61,7 @@
 #include "LightsManager.h"
 #include "ModelManager.h"
 #include "CryptManager.h"
+#include "NetworkManager.h"
 #include "NetworkSyncManager.h"
 #include "MessageManager.h"
 #include "StatsManager.h"
@@ -298,6 +299,7 @@ void ShutdownGame()
 	SAFE_DELETE( STATSMAN );
 	SAFE_DELETE( MESSAGEMAN );
 	SAFE_DELETE( NSMAN );
+	SAFE_DELETE( NETWORK );
 	/* Delete INPUTMAN before the other INPUTFILTER handlers, or an input
 	 * driver may try to send a message to INPUTFILTER after we delete it. */
 	SAFE_DELETE( INPUTMAN );
@@ -1174,6 +1176,7 @@ int sm_main(int argc, char* argv[])
 	UNLOCKMAN	= new UnlockManager;
 	SONGMAN->UpdatePopular();
 	SONGMAN->UpdatePreferredSort();
+	NETWORK		= new NetworkManager;
 	NSMAN 		= new NetworkSyncManager( pLoadingWindow );
 	STATSMAN	= new StatsManager;
 
