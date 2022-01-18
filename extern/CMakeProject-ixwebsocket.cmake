@@ -1,8 +1,5 @@
-#set(CMAKE_CXX_STANDARD 11)
-#set(CXX_STANDARD_REQUIRED ON)
-#set(CMAKE_CXX_EXTENSIONS OFF)
-
 set(IXW_DIR "${SM_EXTERN_DIR}/IXWebSocket-11.3.2/ixwebsocket")
+set(MBEDTLS_DIR "${SM_EXTERN_DIR}/mbedtls-3.1.0")
 
 list(APPEND IXW_SRC
             "${IXW_DIR}/IXBench.cpp"
@@ -93,6 +90,9 @@ list(APPEND IXW_HPP
 if(APPLE)
   list(APPEND IXW_SRC "${IXW_DIR}/IXSocketAppleSSL.cpp")
   list(APPEND IXW_HPP "${IXW_DIR}/IXSocketAppleSSL.h")
+elseif(WIN32)
+  list(APPEND IXW_SRC "${IXW_DIR}/IXSocketMbedTLS.cpp")
+  list(APPEND IXW_HPP "${IXW_DIR}/IXSocketMbedTLS.h")
 else()
   list(APPEND IXW_SRC "${IXW_DIR}/IXSocketOpenSSL.cpp")
   list(APPEND IXW_HPP "${IXW_DIR}/IXSocketOpenSSL.h")
@@ -103,6 +103,9 @@ source_group("" FILES ${IXW_SRC} ${IXW_HPP})
 add_library("ixwebsocket" STATIC ${IXW_SRC} ${IXW_HPP})
 
 set_property(TARGET "ixwebsocket" PROPERTY FOLDER "External Libraries")
+set_property(TARGET "ixwebsocket" PROPERTY CXX_STANDARD 11)
+set_property(TARGET "ixwebsocket" PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET "ixwebsocket" PROPERTY CXX_EXTENSIONS OFF)
 
 disable_project_warnings("ixwebsocket")
 
@@ -111,13 +114,14 @@ sm_add_compile_definition("ixwebsocket" IXWEBSOCKET_USE_TLS)
 if(APPLE)
   sm_add_compile_definition("ixwebsocket" IXWEBSOCKET_USE_SECURE_TRANSPORT)
   target_link_libraries(ixwebsocket "-framework foundation" "-framework security")
+elseif(WIN32)
+  sm_add_compile_definition("ixwebsocket" IXWEBSOCKET_USE_MBED_TLS)
+  sm_add_compile_definition("ixwebsocket" IXWEBSOCKET_USE_MBED_TLS_MIN_VERSION_3)
+  add_subdirectory("${MBEDTLS_DIR}" EXCLUDE_FROM_ALL)
+  target_link_libraries("ixwebsocket" mbedtls mbedcrypto mbedx509)
 else()
   sm_add_compile_definition("ixwebsocket" IXWEBSOCKET_USE_OPEN_SSL)
-
-  # Use OPENSSL_ROOT_DIR CMake variable if you need to use your own openssl
   find_package(OpenSSL REQUIRED)
-  message(STATUS "OpenSSL: " ${OPENSSL_VERSION})
-
   add_definitions(${OPENSSL_DEFINITIONS})
   target_include_directories(ixwebsocket PUBLIC ${OPENSSL_INCLUDE_DIR})
   target_link_libraries(ixwebsocket ${OPENSSL_LIBRARIES})
