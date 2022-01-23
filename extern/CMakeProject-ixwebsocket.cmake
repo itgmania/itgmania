@@ -149,5 +149,4 @@ set(IXWEBSOCKET_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/IXWebSocket-11.3.2")
 target_include_directories(ixwebsocket PUBLIC
   "zlib"
   $<BUILD_INTERFACE:${IXWEBSOCKET_INCLUDE_DIRS}/>
-  $<INSTALL_INTERFACE:include/ixwebsocket>
 )

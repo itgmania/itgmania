@@ -403,6 +403,7 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 	FILEMAN->Mount( "dir", sUserDataPath + "/CDTitles", "/CDTitles" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/Characters", "/Characters" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/Courses", "/Courses" );
+	FILEMAN->Mount( "dir", sUserDataPath + "/Downloads", "/Downloads" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/Logs", "/Logs" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/NoteSkins", "/NoteSkins" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/Packages", "/Packages" );

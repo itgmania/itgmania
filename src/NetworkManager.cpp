@@ -1,16 +1,22 @@
 #include "global.h"
 #include "NetworkManager.h"
 #include "LuaManager.h"
+#include "ProductInfo.h"
+#include "RageFile.h"
+#include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "StdString.h"
+#include "ver.h"
 
 #include <ixwebsocket/IXHttpClient.h>
 #include <ixwebsocket/IXNetSystem.h>
 #include <ixwebsocket/IXUrlParser.h>
 
 #include <algorithm>
+#include <climits>
 #include <memory>
+#include <sstream>
 #include <unordered_map>
 #include <vector>
 
@@ -23,6 +29,7 @@ Preference<RString> NetworkManager::httpAllowHosts("HttpAllowHosts", "", nullptr
 static const char *HttpErrorCodeNames[] = {
 	"Blocked",
 	"UnknownError",
+	"FileError",
 	"CannotConnect",
 	"Timeout",
 	"Gzip",
@@ -43,7 +50,7 @@ XToString(HttpErrorCode);
 StringToX(HttpErrorCode);
 LuaXType(HttpErrorCode);
 
-NetworkManager::NetworkManager() : httpClient(true)
+NetworkManager::NetworkManager() : httpClient(true), downloadClient(true)
 {
 	ix::initNetSystem();
 
@@ -54,6 +61,8 @@ NetworkManager::NetworkManager() : httpClient(true)
 		lua_setglobal(L, "NETWORK");
 		LUA->Release(L);
 	}
+
+	this->ClearDownloads();
 }
 
 NetworkManager::~NetworkManager()
@@ -97,24 +106,75 @@ bool NetworkManager::IsUrlAllowed(const std::string& url)
 
 HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args)
 {
-	ix::HttpRequestArgsPtr req = this->httpClient.createRequest(args.url, args.method);
+	auto &client = args.downloadFile.empty() ? this->httpClient : this->downloadClient;
+	auto downloadFile = std::make_shared<RageFile>();
+	std::string downloadFilename;
+
+	ix::HttpRequestArgsPtr req = client.createRequest(args.url, args.method);
 	req->body = args.body;
 	req->multipartBoundary = args.multipartBoundary;
 
+	req->extraHeaders["User-Agent"] = this->GetUserAgent();
 	for (const auto& entry : args.headers)
 	{
 		req->extraHeaders[entry.first] = entry.second;
 	}
 
-	if (args.connectTimeout > 0) {
+	if (!args.downloadFile.empty())
+	{
+		downloadFilename = std::string("/Downloads/") + args.downloadFile;
+		if (!downloadFile->Open(downloadFilename, RageFile::WRITE | RageFile::STREAMED))
+		{
+			req->cancel = true;
+		}
+
+		req->onChunkCallback = [args, downloadFile, req](const std::string& data) {
+			if (downloadFile->Write(data.c_str(), data.size()) < 0)
+			{
+				req->cancel = true;
+			}
+		};
+
+		// Don't timeout downloads by default. This value might be
+		// overwritten below if a value is specified in the request.
+		req->transferTimeout = INT_MAX;
+
+	}
+
+	if (args.connectTimeout > 0)
 		req->connectTimeout = args.connectTimeout;
-	}
 
-	if (args.transferTimeout > 0) {
+	if (args.transferTimeout > 0)
 		req->transferTimeout = args.transferTimeout;
-	}
 
-	this->httpClient.performRequest(req, args.onResponse);
+	if (args.onProgress)
+		req->onProgressCallback = args.onProgress;
+
+	client.performRequest(req, [args, downloadFile, downloadFilename](const ix::HttpResponsePtr& response) {
+		if (downloadFile->IsOpen())
+		{
+			RString error = downloadFile->GetError();
+			downloadFile->Close();
+
+			if (!error.empty())
+			{
+				std::string errorMessage = "could not write to " + downloadFile->GetPath() + ": " + error;
+				if (args.onFileError)
+					args.onFileError(errorMessage);
+
+				FILEMAN->Remove(downloadFilename);
+				return;
+			}
+		}
+
+		if (args.onResponse)
+			args.onResponse(response);
+
+		if (!args.downloadFile.empty())
+		{
+			FILEMAN->Remove(downloadFilename);
+		}
+	});
 
 	return std::make_shared<HttpRequestFuture>(req);
 }
@@ -129,7 +189,28 @@ std::string NetworkManager::EncodeQueryParameters(const std::unordered_map<std::
 	return this->httpClient.serializeHttpParameters(query);
 }
 
-int HttpRequestFuture::collect(lua_State *L)
+std::string NetworkManager::GetUserAgent()
+{
+	std::stringstream ss;
+	ss << PRODUCT_FAMILY << "/" << product_version;
+	return ss.str();
+}
+
+void NetworkManager::ClearDownloads()
+{
+	vector<RString> files;
+	FILEMAN->GetDirListing("/Downloads/*", files, false, true);
+
+	for (const auto& file : files)
+	{
+		if (FILEMAN->IsADirectory(file))
+			FILEMAN->DeleteRecursive(file + "/");
+		else
+			FILEMAN->Remove(file);
+	}
+}
+
+int HttpRequestFuture::Collect(lua_State *L)
 {
 	void *udata = luaL_checkudata(L, 1, "HttpRequestFuture");
 	auto futptr = static_cast<HttpRequestFuturePtr*>(udata);
@@ -152,7 +233,7 @@ int HttpRequestFuture::Cancel(lua_State *L)
 static void registerHttpRequestMetatable(lua_State *L)
 {
 	const luaL_Reg HttpRequest_meta[] = {
-		{"__gc", HttpRequestFuture::collect},
+		{"__gc", HttpRequestFuture::Collect},
 		{"Cancel", HttpRequestFuture::Cancel},
 		{NULL, NULL},
 	};
@@ -183,6 +264,8 @@ public:
 		luaL_checktype(L, 1, LUA_TTABLE);
 
 		HttpRequestArgs args;
+		int onProgressRef = LUA_NOREF;
+		int onResponseRef = LUA_NOREF;
 
 		lua_getfield(L, 1, "url");
 		if (lua_isnil(L, -1))
@@ -311,9 +394,44 @@ public:
 		}
 		lua_pop(L, 1);
 
-		int onResponseRef = LUA_NOREF;
+		lua_getfield(L, 1, "downloadFile");
+		if (!lua_isnil(L, -1))
+		{
+			if (lua_isstring(L, -1))
+			{
+				args.downloadFile = lua_tostring(L, -1);
+			}
+			else
+			{
+				luaL_error(L, "downloadFile must be a string");
+			}
+		}
+		lua_pop(L, 1);
 
-		// do this as the last check, so we don't leak lua references on error
+		lua_getfield(L, 1, "onProgress");
+		if (!lua_isnil(L, -1))
+		{
+			if (lua_isfunction(L, -1))
+			{
+				lua_pushvalue(L, -1);
+				onProgressRef = luaL_ref(L, LUA_REGISTRYINDEX);
+
+				args.onProgress = [onProgressRef](int current, int total)
+				{
+					Lua *L = LUA->Get();
+					handleProgress(L, current, total, onProgressRef);
+					LUA->Release(L);
+
+					return true;
+				};
+			}
+			else
+			{
+				luaL_error(L, "onProgress must be a function");
+			}
+		}
+		lua_pop(L, 1);
+
 		lua_getfield(L, 1, "onResponse");
 		if (!lua_isnil(L, -1))
 		{
@@ -321,20 +439,38 @@ public:
 			{
 				lua_pushvalue(L, -1);
 				onResponseRef = luaL_ref(L, LUA_REGISTRYINDEX);
-
-				args.onResponse = [onResponseRef](const ix::HttpResponsePtr& response)
-				{
-					Lua *L = LUA->Get();
-					handleHttpResponse(L, response, onResponseRef);
-					LUA->Release(L);
-				};
 			}
 			else
 			{
+				luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
 				luaL_error(L, "onResponse must be a function");
 			}
 		}
 		lua_pop(L, 1);
+
+		args.onFileError = [onProgressRef, onResponseRef](const std::string& errorMessage)
+		{
+			Lua *L = LUA->Get();
+
+			luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
+
+			if (onResponseRef != LUA_NOREF)
+				handleFileError(L, errorMessage, onResponseRef);
+
+			LUA->Release(L);
+		};
+
+		args.onResponse = [onProgressRef, onResponseRef](const ix::HttpResponsePtr& response)
+		{
+			Lua *L = LUA->Get();
+
+			luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
+
+			if (onResponseRef != LUA_NOREF)
+				handleHttpResponse(L, response, onResponseRef);
+
+			LUA->Release(L);
+		};
 
 		if (p->IsUrlAllowed(args.url))
 		{
@@ -349,6 +485,7 @@ public:
 		else
 		{
 			LOG->Warn("blocked access to %s", args.url.c_str());
+			luaL_unref(L, LUA_REGISTRYINDEX, onProgressRef);
 			if (onResponseRef != LUA_NOREF)
 			{
 				handleUrlForbidden(L, args.url, onResponseRef);
@@ -431,6 +568,23 @@ private:
 		LuaHelpers::RunScriptOnStack(L, error, 1, 0, true);
 	}
 
+	static void handleFileError(Lua *L, const std::string& errorMessage, int onResponseRef)
+	{
+		lua_rawgeti(L, LUA_REGISTRYINDEX, onResponseRef);
+		luaL_unref(L, LUA_REGISTRYINDEX, onResponseRef);
+
+		lua_newtable(L);
+
+		LuaHelpers::Push(L, HttpErrorCode_FileError);
+		lua_setfield(L, -2, "error");
+
+		lua_pushstring(L, errorMessage.c_str());
+		lua_setfield(L, -2, "errorMessage");
+
+		RString error = "Lua error in HTTP response handler: ";
+		LuaHelpers::RunScriptOnStack(L, error, 1, 0, true);
+	}
+
 	static void handleHttpResponse(Lua *L, const ix::HttpResponsePtr& response, int onResponseRef)
 	{
 		lua_rawgeti(L, LUA_REGISTRYINDEX, onResponseRef);
@@ -492,6 +646,16 @@ private:
 
 		RString error = "Lua error in HTTP response handler: ";
 		LuaHelpers::RunScriptOnStack(L, error, 1, 0, true);
+	}
+
+	static void handleProgress(Lua *L, int current, int total, int onProgressRef)
+	{
+		lua_rawgeti(L, LUA_REGISTRYINDEX, onProgressRef);
+		lua_pushinteger(L, current);
+		lua_pushinteger(L, total);
+
+		RString error = "Lua error in HTTP progress handler: ";
+		LuaHelpers::RunScriptOnStack(L, error, 2, 0, true);
 	}
 };
 

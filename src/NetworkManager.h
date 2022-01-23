@@ -4,8 +4,10 @@
 #include "Preference.h"
 #include "StdString.h"
 
+#include <atomic>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 
@@ -21,6 +23,7 @@ enum HttpErrorCode
 {
 	HttpErrorCode_Blocked,
 	HttpErrorCode_UnknownError,
+	HttpErrorCode_FileError,
 
 	// from IXWebSocket
 	HttpErrorCode_CannotConnect,
@@ -44,7 +47,7 @@ enum HttpErrorCode
 };
 const RString& HttpErrorCodeToString(HttpErrorCode dc);
 HttpErrorCode StringToHttpErrorCode(const RString& sDC);
-LuaDeclareType( HttpErrorCode );
+LuaDeclareType(HttpErrorCode);
 
 struct HttpRequestArgs
 {
@@ -55,7 +58,10 @@ struct HttpRequestArgs
 	std::unordered_map<std::string, std::string> headers;
 	int connectTimeout = -1;
 	int transferTimeout = -1;
-	std::function<void(const ix::HttpResponsePtr& response)> onResponse = [](const ix::HttpResponsePtr& response) {};
+	std::string downloadFile;
+	std::function<bool(int current, int total)> onProgress;
+	std::function<void(const ix::HttpResponsePtr& response)> onResponse;
+	std::function<void(const std::string& errorMessage)> onFileError;
 };
 
 class HttpRequestFuture
@@ -63,7 +69,7 @@ class HttpRequestFuture
 public:
 	HttpRequestFuture(ix::HttpRequestArgsPtr& args) : args(args) {};
 
-	static int collect(lua_State *L);
+	static int Collect(lua_State *L);
 	static int Cancel(lua_State *L);
 
 private:
@@ -87,7 +93,11 @@ public:
 	void PushSelf(lua_State *L);
 
 private:
+	std::string GetUserAgent();
+	void ClearDownloads();
+
 	ix::HttpClient httpClient;
+	ix::HttpClient downloadClient;
 
 	static Preference<bool> httpEnabled;
 	static Preference<RString> httpAllowHosts;

@@ -3562,16 +3562,20 @@ end
 <pre><code>
 NETWORK:HttpRequest{
 	url="https://api.example.com",
-	method="GET",                           -- default: "GET"
-	body="",                                -- default: ""
-	multipartBoundary="",                   -- default: ""
-	headers={                               -- default: {}
+	method="GET",                           	-- default: "GET"
+	body="",                                	-- default: ""
+	multipartBoundary="",                   	-- default: ""
+	headers={                               	-- default: {}
 		["Accept-Language"]="en-US",
 		["Cookie"]="sessionId=42",
 	},
-	connectTimeout=3,                       -- default: 60
-	transferTimeout=10,                     -- default: 1800
-	onResponse=function(response)           -- default: no callback
+	connectTimeout=3,                       	-- default: 60
+	transferTimeout=10,                     	-- default: 1800
+	downloadFile="",				-- default: no download file
+	onProgress=function(currentBytes, totalBytes)	-- default: no callback
+		...
+	end,
+	onResponse=function(response)           	-- default: no callback
 		...
 	end,
 }
@@ -3598,6 +3602,9 @@ NETWORK:HttpRequest{
 	errorMessage="access to https://api.example.com is not allowed",
 }
 </code></pre>
+	If the <code>downloadFile</code> parameter is set, the response body is not accumulated in memory, but written to <code>/Downloads/${downloadFile}</code>.
+	The file is available in the <code>onResponse</code> callback where it can be unzipped/copied to another location using <code>FILEMAN:Unzip()</code>/<code>FILEMAN:Copy()</code> respectively.
+	The file is deleted once the callback returns.
 	</Function>
 	<Function name='UrlEncode' return='string' arguments='string value'>
 		Returns the URL encoded representation of <code>value</code>.

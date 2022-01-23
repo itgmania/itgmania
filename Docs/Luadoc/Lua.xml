@@ -2486,21 +2486,22 @@
 		<Enum name='HttpErrorCode'>
 			<EnumValue name='&apos;HttpErrorCode_Blocked&apos;' value='0'/>
 			<EnumValue name='&apos;HttpErrorCode_UnknownError&apos;' value='1'/>
-			<EnumValue name='&apos;HttpErrorCode_CannotConnect&apos;' value='2'/>
-			<EnumValue name='&apos;HttpErrorCode_Timeout&apos;' value='3'/>
-			<EnumValue name='&apos;HttpErrorCode_Gzip&apos;' value='4'/>
-			<EnumValue name='&apos;HttpErrorCode_UrlMalformed&apos;' value='5'/>
-			<EnumValue name='&apos;HttpErrorCode_CannotCreateSocket&apos;' value='6'/>
-			<EnumValue name='&apos;HttpErrorCode_SendError&apos;' value='7'/>
-			<EnumValue name='&apos;HttpErrorCode_ReadError&apos;' value='8'/>
-			<EnumValue name='&apos;HttpErrorCode_CannotReadStatusLine&apos;' value='9'/>
-			<EnumValue name='&apos;HttpErrorCode_MissingStatus&apos;' value='10'/>
-			<EnumValue name='&apos;HttpErrorCode_HeaderParsingError&apos;' value='11'/>
-			<EnumValue name='&apos;HttpErrorCode_MissingLocation&apos;' value='12'/>
-			<EnumValue name='&apos;HttpErrorCode_TooManyRedirects&apos;' value='13'/>
-			<EnumValue name='&apos;HttpErrorCode_ChunkReadError&apos;' value='14'/>
-			<EnumValue name='&apos;HttpErrorCode_CannotReadBody&apos;' value='15'/>
-			<EnumValue name='&apos;HttpErrorCode_Cancelled&apos;' value='16'/>
+			<EnumValue name='&apos;HttpErrorCode_FileError&apos;' value='2'/>
+			<EnumValue name='&apos;HttpErrorCode_CannotConnect&apos;' value='3'/>
+			<EnumValue name='&apos;HttpErrorCode_Timeout&apos;' value='4'/>
+			<EnumValue name='&apos;HttpErrorCode_Gzip&apos;' value='5'/>
+			<EnumValue name='&apos;HttpErrorCode_UrlMalformed&apos;' value='6'/>
+			<EnumValue name='&apos;HttpErrorCode_CannotCreateSocket&apos;' value='7'/>
+			<EnumValue name='&apos;HttpErrorCode_SendError&apos;' value='8'/>
+			<EnumValue name='&apos;HttpErrorCode_ReadError&apos;' value='9'/>
+			<EnumValue name='&apos;HttpErrorCode_CannotReadStatusLine&apos;' value='10'/>
+			<EnumValue name='&apos;HttpErrorCode_MissingStatus&apos;' value='11'/>
+			<EnumValue name='&apos;HttpErrorCode_HeaderParsingError&apos;' value='12'/>
+			<EnumValue name='&apos;HttpErrorCode_MissingLocation&apos;' value='13'/>
+			<EnumValue name='&apos;HttpErrorCode_TooManyRedirects&apos;' value='14'/>
+			<EnumValue name='&apos;HttpErrorCode_ChunkReadError&apos;' value='15'/>
+			<EnumValue name='&apos;HttpErrorCode_CannotReadBody&apos;' value='16'/>
+			<EnumValue name='&apos;HttpErrorCode_Cancelled&apos;' value='17'/>
 		</Enum>
 		<Enum name='ImageCacheMode'>
 			<EnumValue name='&apos;ImageCacheMode_Off&apos;' value='0'/>
