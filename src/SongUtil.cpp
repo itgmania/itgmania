@@ -1147,6 +1147,10 @@ void SongID::LoadFromNode( const XNode* pNode )
 	ASSERT( pNode->GetName() == "Song" );
 	pNode->GetAttrValue("Dir", sDir);
 	m_Cache.Unset();
+
+	// HACK for backwards compatibility: /AdditionalSongs has been merged into /Songs
+	if (sDir.Left(16) == "AdditionalSongs/")
+		sDir.replace(0, 16, "Songs/");
 }
 
 RString SongID::ToString() const

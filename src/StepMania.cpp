@@ -1034,14 +1034,14 @@ int sm_main(int argc, char* argv[])
 		vector<RString> dirs;
 		split( PREFSMAN->m_sAdditionalSongFolders, ",", dirs, true );
 		for( unsigned i=0; i < dirs.size(); i++)
-			FILEMAN->Mount( "dir", dirs[i], "/AdditionalSongs" );
+			FILEMAN->Mount( "dir", dirs[i], "/Songs" );
 	}
 	if( PREFSMAN->m_sAdditionalCourseFolders.Get() != "" )
 	{
 		vector<RString> dirs;
 		split( PREFSMAN->m_sAdditionalCourseFolders, ",", dirs, true );
 		for( unsigned i=0; i < dirs.size(); i++)
-			FILEMAN->Mount( "dir", dirs[i], "/AdditionalCourses" );
+			FILEMAN->Mount( "dir", dirs[i], "/Courses" );
 	}
 
 	MountTreeOfZips( SpecialFiles::PACKAGES_DIR );

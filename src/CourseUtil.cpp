@@ -593,6 +593,10 @@ void CourseID::LoadFromNode( const XNode* pNode )
 	if( !pNode->GetAttrValue("Path", sPath) )
 		pNode->GetAttrValue( "FullTitle", sFullTitle );
 	m_Cache.Unset();
+
+	// HACK for backwards compatibility: /AdditionalCourses has been merged into /Courses
+	if (sPath.Left(18) == "AdditionalCourses/")
+		sPath.replace(0, 18, "Courses/");
 }
 
 RString CourseID::ToString() const

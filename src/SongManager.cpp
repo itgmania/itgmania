@@ -39,12 +39,9 @@
 
 SongManager*	SONGMAN = nullptr;	// global and accessible from anywhere in our program
 
-const RString ADDITIONAL_SONGS_DIR	= "/AdditionalSongs/";
-const RString ADDITIONAL_COURSES_DIR	= "/AdditionalCourses/";
-const RString EDIT_SUBDIR		= "Edits/";
-
 /** @brief The file that contains various random attacks. */
 const RString ATTACK_FILE		= "/Data/RandomAttacks.txt";
+const RString EDIT_SUBDIR		= "Edits/";
 
 static const ThemeMetric<RageColor>	EXTRA_COLOR			( "SongManager", "ExtraColor" );
 static const ThemeMetric<int>		EXTRA_COLOR_METER		( "SongManager", "ExtraColorMeter" );
@@ -116,9 +113,7 @@ static LocalizedString SANITY_CHECKING_GROUPS("SongManager", "Sanity checking gr
 void SongManager::Reload( bool bAllowFastLoad, LoadingWindow *ld )
 {
 	FILEMAN->FlushDirCache( SpecialFiles::SONGS_DIR );
-	FILEMAN->FlushDirCache( ADDITIONAL_SONGS_DIR );
 	FILEMAN->FlushDirCache( SpecialFiles::COURSES_DIR );
-	FILEMAN->FlushDirCache( ADDITIONAL_COURSES_DIR );
 	FILEMAN->FlushDirCache( EDIT_SUBDIR );
 
 	if( ld )
@@ -161,11 +156,6 @@ void SongManager::InitSongsFromDisk( LoadingWindow *ld )
 	SONGINDEX->delay_save_cache = true;
 	IMAGECACHE->delay_save_cache = true;
 	LoadStepManiaSongDir( SpecialFiles::SONGS_DIR, ld );
-
-	const bool bOldVal = PREFSMAN->m_bFastLoad;
-	PREFSMAN->m_bFastLoad.Set( PREFSMAN->m_bFastLoadAdditionalSongs );
-	LoadStepManiaSongDir( ADDITIONAL_SONGS_DIR, ld );
-	PREFSMAN->m_bFastLoad.Set( bOldVal );
 	LoadEnabledSongsFromPref();
 	SONGINDEX->SaveCacheIndex();
 	SONGINDEX->delay_save_cache= false;
@@ -799,11 +789,6 @@ int SongManager::GetNumSelectableAndUnlockedSongs() const
 	return std::count_if(m_pSongs.begin(), m_pSongs.end(), [](Song const *s) { return UNLOCKMAN->SongIsLocked(s) & ~(LOCKED_LOCK | LOCKED_SELECTABLE); });
 }
 
-int SongManager::GetNumAdditionalSongs() const
-{
-	return std::count_if(m_pSongs.begin(), m_pSongs.end(), [&](Song const *s) { return WasLoadedFromAdditionalSongs(s); });
-}
-
 int SongManager::GetNumSongGroups() const
 {
 	return m_sSongGroupNames.size();
@@ -812,11 +797,6 @@ int SongManager::GetNumSongGroups() const
 int SongManager::GetNumCourses() const
 {
 	return m_pCourses.size();
-}
-
-int SongManager::GetNumAdditionalCourses() const
-{
-	return std::count_if(m_pCourses.begin(), m_pCourses.end(), [&](Course const *c) { return WasLoadedFromAdditionalCourses(c); });
 }
 
 int SongManager::GetNumCourseGroups() const
@@ -841,18 +821,11 @@ void SongManager::InitCoursesFromDisk( LoadingWindow *ld )
 	RageTimer loading_window_last_update_time;
 	loading_window_last_update_time.Touch();
 
-	vector<RString> vsCourseDirs;
-	vsCourseDirs.push_back( SpecialFiles::COURSES_DIR );
-	vsCourseDirs.push_back( ADDITIONAL_COURSES_DIR );
-
 	vector<RString> vsCourseGroupNames;
-	for (RString const &sDir : vsCourseDirs)
-	{
-		// Find all group directories in Courses dir
-		GetDirListing( sDir + "*", vsCourseGroupNames, true, true );
-		StripCvsAndSvn( vsCourseGroupNames );
-		StripMacResourceForks( vsCourseGroupNames );
-	}
+	// Find all group directories in Courses dir
+	GetDirListing( SpecialFiles::COURSES_DIR + "*", vsCourseGroupNames, true, true );
+	StripCvsAndSvn( vsCourseGroupNames );
+	StripMacResourceForks( vsCourseGroupNames );
 
 	// Search for courses both in COURSES_DIR and in subdirectories
 	vsCourseGroupNames.push_back( SpecialFiles::COURSES_DIR );
@@ -1185,18 +1158,6 @@ void SongManager::DeleteSteps( Steps *pSteps )
 	pSteps->m_pSong->DeleteSteps( pSteps );
 }
 
-bool SongManager::WasLoadedFromAdditionalSongs( const Song *pSong ) const
-{
-	RString sDir = pSong->GetSongDir();
-	return BeginsWith( sDir, ADDITIONAL_SONGS_DIR );
-}
-
-bool SongManager::WasLoadedFromAdditionalCourses( const Course *pCourse ) const
-{
-	RString sDir = pCourse->m_sPath;
-	return BeginsWith( sDir, ADDITIONAL_COURSES_DIR );
-}
-
 void SongManager::GetAllCourses( vector<Course*> &AddTo, bool bIncludeAutogen ) const
 {
 	for( unsigned i=0; i<m_pCourses.size(); i++ )
@@ -1224,14 +1185,6 @@ bool SongManager::GetExtraStageInfoFromCourse( bool bExtra2, RString sPreferredG
 {
 	const RString sCourseSuffix = sPreferredGroup + (bExtra2 ? "/extra2.crs" : "/extra1.crs");
 	RString sCoursePath = SpecialFiles::SONGS_DIR + sCourseSuffix;
-
-	// Couldn't find course in DWI path or alternative song folders
-	if( !DoesFileExist(sCoursePath) )
-	{
-		sCoursePath = ADDITIONAL_SONGS_DIR + sCourseSuffix;
-		if( !DoesFileExist(sCoursePath) )
-			return false;
-	}
 
 	Course course;
 	CourseLoaderCRS::LoadFromCRSFile( sCoursePath, course );
@@ -2022,11 +1975,12 @@ public:
 	static int GetNumLockedSongs( T* p, lua_State *L ) { lua_pushnumber( L, p->GetNumLockedSongs() ); return 1; }
 	static int GetNumUnlockedSongs( T* p, lua_State *L )    { lua_pushnumber( L, p->GetNumUnlockedSongs() ); return 1; }
 	static int GetNumSelectableAndUnlockedSongs( T* p, lua_State *L )    { lua_pushnumber( L, p->GetNumSelectableAndUnlockedSongs() ); return 1; }
-	static int GetNumAdditionalSongs( T* p, lua_State *L )  { lua_pushnumber( L, p->GetNumAdditionalSongs() ); return 1; }
+	static int GetNumAdditionalSongs( T* p, lua_State *L )  { lua_pushnumber( L, 0 ); return 1; }	// deprecated
 	static int GetNumSongGroups( T* p, lua_State *L )	{ lua_pushnumber( L, p->GetNumSongGroups() ); return 1; }
 	static int GetNumCourses( T* p, lua_State *L )		{ lua_pushnumber( L, p->GetNumCourses() ); return 1; }
-	static int GetNumAdditionalCourses( T* p, lua_State *L ){ lua_pushnumber( L, p->GetNumAdditionalCourses() ); return 1; }
+	static int GetNumAdditionalCourses( T* p, lua_State *L ){ lua_pushnumber( L, 0 ); return 1; }	// deprecated
 	static int GetNumCourseGroups( T* p, lua_State *L )	{ lua_pushnumber( L, p->GetNumCourseGroups() ); return 1; }
+
 	/* Note: this could now be implemented as Luna<Steps>::GetSong */
 	static int GetSongFromSteps( T* p, lua_State *L )
 	{
@@ -2129,18 +2083,8 @@ public:
 		lua_pushstring(L, p->SongToPreferredSortSectionName(pSong));
 		return 1;
 	}
-	static int WasLoadedFromAdditionalSongs( T* p, lua_State *L )
-	{
-		const Song* pSong = Luna<Song>::check(L,1);
-		lua_pushboolean(L, p->WasLoadedFromAdditionalSongs(pSong));
-		return 1;
-	}
-	static int WasLoadedFromAdditionalCourses( T* p, lua_State *L )
-	{
-		const Course* pCourse = Luna<Course>::check(L,1);
-		lua_pushboolean(L, p->WasLoadedFromAdditionalCourses(pCourse));
-		return 1;
-	}
+	static int WasLoadedFromAdditionalSongs( T* p, lua_State *L )	{ lua_pushboolean(L, false); return 1; }	// deprecated
+	static int WasLoadedFromAdditionalCourses( T* p, lua_State *L )	{ lua_pushboolean(L, false); return 1; }	// deprecated
 
 	LunaSongManager()
 	{
@@ -2155,10 +2099,10 @@ public:
 		ADD_METHOD( GetNumLockedSongs );
 		ADD_METHOD( GetNumUnlockedSongs );
 		ADD_METHOD( GetNumSelectableAndUnlockedSongs );
-		ADD_METHOD( GetNumAdditionalSongs );
+		ADD_METHOD( GetNumAdditionalSongs );	// deprecated
 		ADD_METHOD( GetNumSongGroups );
 		ADD_METHOD( GetNumCourses );
-		ADD_METHOD( GetNumAdditionalCourses );
+		ADD_METHOD( GetNumAdditionalCourses );	// deprecated
 		ADD_METHOD( GetNumCourseGroups );
 		ADD_METHOD( GetSongFromSteps );
 		ADD_METHOD( GetExtraStageInfo );
@@ -2181,8 +2125,8 @@ public:
 		ADD_METHOD( GetPopularSongs );
 		ADD_METHOD( GetPopularCourses );
 		ADD_METHOD( SongToPreferredSortSectionName );
-		ADD_METHOD( WasLoadedFromAdditionalSongs );
-		ADD_METHOD( WasLoadedFromAdditionalCourses );
+		ADD_METHOD( WasLoadedFromAdditionalSongs );	// deprecated
+		ADD_METHOD( WasLoadedFromAdditionalCourses );	// deprecated
 	}
 };
 
