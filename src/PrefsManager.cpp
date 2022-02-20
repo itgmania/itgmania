@@ -264,9 +264,9 @@ PrefsManager::PrefsManager() :
 	m_CourseSortOrder		( "CourseSortOrder",			COURSE_SORT_SONGS ),
 	m_bSubSortByNumSteps		( "SubSortByNumSteps",			false ),
 	m_GetRankingName		( "GetRankingName",			RANKING_ON ),
-	m_sAdditionalSongFolders	( "AdditionalSongFolders",		"" ),
-	m_sAdditionalCourseFolders	( "AdditionalCourseFolders",		"" ),
-	m_sAdditionalFolders		( "AdditionalFolders",			"" ),
+	m_sAdditionalSongFolders	( "AdditionalSongFolders",		"", nullptr, PreferenceType::Immutable ),
+	m_sAdditionalCourseFolders	( "AdditionalCourseFolders",		"", nullptr, PreferenceType::Immutable ),
+	m_sAdditionalFolders		( "AdditionalFolders",			"", nullptr, PreferenceType::Immutable ),
 	m_sDefaultTheme			( "DefaultTheme",			"default" ),
 	m_sLastSeenVideoDriver		( "LastSeenVideoDriver",		"" ),
 	m_sVideoRenderers		( "VideoRenderers",			"" ),	// StepMania.cpp sets these on first run:
@@ -574,6 +574,11 @@ public:
 			LuaHelpers::ReportScriptErrorFmt( "SetPreference: unknown preference \"%s\"", sName.c_str() );
 			COMMON_RETURN_SELF;
 		}
+		else if (pPref->IsImmutable())
+		{
+			LuaHelpers::ReportScriptErrorFmt( "SetPreference: preference \"%s\" is immutable", sName.c_str() );
+			COMMON_RETURN_SELF;
+		}
 
 		lua_pushvalue( L, 2 );
 		pPref->SetFromStack( L );
@@ -587,6 +592,11 @@ public:
 		if( pPref == nullptr )
 		{
 			LuaHelpers::ReportScriptErrorFmt( "SetPreferenceToDefault: unknown preference \"%s\"", sName.c_str() );
+			COMMON_RETURN_SELF;
+		}
+		else if (pPref->IsImmutable())
+		{
+			LuaHelpers::ReportScriptErrorFmt( "SetPreference: preference \"%s\" is immutable", sName.c_str() );
 			COMMON_RETURN_SELF;
 		}
 

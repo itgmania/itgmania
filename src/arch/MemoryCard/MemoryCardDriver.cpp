@@ -22,7 +22,7 @@ XToString(MemoryCardDriverType);
 StringToX(MemoryCardDriverType);
 LuaXType(MemoryCardDriverType);
 
-Preference<MemoryCardDriverType> g_MemoryCardDriver("MemoryCardDriver", MemoryCardDriverType_Usb);
+Preference<MemoryCardDriverType> g_MemoryCardDriver("MemoryCardDriver", MemoryCardDriverType_Usb, nullptr, PreferenceType::Immutable);
 
 bool UsbStorageDevice::operator==(const UsbStorageDevice& other) const
 {
