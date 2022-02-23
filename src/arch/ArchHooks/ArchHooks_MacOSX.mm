@@ -4,10 +4,10 @@
 #include "RageUtil.h"
 #include "archutils/Unix/CrashHandler.h"
 #include "archutils/Unix/SignalHandler.h"
-#include "SpecialFiles.h"
 #include "ProductInfo.h"
 #include <CoreServices/CoreServices.h>
 #include <ApplicationServices/ApplicationServices.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #include <mach/mach.h>
@@ -318,13 +318,15 @@ static void PathForFolderType( char dir[PATH_MAX], OSType folderType )
 
 void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
 {
-	char dir[PATH_MAX];
+	struct stat st;
+	bool portable = !stat(sDirOfExecutable + "/Portable.ini", &st);
+	FILEMAN->Mount(portable ? "dir" : "dirro", sDirOfExecutable, "/");
+
 	CFURLRef dataUrl = CFBundleCopyResourceURL( CFBundleGetMainBundle(), CFSTR("StepMania"), CFSTR("smzip"), nil);
-
-	FILEMAN->Mount( "dir", sDirOfExecutable, "/" );
-
 	if( dataUrl )
 	{
+		char dir[PATH_MAX];
+
 		CFStringRef dataPath = CFURLCopyFileSystemPath( dataUrl, kCFURLPOSIXPathStyle );
 		CFStringGetCString( dataPath, dir, PATH_MAX, kCFStringEncodingUTF8 );
 
@@ -353,7 +355,7 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 	FILEMAN->Mount( "dir", ssprintf("%s/" PRODUCT_ID "/Characters", dir), "/Characters" );
 	FILEMAN->Mount( "dir", ssprintf("%s/" PRODUCT_ID "/Courses", dir), "/Courses" );
 	FILEMAN->Mount( "dir", ssprintf("%s/" PRODUCT_ID "/NoteSkins", dir), "/NoteSkins" );
-	FILEMAN->Mount( "dir", ssprintf("%s/" PRODUCT_ID "/Packages", dir), "/" + SpecialFiles::USER_PACKAGES_DIR );
+	FILEMAN->Mount( "dir", ssprintf("%s/" PRODUCT_ID "/Packages", dir), "/Packages" );
 	FILEMAN->Mount( "dir", ssprintf("%s/" PRODUCT_ID "/Songs", dir), "/Songs" );
 	FILEMAN->Mount( "dir", ssprintf("%s/" PRODUCT_ID "/RandomMovies", dir), "/RandomMovies" );
 	FILEMAN->Mount( "dir", ssprintf("%s/" PRODUCT_ID "/Themes", dir), "/Themes" );
@@ -369,29 +371,25 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 	// /Logs -> ~/Library/Logs/PRODUCT_ID
 	PathForFolderType( dir, kDomainLibraryFolderType );
 	FILEMAN->Mount( "dir", ssprintf("%s/Logs/" PRODUCT_ID, dir), "/Logs" );
-    
-    NSString* resourcePath = [[NSBundle mainBundle] resourcePath];
-    if( resourcePath )
-    {
-        const char* resourcePathUTF8String = [resourcePath UTF8String];
-        FILEMAN->Mount( "dir", ssprintf("%s/Announcers", resourcePathUTF8String), "/Announcers" );
-        FILEMAN->Mount( "dir", ssprintf("%s/BGAnimations", resourcePathUTF8String), "/BGAnimations" );
-        FILEMAN->Mount( "dir", ssprintf("%s/BackgroundEffects", resourcePathUTF8String), "/BackgroundEffects" );
-        FILEMAN->Mount( "dir", ssprintf("%s/BackgroundTransitions", resourcePathUTF8String), "/BackgroundTransitions" );
-        FILEMAN->Mount( "dir", ssprintf("%s/CDTitles", resourcePathUTF8String), "/CDTitles" );
-        FILEMAN->Mount( "dir", ssprintf("%s/Characters", resourcePathUTF8String), "/Characters" );
-        FILEMAN->Mount( "dir", ssprintf("%s/Courses", resourcePathUTF8String), "/Courses" );
-        FILEMAN->Mount( "dir", ssprintf("%s/NoteSkins", resourcePathUTF8String), "/NoteSkins" );
-        FILEMAN->Mount( "dir", ssprintf("%s/Packages", resourcePathUTF8String), "/" + SpecialFiles::USER_PACKAGES_DIR );
-        FILEMAN->Mount( "dir", ssprintf("%s/Songs", resourcePathUTF8String), "/Songs" );
-        FILEMAN->Mount( "dir", ssprintf("%s/RandomMovies", resourcePathUTF8String), "/RandomMovies" );
-        FILEMAN->Mount( "dir", ssprintf("%s/Themes", resourcePathUTF8String), "/Themes" );
-        FILEMAN->Mount( "dir", ssprintf("%s/Data", resourcePathUTF8String), "/Data" );
-    }
 
-	// /Desktop -> /Users/<user>/Desktop/PRODUCT_ID
-	// PathForFolderType( dir, kDesktopFolderType );
-	// FILEMAN->Mount( "dir", ssprintf("%s/" PRODUCT_ID, dir), "/Desktop" );
+	NSString* resourcePath = [[NSBundle mainBundle] resourcePath];
+	if( resourcePath )
+	{
+		const char* resourcePathUTF8String = [resourcePath UTF8String];
+		FILEMAN->Mount( "dirro", ssprintf("%s/Announcers", resourcePathUTF8String), "/Announcers" );
+		FILEMAN->Mount( "dirro", ssprintf("%s/BGAnimations", resourcePathUTF8String), "/BGAnimations" );
+		FILEMAN->Mount( "dirro", ssprintf("%s/BackgroundEffects", resourcePathUTF8String), "/BackgroundEffects" );
+		FILEMAN->Mount( "dirro", ssprintf("%s/BackgroundTransitions", resourcePathUTF8String), "/BackgroundTransitions" );
+		FILEMAN->Mount( "dirro", ssprintf("%s/CDTitles", resourcePathUTF8String), "/CDTitles" );
+		FILEMAN->Mount( "dirro", ssprintf("%s/Characters", resourcePathUTF8String), "/Characters" );
+		FILEMAN->Mount( "dirro", ssprintf("%s/Courses", resourcePathUTF8String), "/Courses" );
+		FILEMAN->Mount( "dirro", ssprintf("%s/NoteSkins", resourcePathUTF8String), "/NoteSkins" );
+		FILEMAN->Mount( "dirro", ssprintf("%s/Packages", resourcePathUTF8String), "/Packages" );
+		FILEMAN->Mount( "dirro", ssprintf("%s/Songs", resourcePathUTF8String), "/Songs" );
+		FILEMAN->Mount( "dirro", ssprintf("%s/RandomMovies", resourcePathUTF8String), "/RandomMovies" );
+		FILEMAN->Mount( "dirro", ssprintf("%s/Themes", resourcePathUTF8String), "/Themes" );
+		FILEMAN->Mount( "dirro", ssprintf("%s/Data", resourcePathUTF8String), "/Data" );
+	}
 }
 
 static inline int GetIntValue( CFTypeRef r )

@@ -122,9 +122,9 @@ bool MemoryCardDriver::DoOneUpdate( bool bMount, vector<UsbStorageDevice>& vStor
 				 * and then unmount it until Mount() is called. */
 				d.m_State = UsbStorageDevice::STATE_READY;
 			
-				FILEMAN->Mount( "dir", d.sOsMountDir, TEMP_MOUNT_POINT );
+				FILEMAN->Mount( "dirro", d.sOsMountDir, TEMP_MOUNT_POINT );
 				d.bIsNameAvailable = PROFILEMAN->FastLoadProfileNameFromMemoryCard( TEMP_MOUNT_POINT, d.sName );
-				FILEMAN->Unmount( "dir", d.sOsMountDir, TEMP_MOUNT_POINT );
+				FILEMAN->Unmount( "dirro", d.sOsMountDir, TEMP_MOUNT_POINT );
 			}
 
 			this->Unmount( &d );

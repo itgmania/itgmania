@@ -3,7 +3,6 @@
 /** @brief Constants for working with the RageFileManager. */
 namespace RageFileManagerUtil
 {
-	extern RString sInitialWorkingDirectory;
 	extern RString sDirOfExecutable;
 }
 
@@ -48,8 +47,7 @@ public:
 	 * @return the absolute path. */
 	RString ResolvePath(const RString &path);
 
-	bool Mount( const RString &sType, const RString &sRealPath, const RString &sMountPoint, bool bAddToEnd = true );
-	void Mount( RageFileDriver *pDriver, const RString &sMountPoint, bool bAddToEnd = true );
+	bool Mount( const RString &sType, const RString &sRealPath, const RString &sMountPoint );
 	void Unmount( const RString &sType, const RString &sRoot, const RString &sMountPoint );
 
 	/* Change the root of a filesystem.  Only a couple drivers support this; it's

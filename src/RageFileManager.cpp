@@ -22,7 +22,6 @@ RageFileManager *FILEMAN = nullptr;
 /* Lock this before touching any of these globals (except FILEMAN itself). */
 static RageEvent *g_Mutex;
 
-RString RageFileManagerUtil::sInitialWorkingDirectory;
 RString RageFileManagerUtil::sDirOfExecutable;
 
 struct LoadedDriver
@@ -276,7 +275,6 @@ static RString GetDirOfExecutable( RString argv0 )
 
 static void ChangeToDirOfExecutable( const RString &argv0 )
 {
-	RageFileManagerUtil::sInitialWorkingDirectory = GetCwd();
 	RageFileManagerUtil::sDirOfExecutable = GetDirOfExecutable( argv0 );
 
 	/* Set the CWD.  Any effects of this is platform-specific; most files are read and
@@ -545,15 +543,15 @@ static void AdjustMountpoint( RString &sMountPoint )
 
 }
 
-static void AddFilesystemDriver( LoadedDriver *pLoadedDriver, bool bAddToEnd )
+static void AddFilesystemDriver( LoadedDriver *pLoadedDriver )
 {
 	g_Mutex->Lock();
-	g_pDrivers.insert( bAddToEnd? g_pDrivers.end():g_pDrivers.begin(), pLoadedDriver );
+	g_pDrivers.push_back(pLoadedDriver);
 	g_Mountpoints->LoadFromDrivers( g_pDrivers );
 	g_Mutex->Unlock();
 }
 
-bool RageFileManager::Mount( const RString &sType, const RString &sRoot_, const RString &sMountPoint_, bool bAddToEnd )
+bool RageFileManager::Mount( const RString &sType, const RString &sRoot_, const RString &sMountPoint_ )
 {
 	RString sRoot = sRoot_;
 	RString sMountPoint = sMountPoint_;
@@ -593,24 +591,8 @@ bool RageFileManager::Mount( const RString &sType, const RString &sRoot_, const 
 	pLoadedDriver->m_sRoot = sRoot;
 	pLoadedDriver->m_sMountPoint = sMountPoint;
 
-	AddFilesystemDriver( pLoadedDriver, bAddToEnd );
+	AddFilesystemDriver( pLoadedDriver );
 	return true;
-}
-
-/* Mount a custom filesystem. */
-void RageFileManager::Mount( RageFileDriver *pDriver, const RString &sMountPoint_, bool bAddToEnd )
-{
-	RString sMountPoint = sMountPoint_;
-	
-	AdjustMountpoint( sMountPoint );
-
-	LoadedDriver *pLoadedDriver = new LoadedDriver;
-	pLoadedDriver->m_pDriver = pDriver;
-	pLoadedDriver->m_sType = "";
-	pLoadedDriver->m_sRoot = "";
-	pLoadedDriver->m_sMountPoint = sMountPoint;
-
-	AddFilesystemDriver( pLoadedDriver, bAddToEnd );
 }
 
 void RageFileManager::Unmount( const RString &sType, const RString &sRoot_, const RString &sMountPoint_ )
