@@ -230,7 +230,7 @@ RageFileBasic *RageFileDriverDirectReadOnly::Open( const RString &sPath, int iMo
 {
 	if( iMode & RageFile::WRITE )
 	{
-		iError = EROFS;
+		iError = ERROR_WRITING_NOT_SUPPORTED;
 		return nullptr;
 	}
 

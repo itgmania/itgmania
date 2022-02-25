@@ -546,7 +546,7 @@ static void AdjustMountpoint( RString &sMountPoint )
 static void AddFilesystemDriver( LoadedDriver *pLoadedDriver )
 {
 	g_Mutex->Lock();
-	g_pDrivers.push_back(pLoadedDriver);
+	g_pDrivers.insert(g_pDrivers.begin(), pLoadedDriver);
 	g_Mountpoints->LoadFromDrivers( g_pDrivers );
 	g_Mutex->Unlock();
 }
