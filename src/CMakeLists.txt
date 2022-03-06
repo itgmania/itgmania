@@ -425,7 +425,7 @@ endif()
 
 set_property(TARGET "${SM_EXE_NAME}" PROPERTY FOLDER "Internal Libraries")
 
-list(APPEND SMDATA_LINK_LIB "lua-5.1")
+list(APPEND SMDATA_LINK_LIB "lua-5.1" "miniz")
 include(../extern/CMakeProject-mmmagic.cmake)
 
 if(HAS_MP3)
@@ -648,8 +648,11 @@ endif()
 target_link_libraries("${SM_EXE_NAME}" ${SMDATA_LINK_LIB})
 
 list(APPEND SM_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
-            "${SM_SRC_DIR}/generated")
+            "${SM_SRC_DIR}/generated"
+            "${SM_EXTERN_DIR}/miniz")
+
 list(APPEND SM_INCLUDE_DIRS "${JPEG_INCLUDE_DIR}")
+
 if(NOT APPLE)
   if(NOT WITH_SYSTEM_GLEW)
     list(APPEND SM_INCLUDE_DIRS

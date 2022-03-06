@@ -71,6 +71,8 @@ public:
 	RageFileDriver *GetFileDriver( RString sMountpoint );
 	void ReleaseFileDriver( RageFileDriver *pDriver );
 
+	bool Unzip(const std::string &zipPath, std::string targetPath, int strip);
+
 	// Lua
 	void PushSelf( lua_State *L );
 

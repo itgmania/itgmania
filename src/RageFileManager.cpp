@@ -10,12 +10,15 @@
 #include "LuaManager.h"
 
 #include <cerrno>
+#include <sstream>
 
 #if defined(WIN32)
 #include <windows.h>
 #elif defined(UNIX) || defined(MACOSX)
 #include <paths.h>
 #endif
+
+#include <miniz.h>
 
 RageFileManager *FILEMAN = nullptr;
 
@@ -105,6 +108,123 @@ void RageFileManager::ReleaseFileDriver( RageFileDriver *pDriver )
 
 	g_Mutex->Broadcast();
 	g_Mutex->Unlock();
+}
+
+size_t zipRead(void *pOpaque, mz_uint64 file_ofs, void *pBuf, size_t n)
+{
+	RageFile *f = static_cast<RageFile*>(pOpaque);
+
+	int pos = f->Seek(file_ofs);
+	if (pos != file_ofs)
+	{
+		return 0;
+	}
+
+	return f->Read(pBuf, n);
+}
+
+size_t zipWriteFile(void *pOpaque, mz_uint64 file_ofs, const void *pBuf, size_t n)
+{
+	RageFile *f = static_cast<RageFile*>(pOpaque);
+
+	/*
+	 * XXX: RageFile doesn't allow to Seek() in a file open for writing. We
+	 * rely on the fact that miniz writes the file in order. Tell() is not
+	 * allowed either, so we can't even check that the current offset is
+	 * correct.
+	 */
+	/*
+	int pos = f->Seek(file_ofs);
+	if (pos != file_ofs)
+	{
+		return 0;
+	}
+	*/
+
+	return f->Write(pBuf, n);
+}
+
+bool RageFileManager::Unzip(const std::string &zipPath, std::string targetPath, int strip)
+{
+	if (targetPath.empty() || targetPath.back() != '/')
+		targetPath.push_back('/');
+
+	RageFile zipFile;
+	if (!zipFile.Open(zipPath, RageFile::READ))
+	{
+		RString error = zipFile.GetError();
+		LOG->Warn("Could not unzip %s: %s", zipPath.c_str(), error.c_str());
+		return false;
+	}
+
+	mz_zip_archive zip = {};
+	zip.m_pRead = zipRead;
+	zip.m_pIO_opaque = &zipFile;
+
+	if (!mz_zip_reader_init(&zip, zipFile.GetFileSize(), 0))
+	{
+		LOG->Warn("Could not unzip %s: %s", zipPath.c_str(), mz_zip_get_error_string(zip.m_last_error));
+		mz_zip_reader_end(&zip);
+		return false;
+	}
+
+	bool success = true;
+	mz_uint file_count = mz_zip_reader_get_num_files(&zip);
+
+	for (mz_uint fileIndex = 0; fileIndex < file_count; fileIndex++)
+	{
+		mz_zip_archive_file_stat info;
+		if (!mz_zip_reader_file_stat(&zip, fileIndex, &info))
+		{
+			LOG->Warn("Could not unzip %s: %s", zipPath.c_str(), mz_zip_get_error_string(zip.m_last_error));
+			success = false;
+			break;
+		}
+
+		std::string filename(info.m_filename);
+		if (filename.back() == '/')
+			filename.pop_back();
+
+		for (int i = 0; i < strip; i++)
+		{
+			size_t pos = filename.find('/');
+			if (pos != std::string::npos)
+				pos++;
+			filename.erase(0, pos);
+		}
+		if (filename.empty())
+			continue;
+
+		std::string filepath = targetPath + filename;
+
+		if (info.m_is_directory)
+		{
+			CreateDir(filepath);
+		}
+		else
+		{
+			RageFile f;
+			if (!f.Open(filepath, RageFile::WRITE | RageFile::STREAMED))
+			{
+				RString error = zipFile.GetError();
+				LOG->Warn("Could not write to %s: %s", filepath.c_str(), error.c_str());
+				success = false;
+				break;
+			}
+
+			success = mz_zip_reader_extract_to_callback(&zip, fileIndex, zipWriteFile, &f, 0);
+			if (!success)
+			{
+				RString error = f.GetError();
+				LOG->Warn("Could not write to %s: %s", filepath.c_str(), error.c_str());
+				FILEMAN->Remove(filepath);
+				break;
+			}
+		}
+	}
+
+	mz_zip_reader_end(&zip);
+	return success;
 }
 
 /* Wait for the given driver to become unreferenced, and remove it from the list
@@ -1161,6 +1281,23 @@ public:
 		return 1;
 	}
 	*/
+	static int Unzip(T* p, lua_State *L)
+	{
+		std::string zipPath = SArg(1);
+		std::string targetPath = SArg(2);
+
+		int strip = 0;
+		if (lua_gettop(L) >= 3)
+		{
+			strip = IArg(3);
+		}
+
+		bool success = p->Unzip(zipPath, targetPath, strip);
+
+		lua_pushboolean(L, success);
+		return 1;
+
+	}
 
 	LunaRageFileManager()
 	{
@@ -1169,6 +1306,7 @@ public:
 		ADD_METHOD( GetHashForFile );
 		ADD_METHOD( GetDirListing );
 		//ADD_METHOD( GetDirListingRecursive );
+		ADD_METHOD( Unzip );
 	}
 };
 

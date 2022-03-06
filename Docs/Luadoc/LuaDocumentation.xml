@@ -4860,6 +4860,12 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Function name='GetHashForFile' return='int' arguments='string sPath'>
 		Returns the hash of the file at <code>sPath</code>.
 	</Function>
+	<Function name='Unzip' return='bool' arguments='string zipPath, string targetPath, int strip'>
+		Unzips zip file at <code>zipPath</code> to <code>targetPath</code>.<br />
+		<code>strip</code> is optional and defaults to <code>0</code>.
+		If set to a number larger than <code>0</code>, that many components are removed from the paths of the extracted files. e.g. <code>a/b/c</code> is replaced with <code>b/c</code> when stripping one component or just <code>c</code> when stripping two.<br />
+		Returns <code>true</code> if all files were extracted successfully.
+	</Function>
 </Class>
 <Class name='RageInput'>
 	<Description>

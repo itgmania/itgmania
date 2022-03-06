@@ -1596,6 +1596,7 @@
 			<Function name='GetDirListing'/>
 			<Function name='GetFileSizeBytes'/>
 			<Function name='GetHashForFile'/>
+			<Function name='Unzip'/>
 		</Class>
 		<Class name='RageInput'>
 			<Function name='GetDescriptions'/>
