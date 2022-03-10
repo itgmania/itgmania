@@ -1592,6 +1592,7 @@
 			<Function name='destroy'/>
 		</Class>
 		<Class name='RageFileManager'>
+			<Function name='Copy'/>
 			<Function name='DoesFileExist'/>
 			<Function name='GetDirListing'/>
 			<Function name='GetFileSizeBytes'/>

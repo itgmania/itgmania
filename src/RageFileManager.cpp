@@ -575,23 +575,23 @@ void RageFileManager::GetDirListingWithMultipleExtensions( const RString &sPath,
 }
 
 /* Files may only be moved within the same file driver. */
-bool RageFileManager::Move( const RString &sOldPath_, const RString &sNewPath_ )
+bool RageFileManager::Move( const RString &fromPath_, const RString &toPath_ )
 {
-	RString sOldPath = sOldPath_;
-	RString sNewPath = sNewPath_;
+	RString fromPath = fromPath_;
+	RString toPath = toPath_;
 
 	vector<LoadedDriver *> aDriverList;
 	ReferenceAllDrivers( aDriverList );
 
-	NormalizePath( sOldPath );
-	NormalizePath( sNewPath );
+	NormalizePath( fromPath );
+	NormalizePath( toPath );
 	
 	/* Multiple drivers may have the same file. */
 	bool Deleted = false;
 	for( unsigned i = 0; i < aDriverList.size(); ++i )
 	{
-		const RString sOldDriverPath = aDriverList[i]->GetPath( sOldPath );
-		const RString sNewDriverPath = aDriverList[i]->GetPath( sNewPath );
+		const RString sOldDriverPath = aDriverList[i]->GetPath( fromPath );
+		const RString sNewDriverPath = aDriverList[i]->GetPath( toPath );
 		if( sOldDriverPath.size() == 0 || sNewDriverPath.size() == 0 )
 			continue;
 
@@ -603,6 +603,36 @@ bool RageFileManager::Move( const RString &sOldPath_, const RString &sNewPath_ )
 	UnreferenceAllDrivers( aDriverList );
 
 	return Deleted;
+}
+
+bool RageFileManager::Copy(const std::string &fromPath, const std::string &toPath)
+{
+	RageFile fromFile, toFile;
+
+	if (!fromFile.Open(fromPath, RageFile::READ))
+		return false;
+
+	if (!toFile.Open(toPath, RageFile::WRITE))
+		return false;
+
+	char buf[4096];
+	for (;;)
+	{
+		int readBytes = fromFile.Read(buf, sizeof(buf));
+		if (readBytes <= 0)
+			break;
+
+		int writtenBytes = toFile.Write(buf, readBytes);
+		if (writtenBytes != readBytes)
+			break;
+	}
+
+	if (!fromFile.GetError().empty() || !toFile.GetError().empty())
+	{
+		return false;
+	}
+
+	return true;
 }
 
 bool RageFileManager::Remove( const RString &sPath_ )
@@ -1247,6 +1277,7 @@ unsigned int GetHashForDirectory( const RString &sDir )
 class LunaRageFileManager: public Luna<RageFileManager>
 {
 public:
+	static int Copy(T* p, lua_State *L){ lua_pushboolean(L, p->Copy(SArg(1), SArg(2))); return 1; }
 	static int DoesFileExist( T* p, lua_State *L ){ lua_pushboolean( L, p->DoesFileExist(SArg(1)) ); return 1; }
 	static int GetFileSizeBytes( T* p, lua_State *L ){ lua_pushnumber( L, p->GetFileSizeInBytes(SArg(1)) ); return 1; }
 	static int GetHashForFile( T* p, lua_State *L ){ lua_pushnumber( L, p->GetFileHash(SArg(1)) ); return 1; }
@@ -1301,6 +1332,7 @@ public:
 
 	LunaRageFileManager()
 	{
+		ADD_METHOD( Copy );
 		ADD_METHOD( DoesFileExist );
 		ADD_METHOD( GetFileSizeBytes );
 		ADD_METHOD( GetHashForFile );

@@ -26,7 +26,8 @@ public:
 	void GetDirListingWithMultipleExtensions(const RString &sPath,
 		vector<RString> const& ExtensionList, vector<RString> &AddTo,
 		bool bOnlyDirs= false, bool bReturnPathToo= false);
-	bool Move( const RString &sOldPath, const RString &sNewPath );
+	bool Move( const RString &fromPath, const RString &toPath );
+	bool Copy( const std::string &fromPath, const std::string &toPath );
 	bool Remove( const RString &sPath );
 	bool DeleteRecursive( const RString &sPath );
 	void CreateDir( const RString &sDir );

@@ -4848,6 +4848,10 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Description>
 		This singleton is accessible to Lua via <code>FILEMAN</code>.
 	</Description>
+	<Function name='Copy' return='bool' arguments='string fromPath, string toPath'>
+		Copies a file from <code>fromPath</code> to <code>toPath</code>.
+		Returns <code>true</code> if the file was copied successfully.
+	</Function>
 	<Function name='DoesFileExist' return='bool' arguments='string sPath'>
 		Returns <code>true</code> if a file exists at <code>sPath</code>.
 	</Function>
