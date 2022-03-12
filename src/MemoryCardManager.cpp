@@ -42,14 +42,14 @@ static Preference<bool>	g_bMemoryCards( "MemoryCards", false );
 static Preference<bool>	g_bMemoryCardProfiles( "MemoryCardProfiles", true );
 
 // if set, always use the device that mounts to this point
-Preference1D<RString>		MemoryCardManager::m_sMemoryCardOsMountPoint( MemoryCardOsMountPointInit,	NUM_PLAYERS );
+Preference1D<RString>	MemoryCardManager::m_sMemoryCardOsMountPoint( MemoryCardOsMountPointInit, NUM_PLAYERS, PreferenceType::Immutable );
 
 // Look for this level, bus, port when assigning cards. -1 = match any
-Preference1D<int>		MemoryCardManager::m_iMemoryCardUsbBus( MemoryCardUsbBusInit,			NUM_PLAYERS );
-Preference1D<int>		MemoryCardManager::m_iMemoryCardUsbPort( MemoryCardUsbPortInit,			NUM_PLAYERS );
-Preference1D<int>		MemoryCardManager::m_iMemoryCardUsbLevel( MemoryCardUsbLevelInit,		NUM_PLAYERS );
+Preference1D<int>	MemoryCardManager::m_iMemoryCardUsbBus( MemoryCardUsbBusInit, NUM_PLAYERS, PreferenceType::Immutable );
+Preference1D<int>	MemoryCardManager::m_iMemoryCardUsbPort( MemoryCardUsbPortInit, NUM_PLAYERS, PreferenceType::Immutable );
+Preference1D<int>	MemoryCardManager::m_iMemoryCardUsbLevel( MemoryCardUsbLevelInit, NUM_PLAYERS, PreferenceType::Immutable );
 
-Preference<RString>		MemoryCardManager::m_sEditorMemoryCardOsMountPoint( "EditorMemoryCardOsMountPoint",	"" );
+Preference<RString>	MemoryCardManager::m_sEditorMemoryCardOsMountPoint( "EditorMemoryCardOsMountPoint", "", nullptr, PreferenceType::Immutable );
 
 const RString MEM_CARD_MOUNT_POINT[NUM_PLAYERS] =
 {
