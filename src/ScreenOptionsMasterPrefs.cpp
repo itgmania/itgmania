@@ -780,7 +780,6 @@ static void InitializeConfOptions()
 
 	ADD( ConfOption( "AutogenGroupCourses",		MovePref<bool>,		"Off","On" ) );
 	ADD( ConfOption( "FastLoad",			MovePref<bool>,		"Off","On" ) );
-	ADD( ConfOption( "FastLoadAdditionalSongs",			MovePref<bool>,		"Off","On" ) );
 	{
 		ConfOption c("EditRecordModeLeadIn", EditRecordModeLeadIn);
 		for(int i= 0; i < 32; ++i)

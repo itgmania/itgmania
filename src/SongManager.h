@@ -132,13 +132,11 @@ public:
 	int GetNumLockedSongs() const;
 	int GetNumUnlockedSongs() const;
 	int GetNumSelectableAndUnlockedSongs() const;
-	int GetNumAdditionalSongs() const;
 	int GetNumSongGroups() const;
 	/**
 	 * @brief Retrieve the number of courses in the game.
 	 * @return the number of courses. */
 	int GetNumCourses() const;
-	int GetNumAdditionalCourses() const;
 	int GetNumCourseGroups() const;
 	Song* GetRandomSong();
 	Course* GetRandomCourse();
@@ -148,8 +146,6 @@ public:
 
 	void GetStepsLoadedFromProfile( vector<Steps*> &AddTo, ProfileSlot slot ) const;
 	void DeleteSteps( Steps *pSteps );	// transfers ownership of pSteps
-	bool WasLoadedFromAdditionalSongs( const Song *pSong ) const;
-	bool WasLoadedFromAdditionalCourses( const Course *pCourse ) const;
 
 	void GetAllCourses( vector<Course*> &AddTo, bool bIncludeAutogen ) const;
 	void GetCourses( CourseType ct, vector<Course*> &AddTo, bool bIncludeAutogen ) const;

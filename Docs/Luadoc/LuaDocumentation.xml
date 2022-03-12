@@ -5655,10 +5655,10 @@ local args = {
 		Returns the extra stage info (Song, Steps) for the specified Style <code>s</code>. If <code>b2ndExtra</code> is true, it will use the second Extra Stage data instead of the first.
 	</Function>
 	<Function name='GetNumAdditionalCourses' return='int' arguments=''>
-		Returns the number of courses loaded via Additional folders.
+		[Deprecated] Always returns <code>0</code>
 	</Function>
 	<Function name='GetNumAdditionalSongs' return='int' arguments=''>
-		Returns the number of songs loaded via Additional folders.
+		[Deprecated] Always returns <code>0</code>
 	</Function>
 	<Function name='GetNumCourseGroups' return='int' arguments=''>
 		Returns the number of course groups.
@@ -5733,10 +5733,10 @@ local args = {
 		Returns the preferred sort section name for the specified Song.
 	</Function>
 	<Function name='WasLoadedFromAdditionalCourses' return='bool' arguments='Course c'>
-		Returns <code>true</code> if the specified course was loaded from AdditionalCourses.
+		[Deprecated] Always returns <code>false</code>
 	</Function>
 	<Function name='WasLoadedFromAdditionalSongs' return='bool' arguments='Song s'>
-		Returns <code>true</code> if the specified song was loaded from AdditionalSongs.
+		[Deprecated] Always returns <code>false</code>
 	</Function>
 </Class>
 <Class name='SongOptions'>
@@ -6129,7 +6129,7 @@ local spr = Def.Sprite{
 		Returns <code>true</code> if this style locks the difficulty for both players.
 	</Function>
 	<Function name='NeedsZoomOutWith2Players' return='bool' arguments=''>
-		Deprecated.  Always returns false.
+		[Deprecated] Always returns <code>false</code>.
 	</Function>
 </Class>
 <Class name='TapNote'>

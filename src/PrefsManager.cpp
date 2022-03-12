@@ -182,7 +182,6 @@ PrefsManager::PrefsManager() :
 	m_bDelayedModelDelete		( "DelayedModelDelete",		false ),
 	m_ImageCache			( "ImageCache",		IMGCACHE_LOW_RES_PRELOAD ),
 	m_bFastLoad			( "FastLoad",			true ),
-	m_bFastLoadAdditionalSongs      ( "FastLoadAdditionalSongs",    true ),
 	m_NeverCacheList		( "NeverCacheList", ""),
 
 	m_bOnlyDedicatedMenuButtons	( "OnlyDedicatedMenuButtons",	false ),
