@@ -264,9 +264,15 @@ PrefsManager::PrefsManager() :
 	m_CourseSortOrder		( "CourseSortOrder",			COURSE_SORT_SONGS ),
 	m_bSubSortByNumSteps		( "SubSortByNumSteps",			false ),
 	m_GetRankingName		( "GetRankingName",			RANKING_ON ),
-	m_sAdditionalSongFolders	( "AdditionalSongFolders",		"", nullptr, PreferenceType::Immutable ),
-	m_sAdditionalCourseFolders	( "AdditionalCourseFolders",		"", nullptr, PreferenceType::Immutable ),
-	m_sAdditionalFolders		( "AdditionalFolders",			"", nullptr, PreferenceType::Immutable ),
+	m_sAdditionalSongFoldersReadOnly( "AdditionalSongFoldersReadOnly",	"", nullptr, PreferenceType::Immutable ),
+	m_sAdditionalSongFoldersWritable( "AdditionalSongFoldersWritable",	"", nullptr, PreferenceType::Immutable ),
+	m_sAdditionalCourseFoldersReadOnly( "AdditionalCourseFoldersReadOnly",	"", nullptr, PreferenceType::Immutable ),
+	m_sAdditionalCourseFoldersWritable( "AdditionalCourseFoldersWritable",	"", nullptr, PreferenceType::Immutable ),
+	m_sAdditionalFoldersReadOnly	( "AdditionalFoldersReadOnly",		"", nullptr, PreferenceType::Immutable ),
+	m_sAdditionalFoldersWritable	( "AdditionalFoldersWritable",		"", nullptr, PreferenceType::Immutable ),
+	m_sAdditionalSongFolders	( "AdditionalSongFolders",		"", nullptr, PreferenceType::Deprecated ),
+	m_sAdditionalCourseFolders	( "AdditionalCourseFolders",		"", nullptr, PreferenceType::Deprecated ),
+	m_sAdditionalFolders		( "AdditionalFolders",			"", nullptr, PreferenceType::Deprecated ),
 	m_sDefaultTheme			( "DefaultTheme",			"default" ),
 	m_sLastSeenVideoDriver		( "LastSeenVideoDriver",		"" ),
 	m_sVideoRenderers		( "VideoRenderers",			"" ),	// StepMania.cpp sets these on first run:
@@ -405,6 +411,8 @@ void PrefsManager::ReadPrefsFromDisk()
 	ReadGamePrefsFromIni( SpecialFiles::PREFERENCES_INI_PATH );
 	ReadPrefsFromFile( SpecialFiles::STATIC_INI_PATH, GetPreferencesSection(), true );
 
+	TranslateDeprecatedFlags();
+
 	if( !m_sCurrentGame.Get().empty() )
 		RestoreGamePrefs();
 }
@@ -415,6 +423,8 @@ void PrefsManager::ResetToFactoryDefaults()
 	Init();
 	IPreference::LoadAllDefaults();
 	ReadPrefsFromFile( SpecialFiles::STATIC_INI_PATH, GetPreferencesSection(), true );
+
+	TranslateDeprecatedFlags();
 
 	SavePrefsToDisk();
 }
@@ -498,6 +508,16 @@ void PrefsManager::ReadDefaultsFromIni( const IniFile &ini, const RString &sSect
 		ReadDefaultsFromIni( ini, sFallback );
 
 	IPreference::ReadAllDefaultsFromNode( ini.GetChild(sSection) );
+}
+
+void PrefsManager::TranslateDeprecatedFlags()
+{
+	if(!m_sAdditionalFolders.Get().empty())
+		m_sAdditionalFoldersReadOnly.Set(m_sAdditionalFolders.Get());
+	if(!m_sAdditionalSongFolders.Get().empty())
+		m_sAdditionalSongFoldersReadOnly.Set(m_sAdditionalSongFolders.Get());
+	if(!m_sAdditionalCourseFolders.Get().empty())
+		m_sAdditionalCourseFoldersReadOnly.Set(m_sAdditionalCourseFolders.Get());
 }
 
 void PrefsManager::SavePrefsToDisk()

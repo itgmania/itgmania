@@ -275,9 +275,12 @@ public:
 	Preference<bool>	m_bSubSortByNumSteps;
 	Preference<GetRankingName>	m_GetRankingName;
 
-	Preference<RString>	m_sAdditionalSongFolders;
-	Preference<RString>	m_sAdditionalCourseFolders;
-	Preference<RString>	m_sAdditionalFolders;
+	Preference<RString>	m_sAdditionalSongFoldersReadOnly;
+	Preference<RString>	m_sAdditionalSongFoldersWritable;
+	Preference<RString>	m_sAdditionalCourseFoldersReadOnly;
+	Preference<RString>	m_sAdditionalCourseFoldersWritable;
+	Preference<RString>	m_sAdditionalFoldersReadOnly;
+	Preference<RString>	m_sAdditionalFoldersWritable;
 
 	// failsafe
 	Preference<RString>	m_sDefaultTheme;
@@ -352,6 +355,11 @@ public:
 protected:
 	void ReadPrefsFromFile( const RString &sIni, const RString &sSection, bool bIsStatic );
 	void ReadDefaultsFromFile( const RString &sIni, const RString &sSection );
+	void TranslateDeprecatedFlags();
+
+	Preference<RString>	m_sAdditionalSongFolders;	// deprecated
+	Preference<RString>	m_sAdditionalCourseFolders;	// deprecated
+	Preference<RString>	m_sAdditionalFolders;		// deprecated
 };
 
 /* This is global, because it can be accessed by crash handlers and error handlers

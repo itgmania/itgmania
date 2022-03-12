@@ -1,11 +1,11 @@
 #include "global.h"
 #include "ArchHooks_Unix.h"
 #include "ProductInfo.h"
+#include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "RageThreads.h"
 #include "LocalizedString.h"
-#include "SpecialFiles.h"
 #include "archutils/Unix/SignalHandler.h"
 #include "archutils/Unix/GetSysInfo.h"
 #include "archutils/Common/PthreadHelpers.h"
@@ -15,6 +15,7 @@
 #include <unistd.h>
 #endif
 #include <sys/time.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -380,24 +381,11 @@ RString ArchHooks_Unix::GetClipboard()
 #endif
 }
 
-#include "RageFileManager.h"
-#include <sys/stat.h>
-
-static LocalizedString COULDNT_FIND_SONGS( "ArchHooks_Unix", "Couldn't find 'Songs'" );
 void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
 {
-	RString Root;
 	struct stat st;
-	if( !stat(sDirOfExecutable + "/Packages", &st) && st.st_mode&S_IFDIR )
-		Root = sDirOfExecutable;
-	else if( !stat(sDirOfExecutable + "/Songs", &st) && st.st_mode&S_IFDIR )
-		Root = sDirOfExecutable;
-	else if( !stat(RageFileManagerUtil::sInitialWorkingDirectory + "/Songs", &st) && st.st_mode&S_IFDIR )
-		Root = RageFileManagerUtil::sInitialWorkingDirectory;
-	else
-		RageException::Throw( "%s", COULDNT_FIND_SONGS.GetValue().c_str() );
-
-	FILEMAN->Mount( "dir", Root, "/" );
+	bool portable = !stat(sDirOfExecutable + "/Portable.ini", &st);
+	FILEMAN->Mount(portable ? "dir" : "dirro", sDirOfExecutable, "/");
 }
 
 void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
@@ -417,7 +405,7 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 	FILEMAN->Mount( "dir", sUserDataPath + "/Courses", "/Courses" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/Logs", "/Logs" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/NoteSkins", "/NoteSkins" );
-	FILEMAN->Mount( "dir", sUserDataPath + "/Packages", "/" + SpecialFiles::USER_PACKAGES_DIR );
+	FILEMAN->Mount( "dir", sUserDataPath + "/Packages", "/Packages" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/Save", "/Save" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/Screenshots", "/Screenshots" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/Songs", "/Songs" );

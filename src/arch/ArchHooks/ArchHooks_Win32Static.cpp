@@ -5,7 +5,6 @@
 #include "archutils/Win32/SpecialDirs.h"
 #include "ProductInfo.h"
 #include "RageFileManager.h"
-#include "SpecialFiles.h"
 
 // for timeGetTime
 #include <windows.h>
@@ -56,8 +55,9 @@ static RString GetMountDir( const RString &sDirOfExecutable )
 void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
 {
 	RString sDir = GetMountDir( sDirOfExecutable );
-	
-	FILEMAN->Mount( "dir", sDir, "/" );
+
+	bool portable = GetFileAttributes(sDir + "/Portable.ini", &st) != INVALID_FILE_ATTRIBUTES;
+	FILEMAN->Mount(portable ? "dir" : "dirro", sDir, "/");
 }
 
 void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
@@ -84,7 +84,7 @@ void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 	FILEMAN->Mount( "dir", sAppDataDir + "/Courses", "/Courses" );
 	FILEMAN->Mount( "dir", sAppDataDir + "/Logs", "/Logs" );
 	FILEMAN->Mount( "dir", sAppDataDir + "/NoteSkins", "/NoteSkins" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/Packages", "/" + SpecialFiles::USER_PACKAGES_DIR );
+	FILEMAN->Mount( "dir", sAppDataDir + "/Packages", "/Packages" );
 	FILEMAN->Mount( "dir", sAppDataDir + "/Save", "/Save" );
 	FILEMAN->Mount( "dir", sAppDataDir + "/Screenshots", "/Screenshots" );
 	FILEMAN->Mount( "dir", sAppDataDir + "/Songs", "/Songs" );

@@ -917,16 +917,27 @@ static void MountTreeOfZips( const RString &dir )
 		GetDirListing( path + "/*.zip", zips, false, true );
 		GetDirListing( path + "/*.smzip", zips, false, true );
 
-		for( unsigned i = 0; i < zips.size(); ++i )
+		for (const auto& zip : zips)
 		{
-			if( !IsAFile(zips[i]) )
+			if( !IsAFile(zip) )
 				continue;
 
-			LOG->Trace( "VFS: found %s", zips[i].c_str() );
-			FILEMAN->Mount( "zip", zips[i], "/" );
+			LOG->Trace( "VFS: found %s", zip.c_str() );
+			FILEMAN->Mount( "zip", zip, "/" );
 		}
 
 		GetDirListing( path + "/*", dirs, true, true );
+	}
+}
+
+static void MountFolders(const RString &type, const RString &realPathList, const RString &mountPoint)
+{
+	if (!realPathList.empty())
+	{
+		vector<RString> dirs;
+		split(realPathList, ",", dirs, true);
+		for (const auto& dir : dirs)
+			FILEMAN->Mount(type, dir, mountPoint);
 	}
 }
 
@@ -1022,30 +1033,14 @@ int sm_main(int argc, char* argv[])
 	WriteLogHeader();
 
 	// Set up alternative filesystem trees.
-	if( PREFSMAN->m_sAdditionalFolders.Get() != "" )
-	{
-		vector<RString> dirs;
-		split( PREFSMAN->m_sAdditionalFolders, ",", dirs, true );
-		for( unsigned i=0; i < dirs.size(); i++)
-			FILEMAN->Mount( "dir", dirs[i], "/" );
-	}
-	if( PREFSMAN->m_sAdditionalSongFolders.Get() != "" )
-	{
-		vector<RString> dirs;
-		split( PREFSMAN->m_sAdditionalSongFolders, ",", dirs, true );
-		for( unsigned i=0; i < dirs.size(); i++)
-			FILEMAN->Mount( "dir", dirs[i], "/Songs" );
-	}
-	if( PREFSMAN->m_sAdditionalCourseFolders.Get() != "" )
-	{
-		vector<RString> dirs;
-		split( PREFSMAN->m_sAdditionalCourseFolders, ",", dirs, true );
-		for( unsigned i=0; i < dirs.size(); i++)
-			FILEMAN->Mount( "dir", dirs[i], "/Courses" );
-	}
+	MountFolders("dirro", PREFSMAN->m_sAdditionalFoldersReadOnly.Get(), "/");
+	MountFolders("dir", PREFSMAN->m_sAdditionalFoldersWritable.Get(), "/");
+	MountFolders("dirro", PREFSMAN->m_sAdditionalSongFoldersReadOnly.Get(), "/Songs");
+	MountFolders("dir", PREFSMAN->m_sAdditionalSongFoldersWritable.Get(), "/Songs");
+	MountFolders("dirro", PREFSMAN->m_sAdditionalCourseFoldersReadOnly.Get(), "/Courses");
+	MountFolders("dir", PREFSMAN->m_sAdditionalCourseFoldersWritable.Get(), "/Courses");
 
 	MountTreeOfZips( SpecialFiles::PACKAGES_DIR );
-	MountTreeOfZips( SpecialFiles::USER_PACKAGES_DIR );
 
 	/* One of the above filesystems might contain files that affect preferences
 	 * (e.g. Data/Static.ini). Re-read preferences. */
