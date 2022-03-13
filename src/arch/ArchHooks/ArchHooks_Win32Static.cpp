@@ -55,9 +55,28 @@ static RString GetMountDir( const RString &sDirOfExecutable )
 void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
 {
 	RString sDir = GetMountDir( sDirOfExecutable );
+	FILEMAN->Mount("dirro", sDir, "/");
 
-	bool portable = GetFileAttributes(sDir + "/Portable.ini", &st) != INVALID_FILE_ATTRIBUTES;
-	FILEMAN->Mount(portable ? "dir" : "dirro", sDir, "/");
+	bool portable = DoesFileExist("/Portable.ini");
+	if (portable)
+	{
+		FILEMAN->Mount("dir", sDir + "/Announcers", "/Announcers");
+		FILEMAN->Mount("dir", sDir + "/BGAnimations", "/BGAnimations");
+		FILEMAN->Mount("dir", sDir + "/BackgroundEffects", "/BackgroundEffects");
+		FILEMAN->Mount("dir", sDir + "/BackgroundTransitions", "/BackgroundTransitions");
+		FILEMAN->Mount("dir", sDir + "/Cache", "/Cache");
+		FILEMAN->Mount("dir", sDir + "/CDTitles", "/CDTitles");
+		FILEMAN->Mount("dir", sDir + "/Characters", "/Characters");
+		FILEMAN->Mount("dir", sDir + "/Courses", "/Courses");
+		FILEMAN->Mount("dir", sDir + "/Logs", "/Logs");
+		FILEMAN->Mount("dir", sDir + "/NoteSkins", "/NoteSkins");
+		FILEMAN->Mount("dir", sDir + "/Packages", "/Packages");
+		FILEMAN->Mount("dir", sDir + "/Save", "/Save");
+		FILEMAN->Mount("dir", sDir + "/Screenshots", "/Screenshots");
+		FILEMAN->Mount("dir", sDir + "/Songs", "/Songs");
+		FILEMAN->Mount("dir", sDir + "/RandomMovies", "/RandomMovies");
+		FILEMAN->Mount("dir", sDir + "/Themes", "/Themes");
+	}
 }
 
 void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )

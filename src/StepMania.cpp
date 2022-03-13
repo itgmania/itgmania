@@ -1006,7 +1006,7 @@ int sm_main(int argc, char* argv[])
 	FILEMAN = new RageFileManager( argv[0] );
 	FILEMAN->MountInitialFilesystems();
 
-	bool bPortable = DoesFileExist("Portable.ini");
+	bool bPortable = DoesFileExist("/Portable.ini");
 	if( !bPortable )
 		FILEMAN->MountUserFilesystems();
 

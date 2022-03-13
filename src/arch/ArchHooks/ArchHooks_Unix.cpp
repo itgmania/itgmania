@@ -15,7 +15,6 @@
 #include <unistd.h>
 #endif
 #include <sys/time.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -383,9 +382,28 @@ RString ArchHooks_Unix::GetClipboard()
 
 void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
 {
-	struct stat st;
-	bool portable = !stat(sDirOfExecutable + "/Portable.ini", &st);
-	FILEMAN->Mount(portable ? "dir" : "dirro", sDirOfExecutable, "/");
+	FILEMAN->Mount("dirro", sDirOfExecutable, "/");
+
+	bool portable = DoesFileExist("/Portable.ini");
+	if (portable)
+	{
+		FILEMAN->Mount("dir", sDirOfExecutable + "/Announcers", "/Announcers");
+		FILEMAN->Mount("dir", sDirOfExecutable + "/BGAnimations", "/BGAnimations");
+		FILEMAN->Mount("dir", sDirOfExecutable + "/BackgroundEffects", "/BackgroundEffects");
+		FILEMAN->Mount("dir", sDirOfExecutable + "/BackgroundTransitions", "/BackgroundTransitions");
+		FILEMAN->Mount("dir", sDirOfExecutable + "/Cache", "/Cache");
+		FILEMAN->Mount("dir", sDirOfExecutable + "/CDTitles", "/CDTitles");
+		FILEMAN->Mount("dir", sDirOfExecutable + "/Characters", "/Characters");
+		FILEMAN->Mount("dir", sDirOfExecutable + "/Courses", "/Courses");
+		FILEMAN->Mount("dir", sDirOfExecutable + "/Logs", "/Logs");
+		FILEMAN->Mount("dir", sDirOfExecutable + "/NoteSkins", "/NoteSkins");
+		FILEMAN->Mount("dir", sDirOfExecutable + "/Packages", "/Packages");
+		FILEMAN->Mount("dir", sDirOfExecutable + "/Save", "/Save");
+		FILEMAN->Mount("dir", sDirOfExecutable + "/Screenshots", "/Screenshots");
+		FILEMAN->Mount("dir", sDirOfExecutable + "/Songs", "/Songs");
+		FILEMAN->Mount("dir", sDirOfExecutable + "/RandomMovies", "/RandomMovies");
+		FILEMAN->Mount("dir", sDirOfExecutable + "/Themes", "/Themes");
+	}
 }
 
 void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
