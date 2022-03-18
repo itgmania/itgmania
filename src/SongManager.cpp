@@ -12,6 +12,7 @@
 #include "GameManager.h"
 #include "GameState.h"
 #include "LocalizedString.h"
+#include "MemoryCardManager.h"
 #include "MsdFile.h"
 #include "NoteSkinManager.h"
 #include "NotesLoaderDWI.h"
@@ -36,6 +37,8 @@
 #include "TrailUtil.h"
 #include "UnlockManager.h"
 #include "SpecialFiles.h"
+
+#include <tuple>
 
 SongManager*	SONGMAN = nullptr;	// global and accessible from anywhere in our program
 
@@ -121,6 +124,39 @@ void SongManager::Reload( bool bAllowFastLoad, LoadingWindow *ld )
 
 	// save scores before unloading songs, or the scores will be lost
 	PROFILEMAN->SaveMachineProfile();
+	GAMESTATE->SavePlayerProfiles();
+
+	std::vector<std::tuple<PlayerNumber, RString, bool>> rejoinPlayers;
+	FOREACH_HumanPlayer(pn)
+	{
+		if (GAMESTATE->m_bSideIsJoined[pn])
+		{
+			if (PROFILEMAN->ProfileWasLoadedFromMemoryCard(pn))
+			{
+				rejoinPlayers.push_back(std::make_tuple(pn, RString(""), true));
+			}
+			else if (PROFILEMAN->IsPersistentProfile(pn))
+			{
+				int numLocalProfiles = PROFILEMAN->GetNumLocalProfiles();
+				for (int i = 0; i < numLocalProfiles; i++)
+				{
+					Profile *profile = PROFILEMAN->GetLocalProfileFromIndex(i);
+					if (profile->m_sGuid == PROFILEMAN->GetProfile(pn)->m_sGuid)
+					{
+						RString profileID = PROFILEMAN->GetLocalProfileIDFromIndex(i);
+						rejoinPlayers.push_back(std::make_tuple(pn, profileID, false));
+						break;
+					}
+				}
+			}
+			else
+			{
+				rejoinPlayers.push_back(std::make_tuple(pn, RString(""), false));
+			}
+			GAMESTATE->UnjoinPlayer(pn);
+			PROFILEMAN->UnloadProfile(pn);
+		}
+	}
 
 	if( ld )
 		ld->SetText( UNLOADING_COURSES );
@@ -140,6 +176,31 @@ void SongManager::Reload( bool bAllowFastLoad, LoadingWindow *ld )
 
 	// reload scores and unlocks afterward
 	PROFILEMAN->LoadMachineProfile();
+	MEMCARDMAN->WaitForCheckingToComplete();
+	for (auto& it : rejoinPlayers)
+	{
+		PlayerNumber pn;
+		RString profileID;
+		bool isMemoryCard;
+		std::tie(pn, profileID, isMemoryCard) = it;
+
+		GAMESTATE->JoinPlayer(pn);
+		if (isMemoryCard)
+		{
+			bool success = MEMCARDMAN->MountCard(pn);
+			if (success)
+			{
+				PROFILEMAN->LoadProfileFromMemoryCard(pn, true);
+				MEMCARDMAN->UnmountCard(pn);
+			}
+		}
+		else
+		{
+			PROFILEMAN->m_sDefaultLocalProfileID[pn].Set(profileID);
+			PROFILEMAN->LoadLocalProfileFromMachine(pn);
+		}
+		GAMESTATE->LoadCurrentSettingsFromProfile(pn);
+	}
 	UNLOCKMAN->Reload();
 
 	if( !bAllowFastLoad )
