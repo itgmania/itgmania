@@ -15,10 +15,10 @@ else()
 
   target_include_directories("glew" PUBLIC "glew-1.5.8/include")
 
-  sm_add_compile_definition("glew" GLEW_STATIC)
+  target_compile_definitions("glew" PRIVATE GLEW_STATIC)
 
   if(MSVC)
-    sm_add_compile_definition("glew" _MBCS)
+    target_compile_definitions("glew" PRIVATE _MBCS)
   endif(MSVC)
 
 endif()

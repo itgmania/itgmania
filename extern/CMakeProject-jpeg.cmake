@@ -78,7 +78,7 @@ else()
   set_property(TARGET "jpeg" PROPERTY FOLDER "External Libraries")
 
   if(MSVC)
-    sm_add_compile_definition("jpeg" _CRT_SECURE_NO_WARNINGS)
+    target_compile_definitions("jpeg" PRIVATE _CRT_SECURE_NO_WARNINGS)
   endif(MSVC)
 
   target_include_directories("jpeg" PUBLIC "${JPEG_DIR}")

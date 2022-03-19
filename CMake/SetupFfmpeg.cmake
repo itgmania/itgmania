@@ -10,7 +10,7 @@ set(SM_FFMPEG_SRC_LIST
     "${SM_EXTERN_DIR}"
     "/ffmpeg-linux-"
     "${SM_FFMPEG_VERSION}")
-sm_join("${SM_FFMPEG_SRC_LIST}" "" SM_FFMPEG_SRC_DIR)
+list(JOIN SM_FFMPEG_SRC_LIST "" SM_FFMPEG_SRC_DIR)
 set(SM_FFMPEG_CONFIGURE_EXE "${SM_FFMPEG_SRC_DIR}/configure")
 if(MINGW)
   # Borrow from http://stackoverflow.com/q/11845823 string(SUBSTRING
