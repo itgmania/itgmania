@@ -17,8 +17,8 @@ Using Xcode, simply build in Xcode and it will place the .app file in the correc
 
 Linux
 ===
-Using the command line, simply type make and it will place stepmania and GtkModule.so
-(if requested) in the root StepMania directory. There is no more need to symlink the files.
+Using the command line, simply type make and it will place stepmania in the root StepMania
+directory. There is no more need to symlink the files.
 
 Installing StepMania
 ==
