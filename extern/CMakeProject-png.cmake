@@ -43,7 +43,7 @@ else()
   disable_project_warnings("png")
 
   if(MSVC)
-    sm_add_compile_definition("png" _CRT_SECURE_NO_WARNINGS)
+    target_compile_definitions("png" PRIVATE _CRT_SECURE_NO_WARNINGS)
   endif()
 
   target_include_directories("png" PUBLIC

@@ -814,54 +814,53 @@ else()
   set_property(TARGET "tomcrypt" PROPERTY FOLDER "External Libraries")
 
   # Required since building from the source.
-  sm_add_compile_definition("tomcrypt" LTC_SOURCE)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_SOURCE)
 
   # Required since tommath is a dependency.
-  sm_add_compile_definition("tomcrypt" LTM_DESC)
+  target_compile_definitions("tomcrypt" PRIVATE LTM_DESC)
 
   # This was defined behind an always active block.
-  sm_add_compile_definition("tomcrypt" LTC_DEVRANDOM)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_DEVRANDOM)
 
   # Common formulas used by our app.
-  sm_add_compile_definition("tomcrypt" LTC_SHA256)
-  sm_add_compile_definition("tomcrypt" LTC_SHA1)
-  sm_add_compile_definition("tomcrypt" LTC_MD5)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_SHA256)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_SHA1)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_MD5)
 
   # Use the full AES encryption items.
-  sm_add_compile_definition("tomcrypt" LTC_YARROW)
-  sm_add_compile_definition("tomcrypt" LTC_YARROW_AES=3)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_YARROW)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_YARROW_AES=3)
 
   # Other definitions we used in the past, but whose meanings are not clear.
-  sm_add_compile_definition("tomcrypt" LTC_NO_PKCS)
-  sm_add_compile_definition("tomcrypt" LTC_PKCS_1)
-  sm_add_compile_definition("tomcrypt" LTC_DER)
-  sm_add_compile_definition("tomcrypt" LTC_NO_MODES)
-  sm_add_compile_definition("tomcrypt" LTC_ECB_MODE)
-  sm_add_compile_definition("tomcrypt" LTC_CBC_MODE)
-  sm_add_compile_definition("tomcrypt" LTC_CTR_MODE)
-  sm_add_compile_definition("tomcrypt" LTC_NO_HASHES)
-  sm_add_compile_definition("tomcrypt" LTC_NO_MACS) # no MAC (message authentication code) support
-  sm_add_compile_definition("tomcrypt" LTC_NO_PRNGS)
-  sm_add_compile_definition("tomcrypt" LTC_RNG_GET_BYTES)
-  sm_add_compile_definition("tomcrypt" LTC_RNG_MAKE_PRNG)
-  sm_add_compile_definition("tomcrypt" LTC_TRY_URANDOM_FIRST)
-  sm_add_compile_definition("tomcrypt" LTC_NO_PK)
-  sm_add_compile_definition("tomcrypt" LTC_MRSA)
-  sm_add_compile_definition("tomcrypt" LTC_NO_PROTOTYPES)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_NO_PKCS)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_PKCS_1)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_DER)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_NO_MODES)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_ECB_MODE)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_CBC_MODE)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_CTR_MODE)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_NO_HASHES)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_NO_MACS) # no MAC (message authentication code) support
+  target_compile_definitions("tomcrypt" PRIVATE LTC_NO_PRNGS)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_RNG_GET_BYTES)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_RNG_MAKE_PRNG)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_TRY_URANDOM_FIRST)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_NO_PK)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_MRSA)
+  target_compile_definitions("tomcrypt" PRIVATE LTC_NO_PROTOTYPES)
 
   if(WITH_PORTABLE_TOMCRYPT)
-    sm_add_compile_definition("tomcrypt" LTC_NO_ASM)
+    target_compile_definitions("tomcrypt" PRIVATE LTC_NO_ASM)
   endif()
   if(WITH_NO_ROLC_TOMCRYPT)
-    sm_add_compile_definition("tomcrypt" LTC_NO_ROLC)
+    target_compile_definitions("tomcrypt" PRIVATE LTC_NO_ROLC)
   endif()
 
   if(APPLE)
-    sm_append_simple_target_property("tomcrypt"
-                 XCODE_ATTRIBUTE_GCC_NO_COMMON_BLOCKS "YES")
+    set_property(TARGET "tomcrypt" PROPERTY XCODE_ATTRIBUTE_GCC_NO_COMMON_BLOCKS "YES")
   endif()
   if(MSVC)
-    sm_add_compile_definition("tomcrypt" _CRT_SECURE_NO_WARNINGS)
+    target_compile_definitions("tomcrypt" PRIVATE _CRT_SECURE_NO_WARNINGS)
   endif()
 
   disable_project_warnings("tomcrypt")

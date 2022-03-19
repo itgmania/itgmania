@@ -112,25 +112,25 @@ set_target_properties("${SM_EXE_NAME}"
                                  "${SM_NAME_RELWITHDEBINFO}")
 
 # Required for usage of tomcrypt and tommath.
-sm_add_compile_definition("${SM_EXE_NAME}" LTM_DESC)
+target_compile_definitions("${SM_EXE_NAME}" PRIVATE LTM_DESC)
 
 if(WITH_PORTABLE_TOMCRYPT)
-  sm_add_compile_definition("${SM_EXE_NAME}" LTC_NO_ASM)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE LTC_NO_ASM)
 endif()
 if(WITH_NO_ROLC_TOMCRYPT)
-  sm_add_compile_definition("${SM_EXE_NAME}" LTC_NO_ROLC)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE LTC_NO_ROLC)
 endif()
 
 if(NOT WITH_NETWORKING)
-  sm_add_compile_definition("${SM_EXE_NAME}" WITHOUT_NETWORKING)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE WITHOUT_NETWORKING)
 endif()
 
 # Compilation flags per project here.
-sm_add_compile_definition("${SM_EXE_NAME}" $<$<CONFIG:Debug>:DEBUG>)
-sm_add_compile_definition("${SM_EXE_NAME}" $<$<CONFIG:Release>:RELEASE>)
-sm_add_compile_definition("${SM_EXE_NAME}" $<$<CONFIG:MinSizeRel>:MINSIZEREL>)
-sm_add_compile_definition("${SM_EXE_NAME}"
-                          $<$<CONFIG:RelWithDebInfo>:RELWITHDEBINFO>)
+target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:Debug>:DEBUG>)
+target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:Release>:RELEASE>)
+target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:MinSizeRel>:MINSIZEREL>)
+target_compile_definitions("${SM_EXE_NAME}" PRIVATE
+                           $<$<CONFIG:RelWithDebInfo>:RELWITHDEBINFO>)
 
 set(SM_COMPILE_FLAGS "")
 
@@ -180,12 +180,11 @@ list(APPEND SM_WINDOWS_PROGRAM_DLLS
             "${SM_PROGRAM_DIR}/swscale-2.dll")
 
 if(WIN32)
-  sm_add_compile_definition("${SM_EXE_NAME}" WINDOWS)
-  sm_add_compile_definition("${SM_EXE_NAME}" _WINDOWS) # TODO: Remove this
-                                                       # potential duplicate.
-  sm_add_compile_definition("${SM_EXE_NAME}" _CRT_SECURE_NO_WARNINGS)
-  sm_add_compile_definition("${SM_EXE_NAME}" _WINSOCK_DEPRECATED_NO_WARNINGS)
-  sm_add_compile_definition("${SM_EXE_NAME}" GLEW_STATIC)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE WINDOWS)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WINDOWS) # TODO: Remove this potential duplicate.
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE _CRT_SECURE_NO_WARNINGS)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WINSOCK_DEPRECATED_NO_WARNINGS)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE GLEW_STATIC)
 
   set_target_properties("${SM_EXE_NAME}"
                         PROPERTIES RUNTIME_OUTPUT_DIRECTORY
@@ -210,8 +209,8 @@ if(WIN32)
       COMMENT "Generating file to allow for easier stack traces.")
   endif()
 elseif(APPLE)
-  sm_add_compile_definition("${SM_EXE_NAME}" BACKTRACE_METHOD_X86_DARWIN)
-  sm_add_compile_definition("${SM_EXE_NAME}" MACOSX)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_X86_DARWIN)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE MACOSX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14 -stdlib=libc++")
   set_target_properties(
     "${SM_EXE_NAME}"
@@ -272,10 +271,10 @@ elseif(APPLE)
   target_sources("${SM_EXE_NAME}" PUBLIC ${APPLE_BUNDLE_RESOURCES})
   set_source_files_properties(${APPLE_BUNDLE_RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
-  sm_add_compile_definition("${SM_EXE_NAME}" _XOPEN_SOURCE)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE _XOPEN_SOURCE)
 
   if(${HAS_FFMPEG})
-    sm_add_compile_definition("${SM_EXE_NAME}" HAVE_FFMPEG)
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_FFMPEG)
   endif()
 
   if(CMAKE_BUILD_TYPE EQUAL "Debug")
@@ -351,73 +350,73 @@ else() # Linux
                                    "${SM_ROOT_DIR}")
 
   if(${WITH_CRASH_HANDLER})
-    sm_add_compile_definition("${SM_EXE_NAME}" CRASH_HANDLER)
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE CRASH_HANDLER)
     if(LINUX)
       # used only in the ArchHooks_Unix.cpp file
       if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86" OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
-        sm_add_compile_definition("${SM_EXE_NAME}" BACKTRACE_METHOD_X86_LINUX)
-        sm_add_compile_definition("${SM_EXE_NAME}"
-                                BACKTRACE_METHOD_TEXT="x86 custom backtrace")
+        target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_X86_LINUX)
+        target_compile_definitions("${SM_EXE_NAME}" PRIVATE
+                                   BACKTRACE_METHOD_TEXT="x86 custom backtrace")
       else()
-        sm_add_compile_definition("${SM_EXE_NAME}"
-                                BACKTRACE_METHOD_TEXT="no backtrace")
+        target_compile_definitions("${SM_EXE_NAME}" PRIVATE
+                                   BACKTRACE_METHOD_TEXT="no backtrace")
       endif()
-      sm_add_compile_definition(
-        "${SM_EXE_NAME}" BACKTRACE_LOOKUP_METHOD_TEXT="backtrace_symbols")
+      target_compile_definitions("${SM_EXE_NAME}" PRIVATE
+                                 BACKTRACE_LOOKUP_METHOD_TEXT="backtrace_symbols")
       if(${DL_FOUND})
-        sm_add_compile_definition("${SM_EXE_NAME}"
-                                  BACKTRACE_LOOKUP_METHOD_DLADDR)
+        target_compile_definitions("${SM_EXE_NAME}" PRIVATE
+                                   BACKTRACE_LOOKUP_METHOD_DLADDR)
       else()
-        sm_add_compile_definition("${SM_EXE_NAME}"
-                                  BACKTRACE_LOOKUP_METHOD_BACKTRACE_SYMBOLS)
+        target_compile_definitions("${SM_EXE_NAME}" PRIVATE
+                                   BACKTRACE_LOOKUP_METHOD_BACKTRACE_SYMBOLS)
       endif()
     endif()
   endif()
   if(${HAS_PTHREAD})
-    sm_add_compile_definition("${SM_EXE_NAME}" HAVE_LIBPTHREAD)
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_LIBPTHREAD)
 
     message("Host processor is ${CMAKE_SYSTEM_PROCESSOR}")
     if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
       message("Host processor is 64bit X86")
-      sm_add_compile_definition("${SM_EXE_NAME}" CPU_X86_64)
+      target_compile_definitions("${SM_EXE_NAME}" PRIVATE CPU_X86_64)
     elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86"
            OR CMAKE_SYSTEM_PROCESSOR MATCHES "i686")
       message("Host processor is 32bit X86")
-      sm_add_compile_definition("${SM_EXE_NAME}" CPU_X86)
+      target_compile_definitions("${SM_EXE_NAME}" PRIVATE CPU_X86)
     elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
       message("Host processor is 64bit ARM")
-      sm_add_compile_definition("${SM_EXE_NAME}" CPU_AARCH64)
+      target_compile_definitions("${SM_EXE_NAME}" PRIVATE CPU_AARCH64)
     else()
       message("Unrecognized host processor type")
     endif()
   endif()
   if(${HAS_FFMPEG})
-    sm_add_compile_definition("${SM_EXE_NAME}" HAVE_FFMPEG)
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_FFMPEG)
   endif()
   if(${HAS_XRANDR})
-    sm_add_compile_definition("${SM_EXE_NAME}" HAVE_XRANDR)
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_XRANDR)
   endif()
   if(${HAS_LIBXTST})
-    sm_add_compile_definition("${SM_EXE_NAME}" HAVE_LIBXTST)
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_LIBXTST)
   endif()
   if(${HAS_XINERAMA})
-    sm_add_compile_definition("${SM_EXE_NAME}" HAVE_XINERAMA)
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_XINERAMA)
   endif()
 
   if(BSD)
-    sm_add_compile_definition("${SM_EXE_NAME}" BSD)
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE BSD)
   endif()
 
   if(GTK3_FOUND)
-    sm_add_compile_definition("${SM_EXE_NAME}" HAVE_GTK)
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_GTK)
   endif()
 
-  sm_add_compile_definition("${SM_EXE_NAME}" UNIX)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE UNIX)
   if("${CMAKE_SYSTEM}" MATCHES "Linux")
-    sm_add_compile_definition("${SM_EXE_NAME}" LINUX)
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE LINUX)
   endif()
 
-  sm_add_compile_flag("${SM_EXE_NAME}" "-std=${SM_CPP_STANDARD}")
+  target_compile_options("${SM_EXE_NAME}" PRIVATE "-std=${SM_CPP_STANDARD}")
 endif()
 
 set_property(TARGET "${SM_EXE_NAME}" PROPERTY FOLDER "Internal Libraries")
@@ -459,7 +458,7 @@ else()
 endif()
 
 if(WITH_SYSTEM_JPEG)
-  sm_add_compile_definition("${SM_EXE_NAME}" SYSTEM_JPEGLIB)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE SYSTEM_JPEGLIB)
   list(APPEND SMDATA_LINK_LIB ${JPEG_LIBRARIES})
 else()
   list(APPEND SMDATA_LINK_LIB "jpeg")
@@ -472,7 +471,7 @@ else()
 endif()
 
 if(WITH_SYSTEM_PNG)
-  sm_add_compile_definition("${SM_EXE_NAME}" SYSTEM_PNG)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE SYSTEM_PNG)
   list(APPEND SMDATA_LINK_LIB ${PNG_LIBRARIES})
 else()
   list(APPEND SMDATA_LINK_LIB "png")
@@ -607,17 +606,17 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
 
   if(HAS_OSS)
     # No mention of OSS libraries.
-    sm_add_compile_definition("${SM_EXE_NAME}" "HAVE_OSS_VERSION=1")
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE "HAVE_OSS_VERSION=1")
   endif()
 
   if(HAS_PULSE)
     list(APPEND SMDATA_LINK_LIB ${PULSEAUDIO_LIBRARY})
     # PACKAGE_NAME and PACKAGE_VERSION are only used in this scenario. Why is
     # not clear. TODO: Remove this silliness.
-    sm_add_compile_definition("${SM_EXE_NAME}" PACKAGE_NAME="StepMania")
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE PACKAGE_NAME="StepMania")
     set(PACKAGE_VERSION "${SM_VERSION_MAJOR}.${SM_VERSION_MINOR}")
-    sm_add_compile_definition("${SM_EXE_NAME}"
-                              PACKAGE_VERSION="${PACKAGE_VERSION}")
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE
+                               PACKAGE_VERSION="${PACKAGE_VERSION}")
   endif()
 
   if(X11_FOUND)
@@ -626,7 +625,7 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
 
   if(SDL2_FOUND)
     list(APPEND SMDATA_LINK_LIB ${SDL2_LIBRARY})
-    sm_add_compile_definition("${SM_EXE_NAME}" HAVE_SDL)
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_SDL)
   endif()
 
   if(PCRE_FOUND)
@@ -737,7 +736,7 @@ endif()
 if(NOT APPLE)
   if(WIN32)
     set(SM_FULL_INSTALLATION_PATH_LIST "${SM_INSTALL_DESTINATION}" "Program")
-    sm_join("${SM_FULL_INSTALLATION_PATH_LIST}" "/" SM_FULL_INSTALLATION_PATH)
+    list(JOIN SM_FULL_INSTALLATION_PATH_LIST "/" SM_FULL_INSTALLATION_PATH)
     # Hardcoding the values for now since the foreach loop is not working as
     # intended.
     install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_FULL_INSTALLATION_PATH}")

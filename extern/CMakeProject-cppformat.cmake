@@ -21,15 +21,14 @@ disable_project_warnings("cppformat")
 target_include_directories("cppformat" PUBLIC "cppformat")
 
 if(MSVC)
-  sm_add_compile_definition("cppformat" _CRT_SECURE_NO_WARNINGS)
+  target_compile_definitions("cppformat" PRIVATE _CRT_SECURE_NO_WARNINGS)
 elseif(APPLE)
   set_target_properties("cppformat"
                         PROPERTIES XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD
                                    "${SM_CPP_STANDARD}"
                                    XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY
                                    "libc++")
-  sm_add_compile_flag("cppformat" "-std=${SM_CPP_STANDARD}")
-  sm_add_compile_flag("cppformat" "-stdlib=libc++")
+  target_compile_options("cppformat" PRIVATE "-std=${SM_CPP_STANDARD}" "-stdlib=libc++")
 else() # Unix
-  sm_add_compile_flag("cppformat" "-std=${SM_CPP_STANDARD}")
+  target_compile_options("cppformat" PRIVATE "-std=${SM_CPP_STANDARD}")
 endif()

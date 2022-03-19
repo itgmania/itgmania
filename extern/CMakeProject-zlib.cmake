@@ -41,6 +41,6 @@ else()
   disable_project_warnings("zlib")
 
   if(MSVC)
-    sm_add_compile_definition("zlib" _MBCS)
+    target_compile_definitions("zlib" PRIVATE _MBCS)
   endif(MSVC)
 endif()
