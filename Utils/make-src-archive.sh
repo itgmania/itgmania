@@ -1,6 +1,6 @@
 #!/bin/sh
 
-LINUX= MAC= WIN=
+MAC= WIN=
 
 # Parse options
 while :; do
@@ -54,11 +54,6 @@ mkdir dist
 {
 	echo './dist'
 	echo '*/.hg*'
-	echo './autoconf/m4'
-	echo './autom4te.cache'
-	echo './autogen.sh'
-	echo './aclocal.m4'
-	echo '*/*.a[mc]'
 	echo './_assets'
 	echo './Utils/Font generation'
 	# OSX

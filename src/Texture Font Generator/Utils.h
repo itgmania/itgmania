@@ -1,11 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#if defined(CMAKE_POWERED)
 #include "config.hpp"
-#elif defined(HAVE_CONFIG_H)
-#include "config.h"
-#endif
 
 #if !defined(HAVE_TRUNCF)
 inline float truncf( float f )	{ return float(int(f)); };
