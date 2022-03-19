@@ -240,7 +240,3 @@ $FoundSection || print "warning: SectionEnd not found\n";
 close F;
 
 system("cp -vp \"" . $bin_path . "stepmania5\" \"$instdir\"");
-if( -e $bin_path . "GtkModule.so" )
-{
-	system("cp -vp \"" . $bin_path . "GtkModule.so\" \"$instdir\"");
-}

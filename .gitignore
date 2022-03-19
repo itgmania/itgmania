@@ -107,7 +107,6 @@ src/Makefile
 src/config.h
 src/config.h.in
 src/stamp-h1
-GtkModule.so
 StepMania
 core
 
