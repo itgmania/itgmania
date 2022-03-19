@@ -41,8 +41,6 @@ if(NOT WITH_STATIC_LINKING)
   sm_add_compile_definition("TextureFontGenerator" _AFXDLL)
 endif()
 
-sm_add_compile_definition("TextureFontGenerator" CMAKE_POWERED)
-
 list(APPEND TEXTURE_LINK_LIB "zlib" "png")
 
 target_link_libraries("TextureFontGenerator" ${TEXTURE_LINK_LIB})

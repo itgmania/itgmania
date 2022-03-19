@@ -19,8 +19,6 @@ target_include_directories("LoadingWindowGtk" PRIVATE "${SM_SRC_DIR}"
 
 target_link_libraries("LoadingWindowGtk" ${GTK3_LIBRARIES})
 
-target_compile_definitions("LoadingWindowGtk" PRIVATE CMAKE_POWERED)
-
 list(APPEND SMDATA_LINK_LIB "LoadingWindowGtk")
 list(APPEND SMDATA_ARCH_LOADING_HPP
             "arch/LoadingWindow/LoadingWindow_Gtk.h")

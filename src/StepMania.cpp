@@ -1085,44 +1085,6 @@ int sm_main(int argc, char* argv[])
 
 	CommandLineActions::Handle(pLoadingWindow);
 
-	// Aldo: Check for updates here!
-#if 0
-	if( /* PREFSMAN->m_bUpdateCheckEnable (do this later) */ 0 )
-	{
-		// TODO - Aldo_MX: Use PREFSMAN->m_iUpdateCheckIntervalSeconds & PREFSMAN->m_iUpdateCheckLastCheckedSecond
-		unsigned long current_version = NetworkSyncManager::GetCurrentSMBuild( pLoadingWindow );
-		if( current_version )
-		{
-			if( current_version > version_num )
-			{
-				switch( Dialog::YesNo( "A new version of " PRODUCT_ID " is available. Do you want to download it?", "UpdateCheck" ) )
-				{
-				case Dialog::yes:
-					//PREFSMAN->SavePrefsToDisk();
-					// TODO: GoToURL for Linux
-					if( !HOOKS->GoToURL( SM_DOWNLOAD_URL ) )
-					{
-						Dialog::Error( "Please go to the following URL to download the latest version of " PRODUCT_ID ":\n\n" SM_DOWNLOAD_URL, "UpdateCheckConfirm" );
-					}
-					ShutdownGame();
-					return 0;
-				case Dialog::no:
-					break;
-				default:
-					FAIL_M("Invalid response to Yes/No dialog");
-				}
-			}
-			else if( version_num < current_version )
-			{
-				LOG->Info( "The current version is more recent than the public one, double check you downloaded it from " SM_DOWNLOAD_URL );
-			}
-		}
-		else
-		{
-			LOG->Info( "Unable to check for updates. The server might be offline." );
-		}
-	}
-#endif
 	if( GetCommandlineArgument("dopefish") )
 		GAMESTATE->m_bDopefish = true;
 

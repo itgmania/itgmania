@@ -121,8 +121,6 @@ if(WITH_NO_ROLC_TOMCRYPT)
   sm_add_compile_definition("${SM_EXE_NAME}" LTC_NO_ROLC)
 endif()
 
-sm_add_compile_definition("${SM_EXE_NAME}" CMAKE_POWERED)
-
 if(NOT WITH_NETWORKING)
   sm_add_compile_definition("${SM_EXE_NAME}" WITHOUT_NETWORKING)
 endif()
