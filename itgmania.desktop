@@ -1,10 +1,9 @@
-
 [Desktop Entry]
 Encoding=UTF-8
-Name=StepMania
+Name=ITGmania
 GenericName=Rhythm and dance game
-TryExec=stepmania
-Exec=stepmania
+TryExec=itgmania
+Exec=itgmania
 Terminal=false
 Icon=stepmania-ssc
 Type=Application
