@@ -12,8 +12,8 @@ CPackConfig.cmake
 CPackSourceConfig.cmake
 # The following are generated from CMake, and thus should be stopped.
 .codelite/
-StepMania.project
-StepMania.workspace
+ITGmania.project
+ITGmania.workspace
 version.hpp
 Build/*
 Build/*/*
@@ -21,8 +21,8 @@ Debug/
 Release/
 Contents/
 verdata.*
-StepMania-debug
-stepmania-debug
+ITGmania-debug
+itgmania-debug
 Xcode/Info.StepMania.plist
 Xcode/plistHelper.hpp
 src/version_updater/VersionUpdater
@@ -94,7 +94,7 @@ nsis_strings_temp.inc
 # Linux General Files
 .dirstamp
 Makefile
-stepmania
+itgmania
 Makefile.in
 config.status
 _build/*
@@ -107,7 +107,7 @@ src/Makefile
 src/config.h
 src/config.h.in
 src/stamp-h1
-StepMania
+ITGmania
 core
 
 # Version control specific.
@@ -164,7 +164,7 @@ ffmpeg-*
 Data/SpeedMods.txt
 crashinfo.txt
 Utils/temp*
-Program/StepMania*.lib
+Program/ITGmania*.lib
 
 # Unknown File Types
 *.dia

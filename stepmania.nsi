@@ -42,7 +42,7 @@
 
 	; don't forget to change this before releasing a new version.
 	; wish this could be automated, but it requires "X.Y.Z.a" format. -aj
-	VIProductVersion "5.0.0.5"
+	VIProductVersion "0.5.1.0"
 	VIAddVersionKey "ProductName" "${PRODUCT_ID}"
 	VIAddVersionKey "FileVersion" "${PRODUCT_VER}"
 	VIAddVersionKey "FileDescription" "${PRODUCT_ID} Installer"
@@ -98,7 +98,7 @@
 		# These indented statements modify settings for MUI_PAGE_FINISH
 		!define MUI_FINISHPAGE_NOAUTOCLOSE
 
-		!define MUI_FINISHPAGE_RUN "$INSTDIR\Program\StepMania-SSE2.exe"
+		!define MUI_FINISHPAGE_RUN "$INSTDIR\Program\ITGmania-SSE2.exe"
 		!define MUI_FINISHPAGE_RUN_NOTCHECKED
 		!define MUI_FINISHPAGE_RUN_TEXT "$(TEXT_IO_LAUNCH_THE_GAME)"
 
@@ -163,7 +163,7 @@
 	; generate, then include installer strings
 	;!delfile "nsis_strings_temp.inc"
 
-	!system '"Program\StepMania.exe" --ExportNsisStrings'
+	!system '"Program\ITGmania.exe" --ExportNsisStrings'
 	!include "nsis_strings_temp.inc"
 
 ;-------------------------------------------------------------------------------
@@ -210,10 +210,10 @@ Section "Main Section" SecMain
 	WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\${PRODUCT_ID}" "" "$INSTDIR"
 	WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_ID}" "DisplayName" "$(TEXT_IO_REMOVE_ONLY)"
 	WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_ID}" "DisplayVersion" "$(PRODUCT_VER)"
-	WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_ID}" "Comments" "StepMania 5 is a rhythm game simulator."
-	WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_ID}" "Publisher" "StepMania Team"
-	WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_ID}" "URLInfoAbout" "http://www.stepmania.com/"
-	WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_ID}" "URLUpdateInfo" "http://code.google.com/p/stepmania/"
+	WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_ID}" "Comments" "ITGmania 5 is a rhythm game simulator."
+	WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_ID}" "Publisher" "ITGmania Team"
+	WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_ID}" "URLInfoAbout" "http://www.itgmania.com/"
+	WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_ID}" "URLUpdateInfo" "https://github.com/itgmania/itgmania"
 	WriteRegStr HKEY_LOCAL_MACHINE "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_ID}" "UninstallString" '"$INSTDIR\uninstall.exe"'
 !endif
 
@@ -231,16 +231,16 @@ Section "Main Section" SecMain
 
 !ifdef ASSOCIATE_SMZIP
 	WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\smzipfile" "" "$(TEXT_IO_SMZIP_PACKAGE)"
-	WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\smzipfile\DefaultIcon" "" "$INSTDIR\Program\StepMania.exe,1"
-	WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\smzipfile\shell\open\command" "" '"$INSTDIR\Program\StepMania.exe" "%1"'
+	WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\smzipfile\DefaultIcon" "" "$INSTDIR\Program\ITGmania.exe,1"
+	WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\smzipfile\shell\open\command" "" '"$INSTDIR\Program\ITGmania.exe" "%1"'
 	WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\.smzip" "" "smzipfile"
 !endif
 
 !ifdef ASSOCIATE_SMURL
-	WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\stepmania" "" "StepMania protocol handler"
-	WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\stepmania" "URL Protocol" ""
-	WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\stepmania\DefaultIcon" "" "$INSTDIR\Program\StepMania.exe"
-	WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\stepmania\shell\open\command" "" '"$INSTDIR\Program\StepMania.exe" "%1"'
+	WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\itgmania" "" "ITGmania protocol handler"
+	WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\itgmania" "URL Protocol" ""
+	WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\itgmania\DefaultIcon" "" "$INSTDIR\Program\ITGmania.exe"
+	WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\itgmania\shell\open\command" "" '"$INSTDIR\Program\ITGmania.exe" "%1"'
 !endif
 
 !ifdef INSTALL_NON_PCK_FILES
@@ -427,11 +427,11 @@ Section "Main Section" SecMain
 	SetOutPath "$INSTDIR\Program"
 !ifdef INSTALL_EXECUTABLES
 	; normal exec
-	File "Program\StepMania.exe"
-	File "Program\StepMania.vdi"
+	File "Program\ITGmania.exe"
+	File "Program\ITGmania.vdi"
 	; sse2 exec
-	File "Program\StepMania-SSE2.exe"
-	File "Program\StepMania-SSE2.vdi"
+	File "Program\ITGmania-SSE2.exe"
+	File "Program\ITGmania-SSE2.vdi"
 	; other programs
 	File "Program\Texture Font Generator.exe"
 	; AJ can never get this built properly:
@@ -489,11 +489,11 @@ Section "Main Section" SecMain
 	CreateDirectory "$SMPROGRAMS\${PRODUCT_ID}\"
 	; todo: make desktop shortcut an option
 	!ifdef MAKE_DESKTOP_SHORTCUT
-		CreateShortCut "$DESKTOP\$(TEXT_IO_RUN).lnk" "$INSTDIR\Program\StepMania-SSE2.exe"
+		CreateShortCut "$DESKTOP\$(TEXT_IO_RUN).lnk" "$INSTDIR\Program\ITGmania-SSE2.exe"
 	!endif
 
-	CreateShortCut "$SMPROGRAMS\${PRODUCT_ID}\$(TEXT_IO_RUN).lnk" "$INSTDIR\Program\StepMania-SSE2.exe"
-	CreateShortCut "$SMPROGRAMS\${PRODUCT_ID}\$(TEXT_IO_RUN_WITHOUT_SSE2).lnk" "$INSTDIR\Program\StepMania.exe"
+	CreateShortCut "$SMPROGRAMS\${PRODUCT_ID}\$(TEXT_IO_RUN).lnk" "$INSTDIR\Program\ITGmania-SSE2.exe"
+	CreateShortCut "$SMPROGRAMS\${PRODUCT_ID}\$(TEXT_IO_RUN_WITHOUT_SSE2).lnk" "$INSTDIR\Program\ITGmania.exe"
 
 	!ifdef MAKE_OPEN_PROGRAM_FOLDER_SHORTCUT
 		CreateShortCut "$SMPROGRAMS\${PRODUCT_ID}\$(TEXT_IO_OPEN_PROGRAM_FOLDER).lnk" "$WINDIR\explorer.exe" "$INSTDIR\"
@@ -511,8 +511,8 @@ Section "Main Section" SecMain
 	!ifdef MAKE_UPDATES_SHORTCUT
 		CreateShortCut "$SMPROGRAMS\${PRODUCT_ID}\$(TEXT_IO_CHECK_FOR_UPDATES).lnk" "${UPDATES_URL}"
 	!endif
-	CreateShortCut "$INSTDIR\${PRODUCT_ID}.lnk" "$INSTDIR\Program\StepMania-SSE2.exe"
-	CreateShortCut "$INSTDIR\${PRODUCT_ID} (non-SSE2).lnk" "$INSTDIR\Program\StepMania.exe"
+	CreateShortCut "$INSTDIR\${PRODUCT_ID}.lnk" "$INSTDIR\Program\ITGmania-SSE2.exe"
+	CreateShortCut "$INSTDIR\${PRODUCT_ID} (non-SSE2).lnk" "$INSTDIR\Program\ITGmania.exe"
 !endif
 
 	IfErrors do_error do_no_error
@@ -587,7 +587,7 @@ Function LeaveAutorun
 	GoTo proceed
 
 	play:
-	Exec "$INSTDIR\Program\StepMania-SSE2.exe"
+	Exec "$INSTDIR\Program\ITGmania-SSE2.exe"
 	IfErrors play_error
 	quit
 
@@ -679,7 +679,7 @@ Function PreInstall
 	!endif
 !else
 		; Check that full version is installed.
-		IfFileExists "$INSTDIR\Program\StepMania.exe" proceed_with_patch
+		IfFileExists "$INSTDIR\Program\ITGmania.exe" proceed_with_patch
 		MessageBox MB_YESNO|MB_ICONINFORMATION "$(TEXT_IO_FULL_INSTALL_NOT_FOUND)" IDYES proceed_with_patch
 		Abort
 		proceed_with_patch:
@@ -741,7 +741,7 @@ Section "Uninstall"
 !endif
 
 !ifdef ASSOCIATE_SMURL
-	DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Classes\stepmania"
+	DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Classes\itgmania"
 !endif
 
 !ifdef INSTALL_NON_PCK_FILES
@@ -834,10 +834,10 @@ Section "Uninstall"
 !endif
 
 !ifdef INSTALL_EXECUTABLES
-	Delete "$INSTDIR\Program\StepMania.exe"
-	Delete "$INSTDIR\Program\StepMania.vdi"
-	Delete "$INSTDIR\Program\StepMania-SSE2.exe"
-	Delete "$INSTDIR\Program\StepMania-SSE2.vdi"
+	Delete "$INSTDIR\Program\ITGmania.exe"
+	Delete "$INSTDIR\Program\ITGmania.vdi"
+	Delete "$INSTDIR\Program\ITGmania-SSE2.exe"
+	Delete "$INSTDIR\Program\ITGmania-SSE2.vdi"
 	Delete "$INSTDIR\Program\tools.exe"
 	Delete "$INSTDIR\Program\Texture Font Generator.exe"
 !endif

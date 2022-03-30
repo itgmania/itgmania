@@ -156,7 +156,7 @@ save yourself some time, copy this for undocumented things:
 	</Function>
 	<Function name='convert_xml_bgs' return='' arguments='string dir'>
 		Recursively searches <code>dir</code> for xml files of actors and converts them to equivalent lua files.
-		See <a href="https://github.com/stepmania/stepmania/blob/HEAD/Docs/Themerdocs/XmlToLua.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/XmlToLua.txt</a>.
+		See <a href="https://github.com/itgmania/itgmania/blob/HEAD/Docs/Themerdocs/XmlToLua.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/XmlToLua.txt</a>.
 	</Function>
 	<Function name='create_bezier' return='RageBezier2D' arguments=''>
 		Creates a RageBezier2D for you to use.  Make sure you destroy the RageBezier2D when you're done with it, or you will have a memory leak.
@@ -1175,7 +1175,7 @@ local n = r['PlayerNumber_P2']
 	</Function>
 	<Function name='diffuseblink' return='void' arguments=''>
 		Makes the Actor switch between two colors immediately.
-		See <a href="https://github.com/stepmania/stepmania/blob/HEAD/Docs/Themerdocs/effect_colors.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/effect_colors.txt</a>
+		See <a href="https://github.com/itgmania/itgmania/blob/HEAD/Docs/Themerdocs/effect_colors.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/effect_colors.txt</a>
 		for an example.
 	</Function>
 	<Function name='diffusebottomedge' return='void' arguments=''>
@@ -1195,7 +1195,7 @@ local n = r['PlayerNumber_P2']
 	</Function>
 	<Function name='diffuseramp' return='void' arguments=''>
 		Makes the Actor switch between two colors, jumping back to the first after reaching the second.
-		See <a href="https://github.com/stepmania/stepmania/blob/HEAD/Docs/Themerdocs/effect_colors.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/effect_colors.txt</a>
+		See <a href="https://github.com/itgmania/itgmania/blob/HEAD/Docs/Themerdocs/effect_colors.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/effect_colors.txt</a>
 		for an example.
 	</Function>
 	<Function name='diffuserightedge' return='void' arguments='color c'>
@@ -1203,7 +1203,7 @@ local n = r['PlayerNumber_P2']
 	</Function>
 	<Function name='diffuseshift' return='void' arguments=''>
 		Makes the Actor shift between two colors smoothly.
-		See <a href="https://github.com/stepmania/stepmania/blob/HEAD/Docs/Themerdocs/effect_colors.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/effect_colors.txt</a>
+		See <a href="https://github.com/itgmania/itgmania/blob/HEAD/Docs/Themerdocs/effect_colors.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/effect_colors.txt</a>
 		for an example.
 	</Function>
 	<Function name='diffusetopedge' return='void' arguments='color c'>
@@ -1363,17 +1363,17 @@ local n = r['PlayerNumber_P2']
 	</Function>
 	<Function name='glowblink' return='void' arguments=''>
 		Makes the Actor glow between two colors immediately.
-		See <a href="https://github.com/stepmania/stepmania/blob/HEAD/Docs/Themerdocs/effect_colors.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/effect_colors.txt</a>
+		See <a href="https://github.com/itgmania/itgmania/blob/HEAD/Docs/Themerdocs/effect_colors.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/effect_colors.txt</a>
 		for an example.
 	</Function>
 	<Function name='glowramp' return='void' arguments=''>
 		Makes the Actor glow between two colors smoothly, jumping back to the first at the end.
-		See <a href="https://github.com/stepmania/stepmania/blob/HEAD/Docs/Themerdocs/effect_colors.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/effect_colors.txt</a>
+		See <a href="https://github.com/itgmania/itgmania/blob/HEAD/Docs/Themerdocs/effect_colors.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/effect_colors.txt</a>
 		for an example.
 	</Function>
 	<Function name='glowshift' return='void' arguments=''>
 		Makes the Actor glow between two colors smoothly.
-		See <a href="https://github.com/stepmania/stepmania/blob/HEAD/Docs/Themerdocs/effect_colors.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/effect_colors.txt</a>
+		See <a href="https://github.com/itgmania/itgmania/blob/HEAD/Docs/Themerdocs/effect_colors.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/effect_colors.txt</a>
 		for an example.
 	</Function>
 	<Function name='halign' return='void' arguments='float fAlign'>
@@ -5147,19 +5147,19 @@ Details of the <code>event</code> table:
 	</Function>
 	<Function name='HasteAddAmounts' return='{float}' arguments='{float}'>
 		This is part of the system for controlling how haste behaves. <br />
-		See <a href="https://github.com/stepmania/stepmania/blob/HEAD/Docs/Themerdocs/haste.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/haste.txt</a>.
+		See <a href="https://github.com/itgmania/itgmania/blob/HEAD/Docs/Themerdocs/haste.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/haste.txt</a>.
 	</Function>
 	<Function name='HasteLifeSwitchPoint' return='float' arguments='float'>
 		This is part of the system for controlling how haste behaves. <br />
-		See <a href="https://github.com/stepmania/stepmania/blob/HEAD/Docs/Themerdocs/haste.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/haste.txt</a>.
+		See <a href="https://github.com/itgmania/itgmania/blob/HEAD/Docs/Themerdocs/haste.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/haste.txt</a>.
 	</Function>
 	<Function name='HasteTimeBetweenUpdates' return='float' arguments='float'>
 		This is part of the system for controlling how haste behaves. <br />
-		See <a href="https://github.com/stepmania/stepmania/blob/HEAD/Docs/Themerdocs/haste.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/haste.txt</a>.
+		See <a href="https://github.com/itgmania/itgmania/blob/HEAD/Docs/Themerdocs/haste.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/haste.txt</a>.
 	</Function>
 	<Function name='HasteTurningPoints' return='{float}' arguments='{float}'>
 		This is part of the system for controlling how haste behaves. <br />
-		See <a href="https://github.com/stepmania/stepmania/blob/HEAD/Docs/Themerdocs/haste.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/haste.txt</a>.
+		See <a href="https://github.com/itgmania/itgmania/blob/HEAD/Docs/Themerdocs/haste.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/haste.txt</a>.
 	</Function>
 	<Function name='SetNewScreen' return='void' arguments='string s'>
 		Sets the next Screen to be loaded.

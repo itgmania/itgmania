@@ -53,15 +53,15 @@ if(NOT APPLE)
 endif()
 
 if(MSVC OR APPLE)
-  set(SM_NAME_RELEASE "StepMania")
-  set(SM_NAME_DEBUG "StepMania-debug")
-  set(SM_NAME_MINSIZEREL "StepMania-min-size")
-  set(SM_NAME_RELWITHDEBINFO "StepMania-release-symbols")
+  set(SM_NAME_RELEASE "ITGmania")
+  set(SM_NAME_DEBUG "ITGmania-debug")
+  set(SM_NAME_MINSIZEREL "ITGmania-min-size")
+  set(SM_NAME_RELWITHDEBINFO "ITGmania-release-symbols")
 else()
-  set(SM_NAME_RELEASE "stepmania")
-  set(SM_NAME_DEBUG "stepmania-debug")
-  set(SM_NAME_MINSIZEREL "stepmania-min-size")
-  set(SM_NAME_RELWITHDEBINFO "stepmania-release-symbols")
+  set(SM_NAME_RELEASE "itgmania")
+  set(SM_NAME_DEBUG "itgmania-debug")
+  set(SM_NAME_MINSIZEREL "itgmania-min-size")
+  set(SM_NAME_RELWITHDEBINFO "itgmania-release-symbols")
 endif()
 
 # Configure generated files here.
@@ -322,20 +322,20 @@ elseif(APPLE)
                             "${SM_ROOT_DIR}/${SM_APP_RELEASE_NAME}.app" .\; cd
                             ${SM_ROOT_DIR}\; hdiutil create
                             "${SM_DMG_RELEASE_NAME}" -VOLNAME
-                            "StepMania ${SM_DMG_VERSION}" -SRCFOLDER
+                            "ITGmania ${SM_DMG_VERSION}" -SRCFOLDER
                             "dmgtmpdir/${SM_NAME_VERSION}/" -OV\; rm -fR
                             dmgtmpdir\; popd\;)
 
   # Add the ability to copy the resource file.
   add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
                      COMMAND ${CMAKE_COMMAND} -E make_directory
-                             "$<TARGET_FILE_DIR:StepMania>/../Resources"
+                             "$<TARGET_FILE_DIR:ITGmania>/../Resources"
                      COMMAND ${CMAKE_COMMAND} -E copy
                              "${SM_XCODE_DIR}/smicon.icns"
-                             "$<TARGET_FILE_DIR:StepMania>/../Resources/"
+                             "$<TARGET_FILE_DIR:ITGmania>/../Resources/"
                      COMMAND ${CMAKE_COMMAND} -E copy
                              "${SM_XCODE_DIR}/Hardware.plist"
-                             "$<TARGET_FILE_DIR:StepMania>/../Resources/")
+                             "$<TARGET_FILE_DIR:ITGmania>/../Resources/")
 else() # Linux
   set_target_properties("${SM_EXE_NAME}"
                         PROPERTIES RUNTIME_OUTPUT_DIRECTORY
@@ -613,7 +613,7 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
     list(APPEND SMDATA_LINK_LIB ${PULSEAUDIO_LIBRARY})
     # PACKAGE_NAME and PACKAGE_VERSION are only used in this scenario. Why is
     # not clear. TODO: Remove this silliness.
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE PACKAGE_NAME="StepMania")
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE PACKAGE_NAME="ITGmania")
     set(PACKAGE_VERSION "${SM_VERSION_MAJOR}.${SM_VERSION_MINOR}")
     target_compile_definitions("${SM_EXE_NAME}" PRIVATE
                                PACKAGE_VERSION="${PACKAGE_VERSION}")
@@ -730,7 +730,7 @@ target_include_directories("${SM_EXE_NAME}" PUBLIC ${SM_INCLUDE_DIRS})
 if(WIN32)
   set(SM_INSTALL_DESTINATION ".")
 else()
-  set(SM_INSTALL_DESTINATION "stepmania-5.1")
+  set(SM_INSTALL_DESTINATION "itgmania")
 endif()
 
 if(NOT APPLE)
@@ -754,7 +754,7 @@ if(NOT APPLE)
             DESTINATION "${SM_FULL_INSTALLATION_PATH}")
     install(FILES "${SM_PROGRAM_DIR}/swscale-2.dll"
             DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-    install(FILES "${SM_PROGRAM_DIR}/StepMania.vdi"
+    install(FILES "${SM_PROGRAM_DIR}/ITGmania.vdi"
             DESTINATION "${SM_FULL_INSTALLATION_PATH}")
 
     # foreach(SM_WINDOW_DLL "${SM_WINDOWS_PROGRAM_DLLS}") install(FILES
