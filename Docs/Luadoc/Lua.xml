@@ -254,7 +254,6 @@
 		<Function name='loadstring'/>
 		<Function name='make_camel_aliases'/>
 		<Function name='mbstrlen'/>
-		<Function name='module'/>
 		<Function name='multiapproach'/>
 		<Function name='new_numpad_entry'/>
 		<Function name='newproxy'/>
@@ -1106,12 +1105,6 @@
 			<Function name='SelectSong'/>
 			<Function name='GetCurrentSections' />
 		</Class>
-		<Class name='NetworkManager'>
-			<Function name='IsUrlAllowed'/>
-			<Function name='HttpRequest'/>
-			<Function name='UrlEncode'/>
-			<Function name='EncodeQueryParameters'/>
-		</Class>
 		<Class name='NCSplineHandler'>
 			<Function name='get_spline'/>
 			<Function name='get_beats_per_t'/>
@@ -1122,6 +1115,12 @@
 			<Function name='set_spline_mode'/>
 			<Function name='get_subtract_song_beat'/>
 			<Function name='set_subtract_song_beat'/>
+		</Class>
+		<Class name='NetworkManager'>
+			<Function name='IsUrlAllowed'/>
+			<Function name='HttpRequest'/>
+			<Function name='UrlEncode'/>
+			<Function name='EncodeQueryParameters'/>
 		</Class>
 		<Class base='Actor' name='NoteColumnRenderer'>
 			<Function name='get_pos_handler'/>
@@ -2663,13 +2662,13 @@
 			<EnumValue name='&apos;NoteType_192nd&apos;' value='8'/>
 		</Enum>
 		<Enum name='OptEffect'>
-			<EnumValue name='&apos;OptEffect_SavePreferences&apos;' value='1'/>
-			<EnumValue name='&apos;OptEffect_ApplyGraphics&apos;' value='2'/>
-			<EnumValue name='&apos;OptEffect_ApplyTheme&apos;' value='4'/>
-			<EnumValue name='&apos;OptEffect_ChangeGame&apos;' value='8'/>
-			<EnumValue name='&apos;OptEffect_ApplySound&apos;' value='16'/>
-			<EnumValue name='&apos;OptEffect_ApplySong&apos;' value='32'/>
-			<EnumValue name='&apos;OptEffect_ApplyAspectRatio&apos;' value='64'/>
+			<EnumValue name='&apos;OptEffect_SavePreferences&apos;' value='0'/>
+			<EnumValue name='&apos;OptEffect_ApplyGraphics&apos;' value='1'/>
+			<EnumValue name='&apos;OptEffect_ApplyTheme&apos;' value='2'/>
+			<EnumValue name='&apos;OptEffect_ChangeGame&apos;' value='3'/>
+			<EnumValue name='&apos;OptEffect_ApplySound&apos;' value='4'/>
+			<EnumValue name='&apos;OptEffect_ApplySong&apos;' value='5'/>
+			<EnumValue name='&apos;OptEffect_ApplyAspectRatio&apos;' value='6'/>
 		</Enum>
 		<Enum name='PaneCategory'>
 			<EnumValue name='&apos;PaneCategory_NumSteps&apos;' value='0'/>
@@ -2923,7 +2922,7 @@
 			<EnumValue name='&apos;TapNoteType_Mine&apos;' value='4'/>
 			<EnumValue name='&apos;TapNoteType_Lift&apos;' value='5'/>
 			<EnumValue name='&apos;TapNoteType_Attack&apos;' value='6'/>
-			<EnumValue name='&apos;TapNoteType_AutoKeysound&apos;' value='7'/>
+			<EnumValue name='&apos;TapNoteType_AutoKeySound&apos;' value='7'/>
 			<EnumValue name='&apos;TapNoteType_Fake&apos;' value='8'/>
 		</Enum>
 		<Enum name='TapNoteSubType'>
@@ -2943,6 +2942,18 @@
 			<EnumValue name='&apos;TextureMode_Modulate&apos;' value='0'/>
 			<EnumValue name='&apos;TextureMode_Glow&apos;' value='1'/>
 			<EnumValue name='&apos;TextureMode_Add&apos;' value='2'/>
+		</Enum>
+		<Enum name='TimingWindow'>
+			<EnumValue name='&apos;TimingWindow_W1&apos;' value='0'/>
+			<EnumValue name='&apos;TimingWindow_W2&apos;' value='1'/>
+			<EnumValue name='&apos;TimingWindow_W3&apos;' value='2'/>
+			<EnumValue name='&apos;TimingWindow_W4&apos;' value='3'/>
+			<EnumValue name='&apos;TimingWindow_W5&apos;' value='4'/>
+			<EnumValue name='&apos;TimingWindow_Mine&apos;' value='5'/>
+			<EnumValue name='&apos;TimingWindow_Attack&apos;' value='6'/>
+			<EnumValue name='&apos;TimingWindow_Hold&apos;' value='7'/>
+			<EnumValue name='&apos;TimingWindow_Roll&apos;' value='8'/>
+			<EnumValue name='&apos;TimingWindow_Checkpoint&apos;' value='9'/>
 		</Enum>
 		<Enum name='TweenType'>
 			<EnumValue name='&apos;TweenType_Linear&apos;' value='0'/>
@@ -3023,6 +3034,6 @@
 		<Constant name='right' value='&apos;HorizAlign_Right&apos;'/>
 		<Constant name='top' value='&apos;VertAlign_Top&apos;'/>
 	</Constants>
-	<Version>StepMania5.1-git-89229ed915</Version>
-	<Date>2020-06-25</Date>
+	<Version>ITGmania0.5-git-02008eb469</Version>
+	<Date>2022-04-03</Date>
 </Lua>
