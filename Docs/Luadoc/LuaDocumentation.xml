@@ -32,7 +32,7 @@ save yourself some time, copy this for undocumented things:
 		Many global functions are available when scripting with Lua for StepMania.<br />
 		Some, like <Link class='GLOBAL' function='collectgarbage' />, are core functions of Lua 5.1's <a href="https://www.lua.org/manual/5.1/manual.html#5.1" target="_blank" rel="noopener noreferrer">basic Library</a>.<br />
 		Others, like <Link class='GLOBAL' function='Basename' />, are defined in the StepMania engine's C++ but made available to Lua.<br />
-	  And others, like <Link class='GLOBAL' function='DeepCopy' />, are defined in the _fallback theme's Lua files.<br />
+		And others, like <Link class='GLOBAL' function='DeepCopy' />, are defined in the _fallback theme's Lua files.<br />
 		When scripting with StepMania, keep in mind that if you do not scope your functions (and variables) using the <code>local</code> keyword, they will be global.
 	</Description>
 	<Function name='AllowOptionsMenu' theme='_fallback' return='bool' arguments=''>
@@ -162,7 +162,7 @@ save yourself some time, copy this for undocumented things:
 		Creates a RageBezier2D for you to use.  Make sure you destroy the RageBezier2D when you're done with it, or you will have a memory leak.
 	</Function>
 	<Function name='create_spline' return='CubicSplineN' arguments=''>
-		Creates a CubicSplineN for you to use.  Make sure you destroy the CubicSplineN when you're done with it, or you will have a memory leak.
+		Creates a CubicSplineN for you to use.  Make sure you <Link class="CubicSplineN" function='destroy'>destroy</Link> the CubicSplineN when you're done with it, or you will have a memory leak.
 	</Function>
 	<Function name='CustomDifficultyToColor' theme='_fallback' return='color' arguments='string cd'>
 		[02 Colors.lua]
@@ -467,10 +467,6 @@ save yourself some time, copy this for undocumented things:
 	<Function name='MissCombo' theme='_fallback' return='int' arguments=''>
 		[03 Gameplay.lua] Returns the value to start showing the miss combo at.
 	</Function>
-	<Function name='module' return='void' arguments='string name, ...'>
-		Creates a module.<br />
-		<code>module</code> is a core function of Lua's basic library; see the Lua manual for more details.
-	</Function>
 	<Function name='MonthOfYear' return='int' arguments=''>
 		Returns the current month of the year in the range <code>0</code>-<code>11</code>.
 	</Function>
@@ -692,6 +688,14 @@ save yourself some time, copy this for undocumented things:
 	<Function name='StandardDecorationFromFileOptional' theme='_fallback' return='Actor' arguments='string sMetricsName, string sFileName'>
 		[02 ActorDef.lua]
 	</Function>
+	<Function name='StringToBlend' theme='_fallback' return='string' arguments='string s'>
+		[01 Alias.lua] Given the short form of a <Link class='ENUM' function='BlendMode' /> string, returns the full version of the string.<br />
+		Returns <code>nil</code> if the string passed in does not match any valid BlendModes.
+<pre><code>
+local b = StringToBlend("AlphaMask")
+Trace(b)  -- "BlendMode_AlphaMask"
+</code></pre>
+	</Function>
 	<Function name='tableshuffle' theme='_fallback' return='table' arguments='table t'>
 		[02 Utilities.lua] Returns a shuffled version of <code>t</code>.
 	</Function>
@@ -826,11 +830,11 @@ local playable_steps = SongUtil.GetPlayableSteps(song)
 		Returns the Y Offset of a note in column <code>iCol</code> at beat <code>fNoteBeat</code> for the provided PlayerState. Y Offset is affected by Speed mods and Accel mods, and impacts most other arrow effects.
 	</Function>
 	<Function name='GetYPos' return='float' arguments='PlayerState ps, int iCol, float fYOffset, float fYReverseOffsetPixels'>
-		Returns the Y position of a note in column <code>iCol</code> with a Y offset of <code>fYOffset</code> for the provided PlayerState.<br/>
+		Returns the Y position of a note in column <code>iCol</code> with a Y offset of <code>fYOffset</code> for the provided PlayerState.<br />
 		<code>fYReverseOffsetPixels</code> is the separation between targets with and without reverse. This argument is optional and will pull defaults from the metrics for <code>[Player]</code>
 	</Function>
 	<Function name='GetYOffsetFromYPos' return='float' arguments='PlayerState ps, int iCol, float fYPos, float fYReverseOffsetPixels'>
-		Returns the Y offset of a note in column <code>iCol</code> with a Y position of <code>fYPos</code> for the provided PlayerState.<br/>
+		Returns the Y offset of a note in column <code>iCol</code> with a Y position of <code>fYPos</code> for the provided PlayerState.<br />
 		<code>fYReverseOffsetPixels</code> is the separation between targets with and without reverse. This argument is optional and will pull defaults from the metrics for <code>[Player]</code>
 	</Function>
 	<Function name='GetXPos' return='float' arguments='PlayerState ps, int iCol, float fYOffset'>
@@ -846,18 +850,18 @@ local playable_steps = SongUtil.GetPlayableSteps(song)
 		Returns the Y rotation of a note with a Y offset of <code>fYOffset</code> for the provided PlayerState.
 	</Function>
 	<Function name='GetRotationZ' return='float' arguments='PlayerState ps, float fNoteBeat, bool bIsHoldHead'>
-		Returns the Z rotation of a note at beat <code>fNoteBeat</code> for the provided PlayerState.<br/>
+		Returns the Z rotation of a note at beat <code>fNoteBeat</code> for the provided PlayerState.<br />
 		<code>bIsHoldHead</code> is an optional argument which defaults to false. If true, this function will return <code>0</code> if the [PlayerOptions] modifier <code>DizzyHolds</code> is off.
 	</Function>
 	<Function name='ReceptorGetRotationZ' return='float' arguments='PlayerState ps'>
 		Returns the Z rotation of the receptors for the provided PlayerState.
 	</Function>
 	<Function name='GetAlpha' return='float' arguments='PlayerState ps, int iCol, float fYOffset, float fPercentFadeToFail, float fYReverseOffsetPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar'>
-		Returns the Alpha of a note in column <code>iCol</code> with a Y offset of <code>fYOffset</code> for the provided PlayerState.<br/>
-		<code>fPercentFadeToFail</code> is optional and defaults to -1.<br/>
-		<code>fYReverseOffsetPixels</code> is the separation between targets with and without reverse. This argument is optional and will pull defaults from the metrics for <code>[Player]</code><br/>
-		<code>fDrawDistanceBeforeTargetsPixels</code> is optional and will pull defaults from the <code>[Player]</code> metric <code>DrawDistanceBeforeTargetsPixels</code><br/>
-		<code>fFadeInPercentOfDrawFar</code> is optional and will pull defaults from the <code>[NoteField]</code> metric <code>FadeBeforeTargetsPercent</code><br/>
+		Returns the Alpha of a note in column <code>iCol</code> with a Y offset of <code>fYOffset</code> for the provided PlayerState.<br />
+		<code>fPercentFadeToFail</code> is optional and defaults to -1.<br />
+		<code>fYReverseOffsetPixels</code> is the separation between targets with and without reverse. This argument is optional and will pull defaults from the metrics for <code>[Player]</code><br />
+		<code>fDrawDistanceBeforeTargetsPixels</code> is optional and will pull defaults from the <code>[Player]</code> metric <code>DrawDistanceBeforeTargetsPixels</code><br />
+		<code>fFadeInPercentOfDrawFar</code> is optional and will pull defaults from the <code>[NoteField]</code> metric <code>FadeBeforeTargetsPercent</code><br />
 	</Function>
 	<Function name='GetGlow' return='float' arguments='PlayerState ps, int iCol, float fYOffset, float fPercentFadeToFail, float fYReverseOffsetPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar'>
 		Returns the Glow of a note in column <code>iCol</code> with a Y offset of <code>fYOffset</code> for the provided PlayerState. The arguments are the same as for GetAlpha.
@@ -872,7 +876,8 @@ local playable_steps = SongUtil.GetPlayableSteps(song)
 		Returns the zoom of a note for the provided PlayerState.
 	</Function>
 	<Function name='GetFrameWidthScale' return='float' arguments='PlayerState ps, float fYOffset, float fOverlappedTime'>
-		Returns the FrameWidthScale of a hold part with a Y offset of <code>fYOffset</code> for the provided PlayerState.<br/> <code>fOverlappedTime</code> is optional and will default to 0.
+		Returns the FrameWidthScale of a hold part with a Y offset of <code>fYOffset</code> for the provided PlayerState.<br />
+		<code>fOverlappedTime</code> is optional and will default to 0.
 	</Function>
 </Namespace>
 <Namespace name='Enum'>
@@ -929,12 +934,12 @@ local n = r['PlayerNumber_P2']
 		If unsuccessful, it returns two values: <code>nil</code> and <code>"error"</code>.
 	</Function>
 	<Function name='ReportScriptError' return='void' arguments='string error, string error_type'>
-		Reports the error through the error reporting system.<br/>
-		<code>error</code> is optional and defaults to "Script error occurred.".<br/>
+		Reports the error through the error reporting system.<br />
+		<code>error</code> is optional and defaults to "Script error occurred.".<br />
 		<code>error_type</code> is optional and defaults to "LUA_ERROR".  Errors of type "LUA_ERROR" will be shown in-game if the <code>ShowThemeErrors</code> preference is enabled. A dialog will not appear for an <code>error_type</code> the user has chosen to ignore.
 	</Function>
 	<Function name='RunWithThreadVariables' return='int' arguments='function func, table t, ...'>
-		Calls <code>func(...)</code> with LuaThreadVariables set according to the keys and values of <code>t</code>, and returns the return values of <code>func()</code>.<br/>
+		Calls <code>func(...)</code> with LuaThreadVariables set according to the keys and values of <code>t</code>, and returns the return values of <code>func()</code>.<br />
 		For example, if <code>t</code> is <code>{x=12}</code>, calling <code>Var "x"</code> from <code>func</code> will return 12.
 	</Function>
 	<Function name='Trace' return='void' arguments='string sString'>
@@ -1178,7 +1183,7 @@ local n = r['PlayerNumber_P2']
 		See <a href="https://github.com/itgmania/itgmania/blob/HEAD/Docs/Themerdocs/effect_colors.txt" target="_blank" rel="noopener noreferrer">Docs/Themerdocs/effect_colors.txt</a>
 		for an example.
 	</Function>
-	<Function name='diffusebottomedge' return='void' arguments=''>
+	<Function name='diffusebottomedge' return='void' arguments='color c'>
 		Sets the Actor's bottom edge color to <code>c</code>.
 	</Function>
 	<Function name='diffusecolor' return='void' arguments='color c'>
@@ -1246,12 +1251,9 @@ local n = r['PlayerNumber_P2']
 		Set the Actor's effect period to <code>fTime</code>.
 	</Function>
 	<Function name='effecttiming' return='void' arguments='float ramp_to_half, float hold_at_half, float ramp_to_full, float hold_at_zero, float hold_at_full'>
-		Set the Actor's effect timing.<br />
-		hold_at_zero is before hold_at_full in the argument list for compatibility.  A future version will probably swap them because it makes more sense to have hold_at_full come before hold_at_zero.<br />
+		Set the Actor's effect timing.  The effect timing controls how long it takes an effect to cycle and how long it spends in each phase.<br /><br />
 		All effect timings must be greater than or equal to zero, at least one of them must be greater than zero.<br />
-		The effect timing controls how long it takes an effect to cycle and how long it spends in each phase.<br />
 		Depending on the effect clock, the actor's time into effect is updated every frame.  That time is then translated into a percent_through_effect using the parameters to this function.<br />
-		<br />
 		ramp_to_half is the amount of time for percent_through_effect to reach 0.5.<br />
 		hold_at_half is the amount of time percent_through_effect will stay at 0.5.<br />
 		ramp_to_full is the amount of time percent_through_effect will take to go from 0.5 to 1.0.<br />
@@ -1259,8 +1261,8 @@ local n = r['PlayerNumber_P2']
 		After reaching the end of hold_at_full, percent_through_effect stays at 0 until hold_at_zero is over.<br />
 		<br />
 		The different effects use percent_through_effect in different ways.  Some use it to calculate percent_between_colors with this sine wave:  sin((percent_through_effect + 0.25f) * 2 * PI ) / 2 + 0.5f<br />
-		Some effects check the internal bool blink_on.  blink_on is true if percent_through_effect is greater than 0.5 and false if percent_through_effect is less than or equal to 0.5.<br />
-		Check the effect functions for individual explanations:  diffuseblink, diffuseshift, glowblink, glowshift, glowramp, rainbow, wag, bounce, bob, pulse, spin, vibrate.
+		Some effects check the internal bool blink_on.  blink_on is true if percent_through_effect is greater than 0.5 and false if percent_through_effect is less than or equal to 0.5.<br /><br />
+		Check the effect functions for individual explanations:  <Link  function="diffuseblink" />, <Link  function="diffuseshift" />, <Link  function="glowblink" />, <Link  function="glowshift" />, <Link  function="glowramp" />, <Link  function="rainbow" />, <Link  function="wag" />, <Link  function="bounce" />, <Link  function="bob" />, <Link  function="pulse" />, <Link  function="spin" />, <Link  function="vibrate" />.
 	</Function>
 	<Function name='effect_hold_at_full' return='void' arguments='float hold_at_full'>
 		Set the hold_at_full part of the effect timing while leaving the others unchanged.
@@ -1377,7 +1379,8 @@ local n = r['PlayerNumber_P2']
 		for an example.
 	</Function>
 	<Function name='halign' return='void' arguments='float fAlign'>
-		Set the fractional horizontal alignment of the Actor according to <code>fAlign</code> which should be a float in the range 0..1. An alignment of 0 is left aligned while an alignment of 1 is right aligned. See <Link function='horizalign' /> for the common case.
+		Set the fractional horizontal alignment of the Actor according to <code>fAlign</code> which should be a float in the range 0..1. An alignment of 0 is left-aligned while an alignment of 1 is right-aligned.<br />
+		Use <Link function='horizalign' /> for the common case.
 	</Function>
 	<Function name='heading' return='void' arguments='float fHeading'>
 		Sets the heading of this Actor to <code>fHeading</code>.
@@ -1392,7 +1395,14 @@ local n = r['PlayerNumber_P2']
 		[02 Actor.lua] "Hide if <code>b</code> is <code>true</code>, but don't unhide if <code>b</code> is <code>false</code>."
 	</Function>
 	<Function name='horizalign' return='void' arguments='HorizAlign align'>
-		Set the horizontal alignment of the Actor according to <code>align</code>. See <Link function='halign' /> for fractional alignment.
+		Set the <Link class='ENUM' function='HorizAlign'/> of the Actor according to <code>align</code>.<br />
+<pre><code>
+local spr = LoadActor('awesome.png')
+spr.InitCommand=function(self)
+	self:horizalign('HorizAlign_Left')
+end
+</code></pre>
+		Use <Link function='halign' /> for fractional alignment.
 	</Function>
 	<Function name='hurrytweening' return='void' arguments='float factor'>
 		Hurries up an Actor's tweening by <code>factor</code>.
@@ -1530,10 +1540,18 @@ local n = r['PlayerNumber_P2']
 		It's usually more convenient to use <Link function='linear' />, <Link function='accelerate' />, <Link function='decelerate' />, or <Link function='spring' /> rather than using Actor:tween() directly.
 	</Function>
 	<Function name='valign' return='void' arguments='float fAlign'>
-		Set the fractional vertical alignment of the Actor according to <code>fAlign</code> which should be a float in the range 0..1. An alignment of 0 is top aligned while an alignment of 1 is bottom aligned. See <Link function="vertalign" /> for the common case.
+		Set the fractional vertical alignment of the Actor according to <code>fAlign</code> which should be a float in the range 0..1. An alignment of 0 is top-aligned while an alignment of 1 is bottom-aligned.<br />
+		Use <Link function="vertalign" /> for the common case.
 	</Function>
 	<Function name='vertalign' return='void' arguments='VertAlign align'>
-		Set the vertical alignment of the Actor according to <code>align</code>. See <Link function="valign" /> for fractional alignment.
+		Set the <Link class='ENUM' function='VertAlign' /> of the Actor according to <code>align</code>.<br />
+<pre><code>
+local spr = LoadActor('awesome.png')
+spr.InitCommand=function(self)
+	self:vertalign('VertAlign_Bottom')
+end
+</code></pre>
+		Use <Link function="valign" /> for fractional alignment.
 	</Function>
 	<Function name='vibrate' return='void' arguments=''>
 		Makes the Actor vibrate violently. Can use <Link function='effectmagnitude' /> to define different vibration behavior.
@@ -1794,7 +1812,7 @@ return af
 		Clears all the textures from the ActorMultiTexture.
 	</Function>
 	<Function name='SetEffectMode' return='void' arguments='EffectMode em'>
-		Sets the EffectMode on the ActorMultiTexture.
+		Sets the <Link class='ENUM' function='EffectMode' /> on the ActorMultiTexture.
 	</Function>
 	<Function name='SetSizeFromTexture' return='void' arguments='RageTexture tex'>
 		Sets the size of the ActorMultiTexture from the specified texture.
@@ -1803,7 +1821,7 @@ return af
 		Sets the coordinates of the ActorMultiTexture.
 	</Function>
 	<Function name='SetTextureMode' return='void' arguments='int iIndex, TextureMode tm'>
-		Sets a TextureMode on the specified index.
+		Sets a <Link class='ENUM' function='TextureMode' /> on the specified index.
 	</Function>
 </Class>
 <Class name='ActorMultiVertex' grouping='Actor'>
@@ -1940,10 +1958,10 @@ self:SetDrawState{First= 3, Num= 4}
 		Returns the ActorMultiVertex's texture.
 	</Function>
 	<Function name='SetEffectMode' return='void' arguments='EffectMode em'>
-		Sets the <Link class='ENUM' function='EffectMode'>EffectMode</Link> of the ActorMultiVertex.
+		Sets the <Link class='ENUM' function='EffectMode' /> of the ActorMultiVertex.
 	</Function>
 	<Function name='SetTextureMode' return='void' arguments='TextureMode tm'>
-		Sets the <Link class='ENUM' function='TextureMode'>TextureMode</Link> of the ActorMultiVertex.
+		Sets the <Link class='ENUM' function='TextureMode' /> of the ActorMultiVertex.
 	</Function>
 	<Function name='SetLineWidth' return='void' arguments='float width'>
 		Sets the width of the line for DrawMode_LineStrip.
@@ -2177,7 +2195,7 @@ Def.Sound{
 <Class name='BitmapText' grouping='Actor'>
 	<Description>
 		<em>BitmapText</em> actors are used to display text on-screen.<br />
-		The font can be specified using the <code>Font</code> attribute. It takes a font name a string,
+		The font can be specified using the <code>Font</code> attribute. It takes a font name as a string,
 		pathed relative to the current theme's <code>./Fonts/</code> directory.<br />
 		StepMania expects fonts to be formatted as spritesheets with accompanying ini files.
 		These can be generated from ttf files using <em>Texture Font Generator.exe</em> in the
@@ -2609,7 +2627,7 @@ Def.BitmapText{
 		Returns whether the spline is currently dirty.
 	</Function>
 	<Function name='destroy' return='' arguments=''>
-		Destroys the spline, freeing the memory allocated for it.  This can only be called on splines created with create_spline().
+		Destroys the spline, freeing the memory allocated for it.  This can only be called on splines created with <Link class='GLOBAL' function='create_spline'>create_spline()</Link>.
 	</Function>
 </Class>
 <Class name='DeviceList' grouping='Actor'>
@@ -3532,20 +3550,23 @@ end
 	<Function name='ChangeSort' return='bool' arguments='SortOrder so'>
 		Changes the sort order of the wheel.  Returns <code>true</code> if the order was changed.
 	</Function>
+	<Function name='GetCurrentSections' return='{string}' arguments=''>
+		Returns a string array of the currently displayed sections in the MusicWheel.
+	</Function>
 	<Function name='GetSelectedSection' return='string' arguments=''>
 		Returns the name of the currently selected section.
 	</Function>
 	<Function name='IsRouletting' return='bool' arguments=''>
 		Returns <code>true</code> if the MusicWheel is currently handling Roulette selection.
 	</Function>
-	<Function name='SelectSong' return='bool' arguments='Song sSong'>
-		Selects a song. Returns <code>false</code> on failure.
+	<Function name='Move' return='void' arguments='int n'>
+		Moves the wheel by <code>n</code>.
 	</Function>
 	<Function name='SelectCourse' return='bool' arguments='Course cCourse'>
 		Selects a course. Returns <code>false</code> on failure.
 	</Function>
-	<Function name='GetCurrentSections' return='{string}' arguments=''>
-		Returns a string array of the currently displayed sections in the MusicWheel.
+	<Function name='SelectSong' return='bool' arguments='Song sSong'>
+		Selects a song. Returns <code>false</code> on failure.
 	</Function>
 </Class>
 <Class name='NetworkManager'>
@@ -4684,10 +4705,11 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 		Returns the profile for player <code>pn</code>.
 	</Function>
 	<Function name='GetProfileDir' return='string' arguments='ProfileSlot slot'>
-		Returns the profile directory of the specified <code>ProfileSlot</code>.
+		Returns the profile directory for the provided <Link class="ENUM" function="ProfileSlot">ProfileSlot</Link>, formatted like <code>/Save/LocalProfiles/00000001/</code>.<br />
+		Returns an empty string if the provided <Link class="ENUM" function="ProfileSlot">ProfileSlot</Link> does not have a <Link class="Profile" /> loaded.
 	</Function>
 	<Function name='GetSongNumTimesPlayed' return='int' arguments='Song s, ProfileSlot ps'>
-		Returns the number of times Song s has been played with the specified ProfileSlot.
+		Returns the number of times Song <code>s</code> has been played with the specified <Link class="ENUM" function="ProfileSlot">ProfileSlot</Link>.
 	</Function>
 	<Function name='GetStatsPrefix' return='string' arguments=''>
 		Returns the current stats prefix.
@@ -6014,6 +6036,9 @@ local spr = Def.Sprite{
 	</Function>
 	<Function name='GetCurStageStats' return='StageStats' arguments=''>
 		Returns the current StageStats.
+	</Function>
+	<Function name='GetFinalEvalStageStats' return='Grade' arguments='PlayerNumber pn'>
+		Returns player <code>pn</code>'s final grade.
 	</Function>
 	<Function name='GetFinalGrade' return='Grade' arguments='PlayerNumber pn'>
 		Returns player <code>pn</code>'s final grade.
