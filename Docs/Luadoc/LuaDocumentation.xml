@@ -411,10 +411,10 @@ save yourself some time, copy this for undocumented things:
 	<Function name='join' theme='_fallback' return='string' arguments='string delimiter, table list'>
 		[02 Utilities.lua] Joins a table, splitting each item with <code>delimiter</code>, returning a string of the results.
 	</Function>
-	<Function name='JsonDecode' return='various' arguments='string data'>
+	<Function name='JsonDecode' return='various' arguments='string data' since='ITGmania 0.5.1'>
 		Decodes JSON encoded <code>data</code> and returns the result.
 	</Function>
-	<Function name='JsonEncode' return='string' arguments='various data, bool minify'>
+	<Function name='JsonEncode' return='string' arguments='various data, bool minify' since='ITGmania 0.5.1'>
 		Returns <code>data</code> as JSON. Empty tables are represented as arrays in the output.<br />
 		<code>minify</code> is optional and defaults to <code>false</code>. If <code>true</code>, all unnecessary whitespace is omitted from the output.
 	</Function>
@@ -1997,7 +1997,7 @@ self:SetDrawState{First= 3, Num= 4}
 	<Function name='GetSecondsPauseBetweenItems' return='float' arguments=''>
 		Returns the number of seconds the scroller pauses between items.
 	</Function>
-	<Function name='GetSecondsToDestination' renamed='true' return='float' arguments=''>
+	<Function name='GetSecondsToDestination' return='float' arguments=''>
 		Returns the number of seconds until the scroller reaches its destination.
 	</Function>
 	<Function name='getsecondtodestination' theme='_fallback' return='float' arguments=''>
@@ -2006,13 +2006,13 @@ self:SetDrawState{First= 3, Num= 4}
 	<Function name='PositionItems' return='void' arguments=''>
 		Positions the scroller items.
 	</Function>
-	<Function name='ScrollThroughAllItems' renamed='true' return='void' arguments=''>
+	<Function name='ScrollThroughAllItems' return='void' arguments=''>
 		Scrolls through all the items in the scroller.
 	</Function>
 	<Function name='scrollthroughallitems' theme='_fallback' return='void' arguments=''>
 		Compatibility alias for <Link function='ScrollThroughAllItems' />.
 	</Function>
-	<Function name='ScrollWithPadding' renamed='true' return='void' arguments='float fItemPaddingStart, float fItemPaddingEnd'>
+	<Function name='ScrollWithPadding' return='void' arguments='float fItemPaddingStart, float fItemPaddingEnd'>
 		Scrolls through all the items in the scroller with padding at the beginning and end.
 	</Function>
 	<Function name='scrollwithpadding' theme='_fallback' return='void' arguments='float fItemPaddingStart, float fItemPaddingEnd'>
@@ -2024,7 +2024,7 @@ self:SetDrawState{First= 3, Num= 4}
 	<Function name='SetDestinationItem' return='void' arguments='float fItemIndex'>
 		Sets the item the scroller should scroll to next.
 	</Function>
-	<Function name='SetFastCatchup' renamed='true' return='void' arguments='bool bOn'>
+	<Function name='SetFastCatchup' return='void' arguments='bool bOn'>
 		Sets if the scroller should catch up fast.
 	</Function>
 	<Function name='setfastcatchup' theme='_fallback' return='void' arguments='bool bOn'>
@@ -2039,7 +2039,7 @@ self:SetDrawState{First= 3, Num= 4}
 	<Function name='SetNumItemsToDraw' return='void' arguments='float fNumItems'>
 		Sets the scroller to draw <code>fNumItems</code> items.
 	</Function>
-	<Function name='SetNumSubdivisions' renamed='true' return='void' arguments='int iNumSubdivisions'>
+	<Function name='SetNumSubdivisions' return='void' arguments='int iNumSubdivisions'>
 		Sets the number of subdivisions in the scroller.
 	</Function>
 	<Function name='setnumsubdivisions' theme='_fallback' return='void' arguments='int iNumSubdivisions'>
@@ -2051,7 +2051,7 @@ self:SetDrawState{First= 3, Num= 4}
 	<Function name='SetSecondsPauseBetweenItems' return='void' arguments='float fSeconds'>
 		Sets the scroller's pause between items to <code>fSeconds</code>.
 	</Function>
-	<Function name='SetSecondsPerItem' renamed='true' return='void' arguments='float fSeconds'>
+	<Function name='SetSecondsPerItem' return='void' arguments='float fSeconds'>
 		Sets how many seconds the scroller should spend on each item.<br />
 		A value of <code>0</code> means the scroller will not scroll.
 	</Function>
@@ -2420,7 +2420,7 @@ Def.BitmapText{
 	<Function name='GetCourseEntry' return='CourseEntry' arguments='int iIndex'>
 		Gets the CourseEntry at <code>iIndex</code> from the Course.
 	</Function>
-	<Function name='GetCourseType' renamed='true' return='CourseType' arguments=''>
+	<Function name='GetCourseType' return='CourseType' arguments=''>
 		Returns the Course's <Link class='ENUM' function='CourseType' />.
 	</Function>
 	<Function name='GetDescription' return='string' arguments=''>
@@ -2438,7 +2438,7 @@ Def.BitmapText{
 	<Function name='GetGroupName' return='string' arguments=''>
 		Returns the Course's group name.
 	</Function>
-	<Function name='GetPlayMode' renamed='true' return='PlayMode' arguments=''>
+	<Function name='GetPlayMode' return='PlayMode' arguments=''>
 		Returns the Course's <Link class='ENUM' function='PlayMode' />.
 	</Function>
 	<Function name='GetScripter' return='string' arguments=''>
@@ -3574,10 +3574,10 @@ end
 		This singleton is accessible to Lua via <code>NETWORK</code>.<br />
 		By default, access to the network is disabled for all target hosts. It can be enabled by setting <code>HttpEnabled=1</code> in the preferences. Individual hosts have to be added to <code>HttpAllowHosts</code> as a comma separated list to allow access.
 	</Description>
-	<Function name='IsUrlAllowed' return='bool' arguments='string url'>
+	<Function name='IsUrlAllowed' return='bool' arguments='string url' since='ITGmania 0.5.1'>
 		Returns true if access to <code>url</code> is allowed.
 	</Function>
-	<Function name='HttpRequest' return='HttpRequestFuture' arguments='table params'>
+	<Function name='HttpRequest' return='HttpRequestFuture' arguments='table params' since='ITGmania 0.5.1'>
 		Performs an HTTP request.<br />
 		Usage example:
 <pre><code>
@@ -3601,8 +3601,8 @@ NETWORK:HttpRequest{
 	end,
 }
 </code></pre>
-	Everything but <code>url</code> is optional. Supported methods are <code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>PATCH</code>, <code>DELETE</code> and <code>HEAD</code>.<br />
-	A response looks like this:
+		Everything but <code>url</code> is optional. Supported methods are <code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>PATCH</code>, <code>DELETE</code> and <code>HEAD</code>.<br />
+		A response looks like this:
 <pre><code>
 {
 	statusCode=200,
@@ -3616,21 +3616,21 @@ NETWORK:HttpRequest{
 	downloadSize=216,
 }
 </code></pre>
-	In case of an error the callback is called with a structure like this:
+		In case of an error the callback is called with a structure like this:
 <pre><code>
 {
 	error="HttpErrorCode_Blocked",
 	errorMessage="access to https://api.example.com is not allowed",
 }
 </code></pre>
-	If the <code>downloadFile</code> parameter is set, the response body is not accumulated in memory, but written to <code>/Downloads/${downloadFile}</code>.
-	The file is available in the <code>onResponse</code> callback where it can be unzipped/copied to another location using <code>FILEMAN:Unzip()</code>/<code>FILEMAN:Copy()</code> respectively.
-	The file is deleted once the callback returns.
+		If the <code>downloadFile</code> parameter is set, the response body is not accumulated in memory, but written to <code>/Downloads/${downloadFile}</code>.
+		The file is available in the <code>onResponse</code> callback where it can be unzipped/copied to another location using <code>FILEMAN:Unzip()</code>/<code>FILEMAN:Copy()</code> respectively.
+		The file is deleted once the callback returns.
 	</Function>
-	<Function name='UrlEncode' return='string' arguments='string value'>
+	<Function name='UrlEncode' return='string' arguments='string value' since='ITGmania 0.5.1'>
 		Returns the URL encoded representation of <code>value</code>.
 	</Function>
-	<Function name='EncodeQueryParameters' return='string' arguments='table query'>
+	<Function name='EncodeQueryParameters' return='string' arguments='table query' since='ITGmania 0.5.1'>
 		Returns the <code>query</code> encoded as a query string. Keys and values are automatically URL encoded.
 	</Function>
 </Class>
@@ -3997,7 +3997,7 @@ a,b = options:Boost(5)
 	</Function>
 	<Function name='Dizzy' return='float, float' arguments='float value, float approach_speed'> </Function>
 	<Function name='DizzyHolds' return='bool' arguments='bool value'> </Function>
-	<Function name='DisableTimingWindow' return='' arguments='TimingWindow tw'>
+	<Function name='DisableTimingWindow' return='' arguments='TimingWindow tw' since='ITGmania 0.5.1'>
 		Selectively disable specific timing windows for a player. <br />
 		Valid values are <code>W1</code> to <code>W5</code> as defined in the <Link class='ENUM' function='TimingWindow' /> enum.
 	</Function>
@@ -4046,7 +4046,7 @@ a,b = options:Boost(5)
 	</Function>
 	<Function name='Flip' return='float, float' arguments='float value, float approach_speed'> </Function>
 	<Function name='Floored' return='bool' arguments='bool value'> </Function>
-	<Function name='GetDisabledTimingWindows' return='{TimingWindow}' arguments=''>
+	<Function name='GetDisabledTimingWindows' return='{TimingWindow}' arguments='' since='ITGmania 0.5.1'>
 		Returns a table of the currently disabled <Link class='ENUM' function='TimingWindow' />s for the player.
 	</Function>
 	<Function name='GetStepAttacks' return='bool' arguments=''>
@@ -4154,7 +4154,7 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Function name='RandAttack' return='float, float' arguments='float value, float approach_speed'> </Function>
 	<Function name='RandomSpeed' return='float, float' arguments='float value, float approach_speed'> </Function>
 	<Function name='RandomVanish' return='float, float' arguments='float value, float approach_speed'> </Function>
-	<Function name='ResetDisabledTimingWindows' return='' arguments=''>
+	<Function name='ResetDisabledTimingWindows' return='' arguments='' since='ITGmania 0.5.1'>
 		Re-enable all <Link class='ENUM' function='TimingWindow' />s that may have previously been disabled.
 	</Function>
 	<Function name='Reverse' return='float, float' arguments='float value, float approach_speed'> </Function>
@@ -4257,7 +4257,7 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Function name='UsingReverse' return='bool' arguments=''>
 		Returns <code>true</code> if the player is using reverse. (equivalent to <code>GetReverse() == 1.0</code>)
 	</Function>
-	<Function name='VisualDelay' return='' arguments='float'>
+	<Function name='VisualDelay' return='' arguments='float' since='ITGmania 0.5.1'>
 		The time in seconds to adjust a player's visual delay by.<br />
 		Negative values will shift the arrows up, while positive values will push them down.<br />
 		Sub-millisecond visual delay values are not saved and are instead rounded to the closest millisecond.
@@ -4432,7 +4432,7 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Function name='GetPlayerNumber' return='PlayerNumber' arguments=''>
 		Returns the player number for this PlayerState.
 	</Function>
-	<Function name='GetPlayerOptions' renamed='true' return='PlayerOptions' arguments='ModsLevel ml'>
+	<Function name='GetPlayerOptions' return='PlayerOptions' arguments='ModsLevel ml'>
 		Returns a PlayerOptions object for the specified ModsLevel.
 	</Function>
 	<Function name='GetPlayerOptionsString' return='string' arguments='ModsLevel ml'>
@@ -4870,7 +4870,7 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Description>
 		This singleton is accessible to Lua via <code>FILEMAN</code>.
 	</Description>
-	<Function name='Copy' return='bool' arguments='string fromPath, string toPath'>
+	<Function name='Copy' return='bool' arguments='string fromPath, string toPath' since='ITGmania 0.5.1'>
 		Copies a file from <code>fromPath</code> to <code>toPath</code>.
 		Returns <code>true</code> if the file was copied successfully.
 	</Function>
@@ -4886,7 +4886,7 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Function name='GetHashForFile' return='int' arguments='string sPath'>
 		Returns the hash of the file at <code>sPath</code>.
 	</Function>
-	<Function name='Unzip' return='bool' arguments='string zipPath, string targetPath, int strip'>
+	<Function name='Unzip' return='bool' arguments='string zipPath, string targetPath, int strip' since='ITGmania 0.5.1'>
 		Unzips zip file at <code>zipPath</code> to <code>targetPath</code>.<br />
 		<code>strip</code> is optional and defaults to <code>0</code>.
 		If set to a number larger than <code>0</code>, that many components are removed from the paths of the extracted files. e.g. <code>a/b/c</code> is replaced with <code>b/c</code> when stripping one component or just <code>c</code> when stripping two.<br />
@@ -5292,7 +5292,7 @@ Details of the <code>event</code> table:
 	<Function name='FocusedItemEndsScreen' return='bool'  arguments='PlayerNumber pn'>
 		Returns <code>true</code> if the specified player is on an items that ends the screen.
 	</Function>
-	<Function name='GetCurrentRowIndex' renamed='true' return='int' arguments='PlayerNumber pn'>
+	<Function name='GetCurrentRowIndex' return='int' arguments='PlayerNumber pn'>
 		Returns the current row that player <code>pn</code> is on. (Was previously <code>GetCurrentRow</code>.)
 	</Function>
 	<Function name='GetNumRows' return='int' arguments=''>
@@ -6219,7 +6219,7 @@ local spr = Def.Sprite{
 	<Function name='GetHidden' return='bool' arguments=''>
 		Returns true if the Tap Note was judged with a result that would stop it from drawing.
 	</Function>
-	<Function name='GetHeld' return='bool' arguments=''>
+	<Function name='GetHeld' return='bool' arguments='' since='ITGmania 0.5.1'>
 		Returns whether the input for the Tap Note was ever held during
 		the judgment interval. Useful to distinguish a normal miss from
 		a held miss.
@@ -6252,7 +6252,7 @@ local spr = Def.Sprite{
 	</Function>
 </Class>
 <Class name='HttpRequestFuture'>
-	<Function name='Cancel' return='void' arguments=''>
+	<Function name='Cancel' return='void' arguments='' since='ITGmania 0.5.1'>
                 Cancels the running HTTP request. Does nothing if the request
                 has already completed.
 	</Function>
