@@ -30,7 +30,8 @@ list(APPEND FFMPEG_CONFIGURE
             "--disable-postproc"
             "--disable-avfilter"
             "--disable-shared"
-            "--enable-static")
+            "--enable-static"
+            "--prefix=/")
 
 if(CMAKE_POSITION_INDEPENDENT_CODE)
   list(APPEND FFMPEG_CONFIGURE "--enable-pic")
@@ -40,6 +41,7 @@ if(MACOSX)
   find_program(FFMPEG_YASM_EXECUTABLE yasm
                PATHS /usr/bin /usr/local/bin /opt/local/bin)
   list(APPEND FFMPEG_CONFIGURE "--yasmexe=${FFMPEG_YASM_EXECUTABLE}")
+  list(APPEND FFMPEG_CONFIGURE "--disable-asm")
 endif()
 
 if(WITH_GPL_LIBS)
@@ -58,6 +60,7 @@ list(APPEND SM_FFMPEG_MAKE $(MAKE))
 if(WITH_FFMPEG_JOBS GREATER 0)
   list(APPEND SM_FFMPEG_MAKE "-j${WITH_FFMPEG_JOBS}")
 endif()
+list(APPEND SM_FFMPEG_MAKE "&&" "make" "DESTDIR=./dest" "install")
 
 if(IS_DIRECTORY "${SM_FFMPEG_SRC_DIR}")
   externalproject_add("ffmpeg"
@@ -98,4 +101,5 @@ else()
 endif()
 
 externalproject_get_property("ffmpeg" BINARY_DIR)
-set(SM_FFMPEG_ROOT ${BINARY_DIR})
+set(SM_FFMPEG_LIB ${BINARY_DIR}/dest/lib)
+set(SM_FFMPEG_INCLUDE ${BINARY_DIR}/dest/include)

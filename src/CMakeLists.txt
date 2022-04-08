@@ -61,15 +61,8 @@ else()
   set(SM_NAME_RELWITHDEBINFO "itgmania-release-symbols")
 endif()
 
-# Configure generated files here.
-configure_file("${SM_XCODE_DIR}/Info.plist.in.xml"
-               "${SM_XCODE_DIR}/Info.StepMania.plist")
-configure_file("${SM_XCODE_DIR}/plistHelper.in.hpp"
-               "${SM_XCODE_DIR}/plistHelper.hpp")
-
 # TODO: Make this actually be data and not an executable.
 if(APPLE)
-  set(MACOSX_BUNDLE_BUNDLE_NAME ${SM_EXE_NAME})
   add_executable("${SM_EXE_NAME}"
                  MACOSX_BUNDLE
                  ${SMDATA_ALL_FILES_SRC}
@@ -96,17 +89,22 @@ else()
                  ${SMDATA_ALL_FILES_HPP})
 endif()
 
+set_property(TARGET "${SM_EXE_NAME}" PROPERTY CXX_STANDARD 11)
+set_property(TARGET "${SM_EXE_NAME}" PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET "${SM_EXE_NAME}" PROPERTY CXX_EXTENSIONS ON)
+
 set_target_properties("${SM_EXE_NAME}"
-                      PROPERTIES OUTPUT_NAME
-                                 "${SM_NAME_RELEASE}"
-                                 RELEASE_OUTPUT_NAME
-                                 "${SM_NAME_RELEASE}"
-                                 DEBUG_OUTPUT_NAME
-                                 "${SM_NAME_DEBUG}"
-                                 MINSIZEREL_OUTPUT_NAME
-                                 "${SM_NAME_MINSIZEREL}"
-                                 RELWITHDEBINFO_OUTPUT_NAME
-                                 "${SM_NAME_RELWITHDEBINFO}")
+                      PROPERTIES OUTPUT_NAME "${SM_NAME_RELEASE}"
+                                 RELEASE_OUTPUT_NAME "${SM_NAME_RELEASE}"
+                                 DEBUG_OUTPUT_NAME "${SM_NAME_DEBUG}"
+                                 MINSIZEREL_OUTPUT_NAME "${SM_NAME_MINSIZEREL}"
+                                 RELWITHDEBINFO_OUTPUT_NAME "${SM_NAME_RELWITHDEBINFO}")
+
+if(WITH_LTO)
+  include(CheckIPOSupported)
+  check_ipo_supported()
+  set_property(TARGET "${SM_EXE_NAME}" PROPERTY INTERPROCEDURAL_OPTIMIZATION ON)
+endif()
 
 # Required for usage of tomcrypt and tommath.
 target_compile_definitions("${SM_EXE_NAME}" PRIVATE LTM_DESC)
@@ -141,14 +139,6 @@ if(WITH_SSE2)
   endif()
 endif()
 
-if(WITH_LTO)
-  if(MSVC)
-    set(SM_COMPILE_FLAGS "${SM_COMPILE_FLAGS} /GL")
-  else()
-    set(SM_COMPILE_FLAGS "${SM_COMPILE_FLAGS} -flto")
-  endif()
-endif()
-
 if(MSVC)
   # TODO: Find a way to do this cleanly for non MSVC users.
   set(SM_COMPILE_FLAGS "${SM_COMPILE_FLAGS} /MP2")
@@ -158,12 +148,9 @@ set_target_properties("${SM_EXE_NAME}"
                       PROPERTIES COMPILE_FLAGS "${SM_COMPILE_FLAGS}")
 
 set_target_properties("${SM_EXE_NAME}"
-                      PROPERTIES OUTPUT_NAME_DEBUG
-                                 "${SM_NAME_DEBUG}"
-                                 OUTPUT_NAME_MINSIZEREL
-                                 "${SM_NAME_MINSIZEREL}"
-                                 OUTPUT_NAME_RELWITHDEBINFO
-                                 "${SM_NAME_RELWITHDEBINFO}")
+                      PROPERTIES OUTPUT_NAME_DEBUG "${SM_NAME_DEBUG}"
+                                 OUTPUT_NAME_MINSIZEREL "${SM_NAME_MINSIZEREL}"
+                                 OUTPUT_NAME_RELWITHDEBINFO "${SM_NAME_RELWITHDEBINFO}")
 
 list(APPEND SM_WINDOWS_PROGRAM_DLLS
             "${SM_PROGRAM_DIR}/avcodec-55.dll"
@@ -204,7 +191,6 @@ if(WIN32)
 elseif(APPLE)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_X86_DARWIN)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE MACOSX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14 -stdlib=libc++")
   set_target_properties(
     "${SM_EXE_NAME}"
     PROPERTIES
@@ -219,13 +205,7 @@ elseif(APPLE)
       RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO
       "${SM_ROOT_DIR}"
       MACOSX_BUNDLE_INFO_PLIST
-      "${SM_XCODE_DIR}/Info.StepMania.plist"
-      XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD
-      "${SM_CPP_STANDARD}"
-      XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY
-      "libc++"
-      XCODE_ATTRIBUTE_INFOPLIST_FILE
-      "${SM_XCODE_DIR}/Info.StepMania.plist"
+      "${SM_XCODE_DIR}/Info.plist.in"
       XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS
       "YES"
       XCODE_ATTRIBUTE_INFOPLIST_PREPROCESSOR_DEFINITIONS[variant=Release]
@@ -236,17 +216,11 @@ elseif(APPLE)
       "MINSIZEREL"
       XCODE_ATTRIBUTE_INFOPLIST_PREPROCESSOR_DEFINITIONS[variant=RelWithDebInfo]
       "RELWITHDEBINFO"
-      XCODE_ATTRIBUTE_INFOPLIST_PREFIX_HEADER
-      "${SM_XCODE_DIR}/plistHelper.hpp"
       XCODE_ATTRIBUTE_GCC_PREFIX_HEADER
       "${CMAKE_CURRENT_SOURCE_DIR}/archutils/Darwin/StepMania.pch"
       XCODE_ATTRIBUTE_GCC_ENABLE_CPP_EXCEPTIONS
-      "NO"
-      XCODE_ATTRIBUTE_LIBRARY_SEARCH_PATHS
-      "${SM_XCODE_DIR}/Libraries")
-      # XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS
-      # "${SM_XCODE_DIR}/StepMania.entitlements")
-      
+      "NO")
+
   set(APPLE_BUNDLE_RESOURCES
     "${SM_ROOT_DIR}/Announcers"
     "${SM_ROOT_DIR}/BackgroundEffects"
@@ -270,15 +244,16 @@ elseif(APPLE)
     target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_FFMPEG)
   endif()
 
-  if(CMAKE_BUILD_TYPE EQUAL "Debug")
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(SM_APP_RELEASE_NAME "${SM_NAME_DEBUG}")
-  elseif(CMAKE_BUILD_TYPE EQUAL "MinSizeRel")
+  elseif(CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
     set(SM_APP_RELEASE_NAME "${SM_NAME_MINSIZEREL}")
-  elseif(CMAKE_BUILD_TYPE EQUAL "RelWithDebInfo")
+  elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     set(SM_APP_RELEASE_NAME "${SM_NAME_RELWITHDEBINFO}")
   else()
     set(SM_APP_RELEASE_NAME "${SM_NAME_RELEASE}")
   endif()
+
   if(WITH_FULL_RELEASE)
     string(CONCAT SM_NAME_VERSION
                   "${SM_EXE_NAME}"
@@ -408,8 +383,6 @@ else() # Linux
   if("${CMAKE_SYSTEM}" MATCHES "Linux")
     target_compile_definitions("${SM_EXE_NAME}" PRIVATE LINUX)
   endif()
-
-  target_compile_options("${SM_EXE_NAME}" PRIVATE "-std=${SM_CPP_STANDARD}")
 endif()
 
 set_property(TARGET "${SM_EXE_NAME}" PROPERTY FOLDER "Internal Libraries")
@@ -546,10 +519,10 @@ elseif(APPLE)
 
   if(HAS_FFMPEG)
     list(APPEND SMDATA_LINK_LIB
-                "${SM_FFMPEG_ROOT}/libavformat/libavformat.a"
-                "${SM_FFMPEG_ROOT}/libavcodec/libavcodec.a"
-                "${SM_FFMPEG_ROOT}/libswscale/libswscale.a"
-                "${SM_FFMPEG_ROOT}/libavutil/libavutil.a")
+                "${SM_FFMPEG_LIB}/libavformat.a"
+                "${SM_FFMPEG_LIB}/libavcodec.a"
+                "${SM_FFMPEG_LIB}/libswscale.a"
+                "${SM_FFMPEG_LIB}/libavutil.a")
   endif()
 else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
   if(HAS_FFMPEG)
@@ -561,10 +534,10 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
                   "${FFMPEG_avutil_LIBRARY}")
     else()
       list(APPEND SMDATA_LINK_LIB
-                  "${SM_FFMPEG_ROOT}/libavformat/libavformat.a"
-                  "${SM_FFMPEG_ROOT}/libavcodec/libavcodec.a"
-                  "${SM_FFMPEG_ROOT}/libswscale/libswscale.a"
-                  "${SM_FFMPEG_ROOT}/libavutil/libavutil.a")
+                  "${SM_FFMPEG_LIB}/libavformat.a"
+                  "${SM_FFMPEG_LIB}/libavcodec.a"
+                  "${SM_FFMPEG_LIB}/libswscale.a"
+                  "${SM_FFMPEG_LIB}/libavutil.a")
     endif()
 
     if(NOT WITH_SYSTEM_ZLIB)
@@ -672,7 +645,7 @@ if(NOT APPLE)
         list(APPEND SM_INCLUDE_DIRS "${FFMPEG_INCLUDE_DIR}")
       else()
         add_dependencies("${SM_EXE_NAME}" "ffmpeg")
-        list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_SRC_DIR}" "${SM_FFMPEG_ROOT}")
+        list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
       endif()
     endif()
     if(HAS_GTK3)
@@ -696,7 +669,7 @@ else()
   list(APPEND SM_INCLUDE_DIRS "archutils/Unix")
   if(HAS_FFMPEG)
     add_dependencies("${SM_EXE_NAME}" "ffmpeg")
-    list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_SRC_DIR}" "${SM_FFMPEG_ROOT}")
+    list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
   endif()
 endif()
 

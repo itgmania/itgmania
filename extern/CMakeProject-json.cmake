@@ -23,8 +23,5 @@ else()
 
   if(MSVC)
     target_compile_definitions("jsoncpp" PRIVATE _CRT_SECURE_NO_WARNINGS)
-  elseif(APPLE)
-    set_target_properties("jsoncpp" PROPERTIES XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-    target_compile_options("jsoncpp" PRIVATE "-stdlib=libc++")
   endif()
 endif()
