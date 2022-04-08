@@ -256,11 +256,6 @@ if(WITH_OGG)
   endif()
 endif()
 
-if(WITH_SDL)
-  find_package(SDL2 REQUIRED)
-  set(HAS_SDL TRUE)
-endif()
-
 find_package(nasm)
 find_package(yasm)
 
