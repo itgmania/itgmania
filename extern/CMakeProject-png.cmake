@@ -42,6 +42,9 @@ else()
 
   disable_project_warnings("png")
 
+  target_compile_definitions("png" PRIVATE PNG_ARM_NEON_OPT=0
+                                           PNG_INTEL_SSE_OPT=0)
+
   if(MSVC)
     target_compile_definitions("png" PRIVATE _CRT_SECURE_NO_WARNINGS)
   endif()

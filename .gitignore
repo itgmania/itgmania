@@ -23,8 +23,6 @@ Contents/
 verdata.*
 ITGmania-debug
 itgmania-debug
-Xcode/Info.StepMania.plist
-Xcode/plistHelper.hpp
 src/version_updater/VersionUpdater
 src/generated
 extern/mad-0.15.1b/config.h
