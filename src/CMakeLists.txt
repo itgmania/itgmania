@@ -623,11 +623,6 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
     list(APPEND SMDATA_LINK_LIB ${X11_LIBRARIES})
   endif()
 
-  if(SDL2_FOUND)
-    list(APPEND SMDATA_LINK_LIB ${SDL2_LIBRARY})
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_SDL)
-  endif()
-
   if(PCRE_FOUND)
     list(APPEND SMDATA_LINK_LIB ${PCRE_LIBRARY})
   endif()

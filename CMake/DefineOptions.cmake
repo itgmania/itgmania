@@ -63,8 +63,6 @@ option(WITH_SYSTEM_JPEG "Build with system jpeglib" OFF)
 option(WITH_SYSTEM_PCRE "Build with system PCRE" OFF)
 option(WITH_SYSTEM_ZLIB "Build against system zlib" OFF)
 
-option(WITH_SDL "Build with SDL" OFF)
-
 if(NOT MSVC)
   # Turn this option off to disable using FFMEPG.
   option(WITH_FFMPEG "Build with FFMPEG." ON)
