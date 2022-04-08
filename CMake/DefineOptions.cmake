@@ -15,10 +15,6 @@ option(WITH_LTO
 # This option handles if we use SSE2 processing.
 option(WITH_SSE2 "Build with SSE2 Optimizations." ON)
 
-# This option may go away in the future: if it does, JPEG will always be
-# required.
-option(WITH_JPEG "Build with JPEG Image Support." ON)
-
 # Turn this on to set this to a specific release mode.
 option(WITH_FULL_RELEASE "Build as a proper, full release." OFF)
 
