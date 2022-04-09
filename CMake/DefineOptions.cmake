@@ -77,9 +77,6 @@ endif()
 
 if(WIN32)
   option(WITH_MINIMAID "Build with Minimaid Lights Support." OFF)
-  # Developer only option: connect to IRC to report the result. Only use with
-  # build servers.
-  option(WITH_IRC_POST_HOOK "Report via IRC of the success afterwards." OFF)
 elseif(LINUX)
   # Builder beware: later versions of ffmpeg may break!
   option(WITH_SYSTEM_FFMPEG
