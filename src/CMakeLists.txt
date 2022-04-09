@@ -118,10 +118,6 @@ if(WITH_NO_ROLC_TOMCRYPT)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE LTC_NO_ROLC)
 endif()
 
-if(NOT WITH_NETWORKING)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE WITHOUT_NETWORKING)
-endif()
-
 # Compilation flags per project here.
 target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:Release>:RELEASE>)

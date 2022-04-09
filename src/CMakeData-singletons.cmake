@@ -16,7 +16,6 @@ list(APPEND SMDATA_GLOBAL_SINGLETON_SRC
             "MemoryCardManager.cpp"
             "MessageManager.cpp"
             "NetworkManager.cpp"
-            "NetworkSyncManager.cpp"
             "NoteSkinManager.cpp"
             "PrefsManager.cpp"
             "ProfileManager.cpp"
@@ -43,7 +42,6 @@ list(APPEND SMDATA_GLOBAL_SINGLETON_HPP
             "MemoryCardManager.h"
             "MessageManager.h"
             "NetworkManager.h"
-            "NetworkSyncManager.h"
             "NoteSkinManager.h"
             "PrefsManager.h"
             "ProfileManager.h"
@@ -52,11 +50,6 @@ list(APPEND SMDATA_GLOBAL_SINGLETON_HPP
             "StatsManager.h"
             "ThemeManager.h"
             "UnlockManager.h")
-
-if(WITH_NETWORKING)
-  list(APPEND SMDATA_GLOBAL_SINGLETON_SRC "ezsockets.cpp")
-  list(APPEND SMDATA_GLOBAL_SINGLETON_HPP "ezsockets.h")
-endif()
 
 source_group("Global Singletons"
              FILES

@@ -178,7 +178,6 @@ list(APPEND SM_DATA_REST_SRC
             "Difficulty.cpp"
             "DisplaySpec.cpp"
             "EnumHelper.cpp"
-            "FileDownload.cpp"
             "Game.cpp"
             "GameCommand.cpp"
             "GameConstantsAndTypes.cpp"
@@ -230,7 +229,6 @@ list(APPEND SM_DATA_REST_HPP
             "DisplaySpec.h"
             "Difficulty.h"
             "EnumHelper.h"
-            "FileDownload.h"
             "Game.h"
             "GameCommand.h"
             "GameConstantsAndTypes.h"
@@ -265,11 +263,6 @@ list(APPEND SM_DATA_REST_HPP
             "TimingData.h"
             "TimingSegments.h"
             "TitleSubstitution.h")
-
-if(WITH_NETWORKING)
-  list(APPEND SM_DATA_REST_SRC "RoomWheel.cpp")
-  list(APPEND SM_DATA_REST_HPP "RoomWheel.h")
-endif()
 
 source_group("Data Structures\\\\Misc Objects"
              FILES

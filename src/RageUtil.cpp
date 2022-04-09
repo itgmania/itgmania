@@ -2809,6 +2809,16 @@ int LuaFunc_get_music_file_length(lua_State* L)
 }
 LUAFUNC_REGISTER_COMMON(get_music_file_length);
 
+
+/* stubs for deprecated network functions */
+LuaFunction(CloseConnection, false);
+LuaFunction(ConnectToServer, false);
+LuaFunction(GetServerName, std::string(""));
+LuaFunction(IsNetConnected, false);
+LuaFunction(IsNetSMOnline, false);
+LuaFunction(IsSMOnlineLoggedIn, false);
+LuaFunction(ReportStyle, false);
+
 /*
  * Copyright (c) 2001-2005 Chris Danford, Glenn Maynard
  * All rights reserved.

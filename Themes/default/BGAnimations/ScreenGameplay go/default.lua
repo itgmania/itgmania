@@ -1,8 +1,3 @@
-if IsNetSMOnline() then
-	-- don't show "Ready" online; it will obscure the immediately-starting steps.
-	return Def.ActorFrame{}
-end
-
 return LoadActor("go") .. {
 	InitCommand=cmd(Center;draworder,105);
 	StartTransitioningCommand=function(self)
