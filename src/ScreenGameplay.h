@@ -10,7 +10,6 @@
 #include "BeginnerHelper.h"
 #include "LyricDisplay.h"
 #include "Attack.h"
-#include "NetworkSyncManager.h"
 #include "AutoKeysounds.h"
 #include "ThemeMetric.h"
 #include "PlayerStageStats.h"
@@ -278,9 +277,6 @@ protected:
 	CombinedLifeMeter*	m_pCombinedLifeMeter;
 
 	BitmapText		m_textSongOptions;
-	BitmapText		m_Scoreboard[NUM_NSScoreBoardColumn];	// for NSMAN, so we can have a scoreboard
-
-	bool			m_bShowScoreboard;
 
 	BitmapText		m_textDebug;
 
@@ -333,12 +329,6 @@ protected:
 	// announcer sound needs to be delayed.  See HandleScreenMessage for more.
 	// -Kyz
 	bool m_delaying_ready_announce;
-	
-	// HACK: We have no idea whether we're actually using SMOnline or not.
-	// No, seriously, NOWHERE is it stored what room we're in or whether we're in a room at all.
-	// Apparently we just hope the server is keeping track.
-	// All we can do is guess based on what subclass we are.
-	bool m_bForceNoNetwork;
 };
 
 vector<PlayerInfo>::iterator GetNextEnabledPlayerInfo		( vector<PlayerInfo>::iterator iter, vector<PlayerInfo> &v );

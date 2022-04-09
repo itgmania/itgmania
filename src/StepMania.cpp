@@ -62,7 +62,6 @@
 #include "ModelManager.h"
 #include "CryptManager.h"
 #include "NetworkManager.h"
-#include "NetworkSyncManager.h"
 #include "MessageManager.h"
 #include "StatsManager.h"
 #include "GameLoop.h"
@@ -298,7 +297,6 @@ void ShutdownGame()
 	SAFE_DELETE( SCREENMAN );
 	SAFE_DELETE( STATSMAN );
 	SAFE_DELETE( MESSAGEMAN );
-	SAFE_DELETE( NSMAN );
 	SAFE_DELETE( NETWORK );
 	/* Delete INPUTMAN before the other INPUTFILTER handlers, or an input
 	 * driver may try to send a message to INPUTFILTER after we delete it. */
@@ -1134,7 +1132,6 @@ int sm_main(int argc, char* argv[])
 	SONGMAN->UpdatePopular();
 	SONGMAN->UpdatePreferredSort();
 	NETWORK		= new NetworkManager;
-	NSMAN 		= new NetworkSyncManager( pLoadingWindow );
 	STATSMAN	= new StatsManager;
 
 	// Initialize which courses are ranking courses here.
@@ -1178,9 +1175,6 @@ int sm_main(int argc, char* argv[])
 		SCREENMAN->SystemMessage( sMessage );
 
 	CodeDetector::RefreshCacheItems();
-
-	if( GetCommandlineArgument("netip") )
-		NSMAN->DisplayStartupStatus();	// If we're using networking show what happened
 
 	// Run the main loop.
 	GameLoop::RunGameLoop();

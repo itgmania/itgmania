@@ -95,8 +95,8 @@ save yourself some time, copy this for undocumented things:
 		CLAMP is an all-female Japanese mangaka group that formed in the mid 1980s.
 		Erm, I mean... Clamps <code>fValue</code> between <code>fLow</code> and <code>fHigh</code>.
 	</Function>
-	<Function name='CloseConnection' return='void' arguments=''>
-		Closes any connection to an online server.
+	<Function name='CloseConnection' return='bool' arguments=''>
+		[Deprecated] Always returns <code>false</code>.
 	</Function>
 	<Function name='collectgarbage' return='void' arguments='string opt, float arg'>
 		A generic interface to Lua's garbage collector. Performs different functions based on the value of <code>opt</code>.<br />
@@ -143,7 +143,7 @@ save yourself some time, copy this for undocumented things:
 		The <code>comma</code> and <code>dot</code> arguments are provided to ease compliance with locales or languages that do not use comma and dot in numbers the way English does.
 	</Function>
 	<Function name='ConnectToServer' return='bool' arguments='string sAddress'>
-		Tries to connect to the server at <code>sAddress</code>.
+		[Deprecated] Always returns <code>false</code>.
 	</Function>
 	<Function name='CourseDifficultyToLocalizedString' return='string' arguments='Difficulty d'>
 		Returns <Link class='ENUM' function='Difficulty' /> <code>d</code> localized for the current language using strings defined under <code>[CourseDifficulty]</code>.
@@ -281,7 +281,7 @@ save yourself some time, copy this for undocumented things:
 		Returns the screen display aspect ratio (i.e. the <code>DisplayAspectRatio</code> preference).
 	</Function>
 	<Function name='GetServerName' return='string' arguments=''>
-		Returns the name of the currently connected server.
+		[Deprecated] Always returns <code>""</code>.
 	</Function>
 	<Function name='GetSongBackground' theme='_fallback' return='string' arguments=''>
 		[02 Utilities.lua] Returns a path to the current songs background.
@@ -388,13 +388,13 @@ save yourself some time, copy this for undocumented things:
 		[02 Utilities.lua] Returns <code>true</code> if the coin mode is set to <Link class='ENUM' function='CoinMode'>CoinMode_Home</Link>.
 	</Function>
 	<Function name='IsNetConnected' return='bool' arguments=''>
-		Returns <code>true</code> if connected to the Internet.
+		[Deprecated] Always returns <code>false</code>.
 	</Function>
 	<Function name='IsNetSMOnline' return='bool' arguments=''>
-		Returns <code>true</code> if connected to StepMania Online.
+		[Deprecated] Always returns <code>false</code>.
 	</Function>
 	<Function name='IsSMOnlineLoggedIn' return='bool' arguments='PlayerNumber pn'>
-		Returns <code>true</code> if Player <code>pn</code> is logged on to a SMOnline server.
+		[Deprecated] Always returns <code>false</code>.
 	</Function>
 	<Function name='IsW1Allowed' theme='_fallback' return='bool' arguments='TapNoteScore tns'>
 		[04 Scoring.lua] Returns <code>true</code> if W1 is allowed (and <code>tns == 'TapNoteScore_W2'</code>)
@@ -574,7 +574,7 @@ save yourself some time, copy this for undocumented things:
 		<code>indent</code> is an optional argument that will be prepended to every line.
 	</Function>
 	<Function name='ReportStyle' return='void' arguments=''>
-		Sends the current style to the server.
+		[Deprecated] Always returns <code>false</code>.
 	</Function>
 	<Function name='round' theme='_fallback' return='int' arguments='float val, int decimal'>
 		[02 Utilities.lua] Round a number.
@@ -5274,17 +5274,6 @@ Details of the <code>event</code> table:
 		Gets the currently selected letter of Player <code>pn</code>.
 	</Function>
 </Class>
-<Class name='ScreenNetEvaluation' grouping='Screen'>
-	<Function name='GetNumActivePlayers' return='int' arguments=''>
-		Returns the number of active players.
-	</Function>
-</Class>
-<Class name='ScreenNetRoom' grouping='Screen'>
-</Class>
-<Class name='ScreenNetSelectBase' grouping='Screen'>
-</Class>
-<Class name='ScreenNetSelectMusic' grouping='Screen'>
-</Class>
 <Class name='ScreenOptions' grouping='Screen'>
 	<Function name='AllAreOnLastRow' return='bool'  arguments=''>
 		Returns <code>true</code> if all active players are on the last options row.
@@ -5694,10 +5683,10 @@ local args = {
 		Returns the extra stage info (Song, Steps) for the specified Style <code>s</code>. If <code>b2ndExtra</code> is true, it will use the second Extra Stage data instead of the first.
 	</Function>
 	<Function name='GetNumAdditionalCourses' return='int' arguments=''>
-		[Deprecated] Always returns <code>0</code>
+		[Deprecated] Always returns <code>0</code>.
 	</Function>
 	<Function name='GetNumAdditionalSongs' return='int' arguments=''>
-		[Deprecated] Always returns <code>0</code>
+		[Deprecated] Always returns <code>0</code>.
 	</Function>
 	<Function name='GetNumCourseGroups' return='int' arguments=''>
 		Returns the number of course groups.
@@ -5772,10 +5761,10 @@ local args = {
 		Returns the preferred sort section name for the specified Song.
 	</Function>
 	<Function name='WasLoadedFromAdditionalCourses' return='bool' arguments='Course c'>
-		[Deprecated] Always returns <code>false</code>
+		[Deprecated] Always returns <code>false</code>.
 	</Function>
 	<Function name='WasLoadedFromAdditionalSongs' return='bool' arguments='Song s'>
-		[Deprecated] Always returns <code>false</code>
+		[Deprecated] Always returns <code>false</code>.
 	</Function>
 </Class>
 <Class name='SongOptions'>

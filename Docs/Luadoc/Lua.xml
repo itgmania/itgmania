@@ -157,7 +157,6 @@
 		<Function name='ResolveRelativePath'/>
 		<Function name='RoutineSkinP1'/>
 		<Function name='RoutineSkinP2'/>
-		<Function name='SMOnlineScreen'/>
 		<Function name='Saturation'/>
 		<Function name='SaveProfileCustom'/>
 		<Function name='SaveScreenshot'/>
@@ -1641,9 +1640,6 @@
 			<Function name='Load'/>
 			<Function name='targetnumber'/>
 		</Class>
-		<Class base='WheelBase' name='RoomWheel'>
-			<Function name='Move'/>
-		</Class>
 		<Class base='BitmapText' name='ScoreDisplayAliveTime'/>
 		<Class base='BitmapText' name='ScoreDisplayCalories'/>
 		<Class base='ActorFrame' name='Screen'>
@@ -1710,31 +1706,6 @@
 			<Function name='GetEnteringName'/>
 			<Function name='GetFinalized'/>
 			<Function name='GetSelection'/>
-		</Class>
-		<Class base='ScreenEvaluation' name='ScreenNetEvaluation'>
-			<Function name='GetNumActivePlayers'/>
-		</Class>
-		<Class base='ScreenNetSelectBase' name='ScreenNetRoom'>
-			<Function name='GetMusicWheel'/>
-			<Function name='SelectCurrent'/>
-		</Class>
-		<Class base='ScreenWithMenuElements' name='ScreenNetSelectBase'>
-			<Function name='ChatboxInput'/>
-			<Function name='ChatboxVisible'/>
-			<Function name='GetChatLines'/>
-			<Function name='GetChatScroll'/>
-			<Function name='GetUser'/>
-			<Function name='GetUserQty'/>
-			<Function name='GetUserState'/>
-			<Function name='ScrollChatDown'/>
-			<Function name='ScrollChatUp'/>
-			<Function name='ShowNextMsg'/>
-			<Function name='ShowPreviousMsg'/>
-			<Function name='UsersVisible'/>
-		</Class>
-		<Class base='ScreenNetSelectBase' name='ScreenNetSelectMusic'>
-			<Function name='GetMusicWheel'/>
-			<Function name='SelectCurrent'/>
 		</Class>
 		<Class base='ScreenWithMenuElements' name='ScreenOptions'>
 			<Function name='AllAreOnLastRow'/>

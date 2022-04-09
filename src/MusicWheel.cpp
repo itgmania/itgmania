@@ -8,7 +8,6 @@
 #include "RageLog.h"
 #include "GameState.h"
 #include "ThemeManager.h"
-#include "NetworkSyncManager.h"
 #include "ProfileManager.h"
 #include "Song.h"
 #include "Course.h"
@@ -487,35 +486,9 @@ void MusicWheel::GetSongList( vector<Song*> &arraySongs, SortOrder so )
 		}
 		else
 		{
-			// Online mode doesn't support auto set style.  A song that only has
-			// dance-double steps will show up when dance-single was selected, with
-			// no playable steps.  Then the game will crash when trying to play it.
-			// -Kyz
-			if(CommonMetrics::AUTO_SET_STYLE && !NSMAN->isSMOnline)
-			{
-				// with AUTO_SET_STYLE on and Autogen off, some songs may get
-				// hidden. Search through every playable StepsType until you
-				// find one, then add the song.
-				// see Issue 147 for more information. -aj
-				// http://ssc.ajworld.net/sm-ssc/bugtracker/view.php?id=147
-				set<StepsType> vStepsType;
-				SongUtil::GetPlayableStepsTypes( pSong, vStepsType );
-
-				for (StepsType const &type : vStepsType)
-				{
-					if(pSong->HasStepsType(type))
-					{
-						arraySongs.push_back( pSong );
-						break;
-					}
-				}
-			}
-			else
-			{
-				// If the song has at least one steps, add it.
-				if( pSong->HasStepsType(GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StepsType) )
-					arraySongs.push_back( pSong );
-			}
+			// If the song has at least one steps, add it.
+			if( pSong->HasStepsType(GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StepsType) )
+				arraySongs.push_back( pSong );
 		}
 	}
 

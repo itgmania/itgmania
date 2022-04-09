@@ -10,10 +10,6 @@
 #include "RageLog.h"
 #include "SpecialFiles.h"
 
-#if !defined(WITHOUT_NETWORKING)
-#include "ver.h"
-#endif
-
 //DEFAULTS_INI_PATH	= "Data/Defaults.ini";		// these can be overridden
 //PREFERENCES_INI_PATH	// overlay on Defaults.ini, contains the user's choices
 //STATIC_INI_PATH	= "Data/Static.ini";		// overlay on the 2 above, can't be overridden
@@ -315,20 +311,6 @@ PrefsManager::PrefsManager() :
 	m_bShowLoadingWindow		( "ShowLoadingWindow",	true ),
 	m_bPseudoLocalize		( "PseudoLocalize",	false ),
 	m_show_theme_errors("ShowThemeErrors", false)
-
-#if !defined(WITHOUT_NETWORKING)
-	,
-	m_bEnableScoreboard		( "EnableScoreboard",	true )
-	,
-	m_bUpdateCheckEnable			( "UpdateCheckEnable",				true )
-	// TODO - Aldo_MX: Use PREFSMAN->m_iUpdateCheckIntervalSeconds & PREFSMAN->m_iUpdateCheckLastCheckedSecond
-	//,
-	//m_iUpdateCheckIntervalSeconds	( "UpdateCheckIntervalSeconds",		86400 ),	// 24 hours
-	//m_iUpdateCheckLastCheckedSecond	( "UpdateCheckLastCheckSecond",		0 )
-	// TODO - Aldo_MX: Write helpers in LuaManager.cpp to treat unsigned int/long like LUA Numbers
-	//,
-	//m_uUpdateCheckLastCheckedBuild	( "UpdateCheckLastCheckedBuild",	version_num )
-#endif
 
 {
 	Init();

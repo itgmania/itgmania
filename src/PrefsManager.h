@@ -323,20 +323,6 @@ public:
 	Preference<bool>	m_bPseudoLocalize;
 	Preference<bool>	m_show_theme_errors;
 
-#if !defined(WITHOUT_NETWORKING)
-	Preference<bool>	m_bEnableScoreboard;  //Alows disabling of scoreboard in network play
-
-	// Check for Updates code
-	Preference<bool>	m_bUpdateCheckEnable;
-	// TODO - Aldo_MX: Use PREFSMAN->m_iUpdateCheckIntervalSeconds & PREFSMAN->m_iUpdateCheckLastCheckedSecond
-	//Preference<int>				m_iUpdateCheckIntervalSeconds;
-	//Preference<int>				m_iUpdateCheckLastCheckedSecond;
-
-	// TODO - Aldo_MX: Write helpers in LuaManager.cpp to treat unsigned int/long like LUA Numbers
-	//Preference<unsigned long>	m_uUpdateCheckLastCheckedBuild;
-
-#endif
-
 	void ReadPrefsFromIni( const IniFile &ini, const RString &sSection, bool bIsStatic );
 	void ReadGamePrefsFromIni( const RString &sIni );
 	void ReadDefaultsFromIni( const IniFile &ini, const RString &sSection );

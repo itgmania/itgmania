@@ -37,7 +37,6 @@
 #include "ProfileManager.h"
 #include "StatsManager.h"
 #include "PlayerAI.h" // for NUM_SKILL_LEVELS
-#include "NetworkSyncManager.h"
 #include "DancingCharacters.h"
 #include "ScreenDimensions.h"
 #include "ThemeMetric.h"
@@ -324,7 +323,6 @@ ScreenGameplay::ScreenGameplay()
 {
 	m_pSongBackground = nullptr;
 	m_pSongForeground = nullptr;
-	m_bForceNoNetwork = false;
 	m_delaying_ready_announce= false;
 	GAMESTATE->m_AdjustTokensBySongCostForFinalStageCheck= false;
 }
@@ -645,14 +643,6 @@ void ScreenGameplay::Init()
 			break;
 	}
 
-	// Before the lifemeter loads, if Networking is required
-	// we need to wait, so that there is no Dead On Start issues.
-	// if you wait too long at the second checkpoint, you will
-	// appear dead when you begin your game.
-	if( !m_bForceNoNetwork )
-		NSMAN->StartRequest(0);
-
-
 	// Add individual life meter
 	switch( GAMESTATE->m_PlayMode )
 	{
@@ -687,30 +677,6 @@ void ScreenGameplay::Init()
 		default:
 			break;
 	}
-
-	m_bShowScoreboard = false;
-
-#if !defined(WITHOUT_NETWORKING)
-	// Only used in SMLAN/SMOnline:
-	if( !m_bForceNoNetwork && NSMAN->useSMserver && GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StyleType != StyleType_OnePlayerTwoSides )
-	{
-		m_bShowScoreboard = PREFSMAN->m_bEnableScoreboard.Get();
-		PlayerNumber pn = GAMESTATE->GetFirstDisabledPlayer();
-		if( pn != PLAYER_INVALID && m_bShowScoreboard )
-		{
-			FOREACH_NSScoreBoardColumn( col )
-			{
-				m_Scoreboard[col].LoadFromFont( THEME->GetPathF(m_sName,"scoreboard") );
-				m_Scoreboard[col].SetShadowLength( 0 );
-				m_Scoreboard[col].SetName( ssprintf("ScoreboardC%iP%i",col+1,pn+1) );
-				LOAD_ALL_COMMANDS_AND_SET_XY( m_Scoreboard[col] );
-				m_Scoreboard[col].SetText( NSMAN->m_Scoreboard[col] );
-				m_Scoreboard[col].SetVertAlign( align_top );
-				this->AddChild( &m_Scoreboard[col] );
-			}
-		}
-	}
-#endif
 
 	FOREACH_EnabledPlayerInfo( m_vPlayerInfo, pi )
 	{
@@ -1044,9 +1010,6 @@ ScreenGameplay::~ScreenGameplay()
 		m_pSoundMusic->StopPlaying();
 
 	m_GameplayAssist.StopPlaying();
-
-	if( !m_bForceNoNetwork )
-		NSMAN->ReportSongOver();
 }
 
 bool ScreenGameplay::IsLastSong()
@@ -1613,33 +1576,7 @@ void ScreenGameplay::BeginScreen()
 
 	SOUND->PlayOnceFromAnnouncer( "gameplay intro" );	// crowd cheer
 
-	// Get the transitions rolling
-	if( !m_bForceNoNetwork && NSMAN->useSMserver )
-	{
-		// If we're using networking, we must not have any delay. If we do,
-		// this can cause inconsistency on different computers and
-		// different themes.
-
-		StartPlayingSong( 0, 0 );
-		m_pSoundMusic->Stop();
-
-		float startOffset = g_fNetStartOffset;
-
-		NSMAN->StartRequest(1);
-
-		RageSoundParams p;
-		p.m_fSpeed = 1.0f;	// Force 1.0 playback speed
-		p.StopMode = RageSoundParams::M_CONTINUE;
-		p.m_StartSecond = startOffset;
-		m_pSoundMusic->SetProperty( "AccurateSync", true );
-		m_pSoundMusic->Play(false, &p);
-
-		UpdateSongPosition(0);
-	}
-	else
-	{
-		StartPlayingSong( MIN_SECONDS_TO_STEP, MIN_SECONDS_TO_MUSIC );
-	}
+	StartPlayingSong( MIN_SECONDS_TO_STEP, MIN_SECONDS_TO_MUSIC );
 }
 
 bool ScreenGameplay::AllAreFailing()
@@ -2030,17 +1967,6 @@ void ScreenGameplay::Update( float fDeltaTime )
 	UpdateLights();
 	SendCrossedMessages();
 
-	if( !m_bForceNoNetwork && NSMAN->useSMserver )
-	{
-		FOREACH_EnabledPlayerNumberInfo( m_vPlayerInfo, pi )
-			if( pi->m_pLifeMeter )
-				NSMAN->m_playerLife[pi->m_pn] = int(pi->m_pLifeMeter->GetLife()*10000);
-
-		if( m_bShowScoreboard )
-			FOREACH_NSScoreBoardColumn(cn)
-				if( m_bShowScoreboard && NSMAN->ChangedScoreboard(cn) && GAMESTATE->GetFirstDisabledPlayer() != PLAYER_INVALID )
-					m_Scoreboard[cn].SetText( NSMAN->m_Scoreboard[cn] );
-	}
 	// ArrowEffects::Update call moved because having it happen once per
 	// NoteField (which means twice in two player) seemed wasteful. -Kyz
 	ArrowEffects::Update();

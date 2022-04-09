@@ -24,7 +24,6 @@
 #include "ActorUtil.h"
 #include "ArrowEffects.h"
 #include "Game.h"
-#include "NetworkSyncManager.h"	//used for sending timing offset 
 #include "DancingCharacters.h"
 #include "ScreenDimensions.h"
 #include "RageSoundManager.h"
