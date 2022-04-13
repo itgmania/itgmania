@@ -23,8 +23,8 @@
 
 NetworkManager*	NETWORK = nullptr;	// global and accessible from anywhere in our program
 
-Preference<bool> NetworkManager::httpEnabled("HttpEnabled", false, nullptr, PreferenceType::Immutable);
-Preference<RString> NetworkManager::httpAllowHosts("HttpAllowHosts", "", nullptr, PreferenceType::Immutable);
+Preference<bool> NetworkManager::httpEnabled("HttpEnabled", true, nullptr, PreferenceType::Immutable);
+Preference<RString> NetworkManager::httpAllowHosts("HttpAllowHosts", "api.groovestats.com", nullptr, PreferenceType::Immutable);
 
 static const char *HttpErrorCodeNames[] = {
 	"Blocked",
