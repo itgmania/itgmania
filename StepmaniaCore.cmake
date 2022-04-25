@@ -208,11 +208,6 @@ endif()
 # Dependencies go here.
 include(ExternalProject)
 
-if(NOT WITH_GPL_LIBS)
-  message("Disabling GPL exclusive libraries: no MP3 support.")
-  set(WITH_MP3 OFF)
-endif()
-
 if(WITH_WAV)
   # TODO: Identify which headers to check for ensuring this will always work.
   set(HAS_WAV TRUE)
@@ -283,37 +278,37 @@ if(WIN32)
     # FFMPEG...it can be evil.
     find_library(LIB_SWSCALE
                  NAMES "swscale"
-                 PATHS "${SM_EXTERN_DIR}/ffmpeg/${SM_WIN32_ARCH}/lib"
+                 PATHS "${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}"
                  NO_DEFAULT_PATH)
     get_filename_component(LIB_SWSCALE ${LIB_SWSCALE} NAME)
 
     find_library(LIB_AVCODEC
                  NAMES "avcodec"
-                 PATHS "${SM_EXTERN_DIR}/ffmpeg/${SM_WIN32_ARCH}/lib"
+                 PATHS "${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}"
                  NO_DEFAULT_PATH)
     get_filename_component(LIB_AVCODEC ${LIB_AVCODEC} NAME)
 
     find_library(LIB_AVFORMAT
                  NAMES "avformat"
-                 PATHS "${SM_EXTERN_DIR}/ffmpeg/${SM_WIN32_ARCH}/lib"
+                 PATHS "${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}"
                  NO_DEFAULT_PATH)
     get_filename_component(LIB_AVFORMAT ${LIB_AVFORMAT} NAME)
 
     find_library(LIB_AVUTIL
                  NAMES "avutil"
-                 PATHS "${SM_EXTERN_DIR}/ffmpeg/${SM_WIN32_ARCH}/lib"
+                 PATHS "${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}"
                  NO_DEFAULT_PATH)
     get_filename_component(LIB_AVUTIL ${LIB_AVUTIL} NAME)
 
     list(APPEND SM_FFMPEG_WIN32_DLLS
-      "avcodec-55.dll"
-      "avformat-55.dll"
-      "avutil-52.dll"
-      "swscale-2.dll"
+      "avcodec-59.dll"
+      "avformat-59.dll"
+      "avutil-57.dll"
+      "swscale-6.dll"
     )
     foreach(dll ${SM_FFMPEG_WIN32_DLLS})
       file(REMOVE "${SM_PROGRAM_DIR}/${dll}")
-      file(COPY "${SM_EXTERN_DIR}/ffmpeg/${SM_WIN32_ARCH}/bin/${dll}" DESTINATION "${SM_PROGRAM_DIR}/")
+      file(COPY "${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}/${dll}" DESTINATION "${SM_PROGRAM_DIR}/")
     endforeach()
   endif()
 elseif(MACOSX)
@@ -356,6 +351,12 @@ elseif(MACOSX)
                    MAC_FRAME_IOKIT
                    MAC_FRAME_OPENGL
                    MAC_FRAME_SYSTEM)
+
+  if(HAS_FFMPEG)
+    find_library(MAC_FRAME_COREMEDIA CoreMedia ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
+    find_library(MAC_FRAME_COREVIDEO CoreVideo ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
+    find_library(MAC_FRAME_VIDEOTOOLBOX VideoToolbox ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
+  endif()
 elseif(LINUX)
   if(WITH_GTK3)
     find_package("GTK3" 2.0)
@@ -442,8 +443,6 @@ elseif(LINUX)
     set(WITH_FFMPEG OFF)
   endif()
 
-  find_package("Va")
-
   if(WITH_FFMPEG)
     if(WITH_SYSTEM_FFMPEG)
       find_package("FFMPEG")
@@ -461,6 +460,7 @@ elseif(LINUX)
         set(HAS_FFMPEG TRUE)
       endif()
     else()
+      find_package("Va")
       include("${SM_CMAKE_DIR}/SetupFfmpeg.cmake")
       set(HAS_FFMPEG TRUE)
     endif()

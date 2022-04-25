@@ -87,24 +87,17 @@ PBProject/Hardware.plist
 Thumbs.db
 *.exe
 *.dll
+!extern/ffmpeg-w32/*/*.dll
 nsis_strings_temp.inc
 
 # Linux General Files
 .dirstamp
-Makefile
 itgmania
-Makefile.in
 config.status
 _build/*
 aclocal.m4
 autoconf/*
 autom4te.cache/*
-configure
-src/Makefile.in
-src/Makefile
-src/config.h
-src/config.h.in
-src/stamp-h1
 ITGmania
 core
 
@@ -137,18 +130,6 @@ Themes/ultralight
 Themes/test
 src/version.bin
 src/verstub.cpp
-bundle/ffmpeg/.config
-bundle/ffmpeg/.version
-bundle/ffmpeg/config.*
-bundle/ffmpeg/doc/config.texi
-bundle/ffmpeg/libavutil/avconfig.h
-bundle/ffmpeg/version.h
-bundle/ffmpeg/*/*.so
-bundle/ffmpeg/*/*.so.*
-bundle/ffmpeg/*/*.ver
-bundle/ffmpeg/*/*.def
-bundle/ffmpeg/*/*.orig.def
-bundle/ffmpeg/*/*.lib
 src/build-*
 src/Release-*
 src/libtomcrypt/build-*
@@ -158,7 +139,6 @@ src/libtommath/build-*
 src/libtommath/Release-*
 src/libtommath/Debug
 src/*.so
-ffmpeg-*
 Data/SpeedMods.txt
 crashinfo.txt
 Utils/temp*

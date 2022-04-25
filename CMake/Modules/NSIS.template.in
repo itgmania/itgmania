@@ -599,9 +599,9 @@ FunctionEnd
   
   ; Modify the settings for MUI_PAGE_FINISH here.
   !define MUI_FINISHPAGE_NOAUTOCLOSE
-  !define MUI_FINISHPAGE_RUN "$INSTDIR\Program\StepMania.exe"
+  !define MUI_FINISHPAGE_RUN "$INSTDIR\Program\ITGmania.exe"
   !define MUI_FINISHPAGE_RUN_NOTCHECKED
-  !define MUI_FINISHPAGE_RUN_TEXT "Launch StepMania"
+  !define MUI_FINISHPAGE_RUN_TEXT "Launch ITGmania"
   
   !insertmacro MUI_PAGE_FINISH
 
@@ -696,7 +696,7 @@ Section "-Core installation"
   Push "@CPACK_PACKAGE_VERSION@"
   Call ConditionalAddToRegisty
   Push "Comments"
-  Push "StepMania @CPACK_PACKAGE_VERSION_MAJOR@ is a rhythm game simulator."
+  Push "ITGmania is a rhythm game simulator."
   Call ConditionalAddToRegisty
   Push "Publisher"
   Push "@CPACK_PACKAGE_VENDOR@"
@@ -738,15 +738,15 @@ Section "-Core installation"
   
   ; Associate SMZIP files. (Yes, we still use them it seems)
   WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\smzipfile" "" "SMZIP package"
-  WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\smzipfile\DefaultIcon" "" "$INSTDIR\Program\StepMania.exe,1"
-  WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\smzipfile\shell\open\command" "" '"$INSTDIR\Program\StepMania.exe" "%1"'
+  WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\smzipfile\DefaultIcon" "" "$INSTDIR\Program\ITGmania.exe,1"
+  WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\smzipfile\shell\open\command" "" '"$INSTDIR\Program\ITGmania.exe" "%1"'
   WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\.smzip" "" "smzipfile"
   
   ; Associate SMURL protocol.
-  WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\stepmania" "" "StepMania protocol handler"
+  WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\stepmania" "" "ITGmania protocol handler"
   WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\stepmania" "URL Protocol" ""
-  WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\stepmania\DefaultIcon" "" "$INSTDIR\Program\StepMania.exe"
-  WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\stepmania\shell\open\command" "" '"$INSTDIR\Program\StepMania.exe" "%1"'
+  WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\stepmania\DefaultIcon" "" "$INSTDIR\Program\ITGmania.exe"
+  WriteRegStr HKEY_LOCAL_MACHINE "SOFTWARE\Classes\stepmania\shell\open\command" "" '"$INSTDIR\Program\ITGmania.exe" "%1"'
   
   !insertmacro MUI_INSTALLOPTIONS_READ $INSTALL_DESKTOP "NSIS.InstallOptions.ini" "Field 5" "State"
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
