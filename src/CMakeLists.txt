@@ -152,13 +152,6 @@ set_target_properties("${SM_EXE_NAME}"
                                  OUTPUT_NAME_MINSIZEREL "${SM_NAME_MINSIZEREL}"
                                  OUTPUT_NAME_RELWITHDEBINFO "${SM_NAME_RELWITHDEBINFO}")
 
-list(APPEND SM_WINDOWS_PROGRAM_DLLS
-            "${SM_PROGRAM_DIR}/avcodec-55.dll"
-            "${SM_PROGRAM_DIR}/avformat-55.dll"
-            "${SM_PROGRAM_DIR}/avutil-52.dll"
-            "${SM_PROGRAM_DIR}/parallel_lights_io.dll"
-            "${SM_PROGRAM_DIR}/swscale-2.dll")
-
 if(WIN32)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE WINDOWS)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WINDOWS) # TODO: Remove this potential duplicate.
@@ -478,7 +471,7 @@ if(WIN32)
               "setupapi.lib"
               "hid.lib")
 
-  sm_add_link_flag("${SM_EXE_NAME}" "/LIBPATH:\"${SM_EXTERN_DIR}/ffmpeg/${SM_WIN32_ARCH}/lib\"")
+  sm_add_link_flag("${SM_EXE_NAME}" "/LIBPATH:\"${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}\"")
   sm_add_link_flag("${SM_EXE_NAME}"
                    "/LIBPATH:\"${SM_SRC_DIR}/archutils/Win32/ddk/${SM_WIN32_ARCH}\"")
   sm_add_link_flag("${SM_EXE_NAME}" "/ERRORREPORT:SEND")
@@ -522,7 +515,10 @@ elseif(APPLE)
                 "${SM_FFMPEG_LIB}/libavformat.a"
                 "${SM_FFMPEG_LIB}/libavcodec.a"
                 "${SM_FFMPEG_LIB}/libswscale.a"
-                "${SM_FFMPEG_LIB}/libavutil.a")
+                "${SM_FFMPEG_LIB}/libavutil.a"
+                "${MAC_FRAME_COREMEDIA}"
+                "${MAC_FRAME_COREVIDEO}"
+                "${MAC_FRAME_VIDEOTOOLBOX}")
   endif()
 else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
   if(HAS_FFMPEG)
@@ -545,8 +541,9 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
       list(APPEND SMDATA_LINK_LIB "zlib")
     endif()
 
-    if(VA_FOUND)
+    if(NOT WITH_SYSTEM_FFMPEG)
       list(APPEND SMDATA_LINK_LIB ${VA_LIBRARY})
+      list(APPEND SMDATA_LINK_LIB ${VA_DRM_LIBRARY})
     endif()
   endif()
 
@@ -635,7 +632,7 @@ if(NOT APPLE)
                   "${SM_EXTERN_DIR}/newvorbis/lib"
                   "${SM_EXTERN_DIR}/newvorbis/include")
     endif()
-    list(APPEND SM_INCLUDE_DIRS "${SM_EXTERN_DIR}/ffmpeg/include")
+    list(APPEND SM_INCLUDE_DIRS "${SM_EXTERN_DIR}/ffmpeg-w32/include")
   else()
     if(WITH_OGG AND NOT WITH_SYSTEM_OGG)
       list(APPEND SM_INCLUDE_DIRS "${SM_EXTERN_DIR}/vorbis")
@@ -705,21 +702,18 @@ if(NOT APPLE)
       install(FILES "${SM_PROGRAM_DIR}/Texture Font Generator.exe"
               DESTINATION "${SM_FULL_INSTALLATION_PATH}")
     endif()
-    install(FILES "${SM_PROGRAM_DIR}/avcodec-55.dll"
+    install(FILES "${SM_PROGRAM_DIR}/avcodec-59.dll"
             DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-    install(FILES "${SM_PROGRAM_DIR}/avformat-55.dll"
+    install(FILES "${SM_PROGRAM_DIR}/avformat-59.dll"
             DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-    install(FILES "${SM_PROGRAM_DIR}/avutil-52.dll"
+    install(FILES "${SM_PROGRAM_DIR}/avutil-57.dll"
             DESTINATION "${SM_FULL_INSTALLATION_PATH}")
     install(FILES "${SM_PROGRAM_DIR}/parallel_lights_io.dll"
             DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-    install(FILES "${SM_PROGRAM_DIR}/swscale-2.dll"
+    install(FILES "${SM_PROGRAM_DIR}/swscale-6.dll"
             DESTINATION "${SM_FULL_INSTALLATION_PATH}")
     install(FILES "${SM_PROGRAM_DIR}/ITGmania.vdi"
             DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-
-    # foreach(SM_WINDOW_DLL "${SM_WINDOWS_PROGRAM_DLLS}") install(FILES
-    # "${SM_WINDOW_DLL}" DESTINATION "${SM_INSTALL_DESTINATION}") endforeach()
   else()
     install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_INSTALL_DESTINATION}")
   endif()

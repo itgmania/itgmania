@@ -10,24 +10,10 @@ namespace avcodec
 {
 	extern "C"
 	{
+		#include <libavcodec/avcodec.h>
 		#include <libavformat/avformat.h>
 		#include <libswscale/swscale.h>
 		#include <libavutil/pixdesc.h>
-
-		#if LIBAVCODEC_VERSION_MAJOR >= 58
-		#define av_free_packet av_packet_unref
-		#define PixelFormat AVPixelFormat
-		#define PIX_FMT_YUYV422 AV_PIX_FMT_YUYV422
-		#define PIX_FMT_BGRA    AV_PIX_FMT_BGRA
-		#define PIX_FMT_ARGB	AV_PIX_FMT_ARGB
-		#define PIX_FMT_ABGR	AV_PIX_FMT_ABGR
-		#define PIX_FMT_RGBA	AV_PIX_FMT_RGBA
-		#define PIX_FMT_RGB24	AV_PIX_FMT_RGB24
-		#define PIX_FMT_BGR24	AV_PIX_FMT_BGR24
-		#define PIX_FMT_RGB555	AV_PIX_FMT_RGB555
-		#define PIX_FMT_NB		AV_PIX_FMT_NB
-		#define CODEC_ID_NONE   AV_CODEC_ID_NONE
-		#endif
 	}
 };
 
@@ -39,7 +25,6 @@ class MovieTexture_FFMpeg: public MovieTexture_Generic
 public:
 	MovieTexture_FFMpeg( RageTextureID ID );
 
-	static void RegisterProtocols();
 	static RageSurface *AVCodecCreateCompatibleSurface( int iTextureWidth, int iTextureHeight, bool bPreferHighColor, int &iAVTexfmt, MovieDecoderPixelFormatYCbCr &fmtout );
 };
 
@@ -79,7 +64,7 @@ private:
 
 	avcodec::AVStream *m_pStream;
 	avcodec::AVFrame *m_Frame;
-	avcodec::PixelFormat m_AVTexfmt; /* PixelFormat of output surface */
+	avcodec::AVPixelFormat m_AVTexfmt;	/* pixel format of output surface */
 	avcodec::SwsContext *m_swsctx;
 	avcodec::AVCodecContext *m_pStreamCodec;
 
@@ -106,7 +91,7 @@ static struct AVPixelFormat_t
 {
 	int bpp;
 	uint32_t masks[4];
-	avcodec::PixelFormat pf;
+	avcodec::AVPixelFormat pf;
 	bool bHighColor;
 	bool bByteSwapOnLittleEndian;
 	MovieDecoderPixelFormatYCbCr YUV;
@@ -117,7 +102,7 @@ static struct AVPixelFormat_t
 		  0x00FF0000,
 		  0x0000FF00,
 		  0x000000FF },
-		avcodec::PIX_FMT_YUYV422,
+		avcodec::AV_PIX_FMT_YUYV422,
 		false, /* N/A */
 		true,
 		PixelFormatYCbCr_YUYV422,
@@ -128,7 +113,7 @@ static struct AVPixelFormat_t
 		  0x00FF0000,
 		  0xFF000000,
 		  0x000000FF },
-		avcodec::PIX_FMT_BGRA,
+		avcodec::AV_PIX_FMT_BGRA,
 		true,
 		true,
 		PixelFormatYCbCr_Invalid,
@@ -139,7 +124,7 @@ static struct AVPixelFormat_t
 		  0x0000FF00,
 		  0x000000FF,
 		  0xFF000000 },
-		avcodec::PIX_FMT_ARGB,
+		avcodec::AV_PIX_FMT_ARGB,
 		true,
 		true,
 		PixelFormatYCbCr_Invalid,
@@ -151,7 +136,7 @@ static struct AVPixelFormat_t
 		  0x0000FF00,
 		  0x00FF0000,
 		  0xFF000000 },
-		avcodec::PIX_FMT_ABGR,
+		avcodec::AV_PIX_FMT_ABGR,
 		true,
 		true,
 		PixelFormatYCbCr_Invalid,
@@ -162,7 +147,7 @@ static struct AVPixelFormat_t
 		  0x00FF0000,
 		  0x0000FF00,
 		  0x000000FF },
-		avcodec::PIX_FMT_RGBA,
+		avcodec::AV_PIX_FMT_RGBA,
 		true,
 		true,
 		PixelFormatYCbCr_Invalid,
@@ -173,7 +158,7 @@ static struct AVPixelFormat_t
 		  0x00FF00,
 		  0x0000FF,
 		  0x000000 },
-		avcodec::PIX_FMT_RGB24,
+		avcodec::AV_PIX_FMT_RGB24,
 		true,
 		true,
 		PixelFormatYCbCr_Invalid,
@@ -184,7 +169,7 @@ static struct AVPixelFormat_t
 		  0x00FF00,
 		  0xFF0000,
 		  0x000000 },
-		avcodec::PIX_FMT_BGR24,
+		avcodec::AV_PIX_FMT_BGR24,
 		true,
 		true,
 		PixelFormatYCbCr_Invalid,
@@ -195,12 +180,12 @@ static struct AVPixelFormat_t
 		  0x03E0,
 		  0x001F,
 		  0x0000 },
-		avcodec::PIX_FMT_RGB555,
+		avcodec::AV_PIX_FMT_RGB555,
 		false,
 		false,
 		PixelFormatYCbCr_Invalid,
 	},
-	{ 0, { 0,0,0,0 }, avcodec::PIX_FMT_NB, true, false, PixelFormatYCbCr_Invalid }
+	{ 0, { 0,0,0,0 }, avcodec::AV_PIX_FMT_NB, true, false, PixelFormatYCbCr_Invalid }
 };
 
 #endif

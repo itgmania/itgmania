@@ -27,9 +27,6 @@ option(
   "Build without the ROLC assembly instructions for tomcrypt."
   OFF)
 
-# Turn this option off to not use the GPL exclusive components.
-option(WITH_GPL_LIBS "Build with GPL libraries." ON)
-
 # Turn this option off to disable using WAV files with the game. Note that it is
 # recommended to keep this on.
 option(WITH_WAV "Build with WAV Support." ON)
@@ -79,7 +76,6 @@ elseif(LINUX)
   option(WITH_SYSTEM_FFMPEG
          "Build with the system's FFMPEG, disabled build with bundled's FFMPEG"
          OFF)
-  option(WITH_CRYSTALHD_DISABLED "Build FFMPEG without Crystal HD support." OFF)
   option(WITH_MINIMAID "Build with Minimaid Lights Support." OFF)
   option(WITH_TTY "Build with Linux TTY Input Support." OFF)
   option(WITH_PROFILING "Build with Profiling Support." OFF)
