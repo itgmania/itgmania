@@ -512,10 +512,14 @@ elseif(APPLE)
 
   if(HAS_FFMPEG)
     list(APPEND SMDATA_LINK_LIB
-                "${SM_FFMPEG_LIB}/libavformat.a"
-                "${SM_FFMPEG_LIB}/libavcodec.a"
-                "${SM_FFMPEG_LIB}/libswscale.a"
-                "${SM_FFMPEG_LIB}/libavutil.a"
+                "${SM_FFMPEG_LIB_ARM64}/libavformat.a"
+                "${SM_FFMPEG_LIB_ARM64}/libavcodec.a"
+                "${SM_FFMPEG_LIB_ARM64}/libswscale.a"
+                "${SM_FFMPEG_LIB_ARM64}/libavutil.a"
+                "${SM_FFMPEG_LIB_X86_64}/libavformat.a"
+                "${SM_FFMPEG_LIB_X86_64}/libavcodec.a"
+                "${SM_FFMPEG_LIB_X86_64}/libswscale.a"
+                "${SM_FFMPEG_LIB_X86_64}/libavutil.a"
                 "${MAC_FRAME_COREMEDIA}"
                 "${MAC_FRAME_COREVIDEO}"
                 "${MAC_FRAME_VIDEOTOOLBOX}")
@@ -665,7 +669,7 @@ else()
   endif()
   list(APPEND SM_INCLUDE_DIRS "archutils/Unix")
   if(HAS_FFMPEG)
-    add_dependencies("${SM_EXE_NAME}" "ffmpeg")
+    add_dependencies("${SM_EXE_NAME}" "ffmpeg_arm64" "ffmpeg_x86_64")
     list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
   endif()
 endif()
