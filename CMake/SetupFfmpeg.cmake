@@ -33,9 +33,8 @@ if(CMAKE_POSITION_INDEPENDENT_CODE)
 endif()
 
 if(MACOSX)
-  find_program(FFMPEG_YASM_EXECUTABLE yasm
-               PATHS /usr/bin /usr/local/bin /opt/local/bin)
-  list(APPEND FFMPEG_CONFIGURE "--x86asmexe=${FFMPEG_YASM_EXECUTABLE}")
+  list(APPEND FFMPEG_CONFIGURE "--disable-asm")
+  list(APPEND FFMPEG_CONFIGURE "--enable-cross-compile")
   list(APPEND FFMPEG_CONFIGURE "--enable-videotoolbox")
 else()
   list(APPEND FFMPEG_CONFIGURE "--enable-vaapi")
@@ -51,14 +50,42 @@ if(WITH_FFMPEG_JOBS GREATER 0)
 endif()
 list(APPEND SM_FFMPEG_MAKE "&&" "make" "DESTDIR=./dest" "install")
 
-externalproject_add("ffmpeg"
-                    SOURCE_DIR "${SM_FFMPEG_SRC_DIR}"
-                    CONFIGURE_COMMAND ${FFMPEG_CONFIGURE}
-                    BUILD_COMMAND "${SM_FFMPEG_MAKE}"
-                    UPDATE_COMMAND ""
-                    INSTALL_COMMAND ""
-                    TEST_COMMAND "")
+if(MACOSX)
+  externalproject_add("ffmpeg_arm64"
+                      SOURCE_DIR "${SM_FFMPEG_SRC_DIR}"
+                      CONFIGURE_COMMAND ${FFMPEG_CONFIGURE} "--arch=arm64" "--extra-cflags=-arch arm64" "--extra-ldflags=-arch arm64"
+                      BUILD_COMMAND "${SM_FFMPEG_MAKE}"
+                      UPDATE_COMMAND ""
+                      INSTALL_COMMAND ""
+                      TEST_COMMAND "")
 
-externalproject_get_property("ffmpeg" BINARY_DIR)
-set(SM_FFMPEG_LIB ${BINARY_DIR}/dest/lib)
-set(SM_FFMPEG_INCLUDE ${BINARY_DIR}/dest/include)
+  externalproject_get_property("ffmpeg_arm64" BINARY_DIR)
+  set(SM_FFMPEG_LIB_ARM64 ${BINARY_DIR}/dest/lib)
+
+  externalproject_add("ffmpeg_x86_64"
+                      SOURCE_DIR "${SM_FFMPEG_SRC_DIR}"
+                      CONFIGURE_COMMAND ${FFMPEG_CONFIGURE} "--arch=x86_64" "--extra-cflags=-arch x86_64" "--extra-ldflags=-arch x86_64"
+                      BUILD_COMMAND "${SM_FFMPEG_MAKE}"
+                      UPDATE_COMMAND ""
+                      INSTALL_COMMAND ""
+                      TEST_COMMAND "")
+
+  externalproject_get_property("ffmpeg_x86_64" BINARY_DIR)
+  set(SM_FFMPEG_LIB_X86_64 ${BINARY_DIR}/dest/lib)
+
+  # The header files are the same for both architectures, so it doesn't matter
+  # which one of the two binary dirs we use.
+  set(SM_FFMPEG_INCLUDE ${BINARY_DIR}/dest/include)
+else()
+  externalproject_add("ffmpeg"
+                      SOURCE_DIR "${SM_FFMPEG_SRC_DIR}"
+                      CONFIGURE_COMMAND ${FFMPEG_CONFIGURE}
+                      BUILD_COMMAND "${SM_FFMPEG_MAKE}"
+                      UPDATE_COMMAND ""
+                      INSTALL_COMMAND ""
+                      TEST_COMMAND "")
+
+  externalproject_get_property("ffmpeg" BINARY_DIR)
+  set(SM_FFMPEG_LIB ${BINARY_DIR}/dest/lib)
+  set(SM_FFMPEG_INCLUDE ${BINARY_DIR}/dest/include)
+endif()
