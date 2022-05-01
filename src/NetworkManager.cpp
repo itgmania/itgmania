@@ -108,13 +108,15 @@ bool NetworkManager::IsUrlAllowed(const std::string& url)
 
 	for (const auto& allowedHost : allowedHosts)
 	{
-		if (allowedHost.substr(0, 2) == "*.")
+		// subdomain wildcards; ".domain" doesn't match "*.domain", but "a.domain" does
+		if (allowedHost.substr(0, 2) == "*." && host.length() >= allowedHost.length())
 		{
 			size_t pos = host.length() - allowedHost.length() + 1;
 			if (host.substr(pos) == allowedHost.substr(1))
 				return true;
 		}
 
+		// literal match
 		if (host == allowedHost)
 			return true;
 	}
