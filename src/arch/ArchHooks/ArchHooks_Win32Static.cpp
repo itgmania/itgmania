@@ -68,6 +68,7 @@ void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
 		FILEMAN->Mount("dir", sDir + "/CDTitles", "/CDTitles");
 		FILEMAN->Mount("dir", sDir + "/Characters", "/Characters");
 		FILEMAN->Mount("dir", sDir + "/Courses", "/Courses");
+		FILEMAN->Mount("dir", sDir + "/Downloads", "/Downloads");
 		FILEMAN->Mount("dir", sDir + "/Logs", "/Logs");
 		FILEMAN->Mount("dir", sDir + "/NoteSkins", "/NoteSkins");
 		FILEMAN->Mount("dir", sDir + "/Packages", "/Packages");
