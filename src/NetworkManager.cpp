@@ -24,7 +24,7 @@
 NetworkManager*	NETWORK = nullptr;	// global and accessible from anywhere in our program
 
 Preference<bool> NetworkManager::httpEnabled("HttpEnabled", true, nullptr, PreferenceType::Immutable);
-Preference<RString> NetworkManager::httpAllowHosts("HttpAllowHosts", "api.groovestats.com", nullptr, PreferenceType::Immutable);
+Preference<RString> NetworkManager::httpAllowHosts("HttpAllowHosts", "*.groovestats.com", nullptr, PreferenceType::Immutable);
 
 static const char *HttpErrorCodeNames[] = {
 	"Blocked",
@@ -81,7 +81,7 @@ bool NetworkManager::IsUrlAllowed(const std::string& url)
 	}
 
 	std::string protocol;
-	std::string host;
+	RString host;
 	std::string path;
 	std::string query;
 	int port;
@@ -98,10 +98,28 @@ bool NetworkManager::IsUrlAllowed(const std::string& url)
 		return false;
 	}
 
-	vector<RString> allowedHosts;
-	split(this->httpAllowHosts.Get(), ",", allowedHosts);
+	host.MakeLower();
 
-	return std::find(allowedHosts.begin(), allowedHosts.end(), host) != allowedHosts.end();
+	RString allowedHostsStr = this->httpAllowHosts.Get();
+	allowedHostsStr.MakeLower();
+
+	vector<RString> allowedHosts;
+	split(allowedHostsStr, ",", allowedHosts);
+
+	for (const auto& allowedHost : allowedHosts)
+	{
+		if (allowedHost.substr(0, 2) == "*.")
+		{
+			size_t pos = host.length() - allowedHost.length() + 1;
+			if (host.substr(pos) == allowedHost.substr(1))
+				return true;
+		}
+
+		if (host == allowedHost)
+			return true;
+	}
+
+	return false;
 }
 
 HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args)
@@ -138,7 +156,6 @@ HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args)
 		// Don't timeout downloads by default. This value might be
 		// overwritten below if a value is specified in the request.
 		req->transferTimeout = INT_MAX;
-
 	}
 
 	if (args.connectTimeout > 0)
