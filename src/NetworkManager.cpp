@@ -151,7 +151,7 @@ HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args)
 		req->onProgressCallback = args.onProgress;
 
 	client.performRequest(req, [args, downloadFile, downloadFilename](const ix::HttpResponsePtr& response) {
-		if (downloadFile->IsOpen())
+		if (!args.downloadFile.empty())
 		{
 			RString error = downloadFile->GetError();
 			downloadFile->Close();
