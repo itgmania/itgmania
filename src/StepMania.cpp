@@ -1002,6 +1002,9 @@ int sm_main(int argc, char* argv[])
 
 	// Almost everything uses this to read and write files.  Load this early.
 	FILEMAN = new RageFileManager( argv[0] );
+	FILEMAN->ProtectPath(SpecialFiles::DEFAULTS_INI_PATH);
+	FILEMAN->ProtectPath(SpecialFiles::STATIC_INI_PATH);
+	FILEMAN->ProtectPath(SpecialFiles::PREFERENCES_INI_PATH);
 	FILEMAN->MountInitialFilesystems();
 
 	bool bPortable = DoesFileExist("/Portable.ini");

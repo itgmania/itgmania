@@ -197,6 +197,12 @@ bool RageFileManager::Unzip(const std::string &zipPath, std::string targetPath, 
 
 		std::string filepath = targetPath + filename;
 
+		if (FILEMAN->IsPathProtected(filepath))
+		{
+			LOG->Warn("Overwriting %s is not allowed", filepath.c_str());
+			continue;
+		}
+
 		if (info.m_is_directory)
 		{
 			CreateDir(filepath);
@@ -227,42 +233,37 @@ bool RageFileManager::Unzip(const std::string &zipPath, std::string targetPath, 
 	return success;
 }
 
-/* Wait for the given driver to become unreferenced, and remove it from the list
- * to get exclusive access to it.  Returns false if the driver is no longer available
- * (somebody else got it first). */
-#if 0
-static bool GrabDriver( RageFileDriver *pDriver )
+static void NormalizePath( RString &sPath )
 {
-	g_Mutex->Lock();
-
-	for(;;)
+	FixSlashesInPlace( sPath );
+	CollapsePath( sPath, true );
+	if (sPath.size() == 0)
 	{
-		unsigned i;
-		for( i = 0; i < g_pDrivers.size(); ++i )
-		{
-			if( g_pDrivers[i]->m_pDriver == pDriver )
-			{
-				break;
-			}
-		}
-		if( i == g_pDrivers.size() )
-		{
-			g_Mutex->Unlock();
-			return false;
-		}
-
-		if( g_pDrivers[i]->m_iRefs == 0 )
-		{
-			g_pDrivers.erase( g_pDrivers.begin()+i );
-			return true;
-		}
-
-		/* The driver is in use.  Wait for somebody to release a driver, and
-		 * try again. */
-		g_Mutex->Wait();
+		sPath = '/';
+	}
+	else if (sPath[0] != '/')
+	{
+		sPath = '/' + sPath;
 	}
 }
-#endif
+
+void RageFileManager::ProtectPath(const std::string& path)
+{
+	RString normalizedPath(path);
+	NormalizePath(normalizedPath);
+	normalizedPath.MakeLower();
+
+	m_protectedPaths.insert(normalizedPath);
+}
+
+bool RageFileManager::IsPathProtected(const std::string& path)
+{
+	RString normalizedPath(path);
+	NormalizePath(normalizedPath);
+	normalizedPath.MakeLower();
+
+	return m_protectedPaths.count(normalizedPath) > 0;
+}
 
 // Mountpoints as directories cause a problem.  If "Themes/default" is a mountpoint, and
 // doesn't exist anywhere else, then GetDirListing("Themes/*") must return "default".  The
@@ -490,20 +491,6 @@ RString LoadedDriver::GetPath( const RString &sPath ) const
 	/* Add one, so we don't cut off the leading slash. */
 	RString sRet = sPath.Right( sPath.size() - m_sMountPoint.size() + 1 );
 	return sRet;
-}
-
-static void NormalizePath( RString &sPath )
-{
-	FixSlashesInPlace( sPath );
-	CollapsePath( sPath, true );
-	if (sPath.size() == 0)
-	{
-		sPath = '/';
-	}
-	else if (sPath[0] != '/')
-	{
-		sPath = '/' + sPath;
-	}
 }
 
 bool ilt( const RString &a, const RString &b ) { return a.CompareNoCase(b) < 0; }
@@ -1277,7 +1264,20 @@ unsigned int GetHashForDirectory( const RString &sDir )
 class LunaRageFileManager: public Luna<RageFileManager>
 {
 public:
-	static int Copy(T* p, lua_State *L){ lua_pushboolean(L, p->Copy(SArg(1), SArg(2))); return 1; }
+	static int Copy(T* p, lua_State *L){
+		const std::string fromPath = SArg(1);
+		const std::string toPath = SArg(2);
+
+		if (p->IsPathProtected(toPath))
+		{
+			LOG->Warn("Overwriting %s is not allowed", toPath.c_str());
+			lua_pushboolean(L, false);
+			return 1;
+		}
+
+		lua_pushboolean(L, p->Copy(fromPath, toPath));
+		return 1;
+	}
 	static int DoesFileExist( T* p, lua_State *L ){ lua_pushboolean( L, p->DoesFileExist(SArg(1)) ); return 1; }
 	static int GetFileSizeBytes( T* p, lua_State *L ){ lua_pushnumber( L, p->GetFileSizeInBytes(SArg(1)) ); return 1; }
 	static int GetHashForFile( T* p, lua_State *L ){ lua_pushnumber( L, p->GetFileHash(SArg(1)) ); return 1; }
@@ -1302,16 +1302,6 @@ public:
 		LuaHelpers::CreateTableFromArray(vDirs, L);
 		return 1;
 	}
-	/*
-	static int GetDirListingRecursive( T* p, lua_State *L )
-	{
-		vector<RString> vDirs;
-		// (directory, match, addto)
-		GetDirListingRecursive( SArg(1), SArg(2), vDirs );
-		LuaHelpers::CreateTableFromArray(vDirs, L);
-		return 1;
-	}
-	*/
 	static int Unzip(T* p, lua_State *L)
 	{
 		std::string zipPath = SArg(1);
@@ -1337,7 +1327,6 @@ public:
 		ADD_METHOD( GetFileSizeBytes );
 		ADD_METHOD( GetHashForFile );
 		ADD_METHOD( GetDirListing );
-		//ADD_METHOD( GetDirListingRecursive );
 		ADD_METHOD( Unzip );
 	}
 };
