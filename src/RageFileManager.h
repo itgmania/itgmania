@@ -1,5 +1,8 @@
 #ifndef RAGE_FILE_MANAGER_H
 #define RAGE_FILE_MANAGER_H
+
+#include <unordered_set>
+
 /** @brief Constants for working with the RageFileManager. */
 namespace RageFileManagerUtil
 {
@@ -74,12 +77,18 @@ public:
 
 	bool Unzip(const std::string &zipPath, std::string targetPath, int strip);
 
+	// path protection
+	void ProtectPath(const std::string& path);
+	bool IsPathProtected(const std::string& path);
+
 	// Lua
 	void PushSelf( lua_State *L );
 
 private:
 	RageFileBasic *OpenForReading( const RString &sPath, int iMode, int &iError );
 	RageFileBasic *OpenForWriting( const RString &sPath, int iMode, int &iError );
+
+	std::unordered_set<std::string> m_protectedPaths;
 };
 
 extern RageFileManager *FILEMAN;

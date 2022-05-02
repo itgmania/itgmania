@@ -8,6 +8,7 @@
 #include "global.h"
 #include "RageFileBasic.h"
 #include "RageFile.h"
+#include "RageLog.h"
 #include "RageUtil.h"
 #include "RageFileDriver.h"
 
@@ -351,7 +352,17 @@ public:
 
 	static int Open( T* p, lua_State *L )
 	{
-		lua_pushboolean( L, p->Open( SArg(1), IArg(2) ) );
+		const RString path = SArg(1);
+		int mode = IArg(2);
+
+		if ((mode & RageFile::WRITE) && FILEMAN->IsPathProtected(path))
+		{
+			LOG->Warn("Writing to %s is not allowed", path.c_str());
+			lua_pushboolean(L, false);
+			return 1;
+		}
+
+		lua_pushboolean( L, p->Open(path, mode) );
 		return 1;
 	}
 
