@@ -122,12 +122,6 @@ Data/UserPrefs
 Data/uPrefs
 Data/GamePrefs/*.cfg
 Data/Static.ini
-Themes/pump
-Themes/pump-*
-Themes/optical-release
-Themes/moonlight
-Themes/ultralight
-Themes/test
 src/version.bin
 src/verstub.cpp
 src/build-*
