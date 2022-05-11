@@ -247,46 +247,6 @@ elseif(APPLE)
     set(SM_APP_RELEASE_NAME "${SM_NAME_RELEASE}")
   endif()
 
-  if(WITH_FULL_RELEASE)
-    string(CONCAT SM_NAME_VERSION
-                  "${SM_EXE_NAME}"
-                  "-"
-                  "${SM_VERSION_TRADITIONAL}")
-    set(SM_DMG_VERSION "${SM_VERSION_TRADITIONAL}")
-  else()
-    string(CONCAT SM_NAME_VERSION
-                  "${SM_EXE_NAME}"
-                  "-"
-                  "${SM_VERSION_FULL}")
-    set(SM_DMG_VERSION "${SM_VERSION_FULL}")
-  endif()
-  set(SM_DMG_RELEASE_NAME "${SM_NAME_VERSION}-mac.dmg")
-
-  add_custom_target(dmg
-                    COMMAND pushd ${SM_ROOT_DIR}\; mkdir -p dmgtmpdir\; cd
-                            dmgtmpdir\; mkdir -p ${SM_NAME_VERSION}\; cd
-                            ${SM_NAME_VERSION}\; mkdir -p ${SM_NAME_VERSION}\; cd
-                            ${SM_NAME_VERSION}\; cp -R
-                            "${SM_ROOT_DIR}/Announcers" .\; cp -R
-                            "${SM_ROOT_DIR}/BackgroundEffects" .\; cp -R
-                            "${SM_ROOT_DIR}/BackgroundTransitions" .\; cp -R
-                            "${SM_ROOT_DIR}/BGAnimations" .\; cp -R
-                            "${SM_ROOT_DIR}/Characters" .\; cp -R
-                            "${SM_ROOT_DIR}/Courses" .\; cp -R
-                            "${SM_ROOT_DIR}/Data" .\; cp -R
-                            "${SM_ROOT_DIR}/Docs" .\; cp -R
-                            "${SM_ROOT_DIR}/Manual" .\; cp -R
-                            "${SM_ROOT_DIR}/NoteSkins" .\; cp -R
-                            "${SM_ROOT_DIR}/Scripts" .\; cp -R
-                            "${SM_ROOT_DIR}/Songs" .\; cp -R
-                            "${SM_ROOT_DIR}/Themes" .\; cp -R
-                            "${SM_ROOT_DIR}/${SM_APP_RELEASE_NAME}.app" .\; cd
-                            ${SM_ROOT_DIR}\; hdiutil create
-                            "${SM_DMG_RELEASE_NAME}" -VOLNAME
-                            "ITGmania ${SM_DMG_VERSION}" -SRCFOLDER
-                            "dmgtmpdir/${SM_NAME_VERSION}/" -OV\; rm -fR
-                            dmgtmpdir\; popd\;)
-
   # Add the ability to copy the resource file.
   add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
                      COMMAND ${CMAKE_COMMAND} -E make_directory
@@ -695,61 +655,72 @@ else()
   set(SM_INSTALL_DESTINATION "itgmania")
 endif()
 
-if(NOT APPLE)
-  if(WIN32)
-    set(SM_FULL_INSTALLATION_PATH_LIST "${SM_INSTALL_DESTINATION}" "Program")
-    list(JOIN SM_FULL_INSTALLATION_PATH_LIST "/" SM_FULL_INSTALLATION_PATH)
-    # Hardcoding the values for now since the foreach loop is not working as
-    # intended.
-    install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-    if(WITH_FULL_RELEASE OR WITH_TEXTURE_GENERATOR)
-      install(FILES "${SM_PROGRAM_DIR}/Texture Font Generator.exe"
-              DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-    endif()
-    install(FILES "${SM_PROGRAM_DIR}/avcodec-59.dll"
+if(WIN32)
+  set(SM_FULL_INSTALLATION_PATH_LIST "${SM_INSTALL_DESTINATION}" "Program")
+  list(JOIN SM_FULL_INSTALLATION_PATH_LIST "/" SM_FULL_INSTALLATION_PATH)
+  # Hardcoding the values for now since the foreach loop is not working as
+  # intended.
+  install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+  if(WITH_FULL_RELEASE OR WITH_TEXTURE_GENERATOR)
+    install(FILES "${SM_PROGRAM_DIR}/Texture Font Generator.exe"
             DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-    install(FILES "${SM_PROGRAM_DIR}/avformat-59.dll"
-            DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-    install(FILES "${SM_PROGRAM_DIR}/avutil-57.dll"
-            DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-    install(FILES "${SM_PROGRAM_DIR}/parallel_lights_io.dll"
-            DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-    install(FILES "${SM_PROGRAM_DIR}/swscale-6.dll"
-            DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-    install(FILES "${SM_PROGRAM_DIR}/ITGmania.vdi"
-            DESTINATION "${SM_FULL_INSTALLATION_PATH}")
-  else()
-    install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_INSTALL_DESTINATION}")
   endif()
-  install(DIRECTORY "${SM_ROOT_DIR}/Announcers"
-          DESTINATION "${SM_INSTALL_DESTINATION}")
-  install(DIRECTORY "${SM_ROOT_DIR}/BGAnimations"
-          DESTINATION "${SM_INSTALL_DESTINATION}")
-  install(DIRECTORY "${SM_ROOT_DIR}/Themes"
-          DESTINATION "${SM_INSTALL_DESTINATION}")
-  install(DIRECTORY "${SM_ROOT_DIR}/Characters"
-          DESTINATION "${SM_INSTALL_DESTINATION}")
-  install(DIRECTORY "${SM_ROOT_DIR}/Scripts"
-          DESTINATION "${SM_INSTALL_DESTINATION}")
-  install(DIRECTORY "${SM_ROOT_DIR}/Courses"
-          DESTINATION "${SM_INSTALL_DESTINATION}")
-  install(DIRECTORY "${SM_ROOT_DIR}/BackgroundEffects"
-          DESTINATION "${SM_INSTALL_DESTINATION}")
-  install(DIRECTORY "${SM_ROOT_DIR}/Data"
-          DESTINATION "${SM_INSTALL_DESTINATION}")
-  install(DIRECTORY "${SM_ROOT_DIR}/BackgroundTransitions"
-          DESTINATION "${SM_INSTALL_DESTINATION}")
-  install(DIRECTORY "${SM_ROOT_DIR}/Docs"
-          DESTINATION "${SM_INSTALL_DESTINATION}")
-  install(DIRECTORY "${SM_ROOT_DIR}/NoteSkins"
-          DESTINATION "${SM_INSTALL_DESTINATION}")
-  if(NOT SM_INSTALL_DESTINATION)
-    install(DIRECTORY "${SM_ROOT_DIR}/Songs/StepMania 5" DESTINATION "Songs")
-    install(FILES "${SM_ROOT_DIR}/Songs/instructions.txt" DESTINATION "Songs")
-  else()
-    install(DIRECTORY "${SM_ROOT_DIR}/Songs/StepMania 5"
-            DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
-    install(FILES "${SM_ROOT_DIR}/Songs/instructions.txt"
-            DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
-  endif()
+  install(FILES "${SM_PROGRAM_DIR}/avcodec-59.dll"
+          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+  install(FILES "${SM_PROGRAM_DIR}/avformat-59.dll"
+          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+  install(FILES "${SM_PROGRAM_DIR}/avutil-57.dll"
+          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+  install(FILES "${SM_PROGRAM_DIR}/parallel_lights_io.dll"
+          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+  install(FILES "${SM_PROGRAM_DIR}/swscale-6.dll"
+          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+  install(FILES "${SM_PROGRAM_DIR}/ITGmania.vdi"
+          DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+else()
+  install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_INSTALL_DESTINATION}")
+endif()
+install(DIRECTORY "${SM_ROOT_DIR}/Announcers"
+        DESTINATION "${SM_INSTALL_DESTINATION}")
+install(DIRECTORY "${SM_ROOT_DIR}/BGAnimations"
+        DESTINATION "${SM_INSTALL_DESTINATION}")
+install(DIRECTORY "${SM_ROOT_DIR}/Themes"
+        DESTINATION "${SM_INSTALL_DESTINATION}")
+install(DIRECTORY "${SM_ROOT_DIR}/Characters"
+        DESTINATION "${SM_INSTALL_DESTINATION}")
+install(DIRECTORY "${SM_ROOT_DIR}/Scripts"
+        DESTINATION "${SM_INSTALL_DESTINATION}")
+install(DIRECTORY "${SM_ROOT_DIR}/Courses"
+        DESTINATION "${SM_INSTALL_DESTINATION}")
+install(DIRECTORY "${SM_ROOT_DIR}/BackgroundEffects"
+        DESTINATION "${SM_INSTALL_DESTINATION}")
+install(DIRECTORY "${SM_ROOT_DIR}/Data"
+        DESTINATION "${SM_INSTALL_DESTINATION}")
+install(DIRECTORY "${SM_ROOT_DIR}/BackgroundTransitions"
+        DESTINATION "${SM_INSTALL_DESTINATION}")
+install(DIRECTORY "${SM_ROOT_DIR}/Docs"
+        DESTINATION "${SM_INSTALL_DESTINATION}")
+install(DIRECTORY "${SM_ROOT_DIR}/NoteSkins"
+        DESTINATION "${SM_INSTALL_DESTINATION}")
+install(FILES "${SM_ROOT_DIR}/Songs/instructions.txt"
+        DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+
+if(WITH_FULL_RELEASE)
+  # Fetch ClubFantastic packs
+  include(FetchContent)
+  FetchContent_Declare(
+    ClubFantastic
+    URL https://download.clubfantastic.dance/club_fantastic_season2_songs_9ms.zip
+    URL_HASH SHA256=845b62da6bb2994fc2ba7871b35da02f6eb36ea1ae78c2b9a59a6ec046946787
+  )
+  FetchContent_MakeAvailable(ClubFantastic)
+  FetchContent_GetProperties(ClubFantastic SOURCE_DIR CLUB_FANTASTIC_DIR)
+
+  install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 1"
+          DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+  install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 2"
+          DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+else()
+  install(DIRECTORY "${SM_ROOT_DIR}/Songs/StepMania 5"
+          DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
 endif()
