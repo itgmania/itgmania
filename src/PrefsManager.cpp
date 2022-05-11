@@ -269,7 +269,7 @@ PrefsManager::PrefsManager() :
 	m_sAdditionalSongFolders	( "AdditionalSongFolders",		"", nullptr, PreferenceType::Deprecated ),
 	m_sAdditionalCourseFolders	( "AdditionalCourseFolders",		"", nullptr, PreferenceType::Deprecated ),
 	m_sAdditionalFolders		( "AdditionalFolders",			"", nullptr, PreferenceType::Deprecated ),
-	m_sDefaultTheme			( "DefaultTheme",			"default" ),
+	m_sDefaultTheme			( "DefaultTheme",			"Simply Love" ),
 	m_sLastSeenVideoDriver		( "LastSeenVideoDriver",		"" ),
 	m_sVideoRenderers		( "VideoRenderers",			"" ),	// StepMania.cpp sets these on first run:
 	m_bSmoothLines			( "SmoothLines",			false ),
