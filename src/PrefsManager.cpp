@@ -176,7 +176,7 @@ PrefsManager::PrefsManager() :
 	m_bPAL				( "PAL",			false ),
 	m_bDelayedTextureDelete		( "DelayedTextureDelete",	false ),
 	m_bDelayedModelDelete		( "DelayedModelDelete",		false ),
-	m_ImageCache			( "ImageCache",		IMGCACHE_LOW_RES_PRELOAD ),
+	m_ImageCache			( "ImageCache",			IMGCACHE_LOW_RES_PRELOAD ),
 	m_bFastLoad			( "FastLoad",			true ),
 	m_NeverCacheList		( "NeverCacheList", ""),
 
@@ -197,7 +197,7 @@ PrefsManager::PrefsManager() :
 	m_bMercifulBeginner		( "MercifulBeginner",		false ),
 	m_bMercifulSuperMeter		( "MercifulSuperMeter",		true ),
 	m_bDelayedBack			( "DelayedBack",		true ),
-	m_AllowHoldForOptions("AllowHoldForOptions", true),
+	m_AllowHoldForOptions		( "AllowHoldForOptions",	true ),
 	m_bShowInstructions		( "ShowInstructions",		true ),
 	m_bShowCaution			( "ShowCaution",		true ),
 	m_bShowNativeLanguage		( "ShowNativeLanguage",		true ),
@@ -211,10 +211,10 @@ PrefsManager::PrefsManager() :
 	m_iSongsPerPlay			( "SongsPerPlay",		3, ValidateSongsPerPlay ),
 	m_bDelayedCreditsReconcile	( "DelayedCreditsReconcile",	false ),
 	m_bComboContinuesBetweenSongs	( "ComboContinuesBetweenSongs",	false ),
-	m_AllowMultipleToasties		("AllowMultipleToasties",	true ),
-	m_MinTNSToHideNotes		("MinTNSToHideNotes",		TNS_W3 ),
+	m_AllowMultipleToasties		( "AllowMultipleToasties",	true ),
+	m_MinTNSToHideNotes		( "MinTNSToHideNotes",		TNS_W3 ),
 	m_ShowSongOptions		( "ShowSongOptions",		Maybe_NO ),
-	m_bPercentageScoring		( "PercentageScoring",		false ),
+	m_bPercentageScoring		( "PercentageScoring",		true ),
 	// Wow, these preference names are *seriously* long -Colby
 	m_fMinPercentageForMachineSongHighScore		( "MinPercentageForMachineSongHighScore",	0.0001f ), // This is for home, who cares how bad you do?
 	m_fMinPercentageForMachineCourseHighScore	( "MinPercentageForMachineCourseHighScore",	0.0001f ), // don't save course scores with 0 percentage
@@ -223,7 +223,7 @@ PrefsManager::PrefsManager() :
 	m_bAutogenGroupCourses		( "AutogenGroupCourses",		true ),
 	m_bOnlyPreferredDifficulties	( "OnlyPreferredDifficulties",		false ),
 	m_bBreakComboToGetItem		( "BreakComboToGetItem",		false ),
-	m_bLockCourseDifficulties	( "LockCourseDifficulties",		true ),
+	m_bLockCourseDifficulties	( "LockCourseDifficulties",		false ),
 	m_ShowDancingCharacters		( "ShowDancingCharacters",		SDC_Random ),
 	m_bUseUnlockSystem		( "UseUnlockSystem",			false ),
 	m_fGlobalOffsetSeconds		( "GlobalOffsetSeconds",		-0.008f ),
@@ -272,7 +272,7 @@ PrefsManager::PrefsManager() :
 	m_sDefaultTheme			( "DefaultTheme",			"Simply Love" ),
 	m_sLastSeenVideoDriver		( "LastSeenVideoDriver",		"" ),
 	m_sVideoRenderers		( "VideoRenderers",			"" ),	// StepMania.cpp sets these on first run:
-	m_bSmoothLines			( "SmoothLines",			false ),
+	m_bSmoothLines			( "SmoothLines",			true ),
 	m_iSoundWriteAhead		( "SoundWriteAhead",			0 ),
 	m_iSoundDevice			( "SoundDevice",			"" ),
 	m_iRageSoundSampleCountClamp	("RageSoundSampleCountClamp", 0), //some sound drivers mask the sample location number, the most popular number for this is 2^27, this causes lockup after ~50 minutes at 44.1khz sample rate
@@ -310,7 +310,7 @@ PrefsManager::PrefsManager() :
 	m_bLogCheckpoints		( "LogCheckpoints",	false ),
 	m_bShowLoadingWindow		( "ShowLoadingWindow",	true ),
 	m_bPseudoLocalize		( "PseudoLocalize",	false ),
-	m_show_theme_errors("ShowThemeErrors", false)
+	m_show_theme_errors		( "ShowThemeErrors",	false )
 
 {
 	Init();
@@ -375,7 +375,7 @@ void PrefsManager::RestoreGamePrefs()
 		gp = iter->second;
 
 	m_sAnnouncer		.Set( gp.m_sAnnouncer );
-	m_sTheme			.Set( gp.m_sTheme );
+	m_sTheme		.Set( gp.m_sTheme );
 	m_sDefaultModifiers	.Set( gp.m_sDefaultModifiers );
 
 	// give Static.ini a chance to clobber the saved game prefs
@@ -467,7 +467,7 @@ void PrefsManager::ReadGamePrefsFromIni( const RString &sIni )
 
 		// todo: read more prefs here? -aj
 		ini.GetValue(section_name, "Announcer",		gp.m_sAnnouncer);
-		ini.GetValue(section_name, "Theme",			gp.m_sTheme);
+		ini.GetValue(section_name, "Theme",		gp.m_sTheme);
 		ini.GetValue(section_name, "DefaultModifiers",	gp.m_sDefaultModifiers);
 	}
 }
