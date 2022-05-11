@@ -107,8 +107,12 @@ namespace
  *
  * This delay in events is ordinarily not noticable, because we report initial
  * presses and releases immediately.  However, if a real press is ever delayed,
- * this won't cause timing problems, because the event timestamp is preserved. */
-static Preference<float> g_fInputDebounceTime( "InputDebounceTime", 0 );
+ * this won't cause timing problems, because the event timestamp is preserved.
+ *
+ * For pad play, a value of 20ms-50ms seems to result in a better experience.
+ * For keyboard play, this is often set to 0.
+ * */
+static Preference<float> g_fInputDebounceTime( "InputDebounceTime", 0.02 );
 
 InputFilter*	INPUTFILTER = nullptr;	// global and accessible from anywhere in our program
 
