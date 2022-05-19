@@ -67,7 +67,6 @@ if(APPLE)
                  MACOSX_BUNDLE
                  ${SMDATA_ALL_FILES_SRC}
                  ${SMDATA_ALL_FILES_HPP})
-  set_target_properties("${SM_EXE_NAME}" PROPERTIES MACOSX_BUNDLE TRUE)
 else()
   if(MSVC)
     foreach(sm_src_file ${SMDATA_ALL_FILES_SRC})
@@ -198,21 +197,7 @@ elseif(APPLE)
       RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO
       "${SM_ROOT_DIR}"
       MACOSX_BUNDLE_INFO_PLIST
-      "${SM_XCODE_DIR}/Info.plist.in"
-      XCODE_ATTRIBUTE_INFOPLIST_PREPROCESS
-      "YES"
-      XCODE_ATTRIBUTE_INFOPLIST_PREPROCESSOR_DEFINITIONS[variant=Release]
-      "RELEASE"
-      XCODE_ATTRIBUTE_INFOPLIST_PREPROCESSOR_DEFINITIONS[variant=Debug]
-      "DEBUG"
-      XCODE_ATTRIBUTE_INFOPLIST_PREPROCESSOR_DEFINITIONS[variant=MinSizeRel]
-      "MINSIZEREL"
-      XCODE_ATTRIBUTE_INFOPLIST_PREPROCESSOR_DEFINITIONS[variant=RelWithDebInfo]
-      "RELWITHDEBINFO"
-      XCODE_ATTRIBUTE_GCC_PREFIX_HEADER
-      "${CMAKE_CURRENT_SOURCE_DIR}/archutils/Darwin/StepMania.pch"
-      XCODE_ATTRIBUTE_GCC_ENABLE_CPP_EXCEPTIONS
-      "NO")
+      "${SM_XCODE_DIR}/Info.plist.in")
 
   set(APPLE_BUNDLE_RESOURCES
     "${SM_ROOT_DIR}/Announcers"
@@ -252,7 +237,7 @@ elseif(APPLE)
                      COMMAND ${CMAKE_COMMAND} -E make_directory
                              "$<TARGET_FILE_DIR:ITGmania>/../Resources"
                      COMMAND ${CMAKE_COMMAND} -E copy
-                             "${SM_XCODE_DIR}/smicon.icns"
+                             "${SM_XCODE_DIR}/logo.icns"
                              "$<TARGET_FILE_DIR:ITGmania>/../Resources/"
                      COMMAND ${CMAKE_COMMAND} -E copy
                              "${SM_XCODE_DIR}/Hardware.plist"

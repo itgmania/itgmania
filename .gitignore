@@ -52,21 +52,6 @@ ___*
 *_LOCAL_*
 *_REMOTE_*
 
-# Mac Programming Files
-*.pbxuser
-PBProject/build
-Xcode/build
-Xcode/*.xcodeproj/xcuserdata/
-*.xcodeproj/xcuserdata
-*.xcodeproj/project.xcworkspace
-*.xcscheme
-WorkspaceSettings.xcsettings
-UserInterfaceState.xcuserstate
-*.xccheckout
-contents.xcworkspacedata
-xcschememanagement.plist
-PBProject/Hardware.plist
-
 # Mac General Files
 *.app
 *.dmg
