@@ -1,5 +1,3 @@
-/** @brief ProductInfo - Branding strings. Don't forget to also change ProductInfo.inc! */
-
 #ifndef PRODUCT_INFO_H
 #define PRODUCT_INFO_H
 
@@ -20,8 +18,8 @@
 #define PRODUCT_STRINGIFY(x) #x
 #define PRODUCT_XSTRINGIFY(x) PRODUCT_STRINGIFY(x)
 
-#define PRODUCT_FAMILY		PRODUCT_XSTRINGIFY(PRODUCT_FAMILY_BARE)
-#define PRODUCT_ID			PRODUCT_XSTRINGIFY(PRODUCT_ID_BARE)
+#define PRODUCT_FAMILY	PRODUCT_XSTRINGIFY(PRODUCT_FAMILY_BARE)
+#define PRODUCT_ID	PRODUCT_XSTRINGIFY(PRODUCT_ID_BARE)
 
 #define VIDEO_TROUBLESHOOTING_URL "http://old.stepmania.com/stepmaniawiki.php?title=Video_Driver_Troubleshooting"
 /** @brief The URL to report bugs on the program. */

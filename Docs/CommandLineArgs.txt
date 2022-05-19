@@ -22,10 +22,6 @@ usage: --Type=arcade
 Reads preferences from [Preferences-{Type}], usually from the metrics.
 --------------------------------------------------------------------------------
 [StepMania]
-* ExportNsisStrings
-usage: --ExportNsisStrings
-Exports strings for the installer.
-
 * ExportLuaInformation
 usage: --ExportLuaInformation
 Exports Lua.xml using the current theme (and anything it falls back on)

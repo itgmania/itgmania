@@ -24,44 +24,8 @@
 #include <conio.h>
 #endif
 
-/** @brief The directory where languages should be installed. */
-const RString INSTALLER_LANGUAGES_DIR = "Themes/_Installer/Languages/";
-
 vector<CommandLineActions::CommandLineArgs> CommandLineActions::ToProcess;
 
-static void Nsis()
-{
-	RageFile out;
-	if(!out.Open("nsis_strings_temp.inc", RageFile::WRITE))
-		RageException::Throw("Error opening file for write.");
-
-	vector<RString> vs;
-	GetDirListing(INSTALLER_LANGUAGES_DIR + "*.ini", vs, false, false);
-	for (RString const &s : vs)
-	{
-		RString sThrowAway, sLangCode;
-		splitpath(s, sThrowAway, sLangCode, sThrowAway);
-		const LanguageInfo *pLI = GetLanguageInfo(sLangCode);
-
-		RString sLangNameUpper = pLI->szEnglishName;
-		sLangNameUpper.MakeUpper();
-
-		IniFile ini;
-		if(!ini.ReadFile(INSTALLER_LANGUAGES_DIR + s))
-			RageException::Throw("Error opening file for read.");
-		FOREACH_CONST_Child(&ini, child)
-		{
-			FOREACH_CONST_Attr(child, attr)
-			{
-				RString sName = attr->first;
-				RString sValue = attr->second->GetValue<RString>();
-				sValue.Replace("\\n", "$\\n");
-				RString sLine = ssprintf("LangString %s ${LANG_%s} \"%s\"", sName.c_str(), sLangNameUpper.c_str(), sValue.c_str());
-				out.PutLine(sLine);
-			}
-		}
-	}
-}
 static void LuaInformation()
 {
 	XNode *pNode = LuaHelpers::GetLuaInformation();
@@ -107,11 +71,6 @@ void CommandLineActions::Handle(LoadingWindow* pLW)
 	ToProcess.push_back(args);
 
 	bool bExitAfter = false;
-	if( GetCommandlineArgument("ExportNsisStrings") )
-	{
-		Nsis();
-		bExitAfter = true;
-	}
 	if( GetCommandlineArgument("ExportLuaInformation") )
 	{
 		LuaInformation();

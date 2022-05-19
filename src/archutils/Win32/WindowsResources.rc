@@ -173,7 +173,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ICON                ICON                    "StepMania.ICO"
+IDI_ICON                ICON                    "logo.ico"
 IDI_ICON1               ICON                    "smzip.ico"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -198,7 +198,7 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "ITGmania Team \n http://www.itgmania.com/"
+            VALUE "CompanyName", "ITGmania Team \n https://www.itgmania.com/"
             VALUE "FileDescription", "ITGmania"
             VALUE "FileVersion", "0, 5, 1, 0"
             VALUE "InternalName", "ITGmania"
