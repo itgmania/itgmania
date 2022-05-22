@@ -5,9 +5,6 @@ ITGmania is a fork of [StepMania 5.1](https://github.com/stepmania/stepmania/tre
 
 [![Continuous integration](https://github.com/itgmania/itgmania/workflows/Continuous%20integration/badge.svg?branch=beta)](https://github.com/itgmania/itgmania/actions?query=workflow%3A%22Continuous+integration%22+branch%3Abeta)
 
-[![Build Status](https://travis-ci.org/stepmania/stepmania.svg?branch=master)](https://travis-ci.org/stepmania/stepmania)
-[![Build status](https://ci.appveyor.com/api/projects/status/uvoplsnyoats81r2?svg=true)](https://ci.appveyor.com/project/Nickito12/stepmania)
-
 ## Changes to StepMania 5.1
 
 - The mine fix
