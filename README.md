@@ -50,3 +50,17 @@ For specific information/legalese:
 * All of our source code is under the [MIT license](http://opensource.org/licenses/MIT).
 * Any songs that are included within this repository are under the [<abbr title="Creative Commons Non-Commercial">CC-NC</abbr> license](https://creativecommons.org/).
 * The [MAD library](http://www.underbit.com/products/mad/) and [FFmpeg codecs](https://www.ffmpeg.org/) when built with our code use the [GPL license](http://www.gnu.org).
+
+## Credits
+
+### ITGmania Team
+- Martin Natano (natano)
+- teejusb
+
+### Contributors
+- [Club Fantastic](https://wiki.clubfantastic.dance/en/Credits)
+- EvocaitArt (Enchantment noteskin)
+- LightningXCE (Cyber noteskin)
+- MegaSphere (Note/Rainbow/Vivid noteskins)
+- [Stepmania 5](Docs/credits_SM5.txt)
+- [Old StepMania Team](Docs/credits_old_Stepmania_Team.txt)
