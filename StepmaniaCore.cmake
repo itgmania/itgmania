@@ -4,7 +4,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/CMake/CMakeMacros.cmake)
 
 # Make Xcode's 'Archive' build work
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/extern")
-set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
 
 # Set up helper variables for future configuring.
 set(SM_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}/CMake")
@@ -319,8 +318,8 @@ elseif(MACOSX)
   endif()
 
   set(WITH_CRASH_HANDLER TRUE)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9")
-  set(CMAKE_OSX_DEPLOYMENT_TARGET_FULL "10.9.0")
+  set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "11")
 
   find_library(MAC_FRAME_ACCELERATE Accelerate ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
   find_library(MAC_FRAME_APPKIT AppKit ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
