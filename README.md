@@ -22,7 +22,7 @@ ITGmania is a fork of [StepMania 5.1](https://github.com/stepmania/stepmania/tre
 For those that do not wish to compile the game on their own and use a binary right away, be aware of the following issues:
 
 * Windows users are expected to have installed the [Microsoft Visual C++ x86 Redistributable for Visual Studio 2015](http://www.microsoft.com/en-us/download/details.aspx?id=48145) prior to running the game. For those on a 64-bit operating system, grab the x64 redistributable as well. Windows 7 is the minimum supported version.
-* Mac OS X users need to have Mac OS X 10.6.8 or higher to run ITGmania.
+* macOS users need to have macOS 11 (Big Sur) or higher to run ITGmania.
 * Linux users should receive all they need from the package manager of their choice.
 
 ### From Source
@@ -31,8 +31,9 @@ ITGmania can be compiled using [CMake](http://www.cmake.org/). More information 
 
 ## Resources
 
-* Website: https://www.itgmania.com/
-* Lua for ITGmania: https://itgmania.github.io/lua-for-itgmania/
+* [ITGmania Website](https://www.itgmania.com/)
+* [StepMania 5.1 to ITGmania Migration Guide](Docs/Userdocs/sm5_migration.md)
+* [Lua for ITGmania](https://itgmania.github.io/lua-for-itgmania/)
 * Lua API Documentation can be found in the Docs folder.
 
 ## Licensing Terms
