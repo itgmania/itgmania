@@ -540,7 +540,7 @@ void RageFileManager::GetDirListing( const RString &sPath_, vector<RString> &Add
 	UnreferenceAllDrivers( apDriverList );
 
 	// Remove files that start with ._ from the list because these are special
-	// OS X files that cause interference on other platforms. -Kyz
+	// macOS files that cause interference on other platforms. -Kyz
 	StripMacResourceForks(AddTo);
 
 	if( iDriversThatReturnedFiles > 1 )

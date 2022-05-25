@@ -673,7 +673,7 @@ void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 	{
 		ctx = &CurrentCtx;
 
-		/* __builtin_frame_address is broken on OS X; it sometimes returns bogus results. */
+		/* __builtin_frame_address is broken on macOS; it sometimes returns bogus results. */
 		register void *r1 __asm__ ("r1");
 		CurrentCtx.FramePtr = (const Frame *) r1;
 		CurrentCtx.PC = nullptr;

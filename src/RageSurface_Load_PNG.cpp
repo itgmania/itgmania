@@ -92,7 +92,7 @@ static RageSurface *RageSurface_Load_PNG( RageFile *f, const char *fn, char erro
 
 	// Throwing an exception in the error callback would make the exception
 	// pass through C code, which is undefined behavior.  Works fine on Linux,
-	// and on OS X with C++11, but does not work on OS X without C++11. -Kyz
+	// and on macOS with C++11, but does not work on macOS without C++11. -Kyz
 	if(setjmp(png_jmpbuf(png)))
 	{
 		png_destroy_read_struct(&png, &info_ptr, nullptr);

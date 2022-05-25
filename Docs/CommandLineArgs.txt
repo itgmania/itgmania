@@ -1,4 +1,4 @@
-StepMania 5 Command Line Arguments
+ITGmania Command Line Arguments
 ================================================================================
 Pass all arguments with --. For example, version would be entered as --version.
 stepmania --version

@@ -457,7 +457,7 @@ bool SemaImpl_Pthreads::TryWait()
 	return true;
 }
 #else
-// Use conditions, to work around OS X "forgetting" to implement semaphores.
+// Use conditions, to work around macOS "forgetting" to implement semaphores.
 SemaImpl_Pthreads::SemaImpl_Pthreads( int iInitialValue )
 {
 	int ret = pthread_cond_init( &m_Cond, nullptr );

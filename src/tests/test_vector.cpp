@@ -7,7 +7,7 @@
 #include <archutils/Darwin/VectorHelper.h>
 
 #if 0
-# error This depends on OS X and Apple's gcc.
+# error This depends on macOS and Apple's gcc.
 #endif
 #ifndef USE_VEC
 # error Enable altivec or sse.

@@ -535,7 +535,7 @@ save yourself some time, copy this for undocumented things:
 		Returns the product family. (e.g. "StepMania")
 	</Function>
 	<Function name='ProductID' return='string' arguments=''>
-		Returns the product ID. (e.g. "StepMania 5")
+		Returns the product ID. (e.g. "ITGmania")
 	</Function>
 	<Function name='ProductVersion' return='string' arguments=''>
 		Returns the product version. (e.g. "5.0.11" or "5.1.0" or "5.2-git-96f9771")
