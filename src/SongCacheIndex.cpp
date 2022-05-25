@@ -44,7 +44,7 @@ RString SongCacheIndex::GetCacheFilePath( const RString &sGroup, const RString &
 		s = sPath;
 	/* Change slashes and invalid utf-8 characters to _.
 	 * http://en.wikipedia.org/wiki/UTF-8
-	 * Mac OS X doesn't support precomposed unicode characters in files names and
+	 * macOS doesn't support precomposed unicode characters in files names and
 	 * so we should probably replace them with combining diacritics.
 	 * XXX How do we do this and is it even worth it? */
 	const char *invalid = "/\xc0\xc1\xfe\xff\xf8\xf9\xfa\xfb\xfc\xfd\xf5\xf6\xf7";

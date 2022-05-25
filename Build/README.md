@@ -21,7 +21,7 @@ Windows
 
 For those that prefer package manager systems, [Chocolatey](https://chocolatey.org/) has a CMake package. Run `choco install cmake` to get the latest stable version.
 
-Mac OS X Specific
+macOS Specific
 ===
 
 For those that prefer package manager systems, both [Homebrew](http://brew.sh/) and [MacPorts](https://www.macports.org/) offer CMake as part of their offerings. Run `brew install cmake` or `port install cmake` respectively to get the latest stable version.
@@ -43,13 +43,13 @@ CMake Command Line
 If you are unfamiliar with cmake, first run `cmake --help`. This will present a list of options and generators.
 The generators are used for setting up your project.
 
-The following steps will assume you operate from the StepMania project's Build directory.
+The following steps will assume you operate from the ITGmania project's Build directory.
 
 For the first setup, you will want to run this command:
 
 `cmake -G {YourGeneratorHere} .. && cmake ..`
 
-Replace {YourGeneratorHere} with one of the generator choices from `cmake --help`. As an example, Mac OS X users that want to have Xcode used would run `cmake -G Xcode .. && cmake ..` on their Terminal program.
+Replace {YourGeneratorHere} with one of the generator choices from `cmake --help`.
 
 If you are building on Windows and expecting your final executable to be able to run on Windows XP, append an additional parameter `-T "v140_xp"` (or `-T "v120_xp"`, depending on which version of Visual Studio you have installed) to your command line.
 
@@ -66,7 +66,7 @@ CMake GUI
 ===
 
 For those that use the GUI to work with cmake, you need to specify where the source code is and where the binaries will be built.
-The first one, counter-intuitively, is actually the parent directory of this one: the main StepMania directory.
+The first one, counter-intuitively, is actually the parent directory of this one: the main ITGmania directory.
 The second one for building can be this directory.
 
 Upon setting the source and build directories, you should `Configure` the build.

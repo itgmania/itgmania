@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # WARNING: This only works in GIMP 2.4.7 and later. 2.4.6 had a nasty memory leak in
 # gimp_text_fontname that breaks this script in all sorts of bad ways.
-# confirmed working on Linux, and broken on OS X.
+# confirmed working on Linux, and broken on macOS.
 
 from math import ceil
 from gimpfu import *

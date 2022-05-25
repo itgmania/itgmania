@@ -9,11 +9,9 @@ prevents mapping keys through the Config Key/Joy Mappings screen.
 
 
 ## Location
-Windows: %APPDATA%/StepMania 5.1/Save/Keymaps.ini  
-Linux: ~/.stepmania-5.1/Save/Keymaps.ini  
-OS X: ~/Library/Preferences/StepMania 5.1/Save/Keymaps.ini  
-(OS X location may be incorrect, report it if you use OS X and that location
-is incorrect)
+Windows: `%APPDATA%/ITGmania/Save/Keymaps.ini`
+Linux: `~/.itgmania/Save/Keymaps.ini`
+macOS: `~/Library/Preferences/ITGmania/Keymaps.ini`
 
 
 ## Structure

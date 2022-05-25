@@ -130,12 +130,10 @@ void ArchHooks_MacOSX::Init()
 
 RString ArchHooks_MacOSX::GetArchName() const
 {
-#if defined(__i386__)
-	return "Mac OS X (i386)";
-#elif defined(__x86_64__)
-	return "Mac OS X (x86_64)";
+#if defined(__x86_64__)
+	return "macOS (x86_64)";
 #elif defined(__aarch64__) || defined(__arm64__)
-	return "macOS (ARM64)";
+	return "macOS (arm64)";
 #else
 #error What arch?
 #endif
@@ -149,7 +147,7 @@ void ArchHooks_MacOSX::DumpDebugInfo()
 		// http://stackoverflow.com/a/891336
 		NSDictionary *version = [NSDictionary dictionaryWithContentsOfFile:@"/System/Library/CoreServices/SystemVersion.plist"];
 		NSString *productVersion = [version objectForKey:@"ProductVersion"];
-		SystemVersion = ssprintf("Mac OS X %s", [productVersion cStringUsingEncoding:[NSString defaultCStringEncoding]]);
+		SystemVersion = ssprintf("macOS %s", [productVersion cStringUsingEncoding:[NSString defaultCStringEncoding]]);
 	}
 
 	size_t size;

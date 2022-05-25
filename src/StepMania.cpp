@@ -1454,7 +1454,7 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 		 INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.InputList)) )
 	{
 		// alt-enter
-		/* In OS X, this is a menu item and will be handled as such. This will
+		/* In macOS, this is a menu item and will be handled as such. This will
 		 * happen first and then the lower priority GUI thread will happen second,
 		 * causing the window to toggle twice. Another solution would be to put
 		 * a timer in ArchHooks::SetToggleWindowed() and just not set the bool

@@ -45,7 +45,7 @@ static void LuaInformation()
  * @brief Print out version information.
  *
  * HACK: This function is primarily needed for Windows users.
- * Mac OS X and Linux print out version information on the command line
+ * macOS and Linux print out version information on the command line
  * regardless of any preferences (tested by shakesoda on Mac). -aj */
 static void Version()
 {
