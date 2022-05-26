@@ -636,6 +636,8 @@ target_include_directories("${SM_EXE_NAME}" PUBLIC ${SM_INCLUDE_DIRS})
 
 if(WIN32)
   set(SM_INSTALL_DESTINATION ".")
+elseif(APPLE)
+  set(SM_INSTALL_DESTINATION "ITGmania")
 else()
   set(SM_INSTALL_DESTINATION "itgmania")
 endif()
