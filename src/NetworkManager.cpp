@@ -50,6 +50,16 @@ XToString(HttpErrorCode);
 StringToX(HttpErrorCode);
 LuaXType(HttpErrorCode);
 
+static const char *WebSocketMessageTypeNames[] = {
+	"Message",
+	"Open",
+	"Close",
+	"Error",
+};
+XToString(WebSocketMessageType);
+StringToX(WebSocketMessageType);
+LuaXType(WebSocketMessageType);
+
 NetworkManager::NetworkManager() : httpClient(true), downloadClient(true)
 {
 	ix::initNetSystem();
@@ -93,7 +103,7 @@ bool NetworkManager::IsUrlAllowed(const std::string& url)
 		return false;
 	}
 
-	if (protocol != "http" && protocol != "https")
+	if (protocol != "http" && protocol != "https" && protocol != "ws" && protocol != "wss")
 	{
 		return false;
 	}
@@ -198,6 +208,43 @@ HttpRequestFuturePtr NetworkManager::HttpRequest(const HttpRequestArgs& args)
 	return std::make_shared<HttpRequestFuture>(req);
 }
 
+WebSocketHandlePtr NetworkManager::WebSocket(const WebSocketArgs& args)
+{
+	auto handle = std::make_shared<WebSocketHandle>();
+	handle->onClose = args.onClose;
+
+	handle->webSocket.setUrl(args.url);
+
+	ix::WebSocketHttpHeaders headers;
+	headers["User-Agent"] = this->GetUserAgent();
+	for (const auto& entry : args.headers)
+	{
+		headers[entry.first] = entry.second;
+	}
+	handle->webSocket.setExtraHeaders(headers);
+
+	if (args.handshakeTimeout > -1)
+		handle->webSocket.setHandshakeTimeout(args.handshakeTimeout);
+
+	if (args.pingInterval > -1)
+		handle->webSocket.setPingInterval(args.pingInterval);
+
+	if (args.automaticReconnect)
+	{
+		handle->webSocket.enableAutomaticReconnection();
+	}
+	else
+	{
+		handle->webSocket.disableAutomaticReconnection();
+	}
+
+	handle->webSocket.setOnMessageCallback(args.onMessage);
+
+	handle->webSocket.start();
+
+	return handle;
+}
+
 std::string NetworkManager::UrlEncode(const std::string& value)
 {
 	return this->httpClient.urlEncode(value);
@@ -223,9 +270,13 @@ void NetworkManager::ClearDownloads()
 	for (const auto& file : files)
 	{
 		if (FILEMAN->IsADirectory(file))
+		{
 			FILEMAN->DeleteRecursive(file + "/");
+		}
 		else
+		{
 			FILEMAN->Remove(file);
+		}
 	}
 }
 
@@ -243,6 +294,42 @@ int HttpRequestFuture::Cancel(lua_State *L)
 	auto fut = *static_cast<HttpRequestFuturePtr*>(udata);
 	fut->args->cancel = true;
 	return 0;
+}
+
+int WebSocketHandle::Collect(lua_State *L)
+{
+	void *udata = luaL_checkudata(L, 1, "WebSocketHandle");
+	auto handleptr = static_cast<WebSocketHandlePtr*>(udata);
+	handleptr->~shared_ptr();
+	return 0;
+}
+
+int WebSocketHandle::Close(lua_State *L)
+{
+	void *udata = luaL_checkudata(L, 1, "WebSocketHandle");
+	auto handle = *static_cast<WebSocketHandlePtr*>(udata);
+	LUA->YieldLua();
+	handle->webSocket.stop();
+	handle->onClose();
+	LUA->UnyieldLua();
+	return 0;
+}
+
+int WebSocketHandle::Send(lua_State *L)
+{
+	void *udata = luaL_checkudata(L, 1, "WebSocketHandle");
+	auto handle = *static_cast<WebSocketHandlePtr*>(udata);
+
+	size_t len;
+	const char *s = luaL_checklstring(L, 2, &len);
+	std::string data(s, len);
+
+	bool binary = lua_toboolean(L, 3);
+
+	auto info = handle->webSocket.send(data, binary);
+
+	lua_pushboolean(L, info.success);
+	return 1;
 }
 
 
@@ -265,6 +352,24 @@ static void registerHttpRequestMetatable(lua_State *L)
 }
 
 REGISTER_WITH_LUA_FUNCTION(registerHttpRequestMetatable)
+
+static void registerWebSocketMetatable(lua_State *L)
+{
+	const luaL_Reg WebSocket_meta[] = {
+		{"__gc", WebSocketHandle::Collect},
+		{"Close", WebSocketHandle::Close},
+		{"Send", WebSocketHandle::Send},
+		{NULL, NULL},
+	};
+
+	luaL_newmetatable(L, "WebSocketHandle");
+	luaL_register(L, NULL, WebSocket_meta);
+	lua_pushvalue(L, -1);
+	lua_setfield(L, -2, "__index");
+	lua_pop(L, 1);
+}
+
+REGISTER_WITH_LUA_FUNCTION(registerWebSocketMetatable)
 
 /** @brief Allow Lua to have access to the NetworkManager. */
 class LunaNetworkManager: public Luna<NetworkManager>
@@ -316,7 +421,8 @@ public:
 
 				args.method = method;
 			}
-			else {
+			else
+			{
 				luaL_error(L, "method must be a string");
 			}
 		}
@@ -513,6 +619,157 @@ public:
 		}
 	}
 
+	static int WebSocket(T* p, lua_State *L)
+	{
+		luaL_checktype(L, 1, LUA_TTABLE);
+
+		WebSocketArgs args;
+		int onMessageRef = LUA_NOREF;
+
+		lua_getfield(L, 1, "url");
+		if (lua_isnil(L, -1))
+		{
+			luaL_error(L, "url is required");
+		}
+		else if (lua_isstring(L, -1))
+		{
+			args.url = lua_tostring(L, -1);
+		}
+		else
+		{
+			luaL_error(L, "url must be a string");
+		}
+		lua_pop(L, 1);
+
+		lua_getfield(L, 1, "headers");
+		if (!lua_isnil(L, -1)) {
+			if (lua_istable(L, -1))
+			{
+				lua_pushnil(L);
+				while(lua_next(L, -2) != 0)
+				{
+					if (!lua_isstring(L, -2))
+					{
+						luaL_error(L, "header keys must be strings");
+					}
+
+					if (!lua_isstring(L, -1))
+					{
+						luaL_error(L, "header values must be strings");
+					}
+
+					std::string key = lua_tostring(L, -2);
+					std::string value = lua_tostring(L, -1);
+
+					args.headers[key] = value;
+
+					lua_pop(L, 1);
+				}
+			}
+			else
+			{
+				luaL_error(L, "headers must be a table");
+			}
+		}
+		lua_pop(L, 1);
+
+		lua_getfield(L, 1, "handshakeTimeout");
+		if (!lua_isnil(L, -1)) {
+			if (lua_isnumber(L, -1))
+			{
+				args.handshakeTimeout = lua_tointeger(L, -1);
+			}
+			else
+			{
+				luaL_error(L, "handshakeTimeout must be an integer");
+			}
+		}
+		lua_pop(L, 1);
+
+		lua_getfield(L, 1, "pingInterval");
+		if (!lua_isnil(L, -1))
+		{
+			if (lua_isnumber(L, -1))
+			{
+				args.pingInterval = lua_tointeger(L, -1);
+			}
+			else
+			{
+				luaL_error(L, "pingInterval must be an integer");
+			}
+		}
+		lua_pop(L, 1);
+
+		lua_getfield(L, 1, "automaticReconnect");
+		if (!lua_isnil(L, -1))
+		{
+			if (lua_isboolean(L, -1))
+			{
+				args.automaticReconnect = lua_toboolean(L, -1);
+			}
+			else
+			{
+				luaL_error(L, "automaticReconnect must be a boolean");
+			}
+		}
+		lua_pop(L, 1);
+
+		lua_getfield(L, 1, "onMessage");
+		if (!lua_isnil(L, -1))
+		{
+			if (lua_isfunction(L, -1))
+			{
+				lua_pushvalue(L, -1);
+				onMessageRef = luaL_ref(L, LUA_REGISTRYINDEX);
+			}
+			else
+			{
+				luaL_error(L, "onMessage must be a function");
+			}
+		}
+		lua_pop(L, 1);
+
+		args.onMessage = [onMessageRef](const ix::WebSocketMessagePtr& msg)
+		{
+			Lua *L = LUA->Get();
+
+			if (onMessageRef != LUA_NOREF)
+				handleMessage(L, msg, onMessageRef);
+
+			LUA->Release(L);
+		};
+
+		args.onClose = [onMessageRef]()
+		{
+			Lua *L = LUA->Get();
+
+			if (onMessageRef != LUA_NOREF)
+				luaL_unref(L, LUA_REGISTRYINDEX, onMessageRef);
+
+			LUA->Release(L);
+		};
+
+		if (p->IsUrlAllowed(args.url))
+		{
+			auto handle = p->WebSocket(args);
+
+			void *vp = lua_newuserdata(L, sizeof(std::shared_ptr<WebSocketHandle>));
+			new(vp) std::shared_ptr<::WebSocketHandle>(handle);
+			luaL_getmetatable(L, "WebSocketHandle");
+			lua_setmetatable(L, -2);
+			return 1;
+		}
+		else
+		{
+			LOG->Warn("blocked access to %s", args.url.c_str());
+			if (onMessageRef != LUA_NOREF)
+			{
+				handleWebSocketUrlForbidden(L, args.url, onMessageRef);
+			}
+			return 0;
+		}
+	}
+
 	static int UrlEncode(T* p, lua_State *L)
 	{
 		std::string url = SArg(1);
@@ -565,6 +822,7 @@ public:
 	{
 		ADD_METHOD(IsUrlAllowed);
 		ADD_METHOD(HttpRequest);
+		ADD_METHOD(WebSocket);
 		ADD_METHOD(UrlEncode);
 		ADD_METHOD(EncodeQueryParameters);
 	}
@@ -676,6 +934,108 @@ private:
 		RString error = "Lua error in HTTP progress handler: ";
 		LuaHelpers::RunScriptOnStack(L, error, 2, 0, true);
 	}
+
+	static void handleWebSocketUrlForbidden(Lua *L, std::string& url, int onMessageRef)
+	{
+		lua_rawgeti(L, LUA_REGISTRYINDEX, onMessageRef);
+		luaL_unref(L, LUA_REGISTRYINDEX, onMessageRef);
+
+		lua_newtable(L);
+
+		LuaHelpers::Push(L, WebSocketMessageType_Error);
+		lua_setfield(L, -2, "type");
+
+		lua_pushfstring(L, "access to %s is not allowed", url.c_str());
+		lua_setfield(L, -2, "reason");
+
+		RString error = "Lua error in WebSocket message handler: ";
+		LuaHelpers::RunScriptOnStack(L, error, 1, 0, true);
+	}
+
+	static void handleMessage(Lua *L, const ix::WebSocketMessagePtr& msg, int onMessageRef)
+	{
+		lua_rawgeti(L, LUA_REGISTRYINDEX, onMessageRef);
+
+		lua_newtable(L);
+
+		switch (msg->type)
+		{
+			case ix::WebSocketMessageType::Message:
+				LuaHelpers::Push(L, WebSocketMessageType_Message);
+				lua_setfield(L, -2, "type");
+
+				lua_pushlstring(L, msg->str.c_str(), msg->str.length());
+				lua_setfield(L, -2, "data");
+
+				lua_pushboolean(L, msg->binary);
+				lua_setfield(L, -2, "binary");
+				break;
+			case ix::WebSocketMessageType::Open:
+				LuaHelpers::Push(L, WebSocketMessageType_Open);
+				lua_setfield(L, -2, "type");
+
+				lua_pushstring(L, msg->openInfo.uri.c_str());
+				lua_setfield(L, -2, "uri");
+
+				lua_newtable(L);
+				for (const auto& entry : msg->openInfo.headers)
+				{
+					lua_pushstring(L, entry.second.c_str());
+					lua_setfield(L, -2, entry.first.c_str());
+				}
+				lua_setfield(L, -2, "headers");
+
+				lua_pushstring(L, msg->openInfo.protocol.c_str());
+				lua_setfield(L, -2, "protocol");
+				break;
+			case ix::WebSocketMessageType::Close:
+				LuaHelpers::Push(L, WebSocketMessageType_Close);
+				lua_setfield(L, -2, "type");
+
+				lua_pushstring(L, msg->closeInfo.reason.c_str());
+				lua_setfield(L, -2, "reason");
+
+				lua_pushboolean(L, msg->closeInfo.remote);
+				lua_setfield(L, -2, "remote");
+				break;
+			case ix::WebSocketMessageType::Error:
+				LuaHelpers::Push(L, WebSocketMessageType_Error);
+				lua_setfield(L, -2, "type");
+
+				lua_pushinteger(L, msg->errorInfo.retries);
+				lua_setfield(L, -2, "retries");
+
+				lua_pushnumber(L, msg->errorInfo.wait_time);
+				lua_setfield(L, -2, "waitTime");
+
+				if (msg->errorInfo.http_status > 0)
+				{
+					lua_pushinteger(L, msg->errorInfo.http_status);
+				}
+				else
+				{
+					lua_pushnil(L);
+				}
+				lua_setfield(L, -2, "httpStatusCode");
+
+				lua_pushstring(L, msg->errorInfo.reason.c_str());
+				lua_setfield(L, -2, "reason");
+
+				lua_pushboolean(L, msg->errorInfo.decompressionError);
+				lua_setfield(L, -2, "decompressionError");
+				break;
+			case ix::WebSocketMessageType::Ping:
+			case ix::WebSocketMessageType::Pong:
+			case ix::WebSocketMessageType::Fragment:
+			default:
+				lua_pop(L, 2);
+				return;
+		}
+
+		RString error = "Lua error in WebSocket message handler: ";
+		LuaHelpers::RunScriptOnStack(L, error, 1, 0, true);
+	}
+
 };
 
 LUA_REGISTER_CLASS(NetworkManager)

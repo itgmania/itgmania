@@ -13,6 +13,7 @@
 
 #include <ixwebsocket/IXHttp.h>
 #include <ixwebsocket/IXHttpClient.h>
+#include <ixwebsocket/IXWebSocket.h>
 
 #include "EnumHelper.h"
 #include "LuaManager.h"
@@ -49,6 +50,21 @@ const RString& HttpErrorCodeToString(HttpErrorCode dc);
 HttpErrorCode StringToHttpErrorCode(const RString& sDC);
 LuaDeclareType(HttpErrorCode);
 
+enum WebSocketMessageType
+{
+	// from IXWebSocket
+	WebSocketMessageType_Message,
+	WebSocketMessageType_Open,
+	WebSocketMessageType_Close,
+	WebSocketMessageType_Error,
+
+	NUM_WebSocketMessageType,
+	WebSocketMessageType_Invalid,
+};
+const RString& WebSocketMessageTypeToString(WebSocketMessageType dc);
+WebSocketMessageType StringToWebSocketMessageType(const RString& sDC);
+LuaDeclareType(WebSocketMessageType);
+
 struct HttpRequestArgs
 {
 	std::string url;
@@ -78,6 +94,32 @@ private:
 
 typedef std::shared_ptr<HttpRequestFuture> HttpRequestFuturePtr;
 
+struct WebSocketArgs
+{
+	std::string url;
+	std::unordered_map<std::string, std::string> headers;
+	int handshakeTimeout = -1;
+	int pingInterval = -1;
+	bool automaticReconnect = true;
+	std::function<void(const ix::WebSocketMessagePtr& response)> onMessage;
+	std::function<void()> onClose;
+};
+
+class WebSocketHandle
+{
+public:
+	WebSocketHandle() {};
+
+	static int Collect(lua_State *L);
+	static int Close(lua_State *L);
+	static int Send(lua_State *L);
+
+	ix::WebSocket webSocket;
+	std::function<void()> onClose;
+};
+
+typedef std::shared_ptr<WebSocketHandle> WebSocketHandlePtr;
+
 class NetworkManager
 {
 public:
@@ -86,6 +128,7 @@ public:
 
 	bool IsUrlAllowed(const std::string& url);
 	HttpRequestFuturePtr HttpRequest(const HttpRequestArgs& args);
+	WebSocketHandlePtr WebSocket(const WebSocketArgs& args);
 	std::string UrlEncode(const std::string& value);
 	std::string EncodeQueryParameters(const std::unordered_map<std::string, std::string>& query);
 

@@ -1118,6 +1118,7 @@
 		<Class name='NetworkManager'>
 			<Function name='IsUrlAllowed'/>
 			<Function name='HttpRequest'/>
+			<Function name='WebSocket'/>
 			<Function name='UrlEncode'/>
 			<Function name='EncodeQueryParameters'/>
 		</Class>
@@ -2147,6 +2148,10 @@
 			<Function name='UnlockEntryID'/>
 			<Function name='UnlockEntryIndex'/>
 		</Class>
+		<Class name='WebSocketHandle'>
+			<Function name='Close'/>
+			<Function name='Send'/>
+		</Class>
 		<Class base='ActorFrame' name='WheelBase'>
 			<Function name='GetCurrentIndex'/>
 			<Function name='GetNumItems'/>
@@ -2954,6 +2959,12 @@
 			<EnumValue name='&apos;VertAlign_Top&apos;' value='0'/>
 			<EnumValue name='&apos;VertAlign_Middle&apos;' value='1'/>
 			<EnumValue name='&apos;VertAlign_Bottom&apos;' value='2'/>
+		</Enum>
+		<Enum name='WebSocketMessageType'>
+			<EnumValue name='&apos;WebSocketMessageType_Message&apos;' value='0'/>
+			<EnumValue name='&apos;WebSocketMessageType_Open&apos;' value='1'/>
+			<EnumValue name='&apos;WebSocketMessageType_Close&apos;' value='2'/>
+			<EnumValue name='&apos;WebSocketMessageType_Error&apos;' value='3'/>
 		</Enum>
 		<Enum name='WheelItemDataType'>
 			<EnumValue name='&apos;WheelItemDataType_Generic&apos;' value='0'/>
