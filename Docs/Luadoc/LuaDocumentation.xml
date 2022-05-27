@@ -3583,20 +3583,20 @@ end
 <pre><code>
 NETWORK:HttpRequest{
 	url="https://api.example.com",
-	method="GET",                           	-- default: "GET"
-	body="",                                	-- default: ""
-	multipartBoundary="",                   	-- default: ""
-	headers={                               	-- default: {}
+	method="GET",                                   -- default: "GET"
+	body="",                                        -- default: ""
+	multipartBoundary="",                           -- default: ""
+	headers={                                       -- default: {}
 		["Accept-Language"]="en-US",
 		["Cookie"]="sessionId=42",
 	},
-	connectTimeout=3,                       	-- default: 60
-	transferTimeout=10,                     	-- default: 1800
-	downloadFile="",				-- default: no download file
-	onProgress=function(currentBytes, totalBytes)	-- default: no callback
+	connectTimeout=3,                               -- default: 60
+	transferTimeout=10,                             -- default: 1800
+	downloadFile="",                                -- default: no download file
+	onProgress=function(currentBytes, totalBytes)   -- default: no callback
 		...
 	end,
-	onResponse=function(response)           	-- default: no callback
+	onResponse=function(response)                   -- default: no callback
 		...
 	end,
 }
@@ -3626,6 +3626,63 @@ NETWORK:HttpRequest{
 		If the <code>downloadFile</code> parameter is set, the response body is not accumulated in memory, but written to <code>/Downloads/${downloadFile}</code>.
 		The file is available in the <code>onResponse</code> callback where it can be unzipped/copied to another location using <code>FILEMAN:Unzip()</code>/<code>FILEMAN:Copy()</code> respectively.
 		The file is deleted once the callback returns.
+	</Function>
+	<Function name='WebSocket' return='WebSocketHandle' arguments='table params' since='ITGmania 0.5.1'>
+		Open a WebSocket connection.<br />
+		Usage example:
+<pre><code>
+NETWORK:WebSocket{
+	url="wss://api.example.com/chat",
+	headers={                                       -- default: {}
+		["Accept-Language"]="en-US",
+		["Cookie"]="sessionId=42",
+	},
+	handshakeTimeout=3,                             -- default: 60 seconds
+	pingInterval=10,                                -- default: disabled
+	automaticReconnect=false,                       -- default: true
+	onMessage=function(message)                     -- default: no callback
+		...
+	end,
+}
+</code></pre>
+		Everything but <code>url</code> is optional.<br />
+		Messages look like this:
+<pre><code>
+-- Data
+{
+	type="WebSocketMessageType_Message",
+	data="some data",
+	binary=false,
+}
+
+-- Open
+{
+	type="WebSocketMessageType_Open",
+	uri="/chat",
+	headers={
+		["Date"]="Fri, 27 May 2022 18:50:47 GMT",
+	},
+	protocol="",
+}
+
+-- Close
+{
+	type="WebSocketMessageType_Close",
+	reason="Normal closure",
+	remote=false,
+}
+
+-- Error
+{
+	type="WebSocketMessageType_Error",
+	retries=1,
+	waitTime=100,
+	httpStatusCode=404,
+	reason="Expecting status 101 (Switching Protocol), got 404",
+	decompressionError=false,
+
+}
+</code></pre>
 	</Function>
 	<Function name='UrlEncode' return='string' arguments='string value' since='ITGmania 0.5.1'>
 		Returns the URL encoded representation of <code>value</code>.
@@ -6615,6 +6672,16 @@ local bpms_and_times = timing_data:GetBPMsAndTimes(true)
 	<Function name='IsSongLocked' return='int' arguments='Song pSong'>
 		Determines if a song is locked by any means. The number returned determines
 		how the song is locked.
+	</Function>
+</Class>
+<Class name='WebSocketHandle'>
+	<Function name='Close' return='void' arguments='' since='ITGmania 0.5.1'>
+                Closes the WebSocket connection. No further reconnections will be attempted.
+	</Function>
+	<Function name='Send' return='bool' arguments='string data, bool binary' since='ITGmania 0.5.1'>
+		Sends a message containing <code>data</code>.
+		If the optional <code>binary</code> argument is set to <code>true</code>, the message is marked as binary.<br />
+		Returns whether the message was sent successfully.
 	</Function>
 </Class>
 <Class name='WheelBase'>
