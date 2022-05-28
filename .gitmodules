@@ -1,3 +1,9 @@
 [submodule "Themes/Simply-Love"]
 	path = Themes/Simply Love
 	url = https://github.com/Simply-Love/Simply-Love-SM5.git
+[submodule "extern/ixwebsocket"]
+	path = extern/IXWebSocket
+	url = https://github.com/machinezone/IXWebSocket.git
+[submodule "extern/mbedtls"]
+	path = extern/mbedtls
+	url = https://github.com/Mbed-TLS/mbedtls.git
