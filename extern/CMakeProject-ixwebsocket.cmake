@@ -1,8 +1,6 @@
-set(IXW_DIR "${SM_EXTERN_DIR}/IXWebSocket-11.3.2/ixwebsocket")
-set(MBEDTLS_DIR "${SM_EXTERN_DIR}/mbedtls-3.1.0")
+set(IXW_DIR "IXWebSocket/ixwebsocket")
 
-list(APPEND IXW_SRC
-            "${IXW_DIR}/IXBench.cpp"
+set(IXW_SRC "${IXW_DIR}/IXBench.cpp"
             "${IXW_DIR}/IXCancellationRequest.cpp"
             "${IXW_DIR}/IXConnectionState.cpp"
             "${IXW_DIR}/IXDNSLookup.cpp"
@@ -14,6 +12,7 @@ list(APPEND IXW_SRC
             "${IXW_DIR}/IXHttpServer.cpp"
             "${IXW_DIR}/IXNetSystem.cpp"
             "${IXW_DIR}/IXSelectInterrupt.cpp"
+            "${IXW_DIR}/IXSelectInterruptEvent.cpp"
             "${IXW_DIR}/IXSelectInterruptFactory.cpp"
             "${IXW_DIR}/IXSelectInterruptPipe.cpp"
             "${IXW_DIR}/IXSetThreadName.cpp"
@@ -38,8 +37,7 @@ list(APPEND IXW_SRC
             "${IXW_DIR}/IXWebSocketServer.cpp"
             "${IXW_DIR}/IXWebSocketTransport.cpp")
 
-list(APPEND IXW_HPP
-            "${IXW_DIR}/IXBench.h"
+set(IXW_HPP "${IXW_DIR}/IXBench.h"
             "${IXW_DIR}/IXCancellationRequest.h"
             "${IXW_DIR}/IXConnectionState.h"
             "${IXW_DIR}/IXDNSLookup.h"
@@ -52,6 +50,7 @@ list(APPEND IXW_HPP
             "${IXW_DIR}/IXNetSystem.h"
             "${IXW_DIR}/IXProgressCallback.h"
             "${IXW_DIR}/IXSelectInterrupt.h"
+            "${IXW_DIR}/IXSelectInterruptEvent.h"
             "${IXW_DIR}/IXSelectInterruptFactory.h"
             "${IXW_DIR}/IXSelectInterruptPipe.h"
             "${IXW_DIR}/IXSetThreadName.h"
@@ -117,7 +116,7 @@ if(APPLE)
 elseif(WIN32)
   target_compile_definitions("ixwebsocket" PRIVATE IXWEBSOCKET_USE_MBED_TLS)
   target_compile_definitions("ixwebsocket" PRIVATE IXWEBSOCKET_USE_MBED_TLS_MIN_VERSION_3)
-  add_subdirectory("${MBEDTLS_DIR}" EXCLUDE_FROM_ALL)
+  add_subdirectory("mbedtls" EXCLUDE_FROM_ALL)
   set_property(TARGET "mbedtls" PROPERTY FOLDER "External Libraries")
   set_property(TARGET "mbedcrypto" PROPERTY FOLDER "External Libraries")
   set_property(TARGET "mbedx509" PROPERTY FOLDER "External Libraries")
@@ -142,11 +141,7 @@ if(UNIX)
   target_link_libraries(ixwebsocket ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
-target_include_directories("ixwebsocket" PUBLIC "${IXW_DIR}")
-
-set(IXWEBSOCKET_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/IXWebSocket-11.3.2")
-
 target_include_directories(ixwebsocket PUBLIC
   "zlib"
-  $<BUILD_INTERFACE:${IXWEBSOCKET_INCLUDE_DIRS}/>
+  "IXWebSocket"
 )
