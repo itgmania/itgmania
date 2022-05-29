@@ -51,7 +51,7 @@ else()
 
   target_include_directories("png" PUBLIC
     "zlib"
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/libpng>
-    $<INSTALL_INTERFACE:libpng>
+    "libpng"
+    "${CMAKE_CURRENT_BINARY_DIR}/libpng"
   )
 endif()

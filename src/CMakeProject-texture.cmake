@@ -50,16 +50,6 @@ list(APPEND TEXTURE_INCLUDE_DIRS
             "${TEXTURE_DIR}/res"
             "${SM_SRC_DIR}/generated")
 
-if(NOT WITH_SYSTEM_ZLIB)
-  list(APPEND TEXTURE_INCLUDE_DIRS
-              "${SM_EXTERN_DIR}/zlib")
-endif()
-
-if(NOT WITH_SYSTEM_PNG)
-  list(APPEND TEXTURE_INCLUDE_DIRS
-              "${SM_EXTERN_DIR}/libpng")
-endif()
-
 target_include_directories("TextureFontGenerator"
                            PUBLIC ${TEXTURE_INCLUDE_DIRS})
 

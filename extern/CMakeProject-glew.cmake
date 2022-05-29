@@ -13,12 +13,11 @@ else()
 
   set_property(TARGET "glew" PROPERTY FOLDER "External Libraries")
 
-  target_include_directories("glew" PUBLIC "glew-1.5.8/include")
-
   target_compile_definitions("glew" PRIVATE GLEW_STATIC)
 
   if(MSVC)
     target_compile_definitions("glew" PRIVATE _MBCS)
   endif(MSVC)
 
+  target_include_directories("glew" PUBLIC "glew-1.5.8/include")
 endif()
