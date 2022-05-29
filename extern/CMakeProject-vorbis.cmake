@@ -74,9 +74,9 @@ set_property(TARGET "vorbis" PROPERTY FOLDER "External Libraries")
 disable_project_warnings("vorbis")
 
 list(APPEND VORBIS_INCLUDE_DIRS
+            "ogg"
             "${VORBIS_DIR}/lib"
-            "${VORBIS_DIR}/include"
-            "${SM_EXTERN_DIR}/newogg/include")
+            "${VORBIS_DIR}/include")
 
 target_include_directories("vorbis" PUBLIC ${VORBIS_INCLUDE_DIRS})
 
