@@ -61,7 +61,6 @@ else()
   set(SM_NAME_RELWITHDEBINFO "itgmania-release-symbols")
 endif()
 
-# TODO: Make this actually be data and not an executable.
 if(APPLE)
   add_executable("${SM_EXE_NAME}"
                  MACOSX_BUNDLE
@@ -522,12 +521,6 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
 
   if(HAS_PULSE)
     list(APPEND SMDATA_LINK_LIB ${PULSEAUDIO_LIBRARY})
-    # PACKAGE_NAME and PACKAGE_VERSION are only used in this scenario. Why is
-    # not clear. TODO: Remove this silliness.
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE PACKAGE_NAME="ITGmania")
-    set(PACKAGE_VERSION "${SM_VERSION_MAJOR}.${SM_VERSION_MINOR}")
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE
-                               PACKAGE_VERSION="${PACKAGE_VERSION}")
   endif()
 
   if(X11_FOUND)
@@ -589,11 +582,6 @@ else()
     add_dependencies("${SM_EXE_NAME}" "ffmpeg_arm64" "ffmpeg_x86_64")
     list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
   endif()
-endif()
-
-if(WIN32)
-  # FIXME: This makes no sense...
-  #list(APPEND SM_INCLUDE_DIRS ${DIRECTX_INCLUDE_DIR})
 endif()
 
 if(NOT WITH_SYSTEM_TOMCRYPT)

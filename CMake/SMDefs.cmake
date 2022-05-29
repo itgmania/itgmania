@@ -17,19 +17,13 @@ if(NOT (ret STREQUAL "0"))
       "git was not found on your path. If you collect bug reports, please add git to your path and rerun cmake."
     )
   set(SM_VERSION_GIT_HASH "UNKNOWN")
-  set(SM_VERSION_FULL
-      "${SM_VERSION_MAJOR}.${SM_VERSION_MINOR}.${SM_VERSION_PATCH}-${SM_VERSION_GIT_HASH}")
   set(SM_VERSION_GIT
       "${SM_VERSION_MAJOR}.${SM_VERSION_MINOR}.${SM_VERSION_PATCH}-${SM_VERSION_GIT_HASH}")
 else()
   if(WITH_FULL_RELEASE)
-    set(SM_VERSION_FULL
-        "${SM_VERSION_MAJOR}.${SM_VERSION_MINOR}.${SM_VERSION_PATCH}")
     set(SM_VERSION_GIT
         "${SM_VERSION_MAJOR}.${SM_VERSION_MINOR}.${SM_VERSION_PATCH}")
   else()
-    set(SM_VERSION_FULL
-        "${SM_VERSION_MAJOR}.${SM_VERSION_MINOR}.${SM_VERSION_PATCH}-git-${SM_VERSION_GIT_HASH}")
     set(SM_VERSION_GIT
         "${SM_VERSION_MAJOR}.${SM_VERSION_MINOR}.${SM_VERSION_PATCH}-git-${SM_VERSION_GIT_HASH}")
   endif()

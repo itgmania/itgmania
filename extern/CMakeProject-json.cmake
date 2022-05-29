@@ -2,11 +2,10 @@ if(WITH_SYSTEM_JSONCPP)
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(JSONCPP REQUIRED jsoncpp)
 else()
-  list(APPEND JSON_SRC "jsoncpp/jsoncpp.cpp")
+  set(JSON_SRC "jsoncpp/jsoncpp.cpp")
 
-  list(APPEND JSON_HPP
-              "jsoncpp/json/json-forwards.h"
-              "jsoncpp/json/json.h")
+  set(JSON_HPP "jsoncpp/json/json-forwards.h"
+               "jsoncpp/json/json.h")
 
   source_group("" FILES ${JSON_SRC} ${JSON_HPP})
 
