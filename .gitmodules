@@ -7,3 +7,6 @@
 [submodule "extern/mbedtls"]
 	path = extern/mbedtls
 	url = https://github.com/Mbed-TLS/mbedtls.git
+[submodule "extern/zlib"]
+	path = extern/zlib
+	url = https://github.com/madler/zlib.git
