@@ -21,3 +21,6 @@
 	path = extern/libpng
 	url = https://github.com/glennrp/libpng.git
 	shallow = true
+[submodule "extern/ogg"]
+	path = extern/ogg
+	url = https://gitlab.xiph.org/xiph/ogg.git

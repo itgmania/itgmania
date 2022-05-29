@@ -562,7 +562,6 @@ if(NOT APPLE)
   if(MSVC)
     if(WITH_OGG)
       list(APPEND SM_INCLUDE_DIRS
-                  "${SM_EXTERN_DIR}/newogg/include"
                   "${SM_EXTERN_DIR}/newvorbis/lib"
                   "${SM_EXTERN_DIR}/newvorbis/include")
     endif()
@@ -591,8 +590,7 @@ if(NOT APPLE)
   endif()
 else()
   if(WITH_OGG)
-    list(APPEND SM_INCLUDE_DIRS "${SM_EXTERN_DIR}/newogg/include"
-                "${SM_EXTERN_DIR}/newvorbis/include")
+    list(APPEND SM_INCLUDE_DIRS "${SM_EXTERN_DIR}/newvorbis/include")
   endif()
   list(APPEND SM_INCLUDE_DIRS "archutils/Unix")
   if(HAS_FFMPEG)
@@ -604,10 +602,6 @@ endif()
 if(WIN32)
   # FIXME: This makes no sense...
   #list(APPEND SM_INCLUDE_DIRS ${DIRECTX_INCLUDE_DIR})
-endif()
-
-if(NOT WITH_SYSTEM_PNG)
-  list(APPEND SM_INCLUDE_DIRS "${SM_EXTERN_DIR}/libpng")
 endif()
 
 if(NOT WITH_SYSTEM_TOMCRYPT)
