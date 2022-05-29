@@ -18,8 +18,6 @@ Build/
 !Build/README.md
 verdata.*
 src/generated
-extern/mad-0.15.1b/config.h
-extern/libjpeg/jconfig.h
 
 # Text Editor Based Items
 ___*
