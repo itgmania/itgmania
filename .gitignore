@@ -11,19 +11,12 @@ cmake_install.cmake
 CPackConfig.cmake
 CPackSourceConfig.cmake
 # The following are generated from CMake, and thus should be stopped.
-.codelite/
 ITGmania.project
 ITGmania.workspace
-version.hpp
-Build/*
-Build/*/*
-Debug/
-Release/
-Contents/
+Build/
+!Build/INSTALL.md
+!Build/README.md
 verdata.*
-ITGmania-debug
-itgmania-debug
-src/version_updater/VersionUpdater
 src/generated
 extern/mad-0.15.1b/config.h
 extern/libjpeg/jconfig.h
@@ -35,21 +28,14 @@ ___*
 *.sublime-project
 *.sublime-workspace
 *.old
+.codelite/
+.vscode/
 
-# Repository Files
-*.orig
-.git
-.hg
-.hgignore
-.hgtags
-.svn
-.cvsignore
+# Patch Files
 *.diff
+*.orig
 *.patch
-*_BACKUP_*
-*_BASE_*
-*_LOCAL_*
-*_REMOTE_*
+*.rej
 
 # Mac General Files
 *.app
@@ -72,28 +58,16 @@ Thumbs.db
 *.exe
 *.dll
 !extern/ffmpeg-w32/*/*.dll
-nsis_strings_temp.inc
 
 # Linux General Files
-.dirstamp
 itgmania
-config.status
-_build/*
-aclocal.m4
-autoconf/*
-autom4te.cache/*
-ITGmania
-core
-
-# Version control specific.
-*.BACKUP.*
-*.BASE.*
-*.LOCAL.*
-*.REMOTE.*
+itgmania-debug
+itgmania-min-size
+itgmania-release-symbols
+*.core
 
 # StepMania Specific
 *.smzip
-ver.cpp
 gitversion.h
 Cache/
 Save/
@@ -106,16 +80,6 @@ Data/UserPrefs
 Data/uPrefs
 Data/GamePrefs/*.cfg
 Data/Static.ini
-src/version.bin
-src/verstub.cpp
-src/build-*
-src/Release-*
-src/libtomcrypt/build-*
-src/libtomcrypt/Release-*
-src/libtomcrypt/Debug
-src/libtommath/build-*
-src/libtommath/Release-*
-src/libtommath/Debug
 src/*.so
 Data/SpeedMods.txt
 crashinfo.txt
@@ -124,8 +88,6 @@ Program/ITGmania*.lib
 
 # Unknown File Types
 *.dia
-.deps
-*.rej
 tests/*.err
 *.ncb
 *.tlog
@@ -143,4 +105,3 @@ BuildLog.htm
 *.swp
 *.pc
 *.d
-.vscode/

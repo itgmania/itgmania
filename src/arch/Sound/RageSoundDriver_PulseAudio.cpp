@@ -1,4 +1,5 @@
 #include "global.h"
+#include "ProductInfo.h"
 #include "RageSoundDriver_PulseAudio.h"
 #include "RageLog.h"
 #include "RageSound.h"
@@ -6,6 +7,7 @@
 #include "RageUtil.h"
 #include "RageTimer.h"
 #include "PrefsManager.h"
+#include "ver.h"
 #include <pulse/error.h>
 #include <sys/time.h>
 #include <sys/resource.h>
@@ -52,15 +54,15 @@ RString RageSoundDriver_PulseAudio::Init()
 
 #ifdef PA_PROP_APPLICATION_NAME /* proplist available only since 0.9.11 */
 	pa_proplist *plist = pa_proplist_new();
-	pa_proplist_sets(plist, PA_PROP_APPLICATION_NAME, PACKAGE_NAME);
-	pa_proplist_sets(plist, PA_PROP_APPLICATION_VERSION, PACKAGE_VERSION);
+	pa_proplist_sets(plist, PA_PROP_APPLICATION_NAME, PRODUCT_FAMILY);
+	pa_proplist_sets(plist, PA_PROP_APPLICATION_VERSION, product_version);
 	pa_proplist_sets(plist, PA_PROP_MEDIA_ROLE, "game");
 	
 	LOG->Trace("Pulse: pa_context_new_with_proplist()...");
 	
 	m_PulseCtx = pa_context_new_with_proplist(
 			pa_threaded_mainloop_get_api(m_PulseMainLoop),
-			"StepMania", plist);
+			PRODUCT_FAMILY, plist);
 	pa_proplist_free(plist);
 	
 	if(m_PulseCtx == nullptr)
@@ -71,7 +73,7 @@ RString RageSoundDriver_PulseAudio::Init()
 	LOG->Trace("Pulse: pa_context_new()...");
 	m_PulseCtx = pa_context_new(
 			pa_threaded_mainloop_get_api(m_PulseMainLoop),
-			"Stepmania");
+			PRODUCT_FAMILY);
 	if(m_PulseCtx == nullptr)
 	{
 		return "pa_context_new() failed!";
@@ -150,7 +152,7 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 
 	/* create the stream */
 	LOG->Trace("Pulse: pa_stream_new()...");
-	m_PulseStream = pa_stream_new(m_PulseCtx, "Stepmania Audio", &ss, &map);
+	m_PulseStream = pa_stream_new(m_PulseCtx, PRODUCT_FAMILY " Audio", &ss, &map);
 	if(m_PulseStream == nullptr)
 	{
 		if(asprintf(&m_Error, "pa_stream_new(): %s", pa_strerror(pa_context_errno(m_PulseCtx))) == -1)
