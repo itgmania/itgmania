@@ -24,3 +24,8 @@
 [submodule "extern/ogg"]
 	path = extern/ogg
 	url = https://gitlab.xiph.org/xiph/ogg.git
+	shallow = true
+[submodule "extern/vorbis"]
+	path = extern/vorbis
+	url = https://gitlab.xiph.org/xiph/vorbis.git
+	shallow = true
