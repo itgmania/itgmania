@@ -17,3 +17,7 @@
 [submodule "extern/ffmpeg"]
 	path = extern/ffmpeg
 	url = https://git.ffmpeg.org/ffmpeg.git
+[submodule "extern/libpng"]
+	path = extern/libpng
+	url = https://github.com/glennrp/libpng.git
+	shallow = true

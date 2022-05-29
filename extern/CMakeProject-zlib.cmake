@@ -40,4 +40,6 @@ else()
   if(MSVC)
     target_compile_definitions("zlib" PRIVATE _MBCS)
   endif(MSVC)
+
+  target_include_directories("zlib" PUBLIC "zlib")
 endif()

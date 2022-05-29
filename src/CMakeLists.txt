@@ -375,7 +375,6 @@ else()
 endif()
 
 if(WITH_SYSTEM_PNG)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE SYSTEM_PNG)
   list(APPEND SMDATA_LINK_LIB ${PNG_LIBRARIES})
 else()
   list(APPEND SMDATA_LINK_LIB "png")
@@ -551,27 +550,13 @@ endif()
 target_link_libraries("${SM_EXE_NAME}" ${SMDATA_LINK_LIB})
 
 list(APPEND SM_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
-            "${SM_SRC_DIR}/generated"
-            "${SM_EXTERN_DIR}/miniz")
+            "${SM_SRC_DIR}/generated")
 
 list(APPEND SM_INCLUDE_DIRS "${JPEG_INCLUDE_DIR}")
 
 if(NOT APPLE)
-  if(NOT WITH_SYSTEM_GLEW)
-    list(APPEND SM_INCLUDE_DIRS
-                "${SM_EXTERN_DIR}/glew-1.5.8/include")
-  endif()
-
   if(WITH_SYSTEM_JSONCPP)
     list(APPEND SM_INCLUDE_DIRS ${JSONCPP_INCLUDE_DIRS})
-  else()
-    list(APPEND SM_INCLUDE_DIRS
-                "${SM_EXTERN_DIR}/jsoncpp/include")
-  endif()
-
-  if(NOT WITH_SYSTEM_ZLIB)
-    list(APPEND SM_INCLUDE_DIRS
-                "${SM_EXTERN_DIR}/zlib")
   endif()
 
   if(MSVC)
@@ -583,9 +568,6 @@ if(NOT APPLE)
     endif()
     list(APPEND SM_INCLUDE_DIRS "${SM_EXTERN_DIR}/ffmpeg-w32/include")
   else()
-    if(WITH_OGG AND NOT WITH_SYSTEM_OGG)
-      list(APPEND SM_INCLUDE_DIRS "${SM_EXTERN_DIR}/vorbis")
-    endif()
     if(HAS_FFMPEG)
       if(WITH_SYSTEM_FFMPEG)
         list(APPEND SM_INCLUDE_DIRS "${FFMPEG_INCLUDE_DIR}")

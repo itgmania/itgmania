@@ -12,3 +12,5 @@ disable_project_warnings("miniz")
 if(MSVC)
   target_compile_definitions("miniz" PRIVATE _MBCS)
 endif(MSVC)
+
+target_include_directories("miniz" PUBLIC "miniz")
