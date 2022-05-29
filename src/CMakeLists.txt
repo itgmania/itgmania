@@ -361,7 +361,6 @@ else()
 endif()
 
 if(WITH_SYSTEM_JPEG)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE SYSTEM_JPEGLIB)
   list(APPEND SMDATA_LINK_LIB ${JPEG_LIBRARIES})
 else()
   list(APPEND SMDATA_LINK_LIB "jpeg")
