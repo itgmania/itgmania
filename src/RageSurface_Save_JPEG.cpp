@@ -16,13 +16,6 @@ namespace jpeg
 	}
 }
 
-// Newer versions of jpeglib and jpeglib-turbo define TRUE/FALSE in a
-// typedef enum {}
-#if defined(SYSTEM_JPEGLIB) && JPEG_LIB_VERSION > 80
-#define TRUE jpeg::TRUE
-#define FALSE jpeg::FALSE
-#endif
-
 #define OUTPUT_BUFFER_SIZE	4096
 typedef struct
 {
@@ -52,7 +45,7 @@ static jpeg::boolean empty_output_buffer( jpeg::j_compress_ptr cinfo )
 	dest->pub.next_output_byte = dest->buffer;
 	dest->pub.free_in_buffer = OUTPUT_BUFFER_SIZE;
 
-	return TRUE;
+	return jpeg::TRUE;
 }
 
 
@@ -121,14 +114,14 @@ bool RageSurfaceUtils::SaveJPEG( RageSurface *surface, RageFile &f, bool bHighQu
 	jpeg::jpeg_set_defaults(&cinfo);
 
 	if( bHighQual )
-		jpeg::jpeg_set_quality( &cinfo, 150, TRUE );
+		jpeg::jpeg_set_quality( &cinfo, 150, jpeg::TRUE );
 	else
-		jpeg::jpeg_set_quality( &cinfo, 70, TRUE );
+		jpeg::jpeg_set_quality( &cinfo, 70, jpeg::TRUE );
 
 	jpeg_RageFile_dest( &cinfo, f );
 
 	/* Start the compressor. */
-	jpeg::jpeg_start_compress( &cinfo, TRUE );
+	jpeg::jpeg_start_compress( &cinfo, jpeg::TRUE );
 
 	/* Here we use the library's state variable cinfo.next_scanline as the
 	 * loop counter, so that we don't have to keep track ourselves.

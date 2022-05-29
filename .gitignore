@@ -25,6 +25,7 @@ extern/libjpeg/jconfig.h
 ___*
 *~
 *.log
+!change.log
 *.sublime-project
 *.sublime-workspace
 *.old

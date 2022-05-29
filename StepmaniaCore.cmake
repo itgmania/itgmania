@@ -170,18 +170,6 @@ else()
 endif()
 
 check_compile_features("${SM_CMAKE_DIR}/TestCode"
-                       "${SM_CMAKE_DIR}/TestCode/test_prototype.c"
-                       "Checking for function prototype capabilities"
-                       "found"
-                       "not found"
-                       SM_IGNORED_PROTOTYPE_CALL
-                       FALSE)
-
-if(NOT SM_IGNORED_PROTOTYPE_CALL)
-  set(HAVE_PROTOTYPES TRUE)
-endif()
-
-check_compile_features("${SM_CMAKE_DIR}/TestCode"
                        "${SM_CMAKE_DIR}/TestCode/test_external.c"
                        "Checking for external name shortening requirements"
                        "not needed"
