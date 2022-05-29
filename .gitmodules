@@ -1,12 +1,19 @@
 [submodule "Themes/Simply-Love"]
 	path = Themes/Simply Love
 	url = https://github.com/Simply-Love/Simply-Love-SM5.git
+	shallow = true
 [submodule "extern/ixwebsocket"]
 	path = extern/IXWebSocket
 	url = https://github.com/machinezone/IXWebSocket.git
+	shallow = true
 [submodule "extern/mbedtls"]
 	path = extern/mbedtls
 	url = https://github.com/Mbed-TLS/mbedtls.git
+	shallow = true
 [submodule "extern/zlib"]
 	path = extern/zlib
 	url = https://github.com/madler/zlib.git
+	shallow = true
+[submodule "extern/ffmpeg"]
+	path = extern/ffmpeg
+	url = https://git.ffmpeg.org/ffmpeg.git
