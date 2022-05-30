@@ -214,10 +214,6 @@ elseif(APPLE)
 
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _XOPEN_SOURCE)
 
-  if(${HAS_FFMPEG})
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_FFMPEG)
-  endif()
-
   if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     set(SM_APP_RELEASE_NAME "${SM_NAME_DEBUG}")
   elseif(CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
@@ -292,9 +288,6 @@ else() # Linux
       message("Unrecognized host processor type")
     endif()
   endif()
-  if(${HAS_FFMPEG})
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_FFMPEG)
-  endif()
   if(${HAS_XRANDR})
     target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_XRANDR)
   endif()
@@ -324,79 +317,19 @@ set_property(TARGET "${SM_EXE_NAME}" PROPERTY FOLDER "Internal Libraries")
 list(APPEND SMDATA_LINK_LIB "lua-5.1" "miniz")
 include(../extern/CMakeProject-mmmagic.cmake)
 
-if(HAS_MP3)
-  if(WITH_SYSTEM_MAD)
-    list(APPEND SMDATA_LINK_LIB ${LIBMAD_LIBRARY})
-  else()
-    list(APPEND SMDATA_LINK_LIB "mad")
-  endif()
-endif()
-
-if(WITH_SYSTEM_PCRE)
-  list(APPEND SMDATA_LINK_LIB ${PCRE_LIBRARY})
-else()
-  list(APPEND SMDATA_LINK_LIB "pcre")
-endif()
-
-if(WITH_SYSTEM_GLEW)
-  list(APPEND SMDATA_LINK_LIB ${GLEW_LIBRARIES} ${GLEW_LIBRARY_RELEASE})
-  list(APPEND SM_INCLUDE_DIRS ${GLEW_INCLUDE_DIRS})
-else()
-  list(APPEND SMDATA_LINK_LIB "glew")
-endif()
-
-if(WITH_SYSTEM_TOMCRYPT)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE LTM_DESC)
-  list(APPEND SMDATA_LINK_LIB ${TOMCRYPT_LIBRARY})
-else()
-  list(APPEND SMDATA_LINK_LIB "tomcrypt")
-endif()
-
-if(WITH_SYSTEM_TOMMATH)
-  list(APPEND SMDATA_LINK_LIB ${TOMMATH_LIBRARY})
-else()
-  list(APPEND SMDATA_LINK_LIB "tommath")
-endif()
-
-if(WITH_SYSTEM_JPEG)
-  list(APPEND SMDATA_LINK_LIB ${JPEG_LIBRARIES})
-else()
-  list(APPEND SMDATA_LINK_LIB "jpeg")
-endif()
-
-if(WITH_SYSTEM_ZLIB)
-  list(APPEND SMDATA_LINK_LIB ${ZLIB_LIBRARIES} ${ZLIB_LIBRARY_RELEASE})
-else()
-  list(APPEND SMDATA_LINK_LIB "zlib")
-endif()
-
-if(WITH_SYSTEM_PNG)
-  list(APPEND SMDATA_LINK_LIB ${PNG_LIBRARIES})
-else()
-  list(APPEND SMDATA_LINK_LIB "png")
-endif()
-
-if(WITH_SYSTEM_JSONCPP)
-  list(APPEND SMDATA_LINK_LIB ${JSONCPP_LIBRARIES})
-else()
-  list(APPEND SMDATA_LINK_LIB "jsoncpp")
-endif()
-
-if(WITH_OGG)
-  if(WITH_SYSTEM_OGG)
-    list(APPEND SMDATA_LINK_LIB
-                "${VORBISFILE_LIBRARY}"
-                "${VORBIS_LIBRARY}"
-                "${OGG_LIBRARY}")
-  else()
-    list(APPEND SMDATA_LINK_LIB
-                "vorbisfile"
-                "vorbis"
-                "ogg")
-  endif()
-endif()
-
-list(APPEND SMDATA_LINK_LIB "ixwebsocket")
+list(APPEND SMDATA_LINK_LIB "mad"
+                            "pcre"
+                            "glew"
+                            "tomcrypt"
+                            "tommath"
+                            "jpeg"
+                            "zlib"
+                            "png"
+                            "jsoncpp"
+                            "vorbisfile"
+                            "vorbis"
+                            "ogg"
+                            "ixwebsocket")
 
 if(WIN32)
   list(APPEND SMDATA_LINK_LIB
@@ -430,9 +363,6 @@ if(WIN32)
                         PROPERTIES LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS")
 
 elseif(APPLE)
-  # The following were removed from SMDATA_LINK_LIB to "match" StepMania's
-  # pbxproj. ${MAC_FRAME_APPKIT} ${MAC_FRAME_FOUNDATION} "ffmpeg"
-
   list(INSERT SMDATA_LINK_LIB
               0
               ${MAC_FRAME_ACCELERATE}
@@ -445,51 +375,29 @@ elseif(APPLE)
               ${MAC_FRAME_AUDIOUNIT}
               ${MAC_FRAME_COREAUDIO}
               ${MAC_FRAME_CORESERVICES}
-              ${MAC_FRAME_SYSTEM})
-  list(APPEND SMDATA_LINK_LIB
+              ${MAC_FRAME_SYSTEM}
               "${BZIP2_LIBRARY_RELEASE}"
-              "${ICONV_LIBRARIES}")
-
-  if(HAS_FFMPEG)
-    list(APPEND SMDATA_LINK_LIB
-                "${SM_FFMPEG_LIB_ARM64}/libavformat.a"
-                "${SM_FFMPEG_LIB_ARM64}/libavcodec.a"
-                "${SM_FFMPEG_LIB_ARM64}/libswscale.a"
-                "${SM_FFMPEG_LIB_ARM64}/libavutil.a"
-                "${SM_FFMPEG_LIB_X86_64}/libavformat.a"
-                "${SM_FFMPEG_LIB_X86_64}/libavcodec.a"
-                "${SM_FFMPEG_LIB_X86_64}/libswscale.a"
-                "${SM_FFMPEG_LIB_X86_64}/libavutil.a"
-                "${MAC_FRAME_COREMEDIA}"
-                "${MAC_FRAME_COREVIDEO}"
-                "${MAC_FRAME_VIDEOTOOLBOX}")
-  endif()
+              "${ICONV_LIBRARIES}"
+              "${SM_FFMPEG_LIB_ARM64}/libavformat.a"
+              "${SM_FFMPEG_LIB_ARM64}/libavcodec.a"
+              "${SM_FFMPEG_LIB_ARM64}/libswscale.a"
+              "${SM_FFMPEG_LIB_ARM64}/libavutil.a"
+              "${SM_FFMPEG_LIB_X86_64}/libavformat.a"
+              "${SM_FFMPEG_LIB_X86_64}/libavcodec.a"
+              "${SM_FFMPEG_LIB_X86_64}/libswscale.a"
+              "${SM_FFMPEG_LIB_X86_64}/libavutil.a"
+              "${MAC_FRAME_COREMEDIA}"
+              "${MAC_FRAME_COREVIDEO}"
+              "${MAC_FRAME_VIDEOTOOLBOX}")
 else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
-  if(HAS_FFMPEG)
-    if(WITH_SYSTEM_FFMPEG)
-      list(APPEND SMDATA_LINK_LIB
-                  "${FFMPEG_avformat_LIBRARY}"
-                  "${FFMPEG_avcodec_LIBRARY}"
-                  "${FFMPEG_swscale_LIBRARY}"
-                  "${FFMPEG_avutil_LIBRARY}")
-    else()
-      list(APPEND SMDATA_LINK_LIB
-                  "${SM_FFMPEG_LIB}/libavformat.a"
-                  "${SM_FFMPEG_LIB}/libavcodec.a"
-                  "${SM_FFMPEG_LIB}/libswscale.a"
-                  "${SM_FFMPEG_LIB}/libavutil.a")
-    endif()
+  list(APPEND SMDATA_LINK_LIB
+              "${SM_FFMPEG_LIB}/libavformat.a"
+              "${SM_FFMPEG_LIB}/libavcodec.a"
+              "${SM_FFMPEG_LIB}/libswscale.a"
+              "${SM_FFMPEG_LIB}/libavutil.a")
 
-    if(NOT WITH_SYSTEM_ZLIB)
-      list(REMOVE_ITEM SMDATA_LINK_LIB "zlib")
-      list(APPEND SMDATA_LINK_LIB "zlib")
-    endif()
-
-    if(NOT WITH_SYSTEM_FFMPEG)
-      list(APPEND SMDATA_LINK_LIB ${VA_LIBRARY})
-      list(APPEND SMDATA_LINK_LIB ${VA_DRM_LIBRARY})
-    endif()
-  endif()
+  list(REMOVE_ITEM SMDATA_LINK_LIB "zlib")
+  list(APPEND SMDATA_LINK_LIB "zlib" ${VA_LIBRARY} ${VA_DRM_LIBRARY})
 
   if(${DL_FOUND})
     list(APPEND SMDATA_LINK_LIB ${DL_LIBRARIES})
@@ -523,10 +431,6 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
   if(X11_FOUND)
     list(APPEND SMDATA_LINK_LIB ${X11_LIBRARIES})
   endif()
-
-  if(PCRE_FOUND)
-    list(APPEND SMDATA_LINK_LIB ${PCRE_LIBRARY})
-  endif()
   
   if(LIBXTST_FOUND)
     list(APPEND SMDATA_LINK_LIB ${LIBXTST_LIBRARY})
@@ -542,42 +446,27 @@ target_link_libraries("${SM_EXE_NAME}" ${SMDATA_LINK_LIB})
 list(APPEND SM_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
             "${SM_SRC_DIR}/generated")
 
-list(APPEND SM_INCLUDE_DIRS "${JPEG_INCLUDE_DIR}")
+if(APPLE)
+  list(APPEND SM_INCLUDE_DIRS "archutils/Unix")
 
-if(NOT APPLE)
-  if(WITH_SYSTEM_JSONCPP)
-    list(APPEND SM_INCLUDE_DIRS ${JSONCPP_INCLUDE_DIRS})
-  endif()
-
+  add_dependencies("${SM_EXE_NAME}" "ffmpeg_arm64" "ffmpeg_x86_64")
+  list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
+else()
   if(MSVC)
     list(APPEND SM_INCLUDE_DIRS "${SM_EXTERN_DIR}/ffmpeg-w32/include")
   else()
-    if(HAS_FFMPEG)
-      if(WITH_SYSTEM_FFMPEG)
-        list(APPEND SM_INCLUDE_DIRS "${FFMPEG_INCLUDE_DIR}")
-      else()
-        add_dependencies("${SM_EXE_NAME}" "ffmpeg")
-        list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
-      endif()
-    endif()
+    add_dependencies("${SM_EXE_NAME}" "ffmpeg")
+    list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
+
     if(HAS_GTK3)
       list(APPEND SM_INCLUDE_DIRS "${GTK3_INCLUDE_DIRS}")
     endif()
     if(X11_FOUND)
       list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
     endif()
-    if(PCRE_FOUND)
-      list(APPEND SM_INCLUDE_DIRS "${PCRE_INCLUDE_DIR}")
-    endif()
     if(DL_FOUND)
       list(APPEND SM_INCLUDE_DIRS "${DL_INCLUDE_DIR}")
     endif()
-  endif()
-else()
-  list(APPEND SM_INCLUDE_DIRS "archutils/Unix")
-  if(HAS_FFMPEG)
-    add_dependencies("${SM_EXE_NAME}" "ffmpeg_arm64" "ffmpeg_x86_64")
-    list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
   endif()
 endif()
 

@@ -27,34 +27,11 @@ option(
   "Build without the ROLC assembly instructions for tomcrypt."
   OFF)
 
-# Turn this option off to disable using WAV files with the game. Note that it is
-# recommended to keep this on.
-option(WITH_WAV "Build with WAV Support." ON)
-
-# Turn this option off to disable using MP3 files with the game.
-option(WITH_MP3 "Build with MP3 Support." ON)
-
-# Turn this option off to disable using OGG files with the game.
-option(WITH_OGG "Build with OGG/Vorbis Support." ON)
-
 # Turn this option on to log every segment added or removed.
 option(WITH_LOGGING_TIMING_DATA
        "Build with logging all Add and Erase Segment calls." OFF)
 
-option(WITH_SYSTEM_PNG "Build with system PNG library (may not work on 1.6+)"
-       OFF)
-option(WITH_SYSTEM_OGG "Build with system OGG libraries" OFF)
-option(WITH_SYSTEM_GLEW "Build with system GLEW library" OFF)
-option(WITH_SYSTEM_TOMCRYPT "Build with system libtomcrypt" OFF)
-option(WITH_SYSTEM_MAD "Build with system libmad" OFF)
-option(WITH_SYSTEM_JSONCPP "Build with system jsoncpp" OFF)
-option(WITH_SYSTEM_JPEG "Build with system jpeglib" OFF)
-option(WITH_SYSTEM_PCRE "Build with system PCRE" OFF)
-option(WITH_SYSTEM_ZLIB "Build against system zlib" OFF)
-
 if(NOT MSVC)
-  # Turn this option off to disable using FFMEPG.
-  option(WITH_FFMPEG "Build with FFMPEG." ON)
   # Change this number to utilize a different number of jobs for building
   # FFMPEG.
   option(WITH_FFMPEG_JOBS "Build FFMPEG with this many jobs." 2)
@@ -71,10 +48,6 @@ endif()
 if(WIN32)
   option(WITH_MINIMAID "Build with Minimaid Lights Support." OFF)
 elseif(LINUX)
-  # Builder beware: later versions of ffmpeg may break!
-  option(WITH_SYSTEM_FFMPEG
-         "Build with the system's FFMPEG, disabled build with bundled's FFMPEG"
-         OFF)
   option(WITH_MINIMAID "Build with Minimaid Lights Support." OFF)
   option(WITH_TTY "Build with Linux TTY Input Support." OFF)
   option(WITH_PROFILING "Build with Profiling Support." OFF)

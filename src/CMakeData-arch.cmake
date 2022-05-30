@@ -80,33 +80,15 @@ source_group("Arch Specific\\\\Sound"
 
 list(APPEND SMDATA_ARCH_MOVIE_TEXTURE_SRC
             "arch/MovieTexture/MovieTexture.cpp"
+            "arch/MovieTexture/MovieTexture_FFMpeg.cpp"
             "arch/MovieTexture/MovieTexture_Generic.cpp"
             "arch/MovieTexture/MovieTexture_Null.cpp")
+
 list(APPEND SMDATA_ARCH_MOVIE_TEXTURE_HPP
             "arch/MovieTexture/MovieTexture.h"
+            "arch/MovieTexture/MovieTexture_FFMpeg.h"
             "arch/MovieTexture/MovieTexture_Generic.h"
             "arch/MovieTexture/MovieTexture_Null.h")
-
-if(APPLE)
-  if(${HAS_FFMPEG})
-    list(APPEND SMDATA_ARCH_MOVIE_TEXTURE_SRC
-                "arch/MovieTexture/MovieTexture_FFMpeg.cpp")
-    list(APPEND SMDATA_ARCH_MOVIE_TEXTURE_HPP
-                "arch/MovieTexture/MovieTexture_FFMpeg.h")
-  endif()
-elseif(MSVC)
-  list(APPEND SMDATA_ARCH_MOVIE_TEXTURE_SRC
-              "arch/MovieTexture/MovieTexture_FFMpeg.cpp")
-  list(APPEND SMDATA_ARCH_MOVIE_TEXTURE_HPP
-              "arch/MovieTexture/MovieTexture_FFMpeg.h")
-else() # Unix
-  if(${HAS_FFMPEG})
-    list(APPEND SMDATA_ARCH_MOVIE_TEXTURE_SRC
-                "arch/MovieTexture/MovieTexture_FFMpeg.cpp")
-    list(APPEND SMDATA_ARCH_MOVIE_TEXTURE_HPP
-                "arch/MovieTexture/MovieTexture_FFMpeg.h")
-  endif()
-endif()
 
 source_group("Arch Specific\\\\Movie Texture"
              FILES
