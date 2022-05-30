@@ -196,46 +196,6 @@ endif()
 # Dependencies go here.
 include(ExternalProject)
 
-if(WITH_WAV)
-  # TODO: Identify which headers to check for ensuring this will always work.
-  set(HAS_WAV TRUE)
-endif()
-
-if(WITH_MP3)
-  if(WIN32 OR MACOSX)
-    set(HAS_MP3 TRUE)
-  else()
-    find_package(Mad)
-    if(NOT LIBMAD_FOUND)
-      message(
-        FATAL_ERROR
-          "Libmad library not found. If you wish to skip mp3 support, set WITH_MP3 to OFF when configuring."
-        )
-    else()
-      set(HAS_MP3 TRUE)
-    endif()
-  endif()
-endif(WITH_MP3)
-
-if(WITH_OGG)
-  if(WIN32 OR MACOSX)
-    set(HAS_OGG TRUE)
-  else()
-    find_package(Ogg)
-    find_package(Vorbis)
-    find_package(VorbisFile)
-
-    if(NOT (OGG_FOUND AND VORBIS_FOUND AND VORBISFILE_FOUND))
-      message(
-        FATAL_ERROR
-          "Not all vorbis libraries were found. If you wish to skip vorbis support, set WITH_OGG to OFF when configuring."
-        )
-    else()
-      set(HAS_OGG TRUE)
-    endif()
-  endif()
-endif()
-
 find_package(nasm)
 find_package(yasm)
 
@@ -259,9 +219,8 @@ else()
 endif()
 
 if(WIN32)
-  if(MINGW AND WITH_FFMPEG AND NOT WITH_SYSTEM_FFMPEG)
+  if(MINGW)
     include("${SM_CMAKE_DIR}/SetupFfmpeg.cmake")
-    set(HAS_FFMPEG TRUE)
   else()
     # FFMPEG...it can be evil.
     find_library(LIB_SWSCALE
@@ -300,10 +259,7 @@ if(WIN32)
     endforeach()
   endif()
 elseif(MACOSX)
-  if(WITH_FFMPEG AND NOT WITH_SYSTEM_FFMPEG)
-    include("${SM_CMAKE_DIR}/SetupFfmpeg.cmake")
-    set(HAS_FFMPEG TRUE)
-  endif()
+  include("${SM_CMAKE_DIR}/SetupFfmpeg.cmake")
 
   set(WITH_CRASH_HANDLER TRUE)
   set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
@@ -340,11 +296,9 @@ elseif(MACOSX)
                    MAC_FRAME_OPENGL
                    MAC_FRAME_SYSTEM)
 
-  if(HAS_FFMPEG)
-    find_library(MAC_FRAME_COREMEDIA CoreMedia ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
-    find_library(MAC_FRAME_COREVIDEO CoreVideo ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
-    find_library(MAC_FRAME_VIDEOTOOLBOX VideoToolbox ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
-  endif()
+  find_library(MAC_FRAME_COREMEDIA CoreMedia ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
+  find_library(MAC_FRAME_COREVIDEO CoreVideo ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
+  find_library(MAC_FRAME_VIDEOTOOLBOX VideoToolbox ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
 elseif(LINUX)
   if(WITH_GTK3)
     find_package("GTK3" 2.0)
@@ -424,37 +378,14 @@ elseif(LINUX)
       )
   endif()
 
-  if(WITH_FFMPEG AND NOT YASM_FOUND AND NOT NASM_FOUND)
-    message(
+  if(NOT YASM_FOUND AND NOT NASM_FOUND)
+    message(FATAL_ERROR
       "Neither NASM nor YASM were found. Please install at least one of them if you wish for ffmpeg support."
-      )
-    set(WITH_FFMPEG OFF)
+    )
   endif()
 
-  if(WITH_FFMPEG)
-    if(WITH_SYSTEM_FFMPEG)
-      find_package("FFMPEG")
-      if(NOT FFMPEG_FOUND)
-        message(
-          FATAL_ERROR
-            "System ffmpeg not found! Either install the libraries or remove the argument, then try again."
-          )
-      else()
-
-        message(
-          STATUS
-            "-- Warning! Your version of ffmpeg may be too high! If you want to use the system ffmpeg, clear your cmake cache and do not include the system ffmpeg argument."
-          )
-        set(HAS_FFMPEG TRUE)
-      endif()
-    else()
-      find_package("Va")
-      include("${SM_CMAKE_DIR}/SetupFfmpeg.cmake")
-      set(HAS_FFMPEG TRUE)
-    endif()
-  else()
-    set(HAS_FFMPEG FALSE)
-  endif()
+  find_package("Va")
+  include("${SM_CMAKE_DIR}/SetupFfmpeg.cmake")
 
   set(OpenGL_GL_PREFERENCE GLVND)
   find_package(OpenGL REQUIRED)

@@ -25,12 +25,10 @@
 #endif
 #endif
 
-#if defined(HAVE_FFMPEG)
 extern "C"
 {
 	#include <libavcodec/avcodec.h>
 }
-#endif
 
 #if defined(HAVE_X11)
 #include "archutils/Unix/X11Helper.h"
@@ -284,9 +282,7 @@ void ArchHooks_Unix::DumpDebugInfo()
 
 	LOG->Info( "Runtime library: %s", LibcVersion().c_str() );
 	LOG->Info( "Threads library: %s", ThreadsVersion().c_str() );
-#if defined(HAVE_FFMPEG)
 	LOG->Info( "libavcodec: %#x (%u)", avcodec_version(), avcodec_version() );
-#endif
 }
 
 void ArchHooks_Unix::SetTime( tm newtime )

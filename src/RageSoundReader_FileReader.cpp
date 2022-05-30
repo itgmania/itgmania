@@ -6,36 +6,23 @@
 #include "ActorUtil.h"
 
 #include <set>
-#if defined(HAS_WAV)
+
 #include "RageSoundReader_WAV.h"
-#endif
-
-#if defined(HAS_MP3)
 #include "RageSoundReader_MP3.h"
-#endif
-
-#if defined(HAS_OGG)
 #include "RageSoundReader_Vorbisfile.h"
-#endif
 
 RageSoundReader_FileReader *RageSoundReader_FileReader::TryOpenFile( RageFileBasic *pFile, RString &error, RString format, bool &bKeepTrying )
 {
 	RageSoundReader_FileReader *Sample = nullptr;
 
-#if defined(HAS_WAV)
 	if( !format.CompareNoCase("wav") )
 		Sample = new RageSoundReader_WAV;
-#endif
 
-#if defined(HAS_MP3)
 	if( !format.CompareNoCase("mp3") )
 		Sample = new RageSoundReader_MP3;
-#endif
 
-#if defined(HAS_OGG)
 	if( !format.CompareNoCase("oga") || !format.CompareNoCase("ogg") )
 		Sample = new RageSoundReader_Vorbisfile;
-#endif
 
 	if( !Sample )
 		return nullptr;
