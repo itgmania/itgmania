@@ -33,3 +33,7 @@
 	path = extern/libtommath
 	url = https://github.com/libtom/libtommath.git
 	shallow = true
+[submodule "extern/libtomcrypt"]
+	path = extern/libtomcrypt
+	url = https://github.com/libtom/libtomcrypt.git
+	shallow = true

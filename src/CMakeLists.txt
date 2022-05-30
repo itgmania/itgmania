@@ -104,9 +104,6 @@ if(WITH_LTO)
   set_property(TARGET "${SM_EXE_NAME}" PROPERTY INTERPROCEDURAL_OPTIMIZATION ON)
 endif()
 
-# Required for usage of tomcrypt and tommath.
-target_compile_definitions("${SM_EXE_NAME}" PRIVATE LTM_DESC)
-
 if(WITH_PORTABLE_TOMCRYPT)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE LTC_NO_ASM)
 endif()
@@ -349,6 +346,7 @@ else()
 endif()
 
 if(WITH_SYSTEM_TOMCRYPT)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE LTM_DESC)
   list(APPEND SMDATA_LINK_LIB ${TOMCRYPT_LIBRARY})
 else()
   list(APPEND SMDATA_LINK_LIB "tomcrypt")
@@ -581,10 +579,6 @@ else()
     add_dependencies("${SM_EXE_NAME}" "ffmpeg_arm64" "ffmpeg_x86_64")
     list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
   endif()
-endif()
-
-if(NOT WITH_SYSTEM_TOMCRYPT)
-  list(APPEND SM_INCLUDE_DIRS "${SM_SRC_DIR}/libtomcrypt/src/headers")
 endif()
 
 target_include_directories("${SM_EXE_NAME}" PUBLIC ${SM_INCLUDE_DIRS})
