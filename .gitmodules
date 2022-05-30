@@ -29,3 +29,7 @@
 	path = extern/vorbis
 	url = https://gitlab.xiph.org/xiph/vorbis.git
 	shallow = true
+[submodule "extern/libtommath"]
+	path = extern/libtommath
+	url = https://github.com/libtom/libtommath.git
+	shallow = true
