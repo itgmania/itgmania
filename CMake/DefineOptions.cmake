@@ -45,7 +45,6 @@ option(WITH_SYSTEM_PNG "Build with system PNG library (may not work on 1.6+)"
        OFF)
 option(WITH_SYSTEM_OGG "Build with system OGG libraries" OFF)
 option(WITH_SYSTEM_GLEW "Build with system GLEW library" OFF)
-option(WITH_SYSTEM_TOMMATH "Build with system libtommath" OFF)
 option(WITH_SYSTEM_TOMCRYPT "Build with system libtomcrypt" OFF)
 option(WITH_SYSTEM_MAD "Build with system libmad" OFF)
 option(WITH_SYSTEM_JSONCPP "Build with system jsoncpp" OFF)
