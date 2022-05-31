@@ -16,6 +16,7 @@
 #include <ctime>
 #include <sstream>
 #include <map>
+#include <functional>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <math.h>

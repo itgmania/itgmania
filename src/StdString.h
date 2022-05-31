@@ -91,8 +91,7 @@ typedef char*			PSTR;
 
 // Standard headers needed
 #include <string>			// basic_string
-#include <algorithm>		// for_each, etc.
-#include <functional>		// for StdStringLessNoCase, et al
+#include <algorithm>			// for_each, etc.
 
 #if defined(WIN32)
 #include <malloc.h>			// _alloca
@@ -799,25 +798,23 @@ typedef CStdStr<char>		CStdStringA;	// a better std::string
 // -----------------------------------------------------------------------------
 // FUNCTIONAL COMPARATORS:
 // REMARKS:
-//		These structs are derived from the std::binary_function template.  They
-//		give us functional classes (which may be used in Standard C++ Library
-//		collections and algorithms) that perform case-insensitive comparisons of
-//		CStdString objects.  This is useful for maps in which the key may be the
-//		 proper string but in the wrong case.
+//		These structs give us functional classes (which may be used in
+//		Standard C++ Library collections and algorithms) that perform
+//		case-insensitive comparisons of CStdString objects.  This is
+//		useful for maps in which the key may be the proper string but
+//		in the wrong case.
 // -----------------------------------------------------------------------------
 
 #define StdStringLessNoCase		SSLNCA
 #define StdStringEqualsNoCase		SSENCA
 
 struct StdStringLessNoCase
-	: std::binary_function<CStdStringA, CStdStringA, bool>
 {
 	inline
 	bool operator()(const CStdStringA& sLeft, const CStdStringA& sRight) const
 	{ return ssicmp(sLeft.c_str(), sRight.c_str()) < 0; }
 };
 struct StdStringEqualsNoCase
-	: std::binary_function<CStdStringA, CStdStringA, bool>
 {
 	inline
 	bool operator()(const CStdStringA& sLeft, const CStdStringA& sRight) const
