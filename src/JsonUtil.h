@@ -201,7 +201,7 @@ namespace JsonUtil
 	static void DeserializeStringToObjectMap(M &m, F fnToValue(E e), const Json::Value &root)
 	{
 		for( Json::Value::const_iterator iter = root.begin(); iter != root.end(); iter++ )
-			m[ fnToValue(iter.memberName()) ].Deserialize( *iter );
+			m[ fnToValue(iter.name()) ].Deserialize( *iter );
 	}
 
 	// Serialize a map that has a non-string key type
