@@ -16,28 +16,10 @@ static const UInt32 kBytesPerPacket = kChannelsPerFrame * kBitsPerChannel / 8;
 static const UInt32 kBytesPerFrame = kBytesPerPacket;
 static const UInt32 kFormatFlags = kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsFloat;
 
-#define WERROR(str, num, extra...) str ": '%s' (%lu).", ## extra, FourCCToString(num).c_str(), (num)
-#define ERROR(str, num, extra...) (ssprintf(WERROR(str, (num), ## extra)))
-
-static inline RString FourCCToString( uint32_t num )
+static const char *FormatOSError(OSStatus status)
 {
-	RString s( 4, '?' );
-	char c;
-	
-	c = (num >> 24) & 0xFF;
-	if( c >='\x20' && c <= '\x7e' )
-		s[0] = c;
-	c = (num >> 16) & 0xFF;
-	if( c >='\x20' && c <= '\x7e' )
-		s[1] = c;
-	c = (num >> 8) & 0xFF;
-	if( c >='\x20' && c <= '\x7e' )
-		s[2] = c;
-	c = num & 0xFF;
-	if( c >= '\x20' && c <= '\x7e' )
-		s[3] = c;
-	
-	return s;
+	NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
+	return [error.localizedDescription UTF8String];
 }
 
 RageSoundDriver_AU::RageSoundDriver_AU() : m_OutputUnit(nullptr), m_iSampleRate(0), m_bDone(false), m_bStarted(false),
@@ -54,7 +36,7 @@ static void SetSampleRate( AudioUnit au, Float64 desiredRate )
 	if( (error = AudioUnitGetProperty(au, kAudioOutputUnitProperty_CurrentDevice,
 					  kAudioUnitScope_Global, 0, &OutputDevice, &size)) )
 	{
-		LOG->Warn( WERROR("No output device", error) );
+		LOG->Warn("No output device: %s", FormatOSError(error));
 		return;
 	}
 	
@@ -68,7 +50,7 @@ static void SetSampleRate( AudioUnit au, Float64 desiredRate )
 	size = sizeof( Float64 );
 	if( (error = AudioObjectGetPropertyData(OutputDevice, &RateAddr, 0, NULL, &size, &rate)) )
 	{
-		LOG->Warn( WERROR("Couldn't get the device's sample rate", error) );
+		LOG->Warn("Couldn't get the device's sample rate: %s", FormatOSError(error));
 		return;
 	}
 	if( rate == desiredRate )
@@ -82,7 +64,7 @@ static void SetSampleRate( AudioUnit au, Float64 desiredRate )
 	
 	if( (error = AudioObjectGetPropertyData(OutputDevice, &AvailableRatesAddr, 0, nullptr, &size, nullptr)) )
 	{
-		LOG->Warn( WERROR("Couldn't get available nominal sample rates info", error) );
+		LOG->Warn("Couldn't get available nominal sample rates info: %s", FormatOSError(error));
 		return;
 	}
 	
@@ -91,7 +73,7 @@ static void SetSampleRate( AudioUnit au, Float64 desiredRate )
 	
 	if( (error = AudioObjectGetPropertyData(OutputDevice, &AvailableRatesAddr, 0, NULL, &size, ranges)) )
 	{
-		LOG->Warn( WERROR("Couldn't get available nominal sample rates", error) );
+		LOG->Warn("Couldn't get available nominal sample rates: %s", FormatOSError(error));
 		delete[] ranges;
 		return;
 	}
@@ -115,7 +97,7 @@ static void SetSampleRate( AudioUnit au, Float64 desiredRate )
 
 	if( (error = AudioObjectSetPropertyData(OutputDevice, &RateAddr, 0, nullptr, sizeof(Float64), &bestRate)) )
 	{
-		LOG->Warn( WERROR("Couldn't set the device's sample rate", error) );
+		LOG->Warn("Couldn't set the device's sample rate: %s", FormatOSError(error));
 	}
 }
 
@@ -138,7 +120,7 @@ RString RageSoundDriver_AU::Init()
 	OSStatus error = AudioComponentInstanceNew( comp, &m_OutputUnit );
 	
 	if( error != noErr || m_OutputUnit == nullptr )
-		return ERROR( "Could not open the default output unit", error );
+		return ssprintf("Could not open the default output unit: %s", FormatOSError(error));
 	
 	// Set up a callback function to generate output to the output unit
 	AURenderCallbackStruct input;
@@ -152,7 +134,7 @@ RString RageSoundDriver_AU::Init()
 				      &input, 
 				      sizeof(input) );
 	if( error != noErr )
-		return ERROR( "Failed to set render callback", error );
+		return ssprintf("Failed to set render callback: %s", FormatOSError(error));
 	
 	AudioStreamBasicDescription streamFormat;
 	
@@ -181,7 +163,7 @@ RString RageSoundDriver_AU::Init()
 				      &streamFormat,
 				      sizeof(AudioStreamBasicDescription) );
 	if( error != noErr )
-		return ERROR( "Failed to set AU stream format", error );
+		return ssprintf("Failed to set AU stream format: %s", FormatOSError(error));
 	UInt32 renderQuality = kRenderQuality_Max;
 	
 	error = AudioUnitSetProperty( m_OutputUnit,
@@ -191,16 +173,16 @@ RString RageSoundDriver_AU::Init()
 				      &renderQuality,
 				      sizeof(renderQuality) );
 	if( error != noErr )
-		LOG->Warn( WERROR("Failed to set the maximum render quality", error) );
+		LOG->Warn("Failed to set the maximum render quality: %s", FormatOSError(error));
 		
 	// Initialize the AU.
 	if( (error = AudioUnitInitialize(m_OutputUnit)) )
-		return ERROR( "Could not initialize the AudioUnit", error );
+		return ssprintf("Could not initialize the AudioUnit: %s", FormatOSError(error));
 	
 	StartDecodeThread();
 
 	if( (error = AudioOutputUnitStart(m_OutputUnit)) )
-		return ERROR( "Could not start the AudioUnit", error );
+		return ssprintf("Could not start the AudioUnit: %s", FormatOSError(error));
 	m_bStarted = true;
 	return RString();
 }
@@ -215,7 +197,7 @@ RageSoundDriver_AU::~RageSoundDriver_AU()
 		m_Semaphore.Wait();
 	}
 	AudioUnitUninitialize( m_OutputUnit );
-	CloseComponent( m_OutputUnit );
+	AudioComponentInstanceDispose( m_OutputUnit );
 	delete m_pIOThread;
 	delete m_pNotificationThread;
 }
@@ -245,7 +227,7 @@ float RageSoundDriver_AU::GetPlayLatency() const
 	if( (error = AudioUnitGetProperty(m_OutputUnit, kAudioOutputUnitProperty_CurrentDevice,
 					  kAudioUnitScope_Global, 0, &OutputDevice, &size)) )
 	{
-		LOG->Warn( WERROR("No output device", error) );
+		LOG->Warn("No output device: %s", FormatOSError(error));
 		return 0.0f;
 	}
 	
@@ -258,7 +240,7 @@ float RageSoundDriver_AU::GetPlayLatency() const
 	size = sizeof( Float64 );
 	if( (error = AudioObjectGetPropertyData(OutputDevice, &RateAddr, 0, nullptr, &size, &sampleRate)) )
 	{
-		LOG->Warn( WERROR("Couldn't get the device sample rate", error) );
+		LOG->Warn("Couldn't get the device sample rate: %s", FormatOSError(error));
 		return 0.0f;
 	}	
 
@@ -271,7 +253,7 @@ float RageSoundDriver_AU::GetPlayLatency() const
 	size = sizeof( UInt32 );
 	if( (error = AudioObjectGetPropertyData(OutputDevice, &BufferAddr, 0, nullptr, &size, &bufferSize)) )
 	{
-		LOG->Warn( WERROR("Couldn't determine buffer size", error) );
+		LOG->Warn("Couldn't determine buffer size: %s", FormatOSError(error));
 		bufferSize = 0;
 	}
 	
@@ -286,7 +268,7 @@ float RageSoundDriver_AU::GetPlayLatency() const
 	size = sizeof( UInt32 );
 	if( (error = AudioObjectGetPropertyData(OutputDevice, &LatencyAddr, 0, nullptr, &size, &frames)) )
 	{
-		LOG->Warn( WERROR( "Couldn't get device latency", error) );
+		LOG->Warn("Couldn't get device latency: %s", FormatOSError(error));
 		frames = 0;
 	}
 	
@@ -300,7 +282,7 @@ float RageSoundDriver_AU::GetPlayLatency() const
 	size = sizeof( UInt32 );
 	if( (error = AudioObjectGetPropertyData(OutputDevice, &SafetyAddr, 0, nullptr, &size, &frames)) )
 	{
-		LOG->Warn( WERROR("Couldn't get device safety offset", error) );
+		LOG->Warn("Couldn't get device safety offset: %s", FormatOSError(error));
 		frames = 0;
 	}
 	bufferSize += frames;
@@ -315,7 +297,7 @@ float RageSoundDriver_AU::GetPlayLatency() const
 		
 		if( (error = AudioObjectGetPropertyData(OutputDevice, &StreamsAddr, 0, nullptr, &size, nullptr)) )
 		{
-			LOG->Warn( WERROR("Device has no streams", error) );
+			LOG->Warn("Device has no streams: %s", FormatOSError(error));
 			break;
 		}
 		int num = size / sizeof( AudioStreamID );
@@ -328,7 +310,7 @@ float RageSoundDriver_AU::GetPlayLatency() const
 
 		if( (error = AudioObjectGetPropertyData(OutputDevice, &StreamsAddr, 0, nullptr, &size, streams)) )
 		{
-			LOG->Warn( WERROR("Cannot get device's streams", error) );
+			LOG->Warn("Cannot get device's streams: %s", FormatOSError(error));
 			delete[] streams;
 			break;
 		}
@@ -341,7 +323,7 @@ float RageSoundDriver_AU::GetPlayLatency() const
 		
 		if( (error = AudioObjectGetPropertyData(streams[0], &LatencyAddr, 0, nullptr, &size, &frames)) )
 		{
-			LOG->Warn( WERROR("Stream does not report latency", error) );
+			LOG->Warn("Stream does not report latency: %s", FormatOSError(error));
 			frames = 0;
 		}
 		delete[] streams;

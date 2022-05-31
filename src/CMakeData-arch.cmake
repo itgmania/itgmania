@@ -44,7 +44,7 @@ if(WIN32)
               "arch/Sound/RageSoundDriver_WaveOut.h"
               "arch/Sound/RageSoundDriver_WDMKS.h")
 elseif(APPLE)
-  list(APPEND SMDATA_ARCH_SOUND_SRC "arch/Sound/RageSoundDriver_AU.cpp")
+  list(APPEND SMDATA_ARCH_SOUND_SRC "arch/Sound/RageSoundDriver_AU.mm")
   list(APPEND SMDATA_ARCH_SOUND_HPP "arch/Sound/RageSoundDriver_AU.h")
 else() # Unix
   if(HAS_PULSE)
@@ -273,7 +273,7 @@ if(WIN32)
   endif()
 elseif(APPLE)
   list(APPEND SMDATA_ARCH_INPUT_SRC
-              "arch/InputHandler/InputHandler_MacOSX_HID.cpp")
+              "arch/InputHandler/InputHandler_MacOSX_HID.mm")
   list(APPEND SMDATA_ARCH_INPUT_HPP
               "arch/InputHandler/InputHandler_MacOSX_HID.h")
 else() # Unix/Linux

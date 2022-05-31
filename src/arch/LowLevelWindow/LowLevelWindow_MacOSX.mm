@@ -17,8 +17,8 @@ extern "C" {
 }
 
 
-static const unsigned int g_iStyleMask = NSTitledWindowMask | NSClosableWindowMask |
-					 NSMiniaturizableWindowMask | NSResizableWindowMask;
+static const unsigned int g_iStyleMask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
+					 NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable;
 static bool g_bResized;
 static int g_iWidth;
 static int g_iHeight;
@@ -94,7 +94,6 @@ public:
 						   defer:YES];
 	
 	[m_Window setExcludedFromWindowsMenu:YES];
-	[m_Window useOptimizedDrawing:YES];
 	[m_Window setReleasedWhenClosed:NO];
 	[m_Window setDelegate:static_cast<id<NSWindowDelegate> >(self)];
 }

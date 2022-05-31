@@ -52,7 +52,7 @@
 	[m_Text setSelectable:NO];
 	[m_Text setDrawsBackground:NO];
 	[m_Text setBackgroundColor:[NSColor lightGrayColor]];
-	[m_Text setAlignment:NSCenterTextAlignment];
+	[m_Text setAlignment:NSTextAlignmentCenter];
 	[m_Text setHorizontallyResizable:NO];
 	[m_Text setVerticallyResizable:NO];
 	[m_Text setString:@"Initializing Hardware..."];
@@ -64,17 +64,15 @@
 
 	windowRect = NSMakeRect( 0, 0, size.width, size.height + height + progressHeight + padding);
 	m_Window = [[NSWindow alloc] initWithContentRect:windowRect
-							styleMask:NSTitledWindowMask
+							styleMask:NSWindowStyleMaskTitled
 							backing:NSBackingStoreBuffered
 							defer:YES];
 
 	NSView *view = [m_Window contentView];
 
 	// Set some properties.
-	[m_Window setOneShot:YES];
 	[m_Window setReleasedWhenClosed:YES];
 	[m_Window setExcludedFromWindowsMenu:YES];
-	[m_Window useOptimizedDrawing:YES];
 	[m_Window setTitle:@PRODUCT_FAMILY];
 	[m_Window center];
 

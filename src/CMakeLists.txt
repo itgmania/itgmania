@@ -230,9 +230,6 @@ elseif(APPLE)
                              "$<TARGET_FILE_DIR:ITGmania>/../Resources"
                      COMMAND ${CMAKE_COMMAND} -E copy
                              "${SM_XCODE_DIR}/logo.icns"
-                             "$<TARGET_FILE_DIR:ITGmania>/../Resources/"
-                     COMMAND ${CMAKE_COMMAND} -E copy
-                             "${SM_XCODE_DIR}/Hardware.plist"
                              "$<TARGET_FILE_DIR:ITGmania>/../Resources/")
 else() # Linux
   set_target_properties("${SM_EXE_NAME}"
