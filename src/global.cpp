@@ -1,5 +1,7 @@
 #include "global.h"
 
+#include <cstdlib>
+
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
@@ -15,7 +17,6 @@
 #  endif
 #elif defined(MACOSX)
 #  include "archutils/Darwin/Crash.h"
-#  include <stdlib.h>
 using CrashHandler::IsDebuggerPresent;
 using CrashHandler::DebugBreak;
 #endif
@@ -38,7 +39,7 @@ void NORETURN sm_crash( const char *reason )
 #if defined(CRASH_HANDLER)
 	CrashHandler::ForceCrash( reason );
 #else
-	*(char*)0=0;
+	std::abort();
 
 	/* This isn't actually reached.  We just do this to convince the compiler that the
 	 * function really doesn't return. */
