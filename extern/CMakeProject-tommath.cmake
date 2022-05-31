@@ -169,10 +169,15 @@ add_library("tommath" STATIC ${TOMMATH_SRC} ${TOMMATH_HPP})
 
 set_property(TARGET "tommath" PROPERTY FOLDER "External Libraries")
 
+# tommath 1.2.0 depends on dead code elimination
 if(MSVC)
-  # XXX: tommath depends on dead code elimination, so optimizations *have* to be on
+  # with MSVC the only way I could find to enable dead code elimination is to
+  # enable optimization altogether. This requires to disable RTC (run-time
+  # error checks) though, because those two options are not compatible.
   string(REGEX REPLACE "/RTC1" "" CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
-  set_property(TARGET "tommath" PROPERTY COMPILE_FLAGS "/Ox")
+  target_compile_options("tommath" PRIVATE "/Ox")
+else()
+  target_compile_options("tommath" PRIVATE "-Og")
 endif()
 
 disable_project_warnings("tommath")
