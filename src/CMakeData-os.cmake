@@ -1,6 +1,6 @@
 if(APPLE)
   list(APPEND SMDATA_OS_DARWIN_SRC
-              "archutils/Darwin/Crash.cpp"
+              "archutils/Darwin/Crash.mm"
               "archutils/Darwin/DarwinThreadHelpers.cpp"
               "archutils/Darwin/HIDDevice.cpp"
               "archutils/Darwin/JoystickDevice.cpp"
@@ -8,7 +8,7 @@ if(APPLE)
               "archutils/Darwin/MouseDevice.cpp"
               "archutils/Darwin/PumpDevice.cpp"
               "archutils/Darwin/SMMain.mm"
-              "archutils/Darwin/SpecialDirs.cpp"
+              "archutils/Darwin/SpecialDirs.mm"
               "archutils/Darwin/VectorHelper.cpp")
   list(APPEND SMDATA_OS_DARWIN_HPP
               "archutils/Darwin/arch_setup.h"

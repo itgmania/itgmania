@@ -17,14 +17,13 @@ REGISTER_INPUT_HANDLER_CLASS2( HID, MacOSX_HID );
 void InputHandler_MacOSX_HID::QueueCallback( void *target, int result, void *refcon, void *sender )
 {
 	// The result seems useless as you can't actually return anything...
-	// refcon is the Device number
 
 	RageTimer now;
 	InputHandler_MacOSX_HID *This = (InputHandler_MacOSX_HID *)target;
 	IOHIDQueueInterface **queue = (IOHIDQueueInterface **)sender;
 	IOHIDEventStruct event;
 	AbsoluteTime zeroTime = { 0, 0 };
-	HIDDevice *dev = This->m_vDevices[size_t( refcon )];
+	HIDDevice *dev = static_cast<HIDDevice*>(refcon);
 	vector<DeviceInput> vPresses;
 
 	while( (result = CALL(queue, getNextEvent, &event, zeroTime, 0)) == kIOReturnSuccess )
@@ -116,11 +115,9 @@ void InputHandler_MacOSX_HID::DeviceChanged( void *refCon, io_service_t service,
 // m_LoopRef needs to be set before this is called
 void InputHandler_MacOSX_HID::StartDevices()
 {
-	int n = 0;
-
 	ASSERT( m_LoopRef );
 	for (HIDDevice *i : m_vDevices)
-		i->StartQueue( m_LoopRef, InputHandler_MacOSX_HID::QueueCallback, this, n++ );
+		i->StartQueue( m_LoopRef, InputHandler_MacOSX_HID::QueueCallback, this );
 
 	CFRunLoopSourceRef runLoopSource = IONotificationPortGetRunLoopSource( m_NotifyPort );
 
@@ -397,8 +394,10 @@ static wchar_t KeyCodeToChar(CGKeyCode keyCode, unsigned int modifierFlags)
 		
 		if( status != noErr )
 		{
-			fprintf(stderr, "There was an %s error translating from the '%d' key code to a human readable string: %s\n",
-				GetMacOSStatusErrorString(status), (int)status, GetMacOSStatusCommentString(status));
+			NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
+			const char* errorDescription = [error.localizedDescription UTF8String];
+			fprintf(stderr, "There was an error translating from the '%d' key code to a human readable string: %s\n",
+				keyCode, errorDescription);
 		}
 		else if( actualStringLength == 0 )
 		{

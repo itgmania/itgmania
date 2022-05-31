@@ -1,25 +1,17 @@
 #include "global.h"
 #include "SpecialDirs.h"
 #include "ProductInfo.h"
-#include <CoreServices/CoreServices.h>
-#include <IOKit/IOKitLib.h>
-#include "RageUtil.h"
 
-static void PathForFolderType( char dir[PATH_MAX], OSType folderType )
-{
-	FSRef fs;
-
-	if( FSFindFolder(kUserDomain, folderType, kDontCreateFolder, &fs) )
-		FAIL_M( ssprintf("FSFindFolder(%lu) failed.", folderType) );
-	if( FSRefMakePath(&fs, (UInt8 *)dir, PATH_MAX) )
-		FAIL_M( "FSRefMakePath() failed." );
-}
+#import <Foundation/Foundation.h>
 
 RString SpecialDirs::GetDesktopDir()
 {
-	char dir[PATH_MAX];
-	PathForFolderType( dir, kDesktopFolderType );
-	return RString( ssprintf("%s/" PRODUCT_ID, dir) );
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	NSURL *url = [fileManager URLForDirectory:NSDesktopDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
+	if (url == nil)
+		return "/tmp";
+
+	return RString([url fileSystemRepresentation]) + "/" PRODUCT_ID;
 }
 
 

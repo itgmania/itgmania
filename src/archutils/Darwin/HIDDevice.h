@@ -95,7 +95,7 @@ protected:
 	{
 		IOReturn ret = CALL( m_Queue, addElement, cookie, 0 );
 		if( ret != KERN_SUCCESS )
-			LOG->Warn( "Failed to add HID element with cookie %p to queue: %u", cookie, ret );
+			LOG->Warn( "Failed to add HID element with cookie %u to queue: %u", cookie, ret );
 	}
 
 	// Perform a synchronous set report on the HID interface.
@@ -108,7 +108,7 @@ public:
 	virtual ~HIDDevice();
 
 	bool Open( io_object_t device );
-	void StartQueue( CFRunLoopRef loopRef, IOHIDCallbackFunction callback, void *target, int refCon );
+	void StartQueue( CFRunLoopRef loopRef, IOHIDCallbackFunction callback, void *target );
 	inline const RString& GetDescription() const { return m_sDescription; }
 
 	/* Add button presses (or releases) to vPresses for the given cookie. More

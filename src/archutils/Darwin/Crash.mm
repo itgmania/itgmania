@@ -10,17 +10,16 @@
 #endif
 #include <sys/sysctl.h>
 
+#import <Foundation/Foundation.h>
+
 RString CrashHandler::GetLogsDirectory()
 {
-	FSRef fs;
-	char dir[PATH_MAX];
-	
-	if( FSFindFolder(kUserDomain, kDomainLibraryFolderType, kDontCreateFolder, &fs) ||
-	    FSRefMakePath(&fs, (UInt8 *)dir, PATH_MAX) )
-	{
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	NSURL *url = [fileManager URLForDirectory:NSLibraryDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
+	if (url == nil)
 		return "/tmp";
-	}
-	return RString( dir ) + "/Logs/" PRODUCT_ID;
+
+	return RString([url fileSystemRepresentation]) + "/Logs/" PRODUCT_ID;
 }
 
 // XXX Can we use LocalizedString here instead?
