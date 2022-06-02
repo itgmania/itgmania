@@ -33,7 +33,6 @@ if(CMAKE_POSITION_INDEPENDENT_CODE)
 endif()
 
 if(MACOSX)
-  list(APPEND FFMPEG_CONFIGURE "--disable-asm")
   list(APPEND FFMPEG_CONFIGURE "--enable-cross-compile")
   list(APPEND FFMPEG_CONFIGURE "--enable-videotoolbox")
   list(APPEND FFMPEG_CONFIGURE "--extra-cflags=-mmacosx-version-min=11")
