@@ -299,6 +299,12 @@ elseif(MACOSX)
   find_library(MAC_FRAME_COREMEDIA CoreMedia ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
   find_library(MAC_FRAME_COREVIDEO CoreVideo ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
   find_library(MAC_FRAME_VIDEOTOOLBOX VideoToolbox ${CMAKE_SYSTEM_FRAMEWORK_PATH} REQUIRED)
+
+  if(NOT YASM_FOUND AND NOT NASM_FOUND)
+    message(FATAL_ERROR
+      "Neither NASM nor YASM were found. Please install at least one of them."
+    )
+  endif()
 elseif(LINUX)
   if(WITH_GTK3)
     find_package("GTK3" 2.0)
@@ -380,7 +386,7 @@ elseif(LINUX)
 
   if(NOT YASM_FOUND AND NOT NASM_FOUND)
     message(FATAL_ERROR
-      "Neither NASM nor YASM were found. Please install at least one of them if you wish for ffmpeg support."
+      "Neither NASM nor YASM were found. Please install at least one of them."
     )
   endif()
 
