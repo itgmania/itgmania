@@ -12,7 +12,7 @@ At first, you have to install CMake.
 All OSes
 ===
 
-The common way of installing CMake is to go to [CMake's download page](http://www.cmake.org/download/). At this time of writing, the latest version is 3.22.3. The minimum version supported at this time is 3.12.
+The common way of installing CMake is to go to [CMake's download page](http://www.cmake.org/download/). At this time of writing, the latest version is 3.23.2. The minimum version supported at this time is 3.20.
 
 If this approach is used, consider using the binary distributions. Most should also provide a friendly GUI interface.
 

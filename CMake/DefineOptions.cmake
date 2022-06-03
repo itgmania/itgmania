@@ -41,8 +41,6 @@ else()
     WITH_TEXTURE_GENERATOR
     "Build with the Texture Font Generator. Ensure the MFC library is installed."
     OFF)
-  # Turn this option off to use dynamic linking instead of static linking.
-  option(WITH_STATIC_LINKING "Build StepMania with static linking." ON)
 endif()
 
 if(WIN32)

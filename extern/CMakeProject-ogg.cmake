@@ -1,7 +1,7 @@
 set(OGG_SRC "ogg/src/bitwise.c"
             "ogg/src/framing.c")
 
-set(OGG_HPP "ogg/include/ogg/config_types.h"
+set(OGG_HPP "ogg/ogg/config_types.h"
             "ogg/include/ogg/ogg.h"
             "ogg/include/ogg/os_types.h")
 
