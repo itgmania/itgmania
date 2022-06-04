@@ -1381,7 +1381,7 @@ static void SetDefaultEditorNoteSkin( size_t num, RString &sNameOut, RString &de
 	sNameOut = ssprintf( "EditorNoteSkinP%d", int(num + 1) );
 
 	// XXX: We need more supported noteskins.
-	defaultValueOut = "default";
+	defaultValueOut = "cel";
 }
 
 static Preference1D<RString> EDITOR_NOTE_SKINS( SetDefaultEditorNoteSkin, NUM_PLAYERS );
