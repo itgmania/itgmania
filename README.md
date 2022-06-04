@@ -7,14 +7,15 @@ ITGmania is a fork of [StepMania 5.1](https://github.com/stepmania/stepmania/tre
 
 ## Changes to StepMania 5.1
 
-- The mine fix
-- Track held misses for pad debugging
+- Built-in network functionality
+- The mine fix applied (courtesy of [DinsFire64](https://gist.github.com/DinsFire64/4a3f763cd3033afd55a176980b32a3b5))
+- Held misses tracked in the engine for pad debugging
+- Fixed overlapping hold bug
+- Per-player visual delay
+- Per-player disabling of timing windows
 - New preference to control note render ordering
-- Fixed hold note rendering
 - Increased the Stats.xml file size limit to 100MB
 - Changed the default binding for P2/back from hyphen to backslash
-- Built-in network functionality
-- Per-player visual delay and disabled timing windows
 
 ## Installation
 ### From Packages
