@@ -3,7 +3,7 @@ on: [push, pull_request]
 name: Continuous integration
 
 jobs:
-  ubuntu-build-bundled:
+  ubuntu-build:
     name: Ubuntu
     runs-on: ubuntu-latest
     steps:
@@ -32,8 +32,8 @@ jobs:
       - name: Build
         run: cmake --build build
 
-  macos-build-bundled:
-    name: macOS
+  macos-build-arm64:
+    name: macOS (M1)
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
@@ -43,11 +43,26 @@ jobs:
         run: brew install
           nasm
       - name: Configure
-        run: cmake -B build
+        run: cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64
       - name: Build
         run: cmake --build build
 
-  windows-build-bundled:
+  macos-build-x86_64:
+    name: macOS (Intel)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Checkout submodules
+        run: git submodule update --init
+      - name: Install dependencies
+        run: brew install
+          nasm
+      - name: Configure
+        run: cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64
+      - name: Build
+        run: cmake --build build
+
+  windows-build:
     name: Windows
     runs-on: windows-latest
     steps:
