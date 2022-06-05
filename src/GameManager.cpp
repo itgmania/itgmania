@@ -3215,16 +3215,20 @@ static const Game *g_Games[] =
 {
 	&g_Game_Dance,
 	&g_Game_Pump,
-	&g_Game_KB7,
-	&g_Game_Ez2,
-	&g_Game_Para,
-	&g_Game_DS3DDX,
-	&g_Game_Beat,
-	&g_Game_Maniax,
 	&g_Game_Techno,
-	&g_Game_Popn,
 	&g_Game_Lights,
-	&g_Game_Kickbox,
+
+	// We don't intend to support the following game modes so comment them out.
+	// TODO(teejusb/natano): Remove the following game modes from ITGmania
+	// whenever they start hindering development.
+	// &g_Game_KB7,
+	// &g_Game_Ez2,
+	// &g_Game_Para,
+	// &g_Game_DS3DDX,
+	// &g_Game_Beat,
+	// &g_Game_Maniax,
+	// &g_Game_Popn,
+	// &g_Game_Kickbox,
 };
 
 GameManager::GameManager()
