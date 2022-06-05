@@ -921,6 +921,7 @@ static void InitializeConfOptions()
 	}
 	ADD( ConfOption( "EnableAttackSounds",		MovePref<bool>,		"No","Yes" ) );
 	ADD( ConfOption( "EnableMineHitSound",		MovePref<bool>,		"No","Yes" ) );
+	ADD( ConfOption( "RateModPreservesPitch",		MovePref<bool>,		"No","Yes") );
 
 	// Editor options
 	ADD( ConfOption( "EditorShowBGChangesPlay",	MovePref<bool>,		"Hide","Show") );
