@@ -74,6 +74,7 @@ local stepmania_credits= {
 		name= "Other Contributors",
 		{type= "subsection", name= "ITGmania"},
 		"Club Fantastic (https://www.clubfantastic.com/)",
+		"DinsFire64 (Mine Fix)",
 		"EvocaitArt (Enchantment noteskin)",
 		"LightningXCE (Cyber noteskin)",
 		"MegaSphere (Note/Rainbow/Vivid noteskins)",
