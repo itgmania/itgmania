@@ -375,14 +375,10 @@ elseif(APPLE)
               ${MAC_FRAME_SYSTEM}
               "${BZIP2_LIBRARY_RELEASE}"
               "${ICONV_LIBRARIES}"
-              "${SM_FFMPEG_LIB_ARM64}/libavformat.a"
-              "${SM_FFMPEG_LIB_ARM64}/libavcodec.a"
-              "${SM_FFMPEG_LIB_ARM64}/libswscale.a"
-              "${SM_FFMPEG_LIB_ARM64}/libavutil.a"
-              "${SM_FFMPEG_LIB_X86_64}/libavformat.a"
-              "${SM_FFMPEG_LIB_X86_64}/libavcodec.a"
-              "${SM_FFMPEG_LIB_X86_64}/libswscale.a"
-              "${SM_FFMPEG_LIB_X86_64}/libavutil.a"
+              "${SM_FFMPEG_LIB}/libavformat.a"
+              "${SM_FFMPEG_LIB}/libavcodec.a"
+              "${SM_FFMPEG_LIB}/libswscale.a"
+              "${SM_FFMPEG_LIB}/libavutil.a"
               "${MAC_FRAME_COREMEDIA}"
               "${MAC_FRAME_COREVIDEO}"
               "${MAC_FRAME_VIDEOTOOLBOX}")
@@ -446,7 +442,7 @@ list(APPEND SM_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
 if(APPLE)
   list(APPEND SM_INCLUDE_DIRS "archutils/Unix")
 
-  add_dependencies("${SM_EXE_NAME}" "ffmpeg_arm64" "ffmpeg_x86_64")
+  add_dependencies("${SM_EXE_NAME}" "ffmpeg")
   list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
 else()
   if(MSVC)
