@@ -152,7 +152,6 @@ if(WIN32)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WINDOWS) # TODO: Remove this potential duplicate.
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _CRT_SECURE_NO_WARNINGS)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WINSOCK_DEPRECATED_NO_WARNINGS)
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE GLEW_STATIC)
 
   set_target_properties("${SM_EXE_NAME}"
                         PROPERTIES RUNTIME_OUTPUT_DIRECTORY
@@ -451,9 +450,6 @@ else()
     add_dependencies("${SM_EXE_NAME}" "ffmpeg")
     list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
 
-    if(HAS_GTK3)
-      list(APPEND SM_INCLUDE_DIRS "${GTK3_INCLUDE_DIRS}")
-    endif()
     if(X11_FOUND)
       list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
     endif()
