@@ -21,6 +21,7 @@ list(APPEND FFMPEG_CONFIGURE
             "--disable-postproc"
             "--disable-programs"
             "--disable-swresample"
+            "--disable-vaapi"
             "--enable-bzlib"
             "--enable-gpl"
             "--enable-pthreads"
@@ -45,8 +46,6 @@ if(MACOSX)
       "Unsupported macOS architecture: ${CMAKE_OSX_ARCHITECTURES}, set CMAKE_OSX_ARCHITECTURES to either arm64 or x86_64"
     )
   endif()
-else()
-  list(APPEND FFMPEG_CONFIGURE "--enable-vaapi")
 endif()
 
 if(NOT WITH_EXTERNAL_WARNINGS)
