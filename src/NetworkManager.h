@@ -13,6 +13,7 @@
 
 #include <ixwebsocket/IXHttp.h>
 #include <ixwebsocket/IXHttpClient.h>
+#include <ixwebsocket/IXSocketTLSOptions.h>
 #include <ixwebsocket/IXWebSocket.h>
 
 #include "EnumHelper.h"
@@ -141,6 +142,7 @@ private:
 
 	ix::HttpClient httpClient;
 	ix::HttpClient downloadClient;
+	ix::SocketTLSOptions tlsOptions;
 
 	static Preference<bool> httpEnabled;
 	static Preference<RString> httpAllowHosts;
