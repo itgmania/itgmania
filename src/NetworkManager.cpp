@@ -6,12 +6,14 @@
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
+#include "SpecialFiles.h"
 #include "StdString.h"
 #include "ver.h"
 
 #include <ixwebsocket/IXHttpClient.h>
 #include <ixwebsocket/IXNetSystem.h>
 #include <ixwebsocket/IXUrlParser.h>
+#include <ixwebsocket/IXWebSocket.h>
 
 #include <algorithm>
 #include <climits>
@@ -71,6 +73,23 @@ NetworkManager::NetworkManager() : httpClient(true), downloadClient(true)
 		lua_setglobal(L, "NETWORK");
 		LUA->Release(L);
 	}
+
+	RageFile f;
+	if(f.Open(SpecialFiles::CA_BUNDLE_PATH))
+	{
+		RString data;
+		f.Read(data);
+		f.Close();
+
+		this->tlsOptions.caFile = data;
+	}
+	else
+	{
+		LOG->Warn("Reading '%s' failed: %s", SpecialFiles::CA_BUNDLE_PATH.c_str(), f.GetError().c_str());
+	}
+
+	this->httpClient.setTLSOptions(this->tlsOptions);
+	this->downloadClient.setTLSOptions(this->tlsOptions);
 
 	this->ClearDownloads();
 }
@@ -214,6 +233,8 @@ WebSocketHandlePtr NetworkManager::WebSocket(const WebSocketArgs& args)
 	handle->onClose = args.onClose;
 
 	handle->webSocket.setUrl(args.url);
+	handle->webSocket.setTLSOptions(this->tlsOptions);
+	handle->webSocket.setOnMessageCallback(args.onMessage);
 
 	ix::WebSocketHttpHeaders headers;
 	headers["User-Agent"] = this->GetUserAgent();
@@ -237,8 +258,6 @@ WebSocketHandlePtr NetworkManager::WebSocket(const WebSocketArgs& args)
 	{
 		handle->webSocket.disableAutomaticReconnection();
 	}
-
-	handle->webSocket.setOnMessageCallback(args.onMessage);
 
 	handle->webSocket.start();
 

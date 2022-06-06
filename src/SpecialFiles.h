@@ -23,6 +23,7 @@ namespace SpecialFiles
 	extern const RString DEFAULTS_INI_PATH;
 	extern const RString STATIC_INI_PATH;
 	extern const RString TYPE_TXT_FILE;
+	extern const RString CA_BUNDLE_PATH;
 	/** @brief The default Songs directory. */
 	extern const RString SONGS_DIR;
 	/** @brief The default courses directory. */
