@@ -37,10 +37,6 @@ set_property(TARGET "TextureFontGenerator" PROPERTY FOLDER "Internal Libraries")
 
 disable_project_warnings("TextureFontGenerator")
 
-if(NOT WITH_STATIC_LINKING)
-  target_compile_definitions("TextureFontGenerator" PRIVATE _AFXDLL)
-endif()
-
 list(APPEND TEXTURE_LINK_LIB "zlib" "png")
 
 target_link_libraries("TextureFontGenerator" ${TEXTURE_LINK_LIB})
