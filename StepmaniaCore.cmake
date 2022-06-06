@@ -386,7 +386,6 @@ elseif(LINUX)
     )
   endif()
 
-  find_package("Va")
   include("${SM_CMAKE_DIR}/SetupFfmpeg.cmake")
 
   set(OpenGL_GL_PREFERENCE GLVND)
