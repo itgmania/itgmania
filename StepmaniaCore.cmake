@@ -324,9 +324,6 @@ elseif(LINUX)
     set(HAS_X11 TRUE)
   endif()
 
-  find_package("ZLIB" REQUIRED)
-  find_package("JPEG" REQUIRED)
-
   find_package(Dl)
 
   set(HAS_XRANDR FALSE)
@@ -394,7 +391,6 @@ elseif(LINUX)
 
   set(OpenGL_GL_PREFERENCE GLVND)
   find_package(OpenGL REQUIRED)
-  find_package(GLEW REQUIRED)
 endif(WIN32) # LINUX, APPLE
 
 configure_file("${SM_SRC_DIR}/config.in.hpp"
