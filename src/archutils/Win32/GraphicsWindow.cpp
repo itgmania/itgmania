@@ -541,47 +541,59 @@ HWND GraphicsWindow::GetHwnd()
 
 void GraphicsWindow::GetDisplaySpecs( DisplaySpecs &out )
 {
-	const size_t DM_DRIVER_EXTRA_BYTES = 4096;
-	const size_t DMSIZE = sizeof( DEVMODE ) + DM_DRIVER_EXTRA_BYTES;
-	auto reset = [=]( std::unique_ptr<DEVMODE> &p ) {
-		::memset( p.get(), 0, DMSIZE );
-		p->dmSize = sizeof( DEVMODE );
-		p->dmDriverExtra = static_cast<WORD> (DM_DRIVER_EXTRA_BYTES);
-	};
-	auto isvalid = []( std::unique_ptr<DEVMODE> &dm ) {
-		// Windows 8 and later don't support less than 32bpp, so don't even test
-		// for them.  GetDisplaySpecs only tracks resolution/refresh rate anyway. -Kyz, drewbarbs
-		return (dm->dmFields & DM_PELSWIDTH) && (dm->dmFields & DM_PELSHEIGHT) && (dm->dmFields & DM_DISPLAYFREQUENCY)
-			&& (dm->dmBitsPerPel >= 32 || !(dm->dmFields & DM_BITSPERPEL));
+auto resetDeviceMode = [=]( DEVMODE& mode ) {
+		ZeroMemory( &mode, sizeof( DEVMODE ) );
+		mode.dmSize = sizeof(DEVMODE);
+		mode.dmDriverExtra = 0;
 	};
 
-	std::unique_ptr<DEVMODE> dm( static_cast<DEVMODE*> (operator new(DMSIZE)) );
-	reset( dm );
+	auto deviceModeIsValid = [=]( const DEVMODE& mode ) {
+		return (mode.dmFields & DM_PELSWIDTH) && (mode.dmFields & DM_PELSHEIGHT)
+			&& (mode.dmFields & DM_DISPLAYFREQUENCY)
+			&& (mode.dmBitsPerPel >= 32 || !(mode.dmFields & DM_BITSPERPEL));
+	};
+
+	DEVMODE devmode;
+	resetDeviceMode(devmode);
+
+	std::set<DisplayMode> displayModes;
 
 	int i = 0;
-	std::set<DisplayMode> modes;
-	while ( EnumDisplaySettingsEx( nullptr, i++, dm.get(), 0 ) )
+	while ( EnumDisplaySettingsEx( nullptr, i++, &devmode, 0 ) )
 	{
-		if ( isvalid( dm ) && ChangeDisplaySettingsEx( nullptr, dm.get(), nullptr, CDS_TEST, nullptr ) == DISP_CHANGE_SUCCESSFUL )
+		if ( deviceModeIsValid( devmode ) )
 		{
-			DisplayMode m = { dm->dmPelsWidth, dm->dmPelsHeight, static_cast<double> (dm->dmDisplayFrequency) };
-			modes.insert(m);
+			DisplayMode m = { devmode.dmPelsWidth, devmode.dmPelsHeight, static_cast<double> (devmode.dmDisplayFrequency) };
+			displayModes.insert( m );
 		}
-		reset( dm );
+		resetDeviceMode( devmode );
 	}
 
-	reset( dm );
-	// Get the current display mode
-	if ( EnumDisplaySettingsEx( nullptr, ENUM_CURRENT_SETTINGS, dm.get(), 0 ) && isvalid( dm ) )
-	{
-		DisplayMode m = { dm->dmPelsWidth, dm->dmPelsHeight, static_cast<double> (dm->dmDisplayFrequency) };
-		RectI bounds = { 0, 0, static_cast<int> (m.width), static_cast<int> (m.height) };
-		out.insert( DisplaySpec( "", "Fullscreen", modes, m, bounds ) );
+	/*
+		XXXCF: This doesn't appear to actually be necessary, and causes a horrible system lock-up for about 5s.
+	std::set<DisplayMode> displayModes;
+	for ( auto& deviceMode : allDeviceModes) {
+		Sleep(1);
+		if (ChangeDisplaySettingsEx(nullptr, &devmode, nullptr, CDS_TEST, nullptr) == DISP_CHANGE_SUCCESSFUL) {
+			DisplayMode m = { deviceMode.dmPelsWidth, deviceMode.dmPelsHeight, static_cast<double> (deviceMode.dmDisplayFrequency) };
+			displayModes.insert(m);
+		}
 	}
-	else if ( !modes.empty() )
+	*/
+
+	resetDeviceMode(devmode);
+
+	// Get the current display mode
+	if ( EnumDisplaySettingsEx( nullptr, ENUM_CURRENT_SETTINGS, &devmode, 0 ) && deviceModeIsValid(devmode) )
+	{
+		DisplayMode m = { devmode.dmPelsWidth, devmode.dmPelsHeight, static_cast<double> (devmode.dmDisplayFrequency) };
+		RectI bounds = { 0, 0, static_cast<int> (m.width), static_cast<int> (m.height) };
+		out.insert( DisplaySpec( "", "Fullscreen", displayModes, m, bounds ) );
+	}
+	else if ( !displayModes.empty() )
 	{
 		LOG->Warn( "Could not retrieve valid current display mode" );
-		out.insert( DisplaySpec( "", "Fullscreen", *modes.begin() ) );
+		out.insert( DisplaySpec( "", "Fullscreen", *displayModes.begin() ) );
 	}
 	else
 	{
