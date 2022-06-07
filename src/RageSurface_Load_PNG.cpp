@@ -55,7 +55,6 @@ void PNG_Error( png_struct *png, const char *error )
 
 void PNG_Warning( png_struct *png, const char *warning )
 {
-	// FIXME: Mismatched libpng headers vs. library causes a segfault here on MinGW
 	CHECKPOINT_M(ssprintf("PNG warning during processing: %s", warning));
 	error_info *info = (error_info *) png_get_io_ptr(png);
 	LOG->Trace( "loading \"%s\": warning: %s", info->fn, warning );

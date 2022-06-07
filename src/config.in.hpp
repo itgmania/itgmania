@@ -130,26 +130,8 @@ typedef std::make_signed<size_t>::type ssize_t;
 /* Defined to 1 if the underlying system uses big endian. */
 #cmakedefine ENDIAN_BIG 1
 
-/* Defined to 1 if building on a windows system, and thus uses the windows loading window. */
-#cmakedefine NEED_WINDOWS_LOADING_WINDOW 1
-
 /* Defined to 1 if logging timing segment additions and removals. */
 #cmakedefine WITH_LOGGING_TIMING_DATA 1
-
-/* Defined to 1 if the PBS_MARQUEE symbol was found. */
-#cmakedefine HAVE_PBS_MARQUEE 1
-
-/* Defined to 1 if the PBM_SETMARQUEE symbol was found. */
-#cmakedefine HAVE_PBM_SETMARQUEE 1
-
-#if defined(NEED_WINDOWS_LOADING_WINDOW)
-#if !defined(HAVE_PBS_MARQUEE)
-#define PBS_MARQUEE 0x08
-#endif
-#if !defined(HAVE_PBM_SETMARQUEE)
-#define PBM_SETMARQUEE (WM_USER+10)
-#endif
-#endif
 
 #if defined(__GNUC__)
 /** @brief Define a macro to tell the compiler that a function has printf()
@@ -191,9 +173,6 @@ typedef std::make_signed<size_t>::type ssize_t;
 #else
 #include <sys/types.h>
 #include <sys/stat.h>
-#if defined(__MINGW32__) || defined(__MINGW64__)
-#define mkdir(path, mode) mkdir(path)
-#endif
 #endif
 #endif
 

@@ -51,8 +51,6 @@ void NORETURN sm_crash( const char *reason )
 	 * way, this function will appear in backtrace stack traces. */
 #if defined(_MSC_VER)
 	__nop();
-#elif defined(__GNUC__) // MinGW or similar
-	asm("nop");
 #endif
 #else
 	_exit( 1 );

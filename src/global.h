@@ -46,10 +46,6 @@
 #define unlikely(x) (x)
 #endif
 
-#if defined(NEED_CSTDLIB_WORKAROUND)
-#define llabs ::llabs
-#endif
-
 using namespace std;
 
 #ifdef ASSERT
