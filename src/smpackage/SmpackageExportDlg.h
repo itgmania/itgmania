@@ -1,9 +1,9 @@
 #if !defined(AFX_SMPACKAGEEXPORTDLG_H__3E19CBFB_E8F6_4C18_B0A4_636979B80A4D__INCLUDED_)
 #define AFX_SMPACKAGEEXPORTDLG_H__3E19CBFB_E8F6_4C18_B0A4_636979B80A4D__INCLUDED_
 
-#if _MSC_VER > 1000
+#if defined(_MSC_VER)
 #pragma once
-#endif // _MSC_VER > 1000
+#endif
 
 #include "afxtempl.h"
 

@@ -15,9 +15,7 @@ Abstract:
 #ifndef _INC_SETUPAPI
 #define _INC_SETUPAPI
 
-#if _MSC_VER > 1000
 #pragma once
-#endif
 
 //
 // Define API decoration for direct importing of DLL references.

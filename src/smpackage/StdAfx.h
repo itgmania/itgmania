@@ -6,9 +6,9 @@
 #if !defined(AFX_STDAFX_H__D450D5ED_5C49_4A8B_B887_076F62424F1F__INCLUDED_)
 #define AFX_STDAFX_H__D450D5ED_5C49_4A8B_B887_076F62424F1F__INCLUDED_
 
-#if _MSC_VER > 1000
+#if defined(_MSC_VER)
 #pragma once
-#endif // _MSC_VER > 1000
+#endif
 
 #pragma warning (disable : 4786) // turn off broken debugger warning
 
