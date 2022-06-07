@@ -118,6 +118,7 @@ MusicWheelItem::MusicWheelItem( RString sType ):
 	this->SubscribeToMessage( Message_CurrentTrailP2Changed );
 	this->SubscribeToMessage( Message_PreferredDifficultyP1Changed );
 	this->SubscribeToMessage( Message_PreferredDifficultyP2Changed );
+	this->SubscribeToMessage( Message_PlayerProfileSet );
 }
 
 MusicWheelItem::MusicWheelItem( const MusicWheelItem &cpy ):
@@ -382,7 +383,8 @@ void MusicWheelItem::HandleMessage( const Message &msg )
 	    msg == Message_CurrentTrailP1Changed ||
 	    msg == Message_CurrentTrailP2Changed ||
 	    msg == Message_PreferredDifficultyP1Changed ||
-	    msg == Message_PreferredDifficultyP2Changed )
+	    msg == Message_PreferredDifficultyP2Changed ||
+	    msg == Message_PlayerProfileSet )
 	{
 		const MusicWheelItemData *pWID = dynamic_cast<const MusicWheelItemData*>( m_pData );
 		MusicWheelItemType type = MusicWheelItemType_Invalid;

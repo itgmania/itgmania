@@ -128,7 +128,7 @@ bool ScreenSelectProfile::SetProfileIndex( PlayerNumber pn, int iProfileIndex )
 		return false;
 
 	// wrong selection
-	if( iProfileIndex < -2 )
+	if( iProfileIndex < -3 )
 		return false;
 
 	// unload player
@@ -160,7 +160,7 @@ bool ScreenSelectProfile::Finish(){
 
 	FOREACH_PlayerNumber( p )
 	{
-		// not all players has made their choices
+		// not all players have made their choices
 		if( GAMESTATE->IsHumanPlayer( p ) && ( m_iSelectedProfiles[p] == -1 ) )
 			iUnselectedProfiles++;
 
@@ -209,7 +209,16 @@ bool ScreenSelectProfile::Finish(){
 				MEMCARDMAN->LockCard( p );
 			}
 		}
+
+		// If the player picked a profile (>= 0) or chose to play as a guest (-3),
+		// broadcast a message
+		if( m_iSelectedProfiles[p] >= 0 || m_iSelectedProfiles[p] == -3 ) {
+			Message msg( MessageIDToString(Message_PlayerProfileSet) );
+			msg.SetParam( "Player", p );
+			MESSAGEMAN->Broadcast( msg );
+		}
 	}
+
 	StartTransitioningScreen( SM_GoToNextScreen );
 	return true;
 }

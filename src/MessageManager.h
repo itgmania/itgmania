@@ -53,6 +53,7 @@ enum MessageID
 	Message_MenuSelectionChanged,
 	Message_PlayerJoined,
 	Message_PlayerUnjoined,
+	Message_PlayerProfileSet,
 	Message_AutosyncChanged,
 	Message_PreferredSongGroupChanged,
 	Message_PreferredCourseGroupChanged,

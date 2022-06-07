@@ -5409,7 +5409,8 @@ Details of the <code>event</code> table:
 		Sets the profile index of Player <code>pn</code> to <code>iProfileIndex</code>.<br />
 		The following values of <code>iProfileIndex</code> have special, hardcoded behavior:<br />
 		• <code>-1</code>: join the player and play the theme's start sound effect<br />
-		• <code>-2</code>: unjoin the player, unlock their MemoryCard, and unmount their MemoryCard
+		• <code>-2</code>: unjoin the player, unlock their MemoryCard, and unmount their MemoryCard<br />
+		• <code>-3</code>: allow the user to play without a local or USB profile (as a guest)
 	</Function>
 </Class>
 <Class name='ScreenTextEntry' grouping='Screen'>
