@@ -20,9 +20,7 @@ Revision History:
 #ifndef _DBGHELP_
 #define _DBGHELP_
 
-#if _MSC_VER > 1020
 #pragma once
-#endif
 
 
 // As a general principal always call the 64 bit version
@@ -46,7 +44,7 @@ extern "C" {
  #define DBHLP_DEPRECIATED
 #else
  #define IMAGEAPI DECLSPEC_IMPORT __stdcall
- #if (_MSC_VER >= 1300) && !defined(MIDL_PASS)
+ #if !defined(MIDL_PASS)
   #define DBHLP_DEPRECIATED   __declspec(deprecated)
  #else
   #define DBHLP_DEPRECIATED
@@ -2044,14 +2042,8 @@ typedef enum _MINIDUMP_STREAM_TYPE {
 // Operating System specific information.
 // 
 
-#if defined(_MSC_VER)
-#if _MSC_VER >= 800
-#if _MSC_VER >= 1200
 #pragma warning(push)
-#endif
 #pragma warning(disable:4201)    /* Nameless struct/union */
-#endif
-#endif
 
 typedef struct _MINIDUMP_SYSTEM_INFO {
 
@@ -2161,15 +2153,7 @@ typedef struct _MINIDUMP_SYSTEM_INFO {
 
 typedef union _CPU_INFORMATION CPU_INFORMATION, *PCPU_INFORMATION;
 
-#if defined(_MSC_VER)
-#if _MSC_VER >= 800
-#if _MSC_VER >= 1200
 #pragma warning(pop)
-#else
-#pragma warning(disable:4201)    /* Nameless struct/union */
-#endif
-#endif
-#endif
 
 //
 // The minidump thread contains standard thread

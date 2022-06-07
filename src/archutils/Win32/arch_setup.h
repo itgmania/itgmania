@@ -2,15 +2,9 @@
 #define ARCH_SETUP_WINDOWS_H
 
 #define SUPPORT_OPENGL
-#if defined(_MSC_VER)
 #define SUPPORT_D3D
-#endif
 
-#if defined(_MSC_VER)
-
-#if _MSC_VER == 1400 // VC8 specific warnings
 #pragma warning (disable : 4005) // macro redefinitions (ARRAYSIZE)
-#endif
 
 /*
 The following warnings are disabled in all builds.
@@ -62,8 +56,6 @@ C4355: 'this' : used in base member initializer list
 // If this isn't defined to 0, VC fails to define things like stat and alloca.
 #define __STDC__ 0
 
-#endif
-
 #include <wchar.h> // needs to be included before our fixes below
 
 #define lstat stat
@@ -77,10 +69,8 @@ struct tm *my_localtime_r( const time_t *timep, struct tm *result );
 #define localtime_r my_localtime_r
 struct tm *my_gmtime_r( const time_t *timep, struct tm *result );
 #define gmtime_r my_gmtime_r
-#if defined(_MSC_VER)
 void my_usleep( unsigned long usec );
 #define usleep my_usleep
-#endif
 
 // Missing stdint types:
 typedef signed char int8_t;
@@ -94,20 +84,6 @@ typedef int int32_t;
 typedef unsigned int uint32_t;
 typedef __int64 int64_t;
 typedef unsigned __int64 uint64_t;
-#if defined(_MSC_VER)
-#if _MSC_VER < 1700	// 1700 = VC++ 2011
-#define INT64_C(i) i##i64
-#ifndef UINT64_C
-#define UINT64_C(i) i##ui64
-#endif
-#endif // #if _MSC_VER < 1700
-#if (_MSC_VER >= 1400) && (_MSC_VER < 1800) // 1800 = VC++ 2013
-#define llabs(i) _abs64(i)
-#endif // #if (_MSC_VER >= 1400) && (_MSC_VER < 1800)
-#if _MSC_VER < 1400 // 1400 = VC++ 2005
-int64_t llabs( int64_t i ) { return i >= 0 ? i : -i; }
-#endif // #if _MSC_VER < 1400
-#endif // #if defined(_MSC_VER)
 
 #undef min
 #undef max
@@ -119,7 +95,6 @@ int64_t llabs( int64_t i ) { return i >= 0 ? i : -i; }
 #define CRASH_HANDLER
 #endif
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1310) // Byte swap functions were first implemented in Visual Studio .NET 2003
 #define ArchSwap32(n) _byteswap_ulong(n)
 #define ArchSwap24(n) _byteswap_ulong(n) >> 8
 #define ArchSwap16(n) _byteswap_ushort(n)

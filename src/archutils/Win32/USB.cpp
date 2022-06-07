@@ -4,10 +4,8 @@
 #include "RageUtil.h"
 #include "archutils/Win32/ErrorStrings.h"
 
-#if defined(_MSC_VER)
 #pragma comment(lib, "setupapi.lib") 
 #pragma comment(lib, "hid.lib") 
-#endif
 
 extern "C" {
 #include "archutils/Win32/ddk/setupapi.h"

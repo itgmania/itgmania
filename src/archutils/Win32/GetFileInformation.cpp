@@ -7,9 +7,7 @@
 #include <windows.h>
 #include <tlhelp32.h>
 
-#if defined(_MSC_VER)
 #pragma comment(lib, "version.lib")
-#endif
 
 bool GetFileVersion( RString sFile, RString &sOut )
 {
