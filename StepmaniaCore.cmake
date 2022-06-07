@@ -324,8 +324,6 @@ elseif(LINUX)
     set(HAS_X11 TRUE)
   endif()
 
-  find_package(Dl)
-
   set(HAS_XRANDR FALSE)
   if(WITH_XRANDR)
     find_package(Xrandr REQUIRED)
