@@ -57,6 +57,7 @@ static const char *MessageIDNames[] = {
 	"MenuSelectionChanged",
 	"PlayerJoined",
 	"PlayerUnjoined",
+	"PlayerProfileSet",
 	"AutosyncChanged",
 	"PreferredSongGroupChanged",
 	"PreferredCourseGroupChanged",

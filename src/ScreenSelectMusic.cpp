@@ -137,6 +137,7 @@ void ScreenSelectMusic::Init()
 	ScreenWithMenuElements::Init();
 
 	this->SubscribeToMessage( Message_PlayerJoined );
+	this->SubscribeToMessage( Message_PlayerProfileSet );
 
 	// Cache these values
 	// Marking for change -- Midiman (why? -aj)
