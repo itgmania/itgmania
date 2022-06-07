@@ -256,14 +256,9 @@ else() # Linux
                                    BACKTRACE_METHOD_TEXT="no backtrace")
       endif()
       target_compile_definitions("${SM_EXE_NAME}" PRIVATE
-                                 BACKTRACE_LOOKUP_METHOD_TEXT="backtrace_symbols")
-      if(${DL_FOUND})
-        target_compile_definitions("${SM_EXE_NAME}" PRIVATE
-                                   BACKTRACE_LOOKUP_METHOD_DLADDR)
-      else()
-        target_compile_definitions("${SM_EXE_NAME}" PRIVATE
-                                   BACKTRACE_LOOKUP_METHOD_BACKTRACE_SYMBOLS)
-      endif()
+                                 BACKTRACE_LOOKUP_METHOD_TEXT="dladdr")
+      target_compile_definitions("${SM_EXE_NAME}" PRIVATE
+                                 BACKTRACE_LOOKUP_METHOD_DLADDR)
     endif()
   endif()
   if(${HAS_PTHREAD})
@@ -389,13 +384,9 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
               "${SM_FFMPEG_LIB}/libavutil.a")
 
   list(REMOVE_ITEM SMDATA_LINK_LIB "zlib")
-  list(APPEND SMDATA_LINK_LIB "zlib" ${VA_LIBRARY} ${VA_DRM_LIBRARY})
-
-  if(${DL_FOUND})
-    list(APPEND SMDATA_LINK_LIB ${DL_LIBRARIES})
-  endif()
-
-  list(APPEND SMDATA_LINK_LIB "${OPENGL_LIBRARY}")
+  list(APPEND SMDATA_LINK_LIB "zlib"
+                              ${CMAKE_DL_LIBS}
+                              "${OPENGL_LIBRARY}")
 
   if(GTK3_FOUND)
     list(APPEND SMDATA_LINK_LIB "${GTK3_LIBRARIES}")
@@ -452,9 +443,6 @@ else()
 
     if(X11_FOUND)
       list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
-    endif()
-    if(DL_FOUND)
-      list(APPEND SM_INCLUDE_DIRS "${DL_INCLUDE_DIR}")
     endif()
   endif()
 endif()
