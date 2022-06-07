@@ -290,13 +290,6 @@ else() # Unix/Linux
                 "arch/InputHandler/InputHandler_Linux_Event.h"
                 "arch/InputHandler/InputHandler_Linux_PIUIO.h"
                 "arch/InputHandler/InputHandler_SextetStream.h")
-    if(WITH_TTY)
-      list(APPEND SMDATA_ARCH_INPUT_SRC
-                  "arch/InputHandler/InputHandler_Linux_tty.cpp")
-      list(APPEND SMDATA_ARCH_INPUT_HPP
-                  "arch/InputHandler/InputHandler_Linux_tty.h"
-                  "arch/InputHandler/InputHandler_Linux_tty_keys.h")
-    endif()
   endif()
   if(X11_FOUND)
     list(APPEND SMDATA_ARCH_INPUT_SRC "arch/InputHandler/InputHandler_X11.cpp")
