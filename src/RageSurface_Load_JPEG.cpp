@@ -12,7 +12,7 @@ extern "C" {
 #include "jerror.h"
 }
 
-#if defined(WIN32) && !defined(__MINGW32__)
+#if defined(WIN32)
 // work around namespace bugs in win32/libjpeg:
 #define XMD_H
 #undef FAR

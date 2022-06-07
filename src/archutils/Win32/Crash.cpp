@@ -571,15 +571,6 @@ static void NORETURN debug_crash()
 		__asm mov eax,dword ptr [ebx]
 //		__asm mov dword ptr [ebx],eax
 //		__asm lock add dword ptr cs:[00000000h], 12345678h
-#elif defined(__GNUC__)
-		// HACK: I don't know a lick of ASM and don't know how to port this to
-		// the AT&T syntax gas uses. So we temporarily change it.
-		asm(".intel_syntax noprefix\n\t"
-			"xor ebx,ebx\n\t"
-			"mov eax,dword ptr [ebx]\n\t"
-//			"mov dword ptr [ebx],eax"
-//			"lock add dword ptr cs:[00000000h], 12345678h"
-			".att_syntax noprefix\n\t");
 #endif
 //	} __except( CrashHandler::ExceptionHandler((EXCEPTION_POINTERS*)_exception_info()) ) {
 //	}

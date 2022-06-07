@@ -6,13 +6,6 @@
 #define SUPPORT_D3D
 #endif
 
-#if defined(__MINGW32__)
-#if !defined(_WINDOWS)
-#define _WINDOWS // This isn't defined under all versions of MinGW
-#endif
-#define NEED_CSTDLIB_WORKAROUND // Needed for llabs() in MinGW
-#endif
-
 #if defined(_MSC_VER)
 
 #if _MSC_VER == 1400 // VC8 specific warnings
@@ -90,7 +83,6 @@ void my_usleep( unsigned long usec );
 #endif
 
 // Missing stdint types:
-#if !defined(__MINGW32__) // MinGW headers define these for us
 typedef signed char int8_t;
 typedef signed short int16_t;
 typedef int int32_t;
@@ -116,7 +108,6 @@ typedef unsigned __int64 uint64_t;
 int64_t llabs( int64_t i ) { return i >= 0 ? i : -i; }
 #endif // #if _MSC_VER < 1400
 #endif // #if defined(_MSC_VER)
-#endif // #if !defined(__MINGW32__)
 
 #undef min
 #undef max
@@ -128,53 +119,10 @@ int64_t llabs( int64_t i ) { return i >= 0 ? i : -i; }
 #define CRASH_HANDLER
 #endif
 
-#if defined(__GNUC__) // It might be MinGW or Cygwin(?)
-#include "archutils/Common/gcc_byte_swaps.h"
-#elif defined(_MSC_VER) && (_MSC_VER >= 1310) // Byte swap functions were first implemented in Visual Studio .NET 2003
+#if defined(_MSC_VER) && (_MSC_VER >= 1310) // Byte swap functions were first implemented in Visual Studio .NET 2003
 #define ArchSwap32(n) _byteswap_ulong(n)
 #define ArchSwap24(n) _byteswap_ulong(n) >> 8
 #define ArchSwap16(n) _byteswap_ushort(n)
-#else
-#define HAVE_BYTE_SWAPS
-
-inline uint32_t ArchSwap32( uint32_t n )
-{
-	__asm
-	{
-		mov eax, n
-		xchg al, ah
-		ror eax, 16
-		xchg al, ah
-		mov n, eax
-	};
-	return n;
-}
-
-inline uint32_t ArchSwap24( uint32_t n )
-{
-	__asm
-	{
-		mov eax, n
-		xchg al, ah
-		ror eax, 16
-		xchg al, ah
-		ror eax, 8
-		mov n, eax
-	};
-	return n;
-}
-
-inline uint16_t ArchSwap16( uint16_t n )
-{
-	__asm
-	{
-		mov ax, n
-		xchg al, ah
-		mov n, ax
-	};
-	return n;
-}
-#endif
 
 #endif
 
