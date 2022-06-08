@@ -495,11 +495,11 @@ void PrefsManager::ReadDefaultsFromIni( const IniFile &ini, const RString &sSect
 void PrefsManager::TranslateDeprecatedFlags()
 {
 	if(!m_sAdditionalFolders.Get().empty())
-		m_sAdditionalFoldersReadOnly.Set(m_sAdditionalFolders.Get());
+		m_sAdditionalFoldersWritable.Set(m_sAdditionalFolders.Get());
 	if(!m_sAdditionalSongFolders.Get().empty())
-		m_sAdditionalSongFoldersReadOnly.Set(m_sAdditionalSongFolders.Get());
+		m_sAdditionalSongFoldersWritable.Set(m_sAdditionalSongFolders.Get());
 	if(!m_sAdditionalCourseFolders.Get().empty())
-		m_sAdditionalCourseFoldersReadOnly.Set(m_sAdditionalCourseFolders.Get());
+		m_sAdditionalCourseFoldersWritable.Set(m_sAdditionalCourseFolders.Get());
 }
 
 void PrefsManager::SavePrefsToDisk()
