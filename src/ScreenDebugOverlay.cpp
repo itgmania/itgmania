@@ -630,12 +630,6 @@ class DebugLineAutoplay : public IDebugLine
 		FOREACH_MultiPlayer(p)
 			GAMESTATE->m_pMultiPlayerState[p]->m_PlayerController = GamePreferences::m_AutoPlay;
 
-		// Hide Autoplay if Alt is held down
-		bool bHoldingAlt = 
-			INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LALT) ) || 
-			INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RALT) );
-		ScreenSyncOverlay::SetShowAutoplay( !bHoldingAlt );
-
 		IDebugLine::DoAndLog( sMessageOut );
 	}
 };

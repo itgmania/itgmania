@@ -42,12 +42,6 @@ void ScreenSyncOverlay::Update( float fDeltaTime )
 	UpdateText();
 }
 
-bool g_bShowAutoplay = true;
-void ScreenSyncOverlay::SetShowAutoplay( bool b )
-{
-	g_bShowAutoplay = b;
-}
-
 static LocalizedString AUTO_PLAY		( "ScreenSyncOverlay", "AutoPlay" );
 static LocalizedString AUTO_PLAY_CPU		( "ScreenSyncOverlay", "AutoPlayCPU" );
 static LocalizedString AUTO_SYNC_SONG		( "ScreenSyncOverlay", "AutoSync Song" );
@@ -62,17 +56,14 @@ void ScreenSyncOverlay::UpdateText()
 	// Update Status
 	vector<RString> vs;
 
-	if( g_bShowAutoplay )
+	PlayerController pc = GamePreferences::m_AutoPlay.Get();
+	switch( pc )
 	{
-		PlayerController pc = GamePreferences::m_AutoPlay.Get();
-		switch( pc )
-		{
 		case PC_HUMAN:						break;
 		case PC_AUTOPLAY:	vs.push_back(AUTO_PLAY);	break;
 		case PC_CPU:		vs.push_back(AUTO_PLAY_CPU);	break;
 		default:
 			FAIL_M(ssprintf("Invalid PlayerController: %i", pc));
-		}
 	}
 
 	AutosyncType type = GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType;
