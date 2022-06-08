@@ -2063,7 +2063,7 @@ public:
 		int original_top= lua_gettop(L);
 		lua_newtable( L );
 		int j = 0;
-		for (int i=TW_W1; i != TW_W5; ++i) {
+		for (int i=TW_W1; i <= TW_W5; ++i) {
 			if (p->m_twDisabledWindows[i]) {
 				Enum::Push(L, static_cast<TimingWindow>(i));
 				lua_rawseti( L, -2, j+1 );
