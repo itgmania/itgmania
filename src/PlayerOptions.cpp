@@ -572,12 +572,12 @@ void PlayerOptions::GetMods( vector<RString> &AddTo, bool bForceNoteSkin ) const
 		std::stringstream ss;
 		bool is_first = true;
 		ss << "No ";
-		for (int i=TW_W1; i != TW_W5; ++i) {
+		for (int i=TW_W1; i <= TW_W5; ++i) {
 			if (m_twDisabledWindows[i]) {
 				if (!is_first) {
 					ss << "/";
 				} else {
-					is_first = true;
+					is_first = false;
 				}
 				ss << TimingWindowToString(static_cast<TimingWindow>(i)).c_str();
 			}
