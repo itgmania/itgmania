@@ -113,7 +113,7 @@ static LocalizedString UNLOADING_SONGS ( "SongManager", "Unloading songs..." );
 static LocalizedString UNLOADING_COURSES ( "SongManager", "Unloading courses..." );
 static LocalizedString SANITY_CHECKING_GROUPS("SongManager", "Sanity checking groups...");
 
-void SongManager::Reload( bool bAllowFastLoad, LoadingWindow *ld )
+void SongManager::Reload( LoadingWindow *ld )
 {
 	FILEMAN->FlushDirCache( SpecialFiles::SONGS_DIR );
 	FILEMAN->FlushDirCache( SpecialFiles::COURSES_DIR );
@@ -168,10 +168,6 @@ void SongManager::Reload( bool bAllowFastLoad, LoadingWindow *ld )
 
 	FreeSongs();
 
-	const bool OldVal = PREFSMAN->m_bFastLoad;
-	if( !bAllowFastLoad )
-		PREFSMAN->m_bFastLoad.Set( false );
-
 	InitAll( ld );
 
 	// reload scores and unlocks afterward
@@ -202,9 +198,6 @@ void SongManager::Reload( bool bAllowFastLoad, LoadingWindow *ld )
 		GAMESTATE->LoadCurrentSettingsFromProfile(pn);
 	}
 	UNLOCKMAN->Reload();
-
-	if( !bAllowFastLoad )
-		PREFSMAN->m_bFastLoad.Set( OldVal );
 
 	UpdatePreferredSort();
 }
