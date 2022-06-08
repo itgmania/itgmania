@@ -383,8 +383,11 @@ static RString averr_ssprintf( int err, const char *fmt, ... )
 
 static int AVIORageFile_ReadPacket( void *opaque, uint8_t *buf, int buf_size )
 {
-    RageFile *f = (RageFile *)opaque;
-    return f->Read( buf, buf_size );
+	RageFile *f = (RageFile *)opaque;
+	int n = f->Read( buf, buf_size );
+	if (n == 0)
+		return AVERROR_EOF;
+	return n;
 }
 
 static int64_t AVIORageFile_Seek( void *opaque, int64_t offset, int whence )
