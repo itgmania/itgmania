@@ -93,7 +93,7 @@ SongManager::~SongManager()
 	FreeSongs();
 }
 
-void SongManager::InitAll( LoadingWindow *ld )
+void SongManager::InitAll( LoadingWindow *ld, bool onlyAdditions )
 {
 	vector<RString> never_cache;
 	split(PREFSMAN->m_NeverCacheList, ",", never_cache);
@@ -102,8 +102,12 @@ void SongManager::InitAll( LoadingWindow *ld )
 	{
 		m_GroupsToNeverCache.insert(*group);
 	}
-	InitSongsFromDisk( ld );
-	InitCoursesFromDisk( ld );
+	InitSongsFromDisk( ld, onlyAdditions );
+	InitCoursesFromDisk( ld, onlyAdditions );
+	if (onlyAdditions)
+	{
+		DeleteAutogenCourses();
+	}
 	InitAutogenCourses();
 	InitRandomAttacks();
 }
@@ -168,7 +172,7 @@ void SongManager::Reload( LoadingWindow *ld )
 
 	FreeSongs();
 
-	InitAll( ld );
+	InitAll( ld, /*onlyAdditions=*/false );
 
 	// reload scores and unlocks afterward
 	PROFILEMAN->LoadMachineProfile();
@@ -202,17 +206,30 @@ void SongManager::Reload( LoadingWindow *ld )
 	UpdatePreferredSort();
 }
 
-void SongManager::InitSongsFromDisk( LoadingWindow *ld )
+void SongManager::LoadAdditions( LoadingWindow *ld )
+{
+	FILEMAN->FlushDirCache( SpecialFiles::SONGS_DIR );
+	FILEMAN->FlushDirCache( SpecialFiles::COURSES_DIR );
+	FILEMAN->FlushDirCache( EDIT_SUBDIR );
+
+	InitAll( ld, /*onlyAdditions=*/true );
+
+	UNLOCKMAN->Reload();
+
+	UpdatePreferredSort();
+}
+
+void SongManager::InitSongsFromDisk( LoadingWindow *ld, bool onlyAdditions )
 {
 	RageTimer tm;
 	// Tell SONGINDEX to not write the cache index file every time a song adds
 	// an entry. -Kyz
 	SONGINDEX->delay_save_cache = true;
 	IMAGECACHE->delay_save_cache = true;
-	LoadStepManiaSongDir( SpecialFiles::SONGS_DIR, ld );
+	LoadSongDir( SpecialFiles::SONGS_DIR, ld, onlyAdditions );
 	LoadEnabledSongsFromPref();
 	SONGINDEX->SaveCacheIndex();
-	SONGINDEX->delay_save_cache= false;
+	SONGINDEX->delay_save_cache = false;
 	IMAGECACHE->WriteToDisk();
 	IMAGECACHE->delay_save_cache = false;
 
@@ -312,8 +329,11 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName )
 }
 
 static LocalizedString LOADING_SONGS ( "SongManager", "Loading songs..." );
-void SongManager::LoadStepManiaSongDir( RString sDir, LoadingWindow *ld )
+void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditions )
 {
+	if( ld )
+		ld->SetText( LOADING_SONGS );
+
 	// Compositors and other stuff can impose some overhead on updating the
 	// loading window, which slows down startup time for some people.
 	// loading_window_last_update_time provides a timer so the loading window
@@ -389,6 +409,15 @@ void SongManager::LoadStepManiaSongDir( RString sDir, LoadingWindow *ld )
 		{
 			RString sSongDirName = arraySongDirs[j];
 
+			// Skip already loaded songs if onlyAdditions is set.
+			if (onlyAdditions)
+			{
+				SongID songID;
+				songID.FromString(sSongDirName);
+				if (songID.ToSong() != nullptr)
+					continue;
+			}
+
 			// this is a song directory. Load a new song.
 			if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
 			{
@@ -401,6 +430,7 @@ void SongManager::LoadStepManiaSongDir( RString sDir, LoadingWindow *ld )
 					)
 				);
 			}
+
 			Song* pNewSong = new Song;
 			if( !pNewSong->LoadFromSongDir( sSongDirName ) )
 			{
@@ -754,9 +784,9 @@ void SongManager::ResetGroupColors()
 	COURSE_GROUP_COLOR.Clear();
 
 	NUM_SONG_GROUP_COLORS	.Load( "SongManager", "NumSongGroupColors" );
-	SONG_GROUP_COLOR		.Load( "SongManager", SONG_GROUP_COLOR_NAME, NUM_SONG_GROUP_COLORS );
+	SONG_GROUP_COLOR	.Load( "SongManager", SONG_GROUP_COLOR_NAME, NUM_SONG_GROUP_COLORS );
 	NUM_COURSE_GROUP_COLORS .Load( "SongManager", "NumCourseGroupColors" );
-	COURSE_GROUP_COLOR		.Load( "SongManager", COURSE_GROUP_COLOR_NAME, NUM_COURSE_GROUP_COLORS );
+	COURSE_GROUP_COLOR	.Load( "SongManager", COURSE_GROUP_COLOR_NAME, NUM_COURSE_GROUP_COLORS );
 }
 
 const vector<Song*> &SongManager::GetSongs( const RString &sGroupName ) const
@@ -869,9 +899,12 @@ RString SongManager::ShortenGroupName( RString sLongGroupName )
 }
 
 static LocalizedString LOADING_COURSES ( "SongManager", "Loading courses..." );
-void SongManager::InitCoursesFromDisk( LoadingWindow *ld )
+void SongManager::InitCoursesFromDisk( LoadingWindow *ld, bool onlyAdditions )
 {
 	LOG->Trace( "Loading courses." );
+	if( ld )
+		ld->SetText( LOADING_COURSES );
+
 	RageTimer loading_window_last_update_time;
 	loading_window_last_update_time.Touch();
 
@@ -902,6 +935,15 @@ void SongManager::InitCoursesFromDisk( LoadingWindow *ld )
 		RString base_course_group= Basename(sCourseGroup);
 		for (RString const &sCoursePath : vsCoursePaths)
 		{
+			// Skip already loaded courses if onlyAdditions is set.
+			if (onlyAdditions)
+			{
+				CourseID courseID;
+				courseID.FromPath(sCoursePath);
+				if (courseID.ToCourse() != nullptr)
+					continue;
+			}
+
 			if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
 			{
 				loading_window_last_update_time.Touch();
