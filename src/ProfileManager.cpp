@@ -49,7 +49,7 @@ const RString LAST_GOOD_SUBDIR	=	"LastGood/";
 
 // Directories to search for a profile if m_sMemoryCardProfileSubdir doesn't
 // exist, separated by ";":
-static Preference<RString> g_sMemoryCardProfileImportSubdirs( "MemoryCardProfileImportSubdirs", "" );
+static Preference<RString> g_sMemoryCardProfileImportSubdirs( "MemoryCardProfileImportSubdirs", "StepMania 5.1;StepMania 5;In The Groove 2" );
 
 static RString LocalProfileIDToDir( const RString &sProfileID ) { return USER_PROFILES_DIR + sProfileID + "/"; }
 static RString LocalProfileDirToID( const RString &sDir ) { return Basename( sDir ); }
