@@ -3,7 +3,6 @@
 
 #include "GameConstantsAndTypes.h"
 #include "Difficulty.h"
-#include "RageUtil_CachedObject.h"
 
 class Steps;
 class Song;
@@ -167,7 +166,6 @@ class StepsID
 	Difficulty dc;
 	RString sDescription;
 	unsigned uHash;
-	mutable CachedObjectPointer<Steps> m_Cache;
 
 public:
 	/**
@@ -176,7 +174,7 @@ public:
 	 * This used to call Unset(), which set the variables to
 	 * the same thing. */
 	StepsID(): st(StepsType_Invalid), dc(Difficulty_Invalid),
-		sDescription(""), uHash(0), m_Cache() {}
+		sDescription(""), uHash(0) {}
 	void Unset() { FromSteps(nullptr); }
 	void FromSteps( const Steps *p );
 	Steps *ToSteps( const Song *p, bool bAllowNull ) const;

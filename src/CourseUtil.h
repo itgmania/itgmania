@@ -3,7 +3,6 @@
 
 #include "GameConstantsAndTypes.h"
 #include "Difficulty.h"
-#include "RageUtil_CachedObject.h"
 
 class Course;
 class Profile;
@@ -72,7 +71,7 @@ namespace EditCourseUtil
 class CourseID
 {
 public:
-	CourseID(): sPath(""), sFullTitle(""), m_Cache() { Unset(); }
+	CourseID(): sPath(""), sFullTitle("") { Unset(); }
 	void Unset() { FromCourse(nullptr); }
 	void FromCourse( const Course *p );
 	Course *ToCourse() const;
@@ -92,7 +91,6 @@ public:
 private:
 	RString sPath;
 	RString sFullTitle;
-	mutable CachedObjectPointer<Course> m_Cache;
 };
 
 #endif

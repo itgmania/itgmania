@@ -262,8 +262,6 @@ void StepsID::FromSteps( const Steps *p )
 			uHash = 0;
 		}
 	}
-
-	m_Cache.Unset();
 }
 
 /* XXX: Don't allow duplicate edit descriptions, and don't allow edit descriptions
@@ -295,8 +293,6 @@ Steps *StepsID::ToSteps( const Song *p, bool bAllowNull ) const
 	
 	if( !bAllowNull && pRet == nullptr )
 		FAIL_M( ssprintf("%i, %i, \"%s\"", st, dc, sDescription.c_str()) );
-
-	m_Cache.Set( pRet );
 	
 	return pRet;
 }
@@ -338,8 +334,6 @@ void StepsID::LoadFromNode( const XNode* pNode )
 		sDescription = "";
 		uHash = 0;
 	}
-
-	m_Cache.Unset();
 }
 
 RString StepsID::ToString() const

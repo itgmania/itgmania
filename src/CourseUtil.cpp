@@ -537,17 +537,11 @@ void CourseID::FromCourse( const Course *p )
 	// Strip off leading "/".  2005/05/21 file layer changes added a leading slash.
 	if( sPath.Left(1) == "/" )
 		sPath.erase( sPath.begin() );
-
-	m_Cache.Unset();
 }
 
 Course *CourseID::ToCourse() const
 {
 	Course *pCourse = nullptr;
-	if(m_Cache.Get(&pCourse))
-	{
-		return pCourse;
-	}
 	if(!sPath.empty())
 	{
 		// HACK for backwards compatibility:
@@ -558,17 +552,13 @@ Course *CourseID::ToCourse() const
 			slash_path = "/" + slash_path;
 		}
 
-		if(pCourse == nullptr)
-		{
-			pCourse = SONGMAN->GetCourseFromPath(slash_path);
-		}
+		pCourse = SONGMAN->GetCourseFromPath(slash_path);
 	}
 
 	if( pCourse == nullptr && !sFullTitle.empty() )
 	{
 		pCourse = SONGMAN->GetCourseFromName( sFullTitle );
 	}
-	m_Cache.Set( pCourse );
 
 	return pCourse;
 }
@@ -592,7 +582,6 @@ void CourseID::LoadFromNode( const XNode* pNode )
 	sPath = RString();
 	if( !pNode->GetAttrValue("Path", sPath) )
 		pNode->GetAttrValue( "FullTitle", sFullTitle );
-	m_Cache.Unset();
 
 	// HACK for backwards compatibility: /AdditionalCourses has been merged into /Courses
 	if (sPath.Left(18) == "AdditionalCourses/")

@@ -4,7 +4,6 @@
 #include "Attack.h"
 #include "RadarValues.h"
 #include "Difficulty.h"
-#include "RageUtil_CachedObject.h"
 
 class Song;
 class Steps;
@@ -73,8 +72,7 @@ public:
 		m_CourseType(CourseType_Invalid),
 		m_CourseDifficulty(Difficulty_Invalid),
 		m_vEntries(), m_iSpecifiedMeter(-1),
-		m_bRadarValuesCached(false), m_CachedRadarValues(),
-		m_CachedObject() {}
+		m_bRadarValuesCached(false), m_CachedRadarValues() {}
 	void Init()
 	{
 		m_StepsType = StepsType_Invalid;
@@ -92,8 +90,6 @@ public:
 	void GetDisplayBpms( DisplayBpms &AddTo ) const;
 	bool IsSecret() const;
 	bool ContainsSong( const Song *pSong ) const;
-
-	CachedObject<Trail> m_CachedObject;
 
 	// Lua
 	void PushSelf( lua_State *L );

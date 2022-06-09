@@ -6,7 +6,6 @@
 #include "EnumHelper.h"
 #include "Trail.h"
 #include "RageTypes.h"
-#include "RageUtil_CachedObject.h"
 #include "SongUtil.h"
 #include "StepsUtil.h"
 #include <map>
@@ -204,8 +203,6 @@ public:
 
 	// Preferred styles:
 	set<RString> m_setStyles;
-
-	CachedObject<Course> m_CachedObject;
 };
 
 #endif

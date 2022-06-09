@@ -5,7 +5,6 @@
 
 #include "GameConstantsAndTypes.h"
 #include "Difficulty.h"
-#include "RageUtil_CachedObject.h"
 #include <set>
 
 class Song;
@@ -195,14 +194,13 @@ namespace SongUtil
 class SongID
 {
 	RString sDir;
-	mutable CachedObjectPointer<Song> m_Cache;
 
 public:
 	/**
 	 * @brief Set up the SongID with default values.
 	 *
 	 * This used to call Unset() to do the same thing. */
-	SongID(): sDir(""), m_Cache() { m_Cache.Unset(); }
+	SongID(): sDir("") {}
 	void Unset() { FromSong(nullptr); }
 	void FromSong( const Song *p );
 	Song *ToSong() const;

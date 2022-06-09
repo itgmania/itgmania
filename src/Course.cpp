@@ -94,7 +94,7 @@ Course::Course(): m_bIsAutogen(false), m_sPath(""), m_sMainTitle(""),
 	m_bIncomplete(false), m_vEntries(), m_SortOrder_TotalDifficulty(0),
 	m_SortOrder_Ranking(0), m_LoadedFromProfile(ProfileSlot_Invalid),
 	m_TrailCache(), m_iTrailCacheSeed(0), m_RadarCache(),
-	m_setStyles(), m_CachedObject()
+	m_setStyles()
 {
 	FOREACH_ENUM( Difficulty,dc)
 	m_iCustomMeter[dc] = -1;

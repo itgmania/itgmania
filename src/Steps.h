@@ -8,7 +8,6 @@
 #include "RadarValues.h"
 #include "Difficulty.h"
 #include "RageUtil_AutoPtr.h"
-#include "RageUtil_CachedObject.h"
 #include "TimingData.h"
 
 class Profile;
@@ -112,7 +111,7 @@ public:
 	vector<RString> m_sAttackString;
 
 	RString GetChartName() const			{ return parent ? Real()->GetChartName() : this->chartName; }
-	void SetChartName(const RString name)	{ this->chartName = name; }
+	void SetChartName(const RString name)		{ this->chartName = name; }
 	void SetFilename( RString fn )			{ m_sFilename = fn; }
 	RString GetFilename() const			{ return m_sFilename; }
 	void SetSavedToDisk( bool b )			{ DeAutogen(); m_bSavedToDisk = b; }
@@ -195,8 +194,6 @@ public:
 	RString m_StepsTypeStr;
 	/** @brief The Song these Steps are associated with */
 	Song				*m_pSong;
-
-	CachedObject<Steps> m_CachedObject;
 
 	void SetDisplayBPM(const DisplayBPM type)	{ this->displayBPMType = type; }
 	DisplayBPM GetDisplayBPM() const			{ return this->displayBPMType; }
