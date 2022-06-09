@@ -85,6 +85,7 @@ public:
 
 	XNode* CreateNode() const;
 	void LoadFromNode( const XNode* pNode );
+	void FromPath( RString _sPath ) { sPath = _sPath; }
 	RString ToString() const;
 	bool IsValid() const;
 
