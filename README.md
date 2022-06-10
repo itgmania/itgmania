@@ -8,6 +8,7 @@ ITGmania is a fork of [StepMania 5.1](https://github.com/stepmania/stepmania/tre
 ## Changes to StepMania 5.1
 
 - Built-in network functionality
+- Reload new songs from within the song select screen
 - The mine fix applied (courtesy of [DinsFire64](https://gist.github.com/DinsFire64/4a3f763cd3033afd55a176980b32a3b5))
 - Held misses tracked in the engine for pad debugging
 - Fixed overlapping hold bug
