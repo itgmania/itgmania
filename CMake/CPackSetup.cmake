@@ -15,6 +15,7 @@ set(CPACK_RESOURCE_FILE_LICENSE "${SM_CMAKE_DIR}/license_install.txt")
 
 if(WIN32)
   set(CPACK_GENERATOR NSIS)
+  set(CPACK_SYSTEM_NAME "Windows")
 
   # By setting these install keys manually, The default directory of "StepMania
   # major.minor.patch" is lost. This is currently done to maintain backwards
@@ -57,8 +58,24 @@ elseif(MACOSX)
   set(CPACK_GENERATOR DragNDrop)
   set(CPACK_DMG_VOLUME_NAME "${CPACK_PACKAGE_NAME} ${CPACK_PACKAGE_VERSION}")
   set(CPACK_DMG_FORMAT ULMO)  # lzma-compressed image
+
+  if(CMAKE_OSX_ARCHITECTURES STREQUAL "arm64")
+    set(CPACK_SYSTEM_NAME "macOS-M1")
+  elseif(CMAKE_OSX_ARCHITECTURES STREQUAL "x86_64")
+    set(CPACK_SYSTEM_NAME "macOS-Intel")
+  else()
+    message(FATAL_ERROR
+      "Unsupported macOS architecture: ${CMAKE_OSX_ARCHITECTURES}, set CMAKE_OSX_ARCHITECTURES to either arm64 or x86_64"
+    )
+  endif()
 else()
-  set(CPACK_GENERATOR TGZ TXZ STGZ)
+  set(CPACK_GENERATOR TGZ)
+  set(CPACK_SYSTEM_NAME "Linux")
+endif()
+
+set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_SYSTEM_NAME}")
+if(NOT WITH_CLUB_FANTASTIC)
+  set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_FILE_NAME}-no-songs")
 endif()
 
 include(CPack)

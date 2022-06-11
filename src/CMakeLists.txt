@@ -507,7 +507,7 @@ install(DIRECTORY "${SM_ROOT_DIR}/NoteSkins"
 install(FILES "${SM_ROOT_DIR}/Songs/instructions.txt"
         DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
 
-if(WITH_FULL_RELEASE)
+if(WITH_CLUB_FANTASTIC)
   # Fetch ClubFantastic packs
   include(FetchContent)
   FetchContent_Declare(
@@ -521,8 +521,5 @@ if(WITH_FULL_RELEASE)
   install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 1"
           DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
   install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 2"
-          DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
-else()
-  install(DIRECTORY "${SM_ROOT_DIR}/Songs/StepMania 5"
           DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
 endif()

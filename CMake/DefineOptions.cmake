@@ -15,6 +15,9 @@ option(WITH_SSE2 "Build with SSE2 Optimizations." ON)
 # Turn this on to set this to a specific release mode.
 option(WITH_FULL_RELEASE "Build as a proper, full release." OFF)
 
+# Turn this on to include Club Fantastic songs
+option(WITH_CLUB_FANTASTIC "Include Club Fantastic songs." OFF)
+
 # Turn this on to compile tomcrypt with no assembly data. This is a portable
 # mode.
 option(WITH_PORTABLE_TOMCRYPT
