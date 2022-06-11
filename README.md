@@ -64,8 +64,9 @@ For specific information/legalese:
 ### Contributors
 - [Club Fantastic](https://wiki.clubfantastic.dance/en/Credits)
 - [DinsFire64](https://gist.github.com/DinsFire64/4a3f763cd3033afd55a176980b32a3b5) (Mine Fix)
-- [EvocaitArt](https://twitter.com/EvocaitArt) (Enchantment noteskin)
-- [LightningXCE](https://twitter.com/lightningxce) (Cyber noteskin)
-- [MegaSphere](https://github.com/Pete-Lawrence/Peters-Noteskins) (Note/Rainbow/Vivid noteskins)
+- [EvocaitArt](https://twitter.com/EvocaitArt) (Enchantment NoteSkin)
+- [jenx](https://www.amarion.net/) (Fast Profile Switching)
+- [LightningXCE](https://twitter.com/lightningxce) (Cyber NoteSkin)
+- [MegaSphere](https://github.com/Pete-Lawrence/Peters-Noteskins) (Note/Rainbow/Vivid NoteSkins)
 - [StepMania 5](Docs/credits_SM5.txt)
 - [Old StepMania Team](Docs/credits_old_Stepmania_Team.txt)

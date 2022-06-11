@@ -75,9 +75,10 @@ local stepmania_credits= {
 		{type= "subsection", name= "ITGmania"},
 		"Club Fantastic (https://www.clubfantastic.com/)",
 		"DinsFire64 (Mine Fix)",
-		"EvocaitArt (Enchantment noteskin)",
-		"LightningXCE (Cyber noteskin)",
-		"MegaSphere (Note/Rainbow/Vivid noteskins)",
+		"EvocaitArt (Enchantment NoteSkin)",
+		"jenx (Fast Profile Switching)",
+		"LightningXCE (Cyber NoteSkin)",
+		"MegaSphere (Note/Rainbow/Vivid NoteSkins)",
 		{type= "subsection", name= "StepMania"},
 		"Aldo Fregoso (Aldo_MX)", -- delays and much more. StepMania AMX creator
 		"Alfred Sorenson", -- new lua bindings
@@ -304,7 +305,7 @@ StepManiaCredits= {
 	RandomCopyrightMessage= function()
 		return {
 			name= "Copyright",
-			"StepMania is released under the terms of the MIT license.",
+			"ITGmania is released under the terms of the MIT license.",
 			"If you paid for the program you've been " .. Fooled() .. ".",
 			"All content is the sole property of their respectful owners."
 		}
