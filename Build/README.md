@@ -1,3 +1,8 @@
+Instructions
+==
+
+In general, you can follow the guides laid out for StepMania [here](https://github.com/stepmania/stepmania/wiki/Compiling-StepMania) as long as you replace references to stepmania with itgmania.
+
 Warning
 ==
 
