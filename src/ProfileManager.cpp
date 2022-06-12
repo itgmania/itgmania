@@ -212,6 +212,16 @@ bool ProfileManager::LoadLocalProfileFromMachine( PlayerNumber pn )
 		return false;
 	}
 
+	// Make sure the profile is currently not in use by another player
+	FOREACH_HumanPlayer( pl )
+	{
+		if( PROFILEMAN->IsPersistentProfile(pl) && PROFILEMAN->GetProfile(pl) == PROFILEMAN->GetLocalProfile(sProfileID) )
+		{
+			m_sProfileDir[pn] = "";
+			return false;
+		}
+	}
+
 	m_sProfileDir[pn] = LocalProfileIDToDir( sProfileID );
 	m_bWasLoadedFromMemoryCard[pn] = false;
 	m_bLastLoadWasFromLastGood[pn] = false;
