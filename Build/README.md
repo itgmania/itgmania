@@ -9,7 +9,7 @@ Init Submodules
 Make sure you initialize the submodules after cloning the repository. This is required.
 
 ```sh
-git clone --depth=1 https://github.com/itgmania/itgmania.gitc
+git clone --depth=1 https://github.com/itgmania/itgmania.git
 cd itgmania
 git submodule update --init
 ```
