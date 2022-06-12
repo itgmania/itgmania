@@ -4,6 +4,18 @@ Warning
 Using CMake is considered stable, but not every single combination is known to work.
 Using the defaults as suggested should cause minimal problems.
 
+Init Submodules
+==
+Make sure you initialize the submodules after cloning the repository. This is required.
+
+```sh
+git clone --depth=1 https://github.com/itgmania/itgmania.gitc
+cd itgmania
+git submodule update --init
+```
+
+After that, you can follow the cmake instructions below to create the build.
+
 Install CMake
 ==
 
