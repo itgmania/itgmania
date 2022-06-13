@@ -487,6 +487,7 @@ public:
 		turn_backwards, /**< Turn the notes as if you were facing away from the machine. */
 		shuffle, /**< Replace one column with another column. */
 		super_shuffle, /**< Replace each note individually. */
+		hyper_shuffle, /**< Replace each note individually but more fairly. */
 		NUM_TURN_TYPES 
 	};
 	enum TransformType

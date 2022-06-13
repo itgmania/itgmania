@@ -492,6 +492,7 @@ void PlayerOptions::GetMods( vector<RString> &AddTo, bool bForceNoteSkin ) const
 	if( m_bTurns[TURN_SHUFFLE] )		AddTo.push_back( "Shuffle" );
 	if( m_bTurns[TURN_SOFT_SHUFFLE] )	AddTo.push_back( "SoftShuffle" );
 	if( m_bTurns[TURN_SUPER_SHUFFLE] )	AddTo.push_back( "SuperShuffle" );
+	if( m_bTurns[TURN_HYPER_SHUFFLE] )	AddTo.push_back( "HyperShuffle" );
 
 	if( m_bTransforms[TRANSFORM_NOHOLDS] )	AddTo.push_back( "NoHolds" );
 	if( m_bTransforms[TRANSFORM_NOROLLS] )	AddTo.push_back( "NoRolls" );
@@ -1027,6 +1028,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	else if( sBit == "shuffle" )				m_bTurns[TURN_SHUFFLE] = on;
 	else if( sBit == "softshuffle" )				m_bTurns[TURN_SOFT_SHUFFLE] = on;
 	else if( sBit == "supershuffle" )			m_bTurns[TURN_SUPER_SHUFFLE] = on;
+	else if( sBit == "hypershuffle" )			m_bTurns[TURN_HYPER_SHUFFLE] = on;
 	else if( sBit == "little" )				m_bTransforms[TRANSFORM_LITTLE] = on;
 	else if( sBit == "wide" )				m_bTransforms[TRANSFORM_WIDE] = on;
 	else if( sBit == "big" )				m_bTransforms[TRANSFORM_BIG] = on;
@@ -2009,6 +2011,7 @@ public:
 	BOOL_INTERFACE(Shuffle, Turns[PlayerOptions::TURN_SHUFFLE]);
 	BOOL_INTERFACE(SoftShuffle, Turns[PlayerOptions::TURN_SOFT_SHUFFLE]);
 	BOOL_INTERFACE(SuperShuffle, Turns[PlayerOptions::TURN_SUPER_SHUFFLE]);
+	BOOL_INTERFACE(HyperShuffle, Turns[PlayerOptions::TURN_HYPER_SHUFFLE]);
 	BOOL_INTERFACE(NoHolds, Transforms[PlayerOptions::TRANSFORM_NOHOLDS]);
 	BOOL_INTERFACE(NoRolls, Transforms[PlayerOptions::TRANSFORM_NOROLLS]);
 	BOOL_INTERFACE(NoMines, Transforms[PlayerOptions::TRANSFORM_NOMINES]);
@@ -2554,6 +2557,7 @@ public:
 		ADD_METHOD(Shuffle);
 		ADD_METHOD(SoftShuffle);
 		ADD_METHOD(SuperShuffle);
+		ADD_METHOD(HyperShuffle);
 		ADD_METHOD(NoHolds);
 		ADD_METHOD(NoRolls);
 		ADD_METHOD(NoMines);

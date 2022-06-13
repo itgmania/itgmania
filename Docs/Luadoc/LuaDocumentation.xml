@@ -4125,6 +4125,7 @@ a,b = options:Boost(5)
 	<Function name='Hidden' return='float, float' arguments='float value, float approach_speed'> </Function>
 	<Function name='HiddenOffset' return='float, float' arguments='float value, float approach_speed'> </Function>
 	<Function name='HoldRolls' return='bool' arguments='bool value'> </Function>
+	<Function name='HyperShuffle' return='bool' arguments='bool value'> </Function>
 	<Function name='Incoming' return='float, float' arguments='float value, float approach_speed'>
 		If the player is using Incoming ((positive skew and negative tilt) or (negative skew and positive tilt)), returns the value of skew and its approach_speed.<br />
 		Returns nil otherwise.<br />
