@@ -292,6 +292,7 @@ public:
 		TURN_SHUFFLE, /**< Some of the arrow columns are changed throughout the whole song. */
 		TURN_SOFT_SHUFFLE, /**< Only shuffle arrow columns on an axis of symmetry. */
 		TURN_SUPER_SHUFFLE, /**< Every arrow is placed on a random column. */
+		TURN_HYPER_SHUFFLE, /**< Every arrow is placed on a random column, but more fairly than SuperShuffle. */
 		NUM_TURNS 
 	};
 	enum Transform {

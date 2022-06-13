@@ -107,6 +107,7 @@ namespace NoteDataUtil
 		shuffle,
 		soft_shuffle,
 		super_shuffle,
+		hyper_shuffle,
 		stomp,
 		swap_up_down,
 		NUM_TRACK_MAPPINGS

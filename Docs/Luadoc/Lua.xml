@@ -1289,6 +1289,7 @@
 			<Function name='Hidden'/>
 			<Function name='HiddenOffset'/>
 			<Function name='HoldRolls'/>
+			<Function name='HyperShuffle'/>
 			<Function name='Incoming'/>
 			<Function name='Invert'/>
 			<Function name='IsEasierForCourseAndTrail'/>
