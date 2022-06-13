@@ -508,7 +508,7 @@ void SetStepsDisplayBPM(StepsTagInfo& info)
 	// #DISPLAYBPM:[xxx][xxx:xxx]|[*];
 	if((*info.params)[1] == "*")
 	{ info.steps->SetDisplayBPM(DISPLAY_BPM_RANDOM); }
-	else
+	else if((*info.params)[1] != "")
 	{
 		info.steps->SetDisplayBPM(DISPLAY_BPM_SPECIFIED);
 		float min = std::stof((*info.params)[1]);
