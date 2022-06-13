@@ -3,6 +3,8 @@ LICENSE
 
 ITGmania's source code and resulting binary is licensed under the MIT license. Go to http://opensource.org/licenses/MIT for more information.
 
+Simply Love is licensed under the GPLv3, or (at your option) any later version.
+
 The copyright for songs in the 'Club Fantastic' folders rests with the original authors. The content is explicitly NOT placed under a Creative Commons license (or similar license), but has been provided free of charge, for personal or public use, including online broadcasting, tournaments, and other purposes. Go to https://www.clubfantastic.com/ for more information.
 
 The FFMPEG codes (see https://www.ffmpeg.org/ for more) and the MAD library (see http://www.underbit.com/products/mad/ for more) use the GPL license. Go to http://www.gnu.org for more information.
