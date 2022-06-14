@@ -1869,11 +1869,44 @@ static void HyperShuffleNotes( NoteData &inout, int iStartIndex, int iEndIndex)
 
 	vector<int> viHoldEndRows;
 	viHoldEndRows.resize(iNumTracks);
-	fill(viHoldEndRows.begin(), viHoldEndRows.end(), -1);
-
+	
 	// A "free track" is a track that is not part of a hold and is therefore
 	// free to be shuffled into.
 	int iFreeTracks = iNumTracks;
+
+	// If this is the first row, there cannot be any active holds yet.
+	if ( iStartIndex == 0 )
+	{
+		fill(viHoldEndRows.begin(), viHoldEndRows.end(), -1);
+	}
+	else
+	{
+		// Search for any hold notes that might be present at the first row.
+		// Once the loop below gets going, it keeps track of hold notes itself.
+		for ( int track = 0; track < iNumTracks; track++ )
+		{
+			int iTargetRow = iStartIndex;
+			
+			if ( inout.GetPrevTapNoteRowForTrack(track, iTargetRow) ) 
+			{
+				const TapNote &tn = inout.GetTapNote(track, iTargetRow);
+
+				// Check for a hold that ends on or after this row.
+				if ( tn.type == TapNoteType_HoldHead )
+				{
+					int iHoldEndRow = iTargetRow + tn.iDuration;
+
+					if ( iHoldEndRow >= iStartIndex )
+					{
+						viHoldEndRows[track] = iHoldEndRow;
+						iFreeTracks--;
+					}
+				}
+				else
+					viHoldEndRows[track] = -1;
+			}
+		}
+	}
 
 	FOREACH_NONEMPTY_ROW_ALL_TRACKS_RANGE( inout, r, iStartIndex, iEndIndex )
 	{
@@ -1905,7 +1938,7 @@ static void HyperShuffleNotes( NoteData &inout, int iStartIndex, int iEndIndex)
 				//if asserts are off, delete it and treat it like an empty note
 				//(if they are on, this code is not reachable)
 				inout.SetTapNote(track, r, TAP_EMPTY);
-				
+
 				[[fallthrough]];
 			case TapNoteType_Empty:
 				//Empty tap notes don't get directly placed in the shuffle table.
