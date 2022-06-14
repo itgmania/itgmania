@@ -1869,24 +1869,21 @@ static void HyperShuffleNotes( NoteData &inout, int iStartIndex, int iEndIndex)
 
 	vector<int> viHoldEndRows;
 	viHoldEndRows.resize(iNumTracks);
+	fill(viHoldEndRows.begin(), viHoldEndRows.end(), -1);
 	
 	// A "free track" is a track that is not part of a hold and is therefore
 	// free to be shuffled into.
 	int iFreeTracks = iNumTracks;
 
 	// If this is the first row, there cannot be any active holds yet.
-	if ( iStartIndex == 0 )
-	{
-		fill(viHoldEndRows.begin(), viHoldEndRows.end(), -1);
-	}
-	else
+	if ( iStartIndex != 0 )
 	{
 		// Search for any hold notes that might be present at the first row.
 		// Once the loop below gets going, it keeps track of hold notes itself.
 		for ( int track = 0; track < iNumTracks; track++ )
 		{
 			int iTargetRow = iStartIndex;
-			
+
 			if ( inout.GetPrevTapNoteRowForTrack(track, iTargetRow) ) 
 			{
 				const TapNote &tn = inout.GetTapNote(track, iTargetRow);
@@ -1901,9 +1898,7 @@ static void HyperShuffleNotes( NoteData &inout, int iStartIndex, int iEndIndex)
 						viHoldEndRows[track] = iHoldEndRow;
 						iFreeTracks--;
 					}
-				}
-				else
-					viHoldEndRows[track] = -1;
+				}	
 			}
 		}
 	}
