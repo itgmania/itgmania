@@ -29,6 +29,7 @@ ___*
 *.old
 .codelite/
 .vscode/
+.idea/
 
 # Patch Files
 *.diff
