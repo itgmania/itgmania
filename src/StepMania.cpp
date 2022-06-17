@@ -479,22 +479,26 @@ struct VideoCardDefaults
 	}
 } const g_VideoCardDefaults[] =
 {
-    // We are not in 2005 anymore, rip out the Voodoos!
+	// These lines correspond to the struct defined above.
 	VideoCardDefaults(
-		"OpenGL",	// This matches all drivers in Mac and Linux. -Chris
-		"opengl",
-		1280,720,
-		32,32,32,
-		2048,
-		true
+		"OpenGL",       // Video card name (generic Mac/Linux)
+		"opengl",       // Available renderers
+		1280,720,       // Default resolution
+		32,             // Display color
+		32,             // Texture color
+		32,             // Movie color
+		2048,           // Texture size
+		true            // Smooth lines
 	),
 	VideoCardDefaults(
-		"",
-		"opengl,d3d",
-		1280,720,
-		32,32,32,
-		2048,
-		true
+		"",             // Video card name (generic Windows)
+		"opengl,d3d",   // Available renderers
+		1280,720,       // Default resolution
+		32,             // Display color
+		32,             // Texture color
+		32,             // Movie color
+		2048,           // Texture size
+		true            // Smooth lines
 	),
 };
 
