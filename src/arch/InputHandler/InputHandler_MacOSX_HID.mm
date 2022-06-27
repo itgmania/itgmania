@@ -450,7 +450,7 @@ wchar_t InputHandler_MacOSX_HID::DeviceButtonToChar( DeviceButton button, bool b
 	{
 		CGEventRef event = CGEventCreate(nullptr);
 		CGEventFlags mods = CGEventGetFlags(event);
-        CFRelease(event);
+		CFRelease(event);
 		UInt32 nModifiers = bUseCurrentKeyModifiers ? (UInt32)mods : 0;
 		wchar_t sCharCode = KeyCodeToChar( iMacVirtualKey, nModifiers );
 		if( sCharCode != 0 )

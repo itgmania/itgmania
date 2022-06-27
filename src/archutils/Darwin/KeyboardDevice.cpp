@@ -482,7 +482,14 @@ bool KeyboardDevice::DeviceButtonToMacVirtualKey( DeviceButton button, UInt8 &iM
 		}
 		bInited = true;
 	}
-	iMacVKOut = g_iDeviceButtonToMacVirtualKey[button];
+	if (button < sizeof(g_iDeviceButtonToMacVirtualKey))
+	{
+		iMacVKOut = g_iDeviceButtonToMacVirtualKey[button];
+	}
+	else
+	{
+		iMacVKOut = 0xFF;
+	}
 	return iMacVKOut != 0xFF;
 }
 
