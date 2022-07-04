@@ -2532,88 +2532,83 @@ int LuaFunc_JsonEncode(lua_State* L)
 
 	std::function<Json::Value(int)> convert = [&L, &convert](int index) -> Json::Value
 	{
-		if (lua_isboolean(L, index))
+		switch (lua_type(L, index))
 		{
-			return Json::Value(static_cast<bool>(lua_toboolean(L, index)));
-		}
-		else if (lua_isnil(L, index))
-		{
-			return Json::Value(Json::nullValue);
-		}
-		else if (lua_isnumber(L, index))
-		{
-			double val = lua_tonumber(L, index);
+			case LUA_TNIL:
+				return Json::Value(Json::nullValue);
+			case LUA_TBOOLEAN:
+				return Json::Value(static_cast<bool>(lua_toboolean(L, index)));
+			case LUA_TNUMBER: {
+				double val = lua_tonumber(L, index);
 
-			if (val == static_cast<Json::UInt>(val))
-			{
-				return Json::Value(static_cast<Json::UInt>(val));
-			}
-			else if (val == static_cast<Json::Int>(val))
-			{
-				return Json::Value(static_cast<Json::Int>(val));
-			}
-			return Json::Value(val);
-		}
-		else if (lua_isstring(L, index))
-		{
-			size_t len;
-			const char *s = lua_tolstring(L, index, &len);
-
-			return Json::Value(std::string(s, len));
-		}
-		else if (lua_istable(L, index))
-		{
-			// if the index is relative to the top of the stack,
-			// then calculate the absolute index, so we have a
-			// stable reference
-			if (index < 0)
-			{
-				index = lua_gettop(L) + index + 1;
-			}
-
-			size_t len = lua_objlen(L, index);
-
-			if (len > 0)
-			{
-				// array
-				Json::Value array(Json::arrayValue);
-				array.resize(len);
-
-				for (int i = 0; i < len; i++)
+				if (val == static_cast<Json::UInt>(val))
 				{
-					lua_rawgeti(L, index, i + 1);
-					array[i] = convert(-1);
-					lua_pop(L, 1);
+					return Json::Value(static_cast<Json::UInt>(val));
+				}
+				else if (val == static_cast<Json::Int>(val))
+				{
+					return Json::Value(static_cast<Json::Int>(val));
+				}
+				return Json::Value(val);
+			}
+			case LUA_TSTRING: {
+				size_t len;
+				const char *s = lua_tolstring(L, index, &len);
+
+				return Json::Value(std::string(s, len));
+			}
+			case LUA_TTABLE: {
+				// if the index is relative to the top of the stack,
+				// then calculate the absolute index, so we have a
+				// stable reference
+				if (index < 0)
+				{
+					index = lua_gettop(L) + index + 1;
 				}
 
-				return array;
-			}
-			else
-			{
-				// object
-				Json::Value obj(Json::objectValue);
+				size_t len = lua_objlen(L, index);
 
-				lua_pushnil(L);
-				while (lua_next(L, index) != 0)
+				if (len > 0)
 				{
-					if (!lua_isstring(L, -2))
+					// array
+					Json::Value array(Json::arrayValue);
+					array.resize(len);
+
+					for (int i = 0; i < len; i++)
 					{
-						luaL_error(L, "object keys must be strings");
+						lua_rawgeti(L, index, i + 1);
+						array[i] = convert(-1);
+						lua_pop(L, 1);
 					}
 
-					size_t keylen;
-					const char *key = lua_tolstring(L, -2, &keylen);
-					obj[std::string(key, keylen)] = convert(-1);
-					lua_pop(L, 1);
+					return array;
 				}
-
-				if (obj.size() < 1)
+				else
 				{
-					return Json::Value(Json::arrayValue);
-				}
-				return obj;
-			}
+					// object
+					Json::Value obj(Json::objectValue);
 
+					lua_pushnil(L);
+					while (lua_next(L, index) != 0)
+					{
+						if (!lua_isstring(L, -2))
+						{
+							luaL_error(L, "object keys must be strings");
+						}
+
+						size_t keylen;
+						const char *key = lua_tolstring(L, -2, &keylen);
+						obj[std::string(key, keylen)] = convert(-1);
+						lua_pop(L, 1);
+					}
+
+					if (obj.size() < 1)
+					{
+						return Json::Value(Json::arrayValue);
+					}
+					return obj;
+				}
+			}
 		}
 
 		int tp = lua_type(L, index);
