@@ -22,14 +22,14 @@
 class InputHandler: public RageDriver
 {
 public:
-	static void Create( const RString &sDrivers, vector<InputHandler *> &apAdd );
+	static void Create( const RString &sDrivers, std::vector<InputHandler *> &apAdd );
 	static DriverList m_pDriverList;
 
 	InputHandler(): m_LastUpdate(), m_iInputsSinceUpdate(0) {}
 	virtual ~InputHandler() { }
 	virtual void Update() { }
 	virtual bool DevicesChanged() { return false; }
-	virtual void GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevicesOut ) = 0;
+	virtual void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut ) = 0;
 
 	// Override to return a pretty string that's specific to the controller type.
 	virtual RString GetDeviceSpecificInputString( const DeviceInput &di );

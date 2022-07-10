@@ -27,7 +27,7 @@ protected:
 	void HighlightSong( int iSongIndex );
 
 	Sprite m_sprEmpty;
-	vector<Sprite*>	m_vpBars;
+	std::vector<Sprite*>	m_vpBars;
 
 	int m_iSongsChoppedOffAtBeginning;
 };

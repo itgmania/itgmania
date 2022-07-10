@@ -64,7 +64,7 @@ void ScreenOptionsManageEditSteps::BeginScreen()
 	GAMESTATE->m_pCurSong.Set(nullptr);
 	GAMESTATE->m_pCurSteps[PLAYER_1].Set(nullptr);
 
-	vector<OptionRowHandler*> vHands;
+	std::vector<OptionRowHandler*> vHands;
 
 	int iIndex = 0;
 	
@@ -107,7 +107,7 @@ void ScreenOptionsManageEditSteps::BeginScreen()
 	// select the last chosen course
 	if( GAMESTATE->m_pCurSteps[PLAYER_1] )
 	{
-		vector<Steps*>::const_iterator iter = find( m_vpSteps.begin(), m_vpSteps.end(), GAMESTATE->m_pCurSteps[PLAYER_1] );
+		std::vector<Steps*>::const_iterator iter = find( m_vpSteps.begin(), m_vpSteps.end(), GAMESTATE->m_pCurSteps[PLAYER_1] );
 		if( iter != m_vpSteps.end() )
 		{
 			iIndex = iter - m_vpSteps.begin();
@@ -249,7 +249,7 @@ void ScreenOptionsManageEditSteps::ProcessMenuStart( const InputEventPlus & )
 
 	if( iCurRow == 0 )	// "create new"
 	{
-		vector<Steps*> v;
+		std::vector<Steps*> v;
 		SONGMAN->GetStepsLoadedFromProfile( v, ProfileSlot_Machine );
 		if( v.size() >= size_t(MAX_EDIT_STEPS_PER_PROFILE) )
 		{
@@ -280,12 +280,12 @@ void ScreenOptionsManageEditSteps::ProcessMenuStart( const InputEventPlus & )
 	}
 }
 
-void ScreenOptionsManageEditSteps::ImportOptions( int iRow, const vector<PlayerNumber> &vpns )
+void ScreenOptionsManageEditSteps::ImportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
 {
 
 }
 
-void ScreenOptionsManageEditSteps::ExportOptions( int iRow, const vector<PlayerNumber> &vpns )
+void ScreenOptionsManageEditSteps::ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
 {
 
 }

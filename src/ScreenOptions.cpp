@@ -199,7 +199,7 @@ void ScreenOptions::Init()
 	m_OptionRowTypeExit.Load( OPTION_ROW_EXIT_METRICS_GROUP, this );
 }
 
-void ScreenOptions::InitMenu( const vector<OptionRowHandler*> &vHands )
+void ScreenOptions::InitMenu( const std::vector<OptionRowHandler*> &vHands )
 {
 	LOG->Trace( "ScreenOptions::InitMenu()" );
 
@@ -255,7 +255,7 @@ void ScreenOptions::InitMenu( const vector<OptionRowHandler*> &vHands )
 void ScreenOptions::RestartOptions()
 {
 	m_exprRowPositionTransformFunction.ClearCache();
-	vector<PlayerNumber> vpns;
+	std::vector<PlayerNumber> vpns;
 	FOREACH_HumanPlayer( p )
 		vpns.push_back( p );
 
@@ -564,7 +564,7 @@ void ScreenOptions::HandleScreenMessage( const ScreenMessage SM )
 	}
 	else if( SM == SM_ExportOptions )
 	{
-		vector<PlayerNumber> vpns;
+		std::vector<PlayerNumber> vpns;
 		FOREACH_HumanPlayer( p )
 			vpns.push_back( p );
 		for( unsigned r=0; r<m_pRows.size(); r++ ) // foreach row
@@ -592,7 +592,7 @@ void ScreenOptions::PositionRows( bool bTween )
 	int P1Choice = GAMESTATE->IsHumanPlayer(PLAYER_1)? m_iCurrentRow[PLAYER_1]: m_iCurrentRow[PLAYER_2];
 	int P2Choice = GAMESTATE->IsHumanPlayer(PLAYER_2)? m_iCurrentRow[PLAYER_2]: m_iCurrentRow[PLAYER_1];
 
-	vector<OptionRow*> Rows( m_pRows );
+	std::vector<OptionRow*> Rows( m_pRows );
 	OptionRow *pSeparateExitRow = nullptr;
 
 	if( (bool)SEPARATE_EXIT_ROW && !Rows.empty() && Rows.back()->GetRowType() == OptionRow::RowType_Exit )
@@ -612,30 +612,30 @@ void ScreenOptions::PositionRows( bool bTween )
 	if( m_InputMode == INPUTMODE_SHARE_CURSOR || !BothPlayersActivated )
 	{
 		// Simply center the cursor.
-		first_start = max( P1Choice - halfsize, 0 );
+		first_start = std::max( P1Choice - halfsize, 0 );
 		first_end = first_start + total;
 		second_start = second_end = first_end;
 	}
 	else
 	{
 		// First half:
-		const int earliest = min( P1Choice, P2Choice );
-		first_start = max( earliest - halfsize/2, 0 );
+		const int earliest = std::min( P1Choice, P2Choice );
+		first_start = std::max( earliest - halfsize/2, 0 );
 		first_end = first_start + halfsize;
 
 		// Second half:
-		const int latest = max( P1Choice, P2Choice );
+		const int latest = std::max( P1Choice, P2Choice );
 
-		second_start = max( latest - halfsize/2, 0 );
+		second_start = std::max( latest - halfsize/2, 0 );
 
 		// Don't overlap.
-		second_start = max( second_start, first_end );
+		second_start = std::max( second_start, first_end );
 
 		second_end = second_start + halfsize;
 	}
 
-	first_end = min( first_end, (int) Rows.size() );
-	second_end = min( second_end, (int) Rows.size() );
+	first_end = std::min( first_end, (int) Rows.size() );
+	second_end = std::min( second_end, (int) Rows.size() );
 
 	/* If less than total (and Rows.size()) are displayed, fill in the empty
 	 * space intelligently. */
@@ -678,7 +678,7 @@ void ScreenOptions::PositionRows( bool bTween )
 		else if( i >= first_end && i < second_start )	fPos = ((int)NUM_ROWS_SHOWN)/2-0.5f;
 		else if( i >= second_end )			fPos = ((int)NUM_ROWS_SHOWN)-0.5f;
 
-		Actor::TweenState tsDestination = m_exprRowPositionTransformFunction.GetTransformCached( fPos, i, min( (int)Rows.size(), (int)NUM_ROWS_SHOWN ) );
+		Actor::TweenState tsDestination = m_exprRowPositionTransformFunction.GetTransformCached( fPos, i, std::min( (int)Rows.size(), (int)NUM_ROWS_SHOWN ) );
 
 		bool bHidden =
 			i < first_start ||
@@ -855,7 +855,7 @@ void ScreenOptions::ProcessMenuStart( const InputEventPlus &input )
 		 * something.  Apply it now, and don't go to the next screen. */
 		if( !FocusedItemEndsScreen(input.pn) )
 		{
-			vector<PlayerNumber> vpns;
+			std::vector<PlayerNumber> vpns;
 			vpns.push_back( input.pn );
 			ExportOptions( iCurRow, vpns );
 			return;
@@ -1144,7 +1144,7 @@ void ScreenOptions::ChangeValueInRowRelative( int iRow, PlayerNumber pn, int iDe
 
 	if( row.GetRowDef().m_bExportOnChange )
 	{
-		vector<PlayerNumber> vpns;
+		std::vector<PlayerNumber> vpns;
 		FOREACH_HumanPlayer( p )
 			vpns.push_back( p );
 		ExportOptions( iRow, vpns );

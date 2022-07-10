@@ -13,8 +13,8 @@ public:
 
 protected:
 private:
-	virtual void ImportOptions( int row, const vector<PlayerNumber> &vpns );
-	virtual void ExportOptions( int row, const vector<PlayerNumber> &vpns );
+	virtual void ImportOptions( int row, const std::vector<PlayerNumber> &vpns );
+	virtual void ExportOptions( int row, const std::vector<PlayerNumber> &vpns );
 	
 	virtual void HandleScreenMessage( const ScreenMessage SM );
 	virtual void AfterChangeValueInRow( int iRow, PlayerNumber pn );

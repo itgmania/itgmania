@@ -18,7 +18,7 @@ public:
 	// Lua
 	void PushSelf( lua_State *L );
 protected:
-	vector<AutoActor>	m_vSpr;
+	std::vector<AutoActor>	m_vSpr;
 };
 
 #endif

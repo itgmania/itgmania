@@ -2,8 +2,6 @@
 #include "JoystickDevice.h"
 #include "RageLog.h"
 
-using std::unordered_map;
-
 Joystick::Joystick() :	id( InputDevice_Invalid ),
 			x_axis( 0 ), y_axis( 0 ), z_axis( 0 ),
 			x_rot( 0 ), y_rot( 0 ), z_rot( 0 ), hat( 0 ),
@@ -134,7 +132,7 @@ void JoystickDevice::Open()
 		ADD( x_rot );	ADD( y_rot );	ADD( z_rot );
 		ADD( hat );
 #undef ADD
-		for( unordered_map<IOHIDElementCookie,DeviceButton>::const_iterator j = js.mapping.begin(); j != js.mapping.end(); ++j )
+		for( std::unordered_map<IOHIDElementCookie,DeviceButton>::const_iterator j = js.mapping.begin(); j != js.mapping.end(); ++j )
 			AddElementToQueue( j->first );
 	}
 }
@@ -152,7 +150,7 @@ bool JoystickDevice::InitDevice( int vid, int pid )
 	return ret == kIOReturnSuccess;
 }
 
-void JoystickDevice::GetButtonPresses( vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value, const RageTimer& now ) const
+void JoystickDevice::GetButtonPresses( std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value, const RageTimer& now ) const
 {
 	for (Joystick const &js : m_vSticks)
 	{
@@ -160,48 +158,48 @@ void JoystickDevice::GetButtonPresses( vector<DeviceInput>& vPresses, IOHIDEleme
 		{
 			float level = SCALE( value, js.x_min, js.x_max, -1.0f, 1.0f );
 
-			vPresses.push_back( DeviceInput(js.id, JOY_LEFT, max(-level, 0.0f), now) );
-			vPresses.push_back( DeviceInput(js.id, JOY_RIGHT, max(level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_LEFT, std::max(-level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_RIGHT, std::max(level, 0.0f), now) );
 			break;
 		}
 		else if( js.y_axis == cookie )
 		{
 			float level = SCALE( value, js.y_min, js.y_max, -1.0f, 1.0f );
 
-			vPresses.push_back( DeviceInput(js.id, JOY_UP, max(-level, 0.0f), now) );
-			vPresses.push_back( DeviceInput(js.id, JOY_DOWN, max(level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_UP, std::max(-level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_DOWN, std::max(level, 0.0f), now) );
 			break;
 		}
 		else if( js.z_axis == cookie )
 		{
 			float level = SCALE( value, js.z_min, js.z_max, -1.0f, 1.0f );
 
-			vPresses.push_back( DeviceInput(js.id, JOY_Z_UP, max(-level, 0.0f), now) );
-			vPresses.push_back( DeviceInput(js.id, JOY_Z_DOWN, max(level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_Z_UP, std::max(-level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_Z_DOWN, std::max(level, 0.0f), now) );
 			break;
 		}
 		else if( js.x_rot == cookie )
 		{
 			float level = SCALE( value, js.rx_min, js.rx_max, -1.0f, 1.0f );
 
-			vPresses.push_back( DeviceInput(js.id, JOY_ROT_LEFT, max(-level, 0.0f), now) );
-			vPresses.push_back( DeviceInput(js.id, JOY_ROT_RIGHT, max(level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_ROT_LEFT, std::max(-level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_ROT_RIGHT, std::max(level, 0.0f), now) );
 			break;
 		}
 		else if( js.y_rot == cookie )
 		{
 			float level = SCALE( value, js.ry_min, js.ry_max, -1.0f, 1.0f );
 
-			vPresses.push_back( DeviceInput(js.id, JOY_ROT_UP, max(-level, 0.0f), now) );
-			vPresses.push_back( DeviceInput(js.id, JOY_ROT_DOWN, max(level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_ROT_UP, std::max(-level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_ROT_DOWN, std::max(level, 0.0f), now) );
 			break;
 		}
 		else if( js.z_rot == cookie )
 		{
 			float level = SCALE( value, js.rz_min, js.rz_max, -1.0f, 1.0f );
 
-			vPresses.push_back( DeviceInput(js.id, JOY_ROT_Z_UP, max(-level, 0.0f), now) );
-			vPresses.push_back( DeviceInput(js.id, JOY_ROT_Z_DOWN, max(level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_ROT_Z_UP, std::max(-level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_ROT_Z_DOWN, std::max(level, 0.0f), now) );
 			break;
 		}
 		else if( js.hat == cookie )
@@ -231,7 +229,7 @@ void JoystickDevice::GetButtonPresses( vector<DeviceInput>& vPresses, IOHIDEleme
 		else
 		{
 			// hash_map<T,U>::operator[] is not const
-			unordered_map<IOHIDElementCookie, DeviceButton>::const_iterator iter;
+			std::unordered_map<IOHIDElementCookie, DeviceButton>::const_iterator iter;
 
 			iter = js.mapping.find( cookie );
 			if( iter != js.mapping.end() )
@@ -260,7 +258,7 @@ int JoystickDevice::AssignIDs( InputDevice startID )
 	return m_vSticks.size();
 }
 
-void JoystickDevice::GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevices ) const
+void JoystickDevice::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevices ) const
 {
 	for (auto &i : m_vSticks)
 		vDevices.push_back( InputDeviceInfo(i.id,GetDescription()) );

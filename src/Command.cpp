@@ -34,7 +34,7 @@ RString Command::GetOriginalCommandString() const
 	return join( ",", m_vsArgs );
 }
 
-static void SplitWithQuotes( const RString sSource, const char Delimitor, vector<RString> &asOut, const bool bIgnoreEmpty )
+static void SplitWithQuotes( const RString sSource, const char Delimitor, std::vector<RString> &asOut, const bool bIgnoreEmpty )
 {
 	/* Short-circuit if the source is empty; we want to return an empty vector if
 	 * the string is empty, even if bIgnoreEmpty is true. */
@@ -53,7 +53,7 @@ static void SplitWithQuotes( const RString sSource, const char Delimitor, vector
 			{
 				/* We've found a quote.  Search for the close. */
 				pos = sSource.find( sSource[pos], pos+1 );
-				if( pos == string::npos )
+				if( pos == std::string::npos )
 					pos = sSource.size();
 				else
 					++pos;
@@ -86,7 +86,7 @@ RString Commands::GetOriginalCommandString() const
 
 void ParseCommands( const RString &sCommands, Commands &vCommandsOut, bool bLegacy )
 {
-	vector<RString> vsCommands;
+	std::vector<RString> vsCommands;
 	if( bLegacy )
 		split( sCommands, ";", vsCommands, true );
 	else

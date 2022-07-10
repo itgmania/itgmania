@@ -83,7 +83,7 @@ NoteField::~NoteField()
 
 void NoteField::Unload()
 {
-	for( map<RString, NoteDisplayCols *>::iterator it = m_NoteDisplays.begin();
+	for( std::map<RString, NoteDisplayCols *>::iterator it = m_NoteDisplays.begin();
 		it != m_NoteDisplays.end(); ++it )
 		delete it->second;
 	m_NoteDisplays.clear();
@@ -134,7 +134,7 @@ void NoteField::CacheAllUsedNoteSkins()
 
 	/* Cache all note skins that we might need for the whole song, course or battle
 	 * play, so we don't have to load them later (such as between course songs). */
-	vector<RString> asSkinsLower;
+	std::vector<RString> asSkinsLower;
 	GAMESTATE->GetAllUsedNoteSkins( asSkinsLower );
 	asSkinsLower.push_back( m_pPlayerState->m_PlayerOptions.GetStage().m_sNoteSkin );
 	for (RString &s : asSkinsLower)
@@ -148,7 +148,7 @@ void NoteField::CacheAllUsedNoteSkins()
 
 	/* If we're changing note skins in the editor, we can have old note skins lying
 	 * around.  Remove them so they don't accumulate. */
-	set<RString> setNoteSkinsToUnload;
+	std::set<RString> setNoteSkinsToUnload;
 	for (std::pair<RString const &, NoteDisplayCols *> d : m_NoteDisplays)
 	{
 		bool unused = find(asSkinsLower.begin(), asSkinsLower.end(), d.first) == asSkinsLower.end();
@@ -162,7 +162,7 @@ void NoteField::CacheAllUsedNoteSkins()
 	NOTESKIN->ValidateNoteSkinName(sCurrentNoteSkinLower);
 	sCurrentNoteSkinLower.MakeLower();
 
-	map<RString, NoteDisplayCols *>::iterator it = m_NoteDisplays.find( sCurrentNoteSkinLower );
+	std::map<RString, NoteDisplayCols*>::iterator it = m_NoteDisplays.find( sCurrentNoteSkinLower );
 	ASSERT_M( it != m_NoteDisplays.end(), sCurrentNoteSkinLower );
 	m_pCurDisplay = it->second;
 	memset( m_pDisplays, 0, sizeof(m_pDisplays) );
@@ -249,11 +249,11 @@ void NoteField::ensure_note_displays_have_skin()
 		{
 			sNoteSkinLower = "default";
 		}
-		m_NoteDisplays.insert(pair<RString, NoteDisplayCols *> (sNoteSkinLower, badIdea));
+		m_NoteDisplays.insert(std::pair<RString, NoteDisplayCols *> (sNoteSkinLower, badIdea));
 	}
 
 	sNoteSkinLower.MakeLower();
-	map<RString, NoteDisplayCols *>::iterator it = m_NoteDisplays.find( sNoteSkinLower );
+	std::map<RString, NoteDisplayCols *>::iterator it = m_NoteDisplays.find( sNoteSkinLower );
 	ASSERT_M( it != m_NoteDisplays.end(), ssprintf("iterator != m_NoteDisplays.end() [sNoteSkinLower = %s]",sNoteSkinLower.c_str()) );
 	memset( m_pDisplays, 0, sizeof(m_pDisplays) );
 	FOREACH_EnabledPlayer( pn )
@@ -269,7 +269,7 @@ void NoteField::ensure_note_displays_have_skin()
 			{
 				sNoteSkinLower = "default";
 			}
-			m_NoteDisplays.insert(pair<RString, NoteDisplayCols *> (sNoteSkinLower, badIdea));
+			m_NoteDisplays.insert(std::pair<RString, NoteDisplayCols *> (sNoteSkinLower, badIdea));
 		}
 
 		sNoteSkinLower.MakeLower();
@@ -343,7 +343,7 @@ void NoteField::Update( float fDeltaTime )
 	cur->m_GhostArrowRow.Update( fDeltaTime );
 
 	if( m_FieldRenderArgs.fail_fade >= 0 )
-		m_FieldRenderArgs.fail_fade = min( m_FieldRenderArgs.fail_fade + fDeltaTime/FADE_FAIL_TIME, 1 );
+		m_FieldRenderArgs.fail_fade = std::min( m_FieldRenderArgs.fail_fade + fDeltaTime/FADE_FAIL_TIME, 1.0f );
 
 	// Update fade to failed
 	m_pCurDisplay->m_ReceptorArrowRow.SetFadeToFailPercent( m_FieldRenderArgs.fail_fade );
@@ -590,7 +590,7 @@ static CacheNoteStat GetNumNotesFromBeginning( const PlayerState *pPlayerState, 
 {
 	// XXX: I realized that I have copied and pasted my binary search code 3 times already.
 	//      how can we abstract this?
-	const vector<CacheNoteStat> &data = pPlayerState->m_CacheNoteStat;
+	const std::vector<CacheNoteStat> &data = pPlayerState->m_CacheNoteStat;
 	int max = data.size() - 1;
 	int l = 0, r = max;
 	while( l <= r )
@@ -696,7 +696,7 @@ float FindLastDisplayedBeat( const PlayerState* pPlayerState, int iDrawDistanceB
 
 	if( fSpeedMultiplier < 0.75 )
 	{
-		fLastBeatToDraw = min(fLastBeatToDraw, pPlayerState->GetDisplayedPosition().m_fSongBeat + 16);
+		fLastBeatToDraw = std::min(fLastBeatToDraw, pPlayerState->GetDisplayedPosition().m_fSongBeat + 16);
 	}
 
 	return fLastBeatToDraw;
@@ -789,7 +789,7 @@ void NoteField::DrawPrimitives()
 	}
 
 	const TimingData *pTiming = &m_pPlayerState->GetDisplayedTiming();
-	const vector<TimingSegment*>* segs[NUM_TimingSegmentType];
+	const std::vector<TimingSegment*>* segs[NUM_TimingSegmentType];
 
 	FOREACH_TimingSegmentType( tst )
 		segs[tst] = &(pTiming->GetTimingSegments(tst));
@@ -798,7 +798,7 @@ void NoteField::DrawPrimitives()
 	// Draw beat bars
 	if( ( GAMESTATE->IsEditing() || SHOW_BEAT_BARS ) && pTiming != nullptr )
 	{
-		const vector<TimingSegment *> &tSigs = *segs[SEGMENT_TIME_SIG];
+		const std::vector<TimingSegment *> &tSigs = *segs[SEGMENT_TIME_SIG];
 		int iMeasureIndex = 0;
 		for (i = 0; i < tSigs.size(); i++)
 		{
@@ -931,14 +931,14 @@ void NoteField::DrawPrimitives()
 					break;
 				case EditMode_Full:
 					{
-						vector<BackgroundChange>::iterator iter[NUM_BackgroundLayer];
+						std::vector<BackgroundChange>::iterator iter[NUM_BackgroundLayer];
 						FOREACH_BackgroundLayer( j )
 							iter[j] = GAMESTATE->m_pCurSong->GetBackgroundChanges(j).begin();
 
 						for(;;)
 						{
 							float fLowestBeat = FLT_MAX;
-							vector<BackgroundLayer> viLowestIndex;
+							std::vector<BackgroundLayer> viLowestIndex;
 
 							FOREACH_BackgroundLayer( j )
 							{
@@ -970,7 +970,7 @@ void NoteField::DrawPrimitives()
 	
 							if( IS_ON_SCREEN(fLowestBeat) )
 							{
-								vector<RString> vsBGChanges;
+								std::vector<RString> vsBGChanges;
 								for (BackgroundLayer const &bl : viLowestIndex)
 								{
 									ASSERT( iter[bl] != GAMESTATE->m_pCurSong->GetBackgroundChanges(bl).end() );
@@ -1058,7 +1058,7 @@ void NoteField::DrawBoardPrimitive()
 
 void NoteField::FadeToFail()
 {
-	m_FieldRenderArgs.fail_fade = max( 0.0f, m_FieldRenderArgs.fail_fade );	// this will slowly increase every Update()
+	m_FieldRenderArgs.fail_fade = std::max( 0.0f, m_FieldRenderArgs.fail_fade );	// this will slowly increase every Update()
 		// don't fade all over again if this is called twice
 }
 

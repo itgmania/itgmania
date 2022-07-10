@@ -16,9 +16,9 @@ void ScreenOptionsToggleSongs::BeginScreen()
 {
 	m_asGroups.clear();
 
-	vector<OptionRowHandler*> vHands;
+	std::vector<OptionRowHandler*> vHands;
 
-	vector<RString> asAllGroups;
+	std::vector<RString> asAllGroups;
 	SONGMAN->GetSongGroupNames(asAllGroups);
 	for (RString const &sGroup : asAllGroups)
 	{
@@ -57,11 +57,11 @@ void ScreenOptionsToggleSongs::ProcessMenuStart( const InputEventPlus &input )
 	SCREENMAN->SetNewScreen("ScreenOptionsToggleSongsSubPage");
 }
 
-void ScreenOptionsToggleSongs::ImportOptions( int row, const vector<PlayerNumber> &vpns )
+void ScreenOptionsToggleSongs::ImportOptions( int row, const std::vector<PlayerNumber> &vpns )
 {
 
 }
-void ScreenOptionsToggleSongs::ExportOptions( int row, const vector<PlayerNumber> &vpns )
+void ScreenOptionsToggleSongs::ExportOptions( int row, const std::vector<PlayerNumber> &vpns )
 {
 
 }
@@ -72,9 +72,9 @@ void ScreenOptionsToggleSongsSubPage::BeginScreen()
 {
 	m_apSongs.clear();
 
-	vector<OptionRowHandler*> vHands;
+	std::vector<OptionRowHandler*> vHands;
 
-	const vector<Song *> &apAllSongs = SONGMAN->GetSongs(ToggleSongs::m_sGroup);
+	const std::vector<Song*> &apAllSongs = SONGMAN->GetSongs(ToggleSongs::m_sGroup);
 	for (Song *pSong : apAllSongs)
 	{
 		if( UNLOCKMAN->SongIsLocked(pSong) & ~LOCKED_DISABLED )
@@ -100,7 +100,7 @@ void ScreenOptionsToggleSongsSubPage::BeginScreen()
 	ScreenOptions::BeginScreen();
 }
 
-void ScreenOptionsToggleSongsSubPage::ImportOptions( int iRow, const vector<PlayerNumber> &vpns )
+void ScreenOptionsToggleSongsSubPage::ImportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
 {
 	if( iRow >= (int)m_apSongs.size() )	// exit row
 		return;
@@ -111,7 +111,7 @@ void ScreenOptionsToggleSongsSubPage::ImportOptions( int iRow, const vector<Play
 	row.SetOneSharedSelection( iSelection );
 }
 
-void ScreenOptionsToggleSongsSubPage::ExportOptions( int iRow, const vector<PlayerNumber> &vpns )
+void ScreenOptionsToggleSongsSubPage::ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
 {
 	if( iRow >= (int)m_apSongs.size() )	// exit row
 		return;

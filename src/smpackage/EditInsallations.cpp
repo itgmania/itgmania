@@ -59,9 +59,9 @@ BOOL EditInsallations::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	// TODO: Add extra initialization here
-	DialogUtil::LocalizeDialogAndContents( *this );	
+	DialogUtil::LocalizeDialogAndContents( *this );
 
-	vector<RString> vs;
+	std::vector<RString> vs;
 	SMPackageUtil::GetGameInstallDirs( vs );
 	for( unsigned i=0; i<vs.size(); i++ )
 		m_list.AddString( vs[i] );
@@ -130,7 +130,7 @@ void EditInsallations::OnButtonAdd()
 
 void EditInsallations::OnOK() 
 {
-	vector<RString> vs;
+	std::vector<RString> vs;
 
 	for( int i=0; i<m_list.GetCount(); i++ )
 	{
@@ -142,7 +142,7 @@ void EditInsallations::OnOK()
 	SMPackageUtil::WriteGameInstallDirs( vs );
 
 	// set the new default
-	vector<RString> asInstallDirs;
+	std::vector<RString> asInstallDirs;
 	SMPackageUtil::GetGameInstallDirs( asInstallDirs );
 	FILEMAN->Remount( "/", asInstallDirs[0] );
 

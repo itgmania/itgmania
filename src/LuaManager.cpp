@@ -22,8 +22,8 @@ LuaManager *LUA = nullptr;
 struct Impl
 {
 	Impl(): g_pLock("Lua") {}
-	vector<lua_State *> g_FreeStateList;
-	map<lua_State *, bool> g_ActiveStates;
+	std::vector<lua_State *> g_FreeStateList;
+	std::map<lua_State *, bool> g_ActiveStates;
 
 	RageMutex g_pLock;
 };
@@ -105,7 +105,7 @@ namespace LuaHelpers
 	}
 }
 
-void LuaHelpers::CreateTableFromArrayB( Lua *L, const vector<bool> &aIn )
+void LuaHelpers::CreateTableFromArrayB( Lua *L, const std::vector<bool> &aIn )
 {
 	lua_newtable( L );
 	for( unsigned i = 0; i < aIn.size(); ++i )
@@ -115,7 +115,7 @@ void LuaHelpers::CreateTableFromArrayB( Lua *L, const vector<bool> &aIn )
 	}
 }
 
-void LuaHelpers::ReadArrayFromTableB( Lua *L, vector<bool> &aOut )
+void LuaHelpers::ReadArrayFromTableB( Lua *L, std::vector<bool> &aOut )
 {
 	luaL_checktype( L, -1, LUA_TTABLE );
 
@@ -180,7 +180,7 @@ static int GetLuaStack( lua_State *L )
 		// The function is now on the top of the stack.
 		const char *file = ar.source[0] == '@' ? ar.source + 1 : ar.short_src;
 		const char *name;
-		vector<RString> vArgs;
+		std::vector<RString> vArgs;
 		
 		if( !strcmp(ar.what, "C") )
 		{
@@ -236,12 +236,12 @@ static int LuaPanic( lua_State *L )
 }
 
 // Actor registration
-static vector<RegisterWithLuaFn>	*g_vRegisterActorTypes = nullptr;
+static std::vector<RegisterWithLuaFn>	*g_vRegisterActorTypes = nullptr;
 
 void LuaManager::Register( RegisterWithLuaFn pfn )
 {
 	if( g_vRegisterActorTypes == nullptr )
-		g_vRegisterActorTypes = new vector<RegisterWithLuaFn>;
+		g_vRegisterActorTypes = new std::vector<RegisterWithLuaFn>;
 
 	g_vRegisterActorTypes->push_back( pfn );
 }
@@ -545,7 +545,7 @@ namespace
 	struct LClass
 	{
 		RString m_sBaseName;
-		vector<RString> m_vMethods;
+		std::vector<RString> m_vMethods;
 	};
 }
 
@@ -560,13 +560,13 @@ XNode *LuaHelpers::GetLuaInformation()
 	XNode *pEnumsNode = pLuaNode->AppendChild( "Enums" );
 	XNode *pConstantsNode = pLuaNode->AppendChild( "Constants" );
 
-	vector<RString> vFunctions;
-	map<RString, LClass> mClasses;
-	map<RString, vector<RString> > mNamespaces;
-	map<RString, RString> mSingletons;
-	map<RString, float> mConstants;
-	map<RString, RString> mStringConstants;
-	map<RString, vector<RString> > mEnums;
+	std::vector<RString> vFunctions;
+	std::map<RString, LClass> mClasses;
+	std::map<RString, std::vector<RString>> mNamespaces;
+	std::map<RString, RString> mSingletons;
+	std::map<RString, float> mConstants;
+	std::map<RString, RString> mStringConstants;
+	std::map<RString, std::vector<RString>> mEnums;
 
 	Lua *L = LUA->Get();
 	FOREACH_LUATABLE( L, LUA_GLOBALSINDEX )
@@ -658,7 +658,7 @@ XNode *LuaHelpers::GetLuaInformation()
 		LuaHelpers::Pop( L, sNamespace );
 		if( find(BuiltInPackages, end, sNamespace) != end )
 			continue;
-		vector<RString> &vNamespaceFunctions = mNamespaces[sNamespace];
+		std::vector<RString> &vNamespaceFunctions = mNamespaces[sNamespace];
 		FOREACH_LUATABLE( L, -1 )
 		{
 			RString sFunction;
@@ -705,10 +705,10 @@ XNode *LuaHelpers::GetLuaInformation()
 	}
 
 	/* Namespaces */
-	for( map<RString, vector<RString> >::const_iterator iter = mNamespaces.begin(); iter != mNamespaces.end(); ++iter )
+	for( std::map<RString, std::vector<RString>>::const_iterator iter = mNamespaces.begin(); iter != mNamespaces.end(); ++iter )
 	{
 		XNode *pNamespaceNode = pNamespacesNode->AppendChild( "Namespace" );
-		const vector<RString> &vNamespace = iter->second;
+		const std::vector<RString> &vNamespace = iter->second;
 		pNamespaceNode->AppendAttr( "name", iter->first );
 
 		for (RString const &func: vNamespace)
@@ -719,11 +719,11 @@ XNode *LuaHelpers::GetLuaInformation()
 	}
 
 	/* Enums */
-	for( map<RString, vector<RString> >::const_iterator iter = mEnums.begin(); iter != mEnums.end(); ++iter )
+	for( std::map<RString, std::vector<RString>>::const_iterator iter = mEnums.begin(); iter != mEnums.end(); ++iter )
 	{
 		XNode *pEnumNode = pEnumsNode->AppendChild( "Enum" );
 
-		const vector<RString> &vEnum = iter->second;
+		const std::vector<RString> &vEnum = iter->second;
 		pEnumNode->AppendAttr( "name", iter->first );
 
 		for( unsigned i = 0; i < vEnum.size(); ++i )
@@ -910,7 +910,7 @@ void LuaHelpers::ParseCommandList( Lua *L, const RString &sCommands, const RStri
 		ParseCommands( sCommands, cmds, bLegacy );
 
 		// Convert cmds to a Lua function
-		ostringstream s;
+		std::ostringstream s;
 
 		s << "return function(self)\n";
 
@@ -1113,7 +1113,7 @@ namespace
 		luaL_checktype( L, 1, LUA_TFUNCTION );
 		luaL_checktype( L, 2, LUA_TTABLE );
 
-		vector<LuaThreadVariable *> apVars;
+		std::vector<LuaThreadVariable *> apVars;
 		FOREACH_LUATABLE( L, 2 )
 		{
 			lua_pushvalue( L, -2 );

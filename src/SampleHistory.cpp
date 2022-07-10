@@ -22,7 +22,7 @@ SampleHistory::SampleHistory()
 
 float SampleHistory::GetSampleNum( float fSamplesAgo ) const
 {
-	fSamplesAgo = min( fSamplesAgo, (float) m_afHistory.size() - 1 );
+	fSamplesAgo = std::min( fSamplesAgo, (float) m_afHistory.size() - 1 );
 	if( fSamplesAgo < 0 )
 		fSamplesAgo = 0;
 	if( m_afHistory.size() == 0 )
@@ -52,7 +52,7 @@ void SampleHistory::AddSample( float fSample, float fDeltaTime )
 {
 	while( fDeltaTime > 0.0001f )
 	{
-		float fTime = min( m_fToSample, fDeltaTime );
+		float fTime = std::min( m_fToSample, fDeltaTime );
 		m_fToSample -= fTime;
 		fDeltaTime -= fTime;
 

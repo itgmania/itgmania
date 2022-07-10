@@ -26,7 +26,7 @@ REGISTER_SCREEN_CLASS( ScreenOptionsMaster );
 
 void ScreenOptionsMaster::Init()
 {
-	vector<RString> asLineNames;
+	std::vector<RString> asLineNames;
 	split( LINE_NAMES, ",", asLineNames );
 	if( asLineNames.empty() )
 	{
@@ -49,7 +49,7 @@ void ScreenOptionsMaster::Init()
 	// Call this after enabling players, if any.
 	ScreenOptions::Init();
 
-	vector<OptionRowHandler*> OptionRowHandlers;
+	std::vector<OptionRowHandler*> OptionRowHandlers;
 	for( unsigned i = 0; i < asLineNames.size(); ++i )
 	{
 		RString sLineName = asLineNames[i];
@@ -71,7 +71,7 @@ void ScreenOptionsMaster::Init()
 	InitMenu( OptionRowHandlers );
 }
 
-void ScreenOptionsMaster::ImportOptions( int r, const vector<PlayerNumber> &vpns )
+void ScreenOptionsMaster::ImportOptions( int r, const std::vector<PlayerNumber> &vpns )
 {
 	for (PlayerNumber const &pn : vpns)
 	{
@@ -81,7 +81,7 @@ void ScreenOptionsMaster::ImportOptions( int r, const vector<PlayerNumber> &vpns
 	row.ImportOptions( vpns );
 }
 
-void ScreenOptionsMaster::ExportOptions( int r, const vector<PlayerNumber> &vpns )
+void ScreenOptionsMaster::ExportOptions( int r, const std::vector<PlayerNumber> &vpns )
 {
 	CHECKPOINT_M( ssprintf("%i/%i", r, int(m_pRows.size())) );
 
@@ -105,7 +105,7 @@ void ScreenOptionsMaster::HandleScreenMessage( const ScreenMessage SM )
 
 		CHECKPOINT_M("Starting the export handling.");
 
-		vector<PlayerNumber> vpns;
+		std::vector<PlayerNumber> vpns;
 		FOREACH_OptionsPlayer( p )
 			vpns.push_back( p );
 		for( unsigned r=0; r<m_pRows.size(); r++ ) // foreach row

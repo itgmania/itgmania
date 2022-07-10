@@ -59,7 +59,7 @@ bool CourseWriterCRS::Write( const Course &course, RageFileBasic &f, bool bSavin
 
 	if( !course.m_setStyles.empty() )
 	{
-		vector<RString> asStyles;
+		std::vector<RString> asStyles;
 		asStyles.insert( asStyles.begin(), course.m_setStyles.begin(), course.m_setStyles.end() );
 		f.PutLine( ssprintf("#STYLE:%s;", join( ",", asStyles ).c_str()) );
 	}
@@ -83,7 +83,7 @@ bool CourseWriterCRS::Write( const Course &course, RageFileBasic &f, bool bSavin
 			StepsType st = entry.first;
 			CourseDifficulty cd = entry.second;
 
-			vector<RString> asRadarValues;
+			std::vector<RString> asRadarValues;
 			const RadarValues &rv = it->second;
 			for( int r=0; r < NUM_RadarCategory; r++ )
 				asRadarValues.push_back( ssprintf("%.3f", rv[r]) );

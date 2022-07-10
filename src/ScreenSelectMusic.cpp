@@ -239,7 +239,7 @@ void ScreenSelectMusic::BeginScreen()
 	{
 		LuaHelpers::ReportScriptError("The Style has not been set.  A theme must set the Style before loading ScreenSelectMusic.");
 		// Instead of crashing, set the first compatible style.
-		vector<StepsType> vst;
+		std::vector<StepsType> vst;
 		GAMEMAN->GetStepsTypesForGame( GAMESTATE->m_pCurGame, vst );
 		const Style *pStyle = GAMEMAN->GetFirstCompatibleStyle( GAMESTATE->m_pCurGame, GAMESTATE->GetNumSidesJoined(), vst[0] );
 		if(pStyle == nullptr)
@@ -1057,7 +1057,7 @@ void ScreenSelectMusic::ChangeSteps( PlayerNumber pn, int dir )
 			return;
 	}
 
-	vector<PlayerNumber> vpns;
+	std::vector<PlayerNumber> vpns;
 	FOREACH_HumanPlayer( p )
 	{
 		if( pn == p || GAMESTATE->DifficultiesLocked() )
@@ -1272,7 +1272,7 @@ bool ScreenSelectMusic::MenuStart( const InputEventPlus &input )
 			bool bIsRepeat = false;
 			int i = 0;
 			if( GAMESTATE->IsEventMode() )
-				i = max( 0, int(STATSMAN->m_vPlayedStageStats.size())-5 );
+				i = std::max( 0, int(STATSMAN->m_vPlayedStageStats.size())-5 );
 			for( ; i < (int)STATSMAN->m_vPlayedStageStats.size(); ++i )
 				if( STATSMAN->m_vPlayedStageStats[i].m_vpPlayedSongs.back() == m_MusicWheel.GetSelectedSong() )
 					bIsRepeat = true;
@@ -1515,7 +1515,7 @@ bool ScreenSelectMusic::MenuStart( const InputEventPlus &input )
 			}
 
 			StartTransitioningScreen( SM_None );
-			float fTime = max( SHOW_OPTIONS_MESSAGE_SECONDS, this->GetTweenTimeLeft() );
+			float fTime = std::max( SHOW_OPTIONS_MESSAGE_SECONDS, this->GetTweenTimeLeft() );
 			this->PostScreenMessage( SM_BeginFadingOut, fTime );
 		}
 		else
@@ -1564,7 +1564,7 @@ bool ScreenSelectMusic::MenuBack( const InputEventPlus & /* input */ )
 	return true;
 }
 
-void ScreenSelectMusic::AfterStepsOrTrailChange( const vector<PlayerNumber> &vpns )
+void ScreenSelectMusic::AfterStepsOrTrailChange( const std::vector<PlayerNumber> &vpns )
 {
 	if(TWO_PART_CONFIRMS_ONLY && m_SelectionState == SelectionState_SelectingSteps)
 	{
@@ -1725,7 +1725,7 @@ void ScreenSelectMusic::AfterMusicChange()
 
 	m_Banner.SetMovingFast( !!m_MusicWheel.IsMoving() );
 
-	vector<RString> m_Artists, m_AltArtists;
+	std::vector<RString> m_Artists, m_AltArtists;
 
 	if( SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong )
 	{
@@ -1891,7 +1891,7 @@ void ScreenSelectMusic::AfterMusicChange()
 			if(pStyle == nullptr)
 			{
 				lCourse->GetAllTrails(m_vpTrails);
-				vector<Trail*>::iterator tra= m_vpTrails.begin();
+				std::vector<Trail*>::iterator tra= m_vpTrails.begin();
 				Game const* cur_game= GAMESTATE->GetCurrentGame();
 				int num_players= GAMESTATE->GetNumPlayersEnabled();
 				while(tra != m_vpTrails.end())
@@ -1978,7 +1978,7 @@ void ScreenSelectMusic::AfterMusicChange()
 
 	g_StartedLoadingAt.Touch();
 
-	vector<PlayerNumber> vpns;
+	std::vector<PlayerNumber> vpns;
 	FOREACH_HumanPlayer( p )
 		vpns.push_back( p );
 

@@ -35,7 +35,7 @@ bool RageThread::s_bSystemSupportsTLS = false;
 bool RageThread::s_bIsShowingDialog = false;
 
 #define MAX_THREADS 128
-//static vector<RageMutex*> *g_MutexList = nullptr; /* watch out for static initialization order problems */
+//static std::vector<RageMutex*> *g_MutexList = nullptr; /* watch out for static initialization order problems */
 
 struct ThreadSlot
 {
@@ -397,7 +397,7 @@ void Checkpoints::SetCheckpoint( const char *file, int line, const char *message
 		LOG->Trace( "%s", slot->m_Checkpoints[slot->m_iCurCheckpoint].m_szFormattedBuf );
 
 	++slot->m_iCurCheckpoint;
-	slot->m_iNumCheckpoints = max( slot->m_iNumCheckpoints, slot->m_iCurCheckpoint );
+	slot->m_iNumCheckpoints = std::max( slot->m_iNumCheckpoints, slot->m_iCurCheckpoint );
 	slot->m_iCurCheckpoint %= CHECKPOINT_COUNT;
 }
 
@@ -474,7 +474,7 @@ void RageMutex::MarkLockedMutex()
 	ASSERT( ID < MAX_MUTEXES );
 
 	/* This is a queue of all mutexes that must be locked before ID, if at all. */
-	vector<const RageMutex *> before;
+	std::vector<const RageMutex *> before;
 
 	/* Iterate over all locked mutexes that are locked by this thread. */
 	for( unsigned i = 0; i < g_MutexList->size(); ++i )
@@ -521,7 +521,7 @@ void RageMutex::MarkLockedMutex()
 }
 
 /* XXX: How can g_FreeMutexIDs and g_MutexList be threadsafed? */
-static set<int> *g_FreeMutexIDs = nullptr;
+static std::set<int> *g_FreeMutexIDs = nullptr;
 #endif
 
 RageMutex::RageMutex( const RString &name ):
@@ -531,7 +531,7 @@ RageMutex::RageMutex( const RString &name ):
 
 /*	if( g_FreeMutexIDs == nullptr )
 	{
-		g_FreeMutexIDs = new set<int>;
+		g_FreeMutexIDs = new std::set<int>;
 		for( int i = 0; i < MAX_MUTEXES; ++i )
 			g_FreeMutexIDs->insert( i );
 	}
@@ -555,7 +555,7 @@ RageMutex::RageMutex( const RString &name ):
 	g_FreeMutexIDs->erase( g_FreeMutexIDs->begin() );
 
 	if( g_MutexList == nullptr )
-		g_MutexList = new vector<RageMutex*>;
+		g_MutexList = new std::vector<RageMutex*>;
 
 	g_MutexList->push_back( this );
 */
@@ -565,7 +565,7 @@ RageMutex::~RageMutex()
 {
 	delete m_pMutex;
 /*
-	vector<RageMutex*>::iterator it = find( g_MutexList->begin(), g_MutexList->end(), this );
+	std::vector<RageMutex*>::iterator it = find( g_MutexList->begin(), g_MutexList->end(), this );
 	ASSERT( it != g_MutexList->end() );
 	g_MutexList->erase( it );
 	if( g_MutexList->empty() )

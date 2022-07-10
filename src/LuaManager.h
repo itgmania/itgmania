@@ -98,7 +98,7 @@ namespace LuaHelpers
 
 	/* Create a Lua array (a table with indices starting at 1) of the given vector,
 	 * and push it on the stack. */
-	void CreateTableFromArrayB( Lua *L, const vector<bool> &aIn );
+	void CreateTableFromArrayB( Lua *L, const std::vector<bool> &aIn );
 
 	// Create a Lua table with contents set from this XNode, then push it on the stack.
 	void CreateTableFromXNode( Lua *L, const XNode *pNode );
@@ -108,7 +108,7 @@ namespace LuaHelpers
 	void DeepCopy( lua_State *L );
 
 	// Read the table at the top of the stack back into a vector.
-	void ReadArrayFromTableB( Lua *L, vector<bool> &aOut );
+	void ReadArrayFromTableB( Lua *L, std::vector<bool> &aOut );
 
 	void ParseCommandList( lua_State *L, const RString &sCommands, const RString &sName, bool bLegacy );
 
@@ -133,7 +133,7 @@ namespace LuaHelpers
 	}
 	
 	template<class T>
-	void ReadArrayFromTable( vector<T> &aOut, lua_State *L )
+	void ReadArrayFromTable( std::vector<T> &aOut, lua_State *L )
 	{
 		luaL_checktype( L, -1, LUA_TTABLE );
 
@@ -147,7 +147,7 @@ namespace LuaHelpers
 		lua_pop( L, 1 ); // pop nil
 	}
 	template<class T>
-	void CreateTableFromArray( const vector<T> &aIn, lua_State *L )
+	void CreateTableFromArray( const std::vector<T> &aIn, lua_State *L )
 	{
 		lua_newtable( L );
 		for( unsigned i = 0; i < aIn.size(); ++i )

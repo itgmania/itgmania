@@ -41,7 +41,7 @@ protected:
 	void RefreshTree();
 	void GetTreeItems( CArray<HTREEITEM,HTREEITEM>& aItemsOut );
 	void GetCheckedTreeItems( CArray<HTREEITEM,HTREEITEM>& aCheckedItemsOut );
-	void GetCheckedPaths( vector<RString>& aCheckedItemsOut );
+	void GetCheckedPaths( std::vector<RString>& aCheckedItemsOut );
 	bool MakeComment( RString &comment );
 	RString GetCurrentInstallDir();
 

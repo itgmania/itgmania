@@ -70,13 +70,13 @@ public:
 	 *        This vector will be populated on Player::Load() be used a lot in
 	 *        ArrowEffects to determine the target beat in O(log N).
 	 */
-	vector<CacheDisplayedBeat> m_CacheDisplayedBeat;
+	std::vector<CacheDisplayedBeat> m_CacheDisplayedBeat;
 
 	/**
 	 * @brief Holds a vector sorted by beat, the cumulative number of notes from
 	 *        the start of the song. This will be used by [insert more description here]
 	 */
-	vector<CacheNoteStat> m_CacheNoteStat;
+	std::vector<CacheNoteStat> m_CacheNoteStat;
 
 	/**
 	 * @brief Change the PlayerOptions to their default.
@@ -114,7 +114,7 @@ public:
 	bool	m_bAttackEndedThisUpdate;	// flag for other objects to watch (play sounds)
 
 	AttackArray		m_ActiveAttacks;
-	vector<Attack>	m_ModsToApply;
+	std::vector<Attack>	m_ModsToApply;
 
 	// Haste
 	int		m_iTapsHitSinceLastHasteUpdate;

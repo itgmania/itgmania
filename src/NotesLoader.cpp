@@ -15,7 +15,7 @@ void NotesLoader::GetMainAndSubTitlesFromFullTitle( const RString &sFullTitle, R
 	for( unsigned i=0; i<ARRAYLEN(sLeftSeps); i++ )
 	{
 		size_t iBeginIndex = sFullTitle.find( sLeftSeps[i] );
-		if( iBeginIndex == string::npos )
+		if( iBeginIndex == std::string::npos )
 			continue;
 		sMainTitleOut = sFullTitle.Left( (int) iBeginIndex );
 		sSubTitleOut = sFullTitle.substr( iBeginIndex+1, sFullTitle.size()-iBeginIndex+1 );
@@ -25,9 +25,9 @@ void NotesLoader::GetMainAndSubTitlesFromFullTitle( const RString &sFullTitle, R
 	sSubTitleOut = ""; 
 };
 
-bool NotesLoader::LoadFromDir( const RString &sPath, Song &out, set<RString> &BlacklistedImages, bool load_autosave )
+bool NotesLoader::LoadFromDir( const RString &sPath, Song &out, std::set<RString> &BlacklistedImages, bool load_autosave )
 {
-	vector<RString> list;
+	std::vector<RString> list;
 
 	BlacklistedImages.clear();
 	SSCLoader loaderSSC;

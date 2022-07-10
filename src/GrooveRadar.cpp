@@ -78,7 +78,7 @@ void GrooveRadar::SetFromSteps( PlayerNumber pn, Steps* pSteps ) // nullptr mean
 	m_GrooveRadarValueMap[pn].SetFromSteps( rv );
 }
 
-void GrooveRadar::SetFromValues( PlayerNumber pn, vector<float> vals )
+void GrooveRadar::SetFromValues( PlayerNumber pn, std::vector<float> vals )
 {
 	m_GrooveRadarValueMap[pn].SetFromValues(vals);
 }
@@ -107,7 +107,7 @@ void GrooveRadar::GrooveRadarValueMap::SetFromSteps( const RadarValues &rv )
 	{
 		const float fValueCurrent = m_fValuesOld[c] * (1-m_PercentTowardNew) + m_fValuesNew[c] * m_PercentTowardNew;
 		m_fValuesOld[c] = fValueCurrent;
-		m_fValuesNew[c] = clamp(rv[c], 0.0, 1.0);
+		m_fValuesNew[c] = clamp(rv[c], 0.0f, 1.0f);
 	}
 
 	if( !m_bValuesVisible ) // the values WERE invisible
@@ -116,7 +116,7 @@ void GrooveRadar::GrooveRadarValueMap::SetFromSteps( const RadarValues &rv )
 		m_PercentTowardNew = 0;
 }
 
-void GrooveRadar::GrooveRadarValueMap::SetFromValues( vector<float> vals )
+void GrooveRadar::GrooveRadarValueMap::SetFromValues( std::vector<float> vals )
 {
 	m_bValuesVisible = true;
 	for( int c=0; c<NUM_SHOWN_RADAR_CATEGORIES; c++ )
@@ -136,7 +136,7 @@ void GrooveRadar::GrooveRadarValueMap::Update( float fDeltaTime )
 {
 	ActorFrame::Update( fDeltaTime );
 
-	m_PercentTowardNew = min( m_PercentTowardNew+4.0f*fDeltaTime, 1 );
+	m_PercentTowardNew = std::min( m_PercentTowardNew + 4.0f * fDeltaTime, 1.0f );
 }
 
 void GrooveRadar::GrooveRadarValueMap::DrawPrimitives()
@@ -235,7 +235,7 @@ public:
 		}
 		else
 		{
-			vector<float> vals;
+			std::vector<float> vals;
 			LuaHelpers::ReadArrayFromTable( vals, L );
 			p->SetFromValues(pn, vals);
 		}

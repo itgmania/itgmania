@@ -21,7 +21,7 @@ void ScreenSongOptions::Init()
 	}
 }
 
-void ScreenSongOptions::ExportOptions( int iRow, const vector<PlayerNumber> &vpns )
+void ScreenSongOptions::ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
 {
 	PlayerNumber pn = GAMESTATE->GetMasterPlayerNumber();
 	PlayerState *pPS = GAMESTATE->m_pPlayerState[pn];

@@ -7,8 +7,6 @@
 #include <vector>
 #include <fstream>
 #include <set>
-using namespace std;
-
 #include <math.h>
 
 static TextureFont *g_pTextureFont = NULL;
@@ -710,7 +708,7 @@ void CTextureFontGeneratorDlg::UpdateCloseUp()
 int CALLBACK CTextureFontGeneratorDlg::EnumFontFamiliesCallback( const LOGFONTA *pLogicalFontData, const TEXTMETRICA *pPhysicalFontData, DWORD FontType, LPARAM lParam )
 {
 	CTextureFontGeneratorDlg *pThis = (CTextureFontGeneratorDlg *) lParam;
-	set<CString> *pSet = (set<CString> *) lParam;
+	std::set<CString> *pSet = (std::set<CString> *) lParam;
 	pSet->insert( pLogicalFontData->lfFaceName );
 	return 1;
 }
@@ -732,9 +730,9 @@ BOOL CTextureFontGeneratorDlg::OnInitDialog()
 		memset( &font, 0, sizeof(font) );
 		font.lfCharSet = DEFAULT_CHARSET;
 		CPaintDC dc(this);
-		set<CString> setFamilies;
+		std::set<CString> setFamilies;
 		EnumFontFamiliesEx( dc.GetSafeHdc(), &font, EnumFontFamiliesCallback, (LPARAM) &setFamilies, 0 );
-		for( set<CString>::const_iterator it = setFamilies.begin(); it != setFamilies.end(); ++it )
+		for( std::set<CString>::const_iterator it = setFamilies.begin(); it != setFamilies.end(); ++it )
 			m_FamilyList.AddString( *it );
 		m_FamilyList.SetCurSel( 0 );
 	}
@@ -872,9 +870,9 @@ BOOL CTextureFontGeneratorDlg::OnMouseWheel( UINT nFlags, short zDelta, CPoint p
 		int i = atoi( sText );
 		i += zDelta / WHEEL_DELTA;
 		if( pFocus == &m_Padding )
-			i = max( i, 0 );
+			i = std::max( i, 0 );
 		else if( pFocus == &m_FontSize )
-			i = max( i, 1 );
+			i = std::max( i, 1 );
 
 		sText.Format( "%i", i );
 		pFocusedEdit->SetWindowText( sText );
@@ -1028,7 +1026,7 @@ void CTextureFontGeneratorDlg::OnFileSave()
 
 
 /*	{
-		vector<CString> asOldFiles;
+		std::vector<CString> asOldFiles;
 		WIN32_FIND_DATA fd;
 
 		CString sPath = szFile;

@@ -10,7 +10,7 @@ public:
 	virtual void Unmount( UsbStorageDevice* pDevice );
 
 protected:
-	void GetUSBStorageDevices( vector<UsbStorageDevice>& vDevicesOut );
+	void GetUSBStorageDevices( std::vector<UsbStorageDevice>& vDevicesOut );
 	bool USBStorageDevicesChanged();
 	bool TestWrite( UsbStorageDevice* pDevice );
 

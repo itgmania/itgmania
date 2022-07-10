@@ -31,7 +31,7 @@ int RageSoundReader_Extend::SetPosition( int iFrame )
 	m_bIgnoreFadeInFrames = false;
 
 	m_iPositionFrames = iFrame;
-	int iRet = m_pSource->SetPosition( max(iFrame, 0) );
+	int iRet = m_pSource->SetPosition( std::max(iFrame, 0) );
 	if( iRet < 0 )
 		return iRet;
 
@@ -59,8 +59,8 @@ int RageSoundReader_Extend::GetData( float *pBuffer, int iFrames )
 	if( m_iLengthFrames != -1 )
 	{
 		int iFramesLeft = GetEndFrame() - m_iPositionFrames;
-		iFramesLeft = max( 0, iFramesLeft );
-		iFramesToRead = min( iFramesToRead, iFramesLeft );
+		iFramesLeft = std::max( 0, iFramesLeft );
+		iFramesToRead = std::min( iFramesToRead, iFramesLeft );
 	}
 
 	if( iFrames && !iFramesToRead )
@@ -68,7 +68,7 @@ int RageSoundReader_Extend::GetData( float *pBuffer, int iFrames )
 
 	if( m_iPositionFrames < 0 )
 	{
-		iFramesToRead = min( iFramesToRead, -m_iPositionFrames );
+		iFramesToRead = std::min( iFramesToRead, -m_iPositionFrames );
 		memset( pBuffer, 0, iFramesToRead * sizeof(float) * this->GetNumChannels() );
 		return iFramesToRead;
 	}
@@ -93,7 +93,7 @@ int RageSoundReader_Extend::Read( float *pBuffer, int iFrames )
 		{
 			iFramesRead = iFrames;
 			if( m_StopMode != M_CONTINUE )
-				iFramesRead = min( GetEndFrame() - m_iPositionFrames, iFramesRead );
+				iFramesRead = std::min( GetEndFrame() - m_iPositionFrames, iFramesRead );
 			memset( pBuffer, 0, iFramesRead * sizeof(float) * this->GetNumChannels() );
 		}
 	}

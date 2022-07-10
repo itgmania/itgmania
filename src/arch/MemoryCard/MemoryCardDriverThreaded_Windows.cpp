@@ -93,7 +93,7 @@ static bool IsFloppyDrive( const RString &sDrive )
 	return false;
 }
 
-void MemoryCardDriverThreaded_Windows::GetUSBStorageDevices( vector<UsbStorageDevice>& vDevicesOut )
+void MemoryCardDriverThreaded_Windows::GetUSBStorageDevices( std::vector<UsbStorageDevice>& vDevicesOut )
 {
 	LOG->Trace( "MemoryCardDriverThreaded_Windows::GetUSBStorageDevices" );
 

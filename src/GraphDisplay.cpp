@@ -104,8 +104,8 @@ public:
 	virtual GraphLine *Copy() const;
 
 private:
-	vector<RageSpriteVertex> m_Quads;
-	vector<RageSpriteVertex> m_pCircles;
+	std::vector<RageSpriteVertex> m_Quads;
+	std::vector<RageSpriteVertex> m_pCircles;
 };
 REGISTER_ACTOR_CLASS( GraphLine );
 
@@ -177,7 +177,7 @@ void GraphDisplay::Set( const StageStats &ss, const PlayerStageStats &pss )
 
 	// Show song boundaries
 	float fSec = 0;
-	vector<Song *> const &possibleSongs = ss.m_vpPossibleSongs;
+	std::vector<Song *> const &possibleSongs = ss.m_vpPossibleSongs;
 
 	std::for_each(possibleSongs.begin(), possibleSongs.end() - 1, [&](Song *song) {
 		fSec += song->GetStepsSeconds();

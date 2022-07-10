@@ -43,10 +43,10 @@ struct LoadedDriver
 	RString GetPath( const RString &sPath ) const;
 };
 
-static vector<LoadedDriver *> g_pDrivers;
-static map<const RageFileBasic *,LoadedDriver *> g_mFileDriverMap;
+static std::vector<LoadedDriver *> g_pDrivers;
+static std::map<const RageFileBasic *,LoadedDriver *> g_mFileDriverMap;
 
-static void ReferenceAllDrivers( vector<LoadedDriver *> &apDriverList )
+static void ReferenceAllDrivers( std::vector<LoadedDriver *> &apDriverList )
 {
 	g_Mutex->Lock();
 	apDriverList = g_pDrivers;
@@ -55,7 +55,7 @@ static void ReferenceAllDrivers( vector<LoadedDriver *> &apDriverList )
 	g_Mutex->Unlock();
 }
 
-static void UnreferenceAllDrivers( vector<LoadedDriver *> &apDriverList )
+static void UnreferenceAllDrivers( std::vector<LoadedDriver *> &apDriverList )
 {
 	g_Mutex->Lock();
 	for( unsigned i = 0; i < apDriverList.size(); ++i )
@@ -281,7 +281,7 @@ public:
 	/* Never flush FDB, except in LoadFromDrivers. */
 	void FlushDirCache( const RString &sPath ) { }
 
-	void LoadFromDrivers( const vector<LoadedDriver *> &apDrivers )
+	void LoadFromDrivers( const std::vector<LoadedDriver *> &apDrivers )
 	{
 		/* XXX: Even though these two operations lock on their own, lock around
 		 * them, too.  That way, nothing can sneak in and get incorrect
@@ -367,7 +367,7 @@ static RString GetDirOfExecutable( RString argv0 )
 			if( !path )
 				path = _PATH_DEFPATH;
 
-			vector<RString> vPath;
+			std::vector<RString> vPath;
 			split( path, ":", vPath );
 			for (RString &i : vPath)
 			{
@@ -495,7 +495,7 @@ RString LoadedDriver::GetPath( const RString &sPath ) const
 
 bool ilt( const RString &a, const RString &b ) { return a.CompareNoCase(b) < 0; }
 bool ieq( const RString &a, const RString &b ) { return a.CompareNoCase(b) == 0; }
-void RageFileManager::GetDirListing( const RString &sPath_, vector<RString> &AddTo, bool bOnlyDirs, bool bReturnPathToo )
+void RageFileManager::GetDirListing( const RString &sPath_, std::vector<RString> &AddTo, bool bOnlyDirs, bool bReturnPathToo )
 {
 	RString sPath = sPath_;
 	NormalizePath( sPath );
@@ -506,7 +506,7 @@ void RageFileManager::GetDirListing( const RString &sPath_, vector<RString> &Add
 	if( sPath.find("/..") != std::string::npos )
 		return;
 
-	vector<LoadedDriver *> apDriverList;
+	std::vector<LoadedDriver *> apDriverList;
 	ReferenceAllDrivers( apDriverList );
 
 	int iDriversThatReturnedFiles = 0;
@@ -547,14 +547,14 @@ void RageFileManager::GetDirListing( const RString &sPath_, vector<RString> &Add
 	{
 		/* More than one driver returned files.  Remove duplicates (case-insensitively). */
 		sort( AddTo.begin()+iOldSize, AddTo.end(), ilt );
-		vector<RString>::iterator it = unique( AddTo.begin()+iOldSize, AddTo.end(), ieq );
+		std::vector<RString>::iterator it = unique( AddTo.begin()+iOldSize, AddTo.end(), ieq );
 		AddTo.erase( it, AddTo.end() );
 	}
 }
 
-void RageFileManager::GetDirListingWithMultipleExtensions( const RString &sPath, vector<RString> const& ExtensionList, vector<RString> &AddTo, bool bOnlyDirs, bool bReturnPathToo )
+void RageFileManager::GetDirListingWithMultipleExtensions( const RString &sPath, std::vector<RString> const& ExtensionList, std::vector<RString> &AddTo, bool bOnlyDirs, bool bReturnPathToo )
 {
-	for(vector<RString>::const_iterator curr_ext= ExtensionList.begin();
+	for(std::vector<RString>::const_iterator curr_ext= ExtensionList.begin();
 		curr_ext != ExtensionList.end(); ++curr_ext)
 	{
 		GetDirListing(sPath + "*." + (*curr_ext), AddTo, bOnlyDirs, bReturnPathToo);
@@ -567,7 +567,7 @@ bool RageFileManager::Move( const RString &fromPath_, const RString &toPath_ )
 	RString fromPath = fromPath_;
 	RString toPath = toPath_;
 
-	vector<LoadedDriver *> aDriverList;
+	std::vector<LoadedDriver *> aDriverList;
 	ReferenceAllDrivers( aDriverList );
 
 	NormalizePath( fromPath );
@@ -626,7 +626,7 @@ bool RageFileManager::Remove( const RString &sPath_ )
 {
 	RString sPath = sPath_;
 
-	vector<LoadedDriver *> apDriverList;
+	std::vector<LoadedDriver *> apDriverList;
 	ReferenceAllDrivers( apDriverList );
 
 	NormalizePath( sPath );
@@ -745,7 +745,7 @@ void RageFileManager::Unmount( const RString &sType, const RString &sRoot_, cons
 
 	/* Find all drivers we want to delete.  Remove them from g_pDrivers, and move them
 	 * into aDriverListToUnmount. */
-	vector<LoadedDriver *> apDriverListToUnmount;
+	std::vector<LoadedDriver *> apDriverListToUnmount;
 	g_Mutex->Lock();
 	for( unsigned i = 0; i < g_pDrivers.size(); ++i )
 	{
@@ -812,7 +812,7 @@ bool RageFileManager::IsMounted( RString MountPoint )
 	return false;
 }
 
-void RageFileManager::GetLoadedDrivers( vector<DriverLocation> &asMounts )
+void RageFileManager::GetLoadedDrivers( std::vector<DriverLocation> &asMounts )
 {
 	LockMut( *g_Mutex );
 
@@ -856,7 +856,7 @@ RageFileManager::FileType RageFileManager::GetFileType( const RString &sPath_ )
 
 	NormalizePath( sPath );
 
-	vector<LoadedDriver *> apDriverList;
+	std::vector<LoadedDriver *> apDriverList;
 	ReferenceAllDrivers( apDriverList );
 
 	RageFileManager::FileType ret = TYPE_NONE;
@@ -882,7 +882,7 @@ int RageFileManager::GetFileSizeInBytes( const RString &sPath_ )
 
 	NormalizePath( sPath );
 
-	vector<LoadedDriver *> apDriverList;
+	std::vector<LoadedDriver *> apDriverList;
 	ReferenceAllDrivers( apDriverList );
 
 	int iRet = -1;
@@ -906,7 +906,7 @@ int RageFileManager::GetFileHash( const RString &sPath_ )
 
 	NormalizePath( sPath );
 
-	vector<LoadedDriver *> apDriverList;
+	std::vector<LoadedDriver *> apDriverList;
 	ReferenceAllDrivers( apDriverList );
 
 	int iRet = -1;
@@ -930,8 +930,8 @@ RString RageFileManager::ResolvePath(const RString &path)
 	NormalizePath(tmpPath);
 	
 	RString resolvedPath = tmpPath;
-	
-	vector<LoadedDriver *> apDriverList;
+
+	std::vector<LoadedDriver *> apDriverList;
 	ReferenceAllDrivers( apDriverList );
 	
 	for( unsigned i = 0; i < apDriverList.size(); ++i )
@@ -960,7 +960,7 @@ RString RageFileManager::ResolvePath(const RString &path)
 	return resolvedPath;
 }
 
-static bool SortBySecond( const pair<int,int> &a, const pair<int,int> &b )
+static bool SortBySecond( const std::pair<int, int> &a, const std::pair<int, int> &b )
 {
 	return a.second < b.second;
 }
@@ -1009,7 +1009,7 @@ RageFileBasic *RageFileManager::Open( const RString &sPath_, int mode, int &err 
 
 void RageFileManager::CacheFile( const RageFileBasic *fb, const RString &sPath_ )
 {
-	map<const RageFileBasic *,LoadedDriver *>::iterator it = g_mFileDriverMap.find( fb );
+	std::map<const RageFileBasic*, LoadedDriver*>::iterator it = g_mFileDriverMap.find( fb );
 	
 	ASSERT_M( it != g_mFileDriverMap.end(), ssprintf("No recorded driver for file: %s", sPath_.c_str()) );
 	
@@ -1022,7 +1022,7 @@ void RageFileManager::CacheFile( const RageFileBasic *fb, const RString &sPath_ 
 
 RageFileBasic *RageFileManager::OpenForReading( const RString &sPath, int mode, int &err )
 {
-	vector<LoadedDriver *> apDriverList;
+	std::vector<LoadedDriver*> apDriverList;
 	ReferenceAllDrivers( apDriverList );
 
 	for( unsigned i = 0; i < apDriverList.size(); ++i )
@@ -1070,10 +1070,10 @@ RageFileBasic *RageFileManager::OpenForWriting( const RString &sPath, int mode, 
 	 * If the given path can not be created, return -1.  This happens if a path
 	 * that needs to be a directory is a file, or vice versa.
 	 */
-	vector<LoadedDriver *> apDriverList;
+	std::vector<LoadedDriver *> apDriverList;
 	ReferenceAllDrivers( apDriverList );
 
-	vector< pair<int,int> > Values;
+	std::vector<std::pair<int, int>> Values;
 	for( unsigned i = 0; i < apDriverList.size(); ++i )
 	{
 		LoadedDriver &ld = *apDriverList[i];
@@ -1085,7 +1085,7 @@ RageFileBasic *RageFileManager::OpenForWriting( const RString &sPath, int mode, 
 		if( value == -1 )
 			continue;
 
-		Values.push_back( make_pair( i, value ) );
+		Values.push_back( std::make_pair( i, value ) );
 	}
 
 	stable_sort( Values.begin(), Values.end(), SortBySecond );
@@ -1154,17 +1154,17 @@ int GetFileSizeInBytes( const RString &sPath )
 	return FILEMAN->GetFileSizeInBytes( sPath );
 }
 
-void GetDirListing( const RString &sPath, vector<RString> &AddTo, bool bOnlyDirs, bool bReturnPathToo )
+void GetDirListing( const RString &sPath, std::vector<RString> &AddTo, bool bOnlyDirs, bool bReturnPathToo )
 {
 	FILEMAN->GetDirListing( sPath, AddTo, bOnlyDirs, bReturnPathToo );
 }
 
-void GetDirListingRecursive( const RString &sDir, const RString &sMatch, vector<RString> &AddTo )
+void GetDirListingRecursive( const RString &sDir, const RString &sMatch, std::vector<RString> &AddTo )
 {
 	ASSERT( sDir.Right(1) == "/" );
-	vector<RString> vsFiles;
+	std::vector<RString> vsFiles;
 	GetDirListing( sDir+sMatch, vsFiles, false, true );
-	vector<RString> vsDirs;
+	std::vector<RString> vsDirs;
 	GetDirListing( sDir+"*", vsDirs, true, true );
 	for( int i=0; i<(int)vsDirs.size(); i++ )
 	{
@@ -1180,12 +1180,12 @@ void GetDirListingRecursive( const RString &sDir, const RString &sMatch, vector<
 	}
 }
 
-void GetDirListingRecursive( RageFileDriver *prfd, const RString &sDir, const RString &sMatch, vector<RString> &AddTo )
+void GetDirListingRecursive( RageFileDriver *prfd, const RString &sDir, const RString &sMatch, std::vector<RString> &AddTo )
 {
 	ASSERT( sDir.Right(1) == "/" );
-	vector<RString> vsFiles;
+	std::vector<RString> vsFiles;
 	prfd->GetDirListing( sDir+sMatch, vsFiles, false, true );
-	vector<RString> vsDirs;
+	std::vector<RString> vsDirs;
 	prfd->GetDirListing( sDir+"*", vsDirs, true, true );
 	for( int i=0; i<(int)vsDirs.size(); i++ )
 	{
@@ -1205,7 +1205,7 @@ bool DeleteRecursive( RageFileDriver *prfd, const RString &sDir )
 {
 	ASSERT( sDir.Right(1) == "/" );
 
-	vector<RString> vsFiles;
+	std::vector<RString> vsFiles;
 	prfd->GetDirListing( sDir+"*", vsFiles, false, true );
 	for (RString const &s : vsFiles)
 	{
@@ -1222,7 +1222,7 @@ bool DeleteRecursive( const RString &sDir )
 {
 	ASSERT( sDir.Right(1) == "/" );
 
-	vector<RString> vsFiles;
+	std::vector<RString> vsFiles;
 	GetDirListing( sDir+"*", vsFiles, false, true );
 	for (RString const &s : vsFiles)
 	{
@@ -1246,7 +1246,7 @@ unsigned int GetHashForDirectory( const RString &sDir )
 
 	hash += GetHashForString( sDir );
 
-	vector<RString> arrayFiles;
+	std::vector<RString> arrayFiles;
 	GetDirListing( sDir+"*", arrayFiles, false );
 	for( unsigned i=0; i<arrayFiles.size(); i++ )
 	{
@@ -1283,7 +1283,7 @@ public:
 	static int GetHashForFile( T* p, lua_State *L ){ lua_pushnumber( L, p->GetFileHash(SArg(1)) ); return 1; }
 	static int GetDirListing( T* p, lua_State *L )
 	{
-		vector<RString> vDirs;
+		std::vector<RString> vDirs;
 		bool bOnlyDirs = false;
 		bool bReturnPathToo = false;
 

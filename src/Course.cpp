@@ -46,7 +46,7 @@ const int MAX_BOTTOM_RANGE = 10;
 
 RString CourseEntry::GetTextDescription() const
 {
-	vector<RString> vsEntryDescription;
+	std::vector<RString> vsEntryDescription;
 	Song *pSong = songID.ToSong();
 	if( pSong )
 		vsEntryDescription.push_back( pSong->GetTranslitFullTitle() ); 
@@ -342,7 +342,7 @@ bool Course::GetTrailSorted( StepsType st, CourseDifficulty cd, Trail &trail ) c
 		ASSERT_M( trail.m_vEntries.size() == SortTrail.m_vEntries.size(),
 			ssprintf("%i %i", int(trail.m_vEntries.size()), int(SortTrail.m_vEntries.size())) );
 
-		vector<SortTrailEntry> entries;
+		std::vector<SortTrailEntry> entries;
 		for( unsigned i = 0; i < trail.m_vEntries.size(); ++i )
 		{
 			SortTrailEntry ste;
@@ -362,7 +362,7 @@ bool Course::GetTrailSorted( StepsType st, CourseDifficulty cd, Trail &trail ) c
 }
 
 // TODO: Move Course initialization after PROFILEMAN is created
-static void CourseSortSongs( SongSort sort, vector<Song*> &vpPossibleSongs, RandomGen &rnd )
+static void CourseSortSongs( SongSort sort, std::vector<Song*> &vpPossibleSongs, RandomGen &rnd )
 {
 	switch( sort )
 	{
@@ -421,7 +421,7 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 	// Different seed for each course, but the same for the whole round:
 	RandomGen rnd( GAMESTATE->m_iStageSeed + GetHashForString(m_sMainTitle) );
 
-	vector<CourseEntry> tmp_entries;
+	std::vector<CourseEntry> tmp_entries;
 	if( m_bShuffle )
 	{
 		/* Always randomize the same way per round.  Otherwise, the displayed course
@@ -431,11 +431,11 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 		random_shuffle( tmp_entries.begin(), tmp_entries.end(), rnd );
 	}
 
-	const vector<CourseEntry> &entries = m_bShuffle ? tmp_entries:m_vEntries;
+	const std::vector<CourseEntry> &entries = m_bShuffle ? tmp_entries:m_vEntries;
 
 	// This can take some time, so don't fill it out unless we need it.
-	vector<Song*> vSongsByMostPlayed;
-	vector<Song*> AllSongsShuffled;
+	std::vector<Song*> vSongsByMostPlayed;
+	std::vector<Song*> AllSongsShuffled;
 
 	trail.m_StepsType = st;
 	trail.m_CourseType = GetCourseType();
@@ -454,7 +454,7 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 	}
 	else
 	{
-		vector<SongAndSteps> vSongAndSteps;
+		std::vector<SongAndSteps> vSongAndSteps;
 		for (auto e = entries.begin(); e != entries.end(); ++e)
 		{
 			SongAndSteps resolved;	// fill this in
@@ -502,9 +502,9 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 			if( vSongAndSteps.empty() )
 				continue;
 
-			vector<Song*> vpSongs;
-			typedef vector<Steps*> StepsVector;
-			map<Song*, StepsVector> mapSongToSteps;
+			std::vector<Song*> vpSongs;
+			typedef std::vector<Steps*> StepsVector;
+			std::map<Song*, StepsVector> mapSongToSteps;
 			for (std::vector<SongAndSteps>::const_iterator sas = vSongAndSteps.begin(); sas != vSongAndSteps.end(); ++sas)
 			{
 				StepsVector &v = mapSongToSteps[ sas->pSong ];
@@ -520,7 +520,7 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 			if( e->iChooseIndex < int( vSongAndSteps.size() ) )
 			{
 				resolved.pSong = vpSongs[ e->iChooseIndex ];
-				const vector<Steps*> &mappedSongs = mapSongToSteps[ resolved.pSong ];
+				const std::vector<Steps*> &mappedSongs = mapSongToSteps[ resolved.pSong ];
 				resolved.pSteps = mappedSongs[ RandomInt( mappedSongs.size() ) ];
 			}
 			else
@@ -583,8 +583,8 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 
 					/* Clamp the possible adjustments to try to avoid going under 1 or over
 					* MAX_BOTTOM_RANGE. */
-					iMinDist = min( max( iMinDist, -iLowMeter + 1 ), iMaxDist );
-					iMaxDist = max( min( iMaxDist, MAX_BOTTOM_RANGE - iHighMeter ), iMinDist );
+					iMinDist = std::min( std::max( iMinDist, -iLowMeter + 1 ), iMaxDist );
+					iMaxDist = std::max( std::min( iMaxDist, MAX_BOTTOM_RANGE - iHighMeter ), iMinDist );
 
 					int iAdd;
 					if( iMaxDist == iMinDist )
@@ -649,14 +649,14 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 	return bCourseDifficultyIsSignificant && trail.m_vEntries.size() > 0;
 }
 
-void Course::GetTrailUnsortedEndless( const vector<CourseEntry> &entries, Trail &trail, StepsType &st, 
+void Course::GetTrailUnsortedEndless( const std::vector<CourseEntry> &entries, Trail &trail, StepsType &st,
 	CourseDifficulty &cd, RandomGen &rnd, bool &bCourseDifficultyIsSignificant ) const
 {
-	typedef vector<Steps*> StepsVector;
+	typedef std::vector<Steps*> StepsVector;
 
 	std::set<Song*> alreadySelected;
 	Song* lastSongSelected;
-	vector<SongAndSteps> vSongAndSteps;
+	std::vector<SongAndSteps> vSongAndSteps;
 	for (auto e = entries.begin(); e != entries.end(); ++e)
 	{
 
@@ -749,7 +749,7 @@ void Course::GetTrailUnsortedEndless( const vector<CourseEntry> &entries, Trail 
 		// Otherwise, pick random steps corresponding to the selected song
 		CourseSortSongs(e->songSort, vpSongs, rnd);
 		resolved.pSong = vpSongs[e->iChooseIndex];
-		const vector<Steps*>& songSteps = songStepMap[resolved.pSong];
+		const std::vector<Steps*>& songSteps = songStepMap[resolved.pSong];
 		resolved.pSteps = songSteps[RandomInt(songSteps.size())];
 
 		lastSongSelected = resolved.pSong;
@@ -814,8 +814,8 @@ void Course::GetTrailUnsortedEndless( const vector<CourseEntry> &entries, Trail 
 
 				/* Clamp the possible adjustments to try to avoid going under 1 or over
 				 * MAX_BOTTOM_RANGE. */
-				iMinDist = min( max( iMinDist, -iLowMeter + 1 ), iMaxDist );
-				iMaxDist = max( min( iMaxDist, MAX_BOTTOM_RANGE - iHighMeter ), iMinDist );
+				iMinDist = std::min( std::max( iMinDist, -iLowMeter + 1 ), iMaxDist );
+				iMaxDist = std::max( std::min( iMaxDist, MAX_BOTTOM_RANGE - iHighMeter ), iMinDist );
 
 				int iAdd;
 				if( iMaxDist == iMinDist )
@@ -860,7 +860,7 @@ void Course::GetTrailUnsortedEndless( const vector<CourseEntry> &entries, Trail 
 	}
 }
 
-void Course::GetTrails( vector<Trail*> &AddTo, StepsType st ) const
+void Course::GetTrails( std::vector<Trail*> &AddTo, StepsType st ) const
 {
 	FOREACH_ShownCourseDifficulty( cd )
 	{
@@ -871,9 +871,9 @@ void Course::GetTrails( vector<Trail*> &AddTo, StepsType st ) const
 	}
 }
 
-void Course::GetAllTrails( vector<Trail*> &AddTo ) const
+void Course::GetAllTrails( std::vector<Trail*> &AddTo ) const
 {
-	vector<StepsType> vStepsTypesToShow;
+	std::vector<StepsType> vStepsTypesToShow;
 	GAMEMAN->GetStepsTypesForGame( GAMESTATE->m_pCurGame, vStepsTypesToShow );
 	for (StepsType const &st : vStepsTypesToShow)
 	{
@@ -923,7 +923,7 @@ bool Course::AllSongsAreFixed() const
 
 const Style *Course::GetCourseStyle( const Game *pGame, int iNumPlayers ) const
 {
-	vector<const Style*> vpStyles;
+	std::vector<const Style*> vpStyles;
 	GAMEMAN->GetCompatibleStyles( pGame, iNumPlayers, vpStyles );
 
 	for (Style const *pStyle : vpStyles)
@@ -1127,7 +1127,7 @@ void Course::UpdateCourseStats( StepsType st )
 
 bool Course::IsRanking() const
 {
-	vector<RString> rankingsongs;
+	std::vector<RString> rankingsongs;
 
 	split(THEME->GetMetric("ScreenRanking", "CoursesToShow"), ",", rankingsongs);
 
@@ -1150,7 +1150,7 @@ const CourseEntry *Course::FindFixedSong( const Song *pSong ) const
 	return nullptr;
 }
 
-void Course::GetAllCachedTrails( vector<Trail *> &out )
+void Course::GetAllCachedTrails( std::vector<Trail *> &out )
 {
 	TrailCache_t::iterator it;
 	for( it = m_TrailCache.begin(); it != m_TrailCache.end(); ++it )
@@ -1201,7 +1201,7 @@ bool Course::Matches( RString sGroup, RString sCourse ) const
 	if( !sFile.empty() )
 	{
 		sFile.Replace("\\","/");
-		vector<RString> bits;
+		std::vector<RString> bits;
 		split( sFile, "/", bits );
 		const RString &sLastBit = bits[bits.size()-1];
 		if( sCourse.EqualsNoCase(sLastBit) )
@@ -1281,7 +1281,7 @@ public:
 	}
 	static int GetCourseEntries( T* p, lua_State *L )
 	{
-		vector<CourseEntry*> v;
+		std::vector<CourseEntry*> v;
 		for( unsigned i = 0; i < p->m_vEntries.size(); ++i )
 		{
 			v.push_back(&p->m_vEntries[i]);
@@ -1296,7 +1296,7 @@ public:
 	}
 	static int GetAllTrails( T* p, lua_State *L )
 	{
-		vector<Trail*> v;
+		std::vector<Trail*> v;
 		p->GetAllTrails( v );
 		LuaHelpers::CreateTableFromArray<Trail*>( v, L );
 		return 1;

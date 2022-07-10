@@ -380,7 +380,7 @@ const RString& RankingCategoryToString( RankingCategory rc );
 RankingCategory StringToRankingCategory( const RString& rc );
 LuaDeclareType( RankingCategory );
 
-extern const vector<RString> RANKING_TO_FILL_IN_MARKER;
+extern const std::vector<RString> RANKING_TO_FILL_IN_MARKER;
 inline bool IsRankingToFillIn( const RString& sName ) { return !sName.empty() && sName[0]=='#'; }
 
 RankingCategory AverageMeterToRankingCategory( int iAverageMeter );
@@ -547,7 +547,7 @@ struct DisplayBpms
 	/**
 	 * @brief The list of the BPMs for the song or course.
 	 */
-	vector<float> vfBpms;
+	std::vector<float> vfBpms;
 };
 
 /** @brief The various style types available. */

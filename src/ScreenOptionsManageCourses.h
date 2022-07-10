@@ -16,8 +16,8 @@ public:
 	virtual bool MenuSelect( const InputEventPlus &input );
 
 protected:
-	virtual void ImportOptions( int iRow, const vector<PlayerNumber> &vpns );
-	virtual void ExportOptions( int iRow, const vector<PlayerNumber> &vpns );
+	virtual void ImportOptions( int iRow, const std::vector<PlayerNumber> &vpns );
+	virtual void ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns );
 	
 	virtual void AfterChangeRow( PlayerNumber pn );
 	virtual void ProcessMenuStart( const InputEventPlus &input );
@@ -26,7 +26,7 @@ private:
 	Course *GetCourseWithFocus() const;
 
 	RageSound m_soundDifficultyChanged;
-	vector<Course*> m_vpCourses;
+	std::vector<Course*> m_vpCourses;
 	ThemeMetric<EditMode> EDIT_MODE;
 	ThemeMetric<RString> CREATE_NEW_SCREEN;
 };

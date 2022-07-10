@@ -17,7 +17,7 @@ public:
 	virtual void DrawPrimitives();
 
 	void Load( const PlayerState* pPlayerState, float fYReverseOffset );
-	void SetColumnRenderers(vector<NoteColumnRenderer>& renderers);
+	void SetColumnRenderers(std::vector<NoteColumnRenderer>& renderers);
 
 	void Step( int iCol, TapNoteScore score );
 	void SetPressed( int iCol );
@@ -30,8 +30,8 @@ protected:
 	float m_fYReverseOffsetPixels;
 	float m_fFadeToFailPercent;
 
-	vector<NoteColumnRenderer> const* m_renderers;
-	vector<ReceptorArrow *> 	m_ReceptorArrow;
+	std::vector<NoteColumnRenderer> const* m_renderers;
+	std::vector<ReceptorArrow *> 	m_ReceptorArrow;
 };
 
 #endif

@@ -5,8 +5,8 @@ struct LanguageInfo;
 
 namespace SMPackageUtil
 {
-	void WriteGameInstallDirs( const vector<RString>& asInstallDirsToWrite );
-	void GetGameInstallDirs( vector<RString>& asInstallDirsOut );
+	void WriteGameInstallDirs( const std::vector<RString>& asInstallDirsToWrite );
+	void GetGameInstallDirs( std::vector<RString>& asInstallDirsOut );
 	void AddGameInstallDir( const RString &sNewInstallDir );
 	void SetDefaultInstallDir( int iInstallDirIndex );
 	void SetDefaultInstallDir( const RString &sInstallDir );
@@ -23,7 +23,7 @@ namespace SMPackageUtil
 	RString GetLanguageDisplayString( const RString &sIsoCode );
 	RString GetLanguageCodeFromDisplayString( const RString &sDisplayString );
 
-	void StripIgnoredSmzipFiles( vector<RString> &vsFilesInOut );
+	void StripIgnoredSmzipFiles( std::vector<RString> &vsFilesInOut );
 
 	bool GetFileContentsOsAbsolute( const RString &sAbsoluteOsFile, RString &sOut );
 

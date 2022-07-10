@@ -109,7 +109,7 @@ out_close:
 
 RString RageSoundDriver_JACK::ConnectPorts()
 {
-	vector<RString> portNames;
+	std::vector<RString> portNames;
 	split(PREFSMAN->m_iSoundDevice.Get(), ",", portNames, true);
 
 	const char *port_out_l = nullptr, *port_out_r = nullptr;

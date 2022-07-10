@@ -70,10 +70,10 @@ static LRESULT CALLBACK GraphicsWindow_WndProc( HWND hWnd, UINT msg, WPARAM wPar
 			if( !g_bHasFocus )
 			{
 				RString sName = GetNewWindow();
-				static set<RString> sLostFocusTo;
+				static std::set<RString> sLostFocusTo;
 				sLostFocusTo.insert( sName );
 				RString sStr;
-				for( set<RString>::const_iterator it = sLostFocusTo.begin(); it != sLostFocusTo.end(); ++it )
+				for( std::set<RString>::const_iterator it = sLostFocusTo.begin(); it != sLostFocusTo.end(); ++it )
 					sStr += (sStr.size()?", ":"") + *it;
 
 				LOG->MapLog( "LOST_FOCUS", "Lost focus to: %s", sStr.c_str() );
@@ -432,7 +432,7 @@ void GraphicsWindow::Initialize( bool bD3D )
 	AppInstance inst;
 	do
 	{
-		const wstring wsClassName = RStringToWstring( g_sClassName );
+		const std::wstring wsClassName = RStringToWstring( g_sClassName );
 		WNDCLASSW WindowClassW =
 		{
 			CS_OWNDC | CS_BYTEALIGNCLIENT,

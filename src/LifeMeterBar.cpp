@@ -126,7 +126,7 @@ void LifeMeterBar::ChangeLife( TapNoteScore score )
 
 	// this was previously if( IsHot()  &&  score < TNS_GOOD ) in 3.9... -freem
 	if(PREFSMAN->m_HarshHotLifePenalty && IsHot()  &&  fDeltaLife < 0)
-		fDeltaLife = min( fDeltaLife, -0.10f );		// make it take a while to get back to "hot"
+		fDeltaLife = std::min( fDeltaLife, -0.10f );		// make it take a while to get back to "hot"
 
 	switch(m_pPlayerState->m_PlayerOptions.GetSong().m_DrainType)
 	{
@@ -134,7 +134,7 @@ void LifeMeterBar::ChangeLife( TapNoteScore score )
 	case DrainType_Normal:
 		break;
 	case DrainType_NoRecover:
-		fDeltaLife = min( fDeltaLife, 0 );
+		fDeltaLife = std::min( fDeltaLife, 0.0f );
 		break;
 	case DrainType_SuddenDeath:
 		if( score < MIN_STAY_ALIVE )
@@ -202,7 +202,7 @@ void LifeMeterBar::ChangeLife( float fDeltaLife )
 	if( fDeltaLife >= 0 )
 	{
 		m_iMissCombo = 0;
-		m_iComboToRegainLife = max( m_iComboToRegainLife-1, 0 );
+		m_iComboToRegainLife = std::max( m_iComboToRegainLife-1, 0 );
 		if ( m_iComboToRegainLife > 0 )
 			fDeltaLife = 0.0f;
 	}
@@ -213,11 +213,11 @@ void LifeMeterBar::ChangeLife( float fDeltaLife )
 		m_iMissCombo++;
 		/* Increase by m_iRegenComboAfterMiss; never push it beyond m_iMaxRegenComboAfterMiss
 		 * but don't reduce it if it's already past. */
-		const int NewComboToRegainLife = min(
+		const int NewComboToRegainLife = std::min(
 			 (int)PREFSMAN->m_iMaxRegenComboAfterMiss,
 			 m_iComboToRegainLife + PREFSMAN->m_iRegenComboAfterMiss );
 
-		m_iComboToRegainLife = max( m_iComboToRegainLife, NewComboToRegainLife );
+		m_iComboToRegainLife = std::max( m_iComboToRegainLife, NewComboToRegainLife );
 	}
 
 	// If we've already failed, there's no point in letting them fill up the bar again.

@@ -168,13 +168,13 @@ bool NotesWriterJson::WriteSong( const RString &sFile, const Song &out, bool bWr
 		FOREACH_BackgroundLayer( bl )
 		{
 			Json::Value &root3 = root2[bl];
-			const vector<BackgroundChange> &vBgc = out.GetBackgroundChanges(bl);
+			const std::vector<BackgroundChange> &vBgc = out.GetBackgroundChanges(bl);
 			JsonUtil::SerializeVectorObjects( vBgc, Serialize, root3 );
 		}
 	}
 
 	{
-		const vector<BackgroundChange> &vBgc = out.GetForegroundChanges();
+		const std::vector<BackgroundChange> &vBgc = out.GetForegroundChanges();
 		JsonUtil::SerializeVectorObjects( vBgc, Serialize, root["ForegroundChanges"] );
 	}
 
@@ -182,7 +182,7 @@ bool NotesWriterJson::WriteSong( const RString &sFile, const Song &out, bool bWr
 
 	if( bWriteSteps )
 	{
-		vector<const Steps*> vpSteps;
+		std::vector<const Steps*> vpSteps;
 		for (Steps * iter : out.GetAllSteps())
 		{
 			if( iter->IsAutogen() )

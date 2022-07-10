@@ -35,7 +35,7 @@ public:
 	 * @return the dancing characters. */
 	DancingCharacters* GetDancingCharacters();
 
-	void GetLoadedBackgroundChanges( vector<BackgroundChange> **pBackgroundChangesOut );
+	void GetLoadedBackgroundChanges( std::vector<BackgroundChange> **pBackgroundChangesOut );
 
 protected:
 	BackgroundImpl *m_pImpl;

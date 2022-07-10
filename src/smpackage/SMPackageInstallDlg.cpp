@@ -70,7 +70,7 @@ static bool CompareStringNoCase( const RString &s1, const RString &s2 )
 	return s1.CompareNoCase( s2 ) < 0;
 }
 
-void GetSmzipFilesToExtract( RageFileDriver &zip, vector<RString> &vsOut )
+void GetSmzipFilesToExtract( RageFileDriver &zip, std::vector<RString> &vsOut )
 {
 	GetDirListingRecursive( &zip, "/", "*", vsOut );
 	SMPackageUtil::StripIgnoredSmzipFiles( vsOut );	
@@ -119,7 +119,7 @@ BOOL CSMPackageInstallDlg::OnInitDialog()
 	// Set the text of the second Edit box
 	//
 	{
-		vector<RString> vs;
+		std::vector<RString> vs;
 		GetSmzipFilesToExtract( zip, vs );
 		CEdit* pEdit2 = (CEdit*)GetDlgItem(IDC_EDIT_MESSAGE2);
 		RString sText = "\t" + join( "\r\n\t", vs );
@@ -183,7 +183,7 @@ static bool CheckPackages( RageFileDriverZip &fileDriver )
 	int cnt = 0;
 	ini.GetValue( "Packages", "NumPackages", cnt );
 
-	vector<RString> vsDirectories;
+	std::vector<RString> vsDirectories;
 	for( int i = 0; i < cnt; ++i )
 	{
 		RString path;
@@ -305,7 +305,7 @@ void CSMPackageInstallDlg::OnOK()
 
 
 	// Unzip the SMzip package into the installation folder
-	vector<RString> vs;
+	std::vector<RString> vs;
 	GetSmzipFilesToExtract( zip, vs );
 	for( unsigned i=0; i<vs.size(); i++ )
 	{
@@ -411,7 +411,7 @@ void CSMPackageInstallDlg::RefreshInstallationList()
 {
 	m_comboDir.ResetContent();
 
-	vector<RString> asInstallDirs;
+	std::vector<RString> asInstallDirs;
 	SMPackageUtil::GetGameInstallDirs( asInstallDirs );
 	for( unsigned i=0; i<asInstallDirs.size(); i++ )
 		m_comboDir.AddString( asInstallDirs[i] );

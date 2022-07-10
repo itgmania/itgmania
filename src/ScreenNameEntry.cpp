@@ -50,7 +50,7 @@ static int	g_iNumCharsToDrawBehind;
 static int	g_iNumCharsToDrawTotal;
 static float	g_fFakeBeatsPerSec;
 
-void ScreenNameEntry::ScrollingText::Init( const RString &sName, const vector<float> &xs )
+void ScreenNameEntry::ScrollingText::Init( const RString &sName, const std::vector<float> &xs )
 {
 	SetName( sName );
 	m_Xs = xs;
@@ -192,7 +192,7 @@ void ScreenNameEntry::Init()
 		SO_GROUP_CALL( GAMESTATE->m_SongOptions, ModsLevel_Stage, Init );
 	}
 
-	vector<GameState::RankingFeat> aFeats[NUM_PLAYERS];
+	std::vector<GameState::RankingFeat> aFeats[NUM_PLAYERS];
 
 	// Find out if players deserve to enter their name
 	FOREACH_PlayerNumber( p )
@@ -259,10 +259,10 @@ void ScreenNameEntry::Init()
 		}
 
 		const Style* pStyle = GAMESTATE->GetCurrentStyle(p);
-		const int iMaxCols = min( int(ABS_MAX_RANKING_NAME_LENGTH), pStyle->m_iColsPerPlayer );
+		const int iMaxCols = std::min( int(ABS_MAX_RANKING_NAME_LENGTH), pStyle->m_iColsPerPlayer );
 		m_ColToStringIndex[p].insert(m_ColToStringIndex[p].begin(), pStyle->m_iColsPerPlayer, -1);
 		int CurrentStringIndex = 0;
-		vector<float> xs;
+		std::vector<float> xs;
 
 		for( int iCol=0; iCol<iMaxCols; ++iCol )
 		{
@@ -270,7 +270,7 @@ void ScreenNameEntry::Init()
 				break; // We have enough columns.
 
 			// Find out if this column is associated with the START menu button.
-			vector<GameInput> gi;
+			std::vector<GameInput> gi;
 			GAMESTATE->GetCurrentStyle(p)->StyleInputToGameInput( iCol, p, gi );
 			bool gi_is_start= false;
 			for(size_t i= 0; i < gi.size(); ++i)

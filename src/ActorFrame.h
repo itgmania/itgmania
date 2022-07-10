@@ -26,7 +26,7 @@ public:
 	virtual void RemoveChild( Actor *pActor );
 	void TransferChildren( ActorFrame *pTo );
 	Actor* GetChild( const RString &sName );
-	vector<Actor*> GetChildren() { return m_SubActors; }
+	std::vector<Actor*> GetChildren() { return m_SubActors; }
 	int GetNumChildren() const { return m_SubActors.size(); }
 
 	/** @brief Remove all of the children from the frame. */
@@ -99,7 +99,7 @@ protected:
 	void LoadChildrenFromNode( const XNode* pNode );
 
 	/** @brief The children Actors used by the ActorFrame. */
-	vector<Actor*>	m_SubActors;
+	std::vector<Actor*>	m_SubActors;
 	bool m_bPropagateCommands;
 	bool m_bDeleteChildren;
 	bool m_bDrawByZPosition;

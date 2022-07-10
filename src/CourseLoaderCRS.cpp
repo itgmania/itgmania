@@ -73,7 +73,7 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 		{
 			RString str = sParams[1];
 			str.MakeLower();
-			if( str.find("yes") != string::npos )
+			if( str.find("yes") != std::string::npos )
 				out.m_bRepeat = true;
 		}
 
@@ -87,7 +87,7 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 		}
 		else if( sValueName.EqualsNoCase("LIVES") )
 		{
-			out.m_iLives = max( StringToInt(sParams[1]), 0 );
+			out.m_iLives = std::max( StringToInt(sParams[1]), 0 );
 		}
 		else if( sValueName.EqualsNoCase("GAINSECONDS") )
 		{
@@ -97,7 +97,7 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 		{
 			if( sParams.params.size() == 2 )
 			{
-				out.m_iCustomMeter[Difficulty_Medium] = max( StringToInt(sParams[1]), 0 ); /* compat */
+				out.m_iCustomMeter[Difficulty_Medium] = std::max( StringToInt(sParams[1]), 0 ); /* compat */
 			}
 			else if( sParams.params.size() == 3 )
 			{
@@ -107,7 +107,7 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 					LOG->UserLog( "Course file", sPath, "contains an invalid #METER string: \"%s\"", sParams[1].c_str() );
 					continue;
 				}
-				out.m_iCustomMeter[cd] = max( StringToInt(sParams[2]), 0 );
+				out.m_iCustomMeter[cd] = std::max( StringToInt(sParams[2]), 0 );
 			}
 		}
 
@@ -117,14 +117,14 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 			float end = -9999;
 			for( unsigned j = 1; j < sParams.params.size(); ++j )
 			{
-				vector<RString> sBits;
+				std::vector<RString> sBits;
 				split( sParams[j], "=", sBits, false );
 				if( sBits.size() < 2 )
 					continue;
 
 				Trim( sBits[0] );
 				if( !sBits[0].CompareNoCase("TIME") )
-					attack.fStartSecond = max( StringToFloat(sBits[1]), 0.0f );
+					attack.fStartSecond = std::max( StringToFloat(sBits[1]), 0.0f );
 				else if( !sBits[0].CompareNoCase("LEN") )
 					attack.fSecsRemaining = StringToFloat( sBits[1] );
 				else if( !sBits[0].CompareNoCase("END") )
@@ -223,7 +223,7 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 				//new_entry.bSecret = true;
 				RString sSong = sParams[1];
 				sSong.Replace( "\\", "/" );
-				vector<RString> bits;
+				std::vector<RString> bits;
 				split( sSong, "/", bits );
 				if( bits.size() == 2 )
 				{
@@ -247,7 +247,7 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 			{
 				RString sSong = sParams[1];
 				sSong.Replace( "\\", "/" );
-				vector<RString> bits;
+				std::vector<RString> bits;
 				split( sSong, "/", bits );
 
 				Song *pSong = nullptr;
@@ -287,14 +287,14 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 					new_entry.stepsCriteria.m_iLowMeter = 3;
 					new_entry.stepsCriteria.m_iHighMeter = 6;
 				}
-				new_entry.stepsCriteria.m_iLowMeter = max( new_entry.stepsCriteria.m_iLowMeter, 1 );
-				new_entry.stepsCriteria.m_iHighMeter = max( new_entry.stepsCriteria.m_iHighMeter, new_entry.stepsCriteria.m_iLowMeter );
+				new_entry.stepsCriteria.m_iLowMeter = std::max( new_entry.stepsCriteria.m_iLowMeter, 1 );
+				new_entry.stepsCriteria.m_iHighMeter = std::max( new_entry.stepsCriteria.m_iHighMeter, new_entry.stepsCriteria.m_iLowMeter );
 			}
 
 			{
 				// If "showcourse" or "noshowcourse" is in the list, force
 				// new_entry.secret on or off.
-				vector<RString> mods;
+				std::vector<RString> mods;
 				split( sParams[3], ",", mods, true );
 				for( int j = (int) mods.size()-1; j >= 0 ; --j )
 				{
@@ -340,7 +340,7 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 		else if( sValueName.EqualsNoCase("STYLE") )
 		{
 			RString sStyles = sParams[1];
-			vector<RString> asStyles;
+			std::vector<RString> asStyles;
 			split( sStyles, ",", asStyles );
 			for (RString const &s : asStyles)
 				out.m_setStyles.insert( s );
@@ -356,7 +356,7 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 	{
 		const RString sFName = SetExtension( out.m_sPath, "" );
 
-		vector<RString> arrayPossibleBanners;
+		std::vector<RString> arrayPossibleBanners;
 		GetDirListing( sFName + "*.png", arrayPossibleBanners, false, false );
 		GetDirListing( sFName + "*.jpg", arrayPossibleBanners, false, false );
 		GetDirListing( sFName + "*.jpeg", arrayPossibleBanners, false, false );
@@ -400,7 +400,7 @@ bool CourseLoaderCRS::LoadFromCRSFile( const RString &_sPath, Course &out )
 
 	// save group name
 	{
-		vector<RString> parts;
+		std::vector<RString> parts;
 		split( sPath, "/", parts, false );
 		if( parts.size() >= 4 ) // e.g. "/Courses/blah/fun.crs"
 			out.m_sGroupName = parts[parts.size()-2];

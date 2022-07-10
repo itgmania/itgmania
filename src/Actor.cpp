@@ -34,8 +34,8 @@ REGISTER_ACTOR_CLASS_WITH_NAME( HiddenActor, Actor );
 
 float Actor::g_fCurrentBGMTime = 0, Actor::g_fCurrentBGMBeat;
 float Actor::g_fCurrentBGMTimeNoOffset = 0, Actor::g_fCurrentBGMBeatNoOffset = 0;
-vector<float> Actor::g_vfCurrentBGMBeatPlayer(NUM_PlayerNumber, 0);
-vector<float> Actor::g_vfCurrentBGMBeatPlayerNoOffset(NUM_PlayerNumber, 0);
+std::vector<float> Actor::g_vfCurrentBGMBeatPlayer(NUM_PlayerNumber, 0);
+std::vector<float> Actor::g_vfCurrentBGMBeatPlayerNoOffset(NUM_PlayerNumber, 0);
 
 
 Actor *Actor::Copy() const { return new Actor(*this); }
@@ -822,7 +822,7 @@ void Actor::UpdateTweening( float fDeltaTime )
 
 		bool bBeginning = TI.m_fTimeLeftInTween == TI.m_fTweenTime;
 
-		float fSecsToSubtract = min( TI.m_fTimeLeftInTween, fDeltaTime );
+		float fSecsToSubtract = std::min( TI.m_fTimeLeftInTween, fDeltaTime );
 		TI.m_fTimeLeftInTween -= fSecsToSubtract;
 		fDeltaTime -= fSecsToSubtract;
 
@@ -1537,7 +1537,7 @@ bool Actor::HasCommand( const RString &sCmdName ) const
 
 const apActorCommands *Actor::GetCommand( const RString &sCommandName ) const
 {
-	map<RString, apActorCommands>::const_iterator it = m_mapNameToCommands.find( sCommandName );
+	std::map<RString, apActorCommands>::const_iterator it = m_mapNameToCommands.find( sCommandName );
 	if( it == m_mapNameToCommands.end() )
 		return nullptr;
 	return &it->second;

@@ -95,7 +95,7 @@ bool RageFileDriverZip::ReadEndCentralRecord( int &iTotalEntries, int &iCentralD
 /* Find the end of central directory record, and seek to it. */
 bool RageFileDriverZip::SeekToEndCentralRecord()
 {
-	const int iSearchTo = max( m_pZip->GetFileSize() - 1024*32, 0 );
+	const int iSearchTo = std::max( m_pZip->GetFileSize() - 1024*32, 0 );
 	int iRealPos = m_pZip->GetFileSize();
 
 	while( iRealPos > 0 && iRealPos >= iSearchTo )
@@ -104,7 +104,7 @@ bool RageFileDriverZip::SeekToEndCentralRecord()
 		 * the case where the signature crosses the block boundary. */
 		char buf[1024*4];
 		iRealPos -= sizeof(buf) - 4;
-		iRealPos = max( 0, iRealPos );
+		iRealPos = std::max( 0, iRealPos );
 		m_pZip->Seek( iRealPos );
 
 		int iGot = m_pZip->Read( buf, sizeof(buf) );

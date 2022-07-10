@@ -120,13 +120,13 @@ RageSoundMixBuffer &RageSoundDriver::MixIntoBuffer( int iFrames, int64_t iFrameN
 					continue; // more data
 
 				/* We've used up p[0].  Try p[1]. */
-				swap( p[0], p[1] );
-				swap( pSize[0], pSize[1] );
+				std::swap( p[0], p[1] );
+				std::swap( pSize[0], pSize[1] );
 				continue;
 			}
 
 			/* Note that, until we call advance_read_pointer, we can safely write to p[0]. */
-			const int frames_to_read = min( iFramesLeft, p[0]->m_FramesInBuffer );
+			const int frames_to_read = std::min( iFramesLeft, p[0]->m_FramesInBuffer );
 			mix.SetWriteOffset( iGotFrames*channels );
 			mix.write( p[0]->m_BufferNext, frames_to_read * channels );
 
@@ -467,7 +467,7 @@ RageSoundDriver::~RageSoundDriver()
 		LOG->Flush();
 
 		LOG->Info( "Mixing %f ahead in %i Mix() calls",
-			float(g_iTotalAhead) / max( g_iTotalAheadCount, 1 ), g_iTotalAheadCount );
+			float(g_iTotalAhead) / std::max( g_iTotalAheadCount, 1 ), g_iTotalAheadCount );
 	}
 }
 
@@ -525,7 +525,7 @@ int64_t RageSoundDriver::ClampHardwareFrame( int64_t iHardwareFrame ) const
 		}
 	}
 	
-	m_iMaxHardwareFrame = iHardwareFrame = max( iHardwareFrame, m_iMaxHardwareFrame );
+	m_iMaxHardwareFrame = iHardwareFrame = std::max( iHardwareFrame, m_iMaxHardwareFrame );
 	//return iHardwareFrame;
 	m_iVMaxHardwareFrame += diff;
 	return m_iVMaxHardwareFrame;

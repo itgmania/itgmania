@@ -80,7 +80,7 @@ namespace
 	 * optimize InputFilter::Update, so we don't have to process every button
 	 * we know about when most of them aren't in use. This set is protected
 	 * by queuemutex. */
-	typedef map<DeviceButtonPair, ButtonState> ButtonStateMap;
+	typedef std::map<DeviceButtonPair, ButtonState> ButtonStateMap;
 	ButtonStateMap g_ButtonStates;
 	ButtonState &GetButtonState( const DeviceInput &di )
 	{
@@ -92,7 +92,7 @@ namespace
 	}
 
 	DeviceInputList g_CurrentState;
-	set<DeviceInput> g_DisableRepeat;
+	std::set<DeviceInput> g_DisableRepeat;
 }
 
 /* Some input devices require debouncing. Do this on both press and release.
@@ -300,7 +300,7 @@ void InputFilter::ReportButtonChange( const DeviceInput &di, InputEventType t )
 	ie.m_ButtonState = g_CurrentState;
 }
 
-void InputFilter::MakeButtonStateList( vector<DeviceInput> &aInputOut ) const
+void InputFilter::MakeButtonStateList( std::vector<DeviceInput> &aInputOut ) const
 {
 	aInputOut.clear();
 	aInputOut.reserve( g_ButtonStates.size() );
@@ -327,9 +327,9 @@ void InputFilter::Update( float fDeltaTime )
 
 	MakeButtonStateList( g_CurrentState );
 
-	vector<ButtonStateMap::iterator> ButtonsToErase;
+	std::vector<ButtonStateMap::iterator> ButtonsToErase;
 
-	for( map<DeviceButtonPair, ButtonState>::iterator b = g_ButtonStates.begin(); b != g_ButtonStates.end(); ++b )
+	for( std::map<DeviceButtonPair, ButtonState>::iterator b = g_ButtonStates.begin(); b != g_ButtonStates.end(); ++b )
 	{
 		di.device = b->first.device;
 		di.button = b->first.button;
@@ -452,14 +452,14 @@ void InputFilter::RepeatStopKey( const DeviceInput &di )
 	g_DisableRepeat.insert( di );
 }
 
-void InputFilter::GetInputEvents( vector<InputEvent> &array )
+void InputFilter::GetInputEvents( std::vector<InputEvent> &array )
 {
 	array.clear();
 	LockMut(*queuemutex);
 	array.swap( queue );
 }
 
-void InputFilter::GetPressedButtons( vector<DeviceInput> &array ) const
+void InputFilter::GetPressedButtons( std::vector<DeviceInput> &array ) const
 {
 	LockMut(*queuemutex);
 	array = g_CurrentState;

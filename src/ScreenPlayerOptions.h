@@ -19,7 +19,7 @@ public:
 	virtual void PushSelf( lua_State *L );
 
 private:
-	vector<bool>	m_bRowCausesDisqualified[NUM_PLAYERS];
+	std::vector<bool>	m_bRowCausesDisqualified[NUM_PLAYERS];
 	void UpdateDisqualified( int row, PlayerNumber pn );
 
 	bool        m_bAcceptedChoices;

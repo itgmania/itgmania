@@ -100,7 +100,7 @@ RString InputHandler_Win32_Pump::GetDeviceSpecificInputString( const DeviceInput
 	return InputHandler::GetDeviceSpecificInputString( di );
 }
 
-void InputHandler_Win32_Pump::GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevicesOut )
+void InputHandler_Win32_Pump::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut )
 {
 	for(int i = 0; i < NUM_PUMPS; ++i)
 	{
@@ -125,7 +125,7 @@ void InputHandler_Win32_Pump::InputThreadMain()
 	/* Enable priority boosting. */
 	SetThreadPriorityBoost( GetCurrentThread(), FALSE );
 
-	vector<WindowsFileIO *> apSources;
+	std::vector<WindowsFileIO *> apSources;
 	for( int i = 0; i < NUM_PUMPS; ++i )
 	{
 		if( m_pDevice[i].m_IO.IsOpen() )

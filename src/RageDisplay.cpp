@@ -41,7 +41,7 @@ struct Centering
 	int m_iTranslateX, m_iTranslateY, m_iAddWidth, m_iAddHeight;
 };
 
-static vector<Centering> g_CenteringStack( 1, Centering(0, 0, 0, 0) );
+static std::vector<Centering> g_CenteringStack( 1, Centering(0, 0, 0, 0) );
 
 RageDisplay*		DISPLAY	= nullptr; // global and accessible from anywhere in our program
 
@@ -69,7 +69,7 @@ static LocalizedString SETVIDEOMODE_FAILED ( "RageDisplay", "SetVideoMode failed
 RString RageDisplay::SetVideoMode( VideoModeParams p, bool &bNeedReloadTextures )
 {
 	RString err;
-	vector<RString> vs;
+	std::vector<RString> vs;
 
 	if( (err = this->TryVideoMode(p,bNeedReloadTextures)) == "" )
 		return RString();
@@ -277,7 +277,7 @@ void RageDisplay::SetDefaultRenderStates()
 // Matrix stuff
 class MatrixStack
 {
-	vector<RageMatrix> stack;
+	std::vector<RageMatrix> stack;
 public:
 
 	MatrixStack(): stack()
@@ -883,7 +883,7 @@ void RageDisplay::DrawTriangles( const RageSpriteVertex v[], int iNumVerts )
 	StatsAddVerts(iNumVerts);
 }
 
-void RageDisplay::DrawCompiledGeometry( const RageCompiledGeometry *p, int iMeshIndex, const vector<msMesh> &vMeshes )
+void RageDisplay::DrawCompiledGeometry( const RageCompiledGeometry *p, int iMeshIndex, const std::vector<msMesh> &vMeshes )
 {
 	this->DrawCompiledGeometryInternal( p, iMeshIndex );
 
@@ -948,7 +948,7 @@ void RageDisplay::FrameLimitBeforeVsync( int iFPS )
 	}
 
 	if( !HOOKS->AppHasFocus() )
-		iDelayMicroseconds = max( iDelayMicroseconds, 10000 ); // give some time to other processes and threads
+		iDelayMicroseconds = std::max( iDelayMicroseconds, 10000 ); // give some time to other processes and threads
 
 	if( iDelayMicroseconds > 0 )
 		usleep( iDelayMicroseconds );
@@ -968,7 +968,7 @@ RageCompiledGeometry::~RageCompiledGeometry()
 	m_bNeedsNormals = false;
 }
 
-void RageCompiledGeometry::Set( const vector<msMesh> &vMeshes, bool bNeedsNormals )
+void RageCompiledGeometry::Set( const std::vector<msMesh> &vMeshes, bool bNeedsNormals )
 {
 	m_bNeedsNormals = bNeedsNormals;
 
@@ -981,8 +981,8 @@ void RageCompiledGeometry::Set( const vector<msMesh> &vMeshes, bool bNeedsNormal
 	for( unsigned i=0; i<vMeshes.size(); i++ )
 	{
 		const msMesh& mesh = vMeshes[i];
-		const vector<RageModelVertex> &Vertices = mesh.Vertices;
-		const vector<msTriangle> &Triangles = mesh.Triangles;
+		const std::vector<RageModelVertex> &Vertices = mesh.Vertices;
+		const std::vector<msTriangle> &Triangles = mesh.Triangles;
 
 		MeshInfo& meshInfo = m_vMeshInfo[i];
 		meshInfo.m_bNeedsTextureMatrixScale = false;

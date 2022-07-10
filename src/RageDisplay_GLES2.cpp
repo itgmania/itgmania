@@ -251,7 +251,7 @@ RageDisplay_GLES2::Init( const VideoModeParams &p, bool bAllowUnacceleratedRende
 		// glGetString(GL_EXTENSIONS) doesn't work for GL3 core profiles.
 		// this will be useful in the future.
 #if 0
-		vector<string> extensions;
+		std::vector<string> extensions;
 		const char *ext = 0;
 		for (int i = 0; (ext = (const char*)glGetStringi(GL_EXTENSIONS, i)); i++)
 		{
@@ -266,7 +266,7 @@ RageDisplay_GLES2::Init( const VideoModeParams &p, bool bAllowUnacceleratedRende
 			string type;
 			for( size_t i = next; i<extensions.size(); ++i )
 			{
-				vector<string> segments;
+				std::vector<string> segments;
 				split(extensions[i], '_', segments);
 				string this_type;
 				if (segments.size() > 2)
@@ -287,7 +287,7 @@ RageDisplay_GLES2::Init( const VideoModeParams &p, bool bAllowUnacceleratedRende
 			string sList = ssprintf( "  %s: ", type.c_str() );
 			while( next <= last )
 			{
-				vector<string> segments;
+				std::vector<string> segments;
 				split( extensions[next], '_', segments );
 				string ext_short = join( "_", segments.begin()+2, segments.end() );
 				sList += ext_short;
@@ -303,7 +303,7 @@ RageDisplay_GLES2::Init( const VideoModeParams &p, bool bAllowUnacceleratedRende
 		}
 #else
 		const char *szExtensionString = (const char *) glGetString(GL_EXTENSIONS);
-		vector<RString> asExtensions;
+		std::vector<RString> asExtensions;
 		split( szExtensionString, " ", asExtensions );
 		sort( asExtensions.begin(), asExtensions.end() );
 		size_t iNextToPrint = 0;
@@ -313,7 +313,7 @@ RageDisplay_GLES2::Init( const VideoModeParams &p, bool bAllowUnacceleratedRende
 			RString sType;
 			for( size_t i = iNextToPrint; i<asExtensions.size(); ++i )
 			{
-				vector<RString> asBits;
+				std::vector<RString> asBits;
 				split( asExtensions[i], "_", asBits );
 				RString sThisType;
 				if (asBits.size() > 2)
@@ -334,7 +334,7 @@ RageDisplay_GLES2::Init( const VideoModeParams &p, bool bAllowUnacceleratedRende
 			RString sList = ssprintf( "  %s: ", sType.c_str() );
 			while( iNextToPrint <= iLastToPrint )
 			{
-				vector<RString> asBits;
+				std::vector<RString> asBits;
 				split( asExtensions[iNextToPrint], "_", asBits );
 				RString sShortExt = join( "_", asBits.begin()+2, asBits.end() );
 				sList += sShortExt;
@@ -485,11 +485,11 @@ class RageCompiledGeometryGLES2 : public RageCompiledGeometry
 {
 public:
 	
-	void Allocate( const vector<msMesh> &vMeshes )
+	void Allocate( const std::vector<msMesh> &vMeshes )
 	{
 		// TODO
 	}
-	void Change( const vector<msMesh> &vMeshes )
+	void Change( const std::vector<msMesh> &vMeshes )
 	{
 		// TODO
 	}

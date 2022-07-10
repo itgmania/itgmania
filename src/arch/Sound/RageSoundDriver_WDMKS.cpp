@@ -58,7 +58,7 @@ struct WinWdmPin
 	HANDLE				m_hHandle;
 	WinWdmFilter			*m_pParentFilter;
 	int				m_iPinId;
-	vector<KSDATARANGE_AUDIO>	m_dataRangesItem;
+	std::vector<KSDATARANGE_AUDIO>	m_dataRangesItem;
 };
 
 enum DeviceSampleFormat
@@ -115,7 +115,7 @@ struct WinWdmFilter
 	void Release();
 
 	HANDLE			m_hHandle;
-	vector<WinWdmPin *>	m_apPins;
+	std::vector<WinWdmPin *>	m_apPins;
 	RString			m_sFilterName;
 	RString			m_sFriendlyName;
 	int			m_iUsageCount;
@@ -189,7 +189,7 @@ static bool WdmGetPropertySimple( HANDLE hHandle, const GUID *pGuidPropertySet, 
 	void *pValue, unsigned long iValueSize, void *pInstance, unsigned long iInstanceSize, RString &sError )
 {
 	unsigned long iPropertySize = sizeof(KSPROPERTY) + iInstanceSize;
-	vector<char> buf;
+	std::vector<char> buf;
 	buf.resize( iPropertySize );
 	KSPROPERTY *ksProperty = (KSPROPERTY*) &buf[0];
 
@@ -209,7 +209,7 @@ static bool WdmSetPropertySimple(
 	void *pValue, unsigned long iValueSize,
 	void *instance, unsigned long iInstanceSize, RString &sError )
 {
-	vector<char> buf;
+	std::vector<char> buf;
 	unsigned long iPropertySize = sizeof(KSPROPERTY) + iInstanceSize;
 	buf.resize( iPropertySize );
 	KSPROPERTY *ksProperty = (KSPROPERTY *) &buf[0];
@@ -638,12 +638,12 @@ WinWdmPin *WinWdmFilter::InstantiateRenderPin( const WAVEFORMATEX *wfex, RString
 }
 
 template<typename T, typename U>
-void MoveToBeginning( vector<T> &v, const U &item )
+void MoveToBeginning( std::vector<T> &v, const U &item )
 {
-	vector<T>::iterator it = find( v.begin(), v.end(), item );
+	std::vector<T>::iterator it = find( v.begin(), v.end(), item );
 	if( it == v.end() )
 		return;
-	vector<T>::iterator next = it;
+	std::vector<T>::iterator next = it;
 	++next;
 	copy_backward( v.begin(), it, next );
 	*v.begin() = item;
@@ -695,7 +695,7 @@ WinWdmPin *WinWdmFilter::InstantiateRenderPin(
 	 * more channels, since some drivers won't send audio to rear speakers in stereo modes.  Sort
 	 * the preferred channel count first.
 	 */
-	vector<int> aChannels;
+	std::vector<int> aChannels;
 	aChannels.push_back( 8 );
 	aChannels.push_back( 6 );
 	aChannels.push_back( 4 );
@@ -704,7 +704,7 @@ WinWdmPin *WinWdmFilter::InstantiateRenderPin(
 	MoveToBeginning( aChannels, iPreferredOutputChannels );
 
 	/* Try all sample formats.  Try PreferredOutputSampleFormat first. */
-	vector<DeviceSampleFormat> SampleFormats;
+	std::vector<DeviceSampleFormat> SampleFormats;
 	SampleFormats.push_back( DeviceSampleFormat_Int16 );
 	SampleFormats.push_back( DeviceSampleFormat_Int24 );
 	SampleFormats.push_back( DeviceSampleFormat_Int32 );
@@ -719,7 +719,7 @@ WinWdmPin *WinWdmFilter::InstantiateRenderPin(
 	 * Try all samplerates listed in the device's DATARANGES.  Sort iSampleRate first,
 	 * then 48k, then 44.1k, then higher sample rates first.
 	 */
-	vector<int> aSampleRates;
+	std::vector<int> aSampleRates;
 	{
 		for (WinWdmPin *pPin : m_apPins)
 		{
@@ -746,7 +746,7 @@ WinWdmPin *WinWdmFilter::InstantiateRenderPin(
 	}
 
 	/* Try WAVE_FORMAT_EXTENSIBLE, then WAVE_FORMAT_PCM. */
-	vector<bool> aTryPCM;
+	std::vector<bool> aTryPCM;
 	aTryPCM.push_back( false );
 	aTryPCM.push_back( true );
 
@@ -811,7 +811,7 @@ static bool GetDevicePath( HANDLE hHandle, SP_DEVICE_INTERFACE_DATA *pInterfaceD
 }
 
 /* Build a list of available filters. */
-static bool BuildFilterList( vector<WinWdmFilter*> &aFilters, RString &sError )
+static bool BuildFilterList( std::vector<WinWdmFilter*> &aFilters, RString &sError )
 {
 	const GUID *pCategoryGuid = (GUID*) &KSCATEGORY_RENDER;
 
@@ -989,7 +989,7 @@ bool WinWdmStream::Open( WinWdmFilter *pFilter,
 	if( m_iFramesPerChunk == 0 )
 	{
 		m_iFramesPerChunk = 512 / m_iWriteAheadChunks;
-		m_iFramesPerChunk = max( m_iFramesPerChunk, iFrameSize ); // iFrameSize may be 0
+		m_iFramesPerChunk = std::max( m_iFramesPerChunk, iFrameSize ); // iFrameSize may be 0
 	}
 
 	LOG->Info( "KS: chunk size: %i; allocator framing: %i (%ims)", m_iFramesPerChunk, iFrameSize, (iFrameSize * 1000) / m_iSampleRate );
@@ -1276,7 +1276,7 @@ RString RageSoundDriver_WDMKS::Init()
 	if( !PaWinWdm_Initialize(sError) )
 		return sError;
 
-	vector<WinWdmFilter *> apFilters;
+	std::vector<WinWdmFilter *> apFilters;
 	if( !BuildFilterList(apFilters, sError) )
 		return "Error building filter list: " + sError;
 	if( apFilters.empty() )

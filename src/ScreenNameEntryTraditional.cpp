@@ -28,7 +28,7 @@ void ScreenNameEntryTraditional::Init()
 		for( int z = 0; z < 3; ++z )
 		{
 			StageStats ss;
-			const vector<Song*> &apSongs = SONGMAN->GetAllSongs();
+			const std::vector<Song*> &apSongs = SONGMAN->GetAllSongs();
 			ss.m_vpPlayedSongs.push_back( apSongs[rand()%apSongs.size()] );
 			ss.m_vpPossibleSongs = ss.m_vpPlayedSongs;
 			ss.m_playMode = GAMESTATE->m_PlayMode;
@@ -77,7 +77,7 @@ void ScreenNameEntryTraditional::BeginScreen()
 	/* Find out if players are entering their name. */
 	FOREACH_PlayerNumber( pn )
 	{
-		vector<GameState::RankingFeat> aFeats;
+		std::vector<GameState::RankingFeat> aFeats;
 		GAMESTATE->GetRankingFeats( pn, aFeats );
 
 		bool bNoStagesLeft = GAMESTATE->m_iPlayerStageTokens[pn] <= 0;
@@ -184,7 +184,7 @@ bool ScreenNameEntryTraditional::Finish( PlayerNumber pn )
 
 void ScreenNameEntryTraditional::UpdateSelectionText( PlayerNumber pn )
 {
-	wstring sText = m_sSelection[pn];
+	std::wstring sText = m_sSelection[pn];
 	if( !m_bFinalized[pn] && (int) sText.size() < MAX_RANKING_NAME_LENGTH )
 		sText += L"_";
 

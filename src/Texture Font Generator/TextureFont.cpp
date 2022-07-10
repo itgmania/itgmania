@@ -25,7 +25,7 @@ void TextureFont::FormatFontPages()
 	for( unsigned i = 0; i < m_apPages.size(); ++i )
 		delete m_apPages[i];
 	m_apPages.clear();
-	for( map<wchar_t, HBITMAP>::iterator i = m_Characters.begin(); i != m_Characters.end(); ++i )
+	for( std::map<wchar_t, HBITMAP>::iterator i = m_Characters.begin(); i != m_Characters.end(); ++i )
 	{
 		if( i->second == NULL )
 			continue;
@@ -247,16 +247,16 @@ void TextureFont::FormatCharacter( wchar_t c, HDC hDC )
 
 	if( realbounds.left != realbounds.right && realbounds.top != realbounds.bottom )
 	{
-		m_BoundingRect.top = min( m_BoundingRect.top, (LONG) realbounds.top );
-		m_BoundingRect.left = min( m_BoundingRect.left, (LONG) realbounds.left );
-		m_BoundingRect.right = max( m_BoundingRect.right, (LONG) realbounds.right );
-		m_BoundingRect.bottom = max( m_BoundingRect.bottom, (LONG) realbounds.bottom );
+		m_BoundingRect.top = std::min( m_BoundingRect.top, (LONG) realbounds.top );
+		m_BoundingRect.left = std::min( m_BoundingRect.left, (LONG) realbounds.left );
+		m_BoundingRect.right = std::max( m_BoundingRect.right, (LONG) realbounds.right );
+		m_BoundingRect.bottom = std::max( m_BoundingRect.bottom, (LONG) realbounds.bottom );
 		if( m_BoundingRect.left == m_BoundingRect.right && m_BoundingRect.top == m_BoundingRect.bottom )
 			m_BoundingRect = realbounds;
 	}
 
-	m_iCharLeftOverlap = max( m_iCharLeftOverlap, -int(abc.abcA) );
-	m_iCharRightOverlap = max( m_iCharRightOverlap, int(abc.abcC) - int(abc.abcB) );
+	m_iCharLeftOverlap = std::max( m_iCharLeftOverlap, -int(abc.abcA) );
+	m_iCharRightOverlap = std::max( m_iCharRightOverlap, int(abc.abcC) - int(abc.abcB) );
 
 //	const SolidBrush solidBrush(Color(128, 255, 0, 255));
 //	Pen pen(&solidBrush, 1);
@@ -439,7 +439,7 @@ void TextureFont::Save( CString sBasePath, CString sBitmapAppendBeforeExtension,
 
 
 			/* export character widths.  "numbers" page has fixed with for all number characters. */
-			vector<int> viCharWidth;
+			std::vector<int> viCharWidth;
 			int iMaxNumberCharWidth = 0;
 			for( unsigned j = 0; j < desc.chars.size(); ++j )
 			{
@@ -451,7 +451,7 @@ void TextureFont::Save( CString sBasePath, CString sBitmapAppendBeforeExtension,
 				viCharWidth.push_back( iCharWidth );
 
 				if( IsNumberChar( c ) )
-					iMaxNumberCharWidth = max( iMaxNumberCharWidth, iCharWidth );
+					iMaxNumberCharWidth = std::max( iMaxNumberCharWidth, iCharWidth );
 			}
 			for( unsigned j = 0; j < desc.chars.size(); ++j )
 			{

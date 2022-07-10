@@ -91,7 +91,7 @@ private:
 	float m_fActorLights[NUM_CabinetLight];	// current "power" of each actor light
 	float m_fSecsLeftInActorLightBlink[NUM_CabinetLight];	// duration to "power" an actor light
 
-	vector<LightsDriver*> m_vpDrivers;
+	std::vector<LightsDriver*> m_vpDrivers;
 	LightsMode m_LightsMode;
 	LightsState m_LightsState;
 

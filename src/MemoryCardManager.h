@@ -42,7 +42,7 @@ public:
 	bool IsNameAvailable( PlayerNumber pn ) const;
 	RString GetName( PlayerNumber pn ) const;
 
-	const vector<UsbStorageDevice> &GetStorageDevices() { return m_vStorageDevices; }
+	const std::vector<UsbStorageDevice> &GetStorageDevices() { return m_vStorageDevices; }
 
 	static Preference1D<RString>	m_sMemoryCardOsMountPoint;
 	static Preference1D<int>	m_iMemoryCardUsbBus;
@@ -58,7 +58,7 @@ protected:
 	void UpdateAssignments();
 	void CheckStateChanges();
 
-	vector<UsbStorageDevice> m_vStorageDevices;	// all currently connected
+	std::vector<UsbStorageDevice> m_vStorageDevices;	// all currently connected
 
 	bool	m_bCardLocked[NUM_PLAYERS];
 	bool	m_bMounted[NUM_PLAYERS];	// card is currently mounted

@@ -31,8 +31,8 @@ extern "C" int sigaltstack(const stack_t * __restrict, stack_t * __restrict);
 static int find_stack_direction2( char *p ) NOINLINE;
 static int find_stack_direction() NOINLINE;
 
-static vector<SignalHandler::handler> handlers;
-unique_ptr<SaveSignals> saved_sigs;
+static std::vector<SignalHandler::handler> handlers;
+std::unique_ptr<SaveSignals> saved_sigs;
 
 static int signals[] =
 {

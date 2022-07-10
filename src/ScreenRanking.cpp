@@ -82,7 +82,7 @@ void ScreenRanking::Init()
 				pts.colorIndex = i;
 				pts.category = (RankingCategory)c;
 				StepsType st = STEPS_TYPES_TO_SHOW.GetValue()[i];
-				pts.aTypes.push_back( make_pair(Difficulty_Invalid, st) );
+				pts.aTypes.push_back( std::make_pair(Difficulty_Invalid, st) );
 				m_vPagesToShow.push_back( pts );
 			}
 		}
@@ -100,7 +100,7 @@ void ScreenRanking::Init()
 		this->AddChild( &m_textCourseTitle );
 		LOAD_ALL_COMMANDS( m_textCourseTitle );
 
-		vector<RString> asCoursePaths;
+		std::vector<RString> asCoursePaths;
 		split( COURSES_TO_SHOW, ",", asCoursePaths, true );
 		for( unsigned i=0; i<STEPS_TYPES_TO_SHOW.GetValue().size(); i++ )
 		{
@@ -109,7 +109,7 @@ void ScreenRanking::Init()
 				PageToShow pts;
 				pts.colorIndex = i;
 				StepsType st = STEPS_TYPES_TO_SHOW.GetValue()[i];
-				pts.aTypes.push_back( make_pair(Difficulty_Invalid, st) );
+				pts.aTypes.push_back( std::make_pair(Difficulty_Invalid, st) );
 				pts.pCourse = SONGMAN->GetCourseFromPath( asCoursePaths[c] );
 				if( pts.pCourse == nullptr )
 					continue;

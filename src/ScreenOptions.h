@@ -37,7 +37,7 @@ public:
 	ScreenOptions();
 	virtual void Init();
 	virtual void BeginScreen();
-	void InitMenu( const vector<OptionRowHandler*> &vHands );
+	void InitMenu( const std::vector<OptionRowHandler*> &vHands );
 	virtual ~ScreenOptions();
 	virtual void Update( float fDeltaTime );
 	virtual bool Input( const InputEventPlus &input );
@@ -51,8 +51,8 @@ public:
 	friend class LunaScreenOptions;
 
 protected:
-	virtual void ImportOptions( int iRow, const vector<PlayerNumber> &vpns ) = 0;
-	virtual void ExportOptions( int iRow, const vector<PlayerNumber> &vpns ) = 0;
+	virtual void ImportOptions( int iRow, const std::vector<PlayerNumber> &vpns ) = 0;
+	virtual void ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns ) = 0;
 
 	void RestartOptions();
 	void GetWidthXY( PlayerNumber pn, int iRow, int iChoiceOnRow, 
@@ -106,7 +106,7 @@ protected:	// derived classes need access to these
 	void SetInputMode( InputMode im ) { m_InputMode = im; }
 
 	/** @brief Map menu lines to m_OptionRow entries. */
-	vector<OptionRow*>	m_pRows;
+	std::vector<OptionRow*>	m_pRows;
 	/** @brief The current row each player is on. */
 	int			m_iCurrentRow[NUM_PLAYERS];
 

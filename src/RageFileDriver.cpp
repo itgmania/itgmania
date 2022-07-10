@@ -10,7 +10,7 @@ RageFileDriver::~RageFileDriver()
 
 int RageFileDriver::GetPathValue( const RString &sPath )
 {
-	vector<RString> asParts;
+	std::vector<RString> asParts;
 	split( sPath, "/", asParts, true );
 
 	RString sPartialPath;
@@ -42,7 +42,7 @@ int RageFileDriver::GetPathValue( const RString &sPath )
 	return 0;
 }
 
-void RageFileDriver::GetDirListing( const RString &sPath, vector<RString> &asAddTo, bool bOnlyDirs, bool bReturnPathToo )
+void RageFileDriver::GetDirListing( const RString &sPath, std::vector<RString> &asAddTo, bool bOnlyDirs, bool bReturnPathToo )
 {
 	FDB->GetDirListing( sPath, asAddTo, bOnlyDirs, bReturnPathToo );
 }

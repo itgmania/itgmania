@@ -102,7 +102,7 @@ void BPMDisplay::SetBPMRange( const DisplayBpms &bpms )
 
 	m_BPMS.clear();
 
-	const vector<float> &BPMS = bpms.vfBpms;
+	const std::vector<float> &BPMS = bpms.vfBpms;
 
 	bool AllIdentical = true;
 	for( unsigned i = 0; i < BPMS.size(); ++i )
@@ -117,8 +117,8 @@ void BPMDisplay::SetBPMRange( const DisplayBpms &bpms )
 		int MaxBPM = INT_MIN;
 		for( unsigned i = 0; i < BPMS.size(); ++i )
 		{
-			MinBPM = min( MinBPM, (int)lrintf(BPMS[i]) );
-			MaxBPM = max( MaxBPM, (int)lrintf(BPMS[i]) );
+			MinBPM = std::min( MinBPM, (int) lrintf(BPMS[i]) );
+			MaxBPM = std::max( MaxBPM, (int) lrintf(BPMS[i]) );
 		}
 		if( MinBPM == MaxBPM )
 		{
@@ -141,7 +141,7 @@ void BPMDisplay::SetBPMRange( const DisplayBpms &bpms )
 				m_BPMS.push_back(BPMS[i]); // hold
 		}
 
-		m_iCurrentBPM = min(1u, m_BPMS.size()); // start on the first hold
+		m_iCurrentBPM = std::min(1, static_cast<int>(m_BPMS.size())); // start on the first hold
 		m_fBPMFrom = BPMS[0];
 		m_fBPMTo = BPMS[0];
 		m_fPercentInState = 1;

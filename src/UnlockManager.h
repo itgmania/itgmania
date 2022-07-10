@@ -157,11 +157,11 @@ public:
 	RString FindEntryID( const RString &sName ) const;
 
 	// All locked songs are stored here
-	vector<UnlockEntry>	m_UnlockEntries;
+	std::vector<UnlockEntry>	m_UnlockEntries;
 
-	void GetUnlocksByType( UnlockRewardType t, vector<UnlockEntry *> &apEntries );
-	void GetSongsUnlockedByEntryID( vector<Song *> &apSongsOut, RString sEntryID );
-	void GetStepsUnlockedByEntryID( vector<Song *> &apSongsOut, vector<Difficulty> &apStepsOut, RString sEntryID );
+	void GetUnlocksByType( UnlockRewardType t, std::vector<UnlockEntry *> &apEntries );
+	void GetSongsUnlockedByEntryID( std::vector<Song *> &apSongsOut, RString sEntryID );
+	void GetStepsUnlockedByEntryID( std::vector<Song *> &apSongsOut, std::vector<Difficulty> &apStepsOut, RString sEntryID );
 
 	const UnlockEntry *FindSong( const Song *pSong ) const;
 	const UnlockEntry *FindSteps( const Song *pSong, const Steps *pSteps ) const;
@@ -175,8 +175,8 @@ public:
 private:
 	// read unlocks
 	void Load();
-	
-	set<RString> m_RouletteCodes; // "codes" which are available in roulette and which unlock if rouletted
+
+	std::set<RString> m_RouletteCodes; // "codes" which are available in roulette and which unlock if rouletted
 };
 
 extern UnlockManager*	UNLOCKMAN;  // global and accessible from anywhere in program

@@ -199,7 +199,7 @@ public:
 	static RString MakeGuid();
 
 	RString m_sGuid;
-	map<RString,RString> m_sDefaultModifiers;
+	std::map<RString,RString> m_sDefaultModifiers;
 	SortOrder m_SortOrder;
 	std::vector<Song*> m_songs;
 	Difficulty m_LastDifficulty;
@@ -228,7 +228,7 @@ public:
 	int m_iTotalLifts;
 	/** @brief Is this a brand new profile? */
 	bool m_bNewProfile;
-	set<RString> m_UnlockedEntryIDs;
+	std::set<RString> m_UnlockedEntryIDs;
 	/**
 	 * @brief Which machine did we play on last, based on the Guid?
 	 *
@@ -240,7 +240,7 @@ public:
 	/* These stats count twice in the machine profile if two players are playing;
 	 * that's the only approach that makes sense for ByDifficulty and ByMeter. */
 	int m_iNumSongsPlayedByPlayMode[NUM_PlayMode];
-	map<StyleID,int> m_iNumSongsPlayedByStyle;
+	std::map<StyleID,int> m_iNumSongsPlayedByStyle;
 	int m_iNumSongsPlayedByDifficulty[NUM_Difficulty];
 	int m_iNumSongsPlayedByMeter[MAX_METER+1];
 	/**
@@ -320,7 +320,7 @@ public:
 
 
 	// Screenshot Data
-	vector<Screenshot> m_vScreenshots;
+	std::vector<Screenshot> m_vScreenshots;
 	void AddScreenshot( const Screenshot &screenshot );
 	int GetNextScreenshotIndex() { return m_vScreenshots.size(); }
 
@@ -339,7 +339,7 @@ public:
 		Calories(): fCals(0) {}
 		float fCals;
 	};
-	map<DateTime,Calories> m_mapDayToCaloriesBurned;
+	std::map<DateTime,Calories> m_mapDayToCaloriesBurned;
 	float GetCaloriesBurnedForDay( DateTime day ) const;
 
 /*

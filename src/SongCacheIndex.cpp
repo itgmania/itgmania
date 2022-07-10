@@ -73,7 +73,7 @@ static void EmptyDir( RString dir )
 {
 	ASSERT(dir[dir.size()-1] == '/');
 
-	vector<RString> asCacheFileNames;
+	std::vector<RString> asCacheFileNames;
 	GetDirListing( dir, asCacheFileNames );
 	for( unsigned i=0; i<asCacheFileNames.size(); i++ )
 	{
@@ -95,8 +95,8 @@ void SongCacheIndex::ReadCacheIndex()
 	EmptyDir( SpecialFiles::CACHE_DIR );
 	EmptyDir( SpecialFiles::CACHE_DIR+"Songs/" );
 	EmptyDir( SpecialFiles::CACHE_DIR+"Courses/" );
-	
-	vector<RString> ImageDir;
+
+	std::vector<RString> ImageDir;
 	split( CommonMetrics::IMAGES_TO_CACHE, ",", ImageDir );
 	for( unsigned c=0; c<ImageDir.size(); c++ )
 		EmptyDir( SpecialFiles::CACHE_DIR+ImageDir[c]+"/" );

@@ -144,7 +144,7 @@ int RageSoundReader_Preload::Read( float *pBuffer, int iFrames )
 	const int iSizeFrames = m_Buffer->size() / framesize;
 	const int iFramesAvail = iSizeFrames - m_iPosition;
 
-	iFrames = min( iFrames, iFramesAvail );
+	iFrames = std::min( iFrames, iFramesAvail );
 	if( iFrames == 0 )
 		return END_OF_FILE;
 	if( m_bBufferIs16Bit )

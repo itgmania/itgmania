@@ -26,7 +26,7 @@ const RString GAME_BASE_NOTESKIN_NAME = "default";
 // might init this before SpecialFiles::NOTESKINS_DIR
 #define GLOBAL_BASE_DIR (SpecialFiles::NOTESKINS_DIR + GAME_COMMON_NOTESKIN_NAME + "/")
 
-static map<RString,RString> g_PathCache;
+static std::map<RString,RString> g_PathCache;
 
 struct NoteSkinData
 {
@@ -34,14 +34,14 @@ struct NoteSkinData
 	IniFile metrics;
 
 	// When looking for an element, search these dirs from head to tail.
-	vector<RString> vsDirSearchOrder;
+	std::vector<RString> vsDirSearchOrder;
 
 	LuaReference m_Loader;
 };
 
 namespace
 {
-	static map<RString,NoteSkinData> g_mapNameToData;
+	static std::map<RString,NoteSkinData> g_mapNameToData;
 };
 
 NoteSkinManager::NoteSkinManager()
@@ -76,7 +76,7 @@ void NoteSkinManager::RefreshNoteSkinData( const Game* pGame )
 	g_PathCache.clear();
 
 	RString sBaseSkinFolder = SpecialFiles::NOTESKINS_DIR + pGame->m_szName + "/";
-	vector<RString> asNoteSkinNames;
+	std::vector<RString> asNoteSkinNames;
 	GetDirListing( sBaseSkinFolder + "*", asNoteSkinNames, true );
 
 	StripCvsAndSvn( asNoteSkinNames );
@@ -92,7 +92,7 @@ void NoteSkinManager::RefreshNoteSkinData( const Game* pGame )
 		// delete it from the map. -Kyz
 		if(!LoadNoteSkinData(sName, g_mapNameToData[sName]))
 		{
-			map<RString, NoteSkinData>::iterator entry= g_mapNameToData.find(sName);
+			std::map<RString, NoteSkinData>::iterator entry= g_mapNameToData.find(sName);
 			g_mapNameToData.erase(entry);
 		}
 	}
@@ -167,7 +167,7 @@ bool NoteSkinManager::LoadNoteSkinDataRecursive( const RString &sNoteSkinName_, 
 	}
 
 	LuaReference refScript;
-	for( vector<RString>::reverse_iterator dir = data_out.vsDirSearchOrder.rbegin(); dir != data_out.vsDirSearchOrder.rend(); ++dir )
+	for( std::vector<RString>::reverse_iterator dir = data_out.vsDirSearchOrder.rbegin(); dir != data_out.vsDirSearchOrder.rend(); ++dir )
 	{
 		RString sFile = *dir + "NoteSkin.lua";
 		RString sScript;
@@ -197,17 +197,17 @@ bool NoteSkinManager::LoadNoteSkinDataRecursive( const RString &sNoteSkinName_, 
 }
 
 
-void NoteSkinManager::GetNoteSkinNames( vector<RString> &AddTo )
+void NoteSkinManager::GetNoteSkinNames( std::vector<RString> &AddTo )
 {
 	GetNoteSkinNames( GAMESTATE->m_pCurGame, AddTo );
 }
 
-void NoteSkinManager::GetNoteSkinNames( const Game* pGame, vector<RString> &AddTo )
+void NoteSkinManager::GetNoteSkinNames( const Game* pGame, std::vector<RString> &AddTo )
 {
 	GetAllNoteSkinNamesForGame( pGame, AddTo );
 }
 
-bool NoteSkinManager::NoteSkinNameInList(const RString name, vector<RString> name_list)
+bool NoteSkinManager::NoteSkinNameInList(const RString name, std::vector<RString> name_list)
 {
 	for(size_t i= 0; i < name_list.size(); ++i)
 	{
@@ -221,14 +221,14 @@ bool NoteSkinManager::NoteSkinNameInList(const RString name, vector<RString> nam
 
 bool NoteSkinManager::DoesNoteSkinExist( const RString &sSkinName )
 {
-	vector<RString> asSkinNames;
+	std::vector<RString> asSkinNames;
 	GetAllNoteSkinNamesForGame( GAMESTATE->m_pCurGame, asSkinNames );
 	return NoteSkinNameInList(sSkinName, asSkinNames);
 }
 
 bool NoteSkinManager::DoNoteSkinsExistForGame( const Game *pGame )
 {
-	vector<RString> asSkinNames;
+	std::vector<RString> asSkinNames;
 	GetAllNoteSkinNamesForGame( pGame, asSkinNames );
 	return !asSkinNames.empty();
 }
@@ -236,7 +236,7 @@ bool NoteSkinManager::DoNoteSkinsExistForGame( const Game *pGame )
 RString NoteSkinManager::GetDefaultNoteSkinName()
 {
 	RString name= THEME->GetMetric("Common", "DefaultNoteSkinName");
-	vector<RString> all_names;
+	std::vector<RString> all_names;
 	GetAllNoteSkinNamesForGame(GAMESTATE->m_pCurGame, all_names);
 	if(all_names.empty())
 	{
@@ -262,12 +262,12 @@ void NoteSkinManager::ValidateNoteSkinName(RString& name)
 	}
 }
 
-void NoteSkinManager::GetAllNoteSkinNamesForGame( const Game *pGame, vector<RString> &AddTo )
+void NoteSkinManager::GetAllNoteSkinNamesForGame( const Game *pGame, std::vector<RString> &AddTo )
 {
 	if( pGame == m_pCurGame )
 	{
 		// Faster:
-		for( map<RString,NoteSkinData>::const_iterator iter = g_mapNameToData.begin();
+		for( std::map<RString, NoteSkinData>::const_iterator iter = g_mapNameToData.begin();
 		     iter != g_mapNameToData.end(); ++iter )
 		{
 			AddTo.push_back( iter->second.sName );
@@ -291,7 +291,7 @@ RString NoteSkinManager::GetMetric( const RString &sButtonName, const RString &s
 	}
 	RString sNoteSkinName = m_sCurrentNoteSkin;
 	sNoteSkinName.MakeLower();
-	map<RString,NoteSkinData>::const_iterator it = g_mapNameToData.find(sNoteSkinName);
+	std::map<RString, NoteSkinData>::const_iterator it = g_mapNameToData.find(sNoteSkinName);
 	ASSERT_M( it != g_mapNameToData.end(), sNoteSkinName );	// this NoteSkin doesn't exist!
 	const NoteSkinData& data = it->second;
 
@@ -332,7 +332,7 @@ apActorCommands NoteSkinManager::GetMetricA( const RString &sButtonName, const R
 RString NoteSkinManager::GetPath( const RString &sButtonName, const RString &sElement )
 {
 	const RString CacheString = m_sCurrentNoteSkin + "/" + sButtonName + "/" + sElement;
-	map<RString,RString>::iterator it = g_PathCache.find( CacheString );
+	std::map<RString, RString>::iterator it = g_PathCache.find( CacheString );
 	if( it != g_PathCache.end() )
 		return it->second;
 
@@ -343,7 +343,7 @@ RString NoteSkinManager::GetPath( const RString &sButtonName, const RString &sEl
 	}
 	RString sNoteSkinName = m_sCurrentNoteSkin;
 	sNoteSkinName.MakeLower();
-	map<RString,NoteSkinData>::const_iterator iter = g_mapNameToData.find( sNoteSkinName );
+	std::map<RString, NoteSkinData>::const_iterator iter = g_mapNameToData.find( sNoteSkinName );
 	ASSERT( iter != g_mapNameToData.end() );
 	const NoteSkinData &data = iter->second;
 
@@ -456,7 +456,7 @@ RString NoteSkinManager::GetPath( const RString &sButtonName, const RString &sEl
 
 bool NoteSkinManager::PushActorTemplate( Lua *L, const RString &sButton, const RString &sElement, bool bSpriteOnly )
 {
-	map<RString,NoteSkinData>::const_iterator iter = g_mapNameToData.find( m_sCurrentNoteSkin );
+	std::map<RString, NoteSkinData>::const_iterator iter = g_mapNameToData.find( m_sCurrentNoteSkin );
 	if(iter == g_mapNameToData.end())
 	{
 		LuaHelpers::ReportScriptError("No current noteskin set!", "NOTESKIN_ERROR");
@@ -493,7 +493,7 @@ Actor *NoteSkinManager::LoadActor( const RString &sButton, const RString &sEleme
 		return Sprite::NewBlankSprite();
 	}
 
-	unique_ptr<XNode> pNode( XmlFileUtil::XNodeFromTable(L) );
+	std::unique_ptr<XNode> pNode( XmlFileUtil::XNodeFromTable(L) );
 	if( pNode.get() == nullptr )
 	{
 		LUA->Release( L );
@@ -522,7 +522,7 @@ Actor *NoteSkinManager::LoadActor( const RString &sButton, const RString &sEleme
 
 RString NoteSkinManager::GetPathFromDirAndFile( const RString &sDir, const RString &sFileName )
 {
-	vector<RString> matches;		// fill this with the possible files
+	std::vector<RString> matches;		// fill this with the possible files
 
 	GetDirListing( sDir+sFileName+"*",		matches, false, true );
 
@@ -585,7 +585,7 @@ public:
 #undef FOR_NOTESKIN
 	static int GetNoteSkinNames( T* p, lua_State *L )
 	{
-		vector<RString> vNoteskins;
+		std::vector<RString> vNoteskins;
 		p->GetNoteSkinNames( vNoteskins );
 		LuaHelpers::CreateTableFromArray(vNoteskins, L);
 		return 1;
@@ -594,7 +594,7 @@ public:
 	static int GetNoteSkinNamesForGame( T* p, lua_State *L )
 	{
 		Game *pGame = Luna<Game>::check( L, 1 );
-		vector<RString> vGameNoteskins;
+		std::vector<RString> vGameNoteskins;
 		p->GetNoteSkinNames( pGame, vGameNoteskins );
 		LuaHelpers::CreateTableFromArray(vGameNoteskins, L);
 		return 1;

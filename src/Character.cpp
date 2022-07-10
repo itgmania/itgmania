@@ -20,13 +20,13 @@ bool Character::Load( RString sCharDir )
 
 	// save ID
 	{
-		vector<RString> as;
+		std::vector<RString> as;
 		split( sCharDir, "/", as );
 		m_sCharacterID = as.back();
 	}
 
 	{
-		vector<RString> as;
+		std::vector<RString> as;
 		GetDirListing( m_sCharDir+"card.png", as, false, true );
 		GetDirListing( m_sCharDir+"card.jpg", as, false, true );
 		GetDirListing( m_sCharDir+"card.jpeg", as, false, true );
@@ -39,7 +39,7 @@ bool Character::Load( RString sCharDir )
 	}
 
 	{
-		vector<RString> as;
+		std::vector<RString> as;
 		GetDirListing( m_sCharDir+"icon.png", as, false, true );
 		GetDirListing( m_sCharDir+"icon.jpg", as, false, true );
 		GetDirListing( m_sCharDir+"icon.jpeg", as, false, true );
@@ -74,7 +74,7 @@ bool Character::Load( RString sCharDir )
 
 RString GetRandomFileInDir( RString sDir )
 {
-	vector<RString> asFiles;
+	std::vector<RString> asFiles;
 	GetDirListing( sDir, asFiles, false, true );
 	if( asFiles.empty() )
 		return RString();
@@ -96,7 +96,7 @@ RString Character::GetWarmUpAnimationPath() const { return DerefRedir(GetRandomF
 RString Character::GetDanceAnimationPath() const { return DerefRedir(GetRandomFileInDir(m_sCharDir + "Dance/")); }
 RString Character::GetTakingABreakPath() const
 {
-	vector<RString> as;
+	std::vector<RString> as;
 	GetDirListing( m_sCharDir+"break.png", as, false, true );
 	GetDirListing( m_sCharDir+"break.jpg", as, false, true );
 	GetDirListing( m_sCharDir+"break.jpeg", as, false, true );
@@ -110,7 +110,7 @@ RString Character::GetTakingABreakPath() const
 
 RString Character::GetSongSelectIconPath() const
 {
-	vector<RString> as;
+	std::vector<RString> as;
 	// first try and find an icon specific to the select music screen
 	// so you can have different icons for music select / char select
 	GetDirListing( m_sCharDir+"selectmusicicon.png", as, false, true );
@@ -138,7 +138,7 @@ RString Character::GetSongSelectIconPath() const
 
 RString Character::GetStageIconPath() const
 {
-	vector<RString> as;
+	std::vector<RString> as;
 	// first try and find an icon specific to the select music screen
 	// so you can have different icons for music select / char select
 	GetDirListing( m_sCharDir+"stageicon.png", as, false, true );

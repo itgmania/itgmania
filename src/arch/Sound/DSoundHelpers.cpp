@@ -185,7 +185,7 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 	/* The size of the actual DSound buffer.  This can be large; we generally
 	 * won't fill it completely. */
 	m_iBufferSize = 1024*64;
-	m_iBufferSize = max( m_iBufferSize, m_iWriteAhead );
+	m_iBufferSize = std::max( m_iBufferSize, m_iWriteAhead );
 
 	WAVEFORMATEX waveformat;
 	memset( &waveformat, 0, sizeof(waveformat) );
@@ -250,7 +250,7 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 	{
 		LOG->Warn( "bcaps.dwBufferBytes (%i) != m_iBufferSize(%i); adjusting", bcaps.dwBufferBytes, m_iBufferSize );
 		m_iBufferSize = bcaps.dwBufferBytes;
-		m_iWriteAhead = min( m_iWriteAhead, m_iBufferSize );
+		m_iWriteAhead = std::min( m_iWriteAhead, m_iBufferSize );
 	}
 
 	if( !(bcaps.dwFlags & DSBCAPS_CTRLVOLUME) )
@@ -287,7 +287,7 @@ void DSoundBuf::SetVolume( float fVolume )
 	float iVolumeLog2 = log10f(fVolume) / log10f(2); /* vol log 2 */
 
 	/* Volume is a multiplier; SetVolume wants attenuation in hundredths of a decibel. */
-	const int iNewVolume = max( int(1000 * iVolumeLog2), DSBVOLUME_MIN );
+	const int iNewVolume = std::max( int(1000 * iVolumeLog2), DSBVOLUME_MIN );
 
 	if( m_iVolume == iNewVolume )
 		return;
@@ -488,11 +488,11 @@ bool DSoundBuf::get_output_buf( char **pBuffer, unsigned *pBufferSize, int iChun
 		wrap( bytes_played, m_iBufferSize );
 
 		m_iBufferBytesFilled -= bytes_played;
-		m_iBufferBytesFilled = max( 0, m_iBufferBytesFilled );
+		m_iBufferBytesFilled = std::max( 0, m_iBufferBytesFilled );
 
 		if( m_iExtraWriteahead )
 		{
-			int used = min( m_iExtraWriteahead, bytes_played );
+			int used = std::min( m_iExtraWriteahead, bytes_played );
 			RString s = ssprintf("used %i of %i (%i..%i)", used, m_iExtraWriteahead, iCursorStart, iCursorEnd );
 			s += "; last: ";
 			for( int i = 0; i < 4; ++i )
@@ -591,7 +591,7 @@ int64_t DSoundBuf::GetPosition() const
 
 	/* Failsafe: never return a value smaller than we've already returned.
 	 * This can happen once in a while in underrun conditions. */
-	iRet = max( m_iLastPosition, iRet );
+	iRet = std::max( m_iLastPosition, iRet );
 	m_iLastPosition = iRet;
 
 	return iRet;

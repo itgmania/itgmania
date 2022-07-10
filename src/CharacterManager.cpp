@@ -24,7 +24,7 @@ CharacterManager::CharacterManager()
 		SAFE_DELETE( m_pCharacters[i] );
 	m_pCharacters.clear();
 
-	vector<RString> as;
+	std::vector<RString> as;
 	GetDirListing( CHARACTERS_DIR "*", as, true, true );
 	StripCvsAndSvn( as );
 	StripMacResourceForks( as );
@@ -63,7 +63,7 @@ CharacterManager::~CharacterManager()
 	LUA->UnsetGlobal( "CHARMAN" );
 }
 
-void CharacterManager::GetCharacters( vector<Character*> &apCharactersOut )
+void CharacterManager::GetCharacters( std::vector<Character*> &apCharactersOut )
 {
 	for( unsigned i=0; i<m_pCharacters.size(); i++ )
 		if( !m_pCharacters[i]->IsDefaultCharacter() )
@@ -72,7 +72,7 @@ void CharacterManager::GetCharacters( vector<Character*> &apCharactersOut )
 
 Character* CharacterManager::GetRandomCharacter()
 {
-	vector<Character*> apCharacters;
+	std::vector<Character*> apCharacters;
 	GetCharacters( apCharacters );
 	if( apCharacters.size() )
 		return apCharacters[RandomInt(apCharacters.size())];
@@ -146,7 +146,7 @@ public:
 	}
 	static int GetAllCharacters( T* p, lua_State *L )
 	{
-		vector<Character*> vChars;
+		std::vector<Character*> vChars;
 		p->GetCharacters(vChars);
 
 		LuaHelpers::CreateTableFromArray(vChars, L);
@@ -154,7 +154,7 @@ public:
 	}
 	static int GetCharacterCount(T* p, lua_State *L)
 	{
-		vector<Character*> chars;
+		std::vector<Character*> chars;
 		p->GetCharacters(chars);
 		lua_pushnumber(L, chars.size());
 		return 1;

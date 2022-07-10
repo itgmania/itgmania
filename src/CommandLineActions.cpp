@@ -24,7 +24,7 @@
 #include <conio.h>
 #endif
 
-vector<CommandLineActions::CommandLineArgs> CommandLineActions::ToProcess;
+std::vector<CommandLineActions::CommandLineArgs> CommandLineActions::ToProcess;
 
 static void LuaInformation()
 {
@@ -33,7 +33,7 @@ static void LuaInformation()
 	pNode->AppendAttr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 	pNode->AppendAttr("xsi:schemaLocation", "http://www.stepmania.com Lua.xsd");
 
-	pNode->AppendChild("Version", string(PRODUCT_FAMILY) + product_version);
+	pNode->AppendChild("Version", std::string(PRODUCT_FAMILY) + product_version);
 	pNode->AppendChild("Date", DateTime::GetNowDate().GetString());
 
 	XmlFileUtil::SaveToFile(pNode, "Lua.xml", "Lua.xsl");
@@ -50,7 +50,7 @@ static void LuaInformation()
 static void Version()
 {
 	#if defined(WIN32)
-		RString sProductID = ssprintf("%s", (string(PRODUCT_FAMILY) + product_version).c_str() );
+		RString sProductID = ssprintf("%s", (std::string(PRODUCT_FAMILY) + product_version).c_str() );
 		RString sVersion = ssprintf("build %s\nCompile Date: %s @ %s", ::sm_version_git_hash, version_date, version_time);
 
 		AllocConsole();

@@ -23,7 +23,7 @@ private:
 	public:
 		ScrollingText() : m_bDone(true) { }
 		inline void SetDone() { m_bDone = true; }
-		void Init( const RString &sName, const vector<float> &xs );
+		void Init( const RString &sName, const std::vector<float> &xs );
 		virtual bool EarlyAbortDraw() const { return m_bDone; }
 		virtual void DrawPrimitives();
 		char GetClosestChar( float fFakeBeat ) const;
@@ -31,7 +31,7 @@ private:
 	private:
 		float GetClosestCharYOffset( float fFakeBeat ) const;
 
-		vector<float>	m_Xs;
+		std::vector<float>	m_Xs;
 		bool		m_bDone;
 		BitmapText	m_Stamp;
 		static RString	g_sNameChars;
@@ -50,7 +50,7 @@ private:
 	bool			m_bStillEnteringName[NUM_PLAYERS];
 
 	ScrollingText		m_Text[NUM_PLAYERS];
-	vector<int>		m_ColToStringIndex[NUM_PLAYERS];
+	std::vector<int>		m_ColToStringIndex[NUM_PLAYERS];
 };
 
 #endif

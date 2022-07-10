@@ -61,7 +61,7 @@ void Screen::Init()
 
 	PlayCommandNoRecurse( Message("Init") );
 
-	vector<RString> asList;
+	std::vector<RString> asList;
 	split( PREPARE_SCREENS, ",", asList );
 	for( unsigned i = 0; i < asList.size(); ++i )
 	{
@@ -109,7 +109,7 @@ void Screen::Update( float fDeltaTime )
 {
 	ActorFrame::Update( fDeltaTime );
 	
-	m_fLockInputSecs = max( 0, m_fLockInputSecs-fDeltaTime );
+	m_fLockInputSecs = std::max( 0.0f, m_fLockInputSecs-fDeltaTime );
 
 	/* We need to ensure two things:
 	 * 1. Messages must be sent in the order of delay. If two messages are sent
@@ -136,7 +136,7 @@ void Screen::Update( float fDeltaTime )
 		if( m_QueuedMessages[i].fDelayRemaining > 0.0001f )
 		{
 			m_QueuedMessages[i].fDelayRemaining -= fDeltaTime;
-			m_QueuedMessages[i].fDelayRemaining = max( m_QueuedMessages[i].fDelayRemaining, 0.0001f );
+			m_QueuedMessages[i].fDelayRemaining = std::max( m_QueuedMessages[i].fDelayRemaining, 0.0001f );
 		}
 		else
 		{
@@ -355,7 +355,7 @@ bool Screen::PassInputToLua(const InputEventPlus& input)
 	lua_setfield(L, -2, "PlayerNumber");
 	Enum::Push(L, input.mp);
 	lua_setfield(L, -2, "MultiPlayer");
-	for(map<callback_key_t, LuaReference>::iterator callback= m_InputCallbacks.begin();
+	for(std::map<callback_key_t, LuaReference>::iterator callback= m_InputCallbacks.begin();
 			callback != m_InputCallbacks.end() && !handled; ++callback)
 	{
 		callback->second.PushSelf(L);
@@ -370,7 +370,7 @@ bool Screen::PassInputToLua(const InputEventPlus& input)
 	m_CallingInputCallbacks= false;
 	if(!m_DelayedCallbackRemovals.empty())
 	{
-		for(vector<callback_key_t>::iterator key= m_DelayedCallbackRemovals.begin();
+		for(std::vector<callback_key_t>::iterator key= m_DelayedCallbackRemovals.begin();
 				key != m_DelayedCallbackRemovals.end(); ++key)
 		{
 			InternalRemoveCallback(*key);
@@ -400,7 +400,7 @@ void Screen::RemoveInputCallback(lua_State* L)
 
 void Screen::InternalRemoveCallback(callback_key_t key)
 {
-	map<callback_key_t, LuaReference>::iterator iter= m_InputCallbacks.find(key);
+	std::map<callback_key_t, LuaReference>::iterator iter= m_InputCallbacks.find(key);
 	if(iter != m_InputCallbacks.end())
 	{
 		m_InputCallbacks.erase(iter);

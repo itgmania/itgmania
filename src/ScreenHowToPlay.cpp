@@ -89,7 +89,7 @@ void ScreenHowToPlay::Init()
 	}
 
 	// Display a character
-	vector<Character*> vpCharacters;
+	std::vector<Character*> vpCharacters;
 	CHARMAN->GetCharacters( vpCharacters );
 	if( (bool)USE_CHARACTER && vpCharacters.size() && HaveAllCharAnimations() )
 	{

@@ -54,7 +54,7 @@ XNode *BackgroundDef::CreateNode() const
 
 RString BackgroundChange::GetTextDescription() const
 {
-	vector<RString> vsParts;
+	std::vector<RString> vsParts;
 	if( !m_def.m_sFile1.empty() )	vsParts.push_back( m_def.m_sFile1 );
 	if( !m_def.m_sFile2.empty() )	vsParts.push_back( m_def.m_sFile2 );
 	if( m_fRate!=1.0f )				vsParts.push_back( ssprintf("%.2f%%",m_fRate*100) );
@@ -108,7 +108,7 @@ const RString SBE_StretchNoLoop         = "StretchNoLoop";
 const RString SBE_StretchRewind         = "StretchRewind";
 const RString SBT_CrossFade             = "CrossFade";
 
-static void StripCvsAndSvn( vector<RString> &vsPathsToStrip, vector<RString> &vsNamesToStrip )
+static void StripCvsAndSvn( std::vector<RString> &vsPathsToStrip, std::vector<RString> &vsNamesToStrip )
 {
 	ASSERT( vsPathsToStrip.size() == vsNamesToStrip.size() );
 	for( unsigned i=0; i<vsNamesToStrip.size(); i++ )
@@ -126,19 +126,19 @@ int CompareBackgroundChanges(const BackgroundChange &seg1, const BackgroundChang
 	return seg1.m_fStartBeat < seg2.m_fStartBeat;
 }
 
-void BackgroundUtil::SortBackgroundChangesArray( vector<BackgroundChange> &vBackgroundChanges )
+void BackgroundUtil::SortBackgroundChangesArray( std::vector<BackgroundChange> &vBackgroundChanges )
 {
 	sort( vBackgroundChanges.begin(), vBackgroundChanges.end(), CompareBackgroundChanges );
 }
 
-void BackgroundUtil::AddBackgroundChange( vector<BackgroundChange> &vBackgroundChanges, BackgroundChange seg )
+void BackgroundUtil::AddBackgroundChange( std::vector<BackgroundChange> &vBackgroundChanges, BackgroundChange seg )
 {
-	vector<BackgroundChange>::iterator it;
+	std::vector<BackgroundChange>::iterator it;
 	it = upper_bound( vBackgroundChanges.begin(), vBackgroundChanges.end(), seg, CompareBackgroundChanges );
 	vBackgroundChanges.insert( it, seg );
 }
 
-void BackgroundUtil::GetBackgroundEffects( const RString &_sName, vector<RString> &vsPathsOut, vector<RString> &vsNamesOut )
+void BackgroundUtil::GetBackgroundEffects( const RString &_sName, std::vector<RString> &vsPathsOut, std::vector<RString> &vsNamesOut )
 {
 	RString sName = _sName;
 	if( sName == "" )
@@ -154,7 +154,7 @@ void BackgroundUtil::GetBackgroundEffects( const RString &_sName, vector<RString
 	StripCvsAndSvn( vsPathsOut, vsNamesOut );
 }
 
-void BackgroundUtil::GetBackgroundTransitions( const RString &_sName, vector<RString> &vsPathsOut, vector<RString> &vsNamesOut )
+void BackgroundUtil::GetBackgroundTransitions( const RString &_sName, std::vector<RString> &vsPathsOut, std::vector<RString> &vsNamesOut )
 {
 	RString sName = _sName;
 	if( sName == "" )
@@ -172,7 +172,7 @@ void BackgroundUtil::GetBackgroundTransitions( const RString &_sName, vector<RSt
 	StripCvsAndSvn( vsPathsOut, vsNamesOut );
 }
 
-void BackgroundUtil::GetSongBGAnimations( const Song *pSong, const RString &sMatch, vector<RString> &vsPathsOut, vector<RString> &vsNamesOut )
+void BackgroundUtil::GetSongBGAnimations( const Song *pSong, const RString &sMatch, std::vector<RString> &vsPathsOut, std::vector<RString> &vsNamesOut )
 {
 	vsPathsOut.clear();
 	if( sMatch.empty() )
@@ -191,7 +191,7 @@ void BackgroundUtil::GetSongBGAnimations( const Song *pSong, const RString &sMat
 	StripCvsAndSvn( vsPathsOut, vsNamesOut );
 }
 
-void BackgroundUtil::GetSongMovies( const Song *pSong, const RString &sMatch, vector<RString> &vsPathsOut, vector<RString> &vsNamesOut )
+void BackgroundUtil::GetSongMovies( const Song *pSong, const RString &sMatch, std::vector<RString> &vsPathsOut, std::vector<RString> &vsNamesOut )
 {
 	vsPathsOut.clear();
 	if( sMatch.empty() )
@@ -211,7 +211,7 @@ void BackgroundUtil::GetSongMovies( const Song *pSong, const RString &sMatch, ve
 	StripCvsAndSvn( vsPathsOut, vsNamesOut );
 }
 
-void BackgroundUtil::GetSongBitmaps( const Song *pSong, const RString &sMatch, vector<RString> &vsPathsOut, vector<RString> &vsNamesOut )
+void BackgroundUtil::GetSongBitmaps( const Song *pSong, const RString &sMatch, std::vector<RString> &vsPathsOut, std::vector<RString> &vsNamesOut )
 {
 	vsPathsOut.clear();
 	if( sMatch.empty() )
@@ -231,7 +231,7 @@ void BackgroundUtil::GetSongBitmaps( const Song *pSong, const RString &sMatch, v
 	StripCvsAndSvn( vsPathsOut, vsNamesOut );
 }
 
-static void GetFilterToFileNames( const RString sBaseDir, const Song *pSong, set<RString> &vsPossibleFileNamesOut )
+static void GetFilterToFileNames( const RString sBaseDir, const Song *pSong, std::set<RString> &vsPossibleFileNamesOut )
 {
 	vsPossibleFileNamesOut.clear();
 
@@ -262,7 +262,7 @@ static void GetFilterToFileNames( const RString sBaseDir, const Song *pSong, set
 		vsPossibleFileNamesOut.insert( p->first );
 }
 
-void BackgroundUtil::GetGlobalBGAnimations( const Song *pSong, const RString &sMatch, vector<RString> &vsPathsOut, vector<RString> &vsNamesOut )
+void BackgroundUtil::GetGlobalBGAnimations( const Song *pSong, const RString &sMatch, std::vector<RString> &vsPathsOut, std::vector<RString> &vsNamesOut )
 {
 	vsPathsOut.clear();
 	GetDirListing( BG_ANIMS_DIR+sMatch+"*", vsPathsOut, true, true );
@@ -283,7 +283,7 @@ namespace {
 	void GetGlobalRandomMoviePaths(
 		const Song *pSong,
 		const RString &sMatch,
-		vector<RString> &vsPathsOut,
+		std::vector<RString> &vsPathsOut,
 		bool bTryInsideOfSongGroupAndGenreFirst,
 		bool bTryInsideOfSongGroupFirst )
 	{
@@ -301,11 +301,11 @@ namespace {
 		}
 
 		// Search for the most appropriate background
-		set<RString> ssFileNameWhitelist;
+		std::set<RString> ssFileNameWhitelist;
 		if( bTryInsideOfSongGroupAndGenreFirst  &&  pSong  &&  !pSong->m_sGenre.empty() )
 			GetFilterToFileNames( RANDOMMOVIES_DIR, pSong, ssFileNameWhitelist );
 
-		vector<RString> vsDirsToTry;
+		std::vector<RString> vsDirsToTry;
 		if( bTryInsideOfSongGroupFirst && pSong )
 		{
 			ASSERT( !pSong->m_sGroupName.empty() );
@@ -322,7 +322,7 @@ namespace {
 
 			if( !ssFileNameWhitelist.empty() )
 			{
-				vector<RString> vsMatches;
+				std::vector<RString> vsMatches;
 				for (RString const &s : vsPathsOut)
 				{
 					RString sBasename = Basename( s );
@@ -349,8 +349,8 @@ namespace {
 void BackgroundUtil::GetGlobalRandomMovies(
 	const Song *pSong,
 	const RString &sMatch,
-	vector<RString> &vsPathsOut,
-	vector<RString> &vsNamesOut,
+	std::vector<RString> &vsPathsOut,
+	std::vector<RString> &vsNamesOut,
 	bool bTryInsideOfSongGroupAndGenreFirst,
 	bool bTryInsideOfSongGroupFirst )
 {
@@ -371,7 +371,7 @@ void BackgroundUtil::BakeAllBackgroundChanges( Song *pSong )
 {
 	Background bg;
 	bg.LoadFromSong( pSong );
-	vector<BackgroundChange> *vBGChanges[NUM_BackgroundLayer];
+	std::vector<BackgroundChange> *vBGChanges[NUM_BackgroundLayer];
 	FOREACH_BackgroundLayer( i )
 		vBGChanges[i] = &pSong->GetBackgroundChanges(i);
 	bg.GetLoadedBackgroundChanges( vBGChanges );

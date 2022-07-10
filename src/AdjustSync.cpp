@@ -43,12 +43,12 @@
 #include "ScreenManager.h"
 
 
-vector<TimingData> AdjustSync::s_vpTimingDataOriginal;
+std::vector<TimingData> AdjustSync::s_vpTimingDataOriginal;
 float AdjustSync::s_fGlobalOffsetSecondsOriginal = 0.0f;
 int AdjustSync::s_iAutosyncOffsetSample = 0;
 float AdjustSync::s_fAutosyncOffset[AdjustSync::OFFSET_SAMPLE_COUNT];
 float AdjustSync::s_fStandardDeviation = 0.0f;
-vector< pair<float, float> > AdjustSync::s_vAutosyncTempoData;
+std::vector<std::pair<float, float>> AdjustSync::s_vAutosyncTempoData;
 float AdjustSync::s_fAverageError = 0.0f;
 const float AdjustSync::ERROR_TOO_HIGH = 0.025f;
 int AdjustSync::s_iStepsFiltered = 0;
@@ -60,7 +60,7 @@ void AdjustSync::ResetOriginalSyncData()
 	if( GAMESTATE->m_pCurSong )
 	{
 		s_vpTimingDataOriginal.push_back(GAMESTATE->m_pCurSong->m_SongTiming);
-		const vector<Steps *>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
+		const std::vector<Steps*>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
 		for (Steps const *s : vpSteps)
 		{
 			s_vpTimingDataOriginal.push_back(s->m_Timing);
@@ -86,7 +86,7 @@ bool AdjustSync::IsSyncDataChanged()
 	// Can't sync in course modes
 	if( GAMESTATE->IsCourseMode() )
 		return false;
-	vector<RString> vs;
+	std::vector<RString> vs;
 	AdjustSync::GetSyncChangeTextGlobal( vs );
 	AdjustSync::GetSyncChangeTextSong( vs );
 	return !vs.empty();
@@ -127,7 +127,7 @@ void AdjustSync::RevertSyncChanges()
 	GAMESTATE->m_pCurSong->m_SongTiming = s_vpTimingDataOriginal[0];
 
 	unsigned location = 1;
-	const vector<Steps *>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
+	const std::vector<Steps*>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
 	for (Steps *s : vpSteps)
 	{
 		s->m_Timing = s_vpTimingDataOriginal[location];
@@ -152,7 +152,7 @@ void AdjustSync::HandleAutosync( float fNoteOffBySeconds, float fStepTime )
 	case AutosyncType_Tempo:
 	{
 		// We collect all of the data and process it at the end
-		s_vAutosyncTempoData.push_back( make_pair(fStepTime, fNoteOffBySeconds) );
+		s_vAutosyncTempoData.push_back( std::make_pair(fStepTime, fNoteOffBySeconds) );
 		break;
 	}
 	case AutosyncType_Machine:
@@ -198,7 +198,7 @@ void AdjustSync::AutosyncOffset()
 			case AutosyncType_Song:
 			{
 				GAMESTATE->m_pCurSong->m_SongTiming.m_fBeat0OffsetInSeconds += mean;
-				const vector<Steps *>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
+				const std::vector<Steps*>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
 				for (Steps *s : vpSteps)
 				{
 					// Empty TimingData means it's inherited
@@ -257,7 +257,7 @@ void AdjustSync::AutosyncTempo()
 		const float fScaleBPM = 1.0f/(1.0f - fSlope);
 		TimingData &timing = GAMESTATE->m_pCurSong->m_SongTiming;
 
-		const vector<TimingSegment *> &bpms = timing.GetTimingSegments(SEGMENT_BPM);
+		const std::vector<TimingSegment*> &bpms = timing.GetTimingSegments(SEGMENT_BPM);
 		for (unsigned i = 0; i < bpms.size(); i++)
 		{
 			const BPMSegment *b = ToBPM( bpms[i] );
@@ -267,14 +267,14 @@ void AdjustSync::AutosyncTempo()
 		/* We assume that the stops were measured as a number of beats.
 		 * Therefore, if we change the bpms, we need to make a similar
 		 * change to the stops. */
-		const vector<TimingSegment *> &stops = timing.GetTimingSegments(SEGMENT_STOP);
+		const std::vector<TimingSegment*> &stops = timing.GetTimingSegments(SEGMENT_STOP);
 		for (unsigned i = 0; i < stops.size(); i++)
 		{
 			const StopSegment *s = ToStop( stops[i] );
 			timing.AddSegment( StopSegment(s->GetRow(), s->GetPause() * (1.0f - fSlope)) );
 		}
 		// Do the same for delays.
-		const vector<TimingSegment *> &delays = timing.GetTimingSegments(SEGMENT_DELAY);
+		const std::vector<TimingSegment*> &delays = timing.GetTimingSegments(SEGMENT_DELAY);
 		for (unsigned i = 0; i < delays.size(); i++)
 		{
 			const DelaySegment *s = ToDelay( delays[i] );
@@ -307,7 +307,7 @@ static LocalizedString ERROR			("AdjustSync", "Average Error %.5fs");
 static LocalizedString ETC              ("AdjustSync", "Etc.");
 static LocalizedString TAPS_IGNORED	("AdjustSync", "%d taps ignored.");
 
-void AdjustSync::GetSyncChangeTextGlobal( vector<RString> &vsAddTo )
+void AdjustSync::GetSyncChangeTextGlobal( std::vector<RString> &vsAddTo )
 {
 	{
 		float fOld = Quantize( AdjustSync::s_fGlobalOffsetSecondsOriginal, 0.001f );
@@ -325,7 +325,7 @@ void AdjustSync::GetSyncChangeTextGlobal( vector<RString> &vsAddTo )
 }
 
 // XXX: needs cleanup still -- vyhd
-void AdjustSync::GetSyncChangeTextSong( vector<RString> &vsAddTo )
+void AdjustSync::GetSyncChangeTextSong( std::vector<RString> &vsAddTo )
 {
 	if( GAMESTATE->m_pCurSong.Get() )
 	{
@@ -354,8 +354,8 @@ void AdjustSync::GetSyncChangeTextSong( vector<RString> &vsAddTo )
 			}
 		}
 
-		const vector<TimingSegment *> &bpmTest = testing.GetTimingSegments(SEGMENT_BPM);
-		const vector<TimingSegment *> &bpmOrig = original.GetTimingSegments(SEGMENT_BPM);
+		const std::vector<TimingSegment*> &bpmTest = testing.GetTimingSegments(SEGMENT_BPM);
+		const std::vector<TimingSegment*> &bpmOrig = original.GetTimingSegments(SEGMENT_BPM);
 		SEGMENTS_MISMATCH_MESSAGE(bpmOrig, bpmTest, bpm);
 		for(size_t i= 0; i < bpmTest.size() && i < bpmOrig.size(); i++)
 		{
@@ -377,8 +377,8 @@ void AdjustSync::GetSyncChangeTextSong( vector<RString> &vsAddTo )
 			vsAddTo.push_back( s );
 		}
 
-		const vector<TimingSegment *> &stopTest = testing.GetTimingSegments(SEGMENT_STOP);
-		const vector<TimingSegment *> &stopOrig = original.GetTimingSegments(SEGMENT_STOP);
+		const std::vector<TimingSegment*> &stopTest = testing.GetTimingSegments(SEGMENT_STOP);
+		const std::vector<TimingSegment*> &stopOrig = original.GetTimingSegments(SEGMENT_STOP);
 
 		SEGMENTS_MISMATCH_MESSAGE(stopOrig, stopTest, stop);
 		for(size_t i= 0; i < stopTest.size() && i < stopOrig.size(); i++)
@@ -400,8 +400,8 @@ void AdjustSync::GetSyncChangeTextSong( vector<RString> &vsAddTo )
 			vsAddTo.push_back( s );
 		}
 
-		const vector<TimingSegment *> &delyTest = testing.GetTimingSegments(SEGMENT_DELAY);
-		const vector<TimingSegment *> &delyOrig = original.GetTimingSegments(SEGMENT_DELAY);
+		const std::vector<TimingSegment*> &delyTest = testing.GetTimingSegments(SEGMENT_DELAY);
+		const std::vector<TimingSegment*> &delyOrig = original.GetTimingSegments(SEGMENT_DELAY);
 
 		SEGMENTS_MISMATCH_MESSAGE(delyOrig, delyTest, delay);
 		for(size_t i= 0; i < delyTest.size() && i < delyOrig.size(); i++)

@@ -194,7 +194,7 @@ void PlayerOptions::Approach( const PlayerOptions& other, float fDeltaSeconds )
 #undef DO_COPY
 }
 
-static void AddPart( vector<RString> &AddTo, float level, RString name )
+static void AddPart( std::vector<RString> &AddTo, float level, RString name )
 {
 	if( level == 0 )
 		return;
@@ -206,12 +206,12 @@ static void AddPart( vector<RString> &AddTo, float level, RString name )
 
 RString PlayerOptions::GetString( bool bForceNoteSkin ) const
 {
-	vector<RString> v;
+	std::vector<RString> v;
 	GetMods( v, bForceNoteSkin );
 	return join( ", ", v );
 }
 
-void PlayerOptions::GetMods( vector<RString> &AddTo, bool bForceNoteSkin ) const
+void PlayerOptions::GetMods( std::vector<RString> &AddTo, bool bForceNoteSkin ) const
 {
 	//RString sReturn;
 
@@ -594,7 +594,7 @@ void PlayerOptions::GetMods( vector<RString> &AddTo, bool bForceNoteSkin ) const
 void PlayerOptions::FromString( const RString &sMultipleMods )
 {
 	RString sTemp = sMultipleMods;
-	vector<RString> vs;
+	std::vector<RString> vs;
 	split( sTemp, ",", vs, true );
 	RString sThrowAway;
 	for (RString &s : vs)
@@ -622,7 +622,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 
 	float level = 1;
 	float speed = 1;
-	vector<RString> asParts;
+	std::vector<RString> asParts;
 	split( sBit, " ", asParts, true );
 
 	for (RString const &s : asParts)
@@ -656,7 +656,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 		else if( s[0]=='*' )
 		{
 			sscanf( s, "*%f", &speed );
-			if( !isfinite(speed) )
+			if( !std::isfinite(speed) )
 				speed = 1.0f;
 		}
 	}
@@ -668,7 +668,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 
 	static Regex mult("^([0-9]+(\\.[0-9]+)?)x$");
 	static Regex disabledWindows("(w[1-5])");
-	vector<RString> matches;
+	std::vector<RString> matches;
 	if( mult.Compare(sBit, matches) )
 	{
 		StringConversion::FromString( matches[0], level );
@@ -679,7 +679,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	}
 	else if( sscanf( sBit, "c%f", &level ) == 1 )
 	{
-		if( !isfinite(level) || level <= 0.0f )
+		if( !std::isfinite(level) || level <= 0.0f )
 			level = CMOD_DEFAULT;
 		SET_FLOAT( fScrollBPM )
 		SET_FLOAT( fTimeSpacing )
@@ -691,7 +691,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	{
 		// OpenITG doesn't have this block:
 		/*
-		if( !isfinite(level) || level <= 0.0f )
+		if( !std::isfinite(level) || level <= 0.0f )
 			level = CMOD_DEFAULT;
 		*/
 		SET_FLOAT( fMaxScrollBPM )
@@ -1673,15 +1673,15 @@ bool PlayerOptions::IsEasierForCourseAndTrail( Course* pCourse, Trail* pTrail ) 
 	});
 }
 
-void PlayerOptions::GetLocalizedMods( vector<RString> &AddTo ) const
+void PlayerOptions::GetLocalizedMods( std::vector<RString> &AddTo ) const
 {
-	vector<RString> vMods;
+	std::vector<RString> vMods;
 	GetMods( vMods );
 	for (RString const &sOneMod : vMods)
 	{
 		ASSERT( !sOneMod.empty() );
 
-		vector<RString> asTokens;
+		std::vector<RString> asTokens;
 		split( sOneMod, " ", asTokens );
 
 		if( asTokens.empty() )
@@ -2136,7 +2136,7 @@ public:
 		if(original_top >= 1 && lua_isnumber(L, 1))
 		{
 			float speed= FArg(1);
-			if(!isfinite(speed) || speed <= 0.0f)
+			if(!std::isfinite(speed) || speed <= 0.0f)
 			{
 				luaL_error(L, "CMod speed must be finite and greater than 0.");
 			}
@@ -2197,7 +2197,7 @@ public:
 		if(lua_isnumber(L, 1) && original_top >= 1)
 		{
 			float speed= FArg(1);
-			if(!isfinite(speed) || speed <= 0.0f)
+			if(!std::isfinite(speed) || speed <= 0.0f)
 			{
 				luaL_error(L, "MMod speed must be finite and greater than 0.");
 			}

@@ -500,7 +500,7 @@ static bool PointsToValidCall( vm_address_t start, const void *ptr )
 	
 	/* We're reading buf backwards, between buf[-7] and buf[-1].  Find out how
 	* far we can read. */
-	const int len = min( intptr_t(ptr)-start, 7U );
+	const int len = std::min<int>(intptr_t(ptr) - start, 7);
 	
 	// Permissible CALL sequences that we care about:
 	//

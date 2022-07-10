@@ -140,7 +140,7 @@ public:
 	XNode* CreateNode() const;
 	void LoadFromNode( const XNode* pNode );
 
-	vector<HighScore> vHighScores;
+	std::vector<HighScore> vHighScores;
 	Grade HighGrade;
 
 	// Lua

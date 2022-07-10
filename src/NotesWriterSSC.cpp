@@ -19,7 +19,7 @@
  * @brief Turn a vector of lines into a single line joined by newline characters.
  * @param lines the list of lines to join.
  * @return the joined lines. */
-static RString JoinLineList( vector<RString> &lines )
+static RString JoinLineList( std::vector<RString> &lines )
 {
 	for( unsigned i = 0; i < lines.size(); ++i )
 		TrimRight( lines[i] );
@@ -36,10 +36,10 @@ static RString JoinLineList( vector<RString> &lines )
 // A utility class to write timing tags more easily!
 struct TimingTagWriter {
 
-	vector<RString> *m_pvsLines;
+	std::vector<RString> *m_pvsLines;
 	RString m_sNext;
 
-	TimingTagWriter( vector<RString> *pvsLines ): m_pvsLines (pvsLines) { }
+	TimingTagWriter( std::vector<RString>* pvsLines ): m_pvsLines (pvsLines) { }
 
 	void Write( const int row, const char *value )
 	{
@@ -59,7 +59,7 @@ struct TimingTagWriter {
 
 };
 
-static void GetTimingTags( vector<RString> &lines, const TimingData &timing, bool bIsSong = false )
+static void GetTimingTags( std::vector<RString> &lines, const TimingData &timing, bool bIsSong = false )
 {
 	TimingTagWriter w ( &lines );
 
@@ -67,7 +67,7 @@ static void GetTimingTags( vector<RString> &lines, const TimingData &timing, boo
 	unsigned i = 0;
 
 	w.Init( "BPMS" );
-	const vector<TimingSegment *> &bpms = timing.GetTimingSegments(SEGMENT_BPM);
+	const std::vector<TimingSegment*> &bpms = timing.GetTimingSegments(SEGMENT_BPM);
 	for (; i < bpms.size(); i++)
 	{
 		const BPMSegment *bs = ToBPM( bpms[i] );
@@ -76,7 +76,7 @@ static void GetTimingTags( vector<RString> &lines, const TimingData &timing, boo
 	w.Finish();
 
 	w.Init( "STOPS" );
-	const vector<TimingSegment *> &stops = timing.GetTimingSegments(SEGMENT_STOP);
+	const std::vector<TimingSegment*> &stops = timing.GetTimingSegments(SEGMENT_STOP);
 	for (i = 0; i < stops.size(); i++)
 	{
 		const StopSegment *ss = ToStop( stops[i] );
@@ -85,7 +85,7 @@ static void GetTimingTags( vector<RString> &lines, const TimingData &timing, boo
 	w.Finish();
 
 	w.Init( "DELAYS" );
-	const vector<TimingSegment *> &delays = timing.GetTimingSegments(SEGMENT_DELAY);
+	const std::vector<TimingSegment*> &delays = timing.GetTimingSegments(SEGMENT_DELAY);
 	for (i = 0; i < delays.size(); i++)
 	{
 		const DelaySegment *ss = ToDelay( delays[i] );
@@ -94,7 +94,7 @@ static void GetTimingTags( vector<RString> &lines, const TimingData &timing, boo
 	w.Finish();
 
 	w.Init( "WARPS" );
-	const vector<TimingSegment *> &warps = timing.GetTimingSegments(SEGMENT_WARP);
+	const std::vector<TimingSegment*> &warps = timing.GetTimingSegments(SEGMENT_WARP);
 	for (i = 0; i < warps.size(); i++)
 	{
 		const WarpSegment *ws = ToWarp( warps[i] );
@@ -102,7 +102,7 @@ static void GetTimingTags( vector<RString> &lines, const TimingData &timing, boo
 	}
 	w.Finish();
 
-	const vector<TimingSegment *> &tSigs = timing.GetTimingSegments(SEGMENT_TIME_SIG);
+	const std::vector<TimingSegment*> &tSigs = timing.GetTimingSegments(SEGMENT_TIME_SIG);
 	ASSERT( !tSigs.empty() );
 	w.Init( "TIMESIGNATURES" );
 	for (i = 0; i < tSigs.size(); i++)
@@ -112,7 +112,7 @@ static void GetTimingTags( vector<RString> &lines, const TimingData &timing, boo
 	}
 	w.Finish();
 
-	const vector<TimingSegment *> &ticks = timing.GetTimingSegments(SEGMENT_TICKCOUNT);
+	const std::vector<TimingSegment*> &ticks = timing.GetTimingSegments(SEGMENT_TICKCOUNT);
 	ASSERT( !ticks.empty() );
 	w.Init( "TICKCOUNTS" );
 	for (i = 0; i < ticks.size(); i++)
@@ -122,7 +122,7 @@ static void GetTimingTags( vector<RString> &lines, const TimingData &timing, boo
 	}
 	w.Finish();
 
-	const vector<TimingSegment *> &combos = timing.GetTimingSegments(SEGMENT_COMBO);
+	const std::vector<TimingSegment*> &combos = timing.GetTimingSegments(SEGMENT_COMBO);
 	ASSERT( !combos.empty() );
 	w.Init( "COMBOS" );
 	for (i = 0; i < combos.size(); i++)
@@ -136,7 +136,7 @@ static void GetTimingTags( vector<RString> &lines, const TimingData &timing, boo
 	w.Finish();
 
 	// Song Timing should only have the initial value.
-	const vector<TimingSegment *> &speeds = timing.GetTimingSegments(SEGMENT_SPEED);
+	const std::vector<TimingSegment*> &speeds = timing.GetTimingSegments(SEGMENT_SPEED);
 	w.Init( "SPEEDS" );
 	for (i = 0; i < speeds.size(); i++)
 	{
@@ -146,7 +146,7 @@ static void GetTimingTags( vector<RString> &lines, const TimingData &timing, boo
 	w.Finish();
 
 	w.Init( "SCROLLS" );
-	const vector<TimingSegment *> &scrolls = timing.GetTimingSegments(SEGMENT_SCROLL);
+	const std::vector<TimingSegment*> &scrolls = timing.GetTimingSegments(SEGMENT_SCROLL);
 	for (i = 0; i < scrolls.size(); i++)
 	{
 		ScrollSegment *ss = ToScroll( scrolls[i] );
@@ -156,7 +156,7 @@ static void GetTimingTags( vector<RString> &lines, const TimingData &timing, boo
 
 	if( !bIsSong )
 	{
-		const vector<TimingSegment *> &fakes = timing.GetTimingSegments(SEGMENT_FAKE);
+		const std::vector<TimingSegment*> &fakes = timing.GetTimingSegments(SEGMENT_FAKE);
 		w.Init( "FAKES" );
 		for (i = 0; i < fakes.size(); i++)
 		{
@@ -167,7 +167,7 @@ static void GetTimingTags( vector<RString> &lines, const TimingData &timing, boo
 	}
 
 	w.Init( "LABELS" );
-	const vector<TimingSegment *> &labels = timing.GetTimingSegments(SEGMENT_LABEL);
+	const std::vector<TimingSegment*> &labels = timing.GetTimingSegments(SEGMENT_LABEL);
 	for (i = 0; i < labels.size(); i++)
 	{
 		LabelSegment *ls = static_cast<LabelSegment *>(labels[i]);
@@ -235,7 +235,7 @@ static void WriteGlobalTags( RageFile &f, const Song &out )
 	}
 
 	{
-		vector<RString> vs = out.GetInstrumentTracksToVectorString();
+		std::vector<RString> vs = out.GetInstrumentTracksToVectorString();
 		if( !vs.empty() )
 		{
 			RString s = join( ",", vs );
@@ -349,7 +349,7 @@ static void WriteGlobalTags( RageFile &f, const Song &out )
  * @return the NoteData in RString form. */
 static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCache )
 {
-	vector<RString> lines;
+	std::vector<RString> lines;
 
 	lines.push_back( "" );
 	// Escape to prevent some clown from making a comment of "\r\n;"
@@ -369,7 +369,7 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 		lines.push_back(ssprintf("#MUSIC:%s;", music.c_str()));
 	}
 
-	vector<RString> asRadarValues;
+	std::vector<RString> asRadarValues;
 	FOREACH_PlayerNumber( pn )
 	{
 		const RadarValues &rv = in.GetRadarValues( pn );
@@ -431,7 +431,7 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 	return JoinLineList( lines );
 }
 
-bool NotesWriterSSC::Write( RString sPath, const Song &out, const vector<Steps*>& vpStepsToSave, bool bSavingCache )
+bool NotesWriterSSC::Write( RString sPath, const Song &out, const std::vector<Steps*>& vpStepsToSave, bool bSavingCache )
 {
 	int flags = RageFile::WRITE;
 
@@ -480,7 +480,7 @@ void NotesWriterSSC::GetEditFileContents( const Song *pSong, const Steps *pSteps
 	RString sDir = pSong->GetSongDir();
 
 	// "Songs/foo/bar"; strip off "Songs/".
-	vector<RString> asParts;
+	std::vector<RString> asParts;
 	split( sDir, "/", asParts );
 	if( asParts.size() )
 		sDir = join( "/", asParts.begin()+1, asParts.end() );
