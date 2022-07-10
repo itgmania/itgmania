@@ -13,14 +13,14 @@
 
 RString StepsTypeToString( StepsType st );
 
-static vector<RString> GenerateRankingToFillInMarker()
+static std::vector<RString> GenerateRankingToFillInMarker()
 {
-	vector<RString> vRankings;
+	std::vector<RString> vRankings;
 	FOREACH_ENUM( PlayerNumber, pn )
 		vRankings.push_back( ssprintf("#P%d#", pn+1) );
 	return vRankings;
 }
-extern const vector<RString> RANKING_TO_FILL_IN_MARKER( GenerateRankingToFillInMarker() );
+extern const std::vector<RString> RANKING_TO_FILL_IN_MARKER( GenerateRankingToFillInMarker() );
 
 extern const RString GROUP_ALL = "---Group All---";
 
@@ -380,7 +380,7 @@ float DisplayBpms::GetMin() const
 	for (float const &f : vfBpms)
 	{
 		if( f != -1 )
-			fMin = min( fMin, f );
+			fMin = std::min( fMin, f );
 	}
 	if( fMin == FLT_MAX )
 		return 0;
@@ -399,7 +399,7 @@ float DisplayBpms::GetMaxWithin(float highest) const
 	for (float const &f : vfBpms)
 	{
 		if( f != -1 )
-			fMax = clamp(max( fMax, f ), 0, highest);
+			fMax = clamp(std::max( fMax, f ), 0.0f, highest);
 	}
 	return fMax;
 }

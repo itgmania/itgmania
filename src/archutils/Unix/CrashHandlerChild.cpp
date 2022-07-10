@@ -134,7 +134,7 @@ static void child_process()
 	if( !child_read(3, temp, size) )
 		return;
 
-	vector<RString> Checkpoints;
+	std::vector<RString> Checkpoints;
 	split(temp, "$$", Checkpoints);
 	delete [] temp;
 

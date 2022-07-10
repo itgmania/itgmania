@@ -247,7 +247,7 @@ RString InputHandler_Win32_ddrio::GetDeviceSpecificInputString( const DeviceInpu
 	return InputHandler::GetDeviceSpecificInputString(di);
 }
 
-void InputHandler_Win32_ddrio::GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevicesOut )
+void InputHandler_Win32_ddrio::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut )
 {
 	// We use a joystick device so we can get automatic input mapping
 	vDevicesOut.push_back(InputDeviceInfo(InputDevice(DDRIO_DEVICEID), "ddrio"));

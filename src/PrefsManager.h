@@ -143,7 +143,7 @@ protected:
 		RString m_sTheme;
 		RString	m_sDefaultModifiers;
 	};
-	map<RString, GamePrefs> m_mapGameNameToGamePrefs;
+	std::map<RString, GamePrefs> m_mapGameNameToGamePrefs;
 
 public:
 	Preference<bool>	m_bWindowed;

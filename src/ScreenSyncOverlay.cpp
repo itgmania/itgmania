@@ -54,7 +54,7 @@ static LocalizedString STANDARD_DEVIATION( "ScreenSyncOverlay", "Standard deviat
 void ScreenSyncOverlay::UpdateText()
 {
 	// Update Status
-	vector<RString> vs;
+	std::vector<RString> vs;
 
 	PlayerController pc = GamePreferences::m_AutoPlay.Get();
 	switch( pc )
@@ -203,7 +203,7 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 				TimingData &sTiming = GAMESTATE->m_pCurSong->m_SongTiming;
 				BPMSegment * seg = sTiming.GetBPMSegmentAtBeat( GAMESTATE->m_Position.m_fSongBeat );
 				seg->SetBPS( seg->GetBPS() + fDelta );
-				const vector<Steps *>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
+				const std::vector<Steps*>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
 				for (Steps *s : vpSteps)
 				{
 					TimingData &pTiming = s->m_Timing;
@@ -253,7 +253,7 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 					if( GAMESTATE->m_pCurSong != nullptr )
 					{
 						GAMESTATE->m_pCurSong->m_SongTiming.m_fBeat0OffsetInSeconds += fDelta;
-						const vector<Steps *>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
+						const std::vector<Steps*>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
 						for (Steps *s : vpSteps)
 						{
 							// Empty means it inherits song timing,

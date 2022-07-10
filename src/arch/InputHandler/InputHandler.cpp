@@ -133,7 +133,7 @@ RString InputHandler::GetDeviceSpecificInputString( const DeviceInput &di )
 
 		wchar_t c = DeviceButtonToChar( di.button, false );
 		if( c && c != L' ' ) // Don't show "Key  " for space.
-			return InputDeviceToString( di.device ) + " " + Capitalize( WStringToRString(wstring()+c) );
+			return InputDeviceToString( di.device ) + " " + Capitalize( WStringToRString(std::wstring()+c) );
 	}
 
 	RString s = DeviceButtonToString( di.button );
@@ -162,7 +162,7 @@ RString InputHandler::GetLocalizedInputString( const DeviceInput &di )
 	default:
 		wchar_t c = DeviceButtonToChar( di.button, false );
 		if( c && c != L' ' ) // Don't show "Key  " for space.
-			return Capitalize( WStringToRString(wstring()+c) );
+			return Capitalize( WStringToRString(std::wstring()+c) );
 
 		return DeviceButtonToString( di.button );
 	}
@@ -171,10 +171,10 @@ RString InputHandler::GetLocalizedInputString( const DeviceInput &di )
 DriverList InputHandler::m_pDriverList;
 
 static LocalizedString INPUT_HANDLERS_EMPTY( "Arch", "Input Handlers cannot be empty." );
-void InputHandler::Create( const RString &drivers_, vector<InputHandler *> &Add )
+void InputHandler::Create( const RString &drivers_, std::vector<InputHandler *> &Add )
 {
 	const RString drivers = drivers_.empty()? RString(DEFAULT_INPUT_DRIVER_LIST):drivers_;
-	vector<RString> DriversToTry;
+	std::vector<RString> DriversToTry;
 	split( drivers, ",", DriversToTry, true );
 	
 	if( DriversToTry.empty() )

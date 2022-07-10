@@ -52,7 +52,7 @@ void StatsManager::Reset()
 	CalcAccumPlayedStageStats();
 }
 
-static StageStats AccumPlayedStageStats( const vector<StageStats>& vss )
+static StageStats AccumPlayedStageStats( const std::vector<StageStats>& vss )
 {
 	StageStats ssreturn;
 
@@ -95,7 +95,7 @@ static StageStats AccumPlayedStageStats( const vector<StageStats>& vss )
 void StatsManager::GetFinalEvalStageStats( StageStats& statsOut ) const
 {
 	statsOut.Init();
-	vector<StageStats> vssToCount;
+	std::vector<StageStats> vssToCount;
 	for(size_t i= 0; i < m_vPlayedStageStats.size(); ++i)
 	{
 		vssToCount.push_back(m_vPlayedStageStats[i]);
@@ -252,7 +252,7 @@ void StatsManager::CommitStatsToProfiles( const StageStats *pSS )
 void StatsManager::SaveUploadFile( const StageStats *pSS )
 {
 	// Save recent scores
-	unique_ptr<XNode> xml( new XNode("Stats") );
+	std::unique_ptr<XNode> xml( new XNode("Stats") );
 	xml->AppendChild( "MachineGuid",  PROFILEMAN->GetMachineProfile()->m_sGuid );
 
 	XNode *recent = nullptr;
@@ -331,7 +331,7 @@ void StatsManager::SavePadmissScore( const StageStats *pSS, PlayerNumber pn )
 	stepdata->AppendChild( "StepArtist", steps->GetCredit() );
 	stepdata->AppendChild( "StepsType", steps->m_StepsTypeStr );
 	RageFileObjMem f;
-	vector<Steps*> stepv;
+	std::vector<Steps*> stepv;
 	stepv.push_back(steps);
 	NotesWriterSM::Write( f, *song, stepv );
 	stepdata->AppendChild( "StepData", f.GetString() );
@@ -492,7 +492,7 @@ void StatsManager::UnjoinPlayer( PlayerNumber pn )
 	}
 }
 
-void StatsManager::GetStepsInUse( set<Steps*> &apInUseOut ) const
+void StatsManager::GetStepsInUse( std::set<Steps*> &apInUseOut ) const
 {
 	for( int i = 0; i < (int) m_vPlayedStageStats.size(); ++i )
 	{
@@ -557,7 +557,7 @@ public:
 	{
 		Grade g = NUM_Grade;
 		FOREACH_EnabledPlayer( pn )
-			g = min( g, STATSMAN->m_CurStageStats.m_player[pn].GetGrade() );
+			g = std::min( g, STATSMAN->m_CurStageStats.m_player[pn].GetGrade() );
 		lua_pushnumber( L, g );
 		return 1;
 	}
@@ -566,7 +566,7 @@ public:
 	{
 		Grade g = Grade_Tier01;
 		FOREACH_EnabledPlayer( pn )
-			g = max( g, STATSMAN->m_CurStageStats.m_player[pn].GetGrade() );
+			g = std::max( g, STATSMAN->m_CurStageStats.m_player[pn].GetGrade() );
 		lua_pushnumber( L, g );
 		return 1;
 	}
@@ -583,7 +583,7 @@ public:
 				[&](StageStats const &ss) { return ss.m_player[p].m_bFailed; }))
 				continue;
 
-			top_grade = min( top_grade, stats.m_player[p].GetGrade() );
+			top_grade = std::min( top_grade, stats.m_player[p].GetGrade() );
 		}
 
 		Enum::Push( L, top_grade );

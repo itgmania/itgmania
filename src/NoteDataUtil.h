@@ -13,7 +13,7 @@ class TimingData;
 
 void PlaceAutoKeysound( NoteData &out, int row, TapNote akTap );
 int FindLongestOverlappingHoldNoteForAnyTrack( const NoteData &in, int iRow );
-void LightTransformHelper( const NoteData &in, NoteData &out, const vector<int> &aiTracks );
+void LightTransformHelper( const NoteData &in, NoteData &out, const std::vector<int> &aiTracks );
 
 /**
  * @brief Utility functions that deal with NoteData.
@@ -27,8 +27,8 @@ namespace NoteDataUtil
 	NoteType GetSmallestNoteTypeInRange( const NoteData &nd, int iStartIndex, int iEndIndex );
 	void LoadFromSMNoteDataString( NoteData &out, const RString &sSMNoteData, bool bComposite );
 	void GetSMNoteDataString( const NoteData &in, RString &notes_out );
-	void SplitCompositeNoteData( const NoteData &in, vector<NoteData> &out );
-	void CombineCompositeNoteData( NoteData &out, const vector<NoteData> &in );
+	void SplitCompositeNoteData( const NoteData &in, std::vector<NoteData> &out );
+	void CombineCompositeNoteData( NoteData &out, const std::vector<NoteData> &in );
 	/**
 	 * @brief Autogenerate notes from one type to another.
 	 *

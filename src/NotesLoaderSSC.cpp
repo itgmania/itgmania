@@ -357,7 +357,7 @@ void SetRadarValues(StepsTagInfo& info)
 {
 	if(info.from_cache || info.for_load_edit)
 	{
-		vector<RString> values;
+		std::vector<RString> values;
 		split((*info.params)[1], ",", values, true);
 		// Instead of trying to use the version to figure out how many
 		// categories to expect, look at the number of values and split them
@@ -643,12 +643,12 @@ ssc_parser_helper_t parser_helper;
 
 void SSCLoader::ProcessBPMs( TimingData &out, const RString sParam )
 {
-	vector<RString> arrayBPMExpressions;
+	std::vector<RString> arrayBPMExpressions;
 	split( sParam, ",", arrayBPMExpressions );
 	
 	for( unsigned b=0; b<arrayBPMExpressions.size(); b++ )
 	{
-		vector<RString> arrayBPMValues;
+		std::vector<RString> arrayBPMValues;
 		split( arrayBPMExpressions[b], "=", arrayBPMValues );
 		if( arrayBPMValues.size() != 2 )
 		{
@@ -677,12 +677,12 @@ void SSCLoader::ProcessBPMs( TimingData &out, const RString sParam )
 
 void SSCLoader::ProcessStops( TimingData &out, const RString sParam )
 {
-	vector<RString> arrayStopExpressions;
+	std::vector<RString> arrayStopExpressions;
 	split( sParam, ",", arrayStopExpressions );
 	
 	for( unsigned b=0; b<arrayStopExpressions.size(); b++ )
 	{
-		vector<RString> arrayStopValues;
+		std::vector<RString> arrayStopValues;
 		split( arrayStopExpressions[b], "=", arrayStopValues );
 		if( arrayStopValues.size() != 2 )
 		{
@@ -709,12 +709,12 @@ void SSCLoader::ProcessStops( TimingData &out, const RString sParam )
 
 void SSCLoader::ProcessWarps( TimingData &out, const RString sParam, const float fVersion )
 {
-	vector<RString> arrayWarpExpressions;
+	std::vector<RString> arrayWarpExpressions;
 	split( sParam, ",", arrayWarpExpressions );
 	
 	for( unsigned b=0; b<arrayWarpExpressions.size(); b++ )
 	{
-		vector<RString> arrayWarpValues;
+		std::vector<RString> arrayWarpValues;
 		split( arrayWarpExpressions[b], "=", arrayWarpValues );
 		if( arrayWarpValues.size() != 2 )
 		{
@@ -746,12 +746,12 @@ void SSCLoader::ProcessWarps( TimingData &out, const RString sParam, const float
 
 void SSCLoader::ProcessLabels( TimingData &out, const RString sParam )
 {
-	vector<RString> arrayLabelExpressions;
+	std::vector<RString> arrayLabelExpressions;
 	split( sParam, ",", arrayLabelExpressions );
 	
 	for( unsigned b=0; b<arrayLabelExpressions.size(); b++ )
 	{
-		vector<RString> arrayLabelValues;
+		std::vector<RString> arrayLabelValues;
 		split( arrayLabelExpressions[b], "=", arrayLabelValues );
 		if( arrayLabelValues.size() != 2 )
 		{
@@ -780,12 +780,12 @@ void SSCLoader::ProcessLabels( TimingData &out, const RString sParam )
 
 void SSCLoader::ProcessCombos( TimingData &out, const RString line, const int rowsPerBeat )
 {
-	vector<RString> arrayComboExpressions;
+	std::vector<RString> arrayComboExpressions;
 	split( line, ",", arrayComboExpressions );
 	
 	for( unsigned f=0; f<arrayComboExpressions.size(); f++ )
 	{
-		vector<RString> arrayComboValues;
+		std::vector<RString> arrayComboValues;
 		split( arrayComboExpressions[f], "=", arrayComboValues );
 		unsigned size = arrayComboValues.size();
 		if( size < 2 )
@@ -805,12 +805,12 @@ void SSCLoader::ProcessCombos( TimingData &out, const RString line, const int ro
 
 void SSCLoader::ProcessScrolls( TimingData &out, const RString sParam )
 {
-	vector<RString> vs1;
+	std::vector<RString> vs1;
 	split( sParam, ",", vs1 );
 	
 	for (RString const &s1 : vs1)
 	{
-		vector<RString> vs2;
+		std::vector<RString> vs2;
 		split( s1, "=", vs2 );
 		
 		if( vs2.size() < 2 )

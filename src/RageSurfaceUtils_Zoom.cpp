@@ -5,7 +5,6 @@
 #include "RageUtil.h"
 
 #include <vector>
-using namespace std;
 
 /* Coordinate 0x0 represents the exact top-left corner of a bitmap.  .5x.5
  * represents the center of the top-left pixel; 1x1 is the center of the top
@@ -14,7 +13,7 @@ using namespace std;
  * (Look at a grid: map coordinates to the lines, not the squares between the
  * lines.) */
 
-static void InitVectors( vector<int> &s0, vector<int> &s1, vector<uint32_t> &percent, int src, int dst )
+static void InitVectors( std::vector<int> &s0, std::vector<int> &s1, std::vector<uint32_t> &percent, int src, int dst )
 {
 	if( src >= dst )
 	{
@@ -83,8 +82,8 @@ static void ZoomSurface( const RageSurface * src, RageSurface * dst )
 {
 	/* For each destination coordinate, two source rows, two source columns
 	 * and the percentage of the first row and first column: */
-	vector<int> esx0, esx1, esy0, esy1;
-	vector<uint32_t> ex0, ey0;
+	std::vector<int> esx0, esx1, esy0, esy1;
+	std::vector<uint32_t> ex0, ey0;
 
 	InitVectors( esx0, esx1, ex0, src->w, dst->w );
 	InitVectors( esy0, esy1, ey0, src->h, dst->h );

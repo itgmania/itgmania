@@ -170,7 +170,7 @@ void WheelBase::Update( float fDeltaTime )
 	if( m_Moving )
 	{
 		m_TimeBeforeMovingBegins -= fDeltaTime;
-		m_TimeBeforeMovingBegins = max(m_TimeBeforeMovingBegins, 0);
+		m_TimeBeforeMovingBegins = std::max(m_TimeBeforeMovingBegins, 0.0f);
 	}
 
 	// update wheel state
@@ -185,7 +185,7 @@ void WheelBase::Update( float fDeltaTime )
 		float fTime = fDeltaTime;
 		while( fTime > 0 )
 		{
-			float t = min( fTime, 0.1f );
+			float t = std::min( fTime, 0.1f );
 			fTime -= t;
 
 			m_fPositionOffsetFromSelection = clamp( m_fPositionOffsetFromSelection, -0.3f, +0.3f );
@@ -436,8 +436,8 @@ void WheelBase::ChangeMusic( int iDist )
 
 void WheelBase::RebuildWheelItems( int iDist )
 {
-	const vector<WheelItemBaseData *> &data = m_CurWheelItemData;
-	vector<WheelItemBase *> &items = m_WheelBaseItems;
+	const std::vector<WheelItemBaseData*> &data = m_CurWheelItemData;
+	std::vector<WheelItemBase*> &items = m_WheelBaseItems;
 
 	// rewind to first index that will be displayed;
 	int iFirstVisibleIndex = m_iSelection;

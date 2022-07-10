@@ -187,10 +187,10 @@ public:
 
 	bool DrawHoldsInRange(const NoteFieldRenderArgs& field_args,
 		const NoteColumnRenderArgs& column_args,
-		const vector<NoteData::TrackMap::const_iterator>& tap_set);
+		const std::vector<NoteData::TrackMap::const_iterator>& tap_set);
 	bool DrawTapsInRange(const NoteFieldRenderArgs& field_args,
 		const NoteColumnRenderArgs& column_args,
-		const vector<NoteData::TrackMap::const_iterator>& tap_set);
+		const std::vector<NoteData::TrackMap::const_iterator>& tap_set);
 	/**
 	 * @brief Draw the TapNote onto the NoteField.
 	 * @param tn the TapNote in question.
@@ -244,12 +244,12 @@ private:
 		const NoteColumnRenderArgs& column_args, float fYOffset, float fBeat,
 		bool bIsAddition, float fPercentFadeToFail, float fColorScale,
 		bool is_being_held);
-	void DrawHoldPart(vector<Sprite*> &vpSpr,
+	void DrawHoldPart(std::vector<Sprite*> &vpSpr,
 		const NoteFieldRenderArgs& field_args,
 		const NoteColumnRenderArgs& column_args,
 		const draw_hold_part_args& part_args, bool glow, int part_type);
-	void DrawHoldBodyInternal(vector<Sprite*>& sprite_top,
-		vector<Sprite*>& sprite_body, vector<Sprite*>& sprite_bottom,
+	void DrawHoldBodyInternal(std::vector<Sprite*>& sprite_top,
+		std::vector<Sprite*>& sprite_body, std::vector<Sprite*>& sprite_bottom,
 		const NoteFieldRenderArgs& field_args,
 		const NoteColumnRenderArgs& column_args,
 		draw_hold_part_args& part_args,
@@ -333,7 +333,7 @@ struct NoteColumnRenderer : public Actor
 	NCSplineHandler* GetZoomHandler() { return &NCR_DestTweenState().m_zoom_handler; }
 
 	private:
-	vector<NCR_TweenState> NCR_Tweens;
+	std::vector<NCR_TweenState> NCR_Tweens;
 	NCR_TweenState NCR_current;
 	NCR_TweenState NCR_start;
 };

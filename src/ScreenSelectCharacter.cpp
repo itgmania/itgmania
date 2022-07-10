@@ -51,8 +51,8 @@ REGISTER_SCREEN_CLASS( ScreenSelectCharacter );
 void ScreenSelectCharacter::Init()
 {
 	ScreenWithMenuElements::Init();
-	
-	vector<Character*> apCharacters;
+
+	std::vector<Character*> apCharacters;
 	CHARMAN->GetCharacters( apCharacters );
 	if( apCharacters.empty() )
 	{
@@ -234,7 +234,7 @@ void ScreenSelectCharacter::AfterValueChange( PlayerNumber pn )
 	case CHOOSING_CPU_CHARACTER:
 	case CHOOSING_HUMAN_CHARACTER:
 		{
-			vector<Character*> apCharacters;
+			std::vector<Character*> apCharacters;
 			CHARMAN->GetCharacters( apCharacters );
 			Character* pChar = apCharacters[ m_iSelectedCharacter[pnAffected] ];
 			m_sprCard[pnAffected].UnloadTexture();
@@ -304,7 +304,7 @@ void ScreenSelectCharacter::Move( PlayerNumber pn, int deltaValue )
 		case CHOOSING_CPU_CHARACTER:
 		case CHOOSING_HUMAN_CHARACTER:
 		{
-			vector<Character*> apCharacters;
+			std::vector<Character*> apCharacters;
 			CHARMAN->GetCharacters( apCharacters );
 			m_iSelectedCharacter[pnAffected] += deltaValue;
 			wrap( m_iSelectedCharacter[pnAffected], apCharacters.size() );
@@ -356,7 +356,7 @@ void ScreenSelectCharacter::MakeSelection( PlayerNumber pn )
 	{
 		FOREACH_PlayerNumber( p )
 		{
-			vector<Character*> apCharacters;
+			std::vector<Character*> apCharacters;
 			CHARMAN->GetCharacters( apCharacters );
 			Character* pChar = apCharacters[ m_iSelectedCharacter[p] ];
 			GAMESTATE->m_pCurCharacters[p] = pChar;

@@ -110,7 +110,7 @@ private:
 };
 
 
-static vector<RageFileReadAheadThread *> g_apReadAheads;
+static std::vector<RageFileReadAheadThread *> g_apReadAheads;
 
 void RageFileManagerReadAhead::Init() { }
 void RageFileManagerReadAhead::Shutdown()

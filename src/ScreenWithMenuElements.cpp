@@ -279,7 +279,7 @@ void ScreenWithMenuElements::StartTransitioningScreen( ScreenMessage smSendWhenD
 		// Time the transition so that it finishes exactly when all actors have 
 		// finished tweening.
 		float fSecondsUntilFinished = GetTweenTimeLeft();
-		float fSecondsUntilBeginOff = max( fSecondsUntilFinished - m_Out.GetTweenTimeLeft(), 0 );
+		float fSecondsUntilBeginOff = std::max( fSecondsUntilFinished - m_Out.GetTweenTimeLeft(), 0.0f );
 		m_Out.SetHibernate( fSecondsUntilBeginOff );
 	}
 }

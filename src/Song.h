@@ -259,10 +259,10 @@ public:
 	RString m_sBackgroundFile;
 	RString m_sCDTitleFile;
 	RString m_sPreviewVidFile;
-	vector<RString> ImageDir;
+	std::vector<RString> ImageDir;
 
 	AttackArray m_Attacks;
-	vector<RString>	m_sAttackString;
+	std::vector<RString>	m_sAttackString;
 
 	static RString GetSongAssetPath( RString sPath, const RString &sSongPath );
 	RString GetMusicPath() const;
@@ -319,7 +319,7 @@ public:
 	void SetLastSecond(const float f);
 	void SetSpecifiedLastSecond(const float f);
 
-	typedef vector<BackgroundChange> 	VBackgroundChange;
+	typedef std::vector<BackgroundChange> 	VBackgroundChange;
 private:
 	/** @brief The first second that a note is hit. */
 	float firstSecond;
@@ -340,23 +340,23 @@ private:
 	 * This must be sorted before gameplay. */
 	AutoPtrCopyOnWrite<VBackgroundChange>	m_ForegroundChanges;
 
-	vector<RString> GetChangesToVectorString(const vector<BackgroundChange> & changes) const;
+	std::vector<RString> GetChangesToVectorString(const std::vector<BackgroundChange> & changes) const;
 public:
-	const vector<BackgroundChange>	&GetBackgroundChanges( BackgroundLayer bl ) const;
-	vector<BackgroundChange>	&GetBackgroundChanges( BackgroundLayer bl );
-	const vector<BackgroundChange>	&GetForegroundChanges() const;
-	vector<BackgroundChange>	&GetForegroundChanges();
+	const std::vector<BackgroundChange>	&GetBackgroundChanges( BackgroundLayer bl ) const;
+	std::vector<BackgroundChange>	&GetBackgroundChanges( BackgroundLayer bl );
+	const std::vector<BackgroundChange>	&GetForegroundChanges() const;
+	std::vector<BackgroundChange>	&GetForegroundChanges();
 
-	vector<RString> GetBGChanges1ToVectorString() const;
-	vector<RString> GetBGChanges2ToVectorString() const;
-	vector<RString> GetFGChanges1ToVectorString() const;
+	std::vector<RString> GetBGChanges1ToVectorString() const;
+	std::vector<RString> GetBGChanges2ToVectorString() const;
+	std::vector<RString> GetFGChanges1ToVectorString() const;
 
-	vector<RString> GetInstrumentTracksToVectorString() const;
+	std::vector<RString> GetInstrumentTracksToVectorString() const;
 
 	/**
 	 * @brief The list of LyricSegments.
 	 * This must be sorted before gameplay. */
-	vector<LyricSegment>			m_LyricSegments;
+	std::vector<LyricSegment>			m_LyricSegments;
 
 /* [splittiming]
 	void AddBPMSegment( const BPMSegment &seg ) { m_Timing.AddBPMSegment( seg ); }
@@ -416,8 +416,8 @@ public:
 	bool HasStepsType( StepsType st ) const;
 	bool HasStepsTypeAndDifficulty( StepsType st, Difficulty dc ) const;
 	// TODO: Allow for a non const version.
-	const vector<Steps*>& GetAllSteps() const { return m_vpSteps; }
-	const vector<Steps*>& GetStepsByStepsType( StepsType st ) const { return m_vpStepsByType[st]; }
+	const std::vector<Steps*>& GetAllSteps() const { return m_vpSteps; }
+	const std::vector<Steps*>& GetStepsByStepsType( StepsType st ) const { return m_vpStepsByType[st]; }
 	bool IsEasy( StepsType st ) const;
 	bool IsTutorial() const;
 	bool HasEdits( StepsType st ) const;
@@ -439,9 +439,9 @@ public:
 	void AddSteps( Steps* pSteps );
 	void DeleteSteps( const Steps* pSteps, bool bReAutoGen = true );
 
-	void FreeAllLoadedFromProfile( ProfileSlot slot = ProfileSlot_Invalid, const set<Steps*> *setInUse = nullptr );
+	void FreeAllLoadedFromProfile( ProfileSlot slot = ProfileSlot_Invalid, const std::set<Steps*> *setInUse = nullptr );
 	bool WasLoadedFromProfile() const { return m_LoadedFromProfile != ProfileSlot_Invalid; }
-	void GetStepsLoadedFromProfile( ProfileSlot slot, vector<Steps*> &vpStepsOut ) const;
+	void GetStepsLoadedFromProfile( ProfileSlot slot, std::vector<Steps*> &vpStepsOut ) const;
 	int GetNumStepsLoadedFromProfile( ProfileSlot slot ) const;
 	bool IsEditAlreadyLoaded( Steps* pSteps ) const;
 
@@ -454,7 +454,7 @@ public:
 	 * If you  change the index in here, you must change all NoteData too.
 	 * Any note that doesn't have a value in the range of this array
 	 * means "this note doesn't have a keysound". */
-	vector<RString> m_vsKeysoundFile;
+	std::vector<RString> m_vsKeysoundFile;
 
 	RString GetAttackString() const
 	{
@@ -467,11 +467,11 @@ public:
 private:
 	bool m_loaded_from_autosave;
 	/** @brief the Steps that belong to this Song. */
-	vector<Steps*> m_vpSteps;
+	std::vector<Steps*> m_vpSteps;
 	/** @brief the Steps of a particular StepsType that belong to this Song. */
-	std::array<vector<Steps *>, NUM_StepsType> m_vpStepsByType;
+	std::array<std::vector<Steps *>, NUM_StepsType> m_vpStepsByType;
 	/** @brief the Steps that are of unrecognized Styles. */
-	vector<Steps*> m_UnknownStyleSteps;
+	std::vector<Steps*> m_UnknownStyleSteps;
 };
 
 #endif

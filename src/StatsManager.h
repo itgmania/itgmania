@@ -17,7 +17,7 @@ public:
      *
      * This is not necessarily passed stage stats if this is an Extra Stage. */
     StageStats		m_CurStageStats;
-    vector<StageStats>	m_vPlayedStageStats;
+    std::vector<StageStats>	m_vPlayedStageStats;
 
     // Only the latest 3 normal songs + passed extra stages.
     void GetFinalEvalStageStats( StageStats& statsOut ) const;
@@ -30,7 +30,7 @@ public:
     static void CommitStatsToProfiles( const StageStats *pSS );
 
     void UnjoinPlayer( PlayerNumber pn );
-    void GetStepsInUse( set<Steps*> &apInUseOut ) const;
+    void GetStepsInUse( std::set<Steps*> &apInUseOut ) const;
 
     // Lua
     void PushSelf( lua_State *L );

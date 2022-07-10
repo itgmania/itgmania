@@ -24,7 +24,7 @@ protected:
 		bool			m_bFinished;
 	};
 
-	vector<LoadedBGA>	m_BGAnimations;
+	std::vector<LoadedBGA>	m_BGAnimations;
 	float m_fLastMusicSeconds;
 	const Song *m_pSong;
 };

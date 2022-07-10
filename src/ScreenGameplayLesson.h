@@ -21,7 +21,7 @@ protected:
 	void ChangeLessonPage( int iDir );
 	void ResetAndRestartCurrentSong();
 
-	vector<AutoActor> m_vPages;
+	std::vector<AutoActor> m_vPages;
 	int m_iCurrentPageIndex;
 
 	enum Try

@@ -82,10 +82,10 @@ void GetBounds( const Surface *pSurf, RECT *out )
 			if( (pixel & 0xFFFFFF) == 0 )
 				continue; /* black */
 
-			FirstCol = min(FirstCol, col);
-			LastCol = max(LastCol, col);
-			FirstRow = min(FirstRow, row);
-			LastRow = max(LastRow, row);
+			FirstCol = std::min(FirstCol, col);
+			LastCol = std::max(LastCol, col);
+			FirstRow = std::min(FirstRow, row);
+			LastRow = std::max(LastRow, row);
 		}
 		p += pSurf->iPitch;
 	}

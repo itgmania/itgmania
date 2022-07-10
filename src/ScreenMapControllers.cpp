@@ -73,7 +73,7 @@ void ScreenMapControllers::Init()
 	else
 	{
 		/* Map the specified buttons. */
-		vector<RString> asBits;
+		std::vector<RString> asBits;
 		split( sButtons, ",", asBits );
 		for( unsigned i=0; i<asBits.size(); ++i )
 		{
@@ -532,7 +532,7 @@ bool ScreenMapControllers::Input( const InputEventPlus &input )
 			if(CursorOnKey())
 			{
 				SetListEntry to_add(SetListEntry(CurKeyIndex(), m_CurController, m_CurSlot));
-				set<SetListEntry>::iterator found= m_SetList.find(to_add);
+				std::set<SetListEntry>::iterator found= m_SetList.find(to_add);
 				if(found == m_SetList.end())
 				{
 					m_SetList.insert(to_add);
@@ -622,7 +622,7 @@ void ScreenMapControllers::Refresh()
 	}
 
 	m_LineScroller.SetDestinationItem(
-		static_cast<float>(min(m_CurButton, m_MaxDestItem)));
+		static_cast<float>(std::min(m_CurButton, m_MaxDestItem)));
 }
 
 void ScreenMapControllers::DismissWarning()
@@ -791,7 +791,7 @@ void ScreenMapControllers::ExitAction()
 
 bool ScreenMapControllers::SanityCheckWrapper()
 {
-	vector<RString> reasons_not_sane;
+	std::vector<RString> reasons_not_sane;
 	INPUTMAPPER->SanityCheckMappings(reasons_not_sane);
 	if(reasons_not_sane.empty())
 	{

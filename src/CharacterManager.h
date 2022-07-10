@@ -13,7 +13,7 @@ public:
 	/** @brief Destroy the character manager. */
 	~CharacterManager();
 
-	void GetCharacters( vector<Character*> &vpCharactersOut );
+	void GetCharacters( std::vector<Character*> &vpCharactersOut );
 	/** @brief Get one installed character at random.
 	 * @return The random character. */
 	Character* GetRandomCharacter();
@@ -29,7 +29,7 @@ public:
 	void PushSelf( lua_State *L );
 
 private:
-	vector<Character*> m_pCharacters;
+	std::vector<Character*> m_pCharacters;
 
 };
 

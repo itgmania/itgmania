@@ -38,10 +38,10 @@ bool StepsCriteria::Matches( const Song *pSong, const Steps *pSteps ) const
 	return true;
 }
 
-void StepsUtil::GetAllMatching( const SongCriteria &soc, const StepsCriteria &stc, vector<SongAndSteps> &out )
+void StepsUtil::GetAllMatching( const SongCriteria &soc, const StepsCriteria &stc, std::vector<SongAndSteps> &out )
 {
 	const RString &sGroupName = soc.m_sGroupName.empty()? GROUP_ALL:soc.m_sGroupName;
-    const vector<Song*> &songs = SONGMAN->GetSongs( sGroupName );
+	const std::vector<Song*> &songs = SONGMAN->GetSongs( sGroupName );
 
 	for (Song *so : songs)
 	{
@@ -51,9 +51,9 @@ void StepsUtil::GetAllMatching( const SongCriteria &soc, const StepsCriteria &st
 	}
 }
 
-void StepsUtil::GetAllMatching( Song *pSong, const StepsCriteria &stc, vector<SongAndSteps> &out )
+void StepsUtil::GetAllMatching( Song *pSong, const StepsCriteria &stc, std::vector<SongAndSteps> &out )
 {
-	const vector<Steps*> &vSteps = ( stc.m_st == StepsType_Invalid ?  pSong->GetAllSteps() :
+	const std::vector<Steps*> &vSteps = ( stc.m_st == StepsType_Invalid ?  pSong->GetAllSteps() :
 					 pSong->GetStepsByStepsType(stc.m_st) );
 	
 	for (Steps *st : vSteps)
@@ -61,9 +61,9 @@ void StepsUtil::GetAllMatching( Song *pSong, const StepsCriteria &stc, vector<So
 			out.push_back( SongAndSteps(pSong, st) );
 }
 
-void StepsUtil::GetAllMatchingEndless( Song *pSong, const StepsCriteria &stc, vector<SongAndSteps> &out )
+void StepsUtil::GetAllMatchingEndless( Song *pSong, const StepsCriteria &stc, std::vector<SongAndSteps> &out )
 {
-	const vector<Steps*> &vSteps = ( stc.m_st == StepsType_Invalid ? pSong->GetAllSteps() :
+	const std::vector<Steps*> &vSteps = ( stc.m_st == StepsType_Invalid ? pSong->GetAllSteps() :
 		pSong->GetStepsByStepsType( stc.m_st ) );
 	int previousSize = out.size();
 	int successful = false;
@@ -79,7 +79,7 @@ void StepsUtil::GetAllMatchingEndless( Song *pSong, const StepsCriteria &stc, ve
 		Difficulty difficulty = ( *( vSteps.begin() ) )->GetDifficulty();
 		Difficulty previousDifficulty = difficulty;
 		int lowestDifficultyIndex = 0;
-		vector<Difficulty> difficulties;
+		std::vector<Difficulty> difficulties;
 		for (auto st = vSteps.begin(); st != vSteps.end(); ++st)
 		{
 			previousDifficulty = difficulty;
@@ -100,7 +100,7 @@ void StepsUtil::GetAllMatchingEndless( Song *pSong, const StepsCriteria &stc, ve
 bool StepsUtil::HasMatching( const SongCriteria &soc, const StepsCriteria &stc )
 {
 	const RString &sGroupName = soc.m_sGroupName.empty()? GROUP_ALL:soc.m_sGroupName;
-    const vector<Song*> &songs = SONGMAN->GetSongs( sGroupName );
+	const std::vector<Song*> &songs = SONGMAN->GetSongs( sGroupName );
 
 	return std::any_of(songs.begin(), songs.end(), [&](Song const *so) {
 		return soc.Matches(so) && HasMatching(so, stc);
@@ -109,14 +109,14 @@ bool StepsUtil::HasMatching( const SongCriteria &soc, const StepsCriteria &stc )
 
 bool StepsUtil::HasMatching( const Song *pSong, const StepsCriteria &stc )
 {
-	const vector<Steps*> &vSteps = stc.m_st == StepsType_Invalid? pSong->GetAllSteps():pSong->GetStepsByStepsType( stc.m_st );
+	const std::vector<Steps*> &vSteps = stc.m_st == StepsType_Invalid? pSong->GetAllSteps():pSong->GetStepsByStepsType( stc.m_st );
 	return std::any_of(vSteps.begin(), vSteps.end(), [&](Steps const *st) {
 		return stc.Matches(pSong, st);
 	});
 }
 
 // Sorting stuff
-map<const Steps*, RString> steps_sort_val;
+std::map<const Steps*, RString> steps_sort_val;
 
 static bool CompareStepsPointersBySortValueAscending(const Steps *pSteps1, const Steps *pSteps2)
 {
@@ -128,7 +128,7 @@ static bool CompareStepsPointersBySortValueDescending(const Steps *pSteps1, cons
 	return steps_sort_val[pSteps1] > steps_sort_val[pSteps2];
 }
 
-void StepsUtil::SortStepsPointerArrayByNumPlays( vector<Steps*> &vStepsPointers, ProfileSlot slot, bool bDescending )
+void StepsUtil::SortStepsPointerArrayByNumPlays( std::vector<Steps*> &vStepsPointers, ProfileSlot slot, bool bDescending )
 {
 	if( !PROFILEMAN->IsPersistentProfile(slot) )
 		return;	// nothing to do since we don't have data
@@ -136,17 +136,17 @@ void StepsUtil::SortStepsPointerArrayByNumPlays( vector<Steps*> &vStepsPointers,
 	SortStepsPointerArrayByNumPlays( vStepsPointers, pProfile, bDescending );
 }
 
-void StepsUtil::SortStepsPointerArrayByNumPlays( vector<Steps*> &vStepsPointers, const Profile* pProfile, bool bDecending )
+void StepsUtil::SortStepsPointerArrayByNumPlays( std::vector<Steps*> &vStepsPointers, const Profile* pProfile, bool bDecending )
 {
 	// ugly...
-	vector<Song*> vpSongs = SONGMAN->GetAllSongs();
-	vector<Steps*> vpAllSteps;
-	map<Steps*,Song*> mapStepsToSong;
+	std::vector<Song*> vpSongs = SONGMAN->GetAllSongs();
+	std::vector<Steps*> vpAllSteps;
+	std::map<Steps*, Song*> mapStepsToSong;
 	{
 		for( unsigned i=0; i<vpSongs.size(); i++ )
 		{
 			Song* pSong = vpSongs[i];
-			vector<Steps*> vpSteps = pSong->GetAllSteps();
+			std::vector<Steps*> vpSteps = pSong->GetAllSteps();
 			for( unsigned j=0; j<vpSteps.size(); j++ )
 			{
 				Steps* pSteps = vpSteps[j];
@@ -190,7 +190,7 @@ bool StepsUtil::CompareNotesPointersByDifficulty(const Steps *pSteps1, const Ste
 	return pSteps1->GetDifficulty() < pSteps2->GetDifficulty();
 }
 
-void StepsUtil::SortNotesArrayByDifficulty( vector<Steps*> &arraySteps )
+void StepsUtil::SortNotesArrayByDifficulty( std::vector<Steps*> &arraySteps )
 {
 	/* Sort in reverse order of priority. Sort by description first, to get
 	 * a predictable order for songs with no radar values (edits). */
@@ -209,7 +209,7 @@ bool StepsUtil::CompareStepsPointersByTypeAndDifficulty(const Steps *pStep1, con
 	return pStep1->GetDifficulty() < pStep2->GetDifficulty();
 }
 
-void StepsUtil::SortStepsByTypeAndDifficulty( vector<Steps*> &arraySongPointers )
+void StepsUtil::SortStepsByTypeAndDifficulty( std::vector<Steps*> &arraySongPointers )
 {
 	sort( arraySongPointers.begin(), arraySongPointers.end(), CompareStepsPointersByTypeAndDifficulty );
 }
@@ -219,12 +219,12 @@ bool StepsUtil::CompareStepsPointersByDescription(const Steps *pStep1, const Ste
 	return pStep1->GetDescription().CompareNoCase( pStep2->GetDescription() ) < 0;
 }
 
-void StepsUtil::SortStepsByDescription( vector<Steps*> &arraySongPointers )
+void StepsUtil::SortStepsByDescription( std::vector<Steps*> &arraySongPointers )
 {
 	sort( arraySongPointers.begin(), arraySongPointers.end(), CompareStepsPointersByDescription );
 }
 
-void StepsUtil::RemoveLockedSteps( const Song *pSong, vector<Steps*> &vpSteps )
+void StepsUtil::RemoveLockedSteps( const Song *pSong, std::vector<Steps*> &vpSteps )
 {
 	for( int i=vpSteps.size()-1; i>=0; i-- )
 	{

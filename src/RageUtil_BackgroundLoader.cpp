@@ -33,7 +33,7 @@ BackgroundLoader::BackgroundLoader():
 
 static void DeleteEmptyDirectories( RString sDir )
 {
-	vector<RString> asNewDirs;
+	std::vector<RString> asNewDirs;
 	GetDirListing( sDir + "/*", asNewDirs, false, true );
 	for( unsigned i = 0; i < asNewDirs.size(); ++i )
 	{
@@ -56,7 +56,7 @@ BackgroundLoader::~BackgroundLoader()
 	m_LoadThread.Wait();
 
 	/* Delete all leftover cached files. */
-	map<RString,int>::iterator it;
+	std::map<RString, int>::iterator it;
 	for( it = m_FinishedRequests.begin(); it != m_FinishedRequests.end(); ++it )
 		FILEMAN->Remove( GetCachePath( it->first ) );
 
@@ -101,7 +101,7 @@ void BackgroundLoader::LoadThread()
 		{
 			/* If the file already exists, short circuit. */
 			LockMut( m_Mutex );
-			map<RString,int>::iterator it;
+			std::map<RString, int>::iterator it;
 			it = m_FinishedRequests.find( sFile );
 			if( it != m_FinishedRequests.end() )
 			{
@@ -190,7 +190,7 @@ bool BackgroundLoader::IsCacheFileFinished( const RString &sFile, RString &sActu
 		return true;
 	}
 
-	map<RString,int>::iterator it;
+	std::map<RString, int>::iterator it;
 	it = m_FinishedRequests.find( sFile );
 	if( it == m_FinishedRequests.end() )
 		return false;
@@ -212,7 +212,7 @@ void BackgroundLoader::FinishedWithCachedFile( RString sFile )
 	if( sFile == "" )
 		return;
 
-	map<RString,int>::iterator it;
+	std::map<RString, int>::iterator it;
 	it = m_FinishedRequests.find( sFile );
 	ASSERT_M( it != m_FinishedRequests.end(), sFile );
 

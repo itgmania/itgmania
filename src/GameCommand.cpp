@@ -490,7 +490,7 @@ int GetNumCreditsPaid()
 
 	// players other than the first joined for free
 	if( GAMESTATE->GetPremium() == Premium_2PlayersFor1Credit )
-		iNumCreditsPaid = min( iNumCreditsPaid, 1 );
+		iNumCreditsPaid = std::min( iNumCreditsPaid, 1 );
 
 	return iNumCreditsPaid;
 }
@@ -611,7 +611,7 @@ bool GameCommand::IsPlayable( RString *why ) const
 
 	if( !m_sScreen.CompareNoCase("ScreenEditCoursesMenu") )
 	{
-		vector<Course*> vCourses;
+		std::vector<Course*> vCourses;
 		SONGMAN->GetAllCourses( vCourses, false );
 
 		if( vCourses.size() == 0 )
@@ -659,7 +659,7 @@ bool GameCommand::IsPlayable( RString *why ) const
 
 void GameCommand::ApplyToAllPlayers() const
 {
-	vector<PlayerNumber> vpns;
+	std::vector<PlayerNumber> vpns;
 
 	FOREACH_PlayerNumber( pn )
 		vpns.push_back( pn );
@@ -669,12 +669,12 @@ void GameCommand::ApplyToAllPlayers() const
 
 void GameCommand::Apply( PlayerNumber pn ) const
 {
-	vector<PlayerNumber> vpns;
+	std::vector<PlayerNumber> vpns;
 	vpns.push_back( pn );
 	Apply( vpns );
 }
 
-void GameCommand::Apply( const vector<PlayerNumber> &vpns ) const
+void GameCommand::Apply( const std::vector<PlayerNumber> &vpns ) const
 {
 	if( m_Commands.v.size() )
 	{
@@ -696,7 +696,7 @@ void GameCommand::Apply( const vector<PlayerNumber> &vpns ) const
 	}
 }
 
-void GameCommand::ApplySelf( const vector<PlayerNumber> &vpns ) const
+void GameCommand::ApplySelf( const std::vector<PlayerNumber> &vpns ) const
 {
 	const PlayMode OldPlayMode = GAMESTATE->m_PlayMode;
 
@@ -790,7 +790,7 @@ void GameCommand::ApplySelf( const vector<PlayerNumber> &vpns ) const
 	if( m_pCharacter )
 		for (PlayerNumber const &pn : vpns)
 			GAMESTATE->m_pCurCharacters[pn] = m_pCharacter;
-	for( map<RString,RString>::const_iterator i = m_SetEnv.begin(); i != m_SetEnv.end(); i++ )
+	for( std::map<RString, RString>::const_iterator i = m_SetEnv.begin(); i != m_SetEnv.end(); i++ )
 	{
 		Lua *L = LUA->Get();
 		GAMESTATE->m_Environment->PushSelf(L);
@@ -800,7 +800,7 @@ void GameCommand::ApplySelf( const vector<PlayerNumber> &vpns ) const
 		lua_pop( L, 1 );
 		LUA->Release(L);
 	}
-	for(map<RString,RString>::const_iterator setting= m_SetPref.begin(); setting != m_SetPref.end(); ++setting)
+	for(std::map<RString, RString>::const_iterator setting= m_SetPref.begin(); setting != m_SetPref.end(); ++setting)
 	{
 		IPreference* pref= IPreference::GetPreferenceByName(setting->first);
 		if(pref != nullptr)

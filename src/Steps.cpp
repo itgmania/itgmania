@@ -321,10 +321,10 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
 	if( tempNoteData.IsComposite() )
 	{
-		vector<NoteData> vParts;
+		std::vector<NoteData> vParts;
 
 		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
-		for( size_t pn = 0; pn < min(vParts.size(), size_t(NUM_PLAYERS)); ++pn )
+		for( size_t pn = 0; pn < std::min(vParts.size(), size_t(NUM_PLAYERS)); ++pn )
 			NoteDataUtil::CalculateRadarValues( vParts[pn], fMusicLengthSeconds, m_CachedRadarValues[pn] );
 	}
 	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
@@ -346,7 +346,7 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 	else
 	{
 		NoteDataUtil::CalculateRadarValues( tempNoteData, fMusicLengthSeconds, m_CachedRadarValues[0] );
-		fill_n( m_CachedRadarValues + 1, NUM_PLAYERS-1, m_CachedRadarValues[0] );
+		std::fill_n( m_CachedRadarValues + 1, NUM_PLAYERS-1, m_CachedRadarValues[0] );
 	}
 	GAMESTATE->SetProcessedTimingData(nullptr);
 }
@@ -499,7 +499,7 @@ void Steps::DeAutogen( bool bCopyNoteData )
 	m_sChartStyle		= Real()->m_sChartStyle;
 	m_Difficulty		= Real()->m_Difficulty;
 	m_iMeter		= Real()->m_iMeter;
-	copy( Real()->m_CachedRadarValues, Real()->m_CachedRadarValues + NUM_PLAYERS, m_CachedRadarValues );
+	std::copy( Real()->m_CachedRadarValues, Real()->m_CachedRadarValues + NUM_PLAYERS, m_CachedRadarValues );
 	m_sCredit		= Real()->m_sCredit;
 	parent = nullptr;
 
@@ -624,7 +624,7 @@ void Steps::SetMusicFile(const RString& file)
 void Steps::SetCachedRadarValues( const RadarValues v[NUM_PLAYERS] )
 {
 	DeAutogen();
-	copy( v, v + NUM_PLAYERS, m_CachedRadarValues );
+	std::copy( v, v + NUM_PLAYERS, m_CachedRadarValues );
 	m_bAreCachedRadarValuesJustLoaded = true;
 }
 
@@ -764,7 +764,7 @@ public:
 		p->GetDisplayBpms(temp);
 		float fMin = temp.GetMin();
 		float fMax = temp.GetMax();
-		vector<float> fBPMs;
+		std::vector<float> fBPMs;
 		fBPMs.push_back( fMin );
 		fBPMs.push_back( fMax );
 		LuaHelpers::CreateTableFromArray(fBPMs, L);

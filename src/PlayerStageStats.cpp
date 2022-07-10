@@ -126,7 +126,7 @@ void PlayerStageStats::AddStats( const PlayerStageStats& other )
 	const float fOtherLastSecond = other.m_fLastSecond + m_fLastSecond + 1.0f;
 	m_fLastSecond = fOtherLastSecond;
 
-	map<float,float>::const_iterator it;
+	std::map<float, float>::const_iterator it;
 	for( it = other.m_fLifeRecord.begin(); it != other.m_fLifeRecord.end(); ++it )
 	{
 		const float pos = it->first;
@@ -221,21 +221,21 @@ Grade PlayerStageStats::GetGrade() const
 		if( FullComboOfScore(TNS_W2) )
 			return Grade_Tier02;
 
-		grade = max( grade, Grade_Tier03 );
+		grade = std::max( grade, Grade_Tier03 );
 	}
 
 	if( GRADE_TIER01_IS_ALL_W2S )
 	{
 		if( FullComboOfScore(TNS_W2) )
 			return Grade_Tier01;
-		grade = max( grade, Grade_Tier02 );
+		grade = std::max( grade, Grade_Tier02 );
 	}
 
 	if( GRADE_TIER02_IS_FULL_COMBO )
 	{
 		if( FullComboOfScore(g_MinScoreToMaintainCombo) )
 			return Grade_Tier02;
-		grade = max( grade, Grade_Tier03 );
+		grade = std::max( grade, Grade_Tier03 );
 	}
 
 	return grade;
@@ -255,7 +255,7 @@ float PlayerStageStats::MakePercentScore( int iActual, int iPossible )
 	float fPercent =  iActual / (float)iPossible;
 
 	// don't allow negative
-	fPercent = max( 0, fPercent );
+	fPercent = std::max(0.0f, fPercent);
 
 	int iPercentTotalDigits = 3 + CommonMetrics::PERCENT_SCORE_DECIMAL_PLACES;	// "100" + "." + "00"
 
@@ -366,8 +366,8 @@ void PlayerStageStats::SetLifeRecordAt( float fLife, float fStepsSecond )
 	if( fStepsSecond < 0 )
 		return;
 
-	m_fFirstSecond = min( fStepsSecond, m_fFirstSecond );
-	m_fLastSecond = max( fStepsSecond, m_fLastSecond );
+	m_fFirstSecond = std::min( fStepsSecond, m_fFirstSecond );
+	m_fLastSecond = std::max( fStepsSecond, m_fLastSecond );
 	//LOG->Trace( "fLastSecond = %f", m_fLastSecond );
 
 	// fStepsSecond will usually be greater than any value already in the map,
@@ -380,7 +380,7 @@ void PlayerStageStats::SetLifeRecordAt( float fLife, float fStepsSecond )
 	// entry.  Then the second call of the frame occurs and sets the life for
 	// the current time to a lower value.
 	// -Kyz
-	map<float,float>::iterator curr= m_fLifeRecord.find(fStepsSecond);
+	std::map<float, float>::iterator curr= m_fLifeRecord.find(fStepsSecond);
 	if(curr != m_fLifeRecord.end())
 	{
 		if(curr->second != fLife)
@@ -401,17 +401,17 @@ void PlayerStageStats::SetLifeRecordAt( float fLife, float fStepsSecond )
 	// we can eliminate record B without losing data. Only check the last three 
 	// records in the map since we're only inserting at the end, and we know all 
 	// earlier redundant records have already been removed.
-	map<float,float>::iterator C = m_fLifeRecord.end();
+	std::map<float, float>::iterator C = m_fLifeRecord.end();
 	--C;
 	if( C == m_fLifeRecord.begin() ) // no earlier records left
 		return;
 
-	map<float,float>::iterator B = C;
+	std::map<float, float>::iterator B = C;
 	--B;
 	if( B == m_fLifeRecord.begin() ) // no earlier records left
 		return;
 
-	map<float,float>::iterator A = B;
+	std::map<float, float>::iterator A = B;
 	--A;
 
 	if( A->second == B->second && B->second == C->second )
@@ -424,7 +424,7 @@ float PlayerStageStats::GetLifeRecordAt( float fStepsSecond ) const
 		return 0;
 
 	// Find the first element whose key is greater than k.
-	map<float,float>::const_iterator it = m_fLifeRecord.upper_bound( fStepsSecond );
+	std::map<float, float>::const_iterator it = m_fLifeRecord.upper_bound( fStepsSecond );
 
 	// Find the last element whose key is less than or equal to k.
 	if( it != m_fLifeRecord.begin() )
@@ -440,10 +440,10 @@ float PlayerStageStats::GetLifeRecordLerpAt( float fStepsSecond ) const
 		return 0;
 
 	// Find the first element whose key is greater than k.
-	map<float,float>::const_iterator later = m_fLifeRecord.upper_bound( fStepsSecond );
+	std::map<float, float>::const_iterator later = m_fLifeRecord.upper_bound( fStepsSecond );
 
 	// Find the last element whose key is less than or equal to k.
-	map<float,float>::const_iterator earlier = later;
+	std::map<float, float>::const_iterator earlier = later;
 	if( earlier != m_fLifeRecord.begin() )
 		--earlier;
 
@@ -470,7 +470,7 @@ float PlayerStageStats::GetCurrentLife() const
 {
 	if( m_fLifeRecord.empty() )
 		return 0;
-	map<float,float>::const_iterator iter = m_fLifeRecord.end();
+	std::map<float, float>::const_iterator iter = m_fLifeRecord.end();
 	--iter; 
 	return iter->second;
 }
@@ -488,8 +488,8 @@ void PlayerStageStats::UpdateComboList( float fSecond, bool bRollover )
 
 	if( !bRollover )
 	{
-		m_fFirstSecond = min( fSecond, m_fFirstSecond );
-		m_fLastSecond = max( fSecond, m_fLastSecond );
+		m_fFirstSecond = std::min( fSecond, m_fFirstSecond );
+		m_fLastSecond = std::max( fSecond, m_fLastSecond );
 		//LOG->Trace( "fLastSecond = %f", fLastSecond );
 	}
 
@@ -644,7 +644,7 @@ void PlayerStageStats::CalcAwards( PlayerNumber p, bool bGaveUp, bool bUsedAutop
 	if( bGaveUp || bUsedAutoplay )
 		return;
 
-	deque<StageAward> &vPdas = GAMESTATE->m_vLastStageAwards[p];
+	std::deque<StageAward> &vPdas = GAMESTATE->m_vLastStageAwards[p];
 
 	//LOG->Trace( "per difficulty awards" );
 
@@ -771,7 +771,7 @@ public:
 	static int GetPlayedSteps( T* p, lua_State *L )
 	{
 		lua_newtable(L);
-		for( int i = 0; i < (int) min(p->m_iStepsPlayed, (int) p->m_vpPossibleSteps.size()); ++i )
+		for( int i = 0; i < (int) std::min(p->m_iStepsPlayed, (int) p->m_vpPossibleSteps.size()); ++i )
 		{
 			p->m_vpPossibleSteps[i]->PushSelf(L);
 			lua_rawseti( L, -2, i+1 );

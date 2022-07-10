@@ -10,7 +10,7 @@ public:
 	InputHandler_Win32_MIDI();
 	~InputHandler_Win32_MIDI();
 
-	void GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevicesOut );
+	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut );
 
 	void SetDev( DeviceInput key ) { ButtonPressed( key ); }
 

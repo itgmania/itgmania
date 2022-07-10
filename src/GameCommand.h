@@ -54,8 +54,8 @@ public:
 	void ApplyToAllPlayers() const;
 	void Apply( PlayerNumber pn ) const;
 private:
-	void Apply( const vector<PlayerNumber> &vpns ) const;
-	void ApplySelf( const vector<PlayerNumber> &vpns ) const;
+	void Apply( const std::vector<PlayerNumber> &vpns ) const;
+	void ApplySelf( const std::vector<PlayerNumber> &vpns ) const;
 public:
 
 	bool DescribesCurrentMode( PlayerNumber pn ) const;
@@ -96,7 +96,7 @@ public:
 	RString		m_sSongGroup;
 	SortOrder	m_SortOrder;
 	RString		m_sSoundPath;	// "" for no sound
-	vector<RString>	m_vsScreensToPrepare;
+	std::vector<RString>	m_vsScreensToPrepare;
 	/**
 	 * @brief What is the player's weight in pounds?
 	 *

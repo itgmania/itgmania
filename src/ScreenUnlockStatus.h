@@ -15,11 +15,11 @@ public:
 
 protected:
 	BitmapText PointsUntilNextUnlock;
-	vector<Sprite*> Unlocks;
-	vector<BitmapText*> item; // scrolling text
-	vector<Sprite*> ItemIcons;  // icons for scrolling text
+	std::vector<Sprite*> Unlocks;
+	std::vector<BitmapText*> item; // scrolling text
+	std::vector<Sprite*> ItemIcons;  // icons for scrolling text
 
-	vector<int> LastUnlocks;  // used for "last few" method
+	std::vector<int> LastUnlocks;  // used for "last few" method
 };
 
 #endif

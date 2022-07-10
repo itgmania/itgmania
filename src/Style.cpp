@@ -47,7 +47,7 @@ void Style::GetTransformedNoteDataForStyle( PlayerNumber pn, const NoteData& ori
 	noteDataOut.LoadTransformed( original, m_iColsPerPlayer, iNewToOriginalTrack );
 }
 
-void Style::StyleInputToGameInput( int iCol, PlayerNumber pn, vector<GameInput>& ret ) const
+void Style::StyleInputToGameInput( int iCol, PlayerNumber pn, std::vector<GameInput>& ret ) const
 {
 	ASSERT_M( pn < NUM_PLAYERS  &&  iCol < MAX_COLS_PER_PLAYER,
 		ssprintf("P%i C%i", pn, iCol) );
@@ -109,8 +109,8 @@ void Style::GetMinAndMaxColX( PlayerNumber pn, float& fMixXOut, float& fMaxXOut 
 	fMaxXOut = FLT_MIN;
 	for( int i=0; i<m_iColsPerPlayer; i++ )
 	{
-		fMixXOut = min( fMixXOut, m_ColumnInfo[pn][i].fXOffset );
-		fMaxXOut = max( fMaxXOut, m_ColumnInfo[pn][i].fXOffset );
+		fMixXOut = std::min( fMixXOut, m_ColumnInfo[pn][i].fXOffset );
+		fMaxXOut = std::max( fMaxXOut, m_ColumnInfo[pn][i].fXOffset );
 	}
 }
 
@@ -130,7 +130,7 @@ RString Style::ColToButtonName( int iCol ) const
 	if( pzColumnName != nullptr )
 		return pzColumnName;
 
-	vector<GameInput> GI;
+	std::vector<GameInput> GI;
 	StyleInputToGameInput( iCol, PLAYER_1, GI );
 	return INPUTMAPPER->GetInputScheme()->GetGameButtonName(GI[0].button);
 }

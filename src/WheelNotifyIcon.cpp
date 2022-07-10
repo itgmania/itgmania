@@ -58,7 +58,8 @@ void WheelNotifyIcon::SetFlags( Flags flags )
 			m_vIconsToShow.push_back( empty );
 	}
 
-	m_vIconsToShow.resize( min(m_vIconsToShow.size(), static_cast<unsigned int>(NUM_ICONS_TO_SHOW)) );
+	const unsigned int newSize = std::min<unsigned int>(m_vIconsToShow.size(), static_cast<unsigned int>(NUM_ICONS_TO_SHOW));
+	m_vIconsToShow.resize(newSize);
 
 	// Broadcast Set message so items can react. (futures) -aj
 	//Message msg("Set");

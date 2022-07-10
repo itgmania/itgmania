@@ -345,10 +345,10 @@ bool ActorMultiVertex::EarlyAbortDraw() const
 
 void ActorMultiVertex::SetVertsFromSplinesInternal(size_t num_splines, size_t offset)
 {
-	vector<RageSpriteVertex>& verts= AMV_DestTweenState().vertices;
+	std::vector<RageSpriteVertex>& verts= AMV_DestTweenState().vertices;
 	size_t first= AMV_DestTweenState().FirstToDraw + offset;
 	size_t num_verts= AMV_DestTweenState().GetSafeNumToDraw(AMV_DestTweenState()._DrawMode, AMV_DestTweenState().NumToDraw) - offset;
-	vector<float> tper(num_splines, 0.0f);
+	std::vector<float> tper(num_splines, 0.0f);
 	float num_parts= (static_cast<float>(num_verts) /
 		static_cast<float>(num_splines)) - 1.0f;
 	for(size_t i= 0; i < num_splines; ++i)
@@ -357,7 +357,7 @@ void ActorMultiVertex::SetVertsFromSplinesInternal(size_t num_splines, size_t of
 	}
 	for(size_t v= 0; v < num_verts; ++v)
 	{
-		vector<float> pos;
+		std::vector<float> pos;
 		const int spi= v%num_splines;
 		float part= static_cast<float>(v/num_splines);
 		_splines[spi].evaluate(part * tper[spi], pos);
@@ -438,8 +438,8 @@ void ActorMultiVertex::SetSecondsIntoAnimation(float seconds)
 void ActorMultiVertex::UpdateAnimationState(bool force_update)
 {
 	AMV_TweenState& dest= AMV_DestTweenState();
-	vector<RageSpriteVertex>& verts= dest.vertices;
-	vector<size_t>& qs= dest.quad_states;
+	std::vector<RageSpriteVertex>& verts= dest.vertices;
+	std::vector<size_t>& qs= dest.quad_states;
 	if(!_use_animation_state || _states.empty() ||
 		dest._DrawMode == DrawMode_LineStrip || qs.empty())
 	{ return; }
@@ -590,7 +590,7 @@ void ActorMultiVertex::Update(float fDelta)
 	UpdateAnimationState();
 	if(!skip_this_movie_update && _decode_movie)
 	{
-		_Texture->DecodeSeconds(max(0, time_passed));
+		_Texture->DecodeSeconds(std::max(0.0f, time_passed));
 	}
 }
 
@@ -1068,7 +1068,7 @@ public:
 		{
 			luaL_error(L, "The texture must be set before adding states.");
 		}
-		vector<ActorMultiVertex::State> new_states;
+		std::vector<ActorMultiVertex::State> new_states;
 		size_t num_states= lua_objlen(L, 1);
 		new_states.resize(num_states);
 		for(size_t i= 0; i < num_states; ++i)

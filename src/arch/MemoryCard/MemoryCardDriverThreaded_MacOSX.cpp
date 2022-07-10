@@ -73,7 +73,7 @@ void MemoryCardDriverThreaded_MacOSX::Unmount( UsbStorageDevice *pDevice )
 	const RString& base = Basename( pDevice->sOsMountDir );
 	
 	memset( &pb, 0, sizeof(pb) );
-	name[0] = min( base.length(), size_t(255) );
+	name[0] = std::min( base.length(), size_t(255) );
 	strncpy( (char *)&name[1], base, name[0] );
 	pb.volumeParam.ioNamePtr = name;
 	pb.volumeParam.ioVolIndex = -1; // Use ioNamePtr to find the volume.
@@ -133,7 +133,7 @@ static RString GetStringProperty( io_registry_entry_t entry, CFStringRef key )
 	return ret;
 }
 
-void MemoryCardDriverThreaded_MacOSX::GetUSBStorageDevices( vector<UsbStorageDevice>& vDevicesOut )
+void MemoryCardDriverThreaded_MacOSX::GetUSBStorageDevices( std::vector<UsbStorageDevice>& vDevicesOut )
 {
 	LockMut( m_ChangedLock );
 	// First, get all device paths

@@ -45,7 +45,7 @@ PlayAfterLaunchInfo DoInstalls( CommandLineActions::CommandLineArgs args );
 
 static void Parse( const RString &sDir, PlayAfterLaunchInfo &out )
 {
-	vector<RString> vsDirParts;
+	std::vector<RString> vsDirParts;
 	split( sDir, "/", vsDirParts, true );
 	if( vsDirParts.size() == 3 && vsDirParts[0].EqualsNoCase("Songs") )
 		out.sSongDir = "/" + sDir;
@@ -61,12 +61,12 @@ static void InstallSmzip( const RString &sZipFile, PlayAfterLaunchInfo &out )
 	if( !FILEMAN->Mount( "zip", sZipFile, TEMP_ZIP_MOUNT_POINT ) )
 		FAIL_M("Failed to mount " + sZipFile );
 
-	vector<RString> vsFiles;
+	std::vector<RString> vsFiles;
 	{
-		vector<RString> vsRawFiles;
+		std::vector<RString> vsRawFiles;
 		GetDirListingRecursive( TEMP_ZIP_MOUNT_POINT, "*", vsRawFiles);
 
-		vector<RString> vsPrettyFiles;
+		std::vector<RString> vsPrettyFiles;
 		for (RString const &s : vsRawFiles)
 		{
 			if( GetExtension(s).EqualsNoCase("ctl") )
@@ -188,7 +188,7 @@ void ScreenInstallOverlay::Update( float fDeltaTime )
 			pSong = SONGMAN->GetSongFromDir( playAfterLaunchInfo.sSongDir );
 		if( pSong )
 		{
-			vector<const Style*> vpStyle;
+			std::vector<const Style*> vpStyle;
 			GAMEMAN->GetStylesForGame( GAMESTATE->m_pCurGame, vpStyle, false );
 			GAMESTATE->m_PlayMode.Set( PLAY_MODE_REGULAR );
 			GAMESTATE->m_bSideIsJoined[0] = true;

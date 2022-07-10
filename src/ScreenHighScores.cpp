@@ -21,7 +21,7 @@ LuaXType( HighScoresType );
 
 REGISTER_SCREEN_CLASS( ScreenHighScores );
 
-static void GetAllSongsToShow( vector<Song*> &vpOut, int iNumMostRecentScoresToShow )
+static void GetAllSongsToShow( std::vector<Song*> &vpOut, int iNumMostRecentScoresToShow )
 {
 	vpOut.clear();
 	for (Song *s : SONGMAN->GetAllSongs())
@@ -42,10 +42,10 @@ static void GetAllSongsToShow( vector<Song*> &vpOut, int iNumMostRecentScoresToS
 	}
 }
 
-static void GetAllCoursesToShow( vector<Course*> &vpOut, CourseType ct, int iNumMostRecentScoresToShow )
+static void GetAllCoursesToShow( std::vector<Course*> &vpOut, CourseType ct, int iNumMostRecentScoresToShow )
 {
 	vpOut.clear();
-	vector<Course*> vpCourses;
+	std::vector<Course*> vpCourses;
 	if( ct == CourseType_Invalid )
 		SONGMAN->GetAllCourses( vpCourses, false );
 	else
@@ -75,7 +75,7 @@ ScoreScroller::ScoreScroller()
 	this->DeleteChildrenWhenDone();
 }
 
-void ScoreScroller::SetDisplay( const vector<DifficultyAndStepsType> &DifficultiesToShow )
+void ScoreScroller::SetDisplay( const std::vector<DifficultyAndStepsType> &DifficultiesToShow )
 {
 	m_DifficultiesToShow = DifficultiesToShow;
 	ShiftSubActors( INT_MAX );
@@ -161,7 +161,7 @@ void ScoreScroller::ConfigureActor( Actor *pActor, int iItem )
 
 void ScoreScroller::LoadSongs( int iNumRecentScores )
 {
-	vector<Song*> vpSongs;
+	std::vector<Song*> vpSongs;
 	GetAllSongsToShow( vpSongs, iNumRecentScores );
 	m_vScoreRowItemData.resize( vpSongs.size() );
 	for( unsigned i=0; i<m_vScoreRowItemData.size(); ++i )
@@ -170,7 +170,7 @@ void ScoreScroller::LoadSongs( int iNumRecentScores )
 
 void ScoreScroller::LoadCourses( CourseType ct, int iNumRecentScores )
 {
-	vector<Course*> vpCourses;
+	std::vector<Course*> vpCourses;
 	GetAllCoursesToShow( vpCourses, ct, iNumRecentScores );
 	m_vScoreRowItemData.resize( vpCourses.size() );
 	for( unsigned i=0; i<m_vScoreRowItemData.size(); ++i )
@@ -253,7 +253,7 @@ void ScreenHighScores::BeginScreen()
 {
 	ScreenAttract::BeginScreen();
 
-	vector<DifficultyAndStepsType> vdast;
+	std::vector<DifficultyAndStepsType> vdast;
 	for( int i=0; i<NUM_COLUMNS; i++ )
 	{
 		DifficultyAndStepsType dast( COLUMN_DIFFICULTY.GetValue(i), COLUMN_STEPS_TYPE.GetValue(i) );

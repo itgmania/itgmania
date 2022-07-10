@@ -32,8 +32,8 @@
 
 REGISTER_INPUT_HANDLER_CLASS2( DirectInput, DInput );
 
-static vector<DIDevice> Devices;
-static vector<XIDevice> XDevices;
+static std::vector<DIDevice> Devices;
+static std::vector<XIDevice> XDevices;
 
 // Number of joysticks found:
 static int g_iNumJoysticks;
@@ -505,8 +505,8 @@ void InputHandler_DInput::UpdatePolled( DIDevice &device, const RageTimer &tm )
 						if( neg != DeviceButton_Invalid )
 						{
 							float l = SCALE( int(val), 0.0f, 100.0f, 0.0f, 1.0f );
-							ButtonPressed( DeviceInput(dev, neg, max(-l,0), tm) );
-							ButtonPressed( DeviceInput(dev, pos, max(+l,0), tm) );
+							ButtonPressed( DeviceInput(dev, neg, std::max(-l, 0.0f), tm) );
+							ButtonPressed( DeviceInput(dev, pos, std::max(+l, 0.0f), tm) );
 						}
 
 						break;
@@ -752,8 +752,8 @@ void InputHandler_DInput::UpdateBuffered( DIDevice &device, const RageTimer &tm 
 						}
 						else
 						{
-						  ButtonPressed( DeviceInput(dev, up, max(-l,0), tm) );
-						  ButtonPressed( DeviceInput(dev, down, max(+l,0), tm) ); 
+						  ButtonPressed( DeviceInput(dev, up, std::max(-l, 0.0f), tm) );
+						  ButtonPressed( DeviceInput(dev, down, std::max(+l, 0.0f), tm) );
 						}
 					}
 					break;
@@ -777,8 +777,6 @@ const short XINPUT_GAMEPAD_THUMB_MAX = MAXSHORT;
 
 void InputHandler_DInput::UpdateXInput( XIDevice &device, const RageTimer &tm )
 {
-	using std::max;
-
 	XINPUT_STATE state;
 	ZeroMemory(&state, sizeof(XINPUT_STATE));
 	if (XInputGetState(device.m_dwXInputSlot, &state) == ERROR_SUCCESS)
@@ -791,10 +789,10 @@ void InputHandler_DInput::UpdateXInput( XIDevice &device, const RageTimer &tm )
 			lx = SCALE(state.Gamepad.sThumbLX + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f, XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
 			ly = SCALE(state.Gamepad.sThumbLY + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f, XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
 		}
-		ButtonPressed(DeviceInput(device.dev, JOY_LEFT, max(-lx, 0.f), tm));
-		ButtonPressed(DeviceInput(device.dev, JOY_RIGHT, max(+lx, 0.f), tm));
-		ButtonPressed(DeviceInput(device.dev, JOY_UP, max(+ly, 0.f), tm));
-		ButtonPressed(DeviceInput(device.dev, JOY_DOWN, max(-ly, 0.f), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_LEFT, std::max(-lx, 0.f), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_RIGHT, std::max(+lx, 0.f), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_UP, std::max(+ly, 0.f), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_DOWN, std::max(-ly, 0.f), tm));
 
 		float rx = 0.f;
 		float ry = 0.f;
@@ -803,10 +801,10 @@ void InputHandler_DInput::UpdateXInput( XIDevice &device, const RageTimer &tm )
 			rx = SCALE(state.Gamepad.sThumbRX + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f, XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
 			ry = SCALE(state.Gamepad.sThumbRY + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f, XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
 		}
-		ButtonPressed(DeviceInput(device.dev, JOY_LEFT_2, max(-rx, 0.f), tm));
-		ButtonPressed(DeviceInput(device.dev, JOY_RIGHT_2, max(+rx, 0.f), tm));
-		ButtonPressed(DeviceInput(device.dev, JOY_UP_2, max(+ry, 0.f), tm));
-		ButtonPressed(DeviceInput(device.dev, JOY_DOWN_2, max(-ry, 0.f), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_LEFT_2, std::max(-rx, 0.f), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_RIGHT_2, std::max(+rx, 0.f), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_UP_2, std::max(+ry, 0.f), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_DOWN_2, std::max(-ry, 0.f), tm));
 
 		// map buttons
 		ButtonPressed(DeviceInput(device.dev, JOY_BUTTON_1, !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_A), tm));
@@ -944,7 +942,7 @@ void InputHandler_DInput::InputThreadMain()
 	// Enable priority boosting.
 	SetThreadPriorityBoost( GetCurrentThread(), FALSE );
 
-	vector<DIDevice*> BufferedDevices;
+	std::vector<DIDevice*> BufferedDevices;
 	HANDLE Handle = CreateEvent( nullptr, FALSE, FALSE, nullptr );
 	for( unsigned i = 0; i < Devices.size(); ++i )
 	{
@@ -1002,7 +1000,7 @@ void InputHandler_DInput::InputThreadMain()
 	CloseHandle(Handle);
 }
 
-void InputHandler_DInput::GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevicesOut )
+void InputHandler_DInput::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut )
 {
 	for( unsigned i=0; i < XDevices.size(); ++i )
 		vDevicesOut.push_back( InputDeviceInfo(XDevices[i].dev, XDevices[i].m_sName ) );

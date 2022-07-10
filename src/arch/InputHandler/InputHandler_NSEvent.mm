@@ -193,7 +193,7 @@ InputHandler_NSEvent::~InputHandler_NSEvent()
 {
 }
 
-void InputHandler_NSEvent::GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevicesOut )
+void InputHandler_NSEvent::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut )
 {
     vDevicesOut.push_back(InputDeviceInfo(DEVICE_KEYBOARD, "NSEventKeyboard"));
 }

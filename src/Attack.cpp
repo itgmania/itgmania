@@ -33,7 +33,7 @@ void Attack::GetRealtimeAttackBeats( const Song *pSong, const PlayerState* pPlay
 	ASSERT( pPlayerState != nullptr );
 
 	/* If reasonable, push the attack forward 8 beats so that notes on screen don't change suddenly. */
-	fStartBeat = min( GAMESTATE->m_Position.m_fSongBeat+8, pPlayerState->m_fLastDrawnBeat );
+	fStartBeat = std::min( GAMESTATE->m_Position.m_fSongBeat+8, pPlayerState->m_fLastDrawnBeat );
 	fStartBeat = truncf(fStartBeat)+1;
 
 	const TimingData &timing = pSong->m_SongTiming;
@@ -84,7 +84,7 @@ RString Attack::GetTextDescription() const
 
 int Attack::GetNumAttacks() const
 {
-	vector<RString> tmp;
+	std::vector<RString> tmp;
 	split(this->sModifiers, ",", tmp);
 	return tmp.size();
 }
@@ -94,9 +94,9 @@ bool AttackArray::ContainsTransformOrTurn() const
 	return std::any_of((*this).begin(), (*this).end(), [](Attack const &a) { return a.ContainsTransformOrTurn(); });
 }
 
-vector<RString> AttackArray::ToVectorString() const
+std::vector<RString> AttackArray::ToVectorString() const
 {
-	vector<RString> ret;
+	std::vector<RString> ret;
 	for (Attack const &a : *this)
 	{
 		ret.push_back(ssprintf("TIME=%f:LEN=%f:MODS=%s",

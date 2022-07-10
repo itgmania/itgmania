@@ -43,7 +43,7 @@ void AnimatedTexture::Load( const RString &sTexOrIniPath )
 	ASSERT( vFrames.empty() );	// don't load more than once
 
 	m_bSphereMapped = sTexOrIniPath.find("sphere") != RString::npos;
-	if( sTexOrIniPath.find("add") != string::npos )
+	if( sTexOrIniPath.find("add") != std::string::npos )
 		m_BlendMode = BLEND_ADD;
 	else
 		m_BlendMode = BLEND_NORMAL;
@@ -341,9 +341,9 @@ bool msAnimation::LoadMilkshapeAsciiBones( RString sAniName, RString sPath )
 		{
 			msBone& Bone = Animation.Bones[i];
 			for( unsigned j = 0; j < Bone.PositionKeys.size(); ++j )
-				Animation.nTotalFrames = max( Animation.nTotalFrames, (int)Bone.PositionKeys[j].fTime );
+				Animation.nTotalFrames = std::max( Animation.nTotalFrames, (int)Bone.PositionKeys[j].fTime );
 			for( unsigned j = 0; j < Bone.RotationKeys.size(); ++j )
-				Animation.nTotalFrames = max( Animation.nTotalFrames, (int)Bone.RotationKeys[j].fTime );
+				Animation.nTotalFrames = std::max( Animation.nTotalFrames, (int)Bone.RotationKeys[j].fTime );
 		}
 	}
 

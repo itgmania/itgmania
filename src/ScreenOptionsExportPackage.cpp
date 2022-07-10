@@ -34,7 +34,7 @@ void ScreenOptionsExportPackage::BeginScreen()
 	m_vsPackageTypes.push_back("Songs");
 	// announcers, characters, others?
 
-	vector<OptionRowHandler*> OptionRowHandlers;
+	std::vector<OptionRowHandler*> OptionRowHandlers;
 	for (RString const &s : m_vsPackageTypes)
 	{
 		OptionRowHandler *pHand = OptionRowHandlerUtil::MakeNull();
@@ -80,12 +80,12 @@ void ScreenOptionsExportPackage::ProcessMenuStart( const InputEventPlus &input )
 
 // todo: process menu back in SubGroup mode
 
-void ScreenOptionsExportPackage::ImportOptions( int /* iRow */, const vector<PlayerNumber> & /* vpns */ )
+void ScreenOptionsExportPackage::ImportOptions( int /* iRow */, const std::vector<PlayerNumber> & /* vpns */ )
 {
 
 }
 
-void ScreenOptionsExportPackage::ExportOptions( int /* iRow */, const vector<PlayerNumber> & /* vpns */ )
+void ScreenOptionsExportPackage::ExportOptions( int /* iRow */, const std::vector<PlayerNumber> & /* vpns */ )
 {
 
 }
@@ -115,7 +115,7 @@ void ScreenOptionsExportPackageSubPage::BeginScreen()
 	else if( *s_packageType == "NoteSkins" )
 	{
 		// add noteskins
-		vector<RString> vs;
+		std::vector<RString> vs;
 		GetDirListing( SpecialFiles::NOTESKINS_DIR + "*", vs, true, true );
 		for (RString const &s : vs)
 			GetDirListing( s + "*", m_vsPossibleDirsToExport, true, true );
@@ -124,7 +124,7 @@ void ScreenOptionsExportPackageSubPage::BeginScreen()
 	{
 		// Add courses. Only support courses that are in a group folder.
 		// Support for courses not in a group folder should be phased out.
-		vector<RString> vs;
+		std::vector<RString> vs;
 		GetDirListing( SpecialFiles::COURSES_DIR + "*", vs, true, true );
 		StripCvsAndSvn( vs );
 		StripMacResourceForks( vs );
@@ -137,7 +137,7 @@ void ScreenOptionsExportPackageSubPage::BeginScreen()
 	else if( *s_packageType == "Songs" )
 	{
 		// Add song groups
-		vector<RString> asAllGroups;
+		std::vector<RString> asAllGroups;
 		SONGMAN->GetSongGroupNames(asAllGroups);
 		for (RString const &s : asAllGroups)
 		{
@@ -147,7 +147,7 @@ void ScreenOptionsExportPackageSubPage::BeginScreen()
 	else if( *s_packageType == "SubGroup" )
 	{
 		//ExportPackages::m_sFolder
-		vector<RString> vs;
+		std::vector<RString> vs;
 		GetDirListing( SpecialFiles::SONGS_DIR + "/" + ExportPackages::m_sFolder + "/*", vs, true, true );
 		for (RString const &s : vs)
 		{
@@ -158,7 +158,7 @@ void ScreenOptionsExportPackageSubPage::BeginScreen()
 	StripCvsAndSvn( m_vsPossibleDirsToExport );
 	StripMacResourceForks( m_vsPossibleDirsToExport );
 
-	vector<OptionRowHandler*> OptionRowHandlers;
+	std::vector<OptionRowHandler*> OptionRowHandlers;
 	for (RString const &s : m_vsPossibleDirsToExport)
 	{
 		OptionRowHandler *pHand = OptionRowHandlerUtil::MakeNull();
@@ -209,7 +209,7 @@ static bool ExportPackage( RString sPackageName, RString sDirToExport, RString &
 	zip.Start();
 	zip.SetGlobalComment( sComment );
 
-	vector<RString> vs;
+	std::vector<RString> vs;
 	GetDirListingRecursive( sDirToExport, "*", vs );
 	SMPackageUtil::StripIgnoredSmzipFiles( vs );
 	LOG->Trace("Adding files...");
@@ -267,12 +267,12 @@ void ScreenOptionsExportPackageSubPage::ProcessMenuStart( const InputEventPlus &
 		ScreenPrompt::Prompt( SM_None, ssprintf("Failed to export package: %s",sError.c_str()) );
 }
 
-void ScreenOptionsExportPackageSubPage::ImportOptions( int iRow, const vector<PlayerNumber> &vpns )
+void ScreenOptionsExportPackageSubPage::ImportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
 {
 
 }
 
-void ScreenOptionsExportPackageSubPage::ExportOptions( int iRow, const vector<PlayerNumber> &vpns )
+void ScreenOptionsExportPackageSubPage::ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
 {
 
 }

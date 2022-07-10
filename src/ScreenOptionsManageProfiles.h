@@ -15,8 +15,8 @@ public:
 	virtual void HandleScreenMessage( const ScreenMessage SM );
 
 protected:
-	virtual void ImportOptions( int iRow, const vector<PlayerNumber> &vpns );
-	virtual void ExportOptions( int iRow, const vector<PlayerNumber> &vpns );
+	virtual void ImportOptions( int iRow, const std::vector<PlayerNumber> &vpns );
+	virtual void ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns );
 	
 	virtual void AfterChangeRow( PlayerNumber pn );
 	virtual void ProcessMenuStart( const InputEventPlus &input );
@@ -24,7 +24,7 @@ protected:
 	int GetLocalProfileIndexWithFocus() const;
 	RString GetLocalProfileIDWithFocus() const;
 
-	vector<RString> m_vsLocalProfileID;
+	std::vector<RString> m_vsLocalProfileID;
 };
 
 #endif

@@ -18,7 +18,7 @@ AutoScreenMessage( SM_GoToCancel );
 
 bool ScreenMiniMenu::s_bCancelled = false;
 int	ScreenMiniMenu::s_iLastRowCode = -1;
-vector<int>	ScreenMiniMenu::s_viLastAnswers;
+std::vector<int>	ScreenMiniMenu::s_viLastAnswers;
 
 // Hooks for profiling
 void PrepareToLoadScreen( const RString &sScreenName ) {}
@@ -79,8 +79,8 @@ void ScreenMiniMenu::LoadMenu( const MenuDef* pDef )
 	m_vMenuRows = pDef->rows;
 
 	s_viLastAnswers.resize( m_vMenuRows.size() );
-	// Convert from m_vMenuRows to vector<OptionRowDefinition>
-	vector<OptionRowHandler*> vHands;
+	// Convert from m_vMenuRows to std::vector<OptionRowDefinition>
+	std::vector<OptionRowHandler*> vHands;
 	for( unsigned r=0; r<m_vMenuRows.size(); r++ )
 	{
 		const MenuRowDef &mr = m_vMenuRows[r];
@@ -95,7 +95,7 @@ void ScreenMiniMenu::AfterChangeValueOrRow( PlayerNumber pn )
 {
 	ScreenOptions::AfterChangeValueOrRow( pn );
 
-	vector<PlayerNumber> vpns;
+	std::vector<PlayerNumber> vpns;
 	FOREACH_PlayerNumber( p )
 		vpns.push_back( p );
 	for( unsigned i=0; i<m_pRows.size(); i++ )
@@ -116,7 +116,7 @@ void ScreenMiniMenu::AfterChangeValueOrRow( PlayerNumber pn )
 	}
 }
 
-void ScreenMiniMenu::ImportOptions( int r, const vector<PlayerNumber> &vpns )
+void ScreenMiniMenu::ImportOptions( int r, const std::vector<PlayerNumber> &vpns )
 {
 	OptionRow &optrow = *m_pRows[r];
 	const MenuRowDef &mr = m_vMenuRows[r];
@@ -124,7 +124,7 @@ void ScreenMiniMenu::ImportOptions( int r, const vector<PlayerNumber> &vpns )
 		optrow.SetOneSharedSelection( mr.iDefaultChoice );
 }
 
-void ScreenMiniMenu::ExportOptions( int r, const vector<PlayerNumber> &vpns )
+void ScreenMiniMenu::ExportOptions( int r, const std::vector<PlayerNumber> &vpns )
 {
 	if( r == GetCurrentRow() )
 		s_iLastRowCode = m_vMenuRows[r].iRowCode;

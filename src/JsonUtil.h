@@ -17,7 +17,7 @@ namespace JsonUtil
 	std::vector<RString> DeserializeArrayStrings(const Json::Value &array);
 
 	template<class T>
-	static void SerializeVectorObjects(const vector<T> &v, void fn(const T &, Json::Value &), Json::Value &root)
+	static void SerializeVectorObjects(const std::vector<T> &v, void fn(const T &, Json::Value &), Json::Value &root)
 	{
 		root = Json::Value(Json::arrayValue);
 		root.resize(v.size());
@@ -26,7 +26,7 @@ namespace JsonUtil
 	}
 
 	template<class T>
-	static void SerializeVectorPointers(const vector<const T*> &v, void fn(const T &, Json::Value &), Json::Value &root)
+	static void SerializeVectorPointers(const std::vector<const T*> &v, void fn(const T &, Json::Value &), Json::Value &root)
 	{
 		root = Json::Value(Json::arrayValue);
 		root.resize(v.size());
@@ -35,7 +35,7 @@ namespace JsonUtil
 	}
 	
 	template<class T>
-	static void SerializeVectorPointers(const vector<T*> &v, void fn(const T &, Json::Value &), Json::Value &root)
+	static void SerializeVectorPointers(const std::vector<T*> &v, void fn(const T &, Json::Value &), Json::Value &root)
 	{
 		root = Json::Value(Json::arrayValue);
 		root.resize(v.size());
@@ -44,7 +44,7 @@ namespace JsonUtil
 	}
 	
 	template<class T>
-	static void SerializeVectorPointers(const vector<const T*> &v, void fn(const T *, Json::Value &), Json::Value &root)
+	static void SerializeVectorPointers(const std::vector<const T*> &v, void fn(const T *, Json::Value &), Json::Value &root)
 	{
 		root = Json::Value(Json::arrayValue);
 		root.resize(v.size());
@@ -133,7 +133,7 @@ namespace JsonUtil
 	}
 
 	template<class T>
-	static void SerializeVectorValues(const vector<T> &v, Json::Value &root)
+	static void SerializeVectorValues(const std::vector<T> &v, Json::Value &root)
 	{
 		root = Json::Value(Json::arrayValue);
 		root.resize(v.size());
@@ -142,7 +142,7 @@ namespace JsonUtil
 	}
 
 	template<class T>
-	static void DeserializeVectorObjects(vector<T> &v, void fn(T &, const Json::Value &), const Json::Value &root)
+	static void DeserializeVectorObjects(std::vector<T> &v, void fn(T &, const Json::Value &), const Json::Value &root)
 	{
 		v.resize(root.size());
 		for(unsigned i=0; i<v.size(); i++)
@@ -158,7 +158,7 @@ namespace JsonUtil
 	}
 
 	template<class T>
-	static void DeserializeVectorPointers(vector<T*> &v, void fn(T &, const Json::Value &), const Json::Value &root)
+	static void DeserializeVectorPointers(std::vector<T*> &v, void fn(T &, const Json::Value &), const Json::Value &root)
 	{
 		for(unsigned i=0; i<v.size(); i++)
 			SAFE_DELETE(v[i]);
@@ -171,7 +171,7 @@ namespace JsonUtil
 	}
 	
 	template<class T>
-	static void DeserializeVectorPointers(vector<T*> &v, void fn(T *, const Json::Value &), const Json::Value &root)
+	static void DeserializeVectorPointers(std::vector<T*> &v, void fn(T *, const Json::Value &), const Json::Value &root)
 	{
 		for(unsigned i=0; i<v.size(); i++)
 			SAFE_DELETE(v[i]);
@@ -185,7 +185,7 @@ namespace JsonUtil
 
 	/* For classes with one-parameter constructors, such as Steps */
 	template<class T, class P>
-	static void DeserializeVectorPointersParam(vector<T*> &v, void fn(T &, const Json::Value &), const Json::Value &root, const P param)
+	static void DeserializeVectorPointersParam(std::vector<T*> &v, void fn(T &, const Json::Value &), const Json::Value &root, const P param)
 	{
 		for(unsigned i=0; i<v.size(); i++)
 			SAFE_DELETE(v[i]);
@@ -206,7 +206,7 @@ namespace JsonUtil
 
 	// Serialize a map that has a non-string key type
 	template <typename K, typename V>
-	static void DeserializeObjectToObjectMapAsArray(map<K,V> &m, const RString &sKeyName, const RString &sValueName, const Json::Value &root)
+	static void DeserializeObjectToObjectMapAsArray(std::map<K,V> &m, const RString &sKeyName, const RString &sValueName, const Json::Value &root)
 	{
 		m.clear();
 		ASSERT( root.type() == Json::arrayValue );
@@ -224,7 +224,7 @@ namespace JsonUtil
 	}
 
 	template<class T>
-	static void DeserializeVectorValues(vector<T> &v, const Json::Value &root)
+	static void DeserializeVectorValues(std::vector<T> &v, const Json::Value &root)
 	{
 		v.resize(root.size());
 		for(unsigned i=0; i<v.size(); i++)

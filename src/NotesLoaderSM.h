@@ -61,7 +61,7 @@ struct SMLoader
 	 * @param sPath a const reference to the path on the hard drive to check.
 	 * @param out a vector of files found in the path.
 	 */
-	virtual void GetApplicableFiles( const RString &sPath, vector<RString> &out, bool load_autosave= false );
+	virtual void GetApplicableFiles( const RString &sPath, std::vector<RString> &out, bool load_autosave= false );
 	virtual bool LoadEditFromFile( RString sEditFilePath, ProfileSlot slot, bool bAddStepsToSong, Song *givenSong=nullptr );
 	virtual bool LoadEditFromBuffer( const RString &sBuffer, const RString &sEditFilePath, ProfileSlot slot, Song *givenSong=nullptr );
 	virtual bool LoadEditFromMsd( const MsdFile &msd, const RString &sEditFilePath, ProfileSlot slot, bool bAddStepsToSong, Song *givenSong=nullptr );
@@ -72,7 +72,7 @@ struct SMLoader
 	 * @param out the vector to put the data in.
 	 * @param line the string in question.
 	 * @param rowsPerBeat the number of rows per beat for this purpose. */
-	void ParseBPMs(vector< pair<float, float> > &out,
+	void ParseBPMs(std::vector<std::pair<float, float>> &out,
 	               const RString line,
 	               const int rowsPerBeat = -1);
 	/**
@@ -80,13 +80,13 @@ struct SMLoader
 	 * @param out the TimingData being modified.
 	 * @param vBPMChanges the vector of BPM Changes data. */
 	void ProcessBPMs(TimingData & out,
-	                 const vector< pair<float, float> > &vBPMChanges);
+	                 const std::vector<std::pair<float, float>> &vBPMChanges);
 	/**
 	 * @brief Parse Stops data from a string.
 	 * @param out the vector to put the data in.
 	 * @param line the string in question.
 	 * @param rowsPerBeat the number of rows per beat for this purpose. */
-	void ParseStops(vector< pair<float, float> > &out,
+	void ParseStops(std::vector<std::pair<float, float>> &out,
 	                const RString line,
 	                const int rowsPerBeat = -1);
 	/**
@@ -94,15 +94,15 @@ struct SMLoader
 	 * @param out the TimingData being modified.
 	 * @param vStops the vector of Stops data. */
 	void ProcessStops(TimingData & out,
-	                  const vector< pair<float, float> > &vStops);
+	                  const std::vector<std::pair<float, float>> &vStops);
 	/**
 	 * @brief Process BPM and stop segments from the data.
 	 * @param out the TimingData being modified.
 	 * @param vBPMs the vector of BPM changes.
 	 * @param vStops the vector of stops. */
 	void ProcessBPMsAndStops(TimingData &out,
-			vector< pair<float, float> > &vBPMs,
-			vector< pair<float, float> > &vStops);
+			std::vector< std::pair<float, float>> &vBPMs,
+			std::vector< std::pair<float, float>> &vStops);
 	/**
 	 * @brief Process the Delay Segments from the string.
 	 * @param out the TimingData being modified.
@@ -159,7 +159,7 @@ struct SMLoader
 	 * @brief Put the attacks in the attacks string.
 	 * @param attacks the attack string.
 	 * @param params the params from the simfile. */
-	virtual void ProcessAttackString(vector<RString> &attacks, MsdFile::value_t params);
+	virtual void ProcessAttackString(std::vector<RString> &attacks, MsdFile::value_t params);
 	
 	/**
 	 * @brief Put the attacks in the attacks array.

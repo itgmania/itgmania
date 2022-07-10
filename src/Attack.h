@@ -69,7 +69,7 @@ struct Attack
 	int GetNumAttacks() const;
 };
 
-struct AttackArray : public vector<Attack>
+struct AttackArray : public std::vector<Attack>
 {
 	/**
 	 * @brief Determine if the list of attacks contains a transform or turn mod.
@@ -79,7 +79,7 @@ struct AttackArray : public vector<Attack>
 	/**
 	 * @brief Return a string representation used for simfiles.
 	 * @return the string representation. */
-	vector<RString> ToVectorString() const;
+	std::vector<RString> ToVectorString() const;
 	
 	/**
 	 * @brief Adjust the starting time of all attacks.

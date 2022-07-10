@@ -189,7 +189,7 @@ int WindowsFileIO::read( void *p )
 	return finish_read(p);
 }
 
-int WindowsFileIO::read_several(const vector<WindowsFileIO *> &sources, void *p, int &actual, float timeout)
+int WindowsFileIO::read_several(const std::vector<WindowsFileIO *> &sources, void *p, int &actual, float timeout)
 {
 	HANDLE *Handles = new HANDLE[sources.size()];
 	for( unsigned i = 0; i < sources.size(); ++i )

@@ -87,7 +87,7 @@ INT_PTR CALLBACK LoadingWindow_Win32::WndProc( HWND hWnd, UINT msg, WPARAM wPara
 	{
 	case WM_INITDIALOG:
 		{
-			vector<RString> vs;
+			std::vector<RString> vs;
 			GetDirListing( "Data/splash*.png", vs, false, true );
 			if( !vs.empty() )
 				g_hBitmap = LoadWin32Surface( vs[0], hWnd );
@@ -176,7 +176,7 @@ void LoadingWindow_Win32::Paint()
 
 void LoadingWindow_Win32::SetText( RString sText )
 {
-	vector<RString> asMessageLines;
+	std::vector<RString> asMessageLines;
 	split( sText, "\n", asMessageLines, false );
 	while( asMessageLines.size() < 3 )
 		asMessageLines.push_back( "" );

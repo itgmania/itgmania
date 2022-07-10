@@ -135,7 +135,7 @@ TapNoteScore NoteDataWithScoring::MinTapNoteScore( const NoteData &in, unsigned 
 			tn.type == TapNoteType_AutoKeysound ||
 			( plnum != PlayerNumber_Invalid && tn.pn != plnum ) )
 			continue;
-		score = min( score, tn.result.tns );
+		score = std::min( score, tn.result.tns );
 	}
 
 	//LOG->Trace( ssprintf("OMG score is?? %s",TapNoteScoreToString(score).c_str()) );
@@ -198,7 +198,7 @@ struct garv_state
 	int lifts_hit;
 	// hold_ends tracks where currently active holds will end, which is used
 	// to count the number of hands. -Kyz
-	vector<hold_status> hold_ends;
+	std::vector<hold_status> hold_ends;
 	int num_notes_on_curr_row;
 	// num_holds_on_curr_row saves us the work of tracking where holds started
 	// just to keep a jump of two holds from counting as a hand.
@@ -387,7 +387,7 @@ void NoteDataWithScoring::GetActualRadarValues(const NoteData &in,
 	int jump_count= out[RadarCategory_Jumps];
 	int hold_count= out[RadarCategory_Holds];
 	int tap_count= out[RadarCategory_TapsAndHolds];
-	float hittable_steps_length= max(0, 
+	float hittable_steps_length= std::max(0.0f,
 		timing->GetElapsedTimeFromBeat(NoteRowToBeat(last_hittable_row)) -
 		timing->GetElapsedTimeFromBeat(NoteRowToBeat(first_hittable_row)));
 	// The for loop and the assert are used to ensure that all fields of 

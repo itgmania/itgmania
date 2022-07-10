@@ -128,7 +128,7 @@ struct Message
 	}
 
 	template<typename T>
-	void SetParam( const RString &sName, const vector<T> &val )
+	void SetParam( const RString &sName, const std::vector<T> &val )
 	{
 		Lua *L = LUA->Get();
 		LuaHelpers::CreateTableFromArray( val, L );
@@ -180,7 +180,7 @@ public:
 	void UnsubscribeAll();
 
 private:
-	vector<RString> m_vsSubscribedTo;
+	std::vector<RString> m_vsSubscribedTo;
 };
 
 /** @brief Deliver messages to any part of the program as needed. */
@@ -239,7 +239,7 @@ class BroadcastOnChange1D
 {
 private:
 	typedef BroadcastOnChange<T> MyType;
-	vector<MyType> val;
+	std::vector<MyType> val;
 public:
 	explicit BroadcastOnChange1D( MessageID m )
 	{
@@ -273,7 +273,7 @@ class BroadcastOnChangePtr1D
 {
 private:
 	typedef BroadcastOnChangePtr<T> MyType;
-	vector<MyType> val;
+	std::vector<MyType> val;
 public:
 	explicit BroadcastOnChangePtr1D( MessageID m )
 	{

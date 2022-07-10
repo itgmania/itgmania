@@ -234,7 +234,7 @@ public:
 		if( buffer_size > sizes[0] + sizes[1] )
 			return false;
 		
-		const int from_first = min( buffer_size, sizes[0] );
+		const int from_first = std::min( buffer_size, sizes[0] );
 		memcpy( p[0], buffer, from_first*sizeof(T) );
 		if( buffer_size > sizes[0] )
 			memcpy( p[1], buffer+from_first, (buffer_size-sizes[0])*sizeof(T) );
@@ -256,7 +256,7 @@ public:
 		if( buffer_size > sizes[0] + sizes[1] )
 			return false;
 
-		const int from_first = min( buffer_size, sizes[0] );
+		const int from_first = std::min( buffer_size, sizes[0] );
 		memcpy( buffer, p[0], from_first*sizeof(T) );
 		if( buffer_size > sizes[0] )
 			memcpy( buffer+from_first, p[1], (buffer_size-sizes[0])*sizeof(T) );

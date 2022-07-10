@@ -14,8 +14,8 @@ protected:
 	void Open();
 
 public:
-	void GetButtonPresses( vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value, const RageTimer& now ) const;
-	void GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevices ) const;
+	void GetButtonPresses( std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value, const RageTimer& now ) const;
+	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevices ) const;
 
 	static bool DeviceButtonToMacVirtualKey( DeviceButton button, UInt8 &iMacVKOut );
 };

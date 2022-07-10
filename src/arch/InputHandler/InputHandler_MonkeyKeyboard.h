@@ -11,7 +11,7 @@ public:
 	void Update();
 	InputHandler_MonkeyKeyboard();
 	~InputHandler_MonkeyKeyboard();
-	void GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevicesOut );
+	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut );
 
 private:
 	RageTimer m_timerPressButton;

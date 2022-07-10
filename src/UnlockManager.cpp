@@ -359,7 +359,7 @@ bool UnlockEntry::IsValid() const
 
 UnlockEntryStatus UnlockEntry::GetUnlockEntryStatus() const
 {
-	set<RString> &ids = PROFILEMAN->GetMachineProfile()->m_UnlockedEntryIDs;
+	std::set<RString> &ids = PROFILEMAN->GetMachineProfile()->m_UnlockedEntryIDs;
 	if(!m_sEntryID.empty() && 
 	   ids.find(m_sEntryID) != ids.end() )
 		return UnlockEntryStatus_Unlocked;
@@ -379,7 +379,7 @@ UnlockEntryStatus UnlockEntry::GetUnlockEntryStatus() const
 	if( m_bRequirePassHardSteps && m_Song.IsValid() )
 	{
 		Song *pSong = m_Song.ToSong();
-		vector<Steps*> vp;
+		std::vector<Steps*> vp;
 		SongUtil::GetSteps(
 			pSong,
 			vp, 
@@ -394,7 +394,7 @@ UnlockEntryStatus UnlockEntry::GetUnlockEntryStatus() const
 	if (m_bRequirePassChallengeSteps && m_Song.IsValid())
 	{
 		Song *pSong = m_Song.ToSong();
-		vector<Steps*> vp;
+		std::vector<Steps*> vp;
 		SongUtil::GetSteps(pSong,
 				   vp,
 				   StepsType_Invalid,
@@ -478,7 +478,7 @@ void UnlockManager::Load()
 {
 	LOG->Trace( "UnlockManager::Load()" );
 
-	vector<RString> asUnlockNames;
+	std::vector<RString> asUnlockNames;
 	split( UNLOCK_NAMES, ",", asUnlockNames );
 
 	Lua *L = LUA->Get();
@@ -677,7 +677,7 @@ float UnlockManager::PointsUntilNextUnlock( UnlockRequirement t ) const
 	float fSmallestPoints = FLT_MAX;   // or an arbitrarily large value
 	for( unsigned a=0; a<m_UnlockEntries.size(); a++ )
 		if( m_UnlockEntries[a].m_fRequirement[t] > fScores[t] )
-			fSmallestPoints = min( fSmallestPoints, m_UnlockEntries[a].m_fRequirement[t] );
+			fSmallestPoints = std::min( fSmallestPoints, m_UnlockEntries[a].m_fRequirement[t] );
 
 	if( fSmallestPoints == FLT_MAX )
 		return 0;  // no match found
@@ -752,16 +752,16 @@ bool UnlockManager::AnyUnlocksToCelebrate() const
 	return GetUnlockEntryIndexToCelebrate() != -1;
 }
 
-void UnlockManager::GetUnlocksByType( UnlockRewardType t, vector<UnlockEntry *> &apEntries )
+void UnlockManager::GetUnlocksByType( UnlockRewardType t, std::vector<UnlockEntry *> &apEntries )
 {
 	for (UnlockEntry &entry : m_UnlockEntries)
 		if( entry.IsValid() && entry.m_Type == t )
 			apEntries.push_back( &entry );
 }
 
-void UnlockManager::GetSongsUnlockedByEntryID( vector<Song *> &apSongsOut, RString sUnlockEntryID )
+void UnlockManager::GetSongsUnlockedByEntryID( std::vector<Song *> &apSongsOut, RString sUnlockEntryID )
 {
-	vector<UnlockEntry *> apEntries;
+	std::vector<UnlockEntry *> apEntries;
 	GetUnlocksByType( UnlockRewardType_Song, apEntries );
 
 	for (UnlockEntry const *ue : apEntries)
@@ -769,9 +769,9 @@ void UnlockManager::GetSongsUnlockedByEntryID( vector<Song *> &apSongsOut, RStri
 			apSongsOut.push_back( ue->m_Song.ToSong() );
 }
 
-void UnlockManager::GetStepsUnlockedByEntryID( vector<Song *> &apSongsOut, vector<Difficulty> &apDifficultyOut, RString sUnlockEntryID )
+void UnlockManager::GetStepsUnlockedByEntryID( std::vector<Song *> &apSongsOut, std::vector<Difficulty> &apDifficultyOut, RString sUnlockEntryID )
 {
-	vector<UnlockEntry *> apEntries;
+	std::vector<UnlockEntry *> apEntries;
 	GetUnlocksByType( UnlockRewardType_Steps, apEntries );
 
 	for (UnlockEntry const *entry : apEntries)
@@ -814,8 +814,8 @@ public:
 		Song *pSong = p->m_Song.ToSong();
 		if (pSong)
 		{
-			const vector<Steps*>& allSteps = pSong->GetAllSteps();
-			vector<Steps*> toRet;
+			const std::vector<Steps*>& allSteps = pSong->GetAllSteps();
+			std::vector<Steps*> toRet;
 			for (Steps *step : allSteps)
 			{
 				if (step->GetDifficulty() == p->m_dc)
@@ -835,7 +835,7 @@ public:
 		Song *pSong = p->m_Song.ToSong();
 		if (pSong)
 		{
-			const vector<Steps*>& allStepsType = pSong->GetStepsByStepsType(p->m_StepsType);
+			const std::vector<Steps*>& allStepsType = pSong->GetStepsByStepsType(p->m_StepsType);
 			for (Steps *step : allStepsType)
 			{
 				if (step->GetDifficulty() == p->m_dc)
@@ -947,7 +947,7 @@ public:
 	static int GetUnlockEntry( T* p, lua_State *L )			{ unsigned iIndex = IArg(1); if( iIndex >= p->m_UnlockEntries.size() ) return 0; p->m_UnlockEntries[iIndex].PushSelf(L); return 1; }
 	static int GetSongsUnlockedByEntryID( T* p, lua_State *L )
 	{
-		vector<Song *> apSongs;
+		std::vector<Song *> apSongs;
 		UNLOCKMAN->GetSongsUnlockedByEntryID( apSongs, SArg(1) );
 		LuaHelpers::CreateTableFromArray( apSongs, L );
 		return 1;
@@ -956,8 +956,8 @@ public:
 	static int GetStepsUnlockedByEntryID( T* p, lua_State *L )
 	{
 		// Return the Song each Steps are associated with, too.
-		vector<Song *> apSongs;
-		vector<Difficulty> apDifficulty;
+		std::vector<Song *> apSongs;
+		std::vector<Difficulty> apDifficulty;
 		UNLOCKMAN->GetStepsUnlockedByEntryID( apSongs, apDifficulty, SArg(1) );
 		LuaHelpers::CreateTableFromArray( apSongs, L );
 		LuaHelpers::CreateTableFromArray( apDifficulty, L );

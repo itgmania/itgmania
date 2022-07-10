@@ -27,7 +27,7 @@ REGISTER_ACTOR_CLASS( BitmapText );
 #define NUM_RAINBOW_COLORS	THEME->GetMetricI("BitmapText","NumRainbowColors")
 #define RAINBOW_COLOR(n)	THEME->GetMetricC("BitmapText",ssprintf("RainbowColor%i", n+1))
 
-static vector<RageColor> RAINBOW_COLORS;
+static std::vector<RageColor> RAINBOW_COLORS;
 
 BitmapText::BitmapText()
 {
@@ -254,7 +254,7 @@ void BitmapText::BuildChars()
 	for( unsigned l=0; l<m_wTextLines.size(); l++ ) // for each line
 	{
 		m_iLineWidths.push_back(m_pFont->GetLineWidthInSourcePixels( m_wTextLines[l] ));
-		m_size.x = max( m_size.x, m_iLineWidths.back() );
+		m_size.x = std::max( m_size.x, (float) m_iLineWidths.back() );
 	}
 
 	/* Ensure that the width is always even. This maintains pixel alignment;
@@ -283,7 +283,7 @@ void BitmapText::BuildChars()
 	{
 		iY += m_pFont->GetHeight();
 
-		wstring sLine = m_wTextLines[i];
+		std::wstring sLine = m_wTextLines[i];
 		if( m_pFont->IsRightToLeft() )
 			reverse( sLine.begin(), sLine.end() );
 		const int iLineWidth = m_iLineWidths[i];
@@ -494,12 +494,12 @@ void BitmapText::SetTextInternal()
 		/* "...I can add Japanese wrapping, at least. We could handle hyphens
 		 * and soft hyphens and pretty easily, too." -glenn */
 		// TODO: Move this wrapping logic into Font.
-		vector<RString> asLines;
+		std::vector<RString> asLines;
 		split( m_sText, "\n", asLines, false );
 
 		for( unsigned line = 0; line < asLines.size(); ++line )
 		{
-			vector<RString> asWords;
+			std::vector<RString> asWords;
 			split( asLines[line], " ", asWords );
 
 			RString sCurLine;
@@ -612,7 +612,7 @@ void BitmapText::UpdateBaseZoom()
 		} \
 		if(dimension != 0) \
 		{ \
-			const float zoom= min(1, dimension_max / dimension); \
+			const float zoom= fmin(1, dimension_max / dimension); \
 			base_zoom_set(zoom); \
 		} \
 	}
@@ -646,7 +646,7 @@ void BitmapText::CropLineToWidth(size_t l, int width)
 	if(l < m_wTextLines.size())
 	{
 		int used_width= width;
-		wstring& line= m_wTextLines[l];
+		std::wstring& line= m_wTextLines[l];
 		int fit= m_pFont->GetGlyphsThatFit(line, &used_width);
 		if(fit < line.size())
 		{
@@ -720,12 +720,12 @@ void BitmapText::DrawPrimitives()
 		else
 		{
 			size_t i = 0;
-			map<size_t,Attribute>::const_iterator iter = m_mAttributes.begin();
+			std::map<size_t,Attribute>::const_iterator iter = m_mAttributes.begin();
 			while( i < m_aVertices.size() )
 			{
 				// Set the colors up to the next attribute.
 				size_t iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
-				iEnd = min( iEnd, m_aVertices.size() );
+				iEnd = std::min( iEnd, m_aVertices.size() );
 				for( ; i < iEnd; i += 4 )
 				{
 					m_aVertices[i+0].c = m_pTempState->diffuse[0];	// top left
@@ -742,8 +742,8 @@ void BitmapText::DrawPrimitives()
 					iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
 				else
 					iEnd = i + attr.length*4;
-				iEnd = min( iEnd, m_aVertices.size() );
-				vector<RageColor> temp_attr_diffuse(NUM_DIFFUSE_COLORS, m_internalDiffuse);
+				iEnd = std::min( iEnd, m_aVertices.size() );
+				std::vector<RageColor> temp_attr_diffuse(NUM_DIFFUSE_COLORS, m_internalDiffuse);
 				for(size_t c= 0; c < NUM_DIFFUSE_COLORS; ++c)
 				{
 					temp_attr_diffuse[c]*= attr.diffuse[c];
@@ -763,7 +763,7 @@ void BitmapText::DrawPrimitives()
 		}
 
 		// apply jitter to verts
-		vector<RageVector3> vGlyphJitter;
+		std::vector<RageVector3> vGlyphJitter;
 		if( m_bJitter )
 		{
 			int iSeed = lrintf( RageTimer::GetTimeSinceStartFast()*8 );
@@ -805,12 +805,12 @@ void BitmapText::DrawPrimitives()
 		DISPLAY->SetTextureMode( TextureUnit_1, TextureMode_Glow );
 
 		size_t i = 0;
-		map<size_t,Attribute>::const_iterator iter = m_mAttributes.begin();
+		std::map<size_t,Attribute>::const_iterator iter = m_mAttributes.begin();
 		while( i < m_aVertices.size() )
 		{
 			// Set the glow up to the next attribute.
 			size_t iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
-			iEnd = min( iEnd, m_aVertices.size() );
+			iEnd = std::min( iEnd, m_aVertices.size() );
 			for( ; i < iEnd; ++i )
 				m_aVertices[i].c = m_pTempState->glow;
 			if( iter == m_mAttributes.end() )
@@ -822,7 +822,7 @@ void BitmapText::DrawPrimitives()
 				iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
 			else
 				iEnd = i + attr.length*4;
-			iEnd = min( iEnd, m_aVertices.size() );
+			iEnd = std::min( iEnd, m_aVertices.size() );
 			for( ; i < iEnd; ++i )
 			{
 				if( m_internalGlow.a > 0 )
@@ -878,7 +878,7 @@ void BitmapText::AddAttribute( size_t iPos, const Attribute &attr )
 	int iLines = 0;
 	size_t iAdjustedPos = iPos;
 	
-	for (wstring const & line : m_wTextLines)
+	for (std::wstring const & line : m_wTextLines)
 	{
 		size_t length = line.length();
 		if( length >= iAdjustedPos )

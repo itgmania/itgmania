@@ -9,7 +9,7 @@ class InputHandler_SextetStream: public InputHandler
 public:
 	InputHandler_SextetStream();
 	~InputHandler_SextetStream();
-	void GetDevicesAndDescriptions(vector<InputDeviceInfo>& vDevicesOut);
+	void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
 public:
 	class Impl;

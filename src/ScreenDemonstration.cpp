@@ -29,9 +29,9 @@ void ScreenDemonstration::Init()
 
 	// Choose a Style
 	{
-		vector<RString> v;
+		std::vector<RString> v;
 		split( ALLOW_STYLE_TYPES, ",", v );
-		vector<StyleType> vStyleTypeAllow;
+		std::vector<StyleType> vStyleTypeAllow;
 		for (RString const &s : v)
 		{
 			StyleType st = StringToStyleType( s );
@@ -39,7 +39,7 @@ void ScreenDemonstration::Init()
 			vStyleTypeAllow.push_back( st );
 		}
 
-		vector<const Style*> vStylePossible;
+		std::vector<const Style*> vStylePossible;
 		GAMEMAN->GetDemonstrationStylesForGame( GAMESTATE->m_pCurGame, vStylePossible );
 		for( int i=(int)(vStylePossible.size())-1; i>=0; i-- )
 		{

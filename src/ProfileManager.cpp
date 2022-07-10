@@ -64,7 +64,7 @@ struct DirAndProfile
 		profile.swap(other.profile);
 	}
 };
-static vector<DirAndProfile> g_vLocalProfile;
+static std::vector<DirAndProfile> g_vLocalProfile;
 
 
 static ThemeMetric<bool>	FIXED_PROFILES		( "ProfileManager", "FixedProfiles" );
@@ -237,7 +237,7 @@ bool ProfileManager::LoadLocalProfileFromMachine( PlayerNumber pn )
 	return true;
 }
 
-void ProfileManager::GetMemoryCardProfileDirectoriesToTry( vector<RString> &asDirsToTry )
+void ProfileManager::GetMemoryCardProfileDirectoriesToTry( std::vector<RString> &asDirsToTry )
 {
 	/* Try to load the preferred profile. */
 	asDirsToTry.push_back( PREFSMAN->m_sMemoryCardProfileSubdir.Get() );
@@ -254,7 +254,7 @@ bool ProfileManager::LoadProfileFromMemoryCard( PlayerNumber pn, bool bLoadEdits
 	if( MEMCARDMAN->GetCardState(pn) != MemoryCardState_Ready )
 		return false;
 
-	vector<RString> asDirsToTry;
+	std::vector<RString> asDirsToTry;
 	GetMemoryCardProfileDirectoriesToTry( asDirsToTry );
 	m_bNewProfile[pn] = true;
 
@@ -325,7 +325,7 @@ bool ProfileManager::LoadFirstAvailableProfile( PlayerNumber pn, bool bLoadEdits
 
 bool ProfileManager::FastLoadProfileNameFromMemoryCard( RString sRootDir, RString &sName ) const
 {
-	vector<RString> asDirsToTry;
+	std::vector<RString> asDirsToTry;
 	GetMemoryCardProfileDirectoriesToTry( asDirsToTry );
 
 	for( unsigned i = 0; i < asDirsToTry.size(); ++i )
@@ -430,7 +430,7 @@ void ProfileManager::UnloadAllLocalProfiles()
 	g_vLocalProfile.clear();
 }
 
-static void add_category_to_global_list(vector<DirAndProfile>& cat)
+static void add_category_to_global_list(std::vector<DirAndProfile>& cat)
 {
 	g_vLocalProfile.insert(g_vLocalProfile.end(), cat.begin(), cat.end());
 }
@@ -439,7 +439,7 @@ void ProfileManager::RefreshLocalProfilesFromDisk()
 {
 	UnloadAllLocalProfiles();
 
-	vector<RString> profile_ids;
+	std::vector<RString> profile_ids;
 	GetDirListing(USER_PROFILES_DIR + "*", profile_ids, true, true);
 	// Profiles have 3 types:
 	// 1.  Guest profiles:
@@ -450,7 +450,7 @@ void ProfileManager::RefreshLocalProfilesFromDisk()
 	//   Meant for use when testing things, listed last.
 	// If the user renames a profile directory manually, that should not be a
 	// problem. -Kyz
-	map<ProfileType, vector<DirAndProfile> > categorized_profiles;
+	std::map<ProfileType, std::vector<DirAndProfile>> categorized_profiles;
 	// The type data for a profile is in its own file so that loading isn't
 	// slowed down by copying temporary profiles around to make sure the list
 	// is sorted.  The profiles are loaded at the end. -Kyz
@@ -459,7 +459,7 @@ void ProfileManager::RefreshLocalProfilesFromDisk()
 		DirAndProfile derp;
 		derp.sDir= id + "/";
 		derp.profile.LoadTypeFromDir(derp.sDir);
-		map<ProfileType, vector<DirAndProfile> >::iterator category=
+		std::map<ProfileType, std::vector<DirAndProfile>>::iterator category=
 			categorized_profiles.find(derp.profile.m_Type);
 		if(category == categorized_profiles.end())
 		{
@@ -518,7 +518,7 @@ bool ProfileManager::CreateLocalProfile( RString sName, RString &sProfileIDOut )
 	// handled. -Kyz
 	int max_profile_number= -1;
 	int first_free_number= 0;
-	vector<RString> profile_ids;
+	std::vector<RString> profile_ids;
 	GetLocalProfileIDs(profile_ids);
 	for (std::vector<RString>::const_iterator id = profile_ids.begin(); id != profile_ids.end(); ++id)
 	{
@@ -531,7 +531,7 @@ bool ProfileManager::CreateLocalProfile( RString sName, RString &sProfileIDOut )
 			{
 				++first_free_number;
 			}
-			max_profile_number= max(tmp, max_profile_number);
+			max_profile_number= std::max(tmp, max_profile_number);
 		}
 	}
 
@@ -629,7 +629,7 @@ bool ProfileManager::DeleteLocalProfile( RString sProfileID )
 	// flush directory cache in an attempt to get this working
 	FILEMAN->FlushDirCache( sProfileDir );
 
-	for (vector<DirAndProfile>::iterator i = g_vLocalProfile.begin(); i != g_vLocalProfile.end(); ++i)
+	for (std::vector<DirAndProfile>::iterator i = g_vLocalProfile.begin(); i != g_vLocalProfile.end(); ++i)
 	{
 		if( i->sDir == sProfileDir )
 		{
@@ -855,7 +855,7 @@ int ProfileManager::GetSongNumTimesPlayed( const Song* pSong, ProfileSlot slot )
 void ProfileManager::AddStepsScore( const Song* pSong, const Steps* pSteps, PlayerNumber pn, const HighScore &hs_, int &iPersonalIndexOut, int &iMachineIndexOut )
 {
 	HighScore hs = hs_;
-	hs.SetPercentDP( max(0, hs.GetPercentDP()) ); // bump up negative scores
+	hs.SetPercentDP( std::max(0.0f, hs.GetPercentDP()) ); // bump up negative scores
 
 	iPersonalIndexOut = -1;
 	iMachineIndexOut = -1;
@@ -909,7 +909,7 @@ void ProfileManager::IncrementStepsPlayCount( const Song* pSong, const Steps* pS
 void ProfileManager::AddCourseScore( const Course* pCourse, const Trail* pTrail, PlayerNumber pn, const HighScore &hs_, int &iPersonalIndexOut, int &iMachineIndexOut )
 {
 	HighScore hs = hs_;
-	hs.SetPercentDP(max( 0, hs.GetPercentDP()) ); // bump up negative scores
+	hs.SetPercentDP(std::max( 0.0f, hs.GetPercentDP()) ); // bump up negative scores
 
 	iPersonalIndexOut = -1;
 	iMachineIndexOut = -1;
@@ -982,7 +982,7 @@ bool ProfileManager::IsPersistentProfile( ProfileSlot slot ) const
 	}
 }
 
-void ProfileManager::GetLocalProfileIDs( vector<RString> &vsProfileIDsOut ) const
+void ProfileManager::GetLocalProfileIDs( std::vector<RString> &vsProfileIDsOut ) const
 {
 	vsProfileIDsOut.clear();
 	for (DirAndProfile const &i : g_vLocalProfile)
@@ -992,7 +992,7 @@ void ProfileManager::GetLocalProfileIDs( vector<RString> &vsProfileIDsOut ) cons
 	}
 }
 
-void ProfileManager::GetLocalProfileDisplayNames( vector<RString> &vsProfileDisplayNamesOut ) const
+void ProfileManager::GetLocalProfileDisplayNames( std::vector<RString> &vsProfileDisplayNamesOut ) const
 {
 	vsProfileDisplayNamesOut.clear();
 	for (DirAndProfile const &i : g_vLocalProfile)
@@ -1126,14 +1126,14 @@ public:
 	}
 	static int GetLocalProfileIDs( T* p, lua_State *L )
 	{
-		vector<RString> vsProfileIDs;
+		std::vector<RString> vsProfileIDs;
 		p->GetLocalProfileIDs(vsProfileIDs);
 		LuaHelpers::CreateTableFromArray<RString>( vsProfileIDs, L );
 		return 1;
 	}
 	static int GetLocalProfileDisplayNames( T* p, lua_State *L )
 	{
-		vector<RString> vsProfileNames;
+		std::vector<RString> vsProfileNames;
 		p->GetLocalProfileDisplayNames(vsProfileNames);
 		LuaHelpers::CreateTableFromArray<RString>( vsProfileNames, L );
 		return 1;

@@ -20,7 +20,7 @@ public:
 protected:
 	void SetItemFromGameState( Actor *pActor, int iCourseEntryIndex );
 
-	vector<Actor *>		m_vpDisplay;
+	std::vector<Actor *>		m_vpDisplay;
 };
 
 #endif

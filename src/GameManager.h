@@ -29,16 +29,16 @@ public:
 	GameManager();
 	~GameManager();
 
-	void GetStylesForGame( const Game* pGame, vector<const Style*>& aStylesAddTo, bool editor=false );
+	void GetStylesForGame( const Game* pGame, std::vector<const Style*>& aStylesAddTo, bool editor=false );
 	const Game *GetGameForStyle( const Style *pStyle );
-	void GetStepsTypesForGame( const Game* pGame, vector<StepsType>& aStepsTypeAddTo );
+	void GetStepsTypesForGame( const Game* pGame, std::vector<StepsType>& aStepsTypeAddTo );
 	const Style *GetEditorStyleForStepsType( StepsType st );
-	void GetDemonstrationStylesForGame( const Game *pGame, vector<const Style*> &vpStylesOut );
+	void GetDemonstrationStylesForGame( const Game *pGame, std::vector<const Style*> &vpStylesOut );
 	const Style *GetHowToPlayStyleForGame( const Game* pGame );
-	void GetCompatibleStyles( const Game *pGame, int iNumPlayers, vector<const Style*> &vpStylesOut );
+	void GetCompatibleStyles( const Game *pGame, int iNumPlayers, std::vector<const Style*> &vpStylesOut );
 	const Style *GetFirstCompatibleStyle( const Game *pGame, int iNumPlayers, StepsType st );
 
-	void GetEnabledGames( vector<const Game*>& aGamesOut );
+	void GetEnabledGames( std::vector<const Game*>& aGamesOut );
 	const Game* GetDefaultGame();
 	bool IsGameEnabled( const Game* pGame );
 	int GetIndexFromGame( const Game* pGame );

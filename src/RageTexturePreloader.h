@@ -17,7 +17,7 @@ public:
 	void Swap( RageTexturePreloader &rhs ) { swap( m_apTextures, rhs.m_apTextures ); }
 
 private:
-	vector<RageTexture*> m_apTextures;
+	std::vector<RageTexture*> m_apTextures;
 };
 
 #endif

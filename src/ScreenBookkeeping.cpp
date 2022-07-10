@@ -145,7 +145,7 @@ void ScreenBookkeeping::UpdateView()
 		{
 			Profile *pProfile = PROFILEMAN->GetMachineProfile();
 
-			vector<Song*> vpSongs;
+			std::vector<Song*> vpSongs;
 			int iCount = 0;
 			for (Song *pSong : SONGMAN->GetAllSongs())
 			{

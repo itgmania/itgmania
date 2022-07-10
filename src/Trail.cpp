@@ -230,7 +230,7 @@ public:
 	}
 	static int GetArtists( T* p, lua_State *L )
 	{
-		vector<RString> asArtists, asAltArtists;
+		std::vector<RString> asArtists, asAltArtists;
 		for (TrailEntry const &e : p->m_vEntries)
 		{
 			if( e.bSecret )
@@ -260,7 +260,7 @@ public:
 	static int GetTrailEntry( T* p, lua_State *L )	{ TrailEntry &te = p->m_vEntries[IArg(1)]; te.PushSelf(L); return 1; }
 	static int GetTrailEntries( T* p, lua_State *L )
 	{
-		vector<TrailEntry*> v;
+		std::vector<TrailEntry*> v;
 		for( unsigned i = 0; i < p->m_vEntries.size(); ++i )
 		{
 			v.push_back(&p->m_vEntries[i]);

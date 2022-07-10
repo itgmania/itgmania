@@ -48,7 +48,7 @@ public:
 	void low_sample_count_workaround();
 
 private:
-	map<RString, RageSoundReader_Preload *> m_mapPreloadedSounds;
+	std::map<RString, RageSoundReader_Preload *> m_mapPreloadedSounds;
 
 	RageSoundDriver *m_pDriver;
 

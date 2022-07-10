@@ -14,7 +14,7 @@ public:
 	~InputHandler_Linux_Event();
 	bool TryDevice(RString devfile);
 	bool DevicesChanged() { return m_bDevicesChanged; }
-	void GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevicesOut );
+	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut );
 
 private:
 	void StartThread();

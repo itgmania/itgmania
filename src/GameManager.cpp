@@ -3250,7 +3250,7 @@ GameManager::~GameManager()
 }
 
 
-void GameManager::GetStylesForGame( const Game *pGame, vector<const Style*>& aStylesAddTo, bool editor )
+void GameManager::GetStylesForGame( const Game *pGame, std::vector<const Style*>& aStylesAddTo, bool editor )
 {
 	for( int s=0; pGame->m_apStyles[s]; ++s ) 
 	{
@@ -3296,7 +3296,7 @@ const Style* GameManager::GetEditorStyleForStepsType( StepsType st )
 }
 
 
-void GameManager::GetStepsTypesForGame( const Game *pGame, vector<StepsType>& aStepsTypeAddTo )
+void GameManager::GetStepsTypesForGame( const Game *pGame, std::vector<StepsType>& aStepsTypeAddTo )
 {
 	for( int i=0; pGame->m_apStyles[i]; ++i )
 	{
@@ -3314,7 +3314,7 @@ void GameManager::GetStepsTypesForGame( const Game *pGame, vector<StepsType>& aS
 	}
 }
 
-void GameManager::GetDemonstrationStylesForGame( const Game *pGame, vector<const Style*> &vpStylesOut )
+void GameManager::GetDemonstrationStylesForGame( const Game *pGame, std::vector<const Style*> &vpStylesOut )
 {
 	vpStylesOut.clear();
 
@@ -3340,7 +3340,7 @@ const Style* GameManager::GetHowToPlayStyleForGame( const Game *pGame )
 	FAIL_M(ssprintf("Game has no Style that can be used with HowToPlay: %s", pGame->m_szName));
 }
 
-void GameManager::GetCompatibleStyles( const Game *pGame, int iNumPlayers, vector<const Style*> &vpStylesOut )
+void GameManager::GetCompatibleStyles( const Game *pGame, int iNumPlayers, std::vector<const Style*> &vpStylesOut )
 {
 	FOREACH_ENUM( StyleType, styleType )
 	{
@@ -3376,7 +3376,7 @@ void GameManager::GetCompatibleStyles( const Game *pGame, int iNumPlayers, vecto
 
 const Style *GameManager::GetFirstCompatibleStyle( const Game *pGame, int iNumPlayers, StepsType st )
 {
-	vector<const Style*> vpStyles;
+	std::vector<const Style*> vpStyles;
 	GetCompatibleStyles( pGame, iNumPlayers, vpStyles );
 	for (Style const *s : vpStyles)
 	{
@@ -3389,7 +3389,7 @@ const Style *GameManager::GetFirstCompatibleStyle( const Game *pGame, int iNumPl
 }
 
 
-void GameManager::GetEnabledGames( vector<const Game*>& aGamesOut )
+void GameManager::GetEnabledGames( std::vector<const Game*>& aGamesOut )
 {
 	for( size_t g=0; g<ARRAYLEN(g_Games); ++g )
 	{
@@ -3501,7 +3501,7 @@ public:
 	{
 		Game *pGame = Luna<Game>::check( L, 1 );
 
-		vector<StepsType> vstAddTo;
+		std::vector<StepsType> vstAddTo;
 		p->GetStepsTypesForGame( pGame, vstAddTo );
 		ASSERT( !vstAddTo.empty() );
 		StepsType st = vstAddTo[0];
@@ -3526,7 +3526,7 @@ public:
 		{
 			luaL_error(L, "GetStylesForGame: Invalid Game: '%s'", game_name.c_str());
 		}
-		vector<Style*> aStyles;
+		std::vector<Style*> aStyles;
 		lua_createtable(L, 0, 0);
 		for( int s=0; pGame->m_apStyles[s]; ++s ) 
 		{
@@ -3538,7 +3538,7 @@ public:
 	}
 	static int GetEnabledGames( T* p, lua_State *L )
 	{
-		vector<const Game*> aGames;
+		std::vector<const Game*> aGames;
 		p->GetEnabledGames( aGames );
 		lua_createtable(L, aGames.size(), 0);
 		for(size_t i= 0; i < aGames.size(); ++i)

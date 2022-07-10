@@ -18,7 +18,7 @@ static bool CodePageConvert( RString &sText, int iCodePage )
 		return false; /* error */
 	}
 
-	wstring sOut;
+	std::wstring sOut;
 	sOut.append( iSize, ' ' );
 	/* Nonportable: */
 	iSize = MultiByteToWideChar( iCodePage, MB_ERR_INVALID_CHARS, sText.data(), sText.size(), (wchar_t *) sOut.data(), iSize );
@@ -127,7 +127,7 @@ bool ConvertString( RString &str, const RString &encodings )
 	if( str.empty() )
 		return true;
 
-	vector<RString> lst;
+	std::vector<RString> lst;
 	split( encodings, ",", lst );
 
 	for(unsigned i = 0; i < lst.size(); ++i)

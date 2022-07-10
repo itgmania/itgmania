@@ -2,7 +2,6 @@
 #define CUBIC_SPLINE_H
 
 #include <vector>
-using std::vector;
 #include "RageTypes.h"
 struct lua_State;
 
@@ -28,14 +27,14 @@ CubicSpline() :m_spatial_extent(0.0f) {}
 	float m_spatial_extent;
 private:
 	bool check_minimum_size();
-	void prep_inner(size_t last, vector<float>& results);
-	void set_results(size_t last, vector<float>& diagonals, vector<float>& results);
+	void prep_inner(size_t last, std::vector<float>& results);
+	void set_results(size_t last, std::vector<float>& diagonals, std::vector<float>& results);
 
 	struct SplinePoint
 	{
 		float a, b, c, d;
 	};
-	vector<SplinePoint> m_points;
+	std::vector<SplinePoint> m_points;
 };
 
 struct CubicSplineN
@@ -46,17 +45,17 @@ struct CubicSplineN
 	static void weighted_average(CubicSplineN& out, const CubicSplineN& from,
 		const CubicSplineN& to, float between);
 	void solve();
-	void evaluate(float t, vector<float>& v) const;
-	void evaluate_derivative(float t, vector<float>& v) const;
-	void evaluate_second_derivative(float t, vector<float>& v) const;
-	void evaluate_third_derivative(float t, vector<float>& v) const;
+	void evaluate(float t, std::vector<float>& v) const;
+	void evaluate_derivative(float t, std::vector<float>& v) const;
+	void evaluate_second_derivative(float t, std::vector<float>& v) const;
+	void evaluate_third_derivative(float t, std::vector<float>& v) const;
 	void evaluate(float t, RageVector3& v) const;
 	void evaluate_derivative(float t, RageVector3& v) const;
-	void set_point(size_t i, const vector<float>& v);
-	void set_coefficients(size_t i, const vector<float>& b,
-		const vector<float>& c, const vector<float>& d);
-	void get_coefficients(size_t i, vector<float>& b,
-		vector<float>& c, vector<float>& d);
+	void set_point(size_t i, const std::vector<float>& v);
+	void set_coefficients(size_t i, const std::vector<float>& b,
+		const std::vector<float>& c, const std::vector<float>& d);
+	void get_coefficients(size_t i, std::vector<float>& b,
+		std::vector<float>& c, std::vector<float>& d);
 	void set_spatial_extent(size_t i, float extent);
 	float get_spatial_extent(size_t i);
 	void resize(size_t s);
@@ -68,7 +67,7 @@ struct CubicSplineN
 		if(m_loop) { return static_cast<float>(size()); }
 		else { return static_cast<float>(size()-1); }
 	}
-	typedef vector<CubicSpline> spline_cont_t;
+	typedef std::vector<CubicSpline> spline_cont_t;
 	void set_loop(bool l);
 	bool get_loop() const;
 	void set_polygonal(bool p);

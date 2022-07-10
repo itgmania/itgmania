@@ -7,9 +7,6 @@
 
 #include <cstring>
 
-using namespace std;
-
-
 // Private members/methods are kept out of the header using an opaque pointer `_impl`.
 // Google "pimpl idiom" for an explanation of what's going on and why it is (or might be) useful.
 

@@ -46,8 +46,6 @@
 #define unlikely(x) (x)
 #endif
 
-using namespace std;
-
 #ifdef ASSERT
 #undef ASSERT
 #endif

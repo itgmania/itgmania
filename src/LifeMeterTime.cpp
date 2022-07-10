@@ -228,7 +228,7 @@ void LifeMeterTime::Update( float fDeltaTime )
 {
 	// update current stage stats so ScoreDisplayLifeTime can show the right thing
 	float fSecs = GetLifeSeconds();
-	fSecs = max( 0, fSecs );
+	fSecs = std::max( 0.0f, fSecs );
 	m_pPlayerStageStats->m_fLifeRemainingSeconds = fSecs;
 	
 	LifeMeter::Update( fDeltaTime );

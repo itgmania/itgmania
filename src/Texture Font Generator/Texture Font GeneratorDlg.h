@@ -42,7 +42,7 @@ protected:
 	void UpdateCloseUp();
 
 public:
-	vector<FontPageDescription> m_PagesToGenerate;
+	std::vector<FontPageDescription> m_PagesToGenerate;
 
 	afx_msg void OnCbnSelchangeShownPage();
 	afx_msg void OnCbnSelchangeFamilyList();

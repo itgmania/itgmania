@@ -365,7 +365,7 @@ protected:
 	void RevertFromDisk();
 
 	Song m_SongLastSave;
-	vector<Steps> m_vStepsLastSave;
+	std::vector<Steps> m_vStepsLastSave;
 
 
 // for MODE_RECORD
@@ -416,8 +416,8 @@ public:
 		MAIN_MENU_CHOICE_INVALID
 	};
 	int GetSongOrNotesEnd();
-	void HandleMainMenuChoice( MainMenuChoice c, const vector<int> &iAnswers );
-	void HandleMainMenuChoice( MainMenuChoice c ) { const vector<int> v; HandleMainMenuChoice( c, v ); }
+	void HandleMainMenuChoice( MainMenuChoice c, const std::vector<int> &iAnswers );
+	void HandleMainMenuChoice( MainMenuChoice c ) { const std::vector<int> v; HandleMainMenuChoice( c, v ); }
 	MainMenuChoice m_CurrentAction;
 
 	/** @brief How does one alter a selection of NoteData? */
@@ -465,18 +465,18 @@ public:
 	};
 	void HandleArbitraryRemapping(RString const& mapstr);
 	void HandleAlterMenuChoice(AlterMenuChoice choice,
-		const vector<int> &answers, bool allow_undo= true,
+		const std::vector<int> &answers, bool allow_undo= true,
 		bool prompt_clear= true);
 	void HandleAlterMenuChoice(AlterMenuChoice c, bool allow_undo= true,
 		bool prompt_clear= true)
 	{
-		const vector<int> v; HandleAlterMenuChoice(c, v, allow_undo, prompt_clear);
+		const std::vector<int> v; HandleAlterMenuChoice(c, v, allow_undo, prompt_clear);
 	}
 	
-	void HandleAreaMenuChoice( AreaMenuChoice c, const vector<int> &iAnswers, bool bAllowUndo = true );
+	void HandleAreaMenuChoice( AreaMenuChoice c, const std::vector<int> &iAnswers, bool bAllowUndo = true );
 	void HandleAreaMenuChoice( AreaMenuChoice c, bool bAllowUndo = true )
 	{ 
-		const vector<int> v; HandleAreaMenuChoice( c, v, bAllowUndo );
+		const std::vector<int> v; HandleAreaMenuChoice( c, v, bAllowUndo );
 	}
 	/** @brief How should the selected notes be transformed? */
 	enum TurnType
@@ -554,7 +554,7 @@ public:
 		step_music,
 		NUM_STEPS_INFORMATION_CHOICES
 	};
-	void HandleStepsInformationChoice( StepsInformationChoice c, const vector<int> &iAnswers );
+	void HandleStepsInformationChoice( StepsInformationChoice c, const std::vector<int> &iAnswers );
 	
 	enum StepsDataChoice
 	{
@@ -574,7 +574,7 @@ public:
 		chaos,
 		NUM_STEPS_DATA_CHOICES
 	};
-	void HandleStepsDataChoice(StepsDataChoice c, const vector<int> &answers);
+	void HandleStepsDataChoice(StepsDataChoice c, const std::vector<int> &answers);
 
 	enum SongInformationChoice
 	{
@@ -595,7 +595,7 @@ public:
 		max_bpm,
 		NUM_SONG_INFORMATION_CHOICES
 	};
-	void HandleSongInformationChoice( SongInformationChoice c, const vector<int> &iAnswers );
+	void HandleSongInformationChoice( SongInformationChoice c, const std::vector<int> &iAnswers );
 	
 	enum TimingDataInformationChoice
 	{
@@ -625,7 +625,7 @@ public:
 		NUM_TIMING_DATA_INFORMATION_CHOICES
 	};
 	void HandleTimingDataInformationChoice (TimingDataInformationChoice c,
-						const vector<int> &iAnswers );
+						const std::vector<int> &iAnswers );
 
 	enum TimingDataChangeChoice
 	{
@@ -644,7 +644,7 @@ public:
 		NUM_TimingDataChangeChoices
 	};
 	void HandleTimingDataChangeChoice(TimingDataChangeChoice choice,
-		const vector<int>& answers);
+		const std::vector<int>& answers);
 
 	enum BGChangeChoice
 	{
@@ -686,7 +686,7 @@ public:
 	 * It is important that this is only called in Song Timing mode.
 	 * @param c the Background Change style requested.
 	 * @param iAnswers the other settings involving the change. */
-	void HandleBGChangeChoice( BGChangeChoice c, const vector<int> &iAnswers );
+	void HandleBGChangeChoice( BGChangeChoice c, const std::vector<int> &iAnswers );
 
 	enum CourseAttackChoice
 	{

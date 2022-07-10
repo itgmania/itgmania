@@ -32,15 +32,15 @@ public:
 	ThemeManager();
 	~ThemeManager();
 
-	void GetThemeNames( vector<RString>& AddTo );
-	void GetSelectableThemeNames( vector<RString>& AddTo );
+	void GetThemeNames( std::vector<RString>& AddTo );
+	void GetSelectableThemeNames( std::vector<RString>& AddTo );
 	int GetNumSelectableThemes();
 	bool DoesThemeExist( const RString &sThemeName );
 	bool IsThemeSelectable(RString const& name);
 	bool IsThemeNameValid(RString const& name);
 	RString GetThemeDisplayName( const RString &sThemeName );
 	RString GetThemeAuthor( const RString &sThemeName );
-	void GetLanguages( vector<RString>& AddTo );
+	void GetLanguages( std::vector<RString>& AddTo );
 	bool DoesLanguageExist( const RString &sLanguage );
 	void SwitchThemeAndLanguage( const RString &sThemeName, const RString &sLanguage, bool bPseudoLocalize, bool bForceThemeReload = false );
 	void UpdateLuaGlobals();
@@ -53,7 +53,7 @@ public:
 	void ReloadMetrics();
 	void ReloadSubscribers();
 	void ClearSubscribers();
-	void GetOptionNames( vector<RString>& AddTo );
+	void GetOptionNames( std::vector<RString>& AddTo );
 
 	static void EvaluateString( RString &sText );
 
@@ -91,9 +91,9 @@ public:
 	bool	HasString( const RString &sMetricsGroup, const RString &sValueName );
 	RString	GetString( const RString &sMetricsGroup, const RString &sValueName );
 	void	GetString( const RString &sMetricsGroup, const RString &sValueName, RString &valueOut )		{ valueOut = GetString( sMetricsGroup, sValueName ); }
-	void FilterFileLanguages( vector<RString> &asElementPaths );
+	void FilterFileLanguages( std::vector<RString> &asElementPaths );
 
-	void GetMetricsThatBeginWith( const RString &sMetricsGroup, const RString &sValueName, set<RString> &vsValueNamesOut );
+	void GetMetricsThatBeginWith( const RString &sMetricsGroup, const RString &sValueName, std::set<RString> &vsValueNamesOut );
 
 	RString GetMetricsGroupFallback( const RString &sMetricsGroup );
 
@@ -119,9 +119,9 @@ protected:
 	static RString GetThemeDirFromName( const RString &sThemeName );
 	RString GetElementDir( const RString &sThemeName );
 	static RString GetMetricsIniPath( const RString &sThemeName );
-	static void GetLanguagesForTheme( const RString &sThemeName, vector<RString>& asLanguagesOut );
+	static void GetLanguagesForTheme( const RString &sThemeName, std::vector<RString>& asLanguagesOut );
 	static RString GetLanguageIniPath( const RString &sThemeName, const RString &sLanguage );
-	void GetOptionalLanguageIniPaths( vector<RString> &vsPathsOut, const RString &sThemeName, const RString &sLanguage );
+	void GetOptionalLanguageIniPaths( std::vector<RString> &vsPathsOut, const RString &sThemeName, const RString &sLanguage );
 	RString GetDefaultLanguage();
 
 	RString m_sCurThemeName;

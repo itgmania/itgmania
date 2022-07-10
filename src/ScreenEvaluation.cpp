@@ -129,7 +129,7 @@ void ScreenEvaluation::Init()
 			GAMESTATE->m_pCurSteps[p].Set( GAMESTATE->m_pCurSong->GetAllSteps()[0] );
 			if( GAMESTATE->m_pCurCourse )
 			{
-				vector<Trail*> apTrails;
+				std::vector<Trail*> apTrails;
 				GAMESTATE->m_pCurCourse->GetAllTrails( apTrails );
 				if( apTrails.size() )
 					GAMESTATE->m_pCurTrail[p].Set( apTrails[0] );
@@ -311,7 +311,7 @@ void ScreenEvaluation::Init()
 				m_textPlayerOptions[p].SetName( ssprintf("PlayerOptionsP%d",p+1) );
 				ActorUtil::LoadAllCommands( m_textPlayerOptions[p], m_sName );
 				SET_XY( m_textPlayerOptions[p] );
-				vector<RString> v;
+				std::vector<RString> v;
 				PlayerOptions po = GAMESTATE->m_pPlayerState[p]->m_PlayerOptions.GetPreferred();
 				if( PLAYER_OPTIONS_HIDE_FAIL_TYPE )
 					po.m_FailType = (FailType)0;	// blank out the fail type so that it won't show in the mods list
@@ -666,7 +666,7 @@ void ScreenEvaluation::Init()
 
 	Grade best_grade = Grade_NoData;
 	FOREACH_PlayerNumber( p )
-		best_grade = min( best_grade, grade[p] );
+		best_grade = std::min( best_grade, grade[p] );
 
 	if( m_pStageStats->m_EarnedExtraStage != EarnedExtraStage_No )
 	{

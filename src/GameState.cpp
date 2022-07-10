@@ -708,7 +708,7 @@ int GameState::GetNumStagesForCurrentSongAndStepsOrCourse() const
 	else
 		return -1;
 
-	iNumStagesOfThisSong = max( iNumStagesOfThisSong, 1 );
+	iNumStagesOfThisSong = std::max( iNumStagesOfThisSong, 1 );
 
 	return iNumStagesOfThisSong;
 }
@@ -789,7 +789,7 @@ void GameState::CommitStageStats()
 	STATSMAN->CommitStatsToProfiles( &STATSMAN->m_CurStageStats );
 
 	// Update TotalPlaySeconds.
-	int iPlaySeconds = max( 0, (int) m_timeGameStarted.GetDeltaTime() );
+	int iPlaySeconds = std::max( 0, (int) m_timeGameStarted.GetDeltaTime() );
 
 	Profile* pMachineProfile = PROFILEMAN->GetMachineProfile();
 	pMachineProfile->m_iTotalSessionSeconds += iPlaySeconds;
@@ -1007,7 +1007,7 @@ void GameState::SetCompatibleStylesForPlayers()
 		}
 		else if(GetCurrentStyle(PLAYER_INVALID) == nullptr)
 		{
-			vector<StepsType> vst;
+			std::vector<StepsType> vst;
 			GAMEMAN->GetStepsTypesForGame(m_pCurGame, vst);
 			const Style *style = GAMEMAN->GetFirstCompatibleStyle(
 				m_pCurGame, GetNumSidesJoined(), vst[0]);
@@ -1029,7 +1029,7 @@ void GameState::SetCompatibleStylesForPlayers()
 			}
 			else
 			{
-				vector<StepsType> vst;
+				std::vector<StepsType> vst;
 				GAMEMAN->GetStepsTypesForGame(m_pCurGame, vst);
 				st= vst[0];
 			}
@@ -1302,7 +1302,7 @@ int GameState::GetSmallestNumStagesLeftForAnyHumanPlayer() const
 		return 999;
 	int iSmallest = INT_MAX;
 	FOREACH_HumanPlayer( p )
-		iSmallest = min( iSmallest, m_iPlayerStageTokens[p] );
+		iSmallest = std::min( iSmallest, m_iPlayerStageTokens[p] );
 	return iSmallest;
 }
 
@@ -1459,11 +1459,11 @@ int GameState::prepare_song_for_gameplay()
 	// specify their own music file, and the variety of step file formats.
 	// Complex logic to figure out what files the song actually uses would be
 	// bug prone.  Just copy all audio files and step files. -Kyz
-	vector<RString> copy_exts= ActorUtil::GetTypeExtensionList(FT_Sound);
+	std::vector<RString> copy_exts= ActorUtil::GetTypeExtensionList(FT_Sound);
 	copy_exts.push_back("sm");
 	copy_exts.push_back("ssc");
 	copy_exts.push_back("lrc");
-	vector<RString> files_in_dir;
+	std::vector<RString> files_in_dir;
 	FILEMAN->GetDirListingWithMultipleExtensions(from_dir, copy_exts, files_in_dir);
 	for(size_t i= 0; i < files_in_dir.size(); ++i)
 	{
@@ -1937,7 +1937,7 @@ bool GameState::CurrentOptionsDisqualifyPlayer( PlayerNumber pn )
  *
  */
 
-void GameState::GetAllUsedNoteSkins( vector<RString> &out ) const
+void GameState::GetAllUsedNoteSkins( std::vector<RString> &out ) const
 {
 	FOREACH_EnabledPlayer( pn )
 	{
@@ -1979,13 +1979,13 @@ void GameState::AddStageToPlayer( PlayerNumber pn )
 template<class T>
 void setmin( T &a, const T &b )
 {
-	a = min(a, b);
+	a = std::min(a, b);
 }
 
 template<class T>
 void setmax( T &a, const T &b )
 {
-	a = max(a, b);
+	a = std::max(a, b);
 }
 
 FailType GameState::GetPlayerFailType( const PlayerState *pPlayerState ) const
@@ -2000,7 +2000,7 @@ FailType GameState::GetPlayerFailType( const PlayerState *pPlayerState ) const
 	if( IsCourseMode() )
 	{
 		if( PREFSMAN->m_bMinimum1FullSongInCourses && GetCourseSongIndex()==0 )
-			ft = max( ft, FailType_ImmediateContinue );	// take the least harsh of the two FailTypes
+			ft = std::max( ft, FailType_ImmediateContinue );	// take the least harsh of the two FailTypes
 	}
 	else
 	{
@@ -2047,7 +2047,7 @@ bool GameState::ShowW1() const
 
 static ThemeMetric<bool> PROFILE_RECORD_FEATS("GameState","ProfileRecordFeats");
 static ThemeMetric<bool> CATEGORY_RECORD_FEATS("GameState","CategoryRecordFeats");
-void GameState::GetRankingFeats( PlayerNumber pn, vector<RankingFeat> &asFeatsOut ) const
+void GameState::GetRankingFeats( PlayerNumber pn, std::vector<RankingFeat> &asFeatsOut ) const
 {
 	if( !IsHumanPlayer(pn) )
 		return;
@@ -2071,7 +2071,7 @@ void GameState::GetRankingFeats( PlayerNumber pn, vector<RankingFeat> &asFeatsOu
 			// Find unique Song and Steps combinations that were played.
 			// We must keep only the unique combination or else we'll double-count
 			// high score markers.
-			vector<SongAndSteps> vSongAndSteps;
+			std::vector<SongAndSteps> vSongAndSteps;
 
 			for( unsigned i=0; i<STATSMAN->m_vPlayedStageStats.size(); i++ )
 			{
@@ -2090,7 +2090,7 @@ void GameState::GetRankingFeats( PlayerNumber pn, vector<RankingFeat> &asFeatsOu
 
 			sort( vSongAndSteps.begin(), vSongAndSteps.end() );
 
-			vector<SongAndSteps>::iterator toDelete = unique( vSongAndSteps.begin(), vSongAndSteps.end() );
+			std::vector<SongAndSteps>::iterator toDelete = unique( vSongAndSteps.begin(), vSongAndSteps.end() );
 			vSongAndSteps.erase(toDelete, vSongAndSteps.end());
 
 			CHECKPOINT_M( "About to find records from the gathered.");
@@ -2283,7 +2283,7 @@ void GameState::GetRankingFeats( PlayerNumber pn, vector<RankingFeat> &asFeatsOu
 
 bool GameState::AnyPlayerHasRankingFeats() const
 {
-	vector<RankingFeat> vFeats;
+	std::vector<RankingFeat> vFeats;
 	FOREACH_PlayerNumber( p )
 	{
 		GetRankingFeats( p, vFeats );
@@ -2314,7 +2314,7 @@ void GameState::StoreRankingName( PlayerNumber pn, RString sName )
 				}
 
 				sLine.MakeUpper();
-				if( !sLine.empty() && sName.find(sLine) != string::npos )	// name contains a bad word
+				if( !sLine.empty() && sName.find(sLine) != std::string::npos )	// name contains a bad word
 				{
 					LOG->Trace( "entered '%s' matches blacklisted item '%s'", sName.c_str(), sLine.c_str() );
 					sName = "";
@@ -2324,7 +2324,7 @@ void GameState::StoreRankingName( PlayerNumber pn, RString sName )
 		}
 	}
 
-	vector<RankingFeat> aFeats;
+	std::vector<RankingFeat> aFeats;
 	GetRankingFeats( pn, aFeats );
 
 	for( unsigned i=0; i<aFeats.size(); i++ )
@@ -2430,7 +2430,7 @@ bool GameState::ChangePreferredDifficultyAndStepsType( PlayerNumber pn, Difficul
  * difficulty. */
 bool GameState::ChangePreferredDifficulty( PlayerNumber pn, int dir )
 {
-	const vector<Difficulty> &v = CommonMetrics::DIFFICULTIES_TO_SHOW.GetValue();
+	const std::vector<Difficulty> &v = CommonMetrics::DIFFICULTIES_TO_SHOW.GetValue();
 
 	Difficulty d = GetClosestShownDifficulty(pn);
 	for(;;)
@@ -2453,7 +2453,7 @@ bool GameState::ChangePreferredDifficulty( PlayerNumber pn, int dir )
  * Difficulty_Edit. Return the closest shown difficulty <= m_PreferredDifficulty. */
 Difficulty GameState::GetClosestShownDifficulty( PlayerNumber pn ) const
 {
-	const vector<Difficulty> &v = CommonMetrics::DIFFICULTIES_TO_SHOW.GetValue();
+	const std::vector<Difficulty> &v = CommonMetrics::DIFFICULTIES_TO_SHOW.GetValue();
 
 	Difficulty iClosest = (Difficulty) 0;
 	int iClosestDist = -1;
@@ -2488,7 +2488,7 @@ bool GameState::ChangePreferredCourseDifficulty( PlayerNumber pn, int dir )
 	/* If we have a course selected, only choose among difficulties available in the course. */
 	const Course *pCourse = m_pCurCourse;
 
-	const vector<CourseDifficulty> &v = CommonMetrics::COURSE_DIFFICULTIES_TO_SHOW.GetValue();
+	const std::vector<CourseDifficulty> &v = CommonMetrics::COURSE_DIFFICULTIES_TO_SHOW.GetValue();
 
 	CourseDifficulty cd = m_PreferredCourseDifficulty[pn];
 	for(;;)
@@ -2512,7 +2512,7 @@ bool GameState::ChangePreferredCourseDifficulty( PlayerNumber pn, int dir )
 
 bool GameState::IsCourseDifficultyShown( CourseDifficulty cd )
 {
-	const vector<CourseDifficulty> &v = CommonMetrics::COURSE_DIFFICULTIES_TO_SHOW.GetValue();
+	const std::vector<CourseDifficulty> &v = CommonMetrics::COURSE_DIFFICULTIES_TO_SHOW.GetValue();
 	return find(v.begin(), v.end(), cd) != v.end();
 }
 
@@ -2526,7 +2526,7 @@ Difficulty GameState::GetEasiestStepsDifficulty() const
 			LuaHelpers::ReportScriptErrorFmt( "GetEasiestStepsDifficulty called but p%i hasn't chosen notes", p+1 );
 			continue;
 		}
-		dc = min( dc, m_pCurSteps[p]->GetDifficulty() );
+		dc = std::min( dc, m_pCurSteps[p]->GetDifficulty() );
 	}
 	return dc;
 }
@@ -2541,7 +2541,7 @@ Difficulty GameState::GetHardestStepsDifficulty() const
 			LuaHelpers::ReportScriptErrorFmt( "GetHardestStepsDifficulty called but p%i hasn't chosen notes", p+1 );
 			continue;
 		}
-		dc = max( dc, m_pCurSteps[p]->GetDifficulty() );
+		dc = std::max( dc, m_pCurSteps[p]->GetDifficulty() );
 	}
 	return dc;
 }
@@ -2950,7 +2950,7 @@ public:
 			return 0;
 
 		// use a vector and not a set so that ordering is maintained
-		vector<const Steps*> vpStepsToShow;
+		std::vector<const Steps*> vpStepsToShow;
 		FOREACH_HumanPlayer( p )
 		{
 			const Steps* pSteps = GAMESTATE->m_pCurSteps[p];
@@ -2977,7 +2977,7 @@ public:
 	DEFINE_METHOD( GetPreferredSongGroup, m_sPreferredSongGroup.Get() );
 	static int GetHumanPlayers( T* p, lua_State *L )
 	{
-		vector<PlayerNumber> vHP;
+		std::vector<PlayerNumber> vHP;
 		FOREACH_HumanPlayer( pn )
 			vHP.push_back( pn );
 		LuaHelpers::CreateTableFromArray( vHP, L );
@@ -2985,7 +2985,7 @@ public:
 	}
 	static int GetEnabledPlayers(T* , lua_State *L )
 	{
-		vector<PlayerNumber> vEP;
+		std::vector<PlayerNumber> vEP;
 		FOREACH_EnabledPlayer( pn )
 			vEP.push_back( pn );
 		LuaHelpers::CreateTableFromArray( vEP, L );
@@ -3130,7 +3130,7 @@ public:
 		// Do not allow styles with StepsTypes with shared sides or that are one player only with Battle or Rave.
 		if( style->m_StyleType != StyleType_TwoPlayersSharedSides )
 		{
-			vector<const Style*> vpStyles;
+			std::vector<const Style*> vpStyles;
 			GAMEMAN->GetCompatibleStyles( p->m_pCurGame, 2, vpStyles );
 			for (const Style *s : vpStyles)
 			{

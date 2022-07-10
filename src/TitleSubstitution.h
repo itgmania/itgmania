@@ -34,7 +34,7 @@ struct TitleTrans;
 /** @brief Automatic translation for Song titles. */
 class TitleSubst
 {
-	vector<TitleTrans *> ttab;
+	std::vector<TitleTrans *> ttab;
 
 	void AddTrans(const TitleTrans &tr);
 public:

@@ -85,7 +85,7 @@ bool ScreenPlayerOptions::Input( const InputEventPlus &input )
 
 		for( unsigned r=0; r<m_pRows.size(); r++ )
 		{
-			vector<PlayerNumber> v;
+			std::vector<PlayerNumber> v;
 			v.push_back( pn );
 			int iOldFocus = m_pRows[r]->GetChoiceInRowWithFocus( pn );
 			this->ImportOptions( r, v );
@@ -130,7 +130,7 @@ void ScreenPlayerOptions::UpdateDisqualified( int row, PlayerNumber pn )
 	// Find out if the current row when exported causes disqualification.
 	// Exporting the row will fill GAMESTATE->m_PlayerOptions.
 	PO_GROUP_CALL( GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions, ModsLevel_Preferred, Init );
-	vector<PlayerNumber> v;
+	std::vector<PlayerNumber> v;
 	v.push_back( pn );
 	ExportOptions( row, v );
 	bool bRowCausesDisqualified = GAMESTATE->CurrentOptionsDisqualifyPlayer( pn );

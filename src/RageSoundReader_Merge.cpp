@@ -60,7 +60,7 @@ void RageSoundReader_Merge::Finish( int iPreferredSampleRate )
 	 * which will be converted as needed, or have the same number of channels. */
 	m_iChannels = 1;
 	for (RageSoundReader *it : m_aSounds)
-		m_iChannels = max( m_iChannels, it->GetNumChannels() );
+		m_iChannels = std::max( m_iChannels, it->GetNumChannels() );
 
 	/*
 	 * We might get different sample rates from our sources.  If they're all the same
@@ -91,7 +91,7 @@ void RageSoundReader_Merge::Finish( int iPreferredSampleRate )
 	 * channels. */
 	if( m_iChannels > 2 )
 	{
-		vector<RageSoundReader *> aSounds;
+		std::vector<RageSoundReader *> aSounds;
 		for (RageSoundReader *it : m_aSounds)
 		{
 			if( it->GetNumChannels() != m_iChannels )
@@ -177,8 +177,8 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 	 * happens may be a bug, such as sounds at different speeds. 
 	 */
 
-	vector<int> aNextSourceFrames;
-	vector<float> aRatios;
+	std::vector<int> aNextSourceFrames;
+	std::vector<float> aRatios;
 	aNextSourceFrames.resize( m_aSounds.size() );
 	aRatios.resize( m_aSounds.size() );
 	for( unsigned i = 0; i < m_aSounds.size(); ++i )
@@ -213,7 +213,7 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 			 * read now, so we don't advance past it. */
 			int iMaxSourceFramesToRead = aNextSourceFrames[i] - iMinPosition;
 			int iMaxStreamFramesToRead = lrintf( iMaxSourceFramesToRead / m_fCurrentStreamToSourceRatio );
-			iFrames = min( iFrames, iMaxStreamFramesToRead );
+			iFrames = std::min( iFrames, iMaxStreamFramesToRead );
 //			LOG->Warn( "RageSoundReader_Merge: sound positions moving at different rates" );
 		}
 	}
@@ -232,7 +232,7 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 
 	RageSoundMixBuffer mix;
 	float Buffer[2048];
-	iFrames = min( iFrames, (int) (ARRAYLEN(Buffer) / m_iChannels) );
+	iFrames = std::min( iFrames, (int) (ARRAYLEN(Buffer) / m_iChannels) );
 
 	/* Read iFrames from each sound. */
 	for( unsigned i = 0; i < m_aSounds.size(); ++i )
@@ -292,7 +292,7 @@ int RageSoundReader_Merge::GetLength() const
 {
 	int iLength = 0;
 	for( unsigned i = 0; i < m_aSounds.size(); ++i )
-		iLength = max( iLength, m_aSounds[i]->GetLength() );
+		iLength = std::max( iLength, m_aSounds[i]->GetLength() );
 	return iLength;
 }
 
@@ -300,7 +300,7 @@ int RageSoundReader_Merge::GetLength_Fast() const
 {
 	int iLength = 0;
 	for( unsigned i = 0; i < m_aSounds.size(); ++i )
-		iLength = max( iLength, m_aSounds[i]->GetLength_Fast() );
+		iLength = std::max( iLength, m_aSounds[i]->GetLength_Fast() );
 	return iLength;
 }
 

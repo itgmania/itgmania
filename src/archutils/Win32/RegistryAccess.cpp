@@ -112,7 +112,7 @@ bool RegistryAccess::GetRegValue( const RString &sKey, const RString &sName, boo
 	return b;
 }
 
-bool RegistryAccess::GetRegSubKeys( const RString &sKey, vector<RString> &lst, const RString &regex, bool bReturnPathToo )
+bool RegistryAccess::GetRegSubKeys( const RString &sKey, std::vector<RString> &lst, const RString &regex, bool bReturnPathToo )
 {
 	HKEY hKey = OpenRegKey( sKey, READ );
 	if( hKey == nullptr )
@@ -196,7 +196,7 @@ bool RegistryAccess::CreateKey( const RString &sKey )
 	RString sSubkey;
 	HKEY hType;
 	if( !GetRegKeyType(sKey, sSubkey, hType) )
-		return nullptr;
+		return false;
 
 	HKEY hKey;
 	DWORD dwDisposition = 0;

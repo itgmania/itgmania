@@ -108,7 +108,7 @@ public:
 	/** @brief The list of attacks. */
 	AttackArray m_Attacks;
 	/** @brief The stringified list of attacks. */
-	vector<RString> m_sAttackString;
+	std::vector<RString> m_sAttackString;
 
 	RString GetChartName() const			{ return parent ? Real()->GetChartName() : this->chartName; }
 	void SetChartName(const RString name)		{ this->chartName = name; }

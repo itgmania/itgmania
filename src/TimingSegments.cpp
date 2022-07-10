@@ -170,9 +170,9 @@ RString ComboSegment::ToString(int dec) const
 	return ssprintf(str.c_str(), GetBeat(), GetCombo(), GetMissCombo());
 }
 
-vector<float> ComboSegment::GetValues() const
+std::vector<float> ComboSegment::GetValues() const
 {
-	vector<float> ret;
+	std::vector<float> ret;
 	ret.push_back(GetCombo());
 	ret.push_back(GetMissCombo());
 	return ret;
@@ -197,9 +197,9 @@ RString TimeSignatureSegment::ToString(int dec) const
 	return ssprintf(str.c_str(), GetBeat(), GetNum(), GetDen());
 }
 
-vector<float> TimeSignatureSegment::GetValues() const
+std::vector<float> TimeSignatureSegment::GetValues() const
 {
-	vector<float> ret;
+	std::vector<float> ret;
 	ret.push_back(GetNum());
 	ret.push_back(GetDen());
 	return ret;
@@ -214,9 +214,9 @@ RString SpeedSegment::ToString(int dec) const
 		GetDelay(), static_cast<unsigned int>(GetUnit()));
 }
 
-vector<float> SpeedSegment::GetValues() const
+std::vector<float> SpeedSegment::GetValues() const
 {
-	vector<float> ret;
+	std::vector<float> ret;
 	ret.push_back(GetRatio());
 	ret.push_back(GetDelay());
 	ret.push_back(GetUnit());

@@ -61,15 +61,15 @@ protected:
 	void UpdateSelectButton( PlayerNumber pn, bool bBeingPressed );
 
 	void ChangeSteps( PlayerNumber pn, int dir );
-	void AfterStepsOrTrailChange( const vector<PlayerNumber> &vpns );
+	void AfterStepsOrTrailChange( const std::vector<PlayerNumber> &vpns );
 	void SwitchToPreferredDifficulty();
 	void AfterMusicChange();
 
 	void CheckBackgroundRequests( bool bForce );	
 	bool DetectCodes( const InputEventPlus &input );
 
-	vector<Steps*>		m_vpSteps;
-	vector<Trail*>		m_vpTrails;
+	std::vector<Steps*>		m_vpSteps;
+	std::vector<Trail*>		m_vpTrails;
 	int					m_iSelection[NUM_PLAYERS];
 
 	RageTimer		m_timerIdleComment;

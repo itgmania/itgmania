@@ -22,7 +22,7 @@ private:
 	bool LoadSound( RString sSoundFilePath );
 	int GetNextToPlay();
 
-	vector<RageSound*> m_pSamples;
+	std::vector<RageSound*> m_pSamples;
 	int m_iIndexLastPlayed;
 };
 

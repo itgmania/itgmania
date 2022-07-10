@@ -104,7 +104,7 @@ void LifeMeterBattery::OnSongEnded()
 			lua_settop(L, 0);
 			LUA->Release(L);
 		}
-		m_iLivesLeft = min( m_iLivesLeft, m_pPlayerState->m_PlayerOptions.GetSong().m_BatteryLives );
+		m_iLivesLeft = std::min( m_iLivesLeft, m_pPlayerState->m_PlayerOptions.GetSong().m_BatteryLives );
 
 		if( m_iTrailingLivesLeft < m_iLivesLeft )
 			m_soundGainLife.Play(false);

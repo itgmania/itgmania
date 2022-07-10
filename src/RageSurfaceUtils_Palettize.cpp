@@ -144,7 +144,7 @@ void RageSurfaceUtils::Palettize( RageSurface *&pImg, int iColors, bool bDither 
 			}
 			maxval = newmaxval;
 		}
-		newcolors = min( colors, iColors );
+		newcolors = std::min( colors, iColors );
 
 		// Apply median-cut to histogram, making the new acolormap.
 		acolormap = mediancut( achv, colors, pImg->h * pImg->w, maxval, newcolors );
@@ -298,7 +298,7 @@ void RageSurfaceUtils::Palettize( RageSurface *&pImg, int iColors, bool bDither 
 
 		if( bDither )
 		{
-			swap( thiserr, nexterr );
+			std::swap( thiserr, nexterr );
 			fs_direction = !fs_direction;
 		}
 	}
@@ -379,17 +379,17 @@ static acolorhist_item *mediancut( acolorhist_item *achv, int colors, int sum, i
 		{
 			int v;
 			v = achv[indx + i].acolor[0];
-			mins[0] = min( mins[0], v );
-			maxs[0] = max( maxs[0], v );
+			mins[0] = std::min( mins[0], v );
+			maxs[0] = std::max( maxs[0], v );
 			v = achv[indx + i].acolor[1];
-			mins[1] = min( mins[1], v );
-			maxs[1] = max( maxs[1], v );
+			mins[1] = std::min( mins[1], v );
+			maxs[1] = std::max( maxs[1], v );
 			v = achv[indx + i].acolor[2];
-			mins[2] = min( mins[2], v );
-			maxs[2] = max( maxs[2], v );
+			mins[2] = std::min( mins[2], v );
+			maxs[2] = std::max( maxs[2], v );
 			v = achv[indx + i].acolor[3];
-			mins[3] = min( mins[3], v );
-			maxs[3] = max( maxs[3], v );
+			mins[3] = std::min( mins[3], v );
+			maxs[3] = std::max( maxs[3], v );
 		}
 
 		// Find the largest dimension, and sort by that component.
@@ -401,10 +401,10 @@ static acolorhist_item *mediancut( acolorhist_item *achv, int colors, int sum, i
 
 			switch( iMax )
 			{
-			case 0: sort( &achv[indx], &achv[indx+clrs], compare_index_0 ); break;
-			case 1: sort( &achv[indx], &achv[indx+clrs], compare_index_1 ); break;
-			case 2: sort( &achv[indx], &achv[indx+clrs], compare_index_2 ); break;
-			case 3: sort( &achv[indx], &achv[indx+clrs], compare_index_3 ); break;
+			case 0: std::sort( &achv[indx], &achv[indx+clrs], compare_index_0 ); break;
+			case 1: std::sort( &achv[indx], &achv[indx+clrs], compare_index_1 ); break;
+			case 2: std::sort( &achv[indx], &achv[indx+clrs], compare_index_2 ); break;
+			case 3: std::sort( &achv[indx], &achv[indx+clrs], compare_index_3 ); break;
 			}
 		}
 		/* Now find the median based on the counts, so that about half the
@@ -426,7 +426,7 @@ static acolorhist_item *mediancut( acolorhist_item *achv, int colors, int sum, i
 		bv[boxes].colors = clrs - j;
 		bv[boxes].sum = sm - lowersum;
 		++boxes;
-		sort( &bv[0], &bv[boxes], CompareBySumDescending );
+		std::sort( &bv[0], &bv[boxes], CompareBySumDescending );
 	}
 
 	/* Ok, we've got enough boxes. Now choose a representative color for
@@ -471,13 +471,13 @@ static acolorhist_item *mediancut( acolorhist_item *achv, int colors, int sum, i
 			lSum += achv[indx + i].value;
 		}
 		r = r / lSum;
-		r = min( r, (long) maxval );
+		r = std::min( r, (long) maxval );
 		g = g / lSum;
-		g = min( g, (long) maxval );
+		g = std::min( g, (long) maxval );
 		b = b / lSum;
-		b = min( b, (long) maxval );
+		b = std::min( b, (long) maxval );
 		a = a / lSum;
-		a = min( a, (long) maxval );
+		a = std::min( a, (long) maxval );
 		PAM_ASSIGN( acolormap[bi].acolor, (uint8_t)r, (uint8_t)g, (uint8_t)b, (uint8_t)a );
 #endif // REP_AVERAGE_PIXELS
 	}

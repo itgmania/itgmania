@@ -95,8 +95,8 @@ public:
 	// Dereferences course_entries and returns only the playable Songs and Steps
 	Trail* GetTrail( StepsType st, CourseDifficulty cd=Difficulty_Medium ) const;
 	Trail* GetTrailForceRegenCache( StepsType st, CourseDifficulty cd=Difficulty_Medium ) const;
-	void GetTrails( vector<Trail*> &AddTo, StepsType st ) const;
-	void GetAllTrails( vector<Trail*> &AddTo ) const;
+	void GetTrails( std::vector<Trail*> &AddTo, StepsType st ) const;
+	void GetAllTrails( std::vector<Trail*> &AddTo ) const;
 	int GetMeter( StepsType st, CourseDifficulty cd=Difficulty_Medium ) const;
 	bool HasMods() const;
 	bool HasTimedMods() const;
@@ -133,7 +133,7 @@ public:
 	// Call when a Song or its Steps are deleted/changed.
 	void Invalidate( const Song *pStaleSong );
 
-	void GetAllCachedTrails( vector<Trail *> &out );
+	void GetAllCachedTrails( std::vector<Trail *> &out );
 	RString GetCacheFilePath() const;
 
 	const CourseEntry *FindFixedSong( const Song *pSong ) const;
@@ -149,7 +149,7 @@ public:
 	void CalculateRadarValues();
 
 	bool GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail ) const;
-	void GetTrailUnsortedEndless( const vector<CourseEntry> &entries, Trail &trail, StepsType &st,
+	void GetTrailUnsortedEndless( const std::vector<CourseEntry> &entries, Trail &trail, StepsType &st,
 		CourseDifficulty &cd, RandomGen &rnd, bool &bCourseDifficultyIsSignificant ) const;
 	bool GetTrailSorted( StepsType st, CourseDifficulty cd, Trail &trail ) const;
 
@@ -178,7 +178,7 @@ public:
 
 	bool	m_bIncomplete;
 
-	vector<CourseEntry> m_vEntries;
+	std::vector<CourseEntry> m_vEntries;
 
 	// sorting values
 	int	m_SortOrder_TotalDifficulty;
@@ -186,7 +186,7 @@ public:
 
 	ProfileSlot		m_LoadedFromProfile;	// ProfileSlot_Invalid if wasn't loaded from a profile
 
-	typedef pair<StepsType,Difficulty> CacheEntry;
+	typedef std::pair<StepsType,Difficulty> CacheEntry;
 	struct CacheData
 	{
 		Trail trail;
@@ -194,15 +194,15 @@ public:
 
 		CacheData(): trail(), null(false) {}
 	};
-	typedef map<CacheEntry, CacheData> TrailCache_t;
+	typedef std::map<CacheEntry, CacheData> TrailCache_t;
 	mutable TrailCache_t m_TrailCache;
 	mutable int m_iTrailCacheSeed;
 
-	typedef map<CacheEntry, RadarValues> RadarCache_t;
+	typedef std::map<CacheEntry, RadarValues> RadarCache_t;
 	RadarCache_t m_RadarCache;
 
 	// Preferred styles:
-	set<RString> m_setStyles;
+	std::set<RString> m_setStyles;
 };
 
 #endif

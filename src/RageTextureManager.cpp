@@ -33,9 +33,9 @@ RageTextureManager*		TEXTUREMAN		= nullptr; // global and accessible from anywhe
 
 namespace
 {
-	map<RageTextureID, RageTexture*> m_mapPathToTexture;
-	map<RageTextureID, RageTexture*> m_textures_to_update;
-	map<RageTexture*, RageTextureID> m_texture_ids_by_pointer;
+	std::map<RageTextureID, RageTexture*> m_mapPathToTexture;
+	std::map<RageTextureID, RageTexture*> m_textures_to_update;
+	std::map<RageTexture*, RageTextureID> m_texture_ids_by_pointer;
 };
 
 RageTextureManager::RageTextureManager():
@@ -68,7 +68,7 @@ void RageTextureManager::AdjustTextureID( RageTextureID &ID ) const
 {
 	if( ID.iColorDepth == -1 )
 		ID.iColorDepth = m_Prefs.m_iTextureColorDepth;
-	ID.iMaxSize = min( ID.iMaxSize, m_Prefs.m_iMaxTextureResolution );
+	ID.iMaxSize = std::min( ID.iMaxSize, m_Prefs.m_iMaxTextureResolution );
 	if( m_Prefs.m_bMipMaps )
 		ID.bMipMaps = true;
 }
@@ -196,7 +196,7 @@ RageTexture* RageTextureManager::CopyTexture( RageTexture *pCopy )
 void RageTextureManager::VolatileTexture( RageTextureID ID )
 {
 	RageTexture* pTexture = LoadTextureInternal( ID );
-	pTexture->GetPolicy() = min( pTexture->GetPolicy(), RageTextureID::TEX_VOLATILE );
+	pTexture->GetPolicy() = std::min( pTexture->GetPolicy(), RageTextureID::TEX_VOLATILE );
 	UnloadTexture( pTexture );
 }
 
@@ -234,18 +234,18 @@ void RageTextureManager::DeleteTexture( RageTexture *t )
 	ASSERT( t->m_iRefCount == 0 );
 	//LOG->Trace( "RageTextureManager: deleting '%s'.", t->GetID().filename.c_str() );
 
-	map<RageTexture*, RageTextureID>::iterator id_entry=
+	std::map<RageTexture*, RageTextureID>::iterator id_entry=
 		m_texture_ids_by_pointer.find(t);
 	if(id_entry != m_texture_ids_by_pointer.end())
 	{
-		map<RageTextureID, RageTexture*>::iterator tex_entry=
+		std::map<RageTextureID, RageTexture*>::iterator tex_entry=
 			m_mapPathToTexture.find(id_entry->second);
 		if(tex_entry != m_mapPathToTexture.end())
 		{
 			m_mapPathToTexture.erase(tex_entry);
 			SAFE_DELETE(t);
 		}
-		map<RageTextureID, RageTexture*>::iterator tex_update_entry=
+		std::map<RageTextureID, RageTexture*>::iterator tex_update_entry=
 			m_textures_to_update.find(id_entry->second);
 		if(tex_update_entry != m_textures_to_update.end())
 		{
@@ -257,13 +257,13 @@ void RageTextureManager::DeleteTexture( RageTexture *t )
 	else
 	{
 		FAIL_M("Tried to delete a texture that wasn't in the ids by pointer list.");
-		for (map<RageTextureID, RageTexture *>::iterator iter = m_mapPathToTexture.begin(); iter != m_mapPathToTexture.end(); ++iter)
+		for (std::map<RageTextureID, RageTexture *>::iterator iter = m_mapPathToTexture.begin(); iter != m_mapPathToTexture.end(); ++iter)
 		{
 			if( iter->second == t )
 			{
 				m_mapPathToTexture.erase( iter );	// remove map entry
 				SAFE_DELETE( t );	// free the texture
-				map<RageTextureID, RageTexture*>::iterator tex_update_entry=
+				std::map<RageTextureID, RageTexture*>::iterator tex_update_entry=
 					m_textures_to_update.find(iter->first);
 				if(tex_update_entry != m_textures_to_update.end())
 				{

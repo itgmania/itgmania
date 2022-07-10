@@ -85,7 +85,7 @@ public:
 	bool Unmount( const UsbStorageDevice *pDevice );
 
 	// This function will not time out.
-	bool StorageDevicesChanged( vector<UsbStorageDevice> &aOut );
+	bool StorageDevicesChanged( std::vector<UsbStorageDevice> &aOut );
 
 protected:
 	void HandleRequest( int iRequest );
@@ -105,9 +105,9 @@ private:
 
 	RageMutex UsbStorageDevicesMutex;
 	bool m_bUsbStorageDevicesChanged;
-	vector<UsbStorageDevice> m_aUsbStorageDevices;
+	std::vector<UsbStorageDevice> m_aUsbStorageDevices;
 
-	vector<UsbStorageDevice> m_aMountedDevices;
+	std::vector<UsbStorageDevice> m_aMountedDevices;
 
 	enum
 	{
@@ -116,7 +116,7 @@ private:
 	};
 };
 
-bool ThreadedMemoryCardWorker::StorageDevicesChanged( vector<UsbStorageDevice> &aOut )
+bool ThreadedMemoryCardWorker::StorageDevicesChanged( std::vector<UsbStorageDevice> &aOut )
 {
 	UsbStorageDevicesMutex.Lock();
 	if( !m_bUsbStorageDevicesChanged )
@@ -181,7 +181,7 @@ void ThreadedMemoryCardWorker::HandleRequest( int iRequest )
 		case REQ_UNMOUNT:
 		{
 			m_pDriver->Unmount( &m_RequestDevice );
-			vector<UsbStorageDevice>::iterator it = 
+			std::vector<UsbStorageDevice>::iterator it =
 				find( m_aMountedDevices.begin(), m_aMountedDevices.end(), m_RequestDevice );
 			if( it == m_aMountedDevices.end() )
 				LOG->Warn( "Unmounted a device that wasn't mounted" );
@@ -211,7 +211,7 @@ void ThreadedMemoryCardWorker::DoHeartbeat()
 	// If true, detect and mount. If false, only detect.
 	bool bMount = (m_MountThreadState == detect_and_mount);
 
-	vector<UsbStorageDevice> aStorageDevices;
+	std::vector<UsbStorageDevice> aStorageDevices;
 	//LOG->Trace("update");
 	if( !m_pDriver->DoOneUpdate( bMount, aStorageDevices ) )
 		return;
@@ -309,7 +309,7 @@ MemoryCardManager::~MemoryCardManager()
 
 void MemoryCardManager::Update()
 {
-	vector<UsbStorageDevice> vOld;
+	std::vector<UsbStorageDevice> vOld;
 	
 	vOld = m_vStorageDevices;	// copy
 	if( !g_pWorker->StorageDevicesChanged( m_vStorageDevices ) )
@@ -327,7 +327,7 @@ void MemoryCardManager::UpdateAssignments()
 		return;
 
 	// make a list of unassigned
-	vector<UsbStorageDevice> vUnassignedDevices = m_vStorageDevices; // copy
+	std::vector<UsbStorageDevice> vUnassignedDevices = m_vStorageDevices; // copy
 
 	// remove cards that are already assigned
 	FOREACH_PlayerNumber( p )
@@ -336,7 +336,7 @@ void MemoryCardManager::UpdateAssignments()
 		if( assigned_device.IsBlank() )     // no card assigned to this player
 			continue;
 
-		for (vector<UsbStorageDevice>::iterator d = vUnassignedDevices.begin(); d != vUnassignedDevices.end(); ++d)
+		for (std::vector<UsbStorageDevice>::iterator d = vUnassignedDevices.begin(); d != vUnassignedDevices.end(); ++d)
 		{
 			if( *d == assigned_device )
 			{
@@ -354,7 +354,7 @@ void MemoryCardManager::UpdateAssignments()
 		if( !assigned_device.IsBlank() )
 		{
 			// The player has a card assigned. If it's been removed, clear it.
-			vector<UsbStorageDevice>::iterator it = find( m_vStorageDevices.begin(), m_vStorageDevices.end(), assigned_device );
+			std::vector<UsbStorageDevice>::iterator it = find( m_vStorageDevices.begin(), m_vStorageDevices.end(), assigned_device );
 			if( it != m_vStorageDevices.end() )
 			{
 				/* The player has a card, and it's still plugged in. Update any
@@ -372,7 +372,7 @@ void MemoryCardManager::UpdateAssignments()
 
 		LOG->Trace( "Looking for a card for Player %d", p+1 );
 		
-		for (vector<UsbStorageDevice>::iterator d = vUnassignedDevices.begin(); d != vUnassignedDevices.end(); ++d)
+		for (std::vector<UsbStorageDevice>::iterator d = vUnassignedDevices.begin(); d != vUnassignedDevices.end(); ++d)
 		{
 			// search for card dir match
 			if( !m_sMemoryCardOsMountPoint[p].Get().empty() &&

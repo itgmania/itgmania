@@ -59,7 +59,7 @@ public:
 	{ return m_animation_length_seconds; }
 	virtual void RecalcAnimationLengthSeconds();
 	virtual void SetSecondsIntoAnimation( float fSeconds );
-	void SetStateProperties(const vector<State>& new_states)
+	void SetStateProperties(const std::vector<State>& new_states)
 	{ m_States= new_states; RecalcAnimationLengthSeconds(); SetState(0); }
 
 	RString	GetTexturePath() const;
@@ -109,7 +109,7 @@ private:
 
 	RageTexture* m_pTexture;
 
-	vector<State> m_States;
+	std::vector<State> m_States;
 	int		m_iCurState;
 	/** @brief The number of seconds that have elapsed since we switched to this frame. */
 	float	m_fSecsIntoState;

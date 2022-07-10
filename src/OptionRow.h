@@ -63,8 +63,8 @@ public:
 
 	void SetModIcon( PlayerNumber pn, const RString &sText, GameCommand &gc );
 
-	void ImportOptions( const vector<PlayerNumber> &vpns );
-	int ExportOptions( const vector<PlayerNumber> &vpns, bool bRowHasFocus[NUM_PLAYERS] );
+	void ImportOptions( const std::vector<PlayerNumber> &vpns );
+	int ExportOptions( const std::vector<PlayerNumber> &vpns, bool bRowHasFocus[NUM_PLAYERS] );
 
 	enum RowType
 	{
@@ -134,8 +134,8 @@ protected:
 
 	ActorFrame m_Frame;
 
-	vector<BitmapText *>	m_textItems;				// size depends on m_bRowIsLong and which players are joined
-	vector<OptionsCursor *>	m_Underline[NUM_PLAYERS];	// size depends on m_bRowIsLong and which players are joined
+	std::vector<BitmapText *>	m_textItems;				// size depends on m_bRowIsLong and which players are joined
+	std::vector<OptionsCursor *>	m_Underline[NUM_PLAYERS];	// size depends on m_bRowIsLong and which players are joined
 
 	Actor		*m_sprFrame;
 	BitmapText	*m_textTitle;
@@ -146,7 +146,7 @@ protected:
 
 	int			m_iChoiceInRowWithFocus[NUM_PLAYERS];	// this choice has input focus
 	// Only one will true at a time if m_pHand->m_Def.bMultiSelect
-	vector<bool>		m_vbSelected[NUM_PLAYERS];	// size = m_pHand->m_Def.choices.size()
+	std::vector<bool>		m_vbSelected[NUM_PLAYERS];	// size = m_pHand->m_Def.choices.size()
 	Actor::TweenState	m_tsDestination;	// this should approach m_tsDestination.
 
 public:
