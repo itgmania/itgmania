@@ -1535,19 +1535,19 @@ static void GetTrackMapping( StepsType st, NoteDataUtil::TrackMapping tt, int Nu
 				switch(st) {
 					case StepsType_beat_single5:
 					{
-						random_shuffle( &iTakeFromTrack[0], &iTakeFromTrack[5], rnd );
-						random_shuffle( &iTakeFromTrack[6], &iTakeFromTrack[11], rnd );
+						shuffle( &iTakeFromTrack[0], &iTakeFromTrack[5], rnd );
+						shuffle( &iTakeFromTrack[6], &iTakeFromTrack[11], rnd );
 						break;
 					}
 					case StepsType_beat_single7:
 					{
-						random_shuffle( &iTakeFromTrack[1], &iTakeFromTrack[8], rnd );
-						random_shuffle( &iTakeFromTrack[9], &iTakeFromTrack[16], rnd );
+						shuffle( &iTakeFromTrack[1], &iTakeFromTrack[8], rnd );
+						shuffle( &iTakeFromTrack[9], &iTakeFromTrack[16], rnd );
 						break;
 					}
 					default:
 					{
-						random_shuffle( &iTakeFromTrack[0], &iTakeFromTrack[NumTracks], rnd );
+						shuffle( &iTakeFromTrack[0], &iTakeFromTrack[NumTracks], rnd );
 						break;
 					}
 				}
@@ -1970,7 +1970,7 @@ static void HyperShuffleNotes( NoteData &inout, int iStartIndex, int iEndIndex)
 		for(int i = iActualTaps; i < iFreeTracks; i++)
 			vtnTargetTaps.push_back(TAP_EMPTY);
 
-		std::random_shuffle(viTargetTracks.begin(), viTargetTracks.end(), g_RandomNumberGenerator);
+		std::shuffle(viTargetTracks.begin(), viTargetTracks.end(), g_RandomNumberGenerator);
 
 		// Go through the tracks in their shuffled order and drop tap notes.
 		for(int i = 0; i < viTargetTracks.size(); i++)
