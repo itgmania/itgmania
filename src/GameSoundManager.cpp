@@ -318,7 +318,7 @@ static void DoPlayOnceFromDir( RString sPath )
 		{
 			order.push_back(i);
 		}
-		std::random_shuffle(order.begin(), order.end());
+		std::shuffle( order.begin(), order.end(), g_RandomNumberGenerator );
 	}
 
 	int index = order.back();
