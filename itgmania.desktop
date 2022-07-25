@@ -1,10 +1,10 @@
 [Desktop Entry]
 Name=ITGmania
 GenericName=Rhythm and dance game
-TryExec=/usr/local/itgmania/itgmania
-Exec=/usr/local/itgmania/itgmania
+TryExec=/opt/itgmania/itgmania
+Exec=/opt/itgmania/itgmania
 Terminal=false
-Icon=/usr/local/itgmania/Data/icon.png
+Icon=/opt/itgmania/Data/icon.png
 Type=Application
 Categories=Game;ArcadeGame
 Comment=A cross-platform rhythm video game.

@@ -481,6 +481,11 @@ if(WIN32)
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
 else()
   install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_INSTALL_DESTINATION}")
+  if(LINUX)
+    install(FILES "${SM_ROOT_DIR}/itgmania.desktop"
+            DESTINATION "${SM_INSTALL_DESTINATION}")
+    install(PROGRAMS "${SM_ROOT_DIR}/Installer/setup.sh" DESTINATION ".")
+  endif()
 endif()
 install(DIRECTORY "${SM_ROOT_DIR}/Announcers"
         DESTINATION "${SM_INSTALL_DESTINATION}")
