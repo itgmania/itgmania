@@ -211,6 +211,32 @@ bool Trail::ContainsSong( const Song *pSong ) const
 	});
 }
 
+// This is the ReadBPM for the whole trail in the manner of SM 5.1.
+float Trail::GetTrailMModReadBpm( const bool bPerSong ) const
+{
+	float fMaxBpm = 0;
+	const float fMModHighCap = CommonMetrics::M_MOD_HIGH_CAP.GetValue();
+	DisplayBpms bpms;
+
+	this->GetDisplayBpms(bpms);
+	if (!bpms.IsSecret())
+	{
+		fMaxBpm = bpms.GetMax();
+
+		if (fMModHighCap > 0)
+			fMaxBpm = std::min(fMaxBpm, fMModHighCap);
+	}
+	else
+	{
+		// There is no need to check the high cap here, because the Steps will
+		// do that.
+		for (TrailEntry const &e : m_vEntries)
+			fMaxBpm = std::max(fMaxBpm, e.pSteps->GetMModReadBpm(bPerSong));
+	}
+
+	return fMaxBpm;
+}
+
 // lua start
 #include "LuaBinding.h"
 
@@ -218,6 +244,7 @@ bool Trail::ContainsSong( const Song *pSong ) const
 class LunaTrail: public Luna<Trail>
 {
 public:
+	static int GetTrailMModReadBpm( T* p, lua_State *L )		{ LuaHelpers::Push(L, p->GetTrailMModReadBpm()); return 1; }
 	static int GetDifficulty( T* p, lua_State *L )		{ LuaHelpers::Push(L, p->m_CourseDifficulty ); return 1; }
 	static int GetMeter( T* p, lua_State *L )		{ LuaHelpers::Push(L, p->GetMeter() ); return 1; }
 	static int GetTotalMeter( T* p, lua_State *L )		{ LuaHelpers::Push(L, p->GetTotalMeter() ); return 1; }
@@ -290,6 +317,7 @@ public:
 		ADD_METHOD( GetLengthSeconds );
 		ADD_METHOD( IsSecret );
 		ADD_METHOD( ContainsSong );
+		ADD_METHOD( GetTrailMModReadBpm );
 	}
 };
 

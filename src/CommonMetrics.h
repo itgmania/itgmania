@@ -77,6 +77,15 @@ namespace CommonMetrics
 	
 	extern ThemeMetric<RString>		IMAGES_TO_CACHE;
 
+	/**
+ 	* @brief What is our highest cap for mMods?
+ 	*
+ 	* If set to 0 or less, assume the actual BPM takes over. 
+	* Note that this is NOT a [Common] metric. It used to be in Player.cpp and
+	* retains that metric category for backwards compatibility. */
+	extern ThemeMetric<float>	M_MOD_HIGH_CAP;
+
+
 	RString LocalizeOptionItem( const RString &s, bool bOptional );
 };
 

@@ -1456,6 +1456,7 @@
 			<Function name='GetPlayerOptions'/>
 			<Function name='GetPlayerOptionsArray'/>
 			<Function name='GetPlayerOptionsString'/>
+			<Function name='GetReadBpm'/>
 			<Function name='GetSongPosition'/>
 			<Function name='GetSuperMeterLevel'/>
 			<Function name='SetPlayerOptions'/>
@@ -1974,6 +1975,7 @@
 			<Function name='GetFilename'/>
 			<Function name='GetHash'/>
 			<Function name='GetMeter'/>
+			<Function name='GetMModReadBpm'/>
 			<Function name='GetRadarValues'/>
 			<Function name='GetStepsType'/>
 			<Function name='GetTimingData'/>
@@ -2099,6 +2101,7 @@
 			<Function name='GetTotalMeter'/>
 			<Function name='GetTrailEntries'/>
 			<Function name='GetTrailEntry'/>
+			<Function name='GetTrailMModReadBpm'/>
 			<Function name='IsSecret'/>
 		</Class>
 		<Class name='TrailEntry'>
