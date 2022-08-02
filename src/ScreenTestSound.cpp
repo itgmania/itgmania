@@ -69,7 +69,7 @@ ScreenTestSound::~ScreenTestSound()
 	for( int i = 0; i < nsounds; ++i )
 	{
 		/* Delete copied sounds. */
-		vector<RageSound *> &snds = m_sSoundCopies[i];
+		std::vector<RageSound *> &snds = m_sSoundCopies[i];
 		for( unsigned j = 0; j < snds.size(); ++j )
 			delete snds[j];
 	}
@@ -79,7 +79,7 @@ void ScreenTestSound::UpdateText(int n)
 {
 	RString fn = Basename( s[n].s.GetLoadedFilePath() );
 
-	vector<RageSound *> &snds = m_sSoundCopies[n];
+	std::vector<RageSound *> &snds = m_sSoundCopies[n];
 
 	RString pos;
 	for(unsigned p = 0; p < snds.size(); ++p)
@@ -115,7 +115,7 @@ void ScreenTestSound::Update(float f)
 		UpdateText(i);
 
 		/* Delete copied sounds that have finished playing. */
-		vector<RageSound *> &snds = m_sSoundCopies[i];
+		std::vector<RageSound *> &snds = m_sSoundCopies[i];
 		for( unsigned j = 0; j < snds.size(); ++j )
 		{
 			if( snds[j]->IsPlaying() )
@@ -157,7 +157,7 @@ bool ScreenTestSound::Input( const InputEventPlus &input )
 				for( int i = 0; i < nsounds; ++i )
 				{
 					/* Stop copied sounds. */
-					vector<RageSound *> &snds = m_sSoundCopies[i];
+					std::vector<RageSound *> &snds = m_sSoundCopies[i];
 					for( unsigned j = 0; j < snds.size(); ++j )
 						snds[j]->Stop();
 				}

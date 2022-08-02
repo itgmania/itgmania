@@ -40,7 +40,7 @@ inline bool operator!=(StepsTypeAndDifficulty const &lhs, StepsTypeAndDifficulty
 
 static void SetNextCombination()
 {
-	vector<StepsTypeAndDifficulty> v;
+	std::vector<StepsTypeAndDifficulty> v;
 	{
 		for (StepsType const &st : CommonMetrics::STEPS_TYPES_TO_SHOW.GetValue())
 		{
@@ -50,7 +50,7 @@ static void SetNextCombination()
 	}
 
 	StepsTypeAndDifficulty curVal( GAMESTATE->m_stEdit, GAMESTATE->m_cdEdit );
-	vector<StepsTypeAndDifficulty>::const_iterator iter = find( v.begin(), v.end(), curVal );
+	std::vector<StepsTypeAndDifficulty>::const_iterator iter = find( v.begin(), v.end(), curVal );
 	if( iter == v.end() || ++iter == v.end() )
 		iter = v.begin();
 
@@ -76,7 +76,7 @@ void ScreenOptionsManageCourses::Init()
 
 void ScreenOptionsManageCourses::BeginScreen()
 {
-	vector<const Style*> vpStyles;
+	std::vector<const Style*> vpStyles;
 	GAMEMAN->GetStylesForGame( GAMESTATE->m_pCurGame, vpStyles );
 	const Style *pStyle = vpStyles[0];
 	GAMESTATE->SetCurrentStyle( pStyle, PLAYER_INVALID );
@@ -92,7 +92,7 @@ void ScreenOptionsManageCourses::BeginScreen()
 	CourseID cidLast;
 	cidLast.FromCourse( GAMESTATE->m_pCurCourse );
 
-	vector<OptionRowHandler*> vHands;
+	std::vector<OptionRowHandler*> vHands;
 
 	int iIndex = 0;
 
@@ -148,7 +148,7 @@ void ScreenOptionsManageCourses::BeginScreen()
 	if( GAMESTATE->m_pCurCourse )
 	{
 		EditCourseUtil::UpdateAndSetTrail();
-		vector<Course*>::const_iterator iter = find( m_vpCourses.begin(), m_vpCourses.end(), GAMESTATE->m_pCurCourse );
+		std::vector<Course*>::const_iterator iter = find( m_vpCourses.begin(), m_vpCourses.end(), GAMESTATE->m_pCurCourse );
 		if( iter != m_vpCourses.end() )
 		{
 			iIndex = iter - m_vpCourses.begin();
@@ -232,7 +232,7 @@ void ScreenOptionsManageCourses::ProcessMenuStart( const InputEventPlus & )
 
 	if( iCurRow == 0 )	// "create new"
 	{
-		vector<Course*> vpCourses;
+		std::vector<Course*> vpCourses;
 		EditCourseUtil::GetAllEditCourses( vpCourses );
 		if( vpCourses.size() >= (size_t)EditCourseUtil::MAX_PER_PROFILE )
 		{
@@ -257,12 +257,12 @@ void ScreenOptionsManageCourses::ProcessMenuStart( const InputEventPlus & )
 	}
 }
 
-void ScreenOptionsManageCourses::ImportOptions( int iRow, const vector<PlayerNumber> &vpns )
+void ScreenOptionsManageCourses::ImportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
 {
 
 }
 
-void ScreenOptionsManageCourses::ExportOptions( int iRow, const vector<PlayerNumber> &vpns )
+void ScreenOptionsManageCourses::ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
 {
 
 }

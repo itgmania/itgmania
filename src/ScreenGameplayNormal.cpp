@@ -5,7 +5,7 @@
 
 REGISTER_SCREEN_CLASS( ScreenGameplayNormal );
 
-void ScreenGameplayNormal::FillPlayerInfo( vector<PlayerInfo> &vPlayerInfoOut )
+void ScreenGameplayNormal::FillPlayerInfo( std::vector<PlayerInfo> &vPlayerInfoOut )
 {
 	vPlayerInfoOut.resize( NUM_PLAYERS );
 	FOREACH_PlayerNumber( p )

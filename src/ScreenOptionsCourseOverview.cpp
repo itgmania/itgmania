@@ -75,7 +75,7 @@ void ScreenOptionsCourseOverview::Init()
 
 void ScreenOptionsCourseOverview::BeginScreen()
 {
-	vector<OptionRowHandler*> vHands;
+	std::vector<OptionRowHandler*> vHands;
 	FOREACH_ENUM( CourseOverviewRow, rowIndex )
 	{
 		const MenuRowDef &mr = g_MenuRows[rowIndex];
@@ -96,12 +96,12 @@ ScreenOptionsCourseOverview::~ScreenOptionsCourseOverview()
 
 }
 
-void ScreenOptionsCourseOverview::ImportOptions( int iRow, const vector<PlayerNumber> &vpns )
+void ScreenOptionsCourseOverview::ImportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
 {
 	//OptionRow &row = *m_pRows[iRow];
 }
 
-void ScreenOptionsCourseOverview::ExportOptions( int iRow, const vector<PlayerNumber> &vpns )
+void ScreenOptionsCourseOverview::ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
 {
 	OptionRow &row = *m_pRows[iRow];
 	int iIndex = row.GetOneSharedSelection( true );

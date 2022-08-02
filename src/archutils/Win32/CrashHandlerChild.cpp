@@ -446,8 +446,8 @@ struct CompleteCrashData
 	RString m_sInfo;
 	RString m_sAdditionalLog;
 	RString m_sCrashedThread;
-	vector<RString> m_asRecent;
-	vector<RString> m_asCheckpoints;
+	std::vector<RString> m_asRecent;
+	std::vector<RString> m_asCheckpoints;
 };
 
 static void MakeCrashReport( const CompleteCrashData &Data, RString &sOut )
@@ -455,7 +455,7 @@ static void MakeCrashReport( const CompleteCrashData &Data, RString &sOut )
 	sOut += ssprintf(
 			"%s crash report (build %s, %s @ %s)\n"
 			"--------------------------------------\n\n",
-			(string(PRODUCT_FAMILY) + product_version).c_str(), ::sm_version_git_hash, version_date, version_time );
+			(std::string(PRODUCT_FAMILY) + product_version).c_str(), ::sm_version_git_hash, version_date, version_time );
 
 	sOut += ssprintf( "Crash reason: %s\n", Data.m_CrashInfo.m_CrashReason );
 	sOut += ssprintf( "\n" );

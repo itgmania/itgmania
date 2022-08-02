@@ -247,7 +247,7 @@ void InputHandler_X11::Update()
 }
 
 
-void InputHandler_X11::GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevicesOut )
+void InputHandler_X11::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut )
 {
 	if( Dpy && Win )
 	{

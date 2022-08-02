@@ -69,14 +69,14 @@ static bool ChangeAppPri()
 	// if using NTPAD don't boost or else input is laggy
 #if defined(_WINDOWS)
 	{
-		vector<InputDeviceInfo> vDevices;
+		std::vector<InputDeviceInfo> vDevices;
 
 		// This can get called before INPUTMAN is constructed.
 		if( INPUTMAN )
 		{
 			INPUTMAN->GetDevicesAndDescriptions(vDevices);
 			if (std::any_of(vDevices.begin(), vDevices.end(), [](InputDeviceInfo const &d) {
-				return d.sDesc.find("NTPAD") != string::npos;
+				return d.sDesc.find("NTPAD") != std::string::npos;
 			}))
 			{
 				LOG->Trace( "Using NTPAD.  Don't boost priority." );

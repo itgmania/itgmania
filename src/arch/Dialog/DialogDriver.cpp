@@ -3,11 +3,11 @@
 
 #include "RageLog.h"
 
-map<istring, CreateDialogDriverFn> *RegisterDialogDriver::g_pRegistrees;
+std::map<istring, CreateDialogDriverFn> *RegisterDialogDriver::g_pRegistrees;
 RegisterDialogDriver::RegisterDialogDriver( const istring &sName, CreateDialogDriverFn pfn )
 {
 	if( g_pRegistrees == nullptr )
-		g_pRegistrees = new map<istring, CreateDialogDriverFn>;
+		g_pRegistrees = new std::map<istring, CreateDialogDriverFn>;
 
 	ASSERT( g_pRegistrees->find(sName) == g_pRegistrees->end() );
 	(*g_pRegistrees)[sName] = pfn;
@@ -18,14 +18,14 @@ REGISTER_DIALOG_DRIVER_CLASS( Null );
 DialogDriver *DialogDriver::Create()
 {
 	RString sDrivers = "win32,macosx,null";
-	vector<RString> asDriversToTry;
+	std::vector<RString> asDriversToTry;
 	split( sDrivers, ",", asDriversToTry, true );
 
 	ASSERT( asDriversToTry.size() != 0 );
 
 	for (RString const &Driver : asDriversToTry)
 	{
-		map<istring, CreateDialogDriverFn>::const_iterator iter = RegisterDialogDriver::g_pRegistrees->find( istring(Driver) );
+		std::map<istring, CreateDialogDriverFn>::const_iterator iter = RegisterDialogDriver::g_pRegistrees->find( istring(Driver) );
 
 		if( iter == RegisterDialogDriver::g_pRegistrees->end() )
 			continue;

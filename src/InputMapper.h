@@ -92,7 +92,7 @@ struct AutoMappings
 	RString m_sDriverRegex;		// reported by InputHandler
 	RString m_sControllerName;	// the product name of the controller
 
-	vector<AutoMappingEntry> m_vMaps;
+	std::vector<AutoMappingEntry> m_vMaps;
 };
 
 class InputScheme
@@ -111,8 +111,8 @@ public:
 
 	GameButton ButtonNameToIndex( const RString &sButtonName ) const;
 	GameButton GameButtonToMenuButton( GameButton gb ) const;
-	void MenuButtonToGameInputs( GameButton MenuI, PlayerNumber pn, vector<GameInput> &GameIout ) const;
-	void MenuButtonToGameButtons( GameButton MenuI, vector<GameButton> &aGameButtons ) const;
+	void MenuButtonToGameInputs( GameButton MenuI, PlayerNumber pn, std::vector<GameInput> &GameIout ) const;
+	void MenuButtonToGameButtons( GameButton MenuI, std::vector<GameButton> &aGameButtons ) const;
 	const GameButtonInfo *GetGameButtonInfo( GameButton gb ) const;
 	const char *GetGameButtonName( GameButton gb ) const;
 };
@@ -152,8 +152,8 @@ public:
 	void ReadMappingsFromDisk();
 	void SaveMappingsToDisk();
 	void ResetMappingsToDefault();
-	void CheckButtonAndAddToReason(GameButton menu, vector<RString>& full_reason, RString const& sub_reason);
-	void SanityCheckMappings(vector<RString>& reason);
+	void CheckButtonAndAddToReason(GameButton menu, std::vector<RString>& full_reason, RString const& sub_reason);
+	void SanityCheckMappings(std::vector<RString>& reason);
 
 	void ClearAllMappings();
 
@@ -171,7 +171,7 @@ public:
 	bool GameToDevice( const GameInput &GameI, int iSlotNum, DeviceInput& DeviceI ) const;	// return true if there is a mapping from pad to device
 
 	GameButton GameButtonToMenuButton( GameButton gb ) const;
-	void MenuToGame( GameButton MenuI, PlayerNumber pn, vector<GameInput> &GameIout ) const;
+	void MenuToGame( GameButton MenuI, PlayerNumber pn, std::vector<GameInput> &GameIout ) const;
 	PlayerNumber ControllerToPlayerNumber( GameController controller ) const;
 
 	float GetSecsHeld( const GameInput &GameI, MultiPlayer mp = MultiPlayer_Invalid ) const;
@@ -179,7 +179,7 @@ public:
 
 	bool IsBeingPressed( const GameInput &GameI, MultiPlayer mp = MultiPlayer_Invalid, const DeviceInputList *pButtonState = nullptr ) const;
 	bool IsBeingPressed( GameButton MenuI, PlayerNumber pn ) const;
-	bool IsBeingPressed(const vector<GameInput>& GameI, MultiPlayer mp = MultiPlayer_Invalid, const DeviceInputList *pButtonState = nullptr ) const;
+	bool IsBeingPressed(const std::vector<GameInput>& GameI, MultiPlayer mp = MultiPlayer_Invalid, const DeviceInputList *pButtonState = nullptr ) const;
 
 	void ResetKeyRepeat( const GameInput &GameI );
 	void ResetKeyRepeat( GameButton MenuI, PlayerNumber pn );
@@ -194,7 +194,7 @@ public:
 	static MultiPlayer InputDeviceToMultiPlayer( InputDevice id );
 
 	void Unmap( InputDevice device );
-	void ApplyMapping( const vector<AutoMappingEntry> &vMmaps, GameController gc, InputDevice id );
+	void ApplyMapping( const std::vector<AutoMappingEntry> &vMmaps, GameController gc, InputDevice id );
 
 protected:
 	InputMappings m_mappings;

@@ -58,7 +58,7 @@ private:
 		// owned by m_Line
 		BitmapText	*m_textMappedTo[NUM_GameController][NUM_SHOWN_GAME_TO_DEVICE_SLOTS];
 	};
-	vector<KeyToMap> m_KeysToMap;
+	std::vector<KeyToMap> m_KeysToMap;
 
 	BitmapText m_textDevices;
 
@@ -95,8 +95,8 @@ private:
 			return m_slot < rhs.m_slot;
 		}
 	};
-	set<SetListEntry> m_SetList;
-	set<SetListEntry>::iterator m_SetListCurrent;
+	std::set<SetListEntry> m_SetList;
+	std::set<SetListEntry>::iterator m_SetListCurrent;
 	bool m_InSetListMode;
 
 	typedef void (ScreenMapControllers::* action_fun_t)();
@@ -116,9 +116,9 @@ private:
 	void ExitAction();
 	bool SanityCheckWrapper();
 
-	vector<ActionRow> m_Actions;
+	std::vector<ActionRow> m_Actions;
 
-	vector<ActorFrame*> m_Line;
+	std::vector<ActorFrame*> m_Line;
 	ActorScroller m_LineScroller;
 
 	RageSound m_soundChange;

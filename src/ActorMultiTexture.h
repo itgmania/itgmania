@@ -39,7 +39,7 @@ private:
 		RageTexture *m_pTexture;
 		TextureMode m_TextureMode;
 	};
-	vector<TextureUnitState> m_aTextureUnits;
+	std::vector<TextureUnitState> m_aTextureUnits;
 	RectF m_Rect;
 };
 

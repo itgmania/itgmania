@@ -248,8 +248,8 @@ bool PlayerInfo::IsEnabled()
 	FAIL_M("Invalid non-dummy player.");
 }
 
-vector<PlayerInfo>::iterator
-GetNextEnabledPlayerInfo( vector<PlayerInfo>::iterator iter, vector<PlayerInfo> &v )
+std::vector<PlayerInfo>::iterator
+GetNextEnabledPlayerInfo( std::vector<PlayerInfo>::iterator iter, std::vector<PlayerInfo> &v )
 {
 	for( ; iter != v.end(); ++iter )
 	{
@@ -260,8 +260,8 @@ GetNextEnabledPlayerInfo( vector<PlayerInfo>::iterator iter, vector<PlayerInfo> 
 	return iter;
 }
 
-vector<PlayerInfo>::iterator
-GetNextEnabledPlayerInfoNotDummy( vector<PlayerInfo>::iterator iter, vector<PlayerInfo> &v )
+std::vector<PlayerInfo>::iterator
+GetNextEnabledPlayerInfoNotDummy( std::vector<PlayerInfo>::iterator iter, std::vector<PlayerInfo> &v )
 {
 	for( ; iter != v.end(); iter++ )
 	{
@@ -274,8 +274,8 @@ GetNextEnabledPlayerInfoNotDummy( vector<PlayerInfo>::iterator iter, vector<Play
 	return iter;
 }
 
-vector<PlayerInfo>::iterator
-GetNextEnabledPlayerNumberInfo( vector<PlayerInfo>::iterator iter, vector<PlayerInfo> &v )
+std::vector<PlayerInfo>::iterator
+GetNextEnabledPlayerNumberInfo( std::vector<PlayerInfo>::iterator iter, std::vector<PlayerInfo> &v )
 {
 	for( ; iter != v.end(); ++iter )
 	{
@@ -290,8 +290,8 @@ GetNextEnabledPlayerNumberInfo( vector<PlayerInfo>::iterator iter, vector<Player
 	return iter;
 }
 
-vector<PlayerInfo>::iterator
-GetNextPlayerNumberInfo( vector<PlayerInfo>::iterator iter, vector<PlayerInfo> &v )
+std::vector<PlayerInfo>::iterator
+GetNextPlayerNumberInfo( std::vector<PlayerInfo>::iterator iter, std::vector<PlayerInfo> &v )
 {
 	for( ; iter != v.end(); ++iter )
 	{
@@ -304,8 +304,8 @@ GetNextPlayerNumberInfo( vector<PlayerInfo>::iterator iter, vector<PlayerInfo> &
 	return iter;
 }
 
-vector<PlayerInfo>::iterator
-GetNextVisiblePlayerInfo( vector<PlayerInfo>::iterator iter, vector<PlayerInfo> &v )
+std::vector<PlayerInfo>::iterator
+GetNextVisiblePlayerInfo( std::vector<PlayerInfo>::iterator iter, std::vector<PlayerInfo> &v )
 {
 	for( ; iter != v.end(); ++iter )
 	{
@@ -605,7 +605,7 @@ void ScreenGameplay::Init()
 			pi->m_pn+1, player_x, screen_space, left_edge[pi->m_pn], field_space,
 			left_marge, right_marge, style_width, field_zoom);
 		*/
-		pi->GetPlayerState()->m_NotefieldZoom= min(1.0f, field_zoom);
+		pi->GetPlayerState()->m_NotefieldZoom= std::min(1.0f, field_zoom);
 
 		pi->m_pPlayer->SetX(player_x);
 		pi->m_pPlayer->RunCommands( PLAYER_INIT_COMMAND );
@@ -964,10 +964,10 @@ void ScreenGameplay::InitSongQueues()
 			{
 				Steps *pOldSteps = pi->m_vpStepsQueue[i];
 
-				vector<Steps*> vpSteps;
+				std::vector<Steps*> vpSteps;
 				SongUtil::GetSteps( pSong, vpSteps, pOldSteps->m_StepsType );
 				StepsUtil::SortNotesArrayByDifficulty( vpSteps );
-				vector<Steps*>::iterator iter = find( vpSteps.begin(), vpSteps.end(), pOldSteps );
+				std::vector<Steps*>::iterator iter = find( vpSteps.begin(), vpSteps.end(), pOldSteps );
 				int iIndexBase = 0;
 				if( iter != vpSteps.end() )
 				{
@@ -1377,7 +1377,7 @@ void ScreenGameplay::LoadLights()
 
 	// No explicit lights.  Create autogen lights.
 	RString sDifficulty = PREFSMAN->m_sLightsStepsDifficulty;
-	vector<RString> asDifficulties;
+	std::vector<RString> asDifficulties;
 	split( sDifficulty, ",", asDifficulties );
 
 	// Always use the steps from the primary steps type so that lights are consistent over single and double styles.
@@ -1452,7 +1452,7 @@ void ScreenGameplay::StartPlayingSong( float fMinTimeToNotes, float fMinTimeToMu
 	{
 		const float fFirstSecond = GAMESTATE->m_pCurSong->GetFirstSecond();
 		float fStartDelay = fMinTimeToNotes - fFirstSecond;
-		fStartDelay = max( fStartDelay, fMinTimeToMusic );
+		fStartDelay = std::max( fStartDelay, fMinTimeToMusic );
 		p.m_StartSecond = -fStartDelay;
 	}
 
@@ -1610,11 +1610,11 @@ void ScreenGameplay::GetMusicEndTiming( float &fSecondsToStartFadingOutMusic, fl
 
 	/* Make sure we keep going long enough to register a miss for the last note, and
 	 * never start fading before the last note. */
-	fSecondsToStartFadingOutMusic = max( fSecondsToStartFadingOutMusic, fLastStepSeconds );
-	fSecondsToStartTransitioningOut = max( fSecondsToStartTransitioningOut, fLastStepSeconds );
+	fSecondsToStartFadingOutMusic = std::max( fSecondsToStartFadingOutMusic, fLastStepSeconds );
+	fSecondsToStartTransitioningOut = std::max( fSecondsToStartTransitioningOut, fLastStepSeconds );
 
 	/* Make sure the fade finishes before the transition finishes. */
-	fSecondsToStartTransitioningOut = max( fSecondsToStartTransitioningOut, fSecondsToStartFadingOutMusic + MUSIC_FADE_OUT_SECONDS - fTransitionLength );
+	fSecondsToStartTransitioningOut = std::max( fSecondsToStartTransitioningOut, fSecondsToStartFadingOutMusic + MUSIC_FADE_OUT_SECONDS - fTransitionLength );
 }
 
 void ScreenGameplay::Update( float fDeltaTime )
@@ -2050,7 +2050,7 @@ void ScreenGameplay::UpdateHasteRate()
 		// In Battle/Rave mode, the players don't have life meters.
 		if(pi->m_pLifeMeter)
 		{
-			fMaxLife= max(fMaxLife, pi->m_pLifeMeter->GetLife());
+			fMaxLife= std::max(fMaxLife, pi->m_pLifeMeter->GetLife());
 		}
 		else
 		{
@@ -2116,7 +2116,7 @@ void ScreenGameplay::UpdateHasteRate()
 		 * means that the player is only eligible to slow the song down when
 		 * they are down to their last accumulated second. -Kyz */
 		// 1 second left is full speed_add, 0 seconds left is no speed_add.
-		float clamp_secs= max(0, GAMESTATE->m_fAccumulatedHasteSeconds);
+		float clamp_secs= std::max(0.0f, GAMESTATE->m_fAccumulatedHasteSeconds);
 		speed_add = speed_add * clamp_secs;
 	}
 	fSpeed += speed_add;
@@ -2175,7 +2175,7 @@ void ScreenGameplay::UpdateLights()
 
 				if( bBlink )
 				{
-					vector<GameInput> gi;
+					std::vector<GameInput> gi;
 					pStyle->StyleInputToGameInput( t, pi->m_pn, gi );
 					for(size_t i= 0; i < gi.size(); ++i)
 					{
@@ -2220,7 +2220,7 @@ void ScreenGameplay::SendCrossedMessages()
 		float fSongBeat = GAMESTATE->m_pCurSong->m_SongTiming.GetBeatFromElapsedTime( fPositionSeconds );
 
 		int iRowNow = BeatToNoteRowNotRounded( fSongBeat );
-		iRowNow = max( 0, iRowNow );
+		iRowNow = std::max( 0, iRowNow );
 
 		for( int r=iRowLastCrossed+1; r<=iRowNow; r++ )
 		{
@@ -2258,7 +2258,7 @@ void ScreenGameplay::SendCrossedMessages()
 			float fSongBeat = GAMESTATE->m_pCurSong->m_SongTiming.GetBeatFromElapsedTime( fPositionSeconds );
 
 			int iRowNow = BeatToNoteRowNotRounded( fSongBeat );
-			iRowNow = max( 0, iRowNow );
+			iRowNow = std::max( 0, iRowNow );
 			int &iRowLastCrossed = iRowLastCrossedAll[i];
 
 			FOREACH_NONEMPTY_ROW_ALL_TRACKS_RANGE( nd, r, iRowLastCrossed+1, iRowNow+1 )
@@ -2827,8 +2827,8 @@ void ScreenGameplay::HandleScreenMessage( const ScreenMessage SM )
 			ASSERT(course != nullptr);
 			// Need to store these so they can be used to refetch the players'
 			// trails after they're invalidated.
-			vector<StepsType> trail_sts;
-			vector<CourseDifficulty> trail_cds;
+			std::vector<StepsType> trail_sts;
+			std::vector<CourseDifficulty> trail_cds;
 			FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi)
 			{
 				Trail* trail= GAMESTATE->m_pCurTrail[pi->GetStepsAndTrailIndex()];
@@ -2918,7 +2918,7 @@ void ScreenGameplay::HandleScreenMessage( const ScreenMessage SM )
 			}
 		}
 	}
-	else if( ScreenMessageHelpers::ScreenMessageToString(SM).find("0Combo") != string::npos )
+	else if( ScreenMessageHelpers::ScreenMessageToString(SM).find("0Combo") != std::string::npos )
 	{
 		int iCombo;
 		RString sCropped = ScreenMessageHelpers::ScreenMessageToString(SM).substr(3);
@@ -2994,7 +2994,7 @@ void ScreenGameplay::HandleScreenMessage( const ScreenMessage SM )
 		{
 			float fMaxAliveSeconds = 0;
 			FOREACH_EnabledPlayer(p)
-				fMaxAliveSeconds = max( fMaxAliveSeconds, STATSMAN->m_CurStageStats.m_player[p].m_fAliveSeconds );
+				fMaxAliveSeconds = std::max( fMaxAliveSeconds, STATSMAN->m_CurStageStats.m_player[p].m_fAliveSeconds );
 			m_textSurviveTime.SetText( "TIME: " + SecondsToMMSSMsMs(fMaxAliveSeconds) );
 			ON_COMMAND( m_textSurviveTime );
 		}
@@ -3144,7 +3144,7 @@ void ScreenGameplay::SaveReplay()
 			p->AppendChild( pi->m_pPlayer->GetNoteData().CreateNode() );
 
 			// Find a file name for the replay
-			vector<RString> files;
+			std::vector<RString> files;
 			GetDirListing( "Save/Replays/replay*", files, false, false );
 			sort( files.begin(), files.end() );
 
@@ -3154,7 +3154,7 @@ void ScreenGameplay::SaveReplay()
 			for( int i = files.size()-1; i >= 0; --i )
 			{
 				static Regex re( "^replay([0-9]{5})\\....$" );
-				vector<RString> matches;
+				std::vector<RString> matches;
 				if( !re.Compare( files[i], matches ) )
 					continue;
 

@@ -32,7 +32,7 @@ public:
 	float GetPercent() { return m_fPercent; }
 
 private:
-	vector<Sprite*>	m_vpSprPill[NUM_StreamType];
+	std::vector<Sprite*>	m_vpSprPill[NUM_StreamType];
 
 	LuaExpressionTransform		m_transformPill;	// params: self,offsetFromCenter,itemIndex,numItems
 	ThemeMetric<float> VELOCITY_MULTIPLIER;

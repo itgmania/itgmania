@@ -50,14 +50,15 @@ bool RandomSample::LoadSoundDir( RString sDir, int iMaxToLoad )
 		sDir += "/";
 #endif
 
-	vector<RString> arraySoundFiles;
+	std::vector<RString> arraySoundFiles;
 	GetDirListing( sDir + "*.mp3", arraySoundFiles );
 	GetDirListing( sDir + "*.oga", arraySoundFiles );
 	GetDirListing( sDir + "*.ogg", arraySoundFiles );
 	GetDirListing( sDir + "*.wav", arraySoundFiles );
 
-	shuffle( arraySoundFiles.begin(), arraySoundFiles.end(), g_RandomNumberGenerator );
-	arraySoundFiles.resize( min( arraySoundFiles.size(), (unsigned)iMaxToLoad ) );
+	std::shuffle( arraySoundFiles.begin(), arraySoundFiles.end(), g_RandomNumberGenerator );
+	const unsigned int newSize = std::min<unsigned int>(arraySoundFiles.size(), static_cast<unsigned int>(iMaxToLoad));
+	arraySoundFiles.resize(newSize);
 
 	for( unsigned i=0; i<arraySoundFiles.size(); i++ )
 		LoadSound( sDir + arraySoundFiles[i] );

@@ -40,7 +40,7 @@ StringToX( EditMenuAction );
 static RString ARROWS_X_NAME( size_t i )	{ return ssprintf("Arrows%dX",int(i+1)); }
 static RString ROW_Y_NAME( size_t i )		{ return ssprintf("Row%dY",int(i+1)); }
 
-void EditMenu::StripLockedStepsAndDifficulty( vector<StepsAndDifficulty> &v )
+void EditMenu::StripLockedStepsAndDifficulty( std::vector<StepsAndDifficulty> &v )
 {
 	const Song *pSong = GetSelectedSong();
 	for( int i=(int)v.size()-1; i>=0; i-- )
@@ -50,7 +50,7 @@ void EditMenu::StripLockedStepsAndDifficulty( vector<StepsAndDifficulty> &v )
 	}
 }
 
-void EditMenu::GetSongsToShowForGroup( const RString &sGroup, vector<Song*> &vpSongsOut )
+void EditMenu::GetSongsToShowForGroup( const RString &sGroup, std::vector<Song*> &vpSongsOut )
 {
 	if(sGroup == "")
 	{
@@ -79,7 +79,7 @@ void EditMenu::GetSongsToShowForGroup( const RString &sGroup, vector<Song*> &vpS
 	SongUtil::SortSongPointerArrayByTitle( vpSongsOut );
 }
 
-void EditMenu::GetGroupsToShow( vector<RString> &vsGroupsOut )
+void EditMenu::GetGroupsToShow( std::vector<RString> &vsGroupsOut )
 {
 	vsGroupsOut.clear();
 	if( !SHOW_GROUPS.GetValue() )
@@ -89,7 +89,7 @@ void EditMenu::GetGroupsToShow( vector<RString> &vsGroupsOut )
 	for( int i = vsGroupsOut.size()-1; i>=0; i-- )
 	{
 		const RString &sGroup = vsGroupsOut[i];
-		vector<Song*> vpSongs;
+		std::vector<Song*> vpSongs;
 		GetSongsToShowForGroup( sGroup, vpSongs );
 		// strip groups that have no unlocked songs
 		if( vpSongs.empty() )
@@ -408,7 +408,7 @@ void EditMenu::OnRowValueChanged( EditMenuRow row )
 			}
 			if( mode == EditMode_Practice )
 			{
-				vector<Song*> vtSongs;
+				std::vector<Song*> vtSongs;
 				GetSongsToShowForGroup(GetSelectedGroup(), vtSongs);
 				// Filter out songs that aren't playable.
 				for (Song *s :vtSongs)
@@ -461,7 +461,7 @@ void EditMenu::OnRowValueChanged( EditMenuRow row )
 				m_StepsTypes.clear();
 
 				// Only show StepsTypes for which we have valid Steps.
-				vector<StepsType> vSts = CommonMetrics::STEPS_TYPES_TO_SHOW.GetValue();
+				std::vector<StepsType> vSts = CommonMetrics::STEPS_TYPES_TO_SHOW.GetValue();
 				for (StepsType &st : vSts)
 				{
 					if(SongUtil::GetStepsByDifficulty( GetSelectedSong(), st, Difficulty_Invalid, false) != nullptr)
@@ -503,7 +503,7 @@ void EditMenu::OnRowValueChanged( EditMenuRow row )
 						case EditMode_CourseMods:
 						case EditMode_Practice:
 							{
-								vector<Steps*> v;
+								std::vector<Steps*> v;
 								SongUtil::GetSteps( GetSelectedSong(), v, GetSelectedStepsType(), Difficulty_Edit );
 								StepsUtil::SortStepsByDescription( v );
 								for (Steps *p : v)
@@ -616,7 +616,7 @@ void EditMenu::OnRowValueChanged( EditMenuRow row )
 				}
 				else
 				{
-					vector<Steps*> v;
+					std::vector<Steps*> v;
 					SongUtil::GetSteps( GetSelectedSong(), v, GetSelectedSourceStepsType(), dc );
 					StepsUtil::SortStepsByDescription( v );
 					for (Steps *pSteps : v)

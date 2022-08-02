@@ -134,7 +134,7 @@ struct WavReaderPCM: public WavReader
 		if( !iBytesLeftInDataChunk )
 			return RageSoundReader::END_OF_FILE;
 
-		len = min( len, iBytesLeftInDataChunk );
+		len = std::min( len, iBytesLeftInDataChunk );
 		int iGot = m_File.Read( buf, len );
 
 		int iGotSamples = iGot / iBytesPerSample;
@@ -192,7 +192,7 @@ struct WavReaderPCM: public WavReader
 struct WavReaderADPCM: public WavReader
 {
 public:
-	vector<int16_t> m_iaCoef1, m_iaCoef2;
+	std::vector<int16_t> m_iaCoef1, m_iaCoef2;
 	int16_t m_iFramesPerBlock;
 	float *m_pBuffer;
 	int m_iBufferAvail, m_iBufferUsed;
@@ -286,7 +286,7 @@ public:
 		}
 
 		/* We've read the block header; read the rest.  Don't read past the end of the data chunk. */
-		int iMaxSize = min( (int) m_WavData.m_iBlockAlign - 7 * m_WavData.m_iChannels, (m_WavData.m_iDataChunkSize+m_WavData.m_iDataChunkPos) - m_File.Tell() );
+		int iMaxSize = std::min( (int) m_WavData.m_iBlockAlign - 7 * m_WavData.m_iChannels, (m_WavData.m_iDataChunkSize+m_WavData.m_iDataChunkPos) - m_File.Tell() );
 
 		char *pBuf = (char *) alloca( iMaxSize );
 
@@ -343,7 +343,7 @@ public:
 					768, 614, 512, 409, 307, 230, 230, 230
 				};
 				iDelta[c] = int16_t( (iDelta[c] * aAdaptionTable[iErrorDeltaUnsigned]) / (1<<8) );
-				iDelta[c] = max( (int16_t) 16, iDelta[c] );
+				iDelta[c] = std::max( (int16_t) 16, iDelta[c] );
 				
 				iSamp2[c] = iSamp1[c];
 				iSamp1[c] = iNewSample;
@@ -392,7 +392,7 @@ public:
 		const int iBlockHeaderSize = 7 * m_WavData.m_iChannels;
 		if( iExtraBytes > iBlockHeaderSize )
 		{
-			const int iExtraADPCMNibbles = max( 0, iExtraBytes-iBlockHeaderSize )*2;
+			const int iExtraADPCMNibbles = std::max( 0, iExtraBytes-iBlockHeaderSize )*2;
 			const int iExtraADPCMFrames = iExtraADPCMNibbles/m_WavData.m_iChannels;
 			
 			iFrames += 2+iExtraADPCMFrames;

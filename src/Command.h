@@ -20,7 +20,7 @@ public:
 	};
 	Arg GetArg( unsigned index ) const;
 
-	vector<RString> m_vsArgs;
+	std::vector<RString> m_vsArgs;
 	
 	Command(): m_vsArgs() {}
 };
@@ -28,7 +28,7 @@ public:
 class Commands
 {
 public:
-	vector<Command> v;
+	std::vector<Command> v;
 
 	RString GetOriginalCommandString() const;	// used when reporting an error in number of args
 };

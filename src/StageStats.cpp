@@ -143,7 +143,7 @@ static HighScore FillInHighScore( const PlayerStageStats &pss, const PlayerState
 	hs.SetStageAward( pss.m_StageAward );
 	hs.SetPeakComboAward( pss.m_PeakComboAward );
 
-	vector<RString> asModifiers;
+	std::vector<RString> asModifiers;
 	{
 		RString sPlayerOptions = ps.m_PlayerOptions.GetStage().GetString();
 		if( !sPlayerOptions.empty() )
@@ -288,7 +288,7 @@ void StageStats::FinalizeScores( bool bSummary )
 			pHSL = &pProfile->GetStepsHighScoreList( pSong, pSteps );
 		}
 
-		vector<HighScore>::const_iterator iter = find( pHSL->vHighScores.begin(), pHSL->vHighScores.end(), hs );
+		std::vector<HighScore>::const_iterator iter = find( pHSL->vHighScores.begin(), pHSL->vHighScores.end(), hs );
 		if( iter == pHSL->vHighScores.end() )
 			m_player[p].m_iMachineHighScoreIndex = -1;
 		else
@@ -334,7 +334,7 @@ unsigned int StageStats::GetMinimumMissCombo() const
 {
 	unsigned int iMin = INT_MAX;
 	FOREACH_HumanPlayer( p )
-		iMin = min( iMin, m_player[p].m_iCurMissCombo );
+		iMin = std::min( iMin, m_player[p].m_iCurMissCombo );
 	return iMin;
 }
 

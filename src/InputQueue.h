@@ -15,11 +15,11 @@ public:
 
 	void RememberInput( const InputEventPlus &gi );
 	bool WasPressedRecently( GameController c, const GameButton button, const RageTimer &OldestTimeAllowed, InputEventPlus *pIEP = nullptr );
-	const vector<InputEventPlus> &GetQueue( GameController c ) const { return m_aQueue[c]; }
+	const std::vector<InputEventPlus> &GetQueue( GameController c ) const { return m_aQueue[c]; }
 	void ClearQueue( GameController c );
 
 protected:
-	vector<InputEventPlus> m_aQueue[NUM_GameController];
+	std::vector<InputEventPlus> m_aQueue[NUM_GameController];
 };
 
 struct InputQueueCode
@@ -40,17 +40,17 @@ private:
 			memset( m_InputTypes, 0, sizeof(m_InputTypes) );
 			m_InputTypes[IET_FIRST_PRESS] = true;
 		}
-		vector<GameButton> m_aButtonsToHold;
-		vector<GameButton> m_aButtonsToNotHold;
-		vector<GameButton> m_aButtonsToPress;
+		std::vector<GameButton> m_aButtonsToHold;
+		std::vector<GameButton> m_aButtonsToNotHold;
+		std::vector<GameButton> m_aButtonsToPress;
 
 		bool m_InputTypes[NUM_InputEventType];
 		bool m_bAllowIntermediatePresses;
 	};
-	vector<ButtonPress> m_aPresses;
+	std::vector<ButtonPress> m_aPresses;
 
 	float m_fMaxSecondsBack;
-};	
+};
 
 extern InputQueue*	INPUTQUEUE;	// global and accessible from anywhere in our program
 

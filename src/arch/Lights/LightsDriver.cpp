@@ -10,11 +10,11 @@
 
 DriverList LightsDriver::m_pDriverList;
 
-void LightsDriver::Create( const RString &sDrivers, vector<LightsDriver *> &Add )
+void LightsDriver::Create( const RString &sDrivers, std::vector<LightsDriver *> &Add )
 {
 	LOG->Trace( "Initializing lights drivers: %s", sDrivers.c_str() );
 
-	vector<RString> asDriversToTry;
+	std::vector<RString> asDriversToTry;
 	split( sDrivers, ",", asDriversToTry, true );
 	
 	for (RString const &Driver : asDriversToTry)

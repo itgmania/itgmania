@@ -21,12 +21,12 @@ public:
 	virtual void BeginScreen();
 
 protected:
-	virtual void ImportOptions( int iRow, const vector<PlayerNumber> &vpns );
-	virtual void ExportOptions( int iRow, const vector<PlayerNumber> &vpns );
+	virtual void ImportOptions( int iRow, const std::vector<PlayerNumber> &vpns );
+	virtual void ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns );
 
 	virtual void ProcessMenuStart( const InputEventPlus &input );
 
-	vector<RString> m_vsPackageTypes;
+	std::vector<RString> m_vsPackageTypes;
 };
 
 class ScreenOptionsExportPackageSubPage : public ScreenOptions
@@ -36,12 +36,12 @@ public:
 	virtual void BeginScreen();
 
 protected:
-	virtual void ImportOptions( int iRow, const vector<PlayerNumber> &vpns );
-	virtual void ExportOptions( int iRow, const vector<PlayerNumber> &vpns );
+	virtual void ImportOptions( int iRow, const std::vector<PlayerNumber> &vpns );
+	virtual void ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns );
 
 	virtual void ProcessMenuStart( const InputEventPlus &input );
 
-	vector<RString> m_vsPossibleDirsToExport;
+	std::vector<RString> m_vsPossibleDirsToExport;
 };
 
 #endif

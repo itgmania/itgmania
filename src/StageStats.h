@@ -37,8 +37,8 @@ public:
 	Stage		m_Stage;
 	int		m_iStageIndex;
 	PlayMode	m_playMode;
-	vector<Song*>	m_vpPlayedSongs;
-	vector<Song*>	m_vpPossibleSongs;
+	std::vector<Song*>	m_vpPlayedSongs;
+	std::vector<Song*>	m_vpPossibleSongs;
 
 	/** @brief Was an extra stage earned this goaround? */
 	EarnedExtraStage m_EarnedExtraStage;

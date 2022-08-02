@@ -476,7 +476,7 @@ static float ParseBrokenDWITimestamp( const RString &arg1, const RString &arg2, 
 }
 
 
-void DWILoader::GetApplicableFiles( const RString &sPath, vector<RString> &out )
+void DWILoader::GetApplicableFiles( const RString &sPath, std::vector<RString> &out )
 {
 	GetDirListing( sPath + RString("*.dwi"), out );
 }
@@ -519,9 +519,9 @@ bool DWILoader::LoadNoteDataFromSimfile( const RString &path, Steps &out )
 	return false;
 }
 
-bool DWILoader::LoadFromDir( const RString &sPath_, Song &out, set<RString> &BlacklistedImages )
+bool DWILoader::LoadFromDir( const RString &sPath_, Song &out, std::set<RString> &BlacklistedImages )
 {
-	vector<RString> aFileNames;
+	std::vector<RString> aFileNames;
 	GetApplicableFiles( sPath_, aFileNames );
 
 	if( aFileNames.size() > 1 )
@@ -644,12 +644,12 @@ bool DWILoader::LoadFromDir( const RString &sPath_, Song &out, set<RString> &Bla
 
 		else if( sValueName.EqualsNoCase("FREEZE") )
 		{
-			vector<RString> arrayFreezeExpressions;
+			std::vector<RString> arrayFreezeExpressions;
 			split( sParams[1], ",", arrayFreezeExpressions );
 
 			for( unsigned f=0; f<arrayFreezeExpressions.size(); f++ )
 			{
-				vector<RString> arrayFreezeValues;
+				std::vector<RString> arrayFreezeValues;
 				split( arrayFreezeExpressions[f], "=", arrayFreezeValues );
 				if( arrayFreezeValues.size() != 2 )
 				{
@@ -666,12 +666,12 @@ bool DWILoader::LoadFromDir( const RString &sPath_, Song &out, set<RString> &Bla
 
 		else if( sValueName.EqualsNoCase("CHANGEBPM")  || sValueName.EqualsNoCase("BPMCHANGE") )
 		{
-			vector<RString> arrayBPMChangeExpressions;
+			std::vector<RString> arrayBPMChangeExpressions;
 			split( sParams[1], ",", arrayBPMChangeExpressions );
 
 			for( unsigned b=0; b<arrayBPMChangeExpressions.size(); b++ )
 			{
-				vector<RString> arrayBPMChangeValues;
+				std::vector<RString> arrayBPMChangeValues;
 				split( arrayBPMChangeExpressions[b], "=", arrayBPMChangeValues );
 				if( arrayBPMChangeValues.size() != 2 )
 				{

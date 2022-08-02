@@ -109,7 +109,7 @@ private:
 		return pFunc( obj, L );  // call member function
 	}
 
-	vector<RegType> m_aMethods;
+	std::vector<RegType> m_aMethods;
 
 	static int tostring_T( lua_State *L )
 	{

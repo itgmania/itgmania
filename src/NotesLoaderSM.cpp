@@ -24,7 +24,7 @@ struct SMSongTagInfo
 	Song* song;
 	const MsdFile::value_t* params;
 	const RString& path;
-	vector< pair<float, float> > BPMChanges, Stops;
+	std::vector<std::pair<float, float>> BPMChanges, Stops;
 	SMSongTagInfo(SMLoader* l, Song* s, const RString& p)
 		:loader(l), song(s), path(p)
 	{}
@@ -261,7 +261,7 @@ RString SMLoader::GetSongTitle() const
 
 bool SMLoader::LoadFromDir( const RString &sPath, Song &out, bool load_autosave )
 {
-	vector<RString> aFileNames;
+	std::vector<RString> aFileNames;
 	GetApplicableFiles( sPath, aFileNames, load_autosave );
 	return LoadFromSimfile( sPath + aFileNames[0], out );
 }
@@ -368,7 +368,7 @@ void SMLoader::ProcessBGChanges( Song &out, const RString &sValueName, const RSt
 	}
 }
 
-void SMLoader::ProcessAttackString( vector<RString> & attacks, MsdFile::value_t params )
+void SMLoader::ProcessAttackString( std::vector<RString> & attacks, MsdFile::value_t params )
 {
 	for( unsigned s=1; s < params.params.size(); ++s )
 	{
@@ -386,7 +386,7 @@ void SMLoader::ProcessAttacks( AttackArray &attacks, MsdFile::value_t params )
 	
 	for( unsigned j=1; j < params.params.size(); ++j )
 	{
-		vector<RString> sBits;
+		std::vector<RString> sBits;
 		split( params[j], "=", sBits, false );
 		
 		// Need an identifer and a value for this to work
@@ -422,11 +422,11 @@ void SMLoader::ProcessAttacks( AttackArray &attacks, MsdFile::value_t params )
 
 void SMLoader::ProcessInstrumentTracks( Song &out, const RString &sParam )
 {
-	vector<RString> vs1;
+	std::vector<RString> vs1;
 	split( sParam, ",", vs1 );
 	for (RString const &s : vs1)
 	{
-		vector<RString> vs2;
+		std::vector<RString> vs2;
 		split( s, "=", vs2 );
 		if( vs2.size() >= 2 )
 		{
@@ -437,14 +437,14 @@ void SMLoader::ProcessInstrumentTracks( Song &out, const RString &sParam )
 	}
 }
 
-void SMLoader::ParseBPMs( vector< pair<float, float> > &out, const RString line, const int rowsPerBeat )
+void SMLoader::ParseBPMs( std::vector<std::pair<float, float>> &out, const RString line, const int rowsPerBeat )
 {
-	vector<RString> arrayBPMChangeExpressions;
+	std::vector<RString> arrayBPMChangeExpressions;
 	split( line, ",", arrayBPMChangeExpressions );
 
 	for( unsigned b=0; b<arrayBPMChangeExpressions.size(); b++ )
 	{
-		vector<RString> arrayBPMChangeValues;
+		std::vector<RString> arrayBPMChangeValues;
 		split( arrayBPMChangeExpressions[b], "=", arrayBPMChangeValues );
 		if( arrayBPMChangeValues.size() != 2 )
 		{
@@ -463,18 +463,18 @@ void SMLoader::ParseBPMs( vector< pair<float, float> > &out, const RString line,
 			continue;
 		}
 
-		out.push_back( make_pair(fBeat, fNewBPM) );
+		out.push_back( std::make_pair(fBeat, fNewBPM) );
 	}
 }
 
-void SMLoader::ParseStops( vector< pair<float, float> > &out, const RString line, const int rowsPerBeat )
+void SMLoader::ParseStops( std::vector<std::pair<float, float>> &out, const RString line, const int rowsPerBeat )
 {
-	vector<RString> arrayFreezeExpressions;
+	std::vector<RString> arrayFreezeExpressions;
 	split( line, ",", arrayFreezeExpressions );
 	
 	for( unsigned f=0; f<arrayFreezeExpressions.size(); f++ )
 	{
-		vector<RString> arrayFreezeValues;
+		std::vector<RString> arrayFreezeValues;
 		split( arrayFreezeExpressions[f], "=", arrayFreezeValues );
 		if( arrayFreezeValues.size() != 2 )
 		{
@@ -493,13 +493,13 @@ void SMLoader::ParseStops( vector< pair<float, float> > &out, const RString line
 			continue;
 		}
 
-		out.push_back( make_pair(fFreezeBeat, fFreezeSeconds) );
+		out.push_back( std::make_pair(fFreezeBeat, fFreezeSeconds) );
 	}
 }
 
 // Utility function for sorting timing change data
 namespace {
-	bool compare_first(pair<float, float> a, pair<float, float> b) {
+	bool compare_first(std::pair<float, float> a, std::pair<float, float> b) {
 		return a.first < b.first;
 	}
 }
@@ -509,11 +509,11 @@ namespace {
 // Postcondition: all BPM changes, stops, and warps are added to the out
 //     parameter, already sorted by beat.
 void SMLoader::ProcessBPMsAndStops(TimingData &out,
-		vector< pair<float, float> > &vBPMs,
-		vector< pair<float, float> > &vStops)
+		std::vector<std::pair<float, float>> &vBPMs,
+		std::vector<std::pair<float, float>> &vStops)
 {
-	vector< pair<float, float> >::const_iterator ibpm, ibpmend;
-	vector< pair<float, float> >::const_iterator istop, istopend;
+	std::vector<std::pair<float, float>>::const_iterator ibpm, ibpmend;
+	std::vector<std::pair<float, float>>::const_iterator istop, istopend;
 
 	// Current BPM (positive or negative)
 	float bpm = 0;
@@ -595,7 +595,7 @@ void SMLoader::ProcessBPMsAndStops(TimingData &out,
 		// Get the next change in order, with BPMs taking precedence
 		// when they fall on the same beat.
 		bool changeIsBpm = istop == istopend || (ibpm != ibpmend && ibpm->first <= istop->first);
-		const pair<float, float> & change = changeIsBpm ? *ibpm : *istop;
+		const std::pair<float, float> & change = changeIsBpm ? *ibpm : *istop;
 
 		// Calculate the effects of time at the current BPM.  "Infinite"
 		// BPMs (SM4 warps) imply that zero time passes, so skip this
@@ -735,12 +735,12 @@ void SMLoader::ProcessBPMsAndStops(TimingData &out,
 
 void SMLoader::ProcessDelays( TimingData &out, const RString line, const int rowsPerBeat )
 {
-	vector<RString> arrayDelayExpressions;
+	std::vector<RString> arrayDelayExpressions;
 	split( line, ",", arrayDelayExpressions );
 
 	for( unsigned f=0; f<arrayDelayExpressions.size(); f++ )
 	{
-		vector<RString> arrayDelayValues;
+		std::vector<RString> arrayDelayValues;
 		split( arrayDelayExpressions[f], "=", arrayDelayValues );
 		if( arrayDelayValues.size() != 2 )
 		{
@@ -767,12 +767,12 @@ void SMLoader::ProcessDelays( TimingData &out, const RString line, const int row
 
 void SMLoader::ProcessTimeSignatures( TimingData &out, const RString line, const int rowsPerBeat )
 {
-	vector<RString> vs1;
+	std::vector<RString> vs1;
 	split( line, ",", vs1 );
 
 	for (RString const &s1 : vs1)
 	{
-		vector<RString> vs2;
+		std::vector<RString> vs2;
 		split( s1, "=", vs2 );
 
 		if( vs2.size() < 3 )
@@ -821,12 +821,12 @@ void SMLoader::ProcessTimeSignatures( TimingData &out, const RString line, const
 
 void SMLoader::ProcessTickcounts( TimingData &out, const RString line, const int rowsPerBeat )
 {
-	vector<RString> arrayTickcountExpressions;
+	std::vector<RString> arrayTickcountExpressions;
 	split( line, ",", arrayTickcountExpressions );
 
 	for( unsigned f=0; f<arrayTickcountExpressions.size(); f++ )
 	{
-		vector<RString> arrayTickcountValues;
+		std::vector<RString> arrayTickcountValues;
 		split( arrayTickcountExpressions[f], "=", arrayTickcountValues );
 		if( arrayTickcountValues.size() != 2 )
 		{
@@ -846,12 +846,12 @@ void SMLoader::ProcessTickcounts( TimingData &out, const RString line, const int
 
 void SMLoader::ProcessSpeeds( TimingData &out, const RString line, const int rowsPerBeat )
 {
-	vector<RString> vs1;
+	std::vector<RString> vs1;
 	split( line, ",", vs1 );
 
 	for (RString const &s1 : vs1)
 	{
-		vector<RString> vs2;
+		std::vector<RString> vs2;
 		split( s1, "=", vs2 );
 
 		if( vs2[0] == 0 && vs2.size() == 2 ) // First one always seems to have 2.
@@ -906,12 +906,12 @@ void SMLoader::ProcessSpeeds( TimingData &out, const RString line, const int row
 
 void SMLoader::ProcessFakes( TimingData &out, const RString line, const int rowsPerBeat )
 {
-	vector<RString> arrayFakeExpressions;
+	std::vector<RString> arrayFakeExpressions;
 	split( line, ",", arrayFakeExpressions );
 
 	for( unsigned b=0; b<arrayFakeExpressions.size(); b++ )
 	{
-		vector<RString> arrayFakeValues;
+		std::vector<RString> arrayFakeValues;
 		split( arrayFakeExpressions[b], "=", arrayFakeValues );
 		if( arrayFakeValues.size() != 2 )
 		{
@@ -939,7 +939,7 @@ void SMLoader::ProcessFakes( TimingData &out, const RString line, const int rows
 
 bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RString> aBGChangeValues )
 {
-	aBGChangeValues.resize( min((int)aBGChangeValues.size(),11) );
+	aBGChangeValues.resize( std::min((int) aBGChangeValues.size(), 11) );
 
 	switch( aBGChangeValues.size() )
 	{
@@ -960,7 +960,7 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 	{
 		RString tmp = aBGChangeValues[7];
 		tmp.MakeLower();
-		if( ( tmp.find(".ini") != string::npos || tmp.find(".xml") != string::npos )
+		if( ( tmp.find(".ini") != std::string::npos || tmp.find(".xml") != std::string::npos )
 		   && !PREFSMAN->m_bQuirksMode )
 		{
 			return false;
@@ -1004,7 +1004,7 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 	{
 		RString tmp = aBGChangeValues[1];
 		tmp.MakeLower();
-		if( ( tmp.find(".ini") != string::npos || tmp.find(".xml") != string::npos )
+		if( ( tmp.find(".ini") != std::string::npos || tmp.find(".xml") != std::string::npos )
 		   && !PREFSMAN->m_bQuirksMode )
 		{
 			return false;
@@ -1281,7 +1281,7 @@ bool SMLoader::LoadEditFromMsd( const MsdFile &msd, const RString &sEditFilePath
 	return false;
 }
 
-void SMLoader::GetApplicableFiles( const RString &sPath, vector<RString> &out, bool load_autosave )
+void SMLoader::GetApplicableFiles( const RString &sPath, std::vector<RString> &out, bool load_autosave )
 {
 	if(load_autosave)
 	{
@@ -1305,7 +1305,7 @@ void SMLoader::TidyUpData( Song &song, bool bFromCache )
 	* have to add an explicit song BG tag if they want it.  This is really a
 	* formatting hack only; nothing outside of SMLoader ever sees "-nosongbg-".
 	*/
-	vector<BackgroundChange> &bg = song.GetBackgroundChanges(BACKGROUND_LAYER_1);
+	std::vector<BackgroundChange> &bg = song.GetBackgroundChanges(BACKGROUND_LAYER_1);
 	if( !bg.empty() )
 	{
 		/* BGChanges have been sorted. On the odd chance that a BGChange exists

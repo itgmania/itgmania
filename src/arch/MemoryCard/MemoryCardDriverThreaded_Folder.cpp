@@ -74,7 +74,7 @@ bool MemoryCardDriverThreaded_Folder::USBStorageDevicesChanged()
 	return GetActivePlayerMask() != m_LastDevices;
 }
 
-void MemoryCardDriverThreaded_Folder::GetUSBStorageDevices( vector<UsbStorageDevice>& vDevicesOut )
+void MemoryCardDriverThreaded_Folder::GetUSBStorageDevices( std::vector<UsbStorageDevice>& vDevicesOut )
 {
 	LOG->Trace( "GetUSBStorageDevices" );
 

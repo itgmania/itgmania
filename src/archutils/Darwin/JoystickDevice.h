@@ -23,7 +23,7 @@ struct Joystick
 class JoystickDevice : public HIDDevice
 {
 private:
-	vector<Joystick> m_vSticks;
+	std::vector<Joystick> m_vSticks;
 
 protected:
 	bool AddLogicalDevice( int usagePage, int usage );
@@ -32,9 +32,9 @@ protected:
 	bool InitDevice( int vid, int pid );
 
 public:
-	void GetButtonPresses( vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value, const RageTimer& now ) const;
+	void GetButtonPresses( std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value, const RageTimer& now ) const;
 	int AssignIDs( InputDevice startID );
-	void GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevices ) const;
+	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevices ) const;
 };
 
 #endif

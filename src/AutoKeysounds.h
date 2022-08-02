@@ -25,7 +25,7 @@ protected:
 	static void LoadTracks( const Song *pSong, RageSoundReader *&pGlobal, RageSoundReader *&pPlayer1, RageSoundReader *&pPlayer2 );
 
 	NoteData		m_ndAutoKeysoundsOnly[NUM_PLAYERS];
-	vector<RageSound>	m_vKeysounds;
+	std::vector<RageSound>	m_vKeysounds;
 	RageSound		m_sSound;
 	RageSoundReader		*m_pChain; // owned by m_sSound
 	RageSoundReader		*m_pPlayerSounds[NUM_PLAYERS]; // owned by m_sSound

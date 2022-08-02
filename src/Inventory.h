@@ -32,7 +32,7 @@ protected:
 
 	/** @brief a sound played when an item has been acquired. */
 	RageSound m_soundAcquireItem;
-	vector<RageSound*> m_vpSoundUseItem;
+	std::vector<RageSound*> m_vpSoundUseItem;
 	RageSound m_soundItemEnding;
 };
 

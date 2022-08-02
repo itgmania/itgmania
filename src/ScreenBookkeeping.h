@@ -38,7 +38,7 @@ private:
 	void UpdateView();
 
 	int m_iViewIndex;
-	vector<BookkeepingView> m_vBookkeepingViews;
+	std::vector<BookkeepingView> m_vBookkeepingViews;
 
 	BitmapText	m_textAllTime;
 	BitmapText	m_textTitle;

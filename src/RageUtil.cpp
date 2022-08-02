@@ -208,7 +208,7 @@ bool HexToBinary( const RString &s, RString &sOut )
 
 float HHMMSSToSeconds( const RString &sHHMMSS )
 {
-	vector<RString> arrayBits;
+	std::vector<RString> arrayBits;
 	split( sHHMMSS, ":", arrayBits, false );
 
 	while( arrayBits.size() < 3 )
@@ -235,7 +235,7 @@ RString SecondsToMMSSMsMs( float fSecs )
 	const int iMinsDisplay = (int)fSecs/60;
 	const int iSecsDisplay = (int)fSecs - iMinsDisplay*60;
 	const int iLeftoverDisplay = (int) ( (fSecs - iMinsDisplay*60 - iSecsDisplay) * 100 );
-	RString sReturn = ssprintf( "%02d:%02d.%02d", iMinsDisplay, iSecsDisplay, min(99,iLeftoverDisplay) );
+	RString sReturn = ssprintf( "%02d:%02d.%02d", iMinsDisplay, iSecsDisplay, std::min(99,iLeftoverDisplay) );
 	return sReturn;
 }
 
@@ -244,7 +244,7 @@ RString SecondsToMSSMsMs( float fSecs )
 	const int iMinsDisplay = (int)fSecs/60;
 	const int iSecsDisplay = (int)fSecs - iMinsDisplay*60;
 	const int iLeftoverDisplay = (int) ( (fSecs - iMinsDisplay*60 - iSecsDisplay) * 100 );
-	RString sReturn = ssprintf( "%01d:%02d.%02d", iMinsDisplay, iSecsDisplay, min(99,iLeftoverDisplay) );
+	RString sReturn = ssprintf( "%01d:%02d.%02d", iMinsDisplay, iSecsDisplay, std::min(99,iLeftoverDisplay) );
 	return sReturn;
 }
 
@@ -253,7 +253,7 @@ RString SecondsToMMSSMsMsMs( float fSecs )
 	const int iMinsDisplay = (int)fSecs/60;
 	const int iSecsDisplay = (int)fSecs - iMinsDisplay*60;
 	const int iLeftoverDisplay = (int) ( (fSecs - iMinsDisplay*60 - iSecsDisplay) * 1000 );
-	RString sReturn = ssprintf( "%02d:%02d.%03d", iMinsDisplay, iSecsDisplay, min(999,iLeftoverDisplay) );
+	RString sReturn = ssprintf( "%02d:%02d.%03d", iMinsDisplay, iSecsDisplay, std::min(999,iLeftoverDisplay) );
 	return sReturn;
 }
 
@@ -290,11 +290,11 @@ RString Commify(const RString& num, const RString& sep, const RString& dot)
 	size_t num_end= num.size();
 	size_t dot_pos= num.find(dot);
 	size_t dash_pos= num.find('-');
-	if(dot_pos != string::npos)
+	if(dot_pos != std::string::npos)
 	{
 		num_end= dot_pos;
 	}
-	if(dash_pos != string::npos)
+	if(dash_pos != std::string::npos)
 	{
 		num_start= dash_pos + 1;
 	}
@@ -631,7 +631,7 @@ static const LanguageInfo g_langs[] =
 	{"zu", "Zulu"},
 };
 
-void GetLanguageInfos( vector<const LanguageInfo*> &vAddTo )
+void GetLanguageInfos( std::vector<const LanguageInfo*> &vAddTo )
 {
 	for( unsigned i=0; i<ARRAYLEN(g_langs); ++i )
 		vAddTo.push_back( &g_langs[i] );
@@ -648,7 +648,7 @@ const LanguageInfo *GetLanguageInfo( const RString &sIsoCode )
 	return nullptr;
 }
 
-RString join( const RString &sDeliminator, const vector<RString> &sSource)
+RString join( const RString &sDeliminator, const std::vector<RString> &sSource)
 {
 	if( sSource.empty() )
 		return RString();
@@ -672,7 +672,7 @@ RString join( const RString &sDeliminator, const vector<RString> &sSource)
 	return sTmp;
 }
 
-RString join( const RString &sDelimitor, vector<RString>::const_iterator begin, vector<RString>::const_iterator end )
+RString join( const RString &sDelimitor, std::vector<RString>::const_iterator begin, std::vector<RString>::const_iterator end )
 {
 	if( begin == end )
 		return RString();
@@ -680,7 +680,7 @@ RString join( const RString &sDelimitor, vector<RString>::const_iterator begin, 
 	RString sRet;
 	size_t final_size= 0;
 	size_t delim_size= sDelimitor.size();
-	for(vector<RString>::const_iterator curr= begin; curr != end; ++curr)
+	for(std::vector<RString>::const_iterator curr= begin; curr != end; ++curr)
 	{
 		final_size+= curr->size();
 		if(curr != end)
@@ -769,7 +769,7 @@ static int DelimitorLength( wchar_t Delimitor )
 }
 
 template <class S, class C>
-void do_split( const S &Source, const C Delimitor, vector<S> &AddIt, const bool bIgnoreEmpty )
+void do_split( const S &Source, const C Delimitor, std::vector<S> &AddIt, const bool bIgnoreEmpty )
 {
 	/* Short-circuit if the source is empty; we want to return an empty vector if
 	 * the string is empty, even if bIgnoreEmpty is true. */
@@ -801,7 +801,7 @@ void do_split( const S &Source, const C Delimitor, vector<S> &AddIt, const bool 
 	} while ( startpos <= Source.size() );
 }
 
-void split( const RString &sSource, const RString &sDelimitor, vector<RString> &asAddIt, const bool bIgnoreEmpty )
+void split( const RString &sSource, const RString &sDelimitor, std::vector<RString> &asAddIt, const bool bIgnoreEmpty )
 {
 	if( sDelimitor.size() == 1 )
 		do_split( sSource, sDelimitor[0], asAddIt, bIgnoreEmpty );
@@ -809,7 +809,7 @@ void split( const RString &sSource, const RString &sDelimitor, vector<RString> &
 		do_split( sSource, sDelimitor, asAddIt, bIgnoreEmpty );
 }
 
-void split( const wstring &sSource, const wstring &sDelimitor, vector<wstring> &asAddIt, const bool bIgnoreEmpty )
+void split( const std::wstring &sSource, const std::wstring &sDelimitor, std::vector<std::wstring> &asAddIt, const bool bIgnoreEmpty )
 {
 	if( sDelimitor.size() == 1 )
 		do_split( sSource, sDelimitor[0], asAddIt, bIgnoreEmpty );
@@ -838,7 +838,7 @@ void do_split( const S &Source, const S &Delimitor, int &begin, int &size, int l
 	{
 		// Start points to the beginning of the last delimiter. Move it up.
 		begin += size+Delimitor.size();
-		begin = min( begin, len );
+		begin = std::min( begin, len );
 	}
 
 	size = 0;
@@ -868,7 +868,7 @@ void split( const RString &Source, const RString &Delimitor, int &begin, int &si
 	do_split( Source, Delimitor, begin, size, len, bIgnoreEmpty );
 }
 
-void split( const wstring &Source, const wstring &Delimitor, int &begin, int &size, int len, const bool bIgnoreEmpty )
+void split( const std::wstring &Source, const std::wstring &Delimitor, int &begin, int &size, int len, const bool bIgnoreEmpty )
 {
 	do_split( Source, Delimitor, begin, size, len, bIgnoreEmpty );
 }
@@ -878,7 +878,7 @@ void split( const RString &Source, const RString &Delimitor, int &begin, int &si
 	do_split( Source, Delimitor, begin, size, Source.size(), bIgnoreEmpty );
 }
 
-void split( const wstring &Source, const wstring &Delimitor, int &begin, int &size, const bool bIgnoreEmpty )
+void split( const std::wstring &Source, const std::wstring &Delimitor, int &begin, int &size, const bool bIgnoreEmpty )
 {
 	do_split( Source, Delimitor, begin, size, Source.size(), bIgnoreEmpty );
 }
@@ -892,7 +892,7 @@ void splitpath( const RString &sPath, RString &sDir, RString &sFilename, RString
 {
 	sDir = sFilename = sExt = "";
 
-	vector<RString> asMatches;
+	std::vector<RString> asMatches;
 
 	/*
 	 * One level of escapes for the regex, one for C. Ew.
@@ -921,7 +921,7 @@ void splitpath( const RString &sPath, RString &sDir, RString &sFilename, RString
 
 RString custom_songify_path(RString const& path)
 {
-	vector<RString> parts;
+	std::vector<RString> parts;
 	split(path, "/", parts, false);
 	if(parts.size() < 2)
 	{
@@ -962,8 +962,8 @@ RString GetFileNameWithoutExtension( const RString &sPath )
 
 void MakeValidFilename( RString &sName )
 {
-	wstring wsName = RStringToWstring( sName );
-	wstring wsInvalid = L"/\\:*?\"<>|";
+	std::wstring wsName = RStringToWstring( sName );
+	std::wstring wsInvalid = L"/\\:*?\"<>|";
 	for( unsigned i = 0; i < wsName.size(); ++i )
 	{
 		wchar_t w = wsName[i];
@@ -988,9 +988,9 @@ void MakeValidFilename( RString &sName )
 	sName = WStringToRString( wsName );
 }
 
-bool FindFirstFilenameContaining(const vector<RString>& filenames,
-	RString& out, const vector<RString>& starts_with,
-	const vector<RString>& contains, const vector<RString>& ends_with)
+bool FindFirstFilenameContaining(const std::vector<RString>& filenames,
+	RString& out, const std::vector<RString>& starts_with,
+	const std::vector<RString>& contains, const std::vector<RString>& ends_with)
 {
 	for(size_t i= 0; i < filenames.size(); ++i)
 	{
@@ -1010,7 +1010,7 @@ bool FindFirstFilenameContaining(const vector<RString>& filenames,
 			if(lower_size >= ends_with[s].size())
 			{
 				size_t end_pos= lower_size - ends_with[s].size();
-				if(!lower.compare(end_pos, string::npos, ends_with[s]))
+				if(!lower.compare(end_pos, std::string::npos, ends_with[s]))
 				{
 					out= filenames[i];
 					return true;
@@ -1019,7 +1019,7 @@ bool FindFirstFilenameContaining(const vector<RString>& filenames,
 		}
 		for(size_t s= 0; s < contains.size(); ++s)
 		{
-			if(lower.find(contains[s]) != string::npos)
+			if(lower.find(contains[s]) != std::string::npos)
 			{
 				out= filenames[i];
 				return true;
@@ -1143,7 +1143,7 @@ bool DirectoryIsEmpty( const RString &sDir )
 	if( !DoesFileExist(sDir) )
 		return true;
 
-	vector<RString> asFileNames;
+	std::vector<RString> asFileNames;
 	GetDirListing( sDir, asFileNames );
 	return asFileNames.empty();
 }
@@ -1158,7 +1158,7 @@ bool CompareRStringsDesc( const RString &sStr1, const RString &sStr2 )
 	return sStr1.CompareNoCase( sStr2 ) > 0;
 }
 
-void SortRStringArray( vector<RString> &arrayRStrings, const bool bSortAscending )
+void SortRStringArray( std::vector<RString> &arrayRStrings, const bool bSortAscending )
 {
 	sort( arrayRStrings.begin(), arrayRStrings.end(),
 			bSortAscending?CompareRStringsAsc:CompareRStringsDesc );
@@ -1166,7 +1166,7 @@ void SortRStringArray( vector<RString> &arrayRStrings, const bool bSortAscending
 
 float calc_mean( const float *pStart, const float *pEnd )
 {
-	return accumulate( pStart, pEnd, 0.f ) / distance( pStart, pEnd );
+	return std::accumulate( pStart, pEnd, 0.f ) / std::distance( pStart, pEnd );
 }
 
 float calc_stddev( const float *pStart, const float *pEnd, bool bSample )
@@ -1178,13 +1178,13 @@ float calc_stddev( const float *pStart, const float *pEnd, bool bSample )
 	float fDev = 0.0f;
 	for( const float *i=pStart; i != pEnd; ++i )
 		fDev += (*i - fMean) * (*i - fMean);
-	fDev /= distance( pStart, pEnd ) - (bSample ? 1 : 0);
+	fDev /= std::distance( pStart, pEnd ) - (bSample ? 1 : 0);
 	fDev = sqrtf( fDev );
 
 	return fDev;
 }
 
-bool CalcLeastSquares( const vector< pair<float, float> > &vCoordinates,
+bool CalcLeastSquares( const std::vector<std::pair<float, float>> &vCoordinates,
                        float &fSlope, float &fIntercept, float &fError )
 {
 	if( vCoordinates.empty() )
@@ -1212,7 +1212,7 @@ bool CalcLeastSquares( const vector< pair<float, float> > &vCoordinates,
 	return true;
 }
 
-void FilterHighErrorPoints( vector< pair<float, float> > &vCoordinates,
+void FilterHighErrorPoints( std::vector<std::pair<float, float>> &vCoordinates,
                             float fSlope, float fIntercept, float fCutoff )
 {
 	unsigned int iOut = 0;
@@ -1300,7 +1300,7 @@ static bool CVSOrSVN( const RString& s )
 			s.Right(3).EqualsNoCase(".hg");
 }
 
-void StripCvsAndSvn( vector<RString> &vs )
+void StripCvsAndSvn( std::vector<RString> &vs )
 {
 	RemoveIf( vs, CVSOrSVN );
 }
@@ -1310,7 +1310,7 @@ static bool MacResourceFork( const RString& s )
 	return s.Left(2).EqualsNoCase("._");
 }
 
-void StripMacResourceForks( vector<RString> &vs )
+void StripMacResourceForks( std::vector<RString> &vs )
 {
 	RemoveIf( vs, MacResourceFork );
 }
@@ -1338,7 +1338,7 @@ RString DerefRedir( const RString &_path )
 
 		sPath2 += "*";
 
-		vector<RString> matches;
+		std::vector<RString> matches;
 		GetDirListing( sPath2, matches, false, true );
 
 		if( matches.empty() )
@@ -1386,7 +1386,7 @@ bool GetFileContents( const RString &sPath, RString &sOut, bool bOneLine )
 	return true;
 }
 
-bool GetFileContents( const RString &sFile, vector<RString> &asOut )
+bool GetFileContents( const RString &sFile, std::vector<RString> &asOut )
 {
 	RageFile file;
 	if( !file.Open(sFile) )
@@ -1464,7 +1464,7 @@ bool Regex::Compare( const RString &sStr )
 	return iRet >= 0;
 }
 
-bool Regex::Compare( const RString &sStr, vector<RString> &asMatches )
+bool Regex::Compare( const RString &sStr, std::vector<RString> &asMatches )
 {
 	asMatches.clear();
 
@@ -1493,7 +1493,7 @@ bool Regex::Compare( const RString &sStr, vector<RString> &asMatches )
 // http://us3.php.net/manual/en/function.preg-replace.php
 bool Regex::Replace( const RString &sReplacement, const RString &sSubject, RString &sOut )
 {
-	vector<RString> asMatches;
+	std::vector<RString> asMatches;
 	if( !Compare(sSubject, asMatches) )
 		return false;
 
@@ -1812,7 +1812,7 @@ void MakeLower( wchar_t *p, size_t iLen )
 float StringToFloat( const RString &sString )
 {
 	float fOut = std::strtof(sString, nullptr);
-	if (!isfinite(fOut))
+	if (!std::isfinite(fOut))
 	{
 		fOut = 0.0f;
 	}
@@ -1824,12 +1824,12 @@ bool StringToFloat( const RString &sString, float &fOut )
 	char *endPtr = nullptr;
 
 	fOut = std::strtof(sString, &endPtr);
-	return sString.size() && *endPtr == '\0' && isfinite(fOut);
+	return sString.size() && *endPtr == '\0' && std::isfinite(fOut);
 }
 
 RString FloatToString( const float &num )
 {
-	stringstream ss;
+	std::stringstream ss;
 	ss << num;
 	return ss.str();
 }
@@ -1881,9 +1881,9 @@ long long StringToLLong( const std::string& str, std::size_t* pos, int base, lon
 
 const wchar_t INVALID_CHAR = 0xFFFD; /* U+FFFD REPLACEMENT CHARACTER */
 
-wstring RStringToWstring( const RString &s )
+std::wstring RStringToWstring( const RString &s )
 {
-	wstring ret;
+	std::wstring ret;
 	ret.reserve( s.size() );
 	for( unsigned start = 0; start < s.size(); )
 	{
@@ -1905,7 +1905,7 @@ wstring RStringToWstring( const RString &s )
 	return ret;
 }
 
-RString WStringToRString( const wstring &sStr )
+RString WStringToRString( const std::wstring &sStr )
 {
 	RString sRet;
 
@@ -1923,7 +1923,7 @@ RString WcharToUTF8( wchar_t c )
 }
 
 // &a; -> a
-void ReplaceEntityText( RString &sText, const map<RString,RString> &m )
+void ReplaceEntityText( RString &sText, const std::map<RString, RString> &m )
 {
 	RString sRet;
 
@@ -1959,7 +1959,7 @@ void ReplaceEntityText( RString &sText, const map<RString,RString> &m )
 		RString sElement = sText.substr( iStart+1, iEnd-iStart-1 );
 		sElement.MakeLower();
 
-		map<RString,RString>::const_iterator it = m.find( sElement );
+		std::map<RString, RString>::const_iterator it = m.find( sElement );
 		if( it == m.end() )
 		{
 			sRet.append( sText, iStart, iEnd-iStart+1 );
@@ -1976,7 +1976,7 @@ void ReplaceEntityText( RString &sText, const map<RString,RString> &m )
 }
 
 // abcd -> &a; &b; &c; &d;
-void ReplaceEntityText( RString &sText, const map<char,RString> &m )
+void ReplaceEntityText( RString &sText, const std::map<char, RString> &m )
 {
 	RString sFind;
 
@@ -2006,7 +2006,7 @@ void ReplaceEntityText( RString &sText, const map<char,RString> &m )
 
 		char sElement = sText[iStart];
 
-		map<char,RString>::const_iterator it = m.find( sElement );
+		std::map<char, RString>::const_iterator it = m.find( sElement );
 		ASSERT( it != m.end() );
 
 		const RString &sTo = it->second;
@@ -2292,7 +2292,7 @@ namespace StringConversion
 	{
 		const char *endptr = sValue.data() + sValue.size();
 		out = strtof( sValue, (char **) &endptr );
-		if( endptr != sValue.data() && isfinite( out ) )
+		if( endptr != sValue.data() && std::isfinite( out ) )
 			return true;
 		out = 0;
 		return false;

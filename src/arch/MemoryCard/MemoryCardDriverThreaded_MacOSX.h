@@ -14,7 +14,7 @@ public:
 	
 protected:
 	bool USBStorageDevicesChanged();
-	void GetUSBStorageDevices( vector<UsbStorageDevice>& vStorageDevicesOut );
+	void GetUSBStorageDevices( std::vector<UsbStorageDevice>& vStorageDevicesOut );
 	bool TestWrite( UsbStorageDevice *pDevice );
 	
 private:

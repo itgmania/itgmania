@@ -56,7 +56,7 @@ bool LyricsLoader::LoadFromLRCFile(const RString& sPath, Song& out)
 		// "[data1] data2".  Ignore whitespace at the beginning of the line.
 		static Regex x("^ *\\[([^]]+)\\] *(.*)$");
 
-		vector<RString> matches;
+		std::vector<RString> matches;
 		if(!x.Compare(line, matches))
 		{
 			continue;
@@ -91,7 +91,7 @@ bool LyricsLoader::LoadFromLRCFile(const RString& sPath, Song& out)
 		//float fLyricOffset = 0.0f;
 
 		// Enforce strict timestamp format to prevent crashing the program.
-		vector<RString> dummy;
+		std::vector<RString> dummy;
 		static Regex timestamp("^([0-9]+:){0,2}[0-9]+(.[0-9]*)?$");
 		if (timestamp.Compare(sValueName, dummy))
 		{

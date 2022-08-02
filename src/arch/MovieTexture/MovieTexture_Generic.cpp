@@ -117,9 +117,9 @@ public:
 		m_PixFmt = pixfmt;
 		m_iSourceWidth = iWidth;
 		m_iSourceHeight = iHeight;
-/*		int iMaxSize = min( GetID().iMaxSize, DISPLAY->GetMaxTextureSize() );
-		m_iImageWidth = min( m_iSourceWidth, iMaxSize );
-		m_iImageHeight = min( m_iSourceHeight, iMaxSize );
+/*		int iMaxSize = std::min( GetID().iMaxSize, DISPLAY->GetMaxTextureSize() );
+		m_iImageWidth = std::min( m_iSourceWidth, iMaxSize );
+		m_iImageHeight = std::min( m_iSourceHeight, iMaxSize );
 		m_iTextureWidth = power_of_two( m_iImageWidth );
 		m_iTextureHeight = power_of_two( m_iImageHeight );
 */

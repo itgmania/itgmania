@@ -16,7 +16,7 @@ public:
 	virtual void DrawPrimitives();
 
 	void Load( const PlayerState* pPlayerState, float fYReverseOffset );
-	void SetColumnRenderers(vector<NoteColumnRenderer>& renderers);
+	void SetColumnRenderers(std::vector<NoteColumnRenderer>& renderers);
 
 	void DidTapNote( int iCol, TapNoteScore tns, bool bBright );
 	void DidHoldNote( int iCol, HoldNoteScore hns, bool bBright );
@@ -26,10 +26,10 @@ protected:
 	float m_fYReverseOffsetPixels;
 	const PlayerState* m_pPlayerState;
 
-	vector<NoteColumnRenderer> const* m_renderers;
-	vector<Actor *> 	m_Ghost;
-	vector<TapNoteSubType> m_bHoldShowing;
-	vector<TapNoteSubType> m_bLastHoldShowing;
+	std::vector<NoteColumnRenderer> const* m_renderers;
+	std::vector<Actor *> 	m_Ghost;
+	std::vector<TapNoteSubType> m_bHoldShowing;
+	std::vector<TapNoteSubType> m_bLastHoldShowing;
 };
 
 

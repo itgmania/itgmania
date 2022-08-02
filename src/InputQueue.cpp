@@ -68,7 +68,7 @@ bool InputQueueCode::EnteredCode( GameController controller ) const
 
 	// iterate newest to oldest
 	int iSequenceIndex = m_aPresses.size()-1;	// count down
-	const vector<InputEventPlus> &aQueue = INPUTQUEUE->GetQueue( controller );
+	const std::vector<InputEventPlus> &aQueue = INPUTQUEUE->GetQueue( controller );
 	int iQueueIndex = aQueue.size()-1;
 	while( iQueueIndex >= 0 )
 	{
@@ -130,7 +130,7 @@ bool InputQueueCode::EnteredCode( GameController controller ) const
 			}
 			if( !bAllHeldButtonsOK )
 				continue;
-			iMinSearchIndexUsed = min( iMinSearchIndexUsed, iQueueSearchIndex );
+			iMinSearchIndexUsed = std::min( iMinSearchIndexUsed, iQueueSearchIndex );
 			if( b == (int) Press.m_aButtonsToPress.size()-1 )
 				bMatched = true;
 		}
@@ -164,11 +164,11 @@ bool InputQueueCode::Load( RString sButtonsNames )
 {
 	m_aPresses.clear();
 
-	vector<RString> asPresses;
+	std::vector<RString> asPresses;
 	split( sButtonsNames, ",", asPresses, false );
 	for (RString &sPress : asPresses)
 	{
-		vector<RString> asButtonNames;
+		std::vector<RString> asButtonNames;
 
 		split( sPress, "-", asButtonNames, false );
 

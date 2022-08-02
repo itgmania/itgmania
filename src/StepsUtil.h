@@ -117,21 +117,21 @@ namespace StepsUtil
 	 * @param stc the StepsCriteria to look for.
 	 * @param out the SongsAndSteps that match.
 	 */
-	void GetAllMatching( const SongCriteria &soc, const StepsCriteria &stc, vector<SongAndSteps> &out);	// look up in SONGMAN
+	void GetAllMatching( const SongCriteria &soc, const StepsCriteria &stc, std::vector<SongAndSteps> &out);	// look up in SONGMAN
 	/**
 	 * @brief Retrieve all of the Steps that match the criteria.
 	 * @param pSong the Song we're checking in.
 	 * @param stc the StepsCriteria to look for.
 	 * @param out the SongsAndSteps that match.
 	 */
-	void GetAllMatching( Song *pSong, const StepsCriteria &stc, vector<SongAndSteps> &out );
+	void GetAllMatching( Song *pSong, const StepsCriteria &stc, std::vector<SongAndSteps> &out );
 	/**
 	* @brief Retrieve all of the Steps that match the criteria, for Endless mode only.
 	* @param pSong the Song we're checking in.
 	* @param stc the StepsCriteria to look for.
 	* @param out the SongsAndSteps that match.
 	*/
-	void GetAllMatchingEndless( Song *pSong, const StepsCriteria &stc, vector<SongAndSteps> &out );
+	void GetAllMatchingEndless( Song *pSong, const StepsCriteria &stc, std::vector<SongAndSteps> &out );
 	/**
 	 * @brief Is there a <a class="el" href="class_steps.html">Step</a>
 	 * that matches the criteria?
@@ -150,15 +150,15 @@ namespace StepsUtil
 	bool CompareNotesPointersByRadarValues(const Steps* pSteps1, const Steps* pSteps2);
 	bool CompareNotesPointersByMeter(const Steps *pSteps1, const Steps* pSteps2);
 	bool CompareNotesPointersByDifficulty(const Steps *pSteps1, const Steps *pSteps2);
-	void SortNotesArrayByDifficulty( vector<Steps*> &vpStepsInOut );
+	void SortNotesArrayByDifficulty( std::vector<Steps*> &vpStepsInOut );
 	bool CompareStepsPointersByTypeAndDifficulty(const Steps *pStep1, const Steps *pStep2);
-	void SortStepsByTypeAndDifficulty( vector<Steps*> &vpStepsInOut );
-	void SortStepsPointerArrayByNumPlays( vector<Steps*> &vpStepsInOut, ProfileSlot slot, bool bDescending );
-	void SortStepsPointerArrayByNumPlays( vector<Steps*> &vpStepsInOut, const Profile* pProfile, bool bDescending );
+	void SortStepsByTypeAndDifficulty( std::vector<Steps*> &vpStepsInOut );
+	void SortStepsPointerArrayByNumPlays( std::vector<Steps*> &vpStepsInOut, ProfileSlot slot, bool bDescending );
+	void SortStepsPointerArrayByNumPlays( std::vector<Steps*> &vpStepsInOut, const Profile* pProfile, bool bDescending );
 	bool CompareStepsPointersByDescription(const Steps *pStep1, const Steps *pStep2);
-	void SortStepsByDescription( vector<Steps*> &vpStepsInOut );
-	void RemoveLockedSteps( const Song *pSong, vector<Steps*> &vpStepsInOut );
-};
+	void SortStepsByDescription( std::vector<Steps*> &vpStepsInOut );
+	void RemoveLockedSteps( const Song *pSong, std::vector<Steps*> &vpStepsInOut );
+}
 
 class StepsID
 {

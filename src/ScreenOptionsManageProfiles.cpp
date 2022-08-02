@@ -82,7 +82,7 @@ static bool ValidateLocalProfileName( const RString &sAnswer, RString &sErrorOut
 	if( pProfile != nullptr && sAnswer == pProfile->m_sDisplayName )
 		return true; // unchanged
 
-	vector<RString> vsProfileNames;
+	std::vector<RString> vsProfileNames;
 	PROFILEMAN->GetLocalProfileDisplayNames( vsProfileNames );
 	bool bAlreadyAProfileWithThisName = find( vsProfileNames.begin(), vsProfileNames.end(), sAnswer ) != vsProfileNames.end();
 	if( bAlreadyAProfileWithThisName )
@@ -108,7 +108,7 @@ void ScreenOptionsManageProfiles::BeginScreen()
 {
 	// FIXME
 	// int iIndex = 0;
-	vector<OptionRowHandler*> OptionRowHandlers;
+	std::vector<OptionRowHandler*> OptionRowHandlers;
 
 	if( SHOW_CREATE_NEW )
 	{
@@ -163,7 +163,7 @@ void ScreenOptionsManageProfiles::BeginScreen()
 	// select the last chosen profile
 	if( !sEditLocalProfileID.empty() )
 	{
-		vector<RString>::const_iterator iter = find( m_vsLocalProfileID.begin(), m_vsLocalProfileID.end(), sEditLocalProfileID );
+		std::vector<RString>::const_iterator iter = find( m_vsLocalProfileID.begin(), m_vsLocalProfileID.end(), sEditLocalProfileID );
 		if( iter != m_vsLocalProfileID.end() )
 		{
 			int iIndex = iter - m_vsLocalProfileID.begin();
@@ -254,7 +254,7 @@ void ScreenOptionsManageProfiles::HandleScreenMessage( const ScreenMessage SM )
 		{
 			// Select the profile nearest to the one that was just deleted.
 			int iIndex = -1;
-			vector<RString>::const_iterator iter = find( m_vsLocalProfileID.begin(), m_vsLocalProfileID.end(), GAMESTATE->m_sEditLocalProfileID.Get() );
+			std::vector<RString>::const_iterator iter = find( m_vsLocalProfileID.begin(), m_vsLocalProfileID.end(), GAMESTATE->m_sEditLocalProfileID.Get() );
 			if( iter != m_vsLocalProfileID.end() )
 				iIndex = iter - m_vsLocalProfileID.begin();
 			CLAMP( iIndex, 0, m_vsLocalProfileID.size()-1 );
@@ -400,7 +400,7 @@ void ScreenOptionsManageProfiles::ProcessMenuStart( const InputEventPlus & )
 	
 	if( SHOW_CREATE_NEW && iCurRow == 0 )	// "create new"
 	{
-		vector<RString> vsUsedNames;
+		std::vector<RString> vsUsedNames;
 		PROFILEMAN->GetLocalProfileDisplayNames( vsUsedNames );
 
 		RString sPotentialName;
@@ -460,12 +460,12 @@ void ScreenOptionsManageProfiles::ProcessMenuStart( const InputEventPlus & )
 	}
 }
 
-void ScreenOptionsManageProfiles::ImportOptions( int /* iRow */, const vector<PlayerNumber> & /* vpns */ )
+void ScreenOptionsManageProfiles::ImportOptions( int /* iRow */, const std::vector<PlayerNumber> & /* vpns */ )
 {
 
 }
 
-void ScreenOptionsManageProfiles::ExportOptions( int /* iRow */, const vector<PlayerNumber> & /* vpns */ )
+void ScreenOptionsManageProfiles::ExportOptions( int /* iRow */, const std::vector<PlayerNumber> & /* vpns */ )
 {
 
 }

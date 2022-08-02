@@ -162,7 +162,7 @@ void OptionRow::ChoicesChanged( RowType type, bool reset_focus )
 
 	FOREACH_PlayerNumber( p )
 	{
-		vector<bool> &vbSelected = m_vbSelected[p];
+		std::vector<bool> &vbSelected = m_vbSelected[p];
 		vbSelected.resize( 0 );
 		vbSelected.resize( m_pHand->m_Def.m_vsChoices.size(), false );
 		
@@ -455,7 +455,7 @@ void OptionRow::AfterImportOptions( PlayerNumber pn )
 
 void OptionRow::PositionUnderlines( PlayerNumber pn )
 {
-	vector<OptionsCursor*> &vpUnderlines = m_Underline[pn];
+	std::vector<OptionsCursor*> &vpUnderlines = m_Underline[pn];
 	if( vpUnderlines.empty() )
 		return;
 
@@ -524,7 +524,7 @@ void OptionRow::UpdateText( PlayerNumber p )
 			RString sText = GetThemedItemText( iChoiceWithFocus );
 
 			// If player_no is 2 and there is no player 1:
-			int index = min( pn, m_textItems.size()-1 );
+			int index = std::min(static_cast<int>(pn), static_cast<int>(m_textItems.size()) - 1);
 
 			// TODO: Always have one textItem for each player
 
@@ -626,7 +626,7 @@ void OptionRow::UpdateEnabledDisabled()
 			unsigned item_no = m_pHand->m_Def.m_bOneChoiceForAllPlayers ? 0 : pn;
 
 			// If player_no is 2 and there is no player 1:
-			item_no = min( item_no, m_textItems.size()-1 );
+			item_no = std::min<unsigned int>(item_no, m_textItems.size() - 1);
 
 			BitmapText &bt = *m_textItems[item_no];
 
@@ -703,7 +703,7 @@ int OptionRow::GetOneSharedSelection( bool bAllowFail ) const
 
 void OptionRow::SetOneSelection( PlayerNumber pn, int iChoice )
 {
-	vector<bool> &vb = m_vbSelected[pn];
+	std::vector<bool> &vb = m_vbSelected[pn];
 	if( vb.empty() )
 		return;
 	std::fill_n(vb.begin(), vb.size(), false);
@@ -806,7 +806,7 @@ bool OptionRow::NotifyHandlerOfSelection(PlayerNumber pn, int choice)
 	if(changed)
 	{
 		ChoicesChanged(m_RowType, false);
-		vector<PlayerNumber> vpns;
+		std::vector<PlayerNumber> vpns;
 		FOREACH_HumanPlayer( p )
 			vpns.push_back( p );
 		ImportOptions(vpns);
@@ -851,7 +851,7 @@ void OptionRow::Reload()
 	{
 		ChoicesChanged( m_RowType );
 
-		vector<PlayerNumber> vpns;
+		std::vector<PlayerNumber> vpns;
 		FOREACH_HumanPlayer( p )
 			vpns.push_back( p );
 		ImportOptions( vpns );
@@ -905,7 +905,7 @@ void OptionRow::HandleMessage( const Message &msg )
 	if( GetFirstItemGoesDown() ) \
 		vbSelected.insert( vbSelected.begin(), false );
 
-void OptionRow::ImportOptions( const vector<PlayerNumber> &vpns )
+void OptionRow::ImportOptions( const std::vector<PlayerNumber> &vpns )
 {
 	ASSERT( m_pHand->m_Def.m_vsChoices.size() > 0 );
 
@@ -926,7 +926,7 @@ void OptionRow::ImportOptions( const vector<PlayerNumber> &vpns )
 	}
 }
 
-int OptionRow::ExportOptions( const vector<PlayerNumber> &vpns, bool bRowHasFocus[NUM_PLAYERS] )
+int OptionRow::ExportOptions( const std::vector<PlayerNumber> &vpns, bool bRowHasFocus[NUM_PLAYERS] )
 {
 	ASSERT( m_pHand->m_Def.m_vsChoices.size() > 0 );
 

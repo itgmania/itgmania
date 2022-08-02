@@ -93,7 +93,7 @@ void RageFile_JPEG_skip_input_data( j_decompress_ptr cinfo, long num_bytes )
 {
 	RageFile_source_mgr *src = (RageFile_source_mgr *) cinfo->src;
 
-	int in_buffer = min( (long) src->pub.bytes_in_buffer, num_bytes );
+	int in_buffer = std::min( (long) src->pub.bytes_in_buffer, num_bytes );
 	src->pub.next_input_byte += in_buffer;
 	src->pub.bytes_in_buffer -= in_buffer;
 	num_bytes -= in_buffer;

@@ -15,8 +15,8 @@ public:
 
 protected:
 private:
-	virtual void ImportOptions( int row, const vector<PlayerNumber> &vpns );
-	virtual void ExportOptions( int row, const vector<PlayerNumber> &vpns );
+	virtual void ImportOptions( int row, const std::vector<PlayerNumber> &vpns );
+	virtual void ExportOptions( int row, const std::vector<PlayerNumber> &vpns );
 
 	virtual void GoToNextScreen();
 	virtual void GoToPrevScreen();
@@ -31,7 +31,7 @@ private:
 	Song *GetSongForEntry( int iEntryIndex );
 	Steps *GetStepsForEntry( int iEntryIndex );
 
-	vector<Song*> m_vpSongs;
+	std::vector<Song*> m_vpSongs;
 };
 
 #endif

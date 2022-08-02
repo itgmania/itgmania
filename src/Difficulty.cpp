@@ -23,12 +23,12 @@ LuaXType( Difficulty );
 
 const RString &CourseDifficultyToLocalizedString( CourseDifficulty x )
 {
-	static unique_ptr<LocalizedString> g_CourseDifficultyName[NUM_Difficulty];
+	static std::unique_ptr<LocalizedString> g_CourseDifficultyName[NUM_Difficulty];
 	if( g_CourseDifficultyName[0].get() == nullptr )
 	{
 		FOREACH_ENUM( Difficulty,i)
 		{
-			unique_ptr<LocalizedString> ap( new LocalizedString("CourseDifficulty", DifficultyToString(i)) );
+			std::unique_ptr<LocalizedString> ap( new LocalizedString("CourseDifficulty", DifficultyToString(i)) );
 			g_CourseDifficultyName[i] = move(ap);
 		}
 	}
@@ -112,7 +112,7 @@ RString GetCustomDifficulty( StepsType st, Difficulty dc, CourseType ct )
 		return "Edit";
 	}
 	// OPTIMIZATION OPPORTUNITY: cache these metrics and cache the splitting
-	vector<RString> vsNames;
+	std::vector<RString> vsNames;
 	split( NAMES, ",", vsNames );
 	for (RString const &sName: vsNames)
 	{

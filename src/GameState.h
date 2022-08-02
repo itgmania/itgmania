@@ -266,7 +266,7 @@ public:
 	BroadcastOnChange<bool> m_bGameplayLeadIn;
 
 	// if re-adding noteskin changes in courses, add functions and such here -aj
-	void GetAllUsedNoteSkins( vector<RString> &out ) const;
+	void GetAllUsedNoteSkins( std::vector<RString> &out ) const;
 
 	static const float MUSIC_SECONDS_INVALID;
 
@@ -289,7 +289,7 @@ public:
 	float m_DanceDuration;
 
 	// Random Attacks & Attack Mines
-	vector<RString>		m_RandomAttacks;
+	std::vector<RString>		m_RandomAttacks;
 
 	// used in PLAY_MODE_BATTLE
 	float	m_fOpponentHealthPercent;
@@ -353,15 +353,15 @@ public:
 		RString *pStringToFill;
 	};
 
-	void GetRankingFeats( PlayerNumber pn, vector<RankingFeat> &vFeatsOut ) const;
+	void GetRankingFeats( PlayerNumber pn, std::vector<RankingFeat> &vFeatsOut ) const;
 	bool AnyPlayerHasRankingFeats() const;
 	void StoreRankingName( PlayerNumber pn, RString name );	// Called by name entry screens
-	vector<RString*> m_vpsNamesThatWereFilled;	// filled on StoreRankingName, 
+	std::vector<RString*> m_vpsNamesThatWereFilled;	// filled on StoreRankingName,
 
 	// Award stuff
 	// lowest priority in front, highest priority at the back.
-	deque<StageAward> m_vLastStageAwards[NUM_PLAYERS];
-	deque<PeakComboAward> m_vLastPeakComboAwards[NUM_PLAYERS];
+	std::deque<StageAward> m_vLastStageAwards[NUM_PLAYERS];
+	std::deque<PeakComboAward> m_vLastPeakComboAwards[NUM_PLAYERS];
 
 	// Attract stuff
 	int m_iNumTimesThroughAttract;	// negative means play regardless of m_iAttractSoundFrequency setting
@@ -416,7 +416,7 @@ public:
 		if(i >= m_autogen_fargs.size()) { return 0.0f; }
 		return m_autogen_fargs[i];
 	}
-	vector<float> m_autogen_fargs;
+	std::vector<float> m_autogen_fargs;
 
 	// Lua
 	void PushSelf( lua_State *L );

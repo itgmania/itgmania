@@ -29,7 +29,7 @@ void ScreenJukebox::SetSong()
 {
 	ThemeMetric<bool>	ALLOW_ADVANCED_MODIFIERS(m_sName,"AllowAdvancedModifiers");
 
-	vector<Song*> vSongs;
+	std::vector<Song*> vSongs;
 
 	/* Check to see if there is a theme course. If there is a course that has
 	 * the exact same name as the theme, then we pick a song from this course. */
@@ -47,7 +47,7 @@ void ScreenJukebox::SetSong()
 
 
 	// Calculate what difficulties to show
-	vector<Difficulty> vDifficultiesToShow;
+	std::vector<Difficulty> vDifficultiesToShow;
 	if( m_bDemonstration )
 	{
 		// HACK: This belongs in ScreenDemonstration.
@@ -103,10 +103,10 @@ void ScreenJukebox::SetSong()
 		{
 			/* If we have a modifier course containing this song, apply its
 			 * modifiers. Only check fixed course entries. */
-			vector<Course*> apCourses;
+			std::vector<Course*> apCourses;
 			SONGMAN->GetAllCourses( apCourses, false );
-			vector<const CourseEntry *> apOptions;
-			vector<Course*> apPossibleCourses;
+			std::vector<const CourseEntry *> apOptions;
+			std::vector<Course*> apPossibleCourses;
 			for( unsigned j = 0; j < apCourses.size(); ++j )
 			{
 				Course *lCourse = apCourses[j];
@@ -126,8 +126,8 @@ void ScreenJukebox::SetSong()
 						RString s = a.sModifiers;
 						s.MakeLower();
 						// todo: allow themers to modify this list? -aj
-						if( s.find("dark") != string::npos ||
-							s.find("stealth") != string::npos )
+						if( s.find("dark") != std::string::npos ||
+							s.find("stealth") != std::string::npos )
 						{
 							bModsAreOkToShow = false;
 							break;

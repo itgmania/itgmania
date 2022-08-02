@@ -190,9 +190,9 @@ public:
 private:
 	struct StepsAndDifficulty;
 
-	void StripLockedStepsAndDifficulty( vector<StepsAndDifficulty> &v );
-	void GetSongsToShowForGroup( const RString &sGroup, vector<Song*> &vpSongsOut );
-	void GetGroupsToShow( vector<RString> &vsGroupsOut );
+	void StripLockedStepsAndDifficulty( std::vector<StepsAndDifficulty> &v );
+	void GetSongsToShowForGroup( const RString &sGroup, std::vector<Song*> &vpSongsOut );
+	void GetGroupsToShow( std::vector<RString> &vsGroupsOut );
 
 	void UpdateArrows();
 	AutoActor	m_sprArrows[NUM_ARROWS];
@@ -220,13 +220,13 @@ private:
 	};
 
 	/** @brief The list of groups. */
-	vector<RString>			m_sGroups;
+	std::vector<RString>			m_sGroups;
 	/** @brief The list of Songs in a group. */
-	vector<Song*>			m_pSongs;
-	vector<StepsType>		m_StepsTypes;
-	vector<StepsAndDifficulty>	m_vpSteps;
-	vector<StepsAndDifficulty>	m_vpSourceSteps;
-	vector<EditMenuAction>		m_Actions;
+	std::vector<Song*>			m_pSongs;
+	std::vector<StepsType>		m_StepsTypes;
+	std::vector<StepsAndDifficulty>	m_vpSteps;
+	std::vector<StepsAndDifficulty>	m_vpSourceSteps;
+	std::vector<EditMenuAction>		m_Actions;
 
 	void OnRowValueChanged( EditMenuRow row );
 	void ChangeToRow( EditMenuRow newRow );

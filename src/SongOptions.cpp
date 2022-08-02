@@ -60,7 +60,7 @@ void SongOptions::Approach( const SongOptions& other, float fDeltaSeconds )
 #undef DO_COPY
 }
 
-static void AddPart( vector<RString> &AddTo, float level, RString name )
+static void AddPart( std::vector<RString> &AddTo, float level, RString name )
 {
 	if( level == 0 )
 		return;
@@ -70,7 +70,7 @@ static void AddPart( vector<RString> &AddTo, float level, RString name )
 	AddTo.push_back( LevelStr + name );
 }
 
-void SongOptions::GetMods( vector<RString> &AddTo ) const
+void SongOptions::GetMods( std::vector<RString> &AddTo ) const
 {
 	if( m_fMusicRate != 1 )
 	{
@@ -112,7 +112,7 @@ void SongOptions::GetMods( vector<RString> &AddTo ) const
 		AddTo.push_back( "RandomBG" );
 }
 
-void SongOptions::GetLocalizedMods( vector<RString> &v ) const
+void SongOptions::GetLocalizedMods( std::vector<RString> &v ) const
 {
 	GetMods( v );
 	for (RString &s : v)
@@ -123,14 +123,14 @@ void SongOptions::GetLocalizedMods( vector<RString> &v ) const
 
 RString SongOptions::GetString() const
 {
-	vector<RString> v;
+	std::vector<RString> v;
 	GetMods( v );
 	return join( ", ", v );
 }
 
 RString SongOptions::GetLocalizedString() const
 {
-	vector<RString> v;
+	std::vector<RString> v;
 	GetLocalizedMods( v );
 	return join( ", ", v );
 }
@@ -141,7 +141,7 @@ RString SongOptions::GetLocalizedString() const
 void SongOptions::FromString( const RString &sMultipleMods )
 {
 	RString sTemp = sMultipleMods;
-	vector<RString> vs;
+	std::vector<RString> vs;
 	split( sTemp, ",", vs, true );
 	RString sThrowAway;
 	for (RString &s : vs)
@@ -157,7 +157,7 @@ bool SongOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut )
 	Trim( sBit );
 
 	Regex mult("^([0-9]+(\\.[0-9]+)?)xmusic$");
-	vector<RString> matches;
+	std::vector<RString> matches;
 	if( mult.Compare(sBit, matches) )
 	{
 		m_fMusicRate = StringToFloat( matches[0] );
@@ -166,7 +166,7 @@ bool SongOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut )
 
 	matches.clear();
 
-	vector<RString> asParts;
+	std::vector<RString> asParts;
 	split( sBit, " ", asParts, true );
 	bool on = true;
 	if( asParts.size() > 1 )

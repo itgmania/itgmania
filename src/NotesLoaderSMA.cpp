@@ -16,12 +16,12 @@
 
 void SMALoader::ProcessMultipliers( TimingData &out, const int iRowsPerBeat, const RString sParam )
 {
-	vector<RString> arrayMultiplierExpressions;
+	std::vector<RString> arrayMultiplierExpressions;
 	split( sParam, ",", arrayMultiplierExpressions );
 	
 	for( unsigned f=0; f<arrayMultiplierExpressions.size(); f++ )
 	{
-		vector<RString> arrayMultiplierValues;
+		std::vector<RString> arrayMultiplierValues;
 		split( arrayMultiplierExpressions[f], "=", arrayMultiplierValues );
 		unsigned size = arrayMultiplierValues.size();
 		if( size < 2 )
@@ -44,12 +44,12 @@ void SMALoader::ProcessMultipliers( TimingData &out, const int iRowsPerBeat, con
 
 void SMALoader::ProcessBeatsPerMeasure( TimingData &out, const RString sParam )
 {
-	vector<RString> vs1;
+	std::vector<RString> vs1;
 	split( sParam, ",", vs1 );
 	
 	for (RString const &s1 : vs1)
 	{
-		vector<RString> vs2;
+		std::vector<RString> vs2;
 		split( s1, "=", vs2 );
 
 		if( vs2.size() < 2 )
@@ -86,12 +86,12 @@ void SMALoader::ProcessBeatsPerMeasure( TimingData &out, const RString sParam )
 
 void SMALoader::ProcessSpeeds( TimingData &out, const RString line, const int rowsPerBeat )
 {
-	vector<RString> vs1;
+	std::vector<RString> vs1;
 	split( line, ",", vs1 );
 
 	for (std::vector<RString>::const_iterator s1 = vs1.begin(); s1 != vs1.end(); ++s1)
 	{
-		vector<RString> vs2;
+		std::vector<RString> vs2;
 		vs2.clear(); // trying something.
 		RString loopTmp = *s1;
 		Trim( loopTmp );
@@ -163,7 +163,7 @@ bool SMALoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCach
 	
 	Steps* pNewNotes = nullptr;
 	int iRowsPerBeat = -1; // Start with an invalid value: needed for checking.
-	vector< pair<float, float> > vBPMChanges, vStops;
+	std::vector<std::pair<float, float>> vBPMChanges, vStops;
 	
 	for( unsigned i=0; i<msd.GetNumValues(); i++ )
 	{
@@ -291,10 +291,10 @@ bool SMALoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCach
 			 * becomes so, make adjustments to this code. */
 			if( iRowsPerBeat < 0 )
 			{
-				vector<RString> arrayBeatChangeExpressions;
+				std::vector<RString> arrayBeatChangeExpressions;
 				split( sParams[1], ",", arrayBeatChangeExpressions );
-				
-				vector<RString> arrayBeatChangeValues;
+
+				std::vector<RString> arrayBeatChangeValues;
 				split( arrayBeatChangeExpressions[0], "=", arrayBeatChangeValues );
 				iRowsPerBeat = StringToInt(arrayBeatChangeValues[1]);
 			}

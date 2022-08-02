@@ -133,36 +133,36 @@ void StepsDisplayList::UpdatePositions()
 	int P1Choice = GAMESTATE->IsHumanPlayer(PLAYER_1)? iCurrentRow[PLAYER_1]: GAMESTATE->IsHumanPlayer(PLAYER_2)? iCurrentRow[PLAYER_2]: 0;
 	int P2Choice = GAMESTATE->IsHumanPlayer(PLAYER_2)? iCurrentRow[PLAYER_2]: GAMESTATE->IsHumanPlayer(PLAYER_1)? iCurrentRow[PLAYER_1]: 0;
 
-	vector<Row> &Rows = m_Rows;
+	std::vector<Row> &Rows = m_Rows;
 
 	const bool BothPlayersActivated = GAMESTATE->IsHumanPlayer(PLAYER_1) && GAMESTATE->IsHumanPlayer(PLAYER_2);
 	if( !BothPlayersActivated )
 	{
 		// Simply center the cursor.
-		first_start = max( P1Choice - halfsize, 0 );
+		first_start = std::max( P1Choice - halfsize, 0 );
 		first_end = first_start + total;
 		second_start = second_end = first_end;
 	}
 	else
 	{
 		// First half:
-		const int earliest = min( P1Choice, P2Choice );
-		first_start = max( earliest - halfsize/2, 0 );
+		const int earliest = std::min( P1Choice, P2Choice );
+		first_start = std::max( earliest - halfsize/2, 0 );
 		first_end = first_start + halfsize;
 
 		// Second half:
-		const int latest = max( P1Choice, P2Choice );
+		const int latest = std::max( P1Choice, P2Choice );
 
-		second_start = max( latest - halfsize/2, 0 );
+		second_start = std::max( latest - halfsize/2, 0 );
 
 		// Don't overlap.
-		second_start = max( second_start, first_end );
+		second_start = std::max( second_start, first_end );
 
 		second_end = second_start + halfsize;
 	}
 
-	first_end = min( first_end, (int) Rows.size() );
-	second_end = min( second_end, (int) Rows.size() );
+	first_end = std::min( first_end, (int) Rows.size() );
+	second_end = std::min( second_end, (int) Rows.size() );
 
 	/* If less than total (and Rows.size()) are displayed, fill in the empty
 	 * space intelligently. */
@@ -272,7 +272,7 @@ void StepsDisplayList::SetFromGameState()
 		// FIXME: This clamps to between the min and the max difficulty, but
 		// it really should round to the nearest difficulty that's in 
 		// DIFFICULTIES_TO_SHOW.
-		const vector<Difficulty>& difficulties = CommonMetrics::DIFFICULTIES_TO_SHOW.GetValue();
+		const std::vector<Difficulty>& difficulties = CommonMetrics::DIFFICULTIES_TO_SHOW.GetValue();
 		m_Rows.resize( difficulties.size() );
 		for (Difficulty const &d : difficulties)
 		{
@@ -283,7 +283,7 @@ void StepsDisplayList::SetFromGameState()
 	}
 	else
 	{
-		vector<Steps*>	vpSteps;
+		std::vector<Steps*>	vpSteps;
 		SongUtil::GetPlayableSteps( pSong, vpSteps );
 		// Should match the sort in ScreenSelectMusic::AfterMusicChange.
 

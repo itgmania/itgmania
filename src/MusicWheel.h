@@ -52,20 +52,20 @@ public:
 
 	virtual void ReloadSongList();
 
-	void GetCurrentSections(vector<RString> &sections);
+	void GetCurrentSections(std::vector<RString> &sections);
 	// Lua
 	void PushSelf( lua_State *L );
 
 protected:
 	MusicWheelItem *MakeItem();
 
-	void GetSongList( vector<Song*> &arraySongs, SortOrder so );
+	void GetSongList( std::vector<Song*> &arraySongs, SortOrder so );
 	bool SelectSongOrCourse();
 	bool SelectModeMenuItem();
 
 	virtual void UpdateSwitch();
 
-	vector<MusicWheelItemData *> & getWheelItemsData(SortOrder so);
+	std::vector<MusicWheelItemData *> & getWheelItemsData(SortOrder so);
 	void readyWheelItemsData(SortOrder so);
 
 	RString				m_sLastModeMenuItem;
@@ -99,7 +99,7 @@ protected:
 	ThemeMetric<RageColor>	RANDOM_COLOR;
 	ThemeMetric<RageColor>	PORTAL_COLOR;
 	ThemeMetric<RageColor>	EMPTY_COLOR;
-	vector <int> m_viWheelPositions;
+	std::vector <int> m_viWheelPositions;
 	ThemeMetric<RString>	CUSTOM_WHEEL_ITEM_NAMES;
 	ThemeMetricMap<RString>	CUSTOM_CHOICES;
 	ThemeMetricMap<RageColor>	CUSTOM_CHOICE_COLORS;
@@ -107,11 +107,11 @@ protected:
 private:
 	//use getWheelItemsData instead of touching this one
 	enum {INVALID,NEEDREFILTER,VALID} m_WheelItemDatasStatus[NUM_SortOrder];
-	vector<MusicWheelItemData *> m__WheelItemDatas[NUM_SortOrder];
-	vector<MusicWheelItemData *> m__UnFilteredWheelItemDatas[NUM_SortOrder];
+	std::vector<MusicWheelItemData *> m__WheelItemDatas[NUM_SortOrder];
+	std::vector<MusicWheelItemData *> m__UnFilteredWheelItemDatas[NUM_SortOrder];
 
-	void BuildWheelItemDatas( vector<MusicWheelItemData *> &arrayWheelItems, SortOrder so );
-	void FilterWheelItemDatas(vector<MusicWheelItemData *> &aUnFilteredDatas, vector<MusicWheelItemData *> &aFilteredData, SortOrder so );
+	void BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWheelItems, SortOrder so );
+	void FilterWheelItemDatas(std::vector<MusicWheelItemData *> &aUnFilteredDatas, std::vector<MusicWheelItemData *> &aFilteredData, SortOrder so );
 };
 
 #endif

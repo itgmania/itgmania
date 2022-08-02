@@ -132,7 +132,7 @@ void InputHandler_Linux_PIUIO::InputThread()
 	InputHandler::UpdateTimer();
 }
 
-void InputHandler_Linux_PIUIO::GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevicesOut )
+void InputHandler_Linux_PIUIO::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut )
 {
 	vDevicesOut.push_back( InputDeviceInfo(InputDevice(DEVICE_PIUIO), "PIUIO") );
 }

@@ -58,8 +58,8 @@ public:
 		m_bSaveScore(true), m_bSaveReplay(false) {};
 	void Init();
 	void Approach( const SongOptions& other, float fDeltaSeconds );
-	void GetMods( vector<RString> &AddTo ) const;
-	void GetLocalizedMods( vector<RString> &AddTo ) const;
+	void GetMods( std::vector<RString> &AddTo ) const;
+	void GetLocalizedMods( std::vector<RString> &AddTo ) const;
 	RString GetString() const;
 	RString GetLocalizedString() const;
 	void FromString( const RString &sOptions );

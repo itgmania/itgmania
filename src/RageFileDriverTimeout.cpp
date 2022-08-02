@@ -101,7 +101,7 @@ private:
 	RageFileDriver *m_pChildDriver;
 
 	/* List of files to delete: */
-	vector<RageFileBasic *> m_apDeletedFiles;
+	std::vector<RageFileBasic *> m_apDeletedFiles;
 	RageMutex m_DeletedFilesLock;
 
 	/* REQ_OPEN, REQ_POPULATE_FILE_SET, REQ_FLUSH_DIR_CACHE, REQ_REMOVE, REQ_MOVE: */
@@ -139,7 +139,7 @@ private:
 	char *m_pRequestBuffer; /* in */
 };
 
-static vector<ThreadedFileWorker *> g_apWorkers;
+static std::vector<ThreadedFileWorker *> g_apWorkers;
 static RageMutex g_apWorkersMutex("WorkersMutex");
 
 /* Set the timeout length, and reset the timer. */
@@ -197,7 +197,7 @@ void ThreadedFileWorker::HandleRequest( int iRequest )
 {
 	{
 		m_DeletedFilesLock.Lock();
-		vector<RageFileBasic *> apDeletedFiles = m_apDeletedFiles;
+		std::vector<RageFileBasic *> apDeletedFiles = m_apDeletedFiles;
 		m_apDeletedFiles.clear();
 		m_DeletedFilesLock.Unlock();
 

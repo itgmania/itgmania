@@ -534,7 +534,7 @@ void Model::PlayAnimation( const RString &sAniName, float fPlayRate )
 	for( unsigned i = 0; i < m_pGeometry->m_Meshes.size(); ++i )
 	{
 		msMesh *pMesh = &m_pGeometry->m_Meshes[i];
-		vector<RageModelVertex> &Vertices = pMesh->Vertices;
+		std::vector<RageModelVertex> &Vertices = pMesh->Vertices;
 		for( unsigned j = 0; j < Vertices.size(); j++ )
 		{
 			// int iBoneIndex = (pMesh->m_iBoneIndex!=-1) ? pMesh->m_iBoneIndex : bone;
@@ -565,7 +565,7 @@ void Model::PlayAnimation( const RString &sAniName, float fPlayRate )
 void Model::SetPosition( float fSeconds )
 {
 	m_fCurFrame = FRAMES_PER_SECOND * fSeconds;
-	m_fCurFrame = clamp( m_fCurFrame, 0, (float) m_pCurAnimation->nTotalFrames );
+	m_fCurFrame = clamp( m_fCurFrame, (float) 0, (float) m_pCurAnimation->nTotalFrames );
 }
 
 void Model::AdvanceFrame( float fDeltaTime )
@@ -591,14 +591,14 @@ void Model::AdvanceFrame( float fDeltaTime )
 		else if( m_bLoop )
 			wrap( m_fCurFrame, (float) m_pCurAnimation->nTotalFrames );
 		else
-			m_fCurFrame = clamp( m_fCurFrame, 0, (float) m_pCurAnimation->nTotalFrames );
+			m_fCurFrame = clamp( m_fCurFrame, (float) 0, (float) m_pCurAnimation->nTotalFrames );
 	}
 
 	SetBones( m_pCurAnimation, m_fCurFrame, m_vpBones );
 	UpdateTempGeometry();
 }
 
-void Model::SetBones( const msAnimation* pAnimation, float fFrame, vector<myBone_t> &vpBones )
+void Model::SetBones( const msAnimation* pAnimation, float fFrame, std::vector<myBone_t> &vpBones )
 {
 	for( size_t i = 0; i < pAnimation->Bones.size(); ++i )
 	{
@@ -688,8 +688,8 @@ void Model::UpdateTempGeometry()
 	{
 		const msMesh &origMesh = m_pGeometry->m_Meshes[i];
 		msMesh &tempMesh = m_vTempMeshes[i];
-		const vector<RageModelVertex> &origVertices = origMesh.Vertices;
-		vector<RageModelVertex> &tempVertices = tempMesh.Vertices;
+		const std::vector<RageModelVertex> &origVertices = origMesh.Vertices;
+		std::vector<RageModelVertex> &tempVertices = tempMesh.Vertices;
 		for( unsigned j = 0; j < origVertices.size(); j++ )
 		{
 			RageVector3 &tempPos =			tempVertices[j].p;
@@ -731,7 +731,7 @@ int Model::GetNumStates() const
 {
 	int iMaxStates = 0;
 	for (msMaterial const &m : m_Materials)
-		iMaxStates = max( iMaxStates, m.diffuse.GetNumStates() );
+		iMaxStates = std::max( iMaxStates, m.diffuse.GetNumStates() );
 	return iMaxStates;
 }
 
@@ -749,7 +749,7 @@ void Model::RecalcAnimationLengthSeconds()
 	m_animation_length_seconds= 0;
 	for (msMaterial const &m : m_Materials)
 	{
-		m_animation_length_seconds= max(m_animation_length_seconds,
+		m_animation_length_seconds= std::max(m_animation_length_seconds,
 			m.diffuse.GetAnimationLengthSeconds());
 	}
 }

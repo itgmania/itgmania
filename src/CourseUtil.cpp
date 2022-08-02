@@ -87,19 +87,19 @@ static bool CompareCoursePointersByRanking( const Course* pCourse1, const Course
 	return iNum1 < iNum2;
 }
 
-void CourseUtil::SortCoursePointerArrayByDifficulty( vector<Course*> &vpCoursesInOut )
+void CourseUtil::SortCoursePointerArrayByDifficulty( std::vector<Course*> &vpCoursesInOut )
 {
 	sort( vpCoursesInOut.begin(), vpCoursesInOut.end(), CompareCoursePointersByDifficulty );
 }
 
-void CourseUtil::SortCoursePointerArrayByRanking( vector<Course*> &vpCoursesInOut )
+void CourseUtil::SortCoursePointerArrayByRanking( std::vector<Course*> &vpCoursesInOut )
 {
 	for( unsigned i=0; i<vpCoursesInOut.size(); i++ )
 		vpCoursesInOut[i]->UpdateCourseStats( GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StepsType );
 	sort( vpCoursesInOut.begin(), vpCoursesInOut.end(), CompareCoursePointersByRanking );
 }
 
-void CourseUtil::SortCoursePointerArrayByTotalDifficulty( vector<Course*> &vpCoursesInOut )
+void CourseUtil::SortCoursePointerArrayByTotalDifficulty( std::vector<Course*> &vpCoursesInOut )
 {
 	for( unsigned i=0; i<vpCoursesInOut.size(); i++ )
 		vpCoursesInOut[i]->UpdateCourseStats( GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StepsType );
@@ -115,7 +115,7 @@ RString GetSectionNameFromCourseAndSort( const Course *pCourse, SortOrder so )
 	// more code here
 }
 
-void SortCoursePointerArrayBySectionName( vector<Course*> &vpCoursesInOut, SortOrder so )
+void SortCoursePointerArrayBySectionName( std::vector<Course*> &vpCoursesInOut, SortOrder so )
 {
 	RString sOther = SORT_OTHER.GetValue();
 	for(unsigned i = 0; i < vpCoursesInOut.size(); ++i)
@@ -138,17 +138,17 @@ static bool CompareCoursePointersByType( const Course* pCourse1, const Course* p
 	return pCourse1->GetPlayMode() < pCourse2->GetPlayMode();
 }
 
-void CourseUtil::SortCoursePointerArrayByType( vector<Course*> &vpCoursesInOut )
+void CourseUtil::SortCoursePointerArrayByType( std::vector<Course*> &vpCoursesInOut )
 {
 	stable_sort( vpCoursesInOut.begin(), vpCoursesInOut.end(), CompareCoursePointersByType );
 }
 
-void CourseUtil::MoveRandomToEnd( vector<Course*> &vpCoursesInOut )
+void CourseUtil::MoveRandomToEnd( std::vector<Course*> &vpCoursesInOut )
 {
 	stable_sort( vpCoursesInOut.begin(), vpCoursesInOut.end(), CompareRandom );
 }
 
-static map<const Course*, RString> course_sort_val;
+static std::map<const Course*, RString> course_sort_val;
 
 bool CompareCoursePointersBySortValueAscending( const Course *pSong1, const Course *pSong2 )
 {
@@ -165,12 +165,12 @@ bool CompareCoursePointersByTitle( const Course *pCourse1, const Course *pCourse
 	return CompareCoursePointersByName( pCourse1, pCourse2 );
 }
 
-void CourseUtil::SortCoursePointerArrayByTitle( vector<Course*> &vpCoursesInOut )
+void CourseUtil::SortCoursePointerArrayByTitle( std::vector<Course*> &vpCoursesInOut )
 {
 	sort( vpCoursesInOut.begin(), vpCoursesInOut.end(), CompareCoursePointersByTitle );
 }
 
-void CourseUtil::SortCoursePointerArrayByAvgDifficulty( vector<Course*> &vpCoursesInOut )
+void CourseUtil::SortCoursePointerArrayByAvgDifficulty( std::vector<Course*> &vpCoursesInOut )
 {
 	RageTimer foo;
 	course_sort_val.clear();
@@ -185,7 +185,7 @@ void CourseUtil::SortCoursePointerArrayByAvgDifficulty( vector<Course*> &vpCours
 	stable_sort( vpCoursesInOut.begin(), vpCoursesInOut.end(), MovePlayersBestToEnd );
 }
 
-void CourseUtil::SortCoursePointerArrayByNumPlays( vector<Course*> &vpCoursesInOut, ProfileSlot slot, bool bDescending )
+void CourseUtil::SortCoursePointerArrayByNumPlays( std::vector<Course*> &vpCoursesInOut, ProfileSlot slot, bool bDescending )
 {
 	if( !PROFILEMAN->IsPersistentProfile(slot) )
 		return;	// nothing to do since we don't have data
@@ -193,7 +193,7 @@ void CourseUtil::SortCoursePointerArrayByNumPlays( vector<Course*> &vpCoursesInO
 	SortCoursePointerArrayByNumPlays( vpCoursesInOut, pProfile, bDescending );
 }
 
-void CourseUtil::SortCoursePointerArrayByNumPlays( vector<Course*> &vpCoursesInOut, const Profile* pProfile, bool bDescending )
+void CourseUtil::SortCoursePointerArrayByNumPlays( std::vector<Course*> &vpCoursesInOut, const Profile* pProfile, bool bDescending )
 {
 	ASSERT( pProfile != nullptr );
 	for(unsigned i = 0; i < vpCoursesInOut.size(); ++i)
@@ -202,7 +202,7 @@ void CourseUtil::SortCoursePointerArrayByNumPlays( vector<Course*> &vpCoursesInO
 	course_sort_val.clear();
 }
 
-void CourseUtil::SortByMostRecentlyPlayedForMachine( vector<Course*> &vpCoursesInOut )
+void CourseUtil::SortByMostRecentlyPlayedForMachine( std::vector<Course*> &vpCoursesInOut )
 {
 	Profile *pProfile = PROFILEMAN->GetMachineProfile();
 
@@ -275,7 +275,7 @@ void CourseUtil::AutogenNonstopFromGroup( const RString &sGroupName, Difficulty 
 		out.m_vEntries.pop_back();
 }
 
-void CourseUtil::AutogenOniFromArtist( const RString &sArtistName, RString sArtistNameTranslit, vector<Song*> aSongs, Difficulty dc, Course &out )
+void CourseUtil::AutogenOniFromArtist( const RString &sArtistName, RString sArtistNameTranslit, std::vector<Song*> aSongs, Difficulty dc, Course &out )
 {
 	out.m_bIsAutogen = true;
 	out.m_bRepeat = false;
@@ -325,7 +325,7 @@ void CourseUtil::WarnOnInvalidMods( RString sMods )
 {
 	PlayerOptions po;
 	SongOptions so;
-	vector<RString> vs;
+	std::vector<RString> vs;
 	split( sMods, ",", vs, true );
 	for (RString const &s : vs)
 	{
@@ -429,7 +429,7 @@ bool EditCourseUtil::ValidateEditCourseName( const RString &sAnswer, RString &sE
 	}
 
 	// Check for name conflicts
-	vector<Course*> vpCourses;
+	std::vector<Course*> vpCourses;
 	EditCourseUtil::GetAllEditCourses( vpCourses );
 	for (Course const *p : vpCourses)
 	{
@@ -467,9 +467,9 @@ void EditCourseUtil::PrepareForPlay()
 	PROFILEMAN->GetProfile(ProfileSlot_Player1)->m_iGoalSeconds = static_cast<int>(pCourse->m_fGoalSeconds);
 }
 
-void EditCourseUtil::GetAllEditCourses( vector<Course*> &vpCoursesOut )
+void EditCourseUtil::GetAllEditCourses( std::vector<Course*> &vpCoursesOut )
 {
-	vector<Course*> vpCoursesTemp;
+	std::vector<Course*> vpCoursesTemp;
 	SONGMAN->GetAllCourses( vpCoursesTemp, false );
 	for (Course *c : vpCoursesTemp)
 	{
@@ -489,15 +489,15 @@ void EditCourseUtil::LoadDefaults( Course &out )
 	for( int i=0; i<10000; i++ )
 	{
 		out.m_sMainTitle = ssprintf("Workout %d", i+1);
-		
-		vector<Course*> vpCourses;
+
+		std::vector<Course*> vpCourses;
 		EditCourseUtil::GetAllEditCourses( vpCourses );
 
 		if (std::any_of(vpCourses.begin(), vpCourses.end(), [&](Course const *p) { return out.m_sMainTitle == p->m_sMainTitle; }))
 			break;
 	}
 
-	vector<Song*> vpSongs;
+	std::vector<Song*> vpSongs;
 	SONGMAN->GetPreferredSortSongs( vpSongs );
 	for( int i=0; i<(int)vpSongs.size() && i<6; i++ )
 	{

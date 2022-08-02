@@ -80,11 +80,11 @@ static MusicPlaying *g_Playing;
 
 static RageThread MusicThread;
 
-vector<RString> g_SoundsToPlayOnce;
-vector<RString> g_SoundsToPlayOnceFromDir;
-vector<RString> g_SoundsToPlayOnceFromAnnouncer;
+std::vector<RString> g_SoundsToPlayOnce;
+std::vector<RString> g_SoundsToPlayOnceFromDir;
+std::vector<RString> g_SoundsToPlayOnceFromAnnouncer;
 // This should get updated to unordered_map when once C++11 is supported
-std::map<RString, vector<int>> g_DirSoundOrder;
+std::map<RString, std::vector<int>> g_DirSoundOrder;
 
 struct MusicToPlay
 {
@@ -100,7 +100,7 @@ struct MusicToPlay
 		HasTiming = false;
 	}
 };
-vector<MusicToPlay> g_MusicsToPlay;
+std::vector<MusicToPlay> g_MusicsToPlay;
 static GameSoundManager::PlayMusicParams g_FallbackMusicParams;
 
 static void StartMusic( MusicToPlay &ToPlay )
@@ -242,7 +242,7 @@ static void StartMusic( MusicToPlay &ToPlay )
 
 		const float fSecondToStartOn = g_Playing->m_Timing.GetElapsedTimeFromBeatNoOffset( fCurBeatToStartOn );
 		const float fMaximumDistance = 2;
-		const float fDistance = min( fSecondToStartOn - GAMESTATE->m_Position.m_fMusicSeconds, fMaximumDistance );
+		const float fDistance = std::min( fSecondToStartOn - GAMESTATE->m_Position.m_fMusicSeconds, fMaximumDistance );
 
 		when = GAMESTATE->m_Position.m_LastBeatUpdate + fDistance;
 	}
@@ -293,7 +293,7 @@ static void DoPlayOnceFromDir( RString sPath )
 	if( sPath.Right(1) != "/" )
 		sPath += "/";
 
-	vector<RString> arraySoundFiles;
+	std::vector<RString> arraySoundFiles;
 	GetDirListing( sPath + "*.mp3", arraySoundFiles );
 	GetDirListing( sPath + "*.wav", arraySoundFiles );
 	GetDirListing( sPath + "*.ogg", arraySoundFiles );
@@ -310,7 +310,7 @@ static void DoPlayOnceFromDir( RString sPath )
 	}
 
 	g_Mutex->Lock();
-	vector<int> &order = g_DirSoundOrder.insert({sPath, vector<int>()}).first->second;
+	std::vector<int> &order = g_DirSoundOrder.insert({sPath, std::vector<int>()}).first->second;
 	// If order is exhausted, repopulate and reshuffle
 	if (order.size() == 0)
 	{
@@ -340,13 +340,13 @@ static bool SoundWaiting()
 static void StartQueuedSounds()
 {
 	g_Mutex->Lock();
-	vector<RString> aSoundsToPlayOnce = g_SoundsToPlayOnce;
+	std::vector<RString> aSoundsToPlayOnce = g_SoundsToPlayOnce;
 	g_SoundsToPlayOnce.clear();
-	vector<RString> aSoundsToPlayOnceFromDir = g_SoundsToPlayOnceFromDir;
+	std::vector<RString> aSoundsToPlayOnceFromDir = g_SoundsToPlayOnceFromDir;
 	g_SoundsToPlayOnceFromDir.clear();
-	vector<RString> aSoundsToPlayOnceFromAnnouncer = g_SoundsToPlayOnceFromAnnouncer;
+	std::vector<RString> aSoundsToPlayOnceFromAnnouncer = g_SoundsToPlayOnceFromAnnouncer;
 	g_SoundsToPlayOnceFromAnnouncer.clear();
-	vector<MusicToPlay> aMusicsToPlay = g_MusicsToPlay;
+	std::vector<MusicToPlay> aMusicsToPlay = g_MusicsToPlay;
 	g_MusicsToPlay.clear();
 	g_Mutex->Unlock();
 
@@ -507,7 +507,7 @@ float GameSoundManager::GetFrameTimingAdjustment( float fDeltaTime )
 		return 0;
 
 	/* Subtract the extra delay. */
-	return min( -fExtraDelay, 0 );
+	return std::min( -fExtraDelay, 0.0f );
 }
 
 void GameSoundManager::Update( float fDeltaTime )
@@ -638,7 +638,7 @@ void GameSoundManager::Update( float fDeltaTime )
 		float fSongBeat = GAMESTATE->m_Position.m_fSongBeat;
 
 		int iRowNow = BeatToNoteRowNotRounded( fSongBeat );
-		iRowNow = max( 0, iRowNow );
+		iRowNow = std::max( 0, iRowNow );
 
 		int iBeatNow = iRowNow / ROWS_PER_BEAT;
 
@@ -900,7 +900,7 @@ LUA_REGISTER_CLASS(GameSoundManager);
 int LuaFunc_get_sound_driver_list(lua_State* L);
 int LuaFunc_get_sound_driver_list(lua_State* L)
 {
-	vector<RString> driver_names;
+	std::vector<RString> driver_names;
 	split(RageSoundDriver::GetDefaultSoundDriverList(), ",", driver_names, true);
 	lua_createtable(L, driver_names.size(), 0);
 	for(size_t n= 0; n < driver_names.size(); ++n)

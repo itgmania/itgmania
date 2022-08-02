@@ -88,7 +88,7 @@ void PlayerState::Update( float fDelta )
 	m_PlayerOptions.Update( fDelta );
 
 	if( m_fSecondsUntilAttacksPhasedOut > 0 )
-		m_fSecondsUntilAttacksPhasedOut = max( 0, m_fSecondsUntilAttacksPhasedOut - fDelta );
+		m_fSecondsUntilAttacksPhasedOut = std::max( 0.0f, m_fSecondsUntilAttacksPhasedOut - fDelta );
 }
 
 void PlayerState::SetPlayerNumber(PlayerNumber pn)
@@ -248,7 +248,7 @@ public:
 	static int GetPlayerOptionsArray( T* p, lua_State *L )
 	{
 		ModsLevel m = Enum::Check<ModsLevel>( L, 1 );
-		vector<RString> s;
+		std::vector<RString> s;
 		p->m_PlayerOptions.Get(m).GetMods(s);
 		LuaHelpers::CreateTableFromArray<RString>( s, L );
 		return 1;

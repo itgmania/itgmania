@@ -53,8 +53,8 @@ int RageFileObjMem::ReadInternal( void *buffer, size_t bytes )
 {
 	LockMut(m_pFile->m_Mutex);
 
-	m_iFilePos = min( m_iFilePos, GetFileSize() );
-	bytes = min( bytes, (size_t) GetFileSize() - m_iFilePos );
+	m_iFilePos = std::min( m_iFilePos, GetFileSize() );
+	bytes = std::min( bytes, (size_t) GetFileSize() - m_iFilePos );
 	if( bytes == 0 )
 		return 0;
 	memcpy( buffer, &m_pFile->m_sBuf[m_iFilePos], bytes );
@@ -166,7 +166,7 @@ bool RageFileDriverMem::Remove( const RString &sPath )
 
 	/* Unregister the file. */
 	FDB->DelFile( sPath );
-	vector<RageFileObjMemFile *>::iterator it = find( m_Files.begin(), m_Files.end(), pFile );
+	std::vector<RageFileObjMemFile*>::iterator it = find( m_Files.begin(), m_Files.end(), pFile );
 	ASSERT( it != m_Files.end() );
 	m_Files.erase( it );
 

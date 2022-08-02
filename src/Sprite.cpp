@@ -198,7 +198,7 @@ void Sprite::LoadFromNode( const XNode* pNode )
 		// overwriting the states that LoadFromTexture created.
 		// If the .sprite file doesn't define any states, leave
 		// frames and delays created during LoadFromTexture().
-		vector<State> aStates;
+		std::vector<State> aStates;
 
 		const XNode *pFrames = pNode->GetChild( "Frames" );
 		if( pFrames != nullptr )
@@ -471,7 +471,7 @@ void Sprite::Update( float fDelta )
 
 	// If the texture is a movie, decode frames.
 	if(!bSkipThisMovieUpdate && m_DecodeMovie)
-		m_pTexture->DecodeSeconds( max(0, fTimePassed) );
+		m_pTexture->DecodeSeconds( std::max(0.0f, fTimePassed) );
 
 	// update scrolling
 	if( m_fTexCoordVelocityX != 0 || m_fTexCoordVelocityY != 0 )
@@ -815,8 +815,8 @@ void Sprite::SetState( int iNewState )
 	if( iNewState != 0 && (iNewState < 0  ||  iNewState >= (int)m_States.size()) )
 	{
 		// Don't warn about number of states in "_blank" or "_missing".
-		if( !m_pTexture || (m_pTexture->GetID().filename.find("_blank") == string::npos &&
-			m_pTexture->GetID().filename.find("_missing") == string::npos) )
+		if( !m_pTexture || (m_pTexture->GetID().filename.find("_blank") == std::string::npos &&
+			m_pTexture->GetID().filename.find("_missing") == std::string::npos) )
 		{
 			RString sError;
 			if( m_pTexture )
@@ -986,7 +986,7 @@ void Sprite::ScaleToClipped( float fWidth, float fHeight )
 		if( bXDimNeedsToBeCropped ) // crop X
 		{
 			float fPercentageToCutOff = (this->GetZoomedWidth() - fWidth) / this->GetZoomedWidth();
-			fPercentageToCutOff = max( fPercentageToCutOff-fScaleFudgePercent, 0 );
+			fPercentageToCutOff = std::max( fPercentageToCutOff-fScaleFudgePercent, 0.0f );
 			float fPercentageToCutOffEachSide = fPercentageToCutOff / 2;
 
 			// generate a rectangle with new texture coordinates
@@ -1000,7 +1000,7 @@ void Sprite::ScaleToClipped( float fWidth, float fHeight )
 		else // crop Y
 		{
 			float fPercentageToCutOff = (this->GetZoomedHeight() - fHeight) / this->GetZoomedHeight();
-			fPercentageToCutOff = max( fPercentageToCutOff-fScaleFudgePercent, 0 );
+			fPercentageToCutOff = std::max( fPercentageToCutOff-fScaleFudgePercent, 0.0f );
 			float fPercentageToCutOffEachSide = fPercentageToCutOff / 2;
 
 			// generate a rectangle with new texture coordinates
@@ -1160,7 +1160,7 @@ public:
 		for( int i=0; i<8; ++i )
 		{
 			coords[i]= FArg(i+1);
-			if( isnan(coords[i]) )
+			if( std::isnan(coords[i]) )
 			{
 				coords[i]= 0.0f;
 			}
@@ -1199,7 +1199,7 @@ public:
 		{
 			luaL_error(L, "State properties must be in a table.");
 		}
-		vector<Sprite::State> new_states;
+		std::vector<Sprite::State> new_states;
 		size_t num_states= lua_objlen(L, 1);
 		if(num_states == 0)
 		{

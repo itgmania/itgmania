@@ -79,7 +79,7 @@ static Preference<bool> g_bDelayedScreenLoad( "DelayedScreenLoad", false );
 //static Preference<bool> g_bPruneFonts( "PruneFonts", true );
 
 // Screen registration
-static map<RString,CreateScreenFn>	*g_pmapRegistrees = nullptr;
+static std::map<RString,CreateScreenFn>	*g_pmapRegistrees = nullptr;
 
 /** @brief Utility functions for the ScreenManager. */
 namespace ScreenManagerUtil
@@ -105,13 +105,13 @@ namespace ScreenManagerUtil
 
 	Actor				*g_pSharedBGA;  // BGA object that's persistent between screens
 	RString				m_sPreviousTopScreen;
-	vector<LoadedScreen>	g_ScreenStack;  // bottommost to topmost
-	vector<Screen*>		g_OverlayScreens;
-	set<RString>		g_setGroupedScreens;
-	set<RString>		g_setPersistantScreens;
+	std::vector<LoadedScreen>	g_ScreenStack;  // bottommost to topmost
+	std::vector<Screen*>		g_OverlayScreens;
+	std::set<RString>		g_setGroupedScreens;
+	std::set<RString>		g_setPersistantScreens;
 
-	vector<LoadedScreen>    g_vPreparedScreens;
-	vector<Actor*>          g_vPreparedBackgrounds;
+	std::vector<LoadedScreen>    g_vPreparedScreens;
+	std::vector<Actor*>          g_vPreparedBackgrounds;
 
 	// Add a screen to g_ScreenStack. This is the only function that adds to g_ScreenStack.
 	void PushLoadedScreen( const LoadedScreen &ls )
@@ -150,7 +150,7 @@ namespace ScreenManagerUtil
 	 * return it in ls. */
 	bool GetPreppedScreen( const RString &sScreenName, LoadedScreen &ls )
 	{
-		for (vector<LoadedScreen>::iterator s = g_vPreparedScreens.begin(); s != g_vPreparedScreens.end(); ++s)
+		for (std::vector<LoadedScreen>::iterator s = g_vPreparedScreens.begin(); s != g_vPreparedScreens.end(); ++s)
 		{
 			if( s->m_pScreen->GetName() == sScreenName )
 			{
@@ -185,7 +185,7 @@ namespace ScreenManagerUtil
 	 * us (this excludes screens where m_bDeleteWhenDone is false).
 	 * Clear the prepared lists. The contents of apOut must be
 	 * freed by the caller. */
-	void GrabPreparedActors( vector<Actor*> &apOut )
+	void GrabPreparedActors( std::vector<Actor*> &apOut )
 	{
 		for (LoadedScreen const &s : g_vPreparedScreens)
 			if( s.m_bDeleteWhenDone )
@@ -203,7 +203,7 @@ namespace ScreenManagerUtil
 	 * reset the screen group and list of persistant screens. */
 	void DeletePreparedScreens()
 	{
-		vector<Actor*> apActorsToDelete;
+		std::vector<Actor*> apActorsToDelete;
 		GrabPreparedActors( apActorsToDelete );
 
 		BeforeDeleteScreen();
@@ -219,9 +219,9 @@ using namespace ScreenManagerUtil;
 RegisterScreenClass::RegisterScreenClass( const RString& sClassName, CreateScreenFn pfn )
 {
 	if( g_pmapRegistrees == nullptr )
-		g_pmapRegistrees = new map<RString,CreateScreenFn>;
+		g_pmapRegistrees = new std::map<RString, CreateScreenFn>;
 
-	map<RString,CreateScreenFn>::iterator iter = g_pmapRegistrees->find( sClassName );
+	std::map<RString, CreateScreenFn>::iterator iter = g_pmapRegistrees->find( sClassName );
 	ASSERT_M( iter == g_pmapRegistrees->end(), ssprintf("Screen class '%s' already registered.", sClassName.c_str()) );
 
 	(*g_pmapRegistrees)[sClassName] = pfn;
@@ -301,7 +301,7 @@ void ScreenManager::ReloadOverlayScreens()
 
 	// reload overlay screens
 	RString sOverlays = THEME->GetMetric( "Common","OverlayScreens" );
-	vector<RString> asOverlays;
+	std::vector<RString> asOverlays;
 	split( sOverlays, ",", asOverlays );
 	for( unsigned i=0; i<asOverlays.size(); i++ )
 	{
@@ -561,7 +561,7 @@ Screen* ScreenManager::MakeNewScreen( const RString &sScreenName )
 
 	RString sClassName = THEME->GetMetric( sScreenName,"Class" );
 
-	map<RString,CreateScreenFn>::iterator iter = g_pmapRegistrees->find( sClassName );
+	std::map<RString, CreateScreenFn>::iterator iter = g_pmapRegistrees->find( sClassName );
 	if( iter == g_pmapRegistrees->end() )
 	{
 		LuaHelpers::ReportScriptErrorFmt("Screen \"%s\" has an invalid class \"%s\".", sScreenName.c_str(), sClassName.c_str());
@@ -685,7 +685,7 @@ bool ScreenManager::ActivatePreparedScreenAndBackground( const RString &sScreenN
 		}
 		else
 		{
-			for (vector<Actor *>::iterator a = g_vPreparedBackgrounds.begin(); a != g_vPreparedBackgrounds.end(); ++a)
+			for (std::vector<Actor *>::iterator a = g_vPreparedBackgrounds.begin(); a != g_vPreparedBackgrounds.end(); ++a)
 			{
 				if( (*a)->GetName() == sNewBGA )
 				{
@@ -734,7 +734,7 @@ void ScreenManager::LoadDelayedScreen()
 	 * cleanup, so it doesn't get deleted by cleanup. */
 	bool bLoaded = ActivatePreparedScreenAndBackground( sScreenName );
 
-	vector<Actor*> apActorsToDelete;
+	std::vector<Actor*> apActorsToDelete;
 	if( g_setGroupedScreens.find(sScreenName) == g_setGroupedScreens.end() )
 	{
 		/* It's time to delete all old prepared screens. Depending on

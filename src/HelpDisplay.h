@@ -13,9 +13,12 @@ public:
 
 	virtual HelpDisplay *Copy() const;
 
-	void SetTips( const vector<RString> &arrayTips ) { SetTips( arrayTips, arrayTips ); }
-	void SetTips( const vector<RString> &arrayTips, const vector<RString> &arrayTipsAlt );
-	void GetTips( vector<RString> &arrayTipsOut, vector<RString> &arrayTipsAltOut ) const { arrayTipsOut = m_arrayTips; arrayTipsAltOut = m_arrayTipsAlt; }
+	void SetTips( const std::vector<RString> &arrayTips ) { SetTips( arrayTips, arrayTips ); }
+	void SetTips( const std::vector<RString> &arrayTips, const std::vector<RString> &arrayTipsAlt );
+	void GetTips( std::vector<RString> &arrayTipsOut, std::vector<RString> &arrayTipsAltOut ) const {
+		arrayTipsOut = m_arrayTips;
+		arrayTipsAltOut = m_arrayTipsAlt;
+	}
 	void SetSecsBetweenSwitches( float fSeconds ) { m_fSecsBetweenSwitches = m_fSecsUntilSwitch = fSeconds; }
 
 	virtual void Update( float fDeltaTime );
@@ -24,7 +27,7 @@ public:
 	virtual void PushSelf( lua_State *L );
 
 protected:
-	vector<RString> m_arrayTips, m_arrayTipsAlt;
+	std::vector<RString> m_arrayTips, m_arrayTipsAlt;
 	int m_iCurTipIndex;
 	
 	float m_fSecsBetweenSwitches;

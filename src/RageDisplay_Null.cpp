@@ -129,8 +129,8 @@ class RageCompiledGeometryNull : public RageCompiledGeometry
 {
 public:
 	
-	void Allocate( const vector<msMesh> & ) {}
-	void Change( const vector<msMesh> & ) {}
+	void Allocate( const std::vector<msMesh> & ) {}
+	void Change( const std::vector<msMesh> & ) {}
 	void Draw( int iMeshIndex ) const {}
 };
 

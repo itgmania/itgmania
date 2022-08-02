@@ -27,7 +27,7 @@ void ScreenOptionsEditProfile::BeginScreen()
 {
 	m_Original = *GAMESTATE->GetEditLocalProfile();
 
-	vector<OptionRowHandler*> vHands;
+	std::vector<OptionRowHandler*> vHands;
 
 	Profile *pProfile = PROFILEMAN->GetLocalProfile( GAMESTATE->m_sEditLocalProfileID );
 	ASSERT( pProfile != nullptr );
@@ -43,7 +43,7 @@ void ScreenOptionsEditProfile::BeginScreen()
 		def.m_bExportOnChange = true;
 		def.m_sName = "Character";
 		def.m_vsChoices.clear();
-		vector<Character*> vpCharacters;
+		std::vector<Character*> vpCharacters;
 		CHARMAN->GetCharacters( vpCharacters );
 		for (Character const *c : vpCharacters)
 			def.m_vsChoices.push_back( c->GetDisplayName() );
@@ -61,7 +61,7 @@ ScreenOptionsEditProfile::~ScreenOptionsEditProfile()
 
 }
 
-void ScreenOptionsEditProfile::ImportOptions( int iRow, const vector<PlayerNumber> &vpns )
+void ScreenOptionsEditProfile::ImportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
 {
 	Profile *pProfile = PROFILEMAN->GetLocalProfile( GAMESTATE->m_sEditLocalProfileID );
 	ASSERT( pProfile != nullptr );
@@ -75,7 +75,7 @@ void ScreenOptionsEditProfile::ImportOptions( int iRow, const vector<PlayerNumbe
 	}
 }
 
-void ScreenOptionsEditProfile::ExportOptions( int iRow, const vector<PlayerNumber> &vpns )
+void ScreenOptionsEditProfile::ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
 {
 	Profile *pProfile = PROFILEMAN->GetLocalProfile( GAMESTATE->m_sEditLocalProfileID );
 	ASSERT( pProfile != nullptr );

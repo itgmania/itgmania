@@ -1,7 +1,7 @@
 StepMania 5.1 to ITGmania Migration Guide
 =========================================
 
-This guide explains how to migrate from StepMania 5.1 to ITGmania without losing access to your settings and songs.
+This guide explains how to migrate from StepMania 5.1 to ITGmania without losing access to your settings and songs. If you don't have an existing SM5 setup and are starting from scratch, follow [First-Time Setup](./first_time_setup.md) instead.
 
 The steps are as follows:
 

@@ -33,7 +33,7 @@ void ActiveAttackList::Refresh()
 {
 	const AttackArray& attacks = m_pPlayerState->m_ActiveAttacks;
 
-	vector<RString> vsThemedMods;
+	std::vector<RString> vsThemedMods;
 	for( unsigned i=0; i<attacks.size(); i++ )
 	{
 		const Attack& attack = attacks[i];

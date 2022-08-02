@@ -16,9 +16,9 @@ protected:
 	bool InitDevice( int vid, int pid ) { return vid == 0x0d2f && pid == 0x0001; }
 
 public:
-	void GetButtonPresses( vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value, const RageTimer& now ) const;
+	void GetButtonPresses( std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value, const RageTimer& now ) const;
 	int AssignIDs( InputDevice startID );
-	void GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevices ) const;
+	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevices ) const;
 };
 
 #endif

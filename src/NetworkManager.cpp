@@ -132,7 +132,7 @@ bool NetworkManager::IsUrlAllowed(const std::string& url)
 	RString allowedHostsStr = this->httpAllowHosts.Get();
 	allowedHostsStr.MakeLower();
 
-	vector<RString> allowedHosts;
+	std::vector<RString> allowedHosts;
 	split(allowedHostsStr, ",", allowedHosts);
 
 	for (const auto& allowedHost : allowedHosts)
@@ -283,7 +283,7 @@ std::string NetworkManager::GetUserAgent()
 
 void NetworkManager::ClearDownloads()
 {
-	vector<RString> files;
+	std::vector<RString> files;
 	FILEMAN->GetDirListing("/Downloads/*", files, false, true);
 
 	for (const auto& file : files)

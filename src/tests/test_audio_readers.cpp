@@ -174,8 +174,8 @@ bool test_read( RageSoundReader *snd, float *expected_data, int frames )
 	if( bMatches )
 		return true;
 
-	dump( expected_data, min(100, samples) );
-	dump( buf, min(100, samples) );
+	dump( expected_data, std::min(100, samples) );
+	dump( buf, std::min(100, samples) );
 	return false;
 }
 
@@ -360,7 +360,7 @@ bool RunTests( RageSoundReader *snd, const TestFile &tf )
 		if( bFailed )
 		{
 			LOG->Trace("Got data:");
-			dump( InitialData, min( 16, 2*InitialDataSize ) );
+			dump( InitialData, std::min( 16, 2*InitialDataSize ) );
 		}
 
 		const int LaterOffsetFrames = one_second_frames/2; /* half second */

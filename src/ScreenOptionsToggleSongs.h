@@ -16,11 +16,11 @@ public:
 	virtual void BeginScreen();
 
 private:
-	virtual void ImportOptions( int row, const vector<PlayerNumber> &vpns );
-	virtual void ExportOptions( int row, const vector<PlayerNumber> &vpns );
+	virtual void ImportOptions( int row, const std::vector<PlayerNumber> &vpns );
+	virtual void ExportOptions( int row, const std::vector<PlayerNumber> &vpns );
 	virtual void ProcessMenuStart( const InputEventPlus &input );
 
-	vector<RString> m_asGroups;
+	std::vector<RString> m_asGroups;
 };
 
 class ScreenOptionsToggleSongsSubPage: public ScreenOptions
@@ -29,10 +29,10 @@ public:
 	virtual void BeginScreen();
 
 private:
-	virtual void ImportOptions( int row, const vector<PlayerNumber> &vpns );
-	virtual void ExportOptions( int row, const vector<PlayerNumber> &vpns );
+	virtual void ImportOptions( int row, const std::vector<PlayerNumber> &vpns );
+	virtual void ExportOptions( int row, const std::vector<PlayerNumber> &vpns );
 
-	vector<Song *> m_apSongs;
+	std::vector<Song*> m_apSongs;
 };
 
 #endif

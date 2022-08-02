@@ -347,9 +347,9 @@ int RageSurfaceUtils::FindSurfaceTraits( const RageSurface *img )
 				alpha = (val & img->format->Amask);
 
 			if( alpha == 0 )
-				alpha_type = max( alpha_type, NEEDS_BOOL_ALPHA );
+				alpha_type = std::max( alpha_type, NEEDS_BOOL_ALPHA );
 			else if( alpha != max_alpha )
-				alpha_type = max( alpha_type, NEEDS_FULL_ALPHA );
+				alpha_type = std::max( alpha_type, NEEDS_FULL_ALPHA );
 
 			row += img->format->BytesPerPixel;
 		}
@@ -652,8 +652,8 @@ void RageSurfaceUtils::Blit( const RageSurface *src, RageSurface *dst, int width
 		width = src->w;
 	if( height == -1 )
 		height = src->h;
-	width = min( src->w, dst->w );
-	height = min( src->h, dst->h );
+	width = std::min( src->w, dst->w );
+	height = std::min( src->h, dst->h );
 
 	/* Try each blit until we find one that works; run them in order of efficiency,
 	 * so we use the fastest blit possible. */
@@ -835,7 +835,7 @@ RageSurface *RageSurfaceUtils::LoadSurface( RString file )
  * This gives us a generic way to handle arbitrary 8-bit texture formats. */
 RageSurface *RageSurfaceUtils::PalettizeToGrayscale( const RageSurface *src_surf, int GrayBits, int AlphaBits )
 {
-	AlphaBits = min( AlphaBits, 8-src_surf->format->Loss[3] );
+	AlphaBits = std::min( AlphaBits, 8-src_surf->format->Loss[3] );
 
 	const int TotalBits = GrayBits + AlphaBits;
 	ASSERT( TotalBits <= 8 );

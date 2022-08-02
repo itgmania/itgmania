@@ -80,7 +80,7 @@ static bool ReadFile( const RString &sPath, RString &sBuf )
 	return true;
 }
 
-static void GetFileList( const RString &sPath, vector<RString> &out )
+static void GetFileList( const RString &sPath, std::vector<RString> &out )
 {
 	out.clear();
 
@@ -101,8 +101,8 @@ bool MemoryCardDriverThreaded_Linux::USBStorageDevicesChanged()
 	/* If a device is removed and reinserted, the inode of the /sys/block entry
 	 * will change. */
 	RString sDevicePath = "/sys/block/";
-	
-	vector<RString> asDevices;
+
+	std::vector<RString> asDevices;
 	GetFileList( sDevicePath, asDevices );
 
 	for( unsigned i = 0; i < asDevices.size(); ++i )
@@ -121,14 +121,14 @@ bool MemoryCardDriverThreaded_Linux::USBStorageDevicesChanged()
 	return bChanged;
 }
 
-void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices( vector<UsbStorageDevice>& vDevicesOut )
+void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices( std::vector<UsbStorageDevice>& vDevicesOut )
 {
 	LOG->Trace( "GetUSBStorageDevices" );
 	
 	vDevicesOut.clear();
 
 	{
-		vector<RString> asDevices;
+		std::vector<RString> asDevices;
 		RString sBlockDevicePath = "/sys/block/";
 		GetFileList( sBlockDevicePath, asDevices );
 
@@ -232,7 +232,7 @@ void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices( vector<UsbStorageDevi
 				 * the number of hops.
 				 */
 				szLink[iRet] = 0;
-				vector<RString> asBits;
+				std::vector<RString> asBits;
 				split( szLink, "/", asBits );
 
 				RString sHostPort = asBits[asBits.size()-1];
@@ -240,7 +240,7 @@ void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices( vector<UsbStorageDevi
 				{
 					/* Strip off the endpoint information after the colon. */
 					size_t pos = sHostPort.find(':');
-					if( pos != string::npos )
+					if( pos != std::string::npos )
 						sHostPort.erase( pos );
 					
 					/* sHostPort is eg. 2-2.1. */

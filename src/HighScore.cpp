@@ -324,7 +324,7 @@ void HighScoreList::AddHighScore( HighScore hs, int &iIndexOut, bool bIsMachine 
 		if( !bIsMachine )
 			ClampSize( bIsMachine );
 	}
-	HighGrade = min( hs.GetGrade(), HighGrade );
+	HighGrade = std::min( hs.GetGrade(), HighGrade );
 }
 
 void HighScoreList::IncrementPlayCount( DateTime _dtLastPlayed )
@@ -398,16 +398,16 @@ void HighScoreList::LoadFromNode( const XNode* pHighScoreList )
 			if( vHighScores.back().GetScore() == 0 )
 				vHighScores.pop_back();
 			else
-				HighGrade = min( vHighScores.back().GetGrade(), HighGrade );
+				HighGrade = std::min( vHighScores.back().GetGrade(), HighGrade );
 		}
 	}
 }
 
 void HighScoreList::RemoveAllButOneOfEachName()
 {
-	for (vector<HighScore>::iterator i = vHighScores.begin(); i != vHighScores.end(); ++i)
+	for (std::vector<HighScore>::iterator i = vHighScores.begin(); i != vHighScores.end(); ++i)
 	{
-		for( vector<HighScore>::iterator j = i+1; j != vHighScores.end(); j++ )
+		for( std::vector<HighScore>::iterator j = i+1; j != vHighScores.end(); j++ )
 		{
 			if( i->GetName() == j->GetName() )
 			{
@@ -437,7 +437,7 @@ void HighScoreList::MergeFromOtherHSL(HighScoreList& other, bool is_machine)
 	std::sort(vHighScores.begin(), vHighScores.end());
 	// Remove non-unique scores because they probably come from an accidental
 	// repeated merge. -Kyz
-	vector<HighScore>::iterator unique_end=
+	std::vector<HighScore>::iterator unique_end=
 		std::unique(vHighScores.begin(), vHighScores.end());
 	vHighScores.erase(unique_end, vHighScores.end());
 	// Reverse it because sort moved the lesser scores to the top.

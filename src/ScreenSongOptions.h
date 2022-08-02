@@ -9,7 +9,7 @@ public:
 	virtual void Init();
 
 private:
-	virtual void ExportOptions( int iRow, const vector<PlayerNumber> &vpns );
+	virtual void ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns );
 };
 
 #endif

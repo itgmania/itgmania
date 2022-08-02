@@ -12,7 +12,7 @@ public:
 	struct value_t
 	{
 		/** @brief The list of parameters. */
-		vector<RString> params;
+		std::vector<RString> params;
 		/** @brief Set up the parameters with default values. */
 		value_t(): params() {}
 		
@@ -94,7 +94,7 @@ private:
 	void AddValue();
 
 	/** @brief The list of values. */
-	vector<value_t> values;
+	std::vector<value_t> values;
 	/** @brief The error string. */
 	RString error;
 };

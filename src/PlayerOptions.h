@@ -119,8 +119,8 @@ public:
 	void ResetPrefs( ResetPrefsType type );
 	void ResetSavedPrefs() { ResetPrefs(saved_prefs); };
 	void ResetSavedPrefsInvalidForCourse() { ResetPrefs(saved_prefs_invalid_for_course); }
-	void GetMods( vector<RString> &AddTo, bool bForceNoteSkin = false ) const;
-	void GetLocalizedMods( vector<RString> &AddTo ) const;
+	void GetMods( std::vector<RString> &AddTo, bool bForceNoteSkin = false ) const;
+	void GetLocalizedMods( std::vector<RString> &AddTo ) const;
 	void FromString( const RString &sMultipleMods );
 	bool FromOneModString( const RString &sOneMod, RString &sErrorDetailOut );	// On error, return false and optionally set sErrorDetailOut
 	void ChooseRandomModifiers();

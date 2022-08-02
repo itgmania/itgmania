@@ -57,14 +57,14 @@ static LocalizedString MUTE_ACTIONS_ON ("ScreenDebugOverlay", "Mute actions on")
 static LocalizedString MUTE_ACTIONS_OFF ("ScreenDebugOverlay", "Mute actions off");
 
 class IDebugLine;
-static vector<IDebugLine*> *g_pvpSubscribers = nullptr;
+static std::vector<IDebugLine*> *g_pvpSubscribers = nullptr;
 class IDebugLine
 {
 public:
 	IDebugLine()
 	{ 
 		if( g_pvpSubscribers == nullptr )
-			g_pvpSubscribers = new vector<IDebugLine*>;
+			g_pvpSubscribers = new std::vector<IDebugLine*>;
 		g_pvpSubscribers->push_back( this );
 	}
 	virtual ~IDebugLine() { }
@@ -125,7 +125,7 @@ struct MapDebugToDI
 	DeviceInput toggleMute;
 	DeviceInput debugButton[MAX_DEBUG_LINES];
 	DeviceInput gameplayButton[MAX_DEBUG_LINES];
-	map<DeviceInput, int> pageButton;
+	std::map<DeviceInput, int> pageButton;
 	void Clear()
 	{
 		holdForDebug1.MakeInvalid();
@@ -160,9 +160,9 @@ static RString GetDebugButtonName( const IDebugLine *pLine )
 }
 
 template<typename U, typename V>
-static bool GetKeyFromMap( const map<U, V> &m, const V &val, U &key )
+static bool GetKeyFromMap( const std::map<U, V> &m, const V &val, U &key )
 {
-	for( typename map<U,V>::const_iterator iter = m.begin(); iter != m.end(); ++iter )
+	for( typename std::map<U, V>::const_iterator iter = m.begin(); iter != m.end(); ++iter )
 	{
 		if( iter->second == val )
 		{
@@ -227,7 +227,7 @@ void ScreenDebugOverlay::Init()
 		g_Mappings.pageButton[DeviceInput(DEVICE_KEYBOARD, KEY_F8)] = 3;
 	}
 
-	map<RString,int> iNextDebugButton;
+	std::map<RString, int> iNextDebugButton;
 	int iNextGameplayButton = 0;
 	for (IDebugLine *p : *g_pvpSubscribers)
 	{
@@ -265,7 +265,7 @@ void ScreenDebugOverlay::Init()
 	this->AddChild( &m_textHeader );
 
 	auto start = m_asPages.begin();
-	for (vector<RString>::const_iterator s = m_asPages.begin(); s != m_asPages.end(); ++s)
+	for (std::vector<RString>::const_iterator s = m_asPages.begin(); s != m_asPages.end(); ++s)
 	{
 		int iPage = s - start;
 
@@ -360,7 +360,7 @@ void ScreenDebugOverlay::Update( float fDeltaTime )
 void ScreenDebugOverlay::UpdateText()
 {
 	auto start = m_asPages.begin();
-	for (vector<RString>::const_iterator s = m_asPages.begin(); s != m_asPages.end(); ++s)
+	for (std::vector<RString>::const_iterator s = m_asPages.begin(); s != m_asPages.end(); ++s)
 	{
 		int iPage = s - start;
 		m_vptextPages[iPage]->PlayCommand( (iPage == m_iCurrentPage) ? "GainFocus" :  "LoseFocus" );
@@ -369,7 +369,7 @@ void ScreenDebugOverlay::UpdateText()
 	// todo: allow changing of various spacing/location things -aj
 	int iOffset = 0;
 	auto subStart = g_pvpSubscribers->begin();
-	for (vector<IDebugLine *>::const_iterator p = subStart; p != g_pvpSubscribers->end(); ++p)
+	for (std::vector<IDebugLine*>::const_iterator p = subStart; p != g_pvpSubscribers->end(); ++p)
 	{
 		RString sPageName = (*p)->GetPageName();
 
@@ -425,9 +425,9 @@ void ScreenDebugOverlay::UpdateText()
 }
 
 template<typename U, typename V>
-static bool GetValueFromMap( const map<U, V> &m, const U &key, V &val )
+static bool GetValueFromMap( const std::map<U, V> &m, const U &key, V &val )
 {
-	typename map<U, V>::const_iterator it = m.find(key);
+	typename std::map<U, V>::const_iterator it = m.find(key);
 	if( it == m.end() )
 		return false;
 	val = it->second;
@@ -470,7 +470,7 @@ bool ScreenDebugOverlay::Input( const InputEventPlus &input )
 	}
 
 	auto start = g_pvpSubscribers->begin();
-	for (vector<IDebugLine *>::const_iterator p = start; p != g_pvpSubscribers->end(); ++p)
+	for (std::vector<IDebugLine*>::const_iterator p = start; p != g_pvpSubscribers->end(); ++p)
 	{
 		RString sPageName = (*p)->GetPageName();
 
@@ -910,10 +910,10 @@ static void FillProfileStats( Profile *pProfile )
 		PREFSMAN->m_iMaxHighScoresPerListForMachine.Get():
 		PREFSMAN->m_iMaxHighScoresPerListForPlayer.Get();
 
-	vector<Song*> vpAllSongs = SONGMAN->GetAllSongs();
+	std::vector<Song*> vpAllSongs = SONGMAN->GetAllSongs();
 	for (Song const *pSong : vpAllSongs)
 	{
-		vector<Steps*> vpAllSteps = pSong->GetAllSteps();
+		std::vector<Steps*> vpAllSteps = pSong->GetAllSteps();
 		for (Steps const *pSteps : vpAllSteps)
 		{
 			if( rand() % 5 )
@@ -926,11 +926,11 @@ static void FillProfileStats( Profile *pProfile )
 		}
 	}
 
-	vector<Course*> vpAllCourses;
+	std::vector<Course*> vpAllCourses;
 	SONGMAN->GetAllCourses( vpAllCourses, true );
 	for (Course const *pCourse : vpAllCourses)
 	{
-		vector<Trail*> vpAllTrails;
+		std::vector<Trail*> vpAllTrails;
 		pCourse->GetAllTrails( vpAllTrails );
 		for (Trail const *pTrail : vpAllTrails)
 		{

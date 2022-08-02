@@ -14,7 +14,7 @@
 #include "Style.h"
 #include "Steps.h"
 
-static void GetStepsForSong( Song *pSong, vector<Steps*> &vpStepsOut )
+static void GetStepsForSong( Song *pSong, std::vector<Steps*> &vpStepsOut )
 {
 	SongUtil::GetSteps( pSong, vpStepsOut, GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->m_StepsType );
 	// xxx: If the StepsType isn't valid for the current game, this will cause
@@ -63,7 +63,7 @@ public:
 
 		return RELOAD_CHANGED_ALL;
 	}
-	virtual void ImportOption( OptionRow *pRow, const vector<PlayerNumber> &vpns, vector<bool> vbSelectedOut[NUM_PLAYERS] ) const 
+	virtual void ImportOption( OptionRow *pRow, const std::vector<PlayerNumber> &vpns, std::vector<bool> vbSelectedOut[NUM_PLAYERS] ) const
 	{
 		Trail *pTrail = GAMESTATE->m_pCurTrail[PLAYER_1];
 		Steps *pSteps;
@@ -73,7 +73,7 @@ public:
 				pSteps = pTrail->m_vEntries[ m_iEntryIndex ].pSteps;
 		}
 
-		vector<Steps*>::const_iterator iter = find( m_vpSteps.begin(), m_vpSteps.end(), pSteps );
+		std::vector<Steps*>::const_iterator iter = find( m_vpSteps.begin(), m_vpSteps.end(), pSteps );
 		if( iter == m_vpSteps.end() )
 		{
 			pRow->SetOneSharedSelection( 0 );
@@ -85,7 +85,7 @@ public:
 		}
 
 	}
-	virtual int ExportOption( const vector<PlayerNumber> &vpns, const vector<bool> vbSelected[NUM_PLAYERS] ) const 
+	virtual int ExportOption( const std::vector<PlayerNumber> &vpns, const std::vector<bool> vbSelected[NUM_PLAYERS] ) const
 	{
 		return 0;
 	}
@@ -96,7 +96,7 @@ public:
 
 protected:
 	int	m_iEntryIndex;
-	vector<Steps*> m_vpSteps;
+	std::vector<Steps*> m_vpSteps;
 };
 
 
@@ -169,7 +169,7 @@ static RString MakeMinutesString( int mins )
 
 void ScreenOptionsEditCourse::BeginScreen()
 {
-	vector<OptionRowHandler*> vHands;
+	std::vector<OptionRowHandler*> vHands;
 
 	FOREACH_ENUM( EditCourseRow, rowIndex )
 	{
@@ -252,7 +252,7 @@ ScreenOptionsEditCourse::~ScreenOptionsEditCourse()
 
 }
 
-void ScreenOptionsEditCourse::ImportOptions( int iRow, const vector<PlayerNumber> &vpns )
+void ScreenOptionsEditCourse::ImportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
 {
 	OptionRow &row = *m_pRows[iRow];
 	if( row.GetRowType() == OptionRow::RowType_Exit )
@@ -278,7 +278,7 @@ void ScreenOptionsEditCourse::ImportOptions( int iRow, const vector<PlayerNumber
 					if( iEntryIndex < (int)GAMESTATE->m_pCurCourse->m_vEntries.size() )
 						pSong = GAMESTATE->m_pCurCourse->m_vEntries[iEntryIndex].songID.ToSong();
 
-					vector<Song*>::iterator iter = find( m_vpSongs.begin(), m_vpSongs.end(), pSong );
+					std::vector<Song*>::iterator iter = find( m_vpSongs.begin(), m_vpSongs.end(), pSong );
 					if( iter == m_vpSongs.end() )
 						row.SetOneSharedSelection( 0 );
 					else
@@ -294,7 +294,7 @@ void ScreenOptionsEditCourse::ImportOptions( int iRow, const vector<PlayerNumber
 	}
 }
 
-void ScreenOptionsEditCourse::ExportOptions( int iRow, const vector<PlayerNumber> &vpns )
+void ScreenOptionsEditCourse::ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
 {
 	FOREACH_ENUM( EditCourseRow, i )
 	{
@@ -439,7 +439,7 @@ Steps *ScreenOptionsEditCourse::GetStepsForEntry( int iEntryIndex )
 	OptionRow &row = *m_pRows[iRow];
 	int index = row.GetOneSharedSelection();
 	Song *pSong = GetSongForEntry( iEntryIndex );
-	vector<Steps*> vpSteps;
+	std::vector<Steps*> vpSteps;
 	GetStepsForSong( pSong, vpSteps );
 	return vpSteps[index];
 }

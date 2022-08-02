@@ -9,7 +9,7 @@ REGISTER_SCREEN_CLASS( ScreenSelectLanguage );
 void ScreenSelectLanguage::Init()
 {
 	// fill m_aGameCommands before calling Init()
-	vector<RString> vs;
+	std::vector<RString> vs;
 	THEME->GetLanguages( vs );
 	SortRStringArray( vs, true );
 

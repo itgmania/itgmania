@@ -18,12 +18,12 @@ void RageVec3ClearBounds( RageVector3 &mins, RageVector3 &maxs )
 
 void RageVec3AddToBounds( const RageVector3 &p, RageVector3 &mins, RageVector3 &maxs )
 {
-	mins.x = min( mins.x, p.x );
-	mins.y = min( mins.y, p.y );
-	mins.z = min( mins.z, p.z );
-	maxs.x = max( maxs.x, p.x );
-	maxs.y = max( maxs.y, p.y );
-	maxs.z = max( maxs.z, p.z );
+	mins.x = std::min( mins.x, p.x );
+	mins.y = std::min( mins.y, p.y );
+	mins.z = std::min( mins.z, p.z );
+	maxs.x = std::max( maxs.x, p.x );
+	maxs.y = std::max( maxs.y, p.y );
+	maxs.z = std::max( maxs.z, p.z );
 }
 
 void RageVec2Normalize( RageVector2* pOut, const RageVector2* pV )
@@ -41,7 +41,7 @@ void RageVec3Normalize( RageVector3* pOut, const RageVector3* pV )
 	pOut->z = pV->z * scale;
 }
 
-void VectorFloatNormalize(vector<float>& v)
+void VectorFloatNormalize(std::vector<float>& v)
 {
 	ASSERT_M(v.size() == 3, "Can't normalize a non-3D vector.");
 	float scale = 1.0f / sqrtf(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);

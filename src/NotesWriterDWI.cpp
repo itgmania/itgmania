@@ -20,8 +20,8 @@ RString OptimizeDWIString( RString holds, RString taps );
  * @return the one singular character. */
 static char OptimizeDWIPair( char c1, char c2 )
 {
-	typedef pair<char,char> cpair;
-	static map< cpair, char > joins;
+	typedef std::pair<char, char> cpair;
+	static std::map<cpair, char> joins;
 	static bool Initialized = false;
 	if(!Initialized)
 	{
@@ -45,9 +45,9 @@ static char OptimizeDWIPair( char c1, char c2 )
 	}
 	
 	if( c1 > c2 )
-		swap( c1, c2 );
-	
-	map< cpair, char >::const_iterator it = joins.find( cpair(c1, c2) );
+		std::swap( c1, c2 );
+
+	std::map<cpair, char>::const_iterator it = joins.find( cpair(c1, c2) );
 	ASSERT( it != joins.end() );
 	
 	return it->second;
@@ -355,7 +355,7 @@ bool NotesWriterDWI::Write( RString sPath, const Song &out )
 	f.PutLine( ssprintf("#TITLE:%s;", DwiEscape(out.GetTranslitFullTitle()).c_str()) );
 	f.PutLine( ssprintf("#ARTIST:%s;", DwiEscape(out.GetTranslitArtist()).c_str()) );
 
-	const vector<TimingSegment *> &bpms = out.m_SongTiming.GetTimingSegments(SEGMENT_BPM);
+	const std::vector<TimingSegment *> &bpms = out.m_SongTiming.GetTimingSegments(SEGMENT_BPM);
 	ASSERT_M(bpms[0]->GetRow() == 0,
 			 ssprintf("The first BPM Segment must be defined at row 0, not %d!", bpms[0]->GetRow()) );
 	f.PutLine( ssprintf("#FILE:%s;", DwiEscape(out.m_sMusicFile).c_str()) );
@@ -384,7 +384,7 @@ bool NotesWriterDWI::Write( RString sPath, const Song &out )
 	}
 
 	// TODO: Also check for delays, add them as stops minus one row?
-	const vector<TimingSegment *> &stops = out.m_SongTiming.GetTimingSegments(SEGMENT_STOP);
+	const std::vector<TimingSegment *> &stops = out.m_SongTiming.GetTimingSegments(SEGMENT_STOP);
 	if( !stops.empty() )
 	{
 		f.Write( "#FREEZE:" );
@@ -413,7 +413,7 @@ bool NotesWriterDWI::Write( RString sPath, const Song &out )
 		f.PutLine( ";" );
 	}
 
-	const vector<Steps*>& vpSteps = out.GetAllSteps();
+	const std::vector<Steps*>& vpSteps = out.GetAllSteps();
 	for( unsigned i=0; i<vpSteps.size(); i++ ) 
 	{
 		const Steps* pSteps = vpSteps[i];

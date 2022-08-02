@@ -28,7 +28,7 @@ struct Item
 	unsigned int iCombo;
 	RString sModifier;
 };
-static vector<Item>	g_Items;
+static std::vector<Item>	g_Items;
 
 void ReloadItems()
 {

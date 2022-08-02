@@ -54,7 +54,7 @@ InputHandler_Win32_RTIO::~InputHandler_Win32_RTIO()
 	rtio_.Disconnect();
 }
 
-void InputHandler_Win32_RTIO::GetDevicesAndDescriptions(vector<InputDeviceInfo>& vDevicesOut)
+void InputHandler_Win32_RTIO::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut)
 {
 	// We use a joystick device so we can get automatic input mapping
 	vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_JOY1), "Raw Thrills I/O"));
@@ -404,7 +404,7 @@ void InputHandler_Win32_RTIO::HandleCounterAck(const std::string &msg)
 
 	if (ack_num == 0 && counter_state_ == COUNTER_STATE_RECV_2) {
 		counter_state_ = COUNTER_STATE_SEND_1;
-		counter_cycles_pending_ = max(counter_cycles_pending_ - 1, 0);
+		counter_cycles_pending_ = std::max(counter_cycles_pending_ - 1, 0);
 		return;
 	}
 
@@ -658,8 +658,8 @@ int SerialDevice::Read(char *buffer, int buffer_size)
 
 	ResetOverlapped(&read_overlapped_);
 
-	DWORD read_size = min(stat.cbInQue, (DWORD)read_buffer_size_);
-	read_size = min(read_size, (DWORD)buffer_size);
+	DWORD read_size = std::min(stat.cbInQue, (DWORD)read_buffer_size_);
+	read_size = std::min(read_size, (DWORD)buffer_size);
 
 	DWORD bytes_transferred;
 	if (!ReadFile(com_handle_, buffer, read_size, &bytes_transferred, &read_overlapped_)) {
@@ -682,7 +682,7 @@ int SerialDevice::Read(char *buffer, int buffer_size)
 int SerialDevice::Write(const char *buffer, int buffer_size)
 {
 	DWORD bytes_transferred;
-	DWORD write_size = min((DWORD)buffer_size, (DWORD)write_buffer_size_);
+	DWORD write_size = std::min((DWORD) buffer_size, (DWORD) write_buffer_size_);
 
 	ResetOverlapped(&write_overlapped_);
 

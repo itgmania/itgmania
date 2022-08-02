@@ -37,7 +37,7 @@ void FontPage::Load( const FontPageSettings &cfg )
 
 	RageTextureID ID2 = ID1;
 	// "arial 20 16x16 [main].png" => "arial 20 16x16 [main-stroke].png"
-	if( ID2.filename.find("]") != string::npos )
+	if( ID2.filename.find("]") != std::string::npos )
 	{
 		ID2.filename.Replace( "]", "-stroke]" );
 		if( IsAFile(ID2.filename) )
@@ -76,7 +76,7 @@ void FontPage::Load( const FontPageSettings &cfg )
 	}
 
 	// load character widths
-	vector<int> aiFrameWidths;
+	std::vector<int> aiFrameWidths;
 
 	int default_width = m_FontPageTextures.m_pTextureMain->GetSourceFrameWidth();
 	if( cfg.m_iDefaultWidth != -1 )
@@ -85,7 +85,7 @@ void FontPage::Load( const FontPageSettings &cfg )
 	// Assume each character is the width of the frame by default.
 	for( int i=0; i<m_FontPageTextures.m_pTextureMain->GetNumFrames(); i++ )
 	{
-		map<int,int>::const_iterator it = cfg.m_mapGlyphWidths.find(i);
+		std::map<int, int>::const_iterator it = cfg.m_mapGlyphWidths.find(i);
 		if( it != cfg.m_mapGlyphWidths.end() )
 			aiFrameWidths.push_back( it->second );
 		else
@@ -140,7 +140,7 @@ void FontPage::Load( const FontPageSettings &cfg )
 //		   m_sTexturePath.c_str(), height, baseline, baseline-height);
 }
 
-void FontPage::SetTextureCoords( const vector<int> &widths, int iAdvanceExtraPixels )
+void FontPage::SetTextureCoords( const std::vector<int> &widths, int iAdvanceExtraPixels )
 {
 	for(int i = 0; i < m_FontPageTextures.m_pTextureMain->GetNumFrames(); ++i)
 	{
@@ -207,8 +207,8 @@ void FontPage::SetExtraPixels( int iDrawExtraPixelsLeft, int iDrawExtraPixelsRig
 		/* Extra pixels to draw to the left and right.  We don't have to
 		 * worry about alignment here; fCharWidth is always even (by
 		 * SetTextureCoords) and iFrameWidth are almost always even. */
-		float fExtraLeft = min( float(iDrawExtraPixelsLeft), (iFrameWidth-fCharWidth)/2.0f );
-		float fExtraRight = min( float(iDrawExtraPixelsRight), (iFrameWidth-fCharWidth)/2.0f );
+		float fExtraLeft = std::min( float(iDrawExtraPixelsLeft), (iFrameWidth-fCharWidth)/2.0f );
+		float fExtraRight = std::min( float(iDrawExtraPixelsRight), (iFrameWidth-fCharWidth)/2.0f );
 
 		// Move left and expand right.
 		m_aGlyphs[i].m_TexRect.left -= fExtraLeft * m_FontPageTextures.m_pTextureMain->GetSourceToTexCoordsRatioX();
@@ -232,7 +232,7 @@ FontPage::~FontPage()
 	}
 }
 
-int Font::GetLineWidthInSourcePixels( const wstring &szLine ) const
+int Font::GetLineWidthInSourcePixels( const std::wstring &szLine ) const
 {
 	int iLineWidth = 0;
 
@@ -242,19 +242,19 @@ int Font::GetLineWidthInSourcePixels( const wstring &szLine ) const
 	return iLineWidth;
 }
 
-int Font::GetLineHeightInSourcePixels( const wstring &szLine ) const
+int Font::GetLineHeightInSourcePixels( const std::wstring &szLine ) const
 {
 	int iLineHeight = 0;
 
 	// The height of a line is the height of its tallest used font page.
 	for( unsigned i=0; i<szLine.size(); i++ )
-		iLineHeight = max( iLineHeight, GetGlyph(szLine[i]).m_pPage->m_iHeight );
+		iLineHeight = std::max( iLineHeight, GetGlyph(szLine[i]).m_pPage->m_iHeight );
 
 	return iLineHeight;
 }
 
 // width is a pointer so that we can return the used width through it.
-int Font::GetGlyphsThatFit(const wstring& line, int* width) const
+int Font::GetGlyphsThatFit(const std::wstring& line, int* width) const
 {
 	if(*width == 0)
 	{
@@ -310,7 +310,7 @@ void Font::AddPage( FontPage *m_pPage )
 {
 	m_apPages.push_back( m_pPage );
 
-	for( map<wchar_t,int>::const_iterator it = m_pPage->m_iCharToGlyphNo.begin();
+	for( std::map<wchar_t,int>::const_iterator it = m_pPage->m_iCharToGlyphNo.begin();
 		it != m_pPage->m_iCharToGlyphNo.end(); ++it )
 	{
 		m_iCharToGlyph[it->first] = &m_pPage->m_aGlyphs[it->second];
@@ -326,7 +326,7 @@ void Font::MergeFont(Font &f)
 	if( m_pDefault == nullptr )
 		m_pDefault = f.m_pDefault;
 
-	for(map<wchar_t,glyph*>::iterator it = f.m_iCharToGlyph.begin();
+	for(std::map<wchar_t,glyph*>::iterator it = f.m_iCharToGlyph.begin();
 		it != f.m_iCharToGlyph.end(); ++it)
 	{
 		m_iCharToGlyph[it->first] = it->second;
@@ -355,7 +355,7 @@ const glyph &Font::GetGlyph( wchar_t c ) const
 		return *m_iCharToGlyphCache[c];
 
 	// Try the regular character.
-	map<wchar_t,glyph*>::const_iterator it = m_iCharToGlyph.find(c);
+	std::map<wchar_t, glyph*>::const_iterator it = m_iCharToGlyph.find(c);
 
 	// If that's missing, use the default glyph.
 	if(it == m_iCharToGlyph.end()) 
@@ -367,9 +367,9 @@ const glyph &Font::GetGlyph( wchar_t c ) const
 	return *it->second;
 }
 
-bool Font::FontCompleteForString( const wstring &str ) const
+bool Font::FontCompleteForString( const std::wstring &str ) const
 {
-	map<wchar_t,glyph*>::const_iterator mapDefault = m_iCharToGlyph.find( FONT_DEFAULT_GLYPH );
+	std::map<wchar_t, glyph*>::const_iterator mapDefault = m_iCharToGlyph.find( FONT_DEFAULT_GLYPH );
 	if( mapDefault == m_iCharToGlyph.end() )
 		RageException::Throw( "The default glyph is missing from the font \"%s\".", path.c_str() );
 
@@ -389,7 +389,7 @@ void Font::CapsOnly()
 	 * a lowercase one. */
 	for( char c = 'A'; c <= 'Z'; ++c )
 	{
-		map<wchar_t,glyph*>::const_iterator it = m_iCharToGlyph.find(c);
+		std::map<wchar_t, glyph*>::const_iterator it = m_iCharToGlyph.find(c);
 
 		if(it == m_iCharToGlyph.end())
 			continue;
@@ -413,10 +413,10 @@ void Font::SetDefaultGlyph( FontPage *pPage )
 
 
 // Given the INI for a font, find all of the texture pages for the font.
-void Font::GetFontPaths( const RString &sFontIniPath, vector<RString> &asTexturePathsOut )
+void Font::GetFontPaths( const RString &sFontIniPath, std::vector<RString> &asTexturePathsOut )
 {
 	RString sPrefix = SetExtension( sFontIniPath, "" );
-	vector<RString> asFiles;
+	std::vector<RString> asFiles;
 	GetDirListing( sPrefix + "*", asFiles, false, true );
 
 	for( unsigned i = 0; i < asFiles.size(); ++i )
@@ -429,11 +429,11 @@ void Font::GetFontPaths( const RString &sFontIniPath, vector<RString> &asTexture
 RString Font::GetPageNameFromFileName( const RString &sFilename )
 {
 	size_t begin = sFilename.find_first_of( '[' );
-	if( begin == string::npos )
+	if( begin == std::string::npos )
 		return "main";
 
 	size_t end = sFilename.find_first_of( ']', begin );
-	if( end == string::npos )
+	if( end == std::string::npos )
 		return "main";
 
 	begin++;
@@ -545,7 +545,7 @@ void Font::LoadFontPageSettings( FontPageSettings &cfg, IniFile &ini, const RStr
 				 * Map hiragana to 0-84:
 				 * range Unicode #3041-3094=0
 				 */
-				vector<RString> asMatches;
+				std::vector<RString> asMatches;
 				static Regex parse("^RANGE ([A-Z0-9\\-]+)( ?#([0-9A-F]+)-([0-9A-F]+))?$");
 				bool match = parse.Compare( sName, asMatches );
 				ASSERT( asMatches.size() == 4 ); // 4 parens
@@ -617,7 +617,7 @@ void Font::LoadFontPageSettings( FontPageSettings &cfg, IniFile &ini, const RStr
 				}
 
 				// Decode the string.
-				const wstring wdata( RStringToWstring(pValue->GetValue<RString>()) );
+				const std::wstring wdata( RStringToWstring(pValue->GetValue<RString>()) );
 
 				if(int(wdata.size()) > num_frames_wide)
 				{
@@ -720,7 +720,7 @@ RString FontPageSettings::MapRange( RString sMapping, int iMapOffset, int iGlyph
 	return RString();
 }
 
-static vector<RString> LoadStack;
+static std::vector<RString> LoadStack;
 
 /* A font set is a set of files, eg:
  *
@@ -772,7 +772,7 @@ void Font::Load( const RString &sIniPath, RString sChars )
 	m_sChars = sChars;
 
 	// Get the filenames associated with this font.
-	vector<RString> asTexturePaths;
+	std::vector<RString> asTexturePaths;
 	GetFontPaths( sIniPath, asTexturePaths );
 
 	bool bCapitalsOnly = false;
@@ -792,7 +792,7 @@ void Font::Load( const RString &sIniPath, RString sChars )
 	}
 
 	{
-		vector<RString> ImportList;
+		std::vector<RString> ImportList;
 
 		bool bIsTopLevelFont = LoadStack.size() == 1;
 
@@ -838,7 +838,7 @@ void Font::Load( const RString &sIniPath, RString sChars )
 		RString sPagename = GetPageNameFromFileName( sTexturePath );
 
 		// Ignore stroke textures
-		if( sTexturePath.find("-stroke") != string::npos )
+		if( sTexturePath.find("-stroke") != std::string::npos )
 			continue;
 
 		// Create this down here so it doesn't leak if the continue gets triggered.
@@ -855,7 +855,7 @@ void Font::Load( const RString &sIniPath, RString sChars )
 		/* Expect at least as many frames as we have premapped characters. */
 		/* Make sure that we don't map characters to frames we don't actually
 		 * have.  This can happen if the font is too small for an sChars. */
-		for(map<wchar_t,int>::iterator it = pPage->m_iCharToGlyphNo.begin();
+		for(std::map<wchar_t,int>::iterator it = pPage->m_iCharToGlyphNo.begin();
 			it != pPage->m_iCharToGlyphNo.end(); ++it)
 		{
 			if( it->second < pPage->m_FontPageTextures.m_pTextureMain->GetNumFrames() )
@@ -892,7 +892,7 @@ void Font::Load( const RString &sIniPath, RString sChars )
 	{
 		// Cache ASCII glyphs.
 		ZERO( m_iCharToGlyphCache );
-		map<wchar_t,glyph*>::iterator it;
+		std::map<wchar_t,glyph*>::iterator it;
 		for( it = m_iCharToGlyph.begin(); it != m_iCharToGlyph.end(); ++it )
 			if( it->first < (int) ARRAYLEN(m_iCharToGlyphCache) )
 				m_iCharToGlyphCache[it->first] = it->second;

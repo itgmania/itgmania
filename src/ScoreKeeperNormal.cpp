@@ -32,9 +32,9 @@ ScoreKeeperNormal::ScoreKeeperNormal( PlayerState *pPlayerState, PlayerStageStat
 }
 
 void ScoreKeeperNormal::Load(
-		const vector<Song*>& apSongs,
-		const vector<Steps*>& apSteps,
-		const vector<AttackArray> &asModifiers )
+		const std::vector<Song*>& apSongs,
+		const std::vector<Steps*>& apSteps,
+		const std::vector<AttackArray> &asModifiers )
 {
 	m_apSteps = apSteps;
 	ASSERT( apSongs.size() == apSteps.size() );
@@ -451,9 +451,9 @@ void ScoreKeeperNormal::HandleComboInternal( int iNumHitContinueCombo, int iNumH
 	// Regular combo
 	if( m_ComboIsPerRow )
 	{
-		iNumHitContinueCombo = min( iNumHitContinueCombo, 1 );
-		iNumHitMaintainCombo = min( iNumHitMaintainCombo, 1 );
-		iNumBreakCombo = min( iNumBreakCombo, 1 );
+		iNumHitContinueCombo = std::min( iNumHitContinueCombo, 1 );
+		iNumHitMaintainCombo = std::min( iNumHitMaintainCombo, 1 );
+		iNumBreakCombo = std::min( iNumBreakCombo, 1 );
 	}
 
 	if( iNumHitContinueCombo > 0 || iNumHitMaintainCombo > 0 )
@@ -478,7 +478,7 @@ void ScoreKeeperNormal::HandleRowComboInternal( TapNoteScore tns, int iNumTapsIn
 {
 	if( m_ComboIsPerRow )
 	{
-		iNumTapsInRow = min( iNumTapsInRow, 1);
+		iNumTapsInRow = std::min( iNumTapsInRow, 1);
 	}
 	TimingData &td = *GAMESTATE->m_pCurSteps[m_pPlayerState->m_PlayerNumber]->GetTimingData();
 	if ( tns >= m_MinScoreToContinueCombo )
@@ -648,7 +648,7 @@ int ScoreKeeperNormal::GetPossibleDancePoints( NoteData* ndPre, NoteData* ndPost
 	/* The logic here is that if you use a modifier that adds notes, you should
 	 * have to hit the new notes to get a high grade. However, if you use one
 	 * that removes notes, they should simply be counted as misses. */
-	return max(
+	return std::max(
 		GetPossibleDancePoints(ndPre, td, fSongSeconds),
 		GetPossibleDancePoints(ndPost, td, fSongSeconds) );
 }
@@ -676,7 +676,7 @@ int ScoreKeeperNormal::GetPossibleGradePoints( NoteData* ndPre, NoteData* ndPost
 	/* The logic here is that if you use a modifier that adds notes, you should
 	 * have to hit the new notes to get a high grade. However, if you use one
 	 * that removes notes, they should simply be counted as misses. */
-	return max(
+	return std::max(
 		GetPossibleGradePoints( ndPre, td, fSongSeconds ),
 		GetPossibleGradePoints( ndPost, td, fSongSeconds ) );
 }
@@ -723,7 +723,7 @@ int ScoreKeeperNormal::TapNoteScoreToDancePoints( TapNoteScore tns, bool bBeginn
 	case TNS_CheckpointMiss:iWeight = g_iPercentScoreWeight.GetValue(SE_CheckpointMiss);	break;
 	}
 	if( bBeginner && PREFSMAN->m_bMercifulBeginner )
-		iWeight = max( 0, iWeight );
+		iWeight = std::max( 0, iWeight );
 	return iWeight;
 }
 
@@ -739,7 +739,7 @@ int ScoreKeeperNormal::HoldNoteScoreToDancePoints( HoldNoteScore hns, bool bBegi
 	case HNS_Missed:	iWeight = g_iPercentScoreWeight.GetValue(SE_Missed);	break;
 	}
 	if( bBeginner && PREFSMAN->m_bMercifulBeginner )
-		iWeight = max( 0, iWeight );
+		iWeight = std::max( 0, iWeight );
 	return iWeight;
 }
 
@@ -767,7 +767,7 @@ int ScoreKeeperNormal::TapNoteScoreToGradePoints( TapNoteScore tns, bool bBeginn
 	case TNS_CheckpointMiss:iWeight = g_iGradeWeight.GetValue(SE_CheckpointMiss);	break;
 	}
 	if( bBeginner && PREFSMAN->m_bMercifulBeginner )
-		iWeight = max( 0, iWeight );
+		iWeight = std::max( 0, iWeight );
 	return iWeight;
 }
 
@@ -783,7 +783,7 @@ int ScoreKeeperNormal::HoldNoteScoreToGradePoints( HoldNoteScore hns, bool bBegi
 	case HNS_Missed:	iWeight = g_iGradeWeight.GetValue(SE_Missed);		break;
 	}
 	if( bBeginner && PREFSMAN->m_bMercifulBeginner )
-		iWeight = max( 0, iWeight );
+		iWeight = std::max( 0, iWeight );
 	return iWeight;
 }
 

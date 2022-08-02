@@ -24,7 +24,7 @@ void InputHandler_MacOSX_HID::QueueCallback( void *target, int result, void *ref
 	IOHIDEventStruct event;
 	AbsoluteTime zeroTime = { 0, 0 };
 	HIDDevice *dev = static_cast<HIDDevice*>(refcon);
-	vector<DeviceInput> vPresses;
+	std::vector<DeviceInput> vPresses;
 
 	while( (result = CALL(queue, getNextEvent, &event, zeroTime, 0)) == kIOReturnSuccess )
 	{
@@ -271,7 +271,7 @@ InputHandler_MacOSX_HID::InputHandler_MacOSX_HID() : m_Sem( "Input thread starte
 	}
 }
 
-void InputHandler_MacOSX_HID::GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevices )
+void InputHandler_MacOSX_HID::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevices )
 {
 	for (HIDDevice *i : m_vDevices)
 		i->GetDevicesAndDescriptions( vDevices );

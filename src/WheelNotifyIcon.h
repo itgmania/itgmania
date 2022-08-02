@@ -37,7 +37,7 @@ protected:
 	};
 
 	/** @brief the list of Icons to show. */
-	vector<Icons> m_vIconsToShow;
+	std::vector<Icons> m_vIconsToShow;
 };
 
 #endif

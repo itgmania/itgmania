@@ -66,7 +66,7 @@ public:
 	~InputHandler_Win32_ddrio();
 
 	RString GetDeviceSpecificInputString( const DeviceInput &di );
-	void GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevicesOut );
+	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut );
 
 private:
 	RageThread InputThread;

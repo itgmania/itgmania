@@ -9,7 +9,7 @@
 
 REGISTER_SCREEN_CLASS( ScreenGameplayShared );
 
-void ScreenGameplayShared::FillPlayerInfo( vector<PlayerInfo> &vPlayerInfoOut )
+void ScreenGameplayShared::FillPlayerInfo( std::vector<PlayerInfo> &vPlayerInfoOut )
 {
 	const PlayerNumber master = GAMESTATE->GetMasterPlayerNumber();
 	const PlayerNumber other = (master == PLAYER_1? PLAYER_2:PLAYER_1);

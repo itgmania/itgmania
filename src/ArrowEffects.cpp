@@ -295,8 +295,8 @@ void ArrowEffects::Init(PlayerNumber pn)
 				// Using the x offset when the dimension might be y or z feels so
 				// wrong, but it provides min and max values when otherwise the
 				// limits would just be zero, which would make it do nothing. -Kyz
-				data.m_MinTornado[dimension][col_id] = min(pCols[i].fXOffset, data.m_MinTornado[dimension][col_id]);
-				data.m_MaxTornado[dimension][col_id] = max(pCols[i].fXOffset, data.m_MaxTornado[dimension][col_id]);
+				data.m_MinTornado[dimension][col_id] = std::min(pCols[i].fXOffset, data.m_MinTornado[dimension][col_id]);
+				data.m_MaxTornado[dimension][col_id] = std::max(pCols[i].fXOffset, data.m_MaxTornado[dimension][col_id]);
 			}
 		}
 
@@ -433,7 +433,7 @@ void ArrowEffects::SetCurrentOptions(const PlayerOptions* options)
 static float GetDisplayedBeat( const PlayerState* pPlayerState, float beat )
 {
 	// do a binary search here
-	const vector<CacheDisplayedBeat> &data = pPlayerState->m_CacheDisplayedBeat;
+	const std::vector<CacheDisplayedBeat> &data = pPlayerState->m_CacheDisplayedBeat;
 	int max = data.size() - 1;
 	int l = 0, r = max;
 	while( l <= r )
@@ -856,7 +856,7 @@ float ArrowEffects::GetXPos( const PlayerState* pPlayerState, int iColNum, float
 	{
 		// Allow Tiny to pull tracks together, but not to push them apart.
 		float fTinyPercent = fEffects[PlayerOptions::EFFECT_TINY];
-		fTinyPercent = min( powf(TINY_PERCENT_BASE, fTinyPercent), (float)TINY_PERCENT_GATE );
+		fTinyPercent = std::min( powf(TINY_PERCENT_BASE, fTinyPercent), (float)TINY_PERCENT_GATE );
 		fPixelOffsetFromCenter *= fTinyPercent;
 	}
 
@@ -1120,7 +1120,7 @@ float ArrowGetPercentVisible(float fYPosWithoutReverse, int iCol, float fYOffset
 			* fAppearances[PlayerOptions::APPEARANCE_RANDOMVANISH];
 	}
 
-	return clamp( 1+fVisibleAdjust, 0, 1 );
+	return clamp(1 + fVisibleAdjust, 0.0f, 1.0f);
 }
 
 float ArrowEffects::GetAlpha( const PlayerState* pPlayerState, int iCol, float fYOffset, float fPercentFadeToFail, float fYReverseOffsetPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar)

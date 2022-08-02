@@ -121,7 +121,7 @@ int RageFileDriverReadAhead::ReadInternal( void *pBuffer, size_t iBytes )
 	if( m_bReadAheadNeeded && m_iFilePos < (int) m_sBuffer.size() )
 	{
 		// If we can serve data out of the buffer, use it.
-		iRet = min( iBytes, m_sBuffer.size() - m_iFilePos );
+		iRet = std::min( iBytes, m_sBuffer.size() - m_iFilePos );
 		memcpy( pBuffer, m_sBuffer.data() + m_iFilePos, iRet );
 	}
 	else

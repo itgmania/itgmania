@@ -67,7 +67,7 @@ struct EventDevice
 	DeviceButton aiAbsMappingLow[ABS_MAX];
 };
 
-static vector<EventDevice *> g_apEventDevices;
+static std::vector<EventDevice *> g_apEventDevices;
 
 static bool BitIsSet( const uint8_t *pArray, uint32_t iBit )
 {
@@ -153,7 +153,7 @@ bool EventDevice::Open( RString sFile, InputDevice dev )
 		LOG->Warn( "ioctl(EV_MAX): %s", strerror(errno) );
 
 	{
-		vector<RString> setEventTypes;
+		std::vector<RString> setEventTypes;
 
 		if( BitIsSet(iEventTypes, EV_SYN) )		setEventTypes.push_back( "syn" );
 		if( BitIsSet(iEventTypes, EV_KEY) )		setEventTypes.push_back( "key" );
@@ -347,7 +347,7 @@ void InputHandler_Linux_Event::InputThread()
 				continue;
 
 			FD_SET( iFD, &fdset );
-			iMaxFD = max( iMaxFD, iFD );
+			iMaxFD = std::max( iMaxFD, iFD );
 		}
 
 		if( iMaxFD == -1 )
@@ -414,8 +414,8 @@ void InputHandler_Linux_Event::InputThread()
 				}
 				else
 				{
-				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, neg, max(-l,0), now) );
-				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, pos, max(+l,0), now) );
+				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, neg, std::max(-l, 0.0f), now) );
+				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, pos, std::max(+l, 0.0f), now) );
 				}
 				break;
 			}
@@ -428,7 +428,7 @@ void InputHandler_Linux_Event::InputThread()
 	InputHandler::UpdateTimer();
 }
 
-void InputHandler_Linux_Event::GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevicesOut )
+void InputHandler_Linux_Event::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut )
 {
 	for( unsigned i = 0; i < g_apEventDevices.size(); ++i )
 	{

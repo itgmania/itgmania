@@ -11,7 +11,7 @@ void PumpDevice::Open()
 	AddElementToQueue( IOHIDElementCookie(8) );
 }
 
-void PumpDevice::GetButtonPresses( vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value, const RageTimer& now ) const
+void PumpDevice::GetButtonPresses( std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value, const RageTimer& now ) const
 {
 	DeviceButton db1 = DeviceButton_Invalid;
 	DeviceButton db2 = DeviceButton_Invalid;
@@ -58,7 +58,7 @@ int PumpDevice::AssignIDs( InputDevice startID )
 	return 1;
 }
 
-void PumpDevice::GetDevicesAndDescriptions( vector<InputDeviceInfo>& vDevices ) const
+void PumpDevice::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevices ) const
 {
 	vDevices.push_back( InputDeviceInfo(m_Id, "Pump USB") );
 }

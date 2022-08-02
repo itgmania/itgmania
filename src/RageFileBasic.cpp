@@ -108,7 +108,7 @@ int RageFileObj::Read( void *pBuffer, size_t iBytes )
 		if( m_pReadBuffer != nullptr && m_iReadBufAvail )
 		{
 			/* Copy data out of the buffer first. */
-			int iFromBuffer = min( (int) iBytes, m_iReadBufAvail );
+			int iFromBuffer = std::min( (int) iBytes, m_iReadBufAvail );
 			memcpy( pBuffer, m_pReadBuf, iFromBuffer );
 			if( m_bCRC32Enabled )
 				CRC32( m_iCRC32, pBuffer, iFromBuffer );
@@ -169,7 +169,7 @@ int RageFileObj::Read( RString &sBuffer, int iBytes )
 	{
 		int ToRead = sizeof(buf);
 		if( iBytes != -1 )
-			ToRead  = min( ToRead, iBytes-iRet );
+			ToRead  = std::min( ToRead, iBytes-iRet );
 
 		const int iGot = Read( buf, ToRead );
 		if( iGot == 0 )

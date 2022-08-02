@@ -9,8 +9,6 @@
 #include <cstdio>
 #include <cstring>
 
-using namespace std;
-
 // In so many words, ceil(n/6).
 #define NUMBER_OF_SEXTETS_FOR_BIT_COUNT(n) (((n) + 5) / 6)
 
@@ -180,7 +178,7 @@ class InputHandler_SextetStream::Impl
 			}
 		}
 
-		void GetDevicesAndDescriptions(vector<InputDeviceInfo>& vDevicesOut)
+		void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut)
 		{
 			vDevicesOut.push_back(InputDeviceInfo(FIRST_DEVICE, "SextetStream"));
 		}
@@ -292,7 +290,7 @@ class InputHandler_SextetStream::Impl
 		}
 };
 
-void InputHandler_SextetStream::GetDevicesAndDescriptions(vector<InputDeviceInfo>& vDevicesOut)
+void InputHandler_SextetStream::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut)
 {
 	if(_impl != nullptr) {
 		_impl->GetDevicesAndDescriptions(vDevicesOut);
