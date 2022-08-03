@@ -4,6 +4,7 @@
 #define RAGE_UTIL_H
 
 #include <map>
+#include <random>
 #include <vector>
 #include <sstream>
 #include "global.h"
@@ -230,36 +231,15 @@ inline uint32_t Swap24LE( uint32_t n ) { return Swap24( n ); }
 inline uint16_t Swap16LE( uint16_t n ) { return Swap16( n ); }
 #endif
 
-struct MersenneTwister
+class MersenneTwister : public std::mt19937
 {
-	MersenneTwister( int iSeed = 0 ); // 0 = time()
-	int operator()(); // returns [0,2^31-1]
-	int operator()( int n ) // returns [0,n)
-	{
-		return (*this)() % n;
-	}
-
-	void Reset( int iSeed );
-
-private:
-	static int Temper( int iValue );
-	void GenerateValues();
-
-	int m_Values[624];
-	int m_iNext;
+public:
+	MersenneTwister( int iSeed = 0 ) : std::mt19937( iSeed == 0 ? time( nullptr ) : iSeed ) {}
 };
+
 typedef MersenneTwister RandomGen;
 
 extern RandomGen g_RandomNumberGenerator;
-
-/**
- * @brief Generate a random float between 0 inclusive and 1 exclusive.
- * @return the random float.
- */
-inline float RandomFloat()
-{
-	return g_RandomNumberGenerator() / 2147483648.0f;
-}
 
 /**
  * @brief Return a float between the low and high values.
@@ -269,19 +249,30 @@ inline float RandomFloat()
  */
 inline float RandomFloat( float fLow, float fHigh )
 {
-	return SCALE( RandomFloat(), 0.0f, 1.0f, fLow, fHigh );
+	std::uniform_real_distribution<> dist( fLow, fHigh );
+	return dist( g_RandomNumberGenerator );
+}
+
+/**
+ * @brief Generate a random float between 0 inclusive and 1 exclusive.
+ * @return the random float.
+ */
+inline float RandomFloat()
+{
+	return RandomFloat( 0, 1 );
 }
 
 // Returns an integer between nLow and nHigh inclusive
 inline int RandomInt( int nLow, int nHigh )
 {
-	return int( g_RandomNumberGenerator(nHigh - nLow + 1) + nLow );
+	std::uniform_int_distribution<> dist( nLow, nHigh );
+	return dist( g_RandomNumberGenerator );
 }
 
 // Returns an integer between 0 and n-1 inclusive (replacement for rand() % n).
 inline int RandomInt( int n )
 {
-	return int( g_RandomNumberGenerator(n) );
+	return RandomInt( 0, n - 1 );
 }
 
 

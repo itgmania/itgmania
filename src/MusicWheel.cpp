@@ -1333,7 +1333,7 @@ void MusicWheel::StartRandom()
 	{
 		// Shuffle and use the roulette wheel.
 		RandomGen rnd;
-		random_shuffle( getWheelItemsData(SORT_ROULETTE).begin(), getWheelItemsData(SORT_ROULETTE).end(), rnd );
+		shuffle( getWheelItemsData(SORT_ROULETTE).begin(), getWheelItemsData(SORT_ROULETTE).end(), rnd );
 		GAMESTATE->m_SortOrder.Set( SORT_ROULETTE );
 	}
 	else
