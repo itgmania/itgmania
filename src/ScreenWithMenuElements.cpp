@@ -52,7 +52,7 @@ void ScreenWithMenuElements::Init()
 		}
 	}
 
-	if( TIMER_SECONDS != -1 )
+	if( TIMER_SECONDS != -1.0f )
 	{
 		ASSERT( m_MenuTimer == nullptr );	// don't load twice
 		m_MenuTimer = new MenuTimer;

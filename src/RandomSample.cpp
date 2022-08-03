@@ -56,7 +56,7 @@ bool RandomSample::LoadSoundDir( RString sDir, int iMaxToLoad )
 	GetDirListing( sDir + "*.ogg", arraySoundFiles );
 	GetDirListing( sDir + "*.wav", arraySoundFiles );
 
-	std::random_shuffle( arraySoundFiles.begin(), arraySoundFiles.end() );
+	std::shuffle( arraySoundFiles.begin(), arraySoundFiles.end(), g_RandomNumberGenerator );
 	const unsigned int newSize = std::min<unsigned int>(arraySoundFiles.size(), static_cast<unsigned int>(iMaxToLoad));
 	arraySoundFiles.resize(newSize);
 
