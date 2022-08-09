@@ -92,7 +92,7 @@ public:
 		{
 			return GetValue();
 		}
-		RString const & curLanguage = (THEME && THEME->IsThemeLoaded() ? THEME->GetCurLanguage() : "current");
+		RString const & curLanguage = (THEME && THEME->IsThemeLoaded() ? THEME->GetCurLanguage() : RString("current"));
 		LOG->Warn("Missing translation for %s in the %s language.", m_sName.c_str(), curLanguage.c_str());
 		return m_sName;
 	}
