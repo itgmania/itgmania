@@ -98,13 +98,12 @@ struct WinWdmFilter
 
 	~WinWdmFilter()
 	{
-		for( size_t i = 0; i < m_apPins.size(); ++i )
-			delete m_apPins[i];
+		m_apPins.clear();
 		if( m_hHandle )
 			CloseHandle( m_hHandle );
 	}
 
-	WinWdmPin *CreatePin( unsigned long iPinId, RString &sError );
+	std::shared_ptr<WinWdmPin> CreatePin( unsigned long iPinId, RString &sError );
 	WinWdmPin *InstantiateRenderPin(
 			DeviceSampleFormat &PreferredOutputSampleFormat,
 			int &iPreferredOutputChannels,
@@ -115,7 +114,7 @@ struct WinWdmFilter
 	void Release();
 
 	HANDLE			m_hHandle;
-	std::vector<WinWdmPin *>	m_apPins;
+	std::vector<std::shared_ptr<WinWdmPin>>	m_apPins;
 	RString			m_sFilterName;
 	RString			m_sFriendlyName;
 	int			m_iUsageCount;
@@ -275,7 +274,7 @@ static bool WdmGetPinPropertyMulti(
  * The pin object holds all the configuration information about the pin
  * before it is opened, and then the handle of the pin after is opened
  */
-WinWdmPin *WinWdmFilter::CreatePin( unsigned long iPinId, RString &sError )
+std::shared_ptr<WinWdmPin> WinWdmFilter::CreatePin( unsigned long iPinId, RString &sError )
 {
 	{
 		/* Get the COMMUNICATION property */
@@ -370,17 +369,17 @@ WinWdmPin *WinWdmFilter::CreatePin( unsigned long iPinId, RString &sError )
 	}
 
 	/* Allocate the new PIN object */
-	WinWdmPin *pPin = new WinWdmPin( this, iPinId );
+	auto pPin = std::make_shared<WinWdmPin>( this, iPinId );
 
 	/* Get DATARANGEs */
 	KSMULTIPLE_ITEM *pDataRangesItem;
 	if( !WdmGetPinPropertyMulti(m_hHandle, iPinId, &KSPROPSETID_Pin, KSPROPERTY_PIN_DATARANGES, &pDataRangesItem, sError) )
 	{
 		sError = "KSPROPERTY_PIN_DATARANGES: " + sError;
-		goto error;
+		return nullptr;
 	}
 
-	KSDATARANGE *pDataRanges = (KSDATARANGE*) (pDataRangesItem + 1);
+	KSDATARANGE* pDataRanges = (KSDATARANGE*) (pDataRangesItem + 1);
 
 	/* Find audio DATARANGEs */
 	{
@@ -410,18 +409,13 @@ WinWdmPin *WinWdmFilter::CreatePin( unsigned long iPinId, RString &sError )
 	if( pPin->m_dataRangesItem.size() == 0 )
 	{
 		sError = "Pin has no supported audio data ranges";
-		goto error;
+		return nullptr;
 	}
 
 	/* Success */
 	sError = "";
 	CHECKPOINT_M( "Pin created successfully" );
 	return pPin;
-
-error:
-	/* Error cleanup */
-	delete pPin;
-	return nullptr;
 }
 
 /* If the pin handle is open, close it */
@@ -555,8 +549,8 @@ WinWdmFilter *WinWdmFilter::Create( const RString &sFilterName, const RString &s
 	for( int iPinId = 0; iPinId < iNumPins; iPinId++ )
 	{
 		/* Create the pin with this Id */
-		WinWdmPin *pNewPin = pFilter->CreatePin( iPinId, sError );
-		if( pNewPin != nullptr )
+		auto pNewPin = pFilter->CreatePin( iPinId, sError );
+		if( pNewPin )
 			pFilter->m_apPins.push_back( pNewPin );
 	}
 
@@ -625,11 +619,11 @@ WinWdmPin *WinWdmFilter::InstantiateRenderPin( const WAVEFORMATEX *wfex, RString
 {
 	for( size_t i = 0; i < m_apPins.size(); ++i )
 	{
-		WinWdmPin *pPin = m_apPins[i];
+		auto pPin = m_apPins[i];
 		if( pPin->Instantiate(wfex, sError) )
 		{
 			sError = "";
-			return pPin;
+			return pPin.get();
 		}
 	}
 
@@ -640,10 +634,10 @@ WinWdmPin *WinWdmFilter::InstantiateRenderPin( const WAVEFORMATEX *wfex, RString
 template<typename T, typename U>
 void MoveToBeginning( std::vector<T> &v, const U &item )
 {
-	std::vector<T>::iterator it = find( v.begin(), v.end(), item );
+	auto it = find( v.begin(), v.end(), item );
 	if( it == v.end() )
 		return;
-	std::vector<T>::iterator next = it;
+	auto next = it;
 	++next;
 	copy_backward( v.begin(), it, next );
 	*v.begin() = item;
@@ -721,7 +715,7 @@ WinWdmPin *WinWdmFilter::InstantiateRenderPin(
 	 */
 	std::vector<int> aSampleRates;
 	{
-		for (WinWdmPin *pPin : m_apPins)
+		for (auto pPin : m_apPins)
 		{
 			for (KSDATARANGE_AUDIO const &range : pPin->m_dataRangesItem)
 			{
@@ -956,8 +950,10 @@ bool WinWdmStream::Open( WinWdmFilter *pFilter,
 				iPreferredSampleRate,
 				sError );
 
-	if( m_pPlaybackPin == nullptr )
-		goto error;
+	if (m_pPlaybackPin == nullptr) {
+		Close();
+		return false;
+	}
 
 	m_DeviceSampleFormat = PreferredOutputSampleFormat;
 	m_iDeviceOutputChannels = iPreferredOutputChannels;
@@ -1012,10 +1008,6 @@ bool WinWdmStream::Open( WinWdmFilter *pFilter,
 	}
 
 	return true;
-
-error:
-	Close();
-	return false;
 }
 
 bool WinWdmStream::SubmitPacket( int iPacket, RString &sError )
@@ -1287,7 +1279,7 @@ RString RageSoundDriver_WDMKS::Init()
 		const WinWdmFilter *pFilter = apFilters[i];
 		LOG->Trace( "Device #%i: %s", i, pFilter->m_sFriendlyName.c_str() );
 		int j = 0;
-		for (WinWdmPin *pPin : pFilter->m_apPins)
+		for (auto pPin : pFilter->m_apPins)
 		{
 			LOG->Trace( "  Pin %i", j++ );
 			for (KSDATARANGE_AUDIO const &range : pPin->m_dataRangesItem)
