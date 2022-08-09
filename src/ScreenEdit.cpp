@@ -6059,7 +6059,7 @@ void ScreenEdit::HandleBGChangeChoice( BGChangeChoice c, const std::vector<int> 
 	case global_movie_song_group_and_genre:
 		{
 			BGChangeChoice row1 = (BGChangeChoice)(file1_song_bganimation + iAnswers[file1_type]);
-			newChange.m_def.m_sFile1 = g_BackgroundChange.rows[row1].choices.empty() ? "" : g_BackgroundChange.rows[row1].choices[iAnswers[row1]];
+			newChange.m_def.m_sFile1 = g_BackgroundChange.rows[row1].choices.empty() ? RString("") : g_BackgroundChange.rows[row1].choices[iAnswers[row1]];
 		}
 		break;
 	}
