@@ -55,7 +55,7 @@ struct TimingTagWriter {
 		{ Write( row, ssprintf( "%.6f=%.6f=%hd", a, b, c) ); }
 
 	void Init( const RString sTag ) { m_sNext = "#" + sTag + ":"; }
-	void Finish( ) { m_pvsLines->push_back( ( m_sNext != "," ? m_sNext : "" ) + ";" ); }
+	void Finish( ) { m_pvsLines->push_back( ( m_sNext != "," ? m_sNext : RString("") ) + ";" ); }
 
 };
 

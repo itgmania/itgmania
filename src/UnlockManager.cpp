@@ -417,20 +417,20 @@ RString UnlockEntry::GetDescription() const
 	default:
 		FAIL_M(ssprintf("Invalid UnlockRewardType: %i", m_Type));
 	case UnlockRewardType_Song:
-		return pSong ? pSong->GetDisplayFullTitle() : "";
+		return pSong ? pSong->GetDisplayFullTitle() : RString("");
 	case UnlockRewardType_Steps:
 	{
 		StepsType st = GAMEMAN->GetHowToPlayStyleForGame( GAMESTATE->m_pCurGame )->m_StepsType;	// TODO: Is this the best thing we can do here?
-		return (pSong ? pSong->GetDisplayFullTitle() : "") + ", " + CustomDifficultyToLocalizedString( GetCustomDifficulty(st, m_dc, CourseType_Invalid) );
+		return (pSong ? pSong->GetDisplayFullTitle() : RString("")) + ", " + CustomDifficultyToLocalizedString( GetCustomDifficulty(st, m_dc, CourseType_Invalid) );
 	}
 	case UnlockRewardType_Steps_Type:
 	{
-		RString ret = (pSong ? pSong->GetDisplayFullTitle() : "");
+		RString ret = (pSong ? pSong->GetDisplayFullTitle() : RString(""));
 		ret += "," + CustomDifficultyToLocalizedString( GetCustomDifficulty(m_StepsType, m_dc, CourseType_Invalid) );
 		return ret + "," + StringConversion::ToString(m_StepsType); // yeah, bit strange.
 	}
 	case UnlockRewardType_Course:
-		return m_Course.IsValid() ? m_Course.ToCourse()->GetDisplayFullTitle() : "";
+		return m_Course.IsValid() ? m_Course.ToCourse()->GetDisplayFullTitle() : RString("");
 	case UnlockRewardType_Modifier:
 		return CommonMetrics::LocalizeOptionItem( GetModifier(), false );
 	}
@@ -446,9 +446,9 @@ RString	UnlockEntry::GetBannerFile() const
 	case UnlockRewardType_Song:
 	case UnlockRewardType_Steps:
 	case UnlockRewardType_Steps_Type:
-		return pSong ? pSong->GetBannerPath() : "";
+		return pSong ? pSong->GetBannerPath() : RString("");
 	case UnlockRewardType_Course:
-		return m_Course.ToCourse() ? m_Course.ToCourse()->GetBannerPath() : "";
+		return m_Course.ToCourse() ? m_Course.ToCourse()->GetBannerPath() : RString("");
 	case UnlockRewardType_Modifier:
 		return "";
 	}	
@@ -464,7 +464,7 @@ RString	UnlockEntry::GetBackgroundFile() const
 	case UnlockRewardType_Song:
 	case UnlockRewardType_Steps:
 	case UnlockRewardType_Steps_Type:
-		return pSong ? pSong->GetBackgroundPath() : "";
+		return pSong ? pSong->GetBackgroundPath() : RString("");
 	case UnlockRewardType_Course:
 		return "";
 	case UnlockRewardType_Modifier:
