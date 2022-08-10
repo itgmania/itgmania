@@ -103,7 +103,7 @@ struct WinWdmFilter
 			CloseHandle( m_hHandle );
 	}
 
-	std::shared_ptr<WinWdmPin> CreatePin( unsigned long iPinId, RString &sError );
+	std::unique_ptr<WinWdmPin> CreatePin( unsigned long iPinId, RString &sError );
 	WinWdmPin *InstantiateRenderPin(
 			DeviceSampleFormat &PreferredOutputSampleFormat,
 			int &iPreferredOutputChannels,
@@ -114,7 +114,7 @@ struct WinWdmFilter
 	void Release();
 
 	HANDLE			m_hHandle;
-	std::vector<std::shared_ptr<WinWdmPin>>	m_apPins;
+	std::vector<std::unique_ptr<WinWdmPin>>	m_apPins;
 	RString			m_sFilterName;
 	RString			m_sFriendlyName;
 	int			m_iUsageCount;
@@ -274,7 +274,7 @@ static bool WdmGetPinPropertyMulti(
  * The pin object holds all the configuration information about the pin
  * before it is opened, and then the handle of the pin after is opened
  */
-std::shared_ptr<WinWdmPin> WinWdmFilter::CreatePin( unsigned long iPinId, RString &sError )
+std::unique_ptr<WinWdmPin> WinWdmFilter::CreatePin( unsigned long iPinId, RString &sError )
 {
 	{
 		/* Get the COMMUNICATION property */
@@ -369,7 +369,7 @@ std::shared_ptr<WinWdmPin> WinWdmFilter::CreatePin( unsigned long iPinId, RStrin
 	}
 
 	/* Allocate the new PIN object */
-	auto pPin = std::make_shared<WinWdmPin>( this, iPinId );
+	auto pPin = std::make_unique<WinWdmPin>( this, iPinId );
 
 	/* Get DATARANGEs */
 	KSMULTIPLE_ITEM *pDataRangesItem;
@@ -551,7 +551,7 @@ WinWdmFilter *WinWdmFilter::Create( const RString &sFilterName, const RString &s
 		/* Create the pin with this Id */
 		auto pNewPin = pFilter->CreatePin( iPinId, sError );
 		if( pNewPin )
-			pFilter->m_apPins.push_back( pNewPin );
+			pFilter->m_apPins.push_back( std::move(pNewPin) );
 	}
 
 	if( pFilter->m_apPins.empty() )
@@ -617,9 +617,8 @@ void WinWdmFilter::Release()
  */
 WinWdmPin *WinWdmFilter::InstantiateRenderPin( const WAVEFORMATEX *wfex, RString &sError )
 {
-	for( size_t i = 0; i < m_apPins.size(); ++i )
+	for (const auto& pPin : m_apPins)
 	{
-		auto pPin = m_apPins[i];
 		if( pPin->Instantiate(wfex, sError) )
 		{
 			sError = "";
@@ -715,7 +714,7 @@ WinWdmPin *WinWdmFilter::InstantiateRenderPin(
 	 */
 	std::vector<int> aSampleRates;
 	{
-		for (auto pPin : m_apPins)
+		for (const auto& pPin : m_apPins)
 		{
 			for (KSDATARANGE_AUDIO const &range : pPin->m_dataRangesItem)
 			{
@@ -1279,7 +1278,7 @@ RString RageSoundDriver_WDMKS::Init()
 		const WinWdmFilter *pFilter = apFilters[i];
 		LOG->Trace( "Device #%i: %s", i, pFilter->m_sFriendlyName.c_str() );
 		int j = 0;
-		for (auto pPin : pFilter->m_apPins)
+		for (const auto& pPin : pFilter->m_apPins)
 		{
 			LOG->Trace( "  Pin %i", j++ );
 			for (KSDATARANGE_AUDIO const &range : pPin->m_dataRangesItem)

@@ -368,7 +368,7 @@ static void CourseSortSongs( SongSort sort, std::vector<Song*> &vpPossibleSongs,
 	{
 	DEFAULT_FAIL(sort);
 	case SongSort_Randomize:
-		shuffle( vpPossibleSongs.begin(), vpPossibleSongs.end(), rnd );
+		std::shuffle( vpPossibleSongs.begin(), vpPossibleSongs.end(), rnd );
 		break;
 	case SongSort_MostPlays:
 		if( PROFILEMAN )
@@ -428,7 +428,7 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 		* will change every time it's viewed, and the displayed order will have no
 		* bearing on what you'll actually play. */
 		tmp_entries = m_vEntries;
-		shuffle( tmp_entries.begin(), tmp_entries.end(), rnd );
+		std::shuffle( tmp_entries.begin(), tmp_entries.end(), rnd );
 	}
 
 	const std::vector<CourseEntry> &entries = m_bShuffle ? tmp_entries:m_vEntries;
