@@ -7,7 +7,7 @@ jobs:
     name: Ubuntu
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Checkout submodules
         run: git submodule update --init
       - name: Install dependencies
@@ -34,7 +34,7 @@ jobs:
     name: macOS (M1)
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Checkout submodules
         run: git submodule update --init
       - name: Install dependencies
@@ -49,7 +49,7 @@ jobs:
     name: macOS (Intel)
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Checkout submodules
         run: git submodule update --init
       - name: Install dependencies
@@ -64,7 +64,7 @@ jobs:
     name: Windows
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Checkout submodules
         run: git submodule update --init
       - name: Configure
