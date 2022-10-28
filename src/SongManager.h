@@ -84,7 +84,7 @@ public:
 	 *        last invocation of this function
 	 */
 	void InitAll( LoadingWindow *ld, bool onlyAdditions );
-	void Reload( LoadingWindow *ld=nullptr );
+	void Reload( bool bAllowFastLoad, LoadingWindow *ld=nullptr );
 	void LoadAdditions( LoadingWindow *ld=nullptr );
 	void PreloadSongImages();
 

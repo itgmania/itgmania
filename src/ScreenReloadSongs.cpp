@@ -84,7 +84,7 @@ void ScreenReloadSongs::Update( float fDeltaTime )
 	}
 	else
 	{
-		SONGMAN->Reload( m_pLoadingWindow );
+		SONGMAN->Reload( false, m_pLoadingWindow );
 	}
 
 	SCREENMAN->PostMessageToTopScreen( SM_GoToNextScreen, 0 );
