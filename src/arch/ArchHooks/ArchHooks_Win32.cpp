@@ -12,6 +12,8 @@
 #include "archutils/win32/GotoURL.h"
 #include "archutils/Win32/RegistryAccess.h"
 
+#include "VersionHelpers.h"
+
 static HANDLE g_hInstanceMutex;
 static bool g_bIsMultipleInstance = false;
 
@@ -148,20 +150,12 @@ void ArchHooks_Win32::BoostPriority()
 	 * in the background.  We don't really want to be high-priority--above normal should
 	 * be enough.  However, ABOVE_NORMAL_PRIORITY_CLASS is only supported in Win2000
 	 * and later. */
-	OSVERSIONINFO version;
-	version.dwOSVersionInfoSize=sizeof(version);
-	if( !GetVersionEx(&version) )
-	{
-		LOG->Warn( werr_ssprintf(GetLastError(), "GetVersionEx failed") );
-		return;
-	}
-
 #ifndef ABOVE_NORMAL_PRIORITY_CLASS
 #define ABOVE_NORMAL_PRIORITY_CLASS 0x00008000
 #endif
 
 	DWORD pri = HIGH_PRIORITY_CLASS;
-	if( version.dwMajorVersion >= 5 )
+	if( IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN2K), LOBYTE(_WIN32_WINNT_WIN2K), 0) )
 		pri = ABOVE_NORMAL_PRIORITY_CLASS;
 
 	/* Be sure to boost the app, not the thread, to make sure the

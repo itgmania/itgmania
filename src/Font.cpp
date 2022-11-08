@@ -254,7 +254,7 @@ int Font::GetLineHeightInSourcePixels( const std::wstring &szLine ) const
 }
 
 // width is a pointer so that we can return the used width through it.
-int Font::GetGlyphsThatFit(const std::wstring& line, int* width) const
+size_t Font::GetGlyphsThatFit(const std::wstring& line, int* width) const
 {
 	if(*width == 0)
 	{
@@ -262,7 +262,7 @@ int Font::GetGlyphsThatFit(const std::wstring& line, int* width) const
 		return line.size();
 	}
 	int curr_width= 0;
-	unsigned int i= 0;
+	size_t i= 0;
 	for(i= 0; i < line.size() && curr_width < *width; ++i)
 	{
 		curr_width+= GetGlyph(line[i]).m_iHadvance;
@@ -507,7 +507,7 @@ void Font::LoadFontPageSettings( FontPageSettings &cfg, IniFile &ini, const RStr
 
 				wchar_t c;
 				if( sCodepoint.substr(0, 2) == "U+" && IsHexVal(sCodepoint.substr(2)) )
-					sscanf( sCodepoint.substr(2).c_str(), "%x", &c );
+					sscanf( sCodepoint.substr(2).c_str(), "%lc", &c );
 				else if( sCodepoint.size() > 0 &&
 						utf8_get_char_len(sCodepoint[0]) == int(sCodepoint.size()) )
 				{
@@ -558,11 +558,11 @@ void Font::LoadFontPageSettings( FontPageSettings &cfg, IniFile &ini, const RStr
 				}
 				// We must have either 1 match (just the codeset) or 4 (the whole thing).
 				int count = -1;
-				int first = 0;
+				unsigned int first = 0;
 				if( !asMatches[2].empty() )
 				{
 					sscanf( asMatches[2].c_str(), "%x", &first );
-					int last;
+					unsigned int last;
 					sscanf( asMatches[3].c_str(), "%x", &last );
 					if(last < first)
 					{

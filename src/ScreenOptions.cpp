@@ -1269,7 +1269,7 @@ bool ScreenOptions::MenuLeft( const InputEventPlus &input )
 		ChangeValueInRowRelative(m_iCurrentRow[input.pn],input.pn,-1, input.type != IET_FIRST_PRESS);
 
 	PlayerNumber pn = input.pn;
-	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuLeftP1+pn) );
+	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuLeftP1+Enum::to_integral(pn)) );
 	return true;
 }
 
@@ -1281,7 +1281,7 @@ bool ScreenOptions::MenuRight( const InputEventPlus &input )
 		ChangeValueInRowRelative(m_iCurrentRow[input.pn], input.pn,+1, input.type != IET_FIRST_PRESS);
 
 	PlayerNumber pn = input.pn;
-	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuRightP1+pn) );
+	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuRightP1+Enum::to_integral(pn)) );
 	return true;
 }
 
@@ -1289,7 +1289,7 @@ bool ScreenOptions::MenuUp( const InputEventPlus &input )
 {
 	MenuUpDown( input, -1 );
 	PlayerNumber pn = input.pn;
-	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuUpP1+pn) );
+	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuUpP1+Enum::to_integral(pn)) );
 	return true;
 }
 
@@ -1297,7 +1297,7 @@ bool ScreenOptions::MenuDown( const InputEventPlus &input )
 {
 	MenuUpDown( input, +1 );
 	PlayerNumber pn = input.pn;
-	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuDownP1+pn) );
+	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuDownP1+Enum::to_integral(pn)) );
 	return true;
 }
 

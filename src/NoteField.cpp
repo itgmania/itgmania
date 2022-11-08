@@ -674,7 +674,7 @@ float FindLastDisplayedBeat( const PlayerState* pPlayerState, int iDrawDistanceB
 
 	bool bBoomerang;
 	{
-		const float* fAccels = pPlayerState->m_PlayerOptions.GetCurrent().m_fAccels;
+		const auto& fAccels = pPlayerState->m_PlayerOptions.GetCurrent().m_fAccels;
 		bBoomerang = (fAccels[PlayerOptions::ACCEL_BOOMERANG] != 0);
 	}
 
@@ -794,13 +794,12 @@ void NoteField::DrawPrimitives()
 	FOREACH_TimingSegmentType( tst )
 		segs[tst] = &(pTiming->GetTimingSegments(tst));
 
-	unsigned i = 0;
 	// Draw beat bars
 	if( ( GAMESTATE->IsEditing() || SHOW_BEAT_BARS ) && pTiming != nullptr )
 	{
 		const std::vector<TimingSegment *> &tSigs = *segs[SEGMENT_TIME_SIG];
 		int iMeasureIndex = 0;
-		for (i = 0; i < tSigs.size(); i++)
+		for (size_t i = 0; i < tSigs.size(); i++)
 		{
 			const TimeSignatureSegment *ts = ToTimeSignature(tSigs[i]);
 			int iSegmentEndRow = (i + 1 == tSigs.size()) ? m_FieldRenderArgs.last_row : tSigs[i+1]->GetRow();
@@ -848,7 +847,7 @@ void NoteField::DrawPrimitives()
 #define draw_all_segments(str_exp, name, caps_name)	\
 		horiz_align= caps_name##_IS_LEFT_SIDE ? align_right : align_left; \
 		side_sign= caps_name##_IS_LEFT_SIDE ? -1 : 1; \
-		for(unsigned int i= 0; i < segs[SEGMENT_##caps_name]->size(); ++i) \
+		for(size_t i= 0; i < segs[SEGMENT_##caps_name]->size(); ++i) \
 		{ \
 			const name##Segment* seg= To##name((*segs[SEGMENT_##caps_name])[i]); \
 			if(seg->GetRow() >= m_FieldRenderArgs.first_row && \
@@ -903,18 +902,14 @@ void NoteField::DrawPrimitives()
 			AttackArray &attacks = GAMESTATE->m_bIsUsingStepTiming ?
 				GAMESTATE->m_pCurSteps[PLAYER_1]->m_Attacks :
 				GAMESTATE->m_pCurSong->m_Attacks;
-			// XXX: We're somehow getting here when attacks is null. Find the actual cause later.
-			if (&attacks)
+			for (Attack const &a : attacks)
 			{
-				for (Attack const &a : attacks)
+				float fBeat = timing.GetBeatFromElapsedTime(a.fStartSecond);
+				if (BeatToNoteRow(fBeat) >= m_FieldRenderArgs.first_row &&
+					BeatToNoteRow(fBeat) <= m_FieldRenderArgs.last_row &&
+					IS_ON_SCREEN(fBeat))
 				{
-					float fBeat = timing.GetBeatFromElapsedTime(a.fStartSecond);
-					if (BeatToNoteRow(fBeat) >= m_FieldRenderArgs.first_row &&
-						BeatToNoteRow(fBeat) <= m_FieldRenderArgs.last_row &&
-						IS_ON_SCREEN(fBeat))
-					{
-						this->DrawAttackText(fBeat, a, text_glow);
-					}
+					this->DrawAttackText(fBeat, a, text_glow);
 				}
 			}
 		}

@@ -657,7 +657,7 @@ void Course::GetTrailUnsortedEndless( const std::vector<CourseEntry> &entries, T
 	typedef std::vector<Steps*> StepsVector;
 
 	std::set<Song*> alreadySelected;
-	Song* lastSongSelected;
+	Song* lastSongSelected = nullptr;
 	std::vector<SongAndSteps> vSongAndSteps;
 	for (auto e = entries.begin(); e != entries.end(); ++e)
 	{
@@ -743,7 +743,7 @@ void Course::GetTrailUnsortedEndless( const std::vector<CourseEntry> &entries, T
 		ASSERT(e->iChooseIndex >= 0);
 		// If we're trying to pick BEST100 when only 99 songs exist,
 		// we have a problem, so bail out
-		if (e->iChooseIndex >= vpSongs.size()) {
+		if (static_cast<size_t>(e->iChooseIndex) >= vpSongs.size()) {
 			continue;
 		}
 
@@ -1029,7 +1029,6 @@ RageColor Course::GetColor() const
 		else					return SORT_LEVEL4_COLOR;
 	default:
 		FAIL_M( ssprintf("Invalid course sort %d.", int(PREFSMAN->m_CourseSortOrder)) );
-		return RageColor(1,1,1,1);  // white; should never reach here
 	}
 }
 

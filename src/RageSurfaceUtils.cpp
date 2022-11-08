@@ -12,7 +12,7 @@ uint32_t RageSurfaceUtils::decodepixel( const uint8_t *p, int bpp )
 	case 1: return *p;
 	case 2: return *(uint16_t *)p;
 	case 3:
-		if( BYTE_ORDER == BIG_ENDIAN )
+		if constexpr ( Endian::big )
 			return p[0] << 16 | p[1] << 8 | p[2];
 		else
 			return p[0] | p[1] << 8 | p[2] << 16;
@@ -29,7 +29,7 @@ void RageSurfaceUtils::encodepixel( uint8_t *p, int bpp, uint32_t pixel )
 	case 1: *p = uint8_t(pixel); break;
 	case 2: *(uint16_t *)p = uint16_t(pixel); break;
 	case 3:
-		if( BYTE_ORDER == BIG_ENDIAN )
+		if constexpr ( Endian::big )
 		{
 			p[0] = uint8_t((pixel >> 16) & 0xff);
 			p[1] = uint8_t((pixel >> 8) & 0xff);
@@ -518,10 +518,10 @@ static bool blit_rgba_to_rgba( const RageSurface *src_surf, const RageSurface *d
 	const int srcskip = src_surf->pitch - width*src_surf->format->BytesPerPixel;
 	const int dstskip = dst_surf->pitch - width*dst_surf->format->BytesPerPixel;
 
-	const uint32_t *src_shifts = src_surf->format->Shift;
-	const uint32_t *dst_shifts = dst_surf->format->Shift;
-	const uint32_t *src_masks = src_surf->format->Mask;
-	const uint32_t *dst_masks = dst_surf->format->Mask;
+	const auto &src_shifts = src_surf->format->Shift;
+	const auto &dst_shifts = dst_surf->format->Shift;
+	const auto &src_masks = src_surf->format->Mask;
+	const auto &dst_masks = dst_surf->format->Mask;
 
 	uint8_t lookup[4][256];
 	for( int c = 0; c < 4; ++c )
@@ -833,44 +833,38 @@ RageSurface *RageSurfaceUtils::LoadSurface( RString file )
  * two bits are the alpha component.
  *
  * This gives us a generic way to handle arbitrary 8-bit texture formats. */
-RageSurface *RageSurfaceUtils::PalettizeToGrayscale( const RageSurface *src_surf, int GrayBits, int AlphaBits )
+RageSurface *RageSurfaceUtils::PalettizeToGrayscale( const RageSurface *src_surf, uint32_t GrayBits, uint32_t AlphaBits )
 {
 	AlphaBits = std::min( AlphaBits, 8-src_surf->format->Loss[3] );
 
-	const int TotalBits = GrayBits + AlphaBits;
+	const auto TotalBits = GrayBits + AlphaBits;
 	ASSERT( TotalBits <= 8 );
 
 	RageSurface *dst_surf = CreateSurface(src_surf->w, src_surf->h,
 		8, 0,0,0,0 );
 
 	// Set up the palette.
-	const int TotalColors = 1 << TotalBits;
-	const int Ivalues = 1 << GrayBits;					// number of intensity values
-	const int Ishift = 0;								// intensity shift
-	const int Imask = ((1 << GrayBits) - 1) << Ishift;	// intensity mask
-	const int Iloss = 8-GrayBits;
+	const auto TotalColors = 1u << TotalBits;
+	const auto Ivalues = 1u << GrayBits;			// number of intensity values
+	const auto Ishift = 0u;					// intensity shift
+	const auto Imask = ((1u << GrayBits) - 1u) << Ishift;	// intensity mask
+	const auto Iloss = 8u-GrayBits;
 
-	const int Avalues = 1 << AlphaBits;					// number of alpha values
-	const int Ashift = GrayBits;						// alpha shift
-	const int Amask = ((1 << AlphaBits) - 1) << Ashift;	// alpha mask
-	const int Aloss = 8-AlphaBits;
+	const auto Avalues = 1u << AlphaBits;			// number of alpha values
+	const auto Ashift = GrayBits;				// alpha shift
+	const auto Amask = ((1u << AlphaBits) - 1u) << Ashift;	// alpha mask
+	const auto Aloss = 8u-AlphaBits;
 
-	for( int index = 0; index < TotalColors; ++index )
+	for( size_t index = 0; index < TotalColors; ++index )
 	{
-		const int I = (index & Imask) >> Ishift;
-		const int A = (index & Amask) >> Ashift;
+		const auto I = (index & Imask) >> Ishift;
+		const auto A = (index & Amask) >> Ashift;
 
-		int ScaledI;
-		if( Ivalues == 1 )
-			ScaledI = 255; // if only one intensity value, always fullbright
-		else
-			ScaledI = clamp( lrintf(I * (255.0f / (Ivalues-1))), 0L, 255L );
+		// if only one intensity value, always fullbright
+		const auto ScaledI = Ivalues == 1 ? 255 : clamp( lrintf(I * (255.0f / (Ivalues-1))), 0L, 255L );
 
-		int ScaledA;
-		if( Avalues == 1 )
-			ScaledA = 255; // if only one alpha value, always opaque
-		else
-			ScaledA = clamp( lrintf(A * (255.0f / (Avalues-1))), 0L, 255L );
+		// if only one alpha value, always opaque
+		const auto ScaledA = Avalues == 1 ? 255 : clamp( lrintf(A * (255.0f / (Avalues-1))), 0L, 255L );
 
 		RageSurfaceColor c;
 		c.r = uint8_t(ScaledI);

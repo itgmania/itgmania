@@ -186,7 +186,7 @@ public:
 	}
 	TimingSegment* GetSegmentAtBeat( float fBeat, TimingSegmentType tst )
 	{
-		return const_cast<TimingSegment*>( GetSegmentAtBeat(fBeat, tst) );
+		return GetSegmentAtRow( BeatToNoteRow(fBeat), tst );
 	}
 
 	#define DefineSegmentWithName(Seg, SegName, SegType) \
@@ -391,7 +391,7 @@ public:
 	 * @param other the other TimingData.
 	 * @return the equality or lack thereof of the two TimingData.
 	 */
-	bool operator==( const TimingData &other )
+	bool operator==( const TimingData &other ) const
 	{
 		FOREACH_ENUM( TimingSegmentType, tst )
 		{
@@ -423,7 +423,7 @@ public:
 	 * @param other the other TimingData.
 	 * @return the inequality or lack thereof of the two TimingData.
 	 */
-	bool operator!=( const TimingData &other ) { return !operator==(other); }
+	bool operator!=( const TimingData &other ) const { return !operator==(other); }
 
 	void ScaleRegion( float fScale = 1, int iStartRow = 0, int iEndRow = MAX_NOTE_ROW, bool bAdjustBPM = false );
 	void InsertRows( int iStartRow, int iRowsToAdd );

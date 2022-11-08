@@ -543,29 +543,25 @@ ulg crc32(ulg crc, const uch *buf, size_t len)
 class TZip
 {
 public:
-	TZip() : pfout(nullptr),ooffset(0),oerr(false),writ(0),hasputcen(false),zfis(0),hfin(0)
-	{
-	}
-	~TZip()
-	{
-	}
+	TZip() = default;
+	~TZip() = default;
 
 	// These variables say about the file we're writing into
 	// We can write to pipe, file-by-handle, file-by-name, memory-to-memmapfile
-	RageFile *pfout;             // if valid, we'll write here (for files or pipes)
-	unsigned ooffset;         // for pfout, this is where the pointer was initially
-	ZRESULT oerr;             // did a write operation give rise to an error?
-	unsigned writ;            // how have we written. This is maintained by Add, not write(), to avoid confusion over seeks
-	unsigned int opos;        // current pos in the mmap
-	unsigned int mapsize;     // the size of the map we created
-	bool hasputcen;           // have we yet placed the central directory?
+	RageFile *pfout{nullptr};             // if valid, we'll write here (for files or pipes)
+	unsigned ooffset{0};         // for pfout, this is where the pointer was initially
+	ZRESULT oerr{false};             // did a write operation give rise to an error?
+	unsigned writ{0};            // how have we written. This is maintained by Add, not write(), to avoid confusion over seeks
+	unsigned int opos{0};        // current pos in the mmap
+	unsigned int mapsize{0};     // the size of the map we created
+	bool hasputcen{false};           // have we yet placed the central directory?
 	//
-	TZipFileInfo *zfis;       // each file gets added onto this list, for writing the table at the end
+	TZipFileInfo *zfis{nullptr};       // each file gets added onto this list, for writing the table at the end
 
 	ZRESULT Start(RageFile *f);
 	static unsigned sflush(void *param,const char *buf, unsigned *size);
 	static unsigned swrite(void *param,const char *buf, unsigned size);
-	unsigned int write(const char *buf,unsigned int size);
+	unsigned int write(const char *srcbuf,unsigned int size);
 	bool oseek(unsigned int pos);
 	ZRESULT Close();
 
@@ -575,7 +571,7 @@ public:
 	ulg attr; iztimes times; ulg timestamp;  // all open_* methods set these
 	long isize,ired;         // size is not set until close() on pips
 	ulg crc;                                 // crc is not set until close(). iwrit is cumulative
-	RageFile *hfin;           // for input files and pipes
+	RageFile *hfin{nullptr};           // for input files and pipes
 	const char *bufin; unsigned int lenin,posin; // for memory
 	// and a variable for what we've done with the input: (i.e. compressed it!)
 	ulg csize;                               // compressed size, set by the compression routines
@@ -586,7 +582,7 @@ public:
 	ZRESULT open_file(const TCHAR *fn);
 	ZRESULT open_dir();
 	ZRESULT set_times();
-	unsigned read(char *buf, unsigned size);
+	unsigned read(char *srcbuf, unsigned size);
 	ZRESULT iclose();
 
 	ZRESULT ideflate(TZipFileInfo *zfi);
@@ -628,13 +624,11 @@ unsigned TZip::swrite(void *param,const char *buf, unsigned size)
 	TZip *zip=(TZip*)param;
 	return zip->write(buf,size);
 }
-unsigned int TZip::write(const char *buf,unsigned int size)
+unsigned int TZip::write(const char *srcbuf,unsigned int size)
 {
-	const char *srcbuf=buf;
 	if (pfout != nullptr)
 	{
-		unsigned long writ = pfout->Write( srcbuf, size );
-		return writ;
+		return pfout->Write( srcbuf, size );
 	}
 	oerr=ZR_NOTINITED;
 	return 0;
@@ -724,7 +718,7 @@ ZRESULT TZip::set_times()
 	return ZR_OK;
 }
 
-unsigned TZip::read(char *buf, unsigned size)
+unsigned TZip::read(char *srcbuf, unsigned size)
 {
 	if (bufin!=0)
 	{
@@ -732,19 +726,19 @@ unsigned TZip::read(char *buf, unsigned size)
 		ulg red = lenin-posin;
 		if (red>size)
 			red=size;
-		memcpy(buf, bufin+posin, red);
+		memcpy(srcbuf, bufin+posin, red);
 		posin += red;
 		ired += red;
-		crc = crc32(crc, (uch*)buf, red);
+		crc = crc32(crc, (uch*)srcbuf, red);
 		return red;
 	}
 	else if (hfin!=0)
 	{
-		int red = hfin->Read(buf,size);
+		int red = hfin->Read(srcbuf,size);
 		if (red <= 0)
 			return 0;
 		ired += red;
-		crc = crc32(crc, (uch*)buf, red);
+		crc = crc32(crc, (uch*)srcbuf, red);
 		return red;
 	}
 	else

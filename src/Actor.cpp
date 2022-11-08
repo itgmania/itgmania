@@ -1118,7 +1118,7 @@ void Actor::SetEffectClockString( const RString &s )
 		}
 		else
 		{
-			this->SetEffectClock(static_cast<EffectClock>(cl + CLOCK_LIGHT_1));
+			this->SetEffectClock(static_cast<EffectClock>(Enum::to_integral(cl) + CLOCK_LIGHT_1));
 		}
 	}
 }

@@ -14,7 +14,7 @@
 /** @brief Specifies the max number of charts available for a song.
  *
  * This includes autogenned charts. */
-#define MAX_METERS (NUM_Difficulty * NUM_StepsType) + MAX_EDITS_PER_SONG
+inline constexpr auto MAX_METERS = (Enum::to_integral(NUM_Difficulty) * Enum::to_integral(NUM_StepsType)) + MAX_EDITS_PER_SONG;
 
 REGISTER_ACTOR_CLASS( StepsDisplayList );
 
@@ -24,8 +24,8 @@ StepsDisplayList::StepsDisplayList()
 
 	FOREACH_ENUM( PlayerNumber, pn )
 	{
-		SubscribeToMessage( (MessageID)(Message_CurrentStepsP1Changed+pn) );
-		SubscribeToMessage( (MessageID)(Message_CurrentTrailP1Changed+pn) );
+		SubscribeToMessage( (MessageID)(Message_CurrentStepsP1Changed+Enum::to_integral(pn)) );
+		SubscribeToMessage( (MessageID)(Message_CurrentTrailP1Changed+Enum::to_integral(pn)) );
 	}
 }
 
@@ -213,13 +213,13 @@ void StepsDisplayList::UpdatePositions()
 
 void StepsDisplayList::PositionItems()
 {
-	for( int i = 0; i < MAX_METERS; ++i )
+	for( size_t i = 0; i < MAX_METERS; ++i )
 	{
-		bool bUnused = ( i >= (int)m_Rows.size() );
+		bool bUnused = ( i >= m_Rows.size() );
 		m_Lines[i].m_Meter.SetVisible( !bUnused );
 	}
 
-	for( int m = 0; m < (int)m_Rows.size(); ++m )
+	for( size_t m = 0; m < m_Rows.size(); ++m )
 	{
 		Row &row = m_Rows[m];
 		bool bHidden = row.m_bHidden;
@@ -237,10 +237,10 @@ void StepsDisplayList::PositionItems()
 		m_Lines[m].m_Meter.SetY( row.m_fY );
 	}
 
-	for( int m=0; m < MAX_METERS; ++m )
+	for( size_t m=0; m < MAX_METERS; ++m )
 	{
 		bool bHidden = true;
-		if( m_bShown && m < (int)m_Rows.size() )
+		if( m_bShown && m < m_Rows.size() )
 			bHidden = m_Rows[m].m_bHidden;
 
 		float fDiffuseAlpha = bHidden?0.0f:1.0f;
@@ -303,7 +303,7 @@ void StepsDisplayList::SetFromGameState()
 	UpdatePositions();
 	PositionItems();
 
-	for( int m = 0; m < MAX_METERS; ++m )
+	for( size_t m = 0; m < MAX_METERS; ++m )
 		m_Lines[m].m_Meter.FinishTweening();
 }
 
@@ -323,7 +323,7 @@ void StepsDisplayList::TweenOnScreen()
 	FOREACH_HumanPlayer( pn )
 		ON_COMMAND( m_Cursors[pn] );
 
-	for( int m = 0; m < MAX_METERS; ++m )
+	for( size_t m = 0; m < MAX_METERS; ++m )
 		ON_COMMAND( m_Lines[m].m_Meter );
 
 	this->SetHibernate( 0.5f );
@@ -373,8 +373,8 @@ void StepsDisplayList::HandleMessage( const Message &msg )
 {
 	FOREACH_ENUM( PlayerNumber, pn )
 	{
-		if( msg.GetName() == MessageIDToString((MessageID)(Message_CurrentStepsP1Changed+pn))  ||
-			msg.GetName() == MessageIDToString((MessageID)(Message_CurrentTrailP1Changed+pn)) ) 
+		if( msg.GetName() == MessageIDToString((MessageID)(Message_CurrentStepsP1Changed+Enum::to_integral(pn)))  ||
+			msg.GetName() == MessageIDToString((MessageID)(Message_CurrentTrailP1Changed+Enum::to_integral(pn))) ) 
 		SetFromGameState();
 	}
 

@@ -13,19 +13,19 @@
 // an older increment command. This delay is the minimum amount of time to wait
 // between receiving an ack for an increment command and sending a new
 // increment command.
-const static float COUNTER_MINIMUM_SEND_DELAY = 0.15;
+inline constexpr float COUNTER_MINIMUM_SEND_DELAY = 0.15f;
 
 // The longest amount of time to wait for an ack to the increment command
 // before moving on with the coin counter increment sequence.
-const static float COUNTER_MAXIMUM_RECV_DELAY = 3.0;
+inline constexpr float COUNTER_MAXIMUM_RECV_DELAY = 3.0f;
 
 // If RTIO does not initialize within this amount of time, exit the RTIO input
 // loop to free resources.
-const static float RTIO_INIT_TIME_MAX = 10.0;
+inline constexpr float RTIO_INIT_TIME_MAX = 10.0f;
 
 // If there are this many failures, something has most likely gone very wrong,
 // so just exit the RTIO input loop.
-const static int RTIO_MAX_READ_FAILURES = 50;
+inline constexpr int RTIO_MAX_READ_FAILURES = 50;
 
 REGISTER_INPUT_HANDLER_CLASS2(Rtio, Win32_RTIO);
 

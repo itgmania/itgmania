@@ -115,7 +115,7 @@ public:
 	virtual void SetPolygonMode( PolygonMode pm );
 	virtual void SetLineWidth( float fWidth );
 
-	RString GetTextureDiagnostics( unsigned id ) const;
+	RString GetTextureDiagnostics( uintptr_t id ) const;
 
 protected:
 	void DrawQuadsInternal( const RageSpriteVertex v[], int iNumVerts );

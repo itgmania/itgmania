@@ -23,6 +23,7 @@
 #include <XInput.h>
 #include <WbemIdl.h>
 #include <OleAuto.h>
+#include <limits>
 
 // this may not be defined if we are using an older Windows SDK. (for instance, toolsetversion v140_xp does not define it)
 // the number was taken from the documentation
@@ -623,10 +624,8 @@ void InputHandler_DInput::UpdateBuffered( DIDevice &device, const RageTimer &tm 
 	}
 
 	// reset mousewheel
-	DeviceInput diUp = DeviceInput(device.dev, MOUSE_WHEELUP, 0.0f, tm);
-	ButtonPressed( diUp );
-	DeviceInput diDown = DeviceInput(device.dev, MOUSE_WHEELDOWN, 0.0f, tm);
-	ButtonPressed( diDown );
+	ButtonPressed( DeviceInput(device.dev, MOUSE_WHEELUP, 0.0f, tm) );
+	ButtonPressed( DeviceInput(device.dev, MOUSE_WHEELDOWN, 0.0f, tm) );
 
 	for( int i = 0; i < (int) numevents; ++i )
 	{
@@ -772,8 +771,8 @@ void InputHandler_DInput::UpdateBuffered( DIDevice &device, const RageTimer &tm 
 	}
 }
 
-const short XINPUT_GAMEPAD_THUMB_MIN = MINSHORT;
-const short XINPUT_GAMEPAD_THUMB_MAX = MAXSHORT;
+inline constexpr auto XINPUT_GAMEPAD_THUMB_MIN = std::numeric_limits<short>::min();
+inline constexpr auto XINPUT_GAMEPAD_THUMB_MAX = std::numeric_limits<short>::max();
 
 void InputHandler_DInput::UpdateXInput( XIDevice &device, const RageTimer &tm )
 {

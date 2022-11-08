@@ -544,9 +544,8 @@ bool BMSChart::Load( const RString &chartPath )
 	std::vector<RString> lines;
 	Tree.evaluateBMSTree(headers, lines);
 
-	for (std::vector<RString>::iterator i = lines.begin(); i != lines.end(); ++i)
+	for (const auto& line : lines)
 	{
-		RString line = *i;
 		RString data = line.substr(7);
 		int measure = atoi(line.substr(1, 3).c_str());
 		int channel = atoi(line.substr(4, 2).c_str());
@@ -963,6 +962,8 @@ StepsType BMSChartReader::DetermineStepsType()
 				case 4:		return StepsType_dance_single;
 				case 5:
 					if( nonEmptyTracks.find(BMS_RAW_P2_KEY2) != nonEmptyTracks.end() ) return StepsType_popn_five;
+
+					[[fallthrough]];
 				case 6:
 					// FIXME: There's no way to distinguish between these types.
 					// They use the same number of tracks. Assume it's a Beat
@@ -1087,7 +1088,7 @@ bmFrac toFraction(double f)
 	long long upper = 1LL, lower = 1LL;
 	df = 1;
 
-	while (abs(df - f) > 0.000001)
+	while (std::abs(df - f) > 0.000001)
 	{
 		if (df < f)
 		{
@@ -1326,7 +1327,7 @@ bool BMSChartReader::ReadNoteData()
 
 		if( channel == 3 ) // bpm change
 		{
-			int bpm;
+			unsigned int bpm;
 			if( sscanf(obj.value, "%x", &bpm) == 1 )
 			{
 				if( bpm > 0 ) td.SetBPMAtRow( row, measureAdjust * (currentBPM = bpm) );

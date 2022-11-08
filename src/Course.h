@@ -17,8 +17,16 @@ struct Game;
 
 const int MAX_EDIT_COURSE_TITLE_LENGTH = 16;
 
-inline PlayMode CourseTypeToPlayMode( CourseType ct ) { return (PlayMode)(PLAY_MODE_NONSTOP+ct); }
-inline CourseType PlayModeToCourseType( PlayMode pm ) { return (CourseType)(pm-PLAY_MODE_NONSTOP); }
+inline PlayMode CourseTypeToPlayMode( CourseType ct ) {
+	switch (ct) {
+		case COURSE_TYPE_NONSTOP:  return PLAY_MODE_NONSTOP;
+		case COURSE_TYPE_ONI:      return PLAY_MODE_ONI;
+		case COURSE_TYPE_ENDLESS:  return PLAY_MODE_ENDLESS;
+		case COURSE_TYPE_SURVIVAL: return PLAY_MODE_BATTLE;
+		default:                   break;
+	}
+	return PlayMode_Invalid;
+}
 
 enum SongSort
 {

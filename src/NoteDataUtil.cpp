@@ -1514,6 +1514,7 @@ static void GetTrackMapping( StepsType st, NoteDataUtil::TrackMapping tt, int Nu
 		}
 		if (needsBackwards) break;
 	}
+	[[fallthrough]];
 	case NoteDataUtil::mirror:
 		{
 			for( int t=0; t<NumTracks; t++ )
@@ -1973,7 +1974,7 @@ static void HyperShuffleNotes( NoteData &inout, int iStartIndex, int iEndIndex)
 		std::shuffle(viTargetTracks.begin(), viTargetTracks.end(), g_RandomNumberGenerator);
 
 		// Go through the tracks in their shuffled order and drop tap notes.
-		for(int i = 0; i < viTargetTracks.size(); i++)
+		for(size_t i = 0; i < viTargetTracks.size(); i++)
 		{
 			const int targetTrack = viTargetTracks[i];
 			const TapNote current_tn = vtnTargetTaps[i];

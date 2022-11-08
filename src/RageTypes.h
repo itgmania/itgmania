@@ -3,6 +3,8 @@
 #ifndef RAGETYPES_H
 #define RAGETYPES_H
 
+#include <array>
+
 #include "EnumHelper.h"
 
 enum BlendMode
@@ -101,7 +103,7 @@ struct lua_State;
 struct RageVector2
 {
 public:
-	RageVector2(): x(0), y(0) {}
+	RageVector2() = default;
 	RageVector2( const float * f ): x(f[0]), y(f[1]) {}
 	RageVector2( float x1, float y1 ): x(x1), y(y1) {}
 	
@@ -123,14 +125,14 @@ public:
 	
 	friend RageVector2 operator * ( float f, const RageVector2& other )	{ return other*f; }
 	
-	float x, y;
+	float x{0}, y{0};
 };
 
 
 struct RageVector3
 {
 public:
-	RageVector3(): x(0), y(0), z(0) {}
+	RageVector3() = default;
 	RageVector3( const float * f ):	x(f[0]), y(f[1]), z(f[2]) {}
 	RageVector3( float x1, float y1, float z1 ): x(x1), y(y1), z(z1) {}
 	
@@ -152,14 +154,14 @@ public:
 	
 	friend RageVector3 operator * ( float f, const RageVector3& other )	{ return other*f; }
 	
-	float x, y, z;
+	float x{0}, y{0}, z{0};
 };
 
 
 struct RageVector4
 {
 public:
-	RageVector4(): x(0), y(0), z(0), w(0) {}
+	RageVector4() = default;
 	RageVector4( const float * f ): x(f[0]), y(f[1]), z(f[2]), w(f[3]) {}
 	RageVector4( float x1, float y1, float z1, float w1 ): x(x1), y(y1), z(z1), w(w1) {}
 	
@@ -181,15 +183,23 @@ public:
 	
 	friend RageVector4 operator * ( float f, const RageVector4& other )	{ return other*f; }
 	
-	float x, y, z, w;
+	float x{0}, y{0}, z{0}, w{0};
 };
 
 struct RageColor
 {
 public:
-	RageColor(): r(0), g(0), b(0), a(0) {}
+	RageColor() = default;
 	explicit RageColor( const float * f ): r(f[0]), g(f[1]), b(f[2]), a(f[3]) {}
 	RageColor( float r1, float g1, float b1, float a1 ): r(r1), g(g1), b(b1), a(a1) {}
+
+	RageColor& operator=( const RageVector4& rv4 ) {
+		r = rv4.x;
+		g = rv4.y;
+		b = rv4.z;
+		a = rv4.w;
+		return *this;
+	}
 	
 	// casting
 	operator float* ()					{ return &r; };
@@ -228,7 +238,7 @@ public:
 		if( result == 4 )
 			return true;
 		
-		int ir=255, ib=255, ig=255, ia=255;
+		unsigned int ir=255, ib=255, ig=255, ia=255;
 		result = sscanf( str, "#%2x%2x%2x%2x", &ir, &ig, &ib, &ia );
 		if( result >= 3 )
 		{
@@ -251,7 +261,7 @@ public:
 	void FromStack( lua_State *L, int iPos );
 	void FromStackCompat( lua_State *L, int iPos );
 
-	float r, g, b, a;
+	float r{0}, g{0}, b{0}, a{0};
 };
 
 /* Convert floating-point 0..1 value to integer 0..255 value. *
@@ -310,9 +320,9 @@ inline unsigned char FTOC(float a)
 class RageVColor
 {
 public:
-	uint8_t b,g,r,a;	// specific ordering required by Direct3D
+	uint8_t b{0},g{0},r{0},a{0};	// specific ordering required by Direct3D
 
-	RageVColor(): b(0), g(0), r(0), a(0) { }
+	RageVColor() = default;
 	RageVColor(const RageColor &rc): b(0), g(0), r(0), a(0) { *this = rc; }
 	RageVColor &operator= (const RageColor &rc)
 	{
@@ -327,7 +337,7 @@ namespace StepMania
 	class Rect
 	{
 public:
-		Rect(): left(0), top(0), right(0), bottom(0) {}
+		Rect() = default;
 		Rect(T l, T t, T r, T b): left(l), top(t), right(r), bottom(b) {}
 		
 		T GetWidth() const	{ return right-left; };
@@ -347,7 +357,7 @@ public:
 		}
 		bool operator!=( const Rect &other ) const { return !operator==(other); }
 		
-		T left, top, right, bottom;
+		T left{}, top{}, right{}, bottom{};
 	};
 }
 typedef StepMania::Rect<int> RectI;
@@ -357,11 +367,11 @@ typedef StepMania::Rect<float> RectF;
  * have the same layout that D3D expects. */
 struct RageSpriteVertex	// has color
 {
-	RageSpriteVertex(): p(), n(), c(), t() {}
-	RageVector3 p; // position
-	RageVector3 n; // normal
-	RageVColor  c; // diffuse color
-	RageVector2 t; // texture coordinates
+	RageSpriteVertex() = default;
+	RageVector3 p{}; // position
+	RageVector3 n{}; // normal
+	RageVColor  c{}; // diffuse color
+	RageVector2 t{}; // texture coordinates
 };
 
 void lerp_rage_color(RageColor& out, RageColor const& a, RageColor const& b, float t);
@@ -369,19 +379,12 @@ void WeightedAvergeOfRSVs(RageSpriteVertex& average_out, RageSpriteVertex const&
 
 struct RageModelVertex	// doesn't have color.  Relies on material color
 {
-	/* Zero out by default. */
-	RageModelVertex():
-		p(0,0,0),
-		n(0,0,0),
-		t(0,0),
-		bone(0),
-		TextureMatrixScale(1,1)
-		{ }
-	RageVector3 p;	// position
-	RageVector3 n;	// normal
-	RageVector2 t;	// texture coordinates
-	int8_t      bone;
-	RageVector2 TextureMatrixScale; // usually 1,1
+	RageModelVertex() = default;
+	RageVector3 p{};	// position
+	RageVector3 n{};	// normal
+	RageVector2 t{};	// texture coordinates
+	int8_t      bone{0};
+	RageVector2 TextureMatrixScale{1,1}; // usually 1,1
 };
 
 
@@ -394,9 +397,8 @@ struct RageModelVertex	// doesn't have color.  Relies on material color
 struct RageMatrix
 {
 public:
-	RageMatrix() {};
+	RageMatrix() = default;
 	RageMatrix( const float *f )	{ for(int i=0; i<4; i++) for(int j=0; j<4; j++) m[j][i]=f[j*4+i]; }
-	RageMatrix( const RageMatrix& other )	{ for(int i=0; i<4; i++) for(int j=0; j<4; j++) m[j][i]=other.m[j][i]; }
 	RageMatrix( float v00, float v01, float v02, float v03,
                 float v10, float v11, float v12, float v13,
                 float v20, float v21, float v22, float v23,
@@ -407,12 +409,12 @@ public:
 	float  operator () ( int iRow, int iCol ) const { return m[iCol][iRow]; }
 
 	// casting operators
-	operator float* ()				{ return m[0]; }
-	operator const float* () const			{ return m[0]; }
+	operator float* ()				{ return m[0].data(); }
+	operator const float* () const			{ return m[0].data(); }
 
 	RageMatrix GetTranspose() const;
 
-	float m[4][4];
+	std::array<std::array<float, 4>, 4> m{};
 };
 
 #endif

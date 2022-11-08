@@ -1136,8 +1136,8 @@ void Player::Update( float fDeltaTime )
 		 * .5 before the row. Use a very slow song (around 2 BPM) as a test case: without
 		 * rounding, autoplay steps early. -glenn */
 		const float fPositionSeconds = m_pPlayerState->m_Position.m_fMusicSeconds - PREFSMAN->m_fPadStickSeconds;
-		const float fSongBeat = m_pPlayerState->GetDisplayedTiming().GetBeatFromElapsedTime( fPositionSeconds );
-		const int iRowNow = BeatToNoteRowNotRounded( fSongBeat );
+		const float fSongBeatTmp = m_pPlayerState->GetDisplayedTiming().GetBeatFromElapsedTime( fPositionSeconds );
+		const int iRowNow = BeatToNoteRowNotRounded( fSongBeatTmp );
 
 		if( iRowNow >= 0 )
 		{
@@ -2285,6 +2285,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 					break;
 				}
 				// Fall through to default.
+				[[fallthrough]];
 			default:
 				if( (pTN->type == TapNoteType_Lift) == bRelease )
 				{
@@ -3213,22 +3214,22 @@ void Player::SetJudgment( int iRow, int iTrack, const TapNote &tn, TapNoteScore 
 		lua_createtable( L, 0, m_NoteData.GetNumTracks() ); // TapNotes this row
 		lua_createtable( L, 0, m_NoteData.GetNumTracks() ); // HoldHeads of tracks held at this row.
 
-		for( int iTrack = 0; iTrack < m_NoteData.GetNumTracks(); ++iTrack )
+		for( int iTrackTmp = 0; iTrackTmp < m_NoteData.GetNumTracks(); ++iTrackTmp )
 		{
-			NoteData::iterator tn = m_NoteData.FindTapNote(iTrack, iRow);
-			if( tn != m_NoteData.end(iTrack) )
+			NoteData::iterator tnTmp = m_NoteData.FindTapNote(iTrackTmp, iRow);
+			if( tnTmp != m_NoteData.end(iTrackTmp) )
 			{
-				tn->second.PushSelf(L);
-				lua_rawseti(L, -3, iTrack + 1);
+				tnTmp->second.PushSelf(L);
+				lua_rawseti(L, -3, iTrackTmp + 1);
 			}
 			else
 			{
 				int iHeadRow;
-				if( m_NoteData.IsHoldNoteAtRow( iTrack, iRow, &iHeadRow ) )
+				if( m_NoteData.IsHoldNoteAtRow( iTrackTmp, iRow, &iHeadRow ) )
 				{
-					NoteData::iterator hold = m_NoteData.FindTapNote(iTrack, iHeadRow);
+					NoteData::iterator hold = m_NoteData.FindTapNote(iTrackTmp, iHeadRow);
 					hold->second.PushSelf(L);
-					lua_rawseti(L, -2, iTrack + 1);
+					lua_rawseti(L, -2, iTrackTmp + 1);
 				}
 			}
 		}

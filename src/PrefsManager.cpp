@@ -267,9 +267,6 @@ PrefsManager::PrefsManager() :
 	m_sAdditionalCourseFoldersWritable( "AdditionalCourseFoldersWritable",	"", nullptr, PreferenceType::Immutable ),
 	m_sAdditionalFoldersReadOnly	( "AdditionalFoldersReadOnly",		"", nullptr, PreferenceType::Immutable ),
 	m_sAdditionalFoldersWritable	( "AdditionalFoldersWritable",		"", nullptr, PreferenceType::Immutable ),
-	m_sAdditionalSongFolders	( "AdditionalSongFolders",		"", nullptr, PreferenceType::Deprecated ),
-	m_sAdditionalCourseFolders	( "AdditionalCourseFolders",		"", nullptr, PreferenceType::Deprecated ),
-	m_sAdditionalFolders		( "AdditionalFolders",			"", nullptr, PreferenceType::Deprecated ),
 	m_sDefaultTheme			( "DefaultTheme",			"Simply Love" ),
 	m_sLastSeenVideoDriver		( "LastSeenVideoDriver",		"" ),
 	m_sVideoRenderers		( "VideoRenderers",			"" ),	// StepMania.cpp sets these on first run:
@@ -311,8 +308,10 @@ PrefsManager::PrefsManager() :
 	m_bLogCheckpoints		( "LogCheckpoints",	false ),
 	m_bShowLoadingWindow		( "ShowLoadingWindow",	true ),
 	m_bPseudoLocalize		( "PseudoLocalize",	false ),
-	m_show_theme_errors		( "ShowThemeErrors",	false )
-
+	m_show_theme_errors		( "ShowThemeErrors",	false ),
+	m_sAdditionalSongFolders	( "AdditionalSongFolders",		"", nullptr, PreferenceType::Deprecated ),
+	m_sAdditionalCourseFolders	( "AdditionalCourseFolders",		"", nullptr, PreferenceType::Deprecated ),
+	m_sAdditionalFolders		( "AdditionalFolders",			"", nullptr, PreferenceType::Deprecated )
 {
 	Init();
 	ReadPrefsFromDisk();

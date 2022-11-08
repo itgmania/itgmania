@@ -362,6 +362,7 @@ void LightsManager::Update( float fDeltaTime )
 			}
 
 			// fall through to blink on button presses
+			[[fallthrough]];
 		}
 
 		case LIGHTSMODE_DEMONSTRATION:
@@ -383,6 +384,7 @@ void LightsManager::Update( float fDeltaTime )
 			}
 
 			// fall through to blink on button presses
+			[[fallthrough]];
 		}
 
 		case LIGHTSMODE_ATTRACT:

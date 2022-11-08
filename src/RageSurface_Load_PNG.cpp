@@ -236,7 +236,7 @@ static RageSurface *RageSurface_Load_PNG( RageFile *f, const char *fn, char erro
 	ASSERT( img != nullptr );
 
 	row_pointers = new png_byte*[height];
-	CHECKPOINT_M( ssprintf("%p",row_pointers) );
+	CHECKPOINT_M( ssprintf("%p",static_cast<void*>(row_pointers)) );
 
 	for( unsigned y = 0; y < height; ++y )
 	{

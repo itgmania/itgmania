@@ -254,27 +254,8 @@ void RageTextureManager::DeleteTexture( RageTexture *t )
 		m_texture_ids_by_pointer.erase(id_entry);
 		return;
 	}
-	else
-	{
-		FAIL_M("Tried to delete a texture that wasn't in the ids by pointer list.");
-		for (std::map<RageTextureID, RageTexture *>::iterator iter = m_mapPathToTexture.begin(); iter != m_mapPathToTexture.end(); ++iter)
-		{
-			if( iter->second == t )
-			{
-				m_mapPathToTexture.erase( iter );	// remove map entry
-				SAFE_DELETE( t );	// free the texture
-				std::map<RageTextureID, RageTexture*>::iterator tex_update_entry=
-					m_textures_to_update.find(iter->first);
-				if(tex_update_entry != m_textures_to_update.end())
-				{
-					m_textures_to_update.erase(tex_update_entry);
-				}
-				return;
-			}
-		}
-	}
 
-	FAIL_M("Tried to delete a texture that wasn't loaded");
+	FAIL_M("Tried to delete a texture that wasn't in the ids by pointer list.");
 }
 
 void RageTextureManager::GarbageCollect( GCType type )

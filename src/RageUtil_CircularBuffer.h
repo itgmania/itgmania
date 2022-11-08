@@ -131,7 +131,8 @@ public:
 
 	void clear()
 	{
-		read_pos = write_pos = 0;
+		read_pos = 0;
+		write_pos = 0;
 	}
 
 	/* Indicate that n elements have been written. */

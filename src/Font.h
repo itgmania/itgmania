@@ -154,7 +154,7 @@ public:
 
 	int GetLineWidthInSourcePixels( const std::wstring &szLine ) const;
 	int GetLineHeightInSourcePixels( const std::wstring &szLine ) const;
-	int GetGlyphsThatFit(const std::wstring& line, int* width) const;
+	size_t GetGlyphsThatFit(const std::wstring& line, int* width) const;
 
 	bool FontCompleteForString( const std::wstring &str ) const;
 

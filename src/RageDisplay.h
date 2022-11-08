@@ -112,44 +112,30 @@ public:
 		PAL(PAL_),
 		fDisplayAspectRatio(fDisplayAspectRatio_) {}
 
-	VideoModeParams(const VideoModeParams &other):
-	windowed(other.windowed), sDisplayId(other.sDisplayId),
-	width(other.width), height(other.height),
-	bpp(other.bpp), rate(other.rate),
-	vsync(other.vsync), interlaced(other.interlaced),
-	bSmoothLines(other.bSmoothLines), bTrilinearFiltering(other.bTrilinearFiltering),
-	bAnisotropicFiltering(other.bAnisotropicFiltering), bWindowIsFullscreenBorderless(other.bWindowIsFullscreenBorderless),
-	sWindowTitle(other.sWindowTitle), sIconFile(other.sIconFile),
-	PAL(other.PAL), fDisplayAspectRatio(other.fDisplayAspectRatio)
-	{}
+	VideoModeParams(const VideoModeParams &other) = default;
 
-	VideoModeParams(): windowed(false), width(0), height(0),
-					   bpp(0), rate(0), vsync(false), interlaced(false),
-					   bSmoothLines(false), bTrilinearFiltering(false),
-					   bAnisotropicFiltering(false), bWindowIsFullscreenBorderless(false),
-					   sWindowTitle(RString()), sIconFile(RString()),
-					   PAL(false), fDisplayAspectRatio(0.0f) {}
+	VideoModeParams() = default;
 
 	// Subclassing VideoModeParams in ActualVideoModeParams. Make destructor virtual just in case
 	// someone tries to delete one of those through a pointer to base...
-	virtual ~VideoModeParams() {}
+	virtual ~VideoModeParams() = default;
 
-	bool windowed;
-	RString sDisplayId;
-	int width;
-	int height;
-	int bpp;
-	int rate;
-	bool vsync;
-	bool interlaced;
-	bool bSmoothLines;
-	bool bTrilinearFiltering;
-	bool bAnisotropicFiltering;
-	bool bWindowIsFullscreenBorderless;
-	RString sWindowTitle;
-	RString sIconFile;
-	bool PAL;
-	float fDisplayAspectRatio;
+	bool windowed{false};
+	RString sDisplayId{};
+	int width{0};
+	int height{0};
+	int bpp{0};
+	int rate{0};
+	bool vsync{false};
+	bool interlaced{false};
+	bool bSmoothLines{false};
+	bool bTrilinearFiltering{false};
+	bool bAnisotropicFiltering{false};
+	bool bWindowIsFullscreenBorderless{false};
+	RString sWindowTitle{};
+	RString sIconFile{};
+	bool PAL{false};
+	float fDisplayAspectRatio{0.0f};
 };
 
 /**
@@ -171,6 +157,8 @@ public:
 		renderOffscreen( renderOffscreen )
 	{ }
 	ActualVideoModeParams (const ActualVideoModeParams &other) = default;
+	ActualVideoModeParams& operator=(const ActualVideoModeParams& other) = default;
+
 
 	// If bWindowIsFullscreenBorderless is true,
 	// then these properties will differ from width/height (which describe the

@@ -239,7 +239,7 @@ void RageModelGeometry::LoadMilkshapeAscii( const RString& _sPath, bool bNeedsNo
 
 					uint16_t nIndices[3];
 					uint16_t nNormalIndices[3];
-					if( sscanf (sLine, "%d %hd %hd %hd %hd %hd %hd %d",
+					if( sscanf (sLine, "%d %hu %hu %hu %hu %hu %hu %d",
 								&nFlags,
 								&nIndices[0], &nIndices[1], &nIndices[2],
 								&nNormalIndices[0], &nNormalIndices[1], &nNormalIndices[2],

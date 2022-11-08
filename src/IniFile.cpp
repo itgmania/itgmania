@@ -88,6 +88,7 @@ bool IniFile::ReadFile( RageFileBasic &f )
 					}
 					break;
 				}
+				[[fallthrough]];
 			default:
 			keyvalue:
 				if(keychild == nullptr)

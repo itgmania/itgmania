@@ -169,7 +169,10 @@ namespace
 
 	void FixLittleEndian()
 	{
-#if defined(ENDIAN_LITTLE)
+		if constexpr (!Endian::little) {
+			return;
+		}
+
 		static bool bInitialized = false;
 		if (bInitialized)
 			return;
@@ -197,7 +200,6 @@ namespace
 				pf.masks[mask] = m;
 			}
 		}
-#endif
 	}
 	namespace Caps
 	{

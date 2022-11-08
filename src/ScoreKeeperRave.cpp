@@ -116,7 +116,7 @@ void ScoreKeeperRave::AddSuperMeterDelta( float fUnscaledPercentChange )
 {
 	if( PREFSMAN->m_bMercifulDrain  &&  fUnscaledPercentChange<0 )
 	{
-		float fSuperPercentage = m_pPlayerState->m_fSuperMeter / NUM_ATTACK_LEVELS;
+		float fSuperPercentage = m_pPlayerState->m_fSuperMeter / Enum::to_integral(NUM_ATTACK_LEVELS);
 		fUnscaledPercentChange *= SCALE( fSuperPercentage, 0.f, 1.f, 0.5f, 1.f);
 	}
 
