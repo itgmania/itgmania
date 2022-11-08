@@ -62,19 +62,13 @@ RString GetPrimaryVideoDriverName()
 /* Get info for the given card number.  Return false if that card doesn't exist. */
 bool GetVideoDriverInfo( int iCardno, VideoDriverInfo &info )
 {
-	OSVERSIONINFO version;
-	version.dwOSVersionInfoSize = sizeof(version);
-	GetVersionEx(&version);
-	const bool bIsWin9x = version.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS;
-
 	static bool bInitialized=false;
 	static std::vector<RString> lst;
 	if( !bInitialized )
 	{
 		bInitialized = true;
 
-		const RString sTopKey = bIsWin9x?
-			"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Class\\Display":
+		const RString sTopKey = 
 			"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E968-E325-11CE-BFC1-08002BE10318}";
 
 		RegistryAccess::GetRegSubKeys( sTopKey, lst, ".*", false );
@@ -113,7 +107,7 @@ bool GetVideoDriverInfo( int iCardno, VideoDriverInfo &info )
 		RegistryAccess::GetRegValue( sKey, "DriverDate", info.sDate );
 		RegistryAccess::GetRegValue( sKey, "MatchingDeviceId", info.sDeviceID );
 		RegistryAccess::GetRegValue( sKey, "ProviderName", info.sProvider );
-		RegistryAccess::GetRegValue( sKey, bIsWin9x? "Ver":"DriverVersion", info.sVersion );
+		RegistryAccess::GetRegValue( sKey, "DriverVersion", info.sVersion );
 
 		return true;
 	}

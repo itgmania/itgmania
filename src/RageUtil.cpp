@@ -3,6 +3,7 @@
 #include "RageMath.h"
 #include "RageLog.h"
 #include "RageFile.h"
+#include "RageFileDriverDirectHelpers.h"
 #include "RageSoundReader_FileReader.h"
 #include "LocalizedString.h"
 #include "LuaBinding.h"
@@ -1086,7 +1087,7 @@ bool GetCommandlineArgument( const RString &option, RString *argument, int iInde
 RString GetCwd()
 {
 	char buf[PATH_MAX];
-	bool ret = getcwd(buf, PATH_MAX) != nullptr;
+	bool ret = DoGetCwd(buf, PATH_MAX) != nullptr;
 	ASSERT(ret);
 	return buf;
 }
@@ -1980,7 +1981,7 @@ void ReplaceEntityText( RString &sText, const std::map<char, RString> &m )
 {
 	RString sFind;
 
-	for (std::pair<char, RString> const &c : m)
+	for (const auto &c : m)
 		sFind.append( 1, c.first );
 
 	RString sRet;
@@ -2058,11 +2059,8 @@ void Replace_Unicode_Markers( RString &sText )
 			continue;
 		p++;
 
-		int iNum;
-		if( bHex )
-			sscanf( sText.c_str()+iPos, "&x%x;", &iNum );
-		else
-			sscanf( sText.c_str()+iPos, "&#%i;", &iNum );
+		unsigned int iNum;
+		sscanf( sText.c_str()+iPos, bHex ? "&x%x;" : "&#%u;", &iNum );
 		if( iNum > 0xFFFF )
 			iNum = INVALID_CHAR;
 
@@ -2509,7 +2507,7 @@ int LuaFunc_JsonEncode(lua_State* L)
 					Json::Value array(Json::arrayValue);
 					array.resize(len);
 
-					for (int i = 0; i < len; i++)
+					for (unsigned int i = 0; i < len; i++)
 					{
 						lua_rawgeti(L, index, i + 1);
 						array[i] = convert(-1);
@@ -2615,7 +2613,7 @@ int LuaFunc_JsonDecode(lua_State* L)
 		else if (val.isArray())
 		{
 			lua_createtable(L, val.size(), 0);
-			for (int i = 0; i < val.size(); i++)
+			for (unsigned int i = 0; i < val.size(); i++)
 			{
 				convert(val[i]);
 				lua_rawseti(L, -2, i + 1);

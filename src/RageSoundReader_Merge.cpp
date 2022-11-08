@@ -253,13 +253,6 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 			}
 
 			int iGotFrames = pSound->Read( Buffer, iFrames - iFramesRead );
-			if( 0 && /*i == 1 && */iGotFrames > 0 )
-			{
-				int iAt = aNextSourceFrames[i] + lrintf(iGotFrames * aRatios[i]);
-				if( iAt != m_aSounds[i]->GetNextSourceFrame() )
-					LOG->Trace( "%i: at %i, expected %i",
-					i, iAt, m_aSounds[i]->GetNextSourceFrame() );
-			}
 			aNextSourceFrames[i] = m_aSounds[i]->GetNextSourceFrame();
 			aRatios[i] = m_aSounds[i]->GetStreamToSourceRatio();
 //	LOG->Trace( "read %i from %i; %i -> %i", iGotFrames, i, oldf, aNextSourceFrames[i] );

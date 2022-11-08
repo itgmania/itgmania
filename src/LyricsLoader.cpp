@@ -71,7 +71,7 @@ bool LyricsLoader::LoadFromLRCFile(const RString& sPath, Song& out)
 		if( sValueName.EqualsNoCase("COLOUR") || sValueName.EqualsNoCase("COLOR") )
 		{
 			// set color var here for this segment
-			int r, g, b;
+			unsigned int r, g, b;
 			int result = sscanf( sValueData.c_str(), "0x%2x%2x%2x", &r, &g, &b );
 			// According to the Dance With Intensity readme, one can set up to
 			// ten colors in a line and access them via "{cX}", where X is 0-9.

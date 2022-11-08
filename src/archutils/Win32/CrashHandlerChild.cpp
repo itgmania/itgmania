@@ -818,7 +818,6 @@ INT_PTR CrashDialog::HandleMessage( UINT msg, WPARAM wParam, LPARAM lParam )
 				XNode xml;
 				if( sError.empty() )
 				{
-					RString sError;
 					XmlFileUtil::Load( &xml, sResult, sError );
 					if( !sError.empty() )
 					{

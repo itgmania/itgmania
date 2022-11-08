@@ -298,7 +298,7 @@ static DWORD WINAPI MainExceptionHandler( LPVOID lpParameter )
 #else
 		pExc->ContextRecord->FloatSave.ControlWord |= 0x3F;
 #endif
-		return EXCEPTION_CONTINUE_EXECUTION;
+		return static_cast<DWORD>(EXCEPTION_CONTINUE_EXECUTION);
 	}
 
 	static int InHere = 0;
@@ -563,7 +563,7 @@ void CrashHandler::do_backtrace( const void **buf, size_t size,
 }
 
 // Trigger the crash handler. This works even in the debugger.
-static void NORETURN debug_crash()
+static void SM_NORETURN debug_crash()
 {
 //	__try {
 #if defined(__MSC_VER)

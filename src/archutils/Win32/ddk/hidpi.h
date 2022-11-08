@@ -1699,7 +1699,7 @@ typedef struct _HIDP_KEYBOARD_MODIFIER_STATE {
          ULONG ScollLock: 1;
          ULONG NumLock: 1;
          ULONG Reserved: 21;
-      };
+      } s;
       ULONG ul;
    };
 

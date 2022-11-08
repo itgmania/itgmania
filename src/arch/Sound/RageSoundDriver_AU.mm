@@ -14,7 +14,7 @@ static const UInt32 kChannelsPerFrame = 2;
 static const UInt32 kBitsPerChannel = 32;
 static const UInt32 kBytesPerPacket = kChannelsPerFrame * kBitsPerChannel / 8;
 static const UInt32 kBytesPerFrame = kBytesPerPacket;
-static const UInt32 kFormatFlags = kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsFloat;
+static const UInt32 kFormatFlags = Enum::to_integral(kAudioFormatFlagsNativeEndian) | Enum::to_integral(kAudioFormatFlagIsFloat);
 
 static const char *FormatOSError(OSStatus status)
 {
@@ -62,7 +62,7 @@ static void SetSampleRate( AudioUnit au, Float64 desiredRate )
 		kAudioObjectPropertyElementWildcard
 	};
 	
-	if( (error = AudioObjectGetPropertyData(OutputDevice, &AvailableRatesAddr, 0, nullptr, &size, nullptr)) )
+	if( (error = AudioObjectGetPropertyDataSize(OutputDevice, &AvailableRatesAddr, 0, nullptr, &size)) )
 	{
 		LOG->Warn("Couldn't get available nominal sample rates info: %s", FormatOSError(error));
 		return;
@@ -295,7 +295,7 @@ float RageSoundDriver_AU::GetPlayLatency() const
 			kAudioObjectPropertyElementWildcard
 		};
 		
-		if( (error = AudioObjectGetPropertyData(OutputDevice, &StreamsAddr, 0, nullptr, &size, nullptr)) )
+		if( (error = AudioObjectGetPropertyDataSize(OutputDevice, &StreamsAddr, 0, nullptr, &size)) )
 		{
 			LOG->Warn("Device has no streams: %s", FormatOSError(error));
 			break;

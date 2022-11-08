@@ -231,7 +231,7 @@ inline void VerifySelected(SelectType st, std::vector<bool> &selected, const RSt
 				sName.c_str(), num_selected, static_cast<int>(selected.size()));
 			for(unsigned int e= 0; e < selected.size(); ++e)
 			{
-				if(selected[e] && e != first_selected)
+				if(selected[e] && (first_selected < 0 || e != static_cast<uint32_t>(first_selected)))
 				{
 					selected[e]= false;
 				}

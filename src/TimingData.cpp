@@ -105,7 +105,6 @@ void TimingData::PrepareLookup()
 
 		GetBeatStarts time_start;
 		time_start.last_time= -m_fBeat0OffsetInSeconds;
-		float time= GetElapsedTimeInternal(time_start, FLT_MAX, curr_segment);
 		m_time_start_lookup.push_back(lookup_item_t(NoteRowToBeat(time_start.last_row), time_start));
 	}
 	// If there are less than two entries, then FindEntryInLookup in lookup
@@ -267,7 +266,7 @@ void TimingData::ShiftRange(int start_row, int end_row,
 			int last_row= std::max(end_row, end_row + shift_amount);
 			int first_affected= GetSegmentIndexAtRow(seg_type, first_row);
 			int last_affected= GetSegmentIndexAtRow(seg_type, last_row);
-			if(first_affected == INVALID_INDEX)
+			if(first_affected == INVALID_INDEX || last_affected == INVALID_INDEX)
 			{
 				continue;
 			}
@@ -275,7 +274,7 @@ void TimingData::ShiftRange(int start_row, int end_row,
 			// the rows of the segments, the second time removing segments that
 			// have been run over by a segment being moved.  Attempts to combine
 			// both operations into a single loop were error prone. -Kyz
-			for(size_t i= first_affected; i <= last_affected && i < segs.size(); ++i)
+			for(size_t i= first_affected; last_affected >= 0 && i <= static_cast<uint32_t>(last_affected) && i < segs.size(); ++i)
 			{
 				int seg_row= segs[i]->GetRow();
 				if(seg_row > 0 && seg_row >= start_row && seg_row <= end_row)
@@ -285,7 +284,7 @@ void TimingData::ShiftRange(int start_row, int end_row,
 				}
 			}
 #define ERASE_SEG(s) if(segs.size() > 1) { EraseSegment(segs, s, segs[s]); --i; --last_affected; erased= true; }
-			for(size_t i= first_affected; i <= last_affected && i < segs.size(); ++i)
+			for(size_t i= first_affected; last_affected >= 0 && i <= static_cast<uint32_t>(last_affected) && i < segs.size(); ++i)
 			{
 				bool erased= false;
 				int seg_row= segs[i]->GetRow();
@@ -570,8 +569,6 @@ const TimingSegment* TimingData::GetSegmentAtRow( int iNoteRow, TimingSegmentTyp
 				return DummySegments[tst];
 		}
 	}
-
-	FAIL_M("Could not find timing segment for row");
 }
 
 TimingSegment* TimingData::GetSegmentAtRow( int iNoteRow, TimingSegmentType tst )
@@ -866,6 +863,7 @@ void TimingData::GetBeatInternal(GetBeatStarts& start, GetBeatArgs& args,
 					{
 						break;
 					}
+					[[fallthrough]];
 				}
 			case FOUND_STOP:
 				{
@@ -1130,18 +1128,6 @@ void TimingData::DeleteRows( int iStartRow, int iRowsToDelete )
 
 float TimingData::GetDisplayedSpeedPercent( float fSongBeat, float fMusicSeconds ) const
 {
-	/* HACK: Somehow we get called into this function when there is no
-	 * TimingData to work with. This seems to happen the most upon
-	 * leaving the editor. Still, cover our butts in case this instance
-	 * isn't existing. */
-	/* ...but force a crash, so debuggers will catch it and stop here.
-	 * That'll make us keep this bug in mind. -- vyhd */
-	if( !this )
-	{
-		DEBUG_ASSERT( this );
-		return 1.0f;
-	}
-
 	const std::vector<TimingSegment *> &speeds = GetTimingSegments(SEGMENT_SPEED);
 	if( speeds.size() == 0 )
 	{

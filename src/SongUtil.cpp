@@ -326,7 +326,7 @@ void SongUtil::DeleteDuplicateSteps( Song *pSong, std::vector<Steps*> &vSteps )
 				continue;
 
 			LOG->Trace("Removed %p duplicate steps in song \"%s\" with description \"%s\", step author \"%s\", and meter \"%i\"",
-				s2, pSong->GetSongDir().c_str(), s1->GetDescription().c_str(), s1->GetCredit().c_str(), s1->GetMeter() );
+				static_cast<const void*>(s2), pSong->GetSongDir().c_str(), s1->GetDescription().c_str(), s1->GetCredit().c_str(), s1->GetMeter() );
 				
 			pSong->DeleteSteps( s2, false );
 

@@ -3,34 +3,18 @@
 
 struct UsbStorageDevice
 {
-	UsbStorageDevice() { MakeBlank(); }
+	UsbStorageDevice() = default;
 	
-	void MakeBlank()
-	{
-		// -1 means "don't know"
-		iBus = -1;
-		iPort = -1;
-		iLevel = -1;
-		sDevice = "";
-		sSerial = "<none>"; // be different than a card with no serial
-		sOsMountDir = "";
-		m_State = STATE_NONE;
-		bIsNameAvailable = false;
-		sName = "";
-		idVendor = 0;
-		idProduct = 0;
-		sVendor = "";
-		sProduct = "";
-		sVolumeLabel = "";
-		iVolumeSizeMB = 0;
-	};
-	int iBus;
-	int iPort;
-	int iLevel;
-	RString sSerial;
-	RString sDevice;
-	RString	sOsMountDir;	// WITHOUT trailing slash
-	RString sSysPath;   // Linux: /sys/block name
+	void MakeBlank() { *this = {}; };
+
+	// -1 means "don't know"
+	int iBus{-1};
+	int iPort{-1};
+	int iLevel{-1};
+	RString sSerial{"none"}; // be different than a card with no serial
+	RString sDevice{};
+	RString	sOsMountDir{};	// WITHOUT trailing slash
+	RString sSysPath{};   // Linux: /sys/block name
 	enum State
 	{
 		/* Empty device.  This is used only by MemoryCardManager. */
@@ -52,19 +36,19 @@ struct UsbStorageDevice
 		NUM_State,
 		State_INVALID
 	};
-	State m_State;
-	RString m_sError;
+	State m_State{STATE_NONE};
+	RString m_sError{};
 
 	void SetError( const RString &sError ) { m_State = STATE_ERROR; m_sError = sError; }
 
-	bool bIsNameAvailable;  // Name in the profile on the memory card.
-	RString sName;  // Name in the profile on the memory card.
-	int idVendor;
-	int idProduct;
-	RString sVendor;
-	RString sProduct;
-	RString sVolumeLabel;
-	int iVolumeSizeMB;
+	bool bIsNameAvailable{false};  // Name in the profile on the memory card.
+	RString sName{};  // Name in the profile on the memory card.
+	unsigned int idVendor{0};
+	unsigned int idProduct{0};
+	RString sVendor{};
+	RString sProduct{};
+	RString sVolumeLabel{};
+	int iVolumeSizeMB{0};
 
 	bool IsBlank() const { return m_State == STATE_NONE; }
 	void SetOsMountDir( const RString &s );

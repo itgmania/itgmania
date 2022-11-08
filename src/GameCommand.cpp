@@ -543,8 +543,10 @@ static bool AreStyleAndPlayModeCompatible( const Style *style, PlayMode pm )
 			if( style->m_StyleType==StyleType_OnePlayerTwoSides ||
 				style->m_StyleType==StyleType_TwoPlayersSharedSides )
 				return false;
-		default: return true;
+		default: break;
 	}
+
+	return true;
 }
 
 bool GameCommand::IsPlayable( RString *why ) const

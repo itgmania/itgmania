@@ -562,6 +562,7 @@ void actor_template_t::load_node(XNode const& node, RString const& dirname, cond
 					{
 						case FT_Xml:
 							this_relative= SetExtension(this_relative, "lua");
+							[[fallthrough]];
 						case FT_Lua:
 							set_type("LoadActor");
 							store_field("File", this_relative, false);

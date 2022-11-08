@@ -68,11 +68,11 @@ namespace Checkpoints
  * beginning of the function prototype (although it looks better near the end,
  * VC only accepts it at the beginning). */
 #if defined(_MSC_VER)
-#define NORETURN __declspec(noreturn)
+#define SM_NORETURN __declspec(noreturn)
 #elif defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5))
-#define NORETURN __attribute__ ((__noreturn__))
+#define SM_NORETURN __attribute__ ((__noreturn__))
 #else
-#define NORETURN
+#define SM_NORETURN
 #endif
 
 /**
@@ -84,7 +84,7 @@ namespace Checkpoints
  * @param reason the crash reason as determined by prior function calls.
  * @return nothing: there is no escape without quitting the program.
  */
-void NORETURN sm_crash( const char *reason = "Internal error" );
+void SM_NORETURN sm_crash( const char *reason = "Internal error" );
 
 /**
  * @brief Assertion that sets an optional message and brings up the crash 

@@ -374,7 +374,7 @@ void ScreenSelectMaster::HandleScreenMessage( const ScreenMessage SM )
 
 	if( SM == SM_PlayPostSwitchPage )
 	{
-		int iNewChoice = m_iChoice[ GAMESTATE->GetMasterPlayerNumber() ];
+		const auto iNewChoice = m_iChoice[ GAMESTATE->GetMasterPlayerNumber() ];
 		Page newPage = GetPage( iNewChoice );
 
 		Message msg("PostSwitchPage");
@@ -390,7 +390,7 @@ void ScreenSelectMaster::HandleScreenMessage( const ScreenMessage SM )
 		{
 			for (PlayerNumber const &p : vpns)
 			{
-				int iChoice = m_iChoice[p];
+				const auto iChoice = m_iChoice[p];
 				m_vsprScroll[p][iChoice]->HandleMessage( msg );
 			}
 		}
@@ -460,7 +460,7 @@ void ScreenSelectMaster::UpdateSelectableChoices()
 
 		for ( PlayerNumber &p : vpns)
 		{
-			if(disabled && m_iChoice[p] == c)
+			if(disabled && m_iChoice[p] == static_cast<int32_t>(c))
 			{
 				on_unplayable[p]= true;
 			}
@@ -503,7 +503,7 @@ bool ScreenSelectMaster::Move( PlayerNumber pn, MenuDir dir )
 	if( !AnyOptionsArePlayable() )
 		return false;
 
-	int iSwitchToIndex = m_iChoice[pn];
+	auto iSwitchToIndex = m_iChoice[pn];
 	std::set<int> seen;
 
 	do
@@ -540,7 +540,7 @@ bool ScreenSelectMaster::MenuLeft( const InputEventPlus &input )
 	{
 		m_TrackingRepeatingInput = input.MenuI;
 		m_soundChange.Play(true);
-		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuLeftP1+pn) );
+		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuLeftP1+Enum::to_integral(pn)) );
 		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuSelectionChanged) );
 
 		// if they use double select
@@ -571,7 +571,7 @@ bool ScreenSelectMaster::MenuRight( const InputEventPlus &input )
 	{
 		m_TrackingRepeatingInput = input.MenuI;
 		m_soundChange.Play(true);
-		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuRightP1+pn) );
+		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuRightP1+Enum::to_integral(pn)) );
 		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuSelectionChanged) );
 
 		// if they use double select
@@ -602,7 +602,7 @@ bool ScreenSelectMaster::MenuUp( const InputEventPlus &input )
 	{
 		m_TrackingRepeatingInput = input.MenuI;
 		m_soundChange.Play(true);
-		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuUpP1+pn) );
+		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuUpP1+Enum::to_integral(pn)) );
 		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuSelectionChanged) );
 
 		// if they use double select
@@ -633,7 +633,7 @@ bool ScreenSelectMaster::MenuDown( const InputEventPlus &input )
 	{
 		m_TrackingRepeatingInput = input.MenuI;
 		m_soundChange.Play(true);
-		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuDownP1+pn) );
+		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuDownP1+Enum::to_integral(pn)) );
 		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuSelectionChanged) );
 
 		// if they use double select
@@ -963,7 +963,7 @@ bool ScreenSelectMaster::MenuStart( const InputEventPlus &input )
 		mc->ApplyToAllPlayers();
 		// We want to be able to broadcast a Start message to the theme, in
 		// case a themer wants to handle something. -aj
-		Message msg( MessageIDToString((MessageID)(Message_MenuStartP1+pn)) );
+		Message msg( MessageIDToString((MessageID)(Message_MenuStartP1+Enum::to_integral(pn))) );
 		msg.SetParam( "ScreenEmpty", true );
 		MESSAGEMAN->Broadcast( msg );
 		return true;
@@ -991,7 +991,7 @@ bool ScreenSelectMaster::MenuStart( const InputEventPlus &input )
 	if( bAllDone )
 	{
 		// broadcast MenuStart just like MenuLeft/Right/etc.
-		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuStartP1+pn) );
+		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuStartP1+Enum::to_integral(pn)) );
 		this->PostScreenMessage( SM_BeginFadingOut, fSecs );// tell our owner it's time to move on
 	}
 	return true;

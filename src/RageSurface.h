@@ -3,6 +3,9 @@
 #ifndef RAGE_SURFACE_H
 #define RAGE_SURFACE_H
 
+#include <array>
+#include <memory>
+
 /* XXX remove? */
 struct RageSurfaceColor 
 {
@@ -40,16 +43,16 @@ struct RageSurfaceFormat
 {
 	RageSurfaceFormat();
 	RageSurfaceFormat( const RageSurfaceFormat &cpy );
-	~RageSurfaceFormat();
+	~RageSurfaceFormat() = default;
 
 	int32_t BytesPerPixel;
 	int32_t BitsPerPixel;
-	uint32_t Mask[4];
-	uint32_t Shift[4];
-	uint8_t Loss[4];
+	std::array<uint32_t, 4> Mask;
+	std::array<uint32_t, 4> Shift;
+	std::array<uint32_t, 4> Loss;
 	uint32_t &Rmask, &Gmask, &Bmask, &Amask; /* deprecated */
 	uint32_t &Rshift, &Gshift, &Bshift, &Ashift; /* deprecated */
-	RageSurfacePalette *palette;
+	std::unique_ptr<RageSurfacePalette> palette;
 
 	void GetRGB( uint32_t val, uint8_t *r, uint8_t *g, uint8_t *b ) const;
 

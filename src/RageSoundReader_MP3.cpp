@@ -45,9 +45,9 @@ static unsigned long id3_parse_uint( const unsigned char **ptr, unsigned int byt
 
 	switch (bytes)
 	{
-	case 4: value = (value << 8) | *(*ptr)++;
-	case 3: value = (value << 8) | *(*ptr)++;
-	case 2: value = (value << 8) | *(*ptr)++;
+	case 4: value = (value << 8) | *(*ptr)++; [[fallthrough]];
+	case 3: value = (value << 8) | *(*ptr)++; [[fallthrough]];
+	case 2: value = (value << 8) | *(*ptr)++; [[fallthrough]];
 	case 1: value = (value << 8) | *(*ptr)++;
 	}
 
@@ -63,7 +63,7 @@ static unsigned long id3_parse_syncsafe( const unsigned char **ptr, unsigned int
 	switch (bytes)
 	{
 	case 5:
-		value = (value << 4) | (*(*ptr)++ & 0x0f);
+		value = (value << 4) | (*(*ptr)++ & 0x0f); [[fallthrough]];
 	case 4:
 		value = (value << 7) | (*(*ptr)++ & 0x7f);
 		value = (value << 7) | (*(*ptr)++ & 0x7f);

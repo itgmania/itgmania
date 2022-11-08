@@ -124,12 +124,6 @@ typedef unsigned long size_t;
 typedef std::make_signed<size_t>::type ssize_t;
 #endif
 
-/* Defined to 1 if the underlying system uses little endian. */
-#cmakedefine ENDIAN_LITTLE 1
-
-/* Defined to 1 if the underlying system uses big endian. */
-#cmakedefine ENDIAN_BIG 1
-
 /* Defined to 1 if logging timing segment additions and removals. */
 #cmakedefine WITH_LOGGING_TIMING_DATA 1
 
@@ -250,26 +244,12 @@ inline long lrintf( float f )
 #define M_PI 3.1415926535897932384626433832795
 #endif
 
-/* Ensure we have an endianness defined. */
-#if !defined(ENDIAN_LITTLE) && !defined(ENDIAN_BIG)
-#error "Neither ENDIAN_LITTLE nor ENDIAN_BIG defined. Aborting."
-#endif
-
 /* Define standard endianness macros, if they're missing. */
 #if defined(HAVE_ENDIAN_H)
 #include <endian.h>
 #elif defined(HAVE_MACHINE_ENDIAN_H)
 #include <machine/endian.h>
 #else
-/** @brief The macro for little endian order. */
-#define LITTLE_ENDIAN 1234
-/** @brief The macro for big endian order. */
-#define BIG_ENDIAN 4321
-#if defined(ENDIAN_LITTLE)
-#define BYTE_ORDER LITTLE_ENDIAN
-#elif defined(ENDIAN_BIG)
-#define BYTE_ORDER BIG_ENDIAN
-#endif
 
 #endif
 

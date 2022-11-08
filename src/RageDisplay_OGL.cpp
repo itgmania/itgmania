@@ -213,7 +213,10 @@ struct GLPixFmtInfo_t {
 
 static void FixLittleEndian()
 {
-#if defined(ENDIAN_LITTLE)
+	if constexpr (!Endian::little) {
+		return;
+	}
+
 	static bool bInitialized = false;
 	if (bInitialized)
 		return;
@@ -241,7 +244,6 @@ static void FixLittleEndian()
 			pf.masks[mask] = m;
 		}
 	}
-#endif
 }
 
 static void TurnOffHardwareVBO()
@@ -2213,7 +2215,7 @@ uintptr_t RageDisplay_Legacy::CreateTexture(
 
 	/* If the image is paletted, but we're not sending it to a paletted image,
 	 * set up glPixelMap. */
-	SetPixelMapForSurface( glImageFormat, glTexFormat, pImg->format->palette );
+	SetPixelMapForSurface( glImageFormat, glTexFormat, pImg->format->palette.get() );
 
 	// HACK:  OpenGL 1.2 types aren't available in GLU 1.3.  Don't call GLU for mip
 	// mapping if we're using an OGL 1.2 type and don't have >= GLU 1.3.
@@ -2433,7 +2435,7 @@ void RageDisplay_Legacy::UpdateTexture(
 	{
 		GLenum glTexFormat = 0;
 		glGetTexLevelParameteriv( GL_PROXY_TEXTURE_2D, 0, GLenum(GL_TEXTURE_INTERNAL_FORMAT), (GLint *) &glTexFormat );
-		SetPixelMapForSurface( glImageFormat, glTexFormat, pImg->format->palette );
+		SetPixelMapForSurface( glImageFormat, glTexFormat, pImg->format->palette.get() );
 	}
 
 	glTexSubImage2D( GL_TEXTURE_2D, 0,
@@ -2691,7 +2693,7 @@ void RageDisplay_Legacy::SetLineWidth(float fWidth)
 	glLineWidth(fWidth);
 }
 
-RString RageDisplay_Legacy::GetTextureDiagnostics(unsigned iTexture) const
+RString RageDisplay_Legacy::GetTextureDiagnostics(uintptr_t iTexture) const
 {
 	/*
 		s << (bGenerateMipMaps? "gluBuild2DMipmaps":"glTexImage2D");

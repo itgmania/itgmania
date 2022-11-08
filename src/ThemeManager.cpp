@@ -880,7 +880,6 @@ try_element_again:
 			GetThemeDirFromName(SpecialFiles::BASE_THEME_NAME).c_str() );
 	DEFAULT_FAIL( res );
 	}
-	FAIL_M( "" ); // Silence gcc 4.
 }
 
 RString ThemeManager::GetPath( ElementCategory category, const RString &sMetricsGroup, const RString &sElement, bool bOptional )

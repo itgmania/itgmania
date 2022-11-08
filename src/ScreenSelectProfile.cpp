@@ -44,7 +44,7 @@ bool ScreenSelectProfile::MenuLeft( const InputEventPlus &input )
 			return false;
 	}
 	m_TrackingRepeatingInput = input.MenuI;
-	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuLeftP1+pn) );
+	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuLeftP1+Enum::to_integral(pn)) );
 	return true;
 }
 
@@ -65,7 +65,7 @@ bool ScreenSelectProfile::MenuRight( const InputEventPlus &input )
 			return false;
 	}
 	m_TrackingRepeatingInput = input.MenuI;
-	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuRightP1+pn) );
+	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuRightP1+Enum::to_integral(pn)) );
 	return true;
 }
 
@@ -86,7 +86,7 @@ bool ScreenSelectProfile::MenuUp( const InputEventPlus &input )
 			return false;
 	}
 	m_TrackingRepeatingInput = input.MenuI;
-	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuUpP1+pn) );
+	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuUpP1+Enum::to_integral(pn)) );
 	return true;
 }
 
@@ -107,7 +107,7 @@ bool ScreenSelectProfile::MenuDown( const InputEventPlus &input )
 			return false;
 	}
 	m_TrackingRepeatingInput = input.MenuI;
-	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuDownP1+pn) );
+	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuDownP1+Enum::to_integral(pn)) );
 	return true;
 }
 

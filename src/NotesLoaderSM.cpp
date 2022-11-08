@@ -952,10 +952,10 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 		change.m_def.m_sColor1 = aBGChangeValues[9];
 		change.m_def.m_sColor1.Replace( '^', ',' );
 		change.m_def.m_sColor1 = RageColor::NormalizeColorString( change.m_def.m_sColor1 );
-		// fall through
+		[[fallthrough]];
 	case 9:
 		change.m_sTransition = aBGChangeValues[8];
-		// fall through
+		[[fallthrough]];
 	case 8:
 	{
 		RString tmp = aBGChangeValues[7];
@@ -966,11 +966,11 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 			return false;
 		}
 		change.m_def.m_sFile2 = aBGChangeValues[7];
-		// fall through
+		[[fallthrough]];
 	}
 	case 7:
 		change.m_def.m_sEffect = aBGChangeValues[6];
-		// fall through
+		[[fallthrough]];
 	case 6:
 		// param 7 overrides this.
 		// Backward compatibility:
@@ -990,16 +990,16 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 			if( bRewindMovie )
 				change.m_def.m_sEffect = SBE_StretchRewind;
 		}
-		// fall through
+		[[fallthrough]];
 	case 4:
 		// param 9 overrides this.
 		// Backward compatibility:
 		if( change.m_sTransition.empty() )
 			change.m_sTransition = (StringToInt( aBGChangeValues[3] ) != 0) ? "CrossFade" : "";
-		// fall through
+		[[fallthrough]];
 	case 3:
 		change.m_fRate = StringToFloat( aBGChangeValues[2] );
-		// fall through
+		[[fallthrough]];
 	case 2:
 	{
 		RString tmp = aBGChangeValues[1];
@@ -1010,11 +1010,10 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 			return false;
 		}
 		change.m_def.m_sFile1 = aBGChangeValues[1];
-		// fall through
+		[[fallthrough]];
 	}
 	case 1:
 		change.m_fStartBeat = StringToFloat( aBGChangeValues[0] );
-		// fall through
 	}
 
 	return aBGChangeValues.size() >= 2;
@@ -1461,6 +1460,7 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 				break;
 			}
 			// deliberate fall-through if not found. treat it as a normal string like before
+			[[fallthrough]];
 		}
 		// everything else should be safe
 		default:

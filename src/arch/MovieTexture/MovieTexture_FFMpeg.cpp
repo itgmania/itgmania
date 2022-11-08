@@ -11,7 +11,10 @@
 
 static void FixLilEndian()
 {
-#if defined(ENDIAN_LITTLE)
+	if constexpr ( !Endian::little ) {
+		return;
+	}
+
 	static bool Initialized = false;
 	if( Initialized )
 		return;
@@ -37,7 +40,6 @@ static void FixLilEndian()
 			pf.masks[mask] = m;
 		}
 	}
-#endif
 }
 
 static int FindCompatibleAVFormat( bool bHighColor )

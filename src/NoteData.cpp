@@ -30,7 +30,7 @@ bool NoteData::IsComposite() const
 {
 	for( int track = 0; track < GetNumTracks(); ++track )
 	{
-		for (std::pair<int, TapNote> const &tn : m_TapNotes[track])
+		for (const auto& tn : m_TapNotes[track])
 			if( tn.second.pn != PLAYER_INVALID )
 				return true;
 	}
@@ -1340,12 +1340,24 @@ NoteData::_all_tracks_iterator<ND, iter, TN>::_all_tracks_iterator( const _all_t
 }
 
 template<typename ND, typename iter, typename TN>
-	NoteData::_all_tracks_iterator<ND, iter, TN>::~_all_tracks_iterator()
+NoteData::_all_tracks_iterator<ND, iter, TN> &NoteData::_all_tracks_iterator<ND, iter, TN>::operator=( const _all_tracks_iterator &other )
 {
-	if(m_pNoteData != nullptr)
-	{
-		m_pNoteData->RemoveATIFromList(this);
-	}
+	_all_tracks_iterator tmp (other);
+
+#define SWAP_OTHER( x ) std::swap( x, tmp.x )
+	SWAP_OTHER( m_pNoteData );
+	SWAP_OTHER( m_vBeginIters );
+	SWAP_OTHER( m_vCurrentIters );
+	SWAP_OTHER( m_vEndIters );
+	SWAP_OTHER( m_iTrack );
+	SWAP_OTHER( m_bReverse );
+	SWAP_OTHER( m_PrevCurrentRows );
+	SWAP_OTHER( m_StartRow );
+	SWAP_OTHER( m_EndRow );
+#undef SWAP_OTHER
+	m_pNoteData->AddATIToList(this);
+
+	return *this;
 }
 
 template<typename ND, typename iter, typename TN>

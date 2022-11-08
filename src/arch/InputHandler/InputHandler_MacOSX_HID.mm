@@ -281,8 +281,8 @@ RString InputHandler_MacOSX_HID::GetDeviceSpecificInputString( const DeviceInput
 {
 	if( di.device == DEVICE_KEYBOARD )
 	{
-#define OTHER(n) (KEY_OTHER_0 + (n))
-		switch( di.button )
+#define OTHER(n) (Enum::to_integral(KEY_OTHER_0) + (n))
+		switch( Enum::to_integral(di.button) )
 		{
 		case KEY_DEL: return "del";
 		case KEY_BACK: return "delete";
@@ -381,7 +381,7 @@ static wchar_t KeyCodeToChar(CGKeyCode keyCode, unsigned int modifierFlags)
 	if( keyboardLayout )
 	{
 		UInt32 deadKeyState = 0;
-		UniCharCount maxStringLength = 255;
+		constexpr UniCharCount maxStringLength = 255;
 		UniCharCount actualStringLength = 0;
 		UniChar unicodeString[maxStringLength];
 		

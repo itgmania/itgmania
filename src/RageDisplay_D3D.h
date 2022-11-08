@@ -3,6 +3,8 @@
 #ifndef RAGE_DISPLAY_D3D_H
 #define RAGE_DISPLAY_D3D_H
 
+#include "RageDisplay.h"
+
 class RageDisplay_D3D: public RageDisplay
 {
 public:

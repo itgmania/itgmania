@@ -857,13 +857,16 @@ void OptionRow::Reload()
 		ImportOptions( vpns );
 		FOREACH_HumanPlayer( p )
 			AfterImportOptions( p );
-		// fall through
+		[[fallthrough]];
 	}
 
 	case RELOAD_CHANGED_ENABLED:
 		UpdateEnabledDisabled();
 		FOREACH_HumanPlayer( pn )
 			PositionUnderlines( pn );
+		break;
+
+	default:
 		break;
 	}
 

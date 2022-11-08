@@ -477,7 +477,7 @@ public:
 	float GetAux() const				{ return m_current.aux; }
 
 	virtual void BeginTweening( float time, ITween *pInterp );
-	void BeginTweening( float time, TweenType tt = TWEEN_LINEAR );
+	virtual void BeginTweening( float time, TweenType tt = TWEEN_LINEAR );
 	virtual void StopTweening();
 	void Sleep( float time );
 	void QueueCommand( const RString& sCommandName );

@@ -744,7 +744,7 @@ void RageDisplay_D3D::SendCurrentMatrices()
 				0.0f,   0.0f,  0.0f, 0.0f,
 				0.5f,  -0.5f,  0.0f, 1.0f
 			);
-			g_pd3dDevice->SetTransform( (D3DTRANSFORMSTATETYPE)(D3DTS_TEXTURE0+tu), (D3DMATRIX*)&tex );
+			g_pd3dDevice->SetTransform( (D3DTRANSFORMSTATETYPE)(D3DTS_TEXTURE0+Enum::to_integral(tu)), (D3DMATRIX*)&tex );
 
 			// Tell D3D to use transformed reflection vectors as texture co-ordinate 0
 			// and then transform this coordinate by the specified texture matrix.
@@ -765,7 +765,7 @@ void RageDisplay_D3D::SendCurrentMatrices()
 				tex1.m[3][0], tex1.m[3][1],  tex1.m[3][3],	0,
 				0,				0,			0,		0
 			);
-			g_pd3dDevice->SetTransform( D3DTRANSFORMSTATETYPE(D3DTS_TEXTURE0+tu), (D3DMATRIX*)&tex2 );
+			g_pd3dDevice->SetTransform( D3DTRANSFORMSTATETYPE(D3DTS_TEXTURE0+Enum::to_integral(tu)), (D3DMATRIX*)&tex2 );
 
 			g_pd3dDevice->SetTextureStageState( tu, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_PASSTHRU );
 		}

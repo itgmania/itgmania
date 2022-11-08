@@ -81,7 +81,7 @@ void FontManager::UnloadFont( Font *fp )
 		return;
 	}
 
-	FAIL_M( ssprintf("Unloaded an unknown font (%p)", fp) );
+	FAIL_M( ssprintf("Unloaded an unknown font (%p)", static_cast<void*>(fp)) );
 }
 
 /*

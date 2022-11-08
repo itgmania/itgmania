@@ -114,8 +114,8 @@ size_t zipRead(void *pOpaque, mz_uint64 file_ofs, void *pBuf, size_t n)
 {
 	RageFile *f = static_cast<RageFile*>(pOpaque);
 
-	int pos = f->Seek(file_ofs);
-	if (pos != file_ofs)
+	const auto pos = f->Seek(file_ofs);
+	if (pos >= 0 && static_cast<uint64_t>(pos) != file_ofs)
 	{
 		return 0;
 	}
@@ -305,9 +305,9 @@ static RString ExtractDirectory( RString sPath )
 	return sPath;
 }
 
+#if defined(UNIX) || defined(MACOSX)
 static RString ReadlinkRecursive( RString sPath )
 {
-#if defined(UNIX) || defined(MACOSX)
 	// unices support symbolic links; dereference them
 	RString dereferenced = sPath;
 	do
@@ -325,10 +325,10 @@ static RString ReadlinkRecursive( RString sPath )
 			}
 		}
 	} while (sPath != dereferenced);
-#endif
 
 	return sPath;
 }
+#endif
 
 static RString GetDirOfExecutable( RString argv0 )
 {

@@ -575,13 +575,8 @@ void SongManager::UnlistSong(Song *song)
 	// remove all occurences of the song in each of our song vectors
 	std::vector<Song*>* songVectors[3] = { &m_pSongs, &m_pPopularSongs, &m_pShuffledSongs };
 	for (int songVecIdx=0; songVecIdx<3; ++songVecIdx) {
-		std::vector<Song*>& v = *songVectors[songVecIdx];
-		for (int i=0; i<v.size(); ++i) {
-			if (v[i] == song) {
-				v.erase(v.begin()+i);
-				--i;
-			}
-		}
+		auto& v = *songVectors[songVecIdx];
+		std::erase_if( v, [song](Song* vSong){return vSong == song;} );
 	}
 }
 
@@ -1335,7 +1330,7 @@ void SongManager::GetExtraStageInfo( bool bExtra2, const Style *sd, Song*& pSong
 	}
 
 	ASSERT_M( sGroup != "", ssprintf("%p '%s' '%s'",
-		GAMESTATE->m_pCurSong.Get(),
+		static_cast<void*>(GAMESTATE->m_pCurSong.Get()),
 		GAMESTATE->m_pCurSong? GAMESTATE->m_pCurSong->GetSongDir().c_str():"",
 		GAMESTATE->m_pCurSong? GAMESTATE->m_pCurSong->m_sGroupName.c_str():"") );
 

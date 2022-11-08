@@ -130,7 +130,7 @@ public:
 	{ ASSERT(i < _states.size()); _states[i]= s; }
 	void SetStateProperties(const std::vector<State>& new_states)
 	{ _states= new_states; SetState(0); }
-	void SetState(size_t i);
+	void SetState(int i);
 	void SetAllStateDelays(float delay);
 	float GetAnimationLengthSeconds() const;
 	void SetSecondsIntoAnimation(float seconds);

@@ -268,6 +268,8 @@ void RageSoundDriver_PulseAudio::CtxStateCb(pa_context *c)
 		m_Sem.Post();
 		return;
 		break;
+	default:
+		break;
 	}
 }
 
@@ -313,12 +315,12 @@ void RageSoundDriver_PulseAudio::StreamWriteCb(pa_stream *s, size_t length)
 	* maybe the requested length is given in frames instead of bytes */
 	length *= 2;
 #endif
-	size_t nbframes = length / sizeof(int16_t); /* we use 16-bit frames */
-	int16_t buf[nbframes];
+	const size_t nbframes = length / sizeof(int16_t); /* we use 16-bit frames */
+	std::vector<int16_t> buf(nbframes);
 	int64_t pos1 = m_LastPosition;
 	int64_t pos2 = pos1 + nbframes/2; /* Mix() position in stereo frames */
-	this->Mix( buf, pos2-pos1, pos1, pos2);
-	if(pa_stream_write(m_PulseStream, buf, length, nullptr, 0, PA_SEEK_RELATIVE) < 0)
+	this->Mix( buf.data(), pos2-pos1, pos1, pos2);
+	if(pa_stream_write(m_PulseStream, buf.data(), length, nullptr, 0, PA_SEEK_RELATIVE) < 0)
 	{
 		RageException::Throw("Pulse: pa_stream_write()");
 	}

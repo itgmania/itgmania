@@ -98,7 +98,7 @@ static const StepsTypeInfo g_StepsTypeInfos[] = {
 	{ "kickbox-insect", 6, true, StepsTypeCategory_Single },
 	{ "kickbox-arachnid", 8, true, StepsTypeCategory_Single },
 };
-
+static_assert( ARRAYLEN(g_StepsTypeInfos) == NUM_StepsType, "ARRAYLEN(g_StepsTypeInfos) != NUM_StepsType" );
 
 // Important:  Every game must define the buttons: "Start", "Back", "MenuLeft", "Operator" and "MenuRight"
 static const AutoMappings g_AutoKeyMappings_Dance = AutoMappings (
@@ -3441,7 +3441,6 @@ bool GameManager::IsGameEnabled( const Game *pGame )
 
 const StepsTypeInfo &GameManager::GetStepsTypeInfo( StepsType st )
 {
-	ASSERT( ARRAYLEN(g_StepsTypeInfos) == NUM_StepsType );
 	ASSERT_M( st < NUM_StepsType, ssprintf("StepsType %d < NUM_StepsType (%d)", st, NUM_StepsType) );
 	return g_StepsTypeInfos[st];
 }

@@ -112,7 +112,7 @@ namespace
  * For pad play, a value of 20ms-50ms seems to result in a better experience.
  * For keyboard play, this is often set to 0.
  * */
-static Preference<float> g_fInputDebounceTime( "InputDebounceTime", 0.02 );
+static Preference<float> g_fInputDebounceTime( "InputDebounceTime", 0.02f );
 
 InputFilter*	INPUTFILTER = nullptr;	// global and accessible from anywhere in our program
 

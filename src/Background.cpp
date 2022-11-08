@@ -669,11 +669,11 @@ void BackgroundImpl::LoadFromSong( const Song* pSong )
 	// Look for the random file marker, and replace the segment with LoadFromRandom.
 	for( unsigned i=0; i<mainlayer.m_aBGChanges.size(); i++ )
 	{
-		const BackgroundChange change = mainlayer.m_aBGChanges[i];
-		if( change.m_def.m_sFile1 != RANDOM_BACKGROUND_FILE )
+		const auto bgChange = mainlayer.m_aBGChanges[i];
+		if( bgChange.m_def.m_sFile1 != RANDOM_BACKGROUND_FILE )
 			continue;
 
-		float fStartBeat = change.m_fStartBeat;
+		float fStartBeat = bgChange.m_fStartBeat;
 		float fEndBeat = pSong->GetLastBeat();
 		if( i+1 < mainlayer.m_aBGChanges.size() )
 			fEndBeat = mainlayer.m_aBGChanges[i+1].m_fStartBeat;
@@ -681,7 +681,7 @@ void BackgroundImpl::LoadFromSong( const Song* pSong )
 		mainlayer.m_aBGChanges.erase( mainlayer.m_aBGChanges.begin()+i );
 		--i;
 
-		LoadFromRandom( fStartBeat, fEndBeat, change );
+		LoadFromRandom( fStartBeat, fEndBeat, bgChange);
 	}
 
 	// At this point, we shouldn't have any BGChanges to "".  "" is an invalid name.

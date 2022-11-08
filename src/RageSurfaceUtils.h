@@ -55,7 +55,7 @@ namespace RageSurfaceUtils
 	RageSurface *LoadSurface( RString file );
 
 	/* Quickly palettize to an gray/alpha texture. */
-	RageSurface *PalettizeToGrayscale( const RageSurface *src_surf, int GrayBits, int AlphaBits );
+	RageSurface *PalettizeToGrayscale( const RageSurface *src_surf, uint32_t GrayBits, uint32_t AlphaBits );
 
 	RageSurface *MakeDummySurface( int height, int width );
 

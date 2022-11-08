@@ -53,7 +53,17 @@ int FindClosestEntry( T value, const U *mapping, unsigned cnt )
 
 	for( unsigned i = 0; i < cnt; ++i )
 	{
-		const U val = mapping[i];
+		// Need to use if constexpr here so the compiler doesn't even
+		// attempt to parse the else branch for enums
+		const T val = [&]{
+				if constexpr (std::is_enum<U>::value) {
+					return Enum::to_integral(mapping[i]);
+				}
+				else {
+					return mapping[i];
+				}
+			}();
+
 		float dist = value < val? (float)(val-value):(float)(value-val);
 		if( have_best && best_dist < dist )
 			continue;
@@ -64,10 +74,7 @@ int FindClosestEntry( T value, const U *mapping, unsigned cnt )
 		iBestIndex = i;
 	}
 
-	if( have_best )
-		return iBestIndex;
-	else
-		return 0;
+	return iBestIndex;
 }
 
 template <class T>
@@ -839,7 +846,7 @@ static void InitializeConfOptions()
 	ADD(ConfOption("CustomSongsMaxCount", CustomSongsCount, "10", "20", "30", "40", "50", "60", "70", "80", "90", "100", "1000"));
 	ADD(ConfOption("CustomSongsLoadTimeout", CustomSongsLoadTimeout, "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "20", "30", "1000"));
 	ADD(ConfOption("CustomSongsMaxSeconds", CustomSongsMaxSeconds, "60", "90", "120", "150", "180", "210", "240", "10000"));
-	ADD(ConfOption("CustomSongsMaxMegabytes", CustomSongsLoadTimeout, "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "20", "30", "1000"));
+	ADD(ConfOption("CustomSongsMaxMegabytes", CustomSongsMaxMegabytes, "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "20", "30", "1000"));
 
 	// Machine options
 	ADD( ConfOption( "MenuTimer",			MovePref<bool>,		"Off","On" ) );

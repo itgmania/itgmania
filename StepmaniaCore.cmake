@@ -155,14 +155,6 @@ if(WIN32)
   endif()
 endif()
 
-include(TestBigEndian)
-test_big_endian(BIGENDIAN)
-if(${BIGENDIAN})
-  set(ENDIAN_BIG 1)
-else()
-  set(ENDIAN_LITTLE 1)
-endif()
-
 check_compile_features("${SM_CMAKE_DIR}/TestCode"
                        "${SM_CMAKE_DIR}/TestCode/test_external.c"
                        "Checking for external name shortening requirements"

@@ -183,7 +183,7 @@ static INT_PTR CALLBACK ErrorWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			break;
 		case IDC_BUTTON_RESTART:
 			Win32RestartProgram();
-			// Possibly make W32RP a NORETURN call?
+			// Possibly make W32RP a SM_NORETURN call?
 			FAIL_M("Win32RestartProgram failed?");
 		case IDOK:
 			EndDialog( hWnd, 0 );

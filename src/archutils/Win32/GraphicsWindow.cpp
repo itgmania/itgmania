@@ -417,7 +417,7 @@ void GraphicsWindow::Initialize( bool bD3D )
 	g_bD3D = bD3D;
 
 	//keeping xp on life support -- check for vista+ for dwm
-	if (at_least_vista())
+	if (IsWindowsVistaOrGreater())
 	{
 		hInstanceDwmapi = LoadLibraryA("dwmapi.dll");
 	}

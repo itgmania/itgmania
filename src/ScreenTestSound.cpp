@@ -198,12 +198,13 @@ bool ScreenTestSound::Input( const InputEventPlus &input )
 				break;
 */
 			default:
-				return false;
+				break;
 		}
-		default:
-			return false;
+	default:
+		break;
 	}
-	return true;
+
+	return false;
 }
 
 /*

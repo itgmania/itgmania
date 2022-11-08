@@ -89,22 +89,18 @@ static void Deserialize(BackgroundChange &o, const Json::Value &root )
 
 static void Deserialize( TapNote &o, const Json::Value &root )
 {
-	//if( o.type != TapNoteType_Tap )
-	if( root.isInt() )
+	if( root.isInt() ) {
 		o.type = (TapNoteType)root["Type"].asInt();
-	//if( o.type == TapNoteType_HoldHead )
-		o.subType = (TapNoteSubType)root["SubType"].asInt();
-	//root["Source"] = (int)source;
-	//if( !o.sAttackModifiers.empty() )
-		o.sAttackModifiers = root["AttackModifiers"].asString();
-	//if( o.fAttackDurationSeconds > 0 )
-		o.fAttackDurationSeconds = (float)root["AttackDurationSeconds"].asDouble();
-	//if( o.bKeysound )
-		o.iKeysoundIndex = root["KeysoundIndex"].asInt();
-	//if( o.iDuration > 0 )
-		o.iDuration = root["Duration"].asInt();
-	//if( o.pn != PLAYER_INVALID )
-		o.pn = (PlayerNumber)root["PlayerNumber"].asInt();
+	}
+
+	// TODO should all of this also be within the if statement?
+	// It was not in the if statement previously, but that may have been unintentional.
+	o.subType = (TapNoteSubType)root["SubType"].asInt();
+	o.sAttackModifiers = root["AttackModifiers"].asString();
+	o.fAttackDurationSeconds = (float)root["AttackDurationSeconds"].asDouble();
+	o.iKeysoundIndex = root["KeysoundIndex"].asInt();
+	o.iDuration = root["Duration"].asInt();
+	o.pn = (PlayerNumber)root["PlayerNumber"].asInt();
 }
 
 static void Deserialize( StepsType st, NoteData &nd, const Json::Value &root )

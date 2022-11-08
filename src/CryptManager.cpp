@@ -1,6 +1,10 @@
 #include "global.h"
 
+// tomcrypt_cfg.h redefines malloc, realloc, calloc
+#pragma warning( push )
+#pragma warning( disable : 4565 )
 #include <tomcrypt.h>
+#pragma warning ( pop )
 
 #include "CryptManager.h"
 #include "RageUtil.h"

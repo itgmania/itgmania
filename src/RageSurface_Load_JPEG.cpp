@@ -27,10 +27,13 @@ struct my_jpeg_error_mgr
 {
   struct jpeg_error_mgr pub;    /* "public" fields */
 
+  uint8_t pad1[8];  // Explicitly add padding that's implicitly added by the compiler
+
   jmp_buf setjmp_buffer;        /* for return to caller */
   char errorbuf[JMSG_LENGTH_MAX];
-};
 
+  uint8_t pad2[8];  // Explicitly add padding that's implicitly added by the compiler
+};
 
 void my_output_message( j_common_ptr cinfo )
 {

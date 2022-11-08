@@ -41,21 +41,19 @@ RageSurfaceFormat::RageSurfaceFormat():
 	Rmask(Mask[0]), Gmask(Mask[1]), Bmask(Mask[2]), Amask(Mask[3]),
 	Rshift(Shift[0]), Gshift(Shift[1]), Bshift(Shift[2]), Ashift(Shift[3])
 {
-	palette = nullptr;	
 }
 
 RageSurfaceFormat::RageSurfaceFormat( const RageSurfaceFormat &cpy ):
 	Rmask(Mask[0]), Gmask(Mask[1]), Bmask(Mask[2]), Amask(Mask[3]),
 	Rshift(Shift[0]), Gshift(Shift[1]), Bshift(Shift[2]), Ashift(Shift[3])
 {
-	memcpy( this, &cpy, sizeof(RageSurfaceFormat) );
+	BytesPerPixel = cpy.BytesPerPixel;
+	BitsPerPixel = cpy.BitsPerPixel;
+	Mask = cpy.Mask;
+	Shift = cpy.Shift;
+	Loss = cpy.Loss;
 	if( palette )
-		palette = new RageSurfacePalette( *palette );
-}
-
-RageSurfaceFormat::~RageSurfaceFormat()
-{
-	delete palette;
+		palette = std::make_unique<RageSurfacePalette>(*palette);
 }
 
 void RageSurfaceFormat::GetRGB( uint32_t val, uint8_t *r, uint8_t *g, uint8_t *b ) const
@@ -98,7 +96,7 @@ bool RageSurfaceFormat::operator== ( const RageSurfaceFormat &rhs ) const
 		return false;
 
 	if( BytesPerPixel == 1 )
-		if( memcmp( palette, rhs.palette, sizeof(RageSurfaceFormat) ) )
+		if( memcmp( palette.get(), rhs.palette.get(), sizeof(RageSurfaceFormat) ) )
 			return false;
 
 	return true;
@@ -191,7 +189,7 @@ void SetupFormat( RageSurfaceFormat &fmt,
 		// Loss for paletted textures is zero; the actual palette entries are 8-bit.
 		ZERO( fmt.Loss );
 
-		fmt.palette = new RageSurfacePalette;
+		fmt.palette = std::make_unique<RageSurfacePalette>();
 		fmt.palette->ncolors = 256;
 	}
 	else

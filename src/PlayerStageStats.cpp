@@ -391,7 +391,7 @@ void PlayerStageStats::SetLifeRecordAt( float fLife, float fStepsSecond )
 	}
 	m_fLifeRecord[fStepsSecond] = fLife;
 
-	Message msg(static_cast<MessageID>(Message_LifeMeterChangedP1+m_player_number));
+	Message msg(static_cast<MessageID>(Message_LifeMeterChangedP1+Enum::to_integral(m_player_number)));
 	msg.SetParam("Life", fLife);
 	msg.SetParam("StepsSecond", fStepsSecond);
 	MESSAGEMAN->Broadcast(msg);

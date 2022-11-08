@@ -230,6 +230,7 @@ static void child_process()
 			}
 			break;
 		}
+		[[fallthrough]];
 	}
 	case CrashData::FORCE_CRASH:
 		crash.reason[sizeof(crash.reason)-1] = 0;
