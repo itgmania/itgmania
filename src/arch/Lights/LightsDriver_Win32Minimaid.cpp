@@ -50,7 +50,7 @@ void setup_driver()
 LightsDriver_Win32Minimaid::LightsDriver_Win32Minimaid()
 {
 	_mmmagic_loaded=false;
-	hMMMAGICDLL = LoadLibraryW(L"mmmagic.dll");
+	hMMMAGICDLL = LoadLibraryW(L"mmmagic64.dll");
 	if(hMMMAGICDLL == nullptr)
 	{
 		MessageBox(nullptr, "Could not LoadLibrary( mmmagic.dll ).", "ERROR", MB_OK );
