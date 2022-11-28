@@ -5,12 +5,30 @@
 #include "RageLog.h"
 #include "io/PacDrive.h"
 #include "LightsDriver_LinuxPacDrive.h"
+#include "Preference.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS( LinuxPacDrive );
+
+// Adds new preference to allow for different light wiring setups
+// This is the same preference as LightsDriver_PacDrive.cpp but that only gets
+// loaded on Windows builds.
+static Preference<RString> g_sPacDriveLightOrdering("PacDriveLightOrdering", "minimaid");
 
 LightsDriver_LinuxPacDrive::LightsDriver_LinuxPacDrive()
 {
 	m_bHasDevice = Board.Open();
+
+	RString lightOrder = g_sPacDriveLightOrdering.Get();
+	if (lightOrder.CompareNoCase("lumenar") == 0 || lightOrder.CompareNoCase("openitg") == 0) {
+		m_iLightingOrder = 1;
+		LOG->Info( "Setting LinuxPacDrive order to: OpenITG" );
+	}
+	else
+	{
+		m_iLightingOrder = 0;
+		LOG->Info( "Setting LinuxPacDrive order to: SM5" );
+	}
+
 
 	if( m_bHasDevice == false )
 	{
@@ -39,22 +57,78 @@ void LightsDriver_LinuxPacDrive::Set( const LightsState *ls )
 
 	uint16_t outb = 0;
 
-	if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) outb|=BIT(0);
-	if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) outb|=BIT(1);
-	if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) outb|=BIT(2);
-	if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) outb|=BIT(3);
-	if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) outb|=BIT(4);
-	if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) outb|=BIT(5);
-	if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) outb|=BIT(6);
-	if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) outb|=BIT(7);
-	if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) outb|=BIT(8);
-	if (ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) outb|=BIT(9);
-	if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) outb|=BIT(10);
-	if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) outb|=BIT(11);
-	if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) outb|=BIT(12);
-	if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) outb|=BIT(13);
-	if (ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) outb|=BIT(14);
+	switch (m_iLightingOrder) {
+		case 1:
+			//Sets the cabinet light values to follow LumenAR/OpenITG wiring standards
 
+			/*
+			 * OpenITG PacDrive Order:
+			 * Taken from LightsDriver_PacDrive::SetLightsMappings() in openitg.
+			 *
+			 * 0: Marquee UL
+			 * 1: Marquee UR
+			 * 2: Marquee DL
+			 * 3: Marquee DR
+			 *
+			 * 4: P1 Button
+			 * 5: P2 Button
+			 *
+			 * 6: Bass Left
+			 * 7: Bass Right
+			 *
+			 * 8,9,10,11: P1 L R U D
+			 * 12,13,14,15: P2 L R U D
+			 */
+
+			if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) outb |= BIT(0);
+			if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) outb |= BIT(1);
+			if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) outb |= BIT(2);
+			if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) outb |= BIT(3);
+
+			if (ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) outb |= BIT(4);
+			if (ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) outb |= BIT(5);
+
+			//Most PacDrive/Cabinet setups only have *one* bass light, so mux them together here.
+			if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) outb |= BIT(6);
+			if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) outb |= BIT(7);
+
+			if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) outb |= BIT(8);
+			if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) outb |= BIT(9);
+			if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) outb |= BIT(10);
+			if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) outb |= BIT(11);
+
+			if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) outb |= BIT(12);
+			if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) outb |= BIT(13);
+			if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) outb |= BIT(14);
+			if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) outb |= BIT(15);
+
+			break;
+
+		case 0:
+		default:
+			//If all else fails, falls back to Minimaid order
+
+			if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) outb |= BIT(0);
+			if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) outb |= BIT(1);
+			if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) outb |= BIT(2);
+			if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) outb |= BIT(3);
+
+			if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) outb |= BIT(4);
+
+			if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) outb |= BIT(5);
+			if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) outb |= BIT(6);
+			if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) outb |= BIT(7);
+			if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) outb |= BIT(8);
+			if (ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) outb |= BIT(9);
+
+			if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) outb |= BIT(10);
+			if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) outb |= BIT(11);
+			if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) outb |= BIT(12);
+			if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) outb |= BIT(13);
+			if (ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) outb |= BIT(14);
+
+			break;
+	}
 
 	// write the data - if it fails, stop updating
 	if( !Board.Write(outb) )

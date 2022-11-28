@@ -14,10 +14,9 @@ public:
 
 	void Set( const LightsState *ls );
 private:
-
-
 	PacDrive Board;
 	bool m_bHasDevice;
+	bool m_iLightingOrder;
 };
 
 #endif // LIGHTSDRIVER_LINUXPACDRIVE_H
