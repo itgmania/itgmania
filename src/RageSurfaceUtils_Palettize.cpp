@@ -156,7 +156,7 @@ void RageSurfaceUtils::Palettize( RageSurface *&pImg, int iColors, bool bDither 
 
 	// Rescale the palette colors to a maxval of 255.
 	{
-		auto& pal = pRet->format->palette;
+		std::unique_ptr<RageSurfacePalette>& pal = pRet->format->palette;
 		for( int x = 0; x < pal->ncolors; ++x )
 		{
 			// This is really just PAM_DEPTH() broken out for the palette.

@@ -17,7 +17,7 @@ class Model : public Actor
 public:
 	Model();
 	virtual ~Model();
-	virtual Model *Copy() const;
+	virtual Model *Copy() const override;
 
 	void	Clear();
 	void	Load( const RString &sFile );
@@ -27,26 +27,26 @@ public:
 	void 	LoadMaterialsFromMilkshapeAscii( const RString &sPath );
 	bool	LoadMilkshapeAsciiBones( const RString &sAniName, const RString &sPath );
 
-	void LoadFromNode( const XNode* pNode );
+	void LoadFromNode( const XNode* pNode ) override;
 
 	void	PlayAnimation( const RString &sAniName, float fPlayRate = 1 );
 	void	SetRate( float fRate ) { m_fCurAnimationRate = fRate; }
 	void	SetLoop( bool b ) { m_bLoop = b; }
 	void	SetPosition( float fSeconds );
 
-	virtual void	Update( float fDelta );
-	virtual bool	EarlyAbortDraw() const;
-	virtual void	DrawPrimitives();
+	virtual void	Update( float fDelta ) override;
+	virtual bool	EarlyAbortDraw() const override;
+	virtual void	DrawPrimitives() override;
 
 	void	DrawCelShaded();
 	void	SetCelShading( bool bShading ) { m_bDrawCelShaded = bShading; }
 
-	virtual int GetNumStates() const;
-	virtual void SetState( int iNewState );
-	virtual float GetAnimationLengthSeconds() const
+	virtual int GetNumStates() const override;
+	virtual void SetState( int iNewState ) override;
+	virtual float GetAnimationLengthSeconds() const override
 	{ return m_animation_length_seconds; }
 	virtual void RecalcAnimationLengthSeconds();
-	virtual void SetSecondsIntoAnimation( float fSeconds );
+	virtual void SetSecondsIntoAnimation( float fSeconds ) override;
 
 	RString		GetDefaultAnimation() const { return m_sDefaultAnimation; };
 	void		SetDefaultAnimation( RString sAnimation, float fPlayRate = 1 );
@@ -54,7 +54,7 @@ public:
 	bool	MaterialsNeedNormals() const;
 
 	// Lua
-	virtual void PushSelf( lua_State *L );
+	virtual void PushSelf( lua_State *L ) override;
 
 	Model& operator=(const Model& rhs) = delete;
 

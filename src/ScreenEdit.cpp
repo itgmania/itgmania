@@ -5256,7 +5256,7 @@ void ScreenEdit::HandleAlterMenuChoice(AlterMenuChoice c, const std::vector<int>
 		case tempo:
 		{
 			// This affects all steps.
-			const auto tt = static_cast<TempoType>(answers[c]);
+			const TempoType tt = static_cast<TempoType>(answers[c]);
 			float fScale = -1;
 
 			switch( tt )

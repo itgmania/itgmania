@@ -544,7 +544,7 @@ bool BMSChart::Load( const RString &chartPath )
 	std::vector<RString> lines;
 	Tree.evaluateBMSTree(headers, lines);
 
-	for (const auto& line : lines)
+	for (const RString& line : lines)
 	{
 		RString data = line.substr(7);
 		int measure = atoi(line.substr(1, 3).c_str());

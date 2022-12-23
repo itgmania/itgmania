@@ -263,6 +263,9 @@ EventDevice::~EventDevice()
 }
 
 InputHandler_Linux_Event::InputHandler_Linux_Event()
+	: m_NextDevice(DEVICE_JOY10)
+	, m_bShutdown(true)
+	, m_bDevicesChanged(false)
 {
 	if(LINUXINPUT == nullptr) LINUXINPUT = new LinuxInputManager;
 	LINUXINPUT->InitDriver(this);

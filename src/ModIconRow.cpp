@@ -151,11 +151,11 @@ void ModIconRow::SetFromGameState()
 	for( unsigned i=0; i<vsOptions.size(); i++ )
 	{
 		RString sOption = vsOptions[i];
-		int iPerferredCol = OptionToPreferredColumn( sOption );
-		iPerferredCol = clamp( iPerferredCol, 0, (int)m_vpModIcon.size()-1 );
+		int iPreferredCol = OptionToPreferredColumn( sOption );
+		iPreferredCol = clamp( iPreferredCol, 0, (int)m_vpModIcon.size()-1 );
 
 		// search for a vacant spot
-		for( int j=iPerferredCol; j<NUM_OPTION_ICONS; j++ )
+		for( int j=iPreferredCol; j<NUM_OPTION_ICONS; j++ )
 		{
 			if( vsText[j] != "" )
 			{

@@ -33,8 +33,8 @@ public:
 	ActorMultiVertex( const ActorMultiVertex &cpy );
 	virtual ~ActorMultiVertex();
 
-	void LoadFromNode( const XNode* Node );
-	virtual ActorMultiVertex *Copy() const;
+	void LoadFromNode( const XNode* Node ) override;
+	virtual ActorMultiVertex *Copy() const override;
 
 	struct AMV_TweenState
 	{
@@ -68,19 +68,19 @@ public:
 	}
 	const AMV_TweenState& AMV_DestTweenState() const { return const_cast<ActorMultiVertex*>(this)->AMV_DestTweenState(); }
 
-	virtual void EnableAnimation(bool bEnable);
-	virtual void Update(float fDelta);
-	virtual bool EarlyAbortDraw() const;
-	virtual void DrawPrimitives();
+	virtual void EnableAnimation(bool bEnable) override;
+	virtual void Update(float fDelta) override;
+	virtual bool EarlyAbortDraw() const override;
+	virtual void DrawPrimitives() override;
 	virtual void DrawInternal( const AMV_TweenState *TS );
 	
-	void SetCurrentTweenStart();
-	void EraseHeadTween();
-	void UpdatePercentThroughTween( float PercentThroughTween );
-	void BeginTweening( float time, ITween *pInterp );
+	void SetCurrentTweenStart() override;
+	void EraseHeadTween() override;
+	void UpdatePercentThroughTween( float PercentThroughTween ) override;
+	void BeginTweening( float time, ITween *pInterp ) override;
 
-	void StopTweening();
-	void FinishTweening();
+	void StopTweening() override;
+	void FinishTweening() override;
 	
 	void SetTexture( RageTexture *Texture );
 	RageTexture* GetTexture() { return _Texture; };
@@ -119,7 +119,7 @@ public:
 		RectF rect;
 		float delay;
 	};
-	int GetNumStates() const { return _states.size(); }
+	int GetNumStates() const override { return _states.size(); }
 	void AddState(const State& new_state) { _states.push_back(new_state); }
 	void RemoveState(size_t i)
 	{ ASSERT(i < _states.size()); _states.erase(_states.begin()+i); }
@@ -130,10 +130,10 @@ public:
 	{ ASSERT(i < _states.size()); _states[i]= s; }
 	void SetStateProperties(const std::vector<State>& new_states)
 	{ _states= new_states; SetState(0); }
-	void SetState(int i);
+	void SetState(int i) override;
 	void SetAllStateDelays(float delay);
-	float GetAnimationLengthSeconds() const;
-	void SetSecondsIntoAnimation(float seconds);
+	float GetAnimationLengthSeconds() const override;
+	void SetSecondsIntoAnimation(float seconds) override;
 	void UpdateAnimationState(bool force_update= false);
 	size_t GetNumQuadStates() const
 	{ return AMV_DestTweenState().quad_states.size(); }
@@ -148,7 +148,7 @@ public:
 	bool _use_animation_state;
 	bool _decode_movie;
 
-	virtual void PushSelf( lua_State *L );
+	virtual void PushSelf( lua_State *L ) override;
 
 private:
 	RageTexture* _Texture;

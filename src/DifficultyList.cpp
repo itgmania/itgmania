@@ -14,7 +14,7 @@
 /** @brief Specifies the max number of charts available for a song.
  *
  * This includes autogenned charts. */
-inline constexpr auto MAX_METERS = (Enum::to_integral(NUM_Difficulty) * Enum::to_integral(NUM_StepsType)) + MAX_EDITS_PER_SONG;
+inline constexpr int MAX_METERS = (Enum::to_integral(NUM_Difficulty) * Enum::to_integral(NUM_StepsType)) + MAX_EDITS_PER_SONG;
 
 REGISTER_ACTOR_CLASS( StepsDisplayList );
 

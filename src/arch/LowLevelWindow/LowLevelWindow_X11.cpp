@@ -388,8 +388,8 @@ RString LowLevelWindow_X11::TryVideoMode( const VideoModeParams &p, bool &bNewDe
 			// with as close to our desired refresh rate as possible.
 			for (int i = 0; i < scrRes->nmode; i++) {
 				const XRRModeInfo &thisMI = scrRes->modes[i];
-				const auto modeWidth = bPortrait ? thisMI.height : thisMI.width;
-				const auto modeHeight = bPortrait ? thisMI.width : thisMI.height;
+				const unsigned int modeWidth = bPortrait ? thisMI.height : thisMI.width;
+				const unsigned int modeHeight = bPortrait ? thisMI.width : thisMI.height;
 				if (p.width >= 0 && p.height >= 0 && modeWidth == static_cast<uint32_t>(p.width) && modeHeight == static_cast<uint32_t>(p.height)) {
 					float fTempRefresh = calcRandRRefresh(thisMI.dotClock, thisMI.hTotal, thisMI.vTotal);
 					float fTempDiff = std::abs(p.rate - fTempRefresh);

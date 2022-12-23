@@ -674,7 +674,7 @@ float FindLastDisplayedBeat( const PlayerState* pPlayerState, int iDrawDistanceB
 
 	bool bBoomerang;
 	{
-		const auto& fAccels = pPlayerState->m_PlayerOptions.GetCurrent().m_fAccels;
+		const float* fAccels = pPlayerState->m_PlayerOptions.GetCurrent().m_fAccels;
 		bBoomerang = (fAccels[PlayerOptions::ACCEL_BOOMERANG] != 0);
 	}
 
@@ -902,7 +902,7 @@ void NoteField::DrawPrimitives()
 			AttackArray &attacks = GAMESTATE->m_bIsUsingStepTiming ?
 				GAMESTATE->m_pCurSteps[PLAYER_1]->m_Attacks :
 				GAMESTATE->m_pCurSong->m_Attacks;
-			for (Attack const &a : attacks)
+			for (const Attack &a : attacks)
 			{
 				float fBeat = timing.GetBeatFromElapsedTime(a.fStartSecond);
 				if (BeatToNoteRow(fBeat) >= m_FieldRenderArgs.first_row &&

@@ -81,7 +81,7 @@ public:
 	public:
 		_all_tracks_iterator( ND &nd, int iStartRow, int iEndRow, bool bReverse, bool bInclusive );
 		_all_tracks_iterator( const _all_tracks_iterator &other );
-		~_all_tracks_iterator() { if(m_pNoteData != nullptr) { m_pNoteData->RemoveATIFromList(this); } }
+		~_all_tracks_iterator();
 		_all_tracks_iterator &operator=( const _all_tracks_iterator &other );
 		_all_tracks_iterator &operator++();		// preincrement
 		_all_tracks_iterator operator++( int dummy );	// postincrement

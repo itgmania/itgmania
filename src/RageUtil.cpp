@@ -1981,7 +1981,7 @@ void ReplaceEntityText( RString &sText, const std::map<char, RString> &m )
 {
 	RString sFind;
 
-	for (const auto &c : m)
+	for (const std::pair<const char, RString> &c : m)
 		sFind.append( 1, c.first );
 
 	RString sRet;
