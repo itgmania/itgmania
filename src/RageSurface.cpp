@@ -52,8 +52,9 @@ RageSurfaceFormat::RageSurfaceFormat( const RageSurfaceFormat &cpy ):
 	Mask = cpy.Mask;
 	Shift = cpy.Shift;
 	Loss = cpy.Loss;
-	if( palette )
+	if( palette ) {
 		palette = std::make_unique<RageSurfacePalette>(*palette);
+	}
 }
 
 void RageSurfaceFormat::GetRGB( uint32_t val, uint8_t *r, uint8_t *g, uint8_t *b ) const

@@ -374,7 +374,7 @@ void ScreenSelectMaster::HandleScreenMessage( const ScreenMessage SM )
 
 	if( SM == SM_PlayPostSwitchPage )
 	{
-		const auto iNewChoice = m_iChoice[ GAMESTATE->GetMasterPlayerNumber() ];
+		const int iNewChoice = m_iChoice[ GAMESTATE->GetMasterPlayerNumber() ];
 		Page newPage = GetPage( iNewChoice );
 
 		Message msg("PostSwitchPage");
@@ -390,7 +390,7 @@ void ScreenSelectMaster::HandleScreenMessage( const ScreenMessage SM )
 		{
 			for (PlayerNumber const &p : vpns)
 			{
-				const auto iChoice = m_iChoice[p];
+				const int iChoice = m_iChoice[p];
 				m_vsprScroll[p][iChoice]->HandleMessage( msg );
 			}
 		}
@@ -460,7 +460,7 @@ void ScreenSelectMaster::UpdateSelectableChoices()
 
 		for ( PlayerNumber &p : vpns)
 		{
-			if(disabled && m_iChoice[p] == static_cast<int32_t>(c))
+			if(disabled && m_iChoice[p] == static_cast<int>(c))
 			{
 				on_unplayable[p]= true;
 			}
@@ -503,7 +503,7 @@ bool ScreenSelectMaster::Move( PlayerNumber pn, MenuDir dir )
 	if( !AnyOptionsArePlayable() )
 		return false;
 
-	auto iSwitchToIndex = m_iChoice[pn];
+	int iSwitchToIndex = m_iChoice[pn];
 	std::set<int> seen;
 
 	do

@@ -771,8 +771,8 @@ void InputHandler_DInput::UpdateBuffered( DIDevice &device, const RageTimer &tm 
 	}
 }
 
-inline constexpr auto XINPUT_GAMEPAD_THUMB_MIN = std::numeric_limits<short>::min();
-inline constexpr auto XINPUT_GAMEPAD_THUMB_MAX = std::numeric_limits<short>::max();
+inline constexpr short XINPUT_GAMEPAD_THUMB_MIN = std::numeric_limits<short>::min();
+inline constexpr short XINPUT_GAMEPAD_THUMB_MAX = std::numeric_limits<short>::max();
 
 void InputHandler_DInput::UpdateXInput( XIDevice &device, const RageTimer &tm )
 {

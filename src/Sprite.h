@@ -27,14 +27,14 @@ public:
 	// See explanation in source.
 	static Sprite* NewBlankSprite();
 
-	virtual void InitState();
+	virtual void InitState() override;
 
-	void LoadFromNode( const XNode* pNode );
-	virtual Sprite *Copy() const;
+	void LoadFromNode( const XNode* pNode ) override;
+	virtual Sprite *Copy() const override;
 
-	virtual bool EarlyAbortDraw() const;
-	virtual void DrawPrimitives();
-	virtual void Update( float fDeltaTime );
+	virtual bool EarlyAbortDraw() const override;
+	virtual void DrawPrimitives() override;
+	virtual void Update( float fDeltaTime ) override;
 
 	void UpdateAnimationState();	// take m_fSecondsIntoState, and move to a new state
 
@@ -50,15 +50,15 @@ public:
 	void UnloadTexture();
 	RageTexture* GetTexture() { return m_pTexture; };
 
-	virtual void EnableAnimation( bool bEnable );
+	virtual void EnableAnimation( bool bEnable ) override;
 
-	virtual int GetNumStates() const;
-	virtual void SetState( int iNewState );
+	virtual int GetNumStates() const override;
+	virtual void SetState( int iNewState ) override;
 	int GetState() { return m_iCurState; }
-	virtual float GetAnimationLengthSeconds() const
+	virtual float GetAnimationLengthSeconds() const override
 	{ return m_animation_length_seconds; }
 	virtual void RecalcAnimationLengthSeconds();
-	virtual void SetSecondsIntoAnimation( float fSeconds );
+	virtual void SetSecondsIntoAnimation( float fSeconds ) override;
 	void SetStateProperties(const std::vector<State>& new_states)
 	{ m_States= new_states; RecalcAnimationLengthSeconds(); SetState(0); }
 
@@ -91,7 +91,7 @@ public:
 	void CropTo( float fWidth, float fHeight );
 
 	// Commands
-	virtual void PushSelf( lua_State *L );
+	virtual void PushSelf( lua_State *L ) override;
 
 	void SetAllStateDelays(float fDelay);
 

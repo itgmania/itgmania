@@ -669,7 +669,7 @@ void BackgroundImpl::LoadFromSong( const Song* pSong )
 	// Look for the random file marker, and replace the segment with LoadFromRandom.
 	for( unsigned i=0; i<mainlayer.m_aBGChanges.size(); i++ )
 	{
-		const auto bgChange = mainlayer.m_aBGChanges[i];
+		const BackgroundChange bgChange = mainlayer.m_aBGChanges[i];
 		if( bgChange.m_def.m_sFile1 != RANDOM_BACKGROUND_FILE )
 			continue;
 

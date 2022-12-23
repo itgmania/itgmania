@@ -1136,8 +1136,8 @@ void Player::Update( float fDeltaTime )
 		 * .5 before the row. Use a very slow song (around 2 BPM) as a test case: without
 		 * rounding, autoplay steps early. -glenn */
 		const float fPositionSeconds = m_pPlayerState->m_Position.m_fMusicSeconds - PREFSMAN->m_fPadStickSeconds;
-		const float fSongBeatTmp = m_pPlayerState->GetDisplayedTiming().GetBeatFromElapsedTime( fPositionSeconds );
-		const int iRowNow = BeatToNoteRowNotRounded( fSongBeatTmp );
+		const float fDisplayedSongBeat = m_pPlayerState->GetDisplayedTiming().GetBeatFromElapsedTime( fPositionSeconds );
+		const int iRowNow = BeatToNoteRowNotRounded( fDisplayedSongBeat );
 
 		if( iRowNow >= 0 )
 		{

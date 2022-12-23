@@ -319,8 +319,8 @@ void ArrowEffects::Update()
 		const Style::ColumnInfo* pCols = pStyle->m_ColumnInfo[pn];
 		const SongPosition &position = GAMESTATE->m_bIsUsingStepTiming
 		? GAMESTATE->m_pPlayerState[pn]->m_Position : GAMESTATE->m_Position;
-		const auto& effects= GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetCurrent().m_fEffects;
-		const auto& accels= GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetCurrent().m_fAccels;
+		const float* effects= GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetCurrent().m_fEffects;
+		const float* accels= GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetCurrent().m_fAccels;
 
 		PerPlayerData &data = g_EffectData[pn];
 		
@@ -514,8 +514,8 @@ float ArrowEffects::GetYOffset( const PlayerState* pPlayerState, int iCol, float
 		return fYOffset * fScrollSpeed;
 	}
 
-	const auto& fAccels = curr_options->m_fAccels;
-	const auto& fEffects = curr_options->m_fEffects;
+	const float* fAccels = curr_options->m_fAccels;
+	const float* fEffects = curr_options->m_fEffects;
 	
 	// TODO: Don't index by PlayerNumber.
 	PerPlayerData &data = g_EffectData[pPlayerState->m_PlayerNumber];
@@ -636,7 +636,7 @@ float ArrowEffects::GetYPos( const PlayerState* pPlayerState, int iCol, float fY
 	// TODO: Don't index by PlayerNumber.
 	const Style* pStyle = GAMESTATE->GetCurrentStyle(pPlayerState->m_PlayerNumber);
 	const Style::ColumnInfo* pCols = pStyle->m_ColumnInfo[pPlayerState->m_PlayerNumber];
-	const auto& fEffects = curr_options->m_fEffects;
+	const float* fEffects = curr_options->m_fEffects;
 	
 	// Doing the math with a precalculated result of 0 should be faster than
 	// checking whether tipsy is on. -Kyz
@@ -669,7 +669,7 @@ float ArrowEffects::GetYOffsetFromYPos(int iCol, float YPos, float fYReverseOffs
 {
 	float f = YPos;
 
-	const auto& fEffects = curr_options->m_fEffects;
+	const float* fEffects = curr_options->m_fEffects;
 	// Doing the math with a precalculated result of 0 should be faster than
 	// checking whether tipsy is on. -Kyz
 	// TODO: Don't index by PlayerNumber.
@@ -694,7 +694,7 @@ float ArrowEffects::GetXPos( const PlayerState* pPlayerState, int iColNum, float
 	float fPixelOffsetFromCenter = 0; // fill this in below
 
 	const Style* pStyle = GAMESTATE->GetCurrentStyle(pPlayerState->m_PlayerNumber);
-	const auto& fEffects = curr_options->m_fEffects;
+	const float* fEffects = curr_options->m_fEffects;
 
 	// TODO: Don't index by PlayerNumber.
 	const Style::ColumnInfo* pCols = pStyle->m_ColumnInfo[pPlayerState->m_PlayerNumber];
@@ -864,7 +864,7 @@ float ArrowEffects::GetXPos( const PlayerState* pPlayerState, int iColNum, float
 
 float ArrowEffects::GetRotationX(const PlayerState* pPlayerState, float fYOffset, bool bIsHoldCap, int iCol)
 {
-	const auto& fEffects = curr_options->m_fEffects;
+	const float* fEffects = curr_options->m_fEffects;
 	float fRotation = 0;
 	if( fEffects[PlayerOptions::EFFECT_CONFUSION_X] != 0 || fEffects[PlayerOptions::EFFECT_CONFUSION_X_OFFSET] != 0 ||
 	curr_options->m_fConfusionX[iCol] != 0
@@ -879,7 +879,7 @@ float ArrowEffects::GetRotationX(const PlayerState* pPlayerState, float fYOffset
 
 float ArrowEffects::GetRotationY(const PlayerState* pPlayerState, float fYOffset, int iCol)
 {
-	const auto& fEffects = curr_options->m_fEffects;
+	const float* fEffects = curr_options->m_fEffects;
 	float fRotation = 0;
 	if( fEffects[PlayerOptions::EFFECT_CONFUSION_Y] != 0 || fEffects[PlayerOptions::EFFECT_CONFUSION_Y_OFFSET] != 0 ||
 	curr_options->m_fConfusionY[iCol] != 0
@@ -894,7 +894,7 @@ float ArrowEffects::GetRotationY(const PlayerState* pPlayerState, float fYOffset
 
 float ArrowEffects::GetRotationZ( const PlayerState* pPlayerState, float fNoteBeat, bool bIsHoldHead, int iCol ) 
 {
-	const auto& fEffects = curr_options->m_fEffects;
+	const float* fEffects = curr_options->m_fEffects;
 	float fRotation = 0;
 	if( fEffects[PlayerOptions::EFFECT_CONFUSION] != 0 || fEffects[PlayerOptions::EFFECT_CONFUSION_OFFSET] != 0 ||
 	curr_options->m_fConfusionZ[iCol] != 0
@@ -916,7 +916,7 @@ float ArrowEffects::GetRotationZ( const PlayerState* pPlayerState, float fNoteBe
 
 float ArrowEffects::ReceptorGetRotationZ( const PlayerState* pPlayerState, int iCol ) 
 {
-	const auto& fEffects = curr_options->m_fEffects;
+	const float* fEffects = curr_options->m_fEffects;
 	float fRotation = 0;
 
 	if( curr_options->m_fConfusionZ[iCol] != 0 )
@@ -939,7 +939,7 @@ float ArrowEffects::ReceptorGetRotationZ( const PlayerState* pPlayerState, int i
 
 float ArrowEffects::ReceptorGetRotationX( const PlayerState* pPlayerState, int iCol ) 
 {
-	const auto& fEffects = curr_options->m_fEffects;
+	const float* fEffects = curr_options->m_fEffects;
 	float fRotation = 0;
 	
 	if( curr_options->m_fConfusionX[iCol] != 0 )
@@ -962,7 +962,7 @@ float ArrowEffects::ReceptorGetRotationX( const PlayerState* pPlayerState, int i
 
 float ArrowEffects::ReceptorGetRotationY( const PlayerState* pPlayerState, int iCol ) 
 {
-	const auto& fEffects = curr_options->m_fEffects;
+	const float* fEffects = curr_options->m_fEffects;
 	float fRotation = 0;
 
 	if( curr_options->m_fConfusionY[iCol] != 0 )
@@ -985,7 +985,7 @@ float ArrowEffects::ReceptorGetRotationY( const PlayerState* pPlayerState, int i
 
 float ArrowEffects::GetMoveX(int iCol)
 {
-	const auto& fMoves = curr_options->m_fMovesX;
+	const float* fMoves = curr_options->m_fMovesX;
 	float f = 0;
 	if( fMoves[iCol] != 0 )
 		f += ARROW_SIZE * fMoves[iCol];
@@ -994,7 +994,7 @@ float ArrowEffects::GetMoveX(int iCol)
 
 float ArrowEffects::GetMoveY(int iCol)
 {
-	const auto& fMoves = curr_options->m_fMovesY;
+	const float* fMoves = curr_options->m_fMovesY;
 	float f = 0;
 	if( fMoves[iCol] != 0 )
 		f += ARROW_SIZE * fMoves[iCol];
@@ -1003,7 +1003,7 @@ float ArrowEffects::GetMoveY(int iCol)
 
 float ArrowEffects::GetMoveZ(int iCol)
 {
-	const auto& fMoves = curr_options->m_fMovesZ;
+	const float* fMoves = curr_options->m_fMovesZ;
 	float f = 0;
 	if( fMoves[iCol] != 0 )
 		f += ARROW_SIZE * fMoves[iCol];
@@ -1024,7 +1024,7 @@ static float GetCenterLine()
 
 static float GetHiddenSudden()
 {
-	const auto& fAppearances = curr_options->m_fAppearances;
+	const float* fAppearances = curr_options->m_fAppearances;
 	return fAppearances[PlayerOptions::APPEARANCE_HIDDEN] *
 		fAppearances[PlayerOptions::APPEARANCE_SUDDEN];
 }
@@ -1084,7 +1084,7 @@ float ArrowGetPercentVisible(float fYPosWithoutReverse, int iCol, float fYOffset
 	if( fYPos < 0 && curr_options->m_bStealthPastReceptors == false)	// past Gray Arrows
 		return 1;	// totally visible
 
-	const auto& fAppearances = curr_options->m_fAppearances;
+	const float* fAppearances = curr_options->m_fAppearances;
 
 	float fVisibleAdjust = 0;
 
@@ -1173,7 +1173,7 @@ float ArrowEffects::GetBrightness( const PlayerState* pPlayerState, float fNoteB
 float ArrowEffects::GetZPos( const PlayerState* pPlayerState, int iCol, float fYOffset)
 {
 	float fZPos=0;
-	const auto& fEffects = curr_options->m_fEffects;
+	const float* fEffects = curr_options->m_fEffects;
 	const Style* pStyle = GAMESTATE->GetCurrentStyle(pPlayerState->m_PlayerNumber);
 	
 	// TODO: Don't index by PlayerNumber.
@@ -1295,7 +1295,7 @@ float ArrowEffects::GetZPos( const PlayerState* pPlayerState, int iCol, float fY
 
 bool ArrowEffects::NeedZBuffer()
 {
-	const auto& fEffects = curr_options->m_fEffects;
+	const float* fEffects = curr_options->m_fEffects;
 	// We also need to use the Z buffer if twirl is in play, because of
 	// hold modulation. -vyhd (OpenITG r623)
 	if( fEffects[PlayerOptions::EFFECT_BUMPY] != 0 ||

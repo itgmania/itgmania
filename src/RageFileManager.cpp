@@ -114,7 +114,7 @@ size_t zipRead(void *pOpaque, mz_uint64 file_ofs, void *pBuf, size_t n)
 {
 	RageFile *f = static_cast<RageFile*>(pOpaque);
 
-	const auto pos = f->Seek(file_ofs);
+	const int pos = f->Seek(file_ofs);
 	if (pos >= 0 && static_cast<uint64_t>(pos) != file_ofs)
 	{
 		return 0;

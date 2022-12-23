@@ -543,20 +543,22 @@ ulg crc32(ulg crc, const uch *buf, size_t len)
 class TZip
 {
 public:
-	TZip() = default;
+	TZip() : pfout(nullptr),ooffset(0),oerr(false),writ(0),hasputcen(false),zfis(0),hfin(0)
+	{
+	}
 	~TZip() = default;
 
 	// These variables say about the file we're writing into
 	// We can write to pipe, file-by-handle, file-by-name, memory-to-memmapfile
-	RageFile *pfout{nullptr};             // if valid, we'll write here (for files or pipes)
-	unsigned ooffset{0};         // for pfout, this is where the pointer was initially
-	ZRESULT oerr{false};             // did a write operation give rise to an error?
-	unsigned writ{0};            // how have we written. This is maintained by Add, not write(), to avoid confusion over seeks
-	unsigned int opos{0};        // current pos in the mmap
-	unsigned int mapsize{0};     // the size of the map we created
-	bool hasputcen{false};           // have we yet placed the central directory?
+	RageFile *pfout;             // if valid, we'll write here (for files or pipes)
+	unsigned ooffset;         // for pfout, this is where the pointer was initially
+	ZRESULT oerr;             // did a write operation give rise to an error?
+	unsigned writ;            // how have we written. This is maintained by Add, not write(), to avoid confusion over seeks
+	unsigned int opos;        // current pos in the mmap
+	unsigned int mapsize;     // the size of the map we created
+	bool hasputcen;           // have we yet placed the central directory?
 	//
-	TZipFileInfo *zfis{nullptr};       // each file gets added onto this list, for writing the table at the end
+	TZipFileInfo *zfis;       // each file gets added onto this list, for writing the table at the end
 
 	ZRESULT Start(RageFile *f);
 	static unsigned sflush(void *param,const char *buf, unsigned *size);
@@ -571,7 +573,7 @@ public:
 	ulg attr; iztimes times; ulg timestamp;  // all open_* methods set these
 	long isize,ired;         // size is not set until close() on pips
 	ulg crc;                                 // crc is not set until close(). iwrit is cumulative
-	RageFile *hfin{nullptr};           // for input files and pipes
+	RageFile *hfin;           // for input files and pipes
 	const char *bufin; unsigned int lenin,posin; // for memory
 	// and a variable for what we've done with the input: (i.e. compressed it!)
 	ulg csize;                               // compressed size, set by the compression routines

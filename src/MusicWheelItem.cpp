@@ -424,14 +424,14 @@ void MusicWheelItem::HandleMessage( const Message &msg )
 				break;
 		}
 
-		Message tmpMsg( "Set" );
-		tmpMsg.SetParam( "Song", pWID->m_pSong );
-		tmpMsg.SetParam( "Course", pWID->m_pCourse );
-		tmpMsg.SetParam( "Text", pWID->m_sText );
-		tmpMsg.SetParam( "Type", MusicWheelItemTypeToString(type) );
-		tmpMsg.SetParam( "Color", pWID->m_color );
-		tmpMsg.SetParam( "Label", pWID->m_sLabel );
-		this->HandleMessage( tmpMsg );
+		Message setMsg( "Set" );
+		setMsg.SetParam( "Song", pWID->m_pSong );
+		setMsg.SetParam( "Course", pWID->m_pCourse );
+		setMsg.SetParam( "Text", pWID->m_sText );
+		setMsg.SetParam( "Type", MusicWheelItemTypeToString(type) );
+		setMsg.SetParam( "Color", pWID->m_color );
+		setMsg.SetParam( "Label", pWID->m_sLabel );
+		this->HandleMessage( setMsg );
 		
 		RefreshGrades();
 	}

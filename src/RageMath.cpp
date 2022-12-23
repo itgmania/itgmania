@@ -616,7 +616,7 @@ float RageFastSin(float angle)
 {
 	if(angle == 0) { return 0; }
 	float index= angle * sine_table_index_mult;
-	auto first_index= static_cast<uint32_t>(index);
+	auto first_index= static_cast<unsigned int>(index);
 	auto second_index= (first_index + 1) % sine_index_mod;
 	float remainder= index - first_index;
 	first_index%= sine_index_mod;

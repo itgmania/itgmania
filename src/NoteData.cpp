@@ -30,7 +30,7 @@ bool NoteData::IsComposite() const
 {
 	for( int track = 0; track < GetNumTracks(); ++track )
 	{
-		for (const auto& tn : m_TapNotes[track])
+		for (const std::pair<const int, TapNote>& tn : m_TapNotes[track])
 			if( tn.second.pn != PLAYER_INVALID )
 				return true;
 	}
@@ -1337,6 +1337,15 @@ NoteData::_all_tracks_iterator<ND, iter, TN>::_all_tracks_iterator( const _all_t
 #undef COPY_OTHER
 {
 	m_pNoteData->AddATIToList(this);
+}
+
+template<typename ND, typename iter, typename TN>
+NoteData::_all_tracks_iterator<ND, iter, TN>::~_all_tracks_iterator()
+{
+	if(m_pNoteData != nullptr)
+	{
+		m_pNoteData->RemoveATIFromList(this);
+	}
 }
 
 template<typename ND, typename iter, typename TN>

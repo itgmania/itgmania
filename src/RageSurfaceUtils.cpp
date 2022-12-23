@@ -518,10 +518,10 @@ static bool blit_rgba_to_rgba( const RageSurface *src_surf, const RageSurface *d
 	const int srcskip = src_surf->pitch - width*src_surf->format->BytesPerPixel;
 	const int dstskip = dst_surf->pitch - width*dst_surf->format->BytesPerPixel;
 
-	const auto &src_shifts = src_surf->format->Shift;
-	const auto &dst_shifts = dst_surf->format->Shift;
-	const auto &src_masks = src_surf->format->Mask;
-	const auto &dst_masks = dst_surf->format->Mask;
+	const std::array<uint32_t, 4> &src_shifts = src_surf->format->Shift;
+	const std::array<uint32_t, 4> &dst_shifts = dst_surf->format->Shift;
+	const std::array<uint32_t, 4> &src_masks = src_surf->format->Mask;
+	const std::array<uint32_t, 4> &dst_masks = dst_surf->format->Mask;
 
 	uint8_t lookup[4][256];
 	for( int c = 0; c < 4; ++c )
@@ -833,44 +833,44 @@ RageSurface *RageSurfaceUtils::LoadSurface( RString file )
  * two bits are the alpha component.
  *
  * This gives us a generic way to handle arbitrary 8-bit texture formats. */
-RageSurface *RageSurfaceUtils::PalettizeToGrayscale( const RageSurface *src_surf, uint32_t GrayBits, uint32_t AlphaBits )
+RageSurface *RageSurfaceUtils::PalettizeToGrayscale( const RageSurface *src_surf, unsigned int GrayBits, unsigned int AlphaBits )
 {
 	AlphaBits = std::min( AlphaBits, 8-src_surf->format->Loss[3] );
 
-	const auto TotalBits = GrayBits + AlphaBits;
+	const unsigned int TotalBits = GrayBits + AlphaBits;
 	ASSERT( TotalBits <= 8 );
 
 	RageSurface *dst_surf = CreateSurface(src_surf->w, src_surf->h,
 		8, 0,0,0,0 );
 
 	// Set up the palette.
-	const auto TotalColors = 1u << TotalBits;
-	const auto Ivalues = 1u << GrayBits;			// number of intensity values
-	const auto Ishift = 0u;					// intensity shift
-	const auto Imask = ((1u << GrayBits) - 1u) << Ishift;	// intensity mask
-	const auto Iloss = 8u-GrayBits;
+	const unsigned int TotalColors = 1u << TotalBits;
+	const unsigned int Ivalues = 1u << GrayBits;			// number of intensity values
+	const unsigned int Ishift = 0u;					// intensity shift
+	const unsigned int Imask = ((1u << GrayBits) - 1u) << Ishift;	// intensity mask
+	const unsigned int Iloss = 8u-GrayBits;
 
-	const auto Avalues = 1u << AlphaBits;			// number of alpha values
-	const auto Ashift = GrayBits;				// alpha shift
-	const auto Amask = ((1u << AlphaBits) - 1u) << Ashift;	// alpha mask
-	const auto Aloss = 8u-AlphaBits;
+	const unsigned int Avalues = 1u << AlphaBits;			// number of alpha values
+	const unsigned int Ashift = GrayBits;				// alpha shift
+	const unsigned int Amask = ((1u << AlphaBits) - 1u) << Ashift;	// alpha mask
+	const unsigned int Aloss = 8u-AlphaBits;
 
 	for( size_t index = 0; index < TotalColors; ++index )
 	{
-		const auto I = (index & Imask) >> Ishift;
-		const auto A = (index & Amask) >> Ashift;
+		const unsigned int I = (index & Imask) >> Ishift;
+		const unsigned int A = (index & Amask) >> Ashift;
 
 		// if only one intensity value, always fullbright
-		const auto ScaledI = Ivalues == 1 ? 255 : clamp( lrintf(I * (255.0f / (Ivalues-1))), 0L, 255L );
+		const uint8_t ScaledI = Ivalues == 1 ? 255 : clamp( lrintf(I * (255.0f / (Ivalues-1))), 0L, 255L );
 
 		// if only one alpha value, always opaque
-		const auto ScaledA = Avalues == 1 ? 255 : clamp( lrintf(A * (255.0f / (Avalues-1))), 0L, 255L );
+		const uint8_t ScaledA = Avalues == 1 ? 255 : clamp( lrintf(A * (255.0f / (Avalues-1))), 0L, 255L );
 
 		RageSurfaceColor c;
-		c.r = uint8_t(ScaledI);
-		c.g = uint8_t(ScaledI);
-		c.b = uint8_t(ScaledI);
-		c.a = uint8_t(ScaledA);
+		c.r = ScaledI;
+		c.g = ScaledI;
+		c.b = ScaledI;
+		c.a = ScaledA;
 
 		dst_surf->fmt.palette->colors[index] = c;
 	}

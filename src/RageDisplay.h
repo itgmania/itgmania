@@ -114,28 +114,33 @@ public:
 
 	VideoModeParams(const VideoModeParams &other) = default;
 
-	VideoModeParams() = default;
+	VideoModeParams(): windowed(false), width(0), height(0),
+					bpp(0), rate(0), vsync(false), interlaced(false),
+					bSmoothLines(false), bTrilinearFiltering(false),
+					bAnisotropicFiltering(false), bWindowIsFullscreenBorderless(false),
+					sWindowTitle(RString()), sIconFile(RString()),
+					PAL(false), fDisplayAspectRatio(0.0f) {}
 
 	// Subclassing VideoModeParams in ActualVideoModeParams. Make destructor virtual just in case
 	// someone tries to delete one of those through a pointer to base...
 	virtual ~VideoModeParams() = default;
 
-	bool windowed{false};
-	RString sDisplayId{};
-	int width{0};
-	int height{0};
-	int bpp{0};
-	int rate{0};
-	bool vsync{false};
-	bool interlaced{false};
-	bool bSmoothLines{false};
-	bool bTrilinearFiltering{false};
-	bool bAnisotropicFiltering{false};
-	bool bWindowIsFullscreenBorderless{false};
-	RString sWindowTitle{};
-	RString sIconFile{};
-	bool PAL{false};
-	float fDisplayAspectRatio{0.0f};
+	bool windowed;
+	RString sDisplayId;
+	int width;
+	int height;
+	int bpp;
+	int rate;
+	bool vsync;
+	bool interlaced;
+	bool bSmoothLines;
+	bool bTrilinearFiltering;
+	bool bAnisotropicFiltering;
+	bool bWindowIsFullscreenBorderless;
+	RString sWindowTitle;
+	RString sIconFile;
+	bool PAL;
+	float fDisplayAspectRatio;
 };
 
 /**
