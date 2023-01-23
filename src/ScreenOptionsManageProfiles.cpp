@@ -244,7 +244,12 @@ void ScreenOptionsManageProfiles::HandleScreenMessage( const ScreenMessage SM )
 		
 			RString sNewName = ScreenTextEntry::s_sLastAnswer;
 			PROFILEMAN->RenameLocalProfile( GAMESTATE->m_sEditLocalProfileID, sNewName );
-
+			if (PREFSMAN->m_ProfileSortOrder == ProfileSortOrder_Alphabetical)
+			{
+				PROFILEMAN->MoveProfileSorted(
+					GetLocalProfileIndexWithFocus(),
+					PREFSMAN->m_bProfileSortOrderAscending);
+			}
 			SCREENMAN->SetNewScreen( this->m_sName ); // reload
 		}
 	}
@@ -449,8 +454,14 @@ void ScreenOptionsManageProfiles::ProcessMenuStart( const InputEventPlus & )
 			ADD_ACTION( ProfileAction_ChangeToGuest );
 			ADD_ACTION( ProfileAction_ChangeToNormal );
 			ADD_ACTION( ProfileAction_ChangeToTest );
-			ADD_ACTION( ProfileAction_MoveUp );
-			ADD_ACTION( ProfileAction_MoveDown );
+			// There technically isn't an issue keeping these enabled for other ProfileSorts,
+			// but it's not really useful as it would be overwritten.
+			if (PREFSMAN->m_ProfileSortOrder == ProfileSortOrder_Priority)
+			{
+				ADD_ACTION( ProfileAction_MoveUp );
+				ADD_ACTION( ProfileAction_MoveDown );
+			}
+
 		}
 
 		int iWidth, iX, iY;

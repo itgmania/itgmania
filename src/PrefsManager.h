@@ -112,6 +112,18 @@ enum BackgroundFitMode
 	BackgroundFitMode_Invalid
 };
 
+// Profile sort orders exist for sorting the list of profiles.
+// Regardless of sort order, Guest profiles are always at the top of the list
+// and Test profiles are always at the bottom of the list.
+enum ProfileSortOrder
+{
+	ProfileSortOrder_Priority,  // Sort based on the Priority defined in a profile's Type.ini
+	ProfileSortOrder_Recent,  // Sorts profiles by most recently used.
+	ProfileSortOrder_Alphabetical,  // Sorts profiles alphabetically.
+	NUM_ProfileSortOrder,
+	ProfileSortOrder_Invalid
+};
+
 /** @brief Holds user-chosen preferences that are saved between sessions. */
 class PrefsManager
 {
@@ -270,6 +282,13 @@ public:
 	// on different machines that don't have the same key, or else the
 	// profile's data will be discarded.
 	Preference<bool>	m_bSignProfileData;
+
+	// Used to control the ordering of the player profiles.
+	// See the the definition of ProfileSortOrder above about the available sort options.
+	Preference<ProfileSortOrder>	m_ProfileSortOrder;
+
+	// Determines whether the ProfileSortOrder is in ascending order (true) or descending order (false).
+	Preference<bool>	m_bProfileSortOrderAscending;
 
 	// course ranking
 	Preference<CourseSortOrders>	m_CourseSortOrder;

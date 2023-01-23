@@ -125,6 +125,15 @@ XToString( BackgroundFitMode );
 StringToX( BackgroundFitMode );
 LuaXType( BackgroundFitMode );
 
+static const char* ProfileSortOrderNames[] = {
+	"Priority",
+	"Recent",
+	"Alphabetical"
+};
+XToString(ProfileSortOrder);
+StringToX(ProfileSortOrder);
+LuaXType(ProfileSortOrder);
+
 bool g_bAutoRestart = false;
 #ifdef DEBUG
 # define TRUE_IF_DEBUG true
@@ -258,6 +267,8 @@ PrefsManager::PrefsManager() :
 	m_bAnisotropicFiltering		( "AnisotropicFiltering",		false ),
 
 	m_bSignProfileData		( "SignProfileData",			false ),
+	m_ProfileSortOrder		( "ProfileSortOrder",			ProfileSortOrder_Priority ),
+	m_bProfileSortOrderAscending		( "ProfileSortOrderAscending",			true ),
 	m_CourseSortOrder		( "CourseSortOrder",			COURSE_SORT_SONGS ),
 	m_bSubSortByNumSteps		( "SubSortByNumSteps",			false ),
 	m_GetRankingName		( "GetRankingName",			RANKING_ON ),

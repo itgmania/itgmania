@@ -8,6 +8,7 @@
 #include "GameState.h"
 #include "ScreenManager.h"
 #include "SongManager.h"
+#include "ProfileManager.h"
 #include "PrefsManager.h"
 #include "StepMania.h"
 #include "RageSoundManager.h"
@@ -110,6 +111,12 @@ void ScreenOptionsMaster::HandleScreenMessage( const ScreenMessage SM )
 			vpns.push_back( p );
 		for( unsigned r=0; r<m_pRows.size(); r++ ) // foreach row
 			ExportOptions( r, vpns );
+
+		if (m_iChangeMask & OPT_APPLY_PROFILES)
+		{
+			// If we're changing profile settings such as sort order, we need to reload them
+			PROFILEMAN->RefreshLocalProfilesFromDisk();
+		}
 
 		if( m_iChangeMask & OPT_APPLY_ASPECT_RATIO )
 		{
