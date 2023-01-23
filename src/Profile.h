@@ -62,7 +62,7 @@ class Steps;
 class Course;
 struct Game;
 
-// Profile types exist for sorting the list of profiles.
+// Profile types exist for distinguishing profiles and facilitating sorting.
 // Guest profiles at the top, test at the bottom.
 enum ProfileType
 {

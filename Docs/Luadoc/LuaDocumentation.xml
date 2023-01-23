@@ -4747,7 +4747,8 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 		Returns the number of trails with the specified StepsType and Difficulty that you've scored a certain Grade <code>g</code> on.
 	</Function>
 	<Function name='GetType' return='ProfileType' arguments=''>
-		Returns the type of the profile.  The type of the profile is only used to determine where the profile shows up in the list of profiles, and that problem is already handled by ProfileManager, so if you're reading this, this function only exists so you can make your theme color this profile's list entry based on the type or something like that.
+		Returns the type of the profile.  The StepMania engine uses ProfileType to sort the list of profiles, with <code>Guest</code> profiles appearing first, then <code>Normal</code>, then <code>Test</code>.<br />
+		Additional subsorting can be configured with <Link class='ENUM' function='ProfileSortOrder' />.
 	</Function>
 	<Function name='GetUserTable' return='table' arguments=''>
 		Returns the user table for this Profile.
@@ -6856,6 +6857,13 @@ end
 <Enum name='HorizAlign'>
 	<Description>
 		Horizontal alignment. See <Link class='Actor' function='horizalign' />.
+	</Description>
+</Enum>
+<Enum name='ProfileSortOrder'>
+	<Description>
+		Possible values for the <code>ProfileSortOrder</code> preference.  The engine initially sorts profiles based on their <Link class='ENUM' function='ProfileType' />, showing <code>Guest</code> profiles first, then <code>Normal</code>, then <code>Test</code>.  <code>ProfileSortOrder</code> allows additional subsorts to be configured.<br />
+		<code>Priority</code> allows users to manually sort profiles using the <code>Priority=</code> key in each profile's Type.ini file.  New profiles are created with <code>Priority=0</code>.  A profile with <code>Priority=0</code> will appear before any profiles with <code>Priority=1</code> which will appear before any profiles with <code>Priority=2</code> and so on.<br />
+		<code>Recent</code> automatically sorts profiles in the order they are used, with the most recently used profile appearing first.
 	</Description>
 </Enum>
 <Enum name='VertAlign'>
