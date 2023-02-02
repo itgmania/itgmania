@@ -146,6 +146,23 @@ void TimingWindowSecondsInit( std::size_t /*TimingWindow*/ i, RString &sNameOut,
 	}
 }
 
+TapNoteScore MinTnsToScoreTapNote(int i) {
+	switch (i) {
+		case 1:
+			return TNS_W1;
+		case 2:
+			return TNS_W2;
+		case 3:
+			return TNS_W3;
+		case 4:
+			return TNS_W4;
+		case 5:
+			return TNS_W5;
+		default:
+		  return TNS_None;
+	}
+}
+
 static Preference<float> m_fTimingWindowScale	( "TimingWindowScale",		1.0f );
 static Preference<float> m_fTimingWindowAdd	( "TimingWindowAdd",		0 );
 static Preference1D<float> m_fTimingWindowSeconds( TimingWindowSecondsInit, NUM_TimingWindow );
@@ -153,6 +170,7 @@ static Preference<float> m_fTimingWindowJump	( "TimingWindowJump",		0.25 );
 static Preference<float> m_fMaxInputLatencySeconds	( "MaxInputLatencySeconds",	0.0 );
 static Preference<bool> g_bEnableAttackSoundPlayback	( "EnableAttackSounds", true );
 static Preference<bool> g_bEnableMineSoundPlayback	( "EnableMineHitSound", true );
+static Preference<int> g_iMinTnsToScoreTapNote	( "MinTnsToScoreTapNote", 3 );  // Default to great and above.
 
 /** @brief How much life is in a hold note when you start on it? */
 ThemeMetric<float> INITIAL_HOLD_LIFE		( "Player", "InitialHoldLife" );
@@ -2470,8 +2488,61 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 
 		if( score != TNS_None )
 		{
-			pTN->result.tns = score;
-			pTN->result.fTapNoteOffset = -fNoteOffset;
+			TapNoteScore minTnsToScore = MinTnsToScoreTapNote(g_iMinTnsToScoreTapNote);
+			bool badTns = false;
+			if (minTnsToScore != TNS_None) {
+				switch (score) {
+					case TNS_W5:
+					case TNS_W4:
+					case TNS_W3:
+					case TNS_W2:
+					case TNS_W1:
+						if (score < minTnsToScore) {
+							badTns = true;
+						}
+						break;
+					default:
+						break;
+				}
+			}
+
+			// Seems like we want to take the negation of "fNoteOffset" for comparison.
+			// That's what we do with the fTapNoteOffset below, where negative implies
+			// an early hit.
+			// Not sure why this is the case, but I think this implies there's a bug
+			// above on line 2288.
+			if (badTns && -fNoteOffset < 0.0f) {
+				// If a player gets an early way off as well as an early decent, we only
+				// want to change the life once.
+				if (pTN->result.earlyTns == TNS_None) {
+					pTN->result.earlyTns = score;
+					pTN->result.fTapNoteOffset = -fNoteOffset;
+					ChangeLife( score );
+					// TODO: This should maybe also trigger a judgment change and a score
+					// change on hit. If a player gets an early way off, and doesn't
+					// attempt to hit the arrow again, then they'll be met with a way off
+					// judgment instead of a miss which is weird behavior.
+					// We should give the user instant feedback when they get an EarlyHit,
+					// and then update the feedback if they manage to successfully re-hit
+					// the arrow. For now, we can just use the msg below to aid with this
+					// feedback.
+					
+					Message msg( "EarlyHit" );
+					msg.SetParam( "Player", m_pPlayerState->m_PlayerNumber );
+					msg.SetParam( "TapNoteScore", score );
+					MESSAGEMAN->Broadcast( msg );
+				}
+			} else {
+				// If earlyTns is not set (good hit):
+				//   - Default behavior
+				// Otherwise:
+				//   - this should only trigger a judgment and a score change if
+				//   	 it's not a miss and the TNS is minTnsToScore or better.
+				if (pTN->result.earlyTns == TNS_None || (score != TNS_Miss && !badTns)) {
+					pTN->result.tns = score;
+					pTN->result.fTapNoteOffset = -fNoteOffset;
+				}
+			}
 		}
 
 		m_LastTapNoteScore = score;
@@ -2593,7 +2664,11 @@ void Player::UpdateTapNotesMissedOlderThan( float fMissIfOlderThanSeconds )
 		}
 		else
 		{
-			tn.result.tns = TNS_Miss;
+			if (tn.result.earlyTns != TNS_None) {
+				tn.result.tns = tn.result.earlyTns;
+			} else {
+				tn.result.tns = TNS_Miss;
+			}
 		}
 	}
 }
@@ -2962,7 +3037,8 @@ void Player::HandleTapRowScore( unsigned row )
 	if( bNoCheating && m_pPlayerState->m_PlayerController == PC_AUTOPLAY )
 		return;
 
-	TapNoteScore scoreOfLastTap = NoteDataWithScoring::LastTapNoteWithResult(m_NoteData, row).result.tns;
+	TapNote lastTap = NoteDataWithScoring::LastTapNoteWithResult(m_NoteData, row);
+	TapNoteScore scoreOfLastTap = lastTap.result.tns;
 	const unsigned int iOldCombo = m_pPlayerStageStats ? m_pPlayerStageStats->m_iCurCombo : 0;
 	const unsigned int iOldMissCombo = m_pPlayerStageStats ? m_pPlayerStageStats->m_iCurMissCombo : 0;
 
@@ -3049,7 +3125,11 @@ void Player::HandleTapRowScore( unsigned row )
 		m_pSecondaryScoreDisplay->OnJudgment( scoreOfLastTap );
 	}
 
-	ChangeLife( scoreOfLastTap );
+	// if earlyTns is set, the life has already been affected for this note.
+	// Don't want to change the life again for a re-hit.
+	if (lastTap.result.earlyTns == TNS_None) {
+		ChangeLife( scoreOfLastTap );
+	}
 }
 
 void Player::HandleHoldCheckpoint(int iRow,

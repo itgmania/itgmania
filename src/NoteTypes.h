@@ -18,6 +18,8 @@ struct TapNoteResult
 	TapNoteResult() : tns(TNS_None), fTapNoteOffset(0.f), bHidden(false), bHeld(false) { }
 	/** @brief The TapNoteScore that was achieved by the player. */
 	TapNoteScore	tns;
+	/** @brief The TapNoteScore of any early hits of this tap note. */
+	TapNoteScore	earlyTns;
 
 	/**
 	 * @brief Offset, in seconds, for a tap grade.
