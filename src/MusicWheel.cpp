@@ -544,6 +544,8 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 		case SORT_BPM:
 		case SORT_POPULARITY:
 		case SORT_TOP_GRADES:
+		case SORT_TOP_GRADES_P1:
+		case SORT_TOP_GRADES_P2:
 		case SORT_ARTIST:
 		case SORT_GENRE:
 		case SORT_BEGINNER_METER:
@@ -600,7 +602,21 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 					bUseSections = false;
 					break;
 				case SORT_TOP_GRADES:
-					SongUtil::SortSongPointerArrayByGrades( arraySongs, true );
+						SongUtil::SortSongPointerArrayByGrades( arraySongs, true );
+					break;
+				case SORT_TOP_GRADES_P1:
+					// Check if master player profile is persistent
+					if( PROFILEMAN->IsPersistentProfile(PLAYER_1) )
+						SongUtil::SortSongPointerArrayByProfileGrades( arraySongs, true, PLAYER_1);
+					else
+						SongUtil::SortSongPointerArrayByGrades( arraySongs, true );
+					break;
+				case SORT_TOP_GRADES_P2:
+					if( PROFILEMAN->IsPersistentProfile(PLAYER_2) )
+						SongUtil::SortSongPointerArrayByProfileGrades( arraySongs, true, PLAYER_2);
+					else
+						SongUtil::SortSongPointerArrayByGrades( arraySongs, true );
+
 					break;
 				case SORT_ARTIST:
 					SongUtil::SortSongPointerArrayByArtist( arraySongs );
@@ -665,6 +681,8 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 				{
 					case SORT_PREFERRED:
 					case SORT_TOP_GRADES:
+					case SORT_TOP_GRADES_P1:
+					case SORT_TOP_GRADES_P2:
 					case SORT_BPM:
 					case SORT_LENGTH:
 						break;	// don't sort by section

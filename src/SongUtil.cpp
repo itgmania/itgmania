@@ -17,6 +17,8 @@
 #include "CommonMetrics.h"
 #include "LuaBinding.h"
 #include "EnumHelper.h"
+#include "PlayerNumber.h"
+
 
 #include <cmath>
 #include <cstddef>
@@ -495,6 +497,35 @@ void SongUtil::SortSongPointerArrayByGrades( std::vector<Song*> &vpSongsInOut, b
 		vpSongsInOut[i] = vals[i].first;
 }
 
+void SongUtil::SortSongPointerArrayByProfileGrades( std::vector<Song*> &vpSongsInOut, bool bDescending, PlayerNumber pn )
+{
+	/* Optimize by pre-writing a string to compare, since doing
+	 * GetNumNotesWithGrade inside the sort is too slow. */
+	typedef std::pair<Song*, RString> val;
+	std::vector<val> vals;
+	vals.reserve( vpSongsInOut.size() );
+
+	for( unsigned i = 0; i < vpSongsInOut.size(); ++i )
+	{
+		Song *pSong = vpSongsInOut[i];
+
+		int iCounts[NUM_Grade];
+		const Profile *pProfile = PROFILEMAN->GetProfile(pn);
+		ASSERT( pProfile != nullptr );
+		pProfile->GetGrades( pSong, GAMESTATE->GetCurrentStyle(pn)->m_StepsType, iCounts );
+
+		RString foo;
+		foo.reserve(256);
+		for( int g=Grade_Tier01; g<NUM_Grade; ++g )
+			AppendOctal( iCounts[g], 3, foo );
+		vals.push_back( val(pSong, foo) );
+	}
+
+	sort( vals.begin(), vals.end(), bDescending ? CompDescending : CompAscending );
+
+	for( unsigned i = 0; i < vpSongsInOut.size(); ++i )
+		vpSongsInOut[i] = vals[i].first;
+}
 
 void SongUtil::SortSongPointerArrayByArtist( std::vector<Song*> &vpSongsInOut )
 {
@@ -631,6 +662,32 @@ RString SongUtil::GetSectionNameFromSongAndSort( const Song* pSong, SortOrder so
 	case SORT_POPULARITY:
 	case SORT_RECENT:
 		return RString();
+	case SORT_TOP_GRADES_P1:
+			{
+			int iCounts[NUM_Grade];
+			PROFILEMAN->GetProfile(PLAYER_1)->GetGrades( pSong, GAMESTATE->GetCurrentStyle(PLAYER_1)->m_StepsType, iCounts );
+
+			for( int i=Grade_Tier01; i<NUM_Grade; ++i )
+			{
+				Grade g = (Grade)i;
+				if( iCounts[i] > 0 )
+					return ssprintf( "%4s x %d", GradeToLocalizedString(g).c_str(), iCounts[i] );
+			}
+			return GradeToLocalizedString( Grade_NoData );
+		}
+	case SORT_TOP_GRADES_P2:
+			{
+			int iCounts[NUM_Grade];
+			PROFILEMAN->GetProfile(PLAYER_2)->GetGrades( pSong, GAMESTATE->GetCurrentStyle(PLAYER_2)->m_StepsType, iCounts );
+
+			for( int i=Grade_Tier01; i<NUM_Grade; ++i )
+			{
+				Grade g = (Grade)i;
+				if( iCounts[i] > 0 )
+					return ssprintf( "%4s x %d", GradeToLocalizedString(g).c_str(), iCounts[i] );
+			}
+			return GradeToLocalizedString( Grade_NoData );
+		}
 	case SORT_TOP_GRADES:
 		{
 			int iCounts[NUM_Grade];

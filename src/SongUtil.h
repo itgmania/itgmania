@@ -2,7 +2,7 @@
 
 #ifndef SONG_UTIL_H
 #define SONG_UTIL_H
-
+#include "PlayerNumber.h"
 #include "GameConstantsAndTypes.h"
 #include "Difficulty.h"
 
@@ -138,6 +138,7 @@ namespace SongUtil
 	void SortSongPointerArrayByTitle( std::vector<Song*> &vpSongsInOut );
 	void SortSongPointerArrayByBPM( std::vector<Song*> &vpSongsInOut );
 	void SortSongPointerArrayByGrades( std::vector<Song*> &vpSongsInOut, bool bDescending );
+	void SortSongPointerArrayByProfileGrades( std::vector<Song*> &vpSongsInOut, bool bDescending, PlayerNumber pn );
 	void SortSongPointerArrayByArtist( std::vector<Song*> &vpSongsInOut );
 	void SortSongPointerArrayByDisplayArtist( std::vector<Song*> &vpSongsInOut );
 	void SortSongPointerArrayByGenre( std::vector<Song*> &vpSongsInOut );
