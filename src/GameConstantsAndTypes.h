@@ -166,6 +166,8 @@ enum SortOrder
 	SORT_BPM, /**< Sort by the Song's BPM. */
 	SORT_POPULARITY, /**< Sort by how popular the Song is. */
 	SORT_TOP_GRADES, /**< Sort by the highest grades earned on a Song. */
+	SORT_TOP_GRADES_P1, /**< Sort by the highest grades earned on a Song for P1. */
+	SORT_TOP_GRADES_P2, /**< Sort by the highest grades earned on a Song for P2. */
 	SORT_ARTIST, /**< Sort by the name of the artist of the Song. */
 	SORT_GENRE, /**< Sort by the Song's genre. */
 	SORT_BEGINNER_METER, /**< Sort by the difficulty of the single beginner meter. */
