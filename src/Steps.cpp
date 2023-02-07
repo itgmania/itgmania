@@ -28,6 +28,7 @@
 #include "NotesLoaderDWI.h"
 #include "NotesLoaderKSF.h"
 #include "NotesLoaderBMS.h"
+#include "CommonMetrics.h"
 #include <algorithm>
 
 /* register DisplayBPM with StringConversion */
@@ -61,6 +62,7 @@ Steps::~Steps()
 
 void Steps::GetDisplayBpms( DisplayBpms &AddTo ) const
 {
+	// Use the explicit DisplayBPM for this Steps if there is one.
 	if( this->GetDisplayBPM() == DISPLAY_BPM_SPECIFIED )
 	{
 		AddTo.Add( this->GetMinBPM() );
@@ -73,6 +75,48 @@ void Steps::GetDisplayBpms( DisplayBpms &AddTo ) const
 		AddTo.Add( fMinBPM );
 		AddTo.Add( fMaxBPM );
 	}
+}
+
+static float MModReadBpm( const DisplayBpms& bpms, const TimingData& timing, const float fMaxReadBPM )
+{
+	float fReadBPM;
+
+	if( !bpms.IsSecret() )
+		fReadBPM = bpms.GetMax();
+	else // The DisplayBpm is not defined. Use the actual BPM instead.
+	{
+		float fThrowAway;
+		timing.GetActualBPM(fThrowAway, fReadBPM);
+	}
+
+	if( fMaxReadBPM > 0 )
+		fReadBPM = std::min(fMaxReadBPM, fReadBPM);
+
+	return fReadBPM;
+}
+
+float Steps::GetMModReadBpm( const bool bPerSong ) const
+{
+	DisplayBpms bpms;
+	TimingData timing;
+
+	if( bPerSong )
+	{
+		this->m_pSong->GetDisplayBpms(bpms);
+		timing = this->m_pSong->m_SongTiming;
+	}
+	else
+	{
+		// For compatibility with files that don't have an explicitly specified
+		// Steps DisplayBpms, fall back on the Song DisplayBpms.
+		if( this->GetDisplayBPM() == DISPLAY_BPM_SPECIFIED )
+			this->GetDisplayBpms(bpms);
+		else
+			this->m_pSong->GetDisplayBpms(bpms);
+		timing = this->m_Timing;
+	}
+
+	return MModReadBpm(bpms, timing, CommonMetrics::M_MOD_HIGH_CAP.GetValue());
 }
 
 bool Steps::HasAttacks() const
@@ -715,6 +759,7 @@ public:
 	DEFINE_METHOD( IsAutogen,	IsAutogen() )
 	DEFINE_METHOD( IsAnEdit,	IsAnEdit() )
 	DEFINE_METHOD( IsAPlayerEdit,	IsAPlayerEdit() )
+	DEFINE_METHOD( GetMModReadBpm, GetMModReadBpm() )
 
 	static int HasSignificantTimingChanges( T* p, lua_State *L )
 	{
@@ -821,6 +866,7 @@ public:
 		ADD_METHOD( IsDisplayBpmRandom );
 		ADD_METHOD( PredictMeter );
 		ADD_METHOD( GetDisplayBPMType );
+		ADD_METHOD( GetMModReadBpm );
 	}
 };
 

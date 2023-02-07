@@ -202,6 +202,7 @@ public:
 	void SetMaxBPM(const float f)				{ this->specifiedBPMMax = f; }
 	float GetMaxBPM() const					{ return this->specifiedBPMMax; }
 	void GetDisplayBpms( DisplayBpms &addTo) const;
+	float GetMModReadBpm(const bool bPerSong = true) const;
 
 	RString GetAttackString() const
 	{

@@ -4573,6 +4573,10 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Function name='GetPlayerOptionsArray' return='{string}' arguments='ModsLevel ml'>
 		Returns a table of strings, containing the player options for the specified ModsLevel.
 	</Function>
+	<Function name='GetReadBpm' return='float' arguments=''>
+		Returns the current read BPM.
+		For MMods, the effective X mod is calculated by dividing the player's MMod setting by the read BPM.
+	</Function>
 	<Function name='GetSongPosition' return='SongPosition' arguments=''>
 		Returns the SongPosition for this PlayerState.
 	</Function>
@@ -6212,6 +6216,10 @@ local spr = Def.Sprite{
 	<Function name='GetMeter' return='int' arguments=''>
 		Returns the numerical difficulty of the Steps.
 	</Function>
+	<Function name='GetMModReadBpm' return='float' arguments=''>
+		Returns the MMod read BPM for the Steps.
+		See <Link class='PlayerState' function='GetReadBpm' /> for a description of read BPM.
+	</Function>
 	<Function name='HasAttacks' return='bool' arguments=''>
 		Returns <code>true</code> if the Steps has any attacks.
 	</Function>
@@ -6615,6 +6623,10 @@ local bpms_and_times = timing_data:GetBPMsAndTimes(true)
 	</Function>
 	<Function name='GetTrailEntry' return='TrailEntry' arguments='int iEntry'>
 		Returns the TrailEntry at index <code>iEntry</code>.
+	</Function>
+	<Function name='GetTrailMModReadBpm' return='float'>
+		Returns the MMod read BPM for the entire Trail taken as a whole. This is currently used as the read BPM when playing courses.
+		See <Link class='PlayerState' function='GetReadBpm' /> for a description of read BPM.
 	</Function>
 	<Function name='IsSecret' return='bool' arguments=''>
 		Returns <code>true</code> if any of the Trail entries are secret.

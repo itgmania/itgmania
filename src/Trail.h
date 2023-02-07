@@ -90,6 +90,8 @@ public:
 	void GetDisplayBpms( DisplayBpms &AddTo ) const;
 	bool IsSecret() const;
 	bool ContainsSong( const Song *pSong ) const;
+	// This is the Trail's ReadBPM, not the ReadBPM of any Steps within it
+	float GetTrailMModReadBpm( const bool bPerSong = true ) const;
 
 	// Lua
 	void PushSelf( lua_State *L );
