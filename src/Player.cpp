@@ -436,8 +436,8 @@ void Player::Init(
 		}
 		else
 		{
-			ASSERT( GAMESTATE->m_pCurSong != nullptr );
-			GAMESTATE->m_pCurSong->GetDisplayBpms( bpms );
+			ASSERT( GAMESTATE->m_pCurSteps[pn] != nullptr );
+			GAMESTATE->m_pCurSteps[pn]->GetDisplayBpms(bpms);
 		}
 
 		float fMaxBPM = 0;
