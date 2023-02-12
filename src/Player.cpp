@@ -2530,6 +2530,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 					Message msg( "EarlyHit" );
 					msg.SetParam( "Player", m_pPlayerState->m_PlayerNumber );
 					msg.SetParam( "TapNoteScore", score );
+					msg.SetParam( "Column", col );
 					MESSAGEMAN->Broadcast( msg );
 				}
 			} else {
