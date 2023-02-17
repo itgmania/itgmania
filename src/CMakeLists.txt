@@ -441,6 +441,8 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
     list(APPEND SMDATA_LINK_LIB ${LIBXTST_LIBRARY})
   endif()
 
+  list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARIES})
+
   list(APPEND SMDATA_LINK_LIB ${XRANDR_LIBRARIES} ${XINERAMA_LIBRARIES})
 
   list(REMOVE_DUPLICATES SMDATA_LINK_LIB)
@@ -466,6 +468,8 @@ else()
     if(X11_FOUND)
       list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
     endif()
+
+    list(APPEND SM_INCLUDE_DIRS "${LIBUSB_INCLUDE_DIRS}")
   endif()
 endif()
 
