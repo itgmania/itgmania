@@ -370,6 +370,11 @@ elseif(LINUX)
 
   set(OpenGL_GL_PREFERENCE GLVND)
   find_package(OpenGL REQUIRED)
+
+  find_package(Libusb)
+  if(NOT LIBUSB_FOUND)
+    message(FATAL_ERROR "libusb was not found.")
+  endif()
 endif(WIN32) # LINUX, APPLE
 
 configure_file("${SM_SRC_DIR}/config.in.hpp"
