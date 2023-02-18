@@ -124,9 +124,30 @@ RString RageSoundDriver_WaveOut::Init()
 	fmt.nBlockAlign = fmt.nChannels * fmt.wBitsPerSample / 8;
 	fmt.nAvgBytesPerSec = fmt.nSamplesPerSec * fmt.nBlockAlign;
 
-	MMRESULT ret = waveOutOpen( &m_hWaveOut, WAVE_MAPPER, &fmt, (DWORD_PTR) m_hSoundEvent, NULL, CALLBACK_EVENT );
-	if( ret != MMSYSERR_NOERROR )
+	std::vector<UINT> deviceIds;
+	if (!PREFSMAN->m_iSoundDevice.Get().empty()) {
+		std::vector<RString> portNames;
+		split(PREFSMAN->m_iSoundDevice.Get(), ",", portNames, true);
+		for (const RString& device : portNames) {
+			int id = StringToInt(device, /*pos=*/0, /*base=*/10, /*exceptVal=*/-1);
+			if (id != -1) {
+				deviceIds.push_back(id);
+			}
+		}
+	}
+	deviceIds.push_back(WAVE_MAPPER);  // Fallback to WAVE_MAPPER
+	
+	MMRESULT ret = MMSYSERR_ERROR;
+	for (UINT id : deviceIds) {
+		ret = waveOutOpen( &m_hWaveOut, id, &fmt, (DWORD_PTR) m_hSoundEvent, NULL, CALLBACK_EVENT );
+		if (ret == MMSYSERR_NOERROR) {
+			break;
+		}
+	}
+	if (ret != MMSYSERR_NOERROR) {
 		return wo_ssprintf( ret, "waveOutOpen failed" );
+	}
+
 
 	ZERO( m_aBuffers );
 	for(int b = 0; b < num_chunks; ++b)
