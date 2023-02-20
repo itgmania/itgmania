@@ -38,12 +38,14 @@ int32_t RageSurfacePalette::FindClosestColor( const RageSurfaceColor &color ) co
 }
 
 RageSurfaceFormat::RageSurfaceFormat():
+	Mask(), Shift(), Loss(),
 	Rmask(Mask[0]), Gmask(Mask[1]), Bmask(Mask[2]), Amask(Mask[3]),
 	Rshift(Shift[0]), Gshift(Shift[1]), Bshift(Shift[2]), Ashift(Shift[3])
 {
 }
 
 RageSurfaceFormat::RageSurfaceFormat( const RageSurfaceFormat &cpy ):
+	Mask(), Shift(), Loss(),
 	Rmask(Mask[0]), Gmask(Mask[1]), Bmask(Mask[2]), Amask(Mask[3]),
 	Rshift(Shift[0]), Gshift(Shift[1]), Bshift(Shift[2]), Ashift(Shift[3])
 {
