@@ -579,6 +579,7 @@ void GameState::BeginGame()
 	m_timeGameStarted.Touch();
 
 	m_vpsNamesThatWereFilled.clear();
+	m_sPlayersThatWereFilled.clear();
 
 	// Play attract on the ending screen, then on the ranking screen
 	// even if attract sounds are set to off.
@@ -2349,29 +2350,77 @@ void GameState::StoreRankingName( PlayerNumber pn, RString sName )
 		m_vpsNamesThatWereFilled.push_back( aFeats[i].pStringToFill );
 	}
 
+	m_sPlayersThatWereFilled.insert(pn);
 
-	Profile *pProfile = PROFILEMAN->GetMachineProfile();
+	// Only attempt to remove/clamp scores after the last enabled player has saved their scores.
+	if (GAMESTATE->GetNumPlayersEnabled() <= static_cast<int>(m_sPlayersThatWereFilled.size())) {
+		StepsType st = GetCurrentStyle(pn)->m_StepsType;
+		PlayMode mode = m_PlayMode.Get();
+		Profile *pProfile = PROFILEMAN->GetMachineProfile();
+		switch (mode)
+		{
+			case PLAY_MODE_REGULAR:
+			case PLAY_MODE_BATTLE:
+			case PLAY_MODE_RAVE:
+				{
+					// Find unique Song and Steps combinations that were played.
+					// Code is taken from implementation in GetRankingFeats()
+					std::vector<SongAndSteps> vSongAndSteps;
 
-	if( !PREFSMAN->m_bAllowMultipleHighScoreWithSameName )
-	{
-		// erase all but the highest score for each name
-		for (auto &songIter : pProfile->m_SongHighScores)
-			for (auto &stepIter : songIter.second.m_StepsHighScores)
-				stepIter.second.hsl.RemoveAllButOneOfEachName();
+					for( unsigned i=0; i<STATSMAN->m_vPlayedStageStats.size(); i++ )
+					{
+						CHECKPOINT_M( ssprintf("%u/%i", i, (int)STATSMAN->m_vPlayedStageStats.size() ) );
+						SongAndSteps sas;
+						ASSERT( !STATSMAN->m_vPlayedStageStats[i].m_vpPlayedSongs.empty() );
+						sas.pSong = STATSMAN->m_vPlayedStageStats[i].m_vpPlayedSongs[0];
+						ASSERT( sas.pSong != nullptr );
 
-		for (auto &courseIter : pProfile->m_CourseHighScores)
-			for (auto &trailIter : courseIter.second.m_TrailHighScores)
-				trailIter.second.hsl.RemoveAllButOneOfEachName();
+						if ( STATSMAN->m_vPlayedStageStats[i].m_player[pn].m_vpPossibleSteps.empty() )
+							continue;
+						sas.pSteps = STATSMAN->m_vPlayedStageStats[i].m_player[pn].m_vpPossibleSteps[0];
+						ASSERT( sas.pSteps != nullptr );
+						vSongAndSteps.push_back( sas );
+					}
+				
+					std::vector<SongAndSteps>::iterator toDelete = std::unique( vSongAndSteps.begin(), vSongAndSteps.end() );
+					vSongAndSteps.erase(toDelete, vSongAndSteps.end());
+
+					for (unsigned i = 0; i < vSongAndSteps.size(); ++i)
+					{
+						HighScoreList &hsl = pProfile->GetStepsHighScoreList(vSongAndSteps[i].pSong,vSongAndSteps[i].pSteps);
+						if (!PREFSMAN->m_bAllowMultipleHighScoreWithSameName)
+						{
+							// erase all but the highest score for each name
+							hsl.RemoveAllButOneOfEachName();
+						}
+						hsl.ClampSize(true);
+					}
+				}
+				break;
+			case PLAY_MODE_NONSTOP:
+			case PLAY_MODE_ONI:
+			case PLAY_MODE_ENDLESS:
+				{
+					// Code is taken from implementation in GetRankingFeats()
+					Course* pCourse = m_pCurCourse;
+					ASSERT( pCourse != nullptr );
+					Trail *pTrail = m_pCurTrail[pn];
+					ASSERT( pTrail != nullptr );
+					CourseDifficulty cd = pTrail->m_CourseDifficulty;
+					HighScoreList &hsl = pProfile->GetCourseHighScoreList( pCourse, pTrail );				
+					if (!PREFSMAN->m_bAllowMultipleHighScoreWithSameName)
+					{
+						// erase all but the highest score for each name
+						hsl.RemoveAllButOneOfEachName();
+					}
+					hsl.ClampSize(true);
+				}
+				break;
+		default:
+			FAIL_M(ssprintf("Invalid play mode: %i", int(m_PlayMode)));
+		}
 	}
 
-	// clamp high score sizes
-	for (auto &songIter : pProfile->m_SongHighScores)
-		for (auto &stepIter : songIter.second.m_StepsHighScores)
-			stepIter.second.hsl.ClampSize( true );
-
-	for (auto &courseIter : pProfile->m_CourseHighScores)
-		for (auto &trailIter : courseIter.second.m_TrailHighScores)
-			trailIter.second.hsl.ClampSize( true );
 }
 
 bool GameState::AllAreInDangerOrWorse() const
