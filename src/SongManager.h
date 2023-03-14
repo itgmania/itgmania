@@ -179,6 +179,8 @@ public:
 
 	void UpdatePopular();
 	void UpdateShuffled();	// re-shuffle songs and courses
+	void SetPreferredSongs(RString sPreferredSongs = "PreferredSongs.txt", bool bIsAbsolute = false);
+	void SetPreferredCourses(RString sPreferredCourses = "PreferredCourses.txt", bool bIsAbsolute = false);
 	void UpdatePreferredSort(RString sPreferredSongs = "PreferredSongs.txt", RString sPreferredCourses = "PreferredCourses.txt"); 
 	void SortSongs();		// sort m_pSongs by CompareSongPointersByTitle
 
