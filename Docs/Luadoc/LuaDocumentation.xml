@@ -5890,12 +5890,12 @@ local args = {
 	</Function>
 	<Function name='SetPreferredCourses' return='void' arguments='string sListName, bool bIsAbsolute'>
 		By default, loads preferred courses from <code>{theme}/Other/SongManager sListName.txt</code>.
-		(New since ITGmania 0.5.2) If the optional argument <code>bIsAbsolute</code> is set, instead treats
+		(New since ITGmania 0.6.0) If the optional argument <code>bIsAbsolute</code> is set, instead treats
 		sListName as an absolute path instead of loading it from the Theme's <code>Other</code> directory.
 	</Function>
 	<Function name='SetPreferredSongs' return='void' arguments='string sListName, bool bIsAbsolute'>
 		By default, loads preferred songs from <code>{theme}/Other/SongManager sListName.txt</code>.
-		(New since ITGmania 0.5.2) If the optional argument <code>bIsAbsolute</code> is set, instead treats
+		(New since ITGmania 0.6.0) If the optional argument <code>bIsAbsolute</code> is set, instead treats
 		sListName as an absolute path instead of loading it from the Theme's <code>Other</code> directory.
 	</Function>
 	<Function name='SongToPreferredSortSectionName' return='string' arguments='Song s'>
