@@ -1593,188 +1593,202 @@ void SongManager::UpdateShuffled()
 	std::shuffle( m_pShuffledCourses.begin(), m_pShuffledCourses.end(), g_RandomNumberGenerator );
 }
 
-void SongManager::UpdatePreferredSort(RString sPreferredSongs, RString sPreferredCourses)
+void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
+	ASSERT( UNLOCKMAN != nullptr );
+
+	m_vPreferredSongSort.clear();
+
+	std::vector<RString> asLines;
+	RString sFile = sPreferredSongs;
+	if (!bIsAbsolute)
+		sFile = THEME->GetPathO( "SongManager", sPreferredSongs );
+	GetFileContents( sFile, asLines );
+	if( asLines.empty() )
+		return;
+
+	PreferredSortSection section;
+	std::map<Song*, float> mapSongToPri;
+
+	for (RString sLine : asLines)
+	{
+		bool bSectionDivider = BeginsWith(sLine, "---");
+		if( bSectionDivider )
+		{
+			if( !section.vpSongs.empty() )
+			{
+				m_vPreferredSongSort.push_back( section );
+				section = PreferredSortSection();
+			}
+
+			section.sName = sLine.Right( sLine.length() - RString("---").length() );
+			TrimLeft( section.sName );
+			TrimRight( section.sName );
+		}
+		else
+		{
+			/* if the line ends in slash-star, check if the section exists,
+				* and if it does, add all the songs in that group to the list. */
+			if( EndsWith(sLine,"/*") )
+			{
+				RString group = sLine.Left( sLine.length() - RString("/*").length() );
+				if( DoesSongGroupExist(group) )
+				{
+					// add all songs in group
+					const std::vector<Song*> &vSongs = GetSongs( group );
+					for (Song *song : vSongs)
+					{
+						if( UNLOCKMAN->SongIsLocked(song) & LOCKED_SELECTABLE )
+							continue;
+						section.vpSongs.push_back( song );
+					}
+				}
+			}
+
+			Song *pSong = FindSong( sLine );
+			if( pSong == nullptr )
+				continue;
+			if( UNLOCKMAN->SongIsLocked(pSong) & LOCKED_SELECTABLE )
+				continue;
+			section.vpSongs.push_back( pSong );
+		}
+	}
+
+	if( !section.vpSongs.empty() )
+	{
+		m_vPreferredSongSort.push_back( section );
+		section = PreferredSortSection();
+	}
+
+	if( MOVE_UNLOCKS_TO_BOTTOM_OF_PREFERRED_SORT.GetValue() )
+	{
+		// move all unlock songs to a group at the bottom
+		PreferredSortSection PFSection;
+		PFSection.sName = "Unlocks";
+		for (UnlockEntry const &ue : UNLOCKMAN->m_UnlockEntries)
+		{
+			if( ue.m_Type == UnlockRewardType_Song )
+			{
+				Song *pSong = ue.m_Song.ToSong();
+				if( pSong )
+					PFSection.vpSongs.push_back( pSong );
+			}
+		}
+
+		for (std::vector<PreferredSortSection>::iterator v = m_vPreferredSongSort.begin(); v != m_vPreferredSongSort.end(); ++v)
+		{
+			for( int i=v->vpSongs.size()-1; i>=0; i-- )
+			{
+				Song *pSong = v->vpSongs[i];
+				if( find(PFSection.vpSongs.begin(),PFSection.vpSongs.end(),pSong) != PFSection.vpSongs.end() )
+				{
+					v->vpSongs.erase( v->vpSongs.begin()+i );
+				}
+			}
+		}
+
+		m_vPreferredSongSort.push_back( PFSection );
+	}
+
+	// prune empty groups
+	for( int i=m_vPreferredSongSort.size()-1; i>=0; i-- )
+		if( m_vPreferredSongSort[i].vpSongs.empty() )
+			m_vPreferredSongSort.erase( m_vPreferredSongSort.begin()+i );
+
+	for (PreferredSortSection const &i : m_vPreferredSongSort)
+	{
+		for (Song const *j : i.vpSongs)
+		{
+			ASSERT( j != nullptr );
+		}
+	}
+}
+
+void SongManager::SetPreferredCourses(RString sPreferredCourses, bool bIsAbsolute)
 {
 	ASSERT( UNLOCKMAN != nullptr );
 
+	m_vPreferredCourseSort.clear();
+
+	std::vector<RString> asLines;
+	RString sFile = sPreferredCourses;
+	if (!bIsAbsolute)
+		sFile = THEME->GetPathO( "SongManager", sPreferredCourses );
+	if( !GetFileContents(sFile, asLines) )
+		return;
+
+	std::vector<Course*> vpCourses;
+
+	for (RString sLine : asLines)
 	{
-		m_vPreferredSongSort.clear();
-
-		std::vector<RString> asLines;
-		RString sFile = THEME->GetPathO( "SongManager", sPreferredSongs );
-		GetFileContents( sFile, asLines );
-		if( asLines.empty() )
-			return;
-
-		PreferredSortSection section;
-		std::map<Song*, float> mapSongToPri;
-
-		for (RString sLine : asLines)
+		bool bSectionDivider = BeginsWith( sLine, "---" );
+		if( bSectionDivider )
 		{
-			bool bSectionDivider = BeginsWith(sLine, "---");
-			if( bSectionDivider )
+			if( !vpCourses.empty() )
 			{
-				if( !section.vpSongs.empty() )
-				{
-					m_vPreferredSongSort.push_back( section );
-					section = PreferredSortSection();
-				}
-
-				section.sName = sLine.Right( sLine.length() - RString("---").length() );
-				TrimLeft( section.sName );
-				TrimRight( section.sName );
+				m_vPreferredCourseSort.push_back( vpCourses );
+				vpCourses.clear();
 			}
-			else
-			{
-				/* if the line ends in slash-star, check if the section exists,
-				 * and if it does, add all the songs in that group to the list. */
-				if( EndsWith(sLine,"/*") )
-				{
-					RString group = sLine.Left( sLine.length() - RString("/*").length() );
-					if( DoesSongGroupExist(group) )
-					{
-						// add all songs in group
-						const std::vector<Song*> &vSongs = GetSongs( group );
-						for (Song *song : vSongs)
-						{
-							if( UNLOCKMAN->SongIsLocked(song) & LOCKED_SELECTABLE )
-								continue;
-							section.vpSongs.push_back( song );
-						}
-					}
-				}
-
-				Song *pSong = FindSong( sLine );
-				if( pSong == nullptr )
-					continue;
-				if( UNLOCKMAN->SongIsLocked(pSong) & LOCKED_SELECTABLE )
-					continue;
-				section.vpSongs.push_back( pSong );
-			}
+			continue;
 		}
 
-		if( !section.vpSongs.empty() )
-		{
-			m_vPreferredSongSort.push_back( section );
-			section = PreferredSortSection();
-		}
-
-		if( MOVE_UNLOCKS_TO_BOTTOM_OF_PREFERRED_SORT.GetValue() )
-		{
-			// move all unlock songs to a group at the bottom
-			PreferredSortSection PFSection;
-			PFSection.sName = "Unlocks";
-			for (UnlockEntry const &ue : UNLOCKMAN->m_UnlockEntries)
-			{
-				if( ue.m_Type == UnlockRewardType_Song )
-				{
-					Song *pSong = ue.m_Song.ToSong();
-					if( pSong )
-						PFSection.vpSongs.push_back( pSong );
-				}
-			}
-
-			for (std::vector<PreferredSortSection>::iterator v = m_vPreferredSongSort.begin(); v != m_vPreferredSongSort.end(); ++v)
-			{
-				for( int i=v->vpSongs.size()-1; i>=0; i-- )
-				{
-					Song *pSong = v->vpSongs[i];
-					if( find(PFSection.vpSongs.begin(),PFSection.vpSongs.end(),pSong) != PFSection.vpSongs.end() )
-					{
-						v->vpSongs.erase( v->vpSongs.begin()+i );
-					}
-				}
-			}
-
-			m_vPreferredSongSort.push_back( PFSection );
-		}
-
-		// prune empty groups
-		for( int i=m_vPreferredSongSort.size()-1; i>=0; i-- )
-			if( m_vPreferredSongSort[i].vpSongs.empty() )
-				m_vPreferredSongSort.erase( m_vPreferredSongSort.begin()+i );
-
-		for (PreferredSortSection const &i : m_vPreferredSongSort)
-			for (Song const *j : i.vpSongs)
-			{
-				ASSERT( j != nullptr );
-			}
+		Course *pCourse = FindCourse( sLine );
+		if( pCourse == nullptr )
+			continue;
+		if( UNLOCKMAN->CourseIsLocked(pCourse) & LOCKED_SELECTABLE )
+			continue;
+		vpCourses.push_back( pCourse );
 	}
 
+	if( !vpCourses.empty() )
 	{
-		m_vPreferredCourseSort.clear();
-
-		std::vector<RString> asLines;
-		RString sFile = THEME->GetPathO( "SongManager", sPreferredCourses );
-		if( !GetFileContents(sFile, asLines) )
-			return;
-
-		std::vector<Course*> vpCourses;
-
-		for (RString sLine : asLines)
-		{
-			bool bSectionDivider = BeginsWith( sLine, "---" );
-			if( bSectionDivider )
-			{
-				if( !vpCourses.empty() )
-				{
-					m_vPreferredCourseSort.push_back( vpCourses );
-					vpCourses.clear();
-				}
-				continue;
-			}
-
-			Course *pCourse = FindCourse( sLine );
-			if( pCourse == nullptr )
-				continue;
-			if( UNLOCKMAN->CourseIsLocked(pCourse) & LOCKED_SELECTABLE )
-				continue;
-			vpCourses.push_back( pCourse );
-		}
-
-		if( !vpCourses.empty() )
-		{
-			m_vPreferredCourseSort.push_back( vpCourses );
-			vpCourses.clear();
-		}
-
-		if( MOVE_UNLOCKS_TO_BOTTOM_OF_PREFERRED_SORT.GetValue() )
-		{
-			// move all unlock Courses to a group at the bottom
-			std::vector<Course*> vpUnlockCourses;
-			for (UnlockEntry const &ue : UNLOCKMAN->m_UnlockEntries)
-			{
-				if( ue.m_Type == UnlockRewardType_Course )
-					if( ue.m_Course.IsValid() )
-						vpUnlockCourses.push_back( ue.m_Course.ToCourse() );
-			}
-
-			for (auto v = m_vPreferredCourseSort.begin(); v != m_vPreferredCourseSort.end(); ++v)
-			{
-				for( int i=v->size()-1; i>=0; i-- )
-				{
-					Course *pCourse = (*v)[i];
-					if( find(vpUnlockCourses.begin(),vpUnlockCourses.end(),pCourse) != vpUnlockCourses.end() )
-					{
-						v->erase( v->begin()+i );
-					}
-				}
-			}
-
-			m_vPreferredCourseSort.push_back( vpUnlockCourses );
-		}
-
-		// prune empty groups
-		for( int i=m_vPreferredCourseSort.size()-1; i>=0; i-- )
-			if( m_vPreferredCourseSort[i].empty() )
-				m_vPreferredCourseSort.erase( m_vPreferredCourseSort.begin()+i );
-
-		for (CoursePointerVector const &i : m_vPreferredCourseSort)
-			for (Course *j : i)
-			{
-				ASSERT( j != nullptr );
-			}
+		m_vPreferredCourseSort.push_back( vpCourses );
+		vpCourses.clear();
 	}
+
+	if( MOVE_UNLOCKS_TO_BOTTOM_OF_PREFERRED_SORT.GetValue() )
+	{
+		// move all unlock Courses to a group at the bottom
+		std::vector<Course*> vpUnlockCourses;
+		for (UnlockEntry const &ue : UNLOCKMAN->m_UnlockEntries)
+		{
+			if( ue.m_Type == UnlockRewardType_Course )
+				if( ue.m_Course.IsValid() )
+					vpUnlockCourses.push_back( ue.m_Course.ToCourse() );
+		}
+
+		for (auto v = m_vPreferredCourseSort.begin(); v != m_vPreferredCourseSort.end(); ++v)
+		{
+			for( int i=v->size()-1; i>=0; i-- )
+			{
+				Course *pCourse = (*v)[i];
+				if( find(vpUnlockCourses.begin(),vpUnlockCourses.end(),pCourse) != vpUnlockCourses.end() )
+				{
+					v->erase( v->begin()+i );
+				}
+			}
+		}
+
+		m_vPreferredCourseSort.push_back( vpUnlockCourses );
+	}
+
+	// prune empty groups
+	for( int i=m_vPreferredCourseSort.size()-1; i>=0; i-- )
+		if( m_vPreferredCourseSort[i].empty() )
+			m_vPreferredCourseSort.erase( m_vPreferredCourseSort.begin()+i );
+
+	for (CoursePointerVector const &i : m_vPreferredCourseSort)
+	{
+		for (Course *j : i)
+		{
+			ASSERT( j != nullptr );
+		}
+	}
+}
+
+void SongManager::UpdatePreferredSort(RString sPreferredSongs, RString sPreferredCourses)
+{
+	SetPreferredSongs(sPreferredSongs);
+	SetPreferredCourses(sPreferredCourses);
 }
 
 void SongManager::SortSongs()
@@ -2026,13 +2040,29 @@ class LunaSongManager: public Luna<SongManager>
 public:
 	static int SetPreferredSongs( T* p, lua_State *L )
 	{
-		p->UpdatePreferredSort( SArg(1), "PreferredCourses.txt" );
+		RString sPreferredSongs = SArg(1);
+		if ( lua_gettop(L) >= 2 && !lua_isnil(L, 2) )
+		{
+			p->SetPreferredSongs( sPreferredSongs, BArg(2) );
+		}
+		else
+		{
+			p->SetPreferredSongs( sPreferredSongs );
+		}
+
 		COMMON_RETURN_SELF;
 	}
-
 	static int SetPreferredCourses( T* p, lua_State *L )
 	{
-		p->UpdatePreferredSort( "PreferredSongs.txt", SArg(1) );
+		RString sPreferredCourses = SArg(1);
+		if ( lua_gettop(L) >= 2 && !lua_isnil(L, 2) )
+		{
+			p->SetPreferredSongs( sPreferredCourses, BArg(2) );
+		}
+		else
+		{
+			p->SetPreferredSongs( sPreferredCourses );
+		}
 		COMMON_RETURN_SELF;
 	}
 	static int GetAllSongs( T* p, lua_State *L )

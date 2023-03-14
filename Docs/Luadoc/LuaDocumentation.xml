@@ -5888,11 +5888,15 @@ local args = {
 	<Function name='ShortenGroupName' return='string' arguments='string sGroupName'>
 		Returns the shortened group name (based on entries in Translations.xml).
 	</Function>
-	<Function name='SetPreferredCourses' return='void' arguments='string sListName'>
-		Loads preferred courses from <code>{theme}/Other/SongManager sListName.txt</code>.
+	<Function name='SetPreferredCourses' return='void' arguments='string sListName, bool bIsAbsolute'>
+		By default, loads preferred courses from <code>{theme}/Other/SongManager sListName.txt</code>.
+		(New since ITGmania 0.5.2) If the optional argument <code>bIsAbsolute</code> is set, instead treats
+		sListName as an absolute path instead of loading it from the Theme's <code>Other</code> directory.
 	</Function>
-	<Function name='SetPreferredSongs' return='void' arguments='string sListName'>
-		Loads preferred songs from <code>{theme}/Other/SongManager sListName.txt</code>.
+	<Function name='SetPreferredSongs' return='void' arguments='string sListName, bool bIsAbsolute'>
+		By default, loads preferred songs from <code>{theme}/Other/SongManager sListName.txt</code>.
+		(New since ITGmania 0.5.2) If the optional argument <code>bIsAbsolute</code> is set, instead treats
+		sListName as an absolute path instead of loading it from the Theme's <code>Other</code> directory.
 	</Function>
 	<Function name='SongToPreferredSortSectionName' return='string' arguments='Song s'>
 		Returns the preferred sort section name for the specified Song.
