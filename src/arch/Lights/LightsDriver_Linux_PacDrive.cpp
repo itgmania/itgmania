@@ -9,7 +9,7 @@ extern "C" {
 #include <usb.h>
 }
 
-REGISTER_LIGHTS_DRIVER_CLASS( Linux_PacDrive );
+REGISTER_LIGHTS_DRIVER_CLASS( LinuxPacDrive );
 
 #define USB_DIR_OUT	0x00
 #define USB_DIR_IN	0x80
@@ -45,7 +45,11 @@ struct USBInit
 
 static struct USBInit g_USBInit;
 
-LightsDriver_Linux_PacDrive::LightsDriver_Linux_PacDrive()
+//Adds new preference to allow for different light wiring setups
+static Preference<RString> g_sPacDriveLightOrdering("PacDriveLightOrdering", "openitg");
+int iLightingOrder = 0;
+
+LightsDriver_LinuxPacDrive::LightsDriver_LinuxPacDrive()
 {
 	Device = NULL;
 	DeviceHandle = NULL;
@@ -55,46 +59,107 @@ LightsDriver_Linux_PacDrive::LightsDriver_Linux_PacDrive()
 
 	// clear all lights
 	WriteDevice( 0 );
+
+	RString lightOrder = g_sPacDriveLightOrdering.Get();
+	if (lightOrder.CompareNoCase("lumenar") == 0 || lightOrder.CompareNoCase("openitg") == 0) {
+		iLightingOrder = 1;
+	}
 }
 
-LightsDriver_Linux_PacDrive::~LightsDriver_Linux_PacDrive()
+LightsDriver_LinuxPacDrive::~LightsDriver_LinuxPacDrive()
 {
 	// clear all lights and close the connection
 	WriteDevice( 0 );
 	CloseDevice();
 }
 
-void LightsDriver_Linux_PacDrive::Set( const LightsState *ls )
+void LightsDriver_LinuxPacDrive::Set( const LightsState *ls )
 {
 	if ( !DeviceHandle ) return;
 
 	uint16_t outb = 0;
 
-	// This is original order from openitg-beta-2
-	if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) outb|=BIT(0);
-	if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) outb|=BIT(1);
-	if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) outb|=BIT(2);
-	if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) outb|=BIT(3);
+	switch (iLightingOrder) {
+	case 1:
+		//Sets the cabinet light values to follow LumenAR/OpenITG wiring standards
 
-	if (ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) outb|=BIT(4);
-	if (ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) outb|=BIT(5);
+		/*
+		 * OpenITG PacDrive Order:
+		 * Taken from LightsDriver_PacDrive::SetLightsMappings() in openitg.
+		 *
+		 * 0: Marquee UL
+		 * 1: Marquee UR
+		 * 2: Marquee DL
+		 * 3: Marquee DR
+		 *
+		 * 4: P1 Button
+		 * 5: P2 Button
+		 *
+		 * 6: Bass Left
+		 * 7: Bass Right
+		 *
+		 * 8,9,10,11: P1 L R U D
+		 * 12,13,14,15: P2 L R U D
+		 */
 
-	if (ls->m_bCabinetLights[LIGHT_BASS_LEFT]) outb|=BIT(6);
-	if (ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) outb|=BIT(7);
+		if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) outb |= BIT(0);
+		if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) outb |= BIT(1);
+		if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) outb |= BIT(2);
+		if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) outb |= BIT(3);
 
-	if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) outb|=BIT(8);
-	if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) outb|=BIT(9);
-	if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) outb|=BIT(10);
-	if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) outb|=BIT(11);
-	if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) outb|=BIT(12);
-	if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) outb|=BIT(13);
-	if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) outb|=BIT(14);
-	if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) outb|=BIT(15);
+		if (ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) outb |= BIT(4);
+		if (ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) outb |= BIT(5);
+
+		//Most PacDrive/Cabinet setups only have *one* bass light, so mux them together here.
+		if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) outb |= BIT(6);
+		if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) outb |= BIT(7);
+
+		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) outb |= BIT(8);
+		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) outb |= BIT(9);
+		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) outb |= BIT(10);
+		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) outb |= BIT(11);
+
+		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) outb |= BIT(12);
+		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) outb |= BIT(13);
+		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) outb |= BIT(14);
+		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) outb |= BIT(15);
+
+		break;
+
+	case 0:
+	default:
+		//If all else fails, falls back to original order
+		//reference page 7
+		//http://www.peeweepower.com/stepmania/sm509pacdriveinfo.pdf
+
+		if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) outb |= BIT(0);
+		if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) outb |= BIT(1);
+		if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) outb |= BIT(2);
+		if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) outb |= BIT(3);
+
+		if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) outb |= BIT(4);
+
+		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) outb |= BIT(5);
+		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) outb |= BIT(6);
+		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) outb |= BIT(7);
+		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) outb |= BIT(8);
+		if (ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) outb |= BIT(9);
+
+		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) outb |= BIT(10);
+		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) outb |= BIT(11);
+		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) outb |= BIT(12);
+		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) outb |= BIT(13);
+		if (ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) outb |= BIT(14);
+		//Bit index 15 is unused.
+
+		break;
+}
+
 
 	WriteDevice(outb);
 }
 
-void LightsDriver_Linux_PacDrive::FindDevice()
+void LightsDriver_LinuxPacDrive::FindDevice()
 {
 	if ( usb_find_busses() < 0 )
 	{
@@ -122,7 +187,7 @@ void LightsDriver_Linux_PacDrive::FindDevice()
 	Device = NULL;
 }
 
-void LightsDriver_Linux_PacDrive::OpenDevice()
+void LightsDriver_LinuxPacDrive::OpenDevice()
 {
 	CloseDevice();
 
@@ -178,7 +243,7 @@ void LightsDriver_Linux_PacDrive::OpenDevice()
 	}
 }
 
-void LightsDriver_Linux_PacDrive::WriteDevice(uint16_t out)
+void LightsDriver_LinuxPacDrive::WriteDevice(uint16_t out)
 {
 	if ( !DeviceHandle ) return;
 
@@ -197,7 +262,7 @@ void LightsDriver_Linux_PacDrive::WriteDevice(uint16_t out)
 	}
 }
 
-void LightsDriver_Linux_PacDrive::CloseDevice()
+void LightsDriver_LinuxPacDrive::CloseDevice()
 {
 	if ( !DeviceHandle )
 		return;

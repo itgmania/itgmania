@@ -9,11 +9,11 @@ extern "C" {
 
 #define BIT(i) (1<<(i))
 
-class LightsDriver_Linux_PacDrive: public LightsDriver
+class LightsDriver_LinuxPacDrive: public LightsDriver
 {
 public:
-	LightsDriver_Linux_PacDrive();
-	~LightsDriver_Linux_PacDrive();
+	LightsDriver_LinuxPacDrive();
+	~LightsDriver_LinuxPacDrive();
 
 	void Set( const LightsState *ls );
 private:
