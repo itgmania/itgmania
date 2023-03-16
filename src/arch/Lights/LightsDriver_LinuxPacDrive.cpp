@@ -3,7 +3,7 @@
 
 #include "global.h"
 #include "RageLog.h"
-#include "LightsDriver_Linux_PacDrive.h"
+#include "LightsDriver_LinuxPacDrive.h"
 
 extern "C" {
 #include <usb.h>

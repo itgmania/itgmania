@@ -1,5 +1,5 @@
-#ifndef LIGHTSDRIVER_LINUX_PACDRIVE_H
-#define LIGHTSDRIVER_LINUX_PACDRIVE_H
+#ifndef LIGHTSDRIVER_LINUXPACDRIVE_H
+#define LIGHTSDRIVER_LINUXPACDRIVE_H
 
 #include "LightsDriver.h"
 
@@ -27,7 +27,7 @@ private:
 	usb_dev_handle *DeviceHandle;
 };
 
-#endif // LIGHTSDRIVER_LINUX_PACDRIVE_H
+#endif // LIGHTSDRIVER_LINUXPACDRIVE_H
 
 /*
  * Copyright (c) 2008 BoXoRRoXoRs
