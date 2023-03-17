@@ -347,7 +347,7 @@ void TextureFont::FormatFontPage( int iPage, HDC hDC )
 }
 
 /* UTF-8 encode ch and append to out. */
-void wchar_to_utf8( wchar_t ch, string &out )
+void wchar_to_utf8( wchar_t ch, std::string &out )
 {
 	if( ch < 0x80 ) { out.append( 1, (char) ch ); return; }
 
@@ -385,7 +385,7 @@ void TextureFont::Save( CString sBasePath, CString sBitmapAppendBeforeExtension,
 
 	const CString inipath = sBasePath + ".ini";
 
-	ofstream f;
+	std::ofstream f;
 
 	if( bSaveMetrics )
 	{
@@ -421,12 +421,12 @@ void TextureFont::Save( CString sBasePath, CString sBitmapAppendBeforeExtension,
 				unsigned iLine = 0;
 				while( iChar < desc.chars.size() )
 				{
-					f << "Line "  << setw(iWidth) << iLine << "=";
-					f << setw(1);
+					f << "Line "  << std::setw(iWidth) << iLine << "=";
+					f << std::setw(1);
 					for( int iX = 0; iX < page.m_iNumFramesX && iChar < desc.chars.size(); ++iX, ++iChar )
 					{
 						const wchar_t c = desc.chars[iChar];
-						string sUTF8;
+						std::string sUTF8;
 						wchar_to_utf8( c, sUTF8 );
 						f << sUTF8.c_str();
 					}

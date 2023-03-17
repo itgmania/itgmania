@@ -403,7 +403,7 @@ CubicSplineN* ActorMultiVertex::GetSpline(size_t i)
 
 void ActorMultiVertex::SetState(int i)
 {
-	ASSERT(i >= 0 and static_cast<size_t>(i) < _states.size());
+	ASSERT(i >= 0 && static_cast<size_t>(i) < _states.size());
 	_cur_state= i;
 	_secs_into_state= 0.0f;
 }

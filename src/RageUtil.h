@@ -192,8 +192,8 @@ namespace Endian
 	inline constexpr bool little = __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__;
 	inline constexpr bool big    = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__;
 #elif defined(_WIN32)
-	inline constexpr bool little = false;
-	inline constexpr bool big    = true;
+	inline constexpr bool little = true;
+	inline constexpr bool big    = false;
 #else
 #error "unknown byte order"
 #endif
