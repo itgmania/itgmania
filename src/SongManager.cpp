@@ -576,7 +576,12 @@ void SongManager::UnlistSong(Song *song)
 	std::vector<Song*>* songVectors[3] = { &m_pSongs, &m_pPopularSongs, &m_pShuffledSongs };
 	for (int songVecIdx=0; songVecIdx<3; ++songVecIdx) {
 		std::vector<Song*>& v = *songVectors[songVecIdx];
-		std::erase_if( v, [song](Song* vSong){return vSong == song;} );
+		for (size_t i=0; i<v.size(); ++i) {
+			if (v[i] == song) {
+				v.erase(v.begin()+i);
+				--i;
+			}
+		}
 	}
 }
 

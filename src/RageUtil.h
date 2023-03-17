@@ -4,7 +4,6 @@
 #define RAGE_UTIL_H
 
 #include <algorithm>
-#include <bit>
 #include <map>
 #include <random>
 #include <vector>
@@ -189,15 +188,14 @@ namespace Endian
 {
 	// When std::endian is supported by all desired compilers, we can eliminate the #ifdefs
 	// (At least) the current compiler used for the Ubuntu 20.04 build does not support this.
-#if defined(__cpp_lib_endian)
-	inline constexpr bool little = std::endian::native == std::endian::little;
-	inline constexpr bool big    = std::endian::native == std::endian::big;
+#if defined(__BYTE_ORDER__)
+	inline constexpr bool little = __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__;
+	inline constexpr bool big    = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__;
 #elif defined(_WIN32)
 	inline constexpr bool little = false;
 	inline constexpr bool big    = true;
 #else
-	inline constexpr bool little = __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__;
-	inline constexpr bool big    = __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__;
+#error "unknown byte order"
 #endif
 }
 
