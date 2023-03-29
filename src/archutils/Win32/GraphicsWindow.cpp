@@ -416,19 +416,6 @@ void GraphicsWindow::Initialize( bool bD3D )
 	// A few things need to be handled differently for D3D.
 	g_bD3D = bD3D;
 
-	//keeping xp on life support -- check for vista+ for dwm
-	if (IsWindowsVistaOrGreater())
-	{
-		hInstanceDwmapi = LoadLibraryA("dwmapi.dll");
-	}
-
-	//if we have dwm, get function pointers to the dll functions
-	if( hInstanceDwmapi != nullptr )
-	{
-		PFN_DwmFlush =					(HRESULT (WINAPI *)(VOID))GetProcAddress( hInstanceDwmapi, "DwmFlush" );
-		PFN_DwmIsCompositionEnabled =	(HRESULT (WINAPI *)(BOOL*))GetProcAddress( hInstanceDwmapi, "DwmIsCompositionEnabled" );
-	}
-
 	AppInstance inst;
 	do
 	{
@@ -508,20 +495,6 @@ void GraphicsWindow::Update()
 	}
 
 	HOOKS->SetHasFocus( g_bHasFocus );
-
-	if (g_CurrentParams.vsync)
-	{
-		//if we can use DWM
-		if( hInstanceDwmapi != nullptr )
-		{
-			BOOL compositeEnabled = true;
-			PFN_DwmIsCompositionEnabled(&compositeEnabled);
-			if (compositeEnabled)
-			{
-				PFN_DwmFlush();
-			}
-		}
-	}
 
 	if( g_bResolutionChanged && DISPLAY != nullptr )
 	{
