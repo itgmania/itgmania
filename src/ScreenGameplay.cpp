@@ -1989,9 +1989,9 @@ void ScreenGameplay::DrawPrimitives()
 	// -Kyz
 	if(m_pSongBackground)
 	{
-		m_pSongBackground->m_disable_draw= false;
+		m_pSongBackground->disable_draw_= false;
 		m_pSongBackground->Draw();
-		m_pSongBackground->m_disable_draw= true;
+		m_pSongBackground->disable_draw_= true;
 	}
 	FOREACH_EnabledPlayerNumberInfo(m_vPlayerInfo, pi)
 	{
