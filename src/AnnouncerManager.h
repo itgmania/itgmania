@@ -1,54 +1,46 @@
 #ifndef ANNOUNCER_MANAGER_H
 #define ANNOUNCER_MANAGER_H
 
-#include "RageTypes.h"
+#include "global.h"
 
 #include <vector>
 
+#include "RageTypes.h"
 
-/** @brief The commentators who say seemlingly random things during gameplay. */
-class AnnouncerManager
-{
-public:
-	AnnouncerManager();
-	~AnnouncerManager();
+// The commentators who say seemlingly random things during gameplay.
+class AnnouncerManager {
+ public:
+  AnnouncerManager();
+  ~AnnouncerManager();
 
-	/**
-	 * @brief Retrieve the announcer names.
-	 * @param AddTo the list of announcer names. */
-	void GetAnnouncerNames( std::vector<RString>& AddTo );
-	/**
-	 * @brief Determine if the specified announcer exists.
-	 * @param sAnnouncerName the announcer we're checking for.
-	 * @return true if it exists, false otherwise. */
-	bool DoesAnnouncerExist( RString sAnnouncerName );
-	/**
-	 * @brief Switch to a new specified announcer.
-	 * @param sNewAnnouncerName the new announcer the Player will be listening to. */
-	void SwitchAnnouncer( RString sNewAnnouncerName );
-	/**
-	 * @brief Retrieve the current announcer's name.
-	 * @return the current announcer's name. */
-	RString GetCurAnnouncerName() const { return m_sCurAnnouncerName; };
-	void NextAnnouncer();
+  // Retrieve the announcer names.
+  void GetAnnouncerNames(std::vector<RString>& AddTo);
+  // Determine if the specified announcer exists.
+  // True if it exists, false otherwise.
+  bool DoesAnnouncerExist(RString sAnnouncerName);
+  // Switch to a new specified announcer.
+  void SwitchAnnouncer(RString sNewAnnouncerName);
+  // Retrieve the current announcer's name.
+  RString GetCurAnnouncerName() const { return m_sCurAnnouncerName; };
+  void NextAnnouncer();
 
-	RString GetPathTo( RString sFolderName );
-	bool HasSoundsFor( RString sFolderName );
+  RString GetPathTo(RString sFolderName);
+  bool HasSoundsFor(RString sFolderName);
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-protected:
-	static RString GetAnnouncerDirFromName( RString sAnnouncerName );
-	RString GetPathTo( RString AnnouncerPath, RString sFolderName );
-	/** @brief the current announcer's name. */
-	RString m_sCurAnnouncerName;
+ protected:
+  static RString GetAnnouncerDirFromName(RString sAnnouncerName);
+  RString GetPathTo(RString AnnouncerPath, RString sFolderName);
+  // the current announcer's name.
+  RString m_sCurAnnouncerName;
 };
 
+// Global and accessible from anywhere in our program
+extern AnnouncerManager* ANNOUNCER;  
 
-extern AnnouncerManager*	ANNOUNCER;	// global and accessible from anywhere in our program
-
-#endif
+#endif  // ANNOUNCER_MANAGER_H
 
 /**
  * @file
