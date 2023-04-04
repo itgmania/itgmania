@@ -1,21 +1,21 @@
 #include "global.h"
+
 #include "Actor.h"
+
 #include "ActorFrame.h"
-#include "RageDisplay.h"
-#include "RageUtil.h"
-#include "RageMath.h"
-#include "RageLog.h"
-#include "XmlFile.h"
+#include "ActorUtil.h"
+#include "LightsManager.h" // for NUM_CabinetLight
 #include "LuaBinding.h"
-#include "ThemeManager.h"
 #include "LuaReference.h"
 #include "MessageManager.h"
-#include "LightsManager.h" // for NUM_CabinetLight
-#include "ActorUtil.h"
 #include "Preference.h"
+#include "RageDisplay.h"
+#include "RageLog.h"
+#include "RageMath.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
+#include "XmlFile.h"
 
-#include <cmath>
-#include <cstddef>
 #include <typeinfo>
 #include <vector>
 

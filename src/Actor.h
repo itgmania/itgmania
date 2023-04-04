@@ -1,16 +1,17 @@
 #ifndef ACTOR_H
 #define ACTOR_H
 
+#include "EnumHelper.h"
+#include "LuaBinding.h"
+#include "LuaReference.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "RageTypes.h"
 #include "RageUtil_AutoPtr.h"
-#include "LuaReference.h"
-#include "EnumHelper.h"
-class XNode;
-struct lua_State;
-class LuaClass;
-#include "MessageManager.h"
 #include "Tween.h"
+#include "XmlFile.h"
+
+#include <map>
 
 #include <cstddef>
 #include <map>
