@@ -131,7 +131,7 @@ class ArrowEffects {
                                   float fYOffset, float fOverlappedTime);
 };
 
-#endif
+#endif  // ARROWEFFECTS_H
 
 /**
  * @file

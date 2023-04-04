@@ -1582,7 +1582,7 @@ float ArrowEffects::GetZoomVariable(float fYOffset, int iCol, float fCurZoom) {
           curr_options->m_fEffects[PlayerOptions::EFFECT_PULSE_OFFSET]))) /
         (0.4f * (ARROW_SIZE +
                  (curr_options->m_fEffects[PlayerOptions::EFFECT_PULSE_PERIOD] *
-                  ARROW_SIZE)))));
+                  ARROW_SIZE))));
 
     fZoom *=
         (sine *
