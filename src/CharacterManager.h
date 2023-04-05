@@ -3,43 +3,39 @@
 
 #include <vector>
 
+#include "Character.h"
 
-class Character;
 struct lua_State;
 
-/** @brief Manage all of the Characters. */
-class CharacterManager
-{
-public:
-	/** @brief Set up the character manager. */
-	CharacterManager();
-	/** @brief Destroy the character manager. */
-	~CharacterManager();
+// Manage all of the Characters.
+class CharacterManager {
+ public:
+  // Set up the character manager.
+  CharacterManager();
+  // Destroy the character manager.
+  ~CharacterManager();
 
-	void GetCharacters( std::vector<Character*> &vpCharactersOut );
-	/** @brief Get one installed character at random.
-	 * @return The random character. */
-	Character* GetRandomCharacter();
-	/** @brief Get the character assigned as the default.
-	 * @return The default character. */
-	Character* GetDefaultCharacter();
-	Character* GetCharacterFromID( RString sCharacterID );
+  void GetCharacters(std::vector<Character*>& characters_out);
+  // Get one installed character at random.
+  Character* GetRandomCharacter();
+  // Get the character assigned as the default.
+  Character* GetDefaultCharacter();
+  Character* GetCharacterFromID(RString character_id);
 
-	void DemandGraphics();
-	void UndemandGraphics();
+  void DemandGraphics();
+  void UndemandGraphics();
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-private:
-	std::vector<Character*> m_pCharacters;
-
+ private:
+  std::vector<Character*> characters_;
 };
 
+// Global and accessible from anywhere in our program.
+extern CharacterManager* CHARMAN;
 
-extern CharacterManager*	CHARMAN;	// global and accessible from anywhere in our program
-
-#endif
+#endif  // CHARACTER_MANAGER_H
 
 /*
  * (c) 2001-2004 Chris Danford
