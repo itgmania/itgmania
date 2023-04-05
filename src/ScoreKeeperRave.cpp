@@ -180,7 +180,7 @@ void ScoreKeeperRave::LaunchAttack( AttackLevel al )
 {
 	PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
 
-	RString* asAttacks = GAMESTATE->m_pCurCharacters[pn]->m_sAttacks[al];	// [NUM_ATTACKS_PER_LEVEL]
+	RString* asAttacks = GAMESTATE->m_pCurCharacters[pn]->attacks_[al];	// [NUM_ATTACKS_PER_LEVEL]
 	RString sAttackToGive;
 
 	if (GAMESTATE->m_pCurCharacters[pn] != nullptr)

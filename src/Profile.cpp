@@ -239,7 +239,7 @@ Character *Profile::GetCharacter() const
 	CHARMAN->GetCharacters( vpCharacters );
 	for (Character *c : vpCharacters)
 	{
-		if( c->m_sCharacterID.CompareNoCase(m_sCharacterID)==0 )
+		if( c->character_id_.CompareNoCase(m_sCharacterID)==0 )
 			return c;
 	}
 	return CHARMAN->GetDefaultCharacter();

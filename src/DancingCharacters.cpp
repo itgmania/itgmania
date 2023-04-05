@@ -84,7 +84,7 @@ DancingCharacters::DancingCharacters(): m_bDrawDangerLight(false),
 			continue;
 
 		// load in any potential 2D stuff
-		RString sCharacterDirectory = pChar->m_sCharDir;
+		RString sCharacterDirectory = pChar->character_dir_;
 		RString sCurrentAnim;
 		sCurrentAnim = sCharacterDirectory + "2DIdle";
 		if( DoesFileExist(sCurrentAnim + "/BGAnimation.ini") ) // check 2D Idle BGAnim exists
