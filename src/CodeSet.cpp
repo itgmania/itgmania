@@ -1,59 +1,59 @@
 #include "global.h"
+
 #include "CodeSet.h"
-#include "ThemeManager.h"
-#include "InputEventPlus.h"
-#include "MessageManager.h"
 
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "MessageManager.h"
+#include "ThemeManager.h"
 
-#define CODE_NAMES		THEME->GetMetric (sType,"CodeNames")
-#define CODE( s )		THEME->GetMetric (sType,ssprintf("Code%s",s.c_str()))
-void InputQueueCodeSet::Load( const RString &sType )
-{
-	//
-	// Load codes
-	//
-	split( CODE_NAMES, ",", m_asCodeNames, true );
+#define CODE_NAMES THEME->GetMetric(type, "CodeNames")
+#define CODE(s) THEME->GetMetric(type, ssprintf("Code%s", s.c_str()))
 
-	for( unsigned c=0; c<m_asCodeNames.size(); c++ )
-	{
-		std::vector<RString> asBits;
-		split( m_asCodeNames[c], "=", asBits, true );
-		RString sCodeName = asBits[0];
-		if( asBits.size() > 1 )
-			m_asCodeNames[c] = asBits[1];
+void InputQueueCodeSet::Load(const RString& type) {
+  // Load codes
+  split(CODE_NAMES, ",", code_names_, true);
 
-		InputQueueCode code;
-		if( !code.Load(CODE(sCodeName)) )
-			continue;
+  for (unsigned c = 0; c < code_names_.size(); c++) {
+    std::vector<RString> parts;
+    split(code_names_[c], "=", parts, true);
+    const RString& code_name = parts[0];
+    if (parts.size() > 1) {
+      code_names_[c] = parts[1];
+    }
 
-		m_aCodes.push_back( code );
-	}
+    InputQueueCode code;
+    if (!code.Load(CODE(code_name))) {
+      continue;
+    }
+
+    codes_.push_back(code);
+  }
 }
 
-RString InputQueueCodeSet::Input( const InputEventPlus &input ) const
-{
-	for( unsigned i = 0; i < m_aCodes.size(); ++i )
-	{
-		if( !m_aCodes[i].EnteredCode(input.GameI.controller) )
-			continue;
+RString InputQueueCodeSet::Input(const InputEventPlus& input) const {
+  for (unsigned i = 0; i < codes_.size(); ++i) {
+    if (!codes_[i].EnteredCode(input.GameI.controller)) {
+      continue;
+    }
 
-		return m_asCodeNames[i];
-	}
-	return "";
+    return code_names_[i];
+  }
+  return "";
 }
 
-bool InputQueueCodeSet::InputMessage( const InputEventPlus &input, Message &msg ) const
-{
-	RString sCodeName = Input( input );
-	if( sCodeName.empty() )
-		return false;
+bool InputQueueCodeSet::InputMessage(
+    const InputEventPlus& input, Message& msg) const {
+  const RString& code_name = Input(input);
+  if (code_name.empty()) {
+    return false;
+  }
 
-	msg.SetName("Code");
-	msg.SetParam( "PlayerNumber", input.pn );
-	msg.SetParam( "Name", sCodeName );
-	return true;
+  msg.SetName("Code");
+  msg.SetParam("PlayerNumber", input.pn);
+  msg.SetParam("Name", code_name);
+  return true;
 }
 
 /*
