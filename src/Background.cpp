@@ -200,8 +200,8 @@ void BackgroundImpl::Init() {
   static_background_def_ = BackgroundDef();
 
   if (!USE_STATIC_BG) {
-    static_background_def_.m_sColor1 = "#00000000";
-    static_background_def_.m_sColor2 = "#00000000";
+    static_background_def_.color1_ = "#00000000";
+    static_background_def_.color2_ = "#00000000";
   }
 
   // Load transitions
@@ -300,8 +300,8 @@ bool BackgroundImpl::Layer::CreateBackground(
 
   // Resolve the background names
   std::vector<RString> name_to_resolve;
-  name_to_resolve.push_back(bd.m_sFile1);
-  name_to_resolve.push_back(bd.m_sFile2);
+  name_to_resolve.push_back(bd.file1_);
+  name_to_resolve.push_back(bd.file2_);
 
   std::vector<RString> resolved;
   resolved.resize(name_to_resolve.size());
@@ -367,7 +367,7 @@ bool BackgroundImpl::Layer::CreateBackground(
         new LuaThreadVariable(ssprintf("File%d", i + 1), resolved_name);
   }
 
-  RString effect = bd.m_sEffect;
+  RString effect = bd.effect_;
   if (effect.empty()) {
     FileType ft = ActorUtil::GetFileType(resolved[0]);
     switch (ft) {
@@ -400,9 +400,9 @@ bool BackgroundImpl::Layer::CreateBackground(
 
   // Set Lua color globals
   LuaThreadVariable sColor1(
-      "Color1", bd.m_sColor1.empty() ? RString("#FFFFFFFF") : bd.m_sColor1);
+      "Color1", bd.color1_.empty() ? RString("#FFFFFFFF") : bd.color1_);
   LuaThreadVariable sColor2(
-      "Color2", bd.m_sColor2.empty() ? RString("#FFFFFFFF") : bd.m_sColor2);
+      "Color2", bd.color2_.empty() ? RString("#FFFFFFFF") : bd.color2_);
 
   // Resolve the effect file.
   RString effect_file;
@@ -462,7 +462,7 @@ BackgroundDef BackgroundImpl::Layer::CreateRandomBGA(
   random_bg_animations.pop_front();
 
   if (!effect.empty()) {
-    bd.m_sEffect = effect;
+    bd.effect_ = effect;
   }
 
   // create the background if it's not already created
@@ -498,14 +498,14 @@ void BackgroundImpl::LoadFromRandom(
          j += int(RAND_BG_CHANGE_MEASURES * ts->GetNoteRowsPerMeasure())) {
       // Don't fade. It causes frame rate dip, especially on slower machines.
       BackgroundDef bd = layer_[0].CreateRandomBGA(
-          song_, change.m_def.m_sEffect, random_bg_animations_, this);
+          song_, change.background_def_.effect_, random_bg_animations_, this);
       if (!bd.IsEmpty()) {
         BackgroundChange bg_change = change;
-        bg_change.m_def = bd;
+        bg_change.background_def_ = bd;
         if (j == time_signature_start && i == 0) {
-          bg_change.m_fStartBeat = RAND_BG_START_BEAT;
+          bg_change.start_beat_ = RAND_BG_START_BEAT;
         } else {
-          bg_change.m_fStartBeat = NoteRowToBeat(j);
+          bg_change.start_beat_ = NoteRowToBeat(j);
         }
         layer_[0].bg_changes_.push_back(bg_change);
       }
@@ -540,12 +540,12 @@ void BackgroundImpl::LoadFromRandom(
       }
 
       BackgroundDef bd = layer_[0].CreateRandomBGA(
-          song_, change.m_def.m_sEffect, random_bg_animations_, this);
+          song_, change.background_def_.effect_, random_bg_animations_, this);
       if (!bd.IsEmpty()) {
         BackgroundChange bg_change = change;
-        bg_change.m_def.m_sFile1 = bd.m_sFile1;
-        bg_change.m_def.m_sFile2 = bd.m_sFile2;
-        bg_change.m_fStartBeat = bpms[i]->GetBeat();
+        bg_change.background_def_.file1_ = bd.file1_;
+        bg_change.background_def_.file2_ = bd.file2_;
+        bg_change.start_beat_ = bpms[i]->GetBeat();
         layer_[0].bg_changes_.push_back(bg_change);
       }
     }
@@ -556,7 +556,7 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
   Init();
   Unload();
   song_ = song;
-  static_background_def_.m_sFile1 = SONG_BACKGROUND_FILE;
+  static_background_def_.file1_ = SONG_BACKGROUND_FILE;
 
   if (g_fBGBrightness == 0.0f) {
     return;
@@ -592,7 +592,7 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
 
     for (const RString& s : names) {
       BackgroundDef bd;
-      bd.m_sFile1 = s;
+      bd.file1_ = s;
       random_bg_animations_.push_back(bd);
     }
   }
@@ -610,8 +610,8 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
       GAMESTATE->m_SongOptions.GetCurrent().m_bStaticBackground) {
     // Backgrounds are disabled; just display the song background.
     BackgroundChange bg_change;
-    bg_change.m_def = static_background_def_;
-    bg_change.m_fStartBeat = 0;
+    bg_change.background_def_ = static_background_def_;
+    bg_change.start_beat_ = 0;
     layer_[0].bg_changes_.push_back(bg_change);
   }
   // If m_bRandomBGOnly is on, then we want to ignore the scripted BG in favour
@@ -625,12 +625,12 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
       // Load all song-specified backgrounds
       for (const BackgroundChange& change : song->GetBackgroundChanges(i)) {
         BackgroundChange bg_change = change;
-        BackgroundDef& bd = bg_change.m_def;
+        BackgroundDef& bd = bg_change.background_def_;
 
         bool is_already_loaded =
             layer.bg_animations_.find(bd) != layer.bg_animations_.end();
 
-        if (bd.m_sFile1 != RANDOM_BACKGROUND_FILE && !is_already_loaded) {
+        if (bd.file1_ != RANDOM_BACKGROUND_FILE && !is_already_loaded) {
           if (!layer.CreateBackground(song_, bd, this)) {
             if (i == BACKGROUND_LAYER_1) {
               // The background was not found. Try to use a random one instead.
@@ -661,8 +661,8 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
     if (RAND_BG_ENDS_AT_LAST_BEAT) {
       // end showing the static song background
       BackgroundChange bg_change;
-      bg_change.m_def = static_background_def_;
-      bg_change.m_fStartBeat = last_beat;
+      bg_change.background_def_ = static_background_def_;
+      bg_change.start_beat_ = last_beat;
       layer.bg_changes_.push_back(bg_change);
     }
   }
@@ -676,8 +676,8 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
   Layer& main_layer = layer_[0];
 
   BackgroundChange bg_change;
-  bg_change.m_def = static_background_def_;
-  bg_change.m_fStartBeat = -10000;
+  bg_change.background_def_ = static_background_def_;
+  bg_change.start_beat_ = -10000;
   main_layer.bg_changes_.insert(main_layer.bg_changes_.begin(), bg_change);
 
   // If any BGChanges use the background image, load it.
@@ -685,7 +685,7 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
   FOREACH_BackgroundLayer(i) {
     Layer& layer = layer_[i];
     for (const BackgroundChange& change : layer.bg_changes_) {
-      const BackgroundDef& bd = change.m_def;
+      const BackgroundDef& bd = change.background_def_;
       if (bd == static_background_def_) {
         static_background_used = true;
         break;
@@ -711,14 +711,14 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
   // LoadFromRandom.
   for (unsigned i = 0; i < main_layer.bg_changes_.size(); ++i) {
     const BackgroundChange change = main_layer.bg_changes_[i];
-    if (change.m_def.m_sFile1 != RANDOM_BACKGROUND_FILE) {
+    if (change.background_def_.file1_ != RANDOM_BACKGROUND_FILE) {
       continue;
     }
 
-    float start_beat = change.m_fStartBeat;
+    float start_beat = change.start_beat_;
     float end_beat = song->GetLastBeat();
     if (i + 1 < main_layer.bg_changes_.size()) {
-      end_beat = main_layer.bg_changes_[i + 1].m_fStartBeat;
+      end_beat = main_layer.bg_changes_[i + 1].start_beat_;
     }
 
     main_layer.bg_changes_.erase(main_layer.bg_changes_.begin() + i);
@@ -730,7 +730,7 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
   // At this point, we shouldn't have any BGChanges to "". "" is an invalid
   // name.
   for (unsigned i = 0; i < main_layer.bg_changes_.size(); ++i) {
-    ASSERT(!main_layer.bg_changes_[i].m_def.m_sFile1.empty());
+    ASSERT(!main_layer.bg_changes_[i].background_def_.file1_.empty());
   }
 
   // Re-sort.
@@ -749,13 +749,13 @@ int BackgroundImpl::Layer::FindBGSegmentForBeat(float beat) const {
   if (bg_changes_.empty()) {
     return -1;
   }
-  if (beat < bg_changes_[0].m_fStartBeat) {
+  if (beat < bg_changes_[0].start_beat_) {
     return -1;
   }
 
   // Assumes that bg_changes_ are sorted by m_fStartBeat.
   for (int i = bg_changes_.size() - 1; i >= 0; --i) {
-    if (beat >= bg_changes_[i].m_fStartBeat) {
+    if (beat >= bg_changes_[i].start_beat_) {
       return i;
     }
   }
@@ -800,9 +800,9 @@ void BackgroundImpl::Layer::UpdateCurBGChange(
 
     fading_bg_animation_ = cur_bg_animation_;
 
-    auto iter = bg_animations_.find(bg_change.m_def);
+    auto iter = bg_animations_.find(bg_change.background_def_);
     if (iter == bg_animations_.end()) {
-      XNode* node = bg_change.m_def.CreateNode();
+      XNode* node = bg_change.background_def_.CreateNode();
       RString xml = XmlFileUtil::GetXML(node);
       Trim(xml);
       LuaHelpers::ReportScriptErrorFmt(
@@ -820,12 +820,12 @@ void BackgroundImpl::Layer::UpdateCurBGChange(
       if (fading_bg_animation_) {
         fading_bg_animation_->PlayCommand("LoseFocus");
 
-        if (!bg_change.m_sTransition.empty()) {
-          auto it = name_to_transition.find(bg_change.m_sTransition);
+        if (!bg_change.transition_.empty()) {
+          auto it = name_to_transition.find(bg_change.transition_);
           if (it == name_to_transition.end()) {
             LuaHelpers::ReportScriptErrorFmt(
                 "'%s' is not the name of a BackgroundTransition file.",
-                bg_change.m_sTransition.c_str());
+                bg_change.transition_.c_str());
           } else {
             const BackgroundTransition& transition = it->second;
             fading_bg_animation_->RunCommandsOnLeaves(*transition.cmdLeaves);
@@ -835,7 +835,7 @@ void BackgroundImpl::Layer::UpdateCurBGChange(
       }
     }
 
-    cur_bg_animation_->SetUpdateRate(bg_change.m_fRate);
+    cur_bg_animation_->SetUpdateRate(bg_change.rate_);
 
     cur_bg_animation_->InitState();
     cur_bg_animation_->PlayCommand("On");
@@ -844,7 +844,7 @@ void BackgroundImpl::Layer::UpdateCurBGChange(
     // How much time of this BGA have we skipped?  (This happens with
     // SetSeconds.)
     const float start_second =
-        song->m_SongTiming.GetElapsedTimeFromBeat(bg_change.m_fStartBeat);
+        song->m_SongTiming.GetElapsedTimeFromBeat(bg_change.start_beat_);
 
     // This is affected by the music rate.
     delta_time = current_time - start_second;

@@ -76,18 +76,18 @@ static void Deserialize(LyricSegment &o, const Json::Value &root)
 
 static void Deserialize(BackgroundDef &o, const Json::Value &root)
 {
-	o.m_sEffect = root["Effect"].asString();
-	o.m_sFile1 = root["File1"].asString();
-	o.m_sFile2 = root["File2"].asString();
-	o.m_sColor1 = root["Color1"].asString();
+	o.effect_ = root["Effect"].asString();
+	o.file1_ = root["File1"].asString();
+	o.file2_ = root["File2"].asString();
+	o.color1_ = root["Color1"].asString();
 }
 
 static void Deserialize(BackgroundChange &o, const Json::Value &root )
 {
-	Deserialize( o.m_def, root["Def"] );
-	o.m_fStartBeat = (float)root["StartBeat"].asDouble();
-	o.m_fRate = (float)root["Rate"].asDouble();
-	o.m_sTransition = root["Transition"].asString();
+	Deserialize( o.background_def_, root["Def"] );
+	o.start_beat_ = (float)root["StartBeat"].asDouble();
+	o.rate_ = (float)root["Rate"].asDouble();
+	o.transition_ = root["Transition"].asString();
 }
 
 static void Deserialize( TapNote &o, const Json::Value &root )

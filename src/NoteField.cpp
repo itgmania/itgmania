@@ -946,7 +946,7 @@ void NoteField::DrawPrimitives()
 								{
 									continue;
 								}
-								float fBeat = iter[j]->m_fStartBeat;
+								float fBeat = iter[j]->start_beat_;
 								if( fBeat < fLowestBeat )
 								{
 									fLowestBeat = fBeat;

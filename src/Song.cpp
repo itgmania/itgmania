@@ -195,7 +195,7 @@ void Song::AddBackgroundChange( BackgroundLayer iLayer, BackgroundChange seg )
 	auto &changes = GetBackgroundChanges(iLayer);
 	for (std::vector<BackgroundChange>::iterator bgc = changes.begin(); bgc != changes.end(); ++bgc)
 	{
-		if( bgc->m_fStartBeat == seg.m_fStartBeat )
+		if( bgc->start_beat_ == seg.start_beat_ )
 		{
 			GetBackgroundChanges(iLayer).erase( bgc );
 			break;
@@ -252,7 +252,7 @@ void Song::GetDisplayBpms( DisplayBpms &AddTo ) const
 const BackgroundChange &Song::GetBackgroundAtBeat( BackgroundLayer iLayer, float fBeat ) const
 {
 	for( unsigned i=0; i<GetBackgroundChanges(iLayer).size()-1; i++ )
-		if( GetBackgroundChanges(iLayer)[i+1].m_fStartBeat > fBeat )
+		if( GetBackgroundChanges(iLayer)[i+1].start_beat_ > fBeat )
 			return GetBackgroundChanges(iLayer)[i];
 	return GetBackgroundChanges(iLayer)[0];
 }
@@ -2336,21 +2336,21 @@ public:
 		for(std::size_t c= 0; c < changes.size(); ++c)
 		{
 			lua_createtable(L, 0, 8);
-			lua_pushnumber(L, changes[c].m_fStartBeat);
+			lua_pushnumber(L, changes[c].start_beat_);
 			lua_setfield(L, -2, "start_beat");
-			lua_pushnumber(L, changes[c].m_fRate);
+			lua_pushnumber(L, changes[c].rate_);
 			lua_setfield(L, -2, "rate");
-			LuaHelpers::Push(L, changes[c].m_sTransition);
+			LuaHelpers::Push(L, changes[c].transition_);
 			lua_setfield(L, -2, "transition");
-			LuaHelpers::Push(L, changes[c].m_def.m_sEffect);
+			LuaHelpers::Push(L, changes[c].background_def_.effect_);
 			lua_setfield(L, -2, "effect");
-			LuaHelpers::Push(L, changes[c].m_def.m_sFile1);
+			LuaHelpers::Push(L, changes[c].background_def_.file1_);
 			lua_setfield(L, -2, "file1");
-			LuaHelpers::Push(L, changes[c].m_def.m_sFile2);
+			LuaHelpers::Push(L, changes[c].background_def_.file2_);
 			lua_setfield(L, -2, "file2");
-			LuaHelpers::Push(L, changes[c].m_def.m_sColor1);
+			LuaHelpers::Push(L, changes[c].background_def_.color1_);
 			lua_setfield(L, -2, "color1");
-			LuaHelpers::Push(L, changes[c].m_def.m_sColor2);
+			LuaHelpers::Push(L, changes[c].background_def_.color2_);
 			lua_setfield(L, -2, "color2");
 			lua_rawseti(L, -2, c+1);
 		}

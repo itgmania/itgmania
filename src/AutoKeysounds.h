@@ -43,7 +43,7 @@ class AutoKeysounds {
   RageSoundReader* shared_sound_;
 };
 
-#endif
+#endif  // AUTO_KEYSOUNDS_H
 
 /**
  * @file

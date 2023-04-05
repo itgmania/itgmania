@@ -43,7 +43,7 @@ class Background : public ActorFrame {
   BackgroundImpl* background_impl_;
 };
 
-#endif
+#endif  // BACKGROUND_H
 
 /**
  * @file
