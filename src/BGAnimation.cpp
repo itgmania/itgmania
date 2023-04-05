@@ -32,9 +32,9 @@ static bool CompareLayerNames(const RString& s1, const RString& s2) {
 void BGAnimation::AddLayersFromAniDir(
     const RString& ani_dir, const XNode* node) {
   std::vector<RString> layer_names;
-  FOREACH_CONST_Child(node, layer) {
-    if (strncmp(layer->GetName(), "Layer", 5) == 0) {
-      layer_names.push_back(layer->GetName());
+  FOREACH_CONST_Child(node, layer_ptr) {
+    if (strncmp(layer_ptr->GetName(), "Layer", 5) == 0) {
+      layer_names.push_back(layer_ptr->GetName());
     }
   }
 
