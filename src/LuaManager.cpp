@@ -940,9 +940,9 @@ void LuaHelpers::ParseCommandList( Lua *L, const RString &sCommands, const RStri
 					sCmdName == "queuemessage" ||
 					sCmdName == "settext");
 
-			for( unsigned i=1; i<cmd.m_vsArgs.size(); i++ )
+			for( unsigned i=1; i<cmd.args_.size(); i++ )
 			{
-				RString sArg = cmd.m_vsArgs[i];
+				RString sArg = cmd.args_[i];
 
 				// "+200" -> "200"
 				if( sArg[0] == '+' )
@@ -965,7 +965,7 @@ void LuaHelpers::ParseCommandList( Lua *L, const RString &sCommands, const RStri
 					s << sArg;
 				}
 
-				if( i != cmd.m_vsArgs.size()-1 )
+				if( i != cmd.args_.size()-1 )
 					s << ",";
 			}
 			s << ")\n";

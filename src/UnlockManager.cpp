@@ -640,7 +640,7 @@ void UnlockManager::Load()
 	// Log unlocks
 	for (UnlockEntry &e : m_UnlockEntries)
 	{
-		RString str = ssprintf( "Unlock: %s; ", join("\n",e.m_cmd.m_vsArgs).c_str() );
+		RString str = ssprintf( "Unlock: %s; ", join("\n",e.m_cmd.args_).c_str() );
 		FOREACH_ENUM( UnlockRequirement, j )
 			if( e.m_fRequirement[j] )
 				str += ssprintf( "%s = %f; ", UnlockRequirementToString(j).c_str(), e.m_fRequirement[j] );
@@ -867,7 +867,7 @@ public:
 	{
 		Command cmd;
 		for( int i = 1; i <= lua_gettop(L); ++i )
-			cmd.m_vsArgs.push_back( SArg(i) );
+			cmd.args_.push_back( SArg(i) );
 		p->m_cmd = cmd;
 		return 0;
 	}

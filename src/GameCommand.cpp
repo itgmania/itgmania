@@ -172,11 +172,11 @@ void GameCommand::LoadOne( const Command& cmd )
 		return;
 
 	RString sValue;
-	for( unsigned i = 1; i < cmd.m_vsArgs.size(); ++i )
+	for( unsigned i = 1; i < cmd.args_.size(); ++i )
 	{
 		if( i > 1 )
 			sValue += ",";
-		sValue += cmd.m_vsArgs[i];
+		sValue += cmd.args_[i];
 	}
 
 #define MAKE_INVALID(expr) \
@@ -355,15 +355,15 @@ void GameCommand::LoadOne( const Command& cmd )
 
 	else if( sName == "setenv" )
 	{
-		if((cmd.m_vsArgs.size() - 1) % 2 != 0)
+		if((cmd.args_.size() - 1) % 2 != 0)
 		{
 			MAKE_INVALID("Arguments to setenv game command must be key,value pairs.");
 		}
 		else
 		{
-			for(std::size_t i= 1; i < cmd.m_vsArgs.size(); i+= 2)
+			for (std::size_t i = 1; i < cmd.args_.size(); i += 2)
 			{
-				m_SetEnv[cmd.m_vsArgs[i]]= cmd.m_vsArgs[i+1];
+				m_SetEnv[cmd.args_[i]]= cmd.args_[i+1];
 			}
 		}
 	}
@@ -445,21 +445,21 @@ void GameCommand::LoadOne( const Command& cmd )
 
 	else if( sName == "setpref" )
 	{
-		if((cmd.m_vsArgs.size() - 1) % 2 != 0)
+		if((cmd.args_.size() - 1) % 2 != 0)
 		{
 			MAKE_INVALID("Arguments to setpref game command must be key,value pairs.");
 		}
 		else
 		{
-			for(std::size_t i= 1; i < cmd.m_vsArgs.size(); i+= 2)
+			for(std::size_t i = 1; i < cmd.args_.size(); i+= 2)
 			{
-				if(IPreference::GetPreferenceByName(cmd.m_vsArgs[i]) == nullptr)
+				if(IPreference::GetPreferenceByName(cmd.args_[i]) == nullptr)
 				{
-					MAKE_INVALID("Unknown preference \"" + cmd.m_vsArgs[i] + "\".");
+					MAKE_INVALID("Unknown preference \"" + cmd.args_[i] + "\".");
 				}
 				else
 				{
-					m_SetPref[cmd.m_vsArgs[i]]= cmd.m_vsArgs[i+1];
+					m_SetPref[cmd.args_[i]]= cmd.args_[i+1];
 				}
 			}
 		}
@@ -467,11 +467,11 @@ void GameCommand::LoadOne( const Command& cmd )
 
 	else if( sName == "fademusic" )
 	{
-		if( cmd.m_vsArgs.size() == 3 )
+		if( cmd.args_.size() == 3 )
 		{
 			m_bFadeMusic = true;
-			m_fMusicFadeOutVolume = static_cast<float>(atof( cmd.m_vsArgs[1] ));
-			m_fMusicFadeOutSeconds = static_cast<float>(atof( cmd.m_vsArgs[2] ));
+			m_fMusicFadeOutVolume = static_cast<float>(atof( cmd.args_[1] ));
+			m_fMusicFadeOutSeconds = static_cast<float>(atof( cmd.args_[2] ));
 		}
 		else
 		{

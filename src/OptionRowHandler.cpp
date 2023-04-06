@@ -126,7 +126,7 @@ static LocalizedString OFF ( "OptionRowHandler", "Off" );
 	}
 
 #define CHECK_WRONG_NUM_ARGS(num) \
-	ROW_INVALID_IF(command.m_vsArgs.size() != num, "Wrong number of args to option row.", false);
+	ROW_INVALID_IF(command.args_.size() != num, "Wrong number of args to option row.", false);
 #define CHECK_BLANK_ARG \
 	ROW_INVALID_IF(sParam.size() == 0, "Blank arg to Steps row.", false);
 
@@ -163,8 +163,8 @@ public:
 			ROW_INVALID_IF(lCmds.v.size() < 1, "Row command is empty.", false);
 
 			m_Def.m_bOneChoiceForAllPlayers = false;
-			ROW_INVALID_IF(lCmds.v[0].m_vsArgs.size() != 1, "Row command has invalid args to number of entries.", false);
-			const int NumCols = StringToInt( lCmds.v[0].m_vsArgs[0] );
+			ROW_INVALID_IF(lCmds.v[0].args_.size() != 1, "Row command has invalid args to number of entries.", false);
+			const int NumCols = StringToInt( lCmds.v[0].args_[0] );
 			ROW_INVALID_IF(NumCols < 1, "Not enough entries in list.", false);
 			for( unsigned i=1; i<lCmds.v.size(); i++ )
 			{
@@ -179,15 +179,15 @@ public:
 				else if( sName == "default" )		m_Def.m_iDefault = StringToInt( cmd.GetArg(1).s ) - 1; // match ENTRY_MODE
 				else if( sName == "reloadrowmessages" )
 				{
-					for( unsigned a=1; a<cmd.m_vsArgs.size(); a++ )
-						m_vsReloadRowMessages.push_back( cmd.m_vsArgs[a] );
+					for( unsigned a=1; a<cmd.args_.size(); a++ )
+						m_vsReloadRowMessages.push_back( cmd.args_[a] );
 				}
 				else if( sName == "enabledforplayers" )
 				{
 					m_Def.m_vEnabledForPlayers.clear();
-					for( unsigned a=1; a<cmd.m_vsArgs.size(); a++ )
+					for( unsigned a=1; a<cmd.args_.size(); a++ )
 					{
-						RString sArg = cmd.m_vsArgs[a];
+						RString sArg = cmd.args_[a];
 						PlayerNumber pn = (PlayerNumber)(StringToInt(sArg)-1);
 						ASSERT( pn >= 0 && pn < NUM_PLAYERS );
 						m_Def.m_vEnabledForPlayers.insert( pn );
@@ -199,8 +199,8 @@ public:
 				}
 				else if( sName == "broadcastonexport" )
 				{
-					for( unsigned j=1; j<cmd.m_vsArgs.size(); j++ )
-						m_vsBroadcastOnExport.push_back( cmd.m_vsArgs[j] );
+					for( unsigned j=1; j<cmd.args_.size(); j++ )
+						m_vsBroadcastOnExport.push_back( cmd.args_[j] );
 				}
 				else
 				{
@@ -1567,7 +1567,7 @@ OptionRowHandler* OptionRowHandlerUtil::Make( const Commands &cmds )
 	{
 		const Command &command = cmds.v[0];
 		RString sParam = command.GetArg(1).s;
-		ROW_INVALID_IF(command.m_vsArgs.size() != 2 || !sParam.size(),
+		ROW_INVALID_IF(command.args_.size() != 2 || !sParam.size(),
 			"list row command must be 'list,name' or 'list,type'.", nullptr);
 
 		if(	 sParam.CompareNoCase("NoteSkins")==0 )		MAKE( OptionRowHandlerListNoteSkins )
