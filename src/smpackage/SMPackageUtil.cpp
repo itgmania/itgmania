@@ -10,6 +10,8 @@
 #include "LocalizedString.h"
 #include "arch/Dialog/Dialog.h"
 
+#include <cstddef>
+
 static const RString SMPACKAGE_KEY = "HKEY_LOCAL_MACHINE\\Software\\" PRODUCT_ID "\\smpackage";
 static const RString INSTALLATIONS_KEY = "HKEY_LOCAL_MACHINE\\Software\\" PRODUCT_ID "\\smpackage\\Installations";
 
@@ -47,7 +49,7 @@ void SMPackageUtil::GetGameInstallDirs( std::vector<RString>& asInstallDirsOut )
 			continue;	// skip
 
 		asInstallDirsOut.push_back( sPath );
-	} 
+	}
 
 	// while we're at it, write to clean up stale entries
 	WriteGameInstallDirs( asInstallDirsOut );
@@ -209,8 +211,8 @@ RString SMPackageUtil::GetLanguageCodeFromDisplayString( const RString &sDisplay
 {
 	RString s = sDisplayString;
 	// strip the space and everything after
-	size_t iSpace = s.find(' ');
-	ASSERT( iSpace != s.npos ); 
+	std::size_t iSpace = s.find(' ');
+	ASSERT( iSpace != s.npos );
 	s.erase( s.begin()+iSpace, s.end() );
 	return s;
 }
@@ -256,11 +258,11 @@ bool RageFileOsAbsolute::Open( const RString& path, int mode )
 		FILEMAN->Unmount( "dir", m_sOsDir, TEMP_MOUNT_POINT );
 
 	m_sOsDir = path;
-	size_t iStart = m_sOsDir.find_last_of( "/\\" );
+	std::size_t iStart = m_sOsDir.find_last_of( "/\\" );
 	ASSERT( iStart != m_sOsDir.npos );
 	m_sOsDir.erase( m_sOsDir.begin()+iStart, m_sOsDir.end() );
 
-	FILEMAN->Mount( "dir", m_sOsDir, TEMP_MOUNT_POINT );	
+	FILEMAN->Mount( "dir", m_sOsDir, TEMP_MOUNT_POINT );
 	RString sFileName = path.Right( path.size()-m_sOsDir.size() );
 	return RageFile::Open( TEMP_MOUNT_POINT+sFileName, mode );
 }
@@ -268,7 +270,7 @@ bool RageFileOsAbsolute::Open( const RString& path, int mode )
 /*
  * (c) 2002-2005 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -278,7 +280,7 @@ bool RageFileOsAbsolute::Open( const RString& path, int mode )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

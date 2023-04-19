@@ -69,29 +69,10 @@
 /* Defined to 1 if the underlying system provides the pthread_cond_timedwait function. */
 #cmakedefine HAVE_PTHREAD_COND_TIMEDWAIT 1
 
-/* Provide a fallback if intptr_t is not defined. */
-#cmakedefine HAVE_SIZEOF_INTPTR_T 1
-#if !defined(HAVE_SIZEOF_INTPTR_T)
-typedef unsigned int intptr_t;
-#endif
-
 /* Provide a fallback if pid_t is not defined. */
 #cmakedefine HAVE_SIZEOF_PID_T 1
 #if !defined(HAVE_SIZEOF_PID_T)
 typedef int pid_t;
-#endif
-
-/* Provide a fallback if size_t is not defined. */
-#cmakedefine HAVE_SIZEOF_SIZE_T 1
-#if !defined(HAVE_SIZEOF_SIZE_T)
-typedef unsigned long size_t;
-#endif
-
-/* Provide a fallback if ssize_t is not defined. */
-#cmakedefine HAVE_SIZEOF_SSIZE_T 1
-#if !defined(HAVE_SIZEOF_SSIZE_T)
-#include <type_traits>
-typedef std::make_signed<size_t>::type ssize_t;
 #endif
 
 /* Defined to 1 if logging timing segment additions and removals. */

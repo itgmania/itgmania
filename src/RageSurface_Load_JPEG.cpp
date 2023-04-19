@@ -5,6 +5,7 @@
 #include "RageFile.h"
 #include "RageSurface.h"
 
+#include <cstddef>
 #include <setjmp.h>
 
 extern "C" {
@@ -26,7 +27,7 @@ extern "C" {
 struct my_jpeg_error_mgr
 {
   struct jpeg_error_mgr pub;    /* "public" fields */
-  
+
   char errorbuf[JMSG_LENGTH_MAX];
   jmp_buf setjmp_buffer;        /* for return to caller */
 };
@@ -66,7 +67,7 @@ void RageFile_JPEG_init_source( j_decompress_ptr cinfo )
 boolean RageFile_JPEG_fill_input_buffer( j_decompress_ptr cinfo )
 {
 	RageFile_source_mgr *src = (RageFile_source_mgr *) cinfo->src;
-	size_t nbytes = src->file->Read( src->buffer, sizeof(src->buffer) );
+	std::size_t nbytes = src->file->Read( src->buffer, sizeof(src->buffer) );
 
 	if( nbytes <= 0 )
 	{
@@ -113,14 +114,14 @@ static RageSurface *RageSurface_Load_JPEG( RageFile *f, const char *fn, char err
 	cinfo.err = jpeg_std_error(&jerr.pub);
 	jerr.pub.error_exit = my_error_exit;
 	jerr.pub.output_message = my_output_message;
-	
+
 	RageSurface *volatile img = nullptr; /* volatile to prevent possible problems with setjmp */
 
 	if( setjmp(jerr.setjmp_buffer) )
 	{
 		my_jpeg_error_mgr *myerr = (my_jpeg_error_mgr *) cinfo.err;
 		memcpy( errorbuf, myerr->errorbuf, JMSG_LENGTH_MAX );
-		
+
 		jpeg_destroy_decompress( &cinfo );
 		delete img;
 		return nullptr;
@@ -217,7 +218,7 @@ RageSurfaceUtils::OpenResult RageSurface_Load_JPEG( const RString &sPath, RageSu
 /*
  * (c) 2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -227,7 +228,7 @@ RageSurfaceUtils::OpenResult RageSurface_Load_JPEG( const RString &sPath, RageSu
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

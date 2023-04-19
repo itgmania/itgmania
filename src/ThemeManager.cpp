@@ -26,6 +26,8 @@
 #include "EnumHelper.h"
 #include "PrefsManager.h"
 #include "XmlFileUtil.h"
+
+#include <cstddef>
 #include <deque>
 
 ThemeManager*	THEME = nullptr;	// global object accessible from anywhere in the program
@@ -103,7 +105,7 @@ void ThemeManager::Subscribe( IThemeMetric *p )
 	g_Subscribers.Subscribe( p );
 
 	// It's ThemeManager's responsibility to make sure all of its subscribers
-	// are updated with current data.  If a metric is created after 
+	// are updated with current data.  If a metric is created after
 	// a theme is loaded, ThemeManager should update it right away (not just
 	// when the theme changes).
 	if( THEME && THEME->GetCurThemeName().size() )
@@ -286,7 +288,7 @@ void ThemeManager::LoadThemeMetrics( const RString &sThemeName_, const RString &
 	if( g_pLoadedThemeData == nullptr )
 		g_pLoadedThemeData = new LoadedThemeData;
 
-	// Don't delete and recreate LoadedThemeData.  There are references iniMetrics and iniStrings 
+	// Don't delete and recreate LoadedThemeData.  There are references iniMetrics and iniStrings
 	// on the stack, so Clear them instead.
 	g_pLoadedThemeData->ClearAll();
 	g_vThemes.clear();
@@ -580,7 +582,7 @@ struct CompareLanguageTag
 	{
 		RString sLower( sFile );
 		sLower.MakeLower();
-		size_t iPos = sLower.find( m_sLanguageString );
+		std::size_t iPos = sLower.find( m_sLanguageString );
 		return iPos != RString::npos;
 	}
 };
@@ -613,7 +615,7 @@ void ThemeManager::FilterFileLanguages( std::vector<RString> &asPaths )
 		asPaths.erase( it, asPaths.end() );
 }
 
-bool ThemeManager::GetPathInfoToRaw( PathInfo &out, const RString &sThemeName_, ElementCategory category, const RString &sMetricsGroup_, const RString &sElement_ ) 
+bool ThemeManager::GetPathInfoToRaw( PathInfo &out, const RString &sThemeName_, ElementCategory category, const RString &sMetricsGroup_, const RString &sElement_ )
 {
 	/* Ugly: the parameters to this function may be a reference into g_vThemes,
 	 * or something else that might suddenly go away when we call ReloadMetrics,
@@ -703,12 +705,12 @@ bool ThemeManager::GetPathInfoToRaw( PathInfo &out, const RString &sThemeName_, 
 	{
 		g_ThemePathCache[category].clear();
 
-		RString message = ssprintf( 
+		RString message = ssprintf(
 			"ThemeManager:  There is more than one theme element that matches "
 			"'%s/%s/%s'.  Please remove all but one of these matches: ",
 			sThemeName.c_str(), sCategory.c_str(), MetricsGroupAndElementToFileName(sMetricsGroup,sElement).c_str() );
 		message+= asElementPaths[1];
-		for(size_t i= 1; i < asElementPaths.size(); ++i)
+		for(std::size_t i= 1; i < asElementPaths.size(); ++i)
 		{
 			message+= ", " + asElementPaths[i];
 		}
@@ -716,7 +718,7 @@ bool ThemeManager::GetPathInfoToRaw( PathInfo &out, const RString &sThemeName_, 
 		switch( LuaHelpers::ReportScriptError(message, "", true) )
 		{
 			case Dialog::abort:
-				RageException::Throw( "%s", message.c_str() ); 
+				RageException::Throw( "%s", message.c_str() );
 				break;
 			case Dialog::retry:
 				ReloadMetrics();
@@ -772,7 +774,7 @@ bool ThemeManager::GetPathInfoToRaw( PathInfo &out, const RString &sThemeName_, 
 	}
 }
 
-bool ThemeManager::GetPathInfoToAndFallback( PathInfo &out, ElementCategory category, const RString &sMetricsGroup_, const RString &sElement ) 
+bool ThemeManager::GetPathInfoToAndFallback( PathInfo &out, ElementCategory category, const RString &sMetricsGroup_, const RString &sElement )
 {
 	RString sMetricsGroup( sMetricsGroup_ );
 
@@ -800,7 +802,7 @@ bool ThemeManager::GetPathInfoToAndFallback( PathInfo &out, ElementCategory cate
 	return false;
 }
 
-bool ThemeManager::GetPathInfo( PathInfo &out, ElementCategory category, const RString &sMetricsGroup_, const RString &sElement_, bool bOptional ) 
+bool ThemeManager::GetPathInfo( PathInfo &out, ElementCategory category, const RString &sMetricsGroup_, const RString &sElement_, bool bOptional )
 {
 	/* Ugly: the parameters to this function may be a reference into g_vThemes,
 	 * or something else that might suddenly go away when we call ReloadMetrics. */
@@ -871,12 +873,12 @@ try_element_again:
 	case Dialog::abort:
 		LOG->UserLog( "Theme element", sCategory + '/' + sFileName,
 					"could not be found in \"%s\" or \"%s\".",
-					GetThemeDirFromName(m_sCurThemeName).c_str(), 
+					GetThemeDirFromName(m_sCurThemeName).c_str(),
 					GetThemeDirFromName(SpecialFiles::BASE_THEME_NAME).c_str() );
-		RageException::Throw( "Theme element \"%s/%s\" could not be found in \"%s\" or \"%s\".", 
+		RageException::Throw( "Theme element \"%s/%s\" could not be found in \"%s\" or \"%s\".",
 			sCategory.c_str(),
-			sFileName.c_str(), 
-			GetThemeDirFromName(m_sCurThemeName).c_str(), 
+			sFileName.c_str(),
+			GetThemeDirFromName(m_sCurThemeName).c_str(),
 			GetThemeDirFromName(SpecialFiles::BASE_THEME_NAME).c_str() );
 	DEFAULT_FAIL( res );
 	}
@@ -995,7 +997,7 @@ RString ThemeManager::GetMetricRaw( const IniFile &ini, const RString &sMetricsG
 		}
 		RString sCurMetricPath = GetMetricsIniPath( m_sCurThemeName );
 		RString sDefaultMetricPath = GetMetricsIniPath( SpecialFiles::BASE_THEME_NAME );
-		
+
 		RString sType;
 		if( &ini == &g_pLoadedThemeData->iniStrings )
 			sType = "String";
@@ -1003,32 +1005,32 @@ RString ThemeManager::GetMetricRaw( const IniFile &ini, const RString &sMetricsG
 			sType = "Metric";
 		else
 			FAIL_M("");
-		
+
 		RString sMessage = ssprintf( "%s \"%s::%s\" is missing.",
 			sType.c_str(),
 			sMetricsGroup.c_str(),
 			sValueName.c_str() );
-			
+
 		switch( LuaHelpers::ReportScriptError(sMessage, "", true) )
 		{
 			case Dialog::abort:
 				{
-					RageException::Throw( "%s \"%s::%s\" could not be found in \"%s\"' or \"%s\".", 
+					RageException::Throw( "%s \"%s::%s\" could not be found in \"%s\"' or \"%s\".",
 						sType.c_str(),
-						sMetricsGroup.c_str(), 
-						sValueName.c_str(), 
-						sCurMetricPath.c_str(), 
+						sMetricsGroup.c_str(),
+						sValueName.c_str(),
+						sCurMetricPath.c_str(),
 						sDefaultMetricPath.c_str() );
 				}
 			case Dialog::retry:
 				ReloadMetrics();
 				continue;
 			case Dialog::ignore:
-				LOG->UserLog( 
-					sType, 
+				LOG->UserLog(
+					sType,
 					sMetricsGroup + "::" + sValueName,
 					"could not be found in \"%s\" or \"%s\".",
-					sCurMetricPath.c_str(), 
+					sCurMetricPath.c_str(),
 					sDefaultMetricPath.c_str() );
 				return RString();
 			default:
@@ -1168,7 +1170,7 @@ void ThemeManager::GetLanguagesForTheme( const RString &sThemeName, std::vector<
 	RString sLanguageDir = GetThemeDirFromName(sThemeName) + SpecialFiles::LANGUAGES_SUBDIR;
 	std::vector<RString> as;
 	GetDirListing( sLanguageDir + "*.ini", as );
-	
+
 	for (RString const &s : as)
 	{
 		// ignore metrics.ini
@@ -1275,7 +1277,7 @@ RString ThemeManager::GetString( const RString &sMetricsGroup, const RString &sV
 				sTranslated += PseudoLocalize( s.substr(0,pos) );
 				s.erase( s.begin(), s.begin()+pos );
 			}
-			
+
 			pos = s.find( "}" );
 			sTranslated += s.substr(0,pos+1);
 			s.erase( s.begin(), s.begin()+pos+1 );
@@ -1320,7 +1322,7 @@ RString ThemeManager::GetBlankGraphicPath()
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the ThemeManager. */ 
+/** @brief Allow Lua to have access to the ThemeManager. */
 class LunaThemeManager: public Luna<ThemeManager>
 {
 public:
@@ -1374,7 +1376,7 @@ public:
 	GENERAL_GET_PATH(GetPathS);
 	GENERAL_GET_PATH(GetPathO);
 #undef GENERAL_GET_PATH
-	
+
 	static int RunLuaScripts( T* p, lua_State *L )			{ p->RunLuaScripts(SArg(1)); return 1; }
 
 	static int GetSelectableThemeNames( T* p, lua_State *L )
@@ -1447,7 +1449,7 @@ public:
 	{
 		lua_createtable(L, g_vThemes.size(), 0);
 		int ret= lua_gettop(L);
-		for(size_t tid= 0; tid < g_vThemes.size(); ++tid)
+		for(std::size_t tid= 0; tid < g_vThemes.size(); ++tid)
 		{
 			lua_pushstring(L, g_vThemes[tid].sThemeName.c_str());
 			lua_rawseti(L, ret, tid+1);
@@ -1493,7 +1495,7 @@ LUA_REGISTER_CLASS( ThemeManager )
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -1503,7 +1505,7 @@ LUA_REGISTER_CLASS( ThemeManager )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

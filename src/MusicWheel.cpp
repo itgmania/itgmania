@@ -24,6 +24,7 @@
 #include "LocalizedString.h"
 
 #include <cmath>
+#include <cstddef>
 
 static Preference<bool> g_bMoveRandomToEnd( "MoveRandomToEnd", false );
 static Preference<bool> g_bPrecacheAllSorts( "PreCacheAllWheelSorts", false);
@@ -32,7 +33,7 @@ static Preference<bool> g_bPrecacheAllSorts( "PreCacheAllWheelSorts", false);
 #define WHEEL_TEXT(s)		THEME->GetString( "MusicWheel", ssprintf("%sText",s.c_str()) );
 #define CUSTOM_ITEM_WHEEL_TEXT(s)		THEME->GetString( "MusicWheel", ssprintf("CustomItem%sText",s.c_str()) );
 
-static RString SECTION_COLORS_NAME( size_t i )	{ return ssprintf("SectionColor%d",int(i+1)); }
+static RString SECTION_COLORS_NAME( std::size_t i )	{ return ssprintf("SectionColor%d",int(i+1)); }
 static RString CHOICE_NAME( RString s )		{ return ssprintf("Choice%s",s.c_str()); }
 static RString CUSTOM_WHEEL_ITEM_NAME( RString s )		{ return ssprintf("CustomWheelItem%s",s.c_str()); }
 static RString CUSTOM_WHEEL_ITEM_COLOR( RString s )		{ return ssprintf("%sColor",s.c_str()); }
@@ -443,7 +444,7 @@ void MusicWheel::GetSongList( std::vector<Song*> &arraySongs, SortOrder so )
 		if(GAMESTATE->IsPlayerEnabled(pn))
 		{
 			Profile* prof= PROFILEMAN->GetProfile(pn);
-			for(size_t i= 0; i < prof->m_songs.size(); ++i)
+			for(std::size_t i= 0; i < prof->m_songs.size(); ++i)
 			{
 				apAllSongs.push_back(prof->m_songs[i]);
 			}

@@ -6,8 +6,10 @@
 #include "RageLog.h"
 #include "UnlockManager.h"
 
-RString COLUMN_DIFFICULTY_NAME( size_t i );
-RString COLUMN_STEPS_TYPE_NAME( size_t i );
+#include <cstddef>
+
+RString COLUMN_DIFFICULTY_NAME( std::size_t i );
+RString COLUMN_STEPS_TYPE_NAME( std::size_t i );
 
 static const char *HighScoresTypeNames[] = {
 	"AllSteps",
@@ -181,7 +183,7 @@ void ScoreScroller::Load( RString sMetricsGroup )
 {
 	SCROLLER_ITEMS_TO_DRAW.Load(sMetricsGroup, "ScrollerItemsToDraw");
 	SCROLLER_SECONDS_PER_ITEM.Load(sMetricsGroup, "ScrollerSecondsPerItem");
-	
+
 
 	int iNumCopies = SCROLLER_ITEMS_TO_DRAW+1;
 	for( int i=0; i<iNumCopies; ++i )
@@ -201,8 +203,8 @@ void ScoreScroller::Load( RString sMetricsGroup )
 
 /////////////////////////////////////////////
 
-RString COLUMN_DIFFICULTY_NAME( size_t i ) { return ssprintf("ColumnDifficulty%d",int(i+1)); }
-RString COLUMN_STEPS_TYPE_NAME( size_t i ) { return ssprintf("ColumnStepsType%d",int(i+1)); }
+RString COLUMN_DIFFICULTY_NAME( std::size_t i ) { return ssprintf("ColumnDifficulty%d",int(i+1)); }
+RString COLUMN_STEPS_TYPE_NAME( std::size_t i ) { return ssprintf("ColumnStepsType%d",int(i+1)); }
 
 void ScreenHighScores::Init()
 {
@@ -329,7 +331,7 @@ void ScreenHighScores::DoScroll( int iDir )
 /*
  * (c) 2001-2007 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -339,7 +341,7 @@ void ScreenHighScores::DoScroll( int iDir )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

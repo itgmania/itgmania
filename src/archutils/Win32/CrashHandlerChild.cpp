@@ -3,6 +3,7 @@
 #include "Crash.h"
 #include <errno.h>
 
+#include <cstddef>
 #include <windows.h>
 #include <commctrl.h>
 #include "archutils/Win32/ddk/dbghelp.h"
@@ -103,10 +104,10 @@ namespace VDDebugInfo
 
 		src += 64;
 		const int* pVer = reinterpret_cast<const int*>(src);
-		const size_t* pRVASize = reinterpret_cast<const size_t*>(src + sizeof(int));
-		const size_t* pFNamSize = reinterpret_cast<const size_t*>(src + sizeof(int) + sizeof(size_t));
-		const int* pSegCnt = reinterpret_cast<const int*>(src + sizeof(int) + 2 * sizeof(size_t));
-		src += 2 * (sizeof(int) + sizeof(size_t));
+		const std::size_t* pRVASize = reinterpret_cast<const std::size_t*>(src + sizeof(int));
+		const std::size_t* pFNamSize = reinterpret_cast<const std::size_t*>(src + sizeof(int) + sizeof(std::size_t));
+		const int* pSegCnt = reinterpret_cast<const int*>(src + sizeof(int) + 2 * sizeof(std::size_t));
+		src += 2 * (sizeof(int) + sizeof(std::size_t));
 
 		pctx->nBuildNumber		= *pVer;
 		pctx->pRVAHeap			= reinterpret_cast<const unsigned char*>(src + sizeof(uintptr_t));
@@ -146,7 +147,7 @@ namespace VDDebugInfo
 			if( dwFileSize == INVALID_FILE_SIZE )
 				break;
 
-			char *buffer = new char[static_cast<size_t>(dwFileSize) + 1];
+			char *buffer = new char[static_cast<std::size_t>(dwFileSize) + 1];
 			std::fill(buffer, buffer + dwFileSize + 1, '\0' );
 
 			DWORD dwActual;
@@ -177,7 +178,7 @@ namespace VDDebugInfo
 		return false;
 	}
 
-	static const char *GetNameFromHeap(const char *heap, size_t idx)
+	static const char *GetNameFromHeap(const char *heap, std::size_t idx)
 	{
 		while(idx--)
 			while(*heap++);
@@ -192,7 +193,7 @@ namespace VDDebugInfo
 
 		const unsigned char *pr = pctx->pRVAHeap;
 		const unsigned char *pr_limit = (const unsigned char *)pctx->pFuncNameHeap;
-		size_t idx = 0;
+		std::size_t idx = 0;
 
 		// Linearly unpack RVA deltas and find lower_bound
 		rva -= pctx->nFirstRVA;
@@ -313,7 +314,7 @@ namespace SymbolLookup
 			| UNDNAME_NO_CV_THISTYPE
 			| UNDNAME_NO_ALLOCATION_MODEL
 			| UNDNAME_NO_ACCESS_SPECIFIERS // no public:
-			| UNDNAME_NO_MS_KEYWORDS // no __cdecl 
+			| UNDNAME_NO_MS_KEYWORDS // no __cdecl
 			| UNDNAME_NO_MEMBER_TYPE // no virtual, static
 			) )
 		{
@@ -340,7 +341,7 @@ namespace SymbolLookup
 			return "???";
 		}
 		RString sName;
-		char *buffer = new char[static_cast<size_t>(iSize) + 1];
+		char *buffer = new char[static_cast<std::size_t>(iSize) + 1];
 		std::fill(buffer, buffer + iSize + 1, '\0');
 		if (!ReadFromParent(iFD, buffer, iSize))
 		{
@@ -392,7 +393,7 @@ namespace SymbolLookup
 		}
 
 		wsprintf( buf, "%" ADDRESS_ZEROS "Ix: %s!%" ADDRESS_ZEROS "Ix",
-			reinterpret_cast<uintptr_t>(ptr), sName.c_str(), 
+			reinterpret_cast<uintptr_t>(ptr), sName.c_str(),
 			reinterpret_cast<uintptr_t>(meminfo.AllocationBase) );
 	}
 }
@@ -487,7 +488,7 @@ static void MakeCrashReport( const CompleteCrashData &Data, RString &sOut )
 	sOut += ssprintf( "\n" );
 
 	sOut += ssprintf( "Partial log:\n" );
-	for( size_t  i = 0; i < Data.m_asRecent.size(); ++i )
+	for( std::size_t  i = 0; i < Data.m_asRecent.size(); ++i )
 		sOut += ssprintf( "%s\n", Data.m_asRecent[i].c_str() );
 	sOut += ssprintf( "\n" );
 
@@ -527,7 +528,7 @@ bool ReadCrashDataFromParent( int iFD, CompleteCrashData &Data )
 	if( !ReadFromParent(iFD, &iSize, sizeof(iSize)) )
 		return false;
 
-	char *buffer = new char[static_cast<size_t>(iSize) + 1];
+	char *buffer = new char[static_cast<std::size_t>(iSize) + 1];
 	std::fill(buffer, buffer + iSize + 1, '\0');
 	bool wasReadSuccessful = ReadFromParent(iFD, buffer, iSize);
 	RString tmp = buffer;
@@ -708,7 +709,7 @@ INT_PTR CrashDialog::HandleMessage( UINT msg, WPARAM wParam, LPARAM lParam )
 			{
 			case IDC_STATIC_HEADER_TEXT:
 			case IDC_STATIC_ICON:
-				hbr = (HBRUSH)::GetStockObject(WHITE_BRUSH); 
+				hbr = (HBRUSH)::GetStockObject(WHITE_BRUSH);
 				SetBkMode( hdc, OPAQUE );
 				SetBkColor( hdc, RGB(255,255,255) );
 				break;
@@ -907,7 +908,7 @@ void CrashHandler::CrashHandlerHandleArgs( int argc, char* argv[] )
 /*
  * (c) 2003-2006 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -917,7 +918,7 @@ void CrashHandler::CrashHandlerHandleArgs( int argc, char* argv[] )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

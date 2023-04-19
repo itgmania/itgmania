@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #endif
 #include <cerrno>
+#include <cstddef>
 #if defined(WIN32)
 #include <io.h>
 #endif
@@ -115,7 +116,7 @@ static std::vector<RageFileReadAheadThread *> g_apReadAheads;
 void RageFileManagerReadAhead::Init() { }
 void RageFileManagerReadAhead::Shutdown()
 {
-	for( size_t i = 0; i < g_apReadAheads.size(); ++i )
+	for( std::size_t i = 0; i < g_apReadAheads.size(); ++i )
 		delete g_apReadAheads[i];
 	g_apReadAheads.clear();
 }
@@ -140,7 +141,7 @@ void RageFileManagerReadAhead::ReadAhead( RageFileBasic *pFile, int iBytes )
 	RageFileReadAheadThread *pReadAhead = new RageFileReadAheadThread( iFD, iStart, iBytes );
 	g_apReadAheads.push_back( pReadAhead );
 
-	for( size_t i = 0; i < g_apReadAheads.size(); ++i )
+	for( std::size_t i = 0; i < g_apReadAheads.size(); ++i )
 	{
 		if( g_apReadAheads[i]->IsFinished() )
 		{

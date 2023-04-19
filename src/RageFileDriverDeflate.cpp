@@ -4,6 +4,8 @@
 #include "RageFile.h"
 #include "RageLog.h"
 #include "RageUtil.h"
+
+#include <cstddef>
 #include <memory>
 
 #if defined(_WINDOWS)
@@ -62,7 +64,7 @@ RageFileObjInflate *RageFileObjInflate::Copy() const
 {
 	return new RageFileObjInflate( *this );
 }
-	
+
 
 RageFileObjInflate::~RageFileObjInflate()
 {
@@ -76,13 +78,13 @@ RageFileObjInflate::~RageFileObjInflate()
 	delete m_pInflate;
 }
 
-int RageFileObjInflate::ReadInternal( void *buf, size_t bytes )
+int RageFileObjInflate::ReadInternal( void *buf, std::size_t bytes )
 {
 	/* Don't read more than m_iUncompressedSize of data.  If we don't do this, it's
 	 * possible for a .gz to contain a header claiming 500k of data, but to actually
 	 * contain much more deflated data. */
 	ASSERT_M( m_iFilePos <= m_iUncompressedSize, ssprintf("%i, %i",m_iFilePos, m_iUncompressedSize) );
-	bytes = std::min( bytes, size_t(m_iUncompressedSize-m_iFilePos) );
+	bytes = std::min( bytes, std::size_t(m_iUncompressedSize-m_iFilePos) );
 
 	bool done=false;
 	int ret = 0;
@@ -221,7 +223,7 @@ RageFileObjDeflate::~RageFileObjDeflate()
 	delete m_pDeflate;
 }
 
-int RageFileObjDeflate::WriteInternal( const void *pBuffer, size_t iBytes )
+int RageFileObjDeflate::WriteInternal( const void *pBuffer, std::size_t iBytes )
 {
 	if( iBytes == 0 )
 	{
@@ -373,7 +375,7 @@ RageFileObjInflate *GunzipFile( RageFileBasic *pFile_, RString &sError, uint32_t
 	if( iFlags & FCOMMENT )
 		while( sError == "" && FileReading::read_8( *pFile, sError ) != 0 )
 			;
-	
+
 	if( iFlags & FHCRC )
 	{
 		/* Get the CRC of the data read so far.  Be sure to do this before
@@ -381,7 +383,7 @@ RageFileObjInflate *GunzipFile( RageFileBasic *pFile_, RString &sError, uint32_t
 		uint32_t iActualCRC32;
 		bool bOK = pFile->GetCRC32( &iActualCRC32 );
 		ASSERT( bOK );
-	
+
 		uint16_t iExpectedCRC16 = FileReading::read_u16_le( *pFile, sError );
 		uint16_t iActualCRC16 = int16_t( iActualCRC32 & 0xFFFF );
 		if( sError != "" )
@@ -407,17 +409,17 @@ RageFileObjInflate *GunzipFile( RageFileBasic *pFile_, RString &sError, uint32_t
 	int iFooterPos = pFile->GetFileSize() - 8;
 
 	FileReading::Seek( *pFile, iFooterPos, sError );
-	
+
 	uint32_t iExpectedCRC32 = FileReading::read_u32_le( *pFile, sError );
 	uint32_t iUncompressedSize = FileReading::read_u32_le( *pFile, sError );
 	if( iCRC32 != nullptr )
 		*iCRC32 = iExpectedCRC32;
-	
+
 	FileReading::Seek( *pFile, iDataPos, sError );
-	
+
 	if( sError != "" )
 		return nullptr;
-	
+
 	RageFileDriverSlice *pSliceFile = new RageFileDriverSlice( pFile.release(), iDataPos, iFooterPos-iDataPos );
 	pSliceFile->DeleteFileWhenFinished();
 	RageFileObjInflate *pInflateFile = new RageFileObjInflate( pSliceFile, iUncompressedSize );
@@ -440,7 +442,7 @@ RageFileObjInflate *GunzipFile( RageFileBasic *pFile_, RString &sError, uint32_t
  * gzip.Start();
  * gzip.Write( "data" );
  * gzip.Finish();
- */ 
+ */
 RageFileObjGzip::RageFileObjGzip( RageFileBasic *pFile ):
 	RageFileObjDeflate( pFile )
 {
@@ -465,7 +467,7 @@ int RageFileObjGzip::Start()
 
 	if( m_pFile->Write( header, sizeof(header) ) == -1 )
 		return -1;
-	
+
 	m_iDataStartOffset = Tell();
 
 	/* Enable and reset the CRC32 for the uncompressed data about to be
@@ -506,7 +508,7 @@ int RageFileObjGzip::Finish()
 		SetError( m_pFile->GetError() );
 		return -1;
 	}
-	
+
 	/* Flush the CRC and wize that we just wrote directly to the file. */
 	return m_pFile->Flush();
 }

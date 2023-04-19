@@ -10,8 +10,9 @@
 #include "ActorUtil.h"
 
 #include <cmath>
+#include <cstddef>
 
-RString WARNING_COMMAND_NAME( size_t i ) { return ssprintf("Warning%dCommand",int(i)); }
+RString WARNING_COMMAND_NAME( std::size_t i ) { return ssprintf("Warning%dCommand",int(i)); }
 
 static const float TIMER_PAUSE_SECONDS = 99.99f;
 

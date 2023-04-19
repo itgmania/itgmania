@@ -20,6 +20,7 @@
 #include "Player.h"
 
 #include <cmath>
+#include <cstddef>
 
 StatsManager*	STATSMAN = nullptr;	// global object accessible from anywhere in the program
 
@@ -98,7 +99,7 @@ void StatsManager::GetFinalEvalStageStats( StageStats& statsOut ) const
 {
 	statsOut.Init();
 	std::vector<StageStats> vssToCount;
-	for(size_t i= 0; i < m_vPlayedStageStats.size(); ++i)
+	for(std::size_t i= 0; i < m_vPlayedStageStats.size(); ++i)
 	{
 		vssToCount.push_back(m_vPlayedStageStats[i]);
 	}

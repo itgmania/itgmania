@@ -2,6 +2,9 @@
 #include "Crash.h"
 #include "ProductInfo.h"
 #include "arch/ArchHooks/ArchHooks.h"
+
+#include <cstddef>
+
 #include <CoreServices/CoreServices.h>
 #include <os/log.h>
 #include <sys/types.h>
@@ -44,10 +47,10 @@ void CrashHandler::InformUserOfCrash( const RString& sPath )
 						      sPath.c_str(), REPORT_BUG_URL );
 	CFOptionFlags response = kCFUserNotificationCancelResponse;
 	CFTimeInterval timeout = 0.0; // Should we ever time out?
-	
+
 	CFUserNotificationDisplayAlert( timeout, kCFUserNotificationStopAlertLevel, nullptr, nullptr, nullptr,
 					sTitle, sBody, sDefault, sAlternate, sOther, &response );
-	
+
 	switch( response )
 	{
 	case kCFUserNotificationDefaultResponse:
@@ -76,19 +79,19 @@ bool CrashHandler::IsDebuggerPresent()
 	int                 ret;
 	int                 mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() };
 	struct kinfo_proc   info;
-	size_t              size;
-	
+	std::size_t         size;
+
 	// Initialize the flags so that, if sysctl fails for some bizarre
 	// reason, we get a predictable result.
-	
+
 	info.kp_proc.p_flag = 0;
-	
+
 	// Call sysctl.
 	size = sizeof( info );
 	ret = sysctl( mib, sizeof(mib)/sizeof(*mib), &info, &size, nullptr, 0 );
-	
+
 	// We're being debugged if the P_TRACED flag is set.
-	
+
 	return  ret == 0 && (info.kp_proc.p_flag & P_TRACED) != 0;
 #else
 	return false;
@@ -113,7 +116,7 @@ void CrashHandler::DebugBreak()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

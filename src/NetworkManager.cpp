@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <climits>
+#include <cstddef>
 #include <memory>
 #include <sstream>
 #include <unordered_map>
@@ -140,7 +141,7 @@ bool NetworkManager::IsUrlAllowed(const std::string& url)
 		// subdomain wildcards; ".domain" doesn't match "*.domain", but "a.domain" does
 		if (allowedHost.substr(0, 2) == "*." && host.length() >= allowedHost.length())
 		{
-			size_t pos = host.length() - allowedHost.length() + 1;
+			std::size_t pos = host.length() - allowedHost.length() + 1;
 			if (host.substr(pos) == allowedHost.substr(1))
 				return true;
 		}
@@ -339,7 +340,7 @@ int WebSocketHandle::Send(lua_State *L)
 	void *udata = luaL_checkudata(L, 1, "WebSocketHandle");
 	auto handle = *static_cast<WebSocketHandlePtr*>(udata);
 
-	size_t len;
+	std::size_t len;
 	const char *s = luaL_checklstring(L, 2, &len);
 	std::string data(s, len);
 
@@ -452,7 +453,7 @@ public:
 		{
 			if (lua_isstring(L, -1))
 			{
-				size_t len;
+				std::size_t len;
 				const char *s = lua_tolstring(L, -1, &len);
 				args.body = std::string(s, len);
 			}
@@ -468,7 +469,7 @@ public:
 		{
 			if (lua_isstring(L, -1))
 			{
-				size_t len;
+				std::size_t len;
 				const char *s = lua_tolstring(L, -1, &len);
 				args.multipartBoundary = std::string(s, len);
 			}

@@ -31,6 +31,7 @@
 #include "InputEventPlus.h"
 
 #include <cmath>
+#include <cstddef>
 
 // metrics that are common to all ScreenEvaluation classes
 #define BANNER_WIDTH			THEME->GetMetricF(m_sName,"BannerWidth")
@@ -265,7 +266,7 @@ void ScreenEvaluation::Init()
 	{
 		if( SUMMARY )
 		{
-			for( size_t i=0; i<m_pStageStats->m_vpPlayedSongs.size()
+			for( std::size_t i=0; i<m_pStageStats->m_vpPlayedSongs.size()
 						 && i < MAX_SONGS_TO_SHOW; i++ )
 			{
 				Song *pSong = m_pStageStats->m_vpPlayedSongs[i];

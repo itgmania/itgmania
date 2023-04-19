@@ -19,6 +19,8 @@
 #include "RageFileManager.h"
 #include "PrefsManager.h"
 
+#include <cstddef>
+
 REGISTER_SCREEN_CLASS( ScreenOptionsManageCourses );
 
 struct StepsTypeAndDifficulty
@@ -234,7 +236,7 @@ void ScreenOptionsManageCourses::ProcessMenuStart( const InputEventPlus & )
 	{
 		std::vector<Course*> vpCourses;
 		EditCourseUtil::GetAllEditCourses( vpCourses );
-		if( vpCourses.size() >= (size_t)EditCourseUtil::MAX_PER_PROFILE )
+		if( vpCourses.size() >= (std::size_t)EditCourseUtil::MAX_PER_PROFILE )
 		{
 			RString s = ssprintf( YOU_HAVE_MAX.GetValue()+"\n\n"+YOU_MUST_DELETE.GetValue(), EditCourseUtil::MAX_PER_PROFILE );
 			ScreenPrompt::Prompt( SM_None, s );
@@ -283,7 +285,7 @@ Course *ScreenOptionsManageCourses::GetCourseWithFocus() const
 /*
  * (c) 2002-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -293,7 +295,7 @@ Course *ScreenOptionsManageCourses::GetCourseWithFocus() const
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

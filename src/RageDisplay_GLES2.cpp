@@ -10,12 +10,13 @@
 #include "RageUtil.h"
 #include "RageSurface.h"
 #include "RageTextureManager.h"
-
 #include "DisplaySpec.h"
 
 #include "arch/LowLevelWindow/LowLevelWindow.h"
 
 #include <GL/glew.h>
+
+#include <cstddef>
 
 #ifdef NO_GL_FLUSH
 #define glFlush()
@@ -261,12 +262,12 @@ RageDisplay_GLES2::Init( const VideoModeParams &p, bool bAllowUnacceleratedRende
 		}
 
 		sort( extensions.begin(), extensions.end() );
-		size_t next = 0;
+		std::size_t next = 0;
 		while( next < extensions.size() )
 		{
-			size_t last = next;
+			std::size_t last = next;
 			string type;
-			for( size_t i = next; i<extensions.size(); ++i )
+			for( std::size_t i = next; i<extensions.size(); ++i )
 			{
 				std::vector<string> segments;
 				split(extensions[i], '_', segments);
@@ -308,12 +309,12 @@ RageDisplay_GLES2::Init( const VideoModeParams &p, bool bAllowUnacceleratedRende
 		std::vector<RString> asExtensions;
 		split( szExtensionString, " ", asExtensions );
 		sort( asExtensions.begin(), asExtensions.end() );
-		size_t iNextToPrint = 0;
+		std::size_t iNextToPrint = 0;
 		while( iNextToPrint < asExtensions.size() )
 		{
-			size_t iLastToPrint = iNextToPrint;
+			std::size_t iLastToPrint = iNextToPrint;
 			RString sType;
-			for( size_t i = iNextToPrint; i<asExtensions.size(); ++i )
+			for( std::size_t i = iNextToPrint; i<asExtensions.size(); ++i )
 			{
 				std::vector<RString> asBits;
 				split( asExtensions[i], "_", asBits );
@@ -486,7 +487,7 @@ RageDisplay_GLES2::GetOrthoMatrix( float l, float r, float b, float t, float zn,
 class RageCompiledGeometryGLES2 : public RageCompiledGeometry
 {
 public:
-	
+
 	void Allocate( const std::vector<msMesh> &vMeshes )
 	{
 		// TODO
@@ -573,10 +574,10 @@ RageDisplay_GLES2::CreateTexture(
 }
 
 void
-RageDisplay_GLES2::UpdateTexture( 
-	uintptr_t iTexHandle, 
+RageDisplay_GLES2::UpdateTexture(
+	uintptr_t iTexHandle,
 	RageSurface* img,
-	int xoffset, int yoffset, int width, int height 
+	int xoffset, int yoffset, int width, int height
 	)
 {
 	// TODO
@@ -631,7 +632,7 @@ RageDisplay_GLES2::SetTexture( TextureUnit tu, uintptr_t iTexture )
 	}
 }
 
-void 
+void
 RageDisplay_GLES2::SetTextureMode( TextureUnit tu, TextureMode tm )
 {
 	// TODO
@@ -647,7 +648,7 @@ void
 RageDisplay_GLES2::SetTextureFiltering( TextureUnit tu, bool b )
 {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, b ? GL_LINEAR : GL_NEAREST);
-	
+
 	GLint iMinFilter = 0;
 	if (b)
 	{
@@ -851,7 +852,7 @@ RageDisplay_GLES2::SetAlphaTest( bool b )
 }
 
 void
-RageDisplay_GLES2::SetMaterial( 
+RageDisplay_GLES2::SetMaterial(
 	const RageColor &emissive,
 	const RageColor &ambient,
 	const RageColor &diffuse,
@@ -895,11 +896,11 @@ RageDisplay_GLES2::SetLightOff( int index )
 }
 
 void
-RageDisplay_GLES2::SetLightDirectional( 
-	int index, 
-	const RageColor &ambient, 
-	const RageColor &diffuse, 
-	const RageColor &specular, 
+RageDisplay_GLES2::SetLightDirectional(
+	int index,
+	const RageColor &ambient,
+	const RageColor &diffuse,
+	const RageColor &specular,
 	const RageVector3 &dir )
 {
 	// TODO
@@ -948,7 +949,7 @@ RageDisplay_GLES2::DrawTrianglesInternal( const RageSpriteVertex v[], int iNumVe
 }
 
 void
-RageDisplay_GLES2::DrawCompiledGeometryInternal( const RageCompiledGeometry *p, int 
+RageDisplay_GLES2::DrawCompiledGeometryInternal( const RageCompiledGeometry *p, int
 	iMeshIndex )
 {
 	// TODO

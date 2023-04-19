@@ -11,6 +11,8 @@
 #include "LocalizedString.h"
 #include "arch/Dialog/Dialog.h"
 
+#include <cstddef>
+
 #define AUTOMAPPINGS_DIR "/Data/AutoMappings/"
 
 static Preference<RString> g_sLastSeenInputDevices( "LastSeenInputDevices", "" );
@@ -284,7 +286,7 @@ static const AutoMappings g_AutoMappings[] =
 	   ),
 	   AutoMappings(
 		"dance",
-		"0b43:0003", // The EMS USB2 doesn't provide a model string, so Linux 
+		"0b43:0003", // The EMS USB2 doesn't provide a model string, so Linux
 				 // just gives us the VendorID and ModelID in hex.
 		"EMS USB2",
 			   // Player 1.
@@ -868,7 +870,7 @@ void InputMapper::SetInputMap( const DeviceInput &DeviceI, const GameInput &Game
 void InputMapper::ClearFromInputMap( const DeviceInput &DeviceI )
 {
 	m_mappings.ClearFromInputMap( DeviceI );
-	
+
 	UpdateTempDItoGI();
 }
 
@@ -983,7 +985,7 @@ bool InputMapper::IsBeingPressed( GameButton MenuI, PlayerNumber pn ) const
 	}
 	std::vector<GameInput> GameI;
 	MenuToGame( MenuI, pn, GameI );
-	for( size_t i=0; i<GameI.size(); i++ )
+	for( std::size_t i=0; i<GameI.size(); i++ )
 		if( IsBeingPressed(GameI[i]) )
 			return true;
 
@@ -993,7 +995,7 @@ bool InputMapper::IsBeingPressed( GameButton MenuI, PlayerNumber pn ) const
 bool InputMapper::IsBeingPressed(const std::vector<GameInput>& GameI, MultiPlayer mp, const DeviceInputList *pButtonState ) const
 {
 	bool pressed= false;
-	for(size_t i= 0; i < GameI.size(); ++i)
+	for(std::size_t i= 0; i < GameI.size(); ++i)
 	{
 		pressed |= IsBeingPressed(GameI[i], mp, pButtonState);
 	}
@@ -1023,7 +1025,7 @@ void InputMapper::RepeatStopKey( GameButton MenuI, PlayerNumber pn )
 	}
 	std::vector<GameInput> GameI;
 	MenuToGame( MenuI, pn, GameI );
-	for( size_t i=0; i<GameI.size(); i++ )
+	for( std::size_t i=0; i<GameI.size(); i++ )
 		RepeatStopKey( GameI[i] );
 }
 
@@ -1059,7 +1061,7 @@ float InputMapper::GetSecsHeld( GameButton MenuI, PlayerNumber pn ) const
 
 	std::vector<GameInput> GameI;
 	MenuToGame( MenuI, pn, GameI );
-	for( size_t i=0; i<GameI.size(); i++ )
+	for( std::size_t i=0; i<GameI.size(); i++ )
 		fMaxSecsHeld = std::max( fMaxSecsHeld, GetSecsHeld(GameI[i]) );
 
 	return fMaxSecsHeld;
@@ -1087,7 +1089,7 @@ void InputMapper::ResetKeyRepeat( GameButton MenuI, PlayerNumber pn )
 	}
 	std::vector<GameInput> GameI;
 	MenuToGame( MenuI, pn, GameI );
-	for( size_t i=0; i<GameI.size(); i++ )
+	for( std::size_t i=0; i<GameI.size(); i++ )
 		ResetKeyRepeat( GameI[i] );
 }
 
@@ -1118,7 +1120,7 @@ float InputMapper::GetLevel( GameButton MenuI, PlayerNumber pn ) const
 	MenuToGame( MenuI, pn, GameI );
 
 	float fLevel = 0;
-	for( size_t i=0; i<GameI.size(); i++ )
+	for( std::size_t i=0; i<GameI.size(); i++ )
 		fLevel = std::max( fLevel, GetLevel(GameI[i]) );
 
 	return fLevel;
@@ -1140,7 +1142,7 @@ MultiPlayer InputMapper::InputDeviceToMultiPlayer( InputDevice id )
 
 GameButton InputScheme::ButtonNameToIndex( const RString &sButtonName ) const
 {
-	for( GameButton gb=(GameButton) 0; gb<m_iButtonsPerController; gb=(GameButton)(gb+1) ) 
+	for( GameButton gb=(GameButton) 0; gb<m_iButtonsPerController; gb=(GameButton)(gb+1) )
 		if( strcasecmp(GetGameButtonName(gb), sButtonName) == 0 )
 			return gb;
 
@@ -1301,7 +1303,7 @@ void InputMappings::WriteMappings( const InputScheme *pInputScheme, RString sFil
 {
 	IniFile ini;
 	ini.ReadFile( sFilePath );
-	
+
 	// erase the key so that we overwrite everything for this game
 	ini.DeleteKey( pInputScheme->m_szName );
 
@@ -1321,10 +1323,10 @@ void InputMappings::WriteMappings( const InputScheme *pInputScheme, RString sFil
 			std::vector<RString> asValues;
 			for( int slot = 0; slot < NUM_USER_GAME_TO_DEVICE_SLOTS; ++slot )	// don't save data from the last (keyboard automap) slot
 				asValues.push_back( m_GItoDI[i][j][slot].ToString() );
-		
+
 			while( asValues.size() && asValues.back() == "" )
 				asValues.erase( asValues.begin()+asValues.size()-1 );
-			
+
 			RString sValueString = join( DEVICE_INPUT_SEPARATOR, asValues );
 
 			pKey->AppendAttr( sNameString, sValueString );
@@ -1339,7 +1341,7 @@ void InputMappings::SetInputMap( const DeviceInput &DeviceI, const GameInput &Ga
 	// remove the old input
 	ClearFromInputMap( DeviceI );
 	ClearFromInputMap( GameI, iSlotIndex );
-	
+
 	ASSERT_M( GameI.controller < NUM_GameController,
 		  ssprintf("controller: %u >= %u", GameI.controller, NUM_GameController) );
 	ASSERT_M( GameI.button < NUM_GameButton,
@@ -1383,7 +1385,7 @@ bool InputMappings::ClearFromInputMap( const GameInput &GameI, int iSlotIndex )
 /*
  * (c) 2001-2003 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -1393,7 +1395,7 @@ bool InputMappings::ClearFromInputMap( const GameInput &GameI, int iSlotIndex )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -107,20 +107,14 @@ check_function_exists(waitpid HAVE_WAITPID)
 
 # Mostly universal symbols.
 check_cxx_symbol_exists(strtof cstdlib HAVE_STRTOF)
-check_symbol_exists(size_t stddef.h HAVE_SIZE_T_STDDEF)
-check_symbol_exists(size_t stdlib.h HAVE_SIZE_T_STDLIB)
-check_symbol_exists(size_t stdio.h HAVE_SIZE_T_STDIO)
 check_symbol_exists(posix_fadvise fcntl.h HAVE_POSIX_FADVISE)
 
 # Checks to make it easier to work with 32-bit/64-bit builds if required.
 include(CheckTypeSize)
-check_type_size(intptr_t SIZEOF_INTPTR_T)
 check_type_size(pid_t SIZEOF_PID_T)
-check_type_size(size_t SIZEOF_SIZE_T)
-check_type_size(ssize_t SIZEOF_SSIZE_T)
 
 if(WIN32)
-  if(SIZEOF_INTPTR_T EQUAL 8)
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(SM_WIN32_ARCH "x64")
   else()
     set(SM_WIN32_ARCH "x86")

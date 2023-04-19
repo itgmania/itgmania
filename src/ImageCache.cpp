@@ -20,6 +20,7 @@
 #include "Banner.h"
 
 #include <cmath>
+#include <cstddef>
 
 static Preference<bool> g_bPalettedImageCache( "PalettedImageCache", false );
 
@@ -272,7 +273,7 @@ RageTextureID ImageCache::LoadCachedImage( RString sImageDir, RString sImagePath
 {
 	RageTextureID ID( GetImageCachePath(sImageDir,sImagePath) );
 
-	size_t Found = sImagePath.find("_blank");
+	std::size_t Found = sImagePath.find("_blank");
 	if( sImagePath == "" || Found!=RString::npos )
 		return ID;
 

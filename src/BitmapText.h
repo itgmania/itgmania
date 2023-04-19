@@ -2,6 +2,8 @@
 #define BITMAP_TEXT_H
 
 #include "Actor.h"
+
+#include <cstddef>
 #include <map>
 
 class RageTexture;
@@ -62,7 +64,7 @@ public:
 	void SetMaxHeight( float fMaxHeight );
 	void SetMaxDimUseZoom(bool use);
 	void SetWrapWidthPixels( int iWrapWidthPixels );
-	void CropLineToWidth(size_t l, int width);
+	void CropLineToWidth(std::size_t l, int width);
 	void CropToWidth(int width);
 
 	virtual bool EarlyAbortDraw() const override;
@@ -103,7 +105,7 @@ public:
 	};
 
 	Attribute GetDefaultAttribute() const;
-	void AddAttribute( size_t iPos, const Attribute &attr );
+	void AddAttribute( std::size_t iPos, const Attribute &attr );
 	void ClearAttributes();
 
 	// Commands
@@ -128,9 +130,9 @@ protected:
 
 	std::vector<RageSpriteVertex>	m_aVertices;
 
-	std::vector<FontPageTextures*>	m_vpFontPageTextures;
-	std::map<size_t, Attribute>		m_mAttributes;
-	bool				m_bHasGlowAttribute;
+	std::vector<FontPageTextures*>		m_vpFontPageTextures;
+	std::map<std::size_t, Attribute>	m_mAttributes;
+	bool								m_bHasGlowAttribute;
 
 	TextGlowMode	m_TextGlowMode;
 
@@ -153,7 +155,7 @@ private:
  * @author Chris Danford, Charles Lohr, Steve Checkoway (c) 2001-2007
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -163,7 +165,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

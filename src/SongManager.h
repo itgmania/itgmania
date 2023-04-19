@@ -19,8 +19,10 @@ struct lua_State;
 #include "RageTexturePreloader.h"
 #include "RageUtil.h"
 
-RString SONG_GROUP_COLOR_NAME( size_t i );
-RString COURSE_GROUP_COLOR_NAME( size_t i );
+#include <cstddef>
+
+RString SONG_GROUP_COLOR_NAME( std::size_t i );
+RString COURSE_GROUP_COLOR_NAME( std::size_t i );
 bool CompareNotesPointersForExtra(const Steps *n1, const Steps *n2);
 
 /** @brief The max number of edit steps a profile can have. */
@@ -181,7 +183,7 @@ public:
 	void UpdateShuffled();	// re-shuffle songs and courses
 	void SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute = false);
 	void SetPreferredCourses(RString sPreferredCourses, bool bIsAbsolute = false);
-	void UpdatePreferredSort(RString sPreferredSongs = "PreferredSongs.txt", RString sPreferredCourses = "PreferredCourses.txt"); 
+	void UpdatePreferredSort(RString sPreferredSongs = "PreferredSongs.txt", RString sPreferredCourses = "PreferredCourses.txt");
 	void SortSongs();		// sort m_pSongs by CompareSongPointersByTitle
 
 	void UpdateRankingCourses();	// courses shown on the ranking screen
@@ -261,7 +263,7 @@ extern SongManager*	SONGMAN;	// global and accessible from anywhere in our progr
  * @author Chris Danford, Glenn Maynard (c) 2001-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -271,7 +273,7 @@ extern SongManager*	SONGMAN;	// global and accessible from anywhere in our progr
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

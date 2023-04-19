@@ -8,11 +8,12 @@
 #include "Steps.h"
 #include "Song.h"
 #include "StepsUtil.h"
-
 #include "CommonMetrics.h"
 #include "ImageCache.h"
 #include "UnlockManager.h"
 #include "SongUtil.h"
+
+#include <cstddef>
 
 static const char *EditMenuRowNames[] = {
 	"Group",
@@ -37,8 +38,8 @@ XToString( EditMenuAction );
 XToLocalizedString( EditMenuAction );
 StringToX( EditMenuAction );
 
-static RString ARROWS_X_NAME( size_t i )	{ return ssprintf("Arrows%dX",int(i+1)); }
-static RString ROW_Y_NAME( size_t i )		{ return ssprintf("Row%dY",int(i+1)); }
+static RString ARROWS_X_NAME( std::size_t i )	{ return ssprintf("Arrows%dX",int(i+1)); }
+static RString ROW_Y_NAME( std::size_t i )		{ return ssprintf("Row%dY",int(i+1)); }
 
 void EditMenu::StripLockedStepsAndDifficulty( std::vector<StepsAndDifficulty> &v )
 {

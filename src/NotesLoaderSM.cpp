@@ -13,6 +13,8 @@
 #include "Attack.h"
 #include "PrefsManager.h"
 
+#include <cstddef>
+
 // Everything from this line to the creation of sm_parser_helper exists to
 // speed up parsing by allowing the use of std::map.  All these functions
 // are put into a map of function pointers which is used when loading.
@@ -1388,9 +1390,9 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 
 	// strip newlines (basically operates as both split and join at the same time)
 	RString sChanges;
-	size_t start = 0;
+	std::size_t start = 0;
 	do {
-		size_t pos = _sChanges.find_first_of("\r\n", start);
+		std::size_t pos = _sChanges.find_first_of("\r\n", start);
 		if (RString::npos == pos)
 			pos = _sChanges.size();
 
@@ -1429,7 +1431,7 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 				// the string itself matches
 				if (f.EqualsNoCase(sChanges.substr(start, f.size()).c_str()))
 				{
-					size_t nextpos = start + f.size();
+					std::size_t nextpos = start + f.size();
 
 					// is this name followed by end-of-string, equals, or comma?
 					if ((nextpos == sChanges.size()) || (sChanges[nextpos] == '=') || (sChanges[nextpos] == ','))
@@ -1467,8 +1469,8 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 			if(0 == pnum) vvsAddTo.push_back(std::vector<RString>()); // first value of this set. create our vector
 
 			{
-				size_t eqpos = sChanges.find('=', start);
-				size_t compos = sChanges.find(',', start);
+				std::size_t eqpos = sChanges.find('=', start);
+				std::size_t compos = sChanges.find(',', start);
 
 				if ((eqpos == RString::npos) && (compos == RString::npos))
 				{

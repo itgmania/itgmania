@@ -1,6 +1,8 @@
 #include "global.h"
 #include "KeyboardDevice.h"
 
+#include <cstddef>
+
 using namespace __gnu_cxx;
 
 bool KeyboardDevice::AddLogicalDevice( int usagePage, int usage )
@@ -477,7 +479,7 @@ bool KeyboardDevice::DeviceButtonToMacVirtualKey( DeviceButton button, UInt8 &iM
 		for( int iUsbKey = 0; iUsbKey < 256; ++iUsbKey )
 		{
 			DeviceButton button2;
-			if( UsbKeyToDeviceButton(iUsbKey, button2) && size_t(button2) < sizeof(g_iDeviceButtonToMacVirtualKey) )
+			if( UsbKeyToDeviceButton(iUsbKey, button2) && std::size_t(button2) < sizeof(g_iDeviceButtonToMacVirtualKey) )
 				g_iDeviceButtonToMacVirtualKey[button2] = g_iUsbKeyToMacVirtualKey[iUsbKey];
 		}
 		bInited = true;

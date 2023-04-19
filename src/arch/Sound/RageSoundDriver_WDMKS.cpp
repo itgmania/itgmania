@@ -6,6 +6,8 @@
 #include "PrefsManager.h"
 #include "archutils/Win32/ErrorStrings.h"
 
+#include <cstddef>
+
 #define _INC_MMREG
 #define _NTRTL_ /* Turn off default definition of DEFINE_GUIDEX */
 #if !defined(DEFINE_WAVEFORMATEX_GUID)
@@ -498,7 +500,7 @@ bool WinWdmPin::IsFormatSupported( const WAVEFORMATEX *pFormat ) const
 	if( pFormat->wFormatTag == WAVE_FORMAT_EXTENSIBLE )
 		guid = ((WAVEFORMATEXTENSIBLE*) pFormat)->SubFormat;
 
-	for( size_t i = 0; i < m_dataRangesItem.size(); i++ )
+	for( std::size_t i = 0; i < m_dataRangesItem.size(); i++ )
 	{
 		const KSDATARANGE_AUDIO *pDataRangeAudio = &m_dataRangesItem[i];
 		/* This is an audio or wildcard datarange... */
@@ -1159,7 +1161,7 @@ void RageSoundDriver_WDMKS::MixerThread()
 
 	/* Enable priority boosting. */
 	SetThreadPriorityBoost( GetCurrentThread(), FALSE );
-	
+
 	ASSERT( m_pStream->m_pPlaybackPin != nullptr );
 
 	/* Some drivers (stock USB audio in XP) misbehave if we go from KSSTATE_STOP to
@@ -1265,7 +1267,7 @@ RString RageSoundDriver_WDMKS::Init()
 	if( apFilters.empty() )
 		return "No supported audio devices found";
 
-	for( size_t i = 0; i < apFilters.size(); ++i )
+	for( std::size_t i = 0; i < apFilters.size(); ++i )
 	{
 		const WinWdmFilter *pFilter = apFilters[i];
 		LOG->Trace( "Device #%i: %s", i, pFilter->m_sFriendlyName.c_str() );
@@ -1284,7 +1286,7 @@ RString RageSoundDriver_WDMKS::Init()
 				else if( !memcmp(&rawSubFormat, &KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, sizeof(GUID)) )
 					sSubFormat = "FLOAT";
 
-				LOG->Trace( "     Range: %i channels, sample %i-%i, %i-%ihz (%s)", 
+				LOG->Trace( "     Range: %i channels, sample %i-%i, %i-%ihz (%s)",
 					range.MaximumChannels,
 					range.MinimumBitsPerSample,
 					range.MaximumBitsPerSample,
@@ -1297,7 +1299,7 @@ RString RageSoundDriver_WDMKS::Init()
 	}
 
 	m_pFilter = apFilters[0];
-	for( size_t i=0; i < apFilters.size(); ++i )
+	for( std::size_t i=0; i < apFilters.size(); ++i )
 	{
 		if( apFilters[i] != m_pFilter )
 			delete apFilters[i];
@@ -1381,12 +1383,12 @@ float RageSoundDriver_WDMKS::GetPlayLatency() const
  */
 
 /*
- * The text above constitutes the entire PortAudio license; however, 
+ * The text above constitutes the entire PortAudio license; however,
  * the PortAudio community also makes the following non-binding requests:
  *
  * Any person wishing to distribute modifications to the Software is
  * requested to send the modifications to the original developer so that
- * they can be incorporated into the canonical version. It is also 
- * requested that these non-binding requests be included along with the 
+ * they can be incorporated into the canonical version. It is also
+ * requested that these non-binding requests be included along with the
  * license above.
  */

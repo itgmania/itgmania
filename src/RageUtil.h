@@ -3,13 +3,16 @@
 #ifndef RAGE_UTIL_H
 #define RAGE_UTIL_H
 
+#include "global.h"
+
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <map>
 #include <random>
 #include <vector>
 #include <sstream>
-#include "global.h"
+
 class RageFileDriver;
 
 /** @brief Safely delete pointers. */
@@ -337,7 +340,7 @@ float fmodfp( float x, float y );
 int power_of_two( int input );
 bool IsAnInt( const RString &s );
 bool IsHexVal( const RString &s );
-RString BinaryToHex( const void *pData_, size_t iNumBytes );
+RString BinaryToHex( const void *pData_, std::size_t iNumBytes );
 RString BinaryToHex( const RString &sString );
 bool HexToBinary( const RString &s, unsigned char *stringOut );
 bool HexToBinary( const RString &s, RString *sOut );
@@ -382,16 +385,16 @@ bool FindFirstFilenameContaining(
 extern const wchar_t INVALID_CHAR;
 
 int utf8_get_char_len( char p );
-bool utf8_to_wchar( const char *s, size_t iLength, unsigned &start, wchar_t &ch );
+bool utf8_to_wchar( const char *s, std::size_t iLength, unsigned &start, wchar_t &ch );
 bool utf8_to_wchar_ec( const RString &s, unsigned &start, wchar_t &ch );
 void wchar_to_utf8( wchar_t ch, RString &out );
 wchar_t utf8_get_char( const RString &s );
 bool utf8_is_valid( const RString &s );
 void utf8_remove_bom( RString &s );
-void MakeUpper( char *p, size_t iLen );
-void MakeLower( char *p, size_t iLen );
-void MakeUpper( wchar_t *p, size_t iLen );
-void MakeLower( wchar_t *p, size_t iLen );
+void MakeUpper( char *p, std::size_t iLen );
+void MakeLower( char *p, std::size_t iLen );
+void MakeUpper( wchar_t *p, std::size_t iLen );
+void MakeLower( wchar_t *p, std::size_t iLen );
 
 // TODO: Have the three functions below be moved to better locations.
 float StringToFloat( const RString &sString );
@@ -454,7 +457,7 @@ bool GetCommandlineArgument( const RString &option, RString *argument=nullptr, i
 extern int g_argc;
 extern char **g_argv;
 
-void CRC32( unsigned int &iCRC, const void *pBuffer, size_t iSize );
+void CRC32( unsigned int &iCRC, const void *pBuffer, std::size_t iSize );
 unsigned int GetHashForString( const RString &s );
 unsigned int GetHashForFile( const RString &sPath );
 unsigned int GetHashForDirectory( const RString &sDir );	// a hash value that remains the same as long as nothing in the directory has changed
@@ -570,7 +573,7 @@ struct char_traits_char_nocase: public std::char_traits<char>
 	static inline bool lt( char c1, char c2 )
 	{ return g_UpperCase[(unsigned char)c1] < g_UpperCase[(unsigned char)c2]; }
 
-	static int compare( const char* s1, const char* s2, size_t n )
+	static int compare( const char* s1, const char* s2, std::size_t n )
 	{
 		int ret = 0;
 		while( n-- )

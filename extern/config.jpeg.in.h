@@ -17,16 +17,10 @@
 #endif
 
 /* Defined to 1 if we have an unsigned char type. */
-#cmakedefine HAVE_SIZEOF_UNSIGNED_CHAR 1
-#if defined(HAVE_SIZEOF_UNSIGNED_CHAR)
 #define HAVE_UNSIGNED_CHAR 1
-#endif
 
 /* Defined to 1 if we have an unsigned short type. */
-#cmakedefine HAVE_SIZEOF_UNSIGNED_SHORT 1
-#if defined(HAVE_SIZEOF_UNSIGNED_SHORT)
 #define HAVE_UNSIGNED_SHORT 1
-#endif
 
 /* At some point, allow for defining CHAR_IS_UNSIGNED. */
 

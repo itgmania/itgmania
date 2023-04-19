@@ -47,6 +47,7 @@
 #include <fcntl.h>
 #endif
 #include <cerrno>
+#include <cstddef>
 #if defined(WIN32)
 #include <io.h>
 #endif
@@ -115,7 +116,7 @@ void RageFileDriverReadAhead::FillBuffer( int iBytes )
 	RageFileManagerReadAhead::CacheHintStreaming( m_pFile );
 }
 
-int RageFileDriverReadAhead::ReadInternal( void *pBuffer, size_t iBytes )
+int RageFileDriverReadAhead::ReadInternal( void *pBuffer, std::size_t iBytes )
 {
 	int iRet = -1;
 	if( m_bReadAheadNeeded && m_iFilePos < (int) m_sBuffer.size() )

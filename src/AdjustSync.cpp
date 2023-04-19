@@ -43,6 +43,7 @@
 #include "ScreenManager.h"
 
 #include <cmath>
+#include <cstddef>
 
 
 std::vector<TimingData> AdjustSync::s_vpTimingDataOriginal;
@@ -359,7 +360,7 @@ void AdjustSync::GetSyncChangeTextSong( std::vector<RString> &vsAddTo )
 		const std::vector<TimingSegment*> &bpmTest = testing.GetTimingSegments(SEGMENT_BPM);
 		const std::vector<TimingSegment*> &bpmOrig = original.GetTimingSegments(SEGMENT_BPM);
 		SEGMENTS_MISMATCH_MESSAGE(bpmOrig, bpmTest, bpm);
-		for(size_t i= 0; i < bpmTest.size() && i < bpmOrig.size(); i++)
+		for(std::size_t i= 0; i < bpmTest.size() && i < bpmOrig.size(); i++)
 		{
 			float fNew = Quantize( ToBPM(bpmTest[i])->GetBPM(), 0.001f );
 			float fOld = Quantize( ToBPM(bpmOrig[i])->GetBPM(), 0.001f );
@@ -383,7 +384,7 @@ void AdjustSync::GetSyncChangeTextSong( std::vector<RString> &vsAddTo )
 		const std::vector<TimingSegment*> &stopOrig = original.GetTimingSegments(SEGMENT_STOP);
 
 		SEGMENTS_MISMATCH_MESSAGE(stopOrig, stopTest, stop);
-		for(size_t i= 0; i < stopTest.size() && i < stopOrig.size(); i++)
+		for(std::size_t i= 0; i < stopTest.size() && i < stopOrig.size(); i++)
 		{
 			float fOld = Quantize( ToStop(stopOrig[i])->GetPause(), 0.001f );
 			float fNew = Quantize( ToStop(stopTest[i])->GetPause(), 0.001f );
@@ -406,7 +407,7 @@ void AdjustSync::GetSyncChangeTextSong( std::vector<RString> &vsAddTo )
 		const std::vector<TimingSegment*> &delyOrig = original.GetTimingSegments(SEGMENT_DELAY);
 
 		SEGMENTS_MISMATCH_MESSAGE(delyOrig, delyTest, delay);
-		for(size_t i= 0; i < delyTest.size() && i < delyOrig.size(); i++)
+		for(std::size_t i= 0; i < delyTest.size() && i < delyOrig.size(); i++)
 		{
 			if( delyTest[i] == delyOrig[i] )
 				continue;

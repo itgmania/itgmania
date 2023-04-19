@@ -12,6 +12,7 @@
 #include "arch/Dialog/Dialog.h"
 
 #include <cmath>
+#include <cstddef>
 
 FontPage::FontPage(): m_iHeight(0), m_iLineSpacing(0), m_fVshift(0),
 	m_iDrawExtraPixelsLeft(0), m_iDrawExtraPixelsRight(0),
@@ -256,7 +257,7 @@ int Font::GetLineHeightInSourcePixels( const std::wstring &szLine ) const
 }
 
 // width is a pointer so that we can return the used width through it.
-size_t Font::GetGlyphsThatFit(const std::wstring& line, int* width) const
+std::size_t Font::GetGlyphsThatFit(const std::wstring& line, int* width) const
 {
 	if(*width == 0)
 	{
@@ -264,7 +265,7 @@ size_t Font::GetGlyphsThatFit(const std::wstring& line, int* width) const
 		return line.size();
 	}
 	int curr_width= 0;
-	size_t i= 0;
+	std::size_t i= 0;
 	for(i= 0; i < line.size() && curr_width < *width; ++i)
 	{
 		curr_width+= GetGlyph(line[i]).m_iHadvance;
@@ -430,11 +431,11 @@ void Font::GetFontPaths( const RString &sFontIniPath, std::vector<RString> &asTe
 
 RString Font::GetPageNameFromFileName( const RString &sFilename )
 {
-	size_t begin = sFilename.find_first_of( '[' );
+	std::size_t begin = sFilename.find_first_of( '[' );
 	if( begin == std::string::npos )
 		return "main";
 
-	size_t end = sFilename.find_first_of( ']', begin );
+	std::size_t end = sFilename.find_first_of( ']', begin );
 	if( end == std::string::npos )
 		return "main";
 

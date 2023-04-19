@@ -10,9 +10,10 @@
 #include "XmlFile.h"
 #include "XmlFileUtil.h"
 
-#include <vector>
+#include <cstddef>
 #include <map>
 #include <set>
+#include <vector>
 
 #define TWEEN_QUEUE_MAX 50
 
@@ -80,9 +81,9 @@ RString maybe_conv_pos(RString pos, RString (*conv_func)(float p))
 	return pos;
 }
 
-size_t after_slash_or_zero(RString const& s)
+std::size_t after_slash_or_zero(RString const& s)
 {
-	size_t ret= s.rfind('/');
+	std::size_t ret= s.rfind('/');
 	if(ret != std::string::npos)
 	{
 		return ret+1;
@@ -93,13 +94,13 @@ size_t after_slash_or_zero(RString const& s)
 RString add_extension_to_relative_path_from_found_file(
 	RString const& relative_path, RString const& found_file)
 {
-	size_t rel_last_slash= after_slash_or_zero(relative_path);
-	size_t found_last_slash= after_slash_or_zero(found_file);
+	std::size_t rel_last_slash= after_slash_or_zero(relative_path);
+	std::size_t found_last_slash= after_slash_or_zero(found_file);
 	return relative_path.Left(rel_last_slash) +
 		found_file.substr(found_last_slash, std::string::npos);
 }
 
-bool verify_arg_count(RString cmd, std::vector<RString>& args, size_t req)
+bool verify_arg_count(RString cmd, std::vector<RString>& args, std::size_t req)
 {
 	if(args.size() < req)
 	{
@@ -112,7 +113,7 @@ bool verify_arg_count(RString cmd, std::vector<RString>& args, size_t req)
 typedef void (*arg_converter_t)(std::vector<RString>& args);
 
 std::map<RString, arg_converter_t> arg_converters;
-std::map<RString, size_t> tween_counters;
+std::map<RString, std::size_t> tween_counters;
 std::set<RString> fields_that_are_strings;
 std::map<RString, RString> chunks_to_replace;
 
@@ -161,7 +162,7 @@ void diffuse_conv(std::vector<RString>& args)
 {
 	COMMON_ARG_VERIFY(2);
 	RString retarg;
-	for(size_t i= 1; i < args.size(); ++i)
+	for(std::size_t i= 1; i < args.size(); ++i)
 	{
 		retarg+= args[i];
 		if(i < args.size()-1)
@@ -307,7 +308,7 @@ void actor_template_t::store_cmd(RString const& cmd_name, RString const& full_cm
 	}
 	std::vector<RString> cmds;
 	split(full_cmd, ";", cmds, true);
-	size_t queue_size= 0;
+	std::size_t queue_size= 0;
 	// If someone has a simfile that uses a playcommand that pushes tween
 	// states onto the queue, queue size counting will have to be made much
 	// more complex to prevent that from causing an overflow.
@@ -319,8 +320,8 @@ void actor_template_t::store_cmd(RString const& cmd_name, RString const& full_cm
 		{
 			for(std::vector<RString>::iterator arg= args.begin(); arg != args.end(); ++arg)
 			{
-				size_t first_nonspace= 0;
-				size_t last_nonspace= arg->size();
+				std::size_t first_nonspace= 0;
+				std::size_t last_nonspace= arg->size();
 				while((*arg)[first_nonspace] == ' ')
 				{
 					++first_nonspace;
@@ -336,7 +337,7 @@ void actor_template_t::store_cmd(RString const& cmd_name, RString const& full_cm
 			{
 				conv->second(args);
 			}
-			std::map<RString, size_t>::iterator counter= tween_counters.find(args[0]);
+			std::map<RString, std::size_t>::iterator counter= tween_counters.find(args[0]);
 			if(counter != tween_counters.end())
 			{
 				queue_size+= counter->second;
@@ -349,9 +350,9 @@ void actor_template_t::store_cmd(RString const& cmd_name, RString const& full_cm
 	// foreground loading that ran InitCommand twice. -Kyz
 	if(queue_size >= TWEEN_QUEUE_MAX)
 	{
-		size_t num_to_make= (queue_size / TWEEN_QUEUE_MAX) + 1;
-		size_t states_per= (queue_size / num_to_make) + 1;
-		size_t states_in_curr= 0;
+		std::size_t num_to_make= (queue_size / TWEEN_QUEUE_MAX) + 1;
+		std::size_t states_per= (queue_size / num_to_make) + 1;
+		std::size_t states_in_curr= 0;
 		RString this_name= cmd_name;
 		std::vector<RString> curr_cmd;
 		for(std::vector<RString>::iterator cmd= cmds.begin(); cmd != cmds.end(); ++cmd)
@@ -361,7 +362,7 @@ void actor_template_t::store_cmd(RString const& cmd_name, RString const& full_cm
 			split(*cmd, ",", args, true);
 			if(!args.empty())
 			{
-				std::map<RString, size_t>::iterator counter= tween_counters.find(args[0]);
+				std::map<RString, std::size_t>::iterator counter= tween_counters.find(args[0]);
 				if(counter != tween_counters.end())
 				{
 					states_in_curr+= counter->second;
@@ -404,7 +405,7 @@ void actor_template_t::store_field(RString const& field_name, RString const& val
 	{
 		fields[field_name]= pref + value + suf;
 	}
-	
+
 }
 void actor_template_t::store_field(RString const& field_name, XNodeValue const* value, bool cmd_convert, RString const& pref, RString const& suf)
 {
@@ -778,7 +779,7 @@ LUAFUNC_REGISTER_COMMON(convert_xml_bgs);
 /*
  * (c) 2014 Eric Reese
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -788,7 +789,7 @@ LUAFUNC_REGISTER_COMMON(convert_xml_bgs);
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

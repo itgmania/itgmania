@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cassert>
 #include <cmath>
+#include <cstddef>
 #include <algorithm>
 #include <archutils/Darwin/VectorHelper.h>
 
@@ -28,7 +29,7 @@ static void *pStupid;
 #endif
 
 // The reference values.
-static void ScalarWrite( float *pDestBuf, const float *pSrcBuf, size_t iSize )
+static void ScalarWrite( float *pDestBuf, const float *pSrcBuf, std::size_t iSize )
 {
 	for( unsigned iPos = 0; iPos < iSize; ++iPos )
 		pDestBuf[iPos] += pSrcBuf[iPos];
@@ -49,7 +50,7 @@ static void RandBuffer( float *pBuffer, unsigned iSize )
 }
 
 template <typename T>
-static void Diagnostic( const T *pDestBuf, const T *pRefBuf, size_t size )
+static void Diagnostic( const T *pDestBuf, const T *pRefBuf, std::size_t size )
 {
 	const int num = 10;
 	for( int i = 0; i < num; ++i )
@@ -58,16 +59,16 @@ static void Diagnostic( const T *pDestBuf, const T *pRefBuf, size_t size )
 	for( int i = 0; i < num; ++i )
 		fprintf( stderr, "%0*x ", sizeof(T)*2, pRefBuf[i] );
 	puts( "" );
-	for( size_t i = size - num; i < size; ++i )
+	for( std::size_t i = size - num; i < size; ++i )
 		fprintf( stderr, "%0*x ", sizeof(T)*2, pDestBuf[i] );
 	puts( "" );
-	for( size_t i = size - num; i < size; ++i )
+	for( std::size_t i = size - num; i < size; ++i )
 		fprintf( stderr, "%0*x ", sizeof(T)*2, pRefBuf[i] );
 	puts( "" );
 }
 
 template<>
-static void Diagnostic<float>( const float *pDestBuf, const float *pRefBuf, size_t size )
+static void Diagnostic<float>( const float *pDestBuf, const float *pRefBuf, std::size_t size )
 
 {
 	const int num = 10;
@@ -77,15 +78,15 @@ static void Diagnostic<float>( const float *pDestBuf, const float *pRefBuf, size
 	for( int i = 0; i < num; ++i )
 		fprintf( stderr, "%f ", pRefBuf[i] );
 	puts( "" );
-	for( size_t i = size - num; i < size; ++i )
+	for( std::size_t i = size - num; i < size; ++i )
 		fprintf( stderr, "%f ", pDestBuf[i] );
 	puts( "" );
-	for( size_t i = size - num; i < size; ++i )
+	for( std::size_t i = size - num; i < size; ++i )
 		fprintf( stderr, "%f ", pRefBuf[i] );
 	puts( "" );
 }
 
-static bool TestWrite( float *pSrcBuf, float *pDestBuf, float *pRefBuf, size_t iSize )
+static bool TestWrite( float *pSrcBuf, float *pDestBuf, float *pRefBuf, std::size_t iSize )
 {
 	RandBuffer( pSrcBuf, iSize );
 	memset( pDestBuf, 0, iSize * 4 );
@@ -97,12 +98,12 @@ static bool TestWrite( float *pSrcBuf, float *pDestBuf, float *pRefBuf, size_t i
 
 static bool CheckAlignedWrite()
 {
-	const size_t size = 1024;
+	const std::size_t size = 1024;
 	float *pSrcBuf  = NEW( float, size );
 	float *pDestBuf = NEW( float, size );
 	float *pRefBuf  = NEW( float, size );
 	bool ret = true;
-	size_t s;
+	std::size_t s;
 
 	// Test unaligned ends
 	for( int i = 0; i < 16 && ret; ++i )
@@ -120,7 +121,7 @@ static bool CheckAlignedWrite()
 
 static bool CheckMisalignedSrcWrite()
 {
-	const size_t size = 1024;
+	const std::size_t size = 1024;
 	float *pSrcBuf  = NEW( float, size );
 	float *pDestBuf = NEW( float, size );
 	float *pRefBuf  = NEW( float, size );
@@ -128,7 +129,7 @@ static bool CheckMisalignedSrcWrite()
 
 	for( int j = 0; j < 8 && ret; ++j )
 	{
-		size_t s;
+		std::size_t s;
 		for( int i = 0; i < 8 && ret; ++i )
 		{
 			s = size - i - j; // Source buffer is shrinking.
@@ -145,7 +146,7 @@ static bool CheckMisalignedSrcWrite()
 
 static bool CheckMisalignedDestWrite()
 {
-	const size_t size = 1024;
+	const std::size_t size = 1024;
 	float *pSrcBuf  = NEW( float, size );
 	float *pDestBuf = NEW( float, size );
 	float *pRefBuf  = NEW( float, size );
@@ -153,7 +154,7 @@ static bool CheckMisalignedDestWrite()
 
 	for( int j = 0; j < 4 && ret; ++j )
 	{
-		size_t s;
+		std::size_t s;
 		for( int i = 0; i < 8 && ret; ++i )
 		{
 			s = size - i - j; // Dest buffer is shrinking.
@@ -170,12 +171,12 @@ static bool CheckMisalignedDestWrite()
 
 static bool CheckMisalignedBothWrite()
 {
-	const size_t size = 1024;
+	const std::size_t size = 1024;
 	float *pSrcBuf  = NEW( float, size );
 	float *pDestBuf = NEW( float, size );
 	float *pRefBuf  = NEW( float, size );
 	bool ret = true;
-	size_t s;
+	std::size_t s;
 
 	for( int j = 0; j < 4 && ret; ++j )
 	{
@@ -196,12 +197,12 @@ static bool CheckMisalignedBothWrite()
 	return ret;
 }
 
-static bool cmp( const int16_t *p1, const int16_t *p2, size_t size )
+static bool cmp( const int16_t *p1, const int16_t *p2, std::size_t size )
 {
 	return !memcmp( p1, p2, size * 2 );
 }
 
-static bool cmp( const float *p1, const float *p2, size_t size )
+static bool cmp( const float *p1, const float *p2, std::size_t size )
 {
 	const float epsilon = 0.000001;
 	++size;
@@ -214,7 +215,7 @@ static bool cmp( const float *p1, const float *p2, size_t size )
 template<typename T>
 static bool CheckAlignedRead()
 {
-	const size_t size = 1024;
+	const std::size_t size = 1024;
 	int32_t *pSrcBuf = NEW( int32_t, size );
 	T *pDestBuf      = NEW( T, size );
 	T *pRefBuf       = NEW( T, size );
@@ -243,7 +244,7 @@ static bool CheckAlignedRead()
 template<typename T>
 static bool CheckMisalignedRead()
 {
-	const size_t size = 1024;
+	const std::size_t size = 1024;
 	int32_t *pSrcBuf = NEW( int32_t, size );
 	T *pDestBuf      = NEW( T, size );
 	T *pRefBuf       = NEW( T, size );

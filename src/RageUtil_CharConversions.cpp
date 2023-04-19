@@ -33,6 +33,7 @@ static bool AttemptKoreanConversion( RString &sText ) { return CodePageConvert( 
 static bool AttemptJapaneseConversion( RString &sText ) { return CodePageConvert( sText, 932 ); }
 
 #elif defined(HAVE_ICONV)
+#include <cstddef>
 #include <errno.h>
 #include <iconv.h>
 
@@ -47,19 +48,19 @@ static bool ConvertFromCharset( RString &sText, const char *szCharset )
 
 	/* Copy the string into a char* for iconv */
 	ICONV_CONST char *szTextIn = const_cast<ICONV_CONST char*>( sText.data() );
-	size_t iInLeft = sText.size();
+	std::size_t iInLeft = sText.size();
 
 	/* Create a new string with enough room for the new conversion */
 	RString sBuf;
 	sBuf.resize( sText.size() * 5 );
 
 	char *sTextOut = const_cast<char*>( sBuf.data() );
-	size_t iOutLeft = sBuf.size();
-	size_t size = iconv( converter, &szTextIn, &iInLeft, &sTextOut, &iOutLeft );
+	std::size_t iOutLeft = sBuf.size();
+	std::size_t size = iconv( converter, &szTextIn, &iInLeft, &sTextOut, &iOutLeft );
 
 	iconv_close( converter );
 
-	if( size == (size_t)(-1) )
+	if( size == (std::size_t)(-1) )
 	{
 		LOG->Trace( "%s\n", strerror( errno ) );
 		return false; /* Returned an error */
@@ -85,21 +86,22 @@ static bool AttemptKoreanConversion( RString &sText ) { return ConvertFromCharse
 static bool AttemptJapaneseConversion( RString &sText ) { return ConvertFromCharset( sText, "CP932" ); }
 
 #elif defined(MACOSX)
+#include <cstddef>
 #include <CoreFoundation/CoreFoundation.h>
 
 static bool ConvertFromCP( RString &sText, int iCodePage )
 {
 	CFStringEncoding encoding = CFStringConvertWindowsCodepageToEncoding( iCodePage );
-	
+
 	if( encoding == kCFStringEncodingInvalidId )
 		return false;
-	
+
 	CFStringRef old = CFStringCreateWithCString( kCFAllocatorDefault, sText, encoding );
-	
+
 	if( old == nullptr )
 		return false;
-	const size_t size = CFStringGetMaximumSizeForEncoding( CFStringGetLength(old), kCFStringEncodingUTF8 );
-	
+	const std::size_t size = CFStringGetMaximumSizeForEncoding( CFStringGetLength(old), kCFStringEncodingUTF8 );
+
 	char *buf = new char[size+1];
 	buf[0] = '\0';
 	bool result = CFStringGetCString( old, buf, size, kCFStringEncodingUTF8 );

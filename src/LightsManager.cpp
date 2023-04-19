@@ -15,6 +15,7 @@
 #include "Style.h"
 
 #include <cmath>
+#include <cstddef>
 
 const RString DEFAULT_LIGHTS_DRIVER = "SystemMessage,Export";
 static Preference<RString> g_sLightsDriver( "LightsDriver", "" ); // "" == DEFAULT_LIGHTS_DRIVER
@@ -84,7 +85,7 @@ static void GetUsedGameInputs( std::vector<GameInput> &vGameInputsOut )
 			{
 				std::vector<GameInput> gi;
 				style->StyleInputToGameInput( iCol, pn, gi );
-				for(size_t i= 0; i < gi.size(); ++i)
+				for(std::size_t i= 0; i < gi.size(); ++i)
 				{
 					if(gi[i].IsValid())
 					{

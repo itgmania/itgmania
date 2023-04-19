@@ -20,6 +20,7 @@ using namespace RageDisplay_Legacy_Helpers;
 #include "arch/LowLevelWindow/LowLevelWindow.h"
 
 #include <cmath>
+#include <cstddef>
 #include <set>
 
 #if defined(WINDOWS)
@@ -495,12 +496,12 @@ RString RageDisplay_Legacy::Init( const VideoModeParams &p, bool bAllowUnacceler
 		std::vector<RString> asExtensions;
 		split( szExtensionString, " ", asExtensions );
 		sort( asExtensions.begin(), asExtensions.end() );
-		size_t iNextToPrint = 0;
+		std::size_t iNextToPrint = 0;
 		while( iNextToPrint < asExtensions.size() )
 		{
-			size_t iLastToPrint = iNextToPrint;
+			std::size_t iLastToPrint = iNextToPrint;
 			RString sType;
-			for( size_t i = iNextToPrint; i<asExtensions.size(); ++i )
+			for( std::size_t i = iNextToPrint; i<asExtensions.size(); ++i )
 			{
 				std::vector<RString> asBits;
 				split( asExtensions[i], "_", asBits );
