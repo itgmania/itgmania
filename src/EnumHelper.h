@@ -80,7 +80,7 @@ const RString &EnumToString( int iVal, int iMax, const char **szNameArray, std::
 
 #define XToString(X) \
 const RString& X##ToString(X x); \
-COMPILE_ASSERT( NUM_##X == ARRAYLEN(X##Names) ); \
+static_assert( NUM_##X == ARRAYLEN(X##Names) ); \
 const RString& X##ToString( X x ) \
 {	\
 	static std::unique_ptr<RString> as_##X##Name[NUM_##X+2]; \
@@ -186,7 +186,7 @@ namespace LuaHelpers \
  * @author Chris Danford, Glenn Maynard (c) 2004-2006
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -196,7 +196,7 @@ namespace LuaHelpers \
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
