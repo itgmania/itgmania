@@ -1,6 +1,4 @@
 #include "global.h"
-#include <utility>
-#include <float.h>
 #include "ScreenEdit.h"
 #include "ActorUtil.h"
 #include "AdjustSync.h"
@@ -39,6 +37,10 @@
 #include "TimingData.h"
 #include "Game.h"
 #include "RageSoundReader.h"
+
+#include <cfloat>
+#include <cmath>
+#include <utility>
 
 static Preference<float> g_iDefaultRecordLength( "DefaultRecordLength", 4 );
 static Preference<bool> g_bEditorShowBGChangesPlay( "EditorShowBGChangesPlay", true );
@@ -1769,12 +1771,12 @@ void ScreenEdit::Update( float fDeltaTime )
 
 	// Update trailing beat
 	float fDelta = GetBeat() - m_fTrailingBeat;
-	if( fabsf(fDelta) < 10 )
+	if( std::abs(fDelta) < 10 )
 		fapproach( m_fTrailingBeat, GetBeat(),
 			fDeltaTime*40 / m_NoteFieldEdit.GetPlayerState()->m_PlayerOptions.GetCurrent().m_fScrollSpeed );
 	else
 		fapproach( m_fTrailingBeat, GetBeat(),
-			fabsf(fDelta) * fDeltaTime*5 );
+			std::abs(fDelta) * fDeltaTime*5 );
 
 	PlayTicks();
 }
@@ -1784,7 +1786,7 @@ static std::vector<int> FindAllAttacksAtTime(const AttackArray& attacks, float f
 	std::vector<int> ret;
 	for (unsigned i = 0; i < attacks.size(); ++i)
 	{
-		if (fabs(attacks[i].fStartSecond - fStartTime) < 0.001f)
+		if (std::abs(attacks[i].fStartSecond - fStartTime) < 0.001f)
 		{
 			ret.push_back(i);
 		}
@@ -1796,7 +1798,7 @@ static int FindAttackAtTime( const AttackArray& attacks, float fStartTime )
 {
 	for( unsigned i = 0; i < attacks.size(); ++i )
 	{
-		if( fabs(attacks[i].fStartSecond - fStartTime) < 0.001f )
+		if( std::abs(attacks[i].fStartSecond - fStartTime) < 0.001f )
 			return i;
 	}
 	return -1;
@@ -5272,7 +5274,7 @@ void ScreenEdit::HandleAlterMenuChoice(AlterMenuChoice c, const std::vector<int>
 
 			int iStartIndex  = m_NoteFieldEdit.m_iBeginMarker;
 			int iEndIndex    = m_NoteFieldEdit.m_iEndMarker;
-			int iNewEndIndex = iEndIndex + lrintf( (iEndIndex - iStartIndex) * (fScale - 1) );
+			int iNewEndIndex = iEndIndex + std::lrint( (iEndIndex - iStartIndex) * (fScale - 1) );
 
 			// scale currently editing notes
 			NoteDataUtil::ScaleRegion( m_NoteDataEdit, fScale, iStartIndex, iEndIndex );

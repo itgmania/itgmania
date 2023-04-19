@@ -9,7 +9,9 @@
 #include "GameManager.h"
 #include "LocalizedString.h"
 #include "PlayerNumber.h"
-#include <float.h>
+
+#include <cfloat>
+#include <cmath>
 
 RString StepsTypeToString( StepsType st );
 
@@ -346,9 +348,9 @@ StringToX( StageAward );
 LuaFunction( StageAwardToLocalizedString, StageAwardToLocalizedString(Enum::Check<StageAward>(L, 1)) );
 LuaXType( StageAward );
 
-// Numbers are intentionally not at the front of these strings so that the 
+// Numbers are intentionally not at the front of these strings so that the
 // strings can be used as XML entity names.
-// Numbers are intentionally not at the back so that "1000" and "10000" don't 
+// Numbers are intentionally not at the back so that "1000" and "10000" don't
 // conflict when searching for theme elements.
 static const char *PeakComboAwardNames[] = {
 	"1000",
@@ -406,7 +408,7 @@ float DisplayBpms::GetMaxWithin(float highest) const
 
 bool DisplayBpms::BpmIsConstant() const
 {
-	return fabsf( GetMin() - GetMax() ) < 0.001f;
+	return std::abs( GetMin() - GetMax() ) < 0.001f;
 }
 
 bool DisplayBpms::IsSecret() const
@@ -518,7 +520,7 @@ LuaXType( FailType );
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -528,7 +530,7 @@ LuaXType( FailType );
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

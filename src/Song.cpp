@@ -37,9 +37,10 @@
 #include "ActorUtil.h"
 #include "CommonMetrics.h"
 
+#include <cfloat>
+#include <cmath>
 #include <time.h>
 #include <set>
-#include <float.h>
 
 //-Nick12 Used for song file hashing
 #include <CryptManager.h>
@@ -166,7 +167,7 @@ void Song::SetSpecifiedLastSecond(const float f)
 void Song::Reset()
 {
 	for (Steps *s : m_vpSteps)
-	{	
+	{
 		SAFE_DELETE( s );
 	}
 	m_vpSteps.clear();
@@ -438,7 +439,7 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 		for( RString Image : ImageDir )
 		{
 			IMAGECACHE->LoadImage( Image, GetCacheFile( Image ) );
-		}		
+		}
 	}
 
 	// Add AutoGen pointers. (These aren't cached.)
@@ -847,7 +848,7 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 				if(m_fMusicSampleStartSeconds+m_fMusicSampleLengthSeconds > this->m_fMusicLengthSeconds)
 				{
 					// Attempt to get a reasonable default.
-					int iBeat = lrintf(this->m_SongTiming.GetBeatFromElapsedTime(this->GetLastSecond())/2);
+					int iBeat = std::lrint(this->m_SongTiming.GetBeatFromElapsedTime(this->GetLastSecond())/2);
 					iBeat -= iBeat%4;
 					m_fMusicSampleStartSeconds = timing.GetElapsedTimeFromBeat((float)iBeat);
 				}
@@ -1443,7 +1444,7 @@ void Song::AddAutoGenNotes()
 
 			// has (non-autogen) Steps of this type
 			const int iNumTracks = GAMEMAN->GetStepsTypeInfo(st).iNumTracks;
-			const int iTrackDifference = abs(iNumTracks-iNumTracksOfMissing);
+			const int iTrackDifference = std::abs(iNumTracks-iNumTracksOfMissing);
 			if( iTrackDifference < iBestTrackDifference )
 			{
 				stBestMatch = st;
@@ -1657,11 +1658,11 @@ RString Song::GetCacheFile(RString sType)
 	PreDefs["Jacket"] = GetJacketPath();
 	PreDefs["CDImage"] = GetCDImagePath();
 	PreDefs["Disc"] = GetDiscPath();
-	
+
 	// Check if Predefined images exist, And return function if they do.
 	if(PreDefs[sType.c_str()])
-		return PreDefs[sType.c_str()];	
-	
+		return PreDefs[sType.c_str()];
+
 	// Get all image files and put them into a vector.
 	std::vector<RString> song_dir_listing;
 	FILEMAN->GetDirListing(m_sSongDir + "*", song_dir_listing, false, false);
@@ -1669,7 +1670,7 @@ RString Song::GetCacheFile(RString sType)
 	std::vector<RString> fill_exts = ActorUtil::GetTypeExtensionList(FT_Bitmap);
 	for( RString Image : song_dir_listing )
 	{
-		RString FileExt = GetExtension(Image);	
+		RString FileExt = GetExtension(Image);
 		transform(FileExt.begin(), FileExt.end(), FileExt.begin(),::tolower);
 		for ( RString FindExt : fill_exts )
 		{
@@ -1677,7 +1678,7 @@ RString Song::GetCacheFile(RString sType)
 				image_list.push_back(Image);
 		}
 	}
-	
+
 	// Create a map that contains all the filenames to search for.
 	std::map<RString, std::map<int, RString>> PreSets;
 	PreSets["Banner"][1] = "bn";
@@ -1685,13 +1686,13 @@ RString Song::GetCacheFile(RString sType)
 	PreSets["Background"][1] = "bg";
 	PreSets["Background"][2] = "background";
 	PreSets["CDTitle"][1] = "cdtitle";
-	PreSets["Jacket"][1] = "jk_";	
+	PreSets["Jacket"][1] = "jk_";
 	PreSets["Jacket"][2] = "jacket";
 	PreSets["Jacket"][3] = "albumart";
 	PreSets["CDImage"][1] = "-cd";
 	PreSets["Disc"][1] = " disc";
-	PreSets["Disc"][2] = " title";	
-	
+	PreSets["Disc"][2] = " title";
+
 	for( RString Image : image_list)
 	{
 		// We want to make it lower case.
@@ -1703,7 +1704,7 @@ RString Song::GetCacheFile(RString sType)
 			if(Found!=RString::npos)
 				return GetSongAssetPath( Image, m_sSongDir );
 		}
-		// Search for the image directly if it doesnt exist in PreSets, 
+		// Search for the image directly if it doesnt exist in PreSets,
 		// Or incase we define our own stuff.
 		size_t Found = Image.find(sType.c_str());
 		if(Found!=RString::npos)

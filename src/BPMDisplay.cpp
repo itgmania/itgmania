@@ -11,6 +11,7 @@
 #include "Song.h"
 #include "Steps.h"
 
+#include <cmath>
 #include <limits.h>
 
 REGISTER_ACTOR_CLASS( BPMDisplay );
@@ -56,9 +57,9 @@ float BPMDisplay::GetActiveBPM() const
 	return m_fBPMTo + (m_fBPMFrom-m_fBPMTo)*m_fPercentInState;
 }
 
-void BPMDisplay::Update( float fDeltaTime ) 
-{ 
-	BitmapText::Update( fDeltaTime ); 
+void BPMDisplay::Update( float fDeltaTime )
+{
+	BitmapText::Update( fDeltaTime );
 
 	if( !(bool)CYCLE )
 		return;
@@ -117,8 +118,8 @@ void BPMDisplay::SetBPMRange( const DisplayBpms &bpms )
 		int MaxBPM = INT_MIN;
 		for( unsigned i = 0; i < BPMS.size(); ++i )
 		{
-			MinBPM = std::min( MinBPM, (int) lrintf(BPMS[i]) );
-			MaxBPM = std::max( MaxBPM, (int) lrintf(BPMS[i]) );
+			MinBPM = std::min( MinBPM, static_cast<int>(std::lrint(BPMS[i])) );
+			MaxBPM = std::max( MaxBPM, static_cast<int>(std::lrint(BPMS[i])) );
 		}
 		if( MinBPM == MaxBPM )
 		{
@@ -173,7 +174,7 @@ void BPMDisplay::CycleRandomly()
 void BPMDisplay::NoBPM()
 {
 	m_BPMS.clear();
-	SetText( NO_BPM_TEXT ); 
+	SetText( NO_BPM_TEXT );
 	RunCommands( SET_NO_BPM_COMMAND );
 }
 
@@ -276,7 +277,7 @@ class SongBPMDisplay: public BPMDisplay
 public:
 	SongBPMDisplay();
 	virtual SongBPMDisplay *Copy() const;
-	virtual void Update( float fDeltaTime ); 
+	virtual void Update( float fDeltaTime );
 
 private:
 	float m_fLastGameStateBPM;
@@ -288,7 +289,7 @@ SongBPMDisplay::SongBPMDisplay()
 	m_fLastGameStateBPM = 0;
 }
 
-void SongBPMDisplay::Update( float fDeltaTime ) 
+void SongBPMDisplay::Update( float fDeltaTime )
 {
 	float fGameStateBPM = GAMESTATE->m_Position.m_fCurBPS * 60.0f;
 	if( m_fLastGameStateBPM != fGameStateBPM )
@@ -355,7 +356,7 @@ LUA_REGISTER_DERIVED_CLASS( BPMDisplay, BitmapText )
 /*
  * (c) 2001-2002 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -365,7 +366,7 @@ LUA_REGISTER_DERIVED_CLASS( BPMDisplay, BitmapText )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

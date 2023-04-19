@@ -15,11 +15,13 @@
 #include "PlayerState.h"
 #include "Style.h"
 #include "CommonMetrics.h"
-#include <float.h>
 #include "BackgroundUtil.h"
 #include "Course.h"
 #include "NoteData.h"
 #include "RageDisplay.h"
+
+#include <cfloat>
+#include <cmath>
 
 float FindFirstDisplayedBeat( const PlayerState* pPlayerState, int iDrawDistanceAfterTargetsPixels );
 float FindLastDisplayedBeat( const PlayerState* pPlayerState, int iDrawDistanceBeforeTargetsPixels );
@@ -203,7 +205,7 @@ void NoteField::Init( const PlayerState* pPlayerState, float fYReverseOffsetPixe
 	HandleMessage(msg);
 }
 
-void NoteField::Load( 
+void NoteField::Load(
 	const NoteData *pNoteData,
 	int iDrawDistanceAfterTargetsPixels,
 	int iDrawDistanceBeforeTargetsPixels )
@@ -622,26 +624,26 @@ static int GetNumNotesRange( const PlayerState* pPlayerState, float fLow, float 
 
 float FindFirstDisplayedBeat( const PlayerState* pPlayerState, int iDrawDistanceAfterTargetsPixels )
 {
-	
+
 	float fLow = 0, fHigh = pPlayerState->GetDisplayedPosition().m_fSongBeat;
-	
+
 	bool bHasCache = pPlayerState->m_CacheNoteStat.size() > 0;
-	
+
 	if( !bHasCache )
 	{
 		fLow = fHigh - 4.0f;
 	}
-	
+
 	const int NUM_ITERATIONS = 24;
 	const int MAX_NOTES_AFTER = 64;
-	
+
 	float fFirstBeatToDraw = fLow;
-	
+
 	for( int i = 0; i < NUM_ITERATIONS; i ++ )
 	{
-	
+
 		float fMid = (fLow + fHigh) / 2.0f;
-		
+
 		bool bIsPastPeakYOffset;
 		float fPeakYOffset;
 		float fYOffset = ArrowEffects::GetYOffset( pPlayerState, 0, fMid, fPeakYOffset, bIsPastPeakYOffset, true );
@@ -655,7 +657,7 @@ float FindFirstDisplayedBeat( const PlayerState* pPlayerState, int iDrawDistance
 		{
 			fHigh = fMid;
 		}
-		
+
 	}
 
 	return fFirstBeatToDraw;
@@ -707,7 +709,7 @@ bool NoteField::IsOnScreen( float fBeat, int iCol, int iDrawDistanceAfterTargets
 	// IMPORTANT:  Do not modify this function without also modifying the
 	// version that is in NoteDisplay.cpp or coming up with a good way to
 	// merge them. -Kyz
-	// TRICKY: If boomerang is on, then ones in the range 
+	// TRICKY: If boomerang is on, then ones in the range
 	// [iFirstRowToDraw,iLastRowToDraw] aren't necessarily visible.
 	// Test to see if this beat is visible before drawing.
 	float fYOffset = ArrowEffects::GetYOffset( m_pPlayerState, iCol, fBeat );
@@ -724,7 +726,7 @@ void NoteField::CalcPixelsBeforeAndAfterTargets()
 	const PlayerOptions& curr_options= m_pPlayerState->m_PlayerOptions.GetCurrent();
 	// Adjust draw range depending on some effects
 	m_FieldRenderArgs.draw_pixels_after_targets= m_iDrawDistanceAfterTargetsPixels * (1.f + curr_options.m_fDrawSizeBack);
-	// HACK: If boomerang and centered are on, then we want to draw much 
+	// HACK: If boomerang and centered are on, then we want to draw much
 	// earlier so that the notes don't pop on screen.
 	float centered_times_boomerang=
 		curr_options.m_fScrolls[PlayerOptions::SCROLL_CENTERED] *
@@ -735,8 +737,8 @@ void NoteField::CalcPixelsBeforeAndAfterTargets()
 		m_iDrawDistanceBeforeTargetsPixels * (1.f + curr_options.m_fDrawSize);
 
 	float draw_scale= 1;
-	draw_scale*= 1 + 0.5f * fabsf(curr_options.m_fPerspectiveTilt);
-	draw_scale*= 1 + fabsf(curr_options.m_fEffects[PlayerOptions::EFFECT_MINI]);
+	draw_scale*= 1 + 0.5f * std::abs(curr_options.m_fPerspectiveTilt);
+	draw_scale*= 1 + std::abs(curr_options.m_fEffects[PlayerOptions::EFFECT_MINI]);
 
 	m_FieldRenderArgs.draw_pixels_after_targets=
 		(int)(m_FieldRenderArgs.draw_pixels_after_targets * draw_scale);
@@ -881,7 +883,7 @@ void NoteField::DrawPrimitives()
 		const Course *pCourse = GAMESTATE->m_pCurCourse;
 		if( pCourse )
 		{
-			ASSERT_M( GAMESTATE->m_iEditCourseEntryIndex >= 0  &&  GAMESTATE->m_iEditCourseEntryIndex < (int)pCourse->m_vEntries.size(), 
+			ASSERT_M( GAMESTATE->m_iEditCourseEntryIndex >= 0  &&  GAMESTATE->m_iEditCourseEntryIndex < (int)pCourse->m_vEntries.size(),
 				ssprintf("%i",GAMESTATE->m_iEditCourseEntryIndex.Get()) );
 			const CourseEntry &ce = pCourse->m_vEntries[GAMESTATE->m_iEditCourseEntryIndex];
 			for (Attack const &a : ce.attacks)
@@ -953,7 +955,7 @@ void NoteField::DrawPrimitives()
 									viLowestIndex.push_back( j );
 								}
 							}
-		
+
 							if( viLowestIndex.empty() )
 							{
 								FOREACH_BackgroundLayer( j )
@@ -962,7 +964,7 @@ void NoteField::DrawPrimitives()
 								}
 								break;
 							}
-	
+
 							if( IS_ON_SCREEN(fLowestBeat) )
 							{
 								std::vector<RString> vsBGChanges;
@@ -1019,8 +1021,8 @@ void NoteField::DrawPrimitives()
 	// lets us draw in big batches.
 
 	const Style* pStyle = GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber);
-	ASSERT_M(m_pNoteData->GetNumTracks() == GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber)->m_iColsPerPlayer, 
-		ssprintf("NumTracks %d != ColsPerPlayer %d",m_pNoteData->GetNumTracks(), 
+	ASSERT_M(m_pNoteData->GetNumTracks() == GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber)->m_iColsPerPlayer,
+		ssprintf("NumTracks %d != ColsPerPlayer %d",m_pNoteData->GetNumTracks(),
 			GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber)->m_iColsPerPlayer));
 
 	if(*m_FieldRenderArgs.selection_begin_marker != -1 &&
@@ -1282,7 +1284,7 @@ LUA_REGISTER_DERIVED_CLASS(NoteField, ActorFrame)
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -1292,7 +1294,7 @@ LUA_REGISTER_DERIVED_CLASS(NoteField, ActorFrame)
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

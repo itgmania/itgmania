@@ -25,6 +25,8 @@
 #include "Song.h"
 #include "StatsManager.h"
 
+#include <cmath>
+
 // Defines specific to ScreenNameEntry
 #define CATEGORY_Y			THEME->GetMetricF(m_sName,"CategoryY")
 #define CATEGORY_ZOOM			THEME->GetMetricF(m_sName,"CategoryZoom")
@@ -43,7 +45,7 @@
 
 // cache for frequently used metrics
 static float	g_fCharsZoomSmall;
-static float	g_fCharsZoomLarge; 
+static float	g_fCharsZoomLarge;
 static float	g_fCharsSpacingY;
 static float	g_fReceptorArrowsY;
 static int	g_iNumCharsToDrawBehind;
@@ -62,7 +64,7 @@ void ScreenNameEntry::ScrollingText::Init( const RString &sName, const std::vect
 void ScreenNameEntry::ScrollingText::DrawPrimitives()
 {
 	const float fFakeBeat = GAMESTATE->m_Position.m_fSongBeat;
-	const size_t iClosestIndex = lrintf( fFakeBeat ) % CHARS_CHOICES.size();
+	const size_t iClosestIndex = std::lrint( fFakeBeat ) % CHARS_CHOICES.size();
 	const float fClosestYOffset = GetClosestCharYOffset( fFakeBeat );
 
 	size_t iCharIndex = ( iClosestIndex - NUM_CHARS_TO_DRAW_BEHIND + CHARS_CHOICES.size() ) % CHARS_CHOICES.size();
@@ -75,7 +77,7 @@ void ScreenNameEntry::ScrollingText::DrawPrimitives()
 		float fAlpha = 1.f;
 
 		if( iCharIndex == iClosestIndex )
-			fZoom = SCALE( fabs(fClosestYOffset), 0, 0.5f, g_fCharsZoomLarge, g_fCharsZoomSmall );
+			fZoom = SCALE( std::abs(fClosestYOffset), 0, 0.5f, g_fCharsZoomLarge, g_fCharsZoomSmall );
 		if( i == 0 )
 			fAlpha *= SCALE( fClosestYOffset, -0.5f, 0.f, 0.f, 1.f );
 		if( i == g_iNumCharsToDrawTotal-1 )
@@ -98,17 +100,17 @@ void ScreenNameEntry::ScrollingText::DrawPrimitives()
 char ScreenNameEntry::ScrollingText::GetClosestChar( float fFakeBeat ) const
 {
 	ASSERT( fFakeBeat >= 0.f );
-	return CHARS_CHOICES[lrintf(fFakeBeat) % CHARS_CHOICES.size()];
+	return CHARS_CHOICES[std::lrint(fFakeBeat) % CHARS_CHOICES.size()];
 }
 
 // return value is relative to gray arrows
 float ScreenNameEntry::ScrollingText::GetClosestCharYOffset( float fFakeBeat ) const
 {
-	float f = fmodf(fFakeBeat, 1.0f);
+	float f = std::fmod(fFakeBeat, 1.0f);
 	if( f > 0.5f )
 		f -= 1;
 	ASSERT( f>-0.5f && f<=0.5f );
-	return -f;	
+	return -f;
 }
 
 REGISTER_SCREEN_CLASS( ScreenNameEntry );
@@ -215,7 +217,7 @@ void ScreenNameEntry::Init()
 	bool IsOnRanking = ( (GAMESTATE->m_PlayMode == PLAY_MODE_NONSTOP || GAMESTATE->m_PlayMode == PLAY_MODE_ONI)
 		&& !(GAMESTATE->m_pCurCourse->IsRanking()) );
 
-	if( PREFSMAN->m_GetRankingName == RANKING_OFF || 
+	if( PREFSMAN->m_GetRankingName == RANKING_OFF ||
 		(PREFSMAN->m_GetRankingName == RANKING_LIST && !IsOnRanking) )
 	{
 		// don't collect score due to ranking setting
@@ -409,7 +411,7 @@ bool ScreenNameEntry::MenuStart( const InputEventPlus &input )
 /*
  * (c) 2001-2006 Chris Danford, Steve Checkoway
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -419,7 +421,7 @@ bool ScreenNameEntry::MenuStart( const InputEventPlus &input )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -3,6 +3,8 @@
 
 #include "NoteTypes.h" // Converting rows to beats and vice~versa.
 
+#include <cmath>
+
 enum TimingSegmentType
 {
 	SEGMENT_BPM,
@@ -37,7 +39,7 @@ const RString& TimingSegmentTypeToString( TimingSegmentType tst );
 const int ROW_INVALID = -1;
 
 #define COMPARE(x) if( this->x!=other.x ) return false
-#define COMPARE_FLOAT(x) if( fabsf(this->x - other.x) > EPSILON ) return false
+#define COMPARE_FLOAT(x) if( std::abs(this->x - other.x) > EPSILON ) return false
 
 /**
  * @brief The base timing segment for make glorious benefit wolfman
@@ -737,7 +739,7 @@ private:
  * @author Jason Felds (c) 2011
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -747,7 +749,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

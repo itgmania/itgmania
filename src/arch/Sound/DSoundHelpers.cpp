@@ -5,6 +5,8 @@
 #include "archutils/Win32/DirectXHelpers.h"
 #include "archutils/Win32/GetFileInformation.h"
 
+#include <cmath>
+
 #if defined(_WINDOWS)
 #include <mmsystem.h>
 #endif
@@ -78,7 +80,7 @@ void DSound::SetPrimaryBufferMode()
 	/*
 	 * MS docs:
 	 *
-	 * When there are no sounds playing, DirectSound stops the mixer engine and halts DMA 
+	 * When there are no sounds playing, DirectSound stops the mixer engine and halts DMA
 	 * (direct memory access) activity. If your application has frequent short intervals of
 	 * silence, the overhead of starting and stopping the mixer each time a sound is played
 	 * may be worse than the DMA overhead if you kept the mixer active. Also, some sound
@@ -280,10 +282,10 @@ void DSoundBuf::SetSampleRate( int hz )
 void DSoundBuf::SetVolume( float fVolume )
 {
 	ASSERT_M( fVolume >= 0 && fVolume <= 1, ssprintf("%f",fVolume) );
-	
+
 	if( fVolume == 0 )
-		fVolume = 0.001f;		// fix log10f(0) == -INF
-	float iVolumeLog2 = log10f(fVolume) / log10f(2); /* vol log 2 */
+		fVolume = 0.001f;		// fix log10(0) == -INF
+	float iVolumeLog2 = std::log10(fVolume) / std::log10(2); /* vol log 2 */
 
 	/* Volume is a multiplier; SetVolume wants attenuation in hundredths of a decibel. */
 	const int iNewVolume = std::max( int(1000 * iVolumeLog2), DSBVOLUME_MIN );
@@ -630,7 +632,7 @@ void DSoundBuf::Stop()
 /*
  * (c) 2002-2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -640,7 +642,7 @@ void DSoundBuf::Stop()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

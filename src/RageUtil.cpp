@@ -8,19 +8,19 @@
 #include "LocalizedString.h"
 #include "LuaBinding.h"
 #include "LuaManager.h"
-#include <float.h>
 
 #include <json/json.h>
 #include <pcre.h>
 
-#include <numeric>
+#include <cfloat>
+#include <cmath>
 #include <ctime>
-#include <sstream>
-#include <map>
 #include <functional>
+#include <map>
+#include <numeric>
+#include <sstream>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <math.h>
 
 const RString CUSTOM_SONG_PATH= "/@mem/";
 
@@ -38,7 +38,7 @@ namespace
 	MersenneTwister g_LuaPRNG;
 
 	/* To map from [0..2^31-1] to [0..1), we divide by 2^31. */
-	const double DIVISOR = pow( double(2), double(31) );
+	const double DIVISOR = std::pow( double(2), double(31) );
 
 	static int Seed( lua_State *L )
 	{
@@ -103,9 +103,9 @@ void fapproach( float& val, float other_val, float to_move )
 	if( val == other_val )
 		return;
 	float fDelta = other_val - val;
-	float fSign = fDelta / fabsf( fDelta );
+	float fSign = fDelta / std::abs( fDelta );
 	float fToMove = fSign*to_move;
-	if( fabsf(fToMove) > fabsf(fDelta) )
+	if( std::abs(fToMove) > std::abs(fDelta) )
 		fToMove = fDelta;	// snap
 	val += fToMove;
 }
@@ -113,9 +113,9 @@ void fapproach( float& val, float other_val, float to_move )
 /* Return a positive x mod y. */
 float fmodfp(float x, float y)
 {
-	x = fmodf(x, y);	/* x is [-y,y] */
-	x += y;			/* x is [0,y*2] */
-	x = fmodf(x, y);	/* x is [0,y] */
+	x = std::fmod(x, y);	/* x is [-y,y] */
+	x += y;					/* x is [0,y*2] */
+	x = std::fmod(x, y);	/* x is [0,y] */
 	return x;
 }
 
@@ -1180,7 +1180,7 @@ float calc_stddev( const float *pStart, const float *pEnd, bool bSample )
 	for( const float *i=pStart; i != pEnd; ++i )
 		fDev += (*i - fMean) * (*i - fMean);
 	fDev /= std::distance( pStart, pEnd ) - (bSample ? 1 : 0);
-	fDev = sqrtf( fDev );
+	fDev = std::sqrt( fDev );
 
 	return fDev;
 }
@@ -1209,7 +1209,7 @@ bool CalcLeastSquares( const std::vector<std::pair<float, float>> &vCoordinates,
 		fError += fOneError * fOneError;
 	}
 	fError /= vCoordinates.size();
-	fError = sqrtf( fError );
+	fError = std::sqrt( fError );
 	return true;
 }
 
@@ -1220,7 +1220,7 @@ void FilterHighErrorPoints( std::vector<std::pair<float, float>> &vCoordinates,
 	for( unsigned int iIn = 0; iIn < vCoordinates.size(); ++iIn )
 	{
 		const float fError = fIntercept + fSlope * vCoordinates[iIn].first - vCoordinates[iIn].second;
-		if( fabsf(fError) < fCutoff )
+		if( std::abs(fError) < fCutoff )
 		{
 			vCoordinates[iOut] = vCoordinates[iIn];
 			++iOut;

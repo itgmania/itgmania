@@ -8,7 +8,10 @@
 #include "RageLog.h"
 #include "RageMath.h"
 #include "RageTypes.h"
-#include <float.h>
+
+#include <cfloat>
+#include <cmath>
+
 
 void RageVec3ClearBounds( RageVector3 &mins, RageVector3 &maxs )
 {
@@ -28,14 +31,14 @@ void RageVec3AddToBounds( const RageVector3 &p, RageVector3 &mins, RageVector3 &
 
 void RageVec2Normalize( RageVector2* pOut, const RageVector2* pV )
 {
-	float scale = 1.0f / sqrtf( pV->x*pV->x + pV->y*pV->y );
+	float scale = 1.0f / std::sqrt( pV->x*pV->x + pV->y*pV->y );
 	pOut->x = pV->x * scale;
 	pOut->y = pV->y * scale;
 }
 
 void RageVec3Normalize( RageVector3* pOut, const RageVector3* pV )
 {
-	float scale = 1.0f / sqrtf( pV->x*pV->x + pV->y*pV->y + pV->z*pV->z );
+	float scale = 1.0f / std::sqrt( pV->x*pV->x + pV->y*pV->y + pV->z*pV->z );
 	pOut->x = pV->x * scale;
 	pOut->y = pV->y * scale;
 	pOut->z = pV->z * scale;
@@ -44,7 +47,7 @@ void RageVec3Normalize( RageVector3* pOut, const RageVector3* pV )
 void VectorFloatNormalize(std::vector<float>& v)
 {
 	ASSERT_M(v.size() == 3, "Can't normalize a non-3D vector.");
-	float scale = 1.0f / sqrtf(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+	float scale = 1.0f / std::sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
 	v[0]*= scale;
 	v[1]*= scale;
 	v[2]*= scale;
@@ -152,7 +155,7 @@ void RageMatrixMultiply( RageMatrix* pOut, const RageMatrix* pA, const RageMatri
 		b.m30*a.m00+b.m31*a.m10+b.m32*a.m20+b.m33*a.m30,
 		b.m30*a.m01+b.m31*a.m11+b.m32*a.m21+b.m33*a.m31,
 		b.m30*a.m02+b.m31*a.m12+b.m32*a.m22+b.m33*a.m32,
-		b.m30*a.m03+b.m31*a.m13+b.m32*a.m23+b.m33*a.m33 
+		b.m30*a.m03+b.m31*a.m13+b.m32*a.m23+b.m33*a.m33
 	);
 	// phew!
 //#endif
@@ -356,9 +359,9 @@ void RageQuatMultiply( RageVector4* pOut, const RageVector4 &pA, const RageVecto
 	float dist, square;
 
 	square = out.x * out.x + out.y * out.y + out.z * out.z + out.w * out.w;
-	
+
 	if (square > 0.0)
-		dist = 1.0f / sqrtf(square);
+		dist = 1.0f / std::sqrt(square);
 	else dist = 1;
 
 	out.x *= dist;
@@ -467,7 +470,7 @@ void RageMatrixFromQuat( RageMatrix* pOut, const RageVector4 q )
 	float yz = q.y * (q.z + q.z);
 
 	float zz = q.z * (q.z + q.z);
-	// careful.  The param order is row-major, which is the 
+	// careful.  The param order is row-major, which is the
 	// transpose of the order shown in the OpenGL docs.
 	*pOut = RageMatrix(
 		1-(yy+zz), xy+wz,     xz-wy,     0,
@@ -505,14 +508,14 @@ void RageQuatSlerp(RageVector4 *pOut, const RageVector4 &from, const RageVector4
 	if ( cosom < 0.9999f )
 	{
 		// standard case (slerp)
-		float omega = acosf(cosom);
+		float omega = std::acos(cosom);
 		float sinom = RageFastSin(omega);
 		scale0 = RageFastSin((1.0f - t) * omega) / sinom;
 		scale1 = RageFastSin(t * omega) / sinom;
 	}
 	else
 	{
-		// "from" and "to" quaternions are very close 
+		// "from" and "to" quaternions are very close
 		//  ... so we can do a linear interpolation
 		scale0 = 1.0f - t;
 		scale1 = t;
@@ -565,7 +568,7 @@ RageMatrix RageLookAt(
 void RageMatrixAngles( RageMatrix* pOut, const RageVector3 &angles )
 {
 	const RageVector3 angles_radians( angles * 2*PI / 360 );
-	
+
 	const float sy = RageFastSin( angles_radians[2] );
 	const float cy = RageFastCos( angles_radians[2] );
 	const float sp = RageFastSin( angles_radians[1] );
@@ -606,7 +609,7 @@ struct sine_initter
 		for(unsigned int i= 0; i < sine_table_size; ++i)
 		{
 			float angle= SCALE(i, 0, sine_table_size, 0.0f, PI);
-			sine_table[i]= sinf(angle);
+			sine_table[i]= std::sin(angle);
 		}
 	}
 };
@@ -654,7 +657,7 @@ float RageFastCsc( float x )
 
 float RageSquare( float angle )
 {
-	float fAngle = fmod( angle , (PI * 2) );
+	float fAngle = std::fmod( angle , (PI * 2) );
 		//Hack: This ensures the hold notes don't flicker right before they're hit.
 		if(fAngle < 0.01f)
 		{
@@ -665,7 +668,7 @@ float RageSquare( float angle )
 
 float RageTriangle( float angle )
 {
-	float fAngle= fmod(angle, PI * 2.0f);
+	float fAngle= std::fmod(angle, PI * 2.0f);
 	if(fAngle < 0.0)
 	{
 		fAngle+= PI * 2.0;
@@ -683,7 +686,7 @@ float RageTriangle( float angle )
 	{
 		return -4.0 + (result * 2.0);
 	}
-	
+
 }
 
 float RageQuadratic::Evaluate( float fT ) const
@@ -742,7 +745,7 @@ float RageBezier2D::EvaluateYFromX( float fX ) const
 		float fError = fX-fGuessedX;
 
 		/* If our guess is good enough, evaluate the result Y and return. */
-		if( unlikely(fabsf(fError) < 0.0001f) )
+		if( unlikely(std::abs(fError) < 0.0001f) )
 			return m_Y.Evaluate( fT );
 
 		float fSlope = m_X.GetSlope( fT );

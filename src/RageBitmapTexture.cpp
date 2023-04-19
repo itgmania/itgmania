@@ -13,6 +13,8 @@
 #include "arch/Dialog/Dialog.h"
 #include "StepMania.h"
 
+#include <cmath>
+
 static void GetResolutionFromFileName( RString sPath, int &iWidth, int &iHeight )
 {
 	/* Match:
@@ -180,7 +182,7 @@ void RageBitmapTexture::Create()
 		m_iImageHeight = m_iTextureHeight;
 	}
 
-	if( pImg->w != m_iImageWidth || pImg->h != m_iImageHeight ) 
+	if( pImg->w != m_iImageWidth || pImg->h != m_iImageHeight )
 		RageSurfaceUtils::Zoom( pImg, m_iImageWidth, m_iImageHeight );
 
 	if( actualID.iGrayscaleBits != -1 && DISPLAY->SupportsTextureFormat(RagePixelFormat_PAL) )
@@ -244,7 +246,7 @@ void RageBitmapTexture::Create()
 	 * We actually want to dither only if the destination has greater color depth
 	 * on at least one color channel than the source. For example, it doesn't
 	 * make sense to do this when pixfmt is RGBA5551 if the image is only RGBA555. */
-	if( actualID.bDither && 
+	if( actualID.bDither &&
 		(pixfmt==RagePixelFormat_RGBA4 || pixfmt==RagePixelFormat_RGB5A1) )
 	{
 		// Dither down to the destination format.
@@ -265,7 +267,7 @@ void RageBitmapTexture::Create()
 	/* Scale up to the texture size, if needed. */
 	RageSurfaceUtils::ConvertSurface( pImg, m_iTextureWidth, m_iTextureHeight,
 		pImg->fmt.BitsPerPixel, pImg->fmt.Mask[0], pImg->fmt.Mask[1], pImg->fmt.Mask[2], pImg->fmt.Mask[3] );
-	
+
 	m_uTexHandle = DISPLAY->CreateTexture( pixfmt, pImg, actualID.bMipMaps );
 
 	CreateFrameRects();
@@ -302,8 +304,8 @@ void RageBitmapTexture::Create()
 		{
 			float fFrameWidth = this->GetSourceWidth() / (float)this->GetFramesWide();
 			float fFrameHeight = this->GetSourceHeight() / (float)this->GetFramesHigh();
-			float fBetterFrameWidth = ceilf(fFrameWidth/iDimensionMultiple) * iDimensionMultiple;
-			float fBetterFrameHeight = ceilf(fFrameHeight/iDimensionMultiple) * iDimensionMultiple;
+			float fBetterFrameWidth = std::ceil(fFrameWidth/iDimensionMultiple) * iDimensionMultiple;
+			float fBetterFrameHeight = std::ceil(fFrameHeight/iDimensionMultiple) * iDimensionMultiple;
 			float fBetterSourceWidth = this->GetFramesWide() * fBetterFrameWidth;
 			float fBetterSourceHeight = this->GetFramesHigh() * fBetterFrameHeight;
 			if( fFrameWidth!=fBetterFrameWidth || fFrameHeight!=fBetterFrameHeight )
@@ -311,10 +313,10 @@ void RageBitmapTexture::Create()
 				RString sWarning = ssprintf(
 					"The graphic '%s' has frame dimensions that aren't a multiple of %d.\n"
 					"The entire image is %dx%d and frame size is %.1fx%.1f.\n"
-					"Image quality will be much improved if you resize the graphic to %.0fx%.0f, which is a frame size of %.0fx%.0f.", 
-					actualID.filename.c_str(), 
+					"Image quality will be much improved if you resize the graphic to %.0fx%.0f, which is a frame size of %.0fx%.0f.",
+					actualID.filename.c_str(),
 					iDimensionMultiple,
-					this->GetSourceWidth(), this->GetSourceHeight(), 
+					this->GetSourceWidth(), this->GetSourceHeight(),
 					fFrameWidth, fFrameHeight,
 					fBetterSourceWidth, fBetterSourceHeight,
 					fBetterFrameWidth, fBetterFrameHeight );
@@ -362,7 +364,7 @@ void RageBitmapTexture::Destroy()
 /*
  * Copyright (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -372,7 +374,7 @@ void RageBitmapTexture::Destroy()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
@@ -382,4 +384,4 @@ void RageBitmapTexture::Destroy()
  * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
- */ 
+ */

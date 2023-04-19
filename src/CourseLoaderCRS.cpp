@@ -14,7 +14,8 @@
 #include "CourseWriterCRS.h"
 #include "RageUtil.h"
 #include "CourseUtil.h"
-#include <float.h>
+
+#include <cfloat>
 
 /** @brief Edit courses can only be so big before they are rejected. */
 const int MAX_EDIT_COURSE_SIZE_BYTES	= 32*1024;	// 32KB
@@ -417,7 +418,7 @@ bool CourseLoaderCRS::LoadFromCRSFile( const RString &_sPath, Course &out )
 			bUseCache = false;
 		// XXX: if !FastLoad, regen cache if the used songs have changed
 		if( !PREFSMAN->m_bFastLoad && GetHashForFile(out.m_sPath) != uHash )
-			bUseCache = false; // this cache is out of date 
+			bUseCache = false; // this cache is out of date
 	}
 
 	if( bUseCache )
@@ -437,7 +438,7 @@ bool CourseLoaderCRS::LoadFromCRSFile( const RString &_sPath, Course &out )
 		LOG->UserLog( "Course file", sPath, "couldn't be opened: %s.", msd.GetError().c_str() );
 		return false;
 	}
-	
+
 	if( !LoadFromMsd(sPath, msd, out, bUseCache) )
 		return false;
 
@@ -502,7 +503,7 @@ bool CourseLoaderCRS::LoadEditFromBuffer( const RString &sBuffer, const RString 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -512,7 +513,7 @@ bool CourseLoaderCRS::LoadEditFromBuffer( const RString &sBuffer, const RString 
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

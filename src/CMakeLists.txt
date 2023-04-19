@@ -226,7 +226,7 @@ elseif(APPLE)
     "${SM_ROOT_DIR}/Songs"
     "${SM_ROOT_DIR}/Themes"
   )
-  
+
   target_sources("${SM_EXE_NAME}" PUBLIC ${APPLE_BUNDLE_RESOURCES})
   set_source_files_properties(${APPLE_BUNDLE_RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
@@ -433,7 +433,7 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
   if(X11_FOUND)
     list(APPEND SMDATA_LINK_LIB ${X11_LIBRARIES})
   endif()
-  
+
   if(LIBXTST_FOUND)
     list(APPEND SMDATA_LINK_LIB ${LIBXTST_LIBRARY})
   endif()

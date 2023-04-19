@@ -18,6 +18,8 @@
 #include "LuaBinding.h"
 #include "EnumHelper.h"
 
+#include <cmath>
+
 ThemeMetric<int> SORT_BPM_DIVISION ( "MusicWheel", "SortBPMDivision" );
 ThemeMetric<int> SORT_LENGTH_DIVISION ( "MusicWheel", "SortLengthDivision" );
 ThemeMetric<bool> SHOW_SECTIONS_IN_BPM_SORT ( "MusicWheel", "ShowSectionsInBPMSort" );
@@ -94,18 +96,18 @@ bool SongCriteria::Matches( const Song *pSong ) const
 	return true;
 }
 
-void SongUtil::GetSteps( 
+void SongUtil::GetSteps(
 	const Song *pSong,
 	std::vector<Steps*>& arrayAddTo,
-	StepsType st, 
-	Difficulty dc, 
-	int iMeterLow, 
-	int iMeterHigh, 
+	StepsType st,
+	Difficulty dc,
+	int iMeterLow,
+	int iMeterHigh,
 	const RString &sDescription,
 	const RString &sCredit,
-	bool bIncludeAutoGen, 
+	bool bIncludeAutoGen,
 	unsigned uHash,
-	int iMaxToGet 
+	int iMaxToGet
 	)
 {
 	if( !iMaxToGet )
@@ -142,12 +144,12 @@ void SongUtil::GetSteps(
 	}
 }
 
-Steps* SongUtil::GetOneSteps( 
-	const Song *pSong, 
-	StepsType st, 
-	Difficulty dc, 
-	int iMeterLow, 
-	int iMeterHigh, 
+Steps* SongUtil::GetOneSteps(
+	const Song *pSong,
+	StepsType st,
+	Difficulty dc,
+	int iMeterLow,
+	int iMeterHigh,
 	const RString &sDescription,
 	const RString &sCredit,
 	unsigned uHash,
@@ -204,7 +206,7 @@ Steps* SongUtil::GetStepsByDescription( const Song *pSong, StepsType st, RString
 	GetSteps( pSong, vNotes, st, Difficulty_Invalid, -1, -1, sDescription, "" );
 	if( vNotes.size() == 0 )
 		return nullptr;
-	else 
+	else
 		return vNotes[0];
 }
 
@@ -235,7 +237,7 @@ Steps* SongUtil::GetClosestNotes( const Song *pSong, StepsType st, Difficulty dc
 		if( bIgnoreLocked && UNLOCKMAN->StepsIsLocked(pSong,pSteps) )
 			continue;
 
-		int iDistance = abs(dc - pSteps->GetDifficulty());
+		int iDistance = std::abs(dc - pSteps->GetDifficulty());
 		if( iDistance < iClosestDistance )
 		{
 			pClosest = pSteps;
@@ -327,7 +329,7 @@ void SongUtil::DeleteDuplicateSteps( Song *pSong, std::vector<Steps*> &vSteps )
 
 			LOG->Trace("Removed %p duplicate steps in song \"%s\" with description \"%s\", step author \"%s\", and meter \"%i\"",
 				static_cast<const void*>(s2), pSong->GetSongDir().c_str(), s1->GetDescription().c_str(), s1->GetCredit().c_str(), s1->GetMeter() );
-				
+
 			pSong->DeleteSteps( s2, false );
 
 			vSteps.erase(vSteps.begin()+j);
@@ -413,7 +415,7 @@ static bool CompareSongPointersByBPM( const Song *pSong1, const Song *pSong2 )
 		return true;
 	if( bpms1.GetMax() > bpms2.GetMax() )
 		return false;
-	
+
 	return CompareRStringsAsc( pSong1->GetSongFilePath(), pSong2->GetSongFilePath() );
 }
 
@@ -568,7 +570,7 @@ RString SongUtil::GetSectionNameFromSongAndSort( const Song* pSong, SortOrder so
 	case SORT_PREFERRED:
 		return SONGMAN->SongToPreferredSortSectionName( pSong );
 	case SORT_GROUP:
-		// guaranteed not empty	
+		// guaranteed not empty
 		return pSong->m_sGroupName;
 	case SORT_TITLE:
 	case SORT_ARTIST:
@@ -807,7 +809,7 @@ bool SongUtil::ValidateCurrentEditStepsDescription( const RString &sAnswer, RStr
 
 	// Steps name must be unique for this song.
 	std::vector<Steps*> v;
-	GetSteps( pSong, v, StepsType_Invalid, Difficulty_Edit ); 
+	GetSteps( pSong, v, StepsType_Invalid, Difficulty_Edit );
 	for (Steps const *s : v)
 	{
 		if( pSteps == s )
@@ -847,20 +849,20 @@ bool SongUtil::ValidateCurrentStepsDescription( const RString &sAnswer, RString 
 bool SongUtil::ValidateCurrentStepsChartName(const RString &answer, RString &error)
 {
 	if (answer.empty()) return true;
-	
+
 	static const RString sInvalidChars = "\\/:*?\"<>|";
 	if( strpbrk(answer, sInvalidChars) != nullptr )
 	{
 		error = ssprintf( CHART_NAME_CANNOT_CONTAIN.GetValue(), sInvalidChars.c_str() );
 		return false;
 	}
-	
+
 	/* Don't allow duplicate title names within the same StepsType.
 	 * We need some way of identifying the unique charts. */
 	Steps *pSteps = GAMESTATE->m_pCurSteps[PLAYER_1];
-	
+
 	if (pSteps->GetChartName() == answer) return true;
-	
+
 	// TODO next commit: borrow code from EditStepsDescription.
 	bool result = SongUtil::IsChartNameUnique(GAMESTATE->m_pCurSong, pSteps->m_StepsType,
 											  answer, pSteps);
@@ -875,12 +877,12 @@ bool SongUtil::ValidateCurrentStepsCredit( const RString &sAnswer, RString &sErr
 {
 	if( sAnswer.empty() )
 		return true;
-	
+
 	Steps *pSteps = GAMESTATE->m_pCurSteps[PLAYER_1];
 	// If unchanged:
 	if( pSteps->GetCredit() == sAnswer )
 		return true;
-	
+
 	// Borrow from EditDescription testing. Perhaps this should be abstracted? -Wolfman2000
 	static const RString sInvalidChars = "\\/:*?\"<>|";
 	if( strpbrk(sAnswer, sInvalidChars) != nullptr )
@@ -888,7 +890,7 @@ bool SongUtil::ValidateCurrentStepsCredit( const RString &sAnswer, RString &sErr
 		sErrorOut = ssprintf( AUTHOR_NAME_CANNOT_CONTAIN.GetValue(), sInvalidChars.c_str() );
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -999,8 +1001,8 @@ void SongUtil::GetPlayableStepsTypes( const Song *pSong, std::set<StepsType> &vO
 		int iNumPlayers = GAMESTATE->GetNumPlayersEnabled();
 		iNumPlayers = std::max( iNumPlayers, 1 );
 
-		bool bEnoughStages = GAMESTATE->IsAnExtraStage() || 
-			GAMESTATE->GetSmallestNumStagesLeftForAnyHumanPlayer() >= 
+		bool bEnoughStages = GAMESTATE->IsAnExtraStage() ||
+			GAMESTATE->GetSmallestNumStagesLeftForAnyHumanPlayer() >=
 			GAMESTATE->GetNumStagesMultiplierForSong(pSong);
 
 		if( bShowThisStepsType && bEnoughStages )
@@ -1136,7 +1138,7 @@ XNode* SongID::CreateNode() const
 	return pNode;
 }
 
-void SongID::LoadFromNode( const XNode* pNode ) 
+void SongID::LoadFromNode( const XNode* pNode )
 {
 	ASSERT( pNode->GetName() == "Song" );
 	pNode->GetAttrValue("Dir", sDir);
@@ -1200,7 +1202,7 @@ LUA_REGISTER_NAMESPACE( SongUtil )
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -1210,7 +1212,7 @@ LUA_REGISTER_NAMESPACE( SongUtil )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

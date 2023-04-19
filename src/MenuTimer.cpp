@@ -9,6 +9,8 @@
 #include "ThemeMetric.h"
 #include "ActorUtil.h"
 
+#include <cmath>
+
 RString WARNING_COMMAND_NAME( size_t i ) { return ssprintf("Warning%dCommand",int(i)); }
 
 static const float TIMER_PAUSE_SECONDS = 99.99f;
@@ -73,8 +75,8 @@ void MenuTimer::EnableStealth( bool bStealth )
 	}
 }
 
-void MenuTimer::Update( float fDeltaTime ) 
-{ 
+void MenuTimer::Update( float fDeltaTime )
+{
 	ActorFrame::Update( fDeltaTime );
 
 	if( m_bPaused )
@@ -100,7 +102,7 @@ void MenuTimer::Update( float fDeltaTime )
 		SOUND->PlayOnceFromAnnouncer( "hurry up" );
 
 
-	int iCrossed = (int)floorf(fOldSecondsLeft);
+	int iCrossed = std::floor(fOldSecondsLeft);
 	if( fOldSecondsLeft > iCrossed && fNewSecondsLeft < iCrossed )	// crossed
 	{
 		if( iCrossed <= WARNING_START )
@@ -198,7 +200,7 @@ void MenuTimer::SetText( float fSeconds )
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the MenuTimer. */ 
+/** @brief Allow Lua to have access to the MenuTimer. */
 class LunaMenuTimer: public Luna<MenuTimer>
 {
 public:
@@ -230,7 +232,7 @@ LUA_REGISTER_DERIVED_CLASS( MenuTimer, ActorFrame )
 /*
  * (c) 2002-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -240,7 +242,7 @@ LUA_REGISTER_DERIVED_CLASS( MenuTimer, ActorFrame )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

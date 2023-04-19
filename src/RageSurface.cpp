@@ -2,7 +2,8 @@
 #include "RageSurface.h"
 #include "RageUtil.h"
 
-#include <limits.h>
+#include <climits>
+#include <cmath>
 
 
 int32_t RageSurfacePalette::FindColor( const RageSurfaceColor &color ) const
@@ -23,10 +24,10 @@ int32_t RageSurfacePalette::FindClosestColor( const RageSurfaceColor &color ) co
 		if( colors[i] == color )
 			return i;
 
-		int iDist = abs( colors[i].r - color.r ) +
-			abs( colors[i].g - color.g ) +
-			abs( colors[i].b - color.b ) +
-			abs( colors[i].a - color.a );
+		int iDist = std::abs( colors[i].r - color.r ) +
+			std::abs( colors[i].g - color.g ) +
+			std::abs( colors[i].b - color.b ) +
+			std::abs( colors[i].a - color.a );
 		if( iDist < iBestDist )
 		{
 			iBestDist = iDist ;
@@ -84,7 +85,7 @@ bool RageSurfaceFormat::MapRGBA( uint8_t r, uint8_t g, uint8_t b, uint8_t a, uin
 			return false;
 		val = (uint32_t) n;
 	} else {
-		val  = 
+		val  =
 			(r >> Loss[0] << Shift[0]) |
 			(g >> Loss[1] << Shift[1]) |
 			(b >> Loss[2] << Shift[2]) |

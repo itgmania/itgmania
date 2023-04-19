@@ -4,11 +4,12 @@
 #include "RageSurfaceUtils.h"
 #include "RageUtil.h"
 
+#include <cmath>
 #include <vector>
 
 /* Coordinate 0x0 represents the exact top-left corner of a bitmap.  .5x.5
  * represents the center of the top-left pixel; 1x1 is the center of the top
- * square of pixels.  
+ * square of pixels.
  *
  * (Look at a grid: map coordinates to the lines, not the squares between the
  * lines.) */
@@ -72,7 +73,7 @@ static void InitVectors( std::vector<int> &s0, std::vector<int> &s1, std::vector
 			s0.push_back( clamp(int(sax), 0, src-1));
 			s1.push_back( clamp(int(sax+1), 0, src-1) );
 
-			const float p = (1.0f - (sax - floorf(sax))) * 16777216.0f;
+			const float p = (1.0f - (sax - std::floor(sax))) * 16777216.0f;
 			percent.push_back( uint32_t(p) );
 		}
 	}
@@ -95,7 +96,7 @@ static void ZoomSurface( const RageSurface * src, RageSurface * dst )
 	for( int y = 0; y < height; y++ )
 	{
 		uint8_t *dp = (uint8_t *) (dst->pixels + dst->pitch*y);
-		/* current source pointer and next source pointer (first and second 
+		/* current source pointer and next source pointer (first and second
 		 * rows sampled for this row): */
 		const uint8_t *csp = sp + esy0[y] * src->pitch;
 		const uint8_t *ncsp = sp + esy1[y] * src->pitch;
@@ -116,7 +117,7 @@ static void ZoomSurface( const RageSurface * src, RageSurface * dst )
 				uint32_t x1 = uint32_t(c10[c]) * ex0[x];
 				x1 += uint32_t(c11[c]) * (16777216 - ex0[x]);
 				x1 >>= 24;
-				
+
 				const uint32_t res = ((x0 * ey0[y]) + (x1 * (16777216-ey0[y])) + 8388608) >> 24;
 				dp[c] = uint8_t(res);
 			}
@@ -156,8 +157,8 @@ void RageSurfaceUtils::Zoom( RageSurface *&src, int dstwidth, int dstheight )
 		xscale = clamp( xscale, .5f, 2.0f );
 		yscale = clamp( yscale, .5f, 2.0f );
 
-		int target_width = lrintf( src->w*xscale );
-		int target_height = lrintf( src->h*yscale );
+		int target_width = std::lrint( src->w*xscale );
+		int target_height = std::lrint( src->h*yscale );
 
 		RageSurface *dst =
 			CreateSurface(target_width, target_height, 32,
@@ -172,10 +173,10 @@ void RageSurfaceUtils::Zoom( RageSurface *&src, int dstwidth, int dstheight )
 	}
 }
 
-/*  
+/*
  * (c) A. Schiffler, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -185,7 +186,7 @@ void RageSurfaceUtils::Zoom( RageSurface *&src, int dstwidth, int dstheight )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
@@ -195,7 +196,7 @@ void RageSurfaceUtils::Zoom( RageSurface *&src, int dstwidth, int dstheight )
  * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
- * 
+ *
  * This is based on code from SDL_rotozoom, under the above license with
  * permission from Andreas Schiffler.
  */

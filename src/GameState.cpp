@@ -42,6 +42,7 @@
 #include "ScreenManager.h"
 #include "Screen.h"
 
+#include <cmath>
 #include <ctime>
 #include <set>
 
@@ -1853,7 +1854,7 @@ StageResult GameState::GetStageResult( PlayerNumber pn ) const
 	{
 		case PLAY_MODE_BATTLE:
 		case PLAY_MODE_RAVE:
-			if( fabsf(m_fTugLifePercentP1 - 0.5f) < 0.0001f )
+			if( std::abs(m_fTugLifePercentP1 - 0.5f) < 0.0001f )
 				return RESULT_DRAW;
 			switch( pn )
 			{
@@ -2073,7 +2074,7 @@ void GameState::GetRankingFeats( PlayerNumber pn, std::vector<RankingFeat> &asFe
 	// may have made high scores then switched modes.
 	PlayMode mode = m_PlayMode.Get();
 	char const *modeStr = PlayModeToString(mode).c_str();
-	
+
 	CHECKPOINT_M( ssprintf("Getting the feats for %s", modeStr));
 	switch( mode )
 	{
@@ -2381,7 +2382,7 @@ void GameState::StoreRankingName( PlayerNumber pn, RString sName )
 						ASSERT( sas.pSteps != nullptr );
 						vSongAndSteps.push_back( sas );
 					}
-				
+
 					std::vector<SongAndSteps>::iterator toDelete = std::unique( vSongAndSteps.begin(), vSongAndSteps.end() );
 					vSongAndSteps.erase(toDelete, vSongAndSteps.end());
 
@@ -2407,7 +2408,7 @@ void GameState::StoreRankingName( PlayerNumber pn, RString sName )
 					Trail *pTrail = m_pCurTrail[pn];
 					ASSERT( pTrail != nullptr );
 					CourseDifficulty cd = pTrail->m_CourseDifficulty;
-					HighScoreList &hsl = pProfile->GetCourseHighScoreList( pCourse, pTrail );				
+					HighScoreList &hsl = pProfile->GetCourseHighScoreList( pCourse, pTrail );
 					if (!PREFSMAN->m_bAllowMultipleHighScoreWithSameName)
 					{
 						// erase all but the highest score for each name

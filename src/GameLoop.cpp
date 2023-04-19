@@ -21,6 +21,8 @@
 #include "RageTimer.h"
 #include "RageInput.h"
 
+#include <cmath>
+
 static RageTimer g_GameplayTimer;
 
 static Preference<bool> g_bNeverBoostAppPriority( "NeverBoostAppPriority", false );
@@ -56,7 +58,7 @@ static void CheckGameLoopTimerSkips( float fDeltaTime )
 
 	const float fExpectedTime = 1.0f / iThisFPS;
 	const float fDifference = fDeltaTime - fExpectedTime;
-	if( fabsf(fDifference) > 0.002f && fabsf(fDifference) < 0.100f )
+	if( std::abs(fDifference) > 0.002f && std::abs(fDifference) < 0.100f )
 		LOG->Trace( "GameLoop timer skip: %i FPS, expected %.3f, got %.3f (%.3f difference)",
 			iThisFPS, fExpectedTime, fDeltaTime, fDifference );
 }
@@ -256,7 +258,7 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 		m_bUpdatedDuringVBLANK = false;
 		return; //would it kill us to run it again or do we want to draw asap?
 	}
-	
+
 	//if vblank called us, we will tell the game loop we received an update for the frame it wants to process
 	if (bRunningFromVBLANK)	m_bUpdatedDuringVBLANK = true;
 	else m_bUpdatedDuringVBLANK = false;
@@ -270,7 +272,7 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 	CheckGameLoopTimerSkips(fDeltaTime);
 
 	fDeltaTime *= g_fUpdateRate;
-	
+
 	// Update SOUNDMAN early (before any RageSound::GetPosition calls), to flush position data.
 	SOUNDMAN->Update();
 
@@ -290,7 +292,7 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 	//bandaid for low max audio sample counter
 	SOUNDMAN->low_sample_count_workaround();
 	LIGHTSMAN->Update(fDeltaTime);
-	
+
 }
 
 

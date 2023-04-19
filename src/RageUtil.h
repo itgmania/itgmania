@@ -4,6 +4,7 @@
 #define RAGE_UTIL_H
 
 #include <algorithm>
+#include <cmath>
 #include <map>
 #include <random>
 #include <vector>
@@ -73,16 +74,16 @@ inline void wrap( unsigned &x, unsigned n )
 inline void wrap( float &x, float n )
 {
 	if (x<0)
-		x += truncf(((-x/n)+1))*n;
-	x = fmodf(x,n);
+		x += std::trunc(((-x/n)+1))*n;
+	x = std::fmod(x,n);
 }
 
-inline float fracf( float f ) { return f - truncf(f); }
+inline float fracf( float f ) { return f - std::trunc(f); }
 
 template<class T>
 void CircularShift( std::vector<T> &v, int dist )
 {
-	for( int i = abs(dist); i>0; i-- )
+	for( int i = std::abs(dist); i>0; i-- )
 	{
 		if( dist > 0 )
 		{
@@ -313,7 +314,7 @@ inline int QuantizeUp( int i, int iInterval )
 
 inline float QuantizeUp( float i, float iInterval )
 {
-	return ceilf( i/iInterval ) * iInterval;
+	return std::ceil( i/iInterval ) * iInterval;
 }
 
 /* Return i rounded down to the nearest multiple of iInterval. */
@@ -324,7 +325,7 @@ inline int QuantizeDown( int i, int iInterval )
 
 inline float QuantizeDown( float i, float iInterval )
 {
-	return floorf( i/iInterval ) * iInterval;
+	return std::floor( i/iInterval ) * iInterval;
 }
 
 // Move val toward other_val by to_move.

@@ -4,6 +4,8 @@
 #include "RageLog.h"
 #include "archutils/Win32/DirectXHelpers.h"
 
+#include <cmath>
+
 //-----------------------------------------------------------------------------
 // Define GUID for Texture Renderer
 // {71771540-2017-11cf-AE26-0020AFD79767}
@@ -12,7 +14,7 @@ struct __declspec(uuid("{71771540-2017-11cf-ae26-0020afd79767}")) CLSID_TextureR
 
 static HRESULT CBV_ret;
 CTextureRenderer::CTextureRenderer():
-	CBaseVideoRenderer(__uuidof(CLSID_TextureRenderer), 
+	CBaseVideoRenderer(__uuidof(CLSID_TextureRenderer),
 	NAME("Texture Renderer"), nullptr, &CBV_ret),
 	m_OneFrameDecoded( "m_OneFrameDecoded", 0 )
 {
@@ -47,14 +49,14 @@ HRESULT CTextureRenderer::CheckMediaType(const CMediaType *pmt)
 }
 
 
-// SetMediaType: Graph connection has been made. 
+// SetMediaType: Graph connection has been made.
 HRESULT CTextureRenderer::SetMediaType(const CMediaType *pmt)
 {
 	// Retrive the size of this media type
 	VIDEOINFO *pviBmp;                      // Bitmap info header
 	pviBmp = (VIDEOINFO *)pmt->Format();
 	m_lVidWidth  = pviBmp->bmiHeader.biWidth;
-	m_lVidHeight = abs(pviBmp->bmiHeader.biHeight);
+	m_lVidHeight = std::abs(pviBmp->bmiHeader.biHeight);
 	m_lVidPitch = (m_lVidWidth * 3 + 3) + ~3; // We are forcing RGB24
 
 	return S_OK;
@@ -98,7 +100,7 @@ void CTextureRenderer::OnReceiveFirstSample( IMediaSample * pSample )
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -108,7 +110,7 @@ void CTextureRenderer::OnReceiveFirstSample( IMediaSample * pSample )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

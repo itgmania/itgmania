@@ -3,30 +3,6 @@
 
 #include "config.hpp"
 
-#if !defined(HAVE_TRUNCF)
-inline float truncf( float f )	{ return float(int(f)); };
-#endif
-
-#if !defined(HAVE_ROUNDF)
-inline float roundf( float f )	{ if(f < 0) return truncf(f-0.5f); return truncf(f+0.5f); };
-#endif
-
-#if !defined(HAVE_LRINTF)
-#if defined(_MSC_VER) && defined(_X86_)
-inline long int lrintf( float f )
-{
-	int retval;
-	
-	_asm fld f;
-	_asm fistp retval;
-
-	return retval;
-}
-#else
-#define lrintf(x) ((int)rint(x))
-#endif
-#endif
-
 struct Surface
 {
 	Surface() { pRGBA = NULL; }
