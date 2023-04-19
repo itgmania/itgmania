@@ -1434,7 +1434,7 @@ void ScreenGameplay::LoadLights()
 			return;
 		}
 
-		/* fall through */
+		// fall through
 	}
 
 	NoteDataUtil::LoadTransformedLights( TapNoteData1, m_CabinetLightsNoteData, GAMEMAN->GetStepsTypeInfo(StepsType_lights_cabinet).iNumTracks );

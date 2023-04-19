@@ -2175,7 +2175,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 		case 0:
 			// autoplay is on, or this is a computer player
 			iNumTracksHeld = 1;
-			// fall through
+			[[fallthrough]];
 		default:
 			{
 				float fCalsFor100Lbs = SCALE( iNumTracksHeld, 1, 2, 0.023f, 0.077f );
@@ -2286,7 +2286,6 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 
 					break;
 				}
-				// Fall through to default.
 				[[fallthrough]];
 			default:
 				if( (pTN->type == TapNoteType_Lift) == bRelease )

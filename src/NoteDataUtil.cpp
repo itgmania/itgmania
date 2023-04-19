@@ -1515,8 +1515,8 @@ static void GetTrackMapping( StepsType st, NoteDataUtil::TrackMapping tt, int Nu
 				needsBackwards = false;
 		}
 		if (needsBackwards) break;
+		[[fallthrough]];
 	}
-	[[fallthrough]];
 	case NoteDataUtil::mirror:
 		{
 			for( int t=0; t<NumTracks; t++ )
@@ -1935,7 +1935,7 @@ static void HyperShuffleNotes( NoteData &inout, int iStartIndex, int iEndIndex)
 				// If they aren't off, this code can't be reached.
 				inout.SetTapNote(track, r, TAP_EMPTY);
 
-				// Fallthrough
+				[[fallthrough]];
 			case TapNoteType_Empty:
 				// Empty tap notes don't get directly placed in the shuffle table.
 				// Instead, if they aren't in a hold, they get added to the list

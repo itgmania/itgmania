@@ -826,7 +826,7 @@ float ArrowEffects::GetXPos( const PlayerState* pPlayerState, int iColNum, float
 		switch( pStyle->m_StyleType )
 		{
 			case StyleType_OnePlayerTwoSides:
-			case StyleType_TwoPlayersSharedSides: // fall through?
+			case StyleType_TwoPlayersSharedSides:
 				{
 					// find the middle, and split based on iColNum
 					// it's unknown if this will work for routine.
@@ -838,7 +838,7 @@ float ArrowEffects::GetXPos( const PlayerState* pPlayerState, int iColNum, float
 				}
 				break;
 			case StyleType_OnePlayerOneSide:
-			case StyleType_TwoPlayersTwoSides: // fall through
+			case StyleType_TwoPlayersTwoSides:
 				{
 					// the code was the same for both of these cases in StepNXA.
 					if( pPlayerState->m_PlayerNumber == PLAYER_2 )

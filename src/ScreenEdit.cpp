@@ -3239,8 +3239,7 @@ bool ScreenEdit::InputPlay( const InputEventPlus &input, EditButton EditB )
 			if( GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->m_StyleType != StyleType_TwoPlayersSharedSides )
 				break;
 
-		// fall through to input handling logic:
-		[[fallthrough]];
+			[[fallthrough]];
 		case PLAYER_1:
 			{
 				switch( gbt )
