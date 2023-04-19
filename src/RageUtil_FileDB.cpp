@@ -4,6 +4,8 @@
 #include "RageUtil.h"
 #include "RageLog.h"
 
+#include <cstddef>
+
 /* Search for "beginning*containing*ending". */
 void FileSet::GetFilesMatching( const RString &sBeginning_, const RString &sContaining_, const RString &sEnding_, std::vector<RString> &asOut, bool bOnlyDirs ) const
 {
@@ -46,7 +48,7 @@ void FileSet::GetFilesMatching( const RString &sBeginning_, const RString &sCont
 		 * search instead of string match). */
 		if( !sContaining.empty() )
 		{
-			size_t pos = sPath.find( sContaining, sBeginning.size() );
+			std::size_t pos = sPath.find( sContaining, sBeginning.size() );
 			if( pos == sPath.npos )
 				continue; /* doesn't contain it */
 			if( pos + sContaining.size() > unsigned(end_pos) )
@@ -104,7 +106,7 @@ static void SplitPath( RString sPath, RString &sDir, RString &sName )
 	if( sPath.Right(1) == "/" )
 		sPath.erase( sPath.size()-1 );
 
-	size_t iSep = sPath.find_last_of( '/' );
+	std::size_t iSep = sPath.find_last_of( '/' );
 	if( iSep == RString::npos )
 	{
 		sDir = "";
@@ -204,7 +206,7 @@ bool FilenameDB::ResolvePath( RString &sPath )
 
 		m_Mutex.Unlock(); /* locked by GetFileSet */
 	}
-	
+
 	if( sPath.size() && sPath[sPath.size()-1] == '/' )
 		sPath = ret + "/";
 	else
@@ -234,14 +236,14 @@ void FilenameDB::GetFilesEqualTo( const RString &sDir, const RString &sFile, std
 void FilenameDB::GetFilesSimpleMatch( const RString &sDir, const RString &sMask, std::vector<RString> &asOut, bool bOnlyDirs )
 {
 	/* Does this contain a wildcard? */
-	size_t first_pos = sMask.find_first_of( '*' );
+	std::size_t first_pos = sMask.find_first_of( '*' );
 	if( first_pos == sMask.npos )
 	{
 		/* No; just do a regular search. */
 		GetFilesEqualTo( sDir, sMask, asOut, bOnlyDirs );
 		return;
 	}
-	size_t second_pos = sMask.find_first_of( '*', first_pos+1 );
+	std::size_t second_pos = sMask.find_first_of( '*', first_pos+1 );
 	if( second_pos == sMask.npos )
 	{
 		/* Only one *: "A*B". */
@@ -251,7 +253,7 @@ void FilenameDB::GetFilesSimpleMatch( const RString &sDir, const RString &sMask,
 	}
 
 	/* Two *s: "A*B*C". */
-	GetFilesMatching( sDir, 
+	GetFilesMatching( sDir,
 		sMask.substr(0, first_pos),
 		sMask.substr(first_pos+1, second_pos-first_pos-1),
 		sMask.substr(second_pos+1), asOut, bOnlyDirs );
@@ -485,20 +487,20 @@ void FilenameDB::FlushDirCache( const RString & /* sDir */ )
 	{
 		if( dirs.empty() )
 			break;
-		
+
 		/* Grab the first entry.  Take it out of the list while we hold the
 		 * lock, to guarantee that we own it. */
 		pFileSet = dirs.begin()->second;
-		
+
 		dirs.erase( dirs.begin() );
-		
+
 		/* If it's being filled, we don't really own it until it's finished being
 		 * filled, so wait. */
 		while( !pFileSet->m_bFilled )
 			m_Mutex.Wait();
 		delete pFileSet;
 	}
-	
+
 #if 0
 	/* XXX: This is tricky, we want to flush all of the subdirectories of
 	 * sDir, but once we unlock the mutex, we basically have to start over.
@@ -576,7 +578,7 @@ void FilenameDB::GetDirListing( const RString &sPath_, std::vector<RString> &asA
 	ASSERT( !sPath.empty() );
 
 	/* Strip off the last path element and use it as a mask. */
-	size_t  pos = sPath.find_last_of( '/' );
+	std::size_t  pos = sPath.find_last_of( '/' );
 	RString fn;
 	if( pos == sPath.npos )
 	{

@@ -4,8 +4,10 @@
 #include "RageTimer.h"
 #include "RageThreads.h"
 #include "RageUtil.h"
-#include <sys/time.h>
+
+#include <cstddef>
 #include <errno.h>
+#include <sys/time.h>
 
 #if defined(UNIX)
 #include "archutils/Unix/RunningUnderValgrind.h"
@@ -94,7 +96,7 @@ ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, uint64_t *piThre
 
 	// Copy the thread name.
 	const char *rawname = RageThread::GetThreadNameByID( *piThreadID );
-	const size_t maxNameLen = sizeof( thread->name );
+	const std::size_t maxNameLen = sizeof( thread->name );
 	if (strlen(rawname) < maxNameLen) {
 		// If it fits, I sits^H^H^H^Hcopy.
 		strncpy( thread->name, rawname, maxNameLen );

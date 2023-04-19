@@ -27,6 +27,7 @@
 #include "Character.h"
 
 #include <algorithm>
+#include <cstddef>
 
 const RString STATS_XML            = "Stats.xml";
 const RString STATS_XML_GZ         = "Stats.xml.gz";
@@ -81,7 +82,7 @@ void Profile::ClearSongs()
 		return;
 	}
 	Song* gamestate_curr_song= GAMESTATE->m_pCurSong;
-	for(size_t i= 0; i < m_songs.size(); ++i)
+	for(std::size_t i= 0; i < m_songs.size(); ++i)
 	{
 		Song* curr_song= m_songs[i];
 		if(curr_song == gamestate_curr_song)
@@ -256,7 +257,7 @@ int Profile::GetCalculatedWeightPounds() const
 {
 	if( m_iWeightPounds == 0 )	// weight not entered
 		return DEFAULT_WEIGHT_POUNDS;
-	else 
+	else
 		return m_iWeightPounds;
 }
 
@@ -361,7 +362,7 @@ float Profile::GetSongsPossible( StepsType st, Difficulty dc ) const
 	for( unsigned i=0; i<vSongs.size(); i++ )
 	{
 		Song* pSong = vSongs[i];
-		
+
 		if( !pSong->NormallyDisplayed() )
 			continue;	// skip
 
@@ -369,7 +370,7 @@ float Profile::GetSongsPossible( StepsType st, Difficulty dc ) const
 		for( unsigned j=0; j<vSteps.size(); j++ )
 		{
 			Steps* pSteps = vSteps[j];
-			
+
 			if( pSteps->m_StepsType != st )
 				continue;	// skip
 
@@ -396,7 +397,7 @@ float Profile::GetSongsActual( StepsType st, Difficulty dc ) const
 
 		CHECKPOINT_M( ssprintf("Profile::GetSongsActual: %p", static_cast<void*>(pSong)) );
 
-		// If the Song isn't loaded on the current machine, then we can't 
+		// If the Song isn't loaded on the current machine, then we can't
 		// get radar values to compute dance points.
 		if( pSong == nullptr )
 			continue;
@@ -413,7 +414,7 @@ float Profile::GetSongsActual( StepsType st, Difficulty dc ) const
 			Steps* pSteps = sid.ToSteps( pSong, true );
 			CHECKPOINT_M( ssprintf("Profile::GetSongsActual: song %p, steps %p", static_cast<void*>(pSong), static_cast<void*>(pSteps)) );
 
-			// If the Steps isn't loaded on the current machine, then we can't 
+			// If the Steps isn't loaded on the current machine, then we can't
 			// get radar values to compute dance points.
 			if( pSteps == nullptr )
 				continue;
@@ -426,7 +427,7 @@ float Profile::GetSongsActual( StepsType st, Difficulty dc ) const
 			{
 				continue;	// skip
 			}
-			
+
 			CHECKPOINT_M( ssprintf("Profile::GetSongsActual: difficulty %s is correct", DifficultyToString(dc).c_str()));
 
 			const HighScoresForASteps& h = j.second;
@@ -920,10 +921,10 @@ void Profile::MergeScoresFromOtherProfile(Profile* other, bool skip_totals,
 	{
 		// The old screenshot count is stored so we know where to start in the
 		// list when copying the screenshot images.
-		size_t old_count= m_vScreenshots.size();
+		std::size_t old_count= m_vScreenshots.size();
 		m_vScreenshots.insert(m_vScreenshots.end(),
 			other->m_vScreenshots.begin(), other->m_vScreenshots.end());
-		for(size_t sid= old_count; sid < m_vScreenshots.size(); ++sid)
+		for(std::size_t sid= old_count; sid < m_vScreenshots.size(); ++sid)
 		{
 			RString old_path= from_dir + "Screenshots/" + m_vScreenshots[sid].sFileName;
 			RString new_path= to_dir + "Screenshots/" + m_vScreenshots[sid].sFileName;
@@ -1149,7 +1150,7 @@ void Profile::HandleStatsPrefixChange(RString dir, bool require_signature)
 		SaveAllToDir(dir, require_signature);
 	}
 }
-	
+
 ProfileLoadResult Profile::LoadAllFromDir( RString sDir, bool bRequireSignature )
 {
 	LOG->Trace( "Profile::LoadAllFromDir( %s )", sDir.c_str() );
@@ -1194,7 +1195,7 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot)
 		StripMacResourceForks(song_folders);
 		LOG->Trace("Found %i songs in profile.", int(song_folders.size()));
 		// Only songs that are successfully loaded count towards the limit. -Kyz
-		for(size_t song_index= 0; song_index < song_folders.size()
+		for(std::size_t song_index= 0; song_index < song_folders.size()
 					&& m_songs.size() < PREFSMAN->m_custom_songs_max_count;
 				++song_index)
 		{
@@ -1276,7 +1277,7 @@ ProfileLoadResult Profile::LoadStatsFromDir(RString dir, bool require_signature)
 	}
 
 	if(require_signature)
-	{ 
+	{
 		RString sStatsXmlSigFile = fn+SIGNATURE_APPEND;
 		RString sDontShareFile = dir + DONT_SHARE_SIG;
 
@@ -1531,7 +1532,7 @@ XNode* Profile::SaveGeneralDataCreateNode() const
 	XNode* pGeneralDataNode = new XNode( "GeneralData" );
 
 	// TRICKY: These are write-only elements that are normally never read again.
-	// This data is required by other apps (like internet ranking), but is 
+	// This data is required by other apps (like internet ranking), but is
 	// redundant to the game app.
 	pGeneralDataNode->AppendChild( "DisplayName",			GetDisplayNameOrHighScoreName() );
 	pGeneralDataNode->AppendChild( "CharacterID",			m_sCharacterID );
@@ -1574,7 +1575,7 @@ XNode* Profile::SaveGeneralDataCreateNode() const
 	pGeneralDataNode->AppendChild( "TotalHands",			m_iTotalHands );
 	pGeneralDataNode->AppendChild( "TotalLifts",			m_iTotalLifts );
 
-	// Keep declared variables in a very local scope so they aren't 
+	// Keep declared variables in a very local scope so they aren't
 	// accidentally used where they're not intended.  There's a lot of
 	// copying and pasting in this code.
 
@@ -1918,9 +1919,9 @@ float Profile::CalculateCaloriesFromHeartRate(float HeartRate, float Duration)
 		Female: ((-20.4022 + (0.4472 x HR) - (0.1263 x W) + (0.074 x A))/4.184) x T
 		where
 
-		HR = Heart rate (in beats/minute) 
-		W = Weight (in kilograms) 
-		A = Age (in years) 
+		HR = Heart rate (in beats/minute)
+		W = Weight (in kilograms)
+		A = Age (in years)
 		T = Exercise duration time (in minutes)
 
 		Equations for Determination of Calorie Burn if VO2max is Known
@@ -1929,10 +1930,10 @@ float Profile::CalculateCaloriesFromHeartRate(float HeartRate, float Duration)
 		Female: ((-59.3954 + (0.45 x HR) + (0.380 x VO2max) + (0.103 x W) + (0.274 x A))/4.184) x T
 		where
 
-		HR = Heart rate (in beats/minute) 
-		VO2max = Maximal oxygen consumption (in mL•kg-1•min-1) 
-		W = Weight (in kilograms) 
-		A = Age (in years) 
+		HR = Heart rate (in beats/minute)
+		VO2max = Maximal oxygen consumption (in mL•kg-1•min-1)
+		W = Weight (in kilograms)
+		A = Age (in years)
 		T = Exercise duration time (in minutes)
 	*/
 	// Duration passed in is in seconds.  Convert it to minutes to make the code
@@ -2054,7 +2055,7 @@ void Profile::LoadSongScoresFromNode( const XNode* pSongScores )
 			const XNode *pHighScoreListNode = pSteps->GetChild("HighScoreList");
 			if( pHighScoreListNode == nullptr )
 				WARN_AND_CONTINUE;
-			
+
 			HighScoreList &hsl = m_SongHighScores[songID].m_StepsHighScores[stepsID].hsl;
 			hsl.LoadFromNode( pHighScoreListNode );
 		}
@@ -2124,9 +2125,9 @@ void Profile::LoadCourseScoresFromNode( const XNode* pCourseScores )
 		//	WARN_AND_CONTINUE;
 
 
-		// Backward compatability hack to fix importing scores of old style 
+		// Backward compatability hack to fix importing scores of old style
 		// courses that weren't in group folder but have now been moved into
-		// a group folder: 
+		// a group folder:
 		// If the courseID doesn't resolve, then take the file name part of sPath
 		// and search for matches of just the file name.
 		{
@@ -2156,7 +2157,7 @@ void Profile::LoadCourseScoresFromNode( const XNode* pCourseScores )
 		{
 			if( pTrail->GetName() != "Trail" )
 				continue;
-			
+
 			TrailID trailID;
 			trailID.LoadFromNode( pTrail );
 			if( !trailID.IsValid() )
@@ -2165,7 +2166,7 @@ void Profile::LoadCourseScoresFromNode( const XNode* pCourseScores )
 			const XNode *pHighScoreListNode = pTrail->GetChild("HighScoreList");
 			if( pHighScoreListNode == nullptr )
 				WARN_AND_CONTINUE;
-			
+
 			HighScoreList &hsl = m_CourseHighScores[courseID].m_TrailHighScores[trailID].hsl;
 			hsl.LoadFromNode( pHighScoreListNode );
 		}
@@ -2240,7 +2241,7 @@ void Profile::LoadCategoryScoresFromNode( const XNode* pCategoryScores )
 			const XNode *pHighScoreListNode = pRadarCategory->GetChild("HighScoreList");
 			if( pHighScoreListNode == nullptr )
 				WARN_AND_CONTINUE;
-			
+
 			HighScoreList &hsl = this->GetCategoryHighScoreList( st, rc );
 			hsl.LoadFromNode( pHighScoreListNode );
 		}
@@ -2319,7 +2320,7 @@ void Profile::LoadCalorieDataFromNode( const XNode* pCalorieData )
 		pCaloriesBurned->GetTextValue(fCaloriesBurned);
 
 		m_mapDayToCaloriesBurned[date].fCals = fCaloriesBurned;
-	}	
+	}
 }
 
 XNode* Profile::SaveCalorieDataCreateNode() const
@@ -2540,7 +2541,7 @@ RString Profile::MakeFileNameNoExtension( RString sFileNameBeginning, int iIndex
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the Profile. */ 
+/** @brief Allow Lua to have access to the Profile. */
 class LunaProfile: public Luna<Profile>
 {
 public:
@@ -2780,7 +2781,7 @@ public:
 	{
 		lua_createtable(L, p->m_songs.size(), 0);
 		int song_tab= lua_gettop(L);
-		for(size_t i= 0; i < p->m_songs.size(); ++i)
+		for(std::size_t i= 0; i < p->m_songs.size(); ++i)
 		{
 			p->m_songs[i]->PushSelf(L);
 			lua_rawseti(L, song_tab, i+1);
@@ -2867,7 +2868,7 @@ LUA_REGISTER_CLASS( Profile )
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -2877,7 +2878,7 @@ LUA_REGISTER_CLASS( Profile )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

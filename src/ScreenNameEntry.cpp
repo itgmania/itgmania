@@ -26,6 +26,7 @@
 #include "StatsManager.h"
 
 #include <cmath>
+#include <cstddef>
 
 // Defines specific to ScreenNameEntry
 #define CATEGORY_Y			THEME->GetMetricF(m_sName,"CategoryY")
@@ -64,10 +65,10 @@ void ScreenNameEntry::ScrollingText::Init( const RString &sName, const std::vect
 void ScreenNameEntry::ScrollingText::DrawPrimitives()
 {
 	const float fFakeBeat = GAMESTATE->m_Position.m_fSongBeat;
-	const size_t iClosestIndex = std::lrint( fFakeBeat ) % CHARS_CHOICES.size();
+	const std::size_t iClosestIndex = std::lrint( fFakeBeat ) % CHARS_CHOICES.size();
 	const float fClosestYOffset = GetClosestCharYOffset( fFakeBeat );
 
-	size_t iCharIndex = ( iClosestIndex - NUM_CHARS_TO_DRAW_BEHIND + CHARS_CHOICES.size() ) % CHARS_CHOICES.size();
+	std::size_t iCharIndex = ( iClosestIndex - NUM_CHARS_TO_DRAW_BEHIND + CHARS_CHOICES.size() ) % CHARS_CHOICES.size();
 	float fY = GRAY_ARROWS_Y + ( fClosestYOffset - g_iNumCharsToDrawBehind ) * g_fCharsSpacingY;
 
 	for( int i = 0; i < NUM_CHARS_TO_DRAW_TOTAL; ++i )
@@ -275,7 +276,7 @@ void ScreenNameEntry::Init()
 			std::vector<GameInput> gi;
 			GAMESTATE->GetCurrentStyle(p)->StyleInputToGameInput( iCol, p, gi );
 			bool gi_is_start= false;
-			for(size_t i= 0; i < gi.size(); ++i)
+			for(std::size_t i= 0; i < gi.size(); ++i)
 			{
 				gi_is_start|= (INPUTMAPPER->GameButtonToMenuButton(gi[i].button)
 					== GAME_BUTTON_START);

@@ -1,4 +1,3 @@
-#include <limits.h>
 #include "global.h"
 #include "Course.h"
 #include "CourseLoaderCRS.h"
@@ -18,6 +17,9 @@
 #include "UnlockManager.h"
 #include "Game.h"
 #include "Style.h"
+
+#include <cstddef>
+#include <limits.h>
 
 static Preference<int> MAX_SONGS_IN_EDIT_COURSE( "MaxSongsInEditCourse", -1 );
 
@@ -49,7 +51,7 @@ RString CourseEntry::GetTextDescription() const
 	std::vector<RString> vsEntryDescription;
 	Song *pSong = songID.ToSong();
 	if( pSong )
-		vsEntryDescription.push_back( pSong->GetTranslitFullTitle() ); 
+		vsEntryDescription.push_back( pSong->GetTranslitFullTitle() );
 	else
 		vsEntryDescription.push_back( "Random" );
 	if( !songCriteria.m_sGroupName.empty() )
@@ -89,7 +91,7 @@ int CourseEntry::GetNumModChanges() const
 Course::Course(): m_bIsAutogen(false), m_sPath(""), m_sMainTitle(""),
 	m_sMainTitleTranslit(""), m_sSubTitle(""), m_sSubTitleTranslit(""),
 	m_sScripter(""), m_sDescription(""), m_sBannerPath(""), m_sBackgroundPath(""),
-	m_sCDTitlePath(""), m_sGroupName(""), m_bRepeat(false), m_fGoalSeconds(0), 
+	m_sCDTitlePath(""), m_sGroupName(""), m_bRepeat(false), m_fGoalSeconds(0),
 	m_bShuffle(false), m_iLives(-1), m_bSortByMeter(false),
 	m_bIncomplete(false), m_vEntries(), m_SortOrder_TotalDifficulty(0),
 	m_SortOrder_Ranking(0), m_LoadedFromProfile(ProfileSlot_Invalid),
@@ -104,7 +106,7 @@ CourseType Course::GetCourseType() const
 {
 	if( m_bRepeat )
 		return COURSE_TYPE_ENDLESS;
-	if( m_iLives > 0 ) 
+	if( m_iLives > 0 )
 		return COURSE_TYPE_ONI;
 	if( !m_vEntries.empty()  &&  m_vEntries[0].fGainSeconds > 0 )
 		return COURSE_TYPE_SURVIVAL;
@@ -223,9 +225,9 @@ struct SortTrailEntry
 {
 	TrailEntry entry;
 	int SortMeter;
-	
+
 	SortTrailEntry(): entry(), SortMeter(0) {}
-	
+
 	bool operator< ( const SortTrailEntry &rhs ) const { return SortMeter < rhs.SortMeter; }
 };
 
@@ -445,7 +447,7 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 	// Set to true if CourseDifficulty is able to change something.
 	bool bCourseDifficultyIsSignificant = (cd == Difficulty_Medium);
 
-	
+
 
 	// Resolve each entry to a Song and Steps.
 	if( trail.m_CourseType == COURSE_TYPE_ENDLESS )
@@ -743,7 +745,7 @@ void Course::GetTrailUnsortedEndless( const std::vector<CourseEntry> &entries, T
 		ASSERT(e->iChooseIndex >= 0);
 		// If we're trying to pick BEST100 when only 99 songs exist,
 		// we have a problem, so bail out
-		if (static_cast<size_t>(e->iChooseIndex) >= vpSongs.size()) {
+		if (static_cast<std::size_t>(e->iChooseIndex) >= vpSongs.size()) {
 			continue;
 		}
 
@@ -959,7 +961,7 @@ void Course::Invalidate( const Song *pStaleSong )
 	}
 
 	// Invalidate any Trails that contain this song.
-	// If we find a Trail that contains this song, then it's part of a 
+	// If we find a Trail that contains this song, then it's part of a
 	// non-fixed entry. So, regenerating the Trail will force different
 	// songs to be chosen.
 	FOREACH_ENUM( StepsType,st )
@@ -980,8 +982,8 @@ void Course::Invalidate( const Song *pStaleSong )
 void Course::RegenerateNonFixedTrails() const
 {
 	// Only need to regen Trails if the Course has a random entry.
-	// We can create these Trails on demand because we don't 
-	// calculate RadarValues for Trails with one or more non-fixed 
+	// We can create these Trails on demand because we don't
+	// calculate RadarValues for Trails with one or more non-fixed
 	// entry.
 	if( AllSongsAreFixed() )
 		return;
@@ -1003,7 +1005,7 @@ RageColor Course::GetColor() const
 	case COURSE_SORT_PREFERRED:
 		return SORT_PREFERRED_COLOR;	//This will also be used for autogen'd courses in some cases.
 
-	case COURSE_SORT_SONGS:	
+	case COURSE_SORT_SONGS:
 		if( m_vEntries.size() >= 7 )		return SORT_LEVEL2_COLOR;
 		else if( m_vEntries.size() >= 4 )	return SORT_LEVEL4_COLOR;
 		else					return SORT_LEVEL5_COLOR;
@@ -1220,7 +1222,7 @@ bool Course::Matches( RString sGroup, RString sCourse ) const
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the CourseEntry. */ 
+/** @brief Allow Lua to have access to the CourseEntry. */
 class LunaCourseEntry: public Luna<CourseEntry>
 {
 public:
@@ -1240,7 +1242,7 @@ public:
 	// GetTimedModifiers - table
 	DEFINE_METHOD( GetNumModChanges, GetNumModChanges() );
 	DEFINE_METHOD( GetTextDescription, GetTextDescription() );
-	
+
 	LunaCourseEntry()
 	{
 		ADD_METHOD( GetSong );
@@ -1259,7 +1261,7 @@ public:
 LUA_REGISTER_CLASS( CourseEntry )
 
 // Now for the Course bindings:
-/** @brief Allow Lua to have access to the Course. */ 
+/** @brief Allow Lua to have access to the Course. */
 class LunaCourse: public Luna<Course>
 {
 public:
@@ -1271,7 +1273,7 @@ public:
 	DEFINE_METHOD( GetCourseType, GetCourseType() )
 	static int GetCourseEntry(T* p, lua_State* L)
 	{
-		size_t id= static_cast<size_t>(IArg(1));
+		std::size_t id= static_cast<std::size_t>(IArg(1));
 		if(id >= p->m_vEntries.size())
 		{
 			lua_pushnil(L);
@@ -1356,8 +1358,8 @@ public:
 		ADD_METHOD( GetGroupName );
 		ADD_METHOD( IsAutogen );
 		ADD_METHOD( GetEstimatedNumStages );
-		ADD_METHOD( GetScripter ); 
-		ADD_METHOD( GetDescription ); 
+		ADD_METHOD( GetScripter );
+		ADD_METHOD( GetDescription );
 		ADD_METHOD( GetTotalSeconds );
 		ADD_METHOD( IsEndless );
 		ADD_METHOD( IsNonstop );
@@ -1379,7 +1381,7 @@ LUA_REGISTER_CLASS( Course )
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -1389,7 +1391,7 @@ LUA_REGISTER_CLASS( Course )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

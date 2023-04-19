@@ -23,6 +23,8 @@
 #include "arch/ArchHooks/ArchHooks.h"
 #include "ScreenPrompt.h"
 
+#include <cstddef>
+
 static LocalizedString COULD_NOT_LAUNCH_BROWSER( "GameCommand", "Could not launch web browser." );
 
 REGISTER_CLASS_TRAITS( GameCommand, new GameCommand(*pCopy) );
@@ -86,8 +88,8 @@ bool GameCommand::DescribesCurrentMode( PlayerNumber pn ) const
 		return false;
 	if( m_pStyle && GAMESTATE->GetCurrentStyle(pn) != m_pStyle )
 		return false;
-	// HACK: don't compare m_dc if m_pSteps is set.  This causes problems 
-	// in ScreenSelectOptionsMaster::ImportOptions if m_PreferredDifficulty 
+	// HACK: don't compare m_dc if m_pSteps is set.  This causes problems
+	// in ScreenSelectOptionsMaster::ImportOptions if m_PreferredDifficulty
 	// doesn't match the difficulty of m_pCurSteps.
 	if( m_pSteps == nullptr  &&  m_dc != Difficulty_Invalid )
 	{
@@ -278,7 +280,7 @@ void GameCommand::LoadOne( const Command& cmd )
 	{
 		CHECK_INVALID_COND(m_pSong, SONGMAN->FindSong(sValue),
 			(SONGMAN->FindSong(sValue) == nullptr),
-			(ssprintf("Song \"%s\" not found", sValue.c_str()))); 
+			(ssprintf("Song \"%s\" not found", sValue.c_str())));
 	}
 
 	else if( sName == "steps" )
@@ -318,7 +320,7 @@ void GameCommand::LoadOne( const Command& cmd )
 			(SONGMAN->FindCourse("", sValue) == nullptr),
 			(ssprintf( "Course \"%s\" not found", sValue.c_str())));
 	}
-	
+
 	else if( sName == "trail" )
 	{
 		RString sTrail = sValue;
@@ -348,7 +350,7 @@ void GameCommand::LoadOne( const Command& cmd )
 			}
 		}
 	}
-	
+
 	else if( sName == "setenv" )
 	{
 		if((cmd.m_vsArgs.size() - 1) % 2 != 0)
@@ -357,13 +359,13 @@ void GameCommand::LoadOne( const Command& cmd )
 		}
 		else
 		{
-			for(size_t i= 1; i < cmd.m_vsArgs.size(); i+= 2)
+			for(std::size_t i= 1; i < cmd.m_vsArgs.size(); i+= 2)
 			{
 				m_SetEnv[cmd.m_vsArgs[i]]= cmd.m_vsArgs[i+1];
 			}
 		}
 	}
-	
+
 	else if( sName == "songgroup" )
 	{
 		CHECK_INVALID_COND(m_sSongGroup, sValue, (!SONGMAN->DoesSongGroupExist(sValue)), ("Song group \"" + sValue + "\" does not exist."));
@@ -447,7 +449,7 @@ void GameCommand::LoadOne( const Command& cmd )
 		}
 		else
 		{
-			for(size_t i= 1; i < cmd.m_vsArgs.size(); i+= 2)
+			for(std::size_t i= 1; i < cmd.m_vsArgs.size(); i+= 2)
 			{
 				if(IPreference::GetPreferenceByName(cmd.m_vsArgs[i]) == nullptr)
 				{
@@ -568,7 +570,7 @@ bool GameCommand::IsPlayable( RString *why ) const
 
 		const int iNumCreditsPaid = GetNumCreditsPaid();
 		const int iNumCreditsRequired = GetCreditsRequiredToPlayStyle(m_pStyle);
-		
+
 		/* With PREFSMAN->m_bDelayedCreditsReconcile disabled, enough credits must
 		 * be paid. (This means that enough sides must be joined.)  Enabled, simply
 		 * having enough credits lying in the machine is sufficient; we'll deduct the
@@ -724,7 +726,7 @@ void GameCommand::ApplySelf( const std::vector<PlayerNumber> &vpns ) const
             		//Credit Used, make sure to update CoinsFile
             		BOOKKEEPER->WriteCoinsFile(GAMESTATE->m_iCoins.Get());
 		}
-		
+
 		// If only one side is joined and we picked a style that requires both
 		// sides, join the other side.
 		switch( m_pStyle->m_StyleType )
@@ -871,7 +873,7 @@ void GameCommand::ApplySelf( const std::vector<PlayerNumber> &vpns ) const
 		GAMESTATE->GetDefaultSongOptions( so );
 		GAMESTATE->m_SongOptions.Assign( ModsLevel_Stage, so );
 	}
-	// HACK: Set life type to BATTERY just once here so it happens once and 
+	// HACK: Set life type to BATTERY just once here so it happens once and
 	// we don't override the user's changes if they back out.
 	FOREACH_PlayerNumber(pn)
 	{
@@ -892,11 +894,11 @@ bool GameCommand::IsZero() const
 		m_sAnnouncer != "" ||
 		m_sPreferredModifiers != "" ||
 		m_sStageModifiers != "" ||
-		m_pSong != nullptr || 
-		m_pSteps != nullptr || 
-		m_pCourse != nullptr || 
-		m_pTrail != nullptr || 
-		m_pCharacter != nullptr || 
+		m_pSong != nullptr ||
+		m_pSteps != nullptr ||
+		m_pCourse != nullptr ||
+		m_pTrail != nullptr ||
+		m_pCharacter != nullptr ||
 		m_CourseDifficulty != Difficulty_Invalid ||
 		!m_sSongGroup.empty() ||
 		m_SortOrder != SortOrder_Invalid ||
@@ -916,7 +918,7 @@ bool GameCommand::IsZero() const
 #include "Steps.h"
 #include "Character.h"
 
-/** @brief Allow Lua to have access to the GameCommand. */ 
+/** @brief Allow Lua to have access to the GameCommand. */
 class LunaGameCommand: public Luna<GameCommand>
 {
 public:
@@ -975,7 +977,7 @@ LUA_REGISTER_CLASS( GameCommand )
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -985,7 +987,7 @@ LUA_REGISTER_CLASS( GameCommand )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

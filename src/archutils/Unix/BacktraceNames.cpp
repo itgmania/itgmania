@@ -3,6 +3,7 @@
 #include "global.h"
 #include "BacktraceNames.h"
 
+#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <cstdarg>
@@ -79,7 +80,7 @@ RString BacktraceNames::Format() const
 	if( ShortenedPath != "" )
 	{
 		/* Abbreviate the module name. */
-		size_t slash = ShortenedPath.rfind('/');
+		std::size_t slash = ShortenedPath.rfind('/');
 		if( slash != ShortenedPath.npos )
 			ShortenedPath = ShortenedPath.substr(slash+1);
 		ShortenedPath = RString("(") + ShortenedPath + ")";
@@ -324,7 +325,7 @@ void BacktraceNames::FromString( RString s )
 
     if( MangledAndOffset != "" )
     {
-        size_t plus = MangledAndOffset.rfind('+');
+        std::size_t plus = MangledAndOffset.rfind('+');
 
         if(plus == MangledAndOffset.npos)
         {

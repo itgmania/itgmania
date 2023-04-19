@@ -17,6 +17,7 @@
 #include <cassert>
 #include <cfloat>
 #include <cmath>
+#include <cstddef>
 
 REGISTER_ACTOR_CLASS( Sprite );
 
@@ -1201,12 +1202,12 @@ public:
 			luaL_error(L, "State properties must be in a table.");
 		}
 		std::vector<Sprite::State> new_states;
-		size_t num_states= lua_objlen(L, 1);
+		std::size_t num_states= lua_objlen(L, 1);
 		if(num_states == 0)
 		{
 			luaL_error(L, "A Sprite cannot have zero states.");
 		}
-		for(size_t s= 0; s < num_states; ++s)
+		for(std::size_t s= 0; s < num_states; ++s)
 		{
 			Sprite::State new_state;
 			lua_rawgeti(L, 1, s+1);

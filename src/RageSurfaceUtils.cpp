@@ -6,6 +6,7 @@
 #include "RageFile.h"
 
 #include <cmath>
+#include <cstddef>
 
 uint32_t RageSurfaceUtils::decodepixel( const uint8_t *p, int bpp )
 {
@@ -857,7 +858,7 @@ RageSurface *RageSurfaceUtils::PalettizeToGrayscale( const RageSurface *src_surf
 	const unsigned int Amask = ((1u << AlphaBits) - 1u) << Ashift;	// alpha mask
 	const unsigned int Aloss = 8u-AlphaBits;
 
-	for( size_t index = 0; index < TotalColors; ++index )
+	for( std::size_t index = 0; index < TotalColors; ++index )
 	{
 		const unsigned int I = (index & Imask) >> Ishift;
 		const unsigned int A = (index & Amask) >> Ashift;

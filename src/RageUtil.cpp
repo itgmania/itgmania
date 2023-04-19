@@ -14,6 +14,7 @@
 
 #include <cfloat>
 #include <cmath>
+#include <cstddef>
 #include <ctime>
 #include <functional>
 #include <map>
@@ -26,7 +27,7 @@ const RString CUSTOM_SONG_PATH= "/@mem/";
 
 bool HexToBinary(const RString&, RString&);
 void utf8_sanitize(RString &);
-void UnicodeUpperLower(wchar_t *, size_t, const unsigned char *);
+void UnicodeUpperLower(wchar_t *, std::size_t, const unsigned char *);
 
 RandomGen g_RandomNumberGenerator;
 
@@ -145,7 +146,7 @@ bool IsAnInt( const RString &s )
 	if( !s.size() )
 		return false;
 
-	for( size_t i=0; i < s.size(); ++i )
+	for( std::size_t i=0; i < s.size(); ++i )
 		if( s[i] < '0' || s[i] > '9' )
 			return false;
 
@@ -157,7 +158,7 @@ bool IsHexVal( const RString &s )
 	if( !s.size() )
 		return false;
 
-	for( size_t i=0; i < s.size(); ++i )
+	for( std::size_t i=0; i < s.size(); ++i )
 		if( !(s[i] >= '0' && s[i] <= '9') &&
 			!(toupper(s[i]) >= 'A' && toupper(s[i]) <= 'F'))
 			return false;
@@ -165,11 +166,11 @@ bool IsHexVal( const RString &s )
 	return true;
 }
 
-RString BinaryToHex( const void *pData_, size_t iNumBytes )
+RString BinaryToHex( const void *pData_, std::size_t iNumBytes )
 {
 	const unsigned char *pData = (const unsigned char *) pData_;
 	RString s;
-	for( size_t i=0; i<iNumBytes; i++ )
+	for( std::size_t i=0; i<iNumBytes; i++ )
 	{
 		unsigned val = pData[i];
 		s += ssprintf( "%02x", val );
@@ -287,10 +288,10 @@ RString Commify( int iNum )
 
 RString Commify(const RString& num, const RString& sep, const RString& dot)
 {
-	size_t num_start= 0;
-	size_t num_end= num.size();
-	size_t dot_pos= num.find(dot);
-	size_t dash_pos= num.find('-');
+	std::size_t num_start= 0;
+	std::size_t num_end= num.size();
+	std::size_t dot_pos= num.find(dot);
+	std::size_t dash_pos= num.find('-');
 	if(dot_pos != std::string::npos)
 	{
 		num_end= dot_pos;
@@ -299,22 +300,22 @@ RString Commify(const RString& num, const RString& sep, const RString& dot)
 	{
 		num_start= dash_pos + 1;
 	}
-	size_t num_size= num_end - num_start;
-	size_t commies= (num_size / 3) - (!(num_size % 3));
+	std::size_t num_size= num_end - num_start;
+	std::size_t commies= (num_size / 3) - (!(num_size % 3));
 	if(commies < 1)
 	{
 		return num;
 	}
-	size_t commified_len= num.size() + (commies * sep.size());
+	std::size_t commified_len= num.size() + (commies * sep.size());
 	RString ret;
 	ret.resize(commified_len);
-	size_t dest= 0;
-	size_t next_comma= (num_size % 3) + (3 * (!(num_size % 3))) + num_start;
-	for(size_t c= 0; c < num.size(); ++c)
+	std::size_t dest= 0;
+	std::size_t next_comma= (num_size % 3) + (3 * (!(num_size % 3))) + num_start;
+	for(std::size_t c= 0; c < num.size(); ++c)
 	{
 		if(c == next_comma && c < num_end)
 		{
-			for(size_t s= 0; s < sep.size(); ++s)
+			for(std::size_t s= 0; s < sep.size(); ++s)
 			{
 				ret[dest]= sep[s];
 				++dest;
@@ -454,17 +455,17 @@ RString ConvertI64FormatString( const RString &sStr )
 	RString sRet;
 	sRet.reserve( sStr.size() + 16 );
 
-	size_t iOffset = 0;
+	std::size_t iOffset = 0;
 	while( iOffset < sStr.size() )
 	{
-		size_t iPercent = sStr.find( '%', iOffset );
+		std::size_t iPercent = sStr.find( '%', iOffset );
 		if( iPercent != sStr.npos )
 		{
 			sRet.append( sStr, iOffset, iPercent - iOffset );
 			iOffset = iPercent;
 		}
 
-		size_t iEnd = sStr.find_first_of( "diouxXeEfFgGaAcsCSpnm%", iOffset + 1 );
+		std::size_t iEnd = sStr.find_first_of( "diouxXeEfFgGaAcsCSpnm%", iOffset + 1 );
 		if( iEnd != sStr.npos && iEnd - iPercent >= 3 && iPercent > 2 && sStr[iEnd-2] == 'l' && sStr[iEnd-1] == 'l' )
 		{
 			sRet.append( sStr, iPercent, iEnd - iPercent - 2 ); // %
@@ -655,9 +656,9 @@ RString join( const RString &sDeliminator, const std::vector<RString> &sSource)
 		return RString();
 
 	RString sTmp;
-	size_t final_size= 0;
-	size_t delim_size= sDeliminator.size();
-	for(size_t n= 0; n < sSource.size()-1; ++n)
+	std::size_t final_size= 0;
+	std::size_t delim_size= sDeliminator.size();
+	for(std::size_t n= 0; n < sSource.size()-1; ++n)
 	{
 		final_size+= sSource[n].size() + delim_size;
 	}
@@ -679,8 +680,8 @@ RString join( const RString &sDelimitor, std::vector<RString>::const_iterator be
 		return RString();
 
 	RString sRet;
-	size_t final_size= 0;
-	size_t delim_size= sDelimitor.size();
+	std::size_t final_size= 0;
+	std::size_t delim_size= sDelimitor.size();
 	for(std::vector<RString>::const_iterator curr= begin; curr != end; ++curr)
 	{
 		final_size+= curr->size();
@@ -777,10 +778,10 @@ void do_split( const S &Source, const C Delimitor, std::vector<S> &AddIt, const 
 	if( Source.empty() )
 		return;
 
-	size_t startpos = 0;
+	std::size_t startpos = 0;
 
 	do {
-		size_t pos;
+		std::size_t pos;
 		pos = Source.find( Delimitor, startpos );
 		if( pos == Source.npos )
 			pos = Source.size();
@@ -854,7 +855,7 @@ void do_split( const S &Source, const S &Delimitor, int &begin, int &size, int l
 
 	/* Where's the string function to find within a substring?
 	 * C++ strings apparently are missing that ... */
-	size_t pos;
+	std::size_t pos;
 	if( Delimitor.size() == 1 )
 		pos = Source.find( Delimitor[0], begin );
 	else
@@ -943,11 +944,11 @@ RString SetExtension( const RString &sPath, const RString &sExt )
 
 RString GetExtension( const RString &sPath )
 {
-	size_t pos = sPath.rfind( '.' );
+	std::size_t pos = sPath.rfind( '.' );
 	if( pos == sPath.npos )
 		return RString();
 
-	size_t slash = sPath.find( '/', pos );
+	std::size_t slash = sPath.find( '/', pos );
 	if( slash != sPath.npos )
 		return RString(); /* rare: path/dir.ext/fn */
 
@@ -993,11 +994,11 @@ bool FindFirstFilenameContaining(const std::vector<RString>& filenames,
 	RString& out, const std::vector<RString>& starts_with,
 	const std::vector<RString>& contains, const std::vector<RString>& ends_with)
 {
-	for(size_t i= 0; i < filenames.size(); ++i)
+	for(std::size_t i= 0; i < filenames.size(); ++i)
 	{
 		RString lower= GetFileNameWithoutExtension(filenames[i]);
 		lower.MakeLower();
-		for(size_t s= 0; s < starts_with.size(); ++s)
+		for(std::size_t s= 0; s < starts_with.size(); ++s)
 		{
 			if(!lower.compare(0, starts_with[s].size(), starts_with[s]))
 			{
@@ -1005,12 +1006,12 @@ bool FindFirstFilenameContaining(const std::vector<RString>& filenames,
 				return true;
 			}
 		}
-		size_t lower_size= lower.size();
-		for(size_t s= 0; s < ends_with.size(); ++s)
+		std::size_t lower_size= lower.size();
+		for(std::size_t s= 0; s < ends_with.size(); ++s)
 		{
 			if(lower_size >= ends_with[s].size())
 			{
-				size_t end_pos= lower_size - ends_with[s].size();
+				std::size_t end_pos= lower_size - ends_with[s].size();
 				if(!lower.compare(end_pos, std::string::npos, ends_with[s]))
 				{
 					out= filenames[i];
@@ -1018,7 +1019,7 @@ bool FindFirstFilenameContaining(const std::vector<RString>& filenames,
 				}
 			}
 		}
-		for(size_t s= 0; s < contains.size(); ++s)
+		for(std::size_t s= 0; s < contains.size(); ++s)
 		{
 			if(lower.find(contains[s]) != std::string::npos)
 			{
@@ -1058,7 +1059,7 @@ bool GetCommandlineArgument( const RString &option, RString *argument, int iInde
 	{
 		const RString CurArgument = g_argv[arg];
 
-		const size_t i = CurArgument.find( "=" );
+		const std::size_t i = CurArgument.find( "=" );
 		RString CurOption = CurArgument.substr(0,i);
 		if( CurOption.CompareNoCase(optstr) )
 			continue; // no match
@@ -1098,7 +1099,7 @@ RString GetCwd()
  *   http://www.theorem.com/java/CRC32.java,
  *   http://www.faqs.org/rfcs/rfc1952.html
  */
-void CRC32( unsigned int &iCRC, const void *pVoidBuffer, size_t iSize )
+void CRC32( unsigned int &iCRC, const void *pVoidBuffer, std::size_t iSize )
 {
 	static unsigned tab[256];
 	static bool initted = false;
@@ -1594,7 +1595,7 @@ bool utf8_to_wchar_ec( const RString &s, unsigned &start, wchar_t &ch )
 }
 
 /* Like utf8_to_wchar_ec, but only does enough error checking to prevent crashing. */
-bool utf8_to_wchar( const char *s, size_t iLength, unsigned &start, wchar_t &ch )
+bool utf8_to_wchar( const char *s, std::size_t iLength, unsigned &start, wchar_t &ch )
 {
 	if( start >= iLength )
 		return false;
@@ -1722,7 +1723,7 @@ void utf8_remove_bom( RString &sLine )
 		sLine.erase(0, 3);
 }
 
-static int UnicodeDoUpper( char *p, size_t iLen, const unsigned char pMapping[256] )
+static int UnicodeDoUpper( char *p, std::size_t iLen, const unsigned char pMapping[256] )
 {
 	// Note: this has problems with certain accented characters. -aj
 	wchar_t wc = L'\0';
@@ -1749,7 +1750,7 @@ static int UnicodeDoUpper( char *p, size_t iLen, const unsigned char pMapping[25
 /* Fast in-place MakeUpper and MakeLower. This only replaces characters with characters of the same UTF-8
  * length, so we never have to move the whole string. This is optimized for strings that have no
  * non-ASCII characters. */
-void MakeUpper( char *p, size_t iLen )
+void MakeUpper( char *p, std::size_t iLen )
 {
 	char *pStart = p;
 	char *pEnd = p + iLen;
@@ -1769,7 +1770,7 @@ void MakeUpper( char *p, size_t iLen )
 	}
 }
 
-void MakeLower( char *p, size_t iLen )
+void MakeLower( char *p, std::size_t iLen )
 {
 	char *pStart = p;
 	char *pEnd = p + iLen;
@@ -1789,7 +1790,7 @@ void MakeLower( char *p, size_t iLen )
 	}
 }
 
-void UnicodeUpperLower( wchar_t *p, size_t iLen, const unsigned char pMapping[256] )
+void UnicodeUpperLower( wchar_t *p, std::size_t iLen, const unsigned char pMapping[256] )
 {
 	wchar_t *pEnd = p + iLen;
 	while( p != pEnd )
@@ -1800,12 +1801,12 @@ void UnicodeUpperLower( wchar_t *p, size_t iLen, const unsigned char pMapping[25
 	}
 }
 
-void MakeUpper( wchar_t *p, size_t iLen )
+void MakeUpper( wchar_t *p, std::size_t iLen )
 {
 	UnicodeUpperLower( p, iLen, g_UpperCase );
 }
 
-void MakeLower( wchar_t *p, size_t iLen )
+void MakeLower( wchar_t *p, std::size_t iLen )
 {
 	UnicodeUpperLower( p, iLen, g_LowerCase );
 }
@@ -1928,10 +1929,10 @@ void ReplaceEntityText( RString &sText, const std::map<RString, RString> &m )
 {
 	RString sRet;
 
-	size_t iOffset = 0;
+	std::size_t iOffset = 0;
 	while( iOffset != sText.size() )
 	{
-		size_t iStart = sText.find( '&', iOffset );
+		std::size_t iStart = sText.find( '&', iOffset );
 		if( iStart == sText.npos )
 		{
 			// Optimization: if we didn't replace anything at all, do nothing.
@@ -1948,7 +1949,7 @@ void ReplaceEntityText( RString &sText, const std::map<RString, RString> &m )
 		iOffset += iStart-iOffset;
 
 		// Optimization: stop early on "&", so "&&&&&&&&&&&" isn't n^2.
-		size_t iEnd = sText.find_first_of( "&;", iStart+1 );
+		std::size_t iEnd = sText.find_first_of( "&;", iStart+1 );
 		if( iEnd == sText.npos || sText[iEnd] == '&' )
 		{
 			// & with no matching ;, or two & in a row. Append the & and continue.
@@ -1986,10 +1987,10 @@ void ReplaceEntityText( RString &sText, const std::map<char, RString> &m )
 
 	RString sRet;
 
-	size_t iOffset = 0;
+	std::size_t iOffset = 0;
 	while( iOffset != sText.size() )
 	{
-		size_t iStart = sText.find_first_of( sFind, iOffset );
+		std::size_t iStart = sText.find_first_of( sFind, iOffset );
 		if( iStart == sText.npos )
 		{
 			// Optimization: if we didn't replace anything at all, do nothing.
@@ -2028,7 +2029,7 @@ void Replace_Unicode_Markers( RString &sText )
 	{
 		// Look for &#digits;
 		bool bHex = false;
-		size_t iPos = sText.find( "&#", iStart );
+		std::size_t iPos = sText.find( "&#", iStart );
 		if( iPos == sText.npos )
 		{
 			bHex = true;
@@ -2084,11 +2085,11 @@ RString WcharDisplayText( wchar_t c )
  */
 RString Basename( const RString &sDir )
 {
-	size_t iEnd = sDir.find_last_not_of( "/\\" );
+	std::size_t iEnd = sDir.find_last_not_of( "/\\" );
 	if( iEnd == sDir.npos )
 		return RString();
 
-	size_t iStart = sDir.find_last_of( "/\\", iEnd );
+	std::size_t iStart = sDir.find_last_of( "/\\", iEnd );
 	if( iStart == sDir.npos )
 		iStart = 0;
 	else
@@ -2205,8 +2206,8 @@ void CollapsePath( RString &sPath, bool bRemoveLeadingDot )
 	RString sOut;
 	sOut.reserve( sPath.size() );
 
-	size_t iPos = 0;
-	size_t iNext;
+	std::size_t iPos = 0;
+	std::size_t iNext;
 	for( ; iPos < sPath.size(); iPos = iNext )
 	{
 		// Find the next slash.
@@ -2242,7 +2243,7 @@ void CollapsePath( RString &sPath, bool bRemoveLeadingDot )
 			}
 
 			// Search backwards for the previous path element.
-			size_t iPrev = sOut.rfind( '/', sOut.size()-2 );
+			std::size_t iPrev = sOut.rfind( '/', sOut.size()-2 );
 			if( iPrev == RString::npos )
 				iPrev = 0;
 			else
@@ -2417,7 +2418,7 @@ LuaFunction( lerp, lerp(FArg(1), FArg(2), FArg(3)) );
 int LuaFunc_BinaryToHex(lua_State* L);
 int LuaFunc_BinaryToHex(lua_State* L)
 {
-	size_t l;
+	std::size_t l;
 	const char *s = luaL_checklstring(L, 1, &l);
 
 	RString hex = BinaryToHex(s, l);
@@ -2485,7 +2486,7 @@ int LuaFunc_JsonEncode(lua_State* L)
 				return Json::Value(val);
 			}
 			case LUA_TSTRING: {
-				size_t len;
+				std::size_t len;
 				const char *s = lua_tolstring(L, index, &len);
 
 				return Json::Value(std::string(s, len));
@@ -2499,7 +2500,7 @@ int LuaFunc_JsonEncode(lua_State* L)
 					index = lua_gettop(L) + index + 1;
 				}
 
-				size_t len = lua_objlen(L, index);
+				std::size_t len = lua_objlen(L, index);
 
 				if (len > 0)
 				{
@@ -2529,7 +2530,7 @@ int LuaFunc_JsonEncode(lua_State* L)
 							luaL_error(L, "object keys must be strings");
 						}
 
-						size_t keylen;
+						std::size_t keylen;
 						const char *key = lua_tolstring(L, -2, &keylen);
 						obj[std::string(key, keylen)] = convert(-1);
 						lua_pop(L, 1);
@@ -2578,7 +2579,7 @@ int LuaFunc_JsonDecode(lua_State* L)
 		luaL_error(L, "JsonDecode requires an argument");
 	}
 
-	size_t datalen;
+	std::size_t datalen;
 	const char *data = lua_tolstring(L, 1, &datalen);
 
 	Json::Reader reader;
@@ -2687,9 +2688,9 @@ int LuaFunc_multiapproach(lua_State* L)
 	{
 		luaL_error(L, "multiapproach:  A table of current values, a table of goal values, and a table of speeds must be passed.");
 	}
-	size_t currents_len= lua_objlen(L, 1);
-	size_t goals_len= lua_objlen(L, 2);
-	size_t speeds_len= lua_objlen(L, 3);
+	std::size_t currents_len= lua_objlen(L, 1);
+	std::size_t goals_len= lua_objlen(L, 2);
+	std::size_t speeds_len= lua_objlen(L, 3);
 	float mult= 1.0f;
 	if(lua_isnumber(L, 4))
 	{
@@ -2703,7 +2704,7 @@ int LuaFunc_multiapproach(lua_State* L)
 	{
 		luaL_error(L, "multiapproach:  current, goal, and speed must all be tables.");
 	}
-	for(size_t i= 1; i <= currents_len; ++i)
+	for(std::size_t i= 1; i <= currents_len; ++i)
 	{
 		lua_rawgeti(L, 1, i);
 		lua_rawgeti(L, 2, i);

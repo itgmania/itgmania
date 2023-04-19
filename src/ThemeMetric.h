@@ -4,10 +4,11 @@
 #define THEME_METRIC_H
 
 #include "ThemeManager.h"
-#include <map>
-
 #include "LuaManager.h"
 #include "RageUtil.h"
+
+#include <cstddef>
+#include <map>
 
 /** @brief The general interface for reading ThemeMetrics. */
 class IThemeMetric
@@ -179,7 +180,7 @@ public:
 	bool operator == ( const T& input ) const { return GetValue() == input; }
 };
 
-typedef RString (*MetricName1D)(size_t N);
+typedef RString (*MetricName1D)(std::size_t N);
 
 template <class T>
 class ThemeMetric1D : public IThemeMetric
@@ -188,7 +189,7 @@ class ThemeMetric1D : public IThemeMetric
 	std::vector<ThemeMetricT> m_metric;
 
 public:
-	ThemeMetric1D( const RString& sGroup, MetricName1D pfn, size_t N )
+	ThemeMetric1D( const RString& sGroup, MetricName1D pfn, std::size_t N )
 	{
 		Load( sGroup, pfn, N );
 	}
@@ -196,7 +197,7 @@ public:
 	{
 		Load( RString(), nullptr, 0 );
 	}
-	void Load( const RString& sGroup, MetricName1D pfn, size_t N )
+	void Load( const RString& sGroup, MetricName1D pfn, std::size_t N )
 	{
 		m_metric.resize( N );
 		for( unsigned i=0; i<N; i++ )
@@ -212,13 +213,13 @@ public:
 		for( unsigned i=0; i<m_metric.size(); i++ )
 			m_metric[i].Clear();
 	}
-	const T& GetValue( size_t i ) const
+	const T& GetValue( std::size_t i ) const
 	{
 		return m_metric[i].GetValue();
 	}
 };
 
-typedef RString (*MetricName2D)(size_t N, size_t M);
+typedef RString (*MetricName2D)(std::size_t N, std::size_t M);
 
 template <class T>
 class ThemeMetric2D : public IThemeMetric
@@ -228,11 +229,11 @@ class ThemeMetric2D : public IThemeMetric
 	std::vector<ThemeMetricTVector> m_metric;
 
 public:
-	ThemeMetric2D( const RString& sGroup = "", MetricName2D pfn = nullptr, size_t N = 0, size_t M = 0 )
+	ThemeMetric2D( const RString& sGroup = "", MetricName2D pfn = nullptr, std::size_t N = 0, std::size_t M = 0 )
 	{
 		Load( sGroup, pfn, N, M );
 	}
-	void Load( const RString& sGroup, MetricName2D pfn, size_t N, size_t M )
+	void Load( const RString& sGroup, MetricName2D pfn, std::size_t N, std::size_t M )
 	{
 		m_metric.resize( N );
 		for( unsigned i=0; i<N; i++ )
@@ -254,7 +255,7 @@ public:
 			for( unsigned j=0; j<m_metric[i].size(); j++ )
 				m_metric[i][j].Clear();
 	}
-	const T& GetValue( size_t i, size_t j ) const
+	const T& GetValue( std::size_t i, std::size_t j ) const
 	{
 		return m_metric[i][j].GetValue();
 	}
@@ -308,7 +309,7 @@ public:
  * @author Chris Danford, Chris Gomez (c) 2001-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -318,7 +319,7 @@ public:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

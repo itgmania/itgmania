@@ -1,6 +1,4 @@
 #include "global.h"
-#include <cassert>
-
 #include "ActorMultiVertex.h"
 #include "RageTextureManager.h"
 #include "XmlFile.h"
@@ -14,6 +12,8 @@
 #include "LuaManager.h"
 #include "LocalizedString.h"
 
+#include <cassert>
+#include <cstddef>
 #include <numeric>
 
 const float min_state_delay= 0.0001f;
@@ -67,7 +67,7 @@ ActorMultiVertex::ActorMultiVertex()
 	_EffectMode = EffectMode_Normal;
 	_TextureMode = TextureMode_Modulate;
 	_splines.resize(num_vert_splines);
-	for(size_t i= 0; i < num_vert_splines; ++i)
+	for(std::size_t i= 0; i < num_vert_splines; ++i)
 	{
 		_splines[i].redimension(3);
 		_splines[i].m_owned_by_actor= true;
@@ -156,11 +156,11 @@ void ActorMultiVertex::UnloadTexture()
 	}
 }
 
-void ActorMultiVertex::SetNumVertices( size_t n )
+void ActorMultiVertex::SetNumVertices( std::size_t n )
 {
 	if( n == 0 )
 	{
-		for( size_t i = 0; i < AMV_Tweens.size(); ++i )
+		for( std::size_t i = 0; i < AMV_Tweens.size(); ++i )
 		{
 			AMV_Tweens[i].vertices.clear();
 		}
@@ -169,7 +169,7 @@ void ActorMultiVertex::SetNumVertices( size_t n )
 	}
 	else
 	{
-		for( size_t i = 0; i < AMV_Tweens.size(); ++i )
+		for( std::size_t i = 0; i < AMV_Tweens.size(); ++i )
 		{
 			AMV_Tweens[i].vertices.resize( n );
 		}
@@ -180,7 +180,7 @@ void ActorMultiVertex::SetNumVertices( size_t n )
 
 void ActorMultiVertex::AddVertex()
 {
-	for( size_t i = 0; i < AMV_Tweens.size(); ++i )
+	for( std::size_t i = 0; i < AMV_Tweens.size(); ++i )
 	{
 		AMV_Tweens[i].vertices.push_back( RageSpriteVertex() );
 	}
@@ -192,7 +192,7 @@ void ActorMultiVertex::AddVertices( int Add )
 {
 	int size = AMV_DestTweenState().vertices.size();
 	size += Add;
-	for( size_t i = 0; i < AMV_Tweens.size(); ++i )
+	for( std::size_t i = 0; i < AMV_Tweens.size(); ++i )
 	{
 		AMV_Tweens[i].vertices.resize( size );
 	}
@@ -224,7 +224,7 @@ void ActorMultiVertex::DrawPrimitives()
 
 	Actor::SetTextureRenderStates();
 	DISPLAY->SetEffectMode( _EffectMode );
-	
+
 	// set temporary diffuse and glow
 	static AMV_TweenState TS;
 
@@ -235,7 +235,7 @@ void ActorMultiVertex::DrawPrimitives()
 	if( m_pTempState->diffuse[0] != RageColor(1, 1, 1, 1) && m_pTempState->diffuse[0].a > 0 )
 	{
 
-		for( size_t i=0; i < TS.vertices.size(); i++ )
+		for( std::size_t i=0; i < TS.vertices.size(); i++ )
 		{
 			// RageVColor uses a uint8_t for each channel.  0-255.
 			// RageColor uses a float. 0-1.
@@ -254,9 +254,9 @@ void ActorMultiVertex::DrawPrimitives()
 			MULT_COLOR_ELEMENTS(TS.vertices[i].c.a, m_pTempState->diffuse[0].a);
 #undef MULT_COLOR_ELEMENTS
 		}
-	
+
 	}
-	
+
 	// Draw diffuse pass.
 	if( m_pTempState->diffuse[0].a > 0 )
 	{
@@ -268,10 +268,10 @@ void ActorMultiVertex::DrawPrimitives()
 	if( m_pTempState->glow.a > 0 )
 	{
 
-		for( size_t i=0; i < TS.vertices.size(); i++ )
+		for( std::size_t i=0; i < TS.vertices.size(); i++ )
 		{
 			TS.vertices[i].c = m_pTempState->glow;
-		}		
+		}
 		DISPLAY->SetTextureMode( TextureUnit_1, TextureMode_Glow );
 		DrawInternal( AMV_TempState );
 
@@ -343,19 +343,19 @@ bool ActorMultiVertex::EarlyAbortDraw() const
 	return false;
 }
 
-void ActorMultiVertex::SetVertsFromSplinesInternal(size_t num_splines, size_t offset)
+void ActorMultiVertex::SetVertsFromSplinesInternal(std::size_t num_splines, std::size_t offset)
 {
 	std::vector<RageSpriteVertex>& verts= AMV_DestTweenState().vertices;
-	size_t first= AMV_DestTweenState().FirstToDraw + offset;
-	size_t num_verts= AMV_DestTweenState().GetSafeNumToDraw(AMV_DestTweenState()._DrawMode, AMV_DestTweenState().NumToDraw) - offset;
+	std::size_t first= AMV_DestTweenState().FirstToDraw + offset;
+	std::size_t num_verts= AMV_DestTweenState().GetSafeNumToDraw(AMV_DestTweenState()._DrawMode, AMV_DestTweenState().NumToDraw) - offset;
 	std::vector<float> tper(num_splines, 0.0f);
 	float num_parts= (static_cast<float>(num_verts) /
 		static_cast<float>(num_splines)) - 1.0f;
-	for(size_t i= 0; i < num_splines; ++i)
+	for(std::size_t i= 0; i < num_splines; ++i)
 	{
 		tper[i]= _splines[i].get_max_t() / num_parts;
 	}
-	for(size_t v= 0; v < num_verts; ++v)
+	for(std::size_t v= 0; v < num_verts; ++v)
 	{
 		std::vector<float> pos;
 		const int spi= v%num_splines;
@@ -395,7 +395,7 @@ void ActorMultiVertex::SetVertsFromSplines()
 	}
 }
 
-CubicSplineN* ActorMultiVertex::GetSpline(size_t i)
+CubicSplineN* ActorMultiVertex::GetSpline(std::size_t i)
 {
 	ASSERT(i < num_vert_splines);
 	return &(_splines[i]);
@@ -403,7 +403,7 @@ CubicSplineN* ActorMultiVertex::GetSpline(size_t i)
 
 void ActorMultiVertex::SetState(int i)
 {
-	ASSERT(i >= 0 && static_cast<size_t>(i) < _states.size());
+	ASSERT(i >= 0 && static_cast<std::size_t>(i) < _states.size());
 	_cur_state= i;
 	_secs_into_state= 0.0f;
 }
@@ -439,7 +439,7 @@ void ActorMultiVertex::UpdateAnimationState(bool force_update)
 {
 	AMV_TweenState& dest= AMV_DestTweenState();
 	std::vector<RageSpriteVertex>& verts= dest.vertices;
-	std::vector<size_t>& qs= dest.quad_states;
+	std::vector<std::size_t>& qs= dest.quad_states;
 	if(!_use_animation_state || _states.empty() ||
 		dest._DrawMode == DrawMode_LineStrip || qs.empty())
 	{ return; }
@@ -456,15 +456,15 @@ void ActorMultiVertex::UpdateAnimationState(bool force_update)
 	}
 	if(state_changed)
 	{
-		size_t first= dest.FirstToDraw;
-		size_t last= first+dest.GetSafeNumToDraw(dest._DrawMode, dest.NumToDraw);
-#define STATE_ID const size_t state_id= (_cur_state + qs[quad_id % qs.size()]) % _states.size();
+		std::size_t first= dest.FirstToDraw;
+		std::size_t last= first+dest.GetSafeNumToDraw(dest._DrawMode, dest.NumToDraw);
+#define STATE_ID const std::size_t state_id= (_cur_state + qs[quad_id % qs.size()]) % _states.size();
 		switch(AMV_DestTweenState()._DrawMode)
 		{
 			case DrawMode_Quads:
-				for(size_t i= first; i < last; ++i)
+				for(std::size_t i= first; i < last; ++i)
 				{
-					const size_t quad_id= (i-first)/4;
+					const std::size_t quad_id= (i-first)/4;
 					STATE_ID;
 					switch((i-first)%4)
 					{
@@ -488,9 +488,9 @@ void ActorMultiVertex::UpdateAnimationState(bool force_update)
 				}
 				break;
 			case DrawMode_QuadStrip:
-				for(size_t i= first; i < last; ++i)
+				for(std::size_t i= first; i < last; ++i)
 				{
-					const size_t quad_id= (i-first)/2;
+					const std::size_t quad_id= (i-first)/2;
 					STATE_ID;
 					switch((i-first)%2)
 					{
@@ -507,18 +507,18 @@ void ActorMultiVertex::UpdateAnimationState(bool force_update)
 				break;
 			case DrawMode_Strip:
 			case DrawMode_Fan:
-				for(size_t i= first; i < last; ++i)
+				for(std::size_t i= first; i < last; ++i)
 				{
-					const size_t quad_id= (i-first);
+					const std::size_t quad_id= (i-first);
 					STATE_ID;
 					verts[i].t.x= _states[state_id].rect.left;
 					verts[i].t.y= _states[state_id].rect.top;
 				}
 				break;
 			case DrawMode_Triangles:
-				for(size_t i= first; i < last; ++i)
+				for(std::size_t i= first; i < last; ++i)
 				{
-					const size_t quad_id= (i-first)/3;
+					const std::size_t quad_id= (i-first)/3;
 					STATE_ID;
 					switch((i-first)%3)
 					{
@@ -538,9 +538,9 @@ void ActorMultiVertex::UpdateAnimationState(bool force_update)
 				}
 				break;
 			case DrawMode_SymmetricQuadStrip:
-				for(size_t i= first; i < last; ++i)
+				for(std::size_t i= first; i < last; ++i)
 				{
-					const size_t quad_id= (i-first)/3;
+					const std::size_t quad_id= (i-first)/3;
 					STATE_ID;
 					switch((i-first)%3)
 					{
@@ -660,7 +660,7 @@ void ActorMultiVertex::AMV_TweenState::SetDrawState( DrawMode dm, int first, int
 void ActorMultiVertex::AMV_TweenState::MakeWeightedAverage(AMV_TweenState& average_out, const AMV_TweenState& ts1, const AMV_TweenState& ts2, float percent_between)
 {
 	average_out.line_width= lerp(percent_between, ts1.line_width, ts2.line_width);
-	for(size_t v= 0; v < average_out.vertices.size(); ++v)
+	for(std::size_t v= 0; v < average_out.vertices.size(); ++v)
 	{
 		WeightedAvergeOfRSVs(average_out.vertices[v], ts1.vertices[v], ts2.vertices[v], percent_between);
 	}
@@ -685,7 +685,7 @@ int ActorMultiVertex::AMV_TweenState::GetSafeNumToDraw( DrawMode dm, int num ) c
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the ActorMultiVertex. */ 
+/** @brief Allow Lua to have access to the ActorMultiVertex. */
 class LunaActorMultiVertex: public Luna<ActorMultiVertex>
 {
 public:
@@ -696,7 +696,7 @@ public:
 	}
 	static int GetNumVertices( T* p, lua_State *L )		{ lua_pushnumber( L, p->GetNumVertices() ); return 1; }
 
-	static void SetVertexFromStack(T* p, lua_State* L, size_t VertexIndex, int DataStackIndex)
+	static void SetVertexFromStack(T* p, lua_State* L, std::size_t VertexIndex, int DataStackIndex)
 	{
 		// Use the number of arguments to determine which property a table is for
 		if(lua_type(L, DataStackIndex) != LUA_TTABLE)
@@ -704,13 +704,13 @@ public:
 			LuaHelpers::ReportScriptErrorFmt("ActorMultiVertex::SetVertex: non-table parameter supplied. Table of tables of vertex data expected.");
 			return;
 		}
-		size_t NumDataParts = lua_objlen(L, DataStackIndex);
-		for(size_t i = 0; i < NumDataParts; ++i)
+		std::size_t NumDataParts = lua_objlen(L, DataStackIndex);
+		for(std::size_t i = 0; i < NumDataParts; ++i)
 		{
 			lua_pushnumber(L, i+1);
 			lua_gettable(L, DataStackIndex);
 			int DataPieceIndex = lua_gettop(L);
-			size_t DataPieceElements = lua_objlen(L, DataPieceIndex);
+			std::size_t DataPieceElements = lua_objlen(L, DataPieceIndex);
 			if(lua_type(L, DataPieceIndex) != LUA_TTABLE)
 			{
 				LuaHelpers::ReportScriptErrorFmt( "ActorMultiVertex::SetVertex: non-table parameter %u supplied inside table of parameters, table expected.", (unsigned int)i );
@@ -889,7 +889,7 @@ public:
 		lua_pushnumber(L, p->GetDestNumToDraw());
 		return 1;
 	}
-	
+
 	static int GetCurrDrawMode( T* p, lua_State* L )
 	{
 		Enum::Push(L, p->GetCurrDrawMode());
@@ -908,7 +908,7 @@ public:
 		lua_pushnumber(L, p->GetCurrNumToDraw());
 		return 1;
 	}
-	
+
 	static int LoadTexture( T* p, lua_State *L )
 	{
 		if( lua_isnil(L, 1) )
@@ -928,7 +928,7 @@ public:
 
 	static int GetSpline(T* p, lua_State* L)
 	{
-		size_t i= static_cast<size_t>(IArg(1)-1);
+		std::size_t i= static_cast<std::size_t>(IArg(1)-1);
 		if(i >= ActorMultiVertex::num_vert_splines)
 		{
 			luaL_error(L, "Spline index must be greater than 0 and less than or equal to %zu.", ActorMultiVertex::num_vert_splines);
@@ -999,14 +999,14 @@ public:
 		p->AddState(s);
 		COMMON_RETURN_SELF;
 	}
-	static size_t ValidStateIndex(T* p, lua_State *L, int pos)
+	static std::size_t ValidStateIndex(T* p, lua_State *L, int pos)
 	{
 		int index= IArg(pos)-1;
 		if(index < 0 || index >= p->GetNumStates())
 		{
 			luaL_error(L, "Invalid state index %d.", index+1);
 		}
-		return static_cast<size_t>(index);
+		return static_cast<std::size_t>(index);
 	}
 	static int RemoveState(T* p, lua_State *L)
 	{
@@ -1069,9 +1069,9 @@ public:
 			luaL_error(L, "The texture must be set before adding states.");
 		}
 		std::vector<ActorMultiVertex::State> new_states;
-		size_t num_states= lua_objlen(L, 1);
+		std::size_t num_states= lua_objlen(L, 1);
 		new_states.resize(num_states);
-		for(size_t i= 0; i < num_states; ++i)
+		for(std::size_t i= 0; i < num_states; ++i)
 		{
 			lua_rawgeti(L, 1, i+1);
 			FillStateFromLua(L, new_states[i], tex, -1);
@@ -1096,14 +1096,14 @@ public:
 		lua_pushnumber(L, p->GetNumQuadStates());
 		return 1;
 	}
-	static size_t QuadStateIndex(T* p, lua_State *L, int pos)
+	static std::size_t QuadStateIndex(T* p, lua_State *L, int pos)
 	{
 		int index= IArg(pos)-1;
-		if(index < 0 || static_cast<size_t>(index) >= p->GetNumQuadStates())
+		if(index < 0 || static_cast<std::size_t>(index) >= p->GetNumQuadStates())
 		{
 			luaL_error(L, "Invalid state index %d.", index+1);
 		}
-		return static_cast<size_t>(index);
+		return static_cast<std::size_t>(index);
 	}
 	static int AddQuadState(T* p, lua_State *L)
 	{
@@ -1215,7 +1215,7 @@ LUA_REGISTER_DERIVED_CLASS( ActorMultiVertex, Actor )
 /*
  * (c) 2014 Matthew Gardner and Eric Reese
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -1225,7 +1225,7 @@ LUA_REGISTER_DERIVED_CLASS( ActorMultiVertex, Actor )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

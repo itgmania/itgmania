@@ -8,6 +8,7 @@
 
 #include "test_misc.h"
 #include <cmath>
+#include <cstddef>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -255,8 +256,8 @@ const int TestDataSize = 2;
 
 /* Find "haystack" in "needle".  Start looking at "expect" and move outward; find
  * the closest. */
-void *xmemsearch( const float *haystack, size_t iHaystackSamples,
-		const int16_t *needle, size_t iNeedleSamples,
+void *xmemsearch( const float *haystack, std::size_t iHaystackSamples,
+		const int16_t *needle, std::size_t iNeedleSamples,
 		int expect )
 {
 	if( !iNeedleSamples )

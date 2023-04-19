@@ -24,6 +24,7 @@
 #include "Character.h"
 #include "CharacterManager.h"
 
+#include <cstddef>
 
 ProfileManager*	PROFILEMAN = nullptr;	// global and accessible from anywhere in our program
 
@@ -31,7 +32,7 @@ ProfileManager*	PROFILEMAN = nullptr;	// global and accessible from anywhere in 
 #define ID_DIGITS_STR "8"
 #define MAX_ID 99999999
 
-static void DefaultLocalProfileIDInit( size_t /*PlayerNumber*/ i, RString &sNameOut, RString &defaultValueOut )
+static void DefaultLocalProfileIDInit( std::size_t /*PlayerNumber*/ i, RString &sNameOut, RString &defaultValueOut )
 {
 	sNameOut = ssprintf( "DefaultLocalProfileIDP%d", int(i+1) );
 	defaultValueOut = "";
@@ -119,7 +120,7 @@ void ProfileManager::Init()
 		// resize to the fixed number
 		if( (int)g_vLocalProfile.size() > NUM_FIXED_PROFILES )
 			g_vLocalProfile.erase( g_vLocalProfile.begin()+NUM_FIXED_PROFILES, g_vLocalProfile.end() );
-		
+
 		for( int i=g_vLocalProfile.size(); i<NUM_FIXED_PROFILES; i++ )
 		{
 			RString sCharacterID = FIXED_PROFILE_CHARACTER_ID( i );
@@ -233,7 +234,7 @@ bool ProfileManager::LoadLocalProfileFromMachine( PlayerNumber pn )
 	}
 
 	GetProfile(pn)->LoadCustomFunction(m_sProfileDir[pn], pn);
-	
+
 	return true;
 }
 
@@ -318,7 +319,7 @@ bool ProfileManager::LoadFirstAvailableProfile( PlayerNumber pn, bool bLoadEdits
 
 	if( LoadLocalProfileFromMachine(pn) )
 		return true;
-	
+
 	return false;
 }
 
@@ -654,7 +655,7 @@ bool ProfileManager::CreateLocalProfile( RString sName, RString &sProfileIDOut )
 {
 	ASSERT( !sName.empty() );
 
-	// Find a directory directory name that's a number greater than all 
+	// Find a directory directory name that's a number greater than all
 	// existing numbers.  This preserves the "order by create date".
 	// Profile IDs are actually the directory names, so they can be any string,
 	// and we have to handle the case where the user renames one.
@@ -823,7 +824,7 @@ bool ProfileManager::DeleteLocalProfile( RString sProfileID )
 void ProfileManager::SaveMachineProfile() const
 {
 	// If the machine name has changed, make sure we use the new name.
-	// It's important that this name be applied before the Player profiles 
+	// It's important that this name be applied before the Player profiles
 	// are saved, so that the Player's profiles show the right machine name.
 	const_cast<ProfileManager *> (this)->m_pMachineProfile->m_sDisplayName = PREFSMAN->m_sMachineName;
 
@@ -939,7 +940,7 @@ void ProfileManager::MergeLocalProfileIntoMachine(RString const& from_id, bool s
 
 void ProfileManager::ChangeProfileType(int index, ProfileType new_type)
 {
-	if(index < 0 || static_cast<size_t>(index) >= g_vLocalProfile.size())
+	if(index < 0 || static_cast<std::size_t>(index) >= g_vLocalProfile.size())
 	{ return; }
 	if(new_type == g_vLocalProfile[index].profile.m_Type)
 	{ return; }
@@ -951,7 +952,7 @@ void ProfileManager::ChangeProfileType(int index, ProfileType new_type)
 
 void ProfileManager::MoveProfileTopBottom(int index, bool top)
 {
-	if (index < 0 || static_cast<size_t>(index) >= g_vLocalProfile.size())
+	if (index < 0 || static_cast<std::size_t>(index) >= g_vLocalProfile.size())
 	{
 		return;
 	}
@@ -959,7 +960,7 @@ void ProfileManager::MoveProfileTopBottom(int index, bool top)
 	int swindex = 0;
 	// There may be guest profiles at the top of the list, so we need to skip over them if moving to the top.
 	// If we're moving the profile to the bottom we should stop once we find the first test profile.
-	for (size_t i= 0; i < g_vLocalProfile.size(); ++i)
+	for (std::size_t i= 0; i < g_vLocalProfile.size(); ++i)
 	{
 		ProfileType type= g_vLocalProfile[i].profile.m_Type;
 		if (!top)
@@ -993,14 +994,14 @@ void ProfileManager::MoveProfileTopBottom(int index, bool top)
 
 void ProfileManager::MoveProfileSorted(int index, bool bAscending) {
 
-	if (index < 0 || static_cast<size_t>(index) >= g_vLocalProfile.size())
+	if (index < 0 || static_cast<std::size_t>(index) >= g_vLocalProfile.size())
 	{
 		return;
 	}
 
 	int swindex = 0;
 	// There may be guest profiles at the top of the list, so we need to skip over them.
-	for (size_t i= 0; i < g_vLocalProfile.size(); ++i)
+	for (std::size_t i= 0; i < g_vLocalProfile.size(); ++i)
 	{
 		ProfileType type= g_vLocalProfile[i].profile.m_Type;
 		if (type != ProfileType_Guest)
@@ -1035,7 +1036,7 @@ void ProfileManager::MoveProfileSorted(int index, bool bAscending) {
 
 void ProfileManager::MoveProfilePriority(int index, bool up)
 {
-	if(index < 0 || static_cast<size_t>(index) >= g_vLocalProfile.size())
+	if(index < 0 || static_cast<std::size_t>(index) >= g_vLocalProfile.size())
 	{ return; }
 	// Changing the priority is complicated a bit because the profiles might
 	// all have the same priority.  So this function has to assign priorities
@@ -1044,7 +1045,7 @@ void ProfileManager::MoveProfilePriority(int index, bool up)
 	int swindex= index + ((up * -2) + 1);
 	ProfileType type= g_vLocalProfile[index].profile.m_Type;
 	int priority= 0;
-	for(size_t i= 0; i < g_vLocalProfile.size(); ++i)
+	for(std::size_t i= 0; i < g_vLocalProfile.size(); ++i)
 	{
 		DirAndProfile* curr= &g_vLocalProfile[i];
 		if(curr->profile.m_Type == type)
@@ -1052,7 +1053,7 @@ void ProfileManager::MoveProfilePriority(int index, bool up)
 			if(curr->profile.m_ListPriority != priority)
 			{
 				curr->profile.m_ListPriority= priority;
-				if(i != static_cast<size_t>(index) && i != static_cast<size_t>(swindex))
+				if(i != static_cast<std::size_t>(index) && i != static_cast<std::size_t>(swindex))
 				{
 					curr->profile.SaveTypeToDir(curr->sDir);
 				}
@@ -1065,7 +1066,7 @@ void ProfileManager::MoveProfilePriority(int index, bool up)
 		}
 	}
 	// Only swap if both indices are valid and the types match.
-	if(swindex >= 0 && static_cast<size_t>(swindex) < g_vLocalProfile.size() &&
+	if(swindex >= 0 && static_cast<std::size_t>(swindex) < g_vLocalProfile.size() &&
 		g_vLocalProfile[swindex].profile.m_Type ==
 		g_vLocalProfile[index].profile.m_Type)
 	{
@@ -1122,7 +1123,7 @@ void ProfileManager::AddStepsScore( const Song* pSong, const Steps* pSteps, Play
 	}
 
 	//
-	// save high score	
+	// save high score
 	//
 	if( IsPersistentProfile(pn) )
 		GetProfile(pn)->AddStepsHighScore( pSong, pSteps, hs, iPersonalIndexOut );
@@ -1220,7 +1221,7 @@ bool ProfileManager::IsPersistentProfile( ProfileSlot slot ) const
 	{
 	case ProfileSlot_Player1:
 	case ProfileSlot_Player2:
-		return GAMESTATE->IsHumanPlayer((PlayerNumber)slot) && !m_sProfileDir[slot].empty(); 
+		return GAMESTATE->IsHumanPlayer((PlayerNumber)slot) && !m_sProfileDir[slot].empty();
 	case ProfileSlot_Machine:
 		return true;
 	default:
@@ -1277,7 +1278,7 @@ int ProfileManager::GetNumLocalProfiles() const
 void ProfileManager::SetStatsPrefix(RString const& prefix)
 {
 	m_stats_prefix= prefix;
-	for(size_t i= 0; i < g_vLocalProfile.size(); ++i)
+	for(std::size_t i= 0; i < g_vLocalProfile.size(); ++i)
 	{
 		g_vLocalProfile[i].profile.HandleStatsPrefixChange(g_vLocalProfile[i].sDir, PREFSMAN->m_bSignProfileData);
 	}
@@ -1295,7 +1296,7 @@ void ProfileManager::SetStatsPrefix(RString const& prefix)
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the ProfileManager. */ 
+/** @brief Allow Lua to have access to the ProfileManager. */
 class LunaProfileManager: public Luna<ProfileManager>
 {
 public:
@@ -1317,7 +1318,7 @@ public:
 	static int GetLocalProfile( T* p, lua_State *L )
 	{
 		Profile *pProfile = p->GetLocalProfile(SArg(1));
-		if( pProfile ) 
+		if( pProfile )
 			pProfile->PushSelf(L);
 		else
 			lua_pushnil(L);
@@ -1420,7 +1421,7 @@ LUA_REGISTER_CLASS( ProfileManager )
 /*
  * (c) 2003-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -1430,7 +1431,7 @@ LUA_REGISTER_CLASS( ProfileManager )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -1,5 +1,6 @@
 #include "global.h"
 
+#include "RageFile.h"
 #include "RageUtil.h"
 #include "RageSoundReader_Vorbisfile.h"
 #include "RageLog.h"
@@ -10,10 +11,11 @@
 #include <vorbis/vorbisfile.h>
 #endif
 
-#include <cstring>
 #include <cerrno>
-#include "RageFile.h"
-static size_t OggRageFile_read_func( void *ptr, size_t size, size_t nmemb, void *datasource )
+#include <cstddef>
+#include <cstring>
+
+static std::size_t OggRageFile_read_func( void *ptr, std::size_t size, std::size_t nmemb, void *datasource )
 {
 	RageFileBasic *f = (RageFileBasic *) datasource;
 	return f->Read( ptr, size, nmemb );
@@ -115,7 +117,7 @@ int RageSoundReader_Vorbisfile::GetLength() const
 	if( len == OV_EINVAL )
 		RageException::Throw( "RageSoundReader_Vorbisfile::GetLength: ov_time_total returned OV_EINVAL." );
 
-	return len; 
+	return len;
 }
 
 int RageSoundReader_Vorbisfile::SetPosition( int iFrame )
@@ -157,7 +159,7 @@ int RageSoundReader_Vorbisfile::Read( float *buf, int iFrames )
 			{
 				/* The timestamps moved backwards.  Ignore it.  This file probably
 				 * won't sync correctly. */
-				LOG->Trace( "p ahead %p %i < %i, we're ahead by %i", 
+				LOG->Trace( "p ahead %p %i < %i, we're ahead by %i",
 					static_cast<void*>(this), curofs, read_offset, read_offset-curofs );
 				read_offset = curofs;
 			}

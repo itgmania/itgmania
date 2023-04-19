@@ -14,6 +14,7 @@
 #endif
 
 #include <cstring>
+#include <cstddef>
 #include <fstream>
 #include <limits.h>
 #include <stdlib.h>
@@ -59,7 +60,7 @@ static bool ReadFile( const RString &sPath, RString &sBuf )
 			LOG->Warn( "Error opening \"%s\": %s", sPath.c_str(), strerror(errno) );
 		return false;
 	}
-	
+
 	while(1)
 	{
 		char buf[1024];
@@ -75,7 +76,7 @@ static bool ReadFile( const RString &sPath, RString &sBuf )
 		if( iGot < (int) sizeof(buf) )
 			break;
 	}
-	
+
 	close(fd);
 	return true;
 }
@@ -113,7 +114,7 @@ bool MemoryCardDriverThreaded_Linux::USBStorageDevicesChanged()
 
 		sThisDevices += ssprintf( "%i,", (int) buf.st_ino );
 	}
-	       
+
 	bool bChanged = sThisDevices != m_sLastDevices;
 	m_sLastDevices = sThisDevices;
 	if( bChanged )
@@ -124,7 +125,7 @@ bool MemoryCardDriverThreaded_Linux::USBStorageDevicesChanged()
 void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices( std::vector<UsbStorageDevice>& vDevicesOut )
 {
 	LOG->Trace( "GetUSBStorageDevices" );
-	
+
 	vDevicesOut.clear();
 
 	{
@@ -205,7 +206,7 @@ void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices( std::vector<UsbStorag
 			 * "2-1" is "bus-port".
 			 */
 			char szLink[256];
-			int iRet = readlink( sPath + "device", szLink, sizeof(szLink) );
+			ssize_t iRet = readlink( sPath + "device", szLink, sizeof(szLink) );
 			if( iRet == -1 )
 			{
 				LOG->Warn( "readlink(\"%s\"): %s", (sPath + "device").c_str(), strerror(errno) );
@@ -227,7 +228,7 @@ void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices( std::vector<UsbStorag
 				 *   -2           port 1 on the host,
 				 *     .1         port 1 on an attached hub
 				 *       .2       ... port 2 on the next hub ...
-				 * 
+				 *
 				 * We want the bus number and the port of the last hop.  The level is
 				 * the number of hops.
 				 */
@@ -239,10 +240,10 @@ void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices( std::vector<UsbStorag
 				if( !sHostPort.empty() )
 				{
 					/* Strip off the endpoint information after the colon. */
-					size_t pos = sHostPort.find(':');
+					std::size_t pos = sHostPort.find(':');
 					if( pos != std::string::npos )
 						sHostPort.erase( pos );
-					
+
 					/* sHostPort is eg. 2-2.1. */
 					sHostPort.Replace( "-", "." );
 					asBits.clear();
@@ -284,7 +285,7 @@ void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices( std::vector<UsbStorag
 
 	{
 		// Find where each device is mounted. Output looks like:
-		
+
 		// /dev/sda1               /mnt/flash1             auto    noauto,owner 0 0
 		// /dev/sdb1               /mnt/flash2             auto    noauto,owner 0 0
 		// /dev/sdc1               /mnt/flash3             auto    noauto,owner 0 0
@@ -355,7 +356,7 @@ void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices( std::vector<UsbStorag
 				usbd.sDevice.c_str(), usbd.iBus, usbd.iLevel, usbd.iPort, usbd.idVendor, usbd.idProduct, usbd.sVendor.c_str(),
 				usbd.sProduct.c_str(), usbd.sSerial.c_str(), usbd.sOsMountDir.c_str() );
 	}
-	
+
 	/* Remove any devices that we couldn't find a mountpoint for. */
 	for( unsigned i=0; i<vDevicesOut.size(); i++ )
 	{
@@ -363,12 +364,12 @@ void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices( std::vector<UsbStorag
 		if( usbd.sOsMountDir.empty() )
 		{
 			LOG->Trace( "Ignoring %s (couldn't find in /etc/fstab)", usbd.sDevice.c_str() );
-			
+
 			vDevicesOut.erase( vDevicesOut.begin()+i );
 			--i;
 		}
 	}
-	
+
 	LOG->Trace( "Done with GetUSBStorageDevices" );
 }
 
@@ -376,7 +377,7 @@ void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices( std::vector<UsbStorag
 bool MemoryCardDriverThreaded_Linux::Mount( UsbStorageDevice* pDevice )
 {
 	ASSERT( !pDevice->sDevice.empty() );
-	
+
         RString sCommand = "mount " + pDevice->sDevice;
         bool bMountedSuccessfully = ExecuteCommand( sCommand );
 
@@ -387,7 +388,7 @@ void MemoryCardDriverThreaded_Linux::Unmount( UsbStorageDevice* pDevice )
 {
 	if( pDevice->sDevice.empty() )
 		return;
-	
+
 	/* Use umount -l, so we unmount the device even if it's in use.  Open
 	 * files remain usable, and the device (eg. /dev/sda) won't be reused
 	 * by new devices until those are closed.  Without this, if something
@@ -400,7 +401,7 @@ void MemoryCardDriverThreaded_Linux::Unmount( UsbStorageDevice* pDevice )
 /*
  * (c) 2003-2005 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -410,7 +411,7 @@ void MemoryCardDriverThreaded_Linux::Unmount( UsbStorageDevice* pDevice )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

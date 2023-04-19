@@ -12,6 +12,7 @@
 
 #include <cfloat>
 #include <cmath>
+#include <cstddef>
 #include <numeric>
 
 #define GRADE_PERCENT_TIER(i)	THEME->GetMetricF("PlayerStageStats",ssprintf("GradePercent%s",GradeToString((Grade)i).c_str()))
@@ -792,7 +793,7 @@ public:
 	static int GetComboList( T* p, lua_State *L )
 	{
 		lua_createtable(L, p->m_ComboList.size(), 0);
-		for( size_t i= 0; i < p->m_ComboList.size(); ++i)
+		for( std::size_t i= 0; i < p->m_ComboList.size(); ++i)
 		{
 			lua_createtable(L, 0, 6);
 			lua_pushstring(L, "StartSecond");

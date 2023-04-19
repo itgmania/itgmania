@@ -20,8 +20,10 @@
 #include "TimingData.h"
 #include "NoteDataWithScoring.h"
 
-static RString PercentScoreWeightName( size_t i ) { return "PercentScoreWeight" + ScoreEventToString( (ScoreEvent)i ); }
-static RString GradeWeightName( size_t i ) { return "GradeWeight" + ScoreEventToString( (ScoreEvent)i ); }
+#include <cstddef>
+
+static RString PercentScoreWeightName( std::size_t i ) { return "PercentScoreWeight" + ScoreEventToString( (ScoreEvent)i ); }
+static RString GradeWeightName( std::size_t i ) { return "GradeWeight" + ScoreEventToString( (ScoreEvent)i ); }
 
 static ThemeMetric1D<int> g_iPercentScoreWeight("ScoreKeeperNormal", PercentScoreWeightName, NUM_ScoreEvent );
 static ThemeMetric1D<int> g_iGradeWeight("ScoreKeeperNormal", GradeWeightName, NUM_ScoreEvent );
@@ -171,7 +173,7 @@ void ScoreKeeperNormal::OnNextSong( int iSongInCourseIndex, const Steps* pSteps,
 	{
 		// long ver and marathon ver songs have higher max possible scores
 		int iLengthMultiplier = GameState::GetNumStagesMultiplierForSong( GAMESTATE->m_pCurSong );
-		
+
 		/* This is no longer just simple additive/subtractive scoring,
 		 * but start with capping the score at the size of the score counter. */
 		m_iMaxPossiblePoints = 10 * 10000000 * iLengthMultiplier;
@@ -180,7 +182,7 @@ void ScoreKeeperNormal::OnNextSong( int iSongInCourseIndex, const Steps* pSteps,
 	m_iMaxScoreSoFar += m_iMaxPossiblePoints;
 
 	GAMESTATE->SetProcessedTimingData(const_cast<TimingData *>(pSteps->GetTimingData()));
-	
+
 	m_iNumTapsAndHolds = pNoteData->GetNumRowsWithTapOrHoldHead() + pNoteData->GetNumHoldNotes()
 		+ pNoteData->GetNumRolls();
 
@@ -194,7 +196,7 @@ void ScoreKeeperNormal::OnNextSong( int iSongInCourseIndex, const Steps* pSteps,
 	ASSERT( m_iPointBonus >= 0 );
 
 	m_iTapNotesHit = 0;
-	
+
 	GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
@@ -259,7 +261,7 @@ void ScoreKeeperNormal::AddScoreInternal( TapNoteScore score )
 {
 	if( m_UseInternalScoring )
 	{
-		
+
 		unsigned int &iScore = m_pPlayerStageStats->m_iScore;
 		unsigned int &iCurMaxScore = m_pPlayerStageStats->m_iCurMaxScore;
 
@@ -398,9 +400,9 @@ void ScoreKeeperNormal::HandleTapScore( const TapNote &tn )
 			m_pPlayerStageStats->m_iTapNoteScores[TNS_HitMine] += 1;
 			if( m_MineHitIncrementsMissCombo )
 				HandleComboInternal( 0, 0, 1 );
-			
+
 		}
-		
+
 		if( tns == TNS_AvoidMine && m_AvoidMineIncrementsCombo )
 			HandleComboInternal( 1, 0, 0 );
 
@@ -438,7 +440,7 @@ void ScoreKeeperNormal::HandleTapNoteScoreInternal( TapNoteScore tns, TapNoteSco
 		m_pPlayerStageStats->m_iTapNoteScores[tns] += cs->GetMissCombo();
 	}
 	else
-	{	
+	{
 		m_pPlayerStageStats->m_iTapNoteScores[tns] += 1;
 	}
 
@@ -533,7 +535,7 @@ void ScoreKeeperNormal::HandleTapRowScore( const NoteData &nd, int iRow )
 
 	TapNoteScore scoreOfLastTap = NoteDataWithScoring::LastTapNoteWithResult( nd, iRow ).result.tns;
 	HandleTapNoteScoreInternal( scoreOfLastTap, TNS_W1, iRow );
-	
+
 	if ( GAMESTATE->GetCurrentGame()->m_bCountNotesSeparately )
 	{
 		HandleComboInternal( iNumHitContinueCombo, iNumHitMaintainCombo, iNumBreakCombo, iRow );
@@ -632,14 +634,14 @@ int ScoreKeeperNormal::GetPossibleDancePoints( NoteData* nd, const TimingData* t
 	// XXX: That's not actually implemented!
 	RadarValues radars;
 	NoteDataUtil::CalculateRadarValues( *nd, fSongSeconds, radars );
-	
+
 	int ret = 0;
-	 
+
 	ret += int(radars[RadarCategory_TapsAndHolds]) * TapNoteScoreToDancePoints(TNS_W1, false);
 	if( GAMESTATE->GetCurrentGame()->m_bTickHolds ) ret += NoteDataUtil::GetTotalHoldTicks( nd, td ) * g_iPercentScoreWeight.GetValue(SE_CheckpointHit);
-	ret += int(radars[RadarCategory_Holds]) * HoldNoteScoreToDancePoints(HNS_Held, false);	
+	ret += int(radars[RadarCategory_Holds]) * HoldNoteScoreToDancePoints(HNS_Held, false);
 	ret += int(radars[RadarCategory_Rolls]) * HoldNoteScoreToDancePoints(HNS_Held, false);
-	
+
 	return ret;
 }
 
@@ -662,12 +664,12 @@ int ScoreKeeperNormal::GetPossibleGradePoints( NoteData* nd, const TimingData* t
 	NoteDataUtil::CalculateRadarValues( *nd, fSongSeconds, radars );
 
 	int ret = 0;
-	
+
 	ret += int(radars[RadarCategory_TapsAndHolds]) * TapNoteScoreToGradePoints(TNS_W1, false);
 	if( GAMESTATE->GetCurrentGame()->m_bTickHolds ) ret += NoteDataUtil::GetTotalHoldTicks( nd, td ) * g_iGradeWeight.GetValue(SE_CheckpointHit);
 	ret += int(radars[RadarCategory_Holds]) * HoldNoteScoreToGradePoints(HNS_Held, false);
 	ret += int(radars[RadarCategory_Rolls]) * HoldNoteScoreToGradePoints(HNS_Held, false);
-	
+
 	return ret;
 }
 

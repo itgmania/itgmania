@@ -9,8 +9,10 @@
 #include "GameCommand.h"
 #include "ActorUtil.h"
 #include "RageLog.h"
-#include <set>
 #include "InputEventPlus.h"
+
+#include <cstddef>
+#include <set>
 
 static const char *MenuDirNames[] = {
 	"Up",
@@ -23,10 +25,10 @@ XToString( MenuDir );
 
 AutoScreenMessage( SM_PlayPostSwitchPage );
 
-static RString CURSOR_OFFSET_X_FROM_ICON_NAME( size_t p ) { return ssprintf("CursorP%dOffsetXFromIcon",int(p+1)); }
-static RString CURSOR_OFFSET_Y_FROM_ICON_NAME( size_t p ) { return ssprintf("CursorP%dOffsetYFromIcon",int(p+1)); }
+static RString CURSOR_OFFSET_X_FROM_ICON_NAME( std::size_t p ) { return ssprintf("CursorP%dOffsetXFromIcon",int(p+1)); }
+static RString CURSOR_OFFSET_Y_FROM_ICON_NAME( std::size_t p ) { return ssprintf("CursorP%dOffsetYFromIcon",int(p+1)); }
 // e.g. "OptionOrderLeft=0:1,1:2,2:3,3:4"
-static RString OPTION_ORDER_NAME( size_t dir ) { return "OptionOrder"+MenuDirToString((MenuDir)dir); }
+static RString OPTION_ORDER_NAME( std::size_t dir ) { return "OptionOrder"+MenuDirToString((MenuDir)dir); }
 
 REGISTER_SCREEN_CLASS( ScreenSelectMaster );
 
@@ -133,8 +135,8 @@ void ScreenSelectMaster::Init()
 				}
 				else
 				{
-					size_t poses= lua_objlen(L, -1);
-					for(size_t p= 1; p <= poses; ++p)
+					std::size_t poses= lua_objlen(L, -1);
+					for(std::size_t p= 1; p <= poses; ++p)
 					{
 						lua_rawgeti(L, -1, p);
 						RageVector3 pos(0.0f, 0.0f, 0.0f);
@@ -758,7 +760,7 @@ bool ScreenSelectMaster::ChangeSelection( PlayerNumber pn, MenuDir dir, int iNew
 			if(DOUBLE_PRESS_TO_SELECT)
 			{
 				// this player is currently on a single press, which they are cancelling
-				if(m_bDoubleChoice[pn]) 
+				if(m_bDoubleChoice[pn])
 				{
 					if( !bOldStillHasFocus )
 						m_vsprIcon[iOldChoice]->PlayCommand( "LostSelectedLoseFocus" );
@@ -821,7 +823,7 @@ bool ScreenSelectMaster::ChangeSelection( PlayerNumber pn, MenuDir dir, int iNew
 			if(DOUBLE_PRESS_TO_SELECT)
 			{
 				// this player is currently on a single press, which they are cancelling
-				if(m_bDoubleChoice[pn]) 
+				if(m_bDoubleChoice[pn])
 				{
 					vScroll[iOldChoice]->PlayCommand( "LostSelectedLoseFocus" );
 					vScroll[iNewChoice]->PlayCommand( "LostSelectedGainFocus" );
@@ -1094,7 +1096,7 @@ float ScreenSelectMaster::GetCursorY( PlayerNumber pn )
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the ScreenSelectMaster. */ 
+/** @brief Allow Lua to have access to the ScreenSelectMaster. */
 class LunaScreenSelectMaster: public Luna<ScreenSelectMaster>
 {
 public:
@@ -1116,7 +1118,7 @@ LUA_REGISTER_DERIVED_CLASS( ScreenSelectMaster, ScreenWithMenuElements )
 /*
  * (c) 2003-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -1126,7 +1128,7 @@ LUA_REGISTER_DERIVED_CLASS( ScreenSelectMaster, ScreenWithMenuElements )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

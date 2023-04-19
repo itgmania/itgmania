@@ -40,6 +40,7 @@
 
 #include <cfloat>
 #include <cmath>
+#include <cstddef>
 #include <utility>
 
 static Preference<float> g_iDefaultRecordLength( "DefaultRecordLength", 4 );
@@ -547,7 +548,7 @@ void ScreenEdit::LoadKeymapSectionIntoMappingsMember(XNode const* section, MapEd
 			attr->second->GetValue(joined_names);
 			std::vector<RString> key_names;
 			split(joined_names, DEVICE_INPUT_SEPARATOR, key_names, false);
-			for(size_t k= 0; k < key_names.size() && k < NUM_EDIT_TO_DEVICE_SLOTS; ++k)
+			for(std::size_t k= 0; k < key_names.size() && k < NUM_EDIT_TO_DEVICE_SLOTS; ++k)
 			{
 				DeviceInput devi;
 				devi.FromString(key_names[k]);
@@ -1378,7 +1379,7 @@ static float g_fLastInsertAttackDurationSeconds = -1;
 static float g_fLastInsertAttackPositionSeconds = -1;
 static BackgroundLayer g_CurrentBGChangeLayer = BACKGROUND_LAYER_Invalid;
 
-static void SetDefaultEditorNoteSkin( size_t num, RString &sNameOut, RString &defaultValueOut )
+static void SetDefaultEditorNoteSkin( std::size_t num, RString &sNameOut, RString &defaultValueOut )
 {
 	sNameOut = ssprintf( "EditorNoteSkinP%d", int(num + 1) );
 
@@ -1681,7 +1682,7 @@ void ScreenEdit::Update( float fDeltaTime )
 			std::vector<GameInput> GameI;
 			GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->StyleInputToGameInput( t, PLAYER_1, GameI );
 			float fSecsHeld= 0.0f;
-			for(size_t i= 0; i < GameI.size(); ++i)
+			for(std::size_t i= 0; i < GameI.size(); ++i)
 			{
 				fSecsHeld= std::max(fSecsHeld, INPUTMAPPER->GetSecsHeld(GameI[i]));
 			}
@@ -5026,7 +5027,7 @@ static bool ConvertMappingInputToMapping(RString const& mapstr, int* mapping, RS
 {
 	std::vector<RString> mapping_input;
 	split(mapstr, ",", mapping_input);
-	size_t tracks_for_type= GAMEMAN->GetStepsTypeInfo(GAMESTATE->m_pCurSteps[0]->m_StepsType).iNumTracks;
+	std::size_t tracks_for_type= GAMEMAN->GetStepsTypeInfo(GAMESTATE->m_pCurSteps[0]->m_StepsType).iNumTracks;
 	if(mapping_input.size() > tracks_for_type)
 	{
 		error= TOO_MANY_TRACKS;
@@ -5034,7 +5035,7 @@ static bool ConvertMappingInputToMapping(RString const& mapstr, int* mapping, RS
 	}
 	// mapping_input.size() < tracks_for_type is not checked because
 	// unspecified tracks are mapped directly. -Kyz
-	size_t track= 0;
+	std::size_t track= 0;
 	// track will be used for filling in the unspecified part of the mapping.
 	for(; track < mapping_input.size(); ++track)
 	{

@@ -28,7 +28,9 @@
 #include "NotesLoaderDWI.h"
 #include "NotesLoaderKSF.h"
 #include "NotesLoaderBMS.h"
+
 #include <algorithm>
+#include <cstddef>
 
 /* register DisplayBPM with StringConversion */
 #include "EnumHelper.h"
@@ -46,10 +48,10 @@ XToString( DisplayBPM );
 LuaXType( DisplayBPM );
 
 Steps::Steps(Song *song): m_StepsType(StepsType_Invalid), m_pSong(song),
-	parent(nullptr), m_pNoteData(new NoteData), m_bNoteDataIsFilled(false), 
-	m_sNoteDataCompressed(""), m_sFilename(""), m_bSavedToDisk(false), 
+	parent(nullptr), m_pNoteData(new NoteData), m_bNoteDataIsFilled(false),
+	m_sNoteDataCompressed(""), m_sFilename(""), m_bSavedToDisk(false),
 	m_LoadedFromProfile(ProfileSlot_Invalid), m_iHash(0),
-	m_sDescription(""), m_sChartStyle(""), 
+	m_sDescription(""), m_sChartStyle(""),
 	m_Difficulty(Difficulty_Invalid), m_iMeter(0),
 	m_bAreCachedRadarValuesJustLoaded(false),
 	m_sCredit(""), displayBPMType(DISPLAY_BPM_ACTUAL),
@@ -117,16 +119,16 @@ bool Steps::GetNoteDataFromSimfile()
 			/*
 			HACK: 7/20/12 -- see bugzilla #740
 			users who edit songs using the ever popular .sm file
-			that remove or tamper with the .ssc file later on 
+			that remove or tamper with the .ssc file later on
 			complain of blank steps in the editor after reloading.
-			Despite the blank steps being well justified since 
+			Despite the blank steps being well justified since
 			the cache files contain only the SSC step file,
 			give the user some leeway and search for a .sm replacement
 			*/
 			SMLoader backup_loader;
 			RString transformedStepFile = stepFile;
 			transformedStepFile.Replace(".ssc", ".sm");
-			
+
 			return backup_loader.LoadNoteDataFromSimfile(transformedStepFile, *this);
 		}
 		else
@@ -178,7 +180,7 @@ void Steps::SetNoteData( const NoteData& noteDataNew )
 
 	*m_pNoteData = noteDataNew;
 	m_bNoteDataIsFilled = true;
-	
+
 	m_sNoteDataCompressed = RString();
 	m_iHash = 0;
 }
@@ -219,7 +221,7 @@ void Steps::GetSMNoteData( RString &notes_comp_out ) const
 {
 	if( m_sNoteDataCompressed.empty() )
 	{
-		if( !m_bNoteDataIsFilled ) 
+		if( !m_bNoteDataIsFilled )
 		{
 			/* no data is no data */
 			notes_comp_out = "";
@@ -324,7 +326,7 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 		std::vector<NoteData> vParts;
 
 		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
-		for( size_t pn = 0; pn < std::min(vParts.size(), size_t(NUM_PLAYERS)); ++pn )
+		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
 			NoteDataUtil::CalculateRadarValues( vParts[pn], fMusicLengthSeconds, m_CachedRadarValues[pn] );
 	}
 	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
@@ -450,7 +452,7 @@ void Steps::Compress() const
 		m_sNoteDataCompressed = RString();
 		return;
 	}
-	
+
 	// Don't compress data in the editor: it's still in use.
 	if (GAMESTATE->m_bInStepEditor)
 	{
@@ -658,7 +660,7 @@ RString Steps::GenerateChartKey(NoteData &nd, TimingData *td)
 	{
 #pragma omp section
 		{
-			for (size_t r = 0; r < nerv.size() / 2; r++) {
+			for (std::size_t r = 0; r < nerv.size() / 2; r++) {
 				int row = nerv[r];
 				for (int t = 0; t < nd.GetNumTracks(); ++t) {
 					const TapNote &tn = nd.GetTapNote(t, row);
@@ -675,7 +677,7 @@ RString Steps::GenerateChartKey(NoteData &nd, TimingData *td)
 
 #pragma omp section
 		{
-			for (size_t r = nerv.size() / 2; r < nerv.size(); r++) {
+			for (std::size_t r = nerv.size() / 2; r < nerv.size(); r++) {
 				int row = nerv[r];
 				for (int t = 0; t < nd.GetNumTracks(); ++t) {
 					const TapNote &tn = nd.GetTapNote(t, row);
@@ -718,13 +720,13 @@ public:
 
 	static int HasSignificantTimingChanges( T* p, lua_State *L )
 	{
-		lua_pushboolean(L, p->HasSignificantTimingChanges()); 
-		return 1; 
+		lua_pushboolean(L, p->HasSignificantTimingChanges());
+		return 1;
 	}
 	static int HasAttacks( T* p, lua_State *L )
-	{ 
-		lua_pushboolean(L, p->HasAttacks()); 
-		return 1; 
+	{
+		lua_pushboolean(L, p->HasAttacks());
+		return 1;
 	}
 	static int GetRadarValues( T* p, lua_State *L )
 	{
@@ -732,7 +734,7 @@ public:
 		if (!lua_isnil(L, 1)) {
 			pn = Enum::Check<PlayerNumber>(L, 1);
 		}
-		
+
 		RadarValues &rv = const_cast<RadarValues &>(p->GetRadarValues(pn));
 		rv.PushSelf(L);
 		return 1;
@@ -831,7 +833,7 @@ LUA_REGISTER_CLASS( Steps )
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard, David Wilson
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -841,7 +843,7 @@ LUA_REGISTER_CLASS( Steps )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

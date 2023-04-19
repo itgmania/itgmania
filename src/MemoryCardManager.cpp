@@ -12,27 +12,29 @@
 #include "arch/MemoryCard/MemoryCardDriver_Null.h"
 #include "LuaManager.h"
 
+#include <cstddef>
+
 MemoryCardManager*	MEMCARDMAN = nullptr;	// global and accessible from anywhere in our program
 
-static void MemoryCardOsMountPointInit( size_t /*PlayerNumber*/ i, RString &sNameOut, RString &defaultValueOut )
+static void MemoryCardOsMountPointInit( std::size_t /*PlayerNumber*/ i, RString &sNameOut, RString &defaultValueOut )
 {
 	sNameOut = ssprintf( "MemoryCardOsMountPointP%d", int(i+1) );
 	defaultValueOut = "";
 }
 
-static void MemoryCardUsbBusInit( size_t /*PlayerNumber*/ i, RString &sNameOut, int &defaultValueOut )
+static void MemoryCardUsbBusInit( std::size_t /*PlayerNumber*/ i, RString &sNameOut, int &defaultValueOut )
 {
 	sNameOut = ssprintf( "MemoryCardUsbBusP%d", int(i+1) );
 	defaultValueOut = -1;
 }
 
-static void MemoryCardUsbPortInit( size_t /*PlayerNumber*/ i, RString &sNameOut, int &defaultValueOut )
+static void MemoryCardUsbPortInit( std::size_t /*PlayerNumber*/ i, RString &sNameOut, int &defaultValueOut )
 {
 	sNameOut = ssprintf( "MemoryCardUsbPortP%d",int(i+1) );
 	defaultValueOut = -1;
 }
 
-static void MemoryCardUsbLevelInit( size_t /*PlayerNumber*/ i, RString &sNameOut, int &defaultValueOut )
+static void MemoryCardUsbLevelInit( std::size_t /*PlayerNumber*/ i, RString &sNameOut, int &defaultValueOut )
 {
 	sNameOut = ssprintf( "MemoryCardUsbLevelP%d", int(i+1) );
 	defaultValueOut = -1;
@@ -72,7 +74,7 @@ public:
 	ThreadedMemoryCardWorker();
 	~ThreadedMemoryCardWorker();
 
-	enum MountThreadState 
+	enum MountThreadState
 	{
 		detect_and_mount,
 		detect_and_dont_mount,
@@ -275,7 +277,7 @@ MemoryCardManager::MemoryCardManager()
 		m_bMounted[p] = false;
 		m_State[p] = MemoryCardState_NoCard;
 	}
-	
+
 	/* These can play at any time.  Preload them, so we don't cause a skip in gameplay. */
 	m_soundReady.Load( THEME->GetPathS("MemoryCardManager","ready"), true );
 	m_soundError.Load( THEME->GetPathS("MemoryCardManager","error"), true );
@@ -310,7 +312,7 @@ MemoryCardManager::~MemoryCardManager()
 void MemoryCardManager::Update()
 {
 	std::vector<UsbStorageDevice> vOld;
-	
+
 	vOld = m_vStorageDevices;	// copy
 	if( !g_pWorker->StorageDevicesChanged( m_vStorageDevices ) )
 		return;
@@ -371,27 +373,27 @@ void MemoryCardManager::UpdateAssignments()
 		}
 
 		LOG->Trace( "Looking for a card for Player %d", p+1 );
-		
+
 		for (std::vector<UsbStorageDevice>::iterator d = vUnassignedDevices.begin(); d != vUnassignedDevices.end(); ++d)
 		{
 			// search for card dir match
 			if( !m_sMemoryCardOsMountPoint[p].Get().empty() &&
 				d->sOsMountDir.CompareNoCase(m_sMemoryCardOsMountPoint[p].Get()) )
 				continue; // not a match
-			
+
 			// search for USB bus match
 			if( m_iMemoryCardUsbBus[p] != -1 &&
 				m_iMemoryCardUsbBus[p] != d->iBus )
 				continue; // not a match
-			
+
 			if( m_iMemoryCardUsbPort[p] != -1 &&
 				m_iMemoryCardUsbPort[p] != d->iPort )
 				continue; // not a match
-			
+
 			if( m_iMemoryCardUsbLevel[p] != -1 &&
 				m_iMemoryCardUsbLevel[p] != d->iLevel )
 				continue;// not a match
-			
+
 			LOG->Trace( "Player %i: matched %s", p+1, d->sDevice.c_str() );
 
 			assigned_device = *d; // save a copy
@@ -714,7 +716,7 @@ void MemoryCardManager::UnPauseMountingThread()
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the MemoryCardManager. */ 
+/** @brief Allow Lua to have access to the MemoryCardManager. */
 class LunaMemoryCardManager: public Luna<MemoryCardManager>
 {
 public:
@@ -745,7 +747,7 @@ LUA_REGISTER_CLASS( MemoryCardManager )
 /*
  * (c) 2003-2005 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -755,7 +757,7 @@ LUA_REGISTER_CLASS( MemoryCardManager )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

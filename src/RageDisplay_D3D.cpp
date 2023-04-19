@@ -25,6 +25,7 @@
 #endif
 
 #include <cmath>
+#include <cstddef>
 #include <list>
 
 // Globals
@@ -44,8 +45,8 @@ const D3DFORMAT g_DefaultAdapterFormat = D3DFMT_X8R8G8B8;
 /* Direct3D doesn't associate a palette with textures. Instead, we load a
  * palette into a slot. We need to keep track of which texture's palette is
  * stored in what slot. */
-std::map<uintptr_t, size_t>		g_TexResourceToPaletteIndex;
-std::list<size_t>			g_PaletteIndex;
+std::map<uintptr_t, std::size_t>		g_TexResourceToPaletteIndex;
+std::list<std::size_t>			g_PaletteIndex;
 struct TexturePalette { PALETTEENTRY p[256]; };
 std::map<uintptr_t, TexturePalette>	g_TexResourceToTexturePalette;
 
@@ -63,7 +64,7 @@ static void SetPalette( uintptr_t TexResource )
 		UINT iPalIndex = static_cast<UINT>(g_PaletteIndex.front());
 
 		// If any other texture is currently using this slot, mark that palette unloaded.
-		for( std::map<uintptr_t, size_t>::iterator i = g_TexResourceToPaletteIndex.begin(); i != g_TexResourceToPaletteIndex.end(); ++i )
+		for( std::map<uintptr_t, std::size_t>::iterator i = g_TexResourceToPaletteIndex.begin(); i != g_TexResourceToPaletteIndex.end(); ++i )
 		{
 			if( i->second != iPalIndex )
 				continue;
@@ -81,7 +82,7 @@ static void SetPalette( uintptr_t TexResource )
 	const int iPalIndex = g_TexResourceToPaletteIndex[TexResource];
 
 	// Find this palette index in the least-recently-used queue and move it to the end.
-	for(std::list<size_t>::iterator i = g_PaletteIndex.begin(); i != g_PaletteIndex.end(); ++i)
+	for(std::list<std::size_t>::iterator i = g_PaletteIndex.begin(); i != g_PaletteIndex.end(); ++i)
 	{
 		if( *i != iPalIndex )
 			continue;
@@ -327,7 +328,7 @@ D3DFORMAT FindBackBufferType(bool bWindowed, int iBPP)
 	}
 
 	// Test each back buffer format until we find something that works.
-	for( size_t i=0; i < vBackBufferFormats.size(); i++ )
+	for( std::size_t i=0; i < vBackBufferFormats.size(); i++ )
 	{
 		D3DFORMAT fmtBackBuffer = vBackBufferFormats[i];
 
@@ -782,18 +783,18 @@ public:
 	}
 	void Change( const std::vector<msMesh> &vMeshes )
 	{
-		for( size_t i=0; i<vMeshes.size(); i++ )
+		for( std::size_t i=0; i<vMeshes.size(); i++ )
 		{
 			const MeshInfo& meshInfo = m_vMeshInfo[i];
 			const msMesh& mesh = vMeshes[i];
 			const std::vector<RageModelVertex> &Vertices = mesh.Vertices;
 			const std::vector<msTriangle> &Triangles = mesh.Triangles;
 
-			for( size_t j=0; j<Vertices.size(); j++ )
+			for( std::size_t j=0; j<Vertices.size(); j++ )
 				m_vVertex[meshInfo.iVertexStart+j] = Vertices[j];
 
-			for( size_t j=0; j<Triangles.size(); j++ )
-				for( size_t k=0; k<3; k++ )
+			for( std::size_t j=0; j<Triangles.size(); j++ )
+				for( std::size_t k=0; k<3; k++ )
 					m_vTriangles[meshInfo.iTriangleStart+j].nVertexIndices[k] = (uint16_t) meshInfo.iVertexStart + Triangles[j].nVertexIndices[k];
 		}
 	}
@@ -851,8 +852,8 @@ void RageDisplay_D3D::DrawQuadsInternal( const RageSpriteVertex v[], int iNumVer
 
 	// make a temporary index buffer
 	static std::vector<uint16_t> vIndices;
-	size_t uOldSize = vIndices.size();
-	size_t uNewSize = std::max(uOldSize, static_cast<size_t>(iNumIndices));
+	std::size_t uOldSize = vIndices.size();
+	std::size_t uNewSize = std::max(uOldSize, static_cast<std::size_t>(iNumIndices));
 	vIndices.resize( uNewSize );
 	for( uint16_t i=(uint16_t)uOldSize/6; i<(uint16_t)iNumQuads; i++ )
 	{
@@ -887,8 +888,8 @@ void RageDisplay_D3D::DrawQuadStripInternal( const RageSpriteVertex v[], int iNu
 
 	// make a temporary index buffer
 	static std::vector<uint16_t> vIndices;
-	size_t uOldSize = vIndices.size();
-	size_t uNewSize = std::max(uOldSize, static_cast<size_t>(iNumIndices));
+	std::size_t uOldSize = vIndices.size();
+	std::size_t uNewSize = std::max(uOldSize, static_cast<std::size_t>(iNumIndices));
 	vIndices.resize( uNewSize );
 	for( uint16_t i=(uint16_t)uOldSize/6; i<(uint16_t)iNumQuads; i++ )
 	{
@@ -922,8 +923,8 @@ void RageDisplay_D3D::DrawSymmetricQuadStripInternal( const RageSpriteVertex v[]
 
 	// make a temporary index buffer
 	static std::vector<uint16_t> vIndices;
-	size_t uOldSize = vIndices.size();
-	size_t uNewSize = std::max(uOldSize, static_cast<size_t>(iNumIndices));
+	std::size_t uOldSize = vIndices.size();
+	std::size_t uNewSize = std::max(uOldSize, static_cast<std::size_t>(iNumIndices));
 	vIndices.resize( uNewSize );
 	for( uint16_t i=(uint16_t)uOldSize/12; i<(uint16_t)iNumPieces; i++ )
 	{

@@ -314,7 +314,7 @@ public:
 		for (PlayerNumber const &p : vpns)
 		{
 			const std::vector<bool> &vbSel = vbSelected[p];
-		
+
 			m_Default.Apply( p );
 			for( unsigned i=0; i<vbSel.size(); i++ )
 			{
@@ -341,7 +341,7 @@ public:
 		gcOut = m_aListEntries[iFirstSelection];
 	}
 	virtual RString GetScreen( int iChoice ) const
-	{ 
+	{
 		const GameCommand &gc = m_aListEntries[iChoice];
 		return gc.m_sScreen;
 	}
@@ -556,7 +556,7 @@ public:
 		{
 			ROW_INVALID_IF(true, "Invalid StepsType param \"" + sParam + "\".", false);
 		}
-		
+
 		m_Def.m_sName = sParam;
 		m_Def.m_bOneChoiceForAllPlayers = true;
 		m_Def.m_layoutType = LAYOUT_SHOW_ONE_IN_ROW;
@@ -703,7 +703,7 @@ class OptionRowHandlerListCharacters: public OptionRowHandlerList
 			RString s = pCharacter->GetDisplayName();
 			s.MakeUpper();
 
-			m_Def.m_vsChoices.push_back( s ); 
+			m_Def.m_vsChoices.push_back( s );
 			GameCommand mc;
 			mc.m_pCharacter = pCharacter;
 			m_aListEntries.push_back( mc );
@@ -725,7 +725,7 @@ class OptionRowHandlerListStyles: public OptionRowHandlerList
 		ASSERT( vStyles.size() != 0 );
 		for (Style const *s : vStyles)
 		{
-			m_Def.m_vsChoices.push_back( GAMEMAN->StyleToLocalizedString(s) ); 
+			m_Def.m_vsChoices.push_back( GAMEMAN->StyleToLocalizedString(s) );
 			GameCommand mc;
 			mc.m_pStyle = s;
 			m_aListEntries.push_back( mc );
@@ -758,7 +758,7 @@ class OptionRowHandlerListGroups: public OptionRowHandlerList
 
 		for (RString const &g : vSongGroups)
 		{
-			m_Def.m_vsChoices.push_back( g ); 
+			m_Def.m_vsChoices.push_back( g );
 			GameCommand mc;
 			mc.m_sSongGroup = g;
 			m_aListEntries.push_back( mc );
@@ -789,7 +789,7 @@ class OptionRowHandlerListDifficulties: public OptionRowHandlerList
 			StepsType st = GAMEMAN->GetHowToPlayStyleForGame( GAMESTATE->m_pCurGame )->m_StepsType;
 			RString s = CustomDifficultyToLocalizedString( GetCustomDifficulty(st, d, CourseType_Invalid) );
 
-			m_Def.m_vsChoices.push_back( s ); 
+			m_Def.m_vsChoices.push_back( s );
 			GameCommand mc;
 			mc.m_dc = d;
 			m_aListEntries.push_back( mc );
@@ -815,7 +815,7 @@ class OptionRowHandlerListSongsInCurrentSongGroup: public OptionRowHandlerList
 
 		for (Song *p : vpSongs)
 		{
-			m_Def.m_vsChoices.push_back( p->GetTranslitFullTitle() ); 
+			m_Def.m_vsChoices.push_back( p->GetTranslitFullTitle() );
 			GameCommand mc;
 			mc.m_pSong = p;
 			m_aListEntries.push_back( mc );
@@ -1061,7 +1061,7 @@ public:
 		m_GoToFirstOnStart = lua_toboolean(L, -1) > 0;
 		lua_pop(L, 1);
 
-		lua_getfield(L, -1, "OneChoiceForAllPlayers"); 
+		lua_getfield(L, -1, "OneChoiceForAllPlayers");
 		m_Def.m_bOneChoiceForAllPlayers = lua_toboolean( L, -1 ) > 0;
 		lua_pop( L, 1 );
 
@@ -1535,7 +1535,7 @@ public:
 		gcOut = m_gc;
 	}
 	virtual RString GetScreen( int iChoice ) const
-	{ 
+	{
 		return m_gc.m_sScreen;
 	}
 };
@@ -1572,7 +1572,7 @@ OptionRowHandler* OptionRowHandlerUtil::Make( const Commands &cmds )
 		else if( sParam.CompareNoCase("Steps")==0 )		MAKE( OptionRowHandlerListSteps )
 		else if( sParam.CompareNoCase("StepsLocked")==0 )
 		{
-			MAKE( OptionRowHandlerListSteps ); 
+			MAKE( OptionRowHandlerListSteps );
 			pHand->m_Def.m_bOneChoiceForAllPlayers = true;
 		}
 		else if( sParam.CompareNoCase("Characters")==0 )	MAKE( OptionRowHandlerListCharacters )
@@ -1661,7 +1661,7 @@ LuaXType( ReloadChanged );
 /*
  * (c) 2002-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -1671,7 +1671,7 @@ LuaXType( ReloadChanged );
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -13,11 +13,12 @@
 #include "MessageManager.h"
 #include "ver.h"
 
-#include <sstream> // conversion for lua functions.
-#include <csetjmp>
 #include <cassert>
 #include <cmath>
+#include <csetjmp>
+#include <cstddef>
 #include <map>
+#include <sstream> // conversion for lua functions.
 
 LuaManager *LUA = nullptr;
 struct Impl
@@ -95,7 +96,7 @@ namespace LuaHelpers
 	template<> bool FromStack<unsigned int>( Lua *L, unsigned int &Object, int iOffset ) { Object = lua_tointeger( L, iOffset ); return true; }
 	template<> bool FromStack<RString>( Lua *L, RString &Object, int iOffset )
 	{
-		size_t iLen;
+		std::size_t iLen;
 		const char *pStr = lua_tolstring( L, iOffset, &iLen );
 		if( pStr != nullptr )
 			Object.assign( pStr, iLen );

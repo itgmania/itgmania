@@ -3,6 +3,7 @@
 // DO NOT USE stdio.h!  printf() calls malloc()!
 //#include <stdio.h>
 
+#include <cstddef>
 #include <windows.h>
 
 #include "global.h"
@@ -80,7 +81,7 @@ void CrashHandler::SetForegroundWindow( HWND hWnd )
 	g_hForegroundWnd = hWnd;
 }
 
-void WriteToChild( HANDLE hPipe, const void *pData, size_t iSize )
+void WriteToChild( HANDLE hPipe, const void *pData, std::size_t iSize )
 {
 	while( iSize )
 	{
@@ -467,7 +468,7 @@ static bool PointsToValidCall( ULONG_PTR ptr )
 	return IsValidCall(buf+7, len);
 }
 
-void CrashHandler::do_backtrace( const void **buf, size_t size,
+void CrashHandler::do_backtrace( const void **buf, std::size_t size,
 						 HANDLE hProcess, HANDLE hThread, const CONTEXT *pContext )
 {
 	const void **pLast = buf + size - 1;

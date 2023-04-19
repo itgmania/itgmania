@@ -11,6 +11,7 @@
 #include "LuaBinding.h"
 
 #include <cmath>
+#include <cstddef>
 
 
 REGISTER_ACTOR_CLASS( BitmapText );
@@ -643,13 +644,13 @@ bool BitmapText::StringWillUseAlternate( const RString& sText, const RString& sA
 	return true;
 }
 
-void BitmapText::CropLineToWidth(size_t l, int width)
+void BitmapText::CropLineToWidth(std::size_t l, int width)
 {
 	if(l < m_wTextLines.size())
 	{
 		int used_width= width;
 		std::wstring& line= m_wTextLines[l];
-		const size_t fit= m_pFont->GetGlyphsThatFit(line, &used_width);
+		const std::size_t fit= m_pFont->GetGlyphsThatFit(line, &used_width);
 		if(fit < line.size())
 		{
 			line.erase(line.begin()+fit, line.end());
@@ -660,7 +661,7 @@ void BitmapText::CropLineToWidth(size_t l, int width)
 
 void BitmapText::CropToWidth(int width)
 {
-	for(size_t l= 0; l < m_wTextLines.size(); ++l)
+	for(std::size_t l= 0; l < m_wTextLines.size(); ++l)
 	{
 		CropLineToWidth(l, width);
 	}
@@ -721,12 +722,12 @@ void BitmapText::DrawPrimitives()
 		}
 		else
 		{
-			size_t i = 0;
-			std::map<size_t,Attribute>::const_iterator iter = m_mAttributes.begin();
+			std::size_t i = 0;
+			std::map<std::size_t,Attribute>::const_iterator iter = m_mAttributes.begin();
 			while( i < m_aVertices.size() )
 			{
 				// Set the colors up to the next attribute.
-				size_t iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
+				std::size_t iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
 				iEnd = std::min( iEnd, m_aVertices.size() );
 				for( ; i < iEnd; i += 4 )
 				{
@@ -746,7 +747,7 @@ void BitmapText::DrawPrimitives()
 					iEnd = i + attr.length*4;
 				iEnd = std::min( iEnd, m_aVertices.size() );
 				std::vector<RageColor> temp_attr_diffuse(NUM_DIFFUSE_COLORS, m_internalDiffuse);
-				for(size_t c= 0; c < NUM_DIFFUSE_COLORS; ++c)
+				for(std::size_t c= 0; c < NUM_DIFFUSE_COLORS; ++c)
 				{
 					temp_attr_diffuse[c]*= attr.diffuse[c];
 					if(m_mult_attrs_with_diffuse)
@@ -806,12 +807,12 @@ void BitmapText::DrawPrimitives()
 	{
 		DISPLAY->SetTextureMode( TextureUnit_1, TextureMode_Glow );
 
-		size_t i = 0;
-		std::map<size_t,Attribute>::const_iterator iter = m_mAttributes.begin();
+		std::size_t i = 0;
+		std::map<std::size_t,Attribute>::const_iterator iter = m_mAttributes.begin();
 		while( i < m_aVertices.size() )
 		{
 			// Set the glow up to the next attribute.
-			size_t iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
+			std::size_t iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
 			iEnd = std::min( iEnd, m_aVertices.size() );
 			for( ; i < iEnd; ++i )
 				m_aVertices[i].c = m_pTempState->glow;
@@ -874,15 +875,15 @@ BitmapText::Attribute BitmapText::GetDefaultAttribute() const
 	return attr;
 }
 
-void BitmapText::AddAttribute( size_t iPos, const Attribute &attr )
+void BitmapText::AddAttribute( std::size_t iPos, const Attribute &attr )
 {
 	// Fixup position for new lines.
 	int iLines = 0;
-	size_t iAdjustedPos = iPos;
+	std::size_t iAdjustedPos = iPos;
 
 	for (std::wstring const & line : m_wTextLines)
 	{
-		size_t length = line.length();
+		std::size_t length = line.length();
 		if( length >= iAdjustedPos )
 			break;
 		iAdjustedPos -= length;
@@ -989,7 +990,7 @@ public:
 	static int GetText( T* p, lua_State *L )		{ lua_pushstring( L, p->GetText() ); return 1; }
 	static int AddAttribute( T* p, lua_State *L )
 	{
-		size_t iPos = IArg(1);
+		std::size_t iPos = IArg(1);
 		BitmapText::Attribute attr = p->GetDefaultAttribute();
 
 		attr.FromStack( L, 2 );

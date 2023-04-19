@@ -13,8 +13,10 @@
 #include "ActorUtil.h"
 #include "XmlFileUtil.h"
 #include "Sprite.h"
-#include <map>
 #include "SpecialFiles.h"
+
+#include <cstddef>
+#include <map>
 
 /** @brief Have the NoteSkinManager available throughout the program. */
 NoteSkinManager*	NOTESKIN = nullptr; // global and accessible from anywhere in our program
@@ -209,7 +211,7 @@ void NoteSkinManager::GetNoteSkinNames( const Game* pGame, std::vector<RString> 
 
 bool NoteSkinManager::NoteSkinNameInList(const RString name, std::vector<RString> name_list)
 {
-	for(size_t i= 0; i < name_list.size(); ++i)
+	for(std::size_t i= 0; i < name_list.size(); ++i)
 	{
 		if(0 == strcasecmp(name, name_list[i]))
 		{
@@ -280,7 +282,7 @@ void NoteSkinManager::GetAllNoteSkinNamesForGame( const Game *pGame, std::vector
 		StripCvsAndSvn( AddTo );
 		StripMacResourceForks( AddTo );
 	}
-}	
+}
 
 RString NoteSkinManager::GetMetric( const RString &sButtonName, const RString &sValue )
 {
@@ -383,8 +385,8 @@ RString NoteSkinManager::GetPath( const RString &sButtonName, const RString &sEl
 		}
 
 		RString message = ssprintf(
-			"The NoteSkin element \"%s %s\" could not be found in any of the following directories:\n%s", 
-			sButtonName.c_str(), sElement.c_str(), 
+			"The NoteSkin element \"%s %s\" could not be found in any of the following directories:\n%s",
+			sButtonName.c_str(), sElement.c_str(),
 			sPaths.c_str() );
 
 		switch(LuaHelpers::ReportScriptError(message, "NOTESKIN_ERROR", true))
@@ -446,7 +448,7 @@ RString NoteSkinManager::GetPath( const RString &sButtonName, const RString &sEl
 					break;
 			}
 		}
-		
+
 		sPath = sRealPath;
 	}
 
@@ -535,14 +537,14 @@ RString NoteSkinManager::GetPathFromDirAndFile( const RString &sDir, const RStri
 		sError+= join(", ", matches);
 		LuaHelpers::ReportScriptError(sError, "NOTESKIN_ERROR");
 	}
-	
+
 	return matches[0];
 }
 
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the NoteSkinManager. */ 
+/** @brief Allow Lua to have access to the NoteSkinManager. */
 class LunaNoteSkinManager: public Luna<NoteSkinManager>
 {
 public:
@@ -629,7 +631,7 @@ LUA_REGISTER_CLASS( NoteSkinManager )
 /*
  * (c) 2003-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -639,7 +641,7 @@ LUA_REGISTER_CLASS( NoteSkinManager )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

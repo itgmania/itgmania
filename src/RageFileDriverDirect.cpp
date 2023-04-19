@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #endif
 #include <cerrno>
+#include <cstddef>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -296,7 +297,7 @@ bool RageFileObjDirect::FinalFlush()
 	/* Only do the rest of the flushes if SLOW_FLUSH is enabled. */
 	if( !(m_iMode & RageFile::SLOW_FLUSH) )
 		return true;
-	
+
 	/* Force a kernel buffer flush. */
 	if( fsync( m_iFD ) == -1 )
 	{
@@ -319,7 +320,7 @@ bool RageFileObjDirect::FinalFlush()
 RageFileObjDirect::~RageFileObjDirect()
 {
 	bool bFailed = !FinalFlush();
-	
+
 	if( m_iFD != -1 )
 	{
 		if( DoClose( m_iFD ) == -1 )
@@ -363,7 +364,7 @@ RageFileObjDirect::~RageFileObjDirect()
 #else
 		if( rename( sOldPath, sNewPath ) == -1 )
 		{
-			WARN( ssprintf("Error renaming \"%s\" to \"%s\": %s", 
+			WARN( ssprintf("Error renaming \"%s\" to \"%s\": %s",
 					sOldPath.c_str(), sNewPath.c_str(), strerror(errno)) );
 			SetError( strerror(errno) );
 			break;
@@ -389,7 +390,7 @@ RageFileObjDirect::~RageFileObjDirect()
 	DoRemove( MakeTempFilename(m_sPath) );
 }
 
-int RageFileObjDirect::ReadInternal( void *pBuf, size_t iBytes )
+int RageFileObjDirect::ReadInternal( void *pBuf, std::size_t iBytes )
 {
 	int iRet = DoRead( m_iFD, pBuf, iBytes );
 	if( iRet == -1 )
@@ -402,7 +403,7 @@ int RageFileObjDirect::ReadInternal( void *pBuf, size_t iBytes )
 }
 
 // write(), but retry a couple times on EINTR.
-static int RetriedWrite( int iFD, const void *pBuf, size_t iCount )
+static int RetriedWrite( int iFD, const void *pBuf, std::size_t iCount )
 {
 	int iTries = 3, iRet;
 	do
@@ -426,7 +427,7 @@ int RageFileObjDirect::FlushInternal()
 	return 0;
 }
 
-int RageFileObjDirect::WriteInternal( const void *pBuf, size_t iBytes )
+int RageFileObjDirect::WriteInternal( const void *pBuf, std::size_t iBytes )
 {
 	if( WriteFailed() )
 	{

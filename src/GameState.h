@@ -13,8 +13,9 @@
 #include "SongPosition.h"
 #include "Preference.h"
 
-#include <map>
+#include <cstddef>
 #include <deque>
+#include <map>
 #include <set>
 
 class Character;
@@ -104,7 +105,7 @@ public:
 	/**
 	 * @brief The number of coins presently in the machine.
 	 *
-	 * Note that coins are not "credits". One may have to put in two coins 
+	 * Note that coins are not "credits". One may have to put in two coins
 	 * to get one credit, only to have to put in another four coins to get
 	 * the three credits needed to begin the game. */
 	BroadcastOnChange<int>			m_iCoins;
@@ -377,7 +378,7 @@ public:
 	// Preferences
 	static Preference<bool> m_bAutoJoin;
 
-	// These options have weird interactions depending on m_bEventMode, 
+	// These options have weird interactions depending on m_bEventMode,
 	// so wrap them.
 	bool		m_bTemporaryEventMode;
 	bool		IsEventMode() const;
@@ -385,7 +386,7 @@ public:
 	Premium		GetPremium() const;
 
 	// Edit stuff
-	
+
 	/**
 	 * @brief Is the game right now using Song timing or Steps timing?
 	 *
@@ -412,7 +413,7 @@ public:
 
 	// Autogen stuff.  This should probably be moved to its own singleton or
 	// something when autogen is generalized and more customizable. -Kyz
-	float GetAutoGenFarg(size_t i)
+	float GetAutoGenFarg(std::size_t i)
 	{
 		if(i >= m_autogen_fargs.size()) { return 0.0f; }
 		return m_autogen_fargs[i];
@@ -466,7 +467,7 @@ extern GameState*	GAMESTATE;	// global and accessible from anywhere in our progr
  * @author Chris Danford, Glenn Maynard, Chris Gomez (c) 2001-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -476,7 +477,7 @@ extern GameState*	GAMESTATE;	// global and accessible from anywhere in our progr
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

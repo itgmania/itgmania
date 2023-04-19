@@ -19,6 +19,7 @@
 #include "EnumHelper.h"
 
 #include <cmath>
+#include <cstddef>
 
 ThemeMetric<int> SORT_BPM_DIVISION ( "MusicWheel", "SortBPMDivision" );
 ThemeMetric<int> SORT_LENGTH_DIVISION ( "MusicWheel", "SortLengthDivision" );
@@ -294,7 +295,7 @@ void SongUtil::AdjustDuplicateSteps( Song *pSong )
  */
 static RString RemoveInitialWhitespace( RString s )
 {
-	size_t i = s.find_first_not_of(" \t\r\n");
+	std::size_t i = s.find_first_not_of(" \t\r\n");
 	if( i != s.npos )
 		s.erase( 0, i );
 	return s;

@@ -13,6 +13,8 @@
 #include "LuaBinding.h"
 #include "PrefsManager.h"
 
+#include <cstddef>
+
 REGISTER_ACTOR_CLASS( Model );
 
 static const float FRAMES_PER_SECOND = 30;
@@ -297,13 +299,13 @@ void Model::DrawCelShaded()
 	DISPLAY->SetCullMode(CULL_FRONT);
 	this->SetZWrite(false); // XXX: Why on earth isn't the culling working? -Colby
 	this->Draw();
-	
+
 	// Second pass: cel shading
 	DISPLAY->SetCelShaded(2);
 	DISPLAY->SetCullMode(CULL_BACK);
 	this->SetZWrite(true);
 	this->Draw();
-	
+
 	DISPLAY->SetCelShaded(0);
 }
 
@@ -570,8 +572,8 @@ void Model::SetPosition( float fSeconds )
 
 void Model::AdvanceFrame( float fDeltaTime )
 {
-	if( m_pGeometry == nullptr || 
-		m_pGeometry->m_Meshes.empty() || 
+	if( m_pGeometry == nullptr ||
+		m_pGeometry->m_Meshes.empty() ||
 		!m_pCurAnimation )
 	{
 		return; // bail early
@@ -600,7 +602,7 @@ void Model::AdvanceFrame( float fDeltaTime )
 
 void Model::SetBones( const msAnimation* pAnimation, float fFrame, std::vector<myBone_t> &vpBones )
 {
-	for( size_t i = 0; i < pAnimation->Bones.size(); ++i )
+	for( std::size_t i = 0; i < pAnimation->Bones.size(); ++i )
 	{
 		const msBone *pBone = &pAnimation->Bones[i];
 		if( pBone->PositionKeys.size() == 0 && pBone->RotationKeys.size() == 0 )
@@ -611,7 +613,7 @@ void Model::SetBones( const msAnimation* pAnimation, float fFrame, std::vector<m
 
 		// search for the adjacent position keys
 		const msPositionKey *pLastPositionKey = nullptr, *pThisPositionKey = nullptr;
-		for( size_t j = 0; j < pBone->PositionKeys.size(); ++j )
+		for( std::size_t j = 0; j < pBone->PositionKeys.size(); ++j )
 		{
 			const msPositionKey *pPositionKey = &pBone->PositionKeys[j];
 			if( pPositionKey->fTime >= fFrame )
@@ -635,7 +637,7 @@ void Model::SetBones( const msAnimation* pAnimation, float fFrame, std::vector<m
 
 		// search for the adjacent rotation keys
 		const msRotationKey *pLastRotationKey = nullptr, *pThisRotationKey = nullptr;
-		for( size_t j = 0; j < pBone->RotationKeys.size(); ++j )
+		for( std::size_t j = 0; j < pBone->RotationKeys.size(); ++j )
 		{
 			const msRotationKey *pRotationKey = &pBone->RotationKeys[j];
 			if( pRotationKey->fTime >= fFrame )
@@ -744,7 +746,7 @@ void Model::SetState( int iNewState )
 	}
 }
 
-void Model::RecalcAnimationLengthSeconds() 
+void Model::RecalcAnimationLengthSeconds()
 {
 	m_animation_length_seconds= 0;
 	for (msMaterial const &m : m_Materials)
@@ -771,7 +773,7 @@ bool Model::MaterialsNeedNormals() const
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the Model. */ 
+/** @brief Allow Lua to have access to the Model. */
 class LunaModel: public Luna<Model>
 {
 public:
@@ -805,7 +807,7 @@ LUA_REGISTER_DERIVED_CLASS( Model, Actor )
 /*
  * (c) 2003-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -815,7 +817,7 @@ LUA_REGISTER_DERIVED_CLASS( Model, Actor )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -7,6 +7,7 @@
 #include <unistd.h>
 #endif
 #include <cerrno>
+#include <cstddef>
 #include <limits.h>
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
@@ -38,7 +39,7 @@ static void safe_print( int fd, ... )
 		{
 			break;
 		}
-		size_t len = strlen( p );
+		std::size_t len = strlen( p );
 		while( len )
 		{
 			ssize_t result = write( fd, p, strlen(p) );
@@ -100,7 +101,7 @@ static void spawn_child_process( int from_parent )
 }
 
 /* write(), but retry a couple times on EINTR. */
-static int retried_write( int fd, const void *buf, size_t count )
+static int retried_write( int fd, const void *buf, std::size_t count )
 {
 	int tries = 3, ret;
 	do
@@ -112,7 +113,7 @@ static int retried_write( int fd, const void *buf, size_t count )
 	return ret;
 }
 
-static bool parent_write( int to_child, const void *p, size_t size )
+static bool parent_write( int to_child, const void *p, std::size_t size )
 {
 	int ret = retried_write( to_child, p, size );
 	if( ret == -1 )
@@ -121,7 +122,7 @@ static bool parent_write( int to_child, const void *p, size_t size )
 		return false;
 	}
 
-	if( size_t(ret) != size )
+	if( std::size_t(ret) != size )
 	{
 		safe_print( fileno(stderr), "Unexpected write() result (", itoa(ret), ")\n", nullptr );
 		return false;

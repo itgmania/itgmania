@@ -12,6 +12,8 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#include <cstddef>
+
 /* Register the RageSoundDriver_Pulseaudio class as sound driver "Pulse" */
 REGISTER_SOUND_DRIVER_CLASS2( Pulse, PulseAudio );
 
@@ -33,7 +35,7 @@ RageSoundDriver_PulseAudio::~RageSoundDriver_PulseAudio()
 	pa_context_unref(m_PulseCtx);
 	pa_threaded_mainloop_stop(m_PulseMainLoop);
 	pa_threaded_mainloop_free(m_PulseMainLoop);
-	
+
 	if(m_Error != nullptr)
 	{
 		free(m_Error);
@@ -57,14 +59,14 @@ RString RageSoundDriver_PulseAudio::Init()
 	pa_proplist_sets(plist, PA_PROP_APPLICATION_NAME, PRODUCT_FAMILY);
 	pa_proplist_sets(plist, PA_PROP_APPLICATION_VERSION, product_version);
 	pa_proplist_sets(plist, PA_PROP_MEDIA_ROLE, "game");
-	
+
 	LOG->Trace("Pulse: pa_context_new_with_proplist()...");
-	
+
 	m_PulseCtx = pa_context_new_with_proplist(
 			pa_threaded_mainloop_get_api(m_PulseMainLoop),
 			PRODUCT_FAMILY, plist);
 	pa_proplist_free(plist);
-	
+
 	if(m_PulseCtx == nullptr)
 	{
 		return "pa_context_new_with_proplist() failed!";
@@ -81,10 +83,10 @@ RString RageSoundDriver_PulseAudio::Init()
 #endif
 
 	pa_context_set_state_callback(m_PulseCtx, StaticCtxStateCb, this);
-	
+
 	LOG->Trace("Pulse: pa_context_connect()...");
 	error = pa_context_connect(m_PulseCtx, nullptr, (pa_context_flags_t)0, nullptr);
-	
+
 	if(error < 0)
 	{
 		return ssprintf("pa_contect_connect(): %s",
@@ -308,14 +310,14 @@ int64_t RageSoundDriver_PulseAudio::GetPosition() const
  * This needs to be looked into (and for some reason the ALSA driver is
  * useless on my laptop). - Colby
  */
-void RageSoundDriver_PulseAudio::StreamWriteCb(pa_stream *s, size_t length)
+void RageSoundDriver_PulseAudio::StreamWriteCb(pa_stream *s, std::size_t length)
 {
 #if PA_API_VERSION <= 11
 	/* We have to multiply the requested length by 2 on 0.9.10
 	* maybe the requested length is given in frames instead of bytes */
 	length *= 2;
 #endif
-	const size_t nbframes = length / sizeof(int16_t); /* we use 16-bit frames */
+	const std::size_t nbframes = length / sizeof(int16_t); /* we use 16-bit frames */
 	std::vector<int16_t> buf(nbframes);
 	int64_t pos1 = m_LastPosition;
 	int64_t pos2 = pos1 + nbframes/2; /* Mix() position in stereo frames */
@@ -339,7 +341,7 @@ void RageSoundDriver_PulseAudio::StaticStreamStateCb(pa_stream *s, void *user)
 	RageSoundDriver_PulseAudio *obj = (RageSoundDriver_PulseAudio*)user;
 	obj->StreamStateCb(s);
 }
-void RageSoundDriver_PulseAudio::StaticStreamWriteCb(pa_stream *s, size_t length, void *user)
+void RageSoundDriver_PulseAudio::StaticStreamWriteCb(pa_stream *s, std::size_t length, void *user)
 {
 	 RageSoundDriver_PulseAudio *obj = (RageSoundDriver_PulseAudio*)user;
 	 obj->StreamWriteCb(s, length);

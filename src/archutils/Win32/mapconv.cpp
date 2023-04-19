@@ -3,11 +3,12 @@
 #include <vector>
 #include <algorithm>
 
-#include <inttypes.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstddef>
+#include <cinttypes>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <ctype.h>
 
 #define MAX_FNAMBUF		(0x0FFFFFFF)
@@ -95,7 +96,7 @@ void RemoveAnonymousNamespaces( char *p )
 
 void parsename(uintptr_t rva, char *func_name) {
 	RemoveAnonymousNamespaces( func_name );
-	 
+
 	fnamptr = strtack(fnamptr, func_name, fnambuf+MAX_FNAMBUF);
 	if(!fnamptr)
 		throw "Too many func names; increase MAX_FNAMBUF.";
@@ -223,7 +224,7 @@ int main(int argc, char **argv) {
 
 //		printf("Processing RVA entries...\n");
 
-		for (size_t i = 0; i < rvabuf.size(); ++i) {
+		for (std::size_t i = 0; i < rvabuf.size(); ++i) {
 			uint16_t grp;
 			uint32_t start;
 			uintptr_t rva;
@@ -236,17 +237,17 @@ int main(int argc, char **argv) {
 
 			parsename(rva, symname);
 		}
-		
+
 //		printf("Processing segment entries...\n");
 
-		for (size_t i = 0; i < segcnt; i++) {
+		for (std::size_t i = 0; i < segcnt; i++) {
 			segbuf[i][0] += grpstart[seggrp[i]];
 //			printf("\t#%-2zu  %p-%p\n", i + 1, reinterpret_cast<void*>(segbuf[i][0]), reinterpret_cast<void*>(segbuf[i][0] + segbuf[i][1] - 1));
 		}
 /*
 		printf("Raw statistics:\n");
 		printf("\tRVA bytes:        %zu\n", rvabuf.size() * 4);
-		printf("\tFunc name bytes:  %" PRIdPTR "\n", static_cast<ptrdiff_t>(fnamptr - fnambuf));
+		printf("\tFunc name bytes:  %" PRIdPTR "\n", static_cast<std::ptrdiff_t>(fnamptr - fnambuf));
 
 		printf("\nPacking RVA data..."); fflush(stdout);
 */
@@ -256,7 +257,7 @@ int main(int argc, char **argv) {
 		uintptr_t lastrva = firstrva;
 
 		for(; itRVA != itRVAEnd; ++itRVA) {
-			ptrdiff_t rvadiff = (*itRVA).rva - lastrva;
+			std::ptrdiff_t rvadiff = (*itRVA).rva - lastrva;
 
 			lastrva += rvadiff;
 
@@ -287,7 +288,7 @@ int main(int argc, char **argv) {
 
 		fwrite(header, 64, 1, fo);
 
-		size_t t;
+		std::size_t t;
 
 		fwrite(&ver, sizeof ver, 1, fo);
 
@@ -308,7 +309,7 @@ int main(int argc, char **argv) {
 
 		if (fclose(fo))
 			throw "output file close failed";
-		
+
 	} catch (const char *s) {
 		fprintf(stderr, "%s: %s\n", argv[1], s);
 	}
@@ -321,7 +322,7 @@ int main(int argc, char **argv) {
 /*
  * (c) 2002 Avery Lee
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -331,7 +332,7 @@ int main(int argc, char **argv) {
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

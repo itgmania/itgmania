@@ -10,6 +10,8 @@ http://en.wikipedia.org/wiki/INI_file
 #include "RageLog.h"
 #include "RageFile.h"
 
+#include <cstddef>
+
 
 IniFile::IniFile(): XNode("IniFile")
 {
@@ -94,7 +96,7 @@ bool IniFile::ReadFile( RageFileBasic &f )
 				if(keychild == nullptr)
 				{ break; }
 				// New value.
-				size_t iEqualIndex = line.find("=");
+				std::size_t iEqualIndex = line.find("=");
 				if( iEqualIndex != std::string::npos )
 				{
 					RString valuename = line.Left((int) iEqualIndex);
