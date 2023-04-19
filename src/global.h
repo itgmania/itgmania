@@ -112,11 +112,6 @@ void ShowWarningOrTrace( const char *file, int line, const char *message, bool b
 #define SM_UNIQUE_NAME2(x,line) SM_UNIQUE_NAME3(x, line)
 #define SM_UNIQUE_NAME(x) SM_UNIQUE_NAME2(x, __LINE__)
 
-template <bool> struct CompileAssert;
-template <> struct CompileAssert<true> { };
-template<int> struct CompileAssertDecl { };
-#define COMPILE_ASSERT(COND) typedef CompileAssertDecl< sizeof(CompileAssert<!!(COND)>) > CompileAssertInst
-
 #include "StdString.h"
 /** @brief Use RStrings throughout the program. */
 typedef StdString::CStdString RString;
