@@ -2429,6 +2429,7 @@ int CZipArchive::CWildcard::Match(LPCTSTR lpszPattern, LPCTSTR lpszText)
 
 				/* must match this character exactly */
 
+				[[fallthrough]];
 			default:
 				if (*lpszPattern != *lpszText)
 					return matchPattern;

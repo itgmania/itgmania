@@ -402,7 +402,7 @@ void NoteField::DrawBeatBar( const float fBeat, BeatBarType type, int iMeasureIn
 		{
 			DEFAULT_FAIL( type );
 			case measure: // handled above
-			case beat: // fall through
+			case beat:
 				fAlpha = BAR_4TH_ALPHA;
 				iState = 1;
 				break;

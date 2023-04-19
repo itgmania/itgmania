@@ -334,7 +334,7 @@ bool BackgroundImpl::Layer::CreateBackground( const Song *pSong, const Backgroun
 		{
 		default:
 			LuaHelpers::ReportScriptErrorFmt( "CreateBackground() Unknown file type '%s'", vsResolved[0].c_str() );
-			// fall through
+			[[fallthrough]];
 		case FT_Bitmap:
 		case FT_Sprite:
 		case FT_Movie:

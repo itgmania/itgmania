@@ -62,20 +62,6 @@ namespace Checkpoints
 
 
 /**
- * @brief Define a macro to tell the compiler that a function doesn't return.
- *
- * This just improves compiler warnings.  This should be placed near the
- * beginning of the function prototype (although it looks better near the end,
- * VC only accepts it at the beginning). */
-#if defined(_MSC_VER)
-#define SM_NORETURN __declspec(noreturn)
-#elif defined(__GNUC__) && (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5))
-#define SM_NORETURN __attribute__ ((__noreturn__))
-#else
-#define SM_NORETURN
-#endif
-
-/**
  * @brief A crash has occurred, and we're not getting out of it easily.
  *
  * For most users, this will result in a crashinfo.txt file being generated.
@@ -84,7 +70,8 @@ namespace Checkpoints
  * @param reason the crash reason as determined by prior function calls.
  * @return nothing: there is no escape without quitting the program.
  */
-void SM_NORETURN sm_crash( const char *reason = "Internal error" );
+[[noreturn]]
+void sm_crash( const char *reason = "Internal error" );
 
 /**
  * @brief Assertion that sets an optional message and brings up the crash

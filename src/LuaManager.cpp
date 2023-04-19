@@ -608,8 +608,8 @@ XNode *LuaHelpers::GetLuaInformation()
 				sort( c.m_vMethods.begin(), c.m_vMethods.end() );
 				break;
 			}
+			[[fallthrough]];
 		}
-		// fall through
 		case LUA_TUSERDATA: // table or userdata: class instance
 		{
 			if( !luaL_callmeta(L, -1, "__type") )

@@ -1852,7 +1852,7 @@ void ScreenSelectMusic::AfterMusicChange()
 				// we want to load the sample music, but we don't want to
 				// actually play it. fall through. -aj
 			case SampleMusicPreviewMode_Normal:
-			case SampleMusicPreviewMode_LastSong: // fall through
+			case SampleMusicPreviewMode_LastSong:
 				// play the sample music
 				m_sSampleMusicToPlay = pSong->GetPreviewMusicPath();
 				if(!m_sSampleMusicToPlay.empty() && ActorUtil::GetFileType(m_sSampleMusicToPlay) != FT_Sound)

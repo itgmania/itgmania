@@ -281,8 +281,8 @@ float SMLoader::RowToBeat( RString line, const int rowsPerBeat )
 	}
 }
 
-void SMLoader::LoadFromTokens( 
-			     RString sStepsType, 
+void SMLoader::LoadFromTokens(
+			     RString sStepsType,
 			     RString sDescription,
 			     RString sDifficulty,
 			     RString sMeter,
@@ -322,11 +322,11 @@ void SMLoader::LoadFromTokens(
 	if( out.GetDifficulty() == Difficulty_Hard )
 	{
 		// HACK: SMANIAC used to be Difficulty_Hard with a special description.
-		if( sDescription.CompareNoCase("smaniac") == 0 ) 
+		if( sDescription.CompareNoCase("smaniac") == 0 )
 			out.SetDifficulty( Difficulty_Challenge );
 
 		// HACK: CHALLENGE used to be Difficulty_Hard with a special description.
-		if( sDescription.CompareNoCase("challenge") == 0 ) 
+		if( sDescription.CompareNoCase("challenge") == 0 )
 			out.SetDifficulty( Difficulty_Challenge );
 	}
 
@@ -348,7 +348,7 @@ void SMLoader::ProcessBGChanges( Song &out, const RString &sValueName, const RSt
 	BackgroundLayer iLayer = BACKGROUND_LAYER_1;
 	if( sscanf(sValueName, "BGCHANGES%d", &*ConvertValue<int>(&iLayer)) == 1 )
 		enum_add(iLayer, -1);	// #BGCHANGES2 = BACKGROUND_LAYER_2
-	
+
 	bool bValid = iLayer>=0 && iLayer<NUM_BackgroundLayer;
 	if( !bValid )
 	{
@@ -383,18 +383,18 @@ void SMLoader::ProcessAttacks( AttackArray &attacks, MsdFile::value_t params )
 {
 	Attack attack;
 	float end = -9999;
-	
+
 	for( unsigned j=1; j < params.params.size(); ++j )
 	{
 		std::vector<RString> sBits;
 		split( params[j], "=", sBits, false );
-		
+
 		// Need an identifer and a value for this to work
 		if( sBits.size() < 2 )
 			continue;
-		
+
 		Trim( sBits[0] );
-		
+
 		if( !sBits[0].CompareNoCase("TIME") )
 			attack.fStartSecond = strtof( sBits[1], nullptr );
 		else if( !sBits[0].CompareNoCase("LEN") )
@@ -405,16 +405,16 @@ void SMLoader::ProcessAttacks( AttackArray &attacks, MsdFile::value_t params )
 		{
 			Trim(sBits[1]);
 			attack.sModifiers = sBits[1];
-			
+
 			if( end != -9999 )
 			{
 				attack.fSecsRemaining = end - attack.fStartSecond;
 				end = -9999;
 			}
-			
+
 			if( attack.fSecsRemaining < 0.0f )
 				attack.fSecsRemaining = 0.0f;
-			
+
 			attacks.push_back( attack );
 		}
 	}
@@ -471,7 +471,7 @@ void SMLoader::ParseStops( std::vector<std::pair<float, float>> &out, const RStr
 {
 	std::vector<RString> arrayFreezeExpressions;
 	split( line, ",", arrayFreezeExpressions );
-	
+
 	for( unsigned f=0; f<arrayFreezeExpressions.size(); f++ )
 	{
 		std::vector<RString> arrayFreezeValues;
@@ -947,7 +947,7 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 		change.m_def.m_sColor2 = aBGChangeValues[10];
 		change.m_def.m_sColor2.Replace( '^', ',' );
 		change.m_def.m_sColor2 = RageColor::NormalizeColorString( change.m_def.m_sColor2 );
-		// fall through
+		[[fallthrough]];
 	case 10:
 		change.m_def.m_sColor1 = aBGChangeValues[9];
 		change.m_def.m_sColor1.Replace( '^', ',' );
@@ -980,7 +980,7 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 			if( !bLoop )
 				change.m_def.m_sEffect = SBE_StretchNoLoop;
 		}
-		// fall through
+		[[fallthrough]];
 	case 5:
 		// param 7 overrides this.
 		// Backward compatibility:
@@ -1036,7 +1036,7 @@ bool SMLoader::LoadNoteDataFromSimfile( const RString &path, Steps &out )
 		const MsdFile::value_t &sParams = msd.GetValue(i);
 		RString sValueName = sParams[0];
 		sValueName.MakeUpper();
-		
+
 		// The only tag we care about is the #NOTES tag.
 		if( sValueName=="NOTES" || sValueName=="NOTES2" )
 		{
@@ -1048,7 +1048,7 @@ bool SMLoader::LoadNoteDataFromSimfile( const RString &path, Steps &out )
 					     iNumParams );
 				continue;
 			}
-			
+
 			RString stepsType = sParams[1];
 			RString description = sParams[2];
 			RString difficulty = sParams[3];
@@ -1064,7 +1064,7 @@ bool SMLoader::LoadNoteDataFromSimfile( const RString &path, Steps &out )
 			{
 				difficulty = "Challenge";
 			}
-			
+
 			/* Handle hacks that originated back when StepMania didn't have
 			 * Difficulty_Challenge. TODO: Remove the need for said hacks. */
 			if( difficulty.CompareNoCase("hard") == 0 )
@@ -1074,10 +1074,10 @@ bool SMLoader::LoadNoteDataFromSimfile( const RString &path, Steps &out )
 				 * Account for the rogue charts that do this. */
 				// HACK: SMANIAC used to be Difficulty_Hard with a special description.
 				if (description.CompareNoCase("smaniac") == 0 ||
-					description.CompareNoCase("challenge") == 0) 
+					description.CompareNoCase("challenge") == 0)
 					difficulty = "Challenge";
 			}
-			
+
 			if(!(out.m_StepsType == GAMEMAN->StringToStepsType( stepsType ) &&
 			     out.GetDescription() == description &&
 			     (out.GetDifficulty() == StringToDifficulty(difficulty) ||
@@ -1085,7 +1085,7 @@ bool SMLoader::LoadNoteDataFromSimfile( const RString &path, Steps &out )
 			{
 				continue;
 			}
-			
+
 			RString noteData = sParams[6];
 			Trim( noteData );
 			out.SetSMNoteData( noteData );
@@ -1141,12 +1141,12 @@ bool SMLoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCache
 			}
 
 			Steps* pNewNotes = out.CreateSteps();
-			LoadFromTokens( 
-				sParams[1], 
-				sParams[2], 
-				sParams[3], 
-				sParams[4], 
-				sParams[5], 
+			LoadFromTokens(
+				sParams[1],
+				sParams[2],
+				sParams[3],
+				sParams[4],
+				sParams[5],
 				sParams[6],
 				*pNewNotes);
 
@@ -1252,7 +1252,7 @@ bool SMLoader::LoadEditFromMsd( const MsdFile &msd, const RString &sEditFilePath
 				return true;
 
 			Steps* pNewNotes = pSong->CreateSteps();
-			LoadFromTokens( 
+			LoadFromTokens(
 				sParams[1], sParams[2], sParams[3], sParams[4], sParams[5], sParams[6],
 				*pNewNotes);
 
@@ -1427,7 +1427,7 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 					continue;
 
 				// the string itself matches
-				if (f.EqualsNoCase(sChanges.substr(start, f.size()).c_str())) 
+				if (f.EqualsNoCase(sChanges.substr(start, f.size()).c_str()))
 				{
 					size_t nextpos = start + f.size();
 
@@ -1469,7 +1469,7 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 			{
 				size_t eqpos = sChanges.find('=', start);
 				size_t compos = sChanges.find(',', start);
-				
+
 				if ((eqpos == RString::npos) && (compos == RString::npos))
 				{
 					// neither = nor , were found in the remainder of the string. consume the rest of the string.
@@ -1517,7 +1517,7 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 /*
 * (c) 2001-2004 Chris Danford, Glenn Maynard
 * All rights reserved.
-* 
+*
 * Permission is hereby granted, free of charge, to any person obtaining a
 * copy of this software and associated documentation files (the
 * "Software"), to deal in the Software without restriction, including
@@ -1527,7 +1527,7 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 * copyright notice(s) and this permission notice appear in all copies of
 * the Software and that both the above copyright notice(s) and this
 * permission notice appear in supporting documentation.
-* 
+*
 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

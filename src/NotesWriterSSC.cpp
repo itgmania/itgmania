@@ -249,10 +249,20 @@ static void WriteGlobalTags( RageFile &f, const Song &out )
 	f.Write( "#SELECTABLE:" );
 	switch(out.m_SelectionDisplay)
 	{
-		default: ASSERT_M(0, "An invalid selectable value was found for this song!"); // fall through
-		case Song::SHOW_ALWAYS:	f.Write( "YES" );		break;
-		//case Song::SHOW_NONSTOP:	f.Write( "NONSTOP" );	break;
-		case Song::SHOW_NEVER:		f.Write( "NO" );		break;
+		default:
+			ASSERT_M(0, "An invalid selectable value was found for this song!");
+			[[fallthrough]];
+		case Song::SHOW_ALWAYS:
+			f.Write( "YES" );
+			break;
+#if 0
+		case Song::SHOW_NONSTOP:
+			f.Write( "NONSTOP" );
+			break;
+#endif
+		case Song::SHOW_NEVER:
+			f.Write( "NO" );
+			break;
 	}
 	f.PutLine( ";" );
 
@@ -449,7 +459,7 @@ bool NotesWriterSSC::Write( RString sPath, const Song &out, const std::vector<St
 	}
 
 	WriteGlobalTags( f, out );
-	
+
 	if( bSavingCache )
 	{
 		f.PutLine( ssprintf( "// cache tags:" ) );
@@ -514,8 +524,8 @@ bool NotesWriterSSC::WriteEditFileToMachine( const Song *pSong, Steps *pSteps, R
 	RString sPath = sDir + GetEditFileName(pSong,pSteps);
 
 	// Check to make sure that we're not clobering an existing file before opening.
-	bool bFileNameChanging = 
-		pSteps->GetSavedToDisk()  && 
+	bool bFileNameChanging =
+		pSteps->GetSavedToDisk()  &&
 		pSteps->GetFilename() != sPath;
 	if( bFileNameChanging  &&  DoesFileExist(sPath) )
 	{
@@ -551,7 +561,7 @@ bool NotesWriterSSC::WriteEditFileToMachine( const Song *pSong, Steps *pSteps, R
 /*
  * (c) 2011 Jason Felds
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -561,7 +571,7 @@ bool NotesWriterSSC::WriteEditFileToMachine( const Song *pSong, Steps *pSteps, R
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

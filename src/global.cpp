@@ -25,7 +25,7 @@ using CrashHandler::DebugBreak;
 #include "archutils/Unix/CrashHandler.h"
 #endif
 
-void SM_NORETURN sm_crash( const char *reason )
+void sm_crash( const char *reason )
 {
 #if ( defined(_WINDOWS) && defined(CRASH_HANDLER) ) || defined(MACOSX) || defined(_XDBG)
 	/* If we're being debugged, throw a debug break so it'll suspend the process. */
@@ -60,7 +60,7 @@ void SM_NORETURN sm_crash( const char *reason )
 /*
  * (c) 2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -70,7 +70,7 @@ void SM_NORETURN sm_crash( const char *reason )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
