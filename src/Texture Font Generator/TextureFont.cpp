@@ -2,9 +2,9 @@
 #include "TextureFont.h"
 #include "Utils.h"
 
-#include <fstream>
-#include <math.h>
 #include <cassert>
+#include <cmath>
+#include <fstream>
 
 TextureFont::TextureFont()
 {
@@ -33,7 +33,7 @@ void TextureFont::FormatFontPages()
 		ASSERT( b );
 	}
 	m_Characters.clear();
-	
+
 	m_sError = m_sWarnings = "";
 
 	/*
@@ -151,9 +151,9 @@ void TextureFont::FormatCharacter( wchar_t c, HDC hDC )
 		ABCFLOAT abcf;
 		GetCharABCWidthsFloatW( hDC, c, c, &abcf );
 
-		abc.abcA = lrintf( abcf.abcfA );
-		abc.abcB = lrintf( abcf.abcfB );
-		abc.abcC = lrintf( abcf.abcfC );
+		abc.abcA = std::lrint( abcf.abcfA );
+		abc.abcB = std::lrint( abcf.abcfB );
+		abc.abcC = std::lrint( abcf.abcfC );
 	}
 
 	/*
@@ -289,14 +289,14 @@ void TextureFont::FormatFontPage( int iPage, HDC hDC )
 	pPage->m_iFrameWidth = (m_BoundingRect.right - m_BoundingRect.left) + m_iPadding;
 	pPage->m_iFrameHeight = (m_BoundingRect.bottom - m_BoundingRect.top) + m_iPadding;
 	int iDimensionMultiple = 4;	// TODO: This only needs to be 4 for doubleres textures.  It could be 2 otherwise and use less space
-	pPage->m_iFrameWidth = (int)ceil( pPage->m_iFrameWidth /(double)iDimensionMultiple ) * iDimensionMultiple;
-	pPage->m_iFrameHeight = (int)ceil( pPage->m_iFrameHeight /(double)iDimensionMultiple ) * iDimensionMultiple;
+	pPage->m_iFrameWidth = std::ceil( pPage->m_iFrameWidth /(double)iDimensionMultiple ) * iDimensionMultiple;
+	pPage->m_iFrameHeight = std::ceil( pPage->m_iFrameHeight /(double)iDimensionMultiple ) * iDimensionMultiple;
 
-	pPage->m_iNumFramesX = (int) ceil( powf( (float) Desc.chars.size(), 0.5f ) );
-	pPage->m_iNumFramesY = (int) ceil( (float) Desc.chars.size() / pPage->m_iNumFramesX );
+	pPage->m_iNumFramesX = std::ceil( std::pow( (float) Desc.chars.size(), 0.5f ) );
+	pPage->m_iNumFramesY = std::ceil( (float) Desc.chars.size() / pPage->m_iNumFramesX );
 
 	pPage->Create( pPage->m_iNumFramesX*pPage->m_iFrameWidth, pPage->m_iNumFramesY*pPage->m_iFrameHeight );
-	
+
 	HGDIOBJ hOldBitmap = SelectObject( hDC, pPage->m_hPage );
 
 	HDC hSrcDC = CreateCompatibleDC( NULL );
@@ -306,7 +306,7 @@ void TextureFont::FormatFontPage( int iPage, HDC hDC )
 	{
 		const wchar_t c = Desc.chars[CurChar];
 		const ABC &abc = m_ABC[c];
-		
+
 		/* The current frame is at fOffsetX/fOffsetY.  Center the character
 		 * horizontally in the frame.  We can align it however we want
 		 * vertically, as long as we align the baselines. */
@@ -505,7 +505,7 @@ void TextureFont::Save( CString sBasePath, CString sBitmapAppendBeforeExtension,
 
 
 FontPage::FontPage()
-{ 
+{
 	m_hPage = NULL;
 	m_iFrameWidth = 0;
 	m_iFrameHeight = 0;

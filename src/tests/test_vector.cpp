@@ -206,7 +206,7 @@ static bool cmp( const float *p1, const float *p2, size_t size )
 	const float epsilon = 0.000001;
 	++size;
 	while( --size )
-		if( fabs(*p1++ - *p2++) >= epsilon )
+		if( std::abs(*p1++ - *p2++) >= epsilon )
 			return false;
 	return true;
 }
@@ -219,13 +219,13 @@ static bool CheckAlignedRead()
 	T *pDestBuf      = NEW( T, size );
 	T *pRefBuf       = NEW( T, size );
 	bool ret = true;
-	
+
 	for( int i = 0; i < 8; ++i )
 	{
 		RandBuffer( pSrcBuf, size-i );
 		Vector::FastSoundRead( pDestBuf, pSrcBuf, size-i );
 		ScalarRead( pRefBuf, pSrcBuf, size-i );
-		
+
 		if( !(ret = cmp(pRefBuf, pDestBuf, size-i)) )
 		{
 			fprintf( stderr, "%d: \n", i );
@@ -248,7 +248,7 @@ static bool CheckMisalignedRead()
 	T *pDestBuf      = NEW( T, size );
 	T *pRefBuf       = NEW( T, size );
 	bool ret = true;
-	
+
 	for( int j = 0; j < 8; ++j )
 	{
 		for( int i = 0; i < 8; ++i )
@@ -256,7 +256,7 @@ static bool CheckMisalignedRead()
 			RandBuffer( pSrcBuf, size-i );
 			Vector::FastSoundRead( pDestBuf+j, pSrcBuf, size-i-j );
 			ScalarRead( pRefBuf+j, pSrcBuf, size-i-j );
-			
+
 			if( !(ret = cmp(pRefBuf+j, pDestBuf+j, size-i-j)) )
 			{
 				fprintf( stderr, "%d, %d: \n", j, i );

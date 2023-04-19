@@ -17,12 +17,13 @@
 #include "ThemeMetric.h"
 #include "PlayerState.h"
 #include "ActorUtil.h"
-#include <float.h>
 #include "XmlFile.h"
 #include "XmlFileUtil.h"
 #include "BackgroundUtil.h"
 #include "Song.h"
 #include "AutoActor.h"
+
+#include <cfloat>
 
 static ThemeMetric<float> LEFT_EDGE				("Background","LeftEdge");
 static ThemeMetric<float> TOP_EDGE				("Background","TopEdge");

@@ -9,6 +9,8 @@
 #include "RageSoundMixBuffer.h"
 #include "RageSoundUtil.h"
 
+#include <cmath>
+
 
 /*
  * Keyed sounds should pass this object to SoundReader_Preload, to preprocess it.
@@ -53,7 +55,7 @@ void RageSoundReader_Chain::AddSound( int iIndex, float fOffsetSecs, float fPan 
 
 	Sound s;
 	s.iIndex = iIndex;
-	s.iOffsetMS = lrintf( fOffsetSecs * 1000 );
+	s.iOffsetMS = std::lrint( fOffsetSecs * 1000 );
 	s.fPan = fPan;
 	s.pSound = nullptr;
 	m_aSounds.push_back( s );
@@ -85,7 +87,7 @@ int RageSoundReader_Chain::LoadSound( RString sPath )
 	}
 
 	m_apNamedSounds[sPath] = pReader;
-	
+
 	m_apLoadedSounds.push_back( m_apNamedSounds[sPath] );
 	return m_apLoadedSounds.size()-1;
 }

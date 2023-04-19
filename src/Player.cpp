@@ -41,6 +41,8 @@
 #include "LocalizedString.h"
 #include "AdjustSync.h"
 
+#include <cmath>
+
 RString ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides );
 void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut );
 
@@ -289,20 +291,20 @@ Player::~Player()
 	SAFE_DELETE( m_pIterUncrossedRows );
 	SAFE_DELETE( m_pIterUnjudgedRows );
 	SAFE_DELETE( m_pIterUnjudgedMineRows );
-	
+
 }
 
 /* Init() does the expensive stuff: load sounds and noteskins.  Load() just loads a NoteData. */
 void Player::Init(
 	const RString &sType,
-	PlayerState* pPlayerState, 
+	PlayerState* pPlayerState,
 	PlayerStageStats* pPlayerStageStats,
-	LifeMeter* pLM, 
-	CombinedLifeMeter* pCombinedLM, 
-	ScoreDisplay* pScoreDisplay, 
-	ScoreDisplay* pSecondaryScoreDisplay, 
-	Inventory* pInventory, 
-	ScoreKeeper* pPrimaryScoreKeeper, 
+	LifeMeter* pLM,
+	CombinedLifeMeter* pCombinedLM,
+	ScoreDisplay* pScoreDisplay,
+	ScoreDisplay* pSecondaryScoreDisplay,
+	Inventory* pInventory,
+	ScoreKeeper* pPrimaryScoreKeeper,
 	ScoreKeeper* pSecondaryScoreKeeper )
 {
 	GRAY_ARROWS_Y_STANDARD.Load(			sType, "ReceptorArrowsYStandard" );
@@ -393,7 +395,7 @@ void Player::Init(
 
 	m_iLastSeenCombo      = 0;
 	m_bSeenComboYet       = false;
-	
+
 	// set initial life
 	if( m_pLifeMeter && m_pPlayerStageStats )
 	{
@@ -442,20 +444,20 @@ void Player::Init(
 
 		float fMaxBPM = 0;
 
-		/* TODO: Find a way to not go above a certain BPM range 
+		/* TODO: Find a way to not go above a certain BPM range
 		 * for getting the max BPM. Otherwise, you get songs
 		 * like Tsuhsuixamush, M550, 0.18x speed. Even slow
 		 * speed readers would not generally find this fun.
 		 * -Wolfman2000
 		 */
-		
+
 		// all BPMs are listed and available, so try them first.
 		// get the maximum listed value for the song or course.
 		// if the BPMs are < 0, reset and get the actual values.
 		if( !bpms.IsSecret() )
 		{
-			fMaxBPM = (M_MOD_HIGH_CAP > 0 ? 
-				   bpms.GetMaxWithin(M_MOD_HIGH_CAP) : 
+			fMaxBPM = (M_MOD_HIGH_CAP > 0 ?
+				   bpms.GetMaxWithin(M_MOD_HIGH_CAP) :
 				   bpms.GetMax());
 			fMaxBPM = std::max( 0.0f, fMaxBPM );
 		}
@@ -472,7 +474,7 @@ void Player::Init(
 					float fMaxForEntry;
 					if (M_MOD_HIGH_CAP > 0)
 						e.pSong->m_SongTiming.GetActualBPM( fThrowAway, fMaxForEntry, M_MOD_HIGH_CAP );
-					else 
+					else
 						e.pSong->m_SongTiming.GetActualBPM( fThrowAway, fMaxForEntry );
 					fMaxBPM = std::max( fMaxForEntry, fMaxBPM );
 				}
@@ -614,9 +616,9 @@ static void GenerateCacheDataStructure(PlayerState *pPlayerState, const NoteData
 		CacheDisplayedBeat c = { seg->GetBeat(), displayedBeat, seg->GetRatio() };
 		pPlayerState->m_CacheDisplayedBeat.push_back( c );
 	}
-	
+
 	pPlayerState->m_CacheNoteStat.clear();
-	
+
 	NoteData::all_tracks_const_iterator it = notes.GetTapNoteRangeAllTracks( 0, MAX_NOTE_ROW, true );
 	int count = 0, lastCount = 0;
 	for( ; !it.IsAtEnd(); ++it )
@@ -648,7 +650,7 @@ void Player::Load()
 	// TODO: Remove use of PlayerNumber.
 	PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
 
-	bool bOniDead = m_pPlayerState->m_PlayerOptions.GetStage().m_LifeType == LifeType_Battery  &&  
+	bool bOniDead = m_pPlayerState->m_PlayerOptions.GetStage().m_LifeType == LifeType_Battery  &&
 		(m_pPlayerStageStats == nullptr || m_pPlayerStageStats->m_bFailed);
 
 	/* The editor reuses Players ... so we really need to make sure everything
@@ -721,7 +723,7 @@ void Player::Load()
 	int iDrawDistanceBeforeTargetsPixels = GAMESTATE->IsEditing() ? 400 : DRAW_DISTANCE_BEFORE_TARGET_PIXELS;
 
 	float fNoteFieldMiddle = (GRAY_ARROWS_Y_STANDARD+GRAY_ARROWS_Y_REVERSE)/2;
-	
+
 	if( m_pNoteField && !bOniDead )
 	{
 		m_pNoteField->SetY( fNoteFieldMiddle );
@@ -733,7 +735,7 @@ void Player::Load()
 		m_pAttackDisplay->SetX( ATTACK_DISPLAY_X.GetValue(pn, bPlayerUsingBothSides) - 40 );
 	// set this in Update //m_pAttackDisplay->SetY( bReverse ? ATTACK_DISPLAY_Y_REVERSE : ATTACK_DISPLAY_Y );
 
-	// set this in Update 
+	// set this in Update
 	//m_pJudgment->SetX( JUDGMENT_X.GetValue(pn,bPlayerUsingBothSides) );
 	//m_pJudgment->SetY( bReverse ? JUDGMENT_Y_REVERSE : JUDGMENT_Y );
 
@@ -840,7 +842,7 @@ void Player::Update( float fDeltaTime )
 
 	ArrowEffects::SetCurrentOptions(&m_pPlayerState->m_PlayerOptions.GetCurrent());
 
-	// Optimization: Don't spend time processing the things below that won't show 
+	// Optimization: Don't spend time processing the things below that won't show
 	// if the Player doesn't show anything on the screen.
 	if( HasVisibleParts() )
 	{
@@ -879,7 +881,7 @@ void Player::Update( float fDeltaTime )
 
 		float fMiniPercent = m_pPlayerState->m_PlayerOptions.GetCurrent().m_fEffects[PlayerOptions::EFFECT_MINI];
 		float fTinyPercent = m_pPlayerState->m_PlayerOptions.GetCurrent().m_fEffects[PlayerOptions::EFFECT_TINY];
-		float fJudgmentZoom = std::min( powf(0.5f, fMiniPercent+fTinyPercent), 1.0f );
+		float fJudgmentZoom = std::min( std::pow(0.5f, fMiniPercent+fTinyPercent), 1.0f );
 
 		// Update Y positions
 		{
@@ -1042,7 +1044,7 @@ void Player::Update( float fDeltaTime )
 				continue;
 
 			const float notePosition = m_Timing->GetElapsedTimeFromBeat(NoteRowToBeat(row));
-			const float offset = fabsf((notePosition - musicPosition) / rate);
+			const float offset = std::abs((notePosition - musicPosition) / rate);
 
 			// Skip if we are outside of the largest timing window
 			if (offset > largestWindow)
@@ -1088,7 +1090,7 @@ void Player::Update( float fDeltaTime )
 			int iRow = iter.Row();
 			TrackRowTapNote trtn = { iTrack, iRow, &tn };
 
-			/* All holds must be of the same subType because fLife is handled 
+			/* All holds must be of the same subType because fLife is handled
 			 * in different ways depending on the SubType. Handle Rolls one at
 			 * a time and don't mix with holds. */
 			switch( tn.subType )
@@ -1201,7 +1203,7 @@ void Player::UpdateHoldNotes( int iSongRow, float fDeltaTime, std::vector<TrackR
 		if( subType == TapNoteSubType_Invalid )
 			subType = tn.subType;
 
-		/* All holds must be of the same subType because fLife is handled 
+		/* All holds must be of the same subType because fLife is handled
 		 * in different ways depending on the SubType. */
 		ASSERT( tn.subType == subType );
 
@@ -1264,12 +1266,12 @@ void Player::UpdateHoldNotes( int iSongRow, float fDeltaTime, std::vector<TrackR
 		TapNoteScore tns = tn.result.tns;
 		//LOG->Trace( ssprintf("[C++] tap note score: %s",StringConversion::ToString(tns).c_str()) );
 
-		// TODO: When using JUDGE_HOLD_NOTES_ON_SAME_ROW_TOGETHER, require that the whole row of 
+		// TODO: When using JUDGE_HOLD_NOTES_ON_SAME_ROW_TOGETHER, require that the whole row of
 		// taps was hit before activating this group of holds.
 		/* Something about the logic in this section is causing 192nd steps to
 		 * fail for some odd reason. -aj */
 		bSteppedOnHead &= (tns != TNS_Miss && tns != TNS_None);	// did they step on the start of this hold?
-		bHeadJudged &= (tns != TNS_None);	// has this hold really even started yet?	
+		bHeadJudged &= (tns != TNS_None);	// has this hold really even started yet?
 
 		/*
 		if(bSteppedOnHead)
@@ -1416,7 +1418,7 @@ void Player::UpdateHoldNotes( int iSongRow, float fDeltaTime, std::vector<TrackR
 	}
 
 	// TODO: Cap the active time passed to the score keeper to the actual start time and end time of the hold.
-	if( vTN[0].pTN->HoldResult.bActive ) 
+	if( vTN[0].pTN->HoldResult.bActive )
 	{
 		float fSecondsActiveSinceLastUpdate = fDeltaTime * GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
 		if( m_pPrimaryScoreKeeper )
@@ -1525,7 +1527,7 @@ void Player::UpdateHoldNotes( int iSongRow, float fDeltaTime, std::vector<TrackR
 		{
 			hns = HNS_LetGo;
 		}
-		else 
+		else
 		{
 			hns = HNS_Missed;
 		}
@@ -1558,7 +1560,7 @@ void Player::UpdateHoldNotes( int iSongRow, float fDeltaTime, std::vector<TrackR
 
 	if ( (hns == HNS_LetGo) && COMBO_BREAK_ON_IMMEDIATE_HOLD_LET_GO )
 		IncrementMissCombo();
-	
+
 	if( hns != HNS_None )
 	{
 		//LOG->Trace("tap note scoring time.");
@@ -1883,7 +1885,7 @@ int Player::GetClosestNote( int col, int iNoteRow, int iMaxRowsAhead, int iMaxRo
 		return iNextIndex;
 
 	/* Figure out which row is closer. */
-	if( abs(iNoteRow-iNextIndex) > abs(iNoteRow-iPrevIndex) )
+	if( std::abs(iNoteRow-iNextIndex) > std::abs(iNoteRow-iPrevIndex) )
 		return iPrevIndex;
 	else
 		return iNextIndex;
@@ -1948,7 +1950,7 @@ int Player::GetClosestNonEmptyRow( int iNoteRow, int iMaxRowsAhead, int iMaxRows
 	float fPrevTime = m_Timing->GetElapsedTimeFromBeat(NoteRowToBeat(iPrevRow));
 
 	/* Figure out which row is closer. */
-	if( fabsf(fNoteTime-fNextTime) > fabsf(fNoteTime-fPrevTime) )
+	if( std::abs(fNoteTime-fNextTime) > std::abs(fNoteTime-fPrevTime) )
 		return iPrevRow;
 	else
 		return iNextRow;
@@ -2065,15 +2067,15 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 	const float fTimeSinceStep = tm.Ago();
 
 	float fSongBeat = m_pPlayerState->m_Position.m_fSongBeat;
-	
+
 	if( GAMESTATE->m_pCurSong )
 	{
 		fSongBeat = GAMESTATE->m_pCurSong->m_SongTiming.GetBeatFromElapsedTime( fPositionSeconds );
-	
+
 		if( GAMESTATE->m_pCurSteps[m_pPlayerState->m_PlayerNumber] )
 			fSongBeat = m_Timing->GetBeatFromElapsedTime( fPositionSeconds );
 	}
-	
+
 	const int iSongRow = row == -1 ? BeatToNoteRow( fSongBeat ) : row;
 
 	if( col != -1 && !bRelease )
@@ -2133,7 +2135,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 					if( ROLL_BODY_INCREMENTS_COMBO && m_pPlayerState->m_PlayerController != PC_AUTOPLAY )
 					{
 						IncrementCombo();
-						
+
 						bool bBright = m_pPlayerStageStats && m_pPlayerStageStats->m_iCurCombo>(unsigned int)BRIGHT_GHOST_COMBO_THRESHOLD;
 						if( m_pNoteField )
 							m_pNoteField->DidHoldNote( col, HNS_Held, bBright );
@@ -2234,13 +2236,13 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 			// The offset from the actual step in seconds:
 			fNoteOffset = (fStepSeconds - fMusicSeconds) / GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;	// account for music rate
 			/*
-			LOG->Trace("step was %.3f ago, music is off by %f: %f vs %f, step was %f off", 
+			LOG->Trace("step was %.3f ago, music is off by %f: %f vs %f, step was %f off",
 				fTimeSinceStep, GAMESTATE->m_LastBeatUpdate.Ago()/GAMESTATE->m_SongOptions.m_fMusicRate,
 				fStepSeconds, fMusicSeconds, fNoteOffset );
 			*/
 		}
 
-		const float fSecondsFromExact = fabsf( fNoteOffset );
+		const float fSecondsFromExact = std::abs( fNoteOffset );
 
 		TapNote tnDummy = TAP_ORIGINAL_TAP;
 		TapNote *pTN = nullptr;
@@ -2281,7 +2283,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 						score = TNS_W4;
 					else if (!disabledWindows[TW_W5])
 						score = TNS_W5;
-				
+
 					break;
 				}
 				// Fall through to default.
@@ -2323,7 +2325,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 			if ( pTN->type == TapNoteType_Mine )
 			{
 				// The CPU hits a lot of mines. Only consider hitting the
-				// first mine for a row. We know we're the first mine if 
+				// first mine for a row. We know we're the first mine if
 				// there are are no mines to the left of us.
 				for ( int t=0; t<col; t++ )
 				{
@@ -2331,7 +2333,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 						return;	// avoid
 				}
 
-				// The CPU hits a lot of mines. Make it less likely to hit 
+				// The CPU hits a lot of mines. Make it less likely to hit
 				// mines that don't have a tap note on the same row.
 				bool bTapsOnRow = m_NoteData.IsThereATapOrHoldHeadAtRow( iRowOfOverlappingNoteOrRow );
 				TapNoteScore get_to_avoid = bTapsOnRow ? TNS_W3 : TNS_W4;
@@ -2352,7 +2354,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 			if ( score == TNS_Miss )
 				return;
 
-			// Put some small, random amount in fNoteOffset so that demonstration 
+			// Put some small, random amount in fNoteOffset so that demonstration
 			// show a mix of late and early. - Chris (StepMania r15628)
 			//fNoteOffset = randomf( -0.1f, 0.1f );
 			// Since themes may use the offset in a visual graph, the above
@@ -2455,7 +2457,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 			}
 		}
 
-		if( m_pPlayerState->m_PlayerController == PC_HUMAN && score >= TNS_W3 ) 
+		if( m_pPlayerState->m_PlayerController == PC_HUMAN && score >= TNS_W3 )
 			AdjustSync::HandleAutosync( fNoteOffset, fStepSeconds );
 
 		// Do game-specific and mode-specific score mapping.
@@ -3048,9 +3050,9 @@ void Player::HandleTapRowScore( unsigned row )
 	ChangeLife( scoreOfLastTap );
 }
 
-void Player::HandleHoldCheckpoint(int iRow, 
-				  int iNumHoldsHeldThisRow, 
-				  int iNumHoldsMissedThisRow, 
+void Player::HandleHoldCheckpoint(int iRow,
+				  int iNumHoldsHeldThisRow,
+				  int iNumHoldsMissedThisRow,
 				  const std::vector<int> &viColsWithHold )
 {
 	bool bNoCheating = true;
@@ -3070,14 +3072,14 @@ void Player::HandleHoldCheckpoint(int iRow,
 	const unsigned int iOldMissCombo = m_pPlayerStageStats ? m_pPlayerStageStats->m_iCurMissCombo : 0;
 
 	if( m_pPrimaryScoreKeeper )
-		m_pPrimaryScoreKeeper->HandleHoldCheckpointScore(m_NoteData, 
-								 iRow, 
-								 iNumHoldsHeldThisRow, 
+		m_pPrimaryScoreKeeper->HandleHoldCheckpointScore(m_NoteData,
+								 iRow,
+								 iNumHoldsHeldThisRow,
 								 iNumHoldsMissedThisRow );
 	if( m_pSecondaryScoreKeeper )
-		m_pSecondaryScoreKeeper->HandleHoldCheckpointScore(m_NoteData, 
-								   iRow, 
-								   iNumHoldsHeldThisRow, 
+		m_pSecondaryScoreKeeper->HandleHoldCheckpointScore(m_NoteData,
+								   iRow,
+								   iNumHoldsHeldThisRow,
 								   iNumHoldsMissedThisRow );
 
 	if( iNumHoldsMissedThisRow == 0 )
@@ -3087,7 +3089,7 @@ void Player::HandleHoldCheckpoint(int iRow,
 		{
 			for (int const &i : viColsWithHold)
 			{
-				bool bBright = m_pPlayerStageStats 
+				bool bBright = m_pPlayerStageStats
 					&& m_pPlayerStageStats->m_iCurCombo>(unsigned int)BRIGHT_GHOST_COMBO_THRESHOLD;
 				if( m_pNoteField )
 					m_pNoteField->DidHoldNote( i, HNS_Held, bBright );
@@ -3130,13 +3132,13 @@ void Player::HandleHoldScore( const TapNote &tn )
 
 	if( m_pScoreDisplay )
 	{
-		if( m_pPlayerStageStats ) 
+		if( m_pPlayerStageStats )
 			m_pScoreDisplay->SetScore( m_pPlayerStageStats->m_iScore );
 		m_pScoreDisplay->OnJudgment( holdScore, tapScore );
 	}
 	if( m_pSecondaryScoreDisplay )
 	{
-		if( m_pPlayerStageStats ) 
+		if( m_pPlayerStageStats )
 			m_pSecondaryScoreDisplay->SetScore( m_pPlayerStageStats->m_iScore );
 		m_pSecondaryScoreDisplay->OnJudgment( holdScore, tapScore );
 	}
@@ -3186,7 +3188,7 @@ void Player::SetMineJudgment( TapNoteScore tns , int iTrack )
 		msg.SetParam( "FirstTrack", iTrack );
 		MESSAGEMAN->Broadcast( msg );
 		if( m_pPlayerStageStats &&
-			( ( tns == TNS_AvoidMine && AVOID_MINE_INCREMENTS_COMBO ) || 
+			( ( tns == TNS_AvoidMine && AVOID_MINE_INCREMENTS_COMBO ) ||
 				( tns == TNS_HitMine && MINE_HIT_INCREMENTS_MISS_COMBO ))
 		)
 		{
@@ -3273,7 +3275,7 @@ void Player::SetCombo( unsigned int iCombo, unsigned int iMisses )
 		m_bSeenComboYet = true;
 		m_iLastSeenCombo = iCombo;
 	}
-	
+
 	bool b25Milestone = false;
 	bool b50Milestone = false;
 	bool b100Milestone = false;
@@ -3324,13 +3326,13 @@ void Player::SetCombo( unsigned int iCombo, unsigned int iMisses )
 	if( GAMESTATE->IsCourseMode() )
 	{
 		int iSongIndexStartColoring = GAMESTATE->m_pCurCourse->GetEstimatedNumStages();
-		iSongIndexStartColoring = 
-			static_cast<int>(floor(iSongIndexStartColoring*PERCENT_UNTIL_COLOR_COMBO));
+		iSongIndexStartColoring =
+			static_cast<int>(std::floor(iSongIndexStartColoring*PERCENT_UNTIL_COLOR_COMBO));
 		bPastBeginning = GAMESTATE->GetCourseSongIndex() >= iSongIndexStartColoring;
 	}
 	else
 	{
-		bPastBeginning = m_pPlayerState->m_Position.m_fMusicSeconds 
+		bPastBeginning = m_pPlayerState->m_Position.m_fMusicSeconds
 			> GAMESTATE->m_pCurSong->m_fMusicLengthSeconds * PERCENT_UNTIL_COLOR_COMBO;
 	}
 
@@ -3392,7 +3394,7 @@ RString Player::ApplyRandomAttack()
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the Player. */ 
+/** @brief Allow Lua to have access to the Player. */
 class LunaPlayer: public Luna<Player>
 {
 public:
@@ -3419,15 +3421,15 @@ public:
 		COMMON_RETURN_SELF;
 	}
 	static int SetActorWithJudgmentPosition( T* p, lua_State *L )
-	{ 
-		Actor *pActor = Luna<Actor>::check(L, 1); 
-		p->SetActorWithJudgmentPosition(pActor); 
+	{
+		Actor *pActor = Luna<Actor>::check(L, 1);
+		p->SetActorWithJudgmentPosition(pActor);
 		COMMON_RETURN_SELF;
 	}
 	static int SetActorWithComboPosition( T* p, lua_State *L )
-	{ 
-		Actor *pActor = Luna<Actor>::check(L, 1); 
-		p->SetActorWithComboPosition(pActor); 
+	{
+		Actor *pActor = Luna<Actor>::check(L, 1);
+		p->SetActorWithComboPosition(pActor);
 		COMMON_RETURN_SELF;
 	}
 	static int GetPlayerTimingData( T* p, lua_State *L )
@@ -3436,7 +3438,7 @@ public:
 		return 1;
 	}
 	GET_SET_BOOL_METHOD(oitg_zoom_mode, m_oitg_zoom_mode);
-	
+
 	LunaPlayer()
 	{
 		ADD_METHOD(SetLife);
@@ -3454,7 +3456,7 @@ LUA_REGISTER_DERIVED_CLASS( Player, ActorFrame )
 /*
  * (c) 2001-2006 Chris Danford, Steve Checkoway
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -3464,7 +3466,7 @@ LUA_REGISTER_DERIVED_CLASS( Player, ActorFrame )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

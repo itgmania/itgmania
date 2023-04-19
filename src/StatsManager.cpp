@@ -1,4 +1,4 @@
-﻿#include "global.h"
+#include "global.h"
 #include "StatsManager.h"
 #include "RageFileManager.h"
 #include "GameState.h"
@@ -18,6 +18,8 @@
 #include "PlayerOptions.h"
 #include "PlayerState.h"
 #include "Player.h"
+
+#include <cmath>
 
 StatsManager*	STATSMAN = nullptr;	// global object accessible from anywhere in the program
 
@@ -209,7 +211,7 @@ void StatsManager::CommitStatsToProfiles( const StageStats *pSS )
 	// Update profile stats
 	Profile* pMachineProfile = PROFILEMAN->GetMachineProfile();
 
-	int iGameplaySeconds = (int)truncf(pSS->m_fGameplaySeconds);
+	int iGameplaySeconds = std::trunc(pSS->m_fGameplaySeconds);
 
 	pMachineProfile->m_iTotalGameplaySeconds += iGameplaySeconds;
 	pMachineProfile->m_iNumTotalSongsPlayed += pSS->m_vpPlayedSongs.size();

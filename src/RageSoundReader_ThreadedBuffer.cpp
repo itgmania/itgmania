@@ -4,6 +4,8 @@
 #include "RageTimer.h"
 #include "RageLog.h"
 
+#include <cmath>
+
 /* Implement threaded read-ahead buffering.
  *
  * If a buffer is low on data, keep filling until it has a g_iMinFillFrames.
@@ -235,7 +237,7 @@ void RageSoundReader_ThreadedBuffer::BufferingThread()
 		else
 		{
 			m_Event.Unlock();
-			usleep( lrintf(fTimeToSleep * 1000000) );
+			usleep( std::lrint(fTimeToSleep * 1000000) );
 			m_Event.Lock();
 		}
 	}

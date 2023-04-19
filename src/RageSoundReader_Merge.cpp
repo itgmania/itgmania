@@ -7,6 +7,8 @@
 #include "RageSoundMixBuffer.h"
 #include "RageSoundUtil.h"
 
+#include <cmath>
+
 
 RageSoundReader_Merge::RageSoundReader_Merge()
 {
@@ -140,8 +142,8 @@ bool RageSoundReader_Merge::SetProperty( const RString &sProperty, float fValue 
 	return bRet;
 }
 
-static float Difference( float a, float b ) { return fabsf( a - b ); }
-static int Difference( int a, int b ) { return abs( a - b ); }
+static float Difference( float a, float b ) { return std::abs( a - b ); }
+static int Difference( int a, int b ) { return std::abs( a - b ); }
 
 /*
  * If the audio position drifts apart further than ERROR_CORRECTION_THRESHOLD frames,
@@ -174,7 +176,7 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 	/*
 	 * All sounds which are active should stay aligned; each GetNextSourceFrame should not
 	 * come out of sync.  Accomodate small rounding errors.  A larger inconsistency
-	 * happens may be a bug, such as sounds at different speeds. 
+	 * happens may be a bug, such as sounds at different speeds.
 	 */
 
 	std::vector<int> aNextSourceFrames;
@@ -212,7 +214,7 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 			/* A sound is being delayed to resync it; clamp the number of frames we
 			 * read now, so we don't advance past it. */
 			int iMaxSourceFramesToRead = aNextSourceFrames[i] - iMinPosition;
-			int iMaxStreamFramesToRead = lrintf( iMaxSourceFramesToRead / m_fCurrentStreamToSourceRatio );
+			int iMaxStreamFramesToRead = std::lrint( iMaxSourceFramesToRead / m_fCurrentStreamToSourceRatio );
 			iFrames = std::min( iFrames, iMaxStreamFramesToRead );
 //			LOG->Warn( "RageSoundReader_Merge: sound positions moving at different rates" );
 		}
@@ -224,7 +226,7 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 		RageSoundReader *pSound = m_aSounds.front();
 		iFrames = pSound->Read( pBuffer, iFrames );
 		if( iFrames > 0 )
-			m_iNextSourceFrame += lrintf( iFrames * m_fCurrentStreamToSourceRatio );
+			m_iNextSourceFrame += std::lrint( iFrames * m_fCurrentStreamToSourceRatio );
 		aNextSourceFrames.front() = pSound->GetNextSourceFrame();
 		aRatios.front() = pSound->GetStreamToSourceRatio();
 		return iFrames;
@@ -244,11 +246,11 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 		while( iFramesRead < iFrames )
 		{
 //			if( i == 0 )
-//LOG->Trace( "*** %i", Difference(aNextSourceFrames[i], m_iNextSourceFrame + lrintf(iFramesRead * aRatios[i])) );
+//LOG->Trace( "*** %i", Difference(aNextSourceFrames[i], m_iNextSourceFrame + std::lrint(iFramesRead * aRatios[i])) );
 
-			if( Difference(aNextSourceFrames[i], m_iNextSourceFrame + lrintf(iFramesRead * aRatios[i])) > ERROR_CORRECTION_THRESHOLD )
+			if( Difference(aNextSourceFrames[i], m_iNextSourceFrame + std::lrint(iFramesRead * aRatios[i])) > ERROR_CORRECTION_THRESHOLD )
 			{
-				LOG->Trace( "*** hurk %i", Difference(aNextSourceFrames[i], m_iNextSourceFrame + lrintf(iFramesRead * aRatios[i])) );
+				LOG->Trace( "*** hurk %i", Difference(aNextSourceFrames[i], m_iNextSourceFrame + std::lrint(iFramesRead * aRatios[i])) );
 				break;
 			}
 
@@ -276,7 +278,7 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 	int iMaxFramesRead = mix.size() / m_iChannels;
 	mix.read( pBuffer );
 
-	m_iNextSourceFrame += lrintf( iMaxFramesRead * m_fCurrentStreamToSourceRatio );
+	m_iNextSourceFrame += std::lrint( iMaxFramesRead * m_fCurrentStreamToSourceRatio );
 
 	return iMaxFramesRead;
 }

@@ -3,6 +3,8 @@
 #include "RageUtil.h"
 #include "RageLog.h"
 
+#include <cmath>
+
 static const int WINDOW_SIZE_MS = 30;
 
 RageSoundReader_SpeedChange::RageSoundReader_SpeedChange( RageSoundReader *pSource ):
@@ -63,7 +65,7 @@ static int FindClosestMatch( const float *pBuffer, int iBufferSize, const float 
 		for( int j = 0; j < iCorrelateBufferSize; j += iStride )
 		{
 			float fDiff = pFrames[j] - pCorrelateBuffer[j];
-			fScore += fabsf(fDiff);
+			fScore += std::abs(fDiff);
 		}
 
 		if( i == 0 || fScore < fBestScore )
@@ -163,7 +165,7 @@ int RageSoundReader_SpeedChange::Step()
 		 * by 2.0 frames, and advance by 0.3 more the next time around. */
 		float fAdvanceFrames = GetWindowSizeFrames() * m_fTrailingSpeedRatio;
 		fAdvanceFrames += m_fErrorFrames;
-		int iTrailingDeltaFrames = lrintf( fAdvanceFrames );
+		int iTrailingDeltaFrames = std::lrint( fAdvanceFrames );
 		m_fErrorFrames = fAdvanceFrames - iTrailingDeltaFrames;
 		m_iUncorrelatedPos += iTrailingDeltaFrames;
 
@@ -312,7 +314,7 @@ int RageSoundReader_SpeedChange::GetNextSourceFrame() const
 	float fRatio = m_fTrailingSpeedRatio;
 
 	int iSourceFrame = RageSoundReader_Filter::GetNextSourceFrame();
-	int iPos = lrintf(m_iPos * fRatio);
+	int iPos = std::lrint(m_iPos * fRatio);
 
 	iSourceFrame -= m_iDataBufferAvailFrames;
 	iSourceFrame += m_iUncorrelatedPos + iPos;

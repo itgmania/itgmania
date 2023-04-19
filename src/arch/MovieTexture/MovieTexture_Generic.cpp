@@ -9,6 +9,8 @@
 #include "RageUtil.h"
 #include "Sprite.h"
 
+#include <cmath>
+
 #if defined(WIN32)
 #include "archutils/Win32/ErrorStrings.h"
 #include <windows.h>
@@ -77,7 +79,7 @@ MovieTexture_Generic::~MovieTexture_Generic()
 
 	/* m_pSprite may reference the texture; delete it before DestroyTexture. */
 	delete m_pSprite;
-	
+
 	DestroyTexture();
 
 	delete m_pDecoder;
@@ -108,7 +110,7 @@ void MovieTexture_Generic::DestroyTexture()
 class RageMovieTexture_Generic_Intermediate : public RageTexture
 {
 public:
-	RageMovieTexture_Generic_Intermediate( RageTextureID ID, int iWidth, int iHeight, 
+	RageMovieTexture_Generic_Intermediate( RageTextureID ID, int iWidth, int iHeight,
 		int iImageWidth, int iImageHeight, int iTextureWidth, int iTextureHeight,
 		RageSurfaceFormat SurfaceFormat, RagePixelFormat pixfmt ):
 		RageTexture(ID),
@@ -123,7 +125,7 @@ public:
 		m_iTextureWidth = power_of_two( m_iImageWidth );
 		m_iTextureHeight = power_of_two( m_iImageHeight );
 */
-		
+
 		m_iImageWidth = iImageWidth;
 		m_iImageHeight = iImageHeight;
 		m_iTextureWidth = iTextureWidth;
@@ -193,9 +195,9 @@ void MovieTexture_Generic::CreateTexture()
 	/* Adjust m_iSourceWidth to support different source aspect ratios. */
 	float fSourceAspectRatio = m_pDecoder->GetSourceAspectRatio();
 	if( fSourceAspectRatio < 1 )
-		m_iSourceHeight = lrintf( m_iSourceHeight / fSourceAspectRatio );
+		m_iSourceHeight = std::lrint( m_iSourceHeight / fSourceAspectRatio );
 	else if( fSourceAspectRatio > 1 )
-		m_iSourceWidth = lrintf( m_iSourceWidth * fSourceAspectRatio );
+		m_iSourceWidth = std::lrint( m_iSourceWidth * fSourceAspectRatio );
 
 	/* HACK: Don't cap movie textures to the max texture size, since we
 	 * render them onto the texture at the source dimensions.  If we find a
@@ -381,7 +383,7 @@ float MovieTexture_Generic::CheckFrameTime()
 	}
 
 	/*
-	 * We're behind by -Offset seconds.  
+	 * We're behind by -Offset seconds.
 	 *
 	 * If we're just slightly behind, don't worry about it; we'll simply
 	 * not sleep, so we'll move as fast as we can to catch up.
@@ -487,7 +489,7 @@ void MovieTexture_Generic::UpdateFrame()
 	}
 }
 
-static EffectMode EffectModes[] = 
+static EffectMode EffectModes[] =
 {
 	EffectMode_YUYV422,
 };
@@ -529,7 +531,7 @@ uintptr_t MovieTexture_Generic::GetTexHandle() const
 /*
  * (c) 2003-2005 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -539,7 +541,7 @@ uintptr_t MovieTexture_Generic::GetTexHandle() const
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

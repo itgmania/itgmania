@@ -19,6 +19,8 @@
 #include "Sprite.h"
 #include "Style.h"
 
+#include <cmath>
+
 static Preference<bool> g_bRenderEarlierNotesOnTop( "RenderEarlierNotesOnTop", false );
 
 static const double PI_180= PI / 180.0;
@@ -664,13 +666,13 @@ void NoteDisplay::SetActiveFrame( float fNoteBeat, Actor &actorToSet, float fAni
 	/* -inf ... inf */
 	float fBeatOrSecond = cache->m_bAnimationBasedOnBeats ? m_pPlayerState->m_Position.m_fSongBeat : m_pPlayerState->m_Position.m_fMusicSeconds;
 	/* -len ... +len */
-	float fPercentIntoAnimation = fmodf( fBeatOrSecond, fAnimationLength );
+	float fPercentIntoAnimation = std::fmod( fBeatOrSecond, fAnimationLength );
 	/* -1 ... 1 */
 	fPercentIntoAnimation /= fAnimationLength;
 
 	if( bVivid )
 	{
-		float fNoteBeatFraction = fmodf( fNoteBeat, 1.0f );
+		float fNoteBeatFraction = std::fmod( fNoteBeat, 1.0f );
 
 		const float fInterval = 1.f / fAnimationLength;
 		fPercentIntoAnimation += QuantizeDown( fNoteBeatFraction, fInterval );
@@ -776,7 +778,7 @@ void NoteDisplay::DrawHoldPart(std::vector<Sprite*> &vpSpr,
 	float y_start_pos = (part_type == hpt_body) ? part_args.y_top : std::max(part_args.y_top, part_args.y_start_pos);
 	if (part_args.y_top < part_args.y_start_pos - unzoomed_frame_height)
 	{
-		y_start_pos = fmod((y_start_pos - part_args.y_start_pos), unzoomed_frame_height) + part_args.y_start_pos;
+		y_start_pos = std::fmod((y_start_pos - part_args.y_start_pos), unzoomed_frame_height) + part_args.y_start_pos;
 	}
 	float y_end_pos = std::min(part_args.y_bottom, part_args.y_end_pos);
 	const float color_scale= glow ? 1 : part_args.color_scale;
@@ -800,7 +802,7 @@ void NoteDisplay::DrawHoldPart(std::vector<Sprite*> &vpSpr,
 		{
 			float tex_coord_bottom= SCALE(part_args.y_bottom - part_args.y_top,
 				0, unzoomed_frame_height, rect.top, rect.bottom);
-			float want_tex_coord_bottom	= ceilf(tex_coord_bottom - 0.0001f);
+			float want_tex_coord_bottom	= std::ceil(tex_coord_bottom - 0.0001f);
 			add_to_tex_coord = want_tex_coord_bottom - tex_coord_bottom;
 		}
 
@@ -811,7 +813,7 @@ void NoteDisplay::DrawHoldPart(std::vector<Sprite*> &vpSpr,
 			const float fDistFromTop = y_start_pos - part_args.y_top;
 			float fTexCoordTop = SCALE(fDistFromTop, 0, unzoomed_frame_height, rect.top, rect.bottom);
 			fTexCoordTop += add_to_tex_coord;
-			add_to_tex_coord -= floorf(fTexCoordTop);
+			add_to_tex_coord -= std::floor(fTexCoordTop);
 		}
 	}
 	// The bottom caps mysteriously hate me and their texture coords need to be
@@ -855,7 +857,7 @@ void NoteDisplay::DrawHoldPart(std::vector<Sprite*> &vpSpr,
 		const float fYOffset= ArrowEffects::GetYOffsetFromYPos(column_args.column, fY, m_fYReverseOffsetPixels);
 
 		ae_zoom = ArrowEffects::GetZoom(m_pPlayerState, fYOffset, column_args.column);
-		
+
 		float cur_beat= part_args.top_beat;
 		if(part_args.top_beat != part_args.bottom_beat)
 		{
@@ -1006,7 +1008,7 @@ void NoteDisplay::DrawHoldPart(std::vector<Sprite*> &vpSpr,
 		// or else hold ends don't look right.
 		const float fPulseInnerAdj	= ArrowEffects::GetPulseInner();
 		const float fVariableZoom	= ArrowEffects::GetZoomVariable(fYOffset, column_args.column, 1) / fPulseInnerAdj;
-		
+
 		const float fDistFromTop	= (fY - y_start_pos) / ae_zoom;
 		float fTexCoordTop		= SCALE(fDistFromTop, 0, unzoomed_frame_height, rect.top, rect.bottom * fVariableZoom);
 		fTexCoordTop += add_to_tex_coord;
@@ -1078,7 +1080,7 @@ void NoteDisplay::DrawHoldBodyInternal(std::vector<Sprite*>& sprite_top,
 	part_args.y_top = y_tail + overlap_hack;
 	part_args.y_bottom = tail_plus_bottom + overlap_hack;
 	part_args.top_beat = bottom_beat;
-	part_args.y_start_pos = fmaxf(part_args.y_start_pos, y_head);
+	part_args.y_start_pos = std::fmax(part_args.y_start_pos, y_head);
 	part_args.wrapping = false;
 	DrawHoldPart(sprite_bottom, field_args, column_args, part_args, glow, hpt_bottom);
 }
@@ -1199,18 +1201,18 @@ void NoteDisplay::DrawHold(const TapNote& tn,
 		;	// use the default values filled in above
 	else
 		fStartYOffset = ArrowEffects::GetYOffset( m_pPlayerState, column_args.column, fStartBeat, fThrowAway, bStartIsPastPeak );
-	
+
 	float fEndPeakYOffset	= 0;
 	bool bEndIsPastPeak = false;
 	float fEndYOffset	= ArrowEffects::GetYOffset( m_pPlayerState, column_args.column, NoteRowToBeat(iEndRow), fEndPeakYOffset, bEndIsPastPeak );
 
-	// In boomerang, the arrows reverse direction at Y offset value fPeakAtYOffset.  
-	// If fPeakAtYOffset lies inside of the hold we're drawing, then the we 
-	// want to draw the tail at that max Y offset, or else the hold will appear 
+	// In boomerang, the arrows reverse direction at Y offset value fPeakAtYOffset.
+	// If fPeakAtYOffset lies inside of the hold we're drawing, then the we
+	// want to draw the tail at that max Y offset, or else the hold will appear
 	// to magically grow as the tail approaches the max Y offset.
 	if( bStartIsPastPeak && !bEndIsPastPeak )
 		fEndYOffset	= fEndPeakYOffset;	// use the calculated PeakYOffset so that long holds don't appear to grow
-	
+
 	// Swap in reverse, so fStartYOffset is always the offset higher on the screen.
 	if( bReverse )
 		std::swap( fStartYOffset, fEndYOffset );
@@ -1352,15 +1354,15 @@ void NoteDisplay::DrawActor(const TapNote& tn, Actor* pActor, NotePart part,
 			color = clamp( color, 0.0f, (float) (cache->m_iNoteColorCount[part]-1) );
 			break;
 		case NoteColorType_Progress:
-			color = fmodf( ceilf( fBeat * cache->m_iNoteColorCount[part] ), (float)cache->m_iNoteColorCount[part] );
+			color = std::fmod( std::ceil( fBeat * cache->m_iNoteColorCount[part] ), (float)cache->m_iNoteColorCount[part] );
 			break;
 		case NoteColorType_ProgressAlternate:
 			fScaledBeat = fBeat * cache->m_iNoteColorCount[part];
 			if( fScaledBeat - int64_t(fScaledBeat) == 0.0f )
 				//we're on a boundary, so move to the previous frame.
-				//doing it this way ensures that fScaledBeat is never negative so fmodf works.
+				//doing it this way ensures that fScaledBeat is never negative so std::fmod works.
 				fScaledBeat += cache->m_iNoteColorCount[part] - 1;
-			color = fmodf( ceilf( fScaledBeat ), (float)cache->m_iNoteColorCount[part] );
+			color = std::fmod( std::ceil( fScaledBeat ), (float)cache->m_iNoteColorCount[part] );
 			break;
 		default:
 			FAIL_M(ssprintf("Invalid NoteColorType: %i", cache->m_NoteColorType[part]));
@@ -1429,17 +1431,17 @@ void NoteDisplay::DrawTap(const TapNote& tn,
 			pActor = GetHoldActor( m_HoldHead, NotePart_HoldHead, fBeat, true, false );
 		}
 	}
-	
+
 	else if( bOnSameRowAsHoldStart  &&  cache->m_bDrawHoldHeadForTapsOnSameRow )
 	{
 		pActor = GetHoldActor( m_HoldHead, NotePart_HoldHead, fBeat, false, false );
 	}
-	
+
 	else if( bOnSameRowAsRollStart  &&  cache->m_bDrawRollHeadForTapsOnSameRow )
 	{
 		pActor = GetHoldActor( m_HoldHead, NotePart_HoldHead, fBeat, true, false );
 	}
-	
+
 	else
 	{
 		pActor = GetTapActor( m_TapNote, NotePart_Tap, fBeat );
@@ -1743,7 +1745,7 @@ LUA_REGISTER_DERIVED_CLASS(NoteColumnRenderer, Actor)
  * NoteColumnRenderer and associated spline stuff (c) Eric Reese 2014-2015
  * (c) 2001-2006 Brian Bugh, Ben Nordstrom, Chris Danford, Steve Checkoway
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -1753,7 +1755,7 @@ LUA_REGISTER_DERIVED_CLASS(NoteColumnRenderer, Actor)
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

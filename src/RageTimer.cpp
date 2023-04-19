@@ -26,7 +26,9 @@
 #include "RageUtil.h"
 
 #include "arch/ArchHooks/ArchHooks.h"
- 
+
+#include <cmath>
+
 #define TIMESTAMP_RESOLUTION 1000000
 
 const RageTimer RageZeroTimer(0,0);
@@ -39,7 +41,7 @@ static uint64_t GetTime( bool /* bAccurate */ )
 	/* This isn't threadsafe, and locking it would undo any benefit of not
 	 * calling GetMicrosecondsSinceStart. */
 #if 0
-	// if !bAccurate, then don't call ArchHooks to find the current time.  Just return the 
+	// if !bAccurate, then don't call ArchHooks to find the current time.  Just return the
 	// last calculated time.  GetMicrosecondsSinceStart is slow on some archs.
 	static uint64_t usecs = 0;
 	if( bAccurate )
@@ -88,7 +90,7 @@ float RageTimer::GetDeltaTime()
 /*
  * Get a timer representing half of the time ago as this one.  This is
  * useful for averaging time.  For example,
- * 
+ *
  * RageTimer tm;
  * ... do stuff ...
  * RageTimer AverageTime = tm.Half();
@@ -122,7 +124,7 @@ RageTimer RageTimer::Sum(const RageTimer &lhs, float tm)
 {
 	/* tm == 5.25  -> secs =  5, us = 5.25  - ( 5) = .25
 	 * tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75 */
-	int seconds = (int) floorf(tm);
+	int seconds = std::floor(tm);
 	int us = int( (tm - seconds) * TIMESTAMP_RESOLUTION );
 
 	RageTimer ret(0,0); // Prevent unnecessarily checking the time

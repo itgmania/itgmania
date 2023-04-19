@@ -11,6 +11,8 @@
 #include "Song.h"
 #include "XmlFile.h"
 
+#include <cmath>
+
 //#define DIVIDE_LINE_WIDTH			THEME->GetMetricI(m_sName,"TexturedBottomHalf")
 REGISTER_ACTOR_CLASS( GraphDisplay );
 
@@ -27,7 +29,7 @@ public:
 
 		DISPLAY->ClearAllTextures();
 
-		// Must call this after setting the texture or else texture 
+		// Must call this after setting the texture or else texture
 		// parameters have no effect.
 		Actor::SetTextureRenderStates();
 
@@ -66,7 +68,7 @@ public:
 		{
 			MakeCircle( m_LineStrip[i], &m_pCircles[0] + iCircleVertices*i, iSubdivisions, 1 );
 		}
-		
+
 		int iNumLines = iSize-1;
 		m_Quads.resize( iNumLines * 4 );
 		for( int i = 0; i < iNumLines; ++i )
@@ -76,7 +78,7 @@ public:
 
 			float opp = p2.p.x - p1.p.x;
 			float adj = p2.p.y - p1.p.y;
-			float hyp = powf(opp*opp + adj*adj, 0.5f);
+			float hyp = std::pow(opp*opp + adj*adj, 0.5f);
 
 			float lsin = opp/hyp;
 			float lcos = adj/hyp;
@@ -88,7 +90,7 @@ public:
 			int iLineWidth = 2;
 			float ydist = lsin * iLineWidth/2;
 			float xdist = lcos * iLineWidth/2;
-			
+
 			v[0].p.x += xdist;
 			v[0].p.y -= ydist;
 			v[1].p.x -= xdist;
@@ -135,7 +137,7 @@ public:
 		DISPLAY->ClearAllTextures();
 		DISPLAY->SetTexture( TextureUnit_1, m_pTexture->GetTexHandle() );
 
-		// Must call this after setting the texture or else texture 
+		// Must call this after setting the texture or else texture
 		// parameters have no effect.
 		Actor::SetTextureRenderStates();
 
@@ -275,7 +277,7 @@ void GraphDisplay::UpdateVerts()
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the GraphDisplay. */ 
+/** @brief Allow Lua to have access to the GraphDisplay. */
 class LunaGraphDisplay: public Luna<GraphDisplay>
 {
 public:
@@ -313,7 +315,7 @@ LUA_REGISTER_DERIVED_CLASS( GraphDisplay, ActorFrame )
 /*
  * (c) 2003 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -323,7 +325,7 @@ LUA_REGISTER_DERIVED_CLASS( GraphDisplay, ActorFrame )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

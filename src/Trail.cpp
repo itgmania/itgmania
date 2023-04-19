@@ -7,6 +7,8 @@
 #include "NoteData.h"
 #include "NoteDataUtil.h"
 #include "CommonMetrics.h"
+
+#include <cmath>
 #include <numeric>
 
 void TrailEntry::GetAttackArray( AttackArray &out ) const
@@ -20,7 +22,7 @@ void TrailEntry::GetAttackArray( AttackArray &out ) const
 bool TrailEntry::operator== ( const TrailEntry &rhs ) const
 {
 #define EQUAL(a) (a==rhs.a)
-	return 
+	return
 		EQUAL(pSong) &&
 		EQUAL(pSteps) &&
 		EQUAL(Modifiers) &&
@@ -45,7 +47,7 @@ bool TrailEntry::ContainsTransformOrTurn() const
 // TrailEntry lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the TrailEntry. */ 
+/** @brief Allow Lua to have access to the TrailEntry. */
 class LunaTrailEntry: public Luna<TrailEntry>
 {
 public:
@@ -94,8 +96,8 @@ const RadarValues &Trail::GetRadarValues() const
 	}
 	if( IsSecret() )
 	{
-		// Don't calculate RadarValues for a non-fixed Course.  They values are 
-		// worthless because they'll change every time this Trail is 
+		// Don't calculate RadarValues for a non-fixed Course.  They values are
+		// worthless because they'll change every time this Trail is
 		// regenerated.
 		m_CachedRadarValues = RadarValues();
 		return m_CachedRadarValues;
@@ -131,7 +133,7 @@ const RadarValues &Trail::GetRadarValues() const
 			}
 			else
 			{
-				rv += pSteps->GetRadarValues( PLAYER_1 );			
+				rv += pSteps->GetRadarValues( PLAYER_1 );
 			}
 		}
 
@@ -154,7 +156,7 @@ int Trail::GetMeter() const
 
 	float fMeter = GetTotalMeter() / (float)m_vEntries.size();
 
-	return lrintf( fMeter );
+	return std::lrint( fMeter );
 }
 
 int Trail::GetTotalMeter() const
@@ -214,7 +216,7 @@ bool Trail::ContainsSong( const Song *pSong ) const
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the Trail. */ 
+/** @brief Allow Lua to have access to the Trail. */
 class LunaTrail: public Luna<Trail>
 {
 public:
@@ -299,7 +301,7 @@ LUA_REGISTER_CLASS( Trail )
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -309,7 +311,7 @@ LUA_REGISTER_CLASS( Trail )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

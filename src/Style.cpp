@@ -2,13 +2,13 @@
 
 /*
  * Styles define a set of columns for each player, and information about those
- * columns, like what Instruments are used play those columns and what track 
+ * columns, like what Instruments are used play those columns and what track
  * to use to populate the column's notes.
- * A "track" is the term used to descibe a particular vertical sting of note 
+ * A "track" is the term used to descibe a particular vertical sting of note
  * in NoteData.
- * A "column" is the term used to describe the vertical string of notes that 
- * a player sees on the screen while they're playing.  Column notes are 
- * picked from a track, but columns and tracks don't have a 1-to-1 
+ * A "column" is the term used to describe the vertical string of notes that
+ * a player sees on the screen while they're playing.  Column notes are
+ * picked from a track, but columns and tracks don't have a 1-to-1
  * correspondance.  For example, dance-versus has 8 columns but only 4 tracks
  * because two players place from the same set of 4 tracks.
  */
@@ -19,7 +19,8 @@
 #include "RageUtil.h"
 #include "InputMapper.h"
 #include "NoteData.h"
-#include <float.h>
+
+#include <cfloat>
 
 bool Style::GetUsesCenteredArrows() const
 {
@@ -138,7 +139,7 @@ RString Style::ColToButtonName( int iCol ) const
 // Lua bindings
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the Style. */ 
+/** @brief Allow Lua to have access to the Style. */
 class LunaStyle: public Luna<Style>
 {
 public:
@@ -179,8 +180,8 @@ public:
 		ret.Set( L,  "XOffset" );
 		lua_pushstring( L, p->ColToButtonName(iCol) );
 		ret.Set( L, "Name" );
-		
-		ret.PushSelf(L); 
+
+		ret.PushSelf(L);
 		return 1;
 	}
 
@@ -195,7 +196,7 @@ public:
 		lua_pushnumber( L, p->m_iColumnDrawOrder[iCol]+1 );
 		return 1;
 	}
-	
+
 	LunaStyle()
 	{
 		ADD_METHOD( GetName );
@@ -215,7 +216,7 @@ LUA_REGISTER_CLASS( Style )
 /*
  * (c) 2001-2002 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -225,7 +226,7 @@ LUA_REGISTER_CLASS( Style )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

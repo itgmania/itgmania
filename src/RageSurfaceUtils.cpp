@@ -5,6 +5,8 @@
 #include "RageLog.h"
 #include "RageFile.h"
 
+#include <cmath>
+
 uint32_t RageSurfaceUtils::decodepixel( const uint8_t *p, int bpp )
 {
 	switch(bpp)
@@ -278,7 +280,7 @@ static void SetAlphaRGB(const RageSurface *pImg, uint8_t r, uint8_t g, uint8_t b
  *
  * A few images don't. We can only make a guess here. After the above
  * search, do the same in reverse (bottom-top-right-left). If the color
- * we find is different, just set the border color to black.  
+ * we find is different, just set the border color to black.
  */
 void RageSurfaceUtils::FixHiddenAlpha( RageSurface *pImg )
 {
@@ -356,7 +358,7 @@ int RageSurfaceUtils::FindSurfaceTraits( const RageSurface *img )
 	}
 
 	int ret = 0;
-	switch( alpha_type ) 
+	switch( alpha_type )
 	{
 	case NEEDS_NO_ALPHA:	ret |= TRAIT_NO_TRANSPARENCY;	break;
 	case NEEDS_BOOL_ALPHA:	ret |= TRAIT_BOOL_TRANSPARENCY;	break;
@@ -384,7 +386,7 @@ static inline float scale( float x, float l1, float h1, float l2, float h2 )
 }
 
 // Completely unoptimized.
-void RageSurfaceUtils::BlitTransform( const RageSurface *src, RageSurface *dst, 
+void RageSurfaceUtils::BlitTransform( const RageSurface *src, RageSurface *dst,
 					const float fCoords[8] /* TL, BR, BL, TR */ )
 {
 	ASSERT( src->format->BytesPerPixel == dst->format->BytesPerPixel );
@@ -420,10 +422,10 @@ void RageSurfaceUtils::BlitTransform( const RageSurface *src, RageSurface *dst,
 			 * pixel[1]; 2 indicates 50% pixel[1], 50% pixel[2] (which is clamped
 			 * to pixel[1]). */
 			int src_x[2], src_y[2];
-			src_x[0] = (int) truncf(src_xp - 0.5f);
+			src_x[0] = std::trunc(src_xp - 0.5f);
 			src_x[1] = src_x[0] + 1;
 
-			src_y[0] = (int) truncf(src_yp - 0.5f);
+			src_y[0] = std::trunc(src_yp - 0.5f);
 			src_y[1] = src_y[0] + 1;
 
 			// Emulate GL_REPEAT.
@@ -452,7 +454,7 @@ void RageSurfaceUtils::BlitTransform( const RageSurface *src, RageSurface *dst,
 				sum += v[1][i] * (1-weight_x) * (weight_y);
 				sum += v[2][i] * (weight_x)   * (1-weight_y);
 				sum += v[3][i] * (weight_x)   * (weight_y);
-				out[i] = (uint8_t) clamp( lrintf(sum), 0L, 255L );
+				out[i] = (uint8_t) clamp( std::lrint(sum), 0L, 255L );
 			}
 
 			// If the source has no alpha, set the destination to opaque.
@@ -547,7 +549,7 @@ static bool blit_rgba_to_rgba( const RageSurface *src_surf, const RageSurface *d
 			 * { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3 }
 			 * SCALE( i, 0, max_src_val, 0, max_dst_val );
 			 * { 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3 }
-			 * lrintf( ((float) i / max_src_val) * max_dst_val )
+			 * std::lrint( ((float) i / max_src_val) * max_dst_val )
 			 * { 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3 }
 			 *
 			 * We use the first for increasing resolution, since it gives the most even
@@ -558,7 +560,7 @@ static bool blit_rgba_to_rgba( const RageSurface *src_surf, const RageSurface *d
 			 * { 0, 4, 8, 12 }
 			 * SCALE( i, 0, max_src_val, 0, max_dst_val );
 			 * { 0, 5, 10, 15 }
-			 * lrintf( ((float) i / max_src_val) * max_dst_val )
+			 * std::lrint( ((float) i / max_src_val) * max_dst_val )
 			 * { 0, 5, 10, 15 }
 			 *
 			 * The latter two are equivalent and give an even distribution; we use the
@@ -861,10 +863,10 @@ RageSurface *RageSurfaceUtils::PalettizeToGrayscale( const RageSurface *src_surf
 		const unsigned int A = (index & Amask) >> Ashift;
 
 		// if only one intensity value, always fullbright
-		const uint8_t ScaledI = Ivalues == 1 ? 255 : clamp( lrintf(I * (255.0f / (Ivalues-1))), 0L, 255L );
+		const uint8_t ScaledI = Ivalues == 1 ? 255 : clamp( std::lrint(I * (255.0f / (Ivalues-1))), 0L, 255L );
 
 		// if only one alpha value, always opaque
-		const uint8_t ScaledA = Avalues == 1 ? 255 : clamp( lrintf(A * (255.0f / (Avalues-1))), 0L, 255L );
+		const uint8_t ScaledA = Avalues == 1 ? 255 : clamp( std::lrint(A * (255.0f / (Avalues-1))), 0L, 255L );
 
 		RageSurfaceColor c;
 		c.r = ScaledI;

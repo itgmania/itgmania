@@ -12,8 +12,8 @@
 using namespace RageDisplay_Legacy_Helpers;
 using namespace X11Helper;
 
+#include <cmath>
 #include <set>
-#include <math.h>	// ceil()
 #include <GL/glxew.h>
 #define GLX_GLXEXT_PROTOTYPES
 #include <GL/glx.h>	// All sorts of stuff...
@@ -410,7 +410,7 @@ RString LowLevelWindow_X11::TryVideoMode( const VideoModeParams &p, bool &bNewDe
 					}
 				}
 			}
-			rate = roundf(fRefreshRate);
+			rate = std::round(fRefreshRate);
 
 			g_usedCrtc = tgtOutCrtc;
 			g_originalRandRMode = oldConf->mode;
@@ -559,7 +559,7 @@ RString LowLevelWindow_X11::TryVideoMode( const VideoModeParams &p, bool &bNewDe
 	CurrentParams.windowHeight = windowHeight;
 	CurrentParams.renderOffscreen = renderOffscreen;
 	ASSERT( rate > 0 );
-	CurrentParams.rate = static_cast<int> (roundf(rate));
+	CurrentParams.rate = std::round(rate);
 
 	if (!p.windowed)
 	{

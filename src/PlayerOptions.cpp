@@ -9,7 +9,9 @@
 #include "ThemeManager.h"
 #include "Style.h"
 #include "CommonMetrics.h"
-#include <float.h>
+
+#include <cfloat>
+#include <cmath>
 #include <sstream>
 
 static const char *LifeTypeNames[] = {
@@ -199,7 +201,7 @@ static void AddPart( std::vector<RString> &AddTo, float level, RString name )
 	if( level == 0 )
 		return;
 
-	const RString LevelStr = (level == 1)? RString(""): ssprintf( "%ld%% ", lrintf(level*100) );
+	const RString LevelStr = (level == 1)? RString(""): ssprintf( "%ld%% ", std::lrint(level*100) );
 
 	AddTo.push_back( LevelStr + name );
 }
@@ -540,11 +542,11 @@ void PlayerOptions::GetMods( std::vector<RString> &AddTo, bool bForceNoteSkin ) 
 		else
 			AddPart( AddTo, -m_fPerspectiveTilt, "Hallway" );
 	}
-	else if( fabsf(m_fSkew-m_fPerspectiveTilt) < 0.0001f )
+	else if( std::abs(m_fSkew-m_fPerspectiveTilt) < 0.0001f )
 	{
 		AddPart( AddTo, m_fSkew, "Space" );
 	}
-	else if( fabsf(m_fSkew+m_fPerspectiveTilt) < 0.0001f )
+	else if( std::abs(m_fSkew+m_fPerspectiveTilt) < 0.0001f )
 	{
 		AddPart( AddTo, m_fSkew, "Incoming" );
 	}
@@ -562,7 +564,7 @@ void PlayerOptions::GetMods( std::vector<RString> &AddTo, bool bForceNoteSkin ) 
 		AddTo.push_back( s );
 	}
 
-	if ( fabsf(m_fVisualDelay) > 0.0001f )
+	if ( std::abs(m_fVisualDelay) > 0.0001f )
 	{
 		// Format the string to be something like "10ms VisualDelay".
 		// Note that we don't process sub-millisecond visual delay.
@@ -1168,7 +1170,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	else if( sBit == "cosecant" )				m_bCosecant = on;
 	else if( sBit == "visualdelay" )			m_fVisualDelay = level;
 	else if( level == 0 && disabledWindows.Compare(sBit)) // "No w1" etc.
-	{	
+	{
 		// We come into this condition if there is at least a single window present but there may be more.
 		// To get all of the windows, we go through in a loop to extract all of them.
 		static Regex allDisabledWindows("(w[1-5])(.*)$");
@@ -1393,7 +1395,7 @@ float PlayerOptions::GetReversePercentForColumn( int iCol ) const
 		f += m_fScrolls[SCROLL_CROSS];
 
 	if( f > 2 )
-		f = fmodf( f, 2 );
+		f = std::fmod( f, 2 );
 	if( f > 1 )
 		f = SCALE( f, 1.f, 2.f, 1.f, 0.f );
 	return f;

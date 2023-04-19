@@ -4,6 +4,8 @@
 #include "RageSoundUtil.h"
 #include "RageUtil.h"
 
+#include <cmath>
+
 /*
  * Add support for negative seeks (adding a delay), extending a sound
  * beyond its end (m_LengthSeconds and M_CONTINUE), looping and fading.
@@ -153,7 +155,7 @@ bool RageSoundReader_Extend::SetProperty( const RString &sProperty, float fValue
 {
 	if( sProperty == "StartSecond" )
 	{
-		m_iStartFrames = lrintf( fValue * this->GetSampleRate() );
+		m_iStartFrames = std::lrint( fValue * this->GetSampleRate() );
 		return true;
 	}
 
@@ -162,7 +164,7 @@ bool RageSoundReader_Extend::SetProperty( const RString &sProperty, float fValue
 		if( fValue == -1 )
 			m_iLengthFrames = -1;
 		else
-			m_iLengthFrames = lrintf( fValue * this->GetSampleRate() );
+			m_iLengthFrames = std::lrint( fValue * this->GetSampleRate() );
 		return true;
 	}
 
@@ -186,13 +188,13 @@ bool RageSoundReader_Extend::SetProperty( const RString &sProperty, float fValue
 
 	if( sProperty == "FadeInSeconds" )
 	{
-		m_iFadeInFrames = lrintf( fValue * this->GetSampleRate() );
+		m_iFadeInFrames = std::lrint( fValue * this->GetSampleRate() );
 		return true;
 	}
 
 	if( sProperty == "FadeSeconds" || sProperty == "FadeOutSeconds" )
 	{
-		m_iFadeOutFrames = lrintf( fValue * this->GetSampleRate() );
+		m_iFadeOutFrames = std::lrint( fValue * this->GetSampleRate() );
 		return true;
 	}
 

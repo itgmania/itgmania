@@ -36,6 +36,8 @@
 #include "RageSoundReader_FileReader.h"
 #include "RageSoundReader_ThreadedBuffer.h"
 
+#include <cmath>
+
 #define samplerate() m_pSource->GetSampleRate()
 
 RageSoundParams::RageSoundParams():
@@ -48,7 +50,7 @@ RageSoundLoadParams::RageSoundLoadParams():
 	m_bSupportRateChanging(false), m_bSupportPan(false) {}
 
 RageSound::RageSound():
-	m_Mutex( "RageSound" ), m_pSource(nullptr), 
+	m_Mutex( "RageSound" ), m_pSource(nullptr),
 	m_sFilePath(""), m_Param(), m_iStreamFrame(0),
 	m_iStoppedSourceFrame(0), m_bPlaying(false),
 	m_bDeleteWhenFinished(false), m_sError("")
@@ -112,7 +114,7 @@ void RageSound::Unload()
 		delete m_pSource;
 	}
 	m_pSource = nullptr;
-	
+
 	m_sFilePath = "";
 }
 
@@ -263,7 +265,7 @@ void RageSound::LoadSoundReader( RageSoundReader *pSound )
  *
  * On underrun, if no data was read, returns WOULD_BLOCK.  On end of file, if no
  * data was read, returns END_OF_FILE.  If any data is read, it is returned; these
- * conditions are masked and will be seen on the next call.  Otherwise, the requested 
+ * conditions are masked and will be seen on the next call.  Otherwise, the requested
  * number of frames will always be returned.
  */
 int RageSound::GetDataToPlay( float *pBuffer, int iFrames, int64_t &iStreamFrame, int &iFramesStored )
@@ -328,7 +330,7 @@ void RageSound::StartPlaying()
 	ASSERT( !m_bPlaying );
 
 	// Move to the start position.
-	SetPositionFrames( lrintf(m_Param.m_StartSecond * samplerate()) );
+	SetPositionFrames( std::lrint(m_Param.m_StartSecond * samplerate()) );
 
 	/* If m_StartTime is in the past, then we probably set a start time but took too
 	 * long loading.  We don't want that; log it, since it can be unobvious. */
@@ -647,7 +649,7 @@ void RageSound::SetStopModeFromString( const RString &sStopMode )
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the RageSound. */ 
+/** @brief Allow Lua to have access to the RageSound. */
 class LunaRageSound: public Luna<RageSound>
 {
 public:

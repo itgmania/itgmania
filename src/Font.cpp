@@ -11,6 +11,8 @@
 #include "FontCharAliases.h"
 #include "arch/Dialog/Dialog.h"
 
+#include <cmath>
+
 FontPage::FontPage(): m_iHeight(0), m_iLineSpacing(0), m_fVshift(0),
 	m_iDrawExtraPixelsLeft(0), m_iDrawExtraPixelsRight(0),
 	m_FontPageTextures(), m_sTexturePath(""), m_aGlyphs(),
@@ -101,7 +103,7 @@ void FontPage::Load( const FontPageSettings &cfg )
 	if( cfg.m_fScaleAllWidthsBy != 1 )
 	{
 		for( int i=0; i<m_FontPageTextures.m_pTextureMain->GetNumFrames(); i++ )
-			aiFrameWidths[i] = lrintf( aiFrameWidths[i] * cfg.m_fScaleAllWidthsBy );
+			aiFrameWidths[i] = std::lrint( aiFrameWidths[i] * cfg.m_fScaleAllWidthsBy );
 	}
 
 	m_iCharToGlyphNo = cfg.CharToGlyphNo;
@@ -167,7 +169,7 @@ void FontPage::SetTextureCoords( const std::vector<int> &widths, int iAdvanceExt
 			if( (iSourcePixelsToChopOff % 2) == 1 )
 			{
 				/* We don't want to chop off an odd number of pixels, since that'll
-				 * put our texture coordinates between texels and make things blurrier. 
+				 * put our texture coordinates between texels and make things blurrier.
 				 * Note that, since we set m_iHadvance above, this merely expands what
 				 * we render; it doesn't advance the cursor further.  So, glyphs
 				 * that have an odd width should err to being a pixel offcenter left,
@@ -358,10 +360,10 @@ const glyph &Font::GetGlyph( wchar_t c ) const
 	std::map<wchar_t, glyph*>::const_iterator it = m_iCharToGlyph.find(c);
 
 	// If that's missing, use the default glyph.
-	if(it == m_iCharToGlyph.end()) 
+	if(it == m_iCharToGlyph.end())
 		it = m_iCharToGlyph.find(FONT_DEFAULT_GLYPH);
 
-	if(it == m_iCharToGlyph.end()) 
+	if(it == m_iCharToGlyph.end())
 		RageException::Throw( "The default glyph is missing from the font \"%s\".", path.c_str() );
 
 	return *it->second;
@@ -673,7 +675,7 @@ RString FontPageSettings::MapRange( RString sMapping, int iMapOffset, int iGlyph
 
 		/* What's a practical limit?  A 2048x2048 texture could contain 16x16
 		 * characters, which is 16384 glyphs. (Use a grayscale map and that's
-		 * only 4 megs.) Let's use that as a cap. (We don't want to go crazy 
+		 * only 4 megs.) Let's use that as a cap. (We don't want to go crazy
 		 * if someone says "range Unicode #0-FFFFFFFF".) */
 		if( iCount > 16384 )
 			return ssprintf( "Can't map %i glyphs to one font page", iCount );
@@ -902,7 +904,7 @@ void Font::Load( const RString &sIniPath, RString sChars )
 /*
  * (c) 2001-2004 Glenn Maynard, Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -912,7 +914,7 @@ void Font::Load( const RString &sIniPath, RString sChars )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -17,8 +17,9 @@
 #include "RageSurfaceUtils_Dither.h"
 #include "RageSurfaceUtils_Zoom.h"
 #include "SpecialFiles.h"
-
 #include "Banner.h"
+
+#include <cmath>
 
 static Preference<bool> g_bPalettedImageCache( "PalettedImageCache", false );
 
@@ -65,7 +66,7 @@ void ImageCache::Demand( RString sImageDir )
 	++g_iDemandRefcount;
 	if( g_iDemandRefcount > 1 )
 		return;
-	
+
 	if( PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_LOAD_ON_DEMAND )
 		return;
 
@@ -93,7 +94,7 @@ void ImageCache::Undemand( RString sImageDir )
 	--g_iDemandRefcount;
 	if( g_iDemandRefcount != 0 )
 		return;
-	
+
 	if( PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_LOAD_ON_DEMAND )
 		return;
 
@@ -199,10 +200,10 @@ struct ImageTexture: public RageTexture
 	}
 
 	~ImageTexture()
-	{ 
+	{
 		Destroy();
 	}
-	
+
 	void Create()
 	{
 		ASSERT( m_pImage != nullptr );
@@ -213,10 +214,10 @@ struct ImageTexture: public RageTexture
 		m_iSourceWidth = m_iWidth;
 		m_iSourceHeight = m_iHeight;
 
-		/* The image width (within the texture) is always the entire texture. 
+		/* The image width (within the texture) is always the entire texture.
 		 * Only resize if the max texture size requires it; since these images
 		 * are already scaled down, this shouldn't happen often. */
-		if( m_pImage->w > DISPLAY->GetMaxTextureSize() || 
+		if( m_pImage->w > DISPLAY->GetMaxTextureSize() ||
 			m_pImage->h > DISPLAY->GetMaxTextureSize() )
 		{
 			LOG->Warn( "Converted %s at runtime", GetID().filename.c_str() );
@@ -325,7 +326,7 @@ RageTextureID ImageCache::LoadCachedImage( RString sImageDir, RString sImagePath
 
 static inline int closest( int num, int n1, int n2 )
 {
-	if( abs(num - n1) > abs(num - n2) )
+	if( std::abs(num - n1) > std::abs(num - n2) )
 		return n2;
 	return n1;
 }
@@ -471,7 +472,7 @@ void ImageCache::WriteToDisk()
 /*
  * (c) 2003 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -481,7 +482,7 @@ void ImageCache::WriteToDisk()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

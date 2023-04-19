@@ -4,7 +4,8 @@
 #include "RageUtil.h"
 #include "RageTimer.h"
 
-#include <limits.h>
+#include <climits>
+#include <cmath>
 #include <list>
 
 /* The number of frames we should keep pos_map data for.  This being too high
@@ -60,7 +61,7 @@ void pos_map_queue::Insert( int64_t iSourceFrame, int iFrames, int64_t iDestFram
 		pos_map_t &last = m_pImpl->m_Queue.back();
 		if( last.m_iSourceFrame + last.m_iFrames == iSourceFrame &&
 		    last.m_fSourceToDestRatio == fSourceToDestRatio &&
-		    llabs(last.m_iDestFrame + lrintf(last.m_iFrames * last.m_fSourceToDestRatio) - iDestFrame) <= 1 )
+		    llabs(last.m_iDestFrame + std::lrint(last.m_iFrames * last.m_fSourceToDestRatio) - iDestFrame) <= 1 )
 		{
 			last.m_iFrames += iFrames;
 
@@ -82,7 +83,7 @@ void pos_map_queue::Insert( int64_t iSourceFrame, int iFrames, int64_t iDestFram
 
 				next.m_iSourceFrame += iDeleteFrames;
 				next.m_iFrames -= iDeleteFrames;
-				next.m_iDestFrame += lrintf( iDeleteFrames * next.m_fSourceToDestRatio );
+				next.m_iDestFrame += std::lrint( iDeleteFrames * next.m_fSourceToDestRatio );
 
 				m_pImpl->m_Queue.push_back( next );
 			}
@@ -99,7 +100,7 @@ void pos_map_queue::Insert( int64_t iSourceFrame, int iFrames, int64_t iDestFram
 	m.m_iDestFrame = iDestFrame;
 	m.m_iFrames = iFrames;
 	m.m_fSourceToDestRatio = fSourceToDestRatio;
-	
+
 	m_pImpl->Cleanup();
 }
 
@@ -143,7 +144,7 @@ int64_t pos_map_queue::Search( int64_t iSourceFrame, bool *bApproximate ) const
 			/* iSourceFrame lies in this block; it's an exact match.  Figure
 			 * out the exact position. */
 			int iDiff = int(iSourceFrame - pm.m_iSourceFrame);
-			iDiff = lrintf( iDiff * pm.m_fSourceToDestRatio );
+			iDiff = std::lrint( iDiff * pm.m_fSourceToDestRatio );
 			return pm.m_iDestFrame + iDiff;
 		}
 
@@ -162,7 +163,7 @@ int64_t pos_map_queue::Search( int64_t iSourceFrame, bool *bApproximate ) const
 		{
 			iClosestPositionDist = dist;
 			pClosestBlock = &pm;
-			iClosestPosition = pm.m_iDestFrame + lrintf( pm.m_iFrames * pm.m_fSourceToDestRatio );
+			iClosestPosition = pm.m_iDestFrame + std::lrint( pm.m_iFrames * pm.m_fSourceToDestRatio );
 		}
 	}
 
@@ -170,7 +171,7 @@ int64_t pos_map_queue::Search( int64_t iSourceFrame, bool *bApproximate ) const
 	 * The frame is out of the range of data we've actually sent.
 	 * Return the closest position.
 	 *
-	 * There are three cases when this happens: 
+	 * There are three cases when this happens:
 	 * 1. Before the first CommitPlayingPosition call.
 	 * 2. After GetDataToPlay returns EOF and the sound has flushed, but before
 	 *    SoundStopped has been called.

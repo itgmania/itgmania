@@ -24,7 +24,7 @@
 	#pragma comment(lib, "d3d9.lib")
 #endif
 
-#include <math.h>
+#include <cmath>
 #include <list>
 
 // Globals
@@ -151,7 +151,7 @@ static const RageDisplay::RagePixelFormatDesc PIXEL_FORMAT_DESC[NUM_RagePixelFor
 	}
 };
 
-static D3DFORMAT D3DFORMATS[NUM_RagePixelFormat] = 
+static D3DFORMAT D3DFORMATS[NUM_RagePixelFormat] =
 {
 	D3DFMT_A8R8G8B8,
 	D3DFMT_UNKNOWN,
@@ -179,7 +179,7 @@ RageDisplay_D3D::RageDisplay_D3D()
 
 static LocalizedString D3D_NOT_INSTALLED ( "RageDisplay_D3D", "DirectX 9.0c or greater is not installed.  You can download it from:" );
 const RString D3D_URL = "http://www.microsoft.com/en-us/download/details.aspx?id=8109";
-static LocalizedString HARDWARE_ACCELERATION_NOT_AVAILABLE ( "RageDisplay_D3D", 
+static LocalizedString HARDWARE_ACCELERATION_NOT_AVAILABLE ( "RageDisplay_D3D",
 	"Your system is reporting that Direct3D hardware acceleration is not available.  Please obtain an updated driver from your video card manufacturer." );
 RString RageDisplay_D3D::Init( const VideoModeParams &p, bool /* bAllowUnacceleratedRenderer */ )
 {
@@ -197,17 +197,17 @@ RString RageDisplay_D3D::Init( const VideoModeParams &p, bool /* bAllowUnacceler
 
 	if( FAILED( g_pd3d->GetDeviceCaps(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &g_DeviceCaps) ) )
 		return HARDWARE_ACCELERATION_NOT_AVAILABLE.GetValue();
-			
+
 
 	D3DADAPTER_IDENTIFIER9	identifier;
 	g_pd3d->GetAdapterIdentifier( D3DADAPTER_DEFAULT, 0, &identifier );
 
-	LOG->Trace( 
+	LOG->Trace(
 		"Driver: %s\n"
 		"Description: %s\n"
 		"Max texture size: %d\n"
 		"Alpha in palette: %s\n",
-		identifier.Driver, 
+		identifier.Driver,
 		identifier.Description,
 		g_DeviceCaps.MaxTextureWidth,
 		(g_DeviceCaps.TextureCaps & D3DPTEXTURECAPS_ALPHAPALETTE) ? "yes" : "no" );
@@ -318,7 +318,7 @@ D3DFORMAT FindBackBufferType(bool bWindowed, int iBPP)
 		vBackBufferFormats.push_back( D3DFMT_X1R5G5B5 );
 		vBackBufferFormats.push_back( D3DFMT_A1R5G5B5 );
 	}
-	
+
 
 	if( !bWindowed && iBPP != 16 && iBPP != 32 )
 	{
@@ -340,7 +340,7 @@ D3DFORMAT FindBackBufferType(bool bWindowed, int iBPP)
 		LOG->Trace( "Testing format: display %d, back buffer %d, windowed %d...",
 					fmtDisplay, fmtBackBuffer, bWindowed );
 
-		hr = g_pd3d->CheckDeviceType( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, 
+		hr = g_pd3d->CheckDeviceType( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL,
 			fmtDisplay, fmtBackBuffer, bWindowed );
 
 		if( FAILED(hr) )
@@ -361,11 +361,11 @@ RString SetD3DParams( bool &bNewDeviceOut )
 	{
 		bNewDeviceOut = true;
 		HRESULT hr = g_pd3d->CreateDevice(
-			D3DADAPTER_DEFAULT, 
-			D3DDEVTYPE_HAL, 
+			D3DADAPTER_DEFAULT,
+			D3DDEVTYPE_HAL,
 			GraphicsWindow::GetHwnd(),
 			D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED,
-			&g_d3dpp, 
+			&g_d3dpp,
 			&g_pd3dDevice );
 		if( FAILED(hr) )
 		{
@@ -385,7 +385,7 @@ RString SetD3DParams( bool &bNewDeviceOut )
 		}
 	}
 
-	g_pd3dDevice->SetRenderState( D3DRS_NORMALIZENORMALS, TRUE );	
+	g_pd3dDevice->SetRenderState( D3DRS_NORMALIZENORMALS, TRUE );
 
 	// Palettes were lost by Reset(), so mark them unloaded.
 	g_TexResourceToPaletteIndex.clear();
@@ -497,7 +497,7 @@ static void SetPresentParametersFromVideoModeParams( const VideoModeParams &p, D
 
 	pD3Dpp->Flags = 0;
 
-	LOG->Trace( "Present Parameters: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d", 
+	LOG->Trace( "Present Parameters: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d",
 		pD3Dpp->BackBufferWidth, pD3Dpp->BackBufferHeight, pD3Dpp->BackBufferFormat,
 		pD3Dpp->BackBufferCount,
 		pD3Dpp->MultiSampleType, pD3Dpp->SwapEffect, pD3Dpp->hDeviceWindow,
@@ -616,7 +616,7 @@ bool RageDisplay_D3D::SupportsTextureFormat( RagePixelFormat pixfmt, bool realti
 		return false;
 
 	D3DFORMAT d3dfmt = D3DFORMATS[pixfmt];
-	HRESULT hr = g_pd3d->CheckDeviceFormat( 
+	HRESULT hr = g_pd3d->CheckDeviceFormat(
 		D3DADAPTER_DEFAULT,
 		D3DDEVTYPE_HAL,
 		g_d3dpp.BackBufferFormat,
@@ -677,7 +677,7 @@ RageSurface* RageDisplay_D3D::CreateScreenshot()
 				default:               pf = RagePixelFormat_Invalid; FAIL_M("Unknown pixel format");  break;
 				case D3DFMT_X8R8G8B8:  pf = RagePixelFormat_RGBA8; break;
 				case D3DFMT_A8R8G8B8:  pf = RagePixelFormat_RGBA8; break;
-					// 16-bit formats are not here. Does anybody actually use them? 
+					// 16-bit formats are not here. Does anybody actually use them?
 				}
 
 				RageSurface *surface = CreateSurfaceFromPixfmt(pf, lr.pBits, desc.Width, desc.Height, lr.Pitch);
@@ -1086,7 +1086,7 @@ void RageDisplay_D3D::SetTextureMode( TextureUnit tu, TextureMode tm )
 	switch( tm )
 	{
 	case TextureMode_Modulate:
-		// Use D3DTA_CURRENT instead of diffuse so that multitexturing works 
+		// Use D3DTA_CURRENT instead of diffuse so that multitexturing works
 		// properly.  For stage 0, D3DTA_CURRENT is the diffuse color.
 
 		g_pd3dDevice->SetTextureStageState( tu, D3DTSS_COLORARG1, D3DTA_TEXTURE );
@@ -1261,7 +1261,7 @@ void RageDisplay_D3D::SetTextureWrapping( TextureUnit tu, bool b )
 	g_pd3dDevice->SetSamplerState( tu, D3DSAMP_ADDRESSV, mode );
 }
 
-void RageDisplay_D3D::SetMaterial( 
+void RageDisplay_D3D::SetMaterial(
 	const RageColor &emissive,
 	const RageColor &ambient,
 	const RageColor &diffuse,
@@ -1307,11 +1307,11 @@ void RageDisplay_D3D::SetLightOff( int index )
 {
 	g_pd3dDevice->LightEnable( index, false );
 }
-void RageDisplay_D3D::SetLightDirectional( 
-	int index, 
-	const RageColor &ambient, 
-	const RageColor &diffuse, 
-	const RageColor &specular, 
+void RageDisplay_D3D::SetLightDirectional(
+	int index,
+	const RageColor &ambient,
+	const RageColor &diffuse,
+	const RageColor &specular,
 	const RageVector3 &dir )
 {
 	g_pd3dDevice->LightEnable( index, true );
@@ -1372,7 +1372,7 @@ void RageDisplay_D3D::DeleteTexture( uintptr_t iTexHandle )
 }
 
 
-uintptr_t RageDisplay_D3D::CreateTexture( 
+uintptr_t RageDisplay_D3D::CreateTexture(
 	RagePixelFormat pixfmt,
 	RageSurface* img,
 	bool bGenerateMipMaps )
@@ -1382,7 +1382,7 @@ uintptr_t RageDisplay_D3D::CreateTexture(
 	hr = g_pd3dDevice->CreateTexture( power_of_two(img->w), power_of_two(img->h), 1, 0, D3DFORMATS[pixfmt], D3DPOOL_MANAGED, &pTex, nullptr );
 
 	if( FAILED(hr) )
-		RageException::Throw( "CreateTexture(%i,%i,%s) failed: %s", 
+		RageException::Throw( "CreateTexture(%i,%i,%s) failed: %s",
 		img->w, img->h, RagePixelFormatToString(pixfmt).c_str(), GetErrorString(hr).c_str() );
 
 	uintptr_t uTexHandle = reinterpret_cast<uintptr_t>(pTex);
@@ -1410,15 +1410,15 @@ uintptr_t RageDisplay_D3D::CreateTexture(
 	return uTexHandle;
 }
 
-void RageDisplay_D3D::UpdateTexture( 
-	uintptr_t uTexHandle, 
+void RageDisplay_D3D::UpdateTexture(
+	uintptr_t uTexHandle,
 	RageSurface* img,
 	int xoffset, int yoffset, int width, int height )
 {
 	IDirect3DTexture9* pTex = reinterpret_cast<IDirect3DTexture9*>(uTexHandle);
 	ASSERT( pTex != nullptr );
 
-	RECT rect; 
+	RECT rect;
 	rect.left = xoffset;
 	rect.top = yoffset;
 	rect.right = width - xoffset;

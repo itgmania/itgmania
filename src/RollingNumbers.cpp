@@ -6,6 +6,9 @@
 #include "ActorUtil.h"
 #include "LuaManager.h"
 #include "ThemeManager.h"
+
+#include <cmath>
+
 REGISTER_ACTOR_CLASS( RollingNumbers );
 
 RollingNumbers::RollingNumbers()
@@ -90,7 +93,7 @@ void RollingNumbers::Update( float fDeltaTime )
 {
 	if(m_fCurrentNumber != m_fTargetNumber)
 	{
-		fapproach( m_fCurrentNumber, m_fTargetNumber, fabsf(m_fScoreVelocity) * fDeltaTime );
+		fapproach( m_fCurrentNumber, m_fTargetNumber, std::abs(m_fScoreVelocity) * fDeltaTime );
 		UpdateText();
 	}
 
@@ -135,7 +138,7 @@ void RollingNumbers::UpdateText()
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the RollingNumbers. */ 
+/** @brief Allow Lua to have access to the RollingNumbers. */
 class LunaRollingNumbers: public Luna<RollingNumbers>
 {
 public:
@@ -156,7 +159,7 @@ LUA_REGISTER_DERIVED_CLASS( RollingNumbers, BitmapText )
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -166,7 +169,7 @@ LUA_REGISTER_DERIVED_CLASS( RollingNumbers, BitmapText )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

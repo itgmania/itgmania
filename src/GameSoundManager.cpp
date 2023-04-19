@@ -20,13 +20,15 @@
 
 #include "arch/Sound/RageSoundDriver.h"
 
+#include <cmath>
+
 GameSoundManager *SOUND = nullptr;
 
 /*
  * When playing music, automatically search for an SM file for timing data.  If one is
  * found, automatically handle GAMESTATE->m_fSongBeat, etc.
  *
- * modf(GAMESTATE->m_fSongBeat) should always be continuously moving from 0 to 1.  To do
+ * std::modf(GAMESTATE->m_fSongBeat) should always be continuously moving from 0 to 1.  To do
  * this, wait before starting a sound until the fractional portion of the beat will be
  * the same.
  *
@@ -184,7 +186,7 @@ static void StartMusic( MusicToPlay &ToPlay )
 		float fStartBeat = NewMusic->m_NewTiming.GetBeatFromElapsedTimeNoOffset( ToPlay.fStartSecond );
 		float fEndSec = ToPlay.fStartSecond + ToPlay.fLengthSeconds;
 		float fEndBeat = NewMusic->m_NewTiming.GetBeatFromElapsedTimeNoOffset( fEndSec );
-		
+
 		const float fStartBeatFraction = fmodfp( fStartBeat, 1 );
 		const float fEndBeatFraction = fmodfp( fEndBeat, 1 );
 
@@ -236,7 +238,7 @@ static void StartMusic( MusicToPlay &ToPlay )
 		const float fStartBeat = NewMusic->m_NewTiming.GetBeatFromElapsedTimeNoOffset( ToPlay.fStartSecond );
 		const float fStartBeatFraction = fmodfp( fStartBeat, 1 );
 
-		float fCurBeatToStartOn = truncf(fCurBeat) + fStartBeatFraction;
+		float fCurBeatToStartOn = std::trunc(fCurBeat) + fStartBeatFraction;
 		if( fCurBeatToStartOn < fCurBeat )
 			fCurBeatToStartOn += 1.0f;
 
@@ -503,7 +505,7 @@ float GameSoundManager::GetFrameTimingAdjustment( float fDeltaTime )
 
 	const float fExpectedDelay = 1.0f / iThisFPS;
 	const float fExtraDelay = fDeltaTime - fExpectedDelay;
-	if( fabsf(fExtraDelay) >= fExpectedDelay/2 )
+	if( std::abs(fExtraDelay) >= fExpectedDelay/2 )
 		return 0;
 
 	/* Subtract the extra delay. */
@@ -550,7 +552,7 @@ void GameSoundManager::Update( float fDeltaTime )
 		case FADE_NONE: break;
 		case FADE_OUT:
 			fapproach( fVolume, g_fDimVolume, fDeltaTime/fFadeOutSpeed );
-			if( fabsf(fVolume-g_fDimVolume) < 0.001f )
+			if( std::abs(fVolume-g_fDimVolume) < 0.001f )
 				g_FadeState = FADE_WAIT;
 			break;
 		case FADE_WAIT:
@@ -560,11 +562,11 @@ void GameSoundManager::Update( float fDeltaTime )
 			break;
 		case FADE_IN:
 			fapproach( fVolume, g_fOriginalVolume, fDeltaTime/fFadeInSpeed );
-			if( fabsf(fVolume-g_fOriginalVolume) < 0.001f )
+			if( std::abs(fVolume-g_fOriginalVolume) < 0.001f )
 				g_FadeState = FADE_NONE;
 			break;
 		}
-		
+
 		RageSoundParams p = g_Playing->m_Music->GetParams();
 		if( p.m_Volume != fVolume )
 		{
@@ -604,7 +606,7 @@ void GameSoundManager::Update( float fDeltaTime )
 		const RString ThisFile = g_Playing->m_Music->GetLoadedFilePath();
 
 		/* If fSoundTimePassed < 0, the sound has probably looped. */
-		if( sLastFile == ThisFile && fSoundTimePassed >= 0 && fabsf(fDiff) > 0.003f )
+		if( sLastFile == ThisFile && fSoundTimePassed >= 0 && std::abs(fDiff) > 0.003f )
 			LOG->Trace("Song position skip in %s: expected %.3f, got %.3f (cur %f, prev %f) (%.3f difference)",
 				Basename(ThisFile).c_str(), fExpectedTimePassed, fSoundTimePassed, fSeconds, GAMESTATE->m_Position.m_fMusicSeconds, fDiff );
 		sLastFile = ThisFile;
@@ -662,7 +664,7 @@ void GameSoundManager::Update( float fDeltaTime )
 		static int iRowLastCrossed = 0;
 
 		FOREACH_CabinetLight( cl )
-		{	
+		{
 			// Are we "holding" the light?
 			if( lights.IsHoldNoteAtRow( cl, iSongRow ) )
 			{
@@ -692,14 +694,14 @@ RString GameSoundManager::GetMusicPath() const
 	return g_Playing->m_Music->GetLoadedFilePath();
 }
 
-void GameSoundManager::PlayMusic( 
-	RString sFile, 
-	const TimingData *pTiming, 
+void GameSoundManager::PlayMusic(
+	RString sFile,
+	const TimingData *pTiming,
 	bool bForceLoop,
-	float fStartSecond, 
-	float fLengthSeconds, 
-	float fFadeInLengthSeconds, 
-	float fFadeOutLengthSeconds, 
+	float fStartSecond,
+	float fLengthSeconds,
+	float fFadeInLengthSeconds,
+	float fFadeOutLengthSeconds,
 	bool bAlignBeat,
 	bool bApplyMusicRate
 	)
@@ -812,7 +814,7 @@ float GameSoundManager::GetPlayerBalance( PlayerNumber pn )
 
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the GameSoundManager. */ 
+/** @brief Allow Lua to have access to the GameSoundManager. */
 class LunaGameSoundManager: public Luna<GameSoundManager>
 {
 public:
@@ -882,7 +884,7 @@ public:
 
 	static int StopMusic( T* p, lua_State *L )			{ p->StopMusic(); COMMON_RETURN_SELF; }
 	static int IsTimingDelayed( T* p, lua_State *L )	{ lua_pushboolean( L, g_Playing->m_bTimingDelayed ); return 1; }
-	
+
 	LunaGameSoundManager()
 	{
 		ADD_METHOD( DimMusic );
