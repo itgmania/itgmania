@@ -107,6 +107,7 @@ check_function_exists(waitpid HAVE_WAITPID)
 
 # Mostly universal symbols.
 check_cxx_symbol_exists(strtof cstdlib HAVE_STRTOF)
+check_symbol_exists(M_PI math.h HAVE_M_PI)
 check_symbol_exists(posix_fadvise fcntl.h HAVE_POSIX_FADVISE)
 
 # Checks to make it easier to work with 32-bit/64-bit builds if required.
