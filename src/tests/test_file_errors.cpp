@@ -99,7 +99,7 @@ RageFileDriverTest::RageFileDriverTest( RString root_ ):
 	RageFileDriver( new TestFilenameDB(root_) ),
 	root(root_)
 {
-	if( root.Right(1) != "/" )
+	if( !StrUtil::EndsWith(root, "/") )
 		root += '/';
 }
 

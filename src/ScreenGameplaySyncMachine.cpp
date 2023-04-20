@@ -1,4 +1,5 @@
 #include "global.h"
+#include "RageUtil.h"
 #include "ScreenGameplaySyncMachine.h"
 #include "NotesLoaderSSC.h"
 #include "NotesLoaderSM.h"
@@ -26,7 +27,7 @@ void ScreenGameplaySyncMachine::Init()
 	// Allow themers to use either a .ssc or .sm file for this. -aj
 	SSCLoader loaderSSC;
 	SMLoader loaderSM;
-	if(sFile.Right(4) == ".ssc")
+	if(StrUtil::EndsWith(sFile, ".ssc"))
 		loaderSSC.LoadFromSimfile( sFile, m_Song );
 	else
 		loaderSM.LoadFromSimfile( sFile, m_Song );

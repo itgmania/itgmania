@@ -426,7 +426,7 @@ void Font::GetFontPaths( const RString &sFontIniPath, std::vector<RString> &asTe
 
 	for( unsigned i = 0; i < asFiles.size(); ++i )
 	{
-		if( !asFiles[i].Right(4).EqualsNoCase(".ini") )
+		if( !RString(asFiles[i].substr(asFiles[i].size()-4)).EqualsNoCase(".ini") )
 			asTexturePathsOut.push_back( asFiles[i] );
 	}
 }
@@ -498,7 +498,7 @@ void Font::LoadFontPageSettings( FontPageSettings &cfg, IniFile &ini, const RStr
 			}
 
 			// "map codepoint=frame" maps a char to a frame.
-			if( sName.substr(0, 4) == "MAP " )
+			if( StrUtil::StartsWith(sName, "MAP ") )
 			{
 				/* map CODEPOINT=frame. CODEPOINT can be
 				 * 1. U+hexval
@@ -511,7 +511,7 @@ void Font::LoadFontPageSettings( FontPageSettings &cfg, IniFile &ini, const RStr
 				RString sCodepoint = sName.substr(4); // "CODEPOINT"
 
 				wchar_t c;
-				if( sCodepoint.substr(0, 2) == "U+" && IsHexVal(sCodepoint.substr(2)) )
+				if( StrUtil::StartsWith(sCodepoint, "U+") && IsHexVal(sCodepoint.substr(2)) )
 					sscanf( sCodepoint.substr(2).c_str(), "%lc", &c );
 				else if( sCodepoint.size() > 0 &&
 						utf8_get_char_len(sCodepoint[0]) == int(sCodepoint.size()) )
@@ -533,7 +533,7 @@ void Font::LoadFontPageSettings( FontPageSettings &cfg, IniFile &ini, const RStr
 				continue;
 			}
 
-			if( sName.substr(0, 6) == "RANGE " )
+			if( StrUtil::StartsWith(sName, "RANGE ") )
 			{
 				/* range CODESET=first_frame or
 				 * range CODESET #start-end=first_frame
@@ -591,7 +591,7 @@ void Font::LoadFontPageSettings( FontPageSettings &cfg, IniFile &ini, const RStr
 				continue;
 			}
 
-			if( sName.substr(0, 5) == "LINE " )
+			if( StrUtil::StartsWith(sName, "LINE ") )
 			{
 				/* line ROW=CHAR1CHAR2CHAR3CHAR4
 				 * eg.

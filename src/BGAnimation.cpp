@@ -65,7 +65,7 @@ void BGAnimation::AddLayersFromAniDir( const RString &_sAniDir, const XNode *pNo
 				sImportDir = sAniDir + sImportDir;
 				CollapsePath( sImportDir );
 
-				if( sImportDir.Right(1) != "/" )
+				if( !StrUtil::EndsWith(sImportDir, "/") )
 					sImportDir += "/";
 
 				ASSERT_M( IsADirectory(sImportDir), sImportDir + " isn't a directory" );
@@ -96,7 +96,7 @@ void BGAnimation::LoadFromAniDir( const RString &_sAniDir )
 		 return;
 
 	RString sAniDir = _sAniDir;
-	if( sAniDir.Right(1) != "/" )
+	if( !StrUtil::EndsWith(sAniDir, "/") )
 		sAniDir += "/";
 
 	ASSERT_M( IsADirectory(sAniDir), sAniDir + " isn't a directory" );
@@ -149,7 +149,7 @@ void BGAnimation::LoadFromAniDir( const RString &_sAniDir )
 		for( unsigned i=0; i<asImagePaths.size(); i++ )
 		{
 			const RString sPath = asImagePaths[i];
-			if( Basename(sPath).Left(1) == "_" )
+			if( StrUtil::StartsWith(Basename(sPath), "_") )
 				continue; // don't directly load files starting with an underscore
 			BGAnimationLayer* pLayer = new BGAnimationLayer;
 			pLayer->LoadFromAniLayerFile( asImagePaths[i] );

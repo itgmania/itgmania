@@ -70,7 +70,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CSmpackageExportDlg message handlers
 
-BOOL CSmpackageExportDlg::OnInitDialog() 
+BOOL CSmpackageExportDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
@@ -87,10 +87,10 @@ BOOL CSmpackageExportDlg::OnInitDialog()
 RString ReplaceInvalidFileNameChars( RString sOldFileName )
 {
 	RString sNewFileName = sOldFileName;
-	const char charsToReplace[] = { 
-		' ', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', 
+	const char charsToReplace[] = {
+		' ', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')',
 		'+', '=', '[', ']', '{', '}', '|', ':', '\"', '\\',
-		'<', '>', ',', '?', '/' 
+		'<', '>', ',', '?', '/'
 	};
 	for( int i=0; i<sizeof(charsToReplace); i++ )
 		sNewFileName.Replace( charsToReplace[i], '_' );
@@ -129,7 +129,7 @@ static bool ExportPackage( const RString &sPackageName, const RString &sSourceIn
 		for( unsigned i=0; i<asDirectoriesToExport.size(); i++ )
 		{
 			RString sDir = asDirectoriesToExport[i];
-			if( sDir.Right(1) != "/" )
+			if( !StrUtil::EndsWith(sDir, "/") )
 				sDir += "/";
 			GetDirListingRecursive( &fileDriver, sDir, "*", asFilePaths );
 			SMPackageUtil::StripIgnoredSmzipFiles( asFilePaths );
@@ -232,7 +232,7 @@ bool CSmpackageExportDlg::MakeComment( RString &comment )
 
 static LocalizedString NO_ITEMS_ARE_CHECKED	( "CSmpackageExportDlg", "No items are checked." );
 static LocalizedString SUCCESSFULLY_EXPORTED( "CSmpackageExportDlg", "Successfully exported package '%s' to your Desktop." );
-void CSmpackageExportDlg::OnButtonExportAsOne() 
+void CSmpackageExportDlg::OnButtonExportAsOne()
 {
 	std::vector<RString> asPaths;
 	GetCheckedPaths( asPaths );
@@ -268,7 +268,7 @@ void CSmpackageExportDlg::OnButtonExportAsOne()
 
 static LocalizedString THE_FOLLOWING_PACKAGES_WERE_EXPORTED ("CSmpackageExportDlg","The following packages were exported to your Desktop:");
 static LocalizedString THE_FOLLOWING_PACKAGES_FAILED ("CSmpackageExportDlg","The following packages failed to export:");
-void CSmpackageExportDlg::OnButtonExportAsIndividual() 
+void CSmpackageExportDlg::OnButtonExportAsIndividual()
 {
 	std::vector<RString> asPaths;
 	GetCheckedPaths( asPaths );
@@ -315,7 +315,7 @@ void CSmpackageExportDlg::OnButtonExportAsIndividual()
 	Dialog::OK( sMessage );
 }
 
-void CSmpackageExportDlg::OnButtonPlay() 
+void CSmpackageExportDlg::OnButtonPlay()
 {
 	// TODO: Add your control notification handler code here
 	SMPackageUtil::LaunchGame();
@@ -324,7 +324,7 @@ void CSmpackageExportDlg::OnButtonPlay()
 
 void CSmpackageExportDlg::GetTreeItems( CArray<HTREEITEM,HTREEITEM>& aItemsOut )
 {
-	CArray<HTREEITEM,HTREEITEM> aRootsToExplore;	
+	CArray<HTREEITEM,HTREEITEM> aRootsToExplore;
 
 	// add all top-level roots
 	HTREEITEM item = m_tree.GetRootItem();
@@ -351,7 +351,7 @@ void CSmpackageExportDlg::GetTreeItems( CArray<HTREEITEM,HTREEITEM>& aItemsOut )
 
 void CSmpackageExportDlg::GetCheckedTreeItems( CArray<HTREEITEM,HTREEITEM>& aCheckedItemsOut )
 {
-	CArray<HTREEITEM,HTREEITEM> aItems;	
+	CArray<HTREEITEM,HTREEITEM> aItems;
 
 	GetTreeItems( aItems );
 	for( int i=0; i<aItems.GetSize(); i++ )
@@ -361,7 +361,7 @@ void CSmpackageExportDlg::GetCheckedTreeItems( CArray<HTREEITEM,HTREEITEM>& aChe
 
 void CSmpackageExportDlg::GetCheckedPaths( std::vector<RString>& aPathsOut )
 {
-	CArray<HTREEITEM,HTREEITEM> aItems;	
+	CArray<HTREEITEM,HTREEITEM> aItems;
 
 	GetCheckedTreeItems( aItems );
 	for( int i=0; i<aItems.GetSize(); i++ )
@@ -383,7 +383,7 @@ void CSmpackageExportDlg::GetCheckedPaths( std::vector<RString>& aPathsOut )
 }
 
 
-void CSmpackageExportDlg::OnButtonEdit() 
+void CSmpackageExportDlg::OnButtonEdit()
 {
 	// TODO: Add your control notification handler code here
 	EditInsallations dlg;
@@ -395,7 +395,7 @@ void CSmpackageExportDlg::OnButtonEdit()
 	}
 }
 
-void CSmpackageExportDlg::RefreshInstallationList() 
+void CSmpackageExportDlg::RefreshInstallationList()
 {
 	m_comboDir.ResetContent();
 
@@ -408,7 +408,7 @@ void CSmpackageExportDlg::RefreshInstallationList()
 	m_comboDir.SetCurSel( 0 );	// guaranteed to be at least one item
 }
 
-void CSmpackageExportDlg::OnSelchangeComboDir() 
+void CSmpackageExportDlg::OnSelchangeComboDir()
 {
 	// TODO: Add your control notification handler code here
 	RefreshTree();
@@ -419,7 +419,7 @@ RString CSmpackageExportDlg::GetCurrentInstallDir()
 	CString s;
 	m_comboDir.GetWindowText( s );
 	RString s2 = s;
-	if( s2.Right(1) != "/" )
+	if( !StrUtil::EndsWith(s2, "/") )
 		s2 += "/";
 	return s2;
 }
@@ -497,7 +497,7 @@ void CSmpackageExportDlg::RefreshTree()
 		fileDriver.GetDirListing( "Courses/*.crs", as1, false, false );
 		for( unsigned i=0; i<as1.size(); i++ )
 		{
-			as1[i] = as1[i].Left(as1[i].size()-4);	// strip off ".crs"
+			as1[i] = as1[i].substr(0, as1[i].size()-4);	// strip off ".crs"
 			m_tree.InsertItem( as1[i], item1 );
 		}
 	}
@@ -549,7 +549,7 @@ void CSmpackageExportDlg::RefreshTree()
 	}
 }
 
-void CSmpackageExportDlg::OnButtonOpen() 
+void CSmpackageExportDlg::OnButtonOpen()
 {
 	// TODO: Add your control notification handler code here
 
@@ -581,7 +581,7 @@ void CSmpackageExportDlg::OnButtonOpen()
 /*
  * (c) 2002-2005 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -591,7 +591,7 @@ void CSmpackageExportDlg::OnButtonOpen()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

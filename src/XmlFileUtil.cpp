@@ -9,6 +9,7 @@
 #include "LuaManager.h"
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
 
@@ -537,6 +538,7 @@ public:
 	T GetValue() const { T val; GetValue(val); return val; }
 
 	void GetValue( RString &out ) const;
+	void GetValue( std::string &out ) const;
 	void GetValue( int &out ) const;
 	void GetValue( float &out ) const;
 	void GetValue( bool &out ) const;
@@ -544,6 +546,8 @@ public:
 	void PushValue( lua_State *L ) const;
 
 	void SetValue( const RString &v );
+	void SetValue( const std::string &v );
+	void SetValue( const char *&v );
 	void SetValue( int v );
 	void SetValue( float v );
 	void SetValue( unsigned v );
@@ -556,6 +560,7 @@ void XNodeLuaValue::PushValue( lua_State *L ) const
 }
 
 void XNodeLuaValue::GetValue( RString &out ) const { Lua *L = LUA->Get(); PushValue( L ); LuaHelpers::Pop( L, out ); LUA->Release( L ); }
+void XNodeLuaValue::GetValue( std::string &out ) const { Lua *L = LUA->Get(); PushValue( L ); LuaHelpers::Pop( L, out ); LUA->Release( L ); }
 void XNodeLuaValue::GetValue( int &out ) const { Lua *L = LUA->Get(); PushValue( L ); LuaHelpers::Pop( L, out ); LUA->Release( L ); }
 void XNodeLuaValue::GetValue( float &out ) const { Lua *L = LUA->Get(); PushValue( L ); LuaHelpers::Pop( L, out ); LUA->Release( L ); }
 void XNodeLuaValue::GetValue( bool &out ) const { Lua *L = LUA->Get(); PushValue( L ); LuaHelpers::Pop( L, out ); LUA->Release( L ); }
@@ -567,6 +572,8 @@ void XNodeLuaValue::SetValueFromStack( lua_State *L )
 }
 
 void XNodeLuaValue::SetValue( const RString &v ) { Lua *L = LUA->Get(); LuaHelpers::Push( L, v ); SetValueFromStack( L ); LUA->Release( L ); }
+void XNodeLuaValue::SetValue( const std::string &v ) { Lua *L = LUA->Get(); LuaHelpers::Push( L, v ); SetValueFromStack( L ); LUA->Release( L ); }
+void XNodeLuaValue::SetValue( const char *&v ) { Lua *L = LUA->Get(); LuaHelpers::Push( L, std::string(v) ); SetValueFromStack( L ); LUA->Release( L ); }
 void XNodeLuaValue::SetValue( int v ) { Lua *L = LUA->Get(); LuaHelpers::Push( L, v ); SetValueFromStack( L ); LUA->Release( L ); }
 void XNodeLuaValue::SetValue( float v ) { Lua *L = LUA->Get(); LuaHelpers::Push( L, v ); SetValueFromStack( L ); LUA->Release( L ); }
 void XNodeLuaValue::SetValue( unsigned v ) { Lua *L = LUA->Get(); LuaHelpers::Push( L, (float) v ); SetValueFromStack( L ); LUA->Release( L ); }

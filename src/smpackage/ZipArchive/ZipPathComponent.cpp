@@ -10,7 +10,7 @@
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version 2
 // of the License, or (at your option) any later version.
-// 
+//
 // For the licensing details see the file License.txt
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -34,8 +34,8 @@ void CZipPathComponent::SetFullPath(LPCTSTR lpszFullPath)
 	TCHAR szDir[_MAX_DIR];
 	TCHAR szFname[_MAX_FNAME];
 	TCHAR szExt[_MAX_EXT];
-	
-	
+
+
 	CZipString szTempPath(lpszFullPath);
 	const CZipString szPrefix = _T("\\\\?\\unc\\");
 	int i = -1, iLen = szPrefix.GetLength();
@@ -43,11 +43,11 @@ void CZipPathComponent::SetFullPath(LPCTSTR lpszFullPath)
 		iLen = szTempPath.GetLength();
 	CZipString szPossiblePrefix = szTempPath.Left(iLen);
 	szPossiblePrefix.MakeLower(); // must perform case insensitive comparison
-	while (++i < iLen && szPossiblePrefix[i] == szPrefix[i]); 
+	while (++i < iLen && szPossiblePrefix[i] == szPrefix[i]);
 	if (i == 2 || i == 4 || i == 8) // unc path, unicode path or unc path meeting windows file name conventions
 	{
 		m_szPrefix = szTempPath.Left(i);
-		szTempPath = szTempPath.Mid(i);		
+		szTempPath = szTempPath.Mid(i);
 	}
 	else
 		m_szPrefix.Empty();
@@ -55,7 +55,7 @@ void CZipPathComponent::SetFullPath(LPCTSTR lpszFullPath)
 	_tsplitpath(szTempPath, szDrive , szDir, szFname, szExt);
 	m_szDrive = szDrive;
 	m_szDirectory = szDir;
-	
+
 	m_szDirectory.TrimLeft(m_cSeparator);
 	m_szDirectory.TrimRight(m_cSeparator);
 	SetExtension(szExt);
@@ -71,6 +71,6 @@ CZipString CZipPathComponent::GetNoDrive() const
 		szPath += m_cSeparator;
 
 	szPath += szFileName;
-	return szPath;	
+	return szPath;
 }
 

@@ -1670,7 +1670,7 @@ void BMSSongLoader::AddToSong()
 													  it->second,
 													  "",
 													  1.f,
-													  it->second.substr(it->second.length()-4)==".lua"?SBE_Centered:SBE_StretchNoLoop));
+													  StrUtil::EndsWith(it->second, ".lua")?SBE_Centered:SBE_StretchNoLoop));
 		}
 
 		out->m_sMusicFile = main.info.musicFile;

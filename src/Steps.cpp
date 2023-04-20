@@ -571,7 +571,7 @@ bool Steps::MakeValidEditDescription( RString &sPreferredDescription )
 {
 	if( int(sPreferredDescription.size()) > MAX_STEPS_DESCRIPTION_LENGTH )
 	{
-		sPreferredDescription = sPreferredDescription.Left( MAX_STEPS_DESCRIPTION_LENGTH );
+		sPreferredDescription = sPreferredDescription.substr( 0, MAX_STEPS_DESCRIPTION_LENGTH );
 		return true;
 	}
 	return false;

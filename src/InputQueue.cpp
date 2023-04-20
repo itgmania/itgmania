@@ -5,6 +5,7 @@
 #include "InputEventPlus.h"
 #include "InputMapper.h"
 
+#include <string>
 #include <vector>
 
 
@@ -189,23 +190,25 @@ bool InputQueueCode::Load( RString sButtonsNames )
 			bool bNotHold = false;
 			for(;;)
 			{
-				if( sButtonName.Left(1) == "+" )
+				std::string prefix = sButtonName.substr(0, 1);
+
+				if( prefix == "+" )
 				{
 					m_aPresses.back().m_InputTypes[IET_REPEAT] = true;
 					sButtonName.erase(0, 1);
 				}
-				else if( sButtonName.Left(1) == "~" )
+				else if( prefix == "~" )
 				{
 					m_aPresses.back().m_InputTypes[IET_FIRST_PRESS] = false;
 					m_aPresses.back().m_InputTypes[IET_RELEASE] = true;
 					sButtonName.erase(0, 1);
 				}
-				else if( sButtonName.Left(1) == "@" )
+				else if( prefix == "@" )
 				{
 					sButtonName.erase(0, 1);
 					bHold = true;
 				}
-				else if( sButtonName.Left(1) == "!" )
+				else if( prefix == "!" )
 				{
 					sButtonName.erase(0, 1);
 					bNotHold = true;

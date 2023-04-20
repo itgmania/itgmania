@@ -563,7 +563,7 @@ void LanguagesDlg::OnBnClickedCheckLanguage()
 					RString sCurrentLanguage2 = sCurrentLanguage;
 					TrimRight( sCurrentLanguage2, " " );
 
-					if( (sBaseLanguage2.Right(1) == ".")  ^  (sCurrentLanguage2.Right(1) == ".") )
+					if( StrUtil::EndsWith(sBaseLanguage2, ".")  ^  StrUtil::EndsWith(sCurrentLanguage2, ".") )
 					{
 						file.PutLine( ssprintf("Period mismatch in section [%s] (%s):", sSection.c_str(), sID.c_str()) );
 						file.PutLine( ssprintf("    %s", sCurrentLanguage.c_str()) );

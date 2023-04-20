@@ -340,7 +340,7 @@ bool SMALoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCach
 					     sParams[1].c_str() );
 		}
 
-		else if( sValueName.Left(strlen("BGCHANGES"))=="BGCHANGES" || sValueName=="ANIMATIONS" )
+		else if( StrUtil::StartsWith(sValueName, "BGCHANGES") || sValueName=="ANIMATIONS" )
 		{
 			SMLoader::ProcessBGChanges( out, sValueName, sPath, sParams[1]);
 		}

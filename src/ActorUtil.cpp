@@ -203,7 +203,7 @@ Actor *ActorUtil::LoadFromNode( const XNode* _pNode, Actor *pParentActor )
 		{
 			RString sPath;
 			// Handle absolute paths correctly
-			if (sFile.Left(1) == "/")
+			if (StrUtil::StartsWith(sFile, "/"))
 				sPath = sFile;
 			else
 				sPath = Dirname(GetSourcePath(&node)) + sFile;
@@ -332,7 +332,7 @@ Actor* ActorUtil::MakeActor( const RString &sPath_, Actor *pParentActor )
 		}
 	case FT_Directory:
 		{
-			if( sPath.Right(1) != "/" )
+			if( !StrUtil::EndsWith(sPath, "/") )
 				sPath += '/';
 
 			RString sXml = sPath + "default.xml";
@@ -391,7 +391,7 @@ RString ActorUtil::GetSourcePath( const XNode *pNode )
 {
 	RString sRet;
 	pNode->GetAttrValue( "_Source", sRet );
-	if( sRet.substr(0, 1) == "@" )
+	if( StrUtil::StartsWith(sRet, "@") )
 		sRet.erase( 0, 1 );
 
 	return sRet;
@@ -412,7 +412,7 @@ bool ActorUtil::GetAttrPath( const XNode *pNode, const RString &sName, RString &
 	if( !pNode->GetAttrValue(sName, sOut) )
 		return false;
 
-	bool bIsRelativePath = sOut.Left(1) != "/";
+	bool bIsRelativePath = !StrUtil::StartsWith(sOut, "/");
 	if( bIsRelativePath )
 	{
 		RString sDir;
@@ -626,7 +626,7 @@ namespace
 		bool optional= lua_toboolean(L, 3);
 		luaL_where( L, iLevel );
 		RString sWhere = lua_tostring( L, -1 );
-		if( sWhere.size() > 2 && sWhere.substr(sWhere.size()-2, 2) == ": " )
+		if( StrUtil::EndsWith(sWhere, ": ") )
 			sWhere = sWhere.substr( 0, sWhere.size()-2 ); // remove trailing ": "
 
 		LUA->YieldLua();

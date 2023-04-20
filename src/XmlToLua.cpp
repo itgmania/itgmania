@@ -5,6 +5,7 @@
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageTypes.h"
+#include "RageUtil.h"
 #include "LuaManager.h"
 #include "LuaBinding.h"
 #include "XmlFile.h"
@@ -96,7 +97,7 @@ RString add_extension_to_relative_path_from_found_file(
 {
 	std::size_t rel_last_slash= after_slash_or_zero(relative_path);
 	std::size_t found_last_slash= after_slash_or_zero(found_file);
-	return relative_path.Left(rel_last_slash) +
+	return relative_path.substr(0, rel_last_slash) +
 		found_file.substr(found_last_slash, std::string::npos);
 }
 
@@ -299,9 +300,9 @@ void actor_template_t::make_space_for_frame(int id)
 
 void actor_template_t::store_cmd(RString const& cmd_name, RString const& full_cmd)
 {
-	if(full_cmd.Left(1) == "%")
+	if(StrUtil::StartsWith(full_cmd, "%"))
 	{
-		RString cmd_text= full_cmd.Right(full_cmd.size()-1);
+		RString cmd_text= full_cmd.substr(1);
 		convert_lua_chunk(cmd_text);
 		fields[cmd_name]= cmd_text;
 		return;
@@ -392,13 +393,13 @@ void actor_template_t::store_cmd(RString const& cmd_name, RString const& full_cm
 void actor_template_t::store_field(RString const& field_name, RString const& value, bool cmd_convert, RString const& pref, RString const& suf)
 {
 	// OITG apparently allowed "Oncommand" as valid.
-	if(field_name.Right(7).MakeLower() != "command")
+	if(RString(field_name.substr(field_name.size()-7)).MakeLower() != "command")
 	{
 		cmd_convert= false;
 	}
 	if(cmd_convert)
 	{
-		RString real_field_name= field_name.Left(field_name.size()-7) + "Command";
+		RString real_field_name= field_name.substr(0, field_name.size()-7) + "Command";
 		store_cmd(real_field_name, value);
 	}
 	else
@@ -450,16 +451,16 @@ void actor_template_t::load_frames_from_file(RString const& fname, RString const
 		{
 			// Frame and Delay fields have names of the form "Frame0000" where the
 			// "0000" part is the id of the frame.
-			RString field_type= attr->first.Left(5);
+			RString field_type= attr->first.substr(0, 5);
 			if(field_type == "Frame")
 			{
-				int id= StringToInt(attr->first.Right(attr->first.size()-5));
+				int id= StringToInt(attr->first.substr(5));
 				make_space_for_frame(id);
 				attr->second->GetValue(frames[id].frame);
 			}
 			else if(field_type == "Delay")
 			{
-				int id= StringToInt(attr->first.Right(attr->first.size()-5));
+				int id= StringToInt(attr->first.substr(5));
 				make_space_for_frame(id);
 				attr->second->GetValue(frames[id].delay);
 			}
@@ -689,8 +690,8 @@ void actor_template_t::output_to_file(RageFile* file, RString const& indent)
 		for(std::vector<frame_t>::iterator frame= frames.begin();
 			frame != frames.end(); ++frame)
 		{
-			file->Write(frameindent + "{Frame= " + std::to_string(frame->frame) +
-				", Delay= " + std::to_string(frame->delay) + "},\n");
+			file->Write(frameindent + "{Frame= " + RString(std::to_string(frame->frame)) +
+				", Delay= " + RString(std::to_string(frame->delay)) + "},\n");
 		}
 		file->Write(indent + "},\n");
 	}
@@ -737,7 +738,7 @@ void convert_xml_file(RString const& fname, RString const& dirname)
 	condition_set_t conditions;
 	plate.load_node(xml, dirname, conditions);
 	RageFile* file= new RageFile;
-	RString out_name= fname.Left(fname.size()-4) + ".lua";
+	RString out_name= fname.substr(0, fname.size()-4) + ".lua";
 	if(!file->Open(out_name, RageFile::WRITE))
 	{
 		LOG->Trace("Could not open %s: %s", out_name.c_str(), file->GetError().c_str());

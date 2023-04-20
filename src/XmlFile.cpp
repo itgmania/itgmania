@@ -1,5 +1,5 @@
 // Adapted from http://www.codeproject.com/cpp/xmlite.asp.
-// On 2004-02-09 Cho, Kyung-Min gave us permission to use and modify this 
+// On 2004-02-09 Cho, Kyung-Min gave us permission to use and modify this
 // library.
 //
 // XmlFile : XML Lite Parser Library
@@ -12,6 +12,9 @@
 #include "RageUtil.h"
 #include "DateTime.h"
 #include "LuaManager.h"
+
+#include <string>
+
 
 const RString XNode::TEXT_ATTRIBUTE = "__TEXT__";
 
@@ -48,8 +51,9 @@ void XNode::Free()
 	m_children_by_name.clear();
 	m_attrs.clear();
 }
-	
+
 void XNodeStringValue::GetValue( RString &out ) const		{ out = m_sValue; }
+void XNodeStringValue::GetValue( std::string &out ) const	{ out = m_sValue; }
 void XNodeStringValue::GetValue( int &out ) const		{ out = StringToInt(m_sValue); }
 void XNodeStringValue::GetValue( float &out ) const		{ out = StringToFloat(m_sValue); }
 void XNodeStringValue::GetValue( bool &out ) const		{ out = StringToInt(m_sValue) != 0; }
@@ -60,6 +64,8 @@ void XNodeStringValue::PushValue( lua_State *L ) const
 }
 
 void XNodeStringValue::SetValue( const RString &v )		{ m_sValue = v; }
+void XNodeStringValue::SetValue( const std::string &v )	{ m_sValue = v; }
+void XNodeStringValue::SetValue( const char *&v )	{ m_sValue = std::string(v); }
 void XNodeStringValue::SetValue( int v )			{ m_sValue = ssprintf("%d",v); }
 void XNodeStringValue::SetValue( float v )			{ m_sValue = ssprintf("%f",v); }
 void XNodeStringValue::SetValue( unsigned v )			{ m_sValue = ssprintf("%u",v); }

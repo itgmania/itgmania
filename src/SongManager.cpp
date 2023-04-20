@@ -24,6 +24,7 @@
 #include "RageFile.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
+#include "RageUtil.h"
 #include "Song.h"
 #include "SongCacheIndex.h"
 #include "SongUtil.h"
@@ -351,7 +352,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 	RageTimer loading_window_last_update_time;
 	loading_window_last_update_time.Touch();
 	// Make sure sDir has a trailing slash.
-	if( sDir.Right(1) != "/" )
+	if( !StrUtil::EndsWith(sDir, "/") )
 		sDir += "/";
 
 	// Find all group directories in "Songs" folder
@@ -1447,7 +1448,7 @@ Course* SongManager::GetRandomCourse()
 
 Song* SongManager::GetSongFromDir(RString dir) const
 {
-	if(dir.Right(1) != "/")
+	if(!StrUtil::EndsWith(dir, "/"))
 	{ dir += "/"; }
 
 	dir.Replace('\\', '/');
@@ -1628,7 +1629,7 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 				section = PreferredSortSection();
 			}
 
-			section.sName = sLine.Right( sLine.length() - RString("---").length() );
+			section.sName = sLine.substr( RString("---").length() );
 			TrimLeft( section.sName );
 			TrimRight( section.sName );
 		}
@@ -1638,7 +1639,7 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 				* and if it does, add all the songs in that group to the list. */
 			if( EndsWith(sLine,"/*") )
 			{
-				RString group = sLine.Left( sLine.length() - RString("/*").length() );
+				RString group = sLine.substr( 0, sLine.length() - strlen("/*") );
 				if( DoesSongGroupExist(group) )
 				{
 					// add all songs in group

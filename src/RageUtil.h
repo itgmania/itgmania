@@ -12,6 +12,7 @@
 #include <map>
 #include <random>
 #include <sstream>
+#include <string>
 #include <vector>
 
 class RageFileDriver;
@@ -638,6 +639,12 @@ void GetConnectsDisconnects( const std::vector<T> &before, const std::vector<T> 
 	GetAsNotInBs( after, before, connects );
 }
 
+
+namespace StrUtil
+{
+	bool StartsWith(const std::string &s, const std::string &prefix);
+	bool EndsWith(const std::string &s, const std::string &suffix);
+}
 
 #endif
 

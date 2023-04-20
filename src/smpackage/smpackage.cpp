@@ -65,7 +65,7 @@ BOOL CSmpackageApp::InitInstance()
 	{
 		SMPackageUtil::AddGameInstallDir( szCurrentDirectory );	// add this if it doesn't already exist
 		SMPackageUtil::SetDefaultInstallDir( szCurrentDirectory );
-	}	
+	}
 
 	FILEMAN->Remount( "/", szCurrentDirectory );
 
@@ -73,7 +73,7 @@ BOOL CSmpackageApp::InitInstance()
 	LUA = new LuaManager;
 	THEME = new ThemeManager;
 
-	// TODO: Use PrefsManager to get the current language instead?  PrefsManager would 
+	// TODO: Use PrefsManager to get the current language instead?  PrefsManager would
 	// need to be split up to reduce dependencies
 	RString sTheme = SpecialFiles::BASE_THEME_NAME;
 
@@ -142,7 +142,7 @@ BOOL CSmpackageApp::InitInstance()
 		sPathLower.MakeLower();
 
 		// test to see if this is a smzip file
-		if( sPathLower.Right(3).CompareNoCase("zip")==0 )
+		if( RString(sPathLower.substr(sPathLower.size()-3)).CompareNoCase("zip")==0 )
 		{
 			// We found a zip package.  Prompt the user to install it!
 			CSMPackageInstallDlg dlg( sPath );
@@ -170,7 +170,7 @@ BOOL CSmpackageApp::InitInstance()
 /*
  * (c) 2002-2005 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -180,7 +180,7 @@ BOOL CSmpackageApp::InitInstance()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

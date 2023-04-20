@@ -52,6 +52,7 @@ namespace LuaHelpers
 	template<> bool FromStack<int>( Lua *L, int &Object, int iOffset );
 	template<> bool FromStack<unsigned int>( Lua *L, unsigned int &Object, int iOffset );
 	template<> bool FromStack<RString>( Lua *L, RString &Object, int iOffset );
+	template<> bool FromStack<std::string>( Lua *L, std::string &Object, int iOffset );
 
 	bool InReportScriptError= false;
 }
@@ -97,6 +98,17 @@ namespace LuaHelpers
 	template<> bool FromStack<int>( Lua *L, int &Object, int iOffset ) { Object = lua_tointeger( L, iOffset ); return true; }
 	template<> bool FromStack<unsigned int>( Lua *L, unsigned int &Object, int iOffset ) { Object = lua_tointeger( L, iOffset ); return true; }
 	template<> bool FromStack<RString>( Lua *L, RString &Object, int iOffset )
+	{
+		std::size_t iLen;
+		const char *pStr = lua_tolstring( L, iOffset, &iLen );
+		if( pStr != nullptr )
+			Object.assign( pStr, iLen );
+		else
+			Object.clear();
+
+		return pStr != nullptr;
+	}
+	template<> bool FromStack<std::string>( Lua *L, std::string &Object, int iOffset )
 	{
 		std::size_t iLen;
 		const char *pStr = lua_tolstring( L, iOffset, &iLen );

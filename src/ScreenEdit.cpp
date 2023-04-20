@@ -21,6 +21,7 @@
 #include "RageSoundReader_FileReader.h"
 #include "RageInput.h"
 #include "RageLog.h"
+#include "RageUtil.h"
 #include "ScreenDimensions.h"
 #include "ScreenManager.h"
 #include "ScreenMiniMenu.h"
@@ -3792,11 +3793,11 @@ void ScreenEdit::HandleScreenMessage( const ScreenMessage SM )
 	}
 	else if ( SM == SM_BackFromSpeedModeChange && !ScreenTextEntry::s_bCancelledLast )
 	{
-		if( ScreenTextEntry::s_sLastAnswer.substr(0, 1) == "b" || ScreenTextEntry::s_sLastAnswer.substr(0, 1) == "B" )
+		if( StrUtil::StartsWith(ScreenTextEntry::s_sLastAnswer, "b") || StrUtil::StartsWith(ScreenTextEntry::s_sLastAnswer, "B") )
 		{
 			GetAppropriateTimingForUpdate().SetSpeedModeAtBeat( GetBeat(), SpeedSegment::UNIT_BEATS );
 		}
-		else if( ScreenTextEntry::s_sLastAnswer.substr(0, 1) == "s" || ScreenTextEntry::s_sLastAnswer.substr(0, 1) == "S" )
+		else if( StrUtil::StartsWith(ScreenTextEntry::s_sLastAnswer, "s") || StrUtil::StartsWith(ScreenTextEntry::s_sLastAnswer, "S") )
 		{
 			GetAppropriateTimingForUpdate().SetSpeedModeAtBeat( GetBeat(), SpeedSegment::UNIT_SECONDS );
 		}

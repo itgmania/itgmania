@@ -169,9 +169,9 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 			// to a lack of songs. -aj
 			int iNumSongs = SONGMAN->GetNumSongs();
 			// most played
-			if( sParams[1].Left(strlen("BEST")) == "BEST" )
+			if( StrUtil::StartsWith(sParams[1], "BEST") )
 			{
-				int iChooseIndex = StringToInt( sParams[1].Right(sParams[1].size()-strlen("BEST")) ) - 1;
+				int iChooseIndex = StringToInt( sParams[1].substr(strlen("BEST")) ) - 1;
 				if( iChooseIndex > iNumSongs )
 				{
 					// looking up a song that doesn't exist.
@@ -186,9 +186,9 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 				new_entry.songSort = SongSort_MostPlays;
 			}
 			// least played
-			else if( sParams[1].Left(strlen("WORST")) == "WORST" )
+			else if( StrUtil::StartsWith(sParams[1], "WORST") )
 			{
-				int iChooseIndex = StringToInt( sParams[1].Right(sParams[1].size()-strlen("WORST")) ) - 1;
+				int iChooseIndex = StringToInt( sParams[1].substr(strlen("WORST")) ) - 1;
 				if( iChooseIndex > iNumSongs )
 				{
 					// looking up a song that doesn't exist.
@@ -203,16 +203,16 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 				new_entry.songSort = SongSort_FewestPlays;
 			}
 			// best grades
-			else if( sParams[1].Left(strlen("GRADEBEST")) == "GRADEBEST" )
+			else if( StrUtil::StartsWith(sParams[1], "GRADEBEST") )
 			{
-				new_entry.iChooseIndex = StringToInt( sParams[1].Right(sParams[1].size()-strlen("GRADEBEST")) ) - 1;
+				new_entry.iChooseIndex = StringToInt( sParams[1].substr(strlen("GRADEBEST")) ) - 1;
 				CLAMP( new_entry.iChooseIndex, 0, 500 );
 				new_entry.songSort = SongSort_TopGrades;
 			}
 			// worst grades
-			else if( sParams[1].Left(strlen("GRADEWORST")) == "GRADEWORST" )
+			else if( StrUtil::StartsWith(sParams[1], "GRADEWORST") )
 			{
-				new_entry.iChooseIndex = StringToInt( sParams[1].Right(sParams[1].size()-strlen("GRADEWORST")) ) - 1;
+				new_entry.iChooseIndex = StringToInt( sParams[1].substr(strlen("GRADEWORST")) ) - 1;
 				CLAMP( new_entry.iChooseIndex, 0, 500 );
 				new_entry.songSort = SongSort_LowestGrades;
 			}
@@ -221,7 +221,7 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 				//new_entry.bSecret = true;
 			}
 			// group random
-			else if( sParams[1].Right(1) == "*" )
+			else if( StrUtil::EndsWith(sParams[1], "*") )
 			{
 				//new_entry.bSecret = true;
 				RString sSong = sParams[1];
@@ -310,7 +310,7 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 						new_entry.bSecret = true;
 					else if( !sMod.CompareNoCase("nodifficult") )
 						new_entry.bNoDifficult = true;
-					else if( sMod.length() > 5 && !sMod.Left(5).CompareNoCase("award") )
+					else if( sMod.length() > 5 && !RString(sMod.substr(0, strlen("award"))).CompareNoCase("award") )
 						new_entry.iGainLives = StringToInt( sMod.substr(5) );
 					else
 						continue;

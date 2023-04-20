@@ -42,7 +42,7 @@ void BacktraceNames::Demangle()
 void BacktraceNames::Demangle()
 {
 	/* demangle the name using __cxa_demangle() if needed */
-	if( Symbol.substr(0, 2) != "_Z" )
+	if( StrUtil::StartsWith(Symbol, "_Z") )
 		return;
 
 	int status = 0;
@@ -282,13 +282,13 @@ void BacktraceNames::FromAddr( void * const p )
 	 * __start   -> _start
 	 * __ZN7RageLog5TraceEPKcz -> _ZN7RageLog5TraceEPKcz (so demangling will work)
 	 */
-	if( Symbol.Left(1) == "_" )
+	if( StrUtil::StartsWith(Symbol, "_") )
 		Symbol = Symbol.substr(1);
 	/* After stripping off the leading _
 	 * _GLOBAL__I__ZN5ModelC2Ev -> _ZN5ModelC2Ev
 	 * _GLOBAL__D__Z12ForceToAsciiR7CStdStrIcE -> _Z12ForceToAsciiR7CStdStrIcE
 	 */
-	if( Symbol.Left(9) == "_GLOBAL__" )
+	if( StrUtil::StartsWith(Symbol, "_GLOBAL__") )
 		Symbol = Symbol.substr(11);
 
 }

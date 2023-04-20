@@ -227,7 +227,7 @@ void SetFGChanges(SongTagInfo& info)
 void SetKeysounds(SongTagInfo& info)
 {
 	RString keysounds = (*info.params)[1];
-	if(keysounds.length() >= 2 && keysounds.substr(0, 2) == "\\#")
+	if(StrUtil::StartsWith(keysounds, "\\#"))
 	{ keysounds = keysounds.substr(1); }
 	split(keysounds, ",", info.song->m_vsKeysoundFile);
 }
@@ -989,7 +989,7 @@ bool SSCLoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCach
 				{
 					handler->second(reused_song_info);
 				}
-				else if(sValueName.Left(strlen("BGCHANGES"))=="BGCHANGES")
+				else if(StrUtil::StartsWith(sValueName, "BGCHANGES"))
 				{
 					SetBGChanges(reused_song_info);
 				}

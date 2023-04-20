@@ -21,6 +21,7 @@
 #include <map>
 #include <numeric>
 #include <sstream>
+#include <string>
 #include <vector>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1299,9 +1300,9 @@ RString URLEncode( const RString &sStr )
 // remove various version control-related files
 static bool CVSOrSVN( const RString& s )
 {
-	return s.Right(3).EqualsNoCase("CVS") ||
-			s.Right(4) == ".svn" ||
-			s.Right(3).EqualsNoCase(".hg");
+	return RString(s.substr(s.size()-3)).EqualsNoCase("CVS") ||
+			StrUtil::EndsWith(s, ".svn") ||
+			RString(s.substr(s.size()-3)).EqualsNoCase(".hg");
 }
 
 void StripCvsAndSvn( std::vector<RString> &vs )
@@ -1311,7 +1312,7 @@ void StripCvsAndSvn( std::vector<RString> &vs )
 
 static bool MacResourceFork( const RString& s )
 {
-	return s.Left(2).EqualsNoCase("._");
+	return StrUtil::StartsWith(s, "._");
 }
 
 void StripMacResourceForks( std::vector<RString> &vs )
@@ -2397,6 +2398,21 @@ bool FileCopy( RageFileBasic &in, RageFileBasic &out, RString &sError, bool *bRe
 	}
 
 	return true;
+}
+
+// XXX: Use std::string::starts_with() as soon as we depend on C++20
+bool StrUtil::StartsWith(const std::string &s, const std::string &prefix)
+{
+		return s.substr(0, prefix.size()) == prefix;
+}
+
+// XXX: Use std::string::ends_with() as soon as we depend on C++20
+bool StrUtil::EndsWith(const std::string &s, const std::string &suffix)
+{
+		if (s.size() < suffix.size())
+				return false;
+
+		return s.substr(s.size() - suffix.size()) == suffix;
 }
 
 LuaFunction( SecondsToMSSMsMs, SecondsToMSSMsMs( FArg(1) ) )

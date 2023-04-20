@@ -4,6 +4,7 @@
 #define XML_FILE_H
 
 #include <map>
+#include <string>
 #include <vector>
 
 
@@ -18,6 +19,7 @@ public:
 	virtual XNodeValue *Copy() const = 0;
 
 	virtual void GetValue( RString &out ) const = 0;
+	virtual void GetValue( std::string &out ) const = 0;
 	virtual void GetValue( int &out ) const = 0;
 	virtual void GetValue( float &out ) const = 0;
 	virtual void GetValue( bool &out ) const = 0;
@@ -28,6 +30,8 @@ public:
 	T GetValue() const { T val; GetValue(val); return val; }
 
 	virtual void SetValue( const RString &v ) = 0;
+	virtual void SetValue( const std::string &v ) = 0;
+	virtual void SetValue( const char *&v ) = 0;
 	virtual void SetValue( int v ) = 0;
 	virtual void SetValue( float v ) = 0;
 	virtual void SetValue( unsigned v ) = 0;
@@ -42,6 +46,7 @@ public:
 	XNodeValue *Copy() const { return new XNodeStringValue( *this ); }
 
 	void GetValue( RString &out ) const;
+	void GetValue( std::string &out ) const;
 	void GetValue( int &out ) const;
 	void GetValue( float &out ) const;
 	void GetValue( bool &out ) const;
@@ -49,6 +54,8 @@ public:
 	void PushValue( lua_State *L ) const;
 
 	void SetValue( const RString &v );
+	void SetValue( const std::string &v );
+	void SetValue( const char *&v );
 	void SetValue( int v );
 	void SetValue( float v );
 	void SetValue( unsigned v );
@@ -104,7 +111,7 @@ public:
 	const XNodeValue *GetAttr( const RString &sAttrName ) const;
 	XNodeValue *GetAttr( const RString &sAttrName );
 	template <typename T>
-	bool GetAttrValue( const RString &sName, T &out ) const	{ const XNodeValue *pAttr=GetAttr(sName); if(pAttr== nullptr) return false; pAttr->GetValue(out); return true; }
+	bool GetAttrValue( const std::string &sName, T &out ) const	{ const XNodeValue *pAttr=GetAttr(sName); if(pAttr== nullptr) return false; pAttr->GetValue(out); return true; }
 	bool PushAttrValue( lua_State *L, const RString &sName ) const;
 
 	XNodes::iterator GetChildrenBegin() { return m_childs.begin(); }

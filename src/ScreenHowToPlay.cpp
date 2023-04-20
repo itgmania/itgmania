@@ -15,6 +15,7 @@
 #include "CharacterManager.h"
 #include "StatsManager.h"
 #include "RageDisplay.h"
+#include "RageUtil.h"
 #include "SongUtil.h"
 #include "Character.h"
 #include "LifeMeterBar.h"
@@ -143,7 +144,7 @@ void ScreenHowToPlay::Init()
 		RString sStepsPath = THEME->GetPathO(m_sName, "steps");
 		SSCLoader loaderSSC;
 		SMLoader loaderSM;
-		if( sStepsPath.Right(4) == ".ssc" )
+		if( StrUtil::EndsWith(sStepsPath, ".ssc") )
 			loaderSSC.LoadFromSimfile( sStepsPath, m_Song, false );
 		else
 			loaderSM.LoadFromSimfile( sStepsPath, m_Song, false );

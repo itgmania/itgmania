@@ -2,6 +2,7 @@
 #include "CourseUtil.h"
 #include "Course.h"
 #include "RageTimer.h"
+#include "RageUtil.h"
 #include "ProfileManager.h"
 #include "Profile.h"
 #include "SongManager.h"
@@ -538,7 +539,7 @@ void CourseID::FromCourse( const Course *p )
 
 	// HACK for backwards compatibility:
 	// Strip off leading "/".  2005/05/21 file layer changes added a leading slash.
-	if( sPath.Left(1) == "/" )
+	if( StrUtil::StartsWith(sPath, "/") )
 		sPath.erase( sPath.begin() );
 }
 
@@ -550,7 +551,7 @@ Course *CourseID::ToCourse() const
 		// HACK for backwards compatibility:
 		// Re-add the leading "/".  2005/05/21 file layer changes added a leading slash.
 		RString slash_path = sPath;
-		if(slash_path.Left(1) != "/")
+		if(StrUtil::StartsWith(slash_path, "/"))
 		{
 			slash_path = "/" + slash_path;
 		}
@@ -587,8 +588,8 @@ void CourseID::LoadFromNode( const XNode* pNode )
 		pNode->GetAttrValue( "FullTitle", sFullTitle );
 
 	// HACK for backwards compatibility: /AdditionalCourses has been merged into /Courses
-	if (sPath.Left(18) == "AdditionalCourses/")
-		sPath.replace(0, 18, "Courses/");
+	if (StrUtil::StartsWith(sPath, "AdditionalCourses/"))
+		sPath.replace(0, strlen("AdditionalCourses/"), "Courses/");
 }
 
 RString CourseID::ToString() const

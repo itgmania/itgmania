@@ -13,6 +13,7 @@
 #include "ThemeMetric.h"
 #include "LocalizedString.h"
 #include "RageLog.h"
+#include "RageUtil.h"
 #include "GameManager.h"
 #include "CommonMetrics.h"
 #include "LuaBinding.h"
@@ -20,6 +21,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <string>
 #include <vector>
 
 
@@ -595,7 +597,7 @@ RString SongUtil::GetSectionNameFromSongAndSort( const Song* pSong, SortOrder so
 			else if( s[0] < 'A' || s[0] > 'Z')
 				return SORT_OTHER.GetValue();
 			else
-				return s.Left(1);
+				return s.substr(0, 1);
 		}
 	case SORT_GENRE:
 		if( !pSong->m_sGenre.empty() )
@@ -768,13 +770,13 @@ RString SongUtil::MakeUniqueEditDescription( const Song *pSong, StepsType st, co
 	if( IsEditDescriptionUnique( pSong, st, sPreferredDescription, nullptr ) )
 		return sPreferredDescription;
 
-	RString sTemp;
+	std::string sTemp;
 
 	for( int i=0; i<1000; i++ )
 	{
 		// make name "My Edit" -> "My Edit2"
-		RString sNum = ssprintf("%d", i+1);
-		sTemp = sPreferredDescription.Left( MAX_STEPS_DESCRIPTION_LENGTH - sNum.size() ) + sNum;
+		std::string sNum = ssprintf("%d", i+1);
+		sTemp = sPreferredDescription.substr( 0, MAX_STEPS_DESCRIPTION_LENGTH - sNum.size() ) + sNum;
 
 		if( IsEditDescriptionUnique(pSong, st, sTemp, nullptr) )
 			return sTemp;
@@ -1113,7 +1115,7 @@ void SongID::FromSong( const Song *p )
 
 	// HACK for backwards compatibility:
 	// Strip off leading "/".  2005/05/21 file layer changes added a leading slash.
-	if( sDir.Left(1) == "/" )
+	if( StrUtil::StartsWith(sDir, "/") )
 		sDir.erase( sDir.begin() );
 }
 
@@ -1125,7 +1127,7 @@ Song *SongID::ToSong() const
 		// HACK for backwards compatibility: Re-add the leading "/".
 		// 2005/05/21 file layer changes added a leading slash.
 		RString sDir2 = sDir;
-		if(sDir2.Left(1) != "/")
+		if(StrUtil::StartsWith(sDir2, "/"))
 		{
 			sDir2 = "/" + sDir2;
 		}
@@ -1147,8 +1149,8 @@ void SongID::LoadFromNode( const XNode* pNode )
 	pNode->GetAttrValue("Dir", sDir);
 
 	// HACK for backwards compatibility: /AdditionalSongs has been merged into /Songs
-	if (sDir.Left(16) == "AdditionalSongs/")
-		sDir.replace(0, 16, "Songs/");
+	if (StrUtil::StartsWith(sDir, "AdditionalSongs/"))
+		sDir.replace(0, strlen("AdditionalSongs/"), "Songs/");
 }
 
 RString SongID::ToString() const

@@ -3,6 +3,7 @@
 #include "ScreenManager.h"
 #include "GameSoundManager.h"
 #include "RageLog.h"
+#include "RageUtil.h"
 #include "AnnouncerManager.h"
 #include "GameState.h"
 #include "ThemeManager.h"
@@ -36,9 +37,9 @@ void ScreenSelect::Init()
 	// Load choices
 	// Allow lua as an alternative to metrics.
 	RString choice_names= CHOICE_NAMES;
-	if(choice_names.Left(4) == "lua,")
+	if(StrUtil::StartsWith(choice_names, "lua,"))
 	{
-		RString command= choice_names.Right(choice_names.size()-4);
+		RString command= choice_names.substr(4);
 		Lua* L= LUA->Get();
 		if(LuaHelpers::RunExpression(L, command, m_sName + "::ChoiceNames"))
 		{
@@ -54,7 +55,8 @@ void ScreenSelect::Init()
 					lua_rawgeti(L, 1, i);
 					if(!lua_isstring(L, -1))
 					{
-						LuaHelpers::ReportScriptErrorFmt(m_sName + "::ChoiceNames element %zu is not a string.", i);
+						std::string fmt = m_sName + "::ChoiceNames element %zu is not a string.";
+						LuaHelpers::ReportScriptErrorFmt(fmt.c_str(), i);
 					}
 					else
 					{

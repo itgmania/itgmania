@@ -1058,7 +1058,7 @@ bool SMLoader::LoadNoteDataFromSimfile( const RString &path, Steps &out )
 			RString difficulty = sParams[3];
 
 			// HACK?: If this is a .edit fudge the edit difficulty
-			if(path.Right(5).CompareNoCase(".edit") == 0) difficulty = "edit";
+			if(RString(path.substr(path.size()-5)).CompareNoCase(".edit") == 0) difficulty = "edit";
 
 			Trim(stepsType);
 			Trim(description);
@@ -1132,7 +1132,7 @@ bool SMLoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCache
 		 * splitting other formats that *don't* natively support #SUBTITLE. */
 			handler->second(reused_song_info);
 		}
-		else if(sValueName.Left(strlen("BGCHANGES")) == "BGCHANGES")
+		else if(StrUtil::StartsWith(sValueName, "BGCHANGES"))
 		{
 			SMSetBGChanges(reused_song_info);
 		}
