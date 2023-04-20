@@ -14,6 +14,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <utility>
+#include <vector>
+
 
 // TODO: Remove these constants that aren't time signature-aware
 static const int BEATS_PER_MEASURE = 4;

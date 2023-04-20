@@ -12,6 +12,7 @@
 #include "PlayerState.h"
 
 #include <cstddef>
+#include <vector>
 
 #define LINE(sLineName)				THEME->GetMetric (m_sName,ssprintf("Line%s",sLineName.c_str()))
 #define MAX_ITEMS_BEFORE_SPLIT			THEME->GetMetricI(m_sName,"MaxItemsBeforeSplit")

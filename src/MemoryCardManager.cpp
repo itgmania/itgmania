@@ -13,6 +13,8 @@
 #include "LuaManager.h"
 
 #include <cstddef>
+#include <vector>
+
 
 MemoryCardManager*	MEMCARDMAN = nullptr;	// global and accessible from anywhere in our program
 

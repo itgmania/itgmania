@@ -29,6 +29,8 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <vector>
+
 
 const RString STATS_XML            = "Stats.xml";
 const RString STATS_XML_GZ         = "Stats.xml.gz";

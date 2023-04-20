@@ -11,6 +11,9 @@
 #include "CodeSet.h"
 #include "ThemeMetric.h"
 
+#include <vector>
+
+
 class OptionsList;
 class OptionListRow: public ActorFrame
 {

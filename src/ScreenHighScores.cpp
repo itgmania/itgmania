@@ -7,6 +7,8 @@
 #include "UnlockManager.h"
 
 #include <cstddef>
+#include <vector>
+
 
 RString COLUMN_DIFFICULTY_NAME( std::size_t i );
 RString COLUMN_STEPS_TYPE_NAME( std::size_t i );

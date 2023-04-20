@@ -12,6 +12,8 @@
 
 #include <array>
 #include <cstddef>
+#include <vector>
+
 
 class OptionRowHandler;
 class GameCommand;

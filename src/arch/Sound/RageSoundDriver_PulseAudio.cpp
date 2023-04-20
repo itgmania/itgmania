@@ -14,6 +14,8 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <vector>
+
 
 /* Register the RageSoundDriver_Pulseaudio class as sound driver "Pulse" */
 REGISTER_SOUND_DRIVER_CLASS2( Pulse, PulseAudio );

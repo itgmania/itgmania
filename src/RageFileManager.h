@@ -2,6 +2,8 @@
 #define RAGE_FILE_MANAGER_H
 
 #include <unordered_set>
+#include <vector>
+
 
 /** @brief Constants for working with the RageFileManager. */
 namespace RageFileManagerUtil
@@ -34,7 +36,7 @@ public:
 	bool Remove( const RString &sPath );
 	bool DeleteRecursive( const RString &sPath );
 	void CreateDir( const RString &sDir );
-	
+
 	enum FileType { TYPE_FILE, TYPE_DIR, TYPE_NONE };
 	FileType GetFileType( const RString &sPath );
 
@@ -44,7 +46,7 @@ public:
 
 	int GetFileSizeInBytes( const RString &sPath );
 	int GetFileHash( const RString &sPath );
-	
+
 	/**
 	 * @brief Get the absolte path from the VPS.
 	 * @param path the VPS path.

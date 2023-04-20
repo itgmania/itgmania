@@ -16,6 +16,9 @@
 #include "Steps.h"
 #include "ThemeMetric.h"
 
+#include <vector>
+
+
 ThemeMetric<bool> USE_CREDIT	( "NotesWriterSM", "DescriptionUsesCreditField" );
 
 /**

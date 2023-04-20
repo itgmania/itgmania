@@ -6,6 +6,8 @@
 #include "RageLog.h"
 #include "RageThreads.h"
 
+#include <vector>
+
 
 /* If we're on an OS with a good caching system, writing to our own cache will only
  * waste memory.  In that case, just read the file, to force it into system cache.
@@ -128,7 +130,7 @@ void BackgroundLoader::LoadThread()
 			if( bWriteToCache )
 				bWriteToCache = dst.Open( sCachePath, RageFile::WRITE );
 			LOG->Trace("XXX: go on '%s' to '%s'", sFile.c_str(), sCachePath.c_str());
-			
+
 			char buf[1024*4];
 			while( !m_sThreadShouldAbort && !src.AtEOF() )
 			{
@@ -248,7 +250,7 @@ void BackgroundLoader::Abort()
 /*
  * (c) 2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -258,7 +260,7 @@ void BackgroundLoader::Abort()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -3,6 +3,10 @@
 #include "RageThreads.h"
 #include "RageLog.h"
 
+#include <cerrno>
+#include <cstddef>
+#include <vector>
+
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif
@@ -12,8 +16,6 @@
 #if defined(HAVE_SYS_TYPES_H)
 #include <sys/types.h>
 #endif
-#include <cerrno>
-#include <cstddef>
 #if defined(WIN32)
 #include <io.h>
 #endif

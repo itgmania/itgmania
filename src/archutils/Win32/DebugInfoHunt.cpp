@@ -4,8 +4,12 @@
 #include "RageUtil.h"
 #include "VideoDriverInfo.h"
 #include "RegistryAccess.h"
+
+#include <vector>
+
 #include <windows.h>
 #include <mmsystem.h>
+
 
 static void LogVideoDriverInfo( VideoDriverInfo info )
 {

@@ -13,6 +13,8 @@
 #include "LuaExpressionTransform.h"
 
 #include <cmath>
+#include <vector>
+
 
 #define NUM_WHEEL_ITEMS		((int)std::ceil(NUM_WHEEL_ITEMS_TO_DRAW+2))
 

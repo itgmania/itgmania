@@ -2,6 +2,8 @@
 #include "PumpDevice.h"
 
 #include <cstdint>
+#include <vector>
+
 
 void PumpDevice::Open()
 {

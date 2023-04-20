@@ -10,6 +10,8 @@
 
 #include <cmath>
 #include <numeric>
+#include <vector>
+
 
 void TrailEntry::GetAttackArray( AttackArray &out ) const
 {

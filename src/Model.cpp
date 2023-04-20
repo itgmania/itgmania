@@ -15,6 +15,8 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <vector>
+
 
 REGISTER_ACTOR_CLASS( Model );
 

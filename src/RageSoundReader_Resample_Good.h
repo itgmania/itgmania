@@ -5,6 +5,9 @@
 
 #include "RageSoundReader_Filter.h"
 
+#include <vector>
+
+
 class RageSoundResampler_Polyphase;
 
 /** @brief This class changes the sampling rate of a sound. */

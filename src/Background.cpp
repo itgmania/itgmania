@@ -24,6 +24,8 @@
 #include "AutoActor.h"
 
 #include <cfloat>
+#include <vector>
+
 
 static ThemeMetric<float> LEFT_EDGE				("Background","LeftEdge");
 static ThemeMetric<float> TOP_EDGE				("Background","TopEdge");

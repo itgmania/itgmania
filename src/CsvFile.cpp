@@ -4,6 +4,9 @@
 #include "RageFile.h"
 #include "RageLog.h"
 
+#include <vector>
+
+
 CsvFile::CsvFile()
 {
 }

@@ -6,6 +6,8 @@
 #include "arch/Lights/LightsDriver_Export.h"
 
 #include <cstdint>
+#include <vector>
+
 
 static bool _ddriodll_loaded = false;
 

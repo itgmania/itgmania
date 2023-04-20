@@ -3,11 +3,12 @@
 
 #include "global.h"
 #include "InputHandler_Win32_RTIO.h"
-
-#include <algorithm>
-
 #include "RageLog.h"
 #include "RageInputDevice.h"
+
+#include <algorithm>
+#include <vector>
+
 
 // The coin counter won't accept an increment command immediately after acking
 // an older increment command. This delay is the minimum amount of time to wait

@@ -11,6 +11,7 @@
 #include "LocalizedString.h"
 
 #include <cstddef>
+#include <vector>
 
 AutoScreenMessage(SM_DoSaveAndExit);
 #define BUTTONS_TO_MAP			THEME->GetMetric ( m_sName, "ButtonsToMap" )

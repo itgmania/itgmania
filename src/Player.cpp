@@ -43,6 +43,8 @@
 
 #include <cmath>
 #include <cstddef>
+#include <vector>
+
 
 RString ATTACK_DISPLAY_X_NAME( std::size_t p, std::size_t both_sides );
 void TimingWindowSecondsInit( std::size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut );

@@ -8,6 +8,8 @@
 #include "InputHandler_MonkeyKeyboard.h"
 //#include "InputHandler_NSEvent.hpp"
 
+#include <vector>
+
 
 void InputHandler::UpdateTimer()
 {
@@ -58,15 +60,15 @@ wchar_t InputHandler::DeviceButtonToChar( DeviceButton button, bool bUseCurrentK
 	case KEY_KP_EQUAL:	c = L'=';	break;
 	}
 
-	// Handle some default US keyboard modifiers for derived InputHandlers that 
+	// Handle some default US keyboard modifiers for derived InputHandlers that
 	// don't implement DeviceButtonToChar.
 	if( bUseCurrentKeyModifiers )
 	{
-		bool bHoldingShift = 
+		bool bHoldingShift =
 			INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT)) ||
 			INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT));
 
-		bool bHoldingCtrl = 
+		bool bHoldingCtrl =
 			INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL)) ||
 			INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL));
 
@@ -103,7 +105,7 @@ wchar_t InputHandler::DeviceButtonToChar( DeviceButton button, bool bUseCurrentK
 		}
 
 	}
-	
+
 	return c;
 }
 
@@ -176,10 +178,10 @@ void InputHandler::Create( const RString &drivers_, std::vector<InputHandler *> 
 	const RString drivers = drivers_.empty()? RString(DEFAULT_INPUT_DRIVER_LIST):drivers_;
 	std::vector<RString> DriversToTry;
 	split( drivers, ",", DriversToTry, true );
-	
+
 	if( DriversToTry.empty() )
 		RageException::Throw( "%s", INPUT_HANDLERS_EMPTY.GetValue().c_str() );
-	
+
 	for (RString const &s : DriversToTry)
 	{
 		RageDriver *pDriver = InputHandler::m_pDriverList.Create( s );
@@ -203,7 +205,7 @@ void InputHandler::Create( const RString &drivers_, std::vector<InputHandler *> 
 /*
  * (c) 2003-2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -213,7 +215,7 @@ void InputHandler::Create( const RString &drivers_, std::vector<InputHandler *> 
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

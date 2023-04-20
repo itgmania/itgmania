@@ -16,6 +16,8 @@
 #include <cfloat>
 #include <cmath>
 #include <cstddef>
+#include <vector>
+
 
 static char const dimension_names[4]= "XYZ";
 

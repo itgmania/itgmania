@@ -18,6 +18,8 @@
 #include "SoundEffectControl.h"
 #include "GameplayAssist.h"
 
+#include <vector>
+
 class LyricsLoader;
 class ActiveAttackList;
 class CombinedLifeMeter;
@@ -68,7 +70,7 @@ public:
 	{
 		if( m_bIsDummy )
 			return ssprintf("Dummy%d",m_iDummyIndex);
-		if( IsMultiPlayer() ) 
+		if( IsMultiPlayer() )
 			return MultiPlayerToString( m_mp );
 		else
 			return PlayerNumberToString( m_pn );
@@ -243,7 +245,7 @@ protected:
 	// These exist so that the haste rate isn't recalculated every time GetHasteRate is called, which is at least once per frame. -Kyz
 
 	/** @brief The different game states of ScreenGameplay. */
-	enum DancingState { 
+	enum DancingState {
 		STATE_INTRO = 0, /**< The starting state, pressing Back isn't allowed here. */
 		STATE_DANCING,	 /**< The main state where notes have to be pressed. */
 		STATE_OUTRO,	 /**< The ending state, pressing Back isn't allowed here. */
@@ -356,7 +358,7 @@ std::vector<PlayerInfo>::iterator GetNextVisiblePlayerInfo		( std::vector<Player
  * @author Chris Danford, Glenn Maynard (c) 2001-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -366,7 +368,7 @@ std::vector<PlayerInfo>::iterator GetNextVisiblePlayerInfo		( std::vector<Player
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

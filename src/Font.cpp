@@ -13,6 +13,8 @@
 
 #include <cmath>
 #include <cstddef>
+#include <vector>
+
 
 FontPage::FontPage(): m_iHeight(0), m_iLineSpacing(0), m_fVshift(0),
 	m_iDrawExtraPixelsLeft(0), m_iDrawExtraPixelsRight(0),

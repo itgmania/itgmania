@@ -9,6 +9,8 @@
 
 #include <cstddef>
 #include <map>
+#include <vector>
+
 
 /** @brief The general interface for reading ThemeMetrics. */
 class IThemeMetric

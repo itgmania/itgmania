@@ -1,11 +1,14 @@
 #ifndef RAGE_UTIL_FILEDB
 #define RAGE_UTIL_FILEDB
 
-#include <set>
-#include <map>
 #include "RageTimer.h"
 #include "RageThreads.h"
 #include "RageFileManager.h"
+
+#include <map>
+#include <set>
+#include <vector>
+
 
 struct FileSet;
 struct File
@@ -19,7 +22,7 @@ struct File
 		lname = name;
 		lname.MakeLower();
 	}
-	
+
 	bool dir;
 	int size;
 	/* Modification time of the file.  The contents of this is undefined, except that
@@ -39,7 +42,7 @@ struct File
 		SetName( fn );
 		dir=false; size=-1; hash=-1; priv=nullptr; dirp=nullptr;
 	}
-	
+
 	bool operator< (const File &rhs) const { return lname<rhs.lname; }
 
 	bool equal(const File &rhs) const { return lname == rhs.lname; }

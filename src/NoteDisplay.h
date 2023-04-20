@@ -7,6 +7,9 @@
 #include "PlayerNumber.h"
 #include "GameInput.h"
 
+#include <vector>
+
+
 class Sprite;
 class Model;
 class PlayerState;
@@ -65,7 +68,7 @@ private:
 	NoteResource *m_p;
 };
 /** @brief What types of holds are there? */
-enum HoldType 
+enum HoldType
 {
 	hold, /**< Merely keep your foot held on the body for it to count. */
 	roll, /**< Keep hitting the hold body for it to stay alive. */
@@ -200,7 +203,7 @@ public:
 	 * @param bOnSameRowAsRollStart a flag to see if a roll is on the same beat.
 	 * @param bIsAddition a flag to see if this note was added via mods.
 	 * @param fPercentFadeToFail at what point do the notes fade on failure?
-	 * @param fReverseOffsetPixels How are the notes adjusted on Reverse? 
+	 * @param fReverseOffsetPixels How are the notes adjusted on Reverse?
 	 * @param fDrawDistanceAfterTargetsPixels how much to draw after the receptors.
 	 * @param fDrawDistanceBeforeTargetsPixels how much ot draw before the receptors.
 	 * @param fFadeInPercentOfDrawFar when to start fading in. */
@@ -346,7 +349,7 @@ struct NoteColumnRenderer : public Actor
  * @author Brian Bugh, Ben Nordstrom, Chris Danford, Steve Checkoway (c) 2001-2006
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -356,7 +359,7 @@ struct NoteColumnRenderer : public Actor
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

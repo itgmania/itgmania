@@ -1,6 +1,9 @@
 #include "global.h"
 #include "MouseDevice.h"
 
+#include <vector>
+
+
 Mouse::Mouse() : id( InputDevice_Invalid ),
 				x_axis( 0 ), y_axis( 0 ), z_axis( 0 ),
 				x_min( 0 ), x_max( 0 ), y_min( 0 ),

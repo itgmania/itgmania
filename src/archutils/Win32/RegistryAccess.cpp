@@ -5,7 +5,9 @@
 #include "archutils/Win32/ErrorStrings.h"
 
 #include <cstddef>
+#include <vector>
 #include <windows.h>
+
 
 /* Given "HKEY_LOCAL_MACHINE\hardware\foo", return "hardware\foo", and place
  * the HKEY_LOCAL_MACHINE constant in key. */

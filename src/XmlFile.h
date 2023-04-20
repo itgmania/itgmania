@@ -4,6 +4,9 @@
 #define XML_FILE_H
 
 #include <map>
+#include <vector>
+
+
 struct DateTime;
 class RageFileBasic;
 struct lua_State;
@@ -98,8 +101,8 @@ public:
 	void GetTextValue( T &out ) const { GetAttrValue(TEXT_ATTRIBUTE, out); }
 
 	// in own attribute list
-	const XNodeValue *GetAttr( const RString &sAttrName ) const; 
-	XNodeValue *GetAttr( const RString &sAttrName ); 
+	const XNodeValue *GetAttr( const RString &sAttrName ) const;
+	XNodeValue *GetAttr( const RString &sAttrName );
 	template <typename T>
 	bool GetAttrValue( const RString &sName, T &out ) const	{ const XNodeValue *pAttr=GetAttr(sName); if(pAttr== nullptr) return false; pAttr->GetValue(out); return true; }
 	bool PushAttrValue( lua_State *L, const RString &sName ) const;

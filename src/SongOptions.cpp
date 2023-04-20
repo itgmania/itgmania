@@ -5,6 +5,8 @@
 #include "CommonMetrics.h"
 
 #include <cmath>
+#include <vector>
+
 
 static const char *AutosyncTypeNames[] = {
 	"Off",

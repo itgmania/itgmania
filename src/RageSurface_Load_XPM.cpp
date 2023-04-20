@@ -9,6 +9,7 @@
 
 #include <cstdint>
 #include <map>
+#include <vector>
 
 #define CheckLine() \
 	if( xpm[line] == nullptr ) { \

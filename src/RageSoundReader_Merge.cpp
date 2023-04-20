@@ -8,6 +8,7 @@
 #include "RageSoundUtil.h"
 
 #include <cmath>
+#include <vector>
 
 
 RageSoundReader_Merge::RageSoundReader_Merge()

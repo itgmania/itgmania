@@ -7,6 +7,8 @@
 
 #include <cstdint>
 #include <map>
+#include <vector>
+
 
 class RageSoundReader_Chain: public RageSoundReader
 {

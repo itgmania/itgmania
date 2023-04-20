@@ -19,6 +19,8 @@
 #include "RageFileManager.h"
 
 #include <cstddef>
+#include <vector>
+
 
 /* BMS encoding:	tap-hold
  * 4&8panel:	Player1		Player2

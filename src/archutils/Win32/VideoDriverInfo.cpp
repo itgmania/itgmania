@@ -3,7 +3,10 @@
 #include "RageUtil.h"
 #include "RageLog.h"
 #include "RegistryAccess.h"
+
+#include <vector>
 #include <windows.h>
+
 
 // this will not work on 95 and NT because of EnumDisplayDevices
 RString GetPrimaryVideoName()
@@ -13,8 +16,8 @@ RString GetPrimaryVideoName()
 	HINSTANCE hInstUser32;
 
 	hInstUser32 = LoadLibrary( "User32.DLL" );
-	if( !hInstUser32 ) 
-		return RString();  
+	if( !hInstUser32 )
+		return RString();
 
 	// VC6 don't have a stub to static link with, so link dynamically.
 	EnumDisplayDevices = (pfnEnumDisplayDevices)GetProcAddress(hInstUser32,"EnumDisplayDevicesA");
@@ -23,7 +26,7 @@ RString GetPrimaryVideoName()
 		FreeLibrary(hInstUser32);
 		return RString();
 	}
-	
+
 	RString sPrimaryDeviceName;
 	for( int i=0; true; ++i )
 	{
@@ -49,7 +52,7 @@ RString GetPrimaryVideoDriverName()
 	RString sPrimaryDeviceName = GetPrimaryVideoName();
 	if( sPrimaryDeviceName != "" )
 		return sPrimaryDeviceName;
-	
+
 	LOG->Warn("GetPrimaryVideoName failed; renderer selection may be wrong");
 
 	VideoDriverInfo info;
@@ -68,7 +71,7 @@ bool GetVideoDriverInfo( int iCardno, VideoDriverInfo &info )
 	{
 		bInitialized = true;
 
-		const RString sTopKey = 
+		const RString sTopKey =
 			"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E968-E325-11CE-BFC1-08002BE10318}";
 
 		RegistryAccess::GetRegSubKeys( sTopKey, lst, ".*", false );
@@ -118,7 +121,7 @@ bool GetVideoDriverInfo( int iCardno, VideoDriverInfo &info )
 /*
  * (c) 2002-2004 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -128,7 +131,7 @@ bool GetVideoDriverInfo( int iCardno, VideoDriverInfo &info )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

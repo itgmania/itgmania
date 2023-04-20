@@ -8,6 +8,8 @@
 #include "Style.h"
 
 #include <cstddef>
+#include <vector>
+
 
 ReceptorArrowRow::ReceptorArrowRow()
 {

@@ -17,6 +17,9 @@
 #include "StepMania.h"
 #include "NotesLoaderSSC.h"
 
+#include <vector>
+
+
 static LocalizedString BOOKKEEPING_DATA_CLEARED( "ScreenServiceAction", "Bookkeeping data cleared." );
 static RString ClearBookkeepingData()
 {
@@ -47,7 +50,7 @@ static RString ClearMachineEdits()
 	// reload the machine profile
 	PROFILEMAN->SaveMachineProfile();
 	PROFILEMAN->LoadMachineProfile();
-	
+
 	int errorCount = editCount - removedCount;
 	return ssprintf(MACHINE_EDITS_CLEARED.GetValue(), editCount, errorCount);
 }
@@ -309,7 +312,7 @@ static RString CopyEditsMachineToMemoryCard()
 	vs.push_back( ssprintf( COPIED_TO_CARD.GetValue(), pn+1 ) );
 	RString s = CopyEdits( sFromDir, sToDir, PREFSMAN->m_sMemoryCardProfileSubdir );
 	vs.push_back( s );
-	
+
 	MEMCARDMAN->UnmountCard(pn);
 
 	return join("\n\n",vs);
@@ -332,7 +335,7 @@ static RString SyncEditsMachineToMemoryCard()
 	RString sFromDir = PROFILEMAN->GetProfileDir(ProfileSlot_Machine);
 	RString sToDir = MEM_CARD_MOUNT_POINT[pn] + (RString)PREFSMAN->m_sMemoryCardProfileSubdir + "/";
 	SyncEdits( sFromDir, sToDir, iNumAdded, iNumDeleted, iNumOverwritten, iNumFailed );
-	
+
 	MEMCARDMAN->UnmountCard(pn);
 
 	RString sRet = ssprintf( COPIED_TO_CARD.GetValue(), pn+1 ) + " ";
@@ -368,7 +371,7 @@ static RString CopyEditsMemoryCardToMachine()
 		RString s = CopyEdits( sFromDir, sToDir, sSubDir );
 		vs.push_back( s );
 	}
-	
+
 	MEMCARDMAN->UnmountCard(pn);
 
 	// reload the machine profile
@@ -409,9 +412,9 @@ void ScreenServiceAction::BeginScreen()
 		else if( s == "CopyEditsMemoryCardToMachine" )		pfn = CopyEditsMemoryCardToMachine;
 		else if( s == "SyncEditsMachineToMemoryCard" )		pfn = SyncEditsMachineToMemoryCard;
 		else if( s == "ResetPreferences" )			pfn = ResetPreferences;
-		
+
 		ASSERT_M( pfn != nullptr, s );
-		
+
 		RString sResult = pfn();
 		vsResults.push_back( sResult );
 	}
@@ -424,7 +427,7 @@ void ScreenServiceAction::BeginScreen()
 /*
  * (c) 2001-2005 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -434,7 +437,7 @@ void ScreenServiceAction::BeginScreen()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

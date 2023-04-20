@@ -7,6 +7,7 @@
 #include "PrefsManager.h"
 
 #include <cstdint>
+#include <vector>
 #include <windows.h>
 #include <process.h>
 

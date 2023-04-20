@@ -11,6 +11,8 @@
 #include "XmlFile.h"
 
 #include <cstddef>
+#include <vector>
+
 
 /** @brief Specifies the max number of charts available for a song.
  *

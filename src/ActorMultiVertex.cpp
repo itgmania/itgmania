@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <numeric>
+#include <vector>
 
 const float min_state_delay= 0.0001f;
 

@@ -22,6 +22,9 @@ extern "C"
 // For Dialog::Result
 #include "arch/Dialog/Dialog.h"
 
+#include <vector>
+
+
 class LuaManager
 {
 public:
@@ -78,7 +81,7 @@ namespace LuaHelpers
 
 	/* Run the function with arguments at the top of the stack, with the given
 	 * number of arguments. The specified number of return values are left on
-	 * the Lua stack. On error, nils are left on the stack, sError is set and 
+	 * the Lua stack. On error, nils are left on the stack, sError is set and
 	 * false is returned.
 	 * If ReportError is true, Error should contain the string to prepend
 	 * when reporting.  The error is reported through LOG->Warn and
@@ -131,7 +134,7 @@ namespace LuaHelpers
 		lua_pop( L, 1 );
 		return bRet;
 	}
-	
+
 	template<class T>
 	void ReadArrayFromTable( std::vector<T> &aOut, lua_State *L )
 	{
@@ -180,18 +183,18 @@ private:
 
 	LuaReference *m_Name;
 	LuaReference *m_pOldValue;
-	
+
 	// Swallow up warnings. If they must be used, define them.
 	LuaThreadVariable& operator=(const LuaThreadVariable& rhs);
 };
 
 /**
  * @brief Iterate over all elements in the table.
- * 
- * For safety reasons, the key is pushed onto the stack and can be read (safely) 
- * as a string and popped or altered in any way. Stack management is handled 
- * automatically. That is, you need not remove all stack elements above the key. 
- * Once the loop exits normally, the top of the stack will be where it was before. 
+ *
+ * For safety reasons, the key is pushed onto the stack and can be read (safely)
+ * as a string and popped or altered in any way. Stack management is handled
+ * automatically. That is, you need not remove all stack elements above the key.
+ * Once the loop exits normally, the top of the stack will be where it was before.
  * If you break out of the loop early, you need to handle that explicitly. */
 #define FOREACH_LUATABLE(L,index) \
 for( const int SM_UNIQUE_NAME(tab) = LuaHelpers::AbsIndex(L,index), \
@@ -292,7 +295,7 @@ REGISTER_WITH_LUA_FUNCTION(LuaFunc_Register_##func_name);
 /*
  * (c) 2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -302,7 +305,7 @@ REGISTER_WITH_LUA_FUNCTION(LuaFunc_Register_##func_name);
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -10,6 +10,7 @@
 #include "InputEventPlus.h"
 
 #include <cstddef>
+#include <vector>
 
 #define CHOICE_NAMES		THEME->GetMetric (m_sName,"ChoiceNames")
 #define CHOICE( s )		THEME->GetMetric (m_sName,ssprintf("Choice%s",s.c_str()))

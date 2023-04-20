@@ -32,6 +32,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <vector>
 
 // metrics that are common to all ScreenEvaluation classes
 #define BANNER_WIDTH			THEME->GetMetricF(m_sName,"BannerWidth")

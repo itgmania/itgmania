@@ -11,6 +11,8 @@
 #include "ActorUtil.h"
 
 #include <cstddef>
+#include <vector>
+
 
 void GhostArrowRow::Load( const PlayerState* pPlayerState, float fYReverseOffset )
 {

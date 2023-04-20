@@ -6,6 +6,8 @@
 #include "RageTypes.h"
 
 #include <cstdint>
+#include <vector>
+
 
 struct msTriangle
 {

@@ -14,6 +14,8 @@
 
 #include <cstddef>
 #include <map>
+#include <vector>
+
 
 Difficulty DwiCompatibleStringToDifficulty( const RString& sDC );
 

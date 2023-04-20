@@ -42,6 +42,7 @@
 #include <cmath>
 #include <cstddef>
 #include <utility>
+#include <vector>
 
 static Preference<float> g_iDefaultRecordLength( "DefaultRecordLength", 4 );
 static Preference<bool> g_bEditorShowBGChangesPlay( "EditorShowBGChangesPlay", true );

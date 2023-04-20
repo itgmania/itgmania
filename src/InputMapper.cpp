@@ -12,6 +12,8 @@
 #include "arch/Dialog/Dialog.h"
 
 #include <cstddef>
+#include <vector>
+
 
 #define AUTOMAPPINGS_DIR "/Data/AutoMappings/"
 

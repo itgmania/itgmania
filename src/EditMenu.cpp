@@ -14,6 +14,8 @@
 #include "SongUtil.h"
 
 #include <cstddef>
+#include <vector>
+
 
 static const char *EditMenuRowNames[] = {
 	"Group",

@@ -8,6 +8,8 @@
 #include "Profile.h"
 
 #include <cstddef>
+#include <vector>
+
 
 static const char *RankingTypeNames[] = {
 	"Category",

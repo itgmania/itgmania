@@ -6,6 +6,7 @@
 #include "RageDisplay.h"
 
 #include <cstdint>
+#include <vector>
 
 #define MS_MAX_NAME	32
 

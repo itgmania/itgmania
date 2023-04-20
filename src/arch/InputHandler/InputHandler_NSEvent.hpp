@@ -10,14 +10,16 @@
 
 #include "InputHandler.h"
 
-#include <stdio.h>
+#include <cstdio>
+#include <vector>
+
 
 class InputHandler_NSEvent : public InputHandler
 {
 public:
     InputHandler_NSEvent();
     ~InputHandler_NSEvent();
-    
+
     void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut );
 };
 

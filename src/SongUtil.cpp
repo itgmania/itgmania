@@ -20,6 +20,8 @@
 
 #include <cmath>
 #include <cstddef>
+#include <vector>
+
 
 ThemeMetric<int> SORT_BPM_DIVISION ( "MusicWheel", "SortBPMDivision" );
 ThemeMetric<int> SORT_LENGTH_DIVISION ( "MusicWheel", "SortLengthDivision" );

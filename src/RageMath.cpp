@@ -11,6 +11,7 @@
 
 #include <cfloat>
 #include <cmath>
+#include <vector>
 
 
 void RageVec3ClearBounds( RageVector3 &mins, RageVector3 &maxs )

@@ -10,6 +10,8 @@
 #include "OptionRowHandler.h"
 
 #include <cstddef>
+#include <vector>
+
 
 REGISTER_SCREEN_CLASS( ScreenOptionsMemoryCard );
 

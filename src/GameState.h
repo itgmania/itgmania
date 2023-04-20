@@ -17,6 +17,8 @@
 #include <deque>
 #include <map>
 #include <set>
+#include <vector>
+
 
 class Character;
 class Course;

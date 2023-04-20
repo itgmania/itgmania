@@ -9,6 +9,8 @@
 
 #include <cstddef>
 #include <map>
+#include <vector>
+
 
 class FontPage;
 class RageTexture;

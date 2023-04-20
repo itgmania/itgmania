@@ -22,6 +22,8 @@
 #include "RageInput.h"
 
 #include <cmath>
+#include <vector>
+
 
 static RageTimer g_GameplayTimer;
 

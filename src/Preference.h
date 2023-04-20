@@ -8,6 +8,8 @@
 #include "RageUtil.h"
 
 #include <cstddef>
+#include <vector>
+
 
 class XNode;
 

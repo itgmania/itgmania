@@ -11,6 +11,7 @@
 #include "arch/Dialog/Dialog.h"
 
 #include <cstddef>
+#include <vector>
 
 static const RString SMPACKAGE_KEY = "HKEY_LOCAL_MACHINE\\Software\\" PRODUCT_ID "\\smpackage";
 static const RString INSTALLATIONS_KEY = "HKEY_LOCAL_MACHINE\\Software\\" PRODUCT_ID "\\smpackage\\Installations";

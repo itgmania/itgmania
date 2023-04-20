@@ -18,6 +18,8 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <vector>
+
 
 // Statistics stuff
 RageTimer	g_LastCheckTimer;

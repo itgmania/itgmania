@@ -3,7 +3,10 @@
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "RageFile.h"
+
 #include <cstring>
+#include <vector>
+
 
 AnnouncerManager*	ANNOUNCER = nullptr; // global and accessible from anywhere in our program
 

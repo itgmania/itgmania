@@ -24,6 +24,8 @@
 #include "ScreenPrompt.h"
 
 #include <cstddef>
+#include <vector>
+
 
 static LocalizedString COULD_NOT_LAUNCH_BROWSER( "GameCommand", "Could not launch web browser." );
 

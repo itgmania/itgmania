@@ -12,7 +12,9 @@
 #include "Steps.h"
 
 #include <cmath>
-#include <limits.h>
+#include <climits>
+#include <vector>
+
 
 REGISTER_ACTOR_CLASS( BPMDisplay );
 

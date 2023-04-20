@@ -9,8 +9,11 @@
 #include "Song.h"
 #include "Steps.h"
 
-static void HandleBunki( TimingData &timing, const float fEarlyBPM, 
-			const float fCurBPM, const float fGap, 
+#include <vector>
+
+
+static void HandleBunki( TimingData &timing, const float fEarlyBPM,
+			const float fCurBPM, const float fGap,
 			const float fPos )
 {
 	const float BeatsPerSecond = fEarlyBPM / 60.0f;
@@ -39,7 +42,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 
 	// According to Aldo_MX, there is a default BPM and it's 60. -aj
 	bool bDoublesChart = false;
-	
+
 	TimingData stepsTiming;
 	float SMGap1 = 0, SMGap2 = 0, BPM1 = -1, BPMPos2 = -1, BPM2 = -1, BPMPos3 = -1, BPM3 = -1;
 
@@ -110,7 +113,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 			SMGap1 = -StringToFloat( sParams[1] )/100;
 			stepsTiming.m_fBeat0OffsetInSeconds = SMGap1;
 		}
-		// This is currently required for more accurate KIU BPM changes.  
+		// This is currently required for more accurate KIU BPM changes.
 		else if( sValueName=="STARTTIME2" )
 		{
 			if (bKIUCompliant)
@@ -127,7 +130,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 			// STARTTIME3 only ensures this is a KIU compliant simfile.
 			bKIUCompliant = true;
 		}
-		
+
 		else if( sValueName=="TICKCOUNT" )
 		{
 			iTickCount = StringToInt( sParams[1] );
@@ -138,7 +141,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 			}
 			stepsTiming.AddSegment( TickcountSegment(0, iTickCount));
 		}
-		
+
 		else if( sValueName=="DIFFICULTY" )
 		{
 			out.SetMeter( std::max(StringToInt(sParams[1]), 1) );
@@ -165,7 +168,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 		iTickCount = 4;
 		LOG->UserLog( "Song file", sPath, "doesn't have a TICKCOUNT. Defaulting to %i.", iTickCount );
 	}
-	
+
 	// Prepare BPM stuff already if the file uses KSF syntax.
 	if( bKIUCompliant )
 	{
@@ -173,7 +176,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 		{
 			HandleBunki( stepsTiming, BPM1, BPM2, SMGap1, BPMPos2 );
 		}
-		
+
 		if( BPM3 > 0 && BPMPos3 > 0 )
 		{
 			HandleBunki( stepsTiming, BPM2, BPM3, SMGap2, BPMPos3 );
@@ -341,14 +344,14 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 
 			RString temp = sRowString.substr(2,sRowString.size()-3);
 			float numTemp = StringToFloat(temp);
-			if (BeginsWith(sRowString, "|T")) 
+			if (BeginsWith(sRowString, "|T"))
 			{
 				// duh
 				iTickCount = static_cast<int>(numTemp);
 				// I have been owned by the man -DaisuMaster
 				stepsTiming.SetTickcountAtBeat( fCurBeat, clamp(iTickCount, 0, ROWS_PER_BEAT) );
 			}
-			else if (BeginsWith(sRowString, "|B")) 
+			else if (BeginsWith(sRowString, "|B"))
 			{
 				// BPM
 				stepsTiming.SetBPMAtBeat( fCurBeat, numTemp );
@@ -481,7 +484,7 @@ static void LoadTags( const RString &str, Song &out )
 		asBits[2].EqualsNoCase("normal") ||
 		asBits[2].EqualsNoCase("hard") ||
 		asBits[2].EqualsNoCase("crazy") ||
-		asBits[2].EqualsNoCase("nightmare")) 
+		asBits[2].EqualsNoCase("nightmare"))
 		)
 	{
 		asBits.erase( asBits.begin()+2, asBits.begin()+3 );
@@ -651,7 +654,7 @@ static bool LoadGlobalData( const RString &sPath, Song &out, bool &bKIUCompliant
 	out.m_fMusicSampleLengthSeconds = 7.0f;
 
 	/* BPM Change checks are done here.  If bKIUCompliant, it's short and sweet.
-	 * Otherwise, the whole file has to be processed.  Right now, this is only 
+	 * Otherwise, the whole file has to be processed.  Right now, this is only
 	 * called once, for the initial file (often the Crazy steps).  Hopefully that
 	 * will end up changing soon. */
 	if( bKIUCompliant )
@@ -698,7 +701,7 @@ static bool LoadGlobalData( const RString &sPath, Song &out, bool &bKIUCompliant
 				// ignore whatever else...
 				//continue;
 			}
-			
+
 			fCurBeat += 1.0f / iTickCount;
 		}
 	}
@@ -749,7 +752,7 @@ bool KSFLoader::LoadFromDir( const RString &sDir, Song &out )
 	bool bKIUCompliant = false;
 	/* With Split Timing, there has to be a backup Song Timing in case
 	 * anything goes wrong. As these files are kept in alphabetical
-	 * order (hopefully), it is best to use the LAST file for timing 
+	 * order (hopefully), it is best to use the LAST file for timing
 	 * purposes, for that is the "normal", or easiest difficulty.
 	 * Usually. */
 	// Nevermind, kiu compilancy is screwing things up:
@@ -770,7 +773,7 @@ bool KSFLoader::LoadFromDir( const RString &sDir, Song &out )
 
 	out.m_sSongFileName = dir + arrayKSFFileNames[files - 1];
 	// load the Steps from the rest of the KSF files
-	for( unsigned i=0; i<files; i++ ) 
+	for( unsigned i=0; i<files; i++ )
 	{
 		Steps* pNewNotes = out.CreateSteps();
 		if( !LoadFromKSFFile(dir + arrayKSFFileNames[i], *pNewNotes, out, bKIUCompliant) )
@@ -787,7 +790,7 @@ bool KSFLoader::LoadFromDir( const RString &sDir, Song &out )
 /*
  * (c) 2001-2006 Chris Danford, Glenn Maynard, Jason Felds
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -797,7 +800,7 @@ bool KSFLoader::LoadFromDir( const RString &sDir, Song &out )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

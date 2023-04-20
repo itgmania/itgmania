@@ -5,6 +5,9 @@
 
 #include "RageFileManager.h"
 
+#include <vector>
+
+
 class RageFileBasic;
 class FilenameDB;
 class RageFileDriver

@@ -5,6 +5,9 @@
 
 #include "RageSoundReader.h"
 
+#include <vector>
+
+
 class RageSoundSplitterImpl;
 
 class RageSoundReader_Split: public RageSoundReader

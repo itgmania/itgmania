@@ -6,10 +6,12 @@
 #include "RageThreads.h"
 
 #include <ctime>
+#include <map>
+#include <vector>
+
 #if defined(_WINDOWS)
 #include <windows.h>
 #endif
-#include <map>
 
 RageLog* LOG;		// global and accessible from anywhere in the program
 
@@ -89,7 +91,7 @@ m_bUserLogToDisk(false), m_bFlush(false), m_bShowLogOutput(false)
 
 	if(!g_fileTimeLog->Open(TIME_PATH, RageFile::WRITE|RageFile::STREAMED))
 	{ fprintf(stderr, "Couldn't open %s: %s\n", TIME_PATH, g_fileTimeLog->GetError().c_str()); }
-	
+
 	g_Mutex = new RageMutex( "Log" );
 }
 
@@ -158,9 +160,9 @@ void RageLog::SetUserLogToDisk( bool b )
 {
 	if( m_bUserLogToDisk == b )
 		return;
-	
+
 	m_bUserLogToDisk = b;
-	
+
 	if( !m_bUserLogToDisk )
 	{
 		if( g_fileUserLog->IsOpen() )
@@ -244,10 +246,10 @@ void RageLog::UserLog( const RString &sType, const RString &sElement, const char
 	va_start( va, fmt );
 	RString sBuf = vssprintf( fmt, va );
 	va_end( va );
-	
+
 	if( !sType.empty() )
 		sBuf = ssprintf( "%s \"%s\" %s", sType.c_str(), sElement.c_str(), sBuf.c_str() );
-	
+
 	Write( WRITE_TO_USER_LOG, sBuf );
 }
 
@@ -294,7 +296,7 @@ void RageLog::Write( int where, const RString &sLine )
 			g_fileTimeLog->PutLine(sStr);
 
 		AddToRecentLogs( sStr );
-		
+
 		if( m_bLogToDisk && g_fileLog->IsOpen() )
 			g_fileLog->PutLine( sStr );
 	}
@@ -328,12 +330,12 @@ void RageLog::AddToInfo( const RString &str )
 	static bool limit_reached = false;
 	if( limit_reached )
 		return;
-	
+
 	unsigned len = str.size() + strlen( NEWLINE );
 	if( staticlog_size + len > sizeof(staticlog) )
 	{
 		const RString txt( NEWLINE "Staticlog limit reached" NEWLINE );
-		
+
 		const unsigned int pos = std::min<unsigned int>(staticlog_size, sizeof(staticlog) - txt.size());
 		memcpy( staticlog+pos, txt.data(), txt.size() );
 		limit_reached = true;

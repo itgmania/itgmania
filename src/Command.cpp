@@ -6,6 +6,8 @@
 
 #include <cstddef>
 #include <numeric>
+#include <vector>
+
 
 RString Command::GetName() const
 {

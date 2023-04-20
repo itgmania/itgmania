@@ -23,6 +23,9 @@
 #include "archutils/Win32/GotoURL.h"
 #include "archutils/Win32/ErrorStrings.h"
 
+#include <vector>
+
+
 // LanguagesDlg dialog
 
 IMPLEMENT_DYNAMIC(LanguagesDlg, CDialog)
@@ -87,7 +90,7 @@ static void SelectString( CListBox &list, const RString &sToSelect )
 	}
 }
 
-void LanguagesDlg::OnSelchangeListThemes() 
+void LanguagesDlg::OnSelchangeListThemes()
 {
 	// TODO: Add your control notification handler code here
 	m_listLanguages.ResetContent();
@@ -152,7 +155,7 @@ static int GetNumIntersectingIniValues( const RString &sIniFile1, const RString 
 	return count;
 }
 
-void LanguagesDlg::OnSelchangeListLanguages() 
+void LanguagesDlg::OnSelchangeListLanguages()
 {
 	// TODO: Add your control notification handler code here
 	int iTotalStrings = -1;
@@ -175,15 +178,15 @@ void LanguagesDlg::OnSelchangeListLanguages()
 		}
 	}
 
-	GetDlgItem(IDC_STATIC_TOTAL_STRINGS		)->SetWindowText( ssprintf(iTotalStrings==-1?"":"%d",iTotalStrings) ); 
-	GetDlgItem(IDC_STATIC_NEED_TRANSLATION	)->SetWindowText( ssprintf(iNeedTranslation==-1?"":"%d",iNeedTranslation) ); 
+	GetDlgItem(IDC_STATIC_TOTAL_STRINGS		)->SetWindowText( ssprintf(iTotalStrings==-1?"":"%d",iTotalStrings) );
+	GetDlgItem(IDC_STATIC_NEED_TRANSLATION	)->SetWindowText( ssprintf(iNeedTranslation==-1?"":"%d",iNeedTranslation) );
 
-	GetDlgItem(IDC_BUTTON_CREATE)->EnableWindow( !sTheme.empty() ); 
-	GetDlgItem(IDC_BUTTON_DELETE)->EnableWindow( !sLanguage.empty() ); 
-	GetDlgItem(IDC_BUTTON_EXPORT)->EnableWindow( !sLanguage.empty() ); 
+	GetDlgItem(IDC_BUTTON_CREATE)->EnableWindow( !sTheme.empty() );
+	GetDlgItem(IDC_BUTTON_DELETE)->EnableWindow( !sLanguage.empty() );
+	GetDlgItem(IDC_BUTTON_EXPORT)->EnableWindow( !sLanguage.empty() );
 	GetDlgItem(IDC_BUTTON_IMPORT)->EnableWindow( !sLanguage.empty() );
 	GetDlgItem(IDC_CHECK_LANGUAGE)->EnableWindow( !sLanguage.empty() );
-	GetDlgItem(IDC_CHECK_EXPORT_ALREADY_TRANSLATED)->EnableWindow( !sLanguage.empty() ); 
+	GetDlgItem(IDC_CHECK_EXPORT_ALREADY_TRANSLATED)->EnableWindow( !sLanguage.empty() );
 }
 
 
@@ -318,7 +321,7 @@ void LanguagesDlg::OnBnClickedButtonExport()
 	file.Open( sFullFile, RageFile::WRITE );
 	if( iNumExpored == 0 )
 	{
-		Dialog::OK( THERE_ARE_NO_STRINGS_TO_EXPORT.GetValue() );	
+		Dialog::OK( THERE_ARE_NO_STRINGS_TO_EXPORT.GetValue() );
 		return;
 	}
 

@@ -20,6 +20,8 @@
 #include "PrefsManager.h"
 
 #include <cstddef>
+#include <vector>
+
 
 REGISTER_SCREEN_CLASS( ScreenOptionsManageCourses );
 

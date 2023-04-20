@@ -5,8 +5,10 @@
 #include "TimingSegments.h"
 #include "PrefsManager.h"
 
-#include <cfloat>
 #include <array>
+#include <cfloat>
+#include <vector>
+
 
 struct lua_State;
 

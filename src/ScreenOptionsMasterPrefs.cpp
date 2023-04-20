@@ -18,6 +18,9 @@
 #include "SpecialFiles.h"
 #include "RageLog.h"
 
+#include <vector>
+
+
 using namespace StringConversion;
 
 static void GetPrefsDefaultModifiers( PlayerOptions &po, SongOptions &so )
@@ -442,7 +445,7 @@ static void CoinModeNoHome( int &sel, bool ToSel, const ConfOption *pConfOption 
 		else
 			sel = 1;
 	}
-	else 
+	else
 	{
 		int tmp = sel + 1;
 		MovePref<CoinMode>( tmp, ToSel, pConfOption );
@@ -536,7 +539,7 @@ static void MaxHighScoresPerListForPlayer(int& sel, bool to_sel, ConfOption cons
 static int GetTimingDifficulty()
 {
 	int iTimingDifficulty = 0;
-	TimingWindowScale( iTimingDifficulty, true, ConfOption::Find("TimingWindowScale") );	
+	TimingWindowScale( iTimingDifficulty, true, ConfOption::Find("TimingWindowScale") );
 	iTimingDifficulty++; // TimingDifficulty returns an index
 	return iTimingDifficulty;
 }
@@ -544,7 +547,7 @@ LuaFunction( GetTimingDifficulty, GetTimingDifficulty() );
 static int GetLifeDifficulty()
 {
 	int iLifeDifficulty = 0;
-	LifeDifficulty( iLifeDifficulty, true, ConfOption::Find("LifeDifficulty") );	
+	LifeDifficulty( iLifeDifficulty, true, ConfOption::Find("LifeDifficulty") );
 	iLifeDifficulty++; // LifeDifficulty returns an index
 	return iLifeDifficulty;
 }
@@ -557,7 +560,7 @@ struct res_t
 	int w, h;
 	res_t(): w(0), h(0) { }
 	res_t( int w_, int h_ ): w(w_), h(h_) { }
-	
+
 	res_t& operator-=( res_t const &rhs) {
 		w -= rhs.w;
 		h -= rhs.h;
@@ -573,7 +576,7 @@ inline bool operator<(res_t const &lhs, res_t const &rhs)
 	if( lhs.w != rhs.w )
 	{
 		return lhs.w < rhs.w;
-	
+
 	}
 	return lhs.h < rhs.h;
 }
@@ -1002,7 +1005,7 @@ LuaXType( OptEffect );
  * @author Glenn Maynard (c) 2003-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -1012,7 +1015,7 @@ LuaXType( OptEffect );
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

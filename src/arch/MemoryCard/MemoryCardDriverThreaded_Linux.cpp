@@ -5,22 +5,21 @@
 #include "RageTimer.h"
 
 #include <cerrno>
+#include <climits>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <sys/types.h>
+#include <sys/stat.h>
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif
-
 #if defined(HAVE_DIRENT_H)
 #include <dirent.h>
 #endif
-
-#include <cstring>
-#include <cstddef>
-#include <fstream>
-#include <limits.h>
-#include <stdlib.h>
-#include <string>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 bool MemoryCardDriverThreaded_Linux::TestWrite( UsbStorageDevice* pDevice )
 {

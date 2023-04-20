@@ -5,6 +5,9 @@
 
 #include "InputHandler.h"
 
+#include <vector>
+
+
 class InputHandler_X11: public InputHandler
 {
 public:

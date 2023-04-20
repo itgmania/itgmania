@@ -15,6 +15,8 @@
 #include "VersionHelpers.h"
 
 #include <cstdint>
+#include <vector>
+
 
 static HANDLE g_hInstanceMutex;
 static bool g_bIsMultipleInstance = false;

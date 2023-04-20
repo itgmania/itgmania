@@ -9,6 +9,8 @@
 #include "archutils/Darwin/JoystickDevice.h"
 #include "archutils/Darwin/PumpDevice.h"
 
+#include <vector>
+
 #include <IOKit/IOMessage.h>
 #include <Carbon/Carbon.h>
 
@@ -243,10 +245,10 @@ InputHandler_MacOSX_HID::InputHandler_MacOSX_HID() : m_Sem( "Input thread starte
 	// Add devices.
 	LOG->Trace( "Finding keyboards" );
 	AddDevices( kHIDPage_GenericDesktop, kHIDUsage_GD_Keyboard, id );
-	
+
 	LOG->Trace( "Finding mice" );
 	AddDevices( kHIDPage_GenericDesktop, kHIDUsage_GD_Mouse, id );
-	
+
 	LOG->Trace( "Finding joysticks" );
 	id = DEVICE_JOY1;
 	AddDevices( kHIDPage_GenericDesktop, kHIDUsage_GD_Joystick, id );
@@ -377,21 +379,21 @@ static wchar_t KeyCodeToChar(CGKeyCode keyCode, unsigned int modifierFlags)
 	TISInputSourceRef currentKeyboard = TISCopyCurrentKeyboardInputSource();
 	CFDataRef uchr = (CFDataRef)TISGetInputSourceProperty(currentKeyboard, kTISPropertyUnicodeKeyLayoutData);
 	const UCKeyboardLayout *keyboardLayout = uchr ? (const UCKeyboardLayout*)CFDataGetBytePtr(uchr) : nullptr;
-	
+
 	if( keyboardLayout )
 	{
 		UInt32 deadKeyState = 0;
 		constexpr UniCharCount maxStringLength = 255;
 		UniCharCount actualStringLength = 0;
 		UniChar unicodeString[maxStringLength];
-		
+
 		OSStatus status = UCKeyTranslate(keyboardLayout,
 						 keyCode, kUCKeyActionDown, modifierFlags,
 						 LMGetKbdType(), 0,
 						 &deadKeyState,
 						 maxStringLength,
 						 &actualStringLength, unicodeString);
-		
+
 		if( status != noErr )
 		{
 			NSError *error = [NSError errorWithDomain:NSOSStatusErrorDomain code:status userInfo:nil];
@@ -465,7 +467,7 @@ wchar_t InputHandler_MacOSX_HID::DeviceButtonToChar( DeviceButton button, bool b
 /*
  * (c) 2005, 2006 Steve Checkoway
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -475,7 +477,7 @@ wchar_t InputHandler_MacOSX_HID::DeviceButtonToChar( DeviceButton button, bool b
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

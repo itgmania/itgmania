@@ -6,7 +6,6 @@
 #include "RageUtil_AutoPtr.h"
 #include "LuaReference.h"
 #include "EnumHelper.h"
-#include <map>
 class XNode;
 struct lua_State;
 class LuaClass;
@@ -14,6 +13,8 @@ class LuaClass;
 #include "Tween.h"
 
 #include <cstddef>
+#include <map>
+#include <vector>
 
 typedef AutoPtrCopyOnWrite<LuaReference> apActorCommands;
 

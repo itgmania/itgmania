@@ -12,6 +12,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <vector>
 
 
 REGISTER_ACTOR_CLASS( BitmapText );

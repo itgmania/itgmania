@@ -15,6 +15,8 @@
 #include "Style.h"
 
 #include <cstddef>
+#include <vector>
+
 
 GameManager*	GAMEMAN = nullptr;	// global and accessable from anywhere in our program
 

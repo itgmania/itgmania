@@ -14,6 +14,8 @@
 #include "PrefsManager.h"
 
 #include <cstddef>
+#include <vector>
+
 
 // Everything from this line to the creation of sm_parser_helper exists to
 // speed up parsing by allowing the use of std::map.  All these functions

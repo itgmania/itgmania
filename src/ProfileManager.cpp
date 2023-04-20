@@ -25,6 +25,8 @@
 #include "CharacterManager.h"
 
 #include <cstddef>
+#include <vector>
+
 
 ProfileManager*	PROFILEMAN = nullptr;	// global and accessible from anywhere in our program
 

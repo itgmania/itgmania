@@ -8,6 +8,8 @@
 #include "RageThreads.h"
 
 #include <cstddef>
+#include <vector>
+
 
 struct RageFileObjMemFile;
 class RageFileObjMem: public RageFileObj

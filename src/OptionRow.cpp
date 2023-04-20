@@ -13,6 +13,8 @@
 
 #include <cmath>
 #include <cstddef>
+#include <vector>
+
 
 const RString NEXT_ROW_NAME = "NextRow";
 const RString EXIT_NAME = "Exit";

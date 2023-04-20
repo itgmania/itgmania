@@ -7,6 +7,7 @@
 #include "RageFileManager.h"
 
 #include <cstdint>
+#include <vector>
 
 // for timeGetTime
 #include <windows.h>
