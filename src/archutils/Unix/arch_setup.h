@@ -17,7 +17,6 @@
 #undef MACHINE
 #endif
 
-#include "archutils/Common/gcc_byte_swaps.h"
 #endif
 
 /*

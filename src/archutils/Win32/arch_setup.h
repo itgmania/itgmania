@@ -82,10 +82,6 @@ void my_usleep( unsigned long usec );
 #define CRASH_HANDLER
 #endif
 
-#define ArchSwap32(n) _byteswap_ulong(n)
-#define ArchSwap24(n) _byteswap_ulong(n) >> 8
-#define ArchSwap16(n) _byteswap_ushort(n)
-
 #endif
 
 /*
