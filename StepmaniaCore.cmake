@@ -113,6 +113,10 @@ check_symbol_exists(posix_fadvise fcntl.h HAVE_POSIX_FADVISE)
 # Checks to make it easier to work with 32-bit/64-bit builds if required.
 include(CheckTypeSize)
 check_type_size(pid_t SIZEOF_PID_T)
+check_type_size(int SIZEOF_INT)
+check_type_size(long SIZEOF_LONG)
+check_type_size("long long" SIZEOF_LONG_LONG)
+
 
 if(WIN32)
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
