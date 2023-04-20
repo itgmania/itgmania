@@ -4,6 +4,7 @@
 #include "RageLog.h"
 
 #include <cstddef>
+#include <cstdint>
 
 #include <Carbon/Carbon.h>
 #include <IOKit/IOKitLib.h>
@@ -204,7 +205,7 @@ void MemoryCardDriverThreaded_MacOSX::GetUSBStorageDevices( std::vector<UsbStora
 
 			LOG->Trace( "Found memory card at path: %s.", fs[i].f_mntonname );
 			usbd.SetOsMountDir( fs[i].f_mntonname );
-			usbd.iVolumeSizeMB = int( (uint64_t(fs[i].f_blocks) * fs[i].f_bsize) >> 20 );
+			usbd.iVolumeSizeMB = int( (std::uint64_t(fs[i].f_blocks) * fs[i].f_bsize) >> 20 );
 
 			// Now we can get some more information from the registry tree.
 			usbd.iBus = GetIntProperty( device, CFSTR("USB Address") );

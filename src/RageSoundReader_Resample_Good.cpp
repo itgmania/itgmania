@@ -14,6 +14,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <numeric>
 
 /* Filter length.  This must be a power of 2. */
@@ -538,7 +539,7 @@ private:
 
 int RageSoundReader_Resample_Good::GetNextSourceFrame() const
 {
-	int64_t iPosition = m_pSource->GetNextSourceFrame();
+	std::int64_t iPosition = m_pSource->GetNextSourceFrame();
 	iPosition -= m_apResamplers[0]->GetFilled();
 
 	iPosition *= m_iSampleRate;
@@ -638,7 +639,7 @@ RageSoundReader_Resample_Good::~RageSoundReader_Resample_Good()
 int RageSoundReader_Resample_Good::SetPosition( int iFrame )
 {
 	Reset();
-	iFrame = (int) SCALE( iFrame, 0, (int64_t) m_iSampleRate, 0, (int64_t) m_pSource->GetSampleRate() );
+	iFrame = (int) SCALE( iFrame, 0, (std::int64_t) m_iSampleRate, 0, (std::int64_t) m_pSource->GetSampleRate() );
 	return m_pSource->SetPosition( iFrame );
 }
 

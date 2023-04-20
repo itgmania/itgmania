@@ -2,6 +2,8 @@
 #include "JoystickDevice.h"
 #include "RageLog.h"
 
+#include <cstdint>
+
 Joystick::Joystick() :	id( InputDevice_Invalid ),
 			x_axis( 0 ), y_axis( 0 ), z_axis( 0 ),
 			x_rot( 0 ), y_rot( 0 ), z_rot( 0 ), hat( 0 ),
@@ -43,10 +45,10 @@ void JoystickDevice::AddElement( int usagePage, int usage, IOHIDElementCookie co
 	{
 		int iMin = 0;
 		int iMax = 0;
-		
+
 		IntValue( CFDictionaryGetValue(properties, CFSTR(kIOHIDElementMinKey)), iMin );
 		IntValue( CFDictionaryGetValue(properties, CFSTR(kIOHIDElementMaxKey)), iMax );
-		
+
 		switch( usage )
 		{
 		case kHIDUsage_GD_X:
@@ -142,7 +144,7 @@ bool JoystickDevice::InitDevice( int vid, int pid )
 	if( vid != 0x0507 || pid != 0x0011 )
 		return true;
 	// It's a Para controller, so try to power it on.
-	uint8_t powerOn = 1;
+	std::uint8_t powerOn = 1;
 	IOReturn ret = SetReport( kIOHIDReportTypeFeature, 0, &powerOn, 1, 10 );
 
 	if( ret )
@@ -267,7 +269,7 @@ void JoystickDevice::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vD
 /*
  * (c) 2005-2007 Steve Checkoway
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -277,7 +279,7 @@ void JoystickDevice::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vD
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

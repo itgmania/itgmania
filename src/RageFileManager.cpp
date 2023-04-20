@@ -11,6 +11,7 @@
 
 #include <cerrno>
 #include <cstddef>
+#include <cstdint>
 #include <sstream>
 
 #if defined(WIN32)
@@ -117,7 +118,7 @@ std::size_t zipRead(void *pOpaque, mz_uint64 file_ofs, void *pBuf, std::size_t n
 	RageFile *f = static_cast<RageFile*>(pOpaque);
 
 	const int pos = f->Seek(file_ofs);
-	if (pos >= 0 && static_cast<uint64_t>(pos) != file_ofs)
+	if (pos >= 0 && static_cast<std::uint64_t>(pos) != file_ofs)
 	{
 		return 0;
 	}

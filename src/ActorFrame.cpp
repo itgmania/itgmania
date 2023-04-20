@@ -10,9 +10,11 @@
 #include "RageDisplay.h"
 #include "ScreenDimensions.h"
 
+#include <cstdint>
+
 
 /* Tricky: We need ActorFrames created in Lua to auto delete their children.
- * We don't want classes that derive from ActorFrame to auto delete their 
+ * We don't want classes that derive from ActorFrame to auto delete their
  * children.  The name "ActorFrame" is widely used in Lua, so we'll have
  * that string instead create an ActorFrameAutoDeleteChildren object.
  */
@@ -146,7 +148,7 @@ void ActorFrame::AddChild( Actor *pActor )
 #endif
 
 	ASSERT( pActor != nullptr );
-	ASSERT( reinterpret_cast<uintptr_t>(pActor) != static_cast<uintptr_t>(0xC0000005) );
+	ASSERT( reinterpret_cast<std::uintptr_t>(pActor) != static_cast<std::uintptr_t>(0xC0000005) );
 	m_SubActors.push_back( pActor );
 
 	pActor->SetParent( this );
@@ -226,7 +228,7 @@ void ActorFrame::DrawPrimitives()
 		m_bClearZBuffer = false;
 	}
 
-	// Don't set Actor-defined render states because we won't be drawing 
+	// Don't set Actor-defined render states because we won't be drawing
 	// any geometry that belongs to this object.
 	// Actor::DrawPrimitives();
 
@@ -577,7 +579,7 @@ void ActorFrame::HandleMessage( const Message &msg )
 	if( msg.IsBroadcast() )
 		return;
 
-	for( unsigned i=0; i<m_SubActors.size(); i++ ) 
+	for( unsigned i=0; i<m_SubActors.size(); i++ )
 	{
 		Actor* pActor = m_SubActors[i];
 		pActor->HandleMessage( msg );
@@ -593,7 +595,7 @@ void ActorFrame::SetDrawByZPosition( bool b )
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the ActorFrame. */ 
+/** @brief Allow Lua to have access to the ActorFrame. */
 class LunaActorFrame : public Luna<ActorFrame>
 {
 public:
@@ -659,7 +661,7 @@ public:
 			p->SetDrawFunction( ref );
 			COMMON_RETURN_SELF;
 		}
-		
+
 		luaL_checktype( L, 1, LUA_TFUNCTION );
 
 		LuaReference ref;
@@ -683,7 +685,7 @@ public:
 			p->SetUpdateFunction( ref );
 			COMMON_RETURN_SELF;
 		}
-		
+
 		luaL_checktype( L, 1, LUA_TFUNCTION );
 
 		LuaReference ref;
@@ -769,7 +771,7 @@ public:
 		ADD_METHOD( AddChildFromPath );
 		ADD_METHOD( RemoveChild );
 		ADD_METHOD( RemoveAllChildren );
-		
+
 	}
 };
 
@@ -779,7 +781,7 @@ LUA_REGISTER_DERIVED_CLASS( ActorFrame, Actor )
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -789,7 +791,7 @@ LUA_REGISTER_DERIVED_CLASS( ActorFrame, Actor )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

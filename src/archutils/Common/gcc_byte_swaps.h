@@ -3,11 +3,9 @@
 
 #if defined(CPU_X86)
 
-#if defined(HAVE_STDINT_H)
-#include <stdint.h>
-#endif
+#include <cstdint>
 
-inline uint32_t ArchSwap32( uint32_t n )
+inline std::uint32_t ArchSwap32( std::uint32_t n )
 {
 	asm(
 		"xchg %b0, %h0\n"
@@ -17,7 +15,7 @@ inline uint32_t ArchSwap32( uint32_t n )
 	return n;
 }
 
-inline uint32_t ArchSwap24( uint32_t n )
+inline std::uint32_t ArchSwap24( std::uint32_t n )
 {
 	asm(
 		"xchg %b0, %h0\n"
@@ -28,7 +26,7 @@ inline uint32_t ArchSwap24( uint32_t n )
 	return n;
 }
 
-inline uint16_t ArchSwap16( uint16_t n )
+inline std::uint16_t ArchSwap16( std::uint16_t n )
 {
 	asm(
 		"xchg %b0, %h0\n":
@@ -43,7 +41,7 @@ inline uint16_t ArchSwap16( uint16_t n )
 /*
  * (c) 2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -53,7 +51,7 @@ inline uint16_t ArchSwap16( uint16_t n )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

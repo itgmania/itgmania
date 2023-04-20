@@ -10,6 +10,7 @@
 #include "Sprite.h"
 
 #include <cmath>
+#include <cstdint>
 
 #if defined(WIN32)
 #include "archutils/Win32/ErrorStrings.h"
@@ -147,7 +148,7 @@ public:
 
 	virtual void Invalidate() { m_uTexHandle = 0; }
 	virtual void Reload() { }
-	virtual uintptr_t GetTexHandle() const
+	virtual std::uintptr_t GetTexHandle() const
 	{
 		return m_uTexHandle;
 	}
@@ -170,7 +171,7 @@ private:
 		delete pSurface;
 	}
 
-	uintptr_t m_uTexHandle;
+	std::uintptr_t m_uTexHandle;
 	RageSurfaceFormat m_SurfaceFormat;
 	RagePixelFormat m_PixFmt;
 };
@@ -451,7 +452,7 @@ void MovieTexture_Generic::UpdateFrame()
 
 	if( m_pTextureLock != nullptr )
 	{
-		uintptr_t iHandle = m_pTextureIntermediate != nullptr? m_pTextureIntermediate->GetTexHandle(): this->GetTexHandle();
+		std::uintptr_t iHandle = m_pTextureIntermediate != nullptr? m_pTextureIntermediate->GetTexHandle(): this->GetTexHandle();
 		m_pTextureLock->Lock( iHandle, m_pSurface );
 	}
 
@@ -520,7 +521,7 @@ void MovieTexture_Generic::SetPosition( float fSeconds )
 	m_bWantRewind = true;
 }
 
-uintptr_t MovieTexture_Generic::GetTexHandle() const
+std::uintptr_t MovieTexture_Generic::GetTexHandle() const
 {
 	if( m_pRenderTarget != nullptr )
 		return m_pRenderTarget->GetTexHandle();

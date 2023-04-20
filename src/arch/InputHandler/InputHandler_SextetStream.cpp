@@ -7,6 +7,7 @@
 
 #include <cerrno>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 
@@ -130,7 +131,7 @@ class InputHandler_SextetStream::Impl
 			handler->ButtonPressed(di);
 		}
 
-		uint8_t stateBuffer[STATE_BUFFER_SIZE];
+		std::uint8_t stateBuffer[STATE_BUFFER_SIZE];
 		std::size_t timeout_ms;
 		RageThread inputThread;
 		bool continueInputThread;
@@ -190,7 +191,7 @@ class InputHandler_SextetStream::Impl
 			return 0;
 		}
 
-		inline void GetNewState(uint8_t * buffer, RString& line)
+		inline void GetNewState(std::uint8_t * buffer, RString& line)
 		{
 			std::size_t lineLen = line.length();
 			std::size_t i, cursor;
@@ -226,10 +227,10 @@ class InputHandler_SextetStream::Impl
 			}
 		}
 
-		inline void ReactToChanges(const uint8_t * newStateBuffer)
+		inline void ReactToChanges(const std::uint8_t * newStateBuffer)
 		{
 			InputDevice id = InputDevice(FIRST_DEVICE);
-			uint8_t changes[STATE_BUFFER_SIZE];
+			std::uint8_t changes[STATE_BUFFER_SIZE];
 			RageTimer now;
 
 			// XOR to find differences
@@ -274,7 +275,7 @@ class InputHandler_SextetStream::Impl
 					if(linereader->ReadLine(line)) {
 						LOG->Trace("Got line: '%s'", line.c_str());
 						if(line.length() > 0) {
-							uint8_t newStateBuffer[STATE_BUFFER_SIZE];
+							std::uint8_t newStateBuffer[STATE_BUFFER_SIZE];
 							GetNewState(newStateBuffer, line);
 							ReactToChanges(newStateBuffer);
 						}

@@ -1,6 +1,8 @@
 #include "global.h"
 #include "PumpDevice.h"
 
+#include <cstdint>
+
 void PumpDevice::Open()
 {
 	AddElementToQueue( IOHIDElementCookie(2) );
@@ -17,8 +19,8 @@ void PumpDevice::GetButtonPresses( std::vector<DeviceInput>& vPresses, IOHIDElem
 	DeviceButton db2 = DeviceButton_Invalid;
 	bool pressed1 = !(value & 0x1);
 	bool pressed2 = !(value & 0x2);
-	
-	switch( uintptr_t(cookie) )
+
+	switch( std::uintptr_t(cookie) )
 	{
 	case 2:
 		db2 = JOY_BUTTON_1; // bit 9
@@ -66,7 +68,7 @@ void PumpDevice::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevic
 /*
  * (c) 2006 Steve Checkoway
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -76,7 +78,7 @@ void PumpDevice::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevic
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

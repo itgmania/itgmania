@@ -9,12 +9,6 @@
 /* Defined to 1 if <dirent.h> is found. */
 #cmakedefine HAVE_DIRENT_H 1
 
-/* Defined to 1 if <inttypes.h> is found. */
-#cmakedefine HAVE_INTTYPES_H 1
-
-/* Defined to 1 if <stdint.h> is found. */
-#cmakedefine HAVE_STDINT_H 1
-
 /* Defined to 1 if <endian.h> is found. */
 #cmakedefine HAVE_ENDIAN_H 1
 

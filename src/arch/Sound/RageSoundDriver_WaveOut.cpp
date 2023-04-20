@@ -13,6 +13,8 @@
 #include "PrefsManager.h"
 #include "archutils/Win32/ErrorStrings.h"
 
+#include <cstdint>
+
 REGISTER_SOUND_DRIVER_CLASS( WaveOut );
 
 const int channels = 2;
@@ -70,7 +72,7 @@ bool RageSoundDriver_WaveOut::GetData()
 		return false;
 
 	/* Call the callback. */
-	this->Mix( (int16_t *) m_aBuffers[b].lpData, chunksize_frames, m_iLastCursorPos, GetPosition() );
+	this->Mix( (std::int16_t *) m_aBuffers[b].lpData, chunksize_frames, m_iLastCursorPos, GetPosition() );
 
 	MMRESULT ret = waveOutWrite( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
   	if( ret != MMSYSERR_NOERROR )
@@ -88,7 +90,7 @@ void RageSoundDriver_WaveOut::SetupDecodingThread()
 		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
 }
 
-int64_t RageSoundDriver_WaveOut::GetPosition() const
+std::int64_t RageSoundDriver_WaveOut::GetPosition() const
 {
 	MMTIME tm;
 	tm.wType = TIME_SAMPLES;
@@ -136,7 +138,7 @@ RString RageSoundDriver_WaveOut::Init()
 		}
 	}
 	deviceIds.push_back(WAVE_MAPPER);  // Fallback to WAVE_MAPPER
-	
+
 	MMRESULT ret = MMSYSERR_ERROR;
 	for (UINT id : deviceIds) {
 		ret = waveOutOpen( &m_hWaveOut, id, &fmt, (DWORD_PTR) m_hSoundEvent, NULL, CALLBACK_EVENT );
@@ -209,7 +211,7 @@ float RageSoundDriver_WaveOut::GetPlayLatency() const
 /*
  * (c) 2002-2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -219,7 +221,7 @@ float RageSoundDriver_WaveOut::GetPlayLatency() const
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

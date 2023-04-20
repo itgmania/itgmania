@@ -1,6 +1,15 @@
 #ifndef HIDDEVICE_H
 #define HIDDEVICE_H
 
+#include "RageLog.h"
+#include "RageInputDevice.h"
+
+#include <cstddef>
+#include <cstdint>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/hid/IOHIDLib.h>
 #include <IOKit/IOKitLib.h>
@@ -9,13 +18,6 @@
 #include <IOKit/usb/USB.h>
 #include <mach/mach.h>
 #include <mach/mach_error.h>
-#include <cstddef>
-#include <vector>
-#include <utility>
-#include <unordered_map>
-
-#include "RageLog.h"
-#include "RageInputDevice.h"
 
 /* A few helper functions. */
 
@@ -48,11 +50,11 @@ namespace __gnu_cxx
 {
 #ifndef __LP64__
 	template<>
-	struct hash<IOHIDElementCookie> : private hash<uintptr_t>
+	struct hash<IOHIDElementCookie> : private hash<std::uintptr_t>
 	{
 		std::size_t operator()( const IOHIDElementCookie& cookie ) const
 		{
-			return hash<unsigned long>::operator()( uintptr_t(cookie) );
+			return hash<unsigned long>::operator()( std::uintptr_t(cookie) );
 		}
 	};
 #endif

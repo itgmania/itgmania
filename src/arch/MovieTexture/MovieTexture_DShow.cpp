@@ -2,13 +2,13 @@
 
 #if defined(_MSC_VER)
 /* XXX register thread */
-#pragma comment(lib, "winmm.lib") 
- 
+#pragma comment(lib, "winmm.lib")
+
 // Link with the DirectShow base class libraries
 #if defined(DEBUG)
-	#pragma comment(lib, "baseclasses/debug/strmbasd.lib") 
+	#pragma comment(lib, "baseclasses/debug/strmbasd.lib")
 #else
-	#pragma comment(lib, "baseclasses/release/strmbase.lib") 
+	#pragma comment(lib, "baseclasses/release/strmbase.lib")
 #endif
 #endif
 
@@ -23,6 +23,8 @@
 #include "RageSurface.h"
 #include "arch/Dialog/Dialog.h"
 #include "archutils/Win32/DirectXHelpers.h"
+
+#include <cstdint>
 
 #include <vfw.h> /* for GetVideoCodecDebugInfo */
 #if defined(_MSC_VER)
@@ -230,12 +232,12 @@ void MovieTexture_DShow::CheckFrame()
 	// DirectShow feeds us in BGR8
 	RageSurface *pFromDShow = CreateSurfaceFrom(
 		m_iSourceWidth, m_iSourceHeight,
-		24, 
+		24,
 		0xFF0000,
 		0x00FF00,
 		0x0000FF,
 		0x000000,
-		(uint8_t *) buffer, m_iSourceWidth*3 );
+		(std::uint8_t *) buffer, m_iSourceWidth*3 );
 
 	/*
 	 * Optimization notes:
@@ -250,7 +252,7 @@ void MovieTexture_DShow::CheckFrame()
 	 */
 	CHECKPOINT;
 	DISPLAY->UpdateTexture(
-		m_uTexHandle, 
+		m_uTexHandle,
 		pFromDShow,
 		0, 0,
 		m_iImageWidth, m_iImageHeight );
@@ -296,7 +298,7 @@ RString PrintCodecError( HRESULT hr, RString s )
 	 * at the file and try to figure out if it's something
 	 * common: DIV3, DIV4, DIV5, XVID, or maybe even MPEG2. */
 	RString err = hr_ssprintf(hr, "%s", s.c_str());
-	return 
+	return
 		ssprintf(
 		"There was an error initializing a movie: %s.\n"
 		"Could not locate the DivX video codec.\n"
@@ -309,7 +311,7 @@ RString PrintCodecError( HRESULT hr, RString s )
 RString MovieTexture_DShow::GetActiveFilterList()
 {
 	RString ret;
-	
+
 	IEnumFilters *pEnum = nullptr;
 	HRESULT hr = m_pGB->EnumFilters(&pEnum);
 	if (FAILED(hr))
@@ -373,7 +375,7 @@ RString MovieTexture_DShow::Create()
 	if( FAILED( hr = pFTR->FindPin( L"In", &pFTRPinIn ) ) )
 		return hr_ssprintf(hr, "Could not find input pin" );
 
-	CComPtr<IPin> pFSrcPinOut;    // Source Filter Output Pin   
+	CComPtr<IPin> pFSrcPinOut;    // Source Filter Output Pin
 	if( FAILED( hr = pFSrc->FindPin( L"Output", &pFSrcPinOut ) ) )
 		return hr_ssprintf( hr, "Could not find output pin" );
 
@@ -427,7 +429,7 @@ RString MovieTexture_DShow::Create()
 void MovieTexture_DShow::NewData(const char *data)
 {
 	ASSERT(data);
-	
+
 	/* Try to lock. */
 	if( buffer_lock.TryWait() )
 	{
@@ -557,7 +559,7 @@ void MovieTexture_DShow::SetPlaybackRate( float fRate )
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -567,7 +569,7 @@ void MovieTexture_DShow::SetPlaybackRate( float fRate )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

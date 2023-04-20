@@ -5,9 +5,11 @@
 #include "RageThreads.h"
 #include "arch/Lights/LightsDriver_Export.h"
 
+#include <cstdint>
+
 static bool _ddriodll_loaded = false;
 
-//we want to use a 
+//we want to use a
 #define DDRIO_DEVICEID DEVICE_JOY1
 
 enum p3io_light_bit {
@@ -77,7 +79,7 @@ private:
 	static int InputThread_Start( void *p );
 	void InputThreadMain();
 
-	void PushInputState(uint32_t newInput);
+	void PushInputState(std::uint32_t newInput);
 
 	bool IsLightChange(LightsState prevLS, LightsState newLS);
 	void PushLightState(LightsState newLS);

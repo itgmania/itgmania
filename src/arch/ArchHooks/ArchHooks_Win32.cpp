@@ -14,11 +14,13 @@
 
 #include "VersionHelpers.h"
 
+#include <cstdint>
+
 static HANDLE g_hInstanceMutex;
 static bool g_bIsMultipleInstance = false;
 
 void InvalidParameterHandler( const wchar_t *szExpression, const wchar_t *szFunction, const wchar_t *szFile,
-					  unsigned int iLine, uintptr_t pReserved )
+					  unsigned int iLine, std::uintptr_t pReserved )
 {
 	FAIL_M( "Invalid parameter" ); //TODO: Make this more informative
 }
@@ -115,7 +117,7 @@ bool ArchHooks_Win32::CheckForMultipleInstances(int argc, char* argv[])
 		cds.dwData = 0;
 		cds.cbData = sAllArgs.size();
 		cds.lpData = (void*)sAllArgs.data();
-		SendMessage( 
+		SendMessage(
 			(HWND)hWnd, // HWND hWnd = handle of destination window
 			WM_COPYDATA,
 			(WPARAM)nullptr, // HANDLE OF SENDING WINDOW
@@ -141,7 +143,7 @@ void ArchHooks_Win32::SetTime( tm newtime )
 	st.wMinute = (WORD)newtime.tm_min;
 	st.wSecond = (WORD)newtime.tm_sec;
 	st.wMilliseconds = 0;
-	SetLocalTime( &st ); 
+	SetLocalTime( &st );
 }
 
 void ArchHooks_Win32::BoostPriority()
@@ -197,12 +199,12 @@ RString ArchHooks_Win32::GetClipboard()
 	// First make sure that the clipboard actually contains a string
 	// (or something stringifiable)
 	if(unlikely( !IsClipboardFormatAvailable( CF_TEXT ) )) return "";
-	
+
 	// Yes. All this mess just to gain access to the string stored by the clipboard.
 	// I'm having flashbacks to Berkeley sockets.
 	if(unlikely( !OpenClipboard( nullptr ) ))
 		{ LOG->Warn(werr_ssprintf( GetLastError(), "InputHandler_DirectInput: OpenClipboard() failed" )); return ""; }
-	
+
 	hgl = GetClipboardData( CF_TEXT );
 	if(unlikely( hgl == nullptr ))
 		{ LOG->Warn(werr_ssprintf( GetLastError(), "InputHandler_DirectInput: GetClipboardData() failed" )); CloseClipboard(); return ""; }
@@ -220,18 +222,18 @@ RString ArchHooks_Win32::GetClipboard()
 #else
 	ret = RString( lpstr );
 #endif
-	
+
 	// And now we clean up.
 	GlobalUnlock( hgl );
 	CloseClipboard();
-	
+
 	return ret;
 }
 
 /*
  * (c) 2003-2004 Glenn Maynard, Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -241,7 +243,7 @@ RString ArchHooks_Win32::GetClipboard()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

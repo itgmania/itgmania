@@ -16,6 +16,8 @@
 #include "LuaReference.h"
 #include "LuaManager.h"
 
+#include <cstdint>
+
 CryptManager*	CRYPTMAN	= nullptr;	// global and accessible from anywhere in our program
 
 static const RString PRIVATE_KEY_PATH = "Data/private.rsa";
@@ -62,9 +64,9 @@ bool CryptManager::VerifyFileWithFile( RString sPath, RString sSignatureFile )
 
 void CryptManager::GetRandomBytes( void *pData, int iBytes )
 {
-	uint8_t *pBuf = (uint8_t *) pData;
+	std::uint8_t *pBuf = (std::uint8_t *) pData;
 	while( iBytes-- )
-		*pBuf++ = (uint8_t) RandomInt( 256 );
+		*pBuf++ = (std::uint8_t) RandomInt( 256 );
 }
 
 #else
@@ -463,7 +465,7 @@ RString CryptManager::GetPublicKeyFileName()
 /* Generate a version 4 random UUID. */
 RString CryptManager::GenerateRandomUUID()
 {
-	uint32_t buf[4];
+	std::uint32_t buf[4];
 	CryptManager::GetRandomBytes( buf, sizeof(buf) );
 
 	buf[1] &= 0xFFFF0FFF;

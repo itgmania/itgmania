@@ -6,6 +6,7 @@
 #include "archutils/Win32/GetFileInformation.h"
 
 #include <cmath>
+#include <cstdint>
 
 #if defined(_WINDOWS)
 #include <mmsystem.h>
@@ -558,7 +559,7 @@ void DSoundBuf::release_output_buf( char *pBuffer, unsigned iBufferSize )
 	m_bBufferLocked = false;
 }
 
-int64_t DSoundBuf::GetPosition() const
+std::int64_t DSoundBuf::GetPosition() const
 {
 	DWORD iCursor, iJunk;
 	HRESULT hr = m_pBuffer->GetCurrentPosition( &iCursor, &iJunk );
@@ -588,7 +589,7 @@ int64_t DSoundBuf::GetPosition() const
 	if( iFramesBehind < 0 )
 		iFramesBehind += buffersize_frames(); /* unwrap */
 
-	int64_t iRet = m_iWriteCursorPos - iFramesBehind;
+	std::int64_t iRet = m_iWriteCursorPos - iFramesBehind;
 
 	/* Failsafe: never return a value smaller than we've already returned.
 	 * This can happen once in a while in underrun conditions. */

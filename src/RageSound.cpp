@@ -37,6 +37,7 @@
 #include "RageSoundReader_ThreadedBuffer.h"
 
 #include <cmath>
+#include <cstdint>
 
 #define samplerate() m_pSource->GetSampleRate()
 
@@ -268,7 +269,7 @@ void RageSound::LoadSoundReader( RageSoundReader *pSound )
  * conditions are masked and will be seen on the next call.  Otherwise, the requested
  * number of frames will always be returned.
  */
-int RageSound::GetDataToPlay( float *pBuffer, int iFrames, int64_t &iStreamFrame, int &iFramesStored )
+int RageSound::GetDataToPlay( float *pBuffer, int iFrames, std::int64_t &iStreamFrame, int &iFramesStored )
 {
 	/* We only update m_iStreamFrame; only take a shared lock, so we don't block the main thread. */
 //	LockMut(m_Mutex);
@@ -317,7 +318,7 @@ int RageSound::GetDataToPlay( float *pBuffer, int iFrames, int64_t &iStreamFrame
 }
 
 /* Indicate that a block of audio data has been written to the device. */
-void RageSound::CommitPlayingPosition( int64_t iHardwareFrame, int64_t iStreamFrame, int iGotFrames )
+void RageSound::CommitPlayingPosition( std::int64_t iHardwareFrame, std::int64_t iStreamFrame, int iGotFrames )
 {
 	m_Mutex.Lock();
 	m_HardwareToStreamMap.Insert( iHardwareFrame, iGotFrames, iStreamFrame );
@@ -372,7 +373,7 @@ void RageSound::SoundIsFinishedPlaying()
 		return;
 
 	/* Get our current hardware position. */
-	int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition(nullptr);
+	std::int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition(nullptr);
 
 	m_Mutex.Lock();
 
@@ -474,16 +475,16 @@ float RageSound::GetLengthSeconds()
 	return iLength / 1000.f; // ms -> secs
 }
 
-int RageSound::GetSourceFrameFromHardwareFrame( int64_t iHardwareFrame, bool *bApproximate ) const
+int RageSound::GetSourceFrameFromHardwareFrame( std::int64_t iHardwareFrame, bool *bApproximate ) const
 {
 	if( m_HardwareToStreamMap.IsEmpty() || m_StreamToSourceMap.IsEmpty() )
 		return 0;
 
 	bool bApprox;
-	int64_t iStreamFrame = m_HardwareToStreamMap.Search( iHardwareFrame, &bApprox );
+	std::int64_t iStreamFrame = m_HardwareToStreamMap.Search( iHardwareFrame, &bApprox );
 	if( bApproximate && bApprox )
 		*bApproximate = true;
-	int64_t iSourceFrame = m_StreamToSourceMap.Search( iStreamFrame, &bApprox );
+	std::int64_t iSourceFrame = m_StreamToSourceMap.Search( iStreamFrame, &bApprox );
 	if( bApproximate && bApprox )
 		*bApproximate = true;
 	return (int) iSourceFrame;
@@ -499,7 +500,7 @@ int RageSound::GetSourceFrameFromHardwareFrame( int64_t iHardwareFrame, bool *bA
 float RageSound::GetPositionSeconds( bool *bApproximate, RageTimer *pTimestamp ) const
 {
 	/* Get our current hardware position. */
-	int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition( pTimestamp );
+	std::int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition( pTimestamp );
 
 	/* Lock the mutex after calling SOUNDMAN->GetPosition().  We must not make driver
 	 * calls with our mutex locked (driver mutex < sound mutex). */

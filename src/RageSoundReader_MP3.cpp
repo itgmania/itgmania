@@ -5,8 +5,9 @@
 #include "RageLog.h"
 #include "RageUtil.h"
 
-#include <cstdio>
 #include <cerrno>
+#include <cstdint>
+#include <cstdio>
 #include <map>
 
 #include "mad.h"
@@ -188,7 +189,7 @@ struct madlib_t
 		bitrate = 0;
 	}
 
-	uint8_t inbuf[16384];
+	std::uint8_t inbuf[16384];
 	float outbuf[8192];
 	int outpos;
 	unsigned outleft;
@@ -213,7 +214,7 @@ struct madlib_t
 			return mad_timer_compare( timer1, timer2 ) < 0;
 		}
 	};
-		
+
 	typedef std::map<mad_timer_t, int, mad_timer_compare_lt> tocmap_t;
 	tocmap_t tocmap;
 
@@ -283,7 +284,7 @@ bool RageSoundReader_MP3::handle_first_frame()
 		/*
 		 * "Info" tags are written by some tools.  They're just Xing tags, but for
 		 * CBR files.
-		 * 
+		 *
 		 * However, DWI's decoder, BASS, doesn't understand this, and treats it as a
 		 * corrupt frame, outputting a frame of silence.  Let's ignore the tag, so
 		 * it'll be treated as an invalid frame, so we match DWI sync.
@@ -458,7 +459,7 @@ int RageSoundReader_MP3::do_mad_frame_decode( bool headers_only )
 					continue;
 				}
 
-				/* We've decoded the first frame of data. 
+				/* We've decoded the first frame of data.
 				 *
 				 * We want mad->Timer to represent the timestamp of the first sample of the
 				 * currently decoded frame.  Don't increment mad->Timer on the first frame,
@@ -730,7 +731,7 @@ int RageSoundReader_MP3::Read( float *buf, int iFrames )
 bool RageSoundReader_MP3::MADLIB_rewind()
 {
 	m_pFile->Seek(0);
-			
+
 	mad_frame_mute(&mad->Frame);
 	mad_synth_mute(&mad->Synth);
 	mad_timer_reset(&mad->Timer);
@@ -765,7 +766,7 @@ bool RageSoundReader_MP3::MADLIB_rewind()
  * 3. We can seek from any position to any higher position by decoding headers.
  *    (SetPosition_hard)
  *
- * Both 1 and 2 will leave the position behind the actual requested position; 
+ * Both 1 and 2 will leave the position behind the actual requested position;
  * combine them with 3 to catch up. Never do 3 alone in "fast" mode, since it's
  * slow if it ends up seeking from the beginning of the file.  Never do 2 in
  * "precise" mode.
@@ -867,7 +868,7 @@ int RageSoundReader_MP3::SetPosition_hard( int iFrame )
 		 * already decoded the frame, synth it, too. */
 		mad_timer_t next_frame_timer = mad->Timer;
 		mad_timer_add( &next_frame_timer, mad->framelength );
-		
+
 		if( mad_timer_compare(desired, next_frame_timer) < 0 )
 		{
 			if( !synthed )
@@ -937,7 +938,7 @@ int RageSoundReader_MP3::SetPosition_estimate( int iFrame )
 	seekpos += mad->header_bytes;
 	seek_stream_to_byte( seekpos );
 
-	/* We've jumped across the file, so the decoder is currently desynced. 
+	/* We've jumped across the file, so the decoder is currently desynced.
 	 * Don't use resync(); it's slow.  Just decode a few frames. */
 	for( int i = 0; i < 2; ++i )
 	{
@@ -965,7 +966,7 @@ int RageSoundReader_MP3::SetPosition( int iFrame )
 		int ret = SetPosition_toc( iFrame, false );
 		if( ret <= 0 )
 			return ret; /* it set the error */
-		
+
 		/* Align exactly. */
 		return SetPosition_hard( iFrame );
 	}

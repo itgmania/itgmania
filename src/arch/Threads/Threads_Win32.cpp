@@ -5,6 +5,8 @@
 #include "RageTimer.h"
 #include "archutils/Win32/ErrorStrings.h"
 
+#include <cstdint>
+
 const int MAX_THREADS=128;
 
 static MutexImpl_Win32 *g_pThreadIdMutex = nullptr;
@@ -15,10 +17,10 @@ static void InitThreadIdMutex()
 	g_pThreadIdMutex = new MutexImpl_Win32(nullptr);
 }
 
-static uint64_t g_ThreadIds[MAX_THREADS];
+static std::uint64_t g_ThreadIds[MAX_THREADS];
 static HANDLE g_ThreadHandles[MAX_THREADS];
 
-HANDLE Win32ThreadIdToHandle( uint64_t iID )
+HANDLE Win32ThreadIdToHandle( std::uint64_t iID )
 {
 	for( int i = 0; i < MAX_THREADS; ++i )
 	{
@@ -42,9 +44,9 @@ void ThreadImpl_Win32::Resume()
 	ResumeThread( ThreadHandle );
 }
 
-uint64_t ThreadImpl_Win32::GetThreadId() const
+std::uint64_t ThreadImpl_Win32::GetThreadId() const
 {
-	return (uint64_t) ThreadId;
+	return (std::uint64_t) ThreadId;
 }
 
 int ThreadImpl_Win32::Wait()
@@ -109,7 +111,7 @@ static DWORD WINAPI StartThread( LPVOID pData )
 	return ret;
 }
 
-static int GetOpenSlot( uint64_t iID )
+static int GetOpenSlot( std::uint64_t iID )
 {
 	InitThreadIdMutex();
 
@@ -135,7 +137,7 @@ ThreadImpl *MakeThisThread()
 	SetThreadName( GetCurrentThreadId(), RageThread::GetCurrentThreadName() );
 
 	const HANDLE CurProc = GetCurrentProcess();
-	int ret = DuplicateHandle( CurProc, GetCurrentThread(), CurProc, 
+	int ret = DuplicateHandle( CurProc, GetCurrentThread(), CurProc,
 		&thread->ThreadHandle, 0, false, DUPLICATE_SAME_ACCESS );
 
 	if( !ret )
@@ -154,14 +156,14 @@ ThreadImpl *MakeThisThread()
 	return thread;
 }
 
-ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, uint64_t *piThreadID )
+ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, std::uint64_t *piThreadID )
 {
 	ThreadImpl_Win32 *thread = new ThreadImpl_Win32;
 	thread->m_pFunc = pFunc;
 	thread->m_pData = pData;
 
 	thread->ThreadHandle = CreateThread( nullptr, 0, &StartThread, thread, CREATE_SUSPENDED, &thread->ThreadId );
-	*piThreadID = (uint64_t) thread->ThreadId;
+	*piThreadID = (std::uint64_t) thread->ThreadId;
 	ASSERT_M( thread->ThreadHandle != nullptr, ssprintf("%s", werr_ssprintf(GetLastError(), "CreateThread").c_str() ) );
 
 	int slot = GetOpenSlot( thread->ThreadId );
@@ -247,12 +249,12 @@ void MutexImpl_Win32::Unlock()
 		sm_crash( werr_ssprintf( GetLastError(), "ReleaseMutex failed" ) );
 }
 
-uint64_t GetThisThreadId()
+std::uint64_t GetThisThreadId()
 {
 	return GetCurrentThreadId();
 }
 
-uint64_t GetInvalidThreadId()
+std::uint64_t GetInvalidThreadId()
 {
 	return 0;
 }
@@ -452,12 +454,12 @@ void SemaImpl_Win32::Post()
 
 bool SemaImpl_Win32::Wait()
 {
-	int len = 15000; 
+	int len = 15000;
 	int tries = 5;
 
 	while( tries-- )
 	{
-		/* Wait for 15 seconds. If it takes longer than that, we're 
+		/* Wait for 15 seconds. If it takes longer than that, we're
 		 * probably deadlocked. */
 		if( SimpleWaitForSingleObject( sem, len ) )
 		{
@@ -491,7 +493,7 @@ SemaImpl *MakeSemaphore( int iInitialValue )
 /*
  * (c) 2001-2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -501,7 +503,7 @@ SemaImpl *MakeSemaphore( int iInitialValue )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -28,13 +28,14 @@
 #include "arch/ArchHooks/ArchHooks.h"
 
 #include <cmath>
+#include <cstdint>
 
 #define TIMESTAMP_RESOLUTION 1000000
 
 const RageTimer RageZeroTimer(0,0);
-static uint64_t g_iStartTime = ArchHooks::GetMicrosecondsSinceStart( true );
+static std::uint64_t g_iStartTime = ArchHooks::GetMicrosecondsSinceStart( true );
 
-static uint64_t GetTime( bool /* bAccurate */ )
+static std::uint64_t GetTime( bool /* bAccurate */ )
 {
 	return ArchHooks::GetMicrosecondsSinceStart( true );
 
@@ -43,7 +44,7 @@ static uint64_t GetTime( bool /* bAccurate */ )
 #if 0
 	// if !bAccurate, then don't call ArchHooks to find the current time.  Just return the
 	// last calculated time.  GetMicrosecondsSinceStart is slow on some archs.
-	static uint64_t usecs = 0;
+	static std::uint64_t usecs = 0;
 	if( bAccurate )
 		usecs = ArchHooks::GetMicrosecondsSinceStart( true );
 	return usecs;
@@ -52,22 +53,22 @@ static uint64_t GetTime( bool /* bAccurate */ )
 
 float RageTimer::GetTimeSinceStart( bool bAccurate )
 {
-	uint64_t usecs = GetTime( bAccurate );
+	std::uint64_t usecs = GetTime( bAccurate );
 	usecs -= g_iStartTime;
 	/* Avoid using doubles for hardware that doesn't support them.
 	 * This is writing usecs = high*2^32 + low and doing
 	 * usecs/10^6 = high * (2^32/10^6) + low/10^6. */
-	return uint32_t(usecs>>32) * 4294.967296f + uint32_t(usecs)/1000000.f;
+	return std::uint32_t(usecs>>32) * 4294.967296f + std::uint32_t(usecs)/1000000.f;
 }
 
-uint64_t RageTimer::GetUsecsSinceStart()
+std::uint64_t RageTimer::GetUsecsSinceStart()
 {
 	return GetTime(true) - g_iStartTime;
 }
 
 void RageTimer::Touch()
 {
-	uint64_t usecs = GetTime( true );
+	std::uint64_t usecs = GetTime( true );
 
 	this->m_secs = unsigned(usecs / 1000000);
 	this->m_us = unsigned(usecs % 1000000);

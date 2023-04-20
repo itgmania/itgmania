@@ -4,6 +4,7 @@
 //#include <stdio.h>
 
 #include <cstddef>
+#include <cstdint>
 #include <windows.h>
 
 #include "global.h"
@@ -580,7 +581,7 @@ static void debug_crash()
 
 /* Get a stack trace of the current thread and the specified thread.
  * If iID == GetInvalidThreadId(), then output a stack trace for every thread. */
-void CrashHandler::ForceDeadlock( RString reason, uint64_t iID )
+void CrashHandler::ForceDeadlock( RString reason, std::uint64_t iID )
 {
 	strncpy( g_CrashInfo.m_CrashReason, reason, sizeof(g_CrashInfo.m_CrashReason) );
 	g_CrashInfo.m_CrashReason[ sizeof(g_CrashInfo.m_CrashReason)-1 ] = 0;
@@ -607,7 +608,7 @@ void CrashHandler::ForceDeadlock( RString reason, uint64_t iID )
 			context.ContextFlags = CONTEXT_FULL;
 			if( !GetThreadContext( hThread, &context ) )
 				wsprintf( g_CrashInfo.m_CrashReason + strlen(g_CrashInfo.m_CrashReason),
-					"; GetThreadContext(%Ix) failed", reinterpret_cast<uintptr_t>(hThread) );
+					"; GetThreadContext(%Ix) failed", reinterpret_cast<std::uintptr_t>(hThread) );
 			else
 			{
 				static const void *BacktracePointers[BACKTRACE_MAX_SIZE];

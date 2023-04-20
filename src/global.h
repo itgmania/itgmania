@@ -30,10 +30,6 @@
 /* And vector: */
 #include <vector>
 
-#if defined(HAVE_STDINT_H) /* need to define int64_t if so */
-#include <stdint.h>
-#endif
-
 /* Branch optimizations: */
 #if defined(__GNUC__)
 #define likely(x) (__builtin_expect(!!(x), 1))

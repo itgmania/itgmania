@@ -6,6 +6,8 @@
 #include "ProductInfo.h"
 #include "RageFileManager.h"
 
+#include <cstdint>
+
 // for timeGetTime
 #include <windows.h>
 #include <mmsystem.h>
@@ -25,18 +27,18 @@ static void InitTimer()
 	timeBeginPeriod( 1 );
 }
 
-int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
+std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
 {
 	if( !g_bTimerInitialized )
 		InitTimer();
 
-	int64_t ret = timeGetTime() * int64_t(1000);
+	std::int64_t ret = timeGetTime() * std::int64_t(1000);
 	if( bAccurate )
 	{
 		ret = FixupTimeIfLooped( ret );
 		ret = FixupTimeIfBackwards( ret );
 	}
-	
+
 	return ret;
 }
 
@@ -221,7 +223,7 @@ RString ArchHooks::GetPreferredLanguage()
 /*
  * (c) 2003-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -231,7 +233,7 @@ RString ArchHooks::GetPreferredLanguage()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

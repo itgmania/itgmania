@@ -5,6 +5,8 @@
 #include "RageSurface_Load.h"
 #include "LoadingWindow_Gtk.h"
 
+#include <cstdint>
+
 #include <gtk/gtk.h>
 
 static GtkWidget *label;
@@ -75,7 +77,7 @@ void LoadingWindow_Gtk::SetText( RString s )
 
 static void DeletePixels( guchar *pixels, gpointer data )
 {
-	delete[] (uint8_t *)pixels;
+	delete[] (std::uint8_t *)pixels;
 }
 
 static GdkPixbuf *MakePixbuf( const RageSurface *pSrc )
@@ -149,7 +151,7 @@ void LoadingWindow_Gtk::SetIndeterminate( bool indeterminate )
 /*
  * (c) 2003-2004 Glenn Maynard, Sean Burke
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -159,7 +161,7 @@ void LoadingWindow_Gtk::SetIndeterminate( bool indeterminate )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

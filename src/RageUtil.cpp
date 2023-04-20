@@ -15,6 +15,7 @@
 #include <cfloat>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <ctime>
 #include <functional>
 #include <map>
@@ -194,7 +195,7 @@ bool HexToBinary( const RString &s, unsigned char *stringOut )
 			break;
 		RString sByte = s.substr( i*2, 2 );
 
-		uint8_t val = 0;
+		std::uint8_t val = 0;
 		if( sscanf( sByte, "%hhx", &val ) != 1 )
 			return false;
 		stringOut[i] = val;

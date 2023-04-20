@@ -8,10 +8,11 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <random>
-#include <vector>
 #include <sstream>
+#include <vector>
 
 class RageFileDriver;
 
@@ -215,7 +216,7 @@ namespace Endian
 #define Swap24 ArchSwap24
 #define Swap16 ArchSwap16
 #else
-inline uint32_t Swap32( uint32_t n )
+inline std::uint32_t Swap32( std::uint32_t n )
 {
 	return (n >> 24) |
 		((n >>  8) & 0x0000FF00) |
@@ -223,23 +224,23 @@ inline uint32_t Swap32( uint32_t n )
 		(n << 24);
 }
 
-inline uint32_t Swap24( uint32_t n )
+inline std::uint32_t Swap24( std::uint32_t n )
 {
 	return Swap32( n ) >> 8; // xx223344 -> 443322xx -> 00443322
 }
 
-inline uint16_t Swap16( uint16_t n )
+inline std::uint16_t Swap16( std::uint16_t n )
 {
 	return (n >>  8) | (n <<  8);
 }
 #endif
 
-inline uint32_t Swap32LE( uint32_t n ) { return Endian::little ? n : Swap32( n ); }
-inline uint32_t Swap24LE( uint32_t n ) { return Endian::little ? n : Swap24( n ); }
-inline uint16_t Swap16LE( uint16_t n ) { return Endian::little ? n : Swap16( n ); }
-inline uint32_t Swap32BE( uint32_t n ) { return Endian::big    ? n : Swap32( n ); }
-inline uint32_t Swap24BE( uint32_t n ) { return Endian::big    ? n : Swap24( n ); }
-inline uint16_t Swap16BE( uint16_t n ) { return Endian::big    ? n : Swap16( n ); }
+inline std::uint32_t Swap32LE( std::uint32_t n ) { return Endian::little ? n : Swap32( n ); }
+inline std::uint32_t Swap24LE( std::uint32_t n ) { return Endian::little ? n : Swap24( n ); }
+inline std::uint16_t Swap16LE( std::uint16_t n ) { return Endian::little ? n : Swap16( n ); }
+inline std::uint32_t Swap32BE( std::uint32_t n ) { return Endian::big    ? n : Swap32( n ); }
+inline std::uint32_t Swap24BE( std::uint32_t n ) { return Endian::big    ? n : Swap24( n ); }
+inline std::uint16_t Swap16BE( std::uint16_t n ) { return Endian::big    ? n : Swap16( n ); }
 
 class MersenneTwister : public std::mt19937
 {

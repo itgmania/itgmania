@@ -6,6 +6,7 @@
 #include "RageSurface.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <setjmp.h>
 
 extern "C" {
@@ -169,7 +170,7 @@ static RageSurface *RageSurface_Load_JPEG( RageFile *f, const char *fn, char err
 		for( int i = 0; i < 256; ++i )
 		{
 			RageSurfaceColor color;
-			color.r = color.g = color.b = (int8_t) i;
+			color.r = color.g = color.b = (std::int8_t) i;
 			color.a = 0xFF;
 			img->fmt.palette->colors[i] = color;
 		}

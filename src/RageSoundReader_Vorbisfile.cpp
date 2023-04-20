@@ -13,6 +13,7 @@
 
 #include <cerrno>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 
 static std::size_t OggRageFile_read_func( void *ptr, std::size_t size, std::size_t nmemb, void *datasource )
@@ -184,7 +185,7 @@ int RageSoundReader_Vorbisfile::Read( float *buf, int iFrames )
 		{
 			int bstream;
 #if defined(INTEGER_VORBIS)
-			int ret = ov_read( vf, (char *) buf, iFrames * channels * sizeof(int16_t), &bstream );
+			int ret = ov_read( vf, (char *) buf, iFrames * channels * sizeof(std::int16_t), &bstream );
 #else // float vorbis decoder
 			float **pcm;
 			int ret = ov_read_float( vf, &pcm, iFrames, &bstream );
@@ -217,11 +218,11 @@ int RageSoundReader_Vorbisfile::Read( float *buf, int iFrames )
 #if defined(INTEGER_VORBIS)
 			if( ret > 0 )
 			{
-				int iSamplesRead = ret / sizeof(int16_t);
+				int iSamplesRead = ret / sizeof(std::int16_t);
 				iFramesRead = iSamplesRead / channels;
 
 				/* Convert in reverse, so we can do it in-place. */
-				const int16_t *pIn = (int16_t *) buf;
+				const std::int16_t *pIn = (std::int16_t *) buf;
 				float *pOut = (float *) buf;
 				for( int i = iSamplesRead-1; i >= 0; --i )
 					pOut[i] = pIn[i] / 32768.0f;

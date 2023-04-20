@@ -3,6 +3,8 @@
 #ifndef RAGE_TIMER_H
 #define RAGE_TIMER_H
 
+#include <cstdint>
+
 class RageTimer
 {
 public:
@@ -23,7 +25,7 @@ public:
 	/* deprecated: */
 	static float GetTimeSinceStart( bool bAccurate = true );	// seconds since the program was started
 	static float GetTimeSinceStartFast() { return GetTimeSinceStart(false); }
-	static uint64_t GetUsecsSinceStart();
+	static std::uint64_t GetUsecsSinceStart();
 
 	/* Get a timer representing half of the time ago as this one. */
 	RageTimer Half() const;
@@ -53,20 +55,20 @@ private:
 extern const RageTimer RageZeroTimer;
 
 // For profiling how long some chunk of code takes. -Kyz
-#define START_TIME(name) uint64_t name##_start_time= RageTimer::GetUsecsSinceStart();
+#define START_TIME(name) std::uint64_t name##_start_time= RageTimer::GetUsecsSinceStart();
 #define START_TIME_CALL_COUNT(name) START_TIME(name); ++name##_call_count;
-#define END_TIME(name) uint64_t name##_end_time= RageTimer::GetUsecsSinceStart();  LOG->Time(#name " time: %zu to %zu = %zu", name##_start_time, name##_end_time, name##_end_time - name##_start_time);
-#define END_TIME_ADD_TO(name) uint64_t name##_end_time= RageTimer::GetUsecsSinceStart();  name##_total += name##_end_time - name##_start_time;
+#define END_TIME(name) std::uint64_t name##_end_time= RageTimer::GetUsecsSinceStart();  LOG->Time(#name " time: %zu to %zu = %zu", name##_start_time, name##_end_time, name##_end_time - name##_start_time);
+#define END_TIME_ADD_TO(name) std::uint64_t name##_end_time= RageTimer::GetUsecsSinceStart();  name##_total += name##_end_time - name##_start_time;
 #define END_TIME_CALL_COUNT(name) END_TIME_ADD_TO(name); ++name##_end_count;
 
-#define DECL_TOTAL_TIME(name) extern uint64_t name##_total;
-#define DEF_TOTAL_TIME(name) uint64_t name##_total= 0;
+#define DECL_TOTAL_TIME(name) extern std::uint64_t name##_total;
+#define DEF_TOTAL_TIME(name) std::uint64_t name##_total= 0;
 #define PRINT_TOTAL_TIME(name) LOG->Time(#name " total time: %zu", name##_total);
-#define DECL_TOT_CALL_PAIR(name) extern uint64_t name##_total; extern uint64_t name##_call_count;
-#define DEF_TOT_CALL_PAIR(name) uint64_t name##_total= 0; uint64_t name##_call_count= 0;
+#define DECL_TOT_CALL_PAIR(name) extern std::uint64_t name##_total; extern std::uint64_t name##_call_count;
+#define DEF_TOT_CALL_PAIR(name) std::uint64_t name##_total= 0; std::uint64_t name##_call_count= 0;
 #define PRINT_TOT_CALL_PAIR(name) LOG->Time(#name " calls: %zu, time: %zu, per: %f", name##_call_count, name##_total, static_cast<float>(name##_total) / name##_call_count);
-#define DECL_TOT_CALL_END(name) DECL_TOT_CALL_PAIR(name); extern uint64_t name##_end_count;
-#define DEF_TOT_CALL_END(name) DEF_TOT_CALL_PAIR(name); uint64_t name##_end_count= 0;
+#define DECL_TOT_CALL_END(name) DECL_TOT_CALL_PAIR(name); extern std::uint64_t name##_end_count;
+#define DEF_TOT_CALL_END(name) DEF_TOT_CALL_PAIR(name); std::uint64_t name##_end_count= 0;
 #define PRINT_TOT_CALL_END(name) LOG->Time(#name " calls: %zu, time: %zu, early end: %zu, per: %f", name##_call_count, name##_total, name##_end_count, static_cast<float>(name##_total) / (name##_call_count - name##_end_count));
 
 #endif

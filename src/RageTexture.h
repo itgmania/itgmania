@@ -6,6 +6,8 @@
 #include "RageTypes.h"
 #include "RageTextureID.h"
 
+#include <cstdint>
+
 struct lua_State;
 class RageTexture
 {
@@ -15,7 +17,7 @@ public:
 	virtual void Update( float /* fDeltaTime */ ) {}
 	virtual void Reload() {}
 	virtual void Invalidate() { }	/* only called by RageTextureManager::InvalidateTextures */
-	virtual uintptr_t GetTexHandle() const = 0;	// accessed by RageDisplay
+	virtual std::uintptr_t GetTexHandle() const = 0;	// accessed by RageDisplay
 
 	// movie texture/animated texture stuff
 	virtual void SetPosition( float /* fSeconds */ ) {} // seek

@@ -1,5 +1,5 @@
 /*
- * If you're going to use threads, remember this: 
+ * If you're going to use threads, remember this:
  *
  * Threads suck.
  *
@@ -17,6 +17,7 @@
 #include "RageUtil.h"
 
 #include <cerrno>
+#include <cstdint>
 #include <set>
 
 #include "arch/Threads/Threads.h"
@@ -45,7 +46,7 @@ struct ThreadSlot
 	char m_szThreadFormattedOutput[1024];
 
 	bool m_bUsed;
-	uint64_t m_iID;
+	std::uint64_t m_iID;
 
 	ThreadImpl *m_pImpl;
 
@@ -153,7 +154,7 @@ static int FindEmptyThreadSlot()
 		g_ThreadSlots[entry].m_bUsed = true;
 		return entry;
 	}
-			
+
 	RageException::Throw( "Out of thread slots!" );
 }
 
@@ -183,7 +184,7 @@ static void InitThreads()
 }
 
 
-static ThreadSlot *GetThreadSlotFromID( uint64_t iID )
+static ThreadSlot *GetThreadSlotFromID( std::uint64_t iID )
 {
 	InitThreads();
 
@@ -210,7 +211,7 @@ static ThreadSlot *GetUnknownThreadSlot()
 RageThread::RageThread(): m_pSlot(nullptr), m_sName("unnamed") {}
 
 /* Copying a thread does not start the copy. */
-RageThread::RageThread( const RageThread &cpy ): 
+RageThread::RageThread( const RageThread &cpy ):
 	m_pSlot(nullptr), m_sName(cpy.m_sName) {}
 
 RageThread::~RageThread()
@@ -240,7 +241,7 @@ void RageThread::Create( int (*fn)(void *), void *data )
 
 	int slotno = FindEmptyThreadSlot();
 	m_pSlot = &g_ThreadSlots[slotno];
-	
+
 	strcpy( m_pSlot->m_szName, m_sName.c_str() );
 
 	if( LOG )
@@ -257,11 +258,11 @@ RageThreadRegister::RageThreadRegister( const RString &sName )
 {
 	InitThreads();
 	LockMut( GetThreadSlotsLock() );
-	
+
 	int iSlot = FindEmptyThreadSlot();
-	
+
 	m_pSlot = &g_ThreadSlots[iSlot];
-	
+
 	strcpy( m_pSlot->m_szName, sName );
 	sprintf( m_pSlot->m_szThreadFormattedOutput, "Thread: %s", sName.c_str() );
 
@@ -283,7 +284,7 @@ const char *RageThread::GetCurrentThreadName()
 	return GetThreadNameByID( GetCurrentThreadID() );
 }
 
-const char *RageThread::GetThreadNameByID( uint64_t iID )
+const char *RageThread::GetThreadNameByID( std::uint64_t iID )
 {
 	ThreadSlot *slot = GetThreadSlotFromID( iID );
 	if( slot == nullptr )
@@ -292,7 +293,7 @@ const char *RageThread::GetThreadNameByID( uint64_t iID )
 	return slot->GetThreadName();
 }
 
-bool RageThread::EnumThreadIDs( int n, uint64_t &iID )
+bool RageThread::EnumThreadIDs( int n, std::uint64_t &iID )
 {
 	if( n >= MAX_THREADS )
 		return false;
@@ -336,7 +337,7 @@ void RageThread::Resume() {
 
 void RageThread::HaltAllThreads( bool Kill )
 {
-	const uint64_t ThisThreadID = GetThisThreadId();
+	const std::uint64_t ThisThreadID = GetThisThreadId();
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
 		if( !g_ThreadSlots[entry].m_bUsed )
@@ -349,7 +350,7 @@ void RageThread::HaltAllThreads( bool Kill )
 
 void RageThread::ResumeAllThreads()
 {
-	const uint64_t ThisThreadID = GetThisThreadId();
+	const std::uint64_t ThisThreadID = GetThisThreadId();
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
 		if( !g_ThreadSlots[entry].m_bUsed )
@@ -361,11 +362,11 @@ void RageThread::ResumeAllThreads()
 	}
 }
 
-uint64_t RageThread::GetCurrentThreadID()
+std::uint64_t RageThread::GetCurrentThreadID()
 {
 	return GetThisThreadId();
 }
-uint64_t RageThread::GetInvalidThreadID()
+std::uint64_t RageThread::GetInvalidThreadID()
 {
 	return GetInvalidThreadId();
 }
@@ -386,7 +387,7 @@ void Checkpoints::SetCheckpoint( const char *file, int line, const char *message
 	/* We can't ASSERT here, since that uses checkpoints. */
 	if( slot == nullptr )
 		sm_crash( "GetUnknownThreadSlot() returned nullptr" );
-	
+
 	/* Ignore everything up to and including the first "src/". */
 	const char *temp = strstr( file, "src/" );
 	if( temp )
@@ -431,18 +432,18 @@ void Checkpoints::GetLogs( char *pBuf, int iSize, const char *delim )
 			continue;
 		strcat( pBuf, buf );
 		strcat( pBuf, delim );
-		
+
 		for( int line = 1; (buf = GetCheckpointLog(slotno, line)) != nullptr; ++line )
 		{
 			strcat( pBuf, buf );
 			strcat( pBuf, delim );
 		}
-	}	
+	}
 }
 
 /*
  * "Safe" mutexes: locking the same mutex more than once from the same thread
- * is refcounted and does not deadlock. 
+ * is refcounted and does not deadlock.
  *
  * Only actually lock the mutex once; when we do so, remember which thread locked it.
  * Then, when we lock in the future, only increment a counter, with no locks.
@@ -458,7 +459,7 @@ void Checkpoints::GetLogs( char *pBuf, int iSize, const char *delim )
 #if 0
 static const int MAX_MUTEXES = 256;
 
-/* g_MutexesBefore[n] is a list of mutex IDs which must be locked before n (if at all). 
+/* g_MutexesBefore[n] is a list of mutex IDs which must be locked before n (if at all).
  * The array g_MutexesBefore[n] is locked for writing by locking mutex n, so lock that
  * mutex *before* calling MarkLockedMutex(). */
 bool g_MutexesBefore[MAX_MUTEXES][MAX_MUTEXES];
@@ -480,7 +481,7 @@ void RageMutex::MarkLockedMutex()
 	for( unsigned i = 0; i < g_MutexList->size(); ++i )
 	{
 		const RageMutex *mutex = (*g_MutexList)[i];
-		
+
 		if( mutex->m_UniqueID == this->m_UniqueID )
 			continue;
 
@@ -493,20 +494,20 @@ void RageMutex::MarkLockedMutex()
 		{
 			LOG->Warn( "Mutex lock inconsistency: mutex \"%s\" must be locked before \"%s\"",
 				this->GetName().c_str(), mutex->GetName().c_str() );
-			
+
 			break;
 		}
-		
+
 		/* Optimization: don't add it to the queue if it's already been done. */
 		if( !g_MutexesBefore[this->m_UniqueID][mutex->m_UniqueID] )
 			before.push_back( mutex );
 	}
-	
+
 	while( before.size() )
 	{
 		const RageMutex *mutex = before.back();
 		before.pop_back();
-		
+
 		g_MutexesBefore[this->m_UniqueID][mutex->m_UniqueID] = 1;
 
 		/* All IDs which must be locked before mutex must also be locked before
@@ -525,7 +526,7 @@ static std::set<int> *g_FreeMutexIDs = nullptr;
 #endif
 
 RageMutex::RageMutex( const RString &name ):
-	m_pMutex( MakeMutex (this ) ), m_sName(name), 
+	m_pMutex( MakeMutex (this ) ), m_sName(name),
 	m_LockedBy(GetInvalidThreadId()), m_LockCnt(0)
 {
 
@@ -582,7 +583,7 @@ RageMutex::~RageMutex()
 
 void RageMutex::Lock()
 {
-	uint64_t iThisThreadId = GetThisThreadId();
+	std::uint64_t iThisThreadId = GetThisThreadId();
 	if( m_LockedBy == iThisThreadId )
 	{
 		++m_LockCnt;
@@ -606,7 +607,7 @@ void RageMutex::Lock()
 #if defined(CRASH_HANDLER)
 		/* Don't leave GetThreadSlotsLock() locked when we call ForceCrashHandlerDeadlock. */
 		GetThreadSlotsLock().Lock();
-		uint64_t CrashHandle = OtherSlot? OtherSlot->m_iID:0;
+		std::uint64_t CrashHandle = OtherSlot? OtherSlot->m_iID:0;
 		GetThreadSlotsLock().Unlock();
 
 		/* Pass the crash handle of the other thread, so it can backtrace that thread. */

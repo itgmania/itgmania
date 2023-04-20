@@ -7,6 +7,7 @@
 #include "RageUtil.h"
 
 #include <cstddef>
+#include <cstdint>
 
 #if defined(WINDOWS)
 #include <windows.h>
@@ -396,7 +397,7 @@ void NetworkStream_Win32::Open( const RString &sHost, int iPort, ConnectionType 
 		sockaddr_in addr;
 		addr.sin_addr.s_addr = *(DWORD *)pHost->h_addr_list[0];
 		addr.sin_family = PF_INET;
-		addr.sin_port = htons( (uint16_t) iPort );
+		addr.sin_port = htons( (std::uint16_t) iPort );
 
 		m_Mutex.Lock();
 		m_Socket = socket( PF_INET, SOCK_STREAM, IPPROTO_TCP );

@@ -6,6 +6,7 @@
 
 #include <climits>
 #include <cmath>
+#include <cstdint>
 #include <list>
 
 /* The number of frames we should keep pos_map data for.  This being too high
@@ -14,8 +15,8 @@ const int pos_map_backlog_frames = 100000;
 
 struct pos_map_t
 {
-	int64_t m_iSourceFrame;
-	int64_t m_iDestFrame;
+	std::int64_t m_iSourceFrame;
+	std::int64_t m_iDestFrame;
 	int m_iFrames;
 	float m_fSourceToDestRatio;
 
@@ -53,7 +54,7 @@ pos_map_queue &pos_map_queue::operator=( const pos_map_queue &rhs )
 	return *this;
 }
 
-void pos_map_queue::Insert( int64_t iSourceFrame, int iFrames, int64_t iDestFrame, float fSourceToDestRatio )
+void pos_map_queue::Insert( std::int64_t iSourceFrame, int iFrames, std::int64_t iDestFrame, float fSourceToDestRatio )
 {
 	if( !m_pImpl->m_Queue.empty() )
 	{
@@ -120,7 +121,7 @@ void pos_map_impl::Cleanup()
 	m_Queue.erase( m_Queue.begin(), it );
 }
 
-int64_t pos_map_queue::Search( int64_t iSourceFrame, bool *bApproximate ) const
+std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame, bool *bApproximate ) const
 {
 	if( bApproximate )
 		*bApproximate = false;
@@ -134,7 +135,7 @@ int64_t pos_map_queue::Search( int64_t iSourceFrame, bool *bApproximate ) const
 
 	/* iSourceFrame is probably in pos_map.  Search to figure out what position
 	 * it maps to. */
-	int64_t iClosestPosition = 0, iClosestPositionDist = INT_MAX;
+	std::int64_t iClosestPosition = 0, iClosestPositionDist = INT_MAX;
 	const pos_map_t *pClosestBlock = &*m_pImpl->m_Queue.begin(); /* print only */
 	for (pos_map_t const &pm : m_pImpl->m_Queue)
 	{
@@ -149,7 +150,7 @@ int64_t pos_map_queue::Search( int64_t iSourceFrame, bool *bApproximate ) const
 		}
 
 		/* See if the current position is close to the beginning of this block. */
-		int64_t dist = llabs( pm.m_iSourceFrame - iSourceFrame );
+		std::int64_t dist = llabs( pm.m_iSourceFrame - iSourceFrame );
 		if( dist < iClosestPositionDist )
 		{
 			iClosestPositionDist = dist;

@@ -3,9 +3,11 @@
 #ifndef RAGE_SOUND_MANAGER_H
 #define RAGE_SOUND_MANAGER_H
 
-#include <set>
-#include <map>
 #include "RageUtil_CircularBuffer.h"
+
+#include <cstdint>
+#include <map>
+#include <set>
 
 class RageSound;
 class RageSoundBase;
@@ -37,7 +39,7 @@ public:
 	void StartMixing( RageSoundBase *snd );	/* used by RageSound */
 	void StopMixing( RageSoundBase *snd );	/* used by RageSound */
 	bool Pause( RageSoundBase *snd, bool bPause );	/* used by RageSound */
-	int64_t GetPosition( RageTimer *pTimer ) const;	/* used by RageSound */
+	std::int64_t GetPosition( RageTimer *pTimer ) const;	/* used by RageSound */
 	float GetPlayLatency() const;
 	int GetDriverSampleRate() const;
 

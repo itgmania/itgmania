@@ -14,6 +14,7 @@
 #include "PrefsManager.h"
 
 #include <cstddef>
+#include <cstdint>
 
 REGISTER_ACTOR_CLASS( Model );
 
@@ -541,7 +542,7 @@ void Model::PlayAnimation( const RString &sAniName, float fPlayRate )
 		{
 			// int iBoneIndex = (pMesh->m_iBoneIndex!=-1) ? pMesh->m_iBoneIndex : bone;
 			RageVector3 &pos = Vertices[j].p;
-			int8_t bone = Vertices[j].bone;
+			std::int8_t bone = Vertices[j].bone;
 			if( bone != -1 )
 			{
 				pos[0] -= m_vpBones[bone].m_Absolute.m[3][0];
@@ -698,7 +699,7 @@ void Model::UpdateTempGeometry()
 			RageVector3 &tempNormal =		tempVertices[j].n;
 			const RageVector3 &originalPos =	origVertices[j].p;
 			const RageVector3 &originalNormal =	origVertices[j].n;
-			int8_t bone =				origVertices[j].bone;
+			std::int8_t bone =				origVertices[j].bone;
 
 			if( bone == -1 )
 			{

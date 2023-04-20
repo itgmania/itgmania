@@ -3,6 +3,8 @@
 
 #include "MovieTexture.h"
 
+#include <cstdint>
+
 class FFMpeg_Helper;
 struct RageSurface;
 struct RageTextureLock;
@@ -93,7 +95,7 @@ public:
 	virtual void DecodeSeconds( float fSeconds );
 	virtual void SetPlaybackRate( float fRate ) { m_fRate = fRate; }
 	void SetLooping( bool bLooping=true ) { m_bLoop = bLooping; }
-	uintptr_t GetTexHandle() const;
+	std::uintptr_t GetTexHandle() const;
 
 	static EffectMode GetEffectMode( MovieDecoderPixelFormatYCbCr fmt );
 
@@ -110,7 +112,7 @@ private:
 
 	enum State { DECODER_QUIT, DECODER_RUNNING } m_State;
 
-	uintptr_t m_uTexHandle;
+	std::uintptr_t m_uTexHandle;
 	RageTextureRenderTarget *m_pRenderTarget;
 	RageTexture *m_pTextureIntermediate;
 	Sprite *m_pSprite;
@@ -137,7 +139,7 @@ private:
 /*
  * (c) 2003-2005 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -147,7 +149,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

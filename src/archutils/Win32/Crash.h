@@ -2,6 +2,7 @@
 #define CRASH_H
 
 #include <cstddef>
+#include <cstdint>
 #include <windows.h>
 
 /** @brief Win32 crash handling. */
@@ -12,7 +13,7 @@ namespace CrashHandler
 	void do_backtrace( const void **buf, std::size_t size, HANDLE hProcess, HANDLE hThread, const CONTEXT *pContext );
 	void SymLookup( const void *ptr, char *buf );
 	void ForceCrash( const char *reason );
-	void ForceDeadlock( RString reason, uint64_t iID );
+	void ForceDeadlock( RString reason, std::uint64_t iID );
 
 	/* Inform the crash handler of a foreground window that may be fullscreen.
 	 * If set, the crash handler will attempt to hide the window or reset the

@@ -1,6 +1,7 @@
 #include "global.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 
 #if defined(_WINDOWS)
@@ -339,7 +340,7 @@ typedef unsigned IPos; // A Pos is an index in the character window. Pos is used
 
 
 
-typedef int64_t lutime_t;       // define it ourselves since we don't include time.h
+typedef std::int64_t lutime_t;       // define it ourselves since we don't include time.h
 
 typedef struct iztimes {
 	lutime_t atime,mtime,ctime;

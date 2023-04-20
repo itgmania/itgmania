@@ -5,6 +5,7 @@
 #include "RageUtil.h"
 #include "SextetUtils.h"
 
+#include <cstdint>
 #include <cstring>
 
 // Private members/methods are kept out of the header using an opaque pointer `_impl`.
@@ -18,7 +19,7 @@ namespace
 	class Impl
 	{
 	protected:
-		uint8_t lastOutput[FULL_SEXTET_COUNT];
+		std::uint8_t lastOutput[FULL_SEXTET_COUNT];
 		RageFile * out;
 
 	public:
@@ -40,7 +41,7 @@ namespace
 
 		void Set(const LightsState * ls)
 		{
-			uint8_t buffer[FULL_SEXTET_COUNT];
+			std::uint8_t buffer[FULL_SEXTET_COUNT];
 
 			packLine(buffer, ls);
 
