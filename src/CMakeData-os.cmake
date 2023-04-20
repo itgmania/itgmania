@@ -97,8 +97,7 @@ else()
                 "archutils/Unix/GetSysInfo.h"
                 "archutils/Unix/RunningUnderValgrind.h"
                 "archutils/Unix/SignalHandler.h"
-                "archutils/Unix/SpecialDirs.h"
-                "archutils/Common/gcc_byte_swaps.h")
+                "archutils/Unix/SpecialDirs.h")
     if(X11_FOUND)
       list(APPEND SMDATA_OS_SRC "archutils/Unix/X11Helper.cpp")
       list(APPEND SMDATA_OS_HPP "archutils/Unix/X11Helper.h")

@@ -17,7 +17,6 @@
 #include "arch/ArchHooks/ArchHooks.h"
 #include "arch/LoadingWindow/LoadingWindow.h"
 #include "arch/Dialog/Dialog.h"
-#include <ctime>
 
 #include "ProductInfo.h"
 
@@ -71,6 +70,7 @@
 #include "ver.h"
 
 #include <cmath>
+#include <ctime>
 #include <vector>
 
 #if defined(WIN32)

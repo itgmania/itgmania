@@ -204,35 +204,14 @@ namespace Endian
 #endif
 }
 
-/* We only have unsigned swaps; byte swapping a signed value doesn't make sense.
- *
- * Platform-specific, optimized versions are defined in arch_setup, with the names
- * ArchSwap32, ArchSwap24, and ArchSwap16; we define them to their real names here,
- * to force inclusion of this file when swaps are in use (to prevent different dependencies
- * on different systems).
- */
-#ifdef HAVE_BYTE_SWAPS
-#define Swap32 ArchSwap32
-#define Swap24 ArchSwap24
-#define Swap16 ArchSwap16
+#ifdef _WIN32
+#define Swap32(n) _byteswap_ulong(n)
+#define Swap24(n) _byteswap_ulong(n) >> 8
+#define Swap16(n) _byteswap_ushort(n)
 #else
-inline std::uint32_t Swap32( std::uint32_t n )
-{
-	return (n >> 24) |
-		((n >>  8) & 0x0000FF00) |
-		((n <<  8) & 0x00FF0000) |
-		(n << 24);
-}
-
-inline std::uint32_t Swap24( std::uint32_t n )
-{
-	return Swap32( n ) >> 8; // xx223344 -> 443322xx -> 00443322
-}
-
-inline std::uint16_t Swap16( std::uint16_t n )
-{
-	return (n >>  8) | (n <<  8);
-}
+#define Swap32(n) __builtin_bswap32(n)
+#define Swap24(n) __builtin_bswap32(n) >> 8
+#define Swap16(n) __builtin_bswap16(n)
 #endif
 
 inline std::uint32_t Swap32LE( std::uint32_t n ) { return Endian::little ? n : Swap32( n ); }
