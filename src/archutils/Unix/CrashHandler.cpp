@@ -1,8 +1,10 @@
 #include "global.h"
 
+#include <csignal>
+#include <cstdarg>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <cstdarg>
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
@@ -12,7 +14,6 @@
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif
-#include <csignal>
 
 #include "RageLog.h" /* for RageLog::GetAdditionalLog, etc, only */
 #include "RageThreads.h"
@@ -24,7 +25,7 @@
 #include "CrashHandler.h"
 #include "CrashHandlerInternal.h"
 
-extern uint64_t GetInvalidThreadId();
+extern std::uint64_t GetInvalidThreadId();
 extern const char *g_pCrashHandlerArgv0;
 
 static void safe_print( int fd, ... )
@@ -314,7 +315,7 @@ static void RunCrashHandler( const CrashData *crash )
 static void BacktraceAllThreads( CrashData& crash )
 {
 	int iCnt = 1;
-	uint64_t iID;
+	std::uint64_t iID;
 
 	for( int i = 0; RageThread::EnumThreadIDs(i, iID); ++i )
 	{
@@ -347,7 +348,7 @@ void CrashHandler::ForceCrash( const char *reason )
 	RunCrashHandler( &crash );
 }
 
-void CrashHandler::ForceDeadlock( RString reason, uint64_t iID )
+void CrashHandler::ForceDeadlock( RString reason, std::uint64_t iID )
 {
 	CrashData crash;
 	memset( &crash, 0, sizeof(crash) );

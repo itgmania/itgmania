@@ -7,6 +7,7 @@
 #include "ProductInfo.h"
 
 #include <cstddef>
+#include <cstdint>
 
 #include <CoreServices/CoreServices.h>
 #include <ApplicationServices/ApplicationServices.h>
@@ -160,7 +161,7 @@ void ArchHooks_MacOSX::DumpDebugInfo()
 	float fRam;
 	char ramPower;
 	{
-		uint64_t iRam = 0;
+		std::uint64_t iRam = 0;
 		GET_PARAM( "hw.memsize", iRam );
 
 		fRam = float( double(iRam) / 1073741824.0 );
@@ -175,7 +176,7 @@ void ArchHooks_MacOSX::DumpDebugInfo()
 	RString sModel("Unknown");
 	do {
 		char szModel[128];
-		uint64_t iFreq;
+		std::uint64_t iFreq;
 
 		GET_PARAM( "hw.logicalcpu_max", iMaxCPUs );
 		GET_PARAM( "hw.logicalcpu", iCPUs );
@@ -257,7 +258,7 @@ bool ArchHooks_MacOSX::GoToURL( RString sUrl )
 	return result == 0;
 }
 
-int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
+std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
 {
 	// http://developer.apple.com/qa/qa2004/qa1398.html
 	static double factor = 0.0;
@@ -269,7 +270,7 @@ int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
 		mach_timebase_info( &timeBase );
 		factor = timeBase.numer / ( 1000.0 * timeBase.denom );
 	}
-	return int64_t( mach_absolute_time() * factor );
+	return std::int64_t( mach_absolute_time() * factor );
 }
 
 #include "RageFileManager.h"

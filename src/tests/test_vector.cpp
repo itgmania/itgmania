@@ -1,9 +1,10 @@
 #define _XOPEN_SOURCE 600
-#include <cstdio>
-#include <cstdlib>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 #include <algorithm>
 #include <archutils/Darwin/VectorHelper.h>
 
@@ -36,7 +37,7 @@ static void ScalarWrite( float *pDestBuf, const float *pSrcBuf, std::size_t iSiz
 }
 
 #if 0
-static void ScalarRead( int16_t *pDestBuf, const int32_t *pSrcBuf, unsigned iSize )
+static void ScalarRead( std::int16_t *pDestBuf, const std::int32_t *pSrcBuf, unsigned iSize )
 {
 	for( unsigned iPos = 0; iPos < iSize; ++iPos )
 		pDestBuf[iPos] = std::max( -32768, std::min(pSrcBuf[iPos]/256, 32767) );
@@ -197,7 +198,7 @@ static bool CheckMisalignedBothWrite()
 	return ret;
 }
 
-static bool cmp( const int16_t *p1, const int16_t *p2, std::size_t size )
+static bool cmp( const std::int16_t *p1, const std::int16_t *p2, std::size_t size )
 {
 	return !memcmp( p1, p2, size * 2 );
 }
@@ -216,7 +217,7 @@ template<typename T>
 static bool CheckAlignedRead()
 {
 	const std::size_t size = 1024;
-	int32_t *pSrcBuf = NEW( int32_t, size );
+	std::int32_t *pSrcBuf = NEW( std::int32_t, size );
 	T *pDestBuf      = NEW( T, size );
 	T *pRefBuf       = NEW( T, size );
 	bool ret = true;
@@ -245,7 +246,7 @@ template<typename T>
 static bool CheckMisalignedRead()
 {
 	const std::size_t size = 1024;
-	int32_t *pSrcBuf = NEW( int32_t, size );
+	std::int32_t *pSrcBuf = NEW( std::int32_t, size );
 	T *pDestBuf      = NEW( T, size );
 	T *pRefBuf       = NEW( T, size );
 	bool ret = true;
@@ -303,7 +304,7 @@ int main()
 		return 1;
 	}
 #if 0
-	if( !CheckAlignedRead<int16_t>() )
+	if( !CheckAlignedRead<std::int16_t>() )
 	{
 		fputs( "Failed aligned read.\n", stderr );
 		return 1;
@@ -313,7 +314,7 @@ int main()
 		fputs( "Failed aligned float read.\n", stderr );
 		return 1;
 	}
-	if( !CheckMisalignedRead<int16_t>() )
+	if( !CheckMisalignedRead<std::int16_t>() )
 	{
 		fputs( "Failed misaligned read.\n", stderr );
 		return 1;

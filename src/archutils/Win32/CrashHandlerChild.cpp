@@ -1,9 +1,11 @@
 #include "global.h"
 #include "CrashHandlerInternal.h"
 #include "Crash.h"
-#include <errno.h>
 
+#include <cerrno>
 #include <cstddef>
+#include <cstdint>
+
 #include <windows.h>
 #include <commctrl.h>
 #include "archutils/Win32/ddk/dbghelp.h"
@@ -53,10 +55,10 @@ namespace VDDebugInfo
 		int nBuildNumber;
 
 		const unsigned char *pRVAHeap;
-		uintptr_t nFirstRVA;
+		std::uintptr_t nFirstRVA;
 
 		const char *pFuncNameHeap;
-		const uintptr_t (*pSegments)[2];
+		const std::uintptr_t (*pSegments)[2];
 		int nSegments;
 		char sFilename[1024];
 		RString sError;
@@ -110,10 +112,10 @@ namespace VDDebugInfo
 		src += 2 * (sizeof(int) + sizeof(std::size_t));
 
 		pctx->nBuildNumber		= *pVer;
-		pctx->pRVAHeap			= reinterpret_cast<const unsigned char*>(src + sizeof(uintptr_t));
-		pctx->nFirstRVA			= *reinterpret_cast<const uintptr_t*>(src);
+		pctx->pRVAHeap			= reinterpret_cast<const unsigned char*>(src + sizeof(std::uintptr_t));
+		pctx->nFirstRVA			= *reinterpret_cast<const std::uintptr_t*>(src);
 		pctx->pFuncNameHeap		= reinterpret_cast<const char*>(src + *pRVASize);
-		pctx->pSegments			= reinterpret_cast<const uintptr_t(*)[2]>(src + *pRVASize + *pFNamSize);
+		pctx->pSegments			= reinterpret_cast<const std::uintptr_t(*)[2]>(src + *pRVASize + *pFNamSize);
 		pctx->nSegments			= *pSegCnt;
 
 		return true;
@@ -167,7 +169,7 @@ namespace VDDebugInfo
 		return false;
 	}
 
-	static bool PointerIsInAnySegment( const Context *pctx, uintptr_t rva )
+	static bool PointerIsInAnySegment( const Context *pctx, std::uintptr_t rva )
 	{
 		for( int i=0; i<pctx->nSegments; ++i )
 		{
@@ -186,7 +188,7 @@ namespace VDDebugInfo
 		return heap;
 	}
 
-	intptr_t VDDebugInfoLookupRVA( const Context *pctx, uintptr_t rva, char *buf, int buflen )
+	std::intptr_t VDDebugInfoLookupRVA( const Context *pctx, std::uintptr_t rva, char *buf, int buflen )
 	{
 		if( !PointerIsInAnySegment(pctx, rva) )
 			return -1;
@@ -198,13 +200,13 @@ namespace VDDebugInfo
 		// Linearly unpack RVA deltas and find lower_bound
 		rva -= pctx->nFirstRVA;
 
-		if( static_cast<intptr_t>(rva) < 0 )
+		if( static_cast<std::intptr_t>(rva) < 0 )
 			return -1;
 
 		while( pr < pr_limit )
 		{
 			unsigned char c;
-			uintptr_t diff = 0;
+			std::uintptr_t diff = 0;
 
 			do
 			{
@@ -215,7 +217,7 @@ namespace VDDebugInfo
 
 			rva -= diff;
 
-			if (static_cast<intptr_t>(rva) < 0) {
+			if (static_cast<std::intptr_t>(rva) < 0) {
 				rva += diff;
 				break;
 			}
@@ -234,7 +236,7 @@ namespace VDDebugInfo
 		strncpy( buf, fn_name, buflen );
 		buf[buflen-1] = 0;
 
-		return static_cast<intptr_t>(rva);
+		return static_cast<std::intptr_t>(rva);
 	}
 }
 
@@ -287,7 +289,7 @@ namespace SymbolLookup
 		return true;
 	}
 
-	SYMBOL_INFO *GetSym( uintptr_t ptr, DWORD64 &disp )
+	SYMBOL_INFO *GetSym( std::uintptr_t ptr, DWORD64 &disp )
 	{
 		InitDbghelp();
 
@@ -367,12 +369,12 @@ namespace SymbolLookup
 		VirtualQueryEx( g_hParent, ptr, &meminfo, sizeof meminfo );
 
 		char tmp[512];
-		intptr_t iAddress = VDDebugInfo::VDDebugInfoLookupRVA(pctx, reinterpret_cast<uintptr_t>(ptr), tmp, sizeof(tmp));
+		std::intptr_t iAddress = VDDebugInfo::VDDebugInfoLookupRVA(pctx, reinterpret_cast<std::uintptr_t>(ptr), tmp, sizeof(tmp));
 		if( iAddress >= 0 )
 		{
-			wsprintf( buf, "%" ADDRESS_ZEROS "Ix: %s [%" ADDRESS_ZEROS "Ix+%Ix+%Ix]", reinterpret_cast<uintptr_t>(ptr), Demangle(tmp),
+			wsprintf( buf, "%" ADDRESS_ZEROS "Ix: %s [%" ADDRESS_ZEROS "Ix+%Ix+%Ix]", reinterpret_cast<std::uintptr_t>(ptr), Demangle(tmp),
 				pctx->nFirstRVA,
-				reinterpret_cast<uintptr_t>(ptr) - pctx->nFirstRVA - iAddress,
+				reinterpret_cast<std::uintptr_t>(ptr) - pctx->nFirstRVA - iAddress,
 				iAddress );
 			return;
 		}
@@ -380,21 +382,21 @@ namespace SymbolLookup
 		RString sName = CrashChildGetModuleBaseName( (HMODULE)meminfo.AllocationBase );
 
 		DWORD64 disp;
-		SYMBOL_INFO *pSymbol = GetSym( reinterpret_cast<uintptr_t>(ptr), disp );
+		SYMBOL_INFO *pSymbol = GetSym( reinterpret_cast<std::uintptr_t>(ptr), disp );
 
 		if( pSymbol )
 		{
 			wsprintf( buf, "%" ADDRESS_ZEROS "Ix: %s!%s [%" ADDRESS_ZEROS "Ix+%Ix+%Ix]",
-				reinterpret_cast<uintptr_t>(ptr), sName.c_str(), pSymbol->Name,
-				reinterpret_cast<uintptr_t>(meminfo.AllocationBase),
-				static_cast<uintptr_t>(pSymbol->Address) - reinterpret_cast<uintptr_t>(meminfo.AllocationBase),
+				reinterpret_cast<std::uintptr_t>(ptr), sName.c_str(), pSymbol->Name,
+				reinterpret_cast<std::uintptr_t>(meminfo.AllocationBase),
+				static_cast<std::uintptr_t>(pSymbol->Address) - reinterpret_cast<std::uintptr_t>(meminfo.AllocationBase),
 				static_cast<ULONG_PTR>(disp));
 			return;
 		}
 
 		wsprintf( buf, "%" ADDRESS_ZEROS "Ix: %s!%" ADDRESS_ZEROS "Ix",
-			reinterpret_cast<uintptr_t>(ptr), sName.c_str(),
-			reinterpret_cast<uintptr_t>(meminfo.AllocationBase) );
+			reinterpret_cast<std::uintptr_t>(ptr), sName.c_str(),
+			reinterpret_cast<std::uintptr_t>(meminfo.AllocationBase) );
 	}
 }
 

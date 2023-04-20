@@ -17,6 +17,7 @@
 #include <GL/glew.h>
 
 #include <cstddef>
+#include <cstdint>
 
 #ifdef NO_GL_FLUSH
 #define glFlush()
@@ -562,7 +563,7 @@ RageDisplay_GLES2::SupportsPerVertexMatrixScale()
 	return true;
 }
 
-uintptr_t
+std::uintptr_t
 RageDisplay_GLES2::CreateTexture(
 	RagePixelFormat pixfmt,
 	RageSurface* img,
@@ -575,7 +576,7 @@ RageDisplay_GLES2::CreateTexture(
 
 void
 RageDisplay_GLES2::UpdateTexture(
-	uintptr_t iTexHandle,
+	std::uintptr_t iTexHandle,
 	RageSurface* img,
 	int xoffset, int yoffset, int width, int height
 	)
@@ -584,7 +585,7 @@ RageDisplay_GLES2::UpdateTexture(
 }
 
 void
-RageDisplay_GLES2::DeleteTexture( uintptr_t iTexHandle )
+RageDisplay_GLES2::DeleteTexture( std::uintptr_t iTexHandle )
 {
 	// TODO
 }
@@ -616,7 +617,7 @@ SetTextureUnit( TextureUnit tu )
 }
 
 void
-RageDisplay_GLES2::SetTexture( TextureUnit tu, uintptr_t iTexture )
+RageDisplay_GLES2::SetTexture( TextureUnit tu, std::uintptr_t iTexture )
 {
 	if (!SetTextureUnit( tu ))
 		return;

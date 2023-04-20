@@ -5,9 +5,11 @@
 
 #include "RageTypes.h"
 
+#include <cstdint>
+
 struct msTriangle
 {
-	uint16_t nVertexIndices[3];
+	std::uint16_t nVertexIndices[3];
 };
 
 
@@ -18,7 +20,7 @@ struct msMesh
 
 	std::vector<RageModelVertex>	Vertices;
 
-	// OPTIMIZATION: If all verts in a mesh are transformed by the same bone, 
+	// OPTIMIZATION: If all verts in a mesh are transformed by the same bone,
 	// then send the transform to the graphics card for the whole mesh instead
 	// of transforming each vertex on the CPU;
 	char			m_iBoneIndex;	// -1 = no bone
@@ -146,7 +148,7 @@ struct myBone_t
 /*
  * (c) 2003-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -156,7 +158,7 @@ struct myBone_t
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -16,7 +16,7 @@
 #define MAX_GROUPS		(64)
 
 struct RVAEnt {
-	uintptr_t rva;
+	std::uintptr_t rva;
 	char *line;
 };
 
@@ -25,10 +25,10 @@ std::vector<RVAEnt> rvabuf;
 char fnambuf[MAX_FNAMBUF];
 char *fnamptr = fnambuf;
 
-uintptr_t segbuf[MAX_SEGMENTS][2];
+std::uintptr_t segbuf[MAX_SEGMENTS][2];
 int segcnt = 0;
-uint16_t seggrp[MAX_SEGMENTS];
-uintptr_t grpstart[MAX_GROUPS];
+std::uint16_t seggrp[MAX_SEGMENTS];
+std::uintptr_t grpstart[MAX_GROUPS];
 
 char line[8192];
 long codeseg_flags = 0;
@@ -94,7 +94,7 @@ void RemoveAnonymousNamespaces( char *p )
 
 }
 
-void parsename(uintptr_t rva, char *func_name) {
+void parsename(std::uintptr_t rva, char *func_name) {
 	RemoveAnonymousNamespaces( func_name );
 
 	fnamptr = strtack(fnamptr, func_name, fnambuf+MAX_FNAMBUF);
@@ -140,9 +140,9 @@ int main(int argc, char **argv) {
 //		printf("Reading in segment list.\n");
 
 		while (readline()) {
-			uint16_t grp;
-			uint32_t start;
-			uint32_t len;
+			std::uint16_t grp;
+			std::uint32_t start;
+			std::uint32_t len;
 
 			if (sscanf(line, "%" SCNx16 ":%" SCNx32 " %" SCNx32, &grp, &start, &len) != 3)
 				break;
@@ -152,8 +152,8 @@ int main(int argc, char **argv) {
 
 				codeseg_flags |= 1 << grp;
 
-				segbuf[segcnt][0] = static_cast<uintptr_t>(start);
-				segbuf[segcnt][1] = static_cast<uintptr_t>(len);
+				segbuf[segcnt][0] = static_cast<std::uintptr_t>(start);
+				segbuf[segcnt][1] = static_cast<std::uintptr_t>(len);
 				seggrp[segcnt] = grp;
 				++segcnt;
 			}
@@ -169,9 +169,9 @@ int main(int argc, char **argv) {
 //		printf("Found public symbol list.\n");
 
 		while (readline()) {
-			uint16_t grp;
-			uint32_t start;
-			uintptr_t rva;
+			std::uint16_t grp;
+			std::uint32_t start;
+			std::uintptr_t rva;
 			char symname[2048];
 
 			if (sscanf(line, "%" SCNx16 ":%" SCNx32 " %s %" SCNxPTR, &grp, &start, symname, &rva) != 4)
@@ -199,9 +199,9 @@ int main(int argc, char **argv) {
 			readline();
 
 			while (readline()) {
-				uint16_t grp;
-				uint32_t start;
-				uintptr_t rva;
+				std::uint16_t grp;
+				std::uint32_t start;
+				std::uintptr_t rva;
 				char symname[4096];
 
 				if (sscanf(line, "%" SCNx16 ":%" SCNx32 " %s %" SCNxPTR, &grp, &start, symname, &rva) != 4)
@@ -225,15 +225,15 @@ int main(int argc, char **argv) {
 //		printf("Processing RVA entries...\n");
 
 		for (std::size_t i = 0; i < rvabuf.size(); ++i) {
-			uint16_t grp;
-			uint32_t start;
-			uintptr_t rva;
+			std::uint16_t grp;
+			std::uint32_t start;
+			std::uintptr_t rva;
 			char symname[4096];
 
 			if (sscanf(rvabuf[i].line, "%" SCNx16 ":%" SCNx32 " %s %" SCNxPTR, &grp, &start, symname, &rva) != 4)
 				break;
 
-			grpstart[grp] = rva - static_cast<uintptr_t>(start);
+			grpstart[grp] = rva - static_cast<std::uintptr_t>(start);
 
 			parsename(rva, symname);
 		}
@@ -253,8 +253,8 @@ int main(int argc, char **argv) {
 */
 		std::vector<RVAEnt>::iterator itRVA = rvabuf.begin(), itRVAEnd = rvabuf.end();
 		std::vector<char> rvaout;
-		uintptr_t firstrva = (*itRVA++).rva;
-		uintptr_t lastrva = firstrva;
+		std::uintptr_t firstrva = (*itRVA++).rva;
+		std::uintptr_t lastrva = firstrva;
 
 		for(; itRVA != itRVAEnd; ++itRVA) {
 			std::ptrdiff_t rvadiff = (*itRVA).rva - lastrva;
@@ -303,7 +303,7 @@ int main(int argc, char **argv) {
 		fwrite(&firstrva, sizeof firstrva, 1, fo);
 		fwrite(&rvaout[0], rvaout.size(), 1, fo);
 		fwrite(fnambuf, fnamptr - fnambuf, 1, fo);
-		fwrite(segbuf, segcnt * 2 * sizeof(uintptr_t), 1, fo);
+		fwrite(segbuf, segcnt * 2 * sizeof(std::uintptr_t), 1, fo);
 
 		// really all done
 

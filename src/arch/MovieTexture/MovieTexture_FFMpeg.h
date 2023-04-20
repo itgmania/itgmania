@@ -4,6 +4,9 @@
 #define RAGE_MOVIE_TEXTURE_FFMPEG_H
 
 #include "MovieTexture_Generic.h"
+
+#include <cstdint>
+
 struct RageSurface;
 
 namespace avcodec
@@ -90,7 +93,7 @@ private:
 static struct AVPixelFormat_t
 {
 	int bpp;
-	uint32_t masks[4];
+	std::uint32_t masks[4];
 	avcodec::AVPixelFormat pf;
 	bool bHighColor;
 	bool bByteSwapOnLittleEndian;

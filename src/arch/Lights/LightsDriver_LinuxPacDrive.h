@@ -3,6 +3,8 @@
 
 #include "LightsDriver.h"
 
+#include <cstdint>
+
 extern "C" {
 #include <usb.h>
 }
@@ -20,7 +22,7 @@ private:
 
 	void FindDevice();
 	void OpenDevice();
-	void WriteDevice(uint16_t out);
+	void WriteDevice(std::uint16_t out);
 	void CloseDevice();
 
 	struct usb_device *Device;

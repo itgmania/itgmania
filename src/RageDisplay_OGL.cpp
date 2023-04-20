@@ -21,6 +21,7 @@ using namespace RageDisplay_Legacy_Helpers;
 
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <set>
 
 #if defined(WINDOWS)
@@ -64,7 +65,7 @@ static const GLenum RageSpriteVertexFormat = GL_T2F_C4F_N3F_V3F;
 /* If we support texture matrix scaling, a handle to the vertex program: */
 static GLhandleARB g_bTextureMatrixShader = 0;
 
-static std::map<uintptr_t, RenderTarget *> g_mapRenderTargets;
+static std::map<std::uintptr_t, RenderTarget *> g_mapRenderTargets;
 static RenderTarget *g_pCurrentRenderTarget = nullptr;
 
 static LowLevelWindow *g_pWind;
@@ -799,7 +800,7 @@ RString RageDisplay_Legacy::TryVideoMode( const VideoModeParams &p, bool &bNewDe
 
 		/* Delete all render targets.  They may have associated resources other than
 		 * the texture itself. */
-		for (std::pair<uintptr_t const, RenderTarget *> &rt : g_mapRenderTargets)
+		for (std::pair<std::uintptr_t const, RenderTarget *> &rt : g_mapRenderTargets)
 			delete rt.second;
 		g_mapRenderTargets.clear();
 
@@ -926,7 +927,7 @@ RageSurface* RageDisplay_Legacy::CreateScreenshot()
 	return image;
 }
 
-RageSurface *RageDisplay_Legacy::GetTexture( uintptr_t iTexture )
+RageSurface *RageDisplay_Legacy::GetTexture( std::uintptr_t iTexture )
 {
 	if (iTexture == 0)
 		return nullptr; // XXX
@@ -1070,7 +1071,7 @@ public:
 				for( unsigned k=0; k<3; k++ )
 				{
 					int iVertexIndexInVBO = meshInfo.iVertexStart + Triangles[j].nVertexIndices[k];
-					m_vTriangles[meshInfo.iTriangleStart+j].nVertexIndices[k] = (uint16_t) iVertexIndexInVBO;
+					m_vTriangles[meshInfo.iTriangleStart+j].nVertexIndices[k] = (std::uint16_t) iVertexIndexInVBO;
 				}
 		}
 	}
@@ -1512,11 +1513,11 @@ void RageDisplay_Legacy::DrawSymmetricQuadStripInternal( const RageSpriteVertex 
 	int iNumIndices = iNumTriangles*3;
 
 	// make a temporary index buffer
-	static std::vector<uint16_t> vIndices;
+	static std::vector<std::uint16_t> vIndices;
 	unsigned uOldSize = vIndices.size();
 	unsigned uNewSize = std::max(uOldSize,(unsigned)iNumIndices);
 	vIndices.resize( uNewSize );
-	for( uint16_t i=(uint16_t)uOldSize/12; i<(uint16_t)iNumPieces; i++ )
+	for( std::uint16_t i=(std::uint16_t)uOldSize/12; i<(std::uint16_t)iNumPieces; i++ )
 	{
 		// { 1, 3, 0 } { 1, 4, 3 } { 1, 5, 4 } { 1, 2, 5 }
 		vIndices[i*12+0] = i*3+1;
@@ -1686,7 +1687,7 @@ int RageDisplay_Legacy::GetNumTextureUnits()
 		return g_iMaxTextureUnits;
 }
 
-void RageDisplay_Legacy::SetTexture( TextureUnit tu, uintptr_t iTexture )
+void RageDisplay_Legacy::SetTexture( TextureUnit tu, std::uintptr_t iTexture )
 {
 	if (!SetTextureUnit( tu ))
 		return;
@@ -2113,7 +2114,7 @@ void RageDisplay_Legacy::EndConcurrentRendering()
 	g_pWind->EndConcurrentRendering();
 }
 
-void RageDisplay_Legacy::DeleteTexture( uintptr_t iTexture )
+void RageDisplay_Legacy::DeleteTexture( std::uintptr_t iTexture )
 {
 	if (iTexture == 0)
 		return;
@@ -2198,7 +2199,7 @@ void SetPixelMapForSurface( int glImageFormat, int glTexFormat, const RageSurfac
 	DebugAssertNoGLError();
 }
 
-uintptr_t RageDisplay_Legacy::CreateTexture(
+std::uintptr_t RageDisplay_Legacy::CreateTexture(
 	RagePixelFormat pixfmt,
 	RageSurface* pImg,
 	bool bGenerateMipMaps )
@@ -2243,7 +2244,7 @@ uintptr_t RageDisplay_Legacy::CreateTexture(
 	SetTextureUnit( TextureUnit_1 );
 
 	// allocate OpenGL texture resource
-	uintptr_t iTexHandle;
+	std::uintptr_t iTexHandle;
 	glGenTextures( 1, reinterpret_cast<GLuint*>(&iTexHandle) );
 	ASSERT( iTexHandle != 0 );
 
@@ -2359,7 +2360,7 @@ public:
 		m_iTexHandle = 0;
 	}
 
-	void Lock( uintptr_t iTexHandle, RageSurface *pSurface )
+	void Lock( std::uintptr_t iTexHandle, RageSurface *pSurface )
 	{
 		ASSERT( m_iTexHandle == 0 );
 		ASSERT( pSurface->pixels == nullptr );
@@ -2373,7 +2374,7 @@ public:
 		glBufferDataARB( GL_PIXEL_UNPACK_BUFFER_ARB, iSize, nullptr, GL_STREAM_DRAW );
 
 		void *pSurfaceMemory = glMapBufferARB( GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY );
-		pSurface->pixels = (uint8_t *) pSurfaceMemory;
+		pSurface->pixels = (std::uint8_t *) pSurfaceMemory;
 		pSurface->pixels_owned = false;
 	}
 
@@ -2381,7 +2382,7 @@ public:
 	{
 		glUnmapBufferARB( GL_PIXEL_UNPACK_BUFFER_ARB );
 
-		pSurface->pixels = (uint8_t *) BUFFER_OFFSET(0);
+		pSurface->pixels = (std::uint8_t *) BUFFER_OFFSET(0);
 
 		if (bChanged)
 			DISPLAY->UpdateTexture( m_iTexHandle, pSurface, 0, 0, pSurface->w, pSurface->h );
@@ -2405,7 +2406,7 @@ private:
 
 	GLuint m_iBuffer;
 
-	uintptr_t m_iTexHandle;
+	std::uintptr_t m_iTexHandle;
 };
 
 RageTextureLock *RageDisplay_Legacy::CreateTextureLock()
@@ -2417,7 +2418,7 @@ RageTextureLock *RageDisplay_Legacy::CreateTextureLock()
 }
 
 void RageDisplay_Legacy::UpdateTexture(
-	uintptr_t iTexHandle,
+	std::uintptr_t iTexHandle,
 	RageSurface* pImg,
 	int iXOffset, int iYOffset, int iWidth, int iHeight )
 {
@@ -2459,16 +2460,16 @@ public:
 	RenderTarget_FramebufferObject();
 	~RenderTarget_FramebufferObject();
 	void Create( const RenderTargetParam &param, int &iTextureWidthOut, int &iTextureHeightOut );
-	uintptr_t GetTexture() const { return m_iTexHandle; }
+	std::uintptr_t GetTexture() const { return m_iTexHandle; }
 	void StartRenderingTo();
 	void FinishRenderingTo();
 
 	virtual bool InvertY() const { return true; }
 
 private:
-	uintptr_t m_iFrameBufferHandle;
-	uintptr_t m_iTexHandle;
-	uintptr_t m_iDepthBufferHandle;
+	std::uintptr_t m_iFrameBufferHandle;
+	std::uintptr_t m_iTexHandle;
+	std::uintptr_t m_iDepthBufferHandle;
 };
 
 RenderTarget_FramebufferObject::RenderTarget_FramebufferObject()
@@ -2591,7 +2592,7 @@ bool RageDisplay_Legacy::SupportsFullscreenBorderlessWindow() const
  * particularly GeForce 2, but is simpler and faster when available.
  */
 
-uintptr_t RageDisplay_Legacy::CreateRenderTarget( const RenderTargetParam &param, int &iTextureWidthOut, int &iTextureHeightOut )
+std::uintptr_t RageDisplay_Legacy::CreateRenderTarget( const RenderTargetParam &param, int &iTextureWidthOut, int &iTextureHeightOut )
 {
 	RenderTarget *pTarget;
 	if (GLEW_EXT_framebuffer_object)
@@ -2601,22 +2602,22 @@ uintptr_t RageDisplay_Legacy::CreateRenderTarget( const RenderTargetParam &param
 
 	pTarget->Create( param, iTextureWidthOut, iTextureHeightOut );
 
-	uintptr_t iTexture = pTarget->GetTexture();
+	std::uintptr_t iTexture = pTarget->GetTexture();
 
 	ASSERT( g_mapRenderTargets.find(iTexture) == g_mapRenderTargets.end() );
 	g_mapRenderTargets[iTexture] = pTarget;
 	return iTexture;
 }
 
-uintptr_t RageDisplay_Legacy::GetRenderTarget()
+std::uintptr_t RageDisplay_Legacy::GetRenderTarget()
 {
-	for( std::map<uintptr_t, RenderTarget*>::const_iterator it = g_mapRenderTargets.begin(); it != g_mapRenderTargets.end(); ++it )
+	for( std::map<std::uintptr_t, RenderTarget*>::const_iterator it = g_mapRenderTargets.begin(); it != g_mapRenderTargets.end(); ++it )
 	if( it->second == g_pCurrentRenderTarget )
 		return it->first;
 	return 0;
 }
 
-void RageDisplay_Legacy::SetRenderTarget( uintptr_t iTexture, bool bPreserveTexture )
+void RageDisplay_Legacy::SetRenderTarget( std::uintptr_t iTexture, bool bPreserveTexture )
 {
 	if (iTexture == 0)
 	{
@@ -2695,7 +2696,7 @@ void RageDisplay_Legacy::SetLineWidth(float fWidth)
 	glLineWidth(fWidth);
 }
 
-RString RageDisplay_Legacy::GetTextureDiagnostics(uintptr_t iTexture) const
+RString RageDisplay_Legacy::GetTextureDiagnostics(std::uintptr_t iTexture) const
 {
 	/*
 		s << (bGenerateMipMaps? "gluBuild2DMipmaps":"glTexImage2D");

@@ -5,6 +5,7 @@
 #include "RageThreads.h"
 
 #include <cstdarg>
+#include <cstdint>
 
 #if defined(_WINDOWS) && defined(DEBUG)
 #include <windows.h>
@@ -14,7 +15,7 @@ using CrashHandler::IsDebuggerPresent;
 using CrashHandler::DebugBreak;
 #endif
 
-static uint64_t g_HandlerThreadID = RageThread::GetInvalidThreadID();
+static std::uint64_t g_HandlerThreadID = RageThread::GetInvalidThreadID();
 static void (*g_CleanupHandler)( const RString &sError ) = nullptr;
 void RageException::SetCleanupHandler( void (*pHandler)(const RString &sError) )
 {

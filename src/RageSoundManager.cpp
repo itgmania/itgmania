@@ -21,6 +21,8 @@
 
 #include "arch/Sound/RageSoundDriver.h"
 
+#include <cstdint>
+
 /*
  * The lock ordering requirements are:
  * RageSound::Lock before g_SoundManMutex
@@ -98,7 +100,7 @@ bool RageSoundManager::Pause( RageSoundBase *pSound, bool bPause )
 		return m_pDriver->PauseMixing( pSound, bPause );
 }
 
-int64_t RageSoundManager::GetPosition( RageTimer *pTimer ) const
+std::int64_t RageSoundManager::GetPosition( RageTimer *pTimer ) const
 {
 	if( m_pDriver == nullptr )
 		return 0;
@@ -112,7 +114,7 @@ void RageSoundManager::Update()
 	{
 		std::map<RString, RageSoundReader_Preload*>::iterator it, next;
 		it = m_mapPreloadedSounds.begin();
-		
+
 		while( it != m_mapPreloadedSounds.end() )
 		{
 			next = it; ++next;
@@ -179,7 +181,7 @@ void RageSoundManager::AddLoadedSound( const RString &sPath_, RageSoundReader_Pr
 	std::map<RString, RageSoundReader_Preload*>::const_iterator it;
 	it = m_mapPreloadedSounds.find( sPath );
 	ASSERT_M( it == m_mapPreloadedSounds.end(), sPath );
-	
+
 	m_mapPreloadedSounds[sPath] = pSound->Copy();
 }
 

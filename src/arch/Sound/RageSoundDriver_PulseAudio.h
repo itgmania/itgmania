@@ -6,6 +6,7 @@
 #include "RageSoundDriver.h"
 
 #include <cstddef>
+#include <cstdint>
 
 #include <pulse/pulseaudio.h>
 
@@ -17,11 +18,11 @@ public:
 
 	RString Init();
 
-	inline int64_t GetPosition() const;
+	inline std::int64_t GetPosition() const;
 	inline int GetSampleRate() const { return m_SampleRate; };
 
 protected:
-	int64_t m_LastPosition;
+	std::int64_t m_LastPosition;
 	int m_SampleRate;
 	char *m_Error;
 

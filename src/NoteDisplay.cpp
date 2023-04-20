@@ -20,6 +20,7 @@
 #include "Style.h"
 
 #include <cmath>
+#include <cstdint>
 
 static Preference<bool> g_bRenderEarlierNotesOnTop( "RenderEarlierNotesOnTop", false );
 
@@ -1358,7 +1359,7 @@ void NoteDisplay::DrawActor(const TapNote& tn, Actor* pActor, NotePart part,
 			break;
 		case NoteColorType_ProgressAlternate:
 			fScaledBeat = fBeat * cache->m_iNoteColorCount[part];
-			if( fScaledBeat - int64_t(fScaledBeat) == 0.0f )
+			if( fScaledBeat - std::int64_t(fScaledBeat) == 0.0f )
 				//we're on a boundary, so move to the previous frame.
 				//doing it this way ensures that fScaledBeat is never negative so std::fmod works.
 				fScaledBeat += cache->m_iNoteColorCount[part] - 1;

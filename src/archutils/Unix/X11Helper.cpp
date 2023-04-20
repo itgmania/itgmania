@@ -5,6 +5,8 @@
 #include "Preference.h"
 #include "PrefsManager.h" // XXX: only used for m_bShowMouseCursor -aj
 
+#include <cstdint>
+
 #include <X11/extensions/dpms.h>
 
 Display *X11Helper::Dpy = nullptr;
@@ -204,8 +206,8 @@ bool X11Helper::SetWMFullscreenMonitors( const DisplaySpec &target )
 	{
 		auto mon = std::find_if( screens, end, [&]( XineramaScreenInfo &screen ) {
 			return screen.x_org == target.currentBounds().left && screen.y_org == target.currentBounds().top
-				   && screen.width >= 0 && static_cast<uint32_t>(screen.width) == target.currentMode()->width
-				   && screen.height >= 0 && static_cast<uint32_t>(screen.height) == target.currentMode()->height;
+				   && screen.width >= 0 && static_cast<std::uint32_t>(screen.width) == target.currentMode()->width
+				   && screen.height >= 0 && static_cast<std::uint32_t>(screen.height) == target.currentMode()->height;
 		} );
 		if (mon != end)
 		{

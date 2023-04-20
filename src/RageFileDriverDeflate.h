@@ -6,6 +6,7 @@
 #include "RageFileBasic.h"
 
 #include <cstddef>
+#include <cstdint>
 
 typedef struct z_stream_s z_stream;
 
@@ -69,7 +70,7 @@ private:
 	int m_iDataStartOffset;
 };
 
-RageFileObjInflate *GunzipFile( RageFileBasic *pFile, RString &sError, uint32_t *iCRC32 );
+RageFileObjInflate *GunzipFile( RageFileBasic *pFile, RString &sError, std::uint32_t *iCRC32 );
 
 /* Quick helpers: */
 void GzipString( const RString &sIn, RString &sOut );

@@ -3,6 +3,7 @@
 #include "RageUtil.h"
 
 #include <cmath>
+#include <cstdint>
 
 #if defined(MACOSX)
 #include "archutils/Darwin/VectorHelper.h"
@@ -75,7 +76,7 @@ void RageSoundMixBuffer::write( const float *pBuf, unsigned iSize, int iSourceSt
 	}
 }
 
-void RageSoundMixBuffer::read( int16_t *pBuf )
+void RageSoundMixBuffer::read( std::int16_t *pBuf )
 {
 	for( unsigned iPos = 0; iPos < m_iBufUsed; ++iPos )
 	{

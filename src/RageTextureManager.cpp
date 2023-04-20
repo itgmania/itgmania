@@ -17,7 +17,7 @@
  * If a texture is loaded as DEFAULT that was already loaded as VOLATILE, DEFAULT
  * overrides.
  */
-	
+
 #include "global.h"
 #include "RageTextureManager.h"
 #include "RageBitmapTexture.h"
@@ -27,6 +27,7 @@
 #include "RageDisplay.h"
 #include "ActorUtil.h"
 
+#include <cstdint>
 #include <map>
 
 RageTextureManager*		TEXTUREMAN		= nullptr; // global and accessible from anywhere in our program
@@ -132,10 +133,10 @@ public:
 		m_iImageWidth = m_iImageHeight = 1;
 		CreateFrameRects();
 	}
-	uintptr_t GetTexHandle() const { return m_uTexHandle; }
+	std::uintptr_t GetTexHandle() const { return m_uTexHandle; }
 
 private:
-	uintptr_t m_uTexHandle;
+	std::uintptr_t m_uTexHandle;
 };
 
 // Load and unload textures from disk.
@@ -224,7 +225,7 @@ void RageTextureManager::UnloadTexture( RageTexture *t )
 	/* Delete volatile textures after they've been used at least once. */
 	if( t->GetPolicy() == RageTextureID::TEX_VOLATILE && t->m_bWasUsed )
 		bDeleteThis = true;
-	
+
 	if( bDeleteThis )
 		DeleteTexture( t );
 }
@@ -281,7 +282,7 @@ void RageTextureManager::GarbageCollect( GCType type )
 			RageTextureID::TexPolicy policy = t->GetPolicy();
 			switch( policy )
 			{
-			case RageTextureID::TEX_DEFAULT: 
+			case RageTextureID::TEX_DEFAULT:
 				/* If m_bDelayedDelete, wait until delayed_delete.  If !m_bDelayedDelete,
 				 * it should have been deleted when it reached no references, but we
 				 * might have just changed the preference. */
@@ -299,7 +300,7 @@ void RageTextureManager::GarbageCollect( GCType type )
 		/* This happens when we change themes; free all textures. */
 		if( type==delayed_delete )
 			bDeleteThis = true;
-			
+
 		if( bDeleteThis )
 			DeleteTexture( t );
 	}
@@ -344,7 +345,7 @@ bool RageTextureManager::SetPrefs( RageTextureManagerPrefs prefs )
 		bNeedReload = true;
 
 	m_Prefs = prefs;
-	
+
 	ASSERT( m_Prefs.m_iTextureColorDepth==16 || m_Prefs.m_iTextureColorDepth==32 );
 	ASSERT( m_Prefs.m_iMovieColorDepth==16 || m_Prefs.m_iMovieColorDepth==32 );
 	return bNeedReload;

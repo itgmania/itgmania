@@ -13,6 +13,7 @@
 #include <sys/resource.h>
 
 #include <cstddef>
+#include <cstdint>
 
 /* Register the RageSoundDriver_Pulseaudio class as sound driver "Pulse" */
 REGISTER_SOUND_DRIVER_CLASS2( Pulse, PulseAudio );
@@ -181,7 +182,7 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 	*
 	* "The server tries to assure that at least tlength bytes are always
 	*  available in the per-stream server-side playback buffer. It is
-	*  recommended to set this to (uint32_t) -1, which will initialize
+	*  recommended to set this to (std::uint32_t) -1, which will initialize
 	*  this to a value that is deemed sensible by the server. However,
 	*  this value will default to something like 2s, i.e. for applications
 	*  that have specific latency requirements this value should be set to
@@ -194,10 +195,10 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 
 	/* maxlength: Maximum length of the buffer
 	*
-	* "Setting this to (uint32_t) -1 will initialize this to the maximum
+	* "Setting this to (std::uint32_t) -1 will initialize this to the maximum
 	*  value supported by server, which is recommended."
 	*
-	* (uint32_t)-1 is NOT working here, setting it to tlength*2, like
+	* (std::uint32_t)-1 is NOT working here, setting it to tlength*2, like
 	* openal-soft-pulseaudio does.
 	*/
 	attr.maxlength = attr.tlength*2;
@@ -206,10 +207,10 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 	*
 	* "The server does not request less than minreq bytes from the client,
 	*  instead waits until the buffer is free enough to request more bytes
-	*  at once. It is recommended to set this to (uint32_t) -1, which will
+	*  at once. It is recommended to set this to (std::uint32_t) -1, which will
 	*  initialize this to a value that is deemed sensible by the server."
 	*
-	* (uint32_t)-1 is NOT working here, setting it to 0, like
+	* (std::uint32_t)-1 is NOT working here, setting it to 0, like
 	* openal-soft-pulseaudio does.
 	*/
 	attr.minreq = 0;
@@ -218,10 +219,10 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 	*
 	* "The server does not start with playback before at least prebuf
 	*  bytes are available in the buffer. It is recommended to set this
-	*  to (uint32_t) -1, which will initialize this to the same value as
+	*  to (std::uint32_t) -1, which will initialize this to the same value as
 	*  tlength"
 	*/
-	attr.prebuf = (uint32_t)-1;
+	attr.prebuf = (std::uint32_t)-1;
 
 	/* log the used target buffer length */
 	LOG->Trace("Pulse: using target buffer length of %i bytes", attr.tlength);
@@ -300,7 +301,7 @@ void RageSoundDriver_PulseAudio::StreamStateCb(pa_stream *s)
 	}
 }
 
-int64_t RageSoundDriver_PulseAudio::GetPosition() const
+std::int64_t RageSoundDriver_PulseAudio::GetPosition() const
 {
 	return m_LastPosition;
 }
@@ -317,10 +318,10 @@ void RageSoundDriver_PulseAudio::StreamWriteCb(pa_stream *s, std::size_t length)
 	* maybe the requested length is given in frames instead of bytes */
 	length *= 2;
 #endif
-	const std::size_t nbframes = length / sizeof(int16_t); /* we use 16-bit frames */
-	std::vector<int16_t> buf(nbframes);
-	int64_t pos1 = m_LastPosition;
-	int64_t pos2 = pos1 + nbframes/2; /* Mix() position in stereo frames */
+	const std::size_t nbframes = length / sizeof(std::int16_t); /* we use 16-bit frames */
+	std::vector<std::int16_t> buf(nbframes);
+	std::int64_t pos1 = m_LastPosition;
+	std::int64_t pos2 = pos1 + nbframes/2; /* Mix() position in stereo frames */
 	this->Mix( buf.data(), pos2-pos1, pos1, pos2);
 	if(pa_stream_write(m_PulseStream, buf.data(), length, nullptr, 0, PA_SEEK_RELATIVE) < 0)
 	{

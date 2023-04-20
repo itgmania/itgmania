@@ -5,8 +5,9 @@
 #include "RageThreads.h"
 #include "RageUtil.h"
 
+#include <cerrno>
 #include <cstddef>
-#include <errno.h>
+#include <cstdint>
 #include <sys/time.h>
 
 #if defined(UNIX)
@@ -37,7 +38,7 @@ void ThreadImpl_Pthreads::Resume()
 	ResumeThread( threadHandle );
 }
 
-uint64_t ThreadImpl_Pthreads::GetThreadId() const
+std::uint64_t ThreadImpl_Pthreads::GetThreadId() const
 {
 	return threadHandle;
 }
@@ -78,7 +79,7 @@ static void *StartThread( void *pData )
 	return new int(iRet);
 }
 
-ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, uint64_t *piThreadID )
+ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, std::uint64_t *piThreadID )
 {
 	ThreadImpl_Pthreads *thread = new ThreadImpl_Pthreads;
 	thread->m_pFunc = pFunc;
@@ -226,12 +227,12 @@ void MutexImpl_Pthreads::Unlock()
 	pthread_mutex_unlock( &mutex );
 }
 
-uint64_t GetThisThreadId()
+std::uint64_t GetThisThreadId()
 {
 	return GetCurrentThreadId();
 }
 
-uint64_t GetInvalidThreadId()
+std::uint64_t GetInvalidThreadId()
 {
 	return 0;
 }

@@ -7,6 +7,7 @@
 #include "RageFile.h"
 
 #include <cstddef>
+#include <cstdint>
 
 #undef FAR // fix for VC
 /** @brief A helper to get the jpeg lib. */
@@ -24,7 +25,7 @@ typedef struct
 	struct jpeg::jpeg_destination_mgr pub;
 
 	RageFile *f;
-	uint8_t buffer[OUTPUT_BUFFER_SIZE];
+	std::uint8_t buffer[OUTPUT_BUFFER_SIZE];
 } my_destination_mgr;
 
 

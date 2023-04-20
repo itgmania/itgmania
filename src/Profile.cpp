@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 
 const RString STATS_XML            = "Stats.xml";
 const RString STATS_XML_GZ         = "Stats.xml.gz";
@@ -1254,7 +1255,7 @@ ProfileLoadResult Profile::LoadStatsFromDir(RString dir, bool require_signature)
 	if(compressed)
 	{
 		RString sError;
-		uint32_t iCRC32;
+		std::uint32_t iCRC32;
 		RageFileObjInflate *pInflate = GunzipFile(pFile.release(), sError, &iCRC32);
 		if(pInflate == nullptr)
 		{
