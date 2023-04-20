@@ -14,6 +14,8 @@
 #include "StepMania.h"
 
 #include <cmath>
+#include <vector>
+
 
 static void GetResolutionFromFileName( RString sPath, int &iWidth, int &iHeight )
 {

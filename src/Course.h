@@ -8,8 +8,11 @@
 #include "RageTypes.h"
 #include "SongUtil.h"
 #include "StepsUtil.h"
+
 #include <map>
 #include <set>
+#include <vector>
+
 
 struct lua_State;
 class Style;
@@ -54,7 +57,7 @@ public:
 	bool bNoDifficult;		// if true, CourseDifficulty doesn't affect this entry
 
 	SongSort songSort;		// sort by this after filtering
-	int iChooseIndex;		// 
+	int iChooseIndex;		//
 
 	RString sModifiers;		// set player and song options using these
 	AttackArray attacks;	// timed sModifiers
@@ -218,7 +221,7 @@ public:
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -228,7 +231,7 @@ public:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

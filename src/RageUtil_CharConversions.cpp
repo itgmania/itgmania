@@ -3,6 +3,8 @@
 #include "RageUtil.h"
 #include "RageLog.h"
 
+#include <vector>
+
 #if defined(_WINDOWS)
 
 #include "archutils/Win32/ErrorStrings.h"

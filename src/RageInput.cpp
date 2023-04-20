@@ -6,6 +6,9 @@
 #include "LuaManager.h"
 #include "LocalizedString.h"
 
+#include <vector>
+
+
 RageInput* INPUTMAN = nullptr; // global and accessible from anywhere in our program
 
 Preference<RString> g_sInputDrivers( "InputDrivers", "" ); // "" == DEFAULT_INPUT_DRIVER_LIST
@@ -177,7 +180,7 @@ RString RageInput::GetDisplayDevicesString() const
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to RageInput. */ 
+/** @brief Allow Lua to have access to RageInput. */
 class LunaRageInput: public Luna<RageInput>
 {
 public:

@@ -16,6 +16,8 @@
 
 #include <cmath>
 #include <cstddef>
+#include <vector>
+
 
 const RString DEFAULT_LIGHTS_DRIVER = "SystemMessage,Export";
 static Preference<RString> g_sLightsDriver( "LightsDriver", "" ); // "" == DEFAULT_LIGHTS_DRIVER

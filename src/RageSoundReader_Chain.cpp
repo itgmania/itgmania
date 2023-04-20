@@ -10,6 +10,7 @@
 #include "RageSoundUtil.h"
 
 #include <cmath>
+#include <vector>
 
 
 /*

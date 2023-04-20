@@ -7,6 +7,9 @@
 #include "GameConstantsAndTypes.h"
 #include "LocalizedString.h"
 
+#include <vector>
+
+
 // Types
 class ThemeMetricDifficultiesToShow : public ThemeMetric<RString>
 {
@@ -40,7 +43,7 @@ private:
 };
 
 
-/** 
+/**
  * @brief Definitions of metrics that are in the "Common" group.
  *
  * These metrics are used throughout the metrics file. */
@@ -74,7 +77,7 @@ namespace CommonMetrics
 	extern ThemeMetric<bool>			AUTO_SET_STYLE;
 	/** @brief How many decimal places are used? */
 	extern ThemeMetric<int>			PERCENT_SCORE_DECIMAL_PLACES;
-	
+
 	extern ThemeMetric<RString>		IMAGES_TO_CACHE;
 
 	RString LocalizeOptionItem( const RString &s, bool bOptional );
@@ -87,7 +90,7 @@ namespace CommonMetrics
  * @author Chris Danford (c) 2003-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -97,7 +100,7 @@ namespace CommonMetrics
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

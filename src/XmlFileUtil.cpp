@@ -9,6 +9,8 @@
 #include "LuaManager.h"
 
 #include <cstddef>
+#include <vector>
+
 
 bool XmlFileUtil::LoadFromFileShowErrors( XNode &xml, RageFileBasic &f )
 {

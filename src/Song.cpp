@@ -40,8 +40,9 @@
 #include <cfloat>
 #include <cmath>
 #include <cstddef>
-#include <time.h>
+#include <ctime>
 #include <set>
+#include <vector>
 
 //-Nick12 Used for song file hashing
 #include <CryptManager.h>

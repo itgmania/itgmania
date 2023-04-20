@@ -10,6 +10,8 @@
 #include <cfloat>
 #include <cmath>
 #include <cstddef>
+#include <vector>
+
 
 static void EraseSegment(std::vector<TimingSegment*> &vSegs, int index, TimingSegment *cur);
 static const int INVALID_INDEX = -1;

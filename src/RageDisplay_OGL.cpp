@@ -23,6 +23,7 @@ using namespace RageDisplay_Legacy_Helpers;
 #include <cstddef>
 #include <cstdint>
 #include <set>
+#include <vector>
 
 #if defined(WINDOWS)
 #include <GL/wglew.h>

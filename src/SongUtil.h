@@ -5,7 +5,10 @@
 
 #include "GameConstantsAndTypes.h"
 #include "Difficulty.h"
+
 #include <set>
+#include <vector>
+
 
 class Song;
 class Steps;
@@ -40,7 +43,7 @@ public:
 		Tutorial_DontCare /**< This song can or cannot be used for tutorial purposes. */
 	} m_Tutorial;
 	/** @brief Is this song used for locking/unlocking purposes? */
-	enum Locked 
+	enum Locked
 	{
 		Locked_Locked, /**< This song is a locked song. */
 		Locked_Unlocked, /**< This song is an unlocked song. */
@@ -73,17 +76,17 @@ public:
 	{
 /** @brief A quick way to match every part of the song criterium. */
 #define X(x) (x == other.x)
-		return 
-			X(m_sGroupName) && 
-			X(m_bUseSongGenreAllowedList) && 
+		return
+			X(m_sGroupName) &&
+			X(m_bUseSongGenreAllowedList) &&
 			X(m_vsSongGenreAllowedList) &&
-			X(m_Selectable) && 
-			X(m_bUseSongAllowedList) && 
+			X(m_Selectable) &&
+			X(m_bUseSongAllowedList) &&
 			X(m_vpSongAllowedList) &&
-			X(m_iMaxStagesForSong) && 
-			//X(m_fMinBPM) && 
-			//X(m_fMaxBPM) && 
-			X(m_Tutorial) && 
+			X(m_iMaxStagesForSong) &&
+			//X(m_fMinBPM) &&
+			//X(m_fMaxBPM) &&
+			X(m_Tutorial) &&
 			X(m_Locked);
 #undef X
 	}
@@ -98,25 +101,25 @@ public:
 /** @brief A set of song utilities to make working with songs easier. */
 namespace SongUtil
 {
-	void GetSteps( 
+	void GetSteps(
 		const Song *pSong,
 		std::vector<Steps*>& arrayAddTo,
-		StepsType st = StepsType_Invalid, 
-		Difficulty dc = Difficulty_Invalid, 
-		int iMeterLow = -1, 
-		int iMeterHigh = -1, 
+		StepsType st = StepsType_Invalid,
+		Difficulty dc = Difficulty_Invalid,
+		int iMeterLow = -1,
+		int iMeterHigh = -1,
 		const RString &sDescription = "",
 		const RString &sCredit = "",
-		bool bIncludeAutoGen = true, 
+		bool bIncludeAutoGen = true,
 		unsigned uHash = 0,
-		int iMaxToGet = -1 
+		int iMaxToGet = -1
 		);
-	Steps* GetOneSteps( 
+	Steps* GetOneSteps(
 		const Song *pSong,
-		StepsType st = StepsType_Invalid, 
-		Difficulty dc = Difficulty_Invalid, 
-		int iMeterLow = -1, 
-		int iMeterHigh = -1, 
+		StepsType st = StepsType_Invalid,
+		Difficulty dc = Difficulty_Invalid,
+		int iMeterLow = -1,
+		int iMeterHigh = -1,
 		const RString &sDescription = "",
 		const RString &sCredit = "",
 		unsigned uHash = 0,
@@ -127,7 +130,7 @@ namespace SongUtil
 	Steps* GetStepsByDescription(	const Song *pSong, StepsType st, RString sDescription );
 	Steps* GetStepsByCredit(	const Song *pSong, StepsType st, RString sCredit );
 	Steps* GetClosestNotes(		const Song *pSong, StepsType st, Difficulty dc, bool bIgnoreLocked=false );
-	
+
 	void AdjustDuplicateSteps( Song *pSong ); // part of TidyUpData
 	void DeleteDuplicateSteps( Song *pSong, std::vector<Steps*> &vSteps );
 
@@ -228,7 +231,7 @@ public:
  * @author Chris Danford, Glenn Maynard (c) 2001-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -238,7 +241,7 @@ public:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

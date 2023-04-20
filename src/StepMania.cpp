@@ -71,6 +71,7 @@
 #include "ver.h"
 
 #include <cmath>
+#include <vector>
 
 #if defined(WIN32)
 #include <windows.h>

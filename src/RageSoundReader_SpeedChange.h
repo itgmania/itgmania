@@ -5,6 +5,9 @@
 
 #include "RageSoundReader_Filter.h"
 
+#include <vector>
+
+
 class RageSoundReader_SpeedChange: public RageSoundReader_Filter
 {
 public:

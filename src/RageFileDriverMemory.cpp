@@ -4,8 +4,10 @@
 #include "RageUtil.h"
 #include "RageUtil_FileDB.h"
 
+#include <cerrno>
 #include <cstddef>
-#include <errno.h>
+#include <vector>
+
 
 struct RageFileObjMemFile
 {

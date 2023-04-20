@@ -3,6 +3,9 @@
 
 #include "StageStats.h"
 
+#include <vector>
+
+
 /** @brief Managed non-persisted statistics. */
 class StatsManager
 {

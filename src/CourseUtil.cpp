@@ -16,6 +16,9 @@
 #include "RageFileManager.h"
 #include "CourseWriterCRS.h"
 
+#include <vector>
+
+
 // Sorting stuff
 static bool CompareCoursePointersByName( const Course* pCourse1, const Course* pCourse2 )
 {
@@ -266,7 +269,7 @@ void CourseUtil::AutogenNonstopFromGroup( const RString &sGroupName, Difficulty 
 
 	out.m_bRepeat = false;
 
-	out.m_sMainTitle += " Random";	
+	out.m_sMainTitle += " Random";
 
 	// resize to 4
 	while( out.m_vEntries.size() < 4 )
@@ -575,7 +578,7 @@ XNode* CourseID::CreateNode() const
 	return pNode;
 }
 
-void CourseID::LoadFromNode( const XNode* pNode ) 
+void CourseID::LoadFromNode( const XNode* pNode )
 {
 	ASSERT( pNode->GetName() == "Course" );
 	sFullTitle = RString();
@@ -605,7 +608,7 @@ bool CourseID::IsValid() const
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -615,7 +618,7 @@ bool CourseID::IsValid() const
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

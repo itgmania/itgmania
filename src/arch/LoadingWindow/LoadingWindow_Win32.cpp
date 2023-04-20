@@ -18,6 +18,8 @@
 #include "LocalizedString.h"
 
 #include <cmath>
+#include <vector>
+
 
 static HBITMAP g_hBitmap = nullptr;
 

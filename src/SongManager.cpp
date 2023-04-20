@@ -40,6 +40,8 @@
 
 #include <cstddef>
 #include <tuple>
+#include <vector>
+
 
 SongManager*	SONGMAN = nullptr;	// global and accessible from anywhere in our program
 

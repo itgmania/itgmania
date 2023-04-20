@@ -1,4 +1,6 @@
 #pragma once
+
+#include <vector>
 #include <afxwin.h>
 #include <afxcmn.h>
 

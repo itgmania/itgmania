@@ -11,6 +11,9 @@
 #include "ReceptorArrowRow.h"
 #include "GhostArrowRow.h"
 
+#include <vector>
+
+
 struct Attack;
 class NoteData;
 /** @brief An Actor that renders NoteData. */
@@ -25,9 +28,9 @@ public:
 	void DrawBoardPrimitive();
 
 	virtual void Init( const PlayerState* pPlayerState, float fYReverseOffsetPixels, bool use_states_zoom= true );
-	virtual void Load( 
-		const NoteData* pNoteData, 
-		int iDrawDistanceAfterTargetsPixels, 
+	virtual void Load(
+		const NoteData* pNoteData,
+		int iDrawDistanceAfterTargetsPixels,
 		int iDrawDistanceBeforeTargetsPixels );
 	virtual void Unload();
 
@@ -85,7 +88,7 @@ protected:
 	void DrawAttackText(const float beat, const Attack &attack, const RageColor& glow);
 	void DrawBGChangeText(const float beat, const RString new_bg_name, const RageColor& glow);
 	float GetWidth() const;
-	
+
 	const NoteData *m_pNoteData;
 
 	const PlayerState*	m_pPlayerState;
@@ -132,7 +135,7 @@ protected:
  * @author Chris Danford (c) 2001-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -142,7 +145,7 @@ protected:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

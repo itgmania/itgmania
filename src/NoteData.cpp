@@ -13,6 +13,8 @@
 #include "RageUtil_AutoPtr.h"
 
 #include <cstddef>
+#include <vector>
+
 
 REGISTER_CLASS_TRAITS( NoteData, new NoteData(*pCopy) )
 

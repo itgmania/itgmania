@@ -4,14 +4,17 @@
 #include "RageUtil.h"
 #include "archutils/Win32/ErrorStrings.h"
 
-#pragma comment(lib, "setupapi.lib") 
-#pragma comment(lib, "hid.lib") 
+#pragma comment(lib, "setupapi.lib")
+#pragma comment(lib, "hid.lib")
 
 extern "C" {
 #include "archutils/Win32/ddk/setupapi.h"
 /* Quiet header warning: */
 #include "archutils/Win32/ddk/hidsdi.h"
 }
+
+#include <vector>
+
 
 static RString GetUSBDevicePath( int iNum )
 {
@@ -38,7 +41,7 @@ static RString GetUSBDevicePath( int iNum )
 
 	RString sRet;
 	if( SetupDiGetDeviceInterfaceDetail(DeviceInfo, &DeviceInterface,
-		DeviceDetail, iSize, &iSize, nullptr) ) 
+		DeviceDetail, iSize, &iSize, nullptr) )
 		sRet = DeviceDetail->DevicePath;
 	free( DeviceDetail );
 
@@ -221,7 +224,7 @@ bool WindowsFileIO::IsOpen() const
 /*
  * (c) 2002-2005 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -231,7 +234,7 @@ bool WindowsFileIO::IsOpen() const
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

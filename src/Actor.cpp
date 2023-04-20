@@ -17,6 +17,7 @@
 #include <cmath>
 #include <cstddef>
 #include <typeinfo>
+#include <vector>
 
 static Preference<bool> g_bShowMasks("ShowMasks", false);
 static const float default_effect_period= 1.0f;

@@ -5,6 +5,8 @@
 
 #include <cstddef>
 #include <list>
+#include <vector>
+
 
 // Spline solving optimization:
 // The tridiagonal part of the system of equations for a spline of size n is

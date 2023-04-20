@@ -21,6 +21,8 @@
 
 #include <cmath>
 #include <cstddef>
+#include <vector>
+
 
 StatsManager*	STATSMAN = nullptr;	// global object accessible from anywhere in the program
 

@@ -63,6 +63,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <vector>
 
 // Defines
 #define SHOW_LIFE_METER_FOR_DISABLED_PLAYERS	THEME->GetMetricB(m_sName,"ShowLifeMeterForDisabledPlayers")

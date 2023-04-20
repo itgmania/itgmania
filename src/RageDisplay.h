@@ -9,6 +9,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <set>
+#include <vector>
+
 
 class DisplaySpec;
 typedef std::set<DisplaySpec> DisplaySpecs;

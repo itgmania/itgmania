@@ -9,6 +9,8 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <vector>
+
 
 ThemeMetric<RString> EMPTY_NAME("HighScore","EmptyName");
 

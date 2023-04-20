@@ -2,9 +2,12 @@
 #define NOTE_DATA_H
 
 #include "NoteTypes.h"
+
 #include <map>
 #include <set>
 #include <iterator>
+#include <vector>
+
 
 /** @brief Act on each non empty row in the specific track. */
 #define FOREACH_NONEMPTY_ROW_IN_TRACK( nd, track, row ) \

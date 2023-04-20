@@ -25,6 +25,7 @@
 #include <WbemIdl.h>
 #include <OleAuto.h>
 #include <limits>
+#include <vector>
 
 // this may not be defined if we are using an older Windows SDK. (for instance, toolsetversion v140_xp does not define it)
 // the number was taken from the documentation

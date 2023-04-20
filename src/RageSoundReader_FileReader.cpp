@@ -6,6 +6,7 @@
 #include "ActorUtil.h"
 
 #include <set>
+#include <vector>
 
 #include "RageSoundReader_WAV.h"
 #include "RageSoundReader_MP3.h"

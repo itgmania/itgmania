@@ -12,6 +12,8 @@
 #include "XmlFile.h"
 
 #include <cmath>
+#include <vector>
+
 
 //#define DIVIDE_LINE_WIDTH			THEME->GetMetricI(m_sName,"TexturedBottomHalf")
 REGISTER_ACTOR_CLASS( GraphDisplay );

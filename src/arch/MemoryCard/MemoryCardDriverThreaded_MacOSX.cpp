@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <vector>
 
 #include <Carbon/Carbon.h>
 #include <IOKit/IOKitLib.h>

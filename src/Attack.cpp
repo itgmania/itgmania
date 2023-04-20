@@ -7,6 +7,8 @@
 #include "PlayerState.h"
 
 #include <cmath>
+#include <vector>
+
 
 void Attack::GetAttackBeats( const Song *pSong, float &fStartBeat, float &fEndBeat ) const
 {

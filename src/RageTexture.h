@@ -7,6 +7,8 @@
 #include "RageTextureID.h"
 
 #include <cstdint>
+#include <vector>
+
 
 struct lua_State;
 class RageTexture

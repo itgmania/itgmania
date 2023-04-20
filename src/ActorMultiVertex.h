@@ -7,6 +7,7 @@
 #include "RageTextureID.h"
 
 #include <cstddef>
+#include <vector>
 
 enum DrawMode
 {

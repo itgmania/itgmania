@@ -46,6 +46,8 @@
 #include <cstddef>
 #include <ctime>
 #include <set>
+#include <vector>
+
 
 GameState*	GAMESTATE = nullptr;	// global and accessible from anywhere in our program
 

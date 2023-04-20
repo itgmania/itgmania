@@ -3,6 +3,8 @@
 #include "InputHandler_Win32_MIDI.h"
 #include "RageLog.h"
 
+#include <vector>
+
 #include <windows.h>
 #include <mmsystem.h>
 

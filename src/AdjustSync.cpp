@@ -44,6 +44,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <vector>
 
 
 std::vector<TimingData> AdjustSync::s_vpTimingDataOriginal;

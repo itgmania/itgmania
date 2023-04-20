@@ -21,6 +21,8 @@
 #include "NotesWriterSM.h"
 
 #include <cstddef>
+#include <vector>
+
 
 AutoScreenMessage( SM_BackFromRename );
 AutoScreenMessage( SM_BackFromDelete );

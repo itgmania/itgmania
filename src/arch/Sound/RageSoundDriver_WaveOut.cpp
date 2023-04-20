@@ -14,6 +14,8 @@
 #include "archutils/Win32/ErrorStrings.h"
 
 #include <cstdint>
+#include <vector>
+
 
 REGISTER_SOUND_DRIVER_CLASS( WaveOut );
 

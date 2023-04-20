@@ -2,6 +2,8 @@
 #include "KeyboardDevice.h"
 
 #include <cstddef>
+#include <vector>
+
 
 using namespace __gnu_cxx;
 

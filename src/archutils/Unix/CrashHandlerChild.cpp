@@ -1,13 +1,6 @@
 #define __USE_GNU
 #include "global.h"
 
-#include <cstdio>
-#include <cstring>
-#include <cerrno>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/select.h>
-
 #include "Backtrace.h"
 #include "BacktraceNames.h"
 
@@ -23,6 +16,14 @@
 #endif
 
 #include "ver.h"
+
+#include <cstdio>
+#include <cstring>
+#include <cerrno>
+#include <vector>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/select.h>
 
 bool child_read( int fd, void *p, int size );
 

@@ -6,6 +6,8 @@
 #include "EnumHelper.h"
 
 #include <cfloat>
+#include <vector>
+
 
 // Note definitions
 /** @brief Define the mininum difficulty value allowed. */

@@ -22,6 +22,9 @@
 #include "SongUtil.h"
 #include "Song.h"
 
+#include <vector>
+
+
 #define SHOW_COURSE_MODIFIERS_PROBABILITY	THEME->GetMetricF(m_sName,"ShowCourseModifiersProbability")
 
 REGISTER_SCREEN_CLASS( ScreenJukebox );
@@ -145,7 +148,7 @@ void ScreenJukebox::SetSong()
 			{
 				int iIndex = RandomInt( apOptions.size() );
 				m_pCourseEntry = apOptions[iIndex];
-				Course *lCourse = apPossibleCourses[iIndex]; 
+				Course *lCourse = apPossibleCourses[iIndex];
 
 				PlayMode pm = CourseTypeToPlayMode( lCourse->GetCourseType() );
 				GAMESTATE->m_PlayMode.Set( pm );
@@ -326,7 +329,7 @@ void ScreenJukebox::InitSongQueues()
 /*
  * (c) 2003-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -336,7 +339,7 @@ void ScreenJukebox::InitSongQueues()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -5,6 +5,9 @@
 #import "RageFile.h"
 #include "ThemeManager.h"
 
+#include <vector>
+
+
 @interface LoadingWindowHelper : NSObject
 {
 	@public

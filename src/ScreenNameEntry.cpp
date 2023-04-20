@@ -27,6 +27,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <vector>
 
 // Defines specific to ScreenNameEntry
 #define CATEGORY_Y			THEME->GetMetricF(m_sName,"CategoryY")

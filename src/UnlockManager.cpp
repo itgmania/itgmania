@@ -18,6 +18,8 @@
 #include "Style.h"
 
 #include <cfloat>
+#include <vector>
+
 
 UnlockManager*	UNLOCKMAN = nullptr;	// global and accessible from anywhere in our program
 

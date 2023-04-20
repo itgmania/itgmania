@@ -4,6 +4,9 @@
 #include "ScoreKeeperNormal.h"
 #include "PlayerNumber.h"
 
+#include <vector>
+
+
 /** @brief ScoreKeeper for Routine mode. */
 class ScoreKeeperShared : public ScoreKeeperNormal
 {
@@ -31,7 +34,7 @@ public:
 /*
  * (c) 2006 Steve Checkoway
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -41,7 +44,7 @@ public:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

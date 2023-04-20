@@ -13,6 +13,7 @@
 
 #include <cstddef>
 #include <set>
+#include <vector>
 
 static const char *MenuDirNames[] = {
 	"Up",

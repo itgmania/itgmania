@@ -16,7 +16,7 @@
  * but preloading the expensive screens may use too much memory and take too long
  * to load all at once.  By calling GroupScreen(), entering these screens will not
  * trigger cleanup.
- * 
+ *
  * Example uses:
  *  - ScreenOptions1 preloads ScreenOptions2, and persists both.  Moving from Options1
  *    and Options2 and back is instant and reuses both.
@@ -29,7 +29,7 @@
  *  - ScreenAttract1 preloads and persists ScreenAttract1, 3, 5 and 7, and groups 1
  *    through 7.  1, 3, 5 and 7 will remain in memory; the rest will be loaded on
  *    demand.
- * 
+ *
  * If a screen is added to the screen stack that isn't in the current screen group
  * (added to by GroupScreen), the screen group is reset: all prepared screens are
  * unloaded and the persistence list is cleared.
@@ -72,6 +72,9 @@
 #include "ScreenDimensions.h"
 #include "ActorUtil.h"
 #include "InputEventPlus.h"
+
+#include <vector>
+
 
 ScreenManager*	SCREENMAN = nullptr;	// global and accessible from anywhere in our program
 
@@ -198,7 +201,7 @@ namespace ScreenManagerUtil
 		g_setGroupedScreens.clear();
 		g_setPersistantScreens.clear();
 	}
-	
+
 	/* Called when changing screen groups. Delete all prepared screens,
 	 * reset the screen group and list of persistant screens. */
 	void DeletePreparedScreens()
@@ -433,7 +436,7 @@ void ScreenManager::Update( float fDeltaTime )
 
 	/* Screens take some time to load.  If we don't do this, then screens
 	 * receive an initial update that includes all of the time they spent
-	 * loading, which will chop off their tweens.  
+	 * loading, which will chop off their tweens.
 	 *
 	 * We don't want to simply cap update times; for example, the stage
 	 * screen sets a 4 second timer, preps the gameplay screen, and then
@@ -449,8 +452,8 @@ void ScreenManager::Update( float fDeltaTime )
 
 	bool bFirstUpdate = pScreen && pScreen->IsFirstUpdate();
 
-	/* Loading a new screen can take seconds and cause a big jump on the new 
-	 * Screen's first update.  Clamp the first update delta so that the 
+	/* Loading a new screen can take seconds and cause a big jump on the new
+	 * Screen's first update.  Clamp the first update delta so that the
 	 * animations don't jump. */
 	if( pScreen && m_bZeroNextUpdate )
 	{
@@ -467,7 +470,7 @@ void ScreenManager::Update( float fDeltaTime )
 		g_pSharedBGA->Update( fDeltaTime );
 
 		for( unsigned i=0; i<g_OverlayScreens.size(); i++ )
-			g_OverlayScreens[i]->Update( fDeltaTime );	
+			g_OverlayScreens[i]->Update( fDeltaTime );
 	}
 
 	/* The music may be started on the first update. If we're reading from a CD,
@@ -515,7 +518,7 @@ void ScreenManager::Draw()
 
 void ScreenManager::Input( const InputEventPlus &input )
 {
-//	LOG->Trace( "ScreenManager::Input( %d-%d, %d-%d, %d-%d, %d-%d )", 
+//	LOG->Trace( "ScreenManager::Input( %d-%d, %d-%d, %d-%d, %d-%d )",
 //		DeviceI.device, DeviceI.button, GameI.controller, GameI.button, MenuI.player, MenuI.button, StyleI.player, StyleI.col );
 
 	// First, give overlay screens a shot at the input.  If Input returns
@@ -740,7 +743,7 @@ void ScreenManager::LoadDelayedScreen()
 		/* It's time to delete all old prepared screens. Depending on
 		 * DelayedScreenLoad, we can either delete the screens before or after
 		 * we load the new screen. Either way, we must remove them from the
-		 * prepared list before we prepare new screens. 
+		 * prepared list before we prepare new screens.
 		 * If DelayedScreenLoad is true, delete them now; this lowers memory
 		 * requirements, but results in redundant loads as we unload common data. */
 		if( g_bDelayedScreenLoad )
@@ -903,7 +906,7 @@ void ScreenManager::PlaySharedBackgroundOffCommand()
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the ScreenManager. */ 
+/** @brief Allow Lua to have access to the ScreenManager. */
 class LunaScreenManager: public Luna<ScreenManager>
 {
 public:
@@ -1013,7 +1016,7 @@ LUA_REGISTER_CLASS( ScreenManager )
 /*
  * (c) 2001-2003 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -1023,7 +1026,7 @@ LUA_REGISTER_CLASS( ScreenManager )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

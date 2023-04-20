@@ -17,6 +17,8 @@
 #include "LuaManager.h"
 
 #include <cstdint>
+#include <vector>
+
 
 CryptManager*	CRYPTMAN	= nullptr;	// global and accessible from anywhere in our program
 

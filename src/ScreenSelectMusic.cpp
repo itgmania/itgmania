@@ -33,6 +33,8 @@
 #include "RageFileManager.h"
 
 #include <cmath>
+#include <vector>
+
 
 static const char *SelectionStateNames[] = {
 	"SelectingSong",

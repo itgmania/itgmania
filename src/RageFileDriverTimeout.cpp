@@ -50,6 +50,8 @@
 
 #include <cerrno>
 #include <cstddef>
+#include <vector>
+
 
 enum ThreadRequest
 {

@@ -5,6 +5,8 @@
 #include "RageLog.h"
 
 #include <cstddef>
+#include <vector>
+
 
 /* Search for "beginning*containing*ending". */
 void FileSet::GetFilesMatching( const RString &sBeginning_, const RString &sContaining_, const RString &sEnding_, std::vector<RString> &asOut, bool bOnlyDirs ) const

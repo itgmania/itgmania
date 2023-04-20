@@ -28,6 +28,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <list>
+#include <vector>
+
 
 // Globals
 HMODULE				g_D3D9_Module = nullptr;

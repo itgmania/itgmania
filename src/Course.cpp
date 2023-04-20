@@ -19,7 +19,9 @@
 #include "Style.h"
 
 #include <cstddef>
-#include <limits.h>
+#include <climits>
+#include <vector>
+
 
 static Preference<int> MAX_SONGS_IN_EDIT_COURSE( "MaxSongsInEditCourse", -1 );
 

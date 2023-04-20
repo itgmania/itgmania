@@ -21,6 +21,8 @@
 
 #include <cmath>
 #include <cstdint>
+#include <vector>
+
 
 static Preference<bool> g_bRenderEarlierNotesOnTop( "RenderEarlierNotesOnTop", false );
 

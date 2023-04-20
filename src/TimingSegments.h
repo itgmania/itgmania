@@ -4,6 +4,8 @@
 #include "NoteTypes.h" // Converting rows to beats and vice~versa.
 
 #include <cmath>
+#include <vector>
+
 
 enum TimingSegmentType
 {

@@ -16,6 +16,8 @@
 
 #include "arch/Dialog/Dialog.h"
 
+#include <vector>
+
 
 // Actor registration
 static std::map<RString,CreateActorFn>	*g_pmapRegistrees = nullptr;
@@ -61,7 +63,7 @@ bool ActorUtil::ResolvePath( RString &sPath, const RString &sName, bool optional
 			switch(LuaHelpers::ReportScriptError(sError, "BROKEN_FILE_REFERENCE", true))
 			{
 			case Dialog::abort:
-				RageException::Throw( "%s", sError.c_str() ); 
+				RageException::Throw( "%s", sError.c_str() );
 				break;
 			case Dialog::retry:
 				FILEMAN->FlushDirCache();
@@ -82,7 +84,7 @@ bool ActorUtil::ResolvePath( RString &sPath, const RString &sName, bool optional
 			switch(LuaHelpers::ReportScriptError(sError, "BROKEN_FILE_REFERENCE", true))
 			{
 			case Dialog::abort:
-				RageException::Throw( "%s", sError.c_str() ); 
+				RageException::Throw( "%s", sError.c_str() );
 				break;
 			case Dialog::retry:
 				FILEMAN->FlushDirCache();
@@ -476,7 +478,7 @@ void ActorUtil::LoadAllCommandsFromName( Actor& actor, const RString &sMetricsGr
 
 	for (RString const & sv : vsValueNames)
 	{
-		static const RString sEnding = "Command"; 
+		static const RString sEnding = "Command";
 		if( EndsWith(sv,sEnding) )
 		{
 			RString sCommandName( sv.begin()+sName.size(), sv.end()-sEnding.size() );
@@ -676,7 +678,7 @@ namespace
 		LIST_METHOD( ResolvePath ),
 		LIST_METHOD( IsRegisteredClass ),
 		LIST_METHOD( LoadAllCommands ),
-		LIST_METHOD( LoadAllCommandsFromName ), 
+		LIST_METHOD( LoadAllCommandsFromName ),
 		LIST_METHOD( LoadAllCommandsAndSetXY ),
 		{ nullptr, nullptr }
 	};
@@ -687,7 +689,7 @@ LUA_REGISTER_NAMESPACE( ActorUtil )
 /*
  * (c) 2003-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -697,7 +699,7 @@ LUA_REGISTER_NAMESPACE( ActorUtil )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -21,6 +21,8 @@
 #include "NoteData.h"
 
 #include <cfloat>
+#include <vector>
+
 
 bool Style::GetUsesCenteredArrows() const
 {

@@ -16,6 +16,8 @@
 #include "ScreenDimensions.h"
 
 #include <cmath>
+#include <vector>
+
 
 const int MAX_WHEEL_SOUND_SPEED = 15;
 AutoScreenMessage( SM_SongChanged ); // TODO: Replace this with a Message and MESSAGEMAN

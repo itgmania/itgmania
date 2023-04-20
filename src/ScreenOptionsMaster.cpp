@@ -17,6 +17,8 @@
 #include "CommonMetrics.h"
 #include "GameLoop.h"
 
+#include <vector>
+
 #define LINE_NAMES			THEME->GetMetric (m_sName,"LineNames")
 #define LINE(sLineName)		THEME->GetMetric (m_sName,ssprintf("Line%s",sLineName.c_str()))
 #define FORCE_ALL_PLAYERS	THEME->GetMetricB(m_sName,"ForceAllPlayers")
@@ -55,7 +57,7 @@ void ScreenOptionsMaster::Init()
 	{
 		RString sLineName = asLineNames[i];
 		RString sRowCommands = LINE(sLineName);
-		
+
 		Commands cmds;
 		ParseCommands( sRowCommands, cmds, false );
 
@@ -128,7 +130,7 @@ void ScreenOptionsMaster::HandleScreenMessage( const ScreenMessage SM )
 		/* If the theme changes, we need to reset RageDisplay to apply the new window
 		 * title and icon. If the aspect ratio changes, we need to reset RageDisplay
 		 * so that the projection matrix is re-created using the new screen dimensions. */
-		if( (m_iChangeMask & OPT_APPLY_THEME) || 
+		if( (m_iChangeMask & OPT_APPLY_THEME) ||
 			(m_iChangeMask & OPT_APPLY_GRAPHICS) ||
 			(m_iChangeMask & OPT_APPLY_ASPECT_RATIO) )
 		{
@@ -154,7 +156,7 @@ void ScreenOptionsMaster::HandleScreenMessage( const ScreenMessage SM )
 		{
 			SOUNDMAN->SetMixVolume();
 		}
-		
+
 		if( m_iChangeMask & OPT_APPLY_SONG )
 			SONGMAN->SetPreferences();
 
@@ -169,7 +171,7 @@ void ScreenOptionsMaster::HandleScreenMessage( const ScreenMessage SM )
 /*
  * (c) 2003-2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -179,7 +181,7 @@ void ScreenOptionsMaster::HandleScreenMessage( const ScreenMessage SM )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

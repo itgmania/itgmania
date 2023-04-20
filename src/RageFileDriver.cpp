@@ -3,6 +3,9 @@
 #include "RageUtil.h"
 #include "RageUtil_FileDB.h"
 
+#include <vector>
+
+
 RageFileDriver::~RageFileDriver()
 {
 	delete FDB;

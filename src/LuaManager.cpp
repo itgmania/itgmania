@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <map>
 #include <sstream> // conversion for lua functions.
+#include <vector>
 
 LuaManager *LUA = nullptr;
 struct Impl

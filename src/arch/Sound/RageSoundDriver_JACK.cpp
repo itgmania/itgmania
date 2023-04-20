@@ -6,6 +6,8 @@
 #include "ProductInfo.h"
 
 #include <cstdint>
+#include <vector>
+
 
 REGISTER_SOUND_DRIVER_CLASS( JACK );
 

@@ -10,6 +10,8 @@
 #include "TimingData.h"
 
 #include <cstddef>
+#include <vector>
+
 
 namespace
 {

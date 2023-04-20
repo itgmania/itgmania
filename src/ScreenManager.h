@@ -5,6 +5,9 @@
 #include "RageSound.h"
 #include "PlayerNumber.h"
 
+#include <vector>
+
+
 class Actor;
 class Screen;
 struct Menu;
@@ -82,7 +85,7 @@ private:
 	ScreenMessage	m_OnDonePreparingScreen;
 	ScreenMessage	m_PopTopScreen;
 
-	// Set this to true anywhere we create of delete objects.  These 
+	// Set this to true anywhere we create of delete objects.  These
 	// operations take a long time, and will cause a skip on the next update.
 	bool		m_bZeroNextUpdate;
 
@@ -102,7 +105,7 @@ private:
 	bool ActivatePreparedScreenAndBackground( const RString &sScreenName );
 	ScreenMessage PopTopScreenInternal( bool bSendLoseFocus = true );
 
-	// Keep these sounds always loaded, because they could be 
+	// Keep these sounds always loaded, because they could be
 	// played at any time.  We want to eliminate SOUND->PlayOnce
 public:
 	void PlayStartSound();
@@ -131,7 +134,7 @@ extern ScreenManager*	SCREENMAN;	// global and accessible from anywhere in our p
  * @author Chris Danford, Glenn Maynard (c) 2001-2003
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -141,7 +144,7 @@ extern ScreenManager*	SCREENMAN;	// global and accessible from anywhere in our p
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

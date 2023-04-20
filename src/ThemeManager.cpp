@@ -29,6 +29,8 @@
 
 #include <cstddef>
 #include <deque>
+#include <vector>
+
 
 ThemeManager*	THEME = nullptr;	// global object accessible from anywhere in the program
 

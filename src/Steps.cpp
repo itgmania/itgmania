@@ -31,6 +31,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <vector>
 
 /* register DisplayBPM with StringConversion */
 #include "EnumHelper.h"

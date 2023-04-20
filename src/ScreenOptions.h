@@ -10,13 +10,16 @@
 #include "InputEventPlus.h"
 #include "RageSound.h"
 
+#include <vector>
+
+
 class OptionRowHandler;
 
 AutoScreenMessage( SM_ExportOptions );
 
 /** @brief The list of input modes for the given row. */
-enum InputMode 
-{ 
+enum InputMode
+{
 	INPUTMODE_INDIVIDUAL,		/**< each player controls their own cursor */
 	INPUTMODE_SHARE_CURSOR,		/**< both players control the same cursor */
 	NUM_InputMode,			/**< The number of input modes available. */
@@ -55,7 +58,7 @@ protected:
 	virtual void ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns ) = 0;
 
 	void RestartOptions();
-	void GetWidthXY( PlayerNumber pn, int iRow, int iChoiceOnRow, 
+	void GetWidthXY( PlayerNumber pn, int iRow, int iChoiceOnRow,
 			int &iWidthOut, int &iXOut, int &iYOut ) const;
 	RString GetExplanationText( int iRow ) const;
 	void RefreshIcons( int iRow, PlayerNumber pn );
@@ -120,7 +123,7 @@ protected:	// derived classes need access to these
 	bool			m_bWasOnExit[NUM_PLAYERS];
 
 	/** @brief True if at least one player pressed Start after selecting the song.
-	 * 
+	 *
 	 * TRICKY: People hold Start to get to PlayerOptions, then the repeat events
 	 * cause them to zip to the bottom. So, ignore Start repeat events until
 	 * we've seen one first pressed event. */
@@ -170,10 +173,10 @@ protected:	// derived classes need access to these
 
 /**
  * @file
- * @author Chris Danford, Glenn Maynard (c) 2001-2004 
+ * @author Chris Danford, Glenn Maynard (c) 2001-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -183,7 +186,7 @@ protected:	// derived classes need access to these
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

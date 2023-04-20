@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <sstream>
+#include <vector>
 
 #if defined(WIN32)
 #include <windows.h>

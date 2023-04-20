@@ -5,10 +5,12 @@
 
 #include "IniFile.h"
 #include "RageLog.h"
-#include <set>
 #include "Background.h"
 #include "RageFileManager.h"
 #include "ActorUtil.h"
+
+#include <set>
+#include <vector>
 
 
 bool BackgroundDef::operator<( const BackgroundDef &other ) const
@@ -25,7 +27,7 @@ bool BackgroundDef::operator<( const BackgroundDef &other ) const
 
 bool BackgroundDef::operator==( const BackgroundDef &other ) const
 {
-	return 
+	return
 		m_sEffect == other.m_sEffect &&
 		m_sFile1 == other.m_sFile1 &&
 		m_sFile2 == other.m_sFile2 &&
@@ -380,7 +382,7 @@ void BackgroundUtil::BakeAllBackgroundChanges( Song *pSong )
 /*
  * (c) 2001-2004 Chris Danford, Ben Nordstrom
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -390,7 +392,7 @@ void BackgroundUtil::BakeAllBackgroundChanges( Song *pSong )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

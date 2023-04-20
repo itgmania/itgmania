@@ -7,6 +7,8 @@
 
 #include <cstddef>
 #include <set>
+#include <vector>
+
 
 struct MenuRowDef;
 class OptionRow;

@@ -9,6 +9,7 @@
 #include "CommonMetrics.h"
 
 #include <cstddef>
+#include <vector>
 
 /*
  * A quick explanation of song cache hashes: Each song has two hashes; a hash of the

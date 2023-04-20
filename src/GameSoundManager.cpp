@@ -22,6 +22,8 @@
 
 #include <cmath>
 #include <cstddef>
+#include <vector>
+
 
 GameSoundManager *SOUND = nullptr;
 

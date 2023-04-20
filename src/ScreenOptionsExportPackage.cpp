@@ -14,6 +14,9 @@
 #include "RageFile.h"
 #include "archutils/SpecialDirs.h"
 
+#include <vector>
+
+
 // main page (type list)
 REGISTER_SCREEN_CLASS( ScreenOptionsExportPackage );
 
@@ -181,10 +184,10 @@ void ScreenOptionsExportPackageSubPage::BeginScreen()
 static RString ReplaceInvalidFileNameChars( RString sOldFileName )
 {
 	RString sNewFileName = sOldFileName;
-	const char charsToReplace[] = { 
-		' ', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', 
+	const char charsToReplace[] = {
+		' ', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')',
 		'+', '=', '[', ']', '{', '}', '|', ':', '\"', '\\',
-		'<', '>', ',', '?', '/' 
+		'<', '>', ',', '?', '/'
 	};
 	for( unsigned i=0; i<sizeof(charsToReplace); i++ )
 		sNewFileName.Replace( charsToReplace[i], '_' );
@@ -280,7 +283,7 @@ void ScreenOptionsExportPackageSubPage::ExportOptions( int iRow, const std::vect
 /*
  * (c) 2002-2014 Chris Danford, AJ Kelly, Renaud Lepage
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -290,7 +293,7 @@ void ScreenOptionsExportPackageSubPage::ExportOptions( int iRow, const std::vect
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

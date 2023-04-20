@@ -20,6 +20,8 @@ struct lua_State;
 #include "RageUtil.h"
 
 #include <cstddef>
+#include <vector>
+
 
 RString SONG_GROUP_COLOR_NAME( std::size_t i );
 RString COURSE_GROUP_COLOR_NAME( std::size_t i );

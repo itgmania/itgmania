@@ -23,6 +23,8 @@
 #include <cfloat>
 #include <cmath>
 #include <cstddef>
+#include <vector>
+
 
 float FindFirstDisplayedBeat( const PlayerState* pPlayerState, int iDrawDistanceAfterTargetsPixels );
 float FindLastDisplayedBeat( const PlayerState* pPlayerState, int iDrawDistanceBeforeTargetsPixels );

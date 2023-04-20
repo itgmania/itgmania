@@ -25,6 +25,8 @@
 
 #include <cmath>
 #include <cstddef>
+#include <vector>
+
 
 static Preference<bool> g_bMoveRandomToEnd( "MoveRandomToEnd", false );
 static Preference<bool> g_bPrecacheAllSorts( "PreCacheAllWheelSorts", false);

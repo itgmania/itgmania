@@ -8,6 +8,8 @@
 
 #include <cmath>
 #include <cstddef>
+#include <vector>
+
 
 MemoryCardDriverThreaded_Windows::MemoryCardDriverThreaded_Windows()
 {

@@ -2,8 +2,10 @@
 #include "MemoryCardDriver.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
-
 #include "ProfileManager.h"
+
+#include <vector>
+
 
 static const RString TEMP_MOUNT_POINT = "/@mctemptimeout/";
 
@@ -121,7 +123,7 @@ bool MemoryCardDriver::DoOneUpdate( bool bMount, std::vector<UsbStorageDevice>& 
 				 * profile name (by mounting a temporary, private mountpoint),
 				 * and then unmount it until Mount() is called. */
 				d.m_State = UsbStorageDevice::STATE_READY;
-			
+
 				FILEMAN->Mount( "dirro", d.sOsMountDir, TEMP_MOUNT_POINT );
 				d.bIsNameAvailable = PROFILEMAN->FastLoadProfileNameFromMemoryCard( TEMP_MOUNT_POINT, d.sName );
 				FILEMAN->Unmount( "dirro", d.sOsMountDir, TEMP_MOUNT_POINT );
@@ -167,7 +169,7 @@ MemoryCardDriver *MemoryCardDriver::Create()
 /*
  * (c) 2002-2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -177,7 +179,7 @@ MemoryCardDriver *MemoryCardDriver::Create()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

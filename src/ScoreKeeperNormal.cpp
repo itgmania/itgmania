@@ -22,6 +22,8 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <vector>
+
 
 static RString PercentScoreWeightName( std::size_t i ) { return "PercentScoreWeight" + ScoreEventToString( (ScoreEvent)i ); }
 static RString GradeWeightName( std::size_t i ) { return "GradeWeight" + ScoreEventToString( (ScoreEvent)i ); }

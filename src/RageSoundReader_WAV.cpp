@@ -16,6 +16,8 @@
 #include "RageFileBasic.h"
 
 #include <cstdint>
+#include <vector>
+
 
 namespace
 {

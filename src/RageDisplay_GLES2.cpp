@@ -18,6 +18,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <vector>
 
 #ifdef NO_GL_FLUSH
 #define glFlush()

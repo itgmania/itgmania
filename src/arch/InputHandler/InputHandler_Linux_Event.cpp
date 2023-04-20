@@ -5,6 +5,10 @@
 #include "LinuxInputManager.h"
 #include "GamePreferences.h" //needed for Axis Fix
 
+#include <cerrno>
+#include <cstdint>
+#include <vector>
+
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
@@ -13,8 +17,6 @@
 #include <fcntl.h>
 #endif
 
-#include <cerrno>
-#include <cstdint>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <linux/input.h>

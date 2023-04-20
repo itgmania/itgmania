@@ -5,6 +5,10 @@
 #include "LinuxInputManager.h"
 #include "RageInputDevice.h" // NUM_JOYSTICKS
 
+#include <cerrno>
+#include <set>
+#include <vector>
+
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
@@ -12,23 +16,21 @@
 #include <fcntl.h>
 #endif
 
-#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <linux/joystick.h>
 
-#include <set>
 
 REGISTER_INPUT_HANDLER_CLASS2( LinuxJoystick, Linux_Joystick );
 
 InputHandler_Linux_Joystick::InputHandler_Linux_Joystick()
 {
 	m_bDevicesChanged = false;
-	
+
 	LOG->Trace( "InputHandler_Linux_Joystick::InputHandler_Linux_Joystick" );
 	for(int i = 0; i < NUM_JOYSTICKS; ++i)
 		fds[i] = -1;
-	
+
 	m_iLastFd = 0;
 
 	if( LINUXINPUT == nullptr ) LINUXINPUT = new LinuxInputManager;
@@ -70,7 +72,7 @@ bool InputHandler_Linux_Joystick::TryDevice(RString dev)
 
 	if( !S_ISCHR( st.st_mode ) )
 		{ LOG->Warn( "LinuxJoystick: Ignoring %s: not a character device", dev.c_str() ); return false; }
-	
+
 	bool ret = false;
 	bool hotplug = false;
 	if( m_InputThread.IsCreated() ) { StopThread(); hotplug = true; }
@@ -95,7 +97,7 @@ bool InputHandler_Linux_Joystick::TryDevice(RString dev)
 		else LOG->Warn("LinuxJoystick: Failed to open %s: %s", dev.c_str(), strerror(errno) );
 	}
 	if( hotplug ) StartThread();
-	
+
 	return ret;
 }
 
@@ -199,7 +201,7 @@ void InputHandler_Linux_Joystick::GetDevicesAndDescriptions( std::vector<InputDe
 	// as part of the constructor. This isn't called until all InputHandlers have been constructed,
 	// and is (hopefully) in the same thread as TryDevice... so doublecheck our thread now.
 	if( fds[0] != -1 && !m_InputThread.IsCreated() ) StartThread();
-	
+
 	for(int i = 0; i < NUM_JOYSTICKS; ++i)
 	{
 		if (fds[i] < 0)
@@ -214,7 +216,7 @@ void InputHandler_Linux_Joystick::GetDevicesAndDescriptions( std::vector<InputDe
  * (c) 2003-2004 Glenn Maynard
  * (c) 2013 Ben "root" Anderson
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -224,7 +226,7 @@ void InputHandler_Linux_Joystick::GetDevicesAndDescriptions( std::vector<InputDe
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -7,6 +7,8 @@
 #include "arch/arch_default.h"
 
 #include <cstddef>
+#include <vector>
+
 
 DriverList RageSoundDriver::m_pDriverList;
 

@@ -6,6 +6,9 @@
 #include "RageInputDevice.h"
 #include "Preference.h"
 
+#include <vector>
+
+
 struct lua_State;
 class InputHandler;
 

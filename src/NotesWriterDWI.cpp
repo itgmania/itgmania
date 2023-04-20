@@ -12,6 +12,8 @@
 #include "Steps.h"
 
 #include <cmath>
+#include <vector>
+
 
 RString OptimizeDWIString( RString holds, RString taps );
 

@@ -27,9 +27,6 @@
 /* Everything will need string for one reason or another: */
 #include <string>
 
-/* And vector: */
-#include <vector>
-
 /* Branch optimizations: */
 #if defined(__GNUC__)
 #define likely(x) (__builtin_expect(!!(x), 1))

@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cmath>
 #include <fstream>
+#include <vector>
 
 TextureFont::TextureFont()
 {

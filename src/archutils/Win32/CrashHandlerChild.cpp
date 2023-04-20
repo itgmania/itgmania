@@ -2,19 +2,6 @@
 #include "CrashHandlerInternal.h"
 #include "Crash.h"
 
-#include <cerrno>
-#include <cstddef>
-#include <cstdint>
-
-#include <windows.h>
-#include <commctrl.h>
-#include "archutils/Win32/ddk/dbghelp.h"
-#include <io.h>
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
-#include <shellapi.h>
-
 #include "arch/ArchHooks/ArchHooks.h"
 #include "archutils/Win32/WindowsResources.h"
 #include "archutils/Win32/DialogUtil.h"
@@ -31,6 +18,20 @@
 #include "LocalizedString.h"
 #include "RageFileDriverDeflate.h"
 #include "ver.h"
+
+#include <cerrno>
+#include <cstddef>
+#include <cstdint>
+#include <vector>
+
+#include <windows.h>
+#include <commctrl.h>
+#include "archutils/Win32/ddk/dbghelp.h"
+#include <io.h>
+#if defined(HAVE_FCNTL_H)
+#include <fcntl.h>
+#endif
+#include <shellapi.h>
 
 #pragma comment(lib, "dbghelp.lib")
 

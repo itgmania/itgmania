@@ -5,6 +5,8 @@
 
 #include <cstddef>
 #include <map>
+#include <vector>
+
 
 class RageTexture;
 class Font;

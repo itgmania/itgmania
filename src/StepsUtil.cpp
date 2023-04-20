@@ -11,6 +11,8 @@
 #include "SongUtil.h"
 
 #include <cstddef>
+#include <vector>
+
 
 bool StepsCriteria::Matches( const Song *pSong, const Steps *pSteps ) const
 {

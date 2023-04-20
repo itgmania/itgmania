@@ -12,6 +12,8 @@
 
 #include <cfloat>
 #include <cmath>
+#include <vector>
+
 
 RString StepsTypeToString( StepsType st );
 

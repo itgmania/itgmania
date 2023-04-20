@@ -17,6 +17,8 @@
 
 #include <cstddef>
 #include <map>
+#include <vector>
+
 
 /** @brief Have the NoteSkinManager available throughout the program. */
 NoteSkinManager*	NOTESKIN = nullptr; // global and accessible from anywhere in our program

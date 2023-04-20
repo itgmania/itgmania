@@ -9,6 +9,8 @@
 #include "RageUtil.h"
 
 #include <cstddef>
+#include <vector>
+
 
 void NotesLoader::GetMainAndSubTitlesFromFullTitle( const RString &sFullTitle, RString &sMainTitleOut, RString &sSubTitleOut )
 {

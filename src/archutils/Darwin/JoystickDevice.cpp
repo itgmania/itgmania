@@ -3,6 +3,8 @@
 #include "RageLog.h"
 
 #include <cstdint>
+#include <vector>
+
 
 Joystick::Joystick() :	id( InputDevice_Invalid ),
 			x_axis( 0 ), y_axis( 0 ), z_axis( 0 ),

@@ -13,6 +13,8 @@
 #include <cfloat>
 #include <cmath>
 #include <sstream>
+#include <vector>
+
 
 static const char *LifeTypeNames[] = {
 	"Bar",
