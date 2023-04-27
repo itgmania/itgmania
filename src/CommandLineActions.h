@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "LoadingWindow.h"
+#include "arch/LoadingWindow/LoadingWindow.h"
 
 // The collection of command line actions.
 namespace CommandLineActions {
