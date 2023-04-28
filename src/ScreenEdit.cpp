@@ -2830,7 +2830,7 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 				bool bUsesThisSong = false;
 				for( unsigned e = 0; e < crs->m_vEntries.size(); ++e )
 				{
-					if( crs->m_vEntries[e].songID.ToSong() != m_pSong )
+					if( crs->m_vEntries[e].song_id_.ToSong() != m_pSong )
 						continue;
 					bUsesThisSong = true;
 				}
@@ -2859,11 +2859,11 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 				return false;
 			CourseEntry &ce = pCourse->m_vEntries[GAMESTATE->m_iEditCourseEntryIndex];
 			float fStartTime = m_pSteps->GetTimingData()->GetElapsedTimeFromBeat( GAMESTATE->m_pPlayerState[PLAYER_1]->m_Position.m_fSongBeat );
-			int iAttack = FindAttackAtTime( ce.attacks, fStartTime );
+			int iAttack = FindAttackAtTime( ce.attacks_, fStartTime );
 
 			if( iAttack >= 0 )
 			{
-				const RString sDuration = std::to_string(ce.attacks[iAttack].fSecsRemaining );
+				const RString sDuration = std::to_string(ce.attacks_[iAttack].fSecsRemaining );
 
 				g_InsertCourseAttack.rows[remove].bEnabled = true;
 				if( g_InsertCourseAttack.rows[duration].choices.size() == 9 )
@@ -2935,17 +2935,17 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 			{
 				fStart = -1;
 				fEnd = -1;
-				po.FromString( ce.sModifiers );
+				po.FromString( ce.modifiers_ );
 			}
 			else
 			{
 				// TODO: Give Song/Step Timing switches/functions here?
 				TimingData *timing = m_pSteps->GetTimingData();
 				fStart = timing->GetElapsedTimeFromBeat( NoteRowToBeat(m_NoteFieldEdit.m_iBeginMarker) );
-				int iAttack = FindAttackAtTime( ce.attacks, fStart );
+				int iAttack = FindAttackAtTime( ce.attacks_, fStart );
 
 				if( iAttack >= 0 )
-					po.FromString( ce.attacks[iAttack].sModifiers );
+					po.FromString( ce.attacks_[iAttack].sModifiers );
 
 				if( m_NoteFieldEdit.m_iEndMarker == -1 )
 					fEnd = m_pSong->m_fMusicLengthSeconds;
@@ -3850,7 +3850,7 @@ void ScreenEdit::HandleScreenMessage( const ScreenMessage SM )
 			int index = 0;
 			for (CourseEntry const &i : pCourse->m_vEntries)
 			{
-				if( i.songID.ToSong() == GAMESTATE->m_pCurSong.Get() )
+				if( i.song_id_.ToSong() == GAMESTATE->m_pCurSong.Get() )
 					iCourseEntryIndex = index;
 				++index;
 			}
@@ -4213,19 +4213,19 @@ void ScreenEdit::HandleScreenMessage( const ScreenMessage SM )
 
 		g_fLastInsertAttackPositionSeconds = m_pSteps->GetTimingData()->GetElapsedTimeFromBeat( GAMESTATE->m_Position.m_fSongBeat );
 		g_fLastInsertAttackDurationSeconds = StringToFloat( g_InsertCourseAttack.rows[0].choices[iDurationChoice] );
-		iAttack = FindAttackAtTime( ce.attacks, g_fLastInsertAttackPositionSeconds );
+		iAttack = FindAttackAtTime( ce.attacks_, g_fLastInsertAttackPositionSeconds );
 
 		if( ScreenMiniMenu::s_iLastRowCode == ScreenEdit::remove )
 		{
 			ASSERT( iAttack >= 0 );
-			ce.attacks.erase( ce.attacks.begin() + iAttack );
+			ce.attacks_.erase( ce.attacks_.begin() + iAttack );
 		}
 		else
 		{
 			PlayerOptions po;
 
 			if( iAttack >= 0 )
-				po.FromString( ce.attacks[iAttack].sModifiers );
+				po.FromString( ce.attacks_[iAttack].sModifiers );
 
 			GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions.Assign( ModsLevel_Preferred, po );
 			SCREENMAN->AddNewScreenToTop( SET_MOD_SCREEN, SM_BackFromInsertCourseAttackPlayerOptions );
@@ -4263,7 +4263,7 @@ void ScreenEdit::HandleScreenMessage( const ScreenMessage SM )
 		CourseEntry &ce = pCourse->m_vEntries[GAMESTATE->m_iEditCourseEntryIndex];
 		if( g_fLastInsertAttackPositionSeconds < 0 )
 		{
-			ce.sModifiers = sMods;
+			ce.modifiers_ = sMods;
 		}
 		else
 		{
@@ -4274,12 +4274,12 @@ void ScreenEdit::HandleScreenMessage( const ScreenMessage SM )
 				 sMods,
 				 false,
 				 false );
-			int iAttack = FindAttackAtTime( ce.attacks, g_fLastInsertAttackPositionSeconds );
+			int iAttack = FindAttackAtTime( ce.attacks_, g_fLastInsertAttackPositionSeconds );
 
 			if( iAttack >= 0 )
-				ce.attacks[iAttack] = a;
+				ce.attacks_[iAttack] = a;
 			else
-				ce.attacks.push_back( a );
+				ce.attacks_.push_back( a );
 		}
 	}
 	else if( SM == SM_DoRevertToLastSave )
@@ -6116,7 +6116,7 @@ void ScreenEdit::SetupCourseAttacks()
 
 		if( EDIT_MODE == EditMode_CourseMods )
 		{
-			Attacks = GAMESTATE->m_pCurCourse->m_vEntries[GAMESTATE->m_iEditCourseEntryIndex].attacks;
+			Attacks = GAMESTATE->m_pCurCourse->m_vEntries[GAMESTATE->m_iEditCourseEntryIndex].attacks_;
 		}
 		else
 		{
@@ -6124,10 +6124,10 @@ void ScreenEdit::SetupCourseAttacks()
 
 			for( unsigned e = 0; e < GAMESTATE->m_pCurCourse->m_vEntries.size(); ++e )
 			{
-				if( GAMESTATE->m_pCurCourse->m_vEntries[e].songID.ToSong() != m_pSong )
+				if( GAMESTATE->m_pCurCourse->m_vEntries[e].song_id_.ToSong() != m_pSong )
 					continue;
 
-				Attacks = GAMESTATE->m_pCurCourse->m_vEntries[e].attacks;
+				Attacks = GAMESTATE->m_pCurCourse->m_vEntries[e].attacks_;
 				break;
 			}
 		}

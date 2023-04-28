@@ -889,7 +889,7 @@ void NoteField::DrawPrimitives()
 			ASSERT_M( GAMESTATE->m_iEditCourseEntryIndex >= 0  &&  GAMESTATE->m_iEditCourseEntryIndex < (int)pCourse->m_vEntries.size(),
 				ssprintf("%i",GAMESTATE->m_iEditCourseEntryIndex.Get()) );
 			const CourseEntry &ce = pCourse->m_vEntries[GAMESTATE->m_iEditCourseEntryIndex];
-			for (Attack const &a : ce.attacks)
+			for (Attack const &a : ce.attacks_)
 			{
 				float fSecond = a.fStartSecond;
 				float fBeat = timing.GetBeatFromElapsedTime( fSecond );

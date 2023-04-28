@@ -181,9 +181,9 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 					continue; // skip this #SONG
 				}
 
-				new_entry.iChooseIndex = iChooseIndex;
-				CLAMP( new_entry.iChooseIndex, 0, 500 );
-				new_entry.songSort = SongSort_MostPlays;
+				new_entry.choose_index_ = iChooseIndex;
+				CLAMP( new_entry.choose_index_, 0, 500 );
+				new_entry.song_sort_ = SongSort_MostPlays;
 			}
 			// least played
 			else if( sParams[1].Left(strlen("WORST")) == "WORST" )
@@ -198,23 +198,23 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 					continue; // skip this #SONG
 				}
 
-				new_entry.iChooseIndex = iChooseIndex;
-				CLAMP( new_entry.iChooseIndex, 0, 500 );
-				new_entry.songSort = SongSort_FewestPlays;
+				new_entry.choose_index_ = iChooseIndex;
+				CLAMP( new_entry.choose_index_, 0, 500 );
+				new_entry.song_sort_ = SongSort_FewestPlays;
 			}
 			// best grades
 			else if( sParams[1].Left(strlen("GRADEBEST")) == "GRADEBEST" )
 			{
-				new_entry.iChooseIndex = StringToInt( sParams[1].Right(sParams[1].size()-strlen("GRADEBEST")) ) - 1;
-				CLAMP( new_entry.iChooseIndex, 0, 500 );
-				new_entry.songSort = SongSort_TopGrades;
+				new_entry.choose_index_ = StringToInt( sParams[1].Right(sParams[1].size()-strlen("GRADEBEST")) ) - 1;
+				CLAMP( new_entry.choose_index_, 0, 500 );
+				new_entry.song_sort_ = SongSort_TopGrades;
 			}
 			// worst grades
 			else if( sParams[1].Left(strlen("GRADEWORST")) == "GRADEWORST" )
 			{
-				new_entry.iChooseIndex = StringToInt( sParams[1].Right(sParams[1].size()-strlen("GRADEWORST")) ) - 1;
-				CLAMP( new_entry.iChooseIndex, 0, 500 );
-				new_entry.songSort = SongSort_LowestGrades;
+				new_entry.choose_index_ = StringToInt( sParams[1].Right(sParams[1].size()-strlen("GRADEWORST")) ) - 1;
+				CLAMP( new_entry.choose_index_, 0, 500 );
+				new_entry.song_sort_ = SongSort_LowestGrades;
 			}
 			else if( sParams[1] == "*" )
 			{
@@ -230,7 +230,7 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 				split( sSong, "/", bits );
 				if( bits.size() == 2 )
 				{
-					new_entry.songCriteria.m_sGroupName = bits[0];
+					new_entry.song_criteria_.m_sGroupName = bits[0];
 				}
 				else
 				{
@@ -238,7 +238,7 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 						      "Song should be in the format \"<group>/*\".", sSong.c_str() );
 				}
 
-				if( !SONGMAN->DoesSongGroupExist(new_entry.songCriteria.m_sGroupName) )
+				if( !SONGMAN->DoesSongGroupExist(new_entry.song_criteria_.m_sGroupName) )
 				{
 					LOG->UserLog( "Course file", sPath, "random_within_group entry \"%s\" specifies a group that doesn't exist. "
 						      "This entry will be ignored.", sSong.c_str() );
@@ -256,14 +256,14 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 				Song *pSong = nullptr;
 				if( bits.size() == 2 )
 				{
-					new_entry.songCriteria.m_sGroupName = bits[0];
+					new_entry.song_criteria_.m_sGroupName = bits[0];
 					pSong = SONGMAN->FindSong( bits[0], bits[1] );
 				}
 				else if( bits.size() == 1 )
 				{
 					pSong = SONGMAN->FindSong( "", sSong );
 				}
-				new_entry.songID.FromSong( pSong );
+				new_entry.song_id_.FromSong( pSong );
 
 				if( pSong == nullptr )
 				{
@@ -274,24 +274,24 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 				}
 			}
 
-			new_entry.stepsCriteria.m_difficulty = OldStyleStringToDifficulty( sParams[2] );
+			new_entry.steps_criteria_.m_difficulty = OldStyleStringToDifficulty( sParams[2] );
       //most CRS files use old-style difficulties, but Difficulty enum values can be used in SM5. Test for those too.
-      if( new_entry.stepsCriteria.m_difficulty == Difficulty_Invalid )
-        new_entry.stepsCriteria.m_difficulty = StringToDifficulty( sParams[2] );
-			if( new_entry.stepsCriteria.m_difficulty == Difficulty_Invalid )
+      if( new_entry.steps_criteria_.m_difficulty == Difficulty_Invalid )
+        new_entry.steps_criteria_.m_difficulty = StringToDifficulty( sParams[2] );
+			if( new_entry.steps_criteria_.m_difficulty == Difficulty_Invalid )
 			{
-				int retval = sscanf( sParams[2], "%d..%d", &new_entry.stepsCriteria.m_iLowMeter, &new_entry.stepsCriteria.m_iHighMeter );
+				int retval = sscanf( sParams[2], "%d..%d", &new_entry.steps_criteria_.m_iLowMeter, &new_entry.steps_criteria_.m_iHighMeter );
 				if( retval == 1 )
-					new_entry.stepsCriteria.m_iHighMeter = new_entry.stepsCriteria.m_iLowMeter;
+					new_entry.steps_criteria_.m_iHighMeter = new_entry.steps_criteria_.m_iLowMeter;
 				else if( retval != 2 )
 				{
 					LOG->UserLog( "Course file", sPath, "contains an invalid difficulty setting: \"%s\", 3..6 used instead",
 						      sParams[2].c_str() );
-					new_entry.stepsCriteria.m_iLowMeter = 3;
-					new_entry.stepsCriteria.m_iHighMeter = 6;
+					new_entry.steps_criteria_.m_iLowMeter = 3;
+					new_entry.steps_criteria_.m_iHighMeter = 6;
 				}
-				new_entry.stepsCriteria.m_iLowMeter = std::max( new_entry.stepsCriteria.m_iLowMeter, 1 );
-				new_entry.stepsCriteria.m_iHighMeter = std::max( new_entry.stepsCriteria.m_iHighMeter, new_entry.stepsCriteria.m_iLowMeter );
+				new_entry.steps_criteria_.m_iLowMeter = std::max( new_entry.steps_criteria_.m_iLowMeter, 1 );
+				new_entry.steps_criteria_.m_iHighMeter = std::max( new_entry.steps_criteria_.m_iHighMeter, new_entry.steps_criteria_.m_iLowMeter );
 			}
 
 			{
@@ -305,22 +305,22 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 					TrimLeft( sMod );
 					TrimRight( sMod );
 					if( !sMod.CompareNoCase("showcourse") )
-						new_entry.bSecret = false;
+						new_entry.is_secret_ = false;
 					else if( !sMod.CompareNoCase("noshowcourse") )
-						new_entry.bSecret = true;
+						new_entry.is_secret_ = true;
 					else if( !sMod.CompareNoCase("nodifficult") )
-						new_entry.bNoDifficult = true;
+						new_entry.no_difficult_ = true;
 					else if( sMod.length() > 5 && !sMod.Left(5).CompareNoCase("award") )
-						new_entry.iGainLives = StringToInt( sMod.substr(5) );
+						new_entry.gain_lives_ = StringToInt( sMod.substr(5) );
 					else
 						continue;
 					mods.erase( mods.begin() + j );
 				}
-				new_entry.sModifiers = join( ",", mods );
+				new_entry.modifiers_ = join( ",", mods );
 			}
 
-			new_entry.attacks = attacks;
-			new_entry.fGainSeconds = fGainSeconds;
+			new_entry.attacks_ = attacks;
+			new_entry.gain_seconds_ = fGainSeconds;
 			attacks.clear();
 
 			out.m_vEntries.push_back( new_entry );

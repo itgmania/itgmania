@@ -92,8 +92,8 @@ void LifeMeterBattery::OnSongEnded()
 		PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
 		const Course *pCourse = GAMESTATE->m_pCurCourse;
 
-		if( pCourse && pCourse->m_vEntries[GAMESTATE->GetCourseSongIndex()].iGainLives > -1 )
-			m_iLivesLeft += pCourse->m_vEntries[GAMESTATE->GetCourseSongIndex()].iGainLives;
+		if( pCourse && pCourse->m_vEntries[GAMESTATE->GetCourseSongIndex()].gain_lives_ > -1 )
+			m_iLivesLeft += pCourse->m_vEntries[GAMESTATE->GetCourseSongIndex()].gain_lives_;
 		else
 		{
 			Lua *L= LUA->Get();

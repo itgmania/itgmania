@@ -130,7 +130,7 @@ int UnlockManager::CourseIsLocked( const Course *pCourse ) const
 	/* If a course uses a song that is disabled, disable the course too. */
 	for (CourseEntry const &ce : pCourse->m_vEntries)
 	{
-		const Song *pSong = ce.songID.ToSong();
+		const Song *pSong = ce.song_id_.ToSong();
 		if( pSong == nullptr )
 			continue;
 		int iSongLock = SongIsLocked( pSong );

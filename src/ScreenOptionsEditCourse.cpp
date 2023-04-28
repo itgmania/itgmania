@@ -279,7 +279,7 @@ void ScreenOptionsEditCourse::ImportOptions( int iRow, const std::vector<PlayerN
 				{
 					Song *pSong = nullptr;
 					if( iEntryIndex < (int)GAMESTATE->m_pCurCourse->m_vEntries.size() )
-						pSong = GAMESTATE->m_pCurCourse->m_vEntries[iEntryIndex].songID.ToSong();
+						pSong = GAMESTATE->m_pCurCourse->m_vEntries[iEntryIndex].song_id_.ToSong();
 
 					std::vector<Song*>::iterator iter = find( m_vpSongs.begin(), m_vpSongs.end(), pSong );
 					if( iter == m_vpSongs.end() )
@@ -340,8 +340,8 @@ void ScreenOptionsEditCourse::ExportOptions( int iRow, const std::vector<PlayerN
 					Steps *pSteps = this->GetStepsForEntry( iEntryIndex );
 					ASSERT_M( pSteps != nullptr, "No Steps for this Song!" );
 					CourseEntry ce;
-					ce.songID.FromSong( pSong );
-					ce.stepsCriteria.m_difficulty = pSteps->GetDifficulty();
+					ce.song_id_.FromSong( pSong );
+					ce.steps_criteria_.m_difficulty = pSteps->GetDifficulty();
 					GAMESTATE->m_pCurCourse->m_vEntries.push_back( ce );
 				}
 			}

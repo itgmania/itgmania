@@ -98,8 +98,8 @@ void CourseContentsList::SetItemFromGameState( Actor *pActor, int iCourseEntryIn
 			if( ce == nullptr )
 				continue;
 
-			int iLow = ce->stepsCriteria.m_iLowMeter;
-			int iHigh = ce->stepsCriteria.m_iHighMeter;
+			int iLow = ce->steps_criteria_.m_iLowMeter;
+			int iHigh = ce->steps_criteria_.m_iHighMeter;
 
 			bool bLowIsSet = iLow != -1;
 			bool bHighIsSet = iHigh != -1;

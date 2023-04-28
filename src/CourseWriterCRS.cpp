@@ -101,46 +101,46 @@ bool CourseWriterCRS::Write( const Course &course, RageFileBasic &f, bool bSavin
 	{
 		const CourseEntry& entry = course.m_vEntries[i];
 
-		for( unsigned j = 0; j < entry.attacks.size(); ++j )
+		for( unsigned j = 0; j < entry.attacks_.size(); ++j )
 		{
 			if( j == 0 )
 				f.PutLine( "#MODS:" );
 
-			const Attack &a = entry.attacks[j];
+			const Attack &a = entry.attacks_[j];
 			f.Write( ssprintf( "  TIME=%.2f:LEN=%.2f:MODS=%s",
 				a.fStartSecond, a.fSecsRemaining, a.sModifiers.c_str() ) );
 
-			if( j+1 < entry.attacks.size() )
+			if( j+1 < entry.attacks_.size() )
 				f.Write( ":" );
 			else
 				f.Write( ";" );
 			f.PutLine( "" );
 		}
 
-		if( entry.fGainSeconds > 0 )
-			f.PutLine( ssprintf("#GAINSECONDS:%f;", entry.fGainSeconds) );
+		if( entry.gain_seconds_ > 0 )
+			f.PutLine( ssprintf("#GAINSECONDS:%f;", entry.gain_seconds_) );
 
-		if( entry.songSort == SongSort_MostPlays  &&  entry.iChooseIndex != -1 )
+		if( entry.song_sort_ == SongSort_MostPlays  &&  entry.choose_index_ != -1 )
 		{
-			f.Write( ssprintf( "#SONG:BEST%d", entry.iChooseIndex+1 ) );
+			f.Write( ssprintf( "#SONG:BEST%d", entry.choose_index_+1 ) );
 		}
-		else if( entry.songSort == SongSort_FewestPlays  &&  entry.iChooseIndex != -1 )
+		else if( entry.song_sort_ == SongSort_FewestPlays  &&  entry.choose_index_ != -1 )
 		{
-			f.Write( ssprintf( "#SONG:WORST%d", entry.iChooseIndex+1 ) );
+			f.Write( ssprintf( "#SONG:WORST%d", entry.choose_index_+1 ) );
 		}
-		else if( entry.songID.ToSong() )
+		else if( entry.song_id_.ToSong() )
 		{
-			Song *pSong = entry.songID.ToSong();
+			Song *pSong = entry.song_id_.ToSong();
 			const RString &sSong = Basename( pSong->GetSongDir() );
 
 			f.Write( "#SONG:" );
-			if( !entry.songCriteria.m_sGroupName.empty() )
-				f.Write( entry.songCriteria.m_sGroupName + '/' );
+			if( !entry.song_criteria_.m_sGroupName.empty() )
+				f.Write( entry.song_criteria_.m_sGroupName + '/' );
 			f.Write( sSong );
 		}
-		else if( !entry.songCriteria.m_sGroupName.empty() )
+		else if( !entry.song_criteria_.m_sGroupName.empty() )
 		{
-			f.Write( ssprintf( "#SONG:%s/*", entry.songCriteria.m_sGroupName.c_str() ) );
+			f.Write( ssprintf( "#SONG:%s/*", entry.song_criteria_.m_sGroupName.c_str() ) );
 		}
 		else
 		{
@@ -148,33 +148,33 @@ bool CourseWriterCRS::Write( const Course &course, RageFileBasic &f, bool bSavin
 		}
 
 		f.Write( ":" );
-		if( entry.stepsCriteria.m_difficulty != Difficulty_Invalid )
-			f.Write( DifficultyToString(entry.stepsCriteria.m_difficulty) );
-		else if( entry.stepsCriteria.m_iLowMeter != -1  &&  entry.stepsCriteria.m_iHighMeter != -1 )
-			f.Write( ssprintf( "%d..%d", entry.stepsCriteria.m_iLowMeter, entry.stepsCriteria.m_iHighMeter ) );
+		if( entry.steps_criteria_.m_difficulty != Difficulty_Invalid )
+			f.Write( DifficultyToString(entry.steps_criteria_.m_difficulty) );
+		else if( entry.steps_criteria_.m_iLowMeter != -1  &&  entry.steps_criteria_.m_iHighMeter != -1 )
+			f.Write( ssprintf( "%d..%d", entry.steps_criteria_.m_iLowMeter, entry.steps_criteria_.m_iHighMeter ) );
 		f.Write( ":" );
 
-		RString sModifiers = entry.sModifiers;
+		RString sModifiers = entry.modifiers_;
 
-		if( entry.bSecret )
+		if( entry.is_secret_ )
 		{
 			if( sModifiers != "" )
 				sModifiers += ",";
-			sModifiers += entry.bSecret? "noshowcourse":"showcourse";
+			sModifiers += entry.is_secret_? "noshowcourse":"showcourse";
 		}
 
-		if( entry.bNoDifficult )
+		if( entry.no_difficult_ )
 		{
 			if( sModifiers != "" )
 				sModifiers += ",";
 			sModifiers += "nodifficult";
 		}
 
-		if( entry.iGainLives > -1 )
+		if( entry.gain_lives_ > -1 )
 		{
 			if( !sModifiers.empty() )
 				sModifiers += ',';
-			sModifiers += ssprintf( "award%d", entry.iGainLives );
+			sModifiers += ssprintf( "award%d", entry.gain_lives_ );
 		}
 
 		f.Write( sModifiers );

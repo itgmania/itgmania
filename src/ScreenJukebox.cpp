@@ -40,7 +40,7 @@ void ScreenJukebox::SetSong()
 	if( pCourse != nullptr )
 		for ( unsigned i = 0; i < pCourse->m_vEntries.size(); i++ )
 			if( pCourse->m_vEntries[i].IsFixedSong() )
-				vSongs.push_back( pCourse->m_vEntries[i].songID.ToSong() );
+				vSongs.push_back( pCourse->m_vEntries[i].song_id_.ToSong() );
 
 	if ( vSongs.size() == 0 )
 		vSongs = SONGMAN->GetSongs( GAMESTATE->m_sPreferredSongGroup );
@@ -114,16 +114,16 @@ void ScreenJukebox::SetSong()
 			{
 				Course *lCourse = apCourses[j];
 				const CourseEntry *pEntry = lCourse->FindFixedSong( pSong );
-				if( pEntry == nullptr || pEntry->attacks.size() == 0 )
+				if( pEntry == nullptr || pEntry->attacks_.size() == 0 )
 					continue;
 
 				if( !ALLOW_ADVANCED_MODIFIERS )
 				{
 					// There are some confusing mods that we don't want to show in demonstration.
 					bool bModsAreOkToShow = true;
-					AttackArray aAttacks = pEntry->attacks;
-					if( !pEntry->sModifiers.empty() )
-						aAttacks.push_back( Attack::FromGlobalCourseModifier( pEntry->sModifiers ) );
+					AttackArray aAttacks = pEntry->attacks_;
+					if( !pEntry->modifiers_.empty() )
+						aAttacks.push_back( Attack::FromGlobalCourseModifier( pEntry->modifiers_ ) );
 					for (Attack const &a: aAttacks)
 					{
 						RString s = a.sModifiers;
