@@ -1,5 +1,3 @@
-/* ControllerStateDisplay - Show the button state of a controller. */
-
 #ifndef ControllerStateDisplay_H
 #define ControllerStateDisplay_H
 
@@ -19,6 +17,7 @@ enum ControllerStateButton {
   NUM_ControllerStateButton
 };
 
+// Show the button state of a controller.
 class ControllerStateDisplay : public ActorFrame {
  public:
   ControllerStateDisplay();
@@ -53,7 +52,7 @@ class ControllerStateDisplay : public ActorFrame {
   InputDeviceState last_input_device_state_;
 };
 
-#endif
+#endif  // ControllerStateDisplay_H
 
 /*
  * (c) 2001-2004 Chris Danford

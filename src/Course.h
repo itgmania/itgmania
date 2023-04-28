@@ -247,7 +247,7 @@ class Course {
   std::set<RString> m_setStyles;
 };
 
-#endif
+#endif  // COURSE_H
 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard

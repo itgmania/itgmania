@@ -83,7 +83,7 @@ RString LocalizeOptionItem(const RString& option, bool is_optional);
 
 };  // namespace CommonMetrics
 
-#endif
+#endif  // COMMON_METRICS_H
 
 /**
  * @file

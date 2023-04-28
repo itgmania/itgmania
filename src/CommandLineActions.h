@@ -26,7 +26,7 @@ extern std::vector<CommandLineArgs> ToProcess;
 
 }  // namespace CommandLineActions
 
-#endif
+#endif  // CommandLineActions_H
 
 /**
  * @file

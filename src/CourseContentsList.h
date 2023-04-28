@@ -1,33 +1,30 @@
 #ifndef COURSE_CONTENTS_LIST_H
 #define COURSE_CONTENTS_LIST_H
 
-#include "ActorScroller.h"
-
 #include <vector>
 
+#include "ActorScroller.h"
 
-class CourseEntryDisplay;
-/** @brief Holds course name and banner. */
-class CourseContentsList : public ActorScroller
-{
-public:
-	~CourseContentsList();
-	virtual CourseContentsList *Copy() const;
+// Holds course name and banner.
+class CourseContentsList : public ActorScroller {
+ public:
+  ~CourseContentsList();
+  virtual CourseContentsList* Copy() const;
 
-	void LoadFromNode( const XNode* pNode );
+  void LoadFromNode(const XNode* node);
 
-	void SetFromGameState();
+  void SetFromGameState();
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-protected:
-	void SetItemFromGameState( Actor *pActor, int iCourseEntryIndex );
+ protected:
+  void SetItemFromGameState(Actor* actor, int course_entry_index);
 
-	std::vector<Actor *>		m_vpDisplay;
+  std::vector<Actor*> display_;
 };
 
-#endif
+#endif  // COURSE_CONTENTS_LIST_H
 
 /*
  * (c) 2001-2004 Chris Danford
