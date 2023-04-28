@@ -1,14 +1,19 @@
 #ifndef COURSEUTIL_H
 #define COURSEUTIL_H
 
+#include "global.h"
+
 #include <vector>
 
 #include "Course.h"
 #include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
-#include "Profile.h"
 #include "Song.h"
 #include "XmlFile.h"
+
+// TODO(teejusb): Remove forward declaration. Profile.h uses CourseID defined
+// below so we have a circular dependency.
+class Profile;
 
 bool CompareCoursePointersBySortValueAscending(
     const Course* song1, const Course* song2);
@@ -17,8 +22,9 @@ bool CompareCoursePointersBySortValueDescending(
 bool CompareCoursePointersByTitle(
     const Course* course1, const Course* course2);
 
-/** @brief Utility functions that deal with Courses. */
+// Utility functions that deal with Courses.
 namespace CourseUtil {
+
 void SortCoursePointerArrayByDifficulty(std::vector<Course*>& courses);
 void SortCoursePointerArrayByType(std::vector<Course*>& courses);
 void SortCoursePointerArrayByTitle(std::vector<Course*>& courses);
@@ -43,8 +49,6 @@ void AutogenOniFromArtist(
     const RString& artist_name, RString artist_name_translit,
     std::vector<Song*> songs, Difficulty difficulty, Course& out);
 
-bool ValidateEditCourseName(const RString& answer, RString& error);
-
 void WarnOnInvalidMods(RString mods);
 
 };  // namespace CourseUtil
@@ -61,8 +65,6 @@ void GetAllEditCourses(std::vector<Course*>& courses);
 bool Save(Course* course);
 bool RenameAndSave(Course* course, RString name);
 
-bool ValidateEditCourseNametName(const RString& answer, RString& error);
-
 extern int MAX_NAME_LENGTH;
 extern int MAX_PER_PROFILE;
 extern int MIN_WORKOUT_MINUTES;
@@ -77,7 +79,7 @@ class CourseID {
  public:
   CourseID() : path_(""), full_title_("") { Unset(); }
   void Unset() { FromCourse(nullptr); }
-  void FromCourse(const Course* p);
+  void FromCourse(const Course* course);
   Course* ToCourse() const;
   const RString& GetPath() const { return path_; }
   bool operator<(const CourseID& other) const {
@@ -88,7 +90,7 @@ class CourseID {
   }
 
   XNode* CreateNode() const;
-  void LoadFromNode(const XNode* pNode);
+  void LoadFromNode(const XNode* node);
   void FromPath(RString path) { path_ = path; }
   RString ToString() const;
   bool IsValid() const;
