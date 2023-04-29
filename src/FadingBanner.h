@@ -1,65 +1,63 @@
-/* FadingBanner - Fades between two banners. */
-
 #ifndef FADING_BANNER_H
 #define FADING_BANNER_H
 
-#include "Banner.h"
 #include "ActorFrame.h"
+#include "Banner.h"
 #include "RageTimer.h"
 
-class FadingBanner : public ActorFrame
-{
-public:
-	FadingBanner();
-	virtual FadingBanner *Copy() const;
+// FadingBanner - Fades between two banners.
+class FadingBanner : public ActorFrame {
+ public:
+  FadingBanner();
+  virtual FadingBanner* Copy() const;
 
-	void ScaleToClipped( float fWidth, float fHeight );
+  void ScaleToClipped(float width, float height);
 
-	/* If you previously loaded a cached banner, and are now loading the full-
-	 * resolution banner, set bLowResToHighRes to true. */
-	void Load( RageTextureID ID, bool bLowResToHighRes=false );
-	void LoadFromSong( const Song* pSong );		// nullptr means no song
-	void LoadMode();
-	void LoadFromSongGroup( RString sSongGroup );
-	void LoadFromCourse( const Course* pCourse );
-	void LoadIconFromCharacter( Character* pCharacter );
-	void LoadBannerFromUnlockEntry( const UnlockEntry* pUE );
-	void LoadRoulette();
-	void LoadRandom();
-	void LoadFromSortOrder( SortOrder so );
-	void LoadFallback();
-	void LoadCourseFallback();
-	void LoadCustom( RString sBanner );
+  // If you previously loaded a cached banner, and are now loading the full-
+  // resolution banner, set low_res_to_high_res to true.
+  void Load(RageTextureID id, bool low_res_to_high_res = false);
+  void LoadFromSong(const Song* song);  // nullptr means no song
+  void LoadMode();
+  void LoadFromSongGroup(RString song_group);
+  void LoadFromCourse(const Course* course);
+  void LoadIconFromCharacter(Character* character);
+  void LoadBannerFromUnlockEntry(const UnlockEntry* unlock_entry);
+  void LoadRoulette();
+  void LoadRandom();
+  void LoadFromSortOrder(SortOrder sort_order);
+  void LoadFallback();
+  void LoadCourseFallback();
+  void LoadCustom(RString banner);
 
-	bool LoadFromCachedBanner( const RString &path );
+  bool LoadFromCachedBanner(const RString& path);
 
-	void SetMovingFast( bool fast ) { m_bMovingFast=fast; }
-	virtual void UpdateInternal( float fDeltaTime );
-	virtual void DrawPrimitives();
+  void SetMovingFast(bool fast) { moving_fast_ = fast; }
+  virtual void UpdateInternal(float delta);
+  virtual void DrawPrimitives();
 
-	int GetLatestIndex(){ return m_iIndexLatest; }
-	Banner GetBanner(int i){ return m_Banner[i]; }
+  int GetLatestIndex() { return index_latest_; }
+  Banner GetBanner(int i) { return banner_[i]; }
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-protected:
-	void BeforeChange( bool bLowResToHighRes=false );
+ protected:
+  void BeforeChange(bool low_res_to_high_res = false);
 
-	static const int NUM_BANNERS = 5;
-	Banner	m_Banner[NUM_BANNERS];
-	int		m_iIndexLatest;
+  static const int NUM_BANNERS = 5;
+  Banner banner_[NUM_BANNERS];
+  int index_latest_;
 
-	bool	m_bMovingFast;
-	bool	m_bSkipNextBannerUpdate;
+  bool moving_fast_;
+  bool skip_next_banner_update_;
 };
 
-#endif
+#endif  // FADING_BANNER_H
 
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -69,7 +67,7 @@ protected:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
