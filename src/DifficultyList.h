@@ -2,77 +2,71 @@
 #ifndef DIFFICULTY_LIST_H
 #define DIFFICULTY_LIST_H
 
+#include <vector>
+
 #include "ActorFrame.h"
 #include "PlayerNumber.h"
+#include "Song.h"
+#include "Steps.h"
 #include "StepsDisplay.h"
 #include "ThemeMetric.h"
 
-#include <vector>
+class StepsDisplayList : public ActorFrame {
+ public:
+  StepsDisplayList();
+  virtual ~StepsDisplayList();
+  virtual StepsDisplayList* Copy() const;
+  virtual void LoadFromNode(const XNode* node);
 
+  void HandleMessage(const Message& msg);
 
-class Song;
-class Steps;
+  void SetFromGameState();
+  void TweenOnScreen();
+  void TweenOffScreen();
+  void Hide();
+  void Show();
 
-class StepsDisplayList: public ActorFrame
-{
-public:
-	StepsDisplayList();
-	virtual ~StepsDisplayList();
-	virtual StepsDisplayList *Copy() const;
-	virtual void LoadFromNode( const XNode* pNode );
+  // Lua
+  void PushSelf(lua_State* L);
 
-	void HandleMessage( const Message &msg );
+ private:
+  void UpdatePositions();
+  void PositionItems();
+  int GetCurrentRowIndex(PlayerNumber pn) const;
+  void HideRows();
 
-	void SetFromGameState();
-	void TweenOnScreen();
-	void TweenOffScreen();
-	void Hide();
-	void Show();
+  ThemeMetric<float> ITEMS_SPACING_Y;
+  ThemeMetric<int> NUM_SHOWN_ITEMS;
+  ThemeMetric<bool> CAPITALIZE_DIFFICULTY_NAMES;
+  ThemeMetric<apActorCommands> MOVE_COMMAND;
 
-	// Lua
-	void PushSelf( lua_State *L );
+  AutoActor cursors_[NUM_PLAYERS];
+	// Contains Cursor so that color can fade independent of other tweens.
+  ActorFrame cursor_frames_[NUM_PLAYERS];
 
-private:
-	void UpdatePositions();
-	void PositionItems();
-	int GetCurrentRowIndex( PlayerNumber pn ) const;
-	void HideRows();
+  struct Line {
+    StepsDisplay meter;
+  };
+  std::vector<Line> lines_;
 
-	ThemeMetric<float> ITEMS_SPACING_Y;
-	ThemeMetric<int> NUM_SHOWN_ITEMS;
-	ThemeMetric<bool> CAPITALIZE_DIFFICULTY_NAMES;
-	ThemeMetric<apActorCommands> MOVE_COMMAND;
+  const Song* cur_song_;
+  bool is_shown_;
 
-	AutoActor		m_Cursors[NUM_PLAYERS];
-	ActorFrame		m_CursorFrames[NUM_PLAYERS];	// contains Cursor so that color can fade independent of other tweens
+  struct Row {
+    Row() {
+      steps = nullptr;
+      difficulty = Difficulty_Invalid;
+      y = 0;
+      is_hidden = false;
+    }
 
-	struct Line
-	{
-		StepsDisplay m_Meter;
-	};
-	std::vector<Line>	m_Lines;
+    const Steps* steps;
+    Difficulty difficulty;
+    float y;
+    bool is_hidden;  // currently off screen
+  };
 
-	const Song		*m_CurSong;
-	bool			m_bShown;
-
-	struct Row
-	{
-		Row()
-		{
-			m_Steps = nullptr;
-			m_dc = Difficulty_Invalid;
-			m_fY = 0;
-			m_bHidden = false;
-		}
-
-		const Steps *m_Steps;
-		Difficulty m_dc;
-		float m_fY;
-		bool m_bHidden; // currently off screen
-	};
-
-	std::vector<Row>		m_Rows;
-
+  std::vector<Row> rows_;
 };
 
 #endif
