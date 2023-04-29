@@ -1,3 +1,5 @@
+#include "global.h"
+
 #include "DancingCharacters.h"
 
 #include "Character.h"
@@ -10,7 +12,6 @@
 #include "RageUtil.h"
 #include "Song.h"
 #include "StatsManager.h"
-#include "global.h"
 
 int Neg1OrPos1();
 
@@ -26,7 +27,8 @@ int Neg1OrPos1();
 // - Ability to load secondary elements i.e. stages.
 // - Remove support for 2D characters (Lua can do it).
 // - Cleanup!
-#define CAMERA_REST_DISTANCE THEME->GetMetricF("DancingCamera", "RestDistance")
+#define CAMERA_REST_DISTANCE \
+	THEME->GetMetricF("DancingCamera", "RestDistance")
 #define CAMERA_REST_LOOK_AT_HEIGHT \
   THEME->GetMetricF("DancingCamera", "RestHeight")
 #define CAMERA_SWEEP_DISTANCE \
