@@ -1,523 +1,448 @@
 #include "global.h"
-#include "GameConstantsAndTypes.h"
-#include "GameState.h"
-#include "RageUtil.h"
-#include "ThemeMetric.h"
-#include "EnumHelper.h"
 
-#include "LuaManager.h"
-#include "GameManager.h"
-#include "LocalizedString.h"
-#include "PlayerNumber.h"
+#include "GameConstantsAndTypes.h"
 
 #include <cfloat>
 #include <cmath>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "LocalizedString.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "RageUtil.h"
+#include "ThemeMetric.h"
 
-RString StepsTypeToString( StepsType st );
+RString StepsTypeToString(StepsType st);
 
-static std::vector<RString> GenerateRankingToFillInMarker()
-{
-	std::vector<RString> vRankings;
-	FOREACH_ENUM( PlayerNumber, pn )
-		vRankings.push_back( ssprintf("#P%d#", pn+1) );
-	return vRankings;
+static std::vector<RString> GenerateRankingToFillInMarker() {
+  std::vector<RString> rankings;
+  FOREACH_ENUM(PlayerNumber, pn)
+  rankings.push_back(ssprintf("#P%d#", pn + 1));
+  return rankings;
 }
-extern const std::vector<RString> RANKING_TO_FILL_IN_MARKER( GenerateRankingToFillInMarker() );
+extern const std::vector<RString> RANKING_TO_FILL_IN_MARKER(
+    GenerateRankingToFillInMarker());
 
 extern const RString GROUP_ALL = "---Group All---";
 
-static const char *RadarCategoryNames[] = {
-	"Stream",
-	"Voltage",
-	"Air",
-	"Freeze",
-	"Chaos",
-	"Notes",
-	"TapsAndHolds",
-	"Jumps",
-	"Holds",
-	"Mines",
-	"Hands",
-	"Rolls",
-	"Lifts",
-	"Fakes",
+static const char* RadarCategoryNames[] = {
+    "Stream", "Voltage", "Air",   "Freeze", "Chaos", "Notes", "TapsAndHolds",
+    "Jumps",  "Holds",   "Mines", "Hands",  "Rolls", "Lifts", "Fakes",
 };
-XToString( RadarCategory );
-XToLocalizedString( RadarCategory );
-LuaFunction( RadarCategoryToLocalizedString, RadarCategoryToLocalizedString(Enum::Check<RadarCategory>(L, 1)) );
-LuaXType( RadarCategory );
+XToString(RadarCategory);
+XToLocalizedString(RadarCategory);
+LuaFunction(
+    RadarCategoryToLocalizedString,
+    RadarCategoryToLocalizedString(Enum::Check<RadarCategory>(L, 1)));
+LuaXType(RadarCategory);
 
-RString StepsTypeToString( StepsType st )
-{
-	RString s = GAMEMAN->GetStepsTypeInfo( st ).szName; // "dance-single"
-	/* foo-bar -> Foo_Bar */
-	s.Replace('-','_');
+RString StepsTypeToString(StepsType st) {
+  RString s = GAMEMAN->GetStepsTypeInfo(st).szName;  // "dance-single"
+  /* foo-bar -> Foo_Bar */
+  s.Replace('-', '_');
 
-	bool bCapitalizeNextLetter = true;
-	for( int i=0; i<(int)s.length(); i++ )
-	{
-		if( bCapitalizeNextLetter )
-		{
-			s[i] = toupper(s[i]);
-			bCapitalizeNextLetter = false;
-		}
+  bool capitalize_next_letter = true;
+  for (int i = 0; i < (int)s.length(); ++i) {
+    if (capitalize_next_letter) {
+      s[i] = toupper(s[i]);
+      capitalize_next_letter = false;
+    }
 
-		if( s[i] == '_' )
-			bCapitalizeNextLetter = true;
-	}
+    if (s[i] == '_') {
+      capitalize_next_letter = true;
+    }
+  }
 
-	return s;
+  return s;
 }
-namespace StringConversion { template<> RString ToString<StepsType>( const StepsType &value ) { return StepsTypeToString(value); } }
+namespace StringConversion {
+template <>
+RString ToString<StepsType>(const StepsType& value) {
+  return StepsTypeToString(value);
+}
+}  // namespace StringConversion
 
-LuaXType( StepsType );
+LuaXType(StepsType);
 
-
-static const char *PlayModeNames[] = {
-	"Regular",
-	"Nonstop",
-	"Oni",
-	"Endless",
-	"Battle",
-	"Rave",
+static const char* PlayModeNames[] = {
+    "Regular", "Nonstop", "Oni", "Endless", "Battle", "Rave",
 };
-XToString( PlayMode );
-XToLocalizedString( PlayMode );
-StringToX( PlayMode );
-LuaFunction( PlayModeToLocalizedString, PlayModeToLocalizedString(Enum::Check<PlayMode>(L, 1)) );
-LuaXType( PlayMode );
+XToString(PlayMode);
+XToLocalizedString(PlayMode);
+StringToX(PlayMode);
+LuaFunction(
+    PlayModeToLocalizedString,
+    PlayModeToLocalizedString(Enum::Check<PlayMode>(L, 1)));
+LuaXType(PlayMode);
 
-RankingCategory AverageMeterToRankingCategory( int iAverageMeter )
-{
-	if(      iAverageMeter <= 3 )	return RANKING_A;
-	else if( iAverageMeter <= 6 )	return RANKING_B;
-	else if( iAverageMeter <= 9 )	return RANKING_C;
-	else							return RANKING_D;
+RankingCategory AverageMeterToRankingCategory(int average_meter) {
+  if (average_meter <= 3) {
+    return RANKING_A;
+  } else if (average_meter <= 6) {
+    return RANKING_B;
+  } else if (average_meter <= 9) {
+    return RANKING_C;
+  } else {
+    return RANKING_D;
+  }
 }
 
-
-static const char *RankingCategoryNames[] = {
-	"a",
-	"b",
-	"c",
-	"d",
+static const char* RankingCategoryNames[] = {
+    "a",
+    "b",
+    "c",
+    "d",
 };
-XToString( RankingCategory );
-StringToX( RankingCategory );
-LuaXType( RankingCategory );
+XToString(RankingCategory);
+StringToX(RankingCategory);
+LuaXType(RankingCategory);
 
-
-static const char *PlayerControllerNames[] = {
-	"Human",
-	"Autoplay",
-	"Cpu",
-	//"Replay",
+static const char* PlayerControllerNames[] = {
+    "Human", "Autoplay", "Cpu",
+    //"Replay",
 };
-XToString( PlayerController );
-StringToX( PlayerController );
-XToLocalizedString( PlayerController );
-LuaXType( PlayerController );
+XToString(PlayerController);
+StringToX(PlayerController);
+XToLocalizedString(PlayerController);
+LuaXType(PlayerController);
 
-
-static const char *HealthStateNames[] = {
-	"Hot",
-	"Alive",
-	"Danger",
-	"Dead",
+static const char* HealthStateNames[] = {
+    "Hot",
+    "Alive",
+    "Danger",
+    "Dead",
 };
-XToString( HealthState );
-LuaXType( HealthState );
+XToString(HealthState);
+LuaXType(HealthState);
 
-static const char *StageResultNames[] = {
-	"Win",
-	"Lose",
-	"Draw",
+static const char* StageResultNames[] = {
+    "Win",
+    "Lose",
+    "Draw",
 };
-XToString( StageResult );
-LuaXType( StageResult );
+XToString(StageResult);
+LuaXType(StageResult);
 
-static const char *CoinModeNames[] = {
-	"Home",
-	"Pay",
-	"Free",
+static const char* CoinModeNames[] = {
+    "Home",
+    "Pay",
+    "Free",
 };
-XToString( CoinMode );
-StringToX( CoinMode );
-LuaXType( CoinMode );
+XToString(CoinMode);
+StringToX(CoinMode);
+LuaXType(CoinMode);
 
-
-static const char *PremiumNames[] = {
-	"Off",
-	"DoubleFor1Credit",
-	"2PlayersFor1Credit",
+static const char* PremiumNames[] = {
+    "Off",
+    "DoubleFor1Credit",
+    "2PlayersFor1Credit",
 };
-XToString( Premium );
-StringToX( Premium );
-XToLocalizedString( Premium );
-LuaXType( Premium );
+XToString(Premium);
+StringToX(Premium);
+XToLocalizedString(Premium);
+LuaXType(Premium);
 
-
-static const char *SortOrderNames[] = {
-	"Preferred",
-	"Group",
-	"Title",
-	"BPM",
-	"Popularity",
-	"TopGrades",
-	"Artist",
-	"Genre",
-	"BeginnerMeter",
-	"EasyMeter",
-	"MediumMeter",
-	"HardMeter",
-	"ChallengeMeter",
-	"DoubleEasyMeter",
-	"DoubleMediumMeter",
-	"DoubleHardMeter",
-	"DoubleChallengeMeter",
-	"ModeMenu",
-	"AllCourses",
-	"Nonstop",
-	"Oni",
-	"Endless",
-	"Length",
-	"Roulette",
-	"Recent",
+static const char* SortOrderNames[] = {
+    "Preferred",
+    "Group",
+    "Title",
+    "BPM",
+    "Popularity",
+    "TopGrades",
+    "Artist",
+    "Genre",
+    "BeginnerMeter",
+    "EasyMeter",
+    "MediumMeter",
+    "HardMeter",
+    "ChallengeMeter",
+    "DoubleEasyMeter",
+    "DoubleMediumMeter",
+    "DoubleHardMeter",
+    "DoubleChallengeMeter",
+    "ModeMenu",
+    "AllCourses",
+    "Nonstop",
+    "Oni",
+    "Endless",
+    "Length",
+    "Roulette",
+    "Recent",
 };
-XToString( SortOrder );
-StringToX( SortOrder );
-LuaXType( SortOrder );
-XToLocalizedString( SortOrder );
-LuaFunction( SortOrderToLocalizedString, SortOrderToLocalizedString(Enum::Check<SortOrder>(L, 1)) );
+XToString(SortOrder);
+StringToX(SortOrder);
+LuaXType(SortOrder);
+XToLocalizedString(SortOrder);
+LuaFunction(
+    SortOrderToLocalizedString,
+    SortOrderToLocalizedString(Enum::Check<SortOrder>(L, 1)));
 
-
-static const char *TapNoteScoreNames[] = {
-	"None",
-	"HitMine",
-	"AvoidMine",
-	"CheckpointMiss",
-	"Miss",
-	"W5",
-	"W4",
-	"W3",
-	"W2",
-	"W1",
-	"CheckpointHit",
+static const char* TapNoteScoreNames[] = {
+    "None", "HitMine", "AvoidMine", "CheckpointMiss", "Miss", "W5", "W4",
+    "W3",   "W2",      "W1",        "CheckpointHit",
 };
-struct tns_conversion_helper
-{
-	std::map<RString, TapNoteScore> conversion_map;
-	tns_conversion_helper()
-	{
-		FOREACH_ENUM(TapNoteScore, tns)
-		{
-			conversion_map[TapNoteScoreNames[tns]]= tns;
-		}
-		// for backward compatibility
-		conversion_map["Boo"]= TNS_W5;
-		conversion_map["Good"]= TNS_W4;
-		conversion_map["Great"]= TNS_W3;
-		conversion_map["Perfect"]= TNS_W2;
-		conversion_map["Marvelous"]= TNS_W1;
-	}
+struct tns_conversion_helper {
+  std::map<RString, TapNoteScore> conversion_map;
+  tns_conversion_helper() {
+    FOREACH_ENUM(TapNoteScore, tns) {
+      conversion_map[TapNoteScoreNames[tns]] = tns;
+    }
+    // for backward compatibility
+    conversion_map["Boo"] = TNS_W5;
+    conversion_map["Good"] = TNS_W4;
+    conversion_map["Great"] = TNS_W3;
+    conversion_map["Perfect"] = TNS_W2;
+    conversion_map["Marvelous"] = TNS_W1;
+  }
 };
 tns_conversion_helper tns_converter;
-XToString( TapNoteScore );
-LuaXType( TapNoteScore );
-TapNoteScore StringToTapNoteScore( const RString &s )
-{
-	std::map<RString, TapNoteScore>::iterator tns=
-		tns_converter.conversion_map.find(s);
-	if(tns != tns_converter.conversion_map.end())
-	{
-		return tns->second;
-	}
-	return TapNoteScore_Invalid;
+XToString(TapNoteScore);
+LuaXType(TapNoteScore);
+TapNoteScore StringToTapNoteScore(const RString& s) {
+  std::map<RString, TapNoteScore>::iterator tns =
+      tns_converter.conversion_map.find(s);
+  if (tns != tns_converter.conversion_map.end()) {
+    return tns->second;
+  }
+  return TapNoteScore_Invalid;
 }
 // This is necessary because the StringToX macro wasn't used, and Preference
 // relies on there being a StringConversion entry for enums used in prefs. -Kyz
-namespace StringConversion
-{
-	template<> bool FromString<TapNoteScore>(const RString& value, TapNoteScore& out)
-	{
-		out= StringToTapNoteScore(value);
-		return out != TapNoteScore_Invalid;
-	}
+namespace StringConversion {
+template <>
+bool FromString<TapNoteScore>(const RString& value, TapNoteScore& out) {
+  out = StringToTapNoteScore(value);
+  return out != TapNoteScore_Invalid;
 }
-XToLocalizedString( TapNoteScore );
-LuaFunction( TapNoteScoreToLocalizedString, TapNoteScoreToLocalizedString(Enum::Check<TapNoteScore>(L, 1)) );
+}  // namespace StringConversion
+XToLocalizedString(TapNoteScore);
+LuaFunction(
+    TapNoteScoreToLocalizedString,
+    TapNoteScoreToLocalizedString(Enum::Check<TapNoteScore>(L, 1)));
 
-
-static const char *HoldNoteScoreNames[] = {
-	"None",
-	"LetGo",
-	"Held",
-	"MissedHold",
+static const char* HoldNoteScoreNames[] = {
+    "None",
+    "LetGo",
+    "Held",
+    "MissedHold",
 };
-XToString( HoldNoteScore );
-LuaXType( HoldNoteScore );
-HoldNoteScore StringToHoldNoteScore( const RString &s )
-{
-	// for backward compatibility
-	if     ( s == "NG" )		return HNS_LetGo;
-	else if( s == "OK" )		return HNS_Held;
+XToString(HoldNoteScore);
+LuaXType(HoldNoteScore);
+HoldNoteScore StringToHoldNoteScore(const RString& s) {
+  // for backward compatibility
+  if (s == "NG") {
+    return HNS_LetGo;
+  } else if (s == "OK") {
+    return HNS_Held;
+  }
 
-	// new style
-	else if( s == "None" )		return HNS_None;
-	else if( s == "LetGo" )		return HNS_LetGo;
-	else if( s == "Held" )		return HNS_Held;
-	else if( s == "MissedHold" )	return HNS_Missed;
+  // new style
+  else if (s == "None") {
+    return HNS_None;
+  } else if (s == "LetGo") {
+    return HNS_LetGo;
+  } else if (s == "Held") {
+    return HNS_Held;
+  } else if (s == "MissedHold") {
+    return HNS_Missed;
+  }
 
-	return HoldNoteScore_Invalid;
+  return HoldNoteScore_Invalid;
 }
-XToLocalizedString( HoldNoteScore );
+XToLocalizedString(HoldNoteScore);
 
-static const char *TimingWindowNames[] = {
-	"W1",
-	"W2",
-	"W3",
-	"W4",
-	"W5",
-	"Mine",
-	"Attack",
-	"Hold",
-	"Roll",
-	"Checkpoint"
-};
-XToString( TimingWindow );
-LuaXType( TimingWindow );
-StringToX( TimingWindow );
+static const char* TimingWindowNames[] = {"W1",   "W2",        "W3",     "W4",
+                                          "W5",   "Mine",      "Attack", "Hold",
+                                          "Roll", "Checkpoint"};
+XToString(TimingWindow);
+LuaXType(TimingWindow);
+StringToX(TimingWindow);
 
-static const char *ScoreEventNames[] = {
-	"CheckpointHit",
-	"W1",
-	"W2",
-	"W3",
-	"W4",
-	"W5",
-	"Miss",
-	"HitMine",
-	"CheckpointMiss",
-	"Held",
-	"LetGo",
-	"MissedHold",
+static const char* ScoreEventNames[] = {
+    "CheckpointHit",
+    "W1",
+    "W2",
+    "W3",
+    "W4",
+    "W5",
+    "Miss",
+    "HitMine",
+    "CheckpointMiss",
+    "Held",
+    "LetGo",
+    "MissedHold",
 };
-XToString( ScoreEvent );
+XToString(ScoreEvent);
 
-static const char *TapNoteScoreJudgeTypeNames[] = {
-	"MinimumScore",
-	"LastScore",
+static const char* TapNoteScoreJudgeTypeNames[] = {
+    "MinimumScore",
+    "LastScore",
 };
-XToString( TapNoteScoreJudgeType );
-LuaXType( TapNoteScoreJudgeType );
+XToString(TapNoteScoreJudgeType);
+LuaXType(TapNoteScoreJudgeType);
 
-static const char *ProfileSlotNames[] = {
-	"Player1",
-	"Player2",
-	"Machine",
+static const char* ProfileSlotNames[] = {
+    "Player1",
+    "Player2",
+    "Machine",
 };
-XToString( ProfileSlot );
-LuaXType( ProfileSlot );
+XToString(ProfileSlot);
+LuaXType(ProfileSlot);
 
-static const char *MemoryCardStateNames[] = {
-	"ready",
-	"checking",
-	"late",
-	"error",
-	"removed",
-	"none",
+static const char* MemoryCardStateNames[] = {
+    "ready", "checking", "late", "error", "removed", "none",
 };
-XToString( MemoryCardState );
-LuaXType( MemoryCardState );
+XToString(MemoryCardState);
+LuaXType(MemoryCardState);
 
-static const char *StageAwardNames[] = {
-	"FullComboW3",
-	"SingleDigitW3",
-	"OneW3",
-	"FullComboW2",
-	"SingleDigitW2",
-	"OneW2",
-	"FullComboW1",
-	"80PercentW3",
-	"90PercentW3",
-	"100PercentW3",
+static const char* StageAwardNames[] = {
+    "FullComboW3",   "SingleDigitW3", "OneW3",       "FullComboW2",
+    "SingleDigitW2", "OneW2",         "FullComboW1", "80PercentW3",
+    "90PercentW3",   "100PercentW3",
 };
-XToString( StageAward );
-XToLocalizedString( StageAward );
-StringToX( StageAward );
-LuaFunction( StageAwardToLocalizedString, StageAwardToLocalizedString(Enum::Check<StageAward>(L, 1)) );
-LuaXType( StageAward );
+XToString(StageAward);
+XToLocalizedString(StageAward);
+StringToX(StageAward);
+LuaFunction(
+    StageAwardToLocalizedString,
+    StageAwardToLocalizedString(Enum::Check<StageAward>(L, 1)));
+LuaXType(StageAward);
 
 // Numbers are intentionally not at the front of these strings so that the
 // strings can be used as XML entity names.
 // Numbers are intentionally not at the back so that "1000" and "10000" don't
 // conflict when searching for theme elements.
-static const char *PeakComboAwardNames[] = {
-	"1000",
-	"2000",
-	"3000",
-	"4000",
-	"5000",
-	"6000",
-	"7000",
-	"8000",
-	"9000",
-	"10000",
+static const char* PeakComboAwardNames[] = {
+    "1000", "2000", "3000", "4000", "5000",
+    "6000", "7000", "8000", "9000", "10000",
 };
-XToString( PeakComboAward );
-XToLocalizedString( PeakComboAward );
-StringToX( PeakComboAward );
-LuaFunction( PeakComboAwardToLocalizedString, PeakComboAwardToLocalizedString(Enum::Check<PeakComboAward>(L, 1)) );
-LuaXType( PeakComboAward );
+XToString(PeakComboAward);
+XToLocalizedString(PeakComboAward);
+StringToX(PeakComboAward);
+LuaFunction(
+    PeakComboAwardToLocalizedString,
+    PeakComboAwardToLocalizedString(Enum::Check<PeakComboAward>(L, 1)));
+LuaXType(PeakComboAward);
 
+void DisplayBpms::Add(float f) { bpms.push_back(f); }
 
-void DisplayBpms::Add( float f )
-{
-	vfBpms.push_back( f );
+float DisplayBpms::GetMin() const {
+  float min = FLT_MAX;
+  for (const float& f : bpms) {
+    if (f != -1) {
+      min = std::min(min, f);
+    }
+  }
+  if (min == FLT_MAX) {
+    return 0;
+  } else {
+    return min;
+  }
 }
 
-float DisplayBpms::GetMin() const
-{
-	float fMin = FLT_MAX;
-	for (float const &f : vfBpms)
-	{
-		if( f != -1 )
-			fMin = std::min( fMin, f );
-	}
-	if( fMin == FLT_MAX )
-		return 0;
-	else
-		return fMin;
+float DisplayBpms::GetMax() const { return this->GetMaxWithin(); }
+
+float DisplayBpms::GetMaxWithin(float highest) const {
+  float max = 0;
+  for (const float& f : bpms) {
+    if (f != -1) {
+      max = clamp(std::max(max, f), 0.0f, highest);
+    }
+  }
+  return max;
 }
 
-float DisplayBpms::GetMax() const
-{
-	return this->GetMaxWithin();
+bool DisplayBpms::BpmIsConstant() const {
+  return std::abs(GetMin() - GetMax()) < 0.001f;
 }
 
-float DisplayBpms::GetMaxWithin(float highest) const
-{
-	float fMax = 0;
-	for (float const &f : vfBpms)
-	{
-		if( f != -1 )
-			fMax = clamp(std::max( fMax, f ), 0.0f, highest);
-	}
-	return fMax;
+bool DisplayBpms::IsSecret() const {
+  return std::any_of(
+      bpms.begin(), bpms.end(), [](const float& f) { return f == -1; });
 }
 
-bool DisplayBpms::BpmIsConstant() const
-{
-	return std::abs( GetMin() - GetMax() ) < 0.001f;
-}
-
-bool DisplayBpms::IsSecret() const
-{
-	return std::any_of(vfBpms.begin(), vfBpms.end(), [](float const &f) { return f == -1; });
-}
-
-static const char *StyleTypeNames[] = {
-	"OnePlayerOneSide",
-	"TwoPlayersTwoSides",
-	"OnePlayerTwoSides",
-	"TwoPlayersSharedSides",
+static const char* StyleTypeNames[] = {
+    "OnePlayerOneSide",
+    "TwoPlayersTwoSides",
+    "OnePlayerTwoSides",
+    "TwoPlayersSharedSides",
 };
-XToString( StyleType );
-StringToX( StyleType );
-LuaXType( StyleType );
+XToString(StyleType);
+StringToX(StyleType);
+LuaXType(StyleType);
 
-static const char *GoalTypeNames[] = {
-	"Calories",
-	"Time",
-	"None",
+static const char* GoalTypeNames[] = {
+    "Calories",
+    "Time",
+    "None",
 };
-XToString( GoalType );
-StringToX( GoalType );
-LuaXType( GoalType );
+XToString(GoalType);
+StringToX(GoalType);
+LuaXType(GoalType);
 
-static const char *EditModeNames[] = {
-	"Practice",
-	"CourseMods",
-	"Home",
-	"Full"
+static const char* EditModeNames[] = {"Practice", "CourseMods", "Home", "Full"};
+XToString(EditMode);
+StringToX(EditMode);
+LuaXType(EditMode);
+
+static const char* SampleMusicPreviewModeNames[] = {
+    "Normal", "StartToPreview", "ScreenMusic", "LastSong"};
+XToString(SampleMusicPreviewMode);
+StringToX(SampleMusicPreviewMode);
+LuaXType(SampleMusicPreviewMode);
+
+static const char* StageNames[] = {
+    "1st",    "2nd",    "3rd",     "4th", "5th",     "6th",   "Next", "Final",
+    "Extra1", "Extra2", "Nonstop", "Oni", "Endless", "Event", "Demo",
 };
-XToString( EditMode );
-StringToX( EditMode );
-LuaXType( EditMode );
+XToString(Stage);
+LuaXType(Stage);
+XToLocalizedString(Stage);
+LuaFunction(
+    StageToLocalizedString, StageToLocalizedString(Enum::Check<Stage>(L, 1)));
 
-static const char *SampleMusicPreviewModeNames[] = {
-	"Normal",
-	"StartToPreview",
-	"ScreenMusic",
-	"LastSong"
+static const char* EarnedExtraStageNames[] = {
+    "No",
+    "Extra1",
+    "Extra2",
 };
-XToString( SampleMusicPreviewMode );
-StringToX( SampleMusicPreviewMode );
-LuaXType( SampleMusicPreviewMode );
+XToString(EarnedExtraStage);
+LuaXType(EarnedExtraStage);
 
-static const char *StageNames[] = {
-	"1st",
-	"2nd",
-	"3rd",
-	"4th",
-	"5th",
-	"6th",
-	"Next",
-	"Final",
-	"Extra1",
-	"Extra2",
-	"Nonstop",
-	"Oni",
-	"Endless",
-	"Event",
-	"Demo",
+static const char* MultiPlayerStatusNames[] = {
+    "Joined",
+    "NotJoined",
+    "Unplugged",
+    "MissingMultitap",
 };
-XToString( Stage );
-LuaXType( Stage );
-XToLocalizedString( Stage );
-LuaFunction( StageToLocalizedString, StageToLocalizedString(Enum::Check<Stage>(L, 1)) );
+XToString(MultiPlayerStatus);
 
-static const char *EarnedExtraStageNames[] = {
-	"No",
-	"Extra1",
-	"Extra2",
+static const char* CourseTypeNames[] = {
+    "Nonstop",
+    "Oni",
+    "Endless",
+    "Survival",
 };
-XToString( EarnedExtraStage );
-LuaXType( EarnedExtraStage );
+XToString(CourseType);
+XToLocalizedString(CourseType);
+LuaXType(CourseType);
+LuaFunction(
+    CourseTypeToLocalizedString,
+    CourseTypeToLocalizedString(Enum::Check<CourseType>(L, 1)));
 
-
-static const char *MultiPlayerStatusNames[] = {
-	"Joined",
-	"NotJoined",
-	"Unplugged",
-	"MissingMultitap",
+static const char* FailTypeNames[] = {
+    "Immediate",
+    "ImmediateContinue",
+    "EndOfSong",
+    "Off",
 };
-XToString( MultiPlayerStatus );
-
-
-static const char *CourseTypeNames[] = {
-	"Nonstop",
-	"Oni",
-	"Endless",
-	"Survival",
-};
-XToString( CourseType );
-XToLocalizedString( CourseType );
-LuaXType( CourseType );
-LuaFunction( CourseTypeToLocalizedString, CourseTypeToLocalizedString( Enum::Check<CourseType>( L, 1 ) ) );
-
-static const char *FailTypeNames[] = {
-	"Immediate",
-	"ImmediateContinue",
-	"EndOfSong",
-	"Off",
-};
-XToString( FailType );
-XToLocalizedString( FailType );
-StringToX( FailType );
-LuaXType( FailType );
+XToString(FailType);
+XToLocalizedString(FailType);
+StringToX(FailType);
+LuaXType(FailType);
 
 /*
  * (c) 2001-2004 Chris Danford

@@ -98,11 +98,11 @@ void BPMDisplay::Update(float delta) {
 }
 
 void BPMDisplay::SetBPMRange(const DisplayBpms& display_bpms) {
-  ASSERT(!display_bpms.vfBpms.empty());
+  ASSERT(!display_bpms.bpms.empty());
 
   bpms_.clear();
 
-  const std::vector<float>& bpms = display_bpms.vfBpms;
+  const std::vector<float>& bpms = display_bpms.bpms;
 
   bool all_identical = true;
   for (unsigned i = 0; i < bpms.size(); ++i) {
