@@ -1,240 +1,238 @@
-/** @brief Font - stores a font, used by BitmapText. */
-
 #ifndef FONT_H
 #define FONT_H
-
-#include "RageTextureID.h"
-#include "RageUtil.h"
-#include "RageTypes.h"
 
 #include <cstddef>
 #include <map>
 #include <vector>
 
+#include "IniFile.h"
+#include "RageTexture.h"
+#include "RageTextureID.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 
+// TODO(teejusb): Move this to its own file.
 class FontPage;
-class RageTexture;
-class IniFile;
 
-/** @brief The textures used by the font. */
-struct FontPageTextures
-{
-	/** @brief The primary texture drawn underneath Main. */
-	RageTexture *m_pTextureMain;
-	/** @brief an optional texture drawn underneath Main.
-	 *
-	 * This can help to acheive complicated layer styles. */
-	RageTexture *m_pTextureStroke;
+// The textures used by the font.
+struct FontPageTextures {
+  // The primary texture drawn underneath Main.
+  RageTexture* texture_main_;
+  // An optional texture drawn underneath Main.
+  // This can help to acheive complicated layer styles.
+  RageTexture* texture_stroke_;
 
-	/** @brief Set up the initial textures. */
-	FontPageTextures(): m_pTextureMain(nullptr), m_pTextureStroke(nullptr) {}
+  // Set up the initial textures.
+  FontPageTextures() : texture_main_(nullptr), texture_stroke_(nullptr) {}
 
-	bool operator == (const struct FontPageTextures& other) const {
-		return m_pTextureMain == other.m_pTextureMain &&
-			m_pTextureStroke == other.m_pTextureStroke;
-	}
+  bool operator==(const struct FontPageTextures& other) const {
+    return texture_main_ == other.texture_main_ &&
+           texture_stroke_ == other.texture_stroke_;
+  }
 
-	bool operator != (const struct FontPageTextures& other) const {
-		return !operator==(other);
-	}
+  bool operator!=(const struct FontPageTextures& other) const {
+    return !operator==(other);
+  }
 };
 
-/** @brief The components of a glyph (not technically a character). */
-struct glyph
-{
-	/** @brief the FontPage that is needed. */
-	FontPage *m_pPage;
-	/** @brief the textures for the glyph. */
-	FontPageTextures m_FontPageTextures;
-	FontPageTextures *GetFontPageTextures() const { return const_cast<FontPageTextures *>(&m_FontPageTextures); }
+// The components of a glyph (not technically a character).
+struct glyph {
+  // the FontPage that is needed.
+  FontPage* page_;
+  // the textures for the glyph.
+  FontPageTextures font_page_textures_;
+  FontPageTextures* GetFontPageTextures() const {
+    return const_cast<FontPageTextures*>(&font_page_textures_);
+  }
 
-	/** @brief Number of pixels to advance horizontally after drawing this character. */
-	int m_iHadvance;
+  // Number of pixels to advance horizontally after drawing this character.
+  int horiz_advance_;
 
-	/** @brief Width of the actual rendered character. */
-	float m_fWidth;
-	/** @brief Height of the actual rendered character. */
-	float m_fHeight;
+  // Width of the actual rendered character.
+  float width_;
+  // Height of the actual rendered character.
+  float height_;
 
-	/** @brief Number of pixels to offset this character when rendering. */
-	float m_fHshift; // , m_fVshift;
+  // Number of pixels to offset this character when rendering.
+  float horiz_shift_;
 
-	/** @brief Texture coordinate rect. */
-	RectF m_TexRect;
+  // Texture coordinate rect.
+  RectF texture_rect_;
 
-	/** @brief Set up the glyph with default values. */
-	glyph() : m_pPage(nullptr), m_FontPageTextures(), m_iHadvance(0),
-		m_fWidth(0), m_fHeight(0), m_fHshift(0), m_TexRect() {}
+  // Set up the glyph with default values.
+  glyph()
+      : page_(nullptr),
+        font_page_textures_(),
+        horiz_advance_(0),
+        width_(0),
+        height_(0),
+        horiz_shift_(0),
+        texture_rect_() {}
 };
 
-/** @brief The settings used for the FontPage. */
-struct FontPageSettings
-{
-	RString m_sTexturePath;
+// The settings used for the FontPage.
+struct FontPageSettings {
+  RString texture_path_;
 
-	int m_iDrawExtraPixelsLeft,
-		m_iDrawExtraPixelsRight,
-		m_iAddToAllWidths,
-		m_iLineSpacing,
-		m_iTop,
-		m_iBaseline,
-		m_iDefaultWidth,
-		m_iAdvanceExtraPixels;
-	float m_fScaleAllWidthsBy;
-	RString m_sTextureHints;
+  int draw_extra_pixels_left_;
+	int draw_extra_pixels_right_;
+	int add_to_all_widths_;
+  int line_spacing_;
+	int top_;
+	int baseline_;
+	int default_width_;
+  int advance_extra_pixels_;
+  float scale_all_widths_by_;
+  RString texture_hints_;
 
-	std::map<wchar_t,int> CharToGlyphNo;
-	// If a value is missing, the width of the texture frame is used.
-	std::map<int,int> m_mapGlyphWidths;
+  std::map<wchar_t, int> char_to_glyph_no_;
+  // If a value is missing, the width of the texture frame is used.
+  std::map<int, int> glyph_widths_map_;
 
-	/** @brief The initial settings for the FontPage. */
-	FontPageSettings(): m_sTexturePath(""),
-		m_iDrawExtraPixelsLeft(0), m_iDrawExtraPixelsRight(0),
-		m_iAddToAllWidths(0),
-		m_iLineSpacing(-1),
-		m_iTop(-1),
-		m_iBaseline(-1),
-		m_iDefaultWidth(-1),
-		m_iAdvanceExtraPixels(1),
-		m_fScaleAllWidthsBy(1),
-		m_sTextureHints("default"),
-		CharToGlyphNo(),
-		m_mapGlyphWidths()
-	{ }
+  // The initial settings for the FontPage.
+  FontPageSettings()
+      : texture_path_(""),
+        draw_extra_pixels_left_(0),
+        draw_extra_pixels_right_(0),
+        add_to_all_widths_(0),
+        line_spacing_(-1),
+        top_(-1),
+        baseline_(-1),
+        default_width_(-1),
+        advance_extra_pixels_(1),
+        scale_all_widths_by_(1),
+        texture_hints_("default"),
+        char_to_glyph_no_(),
+        glyph_widths_map_() {}
 
-	/**
-	 * @brief Map a range from a character map to glyphs.
-	 * @param sMapping the intended mapping.
-	 * @param iMapOffset the number of maps to offset.
-	 * @param iGlyphOffset the number of glyphs to offset.
-	 * @param iCount the range to map. If -1, the range is the entire map.
-	 * @return the empty string on success, or an error message on failure. */
-	RString MapRange( RString sMapping, int iMapOffset, int iGlyphOffset, int iCount );
+   // Map a range from a character map to glyphs.
+   // - mapping, the intended mapping.
+   // - map_offset, the number of maps to offset.
+   // - glyph_offset, the number of glyphs to offset.
+   // - count, the range to map. If -1, the range is the entire map.
+   // Returns the empty string on success, or an error message on failure.
+  RString MapRange(
+      RString mapping, int map_offset, int glyph_offset, int count);
 };
 
-class FontPage
-{
-public:
-	FontPage();
-	~FontPage();
+class FontPage {
+ public:
+  FontPage();
+  ~FontPage();
 
-	void Load( const FontPageSettings &cfg );
+  void Load(const FontPageSettings& cfg);
 
-	// Page-global properties.
-	int m_iHeight;
-	int m_iLineSpacing;
-	float m_fVshift;
-	int GetCenter() const { return m_iHeight/2; }
+  // Page-global properties.
+  int height_;
+  int line_spacing_;
+  float vert_shift_;
+  int GetCenter() const { return height_ / 2; }
 
-	// Remember these only for GetLineWidthInSourcePixels.
-	int m_iDrawExtraPixelsLeft,
-	m_iDrawExtraPixelsRight;
+  // Remember these only for GetLineWidthInSourcePixels.
+  int draw_extra_pixels_left_;
+	int draw_extra_pixels_right_;
 
-	FontPageTextures m_FontPageTextures;
+  FontPageTextures font_page_textures_;
 
-	// XXX: remove?
-	RString m_sTexturePath;
+  // TODO: remove?
+  RString texture_path_;
 
-	/** @brief All glyphs in this list will point to m_pTexture. */
-	std::vector<glyph> m_aGlyphs;
+  // All glyphs in this list will point to m_pTexture.
+  std::vector<glyph> glyphs_;
 
-	std::map<wchar_t,int> m_iCharToGlyphNo;
+  std::map<wchar_t, int> char_to_glyph_no_;
 
-private:
-	void SetExtraPixels( int iDrawExtraPixelsLeft, int DrawExtraPixelsRight );
-	void SetTextureCoords( const std::vector<int> &aiWidths, int iAdvanceExtraPixels );
+ private:
+  void SetExtraPixels(int draw_extra_pixels_left, int draw_extra_pixels_right);
+  void SetTextureCoords(
+      const std::vector<int>& widths, int advance_extra_pixels);
 };
 
-class Font
-{
-public:
-	int m_iRefCount;
-	RString path;
+// Stores a font, used by BitmapText.
+class Font {
+ public:
+  int ref_count_;
+  RString path_;
 
-	Font();
-	~Font();
+  Font();
+  ~Font();
 
-	const glyph &GetGlyph( wchar_t c ) const;
+  const glyph& GetGlyph(wchar_t c) const;
 
-	int GetLineWidthInSourcePixels( const std::wstring &szLine ) const;
-	int GetLineHeightInSourcePixels( const std::wstring &szLine ) const;
-	std::size_t GetGlyphsThatFit(const std::wstring& line, int* width) const;
+  int GetLineWidthInSourcePixels(const std::wstring& line) const;
+  int GetLineHeightInSourcePixels(const std::wstring& line) const;
+  std::size_t GetGlyphsThatFit(const std::wstring& line, int* width) const;
 
-	bool FontCompleteForString( const std::wstring &str ) const;
+  bool FontCompleteForString(const std::wstring& str) const;
 
-	/**
-	 * @brief Add a FontPage to this font.
-	 * @param fp the FontPage to be added.
-	 */
-	void AddPage(FontPage *fp);
+  // Add a FontPage to this font.
+  void AddPage(FontPage* font_page);
 
-	/**
-	 * @brief Steal all of a font's pages.
-	 * @param f the font whose pages we are stealing. */
-	void MergeFont(Font &f);
+  // Steal all of a font's pages.
+  void MergeFont(Font& font);
 
-	void Load(const RString &sFontOrTextureFilePath, RString sChars);
-	void Unload();
-	void Reload();
+  void Load(const RString& font_or_texture_file_path, RString chars);
+  void Unload();
+  void Reload();
 
-	// Load font-wide settings.
-	void CapsOnly();
+  // Load font-wide settings.
+  void CapsOnly();
 
-	int GetHeight() const { return m_pDefault->m_iHeight; }
-	int GetCenter() const { return m_pDefault->GetCenter(); }
-	int GetLineSpacing() const { return m_pDefault->m_iLineSpacing; }
+  int GetHeight() const { return default_font_page_->height_; }
+  int GetCenter() const { return default_font_page_->GetCenter(); }
+  int GetLineSpacing() const { return default_font_page_->line_spacing_; }
 
-	void SetDefaultGlyph( FontPage *pPage );
+  void SetDefaultGlyph(FontPage* font_page);
 
-	bool IsRightToLeft() const { return m_bRightToLeft; };
-	bool IsDistanceField() const { return m_bDistanceField; };
-	const RageColor &GetDefaultStrokeColor() const { return m_DefaultStrokeColor; };
+  bool IsRightToLeft() const { return right_to_left_; };
+  bool IsDistanceField() const { return distance_field_; };
+  const RageColor& GetDefaultStrokeColor() const {
+    return default_stroke_color_;
+  };
 
-private:
-	/** @brief List of pages and fonts that we use (and are responsible for freeing). */
-	std::vector<FontPage *> m_apPages;
+ private:
+  // List of pages and fonts that we use (and are responsible for freeing).
+  std::vector<FontPage*> pages_;
 
-	/**
-	 * @brief This is the primary fontpage of this font.
-	 *
-	 * The font-wide height, center, etc. is pulled from it.
-	 * (This is one of pages[].) */
-	FontPage *m_pDefault;
+  // This is the primary fontpage of this font.
+  // The font-wide height, center, etc. is pulled from it.
+  // (This is one of pages[].)
+  FontPage* default_font_page_;
 
-	/** @brief Map from characters to glyphs. */
-	std::map<wchar_t,glyph*> m_iCharToGlyph;
-	/** @brief Each glyph is part of one of the pages[]. */
-	glyph *m_iCharToGlyphCache[128];
+  // Map from characters to glyphs.
+  std::map<wchar_t, glyph*> char_to_glyph_map_;
+  // Each glyph is part of one of the pages[].
+  glyph* char_to_glyph_cache_[128];
 
-	/**
-	 * @brief True for Hebrew, Arabic, Urdu fonts.
-	 *
-	 * This will also change the way glyphs from the default FontPage are rendered.
-	 * There may be a better way to handle this. */
-	bool m_bRightToLeft;
+  // True for Hebrew, Arabic, Urdu fonts.
+  // This will also change the way glyphs from the default FontPage are
+  // rendered. There may be a better way to handle this.
+  bool right_to_left_;
 
-	bool m_bDistanceField;
+  bool distance_field_;
 
-	RageColor m_DefaultStrokeColor;
+  RageColor default_stroke_color_;
 
-	/** @brief We keep this around only for reloading. */
-	RString m_sChars;
+  // We keep this around only for reloading.
+  RString chars_;
 
-	void LoadFontPageSettings( FontPageSettings &cfg, IniFile &ini, const RString &sTexturePath, const RString &PageName, RString sChars );
-	static void GetFontPaths( const RString &sFontOrTextureFilePath, std::vector<RString> &sTexturePaths );
-	RString GetPageNameFromFileName( const RString &sFilename );
+  void LoadFontPageSettings(
+      FontPageSettings& cfg, IniFile& ini, const RString& texture_path,
+      const RString& page_name, RString chars);
+  static void GetFontPaths(
+      const RString& font_or_texture_file_path,
+      std::vector<RString>& texture_paths);
+  RString GetPageNameFromFileName(const RString& filename);
 
-	Font(const Font& rhs);
-	Font& operator=(const Font& rhs);
+  Font(const Font& rhs);
+  Font& operator=(const Font& rhs);
 };
 
-/**
- * @brief Last private-use Unicode character:
- *
- * This is in the header to reduce file dependencies. */
+// Last private-use Unicode character:
+// This is in the header to reduce file dependencies. 
 const wchar_t FONT_DEFAULT_GLYPH = 0xF8FF;
 
-#endif
+#endif  // FONT_H
 
 /**
  * @file

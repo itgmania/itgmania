@@ -294,33 +294,33 @@ void BitmapText::BuildChars() {
 
       // Advance the cursor early for RTL(?)
       if (m_pFont->IsRightToLeft()) {
-        iX -= g.m_iHadvance;
+        iX -= g.horiz_advance_;
       }
 
       // Set vertex positions
 			// Top left
-      v[0].p = RageVector3(iX + g.m_fHshift, iY + g.m_pPage->m_fVshift, 0);
+      v[0].p = RageVector3(iX + g.horiz_shift_, iY + g.page_->vert_shift_, 0);
 			// Bottom left
       v[1].p = RageVector3(
-          iX + g.m_fHshift, iY + g.m_pPage->m_fVshift + g.m_fHeight, 0);
+          iX + g.horiz_shift_, iY + g.page_->vert_shift_ + g.height_, 0);
 			// Bottom right
       v[2].p = RageVector3(
-          iX + g.m_fHshift + g.m_fWidth,
-					iY + g.m_pPage->m_fVshift + g.m_fHeight, 0);
+          iX + g.horiz_shift_ + g.width_,
+					iY + g.page_->vert_shift_ + g.height_, 0);
 			// Top right
       v[3].p = RageVector3(
-          iX + g.m_fHshift + g.m_fWidth, iY + g.m_pPage->m_fVshift, 0);  
+          iX + g.horiz_shift_ + g.width_, iY + g.page_->vert_shift_, 0);  
 
       // Advance the cursor.
       if (!m_pFont->IsRightToLeft()) {
-        iX += g.m_iHadvance;
+        iX += g.horiz_advance_;
       }
 
       // Set texture coordinates
-      v[0].t = RageVector2(g.m_TexRect.left, g.m_TexRect.top);
-      v[1].t = RageVector2(g.m_TexRect.left, g.m_TexRect.bottom);
-      v[2].t = RageVector2(g.m_TexRect.right, g.m_TexRect.bottom);
-      v[3].t = RageVector2(g.m_TexRect.right, g.m_TexRect.top);
+      v[0].t = RageVector2(g.texture_rect_.left, g.texture_rect_.top);
+      v[1].t = RageVector2(g.texture_rect_.left, g.texture_rect_.bottom);
+      v[2].t = RageVector2(g.texture_rect_.right, g.texture_rect_.bottom);
+      v[3].t = RageVector2(g.texture_rect_.right, g.texture_rect_.top);
 
       m_aVertices.insert(m_aVertices.end(), &v[0], &v[4]);
       m_vpFontPageTextures.push_back(g.GetFontPageTextures());
@@ -442,17 +442,17 @@ void BitmapText::DrawChars(bool bUseStrokeTexture) {
 
     bool bHaveATexture =
         !bUseStrokeTexture ||
-        (bUseStrokeTexture && m_vpFontPageTextures[start]->m_pTextureStroke);
+        (bUseStrokeTexture && m_vpFontPageTextures[start]->texture_stroke_);
     if (bHaveATexture) {
       DISPLAY->ClearAllTextures();
       if (bUseStrokeTexture) {
         DISPLAY->SetTexture(
             TextureUnit_1,
-            m_vpFontPageTextures[start]->m_pTextureStroke->GetTexHandle());
+            m_vpFontPageTextures[start]->texture_stroke_->GetTexHandle());
       } else {
         DISPLAY->SetTexture(
             TextureUnit_1,
-            m_vpFontPageTextures[start]->m_pTextureMain->GetTexHandle());
+            m_vpFontPageTextures[start]->texture_main_->GetTexHandle());
       }
 
       // Don't bother setting texture render states for text. We never go
