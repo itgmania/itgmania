@@ -1,32 +1,29 @@
-/* FontManager - Interface for loading and releasing fonts. */
-
 #ifndef FONTMANAGER_H
 #define FONTMANAGER_H
 
-class Font;
-struct Game;
+#include "Font.h"
+#include "Game.h"
 
-class FontManager
-{
-public:
-	FontManager();
-	~FontManager();
+// Interface for loading and releasing fonts.
+class FontManager {
+ public:
+  FontManager();
+  ~FontManager();
 
-	Font* LoadFont( const RString &sFontOrTextureFilePath, RString sChars = "" );
-	Font *CopyFont( Font *pFont );
-	void UnloadFont( Font *fp );
-	//void PruneFonts();
+  Font* LoadFont(const RString& font_or_texture_file_path, RString chars = "");
+  Font* CopyFont(Font* font);
+  void UnloadFont(Font* font);
 };
 
-extern FontManager*	FONT;	// global and accessible from anywhere in our program
-
+// Global and accessible from anywhere in our program.
+extern FontManager* FONT;
 
 #endif
 
 /*
  * (c) 2001-2003 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -36,7 +33,7 @@ extern FontManager*	FONT;	// global and accessible from anywhere in our program
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
