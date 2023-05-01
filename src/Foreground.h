@@ -1,38 +1,35 @@
 #ifndef FOREGROUND_H
 #define FOREGROUND_H
 
-#include "ActorFrame.h"
-
 #include <vector>
 
+#include "ActorFrame.h"
+#include "Song.h"
 
-class Song;
-/** @brief Foreground in front of notes while playing. */
-class Foreground: public ActorFrame
-{
-public:
-	~Foreground();
-	void Unload();
-	void LoadFromSong( const Song *pSong );
+// Foreground in front of notes while playing.
+class Foreground : public ActorFrame {
+ public:
+  ~Foreground();
+  void Unload();
+  void LoadFromSong(const Song* song);
 
-	virtual void Update( float fDeltaTime );
-	virtual void HandleMessage( const Message &msg );
+  virtual void Update(float /*delta*/);
+  virtual void HandleMessage(const Message& msg);
 
-protected:
-	struct LoadedBGA
-	{
-		Actor			*m_bga;
-		float			m_fStartBeat;
-		float			m_fStopBeat;
-		bool			m_bFinished;
-	};
+ protected:
+  struct LoadedBGA {
+    Actor* bga;
+    float start_beat;
+    float stop_beat;
+    bool is_finished;
+  };
 
-	std::vector<LoadedBGA>	m_BGAnimations;
-	float m_fLastMusicSeconds;
-	const Song *m_pSong;
+  std::vector<LoadedBGA> bg_animations_;
+  float last_music_seconds_;
+  const Song* song_;
 };
 
-#endif
+#endif  // FOREGROUND_H
 
 /*
  * (c) 2004 Glenn Maynard
