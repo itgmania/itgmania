@@ -373,19 +373,19 @@ void ScreenSelectMusic::CheckBackgroundRequests( bool bForce )
 		g_bSampleMusicWaiting = false;
 
 		GameSoundManager::PlayMusicParams PlayParams;
-		PlayParams.sFile = HandleLuaMusicFile(m_sSampleMusicToPlay);
-		PlayParams.pTiming = m_pSampleMusicTimingData;
-		PlayParams.bForceLoop = SAMPLE_MUSIC_LOOPS;
-		PlayParams.fStartSecond = m_fSampleStartSeconds;
-		PlayParams.fLengthSeconds = m_fSampleLengthSeconds;
-		PlayParams.fFadeOutLengthSeconds = SAMPLE_MUSIC_FADE_OUT_SECONDS;
-		PlayParams.bAlignBeat = ALIGN_MUSIC_BEATS;
-		PlayParams.bApplyMusicRate = true;
+		PlayParams.file = HandleLuaMusicFile(m_sSampleMusicToPlay);
+		PlayParams.timing = m_pSampleMusicTimingData;
+		PlayParams.force_loop = SAMPLE_MUSIC_LOOPS;
+		PlayParams.start_second = m_fSampleStartSeconds;
+		PlayParams.length_seconds = m_fSampleLengthSeconds;
+		PlayParams.fade_out_length_seconds = SAMPLE_MUSIC_FADE_OUT_SECONDS;
+		PlayParams.align_beat = ALIGN_MUSIC_BEATS;
+		PlayParams.apply_music_rate = true;
 
 		GameSoundManager::PlayMusicParams FallbackMusic;
-		FallbackMusic.sFile = m_sLoopMusicPath;
-		FallbackMusic.fFadeInLengthSeconds = SAMPLE_MUSIC_FALLBACK_FADE_IN_SECONDS;
-		FallbackMusic.bAlignBeat = ALIGN_MUSIC_BEATS;
+		FallbackMusic.file = m_sLoopMusicPath;
+		FallbackMusic.fade_in_length_seconds = SAMPLE_MUSIC_FALLBACK_FADE_IN_SECONDS;
+		FallbackMusic.align_beat = ALIGN_MUSIC_BEATS;
 
 		SOUND->PlayMusic( PlayParams, FallbackMusic );
 	}
