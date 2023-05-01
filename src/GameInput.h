@@ -2,7 +2,9 @@
 #define GAME_INPUT_H
 
 #include "EnumHelper.h"
-#include "InputMapper.h"
+
+// TODO(teejusb): Remove this forward declaration (from InputMapper.h).
+class InputScheme;
 
 // The list of controllers in use.
 enum GameController {
