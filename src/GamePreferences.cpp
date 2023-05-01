@@ -1,17 +1,17 @@
 #include "global.h"
+
 #include "GamePreferences.h"
 
 // This options has weird interactions depending on m_bEventMode;
 // use GameState::GetCoinMode().
-Preference<CoinMode> GamePreferences::m_CoinMode( "CoinMode", CoinMode_Home );
-Preference<PlayerController> GamePreferences::m_AutoPlay( "AutoPlay", PC_HUMAN );
+Preference<CoinMode> GamePreferences::m_CoinMode("CoinMode", CoinMode_Home);
+Preference<PlayerController> GamePreferences::m_AutoPlay("AutoPlay", PC_HUMAN);
 Preference<bool> GamePreferences::m_AxisFix("AxisFix", false);
-
 
 /*
  * (c) 2001-2004 Chris Danford, Chris Gomez
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -21,7 +21,7 @@ Preference<bool> GamePreferences::m_AxisFix("AxisFix", false);
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
