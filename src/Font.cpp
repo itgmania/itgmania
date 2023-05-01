@@ -682,7 +682,7 @@ RString FontPageSettings::MapRange(
     return RString();
   }
 
-  const wchar_t* mapping = FontCharmaps::get_char_map(mapping_str);
+  const wchar_t* mapping = FontCharmaps::GetCharmap(mapping_str);
   if (mapping == nullptr) {
     return "Unknown mapping";
   }
