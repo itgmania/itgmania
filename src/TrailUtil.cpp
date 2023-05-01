@@ -52,7 +52,7 @@ XNode* TrailID::CreateNode() const
 {
 	XNode* pNode = new XNode( "Trail" );
 
-	pNode->AppendAttr( "StepsType", GAMEMAN->GetStepsTypeInfo(st).szName );
+	pNode->AppendAttr( "StepsType", GAMEMAN->GetStepsTypeInfo(st).name );
 	pNode->AppendAttr( "CourseDifficulty", DifficultyToString(cd) );
 
 	return pNode;
@@ -73,7 +73,7 @@ void TrailID::LoadFromNode( const XNode* pNode )
 
 RString TrailID::ToString() const
 {
-	RString s = GAMEMAN->GetStepsTypeInfo(st).szName;
+	RString s = GAMEMAN->GetStepsTypeInfo(st).name;
 	s += " " + DifficultyToString( cd );
 	return s;
 }

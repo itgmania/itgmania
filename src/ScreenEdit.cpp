@@ -1940,7 +1940,7 @@ void ScreenEdit::UpdateTextInfo()
 	}
 
 	GAMESTATE->SetProcessedTimingData(m_pSteps->GetTimingData());
-	const StepsTypeCategory &cat = GAMEMAN->GetStepsTypeInfo(m_pSteps->m_StepsType).m_StepsTypeCategory;
+	const StepsTypeCategory &cat = GAMEMAN->GetStepsTypeInfo(m_pSteps->m_StepsType).steps_type_category;
 	if (cat == StepsTypeCategory_Couple || cat == StepsTypeCategory_Routine)
 	{
 		std::pair<int, int> tmp = m_NoteDataEdit.GetNumTapNotesTwoPlayer();
@@ -2495,7 +2495,7 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 
 			RString s = ssprintf(
 				SWITCHED_TO.GetValue() + " %s %s '%s' (%d of %d)",
-				GAMEMAN->GetStepsTypeInfo( st ).szName,
+				GAMEMAN->GetStepsTypeInfo( st ).name,
 				DifficultyToString( pSteps->GetDifficulty() ).c_str(),
 				pSteps->GetChartName().c_str(),
 				it - vSteps.begin() + 1,
@@ -4907,7 +4907,7 @@ void ScreenEdit::HandleMainMenuChoice( MainMenuChoice c, const std::vector<int> 
 		{
 			float fMusicSeconds = m_pSoundMusic->GetLengthSeconds();
 			Steps* pSteps = GAMESTATE->m_pCurSteps[PLAYER_1];
-			const StepsTypeCategory &cat = GAMEMAN->GetStepsTypeInfo(pSteps->m_StepsType).m_StepsTypeCategory;
+			const StepsTypeCategory &cat = GAMEMAN->GetStepsTypeInfo(pSteps->m_StepsType).steps_type_category;
 			if (cat == StepsTypeCategory_Couple || cat == StepsTypeCategory_Routine)
 			{
 				std::pair<int, int> tmp = m_NoteDataEdit.GetNumTapNotesTwoPlayer();
@@ -5028,7 +5028,7 @@ static bool ConvertMappingInputToMapping(RString const& mapstr, int* mapping, RS
 {
 	std::vector<RString> mapping_input;
 	split(mapstr, ",", mapping_input);
-	std::size_t tracks_for_type= GAMEMAN->GetStepsTypeInfo(GAMESTATE->m_pCurSteps[0]->m_StepsType).iNumTracks;
+	std::size_t tracks_for_type= GAMEMAN->GetStepsTypeInfo(GAMESTATE->m_pCurSteps[0]->m_StepsType).num_tracks;
 	if(mapping_input.size() > tracks_for_type)
 	{
 		error= TOO_MANY_TRACKS;

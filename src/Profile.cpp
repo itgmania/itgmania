@@ -1553,7 +1553,7 @@ XNode* Profile::SaveGeneralDataCreateNode() const
 	pGeneralDataNode->AppendChild( "LastDifficulty",		DifficultyToString(m_LastDifficulty) );
 	pGeneralDataNode->AppendChild( "LastCourseDifficulty",		DifficultyToString(m_LastCourseDifficulty) );
 	if( m_LastStepsType != StepsType_Invalid )
-		pGeneralDataNode->AppendChild( "LastStepsType",			GAMEMAN->GetStepsTypeInfo(m_LastStepsType).szName );
+		pGeneralDataNode->AppendChild( "LastStepsType",			GAMEMAN->GetStepsTypeInfo(m_LastStepsType).name );
 	pGeneralDataNode->AppendChild( m_lastSong.CreateNode() );
 	pGeneralDataNode->AppendChild( m_lastCourse.CreateNode() );
 	pGeneralDataNode->AppendChild( "CurrentCombo", m_iCurrentCombo );
@@ -2192,7 +2192,7 @@ XNode* Profile::SaveCategoryScoresCreateNode() const
 			continue;
 
 		XNode* pStepsTypeNode = pNode->AppendChild( "StepsType" );
-		pStepsTypeNode->AppendAttr( "Type", GAMEMAN->GetStepsTypeInfo(st).szName );
+		pStepsTypeNode->AppendAttr( "Type", GAMEMAN->GetStepsTypeInfo(st).name );
 
 		FOREACH_ENUM( RankingCategory,rc )
 		{

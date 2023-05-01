@@ -932,7 +932,7 @@ void BMSChartReader::CalculateStepsType()
 	}
 	else
 	{
-		out->m_StepsTypeStr = GAMEMAN->GetStepsTypeInfo(out->m_StepsType).szName;
+		out->m_StepsTypeStr = GAMEMAN->GetStepsTypeInfo(out->m_StepsType).name;
 	}
 }
 
@@ -1117,7 +1117,7 @@ bool BMSChartReader::ReadNoteData()
 	}
 
 	float currentBPM;
-	int tracks = GAMEMAN->GetStepsTypeInfo( out->m_StepsType ).iNumTracks;
+	int tracks = GAMEMAN->GetStepsTypeInfo( out->m_StepsType ).num_tracks;
 
 	NoteData   nd;
 	TimingData td;

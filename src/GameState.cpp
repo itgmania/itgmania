@@ -970,8 +970,8 @@ bool GameState::CanSafelyEnterGameplay(RString& reason)
 			{
 				reason= ssprintf("Player %d StepsType %s for steps does not equal "
 					"StepsType %s for style.", pn+1,
-					GAMEMAN->GetStepsTypeInfo(steps->m_StepsType).szName,
-					GAMEMAN->GetStepsTypeInfo(style->m_StepsType).szName);
+					GAMEMAN->GetStepsTypeInfo(steps->m_StepsType).name,
+					GAMEMAN->GetStepsTypeInfo(style->m_StepsType).name);
 				return false;
 			}
 			if(steps->m_pSong != m_pCurSong)
@@ -1001,8 +1001,8 @@ bool GameState::CanSafelyEnterGameplay(RString& reason)
 			{
 				reason= ssprintf("Player %d StepsType %s for steps does not equal "
 					"StepsType %s for style.", pn+1,
-					GAMEMAN->GetStepsTypeInfo(steps->m_StepsType).szName,
-					GAMEMAN->GetStepsTypeInfo(style->m_StepsType).szName);
+					GAMEMAN->GetStepsTypeInfo(steps->m_StepsType).name,
+					GAMEMAN->GetStepsTypeInfo(style->m_StepsType).name);
 				return false;
 			}
 		}

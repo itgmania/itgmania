@@ -40,7 +40,7 @@ LuaFunction(
 LuaXType(RadarCategory);
 
 RString StepsTypeToString(StepsType st) {
-  RString s = GAMEMAN->GetStepsTypeInfo(st).szName;  // "dance-single"
+  RString s = GAMEMAN->GetStepsTypeInfo(st).name;  // "dance-single"
   /* foo-bar -> Foo_Bar */
   s.Replace('-', '_');
 

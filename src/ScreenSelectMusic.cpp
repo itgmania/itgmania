@@ -1374,7 +1374,7 @@ bool ScreenSelectMusic::MenuStart( const InputEventPlus &input )
 					const Steps *pSteps = GAMESTATE->m_pCurSteps[p];
 					const StepsTypeInfo &sti = GAMEMAN->GetStepsTypeInfo( pSteps->m_StepsType );
 
-					bSelectedRoutineSteps[p] = sti.m_StepsTypeCategory == StepsTypeCategory_Routine;
+					bSelectedRoutineSteps[p] = sti.steps_type_category == StepsTypeCategory_Routine;
 					bAnySelectedRoutine |= bSelectedRoutineSteps[p];
 				}
 
