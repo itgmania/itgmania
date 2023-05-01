@@ -47,7 +47,7 @@ void LightsDriver_Linux_PIUIO::Set( const LightsState *ls )
 	if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) buf[3] |= 0x01;
 	if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) buf[1] |= 0x04;
 
-	RString sInput = GAMESTATE->GetCurrentGame()->m_InputScheme.m_szName;
+	RString sInput = GAMESTATE->GetCurrentGame()->input_scheme.m_szName;
 	if (sInput.EqualsNoCase("dance")) {
 		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) buf[2] |= 0x04;
 		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) buf[2] |= 0x08;
