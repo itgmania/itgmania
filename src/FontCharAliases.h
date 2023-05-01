@@ -1,19 +1,20 @@
 #ifndef FONT_CHAR_ALIASES
 #define FONT_CHAR_ALIASES
 
-/** @brief Provides support for nonstandard characters in text. */
-namespace FontCharAliases
-{
-	void ReplaceMarkers( RString &sText );
-	bool GetChar( RString &codepoint, wchar_t &ch );
-};
+// Provides support for nonstandard characters in text.
+namespace FontCharAliases {
 
-#endif
+void ReplaceMarkers(RString& text);
+bool GetChar(RString& codepoint, wchar_t& ch);
+
+};  // namespace FontCharAliases
+
+#endif  // FONT_CHAR_ALIASES
 
 /*
  * (c) 2003 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -23,7 +24,7 @@ namespace FontCharAliases
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
