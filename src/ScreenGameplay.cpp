@@ -451,7 +451,7 @@ void ScreenGameplay::Init()
 		{
 			PlayerNumber human_pn= GAMESTATE->GetFirstHumanPlayer();
 			GAMESTATE->m_pCurSteps[p].Set( GAMESTATE->m_pCurSteps[human_pn] );
-			if(GAMESTATE->GetCurrentGame()->m_PlayersHaveSeparateStyles)
+			if(GAMESTATE->GetCurrentGame()->players_have_separate_styles)
 			{
 				GAMESTATE->SetCurrentStyle(GAMESTATE->GetCurrentStyle(human_pn), p);
 			}
@@ -2276,7 +2276,7 @@ void ScreenGameplay::SendCrossedMessages()
 					iNumTracksWithTapOrHoldHead++;
 
 					// send crossed message
-					if(GAMESTATE->GetCurrentGame()->m_PlayersHaveSeparateStyles)
+					if(GAMESTATE->GetCurrentGame()->players_have_separate_styles)
 					{
 						FOREACH_EnabledPlayerNumberInfo(m_vPlayerInfo, pi)
 						{
@@ -2520,7 +2520,7 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 
 				ASSERT( input.GameI.IsValid() );
 
-				GameButtonType gbt = GAMESTATE->m_pCurGame->GetPerButtonInfo(input.GameI.button)->m_gbt;
+				GameButtonType gbt = GAMESTATE->m_pCurGame->GetPerButtonInfo(input.GameI.button)->game_button_type;
 				switch( gbt )
 				{
 				case GameButtonType_Menu:

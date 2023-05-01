@@ -355,7 +355,7 @@ void StepMania::ResetGame()
 
 	if( !THEME->DoesThemeExist( THEME->GetCurThemeName() ) )
 	{
-		RString sGameName = GAMESTATE->GetCurrentGame()->m_szName;
+		RString sGameName = GAMESTATE->GetCurrentGame()->name;
 		if( !THEME->DoesThemeExist(sGameName) )
 			sGameName = PREFSMAN->m_sDefaultTheme; // was previously "default" -aj
 		THEME->SwitchThemeAndLanguage( sGameName, THEME->GetCurLanguage(), PREFSMAN->m_bPseudoLocalize );
@@ -697,7 +697,7 @@ static void SwitchToLastPlayedGame()
 	{
 		pGame = GAMEMAN->GetDefaultGame();
 		LOG->Warn( "Default NoteSkin for \"%s\" missing, reverting to \"%s\"",
-			pGame->m_szName, GAMEMAN->GetDefaultGame()->m_szName );
+			pGame->name, GAMEMAN->GetDefaultGame()->name );
 	}
 
 	ASSERT( GAMEMAN->IsGameEnabled(pGame) );
@@ -717,11 +717,11 @@ void StepMania::InitializeCurrentGame( const Game* g )
 
 	RString sAnnouncer = PREFSMAN->m_sAnnouncer;
 	RString sTheme = PREFSMAN->m_sTheme;
-	RString sGametype = GAMESTATE->GetCurrentGame()->m_szName;
+	RString sGametype = GAMESTATE->GetCurrentGame()->name;
 	RString sLanguage = PREFSMAN->m_sLanguage;
 
 	if( sAnnouncer.empty() )
-		sAnnouncer = GAMESTATE->GetCurrentGame()->m_szName;
+		sAnnouncer = GAMESTATE->GetCurrentGame()->name;
 	RString argCurGame;
 	if( GetCommandlineArgument( "game", &argCurGame) && argCurGame != sGametype )
 	{
@@ -765,7 +765,7 @@ void StepMania::InitializeCurrentGame( const Game* g )
 	// Set the input scheme for the new game, and load keymaps.
 	if( INPUTMAPPER )
 	{
-		INPUTMAPPER->SetInputScheme( &g->m_InputScheme );
+		INPUTMAPPER->SetInputScheme( &g->input_scheme );
 		INPUTMAPPER->ReadMappingsFromDisk();
 	}
 }

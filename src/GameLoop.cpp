@@ -236,7 +236,7 @@ namespace
 		// Set the input scheme for the new game, and load keymaps.
 		if( INPUTMAPPER )
 		{
-			INPUTMAPPER->SetInputScheme(&g->m_InputScheme);
+			INPUTMAPPER->SetInputScheme(&g->input_scheme);
 			INPUTMAPPER->ReadMappingsFromDisk();
 		}
 		// aj's comment transplanted from ScreenOptionsMasterPrefs.cpp:GameSel. -Kyz

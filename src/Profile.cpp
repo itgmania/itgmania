@@ -550,7 +550,7 @@ int Profile::GetSongNumTimesPlayed( const SongID& songID ) const
 bool Profile::GetDefaultModifiers( const Game* pGameType, RString &sModifiersOut ) const
 {
 	std::map<RString, RString>::const_iterator it;
-	it = m_sDefaultModifiers.find( pGameType->m_szName );
+	it = m_sDefaultModifiers.find( pGameType->name );
 	if( it == m_sDefaultModifiers.end() )
 		return false;
 	sModifiersOut = it->second;
@@ -560,9 +560,9 @@ bool Profile::GetDefaultModifiers( const Game* pGameType, RString &sModifiersOut
 void Profile::SetDefaultModifiers( const Game* pGameType, const RString &sModifiers )
 {
 	if( sModifiers == "" )
-		m_sDefaultModifiers.erase( pGameType->m_szName );
+		m_sDefaultModifiers.erase( pGameType->name );
 	else
-		m_sDefaultModifiers[pGameType->m_szName] = sModifiers;
+		m_sDefaultModifiers[pGameType->name] = sModifiers;
 }
 
 bool Profile::IsCodeUnlocked( RString sUnlockEntryID ) const

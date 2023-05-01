@@ -249,7 +249,7 @@ void ScreenSelectMusic::BeginScreen()
 		if(pStyle == nullptr)
 		{
 			FAIL_M( ssprintf("No compatible styles for %s with %d player%s.",
-					GAMESTATE->m_pCurGame->m_szName,
+					GAMESTATE->m_pCurGame->name,
 					GAMESTATE->GetNumSidesJoined(),
 					GAMESTATE->GetNumSidesJoined()==1?"":"s") );
 		}

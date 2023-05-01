@@ -642,7 +642,7 @@ void Player::Load()
 	m_bLoaded = true;
 
 	// Figured this is probably a little expensive so let's cache it
-	m_bTickHolds = GAMESTATE->GetCurrentGame()->m_bTickHolds;
+	m_bTickHolds = GAMESTATE->GetCurrentGame()->tick_holds;
 
 	m_LastTapNoteScore = TNS_None;
 	// The editor can start playing in the middle of the song.
@@ -2475,7 +2475,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 		}
 
 		m_LastTapNoteScore = score;
-		if( GAMESTATE->GetCurrentGame()->m_bCountNotesSeparately )
+		if( GAMESTATE->GetCurrentGame()->count_notes_separately )
 		{
 			if( pTN->type != TapNoteType_Mine )
 			{
@@ -2603,7 +2603,7 @@ void Player::UpdateJudgedRows()
 	// Look ahead far enough to catch any rows judged early.
 	const int iEndRow = BeatToNoteRow( m_Timing->GetBeatFromElapsedTime( m_pPlayerState->m_Position.m_fMusicSeconds + GetMaxStepDistanceSeconds() ) );
 	bool bAllJudged = true;
-	const bool bSeparately = GAMESTATE->GetCurrentGame()->m_bCountNotesSeparately;
+	const bool bSeparately = GAMESTATE->GetCurrentGame()->count_notes_separately;
 
 	{
 		NoteData::all_tracks_iterator iter = *m_pIterUnjudgedRows;

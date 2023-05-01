@@ -1194,7 +1194,7 @@ void GameState::Update( float fDelta )
 void GameState::SetCurGame( const Game *pGame )
 {
 	m_pCurGame.Set( pGame );
-	RString sGame = pGame ? RString(pGame->m_szName) : RString();
+	RString sGame = pGame ? RString(pGame->name) : RString();
 	PREFSMAN->SetCurrentGame( sGame );
 }
 
@@ -1576,7 +1576,7 @@ const Game* GameState::GetCurrentGame() const
 const Style* GameState::GetCurrentStyle(PlayerNumber pn) const
 {
 	if(GetCurrentGame() == nullptr) { return nullptr; }
-	if(!GetCurrentGame()->m_PlayersHaveSeparateStyles)
+	if(!GetCurrentGame()->players_have_separate_styles)
 	{
 		return m_pCurStyle;
 	}
@@ -1593,7 +1593,7 @@ const Style* GameState::GetCurrentStyle(PlayerNumber pn) const
 
 void GameState::SetCurrentStyle(const Style *style, PlayerNumber pn)
 {
-	if(!GetCurrentGame()->m_PlayersHaveSeparateStyles)
+	if(!GetCurrentGame()->players_have_separate_styles)
 	{
 		m_pCurStyle.Set(style);
 	}
@@ -1693,7 +1693,7 @@ bool GameState::IsHumanPlayer( PlayerNumber pn ) const
 	if( pn == PLAYER_INVALID )
 		return false;
 
-	if(GetCurrentGame()->m_PlayersHaveSeparateStyles)
+	if(GetCurrentGame()->players_have_separate_styles)
 	{
 		if( GetCurrentStyle(pn) == nullptr )	// no style chosen
 		{
