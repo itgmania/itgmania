@@ -22,13 +22,13 @@ void ScreenSelectLanguage::Init()
 		const LanguageInfo *pLI = GetLanguageInfo( s );
 
 		GameCommand gc;
-		gc.m_iIndex = index++;
-		gc.m_sName = s;
-		gc.m_bInvalid = false;
+		gc.index_ = index++;
+		gc.name_ = s;
+		gc.is_invalid_ = false;
 		if( pLI )
-			gc.m_sText = THEME->GetString("NativeLanguageNames", pLI->szEnglishName);
+			gc.text_ = THEME->GetString("NativeLanguageNames", pLI->szEnglishName);
 		else
-			gc.m_sText = s;
+			gc.text_ = s;
 
 		m_aGameCommands.push_back( gc );
 	}
@@ -49,7 +49,7 @@ void ScreenSelectLanguage::BeginScreen()
 bool ScreenSelectLanguage::MenuStart( const InputEventPlus &input )
 {
 	int iIndex = this->GetSelectionIndex( input.pn );
-	RString sLangCode = m_aGameCommands[iIndex].m_sName;
+	RString sLangCode = m_aGameCommands[iIndex].name_;
 	PREFSMAN->m_sLanguage.Set( sLangCode );
 	PREFSMAN->SavePrefsToDisk();
 	THEME->SwitchThemeAndLanguage( THEME->GetCurThemeName(), PREFSMAN->m_sLanguage, PREFSMAN->m_bPseudoLocalize );

@@ -61,7 +61,7 @@ void ScreenSelect::Init()
 						RString com= SArg(-1);
 						GameCommand mc;
 						mc.ApplyCommitsScreens(false);
-						mc.m_sName = ssprintf("%zu", i);
+						mc.name_ = ssprintf("%zu", i);
 						Commands cmd= ParseCommands(com);
 						mc.Load(i, cmd);
 						m_aGameCommands.push_back(mc);
@@ -88,7 +88,7 @@ void ScreenSelect::Init()
 
 			GameCommand mc;
 			mc.ApplyCommitsScreens( false );
-			mc.m_sName = sChoiceName;
+			mc.name_ = sChoiceName;
 			Commands cmd = ParseCommands( CHOICE(sChoiceName) );
 			mc.Load( c, cmd );
 			m_aGameCommands.push_back( mc );
@@ -207,8 +207,8 @@ void ScreenSelect::HandleScreenMessage( const ScreenMessage SM )
 			if( bAllPlayersChoseTheSame )
 			{
 				const GameCommand &gc = m_aGameCommands[iMastersIndex];
-				m_sNextScreen = gc.m_sScreen;
-				if( !gc.m_bInvalid )
+				m_sNextScreen = gc.screen_;
+				if( !gc.is_invalid_ )
 				gc.ApplyToAllPlayers();
 			}
 			else
@@ -217,8 +217,8 @@ void ScreenSelect::HandleScreenMessage( const ScreenMessage SM )
 				{
 					int iIndex = this->GetSelectionIndex(p);
 					const GameCommand &gc = m_aGameCommands[iIndex];
-					m_sNextScreen = gc.m_sScreen;
-					if( !gc.m_bInvalid )
+					m_sNextScreen = gc.screen_;
+					if( !gc.is_invalid_ )
 					gc.Apply( p );
 				}
 			}

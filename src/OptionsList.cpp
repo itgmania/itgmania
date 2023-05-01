@@ -684,7 +684,7 @@ bool OptionsList::Start()
 		RString sIconText;
 		GameCommand gc;
 		pHandler->GetIconTextAndGameCommand( m_iMenuStackSelection, sIconText, gc );
-		if( gc.m_sName == RESET_ROW )
+		if( gc.name_ == RESET_ROW )
 		{
 			GAMESTATE->m_pPlayerState[m_pn]->ResetToDefaultPlayerOptions( ModsLevel_Preferred );
 			GAMESTATE->ResetToDefaultSongOptions( ModsLevel_Preferred );

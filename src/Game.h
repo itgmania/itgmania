@@ -1,5 +1,5 @@
-#ifndef GAMEDEF_H
-#define GAMEDEF_H
+#ifndef GAME_H
+#define GAME_H
 
 #include "GameConstantsAndTypes.h"
 #include "InputMapper.h"
@@ -59,7 +59,7 @@ struct Game {
   void PushSelf(lua_State* L);
 };
 
-#endif  // GAMEDEF_H
+#endif  // GAME_H
 
 /**
  * @file

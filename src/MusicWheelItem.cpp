@@ -243,7 +243,7 @@ void MusicWheelItem::LoadFromWheelItemData( const WheelItemBaseData *pData, int 
 	case WheelItemDataType_Sort:
 		sDisplayName = pWID->m_sLabel;
 		// hack to get mode items working. -freem
-		if( pWID->m_pAction->m_pm != PlayMode_Invalid )
+		if( pWID->m_pAction->play_mode_ != PlayMode_Invalid )
 			type = MusicWheelItemType_Mode;
 		else
 			type = MusicWheelItemType_Sort;
@@ -405,7 +405,7 @@ void MusicWheelItem::HandleMessage( const Message &msg )
 				type = MusicWheelItemType_Course;
 				break;
 			case WheelItemDataType_Sort:
-				if( pWID->m_pAction->m_pm != PlayMode_Invalid )
+				if( pWID->m_pAction->play_mode_ != PlayMode_Invalid )
 					type = MusicWheelItemType_Mode;
 				else
 					type = MusicWheelItemType_Sort;

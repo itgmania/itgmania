@@ -1818,7 +1818,7 @@ void ScreenSelectMusic::AfterMusicChange()
 			case WheelItemDataType_Custom:
 				{
 					bWantBanner = false; // we load it ourself
-					RString sBannerName = GetMusicWheel()->GetCurWheelItemData( GetMusicWheel()->GetCurrentIndex() )->m_pAction->m_sName.c_str();
+					RString sBannerName = GetMusicWheel()->GetCurWheelItemData( GetMusicWheel()->GetCurrentIndex() )->m_pAction->name_.c_str();
 					m_Banner.LoadCustom(sBannerName);
 					if( SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong )
 						m_sSampleMusicToPlay = m_sSectionMusicPath;

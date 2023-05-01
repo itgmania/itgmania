@@ -180,10 +180,10 @@ void ScreenSelectMaster::Init()
 			std::vector<RString> vs;
 			vs.push_back( "Icon" );
 			if( PER_CHOICE_ICON_ELEMENT )
-				vs.push_back( "Choice" + mc.m_sName );
+				vs.push_back( "Choice" + mc.name_ );
 			RString sElement = join( " ", vs );
 			m_vsprIcon[c].Load( THEME->GetPathG(m_sName,sElement) );
-			RString sName = "Icon" "Choice" + mc.m_sName;
+			RString sName = "Icon" "Choice" + mc.name_;
 			m_vsprIcon[c]->SetName( sName );
 			if( USE_ICON_METRICS )
 			{
@@ -217,12 +217,12 @@ void ScreenSelectMaster::Init()
 				std::vector<RString> vs;
 				vs.push_back( "Scroll" );
 				if( PER_CHOICE_SCROLL_ELEMENT )
-					vs.push_back( "Choice" + mc.m_sName );
+					vs.push_back( "Choice" + mc.name_ );
 				if( !SHARED_SELECTION )
 					vs.push_back( PLAYER_APPEND_NO_SPACE(p) );
 				RString sElement = join( " ", vs );
 				m_vsprScroll[p][c].Load( THEME->GetPathG(m_sName,sElement) );
-				RString sName = "Scroll" "Choice" + mc.m_sName;
+				RString sName = "Scroll" "Choice" + mc.name_;
 				if( !SHARED_SELECTION )
 					sName += PLAYER_APPEND_NO_SPACE(p);
 				m_vsprScroll[p][c]->SetName( sName );
@@ -330,7 +330,7 @@ void ScreenSelectMaster::BeginScreen()
 	for( unsigned c=0; c<m_aGameCommands.size(); c++ )
 	{
 		const GameCommand& mc = m_aGameCommands[c];
-		if( mc.m_sName == (RString) DEFAULT_CHOICE )
+		if( mc.name_ == (RString) DEFAULT_CHOICE )
 		{
 			iDefaultChoice = c;
 			break;
@@ -955,13 +955,13 @@ bool ScreenSelectMaster::MenuStart( const InputEventPlus &input )
 	if( !AnyOptionsArePlayable() )
 		return false;
 
-	SOUND->PlayOnceFromDir( ANNOUNCER->GetPathTo(ssprintf("%s comment %s",m_sName.c_str(), mc->m_sName.c_str())) );
+	SOUND->PlayOnceFromDir( ANNOUNCER->GetPathTo(ssprintf("%s comment %s",m_sName.c_str(), mc->name_.c_str())) );
 
 	// Play a copy of the sound, so it'll finish playing even if we leave the screen immediately.
-	if( mc->m_sSoundPath.empty() && !m_bDoubleChoiceNoSound )
+	if( mc->sound_path_.empty() && !m_bDoubleChoiceNoSound )
 		m_soundStart.PlayCopy(true);
 
-	if( mc->m_sScreen.empty() )
+	if( mc->screen_.empty() )
 	{
 		mc->ApplyToAllPlayers();
 		// We want to be able to broadcast a Start message to the theme, in

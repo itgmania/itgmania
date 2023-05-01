@@ -163,7 +163,7 @@ void MusicWheel::BeginScreen()
 			ASSERT( !from[i]->m_pAction.isNull() );
 			if( from[i]->m_pAction->DescribesCurrentModeForAllPlayers() )
 			{
-				m_sLastModeMenuItem = from[i]->m_pAction->m_sName;
+				m_sLastModeMenuItem = from[i]->m_pAction->name_;
 				break;
 			}
 		}
@@ -394,7 +394,7 @@ bool MusicWheel::SelectModeMenuItem()
 	for( i=0; i<from.size(); i++ )
 	{
 		const GameCommand &gc = *from[i]->m_pAction;
-		if( gc.m_sName == m_sLastModeMenuItem )
+		if( gc.name_ == m_sLastModeMenuItem )
 			break;
 	}
 	if( i == from.size() )
@@ -405,7 +405,7 @@ bool MusicWheel::SelectModeMenuItem()
 
 	for( i=0; i<m_CurWheelItemData.size(); i++ )
 	{
-		if( GetCurWheelItemData(i)->m_pAction->m_sName != m_sLastModeMenuItem )
+		if( GetCurWheelItemData(i)->m_pAction->name_ != m_sLastModeMenuItem )
 			continue;
 		m_iSelection = i;		// select it
 		break;
@@ -526,7 +526,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 			{
 				MusicWheelItemData wid( WheelItemDataType_Sort, nullptr, "", nullptr, SORT_MENU_COLOR, 0 );
 				wid.m_pAction = HiddenPtr<GameCommand>( new GameCommand );
-				wid.m_pAction->m_sName = vsNames[i];
+				wid.m_pAction->name_ = vsNames[i];
 				wid.m_pAction->Load( i, ParseCommands(CHOICE.GetValue(vsNames[i])) );
 				wid.m_sLabel = WHEEL_TEXT( vsNames[i] );
 
@@ -733,7 +733,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 				{
 					MusicWheelItemData wid( WheelItemDataType_Custom, nullptr, "", nullptr, CUSTOM_CHOICE_COLORS.GetValue(vsNames[i]), 0 );
 					wid.m_pAction = HiddenPtr<GameCommand>( new GameCommand );
-					wid.m_pAction->m_sName = vsNames[i];
+					wid.m_pAction->name_ = vsNames[i];
 					wid.m_pAction->Load( i, ParseCommands(CUSTOM_CHOICES.GetValue(vsNames[i])) );
 					wid.m_sLabel = CUSTOM_ITEM_WHEEL_TEXT( vsNames[i] );
 
@@ -1307,11 +1307,11 @@ bool MusicWheel::Select()	// return true if this selection ends the screen
 		case WheelItemDataType_Sort:
 			GetCurWheelItemData(m_iSelection)->m_pAction->ApplyToAllPlayers();
 			ChangeSort( GAMESTATE->m_PreferredSortOrder );
-			m_sLastModeMenuItem = GetCurWheelItemData(m_iSelection)->m_pAction->m_sName;
+			m_sLastModeMenuItem = GetCurWheelItemData(m_iSelection)->m_pAction->name_;
 			return false;
 		case WheelItemDataType_Custom:
 			GetCurWheelItemData(m_iSelection)->m_pAction->ApplyToAllPlayers();
-			if( GetCurWheelItemData(m_iSelection)->m_pAction->m_sScreen != "" )
+			if( GetCurWheelItemData(m_iSelection)->m_pAction->screen_ != "" )
 				return true;
 			else
 				return false;

@@ -214,12 +214,12 @@ public:
 				mc.Load( 0, ParseCommands(ENTRY_MODE(sParam, col)) );
 				/* If the row has just one entry, use the name of the row as the name of the
 				 * entry. If it has more than one, each one must be specified explicitly. */
-				if( mc.m_sName == "" && NumCols == 1 )
-					mc.m_sName = sParam;
-				if( mc.m_sName == "" )
+				if( mc.name_ == "" && NumCols == 1 )
+					mc.name_ = sParam;
+				if( mc.name_ == "" )
 				{
 					LuaHelpers::ReportScriptErrorFmt("List \"%s\", choice %i has no name.", sParam.c_str(), col+1);
-					mc.m_sName= "";
+					mc.name_= "";
 				}
 
 				RString why;
@@ -230,7 +230,7 @@ public:
 				}
 
 				m_aListEntries.push_back( mc );
-				RString sChoice = mc.m_sName;
+				RString sChoice = mc.name_;
 				m_Def.m_vsChoices.push_back( sChoice );
 			}
 		}
@@ -337,7 +337,7 @@ public:
 	virtual void GetIconTextAndGameCommand( int iFirstSelection, RString &sIconTextOut, GameCommand &gcOut ) const
 	{
 		sIconTextOut = m_bUseModNameForIcon ?
-			m_aListEntries[iFirstSelection].m_sPreferredModifiers :
+			m_aListEntries[iFirstSelection].preferred_modifiers_ :
 			m_Def.m_vsChoices[iFirstSelection];
 
 		gcOut = m_aListEntries[iFirstSelection];
@@ -345,7 +345,7 @@ public:
 	virtual RString GetScreen( int iChoice ) const
 	{
 		const GameCommand &gc = m_aListEntries[iChoice];
-		return gc.m_sScreen;
+		return gc.screen_;
 	}
 
 	virtual ReloadChanged Reload()
@@ -397,7 +397,7 @@ class OptionRowHandlerListNoteSkins : public OptionRowHandlerList
 			if( arraySkinNames[skin] == CommonMetrics::DEFAULT_NOTESKIN_NAME.GetValue() )
 				m_Def.m_iDefault = skin;
 			GameCommand mc;
-			mc.m_sPreferredModifiers = arraySkinNames[skin];
+			mc.preferred_modifiers_ = arraySkinNames[skin];
 			//ms.m_sName = arraySkinNames[skin];
 			m_aListEntries.push_back( mc );
 			m_Def.m_vsChoices.push_back( arraySkinNames[skin] );
@@ -450,7 +450,7 @@ class OptionRowHandlerListSteps : public OptionRowHandlerList
 				s += ssprintf( " %d", pTrail->GetMeter() );
 				m_Def.m_vsChoices.push_back( s );
 				GameCommand mc;
-				mc.m_pTrail = pTrail;
+				mc.trail_ = pTrail;
 				m_aListEntries.push_back( mc );
 			}
 		}
@@ -496,8 +496,8 @@ class OptionRowHandlerListSteps : public OptionRowHandlerList
 				s += ssprintf( " %d", pSteps->GetMeter() );
 				m_Def.m_vsChoices.push_back( s );
 				GameCommand mc;
-				mc.m_pSteps = pSteps;
-				mc.m_dc = pSteps->GetDifficulty();
+				mc.steps_ = pSteps;
+				mc.difficulty_ = pSteps->GetDifficulty();
 				m_aListEntries.push_back( mc );
 			}
 		}
@@ -688,12 +688,12 @@ class OptionRowHandlerListCharacters: public OptionRowHandlerList
 		m_Def.m_bAllowThemeItems = false;
 		m_Def.m_sName = "Characters";
 		m_Def.m_iDefault = 0;
-		m_Default.m_pCharacter = CHARMAN->GetDefaultCharacter();
+		m_Default.character_ = CHARMAN->GetDefaultCharacter();
 
 		{
 			m_Def.m_vsChoices.push_back( OFF );
 			GameCommand mc;
-			mc.m_pCharacter = nullptr;
+			mc.character_ = nullptr;
 			m_aListEntries.push_back( mc );
 		}
 
@@ -707,7 +707,7 @@ class OptionRowHandlerListCharacters: public OptionRowHandlerList
 
 			m_Def.m_vsChoices.push_back( s );
 			GameCommand mc;
-			mc.m_pCharacter = pCharacter;
+			mc.character_ = pCharacter;
 			m_aListEntries.push_back( mc );
 		}
 		return true;
@@ -729,11 +729,11 @@ class OptionRowHandlerListStyles: public OptionRowHandlerList
 		{
 			m_Def.m_vsChoices.push_back( GAMEMAN->StyleToLocalizedString(s) );
 			GameCommand mc;
-			mc.m_pStyle = s;
+			mc.style_ = s;
 			m_aListEntries.push_back( mc );
 		}
 
-		m_Default.m_pStyle = vStyles[0];
+		m_Default.style_ = vStyles[0];
 		return true;
 	}
 };
@@ -745,7 +745,7 @@ class OptionRowHandlerListGroups: public OptionRowHandlerList
 		m_Def.m_bOneChoiceForAllPlayers = true;
 		m_Def.m_bAllowThemeItems = false;	// we theme the text ourself
 		m_Def.m_sName = "Group";
-		m_Default.m_sSongGroup = GROUP_ALL;
+		m_Default.song_group_ = GROUP_ALL;
 
 		std::vector<RString> vSongGroups;
 		SONGMAN->GetSongGroupNames( vSongGroups );
@@ -754,7 +754,7 @@ class OptionRowHandlerListGroups: public OptionRowHandlerList
 		{
 			m_Def.m_vsChoices.push_back( "AllGroups" );
 			GameCommand mc;
-			mc.m_sSongGroup = GROUP_ALL;
+			mc.song_group_ = GROUP_ALL;
 			m_aListEntries.push_back( mc );
 		}
 
@@ -762,7 +762,7 @@ class OptionRowHandlerListGroups: public OptionRowHandlerList
 		{
 			m_Def.m_vsChoices.push_back( g );
 			GameCommand mc;
-			mc.m_sSongGroup = g;
+			mc.song_group_ = g;
 			m_aListEntries.push_back( mc );
 		}
 		return true;
@@ -775,13 +775,13 @@ class OptionRowHandlerListDifficulties: public OptionRowHandlerList
 	{
 		m_Def.m_bOneChoiceForAllPlayers = true;
 		m_Def.m_sName = "Difficulty";
-		m_Default.m_dc = Difficulty_Invalid;
+		m_Default.difficulty_ = Difficulty_Invalid;
 		m_Def.m_bAllowThemeItems = false;	// we theme the text ourself
 
 		{
 			m_Def.m_vsChoices.push_back( "AllDifficulties" );
 			GameCommand mc;
-			mc.m_dc = Difficulty_Invalid;
+			mc.difficulty_ = Difficulty_Invalid;
 			m_aListEntries.push_back( mc );
 		}
 
@@ -793,7 +793,7 @@ class OptionRowHandlerListDifficulties: public OptionRowHandlerList
 
 			m_Def.m_vsChoices.push_back( s );
 			GameCommand mc;
-			mc.m_dc = d;
+			mc.difficulty_ = d;
 			m_aListEntries.push_back( mc );
 		}
 		return true;
@@ -819,7 +819,7 @@ class OptionRowHandlerListSongsInCurrentSongGroup: public OptionRowHandlerList
 		{
 			m_Def.m_vsChoices.push_back( p->GetTranslitFullTitle() );
 			GameCommand mc;
-			mc.m_pSong = p;
+			mc.song_ = p;
 			m_aListEntries.push_back( mc );
 		}
 		return true;
@@ -1514,8 +1514,8 @@ public:
 		Commands temp = cmds;
 		temp.v.erase( temp.v.begin() );
 		m_gc.Load( 0, temp );
-		ROW_INVALID_IF(m_gc.m_sName.empty(), "GameCommand row has no name.", false);
-		m_Def.m_sName = m_gc.m_sName;
+		ROW_INVALID_IF(m_gc.name_.empty(), "GameCommand row has no name.", false);
+		m_Def.m_sName = m_gc.name_;
 		m_Def.m_bOneChoiceForAllPlayers = true;
 		m_Def.m_layoutType = LAYOUT_SHOW_ONE_IN_ROW;
 		m_Def.m_selectType = SELECT_NONE;
@@ -1538,7 +1538,7 @@ public:
 	}
 	virtual RString GetScreen( int iChoice ) const
 	{
-		return m_gc.m_sScreen;
+		return m_gc.screen_;
 	}
 };
 
