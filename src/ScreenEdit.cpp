@@ -2070,16 +2070,16 @@ bool ScreenEdit::Input( const InputEventPlus &input )
 	if( m_In.IsTransitioning() || m_Out.IsTransitioning() )
 		return false;
 
-	EditButton EditB = DeviceToEdit( input.DeviceI );
+	EditButton EditB = DeviceToEdit( input.device_input_ );
 	if( EditB == EditButton_Invalid )
-		EditB = MenuButtonToEditButton( input.MenuI );
+		EditB = MenuButtonToEditButton( input.menu_input_ );
 
 	if( EditB == EDIT_BUTTON_REMOVE_NOTE )
 	{
 		/* Ugly: we need to know when the button was pressed or released, so we
 		 * can clamp operations to that time.  Should InputFilter keep track of
 		 * last release, too? */
-		m_bRemoveNoteButtonDown = (input.type != IET_RELEASE);
+		m_bRemoveNoteButtonDown = (input.type_ != IET_RELEASE);
 		m_RemoveNoteButtonLastChanged.Touch();
 	}
 
@@ -2121,9 +2121,9 @@ static ThemeMetric<bool> INVERT_SCROLL_BUTTONS	( "ScreenEdit", "InvertScrollSpee
 
 bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 {
-	if( input.type == IET_RELEASE )
+	if( input.type_ == IET_RELEASE )
 	{
-		if( EditPressed( EDIT_BUTTON_SCROLL_SELECT, input.DeviceI ) )
+		if( EditPressed( EDIT_BUTTON_SCROLL_SELECT, input.device_input_ ) )
 			m_iShiftAnchor = -1;
 		// XXX Key releases usually don't count as "handled," but what
 		// does it mean in this case?
@@ -2146,7 +2146,7 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 	case EDIT_BUTTON_COLUMN_8:
 	case EDIT_BUTTON_COLUMN_9:
 		{
-			if( input.type != IET_FIRST_PRESS )
+			if( input.type_ != IET_FIRST_PRESS )
 				return false;	// We only care about first presses
 
 			int iCol = EditB - EDIT_BUTTON_COLUMN_0;
@@ -2524,9 +2524,9 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 			{
 				fDelta /= 20;	// .001 bpm
 			}
-			else if( input.type == IET_REPEAT )
+			else if( input.type_ == IET_REPEAT )
 			{
-				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+				if( INPUTFILTER->GetSecsHeld(input.device_input_) < 1.0f )
 					fDelta *= 10;
 				else
 					fDelta *= 40;
@@ -2555,9 +2555,9 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 			{
 				fDelta /= 20; // 1ms
 			}
-			else if( input.type == IET_REPEAT )
+			else if( input.type_ == IET_REPEAT )
 			{
-				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+				if( INPUTFILTER->GetSecsHeld(input.device_input_) < 1.0f )
 					fDelta *= 10;
 				else
 					fDelta *= 40;
@@ -2601,9 +2601,9 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 			{
 				fDelta /= 20; // 1ms
 			}
-			else if( input.type == IET_REPEAT )
+			else if( input.type_ == IET_REPEAT )
 			{
-				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+				if( INPUTFILTER->GetSecsHeld(input.device_input_) < 1.0f )
 					fDelta *= 10;
 				else
 					fDelta *= 40;
@@ -2646,9 +2646,9 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 			{
 				fDelta /= 20; /* 1ms */
 			}
-			else if( input.type == IET_REPEAT )
+			else if( input.type_ == IET_REPEAT )
 			{
-				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+				if( INPUTFILTER->GetSecsHeld(input.device_input_) < 1.0f )
 					fDelta *= 10;
 				else
 					fDelta *= 40;
@@ -2682,9 +2682,9 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 			case EDIT_BUTTON_SAMPLE_LENGTH_UP:		fDelta = +0.02f;	break;
 			}
 
-			if( input.type == IET_REPEAT )
+			if( input.type_ == IET_REPEAT )
 			{
-				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+				if( INPUTFILTER->GetSecsHeld(input.device_input_) < 1.0f )
 					fDelta *= 10;
 				else
 					fDelta *= 40;
@@ -3106,24 +3106,24 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 
 bool ScreenEdit::InputRecord( const InputEventPlus &input, EditButton EditB )
 {
-	if( input.type == IET_FIRST_PRESS  &&  EditB == EDIT_BUTTON_RETURN_TO_EDIT )
+	if( input.type_ == IET_FIRST_PRESS  &&  EditB == EDIT_BUTTON_RETURN_TO_EDIT )
 	{
 		TransitionEditState( STATE_EDITING );
 		return true;
 	}
 
-	if( input.pn != PLAYER_1 )
+	if( input.pn_ != PLAYER_1 )
 		return false;		// ignore
 
-	const int iCol = GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->GameInputToColumn( input.GameI );
+	const int iCol = GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->GameInputToColumn( input.game_input_ );
 
 	//Is this actually a column? If not, ignore the input.
 	if( iCol == -1 )
 		return false;
 
-	switch( input.type )
+	switch( input.type_ )
 	{
-	DEFAULT_FAIL( input.type );
+	DEFAULT_FAIL( input.type_ );
 	case IET_FIRST_PRESS:
 		{
 			if( EditIsBeingPressed(EDIT_BUTTON_REMOVE_NOTE) )
@@ -3164,7 +3164,7 @@ bool ScreenEdit::InputRecord( const InputEventPlus &input, EditButton EditB )
 
 bool ScreenEdit::InputRecordPaused( const InputEventPlus &input, EditButton EditB )
 {
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false;	// don't care
 
 	switch( EditB )
@@ -3219,7 +3219,7 @@ bool ScreenEdit::InputRecordPaused( const InputEventPlus &input, EditButton Edit
 
 bool ScreenEdit::InputPlay( const InputEventPlus &input, EditButton EditB )
 {
-	switch( input.type )
+	switch( input.type_ )
 	{
 	case IET_RELEASE:
 	case IET_FIRST_PRESS:
@@ -3228,13 +3228,13 @@ bool ScreenEdit::InputPlay( const InputEventPlus &input, EditButton EditB )
 		return false;
 	}
 
-	GameButtonType gbt = GAMESTATE->cur_game_->GetPerButtonInfo(input.GameI.button)->game_button_type;
+	GameButtonType gbt = GAMESTATE->cur_game_->GetPerButtonInfo(input.game_input_.button)->game_button_type;
 
 	if( GamePreferences::m_AutoPlay == PC_HUMAN && GAMESTATE->player_state_[PLAYER_1]->m_PlayerOptions.GetCurrent().m_fPlayerAutoPlay == 0 )
 	{
-		const int iCol = GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->GameInputToColumn( input.GameI );
-		bool bRelease = input.type == IET_RELEASE;
-		switch( input.pn )
+		const int iCol = GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->GameInputToColumn( input.game_input_ );
+		bool bRelease = input.type_ == IET_RELEASE;
+		switch( input.pn_ )
 		{
 		case PLAYER_2:
 			// ignore player 2 input unless this mode requires it
@@ -3248,7 +3248,7 @@ bool ScreenEdit::InputPlay( const InputEventPlus &input, EditButton EditB )
 				{
 				case GameButtonType_Step:
 					if( iCol != -1 )
-						m_Player->Step( iCol, -1, input.DeviceI.ts, false, bRelease );
+						m_Player->Step( iCol, -1, input.device_input_.ts, false, bRelease );
 					return true;
 				default:
 					break;
@@ -3258,7 +3258,7 @@ bool ScreenEdit::InputPlay( const InputEventPlus &input, EditButton EditB )
 		}
 	}
 
-	if( gbt == GameButtonType_Menu  &&  input.type == IET_FIRST_PRESS )
+	if( gbt == GameButtonType_Menu  &&  input.type_ == IET_FIRST_PRESS )
 	{
 		switch( EditB )
 		{
@@ -3282,9 +3282,9 @@ bool ScreenEdit::InputPlay( const InputEventPlus &input, EditButton EditB )
 			{
 				fOffsetDelta /= 20; /* 1ms */
 			}
-			else if( input.type == IET_REPEAT )
+			else if( input.type_ == IET_REPEAT )
 			{
-				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+				if( INPUTFILTER->GetSecsHeld(input.device_input_) < 1.0f )
 					fOffsetDelta *= 10;
 				else
 					fOffsetDelta *= 40;

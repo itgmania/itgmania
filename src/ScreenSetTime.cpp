@@ -102,7 +102,7 @@ void ScreenSetTime::Update( float fDelta )
 
 bool ScreenSetTime::Input( const InputEventPlus &input )
 {
-	if( input.type != IET_FIRST_PRESS && input.type != IET_REPEAT )
+	if( input.type_ != IET_FIRST_PRESS && input.type_ != IET_REPEAT )
 		return false;	// ignore
 
 	if( IsTransitioning() )
@@ -186,8 +186,8 @@ bool ScreenSetTime::MenuRight( const InputEventPlus &input )
 bool ScreenSetTime::MenuStart( const InputEventPlus &input )
 {
 	bool bHoldingLeftAndRight = 
-		INPUTMAPPER->IsBeingPressed( GAME_BUTTON_RIGHT, input.pn ) &&
-		INPUTMAPPER->IsBeingPressed( GAME_BUTTON_LEFT, input.pn );
+		INPUTMAPPER->IsBeingPressed( GAME_BUTTON_RIGHT, input.pn_ ) &&
+		INPUTMAPPER->IsBeingPressed( GAME_BUTTON_LEFT, input.pn_ );
 
 	if( bHoldingLeftAndRight )
 		ChangeSelection( -1 );

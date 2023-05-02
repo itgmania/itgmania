@@ -90,7 +90,7 @@ void ScreenTestLights::Update( float fDeltaTime )
 
 bool ScreenTestLights::Input( const InputEventPlus &input )
 {
-	if( input.type != IET_FIRST_PRESS && input.type != IET_REPEAT )
+	if( input.type_ != IET_FIRST_PRESS && input.type_ != IET_REPEAT )
 		return false;	// ignore
 
 	return ScreenWithMenuElements::Input( input );	// default handler
@@ -100,7 +100,7 @@ bool ScreenTestLights::MenuLeft( const InputEventPlus &input )
 {
 	if( LIGHTSMAN->GetLightsMode() != LIGHTSMODE_TEST_MANUAL_CYCLE )
 		LIGHTSMAN->SetLightsMode( LIGHTSMODE_TEST_MANUAL_CYCLE );
-	if( input.pn == PLAYER_1 )
+	if( input.pn_ == PLAYER_1 )
 		LIGHTSMAN->PrevTestCabinetLight();
 	else
 		LIGHTSMAN->PrevTestGameButtonLight();
@@ -112,7 +112,7 @@ bool ScreenTestLights::MenuRight( const InputEventPlus &input )
 {
 	if( LIGHTSMAN->GetLightsMode() != LIGHTSMODE_TEST_MANUAL_CYCLE )
 		LIGHTSMAN->SetLightsMode( LIGHTSMODE_TEST_MANUAL_CYCLE );
-	if( input.pn == PLAYER_1 )
+	if( input.pn_ == PLAYER_1 )
 		LIGHTSMAN->NextTestCabinetLight();
 	else
 		LIGHTSMAN->NextTestGameButtonLight();

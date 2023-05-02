@@ -1187,10 +1187,10 @@ static LocalizedString RELOADED_OVERLAY_SCREENS( "ThemeManager", "Reloaded overl
 bool HandleGlobalInputs( const InputEventPlus &input )
 {
 	// None of the globals keys act on types other than FIRST_PRESS
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false;
 
-	switch( input.MenuI )
+	switch( input.menu_input_ )
 	{
 		case GAME_BUTTON_OPERATOR:
 			/* Global operator key, to get quick access to the options menu. Don't
@@ -1220,11 +1220,11 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 	/* Re-added for StepMania 3.9 theming veterans, plus it's just faster than
 	 * the debug menu. The Shift button only reloads the metrics, unlike in 3.9
 	 * (where it saved bookkeeping and machine profile). -aj */
-	bool bIsShiftHeld = INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT), &input.InputList) ||
-		INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT), &input.InputList);
-	bool bIsCtrlHeld = INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL), &input.InputList) ||
-		INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL), &input.InputList);
-	if( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F2) )
+	bool bIsShiftHeld = INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT), &input.input_list_) ||
+		INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT), &input.input_list_);
+	bool bIsCtrlHeld = INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL), &input.input_list_) ||
+		INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL), &input.input_list_);
+	if( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_F2) )
 	{
 		if( bIsShiftHeld && !bIsCtrlHeld )
 		{
@@ -1261,7 +1261,7 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 		return true;
 	}
 
-	if( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_PAUSE) )
+	if( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_PAUSE) )
 	{
 		Message msg("ToggleConsoleDisplay");
 		MESSAGEMAN->Broadcast( msg );
@@ -1269,10 +1269,10 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 	}
 
 #if !defined(MACOSX)
-	if( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F4) )
+	if( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_F4) )
 	{
-		if( INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.InputList) ||
-			INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.InputList) )
+		if( INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.input_list_) ||
+			INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.input_list_) )
 		{
 			// pressed Alt+F4
 			ArchHooks::SetUserQuit();
@@ -1294,20 +1294,20 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 	bool bDoScreenshot =
 #if defined(MACOSX)
 	// Notebooks don't have F13. Use cmd-F12 as well.
-		input.DeviceI == DeviceInput( DEVICE_KEYBOARD, KEY_PRTSC ) ||
-		input.DeviceI == DeviceInput( DEVICE_KEYBOARD, KEY_F13 ) ||
-		( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F12) &&
-		  (INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LMETA), &input.InputList) ||
-		   INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RMETA), &input.InputList)) );
+		input.device_input_ == DeviceInput( DEVICE_KEYBOARD, KEY_PRTSC ) ||
+		input.device_input_ == DeviceInput( DEVICE_KEYBOARD, KEY_F13 ) ||
+		( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_F12) &&
+		  (INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LMETA), &input.input_list_) ||
+		   INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RMETA), &input.input_list_)) );
 #else
 	/* The default Windows message handler will capture the desktop window upon
 	 * pressing PrntScrn, or will capture the foreground with focus upon pressing
 	 * Alt+PrntScrn. Windows will do this whether or not we save a screenshot
 	 * ourself by dumping the frame buffer. */
 	// "if pressing PrintScreen and not pressing Alt"
-		input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_PRTSC) &&
-		!INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.InputList) &&
-		!INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.InputList);
+		input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_PRTSC) &&
+		!INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.input_list_) &&
+		!INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.input_list_);
 #endif
 	if( bDoScreenshot )
 	{
@@ -1321,9 +1321,9 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 		return true; // handled
 	}
 
-	if( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_ENTER) &&
-		(INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.InputList) ||
-		 INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.InputList)) )
+	if( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_ENTER) &&
+		(INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.input_list_) ||
+		 INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.input_list_)) )
 	{
 		// alt-enter
 		/* In macOS, this is a menu item and will be handled as such. This will
@@ -1362,9 +1362,9 @@ void HandleInputEvents(float fDeltaTime)
 	for( unsigned i=0; i<ieArray.size(); i++ )
 	{
 		InputEventPlus input;
-		input.DeviceI = ieArray[i].di;
-		input.type = ieArray[i].type;
-		swap( input.InputList, ieArray[i].m_ButtonState );
+		input.device_input_ = ieArray[i].di;
+		input.type_ = ieArray[i].type;
+		std::swap( input.input_list_, ieArray[i].m_ButtonState );
 
 		// hack for testing (MultiPlayer) with only one joystick
 		/*
@@ -1383,16 +1383,16 @@ void HandleInputEvents(float fDeltaTime)
 		}
 		*/
 
-		INPUTMAPPER->DeviceToGame( input.DeviceI, input.GameI );
+		INPUTMAPPER->DeviceToGame( input.device_input_, input.game_input_ );
 
-		input.mp = MultiPlayer_Invalid;
+		input.multiplayer_ = MultiPlayer_Invalid;
 
 		{
 			// Translate input to the appropriate MultiPlayer. Assume that all
 			// joystick devices are mapped the same as the master player.
-			if( input.DeviceI.IsJoystick() )
+			if( input.device_input_.IsJoystick() )
 			{
-				DeviceInput diTemp = input.DeviceI;
+				DeviceInput diTemp = input.device_input_;
 				diTemp.device = DEVICE_JOY1;
 				GameInput gi;
 
@@ -1401,32 +1401,32 @@ void HandleInputEvents(float fDeltaTime)
 				{
 					if( GAMESTATE->multiplayer_ )
 					{
-						input.GameI = gi;
-						//LOG->Trace( "game %d %d", input.GameI.controller, input.GameI.button );
+						input.game_input_ = gi;
+						//LOG->Trace( "game %d %d", input.game_input_.controller, input.game_input_.button );
 					}
 
-					input.mp = InputMapper::InputDeviceToMultiPlayer( input.DeviceI.device );
-					//LOG->Trace( "multiplayer %d", input.mp );
-					ASSERT( input.mp >= 0 && input.mp < NUM_MultiPlayer );
+					input.multiplayer_ = InputMapper::InputDeviceToMultiPlayer( input.device_input_.device );
+					//LOG->Trace( "multiplayer %d", input.multiplayer_ );
+					ASSERT( input.multiplayer_ >= 0 && input.multiplayer_ < NUM_MultiPlayer );
 				}
 			}
 		}
 
-		if( input.GameI.IsValid() )
+		if( input.game_input_.IsValid() )
 		{
-			input.MenuI = INPUTMAPPER->GameButtonToMenuButton( input.GameI.button );
-			input.pn = INPUTMAPPER->ControllerToPlayerNumber( input.GameI.controller );
+			input.menu_input_ = INPUTMAPPER->GameButtonToMenuButton( input.game_input_.button );
+			input.pn_ = INPUTMAPPER->ControllerToPlayerNumber( input.game_input_.controller );
 		}
 
 		INPUTQUEUE->RememberInput( input );
 
 		// When a GameButton is pressed, stop repeating other keys on the same controller.
-		if( input.type == IET_FIRST_PRESS && input.MenuI != GameButton_Invalid )
+		if( input.type_ == IET_FIRST_PRESS && input.menu_input_ != GameButton_Invalid )
 		{
 			FOREACH_ENUM( GameButton,  m )
 			{
-				if( input.MenuI != m )
-					INPUTMAPPER->RepeatStopKey( m, input.pn );
+				if( input.menu_input_ != m )
+					INPUTMAPPER->RepeatStopKey( m, input.pn_ );
 			}
 		}
 
@@ -1435,9 +1435,9 @@ void HandleInputEvents(float fDeltaTime)
 
 		// check back in event mode
 		if( GAMESTATE->IsEventMode() &&
-			CodeDetector::EnteredCode(input.GameI.controller,CODE_BACK_IN_EVENT_MODE) )
+			CodeDetector::EnteredCode(input.game_input_.controller,CODE_BACK_IN_EVENT_MODE) )
 		{
-			input.MenuI = GAME_BUTTON_BACK;
+			input.menu_input_ = GAME_BUTTON_BACK;
 		}
 
 		SCREENMAN->Input( input );

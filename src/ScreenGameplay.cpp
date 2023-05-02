@@ -2385,9 +2385,9 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 	if( m_bPaused )
 	{
 		/* If we're paused, only accept GAME_BUTTON_START to unpause. */
-		if( GAMESTATE->IsHumanPlayer(input.pn) && input.MenuI == GAME_BUTTON_START && input.type == IET_FIRST_PRESS )
+		if( GAMESTATE->IsHumanPlayer(input.pn_) && input.menu_input_ == GAME_BUTTON_START && input.type_ == IET_FIRST_PRESS )
 		{
-			if( m_PauseController == GameController_Invalid || m_PauseController == input.GameI.controller )
+			if( m_PauseController == GameController_Invalid || m_PauseController == input.game_input_.controller )
 			{
 				// IMO, it's better to have this configurable. -DaisuMaster
 				if( UNPAUSE_WITH_START )
@@ -2401,7 +2401,7 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 	}
 
 	if(m_DancingState != STATE_OUTRO  &&
-		GAMESTATE->IsHumanPlayer(input.pn)  &&
+		GAMESTATE->IsHumanPlayer(input.pn_)  &&
 		!m_Cancel.IsTransitioning() )
 	{
 		/* Allow bailing out by holding any START button.
@@ -2409,20 +2409,20 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 		 * If this is also a style button, don't do this; pump center is start.
 		 */
 		bool bHoldingGiveUp = false;
-		if( GAMESTATE->GetCurrentStyle(input.pn)->GameInputToColumn(input.GameI) == Column_Invalid )
+		if( GAMESTATE->GetCurrentStyle(input.pn_)->GameInputToColumn(input.game_input_) == Column_Invalid )
 		{
-			bHoldingGiveUp |= ( START_GIVES_UP && input.MenuI == GAME_BUTTON_START );
-			bHoldingGiveUp |= ( BACK_GIVES_UP && input.MenuI == GAME_BUTTON_BACK );
+			bHoldingGiveUp |= ( START_GIVES_UP && input.menu_input_ == GAME_BUTTON_START );
+			bHoldingGiveUp |= ( BACK_GIVES_UP && input.menu_input_ == GAME_BUTTON_BACK );
 		}
 		// Allow holding SELECT to skip the current song in course mode. -Kyz
 		if(GAMESTATE->IsCourseMode() && SELECT_SKIPS_SONG &&
-			input.MenuI == GAME_BUTTON_SELECT)
+			input.menu_input_ == GAME_BUTTON_SELECT)
 		{
-			if(input.type == IET_RELEASE)
+			if(input.type_ == IET_RELEASE)
 			{
 				AbortSkipSong(true);
 			}
-			else if(input.type == IET_FIRST_PRESS && m_SkipSongTimer.IsZero())
+			else if(input.type_ == IET_FIRST_PRESS && m_SkipSongTimer.IsZero())
 			{
 				m_textDebug.SetText(SKIP_SONG_TEXT);
 				m_textDebug.PlayCommand("StartOn");
@@ -2434,11 +2434,11 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 		if( bHoldingGiveUp )
 		{
 			// No PREFSMAN->m_bDelayedEscape; always delayed.
-			if( input.type==IET_RELEASE )
+			if( input.type_==IET_RELEASE )
 			{
 				AbortGiveUp( true );
 			}
-			else if( input.type==IET_FIRST_PRESS && m_GiveUpTimer.IsZero() )
+			else if( input.type_==IET_FIRST_PRESS && m_GiveUpTimer.IsZero() )
 			{
 				m_textDebug.SetText( GIVE_UP_START_TEXT );
 				m_textDebug.PlayCommand( "StartOn" );
@@ -2451,26 +2451,26 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 		/* Only handle GAME_BUTTON_BACK as a regular BACK button if BACK_GIVES_UP is
 		 * disabled. */
 		bool bHoldingBack = false;
-		if( GAMESTATE->GetCurrentStyle(input.pn)->GameInputToColumn(input.GameI) == Column_Invalid )
+		if( GAMESTATE->GetCurrentStyle(input.pn_)->GameInputToColumn(input.game_input_) == Column_Invalid )
 		{
-			bHoldingBack |= input.MenuI == GAME_BUTTON_BACK && !BACK_GIVES_UP;
+			bHoldingBack |= input.menu_input_ == GAME_BUTTON_BACK && !BACK_GIVES_UP;
 		}
 
 		if( bHoldingBack )
 		{
-			if( ((!PREFSMAN->m_bDelayedBack && input.type==IET_FIRST_PRESS) ||
-				(input.DeviceI.device==DEVICE_KEYBOARD && input.type==IET_REPEAT) ||
-				(input.DeviceI.device!=DEVICE_KEYBOARD && INPUTFILTER->GetSecsHeld(input.DeviceI) >= 1.0f)) )
+			if( ((!PREFSMAN->m_bDelayedBack && input.type_==IET_FIRST_PRESS) ||
+				(input.device_input_.device==DEVICE_KEYBOARD && input.type_==IET_REPEAT) ||
+				(input.device_input_.device!=DEVICE_KEYBOARD && INPUTFILTER->GetSecsHeld(input.device_input_) >= 1.0f)) )
 			{
-				LOG->Trace("Player %i went back", input.pn+1);
+				LOG->Trace("Player %i went back", input.pn_+1);
 				BeginBackingOutFromGameplay();
 			}
-			else if( PREFSMAN->m_bDelayedBack && input.type==IET_FIRST_PRESS )
+			else if( PREFSMAN->m_bDelayedBack && input.type_==IET_FIRST_PRESS )
 			{
 				m_textDebug.SetText( GIVE_UP_BACK_TEXT );
 				m_textDebug.PlayCommand( "BackOn" );
 			}
-			else if( PREFSMAN->m_bDelayedBack && input.type==IET_RELEASE )
+			else if( PREFSMAN->m_bDelayedBack && input.type_==IET_RELEASE )
 			{
 				m_textDebug.PlayCommand( "TweenOff" );
 			}
@@ -2479,14 +2479,14 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 		}
 	}
 
-	bool bRelease = input.type == IET_RELEASE;
-	if( !input.GameI.IsValid() )
+	bool bRelease = input.type_ == IET_RELEASE;
+	if( !input.game_input_.IsValid() )
 		return false;
 
-	int iCol = GAMESTATE->GetCurrentStyle(input.pn)->GameInputToColumn( input.GameI );
+	int iCol = GAMESTATE->GetCurrentStyle(input.pn_)->GameInputToColumn( input.game_input_ );
 
 	// Don't pass on any inputs to Player that aren't a press or a release.
-	switch( input.type )
+	switch( input.type_ )
 	{
 	case IET_FIRST_PRESS:
 	case IET_RELEASE:
@@ -2497,12 +2497,12 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 
 	if( GAMESTATE->multiplayer_ )
 	{
-		if( input.mp != MultiPlayer_Invalid  &&  GAMESTATE->IsMultiPlayerEnabled(input.mp)  &&  iCol != -1 )
+		if( input.multiplayer_ != MultiPlayer_Invalid  &&  GAMESTATE->IsMultiPlayerEnabled(input.multiplayer_)  &&  iCol != -1 )
 		{
 			for (PlayerInfo const &pi : m_vPlayerInfo)
 			{
-				if( input.mp == pi.m_mp )
-					pi.m_pPlayer->Step( iCol, -1, input.DeviceI.ts, false, bRelease );
+				if( input.multiplayer_ == pi.m_mp )
+					pi.m_pPlayer->Step( iCol, -1, input.device_input_.ts, false, bRelease );
 			}
 			return true;
 		}
@@ -2510,24 +2510,24 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 	else
 	{
 		// handle a step or battle item activate
-		if( GAMESTATE->IsHumanPlayer( input.pn ) )
+		if( GAMESTATE->IsHumanPlayer( input.pn_ ) )
 		{
 			ResetGiveUpTimers(true);
 
-			if( GamePreferences::m_AutoPlay == PC_HUMAN && GAMESTATE->player_state_[input.pn]->m_PlayerOptions.GetCurrent().m_fPlayerAutoPlay == 0 )
+			if( GamePreferences::m_AutoPlay == PC_HUMAN && GAMESTATE->player_state_[input.pn_]->m_PlayerOptions.GetCurrent().m_fPlayerAutoPlay == 0 )
 			{
 				PlayerInfo& pi = GetPlayerInfoForInput( input );
 
-				ASSERT( input.GameI.IsValid() );
+				ASSERT( input.game_input_.IsValid() );
 
-				GameButtonType gbt = GAMESTATE->cur_game_->GetPerButtonInfo(input.GameI.button)->game_button_type;
+				GameButtonType gbt = GAMESTATE->cur_game_->GetPerButtonInfo(input.game_input_.button)->game_button_type;
 				switch( gbt )
 				{
 				case GameButtonType_Menu:
 					return false;
 				case GameButtonType_Step:
 					if( iCol != -1 )
-						pi.m_pPlayer->Step( iCol, -1, input.DeviceI.ts, false, bRelease );
+						pi.m_pPlayer->Step( iCol, -1, input.device_input_.ts, false, bRelease );
 					return true;
 				}
 			}

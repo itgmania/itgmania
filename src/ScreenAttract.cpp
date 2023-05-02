@@ -72,10 +72,10 @@ void ScreenAttract::Cancel( ScreenMessage smSendWhenDone )
 
 bool ScreenAttract::AttractInput( const InputEventPlus &input, ScreenWithMenuElements *pScreen )
 {
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false; // don't care
 
-	switch( input.MenuI )
+	switch( input.menu_input_ )
 	{
 		case GAME_BUTTON_BACK:
 			if( !BACK_GOES_TO_START_SCREEN )
@@ -93,7 +93,7 @@ bool ScreenAttract::AttractInput( const InputEventPlus &input, ScreenWithMenuEle
 				return false;
 
 			// HandleGlobalInputs() already played the coin sound. Don't play it again.
-			if( input.MenuI != GAME_BUTTON_COIN )
+			if( input.menu_input_ != GAME_BUTTON_COIN )
 				SCREENMAN->PlayStartSound();
 
 			pScreen->Cancel( SM_GoToStartScreen );
@@ -104,7 +104,7 @@ bool ScreenAttract::AttractInput( const InputEventPlus &input, ScreenWithMenuEle
 	if( pScreen->IsTransitioning() )
 		return false;
 
-	switch( input.MenuI )
+	switch( input.menu_input_ )
 	{
 		case GAME_BUTTON_LEFT:
 		case GAME_BUTTON_RIGHT:

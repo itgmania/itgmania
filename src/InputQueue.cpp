@@ -20,10 +20,10 @@ InputQueue::InputQueue()
 
 void InputQueue::RememberInput( const InputEventPlus &iep )
 {
-	if( !iep.GameI.IsValid() )
+	if( !iep.game_input_.IsValid() )
 		return;
 
-	int c = iep.GameI.controller;
+	int c = iep.game_input_.controller;
 	if( m_aQueue[c].size() >= MAX_INPUT_QUEUE_LENGTH )	// full
 		m_aQueue[c].erase( m_aQueue[c].begin(), m_aQueue[c].begin() + (m_aQueue[c].size()-MAX_INPUT_QUEUE_LENGTH+1) );
 	m_aQueue[c].push_back( iep );
@@ -34,10 +34,10 @@ bool InputQueue::WasPressedRecently( GameController c, const GameButton button, 
 	for( int queue_index=m_aQueue[c].size()-1; queue_index>=0; queue_index-- )	// iterate newest to oldest
 	{
 		const InputEventPlus &iep = m_aQueue[c][queue_index];
-		if( iep.DeviceI.ts < OldestTimeAllowed )	// buttons are too old.  Stop searching because we're not going to find a match
+		if( iep.device_input_.ts < OldestTimeAllowed )	// buttons are too old.  Stop searching because we're not going to find a match
 			return false;
 
-		if( iep.GameI.button != button )
+		if( iep.game_input_.button != button )
 			continue;
 
 		if( pIEP != nullptr )
@@ -76,13 +76,13 @@ bool InputQueueCode::EnteredCode( GameController controller ) const
 	while( iQueueIndex >= 0 )
 	{
 		/* If the buttons are too old, stop searching because we're not going to find a match. */
-		if( !OldestTimeAllowed.IsZero() && aQueue[iQueueIndex].DeviceI.ts < OldestTimeAllowed )
+		if( !OldestTimeAllowed.IsZero() && aQueue[iQueueIndex].device_input_.ts < OldestTimeAllowed )
 			return false;
 
 		/* If the last press is an input type we're not interested in, skip it
 		 * and look again. */
 		const ButtonPress &Press = m_aPresses[iSequenceIndex];
-		if( !Press.m_InputTypes[aQueue[iQueueIndex].type] )
+		if( !Press.m_InputTypes[aQueue[iQueueIndex].type_] )
 		{
 			--iQueueIndex;
 			continue;
@@ -90,7 +90,7 @@ bool InputQueueCode::EnteredCode( GameController controller ) const
 
 		/* Search backwards for all of Press.m_aButtonsToPress pressed within g_fTapThreshold seconds
 		 * with m_aButtonsToHold pressed.  Start looking at iQueueIndex. */
-		RageTimer OldestTimeAllowedForTap( aQueue[iQueueIndex].DeviceI.ts );
+		RageTimer OldestTimeAllowedForTap( aQueue[iQueueIndex].device_input_.ts );
 		OldestTimeAllowedForTap += -g_fSimultaneousThreshold;
 
 		bool bMatched = false;
@@ -102,13 +102,13 @@ bool InputQueueCode::EnteredCode( GameController controller ) const
 			for( ; iQueueSearchIndex>=0; --iQueueSearchIndex )	// iterate newest to oldest
 			{
 				const InputEventPlus &iep = aQueue[iQueueSearchIndex];
-				if( iep.DeviceI.ts < OldestTimeAllowedForTap )	// buttons are too old.  Stop searching because we're not going to find a match
+				if( iep.device_input_.ts < OldestTimeAllowedForTap )	// buttons are too old.  Stop searching because we're not going to find a match
 					break;
 
-				if( !Press.m_InputTypes[iep.type] )
+				if( !Press.m_InputTypes[iep.type_] )
 					continue;
 
-				if( iep.GameI.button == Press.m_aButtonsToPress[b] )
+				if( iep.game_input_.button == Press.m_aButtonsToPress[b] )
 				{
 					pIEP = &iep;
 					break;
@@ -122,13 +122,13 @@ bool InputQueueCode::EnteredCode( GameController controller ) const
 			for( unsigned i=0; i<Press.m_aButtonsToHold.size(); i++ )
 			{
 				GameInput gi( controller, Press.m_aButtonsToHold[i] );
-				if( !INPUTMAPPER->IsBeingPressed(gi, MultiPlayer_Invalid, &pIEP->InputList) )
+				if( !INPUTMAPPER->IsBeingPressed(gi, MultiPlayer_Invalid, &pIEP->input_list_) )
 					bAllHeldButtonsOK = false;
 			}
 			for( unsigned i=0; i<Press.m_aButtonsToNotHold.size(); i++ )
 			{
 				GameInput gi( controller, Press.m_aButtonsToNotHold[i] );
-				if( INPUTMAPPER->IsBeingPressed(gi, MultiPlayer_Invalid, &pIEP->InputList) )
+				if( INPUTMAPPER->IsBeingPressed(gi, MultiPlayer_Invalid, &pIEP->input_list_) )
 					bAllHeldButtonsOK = false;
 			}
 			if( !bAllHeldButtonsOK )

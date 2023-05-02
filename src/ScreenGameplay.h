@@ -323,7 +323,7 @@ protected:
 
 	std::vector<PlayerInfo>	m_vPlayerInfo;	// filled by SGameplay derivatives in FillPlayerInfo
 	virtual void FillPlayerInfo( std::vector<PlayerInfo> &vPlayerInfoOut ) = 0;
-	virtual PlayerInfo &GetPlayerInfoForInput( const InputEventPlus& iep )  { return m_vPlayerInfo[iep.pn]; }
+	virtual PlayerInfo &GetPlayerInfoForInput( const InputEventPlus& iep )  { return m_vPlayerInfo[iep.pn_]; }
 
 	RageTimer		m_timerGameplaySeconds;
 

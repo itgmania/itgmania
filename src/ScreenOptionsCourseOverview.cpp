@@ -206,7 +206,7 @@ void ScreenOptionsCourseOverview::ProcessMenuStart( const InputEventPlus &input 
 		{
 			Course *pCourse = GAMESTATE->cur_course_;
 			std::shuffle( pCourse->m_vEntries.begin(), pCourse->m_vEntries.end(), g_RandomNumberGenerator );
-			Trail *pTrail = pCourse->GetTrailForceRegenCache( GAMESTATE->GetCurrentStyle(input.pn)->m_StepsType );
+			Trail *pTrail = pCourse->GetTrailForceRegenCache( GAMESTATE->GetCurrentStyle(input.pn_)->m_StepsType );
 			GAMESTATE->cur_trail_[PLAYER_1].Set( pTrail );
 			SCREENMAN->PlayStartSound();
 			MESSAGEMAN->Broadcast("CurrentCourseChanged");

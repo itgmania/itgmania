@@ -64,9 +64,9 @@ bool ScreenPlayerOptions::Input( const InputEventPlus &input )
 	bool bHandled = false;
 
 	if( m_bAskOptionsMessage &&
-		input.type == IET_FIRST_PRESS  &&
+		input.type_ == IET_FIRST_PRESS  &&
 		!m_In.IsTransitioning()  &&
-		input.MenuI == GAME_BUTTON_START )
+		input.menu_input_ == GAME_BUTTON_START )
 	{
 		if( m_bAcceptedChoices  &&  !m_bGoToOptions )
 		{
@@ -77,8 +77,8 @@ bool ScreenPlayerOptions::Input( const InputEventPlus &input )
 		}
 	}
 
-	PlayerNumber pn = input.pn;
-	if( GAMESTATE->IsHumanPlayer(pn) && CodeDetector::EnteredCode(input.GameI.controller,CODE_CANCEL_ALL_PLAYER_OPTIONS) )
+	PlayerNumber pn = input.pn_;
+	if( GAMESTATE->IsHumanPlayer(pn) && CodeDetector::EnteredCode(input.game_input_.controller,CODE_CANCEL_ALL_PLAYER_OPTIONS) )
 	{
 		// apply the game default mods, but not the Profile saved mods
 		GAMESTATE->player_state_[pn]->ResetToDefaultPlayerOptions( ModsLevel_Preferred );
@@ -101,7 +101,7 @@ bool ScreenPlayerOptions::Input( const InputEventPlus &input )
 	bHandled = ScreenOptionsMaster::Input( input ) || bHandled;
 
 	// UGLY: Update m_Disqualified whenever Start is pressed
-	if( GAMESTATE->IsHumanPlayer(pn) && input.MenuI == GAME_BUTTON_START )
+	if( GAMESTATE->IsHumanPlayer(pn) && input.menu_input_ == GAME_BUTTON_START )
 	{
 		int row = m_iCurrentRow[pn];
 		UpdateDisqualified( row, pn );

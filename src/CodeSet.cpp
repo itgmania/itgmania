@@ -34,7 +34,7 @@ void InputQueueCodeSet::Load(const RString& type) {
 
 RString InputQueueCodeSet::Input(const InputEventPlus& input) const {
   for (unsigned i = 0; i < codes_.size(); ++i) {
-    if (!codes_[i].EnteredCode(input.GameI.controller)) {
+    if (!codes_[i].EnteredCode(input.game_input_.controller)) {
       continue;
     }
 
@@ -51,7 +51,7 @@ bool InputQueueCodeSet::InputMessage(
   }
 
   msg.SetName("Code");
-  msg.SetParam("PlayerNumber", input.pn);
+  msg.SetParam("PlayerNumber", input.pn_);
   msg.SetParam("Name", code_name);
   return true;
 }

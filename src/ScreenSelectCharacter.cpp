@@ -287,14 +287,14 @@ bool ScreenSelectCharacter::MenuRight( const InputEventPlus &input )
 
 bool ScreenSelectCharacter::MenuUp( const InputEventPlus &input )
 {
-	Move( input.pn, -1 );
+	Move( input.pn_, -1 );
 	return true;
 }
 
 
 bool ScreenSelectCharacter::MenuDown( const InputEventPlus &input )
 {
-	Move( input.pn, +1 );
+	Move( input.pn_, +1 );
 	return true;
 }
 
@@ -328,7 +328,7 @@ bool ScreenSelectCharacter::AllAreFinishedChoosing() const
 
 bool ScreenSelectCharacter::MenuStart( const InputEventPlus &input )
 {
-	MakeSelection( input.pn );
+	MakeSelection( input.pn_ );
 	return true;
 }
 

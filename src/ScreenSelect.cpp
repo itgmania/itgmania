@@ -147,10 +147,10 @@ bool ScreenSelect::Input( const InputEventPlus &input )
 	m_timerIdleTimeout.GetDeltaTime();
 
 	/* Choices may change when more coins are inserted. */
-	if( input.MenuI == GAME_BUTTON_COIN && input.type == IET_FIRST_PRESS )
+	if( input.menu_input_ == GAME_BUTTON_COIN && input.type_ == IET_FIRST_PRESS )
 		this->UpdateSelectableChoices();
 
-	if( input.MenuI == GAME_BUTTON_START && input.type == IET_FIRST_PRESS && GAMESTATE->JoinInput(input.pn) )
+	if( input.menu_input_ == GAME_BUTTON_START && input.type_ == IET_FIRST_PRESS && GAMESTATE->JoinInput(input.pn_) )
 	{
 		// HACK: Only play start sound for the 2nd player who joins. The
 		// start sound for the 1st player will be played by ScreenTitleMenu
@@ -162,7 +162,7 @@ bool ScreenSelect::Input( const InputEventPlus &input )
 			return false;	// don't let the screen handle the MENU_START press
 	}
 
-	if( !GAMESTATE->IsPlayerEnabled(input.pn) )
+	if( !GAMESTATE->IsPlayerEnabled(input.pn_) )
 	{
 		// block input of disabled players
 		if( !ALLOW_DISABLED_PLAYER_INPUT )
@@ -173,7 +173,7 @@ bool ScreenSelect::Input( const InputEventPlus &input )
 		 * let a non-joined player start, we might start the game with no
 		 * players joined (eg. if ScreenTitleJoin is started in pay with no
 		 * credits). */
-		if( input.MenuI == GAME_BUTTON_START )
+		if( input.menu_input_ == GAME_BUTTON_START )
 			return false;
 	}
 

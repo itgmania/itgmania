@@ -151,7 +151,7 @@ void ScreenWithMenuElements::HandleScreenMessage( const ScreenMessage SM )
 		FOREACH_HumanPlayer(p)
 		{
 			InputEventPlus iep;
-			iep.pn = p;
+			iep.pn_ = p;
 			MenuStart( iep );
 		}
 	}

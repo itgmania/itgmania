@@ -504,7 +504,7 @@ bool ScreenOptions::Input( const InputEventPlus &input )
 	bool mouse_evt = false;
 	for (int i = MOUSE_LEFT; i <= MOUSE_WHEELDOWN; i++)
 	{
-		if (input.DeviceI == DeviceInput( DEVICE_MOUSE, (DeviceButton)i ))
+		if (input.device_input_ == DeviceInput( DEVICE_MOUSE, (DeviceButton)i ))
 			mouse_evt = true;
 	}
 	if (mouse_evt)
@@ -517,20 +517,20 @@ bool ScreenOptions::Input( const InputEventPlus &input )
 	if( m_Cancel.IsTransitioning() || m_Out.IsTransitioning() || m_fLockInputSecs > 0 )
 		return false;
 
-	if( !GAMESTATE->IsHumanPlayer(input.pn) )
+	if( !GAMESTATE->IsHumanPlayer(input.pn_) )
 		return false;
 
-	if( input.type == IET_RELEASE )
+	if( input.type_ == IET_RELEASE )
 	{
-		switch( input.MenuI )
+		switch( input.menu_input_ )
 		{
 			case GAME_BUTTON_START:
 			case GAME_BUTTON_SELECT:
 			case GAME_BUTTON_MENURIGHT:
 			case GAME_BUTTON_MENULEFT:
-				INPUTMAPPER->ResetKeyRepeat( GAME_BUTTON_START, input.pn );
-				INPUTMAPPER->ResetKeyRepeat( GAME_BUTTON_RIGHT, input.pn );
-				INPUTMAPPER->ResetKeyRepeat( GAME_BUTTON_LEFT, input.pn );
+				INPUTMAPPER->ResetKeyRepeat( GAME_BUTTON_START, input.pn_ );
+				INPUTMAPPER->ResetKeyRepeat( GAME_BUTTON_RIGHT, input.pn_ );
+				INPUTMAPPER->ResetKeyRepeat( GAME_BUTTON_LEFT, input.pn_ );
 			default:
 				break;
 		}
@@ -798,8 +798,8 @@ bool ScreenOptions::AllAreOnLastRow() const
 
 bool ScreenOptions::MenuStart( const InputEventPlus &input )
 {
-	PlayerNumber pn = input.pn;
-	switch( input.type )
+	PlayerNumber pn = input.pn_;
+	switch( input.type_ )
 	{
 	case IET_FIRST_PRESS:
 		m_bGotAtLeastOneStartPressed[pn] = true;
@@ -824,7 +824,7 @@ bool ScreenOptions::MenuStart( const InputEventPlus &input )
 				INPUTMAPPER->IsBeingPressed( GAME_BUTTON_LEFT, pn );
 			if( bHoldingLeftAndRight )
 			{
-				if( MoveRowRelative(pn, -1, input.type != IET_FIRST_PRESS) )
+				if( MoveRowRelative(pn, -1, input.type_ != IET_FIRST_PRESS) )
 					m_SoundPrevRow.Play(true);
 				return true;
 			}
@@ -838,7 +838,7 @@ bool ScreenOptions::MenuStart( const InputEventPlus &input )
 
 void ScreenOptions::ProcessMenuStart( const InputEventPlus &input )
 {
-	PlayerNumber pn = input.pn;
+	PlayerNumber pn = input.pn_;
 
 	int iCurRow = m_iCurrentRow[pn];
 
@@ -856,10 +856,10 @@ void ScreenOptions::ProcessMenuStart( const InputEventPlus &input )
 	{
 		/* In NAV_THREE_KEY_MENU mode, if a row doesn't set a screen, it does
 		 * something.  Apply it now, and don't go to the next screen. */
-		if( !FocusedItemEndsScreen(input.pn) )
+		if( !FocusedItemEndsScreen(input.pn_) )
 		{
 			std::vector<PlayerNumber> vpns;
-			vpns.push_back( input.pn );
+			vpns.push_back( input.pn_ );
 			ExportOptions( iCurRow, vpns );
 			return;
 		}
@@ -884,7 +884,7 @@ void ScreenOptions::ProcessMenuStart( const InputEventPlus &input )
 
 		// Don't accept START to go to the next screen if we're still transitioning in.
 		if( bEndThisScreen &&
-			(input.type != IET_FIRST_PRESS || IsTransitioning()) )
+			(input.type_ != IET_FIRST_PRESS || IsTransitioning()) )
 			return;
 
 		if( bEndThisScreen )
@@ -933,7 +933,7 @@ void ScreenOptions::ProcessMenuStart( const InputEventPlus &input )
 		if(row.GetFirstItemGoesDown() && row.GoToFirstOnStart())
 		{
 			// move to the first choice in the row
-			ChangeValueInRowRelative( m_iCurrentRow[pn], pn, -row.GetChoiceInRowWithFocus(pn), input.type != IET_FIRST_PRESS );
+			ChangeValueInRowRelative( m_iCurrentRow[pn], pn, -row.GetChoiceInRowWithFocus(pn), input.type_ != IET_FIRST_PRESS );
 		}
 	}
 	else	// data.selectType != SELECT_MULTIPLE
@@ -947,7 +947,7 @@ void ScreenOptions::ProcessMenuStart( const InputEventPlus &input )
 			MenuDown( input );
 			break;
 		case NAV_THREE_KEY_ALT:
-			ChangeValueInRowRelative( m_iCurrentRow[input.pn], input.pn, +1, input.type != IET_FIRST_PRESS );
+			ChangeValueInRowRelative( m_iCurrentRow[input.pn_], input.pn_, +1, input.type_ != IET_FIRST_PRESS );
 			break;
 
 		case NAV_TOGGLE_THREE_KEY:
@@ -960,9 +960,9 @@ void ScreenOptions::ProcessMenuStart( const InputEventPlus &input )
 				row.SetOneSelection( pn, iChoiceInRow );
 
 			if( row.GetFirstItemGoesDown() )
-				ChangeValueInRowRelative( m_iCurrentRow[pn], pn, -row.GetChoiceInRowWithFocus(pn), input.type != IET_FIRST_PRESS );	// move to the first choice
+				ChangeValueInRowRelative( m_iCurrentRow[pn], pn, -row.GetChoiceInRowWithFocus(pn), input.type_ != IET_FIRST_PRESS );	// move to the first choice
 			else
-				ChangeValueInRowRelative( m_iCurrentRow[pn], pn, 0, input.type != IET_FIRST_PRESS );
+				ChangeValueInRowRelative( m_iCurrentRow[pn], pn, 0, input.type_ != IET_FIRST_PRESS );
 			break;
 		}
 		case NAV_THREE_KEY_MENU:
@@ -1269,9 +1269,9 @@ bool ScreenOptions::MenuLeft( const InputEventPlus &input )
 	if( m_OptionsNavigation == NAV_THREE_KEY_ALT )
 		MenuUpDown( input, -1 );
 	else
-		ChangeValueInRowRelative(m_iCurrentRow[input.pn],input.pn,-1, input.type != IET_FIRST_PRESS);
+		ChangeValueInRowRelative(m_iCurrentRow[input.pn_],input.pn_,-1, input.type_ != IET_FIRST_PRESS);
 
-	PlayerNumber pn = input.pn;
+	PlayerNumber pn = input.pn_;
 	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuLeftP1+Enum::to_integral(pn)) );
 	return true;
 }
@@ -1281,9 +1281,9 @@ bool ScreenOptions::MenuRight( const InputEventPlus &input )
 	if( m_OptionsNavigation == NAV_THREE_KEY_ALT )
 		MenuUpDown( input, +1 );
 	else
-		ChangeValueInRowRelative(m_iCurrentRow[input.pn], input.pn,+1, input.type != IET_FIRST_PRESS);
+		ChangeValueInRowRelative(m_iCurrentRow[input.pn_], input.pn_,+1, input.type_ != IET_FIRST_PRESS);
 
-	PlayerNumber pn = input.pn;
+	PlayerNumber pn = input.pn_;
 	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuRightP1+Enum::to_integral(pn)) );
 	return true;
 }
@@ -1291,7 +1291,7 @@ bool ScreenOptions::MenuRight( const InputEventPlus &input )
 bool ScreenOptions::MenuUp( const InputEventPlus &input )
 {
 	MenuUpDown( input, -1 );
-	PlayerNumber pn = input.pn;
+	PlayerNumber pn = input.pn_;
 	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuUpP1+Enum::to_integral(pn)) );
 	return true;
 }
@@ -1299,7 +1299,7 @@ bool ScreenOptions::MenuUp( const InputEventPlus &input )
 bool ScreenOptions::MenuDown( const InputEventPlus &input )
 {
 	MenuUpDown( input, +1 );
-	PlayerNumber pn = input.pn;
+	PlayerNumber pn = input.pn_;
 	MESSAGEMAN->Broadcast( (MessageID)(Message_MenuDownP1+Enum::to_integral(pn)) );
 	return true;
 }
@@ -1313,9 +1313,9 @@ bool ScreenOptions::MenuSelect( const InputEventPlus &input )
 void ScreenOptions::MenuUpDown( const InputEventPlus &input, int iDir )
 {
 	ASSERT( iDir == -1 || iDir == +1 );
-	PlayerNumber pn = input.pn;
+	PlayerNumber pn = input.pn_;
 
-	if( input.type == IET_REPEAT )
+	if( input.type_ == IET_REPEAT )
 	{
 		/* If down is pressed, don't allow up to repeat, and vice versa. This
 		 * prevents holding both up and down from toggling repeatedly in-place. */
@@ -1333,7 +1333,7 @@ void ScreenOptions::MenuUpDown( const InputEventPlus &input, int iDir )
 		}
 	}
 
-	if( MoveRowRelative(pn, iDir, input.type != IET_FIRST_PRESS) )
+	if( MoveRowRelative(pn, iDir, input.type_ != IET_FIRST_PRESS) )
 	{
 		if( iDir < 0 )
 			m_SoundPrevRow.Play(true);

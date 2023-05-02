@@ -410,7 +410,7 @@ void ScreenSelectMaster::HandleScreenMessage( const ScreenMessage SM )
 				m_bDoubleChoiceNoSound = true;
 				m_bDoubleChoice[p] = true;
 				InputEventPlus iep;
-				iep.pn = p;
+				iep.pn_ = p;
 				MenuStart( iep );
 			}
 		}
@@ -527,21 +527,21 @@ bool ScreenSelectMaster::Move( PlayerNumber pn, MenuDir dir )
 
 bool ScreenSelectMaster::MenuLeft( const InputEventPlus &input )
 {
-	PlayerNumber pn = input.pn;
+	PlayerNumber pn = input.pn_;
 	if( m_fLockInputSecs > 0 || m_bChosen[pn] )
 		return false;
-	if( input.type == IET_RELEASE )
+	if( input.type_ == IET_RELEASE )
 		return false;
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 	{
 		if( !ALLOW_REPEATING_INPUT )
 			return false;
-		if( m_TrackingRepeatingInput != input.MenuI )
+		if( m_TrackingRepeatingInput != input.menu_input_ )
 			return false;
 	}
 	if( Move(pn, MenuDir_Left) )
 	{
-		m_TrackingRepeatingInput = input.MenuI;
+		m_TrackingRepeatingInput = input.menu_input_;
 		m_soundChange.Play(true);
 		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuLeftP1+Enum::to_integral(pn)) );
 		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuSelectionChanged) );
@@ -558,21 +558,21 @@ bool ScreenSelectMaster::MenuLeft( const InputEventPlus &input )
 
 bool ScreenSelectMaster::MenuRight( const InputEventPlus &input )
 {
-	PlayerNumber pn = input.pn;
+	PlayerNumber pn = input.pn_;
 	if( m_fLockInputSecs > 0 || m_bChosen[pn] )
 		return false;
-	if( input.type == IET_RELEASE )
+	if( input.type_ == IET_RELEASE )
 		return false;
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 	{
 		if( !ALLOW_REPEATING_INPUT )
 			return false;
-		if( m_TrackingRepeatingInput != input.MenuI )
+		if( m_TrackingRepeatingInput != input.menu_input_ )
 			return false;
 	}
 	if( Move(pn, MenuDir_Right) )
 	{
-		m_TrackingRepeatingInput = input.MenuI;
+		m_TrackingRepeatingInput = input.menu_input_;
 		m_soundChange.Play(true);
 		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuRightP1+Enum::to_integral(pn)) );
 		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuSelectionChanged) );
@@ -589,21 +589,21 @@ bool ScreenSelectMaster::MenuRight( const InputEventPlus &input )
 
 bool ScreenSelectMaster::MenuUp( const InputEventPlus &input )
 {
-	PlayerNumber pn = input.pn;
+	PlayerNumber pn = input.pn_;
 	if( m_fLockInputSecs > 0 || m_bChosen[pn] )
 		return false;
-	if( input.type == IET_RELEASE )
+	if( input.type_ == IET_RELEASE )
 		return false;
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 	{
 		if( !ALLOW_REPEATING_INPUT )
 			return false;
-		if( m_TrackingRepeatingInput != input.MenuI )
+		if( m_TrackingRepeatingInput != input.menu_input_ )
 			return false;
 	}
 	if( Move(pn, MenuDir_Up) )
 	{
-		m_TrackingRepeatingInput = input.MenuI;
+		m_TrackingRepeatingInput = input.menu_input_;
 		m_soundChange.Play(true);
 		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuUpP1+Enum::to_integral(pn)) );
 		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuSelectionChanged) );
@@ -620,21 +620,21 @@ bool ScreenSelectMaster::MenuUp( const InputEventPlus &input )
 
 bool ScreenSelectMaster::MenuDown( const InputEventPlus &input )
 {
-	PlayerNumber pn = input.pn;
+	PlayerNumber pn = input.pn_;
 	if( m_fLockInputSecs > 0 || m_bChosen[pn] )
 		return false;
-	if( input.type == IET_RELEASE )
+	if( input.type_ == IET_RELEASE )
 		return false;
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 	{
 		if( !ALLOW_REPEATING_INPUT )
 			return false;
-		if( m_TrackingRepeatingInput != input.MenuI )
+		if( m_TrackingRepeatingInput != input.menu_input_ )
 			return false;
 	}
 	if( Move(pn, MenuDir_Down) )
 	{
-		m_TrackingRepeatingInput = input.MenuI;
+		m_TrackingRepeatingInput = input.menu_input_;
 		m_soundChange.Play(true);
 		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuDownP1+Enum::to_integral(pn)) );
 		MESSAGEMAN->Broadcast( (MessageID)(Message_MenuSelectionChanged) );
@@ -905,9 +905,9 @@ float ScreenSelectMaster::DoMenuStart( PlayerNumber pn )
 
 bool ScreenSelectMaster::MenuStart( const InputEventPlus &input )
 {
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false;
-	PlayerNumber pn = input.pn;
+	PlayerNumber pn = input.pn_;
 
 	if( m_fLockInputSecs > 0 )
 		return false;

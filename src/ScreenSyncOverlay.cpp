@@ -121,7 +121,7 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 	if( !IsGameplay() )
 		return Screen::Input(input);
 
-	if( input.DeviceI.device != DEVICE_KEYBOARD )
+	if( input.device_input_.device != DEVICE_KEYBOARD )
 		return Screen::Input(input);
 
 	enum Action
@@ -135,7 +135,7 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 	Action a = Action_Invalid;
 
 	bool bIncrease = true;
-	switch( input.DeviceI.button )
+	switch( input.device_input_.button )
 	{
 	case KEY_F4:
 		a = RevertSyncChanges;
@@ -185,7 +185,7 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 	switch( a )
 	{
 	case RevertSyncChanges:
-		if( input.type != IET_FIRST_PRESS )
+		if( input.type_ != IET_FIRST_PRESS )
 			return false;
 		SCREENMAN->SystemMessage( SYNC_CHANGES_REVERTED );
 		AdjustSync::RevertSyncChanges();
@@ -198,12 +198,12 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 			{
 				fDelta /= 20;
 			}
-			switch( input.type )
+			switch( input.type_ )
 			{
 				case IET_RELEASE:	fDelta *= 0;	break;
 				case IET_REPEAT:
 				{
-					if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+					if( INPUTFILTER->GetSecsHeld(input.device_input_) < 1.0f )
 						fDelta *= 0;
 					else
 						fDelta *= 10;
@@ -240,12 +240,12 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 			{
 				fDelta /= 20; /* 1ms */
 			}
-			switch( input.type )
+			switch( input.type_ )
 			{
 				case IET_RELEASE:	fDelta *= 0;	break;
 				case IET_REPEAT:
 				{
-					if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+					if( INPUTFILTER->GetSecsHeld(input.device_input_) < 1.0f )
 						fDelta *= 0;
 					else
 						fDelta *= 10;

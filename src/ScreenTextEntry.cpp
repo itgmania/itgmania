@@ -212,9 +212,9 @@ bool ScreenTextEntry::Input( const InputEventPlus &input )
 
 	// bLCtrl and bRCtl are whether their respective Ctrl keys are held
 	// We update them here.
-	if( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL) )
+	if( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL) )
 	{
-		switch( input.type )
+		switch( input.type_ )
 		{
 			case IET_FIRST_PRESS:
 				bLCtrl = true;
@@ -227,9 +227,9 @@ bool ScreenTextEntry::Input( const InputEventPlus &input )
 		}
 	}
 
-	if( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL) )
+	if( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL) )
 	{
-		switch( input.type )
+		switch( input.type_ )
 		{
 			case IET_FIRST_PRESS:
 				bRCtrl = true;
@@ -243,9 +243,9 @@ bool ScreenTextEntry::Input( const InputEventPlus &input )
 	}
 
 	bool bHandled = false;
-	if( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_BACK) )
+	if( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_BACK) )
 	{
-		switch( input.type )
+		switch( input.type_ )
 		{
 			case IET_FIRST_PRESS:
 			case IET_REPEAT:
@@ -255,9 +255,9 @@ bool ScreenTextEntry::Input( const InputEventPlus &input )
 				break;
 		}
 	}
-	else if( input.type == IET_FIRST_PRESS )
+	else if( input.type_ == IET_FIRST_PRESS )
 	{
-		wchar_t c = INPUTMAN->DeviceInputToChar(input.DeviceI,true);
+		wchar_t c = INPUTMAN->DeviceInputToChar(input.device_input_,true);
 		// Detect Ctrl+V
 		if( ( c == L'v' || c == L'V' ) && ( bLCtrl || bRCtrl ) )
 		{
@@ -317,7 +317,7 @@ void ScreenTextEntry::BackspaceInAnswer()
 bool ScreenTextEntry::MenuStart( const InputEventPlus &input )
 {
 	// HACK: Only allow the screen to end on the Enter key.-aj
-	if( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_ENTER) && input.type==IET_FIRST_PRESS )
+	if( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_ENTER) && input.type_==IET_FIRST_PRESS )
 	{
 		End( false );
 		return true;
@@ -366,7 +366,7 @@ void ScreenTextEntry::End( bool bCancelled )
 
 bool ScreenTextEntry::MenuBack( const InputEventPlus &input )
 {
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false;
 	End( true );
 	return true;
@@ -761,28 +761,28 @@ void ScreenTextEntryVisual::MoveY( int iDir )
 
 bool ScreenTextEntryVisual::MenuLeft( const InputEventPlus &input )
 {
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false;
 	MoveX(-1);
 	return true;
 }
 bool ScreenTextEntryVisual::MenuRight( const InputEventPlus &input )
 {
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false;
 	MoveX(+1);
 	return true;
 }
 bool ScreenTextEntryVisual::MenuUp( const InputEventPlus &input )
 {
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false;
 	MoveY(-1);
 	return true;
 }
 bool ScreenTextEntryVisual::MenuDown( const InputEventPlus &input )
 {
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false;
 	MoveY(+1);
 	return true;
@@ -790,7 +790,7 @@ bool ScreenTextEntryVisual::MenuDown( const InputEventPlus &input )
 
 bool ScreenTextEntryVisual::MenuStart( const InputEventPlus &input )
 {
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false;
 	if( m_iFocusY == KEYBOARD_ROW_SPECIAL )
 	{

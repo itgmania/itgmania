@@ -729,12 +729,12 @@ bool ScreenEvaluation::Input( const InputEventPlus &input )
 	if( IsTransitioning() )
 		return false;
 
-	if( input.GameI.IsValid() )
+	if( input.game_input_.IsValid() )
 	{
-		if( CodeDetector::EnteredCode(input.GameI.controller, CODE_SAVE_SCREENSHOT1) ||
-			CodeDetector::EnteredCode(input.GameI.controller, CODE_SAVE_SCREENSHOT2) )
+		if( CodeDetector::EnteredCode(input.game_input_.controller, CODE_SAVE_SCREENSHOT1) ||
+			CodeDetector::EnteredCode(input.game_input_.controller, CODE_SAVE_SCREENSHOT2) )
 		{
-			PlayerNumber pn = input.pn;
+			PlayerNumber pn = input.pn_;
 			if( !m_bSavedScreenshot[pn]  &&	// only allow one screenshot
 				PROFILEMAN->IsPersistentProfile(pn) )
 			{

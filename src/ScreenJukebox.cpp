@@ -249,10 +249,10 @@ bool ScreenJukebox::Input( const InputEventPlus &input )
 {
 	//LOG->Trace( "ScreenJukebox::Input()" );
 
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false; // ignore
 
-	switch( input.MenuI )
+	switch( input.menu_input_ )
 	{
 		case GAME_BUTTON_LEFT:
 		case GAME_BUTTON_RIGHT:

@@ -116,7 +116,7 @@ bool ScreenEnding::Input( const InputEventPlus &input )
 	bool handled = false;
 	if( !IsTransitioning() )
 	{
-		switch( input.MenuI )
+		switch( input.menu_input_ )
 		{
 			case GAME_BUTTON_START:
 				SCREENMAN->PostMessageToTopScreen( SM_BeginFadingOut, 0 );

@@ -119,12 +119,12 @@ bool ScreenPrompt::Input( const InputEventPlus &input )
 	if( IsTransitioning() )
 		return false;
 
-	if( input.type == IET_RELEASE )
+	if( input.type_ == IET_RELEASE )
 		return false;
 
-	if( input.DeviceI.device==DEVICE_KEYBOARD )
+	if( input.device_input_.device==DEVICE_KEYBOARD )
 	{
-		switch( input.DeviceI.button )
+		switch( input.device_input_.button )
 		{
 			case KEY_LEFT:
 				return this->MenuLeft( input );

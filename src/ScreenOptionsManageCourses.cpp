@@ -218,7 +218,7 @@ void ScreenOptionsManageCourses::AfterChangeRow( PlayerNumber pn )
 
 bool ScreenOptionsManageCourses::MenuSelect( const InputEventPlus &input )
 {
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false;
 	SetNextCombination();
 	m_soundDifficultyChanged.Play(true);

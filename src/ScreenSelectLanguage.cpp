@@ -48,7 +48,7 @@ void ScreenSelectLanguage::BeginScreen()
 
 bool ScreenSelectLanguage::MenuStart( const InputEventPlus &input )
 {
-	int iIndex = this->GetSelectionIndex( input.pn );
+	int iIndex = this->GetSelectionIndex( input.pn_ );
 	RString sLangCode = m_aGameCommands[iIndex].name_;
 	PREFSMAN->m_sLanguage.Set( sLangCode );
 	PREFSMAN->SavePrefsToDisk();

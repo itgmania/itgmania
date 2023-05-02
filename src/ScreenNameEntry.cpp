@@ -345,21 +345,21 @@ bool ScreenNameEntry::Input( const InputEventPlus &input )
 	if( IsTransitioning() )
 		return false;
 
-	if( input.type != IET_FIRST_PRESS || !input.GameI.IsValid() )
+	if( input.type_ != IET_FIRST_PRESS || !input.game_input_.IsValid() )
 		return false; // ignore
 
-	const int iCol = GAMESTATE->GetCurrentStyle(input.pn)->GameInputToColumn( input.GameI );
+	const int iCol = GAMESTATE->GetCurrentStyle(input.pn_)->GameInputToColumn( input.game_input_ );
 	bool bHandled = false;
-	if( iCol != Column_Invalid && m_bStillEnteringName[input.pn] )
+	if( iCol != Column_Invalid && m_bStillEnteringName[input.pn_] )
 	{
-		int iStringIndex = m_ColToStringIndex[input.pn][iCol];
+		int iStringIndex = m_ColToStringIndex[input.pn_][iCol];
 		if( iStringIndex != -1 )
 		{
-			m_ReceptorArrowRow[input.pn].Step( iCol, TNS_W1 );
+			m_ReceptorArrowRow[input.pn_].Step( iCol, TNS_W1 );
 			m_soundStep.Play(true);
-			char c = m_Text[input.pn].GetClosestChar( m_fFakeBeat );
-			m_textSelectedChars[input.pn][iCol].SetText( RString(1, c) );
-			m_sSelectedName[input.pn][iStringIndex] = c;
+			char c = m_Text[input.pn_].GetClosestChar( m_fFakeBeat );
+			m_textSelectedChars[input.pn_][iCol].SetText( RString(1, c) );
+			m_sSelectedName[input.pn_][iStringIndex] = c;
 		}
 		bHandled = true;
 	}
@@ -376,7 +376,7 @@ void ScreenNameEntry::HandleScreenMessage( const ScreenMessage SM )
 			InputEventPlus iep;
 			FOREACH_PlayerNumber( p )
 			{
-				iep.pn = p;
+				iep.pn_ = p;
 				this->MenuStart( iep );
 			}
 		}
@@ -388,7 +388,7 @@ void ScreenNameEntry::HandleScreenMessage( const ScreenMessage SM )
 
 bool ScreenNameEntry::MenuStart( const InputEventPlus &input )
 {
-	PlayerNumber pn = input.pn;
+	PlayerNumber pn = input.pn_;
 
 	if( !m_bStillEnteringName[pn] )
 		return false;

@@ -186,7 +186,7 @@ bool Screen::Input( const InputEventPlus &input )
 	}
 
 	// Don't send release messages with the default handler.
-	switch( input.type )
+	switch( input.type_ )
 	{
 	case IET_FIRST_PRESS:
 	case IET_REPEAT:
@@ -196,20 +196,20 @@ bool Screen::Input( const InputEventPlus &input )
 	}
 
 	// Always broadcast mouse input so themers can grab it. -aj
-	if( input.DeviceI == DeviceInput( DEVICE_MOUSE, MOUSE_LEFT ) )
+	if( input.device_input_ == DeviceInput( DEVICE_MOUSE, MOUSE_LEFT ) )
 		MESSAGEMAN->Broadcast( (MessageID)(Message_LeftClick) );
-	if( input.DeviceI == DeviceInput( DEVICE_MOUSE, MOUSE_RIGHT ) )
+	if( input.device_input_ == DeviceInput( DEVICE_MOUSE, MOUSE_RIGHT ) )
 		MESSAGEMAN->Broadcast( (MessageID)(Message_RightClick) );
-	if( input.DeviceI == DeviceInput( DEVICE_MOUSE, MOUSE_MIDDLE ) )
+	if( input.device_input_ == DeviceInput( DEVICE_MOUSE, MOUSE_MIDDLE ) )
 		MESSAGEMAN->Broadcast( (MessageID)(Message_MiddleClick) );
 	// Can't do MouseWheelUp and MouseWheelDown at the same time. -aj
-	if( input.DeviceI == DeviceInput( DEVICE_MOUSE, MOUSE_WHEELUP ) )
+	if( input.device_input_ == DeviceInput( DEVICE_MOUSE, MOUSE_WHEELUP ) )
 		MESSAGEMAN->Broadcast( (MessageID)(Message_MouseWheelUp) );
-	else if( input.DeviceI == DeviceInput( DEVICE_MOUSE, MOUSE_WHEELDOWN ) )
+	else if( input.device_input_ == DeviceInput( DEVICE_MOUSE, MOUSE_WHEELDOWN ) )
 		MESSAGEMAN->Broadcast( (MessageID)(Message_MouseWheelDown) );
 
 	// default input handler used by most menus
-	switch( input.MenuI )
+	switch( input.menu_input_ )
 	{
 		case GAME_BUTTON_MENUUP:    return this->MenuUp   ( input );
 		case GAME_BUTTON_MENUDOWN:  return this->MenuDown ( input );
@@ -219,7 +219,7 @@ bool Screen::Input( const InputEventPlus &input )
 			// Only go back on first press.  If somebody is backing out of the
 			// options screen, they might still be holding it when select music
 			// appears, and accidentally back out of that too. -Kyz
-			if(input.type == IET_FIRST_PRESS)
+			if(input.type_ == IET_FIRST_PRESS)
 			{
 				if( HANDLE_BACK_BUTTON )
 					return this->MenuBack( input );
@@ -328,35 +328,35 @@ bool Screen::PassInputToLua(const InputEventPlus& input)
 	{ // This block is meant to improve clarity.  A subtable is created for
 		// storing the DeviceInput member.
 		lua_createtable(L, 0, 8);
-		Enum::Push(L, input.DeviceI.device);
+		Enum::Push(L, input.device_input_.device);
 		lua_setfield(L, -2, "device");
-		Enum::Push(L, input.DeviceI.button);
+		Enum::Push(L, input.device_input_.button);
 		lua_setfield(L, -2, "button");
-		lua_pushnumber(L, input.DeviceI.level);
+		lua_pushnumber(L, input.device_input_.level);
 		lua_setfield(L, -2, "level");
-		lua_pushinteger(L, input.DeviceI.z);
+		lua_pushinteger(L, input.device_input_.z);
 		lua_setfield(L, -2, "z");
-		lua_pushboolean(L, input.DeviceI.bDown);
+		lua_pushboolean(L, input.device_input_.bDown);
 		lua_setfield(L, -2, "down");
-		lua_pushnumber(L, input.DeviceI.ts.Ago());
+		lua_pushnumber(L, input.device_input_.ts.Ago());
 		lua_setfield(L, -2, "ago");
-		lua_pushboolean(L, input.DeviceI.IsJoystick());
+		lua_pushboolean(L, input.device_input_.IsJoystick());
 		lua_setfield(L, -2, "is_joystick");
-		lua_pushboolean(L, input.DeviceI.IsMouse());
+		lua_pushboolean(L, input.device_input_.IsMouse());
 		lua_setfield(L, -2, "is_mouse");
 	}
 	lua_setfield(L, -2, "DeviceInput");
-	Enum::Push(L, input.GameI.controller);
+	Enum::Push(L, input.game_input_.controller);
 	lua_setfield(L, -2, "controller");
-	LuaHelpers::Push(L, GameButtonToString(INPUTMAPPER->GetInputScheme(), input.GameI.button));
+	LuaHelpers::Push(L, GameButtonToString(INPUTMAPPER->GetInputScheme(), input.game_input_.button));
 	lua_setfield(L, -2, "button");
-	Enum::Push(L, input.type);
+	Enum::Push(L, input.type_);
 	lua_setfield(L, -2, "type");
-	LuaHelpers::Push(L, GameButtonToString(INPUTMAPPER->GetInputScheme(), input.MenuI));
+	LuaHelpers::Push(L, GameButtonToString(INPUTMAPPER->GetInputScheme(), input.menu_input_));
 	lua_setfield(L, -2, "GameButton");
-	Enum::Push(L, input.pn);
+	Enum::Push(L, input.pn_);
 	lua_setfield(L, -2, "PlayerNumber");
-	Enum::Push(L, input.mp);
+	Enum::Push(L, input.multiplayer_);
 	lua_setfield(L, -2, "MultiPlayer");
 	for(std::map<callback_key_t, LuaReference>::iterator callback= m_InputCallbacks.begin();
 			callback != m_InputCallbacks.end() && !handled; ++callback)

@@ -439,8 +439,8 @@ static bool GetValueFromMap( const std::map<U, V> &m, const U &key, V &val )
 
 bool ScreenDebugOverlay::Input( const InputEventPlus &input )
 {
-	if( input.DeviceI == g_Mappings.holdForDebug1 ||
-		input.DeviceI == g_Mappings.holdForDebug2 )
+	if( input.device_input_ == g_Mappings.holdForDebug1 ||
+		input.device_input_ == g_Mappings.holdForDebug2 )
 	{
 		bool bHoldingNeither =
 			(!g_Mappings.holdForDebug1.IsValid() || !INPUTFILTER->IsBeingPressed(g_Mappings.holdForDebug1)) &&
@@ -456,16 +456,16 @@ bool ScreenDebugOverlay::Input( const InputEventPlus &input )
 		else
 			g_bIsDisplayed = false;
 	}
-	if(input.DeviceI == g_Mappings.toggleMute)
+	if(input.device_input_ == g_Mappings.toggleMute)
 	{
 		PREFSMAN->m_MuteActions.Set(!PREFSMAN->m_MuteActions);
 		SCREENMAN->SystemMessage(PREFSMAN->m_MuteActions ? MUTE_ACTIONS_ON.GetValue() : MUTE_ACTIONS_OFF.GetValue());
 	}
 
 	int iPage = 0;
-	if( g_bIsDisplayed && GetValueFromMap(g_Mappings.pageButton, input.DeviceI, iPage) )
+	if( g_bIsDisplayed && GetValueFromMap(g_Mappings.pageButton, input.device_input_, iPage) )
 	{
-		if( input.type != IET_FIRST_PRESS )
+		if( input.type_ != IET_FIRST_PRESS )
 			return true; // eat the input but do nothing
 		m_iCurrentPage = iPage;
 		CLAMP( m_iCurrentPage, 0, (int) m_asPages.size()-1 );
@@ -498,9 +498,9 @@ bool ScreenDebugOverlay::Input( const InputEventPlus &input )
 			FAIL_M(ssprintf("Invalid debug line type: %i", type));
 		}
 
-		if( input.DeviceI == (*p)->m_Button )
+		if( input.device_input_ == (*p)->m_Button )
 		{
-			if( input.type != IET_FIRST_PRESS )
+			if( input.type_ != IET_FIRST_PRESS )
 				return true; // eat the input but do nothing
 
 			// do the action
