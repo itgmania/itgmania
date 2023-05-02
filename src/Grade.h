@@ -76,7 +76,7 @@ Grade GetNextPossibleGrade(Grade grade);
   for (Grade grade = (Grade)(0); grade != Grade_Invalid; \
        g = GetNextPossibleGrade(grade))
 
-#endif
+#endif  // GRADE_H
 
 /**
  * @file

@@ -25,7 +25,7 @@ class GradeDisplay : public ActorFrame {
   std::vector<AutoActor> ptr_;
 };
 
-#endif
+#endif  // GRADE_DISPLAY_H
 
 /*
  * (c) 2001-2002 Chris Danford
