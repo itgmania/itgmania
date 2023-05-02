@@ -112,9 +112,9 @@ void LifeMeterTime::OnLoadSong()
 		Song* song= GAMESTATE->cur_song_;
 		ASSERT(song != nullptr);
 		float song_len= song->m_fMusicLengthSeconds;
-		Steps* steps= GAMESTATE->cur_steps_[m_pPlayerState->m_PlayerNumber];
+		Steps* steps= GAMESTATE->cur_steps_[player_state_->m_PlayerNumber];
 		ASSERT(steps != nullptr);
-		RadarValues radars= steps->GetRadarValues(m_pPlayerState->m_PlayerNumber);
+		RadarValues radars= steps->GetRadarValues(player_state_->m_PlayerNumber);
 		float scorable_things= radars[RadarCategory_TapsAndHolds] +
 			radars[RadarCategory_Lifts];
 		if(g_fTimeMeterSecondsChange[SE_Held] > 0.0f)
@@ -202,7 +202,7 @@ void LifeMeterTime::HandleTapScoreNone()
 void LifeMeterTime::SendLifeChangedMessage( float fOldLife, TapNoteScore tns, HoldNoteScore hns )
 {
 	Message msg( "LifeChanged" );
-	msg.SetParam( "Player", m_pPlayerState->m_PlayerNumber );
+	msg.SetParam( "Player", player_state_->m_PlayerNumber );
 	msg.SetParam( "TapNoteScore", LuaReference::Create(tns) );
 	msg.SetParam( "HoldNoteScore", LuaReference::Create(hns) );
 	msg.SetParam( "OldLife", fOldLife );
@@ -231,7 +231,7 @@ void LifeMeterTime::Update( float fDeltaTime )
 	// update current stage stats so ScoreDisplayLifeTime can show the right thing
 	float fSecs = GetLifeSeconds();
 	fSecs = std::max( 0.0f, fSecs );
-	m_pPlayerStageStats->m_fLifeRemainingSeconds = fSecs;
+	player_stage_stats_->m_fLifeRemainingSeconds = fSecs;
 
 	LifeMeter::Update( fDeltaTime );
 
@@ -239,7 +239,7 @@ void LifeMeterTime::Update( float fDeltaTime )
 	m_pStream->SetPassingAlpha( 0 );
 	m_pStream->SetHotAlpha( 0 );
 
-	if( m_pPlayerState->m_HealthState == HealthState_Danger )
+	if( player_state_->m_HealthState == HealthState_Danger )
 		m_quadDangerGlow.SetDiffuseAlpha( 1 );
 	else
 		m_quadDangerGlow.SetDiffuseAlpha( 0 );

@@ -31,7 +31,7 @@ LifeMeterBar::LifeMeterBar()
 	EXTRA_STAGE_LIFE_DIFFICULTY.Load	("LifeMeterBar","ExtraStageLifeDifficulty");
 	m_fLifePercentChange.Load( "LifeMeterBar", LIFE_PERCENT_CHANGE_NAME, NUM_ScoreEvent );
 
-	m_pPlayerState = nullptr;
+	player_state_ = nullptr;
 
 	const RString sType = "LifeMeterBar";
 
@@ -130,9 +130,9 @@ void LifeMeterBar::ChangeLife( TapNoteScore score )
 	if(PREFSMAN->m_HarshHotLifePenalty && IsHot()  &&  fDeltaLife < 0)
 		fDeltaLife = std::min( fDeltaLife, -0.10f );		// make it take a while to get back to "hot"
 
-	switch(m_pPlayerState->m_PlayerOptions.GetSong().m_DrainType)
+	switch(player_state_->m_PlayerOptions.GetSong().m_DrainType)
 	{
-	DEFAULT_FAIL(m_pPlayerState->m_PlayerOptions.GetSong().m_DrainType);
+	DEFAULT_FAIL(player_state_->m_PlayerOptions.GetSong().m_DrainType);
 	case DrainType_Normal:
 		break;
 	case DrainType_NoRecover:
@@ -152,7 +152,7 @@ void LifeMeterBar::ChangeLife( TapNoteScore score )
 void LifeMeterBar::ChangeLife( HoldNoteScore score, TapNoteScore tscore )
 {
 	float fDeltaLife=0.f;
-	DrainType dtype = m_pPlayerState->m_PlayerOptions.GetSong().m_DrainType;
+	DrainType dtype = player_state_->m_PlayerOptions.GetSong().m_DrainType;
 	switch( dtype )
 	{
 	case DrainType_Normal:
@@ -223,10 +223,10 @@ void LifeMeterBar::ChangeLife( float fDeltaLife )
 	}
 
 	// If we've already failed, there's no point in letting them fill up the bar again.
-	if( m_pPlayerStageStats->m_bFailed )
+	if( player_stage_stats_->m_bFailed )
 		return;
 
-	switch(m_pPlayerState->m_PlayerOptions.GetSong().m_DrainType)
+	switch(player_state_->m_PlayerOptions.GetSong().m_DrainType)
 	{
 		case DrainType_Normal:
 		case DrainType_NoRecover:
@@ -270,7 +270,7 @@ void LifeMeterBar::AfterLifeChanged()
 	m_pStream->SetPercent( m_fLifePercentage );
 
 	Message msg( "LifeChanged" );
-	msg.SetParam( "Player", m_pPlayerState->m_PlayerNumber );
+	msg.SetParam( "Player", player_state_->m_PlayerNumber );
 	msg.SetParam( "LifeMeter", LuaReference::CreateFromPush(*this) );
 	MESSAGEMAN->Broadcast( msg );
 }
@@ -287,7 +287,7 @@ bool LifeMeterBar::IsInDanger() const
 
 bool LifeMeterBar::IsFailing() const
 {
-	return m_fLifePercentage <= m_pPlayerState->m_PlayerOptions.GetCurrent().m_fPassmark;
+	return m_fLifePercentage <= player_state_->m_PlayerOptions.GetCurrent().m_fPassmark;
 }
 
 
@@ -304,7 +304,7 @@ void LifeMeterBar::Update( float fDeltaTime )
 	m_pStream->SetPassingAlpha( m_fPassingAlpha );
 	m_pStream->SetHotAlpha( m_fHotAlpha );
 
-	if( m_pPlayerState->m_HealthState == HealthState_Danger )
+	if( player_state_->m_HealthState == HealthState_Danger )
 		m_sprDanger->SetVisible( true );
 	else
 		m_sprDanger->SetVisible( false );
