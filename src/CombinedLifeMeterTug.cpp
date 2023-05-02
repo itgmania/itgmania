@@ -84,7 +84,7 @@ CombinedLifeMeterTug::CombinedLifeMeterTug() {
 }
 
 void CombinedLifeMeterTug::Update(float fDelta) {
-  float percent_to_show = GAMESTATE->m_fTugLifePercentP1;
+  float percent_to_show = GAMESTATE->tug_life_percent_p1_;
   CLAMP(percent_to_show, 0.f, 1.f);
 
   stream_[PLAYER_1].SetPercent(percent_to_show);
@@ -162,10 +162,10 @@ void CombinedLifeMeterTug::ChangeLife(PlayerNumber pn, float percent_to_move) {
     float life_percentage = 0;
     switch (pn) {
       case PLAYER_1:
-        life_percentage = GAMESTATE->m_fTugLifePercentP1;
+        life_percentage = GAMESTATE->tug_life_percent_p1_;
         break;
       case PLAYER_2:
-        life_percentage = 1 - GAMESTATE->m_fTugLifePercentP1;
+        life_percentage = 1 - GAMESTATE->tug_life_percent_p1_;
         break;
       default:
         FAIL_M(ssprintf("Invalid player number: %i", pn));
@@ -178,10 +178,10 @@ void CombinedLifeMeterTug::ChangeLife(PlayerNumber pn, float percent_to_move) {
 
   switch (pn) {
     case PLAYER_1:
-      GAMESTATE->m_fTugLifePercentP1 += percent_to_move;
+      GAMESTATE->tug_life_percent_p1_ += percent_to_move;
       break;
     case PLAYER_2:
-      GAMESTATE->m_fTugLifePercentP1 -= percent_to_move;
+      GAMESTATE->tug_life_percent_p1_ -= percent_to_move;
       break;
     default:
       FAIL_M(ssprintf("Invalid player number: %i", pn));
@@ -191,10 +191,10 @@ void CombinedLifeMeterTug::ChangeLife(PlayerNumber pn, float percent_to_move) {
 void CombinedLifeMeterTug::SetLife(PlayerNumber pn, float value) {
   switch (pn) {
     case PLAYER_1:
-      GAMESTATE->m_fTugLifePercentP1 = value;
+      GAMESTATE->tug_life_percent_p1_ = value;
       break;
     case PLAYER_2:
-      GAMESTATE->m_fTugLifePercentP1 = 1 - value;
+      GAMESTATE->tug_life_percent_p1_ = 1 - value;
       break;
     default:
       FAIL_M(ssprintf("Invalid player number: %i", pn));

@@ -43,7 +43,7 @@ namespace
 		else if( MEMCARDMAN->GetCardLocked(pn) )
 			bShowCreditsMessage = !GAMESTATE->IsPlayerEnabled( pn );
 		else 
-			bShowCreditsMessage = !GAMESTATE->m_bSideIsJoined[pn];
+			bShowCreditsMessage = !GAMESTATE->side_is_joined_[pn];
 			
 		if( !bShowCreditsMessage )
 		{
@@ -108,8 +108,8 @@ namespace
 			case CoinMode_Pay:
 			// GCC is picky and needs this to be bracketed
 			{
-				int iCredits = GAMESTATE->m_iCoins / PREFSMAN->m_iCoinsPerCredit;
-				int iCoins = GAMESTATE->m_iCoins % PREFSMAN->m_iCoinsPerCredit;
+				int iCredits = GAMESTATE->coins_ / PREFSMAN->m_iCoinsPerCredit;
+				int iCoins = GAMESTATE->coins_ % PREFSMAN->m_iCoinsPerCredit;
 				RString sCredits = CREDITS_CREDITS;
 				// todo: allow themers to change these strings -aj
 				if( iCredits > 0 || PREFSMAN->m_iCoinsPerCredit == 1 )

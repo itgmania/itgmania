@@ -100,9 +100,9 @@ void LifeMeterBar::Load( const PlayerState *pPlayerState, PlayerStageStats *pPla
 
 	// Change life difficulty to really easy if merciful beginner on
 	m_bMercifulBeginnerInEffect =
-		GAMESTATE->m_PlayMode == PLAY_MODE_REGULAR  &&
+		GAMESTATE->play_mode_ == PLAY_MODE_REGULAR  &&
 		GAMESTATE->IsPlayerEnabled( pPlayerState )  &&
-		GAMESTATE->m_pCurSteps[pn]->GetDifficulty() == Difficulty_Beginner  &&
+		GAMESTATE->cur_steps_[pn]->GetDifficulty() == Difficulty_Beginner  &&
 		PREFSMAN->m_bMercifulBeginner;
 
 	AfterLifeChanged();
@@ -315,19 +315,19 @@ void LifeMeterBar::UpdateNonstopLifebar()
 {
 	int iCleared, iTotal, iProgressiveLifebarDifficulty;
 
-	switch( GAMESTATE->m_PlayMode )
+	switch( GAMESTATE->play_mode_ )
 	{
 	case PLAY_MODE_REGULAR:
-		if( GAMESTATE->IsEventMode() || GAMESTATE->m_bDemonstrationOrJukebox )
+		if( GAMESTATE->IsEventMode() || GAMESTATE->demonstration_or_jukebox_ )
 			return;
 
-		iCleared = GAMESTATE->m_iCurrentStageIndex;
+		iCleared = GAMESTATE->current_stage_index_;
 		iTotal = PREFSMAN->m_iSongsPerPlay;
 		iProgressiveLifebarDifficulty = PREFSMAN->m_iProgressiveStageLifebar;
 		break;
 	case PLAY_MODE_NONSTOP:
 		iCleared = GAMESTATE->GetCourseSongIndex();
-		iTotal = GAMESTATE->m_pCurCourse->GetEstimatedNumStages();
+		iTotal = GAMESTATE->cur_course_->GetEstimatedNumStages();
 		iProgressiveLifebarDifficulty = PREFSMAN->m_iProgressiveNonstopLifebar;
 		break;
 	default:

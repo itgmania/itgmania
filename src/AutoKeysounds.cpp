@@ -42,7 +42,7 @@ void AutoKeysounds::Load(
 
 void AutoKeysounds::LoadAutoplaySoundsInto(RageSoundReader_Chain* chain) {
   // Load sounds.
-  Song* song = GAMESTATE->m_pCurSong;
+  Song* song = GAMESTATE->cur_song_;
   RString song_dir = song->GetSongDir();
 
   // Add all current autoplay sounds in both players to the chain.
@@ -88,7 +88,7 @@ void AutoKeysounds::LoadAutoplaySoundsInto(RageSoundReader_Chain* chain) {
           RString keysound_file_path =
               song_dir + song->m_vsKeysoundFile[tap_notes[pn].iKeysoundIndex];
           float seconds =
-              GAMESTATE->m_pCurSteps[pn]
+              GAMESTATE->cur_steps_[pn]
                   ->GetTimingData()
                   ->GetElapsedTimeFromBeatNoOffset(NoteRowToBeat(row)) +
               SOUNDMAN->GetPlayLatency();
@@ -117,7 +117,7 @@ void AutoKeysounds::LoadTracks(
 
   std::vector<RString> music_file;
   const RString music_path =
-      GAMESTATE->m_pCurSteps[GAMESTATE->GetMasterPlayerNumber()]
+      GAMESTATE->cur_steps_[GAMESTATE->GetMasterPlayerNumber()]
           ->GetMusicPath();
 
   if (!music_path.empty()) {
@@ -184,7 +184,7 @@ void AutoKeysounds::LoadTracks(
 void AutoKeysounds::FinishLoading() {
   sound_.Unload();
 
-  Song* song = GAMESTATE->m_pCurSong;
+  Song* song = GAMESTATE->cur_song_;
 
   std::vector<RageSoundReader*> sounds;
   LoadTracks(song, shared_sound_, player_sounds_[0], player_sounds_[1]);

@@ -160,7 +160,7 @@ bool CodeDetector::DetectAndAdjustMusicOptions(GameController controller) {
     Code code = (Code)c;
 
     PlayerOptions po =
-        GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetPreferred();
+        GAMESTATE->player_state_[pn]->m_PlayerOptions.GetPreferred();
 
     if (EnteredCode(controller, code)) {
       switch (code) {
@@ -232,7 +232,7 @@ bool CodeDetector::DetectAndAdjustMusicOptions(GameController controller) {
           break;
       }
 
-      GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.Assign(
+      GAMESTATE->player_state_[pn]->m_PlayerOptions.Assign(
           ModsLevel_Preferred, po);
 
       return true;  // don't check any more

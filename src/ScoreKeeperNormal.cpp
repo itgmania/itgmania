@@ -175,7 +175,7 @@ void ScoreKeeperNormal::OnNextSong( int iSongInCourseIndex, const Steps* pSteps,
 	else
 	{
 		// long ver and marathon ver songs have higher max possible scores
-		int iLengthMultiplier = GameState::GetNumStagesMultiplierForSong( GAMESTATE->m_pCurSong );
+		int iLengthMultiplier = GameState::GetNumStagesMultiplierForSong( GAMESTATE->cur_song_ );
 
 		/* This is no longer just simple additive/subtractive scoring,
 		 * but start with capping the score at the size of the score counter. */
@@ -432,7 +432,7 @@ void ScoreKeeperNormal::HandleTapNoteScoreInternal( TapNoteScore tns, TapNoteSco
 		m_pPlayerStageStats->m_iActualDancePoints += TapNoteScoreToDancePoints( tns );
 
 	// update judged row totals. Respect Combo segments here.
-	TimingData &td = *GAMESTATE->m_pCurSteps[m_pPlayerState->m_PlayerNumber]->GetTimingData();
+	TimingData &td = *GAMESTATE->cur_steps_[m_pPlayerState->m_PlayerNumber]->GetTimingData();
 	ComboSegment *cs = td.GetComboSegmentAtRow(row);
 	if (tns == TNS_CheckpointHit || tns >= m_MinScoreToContinueCombo)
 	{
@@ -465,7 +465,7 @@ void ScoreKeeperNormal::HandleComboInternal( int iNumHitContinueCombo, int iNumH
 	{
 		m_pPlayerStageStats->m_iCurMissCombo = 0;
 	}
-	TimingData &td = *GAMESTATE->m_pCurSteps[m_pPlayerState->m_PlayerNumber]->GetTimingData();
+	TimingData &td = *GAMESTATE->cur_steps_[m_pPlayerState->m_PlayerNumber]->GetTimingData();
 	if( iNumBreakCombo == 0 )
 	{
 		int multiplier = ( iRow == -1 ? 1 : td.GetComboSegmentAtRow( iRow )->GetCombo() );
@@ -485,7 +485,7 @@ void ScoreKeeperNormal::HandleRowComboInternal( TapNoteScore tns, int iNumTapsIn
 	{
 		iNumTapsInRow = std::min( iNumTapsInRow, 1);
 	}
-	TimingData &td = *GAMESTATE->m_pCurSteps[m_pPlayerState->m_PlayerNumber]->GetTimingData();
+	TimingData &td = *GAMESTATE->cur_steps_[m_pPlayerState->m_PlayerNumber]->GetTimingData();
 	if ( tns >= m_MinScoreToContinueCombo )
 	{
 		m_pPlayerStageStats->m_iCurMissCombo = 0;
@@ -556,7 +556,7 @@ void ScoreKeeperNormal::HandleTapRowScore( const NoteData &nd, int iRow )
 	// handle combo logic
 #ifndef DEBUG
 	if( (GamePreferences::m_AutoPlay != PC_HUMAN || m_pPlayerState->m_PlayerOptions.GetCurrent().m_fPlayerAutoPlay != 0)
-		&& !GAMESTATE->m_bDemonstrationOrJukebox )	// cheaters always prosper >:D -aj comment edit
+		&& !GAMESTATE->demonstration_or_jukebox_ )	// cheaters always prosper >:D -aj comment edit
 	{
 		m_cur_toasty_combo = 0;
 		return;
@@ -568,7 +568,7 @@ void ScoreKeeperNormal::HandleTapRowScore( const NoteData &nd, int iRow )
 	{
 		m_cur_toasty_combo += iNumTapsInRow;
 		if(m_cur_toasty_combo > m_next_toasty_at &&
-			!GAMESTATE->m_bDemonstrationOrJukebox)
+			!GAMESTATE->demonstration_or_jukebox_)
 		{
 			++m_cur_toasty_level;
 			// Broadcast the message before posting the screen message so that the

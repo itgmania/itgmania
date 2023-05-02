@@ -244,21 +244,21 @@ void BPMDisplay::SetVarious() {
 }
 
 void BPMDisplay::SetFromGameState() {
-  if (GAMESTATE->m_pCurSong.Get()) {
+  if (GAMESTATE->cur_song_.Get()) {
     if (GAMESTATE->IsAnExtraStageAndSelectionLocked()) {
       CycleRandomly();
     } else {
-      SetBpmFromSong(GAMESTATE->m_pCurSong);
+      SetBpmFromSong(GAMESTATE->cur_song_);
     }
     return;
   }
-  if (GAMESTATE->m_pCurCourse.Get()) {
+  if (GAMESTATE->cur_course_.Get()) {
     if (GAMESTATE->GetCurrentStyle(PLAYER_INVALID) == nullptr) {
       ;  // This is true when backing out from ScreenSelectCourse to
          // ScreenTitleMenu.  So, don't call SetBpmFromCourse where an assert
          // will fire.
     } else {
-      SetBpmFromCourse(GAMESTATE->m_pCurCourse);
+      SetBpmFromCourse(GAMESTATE->cur_course_);
     }
 
     return;
@@ -281,7 +281,7 @@ class SongBPMDisplay : public BPMDisplay {
 SongBPMDisplay::SongBPMDisplay() { m_fLastGameStateBPM = 0; }
 
 void SongBPMDisplay::Update(float delta) {
-  float fGameStateBPM = GAMESTATE->m_Position.m_fCurBPS * 60.0f;
+  float fGameStateBPM = GAMESTATE->position_.m_fCurBPS * 60.0f;
   if (m_fLastGameStateBPM != fGameStateBPM) {
     m_fLastGameStateBPM = fGameStateBPM;
     SetConstantBpm(fGameStateBPM);

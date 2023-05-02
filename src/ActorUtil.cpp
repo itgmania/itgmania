@@ -135,7 +135,7 @@ RString GetLegacyActorClass(XNode* pActor) {
     // Backward compatibility hacks for "special" filenames
     if (sFile.EqualsNoCase("songbackground")) {
       XNodeStringValue *pVal = new XNodeStringValue;
-      Song* pSong = GAMESTATE->m_pCurSong;
+      Song* pSong = GAMESTATE->cur_song_;
       if (pSong && pSong->HasBackground()) {
         pVal->SetValue(pSong->GetBackgroundPath());
       } else {
@@ -145,7 +145,7 @@ RString GetLegacyActorClass(XNode* pActor) {
       return "Sprite";
     } else if (sFile.EqualsNoCase("songbanner")) {
       XNodeStringValue *pVal = new XNodeStringValue;
-      Song* pSong = GAMESTATE->m_pCurSong;
+      Song* pSong = GAMESTATE->cur_song_;
       if (pSong && pSong->HasBanner()) {
         pVal->SetValue(pSong->GetBannerPath());
       } else {
@@ -155,7 +155,7 @@ RString GetLegacyActorClass(XNode* pActor) {
       return "Sprite";
     } else if (sFile.EqualsNoCase("coursebanner")) {
       XNodeStringValue *pVal = new XNodeStringValue;
-      Course* pCourse = GAMESTATE->m_pCurCourse;
+      Course* pCourse = GAMESTATE->cur_course_;
       if (pCourse && pCourse->HasBanner()) {
         pVal->SetValue(pCourse->GetBannerPath());
       } else {

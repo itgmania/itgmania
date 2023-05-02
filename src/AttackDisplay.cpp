@@ -22,8 +22,8 @@ RString GetAttackPieceName(const RString& attack) {
 }
 
 AttackDisplay::AttackDisplay() {
-  if (GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
-      GAMESTATE->m_PlayMode != PLAY_MODE_RAVE) {
+  if (GAMESTATE->play_mode_ != PLAY_MODE_BATTLE &&
+      GAMESTATE->play_mode_ != PLAY_MODE_RAVE) {
     return;
 	}
 
@@ -39,14 +39,14 @@ void AttackDisplay::Init(const PlayerState* player_state) {
   PlayerNumber pn = player_state_->m_PlayerNumber;
   sprite_.SetName(ssprintf("TextP%d", pn + 1));
 
-  if (GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
-      GAMESTATE->m_PlayMode != PLAY_MODE_RAVE) {
+  if (GAMESTATE->play_mode_ != PLAY_MODE_BATTLE &&
+      GAMESTATE->play_mode_ != PLAY_MODE_RAVE) {
     return;
 	}
 
   std::set<RString> attacks;
   for (int al = 0; al < NUM_ATTACK_LEVELS; ++al) {
-    const Character* ch = GAMESTATE->m_pCurCharacters[pn];
+    const Character* ch = GAMESTATE->cur_characters_[pn];
     ASSERT(ch != nullptr);
     const RString* asAttacks = ch->attacks_[al];
     for (int att = 0; att < NUM_ATTACKS_PER_LEVEL; ++att) {
@@ -69,8 +69,8 @@ void AttackDisplay::Init(const PlayerState* player_state) {
 void AttackDisplay::Update(float delta) {
   ActorFrame::Update(delta);
 
-  if (GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
-      GAMESTATE->m_PlayMode != PLAY_MODE_RAVE) {
+  if (GAMESTATE->play_mode_ != PLAY_MODE_BATTLE &&
+      GAMESTATE->play_mode_ != PLAY_MODE_RAVE) {
     return;
 	}
 

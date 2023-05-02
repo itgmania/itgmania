@@ -132,19 +132,19 @@ void StepsDisplay::SetFromGameState( PlayerNumber pn )
 	if( GAMESTATE->IsCourseMode() )
 	{
 		// figure out what course type is selected somehow.
-		const Trail* pTrail = GAMESTATE->m_pCurTrail[pn];
+		const Trail* pTrail = GAMESTATE->cur_trail_[pn];
 		if( pTrail )
 			SetFromTrail( pTrail );
 		else
-			SetFromStepsTypeAndMeterAndDifficultyAndCourseType( StepsType_Invalid, 0, GAMESTATE->m_PreferredCourseDifficulty[pn], CourseType_Invalid );
+			SetFromStepsTypeAndMeterAndDifficultyAndCourseType( StepsType_Invalid, 0, GAMESTATE->preferred_course_difficulty_[pn], CourseType_Invalid );
 	}
 	else
 	{
-		const Steps* pSteps = GAMESTATE->m_pCurSteps[pn];
+		const Steps* pSteps = GAMESTATE->cur_steps_[pn];
 		if( pSteps )
 			SetFromSteps( pSteps );
 		else
-			SetFromStepsTypeAndMeterAndDifficultyAndCourseType( StepsType_Invalid, 0, GAMESTATE->m_PreferredDifficulty[pn], CourseType_Invalid );
+			SetFromStepsTypeAndMeterAndDifficultyAndCourseType( StepsType_Invalid, 0, GAMESTATE->preferred_difficulty_[pn], CourseType_Invalid );
 	}
 }
 

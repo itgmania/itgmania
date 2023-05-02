@@ -423,7 +423,7 @@ RString UnlockEntry::GetDescription() const
 		return pSong ? pSong->GetDisplayFullTitle() : RString("");
 	case UnlockRewardType_Steps:
 	{
-		StepsType st = GAMEMAN->GetHowToPlayStyleForGame( GAMESTATE->m_pCurGame )->m_StepsType;	// TODO: Is this the best thing we can do here?
+		StepsType st = GAMEMAN->GetHowToPlayStyleForGame( GAMESTATE->cur_game_ )->m_StepsType;	// TODO: Is this the best thing we can do here?
 		return (pSong ? pSong->GetDisplayFullTitle() : RString("")) + ", " + CustomDifficultyToLocalizedString( GetCustomDifficulty(st, m_dc, CourseType_Invalid) );
 	}
 	case UnlockRewardType_Steps_Type:
@@ -720,9 +720,9 @@ void UnlockManager::PreferUnlockEntryID( RString sUnlockEntryID )
 			continue;
 
 		if( pEntry.m_Song.ToSong() != nullptr )
-			GAMESTATE->m_pPreferredSong = pEntry.m_Song.ToSong();
+			GAMESTATE->preferred_song_ = pEntry.m_Song.ToSong();
 		if( pEntry.m_Course.ToCourse() )
-			GAMESTATE->m_pPreferredCourse = pEntry.m_Course.ToCourse();
+			GAMESTATE->preferred_course_ = pEntry.m_Course.ToCourse();
 	}
 }
 

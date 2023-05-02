@@ -161,7 +161,7 @@ void PlayerState::RebuildPlayerOptionsFromActiveAttacks()
 {
 	// rebuild player options
 	PlayerOptions po = m_PlayerOptions.GetStage();
-	SongOptions so = GAMESTATE->m_SongOptions.GetStage();
+	SongOptions so = GAMESTATE->song_options_.GetStage();
 	for( unsigned s=0; s<m_ActiveAttacks.size(); s++ )
 	{
 		if( !m_ActiveAttacks[s].bOn )
@@ -171,7 +171,7 @@ void PlayerState::RebuildPlayerOptionsFromActiveAttacks()
 	}
 	m_PlayerOptions.Assign( ModsLevel_Song, po );
 	if( m_PlayerNumber == GAMESTATE->GetMasterPlayerNumber() )
-		GAMESTATE->m_SongOptions.Assign( ModsLevel_Song, so );
+		GAMESTATE->song_options_.Assign( ModsLevel_Song, so );
 
 	int iSumOfAttackLevels = GetSumOfActiveAttackLevels();
 	if( iSumOfAttackLevels > 0 )
@@ -199,16 +199,16 @@ int PlayerState::GetSumOfActiveAttackLevels() const
 
 const SongPosition &PlayerState::GetDisplayedPosition() const
 {
-	if( GAMESTATE->m_bIsUsingStepTiming )
+	if( GAMESTATE->is_using_step_timing_ )
 		return m_Position;
-	return GAMESTATE->m_Position;
+	return GAMESTATE->position_;
 }
 
 const TimingData &PlayerState::GetDisplayedTiming() const
 {
-	Steps *steps = GAMESTATE->m_pCurSteps[m_PlayerNumber];
+	Steps *steps = GAMESTATE->cur_steps_[m_PlayerNumber];
 	if( steps == nullptr )
-		return GAMESTATE->m_pCurSong->m_SongTiming;
+		return GAMESTATE->cur_song_->m_SongTiming;
 	return *steps->GetTimingData();
 }
 

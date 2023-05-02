@@ -101,7 +101,7 @@ void LifeMeterTime::OnLoadSong()
 	float fGainSeconds = 0;
 	if(GAMESTATE->IsCourseMode())
 	{
-		Course* pCourse = GAMESTATE->m_pCurCourse;
+		Course* pCourse = GAMESTATE->cur_course_;
 		ASSERT( pCourse != nullptr );
 		fGainSeconds= pCourse->m_vEntries[GAMESTATE->GetCourseSongIndex()].gain_seconds_;
 	}
@@ -109,10 +109,10 @@ void LifeMeterTime::OnLoadSong()
 	{
 		// Placeholderish, at least this way it won't crash when someone tries it
 		// out in non-course mode. -Kyz
-		Song* song= GAMESTATE->m_pCurSong;
+		Song* song= GAMESTATE->cur_song_;
 		ASSERT(song != nullptr);
 		float song_len= song->m_fMusicLengthSeconds;
-		Steps* steps= GAMESTATE->m_pCurSteps[m_pPlayerState->m_PlayerNumber];
+		Steps* steps= GAMESTATE->cur_steps_[m_pPlayerState->m_PlayerNumber];
 		ASSERT(steps != nullptr);
 		RadarValues radars= steps->GetRadarValues(m_pPlayerState->m_PlayerNumber);
 		float scorable_things= radars[RadarCategory_TapsAndHolds] +

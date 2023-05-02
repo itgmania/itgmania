@@ -224,7 +224,7 @@ void MusicWheelItem::LoadFromWheelItemData( const WheelItemBaseData *pData, int 
 		{
 			sDisplayName = SONGMAN->ShortenGroupName(pWID->m_sText);
 
-			if( GAMESTATE->sExpandedSectionName == pWID->m_sText )
+			if( GAMESTATE->expanded_section_name_ == pWID->m_sText )
 				type = MusicWheelItemType_SectionExpanded;
 			else
 				type = MusicWheelItemType_SectionCollapsed;
@@ -319,12 +319,12 @@ void MusicWheelItem::RefreshGrades()
 			continue;
 
 		Difficulty dc;
-		if( GAMESTATE->m_pCurSteps[p] )
-			dc = GAMESTATE->m_pCurSteps[p]->GetDifficulty();
-		else if( GAMESTATE->m_pCurTrail[p] )
-			dc = GAMESTATE->m_pCurTrail[p]->m_CourseDifficulty;
+		if( GAMESTATE->cur_steps_[p] )
+			dc = GAMESTATE->cur_steps_[p]->GetDifficulty();
+		else if( GAMESTATE->cur_trail_[p] )
+			dc = GAMESTATE->cur_trail_[p]->m_CourseDifficulty;
 		else
-			dc = GAMESTATE->m_PreferredDifficulty[p];
+			dc = GAMESTATE->preferred_difficulty_[p];
 
 		ProfileSlot ps;
 		if( PROFILEMAN->IsPersistentProfile(p) )
@@ -335,10 +335,10 @@ void MusicWheelItem::RefreshGrades()
 			continue;
 
 		StepsType st;
-		if( GAMESTATE->m_pCurSteps[p] )
-			st = GAMESTATE->m_pCurSteps[p]->m_StepsType;
-		else if( GAMESTATE->m_pCurTrail[p] )
-			st = GAMESTATE->m_pCurTrail[p]->m_StepsType;
+		if( GAMESTATE->cur_steps_[p] )
+			st = GAMESTATE->cur_steps_[p]->m_StepsType;
+		else if( GAMESTATE->cur_trail_[p] )
+			st = GAMESTATE->cur_trail_[p]->m_StepsType;
 		else
 			st = GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StepsType;
 
@@ -396,7 +396,7 @@ void MusicWheelItem::HandleMessage( const Message &msg )
 				type = MusicWheelItemType_Song;
 				break;
 			case WheelItemDataType_Section:
-				if( GAMESTATE->sExpandedSectionName == pWID->m_sText )
+				if( GAMESTATE->expanded_section_name_ == pWID->m_sText )
 					type = MusicWheelItemType_SectionExpanded;
 				else
 					type = MusicWheelItemType_SectionCollapsed;

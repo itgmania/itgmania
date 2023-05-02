@@ -59,7 +59,7 @@ void WorkoutGraph::SetInternal( int iMinSongsPlayed )
 	}
 	m_vpBars.clear();
 
-	Trail *pTrail = GAMESTATE->m_pCurTrail[PLAYER_1];
+	Trail *pTrail = GAMESTATE->cur_trail_[PLAYER_1];
 	if( pTrail == nullptr )
 		return;
 

@@ -313,9 +313,9 @@ Trail* Course::GetTrail(
   ASSERT(course_difficulty != Difficulty_Invalid);
 
   // Check to see if the Trail cache is out of date
-  if (m_iTrailCacheSeed != GAMESTATE->m_iStageSeed) {
+  if (m_iTrailCacheSeed != GAMESTATE->stage_seed_) {
     RegenerateNonFixedTrails();
-    m_iTrailCacheSeed = GAMESTATE->m_iStageSeed;
+    m_iTrailCacheSeed = GAMESTATE->stage_seed_;
   }
 
   // Look in the Trail cache
@@ -460,7 +460,7 @@ bool Course::GetTrailUnsorted(
 
   // Construct a new Trail, add it to the cache, then return it.
   // Different seed for each course, but the same for the whole round:
-  RandomGen rnd(GAMESTATE->m_iStageSeed + GetHashForString(m_sMainTitle));
+  RandomGen rnd(GAMESTATE->stage_seed_ + GetHashForString(m_sMainTitle));
 
   std::vector<CourseEntry> tmp_entries;
   if (m_bShuffle) {
@@ -876,7 +876,7 @@ void Course::GetTrails(
 
 void Course::GetAllTrails(std::vector<Trail*>& add_to) const {
   std::vector<StepsType> steps_type_to_show;
-  GAMEMAN->GetStepsTypesForGame(GAMESTATE->m_pCurGame, steps_type_to_show);
+  GAMEMAN->GetStepsTypesForGame(GAMESTATE->cur_game_, steps_type_to_show);
   for (const StepsType& steps_type : steps_type_to_show) {
     GetTrails(add_to, steps_type);
   }

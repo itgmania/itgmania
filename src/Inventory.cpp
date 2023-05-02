@@ -49,7 +49,7 @@ void ReloadItems()
 
 Inventory::Inventory()
 {
-	PlayMode mode = GAMESTATE->m_PlayMode;
+	PlayMode mode = GAMESTATE->play_mode_;
 	switch( mode )
 	{
 	case PLAY_MODE_BATTLE:
@@ -74,7 +74,7 @@ void Inventory::Load( PlayerState* pPlayerState )
 	m_iLastSeenCombo = 0;
 
 	// don't load battle sounds if they're not going to be used
-	switch( GAMESTATE->m_PlayMode )
+	switch( GAMESTATE->play_mode_ )
 	{
 		case PLAY_MODE_BATTLE:
 		{
@@ -126,10 +126,10 @@ void Inventory::Update( float fDelta )
 		}
 	}
 
-	Song &song = *GAMESTATE->m_pCurSong;
+	Song &song = *GAMESTATE->cur_song_;
 	// use items if this player is CPU-controlled
 	if( m_pPlayerState->m_PlayerController != PC_HUMAN &&
-		GAMESTATE->m_Position.m_fSongBeat < song.GetLastBeat() )
+		GAMESTATE->position_.m_fSongBeat < song.GetLastBeat() )
 	{
 		// every 1 seconds, try to use an item
 		int iLastSecond = (int)(RageTimer::GetTimeSinceStartFast() - fDelta);
@@ -206,13 +206,13 @@ void Inventory::UseItem( int iSlot )
 	m_vpSoundUseItem[a.level]->Play(false);
 
 	PlayerNumber pnToAttack = OPPOSITE_PLAYER[pn];
-	PlayerState *pPlayerStateToAttack = GAMESTATE->m_pPlayerState[pnToAttack];
+	PlayerState *pPlayerStateToAttack = GAMESTATE->player_state_[pnToAttack];
 	pPlayerStateToAttack->LaunchAttack( a );
 
 	float fPercentHealthToDrain = (a.level+1) / 10.f;
 	ASSERT( fPercentHealthToDrain > 0 );
-	GAMESTATE->m_fOpponentHealthPercent -= fPercentHealthToDrain;
-	CLAMP( GAMESTATE->m_fOpponentHealthPercent, 0.f, 1.f );
+	GAMESTATE->opponent_health_percent_ -= fPercentHealthToDrain;
+	CLAMP( GAMESTATE->opponent_health_percent_, 0.f, 1.f );
 
 	// play announcer sound
 	SCREENMAN->SendMessageToTopScreen( ssprintf("SM_BattleDamageLevel%d",a.level+1) );

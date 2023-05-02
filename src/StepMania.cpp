@@ -959,7 +959,7 @@ int sm_main(int argc, char* argv[])
 	CommandLineActions::Handle(pLoadingWindow);
 
 	if( GetCommandlineArgument("dopefish") )
-		GAMESTATE->m_bDopefish = true;
+		GAMESTATE->dopefish_ = true;
 
 	{
 		/* Now that THEME is loaded, load the icon and splash for the current
@@ -1107,30 +1107,30 @@ void StepMania::InsertCoin( int iNum, bool bCountInBookkeeping )
 		LIGHTSMAN->PulseCoinCounter();
 		BOOKKEEPER->CoinInserted();
 	}
-	int iNumCoinsOld = GAMESTATE->m_iCoins;
+	int iNumCoinsOld = GAMESTATE->coins_;
 
 	// Don't allow GAMESTATE's coin count to become negative.
-	if (GAMESTATE->m_iCoins + iNum >= 0)
+	if (GAMESTATE->coins_ + iNum >= 0)
 	{
-		GAMESTATE->m_iCoins.Set( GAMESTATE->m_iCoins + iNum );
+		GAMESTATE->coins_.Set( GAMESTATE->coins_ + iNum );
 	}
 
-	int iCredits = GAMESTATE->m_iCoins / PREFSMAN->m_iCoinsPerCredit;
+	int iCredits = GAMESTATE->coins_ / PREFSMAN->m_iCoinsPerCredit;
 	bool bMaxCredits = iCredits >= PREFSMAN->m_iMaxNumCredits;
 	if( bMaxCredits )
 	{
-		GAMESTATE->m_iCoins.Set( PREFSMAN->m_iMaxNumCredits * PREFSMAN->m_iCoinsPerCredit );
+		GAMESTATE->coins_.Set( PREFSMAN->m_iMaxNumCredits * PREFSMAN->m_iCoinsPerCredit );
 	}
 
-	LOG->Trace("%i coins inserted, %i needed to play", GAMESTATE->m_iCoins.Get(), PREFSMAN->m_iCoinsPerCredit.Get() );
+	LOG->Trace("%i coins inserted, %i needed to play", GAMESTATE->coins_.Get(), PREFSMAN->m_iCoinsPerCredit.Get() );
 
     // On InsertCoin, make sure to update Coins file
-    BOOKKEEPER->WriteCoinsFile(GAMESTATE->m_iCoins.Get());
+    BOOKKEEPER->WriteCoinsFile(GAMESTATE->coins_.Get());
 
 	// If inserting coins, play an appropriate sound; if deducting coins, don't play anything.
 	if (iNum > 0)
 	{
-		if( iNumCoinsOld != GAMESTATE->m_iCoins )
+		if( iNumCoinsOld != GAMESTATE->coins_ )
 		{
 			SCREENMAN->PlayCoinSound();
 		} else {
@@ -1140,7 +1140,7 @@ void StepMania::InsertCoin( int iNum, bool bCountInBookkeeping )
 
 	/* If AutoJoin and a player is already joined, then try to join a player.
 	 * (If no players are joined, they'll join on the first JoinInput.) */
-	if( GAMESTATE->m_bAutoJoin.Get() && GAMESTATE->GetNumSidesJoined() > 0 )
+	if( GAMESTATE->auto_join_.Get() && GAMESTATE->GetNumSidesJoined() > 0 )
 	{
 		if( GAMESTATE->GetNumSidesJoined() > 0 && GAMESTATE->JoinPlayers() )
 			SCREENMAN->PlayStartSound();
@@ -1162,17 +1162,17 @@ void StepMania::InsertCredit()
 
 void StepMania::ClearCredits()
 {
-	LOG->Trace("%i coins cleared", GAMESTATE->m_iCoins.Get() );
-	GAMESTATE->m_iCoins.Set( 0 );
+	LOG->Trace("%i coins cleared", GAMESTATE->coins_.Get() );
+	GAMESTATE->coins_.Set( 0 );
 	SCREENMAN->PlayInvalidSound();
 
     // Update Coins file to make sure credits are cleared.
-    BOOKKEEPER->WriteCoinsFile(GAMESTATE->m_iCoins.Get());
+    BOOKKEEPER->WriteCoinsFile(GAMESTATE->coins_.Get());
 
 	// TODO: remove this redundant message and things that depend on it
 	Message msg( "CoinInserted" );
 	// below params are unused
-	//msg.SetParam( "Coins", GAMESTATE->m_iCoins );
+	//msg.SetParam( "Coins", GAMESTATE->coins_ );
 	//msg.SetParam( "Clear", true );
 	MESSAGEMAN->Broadcast( msg );
 }
@@ -1230,7 +1230,7 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 		{
 			// Shift+F2: refresh metrics,noteskin cache and CodeDetector cache only
 			THEME->ReloadMetrics();
-			NOTESKIN->RefreshNoteSkinData( GAMESTATE->m_pCurGame );
+			NOTESKIN->RefreshNoteSkinData( GAMESTATE->cur_game_ );
 			CodeDetector::RefreshCacheItems();
 			SCREENMAN->SystemMessage( RELOADED_METRICS );
 		}
@@ -1253,7 +1253,7 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 			// F2 alone: refresh metrics, textures, noteskins, codedetector cache
 			THEME->ReloadMetrics();
 			TEXTUREMAN->ReloadAll();
-			NOTESKIN->RefreshNoteSkinData( GAMESTATE->m_pCurGame );
+			NOTESKIN->RefreshNoteSkinData( GAMESTATE->cur_game_ );
 			CodeDetector::RefreshCacheItems();
 			SCREENMAN->SystemMessage( RELOADED_METRICS_AND_TEXTURES );
 		}
@@ -1399,7 +1399,7 @@ void HandleInputEvents(float fDeltaTime)
 				//LOG->Trace( "device %d, %d", diTemp.device, diTemp.button );
 				if( INPUTMAPPER->DeviceToGame(diTemp, gi) )
 				{
-					if( GAMESTATE->m_bMultiplayer )
+					if( GAMESTATE->multiplayer_ )
 					{
 						input.GameI = gi;
 						//LOG->Trace( "game %d %d", input.GameI.controller, input.GameI.button );

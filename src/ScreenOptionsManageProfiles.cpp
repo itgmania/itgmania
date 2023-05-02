@@ -81,7 +81,7 @@ static bool ValidateLocalProfileName( const RString &sAnswer, RString &sErrorOut
 		return false;
 	}
 
-	Profile *pProfile = PROFILEMAN->GetLocalProfile( GAMESTATE->m_sEditLocalProfileID );
+	Profile *pProfile = PROFILEMAN->GetLocalProfile( GAMESTATE->edit_local_profile_id_ );
 	if( pProfile != nullptr && sAnswer == pProfile->m_sDisplayName )
 		return true; // unchanged
 
@@ -159,7 +159,7 @@ void ScreenOptionsManageProfiles::BeginScreen()
 	ScreenOptions::InitMenu( OptionRowHandlers );
 
 	// Save sEditLocalProfileID before calling ScreenOptions::BeginScreen, because it will get clobbered.
-	RString sEditLocalProfileID = GAMESTATE->m_sEditLocalProfileID;
+	RString sEditLocalProfileID = GAMESTATE->edit_local_profile_id_;
 
 	ScreenOptions::BeginScreen();
 
@@ -204,7 +204,7 @@ void ScreenOptionsManageProfiles::HandleScreenMessage( const ScreenMessage SM )
 			ASSERT( ScreenTextEntry::s_sLastAnswer != "" );	// validate should have assured this
 
 			RString sNewName = ScreenTextEntry::s_sLastAnswer;
-			ASSERT( GAMESTATE->m_sEditLocalProfileID.Get().empty() );
+			ASSERT( GAMESTATE->edit_local_profile_id_.Get().empty() );
 
 			int iNumProfiles = PROFILEMAN->GetNumLocalProfiles();
 
@@ -215,7 +215,7 @@ void ScreenOptionsManageProfiles::HandleScreenMessage( const ScreenMessage SM )
 			bool bCreateProfile = PROFILEMAN->CreateLocalProfile( ScreenTextEntry::s_sLastAnswer, sProfileID );
 			ASSERT(bCreateProfile);
 
-			GAMESTATE->m_sEditLocalProfileID.Set( sProfileID );
+			GAMESTATE->edit_local_profile_id_.Set( sProfileID );
 
 			if( iNumProfiles < NUM_PLAYERS )
 			{
@@ -246,7 +246,7 @@ void ScreenOptionsManageProfiles::HandleScreenMessage( const ScreenMessage SM )
 			ASSERT( ScreenTextEntry::s_sLastAnswer != "" );	// validate should have assured this
 
 			RString sNewName = ScreenTextEntry::s_sLastAnswer;
-			PROFILEMAN->RenameLocalProfile( GAMESTATE->m_sEditLocalProfileID, sNewName );
+			PROFILEMAN->RenameLocalProfile( GAMESTATE->edit_local_profile_id_, sNewName );
 			if (PREFSMAN->m_ProfileSortOrder == ProfileSortOrder_Alphabetical)
 			{
 				PROFILEMAN->MoveProfileSorted(
@@ -262,11 +262,11 @@ void ScreenOptionsManageProfiles::HandleScreenMessage( const ScreenMessage SM )
 		{
 			// Select the profile nearest to the one that was just deleted.
 			int iIndex = -1;
-			std::vector<RString>::const_iterator iter = find( m_vsLocalProfileID.begin(), m_vsLocalProfileID.end(), GAMESTATE->m_sEditLocalProfileID.Get() );
+			std::vector<RString>::const_iterator iter = find( m_vsLocalProfileID.begin(), m_vsLocalProfileID.end(), GAMESTATE->edit_local_profile_id_.Get() );
 			if( iter != m_vsLocalProfileID.end() )
 				iIndex = iter - m_vsLocalProfileID.begin();
 			CLAMP( iIndex, 0, m_vsLocalProfileID.size()-1 );
-			GAMESTATE->m_sEditLocalProfileID.Set( m_vsLocalProfileID[iIndex] );
+			GAMESTATE->edit_local_profile_id_.Set( m_vsLocalProfileID[iIndex] );
 
 			PROFILEMAN->DeleteLocalProfile( GetLocalProfileIDWithFocus() );
 
@@ -286,7 +286,7 @@ void ScreenOptionsManageProfiles::HandleScreenMessage( const ScreenMessage SM )
 	{
 		if( !ScreenMiniMenu::s_bCancelled )
 		{
-			Profile *pProfile = PROFILEMAN->GetLocalProfile( GAMESTATE->m_sEditLocalProfileID );
+			Profile *pProfile = PROFILEMAN->GetLocalProfile( GAMESTATE->edit_local_profile_id_ );
 			ASSERT( pProfile != nullptr );
 
 			switch( ScreenMiniMenu::s_iLastRowCode )
@@ -308,7 +308,7 @@ void ScreenOptionsManageProfiles::HandleScreenMessage( const ScreenMessage SM )
 				break;
 			case ProfileAction_Edit:
 				{
-					GAMESTATE->m_sEditLocalProfileID.Set( GetLocalProfileIDWithFocus() );
+					GAMESTATE->edit_local_profile_id_.Set( GetLocalProfileIDWithFocus() );
 
 					ScreenOptions::BeginFadingOut();
 				}
@@ -393,7 +393,7 @@ void ScreenOptionsManageProfiles::HandleScreenMessage( const ScreenMessage SM )
 
 void ScreenOptionsManageProfiles::AfterChangeRow( PlayerNumber pn )
 {
-	GAMESTATE->m_sEditLocalProfileID.Set( GetLocalProfileIDWithFocus() );
+	GAMESTATE->edit_local_profile_id_.Set( GetLocalProfileIDWithFocus() );
 
 	ScreenOptions::AfterChangeRow( pn );
 }

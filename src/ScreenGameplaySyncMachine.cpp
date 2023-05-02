@@ -18,8 +18,8 @@ REGISTER_SCREEN_CLASS( ScreenGameplaySyncMachine );
 
 void ScreenGameplaySyncMachine::Init()
 {
-	GAMESTATE->m_PlayMode.Set( PLAY_MODE_REGULAR );
-	GAMESTATE->SetCurrentStyle( GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->m_pCurGame), PLAYER_INVALID );
+	GAMESTATE->play_mode_.Set( PLAY_MODE_REGULAR );
+	GAMESTATE->SetCurrentStyle( GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->cur_game_), PLAYER_INVALID );
 	AdjustSync::ResetOriginalSyncData();
 
 	RString sFile = THEME->GetPathO("ScreenGameplaySyncMachine","music");
@@ -34,23 +34,23 @@ void ScreenGameplaySyncMachine::Init()
 	m_Song.SetSongDir( Dirname(sFile) );
 	m_Song.TidyUpData();
 
-	GAMESTATE->m_pCurSong.Set( &m_Song );
+	GAMESTATE->cur_song_.Set( &m_Song );
 	// Needs proper StepsType -freem
 	std::vector<Steps*> vpSteps;
 	SongUtil::GetPlayableSteps( &m_Song, vpSteps );
 	ASSERT_M(vpSteps.size() > 0, "No playable steps for ScreenGameplaySyncMachine");
 	Steps *pSteps = vpSteps[0];
-	GAMESTATE->m_pCurSteps[GAMESTATE->GetFirstHumanPlayer()].Set( pSteps );
+	GAMESTATE->cur_steps_[GAMESTATE->GetFirstHumanPlayer()].Set( pSteps );
 
 	GamePreferences::m_AutoPlay.Set( PC_HUMAN );
 
 	ScreenGameplayNormal::Init();
 
-	SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Stage, m_AutosyncType, AutosyncType_Machine );
+	SO_GROUP_ASSIGN( GAMESTATE->song_options_, ModsLevel_Stage, m_AutosyncType, AutosyncType_Machine );
 
 	ClearMessageQueue();	// remove all of the messages set in ScreenGameplay that animate "ready", "here we go", etc.
 
-	GAMESTATE->m_bGameplayLeadIn.Set( false );
+	GAMESTATE->gameplay_lead_in_.Set( false );
 
 	m_DancingState = STATE_DANCING;
 
@@ -97,11 +97,11 @@ void ScreenGameplaySyncMachine::HandleScreenMessage( const ScreenMessage SM )
 	{
 		FOREACH_PlayerNumber( pn )
 		{
-			GAMESTATE->m_pCurSteps[pn].Set( nullptr );
+			GAMESTATE->cur_steps_[pn].Set( nullptr );
 		}
-		GAMESTATE->m_PlayMode.Set( PlayMode_Invalid );
+		GAMESTATE->play_mode_.Set( PlayMode_Invalid );
 		GAMESTATE->SetCurrentStyle( nullptr, PLAYER_INVALID );
-		GAMESTATE->m_pCurSong.Set( nullptr );
+		GAMESTATE->cur_song_.Set( nullptr );
 	}
 }
 

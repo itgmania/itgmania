@@ -190,25 +190,25 @@ void EditMenu::RefreshAll() {
   OnRowValueChanged((EditMenuRow)0);
 
   // Select the current song if any
-  if (GAMESTATE->m_pCurSong) {
+  if (GAMESTATE->cur_song_) {
     for (unsigned i = 0; i < m_sGroups.size(); i++) {
-      if (GAMESTATE->m_pCurSong->m_sGroupName == m_sGroups[i]) {
+      if (GAMESTATE->cur_song_->m_sGroupName == m_sGroups[i]) {
         m_iSelection[ROW_GROUP] = i;
       }
     }
     OnRowValueChanged(ROW_GROUP);
 
     for (unsigned i = 0; i < m_pSongs.size(); i++) {
-      if (GAMESTATE->m_pCurSong == m_pSongs[i]) {
+      if (GAMESTATE->cur_song_ == m_pSongs[i]) {
         m_iSelection[ROW_SONG] = i;
       }
     }
     OnRowValueChanged(ROW_SONG);
 
     // Select the current StepsType and difficulty if any
-    if (GAMESTATE->m_pCurSteps[PLAYER_1]) {
+    if (GAMESTATE->cur_steps_[PLAYER_1]) {
       for (unsigned i = 0; i < m_StepsTypes.size(); i++) {
-        if (m_StepsTypes[i] == GAMESTATE->m_pCurSteps[PLAYER_1]->m_StepsType) {
+        if (m_StepsTypes[i] == GAMESTATE->cur_steps_[PLAYER_1]->m_StepsType) {
           m_iSelection[ROW_STEPS_TYPE] = i;
           OnRowValueChanged(ROW_STEPS_TYPE);
         }
@@ -216,7 +216,7 @@ void EditMenu::RefreshAll() {
 
       for (unsigned i = 0; i < m_vpSteps.size(); i++) {
         const Steps* pSteps = m_vpSteps[i].pSteps;
-        if (pSteps == GAMESTATE->m_pCurSteps[PLAYER_1]) {
+        if (pSteps == GAMESTATE->cur_steps_[PLAYER_1]) {
           m_iSelection[ROW_STEPS] = i;
           OnRowValueChanged(ROW_STEPS);
         }

@@ -151,7 +151,7 @@ static HighScore FillInHighScore( const PlayerStageStats &pss, const PlayerState
 		RString sPlayerOptions = ps.m_PlayerOptions.GetStage().GetString();
 		if( !sPlayerOptions.empty() )
 			asModifiers.push_back( sPlayerOptions );
-		RString sSongOptions = GAMESTATE->m_SongOptions.GetStage().GetString();
+		RString sSongOptions = GAMESTATE->song_options_.GetStage().GetString();
 		if( !sSongOptions.empty() )
 			asModifiers.push_back( sSongOptions );
 	}
@@ -174,7 +174,7 @@ static HighScore FillInHighScore( const PlayerStageStats &pss, const PlayerState
 
 void StageStats::FinalizeScores( bool bSummary )
 {
-	switch( GAMESTATE->m_PlayMode )
+	switch( GAMESTATE->play_mode_ )
 	{
 		case PLAY_MODE_BATTLE:
 		case PLAY_MODE_RAVE:
@@ -192,7 +192,7 @@ void StageStats::FinalizeScores( bool bSummary )
 	}
 
 	// don't save scores if the player chose not to
-	if( !GAMESTATE->m_SongOptions.GetCurrent().m_bSaveScore )
+	if( !GAMESTATE->song_options_.GetCurrent().m_bSaveScore )
 		return;
 
 	LOG->Trace( "saving stats and high scores" );
@@ -204,12 +204,12 @@ void StageStats::FinalizeScores( bool bSummary )
 	FOREACH_HumanPlayer( p )
 	{
 		RString sPlayerGuid = PROFILEMAN->IsPersistentProfile(p) ? PROFILEMAN->GetProfile(p)->m_sGuid : RString("");
-		m_player[p].m_HighScore = FillInHighScore( m_player[p], *GAMESTATE->m_pPlayerState[p], RANKING_TO_FILL_IN_MARKER[p], sPlayerGuid );
+		m_player[p].m_HighScore = FillInHighScore( m_player[p], *GAMESTATE->player_state_[p], RANKING_TO_FILL_IN_MARKER[p], sPlayerGuid );
 	}
 	FOREACH_EnabledMultiPlayer( mp )
 	{
 		RString sPlayerGuid = "00000000-0000-0000-0000-000000000000";	// FIXME
-		m_multiPlayer[mp].m_HighScore = FillInHighScore( m_multiPlayer[mp], *GAMESTATE->m_pMultiPlayerState[mp], "", sPlayerGuid );
+		m_multiPlayer[mp].m_HighScore = FillInHighScore( m_multiPlayer[mp], *GAMESTATE->multiplayer_state_[mp], "", sPlayerGuid );
 	}
 
 	FOREACH_HumanPlayer( p )
@@ -217,8 +217,8 @@ void StageStats::FinalizeScores( bool bSummary )
 		const HighScore &hs = m_player[p].m_HighScore;
 		StepsType st = GAMESTATE->GetCurrentStyle(p)->m_StepsType;
 
-		const Song* pSong = GAMESTATE->m_pCurSong;
-		const Steps* pSteps = GAMESTATE->m_pCurSteps[p];
+		const Song* pSong = GAMESTATE->cur_song_;
+		const Steps* pSteps = GAMESTATE->cur_steps_[p];
 
 		// Don't save DQ'd scores
 		if( hs.GetDisqualified() )
@@ -245,9 +245,9 @@ void StageStats::FinalizeScores( bool bSummary )
 		else if( GAMESTATE->IsCourseMode() )
 		{
 			// Save this stage to recent scores
-			Course* pCourse = GAMESTATE->m_pCurCourse;
+			Course* pCourse = GAMESTATE->cur_course_;
 			ASSERT( pCourse != nullptr );
-			Trail* pTrail = GAMESTATE->m_pCurTrail[p];
+			Trail* pTrail = GAMESTATE->cur_trail_[p];
 
 			PROFILEMAN->AddCourseScore( pCourse, pTrail, p, hs, m_player[p].m_iPersonalHighScoreIndex, m_player[p].m_iMachineHighScoreIndex );
 		}
@@ -278,16 +278,16 @@ void StageStats::FinalizeScores( bool bSummary )
 		}
 		else if( GAMESTATE->IsCourseMode() )
 		{
-			Course* pCourse = GAMESTATE->m_pCurCourse;
+			Course* pCourse = GAMESTATE->cur_course_;
 			ASSERT( pCourse != nullptr );
-			Trail *pTrail = GAMESTATE->m_pCurTrail[p];
+			Trail *pTrail = GAMESTATE->cur_trail_[p];
 			ASSERT( pTrail != nullptr );
 			pHSL = &pProfile->GetCourseHighScoreList( pCourse, pTrail );
 		}
 		else
 		{
-			Song* pSong = GAMESTATE->m_pCurSong;
-			Steps* pSteps = GAMESTATE->m_pCurSteps[p];
+			Song* pSong = GAMESTATE->cur_song_;
+			Steps* pSteps = GAMESTATE->cur_steps_[p];
 			pHSL = &pProfile->GetStepsHighScoreList( pSong, pSteps );
 		}
 
@@ -305,8 +305,8 @@ bool StageStats::PlayerHasHighScore( PlayerNumber pn ) const
 {
 	const Song *pSong = m_vpPlayedSongs[0];
 	const Steps *pSteps = m_player[pn].m_vpPossibleSteps[0];
-	const Course *pCourse = GAMESTATE->m_pCurCourse;
-	const Trail *pTrail = GAMESTATE->m_pCurTrail[pn];
+	const Course *pCourse = GAMESTATE->cur_course_;
+	const Trail *pTrail = GAMESTATE->cur_trail_[pn];
 
 	// Don't show high scores for tutorial songs.
 	if( pSong->IsTutorial() == Song::SHOW_NEVER )

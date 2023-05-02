@@ -126,10 +126,10 @@ void PaneDisplay::LoadFromNode( const XNode *pNode )
 
 void PaneDisplay::GetPaneTextAndLevel( PaneCategory c, RString & sTextOut, float & fLevelOut )
 {
-	const Song *pSong = GAMESTATE->m_pCurSong;
-	const Steps *pSteps = GAMESTATE->m_pCurSteps[m_PlayerNumber];
-	const Course *pCourse = GAMESTATE->m_pCurCourse;
-	const Trail *pTrail = GAMESTATE->m_pCurTrail[m_PlayerNumber];
+	const Song *pSong = GAMESTATE->cur_song_;
+	const Steps *pSteps = GAMESTATE->cur_steps_[m_PlayerNumber];
+	const Course *pCourse = GAMESTATE->cur_course_;
+	const Trail *pTrail = GAMESTATE->cur_trail_[m_PlayerNumber];
 	const Profile *pProfile = PROFILEMAN->IsPersistentProfile(m_PlayerNumber) ? PROFILEMAN->GetProfile(m_PlayerNumber) : nullptr;
 	bool bIsPlayerEdit = pSteps && pSteps->IsAPlayerEdit();
 

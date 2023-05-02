@@ -107,7 +107,7 @@ DancingCharacters::DancingCharacters()
       continue;
     }
 
-    Character* pChar = GAMESTATE->m_pCurCharacters[p];
+    Character* pChar = GAMESTATE->cur_characters_[p];
     if (!pChar) {
       continue;
     }
@@ -181,7 +181,7 @@ DancingCharacters::DancingCharacters()
       m_pCharacter[p]->SetX(MODEL_X_ONE_PLAYER);
     }
 
-    switch (GAMESTATE->m_PlayMode) {
+    switch (GAMESTATE->play_mode_) {
       case PLAY_MODE_BATTLE:
       case PLAY_MODE_RAVE:
         m_pCharacter[p]->SetRotationY(MODEL_ROTATIONY_TWO_PLAYERS[p]);
@@ -218,8 +218,8 @@ void DancingCharacters::LoadNextSong() {
   m_fThisCameraStartBeat = 0;
   m_fThisCameraEndBeat = 0;
 
-  ASSERT(GAMESTATE->m_pCurSong != nullptr);
-  m_fThisCameraEndBeat = GAMESTATE->m_pCurSong->GetFirstBeat();
+  ASSERT(GAMESTATE->cur_song_ != nullptr);
+  m_fThisCameraEndBeat = GAMESTATE->cur_song_->GetFirstBeat();
 
   FOREACH_PlayerNumber(p) if (GAMESTATE->IsPlayerEnabled(p)) m_pCharacter[p]
       ->PlayAnimation("rest");
@@ -228,19 +228,19 @@ void DancingCharacters::LoadNextSong() {
 int Neg1OrPos1() { return RandomInt(2) ? -1 : +1; }
 
 void DancingCharacters::Update(float fDelta) {
-  if (GAMESTATE->m_Position.m_bFreeze || GAMESTATE->m_Position.m_bDelay) {
+  if (GAMESTATE->position_.m_bFreeze || GAMESTATE->position_.m_bDelay) {
     // Spin the camera Matrix-style.
     m_CameraPanYStart += fDelta * 40;
     m_CameraPanYEnd += fDelta * 40;
   } else {
     // Make the characters move.
-    float fBPM = GAMESTATE->m_Position.m_fCurBPS * 60;
+    float fBPM = GAMESTATE->position_.m_fCurBPS * 60;
     float fUpdateScale = SCALE(fBPM, 60.f, 300.f, 0.75f, 1.5f);
     CLAMP(fUpdateScale, 0.75f, 1.5f);
 
     // It's OK for the animation to go slower than natural when we're
     // at a very low music rate.
-    fUpdateScale *= GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+    fUpdateScale *= GAMESTATE->song_options_.GetCurrent().m_fMusicRate;
 
     FOREACH_PlayerNumber(p) {
       if (GAMESTATE->IsPlayerEnabled(p)) {
@@ -250,23 +250,23 @@ void DancingCharacters::Update(float fDelta) {
   }
 
   static bool bWasGameplayStarting = false;
-  bool bGameplayStarting = GAMESTATE->m_bGameplayLeadIn;
+  bool bGameplayStarting = GAMESTATE->gameplay_lead_in_;
   if (!bWasGameplayStarting && bGameplayStarting) {
     FOREACH_PlayerNumber(p) if (GAMESTATE->IsPlayerEnabled(p)) m_pCharacter[p]
         ->PlayAnimation("warmup");
   }
   bWasGameplayStarting = bGameplayStarting;
 
-  static float fLastBeat = GAMESTATE->m_Position.m_fSongBeat;
-  float firstBeat = GAMESTATE->m_pCurSong->GetFirstBeat();
-  float fThisBeat = GAMESTATE->m_Position.m_fSongBeat;
+  static float fLastBeat = GAMESTATE->position_.m_fSongBeat;
+  float firstBeat = GAMESTATE->cur_song_->GetFirstBeat();
+  float fThisBeat = GAMESTATE->position_.m_fSongBeat;
   if (fLastBeat < firstBeat && fThisBeat >= firstBeat) {
     FOREACH_PlayerNumber(p) m_pCharacter[p]->PlayAnimation("dance");
   }
   fLastBeat = fThisBeat;
 
   // Time for a new sweep?
-  if (GAMESTATE->m_Position.m_fSongBeat > m_fThisCameraEndBeat) {
+  if (GAMESTATE->position_.m_fSongBeat > m_fThisCameraEndBeat) {
     if (RandomInt(6) >= 4) {
       // Sweeping camera.
       m_CameraDistance = CAMERA_SWEEP_DISTANCE +
@@ -299,7 +299,7 @@ void DancingCharacters::Update(float fDelta) {
       m_fLookAtHeight = CAMERA_STILL_LOOK_AT_HEIGHT;
     }
 
-    int iCurBeat = (int)GAMESTATE->m_Position.m_fSongBeat;
+    int iCurBeat = (int)GAMESTATE->position_.m_fSongBeat;
     // Need to convert it to a int, otherwise it complains.
     int NewBeatToSet = (int)AMM_BEATS_TIL_NEXTCAMERA;
     iCurBeat -= iCurBeat % NewBeatToSet;
@@ -324,7 +324,7 @@ void DancingCharacters::DrawPrimitives() {
     fPercentIntoSweep = 0;
   } else {
     fPercentIntoSweep = SCALE(
-        GAMESTATE->m_Position.m_fSongBeat, m_fThisCameraStartBeat,
+        GAMESTATE->position_.m_fSongBeat, m_fThisCameraStartBeat,
         m_fThisCameraEndBeat, 0.f, 1.f);
   }
   float fCameraPanY =

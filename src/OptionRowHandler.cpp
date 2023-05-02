@@ -435,13 +435,13 @@ class OptionRowHandlerListSteps : public OptionRowHandlerList
 		// TODO:  Fix this OptionRow to fetch steps for all styles available.
 		// This is broken in kickbox game mode because kickbox uses separated
 		// styles. -Kyz
-		else if(GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber()) && GAMESTATE->IsCourseMode() && GAMESTATE->m_pCurCourse)   // playing a course
+		else if(GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber()) && GAMESTATE->IsCourseMode() && GAMESTATE->cur_course_)   // playing a course
 		{
 			m_Def.m_bOneChoiceForAllPlayers = (bool)PREFSMAN->m_bLockCourseDifficulties;
 			m_Def.m_layoutType = StringToLayoutType( STEPS_ROW_LAYOUT_TYPE );
 
 			std::vector<Trail*> vTrails;
-			GAMESTATE->m_pCurCourse->GetTrails( vTrails, GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->m_StepsType );
+			GAMESTATE->cur_course_->GetTrails( vTrails, GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->m_StepsType );
 			for( unsigned i=0; i<vTrails.size(); i++ )
 			{
 				Trail* pTrail = vTrails[i];
@@ -454,12 +454,12 @@ class OptionRowHandlerListSteps : public OptionRowHandlerList
 				m_aListEntries.push_back( mc );
 			}
 		}
-		else if(GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber()) && GAMESTATE->m_pCurSong) // playing a song
+		else if(GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber()) && GAMESTATE->cur_song_) // playing a song
 		{
 			m_Def.m_layoutType = StringToLayoutType( STEPS_ROW_LAYOUT_TYPE );
 
 			std::vector<Steps*> vpSteps;
-			Song *pSong = GAMESTATE->m_pCurSong;
+			Song *pSong = GAMESTATE->cur_song_;
 			SongUtil::GetSteps( pSong, vpSteps, GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->m_StepsType );
 			StepsUtil::RemoveLockedSteps( pSong, vpSteps );
 			StepsUtil::SortNotesArrayByDifficulty( vpSteps );
@@ -541,17 +541,17 @@ public:
 
 		if( sParam == "EditSteps" )
 		{
-			m_ppStepsToFill = &GAMESTATE->m_pCurSteps[0];
-			m_pDifficultyToFill = &GAMESTATE->m_PreferredDifficulty[0];
-			m_pst = &GAMESTATE->m_stEdit;
+			m_ppStepsToFill = &GAMESTATE->cur_steps_[0];
+			m_pDifficultyToFill = &GAMESTATE->preferred_difficulty_[0];
+			m_pst = &GAMESTATE->steps_type_edit_;
 			m_vsReloadRowMessages.push_back( MessageIDToString(Message_EditStepsTypeChanged) );
 		}
 		else if( sParam == "EditSourceSteps" )
 		{
-			m_ppStepsToFill = &GAMESTATE->m_pEditSourceSteps;
-			m_pst = &GAMESTATE->m_stEditSource;
+			m_ppStepsToFill = &GAMESTATE->edit_source_steps_;
+			m_pst = &GAMESTATE->edit_source_steps_type_;
 			m_vsReloadRowMessages.push_back( MessageIDToString(Message_EditSourceStepsTypeChanged) );
-			if( GAMESTATE->m_pCurSteps[0].Get() != nullptr )
+			if( GAMESTATE->cur_steps_[0].Get() != nullptr )
 				m_Def.m_vEnabledForPlayers.clear();	// hide row
 		}
 		else
@@ -569,17 +569,17 @@ public:
 		m_vDifficulties.clear();
 		m_vSteps.clear();
 
-		if( GAMESTATE->m_pCurSong )
+		if( GAMESTATE->cur_song_ )
 		{
 			FOREACH_ENUM( Difficulty, dc )
 			{
 				if( dc == Difficulty_Edit )
 					continue;
 				m_vDifficulties.push_back( dc );
-				Steps* pSteps = SongUtil::GetStepsByDifficulty( GAMESTATE->m_pCurSong, *m_pst, dc );
+				Steps* pSteps = SongUtil::GetStepsByDifficulty( GAMESTATE->cur_song_, *m_pst, dc );
 				m_vSteps.push_back( pSteps );
 			}
-			SongUtil::GetSteps( GAMESTATE->m_pCurSong, m_vSteps, *m_pst, Difficulty_Edit );
+			SongUtil::GetSteps( GAMESTATE->cur_song_, m_vSteps, *m_pst, Difficulty_Edit );
 			m_vDifficulties.resize( m_vSteps.size(), Difficulty_Edit );
 
 			if( sParam == "EditSteps" )
@@ -603,7 +603,7 @@ public:
 				}
 				else
 				{
-					s = CustomDifficultyToLocalizedString( GetCustomDifficulty( GAMESTATE->m_stEdit, dc, CourseType_Invalid ) );
+					s = CustomDifficultyToLocalizedString( GetCustomDifficulty( GAMESTATE->steps_type_edit_, dc, CourseType_Invalid ) );
 				}
 				m_Def.m_vsChoices.push_back( s );
 			}
@@ -644,7 +644,7 @@ public:
 				for (std::vector<Difficulty>::const_iterator d = m_vDifficulties.begin(); d != m_vDifficulties.end(); ++d)
 				{
 					unsigned i = d - m_vDifficulties.begin();
-					if( *d == GAMESTATE->m_PreferredDifficulty[p] )
+					if( *d == GAMESTATE->preferred_difficulty_[p] )
 					{
 						vbSelOut[i] = true;
 						matched= true;
@@ -723,7 +723,7 @@ class OptionRowHandlerListStyles: public OptionRowHandlerList
 		m_Def.m_bAllowThemeItems = false;	// we theme the text ourself
 
 		std::vector<const Style*> vStyles;
-		GAMEMAN->GetStylesForGame( GAMESTATE->m_pCurGame, vStyles );
+		GAMEMAN->GetStylesForGame( GAMESTATE->cur_game_, vStyles );
 		ASSERT( vStyles.size() != 0 );
 		for (Style const *s : vStyles)
 		{
@@ -788,7 +788,7 @@ class OptionRowHandlerListDifficulties: public OptionRowHandlerList
 		for (Difficulty const &d : CommonMetrics::DIFFICULTIES_TO_SHOW.GetValue())
 		{
 			// TODO: Is this the best thing we can do here?
-			StepsType st = GAMEMAN->GetHowToPlayStyleForGame( GAMESTATE->m_pCurGame )->m_StepsType;
+			StepsType st = GAMEMAN->GetHowToPlayStyleForGame( GAMESTATE->cur_game_ )->m_StepsType;
 			RString s = CustomDifficultyToLocalizedString( GetCustomDifficulty(st, d, CourseType_Invalid) );
 
 			m_Def.m_vsChoices.push_back( s );
@@ -805,10 +805,10 @@ class OptionRowHandlerListSongsInCurrentSongGroup: public OptionRowHandlerList
 {
 	virtual bool LoadInternal( const Commands & )
 	{
-		const std::vector<Song*> &vpSongs = SONGMAN->GetSongs( GAMESTATE->m_sPreferredSongGroup );
+		const std::vector<Song*> &vpSongs = SONGMAN->GetSongs( GAMESTATE->preferred_song_group_ );
 
-		if( GAMESTATE->m_pCurSong == nullptr )
-			GAMESTATE->m_pCurSong.Set( vpSongs[0] );
+		if( GAMESTATE->cur_song_ == nullptr )
+			GAMESTATE->cur_song_.Set( vpSongs[0] );
 
 		m_Def.m_sName = "SongsInCurrentSongGroup";
 		m_Def.m_bOneChoiceForAllPlayers = true;
@@ -1424,14 +1424,14 @@ public:
 
 		if( sParam == "EditStepsType" )
 		{
-			m_pstToFill = &GAMESTATE->m_stEdit;
+			m_pstToFill = &GAMESTATE->steps_type_edit_;
 		}
 		else if( sParam == "EditSourceStepsType" )
 		{
-			m_pstToFill = &GAMESTATE->m_stEditSource;
+			m_pstToFill = &GAMESTATE->edit_source_steps_type_;
 			m_vsReloadRowMessages.push_back( MessageIDToString(Message_CurrentStepsP1Changed) );
 			m_vsReloadRowMessages.push_back( MessageIDToString(Message_EditStepsTypeChanged) );
-			if( GAMESTATE->m_pCurSteps[0].Get() != nullptr )
+			if( GAMESTATE->cur_steps_[0].Get() != nullptr )
 				m_Def.m_vEnabledForPlayers.clear();	// hide row
 		}
 		else
@@ -1466,9 +1466,9 @@ public:
 		{
 			std::vector<bool> &vbSelOut = vbSelectedOut[p];
 
-			if( GAMESTATE->m_pCurSteps[0] )
+			if( GAMESTATE->cur_steps_[0] )
 			{
-				StepsType st = GAMESTATE->m_pCurSteps[0]->m_StepsType;
+				StepsType st = GAMESTATE->cur_steps_[0]->m_StepsType;
 				std::vector<StepsType>::const_iterator iter = find( m_vStepsTypesToShow.begin(), m_vStepsTypesToShow.end(), st );
 				if( iter != m_vStepsTypesToShow.end() )
 				{

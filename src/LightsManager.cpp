@@ -74,7 +74,7 @@ static void GetUsedGameInputs( std::vector<GameInput> &vGameInputsOut )
 
 	std::set<GameInput> vGIs;
 	std::vector<const Style*> vStyles;
-	GAMEMAN->GetStylesForGame( GAMESTATE->m_pCurGame, vStyles );
+	GAMEMAN->GetStylesForGame( GAMESTATE->cur_game_, vStyles );
 	auto const &value = CommonMetrics::STEPS_TYPES_TO_SHOW.GetValue();
 	for (Style const *style : vStyles)
 	{
@@ -249,7 +249,7 @@ void LightsManager::Update( float fDeltaTime )
 			// if we've crossed a beat boundary, advance the light index
 			{
 				static float fLastBeat;
-				float fLightSongBeat = GAMESTATE->m_Position.m_fLightSongBeat;
+				float fLightSongBeat = GAMESTATE->position_.m_fLightSongBeat;
 
 				if( fracf(fLightSongBeat) < fracf(fLastBeat) )
 				{
@@ -325,7 +325,7 @@ void LightsManager::Update( float fDeltaTime )
 		{
 			FOREACH_ENUM( GameController, gc )
 			{
-				if( GAMESTATE->m_bSideIsJoined[gc] )
+				if( GAMESTATE->side_is_joined_[gc] )
 				{
 					FOREACH_ENUM( GameButton, gb )
 						m_LightsState.m_bGameButtonLights[gc][gb] = true;
@@ -338,14 +338,14 @@ void LightsManager::Update( float fDeltaTime )
 		case LIGHTSMODE_MENU_START_ONLY:
 		case LIGHTSMODE_MENU_START_AND_DIRECTIONS:
 		{
-			float fLightSongBeat = GAMESTATE->m_Position.m_fLightSongBeat;
+			float fLightSongBeat = GAMESTATE->position_.m_fLightSongBeat;
 
 			/* Blink menu lights on the first half of the beat */
 			if( fracf(fLightSongBeat) <= 0.5f )
 			{
 				FOREACH_PlayerNumber( pn )
 				{
-					if( !GAMESTATE->m_bSideIsJoined[pn] )
+					if( !GAMESTATE->side_is_joined_[pn] )
 						continue;
 
 					m_LightsState.m_bGameButtonLights[pn][GAME_BUTTON_START] = true;
@@ -445,11 +445,11 @@ void LightsManager::Update( float fDeltaTime )
 	// If not joined, has enough credits, and not too late to join, then
 	// blink the menu buttons rapidly so they'll press Start
 	{
-		int iBeat = (int)(GAMESTATE->m_Position.m_fLightSongBeat*4);
+		int iBeat = (int)(GAMESTATE->position_.m_fLightSongBeat*4);
 		bool bBlinkOn = (iBeat%2)==0;
 		FOREACH_PlayerNumber( pn )
 		{
-			if( !GAMESTATE->m_bSideIsJoined[pn] && GAMESTATE->PlayersCanJoin() && GAMESTATE->EnoughCreditsToJoin() )
+			if( !GAMESTATE->side_is_joined_[pn] && GAMESTATE->PlayersCanJoin() && GAMESTATE->EnoughCreditsToJoin() )
 				m_LightsState.m_bGameButtonLights[pn][GAME_BUTTON_START] = bBlinkOn;
 		}
 	}

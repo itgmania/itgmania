@@ -203,7 +203,7 @@ bool NoteSkinManager::LoadNoteSkinDataRecursive( const RString &sNoteSkinName_, 
 
 void NoteSkinManager::GetNoteSkinNames( std::vector<RString> &AddTo )
 {
-	GetNoteSkinNames( GAMESTATE->m_pCurGame, AddTo );
+	GetNoteSkinNames( GAMESTATE->cur_game_, AddTo );
 }
 
 void NoteSkinManager::GetNoteSkinNames( const Game* pGame, std::vector<RString> &AddTo )
@@ -226,7 +226,7 @@ bool NoteSkinManager::NoteSkinNameInList(const RString name, std::vector<RString
 bool NoteSkinManager::DoesNoteSkinExist( const RString &sSkinName )
 {
 	std::vector<RString> asSkinNames;
-	GetAllNoteSkinNamesForGame( GAMESTATE->m_pCurGame, asSkinNames );
+	GetAllNoteSkinNamesForGame( GAMESTATE->cur_game_, asSkinNames );
 	return NoteSkinNameInList(sSkinName, asSkinNames);
 }
 
@@ -241,7 +241,7 @@ RString NoteSkinManager::GetDefaultNoteSkinName()
 {
 	RString name= THEME->GetMetric("Common", "DefaultNoteSkinName");
 	std::vector<RString> all_names;
-	GetAllNoteSkinNamesForGame(GAMESTATE->m_pCurGame, all_names);
+	GetAllNoteSkinNamesForGame(GAMESTATE->cur_game_, all_names);
 	if(all_names.empty())
 	{
 		return "";

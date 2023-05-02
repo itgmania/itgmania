@@ -90,7 +90,7 @@ void LifeMeterBattery::OnSongEnded()
 	{
 		m_iTrailingLivesLeft = m_iLivesLeft;
 		PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
-		const Course *pCourse = GAMESTATE->m_pCurCourse;
+		const Course *pCourse = GAMESTATE->cur_course_;
 
 		if( pCourse && pCourse->m_vEntries[GAMESTATE->GetCourseSongIndex()].gain_lives_ > -1 )
 			m_iLivesLeft += pCourse->m_vEntries[GAMESTATE->GetCourseSongIndex()].gain_lives_;

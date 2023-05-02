@@ -69,7 +69,7 @@ void ScreenSyncOverlay::UpdateText()
 			FAIL_M(ssprintf("Invalid PlayerController: %i", pc));
 	}
 
-	AutosyncType type = GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType;
+	AutosyncType type = GAMESTATE->song_options_.GetCurrent().m_AutosyncType;
 	switch( type )
 	{
 	case AutosyncType_Off:							break;
@@ -80,7 +80,7 @@ void ScreenSyncOverlay::UpdateText()
 		FAIL_M(ssprintf("Invalid autosync type: %i", type));
 	}
 
-	if( GAMESTATE->m_pCurSong != nullptr  &&  !GAMESTATE->IsCourseMode() )	// sync controls available
+	if( GAMESTATE->cur_song_ != nullptr  &&  !GAMESTATE->IsCourseMode() )	// sync controls available
 	{
 		AdjustSync::GetSyncChangeTextGlobal( vs );
 		AdjustSync::GetSyncChangeTextSong( vs );
@@ -92,7 +92,7 @@ void ScreenSyncOverlay::UpdateText()
 
 
 	// Update SyncInfo
-	bool visible= GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType != AutosyncType_Off;
+	bool visible= GAMESTATE->song_options_.GetCurrent().m_AutosyncType != AutosyncType_Off;
 	Message set_adjustments("SetAdjustments");
 	set_adjustments.SetParam("visible", visible);
 	if(visible)
@@ -175,9 +175,9 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 	{
 		FOREACH_EnabledPlayer(pn)
 		{
-			if(GAMESTATE->m_pCurSteps[pn])
+			if(GAMESTATE->cur_steps_[pn])
 			{
-				GAMESTATE->m_pCurSteps[pn]->GetTimingData()->ReleaseLookup();
+				GAMESTATE->cur_steps_[pn]->GetTimingData()->ReleaseLookup();
 			}
 		}
 	}
@@ -211,12 +211,12 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 				}
 				default: break;
 			}
-			if( GAMESTATE->m_pCurSong != nullptr )
+			if( GAMESTATE->cur_song_ != nullptr )
 			{
-				TimingData &sTiming = GAMESTATE->m_pCurSong->m_SongTiming;
-				BPMSegment * seg = sTiming.GetBPMSegmentAtBeat( GAMESTATE->m_Position.m_fSongBeat );
+				TimingData &sTiming = GAMESTATE->cur_song_->m_SongTiming;
+				BPMSegment * seg = sTiming.GetBPMSegmentAtBeat( GAMESTATE->position_.m_fSongBeat );
 				seg->SetBPS( seg->GetBPS() + fDelta );
-				const std::vector<Steps*>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
+				const std::vector<Steps*>& vpSteps = GAMESTATE->cur_song_->GetAllSteps();
 				for (Steps *s : vpSteps)
 				{
 					TimingData &pTiming = s->m_Timing;
@@ -224,7 +224,7 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 					// which has already been updated.
 					if( pTiming.empty() )
 						continue;
-					float second = sTiming.GetElapsedTimeFromBeat(GAMESTATE->m_Position.m_fSongBeat);
+					float second = sTiming.GetElapsedTimeFromBeat(GAMESTATE->position_.m_fSongBeat);
 					seg = pTiming.GetBPMSegmentAtBeat(pTiming.GetBeatFromElapsedTime(second));
 					seg->SetBPS( seg->GetBPS() + fDelta );
 				}
@@ -263,10 +263,10 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 
 				case ChangeSongOffset:
 				{
-					if( GAMESTATE->m_pCurSong != nullptr )
+					if( GAMESTATE->cur_song_ != nullptr )
 					{
-						GAMESTATE->m_pCurSong->m_SongTiming.m_fBeat0OffsetInSeconds += fDelta;
-						const std::vector<Steps*>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
+						GAMESTATE->cur_song_->m_SongTiming.m_fBeat0OffsetInSeconds += fDelta;
+						const std::vector<Steps*>& vpSteps = GAMESTATE->cur_song_->GetAllSteps();
 						for (Steps *s : vpSteps)
 						{
 							// Empty means it inherits song timing,

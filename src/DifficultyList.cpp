@@ -98,12 +98,12 @@ int StepsDisplayList::GetCurrentRowIndex(PlayerNumber pn) const {
   for (unsigned i = 0; i < rows_.size(); ++i) {
     const Row& row = rows_[i];
 
-    if (GAMESTATE->m_pCurSteps[pn] == nullptr) {
+    if (GAMESTATE->cur_steps_[pn] == nullptr) {
       if (row.difficulty == ClosestDifficulty) {
         return i;
       }
     } else {
-      if (GAMESTATE->m_pCurSteps[pn].Get() == row.steps) {
+      if (GAMESTATE->cur_steps_[pn].Get() == row.steps) {
         return i;
       }
     }
@@ -256,7 +256,7 @@ void StepsDisplayList::PositionItems() {
 }
 
 void StepsDisplayList::SetFromGameState() {
-  const Song* song = GAMESTATE->m_pCurSong;
+  const Song* song = GAMESTATE->cur_song_;
   unsigned i = 0;
 
   if (song == nullptr) {

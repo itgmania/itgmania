@@ -259,7 +259,7 @@ float ScreenRanking::SetPage( const PageToShow &pts )
 				{
 					hs = hsl.vHighScores[l];
 					RString *psName = hsl.vHighScores[l].GetNameMutable();
-					bRecentHighScore = find( GAMESTATE->m_vpsNamesThatWereFilled.begin(), GAMESTATE->m_vpsNamesThatWereFilled.end(), psName ) != GAMESTATE->m_vpsNamesThatWereFilled.end();
+					bRecentHighScore = find( GAMESTATE->names_that_were_filled_.begin(), GAMESTATE->names_that_were_filled_.end(), psName ) != GAMESTATE->names_that_were_filled_.end();
 				}
 				else
 				{
@@ -299,7 +299,7 @@ float ScreenRanking::SetPage( const PageToShow &pts )
 				{
 					hs = hsl.vHighScores[l];
 					const RString *psName = hsl.vHighScores[l].GetNameMutable();
-					bRecentHighScore = find( GAMESTATE->m_vpsNamesThatWereFilled.begin(), GAMESTATE->m_vpsNamesThatWereFilled.end(), psName ) != GAMESTATE->m_vpsNamesThatWereFilled.end();
+					bRecentHighScore = find( GAMESTATE->names_that_were_filled_.begin(), GAMESTATE->names_that_were_filled_.end(), psName ) != GAMESTATE->names_that_were_filled_.end();
 				}
 				else
 				{

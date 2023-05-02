@@ -362,7 +362,7 @@ void PlayerStageStats::ResetScoreForLesson()
 void PlayerStageStats::SetLifeRecordAt( float fLife, float fStepsSecond )
 {
 	// Don't save life stats in endless courses, or could run OOM in a few hours.
-	if( GAMESTATE->m_pCurCourse && GAMESTATE->m_pCurCourse->IsEndless() )
+	if( GAMESTATE->cur_course_ && GAMESTATE->cur_course_->IsEndless() )
 		return;
 
 	if( fStepsSecond < 0 )
@@ -482,7 +482,7 @@ float PlayerStageStats::GetCurrentLife() const
 void PlayerStageStats::UpdateComboList( float fSecond, bool bRollover )
 {
 	// Don't save combo stats in endless courses, or could run OOM in a few hours.
-	if( GAMESTATE->m_pCurCourse && GAMESTATE->m_pCurCourse->IsEndless() )
+	if( GAMESTATE->cur_course_ && GAMESTATE->cur_course_->IsEndless() )
 		return;
 
 	if( fSecond < 0 )
@@ -646,7 +646,7 @@ void PlayerStageStats::CalcAwards( PlayerNumber p, bool bGaveUp, bool bUsedAutop
 	if( bGaveUp || bUsedAutoplay )
 		return;
 
-	std::deque<StageAward> &vPdas = GAMESTATE->m_vLastStageAwards[p];
+	std::deque<StageAward> &vPdas = GAMESTATE->last_stage_awards_[p];
 
 	//LOG->Trace( "per difficulty awards" );
 
@@ -700,11 +700,11 @@ void PlayerStageStats::CalcAwards( PlayerNumber p, bool bGaveUp, bool bUsedAutop
 		bool bCrossedLevel = iComboAtStartOfStage < iLevel && iPeakCombo >= iLevel;
 		//LOG->Trace( "pca = %d, iLevel = %d, bCrossedLevel = %d", pca, iLevel, bCrossedLevel );
 		if( bCrossedLevel )
-			GAMESTATE->m_vLastPeakComboAwards[p].push_back( pca );
+			GAMESTATE->last_peak_combo_awards_[p].push_back( pca );
 	}
 
-	if( !GAMESTATE->m_vLastPeakComboAwards[p].empty() )
-		m_PeakComboAward = GAMESTATE->m_vLastPeakComboAwards[p].back();
+	if( !GAMESTATE->last_peak_combo_awards_[p].empty() )
+		m_PeakComboAward = GAMESTATE->last_peak_combo_awards_[p].back();
 	else
 		m_PeakComboAward = PeakComboAward_Invalid;
 

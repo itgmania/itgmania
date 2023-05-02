@@ -136,7 +136,7 @@ void SongManager::Reload( bool bAllowFastLoad, LoadingWindow *ld )
 	std::vector<std::tuple<PlayerNumber, RString, bool>> rejoinPlayers;
 	FOREACH_HumanPlayer(pn)
 	{
-		if (GAMESTATE->m_bSideIsJoined[pn])
+		if (GAMESTATE->side_is_joined_[pn])
 		{
 			if (PROFILEMAN->ProfileWasLoadedFromMemoryCard(pn))
 			{
@@ -1066,7 +1066,7 @@ void SongManager::InitAutogenCourses()
 
 void SongManager::InitRandomAttacks()
 {
-	GAMESTATE->m_RandomAttacks.clear();
+	GAMESTATE->random_attacks_.clear();
 
 	if( !IsAFile(ATTACK_FILE) )
 		LOG->Trace( "File Data/RandomAttacks.txt was not found" );
@@ -1097,7 +1097,7 @@ void SongManager::InitRandomAttacks()
 					continue;
 				}
 
-				GAMESTATE->m_RandomAttacks.push_back( sAttack );
+				GAMESTATE->random_attacks_.push_back( sAttack );
 			}
 		}
 	}
@@ -1325,22 +1325,22 @@ bool CompareNotesPointersForExtra(const Steps *n1, const Steps *n2)
 
 void SongManager::GetExtraStageInfo( bool bExtra2, const Style *sd, Song*& pSongOut, Steps*& pStepsOut )
 {
-	RString sGroup = GAMESTATE->m_sPreferredSongGroup;
+	RString sGroup = GAMESTATE->preferred_song_group_;
 	if( sGroup == GROUP_ALL )
 	{
-		if( GAMESTATE->m_pCurSong == nullptr )
+		if( GAMESTATE->cur_song_ == nullptr )
 		{
 			// This normally shouldn't happen, but it's helpful to permit it for testing.
-			LuaHelpers::ReportScriptErrorFmt( "GetExtraStageInfo() called in GROUP_ALL, but GAMESTATE->m_pCurSong == nullptr" );
-			GAMESTATE->m_pCurSong.Set( GetRandomSong() );
+			LuaHelpers::ReportScriptErrorFmt( "GetExtraStageInfo() called in GROUP_ALL, but GAMESTATE->cur_song_ == nullptr" );
+			GAMESTATE->cur_song_.Set( GetRandomSong() );
 		}
-		sGroup = GAMESTATE->m_pCurSong->m_sGroupName;
+		sGroup = GAMESTATE->cur_song_->m_sGroupName;
 	}
 
 	ASSERT_M( sGroup != "", ssprintf("%p '%s' '%s'",
-		static_cast<void*>(GAMESTATE->m_pCurSong.Get()),
-		GAMESTATE->m_pCurSong? GAMESTATE->m_pCurSong->GetSongDir().c_str():"",
-		GAMESTATE->m_pCurSong? GAMESTATE->m_pCurSong->m_sGroupName.c_str():"") );
+		static_cast<void*>(GAMESTATE->cur_song_.Get()),
+		GAMESTATE->cur_song_? GAMESTATE->cur_song_->GetSongDir().c_str():"",
+		GAMESTATE->cur_song_? GAMESTATE->cur_song_->m_sGroupName.c_str():"") );
 
 	// Check preferred group
 	if( GetExtraStageInfoFromCourse(bExtra2, sGroup, pSongOut, pStepsOut, sd->m_StepsType) )

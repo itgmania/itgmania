@@ -23,10 +23,10 @@ void ScreenNameEntryTraditional::Init()
 {
 	if( PREFSMAN->m_sTestInitialScreen.Get() == m_sName )
 	{
-		GAMESTATE->m_bSideIsJoined[PLAYER_1] = true;
-		GAMESTATE->m_bSideIsJoined[PLAYER_2] = true;
+		GAMESTATE->side_is_joined_[PLAYER_1] = true;
+		GAMESTATE->side_is_joined_[PLAYER_2] = true;
 		GAMESTATE->SetMasterPlayerNumber(PLAYER_1);
-		GAMESTATE->m_PlayMode.Set( PLAY_MODE_REGULAR );
+		GAMESTATE->play_mode_.Set( PLAY_MODE_REGULAR );
 		GAMESTATE->SetCurrentStyle( GAMEMAN->GameAndStringToStyle( GAMEMAN->GetDefaultGame(),"versus"), GAMESTATE->GetMasterPlayerNumber() );
 		for( int z = 0; z < 3; ++z )
 		{
@@ -34,7 +34,7 @@ void ScreenNameEntryTraditional::Init()
 			const std::vector<Song*> &apSongs = SONGMAN->GetAllSongs();
 			ss.m_vpPlayedSongs.push_back( apSongs[rand()%apSongs.size()] );
 			ss.m_vpPossibleSongs = ss.m_vpPlayedSongs;
-			ss.m_playMode = GAMESTATE->m_PlayMode;
+			ss.m_playMode = GAMESTATE->play_mode_;
 			ASSERT( ss.m_vpPlayedSongs[0]->GetAllSteps().size() );
 
 			FOREACH_PlayerNumber( p )
@@ -43,7 +43,7 @@ void ScreenNameEntryTraditional::Init()
 				StepsType st = GAMESTATE->GetCurrentStyle(p)->m_StepsType;
 				Steps *pSteps = ss.m_vpPlayedSongs[0]->GetAllSteps()[0];
 				ss.m_player[p].m_iStepsPlayed = 1;
-				GAMESTATE->m_pCurSteps[p].Set( pSteps );
+				GAMESTATE->cur_steps_[p].Set( pSteps );
 				ss.m_player[p].m_iPossibleDancePoints = 100;
 				ss.m_player[p].m_iActualDancePoints = 100;
 				ss.m_player[p].m_iScore = 100;
@@ -83,7 +83,7 @@ void ScreenNameEntryTraditional::BeginScreen()
 		std::vector<GameState::RankingFeat> aFeats;
 		GAMESTATE->GetRankingFeats( pn, aFeats );
 
-		bool bNoStagesLeft = GAMESTATE->m_iPlayerStageTokens[pn] <= 0;
+		bool bNoStagesLeft = GAMESTATE->player_stage_tokens_[pn] <= 0;
 		m_bEnteringName[pn] = ( aFeats.size() > 0 ||
 				       PROFILEMAN->ProfileFromMemoryCardIsNew(pn) ) && bNoStagesLeft;
 		m_bFinalized[pn] = !m_bEnteringName[pn];

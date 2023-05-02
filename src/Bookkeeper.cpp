@@ -126,7 +126,7 @@ void Bookkeeper::ReadFromDisk() {
   }
 
   LOG->Trace("Number of Coins to Load on boot: %i", num_coins);
-  GAMESTATE->m_iCoins.Set(num_coins);
+  GAMESTATE->coins_.Set(num_coins);
 
   LoadFromNode(&xml);
 }

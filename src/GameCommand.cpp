@@ -80,19 +80,19 @@ bool GameCommand::DescribesCurrentModeForAllPlayers() const {
 }
 
 bool GameCommand::DescribesCurrentMode(PlayerNumber pn) const {
-  if (play_mode_ != PlayMode_Invalid && GAMESTATE->m_PlayMode != play_mode_) {
+  if (play_mode_ != PlayMode_Invalid && GAMESTATE->play_mode_ != play_mode_) {
     return false;
   }
   if (style_ && GAMESTATE->GetCurrentStyle(pn) != style_) {
     return false;
   }
   // HACK: don't compare difficulty_ if steps_ is set. This causes problems in
-  // ScreenSelectOptionsMaster::ImportOptions if m_PreferredDifficulty doesn't
+  // ScreenSelectOptionsMaster::ImportOptions if preferred_difficulty_ doesn't
   // match the difficulty of m_pCurSteps.
   if (steps_ == nullptr && difficulty_ != Difficulty_Invalid) {
     // TODO: Why is this checking for all players?
     FOREACH_HumanPlayer(human) if (
-        GAMESTATE->m_PreferredDifficulty[human] != difficulty_) return false;
+        GAMESTATE->preferred_difficulty_[human] != difficulty_) return false;
   }
 
   if (announcer_ != "" && announcer_ != ANNOUNCER->GetCurAnnouncerName()) {
@@ -101,55 +101,55 @@ bool GameCommand::DescribesCurrentMode(PlayerNumber pn) const {
 
   if (preferred_modifiers_ != "") {
     PlayerOptions player_options =
-        GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetPreferred();
-    SongOptions song_options = GAMESTATE->m_SongOptions.GetPreferred();
+        GAMESTATE->player_state_[pn]->m_PlayerOptions.GetPreferred();
+    SongOptions song_options = GAMESTATE->song_options_.GetPreferred();
     player_options.FromString(preferred_modifiers_);
     song_options.FromString(preferred_modifiers_);
 
     if (player_options !=
-        GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetPreferred()) {
+        GAMESTATE->player_state_[pn]->m_PlayerOptions.GetPreferred()) {
       return false;
     }
-    if (song_options != GAMESTATE->m_SongOptions.GetPreferred()) {
+    if (song_options != GAMESTATE->song_options_.GetPreferred()) {
       return false;
     }
   }
   if (stage_modifiers_ != "") {
     PlayerOptions player_options =
-        GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetStage();
-    SongOptions song_options = GAMESTATE->m_SongOptions.GetStage();
+        GAMESTATE->player_state_[pn]->m_PlayerOptions.GetStage();
+    SongOptions song_options = GAMESTATE->song_options_.GetStage();
     player_options.FromString(stage_modifiers_);
     song_options.FromString(stage_modifiers_);
 
     if (player_options !=
-        GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetStage()) {
+        GAMESTATE->player_state_[pn]->m_PlayerOptions.GetStage()) {
       return false;
     }
-    if (song_options != GAMESTATE->m_SongOptions.GetStage()) {
+    if (song_options != GAMESTATE->song_options_.GetStage()) {
       return false;
     }
   }
 
-  if (song_ && GAMESTATE->m_pCurSong.Get() != song_) {
+  if (song_ && GAMESTATE->cur_song_.Get() != song_) {
     return false;
   }
-  if (steps_ && GAMESTATE->m_pCurSteps[pn].Get() != steps_) {
+  if (steps_ && GAMESTATE->cur_steps_[pn].Get() != steps_) {
     return false;
   }
-  if (character_ && GAMESTATE->m_pCurCharacters[pn] != character_) {
+  if (character_ && GAMESTATE->cur_characters_[pn] != character_) {
     return false;
   }
-  if (course_ && GAMESTATE->m_pCurCourse.Get() != course_) {
+  if (course_ && GAMESTATE->cur_course_.Get() != course_) {
     return false;
   }
-  if (trail_ && GAMESTATE->m_pCurTrail[pn].Get() != trail_) {
+  if (trail_ && GAMESTATE->cur_trail_[pn].Get() != trail_) {
     return false;
   }
-  if (!song_group_.empty() && GAMESTATE->m_sPreferredSongGroup != song_group_) {
+  if (!song_group_.empty() && GAMESTATE->preferred_song_group_ != song_group_) {
     return false;
   }
   if (sort_order_ != SortOrder_Invalid &&
-      GAMESTATE->m_PreferredSortOrder != sort_order_) {
+      GAMESTATE->preferred_sort_order_ != sort_order_) {
     return false;
   }
   if (weight_pounds_ != -1 &&
@@ -215,7 +215,7 @@ void GameCommand::LoadOne(const Command& cmd) {
 
   if (cmd_name == "style") {
     const Style* style =
-        GAMEMAN->GameAndStringToStyle(GAMESTATE->m_pCurGame, cmd_value);
+        GAMEMAN->GameAndStringToStyle(GAMESTATE->cur_game_, cmd_value);
     CHECK_INVALID_VALUE(style_, style, nullptr, style);
   }
   else if (cmd_name == "playmode") {
@@ -286,7 +286,7 @@ void GameCommand::LoadOne(const Command& cmd) {
 
     // This must be processed after "song" and "style" commands.
     if (!is_invalid_) {
-      Song* song = (song_ != nullptr) ? song_ : GAMESTATE->m_pCurSong;
+      Song* song = (song_ != nullptr) ? song_ : GAMESTATE->cur_song_;
       const Style* style =
           style_
               ? style_
@@ -320,7 +320,7 @@ void GameCommand::LoadOne(const Command& cmd) {
     // This must be processed after "course" and "style" commands.
     if (!is_invalid_) {
       Course* course =
-          (course_ != nullptr) ? course_ : GAMESTATE->m_pCurCourse;
+          (course_ != nullptr) ? course_ : GAMESTATE->cur_course_;
       const Style* style =
           style_
               ? style_
@@ -481,7 +481,7 @@ static bool AreStyleAndPlayModeCompatible(const Style* style, PlayMode pm) {
       // and should be okay for pump.. not sure about other game types.
       // Techno Motion scales down versus arrows, though, so allow this.
       if (style->m_iColsPerPlayer >= 6 &&
-          RString(GAMESTATE->m_pCurGame->name) != "techno") {
+          RString(GAMESTATE->cur_game_->name) != "techno") {
         return false;
       }
 
@@ -508,7 +508,7 @@ bool GameCommand::IsPlayable(RString* invalid_reason) const {
   if (style_) {
     int credits;
     if (GAMESTATE->GetCoinMode() == CoinMode_Pay) {
-      credits = GAMESTATE->m_iCoins / PREFSMAN->m_iCoinsPerCredit;
+      credits = GAMESTATE->coins_ / PREFSMAN->m_iCoinsPerCredit;
     } else {
       credits = NUM_PLAYERS;
     }
@@ -549,7 +549,7 @@ bool GameCommand::IsPlayable(RString* invalid_reason) const {
   // and vice versa.
   if (play_mode_ != PlayMode_Invalid || style_ != nullptr) {
     const PlayMode pm =
-        (play_mode_ != PlayMode_Invalid) ? play_mode_ : GAMESTATE->m_PlayMode;
+        (play_mode_ != PlayMode_Invalid) ? play_mode_ : GAMESTATE->play_mode_;
     const Style* style =
         (style_ != nullptr)
             ? style_
@@ -644,10 +644,10 @@ void GameCommand::Apply(const std::vector<PlayerNumber>& pns) const {
 }
 
 void GameCommand::ApplySelf(const std::vector<PlayerNumber>& pns) const {
-  const PlayMode old_play_mode = GAMESTATE->m_PlayMode;
+  const PlayMode old_play_mode = GAMESTATE->play_mode_;
 
   if (play_mode_ != PlayMode_Invalid) {
-    GAMESTATE->m_PlayMode.Set(play_mode_);
+    GAMESTATE->play_mode_.Set(play_mode_);
   }
 
   if (style_ != nullptr) {
@@ -660,15 +660,15 @@ void GameCommand::ApplySelf(const std::vector<PlayerNumber>& pns) const {
       int num_credits_required = GetCreditsRequiredToPlayStyle(style_);
       int num_credits_paid = GetNumCreditsPaid();
       int num_credits_owed = num_credits_required - num_credits_paid;
-      GAMESTATE->m_iCoins.Set(
-          GAMESTATE->m_iCoins - num_credits_owed * PREFSMAN->m_iCoinsPerCredit);
+      GAMESTATE->coins_.Set(
+          GAMESTATE->coins_ - num_credits_owed * PREFSMAN->m_iCoinsPerCredit);
       LOG->Trace(
           "Deducted %i coins, %i remaining",
           num_credits_owed * PREFSMAN->m_iCoinsPerCredit,
-          GAMESTATE->m_iCoins.Get());
+          GAMESTATE->coins_.Get());
 
       // Credit Used, make sure to update CoinsFile
-      BOOKKEEPER->WriteCoinsFile(GAMESTATE->m_iCoins.Get());
+      BOOKKEEPER->WriteCoinsFile(GAMESTATE->coins_.Get());
     }
 
     // If only one side is joined and we picked a style that requires both
@@ -688,7 +688,7 @@ void GameCommand::ApplySelf(const std::vector<PlayerNumber>& pns) const {
   }
   if (difficulty_ != Difficulty_Invalid) {
     for (const PlayerNumber& pn : pns) {
-      GAMESTATE->m_PreferredDifficulty[pn].Set(difficulty_);
+      GAMESTATE->preferred_difficulty_[pn].Set(difficulty_);
     }
   }
   if (announcer_ != "") {
@@ -720,21 +720,21 @@ void GameCommand::ApplySelf(const std::vector<PlayerNumber>& pns) const {
     SCREENMAN->SetNewScreen(screen_);
   }
   if (song_) {
-    GAMESTATE->m_pCurSong.Set(song_);
-    GAMESTATE->m_pPreferredSong = song_;
+    GAMESTATE->cur_song_.Set(song_);
+    GAMESTATE->preferred_song_ = song_;
   }
   if (steps_) {
     for (const PlayerNumber& pn : pns) {
-      GAMESTATE->m_pCurSteps[pn].Set(steps_);
+      GAMESTATE->cur_steps_[pn].Set(steps_);
     }
   }
   if (course_) {
-    GAMESTATE->m_pCurCourse.Set(course_);
-    GAMESTATE->m_pPreferredCourse = course_;
+    GAMESTATE->cur_course_.Set(course_);
+    GAMESTATE->preferred_course_ = course_;
   }
   if (trail_) {
     for (const PlayerNumber& pn : pns) {
-      GAMESTATE->m_pCurTrail[pn].Set(trail_);
+      GAMESTATE->cur_trail_[pn].Set(trail_);
     }
   }
   if (course_difficulty_ != Difficulty_Invalid) {
@@ -744,12 +744,12 @@ void GameCommand::ApplySelf(const std::vector<PlayerNumber>& pns) const {
   }
   if (character_) {
     for (const PlayerNumber& pn : pns) {
-      GAMESTATE->m_pCurCharacters[pn] = character_;
+      GAMESTATE->cur_characters_[pn] = character_;
     }
   }
   for (auto it = set_env_.begin(); it != set_env_.end(); ++it) {
     Lua* L = LUA->Get();
-    GAMESTATE->m_Environment->PushSelf(L);
+    GAMESTATE->environment_->PushSelf(L);
     lua_pushstring(L, it->first);
     lua_pushstring(L, it->second);
     lua_settable(L, -3);
@@ -763,10 +763,10 @@ void GameCommand::ApplySelf(const std::vector<PlayerNumber>& pns) const {
     }
   }
   if (!song_group_.empty()) {
-    GAMESTATE->m_sPreferredSongGroup.Set(song_group_);
+    GAMESTATE->preferred_song_group_.Set(song_group_);
   }
   if (sort_order_ != SortOrder_Invalid) {
-    GAMESTATE->m_PreferredSortOrder = sort_order_;
+    GAMESTATE->preferred_sort_order_ = sort_order_;
   }
   if (sound_path_ != "") {
     SOUND->PlayOnce(THEME->GetPathS("", sound_path_));
@@ -827,23 +827,23 @@ void GameCommand::ApplySelf(const std::vector<PlayerNumber>& pns) const {
     FOREACH_PlayerNumber(p) {
       PlayerOptions player_options;
       GAMESTATE->GetDefaultPlayerOptions(player_options);
-      GAMESTATE->m_pPlayerState[p]->m_PlayerOptions.Assign(
+      GAMESTATE->player_state_[p]->m_PlayerOptions.Assign(
 					ModsLevel_Stage, player_options);
     }
 
     SongOptions song_options;
     GAMESTATE->GetDefaultSongOptions(song_options);
-    GAMESTATE->m_SongOptions.Assign(ModsLevel_Stage, song_options);
+    GAMESTATE->song_options_.Assign(ModsLevel_Stage, song_options);
   }
   // HACK: Set life type to BATTERY just once here so it happens once and
   // we don't override the user's changes if they back out.
   FOREACH_PlayerNumber(pn) {
-    if (GAMESTATE->m_PlayMode == PLAY_MODE_ONI &&
-        GAMESTATE->m_PlayMode != old_play_mode &&
-        GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetStage().m_LifeType ==
+    if (GAMESTATE->play_mode_ == PLAY_MODE_ONI &&
+        GAMESTATE->play_mode_ != old_play_mode &&
+        GAMESTATE->player_state_[pn]->m_PlayerOptions.GetStage().m_LifeType ==
             LifeType_Bar) {
       PO_GROUP_ASSIGN(
-          GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions, ModsLevel_Stage,
+          GAMESTATE->player_state_[pn]->m_PlayerOptions, ModsLevel_Stage,
           m_LifeType, LifeType_Battery);
     }
   }

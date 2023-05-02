@@ -174,7 +174,7 @@ void NoteField::CacheAllUsedNoteSkins()
 
 	FOREACH_EnabledPlayer( pn )
 	{
-		RString sNoteSkinLower = GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetCurrent().m_sNoteSkin;
+		RString sNoteSkinLower = GAMESTATE->player_state_[pn]->m_PlayerOptions.GetCurrent().m_sNoteSkin;
 		NOTESKIN->ValidateNoteSkinName(sNoteSkinLower);
 		sNoteSkinLower.MakeLower();
 		it = m_NoteDisplays.find( sNoteSkinLower );
@@ -263,12 +263,12 @@ void NoteField::ensure_note_displays_have_skin()
 	memset( m_pDisplays, 0, sizeof(m_pDisplays) );
 	FOREACH_EnabledPlayer( pn )
 	{
-		sNoteSkinLower = GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetCurrent().m_sNoteSkin;
+		sNoteSkinLower = GAMESTATE->player_state_[pn]->m_PlayerOptions.GetCurrent().m_sNoteSkin;
 
 		// XXX: Re-setup sNoteSkinLower. Unsure if inserting the skin again is needed.
 		if(sNoteSkinLower.empty())
 		{
-			sNoteSkinLower = GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetPreferred().m_sNoteSkin;
+			sNoteSkinLower = GAMESTATE->player_state_[pn]->m_PlayerOptions.GetPreferred().m_sNoteSkin;
 
 			if(sNoteSkinLower.empty())
 			{
@@ -842,7 +842,7 @@ void NoteField::DrawPrimitives()
 
 	if( GAMESTATE->IsEditing() && pTiming != nullptr )
 	{
-		ASSERT(GAMESTATE->m_pCurSong != nullptr);
+		ASSERT(GAMESTATE->cur_song_ != nullptr);
 
 		const TimingData &timing = *pTiming;
 		const RageColor text_glow= RageColor(1,1,1,RageFastCos(RageTimer::GetTimeSinceStartFast()*2)/2+0.5f);
@@ -883,12 +883,12 @@ void NoteField::DrawPrimitives()
 #undef draw_all_segments
 
 		// Course mods text
-		const Course *pCourse = GAMESTATE->m_pCurCourse;
+		const Course *pCourse = GAMESTATE->cur_course_;
 		if( pCourse )
 		{
-			ASSERT_M( GAMESTATE->m_iEditCourseEntryIndex >= 0  &&  GAMESTATE->m_iEditCourseEntryIndex < (int)pCourse->m_vEntries.size(),
-				ssprintf("%i",GAMESTATE->m_iEditCourseEntryIndex.Get()) );
-			const CourseEntry &ce = pCourse->m_vEntries[GAMESTATE->m_iEditCourseEntryIndex];
+			ASSERT_M( GAMESTATE->edit_course_entry_index_ >= 0  &&  GAMESTATE->edit_course_entry_index_ < (int)pCourse->m_vEntries.size(),
+				ssprintf("%i",GAMESTATE->edit_course_entry_index_.Get()) );
+			const CourseEntry &ce = pCourse->m_vEntries[GAMESTATE->edit_course_entry_index_];
 			for (Attack const &a : ce.attacks_)
 			{
 				float fSecond = a.fStartSecond;
@@ -904,9 +904,9 @@ void NoteField::DrawPrimitives()
 		}
 		else
 		{
-			AttackArray &attacks = GAMESTATE->m_bIsUsingStepTiming ?
-				GAMESTATE->m_pCurSteps[PLAYER_1]->m_Attacks :
-				GAMESTATE->m_pCurSong->m_Attacks;
+			AttackArray &attacks = GAMESTATE->is_using_step_timing_ ?
+				GAMESTATE->cur_steps_[PLAYER_1]->m_Attacks :
+				GAMESTATE->cur_song_->m_Attacks;
 			for (const Attack &a : attacks)
 			{
 				float fBeat = timing.GetBeatFromElapsedTime(a.fStartSecond);
@@ -919,10 +919,10 @@ void NoteField::DrawPrimitives()
 			}
 		}
 
-		if( !GAMESTATE->m_bIsUsingStepTiming )
+		if( !GAMESTATE->is_using_step_timing_ )
 		{
 			// BGChange text
-			EditMode mode = GAMESTATE->m_EditMode;
+			EditMode mode = GAMESTATE->edit_mode_;
 			switch( mode )
 			{
 				case EditMode_Home:
@@ -933,7 +933,7 @@ void NoteField::DrawPrimitives()
 					{
 						std::vector<BackgroundChange>::iterator iter[NUM_BackgroundLayer];
 						FOREACH_BackgroundLayer( j )
-							iter[j] = GAMESTATE->m_pCurSong->GetBackgroundChanges(j).begin();
+							iter[j] = GAMESTATE->cur_song_->GetBackgroundChanges(j).begin();
 
 						for(;;)
 						{
@@ -942,7 +942,7 @@ void NoteField::DrawPrimitives()
 
 							FOREACH_BackgroundLayer( j )
 							{
-								if( iter[j] == GAMESTATE->m_pCurSong->GetBackgroundChanges(j).end() )
+								if( iter[j] == GAMESTATE->cur_song_->GetBackgroundChanges(j).end() )
 								{
 									continue;
 								}
@@ -963,7 +963,7 @@ void NoteField::DrawPrimitives()
 							{
 								FOREACH_BackgroundLayer( j )
 								{
-									ASSERT( iter[j] == GAMESTATE->m_pCurSong->GetBackgroundChanges(j).end() );
+									ASSERT( iter[j] == GAMESTATE->cur_song_->GetBackgroundChanges(j).end() );
 								}
 								break;
 							}
@@ -973,7 +973,7 @@ void NoteField::DrawPrimitives()
 								std::vector<RString> vsBGChanges;
 								for (BackgroundLayer const &bl : viLowestIndex)
 								{
-									ASSERT( iter[bl] != GAMESTATE->m_pCurSong->GetBackgroundChanges(bl).end() );
+									ASSERT( iter[bl] != GAMESTATE->cur_song_->GetBackgroundChanges(bl).end() );
 									const BackgroundChange& change = *iter[bl];
 									RString s = change.GetTextDescription();
 									if( bl!=0 )

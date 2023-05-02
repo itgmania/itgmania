@@ -59,9 +59,9 @@ int AdjustSync::s_iStepsFiltered = 0;
 void AdjustSync::ResetOriginalSyncData() {
   s_vpTimingDataOriginal.clear();
 
-  if (GAMESTATE->m_pCurSong) {
-    s_vpTimingDataOriginal.push_back(GAMESTATE->m_pCurSong->m_SongTiming);
-    const std::vector<Steps *> &vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
+  if (GAMESTATE->cur_song_) {
+    s_vpTimingDataOriginal.push_back(GAMESTATE->cur_song_->m_SongTiming);
+    const std::vector<Steps *> &vpSteps = GAMESTATE->cur_song_->GetAllSteps();
     for (const Steps* s : vpSteps) {
       s_vpTimingDataOriginal.push_back(s->m_Timing);
     }
@@ -96,12 +96,12 @@ void AdjustSync::SaveSyncChanges() {
 
   // TODO: Save all of the timing data changes.
   // Luckily, only the song timing data needs comparing here.
-  if (GAMESTATE->m_pCurSong &&
-      s_vpTimingDataOriginal[0] != GAMESTATE->m_pCurSong->m_SongTiming) {
+  if (GAMESTATE->cur_song_ &&
+      s_vpTimingDataOriginal[0] != GAMESTATE->cur_song_->m_SongTiming) {
     if (GAMESTATE->IsEditing()) {
       MESSAGEMAN->Broadcast(Message_SongModified);
     } else {
-      GAMESTATE->m_pCurSong->Save();
+      GAMESTATE->cur_song_->Save();
     }
   }
   if (s_fGlobalOffsetSecondsOriginal != PREFSMAN->m_fGlobalOffsetSeconds) {
@@ -119,10 +119,10 @@ void AdjustSync::RevertSyncChanges() {
   PREFSMAN->m_fGlobalOffsetSeconds.Set(s_fGlobalOffsetSecondsOriginal);
 
   // The first one is ALWAYS the song timing.
-  GAMESTATE->m_pCurSong->m_SongTiming = s_vpTimingDataOriginal[0];
+  GAMESTATE->cur_song_->m_SongTiming = s_vpTimingDataOriginal[0];
 
   unsigned location = 1;
-  const std::vector<Steps*>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
+  const std::vector<Steps*>& vpSteps = GAMESTATE->cur_song_->GetAllSteps();
   for (Steps* s : vpSteps) {
     s->m_Timing = s_vpTimingDataOriginal[location];
     ++location;
@@ -141,7 +141,7 @@ void AdjustSync::HandleAutosync(float fNoteOffBySeconds, float fStepTime) {
   if (GAMESTATE->IsCourseMode()) {
     return;
   }
-  AutosyncType type = GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType;
+  AutosyncType type = GAMESTATE->song_options_.GetCurrent().m_AutosyncType;
   switch (type) {
     case AutosyncType_Off:
       return;
@@ -173,7 +173,7 @@ void AdjustSync::HandleSongEnd() {
   if (GAMESTATE->IsCourseMode()) {
     return;
   }
-  if (GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType ==
+  if (GAMESTATE->song_options_.GetCurrent().m_AutosyncType ==
       AutosyncType_Tempo) {
     AutosyncTempo();
   }
@@ -186,14 +186,14 @@ void AdjustSync::AutosyncOffset() {
   const float stddev =
       calc_stddev(s_fAutosyncOffset, s_fAutosyncOffset + OFFSET_SAMPLE_COUNT);
 
-  AutosyncType type = GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType;
+  AutosyncType type = GAMESTATE->song_options_.GetCurrent().m_AutosyncType;
 
   if (stddev < .03f) {
     switch (type) {
       case AutosyncType_Song: {
-        GAMESTATE->m_pCurSong->m_SongTiming.m_fBeat0OffsetInSeconds += mean;
+        GAMESTATE->cur_song_->m_SongTiming.m_fBeat0OffsetInSeconds += mean;
         const std::vector<Steps *> &vpSteps =
-            GAMESTATE->m_pCurSong->GetAllSteps();
+            GAMESTATE->cur_song_->GetAllSteps();
         for (Steps *s : vpSteps) {
           // Empty TimingData means it's inherited
           // from the song and is already changed.
@@ -246,9 +246,9 @@ void AdjustSync::AutosyncTempo() {
       return;
     }
 
-    GAMESTATE->m_pCurSong->m_SongTiming.m_fBeat0OffsetInSeconds += fIntercept;
+    GAMESTATE->cur_song_->m_SongTiming.m_fBeat0OffsetInSeconds += fIntercept;
     const float fScaleBPM = 1.0f / (1.0f - fSlope);
-    TimingData &timing = GAMESTATE->m_pCurSong->m_SongTiming;
+    TimingData &timing = GAMESTATE->cur_song_->m_SongTiming;
 
     const std::vector<TimingSegment *> &bpms =
         timing.GetTimingSegments(SEGMENT_BPM);
@@ -317,7 +317,7 @@ void AdjustSync::GetSyncChangeTextGlobal(std::vector<RString>& vsAddTo) {
 }
 
 void AdjustSync::GetSyncChangeTextSong(std::vector<RString>& vsAddTo) {
-  if (GAMESTATE->m_pCurSong.Get()) {
+  if (GAMESTATE->cur_song_.Get()) {
 #define SEGMENTS_MISMATCH_MESSAGE(orig, test, segments_name)                 \
   if (orig.size() != test.size()) {                                          \
     LuaHelpers::ReportScriptError(                                           \
@@ -328,7 +328,7 @@ void AdjustSync::GetSyncChangeTextSong(std::vector<RString>& vsAddTo) {
 
     unsigned int iOriginalSize = vsAddTo.size();
     TimingData& original = s_vpTimingDataOriginal[0];
-    TimingData& testing = GAMESTATE->m_pCurSong->m_SongTiming;
+    TimingData& testing = GAMESTATE->cur_song_->m_SongTiming;
 
     {
       float fOld = Quantize(original.m_fBeat0OffsetInSeconds, 0.001f);

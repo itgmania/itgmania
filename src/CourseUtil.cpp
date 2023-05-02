@@ -424,7 +424,7 @@ bool EditCourseUtil::ValidateEditCourseName(
   std::vector<Course*> courses;
   EditCourseUtil::GetAllEditCourses(courses);
   for (const Course* course : courses) {
-    if (GAMESTATE->m_pCurCourse == course) {
+    if (GAMESTATE->cur_course_ == course) {
       continue;  // don't comepare name against ourself
     }
 
@@ -442,21 +442,21 @@ void EditCourseUtil::UpdateAndSetTrail() {
   StepsType steps_type =
       GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StepsType;
   Trail* trail = nullptr;
-  if (GAMESTATE->m_pCurCourse) {
-    trail = GAMESTATE->m_pCurCourse->GetTrailForceRegenCache(steps_type);
+  if (GAMESTATE->cur_course_) {
+    trail = GAMESTATE->cur_course_->GetTrailForceRegenCache(steps_type);
   }
-  GAMESTATE->m_pCurTrail[PLAYER_1].Set(trail);
+  GAMESTATE->cur_trail_[PLAYER_1].Set(trail);
 }
 
 void EditCourseUtil::PrepareForPlay() {
-  GAMESTATE->m_pCurSong.Set(
+  GAMESTATE->cur_song_.Set(
       nullptr);  // CurSong will be set if we back out.  Set it back to nullptr
                  // so that ScreenStage won't show the last song.
-  GAMESTATE->m_PlayMode.Set(PLAY_MODE_ENDLESS);
-  GAMESTATE->m_bSideIsJoined[0] = true;
+  GAMESTATE->play_mode_.Set(PLAY_MODE_ENDLESS);
+  GAMESTATE->side_is_joined_[0] = true;
 
   PROFILEMAN->GetProfile(ProfileSlot_Player1)->m_GoalType = GoalType_Time;
-  Course* course = GAMESTATE->m_pCurCourse;
+  Course* course = GAMESTATE->cur_course_;
   PROFILEMAN->GetProfile(ProfileSlot_Player1)->m_iGoalSeconds =
       static_cast<int>(course->m_fGoalSeconds);
 }

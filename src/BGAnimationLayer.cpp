@@ -111,7 +111,7 @@ void BGAnimationLayer::LoadFromAniLayerFile(const RString& sPath) {
   lcPath.MakeLower();
 
   if (lcPath.find("usesongbg") != RString::npos) {
-    const Song* pSong = GAMESTATE->m_pCurSong;
+    const Song* pSong = GAMESTATE->cur_song_;
     RString sSongBGPath;
     if (pSong && pSong->HasBackground()) {
       sSongBGPath = pSong->GetBackgroundPath();

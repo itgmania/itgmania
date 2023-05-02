@@ -34,7 +34,7 @@ void ScreenContinue::BeginScreen()
 	{
 		if( GAMESTATE->IsHumanPlayer(p) )
 		{
-			bool bPlayerDone = GAMESTATE->m_iPlayerStageTokens[p] <= 0;
+			bool bPlayerDone = GAMESTATE->player_stage_tokens_[p] <= 0;
 			if( bPlayerDone )
 			{
 				GAMESTATE->UnjoinPlayer( p );

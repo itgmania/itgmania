@@ -212,7 +212,7 @@ static void StartMusic(MusicToPlay& to_play) {
   if (!to_play.has_timing) {
     // This song has no real timing data. The offset is arbitrary. Change it so
     // the beat will line up to where we are now, so we don't have to delay.
-    float dest_beat = fmodfp(GAMESTATE->m_Position.m_fSongBeatNoOffset, 1);
+    float dest_beat = fmodfp(GAMESTATE->position_.m_fSongBeatNoOffset, 1);
     float time =
         new_music->new_timing.GetElapsedTimeFromBeatNoOffset(dest_beat);
 
@@ -237,7 +237,7 @@ static void StartMusic(MusicToPlay& to_play) {
     // probably take a little longer. Nudge the latency up.
     const float presumed_latency = SOUNDMAN->GetPlayLatency() + 0.040f;
     const float cur_second =
-        GAMESTATE->m_Position.m_fMusicSeconds + presumed_latency;
+        GAMESTATE->position_.m_fMusicSeconds + presumed_latency;
     const float cur_beat =
         g_Playing->timing.GetBeatFromElapsedTimeNoOffset(cur_second);
 
@@ -256,10 +256,10 @@ static void StartMusic(MusicToPlay& to_play) {
         g_Playing->timing.GetElapsedTimeFromBeatNoOffset(cur_beat_to_start_on);
     const float maximum_distance = 2;
     const float distance = std::min(
-        second_to_start_on - GAMESTATE->m_Position.m_fMusicSeconds,
+        second_to_start_on - GAMESTATE->position_.m_fMusicSeconds,
         maximum_distance);
 
-    when = GAMESTATE->m_Position.m_LastBeatUpdate + distance;
+    when = GAMESTATE->position_.m_LastBeatUpdate + distance;
   }
 
   /* Important: don't hold the mutex while we load and seek the actual sound. */
@@ -521,7 +521,7 @@ void GameSoundManager::Update(float delta) {
     g_Mutex->Lock();
     if (g_Playing->apply_music_rate) {
       RageSoundParams rage_sound_params = g_Playing->music->GetParams();
-      float rate = GAMESTATE->m_SongOptions.GetPreferred().m_fMusicRate;
+      float rate = GAMESTATE->song_options_.GetPreferred().m_fMusicRate;
       if (rage_sound_params.m_fSpeed != rate) {
         rage_sound_params.m_fSpeed = rate;
         g_Playing->music->SetParams(rage_sound_params);
@@ -584,9 +584,9 @@ void GameSoundManager::Update(float delta) {
   if (!g_Playing->music->IsPlaying()) {
     // There's no song playing. Fake it.
     CHECKPOINT_M(
-        ssprintf("%f, delta %f", GAMESTATE->m_Position.m_fMusicSeconds, delta));
+        ssprintf("%f, delta %f", GAMESTATE->position_.m_fMusicSeconds, delta));
     GAMESTATE->UpdateSongPosition(
-        GAMESTATE->m_Position.m_fMusicSeconds +
+        GAMESTATE->position_.m_fMusicSeconds +
             delta * g_Playing->music->GetPlaybackRate(),
         g_Playing->timing);
     return;
@@ -604,10 +604,10 @@ void GameSoundManager::Update(float delta) {
   // Check for song timing skips.
   if (PREFSMAN->m_bLogSkips && !g_Playing->timing_delayed) {
     const float expected_time_passed =
-        (timer - GAMESTATE->m_Position.m_LastBeatUpdate) *
+        (timer - GAMESTATE->position_.m_LastBeatUpdate) *
         g_Playing->music->GetPlaybackRate();
     const float sound_time_passed =
-        seconds - GAMESTATE->m_Position.m_fMusicSeconds;
+        seconds - GAMESTATE->position_.m_fMusicSeconds;
     const float difference = expected_time_passed - sound_time_passed;
 
     static RString last_file = "";
@@ -620,7 +620,7 @@ void GameSoundManager::Update(float delta) {
           "Song position skip in %s: expected %.3f, got %.3f (cur %f, prev %f) "
           "(%.3f difference)",
           Basename(this_file).c_str(), expected_time_passed, sound_time_passed,
-          seconds, GAMESTATE->m_Position.m_fMusicSeconds, difference);
+          seconds, GAMESTATE->position_.m_fMusicSeconds, difference);
     }
     last_file = this_file;
   }
@@ -637,17 +637,17 @@ void GameSoundManager::Update(float delta) {
     // We're still waiting for the new sound to start playing, so keep using the
     // old timing data and fake the time.
     GAMESTATE->UpdateSongPosition(
-        GAMESTATE->m_Position.m_fMusicSeconds + delta, g_Playing->timing);
+        GAMESTATE->position_.m_fMusicSeconds + delta, g_Playing->timing);
   } else {
     GAMESTATE->UpdateSongPosition(
         seconds + adjust, g_Playing->timing, timer + adjust);
   }
 
   // Send crossed messages
-  if (GAMESTATE->m_pCurSong) {
+  if (GAMESTATE->cur_song_) {
     static int beat_last_crossed = 0;
 
-    float song_beat = GAMESTATE->m_Position.m_fSongBeat;
+    float song_beat = GAMESTATE->position_.m_fSongBeat;
 
     int row_now = BeatToNoteRowNotRounded(song_beat);
     row_now = std::max(0, row_now);
@@ -667,7 +667,7 @@ void GameSoundManager::Update(float delta) {
   NoteData& lights = g_Playing->lights;
   // Lights data was loaded
   if (lights.GetNumTracks() > 0) {
-    const float song_beat = GAMESTATE->m_Position.m_fLightSongBeat;
+    const float song_beat = GAMESTATE->position_.m_fLightSongBeat;
     const int song_row = BeatToNoteRowNotRounded(song_beat);
 
     static int row_last_crossed = 0;

@@ -38,7 +38,7 @@ void Attack::GetRealtimeAttackBeats(const Song* pSong,
 
   // If reasonable, push the attack forward 8 beats so that notes on screen
   // don't change suddenly.
-  fStartBeat = std::min(GAMESTATE->m_Position.m_fSongBeat + 8,
+  fStartBeat = std::min(GAMESTATE->position_.m_fSongBeat + 8,
                         pPlayerState->m_fLastDrawnBeat);
   fStartBeat = truncf(fStartBeat) + 1;
 

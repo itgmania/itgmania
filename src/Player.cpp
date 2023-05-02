@@ -337,7 +337,7 @@ void Player::Init(
 
 		int iEnabledPlayerIndex = -1;
 		int iNumEnabledPlayers = 0;
-		if( GAMESTATE->m_bMultiplayer )
+		if( GAMESTATE->multiplayer_ )
 		{
 			FOREACH_EnabledMultiPlayer( p )
 			{
@@ -415,7 +415,7 @@ void Player::Init(
 
 	/* Attacks can be launched in course modes and in battle modes.  They both come
 	 * here to play, but allow loading a different sound for different modes. */
-	switch( GAMESTATE->m_PlayMode )
+	switch( GAMESTATE->play_mode_ )
 	{
 	case PLAY_MODE_RAVE:
 	case PLAY_MODE_BATTLE:
@@ -436,13 +436,13 @@ void Player::Init(
 
 		if( GAMESTATE->IsCourseMode() )
 		{
-			ASSERT( GAMESTATE->m_pCurTrail[pn] != nullptr );
-			GAMESTATE->m_pCurTrail[pn]->GetDisplayBpms( bpms );
+			ASSERT( GAMESTATE->cur_trail_[pn] != nullptr );
+			GAMESTATE->cur_trail_[pn]->GetDisplayBpms( bpms );
 		}
 		else
 		{
-			ASSERT( GAMESTATE->m_pCurSteps[pn] != nullptr );
-			GAMESTATE->m_pCurSteps[pn]->GetDisplayBpms(bpms);
+			ASSERT( GAMESTATE->cur_steps_[pn] != nullptr );
+			GAMESTATE->cur_steps_[pn]->GetDisplayBpms(bpms);
 		}
 
 		float fMaxBPM = 0;
@@ -472,7 +472,7 @@ void Player::Init(
 
 			if( GAMESTATE->IsCourseMode() )
 			{
-				for (TrailEntry const &e : GAMESTATE->m_pCurTrail[pn]->m_vEntries)
+				for (TrailEntry const &e : GAMESTATE->cur_trail_[pn]->m_vEntries)
 				{
 					float fMaxForEntry;
 					if (M_MOD_HIGH_CAP > 0)
@@ -485,9 +485,9 @@ void Player::Init(
 			else
 			{
 				if (M_MOD_HIGH_CAP > 0)
-					GAMESTATE->m_pCurSong->m_SongTiming.GetActualBPM( fThrowAway, fMaxBPM, M_MOD_HIGH_CAP );
+					GAMESTATE->cur_song_->m_SongTiming.GetActualBPM( fThrowAway, fMaxBPM, M_MOD_HIGH_CAP );
 				else
-					GAMESTATE->m_pCurSong->m_SongTiming.GetActualBPM( fThrowAway, fMaxBPM );
+					GAMESTATE->cur_song_->m_SongTiming.GetActualBPM( fThrowAway, fMaxBPM );
 			}
 		}
 
@@ -674,17 +674,17 @@ void Player::Load()
 //	if( m_pScore )
 //		m_pScore->Init( pn );
 
-	m_Timing = GAMESTATE->m_pCurSteps[pn]->GetTimingData();
+	m_Timing = GAMESTATE->cur_steps_[pn]->GetTimingData();
 
 	/* Apply transforms. */
 	NoteDataUtil::TransformNoteData(m_NoteData, *m_Timing, m_pPlayerState->m_PlayerOptions.GetStage(), GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)->m_StepsType);
 
-	const Song* pSong = GAMESTATE->m_pCurSong;
+	const Song* pSong = GAMESTATE->cur_song_;
 
 	// Generate some cache data structure.
 	GenerateCacheDataStructure(m_pPlayerState, m_NoteData);
 
-	switch( GAMESTATE->m_PlayMode )
+	switch( GAMESTATE->play_mode_ )
 	{
 		case PLAY_MODE_RAVE:
 		case PLAY_MODE_BATTLE:
@@ -820,7 +820,7 @@ void Player::Update( float fDeltaTime )
 
 	//LOG->Trace( "Player::Update(%f)", fDeltaTime );
 
-	if( GAMESTATE->m_pCurSong== nullptr || IsOniDead() )
+	if( GAMESTATE->cur_song_== nullptr || IsOniDead() )
 		return;
 
 	ActorFrame::Update( fDeltaTime );
@@ -964,7 +964,7 @@ void Player::Update( float fDeltaTime )
 		bool bIsHoldingButton= INPUTMAPPER->IsBeingPressed(GameI);
 
 		// TODO: Make this work for non-human-controlled players
-		if( bIsHoldingButton && !GAMESTATE->m_bDemonstrationOrJukebox && m_pPlayerState->m_PlayerController==PC_HUMAN )
+		if( bIsHoldingButton && !GAMESTATE->demonstration_or_jukebox_ && m_pPlayerState->m_PlayerController==PC_HUMAN )
 			if( m_pNoteField )
 				m_pNoteField->SetPressed( col );
 	}
@@ -1020,7 +1020,7 @@ void Player::Update( float fDeltaTime )
 
 		// We have to check the unjudged notes that are within the
 		// timing window. Let's find the cutoff point! (lastCheckRow)
-		const float rate = GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+		const float rate = GAMESTATE->song_options_.GetCurrent().m_fMusicRate;
 		const SongPosition songPosition = m_pPlayerState->m_Position;
 		const float musicPosition = songPosition.m_fMusicSeconds + (songPosition.m_LastBeatUpdate.Ago() * rate);
 		// We have to add 1 here, because GetBeatFromElapsedTime() can round down.
@@ -1173,7 +1173,7 @@ void Player::Update( float fDeltaTime )
 	UpdateJudgedRows();
 
 	// Check for TapNote misses
-	if (!GAMESTATE->m_bInStepEditor)
+	if (!GAMESTATE->in_step_editor_)
 	{
 		UpdateTapNotesMissedOlderThan( GetMaxStepDistanceSeconds() );
 	}
@@ -1423,7 +1423,7 @@ void Player::UpdateHoldNotes( int iSongRow, float fDeltaTime, std::vector<TrackR
 	// TODO: Cap the active time passed to the score keeper to the actual start time and end time of the hold.
 	if( vTN[0].pTN->HoldResult.bActive )
 	{
-		float fSecondsActiveSinceLastUpdate = fDeltaTime * GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+		float fSecondsActiveSinceLastUpdate = fDeltaTime * GAMESTATE->song_options_.GetCurrent().m_fMusicRate;
 		if( m_pPrimaryScoreKeeper )
 			m_pPrimaryScoreKeeper->HandleHoldActiveSeconds( fSecondsActiveSinceLastUpdate );
 		if( m_pSecondaryScoreKeeper )
@@ -1585,11 +1585,11 @@ void Player::ApplyWaitingTransforms()
 		po.FromString( mod.sModifiers );
 
 		float fStartBeat, fEndBeat;
-		mod.GetRealtimeAttackBeats( GAMESTATE->m_pCurSong, m_pPlayerState, fStartBeat, fEndBeat );
+		mod.GetRealtimeAttackBeats( GAMESTATE->cur_song_, m_pPlayerState, fStartBeat, fEndBeat );
 		fEndBeat = std::min( fEndBeat, m_NoteData.GetLastBeat() );
 
 		LOG->Trace( "Applying transform '%s' from %f to %f to '%s'", mod.sModifiers.c_str(), fStartBeat, fEndBeat,
-			GAMESTATE->m_pCurSong->GetTranslitMainTitle().c_str() );
+			GAMESTATE->cur_song_->GetTranslitMainTitle().c_str() );
 
 		// if re-adding noteskin changes, this is one place to edit -aj
 
@@ -1830,7 +1830,7 @@ void Player::ChangeLifeRecord()
 	}
 	else if( m_pCombinedLifeMeter )
 	{
-		fLife = GAMESTATE->m_fTugLifePercentP1;
+		fLife = GAMESTATE->tug_life_percent_p1_;
 		if( pn == PLAYER_2 )
 			fLife = 1.0f - fLife;
 	}
@@ -2071,11 +2071,11 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 
 	float fSongBeat = m_pPlayerState->m_Position.m_fSongBeat;
 
-	if( GAMESTATE->m_pCurSong )
+	if( GAMESTATE->cur_song_ )
 	{
-		fSongBeat = GAMESTATE->m_pCurSong->m_SongTiming.GetBeatFromElapsedTime( fPositionSeconds );
+		fSongBeat = GAMESTATE->cur_song_->m_SongTiming.GetBeatFromElapsedTime( fPositionSeconds );
 
-		if( GAMESTATE->m_pCurSteps[m_pPlayerState->m_PlayerNumber] )
+		if( GAMESTATE->cur_steps_[m_pPlayerState->m_PlayerNumber] )
 			fSongBeat = m_Timing->GetBeatFromElapsedTime( fPositionSeconds );
 	}
 
@@ -2231,13 +2231,13 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 
 			/* GAMESTATE->m_fMusicSeconds is the music time as of GAMESTATE->m_LastBeatUpdate. Figure
 			 * out what the music time is as of now. */
-			const float fCurrentMusicSeconds = m_pPlayerState->m_Position.m_fMusicSeconds + (fLastBeatUpdate*GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate);
+			const float fCurrentMusicSeconds = m_pPlayerState->m_Position.m_fMusicSeconds + (fLastBeatUpdate*GAMESTATE->song_options_.GetCurrent().m_fMusicRate);
 
 			// ... which means it happened at this point in the music:
-			const float fMusicSeconds = fCurrentMusicSeconds - fTimeSinceStep * GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+			const float fMusicSeconds = fCurrentMusicSeconds - fTimeSinceStep * GAMESTATE->song_options_.GetCurrent().m_fMusicRate;
 
 			// The offset from the actual step in seconds:
-			fNoteOffset = (fStepSeconds - fMusicSeconds) / GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;	// account for music rate
+			fNoteOffset = (fStepSeconds - fMusicSeconds) / GAMESTATE->song_options_.GetCurrent().m_fMusicRate;	// account for music rate
 			/*
 			LOG->Trace("step was %.3f ago, music is off by %f: %f vs %f, step was %f off",
 				fTimeSinceStep, GAMESTATE->m_LastBeatUpdate.Ago()/GAMESTATE->m_SongOptions.m_fMusicRate,
@@ -2447,7 +2447,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 
 			// TODO: Remove use of PlayerNumber
 			PlayerNumber pnToAttack = OPPOSITE_PLAYER[m_pPlayerState->m_PlayerNumber];
-			PlayerState *pPlayerStateToAttack = GAMESTATE->m_pPlayerState[pnToAttack];
+			PlayerState *pPlayerStateToAttack = GAMESTATE->player_state_[pnToAttack];
 			pPlayerStateToAttack->LaunchAttack( attack );
 
 			// remove all TapAttacks on this row
@@ -2872,7 +2872,7 @@ void Player::CrossedRows( int iLastRowCrossed, const RageTimer &now )
 			iLastSeenRow = iRow;
 
 			// handle autokeysounds here (if not in the editor).
-			if (!GAMESTATE->m_bInStepEditor)
+			if (!GAMESTATE->in_step_editor_)
 			{
 				for (int t = 0; t < m_NoteData.GetNumTracks(); ++t)
 				{
@@ -2956,7 +2956,7 @@ void Player::HandleTapRowScore( unsigned row )
 	if (!m_Timing->IsJudgableAtRow(row))
 		return;
 
-	if( GAMESTATE->m_bDemonstrationOrJukebox )
+	if( GAMESTATE->demonstration_or_jukebox_ )
 		bNoCheating = false;
 	// don't accumulate points if AutoPlay is on.
 	if( bNoCheating && m_pPlayerState->m_PlayerController == PC_AUTOPLAY )
@@ -3121,7 +3121,7 @@ void Player::HandleHoldScore( const TapNote &tn )
 	bNoCheating = false;
 #endif
 
-	if( GAMESTATE->m_bDemonstrationOrJukebox )
+	if( GAMESTATE->demonstration_or_jukebox_ )
 		bNoCheating = false;
 	// don't accumulate points if AutoPlay is on.
 	if( bNoCheating && m_pPlayerState->m_PlayerController == PC_AUTOPLAY )
@@ -3161,7 +3161,7 @@ float Player::GetMaxStepDistanceSeconds()
 	fMax = std::max( fMax, GetWindowSeconds(TW_Roll) );
 	fMax = std::max( fMax, GetWindowSeconds(TW_Attack) );
 	fMax = std::max( fMax, GetWindowSeconds(TW_Checkpoint) );
-	float f = GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate * fMax;
+	float f = GAMESTATE->song_options_.GetCurrent().m_fMusicRate * fMax;
 	return f + m_fMaxInputLatencySeconds;
 }
 
@@ -3327,7 +3327,7 @@ void Player::SetCombo( unsigned int iCombo, unsigned int iMisses )
 	bool bPastBeginning = false;
 	if( GAMESTATE->IsCourseMode() )
 	{
-		int iSongIndexStartColoring = GAMESTATE->m_pCurCourse->GetEstimatedNumStages();
+		int iSongIndexStartColoring = GAMESTATE->cur_course_->GetEstimatedNumStages();
 		iSongIndexStartColoring =
 			static_cast<int>(std::floor(iSongIndexStartColoring*PERCENT_UNTIL_COLOR_COMBO));
 		bPastBeginning = GAMESTATE->GetCourseSongIndex() >= iSongIndexStartColoring;
@@ -3335,7 +3335,7 @@ void Player::SetCombo( unsigned int iCombo, unsigned int iMisses )
 	else
 	{
 		bPastBeginning = m_pPlayerState->m_Position.m_fMusicSeconds
-			> GAMESTATE->m_pCurSong->m_fMusicLengthSeconds * PERCENT_UNTIL_COLOR_COMBO;
+			> GAMESTATE->cur_song_->m_fMusicLengthSeconds * PERCENT_UNTIL_COLOR_COMBO;
 	}
 
 	if( m_bSendJudgmentAndComboMessages )
@@ -3382,15 +3382,15 @@ void Player::IncrementComboOrMissCombo(bool bComboOrMissCombo)
 
 RString Player::ApplyRandomAttack()
 {
-	if( GAMESTATE->m_RandomAttacks.size() < 1 )
+	if( GAMESTATE->random_attacks_.size() < 1 )
 		return "";
 
-	//int iAttackToUse = rand() % GAMESTATE->m_RandomAttacks.size();
+	//int iAttackToUse = rand() % GAMESTATE->random_attacks_.size();
 	DateTime now = DateTime::GetNowDate();
 	int iSeed = now.tm_hour * now.tm_min * now.tm_sec * now.tm_mday;
-	RandomGen rnd( GAMESTATE->m_iStageSeed * iSeed );
-	int iAttackToUse = rnd() % GAMESTATE->m_RandomAttacks.size();
-	return GAMESTATE->m_RandomAttacks[iAttackToUse];
+	RandomGen rnd( GAMESTATE->stage_seed_ * iSeed );
+	int iAttackToUse = rnd() % GAMESTATE->random_attacks_.size();
+	return GAMESTATE->random_attacks_[iAttackToUse];
 }
 
 // lua start

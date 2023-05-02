@@ -237,8 +237,8 @@ void BackgroundImpl::Init() {
     one_or_more_chars = true;
     // Disable dancing characters if Beginner Helper will be showing.
     if (PREFSMAN->m_bShowBeginnerHelper && BeginnerHelper::CanUse(p) &&
-        GAMESTATE->m_pCurSteps[p] &&
-        GAMESTATE->m_pCurSteps[p]->GetDifficulty() == Difficulty_Beginner)
+        GAMESTATE->cur_steps_[p] &&
+        GAMESTATE->cur_steps_[p]->GetDifficulty() == Difficulty_Beginner)
       showing_beginner_helper = true;
   }
 
@@ -447,7 +447,7 @@ BackgroundDef BackgroundImpl::Layer::CreateRandomBGA(
   }
 
   // Set to not show any BGChanges, whether scripted or random
-  if (GAMESTATE->m_SongOptions.GetCurrent().m_bStaticBackground) {
+  if (GAMESTATE->song_options_.GetCurrent().m_bStaticBackground) {
     return BackgroundDef();
   }
 
@@ -607,7 +607,7 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
   // Set to not show any BGChanges, whether scripted or random if
   // m_bStaticBackground is on
   if (!g_bSongBackgrounds ||
-      GAMESTATE->m_SongOptions.GetCurrent().m_bStaticBackground) {
+      GAMESTATE->song_options_.GetCurrent().m_bStaticBackground) {
     // Backgrounds are disabled; just display the song background.
     BackgroundChange bg_change;
     bg_change.background_def_ = static_background_def_;
@@ -618,7 +618,7 @@ void BackgroundImpl::LoadFromSong(const Song* song) {
   // of randomly loaded BGs
   else if (
       song->HasBGChanges() &&
-      !GAMESTATE->m_SongOptions.GetCurrent().m_bRandomBGOnly) {
+      !GAMESTATE->song_options_.GetCurrent().m_bRandomBGOnly) {
     FOREACH_BackgroundLayer(i) {
       Layer& layer = layer_[i];
 
@@ -781,7 +781,7 @@ void BackgroundImpl::Layer::UpdateCurBGChange(
   // RateModsAffectFGChanges is enabled; current_time is. Undo it.
   const float fRate = PREFSMAN->m_bRateModsAffectTweens
                           ? 1.0f
-                          : GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+                          : GAMESTATE->song_options_.GetCurrent().m_fMusicRate;
 
   // Find the BGSegment we're in
   const int i = FindBGSegmentForBeat(beat_info.beat);
@@ -885,10 +885,10 @@ void BackgroundImpl::Update(float delta_time) {
   FOREACH_BackgroundLayer(i) {
     Layer& layer = layer_[i];
     layer.UpdateCurBGChange(
-        song_, last_music_seconds_, GAMESTATE->m_Position.m_fMusicSeconds,
+        song_, last_music_seconds_, GAMESTATE->position_.m_fMusicSeconds,
         name_to_transition_);
   }
-  last_music_seconds_ = GAMESTATE->m_Position.m_fMusicSeconds;
+  last_music_seconds_ = GAMESTATE->position_.m_fMusicSeconds;
 }
 
 void BackgroundImpl::DrawPrimitives() {
@@ -935,7 +935,7 @@ void BackgroundImpl::GetLoadedBackgroundChanges(
 bool BackgroundImpl::IsDangerAllVisible() {
   // The players are never in danger in FAIL_OFF.
   FOREACH_PlayerNumber(p) {
-    if (GAMESTATE->GetPlayerFailType(GAMESTATE->m_pPlayerState[p]) ==
+    if (GAMESTATE->GetPlayerFailType(GAMESTATE->player_state_[p]) ==
         FailType_Off) {
       return false;
     }
@@ -983,16 +983,16 @@ void BrightnessOverlay::Update(float delta_time) {
   ActorFrame::Update(delta_time);
   // If we're actually playing, then we're past fades, etc; update the
   // background brightness to follow Cover.
-  if (!GAMESTATE->m_bGameplayLeadIn) {
+  if (!GAMESTATE->gameplay_lead_in_) {
     SetActualBrightness();
   }
 }
 
 void BrightnessOverlay::SetActualBrightness() {
-  float left_brightness = 1 - GAMESTATE->m_pPlayerState[PLAYER_1]
+  float left_brightness = 1 - GAMESTATE->player_state_[PLAYER_1]
                                   ->m_PlayerOptions.GetCurrent()
                                   .m_fCover;
-  float right_brightness = 1 - GAMESTATE->m_pPlayerState[PLAYER_2]
+  float right_brightness = 1 - GAMESTATE->player_state_[PLAYER_2]
                                    ->m_PlayerOptions.GetCurrent()
                                    .m_fCover;
 

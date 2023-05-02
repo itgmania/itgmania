@@ -156,9 +156,9 @@ float ArrowEffects::GetTime() {
     case ModTimerType_Game:
       return (RageTimer::GetTimeSinceStartFast() + offset) * mult;
     case ModTimerType_Beat:
-      return (GAMESTATE->m_Position.m_fSongBeatVisible + offset) * mult;
+      return (GAMESTATE->position_.m_fSongBeatVisible + offset) * mult;
     case ModTimerType_Song:
-      return (GAMESTATE->m_Position.m_fMusicSeconds + offset) * mult;
+      return (GAMESTATE->position_.m_fMusicSeconds + offset) * mult;
     default:
       return RageTimer::GetTimeSinceStartFast() + offset;
   }
@@ -386,13 +386,13 @@ void ArrowEffects::Update() {
     const Style* pStyle = GAMESTATE->GetCurrentStyle(pn);
     const Style::ColumnInfo* pCols = pStyle->m_ColumnInfo[pn];
     const SongPosition& position =
-        GAMESTATE->m_bIsUsingStepTiming
-            ? GAMESTATE->m_pPlayerState[pn]->m_Position
-            : GAMESTATE->m_Position;
+        GAMESTATE->is_using_step_timing_
+            ? GAMESTATE->player_state_[pn]->m_Position
+            : GAMESTATE->position_;
     const float* effects =
-        GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetCurrent().m_fEffects;
+        GAMESTATE->player_state_[pn]->m_PlayerOptions.GetCurrent().m_fEffects;
     const float* accels =
-        GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetCurrent().m_fAccels;
+        GAMESTATE->player_state_[pn]->m_PlayerOptions.GetCurrent().m_fAccels;
 
     PerPlayerData& data = g_EffectData[pn];
 
@@ -532,13 +532,13 @@ float ArrowEffects::GetYOffset(const PlayerState* pPlayerState, int iCol,
 
   float fSongBeat = position.m_fSongBeatVisible;
 
-  Steps* pCurSteps = GAMESTATE->m_pCurSteps[pPlayerState->m_PlayerNumber];
+  Steps* pCurSteps = GAMESTATE->cur_steps_[pPlayerState->m_PlayerNumber];
 
   // Usually, fTimeSpacing is 0 or 1, in which case we use entirely beat spacing
   // or entirely time spacing (respectively). Occasionally, we tween between
   // them.
   if (curr_options->m_fTimeSpacing != 1.0f) {
-    if (GAMESTATE->m_bInStepEditor) {
+    if (GAMESTATE->in_step_editor_) {
       // Use constant spacing in step editor
       fYOffset = fNoteBeat - fSongBeat;
     } else {
@@ -557,7 +557,7 @@ float ArrowEffects::GetYOffset(const PlayerState* pPlayerState, int iCol,
     float fSecondsUntilStep = fNoteSeconds - fSongSeconds;
     float fBPM = curr_options->m_fScrollBPM;
     float fBPS =
-        fBPM / 60.f / GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+        fBPM / 60.f / GAMESTATE->song_options_.GetCurrent().m_fMusicRate;
     float fYOffsetTimeSpacing = fSecondsUntilStep * fBPS;
     fYOffset += fYOffsetTimeSpacing * curr_options->m_fTimeSpacing;
   }
@@ -571,7 +571,7 @@ float ArrowEffects::GetYOffset(const PlayerState* pPlayerState, int iCol,
   if (curr_options->m_fMaxScrollBPM != 0) {
     fScrollSpeed = curr_options->m_fMaxScrollBPM /
                    (pPlayerState->m_fReadBPM *
-                    GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate);
+                    GAMESTATE->song_options_.GetCurrent().m_fMusicRate);
   }
 
   // don't mess with the arrows after they've crossed 0
@@ -635,7 +635,7 @@ float ArrowEffects::GetYOffset(const PlayerState* pPlayerState, int iCol,
 
   if (curr_options->m_fRandomSpeed > 0 && !bAbsolute) {
     // Generate a deterministically "random" speed for each arrow.
-    unsigned seed = GAMESTATE->m_iStageSeed + (BeatToNoteRow(fNoteBeat) << 8) +
+    unsigned seed = GAMESTATE->stage_seed_ + (BeatToNoteRow(fNoteBeat) << 8) +
                     (iCol * 100);
 
     for (int i = 0; i < 3; ++i) {

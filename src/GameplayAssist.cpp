@@ -19,8 +19,8 @@ void GameplayAssist::Init() {
 
 void GameplayAssist::PlayTicks(
     const NoteData& note_data, const PlayerState* player_state) {
-  bool clap = GAMESTATE->m_SongOptions.GetCurrent().m_bAssistClap;
-  bool metronome = GAMESTATE->m_SongOptions.GetCurrent().m_bAssistMetronome;
+  bool clap = GAMESTATE->song_options_.GetCurrent().m_bAssistClap;
+  bool metronome = GAMESTATE->song_options_.GetCurrent().m_bAssistMetronome;
   if (!clap && !metronome) {
     return;
   }
@@ -36,12 +36,12 @@ void GameplayAssist::PlayTicks(
   // early enough for it to come out on time; the actual precise timing is
   // handled by SetStartTime.
   SongPosition& position =
-      GAMESTATE->m_pPlayerState[player_state->m_PlayerNumber]->m_Position;
+      GAMESTATE->player_state_[player_state->m_PlayerNumber]->m_Position;
   float position_seconds = position.m_fMusicSeconds;
   position_seconds += SOUNDMAN->GetPlayLatency() +
                       (float)CommonMetrics::TICK_EARLY_SECONDS + 0.250f;
   const TimingData& timing =
-      *GAMESTATE->m_pCurSteps[player_state->m_PlayerNumber]->GetTimingData();
+      *GAMESTATE->cur_steps_[player_state->m_PlayerNumber]->GetTimingData();
   const float song_beat =
       timing.GetBeatFromElapsedTimeNoOffset(position_seconds);
 
@@ -66,7 +66,7 @@ void GameplayAssist::PlayTicks(
           timing.GetElapsedTimeFromBeatNoOffset(tick_beat);
       float fSecondsUntil = tick_second - position.m_fMusicSeconds;
 			// 2x music rate means the time until the tick is halved.
-      fSecondsUntil /= GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+      fSecondsUntil /= GAMESTATE->song_options_.GetCurrent().m_fMusicRate;
 
       RageSoundParams rage_sound_params;
       rage_sound_params.m_StartTime =
@@ -108,7 +108,7 @@ void GameplayAssist::PlayTicks(
           timing.GetElapsedTimeFromBeatNoOffset(tick_beat);
       float fSecondsUntil = tick_second - position.m_fMusicSeconds;
       // 2x music rate means the time until the tick is halved.
-      fSecondsUntil /= GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+      fSecondsUntil /= GAMESTATE->song_options_.GetCurrent().m_fMusicRate;
 
       RageSoundParams rage_sound_params;
       rage_sound_params.m_StartTime =

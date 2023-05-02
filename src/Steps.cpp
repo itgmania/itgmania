@@ -455,7 +455,7 @@ void Steps::Compress() const
 	}
 
 	// Don't compress data in the editor: it's still in use.
-	if (GAMESTATE->m_bInStepEditor)
+	if (GAMESTATE->in_step_editor_)
 	{
 		return;
 	}

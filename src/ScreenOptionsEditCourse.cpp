@@ -39,7 +39,7 @@ public:
 		m_Def.m_vsChoices.clear();
 		m_vpSteps.clear();
 
-		Song *pSong = GAMESTATE->m_pCurSong;
+		Song *pSong = GAMESTATE->cur_song_;
 		if( pSong ) // playing a song
 		{
 			GetStepsForSong( pSong, m_vpSteps );
@@ -68,7 +68,7 @@ public:
 	}
 	virtual void ImportOption( OptionRow *pRow, const std::vector<PlayerNumber> &vpns, std::vector<bool> vbSelectedOut[NUM_PLAYERS] ) const
 	{
-		Trail *pTrail = GAMESTATE->m_pCurTrail[PLAYER_1];
+		Trail *pTrail = GAMESTATE->cur_trail_[PLAYER_1];
 		Steps *pSteps;
 		if( pTrail )
 		{
@@ -265,7 +265,7 @@ void ScreenOptionsEditCourse::ImportOptions( int iRow, const std::vector<PlayerN
 	{
 	case EditCourseRow_Minutes:
 		row.SetOneSharedSelection( 0 );
-		row.SetOneSharedSelectionIfPresent( MakeMinutesString(static_cast<int>(GAMESTATE->m_pCurCourse->m_fGoalSeconds)/60) );
+		row.SetOneSharedSelectionIfPresent( MakeMinutesString(static_cast<int>(GAMESTATE->cur_course_->m_fGoalSeconds)/60) );
 		break;
 	default:
 		{
@@ -278,8 +278,8 @@ void ScreenOptionsEditCourse::ImportOptions( int iRow, const std::vector<PlayerN
 			case RowType_Song:
 				{
 					Song *pSong = nullptr;
-					if( iEntryIndex < (int)GAMESTATE->m_pCurCourse->m_vEntries.size() )
-						pSong = GAMESTATE->m_pCurCourse->m_vEntries[iEntryIndex].song_id_.ToSong();
+					if( iEntryIndex < (int)GAMESTATE->cur_course_->m_vEntries.size() )
+						pSong = GAMESTATE->cur_course_->m_vEntries[iEntryIndex].song_id_.ToSong();
 
 					std::vector<Song*>::iterator iter = find( m_vpSongs.begin(), m_vpSongs.end(), pSong );
 					if( iter == m_vpSongs.end() )
@@ -311,15 +311,15 @@ void ScreenOptionsEditCourse::ExportOptions( int iRow, const std::vector<PlayerN
 		{
 		DEFAULT_FAIL(i);
 		case EditCourseRow_Minutes:
-			GAMESTATE->m_pCurCourse->m_fGoalSeconds = 0;
+			GAMESTATE->cur_course_->m_fGoalSeconds = 0;
 			int mins;
 			if( sscanf( sValue, "%d", &mins ) == 1 )
-				GAMESTATE->m_pCurCourse->m_fGoalSeconds = float(mins * 60);
+				GAMESTATE->cur_course_->m_fGoalSeconds = float(mins * 60);
 			break;
 		}
 	}
 
-	GAMESTATE->m_pCurCourse->m_vEntries.clear();
+	GAMESTATE->cur_course_->m_vEntries.clear();
 
 	for( int i=NUM_EditCourseRow; i<(int)m_pRows.size(); i++ )
 	{
@@ -342,7 +342,7 @@ void ScreenOptionsEditCourse::ExportOptions( int iRow, const std::vector<PlayerN
 					CourseEntry ce;
 					ce.song_id_.FromSong( pSong );
 					ce.steps_criteria_.m_difficulty = pSteps->GetDifficulty();
-					GAMESTATE->m_pCurCourse->m_vEntries.push_back( ce );
+					GAMESTATE->cur_course_->m_vEntries.push_back( ce );
 				}
 			}
 			break;
@@ -382,8 +382,8 @@ void ScreenOptionsEditCourse::SetCurrentSong()
 
 	if( row.GetRowType() == OptionRow::RowType_Exit )
 	{
-		GAMESTATE->m_pCurSong.Set(nullptr);
-		GAMESTATE->m_pCurSteps[PLAYER_1].Set(nullptr);
+		GAMESTATE->cur_song_.Set(nullptr);
+		GAMESTATE->cur_steps_[PLAYER_1].Set(nullptr);
 	}
 	else
 	{
@@ -400,14 +400,14 @@ void ScreenOptionsEditCourse::SetCurrentSong()
 		}
 		if ( pSong != nullptr )
 		{
-			GAMESTATE->m_pCurSong.Set( pSong );
+			GAMESTATE->cur_song_.Set( pSong );
 		}
 	}
 }
 
 void ScreenOptionsEditCourse::SetCurrentSteps()
 {
-	Song *pSong = GAMESTATE->m_pCurSong;
+	Song *pSong = GAMESTATE->cur_song_;
 	if( pSong )
 	{
 		int iRow = m_iCurrentRow[PLAYER_1];
@@ -417,11 +417,11 @@ void ScreenOptionsEditCourse::SetCurrentSteps()
 		const EditCourseOptionRowHandlerSteps *pHand = dynamic_cast<const EditCourseOptionRowHandlerSteps *>( row.GetHandler() );
 		ASSERT( pHand != nullptr );
 		Steps *pSteps = pHand->GetSteps( iStepsIndex );
-		GAMESTATE->m_pCurSteps[PLAYER_1].Set( pSteps );
+		GAMESTATE->cur_steps_[PLAYER_1].Set( pSteps );
 	}
 	else
 	{
-		GAMESTATE->m_pCurSteps[PLAYER_1].Set(nullptr);
+		GAMESTATE->cur_steps_[PLAYER_1].Set(nullptr);
 	}
 }
 
@@ -493,7 +493,7 @@ void ScreenOptionsEditCourse::ProcessMenuStart( const InputEventPlus &input )
 
 	int iRow = m_iCurrentRow[GAMESTATE->GetMasterPlayerNumber()];
 
-	unsigned iSongCount = GAMESTATE->m_pCurCourse->m_vEntries.size();
+	unsigned iSongCount = GAMESTATE->cur_course_->m_vEntries.size();
 
 	if( m_pRows[iRow]->GetRowType() == OptionRow::RowType_Exit  &&  iSongCount < unsigned(MIN_ENABLED_SONGS) )
 	{

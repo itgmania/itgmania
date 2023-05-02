@@ -19,19 +19,19 @@ ScreenGameplayLesson::ScreenGameplayLesson()
 void ScreenGameplayLesson::Init()
 {
 	ASSERT( GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber()) != nullptr );
-	ASSERT( GAMESTATE->m_pCurSong != nullptr );
+	ASSERT( GAMESTATE->cur_song_ != nullptr );
 
 	/* Now that we've set up, init the base class. */
 	ScreenGameplayNormal::Init();
 
 	ClearMessageQueue();	// remove all of the messages set in ScreenGameplay that animate "ready", "here we go", etc.
 
-	GAMESTATE->m_bGameplayLeadIn.Set( false );
+	GAMESTATE->gameplay_lead_in_.Set( false );
 
 	m_DancingState = STATE_DANCING;
 
 	// Load pages
-	Song *pSong = GAMESTATE->m_pCurSong;
+	Song *pSong = GAMESTATE->cur_song_;
 	RString sDir = pSong->GetSongDir();
 	std::vector<RString> vs;
 	GetDirListing( sDir+"Page*", vs, true, true );
@@ -58,9 +58,9 @@ void ScreenGameplayLesson::Init()
 	}
 
 	// Reset stage number (not relevant in lessons)
-	GAMESTATE->m_iCurrentStageIndex = 0;
+	GAMESTATE->current_stage_index_ = 0;
 	FOREACH_ENUM( PlayerNumber, p )
-		GAMESTATE->m_iPlayerStageTokens[p] = 1;
+		GAMESTATE->player_stage_tokens_[p] = 1;
 
 	// Autoplay during demonstration
 	FOREACH_EnabledPlayerInfo( m_vPlayerInfo, pi )

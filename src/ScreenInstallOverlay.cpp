@@ -192,13 +192,13 @@ void ScreenInstallOverlay::Update( float fDeltaTime )
 		if( pSong )
 		{
 			std::vector<const Style*> vpStyle;
-			GAMEMAN->GetStylesForGame( GAMESTATE->m_pCurGame, vpStyle, false );
-			GAMESTATE->m_PlayMode.Set( PLAY_MODE_REGULAR );
-			GAMESTATE->m_bSideIsJoined[0] = true;
+			GAMEMAN->GetStylesForGame( GAMESTATE->cur_game_, vpStyle, false );
+			GAMESTATE->play_mode_.Set( PLAY_MODE_REGULAR );
+			GAMESTATE->side_is_joined_[0] = true;
 			GAMESTATE->SetMasterPlayerNumber(PLAYER_1);
 			GAMESTATE->SetCurrentStyle( vpStyle[0], PLAYER_1 );
-			GAMESTATE->m_pCurSong.Set( pSong );
-			GAMESTATE->m_pPreferredSong = pSong;
+			GAMESTATE->cur_song_.Set( pSong );
+			GAMESTATE->preferred_song_ = pSong;
 			sInitialScreen = StepMania::GetSelectMusicScreen();
 		}
 		else

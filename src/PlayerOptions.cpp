@@ -118,7 +118,7 @@ void PlayerOptions::Init()
 
 void PlayerOptions::Approach( const PlayerOptions& other, float fDeltaSeconds )
 {
-	const float fRateMult = PREFSMAN->m_bRateModsAffectTweens ? GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate : 1.0f;
+	const float fRateMult = PREFSMAN->m_bRateModsAffectTweens ? GAMESTATE->song_options_.GetCurrent().m_fMusicRate : 1.0f;
 
 #define APPROACH( opt ) \
 	fapproach( m_ ## opt, other.m_ ## opt, fRateMult * fDeltaSeconds * other.m_Speed ## opt );
@@ -1650,12 +1650,12 @@ bool PlayerOptions::IsEasierForSongAndSteps( Song* pSong, Steps* pSteps, PlayerN
 		DisplayBpms bpms;
 		if( GAMESTATE->IsCourseMode() )
 		{
-			Trail *pTrail = GAMESTATE->m_pCurCourse->GetTrail( GAMESTATE->GetCurrentStyle(m_pn)->m_StepsType );
+			Trail *pTrail = GAMESTATE->cur_course_->GetTrail( GAMESTATE->GetCurrentStyle(m_pn)->m_StepsType );
 			pTrail->GetDisplayBpms( bpms );
 		}
 		else
 		{
-			GAMESTATE->m_pCurSong->GetDisplayBpms( bpms );
+			GAMESTATE->cur_song_->GetDisplayBpms( bpms );
 		}
 		pSong->GetDisplayBpms( bpms );
 

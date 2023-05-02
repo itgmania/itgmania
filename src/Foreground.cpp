@@ -67,12 +67,12 @@ void Foreground::Update(float /*delta*/) {
   // RateModsAffectFGChanges is enabled. Undo it.
   const float rate = PREFSMAN->m_bRateModsAffectTweens
                           ? 1.0f
-                          : GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+                          : GAMESTATE->song_options_.GetCurrent().m_fMusicRate;
 
   for (unsigned i = 0; i < bg_animations_.size(); ++i) {
     LoadedBGA& bga = bg_animations_[i];
 
-    if (GAMESTATE->m_Position.m_fSongBeat < bga.start_beat) {
+    if (GAMESTATE->position_.m_fSongBeat < bga.start_beat) {
       // The animation hasn't started yet.
       continue;
     }
@@ -94,9 +94,9 @@ void Foreground::Update(float /*delta*/) {
       bga.stop_beat =
           song_->m_SongTiming.GetBeatFromElapsedTime(fStopSecond);
 
-      delta_time = GAMESTATE->m_Position.m_fMusicSeconds - fStartSecond;
+      delta_time = GAMESTATE->position_.m_fMusicSeconds - fStartSecond;
     } else {
-      delta_time = GAMESTATE->m_Position.m_fMusicSeconds - last_music_seconds_;
+      delta_time = GAMESTATE->position_.m_fMusicSeconds - last_music_seconds_;
     }
 
     // This shouldn't go down, but be safe:
@@ -104,7 +104,7 @@ void Foreground::Update(float /*delta*/) {
 
     bga.bga->Update(delta_time / rate);
 
-    if (GAMESTATE->m_Position.m_fSongBeat > bga.stop_beat) {
+    if (GAMESTATE->position_.m_fSongBeat > bga.stop_beat) {
       // Finished.
       bga.bga->SetVisible(false);
       bga.is_finished = true;
@@ -112,7 +112,7 @@ void Foreground::Update(float /*delta*/) {
     }
   }
 
-  last_music_seconds_ = GAMESTATE->m_Position.m_fMusicSeconds;
+  last_music_seconds_ = GAMESTATE->position_.m_fMusicSeconds;
 }
 
 void Foreground::HandleMessage(const Message& msg) {

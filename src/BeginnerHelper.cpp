@@ -162,7 +162,7 @@ bool BeginnerHelper::Init(int dance_pad_type) {
     }
 
     // Load character data
-    const Character* Character = GAMESTATE->m_pCurCharacters[pn];
+    const Character* Character = GAMESTATE->cur_characters_[pn];
     ASSERT(Character != nullptr);
 
     dancers_[pn]->SetName(ssprintf("PlayerP%d", pn + 1));
@@ -218,7 +218,7 @@ void BeginnerHelper::ShowStepCircle(PlayerNumber pn, int step) {
   step_circles_[pn][step_circle].SetZoom(2);
   step_circles_[pn][step_circle].StopTweening();
   step_circles_[pn][step_circle].BeginTweening(
-      GAMESTATE->m_Position.m_fCurBPS / 3, TWEEN_LINEAR);
+      GAMESTATE->position_.m_fCurBPS / 3, TWEEN_LINEAR);
   step_circles_[pn][step_circle].SetZoom(0);
 }
 
@@ -231,7 +231,7 @@ void BeginnerHelper::AddPlayer(PlayerNumber pn, const NoteData& note_data) {
     return;
   }
 
-  const Character* Character = GAMESTATE->m_pCurCharacters[pn];
+  const Character* Character = GAMESTATE->cur_characters_[pn];
   ASSERT(Character != nullptr);
   if (!DoesFileExist(Character->GetModelPath())) {
     return;
@@ -350,22 +350,22 @@ void BeginnerHelper::Step(PlayerNumber pn, int step) {
       dancers_[pn]->StopTweening();
       dancers_[pn]->PlayAnimation("Step-JUMPLR", 1.5f);
       dancers_[pn]->BeginTweening(
-          GAMESTATE->m_Position.m_fCurBPS / 8, TWEEN_LINEAR);
+          GAMESTATE->position_.m_fCurBPS / 8, TWEEN_LINEAR);
       dancers_[pn]->SetRotationY(90);
       // sleep between jump-frames
       dancers_[pn]->BeginTweening(
-          1 / (GAMESTATE->m_Position.m_fCurBPS * 2));
+          1 / (GAMESTATE->position_.m_fCurBPS * 2));
       dancers_[pn]->BeginTweening(
-          GAMESTATE->m_Position.m_fCurBPS / 6, TWEEN_LINEAR);
+          GAMESTATE->position_.m_fCurBPS / 6, TWEEN_LINEAR);
       dancers_[pn]->SetRotationY(0);
       break;
   }
 
   flash_.StopEffect();
   flash_.StopTweening();
-  flash_.Sleep(GAMESTATE->m_Position.m_fCurBPS / 16);
+  flash_.Sleep(GAMESTATE->position_.m_fCurBPS / 16);
   flash_.SetDiffuseAlpha(1);
-  flash_.BeginTweening(1 / GAMESTATE->m_Position.m_fCurBPS * 0.5f);
+  flash_.BeginTweening(1 / GAMESTATE->position_.m_fCurBPS * 0.5f);
   flash_.SetDiffuseAlpha(0);
 }
 
@@ -376,7 +376,7 @@ void BeginnerHelper::Update(float delta) {
 
   // the row we want to check on this update
   int cur_row =
-      BeatToNoteRowNotRounded(GAMESTATE->m_Position.m_fSongBeat + 0.4f);
+      BeatToNoteRowNotRounded(GAMESTATE->position_.m_fSongBeat + 0.4f);
   FOREACH_EnabledPlayer(pn) {
     for (int row = last_row_checked_; row < cur_row; ++row) {
       // Check if there are any notes at all on this row. If not, save scanning.
@@ -406,7 +406,7 @@ void BeginnerHelper::Update(float delta) {
   dance_pad_->Update(delta);
   flash_.Update(delta);
 
-  float beat = delta * GAMESTATE->m_Position.m_fCurBPS;
+  float beat = delta * GAMESTATE->position_.m_fCurBPS;
   // If this is not a human player, the dancer is not shown
   FOREACH_HumanPlayer(pu) {
     // Update dancer's animation and StepCircles

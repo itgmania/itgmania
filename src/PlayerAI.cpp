@@ -125,7 +125,7 @@ TapNoteScore PlayerAI::GetTapNoteScore( const PlayerState* pPlayerState )
 	 * modifiers attached, don't make demonstration miss a lot. */
 	// Idea: weight certain modifiers (boomerang, tornado) more? (to simulate
 	// readability problems) -aj
-	if( !GAMESTATE->m_bDemonstrationOrJukebox )
+	if( !GAMESTATE->demonstration_or_jukebox_ )
 	{
 		int iSumOfAttackLevels = 
 			pPlayerState->m_fSecondsUntilAttacksPhasedOut > 0 ? 

@@ -49,7 +49,7 @@ void CourseContentsList::SetFromGameState() {
     return;
   }
   const Trail* master_trail =
-      GAMESTATE->m_pCurTrail[GAMESTATE->GetMasterPlayerNumber()];
+      GAMESTATE->cur_trail_[GAMESTATE->GetMasterPlayerNumber()];
   if (master_trail == nullptr) {
     return;
   }
@@ -78,10 +78,10 @@ void CourseContentsList::SetFromGameState() {
 
 void CourseContentsList::SetItemFromGameState(
     Actor* actor, int course_entry_index) {
-  const Course* pCourse = GAMESTATE->m_pCurCourse;
+  const Course* pCourse = GAMESTATE->cur_course_;
 
   FOREACH_HumanPlayer(pn) {
-    const Trail* trail = GAMESTATE->m_pCurTrail[pn];
+    const Trail* trail = GAMESTATE->cur_trail_[pn];
     if (trail == nullptr ||
         course_entry_index >= (int)trail->m_vEntries.size() ||
         course_entry_index >= (int)pCourse->m_vEntries.size()) {

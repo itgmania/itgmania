@@ -84,13 +84,13 @@ void Profile::ClearSongs()
 	{
 		return;
 	}
-	Song* gamestate_curr_song= GAMESTATE->m_pCurSong;
+	Song* gamestate_curr_song= GAMESTATE->cur_song_;
 	for(std::size_t i= 0; i < m_songs.size(); ++i)
 	{
 		Song* curr_song= m_songs[i];
 		if(curr_song == gamestate_curr_song)
 		{
-			GAMESTATE->m_pCurSong.Set(nullptr);
+			GAMESTATE->cur_song_.Set(nullptr);
 		}
 		delete curr_song;
 	}

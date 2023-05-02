@@ -686,7 +686,7 @@ bool OptionsList::Start()
 		pHandler->GetIconTextAndGameCommand( m_iMenuStackSelection, sIconText, gc );
 		if( gc.name_ == RESET_ROW )
 		{
-			GAMESTATE->m_pPlayerState[m_pn]->ResetToDefaultPlayerOptions( ModsLevel_Preferred );
+			GAMESTATE->player_state_[m_pn]->ResetToDefaultPlayerOptions( ModsLevel_Preferred );
 			GAMESTATE->ResetToDefaultSongOptions( ModsLevel_Preferred );
 
 			/* Import options. */

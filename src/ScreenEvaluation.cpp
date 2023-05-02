@@ -83,12 +83,12 @@ REGISTER_SCREEN_CLASS( ScreenEvaluation );
 
 ScreenEvaluation::ScreenEvaluation()
 {
-	GAMESTATE->m_AdjustTokensBySongCostForFinalStageCheck= false;
+	GAMESTATE->adjust_tokens_by_song_cost_for_final_stage_check= false;
 }
 
 ScreenEvaluation::~ScreenEvaluation()
 {
-	GAMESTATE->m_AdjustTokensBySongCostForFinalStageCheck= true;
+	GAMESTATE->adjust_tokens_by_song_cost_for_final_stage_check= true;
 }
 
 void ScreenEvaluation::Init()
@@ -107,42 +107,42 @@ void ScreenEvaluation::Init()
 		STATSMAN->m_vPlayedStageStats.push_back( StageStats() );
 		StageStats &ss = STATSMAN->m_vPlayedStageStats.back();
 
-		GAMESTATE->m_PlayMode.Set( PLAY_MODE_REGULAR );
+		GAMESTATE->play_mode_.Set( PLAY_MODE_REGULAR );
 		GAMESTATE->SetCurrentStyle( GAMEMAN->GameAndStringToStyle(GAMEMAN->GetDefaultGame(),"versus"), PLAYER_INVALID );
-		ss.m_playMode = GAMESTATE->m_PlayMode;
+		ss.m_playMode = GAMESTATE->play_mode_;
 		ss.m_Stage = Stage_1st;
 		enum_add( ss.m_Stage, rand()%3 );
 		ss.m_EarnedExtraStage = (EarnedExtraStage)(rand() % NUM_EarnedExtraStage);
 		GAMESTATE->SetMasterPlayerNumber(PLAYER_1);
-		GAMESTATE->m_pCurSong.Set( SONGMAN->GetRandomSong() );
-		ss.m_vpPlayedSongs.push_back( GAMESTATE->m_pCurSong );
-		ss.m_vpPossibleSongs.push_back( GAMESTATE->m_pCurSong );
-		GAMESTATE->m_pCurCourse.Set( SONGMAN->GetRandomCourse() );
-		GAMESTATE->m_iCurrentStageIndex = 0;
+		GAMESTATE->cur_song_.Set( SONGMAN->GetRandomSong() );
+		ss.m_vpPlayedSongs.push_back( GAMESTATE->cur_song_ );
+		ss.m_vpPossibleSongs.push_back( GAMESTATE->cur_song_ );
+		GAMESTATE->cur_course_.Set( SONGMAN->GetRandomCourse() );
+		GAMESTATE->current_stage_index_ = 0;
 		FOREACH_ENUM( PlayerNumber, p )
-			GAMESTATE->m_iPlayerStageTokens[p] = 1;
+			GAMESTATE->player_stage_tokens_[p] = 1;
 
 		FOREACH_PlayerNumber( p )
 		{
 			ss.m_player[p].m_pStyle = GAMESTATE->GetCurrentStyle(p);
 			if( RandomInt(2) )
-				PO_GROUP_ASSIGN_N( GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage, m_bTransforms, PlayerOptions::TRANSFORM_ECHO, true );	// show "disqualified"
-			SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Stage, m_fMusicRate, 1.1f );
+				PO_GROUP_ASSIGN_N( GAMESTATE->player_state_[p]->m_PlayerOptions, ModsLevel_Stage, m_bTransforms, PlayerOptions::TRANSFORM_ECHO, true );	// show "disqualified"
+			SO_GROUP_ASSIGN( GAMESTATE->song_options_, ModsLevel_Stage, m_fMusicRate, 1.1f );
 
 			GAMESTATE->JoinPlayer( p );
-			GAMESTATE->m_pCurSteps[p].Set( GAMESTATE->m_pCurSong->GetAllSteps()[0] );
-			if( GAMESTATE->m_pCurCourse )
+			GAMESTATE->cur_steps_[p].Set( GAMESTATE->cur_song_->GetAllSteps()[0] );
+			if( GAMESTATE->cur_course_ )
 			{
 				std::vector<Trail*> apTrails;
-				GAMESTATE->m_pCurCourse->GetAllTrails( apTrails );
+				GAMESTATE->cur_course_->GetAllTrails( apTrails );
 				if( apTrails.size() )
-					GAMESTATE->m_pCurTrail[p].Set( apTrails[0] );
+					GAMESTATE->cur_trail_[p].Set( apTrails[0] );
 			}
-			ss.m_player[p].m_vpPossibleSteps.push_back( GAMESTATE->m_pCurSteps[PLAYER_1] );
+			ss.m_player[p].m_vpPossibleSteps.push_back( GAMESTATE->cur_steps_[PLAYER_1] );
 			ss.m_player[p].m_iStepsPlayed = 1;
 
-			PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage, m_fScrollSpeed, 2.0f );
-			PO_GROUP_CALL( GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage, ChooseRandomModifiers );
+			PO_GROUP_ASSIGN( GAMESTATE->player_state_[p]->m_PlayerOptions, ModsLevel_Stage, m_fScrollSpeed, 2.0f );
+			PO_GROUP_CALL( GAMESTATE->player_state_[p]->m_PlayerOptions, ModsLevel_Stage, ChooseRandomModifiers );
 		}
 
 		for( float f = 0; f < 100.0f; f += 1.0f )
@@ -154,7 +154,7 @@ void ScreenEvaluation::Init()
 
 		FOREACH_PlayerNumber( p )
 		{
-			float fSeconds = GAMESTATE->m_pCurSong->GetStepsSeconds();
+			float fSeconds = GAMESTATE->cur_song_->GetStepsSeconds();
 			ss.m_player[p].m_iActualDancePoints = RandomInt( 3 );
 			ss.m_player[p].m_iPossibleDancePoints = 2;
 			if( RandomInt(2) )
@@ -289,9 +289,9 @@ void ScreenEvaluation::Init()
 		else
 		{
 			if( GAMESTATE->IsCourseMode() )
-				m_LargeBanner.LoadFromCourse( GAMESTATE->m_pCurCourse );
+				m_LargeBanner.LoadFromCourse( GAMESTATE->cur_course_ );
 			else
-				m_LargeBanner.LoadFromSong( GAMESTATE->m_pCurSong );
+				m_LargeBanner.LoadFromSong( GAMESTATE->cur_song_ );
 			m_LargeBanner.ScaleToClipped( BANNER_WIDTH, BANNER_HEIGHT );
 			m_LargeBanner.SetName( "LargeBanner" );
 			ActorUtil::LoadAllCommands( m_LargeBanner, m_sName );
@@ -316,7 +316,7 @@ void ScreenEvaluation::Init()
 				ActorUtil::LoadAllCommands( m_textPlayerOptions[p], m_sName );
 				SET_XY( m_textPlayerOptions[p] );
 				std::vector<RString> v;
-				PlayerOptions po = GAMESTATE->m_pPlayerState[p]->m_PlayerOptions.GetPreferred();
+				PlayerOptions po = GAMESTATE->player_state_[p]->m_PlayerOptions.GetPreferred();
 				if( PLAYER_OPTIONS_HIDE_FAIL_TYPE )
 					po.m_FailType = (FailType)0;	// blank out the fail type so that it won't show in the mods list
 				po.GetLocalizedMods( v );
@@ -330,7 +330,7 @@ void ScreenEvaluation::Init()
 				m_textSongOptions.SetName( "SongOptions" );
 				ActorUtil::LoadAllCommands( m_textSongOptions, m_sName );
 				SET_XY( m_textSongOptions );
-				m_textSongOptions.SetText( GAMESTATE->m_SongOptions.GetStage().GetLocalizedString() );
+				m_textSongOptions.SetText( GAMESTATE->song_options_.GetStage().GetLocalizedString() );
 				this->AddChild( &m_textSongOptions );
 			}
 		}
@@ -381,7 +381,7 @@ void ScreenEvaluation::Init()
 			/* Use "ScreenEvaluation Percent" in the [metrics], but position and
 			 * tween it with "PercentP1X", etc. */
 			m_Percent[p].SetName( ssprintf("PercentP%d",p+1) );
-			m_Percent[p].Load( GAMESTATE->m_pPlayerState[p], &m_pStageStats->m_player[p], "ScreenEvaluation Percent", true );
+			m_Percent[p].Load( GAMESTATE->player_state_[p], &m_pStageStats->m_player[p], "ScreenEvaluation Percent", true );
 			ActorUtil::LoadAllCommands( m_Percent[p], m_sName );
 			SET_XY( m_Percent[p] );
 			this->AddChild( &m_Percent[p] );
@@ -394,7 +394,7 @@ void ScreenEvaluation::Init()
 		// In course mode, we need to make sure the bar doesn't overflow. -aj
 		float fDivider = 1.0f;
 		if( GAMESTATE->IsCourseMode() )
-			fDivider = fDivider / GAMESTATE->m_pCurCourse->m_vEntries.size();
+			fDivider = fDivider / GAMESTATE->cur_course_->m_vEntries.size();
 
 		FOREACH_EnabledPlayer( p )
 		{
@@ -697,7 +697,7 @@ void ScreenEvaluation::Init()
 		}
 		else
 		{
-			switch( GAMESTATE->m_PlayMode )
+			switch( GAMESTATE->play_mode_ )
 			{
 			case PLAY_MODE_BATTLE:
 				{
