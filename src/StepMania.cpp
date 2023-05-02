@@ -1280,9 +1280,9 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 		}
 	}
 #else
-	if( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_Cq) &&
-		(INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LMETA), &input.InputList ) ||
-		 INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RMETA), &input.InputList )) )
+	if( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_Cq) &&
+		(INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LMETA), &input.input_list_ ) ||
+		 INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RMETA), &input.input_list_ )) )
 	{
 		/* The user quit is handled by the menu item so we don't need to set it
 		 * here; however, we do want to return that it has been handled since
