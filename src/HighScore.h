@@ -1,184 +1,164 @@
 #ifndef HIGH_SCORE_H
 #define HIGH_SCORE_H
 
-#include "Grade.h"
-#include "GameConstantsAndTypes.h"
-#include "DateTime.h"
-#include "RageUtil_AutoPtr.h"
-
 #include <vector>
 
+#include "DateTime.h"
+#include "GameConstantsAndTypes.h"
+#include "Grade.h"
+#include "RadarValues.h"
+#include "RageUtil_AutoPtr.h"
+#include "XmlFile.h"
 
-class XNode;
-struct RadarValues;
 struct lua_State;
 
+// TODO(teejusb): This is defined in the cpp file.
 struct HighScoreImpl;
-/** @brief The high score that is earned by a player.
- *
- * This is scoring data that is persisted between sessions. */
-struct HighScore
-{
-	HighScore();
 
-	/**
-	 * @brief Retrieve the name of the player that set the high score.
-	 * @return the name of the player. */
-	RString	GetName() const;
-	/**
-	 * @brief Retrieve the grade earned from this score.
-	 * @return the grade.
-	 */
-	Grade GetGrade() const;
-	/**
-	 * @brief Retrieve the score earned.
-	 * @return the score. */
-	unsigned int GetScore() const;
-	/**
-	 * @brief Determine if any judgments were tallied during this run.
-	 * @return true if no judgments were recorded, false otherwise. */
-	bool IsEmpty() const;
-	float GetPercentDP() const;
-	/**
-	 * @brief Determine how many seconds the player had left in Survival mode.
-	 * @return the number of seconds left. */
-	float GetSurviveSeconds() const;
-	float GetSurvivalSeconds() const;
-	unsigned int   GetMaxCombo() const;
-	StageAward GetStageAward() const;
-	PeakComboAward GetPeakComboAward() const;
-	/**
-	 * @brief Get the modifiers used for this run.
-	 * @return the modifiers. */
-	RString GetModifiers() const;
-	DateTime GetDateTime() const;
-	RString GetPlayerGuid() const;
-	RString GetMachineGuid() const;
-	int GetProductID() const;
-	int GetTapNoteScore( TapNoteScore tns ) const;
-	int GetHoldNoteScore( HoldNoteScore tns ) const;
-	const RadarValues &GetRadarValues() const;
-	float GetLifeRemainingSeconds() const;
-	/**
-	 * @brief Determine if this score was from a situation that would cause disqualification.
-	 * @return true if the score would be disqualified, false otherwise. */
-	bool GetDisqualified() const;
+// The high score that is earned by a player.
+// This is scoring data that is persisted between sessions.
+struct HighScore {
+  HighScore();
 
-	/**
-	 * @brief Set the name of the Player that earned the score.
-	 * @param sName the name of the Player. */
-	void SetName( const RString &sName );
-	void SetGrade( Grade g );
-	void SetScore( unsigned int iScore );
-	void SetPercentDP( float f );
-	void SetAliveSeconds( float f );
-	void SetMaxCombo( unsigned int i );
-	void SetStageAward( StageAward a );
-	void SetPeakComboAward( PeakComboAward a );
-	void SetModifiers( RString s );
-	void SetDateTime( DateTime d );
-	void SetPlayerGuid( RString s );
-	void SetMachineGuid( RString s );
-	void SetProductID( int i );
-	void SetTapNoteScore( TapNoteScore tns, int i );
-	void SetHoldNoteScore( HoldNoteScore tns, int i );
-	void SetRadarValues( const RadarValues &rv );
-	void SetLifeRemainingSeconds( float f );
-	void SetDisqualified( bool b );
+  // Retrieve the name of the player that set the high score.
+  RString GetName() const;
+  // Retrieve the grade earned from this score.
+  Grade GetGrade() const;
+  // Retrieve the score earned.
+  unsigned int GetScore() const;
+  // Determine if any judgments were tallied during this run.
+  bool IsEmpty() const;
+  float GetPercentDP() const;
+  // Determine how many seconds the player had left in Survival mode.
+  float GetSurviveSeconds() const;
+  float GetSurvivalSeconds() const;
+  unsigned int GetMaxCombo() const;
+  StageAward GetStageAward() const;
+  PeakComboAward GetPeakComboAward() const;
+  // Get the modifiers used for this run.
+  RString GetModifiers() const;
+  DateTime GetDateTime() const;
+  RString GetPlayerGuid() const;
+  RString GetMachineGuid() const;
+  int GetProductID() const;
+  int GetTapNoteScore(TapNoteScore tns) const;
+  int GetHoldNoteScore(HoldNoteScore tns) const;
+  const RadarValues& GetRadarValues() const;
+  float GetLifeRemainingSeconds() const;
+  // Determine if this score was from a situation that would cause
+	// disqualification.
+  bool GetDisqualified() const;
 
-	RString *GetNameMutable();
-	const RString *GetNameMutable() const { return const_cast<RString *> (const_cast<HighScore *>(this)->GetNameMutable()); }
+  // Set the name of the Player that earned the score.
+  void SetName(const RString& name);
+  void SetGrade(Grade grade);
+  void SetScore(unsigned int score);
+  void SetPercentDP(float percent_dp);
+  void SetAliveSeconds(float alive_seconds);
+  void SetMaxCombo(unsigned int max_combo);
+  void SetStageAward(StageAward stage_award);
+  void SetPeakComboAward(PeakComboAward peak_combo_award);
+  void SetModifiers(RString modifiers);
+  void SetDateTime(DateTime date_time);
+  void SetPlayerGuid(RString player_guid);
+  void SetMachineGuid(RString maching_guid);
+  void SetProductID(int product_id);
+  void SetTapNoteScore(TapNoteScore tns, int i);
+  void SetHoldNoteScore(HoldNoteScore tns, int i);
+  void SetRadarValues(const RadarValues& radar_values);
+  void SetLifeRemainingSeconds(float life_remaining_seconds);
+  void SetDisqualified(bool disqualified);
 
-	void Unset();
+  RString* GetNameMutable();
+  const RString* GetNameMutable() const {
+    return const_cast<RString*>(const_cast<HighScore*>(this)->GetNameMutable());
+  }
 
-	bool operator<(HighScore const& other) const;
-	bool operator>(HighScore const& other) const;
-	bool operator<=(HighScore const& other) const;
-	bool operator>=(HighScore const& other) const;
-	bool operator==(HighScore const& other) const;
-	bool operator!=(HighScore const& other) const;
+  void Unset();
 
-	XNode* CreateNode() const;
-	void LoadFromNode( const XNode* pNode );
+  bool operator<(const HighScore& other) const;
+  bool operator>(const HighScore& other) const;
+  bool operator<=(const HighScore& other) const;
+  bool operator>=(const HighScore& other) const;
+  bool operator==(const HighScore& other) const;
+  bool operator!=(const HighScore& other) const;
 
-	RString GetDisplayName() const;
+  XNode* CreateNode() const;
+  void LoadFromNode(const XNode* node);
 
-	// Lua
-	void PushSelf( lua_State *L );
-private:
-	HiddenPtr<HighScoreImpl> m_Impl;
+  RString GetDisplayName() const;
+
+  // Lua
+  void PushSelf(lua_State* L);
+
+ private:
+  HiddenPtr<HighScoreImpl> high_score_impl_;
 };
 
-/** @brief The list of high scores */
-struct HighScoreList
-{
-public:
-	/**
-	 * @brief Set up the HighScore List with default values.
-	 *
-	 * This used to call Init(), but it's better to be explicit here. */
-	HighScoreList(): vHighScores(), HighGrade(Grade_NoData),
-		iNumTimesPlayed(0), dtLastPlayed() {}
+// The list of high scores
+struct HighScoreList {
+ public:
+  // Set up the HighScore List with default values.
+  // This used to call Init(), but it's better to be explicit here.
+  HighScoreList()
+      : high_scores_(),
+        high_grade_(Grade_NoData),
+        num_times_played_(0),
+        last_played_() {}
 
-	void Init();
+  void Init();
 
-	int GetNumTimesPlayed() const
-	{
-		return iNumTimesPlayed;
-	}
-	DateTime GetLastPlayed() const
-	{
-		ASSERT( iNumTimesPlayed > 0 );	// don't call this unless the song has been played
-		return dtLastPlayed;
-	}
-	const HighScore& GetTopScore() const;
+  int GetNumTimesPlayed() const { return num_times_played_; }
+  DateTime GetLastPlayed() const {
+		// Don't call this unless the song has been played.
+    ASSERT(num_times_played_ > 0);
+    return last_played_;
+  }
+  const HighScore& GetTopScore() const;
 
-	void AddHighScore( HighScore hs, int &iIndexOut, bool bIsMachine );
-	void IncrementPlayCount( DateTime dtLastPlayed );
-	void RemoveAllButOneOfEachName();
-	void ClampSize( bool bIsMachine );
+  void AddHighScore(HighScore high_score, int& index_out, bool is_machine);
+  void IncrementPlayCount(DateTime last_played_);
+  void RemoveAllButOneOfEachName();
+  void ClampSize(bool is_machine);
 
-	void MergeFromOtherHSL(HighScoreList& other, bool is_machine);
+  void MergeFromOtherHSL(HighScoreList& other, bool is_machine);
 
-	XNode* CreateNode() const;
-	void LoadFromNode( const XNode* pNode );
+  XNode* CreateNode() const;
+  void LoadFromNode(const XNode* node);
 
-	std::vector<HighScore> vHighScores;
-	Grade HighGrade;
+  std::vector<HighScore> high_scores_;
+  Grade high_grade_;
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-private:
-	int iNumTimesPlayed;
-	DateTime dtLastPlayed;	// meaningless if iNumTimesPlayed == 0
-
+ private:
+  int num_times_played_;
+	// Meaningless if num_times_played_ == 0.
+  DateTime last_played_;
 };
 
-/** @brief the picture taken of the high score. */
-struct Screenshot
-{
-	/** @brief the filename of the screen shot. There is no directory part. */
-	RString sFileName;
-	/** @brief The MD5 hash of the screen shot file above. */
-	RString sMD5;
-	/** @brief The actual high score in question. */
-	HighScore highScore;
+// the picture taken of the high score.
+struct Screenshot {
+  // the filename of the screen shot. There is no directory part.
+  RString file_name;
+  // The MD5 hash of the screen shot file above.
+  RString md5;
+  // The actual high score in question.
+  HighScore high_score;
 
-	XNode* CreateNode() const;
-	void LoadFromNode( const XNode* pNode );
-	bool operator<(Screenshot const& rhs) const
-	{
-		return highScore.GetDateTime() < rhs.highScore.GetDateTime();
-	}
+  XNode* CreateNode() const;
+  void LoadFromNode(const XNode* node);
+  bool operator<(const Screenshot& rhs) const {
+    return high_score.GetDateTime() < rhs.high_score.GetDateTime();
+  }
 
-	bool operator==(Screenshot const& rhs) const
-	{
-		return sFileName == rhs.sFileName;
-	}
+  bool operator==(const Screenshot& rhs) const {
+    return file_name == rhs.file_name;
+  }
 };
 
-#endif
+#endif  // HIGH_SCORE_H
 
 /**
  * @file

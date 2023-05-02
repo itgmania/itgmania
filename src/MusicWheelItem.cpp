@@ -368,7 +368,7 @@ void MusicWheelItem::RefreshGrades()
 		msg.SetParam( "PlayerNumber", p );
 		if( pHSL )
 		{
-			msg.SetParam( "Grade", pHSL->HighGrade );
+			msg.SetParam( "Grade", pHSL->high_grade_ );
 			msg.SetParam( "NumTimesPlayed", pHSL->GetNumTimesPlayed() );
 		}
 		m_pGradeDisplay[p]->HandleMessage( msg );

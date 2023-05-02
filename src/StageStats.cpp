@@ -291,11 +291,11 @@ void StageStats::FinalizeScores( bool bSummary )
 			pHSL = &pProfile->GetStepsHighScoreList( pSong, pSteps );
 		}
 
-		std::vector<HighScore>::const_iterator iter = find( pHSL->vHighScores.begin(), pHSL->vHighScores.end(), hs );
-		if( iter == pHSL->vHighScores.end() )
+		std::vector<HighScore>::const_iterator iter = std::find( pHSL->high_scores_.begin(), pHSL->high_scores_.end(), hs );
+		if( iter == pHSL->high_scores_.end() )
 			m_player[p].m_iMachineHighScoreIndex = -1;
 		else
-			m_player[p].m_iMachineHighScoreIndex = iter - pHSL->vHighScores.begin();
+			m_player[p].m_iMachineHighScoreIndex = iter - pHSL->high_scores_.begin();
 	}
 
 	LOG->Trace( "done saving stats and high scores" );
@@ -319,9 +319,9 @@ bool StageStats::PlayerHasHighScore( PlayerNumber pn ) const
 
 	const unsigned int iScore = m_player[pn].m_iScore;
 	float fPercentDP = m_player[pn].GetPercentDancePoints();
-	for( int h=0; h<(int)hsl.vHighScores.size() && h<PREFSMAN->m_iMaxHighScoresPerListForMachine; ++h )
+	for( int h=0; h<(int)hsl.high_scores_.size() && h<PREFSMAN->m_iMaxHighScoresPerListForMachine; ++h )
 	{
-		const HighScore &hs = hsl.vHighScores[h];
+		const HighScore &hs = hsl.high_scores_[h];
 		if( hs.GetName() == RANKING_TO_FILL_IN_MARKER[pn]  &&
 			hs.GetPercentDP() == fPercentDP  &&
 			hs.GetScore() == iScore )

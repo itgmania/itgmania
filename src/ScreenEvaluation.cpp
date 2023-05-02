@@ -751,9 +751,9 @@ bool ScreenEvaluation::Input( const InputEventPlus &input )
 
 					const HighScore &hs = m_pStageStats->m_player[pn].m_HighScore;
 					Screenshot screenshot;
-					screenshot.sFileName = sFileName;
-					screenshot.sMD5 = BinaryToHex( CRYPTMAN->GetMD5ForFile(sPath) );
-					screenshot.highScore = hs;
+					screenshot.file_name = sFileName;
+					screenshot.md5 = BinaryToHex( CRYPTMAN->GetMD5ForFile(sPath) );
+					screenshot.high_score = hs;
 					pProfile->AddScreenshot( screenshot );
 				}
 

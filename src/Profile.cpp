@@ -316,10 +316,10 @@ int Profile::GetTotalStepsWithTopGrade( StepsType st, Difficulty d, Grade g ) co
 				continue;	// skip
 
 			const HighScoreList &hsl = GetStepsHighScoreList( pSong, pSteps );
-			if( hsl.vHighScores.empty() )
+			if( hsl.high_scores_.empty() )
 				continue;	// skip
 
-			if( hsl.vHighScores[0].GetGrade() == g )
+			if( hsl.high_scores_[0].GetGrade() == g )
 				iCount++;
 		}
 	}
@@ -346,10 +346,10 @@ int Profile::GetTotalTrailsWithTopGrade( StepsType st, CourseDifficulty d, Grade
 			continue;
 
 		const HighScoreList &hsl = GetCourseHighScoreList( pCourse, pTrail );
-		if( hsl.vHighScores.empty() )
+		if( hsl.high_scores_.empty() )
 			continue;	// skip
 
-		if( hsl.vHighScores[0].GetGrade() == g )
+		if( hsl.high_scores_[0].GetGrade() == g )
 			iCount++;
 	}
 
@@ -798,8 +798,8 @@ void Profile::GetAllUsedHighScoreNames(std::set<RString>& names)
 				sub_entry != main_entry->second.sub_member.end(); ++sub_entry) \
 		{ \
 			for(std::vector<HighScore>::iterator high_score= \
-						sub_entry->second.hsl.vHighScores.begin(); \
-					high_score != sub_entry->second.hsl.vHighScores.end(); \
+						sub_entry->second.hsl.high_scores_.begin(); \
+					high_score != sub_entry->second.hsl.high_scores_.end(); \
 					++high_score) \
 			{ \
 				if(high_score->GetName().size() > 0) \
@@ -929,8 +929,8 @@ void Profile::MergeScoresFromOtherProfile(Profile* other, bool skip_totals,
 			other->m_vScreenshots.begin(), other->m_vScreenshots.end());
 		for(std::size_t sid= old_count; sid < m_vScreenshots.size(); ++sid)
 		{
-			RString old_path= from_dir + "Screenshots/" + m_vScreenshots[sid].sFileName;
-			RString new_path= to_dir + "Screenshots/" + m_vScreenshots[sid].sFileName;
+			RString old_path= from_dir + "Screenshots/" + m_vScreenshots[sid].file_name;
+			RString new_path= to_dir + "Screenshots/" + m_vScreenshots[sid].file_name;
 			// Only move the old screenshot over if it exists and won't stomp an
 			// existing screenshot.
 			if(FILEMAN->DoesFileExist(old_path) && (!FILEMAN->DoesFileExist(new_path)))
@@ -2553,9 +2553,9 @@ public:
 		HighScore* hs= Luna<HighScore>::check(L, 1);
 		RString filename= SArg(2);
 		Screenshot screenshot;
-		screenshot.sFileName= filename;
-		screenshot.sMD5= BinaryToHex(CRYPTMAN->GetMD5ForFile(filename));
-		screenshot.highScore= *hs;
+		screenshot.file_name= filename;
+		screenshot.md5= BinaryToHex(CRYPTMAN->GetMD5ForFile(filename));
+		screenshot.high_score= *hs;
 		p->AddScreenshot(screenshot);
 		COMMON_RETURN_SELF;
 	}

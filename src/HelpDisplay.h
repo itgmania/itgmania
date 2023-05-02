@@ -45,7 +45,7 @@ class HelpDisplay : public BitmapText {
   float seconds_until_switch_;
 };
 
-#endif
+#endif  // HELP_DISPLAY_H
 
 /*
  * (c) 2001-2003 Chris Danford, Glenn Maynard

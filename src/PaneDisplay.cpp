@@ -268,7 +268,7 @@ void PaneDisplay::GetPaneTextAndLevel( PaneCategory c, RString & sTextOut, float
 			switch( c )
 			{
 				case PaneCategory_MachineHighName:
-					if( pHSL->vHighScores.empty() )
+					if( pHSL->high_scores_.empty() )
 					{
 						sTextOut = EMPTY_MACHINE_HIGH_SCORE_NAME;
 					}

@@ -2032,8 +2032,8 @@ void GameState::GetRankingFeats(
           HighScoreList& hsl =
               PROFILEMAN->GetMachineProfile()->GetStepsHighScoreList(
                   song, steps);
-          for (unsigned j = 0; j < hsl.vHighScores.size(); ++j) {
-            HighScore& high_score = hsl.vHighScores[j];
+          for (unsigned j = 0; j < hsl.high_scores_.size(); ++j) {
+            HighScore& high_score = hsl.high_scores_[j];
 
             if (high_score.GetName() != RANKING_TO_FILL_IN_MARKER[pn]) {
               continue;
@@ -2062,8 +2062,8 @@ void GameState::GetRankingFeats(
         // Find Personal Records
         if (profile && PROFILE_RECORD_FEATS) {
           HighScoreList& hsl = profile->GetStepsHighScoreList(song, steps);
-          for (unsigned j = 0; j < hsl.vHighScores.size(); j++) {
-            HighScore& high_score = hsl.vHighScores[j];
+          for (unsigned j = 0; j < hsl.high_scores_.size(); j++) {
+            HighScore& high_score = hsl.high_scores_[j];
 
             if (high_score.GetName() != RANKING_TO_FILL_IN_MARKER[pn]) {
               continue;
@@ -2104,8 +2104,8 @@ void GameState::GetRankingFeats(
         HighScoreList& hsl =
             PROFILEMAN->GetMachineProfile()->GetCategoryHighScoreList(
 								steps_type, ranking_category);
-        for (unsigned j = 0; j < hsl.vHighScores.size(); ++j) {
-          HighScore& hs = hsl.vHighScores[j];
+        for (unsigned j = 0; j < hsl.high_scores_.size(); ++j) {
+          HighScore& hs = hsl.high_scores_[j];
           if (hs.GetName() != RANKING_TO_FILL_IN_MARKER[pn]) {
             continue;
           }
@@ -2132,8 +2132,8 @@ void GameState::GetRankingFeats(
         if (profile && PROFILE_RECORD_FEATS) {
           HighScoreList& hsl = profile->GetCategoryHighScoreList(
 							steps_type, ranking_category);
-          for (unsigned j = 0; j < hsl.vHighScores.size(); ++j) {
-            HighScore& high_score = hsl.vHighScores[j];
+          for (unsigned j = 0; j < hsl.high_scores_.size(); ++j) {
+            HighScore& high_score = hsl.high_scores_[j];
             if (high_score.GetName() != RANKING_TO_FILL_IN_MARKER[pn]) {
               continue;
             }
@@ -2165,8 +2165,8 @@ void GameState::GetRankingFeats(
       {
         Profile* pProfile = PROFILEMAN->GetMachineProfile();
         HighScoreList& hsl = pProfile->GetCourseHighScoreList(course, trail);
-        for (unsigned i = 0; i < hsl.vHighScores.size(); ++i) {
-          HighScore& high_score = hsl.vHighScores[i];
+        for (unsigned i = 0; i < hsl.high_scores_.size(); ++i) {
+          HighScore& high_score = hsl.high_scores_[i];
           if (high_score.GetName() != RANKING_TO_FILL_IN_MARKER[pn]) {
             continue;
           }
@@ -2194,8 +2194,8 @@ void GameState::GetRankingFeats(
       // Find Personal Records
       if (PROFILE_RECORD_FEATS && PROFILEMAN->IsPersistentProfile(pn)) {
         HighScoreList& hsl = profile->GetCourseHighScoreList(course, trail);
-        for (unsigned i = 0; i < hsl.vHighScores.size(); ++i) {
-          HighScore& high_score = hsl.vHighScores[i];
+        for (unsigned i = 0; i < hsl.high_scores_.size(); ++i) {
+          HighScore& high_score = hsl.high_scores_[i];
           if (high_score.GetName() != RANKING_TO_FILL_IN_MARKER[pn]) {
             continue;
           }
