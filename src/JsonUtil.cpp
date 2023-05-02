@@ -1,93 +1,87 @@
 #include "global.h"
+
 #include "JsonUtil.h"
-#include "RageFile.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "arch/Dialog/Dialog.h"
-#include "json/json.h"
 
 #include <vector>
 
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "arch/Dialog/Dialog.h"
+#include "json/json.h"
 
-bool JsonUtil::LoadFromString(Json::Value &root, RString sData, RString &sErrorOut)
-{
-	Json::Reader reader;
-	bool parsingSuccessful = reader.parse(sData, root);
-	if (!parsingSuccessful)
-	{
-		RString err = reader.getFormattedErrorMessages();
-		LOG->Warn("JSON: LoadFromFileShowErrors failed: %s", err.c_str());
-		return false;
-	}
-	return true;
+bool JsonUtil::LoadFromString(
+    Json::Value& root, RString data, RString& error_out) {
+  Json::Reader reader;
+  bool success = reader.parse(data, root);
+  if (!success) {
+    error_out = reader.getFormattedErrorMessages();
+    LOG->Warn("JSON: LoadFromFileShowErrors failed: %s", error_out.c_str());
+    return false;
+  }
+  return true;
 }
 
-bool JsonUtil::LoadFromFileShowErrors(Json::Value &root, RageFileBasic &f)
-{
-	// Optimization opportunity: read this streaming instead of at once
-	RString sData;
-	f.Read(sData, f.GetFileSize());
-	return LoadFromStringShowErrors(root, sData);
+bool JsonUtil::LoadFromFileShowErrors(Json::Value& root, RageFileBasic& file) {
+  // Optimization opportunity: read this streaming instead of at once
+  RString data;
+  file.Read(data, file.GetFileSize());
+  return LoadFromStringShowErrors(root, data);
 }
 
-bool JsonUtil::LoadFromFileShowErrors(Json::Value &root, const RString &sFile)
-{
-	RageFile f;
-	if(!f.Open(sFile, RageFile::READ))
-	{
-		LOG->Warn("Couldn't open %s for reading: %s", sFile.c_str(), f.GetError().c_str());
-		return false;
-	}
+bool JsonUtil::LoadFromFileShowErrors(
+			Json::Value& root, const RString& file_str) {
+  RageFile file;
+  if (!file.Open(file_str, RageFile::READ)) {
+    LOG->Warn(
+        "Couldn't open %s for reading: %s", file_str.c_str(),
+        file.GetError().c_str());
+    return false;
+  }
 
-	return LoadFromFileShowErrors(root, f);
+  return LoadFromFileShowErrors(root, file);
 }
 
-bool JsonUtil::LoadFromStringShowErrors(Json::Value &root, RString sData)
-{
-	RString sError;
-	if(!LoadFromString(root, sData, sError))
-	{
-		Dialog::OK(sError, "JSON_PARSE_ERROR");
-		return false;
-	}
-	return true;
+bool JsonUtil::LoadFromStringShowErrors(Json::Value& root, RString data) {
+  RString error;
+  if (!LoadFromString(root, data, error)) {
+    Dialog::OK(error, "JSON_PARSE_ERROR");
+    return false;
+  }
+  return true;
 }
 
-bool JsonUtil::WriteFile(const Json::Value &root, const RString &sFile, bool bMinified)
-{
-	std::string s;
-	if(!bMinified)
-	{
-		Json::StyledWriter writer;
-		s = writer.write(root);
-	}
-	else
-	{
-		Json::FastWriter writer;
-		s = writer.write(root);
-	}
+bool JsonUtil::WriteFile(
+    const Json::Value& root, const RString& file_str, bool minified) {
+  std::string s;
+  if (!minified) {
+    Json::StyledWriter writer;
+    s = writer.write(root);
+  } else {
+    Json::FastWriter writer;
+    s = writer.write(root);
+  }
 
-	RageFile f;
-	if(!f.Open(sFile, RageFile::WRITE))
-	{
-		LOG->Warn("Couldn't open %s for reading: %s", sFile.c_str(), f.GetError().c_str());
-		return false;
-	}
-	f.Write(s);
-	return true;
+  RageFile file;
+  if (!file.Open(file_str, RageFile::WRITE)) {
+    LOG->Warn(
+        "Couldn't open %s for reading: %s", file_str.c_str(),
+        file.GetError().c_str());
+    return false;
+  }
+  file.Write(s);
+  return true;
 }
 
-std::vector<RString> JsonUtil::DeserializeArrayStrings(const Json::Value &value)
-{
-	std::vector<RString> values;
-	for(auto &&inner_value : value)
-	{
-		if(inner_value.isConvertibleTo(Json::stringValue))
-		{
-			values.push_back(inner_value.asString());
-		}
-	}
-	return values;
+std::vector<RString> JsonUtil::DeserializeArrayStrings(
+    const Json::Value& value) {
+  std::vector<RString> values;
+  for (auto&& inner_value : value) {
+    if (inner_value.isConvertibleTo(Json::stringValue)) {
+      values.push_back(inner_value.asString());
+    }
+  }
+  return values;
 }
 
 /*
