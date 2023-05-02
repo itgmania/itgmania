@@ -1,77 +1,80 @@
 #ifndef LIFEMETERBAR_H
 #define LIFEMETERBAR_H
 
-#include "LifeMeter.h"
-#include "Sprite.h"
 #include "AutoActor.h"
+#include "LifeMeter.h"
 #include "Quad.h"
+#include "Sprite.h"
+#include "StreamDisplay.h"
 #include "ThemeMetric.h"
-class StreamDisplay;
 
-/** @brief The player's life represented as a bar. */
-class LifeMeterBar : public LifeMeter
-{
-public:
-	LifeMeterBar();
-	~LifeMeterBar();
+// The player's life represented as a bar.
+class LifeMeterBar : public LifeMeter {
+ public:
+  LifeMeterBar();
+  ~LifeMeterBar();
 
-	virtual void Load( const PlayerState *pPlayerState, PlayerStageStats *pPlayerStageStats );
+  virtual void Load(
+      const PlayerState* player_state, PlayerStageStats* player_stage_stats);
 
-	virtual void Update( float fDeltaTime );
+  virtual void Update(float delta);
 
-	virtual void ChangeLife( TapNoteScore score );
-	virtual void ChangeLife( HoldNoteScore score, TapNoteScore tscore  );
-	virtual void ChangeLife( float fDeltaLifePercent );
-	virtual void SetLife(float value);
-	virtual void HandleTapScoreNone();
-	virtual void AfterLifeChanged();
-	virtual bool IsInDanger() const;
-	virtual bool IsHot() const;
-	virtual bool IsFailing() const;
-	virtual float GetLife() const { return m_fLifePercentage; }
+  virtual void ChangeLife(TapNoteScore tns);
+  virtual void ChangeLife(HoldNoteScore hns, TapNoteScore tns);
+  virtual void ChangeLife(float delta_life_percent);
+  virtual void SetLife(float value);
+  virtual void HandleTapScoreNone();
+  virtual void AfterLifeChanged();
+  virtual bool IsInDanger() const;
+  virtual bool IsHot() const;
+  virtual bool IsFailing() const;
+  virtual float GetLife() const { return life_percentage_; }
 
-	void UpdateNonstopLifebar();
-	void FillForHowToPlay(int NumT2s, int NumMisses);
-	// this function is solely for HowToPlay
+  void UpdateNonstopLifebar();
+  void FillForHowToPlay(int num_w2s, int num_misses);
+  // this function is solely for HowToPlay
 
-private:
-	ThemeMetric<float> DANGER_THRESHOLD;
-	ThemeMetric<float> INITIAL_VALUE;
-	ThemeMetric<float> HOT_VALUE;
-	ThemeMetric<float> LIFE_MULTIPLIER;
-	ThemeMetric<bool> FORCE_LIFE_DIFFICULTY_ON_EXTRA_STAGE;
-	ThemeMetric<TapNoteScore>   MIN_STAY_ALIVE;
-	ThemeMetric<float>	EXTRA_STAGE_LIFE_DIFFICULTY;
+ private:
+  ThemeMetric<float> DANGER_THRESHOLD;
+  ThemeMetric<float> INITIAL_VALUE;
+  ThemeMetric<float> HOT_VALUE;
+  ThemeMetric<float> LIFE_MULTIPLIER;
+  ThemeMetric<bool> FORCE_LIFE_DIFFICULTY_ON_EXTRA_STAGE;
+  ThemeMetric<TapNoteScore> MIN_STAY_ALIVE;
+  ThemeMetric<float> EXTRA_STAGE_LIFE_DIFFICULTY;
 
-	ThemeMetric1D<float> m_fLifePercentChange;
+  ThemeMetric1D<float> life_percent_change_;
 
-	AutoActor		m_sprUnder;
-	AutoActor		m_sprDanger;
-	StreamDisplay*	m_pStream;
-	AutoActor		m_sprOver;
+  AutoActor under_;
+  AutoActor danger_;
+  StreamDisplay* stream_;
+  AutoActor over_;
 
-	float		m_fLifePercentage;
+  float life_percentage_;
 
-	float		m_fPassingAlpha;
-	float		m_fHotAlpha;
+  float passing_alpha_;
+  float hot_alpha_;
 
-	bool		m_bMercifulBeginnerInEffect;
-	float		m_fBaseLifeDifficulty;
-	float		m_fLifeDifficulty;		// essentially same as pref
+  bool merciful_beginner_in_effect_;
+  float base_life_difficulty_;
+	// Essentially same as pref
+  float life_difficulty_;
 
-	int			m_iProgressiveLifebar;		// cached from prefs
-	/** @brief The current number of progressive W5/miss rankings. */
-	int			m_iMissCombo;
-	/** @brief The combo needed before the life bar starts to fill up after a Player failed. */
-	int			m_iComboToRegainLife;
+	// cached from prefs
+  int progressive_life_bar_;
+  // The current number of progressive W5/miss rankings.
+  int miss_combo_;
+  // The combo needed before the life bar starts to fill up after a Player
+	// failed.
+  int combo_to_regain_life_;
 };
 
-#endif
+#endif  // LIFEMETERBAR_H
 
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -81,7 +84,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
