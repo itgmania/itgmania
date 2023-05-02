@@ -47,7 +47,7 @@ bool LightsDriver_Linux_Leds::WriteLight(const char *filename, bool state)
 bool LightsDriver_Linux_Leds::IsDance()
 {
 	pInput = &GAMESTATE->GetCurrentGame()->input_scheme;
-	sInputName = pInput->m_szName;
+	sInputName = pInput->name_;
 
 	return sInputName.EqualsNoCase("dance");
 }
@@ -55,7 +55,7 @@ bool LightsDriver_Linux_Leds::IsDance()
 bool LightsDriver_Linux_Leds::IsPump()
 {
 	pInput = &GAMESTATE->GetCurrentGame()->input_scheme;
-	sInputName = pInput->m_szName;
+	sInputName = pInput->name_;
 
 	return sInputName.EqualsNoCase("pump");
 }
