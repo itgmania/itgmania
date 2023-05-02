@@ -1,246 +1,262 @@
 #include "global.h"
+
 #include "InputQueue.h"
-#include "RageTimer.h"
-#include "RageLog.h"
-#include "InputEventPlus.h"
-#include "InputMapper.h"
 
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "InputMapper.h"
+#include "RageLog.h"
+#include "RageTimer.h"
 
-InputQueue*	INPUTQUEUE = nullptr;	// global and accessible from anywhere in our program
+// Global and accessible from anywhere in our program.
+InputQueue* INPUTQUEUE = nullptr;
 
 const unsigned MAX_INPUT_QUEUE_LENGTH = 32;
 
-InputQueue::InputQueue()
-{
-	FOREACH_ENUM( GameController, gc )
-		m_aQueue[gc].resize( MAX_INPUT_QUEUE_LENGTH );
+InputQueue::InputQueue() {
+  FOREACH_ENUM(GameController, game_controller)
+  queue_[game_controller].resize(MAX_INPUT_QUEUE_LENGTH);
 }
 
-void InputQueue::RememberInput( const InputEventPlus &iep )
-{
-	if( !iep.game_input_.IsValid() )
-		return;
+void InputQueue::RememberInput(const InputEventPlus& input_event_plus) {
+  if (!input_event_plus.game_input_.IsValid()) {
+    return;
+  }
 
-	int c = iep.game_input_.controller;
-	if( m_aQueue[c].size() >= MAX_INPUT_QUEUE_LENGTH )	// full
-		m_aQueue[c].erase( m_aQueue[c].begin(), m_aQueue[c].begin() + (m_aQueue[c].size()-MAX_INPUT_QUEUE_LENGTH+1) );
-	m_aQueue[c].push_back( iep );
+  int game_controller = input_event_plus.game_input_.controller;
+  if (queue_[game_controller].size() >= MAX_INPUT_QUEUE_LENGTH) {  // full
+    queue_[game_controller].erase(
+        queue_[game_controller].begin(),
+        queue_[game_controller].begin() +
+            (queue_[game_controller].size() - MAX_INPUT_QUEUE_LENGTH + 1));
+  }
+  queue_[game_controller].push_back(input_event_plus);
 }
 
-bool InputQueue::WasPressedRecently( GameController c, const GameButton button, const RageTimer &OldestTimeAllowed, InputEventPlus *pIEP )
-{
-	for( int queue_index=m_aQueue[c].size()-1; queue_index>=0; queue_index-- )	// iterate newest to oldest
-	{
-		const InputEventPlus &iep = m_aQueue[c][queue_index];
-		if( iep.device_input_.ts < OldestTimeAllowed )	// buttons are too old.  Stop searching because we're not going to find a match
-			return false;
+bool InputQueue::WasPressedRecently(
+    GameController game_controller, const GameButton game_button,
+    const RageTimer& oldest_time_allowed, InputEventPlus* input_event_plus) {
+	// Iterate newest to oldest.
+  for (int queue_index = queue_[game_controller].size() - 1; queue_index >= 0;
+       --queue_index) {
+    const InputEventPlus& iep = queue_[game_controller][queue_index];
+		// Buttons are too old. Stop searching because we're not going to find a
+		// match.
+    if (iep.device_input_.ts < oldest_time_allowed) {
+      return false;
+    }
 
-		if( iep.game_input_.button != button )
-			continue;
+    if (iep.game_input_.button != game_button) {
+      continue;
+    }
 
-		if( pIEP != nullptr )
-			*pIEP = iep;
+    if (input_event_plus != nullptr) {
+      *input_event_plus = iep;
+    }
 
-		return true;
-	}
+    return true;
+  }
 
-	return false;	// didn't find the button
+	// Didn't find the button.
+  return false;
 }
 
-void InputQueue::ClearQueue( GameController c )
-{
-	m_aQueue[c].clear();
+void InputQueue::ClearQueue(GameController game_controller) {
+	queue_[game_controller].clear();
 }
 
 static const float g_fSimultaneousThreshold = 0.05f;
 
-bool InputQueueCode::EnteredCode( GameController controller ) const
-{
-	if( controller == GameController_Invalid )
-		return false;
-	if( m_aPresses.size() == 0 )
-		return false;
+bool InputQueueCode::EnteredCode(GameController game_controller) const {
+  if (game_controller == GameController_Invalid) {
+    return false;
+  }
+  if (presses_.size() == 0) {
+    return false;
+  }
 
-	RageTimer OldestTimeAllowed;
-	if( m_fMaxSecondsBack == -1 )
-		OldestTimeAllowed.SetZero();
-	else
-		OldestTimeAllowed += -m_fMaxSecondsBack;
+  RageTimer oldest_time_allowed;
+  if (max_seconds_back_ == -1) {
+    oldest_time_allowed.SetZero();
+  } else {
+    oldest_time_allowed += -max_seconds_back_;
+  }
 
-	// iterate newest to oldest
-	int iSequenceIndex = m_aPresses.size()-1;	// count down
-	const std::vector<InputEventPlus> &aQueue = INPUTQUEUE->GetQueue( controller );
-	int iQueueIndex = aQueue.size()-1;
-	while( iQueueIndex >= 0 )
-	{
-		/* If the buttons are too old, stop searching because we're not going to find a match. */
-		if( !OldestTimeAllowed.IsZero() && aQueue[iQueueIndex].device_input_.ts < OldestTimeAllowed )
-			return false;
+  // Iterate newest to oldest.
+  int sequence_index = presses_.size() - 1;  // count down
+  const std::vector<InputEventPlus>& queue =
+			INPUTQUEUE->GetQueue(game_controller);
+  int queue_index = queue.size() - 1;
+  while (queue_index >= 0) {
+    // If the buttons are too old, stop searching because we're not going to
+    // find a match.
+    if (!oldest_time_allowed.IsZero() &&
+        queue[queue_index].device_input_.ts < oldest_time_allowed) {
+      return false;
+    }
 
-		/* If the last press is an input type we're not interested in, skip it
-		 * and look again. */
-		const ButtonPress &Press = m_aPresses[iSequenceIndex];
-		if( !Press.m_InputTypes[aQueue[iQueueIndex].type_] )
-		{
-			--iQueueIndex;
-			continue;
-		}
+    // If the last press is an input type we're not interested in, skip it and
+		// look again.
+    const ButtonPress& press = presses_[sequence_index];
+    if (!press.input_types_[queue[queue_index].type_]) {
+      --queue_index;
+      continue;
+    }
 
-		/* Search backwards for all of Press.m_aButtonsToPress pressed within g_fTapThreshold seconds
-		 * with m_aButtonsToHold pressed.  Start looking at iQueueIndex. */
-		RageTimer OldestTimeAllowedForTap( aQueue[iQueueIndex].device_input_.ts );
-		OldestTimeAllowedForTap += -g_fSimultaneousThreshold;
+    // Search backwards for all of press.buttons_to_press_ pressed within
+    // g_fTapThreshold seconds with m_aButtonsToHold pressed. Start looking at
+    // queue_index.
+    RageTimer oldest_time_allowed_for_tap(queue[queue_index].device_input_.ts);
+    oldest_time_allowed_for_tap += -g_fSimultaneousThreshold;
 
-		bool bMatched = false;
-		int iMinSearchIndexUsed = iQueueIndex;
-		for( int b=0; b<(int) Press.m_aButtonsToPress.size(); ++b )
-		{
-			const InputEventPlus *pIEP = nullptr;
-			int iQueueSearchIndex = iQueueIndex;
-			for( ; iQueueSearchIndex>=0; --iQueueSearchIndex )	// iterate newest to oldest
-			{
-				const InputEventPlus &iep = aQueue[iQueueSearchIndex];
-				if( iep.device_input_.ts < OldestTimeAllowedForTap )	// buttons are too old.  Stop searching because we're not going to find a match
-					break;
+    bool matched = false;
+    int min_search_index_used = queue_index;
+    for (int b = 0; b < (int)press.buttons_to_press_.size(); ++b) {
+      const InputEventPlus* input_event_plus = nullptr;
+			// Iterate newest to oldest.
+			int queue_search_index = queue_index; 
+      for (; queue_search_index >= 0; --queue_search_index) {
+        const InputEventPlus& iep = queue[queue_search_index];
+				// Buttons are too old. Stop searching because we're not going to find a
+				// match.
+        if (iep.device_input_.ts < oldest_time_allowed_for_tap) {
+          break;
+        }
 
-				if( !Press.m_InputTypes[iep.type_] )
-					continue;
+        if (!press.input_types_[iep.type_]) {
+          continue;
+        }
 
-				if( iep.game_input_.button == Press.m_aButtonsToPress[b] )
-				{
-					pIEP = &iep;
-					break;
-				}
-			}
-			if( pIEP == nullptr )
-				break;	// didn't find the button
+        if (iep.game_input_.button == press.buttons_to_press_[b]) {
+          input_event_plus = &iep;
+          break;
+        }
+      }
+      if (input_event_plus == nullptr) {
+        break;  // didn't find the button
+      }
 
-			// Check that m_aButtonsToHold were being held when the buttons were pressed.
-			bool bAllHeldButtonsOK = true;
-			for( unsigned i=0; i<Press.m_aButtonsToHold.size(); i++ )
-			{
-				GameInput gi( controller, Press.m_aButtonsToHold[i] );
-				if( !INPUTMAPPER->IsBeingPressed(gi, MultiPlayer_Invalid, &pIEP->input_list_) )
-					bAllHeldButtonsOK = false;
-			}
-			for( unsigned i=0; i<Press.m_aButtonsToNotHold.size(); i++ )
-			{
-				GameInput gi( controller, Press.m_aButtonsToNotHold[i] );
-				if( INPUTMAPPER->IsBeingPressed(gi, MultiPlayer_Invalid, &pIEP->input_list_) )
-					bAllHeldButtonsOK = false;
-			}
-			if( !bAllHeldButtonsOK )
-				continue;
-			iMinSearchIndexUsed = std::min( iMinSearchIndexUsed, iQueueSearchIndex );
-			if( b == (int) Press.m_aButtonsToPress.size()-1 )
-				bMatched = true;
-		}
+      // Check that buttons_to_hold_ were being held when the buttons were
+      // pressed.
+      bool all_held_buttons_okay = true;
+      for (unsigned i = 0; i < press.buttons_to_hold_.size(); ++i) {
+        GameInput game_input(game_controller, press.buttons_to_hold_[i]);
+        if (!INPUTMAPPER->IsBeingPressed(
+                game_input, MultiPlayer_Invalid, &input_event_plus->input_list_)) {
+          all_held_buttons_okay = false;
+        }
+      }
+      for (unsigned i = 0; i < press.buttons_to_not_hold_.size(); ++i) {
+        GameInput game_input(game_controller, press.buttons_to_not_hold_[i]);
+        if (INPUTMAPPER->IsBeingPressed(
+                game_input, MultiPlayer_Invalid, &input_event_plus->input_list_)) {
+          all_held_buttons_okay = false;
+        }
+      }
+      if (!all_held_buttons_okay) {
+        continue;
+      }
+      min_search_index_used = std::min(min_search_index_used, queue_search_index);
+      if (b == (int)press.buttons_to_press_.size() - 1) {
+        matched = true;
+      }
+    }
 
-		if( !bMatched )
-		{
-			/* The press wasn't matched.  If m_bAllowIntermediatePresses is true,
-			 * skip the last press, and look again. */
-			if( !Press.m_bAllowIntermediatePresses )
-				return false;
-			--iQueueIndex;
-			continue;
-		}
+    if (!matched) {
+      // The press wasn't matched. If allow_intermediate_presses_ is true, skip
+			// the last press, and look again.
+      if (!press.allow_intermediate_presses_) {
+        return false;
+      }
+      --queue_index;
+      continue;
+    }
 
-		if( iSequenceIndex == 0 )
-		{
-			// we matched the whole pattern.  Empty the queue so we don't match on it again.
-			INPUTQUEUE->ClearQueue( controller );
-			return true;
-		}
+    if (sequence_index == 0) {
+      // We matched the whole pattern. Empty the queue so we don't match on it
+      // again.
+      INPUTQUEUE->ClearQueue(game_controller);
+      return true;
+    }
 
-		/* The press was matched. */
-		iQueueIndex = iMinSearchIndexUsed - 1;
-		--iSequenceIndex;
-	}
+    // The press was matched.
+    queue_index = min_search_index_used - 1;
+    --sequence_index;
+  }
 
-	return false;
+  return false;
 }
 
-bool InputQueueCode::Load( RString sButtonsNames )
-{
-	m_aPresses.clear();
+bool InputQueueCode::Load(RString button_names_str) {
+  presses_.clear();
 
-	std::vector<RString> asPresses;
-	split( sButtonsNames, ",", asPresses, false );
-	for (RString &sPress : asPresses)
-	{
-		std::vector<RString> asButtonNames;
+  std::vector<RString> presses;
+  split(button_names_str, ",", presses, false);
+  for (RString& press : presses) {
+    std::vector<RString> button_names;
 
-		split( sPress, "-", asButtonNames, false );
+    split(press, "-", button_names, false);
 
-		if( asButtonNames.size() < 1 )
-		{
-			if( sButtonsNames != "" )
-				LOG->Trace( "Ignoring empty code \"%s\".", sButtonsNames.c_str() );
-			return false;
-		}
+    if (button_names.size() < 1) {
+      if (button_names_str != "") {
+        LOG->Trace("Ignoring empty code \"%s\".", button_names_str.c_str());
+      }
+      return false;
+    }
 
-		m_aPresses.push_back( ButtonPress() );
-		for (RString sButtonName : asButtonNames)	// for each button in this code
-		{
-			bool bHold = false;
-			bool bNotHold = false;
-			for(;;)
-			{
-				if( sButtonName.Left(1) == "+" )
-				{
-					m_aPresses.back().m_InputTypes[IET_REPEAT] = true;
-					sButtonName.erase(0, 1);
-				}
-				else if( sButtonName.Left(1) == "~" )
-				{
-					m_aPresses.back().m_InputTypes[IET_FIRST_PRESS] = false;
-					m_aPresses.back().m_InputTypes[IET_RELEASE] = true;
-					sButtonName.erase(0, 1);
-				}
-				else if( sButtonName.Left(1) == "@" )
-				{
-					sButtonName.erase(0, 1);
-					bHold = true;
-				}
-				else if( sButtonName.Left(1) == "!" )
-				{
-					sButtonName.erase(0, 1);
-					bNotHold = true;
-				}
-				else
-				{
-					break;
-				}
-			}
+    presses_.push_back(ButtonPress());
+    for (RString button_name : button_names) {
+      bool hold = false;
+      bool not_hold = false;
+      while (true) {
+        if (button_name.Left(1) == "+") {
+          presses_.back().input_types_[IET_REPEAT] = true;
+          button_name.erase(0, 1);
+        } else if (button_name.Left(1) == "~") {
+          presses_.back().input_types_[IET_FIRST_PRESS] = false;
+          presses_.back().input_types_[IET_RELEASE] = true;
+          button_name.erase(0, 1);
+        } else if (button_name.Left(1) == "@") {
+          button_name.erase(0, 1);
+          hold = true;
+        } else if (button_name.Left(1) == "!") {
+          button_name.erase(0, 1);
+          not_hold = true;
+        } else {
+          break;
+        }
+      }
 
-			// Search for the corresponding GameButton
-			const GameButton gb = INPUTMAPPER->GetInputScheme()->ButtonNameToIndex( sButtonName );
-			if( gb == GameButton_Invalid )
-			{
-				LOG->Trace( "The code \"%s\" contains an unrecognized button \"%s\".", sButtonsNames.c_str(), sButtonName.c_str() );
-				m_aPresses.clear();
-				return false;
-			}
+      // Search for the corresponding GameButton
+      const GameButton game_button =
+          INPUTMAPPER->GetInputScheme()->ButtonNameToIndex(button_name);
+      if (game_button == GameButton_Invalid) {
+        LOG->Trace(
+            "The code \"%s\" contains an unrecognized button \"%s\".",
+            button_names_str.c_str(), button_name.c_str());
+        presses_.clear();
+        return false;
+      }
 
-			if( bHold )
-				m_aPresses.back().m_aButtonsToHold.push_back( gb );
-			else if( bNotHold )
-				m_aPresses.back().m_aButtonsToNotHold.push_back( gb );
-			else
-				m_aPresses.back().m_aButtonsToPress.push_back( gb );
-		}
-	}
+      if (hold) {
+        presses_.back().buttons_to_hold_.push_back(game_button);
+      } else if (not_hold) {
+        presses_.back().buttons_to_not_hold_.push_back(game_button);
+      } else {
+        presses_.back().buttons_to_press_.push_back(game_button);
+      }
+    }
+  }
 
-	if( m_aPresses.size() == 1 )
-		m_fMaxSecondsBack = 0.55f;
-	else
-		m_fMaxSecondsBack = (m_aPresses.size()-1)*0.6f;
+  if (presses_.size() == 1) {
+    max_seconds_back_ = 0.55f;
+  } else {
+    max_seconds_back_ = (presses_.size() - 1) * 0.6f;
+  }
 
-	// if we make it here, we found all the buttons in the code
-	return true;
+  // If we make it here, we found all the buttons in the code.
+  return true;
 }
 
 /*
