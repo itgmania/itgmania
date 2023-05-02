@@ -61,7 +61,7 @@ void Style::StyleInputToGameInput( int iCol, PlayerNumber pn, std::vector<GameIn
 		if( bUsingOneSide && gc != (int) pn )
 			continue;
 
-		int iButtonsPerController = INPUTMAPPER->GetInputScheme()->m_iButtonsPerController;
+		int iButtonsPerController = INPUTMAPPER->GetInputScheme()->buttons_per_controller_;
 		for( GameButton gb=GAME_BUTTON_NEXT; gb < iButtonsPerController; gb=(GameButton)(gb+1) )
 		{
 			int iThisInputCol = m_iInputColumn[gc][gb-GAME_BUTTON_NEXT];

@@ -821,9 +821,9 @@ void GameState::FinishStage() {
     if (PREFSMAN->m_ProfileSortOrder == ProfileSortOrder_Recent &&
         PROFILEMAN->IsPersistentProfile(p)) {
       int num_local_profiles = PROFILEMAN->GetNumLocalProfiles();
-      for (int i = 0; i < num_local_profiles; i++) {
-        Profile* profile = PROFILEMAN->GetLocalProfileFromIndex(i);
-        if (profile->m_sGuid == profile->m_sGuid) {
+      for (int i = 0; i < num_local_profiles; ++i) {
+        Profile* local_profile = PROFILEMAN->GetLocalProfileFromIndex(i);
+        if (local_profile->m_sGuid == profile->m_sGuid) {
           PROFILEMAN->MoveProfileTopBottom(
               i, PREFSMAN->m_bProfileSortOrderAscending);
           break;
