@@ -1,36 +1,38 @@
-#ifndef LocalizedString_H
-#define LocalizedString_H
+#ifndef LOCALIZEDSTRING_H
+#define LOCALIZEDSTRING_H
 
-class ILocalizedStringImpl
-{
-public:
-	virtual ~ILocalizedStringImpl() { }
-	virtual void Load( const RString& sGroup, const RString& sName ) = 0;
-	virtual const RString &GetLocalized() const = 0;
-};
-/** @brief Get a String based on the user's natural language. */
-class LocalizedString
-{
-public:
-	LocalizedString( const RString& sGroup = "", const RString& sName = "" );
-	LocalizedString(LocalizedString const& other);
-	~LocalizedString();
-	void Load( const RString& sGroup, const RString& sName );
-	operator const RString &() const { return GetValue(); }
-	const RString &GetValue() const;
+#include "global.h"
 
-	typedef ILocalizedStringImpl *(*MakeLocalizer)();
-	static void RegisterLocalizer( MakeLocalizer pFunc );
-
-private:
-	void CreateImpl();
-	RString m_sGroup, m_sName;
-	ILocalizedStringImpl *m_pImpl;
-	// Swallow up warnings. If they must be used, define them.
-	LocalizedString& operator=(const LocalizedString& rhs);
+class ILocalizedStringImpl {
+ public:
+  virtual ~ILocalizedStringImpl() {}
+  virtual void Load(const RString& group, const RString& name) = 0;
+  virtual const RString& GetLocalized() const = 0;
 };
 
-#endif
+// Get a String based on the user's natural language.
+class LocalizedString {
+ public:
+  LocalizedString(const RString& group = "", const RString& name = "");
+  LocalizedString(const LocalizedString& other);
+  ~LocalizedString();
+  void Load(const RString& group, const RString& name);
+  operator const RString&() const { return GetValue(); }
+  const RString& GetValue() const;
+
+  typedef ILocalizedStringImpl* (*MakeLocalizer)();
+  static void RegisterLocalizer(MakeLocalizer func);
+
+ private:
+  void CreateImpl();
+  RString group_;
+	RString name_;
+  ILocalizedStringImpl* impl_;
+  // Swallow up warnings. If they must be used, define them.
+  LocalizedString& operator=(const LocalizedString& rhs);
+};
+
+#endif  // LOCALIZEDSTRING_H
 
 /**
  * @file
