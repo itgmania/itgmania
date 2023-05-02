@@ -26,7 +26,7 @@ class HoldJudgment : public ActorFrame {
   MultiPlayer multiplayer_to_track_;
 };
 
-#endif
+#endif  // HOLD_JUDGMENT_H
 
 /*
  * (c) 2001-2004 Chris Danford
