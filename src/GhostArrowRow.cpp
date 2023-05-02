@@ -1,151 +1,153 @@
 #include "global.h"
+
 #include "GhostArrowRow.h"
-#include "RageUtil.h"
-#include "GameConstantsAndTypes.h"
-#include "ArrowEffects.h"
-#include "NoteSkinManager.h"
-#include "GameState.h"
-#include "Game.h"
-#include "PlayerState.h"
-#include "Style.h"
-#include "ActorUtil.h"
 
 #include <cstddef>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "ArrowEffects.h"
+#include "Game.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "NoteSkinManager.h"
+#include "PlayerState.h"
+#include "RageUtil.h"
+#include "Style.h"
 
-void GhostArrowRow::Load( const PlayerState* pPlayerState, float fYReverseOffset )
-{
-	m_pPlayerState = pPlayerState;
-	m_fYReverseOffsetPixels = fYReverseOffset;
+void GhostArrowRow::Load(
+    const PlayerState* player_state, float y_reverse_offset) {
+  player_state_ = player_state;
+  y_reverse_offset_pixels_ = y_reverse_offset;
 
-	const PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
-	const Style* pStyle = GAMESTATE->GetCurrentStyle(pn);
-	NOTESKIN->SetPlayerNumber( pn );
+  const PlayerNumber pn = player_state_->m_PlayerNumber;
+  const Style* style = GAMESTATE->GetCurrentStyle(pn);
+  NOTESKIN->SetPlayerNumber(pn);
 
-	// init arrows
-	for( int c=0; c<pStyle->m_iColsPerPlayer; c++ )
-	{
-		const RString &sButton = GAMESTATE->GetCurrentStyle(pn)->ColToButtonName( c );
+  // init arrows
+  for (int c = 0; c < style->m_iColsPerPlayer; ++c) {
+    const RString& button = GAMESTATE->GetCurrentStyle(pn)->ColToButtonName(c);
 
-		std::vector<GameInput> GameI;
-		GAMESTATE->GetCurrentStyle(pn)->StyleInputToGameInput( c, pn, GameI );
-		NOTESKIN->SetGameController( GameI[0].controller );
+    std::vector<GameInput> GameI;
+    GAMESTATE->GetCurrentStyle(pn)->StyleInputToGameInput(c, pn, GameI);
+    NOTESKIN->SetGameController(GameI[0].controller);
 
-		m_bHoldShowing.push_back( TapNoteSubType_Invalid );
-		m_bLastHoldShowing.push_back( TapNoteSubType_Invalid );
+    hold_showing_.push_back(TapNoteSubType_Invalid);
+    last_hold_showing_.push_back(TapNoteSubType_Invalid);
 
-		m_Ghost.push_back( NOTESKIN->LoadActor(sButton, "Explosion", this) );
-		m_Ghost[c]->SetName( "GhostArrow" );
-	}
+    ghost_.push_back(NOTESKIN->LoadActor(button, "Explosion", this));
+    ghost_[c]->SetName("GhostArrow");
+  }
 }
 
-void GhostArrowRow::SetColumnRenderers(std::vector<NoteColumnRenderer>& renderers)
-{
-	ASSERT_M(renderers.size() == m_Ghost.size(), "Notefield has different number of columns than ghost row.");
-	for(std::size_t c= 0; c < m_Ghost.size(); ++c)
-	{
-		m_Ghost[c]->SetFakeParent(&(renderers[c]));
-	}
-	m_renderers= &renderers;
+void GhostArrowRow::SetColumnRenderers(
+    std::vector<NoteColumnRenderer>& renderers) {
+  ASSERT_M(
+      renderers.size() == ghost_.size(),
+      "Notefield has different number of columns than ghost row.");
+  for (std::size_t c = 0; c < ghost_.size(); ++c) {
+    ghost_[c]->SetFakeParent(&(renderers[c]));
+  }
+  renderers_ = &renderers;
 }
 
-GhostArrowRow::~GhostArrowRow()
-{
-	for( unsigned i = 0; i < m_Ghost.size(); ++i )
-		delete m_Ghost[i];
+GhostArrowRow::~GhostArrowRow() {
+  for (unsigned i = 0; i < ghost_.size(); ++i) {
+    delete ghost_[i];
+  }
 }
 
+void GhostArrowRow::Update(float delta) {
+  for (unsigned c = 0; c < ghost_.size(); c++) {
+    ghost_[c]->Update(delta);
+    (*renderers_)[c].UpdateReceptorGhostStuff(ghost_[c]);
+  }
 
-void GhostArrowRow::Update( float fDeltaTime )
-{
-	for( unsigned c=0; c<m_Ghost.size(); c++ )
-	{
-		m_Ghost[c]->Update( fDeltaTime );
-		(*m_renderers)[c].UpdateReceptorGhostStuff(m_Ghost[c]);
-	}
+  for (unsigned i = 0; i < hold_showing_.size(); ++i) {
+    if (last_hold_showing_[i] != hold_showing_[i]) {
+      if (last_hold_showing_[i] == TapNoteSubType_Hold) {
+        ghost_[i]->PlayCommand("HoldingOff");
+      } else if (last_hold_showing_[i] == TapNoteSubType_Roll) {
+        ghost_[i]->PlayCommand("RollOff");
+      }
+      /*
+      else if( last_hold_showing_[i] == TapNoteSubType_Mine )
+              ghost_[i]->PlayCommand( "MinefieldOff" );
+      */
 
-	for( unsigned i = 0; i < m_bHoldShowing.size(); ++i )
-	{
-		if( m_bLastHoldShowing[i] != m_bHoldShowing[i] )
-		{
-			if( m_bLastHoldShowing[i] == TapNoteSubType_Hold )
-				m_Ghost[i]->PlayCommand( "HoldingOff" );
-			else if( m_bLastHoldShowing[i] == TapNoteSubType_Roll )
-				m_Ghost[i]->PlayCommand( "RollOff" );
-			/*
-			else if( m_bLastHoldShowing[i] == TapNoteSubType_Mine )
-				m_Ghost[i]->PlayCommand( "MinefieldOff" );
-			*/
-
-			if( m_bHoldShowing[i] == TapNoteSubType_Hold )
-				m_Ghost[i]->PlayCommand( "HoldingOn" );
-			else if( m_bHoldShowing[i] == TapNoteSubType_Roll )
-				m_Ghost[i]->PlayCommand( "RollOn" );
-			/*
-			else if( m_bHoldShowing[i] == TapNoteSubType_Mine )
-				m_Ghost[i]->PlayCommand( "MinefieldOn" );
-			*/
-			m_bLastHoldShowing[i] = m_bHoldShowing[i];
-		}
-		m_bHoldShowing[i] = TapNoteSubType_Invalid;
-	}
+      if (hold_showing_[i] == TapNoteSubType_Hold) {
+        ghost_[i]->PlayCommand("HoldingOn");
+      } else if (hold_showing_[i] == TapNoteSubType_Roll) {
+        ghost_[i]->PlayCommand("RollOn");
+      }
+      /*
+      else if( hold_showing_[i] == TapNoteSubType_Mine )
+              ghost_[i]->PlayCommand( "MinefieldOn" );
+      */
+      last_hold_showing_[i] = hold_showing_[i];
+    }
+    hold_showing_[i] = TapNoteSubType_Invalid;
+  }
 }
 
-void GhostArrowRow::DrawPrimitives()
-{
-	const Style* pStyle = GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber);
-	for( unsigned i=0; i<m_Ghost.size(); i++ )
-	{
-		const int c = pStyle->m_iColumnDrawOrder[i];
-		m_Ghost[c]->Draw();
-	}
+void GhostArrowRow::DrawPrimitives() {
+  const Style* style =
+      GAMESTATE->GetCurrentStyle(player_state_->m_PlayerNumber);
+  for (unsigned i = 0; i < ghost_.size(); i++) {
+    const int c = style->m_iColumnDrawOrder[i];
+    ghost_[c]->Draw();
+  }
 }
 
-void GhostArrowRow::DidTapNote( int iCol, TapNoteScore tns, bool bBright )
-{
-	ASSERT_M( iCol >= 0  &&  iCol < (int) m_Ghost.size(), ssprintf("assert(iCol %i >= 0  && iCol %i < (int)m_Ghost.size() %i) failed",iCol,iCol,(int)m_Ghost.size()) );
+void GhostArrowRow::DidTapNote(int col, TapNoteScore tns, bool bright) {
+  ASSERT_M(
+      col >= 0 && col < (int)ghost_.size(),
+      ssprintf(
+          "assert(col %i >= 0  && col %i < (int)ghost_.size() %i) failed", col,
+          col, (int)ghost_.size()));
 
-	Message msg("ColumnJudgment");
-	msg.SetParam( "TapNoteScore", tns );
-	// This may be useful for popn styled judgment :) -DaisuMaster
-	msg.SetParam( "Column", iCol );
-	if( bBright )
-		msg.SetParam( "Bright", true );
-	m_Ghost[iCol]->HandleMessage( msg );
+  Message msg("ColumnJudgment");
+  msg.SetParam("TapNoteScore", tns);
+  // NOTE(DaisuMaster): This may be useful for popn styled judgment.
+  msg.SetParam("Column", col);
+  if (bright) {
+    msg.SetParam("Bright", true);
+  }
+  ghost_[col]->HandleMessage(msg);
 
-	m_Ghost[iCol]->PlayCommand( "Judgment" );
-	if( bBright )
-		m_Ghost[iCol]->PlayCommand( "Bright" );
-	else
-		m_Ghost[iCol]->PlayCommand( "Dim" );
-	RString sJudge = TapNoteScoreToString( tns );
-	m_Ghost[iCol]->PlayCommand( Capitalize(sJudge) );
+  ghost_[col]->PlayCommand("Judgment");
+  if (bright) {
+    ghost_[col]->PlayCommand("Bright");
+  } else {
+    ghost_[col]->PlayCommand("Dim");
+  }
+  RString judge = TapNoteScoreToString(tns);
+  ghost_[col]->PlayCommand(Capitalize(judge));
 }
 
-void GhostArrowRow::DidHoldNote( int iCol, HoldNoteScore hns, bool bBright )
-{
-	ASSERT( iCol >= 0  &&  iCol < (int) m_Ghost.size() );
-	Message msg("ColumnJudgment");
-	msg.SetParam( "HoldNoteScore", hns );
-	msg.SetParam( "Column", iCol );
-	if( bBright )
-		msg.SetParam( "Bright", true );
-	m_Ghost[iCol]->HandleMessage( msg );
+void GhostArrowRow::DidHoldNote(int col, HoldNoteScore hns, bool bright) {
+  ASSERT(col >= 0 && col < (int)ghost_.size());
+  Message msg("ColumnJudgment");
+  msg.SetParam("HoldNoteScore", hns);
+  msg.SetParam("Column", col);
+  if (bright) {
+    msg.SetParam("Bright", true);
+  }
+  ghost_[col]->HandleMessage(msg);
 
-	m_Ghost[iCol]->PlayCommand( "Judgment" );
-	if( bBright )
-		m_Ghost[iCol]->PlayCommand( "Bright" );
-	else
-		m_Ghost[iCol]->PlayCommand( "Dim" );
-	RString sJudge = HoldNoteScoreToString( hns );
-	m_Ghost[iCol]->PlayCommand( Capitalize(sJudge) );
+  ghost_[col]->PlayCommand("Judgment");
+  if (bright) {
+    ghost_[col]->PlayCommand("Bright");
+  } else {
+    ghost_[col]->PlayCommand("Dim");
+  }
+  RString sJudge = HoldNoteScoreToString(hns);
+  ghost_[col]->PlayCommand(Capitalize(sJudge));
 }
 
-void GhostArrowRow::SetHoldShowing( int iCol, const TapNote &tn )
-{
-	ASSERT( iCol >= 0  &&  iCol < (int) m_Ghost.size() );
-	m_bHoldShowing[iCol] = tn.subType;
+void GhostArrowRow::SetHoldShowing(int col, const TapNote& tn) {
+  ASSERT(col >= 0 && col < (int)ghost_.size());
+  hold_showing_[col] = tn.subType;
 }
 
 /*
