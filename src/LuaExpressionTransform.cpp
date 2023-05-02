@@ -1,74 +1,74 @@
 #include "global.h"
+
 #include "LuaExpressionTransform.h"
+
 #include "LuaManager.h"
 #include "RageUtil.h"
 
-LuaExpressionTransform::LuaExpressionTransform()
-{
-	m_iNumSubdivisions = 1;
+LuaExpressionTransform::LuaExpressionTransform() { num_subdivisions_ = 1; }
+
+LuaExpressionTransform::~LuaExpressionTransform() {}
+
+void LuaExpressionTransform::SetFromReference(const LuaReference& ref) {
+  transform_function_ = ref;
 }
 
-LuaExpressionTransform::~LuaExpressionTransform()
-{
+void LuaExpressionTransform::TransformItemDirect(
+    Actor& actor, float position_offset_from_center, int item_index,
+    int num_items) const {
+  Lua* L = LUA->Get();
+  transform_function_.PushSelf(L);
+  ASSERT(!lua_isnil(L, -1));
+  actor.PushSelf(L);
+  LuaHelpers::Push(L, position_offset_from_center);
+  LuaHelpers::Push(L, item_index);
+  LuaHelpers::Push(L, num_items);
+  RString error = "Lua error in Transform function: ";
+  LuaHelpers::RunScriptOnStack(L, error, 4, 0, true);
+  LUA->Release(L);
 }
 
-void LuaExpressionTransform::SetFromReference( const LuaReference &ref )
-{
-	m_exprTransformFunction = ref;
+const Actor::TweenState& LuaExpressionTransform::GetTransformCached(
+    float position_offset_from_center, int item_index, int num_iems) const {
+  PositionOffsetAndItemIndex key = {position_offset_from_center, item_index};
+
+  auto iter = position_to_tween_state_cache_.find(key);
+  if (iter != position_to_tween_state_cache_.end()) {
+    return iter->second;
+  }
+
+  Actor actor;
+  TransformItemDirect(actor, position_offset_from_center, item_index, num_iems);
+  return position_to_tween_state_cache_[key] = actor.DestTweenState();
 }
 
-void LuaExpressionTransform::TransformItemDirect( Actor &a, float fPositionOffsetFromCenter, int iItemIndex, int iNumItems ) const
-{
-	Lua *L = LUA->Get();
-	m_exprTransformFunction.PushSelf( L );
-	ASSERT( !lua_isnil(L, -1) );
-	a.PushSelf( L );
-	LuaHelpers::Push( L, fPositionOffsetFromCenter );
-	LuaHelpers::Push( L, iItemIndex );
-	LuaHelpers::Push( L, iNumItems );
-	RString error= "Lua error in Transform function: ";
-	LuaHelpers::RunScriptOnStack(L, error, 4, 0, true);
-	LUA->Release(L);
+void LuaExpressionTransform::TransformItemCached(
+    Actor& actor, float position_offset_from_center, int item_index,
+		int num_iems) {
+  float interval = 1.0f / num_subdivisions_;
+  float floor_val = QuantizeDown(position_offset_from_center, interval);
+  float ceil_val = QuantizeUp(position_offset_from_center, interval);
+
+  if (floor_val == ceil_val) {
+    actor.DestTweenState() = GetTransformCached(ceil_val, item_index, num_iems);
+  } else {
+    const Actor::TweenState& tween_state_floor =
+        GetTransformCached(floor_val, item_index, num_iems);
+    const Actor::TweenState& tween_state_ceil =
+        GetTransformCached(ceil_val, item_index, num_iems);
+
+    float percent_toward_ceil =
+        SCALE(position_offset_from_center, floor_val, ceil_val, 0.0f, 1.0f);
+    Actor::TweenState::MakeWeightedAverage(
+        actor.DestTweenState(), tween_state_floor, tween_state_ceil,
+				percent_toward_ceil);
+  }
 }
-
-const Actor::TweenState &LuaExpressionTransform::GetTransformCached( float fPositionOffsetFromCenter, int iItemIndex, int iNumItems ) const
-{
-	PositionOffsetAndItemIndex key = { fPositionOffsetFromCenter, iItemIndex };
-
-	std::map<PositionOffsetAndItemIndex,Actor::TweenState>::const_iterator iter = m_mapPositionToTweenStateCache.find( key );
-	if( iter != m_mapPositionToTweenStateCache.end() )
-		return iter->second;
-
-	Actor a;
-	TransformItemDirect( a, fPositionOffsetFromCenter, iItemIndex, iNumItems );
-	return m_mapPositionToTweenStateCache[key] = a.DestTweenState();
-}
-
-void LuaExpressionTransform::TransformItemCached( Actor &a, float fPositionOffsetFromCenter, int iItemIndex, int iNumItems )
-{
-	float fInterval = 1.0f / m_iNumSubdivisions;
-	float fFloor = QuantizeDown( fPositionOffsetFromCenter, fInterval );
-	float fCeil = QuantizeUp( fPositionOffsetFromCenter, fInterval );
-
-	if( fFloor == fCeil )
-	{
-		a.DestTweenState() = GetTransformCached( fCeil, iItemIndex, iNumItems );
-	}
-	else
-	{
-		const Actor::TweenState &tsFloor = GetTransformCached( fFloor, iItemIndex, iNumItems );
-		const Actor::TweenState &tsCeil = GetTransformCached( fCeil, iItemIndex, iNumItems );
-
-		float fPercentTowardCeil = SCALE( fPositionOffsetFromCenter, fFloor, fCeil, 0.0f, 1.0f );
-		Actor::TweenState::MakeWeightedAverage( a.DestTweenState(), tsFloor, tsCeil, fPercentTowardCeil );
-	}
-}
-
 
 /*
  * (c) 2003-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -78,7 +78,7 @@ void LuaExpressionTransform::TransformItemCached( Actor &a, float fPositionOffse
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
