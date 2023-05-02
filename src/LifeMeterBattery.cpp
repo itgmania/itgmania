@@ -1,292 +1,279 @@
 #include "global.h"
+
 #include "LifeMeterBattery.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "Steps.h"
-#include "PlayerState.h"
-#include "Course.h"
-#include "ActorUtil.h"
 
 #include <cmath>
 
-LifeMeterBattery::LifeMeterBattery()
-{
-	m_iLivesLeft= 4;
-	m_iTrailingLivesLeft = m_iLivesLeft;
+#include "ActorUtil.h"
+#include "Course.h"
+#include "GameState.h"
+#include "PlayerState.h"
+#include "Steps.h"
+#include "ThemeManager.h"
 
-	m_soundGainLife.Load( THEME->GetPathS("LifeMeterBattery","gain") );
-	m_soundLoseLife.Load( THEME->GetPathS("LifeMeterBattery","lose"),true );
+LifeMeterBattery::LifeMeterBattery() {
+  lives_left_ = 4;
+  trailing_lives_left = lives_left_;
+
+  sound_gain_life_.Load(THEME->GetPathS("LifeMeterBattery", "gain"));
+  sound_lose_life_.Load(THEME->GetPathS("LifeMeterBattery", "lose"), true);
 }
 
-void LifeMeterBattery::Load( const PlayerState *pPlayerState, PlayerStageStats *pPlayerStageStats )
-{
-	LifeMeter::Load( pPlayerState, pPlayerStageStats );
+void LifeMeterBattery::Load(
+    const PlayerState* player_state, PlayerStageStats* player_stage_stats) {
+  LifeMeter::Load(player_state, player_stage_stats);
 
-	m_iLivesLeft = player_state_->m_PlayerOptions.GetStage().m_BatteryLives;
-	m_iTrailingLivesLeft = m_iLivesLeft;
+  lives_left_ = player_state_->m_PlayerOptions.GetStage().m_BatteryLives;
+  trailing_lives_left = lives_left_;
 
-	const RString sType = "LifeMeterBattery";
-	PlayerNumber pn = pPlayerState->m_PlayerNumber;
+  const RString type = "LifeMeterBattery";
+  PlayerNumber pn = player_state->m_PlayerNumber;
 
-	MIN_SCORE_TO_KEEP_LIFE.Load(sType, "MinScoreToKeepLife");
-	MAX_LIVES.Load(sType, "MaxLives");
-	DANGER_THRESHOLD.Load(sType, "DangerThreshold");
-	SUBTRACT_LIVES.Load(sType, "SubtractLives");
-	MINES_SUBTRACT_LIVES.Load(sType, "MinesSubtractLives");
-	HELD_ADD_LIVES.Load(sType, "HeldAddLives");
-	LET_GO_SUBTRACT_LIVES.Load(sType, "LetGoSubtractLives");
-	COURSE_SONG_REWARD_LIVES.Load(sType, "CourseSongRewardLives");
+  MIN_SCORE_TO_KEEP_LIFE.Load(type, "MinScoreToKeepLife");
+  MAX_LIVES.Load(type, "MaxLives");
+  DANGER_THRESHOLD.Load(type, "DangerThreshold");
+  SUBTRACT_LIVES.Load(type, "SubtractLives");
+  MINES_SUBTRACT_LIVES.Load(type, "MinesSubtractLives");
+  HELD_ADD_LIVES.Load(type, "HeldAddLives");
+  LET_GO_SUBTRACT_LIVES.Load(type, "LetGoSubtractLives");
+  COURSE_SONG_REWARD_LIVES.Load(type, "CourseSongRewardLives");
 
-	LIVES_FORMAT.Load(sType, "NumLivesFormat");
+  LIVES_FORMAT.Load(type, "NumLivesFormat");
 
-	bool bPlayerEnabled = GAMESTATE->IsPlayerEnabled( pPlayerState );
-	LuaThreadVariable var( "Player", LuaReference::Create(player_state_->m_PlayerNumber) );
+  bool player_enabled = GAMESTATE->IsPlayerEnabled(player_state);
+  LuaThreadVariable var(
+      "Player", LuaReference::Create(player_state_->m_PlayerNumber));
 
-	m_sprFrame.Load( THEME->GetPathG(sType,"frame") );
-	this->AddChild( m_sprFrame );
+  frame_.Load(THEME->GetPathG(type, "frame"));
+  this->AddChild(frame_);
 
-	m_sprBattery.Load( THEME->GetPathG(sType,"lives") );
-	m_sprBattery->SetName( ssprintf("BatteryP%i",int(pn+1)) );
-	if( bPlayerEnabled )
-	{
-		ActorUtil::LoadAllCommandsAndSetXY( m_sprBattery, sType );
-		this->AddChild( m_sprBattery );
-	}
+  battery_.Load(THEME->GetPathG(type, "lives"));
+  battery_->SetName(ssprintf("BatteryP%i", int(pn + 1)));
+  if (player_enabled) {
+    ActorUtil::LoadAllCommandsAndSetXY(battery_, type);
+    this->AddChild(battery_);
+  }
 
-	m_textNumLives.LoadFromFont( THEME->GetPathF(sType, "lives") );
-	m_textNumLives.SetName( ssprintf("NumLivesP%i",int(pn+1)) );
-	if( bPlayerEnabled )
-	{
-		ActorUtil::LoadAllCommandsAndSetXY( m_textNumLives, sType );
-		this->AddChild( &m_textNumLives );
-	}
-	// old hardcoded commands:
-	/*
-	m_sprFrame.SetZoomX( pn==PLAYER_1 ? 1.0f : -1.0f );
-	m_sprBattery.SetZoomX( pn==PLAYER_1 ? 1.0f : -1.0f );
-	m_sprBattery.SetX( BATTERY_X[pn] );
-	m_textNumLives.SetX( NUM_X[pn] );
-	m_textNumLives.SetY( NUM_Y );
-	*/
+  text_num_lives_.LoadFromFont(THEME->GetPathF(type, "lives"));
+  text_num_lives_.SetName(ssprintf("NumLivesP%i", int(pn + 1)));
+  if (player_enabled) {
+    ActorUtil::LoadAllCommandsAndSetXY(text_num_lives_, type);
+    this->AddChild(&text_num_lives_);
+  }
 
-	if( bPlayerEnabled )
-	{
-		m_Percent.Load( pPlayerState, pPlayerStageStats, "LifeMeterBattery Percent", true );
-		// old hardcoded commands (this is useful, but let the themer decide
-		// what they want to do, please -aj)
-		//m_Percent.SetZoomX( pn==PLAYER_1 ? 1.0f : -1.0f );
-		this->AddChild( &m_Percent );
-	}
+  if (player_enabled) {
+    percent_.Load(
+        player_state, player_stage_stats, "LifeMeterBattery Percent", true);
+    // NOTE(aj): old hardcoded commands (this is useful, but let the themer
+    // decide what they want to do, please)
+    // percent_.SetZoomX( pn==PLAYER_1 ? 1.0f : -1.0f );
+    this->AddChild(&percent_);
+  }
 
-	Refresh();
+  Refresh();
 }
 
-void LifeMeterBattery::OnSongEnded()
-{
-	if( player_stage_stats_->m_bFailed || m_iLivesLeft == 0 )
-		return;
+void LifeMeterBattery::OnSongEnded() {
+  if (player_stage_stats_->m_bFailed || lives_left_ == 0) {
+    return;
+  }
 
-	if( m_iLivesLeft < player_state_->m_PlayerOptions.GetSong().m_BatteryLives )
-	{
-		m_iTrailingLivesLeft = m_iLivesLeft;
-		PlayerNumber pn = player_state_->m_PlayerNumber;
-		const Course *pCourse = GAMESTATE->cur_course_;
+  if (lives_left_ < player_state_->m_PlayerOptions.GetSong().m_BatteryLives) {
+    trailing_lives_left = lives_left_;
+    PlayerNumber pn = player_state_->m_PlayerNumber;
+    const Course* course = GAMESTATE->cur_course_;
 
-		if( pCourse && pCourse->m_vEntries[GAMESTATE->GetCourseSongIndex()].gain_lives_ > -1 )
-			m_iLivesLeft += pCourse->m_vEntries[GAMESTATE->GetCourseSongIndex()].gain_lives_;
-		else
-		{
-			Lua *L= LUA->Get();
-			COURSE_SONG_REWARD_LIVES.PushSelf(L);
-			PushSelf(L);
-			LuaHelpers::Push(L, pn);
-			RString error= "Error running CourseSongRewardLives callback: ";
-			LuaHelpers::RunScriptOnStack(L, error, 2, 1, true);
-			m_iLivesLeft += (int)luaL_optnumber(L, -1, 0);
-			lua_settop(L, 0);
-			LUA->Release(L);
-		}
-		m_iLivesLeft = std::min( m_iLivesLeft, player_state_->m_PlayerOptions.GetSong().m_BatteryLives );
+    if (course &&
+        course->m_vEntries[GAMESTATE->GetCourseSongIndex()].gain_lives_ > -1) {
+      lives_left_ +=
+          course->m_vEntries[GAMESTATE->GetCourseSongIndex()].gain_lives_;
+    } else {
+      Lua* L = LUA->Get();
+      COURSE_SONG_REWARD_LIVES.PushSelf(L);
+      PushSelf(L);
+      LuaHelpers::Push(L, pn);
+      RString error = "Error running CourseSongRewardLives callback: ";
+      LuaHelpers::RunScriptOnStack(L, error, 2, 1, true);
+      lives_left_ += (int)luaL_optnumber(L, -1, 0);
+      lua_settop(L, 0);
+      LUA->Release(L);
+    }
+    lives_left_ = std::min(
+        lives_left_, player_state_->m_PlayerOptions.GetSong().m_BatteryLives);
 
-		if( m_iTrailingLivesLeft < m_iLivesLeft )
-			m_soundGainLife.Play(false);
-	}
+    if (trailing_lives_left < lives_left_) {
+      sound_gain_life_.Play(false);
+    }
+  }
 
-	Refresh();
+  Refresh();
 }
 
-void LifeMeterBattery::SubtractLives( int iLives )
-{
-	if( iLives <= 0 )
-		return;
+void LifeMeterBattery::SubtractLives(int lives) {
+  if (lives <= 0) {
+    return;
+  }
 
-	m_iTrailingLivesLeft = m_iLivesLeft;
-	m_iLivesLeft -= iLives;
-	m_soundLoseLife.Play(false);
-	m_textNumLives.PlayCommand("LoseLife");
+  trailing_lives_left = lives_left_;
+  lives_left_ -= lives;
+  sound_lose_life_.Play(false);
+  text_num_lives_.PlayCommand("LoseLife");
 
-	Refresh();
+  Refresh();
 }
 
-void LifeMeterBattery::AddLives( int iLives )
-{
-	if( iLives <= 0 )
-		return;
-	if( MAX_LIVES != 0 && m_iLivesLeft >= MAX_LIVES )
-		return;
+void LifeMeterBattery::AddLives(int lives) {
+  if (lives <= 0) {
+    return;
+  }
+  if (MAX_LIVES != 0 && lives_left_ >= MAX_LIVES) {
+    return;
+  }
 
-	m_iTrailingLivesLeft = m_iLivesLeft;
-	m_iLivesLeft += iLives;
-	m_soundGainLife.Play(false);
-	m_textNumLives.PlayCommand("GainLife");
+  trailing_lives_left = lives_left_;
+  lives_left_ += lives;
+  sound_gain_life_.Play(false);
+  text_num_lives_.PlayCommand("GainLife");
 
-	Refresh();
+  Refresh();
 }
 
-void LifeMeterBattery::ChangeLives(int iLifeDiff)
-{
-	if( iLifeDiff < 0 )
-		SubtractLives( std::abs(iLifeDiff) );
-	else if( iLifeDiff > 0 )
-		AddLives(iLifeDiff);
+void LifeMeterBattery::ChangeLives(int life_diff) {
+  if (life_diff < 0) {
+    SubtractLives(std::abs(life_diff));
+  } else if (life_diff > 0) {
+    AddLives(life_diff);
+  }
 }
 
-void LifeMeterBattery::ChangeLife( TapNoteScore score )
-{
-	if( m_iLivesLeft == 0 )
-		return;
+void LifeMeterBattery::ChangeLife(TapNoteScore tns) {
+  if (lives_left_ == 0) {
+    return;
+  }
 
-	bool bSubtract = false;
-	// this probably doesn't handle hold checkpoints. -aj
-	if( score == TNS_HitMine && MINES_SUBTRACT_LIVES > 0 )
-	{
-		SubtractLives(MINES_SUBTRACT_LIVES);
-		bSubtract = true;
-	}
-	else
-	{
-		if( score < MIN_SCORE_TO_KEEP_LIFE && score > TNS_CheckpointMiss && SUBTRACT_LIVES > 0 )
-		{
-			SubtractLives(SUBTRACT_LIVES);
-			bSubtract = true;
-		}
-	}
-	BroadcastLifeChanged(bSubtract);
+  bool subtract = false;
+  // NOTE(aj): this probably doesn't handle hold checkpoints.
+  if (tns == TNS_HitMine && MINES_SUBTRACT_LIVES > 0) {
+    SubtractLives(MINES_SUBTRACT_LIVES);
+    subtract = true;
+  } else {
+    if (tns < MIN_SCORE_TO_KEEP_LIFE && tns > TNS_CheckpointMiss &&
+        SUBTRACT_LIVES > 0) {
+      SubtractLives(SUBTRACT_LIVES);
+      subtract = true;
+    }
+  }
+  BroadcastLifeChanged(subtract);
 }
 
-void LifeMeterBattery::ChangeLife( HoldNoteScore score, TapNoteScore tscore )
-{
-	if( m_iLivesLeft == 0 )
-		return;
+void LifeMeterBattery::ChangeLife(HoldNoteScore hns, TapNoteScore tns) {
+  if (lives_left_ == 0) {
+    return;
+  }
 
-	bool bSubtract = false;
-	if( score == HNS_Held && HELD_ADD_LIVES > 0 )
-		AddLives(HELD_ADD_LIVES);
-	if( score == HNS_LetGo && LET_GO_SUBTRACT_LIVES > 0 )
-	{
-		SubtractLives(LET_GO_SUBTRACT_LIVES);
-		bSubtract = true;
-	}
-	BroadcastLifeChanged(bSubtract);
+  bool subtract = false;
+  if (hns == HNS_Held && HELD_ADD_LIVES > 0) {
+    AddLives(HELD_ADD_LIVES);
+  }
+  if (hns == HNS_LetGo && LET_GO_SUBTRACT_LIVES > 0) {
+    SubtractLives(LET_GO_SUBTRACT_LIVES);
+    subtract = true;
+  }
+  BroadcastLifeChanged(subtract);
 }
 
-void LifeMeterBattery::SetLife(float value)
-{
-	int new_lives= static_cast<int>(value);
-	bool lost= (new_lives < m_iLivesLeft);
-	m_iLivesLeft= new_lives;
-	BroadcastLifeChanged(lost);
+void LifeMeterBattery::SetLife(float value) {
+  int new_lives = static_cast<int>(value);
+  bool lost = (new_lives < lives_left_);
+  lives_left_ = new_lives;
+  BroadcastLifeChanged(lost);
 }
 
-void LifeMeterBattery::BroadcastLifeChanged(bool lost_life)
-{
-	Message msg("LifeChanged");
-	msg.SetParam("Player", player_state_->m_PlayerNumber);
-	msg.SetParam("LifeMeter", LuaReference::CreateFromPush(*this));
-	msg.SetParam("LivesLeft", GetLivesLeft());
-	msg.SetParam("LostLife", lost_life);
-	MESSAGEMAN->Broadcast(msg);
+void LifeMeterBattery::BroadcastLifeChanged(bool lost_life) {
+  Message msg("LifeChanged");
+  msg.SetParam("Player", player_state_->m_PlayerNumber);
+  msg.SetParam("LifeMeter", LuaReference::CreateFromPush(*this));
+  msg.SetParam("LivesLeft", GetLivesLeft());
+  msg.SetParam("LostLife", lost_life);
+  MESSAGEMAN->Broadcast(msg);
 }
 
-void LifeMeterBattery::HandleTapScoreNone()
-{
-	// do nothing
+void LifeMeterBattery::HandleTapScoreNone() {
+  // do nothing
 }
 
-void LifeMeterBattery::ChangeLife( float fDeltaLifePercent )
-{
+void LifeMeterBattery::ChangeLife(float delta_life_percent) {}
+
+bool LifeMeterBattery::IsInDanger() const {
+  return lives_left_ < DANGER_THRESHOLD;
 }
 
-bool LifeMeterBattery::IsInDanger() const
-{
-	return m_iLivesLeft < DANGER_THRESHOLD;
+bool LifeMeterBattery::IsHot() const {
+  return lives_left_ ==
+         player_state_->m_PlayerOptions.GetSong().m_BatteryLives;
 }
 
-bool LifeMeterBattery::IsHot() const
-{
-	return m_iLivesLeft == player_state_->m_PlayerOptions.GetSong().m_BatteryLives;
+bool LifeMeterBattery::IsFailing() const { return lives_left_ == 0; }
+
+float LifeMeterBattery::GetLife() const {
+  if (!player_state_->m_PlayerOptions.GetSong().m_BatteryLives) {
+    return 1;
+  }
+
+  return float(lives_left_) /
+         player_state_->m_PlayerOptions.GetSong().m_BatteryLives;
+}
+int LifeMeterBattery::GetRemainingLives() const {
+  if (!player_state_->m_PlayerOptions.GetSong().m_BatteryLives) {
+    return 1;
+  }
+
+  return lives_left_;
+}
+void LifeMeterBattery::Refresh() {
+  text_num_lives_.SetText(ssprintf(LIVES_FORMAT.GetValue(), lives_left_));
+  if (lives_left_ < 0) {
+    // Hide text to avoid showing -1.
+    text_num_lives_.SetVisible(false);
+  }
+  // Update battery_
 }
 
-bool LifeMeterBattery::IsFailing() const
-{
-	return m_iLivesLeft == 0;
+int LifeMeterBattery::GetTotalLives() {
+  return player_state_->m_PlayerOptions.GetSong().m_BatteryLives;
 }
 
-float LifeMeterBattery::GetLife() const
-{
-	if(!player_state_->m_PlayerOptions.GetSong().m_BatteryLives)
-		return 1;
-
-	return float(m_iLivesLeft) / player_state_->m_PlayerOptions.GetSong().m_BatteryLives;
-}
-int LifeMeterBattery::GetRemainingLives() const
-{
-	if( !player_state_->m_PlayerOptions.GetSong().m_BatteryLives )
-		return 1;
-
-	return m_iLivesLeft;
-}
-void LifeMeterBattery::Refresh()
-{
-	m_textNumLives.SetText( ssprintf(LIVES_FORMAT.GetValue(), m_iLivesLeft) );
-	if( m_iLivesLeft < 0 )
-	{
-		// hide text to avoid showing -1
-		m_textNumLives.SetVisible(false);
-	}
-	//update m_sprBattery
-}
-
-int LifeMeterBattery::GetTotalLives()
-{
-	return player_state_->m_PlayerOptions.GetSong().m_BatteryLives;
-}
-
-void LifeMeterBattery::Update( float fDeltaTime )
-{
-	LifeMeter::Update( fDeltaTime );
+void LifeMeterBattery::Update(float fDeltaTime) {
+  LifeMeter::Update(fDeltaTime);
 }
 
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the LifeMeterBattery. */
-class LunaLifeMeterBattery: public Luna<LifeMeterBattery>
-{
-public:
-	static int GetLivesLeft( T* p, lua_State *L )	{ lua_pushnumber( L, p->GetLivesLeft() ); return 1; }
-	static int GetTotalLives( T* p, lua_State *L )	{ lua_pushnumber(L, p->GetTotalLives()); return 1; }
-	static int ChangeLives( T* p, lua_State *L )	{ p->ChangeLives(IArg(1)); COMMON_RETURN_SELF; }
+// Allow Lua to have access to the LifeMeterBattery.
+class LunaLifeMeterBattery : public Luna<LifeMeterBattery> {
+ public:
+  static int GetLivesLeft(T* p, lua_State* L) {
+    lua_pushnumber(L, p->GetLivesLeft());
+    return 1;
+  }
+  static int GetTotalLives(T* p, lua_State* L) {
+    lua_pushnumber(L, p->GetTotalLives());
+    return 1;
+  }
+  static int ChangeLives(T* p, lua_State* L) {
+    p->ChangeLives(IArg(1));
+    COMMON_RETURN_SELF;
+  }
 
-	LunaLifeMeterBattery()
-	{
-		ADD_METHOD( GetLivesLeft );
-		ADD_METHOD( GetTotalLives );
-		ADD_METHOD( ChangeLives );
-	}
+  LunaLifeMeterBattery() {
+    ADD_METHOD(GetLivesLeft);
+    ADD_METHOD(GetTotalLives);
+    ADD_METHOD(ChangeLives);
+  }
 };
 
-LUA_REGISTER_DERIVED_CLASS( LifeMeterBattery, LifeMeter )
+LUA_REGISTER_DERIVED_CLASS(LifeMeterBattery, LifeMeter)
 
 /*
  * (c) 2001-2004 Chris Danford
