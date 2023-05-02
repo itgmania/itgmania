@@ -9,6 +9,10 @@
 #include "PlayerStageStats.h"
 #include "StageStats.h"
 
+// TODO(teejusb): These are defined in the cpp. Move them to their own headers.
+class GraphLine;
+class GraphBody;
+
 // A graph of the player's life over the course of Gameplay, used on Evaluation.
 class GraphDisplay : public ActorFrame {
  public:

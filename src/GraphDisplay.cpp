@@ -252,11 +252,11 @@ void GraphDisplay::UpdateVerts() {
     const float y = SCALE(
         values_[i], 0.0f, 1.0f, quad_vertices_.bottom, quad_vertices_.top);
 
-    graph_body_->m_Slices[i * 2 + 0].p = RageVector3(x, y, 0);
-    graph_body_->m_Slices[i * 2 + 1].p =
+    graph_body_->slices_[i * 2 + 0].p = RageVector3(x, y, 0);
+    graph_body_->slices_[i * 2 + 1].p =
         RageVector3(x, quad_vertices_.bottom, 0);
 
-    const RectF* rect = graph_body_->m_pTexture->GetTextureCoordRect(0);
+    const RectF* rect = graph_body_->texture_->GetTextureCoordRect(0);
 
     const float u = SCALE(
         x, quad_vertices_.left, quad_vertices_.right, rect->left,
@@ -264,8 +264,8 @@ void GraphDisplay::UpdateVerts() {
     const float v = SCALE(
         y, quad_vertices_.top, quad_vertices_.bottom, rect->top,
         rect->bottom);
-    graph_body_->m_Slices[i * 2 + 0].t = RageVector2(u, v);
-    graph_body_->m_Slices[i * 2 + 1].t = RageVector2(u, rect->bottom);
+    graph_body_->slices_[i * 2 + 0].t = RageVector2(u, v);
+    graph_body_->slices_[i * 2 + 1].t = RageVector2(u, rect->bottom);
 
     line_strip[i].p = RageVector3(x, y, 0);
     line_strip[i].c = RageColor(1, 1, 1, 1);
