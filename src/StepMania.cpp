@@ -1362,9 +1362,9 @@ void HandleInputEvents(float fDeltaTime)
 	for( unsigned i=0; i<ieArray.size(); i++ )
 	{
 		InputEventPlus input;
-		input.device_input_ = ieArray[i].di;
-		input.type_ = ieArray[i].type;
-		std::swap( input.input_list_, ieArray[i].m_ButtonState );
+		input.device_input_ = ieArray[i].device_input_;
+		input.type_ = ieArray[i].type_;
+		std::swap( input.input_list_, ieArray[i].button_state_ );
 
 		// hack for testing (MultiPlayer) with only one joystick
 		/*
