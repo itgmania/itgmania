@@ -243,7 +243,7 @@ void LightsDriver_Linux_stac::HandleState(const LightsState *ls, StacDevice *dev
 {
     //check to see which game we are running as it can change during gameplay.
     const InputScheme *pInput = &GAMESTATE->GetCurrentGame()->input_scheme;
-    RString sInputName = pInput->m_szName;
+    RString sInputName = pInput->name_;
 
     if (sInputName.EqualsNoCase("dance"))
     {
