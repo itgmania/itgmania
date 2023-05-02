@@ -75,22 +75,22 @@ void LightsDriver_Win32Minimaid::Set( const LightsState *ls )
 		mm_setDDRAllOff();
 
 		// Set the cabinet light values
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_UPPER_LEFT, 1);
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_UPPER_RIGHT, 1);
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_LOWER_LEFT, 1);
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_LOWER_RIGHT, 1);
-		if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) mm_setDDRBassLight(DDR_DOUBLE_BASS_LIGHTS, 1);
+		if (ls->cabinet_lights[LIGHT_MARQUEE_UP_LEFT]) mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_UPPER_LEFT, 1);
+		if (ls->cabinet_lights[LIGHT_MARQUEE_UP_RIGHT]) mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_UPPER_RIGHT, 1);
+		if (ls->cabinet_lights[LIGHT_MARQUEE_LR_LEFT]) mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_LOWER_LEFT, 1);
+		if (ls->cabinet_lights[LIGHT_MARQUEE_LR_RIGHT]) mm_setDDRCabinetLight(DDR_DOUBLE_MARQUEE_LOWER_RIGHT, 1);
+		if (ls->cabinet_lights[LIGHT_BASS_LEFT] || ls->cabinet_lights[LIGHT_BASS_RIGHT]) mm_setDDRBassLight(DDR_DOUBLE_BASS_LIGHTS, 1);
 
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) mm_setDDRPad1Light(DDR_DOUBLE_PAD_LEFT, 1);
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) mm_setDDRPad1Light(DDR_DOUBLE_PAD_RIGHT, 1);
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) mm_setDDRPad1Light(DDR_DOUBLE_PAD_UP, 1);
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) mm_setDDRPad1Light(DDR_DOUBLE_PAD_DOWN, 1);
-		if (ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) mm_setDDRCabinetLight(DDR_DOUBLE_PLAYER1_PANEL, 1);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) mm_setDDRPad2Light(DDR_DOUBLE_PAD_LEFT, 1);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) mm_setDDRPad2Light(DDR_DOUBLE_PAD_RIGHT, 1);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) mm_setDDRPad2Light(DDR_DOUBLE_PAD_UP, 1);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) mm_setDDRPad2Light(DDR_DOUBLE_PAD_DOWN, 1);
-		if (ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) mm_setDDRCabinetLight(DDR_DOUBLE_PLAYER2_PANEL, 1);
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_LEFT]) mm_setDDRPad1Light(DDR_DOUBLE_PAD_LEFT, 1);
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_RIGHT]) mm_setDDRPad1Light(DDR_DOUBLE_PAD_RIGHT, 1);
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_UP]) mm_setDDRPad1Light(DDR_DOUBLE_PAD_UP, 1);
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_DOWN]) mm_setDDRPad1Light(DDR_DOUBLE_PAD_DOWN, 1);
+		if (ls->game_button_lights[GameController_1][GAME_BUTTON_START]) mm_setDDRCabinetLight(DDR_DOUBLE_PLAYER1_PANEL, 1);
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_LEFT]) mm_setDDRPad2Light(DDR_DOUBLE_PAD_LEFT, 1);
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_RIGHT]) mm_setDDRPad2Light(DDR_DOUBLE_PAD_RIGHT, 1);
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_UP]) mm_setDDRPad2Light(DDR_DOUBLE_PAD_UP, 1);
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_DOWN]) mm_setDDRPad2Light(DDR_DOUBLE_PAD_DOWN, 1);
+		if (ls->game_button_lights[GameController_2][GAME_BUTTON_START]) mm_setDDRCabinetLight(DDR_DOUBLE_PLAYER2_PANEL, 1);
 
 		// Output the information
 		mm_sendDDRMiniMaidUpdate();

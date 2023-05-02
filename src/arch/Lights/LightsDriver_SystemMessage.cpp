@@ -31,7 +31,7 @@ void LightsDriver_SystemMessage::Set( const LightsState *ls )
 	s += "Cabinet: ";
 	FOREACH_CabinetLight( cl )
 	{
-		s += ls->m_bCabinetLights[cl] ? '1' : '0';
+		s += ls->cabinet_lights[cl] ? '1' : '0';
 	}
 	s += "\n";
 
@@ -40,7 +40,7 @@ void LightsDriver_SystemMessage::Set( const LightsState *ls )
 		s += ssprintf("Controller%d: ",gc+1);
 		FOREACH_ENUM( GameButton,  gb )
 		{
-			s += ls->m_bGameButtonLights[gc][gb] ? '1' : '0';
+			s += ls->game_button_lights[gc][gb] ? '1' : '0';
 		}
 		s += "\n";
 	}

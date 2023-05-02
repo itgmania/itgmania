@@ -73,7 +73,7 @@ void LightsDriver_Linux_Leds::SetCabinetLights(const char *stringArray[], const 
 {
 	FOREACH_CabinetLight(light)
 	{
-		SetLight(stringArray[light], previousLS.m_bCabinetLights[light], ls->m_bCabinetLights[light]);
+		SetLight(stringArray[light], previousLS.cabinet_lights[light], ls->cabinet_lights[light]);
 	}
 }
 
@@ -91,10 +91,10 @@ void LightsDriver_Linux_Leds::SetCabinetLights(const int intArray[], const Light
 			if (intArray[light] >= 0)
 			{
 				//don't waste sprintf time if we don't need to change the light
-				if (previousLS.m_bCabinetLights[light] != ls->m_bCabinetLights[light])
+				if (previousLS.cabinet_lights[light] != ls->cabinet_lights[light])
 				{
 					sprintf(fileName, baseFileLocation, intArray[light]);
-					SetLight(fileName, previousLS.m_bCabinetLights[light], ls->m_bCabinetLights[light]);
+					SetLight(fileName, previousLS.cabinet_lights[light], ls->cabinet_lights[light]);
 				}
 			}
 		}
@@ -106,7 +106,7 @@ void LightsDriver_Linux_Leds::SetGameControllerLights(GameController gc, const c
 	//iterate over all gamebuttons, including the menu/start/etc buttons.
 	FOREACH_ENUM(GameButton, gb)
 	{
-		SetLight(stringArray[gb], previousLS.m_bGameButtonLights[gc][gb], ls->m_bGameButtonLights[gc][gb]);
+		SetLight(stringArray[gb], previousLS.game_button_lights[gc][gb], ls->game_button_lights[gc][gb]);
 	}
 }
 
@@ -125,10 +125,10 @@ void LightsDriver_Linux_Leds::SetGameControllerLights(GameController gc, const i
 			if (intArray[gb] >= 0)
 			{
 				//don't waste sprintf time if we don't need to change the light
-				if (previousLS.m_bGameButtonLights[gc][gb] != ls->m_bGameButtonLights[gc][gb])
+				if (previousLS.game_button_lights[gc][gb] != ls->game_button_lights[gc][gb])
 				{
 					sprintf(fileName, baseFileLocation, intArray[gb]);
-					SetLight(fileName, previousLS.m_bGameButtonLights[gc][gb], ls->m_bGameButtonLights[gc][gb]);
+					SetLight(fileName, previousLS.game_button_lights[gc][gb], ls->game_button_lights[gc][gb]);
 				}
 			}
 		}

@@ -314,7 +314,7 @@ bool InputHandler_Win32_ddrio::IsLightChange(LightsState prevLS, LightsState new
 {
 	FOREACH_CabinetLight(light)
 	{
-		if (prevLS.m_bCabinetLights[light] != newLS.m_bCabinetLights[light])
+		if (prevLS.cabinet_lights[light] != newLS.cabinet_lights[light])
 		{
 			return true;
 		}
@@ -324,7 +324,7 @@ bool InputHandler_Win32_ddrio::IsLightChange(LightsState prevLS, LightsState new
 	{
 		FOREACH_ENUM(GameButton, gb)
 		{
-			if (prevLS.m_bGameButtonLights[gc][gb] != newLS.m_bGameButtonLights[gc][gb])
+			if (prevLS.game_button_lights[gc][gb] != newLS.game_button_lights[gc][gb])
 			{
 				return true;
 			}
@@ -342,32 +342,32 @@ void InputHandler_Win32_ddrio::PushLightState(LightsState newLS)
 
 	//lighting state has already been verified to have changed in this method, so create the new one from scratch.
 
-	if (newLS.m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) p3io |= (1 << LIGHT_P1_MENU);
-	if (newLS.m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) p3io |= (1 << LIGHT_P2_MENU);
-	if (newLS.m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) p3io |= (1 << LIGHT_P2_LOWER_LAMP);
-	if (newLS.m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) p3io |= (1 << LIGHT_P2_UPPER_LAMP);
-	if (newLS.m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) p3io |= (1 << LIGHT_P1_LOWER_LAMP);
-	if (newLS.m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) p3io |= (1 << LIGHT_P1_UPPER_LAMP);
+	if (newLS.game_button_lights[GameController_1][GAME_BUTTON_START]) p3io |= (1 << LIGHT_P1_MENU);
+	if (newLS.game_button_lights[GameController_2][GAME_BUTTON_START]) p3io |= (1 << LIGHT_P2_MENU);
+	if (newLS.cabinet_lights[LIGHT_MARQUEE_LR_RIGHT]) p3io |= (1 << LIGHT_P2_LOWER_LAMP);
+	if (newLS.cabinet_lights[LIGHT_MARQUEE_UP_RIGHT]) p3io |= (1 << LIGHT_P2_UPPER_LAMP);
+	if (newLS.cabinet_lights[LIGHT_MARQUEE_LR_LEFT]) p3io |= (1 << LIGHT_P1_LOWER_LAMP);
+	if (newLS.cabinet_lights[LIGHT_MARQUEE_UP_LEFT]) p3io |= (1 << LIGHT_P1_UPPER_LAMP);
 
 	//hdxs device has one light for both MenuLeft and MenuRight as well as MenuUp and MenuDown.
-	if (newLS.m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) hdxs |= (1 << LIGHT_HD_P1_START);
-	if (newLS.m_bGameButtonLights[GameController_1][GAME_BUTTON_MENUUP] || newLS.m_bGameButtonLights[GameController_1][GAME_BUTTON_MENUDOWN]) hdxs |= (1 << LIGHT_HD_P1_UP_DOWN);
-	if (newLS.m_bGameButtonLights[GameController_1][GAME_BUTTON_MENULEFT] || newLS.m_bGameButtonLights[GameController_1][GAME_BUTTON_MENURIGHT]) hdxs |= (1 << LIGHT_HD_P1_LEFT_RIGHT);
-	if (newLS.m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) hdxs |= (1 << LIGHT_HD_P2_START);
-	if (newLS.m_bGameButtonLights[GameController_2][GAME_BUTTON_MENUUP] || newLS.m_bGameButtonLights[GameController_2][GAME_BUTTON_MENUDOWN]) hdxs |= (1 << LIGHT_HD_P2_UP_DOWN);
-	if (newLS.m_bGameButtonLights[GameController_2][GAME_BUTTON_MENULEFT] || newLS.m_bGameButtonLights[GameController_2][GAME_BUTTON_MENURIGHT]) hdxs |= (1 << LIGHT_HD_P2_LEFT_RIGHT);
+	if (newLS.game_button_lights[GameController_1][GAME_BUTTON_START]) hdxs |= (1 << LIGHT_HD_P1_START);
+	if (newLS.game_button_lights[GameController_1][GAME_BUTTON_MENUUP] || newLS.game_button_lights[GameController_1][GAME_BUTTON_MENUDOWN]) hdxs |= (1 << LIGHT_HD_P1_UP_DOWN);
+	if (newLS.game_button_lights[GameController_1][GAME_BUTTON_MENULEFT] || newLS.game_button_lights[GameController_1][GAME_BUTTON_MENURIGHT]) hdxs |= (1 << LIGHT_HD_P1_LEFT_RIGHT);
+	if (newLS.game_button_lights[GameController_2][GAME_BUTTON_START]) hdxs |= (1 << LIGHT_HD_P2_START);
+	if (newLS.game_button_lights[GameController_2][GAME_BUTTON_MENUUP] || newLS.game_button_lights[GameController_2][GAME_BUTTON_MENUDOWN]) hdxs |= (1 << LIGHT_HD_P2_UP_DOWN);
+	if (newLS.game_button_lights[GameController_2][GAME_BUTTON_MENULEFT] || newLS.game_button_lights[GameController_2][GAME_BUTTON_MENURIGHT]) hdxs |= (1 << LIGHT_HD_P2_LEFT_RIGHT);
 
-	if (newLS.m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) extio |= (1 << LIGHT_P2_RIGHT);
-	if (newLS.m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) extio |= (1 << LIGHT_P2_LEFT);
-	if (newLS.m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) extio |= (1 << LIGHT_P2_DOWN);
-	if (newLS.m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) extio |= (1 << LIGHT_P2_UP);
+	if (newLS.game_button_lights[GameController_2][DANCE_BUTTON_RIGHT]) extio |= (1 << LIGHT_P2_RIGHT);
+	if (newLS.game_button_lights[GameController_2][DANCE_BUTTON_LEFT]) extio |= (1 << LIGHT_P2_LEFT);
+	if (newLS.game_button_lights[GameController_2][DANCE_BUTTON_DOWN]) extio |= (1 << LIGHT_P2_DOWN);
+	if (newLS.game_button_lights[GameController_2][DANCE_BUTTON_UP]) extio |= (1 << LIGHT_P2_UP);
 
-	if (newLS.m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) extio |= (1 << LIGHT_P1_RIGHT);
-	if (newLS.m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) extio |= (1 << LIGHT_P1_LEFT);
-	if (newLS.m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) extio |= (1 << LIGHT_P1_DOWN);
-	if (newLS.m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) extio |= (1 << LIGHT_P1_UP);
+	if (newLS.game_button_lights[GameController_1][DANCE_BUTTON_RIGHT]) extio |= (1 << LIGHT_P1_RIGHT);
+	if (newLS.game_button_lights[GameController_1][DANCE_BUTTON_LEFT]) extio |= (1 << LIGHT_P1_LEFT);
+	if (newLS.game_button_lights[GameController_1][DANCE_BUTTON_DOWN]) extio |= (1 << LIGHT_P1_DOWN);
+	if (newLS.game_button_lights[GameController_1][DANCE_BUTTON_UP]) extio |= (1 << LIGHT_P1_UP);
 
-	if (newLS.m_bCabinetLights[LIGHT_BASS_LEFT] || newLS.m_bCabinetLights[LIGHT_BASS_RIGHT]) extio |= (1 << LIGHT_NEONS);
+	if (newLS.cabinet_lights[LIGHT_BASS_LEFT] || newLS.cabinet_lights[LIGHT_BASS_RIGHT]) extio |= (1 << LIGHT_NEONS);
 
 	//all of these functions are technically optional,
 	//so check to see if we were able to find them in this specific dll before calling a nullptr
