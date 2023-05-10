@@ -3291,6 +3291,7 @@ void Player::SetJudgment( int iRow, int iTrack, const TapNote &tn, TapNoteScore 
 		msg.SetParam( "TapNoteScore", tns );
 		msg.SetParam( "Early", fTapNoteOffset < 0.0f );
 		msg.SetParam( "TapNoteOffset", tn.result.fTapNoteOffset );
+		msg.SetParam( "EarlyTapNoteScore", tn.result.earlyTns );
 
 		if ( tns == TNS_Miss )
 			msg.SetParam( "HeldMiss", tn.result.bHeld );
@@ -3341,6 +3342,7 @@ void Player::SetHoldJudgment( TapNote &tn, int iTrack )
 		msg.SetParam( "NumTracks", (int)m_vpHoldJudgment.size() );
 		msg.SetParam( "TapNoteScore", tn.result.tns );
 		msg.SetParam( "HoldNoteScore", tn.HoldResult.hns );
+		msg.SetParam( "EarlyTapNoteScore", tn.result.earlyTns );
 
 		Lua* L = LUA->Get();
 		tn.PushSelf(L);
