@@ -471,6 +471,11 @@ endif()
 
 if(APPLE)
   set_property(TARGET "tomcrypt" PROPERTY XCODE_ATTRIBUTE_GCC_NO_COMMON_BLOCKS "YES")
+
+  # Fixes build failures due to warnings on macOS >= 13.3
+  # See itgmania/itgmania#107 for details
+  set_property(TARGET "tomcrypt" PROPERTY C_STANDARD 90)
+  set_property(TARGET "tomcrypt" PROPERTY C_STANDARD_REQUIRED ON)
 endif()
 if(MSVC)
   target_compile_definitions("tomcrypt" PRIVATE _CRT_SECURE_NO_WARNINGS)
