@@ -2668,6 +2668,7 @@ void Player::UpdateTapNotesMissedOlderThan( float fMissIfOlderThanSeconds )
 		{
 			if (tn.result.earlyTns != TNS_None) {
 				tn.result.tns = tn.result.earlyTns;
+				tn.result.fTapNoteOffset = tn.result.fEarlyTapNoteOffset;
 			} else {
 				tn.result.tns = TNS_Miss;
 			}
