@@ -2516,7 +2516,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 				// want to change the life once.
 				if (pTN->result.earlyTns == TNS_None) {
 					pTN->result.earlyTns = score;
-					pTN->result.fTapNoteOffset = -fNoteOffset;
+					pTN->result.fEarlyTapNoteOffset = -fNoteOffset;
 					ChangeLife( score );
 					// TODO: This should maybe also trigger a judgment change and a score
 					// change on hit. If a player gets an early way off, and doesn't
@@ -2531,6 +2531,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 					msg.SetParam( "Player", m_pPlayerState->m_PlayerNumber );
 					msg.SetParam( "TapNoteScore", score );
 					msg.SetParam( "Column", col );
+					msg.SetParam( "TapNoteOffset", -fNoteOffset);
 					MESSAGEMAN->Broadcast( msg );
 				}
 			} else {
@@ -3292,6 +3293,7 @@ void Player::SetJudgment( int iRow, int iTrack, const TapNote &tn, TapNoteScore 
 		msg.SetParam( "Early", fTapNoteOffset < 0.0f );
 		msg.SetParam( "TapNoteOffset", tn.result.fTapNoteOffset );
 		msg.SetParam( "EarlyTapNoteScore", tn.result.earlyTns );
+		msg.SetParam( "EarlyTapNoteOffset", tn.result.fEarlyTapNoteOffset );
 
 		if ( tns == TNS_Miss )
 			msg.SetParam( "HeldMiss", tn.result.bHeld );
