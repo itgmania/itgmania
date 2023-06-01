@@ -1291,8 +1291,11 @@ void Player::UpdateHoldNotes( int iSongRow, float fDeltaTime, std::vector<TrackR
 		// taps was hit before activating this group of holds.
 		/* Something about the logic in this section is causing 192nd steps to
 		 * fail for some odd reason. -aj */
-		bSteppedOnHead &= (tns != TNS_Miss && tns != TNS_None);	// did they step on the start of this hold?
-		bHeadJudged &= (tns != TNS_None);	// has this hold really even started yet?
+		// NOTE(teejusb): We want early hits to count as a hit on the hold head
+		// otherwise it visually looks weird if you never have a second hit for the
+		// arrow.
+		bSteppedOnHead &= (tns != TNS_Miss && tns != TNS_None || tn.result.earlyTns != TNS_None);	// did they step on the start of this hold?
+		bHeadJudged &= (tns != TNS_None || tn.result.earlyTns != TNS_None);	// has this hold really even started yet?
 
 		/*
 		if(bSteppedOnHead)
