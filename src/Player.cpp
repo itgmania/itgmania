@@ -170,7 +170,7 @@ static Preference<float> m_fTimingWindowJump	( "TimingWindowJump",		0.25 );
 static Preference<float> m_fMaxInputLatencySeconds	( "MaxInputLatencySeconds",	0.0 );
 static Preference<bool> g_bEnableAttackSoundPlayback	( "EnableAttackSounds", true );
 static Preference<bool> g_bEnableMineSoundPlayback	( "EnableMineHitSound", true );
-static Preference<int> g_iMinTnsToScoreTapNote	( "MinTnsToScoreTapNote", 3 );  // Default to great and above.
+static Preference<int> g_iMinTnsToScoreTapNote	( "MinTnsToScoreTapNote", 3 );  // Default to great and above. Use -1 to indicate None.
 
 /** @brief How much life is in a hold note when you start on it? */
 ThemeMetric<float> INITIAL_HOLD_LIFE		( "Player", "InitialHoldLife" );
@@ -2521,15 +2521,10 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 					pTN->result.earlyTns = score;
 					pTN->result.fEarlyTapNoteOffset = -fNoteOffset;
 					ChangeLife( score );
-					// TODO: This should maybe also trigger a judgment change and a score
-					// change on hit. If a player gets an early way off, and doesn't
-					// attempt to hit the arrow again, then they'll be met with a way off
-					// judgment instead of a miss which is weird behavior.
-					// We should give the user instant feedback when they get an EarlyHit,
-					// and then update the feedback if they manage to successfully re-hit
-					// the arrow. For now, we can just use the msg below to aid with this
-					// feedback.
-					
+					// We don't want to trigger a JudgmentMessage since we use that to
+					// indicate "finalized" judgments. We handle that elsewhere so instead
+					// we introduce a new EarlyHitMessage to control the instant feedback
+					// we want to relay to to the player.					
 					Message msg( "EarlyHit" );
 					msg.SetParam( "Player", m_pPlayerState->m_PlayerNumber );
 					msg.SetParam( "TapNoteScore", score );
