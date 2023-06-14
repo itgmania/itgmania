@@ -2136,7 +2136,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 			const TapNoteScore tns = tn.result.tns;
 			bool bInitiatedNote = true;
 			if( REQUIRE_STEP_ON_HOLD_HEADS )
-				bInitiatedNote = tns != TNS_None  &&  tns != TNS_Miss;	// did they step on the start?
+				bInitiatedNote = (tns != TNS_None && tns != TNS_Miss || tn.result.earlyTns != TNS_None);	// did they step on the start?
 			const int iEndRow = iRow + tn.iDuration;
 
 			if( bInitiatedNote && tn.HoldResult.fLife != 0 )
@@ -2488,8 +2488,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 		if( score == TNS_W1 && !GAMESTATE->ShowW1() )
 			score = TNS_W2;
 
-
-		if( score != TNS_None )
+		if( score != TNS_None)
 		{
 			TapNoteScore minTnsToScore = MinTnsToScoreTapNote(g_iMinTnsToScoreTapNote);
 			bool badTns = false;
@@ -2514,7 +2513,17 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 			// an early hit.
 			// Not sure why this is the case, but I think this implies there's a bug
 			// above on line 2288.
-			if (badTns && -fNoteOffset < 0.0f) {
+			//
+			// NOTE(teejusb): We have a few options for how to handle jumps with re-hits.
+			// 1) Ignore trying re-hit jumps (which is what we do now).
+			// 2) Let early hits for jumps count as the final judgment, but we have to
+			//    remember to not actually trigger any life bar hits if
+			//    CountNotesSeparately is false, until the final track has been
+			//    finalized. Otherwise chord cohesion will be broken and players will
+			//    incur unnecessary life bar hits. This option is a bit complicated so
+			//    for now we'll stick with 1.
+			int iNumTracksWithNotes = m_NoteData.GetNumTracksWithTapOrHoldHead(iRowOfOverlappingNoteOrRow);
+			if (badTns && -fNoteOffset < 0.0f && iNumTracksWithNotes == 1) {
 				// If a player gets an early way off as well as an early decent, we only
 				// want to change the life once.
 				if (pTN->result.earlyTns == TNS_None) {
