@@ -146,7 +146,7 @@ void TimingWindowSecondsInit( std::size_t /*TimingWindow*/ i, RString &sNameOut,
 	}
 }
 
-TapNoteScore ValidateMinTNSToScoreNotes(TapNoteScore tns) {
+void ValidateMinTNSToScoreNotes(TapNoteScore& tns) {
 	switch (tns) {
 		case TNS_W1:
 		case TNS_W2:
@@ -156,9 +156,8 @@ TapNoteScore ValidateMinTNSToScoreNotes(TapNoteScore tns) {
 		case TNS_None:
 			break;
 		default:
-		  return TNS_None;
+			tns = TNS_None;
 	}
-	return tns;
 }
 
 static Preference<float> m_fTimingWindowScale	( "TimingWindowScale",		1.0f );
@@ -168,7 +167,7 @@ static Preference<float> m_fTimingWindowJump	( "TimingWindowJump",		0.25 );
 static Preference<float> m_fMaxInputLatencySeconds	( "MaxInputLatencySeconds",	0.0 );
 static Preference<bool> g_bEnableAttackSoundPlayback	( "EnableAttackSounds", true );
 static Preference<bool> g_bEnableMineSoundPlayback	( "EnableMineHitSound", true );
-static Preference<TapNoteScore> g_MinTNSToScoreNotes	( "MinTNSToScoreNotes", TNS_W3 );  // Default to great and above.
+static Preference<TapNoteScore> g_MinTNSToScoreNotes	( "MinTNSToScoreNotes", TNS_None, ValidateMinTNSToScoreNotes );  // Default to great and above.
 
 /** @brief How much life is in a hold note when you start on it? */
 ThemeMetric<float> INITIAL_HOLD_LIFE		( "Player", "InitialHoldLife" );
@@ -2488,7 +2487,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 
 		if( score != TNS_None)
 		{
-			TapNoteScore minTnsToScore = ValidateMinTNSToScoreNotes(g_MinTNSToScoreNotes);
+			TapNoteScore minTnsToScore = g_MinTNSToScoreNotes;
 			bool badTns = false;
 			if (minTnsToScore != TNS_None) {
 				switch (score) {
