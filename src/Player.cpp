@@ -1291,7 +1291,7 @@ void Player::UpdateHoldNotes( int iSongRow, float fDeltaTime, std::vector<TrackR
 		// NOTE(teejusb): We want early hits to count as a hit on the hold head
 		// otherwise it visually looks weird if you never have a second hit for the
 		// arrow.
-		bSteppedOnHead &= (tns != TNS_Miss && tns != TNS_None || tn.result.earlyTns != TNS_None);	// did they step on the start of this hold?
+		bSteppedOnHead &= ((tns != TNS_Miss && tns != TNS_None) || tn.result.earlyTns != TNS_None);	// did they step on the start of this hold?
 		bHeadJudged &= (tns != TNS_None || tn.result.earlyTns != TNS_None);	// has this hold really even started yet?
 
 		/*
@@ -2133,7 +2133,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 			const TapNoteScore tns = tn.result.tns;
 			bool bInitiatedNote = true;
 			if( REQUIRE_STEP_ON_HOLD_HEADS )
-				bInitiatedNote = (tns != TNS_None && tns != TNS_Miss || tn.result.earlyTns != TNS_None);	// did they step on the start?
+				bInitiatedNote = ((tns != TNS_None && tns != TNS_Miss) || tn.result.earlyTns != TNS_None);	// did they step on the start?
 			const int iEndRow = iRow + tn.iDuration;
 
 			if( bInitiatedNote && tn.HoldResult.fLife != 0 )
