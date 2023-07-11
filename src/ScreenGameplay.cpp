@@ -1419,6 +1419,7 @@ void ScreenGameplay::LoadLights()
 	pSteps->GetNoteData( TapNoteData1 );
 
 	//taken from oitg, restores arrow -> marquee/bass light mapping.
+	//if the user has a pref for more than one difficulty to make the lighting chart...
 	if( asDifficulties.size() > 1 )
 	{
 		Difficulty d2 = StringToDifficulty( asDifficulties[1] );
@@ -1427,7 +1428,10 @@ void ScreenGameplay::LoadLights()
 
 		pSteps2 = SongUtil::GetClosestNotes( GAMESTATE->m_pCurSong, st, d2 );
 
-		if(pSteps2 != nullptr)
+		//if the difficulities are actually different
+		//then we can use them to generate a lighting chart.
+		//as the user defined.
+		if(pSteps != pSteps2)
 		{
 			NoteData TapNoteData2;
 			pSteps2->GetNoteData( TapNoteData2 );
