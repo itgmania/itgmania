@@ -287,6 +287,7 @@ PrefsManager::PrefsManager() :
 	m_iRageSoundSampleCountClamp	("RageSoundSampleCountClamp", 0), //some sound drivers mask the sample location number, the most popular number for this is 2^27, this causes lockup after ~50 minutes at 44.1khz sample rate
 	m_iSoundPreferredSampleRate	( "SoundPreferredSampleRate",		0 ),
 	m_sLightsStepsDifficulty	( "LightsStepsDifficulty",		"hard,medium" ),
+	m_bLightsSimplifyBass		( "LightsSimplifyBass",		false),
 	m_bAllowUnacceleratedRenderer	( "AllowUnacceleratedRenderer",		false ),
 	m_bThreadedInput		( "ThreadedInput",			true ),
 	m_bThreadedMovieDecode		( "ThreadedMovieDecode",		true ),
