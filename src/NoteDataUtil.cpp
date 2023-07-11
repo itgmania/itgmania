@@ -752,6 +752,24 @@ void LightTransformHelper( const NoteData &in, NoteData &out, const std::vector<
 // For every track enabled in "in", enable all tracks in "out".
 void NoteDataUtil::LoadTransformedLights( const NoteData &in, NoteData &out, int iNewNumTracks )
 {
+	// make a new NoteData that is a copy of the input.
+	NoteData bass;
+	bass.Init();
+	bass.CopyAll( in );
+
+	// if the user desires,
+	// copy from the marquee data, but slim down the notes.
+	// this makes it look more bass-ish and less like the original chart.
+	if(PREFSMAN->m_bLightsSimplifyBass)
+	{
+		RemoveHoldNotes( bass );
+		Little( bass );
+	}
+
+	LoadTransformedLightsFromTwo( in, bass, out );
+
+	// old code which will make all lights blink on every note.
+	/*
 	// reset all notes
 	out.Init();
 
@@ -762,6 +780,7 @@ void NoteDataUtil::LoadTransformedLights( const NoteData &in, NoteData &out, int
 		aiTracks.push_back( i );
 
 	LightTransformHelper( in, out, aiTracks );
+	*/
 }
 
 // This transform is specific to StepsType_lights_cabinet.
