@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-RageFileDriverSlice::RageFileDriverSlice( RageFileBasic *pFile, int iOffset, int iFileSize )
+RageFileDriverSlice::RageFileDriverSlice( RageFileBasic *pFile, std::int64_t iOffset, std::int64_t iFileSize )
 {
 	m_pFile = pFile;
 	m_iOffset = iOffset;
@@ -40,8 +40,8 @@ int RageFileDriverSlice::ReadInternal( void *buf, std::size_t bytes )
 	 * with a file not pointing to iOffset. */
 	m_pFile->Seek( m_iFilePos+m_iOffset );
 
-	const int bytes_left = m_iFileSize-this->m_iFilePos;
-	const int got = m_pFile->Read( buf, std::min( (int) bytes, bytes_left ) );
+	const std::int64_t bytes_left = m_iFileSize-this->m_iFilePos;
+	const int got = m_pFile->Read( buf, std::min( (std::int64_t) bytes, bytes_left ) );
 	if( got == -1 )
 	{
 		SetError( m_pFile->GetError() );
@@ -54,12 +54,12 @@ int RageFileDriverSlice::ReadInternal( void *buf, std::size_t bytes )
 }
 
 
-int RageFileDriverSlice::SeekInternal( int offset )
+std::int64_t RageFileDriverSlice::SeekInternal( std::int64_t offset )
 {
 	ASSERT( offset >= 0 );
 	offset = std::min( offset, m_iFileSize );
 
-	int ret = m_pFile->Seek( m_iOffset + offset );
+	std::int64_t ret = m_pFile->Seek( m_iOffset + offset );
 	if( ret == -1 )
 	{
 		SetError( m_pFile->GetError() );

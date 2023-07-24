@@ -23,9 +23,9 @@ public:
 	/* Seek to the given absolute offset.  Return to the position actually
 	 * seeked to; if the position given was beyond the end of the file, the
 	 * return value will be the size of the file. */
-	virtual int Seek( int iOffset ) = 0;
-	virtual int Seek( int offset, int whence ) = 0;
-	virtual int Tell() const = 0;
+	virtual std::int64_t Seek( std::int64_t iOffset ) = 0;
+	virtual std::int64_t Seek( std::int64_t offset, int whence ) = 0;
+	virtual std::int64_t Tell() const = 0;
 
 	/* Read at most iSize bytes into pBuf.  Return the number of bytes read,
 	 * 0 on end of stream, or -1 on error.  Note that reading less than iSize
@@ -57,7 +57,7 @@ public:
 	virtual void EnableCRC32( bool on=true ) = 0;
 	virtual bool GetCRC32( std::uint32_t *iRet ) = 0;
 
-	virtual int GetFileSize() const = 0;
+	virtual std::int64_t GetFileSize() const = 0;
 
 	/* If this file is backed by a file descriptor, return it. This is valid even
 	 * if the file is being filtered or decompressed. If the file has no
@@ -77,9 +77,9 @@ public:
 
 	bool AtEOF() const { return m_bEOF; }
 
-	int Seek( int iOffset );
-	int Seek( int offset, int whence );
-	int Tell() const { return m_iFilePos; }
+	std::int64_t Seek( std::int64_t iOffset );
+	std::int64_t Seek( std::int64_t offset, int whence );
+	std::int64_t Tell() const { return m_iFilePos; }
 
 	int Read( void *pBuffer, std::size_t iBytes );
 	int Read( RString &buffer, int bytes = -1 );
@@ -97,13 +97,13 @@ public:
 	void EnableCRC32( bool on=true );
 	bool GetCRC32( std::uint32_t *iRet );
 
-	virtual int GetFileSize() const = 0;
+	virtual std::int64_t GetFileSize() const = 0;
 	virtual int GetFD() { return -1; }
 	virtual RString GetDisplayPath() const { return RString(); }
 	virtual RageFileBasic *Copy() const { FAIL_M( "Copying unimplemented" ); }
 
 protected:
-	virtual int SeekInternal( int /* iOffset */ ) { FAIL_M( "Seeking unimplemented" ); }
+	virtual std::int64_t SeekInternal( std::int64_t /* iOffset */ ) { FAIL_M( "Seeking unimplemented" ); }
 	virtual int ReadInternal( void *pBuffer, std::size_t iBytes ) = 0;
 	virtual int WriteInternal( const void *pBuffer, std::size_t iBytes ) = 0;
 	virtual int FlushInternal() { return 0; }
@@ -120,7 +120,7 @@ private:
 	int EmptyWriteBuf();
 
 	bool m_bEOF;
-	int m_iFilePos;
+	std::int64_t m_iFilePos;
 
 	/*
 	 * If read buffering is enabled, m_pReadBuffer is the buffer, m_pReadBuf is the
@@ -148,7 +148,7 @@ private:
 	 * is the file position of the start of the buffer.
 	 */
 	char *m_pWriteBuffer;
-	int m_iWriteBufferPos;
+	std::int64_t m_iWriteBufferPos;
 	int m_iWriteBufferSize;
 	int m_iWriteBufferUsed;
 

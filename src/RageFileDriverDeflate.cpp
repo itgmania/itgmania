@@ -24,7 +24,7 @@
 #include <zlib.h>
 #endif
 
-RageFileObjInflate::RageFileObjInflate( RageFileBasic *pFile, int iUncompressedSize )
+RageFileObjInflate::RageFileObjInflate( RageFileBasic *pFile, std::int64_t iUncompressedSize )
 {
 	m_bFileOwned = false;
 	m_pFile = pFile;
@@ -146,7 +146,7 @@ int RageFileObjInflate::ReadInternal( void *buf, std::size_t bytes )
 	return ret;
 }
 
-int RageFileObjInflate::SeekInternal( int iPos )
+std::int64_t RageFileObjInflate::SeekInternal( std::int64_t iPos )
 {
 	/* Optimization: if offset is the end of the file, it's a lseek(0,SEEK_END).  Don't
 	 * decode anything. */
@@ -170,13 +170,13 @@ int RageFileObjInflate::SeekInternal( int iPos )
 		m_iFilePos = 0;
 	}
 
-	int iOffset = iPos - m_iFilePos;
+	std::int64_t iOffset = iPos - m_iFilePos;
 
 	/* Can this be optimized? */
 	char buf[1024*4];
 	while( iOffset )
 	{
-		int got = ReadInternal( buf, std::min( (int) sizeof(buf), iOffset ) );
+		int got = ReadInternal( buf, std::min( (std::int64_t) sizeof(buf), iOffset ) );
 		if( got == -1 )
 			return -1;
 
@@ -404,10 +404,10 @@ RageFileObjInflate *GunzipFile( RageFileBasic *pFile_, RString &sError, std::uin
 	if( sError != "" )
 		return nullptr;
 
-	int iDataPos = pFile->Tell();
+	std::int64_t iDataPos = pFile->Tell();
 
 	/* Seek to the end, and grab the uncompressed flie size and CRC. */
-	int iFooterPos = pFile->GetFileSize() - 8;
+	std::int64_t iFooterPos = pFile->GetFileSize() - 8;
 
 	FileReading::Seek( *pFile, iFooterPos, sError );
 

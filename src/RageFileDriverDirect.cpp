@@ -205,7 +205,7 @@ RageFileObjDirect *RageFileObjDirect::Copy() const
 	if( ret == nullptr )
 		RageException::Throw( "Couldn't reopen \"%s\": %s", m_sPath.c_str(), strerror(iErr) );
 
-	ret->Seek( (int)DoLseek( m_iFD, 0, SEEK_CUR ) );
+	ret->Seek( DoLseek( m_iFD, 0, SEEK_CUR ) );
 
 	return ret;
 }
@@ -447,16 +447,16 @@ int RageFileObjDirect::WriteInternal( const void *pBuf, std::size_t iBytes )
 	return iBytes;
 }
 
-int RageFileObjDirect::SeekInternal( int iOffset )
+std::int64_t RageFileObjDirect::SeekInternal( std::int64_t iOffset )
 {
-	return (int)DoLseek( m_iFD, iOffset, SEEK_SET );
+	return DoLseek( m_iFD, iOffset, SEEK_SET );
 }
 
-int RageFileObjDirect::GetFileSize() const
+std::int64_t RageFileObjDirect::GetFileSize() const
 {
-	const int iOldPos = (int)DoLseek( m_iFD, 0, SEEK_CUR );
-	ASSERT_M( iOldPos != -1, ssprintf("\"%s\": %s", m_sPath.c_str(), strerror(errno)) );
-	const int iRet = (int)DoLseek( m_iFD, 0, SEEK_END );
+	const std::int64_t iOldPos = DoLseek( m_iFD, 0, SEEK_CUR );
+	ASSERT_M( iOldPos != -1LL, ssprintf("\"%s\": %s", m_sPath.c_str(), strerror(errno)) );
+	const std::int64_t iRet = DoLseek( m_iFD, 0, SEEK_END );
 	ASSERT_M( iRet != -1, ssprintf("\"%s\": %s", m_sPath.c_str(), strerror(errno)) );
 	DoLseek( m_iFD, iOldPos, SEEK_SET );
 	return iRet;

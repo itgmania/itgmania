@@ -67,7 +67,7 @@ RageFileObj::~RageFileObj()
 	delete [] m_pWriteBuffer;
 }
 
-int RageFileObj::Seek( int iOffset )
+std::int64_t RageFileObj::Seek( std::int64_t iOffset )
 {
 	/* If we're already at the requested position, short circuit and don't flush
 	 * our buffer. */
@@ -84,13 +84,13 @@ int RageFileObj::Seek( int iOffset )
 	 * flush before seeking to do proper error checking. */
 	ResetReadBuf();
 
-	int iPos = SeekInternal( iOffset );
+	std::int64_t iPos = SeekInternal( iOffset );
 	if( iPos != -1 )
 	        m_iFilePos = iPos;
 	return iPos;
 }
 
-int RageFileObj::Seek( int offset, int whence )
+std::int64_t RageFileObj::Seek( std::int64_t offset, int whence )
 {
 	switch( whence )
 	{
@@ -99,7 +99,7 @@ int RageFileObj::Seek( int offset, int whence )
 	case SEEK_END:
 		offset += GetFileSize();
 	}
-	return Seek( (int) offset );
+	return Seek( offset );
 }
 
 int RageFileObj::Read( void *pBuffer, std::size_t iBytes )

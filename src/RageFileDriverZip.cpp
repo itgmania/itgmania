@@ -70,7 +70,7 @@ bool RageFileDriverZip::Load( RageFileBasic *pFile )
 }
 
 
-bool RageFileDriverZip::ReadEndCentralRecord( int &iTotalEntries, int &iCentralDirectoryOffset )
+bool RageFileDriverZip::ReadEndCentralRecord( int &iTotalEntries, std::uint32_t &iCentralDirectoryOffset )
 {
 	RString sError;
 	RString sSig = FileReading::ReadString( *m_pZip, 4, sError );
@@ -79,7 +79,7 @@ bool RageFileDriverZip::ReadEndCentralRecord( int &iTotalEntries, int &iCentralD
 	FileReading::read_16_le( *m_pZip, sError ); /* skip number of entries on this disk */
 	iTotalEntries = FileReading::read_16_le( *m_pZip, sError );
 	FileReading::read_32_le( *m_pZip, sError ); /* skip size of the central directory */
-	iCentralDirectoryOffset = FileReading::read_32_le( *m_pZip, sError );
+	iCentralDirectoryOffset = FileReading::read_u32_le( *m_pZip, sError );
 	int iCommentLength = FileReading::read_16_le( *m_pZip, sError );
 	m_sComment = FileReading::ReadString( *m_pZip, iCommentLength, sError );
 
@@ -95,16 +95,16 @@ bool RageFileDriverZip::ReadEndCentralRecord( int &iTotalEntries, int &iCentralD
 /* Find the end of central directory record, and seek to it. */
 bool RageFileDriverZip::SeekToEndCentralRecord()
 {
-	const int iSearchTo = std::max( m_pZip->GetFileSize() - 1024*32, 0 );
-	int iRealPos = m_pZip->GetFileSize();
+	const std::int64_t iSearchTo = std::max(m_pZip->GetFileSize() - 1024*32, 0LL);
+	std::int64_t iRealPos = m_pZip->GetFileSize();
 
-	while( iRealPos > 0 && iRealPos >= iSearchTo )
+	while( iRealPos > 0LL && iRealPos >= iSearchTo )
 	{
 		/* Move back in the file; leave some overlap between checks, to handle
 		 * the case where the signature crosses the block boundary. */
 		char buf[1024*4];
 		iRealPos -= sizeof(buf) - 4;
-		iRealPos = std::max( 0, iRealPos );
+		iRealPos = std::max( 0LL, iRealPos );
 		m_pZip->Seek( iRealPos );
 
 		int iGot = m_pZip->Read( buf, sizeof(buf) );
@@ -136,7 +136,8 @@ bool RageFileDriverZip::ParseZipfile()
 	}
 
 	/* Read the end of central directory record. */
-	int iTotalEntries, iCentralDirectoryOffset;
+	int iTotalEntries;
+	std::uint32_t iCentralDirectoryOffset;
 	if( !ReadEndCentralRecord(iTotalEntries, iCentralDirectoryOffset) )
 		return false; /* warned already */
 
@@ -183,15 +184,15 @@ int RageFileDriverZip::ProcessCdirFileHdr( FileInfo &info )
 	FileReading::read_16_le( *m_pZip, sError ); /* skip last mod file time */
 	FileReading::read_16_le( *m_pZip, sError ); /* skip last mod file date */
 	info.m_iCRC32 = FileReading::read_32_le( *m_pZip, sError );
-	info.m_iCompressedSize = FileReading::read_32_le( *m_pZip, sError );
-	info.m_iUncompressedSize = FileReading::read_32_le( *m_pZip, sError );
+	info.m_iCompressedSize = FileReading::read_u32_le( *m_pZip, sError );
+	info.m_iUncompressedSize = FileReading::read_u32_le( *m_pZip, sError );
 	int iFilenameLength = FileReading::read_16_le( *m_pZip, sError );
 	int iExtraFieldLength = FileReading::read_16_le( *m_pZip, sError );
 	int iFileCommentLength = FileReading::read_16_le( *m_pZip, sError );
 	FileReading::read_16_le( *m_pZip, sError ); /* relative offset of local header */
 	FileReading::read_16_le( *m_pZip, sError ); /* skip internal file attributes */
 	unsigned iExternalFileAttributes = FileReading::read_32_le( *m_pZip, sError );
-	info.m_iOffset = FileReading::read_32_le( *m_pZip, sError );
+	info.m_iOffset = FileReading::read_u32_le( *m_pZip, sError );
 
 	/* Check for errors before reading variable-length fields. */
 	if( sError != "" )
@@ -264,8 +265,8 @@ bool RageFileDriverZip::ReadLocalFileHeader( FileInfo &info )
 
 	FileReading::SkipBytes( *m_pZip, 22, sError ); /* skip most of the local file header */
 
-	const int iFilenameLength = FileReading::read_16_le( *m_pZip, sError );
-	const int iExtraFieldLength = FileReading::read_16_le( *m_pZip, sError );
+	const std::int64_t iFilenameLength = FileReading::read_u16_le( *m_pZip, sError );
+	const std::int64_t iExtraFieldLength = FileReading::read_u16_le( *m_pZip, sError );
 	info.m_iDataOffset = m_pZip->Tell() + iFilenameLength + iExtraFieldLength;
 
 	if( sError != "" )

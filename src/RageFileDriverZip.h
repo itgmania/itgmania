@@ -28,12 +28,12 @@ public:
 	struct FileInfo
 	{
 		RString m_sName;
-		int m_iOffset;
-		int m_iDataOffset;
+		std::uint32_t m_iOffset;
+		std::int64_t m_iDataOffset;
 
 		ZipCompressionMethod m_iCompressionMethod;
 		int m_iCRC32;
-		int m_iCompressedSize, m_iUncompressedSize;
+		std::uint32_t m_iCompressedSize, m_iUncompressedSize;
 
 		/* If 0, unknown. */
 		int m_iFilePermissions;
@@ -56,7 +56,7 @@ private:
 	RageMutex m_Mutex;
 
 	bool ParseZipfile();
-	bool ReadEndCentralRecord( int &total_entries_central_dir, int &offset_start_central_directory );
+	bool ReadEndCentralRecord( int &total_entries_central_dir, std::uint32_t &offset_start_central_directory );
 	int ProcessCdirFileHdr( FileInfo &info );
 	bool SeekToEndCentralRecord();
 	bool ReadLocalFileHeader( FileInfo &info );

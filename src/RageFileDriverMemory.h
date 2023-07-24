@@ -21,8 +21,8 @@ public:
 
 	int ReadInternal( void *buffer, std::size_t bytes );
 	int WriteInternal( const void *buffer, std::size_t bytes );
-	int SeekInternal( int offset );
-	int GetFileSize() const;
+	std::int64_t SeekInternal( std::int64_t offset );
+	std::int64_t GetFileSize() const;
 	RageFileObjMem *Copy() const;
 
 	/* Retrieve the contents of this file. */
