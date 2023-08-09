@@ -328,10 +328,12 @@ int WebSocketHandle::Close(lua_State *L)
 {
 	void *udata = luaL_checkudata(L, 1, "WebSocketHandle");
 	auto handle = *static_cast<WebSocketHandlePtr*>(udata);
-	LUA->YieldLua();
+	// No need to yield lua here as we don't even have it locked.
+	// Yielding and unyielding results in Lua staying locked here forever.
+	// LUA->YieldLua(); 
 	handle->webSocket.stop();
 	handle->onClose();
-	LUA->UnyieldLua();
+	// LUA->UnyieldLua();
 	return 0;
 }
 
