@@ -401,16 +401,25 @@ void NoteDataWithScoring::GetActualRadarValues(const NoteData &in,
 		switch(rc)
 		{
 			case RadarCategory_Stream:
-				out[rc]= clamp(float(state.notes_hit_for_stream) / note_count, 0.0f, 1.0f);
+				if (note_count > 0.0f)
+					out[rc] = clamp(float(state.notes_hit_for_stream) / note_count, 0.0f, 1.0f);
+				else
+					out[rc] = 0.0f;
 				break;
 			case RadarCategory_Voltage:
 				out[rc]= GetActualVoltageRadarValue(in, hittable_steps_length, pss);
 				break;
 			case RadarCategory_Air:
-				out[rc]= clamp(float(state.jumps_hit_for_air) / jump_count, 0.0f, 1.0f);
+				if (jump_count > 0.0f)
+					out[rc] = clamp(float(state.jumps_hit_for_air) / jump_count, 0.0f, 1.0f);
+				else
+					out[rc] = 0.0f;
 				break;
 			case RadarCategory_Freeze:
-				out[rc]= clamp(float(state.holds_held) / hold_count, 0.0f, 1.0f);
+				if (hold_count > 0.0f)
+					out[rc] = clamp(float(state.holds_held) / hold_count, 0.0f, 1.0f);
+				else
+					out[rc] = 0.0f;
 				break;
 			case RadarCategory_Chaos:
 				out[rc]= GetActualChaosRadarValue(in, song_seconds, pss);
