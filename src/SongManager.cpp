@@ -845,6 +845,43 @@ RString SongManager::SongToPreferredSortSectionName( const Song *pSong ) const
 	return RString();
 }
 
+
+void SongManager::GetPreferredSortSongsBySectionName( const RString &sSectionName, std::vector<Song*> &AddTo ) const
+{
+	for (PreferredSortSection const &v : m_vPreferredSongSort)
+	{
+		if (v.sName == sSectionName)
+		{
+			AddTo.insert( AddTo.end(), v.vpSongs.begin(), v.vpSongs.end() );
+			return;
+		}
+	}
+}
+
+std::vector<Song*> SongManager::GetPreferredSortSongsBySectionName( const RString &sSectionName ) const
+{
+	std::vector<Song*> AddTo;
+	for (PreferredSortSection const &v : m_vPreferredSongSort)
+	{
+		if (v.sName == sSectionName)
+		{
+			AddTo.insert( AddTo.end(), v.vpSongs.begin(), v.vpSongs.end() );
+			return AddTo;
+		}
+	}
+	return AddTo;
+}
+
+std::vector<RString> SongManager::GetPreferredSortSectionNames() const
+{
+	std::vector<RString> sectionNames;
+	for (PreferredSortSection const &v : m_vPreferredSongSort)
+	{
+		sectionNames.push_back(v.sName);
+	}
+	return sectionNames;
+}
+	
 void SongManager::GetPreferredSortCourses( CourseType ct, std::vector<Course*> &AddTo, bool bIncludeAutogen ) const
 {
 	if( m_vPreferredCourseSort.empty() )
@@ -1605,7 +1642,6 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 	ASSERT( UNLOCKMAN != nullptr );
 
 	m_vPreferredSongSort.clear();
-
 	std::vector<RString> asLines;
 	RString sFile = sPreferredSongs;
 	if (!bIsAbsolute)
@@ -2219,6 +2255,14 @@ public:
 		lua_pushstring(L, p->SongToPreferredSortSectionName(pSong));
 		return 1;
 	}
+	static int GetPreferredSortSongsBySectionName( T* p, lua_State *L )
+	{
+		std::vector<Song*> v;
+		p->GetPreferredSortSongsBySectionName(SArg(1), v);
+		LuaHelpers::CreateTableFromArray<Song*>( v, L );
+		return 1;
+	}
+
 	static int WasLoadedFromAdditionalSongs( T* p, lua_State *L )	{ lua_pushboolean(L, false); return 1; }	// deprecated
 	static int WasLoadedFromAdditionalCourses( T* p, lua_State *L )	{ lua_pushboolean(L, false); return 1; }	// deprecated
 
@@ -2261,6 +2305,7 @@ public:
 		ADD_METHOD( GetPopularSongs );
 		ADD_METHOD( GetPopularCourses );
 		ADD_METHOD( SongToPreferredSortSectionName );
+		ADD_METHOD( GetPreferredSortSongsBySectionName );
 		ADD_METHOD( WasLoadedFromAdditionalSongs );	// deprecated
 		ADD_METHOD( WasLoadedFromAdditionalCourses );	// deprecated
 	}

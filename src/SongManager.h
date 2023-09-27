@@ -144,6 +144,10 @@ public:
 
 	void GetPreferredSortSongs( std::vector<Song*> &AddTo ) const;
 	RString SongToPreferredSortSectionName( const Song *pSong ) const;
+	std::vector<RString> GetPreferredSortSectionNames() const;
+	std::vector<Song*> GetPreferredSortSongsBySectionName( const RString &sSectionName ) const;
+	void GetPreferredSortSongsBySectionName( const RString &sSectionName, std::vector<Song*> &AddTo ) const;
+
 	const std::vector<Course*> &GetPopularCourses( CourseType ct ) const { return m_pPopularCourses[ct]; }
 	Song *FindSong( RString sPath ) const;
 	Song *FindSong( RString sGroup, RString sSong ) const;
