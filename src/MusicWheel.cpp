@@ -937,8 +937,11 @@ void MusicWheel::readyWheelItemsData(SortOrder so) {
 			BuildWheelItemDatas(  aUnFilteredDatas, so );
 		}
 		FilterWheelItemDatas( aUnFilteredDatas, m__WheelItemDatas[so], so );
-		m_WheelItemDatasStatus[so]=VALID;
-
+		// The preferred sort's songs are subject to change during a session (particularly if two players have different preferred songs) 
+		// thus it's status should remain invalid so the wheel items are rebuilt each time in case of change.
+		if (so != SORT_PREFERRED) {
+			m_WheelItemDatasStatus[so]=VALID;
+		}
 		LOG->Trace( "MusicWheel sorting took: %f", timer.GetTimeSinceStart() );
 	}
 
@@ -1229,7 +1232,9 @@ void MusicWheel::ChangeMusic( int iDist )
 bool MusicWheel::ChangeSort( SortOrder new_so, bool allowSameSort )	// return true if change successful
 {
 	ASSERT( new_so < NUM_SortOrder );
-	if( GAMESTATE->m_SortOrder == new_so && !allowSameSort )
+	// Ignore allowSameSort if we're using SORT_PREFERRED
+	// Each player has their own preferred songs which sorts the songs differently -crashcringle
+	if( GAMESTATE->m_SortOrder == new_so && (!allowSameSort && new_so != SORT_PREFERRED ))
 	{
 		return false;
 	}
