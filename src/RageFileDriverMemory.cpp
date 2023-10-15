@@ -79,7 +79,7 @@ int RageFileObjMem::WriteInternal( const void *buffer, std::size_t bytes )
 
 std::int64_t RageFileObjMem::SeekInternal( std::int64_t offset )
 {
-	m_iFilePos = clamp( offset, 0LL, GetFileSize() );
+	m_iFilePos = clamp( offset, (std::int64_t) 0, GetFileSize() );
 	return m_iFilePos;
 }
 
