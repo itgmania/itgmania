@@ -46,6 +46,7 @@ const RString EDIT_STEPS_SUBDIR    = "Edits/";
 const RString EDIT_COURSES_SUBDIR  = "EditCourses/";
 //const RString UPLOAD_SUBDIR         = "Upload/";
 const RString RIVAL_SUBDIR         = "Rivals/";
+const RString SONGS_SUBDIR         = "Songs/";
 
 ThemeMetric<bool> SHOW_COIN_DATA( "Profile", "ShowCoinData" );
 static Preference<bool> g_bProfileDataCompress( "ProfileDataCompress", false );
@@ -1408,6 +1409,8 @@ bool Profile::SaveAllToDir( RString sDir, bool bSignData ) const
 		FILEMAN->CreateDir( sDir + EDIT_STEPS_SUBDIR );
 	if( ProfileManager::m_bProfileCourseEdits )
 		FILEMAN->CreateDir( sDir + EDIT_COURSES_SUBDIR );
+	if (PREFSMAN->m_custom_songs_enable)
+		FILEMAN->CreateDir( sDir + SONGS_SUBDIR );
 	FILEMAN->CreateDir( sDir + SCREENSHOTS_SUBDIR );
 	FILEMAN->CreateDir( sDir + RIVAL_SUBDIR );
 
