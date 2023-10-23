@@ -291,8 +291,8 @@ void Steps::TidyUpData()
 		else				SetDifficulty( Difficulty_Hard );
 	}
 
-	if( GetMeter() < 1) // meter is invalid
-		SetMeter( int(PredictMeter()) );
+	if( GetMeter() < 0) // meter is negative
+		SetMeter(1);
 }
 
 void Steps::CalculateRadarValues( float fMusicLengthSeconds )
