@@ -12,6 +12,7 @@
 RageInput* INPUTMAN = nullptr; // global and accessible from anywhere in our program
 
 Preference<RString> g_sInputDrivers( "InputDrivers", "" ); // "" == DEFAULT_INPUT_DRIVER_LIST
+Preference<RString> g_sInputLinuxJoysticks( "InputLinuxJoysticks", "" ); // "" == DEFAULT_LINUX_INPUT_JOYSTICK_LIST
 
 namespace
 {
