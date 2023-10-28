@@ -36,6 +36,7 @@ public:
 };
 
 extern Preference<RString> g_sInputDrivers;
+extern Preference<RString> g_sInputLinuxJoysticks;
 
 extern RageInput*			INPUTMAN;	// global and accessible from anywhere in our program
 
