@@ -4,8 +4,10 @@
 #define COURSE_LOADER_CRS_H
 
 #include "GameConstantsAndTypes.h"
+#include "MsdFile.h"
 class Course;
-class MsdFile;
+class CourseEntry;
+struct AttackArray;
 
 /** @brief The Course Loader handles parsing the .crs files. */
 namespace CourseLoaderCRS
@@ -49,6 +51,9 @@ namespace CourseLoaderCRS
 	 * @return its success or failure.
 	 */
 	bool LoadEditFromBuffer( const RString &sBuffer, const RString &sPath, ProfileSlot slot );
+
+	bool ParseCourseMods( const MsdFile::value_t &sParams, AttackArray &attacks, const RString &sPath );
+	bool ParseCourseSong( const MsdFile::value_t &sParams, CourseEntry &new_entry, const RString &sPath );
 }
 
 #endif
