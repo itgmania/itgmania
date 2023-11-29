@@ -5,7 +5,6 @@
 #include "RageUtil.h"
 #include "SongCacheIndex.h"
 #include "PrefsManager.h"
-#include "MsdFile.h"
 #include "PlayerOptions.h"
 #include "SongManager.h"
 #include "TitleSubstitution.h"
@@ -116,207 +115,14 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 
 		else if( sValueName.EqualsNoCase("MODS") )
 		{
-			Attack attack;
-			float end = -9999;
-			for( unsigned j = 1; j < sParams.params.size(); ++j )
-			{
-				std::vector<RString> sBits;
-				split( sParams[j], "=", sBits, false );
-				if( sBits.size() < 2 )
-					continue;
-
-				Trim( sBits[0] );
-				if( !sBits[0].CompareNoCase("TIME") )
-					attack.fStartSecond = std::max( StringToFloat(sBits[1]), 0.0f );
-				else if( !sBits[0].CompareNoCase("LEN") )
-					attack.fSecsRemaining = StringToFloat( sBits[1] );
-				else if( !sBits[0].CompareNoCase("END") )
-					end = StringToFloat( sBits[1] );
-				else if( !sBits[0].CompareNoCase("MODS") )
-				{
-					attack.sModifiers = sBits[1];
-
-					if( end != -9999 )
-					{
-						attack.fSecsRemaining = end - attack.fStartSecond;
-						end = -9999;
-					}
-
-					if( attack.fSecsRemaining <= 0.0f)
-					{
-						LOG->UserLog( "Course file", sPath, "has an attack with a nonpositive length: %s", sBits[1].c_str() );
-						attack.fSecsRemaining = 0.0f;
-					}
-
-					// warn on invalid so we catch typos on load
-					CourseUtil::WarnOnInvalidMods( attack.sModifiers );
-
-					attacks.push_back( attack );
-				}
-				else
-				{
-					LOG->UserLog( "Course file", sPath, "has an unexpected value named '%s'", sBits[0].c_str() );
-				}
-			}
-
+			CourseLoaderCRS::ParseCourseMods(sParams, attacks, sPath);
 		}
 		else if( sValueName.EqualsNoCase("SONG") )
 		{
 			CourseEntry new_entry;
-
-			// infer entry::Type from the first param
-			// todo: make sure these aren't generating bogus entries due
-			// to a lack of songs. -aj
-			int iNumSongs = SONGMAN->GetNumSongs();
-			// most played
-			if( sParams[1].Left(strlen("BEST")) == "BEST" )
-			{
-				int iChooseIndex = StringToInt( sParams[1].Right(sParams[1].size()-strlen("BEST")) ) - 1;
-				if( iChooseIndex > iNumSongs )
-				{
-					// looking up a song that doesn't exist.
-					LOG->UserLog( "Course file", sPath, "is trying to load BEST%i with only %i songs installed. "
-						      "This entry will be ignored.", iChooseIndex, iNumSongs);
-					out.m_bIncomplete = true;
-					continue; // skip this #SONG
-				}
-
-				new_entry.iChooseIndex = iChooseIndex;
-				CLAMP( new_entry.iChooseIndex, 0, 500 );
-				new_entry.songSort = SongSort_MostPlays;
-			}
-			// least played
-			else if( sParams[1].Left(strlen("WORST")) == "WORST" )
-			{
-				int iChooseIndex = StringToInt( sParams[1].Right(sParams[1].size()-strlen("WORST")) ) - 1;
-				if( iChooseIndex > iNumSongs )
-				{
-					// looking up a song that doesn't exist.
-					LOG->UserLog( "Course file", sPath, "is trying to load WORST%i with only %i songs installed. "
-						      "This entry will be ignored.", iChooseIndex, iNumSongs);
-					out.m_bIncomplete = true;
-					continue; // skip this #SONG
-				}
-
-				new_entry.iChooseIndex = iChooseIndex;
-				CLAMP( new_entry.iChooseIndex, 0, 500 );
-				new_entry.songSort = SongSort_FewestPlays;
-			}
-			// best grades
-			else if( sParams[1].Left(strlen("GRADEBEST")) == "GRADEBEST" )
-			{
-				new_entry.iChooseIndex = StringToInt( sParams[1].Right(sParams[1].size()-strlen("GRADEBEST")) ) - 1;
-				CLAMP( new_entry.iChooseIndex, 0, 500 );
-				new_entry.songSort = SongSort_TopGrades;
-			}
-			// worst grades
-			else if( sParams[1].Left(strlen("GRADEWORST")) == "GRADEWORST" )
-			{
-				new_entry.iChooseIndex = StringToInt( sParams[1].Right(sParams[1].size()-strlen("GRADEWORST")) ) - 1;
-				CLAMP( new_entry.iChooseIndex, 0, 500 );
-				new_entry.songSort = SongSort_LowestGrades;
-			}
-			else if( sParams[1] == "*" )
-			{
-				//new_entry.bSecret = true;
-			}
-			// group random
-			else if( sParams[1].Right(1) == "*" )
-			{
-				//new_entry.bSecret = true;
-				RString sSong = sParams[1];
-				sSong.Replace( "\\", "/" );
-				std::vector<RString> bits;
-				split( sSong, "/", bits );
-				if( bits.size() == 2 )
-				{
-					new_entry.songCriteria.m_sGroupName = bits[0];
-				}
-				else
-				{
-					LOG->UserLog( "Course file", sPath, "contains a random_within_group entry \"%s\" that is invalid. "
-						      "Song should be in the format \"<group>/*\".", sSong.c_str() );
-				}
-
-				if( !SONGMAN->DoesSongGroupExist(new_entry.songCriteria.m_sGroupName) )
-				{
-					LOG->UserLog( "Course file", sPath, "random_within_group entry \"%s\" specifies a group that doesn't exist. "
-						      "This entry will be ignored.", sSong.c_str() );
-					out.m_bIncomplete = true;
-					continue; // skip this #SONG
-				}
-			}
-			else
-			{
-				RString sSong = sParams[1];
-				sSong.Replace( "\\", "/" );
-				std::vector<RString> bits;
-				split( sSong, "/", bits );
-
-				Song *pSong = nullptr;
-				if( bits.size() == 2 )
-				{
-					new_entry.songCriteria.m_sGroupName = bits[0];
-					pSong = SONGMAN->FindSong( bits[0], bits[1] );
-				}
-				else if( bits.size() == 1 )
-				{
-					pSong = SONGMAN->FindSong( "", sSong );
-				}
-				new_entry.songID.FromSong( pSong );
-
-				if( pSong == nullptr )
-				{
-					LOG->UserLog( "Course file", sPath, "contains a fixed song entry \"%s\" that does not exist. "
-						      "This entry will be ignored.", sSong.c_str());
-					out.m_bIncomplete = true;
-					continue; // skip this #SONG
-				}
-			}
-
-			new_entry.stepsCriteria.m_difficulty = OldStyleStringToDifficulty( sParams[2] );
-      //most CRS files use old-style difficulties, but Difficulty enum values can be used in SM5. Test for those too.
-      if( new_entry.stepsCriteria.m_difficulty == Difficulty_Invalid )
-        new_entry.stepsCriteria.m_difficulty = StringToDifficulty( sParams[2] );
-			if( new_entry.stepsCriteria.m_difficulty == Difficulty_Invalid )
-			{
-				int retval = sscanf( sParams[2], "%d..%d", &new_entry.stepsCriteria.m_iLowMeter, &new_entry.stepsCriteria.m_iHighMeter );
-				if( retval == 1 )
-					new_entry.stepsCriteria.m_iHighMeter = new_entry.stepsCriteria.m_iLowMeter;
-				else if( retval != 2 )
-				{
-					LOG->UserLog( "Course file", sPath, "contains an invalid difficulty setting: \"%s\", 3..6 used instead",
-						      sParams[2].c_str() );
-					new_entry.stepsCriteria.m_iLowMeter = 3;
-					new_entry.stepsCriteria.m_iHighMeter = 6;
-				}
-				new_entry.stepsCriteria.m_iLowMeter = std::max( new_entry.stepsCriteria.m_iLowMeter, 1 );
-				new_entry.stepsCriteria.m_iHighMeter = std::max( new_entry.stepsCriteria.m_iHighMeter, new_entry.stepsCriteria.m_iLowMeter );
-			}
-
-			{
-				// If "showcourse" or "noshowcourse" is in the list, force
-				// new_entry.secret on or off.
-				std::vector<RString> mods;
-				split( sParams[3], ",", mods, true );
-				for( int j = (int) mods.size()-1; j >= 0 ; --j )
-				{
-					RString &sMod = mods[j];
-					TrimLeft( sMod );
-					TrimRight( sMod );
-					if( !sMod.CompareNoCase("showcourse") )
-						new_entry.bSecret = false;
-					else if( !sMod.CompareNoCase("noshowcourse") )
-						new_entry.bSecret = true;
-					else if( !sMod.CompareNoCase("nodifficult") )
-						new_entry.bNoDifficult = true;
-					else if( sMod.length() > 5 && !sMod.Left(5).CompareNoCase("award") )
-						new_entry.iGainLives = StringToInt( sMod.substr(5) );
-					else
-						continue;
-					mods.erase( mods.begin() + j );
-				}
-				new_entry.sModifiers = join( ",", mods );
+			if(CourseLoaderCRS::ParseCourseSong(sParams, new_entry, sPath) == false) {
+				out.m_bIncomplete = true;
+				continue; // Skip this #SONG
 			}
 
 			new_entry.attacks = attacks;
@@ -501,6 +307,233 @@ bool CourseLoaderCRS::LoadEditFromBuffer( const RString &sBuffer, const RString 
 	return true;
 }
 
+bool CourseLoaderCRS::ParseCourseMods( const MsdFile::value_t &sParams, AttackArray &attacks, const RString &sPath )  
+{
+	Attack attack;
+	float end = -9999;
+	for( unsigned j = 1; j < sParams.params.size(); ++j )
+	{
+		std::vector<RString> sBits;
+		split( sParams[j], "=", sBits, false );
+		if( sBits.size() < 2 )
+			continue;
+
+		Trim( sBits[0] );
+		if( !sBits[0].CompareNoCase("TIME") )
+			attack.fStartSecond = std::max( StringToFloat(sBits[1]), 0.0f );
+		else if( !sBits[0].CompareNoCase("LEN") )
+			attack.fSecsRemaining = StringToFloat( sBits[1] );
+		else if( !sBits[0].CompareNoCase("END") )
+			end = StringToFloat( sBits[1] );
+		else if( !sBits[0].CompareNoCase("MODS") )
+		{
+			attack.sModifiers = sBits[1];
+
+			if( end != -9999 )
+			{
+				attack.fSecsRemaining = end - attack.fStartSecond;
+				end = -9999;
+			}
+
+			if( attack.fSecsRemaining <= 0.0f)
+			{
+				LOG->UserLog( "Course file", sPath, "has an attack with a nonpositive length: %s", sBits[1].c_str() );
+				attack.fSecsRemaining = 0.0f;
+			}
+
+			// warn on invalid so we catch typos on load
+			CourseUtil::WarnOnInvalidMods( attack.sModifiers );
+
+			attacks.push_back( attack );
+		}
+		else
+		{
+			LOG->UserLog( "Course file", sPath, "has an unexpected value named '%s'", sBits[0].c_str() );
+		}
+	}
+	return true;
+}
+
+bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEntry &new_entry, const RString &sPath ) 
+{
+	LOG->Trace("CourseLoaderCRS::ParseCourseSong parsing song %s", sPath.c_str());
+	LOG->Trace("CourseLoaderCRS::ParseCourseSong sParams[1] =  %s", sParams[1].c_str());
+	// infer entry::Type from the first param
+	// todo: make sure these aren't generating bogus entries due
+	// to a lack of songs. -aj
+	int iNumSongs = SONGMAN->GetNumSongs();
+	// most played
+	if( sParams[1].Left(strlen("BEST")) == "BEST" )
+	{
+		int iChooseIndex = StringToInt( sParams[1].Right(sParams[1].size()-strlen("BEST")) ) - 1;
+		if( iChooseIndex > iNumSongs )
+		{
+			// looking up a song that doesn't exist.
+			LOG->UserLog( "Course file", sPath, "is trying to load BEST%i with only %i songs installed. "
+						"This entry will be ignored.", iChooseIndex, iNumSongs);
+			return false; // skip this #SONG
+		}
+
+		new_entry.iChooseIndex = iChooseIndex;
+		CLAMP( new_entry.iChooseIndex, 0, 500 );
+		new_entry.songSort = SongSort_MostPlays;
+	}
+	// least played
+	else if( sParams[1].Left(strlen("WORST")) == "WORST" )
+	{
+		int iChooseIndex = StringToInt( sParams[1].Right(sParams[1].size()-strlen("WORST")) ) - 1;
+		if( iChooseIndex > iNumSongs )
+		{
+			// looking up a song that doesn't exist.
+			LOG->UserLog( "Course file", sPath, "is trying to load WORST%i with only %i songs installed. "
+						"This entry will be ignored.", iChooseIndex, iNumSongs);
+			return false; // skip this #SONG
+		}
+
+		new_entry.iChooseIndex = iChooseIndex;
+		CLAMP( new_entry.iChooseIndex, 0, 500 );
+		new_entry.songSort = SongSort_FewestPlays;
+	}
+	// best grades
+	else if( sParams[1].Left(strlen("GRADEBEST")) == "GRADEBEST" )
+	{
+		new_entry.iChooseIndex = StringToInt( sParams[1].Right(sParams[1].size()-strlen("GRADEBEST")) ) - 1;
+		CLAMP( new_entry.iChooseIndex, 0, 500 );
+		new_entry.songSort = SongSort_TopGrades;
+	}
+	// worst grades
+	else if( sParams[1].Left(strlen("GRADEWORST")) == "GRADEWORST" )
+	{
+		new_entry.iChooseIndex = StringToInt( sParams[1].Right(sParams[1].size()-strlen("GRADEWORST")) ) - 1;
+		CLAMP( new_entry.iChooseIndex, 0, 500 );
+		new_entry.songSort = SongSort_LowestGrades;
+	}
+	// random song within a bpm range
+	else if( sParams[1].Left(strlen("BPMRANGE")) == "BPMRANGE" )
+	{
+		RString sBpmStr = sParams[1].Right(sParams[1].size() - strlen("BPMRANGE"));
+		std::vector<RString> sBpms;
+		split(sBpmStr, "..", sBpms);
+		
+		if( sBpms.size() == 2 )
+		{
+			new_entry.songCriteria.m_fMinBPM = strtof(sBpms[0].c_str(), NULL);
+			new_entry.songCriteria.m_fMaxBPM = strtof(sBpms[1].c_str(), NULL);
+			LOG->Trace("BPMRANGE min: %f max %f", new_entry.songCriteria.m_fMinBPM, new_entry.songCriteria.m_fMaxBPM);
+		}
+		else
+		{
+			LOG->UserLog( "Course file", sPath, "contains an invalid bpm range setting: \"%s\", ignoring",
+						sBpmStr.c_str() );
+			new_entry.songCriteria.m_fMinBPM = -1;
+			new_entry.songCriteria.m_fMaxBPM = -1;
+		}
+	}
+	else if( sParams[1] == "*" )
+	{
+		//new_entry.bSecret = true;
+	}
+	// group random
+	else if( sParams[1].Right(1) == "*" )
+	{
+		//new_entry.bSecret = true;
+		RString sSong = sParams[1];
+		sSong.Replace( "\\", "/" );
+		std::vector<RString> bits;
+		split( sSong, "/", bits );
+		if( bits.size() == 2 )
+		{
+			new_entry.songCriteria.m_sGroupName = bits[0];
+		}
+		else
+		{
+			LOG->UserLog( "Course file", sPath, "contains a random_within_group entry \"%s\" that is invalid. "
+						"Song should be in the format \"<group>/*\".", sSong.c_str() );
+		}
+
+		if( !SONGMAN->DoesSongGroupExist(new_entry.songCriteria.m_sGroupName) )
+		{
+			LOG->UserLog( "Course file", sPath, "random_within_group entry \"%s\" specifies a group that doesn't exist. "
+						"This entry will be ignored.", sSong.c_str() );
+			return false; // skip this #SONG
+		}
+	}
+	else
+	{
+		RString sSong = sParams[1];
+		sSong.Replace( "\\", "/" );
+		std::vector<RString> bits;
+		split( sSong, "/", bits );
+
+		Song *pSong = nullptr;
+		if( bits.size() == 2 )
+		{
+			new_entry.songCriteria.m_sGroupName = bits[0];
+			pSong = SONGMAN->FindSong( bits[0], bits[1] );
+		}
+		else if( bits.size() == 1 )
+		{
+			pSong = SONGMAN->FindSong( "", sSong );
+		}
+		new_entry.songID.FromSong( pSong );
+
+		if( pSong == nullptr )
+		{
+			LOG->UserLog( "Course file", sPath, "contains a fixed song entry \"%s\" that does not exist. "
+						"This entry will be ignored.", sSong.c_str());
+			return false; // skip this #SONG
+		}
+	}
+
+	new_entry.stepsCriteria.m_difficulty = OldStyleStringToDifficulty( sParams[2] );
+    //most CRS files use old-style difficulties, but Difficulty enum values can be used in SM5. Test for those too.
+	if( new_entry.stepsCriteria.m_difficulty == Difficulty_Invalid )
+	{
+		new_entry.stepsCriteria.m_difficulty = StringToDifficulty( sParams[2] );
+	}
+
+	if( new_entry.stepsCriteria.m_difficulty == Difficulty_Invalid )
+	{
+		int retval = sscanf( sParams[2], "%d..%d", &new_entry.stepsCriteria.m_iLowMeter, &new_entry.stepsCriteria.m_iHighMeter );
+		if( retval == 1 )
+			new_entry.stepsCriteria.m_iHighMeter = new_entry.stepsCriteria.m_iLowMeter;
+		else if( retval != 2 )
+		{
+			LOG->UserLog( "Course file", sPath, "contains an invalid difficulty setting: \"%s\", 3..6 used instead",
+						sParams[2].c_str() );
+			new_entry.stepsCriteria.m_iLowMeter = 3;
+			new_entry.stepsCriteria.m_iHighMeter = 6;
+		}
+		new_entry.stepsCriteria.m_iLowMeter = std::max( new_entry.stepsCriteria.m_iLowMeter, 1 );
+		new_entry.stepsCriteria.m_iHighMeter = std::max( new_entry.stepsCriteria.m_iHighMeter, new_entry.stepsCriteria.m_iLowMeter );
+	}
+
+	{
+		// If "showcourse" or "noshowcourse" is in the list, force
+		// new_entry.secret on or off.
+		std::vector<RString> mods;
+		split( sParams[3], ",", mods, true );
+		for( int j = (int) mods.size()-1; j >= 0 ; --j )
+		{
+			RString &sMod = mods[j];
+			TrimLeft( sMod );
+			TrimRight( sMod );
+			if( !sMod.CompareNoCase("showcourse") )
+				new_entry.bSecret = false;
+			else if( !sMod.CompareNoCase("noshowcourse") )
+				new_entry.bSecret = true;
+			else if( !sMod.CompareNoCase("nodifficult") )
+				new_entry.bNoDifficult = true;
+			else if( sMod.length() > 5 && !sMod.Left(5).CompareNoCase("award") )
+				new_entry.iGainLives = StringToInt( sMod.substr(5) );
+			else
+				continue;
+			mods.erase( mods.begin() + j );
+		}
+		new_entry.sModifiers = join( ",", mods );
+	}
+	return true;
+}
 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard

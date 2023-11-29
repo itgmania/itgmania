@@ -33,8 +33,8 @@ public:
 	std::vector<Song*> m_vpSongAllowedList;
 	/** @brief How many songs does this take max? Don't use this if it's -1. */
 	int m_iMaxStagesForSong;		// don't filter if -1
-	// float m_fMinBPM;		// don't filter if -1
-	// float m_fMaxBPM;		// don't filter if -1
+	float m_fMinBPM;		// don't filter if -1
+	float m_fMaxBPM;		// don't filter if -1
 	/** @brief Is this song used for tutorial purposes? */
 	enum Tutorial
 	{
@@ -54,7 +54,7 @@ public:
 	SongCriteria(): m_sGroupName(""), m_bUseSongGenreAllowedList(false),
 		m_vsSongGenreAllowedList(), m_Selectable(Selectable_DontCare),
 		m_bUseSongAllowedList(false), m_vpSongAllowedList(),
-		m_iMaxStagesForSong(-1), m_Tutorial(Tutorial_DontCare),
+		m_iMaxStagesForSong(-1), m_fMinBPM(-1), m_fMaxBPM(-1), m_Tutorial(Tutorial_DontCare),
 		m_Locked(Locked_DontCare)
 	{
 		// m_fMinBPM = -1;
@@ -84,8 +84,8 @@ public:
 			X(m_bUseSongAllowedList) &&
 			X(m_vpSongAllowedList) &&
 			X(m_iMaxStagesForSong) &&
-			//X(m_fMinBPM) &&
-			//X(m_fMaxBPM) &&
+			X(m_fMinBPM) &&
+			X(m_fMaxBPM) &&
 			X(m_Tutorial) &&
 			X(m_Locked);
 #undef X

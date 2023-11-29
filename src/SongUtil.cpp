@@ -66,6 +66,16 @@ bool SongCriteria::Matches( const Song *pSong ) const
 	if( m_iMaxStagesForSong != -1  &&  GAMESTATE->GetNumStagesMultiplierForSong(pSong) > m_iMaxStagesForSong )
 		return false;
 
+	if( m_fMaxBPM != -1 && pSong->m_fSpecifiedBPMMax > m_fMaxBPM )
+	{
+		return false;
+	}
+
+	if( m_fMinBPM != -1 && pSong->m_fSpecifiedBPMMin < m_fMinBPM )
+	{
+		return false;
+	}
+	
 	switch( m_Tutorial )
 	{
 	DEFAULT_FAIL(m_Tutorial);
