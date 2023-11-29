@@ -356,8 +356,6 @@ bool CourseLoaderCRS::ParseCourseMods( const MsdFile::value_t &sParams, AttackAr
 
 bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEntry &new_entry, const RString &sPath ) 
 {
-	LOG->Trace("CourseLoaderCRS::ParseCourseSong parsing song %s", sPath.c_str());
-	LOG->Trace("CourseLoaderCRS::ParseCourseSong sParams[1] =  %s", sParams[1].c_str());
 	// infer entry::Type from the first param
 	// todo: make sure these aren't generating bogus entries due
 	// to a lack of songs. -aj
@@ -443,7 +441,7 @@ bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEn
 		split( sSong, "/", bits );
 		if( bits.size() == 2 )
 		{
-			new_entry.songCriteria.m_sGroupName = bits[0];
+			new_entry.songCriteria.m_vsGroupNames.push_back(bits[0]);
 		}
 		else
 		{
@@ -451,7 +449,7 @@ bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEn
 						"Song should be in the format \"<group>/*\".", sSong.c_str() );
 		}
 
-		if( !SONGMAN->DoesSongGroupExist(new_entry.songCriteria.m_sGroupName) )
+		if( !SONGMAN->DoesSongGroupExist(bits[0]) )
 		{
 			LOG->UserLog( "Course file", sPath, "random_within_group entry \"%s\" specifies a group that doesn't exist. "
 						"This entry will be ignored.", sSong.c_str() );
@@ -468,8 +466,8 @@ bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEn
 		Song *pSong = nullptr;
 		if( bits.size() == 2 )
 		{
-			new_entry.songCriteria.m_sGroupName = bits[0];
-			pSong = SONGMAN->FindSong( bits[0], bits[1] );
+			new_entry.songCriteria.m_vsGroupNames.push_back(bits[0]);
+			pSong = SONGMAN->FindSong(bits[0], bits[1]);
 		}
 		else if( bits.size() == 1 )
 		{

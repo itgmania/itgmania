@@ -142,13 +142,13 @@ bool CourseWriterCRS::Write( const Course &course, RageFileBasic &f, bool bSavin
 			const RString &sSong = Basename( pSong->GetSongDir() );
 
 			f.Write( "#SONG:" );
-			if( !entry.songCriteria.m_sGroupName.empty() )
-				f.Write( entry.songCriteria.m_sGroupName + '/' );
+			if( entry.songCriteria.m_vsGroupNames.size() > 0 )
+				f.Write( entry.songCriteria.m_vsGroupNames[0] + '/' );
 			f.Write( sSong );
 		}
-		else if( !entry.songCriteria.m_sGroupName.empty() )
+		else if( entry.songCriteria.m_vsGroupNames.size() > 0 )
 		{
-			f.Write( ssprintf( "#SONG:%s/*", entry.songCriteria.m_sGroupName.c_str() ) );
+			f.Write( ssprintf( "#SONG:%s/*", entry.songCriteria.m_vsGroupNames[0].c_str() ) );
 		}
 		else
 		{
