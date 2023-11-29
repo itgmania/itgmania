@@ -32,8 +32,10 @@ ThemeMetric<bool> SHOW_SECTIONS_IN_LENGTH_SORT ( "MusicWheel", "ShowSectionsInLe
 
 bool SongCriteria::Matches( const Song *pSong ) const
 {
-	if( !m_sGroupName.empty()  &&  m_sGroupName != pSong->m_sGroupName )
+	if( !m_vsGroupNames.size() > 0 && std::find(m_vsGroupNames.begin(), m_vsGroupNames.end(), pSong->m_sGroupName) == m_vsGroupNames.end() )
+	{
 		return false;
+	}
 
 	if( UNLOCKMAN->SongIsLocked(pSong) & LOCKED_DISABLED )
 		return false;

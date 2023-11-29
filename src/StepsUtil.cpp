@@ -44,8 +44,18 @@ bool StepsCriteria::Matches( const Song *pSong, const Steps *pSteps ) const
 
 void StepsUtil::GetAllMatching( const SongCriteria &soc, const StepsCriteria &stc, std::vector<SongAndSteps> &out )
 {
-	const RString &sGroupName = soc.m_sGroupName.empty()? GROUP_ALL:soc.m_sGroupName;
-	const std::vector<Song*> &songs = SONGMAN->GetSongs( sGroupName );
+	
+	std::vector<RString> groupNames = soc.m_vsGroupNames;
+	if( groupNames.size() == 0 )
+	{
+		groupNames.push_back(GROUP_ALL);
+	}
+	std::vector<Song *> songs;
+	for (unsigned i = 0; i < groupNames.size(); i++)
+	{
+		const std::vector<Song *> &groupSongs = SONGMAN->GetSongs(groupNames[i]);
+		songs.insert(songs.end(), groupSongs.begin(), groupSongs.end());
+	}
 
 	for (Song *so : songs)
 	{
@@ -103,8 +113,17 @@ void StepsUtil::GetAllMatchingEndless( Song *pSong, const StepsCriteria &stc, st
 
 bool StepsUtil::HasMatching( const SongCriteria &soc, const StepsCriteria &stc )
 {
-	const RString &sGroupName = soc.m_sGroupName.empty()? GROUP_ALL:soc.m_sGroupName;
-	const std::vector<Song*> &songs = SONGMAN->GetSongs( sGroupName );
+	std::vector<RString> groupNames = soc.m_vsGroupNames;
+	if( groupNames.size() == 0 )
+	{
+		groupNames.push_back(GROUP_ALL);
+	}
+	std::vector<Song *> songs;
+	for (unsigned i = 0; i < groupNames.size(); i++)
+	{
+		const std::vector<Song *> &groupSongs = SONGMAN->GetSongs(groupNames[i]);
+		songs.insert(songs.end(), groupSongs.begin(), groupSongs.end());
+	}
 
 	return std::any_of(songs.begin(), songs.end(), [&](Song const *so) {
 		return soc.Matches(so) && HasMatching(so, stc);

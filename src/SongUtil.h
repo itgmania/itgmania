@@ -25,7 +25,7 @@ public:
 	 * @brief What group name are we searching for for Songs?
 	 *
 	 * If an empty string, don't bother using this for searching. */
-	RString m_sGroupName;
+	std::vector<RString> m_vsGroupNames;
 	bool m_bUseSongGenreAllowedList;
 	std::vector<RString> m_vsSongGenreAllowedList;
 	enum Selectable { Selectable_Yes, Selectable_No, Selectable_DontCare } m_Selectable;
@@ -51,7 +51,7 @@ public:
 	} m_Locked;
 
 	/** @brief Set up some initial song criteria. */
-	SongCriteria(): m_sGroupName(""), m_bUseSongGenreAllowedList(false),
+	SongCriteria(): m_vsGroupNames(), m_bUseSongGenreAllowedList(false),
 		m_vsSongGenreAllowedList(), m_Selectable(Selectable_DontCare),
 		m_bUseSongAllowedList(false), m_vpSongAllowedList(),
 		m_iMaxStagesForSong(-1), m_fMinBPM(-1), m_fMaxBPM(-1), m_Tutorial(Tutorial_DontCare),
@@ -77,7 +77,7 @@ public:
 /** @brief A quick way to match every part of the song criterium. */
 #define X(x) (x == other.x)
 		return
-			X(m_sGroupName) &&
+			X(m_vsGroupNames) &&
 			X(m_bUseSongGenreAllowedList) &&
 			X(m_vsSongGenreAllowedList) &&
 			X(m_Selectable) &&

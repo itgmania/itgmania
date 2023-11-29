@@ -56,8 +56,8 @@ RString CourseEntry::GetTextDescription() const
 		vsEntryDescription.push_back( pSong->GetTranslitFullTitle() );
 	else
 		vsEntryDescription.push_back( "Random" );
-	if( !songCriteria.m_sGroupName.empty() )
-		vsEntryDescription.push_back( songCriteria.m_sGroupName );
+	if( !songCriteria.m_vsGroupNames.size() > 0 )
+		vsEntryDescription.push_back( join(",", songCriteria.m_vsGroupNames) );
 	if( songCriteria.m_bUseSongGenreAllowedList )
 		vsEntryDescription.push_back( join(",",songCriteria.m_vsSongGenreAllowedList) );
 	if( stepsCriteria.m_difficulty != Difficulty_Invalid  &&  stepsCriteria.m_difficulty != Difficulty_Medium )
