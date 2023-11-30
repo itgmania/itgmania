@@ -128,7 +128,19 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 			new_entry.attacks = attacks;
 			new_entry.fGainSeconds = fGainSeconds;
 			attacks.clear();
-
+			out.m_vEntries.push_back( new_entry );
+		}
+		else if( sValueName.EqualsNoCase("SONGSELECT") )
+		{
+			CourseEntry new_entry;
+			if( CourseLoaderCRS::ParseCourseSongSelect(sParams, new_entry, sPath) == false )
+			{
+				out.m_bIncomplete = true;
+				continue; // Skip this #SONGSELECT
+			}
+			new_entry.attacks = attacks;
+			// new_entry.fGainSeconds = fGainSeconds; // SONGSELECT already has a GAINSECONDS option, so we probably don't need this?
+			attacks.clear();
 			out.m_vEntries.push_back( new_entry );
 		}
 		else if( !sValueName.EqualsNoCase("DISPLAYCOURSE") || !sValueName.EqualsNoCase("COMBO") ||
@@ -406,27 +418,6 @@ bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEn
 		CLAMP( new_entry.iChooseIndex, 0, 500 );
 		new_entry.songSort = SongSort_LowestGrades;
 	}
-	// random song within a bpm range
-	else if( sParams[1].Left(strlen("BPMRANGE")) == "BPMRANGE" )
-	{
-		RString sBpmStr = sParams[1].Right(sParams[1].size() - strlen("BPMRANGE"));
-		std::vector<RString> sBpms;
-		split(sBpmStr, "..", sBpms);
-		
-		if( sBpms.size() == 2 )
-		{
-			new_entry.songCriteria.m_fMinBPM = strtof(sBpms[0].c_str(), NULL);
-			new_entry.songCriteria.m_fMaxBPM = strtof(sBpms[1].c_str(), NULL);
-			LOG->Trace("BPMRANGE min: %f max %f", new_entry.songCriteria.m_fMinBPM, new_entry.songCriteria.m_fMaxBPM);
-		}
-		else
-		{
-			LOG->UserLog( "Course file", sPath, "contains an invalid bpm range setting: \"%s\", ignoring",
-						sBpmStr.c_str() );
-			new_entry.songCriteria.m_fMinBPM = -1;
-			new_entry.songCriteria.m_fMaxBPM = -1;
-		}
-	}
 	else if( sParams[1] == "*" )
 	{
 		//new_entry.bSecret = true;
@@ -533,6 +524,193 @@ bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEn
 	return true;
 }
 
+bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, CourseEntry &new_entry, const RString &sPath)
+{
+	// I want to be able to make courses that are really weirdly specific, so I'm going to try to put together a different
+	// format for defining the song selection criteria.
+	// The basic idea is to free up the order in which the song criteria need to be specified, and to add a bunch more options.
+	// TITLE, GROUP, ARTIST, DIFFICULTY, BPMRANGE, DURATION, METER, GENRE, SORT, MODS
+	// #SONGSELECT:TITLE=sometitle,some other title;
+	// #SONGSELECT:GROUP=DDR A,DDR A3;
+	// #SONGSELECT:ARTIST=TaQ,Someone else;
+	// #SONGSELECT:DURATION=69..420;
+	// #SONGSELECT:DIFFICULTY=Easy,Hard;
+	// #SONGSELECT:BPMRANGE=150..160;
+	// #SONGSELECT:METER=5..9;
+	// #SONGSELECT:GENRE=Pop,Techno,Opera;
+	// #SONGSELECT:SORT=Best,1;
+	// #SONGSELECT:SORT=Worst,10;
+
+	for( unsigned i = 1; i < sParams.params.size(); ++i )
+	{
+		std::vector<RString> sParamParts;
+		split(sParams[i], "=", sParamParts);
+		if( sParamParts.size() != 2 )
+		{
+			LOG->UserLog( "Course file", sPath, "has an invalid SONGSELECT sub-parameter, \"%s\"", sParams[i].c_str());
+			return false;
+		}
+		RString sParamName = sParamParts[0];
+		RString sParamValue = sParamParts[1];
+
+		// For params that accept multiple items, if someone were to define it twice in one #SONGSELECT, should we overwrite the first, or append?
+		if( sParamName.EqualsNoCase("TITLE") )
+		{
+			std::vector<RString> songTitles;
+			split(sParamValue, ",", songTitles);
+			new_entry.songCriteria.m_vsSongNames.insert(new_entry.songCriteria.m_vsSongNames.end(), songTitles.begin(), songTitles.end());
+		}
+		else if( sParamName.EqualsNoCase("GROUP") )
+		{
+			std::vector<RString> groups;
+			split(sParamValue, ",", groups);
+			new_entry.songCriteria.m_vsGroupNames.insert(new_entry.songCriteria.m_vsGroupNames.end(), groups.begin(), groups.end());
+		}
+		else if( sParamName.EqualsNoCase("ARTIST") )
+		{
+			std::vector<RString> artists;
+			split(sParamValue, ",", artists);
+			new_entry.songCriteria.m_vsArtistNames.insert(new_entry.songCriteria.m_vsArtistNames.end(), artists.begin(), artists.end());
+		}
+		else if( sParamName.EqualsNoCase("GENRE") )
+		{
+			new_entry.songCriteria.m_bUseSongGenreAllowedList = true;
+			std::vector<RString> genres;
+			split(sParamValue, ",", genres);
+			new_entry.songCriteria.m_vsSongGenreAllowedList.insert(new_entry.songCriteria.m_vsSongGenreAllowedList.end(), genres.begin(), genres.end());
+		}
+		else if( sParamName.EqualsNoCase("DIFFICULTY") )
+		{
+			std::vector<RString> difficultyStrs;
+			std::vector<Difficulty> difficulties;
+			split(sParamValue, ",", difficultyStrs);
+			for (unsigned d = 0; d < difficultyStrs.size(); d++)
+			{
+				Difficulty diff = OldStyleStringToDifficulty(difficultyStrs[d]);
+				// most CRS files use old-style difficulties, but Difficulty enum values can be used in SM5. Test for those too.
+				if (diff == Difficulty_Invalid)
+				{
+					diff = StringToDifficulty(difficultyStrs[d]);
+				}
+				if( diff != Difficulty_Invalid )
+				{
+					difficulties.push_back(diff);
+				}
+			}
+			new_entry.stepsCriteria.m_vDifficulties.insert(new_entry.stepsCriteria.m_vDifficulties.end(), difficulties.begin(), difficulties.end());
+		}
+		else if( sParamName.EqualsNoCase("SORT") )
+		{
+			if( CourseLoaderCRS::ParseCourseSongSort(sParamValue, new_entry, sPath) == false )
+			{
+				return false;
+			}
+		}
+		else if( sParamName.EqualsNoCase("DURATION") )
+		{
+			std::vector<RString> durations;	
+			split(sParamValue, "..", durations);
+			new_entry.songCriteria.m_fMinDurationSeconds = StringToFloat(durations[0]);
+			new_entry.songCriteria.m_fMaxDurationSeconds = StringToFloat(durations[1]);
+		}
+		else if( sParamName.EqualsNoCase("BPMRANGE") )
+		{
+			std::vector<RString> bpms;	
+			split(sParamValue, "..", bpms);
+			new_entry.songCriteria.m_fMinBPM = StringToFloat(bpms[0]);
+			new_entry.songCriteria.m_fMaxBPM = StringToFloat(bpms[1]);
+		}
+		else if( sParamName.EqualsNoCase("METER") )
+		{
+			std::vector<RString> meters;
+			split(sParamValue, "..", meters);
+			new_entry.stepsCriteria.m_iLowMeter = StringToInt(meters[0]);
+			new_entry.stepsCriteria.m_iHighMeter = StringToInt(meters[1]);
+		}
+		else if( sParamName.EqualsNoCase("LIVES") )
+		{
+			new_entry.iGainLives = StringToInt(sParamValue);
+		}
+		else if( sParamName.EqualsNoCase("GAINSECONDS") )
+		{
+			new_entry.fGainSeconds = StringToInt(sParamValue);
+		}
+		else if( sParamName.EqualsNoCase("MODS") )
+		{
+			std::vector<RString> mods;
+			split( sParamValue, ",", mods, true );
+			for( int j = (int) mods.size()-1; j >= 0 ; --j )
+			{
+				RString &sMod = mods[j];
+				TrimLeft( sMod );
+				TrimRight( sMod );
+				if( !sMod.CompareNoCase("showcourse") )
+					new_entry.bSecret = false;
+				else if( !sMod.CompareNoCase("noshowcourse") )
+					new_entry.bSecret = true;
+				else if( !sMod.CompareNoCase("nodifficult") )
+					new_entry.bNoDifficult = true;
+				else
+					continue;
+				mods.erase( mods.begin() + j );
+			}
+			new_entry.sModifiers = join( ",", mods );
+		}
+	}
+	return true;
+}
+
+
+bool CourseLoaderCRS::ParseCourseSongSort(RString sParam, CourseEntry &new_entry, const RString &sPath)
+{
+	int iNumSongs = SONGMAN->GetNumSongs();
+	if( sParam.Left(strlen("BEST")) == "BEST" )
+	{
+		int iChooseIndex = StringToInt( sParam.Right(sParam.size()-strlen("BEST")) ) - 1;
+		if( iChooseIndex > iNumSongs )
+		{
+			// looking up a song that doesn't exist.
+			LOG->UserLog( "Course file", sPath, "is trying to load BEST%i with only %i songs installed. "
+						"This entry will be ignored.", iChooseIndex, iNumSongs);
+			return false; // skip this #SONG
+		}
+
+		new_entry.iChooseIndex = iChooseIndex;
+		CLAMP( new_entry.iChooseIndex, 0, 500 );
+		new_entry.songSort = SongSort_MostPlays;
+	}
+	// least played
+	else if( sParam.Left(strlen("WORST")) == "WORST" )
+	{
+		int iChooseIndex = StringToInt( sParam.Right(sParam.size()-strlen("WORST")) ) - 1;
+		if( iChooseIndex > iNumSongs )
+		{
+			// looking up a song that doesn't exist.
+			LOG->UserLog( "Course file", sPath, "is trying to load WORST%i with only %i songs installed. "
+						"This entry will be ignored.", iChooseIndex, iNumSongs);
+			return false; // skip this #SONG
+		}
+
+		new_entry.iChooseIndex = iChooseIndex;
+		CLAMP( new_entry.iChooseIndex, 0, 500 );
+		new_entry.songSort = SongSort_FewestPlays;
+	}
+	// best grades
+	else if( sParam.Left(strlen("GRADEBEST")) == "GRADEBEST" )
+	{
+		new_entry.iChooseIndex = StringToInt( sParam.Right(sParam.size()-strlen("GRADEBEST")) ) - 1;
+		CLAMP( new_entry.iChooseIndex, 0, 500 );
+		new_entry.songSort = SongSort_TopGrades;
+	}
+	// worst grades
+	else if( sParam.Left(strlen("GRADEWORST")) == "GRADEWORST" )
+	{
+		new_entry.iChooseIndex = StringToInt( sParam.Right(sParam.size()-strlen("GRADEWORST")) ) - 1;
+		CLAMP( new_entry.iChooseIndex, 0, 500 );
+		new_entry.songSort = SongSort_LowestGrades;
+	}
+	return true;
+}
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.

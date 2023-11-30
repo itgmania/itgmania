@@ -18,6 +18,12 @@ bool StepsCriteria::Matches( const Song *pSong, const Steps *pSteps ) const
 {
 	if( m_difficulty != Difficulty_Invalid  &&  pSteps->GetDifficulty() != m_difficulty )
 		return false;
+	
+	if(m_vDifficulties.size() > 0 && std::find(m_vDifficulties.begin(), m_vDifficulties.end(), pSteps->GetDifficulty()) == m_vDifficulties.end() )
+	{
+		return false;
+	}
+
 	if( m_iLowMeter != -1  &&  pSteps->GetMeter() < m_iLowMeter )
 		return false;
 	if( m_iHighMeter != -1  &&  pSteps->GetMeter() > m_iHighMeter )

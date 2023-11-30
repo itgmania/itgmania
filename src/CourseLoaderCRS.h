@@ -54,6 +54,8 @@ namespace CourseLoaderCRS
 
 	bool ParseCourseMods( const MsdFile::value_t &sParams, AttackArray &attacks, const RString &sPath );
 	bool ParseCourseSong( const MsdFile::value_t &sParams, CourseEntry &new_entry, const RString &sPath );
+	bool ParseCourseSongSelect(const MsdFile::value_t &sParams, CourseEntry &new_entry, const RString &sPath);
+	bool ParseCourseSongSort(RString sParam, CourseEntry &new_entry, const RString &sPath);
 }
 
 #endif
