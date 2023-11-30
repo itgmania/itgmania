@@ -26,6 +26,9 @@ public:
 	 *
 	 * If an empty string, don't bother using this for searching. */
 	std::vector<RString> m_vsGroupNames;
+	std::vector<RString> m_vsSongNames;
+	std::vector<RString> m_vsArtistNames;
+
 	bool m_bUseSongGenreAllowedList;
 	std::vector<RString> m_vsSongGenreAllowedList;
 	enum Selectable { Selectable_Yes, Selectable_No, Selectable_DontCare } m_Selectable;
@@ -35,6 +38,9 @@ public:
 	int m_iMaxStagesForSong;		// don't filter if -1
 	float m_fMinBPM;		// don't filter if -1
 	float m_fMaxBPM;		// don't filter if -1
+	float m_fMinDurationSeconds; // don't filter if -1
+	float m_fMaxDurationSeconds; // don't filter if -1
+
 	/** @brief Is this song used for tutorial purposes? */
 	enum Tutorial
 	{
@@ -51,10 +57,11 @@ public:
 	} m_Locked;
 
 	/** @brief Set up some initial song criteria. */
-	SongCriteria(): m_vsGroupNames(), m_bUseSongGenreAllowedList(false),
+	SongCriteria(): m_vsGroupNames(), m_vsSongNames(), m_vsArtistNames(), m_bUseSongGenreAllowedList(false),
 		m_vsSongGenreAllowedList(), m_Selectable(Selectable_DontCare),
 		m_bUseSongAllowedList(false), m_vpSongAllowedList(),
-		m_iMaxStagesForSong(-1), m_fMinBPM(-1), m_fMaxBPM(-1), m_Tutorial(Tutorial_DontCare),
+		m_iMaxStagesForSong(-1), m_fMinBPM(-1), m_fMaxBPM(-1), m_fMinDurationSeconds(-1), m_fMaxDurationSeconds(-1),
+		m_Tutorial(Tutorial_DontCare),
 		m_Locked(Locked_DontCare)
 	{
 		// m_fMinBPM = -1;
@@ -78,6 +85,8 @@ public:
 #define X(x) (x == other.x)
 		return
 			X(m_vsGroupNames) &&
+			X(m_vsSongNames) &&
+			X(m_vsArtistNames) &&
 			X(m_bUseSongGenreAllowedList) &&
 			X(m_vsSongGenreAllowedList) &&
 			X(m_Selectable) &&
@@ -86,6 +95,8 @@ public:
 			X(m_iMaxStagesForSong) &&
 			X(m_fMinBPM) &&
 			X(m_fMaxBPM) &&
+			X(m_fMinDurationSeconds) &&
+			X(m_fMaxDurationSeconds) &&
 			X(m_Tutorial) &&
 			X(m_Locked);
 #undef X

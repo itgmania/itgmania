@@ -295,11 +295,13 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 
 	bool use_cache = true;
 
+	std::vector<RString> sDirectoryParts;
+	split( m_sSongDir, "/", sDirectoryParts, false );
+	m_sSongName = sDirectoryParts[sDirectoryParts.size() - 2];
+	ASSERT(m_sSongName != "");
 	// save group name
 	if(from_profile == ProfileSlot_Invalid)
 	{
-		std::vector<RString> sDirectoryParts;
-		split( m_sSongDir, "/", sDirectoryParts, false );
 		ASSERT( sDirectoryParts.size() >= 4 ); /* e.g. "/Songs/Slow/Taps/" */
 		m_sGroupName = sDirectoryParts[sDirectoryParts.size()-3];	// second from last item
 		ASSERT( m_sGroupName != "" );
@@ -1956,15 +1958,8 @@ bool Song::Matches(RString sGroup, RString sSong) const
 	if( sGroup.size() && sGroup.CompareNoCase(this->m_sGroupName) != 0)
 		return false;
 
-	RString sDir = this->GetSongDir();
-	sDir.Replace("\\","/");
-	std::vector<RString> bits;
-	split( sDir, "/", bits );
-	ASSERT(bits.size() >= 2); // should always have at least two parts
-	const RString &sLastBit = bits[bits.size()-1];
-
 	// match on song dir or title (ala DWI)
-	if( !sSong.CompareNoCase(sLastBit) )
+	if( !sSong.CompareNoCase(m_sSongName) )
 		return true;
 	if( !sSong.CompareNoCase(this->GetTranslitFullTitle()) )
 		return true;
