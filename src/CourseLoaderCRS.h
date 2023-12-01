@@ -5,6 +5,8 @@
 
 #include "GameConstantsAndTypes.h"
 #include "MsdFile.h"
+#include "Course.h"
+
 class Course;
 class CourseEntry;
 struct AttackArray;
@@ -56,6 +58,7 @@ namespace CourseLoaderCRS
 	bool ParseCourseSong( const MsdFile::value_t &sParams, CourseEntry &new_entry, const RString &sPath );
 	bool ParseCourseSongSelect(const MsdFile::value_t &sParams, CourseEntry &new_entry, const RString &sPath);
 	bool ParseCourseSongSort(RString sParam, CourseEntry &new_entry, const RString &sPath);
+	bool SetCourseSongSort(CourseEntry &new_entry, SongSort sort, int index, const RString &sPath);
 }
 
 #endif

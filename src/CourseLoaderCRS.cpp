@@ -602,7 +602,27 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 		}
 		else if( sParamName.EqualsNoCase("SORT") )
 		{
-			if( CourseLoaderCRS::ParseCourseSongSort(sParamValue, new_entry, sPath) == false )
+			std::vector<RString> sortParams;
+			split(sParamValue, ",", sortParams);
+			if( sortParams.size() != 2 )
+			{
+				LOG->UserLog( "Course file", sPath, "has an invalid SORT parameter, \"%s\"", sParams[i].c_str());
+				return false;
+			}
+			
+			SongSort sort = StringToSongSort(sortParams[0]);
+			if( sort == SongSort_Invalid )
+			{
+				sort = OldStyleStringToSongSort(sortParams[0]);
+			}
+			if( sort == SongSort_Invalid )
+			{
+				LOG->UserLog( "Course file", sPath, "has an invalid SORT parameter, \"%s\"", sParams[i].c_str());
+				return false;
+			}
+			int index = StringToInt(sortParams[1]) - 1;
+
+			if( CourseLoaderCRS::SetCourseSongSort(new_entry, sort, index, sPath) == false )
 			{
 				return false;
 			}
@@ -661,7 +681,6 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 	return true;
 }
 
-
 bool CourseLoaderCRS::ParseCourseSongSort(RString sParam, CourseEntry &new_entry, const RString &sPath)
 {
 	int iNumSongs = SONGMAN->GetNumSongs();
@@ -712,6 +731,34 @@ bool CourseLoaderCRS::ParseCourseSongSort(RString sParam, CourseEntry &new_entry
 	}
 	return true;
 }
+
+bool CourseLoaderCRS::SetCourseSongSort(CourseEntry &new_entry, SongSort sort, int index, const RString &sPath)
+{
+	if( sort == SongSort_Invalid )
+	{
+		return false;
+	}
+	if( sort == SongSort_Randomize )
+	{
+		new_entry.songSort = sort;
+		return true;
+	}
+
+	int iNumSongs = SONGMAN->GetNumSongs();
+	int iChooseIndex = index;
+	if ( iChooseIndex > iNumSongs && (sort == SongSort_MostPlays || sort == SongSort_FewestPlays) )
+	{
+		LOG->UserLog( "Course file", sPath, "is trying to load %s%i with only %i songs installed. "
+					"This entry will be ignored.", SongSortToString(sort).c_str(), iChooseIndex, iNumSongs);
+		return false; // skip this #SONG
+	}
+
+	CLAMP(iChooseIndex, 0, 500);
+	new_entry.iChooseIndex = iChooseIndex;
+	new_entry.songSort = sort;
+	return true;
+}
+
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.

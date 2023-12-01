@@ -263,7 +263,7 @@ bool CourseWriterCRS::WriteSongSelectCourseEntry( const CourseEntry &entry, Rage
 	if( entry.songSort != SongSort_Randomize && entry.iChooseIndex > -1)
 	{
 		RString songSort = SongSortToString(entry.songSort);
-		songSelectParams.push_back(ssprintf("SORT=%s=%d", songSort.c_str(), entry.iChooseIndex+1));
+		songSelectParams.push_back(ssprintf("SORT=%s,%d", songSort.c_str(), entry.iChooseIndex+1));
 	}
 	if(entry.songCriteria.m_fMinDurationSeconds > 0 
 		&& entry.songCriteria.m_fMaxDurationSeconds > 0 )
