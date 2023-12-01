@@ -133,7 +133,8 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 		else if( sValueName.EqualsNoCase("SONGSELECT") )
 		{
 			CourseEntry new_entry;
-			if( CourseLoaderCRS::ParseCourseSongSelect(sParams, new_entry, sPath) == false )
+			new_entry.bUseSongSelect = true;
+			if (CourseLoaderCRS::ParseCourseSongSelect(sParams, new_entry, sPath) == false)
 			{
 				out.m_bIncomplete = true;
 				continue; // Skip this #SONGSELECT
@@ -529,7 +530,7 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 	// I want to be able to make courses that are really weirdly specific, so I'm going to try to put together a different
 	// format for defining the song selection criteria.
 	// The basic idea is to free up the order in which the song criteria need to be specified, and to add a bunch more options.
-	// TITLE, GROUP, ARTIST, DIFFICULTY, BPMRANGE, DURATION, METER, GENRE, SORT, MODS
+	// TITLE, GROUP, ARTIST, DIFFICULTY, BPMRANGE, DURATION, METER, GENRE, SORT, MODS, GAINSECONDS, GAINLIVES
 	// #SONGSELECT:TITLE=sometitle,some other title;
 	// #SONGSELECT:GROUP=DDR A,DDR A3;
 	// #SONGSELECT:ARTIST=TaQ,Someone else;
@@ -627,7 +628,7 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 			new_entry.stepsCriteria.m_iLowMeter = StringToInt(meters[0]);
 			new_entry.stepsCriteria.m_iHighMeter = StringToInt(meters[1]);
 		}
-		else if( sParamName.EqualsNoCase("LIVES") )
+		else if( sParamName.EqualsNoCase("GAINLIVES") )
 		{
 			new_entry.iGainLives = StringToInt(sParamValue);
 		}
