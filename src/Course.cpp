@@ -383,11 +383,14 @@ static void CourseSortSongs( SongSort sort, std::vector<Song*> &vpPossibleSongs,
 			SongUtil::SortSongPointerArrayByNumPlays( vpPossibleSongs, PROFILEMAN->GetMachineProfile(), false );	// ascending
 		break;
 	case SongSort_TopGrades:
-		if( PROFILEMAN )
+		// SongUtil::SortSongPointerArrayByGrades() will crash if called in a state where there's no current master player 
+		// (for instance when returning to the Title Menu). 
+		// A workaround is to just not call it if we know that GAMESTATE->GetMasterPlayerNumber() == PlayerNumber_Invalid
+		if( PROFILEMAN && GAMESTATE->GetMasterPlayerNumber() != PlayerNumber_Invalid )
 			SongUtil::SortSongPointerArrayByGrades( vpPossibleSongs, true );	// descending
 		break;
 	case SongSort_LowestGrades:
-		if( PROFILEMAN )
+		if( PROFILEMAN && GAMESTATE->GetMasterPlayerNumber() != PlayerNumber_Invalid )
 			SongUtil::SortSongPointerArrayByGrades( vpPossibleSongs, false );	// ascending
 		break;
 	}
