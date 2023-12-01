@@ -39,16 +39,20 @@ enum SongSort
 	SongSort_TopGrades,
 	SongSort_LowestGrades,
 	NUM_SongSort,
+	SongSort_Invalid,
 };
 /** @brief Loop through the various Song Sorts. */
 #define FOREACH_SongSort( i ) FOREACH_ENUM( SongSort, i )
 const RString& SongSortToString( SongSort ss );
 const RString& SongSortToLocalizedString( SongSort ss );
 
+SongSort StringToSongSort( const RString& ss );
+
 class CourseEntry
 {
 public:
 	bool bSecret;			// show "??????" instead of an exact song
+	bool bUseSongSelect; 	// if true, this entry was created from a #SONGSELECT entry, instead of a #SONG entry
 
 	// filter criteria, applied from top to bottom
 	SongID songID;			// don't filter if unset

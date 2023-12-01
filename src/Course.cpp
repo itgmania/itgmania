@@ -34,7 +34,7 @@ static const char *SongSortNames[] = {
 };
 XToString( SongSort );
 XToLocalizedString( SongSort );
-
+StringToX( SongSort );
 
 /* Maximum lower value of ranges when difficult: */
 const int MAX_BOTTOM_RANGE = 10;
