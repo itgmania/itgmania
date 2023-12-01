@@ -128,6 +128,14 @@ bool CourseWriterCRS::Write( const Course &course, RageFileBasic &f, bool bSavin
 		{
 			f.Write( ssprintf( "#SONG:WORST%d", entry.iChooseIndex+1 ) );
 		}
+		else if( entry.songSort == SongSort_TopGrades && entry.iChooseIndex != -1 )
+		{
+			f.Write( ssprintf( "#SONG:GRADEBEST%d", entry.iChooseIndex + 1 ) );
+		}
+		else if( entry.songSort == SongSort_LowestGrades && entry.iChooseIndex != -1 )
+		{
+			f.Write( ssprintf( "#SONG:GRADEWORST%d", entry.iChooseIndex + 1 ) );
+		}
 		else if( entry.songID.ToSong() )
 		{
 			Song *pSong = entry.songID.ToSong();
