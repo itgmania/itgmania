@@ -47,6 +47,7 @@ const RString& SongSortToString( SongSort ss );
 const RString& SongSortToLocalizedString( SongSort ss );
 
 SongSort StringToSongSort( const RString& ss );
+SongSort OldStyleStringToSongSort( const RString& ss );
 
 class CourseEntry
 {

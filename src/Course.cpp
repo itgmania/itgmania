@@ -36,6 +36,34 @@ XToString( SongSort );
 XToLocalizedString( SongSort );
 StringToX( SongSort );
 
+struct OldStyleStringToSongSortMapHolder
+{
+	std::map<RString, SongSort> conversion_map;
+	
+	OldStyleStringToSongSortMapHolder()
+	{
+		conversion_map["best"] = SongSort_MostPlays;
+		conversion_map["worst"] = SongSort_FewestPlays;
+		conversion_map["gradebest"] = SongSort_TopGrades;
+		conversion_map["gradeworst"] = SongSort_LowestGrades;
+	}
+};
+
+OldStyleStringToSongSortMapHolder OldStyleStringToSongSortMapHolder_converter;
+
+SongSort OldStyleStringToSongSort(const RString &ss)
+{
+	RString s2 = ss;
+	s2.MakeLower();
+	std::map<RString, SongSort>::iterator diff=
+		OldStyleStringToSongSortMapHolder_converter.conversion_map.find(s2);
+	if(diff != OldStyleStringToSongSortMapHolder_converter.conversion_map.end())
+	{
+		return diff->second;
+	}
+	return SongSort_Invalid;
+}
+
 /* Maximum lower value of ranges when difficult: */
 const int MAX_BOTTOM_RANGE = 10;
 
@@ -368,9 +396,10 @@ bool Course::GetTrailSorted( StepsType st, CourseDifficulty cd, Trail &trail ) c
 // TODO: Move Course initialization after PROFILEMAN is created
 static void CourseSortSongs( SongSort sort, std::vector<Song*> &vpPossibleSongs, RandomGen &rnd )
 {
-	switch( sort )
+	LOG->Trace("CourseSortSongs sort= %d | %s", sort, SongSortToString(sort).c_str());
+	LOG->Flush();
+	switch (sort)
 	{
-	DEFAULT_FAIL(sort);
 	case SongSort_Randomize:
 		std::shuffle( vpPossibleSongs.begin(), vpPossibleSongs.end(), rnd );
 		break;
@@ -392,6 +421,9 @@ static void CourseSortSongs( SongSort sort, std::vector<Song*> &vpPossibleSongs,
 	case SongSort_LowestGrades:
 		if( PROFILEMAN && GAMESTATE->GetMasterPlayerNumber() != PlayerNumber_Invalid )
 			SongUtil::SortSongPointerArrayByGrades( vpPossibleSongs, false );	// ascending
+		break;
+	default:
+		LOG->Trace("CourseSortSongs sort= %d | %s invalid??", sort, SongSortToString(sort).c_str());
 		break;
 	}
 }
@@ -520,8 +552,9 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 				if( v.size() == 1 )
 					vpSongs.push_back( sas->pSong );
 			}
-
-			CourseSortSongs( e->songSort, vpSongs, rnd );
+			LOG->Trace("Course::GetTrailUnsorted");
+			
+			CourseSortSongs(e->songSort, vpSongs, rnd);
 
 			ASSERT( e->iChooseIndex >= 0 );
 			if( e->iChooseIndex < int( vSongAndSteps.size() ) )
