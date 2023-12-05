@@ -28,6 +28,7 @@
 #include "NotesLoaderDWI.h"
 #include "NotesLoaderKSF.h"
 #include "NotesLoaderBMS.h"
+#include "TechStats.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -317,9 +318,11 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 
 	NoteData tempNoteData;
 	this->GetNoteData( tempNoteData );
+	TechStats techStats = TechStats();
 
-	FOREACH_PlayerNumber( pn )
-		m_CachedRadarValues[pn].Zero();
+	FOREACH_PlayerNumber(pn)
+		m_CachedRadarValues[pn]
+			.Zero();
 
 	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
 	if( tempNoteData.IsComposite() )
@@ -328,7 +331,10 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 
 		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
 		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
+		{
 			NoteDataUtil::CalculateRadarValues( vParts[pn], fMusicLengthSeconds, m_CachedRadarValues[pn] );
+			// NoteDataUtil::CalculateTechStats(vParts[pn], techStats);
+		}
 	}
 	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
 	{
@@ -339,18 +345,24 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 		NoteDataUtil::CalculateRadarValues(p1,
 										   fMusicLengthSeconds,
 										   m_CachedRadarValues[PLAYER_1]);
+		// NoteDataUtil::CalculateTechStats(p1, techStats);
 		// at this point, p2 is tempNoteData.
 		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
 		tempNoteData.SetNumTracks(tracks);
 		NoteDataUtil::CalculateRadarValues(tempNoteData,
 										   fMusicLengthSeconds,
 										   m_CachedRadarValues[PLAYER_2]);
+		// NoteDataUtil::CalculateTechStats(p2, techStats);
 	}
 	else
 	{
 		NoteDataUtil::CalculateRadarValues( tempNoteData, fMusicLengthSeconds, m_CachedRadarValues[0] );
+		NoteDataUtil::CalculateTechStats(tempNoteData, techStats);
 		std::fill_n( m_CachedRadarValues + 1, NUM_PLAYERS-1, m_CachedRadarValues[0] );
+		LOG->Trace("TechStats for %s, %s:\n", m_sFilename.c_str(), DifficultyToString(m_Difficulty).c_str());
+		LOG->Trace("%s", techStats.stringDescription().c_str());
 	}
+	
 	GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
