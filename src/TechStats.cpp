@@ -42,18 +42,24 @@ void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &co
 			counter.stepsLr.push_back(counter.lastFoot);
 		}
 		counter.anyStepsSinceLastCommitStream = true;
-
+		// Regardless, record what arrow the foot stepped on (for brackets l8r)
 		if(counter.lastFoot == Foot_Right)
 		{
 			counter.lastArrowR = currentStep;
+		}
+		else
+		{
+			counter.lastArrowL = currentStep;
 		}
 	}
 	else if(IsJump(currentStep))
 	{
 		bool isBracketLeft = (currentStep == StepDirection_LD || currentStep == StepDirection_LU);
 		bool isBracketRight = (currentStep == StepDirection_RD || currentStep == StepDirection_RU);
+		
 		Foot tieBreakFoot = Foot_None;
-		if( isBracketLeft)
+		
+		if(isBracketLeft)
 		{
 			tieBreakFoot = Foot_Left;
 		}
@@ -61,7 +67,9 @@ void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &co
 		{
 			tieBreakFoot = Foot_Right;
 		}
+
 		CommitStream(stats, counter, tieBreakFoot);
+		
 		counter.lastStep = Foot_None;
 		counter.lastRepeatedFoot = StepDirection_None;
 
@@ -70,15 +78,17 @@ void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &co
 			// possibly bracketable
 			if(isBracketLeft && counter.trueLastFoot != Foot_Left)
 			{
-				// check for interference from the right foot
-				if((currentStep & counter.trueLastArrowR) == 0)
+				// Check for interference from the right foot
+				if( !StepContainsStep(currentStep, counter.trueLastArrowR) )
 				{
 					stats.brackets += 1;
 					// allow subsequent brackets to stream
 					counter.trueLastFoot = Foot_Left;
 					counter.lastFoot = Foot_Left;
 					// this prevents eg "LD bracket, DR also bracket"
+					// NB: Take only the U or D arrow (cf above NB)
 					counter.trueLastArrowL = currentStep - StepDirection_Left;
+					counter.justBracketed = true;
 				}
 				else
 				{
@@ -92,25 +102,29 @@ void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &co
 			}
 			else if(isBracketRight && counter.trueLastFoot != Foot_Right)
 			{
-				if((currentStep & counter.trueLastArrowL) == 0)
+				// Check for interference from the left foot
+				// Symmetric logic; see comments above
+				if( !StepContainsStep(currentStep, counter.trueLastArrowL) )
 				{
 					stats.brackets += 1;
 					counter.trueLastFoot = Foot_Right;
 					counter.lastFoot = Foot_Right;
 					counter.trueLastArrowR = currentStep - StepDirection_Right;
+					counter.justBracketed = true;
 				}
 				else
 				{
 					counter.trueLastFoot = Foot_None;
 					counter.trueLastArrowL = currentStep - StepDirection_Right;
-					counter.trueLastArrowR = StepDirection_Left;
+					counter.trueLastArrowR = StepDirection_Right;
 					counter.lastArrowL = counter.trueLastArrowL;
 				}
+				counter.lastArrowR = counter.trueLastArrowR;
 			}
 		}
 		else
 		{
-			// else LR or UD
+			// LR or UD
 			if(currentStep == StepDirection_UD)
 			{
 				// past footing influences which way the player can
@@ -119,6 +133,9 @@ void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &co
 				bool leftU = StepContainsStep(counter.trueLastArrowL, StepDirection_Up);
 				bool rightD = StepContainsStep(counter.trueLastArrowR, StepDirection_Down);
 				bool rightU = StepContainsStep(counter.trueLastArrowR, StepDirection_Up);
+				// The haskell version of this (decideDUFacing) is a
+				// little more strict, and asserts each foot can't be
+				// be on both D and U at once, but whatever.
 				if ((leftD && !rightD) || (rightU && !leftU))
 				{
 					counter.trueLastArrowL = StepDirection_Down;
@@ -150,19 +167,16 @@ void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &co
 	}
 }
 
+// TODO NEXT: DOUBLE CHECK ALL OF THIS LOGIC!
 void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &counter, Foot tieBreaker)
 {
 	int ns = (int)counter.stepsLr.size();
 	int nx = 0;
 	bool needFlip = false;
 	
-	if(ns == 0)
-	{
-		return;
-	}
-
 	for (unsigned i = 0; i < counter.stepsLr.size(); i++)
 	{
+		// Count crossed-over steps given initial footing
 		if(!counter.stepsLr[i])
 		{
 			nx += 1;
@@ -284,12 +298,10 @@ void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &count
 		}
 		// Recurse for each split half
 		counter.stepsLr = stepsLr1;
-		counter.recursionCount += 1;
 		CommitStream(stats, counter, Foot_None);
 		counter.lastRepeatedFoot = Foot_None;
 		counter.stepsLr = stepsLr2;
 		CommitStream(stats, counter, tieBreaker);
-		counter.recursionCount -= 1;
 	}
 	else
 	{
@@ -304,12 +316,12 @@ void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &count
 			stats.crossovers += nx;
 		}
 
-		if(counter.lastRepeatedFoot)
+		if(counter.lastRepeatedFoot != StepDirection_None)
 		{
 			if(needFlip == counter.lastFlip)
 			{
 				stats.footswitches += 1;
-				if(counter.lastRepeatedFoot != Foot_None)
+				if(counter.lastRepeatedFoot == StepDirection_Left || counter.lastRepeatedFoot == StepDirection_Right)
 				{
 					stats.sideswitches += 1;
 				}

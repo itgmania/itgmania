@@ -31,17 +31,17 @@ inline int TrackIntToStepDirection(int track)
 
 inline bool IsSingleStep(StepDirection s)
 {
-	return ((s & StepDirection_Left) || (s & StepDirection_Down) || (s & StepDirection_Up) || (s & StepDirection_Right));
+	return ((s == StepDirection_Left) || (s == StepDirection_Down) || (s == StepDirection_Up) || (s == StepDirection_Right));
 }
 
 inline bool IsJump(StepDirection s)
 {
-	return ( (s & StepDirection_LR) || (s & StepDirection_UD) || (s & StepDirection_LD) || (s & StepDirection_LU) || (s & StepDirection_RD) || (s & StepDirection_RU) );
+	return ( (s == StepDirection_LR) || (s == StepDirection_UD) || (s == StepDirection_LD) || (s == StepDirection_LU) || (s == StepDirection_RD) || (s == StepDirection_RU) );
 }
 
-inline bool StepContainsStep(StepDirection s, StepDirection m)
+inline bool StepContainsStep(StepDirection instep, StepDirection step)
 {
-	return (s & m);
+	return (instep & step) == step;
 }
 
 inline Foot SwitchFeet(Foot f) 
@@ -98,20 +98,22 @@ struct TechStatsCounter
 	int recursionCount;
 	TechStatsCounter()
 	{
+		lastFoot = Foot_Left;
 		wasLastStreamFlipped = false;
-		anyStepsSinceLastCommitStream = false;
-		justBracketed = false;
-		lastFlip = false;
-
-		lastFoot = Foot_None;
-		trueLastFoot = Foot_None;
-		
 		lastStep = StepDirection_None;
 		lastRepeatedFoot = StepDirection_None;
+
+		anyStepsSinceLastCommitStream = false;
+		
 		lastArrowL = StepDirection_None;
 		lastArrowR = StepDirection_None;
+		
 		trueLastArrowL = StepDirection_None;
 		trueLastArrowR = StepDirection_None;
+
+		trueLastFoot = Foot_None;
+		justBracketed = false;
+		lastFlip = false;
 
 		recursionCount = 0;
 	}
