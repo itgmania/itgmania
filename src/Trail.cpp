@@ -7,6 +7,7 @@
 #include "NoteData.h"
 #include "NoteDataUtil.h"
 #include "CommonMetrics.h"
+#include "TechStats.h"
 
 #include <cmath>
 #include <numeric>
@@ -90,6 +91,12 @@ void Trail::SetRadarValues( const RadarValues &rv )
 	m_bRadarValuesCached = true;
 }
 
+void Trail::SetTechStats(const TechStats &ts )
+{
+	m_CachedTechStats = ts;
+	m_bTechStatsCached = true;
+}
+
 const RadarValues &Trail::GetRadarValues() const
 {
 	if( m_bRadarValuesCached )
@@ -146,6 +153,48 @@ const RadarValues &Trail::GetRadarValues() const
 
 		return m_CachedRadarValues;
 	}
+}
+
+TechStats &Trail::GetTechStats()
+{
+	if(m_bTechStatsCached)
+	{
+		return m_CachedTechStats;
+	}
+
+	TechStats techStats = TechStats();
+	
+	for (TrailEntry const &e : m_vEntries)
+	{
+		const Steps *pSteps = e.pSteps;
+		ASSERT( pSteps != nullptr );
+		// Hack: don't calculate for autogen entries
+		if( !pSteps->IsAutogen() && e.ContainsTransformOrTurn() )
+		{
+			NoteData nd;
+			pSteps->GetNoteData( nd );
+			GAMESTATE->SetProcessedTimingData(const_cast<TimingData *>(pSteps->GetTimingData()));
+			PlayerOptions po;
+			po.FromString( e.Modifiers );
+			if( po.ContainsTransformOrTurn() )
+			{
+				NoteDataUtil::TransformNoteData(nd, *(pSteps->GetTimingData()), po, pSteps->m_StepsType);
+			}
+			NoteDataUtil::TransformNoteData(nd, *(pSteps->GetTimingData()), e.Attacks, pSteps->m_StepsType, e.pSong);
+			TechStats ts = TechStats();
+			TechStatsCalculator::CalculateTechStats(nd, ts);
+			GAMESTATE->SetProcessedTimingData(nullptr);
+			techStats += ts;
+		}
+		else
+		{
+			TechStats ts = pSteps->GetTechStats(PLAYER_1);
+			techStats += ts;
+		}
+	}
+	const_cast<Trail *>(this)->SetTechStats(techStats);
+	return m_CachedTechStats;
+
 }
 
 int Trail::GetMeter() const
@@ -281,6 +330,13 @@ public:
 		return 1;
 	}
 
+	static int GetTechStats( T* p, lua_State *L )
+	{
+		TechStats &ts = const_cast<TechStats &>(p->GetTechStats());
+		ts.PushSelf(L);
+		return 1;
+	}
+
 	LunaTrail()
 	{
 		ADD_METHOD( GetDifficulty );
@@ -294,6 +350,7 @@ public:
 		ADD_METHOD( GetLengthSeconds );
 		ADD_METHOD( IsSecret );
 		ADD_METHOD( ContainsSong );
+		ADD_METHOD( GetTechStats );
 	}
 };
 

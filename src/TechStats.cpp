@@ -2,8 +2,8 @@
 #include "TechStats.h"
 #include "NoteData.h"
 #include "RageLog.h"
-
-
+#include "LocalizedString.h"
+#include "LuaBinding.h"
 RString TechStats::stringDescription()
 {
 	RString out;
@@ -15,6 +15,18 @@ RString TechStats::stringDescription()
 
 	return out;
 }
+
+static const char *TechStatsCategoryNames[] = {
+	"Crossovers",
+	"Footswitches",
+	"Sideswitches",
+	"Jacks",
+	"Brackets",
+};
+XToString( TechStatsCategory );
+XToLocalizedString( TechStatsCategory );
+LuaFunction(TechStatsCategoryToLocalizedString, TechStatsCategoryToLocalizedString(Enum::Check<TechStatsCategory>(L, 1)) );
+LuaXType( TechStatsCategory );
 
 // This is currently a more or less direct port of GetTechniques() from SL-ChartParser.lua
 // It seems to match the results pretty closely, but not exactly.
@@ -203,7 +215,7 @@ void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &co
 	}
 }
 
-// TODO NEXT: DOUBLE CHECK ALL OF THIS LOGIC!
+
 void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &counter, Foot tieBreaker)
 {
 	int ns = (int)counter.stepsLr.size();
@@ -415,3 +427,44 @@ void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &count
 		counter.justBracketed = false;
 	}
 }
+
+
+// lua start
+
+class LunaTechStats: public Luna<TechStats>
+{
+public:
+	static int GetValue(T *p, lua_State *L)
+	{
+		TechStatsCategory cat = Enum::Check<TechStatsCategory>(L, 1);
+		switch(cat)
+		{	
+			case TechStatsCategory_Crossovers:
+				lua_pushnumber(L, p->crossovers);
+				break;
+			case TechStatsCategory_Footswitches:
+				lua_pushnumber(L, p->footswitches);
+				break;
+			case TechStatsCategory_Sideswitches:
+				lua_pushnumber(L, p->sideswitches);
+				break;
+			case TechStatsCategory_Jacks:
+				lua_pushnumber(L, p->jacks);
+				break;
+			case TechStatsCategory_Brackets:
+				lua_pushnumber(L, p->brackets);
+				break;
+			default:
+				lua_pushnumber(L, 0);
+				break;
+			}
+		return 1;
+	}
+
+	LunaTechStats()
+	{
+		ADD_METHOD( GetValue );
+	}
+};
+
+LUA_REGISTER_CLASS( TechStats )

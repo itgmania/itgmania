@@ -9,7 +9,7 @@
 #include "Difficulty.h"
 #include "RageUtil_AutoPtr.h"
 #include "TimingData.h"
-
+#include "TechStats.h"
 #include <vector>
 
 
@@ -163,6 +163,8 @@ public:
 	void TidyUpData();
 	void CalculateRadarValues( float fMusicLengthSeconds );
 
+	const TechStats &GetTechStats(PlayerNumber pn) const;
+
 	/**
 	 * @brief The TimingData used by the Steps.
 	 *
@@ -253,6 +255,9 @@ private:
 	/** @brief The radar values used for each player. */
 	RadarValues			m_CachedRadarValues[NUM_PLAYERS];
 	bool                m_bAreCachedRadarValuesJustLoaded;
+	/** @brief The tech stats used for each player */
+	mutable TechStats m_CachedTechStats[NUM_PLAYERS];
+	
 	/** @brief The name of the person who created the Steps. */
 	RString				m_sCredit;
 	/** @brief The name of the chart. */

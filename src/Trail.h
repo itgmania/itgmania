@@ -4,13 +4,14 @@
 #include "Attack.h"
 #include "RadarValues.h"
 #include "Difficulty.h"
-
+#include "TechStats.h"
 #include <vector>
 
 
 class Song;
 class Steps;
 struct lua_State;
+
 
 /** @brief One such Song and
  * <a class="el" href="class_steps.html">Step</a> in the entire Trail. */
@@ -66,7 +67,8 @@ public:
 	int			m_iSpecifiedMeter;	// == -1 if no meter specified
 	mutable bool		m_bRadarValuesCached;
 	mutable RadarValues	m_CachedRadarValues;
-
+	mutable bool m_bTechStatsCached;
+	mutable TechStats m_CachedTechStats;
 	/**
 	 * @brief Set up the Trail with default values.
 	 *
@@ -93,6 +95,9 @@ public:
 	void GetDisplayBpms( DisplayBpms &AddTo ) const;
 	bool IsSecret() const;
 	bool ContainsSong( const Song *pSong ) const;
+
+	TechStats &GetTechStats();
+	void SetTechStats(const TechStats &ts);
 
 	// Lua
 	void PushSelf( lua_State *L );

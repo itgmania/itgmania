@@ -318,7 +318,6 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 
 	NoteData tempNoteData;
 	this->GetNoteData( tempNoteData );
-	TechStats techStats = TechStats();
 
 	FOREACH_PlayerNumber(pn)
 		m_CachedRadarValues[pn]
@@ -333,7 +332,6 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
 		{
 			NoteDataUtil::CalculateRadarValues( vParts[pn], fMusicLengthSeconds, m_CachedRadarValues[pn] );
-			// NoteDataUtil::CalculateTechStats(vParts[pn], techStats);
 		}
 	}
 	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
@@ -345,25 +343,54 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 		NoteDataUtil::CalculateRadarValues(p1,
 										   fMusicLengthSeconds,
 										   m_CachedRadarValues[PLAYER_1]);
-		// NoteDataUtil::CalculateTechStats(p1, techStats);
 		// at this point, p2 is tempNoteData.
 		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
 		tempNoteData.SetNumTracks(tracks);
 		NoteDataUtil::CalculateRadarValues(tempNoteData,
 										   fMusicLengthSeconds,
 										   m_CachedRadarValues[PLAYER_2]);
-		// NoteDataUtil::CalculateTechStats(p2, techStats);
 	}
 	else
 	{
 		NoteDataUtil::CalculateRadarValues( tempNoteData, fMusicLengthSeconds, m_CachedRadarValues[0] );
-		NoteDataUtil::CalculateTechStats(tempNoteData, techStats);
 		std::fill_n( m_CachedRadarValues + 1, NUM_PLAYERS-1, m_CachedRadarValues[0] );
-		LOG->Trace("TechStats for %s, %s:\n", m_sFilename.c_str(), DifficultyToString(m_Difficulty).c_str());
-		LOG->Trace("%s", techStats.stringDescription().c_str());
 	}
 	
 	GAMESTATE->SetProcessedTimingData(nullptr);
+}
+
+const TechStats &Steps::GetTechStats(PlayerNumber pn) const
+{
+	m_CachedTechStats[pn].Zero();
+
+	NoteData tempNoteData;
+	this->GetNoteData( tempNoteData );
+	
+	if( tempNoteData.IsComposite() )
+	{
+		std::vector<NoteData> vParts;
+		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
+		if( vParts.size() > pn)
+		{
+			TechStatsCalculator::CalculateTechStats(vParts[pn], m_CachedTechStats[pn]);
+		}
+	}
+	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
+	{
+		
+		const int tracks = tempNoteData.GetNumTracks() / 2;
+		if(pn == PLAYER_2)
+		{
+			NoteDataUtil::ShiftTracks(tempNoteData, tracks);
+		}
+		tempNoteData.SetNumTracks(tracks);
+		TechStatsCalculator::CalculateTechStats(tempNoteData, m_CachedTechStats[pn]);
+	}
+	else
+	{
+		TechStatsCalculator::CalculateTechStats(tempNoteData, m_CachedTechStats[pn]);
+	}
+	return m_CachedTechStats[pn];
 }
 
 void Steps::ChangeFilenamesForCustomSong()
@@ -752,6 +779,18 @@ public:
 		rv.PushSelf(L);
 		return 1;
 	}
+
+	static int GetTechStats(T* p, lua_State *L )
+	{
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		TechStats &rv = const_cast<TechStats &>(p->GetTechStats(pn));
+		rv.PushSelf(L);
+		return 1;
+	}
+
 	static int GetTimingData( T* p, lua_State *L )
 	{
 		p->GetTimingData()->PushSelf(L);
@@ -836,6 +875,7 @@ public:
 		ADD_METHOD( IsDisplayBpmRandom );
 		ADD_METHOD( PredictMeter );
 		ADD_METHOD( GetDisplayBPMType );
+		ADD_METHOD(GetTechStats);
 	}
 };
 
