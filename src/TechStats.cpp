@@ -16,6 +16,42 @@ RString TechStats::stringDescription()
 	return out;
 }
 
+// This is currently a more or less direct port of GetTechniques() from SL-ChartParser.lua
+// It seems to match the results pretty closely, but not exactly.
+// Instead of using null/false/true for foot mapping, an enum Foot has been introduced.
+// And instead of using "L"/"D"/"U"/"R" for arrow mapping, a typedef StepDirection has been introduced 
+// (it could probably also be an enum).
+void TechStatsCalculator::CalculateTechStats(const NoteData &in, TechStats &out)
+{
+	TechStatsCounter statsCounter = TechStatsCounter();
+	int curr_row = -1;
+
+	// This is a bit of a misnomer, because we only process the "current" step
+	// once curr_note.Row() has moved on to a new row.
+	// But, I don't want to confuse this with lastStep
+	StepDirection curr_step = StepDirection_None;
+	NoteData::all_tracks_const_iterator curr_note =
+		in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
+
+	// The notes aren't grouped, so we have to iterate through them all and figure out 
+	// which ones go together
+	while(!curr_note.IsAtEnd())
+	{
+		if(curr_note.Row() != curr_row)
+		{
+			TechStatsCalculator::UpdateTechStats(out, statsCounter, curr_step);
+			curr_row = curr_note.Row();
+			curr_step = StepDirection_None;
+		}
+		curr_step = curr_step | TrackIntToStepDirection(curr_note.Track());
+		++curr_note;
+	}
+
+	TechStatsCalculator::CommitStream(out, statsCounter, Foot_None);
+}
+
+// The main loop from GetTechniques().
+
 void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &counter, StepDirection currentStep)
 {
 	if( currentStep == StepDirection_None)

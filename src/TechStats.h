@@ -2,6 +2,7 @@
 #define TECH_STATS_H
 
 #include "GameConstantsAndTypes.h"
+class NoteData;
 
 enum Foot
 {
@@ -10,6 +11,8 @@ enum Foot
 	Foot_Right
 };
 
+
+// This could probably be an enum?
 typedef int StepDirection;
 const StepDirection StepDirection_None = 0;
 const StepDirection StepDirection_Left = 1;
@@ -121,10 +124,9 @@ struct TechStatsCounter
 
 namespace TechStatsCalculator
 {
+	void CalculateTechStats(const NoteData &in, TechStats &out);
 	void UpdateTechStats(TechStats &stats, TechStatsCounter &counter, StepDirection currentStep);
-
 	void CommitStream(TechStats &stats, TechStatsCounter &counter, Foot tieBreaker);
 };
-// TODO: This data needs to be available to LUA
 
 #endif

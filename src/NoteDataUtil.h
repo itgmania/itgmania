@@ -13,7 +13,6 @@ class NoteData;
 class Song;
 struct AttackArray;
 class TimingData;
-struct TechStats;
 
 void PlaceAutoKeysound(NoteData &out, int row, TapNote akTap);
 int FindLongestOverlappingHoldNoteForAnyTrack( const NoteData &in, int iRow );
@@ -193,8 +192,6 @@ namespace NoteDataUtil
 	/** @brief Count the number of hold ticks that will fire, assuming that tickholds are on.
 	  * @param td The TimingData from the relevant Steps. */
 	unsigned int GetTotalHoldTicks( NoteData* nd, const TimingData* td );
-
-	void CalculateTechStats( const NoteData& in, TechStats& out );
 };
 
 #endif
