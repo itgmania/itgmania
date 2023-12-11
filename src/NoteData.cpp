@@ -545,6 +545,17 @@ int NoteData::GetNumRowsWithTap( int iStartIndex, int iEndIndex ) const
 	return iNumNotes;
 }
 
+int NoteData::GetNumMinesInRow(int iRow) const
+{
+	int iNumMines = 0;
+	for( int t=0; t<GetNumTracks(); t++ )
+	{
+		if (this->IsMine(GetTapNote(t, iRow), iRow))
+			iNumMines++;
+	}
+	return iNumMines;
+}
+
 int NoteData::GetNumMines( int iStartIndex, int iEndIndex ) const
 {
 	int iNumMines = 0;

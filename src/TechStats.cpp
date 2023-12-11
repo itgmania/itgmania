@@ -4,6 +4,9 @@
 #include "RageLog.h"
 #include "LocalizedString.h"
 #include "LuaBinding.h"
+#include "TimingData.h"
+#include "GameState.h"
+
 RString TechStats::stringDescription()
 {
 	RString out;
@@ -214,7 +217,6 @@ void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &co
 		counter.trueLastFoot = Foot_None;
 	}
 }
-
 
 void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &counter, Foot tieBreaker)
 {
@@ -428,6 +430,93 @@ void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &count
 	}
 }
 
+
+struct MeasureCounter
+{
+	int startRow;
+	int endRow;
+	int rowCount;
+	int tapCount;
+	int mineCount;
+	float nps;
+	float duration;
+	MeasureCounter()
+	{
+		startRow = -1;
+		endRow = -1;
+		rowCount = 0;
+		tapCount = 0;
+		mineCount = 0;
+		nps = 0;
+		duration = 0;
+	}
+};
+// Figure out which measures are considered a stream of notes
+void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &stats)
+{
+
+	int lastRow = in.GetLastRow();
+	int lastRowMeasureIndex = 0;
+	int lastRowBeatIndex = 0;
+	int lastRowRemainder = 0;
+	TimingData *timing = GAMESTATE->GetProcessedTimingData();
+	timing->NoteRowToMeasureAndBeat(lastRow, lastRowMeasureIndex, lastRowBeatIndex, lastRowRemainder);
+
+	int totalMeasureCount = lastRowMeasureIndex + 1;
+	// Stream Measures Variables
+	// Which measures are considered a stream?
+	std::vector<MeasureCounter> counters(totalMeasureCount, MeasureCounter());
+	
+	int iMeasureIndexOut = 0;
+	int iBeatIndexOut = 0;
+	int iRowsRemainder = 0;
+
+	float peak_nps = 0;
+
+	// Count the number of taps, mines for each measure
+	for (int row = 0; row <= lastRow; row++)
+	{
+		timing->NoteRowToMeasureAndBeat(row, iMeasureIndexOut, iBeatIndexOut, iRowsRemainder);
+		int taps = in.GetNumTapNotesInRow(row);
+		int mines = in.GetNumMinesInRow(row);
+		counters[iMeasureIndexOut].tapCount += taps;
+ 		counters[iMeasureIndexOut].mineCount += mines;
+		counters[iMeasureIndexOut].rowCount += 1;
+
+		counters[iMeasureIndexOut].endRow = row;
+		if(counters[iMeasureIndexOut].startRow == -1)
+		{
+			counters[iMeasureIndexOut].startRow = row;
+		}
+	}
+
+	for (unsigned m = 0; m < counters.size(); m++)
+	{
+		int beat = 4 * (m + (counters[m].endRow / counters[m].rowCount));
+
+		float time = timing->GetElapsedTimeFromBeat(beat);
+		float measureDuration = timing->GetElapsedTimeFromBeat(4 * (m+1)) - timing->GetElapsedTimeFromBeat(4 * m);
+		counters[m].duration = measureDuration;
+		if(measureDuration < 0.12)
+		{
+			counters[m].nps = 0;
+		}
+		else
+		{
+			counters[m].nps = counters[m].tapCount / measureDuration;
+		}
+
+		if(counters[m].nps > peak_nps)
+		{
+			peak_nps = counters[m].nps;
+		}
+	}
+
+	// TODO: figure out what columnCues are
+
+	// return notesPerMeasure, peakNPS, NPSperMeasure, columnCues
+
+}
 
 // lua start
 

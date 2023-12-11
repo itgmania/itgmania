@@ -187,6 +187,7 @@ namespace TechStatsCalculator
 	void CalculateTechStats(const NoteData &in, TechStats &out);
 	void UpdateTechStats(TechStats &stats, TechStatsCounter &counter, StepDirection currentStep);
 	void CommitStream(TechStats &stats, TechStatsCounter &counter, Foot tieBreaker);
+	void CalculateMeasureInfo(const NoteData &in, TechStats &stats);
 };
 
 #endif
