@@ -65,8 +65,8 @@ void ScreenOptionsManageEditSteps::BeginScreen()
 	SONGMAN->FreeAllLoadedFromProfile( ProfileSlot_Machine );
 	SONGMAN->LoadStepEditsFromProfileDir( PROFILEMAN->GetProfileDir(ProfileSlot_Machine), ProfileSlot_Machine );
 	SONGMAN->LoadCourseEditsFromProfileDir( PROFILEMAN->GetProfileDir(ProfileSlot_Machine), ProfileSlot_Machine );
-	GAMESTATE->m_pCurSong.Set(nullptr);
-	GAMESTATE->m_pCurSteps[PLAYER_1].Set(nullptr);
+	GAMESTATE->cur_song_.Set(nullptr);
+	GAMESTATE->cur_steps_[PLAYER_1].Set(nullptr);
 
 	std::vector<OptionRowHandler*> vHands;
 
@@ -109,9 +109,9 @@ void ScreenOptionsManageEditSteps::BeginScreen()
 	ScreenOptions::BeginScreen();
 
 	// select the last chosen course
-	if( GAMESTATE->m_pCurSteps[PLAYER_1] )
+	if( GAMESTATE->cur_steps_[PLAYER_1] )
 	{
-		std::vector<Steps*>::const_iterator iter = find( m_vpSteps.begin(), m_vpSteps.end(), GAMESTATE->m_pCurSteps[PLAYER_1] );
+		std::vector<Steps*>::const_iterator iter = find( m_vpSteps.begin(), m_vpSteps.end(), GAMESTATE->cur_steps_[PLAYER_1] );
 		if( iter != m_vpSteps.end() )
 		{
 			iIndex = iter - m_vpSteps.begin();
@@ -143,7 +143,7 @@ void ScreenOptionsManageEditSteps::HandleScreenMessage( const ScreenMessage SM )
 		}
 		else	// a Steps
 		{
-			Steps *pSteps = GAMESTATE->m_pCurSteps[PLAYER_1];
+			Steps *pSteps = GAMESTATE->cur_steps_[PLAYER_1];
 			ASSERT( pSteps != nullptr );
 			const Style *pStyle = GAMEMAN->GetEditorStyleForStepsType( pSteps->m_StepsType );
 			GAMESTATE->SetCurrentStyle( pStyle, PLAYER_INVALID );
@@ -156,7 +156,7 @@ void ScreenOptionsManageEditSteps::HandleScreenMessage( const ScreenMessage SM )
 		{
 			ASSERT( ScreenTextEntry::s_sLastAnswer != "" );	// validate should have assured this
 
-			Steps *pSteps = GAMESTATE->m_pCurSteps[PLAYER_1];
+			Steps *pSteps = GAMESTATE->cur_steps_[PLAYER_1];
 			Song *pSong = pSteps->m_pSong;
 
 			RString sOldDescription = pSteps->GetDescription();
@@ -181,7 +181,7 @@ void ScreenOptionsManageEditSteps::HandleScreenMessage( const ScreenMessage SM )
 			Steps *pSteps = GetStepsWithFocus();
 			FILEMAN->Remove( pSteps->GetFilename() );
 			SONGMAN->DeleteSteps( pSteps );
-			GAMESTATE->m_pCurSteps[PLAYER_1].Set(nullptr);
+			GAMESTATE->cur_steps_[PLAYER_1].Set(nullptr);
 			SCREENMAN->SetNewScreen( this->m_sName ); // reload
 		}
 	}
@@ -195,8 +195,8 @@ void ScreenOptionsManageEditSteps::HandleScreenMessage( const ScreenMessage SM )
 				{
 					Steps *pSteps = GetStepsWithFocus();
 					Song *pSong = pSteps->m_pSong;
-					GAMESTATE->m_pCurSong.Set( pSong );
-					GAMESTATE->m_pCurSteps[PLAYER_1].Set( pSteps );
+					GAMESTATE->cur_song_.Set( pSong );
+					GAMESTATE->cur_steps_[PLAYER_1].Set( pSteps );
 
 					ScreenOptions::BeginFadingOut();
 				}
@@ -206,7 +206,7 @@ void ScreenOptionsManageEditSteps::HandleScreenMessage( const ScreenMessage SM )
 					ScreenTextEntry::TextEntry(
 						SM_BackFromRename,
 						ENTER_NAME_FOR_STEPS,
-						GAMESTATE->m_pCurSteps[PLAYER_1]->GetDescription(),
+						GAMESTATE->cur_steps_[PLAYER_1]->GetDescription(),
 						MAX_STEPS_DESCRIPTION_LENGTH,
 						SongUtil::ValidateCurrentEditStepsDescription );
 				}
@@ -236,8 +236,8 @@ void ScreenOptionsManageEditSteps::AfterChangeRow( PlayerNumber pn )
 	Steps *pSteps = GetStepsWithFocus();
 	Song *pSong = pSteps ? pSteps->m_pSong : nullptr;
 
-	GAMESTATE->m_pCurSong.Set( pSong );
-	GAMESTATE->m_pCurSteps[PLAYER_1].Set( pSteps );
+	GAMESTATE->cur_song_.Set( pSong );
+	GAMESTATE->cur_steps_[PLAYER_1].Set( pSteps );
 
 	ScreenOptions::AfterChangeRow( pn );
 }

@@ -127,14 +127,14 @@ void ScreenHowToPlay::Init()
 		}
 	}
 
-	GAMESTATE->SetCurrentStyle( GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->m_pCurGame), PLAYER_INVALID );
+	GAMESTATE->SetCurrentStyle( GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->cur_game_), PLAYER_INVALID );
 
 	if( USE_PLAYER )
 	{
 		GAMESTATE->SetMasterPlayerNumber(PLAYER_1);
 
 		m_pLifeMeterBar = new LifeMeterBar;
-		m_pLifeMeterBar->Load( GAMESTATE->m_pPlayerState[PLAYER_1], &STATSMAN->m_CurStageStats.m_player[PLAYER_1] );
+		m_pLifeMeterBar->Load( GAMESTATE->player_state_[PLAYER_1], &STATSMAN->m_CurStageStats.m_player[PLAYER_1] );
 		m_pLifeMeterBar->SetName("LifeMeterBar");
 		ActorUtil::LoadAllCommandsAndSetXY( m_pLifeMeterBar, m_sName );
 		m_pLifeMeterBar->FillForHowToPlay( NUM_W2S, NUM_MISSES );
@@ -164,12 +164,12 @@ void ScreenHowToPlay::Init()
 			pSteps->GetNoteData( tempNoteData );
 			pStyle->GetTransformedNoteDataForStyle( PLAYER_1, tempNoteData, m_NoteData );
 
-			GAMESTATE->m_pCurSong.Set( &m_Song );
-			GAMESTATE->m_pCurSteps[PLAYER_1].Set(pSteps);
-			GAMESTATE->m_bGameplayLeadIn.Set( false );
-			GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerController = PC_AUTOPLAY;
+			GAMESTATE->cur_song_.Set( &m_Song );
+			GAMESTATE->cur_steps_[PLAYER_1].Set(pSteps);
+			GAMESTATE->gameplay_lead_in_.Set( false );
+			GAMESTATE->player_state_[PLAYER_1]->m_PlayerController = PC_AUTOPLAY;
 
-			m_Player->Init("Player", GAMESTATE->m_pPlayerState[PLAYER_1],
+			m_Player->Init("Player", GAMESTATE->player_state_[PLAYER_1],
 				nullptr, m_pLifeMeterBar, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
 			m_Player.Load( m_NoteData );
 			m_Player->SetName( "Player" );
@@ -177,8 +177,8 @@ void ScreenHowToPlay::Init()
 			ActorUtil::LoadAllCommandsAndSetXY( m_Player, m_sName );
 
 			// Don't show judgment
-			PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions, ModsLevel_Stage, m_fBlind, 1.0f );
-			GAMESTATE->m_bDemonstrationOrJukebox = true;
+			PO_GROUP_ASSIGN( GAMESTATE->player_state_[PLAYER_1]->m_PlayerOptions, ModsLevel_Stage, m_fBlind, 1.0f );
+			GAMESTATE->demonstration_or_jukebox_ = true;
 		}
 	}
 
@@ -214,7 +214,7 @@ void ScreenHowToPlay::Step()
 #define ST_JUMPUD	(ST_UP | ST_DOWN)
 
 	int iStep = 0;
-	const int iNoteRow = BeatToNoteRowNotRounded( GAMESTATE->m_Position.m_fSongBeat + 0.6f );
+	const int iNoteRow = BeatToNoteRowNotRounded( GAMESTATE->position_.m_fSongBeat + 0.6f );
 	// if we want to miss from here on out, don't process steps.
 	if( m_iW2s < m_iNumW2s && m_NoteData.IsThereATapAtRow( iNoteRow ) )
 	{
@@ -235,10 +235,10 @@ void ScreenHowToPlay::Step()
 			m_pmCharacter->PlayAnimation( "Step-JUMPLR", 1.8f );
 
 			m_pmCharacter->StopTweening();
-			m_pmCharacter->BeginTweening( GAMESTATE->m_Position.m_fCurBPS /8, TWEEN_LINEAR );
+			m_pmCharacter->BeginTweening( GAMESTATE->position_.m_fCurBPS /8, TWEEN_LINEAR );
 			m_pmCharacter->SetRotationY( 90 );
-			m_pmCharacter->BeginTweening( (1/(GAMESTATE->m_Position.m_fCurBPS * 2) ) ); //sleep between jump-frames
-			m_pmCharacter->BeginTweening( GAMESTATE->m_Position.m_fCurBPS /6, TWEEN_LINEAR );
+			m_pmCharacter->BeginTweening( (1/(GAMESTATE->position_.m_fCurBPS * 2) ) ); //sleep between jump-frames
+			m_pmCharacter->BeginTweening( GAMESTATE->position_.m_fCurBPS /6, TWEEN_LINEAR );
 			m_pmCharacter->SetRotationY( 0 );
 			break;
 		}
@@ -247,14 +247,14 @@ void ScreenHowToPlay::Step()
 
 void ScreenHowToPlay::Update( float fDelta )
 {
-	if( GAMESTATE->m_pCurSong != nullptr )
+	if( GAMESTATE->cur_song_ != nullptr )
 	{
 		RageTimer tm;
-		GAMESTATE->UpdateSongPosition( m_fFakeSecondsIntoSong, GAMESTATE->m_pCurSong->m_SongTiming, tm );
+		GAMESTATE->UpdateSongPosition( m_fFakeSecondsIntoSong, GAMESTATE->cur_song_->m_SongTiming, tm );
 		m_fFakeSecondsIntoSong += fDelta;
 
 		static int iLastNoteRowCounted = 0;
-		int iCurNoteRow = BeatToNoteRowNotRounded( GAMESTATE->m_Position.m_fSongBeat );
+		int iCurNoteRow = BeatToNoteRowNotRounded( GAMESTATE->position_.m_fSongBeat );
 
 		if( iCurNoteRow != iLastNoteRowCounted &&m_NoteData.IsThereATapAtRow(iCurNoteRow) )
 		{
@@ -273,7 +273,7 @@ void ScreenHowToPlay::Update( float fDelta )
 		// the controller to HUMAN. Since we aren't taking input, the steps will
 		// always be misses.
 		if( m_iW2s > m_iNumW2s )
-			GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerController = PC_HUMAN;
+			GAMESTATE->player_state_[PLAYER_1]->m_PlayerController = PC_HUMAN;
 
 		// Per the above code, we don't always want the character stepping.
 		// If they try to make all of the steps in the miss part, they look

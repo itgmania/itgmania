@@ -19,14 +19,14 @@ void ScreenUnlockBrowse::Init()
 			FAIL_M(ssprintf("Invalid UnlockEntryStatus: %i", st));
 		case UnlockEntryStatus_RequirementsMet:
 		case UnlockEntryStatus_Unlocked:
-			gc.m_bInvalid = false;
+			gc.is_invalid_ = false;
 			break;
 		case UnlockEntryStatus_RequrementsNotMet:
 			break;
 		}
-		gc.m_iIndex = index++;
+		gc.index_ = index++;
 		// gc.m_sUnlockEntryID = ue->m_sEntryID;
-		gc.m_sName = ssprintf("%d",gc.m_iIndex);
+		gc.name_ = ssprintf("%d",gc.index_);
 		
 		m_aGameCommands.push_back( gc );
 	}

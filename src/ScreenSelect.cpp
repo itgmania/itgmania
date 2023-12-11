@@ -61,7 +61,7 @@ void ScreenSelect::Init()
 						RString com= SArg(-1);
 						GameCommand mc;
 						mc.ApplyCommitsScreens(false);
-						mc.m_sName = ssprintf("%zu", i);
+						mc.name_ = ssprintf("%zu", i);
 						Commands cmd= ParseCommands(com);
 						mc.Load(i, cmd);
 						m_aGameCommands.push_back(mc);
@@ -88,7 +88,7 @@ void ScreenSelect::Init()
 
 			GameCommand mc;
 			mc.ApplyCommitsScreens( false );
-			mc.m_sName = sChoiceName;
+			mc.name_ = sChoiceName;
 			Commands cmd = ParseCommands( CHOICE(sChoiceName) );
 			mc.Load( c, cmd );
 			m_aGameCommands.push_back( mc );
@@ -147,10 +147,10 @@ bool ScreenSelect::Input( const InputEventPlus &input )
 	m_timerIdleTimeout.GetDeltaTime();
 
 	/* Choices may change when more coins are inserted. */
-	if( input.MenuI == GAME_BUTTON_COIN && input.type == IET_FIRST_PRESS )
+	if( input.menu_input_ == GAME_BUTTON_COIN && input.type_ == IET_FIRST_PRESS )
 		this->UpdateSelectableChoices();
 
-	if( input.MenuI == GAME_BUTTON_START && input.type == IET_FIRST_PRESS && GAMESTATE->JoinInput(input.pn) )
+	if( input.menu_input_ == GAME_BUTTON_START && input.type_ == IET_FIRST_PRESS && GAMESTATE->JoinInput(input.pn_) )
 	{
 		// HACK: Only play start sound for the 2nd player who joins. The
 		// start sound for the 1st player will be played by ScreenTitleMenu
@@ -162,7 +162,7 @@ bool ScreenSelect::Input( const InputEventPlus &input )
 			return false;	// don't let the screen handle the MENU_START press
 	}
 
-	if( !GAMESTATE->IsPlayerEnabled(input.pn) )
+	if( !GAMESTATE->IsPlayerEnabled(input.pn_) )
 	{
 		// block input of disabled players
 		if( !ALLOW_DISABLED_PLAYER_INPUT )
@@ -173,7 +173,7 @@ bool ScreenSelect::Input( const InputEventPlus &input )
 		 * let a non-joined player start, we might start the game with no
 		 * players joined (eg. if ScreenTitleJoin is started in pay with no
 		 * credits). */
-		if( input.MenuI == GAME_BUTTON_START )
+		if( input.menu_input_ == GAME_BUTTON_START )
 			return false;
 	}
 
@@ -207,8 +207,8 @@ void ScreenSelect::HandleScreenMessage( const ScreenMessage SM )
 			if( bAllPlayersChoseTheSame )
 			{
 				const GameCommand &gc = m_aGameCommands[iMastersIndex];
-				m_sNextScreen = gc.m_sScreen;
-				if( !gc.m_bInvalid )
+				m_sNextScreen = gc.screen_;
+				if( !gc.is_invalid_ )
 				gc.ApplyToAllPlayers();
 			}
 			else
@@ -217,8 +217,8 @@ void ScreenSelect::HandleScreenMessage( const ScreenMessage SM )
 				{
 					int iIndex = this->GetSelectionIndex(p);
 					const GameCommand &gc = m_aGameCommands[iIndex];
-					m_sNextScreen = gc.m_sScreen;
-					if( !gc.m_bInvalid )
+					m_sNextScreen = gc.screen_;
+					if( !gc.is_invalid_ )
 					gc.Apply( p );
 				}
 			}

@@ -87,11 +87,11 @@ void ScreenEditMenu::HandleScreenMessage( const ScreenMessage SM )
 	{
 		LOG->Trace( "Delete successful; deleting steps from memory" );
 
-		Song* pSong = GAMESTATE->m_pCurSong;
-		Steps* pStepsToDelete = GAMESTATE->m_pCurSteps[PLAYER_1];
+		Song* pSong = GAMESTATE->cur_song_;
+		Steps* pStepsToDelete = GAMESTATE->cur_steps_[PLAYER_1];
 		FOREACH_PlayerNumber(pn)
 		{
-			GAMESTATE->m_pCurSteps[pn].Set(nullptr);
+			GAMESTATE->cur_steps_[pn].Set(nullptr);
 		}
 		bool bSaveSong = !pStepsToDelete->WasLoadedFromProfile();
 		pSong->DeleteSteps( pStepsToDelete );
@@ -168,13 +168,13 @@ static RString GetCopyDescription( const Steps *pSourceSteps )
 
 static void SetCurrentStepsDescription( const RString &s )
 {
-	GAMESTATE->m_pCurSteps[0]->SetDescription( s );
+	GAMESTATE->cur_steps_[0]->SetDescription( s );
 }
 
 static void DeleteCurrentSteps()
 {
-	GAMESTATE->m_pCurSong->DeleteSteps( GAMESTATE->m_pCurSteps[0] );
-	GAMESTATE->m_pCurSteps[0].Set(nullptr);
+	GAMESTATE->cur_song_->DeleteSteps( GAMESTATE->cur_steps_[0] );
+	GAMESTATE->cur_steps_[0].Set(nullptr);
 }
 
 static LocalizedString MISSING_MUSIC_FILE	( "ScreenEditMenu", "This song is missing a music file and cannot be edited." );
@@ -215,10 +215,10 @@ bool ScreenEditMenu::MenuStart( const InputEventPlus & )
 		return true;
 	}
 
-	GAMESTATE->m_pCurSong.Set( pSong );
-	GAMESTATE->m_pCurCourse.Set( nullptr );
+	GAMESTATE->cur_song_.Set( pSong );
+	GAMESTATE->cur_course_.Set( nullptr );
 	GAMESTATE->SetCurrentStyle( GAMEMAN->GetEditorStyleForStepsType(st), PLAYER_INVALID );
-	GAMESTATE->m_pCurSteps[PLAYER_1].Set( pSteps );
+	GAMESTATE->cur_steps_[PLAYER_1].Set( pSteps );
 
 	// handle error cases
 	if( !pSong->HasMusic() )
@@ -279,7 +279,7 @@ bool ScreenEditMenu::MenuStart( const InputEventPlus & )
 		{
 			FOREACH_PlayerNumber(pn)
 			{
-				GAMESTATE->m_pCurSteps[pn].Set(nullptr);
+				GAMESTATE->cur_steps_[pn].Set(nullptr);
 			}
 			pSong->LoadAutosaveFile();
 			SONGMAN->Invalidate(pSong);
@@ -325,9 +325,9 @@ bool ScreenEditMenu::MenuStart( const InputEventPlus & )
 
 			SCREENMAN->PlayStartSound();
 
-			GAMESTATE->m_pCurSong.Set( pSong );
-			GAMESTATE->m_pCurSteps[PLAYER_1].Set( pSteps );
-			GAMESTATE->m_pCurCourse.Set(nullptr);
+			GAMESTATE->cur_song_.Set( pSong );
+			GAMESTATE->cur_steps_[PLAYER_1].Set( pSteps );
+			GAMESTATE->cur_course_.Set(nullptr);
 		}
 		break;
 	default:
@@ -349,7 +349,7 @@ bool ScreenEditMenu::MenuStart( const InputEventPlus & )
 				ScreenTextEntry::TextEntry(
 					SM_BackFromEditDescription,
 					ENTER_EDIT_DESCRIPTION,
-					GAMESTATE->m_pCurSteps[0]->GetDescription(),
+					GAMESTATE->cur_steps_[0]->GetDescription(),
 					MAX_STEPS_DESCRIPTION_LENGTH,
 					SongUtil::ValidateCurrentStepsDescription,
 					SetCurrentStepsDescription,

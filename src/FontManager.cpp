@@ -1,108 +1,92 @@
 #include "global.h"
+
 #include "FontManager.h"
-#include "Font.h"
-#include "RageUtil.h"
-#include "RageLog.h"
+
 #include <map>
 
-FontManager*	FONT	= nullptr;	// global and accessible from anywhere in our program
+#include "Font.h"
+#include "RageLog.h"
+#include "RageUtil.h"
 
-// map from file name to a texture holder
-typedef std::pair<RString,RString> FontName;
-static std::map<FontName, Font*> g_mapPathToFont;
+// Global and accessible from anywhere in our program.
+FontManager* FONT = nullptr;
 
-FontManager::FontManager()
-{
+// Map from file name to a texture holder.
+typedef std::pair<RString, RString> FontName;
+static std::map<FontName, Font*> kPathToFontMap;
+
+FontManager::FontManager() {}
+
+FontManager::~FontManager() {
+  for (auto it = kPathToFontMap.begin(); it != kPathToFontMap.end(); ++it) {
+    const FontName& font_name = it->first;
+    Font* font = it->second;
+    if (font->ref_count_ > 0) {
+      LOG->Trace(
+          "FONT LEAK: '%s', RefCount = %d.", font_name.first.c_str(),
+          font->ref_count_);
+    }
+    delete font;
+  }
 }
 
-FontManager::~FontManager()
-{
-	for( std::map<FontName, Font*>::iterator i = g_mapPathToFont.begin();
-		i != g_mapPathToFont.end(); ++i)
-	{
-		const FontName &fn = i->first;
-		Font* pFont = i->second;
-		if(pFont->m_iRefCount > 0) {
-			LOG->Trace( "FONT LEAK: '%s', RefCount = %d.", fn.first.c_str(), pFont->m_iRefCount );
-		}
-		delete pFont;
-	}
+Font* FontManager::LoadFont(
+    const RString& font_or_texture_file_path, RString chars) {
+  // Convert the path to lowercase so that we don't load duplicates. Really,
+  // this does not solve the duplicate problem. We could have two copies of
+  // the same bitmap if there are equivalent but different paths
+  // (e.g. "graphics\blah.png" and "..\stepmania\graphics\blah.png" ).
+  CHECKPOINT_M(ssprintf(
+      "FontManager::LoadFont(%s).", font_or_texture_file_path.c_str()));
+  const FontName new_name(font_or_texture_file_path, chars);
+  auto it = kPathToFontMap.find(new_name);
+  if (it != kPathToFontMap.end()) {
+    Font* font = it->second;
+    font->ref_count_++;
+    return font;
+  }
+
+  Font* font = new Font;
+  font->Load(font_or_texture_file_path, chars);
+  kPathToFontMap[new_name] = font;
+  return font;
 }
 
-Font* FontManager::LoadFont( const RString &sFontOrTextureFilePath, RString sChars )
-{
-	Font *pFont;
-	/* Convert the path to lowercase so that we don't load duplicates. Really,
-	 * this does not solve the duplicate problem. We could have two copies of
-	 * the same bitmap if there are equivalent but different paths
-	 * (e.g. "graphics\blah.png" and "..\stepmania\graphics\blah.png" ). */
-
-	CHECKPOINT_M( ssprintf("FontManager::LoadFont(%s).", sFontOrTextureFilePath.c_str()) );
-	const FontName NewName( sFontOrTextureFilePath, sChars );
-	std::map<FontName, Font*>::iterator p = g_mapPathToFont.find( NewName );
-	if( p != g_mapPathToFont.end() )
-	{
-		pFont=p->second;
-		pFont->m_iRefCount++;
-		return pFont;
-	}
-
-	Font *f = new Font;
-	f->Load(sFontOrTextureFilePath, sChars);
-	g_mapPathToFont[NewName] = f;
-	return f;
+Font* FontManager::CopyFont(Font* font) {
+  ++font->ref_count_;
+  return font;
 }
 
-Font *FontManager::CopyFont( Font *pFont )
-{
-	++pFont->m_iRefCount;
-	return pFont;
+void FontManager::UnloadFont(Font* font) {
+  CHECKPOINT_M(ssprintf("FontManager::UnloadFont(%s).", font->path_.c_str()));
+
+  for (auto it = kPathToFontMap.begin(); it != kPathToFontMap.end(); ++it) {
+    if (it->second != font) {
+      continue;
+    }
+
+    ASSERT_M(
+        font->ref_count_ > 0,
+        "Attempting to unload a font with zero ref count!");
+
+    it->second->ref_count_--;
+
+    if (font->ref_count_ == 0) {
+			// Free the texture...
+      delete it->second;
+			// ...and remove the key in the map
+      kPathToFontMap.erase(it);
+    }
+    return;
+  }
+
+  FAIL_M(ssprintf("Unloaded an unknown font (%p)", static_cast<void*>(font)));
 }
-
-void FontManager::UnloadFont( Font *fp )
-{
-	CHECKPOINT_M( ssprintf("FontManager::UnloadFont(%s).", fp->path.c_str()) );
-
-	for( std::map<FontName, Font*>::iterator i = g_mapPathToFont.begin();
-		i != g_mapPathToFont.end(); ++i)
-	{
-		if(i->second != fp)
-			continue;
-
-		ASSERT_M(fp->m_iRefCount > 0,"Attempting to unload a font with zero ref count!");
-
-		i->second->m_iRefCount--;
-
-		if( fp->m_iRefCount == 0 )
-		{
-			delete i->second;		// free the texture
-			g_mapPathToFont.erase( i );	// and remove the key in the map
-		}
-		return;
-	}
-
-	FAIL_M( ssprintf("Unloaded an unknown font (%p)", static_cast<void*>(fp)) );
-}
-
-/*
-void FontManager::PruneFonts() {
-	for( std::map<FontName, Font*>::iterator i = g_mapPathToFont.begin();i != g_mapPathToFont.end();) {
-		Font *fp=i->second;
-		if(fp->m_iRefCount==0) {
-			delete fp;
-			g_mapPathToFont.erase(i);
-			i = g_mapPathToFont.end();
-		} else {
-			++i;
-		}
-	}
-}
-*/
 
 /*
  * (c) 2001-2003 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -112,7 +96,7 @@ void FontManager::PruneFonts() {
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -1,38 +1,38 @@
 #ifndef CombinedLifeMeterTug_H
 #define CombinedLifeMeterTug_H
 
-#include "CombinedLifeMeter.h"
-#include "MeterDisplay.h"
 #include <array>
 
-/** @brief Dance Magic-like tug-o-war life meter. */
-class CombinedLifeMeterTug : public CombinedLifeMeter
-{
-public:
-	CombinedLifeMeterTug();
-	virtual void Update( float fDelta );
+#include "CombinedLifeMeter.h"
+#include "MeterDisplay.h"
 
-	virtual void ChangeLife( PlayerNumber pn, TapNoteScore score );
-	virtual void ChangeLife( PlayerNumber pn, HoldNoteScore score, TapNoteScore tscore );
-	virtual void ChangeLife( PlayerNumber pn, float fPercentToMove );
-	virtual void SetLife(PlayerNumber pn, float value);
-	virtual void HandleTapScoreNone( PlayerNumber pn );
+// Dance Magic-like tug-o-war life meter.
+class CombinedLifeMeterTug : public CombinedLifeMeter {
+ public:
+  CombinedLifeMeterTug();
+  virtual void Update(float fDelta);
 
-protected:
+  virtual void ChangeLife(PlayerNumber pn, TapNoteScore score);
+  virtual void ChangeLife(
+      PlayerNumber pn, HoldNoteScore score, TapNoteScore tscore);
+  virtual void ChangeLife(PlayerNumber pn, float percent_to_move);
+  virtual void SetLife(PlayerNumber pn, float value);
+  virtual void HandleTapScoreNone(PlayerNumber pn);
 
-	std::array<MeterDisplay, NUM_PLAYERS> m_Stream;
-	AutoActor	m_sprSeparator;
-	AutoActor	m_sprFrame;
+ protected:
+  std::array<MeterDisplay, NUM_PLAYERS> stream_;
+  AutoActor separator_;
+  AutoActor frame_;
 };
 
-#endif
+#endif  // CombinedLifeMeterTug_H
 
 /**
  * @file
  * @author Chris Danford (c) 2003-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -42,7 +42,7 @@ protected:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

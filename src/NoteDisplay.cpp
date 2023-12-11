@@ -1268,7 +1268,7 @@ void NoteDisplay::DrawActor(const TapNote& tn, Actor* pActor, NotePart part,
 	bool bIsAddition, float fPercentFadeToFail, float fColorScale,
 	bool is_being_held)
 {
-	if (tn.type == TapNoteType_AutoKeysound && !GAMESTATE->m_bInStepEditor) return;
+	if (tn.type == TapNoteType_AutoKeysound && !GAMESTATE->in_step_editor_) return;
 	if(fYOffset < field_args.draw_pixels_after_targets ||
 		fYOffset > field_args.draw_pixels_before_targets)
 	{

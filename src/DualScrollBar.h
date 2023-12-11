@@ -4,35 +4,35 @@
 #include "ActorFrame.h"
 #include "AutoActor.h"
 #include "PlayerNumber.h"
-/** @brief A scrollbar with two independent thumbs. */
-class DualScrollBar: public ActorFrame
-{
-public:
-	DualScrollBar();
 
-	void Load( const RString &sType );
-	void SetBarHeight( float fHeight ) { m_fBarHeight = fHeight; }
-	void SetBarTime( float fTime ) { m_fBarTime = fTime; }
-	void SetPercentage( PlayerNumber pn, float fPercent );
-	void EnablePlayer( PlayerNumber pn, bool on );
+// A scrollbar with two independent thumbs.
+class DualScrollBar : public ActorFrame {
+ public:
+  DualScrollBar();
 
-private:
-	/** @brief The height of the scrollbar. */
-	float	m_fBarHeight;
-	float	m_fBarTime;
+  void Load(const RString& type);
+  void SetBarHeight(float height) { bar_height_ = height; }
+  void SetBarTime(float time) { bar_time_ = time; }
+  void SetPercentage(PlayerNumber pn, float percent);
+  void EnablePlayer(PlayerNumber pn, bool on);
 
-	AutoActor	m_sprScrollThumbOverHalf[NUM_PLAYERS];
-	AutoActor	m_sprScrollThumbUnderHalf[NUM_PLAYERS];
+ private:
+  // The height of the scrollbar.
+  float bar_height_;
+  float bar_time_;
+
+  AutoActor scroll_thumb_over_half_[NUM_PLAYERS];
+  AutoActor scroll_thumb_under_half_[NUM_PLAYERS];
 };
 
-#endif
+#endif  // DUAL_SCROLLBAR_H
 
 /**
  * @file
  * @author Glenn Maynard, Chris Danford (c) 2001-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -42,7 +42,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

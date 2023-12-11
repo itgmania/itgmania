@@ -242,23 +242,23 @@ LightsDriver_Linux_stac::~LightsDriver_Linux_stac()
 void LightsDriver_Linux_stac::HandleState(const LightsState *ls, StacDevice *dev, GameController ctrlNum)
 {
     //check to see which game we are running as it can change during gameplay.
-    const InputScheme *pInput = &GAMESTATE->GetCurrentGame()->m_InputScheme;
-    RString sInputName = pInput->m_szName;
+    const InputScheme *pInput = &GAMESTATE->GetCurrentGame()->input_scheme;
+    RString sInputName = pInput->name_;
 
     if (sInputName.EqualsNoCase("dance"))
     {
-        dev->SetInBuffer(STAC_LIGHTINDEX_BTN1, ls->m_bGameButtonLights[ctrlNum][DANCE_BUTTON_UP]);
-        dev->SetInBuffer(STAC_LIGHTINDEX_BTN2, ls->m_bGameButtonLights[ctrlNum][DANCE_BUTTON_DOWN]);
-        dev->SetInBuffer(STAC_LIGHTINDEX_BTN3, ls->m_bGameButtonLights[ctrlNum][DANCE_BUTTON_LEFT]);
-        dev->SetInBuffer(STAC_LIGHTINDEX_BTN4, ls->m_bGameButtonLights[ctrlNum][DANCE_BUTTON_RIGHT]);
+        dev->SetInBuffer(STAC_LIGHTINDEX_BTN1, ls->game_button_lights[ctrlNum][DANCE_BUTTON_UP]);
+        dev->SetInBuffer(STAC_LIGHTINDEX_BTN2, ls->game_button_lights[ctrlNum][DANCE_BUTTON_DOWN]);
+        dev->SetInBuffer(STAC_LIGHTINDEX_BTN3, ls->game_button_lights[ctrlNum][DANCE_BUTTON_LEFT]);
+        dev->SetInBuffer(STAC_LIGHTINDEX_BTN4, ls->game_button_lights[ctrlNum][DANCE_BUTTON_RIGHT]);
     }
     else if (sInputName.EqualsNoCase("pump"))
     {
-        dev->SetInBuffer(STAC_LIGHTINDEX_BTN1, ls->m_bGameButtonLights[ctrlNum][PUMP_BUTTON_UPLEFT]);
-        dev->SetInBuffer(STAC_LIGHTINDEX_BTN2, ls->m_bGameButtonLights[ctrlNum][PUMP_BUTTON_UPRIGHT]);
-        dev->SetInBuffer(STAC_LIGHTINDEX_BTN3, ls->m_bGameButtonLights[ctrlNum][PUMP_BUTTON_CENTER]);
-        dev->SetInBuffer(STAC_LIGHTINDEX_BTN4, ls->m_bGameButtonLights[ctrlNum][PUMP_BUTTON_DOWNLEFT]);
-        dev->SetInBuffer(STAC_LIGHTINDEX_BTN5, ls->m_bGameButtonLights[ctrlNum][PUMP_BUTTON_DOWNRIGHT]);
+        dev->SetInBuffer(STAC_LIGHTINDEX_BTN1, ls->game_button_lights[ctrlNum][PUMP_BUTTON_UPLEFT]);
+        dev->SetInBuffer(STAC_LIGHTINDEX_BTN2, ls->game_button_lights[ctrlNum][PUMP_BUTTON_UPRIGHT]);
+        dev->SetInBuffer(STAC_LIGHTINDEX_BTN3, ls->game_button_lights[ctrlNum][PUMP_BUTTON_CENTER]);
+        dev->SetInBuffer(STAC_LIGHTINDEX_BTN4, ls->game_button_lights[ctrlNum][PUMP_BUTTON_DOWNLEFT]);
+        dev->SetInBuffer(STAC_LIGHTINDEX_BTN5, ls->game_button_lights[ctrlNum][PUMP_BUTTON_DOWNRIGHT]);
     }
 
     dev->PushBufferToDevice();

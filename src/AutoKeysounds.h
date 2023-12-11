@@ -4,38 +4,46 @@
 #include "NoteData.h"
 #include "PlayerNumber.h"
 #include "RageSound.h"
+#include "RageSoundReader.h"
+#include "RageSoundReader_Chain.h"
+#include "Song.h"
 
 #include <vector>
 
+// Handle playback of auto keysound notes.
+class AutoKeysounds {
+ public:
+  void Load(PlayerNumber pn, const NoteData& auto_keysound_note_data);
+  void Update(float delta);
+  // Finish loading the main sounds, and setup the auto keysounds if any.
+  void FinishLoading();
+  RageSound* GetSound() { return &sound_; }
+  RageSoundReader* GetSharedSound() { return shared_sound_; }
+  RageSoundReader* GetPlayerSound(PlayerNumber pn) {
+    if (pn == PLAYER_INVALID) {
+      return nullptr;
+    }
+    return player_sounds_[pn];
+  }
 
-class RageSoundReader;
-class RageSoundReader_Chain;
-class Song;
-/** @brief Handle playback of auto keysound notes. */
-class AutoKeysounds
-{
-public:
-	void Load( PlayerNumber pn, const NoteData& ndAutoKeysoundsOnly );
-	void Update( float fDelta );
-	/** @brief Finish loading the main sounds, and setup the auto keysounds if any. */
-	void FinishLoading();
-	RageSound *GetSound() { return &m_sSound; }
-	RageSoundReader *GetSharedSound() { return m_pSharedSound; }
-	RageSoundReader *GetPlayerSound( PlayerNumber pn ) { if( pn == PLAYER_INVALID ) return nullptr; return m_pPlayerSounds[pn]; }
+ protected:
+  void LoadAutoplaySoundsInto(RageSoundReader_Chain* chain);
+  static void LoadTracks(
+      const Song* song, RageSoundReader*& shared, RageSoundReader*& player1,
+      RageSoundReader*& player2);
 
-protected:
-	void LoadAutoplaySoundsInto( RageSoundReader_Chain *pChain );
-	static void LoadTracks( const Song *pSong, RageSoundReader *&pGlobal, RageSoundReader *&pPlayer1, RageSoundReader *&pPlayer2 );
-
-	NoteData		m_ndAutoKeysoundsOnly[NUM_PLAYERS];
-	std::vector<RageSound>	m_vKeysounds;
-	RageSound		m_sSound;
-	RageSoundReader		*m_pChain; // owned by m_sSound
-	RageSoundReader		*m_pPlayerSounds[NUM_PLAYERS]; // owned by m_sSound
-	RageSoundReader		*m_pSharedSound; // owned by m_sSound
+  NoteData auto_keysound_note_datas_[NUM_PLAYERS];
+  std::vector<RageSound> keysounds_;
+  RageSound sound_;
+  // Owned by m_sSound
+  RageSoundReader* chain_;
+  // Owned by m_sSound
+  RageSoundReader* player_sounds_[NUM_PLAYERS];
+  // Owned by m_sSound
+  RageSoundReader* shared_sound_;
 };
 
-#endif
+#endif  // AUTO_KEYSOUNDS_H
 
 /**
  * @file

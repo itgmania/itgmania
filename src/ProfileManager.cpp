@@ -701,7 +701,7 @@ bool ProfileManager::CreateLocalProfile( RString sName, RString &sProfileIDOut )
 	// Create the new profile.
 	Profile *pProfile = new Profile;
 	pProfile->m_sDisplayName = sName;
-	pProfile->m_sCharacterID = CHARMAN->GetRandomCharacter()->m_sCharacterID;
+	pProfile->m_sCharacterID = CHARMAN->GetRandomCharacter()->character_id_;
 
 	// Save it to disk.
 	RString sProfileDir = LocalProfileIDToDir(profile_id);

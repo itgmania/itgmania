@@ -62,7 +62,7 @@ void ScreenSelectCharacter::Init()
 		return;
 	}
 
-	switch( GAMESTATE->m_PlayMode )
+	switch( GAMESTATE->play_mode_ )
 	{
 	// For Rave/Battle mode, we force the players to select characters
 	// (by not returning in this switch)
@@ -109,7 +109,7 @@ void ScreenSelectCharacter::Init()
 			this->AddChild( &m_sprIcons[p][i] );
 		}
 
-		if(GAMESTATE->m_PlayMode == PLAY_MODE_BATTLE || GAMESTATE->m_PlayMode == PLAY_MODE_RAVE)
+		if(GAMESTATE->play_mode_ == PLAY_MODE_BATTLE || GAMESTATE->play_mode_ == PLAY_MODE_RAVE)
 		{
 			m_sprAttackFrame[p].Load( THEME->GetPathG("ScreenSelectCharacter","attack frame 1x2") );
 			m_sprAttackFrame[p].StopAnimating();
@@ -242,12 +242,12 @@ void ScreenSelectCharacter::AfterValueChange( PlayerNumber pn )
 			m_sprCard[pnAffected].UnloadTexture();
 			m_sprCard[pnAffected].Load( pChar->GetCardPath() );
 
-			if(GAMESTATE->m_PlayMode == PLAY_MODE_BATTLE || GAMESTATE->m_PlayMode == PLAY_MODE_RAVE)
+			if(GAMESTATE->play_mode_ == PLAY_MODE_BATTLE || GAMESTATE->play_mode_ == PLAY_MODE_RAVE)
 				for( int i=0; i<NUM_ATTACK_LEVELS; i++ )
 					for( int j=0; j<NUM_ATTACKS_PER_LEVEL; j++ )
 					{
 						m_AttackIcons[pnAffected][i][j].Load( "ScreenSelectCharacter" );
-						m_AttackIcons[pnAffected][i][j].Set( pChar->m_sAttacks[i][j] );
+						m_AttackIcons[pnAffected][i][j].Set( pChar->attacks_[i][j] );
 					}
 
 			int c = m_iSelectedCharacter[pnAffected] - MAX_CHAR_ICONS_TO_SHOW/2;
@@ -287,14 +287,14 @@ bool ScreenSelectCharacter::MenuRight( const InputEventPlus &input )
 
 bool ScreenSelectCharacter::MenuUp( const InputEventPlus &input )
 {
-	Move( input.pn, -1 );
+	Move( input.pn_, -1 );
 	return true;
 }
 
 
 bool ScreenSelectCharacter::MenuDown( const InputEventPlus &input )
 {
-	Move( input.pn, +1 );
+	Move( input.pn_, +1 );
 	return true;
 }
 
@@ -328,7 +328,7 @@ bool ScreenSelectCharacter::AllAreFinishedChoosing() const
 
 bool ScreenSelectCharacter::MenuStart( const InputEventPlus &input )
 {
-	MakeSelection( input.pn );
+	MakeSelection( input.pn_ );
 	return true;
 }
 
@@ -361,7 +361,7 @@ void ScreenSelectCharacter::MakeSelection( PlayerNumber pn )
 			std::vector<Character*> apCharacters;
 			CHARMAN->GetCharacters( apCharacters );
 			Character* pChar = apCharacters[ m_iSelectedCharacter[p] ];
-			GAMESTATE->m_pCurCharacters[p] = pChar;
+			GAMESTATE->cur_characters_[p] = pChar;
 		}
 
 		StopTimer();
@@ -384,7 +384,7 @@ void ScreenSelectCharacter::TweenOffScreen()
 		m_sprCard[p].RunCommands( CARD_OFF_COMMAND(p) );
 		m_sprTitle[p].RunCommands( TITLE_OFF_COMMAND(p) );
 		m_sprCardArrows[p].RunCommands( CARD_ARROWS_OFF_COMMAND(p) );
-		if(GAMESTATE->m_PlayMode == PLAY_MODE_BATTLE || GAMESTATE->m_PlayMode == PLAY_MODE_RAVE)
+		if(GAMESTATE->play_mode_ == PLAY_MODE_BATTLE || GAMESTATE->play_mode_ == PLAY_MODE_RAVE)
 		{
 			m_sprAttackFrame[p].RunCommands( ATTACK_FRAME_OFF_COMMAND(p) );
 			for( int i=0; i<NUM_ATTACK_LEVELS; i++ )

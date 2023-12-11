@@ -132,19 +132,19 @@ void ScreenTestSound::Update(float f)
 
 bool ScreenTestSound::Input( const InputEventPlus &input )
 {
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false;	// ignore
 
-	switch( input.DeviceI.device )
+	switch( input.device_input_.device )
 	{
 	case DEVICE_KEYBOARD:
-		switch( input.DeviceI.button )
+		switch( input.device_input_.button )
 		{
 			case '1':
 			case '2':
 			case '3':
 			case '4':
-			case '5': selected = input.DeviceI.button - '0'-1; break;
+			case '5': selected = input.device_input_.button - '0'-1; break;
 			case 'p':
 			{
 				/* We want to be able to read the position of copied sounds; if we let

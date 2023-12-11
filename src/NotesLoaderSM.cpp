@@ -948,17 +948,17 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 	switch( aBGChangeValues.size() )
 	{
 	case 11:
-		change.m_def.m_sColor2 = aBGChangeValues[10];
-		change.m_def.m_sColor2.Replace( '^', ',' );
-		change.m_def.m_sColor2 = RageColor::NormalizeColorString( change.m_def.m_sColor2 );
+		change.background_def_.color2_ = aBGChangeValues[10];
+		change.background_def_.color2_.Replace( '^', ',' );
+		change.background_def_.color2_ = RageColor::NormalizeColorString( change.background_def_.color2_ );
 		[[fallthrough]];
 	case 10:
-		change.m_def.m_sColor1 = aBGChangeValues[9];
-		change.m_def.m_sColor1.Replace( '^', ',' );
-		change.m_def.m_sColor1 = RageColor::NormalizeColorString( change.m_def.m_sColor1 );
+		change.background_def_.color1_ = aBGChangeValues[9];
+		change.background_def_.color1_.Replace( '^', ',' );
+		change.background_def_.color1_ = RageColor::NormalizeColorString( change.background_def_.color1_ );
 		[[fallthrough]];
 	case 9:
-		change.m_sTransition = aBGChangeValues[8];
+		change.transition_ = aBGChangeValues[8];
 		[[fallthrough]];
 	case 8:
 	{
@@ -969,40 +969,40 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 		{
 			return false;
 		}
-		change.m_def.m_sFile2 = aBGChangeValues[7];
+		change.background_def_.file2_ = aBGChangeValues[7];
 		[[fallthrough]];
 	}
 	case 7:
-		change.m_def.m_sEffect = aBGChangeValues[6];
+		change.background_def_.effect_ = aBGChangeValues[6];
 		[[fallthrough]];
 	case 6:
 		// param 7 overrides this.
 		// Backward compatibility:
-		if( change.m_def.m_sEffect.empty() )
+		if( change.background_def_.effect_.empty() )
 		{
 			bool bLoop = StringToInt( aBGChangeValues[5] ) != 0;
 			if( !bLoop )
-				change.m_def.m_sEffect = SBE_StretchNoLoop;
+				change.background_def_.effect_ = SBE_StretchNoLoop;
 		}
 		[[fallthrough]];
 	case 5:
 		// param 7 overrides this.
 		// Backward compatibility:
-		if( change.m_def.m_sEffect.empty() )
+		if( change.background_def_.effect_.empty() )
 		{
 			bool bRewindMovie = StringToInt( aBGChangeValues[4] ) != 0;
 			if( bRewindMovie )
-				change.m_def.m_sEffect = SBE_StretchRewind;
+				change.background_def_.effect_ = SBE_StretchRewind;
 		}
 		[[fallthrough]];
 	case 4:
 		// param 9 overrides this.
 		// Backward compatibility:
-		if( change.m_sTransition.empty() )
-			change.m_sTransition = (StringToInt( aBGChangeValues[3] ) != 0) ? "CrossFade" : "";
+		if( change.transition_.empty() )
+			change.transition_ = (StringToInt( aBGChangeValues[3] ) != 0) ? "CrossFade" : "";
 		[[fallthrough]];
 	case 3:
-		change.m_fRate = StringToFloat( aBGChangeValues[2] );
+		change.rate_ = StringToFloat( aBGChangeValues[2] );
 		[[fallthrough]];
 	case 2:
 	{
@@ -1013,11 +1013,11 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 		{
 			return false;
 		}
-		change.m_def.m_sFile1 = aBGChangeValues[1];
+		change.background_def_.file1_ = aBGChangeValues[1];
 		[[fallthrough]];
 	}
 	case 1:
-		change.m_fStartBeat = StringToFloat( aBGChangeValues[0] );
+		change.start_beat_ = StringToFloat( aBGChangeValues[0] );
 	}
 
 	return aBGChangeValues.size() >= 2;
@@ -1317,7 +1317,7 @@ void SMLoader::TidyUpData( Song &song, bool bFromCache )
 
 		for( unsigned i = 0; !bHasNoSongBgTag && i < bg.size(); ++i )
 		{
-			if( !bg[i].m_def.m_sFile1.CompareNoCase(NO_SONG_BG_FILE) )
+			if( !bg[i].background_def_.file1_.CompareNoCase(NO_SONG_BG_FILE) )
 			{
 				bg.erase( bg.begin()+i );
 				bHasNoSongBgTag = true;
@@ -1335,11 +1335,11 @@ void SMLoader::TidyUpData( Song &song, bool bFromCache )
 			float lastBeat = song.GetLastBeat();
 			/* If BGChanges already exist after the last beat, don't add the
 			 * background in the middle. */
-			if( !bg.empty() && bg.back().m_fStartBeat-0.0001f >= lastBeat )
+			if( !bg.empty() && bg.back().start_beat_-0.0001f >= lastBeat )
 				break;
 
 			// If the last BGA is already the song BGA, don't add a duplicate.
-			if( !bg.empty() && !bg.back().m_def.m_sFile1.CompareNoCase(song.m_sBackgroundFile) )
+			if( !bg.empty() && !bg.back().background_def_.file1_.CompareNoCase(song.m_sBackgroundFile) )
 				break;
 
 			if( !IsAFile( song.GetBackgroundPath() ) )

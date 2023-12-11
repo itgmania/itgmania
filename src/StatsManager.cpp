@@ -162,7 +162,7 @@ XNode* MakeRecentScoreNode( const StageStats &ss, Trail *pTrail, const PlayerSta
 		pNode = new XNode( "HighScoreForACourseAndTrail" );
 
 		CourseID courseID;
-		courseID.FromCourse(GAMESTATE->m_pCurCourse );
+		courseID.FromCourse(GAMESTATE->cur_course_ );
 		pNode->AppendChild( courseID.CreateNode() );
 
 		TrailID trailID;
@@ -185,7 +185,7 @@ XNode* MakeRecentScoreNode( const StageStats &ss, Trail *pTrail, const PlayerSta
 
 	XNode* pHighScore = pss.m_HighScore.CreateNode();
 	pHighScore->AppendChild("Pad", mp);
-	pHighScore->AppendChild("StageGuid", GAMESTATE->m_sStageGUID);
+	pHighScore->AppendChild("StageGuid", GAMESTATE->stage_guid_);
 	pHighScore->AppendChild("Guid", CryptManager::GenerateRandomUUID());
 
 	pNode->AppendChild( pHighScore );
@@ -219,7 +219,7 @@ void StatsManager::CommitStatsToProfiles( const StageStats *pSS )
 	pMachineProfile->m_iTotalGameplaySeconds += iGameplaySeconds;
 	pMachineProfile->m_iNumTotalSongsPlayed += pSS->m_vpPlayedSongs.size();
 
-	if( !GAMESTATE->m_bMultiplayer )	// FIXME
+	if( !GAMESTATE->multiplayer_ )	// FIXME
 	{
 		FOREACH_HumanPlayer( pn )
 		{
@@ -266,13 +266,13 @@ void StatsManager::SaveUploadFile( const StageStats *pSS )
 	else
 		recent = xml->AppendChild( new XNode("RecentSongScores") );
 
-	if(!GAMESTATE->m_bMultiplayer)
+	if(!GAMESTATE->multiplayer_)
 	{
 		FOREACH_HumanPlayer( p )
 		{
 			if( pSS->m_player[p].m_HighScore.IsEmpty() )
 				continue;
-			recent->AppendChild( MakeRecentScoreNode( *pSS, GAMESTATE->m_pCurTrail[p], pSS->m_player[p], MultiPlayer_Invalid ) );
+			recent->AppendChild( MakeRecentScoreNode( *pSS, GAMESTATE->cur_trail_[p], pSS->m_player[p], MultiPlayer_Invalid ) );
 		}
 	}
 	else
@@ -281,7 +281,7 @@ void StatsManager::SaveUploadFile( const StageStats *pSS )
 		{
 			if( pSS->m_multiPlayer[mp].m_HighScore.IsEmpty() )
 				continue;
-			recent->AppendChild( MakeRecentScoreNode( *pSS, GAMESTATE->m_pCurTrail[GAMESTATE->GetMasterPlayerNumber()], pSS->m_multiPlayer[mp], mp ) );
+			recent->AppendChild( MakeRecentScoreNode( *pSS, GAMESTATE->cur_trail_[GAMESTATE->GetMasterPlayerNumber()], pSS->m_multiPlayer[mp], mp ) );
 		}
 	}
 
@@ -350,7 +350,7 @@ void StatsManager::SavePadmissScore( const StageStats *pSS, PlayerNumber pn )
 	songdata->AppendChild( "ArtistTranslit", song->m_sArtistTranslit );
 	songdata->AppendChild( "Duration", song->m_fMusicLengthSeconds );
 
-	const PlayerOptions &opts = GAMESTATE->m_pPlayerState[ pn ]->m_PlayerOptions.Get( ModsLevel_Preferred );
+	const PlayerOptions &opts = GAMESTATE->player_state_[ pn ]->m_PlayerOptions.Get( ModsLevel_Preferred );
 	XNode *mods = xml->AppendChild( "Mods" );
 	mods->AppendChild( "MusicRate", pSS->m_fMusicRate );
 #define ADD_BOOLEAN_OPTION( parent, name, opts ) \

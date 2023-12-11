@@ -45,26 +45,26 @@ void LyricDisplay::Update( float fDeltaTime )
 
 	ActorFrame::Update( fDeltaTime );
 
-	if( GAMESTATE->m_pCurSong == nullptr )
+	if( GAMESTATE->cur_song_ == nullptr )
 		return;
 
 	// If the song has changed (in a course), reset.
-	if( GAMESTATE->m_Position.m_fMusicSeconds < m_fLastSecond )
+	if( GAMESTATE->position_.m_fMusicSeconds < m_fLastSecond )
 		Init();
-	m_fLastSecond = GAMESTATE->m_Position.m_fMusicSeconds;
+	m_fLastSecond = GAMESTATE->position_.m_fMusicSeconds;
 
-	if( m_iCurLyricNumber >= GAMESTATE->m_pCurSong->m_LyricSegments.size() )
+	if( m_iCurLyricNumber >= GAMESTATE->cur_song_->m_LyricSegments.size() )
 		return;
 
-	const Song *pSong = GAMESTATE->m_pCurSong;
+	const Song *pSong = GAMESTATE->cur_song_;
 	const float fStartTime = (pSong->m_LyricSegments[m_iCurLyricNumber].m_fStartTime) - IN_LENGTH.GetValue();
 
-	if( GAMESTATE->m_Position.m_fMusicSeconds < fStartTime )
+	if( GAMESTATE->position_.m_fMusicSeconds < fStartTime )
 		return;
 
 	// Clamp this lyric to the beginning of the next or the end of the music.
 	float fEndTime;
-	if( m_iCurLyricNumber+1 < GAMESTATE->m_pCurSong->m_LyricSegments.size() )
+	if( m_iCurLyricNumber+1 < GAMESTATE->cur_song_->m_LyricSegments.size() )
 		fEndTime = pSong->m_LyricSegments[m_iCurLyricNumber+1].m_fStartTime;
 	else
 		fEndTime = pSong->GetLastSecond();
@@ -78,9 +78,9 @@ void LyricDisplay::Update( float fDeltaTime )
 	float fShowLength = std::max( fDistance - fTweenBufferTime, 0.0f );
 
 	// Make lyrics show faster for faster song rates.
-	fShowLength /= GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+	fShowLength /= GAMESTATE->song_options_.GetCurrent().m_fMusicRate;
 
-	const LyricSegment &seg = GAMESTATE->m_pCurSong->m_LyricSegments[m_iCurLyricNumber];
+	const LyricSegment &seg = GAMESTATE->cur_song_->m_LyricSegments[m_iCurLyricNumber];
 
 	LuaThreadVariable var1( "LyricText", seg.m_sLyric );
 	LuaThreadVariable var2( "LyricDuration", LuaReference::Create(fShowLength) );

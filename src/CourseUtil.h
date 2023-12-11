@@ -1,103 +1,106 @@
 #ifndef COURSEUTIL_H
 #define COURSEUTIL_H
 
-#include "GameConstantsAndTypes.h"
-#include "Difficulty.h"
+#include "global.h"
 
 #include <vector>
 
+#include "Course.h"
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
+#include "Song.h"
+#include "XmlFile.h"
 
-class Course;
+// TODO(teejusb): Remove forward declaration. Profile.h uses CourseID defined
+// below so we have a circular dependency.
 class Profile;
-class XNode;
-class CourseEntry;
-class Song;
 
-bool CompareCoursePointersBySortValueAscending( const Course *pSong1, const Course *pSong2 );
-bool CompareCoursePointersBySortValueDescending( const Course *pSong1, const Course *pSong2 );
-bool CompareCoursePointersByTitle( const Course *pCourse1, const Course *pCourse2 );
+bool CompareCoursePointersBySortValueAscending(
+    const Course* song1, const Course* song2);
+bool CompareCoursePointersBySortValueDescending(
+    const Course* song1, const Course* song2);
+bool CompareCoursePointersByTitle(
+    const Course* course1, const Course* course2);
 
-/** @brief Utility functions that deal with Courses. */
-namespace CourseUtil
-{
-	void SortCoursePointerArrayByDifficulty( std::vector<Course*> &vpCoursesInOut );
-	void SortCoursePointerArrayByType( std::vector<Course*> &vpCoursesInOut );
-	void SortCoursePointerArrayByTitle( std::vector<Course*> &vpCoursesInOut );
-	void SortCoursePointerArrayByAvgDifficulty( std::vector<Course*> &vpCoursesInOut );
-	void SortCoursePointerArrayByTotalDifficulty( std::vector<Course*> &vpCoursesInOut );
-	void SortCoursePointerArrayByRanking( std::vector<Course*> &vpCoursesInOut );
-	void SortCoursePointerArrayByNumPlays( std::vector<Course*> &vpCoursesInOut, ProfileSlot slot, bool bDescending );
-	void SortCoursePointerArrayByNumPlays( std::vector<Course*> &vpCoursesInOut, const Profile* pProfile, bool bDescending );
-	void SortByMostRecentlyPlayedForMachine( std::vector<Course*> &vpCoursesInOut );
-	// sm-ssc sort additions:
-	//void SortCoursePointerArrayBySectionName( std::vector<Course*> &vpCoursesInOut, SortOrder so );
+// Utility functions that deal with Courses.
+namespace CourseUtil {
 
-	void MoveRandomToEnd( std::vector<Course*> &vpCoursesInOut );
+void SortCoursePointerArrayByDifficulty(std::vector<Course*>& courses);
+void SortCoursePointerArrayByType(std::vector<Course*>& courses);
+void SortCoursePointerArrayByTitle(std::vector<Course*>& courses);
+void SortCoursePointerArrayByAvgDifficulty(std::vector<Course*>& courses);
+void SortCoursePointerArrayByTotalDifficulty(std::vector<Course*>& courses);
+void SortCoursePointerArrayByRanking(std::vector<Course*>& courses);
+void SortCoursePointerArrayByNumPlays(
+    std::vector<Course*>& courses, ProfileSlot slot, bool descending);
+void SortCoursePointerArrayByNumPlays(
+    std::vector<Course*>& courses, const Profile* profile, bool descending);
+void SortByMostRecentlyPlayedForMachine(std::vector<Course*>& courses);
 
-	void MakeDefaultEditCourseEntry( CourseEntry &out );
+void MoveRandomToEnd(std::vector<Course*>& courses);
 
-	void AutogenEndlessFromGroup( const RString &sGroupName, Difficulty dc, Course &out );
-	void AutogenNonstopFromGroup( const RString &sGroupName, Difficulty dc, Course &out );
-	void AutogenOniFromArtist( const RString &sArtistName, RString sArtistNameTranslit, std::vector<Song*> aSongs, Difficulty dc, Course &out );
+void MakeDefaultEditCourseEntry(CourseEntry& out);
 
-	bool ValidateEditCourseName( const RString &sAnswer, RString &sErrorOut );
+void AutogenEndlessFromGroup(
+    const RString& group_name, Difficulty difficulty, Course& out);
+void AutogenNonstopFromGroup(
+    const RString& group_name, Difficulty difficulty, Course& out);
+void AutogenOniFromArtist(
+    const RString& artist_name, RString artist_name_translit,
+    std::vector<Song*> songs, Difficulty difficulty, Course& out);
 
-	void WarnOnInvalidMods( RString sMods );
+void WarnOnInvalidMods(RString mods);
 
-	// sm-ssc additions:
-	//RString GetSectionNameFromCourseAndSort( const Course *pCourse, SortOrder so );
+};  // namespace CourseUtil
+
+// Utility functions that deal with Edit Courses.
+namespace EditCourseUtil {
+
+void UpdateAndSetTrail();
+void PrepareForPlay();
+void LoadDefaults(Course& out);
+bool RemoveAndDeleteFile(Course* course);
+bool ValidateEditCourseName(const RString& answer, RString& error);
+void GetAllEditCourses(std::vector<Course*>& courses);
+bool Save(Course* course);
+bool RenameAndSave(Course* course, RString name);
+
+extern int MAX_NAME_LENGTH;
+extern int MAX_PER_PROFILE;
+extern int MIN_WORKOUT_MINUTES;
+extern int MAX_WORKOUT_MINUTES;
+
+// if true, we are working with a Course that has never been named.
+extern bool s_bNewCourseNeedsName;
+
+};  // namespace EditCourseUtil
+
+class CourseID {
+ public:
+  CourseID() : path_(""), full_title_("") { Unset(); }
+  void Unset() { FromCourse(nullptr); }
+  void FromCourse(const Course* course);
+  Course* ToCourse() const;
+  const RString& GetPath() const { return path_; }
+  bool operator<(const CourseID& other) const {
+    if (path_ != other.path_) {
+      return path_ < other.path_;
+    }
+    return full_title_ < other.full_title_;
+  }
+
+  XNode* CreateNode() const;
+  void LoadFromNode(const XNode* node);
+  void FromPath(RString path) { path_ = path; }
+  RString ToString() const;
+  bool IsValid() const;
+
+ private:
+  RString path_;
+  RString full_title_;
 };
 
-/** @brief Utility functions that deal with Edit Courses. */
-namespace EditCourseUtil
-{
-	void UpdateAndSetTrail();
-	void PrepareForPlay();
-	void LoadDefaults( Course &out );
-	bool RemoveAndDeleteFile( Course *pCourse );
-	bool ValidateEditCourseName( const RString &sAnswer, RString &sErrorOut );
-	void GetAllEditCourses( std::vector<Course*> &vpCoursesOut );
-	bool Save( Course *pCourse );
-	bool RenameAndSave( Course *pCourse, RString sName );
-
-	bool ValidateEditCourseNametName( const RString &sAnswer, RString &sErrorOut );
-
-	extern int MAX_NAME_LENGTH;
-	extern int MAX_PER_PROFILE;
-	extern int MIN_WORKOUT_MINUTES;
-	extern int MAX_WORKOUT_MINUTES;
-
-	extern bool s_bNewCourseNeedsName;	// if true, we are working with a Course that has never been named
-};
-
-
-class CourseID
-{
-public:
-	CourseID(): sPath(""), sFullTitle("") { Unset(); }
-	void Unset() { FromCourse(nullptr); }
-	void FromCourse( const Course *p );
-	Course *ToCourse() const;
-	const RString &GetPath() const { return sPath; }
-	bool operator<( const CourseID &other ) const
-	{
-		if (sPath != other.sPath)
-			return sPath < other.sPath;
-		return sFullTitle < other.sFullTitle;
-	}
-
-	XNode* CreateNode() const;
-	void LoadFromNode( const XNode* pNode );
-	void FromPath( RString _sPath ) { sPath = _sPath; }
-	RString ToString() const;
-	bool IsValid() const;
-
-private:
-	RString sPath;
-	RString sFullTitle;
-};
-
-#endif
+#endif  // COURSEUTIL_H
 
 /**
  * @file

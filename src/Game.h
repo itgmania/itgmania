@@ -1,11 +1,11 @@
-#ifndef GAMEDEF_H
-#define GAMEDEF_H
+#ifndef GAME_H
+#define GAME_H
 
-#include "InputMapper.h"
 #include "GameConstantsAndTypes.h"
+#include "InputMapper.h"
+#include "Style.h"
 
 struct lua_State;
-class Style;
 
 // PrimaryMenuButton and SecondaryMenuButton are used to support using
 // DeviceInputs that only  navigate the menus.
@@ -17,58 +17,56 @@ class Style;
 // Example 1: A user is using an arcade machine as their controller. Most
 // machines have MenuLeft, MenuStart, and MenuRight buttons on the cabinet, so
 // they should be used to navigate menus. The user will map these DeviceInputs
-// to the GameButtons "MenuLeft (optional)", "MenuStart", and "MenuRight (optional)".
+// to the GameButtons "MenuLeft (optional)", "MenuStart", and "MenuRight
+// (optional)".
 
 // Example 2:  A user is using PlayStation dance pads to play. These controllers
-// don't have dedicated DeviceInputs for MenuLeft and MenuRight. The user maps 
-// Up, Down, Left, and Right as normal. Since the Left and Right GameButtons 
+// don't have dedicated DeviceInputs for MenuLeft and MenuRight. The user maps
+// Up, Down, Left, and Right as normal. Since the Left and Right GameButtons
 // have the flag FLAG_SECONDARY_MENU_*, they will function as MenuLeft and
-// MenuRight as long as "MenuLeft (optional)" and "MenuRight (optional)" are not mapped.
+// MenuRight as long as "MenuLeft (optional)" and "MenuRight (optional)" are not
+// mapped.
 
-/** @brief Holds information about a particular style of a game (e.g. "single", "double"). */
-struct Game
-{
-	const char *		m_szName;
-	const Style * const*	m_apStyles;
+// Holds information about a particular style of a game
+// (e.g. "single",  "double").
+struct Game {
+  const char* name;
+  const Style* const* styles;
 
-	/** @brief Do we count multiple notes in a row as separate notes, or as one note? */
-	bool			m_bCountNotesSeparately;
-	bool			m_bTickHolds;
-	bool m_PlayersHaveSeparateStyles;
+  // Whether we count multiple notes in a row as separate notes, or as one note.
+  bool count_notes_separately;
+  bool tick_holds;
+  bool players_have_separate_styles;
 
-	InputScheme		m_InputScheme;
+  InputScheme input_scheme;
 
-	struct PerButtonInfo
-	{
-		GameButtonType m_gbt;
-	};
-	/**
-	 * @brief Data for each Game-specific GameButton.
-	 *
-	 * This starts at GAME_BUTTON_NEXT. */
-	PerButtonInfo		m_PerButtonInfo[NUM_GameButton];
-	const PerButtonInfo *GetPerButtonInfo( GameButton gb ) const;
+  struct PerButtonInfo {
+    GameButtonType game_button_type;
+  };
+  // Data for each Game-specific GameButton. This starts at GAME_BUTTON_NEXT.
+  PerButtonInfo per_button_info[NUM_GameButton];
+  const PerButtonInfo* GetPerButtonInfo(GameButton gb) const;
 
-	TapNoteScore MapTapNoteScore( TapNoteScore tns ) const;
-	TapNoteScore m_mapW1To;
-	TapNoteScore m_mapW2To;
-	TapNoteScore m_mapW3To;
-	TapNoteScore m_mapW4To;
-	TapNoteScore m_mapW5To;
-	TapNoteScore GetMapJudgmentTo( TapNoteScore tns ) const;
+  TapNoteScore MapTapNoteScore(TapNoteScore tns) const;
+  TapNoteScore map_w1_to;
+  TapNoteScore map_w2_to;
+  TapNoteScore map_w3_to;
+  TapNoteScore map_w4_to;
+  TapNoteScore map_w5_to;
+  TapNoteScore GetMapJudgmentTo(TapNoteScore tns) const;
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 };
 
-#endif
+#endif  // GAME_H
 
 /**
  * @file
  * @author Chris Danford (c) 2001-2002
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -78,7 +76,7 @@ struct Game
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

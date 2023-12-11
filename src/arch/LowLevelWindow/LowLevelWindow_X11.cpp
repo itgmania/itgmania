@@ -724,7 +724,7 @@ void LowLevelWindow_X11::GetDisplaySpecs(DisplaySpecs &out) const {
 					DisplayMode mode = outputModes[outInfo->modes[modeIdx]];
 					unsigned int modeWidth = bPortrait ? mode.height : mode.width;
 					unsigned int modeHeight = bPortrait ? mode.width : mode.height;
-					DisplayMode m = {modeWidth, modeHeight, mode.refreshRate};
+					DisplayMode m = {modeWidth, modeHeight, mode.refresh_rate};
 					outputSupported.insert( m );
 					if (curRRMode != None && outInfo->modes[modeIdx] == curRRMode)
 					{

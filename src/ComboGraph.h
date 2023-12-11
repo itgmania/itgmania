@@ -1,42 +1,40 @@
-/* ComboGraph - A bar displaying the player's combo on Evaluation. */
 #ifndef COMBO_GRAPH_H
 #define COMBO_GRAPH_H
 
 #include "ActorFrame.h"
+#include "BitmapText.h"
 #include "PlayerNumber.h"
+#include "PlayerStageStats.h"
+#include "StageStats.h"
 #include "ThemeMetric.h"
 
-class StageStats;
-class PlayerStageStats;
-class BitmapText;
+// A bar displaying the player's combo on Evaluation.
+class ComboGraph : public ActorFrame {
+ public:
+  ComboGraph();
+  void Load(RString metrics_group);
+  void Set(const StageStats& s, const PlayerStageStats& pss);
+  virtual ComboGraph* Copy() const;
+  virtual bool AutoLoadChildren() const { return true; }
 
-class ComboGraph: public ActorFrame
-{
-public:
-	ComboGraph();
-	void Load( RString sMetricsGroup );
-	void Set( const StageStats &s, const PlayerStageStats &pss );
-	virtual ComboGraph *Copy() const;
-	virtual bool AutoLoadChildren() const { return true; }
+  // Commands
+  virtual void PushSelf(lua_State* L);
 
-	// Commands
-	virtual void PushSelf( lua_State *L );
-
-private:
-	ThemeMetric<float> BODY_WIDTH;
-	ThemeMetric<float> BODY_HEIGHT;
-	Actor *m_pBacking;
-	Actor *m_pNormalCombo;
-	Actor *m_pMaxCombo;
-	BitmapText *m_pComboNumber;
+ private:
+  ThemeMetric<float> BODY_WIDTH;
+  ThemeMetric<float> BODY_HEIGHT;
+  Actor* backing_;
+  Actor* normal_combo_;
+  Actor* max_combo_;
+  BitmapText* combo_number_;
 };
 
-#endif
+#endif  // COMBO_GRAPH_H
 
 /*
  * (c) 2003 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -46,7 +44,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

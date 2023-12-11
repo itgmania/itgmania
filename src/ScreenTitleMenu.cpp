@@ -44,26 +44,26 @@ static LocalizedString ANNOUNCER_	("ScreenTitleMenu","Announcer");
 bool ScreenTitleMenu::Input( const InputEventPlus &input )
 {
 #if defined(DEBUG)
-	LOG->Trace( "ScreenTitleMenu::Input( %d-%d )", input.DeviceI.device, input.DeviceI.button );	// debugging gameport joystick problem
+	LOG->Trace( "ScreenTitleMenu::Input( %d-%d )", input.device_input_.device, input.device_input_.button );	// debugging gameport joystick problem
 #endif
 
 	if( m_In.IsTransitioning() || m_Cancel.IsTransitioning() ) /* not m_Out */
 		return false;
 
 	bool bHandled = false;
-	if( input.type == IET_FIRST_PRESS )
+	if( input.type_ == IET_FIRST_PRESS )
 	{
 		// detect codes
 		// Theme changing pad codes are marked as deprecated in _fallback's
 		// metrics.ini, remove them after SM5? -Kyz
-		if( CodeDetector::EnteredCode(input.GameI.controller,CODE_NEXT_THEME) ||
-			CodeDetector::EnteredCode(input.GameI.controller,CODE_NEXT_THEME2) )
+		if( CodeDetector::EnteredCode(input.game_input_.controller,CODE_NEXT_THEME) ||
+			CodeDetector::EnteredCode(input.game_input_.controller,CODE_NEXT_THEME2) )
 		{
 			GameLoop::ChangeTheme(THEME->GetNextSelectableTheme());
 			bHandled = true;
 		}
-		if( CodeDetector::EnteredCode(input.GameI.controller,CODE_NEXT_ANNOUNCER) ||
-			CodeDetector::EnteredCode(input.GameI.controller,CODE_NEXT_ANNOUNCER2) )
+		if( CodeDetector::EnteredCode(input.game_input_.controller,CODE_NEXT_ANNOUNCER) ||
+			CodeDetector::EnteredCode(input.game_input_.controller,CODE_NEXT_ANNOUNCER2) )
 		{
 			ANNOUNCER->NextAnnouncer();
 			RString sName = ANNOUNCER->GetCurAnnouncerName();

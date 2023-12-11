@@ -175,7 +175,7 @@ bool Steps::GetNoteDataFromSimfile()
 
 void Steps::SetNoteData( const NoteData& noteDataNew )
 {
-	ASSERT( noteDataNew.GetNumTracks() == GAMEMAN->GetStepsTypeInfo(m_StepsType).iNumTracks );
+	ASSERT( noteDataNew.GetNumTracks() == GAMEMAN->GetStepsTypeInfo(m_StepsType).num_tracks );
 
 	DeAutogen( false );
 
@@ -197,7 +197,7 @@ void Steps::GetNoteData( NoteData& noteDataOut ) const
 	else
 	{
 		noteDataOut.ClearAll();
-		noteDataOut.SetNumTracks( GAMEMAN->GetStepsTypeInfo(m_StepsType).iNumTracks );
+		noteDataOut.SetNumTracks( GAMEMAN->GetStepsTypeInfo(m_StepsType).num_tracks );
 	}
 }
 
@@ -277,7 +277,7 @@ void Steps::TidyUpData()
 	}
 	else if(m_StepsTypeStr == "")
 	{
-		m_StepsTypeStr= GAMEMAN->GetStepsTypeInfo(m_StepsType).szName;
+		m_StepsTypeStr= GAMEMAN->GetStepsTypeInfo(m_StepsType).name;
 	}
 
 	if( GetDifficulty() == Difficulty_Invalid )
@@ -330,7 +330,7 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
 			NoteDataUtil::CalculateRadarValues( vParts[pn], fMusicLengthSeconds, m_CachedRadarValues[pn] );
 	}
-	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
+	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).steps_type_category == StepsTypeCategory_Couple)
 	{
 		NoteData p1 = tempNoteData;
 		// XXX: Assumption that couple will always have an even number of notes.
@@ -387,7 +387,7 @@ void Steps::Decompress()
 
 		m_bNoteDataIsFilled = true;
 
-		int iNewTracks = GAMEMAN->GetStepsTypeInfo(m_StepsType).iNumTracks;
+		int iNewTracks = GAMEMAN->GetStepsTypeInfo(m_StepsType).num_tracks;
 
 		if( this->m_StepsType == StepsType_lights_cabinet )
 		{
@@ -437,9 +437,9 @@ void Steps::Decompress()
 	else
 	{
 		// load from compressed
-		bool bComposite = GAMEMAN->GetStepsTypeInfo(m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Routine;
+		bool bComposite = GAMEMAN->GetStepsTypeInfo(m_StepsType).steps_type_category == StepsTypeCategory_Routine;
 		m_bNoteDataIsFilled = true;
-		m_pNoteData->SetNumTracks( GAMEMAN->GetStepsTypeInfo(m_StepsType).iNumTracks );
+		m_pNoteData->SetNumTracks( GAMEMAN->GetStepsTypeInfo(m_StepsType).num_tracks );
 
 		NoteDataUtil::LoadFromSMNoteDataString( *m_pNoteData, m_sNoteDataCompressed, bComposite );
 	}
@@ -455,7 +455,7 @@ void Steps::Compress() const
 	}
 
 	// Don't compress data in the editor: it's still in use.
-	if (GAMESTATE->m_bInStepEditor)
+	if (GAMESTATE->in_step_editor_)
 	{
 		return;
 	}
@@ -514,17 +514,17 @@ void Steps::AutogenFrom( const Steps *parent_, StepsType ntTo )
 {
 	parent = parent_;
 	m_StepsType = ntTo;
-	m_StepsTypeStr= GAMEMAN->GetStepsTypeInfo(ntTo).szName;
+	m_StepsTypeStr= GAMEMAN->GetStepsTypeInfo(ntTo).name;
 	m_Timing = parent->m_Timing;
 }
 
 void Steps::CopyFrom( Steps* pSource, StepsType ntTo, float fMusicLengthSeconds )	// pSource does not have to be of the same StepsType
 {
 	m_StepsType = ntTo;
-	m_StepsTypeStr= GAMEMAN->GetStepsTypeInfo(ntTo).szName;
+	m_StepsTypeStr= GAMEMAN->GetStepsTypeInfo(ntTo).name;
 	NoteData noteData;
 	pSource->GetNoteData( noteData );
-	noteData.SetNumTracks( GAMEMAN->GetStepsTypeInfo(ntTo).iNumTracks );
+	noteData.SetNumTracks( GAMEMAN->GetStepsTypeInfo(ntTo).num_tracks );
 	parent = nullptr;
 	m_Timing = pSource->m_Timing;
 	this->m_pSong = pSource->m_pSong;
@@ -540,9 +540,9 @@ void Steps::CopyFrom( Steps* pSource, StepsType ntTo, float fMusicLengthSeconds 
 void Steps::CreateBlank( StepsType ntTo )
 {
 	m_StepsType = ntTo;
-	m_StepsTypeStr= GAMEMAN->GetStepsTypeInfo(ntTo).szName;
+	m_StepsTypeStr= GAMEMAN->GetStepsTypeInfo(ntTo).name;
 	NoteData noteData;
-	noteData.SetNumTracks( GAMEMAN->GetStepsTypeInfo(ntTo).iNumTracks );
+	noteData.SetNumTracks( GAMEMAN->GetStepsTypeInfo(ntTo).num_tracks );
 	this->SetNoteData( noteData );
 }
 

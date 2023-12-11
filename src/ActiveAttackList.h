@@ -2,31 +2,31 @@
 #define ACTIVE_ATTACK_LIST_H
 
 #include "BitmapText.h"
-class PlayerState;
+#include "PlayerState.h"
 
-/** @brief Shows currently active Player modifiers during gameplay. */
-class ActiveAttackList : public BitmapText
-{
-public:
-	/** @brief The constructor that does nothing. */
-	ActiveAttackList();
-	/**
-	 * @brief Set up the PlayerState.
-	 * @param pPlayerState the PlayerState involved with the attacks. */
-	void Init( const PlayerState* pPlayerState );
-	/**
-	 * @brief Look into updating the list.
-	 * @param fDelta the present time. */
-	virtual void Update( float fDelta );
-	/** @brief Refresh the list of attacks. */ 
-	void Refresh();
+// Shows currently active Player modifiers during gameplay.
+class ActiveAttackList : public BitmapText {
+ public:
+  // The constructor that does nothing.
+  ActiveAttackList();
 
-protected:
-	/** @brief the PlayerState of the Player who is dealing with the attack list. */
-	const PlayerState* m_pPlayerState;
+  // Set up the PlayerState.
+  // player_state is the PlayerState involved with the attacks.
+  void Init(const PlayerState* player_state);
+
+  // Look into updating the list.
+  // fDelta is the present time.
+  virtual void Update(float delta);
+
+  // Refresh the list of attacks.
+  void Refresh();
+
+ protected:
+  // The PlayerState of the Player who is dealing with the attack list.
+  const PlayerState* player_state_;
 };
 
-#endif
+#endif  // ACTIVE_ATTACK_LIST_H
 
 /**
  * @file

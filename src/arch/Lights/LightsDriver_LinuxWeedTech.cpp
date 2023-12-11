@@ -145,8 +145,8 @@ void LightsDriver_LinuxWeedTech::Set( const LightsState *ls )
 			// on multiple lights without bogging down the system with delays. ((2ms between commands req.))
 			FOREACH_CabinetLight( cl )
 			{
-				bOn |= ls->m_bCabinetLights[cl];
-				CurLights.m_bCabinetLights[cl] = ls->m_bCabinetLights[cl];
+				bOn |= ls->cabinet_lights[cl];
+				CurLights.cabinet_lights[cl] = ls->cabinet_lights[cl];
 			}
 
 			str[0]='A';
@@ -172,8 +172,8 @@ void LightsDriver_LinuxWeedTech::Set( const LightsState *ls )
 		FOREACH_CabinetLight( cl )
 		{
 			// Only send the command if the light has changed states (on/off)
-			bOn = ls->m_bCabinetLights[cl];
-			if( bOn != CurLights.m_bCabinetLights[cl] )
+			bOn = ls->cabinet_lights[cl];
+			if( bOn != CurLights.cabinet_lights[cl] )
 			{
 				if(cl == LIGHT_MARQUEE_UP_LEFT)		{str[0] = 'A'; str[2] = 'A';}
 				else if(cl == LIGHT_MARQUEE_UP_RIGHT)	{str[0] = 'A'; str[2] = 'B';}
@@ -192,7 +192,7 @@ void LightsDriver_LinuxWeedTech::Set( const LightsState *ls )
 					SerialOut( str, 6 );
 					str[0]=0x00;
 				}
-				CurLights.m_bCabinetLights[cl] = bOn;
+				CurLights.cabinet_lights[cl] = bOn;
 			}
 		}
 	}
@@ -202,8 +202,8 @@ void LightsDriver_LinuxWeedTech::Set( const LightsState *ls )
 		FOREACH_ENUM( GameButton,  gb )
 		{
 			// Only send the command if the light has changed states (on/off)
-			bool bOn = ls->m_bGameButtonLights[gc][gb];
-			if(bOn != CurLights.m_bGameButtonLights[gc][gb]) {
+			bool bOn = ls->game_button_lights[gc][gb];
+			if(bOn != CurLights.game_button_lights[gc][gb]) {
 				if(gc == GameController_1) {
 					if(gb == DANCE_BUTTON_LEFT)		{str[0] = 'A'; str[2] = 'I';}
 					if(gb == DANCE_BUTTON_RIGHT)		{str[0] = 'A'; str[2] = 'J';}
@@ -226,7 +226,7 @@ void LightsDriver_LinuxWeedTech::Set( const LightsState *ls )
 					//SerialOut(str, 6);
 					str[0]=0x00;
 				}
-				CurLights.m_bGameButtonLights[gc][gb] = bOn;
+				CurLights.game_button_lights[gc][gb] = bOn;
 			}
 		}
 	}

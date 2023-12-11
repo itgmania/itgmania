@@ -73,7 +73,7 @@ void ScreenBookkeeping::Update( float fDelta )
 
 bool ScreenBookkeeping::Input( const InputEventPlus &input )
 {
-	if( input.type != IET_FIRST_PRESS && input.type != IET_REPEAT )
+	if( input.type_ != IET_FIRST_PRESS && input.type_ != IET_REPEAT )
 		return false;	// ignore
 
 	return Screen::Input( input );	// default handler

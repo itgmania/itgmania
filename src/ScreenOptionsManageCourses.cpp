@@ -53,15 +53,15 @@ static void SetNextCombination()
 		}
 	}
 
-	StepsTypeAndDifficulty curVal( GAMESTATE->m_stEdit, GAMESTATE->m_cdEdit );
+	StepsTypeAndDifficulty curVal( GAMESTATE->steps_type_edit_, GAMESTATE->course_difficulty_edit_ );
 	std::vector<StepsTypeAndDifficulty>::const_iterator iter = find( v.begin(), v.end(), curVal );
 	if( iter == v.end() || ++iter == v.end() )
 		iter = v.begin();
 
 	curVal = *iter;
 
-	GAMESTATE->m_stEdit.Set( curVal.st );
-	GAMESTATE->m_cdEdit.Set( curVal.cd );
+	GAMESTATE->steps_type_edit_.Set( curVal.st );
+	GAMESTATE->course_difficulty_edit_.Set( curVal.cd );
 
 	EditCourseUtil::UpdateAndSetTrail();
 }
@@ -81,12 +81,12 @@ void ScreenOptionsManageCourses::Init()
 void ScreenOptionsManageCourses::BeginScreen()
 {
 	std::vector<const Style*> vpStyles;
-	GAMEMAN->GetStylesForGame( GAMESTATE->m_pCurGame, vpStyles );
+	GAMEMAN->GetStylesForGame( GAMESTATE->cur_game_, vpStyles );
 	const Style *pStyle = vpStyles[0];
 	GAMESTATE->SetCurrentStyle( pStyle, PLAYER_INVALID );
 
-	if( GAMESTATE->m_stEdit == StepsType_Invalid  ||
-	    GAMESTATE->m_cdEdit == Difficulty_Invalid )
+	if( GAMESTATE->steps_type_edit_ == StepsType_Invalid  ||
+	    GAMESTATE->course_difficulty_edit_ == Difficulty_Invalid )
 	{
 		SetNextCombination();
 	}
@@ -94,7 +94,7 @@ void ScreenOptionsManageCourses::BeginScreen()
 	// Remember the current course. All Course pointers will be invalidated when
 	// we load the machine profile below.
 	CourseID cidLast;
-	cidLast.FromCourse( GAMESTATE->m_pCurCourse );
+	cidLast.FromCourse( GAMESTATE->cur_course_ );
 
 	std::vector<OptionRowHandler*> vHands;
 
@@ -148,11 +148,11 @@ void ScreenOptionsManageCourses::BeginScreen()
 	ScreenOptions::BeginScreen();
 
 	// select the last chosen course
-	GAMESTATE->m_pCurCourse.Set( cidLast.ToCourse() );
-	if( GAMESTATE->m_pCurCourse )
+	GAMESTATE->cur_course_.Set( cidLast.ToCourse() );
+	if( GAMESTATE->cur_course_ )
 	{
 		EditCourseUtil::UpdateAndSetTrail();
-		std::vector<Course*>::const_iterator iter = find( m_vpCourses.begin(), m_vpCourses.end(), GAMESTATE->m_pCurCourse );
+		std::vector<Course*>::const_iterator iter = find( m_vpCourses.begin(), m_vpCourses.end(), GAMESTATE->cur_course_ );
 		if( iter != m_vpCourses.end() )
 		{
 			iIndex = iter - m_vpCourses.begin();
@@ -176,7 +176,7 @@ void ScreenOptionsManageCourses::HandleScreenMessage( const ScreenMessage SM )
 			EditCourseUtil::LoadDefaults( *pCourse );
 			pCourse->m_LoadedFromProfile = ProfileSlot_Machine;
 			SONGMAN->AddCourse( pCourse );
-			GAMESTATE->m_pCurCourse.Set( pCourse );
+			GAMESTATE->cur_course_.Set( pCourse );
 			EditCourseUtil::s_bNewCourseNeedsName = true;
 			EditCourseUtil::UpdateAndSetTrail();
 
@@ -208,17 +208,17 @@ void ScreenOptionsManageCourses::HandleScreenMessage( const ScreenMessage SM )
 void ScreenOptionsManageCourses::AfterChangeRow( PlayerNumber pn )
 {
 	Course *pCourse = GetCourseWithFocus();
-	Trail *pTrail = pCourse ? pCourse->GetTrail( GAMESTATE->m_stEdit, GAMESTATE->m_cdEdit ) : nullptr;
+	Trail *pTrail = pCourse ? pCourse->GetTrail( GAMESTATE->steps_type_edit_, GAMESTATE->course_difficulty_edit_ ) : nullptr;
 
-	GAMESTATE->m_pCurCourse.Set( pCourse );
-	GAMESTATE->m_pCurTrail[PLAYER_1].Set( pTrail );
+	GAMESTATE->cur_course_.Set( pCourse );
+	GAMESTATE->cur_trail_[PLAYER_1].Set( pTrail );
 
 	ScreenOptions::AfterChangeRow( pn );
 }
 
 bool ScreenOptionsManageCourses::MenuSelect( const InputEventPlus &input )
 {
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false;
 	SetNextCombination();
 	m_soundDifficultyChanged.Play(true);
@@ -254,7 +254,7 @@ void ScreenOptionsManageCourses::ProcessMenuStart( const InputEventPlus & )
 	}
 	else	// a course
 	{
-		GAMESTATE->m_pCurCourse.Set( GetCourseWithFocus() );
+		GAMESTATE->cur_course_.Set( GetCourseWithFocus() );
 		EditCourseUtil::UpdateAndSetTrail();
 		EditCourseUtil::s_bNewCourseNeedsName = false;
 		ScreenOptions::BeginFadingOut();

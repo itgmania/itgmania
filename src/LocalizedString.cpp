@@ -1,4 +1,5 @@
 #include "global.h"
+
 #include "LocalizedString.h"
 
 #include "RageUtil.h"
@@ -6,79 +7,70 @@
 
 static SubscriptionManager<LocalizedString> m_Subscribers;
 
-class LocalizedStringImplDefault: public ILocalizedStringImpl
-{
-public:
-	static ILocalizedStringImpl *Create() { return new LocalizedStringImplDefault; }
+class LocalizedStringImplDefault : public ILocalizedStringImpl {
+ public:
+  static ILocalizedStringImpl* Create() {
+    return new LocalizedStringImplDefault;
+  }
 
-	void Load( const RString& sGroup, const RString& sName )
-	{
-		m_sValue = sName;
-	}
+  void Load(const RString& group, const RString& name) { value_ = name; }
 
-	const RString &GetLocalized() const { return m_sValue; }
+  const RString& GetLocalized() const { return value_; }
 
-private:
-	RString m_sValue;
+ private:
+  RString value_;
 };
 
-static LocalizedString::MakeLocalizer g_pMakeLocalizedStringImpl = LocalizedStringImplDefault::Create;
+static LocalizedString::MakeLocalizer g_pMakeLocalizedStringImpl =
+    LocalizedStringImplDefault::Create;
 
-void LocalizedString::RegisterLocalizer( MakeLocalizer pFunc )
-{
-	g_pMakeLocalizedStringImpl = pFunc;
-	for (LocalizedString *pLoc : *m_Subscribers.m_pSubscribers)
-	{
-		pLoc->CreateImpl();
-	}
+void LocalizedString::RegisterLocalizer(MakeLocalizer func) {
+  g_pMakeLocalizedStringImpl = func;
+  for (LocalizedString* localized : *m_Subscribers.m_pSubscribers) {
+    localized->CreateImpl();
+  }
 }
 
-LocalizedString::LocalizedString( const RString& sGroup, const RString& sName )
-{
-	m_Subscribers.Subscribe( this );
+LocalizedString::LocalizedString(const RString& group, const RString& name) {
+  m_Subscribers.Subscribe(this);
 
-	m_sGroup = sGroup;
-	m_sName = sName;
-	m_pImpl = nullptr;
+  group_ = group;
+  name_ = name;
+  impl_ = nullptr;
 
-	CreateImpl();
+  CreateImpl();
 }
 
-LocalizedString::LocalizedString(LocalizedString const& other)
-{
-	m_Subscribers.Subscribe(this);
+LocalizedString::LocalizedString(const LocalizedString& other) {
+  m_Subscribers.Subscribe(this);
 
-	m_sGroup = other.m_sGroup;
-	m_sName = other.m_sName;
-	m_pImpl = nullptr;
+  group_ = other.group_;
+  name_ = other.name_;
+  impl_ = nullptr;
 
-	CreateImpl();
+  CreateImpl();
 }
 
-LocalizedString::~LocalizedString()
-{
-	m_Subscribers.Unsubscribe( this );
+LocalizedString::~LocalizedString() {
+  m_Subscribers.Unsubscribe(this);
 
-	SAFE_DELETE( m_pImpl );
+  SAFE_DELETE(impl_);
 }
 
-void LocalizedString::CreateImpl()
-{
-	SAFE_DELETE( m_pImpl );
-	m_pImpl = g_pMakeLocalizedStringImpl();
-	m_pImpl->Load(  m_sGroup, m_sName );
+void LocalizedString::CreateImpl() {
+  SAFE_DELETE(impl_);
+  impl_ = g_pMakeLocalizedStringImpl();
+  impl_->Load(group_, name_);
 }
 
-void LocalizedString::Load( const RString& sGroup, const RString& sName )
-{
-	m_sGroup = sGroup;
-	m_sName = sName;
-	CreateImpl();
+void LocalizedString::Load(const RString& group, const RString& name) {
+  group_ = group;
+  name_ = name;
+  CreateImpl();
 }
 
-const RString &LocalizedString::GetValue() const
-{
-	return m_pImpl->GetLocalized();
+const RString& LocalizedString::GetValue() const {
+  return impl_->GetLocalized();
 }
 
 /*

@@ -755,7 +755,7 @@ bool TimingData::DoesLabelExist( const RString& sLabel ) const
 
 void TimingData::GetBeatAndBPSFromElapsedTime(GetBeatArgs& args) const
 {
-	args.elapsed_time += GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate * PREFSMAN->m_fGlobalOffsetSeconds;
+	args.elapsed_time += GAMESTATE->song_options_.GetCurrent().m_fMusicRate * PREFSMAN->m_fGlobalOffsetSeconds;
 	GetBeatAndBPSFromElapsedTimeNoOffset(args);
 }
 
@@ -996,7 +996,7 @@ float TimingData::GetElapsedTimeInternal(GetBeatStarts& start, float beat,
 float TimingData::GetElapsedTimeFromBeat( float fBeat ) const
 {
 	return TimingData::GetElapsedTimeFromBeatNoOffset( fBeat )
-		- GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate * PREFSMAN->m_fGlobalOffsetSeconds;
+		- GAMESTATE->song_options_.GetCurrent().m_fMusicRate * PREFSMAN->m_fGlobalOffsetSeconds;
 }
 
 float TimingData::GetElapsedTimeFromBeatNoOffset( float fBeat ) const

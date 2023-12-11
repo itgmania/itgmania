@@ -176,7 +176,7 @@ static void GameChoices( std::vector<RString> &out )
 	GAMEMAN->GetEnabledGames( aGames );
 	for (Game const *g : aGames)
 	{
-		RString sGameName = g->m_szName;
+		RString sGameName = g->name;
 		out.push_back( sGameName );
 	}
 }
@@ -197,7 +197,7 @@ static void GameSel( int &sel, bool ToSel, const ConfOption *pConfOption )
 	} else {
 		std::vector<const Game*> aGames;
 		GAMEMAN->GetEnabledGames( aGames );
-		PREFSMAN->SetCurrentGame(aGames[sel]->m_szName);
+		PREFSMAN->SetCurrentGame(aGames[sel]->name);
 	}
 }
 

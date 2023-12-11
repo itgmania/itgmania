@@ -128,8 +128,8 @@ void ScoreKeeperRave::AddSuperMeterDelta( float fUnscaledPercentChange )
 		float fLifePercentage = 0;
 		switch( m_pPlayerState->m_PlayerNumber )
 		{
-		case PLAYER_1:	fLifePercentage = GAMESTATE->m_fTugLifePercentP1;		break;
-		case PLAYER_2:	fLifePercentage = 1 - GAMESTATE->m_fTugLifePercentP1;	break;
+		case PLAYER_1:	fLifePercentage = GAMESTATE->tug_life_percent_p1_;		break;
+		case PLAYER_2:	fLifePercentage = 1 - GAMESTATE->tug_life_percent_p1_;	break;
 		default:
 			FAIL_M(ssprintf("Invalid player number: %i", m_pPlayerState->m_PlayerNumber));
 		}
@@ -165,8 +165,8 @@ void ScoreKeeperRave::AddSuperMeterDelta( float fUnscaledPercentChange )
 		bool bWinning;
 		switch( m_pPlayerState->m_PlayerNumber )
 		{
-		case PLAYER_1:	bWinning = GAMESTATE->m_fTugLifePercentP1 > 0.5f;	break;
-		case PLAYER_2:	bWinning = GAMESTATE->m_fTugLifePercentP1 < 0.5f;	break;
+		case PLAYER_1:	bWinning = GAMESTATE->tug_life_percent_p1_ > 0.5f;	break;
+		case PLAYER_2:	bWinning = GAMESTATE->tug_life_percent_p1_ < 0.5f;	break;
 		default:
 			bWinning = false;
 			FAIL_M(ssprintf("Invalid player number: %i", m_pPlayerState->m_PlayerNumber));
@@ -180,10 +180,10 @@ void ScoreKeeperRave::LaunchAttack( AttackLevel al )
 {
 	PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
 
-	RString* asAttacks = GAMESTATE->m_pCurCharacters[pn]->m_sAttacks[al];	// [NUM_ATTACKS_PER_LEVEL]
+	RString* asAttacks = GAMESTATE->cur_characters_[pn]->attacks_[al];	// [NUM_ATTACKS_PER_LEVEL]
 	RString sAttackToGive;
 
-	if (GAMESTATE->m_pCurCharacters[pn] != nullptr)
+	if (GAMESTATE->cur_characters_[pn] != nullptr)
 		sAttackToGive = asAttacks[ RandomInt(NUM_ATTACKS_PER_LEVEL) ];
 	else
 	{
@@ -194,7 +194,7 @@ void ScoreKeeperRave::LaunchAttack( AttackLevel al )
 	}
 
 	PlayerNumber pnToAttack = OPPOSITE_PLAYER[pn];
-	PlayerState *pPlayerStateToAttack = GAMESTATE->m_pPlayerState[pnToAttack];
+	PlayerState *pPlayerStateToAttack = GAMESTATE->player_state_[pnToAttack];
 
 	Attack a;
 	a.level = al;

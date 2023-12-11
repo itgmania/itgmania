@@ -1,59 +1,59 @@
 #ifndef BEGINNER_HELPER_H
 #define BEGINNER_HELPER_H
 
-#include "ActorFrame.h"
-#include "Character.h"
-#include "Sprite.h"
-#include "AutoActor.h"
-#include "PlayerNumber.h"
-#include "NoteData.h"
-#include "ThemeMetric.h"
-
 #include <array>
 
-class Model;
-/** @brief A dancing character that follows the steps of the Song. */
-class BeginnerHelper : public ActorFrame
-{
-public:
-	BeginnerHelper();
-	~BeginnerHelper();
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "Character.h"
+#include "Model.h"
+#include "NoteData.h"
+#include "PlayerNumber.h"
+#include "Sprite.h"
+#include "ThemeMetric.h"
 
-	bool Init( int iDancePadType );
-	bool IsInitialized() { return m_bInitialized; }
-	static bool CanUse(PlayerNumber pn);
-	void AddPlayer( PlayerNumber pn, const NoteData &nd );
-	void ShowStepCircle( PlayerNumber pn, int CSTEP );
-	bool m_bShowBackground;
+// If A dancing character that follows the steps of the Song.
+class BeginnerHelper : public ActorFrame {
+ public:
+  BeginnerHelper();
+  ~BeginnerHelper();
 
-	void Update( float fDeltaTime );
-	virtual void DrawPrimitives();
+  bool Init(int dance_pad_type);
+  bool IsInitialized() { return initialized_; }
+  static bool CanUse(PlayerNumber pn);
+  void AddPlayer(PlayerNumber pn, const NoteData& node_data);
+  void ShowStepCircle(PlayerNumber pn, int step);
+  bool m_bShowBackground;
 
-protected:
-	void Step( PlayerNumber pn, int CSTEP );
+  void Update(float delta);
+  virtual void DrawPrimitives();
 
-	std::array<NoteData, NUM_PLAYERS> m_NoteData;
-	std::array<bool, NUM_PLAYERS> m_bPlayerEnabled;
-	std::array<Model *, NUM_PLAYERS> m_pDancer;
-	Model *m_pDancePad;
-	Sprite	m_sFlash;
-	AutoActor	m_sBackground;
-	std::array<std::array<Sprite, 4>, NUM_PLAYERS> m_sStepCircle; // More memory, but much easier to manage.
+ protected:
+  void Step(PlayerNumber pn, int step);
 
-	int	m_iLastRowChecked;
-	int	m_iLastRowFlashed;
-	bool m_bInitialized;
+  std::array<NoteData, NUM_PLAYERS> note_data_;
+  std::array<bool, NUM_PLAYERS> players_enabled_;
+  std::array<Model*, NUM_PLAYERS> dancers_;
+  Model* dance_pad_;
+  Sprite flash_;
+  AutoActor background_;
+  // More memory, but much easier to manage.
+  std::array<std::array<Sprite, 4>, NUM_PLAYERS> step_circles_;
 
-	ThemeMetric<bool> SHOW_DANCE_PAD;
+  int last_row_checked_;
+  int last_row_flashed_;
+  bool initialized_;
+
+  ThemeMetric<bool> SHOW_DANCE_PAD;
 };
-#endif
+#endif  // BEGINNER_HELPER_H
 
 /**
  * @file
  * @author Kevin Slaughter, Tracy Ward (c) 2003
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -63,7 +63,7 @@ protected:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

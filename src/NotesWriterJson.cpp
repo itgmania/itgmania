@@ -40,18 +40,18 @@ static void Serialize(const LyricSegment &o, Json::Value &root)
 
 static void Serialize(const BackgroundDef &o, Json::Value &root)
 {
-	root["Effect"] = o.m_sEffect;
-	root["File1"] = o.m_sFile1;
-	root["File2"] = o.m_sFile2;
-	root["Color1"] = o.m_sColor1;
+	root["Effect"] = o.effect_;
+	root["File1"] = o.file1_;
+	root["File2"] = o.file2_;
+	root["Color1"] = o.color1_;
 }
 
 static void Serialize(const BackgroundChange &o, Json::Value &root )
 {
-	Serialize( o.m_def, root["Def"] );
-	root["StartBeat"] = o.m_fStartBeat;
-	root["Rate"] = o.m_fRate;
-	root["Transition"] = o.m_sTransition;
+	Serialize( o.background_def_, root["Def"] );
+	root["StartBeat"] = o.start_beat_;
+	root["Rate"] = o.rate_;
+	root["Transition"] = o.transition_;
 }
 
 static void Serialize( const TapNote &o, Json::Value &root )

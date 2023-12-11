@@ -1,11 +1,10 @@
 #ifndef BackgroundUtil_H
 #define BackgroundUtil_H
 
+#include "Song.h"
+#include "XmlFile.h"
+
 #include <vector>
-
-
-class Song;
-class XNode;
 
 extern const RString RANDOM_BACKGROUND_FILE;
 extern const RString NO_SONG_BG_FILE;
@@ -18,81 +17,100 @@ extern const RString SBE_StretchNoLoop;
 extern const RString SBE_StretchRewind;
 extern const RString SBT_CrossFade;
 
-struct BackgroundDef
-{
-	bool operator<( const BackgroundDef &other ) const;
-	bool operator==( const BackgroundDef &other ) const;
-	bool IsEmpty() const { return m_sFile1.empty() && m_sFile2.empty(); }
-	RString	m_sEffect;	// "" == automatically choose
-	RString m_sFile1;	// must not be ""
-	RString m_sFile2;	// may be ""
-	RString m_sColor1;	// "" == use default
-	RString m_sColor2;	// "" == use default
+// TODO(teejusb): Change this to a class.
+struct BackgroundDef {
+  bool operator<(const BackgroundDef& other) const;
+  bool operator==(const BackgroundDef& other) const;
+  bool IsEmpty() const { return file1_.empty() && file2_.empty(); }
 
-	XNode *CreateNode() const;
+  XNode* CreateNode() const;
 
-	/** @brief Set up the BackgroundDef with default values. */
-	BackgroundDef(): m_sEffect(""), m_sFile1(""), m_sFile2(""),
-		m_sColor1(""), m_sColor2("") {}
+  // Set up the BackgroundDef with default values.
+  BackgroundDef()
+      : effect_(""),
+        file1_(""),
+        file2_(""),
+        color1_(""),
+        color2_("") {}
 
-	/**
-	 * @brief Set up the BackgroundDef with some defined values.
-	 * @param effect the intended effect.
-	 * @param f1 the primary filename for the definition.
-	 * @param f2 the secondary filename (optional). */
-	BackgroundDef(RString effect, RString f1, RString f2):
-		m_sEffect(effect), m_sFile1(f1), m_sFile2(f2),
-		m_sColor1(""), m_sColor2("") {}
+  // Set up the BackgroundDef with some defined values.
+  // effect is the intended effect.
+  // f1 is the primary filename for the definition.
+  // f2 is the secondary filename (optional).
+  BackgroundDef(RString effect, RString f1, RString f2)
+      : effect_(effect),
+        file1_(f1),
+        file2_(f2),
+        color1_(""),
+        color2_("") {}
+
+  RString effect_;  // "" == automatically choose
+  RString file1_;   // must not be ""
+  RString file2_;   // may be ""
+  RString color1_;  // "" == use default
+  RString color2_;  // "" == use default
 };
 
-struct BackgroundChange
-{
-	BackgroundChange(): m_def(), m_fStartBeat(-1), m_fRate(1),
-		m_sTransition("") {}
+// TODO(teejusb): Change this to a class.
+struct BackgroundChange {
+ public:
+  BackgroundChange()
+      : background_def_(), start_beat_(-1), rate_(1), transition_("") {}
 
-	BackgroundChange(
-		float s,
-		RString f1,
-		RString f2=RString(),
-		float r=1.f,
-		RString e=SBE_Centered,
-		RString t=RString()
-			 ):
-		m_def(e, f1, f2), m_fStartBeat(s),
-		m_fRate(r), m_sTransition(t) {}
+  BackgroundChange(
+      float s, RString f1, RString f2 = RString(), float r = 1.f,
+      RString e = SBE_Centered, RString t = RString())
+      : background_def_(e, f1, f2), start_beat_(s), rate_(r), transition_(t) {}
 
-	BackgroundDef m_def;
-	float m_fStartBeat;
-	float m_fRate;
-	RString m_sTransition;
+  BackgroundDef background_def_;
+  float start_beat_;
+  float rate_;
+  RString transition_;
 
-	RString GetTextDescription() const;
+  RString GetTextDescription() const;
 
-	/**
-	 * @brief Get the string representation of the change.
-	 * @return the string representation. */
-	RString ToString() const;
-};
-/** @brief Shared background-related routines. */
-namespace BackgroundUtil
-{
-	void AddBackgroundChange( std::vector<BackgroundChange> &vBackgroundChanges, BackgroundChange seg );
-	void SortBackgroundChangesArray( std::vector<BackgroundChange> &vBackgroundChanges );
-
-	void GetBackgroundEffects(	const RString &sName, std::vector<RString> &vsPathsOut, std::vector<RString> &vsNamesOut );
-	void GetBackgroundTransitions(	const RString &sName, std::vector<RString> &vsPathsOut, std::vector<RString> &vsNamesOut );
-
-	void GetSongBGAnimations(	const Song *pSong, const RString &sMatch, std::vector<RString> &vsPathsOut, std::vector<RString> &vsNamesOut );
-	void GetSongMovies(		const Song *pSong, const RString &sMatch, std::vector<RString> &vsPathsOut, std::vector<RString> &vsNamesOut );
-	void GetSongBitmaps(		const Song *pSong, const RString &sMatch, std::vector<RString> &vsPathsOut, std::vector<RString> &vsNamesOut );
-	void GetGlobalBGAnimations(	const Song *pSong, const RString &sMatch, std::vector<RString> &vsPathsOut, std::vector<RString> &vsNamesOut );
-	void GetGlobalRandomMovies(	const Song *pSong, const RString &sMatch, std::vector<RString> &vsPathsOut, std::vector<RString> &vsNamesOut, bool bTryInsideOfSongGroupAndGenreFirst = true, bool bTryInsideOfSongGroupFirst = true );
-
-	void BakeAllBackgroundChanges( Song *pSong );
+  // Get the string representation of the change.
+  RString ToString() const;
 };
 
+// Shared background-related routines.
+namespace BackgroundUtil {
 
-#endif
+void AddBackgroundChange(
+    std::vector<BackgroundChange>& background_changes, BackgroundChange seg);
+void SortBackgroundChangesArray(
+    std::vector<BackgroundChange>& background_changes);
+
+void GetBackgroundEffects(
+    const RString& name, std::vector<RString>& paths_out,
+    std::vector<RString>& names_out);
+void GetBackgroundTransitions(
+    const RString& name, std::vector<RString>& paths_out,
+    std::vector<RString>& names_out);
+
+void GetSongBGAnimations(
+    const Song* song, const RString& match, std::vector<RString>& paths_out,
+    std::vector<RString>& names_out);
+void GetSongMovies(
+    const Song* song, const RString& match, std::vector<RString>& paths_out,
+    std::vector<RString>& names_out);
+void GetSongBitmaps(
+    const Song* song, const RString& match, std::vector<RString>& paths_out,
+    std::vector<RString>& names_out);
+void GetGlobalBGAnimations(
+    const Song* song, const RString& match, std::vector<RString>& paths_out,
+    std::vector<RString>& names_out);
+void GetGlobalRandomMovies(
+    const Song* song, const RString& match, std::vector<RString>& paths_out,
+    std::vector<RString>& names_out,
+    bool try_inside_of_song_group_and_genre_first = true,
+    bool try_inside_of_song_group_first = true);
+
+void BakeAllBackgroundChanges(Song* song);
+
+};  // namespace BackgroundUtil
+
+#endif  // BackgroundUtil_H
 
 /*
  * (c) 2001-2004 Chris Danford, Ben Nordstrom

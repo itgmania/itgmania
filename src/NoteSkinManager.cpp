@@ -79,7 +79,7 @@ void NoteSkinManager::RefreshNoteSkinData( const Game* pGame )
 	// clear path cache
 	g_PathCache.clear();
 
-	RString sBaseSkinFolder = SpecialFiles::NOTESKINS_DIR + pGame->m_szName + "/";
+	RString sBaseSkinFolder = SpecialFiles::NOTESKINS_DIR + pGame->name + "/";
 	std::vector<RString> asNoteSkinNames;
 	GetDirListing( sBaseSkinFolder + "*", asNoteSkinNames, true );
 
@@ -128,7 +128,7 @@ bool NoteSkinManager::LoadNoteSkinDataRecursive( const RString &sNoteSkinName_, 
 			return false;
 		}
 
-		RString sDir = SpecialFiles::NOTESKINS_DIR + m_pCurGame->m_szName + "/" + sNoteSkinName + "/";
+		RString sDir = SpecialFiles::NOTESKINS_DIR + m_pCurGame->name + "/" + sNoteSkinName + "/";
 		if( !FILEMAN->IsADirectory(sDir) )
 		{
 			sDir = GLOBAL_BASE_DIR + sNoteSkinName + "/";
@@ -203,7 +203,7 @@ bool NoteSkinManager::LoadNoteSkinDataRecursive( const RString &sNoteSkinName_, 
 
 void NoteSkinManager::GetNoteSkinNames( std::vector<RString> &AddTo )
 {
-	GetNoteSkinNames( GAMESTATE->m_pCurGame, AddTo );
+	GetNoteSkinNames( GAMESTATE->cur_game_, AddTo );
 }
 
 void NoteSkinManager::GetNoteSkinNames( const Game* pGame, std::vector<RString> &AddTo )
@@ -226,7 +226,7 @@ bool NoteSkinManager::NoteSkinNameInList(const RString name, std::vector<RString
 bool NoteSkinManager::DoesNoteSkinExist( const RString &sSkinName )
 {
 	std::vector<RString> asSkinNames;
-	GetAllNoteSkinNamesForGame( GAMESTATE->m_pCurGame, asSkinNames );
+	GetAllNoteSkinNamesForGame( GAMESTATE->cur_game_, asSkinNames );
 	return NoteSkinNameInList(sSkinName, asSkinNames);
 }
 
@@ -241,7 +241,7 @@ RString NoteSkinManager::GetDefaultNoteSkinName()
 {
 	RString name= THEME->GetMetric("Common", "DefaultNoteSkinName");
 	std::vector<RString> all_names;
-	GetAllNoteSkinNamesForGame(GAMESTATE->m_pCurGame, all_names);
+	GetAllNoteSkinNamesForGame(GAMESTATE->cur_game_, all_names);
 	if(all_names.empty())
 	{
 		return "";
@@ -279,7 +279,7 @@ void NoteSkinManager::GetAllNoteSkinNamesForGame( const Game *pGame, std::vector
 	}
 	else
 	{
-		RString sBaseSkinFolder = SpecialFiles::NOTESKINS_DIR + pGame->m_szName + "/";
+		RString sBaseSkinFolder = SpecialFiles::NOTESKINS_DIR + pGame->name + "/";
 		GetDirListing( sBaseSkinFolder + "*", AddTo, true );
 		StripCvsAndSvn( AddTo );
 		StripMacResourceForks( AddTo );

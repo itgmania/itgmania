@@ -34,7 +34,7 @@ void ScreenContinue::BeginScreen()
 	{
 		if( GAMESTATE->IsHumanPlayer(p) )
 		{
-			bool bPlayerDone = GAMESTATE->m_iPlayerStageTokens[p] <= 0;
+			bool bPlayerDone = GAMESTATE->player_stage_tokens_[p] <= 0;
 			if( bPlayerDone )
 			{
 				GAMESTATE->UnjoinPlayer( p );
@@ -52,18 +52,18 @@ void ScreenContinue::BeginScreen()
 
 bool ScreenContinue::Input( const InputEventPlus &input )
 {
-	if( input.MenuI == GAME_BUTTON_COIN &&  input.type == IET_FIRST_PRESS )
+	if( input.menu_input_ == GAME_BUTTON_COIN &&  input.type_ == IET_FIRST_PRESS )
 		ResetTimer();
 
-	if( input.MenuI == GAME_BUTTON_START  &&  input.type == IET_FIRST_PRESS  &&  GAMESTATE->JoinInput(input.pn) )
+	if( input.menu_input_ == GAME_BUTTON_START  &&  input.type_ == IET_FIRST_PRESS  &&  GAMESTATE->JoinInput(input.pn_) )
 		return true;	// handled
 
 	if( IsTransitioning() )
 		return true;
 
-	if( input.type == IET_FIRST_PRESS  &&  GAMESTATE->IsHumanPlayer(input.pn)  &&  FORCE_TIMER_WAIT )
+	if( input.type_ == IET_FIRST_PRESS  &&  GAMESTATE->IsHumanPlayer(input.pn_)  &&  FORCE_TIMER_WAIT )
 	{
-		switch( input.MenuI )
+		switch( input.menu_input_ )
 		{
 			case GAME_BUTTON_START:
 			case GAME_BUTTON_UP:
@@ -75,7 +75,7 @@ bool ScreenContinue::Input( const InputEventPlus &input )
 				fSeconds = std::max( fSeconds, 0.0001f ); // don't set to 0
 				m_MenuTimer->SetSeconds( fSeconds );
 				Message msg("HurryTimer");
-				msg.SetParam( "PlayerNumber", input.pn );
+				msg.SetParam( "PlayerNumber", input.pn_ );
 				this->HandleMessage( msg );
 				return true;	// handled
 			}

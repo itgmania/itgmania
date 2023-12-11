@@ -380,12 +380,12 @@ bool OptionsList::Input( const InputEventPlus &input )
 
 	const OptionRowHandler *pHandler = GetCurrentHandler();
 
-	PlayerNumber pn = input.pn;
+	PlayerNumber pn = input.pn_;
 	if( m_bStartIsDown )
 	{
-		if( input.MenuI == GAME_BUTTON_LEFT || input.MenuI == GAME_BUTTON_RIGHT )
+		if( input.menu_input_ == GAME_BUTTON_LEFT || input.menu_input_ == GAME_BUTTON_RIGHT )
 		{
-			if( input.type != IET_FIRST_PRESS )
+			if( input.type_ != IET_FIRST_PRESS )
 				return false;
 
 			m_bAcceptStartRelease = false;
@@ -404,7 +404,7 @@ bool OptionsList::Input( const InputEventPlus &input )
 				if( pTarget->m_Def.m_selectType == SELECT_ONE )
 				{
 					int iSelection = GetOneSelection(sDest);
-					int iDir = (input.MenuI == GAME_BUTTON_RIGHT? +1:-1);
+					int iDir = (input.menu_input_ == GAME_BUTTON_RIGHT? +1:-1);
 					iSelection += iDir;
 					wrap( iSelection, bTargetSelections.size() );
 					SelectItem( sDest, iSelection );
@@ -420,9 +420,9 @@ bool OptionsList::Input( const InputEventPlus &input )
 		}
 	}
 
-	if( input.MenuI == m_GameButtonPreviousItem )
+	if( input.menu_input_ == m_GameButtonPreviousItem )
 	{
-		if( input.type == IET_RELEASE )
+		if( input.type_ == IET_RELEASE )
 			return false;
 
 		--m_iMenuStackSelection;
@@ -430,14 +430,14 @@ bool OptionsList::Input( const InputEventPlus &input )
 		PositionCursor();
 
 		Message lMsg("OptionsListLeft");
-		lMsg.SetParam( "Player", input.pn );
+		lMsg.SetParam( "Player", input.pn_ );
 		lMsg.SetParam( "Selection", m_iMenuStackSelection );
 		MESSAGEMAN->Broadcast( lMsg );
 		return true;
 	}
-	else if( input.MenuI == m_GameButtonNextItem )
+	else if( input.menu_input_ == m_GameButtonNextItem )
 	{
-		if( input.type == IET_RELEASE )
+		if( input.type_ == IET_RELEASE )
 			return false;
 
 		++m_iMenuStackSelection;
@@ -445,32 +445,32 @@ bool OptionsList::Input( const InputEventPlus &input )
 		PositionCursor();
 
 		Message lMsg("OptionsListRight");
-		lMsg.SetParam( "Player", input.pn );
+		lMsg.SetParam( "Player", input.pn_ );
 		lMsg.SetParam( "Selection", m_iMenuStackSelection );
 		MESSAGEMAN->Broadcast( lMsg );
 		return true;
 	}
-	else if ( CodeDetector::EnteredPrevOpList(input.GameI.controller) )
+	else if ( CodeDetector::EnteredPrevOpList(input.game_input_.controller) )
 	{
-			if( input.type == IET_FIRST_PRESS )
+			if( input.type_ == IET_FIRST_PRESS )
 				SwitchMenu( -1 );
 			return true;
 	}
-	else if ( CodeDetector::EnteredNextOpList(input.GameI.controller) )
+	else if ( CodeDetector::EnteredNextOpList(input.game_input_.controller) )
 	{
-			if( input.type == IET_FIRST_PRESS )
+			if( input.type_ == IET_FIRST_PRESS )
 				SwitchMenu( +1 );
 			return true;
 	}
-	else if( input.MenuI == GAME_BUTTON_START )
+	else if( input.menu_input_ == GAME_BUTTON_START )
 	{
-		if( input.type == IET_FIRST_PRESS )
+		if( input.type_ == IET_FIRST_PRESS )
 		{
 			m_bStartIsDown = true;
 			m_bAcceptStartRelease = true;
 			return true;
 		}
-		if( input.type == IET_RELEASE )
+		if( input.type_ == IET_RELEASE )
 		{
 			if( m_bAcceptStartRelease )
 				Start();
@@ -479,9 +479,9 @@ bool OptionsList::Input( const InputEventPlus &input )
 
 		return true;
 	}
-	else if( input.MenuI == GAME_BUTTON_SELECT )
+	else if( input.menu_input_ == GAME_BUTTON_SELECT )
 	{
-		if( input.type != IET_FIRST_PRESS )
+		if( input.type_ != IET_FIRST_PRESS )
 			return false;
 //		if( input.type == IET_RELEASE )
 		{
@@ -684,9 +684,9 @@ bool OptionsList::Start()
 		RString sIconText;
 		GameCommand gc;
 		pHandler->GetIconTextAndGameCommand( m_iMenuStackSelection, sIconText, gc );
-		if( gc.m_sName == RESET_ROW )
+		if( gc.name_ == RESET_ROW )
 		{
-			GAMESTATE->m_pPlayerState[m_pn]->ResetToDefaultPlayerOptions( ModsLevel_Preferred );
+			GAMESTATE->player_state_[m_pn]->ResetToDefaultPlayerOptions( ModsLevel_Preferred );
 			GAMESTATE->ResetToDefaultSongOptions( ModsLevel_Preferred );
 
 			/* Import options. */

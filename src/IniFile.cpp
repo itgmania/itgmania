@@ -5,198 +5,180 @@ http://en.wikipedia.org/wiki/INI_file
  - backslash followed by a newline doesn't break the line
 */
 #include "global.h"
+
 #include "IniFile.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageFile.h"
 
 #include <cstddef>
 
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageUtil.h"
 
-IniFile::IniFile(): XNode("IniFile")
-{
+IniFile::IniFile() : XNode("IniFile") {}
+
+bool IniFile::ReadFile(const RString& path) {
+  path_ = path;
+  CHECKPOINT_M(ssprintf("Reading '%s'", path_.c_str()));
+
+  RageFile f;
+  if (!f.Open(path_)) {
+    LOG->Trace(
+        "Reading '%s' failed: %s", path_.c_str(), f.GetError().c_str());
+    error_ = f.GetError();
+    return 0;
+  }
+
+  return ReadFile(f);
 }
 
-bool IniFile::ReadFile( const RString &sPath )
-{
-	m_sPath = sPath;
-	CHECKPOINT_M( ssprintf("Reading '%s'",m_sPath.c_str()) );
+bool IniFile::ReadFile(RageFileBasic& file) {
+  RString key_name;
+  // NOTE(Kyz): key_child is used to cache the node that values are being added
+	// to.
+  XNode* key_child = nullptr;
+  while (true) {
+    RString line;
+    // Read lines until we reach a line that doesn't end in a backslash
+    while (true) {
+      RString s;
+      switch (file.GetLine(s)) {
+        case -1:
+          error_ = file.GetError();
+          return false;
+        case 0:
+          return true;  // eof
+      }
 
-	RageFile f;
-	if( !f.Open( m_sPath ) )
-	{
-		LOG->Trace( "Reading '%s' failed: %s", m_sPath.c_str(), f.GetError().c_str() );
-		m_sError = f.GetError();
-		return 0;
-	}
+      utf8_remove_bom(s);
 
-	return ReadFile( f );
+      line += s;
+
+      if (line.empty() || line[line.size() - 1] != '\\') {
+        break;
+      }
+      line.erase(line.end() - 1);
+    }
+
+    if (line.empty()) {
+      continue;
+    }
+    switch (line[0]) {
+      case ';':
+      case '#':
+        continue;  // comment
+      case '/':
+      case '-':
+        if (line.size() > 1 && line[0] == line[1]) {
+          continue;
+        }  // comment (Lua or C++ style)
+        goto key_value;
+      case '[':
+        if (line[line.size() - 1] == ']') {
+          // New section.
+          key_name = line.substr(1, line.size() - 2);
+          key_child = GetChild(key_name);
+          if (key_child == nullptr) {
+            key_child = AppendChild(key_name);
+          }
+          break;
+        }
+        [[fallthrough]];
+      default:
+      key_value:
+        if (key_child == nullptr) {
+          break;
+        }
+        // New value.
+        std::size_t equal_index = line.find("=");
+        if (equal_index != std::string::npos) {
+          RString value_name = line.Left((int)equal_index);
+          RString value = line.Right(line.size() - value_name.size() - 1);
+          Trim(value_name);
+          if (!value_name.empty()) {
+            SetKeyValue(key_child, value_name, value);
+          }
+        }
+        break;
+    }
+  }
 }
 
-bool IniFile::ReadFile( RageFileBasic &f )
-{
-	RString keyname;
-	// keychild is used to cache the node that values are being added to. -Kyz
-	XNode* keychild= nullptr;
-	for(;;)
-	{
-		RString line;
-		// Read lines until we reach a line that doesn't end in a backslash
-		for(;;)
-		{
-			RString s;
-			switch( f.GetLine(s) )
-			{
-			case -1:
-				m_sError = f.GetError();
-				return false;
-			case 0:
-				return true; // eof
-			}
+bool IniFile::WriteFile(const RString& path) const {
+  RageFile file;
+  if (!file.Open(path, RageFile::WRITE)) {
+    LOG->Warn("Writing '%s' failed: %s", path.c_str(), file.GetError().c_str());
+    error_ = file.GetError();
+    return false;
+  }
 
-			utf8_remove_bom( s );
-
-			line += s;
-
-			if( line.empty() || line[line.size()-1] != '\\' )
-			{
-				break;
-			}
-			line.erase( line.end()-1 );
-		}
-
-
-		if( line.empty() )
-			continue;
-		switch(line[0])
-		{
-			case ';':
-			case '#':
-				continue; // comment
-			case '/':
-			case '-':
-				if(line.size() > 1 && line[0] == line[1])
-				{ continue; } // comment (Lua or C++ style)
-				goto keyvalue;
-			case '[':
-				if(line[line.size()-1] == ']')
-				{
-					// New section.
-					keyname = line.substr(1, line.size()-2);
-					keychild= GetChild(keyname);
-					if(keychild == nullptr)
-					{
-						keychild= AppendChild(keyname);
-					}
-					break;
-				}
-				[[fallthrough]];
-			default:
-			keyvalue:
-				if(keychild == nullptr)
-				{ break; }
-				// New value.
-				std::size_t iEqualIndex = line.find("=");
-				if( iEqualIndex != std::string::npos )
-				{
-					RString valuename = line.Left((int) iEqualIndex);
-					RString value = line.Right(line.size()-valuename.size()-1);
-					Trim(valuename);
-					if(!valuename.empty())
-					{
-						SetKeyValue(keychild, valuename, value);
-					}
-				}
-				break;
-		}
-	}
+  bool success = IniFile::WriteFile(file);
+  int flush = file.Flush();
+  success &= (flush != -1);
+  return success;
 }
 
-bool IniFile::WriteFile( const RString &sPath ) const
-{
-	RageFile f;
-	if( !f.Open( sPath, RageFile::WRITE ) )
-	{
-		LOG->Warn( "Writing '%s' failed: %s", sPath.c_str(), f.GetError().c_str() );
-		m_sError = f.GetError();
-		return false;
-	}
+bool IniFile::WriteFile(RageFileBasic& file) const {
+  FOREACH_CONST_Child(this, key) {
+    if (file.PutLine(ssprintf("[%s]", key->GetName().c_str())) == -1) {
+      error_ = file.GetError();
+      return false;
+    }
 
-	bool bSuccess = IniFile::WriteFile( f );
-	int iFlush = f.Flush();
-	bSuccess &= (iFlush != -1);
-	return bSuccess;
+    FOREACH_CONST_Attr(key, attr) {
+      const RString& name = attr->first;
+      const RString& value = attr->second->GetValue<RString>();
+
+      // TODO: Are there escape rules for these?
+      // take a cue from how multi-line Lua functions are parsed
+      DEBUG_ASSERT(name.find('\n') == name.npos);
+      DEBUG_ASSERT(name.find('=') == name.npos);
+
+      if (file.PutLine(ssprintf("%s=%s", name.c_str(), value.c_str())) == -1) {
+        error_ = file.GetError();
+        return false;
+      }
+    }
+
+    if (file.PutLine("") == -1) {
+      error_ = file.GetError();
+      return false;
+    }
+  }
+  return true;
 }
 
-bool IniFile::WriteFile( RageFileBasic &f ) const
-{
-	FOREACH_CONST_Child( this, pKey )
-	{
-		if( f.PutLine( ssprintf("[%s]", pKey->GetName().c_str()) ) == -1 )
-		{
-			m_sError = f.GetError();
-			return false;
-		}
-
-		FOREACH_CONST_Attr( pKey, pAttr )
-		{
-			const RString &sName = pAttr->first;
-			const RString &sValue = pAttr->second->GetValue<RString>();
-
-			// TODO: Are there escape rules for these?
-			// take a cue from how multi-line Lua functions are parsed
-			DEBUG_ASSERT( sName.find('\n') == sName.npos );
-			DEBUG_ASSERT( sName.find('=') == sName.npos );
-
-			if( f.PutLine( ssprintf("%s=%s", sName.c_str(), sValue.c_str()) ) == -1 )
-			{
-				m_sError = f.GetError();
-				return false;
-			}
-		}
-
-		if( f.PutLine( "" ) == -1 )
-		{
-			m_sError = f.GetError();
-			return false;
-		}
-	}
-	return true;
+bool IniFile::DeleteValue(const RString& key_name, const RString& value_name) {
+  XNode* node = GetChild(key_name);
+  if (node == nullptr) {
+    return false;
+  }
+  return node->RemoveAttr(value_name);
 }
 
-bool IniFile::DeleteValue(const RString &keyname, const RString &valuename)
-{
-	XNode* pNode = GetChild( keyname );
-	if( pNode == nullptr )
-		return false;
-	return pNode->RemoveAttr( valuename );
+bool IniFile::DeleteKey(const RString& key_name) {
+  XNode* node = GetChild(key_name);
+  if (node == nullptr) {
+    return false;
+  }
+  return RemoveChild(node);
 }
 
+bool IniFile::RenameKey(const RString& from, const RString& to) {
+  // If to already exists, do nothing.
+  if (GetChild(to) != nullptr) {
+    return false;
+  }
 
-bool IniFile::DeleteKey(const RString &keyname)
-{
-	XNode* pNode = GetChild( keyname );
-	if( pNode == nullptr )
-		return false;
-	return RemoveChild( pNode );
+  XNode* node = GetChild(from);
+  if (node == nullptr) {
+    return false;
+  }
+
+  node->SetName(to);
+  RenameChildInByName(node);
+
+  return true;
 }
-
-bool IniFile::RenameKey(const RString &from, const RString &to)
-{
-	// If to already exists, do nothing.
-	if( GetChild(to) != nullptr )
-		return false;
-
-	XNode* pNode = GetChild( from );
-	if( pNode == nullptr )
-		return false;
-
-	pNode->SetName( to );
-	RenameChildInByName(pNode);
-
-	return true;
-}
-
 
 /*
  * (c) 2001-2004 Adam Clauss, Chris Danford

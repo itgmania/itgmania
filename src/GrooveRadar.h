@@ -1,75 +1,70 @@
 #ifndef GROOVE_RADAR_H
 #define GROOVE_RADAR_H
 
-#include "ActorFrame.h"
-#include "Sprite.h"
-#include "AutoActor.h"
-#include "PlayerNumber.h"
-#include "GameConstantsAndTypes.h"
-
 #include <vector>
 
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "GameConstantsAndTypes.h"
+#include "PlayerNumber.h"
+#include "RadarValues.h"
+#include "Sprite.h"
+#include "Steps.h"
+#include "XmlFile.h"
 
-class Steps;
-struct RadarValues;
-/** @brief The song's GrooveRadar displayed in SelectMusic. */
-class GrooveRadar : public ActorFrame
-{
-public:
-	GrooveRadar();
-	virtual GrooveRadar *Copy() const;
-	virtual void LoadFromNode( const XNode* pNode );
+// The song's GrooveRadar displayed in SelectMusic.
+class GrooveRadar : public ActorFrame {
+ public:
+  GrooveRadar();
+  virtual GrooveRadar* Copy() const;
+  virtual void LoadFromNode(const XNode* node);
 
-	/**
-	 * @brief Give the Player an empty GrooveRadar.
-	 * @param pn the Player to give an empty GrooveRadar. */
-	void SetEmpty( PlayerNumber pn );
-	void SetFromRadarValues( PlayerNumber pn, const RadarValues &rv );
-	/**
-	 * @brief Give the Player a GrooveRadar based on some Steps.
-	 * @param pn the Player to give a GrooveRadar.
-	 * @param pSteps the Steps to use to make the radar. If nullptr, there are no Steps. */
-	void SetFromSteps( PlayerNumber pn, Steps* pSteps );
-	void SetFromValues( PlayerNumber pn, std::vector<float> vals );
+  // Give the Player an empty GrooveRadar.
+  void SetEmpty(PlayerNumber pn);
+  void SetFromRadarValues(PlayerNumber pn, const RadarValues& radar_values);
+  // Give the Player a GrooveRadar based on some Steps.
+  void SetFromSteps(PlayerNumber pn, Steps* steps);
+  void SetFromValues(PlayerNumber pn, std::vector<float> values);
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-protected:
-	/**
-	 * @brief The companion ValueMap to the GrooveRadar.
-	 *
-	 * This must be a separate Actor so that it can be tweened separately from the labels. */
-	class GrooveRadarValueMap : public ActorFrame
-	{
-	public:
-		GrooveRadarValueMap();
+ protected:
+  // The companion ValueMap to the GrooveRadar.
+  // This must be a separate Actor so that it can be tweened separately from the
+  // labels.
+  class GrooveRadarValueMap : public ActorFrame {
+   public:
+    GrooveRadarValueMap();
 
-		virtual void Update( float fDeltaTime );
-		virtual void DrawPrimitives();
+    virtual void Update(float delta);
+    virtual void DrawPrimitives();
 
-		void SetEmpty();
-		void SetFromSteps( const RadarValues &rv );
-		void SetFromValues( std::vector<float> vals );
+    void SetEmpty();
+    void SetFromSteps(const RadarValues& radar_values);
+    void SetFromValues(std::vector<float> values);
 
-		void SetRadius( float f ) { m_size.x = f; m_size.y = f; }
+    void SetRadius(float f) {
+      m_size.x = f;
+      m_size.y = f;
+    }
 
-		bool m_bValuesVisible;
-		float m_PercentTowardNew;
-		float m_fValuesNew[NUM_RadarCategory];
-		float m_fValuesOld[NUM_RadarCategory];
+    bool values_visible_;
+    float percent_toward_new_;
+    float values_new_[NUM_RadarCategory];
+    float values_old_[NUM_RadarCategory];
 
-		PlayerNumber m_PlayerNumber;
-	};
+    PlayerNumber player_number_;
+  };
 
-	AutoActor m_sprRadarBase;
-	GrooveRadarValueMap m_GrooveRadarValueMap[NUM_PLAYERS];
-	// xxx: convert Sprite to AutoActor -aj
-	Sprite m_sprRadarLabels[NUM_RadarCategory];
-	ActorFrame m_Frame;
+  AutoActor radar_base_;
+  GrooveRadarValueMap groove_radar_value_map_[NUM_PLAYERS];
+  // TODO(aj): Convert Sprite to AutoActor.
+  Sprite radar_labels_[NUM_RadarCategory];
+  ActorFrame frame_;
 };
 
-#endif
+#endif  // GROOVE_RADAR_H
 
 /**
  * @file

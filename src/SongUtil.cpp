@@ -792,7 +792,7 @@ static LocalizedString EDIT_NAME_CANNOT_CONTAIN	( "SongUtil", "The edit name can
 
 bool SongUtil::ValidateCurrentEditStepsDescription( const RString &sAnswer, RString &sErrorOut )
 {
-	Steps *pSteps = GAMESTATE->m_pCurSteps[PLAYER_1];
+	Steps *pSteps = GAMESTATE->cur_steps_[PLAYER_1];
 	Song *pSong = pSteps->m_pSong;
 
 	ASSERT( pSteps->IsAnEdit() );
@@ -835,7 +835,7 @@ bool SongUtil::ValidateCurrentStepsDescription( const RString &sAnswer, RString 
 
 	/* Don't allow duplicate edit names within the same StepsType; edit names
 	 * uniquely identify the edit. */
-	Steps *pSteps = GAMESTATE->m_pCurSteps[PLAYER_1];
+	Steps *pSteps = GAMESTATE->cur_steps_[PLAYER_1];
 
 	// If unchanged:
 	if( pSteps->GetDescription() == sAnswer )
@@ -862,12 +862,12 @@ bool SongUtil::ValidateCurrentStepsChartName(const RString &answer, RString &err
 
 	/* Don't allow duplicate title names within the same StepsType.
 	 * We need some way of identifying the unique charts. */
-	Steps *pSteps = GAMESTATE->m_pCurSteps[PLAYER_1];
+	Steps *pSteps = GAMESTATE->cur_steps_[PLAYER_1];
 
 	if (pSteps->GetChartName() == answer) return true;
 
 	// TODO next commit: borrow code from EditStepsDescription.
-	bool result = SongUtil::IsChartNameUnique(GAMESTATE->m_pCurSong, pSteps->m_StepsType,
+	bool result = SongUtil::IsChartNameUnique(GAMESTATE->cur_song_, pSteps->m_StepsType,
 											  answer, pSteps);
 	if (!result)
 		error = CHART_NAME_CONFLICTS;
@@ -881,7 +881,7 @@ bool SongUtil::ValidateCurrentStepsCredit( const RString &sAnswer, RString &sErr
 	if( sAnswer.empty() )
 		return true;
 
-	Steps *pSteps = GAMESTATE->m_pCurSteps[PLAYER_1];
+	Steps *pSteps = GAMESTATE->cur_steps_[PLAYER_1];
 	// If unchanged:
 	if( pSteps->GetCredit() == sAnswer )
 		return true;
@@ -902,7 +902,7 @@ bool SongUtil::ValidateCurrentSongPreview(const RString& answer, RString& error)
 {
 	if(answer.empty())
 	{ return true; }
-	Song* song= GAMESTATE->m_pCurSong;
+	Song* song= GAMESTATE->cur_song_;
 	RString real_file= song->m_PreviewFile;
 	song->m_PreviewFile= answer;
 	RString path= song->GetPreviewMusicPath();
@@ -920,7 +920,7 @@ bool SongUtil::ValidateCurrentStepsMusic(const RString &answer, RString &error)
 {
 	if(answer.empty())
 		return true;
-	Steps *pSteps = GAMESTATE->m_pCurSteps[PLAYER_1];
+	Steps *pSteps = GAMESTATE->cur_steps_[PLAYER_1];
 	RString real_file= pSteps->GetMusicFile();
 	pSteps->SetMusicFile(answer);
 	RString path= pSteps->GetMusicPath();
@@ -965,12 +965,12 @@ void SongUtil::GetPlayableStepsTypes( const Song *pSong, std::set<StepsType> &vO
 	std::vector<const Style*> vpPossibleStyles;
 	// If AutoSetStyle, or a Style hasn't been chosen, check StepsTypes for all Styles.
 	if( CommonMetrics::AUTO_SET_STYLE || GAMESTATE->GetCurrentStyle(PLAYER_INVALID) == nullptr )
-		GAMEMAN->GetCompatibleStyles( GAMESTATE->m_pCurGame, GAMESTATE->GetNumPlayersEnabled(), vpPossibleStyles );
+		GAMEMAN->GetCompatibleStyles( GAMESTATE->cur_game_, GAMESTATE->GetNumPlayersEnabled(), vpPossibleStyles );
 	else
 		vpPossibleStyles.push_back( GAMESTATE->GetCurrentStyle(PLAYER_INVALID) );
 
 	// Only allow OneSide Styles in Workout
-	if( GAMESTATE->m_bMultiplayer )
+	if( GAMESTATE->multiplayer_ )
 	{
 		for( int i=vpPossibleStyles.size()-1; i>=0; i-- )
 		{
@@ -1082,7 +1082,7 @@ bool SongUtil::GetStepsTypeAndDifficultyFromSortOrder( SortOrder so, StepsType &
 	case SORT_DOUBLE_CHALLENGE_METER:
 		stOut = GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->m_StepsType;	// in case we don't find any matches below
 			std::vector<const Style*> vpStyles;
-		GAMEMAN->GetStylesForGame(GAMESTATE->m_pCurGame,vpStyles);
+		GAMEMAN->GetStylesForGame(GAMESTATE->cur_game_,vpStyles);
 		for (Style const *i : vpStyles)
 		{
 			if( i->m_StyleType == StyleType_OnePlayerTwoSides )

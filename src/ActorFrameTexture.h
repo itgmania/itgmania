@@ -1,71 +1,66 @@
 #ifndef ACTOR_FRAME_TEXTURE_H
 #define ACTOR_FRAME_TEXTURE_H
 
+#include "global.h"
 #include "ActorFrame.h"
-class RageTextureRenderTarget;
+#include "RageTextureRenderTarget.h"
 
-class ActorFrameTexture: public ActorFrame
-{
-public:
-	ActorFrameTexture();
-	ActorFrameTexture( const ActorFrameTexture &cpy );
-	virtual ~ActorFrameTexture();
-	virtual ActorFrameTexture *Copy() const;
+class ActorFrameTexture : public ActorFrame {
+ public:
+  ActorFrameTexture();
+  ActorFrameTexture(const ActorFrameTexture& cpy);
+  virtual ~ActorFrameTexture();
+  virtual ActorFrameTexture *Copy() const;
 
-	/**
-	 * @brief Set the texture name. 
-	 *
-	 * This can be used with RageTextureManager (and users, eg. Sprite)
-	 * to load the texture.  If no name is supplied, a unique one will
-	 * be generated.  In that case, the only way to access the texture 
-	 * is via GetTextureName.
-	 * @param sName the new name. */
-	void SetTextureName( const RString &sName ) { m_sTextureName = sName; }
-	/**
-	 * @brief Retrieve the texture name.
-	 * @return the texture name. */
-	RString GetTextureName() const { return m_sTextureName; }
-	RageTextureRenderTarget *GetTexture() { return m_pRenderTarget; }
+  // Set the texture name.
+  //
+  // This can be used with RageTextureManager (and users, eg. Sprite) to load
+  // the texture. If no name is supplied, a unique one will be generated. In
+  // that case, the only way to access the texture is via GetTextureName.
+  void SetTextureName(const RString& sName) { m_sTextureName = sName; }
+  // Retrieve the texture name.
+  RString GetTextureName() const { return m_sTextureName; }
+  RageTextureRenderTarget* GetTexture() { return m_pRenderTarget; }
 
-	void EnableDepthBuffer( bool b ) { m_bDepthBuffer = b; }
-	void EnableAlphaBuffer( bool b ) { m_bAlphaBuffer = b; }
-	void EnableFloat( bool b ) { m_bFloat = b; }
-	void EnablePreserveTexture( bool b ) { m_bPreserveTexture = b; }
+  void EnableDepthBuffer(bool b) { m_bDepthBuffer = b; }
+  void EnableAlphaBuffer(bool b) { m_bAlphaBuffer = b; }
+  void EnableFloat(bool b) { m_bFloat = b; }
+  void EnablePreserveTexture(bool b) { m_bPreserveTexture = b; }
 
-	void Create();
+  void Create();
 
-	virtual void DrawPrimitives();
+  virtual void DrawPrimitives();
 
-	// Commands
-	virtual void PushSelf( lua_State *L );
+  // Commands
+  virtual void PushSelf(lua_State* L);
 
-private:
-	RageTextureRenderTarget *m_pRenderTarget;
+ private:
+  RageTextureRenderTarget* m_pRenderTarget;
 
-	bool m_bDepthBuffer;
-	bool m_bAlphaBuffer;
-	bool m_bFloat;
-	bool m_bPreserveTexture;
-	/** @brief the name of this ActorFrameTexture. */
-	RString m_sTextureName;
+  bool m_bDepthBuffer;
+  bool m_bAlphaBuffer;
+  bool m_bFloat;
+  bool m_bPreserveTexture;
+
+  // The name of this ActorFrameTexture.
+  RString m_sTextureName;
 };
 
-class ActorFrameTextureAutoDeleteChildren : public ActorFrameTexture
-{
-public:
-	ActorFrameTextureAutoDeleteChildren() { DeleteChildrenWhenDone(true); }
-	virtual bool AutoLoadChildren() const { return true; }
-	virtual ActorFrameTextureAutoDeleteChildren *Copy() const;
+class ActorFrameTextureAutoDeleteChildren : public ActorFrameTexture {
+ public:
+  ActorFrameTextureAutoDeleteChildren() { DeleteChildrenWhenDone(true); }
+  virtual bool AutoLoadChildren() const { return true; }
+  virtual ActorFrameTextureAutoDeleteChildren* Copy() const;
 };
 
-#endif
+#endif  // ACTOR_FRAME_TEXTURE_H
 
 /**
  * @file
  * @author Glenn Maynard (c) 2006
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -75,7 +70,7 @@ public:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -358,9 +358,9 @@ bool ScreenMapControllers::Input( const InputEventPlus &input )
 
 	if(m_AutoDismissWarningSecs > 0.0f)
 	{
-		if(input.type == IET_FIRST_PRESS &&
-			input.DeviceI.device == DEVICE_KEYBOARD &&
-			input.DeviceI.button == KEY_ENTER)
+		if(input.type_ == IET_FIRST_PRESS &&
+			input.device_input_.device == DEVICE_KEYBOARD &&
+			input.device_input_.button == KEY_ENTER)
 		{
 			m_AutoDismissWarningSecs = 0.0f;
 			DismissWarning();
@@ -370,9 +370,9 @@ bool ScreenMapControllers::Input( const InputEventPlus &input )
 
 	if(m_AutoDismissNoSetListPromptSecs > 0.0f)
 	{
-		if(input.type == IET_FIRST_PRESS &&
-			input.DeviceI.device == DEVICE_KEYBOARD &&
-			input.DeviceI.button == KEY_ENTER)
+		if(input.type_ == IET_FIRST_PRESS &&
+			input.device_input_.device == DEVICE_KEYBOARD &&
+			input.device_input_.button == KEY_ENTER)
 		{
 			m_AutoDismissNoSetListPromptSecs = 0.0f;
 			m_NoSetListPrompt->PlayCommand("TweenOff");
@@ -382,9 +382,9 @@ bool ScreenMapControllers::Input( const InputEventPlus &input )
 
 	if(m_AutoDismissSanitySecs > 0.0f)
 	{
-		if(input.type == IET_FIRST_PRESS &&
-			input.DeviceI.device == DEVICE_KEYBOARD &&
-			input.DeviceI.button == KEY_ENTER)
+		if(input.type_ == IET_FIRST_PRESS &&
+			input.device_input_.device == DEVICE_KEYBOARD &&
+			input.device_input_.button == KEY_ENTER)
 		{
 			m_AutoDismissSanitySecs = 0.0f;
 			m_SanityMessage->PlayCommand("TweenOff");
@@ -392,7 +392,7 @@ bool ScreenMapControllers::Input( const InputEventPlus &input )
 		return false;
 	}
 
-	if( input.type != IET_FIRST_PRESS && input.type != IET_REPEAT )
+	if( input.type_ != IET_FIRST_PRESS && input.type_ != IET_REPEAT )
 	{
 		return false;	// ignore
 	}
@@ -405,7 +405,7 @@ bool ScreenMapControllers::Input( const InputEventPlus &input )
 	// LOG->Trace( "ScreenMapControllers::Input():  device: %d, button: %d",
 	// 	input.DeviceI.device, input.DeviceI.button );
 
-	int button = input.DeviceI.button;
+	int button = input.device_input_.button;
 	bool bHandled = false;
 
 	/* TRICKY: Some adapters map the PlayStation digital d-pad to both axes and
@@ -417,11 +417,11 @@ bool ScreenMapControllers::Input( const InputEventPlus &input )
 	 * user's press of a panel. Prefer non-axis events over axis events. */
 	if( !m_WaitingForPress.IsZero() )
 	{
-		if( input.type != IET_FIRST_PRESS )
+		if( input.type_ != IET_FIRST_PRESS )
 			return false;
 
 		// Don't allow function keys to be mapped.
-		if( input.DeviceI.device == DEVICE_KEYBOARD && (input.DeviceI.button >= KEY_F1 && input.DeviceI.button <= KEY_F12) )
+		if( input.device_input_.device == DEVICE_KEYBOARD && (input.device_input_.button >= KEY_F1 && input.device_input_.button <= KEY_F12) )
 		{
 			SCREENMAN->SystemMessage( INVALID_BUTTON );
 			SCREENMAN->PlayInvalidSound();
@@ -430,16 +430,16 @@ bool ScreenMapControllers::Input( const InputEventPlus &input )
 		{
 			if( m_DeviceIToMap.IsValid() &&
 				!IsAxis(m_DeviceIToMap) &&
-				IsAxis(input.DeviceI) )
+				IsAxis(input.device_input_) )
 			{
 				LOG->Trace("Ignored input; non-axis event already received");
 				return false;	// ignore this press
 			}
 
-			m_DeviceIToMap = input.DeviceI;
+			m_DeviceIToMap = input.device_input_;
 		}
 	}
-	else if( input.DeviceI.device == DEVICE_KEYBOARD )
+	else if( input.device_input_.device == DEVICE_KEYBOARD )
 	{
 		switch( button )
 		{

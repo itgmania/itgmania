@@ -439,8 +439,8 @@ static bool GetValueFromMap( const std::map<U, V> &m, const U &key, V &val )
 
 bool ScreenDebugOverlay::Input( const InputEventPlus &input )
 {
-	if( input.DeviceI == g_Mappings.holdForDebug1 ||
-		input.DeviceI == g_Mappings.holdForDebug2 )
+	if( input.device_input_ == g_Mappings.holdForDebug1 ||
+		input.device_input_ == g_Mappings.holdForDebug2 )
 	{
 		bool bHoldingNeither =
 			(!g_Mappings.holdForDebug1.IsValid() || !INPUTFILTER->IsBeingPressed(g_Mappings.holdForDebug1)) &&
@@ -456,16 +456,16 @@ bool ScreenDebugOverlay::Input( const InputEventPlus &input )
 		else
 			g_bIsDisplayed = false;
 	}
-	if(input.DeviceI == g_Mappings.toggleMute)
+	if(input.device_input_ == g_Mappings.toggleMute)
 	{
 		PREFSMAN->m_MuteActions.Set(!PREFSMAN->m_MuteActions);
 		SCREENMAN->SystemMessage(PREFSMAN->m_MuteActions ? MUTE_ACTIONS_ON.GetValue() : MUTE_ACTIONS_OFF.GetValue());
 	}
 
 	int iPage = 0;
-	if( g_bIsDisplayed && GetValueFromMap(g_Mappings.pageButton, input.DeviceI, iPage) )
+	if( g_bIsDisplayed && GetValueFromMap(g_Mappings.pageButton, input.device_input_, iPage) )
 	{
-		if( input.type != IET_FIRST_PRESS )
+		if( input.type_ != IET_FIRST_PRESS )
 			return true; // eat the input but do nothing
 		m_iCurrentPage = iPage;
 		CLAMP( m_iCurrentPage, 0, (int) m_asPages.size()-1 );
@@ -498,9 +498,9 @@ bool ScreenDebugOverlay::Input( const InputEventPlus &input )
 			FAIL_M(ssprintf("Invalid debug line type: %i", type));
 		}
 
-		if( input.DeviceI == (*p)->m_Button )
+		if( input.device_input_ == (*p)->m_Button )
 		{
-			if( input.type != IET_FIRST_PRESS )
+			if( input.type_ != IET_FIRST_PRESS )
 				return true; // eat the input but do nothing
 
 			// do the action
@@ -619,7 +619,7 @@ class DebugLineAutoplay : public IDebugLine
 	virtual void DoAndLog( RString &sMessageOut )
 	{
 		ASSERT( GAMESTATE->GetMasterPlayerNumber() != PLAYER_INVALID );
-		PlayerController pc = GAMESTATE->m_pPlayerState[GAMESTATE->GetMasterPlayerNumber()]->m_PlayerController;
+		PlayerController pc = GAMESTATE->player_state_[GAMESTATE->GetMasterPlayerNumber()]->m_PlayerController;
 		bool bHoldingShift =
 			INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT) ) ||
 			INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT) );
@@ -629,9 +629,9 @@ class DebugLineAutoplay : public IDebugLine
 			pc = (pc==PC_AUTOPLAY) ? PC_HUMAN : PC_AUTOPLAY;
 		GamePreferences::m_AutoPlay.Set( pc );
 		FOREACH_HumanPlayer(p)
-			GAMESTATE->m_pPlayerState[p]->m_PlayerController = GamePreferences::m_AutoPlay;
+			GAMESTATE->player_state_[p]->m_PlayerController = GamePreferences::m_AutoPlay;
 		FOREACH_MultiPlayer(p)
-			GAMESTATE->m_pMultiPlayerState[p]->m_PlayerController = GamePreferences::m_AutoPlay;
+			GAMESTATE->multiplayer_state_[p]->m_PlayerController = GamePreferences::m_AutoPlay;
 
 		IDebugLine::DoAndLog( sMessageOut );
 	}
@@ -643,27 +643,27 @@ class DebugLineAssist : public IDebugLine
 	virtual Type GetType() const { return gameplay_only; }
 	virtual RString GetDisplayValue() {
 		SongOptions so;
-		so.m_bAssistClap = GAMESTATE->m_SongOptions.GetSong().m_bAssistClap;
-		so.m_bAssistMetronome = GAMESTATE->m_SongOptions.GetSong().m_bAssistMetronome;
+		so.m_bAssistClap = GAMESTATE->song_options_.GetSong().m_bAssistClap;
+		so.m_bAssistMetronome = GAMESTATE->song_options_.GetSong().m_bAssistMetronome;
 		if( so.m_bAssistClap || so.m_bAssistMetronome )
 			return so.GetLocalizedString();
 		else
 			return OFF.GetValue();
 	}
-	virtual bool IsEnabled() { return GAMESTATE->m_SongOptions.GetSong().m_bAssistClap || GAMESTATE->m_SongOptions.GetSong().m_bAssistMetronome; }
+	virtual bool IsEnabled() { return GAMESTATE->song_options_.GetSong().m_bAssistClap || GAMESTATE->song_options_.GetSong().m_bAssistMetronome; }
 	virtual void DoAndLog( RString &sMessageOut )
 	{
 		ASSERT( GAMESTATE->GetMasterPlayerNumber() != PLAYER_INVALID );
 		bool bHoldingShift = INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT) );
 		bool b;
 		if( bHoldingShift )
-			b = !GAMESTATE->m_SongOptions.GetSong().m_bAssistMetronome;
+			b = !GAMESTATE->song_options_.GetSong().m_bAssistMetronome;
 		else
-			b = !GAMESTATE->m_SongOptions.GetSong().m_bAssistClap;
+			b = !GAMESTATE->song_options_.GetSong().m_bAssistClap;
 		if( bHoldingShift )
-			SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Preferred, m_bAssistMetronome, b );
+			SO_GROUP_ASSIGN( GAMESTATE->song_options_, ModsLevel_Preferred, m_bAssistMetronome, b );
 		else
-			SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Preferred, m_bAssistClap, b );
+			SO_GROUP_ASSIGN( GAMESTATE->song_options_, ModsLevel_Preferred, m_bAssistClap, b );
 
 		IDebugLine::DoAndLog( sMessageOut );
 	}
@@ -674,7 +674,7 @@ class DebugLineAutosync : public IDebugLine
 	virtual RString GetDisplayTitle() { return AUTOSYNC.GetValue(); }
 	virtual RString GetDisplayValue()
 	{
-		AutosyncType type = GAMESTATE->m_SongOptions.GetSong().m_AutosyncType;
+		AutosyncType type = GAMESTATE->song_options_.GetSong().m_AutosyncType;
 		switch( type )
 		{
 		case AutosyncType_Off: 	return OFF.GetValue();  		break;
@@ -686,16 +686,16 @@ class DebugLineAutosync : public IDebugLine
 		}
 	}
 	virtual Type GetType() const { return IDebugLine::gameplay_only; }
-	virtual bool IsEnabled() { return GAMESTATE->m_SongOptions.GetSong().m_AutosyncType!=AutosyncType_Off; }
+	virtual bool IsEnabled() { return GAMESTATE->song_options_.GetSong().m_AutosyncType!=AutosyncType_Off; }
 	virtual void DoAndLog( RString &sMessageOut )
 	{
-		int as = GAMESTATE->m_SongOptions.GetSong().m_AutosyncType + 1;
+		int as = GAMESTATE->song_options_.GetSong().m_AutosyncType + 1;
 		bool bAllowSongAutosync = !GAMESTATE->IsCourseMode();
 		if( !bAllowSongAutosync  &&
 		  ( as == AutosyncType_Song || as == AutosyncType_Tempo ) )
 			as = AutosyncType_Machine;
 		wrap( as, NUM_AutosyncType );
-		SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Song, m_AutosyncType, AutosyncType(as) );
+		SO_GROUP_ASSIGN( GAMESTATE->song_options_, ModsLevel_Song, m_AutosyncType, AutosyncType(as) );
 		MESSAGEMAN->Broadcast( Message_AutosyncChanged );
 		IDebugLine::DoAndLog( sMessageOut );
 	}
@@ -1077,7 +1077,7 @@ class DebugLineReloadTheme : public IDebugLine
 	{
 		THEME->ReloadMetrics();
 		TEXTUREMAN->ReloadAll();
-		NOTESKIN->RefreshNoteSkinData( GAMESTATE->m_pCurGame );
+		NOTESKIN->RefreshNoteSkinData( GAMESTATE->cur_game_ );
 		CodeDetector::RefreshCacheItems();
 		// HACK: Don't update text below. Return immediately because this screen
 		// was just destroyed as part of the theme reload.
@@ -1147,7 +1147,7 @@ class DebugLineConvertXML : public IDebugLine
 	virtual RString GetPageName() const { return "Theme"; }
 	virtual void DoAndLog( RString &sMessageOut )
 	{
-		Song* cur_song= GAMESTATE->m_pCurSong;
+		Song* cur_song= GAMESTATE->cur_song_;
 		if(cur_song)
 		{
 			convert_xmls_in_dir(cur_song->GetSongDir() + "/");

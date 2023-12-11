@@ -355,7 +355,7 @@ void StepMania::ResetGame()
 
 	if( !THEME->DoesThemeExist( THEME->GetCurThemeName() ) )
 	{
-		RString sGameName = GAMESTATE->GetCurrentGame()->m_szName;
+		RString sGameName = GAMESTATE->GetCurrentGame()->name;
 		if( !THEME->DoesThemeExist(sGameName) )
 			sGameName = PREFSMAN->m_sDefaultTheme; // was previously "default" -aj
 		THEME->SwitchThemeAndLanguage( sGameName, THEME->GetCurLanguage(), PREFSMAN->m_bPseudoLocalize );
@@ -697,7 +697,7 @@ static void SwitchToLastPlayedGame()
 	{
 		pGame = GAMEMAN->GetDefaultGame();
 		LOG->Warn( "Default NoteSkin for \"%s\" missing, reverting to \"%s\"",
-			pGame->m_szName, GAMEMAN->GetDefaultGame()->m_szName );
+			pGame->name, GAMEMAN->GetDefaultGame()->name );
 	}
 
 	ASSERT( GAMEMAN->IsGameEnabled(pGame) );
@@ -717,11 +717,11 @@ void StepMania::InitializeCurrentGame( const Game* g )
 
 	RString sAnnouncer = PREFSMAN->m_sAnnouncer;
 	RString sTheme = PREFSMAN->m_sTheme;
-	RString sGametype = GAMESTATE->GetCurrentGame()->m_szName;
+	RString sGametype = GAMESTATE->GetCurrentGame()->name;
 	RString sLanguage = PREFSMAN->m_sLanguage;
 
 	if( sAnnouncer.empty() )
-		sAnnouncer = GAMESTATE->GetCurrentGame()->m_szName;
+		sAnnouncer = GAMESTATE->GetCurrentGame()->name;
 	RString argCurGame;
 	if( GetCommandlineArgument( "game", &argCurGame) && argCurGame != sGametype )
 	{
@@ -765,7 +765,7 @@ void StepMania::InitializeCurrentGame( const Game* g )
 	// Set the input scheme for the new game, and load keymaps.
 	if( INPUTMAPPER )
 	{
-		INPUTMAPPER->SetInputScheme( &g->m_InputScheme );
+		INPUTMAPPER->SetInputScheme( &g->input_scheme );
 		INPUTMAPPER->ReadMappingsFromDisk();
 	}
 }
@@ -959,7 +959,7 @@ int sm_main(int argc, char* argv[])
 	CommandLineActions::Handle(pLoadingWindow);
 
 	if( GetCommandlineArgument("dopefish") )
-		GAMESTATE->m_bDopefish = true;
+		GAMESTATE->dopefish_ = true;
 
 	{
 		/* Now that THEME is loaded, load the icon and splash for the current
@@ -1107,30 +1107,30 @@ void StepMania::InsertCoin( int iNum, bool bCountInBookkeeping )
 		LIGHTSMAN->PulseCoinCounter();
 		BOOKKEEPER->CoinInserted();
 	}
-	int iNumCoinsOld = GAMESTATE->m_iCoins;
+	int iNumCoinsOld = GAMESTATE->coins_;
 
 	// Don't allow GAMESTATE's coin count to become negative.
-	if (GAMESTATE->m_iCoins + iNum >= 0)
+	if (GAMESTATE->coins_ + iNum >= 0)
 	{
-		GAMESTATE->m_iCoins.Set( GAMESTATE->m_iCoins + iNum );
+		GAMESTATE->coins_.Set( GAMESTATE->coins_ + iNum );
 	}
 
-	int iCredits = GAMESTATE->m_iCoins / PREFSMAN->m_iCoinsPerCredit;
+	int iCredits = GAMESTATE->coins_ / PREFSMAN->m_iCoinsPerCredit;
 	bool bMaxCredits = iCredits >= PREFSMAN->m_iMaxNumCredits;
 	if( bMaxCredits )
 	{
-		GAMESTATE->m_iCoins.Set( PREFSMAN->m_iMaxNumCredits * PREFSMAN->m_iCoinsPerCredit );
+		GAMESTATE->coins_.Set( PREFSMAN->m_iMaxNumCredits * PREFSMAN->m_iCoinsPerCredit );
 	}
 
-	LOG->Trace("%i coins inserted, %i needed to play", GAMESTATE->m_iCoins.Get(), PREFSMAN->m_iCoinsPerCredit.Get() );
+	LOG->Trace("%i coins inserted, %i needed to play", GAMESTATE->coins_.Get(), PREFSMAN->m_iCoinsPerCredit.Get() );
 
     // On InsertCoin, make sure to update Coins file
-    BOOKKEEPER->WriteCoinsFile(GAMESTATE->m_iCoins.Get());
+    BOOKKEEPER->WriteCoinsFile(GAMESTATE->coins_.Get());
 
 	// If inserting coins, play an appropriate sound; if deducting coins, don't play anything.
 	if (iNum > 0)
 	{
-		if( iNumCoinsOld != GAMESTATE->m_iCoins )
+		if( iNumCoinsOld != GAMESTATE->coins_ )
 		{
 			SCREENMAN->PlayCoinSound();
 		} else {
@@ -1140,7 +1140,7 @@ void StepMania::InsertCoin( int iNum, bool bCountInBookkeeping )
 
 	/* If AutoJoin and a player is already joined, then try to join a player.
 	 * (If no players are joined, they'll join on the first JoinInput.) */
-	if( GAMESTATE->m_bAutoJoin.Get() && GAMESTATE->GetNumSidesJoined() > 0 )
+	if( GAMESTATE->auto_join_.Get() && GAMESTATE->GetNumSidesJoined() > 0 )
 	{
 		if( GAMESTATE->GetNumSidesJoined() > 0 && GAMESTATE->JoinPlayers() )
 			SCREENMAN->PlayStartSound();
@@ -1162,17 +1162,17 @@ void StepMania::InsertCredit()
 
 void StepMania::ClearCredits()
 {
-	LOG->Trace("%i coins cleared", GAMESTATE->m_iCoins.Get() );
-	GAMESTATE->m_iCoins.Set( 0 );
+	LOG->Trace("%i coins cleared", GAMESTATE->coins_.Get() );
+	GAMESTATE->coins_.Set( 0 );
 	SCREENMAN->PlayInvalidSound();
 
     // Update Coins file to make sure credits are cleared.
-    BOOKKEEPER->WriteCoinsFile(GAMESTATE->m_iCoins.Get());
+    BOOKKEEPER->WriteCoinsFile(GAMESTATE->coins_.Get());
 
 	// TODO: remove this redundant message and things that depend on it
 	Message msg( "CoinInserted" );
 	// below params are unused
-	//msg.SetParam( "Coins", GAMESTATE->m_iCoins );
+	//msg.SetParam( "Coins", GAMESTATE->coins_ );
 	//msg.SetParam( "Clear", true );
 	MESSAGEMAN->Broadcast( msg );
 }
@@ -1187,10 +1187,10 @@ static LocalizedString RELOADED_OVERLAY_SCREENS( "ThemeManager", "Reloaded overl
 bool HandleGlobalInputs( const InputEventPlus &input )
 {
 	// None of the globals keys act on types other than FIRST_PRESS
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false;
 
-	switch( input.MenuI )
+	switch( input.menu_input_ )
 	{
 		case GAME_BUTTON_OPERATOR:
 			/* Global operator key, to get quick access to the options menu. Don't
@@ -1220,17 +1220,17 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 	/* Re-added for StepMania 3.9 theming veterans, plus it's just faster than
 	 * the debug menu. The Shift button only reloads the metrics, unlike in 3.9
 	 * (where it saved bookkeeping and machine profile). -aj */
-	bool bIsShiftHeld = INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT), &input.InputList) ||
-		INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT), &input.InputList);
-	bool bIsCtrlHeld = INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL), &input.InputList) ||
-		INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL), &input.InputList);
-	if( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F2) )
+	bool bIsShiftHeld = INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT), &input.input_list_) ||
+		INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT), &input.input_list_);
+	bool bIsCtrlHeld = INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL), &input.input_list_) ||
+		INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL), &input.input_list_);
+	if( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_F2) )
 	{
 		if( bIsShiftHeld && !bIsCtrlHeld )
 		{
 			// Shift+F2: refresh metrics,noteskin cache and CodeDetector cache only
 			THEME->ReloadMetrics();
-			NOTESKIN->RefreshNoteSkinData( GAMESTATE->m_pCurGame );
+			NOTESKIN->RefreshNoteSkinData( GAMESTATE->cur_game_ );
 			CodeDetector::RefreshCacheItems();
 			SCREENMAN->SystemMessage( RELOADED_METRICS );
 		}
@@ -1253,7 +1253,7 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 			// F2 alone: refresh metrics, textures, noteskins, codedetector cache
 			THEME->ReloadMetrics();
 			TEXTUREMAN->ReloadAll();
-			NOTESKIN->RefreshNoteSkinData( GAMESTATE->m_pCurGame );
+			NOTESKIN->RefreshNoteSkinData( GAMESTATE->cur_game_ );
 			CodeDetector::RefreshCacheItems();
 			SCREENMAN->SystemMessage( RELOADED_METRICS_AND_TEXTURES );
 		}
@@ -1261,7 +1261,7 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 		return true;
 	}
 
-	if( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_PAUSE) )
+	if( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_PAUSE) )
 	{
 		Message msg("ToggleConsoleDisplay");
 		MESSAGEMAN->Broadcast( msg );
@@ -1269,10 +1269,10 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 	}
 
 #if !defined(MACOSX)
-	if( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F4) )
+	if( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_F4) )
 	{
-		if( INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.InputList) ||
-			INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.InputList) )
+		if( INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.input_list_) ||
+			INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.input_list_) )
 		{
 			// pressed Alt+F4
 			ArchHooks::SetUserQuit();
@@ -1280,9 +1280,9 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 		}
 	}
 #else
-	if( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_Cq) &&
-		(INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LMETA), &input.InputList ) ||
-		 INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RMETA), &input.InputList )) )
+	if( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_Cq) &&
+		(INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_LMETA), &input.input_list_ ) ||
+		 INPUTFILTER->IsBeingPressed( DeviceInput(DEVICE_KEYBOARD, KEY_RMETA), &input.input_list_ )) )
 	{
 		/* The user quit is handled by the menu item so we don't need to set it
 		 * here; however, we do want to return that it has been handled since
@@ -1294,20 +1294,20 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 	bool bDoScreenshot =
 #if defined(MACOSX)
 	// Notebooks don't have F13. Use cmd-F12 as well.
-		input.DeviceI == DeviceInput( DEVICE_KEYBOARD, KEY_PRTSC ) ||
-		input.DeviceI == DeviceInput( DEVICE_KEYBOARD, KEY_F13 ) ||
-		( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_F12) &&
-		  (INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LMETA), &input.InputList) ||
-		   INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RMETA), &input.InputList)) );
+		input.device_input_ == DeviceInput( DEVICE_KEYBOARD, KEY_PRTSC ) ||
+		input.device_input_ == DeviceInput( DEVICE_KEYBOARD, KEY_F13 ) ||
+		( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_F12) &&
+		  (INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LMETA), &input.input_list_) ||
+		   INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RMETA), &input.input_list_)) );
 #else
 	/* The default Windows message handler will capture the desktop window upon
 	 * pressing PrntScrn, or will capture the foreground with focus upon pressing
 	 * Alt+PrntScrn. Windows will do this whether or not we save a screenshot
 	 * ourself by dumping the frame buffer. */
 	// "if pressing PrintScreen and not pressing Alt"
-		input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_PRTSC) &&
-		!INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.InputList) &&
-		!INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.InputList);
+		input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_PRTSC) &&
+		!INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.input_list_) &&
+		!INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.input_list_);
 #endif
 	if( bDoScreenshot )
 	{
@@ -1321,9 +1321,9 @@ bool HandleGlobalInputs( const InputEventPlus &input )
 		return true; // handled
 	}
 
-	if( input.DeviceI == DeviceInput(DEVICE_KEYBOARD, KEY_ENTER) &&
-		(INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.InputList) ||
-		 INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.InputList)) )
+	if( input.device_input_ == DeviceInput(DEVICE_KEYBOARD, KEY_ENTER) &&
+		(INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RALT), &input.input_list_) ||
+		 INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LALT), &input.input_list_)) )
 	{
 		// alt-enter
 		/* In macOS, this is a menu item and will be handled as such. This will
@@ -1362,9 +1362,9 @@ void HandleInputEvents(float fDeltaTime)
 	for( unsigned i=0; i<ieArray.size(); i++ )
 	{
 		InputEventPlus input;
-		input.DeviceI = ieArray[i].di;
-		input.type = ieArray[i].type;
-		swap( input.InputList, ieArray[i].m_ButtonState );
+		input.device_input_ = ieArray[i].device_input_;
+		input.type_ = ieArray[i].type_;
+		std::swap( input.input_list_, ieArray[i].button_state_ );
 
 		// hack for testing (MultiPlayer) with only one joystick
 		/*
@@ -1383,50 +1383,50 @@ void HandleInputEvents(float fDeltaTime)
 		}
 		*/
 
-		INPUTMAPPER->DeviceToGame( input.DeviceI, input.GameI );
+		INPUTMAPPER->DeviceToGame( input.device_input_, input.game_input_ );
 
-		input.mp = MultiPlayer_Invalid;
+		input.multiplayer_ = MultiPlayer_Invalid;
 
 		{
 			// Translate input to the appropriate MultiPlayer. Assume that all
 			// joystick devices are mapped the same as the master player.
-			if( input.DeviceI.IsJoystick() )
+			if( input.device_input_.IsJoystick() )
 			{
-				DeviceInput diTemp = input.DeviceI;
+				DeviceInput diTemp = input.device_input_;
 				diTemp.device = DEVICE_JOY1;
 				GameInput gi;
 
 				//LOG->Trace( "device %d, %d", diTemp.device, diTemp.button );
 				if( INPUTMAPPER->DeviceToGame(diTemp, gi) )
 				{
-					if( GAMESTATE->m_bMultiplayer )
+					if( GAMESTATE->multiplayer_ )
 					{
-						input.GameI = gi;
-						//LOG->Trace( "game %d %d", input.GameI.controller, input.GameI.button );
+						input.game_input_ = gi;
+						//LOG->Trace( "game %d %d", input.game_input_.controller, input.game_input_.button );
 					}
 
-					input.mp = InputMapper::InputDeviceToMultiPlayer( input.DeviceI.device );
-					//LOG->Trace( "multiplayer %d", input.mp );
-					ASSERT( input.mp >= 0 && input.mp < NUM_MultiPlayer );
+					input.multiplayer_ = InputMapper::InputDeviceToMultiPlayer( input.device_input_.device );
+					//LOG->Trace( "multiplayer %d", input.multiplayer_ );
+					ASSERT( input.multiplayer_ >= 0 && input.multiplayer_ < NUM_MultiPlayer );
 				}
 			}
 		}
 
-		if( input.GameI.IsValid() )
+		if( input.game_input_.IsValid() )
 		{
-			input.MenuI = INPUTMAPPER->GameButtonToMenuButton( input.GameI.button );
-			input.pn = INPUTMAPPER->ControllerToPlayerNumber( input.GameI.controller );
+			input.menu_input_ = INPUTMAPPER->GameButtonToMenuButton( input.game_input_.button );
+			input.pn_ = INPUTMAPPER->ControllerToPlayerNumber( input.game_input_.controller );
 		}
 
 		INPUTQUEUE->RememberInput( input );
 
 		// When a GameButton is pressed, stop repeating other keys on the same controller.
-		if( input.type == IET_FIRST_PRESS && input.MenuI != GameButton_Invalid )
+		if( input.type_ == IET_FIRST_PRESS && input.menu_input_ != GameButton_Invalid )
 		{
 			FOREACH_ENUM( GameButton,  m )
 			{
-				if( input.MenuI != m )
-					INPUTMAPPER->RepeatStopKey( m, input.pn );
+				if( input.menu_input_ != m )
+					INPUTMAPPER->RepeatStopKey( m, input.pn_ );
 			}
 		}
 
@@ -1435,9 +1435,9 @@ void HandleInputEvents(float fDeltaTime)
 
 		// check back in event mode
 		if( GAMESTATE->IsEventMode() &&
-			CodeDetector::EnteredCode(input.GameI.controller,CODE_BACK_IN_EVENT_MODE) )
+			CodeDetector::EnteredCode(input.game_input_.controller,CODE_BACK_IN_EVENT_MODE) )
 		{
-			input.MenuI = GAME_BUTTON_BACK;
+			input.menu_input_ = GAME_BUTTON_BACK;
 		}
 
 		SCREENMAN->Input( input );

@@ -40,10 +40,10 @@ void ScreenJukebox::SetSong()
 	if( pCourse != nullptr )
 		for ( unsigned i = 0; i < pCourse->m_vEntries.size(); i++ )
 			if( pCourse->m_vEntries[i].IsFixedSong() )
-				vSongs.push_back( pCourse->m_vEntries[i].songID.ToSong() );
+				vSongs.push_back( pCourse->m_vEntries[i].song_id_.ToSong() );
 
 	if ( vSongs.size() == 0 )
-		vSongs = SONGMAN->GetSongs( GAMESTATE->m_sPreferredSongGroup );
+		vSongs = SONGMAN->GetSongs( GAMESTATE->preferred_song_group_ );
 	// Still nothing?
 	if( vSongs.size() == 0 )
 		return;
@@ -59,9 +59,9 @@ void ScreenJukebox::SetSong()
 	}
 	else
 	{
-		if( GAMESTATE->m_PreferredDifficulty[PLAYER_1] != Difficulty_Invalid )
+		if( GAMESTATE->preferred_difficulty_[PLAYER_1] != Difficulty_Invalid )
 		{
-			vDifficultiesToShow.push_back( GAMESTATE->m_PreferredDifficulty[PLAYER_1] );
+			vDifficultiesToShow.push_back( GAMESTATE->preferred_difficulty_[PLAYER_1] );
 		}
 		else
 		{
@@ -95,11 +95,11 @@ void ScreenJukebox::SetSong()
 			continue;	// skip
 
 		// Found something we can use!
-		GAMESTATE->m_pCurSong.Set( pSong );
+		GAMESTATE->cur_song_.Set( pSong );
 		// We just changed the song. Reset the original sync data.
 		AdjustSync::ResetOriginalSyncData();
 		FOREACH_PlayerNumber( p )
-			GAMESTATE->m_pCurSteps[p].Set( pSteps );
+			GAMESTATE->cur_steps_[p].Set( pSteps );
 
 		bool bShowModifiers = randomf(0,1) <= SHOW_COURSE_MODIFIERS_PROBABILITY;
 		if( bShowModifiers )
@@ -114,16 +114,16 @@ void ScreenJukebox::SetSong()
 			{
 				Course *lCourse = apCourses[j];
 				const CourseEntry *pEntry = lCourse->FindFixedSong( pSong );
-				if( pEntry == nullptr || pEntry->attacks.size() == 0 )
+				if( pEntry == nullptr || pEntry->attacks_.size() == 0 )
 					continue;
 
 				if( !ALLOW_ADVANCED_MODIFIERS )
 				{
 					// There are some confusing mods that we don't want to show in demonstration.
 					bool bModsAreOkToShow = true;
-					AttackArray aAttacks = pEntry->attacks;
-					if( !pEntry->sModifiers.empty() )
-						aAttacks.push_back( Attack::FromGlobalCourseModifier( pEntry->sModifiers ) );
+					AttackArray aAttacks = pEntry->attacks_;
+					if( !pEntry->modifiers_.empty() )
+						aAttacks.push_back( Attack::FromGlobalCourseModifier( pEntry->modifiers_ ) );
 					for (Attack const &a: aAttacks)
 					{
 						RString s = a.sModifiers;
@@ -151,12 +151,12 @@ void ScreenJukebox::SetSong()
 				Course *lCourse = apPossibleCourses[iIndex];
 
 				PlayMode pm = CourseTypeToPlayMode( lCourse->GetCourseType() );
-				GAMESTATE->m_PlayMode.Set( pm );
-				GAMESTATE->m_pCurCourse.Set( lCourse );
+				GAMESTATE->play_mode_.Set( pm );
+				GAMESTATE->cur_course_.Set( lCourse );
 				FOREACH_PlayerNumber( p )
 				{
-					GAMESTATE->m_pCurTrail[p].Set( lCourse->GetTrail( GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StepsType ) );
-					ASSERT( GAMESTATE->m_pCurTrail[p] != nullptr );
+					GAMESTATE->cur_trail_[p].Set( lCourse->GetTrail( GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StepsType ) );
+					ASSERT( GAMESTATE->cur_trail_[p] != nullptr );
 				}
 			}
 		}
@@ -178,7 +178,7 @@ void ScreenJukebox::Init()
 {
 	// ScreenJukeboxMenu must set this
 	ASSERT( GAMESTATE->GetCurrentStyle(PLAYER_INVALID) != nullptr );
-	GAMESTATE->m_PlayMode.Set( PLAY_MODE_REGULAR );
+	GAMESTATE->play_mode_.Set( PLAY_MODE_REGULAR );
 
 	SetSong();
 
@@ -196,11 +196,11 @@ void ScreenJukebox::Init()
 		{
 			/* Lots and lots of arrows. This might even bias to arrows a little
 			 * too much. */
-			PO_GROUP_CALL( GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage, Init );
-			PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage, m_fScrollSpeed, .25f );
-			PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage, m_fPerspectiveTilt, -1.0f );
-			PO_GROUP_ASSIGN_N( GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage, m_fEffects, PlayerOptions::EFFECT_TINY, 1.0f );
-			PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage, m_LifeType, LifeType_Battery );
+			PO_GROUP_CALL( GAMESTATE->player_state_[p]->m_PlayerOptions, ModsLevel_Stage, Init );
+			PO_GROUP_ASSIGN( GAMESTATE->player_state_[p]->m_PlayerOptions, ModsLevel_Stage, m_fScrollSpeed, .25f );
+			PO_GROUP_ASSIGN( GAMESTATE->player_state_[p]->m_PlayerOptions, ModsLevel_Stage, m_fPerspectiveTilt, -1.0f );
+			PO_GROUP_ASSIGN_N( GAMESTATE->player_state_[p]->m_PlayerOptions, ModsLevel_Stage, m_fEffects, PlayerOptions::EFFECT_TINY, 1.0f );
+			PO_GROUP_ASSIGN( GAMESTATE->player_state_[p]->m_PlayerOptions, ModsLevel_Stage, m_LifeType, LifeType_Battery );
 		}
 	}
 
@@ -210,28 +210,28 @@ void ScreenJukebox::Init()
 		STATSMAN->m_CurStageStats.m_player[p].ResetScoreForLesson();
 
 		// This eats any noteskins that may have been set in ScreenJukeboxMenu. -aj
-		if( GAMESTATE->m_bJukeboxUsesModifiers )
+		if( GAMESTATE->jukebox_uses_modifiers_ )
 		{
 			PlayerOptions po;
 			GAMESTATE->GetDefaultPlayerOptions( po );
 			po.ChooseRandomModifiers();
-			GAMESTATE->m_pPlayerState[p]->m_PlayerOptions.Assign( ModsLevel_Stage, po );
+			GAMESTATE->player_state_[p]->m_PlayerOptions.Assign( ModsLevel_Stage, po );
 		}
 	}
 
 	SongOptions so;
 	GAMESTATE->GetDefaultSongOptions( so );
-	GAMESTATE->m_SongOptions.Assign( ModsLevel_Stage, so );
+	GAMESTATE->song_options_.Assign( ModsLevel_Stage, so );
 
 	FOREACH_EnabledPlayer( p )
-		PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage, m_FailType, FailType_Off );
+		PO_GROUP_ASSIGN( GAMESTATE->player_state_[p]->m_PlayerOptions, ModsLevel_Stage, m_FailType, FailType_Off );
 
-	GAMESTATE->m_bDemonstrationOrJukebox = true;
+	GAMESTATE->demonstration_or_jukebox_ = true;
 
 	// Now that we've set up, init the base class.
 	ScreenGameplay::Init();
 
-	if( GAMESTATE->m_pCurSong == nullptr )	// we didn't find a song.
+	if( GAMESTATE->cur_song_ == nullptr )	// we didn't find a song.
 	{
 		SCREENMAN->SystemMessage( NO_MATCHING_STEPS );
 		this->PostScreenMessage( SM_GoToPrevScreen, 0 );	// Abort demonstration.
@@ -240,7 +240,7 @@ void ScreenJukebox::Init()
 
 	ClearMessageQueue();	// remove all of the messages set in ScreenGameplay that animate "ready", "here we go", etc.
 
-	GAMESTATE->m_bGameplayLeadIn.Set( false );
+	GAMESTATE->gameplay_lead_in_.Set( false );
 
 	m_DancingState = STATE_DANCING;
 }
@@ -249,10 +249,10 @@ bool ScreenJukebox::Input( const InputEventPlus &input )
 {
 	//LOG->Trace( "ScreenJukebox::Input()" );
 
-	if( input.type != IET_FIRST_PRESS )
+	if( input.type_ != IET_FIRST_PRESS )
 		return false; // ignore
 
-	switch( input.MenuI )
+	switch( input.menu_input_ )
 	{
 		case GAME_BUTTON_LEFT:
 		case GAME_BUTTON_RIGHT:
@@ -296,7 +296,7 @@ void ScreenJukebox::InitSongQueues()
 	int iIndexToKeep = -1;
 	for( unsigned i=0; i<m_apSongsQueue.size(); i++ )
 	{
-		if( m_apSongsQueue[i] == GAMESTATE->m_pCurSong )
+		if( m_apSongsQueue[i] == GAMESTATE->cur_song_ )
 		{
 			iIndexToKeep = i;
 			break;

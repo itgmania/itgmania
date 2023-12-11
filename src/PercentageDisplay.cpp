@@ -195,9 +195,9 @@ bool PercentageDisplay::ShowDancePointsNotPercentage() const
 {
 	// Use straight dance points in workout because the percentage denominator isn't accurate - we don't know when the players are going to stop.
 
-	if( GAMESTATE->m_pCurCourse )
+	if( GAMESTATE->cur_course_ )
 	{
-		if( GAMESTATE->m_pCurCourse->m_fGoalSeconds > 0 )
+		if( GAMESTATE->cur_course_->m_fGoalSeconds > 0 )
 			return true;
 	}
 

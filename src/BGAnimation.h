@@ -2,33 +2,31 @@
 #define BGANIMATION_H
 
 #include "ActorFrame.h"
+#include "XmlFile.h"
 
-class XNode;
+// An ActorFrame that loads itself.
+class BGAnimation : public ActorFrameAutoDeleteChildren {
+ public:
+  BGAnimation();
+  virtual ~BGAnimation();
 
-/** @brief An ActorFrame that loads itself. */
-class BGAnimation : public ActorFrameAutoDeleteChildren
-{
-public:
-	BGAnimation();
-	virtual ~BGAnimation();
+  void LoadFromAniDir(const RString& _ani_dir);
+  void LoadFromNode(const XNode* node);
 
-	void LoadFromAniDir( const RString &sAniDir );
-	void LoadFromNode( const XNode* pNode );
+  virtual BGAnimation* Copy() const;
 
-	virtual BGAnimation *Copy() const;
-
-protected:
-	void AddLayersFromAniDir( const RString &_sAniDir, const XNode *pNode );
+ protected:
+  void AddLayersFromAniDir(const RString& ani_dir, const XNode* node);
 };
 
-#endif
+#endif  // BGANIMATION_H
 
 /**
  * @file
  * @author Ben Nordstrom, Chris Danford (c) 2001-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -38,7 +36,7 @@ protected:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

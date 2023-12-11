@@ -143,7 +143,7 @@ void ModIconRow::SetFromGameState()
 {
 	PlayerNumber pn = m_pn;
 
-	RString sOptions = GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetStage().GetString();
+	RString sOptions = GAMESTATE->player_state_[pn]->m_PlayerOptions.GetStage().GetString();
 	std::vector<RString> vsOptions;
 	split( sOptions, ", ", vsOptions, true );
 

@@ -1,141 +1,145 @@
 #include "global.h"
+
 #include "DynamicActorScroller.h"
-#include "XmlFile.h"
-#include "LuaManager.h"
-#include "ActorUtil.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "LuaBinding.h"
 
 #include <cmath>
 #include <cstddef>
 
-DynamicActorScroller *DynamicActorScroller::Copy() const { return new DynamicActorScroller(*this); }
+#include "ActorUtil.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "XmlFile.h"
 
-void DynamicActorScroller::LoadFromNode( const XNode *pNode )
-{
-	ActorScroller::LoadFromNode( pNode );
-
-	/* All of our children are identical, since they must be interchangeable.
-	 * The <children> node loads only one; we copy the rest.
-	 *
-	 * Make one extra copy if masking is enabled. */
-	if( m_SubActors.size() != 1 )
-	{
-		LuaHelpers::ReportScriptErrorFmt("%s: DynamicActorScroller: loaded %i nodes; require exactly one", ActorUtil::GetWhere(pNode).c_str(), (int)m_SubActors.size());
-		// Remove all but one.
-		for( std::size_t i=1; i<m_SubActors.size(); i++ )
-		{
-			delete m_SubActors[i];
-		}
-		m_SubActors.resize(1);
-	}
-
-	int iNumCopies = (int) m_fNumItemsToDraw;
-	if( m_quadMask.GetVisible() )
-		iNumCopies += 1;
-	for( int i = 1; i < iNumCopies; ++i )
-	{
-		Actor *pCopy = m_SubActors[0]->Copy();
-		this->AddChild( pCopy );
-	}
-
-	{
-		Lua *L = LUA->Get();
-		pNode->PushAttrValue( L, "LoadFunction" );
-		m_LoadFunction.SetFromStack( L );
-		LUA->Release(L);
-	}
-
-	// Call the expression with line = nil to find out the number of lines.
-	{
-		Lua *L = LUA->Get();
-		m_LoadFunction.PushSelf( L );
-		ASSERT( !lua_isnil(L, -1) );
-		lua_pushnil( L );
-		lua_pushnil( L );
-
-		RString Error= "Error running LoadFunction: ";
-		LuaHelpers::RunScriptOnStack(L, Error, 2, 1, true); // 2 args, 1 result
-
-		m_iNumItems = (int) luaL_checknumber( L, -1 );
-		lua_pop( L, 1 );
-		LUA->Release(L);
-	}
-
-	/* Reconfigure all items, so the loaded actors actually correspond with
-	 * m_iFirstSubActorIndex. */
-	ShiftSubActors( INT_MAX );
+DynamicActorScroller* DynamicActorScroller::Copy() const {
+  return new DynamicActorScroller(*this);
 }
 
-/* Shift m_SubActors forward by iDist, and then fill in the new entries.
- *
- * Important: under normal scrolling, with or without m_bLoop, at most one
- * object is created per update, and this normally only happens when an
- * object comes on screen.  Extra actor updates are avoided for efficiency. */
-void DynamicActorScroller::ShiftSubActors( int iDist )
-{
-	ActorScroller::ShiftSubActors( iDist );
+void DynamicActorScroller::LoadFromNode(const XNode* node) {
+  ActorScroller::LoadFromNode(node);
 
-	if( iDist == 0 )
-		return;
+  // All of our children are identical, since they must be interchangeable.
+  // The <children> node loads only one; we copy the rest.
+  //
+  // Make one extra copy if masking is enabled.
+  if (m_SubActors.size() != 1) {
+    LuaHelpers::ReportScriptErrorFmt(
+        "%s: DynamicActorScroller: loaded %i nodes; require exactly one",
+        ActorUtil::GetWhere(node).c_str(), (int)m_SubActors.size());
+    // Remove all but one.
+    for (std::size_t i = 1; i < m_SubActors.size(); ++i) {
+      delete m_SubActors[i];
+    }
+    m_SubActors.resize(1);
+  }
 
-	if( m_bLoop )
-	{
-		/* Optimization: in a loop of 10, when we loop around from 9 to 0,
-		 * iDist will be -9.  Moving -9 is equivalent to moving +1, and
-		 * reconfigures much fewer actors. */
-		int iWrapped = iDist;
-		wrap( iWrapped, m_iNumItems );
-		if( std::abs(iWrapped) < std::abs(iDist) )
-			iDist = iWrapped;
-	}
+  int num_copies = (int)m_fNumItemsToDraw;
+  if (m_quadMask.GetVisible()) {
+    num_copies += 1;
+  }
+  for (int i = 1; i < num_copies; ++i) {
+    Actor* pCopy = m_SubActors[0]->Copy();
+    this->AddChild(pCopy);
+  }
 
-	int iFirstToReconfigure = 0;
-	int iLastToReconfigure = (int)m_SubActors.size();
-	if( iDist > 0 && iDist < (int) m_SubActors.size() )
-		iFirstToReconfigure = m_SubActors.size()-iDist;
-	else if( iDist < 0 && -iDist < (int) m_SubActors.size() )
-		iLastToReconfigure = -iDist;
+  {
+    Lua* L = LUA->Get();
+    node->PushAttrValue(L, "LoadFunction");
+    load_function_.SetFromStack(L);
+    LUA->Release(L);
+  }
 
-	for( int i = iFirstToReconfigure; i < iLastToReconfigure; i++ )
-	{
-		int iIndex = i; // index into m_SubActors
-		int iItem = i + m_iFirstSubActorIndex;
-		if( m_bLoop )
-		{
-			wrap( iIndex, m_SubActors.size() );
-			wrap( iItem, m_iNumItems );
-		}
-		else if( iIndex < 0 || iIndex >= m_iNumItems || iItem < 0 || iItem >= m_iNumItems )
-			continue;
+  // Call the expression with line = nil to find out the number of lines.
+  {
+    Lua* L = LUA->Get();
+    load_function_.PushSelf(L);
+    ASSERT(!lua_isnil(L, -1));
+    lua_pushnil(L);
+    lua_pushnil(L);
 
-		{
-			Lua *L = LUA->Get();
-			lua_pushnumber( L, i );
-			m_SubActors[iIndex]->m_pLuaInstance->Set( L, "ItemIndex" );
-			LUA->Release(L);
-		}
+    RString Error = "Error running LoadFunction: ";
+    LuaHelpers::RunScriptOnStack(L, Error, 2, 1, true);  // 2 args, 1 result
 
-		ConfigureActor( m_SubActors[iIndex], iItem );
-	}
+    m_iNumItems = (int)luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+    LUA->Release(L);
+  }
+
+  // Reconfigure all items, so the loaded actors actually correspond with
+  // m_iFirstSubActorIndex.
+  ShiftSubActors(INT_MAX);
 }
 
-void DynamicActorScroller::ConfigureActor( Actor *pActor, int iItem )
-{
-	Lua *L = LUA->Get();
-	m_LoadFunction.PushSelf( L );
-	ASSERT( !lua_isnil(L, -1) );
-	pActor->PushSelf( L );
-	LuaHelpers::Push( L, iItem );
+// Shift m_SubActors forward by dist, and then fill in the new entries.
+//
+// Important: under normal scrolling, with or without m_bLoop, at most one
+// object is created per update, and this normally only happens when an
+// object comes on screen.  Extra actor updates are avoided for efficiency.
+void DynamicActorScroller::ShiftSubActors(int dist) {
+  ActorScroller::ShiftSubActors(dist);
 
-	RString Error= "Error running LoadFunction: ";
-	LuaHelpers::RunScriptOnStack(L, Error, 2, 0, true); // 2 args, 0 results
+  if (dist == 0) {
+    return;
+  }
 
-	LUA->Release(L);
+  if (m_bLoop) {
+    // Optimization: in a loop of 10, when we loop around from 9 to 0,
+    // dist will be -9.  Moving -9 is equivalent to moving +1, and
+    // reconfigures much fewer actors.
+    int wrapped = dist;
+    wrap(wrapped, m_iNumItems);
+    if (std::abs(wrapped) < std::abs(dist)) {
+      dist = wrapped;
+    }
+  }
+
+  int first_to_reconfigure = 0;
+  int last_to_reconfigure = (int)m_SubActors.size();
+  if (dist > 0 && dist < (int)m_SubActors.size()) {
+    first_to_reconfigure = m_SubActors.size() - dist;
+  } else if (dist < 0 && -dist < (int)m_SubActors.size()) {
+    last_to_reconfigure = -dist;
+  }
+
+  for (int i = first_to_reconfigure; i < last_to_reconfigure; ++i) {
+    int index = i;  // index into m_SubActors
+    int item = i + m_iFirstSubActorIndex;
+    if (m_bLoop) {
+      wrap(index, m_SubActors.size());
+      wrap(item, m_iNumItems);
+    } else if (
+        index < 0 || index >= m_iNumItems || item < 0 ||
+        item >= m_iNumItems) {
+      continue;
+    }
+
+    {
+      Lua* L = LUA->Get();
+      lua_pushnumber(L, i);
+      m_SubActors[index]->m_pLuaInstance->Set(L, "ItemIndex");
+      LUA->Release(L);
+    }
+
+    ConfigureActor(m_SubActors[index], item);
+  }
 }
 
-REGISTER_ACTOR_CLASS_WITH_NAME( DynamicActorScrollerAutoDeleteChildren, DynamicActorScroller );
+void DynamicActorScroller::ConfigureActor(Actor* actor, int item) {
+  Lua* L = LUA->Get();
+  load_function_.PushSelf(L);
+  ASSERT(!lua_isnil(L, -1));
+  actor->PushSelf(L);
+  LuaHelpers::Push(L, item);
+
+  RString error = "Error running LoadFunction: ";
+  LuaHelpers::RunScriptOnStack(L, error, 2, 0, true);  // 2 args, 0 results
+
+  LUA->Release(L);
+}
+
+REGISTER_ACTOR_CLASS_WITH_NAME(
+    DynamicActorScrollerAutoDeleteChildren, DynamicActorScroller);
 
 /*
  * (c) 2005 Glenn Maynard

@@ -549,7 +549,7 @@ void ScreenManager::Input( const InputEventPlus &input )
 	if( g_ScreenStack.empty() )
 		return;
 
-	if(!get_input_redirected(input.pn))
+	if(!get_input_redirected(input.pn_))
 	{
 		g_ScreenStack.back().m_pScreen->Input( input );
 	}

@@ -126,7 +126,7 @@ static LocalizedString OFF ( "OptionRowHandler", "Off" );
 	}
 
 #define CHECK_WRONG_NUM_ARGS(num) \
-	ROW_INVALID_IF(command.m_vsArgs.size() != num, "Wrong number of args to option row.", false);
+	ROW_INVALID_IF(command.args_.size() != num, "Wrong number of args to option row.", false);
 #define CHECK_BLANK_ARG \
 	ROW_INVALID_IF(sParam.size() == 0, "Blank arg to Steps row.", false);
 
@@ -163,8 +163,8 @@ public:
 			ROW_INVALID_IF(lCmds.v.size() < 1, "Row command is empty.", false);
 
 			m_Def.m_bOneChoiceForAllPlayers = false;
-			ROW_INVALID_IF(lCmds.v[0].m_vsArgs.size() != 1, "Row command has invalid args to number of entries.", false);
-			const int NumCols = StringToInt( lCmds.v[0].m_vsArgs[0] );
+			ROW_INVALID_IF(lCmds.v[0].args_.size() != 1, "Row command has invalid args to number of entries.", false);
+			const int NumCols = StringToInt( lCmds.v[0].args_[0] );
 			ROW_INVALID_IF(NumCols < 1, "Not enough entries in list.", false);
 			for( unsigned i=1; i<lCmds.v.size(); i++ )
 			{
@@ -179,15 +179,15 @@ public:
 				else if( sName == "default" )		m_Def.m_iDefault = StringToInt( cmd.GetArg(1).s ) - 1; // match ENTRY_MODE
 				else if( sName == "reloadrowmessages" )
 				{
-					for( unsigned a=1; a<cmd.m_vsArgs.size(); a++ )
-						m_vsReloadRowMessages.push_back( cmd.m_vsArgs[a] );
+					for( unsigned a=1; a<cmd.args_.size(); a++ )
+						m_vsReloadRowMessages.push_back( cmd.args_[a] );
 				}
 				else if( sName == "enabledforplayers" )
 				{
 					m_Def.m_vEnabledForPlayers.clear();
-					for( unsigned a=1; a<cmd.m_vsArgs.size(); a++ )
+					for( unsigned a=1; a<cmd.args_.size(); a++ )
 					{
-						RString sArg = cmd.m_vsArgs[a];
+						RString sArg = cmd.args_[a];
 						PlayerNumber pn = (PlayerNumber)(StringToInt(sArg)-1);
 						ASSERT( pn >= 0 && pn < NUM_PLAYERS );
 						m_Def.m_vEnabledForPlayers.insert( pn );
@@ -199,8 +199,8 @@ public:
 				}
 				else if( sName == "broadcastonexport" )
 				{
-					for( unsigned j=1; j<cmd.m_vsArgs.size(); j++ )
-						m_vsBroadcastOnExport.push_back( cmd.m_vsArgs[j] );
+					for( unsigned j=1; j<cmd.args_.size(); j++ )
+						m_vsBroadcastOnExport.push_back( cmd.args_[j] );
 				}
 				else
 				{
@@ -214,12 +214,12 @@ public:
 				mc.Load( 0, ParseCommands(ENTRY_MODE(sParam, col)) );
 				/* If the row has just one entry, use the name of the row as the name of the
 				 * entry. If it has more than one, each one must be specified explicitly. */
-				if( mc.m_sName == "" && NumCols == 1 )
-					mc.m_sName = sParam;
-				if( mc.m_sName == "" )
+				if( mc.name_ == "" && NumCols == 1 )
+					mc.name_ = sParam;
+				if( mc.name_ == "" )
 				{
 					LuaHelpers::ReportScriptErrorFmt("List \"%s\", choice %i has no name.", sParam.c_str(), col+1);
-					mc.m_sName= "";
+					mc.name_= "";
 				}
 
 				RString why;
@@ -230,7 +230,7 @@ public:
 				}
 
 				m_aListEntries.push_back( mc );
-				RString sChoice = mc.m_sName;
+				RString sChoice = mc.name_;
 				m_Def.m_vsChoices.push_back( sChoice );
 			}
 		}
@@ -337,7 +337,7 @@ public:
 	virtual void GetIconTextAndGameCommand( int iFirstSelection, RString &sIconTextOut, GameCommand &gcOut ) const
 	{
 		sIconTextOut = m_bUseModNameForIcon ?
-			m_aListEntries[iFirstSelection].m_sPreferredModifiers :
+			m_aListEntries[iFirstSelection].preferred_modifiers_ :
 			m_Def.m_vsChoices[iFirstSelection];
 
 		gcOut = m_aListEntries[iFirstSelection];
@@ -345,7 +345,7 @@ public:
 	virtual RString GetScreen( int iChoice ) const
 	{
 		const GameCommand &gc = m_aListEntries[iChoice];
-		return gc.m_sScreen;
+		return gc.screen_;
 	}
 
 	virtual ReloadChanged Reload()
@@ -397,7 +397,7 @@ class OptionRowHandlerListNoteSkins : public OptionRowHandlerList
 			if( arraySkinNames[skin] == CommonMetrics::DEFAULT_NOTESKIN_NAME.GetValue() )
 				m_Def.m_iDefault = skin;
 			GameCommand mc;
-			mc.m_sPreferredModifiers = arraySkinNames[skin];
+			mc.preferred_modifiers_ = arraySkinNames[skin];
 			//ms.m_sName = arraySkinNames[skin];
 			m_aListEntries.push_back( mc );
 			m_Def.m_vsChoices.push_back( arraySkinNames[skin] );
@@ -435,13 +435,13 @@ class OptionRowHandlerListSteps : public OptionRowHandlerList
 		// TODO:  Fix this OptionRow to fetch steps for all styles available.
 		// This is broken in kickbox game mode because kickbox uses separated
 		// styles. -Kyz
-		else if(GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber()) && GAMESTATE->IsCourseMode() && GAMESTATE->m_pCurCourse)   // playing a course
+		else if(GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber()) && GAMESTATE->IsCourseMode() && GAMESTATE->cur_course_)   // playing a course
 		{
 			m_Def.m_bOneChoiceForAllPlayers = (bool)PREFSMAN->m_bLockCourseDifficulties;
 			m_Def.m_layoutType = StringToLayoutType( STEPS_ROW_LAYOUT_TYPE );
 
 			std::vector<Trail*> vTrails;
-			GAMESTATE->m_pCurCourse->GetTrails( vTrails, GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->m_StepsType );
+			GAMESTATE->cur_course_->GetTrails( vTrails, GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->m_StepsType );
 			for( unsigned i=0; i<vTrails.size(); i++ )
 			{
 				Trail* pTrail = vTrails[i];
@@ -450,16 +450,16 @@ class OptionRowHandlerListSteps : public OptionRowHandlerList
 				s += ssprintf( " %d", pTrail->GetMeter() );
 				m_Def.m_vsChoices.push_back( s );
 				GameCommand mc;
-				mc.m_pTrail = pTrail;
+				mc.trail_ = pTrail;
 				m_aListEntries.push_back( mc );
 			}
 		}
-		else if(GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber()) && GAMESTATE->m_pCurSong) // playing a song
+		else if(GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber()) && GAMESTATE->cur_song_) // playing a song
 		{
 			m_Def.m_layoutType = StringToLayoutType( STEPS_ROW_LAYOUT_TYPE );
 
 			std::vector<Steps*> vpSteps;
-			Song *pSong = GAMESTATE->m_pCurSong;
+			Song *pSong = GAMESTATE->cur_song_;
 			SongUtil::GetSteps( pSong, vpSteps, GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->m_StepsType );
 			StepsUtil::RemoveLockedSteps( pSong, vpSteps );
 			StepsUtil::SortNotesArrayByDifficulty( vpSteps );
@@ -496,8 +496,8 @@ class OptionRowHandlerListSteps : public OptionRowHandlerList
 				s += ssprintf( " %d", pSteps->GetMeter() );
 				m_Def.m_vsChoices.push_back( s );
 				GameCommand mc;
-				mc.m_pSteps = pSteps;
-				mc.m_dc = pSteps->GetDifficulty();
+				mc.steps_ = pSteps;
+				mc.difficulty_ = pSteps->GetDifficulty();
 				m_aListEntries.push_back( mc );
 			}
 		}
@@ -541,17 +541,17 @@ public:
 
 		if( sParam == "EditSteps" )
 		{
-			m_ppStepsToFill = &GAMESTATE->m_pCurSteps[0];
-			m_pDifficultyToFill = &GAMESTATE->m_PreferredDifficulty[0];
-			m_pst = &GAMESTATE->m_stEdit;
+			m_ppStepsToFill = &GAMESTATE->cur_steps_[0];
+			m_pDifficultyToFill = &GAMESTATE->preferred_difficulty_[0];
+			m_pst = &GAMESTATE->steps_type_edit_;
 			m_vsReloadRowMessages.push_back( MessageIDToString(Message_EditStepsTypeChanged) );
 		}
 		else if( sParam == "EditSourceSteps" )
 		{
-			m_ppStepsToFill = &GAMESTATE->m_pEditSourceSteps;
-			m_pst = &GAMESTATE->m_stEditSource;
+			m_ppStepsToFill = &GAMESTATE->edit_source_steps_;
+			m_pst = &GAMESTATE->edit_source_steps_type_;
 			m_vsReloadRowMessages.push_back( MessageIDToString(Message_EditSourceStepsTypeChanged) );
-			if( GAMESTATE->m_pCurSteps[0].Get() != nullptr )
+			if( GAMESTATE->cur_steps_[0].Get() != nullptr )
 				m_Def.m_vEnabledForPlayers.clear();	// hide row
 		}
 		else
@@ -569,17 +569,17 @@ public:
 		m_vDifficulties.clear();
 		m_vSteps.clear();
 
-		if( GAMESTATE->m_pCurSong )
+		if( GAMESTATE->cur_song_ )
 		{
 			FOREACH_ENUM( Difficulty, dc )
 			{
 				if( dc == Difficulty_Edit )
 					continue;
 				m_vDifficulties.push_back( dc );
-				Steps* pSteps = SongUtil::GetStepsByDifficulty( GAMESTATE->m_pCurSong, *m_pst, dc );
+				Steps* pSteps = SongUtil::GetStepsByDifficulty( GAMESTATE->cur_song_, *m_pst, dc );
 				m_vSteps.push_back( pSteps );
 			}
-			SongUtil::GetSteps( GAMESTATE->m_pCurSong, m_vSteps, *m_pst, Difficulty_Edit );
+			SongUtil::GetSteps( GAMESTATE->cur_song_, m_vSteps, *m_pst, Difficulty_Edit );
 			m_vDifficulties.resize( m_vSteps.size(), Difficulty_Edit );
 
 			if( sParam == "EditSteps" )
@@ -603,7 +603,7 @@ public:
 				}
 				else
 				{
-					s = CustomDifficultyToLocalizedString( GetCustomDifficulty( GAMESTATE->m_stEdit, dc, CourseType_Invalid ) );
+					s = CustomDifficultyToLocalizedString( GetCustomDifficulty( GAMESTATE->steps_type_edit_, dc, CourseType_Invalid ) );
 				}
 				m_Def.m_vsChoices.push_back( s );
 			}
@@ -644,7 +644,7 @@ public:
 				for (std::vector<Difficulty>::const_iterator d = m_vDifficulties.begin(); d != m_vDifficulties.end(); ++d)
 				{
 					unsigned i = d - m_vDifficulties.begin();
-					if( *d == GAMESTATE->m_PreferredDifficulty[p] )
+					if( *d == GAMESTATE->preferred_difficulty_[p] )
 					{
 						vbSelOut[i] = true;
 						matched= true;
@@ -688,12 +688,12 @@ class OptionRowHandlerListCharacters: public OptionRowHandlerList
 		m_Def.m_bAllowThemeItems = false;
 		m_Def.m_sName = "Characters";
 		m_Def.m_iDefault = 0;
-		m_Default.m_pCharacter = CHARMAN->GetDefaultCharacter();
+		m_Default.character_ = CHARMAN->GetDefaultCharacter();
 
 		{
 			m_Def.m_vsChoices.push_back( OFF );
 			GameCommand mc;
-			mc.m_pCharacter = nullptr;
+			mc.character_ = nullptr;
 			m_aListEntries.push_back( mc );
 		}
 
@@ -707,7 +707,7 @@ class OptionRowHandlerListCharacters: public OptionRowHandlerList
 
 			m_Def.m_vsChoices.push_back( s );
 			GameCommand mc;
-			mc.m_pCharacter = pCharacter;
+			mc.character_ = pCharacter;
 			m_aListEntries.push_back( mc );
 		}
 		return true;
@@ -723,17 +723,17 @@ class OptionRowHandlerListStyles: public OptionRowHandlerList
 		m_Def.m_bAllowThemeItems = false;	// we theme the text ourself
 
 		std::vector<const Style*> vStyles;
-		GAMEMAN->GetStylesForGame( GAMESTATE->m_pCurGame, vStyles );
+		GAMEMAN->GetStylesForGame( GAMESTATE->cur_game_, vStyles );
 		ASSERT( vStyles.size() != 0 );
 		for (Style const *s : vStyles)
 		{
 			m_Def.m_vsChoices.push_back( GAMEMAN->StyleToLocalizedString(s) );
 			GameCommand mc;
-			mc.m_pStyle = s;
+			mc.style_ = s;
 			m_aListEntries.push_back( mc );
 		}
 
-		m_Default.m_pStyle = vStyles[0];
+		m_Default.style_ = vStyles[0];
 		return true;
 	}
 };
@@ -745,7 +745,7 @@ class OptionRowHandlerListGroups: public OptionRowHandlerList
 		m_Def.m_bOneChoiceForAllPlayers = true;
 		m_Def.m_bAllowThemeItems = false;	// we theme the text ourself
 		m_Def.m_sName = "Group";
-		m_Default.m_sSongGroup = GROUP_ALL;
+		m_Default.song_group_ = GROUP_ALL;
 
 		std::vector<RString> vSongGroups;
 		SONGMAN->GetSongGroupNames( vSongGroups );
@@ -754,7 +754,7 @@ class OptionRowHandlerListGroups: public OptionRowHandlerList
 		{
 			m_Def.m_vsChoices.push_back( "AllGroups" );
 			GameCommand mc;
-			mc.m_sSongGroup = GROUP_ALL;
+			mc.song_group_ = GROUP_ALL;
 			m_aListEntries.push_back( mc );
 		}
 
@@ -762,7 +762,7 @@ class OptionRowHandlerListGroups: public OptionRowHandlerList
 		{
 			m_Def.m_vsChoices.push_back( g );
 			GameCommand mc;
-			mc.m_sSongGroup = g;
+			mc.song_group_ = g;
 			m_aListEntries.push_back( mc );
 		}
 		return true;
@@ -775,25 +775,25 @@ class OptionRowHandlerListDifficulties: public OptionRowHandlerList
 	{
 		m_Def.m_bOneChoiceForAllPlayers = true;
 		m_Def.m_sName = "Difficulty";
-		m_Default.m_dc = Difficulty_Invalid;
+		m_Default.difficulty_ = Difficulty_Invalid;
 		m_Def.m_bAllowThemeItems = false;	// we theme the text ourself
 
 		{
 			m_Def.m_vsChoices.push_back( "AllDifficulties" );
 			GameCommand mc;
-			mc.m_dc = Difficulty_Invalid;
+			mc.difficulty_ = Difficulty_Invalid;
 			m_aListEntries.push_back( mc );
 		}
 
 		for (Difficulty const &d : CommonMetrics::DIFFICULTIES_TO_SHOW.GetValue())
 		{
 			// TODO: Is this the best thing we can do here?
-			StepsType st = GAMEMAN->GetHowToPlayStyleForGame( GAMESTATE->m_pCurGame )->m_StepsType;
+			StepsType st = GAMEMAN->GetHowToPlayStyleForGame( GAMESTATE->cur_game_ )->m_StepsType;
 			RString s = CustomDifficultyToLocalizedString( GetCustomDifficulty(st, d, CourseType_Invalid) );
 
 			m_Def.m_vsChoices.push_back( s );
 			GameCommand mc;
-			mc.m_dc = d;
+			mc.difficulty_ = d;
 			m_aListEntries.push_back( mc );
 		}
 		return true;
@@ -805,10 +805,10 @@ class OptionRowHandlerListSongsInCurrentSongGroup: public OptionRowHandlerList
 {
 	virtual bool LoadInternal( const Commands & )
 	{
-		const std::vector<Song*> &vpSongs = SONGMAN->GetSongs( GAMESTATE->m_sPreferredSongGroup );
+		const std::vector<Song*> &vpSongs = SONGMAN->GetSongs( GAMESTATE->preferred_song_group_ );
 
-		if( GAMESTATE->m_pCurSong == nullptr )
-			GAMESTATE->m_pCurSong.Set( vpSongs[0] );
+		if( GAMESTATE->cur_song_ == nullptr )
+			GAMESTATE->cur_song_.Set( vpSongs[0] );
 
 		m_Def.m_sName = "SongsInCurrentSongGroup";
 		m_Def.m_bOneChoiceForAllPlayers = true;
@@ -819,7 +819,7 @@ class OptionRowHandlerListSongsInCurrentSongGroup: public OptionRowHandlerList
 		{
 			m_Def.m_vsChoices.push_back( p->GetTranslitFullTitle() );
 			GameCommand mc;
-			mc.m_pSong = p;
+			mc.song_ = p;
 			m_aListEntries.push_back( mc );
 		}
 		return true;
@@ -1424,14 +1424,14 @@ public:
 
 		if( sParam == "EditStepsType" )
 		{
-			m_pstToFill = &GAMESTATE->m_stEdit;
+			m_pstToFill = &GAMESTATE->steps_type_edit_;
 		}
 		else if( sParam == "EditSourceStepsType" )
 		{
-			m_pstToFill = &GAMESTATE->m_stEditSource;
+			m_pstToFill = &GAMESTATE->edit_source_steps_type_;
 			m_vsReloadRowMessages.push_back( MessageIDToString(Message_CurrentStepsP1Changed) );
 			m_vsReloadRowMessages.push_back( MessageIDToString(Message_EditStepsTypeChanged) );
-			if( GAMESTATE->m_pCurSteps[0].Get() != nullptr )
+			if( GAMESTATE->cur_steps_[0].Get() != nullptr )
 				m_Def.m_vEnabledForPlayers.clear();	// hide row
 		}
 		else
@@ -1466,9 +1466,9 @@ public:
 		{
 			std::vector<bool> &vbSelOut = vbSelectedOut[p];
 
-			if( GAMESTATE->m_pCurSteps[0] )
+			if( GAMESTATE->cur_steps_[0] )
 			{
-				StepsType st = GAMESTATE->m_pCurSteps[0]->m_StepsType;
+				StepsType st = GAMESTATE->cur_steps_[0]->m_StepsType;
 				std::vector<StepsType>::const_iterator iter = find( m_vStepsTypesToShow.begin(), m_vStepsTypesToShow.end(), st );
 				if( iter != m_vStepsTypesToShow.end() )
 				{
@@ -1514,8 +1514,8 @@ public:
 		Commands temp = cmds;
 		temp.v.erase( temp.v.begin() );
 		m_gc.Load( 0, temp );
-		ROW_INVALID_IF(m_gc.m_sName.empty(), "GameCommand row has no name.", false);
-		m_Def.m_sName = m_gc.m_sName;
+		ROW_INVALID_IF(m_gc.name_.empty(), "GameCommand row has no name.", false);
+		m_Def.m_sName = m_gc.name_;
 		m_Def.m_bOneChoiceForAllPlayers = true;
 		m_Def.m_layoutType = LAYOUT_SHOW_ONE_IN_ROW;
 		m_Def.m_selectType = SELECT_NONE;
@@ -1538,7 +1538,7 @@ public:
 	}
 	virtual RString GetScreen( int iChoice ) const
 	{
-		return m_gc.m_sScreen;
+		return m_gc.screen_;
 	}
 };
 
@@ -1567,7 +1567,7 @@ OptionRowHandler* OptionRowHandlerUtil::Make( const Commands &cmds )
 	{
 		const Command &command = cmds.v[0];
 		RString sParam = command.GetArg(1).s;
-		ROW_INVALID_IF(command.m_vsArgs.size() != 2 || !sParam.size(),
+		ROW_INVALID_IF(command.args_.size() != 2 || !sParam.size(),
 			"list row command must be 'list,name' or 'list,type'.", nullptr);
 
 		if(	 sParam.CompareNoCase("NoteSkins")==0 )		MAKE( OptionRowHandlerListNoteSkins )

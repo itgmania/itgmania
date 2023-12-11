@@ -1,152 +1,142 @@
 #include "global.h"
+
 #include "LuaBinding.h"
+
 #include "LuaReference.h"
 #include "RageUtil.h"
-
-
 #include "SubscriptionManager.h"
 static SubscriptionManager<LuaBinding> m_Subscribers;
 
-namespace
-{
-	void RegisterTypes( lua_State *L )
-	{
-		if( m_Subscribers.m_pSubscribers == nullptr )
-			return;
+namespace {
 
-		/* Register base classes first. */
-		std::map<RString, LuaBinding*> mapToRegister;
-		for (LuaBinding *binding : *m_Subscribers.m_pSubscribers)
-			mapToRegister[binding->GetClassName()] = binding;
+void RegisterTypes(lua_State* L) {
+  if (m_Subscribers.m_pSubscribers == nullptr) {
+    return;
+  }
 
-		std::set<RString> setRegisteredAlready;
+  // Register base classes first.
+  std::map<RString, LuaBinding*> map_to_register;
+  for (LuaBinding* binding : *m_Subscribers.m_pSubscribers) {
+    map_to_register[binding->GetClassName()] = binding;
+  }
 
-		while( !mapToRegister.empty() )
-		{
-			/* Look at the first class.  If it has a base class that needs to be registered,
-			 * go there first. */
-			LuaBinding *pBinding = mapToRegister.begin()->second;
-			for(;;)
-			{
-				if( !pBinding->IsDerivedClass() )
-				{
-					break;
-				}
-				RString sBase = pBinding->GetBaseClassName();
-				std::map<RString, LuaBinding*>::const_iterator it = mapToRegister.find(sBase);
-				if( it != mapToRegister.end() )
-				{
-					pBinding = it->second;
-					continue;
-				}
+  std::set<RString> set_registered_already;
 
-				/* If the base class wasn't found, and hasn't been registered already, then
-				 * a base class registration is missing. */
-				if( setRegisteredAlready.find(sBase) != setRegisteredAlready.end() )
-					break;
+  while (!map_to_register.empty()) {
+    // Look at the first class. If it has a base class that needs to be
+    // registered, go there first.
+    LuaBinding* binding = map_to_register.begin()->second;
+    while(true) {
+      if (!binding->IsDerivedClass()) {
+        break;
+      }
+      RString base = binding->GetBaseClassName();
+      auto it = map_to_register.find(base);
+      if (it != map_to_register.end()) {
+        binding = it->second;
+        continue;
+      }
 
-				FAIL_M( ssprintf("Base class of \"%s\" not registered: \"%s\"",
-					pBinding->GetClassName().c_str(),
-					sBase.c_str()) );
-			}
+      // If the base class wasn't found, and hasn't been registered already,
+      // then a base class registration is missing.
+      if (set_registered_already.find(base) != set_registered_already.end()) {
+        break;
+      }
 
-			pBinding->Register( L );
-			setRegisteredAlready.insert( pBinding->GetClassName() );
-			mapToRegister.erase( pBinding->GetClassName() );
-		}
-	}
-};
-REGISTER_WITH_LUA_FUNCTION( RegisterTypes );
+      FAIL_M(ssprintf(
+          "Base class of \"%s\" not registered: \"%s\"",
+          binding->GetClassName().c_str(), base.c_str()));
+    }
 
-LuaBinding::LuaBinding()
-{
-	m_Subscribers.Subscribe( this );
+    binding->Register(L);
+    set_registered_already.insert(binding->GetClassName());
+    map_to_register.erase(binding->GetClassName());
+  }
 }
 
-LuaBinding::~LuaBinding()
-{
-	m_Subscribers.Unsubscribe( this );
-}
+};  // namespace
+REGISTER_WITH_LUA_FUNCTION(RegisterTypes);
 
-void LuaBinding::Register( lua_State *L )
-{
-	/* Create the methods table, if it doesn't already exist. */
-	LuaBinding::CreateMethodsTable( L, GetClassName() );
-	int methods = lua_gettop( L );
+LuaBinding::LuaBinding() { m_Subscribers.Subscribe(this); }
 
-	/* Create a metatable for the userdata objects. */
-	luaL_newmetatable( L, GetClassName() );
-	int metatable = lua_gettop( L );
+LuaBinding::~LuaBinding() { m_Subscribers.Unsubscribe(this); }
 
-	// We use the metatable to determine the type of the table, so don't
-	// allow it to be changed.
-	lua_pushstring( L, "(hidden)" );
-	lua_setfield( L, metatable, "__metatable" );
+void LuaBinding::Register(lua_State* L) {
+  // Create the methods table, if it doesn't already exist.
+  LuaBinding::CreateMethodsTable(L, GetClassName());
+  int methods = lua_gettop(L);
 
-	lua_pushvalue( L, methods );
-	lua_setfield( L, metatable, "__index" );
+  // Create a metatable for the userdata objects.
+  luaL_newmetatable(L, GetClassName());
+  int metatable = lua_gettop(L);
 
-	lua_pushcfunction( L, PushEqual );
-	lua_setfield( L, metatable, "__eq" );
+  // We use the metatable to determine the type of the table, so don't
+  // allow it to be changed.
+  lua_pushstring(L, "(hidden)");
+  lua_setfield(L, metatable, "__metatable");
 
-	/* Create a metatable for the methods table. */
-	lua_newtable( L );
-	int methods_metatable = lua_gettop( L );
+  lua_pushvalue(L, methods);
+  lua_setfield(L, metatable, "__index");
 
-	// Hide the metatable.
-	lua_pushstring( L, "(hidden)" );
-	lua_setfield( L, methods_metatable, "__metatable" );
+  lua_pushcfunction(L, PushEqual);
+  lua_setfield(L, metatable, "__eq");
 
-	// If this type has a base class, set the __index of this type
-	// to the base class.
-	if( IsDerivedClass() )
-	{
-		lua_getfield( L, LUA_GLOBALSINDEX, GetBaseClassName() );
-		lua_setfield( L, methods_metatable, "__index" );
+  // Create a metatable for the methods table.
+  lua_newtable(L);
+  int methods_metatable = lua_gettop(L);
 
-		lua_pushstring( L, GetBaseClassName() );
-		lua_setfield( L, metatable, "base" );
-	}
+  // Hide the metatable.
+  lua_pushstring(L, "(hidden)");
+  lua_setfield(L, methods_metatable, "__metatable");
 
-	lua_pushstring( L, GetClassName() );
-	lua_setfield( L, methods_metatable, "class" );
+  // If this type has a base class, set the __index of this type to the base
+	// class.
+  if (IsDerivedClass()) {
+    lua_getfield(L, LUA_GLOBALSINDEX, GetBaseClassName());
+    lua_setfield(L, methods_metatable, "__index");
 
-	lua_pushstring( L, GetClassName() );
-	LuaHelpers::PushValueFunc( L, 1 );
-	lua_setfield( L, metatable, "__type" ); // for luaL_pushtype
+    lua_pushstring(L, GetBaseClassName());
+    lua_setfield(L, metatable, "base");
+  }
 
-	{
-		lua_newtable( L );
-		int iHeirarchyTable = lua_gettop( L );
+  lua_pushstring(L, GetClassName());
+  lua_setfield(L, methods_metatable, "class");
 
-		RString sClass = GetClassName();
-		int iIndex = 0;
-		while( !sClass.empty() )
-		{
-			lua_pushstring( L, sClass );
-			lua_pushinteger( L, iIndex );
-			lua_rawset( L, iHeirarchyTable );
-			++iIndex;
+  lua_pushstring(L, GetClassName());
+  LuaHelpers::PushValueFunc(L, 1);
+  lua_setfield(L, metatable, "__type");  // for luaL_pushtype
 
-			luaL_getmetatable( L, sClass );
-			ASSERT( !lua_isnil(L, -1) );
-			lua_getfield( L, -1, "base" );
+  {
+    lua_newtable(L);
+    int heirarchy_table = lua_gettop(L);
 
-			LuaHelpers::FromStack( L, sClass, -1 );
-			lua_pop( L, 2 );
-		}
+    RString class_name = GetClassName();
+    int index = 0;
+    while (!class_name.empty()) {
+      lua_pushstring(L, class_name);
+      lua_pushinteger(L, index);
+      lua_rawset(L, heirarchy_table);
+      ++index;
 
-		lua_setfield( L, metatable, "heirarchy" );
-	}
+      luaL_getmetatable(L, class_name);
+      ASSERT(!lua_isnil(L, -1));
+      lua_getfield(L, -1, "base");
 
-	/* Set and pop the methods metatable. */
-	lua_setmetatable( L, methods );
+      LuaHelpers::FromStack(L, class_name, -1);
+      lua_pop(L, 2);
+    }
 
-	/* Allow the derived class to populate the method table, and set any other
-	 * metatable fields. */
-	Register( L, methods, metatable );
+    lua_setfield(L, metatable, "heirarchy");
+  }
 
-	lua_pop( L, 2 );  // drop metatable and method table
+  // Set and pop the methods metatable.
+  lua_setmetatable(L, methods);
+
+  // Allow the derived class to populate the method table, and set any other
+  // metatable fields.
+  Register(L, methods, metatable);
+
+  lua_pop(L, 2);  // drop metatable and method table
 }
 
 // If defined, type checks for functions will be skipped.  These add
@@ -155,246 +145,237 @@ void LuaBinding::Register( lua_State *L )
 // types (eg. "Actor.x(GAMESTATE, 10)"), which will crash or cause corruption.
 // #define FAST_LUA
 
-void LuaBinding::CreateMethodsTable( lua_State *L, const RString &sName )
-{
-	lua_newtable( L );
-	lua_pushvalue( L, -1 );
-	lua_setfield( L, LUA_GLOBALSINDEX, sName );
+void LuaBinding::CreateMethodsTable(lua_State* L, const RString& name) {
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setfield(L, LUA_GLOBALSINDEX, name);
 }
 
-int LuaBinding::PushEqual( lua_State *L )
-{
-	lua_pushboolean( L, Equal(L) );
-	return 1;
+int LuaBinding::PushEqual(lua_State* L) {
+  lua_pushboolean(L, Equal(L));
+  return 1;
 }
 
-bool LuaBinding::Equal( lua_State *L )
-{
-	int iArg1 = lua_gettop( L ) - 1;
-	int iArg2 = lua_gettop( L );
+bool LuaBinding::Equal(lua_State* L) {
+  int arg1 = lua_gettop(L) - 1;
+  int arg2 = lua_gettop(L);
 
-	int iType = lua_type( L, iArg1 );
-	if( iType != lua_type(L, iArg2) )
-		return false;
+  int type = lua_type(L, arg1);
+  if (type != lua_type(L, arg2)) {
+    return false;
+  }
 
-	if( iType != LUA_TTABLE && iType != LUA_TUSERDATA )
-		return false;
+  if (type != LUA_TTABLE && type != LUA_TUSERDATA) {
+    return false;
+  }
 
-	/* Use the regular method for tables.  If an object's table is
-	 * kept around after the actual object has been destroyed, the
-	 * table is still valid, and the pointer no longer exists. */
-	if( iType == LUA_TTABLE )
-		return !!lua_rawequal( L, iArg1, iArg2 );
+  // Use the regular method for tables. If an object's table is kept around
+	// after the actual object has been destroyed, the table is still valid, and
+	// the pointer no longer exists.
+  if (type == LUA_TTABLE) {
+    return !!lua_rawequal(L, arg1, arg2);
+  }
 
-	// This checks that they're the same type.  it does not check
-	// that it's actually a LuaBinding type.  If iArg1 is a non-LuaBinding
-	// type, this function should not be called and the return value is
-	// undefined, but the lua_objlen check below will prevent us from crashing.
-	if( !lua_getmetatable(L, iArg1) )
-		return false;
-	if( !lua_getmetatable(L, iArg2) )
-	{
-		lua_pop( L, 1 );
-		return false;
-	}
+  // This checks that they're the same type. It does not check that it's
+	// actually a LuaBinding type. If arg1 is a non-LuaBinding type, this function
+	// should not be called and the return value is undefined, but the lua_objlen
+	// check below will prevent us from crashing.
+  if (!lua_getmetatable(L, arg1)) {
+    return false;
+  }
+  if (!lua_getmetatable(L, arg2)) {
+    lua_pop(L, 1);
+    return false;
+  }
 
-	bool bSameType = !!lua_rawequal( L, -1, -2 );
-	lua_pop( L, 2 );
-	if( !bSameType )
-		return false;
+  bool same_type = !!lua_rawequal(L, -1, -2);
+  lua_pop(L, 2);
+  if (!same_type) {
+    return false;
+  }
 
-	if( lua_objlen(L, iArg1) != sizeof(void *) )
-		return false;
-	if( lua_objlen(L, iArg2) != sizeof(void *) )
-		return false;
+  if (lua_objlen(L, arg1) != sizeof(void*)) {
+    return false;
+  }
+  if (lua_objlen(L, arg2) != sizeof(void*)) {
+    return false;
+  }
 
-	void **pData1 = (void **) lua_touserdata( L, iArg1 );
-	void **pData2 = (void **) lua_touserdata( L, iArg2 );
-	return *pData1 == *pData2;
+  void** data1 = (void**)lua_touserdata(L, arg1);
+  void** data2 = (void**)lua_touserdata(L, arg2);
+  return *data1 == *data2;
 }
 
-/*
- * Get a userdata, and check that it's either szType or a type
- * derived from szType, by checking the heirarchy table.
- */
-bool LuaBinding::CheckLuaObjectType( lua_State *L, int iArg, const char *szType )
-{
+// Get a userdata, and check that it's either "type" or a type derived from
+// "type", by checking the heirarchy table.
+bool LuaBinding::CheckLuaObjectType(lua_State* L, int arg, const char* type) {
 #if defined(FAST_LUA)
-	return true;
+  return true;
 #endif
-	luaL_checkany( L, iArg );
+  luaL_checkany(L, arg);
 
-	/* Check that szType is in metatable.heirarchy. */
-	if( !luaL_getmetafield(L, iArg, "heirarchy") )
-		return false;
-	if( !lua_istable(L, -1) )
-	{
-		lua_pop( L, 1 );
-		return false;
-	}
+  // Check that type is in metatable.heirarchy.
+  if (!luaL_getmetafield(L, arg, "heirarchy")) {
+    return false;
+  }
+  if (!lua_istable(L, -1)) {
+    lua_pop(L, 1);
+    return false;
+  }
 
-	lua_getfield( L, -1, szType );
-	bool bRet = !lua_isnil( L, -1 );
-	lua_pop( L, 2 );
+  lua_getfield(L, -1, type);
+  bool bRet = !lua_isnil(L, -1);
+  lua_pop(L, 2);
 
-	return bRet;
+  return bRet;
 }
 
-static void GetGlobalTable( Lua *L )
-{
-	static LuaReference UserDataTable;
-	if( !UserDataTable.IsSet() )
-	{
-		lua_newtable( L );
-		UserDataTable.SetFromStack( L );
-	}
+static void GetGlobalTable(Lua* L) {
+  static LuaReference user_data_table;
+  if (!user_data_table.IsSet()) {
+    lua_newtable(L);
+    user_data_table.SetFromStack(L);
+  }
 
-	UserDataTable.PushSelf( L );
+  user_data_table.PushSelf(L);
 }
 
-/* The object is on the stack.  It's either a table or a userdata.
- * If needed, associate the metatable; if a table, also add it to
- * the userdata table. */
-void LuaBinding::ApplyDerivedType( Lua *L, const RString &sClassName, void *pSelf )
-{
-	int iTable = lua_gettop( L );
+// The object is on the stack. It's either a table or a userdata. If needed,
+// associate the metatable; if a table, also add it to the userdata table.
+void LuaBinding::ApplyDerivedType(
+    Lua* L, const RString& class_name, void* self) {
+  int table = lua_gettop(L);
 
-	int iType = lua_type( L, iTable );
-	ASSERT_M( iType == LUA_TTABLE || iType == LUA_TUSERDATA,
-		ssprintf("Object on lua stack that derived type is being applied to is %i instead of %i or %i", iType, LUA_TTABLE, LUA_TUSERDATA) );
+  int type = lua_type(L, table);
+  ASSERT_M(
+      type == LUA_TTABLE || type == LUA_TUSERDATA,
+      ssprintf(
+          "Object on lua stack that derived type is being applied to is %i "
+          "instead of %i or %i",
+          type, LUA_TTABLE, LUA_TUSERDATA));
 
-	if( iType == LUA_TTABLE )
-	{
-		GetGlobalTable( L );
-		int iGlobalTable = lua_gettop( L );
+  if (type == LUA_TTABLE) {
+    GetGlobalTable(L);
+    int global_table = lua_gettop(L);
 
-		/* If the table is already in the userdata table, then everything
-		 * is already set up. */
-		lua_pushvalue( L, iTable );
-		lua_rawget( L, iGlobalTable );
-		if( !lua_isnil(L, -1) )
-		{
-			void *pData = lua_touserdata( L, -1 );
-			ASSERT( pSelf == pData );
+    // If the table is already in the userdata table, then everything is
+		// already set up.
+    lua_pushvalue(L, table);
+    lua_rawget(L, global_table);
+    if (!lua_isnil(L, -1)) {
+      void* data = lua_touserdata(L, -1);
+      ASSERT(self == data);
 
-			lua_settop( L, iTable );
-			return;
-		}
+      lua_settop(L, table);
+      return;
+    }
 
-		/* Create the userdata, and add it to the global table. */
-		lua_pushvalue( L, iTable );
-		lua_pushlightuserdata( L, pSelf );
-		lua_rawset( L, iGlobalTable );
+    // Create the userdata, and add it to the global table.
+    lua_pushvalue(L, table);
+    lua_pushlightuserdata(L, self);
+    lua_rawset(L, global_table);
 
-		/* Pop everything except the table. */
-		lua_settop( L, iTable );
-	}
+    // Pop everything except the table.
+    lua_settop(L, table);
+  }
 
-	luaL_getmetatable( L, sClassName );
-	lua_setmetatable( L, iTable );
+  luaL_getmetatable(L, class_name);
+  lua_setmetatable(L, table);
 }
 
 #include "RageUtil_AutoPtr.h"
-REGISTER_CLASS_TRAITS( LuaClass, new LuaClass(*pCopy) )
+REGISTER_CLASS_TRAITS(LuaClass, new LuaClass(*pCopy))
 
-void *LuaBinding::GetPointerFromStack( Lua *L, const RString &sType, int iArg )
-{
-	iArg = LuaHelpers::AbsIndex( L, iArg );
+void* LuaBinding::GetPointerFromStack(Lua* L, const RString& type, int arg) {
+  arg = LuaHelpers::AbsIndex(L, arg);
 
-	/* The stack has a userdata or a table.  If it's a table, look up the associated userdata. */
-	if( lua_istable(L, iArg) )
-	{
-		GetGlobalTable( L );
+  // The stack has a userdata or a table. If it's a table, look up the
+  // associated userdata.
+  if (lua_istable(L, arg)) {
+    GetGlobalTable(L);
 
-		lua_pushvalue( L, iArg );
-		lua_rawget( L, -2 );
-		if( lua_isnil(L, -1) )
-			luaL_error( L, "stale %s referenced (object used but no longer exists)", sType.c_str() );
+    lua_pushvalue(L, arg);
+    lua_rawget(L, -2);
+    if (lua_isnil(L, -1)) {
+      luaL_error(
+          L, "stale %s referenced (object used but no longer exists)",
+          type.c_str());
+    }
 
-		void *pRet = lua_touserdata( L, -1 );
-		lua_pop( L, 2 );
+    void* ret = lua_touserdata(L, -1);
+    lua_pop(L, 2);
 
-		return pRet;
-	}
-	else if( lua_isuserdata(L, iArg) )
-	{
-		void **pData = (void **) lua_touserdata( L, iArg );
-		return *pData;
-	}
-	else
-		return nullptr;
+    return ret;
+  } else if (lua_isuserdata(L, arg)) {
+    void** data = (void**)lua_touserdata(L, arg);
+    return *data;
+  } else {
+    return nullptr;
+  }
 }
 
-/* Tricky: when an instance table is copied, we want to do a deep
- * copy, not a reference copy.  Otherwise, the new higher-level object
- * will share a table with the original.  Aside from being confusing,
- * this breaks the global table, which assumes that we have a one-to-
- * one mapping between tables and objects. */
-LuaClass::LuaClass( const LuaClass &cpy ):
-	LuaTable(cpy)
-{
-	if( !IsSet() )
-		return;
+// Tricky: when an instance table is copied, we want to do a deepcopy, not a
+// reference copy. Otherwise, the new higher-level object will share a table
+// with the original. Aside from being confusing, this breaks the global table,
+// which assumes that we have a one-to-one mapping between tables and objects.
+LuaClass::LuaClass(const LuaClass& cpy) : LuaTable(cpy) {
+  if (!IsSet()) {
+    return;
+  }
 
-	DeepCopy();
+  DeepCopy();
 }
 
-LuaClass &LuaClass::operator=( const LuaClass &cpy )
-{
-	LuaTable::operator=(cpy);
+LuaClass& LuaClass::operator=(const LuaClass& cpy) {
+  LuaTable::operator=(cpy);
 
-	if( !IsSet() )
-		return *this;
+  if (!IsSet()) {
+    return *this;
+  }
 
-	DeepCopy();
+  DeepCopy();
 
-	return *this;
+  return *this;
 }
 
+LuaClass::~LuaClass() {
+  if (LUA == nullptr) {
+    return;
+  }
 
-LuaClass::~LuaClass()
-{
-	if( LUA == nullptr )
-		return;
+  Lua* L = LUA->Get();
 
-	Lua *L = LUA->Get();
+  int iTop = lua_gettop(L);
 
-	int iTop = lua_gettop( L );
+  // If we're registered in the global table, unregister.
+  GetGlobalTable(L);
+  this->PushSelf(L);
+  lua_pushnil(L);
+  lua_rawset(L, -3);
 
-	/* If we're registered in the global table, unregister. */
-	GetGlobalTable( L );
-	this->PushSelf( L );
-	lua_pushnil( L );
-	lua_rawset( L, -3 );
+  lua_settop(L, iTop);
 
-	lua_settop( L, iTop );
-
-	LUA->Release( L );
+  LUA->Release(L);
 }
 
-void DefaultNilArgs(lua_State* L, int n)
-{
-	while(lua_gettop(L) < n)
-	{
-		lua_pushnil(L);
-	}
+void DefaultNilArgs(lua_State* L, int n) {
+  while (lua_gettop(L) < n) {
+    lua_pushnil(L);
+  }
 }
 
-float FArgGTEZero(lua_State* L, int index)
-{
-	float s= FArg(index);
-	if(s < 0)
-	{
-		luaL_error(L, "Arg must be greater than or equal to zero.");
-	}
-	return s;
+float FArgGTEZero(lua_State* L, int index) {
+  float s = FArg(index);
+  if (s < 0) {
+    luaL_error(L, "Arg must be greater than or equal to zero.");
+  }
+  return s;
 }
-
 
 /*
  * (c) 2005 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -404,7 +385,7 @@ float FArgGTEZero(lua_State* L, int index)
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

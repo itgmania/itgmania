@@ -122,7 +122,7 @@ RString RageDisplay::SetVideoMode( VideoModeParams p, bool &bNeedReloadTextures 
 	const DisplayMode supported = d.currentMode() != nullptr ? *d.currentMode() : *d.supportedModes().begin();
 	p.width = supported.width;
 	p.height = supported.height;
-	p.rate = std::round(supported.refreshRate);
+	p.rate = std::round(supported.refresh_rate);
 	if( (err = this->TryVideoMode(p,bNeedReloadTextures)) == "" )
 		return RString();
 	vs.push_back( err );

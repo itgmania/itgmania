@@ -296,7 +296,7 @@ void NoteDataWithScoring::GetActualRadarValues(const NoteData &in,
 	// limit to the max combo. -Kyz
 	int first_hittable_row= -1;
 	int last_hittable_row= -1;
-	bool tick_holds= GAMESTATE->GetCurrentGame()->m_bTickHolds;
+	bool tick_holds= GAMESTATE->GetCurrentGame()->tick_holds;
 
 	while(!curr_note.IsAtEnd())
 	{

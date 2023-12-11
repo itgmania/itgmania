@@ -104,27 +104,27 @@ void LightsDriver_LinuxPacDrive::Set( const LightsState *ls )
 		 * 12,13,14,15: P2 L R U D
 		 */
 
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) outb |= BIT(0);
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) outb |= BIT(1);
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) outb |= BIT(2);
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) outb |= BIT(3);
+		if (ls->cabinet_lights[LIGHT_MARQUEE_UP_LEFT]) outb |= BIT(0);
+		if (ls->cabinet_lights[LIGHT_MARQUEE_UP_RIGHT]) outb |= BIT(1);
+		if (ls->cabinet_lights[LIGHT_MARQUEE_LR_LEFT]) outb |= BIT(2);
+		if (ls->cabinet_lights[LIGHT_MARQUEE_LR_RIGHT]) outb |= BIT(3);
 
-		if (ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) outb |= BIT(4);
-		if (ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) outb |= BIT(5);
+		if (ls->game_button_lights[GameController_1][GAME_BUTTON_START]) outb |= BIT(4);
+		if (ls->game_button_lights[GameController_2][GAME_BUTTON_START]) outb |= BIT(5);
 
 		//Most PacDrive/Cabinet setups only have *one* bass light, so mux them together here.
-		if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) outb |= BIT(6);
-		if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) outb |= BIT(7);
+		if (ls->cabinet_lights[LIGHT_BASS_LEFT] || ls->cabinet_lights[LIGHT_BASS_RIGHT]) outb |= BIT(6);
+		if (ls->cabinet_lights[LIGHT_BASS_LEFT] || ls->cabinet_lights[LIGHT_BASS_RIGHT]) outb |= BIT(7);
 
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) outb |= BIT(8);
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) outb |= BIT(9);
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) outb |= BIT(10);
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) outb |= BIT(11);
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_LEFT]) outb |= BIT(8);
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_RIGHT]) outb |= BIT(9);
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_UP]) outb |= BIT(10);
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_DOWN]) outb |= BIT(11);
 
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) outb |= BIT(12);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) outb |= BIT(13);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) outb |= BIT(14);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) outb |= BIT(15);
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_LEFT]) outb |= BIT(12);
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_RIGHT]) outb |= BIT(13);
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_UP]) outb |= BIT(14);
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_DOWN]) outb |= BIT(15);
 
 		break;
 
@@ -134,24 +134,24 @@ void LightsDriver_LinuxPacDrive::Set( const LightsState *ls )
 		//reference page 7
 		//http://www.peeweepower.com/stepmania/sm509pacdriveinfo.pdf
 
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) outb |= BIT(0);
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) outb |= BIT(1);
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) outb |= BIT(2);
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) outb |= BIT(3);
+		if (ls->cabinet_lights[LIGHT_MARQUEE_UP_LEFT]) outb |= BIT(0);
+		if (ls->cabinet_lights[LIGHT_MARQUEE_UP_RIGHT]) outb |= BIT(1);
+		if (ls->cabinet_lights[LIGHT_MARQUEE_LR_LEFT]) outb |= BIT(2);
+		if (ls->cabinet_lights[LIGHT_MARQUEE_LR_RIGHT]) outb |= BIT(3);
 
-		if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) outb |= BIT(4);
+		if (ls->cabinet_lights[LIGHT_BASS_LEFT] || ls->cabinet_lights[LIGHT_BASS_RIGHT]) outb |= BIT(4);
 
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) outb |= BIT(5);
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) outb |= BIT(6);
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) outb |= BIT(7);
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) outb |= BIT(8);
-		if (ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) outb |= BIT(9);
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_LEFT]) outb |= BIT(5);
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_RIGHT]) outb |= BIT(6);
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_UP]) outb |= BIT(7);
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_DOWN]) outb |= BIT(8);
+		if (ls->game_button_lights[GameController_1][GAME_BUTTON_START]) outb |= BIT(9);
 
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) outb |= BIT(10);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) outb |= BIT(11);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) outb |= BIT(12);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) outb |= BIT(13);
-		if (ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) outb |= BIT(14);
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_LEFT]) outb |= BIT(10);
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_RIGHT]) outb |= BIT(11);
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_UP]) outb |= BIT(12);
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_DOWN]) outb |= BIT(13);
+		if (ls->game_button_lights[GameController_2][GAME_BUTTON_START]) outb |= BIT(14);
 		//Bit index 15 is unused.
 
 		break;

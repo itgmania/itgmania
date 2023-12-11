@@ -65,7 +65,7 @@ void ScreenNameEntry::ScrollingText::Init( const RString &sName, const std::vect
 
 void ScreenNameEntry::ScrollingText::DrawPrimitives()
 {
-	const float fFakeBeat = GAMESTATE->m_Position.m_fSongBeat;
+	const float fFakeBeat = GAMESTATE->position_.m_fSongBeat;
 	const std::size_t iClosestIndex = std::lrint( fFakeBeat ) % CHARS_CHOICES.size();
 	const float fClosestYOffset = GetClosestCharYOffset( fFakeBeat );
 
@@ -120,10 +120,10 @@ ScreenNameEntry::ScreenNameEntry()
 {
 	if( PREFSMAN->m_sTestInitialScreen.Get() != "" )
 	{
-		GAMESTATE->m_bSideIsJoined[PLAYER_1] = true;
-		GAMESTATE->m_bSideIsJoined[PLAYER_2] = true;
+		GAMESTATE->side_is_joined_[PLAYER_1] = true;
+		GAMESTATE->side_is_joined_[PLAYER_2] = true;
 		GAMESTATE->SetMasterPlayerNumber(PLAYER_1);
-		GAMESTATE->m_PlayMode.Set( PLAY_MODE_REGULAR );
+		GAMESTATE->play_mode_.Set( PLAY_MODE_REGULAR );
 		GAMESTATE->SetCurrentStyle( GAMEMAN->GameAndStringToStyle( GAMEMAN->GetDefaultGame(),"versus"), PLAYER_INVALID );
 		StageStats ss;
 		for( int z = 0; z < 3; ++z )
@@ -131,7 +131,7 @@ ScreenNameEntry::ScreenNameEntry()
 			ss.m_vpPlayedSongs.push_back( SONGMAN->GetRandomSong() );
 			ss.m_vpPossibleSongs = ss.m_vpPlayedSongs;
 			ss.m_player[PLAYER_1].m_pStyle = GAMESTATE->GetCurrentStyle(PLAYER_1);
-			ss.m_playMode = GAMESTATE->m_PlayMode;
+			ss.m_playMode = GAMESTATE->play_mode_;
 			ASSERT( ss.m_vpPlayedSongs[0]->GetAllSteps().size() != 0 );
 			StepsType st = GAMESTATE->GetCurrentStyle(PLAYER_1)->m_StepsType;
 
@@ -139,7 +139,7 @@ ScreenNameEntry::ScreenNameEntry()
 			{
 				Steps *pSteps = ss.m_vpPlayedSongs[0]->GetAllSteps()[0];
 				ss.m_player[p].m_iStepsPlayed = 1;
-				GAMESTATE->m_pCurSteps[p].Set( pSteps );
+				GAMESTATE->cur_steps_[p].Set( pSteps );
 				ss.m_player[p].m_iPossibleDancePoints = 100;
 				ss.m_player[p].m_iActualDancePoints = 100;
 				ss.m_player[p].m_iScore = 100;
@@ -192,8 +192,8 @@ void ScreenNameEntry::Init()
 	// reset Player and Song Options
 	{
 		FOREACH_PlayerNumber( p )
-			PO_GROUP_CALL( GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage, Init );
-		SO_GROUP_CALL( GAMESTATE->m_SongOptions, ModsLevel_Stage, Init );
+			PO_GROUP_CALL( GAMESTATE->player_state_[p]->m_PlayerOptions, ModsLevel_Stage, Init );
+		SO_GROUP_CALL( GAMESTATE->song_options_, ModsLevel_Stage, Init );
 	}
 
 	std::vector<GameState::RankingFeat> aFeats[NUM_PLAYERS];
@@ -216,8 +216,8 @@ void ScreenNameEntry::Init()
 		return;
 	}
 
-	bool IsOnRanking = ( (GAMESTATE->m_PlayMode == PLAY_MODE_NONSTOP || GAMESTATE->m_PlayMode == PLAY_MODE_ONI)
-		&& !(GAMESTATE->m_pCurCourse->IsRanking()) );
+	bool IsOnRanking = ( (GAMESTATE->play_mode_ == PLAY_MODE_NONSTOP || GAMESTATE->play_mode_ == PLAY_MODE_ONI)
+		&& !(GAMESTATE->cur_course_->IsRanking()) );
 
 	if( PREFSMAN->m_GetRankingName == RANKING_OFF ||
 		(PREFSMAN->m_GetRankingName == RANKING_LIST && !IsOnRanking) )
@@ -227,7 +227,7 @@ void ScreenNameEntry::Init()
 		return;
 	}
 
-	GAMESTATE->m_bGameplayLeadIn.Set( false );	// enable the gray arrows
+	GAMESTATE->gameplay_lead_in_.Set( false );	// enable the gray arrows
 
 	FOREACH_PlayerNumber( p )
 	{
@@ -247,16 +247,16 @@ void ScreenNameEntry::Init()
 		// remove modifiers that may have been on the last song
 		PlayerOptions po;
 		GAMESTATE->GetDefaultPlayerOptions( po );
-		GAMESTATE->m_pPlayerState[p]->m_PlayerOptions.Assign( ModsLevel_Stage, po );
+		GAMESTATE->player_state_[p]->m_PlayerOptions.Assign( ModsLevel_Stage, po );
 
 		ASSERT( GAMESTATE->IsHumanPlayer(p) );	// they better be enabled if they made a high score!
 
 		const float fPlayerX = PLAYER_X( p, GAMESTATE->GetCurrentStyle(p)->m_StyleType );
 
 		{
-			LockNoteSkin l( GAMESTATE->m_pPlayerState[p]->m_PlayerOptions.GetCurrent().m_sNoteSkin );
+			LockNoteSkin l( GAMESTATE->player_state_[p]->m_PlayerOptions.GetCurrent().m_sNoteSkin );
 
-			m_ReceptorArrowRow[p].Load( GAMESTATE->m_pPlayerState[p], 0 );
+			m_ReceptorArrowRow[p].Load( GAMESTATE->player_state_[p], 0 );
 			m_ReceptorArrowRow[p].SetX( fPlayerX );
 			m_ReceptorArrowRow[p].SetY( GRAY_ARROWS_Y );
 			this->AddChild( &m_ReceptorArrowRow[p] );
@@ -310,7 +310,7 @@ void ScreenNameEntry::Init()
 		{
 			if( j )
 				joined += "\n";
-			joined += aFeats[p][j].Feat;
+			joined += aFeats[p][j].feat;
 		}
 
 		m_textCategory[p].SetText( joined );
@@ -335,7 +335,7 @@ void ScreenNameEntry::Update( float fDelta )
 		SOUND->PlayOnceFromDir( ANNOUNCER->GetPathTo("name entry") );
 
 	m_fFakeBeat += fDelta * FAKE_BEATS_PER_SEC;
-	GAMESTATE->m_Position.m_fSongBeat = m_fFakeBeat;
+	GAMESTATE->position_.m_fSongBeat = m_fFakeBeat;
 
 	ScreenWithMenuElements::Update(fDelta);
 }
@@ -345,21 +345,21 @@ bool ScreenNameEntry::Input( const InputEventPlus &input )
 	if( IsTransitioning() )
 		return false;
 
-	if( input.type != IET_FIRST_PRESS || !input.GameI.IsValid() )
+	if( input.type_ != IET_FIRST_PRESS || !input.game_input_.IsValid() )
 		return false; // ignore
 
-	const int iCol = GAMESTATE->GetCurrentStyle(input.pn)->GameInputToColumn( input.GameI );
+	const int iCol = GAMESTATE->GetCurrentStyle(input.pn_)->GameInputToColumn( input.game_input_ );
 	bool bHandled = false;
-	if( iCol != Column_Invalid && m_bStillEnteringName[input.pn] )
+	if( iCol != Column_Invalid && m_bStillEnteringName[input.pn_] )
 	{
-		int iStringIndex = m_ColToStringIndex[input.pn][iCol];
+		int iStringIndex = m_ColToStringIndex[input.pn_][iCol];
 		if( iStringIndex != -1 )
 		{
-			m_ReceptorArrowRow[input.pn].Step( iCol, TNS_W1 );
+			m_ReceptorArrowRow[input.pn_].Step( iCol, TNS_W1 );
 			m_soundStep.Play(true);
-			char c = m_Text[input.pn].GetClosestChar( m_fFakeBeat );
-			m_textSelectedChars[input.pn][iCol].SetText( RString(1, c) );
-			m_sSelectedName[input.pn][iStringIndex] = c;
+			char c = m_Text[input.pn_].GetClosestChar( m_fFakeBeat );
+			m_textSelectedChars[input.pn_][iCol].SetText( RString(1, c) );
+			m_sSelectedName[input.pn_][iStringIndex] = c;
 		}
 		bHandled = true;
 	}
@@ -376,7 +376,7 @@ void ScreenNameEntry::HandleScreenMessage( const ScreenMessage SM )
 			InputEventPlus iep;
 			FOREACH_PlayerNumber( p )
 			{
-				iep.pn = p;
+				iep.pn_ = p;
 				this->MenuStart( iep );
 			}
 		}
@@ -388,7 +388,7 @@ void ScreenNameEntry::HandleScreenMessage( const ScreenMessage SM )
 
 bool ScreenNameEntry::MenuStart( const InputEventPlus &input )
 {
-	PlayerNumber pn = input.pn;
+	PlayerNumber pn = input.pn_;
 
 	if( !m_bStillEnteringName[pn] )
 		return false;

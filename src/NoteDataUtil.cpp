@@ -1535,7 +1535,7 @@ static void GetTrackMapping( StepsType st, NoteDataUtil::TrackMapping tt, int Nu
 			int iOrig[MAX_NOTE_TRACKS];
 			memcpy( iOrig, iTakeFromTrack, sizeof(iOrig) );
 
-			int iShuffleSeed = GAMESTATE->m_iStageSeed;
+			int iShuffleSeed = GAMESTATE->stage_seed_;
 			do {
 				RandomGen rnd( iShuffleSeed );
 				// ignore turntable in beat mode
@@ -1589,7 +1589,7 @@ static void GetTrackMapping( StepsType st, NoteDataUtil::TrackMapping tt, int Nu
 			// TRICKY: Shuffle so that both player get the same shuffle mapping
 			// in the same round.
 
-			int iShuffleSeed = GAMESTATE->m_iStageSeed;
+			int iShuffleSeed = GAMESTATE->stage_seed_;
 			RandomGen rnd( iShuffleSeed );
 			int iRandChoice = (rnd() % 4);
 

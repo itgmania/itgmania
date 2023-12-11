@@ -69,7 +69,7 @@ void ScreenSyncOverlay::UpdateText()
 			FAIL_M(ssprintf("Invalid PlayerController: %i", pc));
 	}
 
-	AutosyncType type = GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType;
+	AutosyncType type = GAMESTATE->song_options_.GetCurrent().m_AutosyncType;
 	switch( type )
 	{
 	case AutosyncType_Off:							break;
@@ -80,7 +80,7 @@ void ScreenSyncOverlay::UpdateText()
 		FAIL_M(ssprintf("Invalid autosync type: %i", type));
 	}
 
-	if( GAMESTATE->m_pCurSong != nullptr  &&  !GAMESTATE->IsCourseMode() )	// sync controls available
+	if( GAMESTATE->cur_song_ != nullptr  &&  !GAMESTATE->IsCourseMode() )	// sync controls available
 	{
 		AdjustSync::GetSyncChangeTextGlobal( vs );
 		AdjustSync::GetSyncChangeTextSong( vs );
@@ -92,7 +92,7 @@ void ScreenSyncOverlay::UpdateText()
 
 
 	// Update SyncInfo
-	bool visible= GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType != AutosyncType_Off;
+	bool visible= GAMESTATE->song_options_.GetCurrent().m_AutosyncType != AutosyncType_Off;
 	Message set_adjustments("SetAdjustments");
 	set_adjustments.SetParam("visible", visible);
 	if(visible)
@@ -121,7 +121,7 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 	if( !IsGameplay() )
 		return Screen::Input(input);
 
-	if( input.DeviceI.device != DEVICE_KEYBOARD )
+	if( input.device_input_.device != DEVICE_KEYBOARD )
 		return Screen::Input(input);
 
 	enum Action
@@ -135,7 +135,7 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 	Action a = Action_Invalid;
 
 	bool bIncrease = true;
-	switch( input.DeviceI.button )
+	switch( input.device_input_.button )
 	{
 	case KEY_F4:
 		a = RevertSyncChanges;
@@ -175,9 +175,9 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 	{
 		FOREACH_EnabledPlayer(pn)
 		{
-			if(GAMESTATE->m_pCurSteps[pn])
+			if(GAMESTATE->cur_steps_[pn])
 			{
-				GAMESTATE->m_pCurSteps[pn]->GetTimingData()->ReleaseLookup();
+				GAMESTATE->cur_steps_[pn]->GetTimingData()->ReleaseLookup();
 			}
 		}
 	}
@@ -185,7 +185,7 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 	switch( a )
 	{
 	case RevertSyncChanges:
-		if( input.type != IET_FIRST_PRESS )
+		if( input.type_ != IET_FIRST_PRESS )
 			return false;
 		SCREENMAN->SystemMessage( SYNC_CHANGES_REVERTED );
 		AdjustSync::RevertSyncChanges();
@@ -198,12 +198,12 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 			{
 				fDelta /= 20;
 			}
-			switch( input.type )
+			switch( input.type_ )
 			{
 				case IET_RELEASE:	fDelta *= 0;	break;
 				case IET_REPEAT:
 				{
-					if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+					if( INPUTFILTER->GetSecsHeld(input.device_input_) < 1.0f )
 						fDelta *= 0;
 					else
 						fDelta *= 10;
@@ -211,12 +211,12 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 				}
 				default: break;
 			}
-			if( GAMESTATE->m_pCurSong != nullptr )
+			if( GAMESTATE->cur_song_ != nullptr )
 			{
-				TimingData &sTiming = GAMESTATE->m_pCurSong->m_SongTiming;
-				BPMSegment * seg = sTiming.GetBPMSegmentAtBeat( GAMESTATE->m_Position.m_fSongBeat );
+				TimingData &sTiming = GAMESTATE->cur_song_->m_SongTiming;
+				BPMSegment * seg = sTiming.GetBPMSegmentAtBeat( GAMESTATE->position_.m_fSongBeat );
 				seg->SetBPS( seg->GetBPS() + fDelta );
-				const std::vector<Steps*>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
+				const std::vector<Steps*>& vpSteps = GAMESTATE->cur_song_->GetAllSteps();
 				for (Steps *s : vpSteps)
 				{
 					TimingData &pTiming = s->m_Timing;
@@ -224,7 +224,7 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 					// which has already been updated.
 					if( pTiming.empty() )
 						continue;
-					float second = sTiming.GetElapsedTimeFromBeat(GAMESTATE->m_Position.m_fSongBeat);
+					float second = sTiming.GetElapsedTimeFromBeat(GAMESTATE->position_.m_fSongBeat);
 					seg = pTiming.GetBPMSegmentAtBeat(pTiming.GetBeatFromElapsedTime(second));
 					seg->SetBPS( seg->GetBPS() + fDelta );
 				}
@@ -240,12 +240,12 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 			{
 				fDelta /= 20; /* 1ms */
 			}
-			switch( input.type )
+			switch( input.type_ )
 			{
 				case IET_RELEASE:	fDelta *= 0;	break;
 				case IET_REPEAT:
 				{
-					if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+					if( INPUTFILTER->GetSecsHeld(input.device_input_) < 1.0f )
 						fDelta *= 0;
 					else
 						fDelta *= 10;
@@ -263,10 +263,10 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 
 				case ChangeSongOffset:
 				{
-					if( GAMESTATE->m_pCurSong != nullptr )
+					if( GAMESTATE->cur_song_ != nullptr )
 					{
-						GAMESTATE->m_pCurSong->m_SongTiming.m_fBeat0OffsetInSeconds += fDelta;
-						const std::vector<Steps*>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
+						GAMESTATE->cur_song_->m_SongTiming.m_fBeat0OffsetInSeconds += fDelta;
+						const std::vector<Steps*>& vpSteps = GAMESTATE->cur_song_->GetAllSteps();
 						for (Steps *s : vpSteps)
 						{
 							// Empty means it inherits song timing,

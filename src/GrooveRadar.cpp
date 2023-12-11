@@ -1,260 +1,254 @@
 #include "global.h"
+
 #include "GrooveRadar.h"
-#include "RageUtil.h"
-#include "PrefsManager.h"
-#include "GameConstantsAndTypes.h"
-#include "ThemeManager.h"
-#include "Steps.h"
-#include "RageDisplay.h"
-#include "RageMath.h"
-#include "ThemeMetric.h"
-#include "CommonMetrics.h"
-#include "ActorUtil.h"
-// I feel weird about this coupling, but it has to be done. -aj
-#include "GameState.h"
 
 #include <vector>
 
+#include "ActorUtil.h"
+#include "CommonMetrics.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "PrefsManager.h"
+#include "RageDisplay.h"
+#include "RageMath.h"
+#include "RageUtil.h"
+#include "Steps.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
 
 REGISTER_ACTOR_CLASS(GrooveRadar);
 
-static const ThemeMetric<float>	RADAR_EDGE_WIDTH	("GrooveRadar","EdgeWidth");
-static const ThemeMetric<float>	RADAR_CENTER_ALPHA	("GrooveRadar","CenterAlpha");
+static const ThemeMetric<float> RADAR_EDGE_WIDTH(
+		"GrooveRadar", "EdgeWidth");
+static const ThemeMetric<float> RADAR_CENTER_ALPHA(
+    "GrooveRadar", "CenterAlpha");
 
-static float RADAR_VALUE_ROTATION( int iValueIndex ) {	return PI/2 + PI*2 / 5.0f * iValueIndex; }
+static float RADAR_VALUE_ROTATION(int value_index) {
+  return PI / 2 + PI * 2 / 5.0f * value_index;
+}
 
 static const int NUM_SHOWN_RADAR_CATEGORIES = 5;
 
-GrooveRadar::GrooveRadar()
-{
-	m_sprRadarBase.Load( THEME->GetPathG("GrooveRadar","base") );
-	m_Frame.AddChild( m_sprRadarBase );
-	m_Frame.SetName( "RadarFrame" );
-	ActorUtil::LoadAllCommands( m_Frame, "GrooveRadar" );
+GrooveRadar::GrooveRadar() {
+  radar_base_.Load(THEME->GetPathG("GrooveRadar", "base"));
+  frame_.AddChild(radar_base_);
+  frame_.SetName("RadarFrame");
+  ActorUtil::LoadAllCommands(frame_, "GrooveRadar");
 
-	FOREACH_PlayerNumber( p )
-	{
-		// todo: remove dependency on radar base being a sprite. -aj
-		m_GrooveRadarValueMap[p].SetRadius( m_sprRadarBase->GetZoomedWidth() );
-		m_Frame.AddChild( &m_GrooveRadarValueMap[p] );
-		m_GrooveRadarValueMap[p].SetName( ssprintf("RadarValueMapP%d",p+1) );
-		ActorUtil::LoadAllCommands( m_GrooveRadarValueMap[p], "GrooveRadar" );
-	}
+  FOREACH_PlayerNumber(pn) {
+    // todo: remove dependency on radar base being a sprite. -aj
+    groove_radar_value_map_[pn].SetRadius(radar_base_->GetZoomedWidth());
+    frame_.AddChild(&groove_radar_value_map_[pn]);
+    groove_radar_value_map_[pn].SetName(ssprintf("RadarValueMapP%d", pn + 1));
+    ActorUtil::LoadAllCommands(groove_radar_value_map_[pn], "GrooveRadar");
+  }
 
-	this->AddChild( &m_Frame );
+  this->AddChild(&frame_);
 
-	for( int c=0; c<NUM_SHOWN_RADAR_CATEGORIES; c++ )
-	{
-		m_sprRadarLabels[c].SetName( ssprintf("Label%i",c+1) );
-		m_sprRadarLabels[c].Load( THEME->GetPathG("GrooveRadar","labels 1x5") );
-		m_sprRadarLabels[c].StopAnimating();
-		m_sprRadarLabels[c].SetState( c );
-		ActorUtil::LoadAllCommandsAndSetXY( m_sprRadarLabels[c], "GrooveRadar" );
-		this->AddChild( &m_sprRadarLabels[c] );
-	}
+  for (int c = 0; c < NUM_SHOWN_RADAR_CATEGORIES; ++c) {
+    radar_labels_[c].SetName(ssprintf("Label%i", c + 1));
+    radar_labels_[c].Load(THEME->GetPathG("GrooveRadar", "labels 1x5"));
+    radar_labels_[c].StopAnimating();
+    radar_labels_[c].SetState(c);
+    ActorUtil::LoadAllCommandsAndSetXY(radar_labels_[c], "GrooveRadar");
+    this->AddChild(&radar_labels_[c]);
+  }
 }
 
-void GrooveRadar::LoadFromNode( const XNode* pNode )
-{
-	ActorFrame::LoadFromNode( pNode );
+void GrooveRadar::LoadFromNode(const XNode* node) {
+  ActorFrame::LoadFromNode(node);
 }
 
-void GrooveRadar::SetEmpty( PlayerNumber pn )
-{
-	SetFromSteps( pn, nullptr );
+void GrooveRadar::SetEmpty(PlayerNumber pn) { SetFromSteps(pn, nullptr); }
+
+void GrooveRadar::SetFromRadarValues(
+		PlayerNumber pn, const RadarValues& radar_values) {
+  groove_radar_value_map_[pn].SetFromSteps(radar_values);
 }
 
-void GrooveRadar::SetFromRadarValues( PlayerNumber pn, const RadarValues &rv )
-{
-	m_GrooveRadarValueMap[pn].SetFromSteps( rv );
+void GrooveRadar::SetFromSteps(PlayerNumber pn, Steps* steps) {
+	// nullptr means no Song
+  if (steps == nullptr) {
+    groove_radar_value_map_[pn].SetEmpty();
+    return;
+  }
+
+  const RadarValues& radar_values = steps->GetRadarValues(pn);
+  groove_radar_value_map_[pn].SetFromSteps(radar_values);
 }
 
-void GrooveRadar::SetFromSteps( PlayerNumber pn, Steps* pSteps ) // nullptr means no Song
-{
-	if( pSteps == nullptr )
-	{
-		m_GrooveRadarValueMap[pn].SetEmpty();
-		return;
-	}
-
-	const RadarValues &rv = pSteps->GetRadarValues( pn );
-	m_GrooveRadarValueMap[pn].SetFromSteps( rv );
+void GrooveRadar::SetFromValues(PlayerNumber pn, std::vector<float> values) {
+  groove_radar_value_map_[pn].SetFromValues(values);
 }
 
-void GrooveRadar::SetFromValues( PlayerNumber pn, std::vector<float> vals )
-{
-	m_GrooveRadarValueMap[pn].SetFromValues(vals);
+GrooveRadar::GrooveRadarValueMap::GrooveRadarValueMap() {
+  values_visible_ = false;
+  percent_toward_new_ = 0;
+
+  for (int c = 0; c < NUM_SHOWN_RADAR_CATEGORIES; c++) {
+    values_new_[c] = 0;
+    values_old_[c] = 0;
+  }
 }
 
-GrooveRadar::GrooveRadarValueMap::GrooveRadarValueMap()
-{
-	m_bValuesVisible = false;
-	m_PercentTowardNew = 0;
+void GrooveRadar::GrooveRadarValueMap::SetEmpty() { values_visible_ = false; }
 
-	for( int c=0; c<NUM_SHOWN_RADAR_CATEGORIES; c++ )
-	{
-		m_fValuesNew[c] = 0;
-		m_fValuesOld[c] = 0;
-	}
+void GrooveRadar::GrooveRadarValueMap::SetFromSteps(
+		const RadarValues& radar_values) {
+  values_visible_ = true;
+  for (int c = 0; c < NUM_SHOWN_RADAR_CATEGORIES; ++c) {
+    const float value_current = values_old_[c] * (1 - percent_toward_new_) +
+                                values_new_[c] * percent_toward_new_;
+    values_old_[c] = value_current;
+    values_new_[c] = clamp(radar_values[c], 0.0f, 1.0f);
+  }
+
+  if (!values_visible_) {  // the values WERE invisible
+    percent_toward_new_ = 1;
+  } else {
+    percent_toward_new_ = 0;
+  }
 }
 
-void GrooveRadar::GrooveRadarValueMap::SetEmpty()
-{
-	m_bValuesVisible = false;
+void GrooveRadar::GrooveRadarValueMap::SetFromValues(
+		std::vector<float> values) {
+  values_visible_ = true;
+  for (int c = 0; c < NUM_SHOWN_RADAR_CATEGORIES; ++c) {
+    const float value_current = values_old_[c] * (1 - percent_toward_new_) +
+                                values_new_[c] * percent_toward_new_;
+    values_old_[c] = value_current;
+    values_new_[c] = values[c];
+  }
+
+  if (!values_visible_) {  // the values WERE invisible
+    percent_toward_new_ = 1;
+  } else {
+    percent_toward_new_ = 0;
+  }
 }
 
-void GrooveRadar::GrooveRadarValueMap::SetFromSteps( const RadarValues &rv )
-{
-	m_bValuesVisible = true;
-	for( int c=0; c<NUM_SHOWN_RADAR_CATEGORIES; c++ )
-	{
-		const float fValueCurrent = m_fValuesOld[c] * (1-m_PercentTowardNew) + m_fValuesNew[c] * m_PercentTowardNew;
-		m_fValuesOld[c] = fValueCurrent;
-		m_fValuesNew[c] = clamp(rv[c], 0.0f, 1.0f);
-	}
+void GrooveRadar::GrooveRadarValueMap::Update(float delta) {
+  ActorFrame::Update(delta);
 
-	if( !m_bValuesVisible ) // the values WERE invisible
-		m_PercentTowardNew = 1;
-	else
-		m_PercentTowardNew = 0;
+  percent_toward_new_ = std::min(percent_toward_new_ + 4.0f * delta, 1.0f);
 }
 
-void GrooveRadar::GrooveRadarValueMap::SetFromValues( std::vector<float> vals )
-{
-	m_bValuesVisible = true;
-	for( int c=0; c<NUM_SHOWN_RADAR_CATEGORIES; c++ )
-	{
-		const float fValueCurrent = m_fValuesOld[c] * (1-m_PercentTowardNew) + m_fValuesNew[c] * m_PercentTowardNew;
-		m_fValuesOld[c] = fValueCurrent;
-		m_fValuesNew[c] = vals[c];
-	}
+void GrooveRadar::GrooveRadarValueMap::DrawPrimitives() {
+  ActorFrame::DrawPrimitives();
 
-	if( !m_bValuesVisible ) // the values WERE invisible
-		m_PercentTowardNew = 1;
-	else
-		m_PercentTowardNew = 0;
-}
+  // draw radar filling
+  const float radius = GetUnzoomedWidth() / 2.0f * 1.1f;
 
-void GrooveRadar::GrooveRadarValueMap::Update( float fDeltaTime )
-{
-	ActorFrame::Update( fDeltaTime );
+  DISPLAY->ClearAllTextures();
+  DISPLAY->SetTextureMode(TextureUnit_1, TextureMode_Modulate);
+	// Needed to draw 5 fan primitives and 10 strip primitives.
+  RageSpriteVertex v[12];
 
-	m_PercentTowardNew = std::min( m_PercentTowardNew + 4.0f * fDeltaTime, 1.0f );
-}
+  // We could either make the values invisible or draw a dot (simulating real
+	// DDR).
+	// TODO(aj): Make that choice up to the themer.
+  if (!values_visible_) {
+    return;
+  }
 
-void GrooveRadar::GrooveRadarValueMap::DrawPrimitives()
-{
-	ActorFrame::DrawPrimitives();
+  // use a fan to draw the volume
+  RageColor color = this->m_pTempState->diffuse[0];
+  color.a = 0.5f;
+  v[0].p = RageVector3(0, 0, 0);
+  RageColor midcolor = color;
+  midcolor.a = RADAR_CENTER_ALPHA;
+  v[0].c = midcolor;
+  v[1].c = color;
 
-	// draw radar filling
-	const float fRadius = GetUnzoomedWidth()/2.0f*1.1f;
+	// Do one extra to close the fan.
+  for (int i = 0; i < NUM_SHOWN_RADAR_CATEGORIES + 1; ++i) {
+    const int c = i % NUM_SHOWN_RADAR_CATEGORIES;
+    const float dist_from_center =
+        (values_old_[c] * (1 - percent_toward_new_) +
+         values_new_[c] * percent_toward_new_ + 0.07f) *
+        radius;
+    const float rotation = RADAR_VALUE_ROTATION(i);
+    const float x = RageFastCos(rotation) * dist_from_center;
+    const float y = -RageFastSin(rotation) * dist_from_center;
 
-	DISPLAY->ClearAllTextures();
-	DISPLAY->SetTextureMode( TextureUnit_1, TextureMode_Modulate );
-	RageSpriteVertex v[12]; // needed to draw 5 fan primitives and 10 strip primitives
+    v[1 + i].p = RageVector3(x, y, 0);
+    v[1 + i].c = v[1].c;
+  }
 
-	// xxx: We could either make the values invisible or draw a dot
-	// (simulating real DDR). TODO: Make that choice up to the themer. -aj
-	if( !m_bValuesVisible )
-		return;
+  DISPLAY->DrawFan(v, NUM_SHOWN_RADAR_CATEGORIES + 2);
 
-	// use a fan to draw the volume
-	RageColor color = this->m_pTempState->diffuse[0];
-	color.a = 0.5f;
-	v[0].p = RageVector3( 0, 0, 0 );
-	RageColor midcolor = color;
-	midcolor.a = RADAR_CENTER_ALPHA;
-	v[0].c = midcolor;
-	v[1].c = color;
+  // use a line loop to draw the thick line
+  for (int i = 0; i <= NUM_SHOWN_RADAR_CATEGORIES; ++i) {
+    const int c = i % NUM_SHOWN_RADAR_CATEGORIES;
+    const float dist_from_center =
+        (values_old_[c] * (1 - percent_toward_new_) +
+         values_new_[c] * percent_toward_new_ + 0.07f) *
+        radius;
+    const float rotation = RADAR_VALUE_ROTATION(i);
+    const float x = RageFastCos(rotation) * dist_from_center;
+    const float y = -RageFastSin(rotation) * dist_from_center;
 
-	for( int i=0; i<NUM_SHOWN_RADAR_CATEGORIES+1; i++ ) // do one extra to close the fan
-	{
-		const int c = i%NUM_SHOWN_RADAR_CATEGORIES;
-		const float fDistFromCenter =
-			( m_fValuesOld[c] * (1-m_PercentTowardNew) + m_fValuesNew[c] * m_PercentTowardNew + 0.07f ) * fRadius;
-		const float fRotation = RADAR_VALUE_ROTATION(i);
-		const float fX = RageFastCos(fRotation) * fDistFromCenter;
-		const float fY = -RageFastSin(fRotation) * fDistFromCenter;
+    v[i].p = RageVector3(x, y, 0);
+    v[i].c = this->m_pTempState->diffuse[0];
+  }
 
-		v[1+i].p = RageVector3( fX, fY, 0 );
-		v[1+i].c = v[1].c;
-	}
-
-	DISPLAY->DrawFan( v, NUM_SHOWN_RADAR_CATEGORIES+2 );
-
-	// use a line loop to draw the thick line
-	for( int i=0; i<=NUM_SHOWN_RADAR_CATEGORIES; i++ )
-	{
-		const int c = i%NUM_SHOWN_RADAR_CATEGORIES;
-		const float fDistFromCenter =
-			( m_fValuesOld[c] * (1-m_PercentTowardNew) + m_fValuesNew[c] * m_PercentTowardNew + 0.07f ) * fRadius;
-		const float fRotation = RADAR_VALUE_ROTATION(i);
-		const float fX = RageFastCos(fRotation) * fDistFromCenter;
-		const float fY = -RageFastSin(fRotation) * fDistFromCenter;
-
-		v[i].p = RageVector3( fX, fY, 0 );
-		v[i].c = this->m_pTempState->diffuse[0];
-	}
-
-	// TODO: Add this back in -Chris
-//	switch( PREFSMAN->m_iPolygonRadar )
-//	{
-//	case 0:		DISPLAY->DrawLoop_LinesAndPoints( v, NUM_SHOWN_RADAR_CATEGORIES, RADAR_EDGE_WIDTH );	break;
-//	case 1:		DISPLAY->DrawLoop_Polys( v, NUM_SHOWN_RADAR_CATEGORIES, RADAR_EDGE_WIDTH );			break;
-//	default:
-//	case -1:
-	DISPLAY->DrawLineStrip( v, NUM_SHOWN_RADAR_CATEGORIES+1, RADAR_EDGE_WIDTH );
-//	break;
-//	}
+  // TODO(Chris): Add this back in
+  //	switch(PREFSMAN->m_iPolygonRadar) {
+  //		case 0:
+	//			DISPLAY->DrawLoop_LinesAndPoints(
+	//					v, NUM_SHOWN_RADAR_CATEGORIES, RADAR_EDGE_WIDTH);
+	//			break; 
+	//		case 1:
+  //			DISPLAY->DrawLoop_Polys(
+	//					v, NUM_SHOWN_RADAR_CATEGORIES, RADAR_EDGE_WIDTH);
+  //			break;
+	//		default:
+	// 		case -1:
+  DISPLAY->DrawLineStrip(v, NUM_SHOWN_RADAR_CATEGORIES + 1, RADAR_EDGE_WIDTH);
+  //			break;
+  //	}
 }
 
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the GrooveRadar. */
-class LunaGrooveRadar: public Luna<GrooveRadar>
-{
-public:
-	static int SetFromRadarValues( T* p, lua_State *L )
-	{
-		PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
-		if( lua_isnil(L,2) )
-		{
-			p->SetEmpty( pn );
-		}
-		else
-		{
-			RadarValues *pRV = Luna<RadarValues>::check(L,2);
-			p->SetFromRadarValues( pn, *pRV );
-		}
-		COMMON_RETURN_SELF;
-	}
-	static int SetFromValues( T* p, lua_State *L )
-	{
-		PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
-		if( !lua_istable(L, 2) || lua_isnil(L,2) )
-		{
-			p->SetEmpty( pn );
-		}
-		else
-		{
-			std::vector<float> vals;
-			LuaHelpers::ReadArrayFromTable( vals, L );
-			p->SetFromValues(pn, vals);
-		}
-		COMMON_RETURN_SELF;
-	}
-	static int SetEmpty( T* p, lua_State *L )		{ p->SetEmpty( Enum::Check<PlayerNumber>(L, 1) ); COMMON_RETURN_SELF; }
+// Allow Lua to have access to the GrooveRadar.
+class LunaGrooveRadar : public Luna<GrooveRadar> {
+ public:
+  static int SetFromRadarValues(T* p, lua_State* L) {
+    PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
+    if (lua_isnil(L, 2)) {
+      p->SetEmpty(pn);
+    } else {
+      RadarValues* radar_values = Luna<RadarValues>::check(L, 2);
+      p->SetFromRadarValues(pn, *radar_values);
+    }
+    COMMON_RETURN_SELF;
+  }
+  static int SetFromValues(T* p, lua_State* L) {
+    PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
+    if (!lua_istable(L, 2) || lua_isnil(L, 2)) {
+      p->SetEmpty(pn);
+    } else {
+      std::vector<float> values;
+      LuaHelpers::ReadArrayFromTable(values, L);
+      p->SetFromValues(pn, values);
+    }
+    COMMON_RETURN_SELF;
+  }
+  static int SetEmpty(T* p, lua_State* L) {
+    p->SetEmpty(Enum::Check<PlayerNumber>(L, 1));
+    COMMON_RETURN_SELF;
+  }
 
-	LunaGrooveRadar()
-	{
-		ADD_METHOD( SetFromRadarValues );
-		ADD_METHOD( SetFromValues );
-		ADD_METHOD( SetEmpty );
-	}
+  LunaGrooveRadar() {
+    ADD_METHOD(SetFromRadarValues);
+    ADD_METHOD(SetFromValues);
+    ADD_METHOD(SetEmpty);
+  }
 };
 
-LUA_REGISTER_DERIVED_CLASS( GrooveRadar, ActorFrame )
+LUA_REGISTER_DERIVED_CLASS(GrooveRadar, ActorFrame)
 // lua end
 
 /*

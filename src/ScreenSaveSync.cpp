@@ -32,7 +32,7 @@ static RString GetPromptText()
 				CHANGED_TIMING_OF.GetValue()+"\n"
 				"%s:\n"
 				"\n",
-				GAMESTATE->m_pCurSong->GetDisplayFullTitle().c_str() );
+				GAMESTATE->cur_song_->GetDisplayFullTitle().c_str() );
 
 			s += join( "\n", vs ) + "\n\n";
 		}

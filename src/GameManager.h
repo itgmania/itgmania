@@ -1,66 +1,68 @@
-/** @brief GameManager - Manages Games and Styles. */
-
 #ifndef GAMEMANAGER_H
 #define GAMEMANAGER_H
 
-class Style;
-struct Game;
-struct lua_State;
-
-#include "GameConstantsAndTypes.h"
-#include "GameInput.h"
-
 #include <vector>
 
+#include "Game.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "Style.h"
 
-/** @brief The collective information about a Steps' Type. */
-struct StepsTypeInfo
-{
-	const char *szName;
-	/** @brief The number of tracks, or columns, of this type. */
-	int iNumTracks;
-	/** @brief A flag to determine if we allow this type to be autogen'ed to other types. */
-	bool bAllowAutogen;
-	/** @brief The most basic StyleType that this StpesTypeInfo is used with. */
-	StepsTypeCategory m_StepsTypeCategory;
-	RString GetLocalizedString() const;
+struct lua_State;
+
+// The collective information about a Steps' Type.
+struct StepsTypeInfo {
+  const char* name;
+  // The number of tracks, or columns, of this type.
+  int num_tracks;
+  // A flag to determine if we allow this type to be autogen'ed to other types.
+  bool allow_autogen;
+  // The most basic StyleType that this StpesTypeInfo is used with.
+  StepsTypeCategory steps_type_category;
+  RString GetLocalizedString() const;
 };
 
-class GameManager
-{
-public:
-	GameManager();
-	~GameManager();
+// Manages Games and Styles.
+class GameManager {
+ public:
+  GameManager();
+  ~GameManager();
 
-	void GetStylesForGame( const Game* pGame, std::vector<const Style*>& aStylesAddTo, bool editor=false );
-	const Game *GetGameForStyle( const Style *pStyle );
-	void GetStepsTypesForGame( const Game* pGame, std::vector<StepsType>& aStepsTypeAddTo );
-	const Style *GetEditorStyleForStepsType( StepsType st );
-	void GetDemonstrationStylesForGame( const Game *pGame, std::vector<const Style*> &vpStylesOut );
-	const Style *GetHowToPlayStyleForGame( const Game* pGame );
-	void GetCompatibleStyles( const Game *pGame, int iNumPlayers, std::vector<const Style*> &vpStylesOut );
-	const Style *GetFirstCompatibleStyle( const Game *pGame, int iNumPlayers, StepsType st );
+  void GetStylesForGame(
+      const Game* game, std::vector<const Style*>& styles_out,
+      bool editor = false);
+  const Game* GetGameForStyle(const Style* style);
+  void GetStepsTypesForGame(
+      const Game* game, std::vector<StepsType>& steps_type_out);
+  const Style* GetEditorStyleForStepsType(StepsType steps_type);
+  void GetDemonstrationStylesForGame(
+      const Game* game, std::vector<const Style*>& styles_out);
+  const Style* GetHowToPlayStyleForGame(const Game* game);
+  void GetCompatibleStyles(
+      const Game* game, int num_players, std::vector<const Style*>& styles_out);
+  const Style* GetFirstCompatibleStyle(
+      const Game* game, int num_players, StepsType steps_type);
 
-	void GetEnabledGames( std::vector<const Game*>& aGamesOut );
-	const Game* GetDefaultGame();
-	bool IsGameEnabled( const Game* pGame );
-	int GetIndexFromGame( const Game* pGame );
-	const Game* GetGameFromIndex( int index );
+  void GetEnabledGames(std::vector<const Game*>& games_out);
+  const Game* GetDefaultGame();
+  bool IsGameEnabled(const Game* game);
+  int GetIndexFromGame(const Game* game);
+  const Game* GetGameFromIndex(int index);
 
-	const StepsTypeInfo &GetStepsTypeInfo( StepsType st );
-	StepsType StringToStepsType( RString sStepsType );
-	const Game* StringToGame( RString sGame );
-	const Style* GameAndStringToStyle( const Game* pGame, RString sStyle );
-	RString StyleToLocalizedString( const Style* s );
+  const StepsTypeInfo& GetStepsTypeInfo(StepsType steps_type);
+  StepsType StringToStepsType(RString steps_type_str);
+  const Game* StringToGame(RString game_str);
+  const Style* GameAndStringToStyle(const Game* game, RString style_str);
+  RString StyleToLocalizedString(const Style* style);
 
-
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 };
 
-extern GameManager*	GAMEMAN;	// global and accessible from anywhere in our program
+// Global and accessible from anywhere in our program.
+extern GameManager* GAMEMAN;
 
-#endif
+#endif  // GAMEMANAGER_H
 
 /**
  * @file

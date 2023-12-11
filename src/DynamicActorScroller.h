@@ -3,36 +3,36 @@
 
 #include "ActorScroller.h"
 #include "LuaReference.h"
-/** @brief ActorScroller that fills in its children on the fly. */
-class DynamicActorScroller: public ActorScroller
-{
-public:
-	virtual DynamicActorScroller *Copy() const;
-	void LoadFromNode( const XNode *pNode );
 
-protected:
-	virtual void ShiftSubActors( int iDist );
-	virtual void ConfigureActor( Actor *pActor, int iItem );
+// ActorScroller that fills in its children on the fly.
+class DynamicActorScroller : public ActorScroller {
+ public:
+  virtual DynamicActorScroller* Copy() const;
+  void LoadFromNode(const XNode* node);
 
-	LuaReference m_LoadFunction;
-};
-/** @brief an ActorScroller that deletes its children automatically. */
-class DynamicActorScrollerAutoDeleteChildren: public DynamicActorScroller 
-{
-public:
-	DynamicActorScrollerAutoDeleteChildren() { DeleteChildrenWhenDone(true); }
-	virtual bool AutoLoadChildren() const { return true; }
-	virtual DynamicActorScrollerAutoDeleteChildren *Copy() const;
+ protected:
+  virtual void ShiftSubActors(int dist);
+  virtual void ConfigureActor(Actor* actor, int item);
+
+  LuaReference load_function_;
 };
 
-#endif
+// an ActorScroller that deletes its children automatically.
+class DynamicActorScrollerAutoDeleteChildren : public DynamicActorScroller {
+ public:
+  DynamicActorScrollerAutoDeleteChildren() { DeleteChildrenWhenDone(true); }
+  virtual bool AutoLoadChildren() const { return true; }
+  virtual DynamicActorScrollerAutoDeleteChildren* Copy() const;
+};
+
+#endif  // ACTOR_SCROLLER_H
 
 /**
  * @file
  * @author Glenn Maynard (c) 2005
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -42,7 +42,7 @@ public:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

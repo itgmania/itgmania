@@ -2,24 +2,22 @@
 #define CODE_SET_H
 
 #include "InputQueue.h"
+#include "MessageManager.h"
 
 #include <vector>
 
+class InputQueueCodeSet {
+ public:
+  void Load(const RString& type);
+  RString Input(const InputEventPlus& input) const;
+  bool InputMessage(const InputEventPlus& input, Message& msg) const;
 
-struct Message;
-class InputQueueCodeSet
-{
-public:
-	void Load( const RString &sType );
-	RString Input( const InputEventPlus &input ) const;
-	bool InputMessage( const InputEventPlus &input, Message &msg ) const;
-
-private:
-	std::vector<InputQueueCode>	m_aCodes;
-	std::vector<RString>		m_asCodeNames;
+ private:
+  std::vector<InputQueueCode> codes_;
+  std::vector<RString> code_names_;
 };
 
-#endif
+#endif  // CODE_SET_H
 
 /*
  * (c) 2007 Glenn Maynard

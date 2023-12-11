@@ -1,51 +1,51 @@
-/** @brief ActorMultiTexture - A texture created from multiple textures. */
 
 #ifndef ACTOR_MULTI_TEXTURE_H
 #define ACTOR_MULTI_TEXTURE_H
 
 #include "Actor.h"
 #include "RageDisplay.h"
+#include "RageTexture.h"
+#include "RageTypes.h"
+#include "XmlFile.h"
 
 #include <vector>
 
-class RageTexture;
+// A texture created from multiple textures.
+class ActorMultiTexture : public Actor {
+ public:
+  ActorMultiTexture();
+  ActorMultiTexture(const ActorMultiTexture& cpy);
+  virtual ~ActorMultiTexture();
 
-class ActorMultiTexture: public Actor
-{
-public:
-	ActorMultiTexture();
-	ActorMultiTexture( const ActorMultiTexture &cpy );
-	virtual ~ActorMultiTexture();
+  void LoadFromNode(const XNode* pNode);
+  virtual ActorMultiTexture* Copy() const;
 
-	void LoadFromNode( const XNode* pNode );
-	virtual ActorMultiTexture *Copy() const;
+  virtual bool EarlyAbortDraw() const;
+  virtual void DrawPrimitives();
 
-	virtual bool EarlyAbortDraw() const;
-	virtual void DrawPrimitives();
+  void ClearTextures();
+  int AddTexture(RageTexture* pTexture);
+  void SetTextureMode(int iIndex, TextureMode tm);
 
-	void ClearTextures();
-	int AddTexture( RageTexture *pTexture );
-	void SetTextureMode( int iIndex, TextureMode tm );
+  void SetSizeFromTexture(RageTexture* pTexture);
+  void SetTextureCoords(const RectF& r);
+  void SetEffectMode(EffectMode em) { m_EffectMode = em; }
 
-	void SetSizeFromTexture( RageTexture *pTexture );
-	void SetTextureCoords( const RectF &r );
-	void SetEffectMode( EffectMode em ) { m_EffectMode = em; }
+  virtual void PushSelf(lua_State* L);
 
-	virtual void PushSelf( lua_State *L );
-
-private:
-	EffectMode m_EffectMode;
-	struct TextureUnitState
-	{
-		TextureUnitState(): m_pTexture(nullptr), m_TextureMode(TextureMode_Modulate) {}
-		RageTexture *m_pTexture;
-		TextureMode m_TextureMode;
-	};
-	std::vector<TextureUnitState> m_aTextureUnits;
-	RectF m_Rect;
+ private:
+  EffectMode m_EffectMode;
+  struct TextureUnitState {
+    TextureUnitState()
+        : m_pTexture(nullptr), m_TextureMode(TextureMode_Modulate) {}
+    RageTexture* m_pTexture;
+    TextureMode m_TextureMode;
+  };
+  std::vector<TextureUnitState> m_aTextureUnits;
+  RectF m_Rect;
 };
 
-#endif
+#endif  // ACTOR_MULTI_TEXTURE_H
 
 /**
  * @file

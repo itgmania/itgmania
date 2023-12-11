@@ -1,62 +1,63 @@
-#ifndef LifeMeterTime_H
-#define LifeMeterTime_H
+#ifndef LIFEMETERTIME_H
+#define LIFEMETERTIME_H
 
-#include "LifeMeter.h"
-#include "Sprite.h"
-#include "BitmapText.h"
-#include "RageSound.h"
-#include "PercentageDisplay.h"
 #include "AutoActor.h"
+#include "BitmapText.h"
+#include "LifeMeter.h"
 #include "MeterDisplay.h"
+#include "PercentageDisplay.h"
 #include "Quad.h"
-class StreamDisplay;
-/** @brief Battery life meter used in Survival. */
-class LifeMeterTime : public LifeMeter
-{
-public:
-	LifeMeterTime();
+#include "RageSound.h"
+#include "Sprite.h"
+#include "StreamDisplay.h"
 
-	virtual ~LifeMeterTime();
+// Battery life meter used in Survival.
+class LifeMeterTime : public LifeMeter {
+ public:
+  LifeMeterTime();
 
-	virtual void Load( const PlayerState *pPlayerState, PlayerStageStats *pPlayerStageStats );
+  virtual ~LifeMeterTime();
 
-	virtual void Update( float fDeltaTime );
+  virtual void Load(
+      const PlayerState* player_state, PlayerStageStats* player_stage_stats);
 
-	virtual void OnLoadSong();
-	virtual void ChangeLife( TapNoteScore score );
-	virtual void ChangeLife( HoldNoteScore score, TapNoteScore tscore );
-	virtual void ChangeLife(float delta);
-	virtual void SetLife(float value);
-	virtual void HandleTapScoreNone();
-	virtual bool IsInDanger() const;
-	virtual bool IsHot() const;
-	virtual bool IsFailing() const;
-	virtual float GetLife() const;
+  virtual void Update(float delta);
 
-private:
-	float GetLifeSeconds() const;
-	void SendLifeChangedMessage( float fOldLife, TapNoteScore tns, HoldNoteScore hns );
+  virtual void OnLoadSong();
+  virtual void ChangeLife(TapNoteScore tns);
+  virtual void ChangeLife(HoldNoteScore hns, TapNoteScore tns);
+  virtual void ChangeLife(float delta);
+  virtual void SetLife(float value);
+  virtual void HandleTapScoreNone();
+  virtual bool IsInDanger() const;
+  virtual bool IsHot() const;
+  virtual bool IsFailing() const;
+  virtual float GetLife() const;
 
-	AutoActor		m_sprBackground;
-	Quad			m_quadDangerGlow;
-	StreamDisplay*	m_pStream;
-	AutoActor		m_sprFrame;
+ private:
+  float GetLifeSeconds() const;
+  void SendLifeChangedMessage(
+      float old_life, TapNoteScore tns, HoldNoteScore hns);
 
-	float		m_fLifeTotalGainedSeconds;
-	float		m_fLifeTotalLostSeconds;
-	/** @brief The sound played when time is gained at the start of each Song. */
-	RageSound	m_soundGainLife;
+  AutoActor background_;
+  Quad danger_glow_;
+  StreamDisplay* stream_;
+  AutoActor frame_;
+
+  float life_total_gained_seconds_;
+  float life_total_lost_seconds_;
+  // The sound played when time is gained at the start of each Song.
+  RageSound sound_gain_life_;
 };
 
-
-#endif
+#endif  // LIFEMETERTIME_H
 
 /**
  * @file
  * @author Chris Danford (c) 2001-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -66,7 +67,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

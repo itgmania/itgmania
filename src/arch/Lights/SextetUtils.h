@@ -63,12 +63,12 @@ inline std::uint8_t packPrintableSextet(bool b0, bool b1, bool b2, bool b3, bool
 inline std::size_t packCabinetLights(const LightsState* ls, std::uint8_t* buffer)
 {
 	buffer[0] = packPrintableSextet(
-		ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT],
-		ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT],
-		ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT],
-		ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT],
-		ls->m_bCabinetLights[LIGHT_BASS_LEFT],
-		ls->m_bCabinetLights[LIGHT_BASS_RIGHT]);
+		ls->cabinet_lights[LIGHT_MARQUEE_UP_LEFT],
+		ls->cabinet_lights[LIGHT_MARQUEE_UP_RIGHT],
+		ls->cabinet_lights[LIGHT_MARQUEE_LR_LEFT],
+		ls->cabinet_lights[LIGHT_MARQUEE_LR_RIGHT],
+		ls->cabinet_lights[LIGHT_BASS_LEFT],
+		ls->cabinet_lights[LIGHT_BASS_RIGHT]);
 	return CABINET_SEXTET_COUNT;
 }
 
@@ -78,46 +78,46 @@ inline std::size_t packControllerLights(const LightsState* ls, GameController gc
 {
 	// Menu buttons
 	buffer[0] = packPrintableSextet(
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_MENULEFT],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_MENURIGHT],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_MENUUP],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_MENUDOWN],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_START],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_SELECT]);
+		ls->game_button_lights[gc][GAME_BUTTON_MENULEFT],
+		ls->game_button_lights[gc][GAME_BUTTON_MENURIGHT],
+		ls->game_button_lights[gc][GAME_BUTTON_MENUUP],
+		ls->game_button_lights[gc][GAME_BUTTON_MENUDOWN],
+		ls->game_button_lights[gc][GAME_BUTTON_START],
+		ls->game_button_lights[gc][GAME_BUTTON_SELECT]);
 
 	// Other non-sensors
 	buffer[1] = packPrintableSextet(
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_BACK],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_COIN],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_OPERATOR],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_EFFECT_UP],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_EFFECT_DOWN],
+		ls->game_button_lights[gc][GAME_BUTTON_BACK],
+		ls->game_button_lights[gc][GAME_BUTTON_COIN],
+		ls->game_button_lights[gc][GAME_BUTTON_OPERATOR],
+		ls->game_button_lights[gc][GAME_BUTTON_EFFECT_UP],
+		ls->game_button_lights[gc][GAME_BUTTON_EFFECT_DOWN],
 		false);
 
 	// Sensors
 	buffer[2] = packPrintableSextet(
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_01],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_02],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_03],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_04],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_05],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_06]);
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_01],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_02],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_03],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_04],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_05],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_06]);
 	buffer[3] = packPrintableSextet(
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_07],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_08],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_09],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_10],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_11],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_12]);
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_07],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_08],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_09],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_10],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_11],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_12]);
 	buffer[4] = packPrintableSextet(
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_13],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_14],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_15],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_16],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_17],
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_18]);
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_13],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_14],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_15],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_16],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_17],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_18]);
 	buffer[5] = packPrintableSextet(
-		ls->m_bGameButtonLights[gc][GAME_BUTTON_CUSTOM_19],
+		ls->game_button_lights[gc][GAME_BUTTON_CUSTOM_19],
 		false,
 		false,
 		false,

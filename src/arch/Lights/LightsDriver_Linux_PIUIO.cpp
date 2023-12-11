@@ -41,35 +41,35 @@ void LightsDriver_Linux_PIUIO::Set( const LightsState *ls )
 	unsigned char buf[8] = { 0, 0, 0, 0x08, 0x37, 0, 0, 0 };
 	static unsigned char oldbuf[8] = { 0, 0, 0, 0x08, 0x37, 0, 0, 0 };
 
-	if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) buf[2] |= 0x80;
-	if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) buf[3] |= 0x04;
-	if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) buf[3] |= 0x02;
-	if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) buf[3] |= 0x01;
-	if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) buf[1] |= 0x04;
+	if (ls->cabinet_lights[LIGHT_MARQUEE_UP_LEFT]) buf[2] |= 0x80;
+	if (ls->cabinet_lights[LIGHT_MARQUEE_UP_RIGHT]) buf[3] |= 0x04;
+	if (ls->cabinet_lights[LIGHT_MARQUEE_LR_LEFT]) buf[3] |= 0x02;
+	if (ls->cabinet_lights[LIGHT_MARQUEE_LR_RIGHT]) buf[3] |= 0x01;
+	if (ls->cabinet_lights[LIGHT_BASS_LEFT] || ls->cabinet_lights[LIGHT_BASS_RIGHT]) buf[1] |= 0x04;
 
-	RString sInput = GAMESTATE->GetCurrentGame()->m_InputScheme.m_szName;
+	RString sInput = GAMESTATE->GetCurrentGame()->input_scheme.name_;
 	if (sInput.EqualsNoCase("dance")) {
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) buf[2] |= 0x04;
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) buf[2] |= 0x08;
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) buf[2] |= 0x10;
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) buf[2] |= 0x20;
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_UP]) buf[2] |= 0x04;
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_DOWN]) buf[2] |= 0x08;
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_LEFT]) buf[2] |= 0x10;
+		if (ls->game_button_lights[GameController_1][DANCE_BUTTON_RIGHT]) buf[2] |= 0x20;
 
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) buf[0] |= 0x04;
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) buf[0] |= 0x08;
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) buf[0] |= 0x10;
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) buf[0] |= 0x20;
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_UP]) buf[0] |= 0x04;
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_DOWN]) buf[0] |= 0x08;
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_LEFT]) buf[0] |= 0x10;
+		if (ls->game_button_lights[GameController_2][DANCE_BUTTON_RIGHT]) buf[0] |= 0x20;
 	} else if (sInput.EqualsNoCase("pump")) {
-		if (ls->m_bGameButtonLights[GameController_1][PUMP_BUTTON_UPLEFT]) buf[0] |= 0x04;
-		if (ls->m_bGameButtonLights[GameController_1][PUMP_BUTTON_UPRIGHT]) buf[0] |= 0x08;
-		if (ls->m_bGameButtonLights[GameController_1][PUMP_BUTTON_CENTER]) buf[0] |= 0x10;
-		if (ls->m_bGameButtonLights[GameController_1][PUMP_BUTTON_DOWNLEFT]) buf[0] |= 0x20;
-		if (ls->m_bGameButtonLights[GameController_1][PUMP_BUTTON_DOWNRIGHT]) buf[0] |= 0x40;
+		if (ls->game_button_lights[GameController_1][PUMP_BUTTON_UPLEFT]) buf[0] |= 0x04;
+		if (ls->game_button_lights[GameController_1][PUMP_BUTTON_UPRIGHT]) buf[0] |= 0x08;
+		if (ls->game_button_lights[GameController_1][PUMP_BUTTON_CENTER]) buf[0] |= 0x10;
+		if (ls->game_button_lights[GameController_1][PUMP_BUTTON_DOWNLEFT]) buf[0] |= 0x20;
+		if (ls->game_button_lights[GameController_1][PUMP_BUTTON_DOWNRIGHT]) buf[0] |= 0x40;
 
-		if (ls->m_bGameButtonLights[GameController_2][PUMP_BUTTON_UPLEFT]) buf[2] |= 0x04;
-		if (ls->m_bGameButtonLights[GameController_2][PUMP_BUTTON_UPRIGHT]) buf[2] |= 0x08;
-		if (ls->m_bGameButtonLights[GameController_2][PUMP_BUTTON_CENTER]) buf[2] |= 0x10;
-		if (ls->m_bGameButtonLights[GameController_2][PUMP_BUTTON_DOWNLEFT]) buf[2] |= 0x20;
-		if (ls->m_bGameButtonLights[GameController_2][PUMP_BUTTON_DOWNRIGHT]) buf[2] |= 0x40;
+		if (ls->game_button_lights[GameController_2][PUMP_BUTTON_UPLEFT]) buf[2] |= 0x04;
+		if (ls->game_button_lights[GameController_2][PUMP_BUTTON_UPRIGHT]) buf[2] |= 0x08;
+		if (ls->game_button_lights[GameController_2][PUMP_BUTTON_CENTER]) buf[2] |= 0x10;
+		if (ls->game_button_lights[GameController_2][PUMP_BUTTON_DOWNLEFT]) buf[2] |= 0x20;
+		if (ls->game_button_lights[GameController_2][PUMP_BUTTON_DOWNRIGHT]) buf[2] |= 0x40;
 	}
 	if (!memcmp(buf, oldbuf, 8))
 		return;

@@ -1,43 +1,51 @@
 #ifndef HELP_DISPLAY_H
 #define HELP_DISPLAY_H
 
-#include "BitmapText.h"
-
 #include <vector>
 
+#include "BitmapText.h"
 
 struct lua_State;
-/** @brief A BitmapText that cycles through messages. */
-class HelpDisplay : public BitmapText
-{
-public:
-	HelpDisplay();
-	void Load( const RString &sType );
 
-	virtual HelpDisplay *Copy() const;
+// A BitmapText that cycles through messages.
+class HelpDisplay : public BitmapText {
+ public:
+  HelpDisplay();
+  void Load(const RString& type);
 
-	void SetTips( const std::vector<RString> &arrayTips ) { SetTips( arrayTips, arrayTips ); }
-	void SetTips( const std::vector<RString> &arrayTips, const std::vector<RString> &arrayTipsAlt );
-	void GetTips( std::vector<RString> &arrayTipsOut, std::vector<RString> &arrayTipsAltOut ) const {
-		arrayTipsOut = m_arrayTips;
-		arrayTipsAltOut = m_arrayTipsAlt;
-	}
-	void SetSecsBetweenSwitches( float fSeconds ) { m_fSecsBetweenSwitches = m_fSecsUntilSwitch = fSeconds; }
+  virtual HelpDisplay* Copy() const;
 
-	virtual void Update( float fDeltaTime );
+  void SetTips(const std::vector<RString>& array_tips) {
+    SetTips(array_tips, array_tips);
+  }
+  void SetTips(
+      const std::vector<RString>& array_tips,
+      const std::vector<RString>& array_tips_alt);
+  void GetTips(
+      std::vector<RString>& array_tips_out,
+      std::vector<RString>& array_tips_alt_out) const {
+    array_tips_out = array_tips_;
+    array_tips_alt_out = array_tips_alt_;
+  }
+  void SetSecsBetweenSwitches(float seconds) {
+    seconds_between_switches_ = seconds_until_switch_ = seconds;
+  }
 
-	// Lua
-	virtual void PushSelf( lua_State *L );
+  virtual void Update(float delta);
 
-protected:
-	std::vector<RString> m_arrayTips, m_arrayTipsAlt;
-	int m_iCurTipIndex;
+  // Lua
+  virtual void PushSelf(lua_State* L);
 
-	float m_fSecsBetweenSwitches;
-	float m_fSecsUntilSwitch;
+ protected:
+  std::vector<RString> array_tips_;
+	std::vector<RString> array_tips_alt_;
+  int cur_tip_index_;
+
+  float seconds_between_switches_;
+  float seconds_until_switch_;
 };
 
-#endif
+#endif  // HELP_DISPLAY_H
 
 /*
  * (c) 2001-2003 Chris Danford, Glenn Maynard

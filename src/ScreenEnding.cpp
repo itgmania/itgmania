@@ -31,25 +31,25 @@ ScreenEnding::ScreenEnding()
 		PROFILEMAN->LoadFirstAvailableProfile(PLAYER_1);
 		PROFILEMAN->LoadFirstAvailableProfile(PLAYER_2);
 
-		GAMESTATE->m_PlayMode.Set( PLAY_MODE_REGULAR );
+		GAMESTATE->play_mode_.Set( PLAY_MODE_REGULAR );
 		GAMESTATE->SetCurrentStyle( GAMEMAN->GameAndStringToStyle( GAMEMAN->GetDefaultGame(),"versus"), PLAYER_INVALID );
 		GAMESTATE->JoinPlayer( PLAYER_1 );
 		GAMESTATE->JoinPlayer( PLAYER_2 );
-		GAMESTATE->m_pCurSong.Set( SONGMAN->GetRandomSong() );
-		GAMESTATE->m_pCurCourse.Set( SONGMAN->GetRandomCourse() );
-		GAMESTATE->m_pCurSteps[PLAYER_1].Set( GAMESTATE->m_pCurSong->GetAllSteps()[0] );
-		GAMESTATE->m_pCurSteps[PLAYER_2].Set( GAMESTATE->m_pCurSong->GetAllSteps()[0] );
-		STATSMAN->m_CurStageStats.m_player[PLAYER_1].m_vpPossibleSteps.push_back( GAMESTATE->m_pCurSteps[PLAYER_1] );
-		STATSMAN->m_CurStageStats.m_player[PLAYER_2].m_vpPossibleSteps.push_back( GAMESTATE->m_pCurSteps[PLAYER_2] );
+		GAMESTATE->cur_song_.Set( SONGMAN->GetRandomSong() );
+		GAMESTATE->cur_course_.Set( SONGMAN->GetRandomCourse() );
+		GAMESTATE->cur_steps_[PLAYER_1].Set( GAMESTATE->cur_song_->GetAllSteps()[0] );
+		GAMESTATE->cur_steps_[PLAYER_2].Set( GAMESTATE->cur_song_->GetAllSteps()[0] );
+		STATSMAN->m_CurStageStats.m_player[PLAYER_1].m_vpPossibleSteps.push_back( GAMESTATE->cur_steps_[PLAYER_1] );
+		STATSMAN->m_CurStageStats.m_player[PLAYER_2].m_vpPossibleSteps.push_back( GAMESTATE->cur_steps_[PLAYER_2] );
 		STATSMAN->m_CurStageStats.m_player[PLAYER_1].m_iStepsPlayed = 1;
 		STATSMAN->m_CurStageStats.m_player[PLAYER_2].m_iStepsPlayed = 1;
-		PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions, ModsLevel_Stage, m_fScrollSpeed, 2.0f );
-		PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[PLAYER_2]->m_PlayerOptions, ModsLevel_Stage, m_fScrollSpeed, 2.0f );
-		GAMESTATE->m_iCurrentStageIndex = 0;
+		PO_GROUP_ASSIGN( GAMESTATE->player_state_[PLAYER_1]->m_PlayerOptions, ModsLevel_Stage, m_fScrollSpeed, 2.0f );
+		PO_GROUP_ASSIGN( GAMESTATE->player_state_[PLAYER_2]->m_PlayerOptions, ModsLevel_Stage, m_fScrollSpeed, 2.0f );
+		GAMESTATE->current_stage_index_ = 0;
 		FOREACH_ENUM( PlayerNumber, p )
-			GAMESTATE->m_iPlayerStageTokens[p] = 1;
-		PO_GROUP_CALL( GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions, ModsLevel_Stage, ChooseRandomModifiers );
-		PO_GROUP_CALL( GAMESTATE->m_pPlayerState[PLAYER_2]->m_PlayerOptions, ModsLevel_Stage, ChooseRandomModifiers );
+			GAMESTATE->player_stage_tokens_[p] = 1;
+		PO_GROUP_CALL( GAMESTATE->player_state_[PLAYER_1]->m_PlayerOptions, ModsLevel_Stage, ChooseRandomModifiers );
+		PO_GROUP_CALL( GAMESTATE->player_state_[PLAYER_2]->m_PlayerOptions, ModsLevel_Stage, ChooseRandomModifiers );
 
 		for( float f = 0; f < 100.0f; f += 1.0f )
 		{
@@ -116,7 +116,7 @@ bool ScreenEnding::Input( const InputEventPlus &input )
 	bool handled = false;
 	if( !IsTransitioning() )
 	{
-		switch( input.MenuI )
+		switch( input.menu_input_ )
 		{
 			case GAME_BUTTON_START:
 				SCREENMAN->PostMessageToTopScreen( SM_BeginFadingOut, 0 );

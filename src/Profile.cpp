@@ -84,13 +84,13 @@ void Profile::ClearSongs()
 	{
 		return;
 	}
-	Song* gamestate_curr_song= GAMESTATE->m_pCurSong;
+	Song* gamestate_curr_song= GAMESTATE->cur_song_;
 	for(std::size_t i= 0; i < m_songs.size(); ++i)
 	{
 		Song* curr_song= m_songs[i];
 		if(curr_song == gamestate_curr_song)
 		{
-			GAMESTATE->m_pCurSong.Set(nullptr);
+			GAMESTATE->cur_song_.Set(nullptr);
 		}
 		delete curr_song;
 	}
@@ -239,7 +239,7 @@ Character *Profile::GetCharacter() const
 	CHARMAN->GetCharacters( vpCharacters );
 	for (Character *c : vpCharacters)
 	{
-		if( c->m_sCharacterID.CompareNoCase(m_sCharacterID)==0 )
+		if( c->character_id_.CompareNoCase(m_sCharacterID)==0 )
 			return c;
 	}
 	return CHARMAN->GetDefaultCharacter();
@@ -316,10 +316,10 @@ int Profile::GetTotalStepsWithTopGrade( StepsType st, Difficulty d, Grade g ) co
 				continue;	// skip
 
 			const HighScoreList &hsl = GetStepsHighScoreList( pSong, pSteps );
-			if( hsl.vHighScores.empty() )
+			if( hsl.high_scores_.empty() )
 				continue;	// skip
 
-			if( hsl.vHighScores[0].GetGrade() == g )
+			if( hsl.high_scores_[0].GetGrade() == g )
 				iCount++;
 		}
 	}
@@ -346,10 +346,10 @@ int Profile::GetTotalTrailsWithTopGrade( StepsType st, CourseDifficulty d, Grade
 			continue;
 
 		const HighScoreList &hsl = GetCourseHighScoreList( pCourse, pTrail );
-		if( hsl.vHighScores.empty() )
+		if( hsl.high_scores_.empty() )
 			continue;	// skip
 
-		if( hsl.vHighScores[0].GetGrade() == g )
+		if( hsl.high_scores_[0].GetGrade() == g )
 			iCount++;
 	}
 
@@ -550,7 +550,7 @@ int Profile::GetSongNumTimesPlayed( const SongID& songID ) const
 bool Profile::GetDefaultModifiers( const Game* pGameType, RString &sModifiersOut ) const
 {
 	std::map<RString, RString>::const_iterator it;
-	it = m_sDefaultModifiers.find( pGameType->m_szName );
+	it = m_sDefaultModifiers.find( pGameType->name );
 	if( it == m_sDefaultModifiers.end() )
 		return false;
 	sModifiersOut = it->second;
@@ -560,9 +560,9 @@ bool Profile::GetDefaultModifiers( const Game* pGameType, RString &sModifiersOut
 void Profile::SetDefaultModifiers( const Game* pGameType, const RString &sModifiers )
 {
 	if( sModifiers == "" )
-		m_sDefaultModifiers.erase( pGameType->m_szName );
+		m_sDefaultModifiers.erase( pGameType->name );
 	else
-		m_sDefaultModifiers[pGameType->m_szName] = sModifiers;
+		m_sDefaultModifiers[pGameType->name] = sModifiers;
 }
 
 bool Profile::IsCodeUnlocked( RString sUnlockEntryID ) const
@@ -798,8 +798,8 @@ void Profile::GetAllUsedHighScoreNames(std::set<RString>& names)
 				sub_entry != main_entry->second.sub_member.end(); ++sub_entry) \
 		{ \
 			for(std::vector<HighScore>::iterator high_score= \
-						sub_entry->second.hsl.vHighScores.begin(); \
-					high_score != sub_entry->second.hsl.vHighScores.end(); \
+						sub_entry->second.hsl.high_scores_.begin(); \
+					high_score != sub_entry->second.hsl.high_scores_.end(); \
 					++high_score) \
 			{ \
 				if(high_score->GetName().size() > 0) \
@@ -929,8 +929,8 @@ void Profile::MergeScoresFromOtherProfile(Profile* other, bool skip_totals,
 			other->m_vScreenshots.begin(), other->m_vScreenshots.end());
 		for(std::size_t sid= old_count; sid < m_vScreenshots.size(); ++sid)
 		{
-			RString old_path= from_dir + "Screenshots/" + m_vScreenshots[sid].sFileName;
-			RString new_path= to_dir + "Screenshots/" + m_vScreenshots[sid].sFileName;
+			RString old_path= from_dir + "Screenshots/" + m_vScreenshots[sid].file_name;
+			RString new_path= to_dir + "Screenshots/" + m_vScreenshots[sid].file_name;
 			// Only move the old screenshot over if it exists and won't stomp an
 			// existing screenshot.
 			if(FILEMAN->DoesFileExist(old_path) && (!FILEMAN->DoesFileExist(new_path)))
@@ -1553,7 +1553,7 @@ XNode* Profile::SaveGeneralDataCreateNode() const
 	pGeneralDataNode->AppendChild( "LastDifficulty",		DifficultyToString(m_LastDifficulty) );
 	pGeneralDataNode->AppendChild( "LastCourseDifficulty",		DifficultyToString(m_LastCourseDifficulty) );
 	if( m_LastStepsType != StepsType_Invalid )
-		pGeneralDataNode->AppendChild( "LastStepsType",			GAMEMAN->GetStepsTypeInfo(m_LastStepsType).szName );
+		pGeneralDataNode->AppendChild( "LastStepsType",			GAMEMAN->GetStepsTypeInfo(m_LastStepsType).name );
 	pGeneralDataNode->AppendChild( m_lastSong.CreateNode() );
 	pGeneralDataNode->AppendChild( m_lastCourse.CreateNode() );
 	pGeneralDataNode->AppendChild( "CurrentCombo", m_iCurrentCombo );
@@ -2192,7 +2192,7 @@ XNode* Profile::SaveCategoryScoresCreateNode() const
 			continue;
 
 		XNode* pStepsTypeNode = pNode->AppendChild( "StepsType" );
-		pStepsTypeNode->AppendAttr( "Type", GAMEMAN->GetStepsTypeInfo(st).szName );
+		pStepsTypeNode->AppendAttr( "Type", GAMEMAN->GetStepsTypeInfo(st).name );
 
 		FOREACH_ENUM( RankingCategory,rc )
 		{
@@ -2553,9 +2553,9 @@ public:
 		HighScore* hs= Luna<HighScore>::check(L, 1);
 		RString filename= SArg(2);
 		Screenshot screenshot;
-		screenshot.sFileName= filename;
-		screenshot.sMD5= BinaryToHex(CRYPTMAN->GetMD5ForFile(filename));
-		screenshot.highScore= *hs;
+		screenshot.file_name= filename;
+		screenshot.md5= BinaryToHex(CRYPTMAN->GetMD5ForFile(filename));
+		screenshot.high_score= *hs;
 		p->AddScreenshot(screenshot);
 		COMMON_RETURN_SELF;
 	}

@@ -1,121 +1,119 @@
 #include "global.h"
-#include "ControllerStateDisplay.h"
-#include "EnumHelper.h"
-#include "RageUtil.h"
-#include "RageInputDevice.h"
-#include "ThemeManager.h"
-#include "InputMapper.h"
-#include "InputFilter.h"
-#include "RageLog.h"
-#include "LuaBinding.h"
 
-static const char *ControllerStateButtonNames[] = {
-	"UpLeft",
-	"UpRight",
-	"Center",
-	"DownLeft",
-	"DownRight",
+#include "ControllerStateDisplay.h"
+
+#include "EnumHelper.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "LuaBinding.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
+
+static const char* ControllerStateButtonNames[] = {
+    "UpLeft", "UpRight", "Center", "DownLeft", "DownRight",
 };
-XToString( ControllerStateButton );
+XToString(ControllerStateButton);
 
 // TODO: Generalize for all game types
 static const GameButton ControllerStateButtonToGameButton[] = {
-	PUMP_BUTTON_UPLEFT,
-	PUMP_BUTTON_UPRIGHT,
-	PUMP_BUTTON_CENTER,
-	PUMP_BUTTON_DOWNLEFT,
-	PUMP_BUTTON_DOWNRIGHT,
+    PUMP_BUTTON_UPLEFT,   PUMP_BUTTON_UPRIGHT,   PUMP_BUTTON_CENTER,
+    PUMP_BUTTON_DOWNLEFT, PUMP_BUTTON_DOWNRIGHT,
 };
 
-REGISTER_ACTOR_CLASS( ControllerStateDisplay );
+REGISTER_ACTOR_CLASS(ControllerStateDisplay);
 
-ControllerStateDisplay::ControllerStateDisplay()
-{
-	m_bIsLoaded = false;
-	m_mp = MultiPlayer_Invalid;
-	m_idsLast = InputDeviceState_Invalid;
+ControllerStateDisplay::ControllerStateDisplay() {
+  is_loaded_ = false;
+  multiplayer_ = MultiPlayer_Invalid;
+  last_input_device_state_ = InputDeviceState_Invalid;
 }
 
-void ControllerStateDisplay::LoadMultiPlayer( RString sType, MultiPlayer mp )
-{
-	LoadInternal( sType, mp, GameController_1 );
+void ControllerStateDisplay::LoadMultiPlayer(
+    RString type, MultiPlayer multiplayer) {
+  LoadInternal(type, multiplayer, GameController_1);
 }
 
-void ControllerStateDisplay::LoadGameController( RString sType, GameController gc )
-{
-	LoadInternal( sType, MultiPlayer_Invalid, gc );
+void ControllerStateDisplay::LoadGameController(
+    RString type, GameController game_controller) {
+  LoadInternal(type, MultiPlayer_Invalid, game_controller);
 }
 
-void ControllerStateDisplay::LoadInternal( RString sType, MultiPlayer mp, GameController gc )
-{
-	ASSERT( !m_bIsLoaded );
-	m_bIsLoaded = true;
-	m_mp = mp;
+void ControllerStateDisplay::LoadInternal(
+    RString type, MultiPlayer multiplayer, GameController game_controller) {
+  ASSERT(!is_loaded_);
+  is_loaded_ = true;
+  multiplayer_ = multiplayer;
 
-	LuaThreadVariable varElement( "MultiPlayer", LuaReference::Create(m_mp) );
-	m_sprFrame.Load( THEME->GetPathG(sType, "frame") );
-	this->AddChild( m_sprFrame );
+  LuaThreadVariable varElement(
+      "MultiPlayer", LuaReference::Create(multiplayer_));
+  smart_pointer_frame_.Load(THEME->GetPathG(type, "frame"));
+  this->AddChild(smart_pointer_frame_);
 
-	FOREACH_ENUM( ControllerStateButton, b )
-	{
-		Button &button = m_Buttons[ b ];
+  FOREACH_ENUM(ControllerStateButton, b) {
+    Button& button = buttons_[b];
 
-		RString sPath = THEME->GetPathG( sType, ControllerStateButtonToString(b) );
-		button.spr.Load( sPath );
-		this->AddChild( m_Buttons[b].spr );
-		
-		button.gi = GameInput( gc, ControllerStateButtonToGameButton[b] );
-	}
+    RString path = THEME->GetPathG(type, ControllerStateButtonToString(b));
+    button.smart_pointer_.Load(path);
+    this->AddChild(buttons_[b].smart_pointer_);
+
+    button.game_input_ =
+        GameInput(game_controller, ControllerStateButtonToGameButton[b]);
+  }
 }
 
-void ControllerStateDisplay::Update( float fDelta )
-{
-	ActorFrame::Update( fDelta );
+void ControllerStateDisplay::Update(float fDelta) {
+  ActorFrame::Update(fDelta);
 
-	if( m_mp != MultiPlayer_Invalid )
-	{
-		InputDevice id = InputMapper::MultiPlayerToInputDevice( m_mp );
-		InputDeviceState ids = INPUTMAN->GetInputDeviceState(id);
-		if( ids != m_idsLast )
-		{
-			PlayCommand( InputDeviceStateToString(ids) );
-		}
-		m_idsLast = ids;
-	}
+  if (multiplayer_ != MultiPlayer_Invalid) {
+    InputDevice input_device =
+				InputMapper::MultiPlayerToInputDevice(multiplayer_);
+    InputDeviceState input_device_state =
+				INPUTMAN->GetInputDeviceState(input_device);
+    if (input_device_state != last_input_device_state_) {
+      PlayCommand(InputDeviceStateToString(input_device_state));
+    }
+    last_input_device_state_ = input_device_state;
+  }
 
-	FOREACH_ENUM( ControllerStateButton, b )
-	{
-		Button &button = m_Buttons[ b ];
-		if( !button.spr.IsLoaded() )
-			continue;
+  FOREACH_ENUM(ControllerStateButton, b) {
+    Button& button = buttons_[b];
+    if (!button.smart_pointer_.IsLoaded()) {
+      continue;
+    }
 
-		bool bVisible = INPUTMAPPER->IsBeingPressed( button.gi, m_mp );
+    bool visible =
+        INPUTMAPPER->IsBeingPressed(button.game_input_, multiplayer_);
 
-		button.spr->SetVisible( bVisible );
-	}
+    button.smart_pointer_->SetVisible(visible);
+  }
 }
 
+// Allow Lua to have access to the ControllerStateDisplay.
+class LunaControllerStateDisplay : public Luna<ControllerStateDisplay> {
+ public:
+  static int LoadGameController(T* p, lua_State* L) {
+    p->LoadGameController(SArg(1), Enum::Check<GameController>(L, 2));
+    COMMON_RETURN_SELF;
+  }
+  static int LoadMultiPlayer(T* p, lua_State* L) {
+    p->LoadMultiPlayer(SArg(1), Enum::Check<MultiPlayer>(L, 2));
+    COMMON_RETURN_SELF;
+  }
 
-/** @brief Allow Lua to have access to the ControllerStateDisplay. */ 
-class LunaControllerStateDisplay: public Luna<ControllerStateDisplay>
-{
-public:
-	static int LoadGameController( T* p, lua_State *L )	{ p->LoadGameController( SArg(1), Enum::Check<GameController>(L, 2) ); COMMON_RETURN_SELF; }
-	static int LoadMultiPlayer( T* p, lua_State *L )	{ p->LoadMultiPlayer( SArg(1), Enum::Check<MultiPlayer>(L, 2) ); COMMON_RETURN_SELF; }
-
-	LunaControllerStateDisplay() 
-	{
-		ADD_METHOD( LoadGameController );
-		ADD_METHOD( LoadMultiPlayer );
-	}
+  LunaControllerStateDisplay() {
+    ADD_METHOD(LoadGameController);
+    ADD_METHOD(LoadMultiPlayer);
+  }
 };
 
-LUA_REGISTER_DERIVED_CLASS( ControllerStateDisplay, ActorFrame )
+LUA_REGISTER_DERIVED_CLASS(ControllerStateDisplay, ActorFrame)
 
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -125,7 +123,7 @@ LUA_REGISTER_DERIVED_CLASS( ControllerStateDisplay, ActorFrame )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
