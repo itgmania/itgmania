@@ -7,6 +7,7 @@
 #include "TimingData.h"
 #include "GameState.h"
 
+
 RString TechStats::stringDescription()
 {
 	RString out;
@@ -25,6 +26,10 @@ static const char *TechStatsCategoryNames[] = {
 	"Sideswitches",
 	"Jacks",
 	"Brackets",
+	"PeakNps",
+	"MeasureCount",
+	"NotesPerMeasure",
+	"NpsPerMeasure"
 };
 XToString( TechStatsCategory );
 XToLocalizedString( TechStatsCategory );
@@ -63,6 +68,7 @@ void TechStatsCalculator::CalculateTechStats(const NoteData &in, TechStats &out)
 	}
 
 	TechStatsCalculator::CommitStream(out, statsCounter, Foot_None);
+	// TechStatsCalculator::CalculateMeasureInfo(in, out);
 }
 
 // The main loop from GetTechniques().
@@ -431,35 +437,16 @@ void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &count
 }
 
 
-struct MeasureCounter
-{
-	int startRow;
-	int endRow;
-	int rowCount;
-	int tapCount;
-	int mineCount;
-	float nps;
-	float duration;
-	MeasureCounter()
-	{
-		startRow = -1;
-		endRow = -1;
-		rowCount = 0;
-		tapCount = 0;
-		mineCount = 0;
-		nps = 0;
-		duration = 0;
-	}
-};
-// Figure out which measures are considered a stream of notes
+
 void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &stats)
 {
 
-	int lastRow = in.GetLastRow();
+	int lastRow = in.GetLastRow() - 1;
 	int lastRowMeasureIndex = 0;
 	int lastRowBeatIndex = 0;
 	int lastRowRemainder = 0;
 	TimingData *timing = GAMESTATE->GetProcessedTimingData();
+
 	timing->NoteRowToMeasureAndBeat(lastRow, lastRowMeasureIndex, lastRowBeatIndex, lastRowRemainder);
 
 	int totalMeasureCount = lastRowMeasureIndex + 1;
@@ -474,7 +461,7 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 	float peak_nps = 0;
 
 	// Count the number of taps, mines for each measure
-	for (int row = 0; row <= lastRow; row++)
+	for (int row = 0; row < lastRow; row++)
 	{
 		timing->NoteRowToMeasureAndBeat(row, iMeasureIndexOut, iBeatIndexOut, iRowsRemainder);
 		int taps = in.GetNumTapNotesInRow(row);
@@ -512,10 +499,37 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 		}
 	}
 
+	stats.measureInfo.clear();
+	stats.peakNps = peak_nps;
+	stats.measureCount = totalMeasureCount;
+	stats.measureInfo.assign(counters.begin(), counters.end());
+
 	// TODO: figure out what columnCues are
 
 	// return notesPerMeasure, peakNPS, NPSperMeasure, columnCues
 
+}
+
+
+std::vector<int> TechStats::notesPerMeasure()
+{
+	std::vector<int> notesPerMeasure(measureCount, 0);
+	for (int i = 0; i < measureCount; i++)
+	{
+		notesPerMeasure[i] = measureInfo[i].tapCount;
+	}
+
+	return notesPerMeasure;
+}
+
+std::vector<float> TechStats::npsPerMeasure()
+{
+	std::vector<float> npsPerMeasure(measureCount, 0);
+	for (int i = 0; i < measureCount; i++)
+	{
+		npsPerMeasure[i] = measureInfo[i].nps;
+	}
+	return npsPerMeasure;
 }
 
 // lua start
@@ -543,6 +557,18 @@ public:
 			case TechStatsCategory_Brackets:
 				lua_pushnumber(L, p->brackets);
 				break;
+			case TechStatsCategory_MeasureCount:
+				lua_pushnumber(L, p->measureCount);
+				break;
+			case TechStatsCategory_PeakNps:
+				lua_pushnumber(L, p->peakNps);
+				break;
+			case TechStatsCategory_NotesPerMeasure:
+				LuaHelpers::CreateTableFromArray(p->notesPerMeasure(), L);
+				break;
+			case TechStatsCategory_NpsPerMeasure:
+				LuaHelpers::CreateTableFromArray(p->npsPerMeasure(), L);
+				break;
 			default:
 				lua_pushnumber(L, 0);
 				break;
@@ -555,5 +581,6 @@ public:
 		ADD_METHOD( GetValue );
 	}
 };
+
 
 LUA_REGISTER_CLASS( TechStats )

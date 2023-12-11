@@ -69,6 +69,10 @@ enum TechStatsCategory
 	TechStatsCategory_Sideswitches,
 	TechStatsCategory_Jacks,
 	TechStatsCategory_Brackets,
+	TechStatsCategory_PeakNps,
+	TechStatsCategory_MeasureCount,
+	TechStatsCategory_NotesPerMeasure,
+	TechStatsCategory_NpsPerMeasure,
 	NUM_TechStatsCategory,
 	TechStatsCategory_Invalid
 };
@@ -84,22 +88,72 @@ LuaDeclareType( TechStatsCategory );
 
 struct lua_State;
 
+/** @brief Container for stats on a given measure */
+
+struct MeasureCounter
+{
+	int startRow;
+	int endRow;
+	int rowCount;
+	int tapCount;
+	int mineCount;
+	float nps;
+	float duration;
+
+	MeasureCounter()
+	{
+		startRow = -1;
+		endRow = -1;
+		rowCount = 0;
+		tapCount = 0;
+		mineCount = 0;
+		nps = 0;
+		duration = 0;
+	}
+
+	bool operator==( const MeasureCounter& other ) const
+	{
+		return (this->startRow == other.startRow
+			&& this->endRow == other.endRow
+			&& this->rowCount == other.rowCount
+			&& this->tapCount == other.tapCount
+			&& this->mineCount == other.mineCount
+			&& this->nps == other.nps
+			&& this->duration == other.duration
+			);
+	}
+
+	bool operator!=(const MeasureCounter& other ) const
+	{
+		return !this->operator==(other);
+	}
+};
+
+
 /** @brief Technical statistics */
 struct TechStats
 {
 public:
-	int crossovers; /** Number of crossovers in song */
-	int footswitches; /** Number of footswitches in song */
-	int sideswitches; /** Number of sideswitches in song */
-	int jacks; /** Number of jacks in song */
-	int brackets; /** Number of brackets in song */
+	int crossovers; // Number of crossovers in song
+	int footswitches; // Number of footswitches in song
+	int sideswitches; // Number of sideswitches in song
+	int jacks; // Number of jacks in song
+	int brackets; // Number of brackets in song
+	int measureCount; // Number of measures in song
+	float peakNps; // peak notes-per-second
 
-	TechStats() {
+	std::vector<MeasureCounter> measureInfo; // Contains info for each measure in song
+
+	TechStats()
+	{
 		crossovers = 0;
 		footswitches = 0;
 		sideswitches = 0;
 		jacks = 0;
 		brackets = 0;
+		measureCount = 0;
+		peakNps = 0;
+		measureInfo.clear();
 	}
 
 	void Zero() {
@@ -108,7 +162,25 @@ public:
 		sideswitches = 0;
 		jacks = 0;
 		brackets = 0;
+		measureCount = 0;
+		peakNps = 0;
+		measureInfo.clear();
 	}
+
+	void updatePeakNps()
+	{
+		peakNps = 0;
+		for (MeasureCounter entry : measureInfo)
+		{
+			if(entry.nps > peakNps)
+			{
+				peakNps = entry.nps;
+			}
+		}
+	}
+
+	std::vector<int> notesPerMeasure();
+	std::vector<float> npsPerMeasure();
 
 	TechStats& operator+=( const TechStats& other )
 	{
@@ -116,14 +188,23 @@ public:
 		this->crossovers += other.crossovers;
 		this->footswitches += other.footswitches;
 		this->sideswitches += other.sideswitches;
+		this->jacks += this->jacks;
 		this->brackets += other.brackets;
-
+		this->measureCount += other.measureCount;
+		this->measureInfo.insert(this->measureInfo.end(), other.measureInfo.begin(), other.measureInfo.end());
+		this->updatePeakNps();
 		return *this;
 	}
 
 	bool operator==( const TechStats& other ) const
 	{
-		return (this->crossovers == other.crossovers && this->footswitches == other.footswitches && this->sideswitches == other.sideswitches && this->brackets == other.brackets);
+		return (this->crossovers == other.crossovers 
+			&& this->footswitches == other.footswitches 
+			&& this->sideswitches == other.sideswitches 
+			&& this->jacks == other.jacks
+			&& this->brackets == other.brackets
+			&& this->measureInfo == other.measureInfo
+			);
 	}
 
 	bool operator!=( const TechStats& other ) const
