@@ -163,7 +163,8 @@ public:
 	void TidyUpData();
 	void CalculateRadarValues( float fMusicLengthSeconds );
 
-	const TechStats &GetTechStats(PlayerNumber pn) const;
+	void CalculateTechStats();
+	const TechStats &GetTechStats(PlayerNumber pn) const { return Real()->m_CachedTechStats[pn]; }
 
 	/**
 	 * @brief The TimingData used by the Steps.

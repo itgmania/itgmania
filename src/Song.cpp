@@ -1135,7 +1135,10 @@ void Song::ReCalculateRadarValuesAndLastSecond(bool fromCache, bool duringCache)
 	{
 		// this is loaded from cache, then we just have to calculate the radar values.
 		for( unsigned i=0; i<m_vpSteps.size(); i++ )
+		{
 			m_vpSteps[i]->CalculateRadarValues( m_fMusicLengthSeconds );
+			m_vpSteps[i]->CalculateTechStats();
+		}
 		return;
 	}
 
@@ -1148,7 +1151,7 @@ void Song::ReCalculateRadarValuesAndLastSecond(bool fromCache, bool duringCache)
 		Steps* pSteps = m_vpSteps[i];
 
 		pSteps->CalculateRadarValues( m_fMusicLengthSeconds );
-
+		pSteps->CalculateTechStats();
 		// Must initialize before the gotos.
 		NoteData tempNoteData;
 		pSteps->GetNoteData( tempNoteData );

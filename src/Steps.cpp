@@ -359,38 +359,52 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 	GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
-const TechStats &Steps::GetTechStats(PlayerNumber pn) const
+void Steps::CalculateTechStats()
 {
-	m_CachedTechStats[pn].Zero();
+	if( parent != nullptr )
+		return;
+
+	if( m_bAreCachedRadarValuesJustLoaded )
+	{
+		m_bAreCachedRadarValuesJustLoaded = false;
+		return;
+	}
 
 	NoteData tempNoteData;
 	this->GetNoteData( tempNoteData );
-	
+
+	FOREACH_PlayerNumber(pn)
+		m_CachedTechStats[pn]
+			.Zero();
+
+	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
+
 	if( tempNoteData.IsComposite() )
 	{
 		std::vector<NoteData> vParts;
 		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
-		if( vParts.size() > pn)
+		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
 		{
 			TechStatsCalculator::CalculateTechStats(vParts[pn], m_CachedTechStats[pn]);
 		}
 	}
 	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
 	{
-		
+		NoteData p1 = tempNoteData;
+		// XXX: Assumption that couple will always have an even number of notes.
 		const int tracks = tempNoteData.GetNumTracks() / 2;
-		if(pn == PLAYER_2)
-		{
-			NoteDataUtil::ShiftTracks(tempNoteData, tracks);
-		}
+		p1.SetNumTracks(tracks);
+		TechStatsCalculator::CalculateTechStats(tempNoteData, m_CachedTechStats[PLAYER_1]);
+		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
 		tempNoteData.SetNumTracks(tracks);
-		TechStatsCalculator::CalculateTechStats(tempNoteData, m_CachedTechStats[pn]);
+		TechStatsCalculator::CalculateTechStats(tempNoteData, m_CachedTechStats[PLAYER_2]);
 	}
 	else
 	{
-		TechStatsCalculator::CalculateTechStats(tempNoteData, m_CachedTechStats[pn]);
+		TechStatsCalculator::CalculateTechStats(tempNoteData, m_CachedTechStats[0]);
+		std::fill_n( m_CachedTechStats + 1, NUM_PLAYERS-1, m_CachedTechStats[0] );
 	}
-	return m_CachedTechStats[pn];
+	
 }
 
 void Steps::ChangeFilenamesForCustomSong()
@@ -574,6 +588,7 @@ void Steps::CopyFrom( Steps* pSource, StepsType ntTo, float fMusicLengthSeconds 
 	this->SetDifficulty( pSource->GetDifficulty() );
 	this->SetMeter( pSource->GetMeter() );
 	this->CalculateRadarValues( fMusicLengthSeconds );
+	this->CalculateTechStats();
 }
 
 void Steps::CreateBlank( StepsType ntTo )
