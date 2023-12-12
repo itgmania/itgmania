@@ -146,6 +146,7 @@ namespace SongUtil
 	void SortSongPointerArrayByNumPlays( std::vector<Song*> &vpSongsInOut, ProfileSlot slot, bool bDescending );
 	void SortSongPointerArrayByNumPlays( std::vector<Song*> &vpSongsInOut, const Profile* pProfile, bool bDescending );
 	void SortSongPointerArrayByStepsTypeAndMeter( std::vector<Song*> &vpSongsInOut, StepsType st, Difficulty dc );
+	void SortSongPointerArrayByStepsTypeAndLevel( std::vector<Song*> &vpSongsInOut, StepsType st, int iMeter );
 	RString GetSectionNameFromSongAndSort( const Song *pSong, SortOrder so );
 	void SortSongPointerArrayBySectionName( std::vector<Song*> &vpSongsInOut, SortOrder so );
 	void SortByMostRecentlyPlayedForMachine( std::vector<Song*> &vpSongsInOut );

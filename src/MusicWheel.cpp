@@ -537,6 +537,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 			}
 			break;
 		}
+		case SORT_METER:
 		case SORT_PREFERRED:
 		case SORT_ROULETTE:
 		case SORT_GROUP:
@@ -569,6 +570,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 			// sort the songs
 			switch( so )
 			{
+				case SORT_METER:
 				case SORT_PREFERRED:
 					// obey order specified by the preferred sort list
 					break;
@@ -674,6 +676,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 				/* We're using sections, so use the section name as the top-level sort. */
 				switch( so )
 				{
+					case SORT_METER:
 					case SORT_PREFERRED:
 					case SORT_TOP_GRADES:
 					case SORT_TOP_GRADES_P1:
@@ -689,58 +692,79 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 			// make WheelItemDatas with sections
 			RString sLastSection = "";
 			int iSectionColorIndex = 0;
-
-			// If the sort order is Preferred handle it differently because we already know the sections
-			if( so == SORT_PREFERRED )
-			{
-				if( bUseSections )
-				{
-					// Get mappping of section names to songs
-					std::map<RString, std::vector<Song*>> preferredSortSongsMap = SONGMAN->GetPreferredSortSongsMap();
-					for (auto const& [sectionName, songs] : SONGMAN->GetPreferredSortSongsMap())
-					{
-						// todo: preferred sort section color handling? -aj
-						RageColor colorSection = SECTION_COLORS.GetValue(iSectionColorIndex);
-						iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
-						// Add the section item
-						arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sectionName, nullptr, colorSection, songs.size()) );
-						// Add all the songs in this section
-						for (auto const& song : songs)
-						{
-							arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, song, sectionName, nullptr, SONGMAN->GetSongColor(song), 0) );
-						}
-					}
-				}
-			} else {
-
-				for( unsigned i=0; i< arraySongs.size(); i++ )
-				{
-					Song* pSong = arraySongs[i];
+			switch (so) {
+				case SORT_PREFERRED:
+					// If the sort order is Preferred handle it differently because we already know the sections
 					if( bUseSections )
 					{
-						RString sThisSection = SongUtil::GetSectionNameFromSongAndSort( pSong, so );
-
-						if( sThisSection != sLastSection )
+						// Get mappping of section names to songs
+						std::map<RString, std::vector<Song*>> preferredSortSongsMap = SONGMAN->GetPreferredSortSongsMap();
+						for (auto const& [sectionName, songs] : SONGMAN->GetPreferredSortSongsMap())
 						{
-							int iSectionCount = 0;
-							// Count songs in this section
-							unsigned j;
-							for( j=i; j < arraySongs.size(); j++ )
-							{
-								if( SongUtil::GetSectionNameFromSongAndSort( arraySongs[j], so ) != sThisSection )
-									break;
-							}
-							iSectionCount = j-i;
-
-							// new section, make a section item
-							RageColor colorSection = (so==SORT_GROUP) ? SONGMAN->GetSongGroupColor(pSong->m_sGroupName) : SECTION_COLORS.GetValue(iSectionColorIndex);
+							// todo: preferred sort section color handling? -aj
+							RageColor colorSection = SECTION_COLORS.GetValue(iSectionColorIndex);
 							iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
-							arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sThisSection, nullptr, colorSection, iSectionCount) );
-							sLastSection = sThisSection;
+							// Add the section item
+							arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sectionName, nullptr, colorSection, songs.size()) );
+							// Add all the songs in this section
+							for (auto const& song : songs)
+							{
+								arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, song, sectionName, nullptr, SONGMAN->GetSongColor(song), 0) );
+							}
 						}
 					}
-					arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, pSong, sLastSection, nullptr, SONGMAN->GetSongColor(pSong), 0) );
-				}
+					break;
+				case SORT_METER:
+					// If the sort order is Preferred handle it differently because we already know the sections
+					if( bUseSections )
+					{
+						int iSectionCount = 0;
+						// // Get all section names
+						std::map<int, std::vector<Song*>> meterSortSongsMap = SONGMAN->GetMeterToSongsMap();
+						for (auto const& [sectionName, songs] : SONGMAN->GetMeterToSongsMap()) {
+							RageColor colorSection = SECTION_COLORS.GetValue(iSectionColorIndex);
+							iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
+							// Add the section item
+							arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, ssprintf("%d",sectionName), nullptr, colorSection, songs.size()) );
+							// Add all the songs in this section
+							for (auto const& song : songs)
+							{
+								arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, song, ssprintf("%d",sectionName), nullptr, SONGMAN->GetSongColor(song), 0) );
+							}
+						} 
+					}
+					break;
+				default:
+					for( unsigned i=0; i< arraySongs.size(); i++ )
+					{
+						Song* pSong = arraySongs[i];
+						if( bUseSections )
+						{
+							RString sThisSection = SongUtil::GetSectionNameFromSongAndSort( pSong, so );
+
+							if( sThisSection != sLastSection )
+							{
+								int iSectionCount = 0;
+								// Count songs in this section
+								unsigned j;
+								for( j=i; j < arraySongs.size(); j++ )
+								{
+									if( SongUtil::GetSectionNameFromSongAndSort( arraySongs[j], so ) != sThisSection )
+										break;
+								}
+								iSectionCount = j-i;
+
+								// new section, make a section item
+								// todo: preferred sort section color handling? -aj
+								RageColor colorSection = (so==SORT_GROUP) ? SONGMAN->GetSongGroupColor(pSong->m_sGroupName) : SECTION_COLORS.GetValue(iSectionColorIndex);
+								iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
+								arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sThisSection, nullptr, colorSection, iSectionCount) );
+								sLastSection = sThisSection;
+							}
+						}
+						arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, pSong, sLastSection, nullptr, SONGMAN->GetSongColor(pSong), 0) );
+					}
+					break;
 			}
 
 			if( so != SORT_ROULETTE )
