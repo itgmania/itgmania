@@ -6,7 +6,7 @@
 #include "LuaBinding.h"
 #include "TimingData.h"
 #include "GameState.h"
-
+#include "RageTimer.h"
 
 RString TechStats::stringDescription()
 {
@@ -50,8 +50,7 @@ void TechStatsCalculator::CalculateTechStats(const NoteData &in, TechStats &out)
 	// once curr_note.Row() has moved on to a new row.
 	// But, I don't want to confuse this with lastStep
 	StepDirection curr_step = StepDirection_None;
-	NoteData::all_tracks_const_iterator curr_note =
-		in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
+	NoteData::all_tracks_const_iterator curr_note = in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
 
 	// The notes aren't grouped, so we have to iterate through them all and figure out 
 	// which ones go together
@@ -63,12 +62,16 @@ void TechStatsCalculator::CalculateTechStats(const NoteData &in, TechStats &out)
 			curr_row = curr_note.Row();
 			curr_step = StepDirection_None;
 		}
-		curr_step = curr_step | TrackIntToStepDirection(curr_note.Track());
+		if (curr_note->type == TapNoteType_Tap || curr_note->type == TapNoteType_HoldHead)
+		{
+			curr_step = curr_step | TrackIntToStepDirection(curr_note.Track());
+		}
+
 		++curr_note;
 	}
-
+	
 	TechStatsCalculator::CommitStream(out, statsCounter, Foot_None);
-	// TechStatsCalculator::CalculateMeasureInfo(in, out);
+	
 }
 
 // The main loop from GetTechniques().
@@ -441,46 +444,79 @@ void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &count
 void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &stats)
 {
 
-	int lastRow = in.GetLastRow() - 1;
+	int lastRow = in.GetLastRow();	// This is apparently wrong?? 
 	int lastRowMeasureIndex = 0;
 	int lastRowBeatIndex = 0;
 	int lastRowRemainder = 0;
+	LOG->Trace("lastRow: %d", lastRow);
+	LOG->Trace("Getting timing data");
+	LOG->Flush();
 	TimingData *timing = GAMESTATE->GetProcessedTimingData();
-
+	LOG->Trace("NoteRowToMeasureAndBeat");
+	LOG->Flush();
 	timing->NoteRowToMeasureAndBeat(lastRow, lastRowMeasureIndex, lastRowBeatIndex, lastRowRemainder);
 
 	int totalMeasureCount = lastRowMeasureIndex + 1;
+	LOG->Trace("totalMeasureCount: %d", totalMeasureCount);
+	LOG->Flush();
 	// Stream Measures Variables
 	// Which measures are considered a stream?
+	LOG->Trace("Initting counters");
+	LOG->Flush();
+
 	std::vector<MeasureCounter> counters(totalMeasureCount, MeasureCounter());
-	
+	LOG->Trace("GetTapNoteRangeAllTracks");
+	LOG->Flush();
+	NoteData::all_tracks_const_iterator curr_note = in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
+
 	int iMeasureIndexOut = 0;
 	int iBeatIndexOut = 0;
 	int iRowsRemainder = 0;
 
 	float peak_nps = 0;
+	int curr_row = -1;
 
-	// Count the number of taps, mines for each measure
-	for (int row = 0; row < lastRow; row++)
+	// The notes aren't grouped, so we have to iterate through them all and figure out 
+	// which ones go together
+	while(!curr_note.IsAtEnd())
 	{
-		timing->NoteRowToMeasureAndBeat(row, iMeasureIndexOut, iBeatIndexOut, iRowsRemainder);
-		int taps = in.GetNumTapNotesInRow(row);
-		int mines = in.GetNumMinesInRow(row);
-		counters[iMeasureIndexOut].tapCount += taps;
- 		counters[iMeasureIndexOut].mineCount += mines;
-		counters[iMeasureIndexOut].rowCount += 1;
+		LOG->Trace("Row: %d", curr_note.Row());
+		LOG->Flush();
+		if(curr_note.Row() != curr_row)
+		{
+			counters[iMeasureIndexOut].rowCount += 1;
+			
+			timing->NoteRowToMeasureAndBeat(curr_note.Row(), iMeasureIndexOut, iBeatIndexOut, iRowsRemainder);
+			curr_row = curr_note.Row();
+		}
+		LOG->Trace("iMeasureIndexOut: %d", iMeasureIndexOut);
+		LOG->Flush();
+		if (curr_note->type == TapNoteType_Tap || curr_note->type == TapNoteType_HoldHead)
+		{
+			counters[iMeasureIndexOut].tapCount += 1;
+		}
+		else if(curr_note->type == TapNoteType_Mine)
+		{
+			counters[iMeasureIndexOut].mineCount += 1;
+		}
 
-		counters[iMeasureIndexOut].endRow = row;
+		counters[iMeasureIndexOut].endRow = curr_note.Row();
 		if(counters[iMeasureIndexOut].startRow == -1)
 		{
-			counters[iMeasureIndexOut].startRow = row;
+			counters[iMeasureIndexOut].startRow = curr_note.Row();
 		}
+		
+		++curr_note;
 	}
 
 	for (unsigned m = 0; m < counters.size(); m++)
 	{
+		if(counters[m].rowCount == 0)
+		{
+			counters[m].nps = 0;
+			continue;
+		}
 		int beat = 4 * (m + (counters[m].endRow / counters[m].rowCount));
-
 		float time = timing->GetElapsedTimeFromBeat(beat);
 		float measureDuration = timing->GetElapsedTimeFromBeat(4 * (m+1)) - timing->GetElapsedTimeFromBeat(4 * m);
 		counters[m].duration = measureDuration;

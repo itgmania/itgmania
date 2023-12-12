@@ -41,17 +41,24 @@ void TimingData::Copy( const TimingData& cpy )
 
 void TimingData::Clear()
 {
+	LOG->Trace("TimingData::Clear for self: %p", (void *)this);
+	LOG->Trace("vvvvvvvvvvvvvvvvvvvv");
+	LOG->Flush();
 	/* Delete all pointers owned by this TimingData. */
 	FOREACH_TimingSegmentType( tst )
 	{
 		std::vector<TimingSegment*> &vSegs = m_avpTimingSegments[tst];
-		for( unsigned i = 0; i < vSegs.size(); ++i )
+		LOG->Trace("TimingData::Clear vSegs size: %lu", vSegs.size());
+		LOG->Flush();
+		for (unsigned i = 0; i < vSegs.size(); ++i)
 		{
 			SAFE_DELETE( vSegs[i] );
 		}
 
 		vSegs.clear();
 	}
+	LOG->Trace("^^^^^^^^^^^^^^^^^^");
+	LOG->Flush();
 }
 
 bool TimingData::IsSafeFullTiming()
