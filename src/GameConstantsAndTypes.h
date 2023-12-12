@@ -168,6 +168,7 @@ enum SortOrder
 	SORT_TOP_GRADES, /**< Sort by the highest grades earned on a Song. */
 	SORT_ARTIST, /**< Sort by the name of the artist of the Song. */
 	SORT_GENRE, /**< Sort by the Song's genre. */
+	SORT_METER, /**< Sort by the difficulty of all meters */
 	SORT_BEGINNER_METER, /**< Sort by the difficulty of the single beginner meter. */
 	SORT_EASY_METER, /**< Sort by the difficulty of the single easy meter. */
 	SORT_MEDIUM_METER, /**< Sort by the difficulty of the single medium meter. */

@@ -214,6 +214,7 @@ void SongManager::Reload( bool bAllowFastLoad, LoadingWindow *ld )
 		PREFSMAN->m_bFastLoad.Set( oldVal );
 
 	UpdatePreferredSort();
+	UpdateMeterSort();
 }
 
 void SongManager::LoadAdditions( LoadingWindow *ld )
@@ -227,6 +228,7 @@ void SongManager::LoadAdditions( LoadingWindow *ld )
 	UNLOCKMAN->Reload();
 
 	UpdatePreferredSort();
+	UpdateMeterSort();
 }
 
 void SongManager::InitSongsFromDisk( LoadingWindow *ld, bool onlyAdditions )
@@ -889,6 +891,16 @@ void SongManager::GetPreferredSortCourses( CourseType ct, std::vector<Course*> &
 	}
 }
 
+std::vector<Song*> SongManager::GetSongsByMeter(const int iMeter) const {
+    std::vector<Song*> AddTo;
+    auto iter = m_mapSongsByDifficulty.find(iMeter);
+    if (iter != m_mapSongsByDifficulty.end()) {
+        // Found the level, add the songs to AddTo
+        AddTo.insert(AddTo.end(), iter->second.begin(), iter->second.end());
+    }
+    return AddTo;
+}
+
 int SongManager::GetNumSongs() const
 {
 	return m_pSongs.size();
@@ -1225,6 +1237,7 @@ void SongManager::Invalidate( const Song *pStaleSong )
 
 	UpdatePopular();
 	UpdateShuffled();
+	UpdateMeterSort();
 	RefreshCourseGroupInfo();
 }
 
@@ -1616,6 +1629,33 @@ void SongManager::UpdatePopular()
 		CourseUtil::SortCoursePointerArrayByNumPlays( vpCourses, ProfileSlot_Machine, true );
 	}
 }
+
+void SongManager::UpdateMeterSort() {
+	std::vector<Song*> apDifficultSongs = m_pSongs;
+	// For each song, for each step
+	for( unsigned i = 0; i < apDifficultSongs.size(); ++i )
+	{
+		const std::vector<Steps*> &vSteps = apDifficultSongs[i]->GetAllSteps();
+		for( unsigned j = 0; j < vSteps.size(); ++j )
+		{
+			Steps *pSteps = vSteps[j];
+			// Check if the meter is already in m_mapSongsByDifficulty
+			
+			if (std::find(m_mapSongsByDifficulty[pSteps->GetMeter()].begin(), m_mapSongsByDifficulty[pSteps->GetMeter()].end(), apDifficultSongs[i]) != m_mapSongsByDifficulty[pSteps->GetMeter()].end())
+				continue;
+			else {			
+				m_mapSongsByDifficulty[pSteps->GetMeter()].push_back(apDifficultSongs[i]);
+			}
+		}
+	}
+
+	// For each meter in m_mapSongsByDifficulty, sort the songs by title
+	for( unsigned i = 0; i < m_mapSongsByDifficulty.size(); ++i )
+	{
+		SongUtil::SortSongPointerArrayByTitle( m_mapSongsByDifficulty[i] );
+	}
+}
+
 
 void SongManager::UpdateShuffled()
 {

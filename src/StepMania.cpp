@@ -1006,6 +1006,7 @@ int sm_main(int argc, char* argv[])
 	UNLOCKMAN	= new UnlockManager;
 	SONGMAN->UpdatePopular();
 	SONGMAN->UpdatePreferredSort();
+	SONGMAN->UpdateMeterSort();
 	NETWORK		= new NetworkManager;
 	STATSMAN	= new StatsManager;
 
