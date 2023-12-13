@@ -404,6 +404,7 @@ void Steps::CalculateTechStats()
 		TechStatsCalculator::CalculateTechStats(tempNoteData, m_CachedTechStats[0]);
 		std::fill_n( m_CachedTechStats + 1, NUM_PLAYERS-1, m_CachedTechStats[0] );
 	}
+	GAMESTATE->SetProcessedTimingData(nullptr);
 	
 }
 

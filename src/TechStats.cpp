@@ -71,7 +71,7 @@ void TechStatsCalculator::CalculateTechStats(const NoteData &in, TechStats &out)
 	}
 	
 	TechStatsCalculator::CommitStream(out, statsCounter, Foot_None);
-	
+	TechStatsCalculator::CalculateMeasureInfo(in, out);
 }
 
 // The main loop from GetTechniques().
@@ -448,25 +448,14 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 	int lastRowMeasureIndex = 0;
 	int lastRowBeatIndex = 0;
 	int lastRowRemainder = 0;
-	LOG->Trace("lastRow: %d", lastRow);
-	LOG->Trace("Getting timing data");
-	LOG->Flush();
 	TimingData *timing = GAMESTATE->GetProcessedTimingData();
-	LOG->Trace("NoteRowToMeasureAndBeat");
-	LOG->Flush();
 	timing->NoteRowToMeasureAndBeat(lastRow, lastRowMeasureIndex, lastRowBeatIndex, lastRowRemainder);
 
 	int totalMeasureCount = lastRowMeasureIndex + 1;
-	LOG->Trace("totalMeasureCount: %d", totalMeasureCount);
-	LOG->Flush();
 	// Stream Measures Variables
 	// Which measures are considered a stream?
-	LOG->Trace("Initting counters");
-	LOG->Flush();
 
 	std::vector<MeasureCounter> counters(totalMeasureCount, MeasureCounter());
-	LOG->Trace("GetTapNoteRangeAllTracks");
-	LOG->Flush();
 	NoteData::all_tracks_const_iterator curr_note = in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
 
 	int iMeasureIndexOut = 0;
@@ -480,8 +469,6 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 	// which ones go together
 	while(!curr_note.IsAtEnd())
 	{
-		LOG->Trace("Row: %d", curr_note.Row());
-		LOG->Flush();
 		if(curr_note.Row() != curr_row)
 		{
 			counters[iMeasureIndexOut].rowCount += 1;
@@ -489,8 +476,6 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 			timing->NoteRowToMeasureAndBeat(curr_note.Row(), iMeasureIndexOut, iBeatIndexOut, iRowsRemainder);
 			curr_row = curr_note.Row();
 		}
-		LOG->Trace("iMeasureIndexOut: %d", iMeasureIndexOut);
-		LOG->Flush();
 		if (curr_note->type == TapNoteType_Tap || curr_note->type == TapNoteType_HoldHead)
 		{
 			counters[iMeasureIndexOut].tapCount += 1;
