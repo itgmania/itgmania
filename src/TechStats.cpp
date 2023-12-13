@@ -455,7 +455,7 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 	// Stream Measures Variables
 	// Which measures are considered a stream?
 
-	std::vector<MeasureCounter> counters(totalMeasureCount, MeasureCounter());
+	std::vector<MeasureStats> counters(totalMeasureCount, MeasureStats());
 	NoteData::all_tracks_const_iterator curr_note = in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
 
 	int iMeasureIndexOut = 0;

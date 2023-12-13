@@ -90,7 +90,7 @@ struct lua_State;
 
 /** @brief Container for stats on a given measure */
 
-struct MeasureCounter
+struct MeasureStats
 {
 	int startRow;
 	int endRow;
@@ -100,7 +100,7 @@ struct MeasureCounter
 	float nps;
 	float duration;
 
-	MeasureCounter()
+	MeasureStats()
 	{
 		startRow = -1;
 		endRow = -1;
@@ -111,7 +111,7 @@ struct MeasureCounter
 		duration = 0;
 	}
 
-	bool operator==( const MeasureCounter& other ) const
+	bool operator==( const MeasureStats& other ) const
 	{
 		return (this->startRow == other.startRow
 			&& this->endRow == other.endRow
@@ -123,7 +123,7 @@ struct MeasureCounter
 			);
 	}
 
-	bool operator!=(const MeasureCounter& other ) const
+	bool operator!=(const MeasureStats& other ) const
 	{
 		return !this->operator==(other);
 	}
@@ -142,7 +142,7 @@ public:
 	int measureCount; // Number of measures in song
 	float peakNps; // peak notes-per-second
 
-	std::vector<MeasureCounter> measureInfo; // Contains info for each measure in song
+	std::vector<MeasureStats> measureInfo; // Contains info for each measure in song
 
 	TechStats()
 	{
@@ -170,7 +170,7 @@ public:
 	void updatePeakNps()
 	{
 		peakNps = 0;
-		for (MeasureCounter entry : measureInfo)
+		for (MeasureStats entry : measureInfo)
 		{
 			if(entry.nps > peakNps)
 			{
