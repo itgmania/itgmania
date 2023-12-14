@@ -462,17 +462,22 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 	float peak_nps = 0;
 	int curr_row = -1;
 
-	// The notes aren't grouped, so we have to iterate through them all and figure out 
-	// which ones go together
 	while(!curr_note.IsAtEnd())
 	{
 		if(curr_note.Row() != curr_row)
 		{
+			// Before moving on to a new row, update the row count, start and end rows for the "current" measure
 			counters[iMeasureIndexOut].rowCount += 1;
-			
+			counters[iMeasureIndexOut].endRow = curr_row;
+			if (counters[iMeasureIndexOut].startRow == -1)
+			{
+				counters[iMeasureIndexOut].startRow = curr_row;
+			}
+			// Update iMeasureIndex for the current row
 			timing->NoteRowToMeasureAndBeat(curr_note.Row(), iMeasureIndexOut, iBeatIndexOut, iRowsRemainder);
 			curr_row = curr_note.Row();
 		}
+		// Update tap and mine count for the current measure
 		if (curr_note->type == TapNoteType_Tap || curr_note->type == TapNoteType_HoldHead)
 		{
 			counters[iMeasureIndexOut].tapCount += 1;
@@ -481,16 +486,11 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 		{
 			counters[iMeasureIndexOut].mineCount += 1;
 		}
-
-		counters[iMeasureIndexOut].endRow = curr_note.Row();
-		if(counters[iMeasureIndexOut].startRow == -1)
-		{
-			counters[iMeasureIndexOut].startRow = curr_note.Row();
-		}
 		
 		++curr_note;
 	}
 
+	// Now that all of the notes have been parsed, calculate nps for each measure
 	for (unsigned m = 0; m < counters.size(); m++)
 	{
 		if(counters[m].rowCount == 0)
@@ -498,6 +498,7 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 			counters[m].nps = 0;
 			continue;
 		}
+		
 		int beat = 4 * (m + (counters[m].endRow / counters[m].rowCount));
 		float time = timing->GetElapsedTimeFromBeat(beat);
 		float measureDuration = timing->GetElapsedTimeFromBeat(4 * (m+1)) - timing->GetElapsedTimeFromBeat(4 * m);
