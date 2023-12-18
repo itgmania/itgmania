@@ -620,14 +620,85 @@ public:
 		return 1;
 	}
 
+	static int GetColumnCues(T *p, lua_State *L)
+	{
+		std::vector<ColumnCue *> c;
+		for (unsigned i = 0; i < p->columnCues.size(); i++ )
+		{
+			c.push_back(&p->columnCues[i]);
+		}
+		LuaHelpers::CreateTableFromArray<ColumnCue*>(c, L);
+		return 1;
+	}
+
 	LunaTechStats()
 	{
 		ADD_METHOD( GetValue );
+		ADD_METHOD(GetColumnCues);
 	}
 };
 
-
 LUA_REGISTER_CLASS( TechStats )
+
+class LunaColumnCue: public Luna<ColumnCue>
+{
+	public:
+
+	static int GetStartTime(T *p, lua_State *L)
+	{
+		lua_pushnumber(L, p->startTime);
+		return 1;
+	}
+
+	static int GetDuration(T *p, lua_State *L)
+	{
+		lua_pushnumber(L, p->duration);
+		return 1;
+	}
+
+	static int GetColumns(T *p, lua_State *L)
+	{
+		std::vector<ColumnCueColumn *> c;
+		for (unsigned i = 0; i < p->columns.size(); i++ )
+		{
+			c.push_back(&p->columns[i]);
+		}
+		LuaHelpers::CreateTableFromArray<ColumnCueColumn*>(c, L);
+		return 1;
+	}
+
+	LunaColumnCue()
+	{
+		ADD_METHOD(GetStartTime);
+		ADD_METHOD(GetDuration);
+		ADD_METHOD(GetColumns);
+	}
+};
+
+LUA_REGISTER_CLASS( ColumnCue )
+
+class LunaColumnCueColumn: public Luna<ColumnCueColumn>
+{
+public:
+	static int GetColumnNumber(T * p, lua_State *L)
+	{
+		lua_pushnumber(L, p->colNum);
+		return 1;
+	}
+	static int GetIsMine(T *p, lua_State *L)
+	{
+		lua_pushboolean(L, p->isMine);
+		return 1;
+	}
+
+	LunaColumnCueColumn()
+	{
+		ADD_METHOD(GetColumnNumber);
+		ADD_METHOD(GetIsMine);
+	}
+};
+
+LUA_REGISTER_CLASS( ColumnCueColumn )
 
 
 /*

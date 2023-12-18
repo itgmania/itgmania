@@ -143,6 +143,7 @@ struct ColumnCueColumn
 		colNum = c;
 		isMine = m;
 	}
+	void PushSelf( lua_State *L );
 };
 
 struct ColumnCue
@@ -163,6 +164,8 @@ struct ColumnCue
 		duration = d;
 		columns.assign(c.begin(), c.end());
 	}
+
+	void PushSelf( lua_State *L );
 };
 
 /** @brief Technical statistics */
