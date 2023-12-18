@@ -439,8 +439,6 @@ void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &count
 	}
 }
 
-
-
 void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &stats)
 {
 	int lastRow = in.GetLastRow();
@@ -462,7 +460,10 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 	float peak_nps = 0;
 	int curr_row = -1;
 
-	while(!curr_note.IsAtEnd())
+	std::vector<ColumnCue> allColumnCues;
+	ColumnCue currentCue = ColumnCue();
+
+	while (!curr_note.IsAtEnd())
 	{
 		if(curr_note.Row() != curr_row)
 		{
@@ -473,6 +474,14 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 			{
 				counters[iMeasureIndexOut].startRow = curr_row;
 			}
+			
+			if (currentCue.startTime != -1 )
+			{
+				allColumnCues.push_back(currentCue);
+			}
+			currentCue = ColumnCue();
+			currentCue.startTime = timing->GetElapsedTimeFromBeat(NoteRowToBeat(curr_note.Row()));
+
 			// Update iMeasureIndex for the current row
 			timing->NoteRowToMeasureAndBeat(curr_note.Row(), iMeasureIndexOut, iBeatIndexOut, iRowsRemainder);
 			curr_row = curr_note.Row();
@@ -481,13 +490,21 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 		if (curr_note->type == TapNoteType_Tap || curr_note->type == TapNoteType_HoldHead)
 		{
 			counters[iMeasureIndexOut].tapCount += 1;
+			currentCue.columns.push_back(ColumnCueColumn(curr_note.Track() + 1, false));
 		}
 		else if(curr_note->type == TapNoteType_Mine)
 		{
 			counters[iMeasureIndexOut].mineCount += 1;
+			currentCue.columns.push_back(ColumnCueColumn(curr_note.Track() + 1, true));
 		}
 		
 		++curr_note;
+	}
+
+	// If there's a remaining columnCue from the last row, add it
+	if( currentCue.startTime != -1)
+	{
+		allColumnCues.push_back(currentCue);
 	}
 
 	// Now that all of the notes have been parsed, calculate nps for each measure
@@ -518,12 +535,25 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 		}
 	}
 
-	stats.measureInfo.clear();
+	float previousCueTime = 0;
+	std::vector<ColumnCue> columnCues;
+	for( ColumnCue columnCue : allColumnCues )
+	{
+		float duration = columnCue.startTime - previousCueTime;
+		if( duration > 1.5 || previousCueTime == 0)
+		{
+			columnCues.push_back(ColumnCue(previousCueTime, duration, columnCue.columns));
+		}
+		previousCueTime = columnCue.startTime;
+	}
+
 	stats.peakNps = peak_nps;
 	stats.measureCount = totalMeasureCount;
+	stats.columnCues.clear();
+	stats.columnCues.assign(columnCues.begin(), columnCues.end());
+	stats.measureInfo.clear();
 	stats.measureInfo.assign(counters.begin(), counters.end());
 }
-
 
 std::vector<int> TechStats::notesPerMeasure()
 {

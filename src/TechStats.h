@@ -129,6 +129,41 @@ struct MeasureStats
 	}
 };
 
+struct ColumnCueColumn
+{
+	int colNum;
+	bool isMine;
+	ColumnCueColumn()
+	{
+		colNum = 0;
+		isMine = false;
+	}
+	ColumnCueColumn(int c, bool m)
+	{
+		colNum = c;
+		isMine = m;
+	}
+};
+
+struct ColumnCue
+{
+	float startTime;
+	float duration;
+	std::vector<ColumnCueColumn> columns;
+
+	ColumnCue()
+	{
+		startTime = -1;
+		duration = -1;
+	}
+
+	ColumnCue(float s, float d, std::vector<ColumnCueColumn> c)
+	{
+		startTime = s;
+		duration = d;
+		columns.assign(c.begin(), c.end());
+	}
+};
 
 /** @brief Technical statistics */
 struct TechStats
@@ -143,6 +178,7 @@ public:
 	float peakNps; // peak notes-per-second
 
 	std::vector<MeasureStats> measureInfo; // Contains info for each measure in song
+	std::vector<ColumnCue> columnCues;
 
 	TechStats()
 	{
@@ -165,6 +201,7 @@ public:
 		measureCount = 0;
 		peakNps = 0;
 		measureInfo.clear();
+		columnCues.clear();
 	}
 
 	void updatePeakNps()
@@ -194,6 +231,7 @@ public:
 		this->brackets += other.brackets;
 		this->measureCount += other.measureCount;
 		this->measureInfo.insert(this->measureInfo.end(), other.measureInfo.begin(), other.measureInfo.end());
+		this->columnCues.insert(this->columnCues.end(), other.columnCues.begin(), other.columnCues.end());
 		this->updatePeakNps();
 		return *this;
 	}
@@ -264,6 +302,7 @@ struct TechStatsCounter
 		recursionCount = 0;
 	}
 };
+
 
 namespace TechStatsCalculator
 {
