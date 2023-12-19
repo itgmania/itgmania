@@ -20,22 +20,6 @@ RString TechStats::stringDescription()
 	return out;
 }
 
-static const char *TechStatsCategoryNames[] = {
-	"Crossovers",
-	"Footswitches",
-	"Sideswitches",
-	"Jacks",
-	"Brackets",
-	"PeakNps",
-	"MeasureCount",
-	"NotesPerMeasure",
-	"NpsPerMeasure"
-};
-XToString( TechStatsCategory );
-XToLocalizedString( TechStatsCategory );
-LuaFunction(TechStatsCategoryToLocalizedString, TechStatsCategoryToLocalizedString(Enum::Check<TechStatsCategory>(L, 1)) );
-LuaXType( TechStatsCategory );
-
 // This is currently a more or less direct port of GetTechniques() from SL-ChartParser.lua
 // It seems to match the results pretty closely, but not exactly.
 // Instead of using null/false/true for foot mapping, an enum Foot has been introduced.
@@ -581,49 +565,32 @@ std::vector<float> TechStats::npsPerMeasure()
 class LunaTechStats: public Luna<TechStats>
 {
 public:
-	static int GetValue(T *p, lua_State *L)
+
+	GET_FLOAT_METHOD(crossovers, crossovers)
+	GET_FLOAT_METHOD(footswitches, footswitches)
+	GET_FLOAT_METHOD(sideswitches, sideswitches)
+	GET_FLOAT_METHOD(jacks, jacks)
+	GET_FLOAT_METHOD(brackets, brackets)
+	GET_FLOAT_METHOD(measure_count, measureCount)
+	GET_FLOAT_METHOD(peak_nps, peakNps)
+
+	static int get_notes_per_measure(T *p, lua_State *L)
 	{
-		TechStatsCategory cat = Enum::Check<TechStatsCategory>(L, 1);
-		switch(cat)
-		{	
-			case TechStatsCategory_Crossovers:
-				lua_pushnumber(L, p->crossovers);
-				break;
-			case TechStatsCategory_Footswitches:
-				lua_pushnumber(L, p->footswitches);
-				break;
-			case TechStatsCategory_Sideswitches:
-				lua_pushnumber(L, p->sideswitches);
-				break;
-			case TechStatsCategory_Jacks:
-				lua_pushnumber(L, p->jacks);
-				break;
-			case TechStatsCategory_Brackets:
-				lua_pushnumber(L, p->brackets);
-				break;
-			case TechStatsCategory_MeasureCount:
-				lua_pushnumber(L, p->measureCount);
-				break;
-			case TechStatsCategory_PeakNps:
-				lua_pushnumber(L, p->peakNps);
-				break;
-			case TechStatsCategory_NotesPerMeasure:
-				LuaHelpers::CreateTableFromArray(p->notesPerMeasure(), L);
-				break;
-			case TechStatsCategory_NpsPerMeasure:
-				LuaHelpers::CreateTableFromArray(p->npsPerMeasure(), L);
-				break;
-			default:
-				lua_pushnumber(L, 0);
-				break;
-			}
+		LuaHelpers::CreateTableFromArray(p->notesPerMeasure(), L);
 		return 1;
 	}
+
+	static int get_nps_per_measure(T *p, lua_State *L)
+	{
+		LuaHelpers::CreateTableFromArray(p->npsPerMeasure(), L);
+		return 1;
+	}
+
 
 	// Build an array that matches the structure of ColumnCues that's returned
 	// by GetMeasureInfo() in SL-ChartParser. This way we don't need to touch
 	// anywhere else that uses this data.
-	static int GetColumnCues(T *p, lua_State *L)
+	static int get_column_cues(T *p, lua_State *L)
 	{
 		lua_createtable(L, p->columnCues.size(), 0);
 
@@ -663,8 +630,16 @@ public:
 
 	LunaTechStats()
 	{
-		ADD_METHOD( GetValue );
-		ADD_METHOD(GetColumnCues);
+		ADD_METHOD(get_crossovers);
+		ADD_METHOD(get_footswitches);
+		ADD_METHOD(get_sideswitches);
+		ADD_METHOD(get_jacks);
+		ADD_METHOD(get_brackets);
+		ADD_METHOD(get_measure_count);
+		ADD_METHOD(get_peak_nps);
+		ADD_METHOD(get_notes_per_measure);
+		ADD_METHOD(get_nps_per_measure);
+		ADD_METHOD(get_column_cues);
 	}
 };
 

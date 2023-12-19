@@ -62,30 +62,6 @@ inline Foot SwitchFeet(Foot f)
 	return ((f == Foot_None || f == Foot_Left) ? Foot_Right : Foot_Left);
 }
 
-enum TechStatsCategory
-{
-	TechStatsCategory_Crossovers = 0,
-	TechStatsCategory_Footswitches,
-	TechStatsCategory_Sideswitches,
-	TechStatsCategory_Jacks,
-	TechStatsCategory_Brackets,
-	TechStatsCategory_PeakNps,
-	TechStatsCategory_MeasureCount,
-	TechStatsCategory_NotesPerMeasure,
-	TechStatsCategory_NpsPerMeasure,
-	NUM_TechStatsCategory,
-	TechStatsCategory_Invalid
-};
-
-const RString& TechStatsCategoryToString( TechStatsCategory cat );
-/**
- * @brief Turn the radar category into a proper localized string.
- * @param cat the radar category.
- * @return the localized string version of the radar category.
- */
-const RString& TechStatsCategoryToLocalizedString( TechStatsCategory cat );
-LuaDeclareType( TechStatsCategory );
-
 struct lua_State;
 
 /** @brief Container for stats on a given measure */

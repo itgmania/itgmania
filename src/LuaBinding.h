@@ -191,17 +191,23 @@ static int set_##bool_name(T* p, lua_State* L) \
 	COMMON_RETURN_SELF; \
 }
 
-#define GET_SET_FLOAT_METHOD(method_name, float_name) \
+#define GET_FLOAT_METHOD(method_name, float_name) \
 static int get_##method_name(T* p, lua_State* L) \
 { \
 	lua_pushnumber(L, p->float_name); \
 	return 1; \
-} \
+}
+
+#define SET_FLOAT_METHOD(method_name, float_name) \
 static int set_##method_name(T* p, lua_State* L) \
 { \
 	p->float_name= FArg(1); \
 	COMMON_RETURN_SELF; \
 }
+
+#define GET_SET_FLOAT_METHOD(method_name, float_name) \
+GET_FLOAT_METHOD(method_name, float_name) \
+SET_FLOAT_METHOD(method_name, float_name)
 
 #define GETTER_SETTER_FLOAT_METHOD(float_name) \
 static int get_##float_name(T* p, lua_State* L) \
