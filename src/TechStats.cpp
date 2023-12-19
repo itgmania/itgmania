@@ -620,14 +620,44 @@ public:
 		return 1;
 	}
 
+	// Build an array that matches the structure of ColumnCues that's returned
+	// by GetMeasureInfo() in SL-ChartParser. This way we don't need to touch
+	// anywhere else that uses this data.
 	static int GetColumnCues(T *p, lua_State *L)
 	{
-		std::vector<ColumnCue *> c;
-		for (unsigned i = 0; i < p->columnCues.size(); i++ )
+		lua_createtable(L, p->columnCues.size(), 0);
+
+		for (unsigned i = 0; i < p->columnCues.size(); i++)
 		{
-			c.push_back(&p->columnCues[i]);
+			lua_newtable(L);
+			lua_pushstring(L, "startTime");
+			lua_pushnumber(L, p->columnCues[i].startTime);
+			lua_settable(L, -3);
+
+			lua_pushstring(L, "duration");
+			lua_pushnumber(L, p->columnCues[i].duration);
+			lua_settable(L, -3);
+
+			lua_pushstring(L, "columns");
+			lua_createtable(L, p->columnCues[i].columns.size(), 0);
+
+			for (unsigned c = 0; c < p->columnCues[i].columns.size(); c++)
+			{
+				lua_newtable(L);
+				lua_pushstring(L, "colNum");
+				lua_pushinteger(L, p->columnCues[i].columns[c].colNum);
+				lua_settable(L, -3);
+
+				lua_pushstring(L, "isMine");
+				lua_pushboolean(L, p->columnCues[i].columns[c].isMine);
+				lua_settable(L, -3);
+
+				lua_rawseti(L, -2, c + 1);
+			}
+
+			lua_settable(L, -3);
+			lua_rawseti(L, -2, i + 1);
 		}
-		LuaHelpers::CreateTableFromArray<ColumnCue*>(c, L);
 		return 1;
 	}
 
@@ -639,67 +669,6 @@ public:
 };
 
 LUA_REGISTER_CLASS( TechStats )
-
-class LunaColumnCue: public Luna<ColumnCue>
-{
-	public:
-
-	static int GetStartTime(T *p, lua_State *L)
-	{
-		lua_pushnumber(L, p->startTime);
-		return 1;
-	}
-
-	static int GetDuration(T *p, lua_State *L)
-	{
-		lua_pushnumber(L, p->duration);
-		return 1;
-	}
-
-	static int GetColumns(T *p, lua_State *L)
-	{
-		std::vector<ColumnCueColumn *> c;
-		for (unsigned i = 0; i < p->columns.size(); i++ )
-		{
-			c.push_back(&p->columns[i]);
-		}
-		LuaHelpers::CreateTableFromArray<ColumnCueColumn*>(c, L);
-		return 1;
-	}
-
-	LunaColumnCue()
-	{
-		ADD_METHOD(GetStartTime);
-		ADD_METHOD(GetDuration);
-		ADD_METHOD(GetColumns);
-	}
-};
-
-LUA_REGISTER_CLASS( ColumnCue )
-
-class LunaColumnCueColumn: public Luna<ColumnCueColumn>
-{
-public:
-	static int GetColumnNumber(T * p, lua_State *L)
-	{
-		lua_pushnumber(L, p->colNum);
-		return 1;
-	}
-	static int GetIsMine(T *p, lua_State *L)
-	{
-		lua_pushboolean(L, p->isMine);
-		return 1;
-	}
-
-	LunaColumnCueColumn()
-	{
-		ADD_METHOD(GetColumnNumber);
-		ADD_METHOD(GetIsMine);
-	}
-};
-
-LUA_REGISTER_CLASS( ColumnCueColumn )
-
 
 /*
  * (c) 2023 Michael Votaw
