@@ -134,6 +134,12 @@ public:
 	RString GetChartKey();
 	void SetChartKey(const RString &k) { ChartKey = k; }
 
+	/** @brief Generates a hash used for GrooveStats integration. */
+	RString GenerateGrooveStatsKey();
+
+	/** @brief Produces a chart that's reduced to it's smallest unique representable form. */
+	RString MinimizedChartString();
+
 	void ChangeFilenamesForCustomSong();
 
 	void SetLoadedFromProfile( ProfileSlot slot )	{ m_LoadedFromProfile = slot; }
