@@ -167,11 +167,13 @@ public:
 	bool IsNoteDataEmpty() const;
 
 	void TidyUpData();
-	void CalculateRadarValues( float fMusicLengthSeconds );
+	void CalculateRadarValues (float fMusicLengthSeconds );
 
 	void CalculateTechStats();
 	const TechStats &GetTechStats(PlayerNumber pn) const { return Real()->m_CachedTechStats[pn]; }
 
+	void CalculateMeasureStats();
+	const MeasureStats &GetMeasureStats(PlayerNumber pn) const { return Real()->m_CachedMeasureStats[pn]; }
 	/**
 	 * @brief The TimingData used by the Steps.
 	 *
@@ -262,9 +264,14 @@ private:
 	/** @brief The radar values used for each player. */
 	RadarValues			m_CachedRadarValues[NUM_PLAYERS];
 	bool                m_bAreCachedRadarValuesJustLoaded;
+
 	/** @brief The tech stats used for each player */
 	mutable TechStats m_CachedTechStats[NUM_PLAYERS];
+	bool m_bAreCachedTechStatsValuesJustLoaded;
 	
+	mutable MeasureStats m_CachedMeasureStats[NUM_PLAYERS];
+	bool m_bAreCachedMeasureStatsJustLoaded;
+
 	/** @brief The name of the person who created the Steps. */
 	RString				m_sCredit;
 	/** @brief The name of the chart. */

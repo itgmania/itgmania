@@ -55,7 +55,6 @@ void TechStatsCalculator::CalculateTechStats(const NoteData &in, TechStats &out)
 	}
 	
 	TechStatsCalculator::CommitStream(out, statsCounter, Foot_None);
-	TechStatsCalculator::CalculateMeasureInfo(in, out);
 }
 
 // The main loop from GetTechniques().
@@ -423,7 +422,10 @@ void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &count
 	}
 }
 
-void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &stats)
+
+// MeasureStats methods
+
+void MeasureStats::CalculateMeasureStats(const NoteData &in, MeasureStats &out)
 {
 	int lastRow = in.GetLastRow();
 	int lastRowMeasureIndex = 0;
@@ -434,7 +436,7 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 
 	int totalMeasureCount = lastRowMeasureIndex + 1;
 
-	std::vector<MeasureStats> counters(totalMeasureCount, MeasureStats());
+	std::vector<MeasureStat> counters(totalMeasureCount, MeasureStat());
 	NoteData::all_tracks_const_iterator curr_note = in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
 
 	int iMeasureIndexOut = 0;
@@ -443,9 +445,6 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 
 	float peak_nps = 0;
 	int curr_row = -1;
-
-	std::vector<ColumnCue> allColumnCues;
-	ColumnCue currentCue = ColumnCue();
 
 	while (!curr_note.IsAtEnd())
 	{
@@ -458,13 +457,6 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 			{
 				counters[iMeasureIndexOut].startRow = curr_row;
 			}
-			
-			if (currentCue.startTime != -1 )
-			{
-				allColumnCues.push_back(currentCue);
-			}
-			currentCue = ColumnCue();
-			currentCue.startTime = timing->GetElapsedTimeFromBeat(NoteRowToBeat(curr_note.Row()));
 
 			// Update iMeasureIndex for the current row
 			timing->NoteRowToMeasureAndBeat(curr_note.Row(), iMeasureIndexOut, iBeatIndexOut, iRowsRemainder);
@@ -474,21 +466,13 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 		if (curr_note->type == TapNoteType_Tap || curr_note->type == TapNoteType_HoldHead)
 		{
 			counters[iMeasureIndexOut].tapCount += 1;
-			currentCue.columns.push_back(ColumnCueColumn(curr_note.Track() + 1, false));
 		}
 		else if(curr_note->type == TapNoteType_Mine)
 		{
 			counters[iMeasureIndexOut].mineCount += 1;
-			currentCue.columns.push_back(ColumnCueColumn(curr_note.Track() + 1, true));
 		}
 		
 		++curr_note;
-	}
-
-	// If there's a remaining columnCue from the last row, add it
-	if( currentCue.startTime != -1)
-	{
-		allColumnCues.push_back(currentCue);
 	}
 
 	// Now that all of the notes have been parsed, calculate nps for each measure
@@ -519,6 +503,76 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 		}
 	}
 
+	out.peakNps = peak_nps;
+	out.measureCount = totalMeasureCount;
+	out.stats.clear();
+	out.stats.assign(counters.begin(), counters.end());
+}
+
+std::vector<int> MeasureStats::notesPerMeasure()
+{
+	std::vector<int> notesPerMeasure(measureCount, 0);
+	for (int i = 0; i < measureCount; i++)
+	{
+		notesPerMeasure[i] = stats[i].tapCount;
+	}
+
+	return notesPerMeasure;
+}
+
+std::vector<float> MeasureStats::npsPerMeasure()
+{
+	std::vector<float> npsPerMeasure(measureCount, 0);
+	for (int i = 0; i < measureCount; i++)
+	{
+		npsPerMeasure[i] = stats[i].nps;
+	}
+	return npsPerMeasure;
+}
+
+// ColumnCues methods
+
+
+void ColumnCues::CalculateColumnCues(const NoteData &in, ColumnCues &out)
+{
+	TimingData *timing = GAMESTATE->GetProcessedTimingData();
+	NoteData::all_tracks_const_iterator curr_note = in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
+	int curr_row = -1;
+
+	std::vector<ColumnCue> allColumnCues;
+	ColumnCue currentCue = ColumnCue();
+
+	while (!curr_note.IsAtEnd())
+	{
+		if(curr_note.Row() != curr_row)
+		{
+			if (currentCue.startTime != -1 )
+			{
+				allColumnCues.push_back(currentCue);
+			}
+			currentCue = ColumnCue();
+			currentCue.startTime = timing->GetElapsedTimeFromBeat(NoteRowToBeat(curr_note.Row()));
+			curr_row = curr_note.Row();
+		}
+
+		if (curr_note->type == TapNoteType_Tap || curr_note->type == TapNoteType_HoldHead)
+		{
+			currentCue.columns.push_back(ColumnCueColumn(curr_note.Track() + 1, false));
+		}
+		else if(curr_note->type == TapNoteType_Mine)
+		{
+			currentCue.columns.push_back(ColumnCueColumn(curr_note.Track() + 1, true));
+		}
+		
+		++curr_note;
+	}
+
+	// If there's a remaining columnCue from the last row, add it
+	if( currentCue.startTime != -1)
+	{
+		allColumnCues.push_back(currentCue);
+	}
+
 	float previousCueTime = 0;
 	std::vector<ColumnCue> columnCues;
 	for( ColumnCue columnCue : allColumnCues )
@@ -531,33 +585,8 @@ void TechStatsCalculator::CalculateMeasureInfo(const NoteData &in, TechStats &st
 		previousCueTime = columnCue.startTime;
 	}
 
-	stats.peakNps = peak_nps;
-	stats.measureCount = totalMeasureCount;
-	stats.columnCues.clear();
-	stats.columnCues.assign(columnCues.begin(), columnCues.end());
-	stats.measureInfo.clear();
-	stats.measureInfo.assign(counters.begin(), counters.end());
-}
-
-std::vector<int> TechStats::notesPerMeasure()
-{
-	std::vector<int> notesPerMeasure(measureCount, 0);
-	for (int i = 0; i < measureCount; i++)
-	{
-		notesPerMeasure[i] = measureInfo[i].tapCount;
-	}
-
-	return notesPerMeasure;
-}
-
-std::vector<float> TechStats::npsPerMeasure()
-{
-	std::vector<float> npsPerMeasure(measureCount, 0);
-	for (int i = 0; i < measureCount; i++)
-	{
-		npsPerMeasure[i] = measureInfo[i].nps;
-	}
-	return npsPerMeasure;
+	out.columnCues.clear();
+	out.columnCues.assign(columnCues.begin(), columnCues.end());
 }
 
 // lua start
@@ -571,6 +600,23 @@ public:
 	GET_FLOAT_METHOD(sideswitches, sideswitches)
 	GET_FLOAT_METHOD(jacks, jacks)
 	GET_FLOAT_METHOD(brackets, brackets)
+
+	LunaTechStats()
+	{
+		ADD_METHOD(get_crossovers);
+		ADD_METHOD(get_footswitches);
+		ADD_METHOD(get_sideswitches);
+		ADD_METHOD(get_jacks);
+		ADD_METHOD(get_brackets);
+	}
+};
+
+LUA_REGISTER_CLASS( TechStats )
+
+
+class LunaMeasureStats: public Luna<MeasureStats>
+{
+public:
 	GET_FLOAT_METHOD(measure_count, measureCount)
 	GET_FLOAT_METHOD(peak_nps, peakNps)
 
@@ -586,7 +632,22 @@ public:
 		return 1;
 	}
 
+	LunaMeasureStats()
+	{
+		ADD_METHOD(get_measure_count);
+		ADD_METHOD(get_peak_nps);
+		ADD_METHOD(get_notes_per_measure);
+		ADD_METHOD(get_nps_per_measure);
 
+	}
+};
+
+LUA_REGISTER_CLASS( MeasureStats )
+
+class LunaColumnCues: public Luna<ColumnCues>
+{
+	
+public:
 	// Build an array that matches the structure of ColumnCues that's returned
 	// by GetMeasureInfo() in SL-ChartParser. This way we don't need to touch
 	// anywhere else that uses this data.
@@ -628,22 +689,13 @@ public:
 		return 1;
 	}
 
-	LunaTechStats()
+	LunaColumnCues()
 	{
-		ADD_METHOD(get_crossovers);
-		ADD_METHOD(get_footswitches);
-		ADD_METHOD(get_sideswitches);
-		ADD_METHOD(get_jacks);
-		ADD_METHOD(get_brackets);
-		ADD_METHOD(get_measure_count);
-		ADD_METHOD(get_peak_nps);
-		ADD_METHOD(get_notes_per_measure);
-		ADD_METHOD(get_nps_per_measure);
 		ADD_METHOD(get_column_cues);
 	}
 };
 
-LUA_REGISTER_CLASS( TechStats )
+LUA_REGISTER_CLASS( ColumnCues )
 
 /*
  * (c) 2023 Michael Votaw

@@ -4482,6 +4482,7 @@ void ScreenEdit::PerformSave(bool autosave)
 				RString sError;
 				m_pSteps->CalculateRadarValues( m_pSong->m_fMusicLengthSeconds );
 				m_pSteps->CalculateTechStats();
+				m_pSteps->CalculateMeasureStats();
 				if (!NotesWriterSM::WriteEditFileToMachine(m_pSong, m_pSteps, sError))
 				{
 					ScreenPrompt::Prompt( SM_None, sError );

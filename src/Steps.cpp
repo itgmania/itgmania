@@ -363,12 +363,12 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 
 void Steps::CalculateTechStats()
 {
-	if( parent != nullptr )
+	if (parent != nullptr)
 		return;
 
-	if( m_bAreCachedRadarValuesJustLoaded )
+	if( m_bAreCachedTechStatsValuesJustLoaded )
 	{
-		m_bAreCachedRadarValuesJustLoaded = false;
+		m_bAreCachedTechStatsValuesJustLoaded = false;
 		return;
 	}
 
@@ -408,6 +408,56 @@ void Steps::CalculateTechStats()
 	}
 	GAMESTATE->SetProcessedTimingData(nullptr);
 	
+}
+
+void Steps::CalculateMeasureStats()
+{
+	if(parent != nullptr)
+	{
+		return;
+	}
+
+	if( m_bAreCachedMeasureStatsJustLoaded )
+	{
+		m_bAreCachedMeasureStatsJustLoaded = false;
+		return;
+	}
+
+	NoteData tempNoteData;
+	this->GetNoteData( tempNoteData );
+
+	FOREACH_PlayerNumber(pn)
+		m_CachedMeasureStats[pn]
+			.Zero();
+
+	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
+
+	if( tempNoteData.IsComposite() )
+	{
+		std::vector<NoteData> vParts;
+		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
+		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
+		{
+			MeasureStats::CalculateMeasureStats(vParts[pn], m_CachedMeasureStats[pn]);
+		}
+	}
+	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
+	{
+		NoteData p1 = tempNoteData;
+		// XXX: Assumption that couple will always have an even number of notes.
+		const int tracks = tempNoteData.GetNumTracks() / 2;
+		p1.SetNumTracks(tracks);
+		MeasureStats::CalculateMeasureStats(tempNoteData, m_CachedMeasureStats[PLAYER_1]);
+		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
+		tempNoteData.SetNumTracks(tracks);
+		MeasureStats::CalculateMeasureStats(tempNoteData, m_CachedMeasureStats[PLAYER_2]);
+	}
+	else
+	{
+		MeasureStats::CalculateMeasureStats(tempNoteData, m_CachedMeasureStats[0]);
+		std::fill_n( m_CachedMeasureStats + 1, NUM_PLAYERS-1, m_CachedMeasureStats[0] );
+	}
+	GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
 void Steps::ChangeFilenamesForCustomSong()
@@ -592,6 +642,7 @@ void Steps::CopyFrom( Steps* pSource, StepsType ntTo, float fMusicLengthSeconds 
 	this->SetMeter( pSource->GetMeter() );
 	this->CalculateRadarValues( fMusicLengthSeconds );
 	this->CalculateTechStats();
+	this->CalculateMeasureStats();
 }
 
 void Steps::CreateBlank( StepsType ntTo )
@@ -920,8 +971,20 @@ public:
 		if (!lua_isnil(L, 1)) {
 			pn = Enum::Check<PlayerNumber>(L, 1);
 		}
-		TechStats &rv = const_cast<TechStats &>(p->GetTechStats(pn));
-		rv.PushSelf(L);
+		TechStats &ts = const_cast<TechStats &>(p->GetTechStats(pn));
+		ts.PushSelf(L);
+		return 1;
+	}
+
+	static int GetMeasureStats(T *p, lua_State *L)
+	{
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+
+		MeasureStats &ms = const_cast<MeasureStats &>(p->GetMeasureStats(pn));
+		ms.PushSelf(L);
 		return 1;
 	}
 
@@ -1008,6 +1071,8 @@ public:
 		ADD_METHOD( HasSignificantTimingChanges );
 		ADD_METHOD( HasAttacks );
 		ADD_METHOD( GetRadarValues );
+		ADD_METHOD( GetTechStats );
+		ADD_METHOD( GetMeasureStats );
 		ADD_METHOD( GetTimingData );
 		ADD_METHOD( GetChartName );
 		//ADD_METHOD( GetSMNoteData );
@@ -1021,7 +1086,6 @@ public:
 		ADD_METHOD( IsDisplayBpmRandom );
 		ADD_METHOD( PredictMeter );
 		ADD_METHOD( GetDisplayBPMType );
-		ADD_METHOD(GetTechStats);
 		ADD_METHOD(GetMinimizedChartString);
 		ADD_METHOD(GetGrooveStatsKey);
 	}

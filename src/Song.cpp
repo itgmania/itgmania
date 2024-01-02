@@ -1138,6 +1138,7 @@ void Song::ReCalculateRadarValuesAndLastSecond(bool fromCache, bool duringCache)
 		{
 			m_vpSteps[i]->CalculateRadarValues( m_fMusicLengthSeconds );
 			m_vpSteps[i]->CalculateTechStats();
+			m_vpSteps[i]->CalculateMeasureStats();
 		}
 		return;
 	}
@@ -1152,6 +1153,7 @@ void Song::ReCalculateRadarValuesAndLastSecond(bool fromCache, bool duringCache)
 
 		pSteps->CalculateRadarValues( m_fMusicLengthSeconds );
 		pSteps->CalculateTechStats();
+		pSteps->CalculateMeasureStats();
 		// Must initialize before the gotos.
 		NoteData tempNoteData;
 		pSteps->GetNoteData( tempNoteData );

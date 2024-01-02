@@ -66,7 +66,8 @@ struct lua_State;
 
 /** @brief Container for stats on a given measure */
 
-struct MeasureStats
+
+struct MeasureStat
 {
 	int startRow;
 	int endRow;
@@ -76,7 +77,7 @@ struct MeasureStats
 	float nps;
 	float duration;
 
-	MeasureStats()
+	MeasureStat()
 	{
 		startRow = -1;
 		endRow = -1;
@@ -87,7 +88,7 @@ struct MeasureStats
 		duration = 0;
 	}
 
-	bool operator==( const MeasureStats& other ) const
+	bool operator==( const MeasureStat& other ) const
 	{
 		return (this->startRow == other.startRow
 			&& this->endRow == other.endRow
@@ -99,10 +100,38 @@ struct MeasureStats
 			);
 	}
 
-	bool operator!=(const MeasureStats& other ) const
+	bool operator!=(const MeasureStat& other ) const
 	{
 		return !this->operator==(other);
 	}
+};
+
+struct MeasureStats
+{
+	int measureCount;
+	float peakNps;
+	std::vector<MeasureStat> stats;
+
+	MeasureStats()
+	{
+		Zero();
+	}
+	
+	void Zero()
+	{
+		measureCount = 0;
+		peakNps = 0;
+		stats.clear();
+	}
+	static void CalculateMeasureStats(const NoteData &in, MeasureStats &out);
+
+/** @brief Returns an array containing the count of notes for each measure.	*/
+	std::vector<int> notesPerMeasure();
+	
+	/** @brief Returns an array containing the notes-per-second for each measure. */
+	std::vector<float> npsPerMeasure();
+
+	void PushSelf( lua_State *L );
 };
 
 struct ColumnCueColumn
@@ -144,6 +173,24 @@ struct ColumnCue
 	void PushSelf( lua_State *L );
 };
 
+struct ColumnCues
+{
+	std::vector<ColumnCue> columnCues;
+
+	ColumnCues()
+	{
+		Zero();
+	}
+
+	void Zero()
+	{
+		columnCues.clear();
+	}
+
+	static void CalculateColumnCues(const NoteData &in, ColumnCues &out);
+	void PushSelf(lua_State *L);
+};
+
 /** @brief Technical statistics */
 struct TechStats
 {
@@ -153,22 +200,10 @@ public:
 	int sideswitches; // Number of sideswitches in song
 	int jacks; // Number of jacks in song
 	int brackets; // Number of brackets in song
-	int measureCount; // Number of measures in song
-	float peakNps; // peak notes-per-second
-
-	std::vector<MeasureStats> measureInfo; // Contains info for each measure in song
-	std::vector<ColumnCue> columnCues;
 
 	TechStats()
 	{
-		crossovers = 0;
-		footswitches = 0;
-		sideswitches = 0;
-		jacks = 0;
-		brackets = 0;
-		measureCount = 0;
-		peakNps = 0;
-		measureInfo.clear();
+		Zero();
 	}
 
 	void Zero() {
@@ -177,29 +212,7 @@ public:
 		sideswitches = 0;
 		jacks = 0;
 		brackets = 0;
-		measureCount = 0;
-		peakNps = 0;
-		measureInfo.clear();
-		columnCues.clear();
 	}
-
-	void updatePeakNps()
-	{
-		peakNps = 0;
-		for (MeasureStats entry : measureInfo)
-		{
-			if(entry.nps > peakNps)
-			{
-				peakNps = entry.nps;
-			}
-		}
-	}
-
-	/** @brief Returns an array containing the count of notes for each measure.	*/
-	std::vector<int> notesPerMeasure();
-	
-	/** @brief Returns an array containing the notes-per-second for each measure. */
-	std::vector<float> npsPerMeasure();
 
 	TechStats& operator+=( const TechStats& other )
 	{
@@ -208,10 +221,6 @@ public:
 		this->sideswitches += other.sideswitches;
 		this->jacks += this->jacks;
 		this->brackets += other.brackets;
-		this->measureCount += other.measureCount;
-		this->measureInfo.insert(this->measureInfo.end(), other.measureInfo.begin(), other.measureInfo.end());
-		this->columnCues.insert(this->columnCues.end(), other.columnCues.begin(), other.columnCues.end());
-		this->updatePeakNps();
 		return *this;
 	}
 
@@ -222,7 +231,6 @@ public:
 			&& this->sideswitches == other.sideswitches 
 			&& this->jacks == other.jacks
 			&& this->brackets == other.brackets
-			&& this->measureInfo == other.measureInfo
 			);
 	}
 
@@ -288,7 +296,6 @@ namespace TechStatsCalculator
 	void CalculateTechStats(const NoteData &in, TechStats &out);
 	void UpdateTechStats(TechStats &stats, TechStatsCounter &counter, StepDirection currentStep);
 	void CommitStream(TechStats &stats, TechStatsCounter &counter, Foot tieBreaker);
-	void CalculateMeasureInfo(const NoteData &in, TechStats &stats);
 };
 
 #endif
