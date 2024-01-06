@@ -11,6 +11,30 @@ enum Foot
 	Foot_Right
 };
 
+/** @brief Unknown radar values are given a default value. */
+#define TECHSTATS_VAL_UNKNOWN -1
+
+enum TechStatsCategory
+{
+	TechStatsCategory_Crossovers = 0,
+	TechStatsCategory_Footswitches,
+	TechStatsCategory_Sideswitches,
+	TechStatsCategory_Jacks,
+	TechStatsCategory_Brackets,
+	TechStatsCategory_PeakNps,
+	NUM_TechStatsCategory,
+	TechStatsCategory_Invalid
+};
+
+const RString& TechStatsCategoryToString( TechStatsCategory cat );
+/**
+ * @brief Turn the radar category into a proper localized string.
+ * @param cat the radar category.
+ * @return the localized string version of the radar category.
+ */
+const RString& TechStatsCategoryToLocalizedString( TechStatsCategory cat );
+LuaDeclareType( TechStatsCategory );
+
 
 // This could probably be an enum?
 typedef int StepDirection;
@@ -64,75 +88,6 @@ inline Foot SwitchFeet(Foot f)
 
 struct lua_State;
 
-/** @brief Container for stats on a given measure */
-
-
-struct MeasureStat
-{
-	int startRow;
-	int endRow;
-	int rowCount;
-	int tapCount;
-	int mineCount;
-	float nps;
-	float duration;
-
-	MeasureStat()
-	{
-		startRow = -1;
-		endRow = -1;
-		rowCount = 0;
-		tapCount = 0;
-		mineCount = 0;
-		nps = 0;
-		duration = 0;
-	}
-
-	bool operator==( const MeasureStat& other ) const
-	{
-		return (this->startRow == other.startRow
-			&& this->endRow == other.endRow
-			&& this->rowCount == other.rowCount
-			&& this->tapCount == other.tapCount
-			&& this->mineCount == other.mineCount
-			&& this->nps == other.nps
-			&& this->duration == other.duration
-			);
-	}
-
-	bool operator!=(const MeasureStat& other ) const
-	{
-		return !this->operator==(other);
-	}
-};
-
-struct MeasureStats
-{
-	int measureCount;
-	float peakNps;
-	std::vector<MeasureStat> stats;
-
-	MeasureStats()
-	{
-		Zero();
-	}
-	
-	void Zero()
-	{
-		measureCount = 0;
-		peakNps = 0;
-		stats.clear();
-	}
-	static void CalculateMeasureStats(const NoteData &in, MeasureStats &out);
-
-/** @brief Returns an array containing the count of notes for each measure.	*/
-	std::vector<int> notesPerMeasure();
-	
-	/** @brief Returns an array containing the notes-per-second for each measure. */
-	std::vector<float> npsPerMeasure();
-
-	void PushSelf( lua_State *L );
-};
 
 struct ColumnCueColumn
 {
@@ -194,6 +149,8 @@ struct ColumnCues
 /** @brief Technical statistics */
 struct TechStats
 {
+private:
+	float m_Values[NUM_TechStatsCategory];
 public:
 	int crossovers; // Number of crossovers in song
 	int footswitches; // Number of footswitches in song
@@ -201,18 +158,13 @@ public:
 	int jacks; // Number of jacks in song
 	int brackets; // Number of brackets in song
 
-	TechStats()
-	{
-		Zero();
-	}
-
-	void Zero() {
-		crossovers = 0;
-		footswitches = 0;
-		sideswitches = 0;
-		jacks = 0;
-		brackets = 0;
-	}
+	float operator[](TechStatsCategory cat) const { return m_Values[cat]; }
+	float& operator[](TechStatsCategory cat) { return m_Values[cat]; }
+	float operator[](int cat) const { return m_Values[cat]; }
+	float& operator[](int cat) { return m_Values[cat]; }
+	TechStats();
+	void MakeUnknown();
+	void Zero();
 
 	TechStats& operator+=( const TechStats& other )
 	{
@@ -239,7 +191,8 @@ public:
 		return !operator==( other );
 	}
 
-	RString stringDescription();
+	RString ToString( int iMaxValues = -1 ) const; // default = all
+	void FromString( RString sValues );
 
 	void PushSelf( lua_State *L );
 };

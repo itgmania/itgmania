@@ -7,7 +7,6 @@
 #include "NoteData.h"
 #include "NoteDataUtil.h"
 #include "CommonMetrics.h"
-#include "TechStats.h"
 
 #include <cmath>
 #include <numeric>

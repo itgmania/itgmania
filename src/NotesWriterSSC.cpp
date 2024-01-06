@@ -391,7 +391,26 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 	}
 	lines.push_back( ssprintf( "#RADARVALUES:%s;", join(",",asRadarValues).c_str() ) );
 
-	lines.push_back( ssprintf( "#CREDIT:%s;", SmEscape(in.GetCredit()).c_str() ) );
+	std::vector<RString> asTechStats;
+	FOREACH_PlayerNumber( pn )
+	{
+		const TechStats &ts = in.GetTechStats(pn);
+		FOREACH_ENUM( TechStatsCategory, tc )
+		{
+			asTechStats.push_back(ssprintf("%.6f", ts[tc]));
+		}
+	}
+	lines.push_back(ssprintf("#TECHSTATS:%s;", join(",", asTechStats).c_str()));
+
+	std::vector<RString> asMeasureStats;
+	FOREACH_PlayerNumber( pn )
+	{
+		const MeasureStats &ms = in.GetMeasureStats(pn);
+		asMeasureStats.push_back(ms.ToString());
+	}
+	lines.push_back(ssprintf("#MEASURESTATS:%s;", join("|", asMeasureStats).c_str()));
+
+	lines.push_back(ssprintf("#CREDIT:%s;", SmEscape(in.GetCredit()).c_str()));
 
 	// If the Steps TimingData is not empty, then they have their own
 	// timing.  Write out the corresponding tags.

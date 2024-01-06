@@ -10,6 +10,7 @@
 #include "RageUtil_AutoPtr.h"
 #include "TimingData.h"
 #include "TechStats.h"
+#include "MeasureStats.h"
 #include <vector>
 
 
@@ -145,6 +146,8 @@ public:
 	void SetLoadedFromProfile( ProfileSlot slot )	{ m_LoadedFromProfile = slot; }
 	void SetMeter( int meter );
 	void SetCachedRadarValues( const RadarValues v[NUM_PLAYERS] );
+	void SetCachedTechStats(const TechStats ts[NUM_PLAYERS]);
+	void SetCachedMeasureStats(const MeasureStats ms[NUM_PLAYERS]);
 	float PredictMeter() const;
 
 	unsigned GetHash() const;

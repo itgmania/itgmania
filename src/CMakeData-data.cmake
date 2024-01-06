@@ -53,13 +53,15 @@ list(APPEND SM_DATA_NOTEDATA_SRC
             "NoteData.cpp"
             "NoteDataUtil.cpp"
             "NoteDataWithScoring.cpp"
-            "TechStats.cpp")
+            "TechStats.cpp"
+            "MeasureStats.cpp")
 
 list(APPEND SM_DATA_NOTEDATA_HPP
             "NoteData.h"
             "NoteDataUtil.h"
             "NoteDataWithScoring.h"
-            "TechStats.h")
+            "TechStats.h"
+            "MeasureStats.h")
 
 source_group("Data Structures\\\\Note Data"
              FILES

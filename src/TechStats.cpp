@@ -8,17 +8,77 @@
 #include "GameState.h"
 #include "RageTimer.h"
 
-RString TechStats::stringDescription()
-{
-	RString out;
-	out += ssprintf("NumCrossovers: %d\n", crossovers);
-	out += ssprintf("NumFootswitches: %d\n", footswitches);
-	out += ssprintf("NumSideswitches: %d\n", sideswitches);
-	out += ssprintf("NumJacks: %d\n", jacks);
-	out += ssprintf("NumBrackets: %d\n", brackets);
 
-	return out;
+static const char *TechStatsCategoryNames[] = {
+	"Crossovers",
+	"Footswitches",
+	"Sideswitches",
+	"Jacks",
+	"Brackets",
+	"PeakNps"
+};
+
+XToString( TechStatsCategory );
+XToLocalizedString( TechStatsCategory );
+LuaFunction(TechStatsCategoryToLocalizedString, TechStatsCategoryToLocalizedString(Enum::Check<TechStatsCategory>(L, 1)) );
+LuaXType( TechStatsCategory );
+
+// TechStats methods
+
+TechStats::TechStats()
+{
+	MakeUnknown();
 }
+
+void TechStats::MakeUnknown()
+{
+	FOREACH_ENUM( TechStatsCategory, rc )
+	{
+		(*this)[rc] = TECHSTATS_VAL_UNKNOWN;
+	}
+}
+
+void TechStats::Zero()
+{
+	FOREACH_ENUM( TechStatsCategory, rc )
+	{
+		(*this)[rc] = 0;
+	}
+}
+
+RString TechStats::ToString( int iMaxValues ) const
+{
+	if( iMaxValues == -1 )
+		iMaxValues = NUM_TechStatsCategory;
+	iMaxValues = std::min( iMaxValues, (int)NUM_TechStatsCategory );
+
+	std::vector<RString> asTechStats;
+	for( int r=0; r < iMaxValues; r++ )
+	{
+		asTechStats.push_back(ssprintf("%.3f", (*this)[r]));
+	}
+
+	return join( ",",asTechStats );
+}
+
+void TechStats::FromString( RString sTechStats )
+{
+	std::vector<RString> saValues;
+	split( sTechStats, ",", saValues, true );
+
+	if( saValues.size() != NUM_TechStatsCategory )
+	{
+		MakeUnknown();
+		return;
+	}
+
+	FOREACH_ENUM( RadarCategory, rc )
+	{
+		(*this)[rc] = StringToFloat(saValues[rc]);
+	}
+
+}
+
 
 // This is currently a more or less direct port of GetTechniques() from SL-ChartParser.lua
 // It seems to match the results pretty closely, but not exactly.
@@ -124,7 +184,7 @@ void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &co
 				// Check for interference from the right foot
 				if( !StepContainsStep(currentStep, counter.trueLastArrowR) )
 				{
-					stats.brackets += 1;
+					stats[TechStatsCategory_Brackets] += 1;
 					// allow subsequent brackets to stream
 					counter.trueLastFoot = Foot_Left;
 					counter.lastFoot = Foot_Left;
@@ -149,7 +209,7 @@ void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &co
 				// Symmetric logic; see comments above
 				if( !StepContainsStep(currentStep, counter.trueLastArrowL) )
 				{
-					stats.brackets += 1;
+					stats[TechStatsCategory_Brackets] += 1;
 					counter.trueLastFoot = Foot_Right;
 					counter.lastFoot = Foot_Right;
 					counter.trueLastArrowR = currentStep - StepDirection_Right;
@@ -205,7 +265,7 @@ void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &co
 		counter.lastStep = StepDirection_None;
 		counter.lastRepeatedFoot = StepDirection_None;
 		// triple/quad - always gotta bracket these
-		stats.brackets += 1;
+		stats[TechStatsCategory_Brackets] += 1;
 		counter.trueLastFoot = Foot_None;
 	}
 }
@@ -258,7 +318,7 @@ void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &count
 				needFlip = tieBreaker == Foot_Left;
 			}
 		}
-		else if(stats.footswitches > stats.jacks)
+		else if(stats[TechStatsCategory_Footswitches] > stats[TechStatsCategory_Jacks])
 		{
 			// Match flipness of last chunk -> footswitch
 			needFlip = counter.lastFlip;
@@ -351,26 +411,26 @@ void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &count
 
 		if(needFlip)
 		{
-			stats.crossovers += ns - nx;
+			stats[TechStatsCategory_Crossovers] += ns - nx;
 		}
 		else
 		{
-			stats.crossovers += nx;
+			stats[TechStatsCategory_Crossovers] += nx;
 		}
 
 		if(counter.lastRepeatedFoot != StepDirection_None)
 		{
 			if(needFlip == counter.lastFlip)
 			{
-				stats.footswitches += 1;
+				stats[TechStatsCategory_Footswitches] += 1;
 				if(counter.lastRepeatedFoot == StepDirection_Left || counter.lastRepeatedFoot == StepDirection_Right)
 				{
-					stats.sideswitches += 1;
+					stats[TechStatsCategory_Sideswitches] += 1;
 				}
 			}
 			else
 			{
-				stats.jacks += 1;
+				stats[TechStatsCategory_Jacks] += 1;
 			}
 		}
 	}
@@ -422,116 +482,7 @@ void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &count
 	}
 }
 
-
-// MeasureStats methods
-
-void MeasureStats::CalculateMeasureStats(const NoteData &in, MeasureStats &out)
-{
-	int lastRow = in.GetLastRow();
-	int lastRowMeasureIndex = 0;
-	int lastRowBeatIndex = 0;
-	int lastRowRemainder = 0;
-	TimingData *timing = GAMESTATE->GetProcessedTimingData();
-	timing->NoteRowToMeasureAndBeat(lastRow, lastRowMeasureIndex, lastRowBeatIndex, lastRowRemainder);
-
-	int totalMeasureCount = lastRowMeasureIndex + 1;
-
-	std::vector<MeasureStat> counters(totalMeasureCount, MeasureStat());
-	NoteData::all_tracks_const_iterator curr_note = in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
-
-	int iMeasureIndexOut = 0;
-	int iBeatIndexOut = 0;
-	int iRowsRemainder = 0;
-
-	float peak_nps = 0;
-	int curr_row = -1;
-
-	while (!curr_note.IsAtEnd())
-	{
-		if(curr_note.Row() != curr_row)
-		{
-			// Before moving on to a new row, update the row count, start and end rows for the "current" measure
-			counters[iMeasureIndexOut].rowCount += 1;
-			counters[iMeasureIndexOut].endRow = curr_row;
-			if (counters[iMeasureIndexOut].startRow == -1)
-			{
-				counters[iMeasureIndexOut].startRow = curr_row;
-			}
-
-			// Update iMeasureIndex for the current row
-			timing->NoteRowToMeasureAndBeat(curr_note.Row(), iMeasureIndexOut, iBeatIndexOut, iRowsRemainder);
-			curr_row = curr_note.Row();
-		}
-		// Update tap and mine count for the current measure
-		if (curr_note->type == TapNoteType_Tap || curr_note->type == TapNoteType_HoldHead)
-		{
-			counters[iMeasureIndexOut].tapCount += 1;
-		}
-		else if(curr_note->type == TapNoteType_Mine)
-		{
-			counters[iMeasureIndexOut].mineCount += 1;
-		}
-		
-		++curr_note;
-	}
-
-	// Now that all of the notes have been parsed, calculate nps for each measure
-	for (unsigned m = 0; m < counters.size(); m++)
-	{
-		if(counters[m].rowCount == 0)
-		{
-			counters[m].nps = 0;
-			continue;
-		}
-		
-		int beat = 4 * (m + (counters[m].endRow / counters[m].rowCount));
-		float time = timing->GetElapsedTimeFromBeat(beat);
-		float measureDuration = timing->GetElapsedTimeFromBeat(4 * (m+1)) - timing->GetElapsedTimeFromBeat(4 * m);
-		counters[m].duration = measureDuration;
-		if(measureDuration < 0.12)
-		{
-			counters[m].nps = 0;
-		}
-		else
-		{
-			counters[m].nps = counters[m].tapCount / measureDuration;
-		}
-
-		if(counters[m].nps > peak_nps)
-		{
-			peak_nps = counters[m].nps;
-		}
-	}
-
-	out.peakNps = peak_nps;
-	out.measureCount = totalMeasureCount;
-	out.stats.clear();
-	out.stats.assign(counters.begin(), counters.end());
-}
-
-std::vector<int> MeasureStats::notesPerMeasure()
-{
-	std::vector<int> notesPerMeasure(measureCount, 0);
-	for (int i = 0; i < measureCount; i++)
-	{
-		notesPerMeasure[i] = stats[i].tapCount;
-	}
-
-	return notesPerMeasure;
-}
-
-std::vector<float> MeasureStats::npsPerMeasure()
-{
-	std::vector<float> npsPerMeasure(measureCount, 0);
-	for (int i = 0; i < measureCount; i++)
-	{
-		npsPerMeasure[i] = stats[i].nps;
-	}
-	return npsPerMeasure;
-}
-
 // ColumnCues methods
-
 
 void ColumnCues::CalculateColumnCues(const NoteData &in, ColumnCues &out)
 {
@@ -595,54 +546,16 @@ class LunaTechStats: public Luna<TechStats>
 {
 public:
 
-	GET_FLOAT_METHOD(crossovers, crossovers)
-	GET_FLOAT_METHOD(footswitches, footswitches)
-	GET_FLOAT_METHOD(sideswitches, sideswitches)
-	GET_FLOAT_METHOD(jacks, jacks)
-	GET_FLOAT_METHOD(brackets, brackets)
+
+	static int GetValue( T* p, lua_State *L ) { lua_pushnumber( L, (*p)[Enum::Check<TechStatsCategory>(L, 1)] ); return 1; }
 
 	LunaTechStats()
 	{
-		ADD_METHOD(get_crossovers);
-		ADD_METHOD(get_footswitches);
-		ADD_METHOD(get_sideswitches);
-		ADD_METHOD(get_jacks);
-		ADD_METHOD(get_brackets);
+		ADD_METHOD( GetValue );
 	}
 };
 
 LUA_REGISTER_CLASS( TechStats )
-
-
-class LunaMeasureStats: public Luna<MeasureStats>
-{
-public:
-	GET_FLOAT_METHOD(measure_count, measureCount)
-	GET_FLOAT_METHOD(peak_nps, peakNps)
-
-	static int get_notes_per_measure(T *p, lua_State *L)
-	{
-		LuaHelpers::CreateTableFromArray(p->notesPerMeasure(), L);
-		return 1;
-	}
-
-	static int get_nps_per_measure(T *p, lua_State *L)
-	{
-		LuaHelpers::CreateTableFromArray(p->npsPerMeasure(), L);
-		return 1;
-	}
-
-	LunaMeasureStats()
-	{
-		ADD_METHOD(get_measure_count);
-		ADD_METHOD(get_peak_nps);
-		ADD_METHOD(get_notes_per_measure);
-		ADD_METHOD(get_nps_per_measure);
-
-	}
-};
-
-LUA_REGISTER_CLASS( MeasureStats )
 
 class LunaColumnCues: public Luna<ColumnCues>
 {

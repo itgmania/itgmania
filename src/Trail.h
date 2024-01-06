@@ -5,6 +5,7 @@
 #include "RadarValues.h"
 #include "Difficulty.h"
 #include "TechStats.h"
+#include "MeasureStats.h"
 #include <vector>
 
 

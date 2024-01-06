@@ -28,7 +28,6 @@
 #include "NotesLoaderDWI.h"
 #include "NotesLoaderKSF.h"
 #include "NotesLoaderBMS.h"
-#include "TechStats.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -58,6 +57,8 @@ Steps::Steps(Song *song): m_StepsType(StepsType_Invalid), m_pSong(song),
 	m_sDescription(""), m_sChartStyle(""),
 	m_Difficulty(Difficulty_Invalid), m_iMeter(0),
 	m_bAreCachedRadarValuesJustLoaded(false),
+	m_bAreCachedTechStatsValuesJustLoaded(false),
+	m_bAreCachedMeasureStatsJustLoaded(false),
 	m_sCredit(""), displayBPMType(DISPLAY_BPM_ACTUAL),
 	specifiedBPMMin(0), specifiedBPMMax(0) {}
 
@@ -438,7 +439,7 @@ void Steps::CalculateMeasureStats()
 		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
 		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
 		{
-			MeasureStats::CalculateMeasureStats(vParts[pn], m_CachedMeasureStats[pn]);
+			MeasureStatsCalculator::CalculateMeasureStats(vParts[pn], m_CachedMeasureStats[pn]);
 		}
 	}
 	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
@@ -447,14 +448,14 @@ void Steps::CalculateMeasureStats()
 		// XXX: Assumption that couple will always have an even number of notes.
 		const int tracks = tempNoteData.GetNumTracks() / 2;
 		p1.SetNumTracks(tracks);
-		MeasureStats::CalculateMeasureStats(tempNoteData, m_CachedMeasureStats[PLAYER_1]);
+		MeasureStatsCalculator::CalculateMeasureStats(tempNoteData, m_CachedMeasureStats[PLAYER_1]);
 		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
 		tempNoteData.SetNumTracks(tracks);
-		MeasureStats::CalculateMeasureStats(tempNoteData, m_CachedMeasureStats[PLAYER_2]);
+		MeasureStatsCalculator::CalculateMeasureStats(tempNoteData, m_CachedMeasureStats[PLAYER_2]);
 	}
 	else
 	{
-		MeasureStats::CalculateMeasureStats(tempNoteData, m_CachedMeasureStats[0]);
+		MeasureStatsCalculator::CalculateMeasureStats(tempNoteData, m_CachedMeasureStats[0]);
 		std::fill_n( m_CachedMeasureStats + 1, NUM_PLAYERS-1, m_CachedMeasureStats[0] );
 	}
 	GAMESTATE->SetProcessedTimingData(nullptr);
@@ -609,6 +610,8 @@ void Steps::DeAutogen( bool bCopyNoteData )
 	m_Difficulty		= Real()->m_Difficulty;
 	m_iMeter		= Real()->m_iMeter;
 	std::copy( Real()->m_CachedRadarValues, Real()->m_CachedRadarValues + NUM_PLAYERS, m_CachedRadarValues );
+	std::copy( Real()->m_CachedTechStats, Real()->m_CachedTechStats + NUM_PLAYERS, m_CachedTechStats );
+	std::copy( Real()->m_CachedMeasureStats, Real()->m_CachedMeasureStats + NUM_PLAYERS, m_CachedMeasureStats );
 	m_sCredit		= Real()->m_sCredit;
 	parent = nullptr;
 
@@ -737,6 +740,20 @@ void Steps::SetCachedRadarValues( const RadarValues v[NUM_PLAYERS] )
 	DeAutogen();
 	std::copy( v, v + NUM_PLAYERS, m_CachedRadarValues );
 	m_bAreCachedRadarValuesJustLoaded = true;
+}
+
+void Steps::SetCachedTechStats( const TechStats ts[NUM_PLAYERS] )
+{
+	DeAutogen();
+	std::copy(ts, ts + NUM_PLAYERS, m_CachedTechStats);
+	m_bAreCachedTechStatsValuesJustLoaded = true;
+}
+
+void Steps::SetCachedMeasureStats(const MeasureStats ms[NUM_PLAYERS])
+{
+	DeAutogen();
+	std::copy(ms, ms + NUM_PLAYERS, m_CachedMeasureStats);
+	m_bAreCachedMeasureStatsJustLoaded = true;
 }
 
 RString Steps::GenerateChartKey()
@@ -976,15 +993,37 @@ public:
 		return 1;
 	}
 
-	static int GetMeasureStats(T *p, lua_State *L)
+	static int GetNPSPerMeasure(T *p, lua_State *L)
 	{
 		PlayerNumber pn = PLAYER_1;
 		if (!lua_isnil(L, 1)) {
 			pn = Enum::Check<PlayerNumber>(L, 1);
 		}
+		MeasureStats &ts = const_cast<MeasureStats &>(p->GetMeasureStats(pn));
+		LuaHelpers::CreateTableFromArray(ts.npsPerMeasure, L);
+		return 1;
+	}
 
-		MeasureStats &ms = const_cast<MeasureStats &>(p->GetMeasureStats(pn));
-		ms.PushSelf(L);
+	static int GetNotesPerMeasure(T *p, lua_State * L)
+	{
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		MeasureStats &ts = const_cast<MeasureStats &>(p->GetMeasureStats(pn));
+		LuaHelpers::CreateTableFromArray(ts.notesPerMeasure, L);
+
+		return 1;
+	}
+
+	static int GetPeakNPS(T *p, lua_State *L)
+	{
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		MeasureStats &ts = const_cast<MeasureStats &>(p->GetMeasureStats(pn));
+		lua_pushnumber(L, ts.peakNps);
 		return 1;
 	}
 
@@ -1072,8 +1111,10 @@ public:
 		ADD_METHOD( HasAttacks );
 		ADD_METHOD( GetRadarValues );
 		ADD_METHOD( GetTechStats );
-		ADD_METHOD( GetMeasureStats );
-		ADD_METHOD( GetTimingData );
+		ADD_METHOD(GetNPSPerMeasure);
+		ADD_METHOD(GetNotesPerMeasure);
+		ADD_METHOD(GetPeakNPS);
+		ADD_METHOD(GetTimingData);
 		ADD_METHOD( GetChartName );
 		//ADD_METHOD( GetSMNoteData );
 		ADD_METHOD( GetStepsType );
