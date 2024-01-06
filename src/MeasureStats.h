@@ -67,7 +67,6 @@ struct MeasureStats
 
 	RString ToString() const;
 	void FromString( RString sValues );
-	void PushSelf( lua_State *L );
 };
 
 namespace MeasureStatsCalculator
