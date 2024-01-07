@@ -59,6 +59,7 @@ Steps::Steps(Song *song): m_StepsType(StepsType_Invalid), m_pSong(song),
 	m_bAreCachedRadarValuesJustLoaded(false),
 	m_bAreCachedTechStatsValuesJustLoaded(false),
 	m_bAreCachedMeasureStatsJustLoaded(false),
+	m_bIsCachedGrooveStatsKeyJustLoaded(false),
 	m_sCredit(""), displayBPMType(DISPLAY_BPM_ACTUAL),
 	specifiedBPMMin(0), specifiedBPMMax(0) {}
 
@@ -304,6 +305,7 @@ void Steps::CalculateStepStats( float fMusicLengthSeconds )
 	this->CalculateRadarValues(fMusicLengthSeconds);
 	this->CalculateTechStats();
 	this->CalculateMeasureStats();
+	this->CalculateGrooveStatsKey();
 }
 
 void Steps::CalculateRadarValues( float fMusicLengthSeconds )
@@ -761,6 +763,12 @@ void Steps::SetCachedMeasureStats(const MeasureStats ms[NUM_PLAYERS])
 	m_bAreCachedMeasureStatsJustLoaded = true;
 }
 
+void Steps::SetCachedGrooveStatsKey(const RString key)
+{
+	GrooveStatsKey = key;
+	m_bIsCachedGrooveStatsKeyJustLoaded = true;
+}
+
 RString Steps::GenerateChartKey()
 {
 	ChartKey = this->GenerateChartKey(*m_pNoteData, this->GetTimingData());
@@ -831,19 +839,20 @@ RString Steps::GenerateChartKey(NoteData &nd, TimingData *td)
 	return o;
 }
 
-RString Steps::GetGrooveStatsKey()
+const RString Steps::GetGrooveStatsKey() const
 {
-	if(GrooveStatsKey.empty())
-	{
-		this->Decompress();
-		GrooveStatsKey = this->GenerateGrooveStatsKey();
-		this->Compress();
-	}
 	return GrooveStatsKey;
 }
 
-RString Steps::GenerateGrooveStatsKey()
+void Steps::CalculateGrooveStatsKey()
 {
+	if (m_bIsCachedGrooveStatsKeyJustLoaded == true)
+	{
+		m_bIsCachedGrooveStatsKeyJustLoaded = false;
+		return;
+	}
+	this->Decompress();
+
 	RString smNoteData = this->MinimizedChartString();
 
 	TimingData * timingData = this->GetTimingData();
@@ -865,7 +874,7 @@ RString Steps::GenerateGrooveStatsKey()
 	smNoteData.append(bpmString);
 	RString gsKey = BinaryToHex(CryptManager::GetSHA1ForString(smNoteData));
 	gsKey = gsKey.substr(0, 16);
-	return gsKey;
+	GrooveStatsKey = gsKey;
 }
 
 RString Steps::MinimizedChartString()

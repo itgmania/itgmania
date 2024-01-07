@@ -430,6 +430,16 @@ void SetMeasureStats(StepsTagInfo& info)
 	info.ssc_format= true;
 }
 
+void SetGrooveStatsKey(StepsTagInfo& info)
+{
+	if(info.from_cache || info.for_load_edit)
+	{
+		RString value = (*info.params)[1];
+		info.steps->SetCachedGrooveStatsKey(value);
+	}
+	info.ssc_format = true;
+}
+
 void SetCredit(StepsTagInfo& info)
 {
 	info.steps->SetCredit((*info.params)[1]);
@@ -672,6 +682,7 @@ struct ssc_parser_helper_t
 		steps_tag_handlers["LABELS"]= &SetStepsLabels;
 		steps_tag_handlers["TECHSTATS"] = &SetTechStats;
 		steps_tag_handlers["MEASURESTATS"] = &SetMeasureStats;
+		steps_tag_handlers["GROOVESTATSKEY"] = &SetGrooveStatsKey;
 
 		/* If this is called, the chart does not use the same attacks
 		 * as the Song's timing. No other changes are required. */

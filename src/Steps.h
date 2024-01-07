@@ -136,9 +136,8 @@ public:
 	void SetChartKey(const RString &k) { ChartKey = k; }
 
 	/** @brief Generates a hash used for GrooveStats integration. */
-	RString GrooveStatsKey;
-	RString GetGrooveStatsKey();
-	RString GenerateGrooveStatsKey();
+	const RString GetGrooveStatsKey() const;
+	void CalculateGrooveStatsKey();
 
 	/** @brief Produces a chart that's reduced to it's smallest unique representable form. */
 	RString MinimizedChartString();
@@ -150,6 +149,7 @@ public:
 	void SetCachedRadarValues( const RadarValues v[NUM_PLAYERS] );
 	void SetCachedTechStats(const TechStats ts[NUM_PLAYERS]);
 	void SetCachedMeasureStats(const MeasureStats ms[NUM_PLAYERS]);
+	void SetCachedGrooveStatsKey(const RString key);
 	float PredictMeter() const;
 
 	unsigned GetHash() const;
@@ -173,7 +173,7 @@ public:
 
 	void TidyUpData();
 	
-	/** @brief Convenience function to calculate Radar Values, Tech Stats, and Measure Stats.*/
+	/** @brief Convenience function to calculate Radar Values, Tech Stats, Measure Stats, and GrooveStats key.*/
 	void CalculateStepStats(float fMusicLengthSeconds);
 
 	void CalculateRadarValues (float fMusicLengthSeconds );
@@ -280,6 +280,9 @@ private:
 	
 	mutable MeasureStats m_CachedMeasureStats[NUM_PLAYERS];
 	bool m_bAreCachedMeasureStatsJustLoaded;
+
+	RString GrooveStatsKey;
+	bool m_bIsCachedGrooveStatsKeyJustLoaded;
 
 	/** @brief The name of the person who created the Steps. */
 	RString				m_sCredit;

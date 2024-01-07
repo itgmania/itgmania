@@ -410,6 +410,8 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 	}
 	lines.push_back(ssprintf("#MEASURESTATS:%s;", join("|", asMeasureStats).c_str()));
 
+	RString GrooveStatsKey = in.GetGrooveStatsKey();
+	lines.push_back(ssprintf("#GROOVESTATSKEY:%s;", GrooveStatsKey.c_str()));
 	lines.push_back(ssprintf("#CREDIT:%s;", SmEscape(in.GetCredit()).c_str()));
 
 	// If the Steps TimingData is not empty, then they have their own
