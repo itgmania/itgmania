@@ -21,7 +21,6 @@ enum TechStatsCategory
 	TechStatsCategory_Sideswitches,
 	TechStatsCategory_Jacks,
 	TechStatsCategory_Brackets,
-	TechStatsCategory_PeakNps,
 	NUM_TechStatsCategory,
 	TechStatsCategory_Invalid
 };

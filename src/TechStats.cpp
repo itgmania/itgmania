@@ -14,8 +14,7 @@ static const char *TechStatsCategoryNames[] = {
 	"Footswitches",
 	"Sideswitches",
 	"Jacks",
-	"Brackets",
-	"PeakNps"
+	"Brackets"
 };
 
 XToString( TechStatsCategory );
