@@ -3,7 +3,6 @@
 
 #include "GameConstantsAndTypes.h"
 class NoteData;
-struct lua_State;
 
 struct ColumnCueColumn
 {
@@ -19,7 +18,6 @@ struct ColumnCueColumn
 		colNum = c;
 		isMine = m;
 	}
-	void PushSelf( lua_State *L );
 };
 
 struct ColumnCue
@@ -40,29 +38,14 @@ struct ColumnCue
 		duration = d;
 		columns.assign(c.begin(), c.end());
 	}
-
-	void PushSelf( lua_State *L );
 };
 
-struct ColumnCues
+namespace ColumnCueCalculator
 {
-	std::vector<ColumnCue> columnCues;
-
-	ColumnCues()
-	{
-		Zero();
-	}
-
-	void Zero()
-	{
-		columnCues.clear();
-	}
-
 	/** @brief Calculates the set of ColumnCues for the given NoteData. Each "cue" is for any note that has a 
 	 * minimum of minDuration seconds between it and the previous note on that same column.
 	*/
-	static void CalculateColumnCues(const NoteData &in, ColumnCues &out, float minDuration);
-	void PushSelf(lua_State *L);
+	void CalculateColumnCues(const NoteData &in, std::vector<ColumnCue> &out, float minDuration);
 };
 
 #endif
