@@ -826,6 +826,17 @@ RString Steps::GenerateChartKey(NoteData &nd, TimingData *td)
 	return o;
 }
 
+RString Steps::GetGrooveStatsKey()
+{
+	if(GrooveStatsKey.empty())
+	{
+		this->Decompress();
+		GrooveStatsKey = this->GenerateGrooveStatsKey();
+		this->Compress();
+	}
+	return GrooveStatsKey;
+}
+
 RString Steps::GenerateGrooveStatsKey()
 {
 	RString smNoteData = this->MinimizedChartString();
@@ -867,7 +878,7 @@ RString Steps::MinimizedChartString()
 	// 		the smallest quantization.
 
 	RString smNoteData = "";
-	this->Decompress();
+	
 	this->GetSMNoteData(smNoteData);
 	if( smNoteData == "")
 	{
@@ -939,7 +950,6 @@ RString Steps::MinimizedChartString()
 			minimizedNoteData += "\n,\n";
 		}
 	}
-
 	return minimizedNoteData;
 }
 
@@ -1094,7 +1104,7 @@ public:
 
 	static int GetGrooveStatsKey(T *p, lua_State *L)
 	{
-		lua_pushstring(L, p->GenerateGrooveStatsKey());
+		lua_pushstring(L, p->GetGrooveStatsKey());
 		return 1;
 	}
 

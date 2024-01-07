@@ -5,7 +5,7 @@
 #include "NoteData.h"
 #include "TimingData.h"
 
-void ColumnCues::CalculateColumnCues(const NoteData &in, ColumnCues &out)
+void ColumnCues::CalculateColumnCues(const NoteData &in, ColumnCues &out, float minDuration)
 {
 	TimingData *timing = GAMESTATE->GetProcessedTimingData();
 	NoteData::all_tracks_const_iterator curr_note = in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
@@ -50,7 +50,7 @@ void ColumnCues::CalculateColumnCues(const NoteData &in, ColumnCues &out)
 	for( ColumnCue columnCue : allColumnCues )
 	{
 		float duration = columnCue.startTime - previousCueTime;
-		if( duration > 1.5 || previousCueTime == 0)
+		if( duration > minDuration || previousCueTime == 0)
 		{
 			columnCues.push_back(ColumnCue(previousCueTime, duration, columnCue.columns));
 		}

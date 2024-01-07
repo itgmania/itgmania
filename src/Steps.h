@@ -136,6 +136,8 @@ public:
 	void SetChartKey(const RString &k) { ChartKey = k; }
 
 	/** @brief Generates a hash used for GrooveStats integration. */
+	RString GrooveStatsKey;
+	RString GetGrooveStatsKey();
 	RString GenerateGrooveStatsKey();
 
 	/** @brief Produces a chart that's reduced to it's smallest unique representable form. */
