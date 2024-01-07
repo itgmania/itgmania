@@ -1108,7 +1108,7 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 
 	/* Generate these before we autogen notes, so the new notes can inherit
 	 * their source's values. */
-	ReCalculateRadarValuesAndLastSecond(from_cache, true);
+	ReCalculateStepStatsAndLastSecond(from_cache, true);
 	// If the music length is suspiciously shorter than the last second, adjust
 	// the length.  This prevents the ogg patch from setting a false length. -Kyz
 	if(m_fMusicLengthSeconds < lastSecond - 10.0f)
@@ -1129,16 +1129,14 @@ void Song::TranslateTitles()
 						m_sMainTitleTranslit, m_sSubTitleTranslit, m_sArtistTranslit );
 }
 
-void Song::ReCalculateRadarValuesAndLastSecond(bool fromCache, bool duringCache)
+void Song::ReCalculateStepStatsAndLastSecond(bool fromCache, bool duringCache)
 {
 	if( fromCache && this->GetFirstSecond() >= 0 && this->GetLastSecond() > 0 )
 	{
 		// this is loaded from cache, then we just have to calculate the radar values.
 		for( unsigned i=0; i<m_vpSteps.size(); i++ )
 		{
-			m_vpSteps[i]->CalculateRadarValues( m_fMusicLengthSeconds );
-			m_vpSteps[i]->CalculateTechStats();
-			m_vpSteps[i]->CalculateMeasureStats();
+			m_vpSteps[i]->CalculateStepStats( m_fMusicLengthSeconds );
 		}
 		return;
 	}
@@ -1150,10 +1148,8 @@ void Song::ReCalculateRadarValuesAndLastSecond(bool fromCache, bool duringCache)
 	for( unsigned i=0; i<m_vpSteps.size(); i++ )
 	{
 		Steps* pSteps = m_vpSteps[i];
-
-		pSteps->CalculateRadarValues( m_fMusicLengthSeconds );
-		pSteps->CalculateTechStats();
-		pSteps->CalculateMeasureStats();
+		pSteps->CalculateStepStats(m_fMusicLengthSeconds);
+		
 		// Must initialize before the gotos.
 		NoteData tempNoteData;
 		pSteps->GetNoteData( tempNoteData );
@@ -1217,7 +1213,7 @@ void Song::Save(bool autosave)
 {
 	LOG->Trace( "Song::SaveToSongFile()" );
 
-	ReCalculateRadarValuesAndLastSecond();
+	ReCalculateStepStatsAndLastSecond();
 	TranslateTitles();
 
 	// Save the new files. These calls make backups on their own.

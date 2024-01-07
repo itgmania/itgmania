@@ -299,6 +299,13 @@ void Steps::TidyUpData()
 		SetMeter( int(PredictMeter()) );
 }
 
+void Steps::CalculateStepStats( float fMusicLengthSeconds )
+{
+	this->CalculateRadarValues(fMusicLengthSeconds);
+	this->CalculateTechStats();
+	this->CalculateMeasureStats();
+}
+
 void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 {
 	// If we're autogen, don't calculate values.  GetRadarValues will take from our parent.
@@ -643,9 +650,7 @@ void Steps::CopyFrom( Steps* pSource, StepsType ntTo, float fMusicLengthSeconds 
 	this->SetDescription( pSource->GetDescription() );
 	this->SetDifficulty( pSource->GetDifficulty() );
 	this->SetMeter( pSource->GetMeter() );
-	this->CalculateRadarValues( fMusicLengthSeconds );
-	this->CalculateTechStats();
-	this->CalculateMeasureStats();
+	this->CalculateStepStats(fMusicLengthSeconds);
 }
 
 void Steps::CreateBlank( StepsType ntTo )

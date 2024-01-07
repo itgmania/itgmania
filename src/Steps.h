@@ -172,6 +172,10 @@ public:
 	bool IsNoteDataEmpty() const;
 
 	void TidyUpData();
+	
+	/** @brief Convenience function to calculate Radar Values, Tech Stats, and Measure Stats.*/
+	void CalculateStepStats(float fMusicLengthSeconds);
+
 	void CalculateRadarValues (float fMusicLengthSeconds );
 
 	void CalculateTechStats();
