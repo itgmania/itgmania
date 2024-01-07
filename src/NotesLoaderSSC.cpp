@@ -1107,8 +1107,18 @@ bool SSCLoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCach
 			}
 		}
 	}
+
+	float prevVersion = out.m_fVersion;
 	out.m_fVersion = STEPFILE_VERSION_NUMBER;
 	TidyUpData(out, bFromCache);
+
+	// Hack: If this was loaded from cache, and the STEPFILE_VERSION_NUMBER has changed,
+	// make sure that the updated version is saved to cache.
+	// It would feel less hacky if we could do this from within Song::LoadFromSongDir()
+	if(bFromCache && prevVersion < STEPFILE_VERSION_NUMBER)
+	{
+		out.SaveToCacheFile();
+	}
 	return true;
 }
 

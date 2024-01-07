@@ -34,6 +34,8 @@ const float VERSION_CHART_NAME_TAG = 0.74f;
 const float VERSION_CACHE_SWITCH_TAG = 0.77f;
 /** @brief The version where note count was added as a radar category. */
 const float VERSION_RADAR_NOTECOUNT = 0.83f;
+/** @brief The version where tech stats, measure stats, and GrooveStats key were added. */
+const float VERSION_TECH_STATS = 0.84f;
 
 /**
  * @brief The SSCLoader handles all of the parsing needed for .ssc files.
