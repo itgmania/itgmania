@@ -46,11 +46,11 @@ local t = Def.ActorFrame {
 		W4Command=NOTESKIN:GetMetricA("GhostArrowBright", "W4Command");
 		W3Command=NOTESKIN:GetMetricA("GhostArrowBright", "W3Command");
 		W2Command=NOTESKIN:GetMetricA("GhostArrowBright", "W2Command");
-		W1Command=NOTESKIN:GetMetricA("GhostArrowBright", "W1Command");
+		W1Command=cmd(diffusealpha,0);
 		HeldCommand=NOTESKIN:GetMetricA("GhostArrowBright", "HeldCommand");
 		JudgmentCommand=cmd(finishtweening);
-		BrightCommand=cmd(visible,true);
-		DimCommand=cmd(visible,false);
+		BrightCommand=NOTESKIN:GetMetricA("GhostArrowBright", "W1Command");
+		DimCommand=cmd(visible,true);
 
 	};
 	--Mine Explosion Commands

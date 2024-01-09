@@ -31,12 +31,12 @@ local t = Def.ActorFrame {
 			DimCommand=cmd(visible,true);
 		};
 		--W1 aka Marvelous Bright Explosion Commands
-		NOTESKIN:LoadActor( Var "Button", "Tap Explosion Dim W1" ) .. {
+		NOTESKIN:LoadActor( Var "Button", "Tap Explosion Bright W1" ) .. {
 			InitCommand=cmd(diffusealpha,0);
-			W1Command=NOTESKIN:GetMetricA("GhostArrowBright", "W1Command");
+			W1Command=cmd(diffusealpha,0);
 			JudgmentCommand=cmd(finishtweening);
-			BrightCommand=cmd(visible,true);
-			DimCommand=cmd(visible,false);
+			BrightCommand=NOTESKIN:GetMetricA("GhostArrowBright", "W1Command");
+			DimCommand=cmd(visible,true);
 		};
 	};
 	Def.ActorFrame {
