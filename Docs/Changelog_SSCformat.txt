@@ -9,10 +9,6 @@ change to JSON, but it is unsure if this will be done.
 Implement .ssc at your own risk.
 _______________________________________________________________________________
 
-[v0.84] - mjvotaw
-* add #TECHSTATS tag
-* add #MEASURESTATS tag
-* add #GROOVESTATSKEY tag
 
 [v0.82] - cerbo
 * add #PREVIEWVID tag. (to load the preview video, like #PREVIEW tag in .sma)
