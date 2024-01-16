@@ -1,5 +1,5 @@
-#ifndef TECH_STATS_H
-#define TECH_STATS_H
+#ifndef TECH_COUNTS_H
+#define TECH_COUNTS_H
 
 #include "GameConstantsAndTypes.h"
 class NoteData;
@@ -12,27 +12,27 @@ enum Foot
 };
 
 /** @brief Unknown radar values are given a default value. */
-#define TECHSTATS_VAL_UNKNOWN -1
+#define TECHCOUNTS_VAL_UNKNOWN -1
 
-enum TechStatsCategory
+enum TechCountsCategory
 {
-	TechStatsCategory_Crossovers = 0,
-	TechStatsCategory_Footswitches,
-	TechStatsCategory_Sideswitches,
-	TechStatsCategory_Jacks,
-	TechStatsCategory_Brackets,
-	NUM_TechStatsCategory,
-	TechStatsCategory_Invalid
+	TechCountsCategory_Crossovers = 0,
+	TechCountsCategory_Footswitches,
+	TechCountsCategory_Sideswitches,
+	TechCountsCategory_Jacks,
+	TechCountsCategory_Brackets,
+	NUM_TechCountsCategory,
+	TechCountsCategory_Invalid
 };
 
-const RString& TechStatsCategoryToString( TechStatsCategory cat );
+const RString& TechCountsCategoryToString( TechCountsCategory cat );
 /**
  * @brief Turn the radar category into a proper localized string.
  * @param cat the radar category.
  * @return the localized string version of the radar category.
  */
-const RString& TechStatsCategoryToLocalizedString( TechStatsCategory cat );
-LuaDeclareType( TechStatsCategory );
+const RString& TechCountsCategoryToLocalizedString( TechCountsCategory cat );
+LuaDeclareType( TechCountsCategory );
 
 
 // This could probably be an enum?
@@ -88,10 +88,10 @@ inline Foot SwitchFeet(Foot f)
 struct lua_State;
 
 /** @brief Technical statistics */
-struct TechStats
+struct TechCounts
 {
 private:
-	float m_Values[NUM_TechStatsCategory];
+	float m_Values[NUM_TechCountsCategory];
 public:
 	int crossovers; // Number of crossovers in song
 	int footswitches; // Number of footswitches in song
@@ -99,15 +99,15 @@ public:
 	int jacks; // Number of jacks in song
 	int brackets; // Number of brackets in song
 
-	float operator[](TechStatsCategory cat) const { return m_Values[cat]; }
-	float& operator[](TechStatsCategory cat) { return m_Values[cat]; }
+	float operator[](TechCountsCategory cat) const { return m_Values[cat]; }
+	float& operator[](TechCountsCategory cat) { return m_Values[cat]; }
 	float operator[](int cat) const { return m_Values[cat]; }
 	float& operator[](int cat) { return m_Values[cat]; }
-	TechStats();
+	TechCounts();
 	void MakeUnknown();
 	void Zero();
 
-	TechStats& operator+=( const TechStats& other )
+	TechCounts& operator+=( const TechCounts& other )
 	{
 		this->crossovers += other.crossovers;
 		this->footswitches += other.footswitches;
@@ -117,7 +117,7 @@ public:
 		return *this;
 	}
 
-	bool operator==( const TechStats& other ) const
+	bool operator==( const TechCounts& other ) const
 	{
 		return (this->crossovers == other.crossovers 
 			&& this->footswitches == other.footswitches 
@@ -127,7 +127,7 @@ public:
 			);
 	}
 
-	bool operator!=( const TechStats& other ) const
+	bool operator!=( const TechCounts& other ) const
 	{
 		return !operator==( other );
 	}
@@ -138,8 +138,8 @@ public:
 	void PushSelf( lua_State *L );
 };
 
-/** @brief a counter used to keep track of state while parsing data in TechStatsCalculator::CalculateTechStats*/
-struct TechStatsCounter
+/** @brief a counter used to keep track of state while parsing data in TechCountsCalculator::CalculateTechCounts*/
+struct TechCountsCounter
 {
 
 	bool wasLastStreamFlipped;
@@ -161,7 +161,7 @@ struct TechStatsCounter
 	StepDirection trueLastArrowR;
 
 	int recursionCount;
-	TechStatsCounter()
+	TechCountsCounter()
 	{
 		lastFoot = Foot_Left;
 		wasLastStreamFlipped = false;
@@ -185,11 +185,11 @@ struct TechStatsCounter
 };
 
 
-namespace TechStatsCalculator
+namespace TechCountsCalculator
 {
-	void CalculateTechStats(const NoteData &in, TechStats &out);
-	void UpdateTechStats(TechStats &stats, TechStatsCounter &counter, StepDirection currentStep);
-	void CommitStream(TechStats &stats, TechStatsCounter &counter, Foot tieBreaker);
+	void CalculateTechCounts(const NoteData &in, TechCounts &out);
+	void UpdateTechCounts(TechCounts &stats, TechCountsCounter &counter, StepDirection currentStep);
+	void CommitStream(TechCounts &stats, TechCountsCounter &counter, Foot tieBreaker);
 };
 
 #endif

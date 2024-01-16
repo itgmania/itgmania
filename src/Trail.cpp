@@ -90,10 +90,10 @@ void Trail::SetRadarValues( const RadarValues &rv )
 	m_bRadarValuesCached = true;
 }
 
-void Trail::SetTechStats(const TechStats &ts )
+void Trail::SetTechCounts(const TechCounts &ts )
 {
-	m_CachedTechStats = ts;
-	m_bTechStatsCached = true;
+	m_CachedTechCounts = ts;
+	m_bTechCountsCached = true;
 }
 
 const RadarValues &Trail::GetRadarValues() const
@@ -154,14 +154,14 @@ const RadarValues &Trail::GetRadarValues() const
 	}
 }
 
-TechStats &Trail::GetTechStats()
+TechCounts &Trail::GetTechCounts()
 {
-	if(m_bTechStatsCached)
+	if(m_bTechCountsCached)
 	{
-		return m_CachedTechStats;
+		return m_CachedTechCounts;
 	}
 
-	TechStats techStats = TechStats();
+	TechCounts techCounts = TechCounts();
 	
 	for (TrailEntry const &e : m_vEntries)
 	{
@@ -180,19 +180,19 @@ TechStats &Trail::GetTechStats()
 				NoteDataUtil::TransformNoteData(nd, *(pSteps->GetTimingData()), po, pSteps->m_StepsType);
 			}
 			NoteDataUtil::TransformNoteData(nd, *(pSteps->GetTimingData()), e.Attacks, pSteps->m_StepsType, e.pSong);
-			TechStats ts = TechStats();
-			TechStatsCalculator::CalculateTechStats(nd, ts);
+			TechCounts ts = TechCounts();
+			TechCountsCalculator::CalculateTechCounts(nd, ts);
 			GAMESTATE->SetProcessedTimingData(nullptr);
-			techStats += ts;
+			techCounts += ts;
 		}
 		else
 		{
-			TechStats ts = pSteps->GetTechStats(PLAYER_1);
-			techStats += ts;
+			TechCounts ts = pSteps->GetTechCounts(PLAYER_1);
+			techCounts += ts;
 		}
 	}
-	const_cast<Trail *>(this)->SetTechStats(techStats);
-	return m_CachedTechStats;
+	const_cast<Trail *>(this)->SetTechCounts(techCounts);
+	return m_CachedTechCounts;
 
 }
 
@@ -329,9 +329,9 @@ public:
 		return 1;
 	}
 
-	static int GetTechStats( T* p, lua_State *L )
+	static int GetTechCounts( T* p, lua_State *L )
 	{
-		TechStats &ts = const_cast<TechStats &>(p->GetTechStats());
+		TechCounts &ts = const_cast<TechCounts &>(p->GetTechCounts());
 		ts.PushSelf(L);
 		return 1;
 	}
@@ -349,7 +349,7 @@ public:
 		ADD_METHOD( GetLengthSeconds );
 		ADD_METHOD( IsSecret );
 		ADD_METHOD( ContainsSong );
-		ADD_METHOD( GetTechStats );
+		ADD_METHOD( GetTechCounts );
 	}
 };
 

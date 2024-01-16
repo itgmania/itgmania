@@ -9,8 +9,8 @@
 #include "Difficulty.h"
 #include "RageUtil_AutoPtr.h"
 #include "TimingData.h"
-#include "TechStats.h"
-#include "MeasureStats.h"
+#include "TechCounts.h"
+#include "MeasureInfo.h"
 #include "ColumnCues.h"
 #include <vector>
 
@@ -137,8 +137,8 @@ public:
 	void SetChartKey(const RString &k) { ChartKey = k; }
 
 	/** @brief Generates a hash used for GrooveStats integration. */
-	const RString GetGrooveStatsKey() const;
-	void CalculateGrooveStatsKey();
+	const RString GetGrooveStatsHash() const;
+	void CalculateGrooveStatsHash();
 
 	/** @brief Produces a chart that's reduced to it's smallest unique representable form. */
 	RString MinimizedChartString();
@@ -148,9 +148,9 @@ public:
 	void SetLoadedFromProfile( ProfileSlot slot )	{ m_LoadedFromProfile = slot; }
 	void SetMeter( int meter );
 	void SetCachedRadarValues( const RadarValues v[NUM_PLAYERS] );
-	void SetCachedTechStats(const TechStats ts[NUM_PLAYERS]);
-	void SetCachedMeasureStats(const MeasureStats ms[NUM_PLAYERS]);
-	void SetCachedGrooveStatsKey(const RString key);
+	void SetCachedTechCounts(const TechCounts ts[NUM_PLAYERS]);
+	void SetCachedMeasureInfo(const MeasureInfo ms[NUM_PLAYERS]);
+	void SetCachedGrooveStatsHash(const RString key);
 	float PredictMeter() const;
 
 	unsigned GetHash() const;
@@ -179,11 +179,11 @@ public:
 
 	void CalculateRadarValues (float fMusicLengthSeconds );
 
-	void CalculateTechStats();
-	const TechStats &GetTechStats(PlayerNumber pn) const { return Real()->m_CachedTechStats[pn]; }
+	void CalculateTechCounts();
+	const TechCounts &GetTechCounts(PlayerNumber pn) const { return Real()->m_CachedTechCounts[pn]; }
 
-	void CalculateMeasureStats();
-	const MeasureStats &GetMeasureStats(PlayerNumber pn) const { return Real()->m_CachedMeasureStats[pn]; }
+	void CalculateMeasureInfo();
+	const MeasureInfo &GetMeasureInfo(PlayerNumber pn) const { return Real()->m_CachedMeasureInfo[pn]; }
 	/**
 	 * @brief The TimingData used by the Steps.
 	 *
@@ -278,14 +278,14 @@ private:
 	bool                m_bAreCachedRadarValuesJustLoaded;
 
 	/** @brief The tech stats used for each player */
-	mutable TechStats m_CachedTechStats[NUM_PLAYERS];
-	bool m_bAreCachedTechStatsValuesJustLoaded;
+	mutable TechCounts m_CachedTechCounts[NUM_PLAYERS];
+	bool m_bAreCachedTechCountsValuesJustLoaded;
 	
-	mutable MeasureStats m_CachedMeasureStats[NUM_PLAYERS];
-	bool m_bAreCachedMeasureStatsJustLoaded;
+	mutable MeasureInfo m_CachedMeasureInfo[NUM_PLAYERS];
+	bool m_bAreCachedMeasureInfoJustLoaded;
 
-	RString GrooveStatsKey;
-	bool m_bIsCachedGrooveStatsKeyJustLoaded;
+	RString GrooveStatsHash;
+	bool m_bIsCachedGrooveStatsHashJustLoaded;
 
 	/** @brief The name of the person who created the Steps. */
 	RString				m_sCredit;

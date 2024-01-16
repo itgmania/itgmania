@@ -384,14 +384,14 @@ void SetRadarValues(StepsTagInfo& info)
 	info.ssc_format= true;
 }
 
-void SetTechStats(StepsTagInfo& info)
+void SetTechCounts(StepsTagInfo& info)
 {
 	if (info.from_cache || info.for_load_edit)
 	{
 		std::vector<RString> values;
 		split((*info.params)[1], ",", values, true);
 		std::size_t cats_per_player= values.size() / NUM_PlayerNumber;
-		TechStats v[NUM_PLAYERS];
+		TechCounts v[NUM_PLAYERS];
 		FOREACH_PlayerNumber(pn)
 		{
 			for(std::size_t i= 0; i < cats_per_player; ++i)
@@ -399,7 +399,7 @@ void SetTechStats(StepsTagInfo& info)
 				v[pn][i]= StringToFloat(values[pn * cats_per_player + i]);
 			}
 		}
-		info.steps->SetCachedTechStats(v);
+		info.steps->SetCachedTechCounts(v);
 	}
 	else
 	{
@@ -408,20 +408,20 @@ void SetTechStats(StepsTagInfo& info)
 	info.ssc_format= true;
 }
 
-void SetMeasureStats(StepsTagInfo& info)
+void SetMeasureInfo(StepsTagInfo& info)
 {
 	if (info.from_cache || info.for_load_edit)
 	{
 		std::vector<RString> values;
 		split((*info.params)[1], "|", values, true);
 
-		MeasureStats v[NUM_PLAYERS];
+		MeasureInfo v[NUM_PLAYERS];
 		FOREACH_PlayerNumber(pn)
 		{
 			v[pn].FromString(values[pn]);
 			
 		}
-		info.steps->SetCachedMeasureStats(v);
+		info.steps->SetCachedMeasureInfo(v);
 	}
 	else
 	{
@@ -430,12 +430,12 @@ void SetMeasureStats(StepsTagInfo& info)
 	info.ssc_format= true;
 }
 
-void SetGrooveStatsKey(StepsTagInfo& info)
+void SetGrooveStatsHash(StepsTagInfo& info)
 {
-	if(info.from_cache || info.for_load_edit)
+	if (info.from_cache || info.for_load_edit)
 	{
 		RString value = (*info.params)[1];
-		info.steps->SetCachedGrooveStatsKey(value);
+		info.steps->SetCachedGrooveStatsHash(value);
 	}
 	info.ssc_format = true;
 }
@@ -680,9 +680,9 @@ struct ssc_parser_helper_t
 		steps_tag_handlers["SCROLLS"]= &SetStepsScrolls;
 		steps_tag_handlers["FAKES"]= &SetStepsFakes;
 		steps_tag_handlers["LABELS"]= &SetStepsLabels;
-		steps_tag_handlers["TECHSTATS"] = &SetTechStats;
-		steps_tag_handlers["MEASURESTATS"] = &SetMeasureStats;
-		steps_tag_handlers["GROOVESTATSKEY"] = &SetGrooveStatsKey;
+		steps_tag_handlers["TECHCOUNTS"] = &SetTechCounts;
+		steps_tag_handlers["MEASUREINFO"] = &SetMeasureInfo;
+		steps_tag_handlers["GROOVESTATSHASH"] = &SetGrooveStatsHash;
 
 		/* If this is called, the chart does not use the same attacks
 		 * as the Song's timing. No other changes are required. */

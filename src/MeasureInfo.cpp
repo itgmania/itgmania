@@ -1,5 +1,5 @@
 #include "global.h"
-#include "MeasureStats.h"
+#include "MeasureInfo.h"
 #include "NoteData.h"
 #include "RageLog.h"
 #include "LocalizedString.h"
@@ -8,23 +8,23 @@
 #include "GameState.h"
 
 
-RString MeasureStats::ToString() const
+RString MeasureInfo::ToString() const
 {
-	std::vector<RString> asMeasureStats;
+	std::vector<RString> asMeasureInfo;
 	for (unsigned i = 0; i < npsPerMeasure.size(); i++)
 	{
-		asMeasureStats.push_back(ssprintf("%.6f", npsPerMeasure[i]));
+		asMeasureInfo.push_back(ssprintf("%.6f", npsPerMeasure[i]));
 	}
 
 	for (unsigned i = 0; i < notesPerMeasure.size(); i++)
 	{
-		asMeasureStats.push_back(ssprintf("%d", notesPerMeasure[i]));
+		asMeasureInfo.push_back(ssprintf("%d", notesPerMeasure[i]));
 	}
 
-	return join(",", asMeasureStats);
+	return join(",", asMeasureInfo);
 }
 
-void MeasureStats::FromString(RString sValues)
+void MeasureInfo::FromString(RString sValues)
 {
 	std::vector<RString> asValues;
 	split( sValues, ",", asValues, true );
@@ -48,7 +48,7 @@ void MeasureStats::FromString(RString sValues)
 	this->peakNps = peak_nps;
 }
 
-void MeasureStatsCalculator::CalculateMeasureStats(const NoteData &in, MeasureStats &out)
+void MeasureInfoCalculator::CalculateMeasureInfo(const NoteData &in, MeasureInfo &out)
 {
 	int lastRow = in.GetLastRow();
 	int lastRowMeasureIndex = 0;
@@ -128,15 +128,15 @@ void MeasureStatsCalculator::CalculateMeasureStats(const NoteData &in, MeasureSt
 
 	out.peakNps = peak_nps;
 	out.measureCount = totalMeasureCount;
-	std::vector<int> notesPerMeasure = MeasureStatsCalculator::notesPerMeasure(counters);
-	std::vector<float> npsPerMeasure = MeasureStatsCalculator::npsPerMeasure(counters);
+	std::vector<int> notesPerMeasure = MeasureInfoCalculator::notesPerMeasure(counters);
+	std::vector<float> npsPerMeasure = MeasureInfoCalculator::npsPerMeasure(counters);
 	out.notesPerMeasure.clear();
 	out.notesPerMeasure.assign(notesPerMeasure.begin(), notesPerMeasure.end());
 	out.npsPerMeasure.clear();
 	out.npsPerMeasure.assign(npsPerMeasure.begin(), npsPerMeasure.end());
 }
 
-std::vector<int> MeasureStatsCalculator::notesPerMeasure(std::vector<MeasureStat> stats)
+std::vector<int> MeasureInfoCalculator::notesPerMeasure(std::vector<MeasureStat> stats)
 {
 	std::vector<int> notesPerMeasure(stats.size(), 0);
 	for (unsigned i = 0; i < stats.size(); i++)
@@ -147,7 +147,7 @@ std::vector<int> MeasureStatsCalculator::notesPerMeasure(std::vector<MeasureStat
 	return notesPerMeasure;
 }
 
-std::vector<float> MeasureStatsCalculator::npsPerMeasure(std::vector<MeasureStat> stats)
+std::vector<float> MeasureInfoCalculator::npsPerMeasure(std::vector<MeasureStat> stats)
 {
 	std::vector<float> npsPerMeasure(stats.size(), 0);
 	for (unsigned i = 0; i < stats.size(); i++)

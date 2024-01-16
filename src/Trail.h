@@ -4,8 +4,8 @@
 #include "Attack.h"
 #include "RadarValues.h"
 #include "Difficulty.h"
-#include "TechStats.h"
-#include "MeasureStats.h"
+#include "TechCounts.h"
+#include "MeasureInfo.h"
 #include <vector>
 
 
@@ -68,8 +68,8 @@ public:
 	int			m_iSpecifiedMeter;	// == -1 if no meter specified
 	mutable bool		m_bRadarValuesCached;
 	mutable RadarValues	m_CachedRadarValues;
-	mutable bool m_bTechStatsCached;
-	mutable TechStats m_CachedTechStats;
+	mutable bool m_bTechCountsCached;
+	mutable TechCounts m_CachedTechCounts;
 	/**
 	 * @brief Set up the Trail with default values.
 	 *
@@ -97,8 +97,8 @@ public:
 	bool IsSecret() const;
 	bool ContainsSong( const Song *pSong ) const;
 
-	TechStats &GetTechStats();
-	void SetTechStats(const TechStats &ts);
+	TechCounts &GetTechCounts();
+	void SetTechCounts(const TechCounts &ts);
 
 	// Lua
 	void PushSelf( lua_State *L );

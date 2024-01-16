@@ -1,5 +1,5 @@
-#ifndef MEASURE_STATS_H
-#define MEASURE_STATS_H
+#ifndef MEASURE_INFO_H
+#define MEASURE_INFO_H
 
 #include "GameConstantsAndTypes.h"
 class NoteData;
@@ -45,14 +45,14 @@ struct MeasureStat
 	}
 };
 
-struct MeasureStats
+struct MeasureInfo
 {
 	int measureCount;
 	float peakNps;
 	std::vector<float> npsPerMeasure;
 	std::vector<int> notesPerMeasure;
 
-	MeasureStats()
+	MeasureInfo()
 	{
 		Zero();
 	}
@@ -69,9 +69,9 @@ struct MeasureStats
 	void FromString( RString sValues );
 };
 
-namespace MeasureStatsCalculator
+namespace MeasureInfoCalculator
 {
-	void CalculateMeasureStats(const NoteData &in, MeasureStats &out);
+	void CalculateMeasureInfo(const NoteData &in, MeasureInfo &out);
 	/** @brief Returns an array containing the count of notes for each measure.	*/
 	std::vector<int> notesPerMeasure(std::vector<MeasureStat> stats);
 	

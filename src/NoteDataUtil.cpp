@@ -9,7 +9,6 @@
 #include "GameState.h"
 #include "RadarValues.h"
 #include "TimingData.h"
-#include "TechStats.h"
 
 #include <cmath>
 #include <cstddef>

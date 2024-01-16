@@ -57,9 +57,9 @@ Steps::Steps(Song *song): m_StepsType(StepsType_Invalid), m_pSong(song),
 	m_sDescription(""), m_sChartStyle(""),
 	m_Difficulty(Difficulty_Invalid), m_iMeter(0),
 	m_bAreCachedRadarValuesJustLoaded(false),
-	m_bAreCachedTechStatsValuesJustLoaded(false),
-	m_bAreCachedMeasureStatsJustLoaded(false),
-	m_bIsCachedGrooveStatsKeyJustLoaded(false),
+	m_bAreCachedTechCountsValuesJustLoaded(false),
+	m_bAreCachedMeasureInfoJustLoaded(false),
+	m_bIsCachedGrooveStatsHashJustLoaded(false),
 	m_sCredit(""), displayBPMType(DISPLAY_BPM_ACTUAL),
 	specifiedBPMMin(0), specifiedBPMMax(0) {}
 
@@ -303,9 +303,9 @@ void Steps::TidyUpData()
 void Steps::CalculateStepStats( float fMusicLengthSeconds )
 {
 	this->CalculateRadarValues(fMusicLengthSeconds);
-	this->CalculateTechStats();
-	this->CalculateMeasureStats();
-	this->CalculateGrooveStatsKey();
+	this->CalculateTechCounts();
+	this->CalculateMeasureInfo();
+	this->CalculateGrooveStatsHash();
 }
 
 void Steps::CalculateRadarValues( float fMusicLengthSeconds )
@@ -371,14 +371,14 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 	GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
-void Steps::CalculateTechStats()
+void Steps::CalculateTechCounts()
 {
 	if (parent != nullptr)
 		return;
 
-	if( m_bAreCachedTechStatsValuesJustLoaded )
+	if( m_bAreCachedTechCountsValuesJustLoaded )
 	{
-		m_bAreCachedTechStatsValuesJustLoaded = false;
+		m_bAreCachedTechCountsValuesJustLoaded = false;
 		return;
 	}
 
@@ -386,7 +386,7 @@ void Steps::CalculateTechStats()
 	this->GetNoteData( tempNoteData );
 
 	FOREACH_PlayerNumber(pn)
-		m_CachedTechStats[pn]
+		m_CachedTechCounts[pn]
 			.Zero();
 
 	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
@@ -397,7 +397,7 @@ void Steps::CalculateTechStats()
 		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
 		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
 		{
-			TechStatsCalculator::CalculateTechStats(vParts[pn], m_CachedTechStats[pn]);
+			TechCountsCalculator::CalculateTechCounts(vParts[pn], m_CachedTechCounts[pn]);
 		}
 	}
 	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
@@ -406,30 +406,30 @@ void Steps::CalculateTechStats()
 		// XXX: Assumption that couple will always have an even number of notes.
 		const int tracks = tempNoteData.GetNumTracks() / 2;
 		p1.SetNumTracks(tracks);
-		TechStatsCalculator::CalculateTechStats(tempNoteData, m_CachedTechStats[PLAYER_1]);
+		TechCountsCalculator::CalculateTechCounts(tempNoteData, m_CachedTechCounts[PLAYER_1]);
 		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
 		tempNoteData.SetNumTracks(tracks);
-		TechStatsCalculator::CalculateTechStats(tempNoteData, m_CachedTechStats[PLAYER_2]);
+		TechCountsCalculator::CalculateTechCounts(tempNoteData, m_CachedTechCounts[PLAYER_2]);
 	}
 	else
 	{
-		TechStatsCalculator::CalculateTechStats(tempNoteData, m_CachedTechStats[0]);
-		std::fill_n( m_CachedTechStats + 1, NUM_PLAYERS-1, m_CachedTechStats[0] );
+		TechCountsCalculator::CalculateTechCounts(tempNoteData, m_CachedTechCounts[0]);
+		std::fill_n( m_CachedTechCounts + 1, NUM_PLAYERS-1, m_CachedTechCounts[0] );
 	}
 	GAMESTATE->SetProcessedTimingData(nullptr);
 	
 }
 
-void Steps::CalculateMeasureStats()
+void Steps::CalculateMeasureInfo()
 {
 	if(parent != nullptr)
 	{
 		return;
 	}
 
-	if( m_bAreCachedMeasureStatsJustLoaded )
+	if( m_bAreCachedMeasureInfoJustLoaded )
 	{
-		m_bAreCachedMeasureStatsJustLoaded = false;
+		m_bAreCachedMeasureInfoJustLoaded = false;
 		return;
 	}
 
@@ -437,7 +437,7 @@ void Steps::CalculateMeasureStats()
 	this->GetNoteData( tempNoteData );
 
 	FOREACH_PlayerNumber(pn)
-		m_CachedMeasureStats[pn]
+		m_CachedMeasureInfo[pn]
 			.Zero();
 
 	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
@@ -448,7 +448,7 @@ void Steps::CalculateMeasureStats()
 		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
 		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
 		{
-			MeasureStatsCalculator::CalculateMeasureStats(vParts[pn], m_CachedMeasureStats[pn]);
+			MeasureInfoCalculator::CalculateMeasureInfo(vParts[pn], m_CachedMeasureInfo[pn]);
 		}
 	}
 	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
@@ -457,15 +457,15 @@ void Steps::CalculateMeasureStats()
 		// XXX: Assumption that couple will always have an even number of notes.
 		const int tracks = tempNoteData.GetNumTracks() / 2;
 		p1.SetNumTracks(tracks);
-		MeasureStatsCalculator::CalculateMeasureStats(tempNoteData, m_CachedMeasureStats[PLAYER_1]);
+		MeasureInfoCalculator::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[PLAYER_1]);
 		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
 		tempNoteData.SetNumTracks(tracks);
-		MeasureStatsCalculator::CalculateMeasureStats(tempNoteData, m_CachedMeasureStats[PLAYER_2]);
+		MeasureInfoCalculator::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[PLAYER_2]);
 	}
 	else
 	{
-		MeasureStatsCalculator::CalculateMeasureStats(tempNoteData, m_CachedMeasureStats[0]);
-		std::fill_n( m_CachedMeasureStats + 1, NUM_PLAYERS-1, m_CachedMeasureStats[0] );
+		MeasureInfoCalculator::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[0]);
+		std::fill_n( m_CachedMeasureInfo + 1, NUM_PLAYERS-1, m_CachedMeasureInfo[0] );
 	}
 	GAMESTATE->SetProcessedTimingData(nullptr);
 }
@@ -619,8 +619,8 @@ void Steps::DeAutogen( bool bCopyNoteData )
 	m_Difficulty		= Real()->m_Difficulty;
 	m_iMeter		= Real()->m_iMeter;
 	std::copy( Real()->m_CachedRadarValues, Real()->m_CachedRadarValues + NUM_PLAYERS, m_CachedRadarValues );
-	std::copy( Real()->m_CachedTechStats, Real()->m_CachedTechStats + NUM_PLAYERS, m_CachedTechStats );
-	std::copy( Real()->m_CachedMeasureStats, Real()->m_CachedMeasureStats + NUM_PLAYERS, m_CachedMeasureStats );
+	std::copy( Real()->m_CachedTechCounts, Real()->m_CachedTechCounts + NUM_PLAYERS, m_CachedTechCounts );
+	std::copy( Real()->m_CachedMeasureInfo, Real()->m_CachedMeasureInfo + NUM_PLAYERS, m_CachedMeasureInfo );
 	m_sCredit		= Real()->m_sCredit;
 	parent = nullptr;
 
@@ -749,24 +749,24 @@ void Steps::SetCachedRadarValues( const RadarValues v[NUM_PLAYERS] )
 	m_bAreCachedRadarValuesJustLoaded = true;
 }
 
-void Steps::SetCachedTechStats( const TechStats ts[NUM_PLAYERS] )
+void Steps::SetCachedTechCounts( const TechCounts ts[NUM_PLAYERS] )
 {
 	DeAutogen();
-	std::copy(ts, ts + NUM_PLAYERS, m_CachedTechStats);
-	m_bAreCachedTechStatsValuesJustLoaded = true;
+	std::copy(ts, ts + NUM_PLAYERS, m_CachedTechCounts);
+	m_bAreCachedTechCountsValuesJustLoaded = true;
 }
 
-void Steps::SetCachedMeasureStats(const MeasureStats ms[NUM_PLAYERS])
+void Steps::SetCachedMeasureInfo(const MeasureInfo ms[NUM_PLAYERS])
 {
 	DeAutogen();
-	std::copy(ms, ms + NUM_PLAYERS, m_CachedMeasureStats);
-	m_bAreCachedMeasureStatsJustLoaded = true;
+	std::copy(ms, ms + NUM_PLAYERS, m_CachedMeasureInfo);
+	m_bAreCachedMeasureInfoJustLoaded = true;
 }
 
-void Steps::SetCachedGrooveStatsKey(const RString key)
+void Steps::SetCachedGrooveStatsHash(const RString key)
 {
-	GrooveStatsKey = key;
-	m_bIsCachedGrooveStatsKeyJustLoaded = true;
+	GrooveStatsHash = key;
+	m_bIsCachedGrooveStatsHashJustLoaded = true;
 }
 
 RString Steps::GenerateChartKey()
@@ -839,16 +839,16 @@ RString Steps::GenerateChartKey(NoteData &nd, TimingData *td)
 	return o;
 }
 
-const RString Steps::GetGrooveStatsKey() const
+const RString Steps::GetGrooveStatsHash() const
 {
-	return GrooveStatsKey;
+	return GrooveStatsHash;
 }
 
-void Steps::CalculateGrooveStatsKey()
+void Steps::CalculateGrooveStatsHash()
 {
-	if (m_bIsCachedGrooveStatsKeyJustLoaded == true)
+	if (m_bIsCachedGrooveStatsHashJustLoaded == true)
 	{
-		m_bIsCachedGrooveStatsKeyJustLoaded = false;
+		m_bIsCachedGrooveStatsHashJustLoaded = false;
 		return;
 	}
 	this->Decompress();
@@ -874,7 +874,7 @@ void Steps::CalculateGrooveStatsKey()
 	smNoteData.append(bpmString);
 	RString gsKey = BinaryToHex(CryptManager::GetSHA1ForString(smNoteData));
 	gsKey = gsKey.substr(0, 16);
-	GrooveStatsKey = gsKey;
+	GrooveStatsHash = gsKey;
 }
 
 RString Steps::MinimizedChartString()
@@ -1021,13 +1021,13 @@ public:
 		return 1;
 	}
 
-	static int GetTechStats(T* p, lua_State *L )
+	static int GetTechCounts(T* p, lua_State *L )
 	{
 		PlayerNumber pn = PLAYER_1;
 		if (!lua_isnil(L, 1)) {
 			pn = Enum::Check<PlayerNumber>(L, 1);
 		}
-		TechStats &ts = const_cast<TechStats &>(p->GetTechStats(pn));
+		TechCounts &ts = const_cast<TechCounts &>(p->GetTechCounts(pn));
 		ts.PushSelf(L);
 		return 1;
 	}
@@ -1038,7 +1038,7 @@ public:
 		if (!lua_isnil(L, 1)) {
 			pn = Enum::Check<PlayerNumber>(L, 1);
 		}
-		MeasureStats &ts = const_cast<MeasureStats &>(p->GetMeasureStats(pn));
+		MeasureInfo &ts = const_cast<MeasureInfo &>(p->GetMeasureInfo(pn));
 		LuaHelpers::CreateTableFromArray(ts.npsPerMeasure, L);
 		return 1;
 	}
@@ -1049,7 +1049,7 @@ public:
 		if (!lua_isnil(L, 1)) {
 			pn = Enum::Check<PlayerNumber>(L, 1);
 		}
-		MeasureStats &ts = const_cast<MeasureStats &>(p->GetMeasureStats(pn));
+		MeasureInfo &ts = const_cast<MeasureInfo &>(p->GetMeasureInfo(pn));
 		LuaHelpers::CreateTableFromArray(ts.notesPerMeasure, L);
 
 		return 1;
@@ -1061,7 +1061,7 @@ public:
 		if (!lua_isnil(L, 1)) {
 			pn = Enum::Check<PlayerNumber>(L, 1);
 		}
-		MeasureStats &ts = const_cast<MeasureStats &>(p->GetMeasureStats(pn));
+		MeasureInfo &ts = const_cast<MeasureInfo &>(p->GetMeasureInfo(pn));
 		lua_pushnumber(L, ts.peakNps);
 		return 1;
 	}
@@ -1131,9 +1131,9 @@ public:
 		return 1;
 	}
 
-	static int GetGrooveStatsKey(T *p, lua_State *L)
+	static int GetGrooveStatsHash(T *p, lua_State *L)
 	{
-		lua_pushstring(L, p->GetGrooveStatsKey());
+		lua_pushstring(L, p->GetGrooveStatsHash());
 		return 1;
 	}
 
@@ -1193,7 +1193,7 @@ public:
 		ADD_METHOD( HasSignificantTimingChanges );
 		ADD_METHOD( HasAttacks );
 		ADD_METHOD( GetRadarValues );
-		ADD_METHOD( GetTechStats );
+		ADD_METHOD( GetTechCounts );
 		ADD_METHOD(GetNPSPerMeasure);
 		ADD_METHOD(GetNotesPerMeasure);
 		ADD_METHOD(GetPeakNPS);
@@ -1211,7 +1211,7 @@ public:
 		ADD_METHOD( PredictMeter );
 		ADD_METHOD( GetDisplayBPMType );
 		ADD_METHOD(GetMinimizedChartString);
-		ADD_METHOD(GetGrooveStatsKey);
+		ADD_METHOD(GetGrooveStatsHash);
 		ADD_METHOD(GetColumnCues);
 	}
 };

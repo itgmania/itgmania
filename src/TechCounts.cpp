@@ -1,5 +1,5 @@
 #include "global.h"
-#include "TechStats.h"
+#include "TechCounts.h"
 #include "NoteData.h"
 #include "RageLog.h"
 #include "LocalizedString.h"
@@ -9,7 +9,7 @@
 #include "RageTimer.h"
 
 
-static const char *TechStatsCategoryNames[] = {
+static const char *TechCountsCategoryNames[] = {
 	"Crossovers",
 	"Footswitches",
 	"Sideswitches",
@@ -17,55 +17,55 @@ static const char *TechStatsCategoryNames[] = {
 	"Brackets"
 };
 
-XToString( TechStatsCategory );
-XToLocalizedString( TechStatsCategory );
-LuaFunction(TechStatsCategoryToLocalizedString, TechStatsCategoryToLocalizedString(Enum::Check<TechStatsCategory>(L, 1)) );
-LuaXType( TechStatsCategory );
+XToString( TechCountsCategory );
+XToLocalizedString( TechCountsCategory );
+LuaFunction(TechCountsCategoryToLocalizedString, TechCountsCategoryToLocalizedString(Enum::Check<TechCountsCategory>(L, 1)) );
+LuaXType( TechCountsCategory );
 
-// TechStats methods
+// TechCounts methods
 
-TechStats::TechStats()
+TechCounts::TechCounts()
 {
 	MakeUnknown();
 }
 
-void TechStats::MakeUnknown()
+void TechCounts::MakeUnknown()
 {
-	FOREACH_ENUM( TechStatsCategory, rc )
+	FOREACH_ENUM( TechCountsCategory, rc )
 	{
-		(*this)[rc] = TECHSTATS_VAL_UNKNOWN;
+		(*this)[rc] = TECHCOUNTS_VAL_UNKNOWN;
 	}
 }
 
-void TechStats::Zero()
+void TechCounts::Zero()
 {
-	FOREACH_ENUM( TechStatsCategory, rc )
+	FOREACH_ENUM( TechCountsCategory, rc )
 	{
 		(*this)[rc] = 0;
 	}
 }
 
-RString TechStats::ToString( int iMaxValues ) const
+RString TechCounts::ToString( int iMaxValues ) const
 {
 	if( iMaxValues == -1 )
-		iMaxValues = NUM_TechStatsCategory;
-	iMaxValues = std::min( iMaxValues, (int)NUM_TechStatsCategory );
+		iMaxValues = NUM_TechCountsCategory;
+	iMaxValues = std::min( iMaxValues, (int)NUM_TechCountsCategory );
 
-	std::vector<RString> asTechStats;
+	std::vector<RString> asTechCounts;
 	for( int r=0; r < iMaxValues; r++ )
 	{
-		asTechStats.push_back(ssprintf("%.3f", (*this)[r]));
+		asTechCounts.push_back(ssprintf("%.3f", (*this)[r]));
 	}
 
-	return join( ",",asTechStats );
+	return join( ",",asTechCounts );
 }
 
-void TechStats::FromString( RString sTechStats )
+void TechCounts::FromString( RString sTechCounts )
 {
 	std::vector<RString> saValues;
-	split( sTechStats, ",", saValues, true );
+	split( sTechCounts, ",", saValues, true );
 
-	if( saValues.size() != NUM_TechStatsCategory )
+	if( saValues.size() != NUM_TechCountsCategory )
 	{
 		MakeUnknown();
 		return;
@@ -84,9 +84,9 @@ void TechStats::FromString( RString sTechStats )
 // Instead of using null/false/true for foot mapping, an enum Foot has been introduced.
 // And instead of using "L"/"D"/"U"/"R" for arrow mapping, a typedef StepDirection has been introduced 
 // (it could probably also be an enum).
-void TechStatsCalculator::CalculateTechStats(const NoteData &in, TechStats &out)
+void TechCountsCalculator::CalculateTechCounts(const NoteData &in, TechCounts &out)
 {
-	TechStatsCounter statsCounter = TechStatsCounter();
+	TechCountsCounter statsCounter = TechCountsCounter();
 	int curr_row = -1;
 
 	// This is a bit of a misnomer, because we only process the "current" step
@@ -101,7 +101,7 @@ void TechStatsCalculator::CalculateTechStats(const NoteData &in, TechStats &out)
 	{
 		if(curr_note.Row() != curr_row)
 		{
-			TechStatsCalculator::UpdateTechStats(out, statsCounter, curr_step);
+			TechCountsCalculator::UpdateTechCounts(out, statsCounter, curr_step);
 			curr_row = curr_note.Row();
 			curr_step = StepDirection_None;
 		}
@@ -113,12 +113,12 @@ void TechStatsCalculator::CalculateTechStats(const NoteData &in, TechStats &out)
 		++curr_note;
 	}
 	
-	TechStatsCalculator::CommitStream(out, statsCounter, Foot_None);
+	TechCountsCalculator::CommitStream(out, statsCounter, Foot_None);
 }
 
 // The main loop from GetTechniques().
 
-void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &counter, StepDirection currentStep)
+void TechCountsCalculator::UpdateTechCounts(TechCounts &stats, TechCountsCounter &counter, StepDirection currentStep)
 {
 	if( currentStep == StepDirection_None)
 	{
@@ -183,7 +183,7 @@ void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &co
 				// Check for interference from the right foot
 				if( !StepContainsStep(currentStep, counter.trueLastArrowR) )
 				{
-					stats[TechStatsCategory_Brackets] += 1;
+					stats[TechCountsCategory_Brackets] += 1;
 					// allow subsequent brackets to stream
 					counter.trueLastFoot = Foot_Left;
 					counter.lastFoot = Foot_Left;
@@ -208,7 +208,7 @@ void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &co
 				// Symmetric logic; see comments above
 				if( !StepContainsStep(currentStep, counter.trueLastArrowL) )
 				{
-					stats[TechStatsCategory_Brackets] += 1;
+					stats[TechCountsCategory_Brackets] += 1;
 					counter.trueLastFoot = Foot_Right;
 					counter.lastFoot = Foot_Right;
 					counter.trueLastArrowR = currentStep - StepDirection_Right;
@@ -264,12 +264,12 @@ void TechStatsCalculator::UpdateTechStats(TechStats &stats, TechStatsCounter &co
 		counter.lastStep = StepDirection_None;
 		counter.lastRepeatedFoot = StepDirection_None;
 		// triple/quad - always gotta bracket these
-		stats[TechStatsCategory_Brackets] += 1;
+		stats[TechCountsCategory_Brackets] += 1;
 		counter.trueLastFoot = Foot_None;
 	}
 }
 
-void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &counter, Foot tieBreaker)
+void TechCountsCalculator::CommitStream(TechCounts &stats, TechCountsCounter &counter, Foot tieBreaker)
 {
 	int ns = (int)counter.stepsLr.size();
 	int nx = 0;
@@ -317,7 +317,7 @@ void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &count
 				needFlip = tieBreaker == Foot_Left;
 			}
 		}
-		else if(stats[TechStatsCategory_Footswitches] > stats[TechStatsCategory_Jacks])
+		else if(stats[TechCountsCategory_Footswitches] > stats[TechCountsCategory_Jacks])
 		{
 			// Match flipness of last chunk -> footswitch
 			needFlip = counter.lastFlip;
@@ -410,26 +410,26 @@ void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &count
 
 		if(needFlip)
 		{
-			stats[TechStatsCategory_Crossovers] += ns - nx;
+			stats[TechCountsCategory_Crossovers] += ns - nx;
 		}
 		else
 		{
-			stats[TechStatsCategory_Crossovers] += nx;
+			stats[TechCountsCategory_Crossovers] += nx;
 		}
 
 		if(counter.lastRepeatedFoot != StepDirection_None)
 		{
 			if(needFlip == counter.lastFlip)
 			{
-				stats[TechStatsCategory_Footswitches] += 1;
+				stats[TechCountsCategory_Footswitches] += 1;
 				if(counter.lastRepeatedFoot == StepDirection_Left || counter.lastRepeatedFoot == StepDirection_Right)
 				{
-					stats[TechStatsCategory_Sideswitches] += 1;
+					stats[TechCountsCategory_Sideswitches] += 1;
 				}
 			}
 			else
 			{
-				stats[TechStatsCategory_Jacks] += 1;
+				stats[TechCountsCategory_Jacks] += 1;
 			}
 		}
 	}
@@ -483,20 +483,20 @@ void TechStatsCalculator::CommitStream(TechStats &stats, TechStatsCounter &count
 
 // lua start
 
-class LunaTechStats: public Luna<TechStats>
+class LunaTechCounts: public Luna<TechCounts>
 {
 public:
 
 
-	static int GetValue( T* p, lua_State *L ) { lua_pushnumber( L, (*p)[Enum::Check<TechStatsCategory>(L, 1)] ); return 1; }
+	static int GetValue( T* p, lua_State *L ) { lua_pushnumber( L, (*p)[Enum::Check<TechCountsCategory>(L, 1)] ); return 1; }
 
-	LunaTechStats()
+	LunaTechCounts()
 	{
 		ADD_METHOD( GetValue );
 	}
 };
 
-LUA_REGISTER_CLASS( TechStats )
+LUA_REGISTER_CLASS( TechCounts )
 
 /*
  * (c) 2023 Michael Votaw
