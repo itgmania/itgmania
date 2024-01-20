@@ -68,6 +68,7 @@ void MeasureInfoCalculator::CalculateMeasureInfo(const NoteData &in, MeasureInfo
 
 	float peak_nps = 0;
 	int curr_row = -1;
+	int notes_this_row = 0;
 
 	while (!curr_note.IsAtEnd())
 	{
@@ -76,6 +77,7 @@ void MeasureInfoCalculator::CalculateMeasureInfo(const NoteData &in, MeasureInfo
 			// Before moving on to a new row, update the row count, start and end rows for the "current" measure
 			counters[iMeasureIndexOut].rowCount += 1;
 			counters[iMeasureIndexOut].endRow = curr_row;
+			counters[iMeasureIndexOut].tapCount += (notes_this_row > 0 ? 1 : 0);
 			if (counters[iMeasureIndexOut].startRow == -1)
 			{
 				counters[iMeasureIndexOut].startRow = curr_row;
@@ -84,11 +86,12 @@ void MeasureInfoCalculator::CalculateMeasureInfo(const NoteData &in, MeasureInfo
 			// Update iMeasureIndex for the current row
 			timing->NoteRowToMeasureAndBeat(curr_note.Row(), iMeasureIndexOut, iBeatIndexOut, iRowsRemainder);
 			curr_row = curr_note.Row();
+			notes_this_row = 0;
 		}
 		// Update tap and mine count for the current measure
 		if (curr_note->type == TapNoteType_Tap || curr_note->type == TapNoteType_HoldHead)
 		{
-			counters[iMeasureIndexOut].tapCount += 1;
+			notes_this_row += 1;
 		}
 		else if(curr_note->type == TapNoteType_Mine)
 		{
@@ -97,6 +100,10 @@ void MeasureInfoCalculator::CalculateMeasureInfo(const NoteData &in, MeasureInfo
 		
 		++curr_note;
 	}
+	// And handle the final note...
+	counters[iMeasureIndexOut].rowCount += 1;
+	counters[iMeasureIndexOut].endRow = curr_row;
+	counters[iMeasureIndexOut].tapCount += (notes_this_row > 0 ? 1 : 0);
 
 	// Now that all of the notes have been parsed, calculate nps for each measure
 	for (unsigned m = 0; m < counters.size(); m++)
@@ -107,8 +114,6 @@ void MeasureInfoCalculator::CalculateMeasureInfo(const NoteData &in, MeasureInfo
 			continue;
 		}
 		
-		int beat = 4 * (m + (counters[m].endRow / counters[m].rowCount));
-		float time = timing->GetElapsedTimeFromBeat(beat);
 		float measureDuration = timing->GetElapsedTimeFromBeat(4 * (m+1)) - timing->GetElapsedTimeFromBeat(4 * m);
 		counters[m].duration = measureDuration;
 		if(measureDuration < 0.12)
