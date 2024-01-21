@@ -1032,6 +1032,18 @@ public:
 		return 1;
 	}
 
+	static int CalculateTechCounts(T* p, lua_State *L )
+	{
+		p->CalculateTechCounts();
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		TechCounts &ts = const_cast<TechCounts &>(p->GetTechCounts(pn));
+		ts.PushSelf(L);
+		return 1;
+	}
+
 	static int GetNPSPerMeasure(T *p, lua_State *L)
 	{
 		PlayerNumber pn = PLAYER_1;
@@ -1194,6 +1206,7 @@ public:
 		ADD_METHOD( HasAttacks );
 		ADD_METHOD( GetRadarValues );
 		ADD_METHOD( GetTechCounts );
+		ADD_METHOD(CalculateTechCounts);
 		ADD_METHOD(GetNPSPerMeasure);
 		ADD_METHOD(GetNotesPerMeasure);
 		ADD_METHOD(GetPeakNPS);
