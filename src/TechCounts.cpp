@@ -97,11 +97,18 @@ void TechCountsCalculator::CalculateTechCounts(const NoteData &in, TechCounts &o
 
 	// The notes aren't grouped, so we have to iterate through them all and figure out 
 	// which ones go together
+	TechCounts statsForRow = TechCounts();
 	while(!curr_note.IsAtEnd())
 	{
 		if(curr_note.Row() != curr_row)
 		{
-			TechCountsCalculator::UpdateTechCounts(out, statsCounter, curr_step);
+			statsForRow.Zero();
+			TechCountsCalculator::UpdateTechCounts(statsForRow, statsCounter, curr_step);
+
+			FOREACH_ENUM( TechCountsCategory, tc )
+			{
+				out[tc] += statsForRow[tc];
+			}
 			curr_row = curr_note.Row();
 			curr_step = StepDirection_None;
 		}
@@ -112,15 +119,15 @@ void TechCountsCalculator::CalculateTechCounts(const NoteData &in, TechCounts &o
 
 		++curr_note;
 	}
-	
-	TechCountsCalculator::CommitStream(out, statsCounter, Foot_None);
+	TechCountsCalculator::UpdateTechCounts(statsForRow, statsCounter, curr_step);
 }
 
 // The main loop from GetTechniques().
 
 void TechCountsCalculator::UpdateTechCounts(TechCounts &stats, TechCountsCounter &counter, StepDirection currentStep)
 {
-	if( currentStep == StepDirection_None)
+	
+	if (currentStep == StepDirection_None)
 	{
 		return;
 	}
@@ -181,7 +188,8 @@ void TechCountsCalculator::UpdateTechCounts(TechCounts &stats, TechCountsCounter
 			if(isBracketLeft && counter.trueLastFoot != Foot_Left)
 			{
 				// Check for interference from the right foot
-				if( !StepContainsStep(currentStep, counter.trueLastArrowR) )
+				if( counter.trueLastArrowR == StepDirection_None ||
+				!StepContainsStep(currentStep, counter.trueLastArrowR) )
 				{
 					stats[TechCountsCategory_Brackets] += 1;
 					// allow subsequent brackets to stream
@@ -206,7 +214,8 @@ void TechCountsCalculator::UpdateTechCounts(TechCounts &stats, TechCountsCounter
 			{
 				// Check for interference from the left foot
 				// Symmetric logic; see comments above
-				if( !StepContainsStep(currentStep, counter.trueLastArrowL) )
+				if( counter.trueLastArrowL == StepDirection_None || 
+				!StepContainsStep(currentStep, counter.trueLastArrowL) )
 				{
 					stats[TechCountsCategory_Brackets] += 1;
 					counter.trueLastFoot = Foot_Right;
@@ -250,10 +259,15 @@ void TechCountsCalculator::UpdateTechCounts(TechCounts &stats, TechCountsCounter
 				}
 				else
 				{
-					// not going to bother thinking about spin-jumps
 					counter.trueLastArrowL = StepDirection_None;
 					counter.trueLastArrowR = StepDirection_None;
 				}
+			}
+			else
+			{
+				// not going to bother thinking about spin-jumps
+				counter.trueLastArrowL = StepDirection_None;
+				counter.trueLastArrowR = StepDirection_None;
 			}
 			counter.trueLastFoot = Foot_None;
 		}
@@ -308,7 +322,7 @@ void TechCountsCalculator::CommitStream(TechCounts &stats, TechCountsCounter &co
 				// bracket jump, that forces the footing, so we can't bracket both)
 				needFlip = false;
 			}
-			else if(counter.lastFoot != Foot_None)
+			else if(counter.lastFoot == Foot_Right)
 			{
 				needFlip = tieBreaker == Foot_Right;
 			}
@@ -447,7 +461,7 @@ void TechCountsCalculator::CommitStream(TechCounts &stats, TechCountsCounter &co
 	{
 		if(needFlip)
 		{
-			if(counter.lastFoot == Foot_Left)
+			if(counter.lastFoot == Foot_Right)
 			{
 				counter.trueLastFoot = Foot_Left;
 			}

@@ -93,11 +93,6 @@ struct TechCounts
 private:
 	float m_Values[NUM_TechCountsCategory];
 public:
-	int crossovers; // Number of crossovers in song
-	int footswitches; // Number of footswitches in song
-	int sideswitches; // Number of sideswitches in song
-	int jacks; // Number of jacks in song
-	int brackets; // Number of brackets in song
 
 	float operator[](TechCountsCategory cat) const { return m_Values[cat]; }
 	float& operator[](TechCountsCategory cat) { return m_Values[cat]; }
@@ -109,22 +104,23 @@ public:
 
 	TechCounts& operator+=( const TechCounts& other )
 	{
-		this->crossovers += other.crossovers;
-		this->footswitches += other.footswitches;
-		this->sideswitches += other.sideswitches;
-		this->jacks += this->jacks;
-		this->brackets += other.brackets;
+		FOREACH_ENUM( TechCountsCategory, tc )
+		{
+			(*this)[tc] += other[tc];
+		}
 		return *this;
 	}
 
 	bool operator==( const TechCounts& other ) const
 	{
-		return (this->crossovers == other.crossovers 
-			&& this->footswitches == other.footswitches 
-			&& this->sideswitches == other.sideswitches 
-			&& this->jacks == other.jacks
-			&& this->brackets == other.brackets
-			);
+		FOREACH_ENUM( TechCountsCategory, tc )
+		{
+			if((*this)[tc] != other[tc])
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 
 	bool operator!=( const TechCounts& other ) const
