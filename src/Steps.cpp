@@ -35,11 +35,17 @@
 #include <iomanip>
 #include <sstream>
 
+#include "StepParityGenerator.h"
+
 /* register DisplayBPM with StringConversion */
 #include "EnumHelper.h"
 
 // For hashing hart keys - Mina
 #include "CryptManager.h"
+
+#include "json/json.h"
+#include "JsonUtil.h"
+#include <fstream>
 
 static const char *DisplayBPMNames[] =
 {
@@ -416,8 +422,13 @@ void Steps::CalculateTechCounts()
 		TechCountsCalculator::CalculateTechCounts(tempNoteData, m_CachedTechCounts[0]);
 		std::fill_n( m_CachedTechCounts + 1, NUM_PLAYERS-1, m_CachedTechCounts[0] );
 	}
+
+	StepParity::StepParityGenerator gen;
+	std::vector<StepParity::Row> parityRows;
+	gen.analyze(tempNoteData, parityRows, m_StepsTypeStr , true);
+
+
 	GAMESTATE->SetProcessedTimingData(nullptr);
-	
 }
 
 void Steps::CalculateMeasureInfo()
