@@ -8,8 +8,6 @@
 #include "GameState.h"
 #include "RageTimer.h"
 
-bool printTechCountPerRow = true;
-
 static const char *TechCountsCategoryNames[] = {
 	"Crossovers",
 	"Footswitches",
@@ -23,93 +21,6 @@ XToLocalizedString( TechCountsCategory );
 LuaFunction(TechCountsCategoryToLocalizedString, TechCountsCategoryToLocalizedString(Enum::Check<TechCountsCategory>(L, 1)) );
 LuaXType( TechCountsCategory );
 
-
-static const char *ShortNames[] = {
-"C",
-"F",
-"S",
-"J",
-"B"
-};
-
-const RString StepDirectionStrings[] = {
-"0000",
-"0001",
-"0010",
-"0011",
-"0100",
-"0101",
-"0110",
-"0111",
-"1000",
-"1001",
-"1010",
-"1011",
-"1100",
-"1101",
-"1110",
-"1111"
-};
-
-RString StepDirectionToLetter(StepDirection s) {
-	if(s == StepDirection_Left) {
-		return "L";
-	}
-	if(s == StepDirection_Down)
-	{
-		return "D";
-	}
-	if(s == StepDirection_Up)
-	{
-		return "U";
-	}
-	if(s == StepDirection_Right)
-	{
-		return "R";
-	}
-
-	return "-";
-}
-
-RString FootToLetter(Foot f) {
-	if(f == Foot_Left)
-	{
-		return "L";
-	}
-	if(f == Foot_Right)
-	{
-		return "R";
-	}
-	return "-";
-}
-
-
-void printTechCountRow(StepDirection curr_step, TechCounts statsForRow, TechCountsCounter statsCounter)
-{
-	
-	RString stepStr = "";
-	stepStr += curr_step & StepDirection_Left ? "1" : "0";
-	stepStr += curr_step & StepDirection_Down ? "1" : "0";
-	stepStr += curr_step & StepDirection_Up ? "1" : "0";
-	stepStr += curr_step & StepDirection_Right ? "1" : "0";
-
-	RString statStr = "";
-	FOREACH_ENUM(TechCountsCategory, tc)
-	{
-		statStr += (statsForRow[tc] > 0 ? ShortNames[tc] : "-");
-	}
-	RString lastStep = StepDirectionToLetter(statsCounter.lastStep);
-	RString lastFoot = FootToLetter(statsCounter.lastFoot);
-	RString trueLastFoot = FootToLetter(statsCounter.trueLastFoot);
-	RString lastRepeatedFoot = StepDirectionToLetter(statsCounter.lastRepeatedFoot);
-	RString trueLastArrowL = StepDirectionToLetter(statsCounter.trueLastArrowL);
-	RString trueLastArrowR = StepDirectionToLetter(statsCounter.trueLastArrowR);
-	RString lastFlip = statsCounter.lastFlip ? "T" : "F";
-	LOG->Trace("%s||%s||%s%s%s%s%s%s%s", stepStr.c_str(), statStr.c_str(),
-			   lastStep.c_str(), lastFoot.c_str(), trueLastFoot.c_str(), 
-			   lastRepeatedFoot.c_str(), trueLastArrowL.c_str(), trueLastArrowR.c_str(),
-			   lastFlip.c_str());
-}
 
 // TechCounts methods
 
@@ -186,28 +97,13 @@ void TechCountsCalculator::CalculateTechCounts(const NoteData &in, TechCounts &o
 	
 	// The notes aren't grouped, so we have to iterate through them all and figure out 
 	// which ones go together
-	TechCounts statsForRow = TechCounts();
 
-	if(printTechCountPerRow)
-	{
-		LOG->Trace("----new----");
-	}
 	while(!curr_note.IsAtEnd())
 	{
-		if(curr_note.Row() != curr_row)
+		if (curr_note.Row() != curr_row)
 		{
-			statsForRow.Zero();
-			TechCountsCalculator::UpdateTechCounts(statsForRow, statsCounter, curr_step);
 
-			FOREACH_ENUM( TechCountsCategory, tc )
-			{
-				out[tc] += statsForRow[tc];
-			}
-
-			if(printTechCountPerRow && curr_step != StepDirection_None)
-			{
-				printTechCountRow(curr_step, statsForRow, statsCounter);
-			}
+			TechCountsCalculator::UpdateTechCounts(out, statsCounter, curr_step);
 			curr_row = curr_note.Row();
 			curr_step = StepDirection_None;
 		}
@@ -218,17 +114,8 @@ void TechCountsCalculator::CalculateTechCounts(const NoteData &in, TechCounts &o
 
 		++curr_note;
 	}
-	TechCountsCalculator::UpdateTechCounts(statsForRow, statsCounter, curr_step);
-	// TechCountsCalculator::CommitStream(out, statsCounter, Foot_None);
 
-	if(printTechCountPerRow)
-	{
-		printTechCountRow(curr_step, statsForRow, statsCounter);
-	}
-	if(printTechCountPerRow)
-	{
-		LOG->Trace("-----new-----");
-	}
+	TechCountsCalculator::UpdateTechCounts(out, statsCounter, curr_step);
 }
 
 // The main loop from GetTechniques().
