@@ -78,7 +78,8 @@ namespace StepParity {
 		Json::Value ToJson()
 		{
 			Json::Value root;
-			root["type"] = TapNoteTypeToString(type);
+			root["type"] = static_cast<int>(type);
+			root["subtype"] = static_cast<int>(subtype);
 			root["col"] = col;
 			root["row"] = row;
 			root["beat"] = beat;
@@ -86,7 +87,7 @@ namespace StepParity {
 			root["warped"] = warped;
 			root["fake"] = fake;
 			root["second"] = second;
-			root["parity"] = FEET_LABELS[parity];
+			root["parity"] = static_cast<int>(parity);
 			return root;
 		}
 	};
@@ -108,18 +109,21 @@ namespace StepParity {
 		std::vector<int> fakeMines;
 		float second = 0;
 		float beat = 0;
+		int _columnCount = 0;
+
 		Row(int columnCount)
 		{
-			Clear(columnCount);
+			_columnCount = columnCount;
+			Clear();
 		}
 
-		void Clear(int columnCount)
+		void Clear()
 		{
-			notes.resize(columnCount);
-			holds.resize(columnCount);
+			notes.resize(_columnCount);
+			holds.resize(_columnCount);
 			holdTails.clear();
-			mines.resize(columnCount);
-			fakeMines.resize(columnCount);
+			mines.resize(_columnCount);
+			fakeMines.resize(_columnCount);
 			second = 0;
 			beat = 0;
 		}
@@ -133,28 +137,11 @@ namespace StepParity {
 			Json::Value jsonMines;
 			Json::Value jsonFakeMines;
 
-			for(IntermediateNoteData n : notes)
-			{
-				jsonNotes.append(n.ToJson());
-			}
-
-			for(IntermediateNoteData n : holds)
-			{
-				jsonHolds.append(n.ToJson());
-			}
-
-			for(int t: holdTails)
-			{
-				jsonHoldTails.append(t);
-			}
-			for(int m: mines)
-			{
-				jsonMines.append(m);
-			}
-			for(int f: fakeMines)
-			{
-				jsonFakeMines.append(f);
-			}
+			for (IntermediateNoteData n : notes) { jsonNotes.append(n.ToJson()); }
+			for (IntermediateNoteData n : holds) { jsonHolds.append(n.ToJson()); }
+			for (int t : holdTails) { jsonHoldTails.append(t); }
+			for (int m : mines) { jsonMines.append(m); }
+			for (int f : fakeMines) { jsonFakeMines.append(f); }
 
 			root["notes"] = jsonNotes;
 			root["holds"] = jsonHolds;
@@ -182,8 +169,9 @@ namespace StepParity {
 
 	public:
 		void analyze(const NoteData &in, std::vector<StepParity::Row> &out, RString stepsTypeStr, bool log);
+		void analyzeRows(std::vector<StepParity::Row> &rows, RString stepsTypeStr, int columnCount);
 		std::vector<Action*> GetPossibleActions(State *initialState, std::vector<Row>& rows, int rowIndex);
-		std::vector<std::vector<Foot>> PermuteColumns(Row row,    std::vector<Foot> columns, unsigned long column);
+		std::vector<std::vector<Foot>> PermuteColumns(Row &row,    std::vector<Foot> columns, unsigned long column);
 		std::vector<Action *> getBestMoveLookahead(State *state, std::vector<Row>& rows, int rowIndex);
 
 		void getActionCost(Action *action, std::vector<Row>& rows, int rowIndex);
@@ -191,15 +179,14 @@ namespace StepParity {
 		/** @brief Converts the NoteData into a more convenient format that already has all of the timing data
 	 incorporated into it. */
 		void CreateIntermediateNoteData(const NoteData &in, std::vector<IntermediateNoteData> &out);
-
 		void CreateRows(const NoteData &in, std::vector<Row> &out);
-
 		
 	private:
 		// helper functions
 
 		float getCachedCost(int rowIndex, RString cacheKey);
-		Action *initAction(State *initialState, Row row, std::vector<Foot> columns);
+		int getPermuteCacheKey(Row &row);
+		Action *initAction(State *initialState, Row &row, std::vector<Foot> columns);
 		bool bracketCheck(int column1, int column2);
 		float getDistanceSq(StepParity::StagePoint p1, StepParity::StagePoint p2);
 		float getPlayerAngle(StepParity::StagePoint left, StepParity::StagePoint right);

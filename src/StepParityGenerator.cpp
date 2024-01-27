@@ -31,20 +31,19 @@ void StepParityGenerator::analyze(const NoteData &in, std::vector<StepParity::Ro
 	}
 
 	layout = Layouts.at(stepsTypeStr);
-
-	State *state = new State();
 	int columnCount = in.GetNumTracks();
-	state->columns = std::vector<Foot>(columnCount, NONE);
+	float createRowsStart = RageTimer::GetTimeSinceStart();
+	CreateRows(in, out);
+	float createRowsEnd = RageTimer::GetTimeSinceStart();
 
-	std::vector<StepParity::Row> rows;
-	CreateRows(in, rows);
+	LOG->Trace("StepParityGenerator::analyze time to CreateRows: %.3f seconds", createRowsEnd - createRowsStart);
 
-	if(log)
+	if (log)
 	{
 		LOG->Trace("StepParityGenerator::analyze start");
 	}
 
-	if(rows.size() == 0)
+	if(out.size() == 0)
 	{
 		if(log)
 		{
@@ -53,14 +52,34 @@ void StepParityGenerator::analyze(const NoteData &in, std::vector<StepParity::Ro
 		return;
 	}
 
+	float analyzeRowsStart = RageTimer::GetTimeSinceStart();
+	analyzeRows(out, stepsTypeStr, columnCount);
+	float analyzeRowsEnd = RageTimer::GetTimeSinceStart();
+	LOG->Trace("StepParityGenerator::analyze time to analyzeRows: %.3f seconds", analyzeRowsEnd - analyzeRowsStart);
+LOG->Trace("StepParityGenerator::analyze total time: %.3f seconds", analyzeRowsEnd - createRowsStart);
+	if (log)
+	{
+		LOG->Trace("StepParityGenerator::alalyze finished");
+		
+		LOG->Trace("Explored nodes: %d, Cached nodes: %d", exploreCounter, cacheCounter);
+	}
+}
+
+void StepParityGenerator::analyzeRows(std::vector<StepParity::Row> &rows, RString stepsTypeStr, int columnCount)
+{
+	if(Layouts.find(stepsTypeStr) == Layouts.end())
+	{
+		LOG->Warn("Tried to call StepParityGenerator::analyze with an unsupported StepsType %s", stepsTypeStr.c_str());
+		return;
+	}
+
+	layout = Layouts.at(stepsTypeStr);
+	State *state = new State();
+	state->columns = std::vector<Foot>(columnCount, NONE);
 	for (unsigned long i = 0; i < rows.size(); i++)
 	{
 		auto bestActions = getBestMoveLookahead(state, rows, i);
 		Action *bestAction = bestActions[0]->head == nullptr ? bestActions[0] : bestActions[0]->head;
-		// if(log)
-		// {
-		// 	LOG->Trace("row %lu, seconds: %.3f | bestActions count: %lu", i, rows[i].second, bestActions.size());
-		// }
 
 		for (unsigned long j = 0; j < bestAction->resultState->columns.size(); j++) {
 			if(rows[i].notes[j].type != TapNoteType_Empty)
@@ -71,15 +90,6 @@ void StepParityGenerator::analyze(const NoteData &in, std::vector<StepParity::Ro
 
 		costCache.clear();
 	}
-
-	if(log)
-	{
-		LOG->Trace("StepParityGenerator::alalyze finished");
-		
-		LOG->Trace("Explored nodes: %d, Cached nodes: %d", exploreCounter, cacheCounter);
-	}
-
-	out.assign(rows.begin(), rows.end());
 }
 
 // Converts the NoteData into a more convenient format that already has all of the timing data
@@ -140,7 +150,9 @@ std::vector<Action*> StepParityGenerator::GetPossibleActions(State *initialState
 	return actions;
 }
 
-std::vector<std::vector<StepParity::Foot>> StepParityGenerator::PermuteColumns(Row row, std::vector<StepParity::Foot> columns, unsigned long column)
+
+
+std::vector<std::vector<StepParity::Foot>> StepParityGenerator::PermuteColumns(Row &row, std::vector<StepParity::Foot> columns, unsigned long column)
 {
 	if (column >= columns.size())
 	{
@@ -303,6 +315,8 @@ struct RowCounter
 
 void StepParityGenerator::CreateRows(const NoteData &in, std::vector<StepParity::Row> &out)
 {
+	layout = Layouts.at("dance-single"); // TODO remove this
+	
 	TimingData *timing = GAMESTATE->GetProcessedTimingData();
 	int columnCount = in.GetNumTracks();
 
@@ -398,7 +412,21 @@ void StepParityGenerator::CreateRows(const NoteData &in, std::vector<StepParity:
 
 // helper methods
 
-Action * StepParityGenerator::initAction(State *initialState, Row row, std::vector<Foot> columns)
+int StepParityGenerator::getPermuteCacheKey(Row &row)
+{
+	int key = 0;
+
+	for (unsigned long i = 0; i < row.notes.size() && i < row.holds.size(); i++)
+	{
+		if(row.notes[i].type != TapNoteType_Empty || row.notes[i].type != TapNoteType_Empty)
+		{
+			key += pow(2, i);
+		}
+	}
+	return key;
+}
+
+Action * StepParityGenerator::initAction(State *initialState, Row &row, std::vector<Foot> columns)
 {
 	Action *action = new Action();
 	action->initialState = initialState;
