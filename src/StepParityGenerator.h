@@ -8,7 +8,28 @@
 
 struct TechCounts;
 
-const RString FEET_LABELS[] = {"N", "L", "l", "R", "r"};
+const RString FEET_LABELS[] = {"N", "L", "l", "R", "r", "5??", "6??"};
+const RString TapNoteTypeShortNames[] = {
+	"Empty",
+	"Tap",
+	"Hold",
+	"HoldTail",
+	"Mine",
+	"Lift",
+	"Attack",
+	"AutoKeySound",
+	"Fake",
+	"",
+	""
+};
+
+const RString TapNoteSubTypeShortNames[] = {
+	"Hold",
+	"Roll",
+	//"Mine",
+	"",
+	""
+};
 
 namespace StepParity {
 
@@ -30,11 +51,15 @@ namespace StepParity {
 
 	enum Foot
 	{
-		NONE,
-		LEFT_HEEL,
-		LEFT_TOE,
-		RIGHT_HEEL,
-		RIGHT_TOE,
+		NONE = 0,
+		LEFT_HEEL= 1,
+		LEFT_TOE = 2,
+		RIGHT_HEEL = 3,
+		RIGHT_TOE = 4,
+		// LEFT_HEEL= 1 << 0,
+		// LEFT_TOE = 1 << 1,
+		// RIGHT_HEEL = 1 << 2,
+		// RIGHT_TOE = 1 << 3,
 	};
 
 	struct StagePoint {
@@ -74,12 +99,23 @@ namespace StepParity {
 		bool fake;			// Is this note fake (besides being TapNoteType_Fake)?
 		float second;		// time into the song on which the note occurs
 
-		Foot parity; 		// Which foot (and which part of the foot) will most likely be used
-		Json::Value ToJson()
+		Foot parity = NONE; 		// Which foot (and which part of the foot) will most likely be used
+		Json::Value ToJson(bool useStrings = false)
 		{
 			Json::Value root;
-			root["type"] = static_cast<int>(type);
-			root["subtype"] = static_cast<int>(subtype);
+			if(useStrings)
+			{
+				root["type"] = TapNoteTypeShortNames[static_cast<int>(type)];
+				root["subtype"] = TapNoteSubTypeShortNames[static_cast<int>(subtype)];
+				root["parity"] = FEET_LABELS[static_cast<int>(parity)];
+				
+			}
+			else
+			{
+				root["type"] = static_cast<int>(type);
+				root["subtype"] = static_cast<int>(subtype);
+				root["parity"] = static_cast<int>(parity);
+			}
 			root["col"] = col;
 			root["row"] = row;
 			root["beat"] = beat;
@@ -87,7 +123,6 @@ namespace StepParity {
 			root["warped"] = warped;
 			root["fake"] = fake;
 			root["second"] = second;
-			root["parity"] = static_cast<int>(parity);
 			return root;
 		}
 	};
@@ -128,7 +163,7 @@ namespace StepParity {
 			beat = 0;
 		}
 
-		Json::Value ToJson()
+		Json::Value ToJson(bool useStrings = false)
 		{
 			Json::Value root;
 			Json::Value jsonNotes;
@@ -137,8 +172,8 @@ namespace StepParity {
 			Json::Value jsonMines;
 			Json::Value jsonFakeMines;
 
-			for (IntermediateNoteData n : notes) { jsonNotes.append(n.ToJson()); }
-			for (IntermediateNoteData n : holds) { jsonHolds.append(n.ToJson()); }
+			for (IntermediateNoteData n : notes) { jsonNotes.append(n.ToJson(useStrings)); }
+			for (IntermediateNoteData n : holds) { jsonHolds.append(n.ToJson(useStrings)); }
 			for (int t : holdTails) { jsonHoldTails.append(t); }
 			for (int m : mines) { jsonMines.append(m); }
 			for (int f : fakeMines) { jsonFakeMines.append(f); }
