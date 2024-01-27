@@ -26,13 +26,6 @@ int indexOf(const std::vector<T>& vec, const T& value) {
     }
 }
 
-template <typename T>
-bool vectorContainsNot(const std::vector<T>& vec, const T& value) {
-    return std::none_of(vec.begin(), vec.end(), [&](const T& element) {
-        return element != value;
-    });
-}
-
 float StepParityGenerator::getCachedCost(int rowIndex, RString cacheKey)
 {
 	if(costCache.find(rowIndex) == costCache.end() || costCache[rowIndex].find(cacheKey) == costCache[rowIndex].end() )
@@ -46,7 +39,7 @@ float StepParityGenerator::getCachedCost(int rowIndex, RString cacheKey)
 void StepParityGenerator::getActionCost(Action *action, std::vector<Row>& rows, int rowIndex)
 {
 	Row row = rows[rowIndex];
-	
+
 	float elapsedTime = action->resultState->second - action->initialState->second;
 	float cost = 0;
 
@@ -85,26 +78,26 @@ void StepParityGenerator::getActionCost(Action *action, std::vector<Row>& rows, 
 	  }
 	}
 
-	std::vector<StepParity::Foot> cacheKeyEnums = action->initialState->columns;
-	cacheKeyEnums.insert(cacheKeyEnums.end(), action->resultState->columns.begin(), action->resultState->columns.end());
-	cacheKeyEnums.insert(cacheKeyEnums.end(), action->initialState->movedFeet.begin(), action->initialState->movedFeet.end());
+	// std::vector<StepParity::Foot> cacheKeyEnums = action->initialState->columns;
+	// cacheKeyEnums.insert(cacheKeyEnums.end(), action->resultState->columns.begin(), action->resultState->columns.end());
+	// cacheKeyEnums.insert(cacheKeyEnums.end(), action->initialState->movedFeet.begin(), action->initialState->movedFeet.end());
 
-	std::vector<RString> cacheKeyStrings;
-	for(StepParity::Foot f: cacheKeyEnums)
-	{
-		cacheKeyStrings.push_back(std::to_string(static_cast<int>(f)));
-	}
+	// std::vector<RString> cacheKeyStrings;
+	// for(StepParity::Foot f: cacheKeyEnums)
+	// {
+	// 	cacheKeyStrings.push_back(std::to_string(static_cast<int>(f)));
+	// }
 
-	RString cacheKey = join("|", cacheKeyStrings);
+	// RString cacheKey = join("|", cacheKeyStrings);
 
-	float cachedCost = getCachedCost(rowIndex, cacheKey);
-	if(cachedCost != -1)
-	{
-		cacheCounter++;
-		action->resultState->columns = combinedColumns;
-	  	action->cost = cachedCost;
-		return;
-	}
+	// float cachedCost = getCachedCost(rowIndex, cacheKey);
+	// if(cachedCost != -1)
+	// {
+	// 	cacheCounter++;
+	// 	action->resultState->columns = combinedColumns;
+	//   	action->cost = cachedCost;
+	// 	return;
+	// }
 	
 	// Mine weighting
 	int leftHeel = -1;
@@ -203,33 +196,32 @@ void StepParityGenerator::getActionCost(Action *action, std::vector<Row>& rows, 
 	}
 
 	// Weighting for moving a foot while the other isn't on the pad (so marked doublesteps are less bad than this)
-	if (vectorContainsNot(action->initialState->columns, NONE)) {
-	  for (auto f: action->resultState->movedFeet) {
-		switch (f) {
-		  case LEFT_HEEL:
-		  case LEFT_TOE:
-			if (
-			  !(
-				vectorIncludes(action->initialState->columns, RIGHT_HEEL) ||
-				vectorIncludes(action->initialState->columns, RIGHT_TOE)
-			  )
-			)
-			  cost += 500;
-			break;
-		  case RIGHT_HEEL:
-		  case RIGHT_TOE:
-			if (
-			  !(
-				vectorIncludes(action->initialState->columns, LEFT_HEEL) ||
-				vectorIncludes(action->initialState->columns, RIGHT_TOE)
-			  )
-			)
-			  cost += 500;
-			break;
-		  default:
-			  break;
+	if (std::any_of(action->initialState->columns.begin(), action->initialState->columns.end(), [](Foot elem) { return elem != NONE;  }))
+	{
+		for (auto f : action->resultState->movedFeet)
+		{
+			switch (f)
+			{
+			case LEFT_HEEL:
+			case LEFT_TOE:
+				if (
+					!(
+						vectorIncludes(action->initialState->columns, RIGHT_HEEL) ||
+						vectorIncludes(action->initialState->columns, RIGHT_TOE)))
+					cost += 500;
+				break;
+			case RIGHT_HEEL:
+			case RIGHT_TOE:
+				if (
+					!(
+						vectorIncludes(action->initialState->columns, LEFT_HEEL) ||
+						vectorIncludes(action->initialState->columns, RIGHT_TOE)))
+					cost += 500;
+				break;
+			default:
+				break;
+			}
 		}
-	  }
 	}
 
 	bool movedLeft =
@@ -437,9 +429,12 @@ void StepParityGenerator::getActionCost(Action *action, std::vector<Row>& rows, 
 
 	if (heelFacingPenalty > 0)
 		cost += heelFacingPenalty * FACING;
-	if (toesFacingPenalty > 0) cost += toesFacingPenalty * FACING;
-	if (leftFacingPenalty > 0) cost += leftFacingPenalty * FACING;
-	if (rightFacingPenalty > 0) cost += rightFacingPenalty * FACING;
+	if (toesFacingPenalty > 0) 
+		cost += toesFacingPenalty * FACING;
+	if (leftFacingPenalty > 0) 
+		cost += leftFacingPenalty * FACING;
+	if (rightFacingPenalty > 0) 
+		cost += rightFacingPenalty * FACING;
 
 	// spin
 	StagePoint previousLeftPos = averagePoint(
@@ -485,26 +480,27 @@ void StepParityGenerator::getActionCost(Action *action, std::vector<Row>& rows, 
 	if (elapsedTime >= 0.25) {
 	  // footswitching has no penalty if there's a mine nearby
 	  if (
-		!vectorContainsNot(row.mines, 0) &&
-		!vectorContainsNot(row.fakeMines, 0)
-	  ) {
-		float timeScaled = elapsedTime - 0.25;
-
-		for (unsigned long i = 0; i < combinedColumns.size(); i++) {
-		  if (
-			action->initialState->columns[i] == NONE ||
-			action->resultState->columns[i] == NONE
+		  std::all_of(row.mines.begin(), row.mines.end(), [](int mine) { return mine == 0; }) &&
+		  std::all_of(row.fakeMines.begin(), row.fakeMines.end(), [](int mine) { return mine == 0; })
 		  )
-			continue;
+	  {
+		  float timeScaled = elapsedTime - 0.25;
 
-		  if (
-			action->initialState->columns[i] != action->resultState->columns[i] &&
-			!setContains(action->resultState->movedFeet, action->initialState->columns[i])
-		  ) {
-			cost += pow(timeScaled / 2.0, 2) * FOOTSWITCH;
-			break;
+		  for (unsigned long i = 0; i < combinedColumns.size(); i++)
+		  {
+			  if (
+				  action->initialState->columns[i] == NONE ||
+				  action->resultState->columns[i] == NONE)
+				  continue;
+
+			  if (
+				  action->initialState->columns[i] != action->resultState->columns[i] &&
+				  !setContains(action->resultState->movedFeet, action->initialState->columns[i]))
+			  {
+				  cost += pow(timeScaled / 2.0, 2) * FOOTSWITCH;
+				  break;
+			  }
 		  }
-		}
 	  }
 	}
 
@@ -529,11 +525,13 @@ void StepParityGenerator::getActionCost(Action *action, std::vector<Row>& rows, 
 	// add penalty if jacked
 
 	if (
-	  (jackedLeft || jackedRight) &&
-	  (vectorContainsNot(row.mines, 0) ||
-		vectorContainsNot(row.fakeMines, 0))
-	) {
-	  cost += MISSED_FOOTSWITCH;
+		(jackedLeft || jackedRight) &&
+		(std::any_of(row.mines.begin(), row.mines.end(), [](int mine)
+					 { return mine != 0;  }) ||
+		 std::any_of(row.fakeMines.begin(), row.fakeMines.end(), [](int mine)
+					 { return mine != 0;  })))
+	{
+		cost += MISSED_FOOTSWITCH;
 	}
 
 	// To do: small weighting for swapping heel with toe or toe with heel (both add up)
@@ -571,5 +569,5 @@ void StepParityGenerator::getActionCost(Action *action, std::vector<Row>& rows, 
 		costCache[rowIndex] = std::map<RString, float>();
 	}
 	exploreCounter++;
-	costCache[rowIndex][cacheKey] = cost;
+	// costCache[rowIndex][cacheKey] = cost;
 }

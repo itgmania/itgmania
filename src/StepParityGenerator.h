@@ -69,11 +69,44 @@ namespace StepParity {
 
 	typedef std::vector<StagePoint> StageLayout;
 
+
+	template<typename Container>
+	Json::Value FeetToJson(const Container& feets, bool useStrings = false)
+	{
+		Json::Value root;
+		for(Foot f: feets)
+		{
+			if(useStrings)
+			{
+				root.append(FEET_LABELS[static_cast<int>(f)]);
+			}
+			else
+			{
+				root.append(static_cast<int>(f));
+			}
+		}
+		return root;
+	}
 	struct State {
 		std::vector<Foot> columns;
 		std::set<Foot> movedFeet;
 		std::set<Foot> holdFeet;
 		float second;
+
+		Json::Value ToJson(bool useStrings = false)
+		{
+			Json::Value root;
+			Json::Value jsonColumns = FeetToJson(columns, useStrings);
+			Json::Value jsonMovedFeet = FeetToJson(movedFeet, useStrings);
+			Json::Value jsonHoldFeet = FeetToJson(holdFeet, useStrings);
+
+			root["columns"] = jsonColumns;
+			root["movedFeet"] = jsonMovedFeet;
+			root["holdFeet"] = jsonHoldFeet;
+			root["second"] = second;
+
+			return root;
+		}
 	};
 
 	struct Action {
@@ -82,6 +115,18 @@ namespace StepParity {
 		State *initialState;
 		State *resultState;
 		float cost;
+
+		Json::Value ToJson(bool useStrings = false)
+		{
+			Json::Value root;
+
+			// root["head"] = head->ToJson(useStrings);
+			// root["parent"] = parent->ToJson(useStrings);
+			root["initialState"] = initialState->ToJson(useStrings);
+			root["resultState"] = resultState->ToJson(useStrings);
+			root["cost"] = cost;
+			return root;
+		}
 	};
 
 	/** @brief A convenience struct used to encapsulate data from NoteData in an 
@@ -145,7 +190,8 @@ namespace StepParity {
 		float second = 0;
 		float beat = 0;
 		int _columnCount = 0;
-
+		float cost = 0;
+		Action *selectedAction = nullptr;
 		Row(int columnCount)
 		{
 			_columnCount = columnCount;
@@ -161,6 +207,7 @@ namespace StepParity {
 			fakeMines.resize(_columnCount);
 			second = 0;
 			beat = 0;
+			cost = 0;
 		}
 
 		Json::Value ToJson(bool useStrings = false)
@@ -185,6 +232,15 @@ namespace StepParity {
 			root["fake_mines"] = jsonFakeMines;
 			root["second"] = second;
 			root["beat"] = beat;
+			root["cost"] = cost;
+			if(selectedAction != nullptr)
+			{
+				root["selectedAction"] = selectedAction->ToJson(false);
+			}
+			else
+			{
+				root["selectedAction"] = "";
+			}
 			return root;
 		}
 	};

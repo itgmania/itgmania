@@ -87,7 +87,9 @@ void StepParityGenerator::analyzeRows(std::vector<StepParity::Row> &rows, RStrin
 				rows[i].notes[j].parity = bestAction->resultState->columns[j];
 			}
 		}
-
+		rows[i].cost = bestAction->cost;
+		rows[i].selectedAction = bestAction;
+		state = bestAction->resultState;
 		costCache.clear();
 	}
 }
@@ -133,6 +135,7 @@ void StepParityGenerator::CreateIntermediateNoteData(const NoteData &in, std::ve
 
 std::vector<Action*> StepParityGenerator::GetPossibleActions(State *initialState, std::vector<Row>& rows, int rowIndex)
 {
+
 	Row row = rows[rowIndex];
 	std::vector<StepParity::Foot> blankColumns(4, NONE);
 
@@ -226,10 +229,10 @@ std::vector<Action *> StepParityGenerator::getBestMoveLookahead(State *state, st
 	for (unsigned long i = 1; i < SEARCH_DEPTH && rowIndex + i < rows.size() - 1; i++)
 	{
 		std::vector<Action *> addl_actions;
-		addl_actions.insert(addl_actions.end(), actions.begin(), actions.end());
+
 		for (auto action : actions)
 		{
-			auto results = GetPossibleActions(action->resultState, rows, rowIndex + 1);
+			auto results = GetPossibleActions(action->resultState, rows, rowIndex + i);
 			for(auto result: results)
 			{
 				result->cost = result->cost * pow(LOOKAHEAD_COST_MOD, i) + action->cost;
@@ -436,13 +439,31 @@ Action * StepParityGenerator::initAction(State *initialState, Row &row, std::vec
 	std::set<Foot> movedFeet;
 	std::set<Foot> holdFeet;
 
+
+	// I tried to condense this, but kept getting the logic messed up
 	for (unsigned long i = 0; i < columns.size(); i++)
 	{
+		if(columns[i] == NONE) {
+			continue;
+		}
+		if(row.holds[i].type == TapNoteType_Empty)
+		{
+			movedFeet.insert(columns[i]);
+			continue;
+		}
 		if(initialState->columns[i] != columns[i])
 		{
 			movedFeet.insert(columns[i]);
 		}
-		if(row.holds[i].type != TapNoteType_Empty )
+	}
+
+	for (unsigned long i = 0; i < columns.size(); i++)
+	{
+		if(columns[i] == NONE) {
+			continue;
+		}
+
+		if(row.holds[i].type != TapNoteType_Empty)
 		{
 			holdFeet.insert(columns[i]);
 		}

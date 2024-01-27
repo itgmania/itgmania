@@ -425,10 +425,16 @@ void Steps::CalculateTechCounts()
 
 	StepParity::StepParityGenerator gen;
 	std::vector<StepParity::Row> parityRows;
-	gen.analyze(tempNoteData, parityRows, m_StepsTypeStr , true);
+	gen.analyze(tempNoteData, parityRows, m_StepsTypeStr, true);
 
-
-	GAMESTATE->SetProcessedTimingData(nullptr);
+	Json::Value rowJson;
+	for(StepParity::Row row: parityRows)
+	{
+		rowJson.append(row.ToJson(true));
+	}
+	RString filename = m_pSong->GetDisplayMainTitle() + "-" + DifficultyToString(m_Difficulty) + ".json";
+	JsonUtil::WriteFile(rowJson, "./Save/song-jsons/" + filename, false);
+		GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
 void Steps::CalculateMeasureInfo()
