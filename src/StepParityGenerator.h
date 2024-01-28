@@ -63,8 +63,8 @@ namespace StepParity {
 	};
 
 	struct StagePoint {
-		int x;
-		int y;
+		float x;
+		float y;
 	};
 
 	typedef std::vector<StagePoint> StageLayout;
@@ -120,8 +120,6 @@ namespace StepParity {
 		{
 			Json::Value root;
 
-			// root["head"] = head->ToJson(useStrings);
-			// root["parent"] = parent->ToJson(useStrings);
 			root["initialState"] = initialState->ToJson(useStrings);
 			root["resultState"] = resultState->ToJson(useStrings);
 			root["cost"] = cost;
@@ -254,8 +252,8 @@ namespace StepParity {
 		int exploreCounter = 0;
 		std::map < int, std::vector<std::vector<StepParity::Foot>>> permuteCache;
 
-		unsigned long SEARCH_DEPTH = 4;
-		unsigned long SEARCH_BREADTH = 5;
+		unsigned long SEARCH_DEPTH = 16;
+		unsigned long SEARCH_BREADTH = 30;
 		float LOOKAHEAD_COST_MOD = 0.95;
 
 	public:

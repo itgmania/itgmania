@@ -491,14 +491,6 @@ float StepParityGenerator::getDistanceSq(StepParity::StagePoint p1, StepParity::
 	return (p1.y - p2.y) * (p1.y - p2.y) + (p1.x - p2.x) * (p1.x - p2.x);
 }
 
-// StepParity::StagePoint StepParityGenerator::getPosition(cols: number[]) {
-//     if (cols.length == 0) return undefined;
-//     if (cols.length == 1) return layout[cols[0]];
-//     const p1 = layout[cols[0]];
-//     const p2 = layout[cols[1]];
-//     return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
-// }
-
 float StepParityGenerator::getPlayerAngle(StepParity::StagePoint left, StepParity::StagePoint right)
 {
 	float x1 = right.x - left.x;
@@ -550,7 +542,7 @@ StagePoint StepParityGenerator::averagePoint(int leftIndex, int rightIndex) {
 	if (leftIndex == -1) return layout[rightIndex];
 	if (rightIndex == -1) return layout[leftIndex];
 	return {
-	  (layout[leftIndex].x + layout[rightIndex].x) / 2,
-	  (layout[leftIndex].y + layout[rightIndex].y) / 2,
+	  (layout[leftIndex].x + layout[rightIndex].x) / 2.0f,
+	  (layout[leftIndex].y + layout[rightIndex].y) / 2.0f,
 	};
   }
