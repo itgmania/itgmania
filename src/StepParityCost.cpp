@@ -38,7 +38,7 @@ float StepParityGenerator::getCachedCost(int rowIndex, RString cacheKey)
 
 void StepParityGenerator::getActionCost(Action *action, std::vector<Row>& rows, int rowIndex)
 {
-	Row row = rows[rowIndex];
+	Row &row = rows[rowIndex];
 
 	float elapsedTime = action->resultState->second - action->initialState->second;
 	float cost = 0;
@@ -78,26 +78,26 @@ void StepParityGenerator::getActionCost(Action *action, std::vector<Row>& rows, 
 	  }
 	}
 
-	// std::vector<StepParity::Foot> cacheKeyEnums = action->initialState->columns;
-	// cacheKeyEnums.insert(cacheKeyEnums.end(), action->resultState->columns.begin(), action->resultState->columns.end());
-	// cacheKeyEnums.insert(cacheKeyEnums.end(), action->initialState->movedFeet.begin(), action->initialState->movedFeet.end());
+	std::vector<StepParity::Foot> cacheKeyEnums = action->initialState->columns;
+	cacheKeyEnums.insert(cacheKeyEnums.end(), action->resultState->columns.begin(), action->resultState->columns.end());
+	cacheKeyEnums.insert(cacheKeyEnums.end(), action->initialState->movedFeet.begin(), action->initialState->movedFeet.end());
 
-	// std::vector<RString> cacheKeyStrings;
-	// for(StepParity::Foot f: cacheKeyEnums)
-	// {
-	// 	cacheKeyStrings.push_back(std::to_string(static_cast<int>(f)));
-	// }
+	std::vector<RString> cacheKeyStrings;
+	for(StepParity::Foot f: cacheKeyEnums)
+	{
+		cacheKeyStrings.push_back(std::to_string(static_cast<int>(f)));
+	}
 
-	// RString cacheKey = join("|", cacheKeyStrings);
+	RString cacheKey = join("|", cacheKeyStrings);
 
-	// float cachedCost = getCachedCost(rowIndex, cacheKey);
-	// if(cachedCost != -1)
-	// {
-	// 	cacheCounter++;
-	// 	action->resultState->columns = combinedColumns;
-	//   	action->cost = cachedCost;
-	// 	return;
-	// }
+	float cachedCost = getCachedCost(rowIndex, cacheKey);
+	if(cachedCost != -1)
+	{
+		cacheCounter++;
+		action->resultState->columns = combinedColumns;
+	  	action->cost = cachedCost;
+		return;
+	}
 	
 	// Mine weighting
 	int leftHeel = -1;
@@ -323,7 +323,7 @@ void StepParityGenerator::getActionCost(Action *action, std::vector<Row>& rows, 
 
 	  if (rowIndex - 1 > -1)
 	  {
-	  	StepParity::Row lastRow = rows[rowIndex - 1];
+	  	StepParity::Row &lastRow = rows[rowIndex - 1];
 		for (StepParity::IntermediateNoteData hold: lastRow.holds) {
 		  if (hold.type == TapNoteType_Empty) continue;
 		  float endBeat = row.beat;
@@ -497,7 +497,7 @@ void StepParityGenerator::getActionCost(Action *action, std::vector<Row>& rows, 
 				  action->initialState->columns[i] != action->resultState->columns[i] &&
 				  !setContains(action->resultState->movedFeet, action->initialState->columns[i]))
 			  {
-				  cost += pow(timeScaled / 2.0, 2) * FOOTSWITCH;
+				  cost += pow(timeScaled / 2.0f, 2) * FOOTSWITCH;
 				  break;
 			  }
 		  }
@@ -569,5 +569,5 @@ void StepParityGenerator::getActionCost(Action *action, std::vector<Row>& rows, 
 		costCache[rowIndex] = std::map<RString, float>();
 	}
 	exploreCounter++;
-	// costCache[rowIndex][cacheKey] = cost;
+	costCache[rowIndex][cacheKey] = cost;
 }
