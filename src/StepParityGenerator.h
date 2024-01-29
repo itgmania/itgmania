@@ -263,8 +263,24 @@ namespace StepParity {
 		std::vector<std::vector<Foot>> PermuteColumns(Row &row,    std::vector<Foot> columns, unsigned long column);
 		std::vector<Action *> getBestMoveLookahead(State *state, std::vector<Row>& rows, int rowIndex);
 
+		// Defined in StepParityCost.cpp
 		void getActionCost(Action *action, std::vector<Row>& rows, int rowIndex);
+		void mergeInitialAndResultPosition(Action *action, std::vector<StepParity::Foot> &combinedColumns);
+		float calcHoldSwitchCost(Action *action, Row &row, std::vector<StepParity::Foot> &combinedColumns);
+		float calcBracketTapCost(Action *action, Row &row, int leftHeel, int leftToe, int rightHeel, int rightToe, float elapsedTime);
+		float calcMovingFootWhileOtherIsntOnPadCost(Action *action);
+		float calcJackCost(Action *action, std::vector<Row> &rows, int rowIndex, bool movedLeft, bool movedRight, bool jackedLeft, bool jackedRight, bool didJump);
+		float calcJumpCost(Row &row, bool movedLeft, bool movedRight, float elapsedTime);
+		float calcMissedFootswitchCost(Row &row, bool jackedLeft, bool jackedRight);
+		float calcFacingAndSpinCosts(Action *action, std::vector<StepParity::Foot> &combinedColumns);
+		float caclFootswitchCost(Action *action, Row &row, std::vector<StepParity::Foot> &combinedColumns, float elapsedTime);
+		float calcSideswitchCost(Action *action);
+		float calcJackedNotesTooCloseTogetherCost(bool movedLeft, bool movedRight, bool jackedLeft, bool jackedRight, float elapsedTime);
+		float calcBigMovementsQuicklyCost(Action *action, float elapsedTime);
 
+		bool didDoubleStep(Action *action, std::vector<Row> &rows, int rowIndex, bool movedLeft, bool jackedLeft, bool movedRight, bool jackedRight);
+		bool didJackLeft(Action *action, int leftHeel, int leftToe, bool movedLeft, bool didJump);
+		bool didJackRight(Action *action, int rightHeel, int rightToe, bool movedRight, bool didJump);
 		/** @brief Converts the NoteData into a more convenient format that already has all of the timing data
 	 incorporated into it. */
 		void CreateIntermediateNoteData(const NoteData &in, std::vector<IntermediateNoteData> &out);
