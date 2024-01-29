@@ -89,8 +89,8 @@ namespace StepParity {
 	}
 	struct State {
 		std::vector<Foot> columns;
-		std::set<Foot> movedFeet;
-		std::set<Foot> holdFeet;
+		std::vector<Foot> movedFeet;
+		std::vector<Foot> holdFeet;
 		float second;
 
 		Json::Value ToJson(bool useStrings = false)

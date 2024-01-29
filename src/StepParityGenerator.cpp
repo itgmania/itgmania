@@ -436,8 +436,8 @@ Action * StepParityGenerator::initAction(State *initialState, Row &row, std::vec
 	State *resultState = new State();
 	resultState->columns = columns;
 
-	std::set<Foot> movedFeet;
-	std::set<Foot> holdFeet;
+	std::vector<Foot> movedFeet;
+	std::vector<Foot> holdFeet;
 
 
 	// I tried to condense this, but kept getting the logic messed up
@@ -448,12 +448,12 @@ Action * StepParityGenerator::initAction(State *initialState, Row &row, std::vec
 		}
 		if(row.holds[i].type == TapNoteType_Empty)
 		{
-			movedFeet.insert(columns[i]);
+			movedFeet.push_back(columns[i]);
 			continue;
 		}
 		if(initialState->columns[i] != columns[i])
 		{
-			movedFeet.insert(columns[i]);
+			movedFeet.push_back(columns[i]);
 		}
 	}
 
@@ -465,7 +465,7 @@ Action * StepParityGenerator::initAction(State *initialState, Row &row, std::vec
 
 		if(row.holds[i].type != TapNoteType_Empty)
 		{
-			holdFeet.insert(columns[i]);
+			holdFeet.push_back(columns[i]);
 		}
 	}
 

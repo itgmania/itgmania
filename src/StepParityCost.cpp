@@ -7,13 +7,15 @@
 using namespace StepParity;
 
 template <typename T>
-bool setContains(const std::set<T>& aSet, const T& value) {
-    return aSet.find(value) != aSet.end();
-}
-
-template <typename T>
 bool vectorIncludes(const std::vector<T>& vec, const T& value) {
-    return std::find(vec.begin(), vec.end(), value) != vec.end();
+    for (auto i = 0; i < vec.size(); i++)
+	{
+		if(vec[i] == value)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 template <typename T>
@@ -90,21 +92,21 @@ void StepParityGenerator::getActionCost(Action *action, std::vector<Row>& rows, 
 
 
 	bool movedLeft =
-	  setContains(action->resultState->movedFeet, LEFT_HEEL) ||
-	  setContains(action->resultState->movedFeet, LEFT_TOE);
+	  vectorIncludes(action->resultState->movedFeet, LEFT_HEEL) ||
+	  vectorIncludes(action->resultState->movedFeet, LEFT_TOE);
 	bool movedRight =
-	  setContains(action->resultState->movedFeet, RIGHT_HEEL) ||
-	  setContains(action->resultState->movedFeet, RIGHT_TOE);
+	  vectorIncludes(action->resultState->movedFeet, RIGHT_HEEL) ||
+	  vectorIncludes(action->resultState->movedFeet, RIGHT_TOE);
 
 	bool didJump =
-	  ((setContains(action->initialState->movedFeet, LEFT_HEEL) &&
-		!setContains(action->initialState->holdFeet, LEFT_HEEL)) ||
-		(setContains(action->initialState->movedFeet, LEFT_TOE) &&
-		  !setContains(action->initialState->holdFeet, LEFT_TOE))) &&
-	  ((setContains(action->initialState->movedFeet, RIGHT_HEEL) &&
-		!setContains(action->initialState->holdFeet, RIGHT_HEEL)) ||
-		(setContains(action->initialState->movedFeet, RIGHT_TOE) &&
-		  !setContains(action->initialState->holdFeet, RIGHT_TOE)));
+	  ((vectorIncludes(action->initialState->movedFeet, LEFT_HEEL) &&
+		!vectorIncludes(action->initialState->holdFeet, LEFT_HEEL)) ||
+		(vectorIncludes(action->initialState->movedFeet, LEFT_TOE) &&
+		  !vectorIncludes(action->initialState->holdFeet, LEFT_TOE))) &&
+	  ((vectorIncludes(action->initialState->movedFeet, RIGHT_HEEL) &&
+		!vectorIncludes(action->initialState->holdFeet, RIGHT_HEEL)) ||
+		(vectorIncludes(action->initialState->movedFeet, RIGHT_TOE) &&
+		  !vectorIncludes(action->initialState->holdFeet, RIGHT_TOE)));
 
 	// jacks don't matter if you did a jump before
 
@@ -146,20 +148,20 @@ void StepParityGenerator::mergeInitialAndResultPosition(Action *action, std::vec
 		action->initialState->columns[i] == LEFT_HEEL ||
 		action->initialState->columns[i] == RIGHT_HEEL
 	  ) {
-		if (!setContains(action->resultState->movedFeet, action->initialState->columns[i])) {
+		if (!vectorIncludes(action->resultState->movedFeet, action->initialState->columns[i])) {
 		  combinedColumns[i] = action->initialState->columns[i];
 		}
 	  } else if (action->initialState->columns[i] == LEFT_TOE) {
 		if (
-		  !setContains(action->resultState->movedFeet, LEFT_TOE) &&
-		  !setContains(action->resultState->movedFeet, LEFT_HEEL)
+		  !vectorIncludes(action->resultState->movedFeet, LEFT_TOE) &&
+		  !vectorIncludes(action->resultState->movedFeet, LEFT_HEEL)
 		) {
 		  combinedColumns[i] = action->initialState->columns[i];
 		}
 	  } else if (action->initialState->columns[i] == RIGHT_TOE) {
 		if (
-		  !setContains(action->resultState->movedFeet, RIGHT_TOE) &&
-		  !setContains(action->resultState->movedFeet, RIGHT_HEEL)
+		  !vectorIncludes(action->resultState->movedFeet, RIGHT_TOE) &&
+		  !vectorIncludes(action->resultState->movedFeet, RIGHT_HEEL)
 		) {
 		  combinedColumns[i] = action->initialState->columns[i];
 		}
@@ -205,8 +207,8 @@ float StepParityGenerator::calcBracketTapCost(Action * action, Row &row, int lef
 	{
 		float jackPenalty = 1;
 		if (
-			setContains(action->initialState->movedFeet, LEFT_HEEL) ||
-			setContains(action->initialState->movedFeet, LEFT_TOE))
+			vectorIncludes(action->initialState->movedFeet, LEFT_HEEL) ||
+			vectorIncludes(action->initialState->movedFeet, LEFT_TOE))
 			jackPenalty = 1 / elapsedTime;
 		if (
 			row.holds[leftHeel].type != TapNoteType_Empty &&
@@ -224,8 +226,8 @@ float StepParityGenerator::calcBracketTapCost(Action * action, Row &row, int lef
 	if (rightHeel != -1 && rightToe != -1) {
 	  float jackPenalty = 1;
 	  if (
-		setContains(action->initialState->movedFeet, RIGHT_TOE) ||
-		setContains(action->initialState->movedFeet, RIGHT_HEEL)
+		vectorIncludes(action->initialState->movedFeet, RIGHT_TOE) ||
+		vectorIncludes(action->initialState->movedFeet, RIGHT_HEEL)
 	  )
 		jackPenalty = 1 / elapsedTime;
 
@@ -296,16 +298,16 @@ float StepParityGenerator::calcJackCost(Action * action, std::vector<Row> & rows
 
 	  if (
 		jackedLeft &&
-		setContains(action->resultState->movedFeet, LEFT_HEEL) &&
-		setContains(action->resultState->movedFeet, LEFT_TOE)
+		vectorIncludes(action->resultState->movedFeet, LEFT_HEEL) &&
+		vectorIncludes(action->resultState->movedFeet, LEFT_TOE)
 	  ) {
 		cost += BRACKETJACK;
 	  }
 
 	  if (
 		jackedRight &&
-		setContains(action->resultState->movedFeet, RIGHT_HEEL) &&
-		setContains(action->resultState->movedFeet, RIGHT_TOE)
+		vectorIncludes(action->resultState->movedFeet, RIGHT_HEEL) &&
+		vectorIncludes(action->resultState->movedFeet, RIGHT_TOE)
 	  ) {
 		cost += BRACKETJACK;
 	  }
@@ -465,7 +467,7 @@ float StepParityGenerator::caclFootswitchCost(Action * action, Row & row, std::v
 
 			if (
 				action->initialState->columns[i] != action->resultState->columns[i] &&
-				!setContains(action->resultState->movedFeet, action->initialState->columns[i]))
+				!vectorIncludes(action->resultState->movedFeet, action->initialState->columns[i]))
 			{
 				cost += pow(timeScaled / 2.0f, 2) * FOOTSWITCH;
 				break;
@@ -484,7 +486,7 @@ float StepParityGenerator::calcSideswitchCost(Action * action)
 		action->initialState->columns[0] != action->resultState->columns[0] &&
 		action->resultState->columns[0] != NONE &&
 		action->initialState->columns[0] != NONE &&
-		!setContains(action->resultState->movedFeet, action->initialState->columns[0]))
+		!vectorIncludes(action->resultState->movedFeet, action->initialState->columns[0]))
 	{
 		cost += SIDESWITCH;
 	}
@@ -493,7 +495,7 @@ float StepParityGenerator::calcSideswitchCost(Action * action)
 	  action->initialState->columns[3] != action->resultState->columns[3] &&
 	  action->resultState->columns[3] != NONE &&
 	  action->initialState->columns[3] != NONE &&
-	  !setContains(action->resultState->movedFeet, action->initialState->columns[3])
+	  !vectorIncludes(action->resultState->movedFeet, action->initialState->columns[3])
 	) {
 	  cost += SIDESWITCH;
 	}
@@ -543,20 +545,20 @@ bool StepParityGenerator::didDoubleStep(Action * action, std::vector<Row> & rows
 	if (
 		movedLeft &&
 		!jackedLeft &&
-		((setContains(action->initialState->movedFeet, LEFT_HEEL) &&
-		  !setContains(action->initialState->holdFeet, LEFT_HEEL)) ||
-		 (setContains(action->initialState->movedFeet, LEFT_TOE) &&
-		  !setContains(action->initialState->holdFeet, LEFT_TOE))))
+		((vectorIncludes(action->initialState->movedFeet, LEFT_HEEL) &&
+		  !vectorIncludes(action->initialState->holdFeet, LEFT_HEEL)) ||
+		 (vectorIncludes(action->initialState->movedFeet, LEFT_TOE) &&
+		  !vectorIncludes(action->initialState->holdFeet, LEFT_TOE))))
 	{
 		doublestepped = true;
 	}
 	  if (
 		movedRight &&
 		!jackedRight &&
-		((setContains(action->initialState->movedFeet, RIGHT_HEEL) &&
-		  !setContains(action->initialState->holdFeet, RIGHT_HEEL)) ||
-		  (setContains(action->initialState->movedFeet, RIGHT_TOE) &&
-			!setContains(action->initialState->holdFeet, RIGHT_TOE)))
+		((vectorIncludes(action->initialState->movedFeet, RIGHT_HEEL) &&
+		  !vectorIncludes(action->initialState->holdFeet, RIGHT_HEEL)) ||
+		  (vectorIncludes(action->initialState->movedFeet, RIGHT_TOE) &&
+			!vectorIncludes(action->initialState->holdFeet, RIGHT_TOE)))
 	  )
 		doublestepped = true;
 
@@ -590,20 +592,20 @@ bool StepParityGenerator::didJackLeft(Action * action, int leftHeel, int leftToe
 		{
 			if (
 			action->initialState->columns[leftHeel] == LEFT_HEEL &&
-			!setContains(action->resultState->holdFeet, LEFT_HEEL) &&
-			((setContains(action->initialState->movedFeet, LEFT_HEEL) &&
-				!setContains(action->initialState->holdFeet, LEFT_HEEL)) ||
-				(setContains(action->initialState->movedFeet, LEFT_TOE) &&
-				!setContains(action->initialState->holdFeet, LEFT_TOE)))
+			!vectorIncludes(action->resultState->holdFeet, LEFT_HEEL) &&
+			((vectorIncludes(action->initialState->movedFeet, LEFT_HEEL) &&
+				!vectorIncludes(action->initialState->holdFeet, LEFT_HEEL)) ||
+				(vectorIncludes(action->initialState->movedFeet, LEFT_TOE) &&
+				!vectorIncludes(action->initialState->holdFeet, LEFT_TOE)))
 			)
 			jackedLeft = true;
 			if (
 			action->initialState->columns[leftToe] == LEFT_TOE &&
-			!setContains(action->resultState->holdFeet, LEFT_TOE) &&
-			((setContains(action->initialState->movedFeet, LEFT_HEEL) &&
-				!setContains(action->initialState->holdFeet, LEFT_HEEL)) ||
-				(setContains(action->initialState->movedFeet, LEFT_TOE) &&
-				!setContains(action->initialState->holdFeet, LEFT_TOE)))
+			!vectorIncludes(action->resultState->holdFeet, LEFT_TOE) &&
+			((vectorIncludes(action->initialState->movedFeet, LEFT_HEEL) &&
+				!vectorIncludes(action->initialState->holdFeet, LEFT_HEEL)) ||
+				(vectorIncludes(action->initialState->movedFeet, LEFT_TOE) &&
+				!vectorIncludes(action->initialState->holdFeet, LEFT_TOE)))
 			)
 			jackedLeft = true;
 		}
@@ -619,20 +621,20 @@ bool StepParityGenerator::didJackRight(Action * action, int rightHeel, int right
 		if (rightHeel != -1 && movedRight) {
 		if (
 		  action->initialState->columns[rightHeel] == RIGHT_HEEL &&
-		  !setContains(action->resultState->holdFeet, RIGHT_HEEL) &&
-		  ((setContains(action->initialState->movedFeet, RIGHT_HEEL) &&
-			!setContains(action->initialState->holdFeet, RIGHT_HEEL)) ||
-			(setContains(action->initialState->movedFeet, RIGHT_TOE) &&
-			  !setContains(action->initialState->holdFeet, RIGHT_TOE)))
+		  !vectorIncludes(action->resultState->holdFeet, RIGHT_HEEL) &&
+		  ((vectorIncludes(action->initialState->movedFeet, RIGHT_HEEL) &&
+			!vectorIncludes(action->initialState->holdFeet, RIGHT_HEEL)) ||
+			(vectorIncludes(action->initialState->movedFeet, RIGHT_TOE) &&
+			  !vectorIncludes(action->initialState->holdFeet, RIGHT_TOE)))
 		)
 		  jackedRight = true;
 		if (
 		  action->initialState->columns[rightToe] == RIGHT_TOE &&
-		  !setContains(action->resultState->holdFeet, RIGHT_TOE) &&
-		  ((setContains(action->initialState->movedFeet, RIGHT_HEEL) &&
-			!setContains(action->initialState->holdFeet, RIGHT_HEEL)) ||
-			(setContains(action->initialState->movedFeet, RIGHT_TOE) &&
-			  !setContains(action->initialState->holdFeet, RIGHT_TOE)))
+		  !vectorIncludes(action->resultState->holdFeet, RIGHT_TOE) &&
+		  ((vectorIncludes(action->initialState->movedFeet, RIGHT_HEEL) &&
+			!vectorIncludes(action->initialState->holdFeet, RIGHT_HEEL)) ||
+			(vectorIncludes(action->initialState->movedFeet, RIGHT_TOE) &&
+			  !vectorIncludes(action->initialState->holdFeet, RIGHT_TOE)))
 		)
 		  jackedRight = true;
 	  }
