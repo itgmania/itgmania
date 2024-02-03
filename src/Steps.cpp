@@ -425,15 +425,27 @@ void Steps::CalculateTechCounts()
 
 	StepParity::StepParityGenerator gen;
 	std::vector<StepParity::Row> parityRows;
-	gen.analyze(tempNoteData, parityRows, m_StepsTypeStr, true);
+	
 
-	Json::Value rowJson;
-	for(StepParity::Row row: parityRows)
-	{
-		rowJson.append(row.ToJson(true));
-	}
-	RString filename = m_pSong->GetDisplayMainTitle() + "-" + DifficultyToString(m_Difficulty) + ".json";
-	JsonUtil::WriteFile(rowJson, "./Save/song-jsons/" + filename, false);
+	float graphStart = RageTimer::GetTimeSinceStart();
+	gen.analyzeNoteData(tempNoteData, parityRows, m_StepsTypeStr);
+	float graphEnd = RageTimer::GetTimeSinceStart();
+	LOG->Trace("analyzeGraph in %f seconds", graphEnd - graphStart);
+	
+
+	
+// 	Json::Value graphJson = graph.ToJson();
+// 	RString graphFilename = m_pSong->GetDisplayMainTitle() + "-" + DifficultyToString(m_Difficulty) + "-graph.json";
+// JsonUtil::WriteFile(graphJson, "./Save/song-full-jsons/graphs/" + graphFilename, false);
+
+	Json::Value fullRowJson = StepParity::Row::ToJsonRows(parityRows, true);
+	RString fullFilename = m_pSong->GetDisplayMainTitle() + "-" + DifficultyToString(m_Difficulty) + "-full-rows.json";
+	JsonUtil::WriteFile(fullRowJson, "./Save/song-full-jsons/" + fullFilename, false);
+
+	Json::Value parityJson = StepParity::Row::ParityRowsJson(parityRows);
+	RString parityFilename = m_pSong->GetDisplayMainTitle() + "-" + DifficultyToString(m_Difficulty) + "-parities.json";
+	JsonUtil::WriteFile(parityJson, "./Save/song-parity-jsons/" + parityFilename, false);
+
 		GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
