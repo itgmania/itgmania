@@ -37,9 +37,11 @@ void StepParityGenerator::analyzeNoteData(const NoteData &in, std::vector<StepPa
 
 
 void StepParityGenerator::analyzeGraph(std::vector<Row> &rows, const StepParityGraph & graph, int columnCount) {
-	std::vector<int> nodes_for_rows = computeCheapestPath(graph, graph.startNode->id, graph.endNode->id);
+	std::vector<int> nodes_for_rows = computeCheapestPath(graph);
+	ASSERT_M(nodes_for_rows.size() == rows.size(), "nodes_for_rows should be the same length as rows!");
 
-	for (unsigned long i = 0; i < rows.size(); i++) {
+	for (unsigned long i = 0; i < rows.size(); i++)
+	{
 		StepParityNode *node = graph[nodes_for_rows[i]];
 		for (int j = 0; j < rows[i].columnCount; j++) {
 			if(rows[i].notes[j].type != TapNoteType_Empty) {
@@ -225,8 +227,10 @@ std::vector<FootPlacement> StepParityGenerator::PermuteFootPlacements(const Row 
 }
 
 
-std::vector<int> StepParityGenerator::computeCheapestPath(const StepParityGraph & graph, int start, int end)
+std::vector<int> StepParityGenerator::computeCheapestPath(const StepParityGraph & graph)
 {
+	int start = graph.startNode->id;
+	int end = graph.endNode->id;
 	std::vector<int> shortest_path;
 	std::vector<float> cost(graph.nodeCount(), FLT_MAX);
 	std::vector<int> predecessor(graph.nodeCount(), -1);
@@ -251,7 +255,10 @@ std::vector<int> StepParityGenerator::computeCheapestPath(const StepParityGraph 
 	while(current_node != start)
 	{
 		ASSERT_M(current_node != -1, "WHOA");
-		shortest_path.push_back(current_node);
+		if(current_node != end)
+		{
+			shortest_path.push_back(current_node);
+		}
 		current_node = predecessor[current_node];
 	}
 	std::reverse(shortest_path.begin(), shortest_path.end());

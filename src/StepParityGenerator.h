@@ -33,6 +33,8 @@ namespace StepParity {
 		void analyzeGraph(std::vector<Row> &rows, const StepParityGraph & graph, int columnCount);
 
 		/// @brief Generates a StepParityGraph from the given vector of Rows.
+		/// The graph inserts two additional nodes: one that represent the beginning of the song, before the first note,
+		/// and one that represents the end of the song, after the final note. 
 		/// @param rows The rows to convert into a graph.
 		/// @param graph Destination for the generated graph.
 		/// @param columnCount Number of columns
@@ -60,14 +62,15 @@ namespace StepParity {
 		/// @return 
 		std::vector<FootPlacement> PermuteFootPlacements(const Row &row, FootPlacement columns, unsigned long column);
 
-		/// @brief Computes the "cheapest" path through the	 given graph from start to end. 
+		/// @brief Computes the "cheapest" path through the	given graph.
+		/// This relies on the fact that the nodes stored in the graph are topologically sorted (that is, all
+		/// of the nodes are ordered in such a way that each node comes before all the nodes it points to.)
+		/// This allows us to find the cheapest path in a single pass.
 		/// The resulting path includes one node for each row of the stepchart represented by the graph.
-		/// Returns a vector of node indices, which can be mapped back to the cheapest state for each row. 
+		/// Returns a vector of node indices, which can be mapped back to the cheapest state for each row.
 		/// @param graph The graph to be traversed
-		/// @param start The index of the starting node
-		/// @param end The index of the destination node
-		/// @return A vector of node indices, making up the cheapest path from start to end.
-		std::vector<int> computeCheapestPath(const StepParity::StepParityGraph &graph, int start, int end);
+		/// @return A vector of node indices, making up the cheapest path through the step chart.
+		std::vector<int> computeCheapestPath(const StepParity::StepParityGraph &graph);
 		
 		
 		void CreateIntermediateNoteData(const NoteData &in, std::vector<IntermediateNoteData> &out);
