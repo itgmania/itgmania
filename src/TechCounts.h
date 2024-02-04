@@ -21,6 +21,7 @@ enum TechCountsCategory
 	TechCountsCategory_Sideswitches,
 	TechCountsCategory_Jacks,
 	TechCountsCategory_Brackets,
+	TechCountsCategory_Doublesteps,
 	NUM_TechCountsCategory,
 	TechCountsCategory_Invalid
 };

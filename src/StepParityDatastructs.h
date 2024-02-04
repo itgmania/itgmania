@@ -16,10 +16,11 @@ namespace StepParity {
 	enum Foot
 	{
 		NONE = 0,
-		LEFT_HEEL= 1,
-		LEFT_TOE = 2,
-		RIGHT_HEEL = 3,
-		RIGHT_TOE = 4,
+		LEFT_HEEL,
+		LEFT_TOE,
+		RIGHT_HEEL,
+		RIGHT_TOE,
+		NUM_Foot
 	};
 
 	const std::vector<StepParity::Foot> FEET = {LEFT_HEEL, LEFT_TOE, RIGHT_HEEL, RIGHT_TOE};

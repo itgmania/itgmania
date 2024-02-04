@@ -7,13 +7,15 @@
 #include "TimingData.h"
 #include "GameState.h"
 #include "RageTimer.h"
+#include "StepParityGenerator.h"
 
 static const char *TechCountsCategoryNames[] = {
 	"Crossovers",
 	"Footswitches",
 	"Sideswitches",
 	"Jacks",
-	"Brackets"
+	"Brackets",
+	"Doublesteps"
 };
 
 XToString( TechCountsCategory );
@@ -79,43 +81,134 @@ void TechCounts::FromString( RString sTechCounts )
 }
 
 
-// This is currently a more or less direct port of GetTechniques() from SL-ChartParser.lua
-// It seems to match the results pretty closely, but not exactly.
-// Instead of using null/false/true for foot mapping, an enum Foot has been introduced.
-// And instead of using "L"/"D"/"U"/"R" for arrow mapping, a typedef StepDirection has been introduced 
-// (it could probably also be an enum).
 void TechCountsCalculator::CalculateTechCounts(const NoteData &in, TechCounts &out)
 {
-	TechCountsCounter statsCounter = TechCountsCounter();
-	int curr_row = -1;
-
-	// This is a bit of a misnomer, because we only process the "current" step
-	// once curr_note.Row() has moved on to a new row.
-	// But, I don't want to confuse this with lastStep
-	StepDirection curr_step = StepDirection_None;
-	NoteData::all_tracks_const_iterator curr_note = in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
-	
-	// The notes aren't grouped, so we have to iterate through them all and figure out 
-	// which ones go together
-
-	while(!curr_note.IsAtEnd())
+	if(in.GetNumTracks() != 4)
 	{
-		if (curr_note.Row() != curr_row)
-		{
+		return;
+	}
+	std::vector<StepParity::Row> rows;
+	StepParity::StepParityGenerator gen;
+	gen.analyzeNoteData(in, rows, "dance-single"); // TODO: don't hard-code the stepsType
 
-			TechCountsCalculator::UpdateTechCounts(out, statsCounter, curr_step);
-			curr_row = curr_note.Row();
-			curr_step = StepDirection_None;
-		}
-		if (curr_note->type == TapNoteType_Tap || curr_note->type == TapNoteType_HoldHead)
-		{
-			curr_step = curr_step | TrackIntToStepDirection(curr_note.Track());
-		}
+	// arrays to hold the column for each Foot enum.
+	// A value of -1 means that Foot is not on any column
+	int previousFootPlacement[StepParity::NUM_Foot];
+	int currentFootPlacement[StepParity::NUM_Foot];
 
-		++curr_note;
+	for (int f = static_cast<int>(StepParity::LEFT_HEEL); f < StepParity::NUM_Foot; f++)
+	{
+		previousFootPlacement[f] = -1;
+		currentFootPlacement[f] = -1;
 	}
 
-	TechCountsCalculator::UpdateTechCounts(out, statsCounter, curr_step);
+	std::vector<StepParity::Foot> previousColumns(rows[0].columnCount, StepParity::NONE);
+	std::vector<StepParity::Foot> currentColumns(rows[0].columnCount, StepParity::NONE);
+	for (unsigned long i = 1; i < rows.size(); i++)
+	{
+		StepParity::Row &currentRow = rows[i];
+
+		for (int c = 0; c < currentRow.columnCount; c++)
+		{
+			
+			StepParity::Foot currFoot = currentRow.notes[c].parity;
+			TapNoteType currType = currentRow.notes[c].type;
+
+			// If this isn't either a tap or the beginning of a hold, skip it
+			if(currType != TapNoteType_Tap && currType != TapNoteType_HoldHead)
+			{
+				continue;
+			}
+
+			currentFootPlacement[currFoot] = c;
+			currentColumns[c] = currFoot;
+		}
+
+				/*
+
+				Jacks are same arrow same foot
+				Doublestep is same foot on successive arrows
+		Brackets are jumps with one foot
+
+		Footswitch is different foot on the up or down arrow
+		Sideswitch is footswitch on left or right arrow
+		Crossovers are left foot on right arrow or vice versa
+		*/
+
+		// check for jacks and doublesteps
+		for (StepParity::Foot foot: StepParity::FEET)
+		{
+			if(currentFootPlacement[foot] == -1 || previousFootPlacement[foot] == -1)
+			{
+				continue;
+			}
+			
+			if(previousFootPlacement[foot] == currentFootPlacement[foot])
+			{
+				out[TechCountsCategory_Jacks] += 1;
+			}
+			else
+			{
+				out[TechCountsCategory_Doublesteps] += 1;
+			}
+		}
+
+		// check for brackets
+
+		if(currentFootPlacement[StepParity::LEFT_HEEL] != -1 && currentFootPlacement[StepParity::LEFT_TOE] != -1)
+		{
+			out[TechCountsCategory_Brackets] += 1;
+		}
+
+		if(currentFootPlacement[StepParity::RIGHT_HEEL] != -1 && currentFootPlacement[StepParity::RIGHT_TOE] != -1)
+		{
+			out[TechCountsCategory_Brackets] += 1;
+		}
+
+		// Check for footswitches, sideswitches, and crossovers
+		for (int c = 0; c < currentRow.columnCount; c++)
+		{
+			if(currentColumns[c] == StepParity::NONE)
+			{
+				continue;
+			}
+
+			// this same column was stepped on in the previous row, but not by the same foot ==> footswitch or sideswitch
+			if(previousColumns[c] != StepParity::NONE && previousColumns[c] != currentColumns[c])
+			{
+				if(c == 0 || c == 3)
+				{
+					out[TechCountsCategory_Sideswitches] += 1;
+				}
+				else
+				{
+					out[TechCountsCategory_Footswitches] += 1;
+				}
+			}
+			// if the right foot is pressing the left arrow, or the left foot is pressing the right ==> crossover
+			else if(c == 0 && previousColumns[c] == StepParity::NONE && (currentColumns[c] == StepParity::RIGHT_HEEL|| currentColumns[c] == StepParity::RIGHT_TOE))
+			{
+				out[TechCountsCategory_Crossovers] += 1;
+			}
+			else if(c == 3 && previousColumns[c] == StepParity::NONE && (currentColumns[c] == StepParity::LEFT_HEEL || currentColumns[c] == StepParity::LEFT_TOE))
+			{
+				out[TechCountsCategory_Crossovers] += 1;
+			}
+		}
+
+		// Move the values from currentFootPlacement to previousFootPlacement,
+		// and reset currentFootPlacement
+		for (int f = static_cast<int>(StepParity::LEFT_HEEL); f < StepParity::NUM_Foot; f++)
+		{
+			previousFootPlacement[f] = currentFootPlacement[f];
+			currentFootPlacement[f] = -1;
+		}
+		for (int c = 0; c < currentRow.columnCount; c++)
+		{
+			previousColumns[c] = currentColumns[c];
+			currentColumns[c] = StepParity::NONE;
+		}
+	}
 }
 
 // The main loop from GetTechniques().

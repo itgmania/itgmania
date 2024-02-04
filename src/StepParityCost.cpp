@@ -377,6 +377,7 @@ float StepParityCost::calcFacingAndSpinCosts(State * initialState, State * resul
 		  break;
 		case RIGHT_TOE:
 		  endRightToe = i;
+		default:
 		  break;
 	  }
 	}
