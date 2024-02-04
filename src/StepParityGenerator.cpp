@@ -54,8 +54,9 @@ void StepParityGenerator::buildStateGraph(std::vector<Row> &rows, StepParityGrap
 {
 	State beginningState(columnCount);
 	beginningState.rowIndex = -1;
+	beginningState.second = rows[0].second - 1;
 	StepParityNode *startNode = graph.addOrGetExistingNode(beginningState);
-	
+
 	graph.startNode = startNode;
 
 	std::queue<State> previousStates;
@@ -97,6 +98,7 @@ void StepParityGenerator::buildStateGraph(std::vector<Row> &rows, StepParityGrap
 	// which just get connected to the endState
 	State endState(columnCount);
 	endState.rowIndex = rows.size();
+	endState.second = rows[rows.size() - 1].second + 1;
 	StepParityNode *endNode = graph.addOrGetExistingNode(endState);
 	graph.endNode = endNode;
 	while(!previousStates.empty())
