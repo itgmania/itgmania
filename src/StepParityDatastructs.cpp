@@ -44,7 +44,7 @@ Json::Value State::ToJson(bool useStrings)
 	root["movedFeet"] = jsonMovedFeet;
 	root["holdFeet"] = jsonHoldFeet;
 	root["second"] = second;
-
+	root["rowIndex"] = rowIndex;
 	return root;
 }
 
@@ -108,13 +108,12 @@ Json::Value StepParityNode::ToJson()
 	for (auto it = neighbors.begin(); it != neighbors.end(); it++)
 	{
 		Json::Value n;
-		n["id"] = it->first;
+		n["id"] = it->first->id;
 		n["cost"] = it->second;
 		jsonNeighbors.append(n);
 	}
 		root["id"] = id;
 		root["neighbors"] = jsonNeighbors;
-		root["row"] = state.rowIndex;
 		return root;
 }
 
@@ -151,6 +150,19 @@ Json::Value StepParityGraph::ToJson()
 	for(auto node: nodes)
 	{
 		root.append(node->ToJson());
+	}
+	return root;
+}
+
+Json::Value StepParityGraph::NodeStateJson()
+{
+	Json::Value root;
+	for(auto node: nodes)
+	{
+		Json::Value nodeJson;
+		nodeJson["id"] = node->id;
+		nodeJson["state"] = node->state.ToJson(false);
+		root.append(nodeJson);
 	}
 	return root;
 }

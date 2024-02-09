@@ -287,8 +287,9 @@ namespace StepParity {
 		}
 		
 		Json::Value ToJson();
-
-		StepParityNode* operator[](int index) const{
+		Json::Value NodeStateJson();
+		StepParityNode *operator[](int index) const
+		{
 			return nodes[index];
 		}
 	};
