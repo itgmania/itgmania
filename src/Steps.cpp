@@ -395,58 +395,19 @@ void Steps::CalculateTechCounts()
 		m_CachedTechCounts[pn]
 			.Zero();
 
+	// For now, we're only supporting dance-single
+	if(this->m_StepsType != StepsType_dance_single)
+	{
+		return;
+	}
+
+	// TODO: Do this more better
 	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
 
-	if( tempNoteData.IsComposite() )
-	{
-		std::vector<NoteData> vParts;
-		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
-		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
-		{
-			TechCountsCalculator::CalculateTechCounts(vParts[pn], m_CachedTechCounts[pn]);
-		}
-	}
-	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
-	{
-		NoteData p1 = tempNoteData;
-		// XXX: Assumption that couple will always have an even number of notes.
-		const int tracks = tempNoteData.GetNumTracks() / 2;
-		p1.SetNumTracks(tracks);
-		TechCountsCalculator::CalculateTechCounts(tempNoteData, m_CachedTechCounts[PLAYER_1]);
-		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
-		tempNoteData.SetNumTracks(tracks);
-		TechCountsCalculator::CalculateTechCounts(tempNoteData, m_CachedTechCounts[PLAYER_2]);
-	}
-	else
-	{
-		TechCountsCalculator::CalculateTechCounts(tempNoteData, m_CachedTechCounts[0]);
-		std::fill_n( m_CachedTechCounts + 1, NUM_PLAYERS-1, m_CachedTechCounts[0] );
-	}
+	TechCountsCalculator::CalculateTechCounts(tempNoteData, m_CachedTechCounts[0]);
+	std::fill_n( m_CachedTechCounts + 1, NUM_PLAYERS-1, m_CachedTechCounts[0] );
 
-	// StepParity::StepParityGenerator gen;
-	// std::vector<StepParity::Row> parityRows;
-	
-
-	// float graphStart = RageTimer::GetTimeSinceStart();
-	// gen.analyzeNoteData(tempNoteData, parityRows, m_StepsTypeStr);
-	// float graphEnd = RageTimer::GetTimeSinceStart();
-	// LOG->Trace("analyzeGraph in %f seconds", graphEnd - graphStart);
-	
-
-	
-// 	Json::Value graphJson = graph.ToJson();
-// 	RString graphFilename = m_pSong->GetDisplayMainTitle() + "-" + DifficultyToString(m_Difficulty) + "-graph.json";
-// JsonUtil::WriteFile(graphJson, "./Save/song-full-jsons/graphs/" + graphFilename, false);
-
-	// Json::Value fullRowJson = StepParity::Row::ToJsonRows(parityRows, true);
-	// RString fullFilename = m_pSong->GetDisplayMainTitle() + "-" + DifficultyToString(m_Difficulty) + "-full-rows.json";
-	// JsonUtil::WriteFile(fullRowJson, "./Save/song-full-jsons/" + fullFilename, false);
-
-	// Json::Value parityJson = StepParity::Row::ParityRowsJson(parityRows);
-	// RString parityFilename = m_pSong->GetDisplayMainTitle() + "-" + DifficultyToString(m_Difficulty) + "-parities.json";
-	// JsonUtil::WriteFile(parityJson, "./Save/song-parity-jsons/" + parityFilename, false);
-
-		GAMESTATE->SetProcessedTimingData(nullptr);
+	GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
 void Steps::CalculateMeasureInfo()
