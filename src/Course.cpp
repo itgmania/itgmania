@@ -85,19 +85,30 @@ RString CourseEntry::GetTextDescription() const
 	else
 		vsEntryDescription.push_back( "Random" );
 	if( songCriteria.m_vsGroupNames.size() > 0 )
-		vsEntryDescription.push_back( join(",", songCriteria.m_vsGroupNames) );
+		vsEntryDescription.push_back("Groups: " + join(",", songCriteria.m_vsGroupNames));
 	if( songCriteria.m_bUseSongGenreAllowedList )
 		vsEntryDescription.push_back( join(",",songCriteria.m_vsSongGenreAllowedList) );
+	if( songCriteria.m_vsArtistNames.size() > 0 )
+		vsEntryDescription.push_back("Artists: " + join(",", songCriteria.m_vsArtistNames));
 	if( stepsCriteria.m_difficulty != Difficulty_Invalid  &&  stepsCriteria.m_difficulty != Difficulty_Medium )
 		vsEntryDescription.push_back( CourseDifficultyToLocalizedString(stepsCriteria.m_difficulty) );
 	if( stepsCriteria.m_iLowMeter != -1 )
 		vsEntryDescription.push_back( ssprintf("Low meter: %d", stepsCriteria.m_iLowMeter) );
 	if( stepsCriteria.m_iHighMeter != -1 )
 		vsEntryDescription.push_back( ssprintf("High meter: %d", stepsCriteria.m_iHighMeter) );
-	if( songSort != SongSort_Randomize )
-		vsEntryDescription.push_back( "Sort: %d" + SongSortToLocalizedString(songSort) );
-	if( songSort != SongSort_Randomize && iChooseIndex != 0 )
-		vsEntryDescription.push_back( "Choose " + FormatNumberAndSuffix(iChooseIndex) + " match" );
+	if( songCriteria.m_fMinBPM != -1 )
+		vsEntryDescription.push_back(ssprintf("Min BPM: %.3f", songCriteria.m_fMinBPM));
+	if( songCriteria.m_fMaxBPM != -1 )
+		vsEntryDescription.push_back(ssprintf("Max BPM: %.3f", songCriteria.m_fMaxBPM));
+	if( songCriteria.m_fMinDurationSeconds != -1 )
+		vsEntryDescription.push_back(ssprintf("Min Duration: %.3f seconds", songCriteria.m_fMinDurationSeconds));
+	if( songCriteria.m_fMaxDurationSeconds != -1 )
+		vsEntryDescription.push_back(ssprintf("Max Duration: %.3f seconds", songCriteria.m_fMaxDurationSeconds));
+
+	if (songSort != SongSort_Randomize)
+		vsEntryDescription.push_back("Sort: " + SongSortToLocalizedString(songSort));
+	if( songSort != SongSort_Randomize && iChooseIndex != -1 )
+		vsEntryDescription.push_back( "Choose " + FormatNumberAndSuffix(iChooseIndex+1) + " match" );
 	int iNumModChanges = GetNumModChanges();
 	if( iNumModChanges != 0 )
 		vsEntryDescription.push_back( ssprintf("%d mod changes", iNumModChanges) );
@@ -396,8 +407,6 @@ bool Course::GetTrailSorted( StepsType st, CourseDifficulty cd, Trail &trail ) c
 // TODO: Move Course initialization after PROFILEMAN is created
 static void CourseSortSongs( SongSort sort, std::vector<Song*> &vpPossibleSongs, RandomGen &rnd )
 {
-	LOG->Trace("CourseSortSongs sort= %d | %s", sort, SongSortToString(sort).c_str());
-	LOG->Flush();
 	switch (sort)
 	{
 	case SongSort_Randomize:
@@ -552,7 +561,6 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 				if( v.size() == 1 )
 					vpSongs.push_back( sas->pSong );
 			}
-			LOG->Trace("Course::GetTrailUnsorted");
 			
 			CourseSortSongs(e->songSort, vpSongs, rnd);
 
