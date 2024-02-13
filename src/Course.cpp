@@ -638,8 +638,7 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 					if( iMaxDist == iMinDist )
 						iAdd = iMaxDist;
 					else {
-						std::uniform_int_distribution<> dist( iMinDist, iMaxDist );
-						iAdd = dist( rnd );
+						iAdd = std::floor((iMinDist + iMaxDist) / 2);
 					}
 					iLowMeter += iAdd;
 					iHighMeter += iAdd;
@@ -871,8 +870,7 @@ void Course::GetTrailUnsortedEndless( const std::vector<CourseEntry> &entries, T
 				if( iMaxDist == iMinDist )
 					iAdd = iMaxDist;
 				else {
-					std::uniform_int_distribution<> dist( iMinDist, iMaxDist );
-					iAdd = dist( rnd );
+					iAdd = std::floor((iMinDist + iMaxDist) / 2);
 				}
 				iLowMeter += iAdd;
 				iHighMeter += iAdd;
