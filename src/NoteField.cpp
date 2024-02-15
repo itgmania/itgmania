@@ -46,6 +46,7 @@ NoteField::NoteField()
 	m_pNoteData = nullptr;
 	m_pCurDisplay = nullptr;
 	m_drawing_board_primitive= false;
+	m_bShowBeatBars = SHOW_BEAT_BARS;
 
 	m_textMeasureNumber.LoadFromFont( THEME->GetPathF("NoteField","MeasureNumber") );
 	m_textMeasureNumber.SetZoom( 1.0f );
@@ -94,6 +95,16 @@ void NoteField::Unload()
 	m_NoteDisplays.clear();
 	m_pCurDisplay = nullptr;
 	memset( m_pDisplays, 0, sizeof(m_pDisplays) );
+}
+
+void NoteField::SetBeatBars(bool active)
+{
+	m_bShowBeatBars = active;
+}
+
+bool NoteField::GetBeatBars()
+{
+	return m_bShowBeatBars;
 }
 
 void NoteField::CacheNoteSkin( const RString &sNoteSkin_ )
@@ -800,7 +811,7 @@ void NoteField::DrawPrimitives()
 		segs[tst] = &(pTiming->GetTimingSegments(tst));
 
 	// Draw beat bars
-	if( ( GAMESTATE->IsEditing() || SHOW_BEAT_BARS ) && pTiming != nullptr )
+	if( ( GAMESTATE->IsEditing() || m_bShowBeatBars ) && pTiming != nullptr )
 	{
 		const std::vector<TimingSegment *> &tSigs = *segs[SEGMENT_TIME_SIG];
 		int iMeasureIndex = 0;
@@ -1267,6 +1278,18 @@ public:
 		return 1;
 	}
 
+	static int GetBeatBars(T* p, lua_State* L)
+	{
+		LuaHelpers::Push(L, p->GetBeatBars());
+		return 1;
+	};
+
+	static int SetBeatBars(T* p, lua_State* L)
+	{
+		p->SetBeatBars(BArg(1));
+		return 0;
+	}
+
 	LunaNoteField()
 	{
 		ADD_METHOD(set_step_callback);
@@ -1278,6 +1301,8 @@ public:
 		ADD_METHOD(did_tap_note);
 		ADD_METHOD(did_hold_note);
 		ADD_METHOD(get_column_actors);
+		ADD_METHOD(GetBeatBars);
+		ADD_METHOD(SetBeatBars);
 	}
 };
 

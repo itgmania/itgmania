@@ -67,6 +67,9 @@ public:
 	// public so that the Lua API can access it. -Kyz
 	std::vector<NoteColumnRenderer> m_ColumnRenderers;
 
+	void SetBeatBars(bool active);
+	bool GetBeatBars();
+
 protected:
 	void CacheNoteSkin( const RString &sNoteSkin );
 	void UncacheNoteSkin( const RString &sNoteSkin );
@@ -126,6 +129,8 @@ protected:
 	BitmapText	m_textMeasureNumber;
 	Quad		m_rectMarkerBar;
 	Quad		m_rectAreaHighlight;
+
+	bool m_bShowBeatBars;
 };
 
 #endif
