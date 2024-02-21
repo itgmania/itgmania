@@ -421,12 +421,12 @@ bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEn
 	}
 	else if( sParams[1] == "*" )
 	{
-		//new_entry.bSecret = true;
+		new_entry.bSecret = true;
 	}
 	// group random
 	else if( sParams[1].Right(1) == "*" )
 	{
-		//new_entry.bSecret = true;
+		new_entry.bSecret = true;
 		RString sSong = sParams[1];
 		sSong.Replace( "\\", "/" );
 		std::vector<RString> bits;
