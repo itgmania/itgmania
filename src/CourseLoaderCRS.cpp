@@ -527,21 +527,7 @@ bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEn
 
 bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, CourseEntry &new_entry, const RString &sPath)
 {
-	// I want to be able to make courses that are really weirdly specific, so I'm going to try to put together a different
-	// format for defining the song selection criteria.
-	// The basic idea is to free up the order in which the song criteria need to be specified, and to add a bunch more options.
-	// TITLE, GROUP, ARTIST, DIFFICULTY, BPMRANGE, DURATION, METER, GENRE, SORT, MODS, GAINSECONDS, GAINLIVES
-	// #SONGSELECT:TITLE=sometitle,some other title;
-	// #SONGSELECT:GROUP=DDR A,DDR A3;
-	// #SONGSELECT:ARTIST=TaQ,Someone else;
-	// #SONGSELECT:DURATION=69..420;
-	// #SONGSELECT:DIFFICULTY=Easy,Hard;
-	// #SONGSELECT:BPMRANGE=150..160;
-	// #SONGSELECT:METER=5..9;
-	// #SONGSELECT:GENRE=Pop,Techno,Opera;
-	// #SONGSELECT:SORT=Best,1;
-	// #SONGSELECT:SORT=Worst,10;
-
+	
 	for( unsigned i = 1; i < sParams.params.size(); ++i )
 	{
 		std::vector<RString> sParamParts;
