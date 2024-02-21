@@ -605,18 +605,13 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 						SongUtil::SortSongPointerArrayByGrades( arraySongs, true );
 					break;
 				case SORT_TOP_GRADES_P1:
-					// Check if master player profile is persistent
+					// Check if player profile is persistent
 					if( PROFILEMAN->IsPersistentProfile(PLAYER_1) )
 						SongUtil::SortSongPointerArrayByProfileGrades( arraySongs, true, PLAYER_1);
-					else
-						SongUtil::SortSongPointerArrayByGrades( arraySongs, true );
 					break;
 				case SORT_TOP_GRADES_P2:
 					if( PROFILEMAN->IsPersistentProfile(PLAYER_2) )
 						SongUtil::SortSongPointerArrayByProfileGrades( arraySongs, true, PLAYER_2);
-					else
-						SongUtil::SortSongPointerArrayByGrades( arraySongs, true );
-
 					break;
 				case SORT_ARTIST:
 					SongUtil::SortSongPointerArrayByArtist( arraySongs );
