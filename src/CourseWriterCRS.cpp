@@ -268,15 +268,15 @@ bool CourseWriterCRS::WriteSongSelectCourseEntry( const CourseEntry &entry, Rage
 	if(entry.songCriteria.m_fMinDurationSeconds > 0 
 		&& entry.songCriteria.m_fMaxDurationSeconds > 0 )
 	{
-		songSelectParams.push_back(ssprintf("DURATION=%d..%d", (int)entry.songCriteria.m_fMinDurationSeconds, (int)entry.songCriteria.m_fMaxDurationSeconds));
+		songSelectParams.push_back(ssprintf("DURATION=%d-%d", (int)entry.songCriteria.m_fMinDurationSeconds, (int)entry.songCriteria.m_fMaxDurationSeconds));
 	}
 	if(entry.songCriteria.m_fMinBPM > 0 && entry.songCriteria.m_fMaxBPM > 0 )
 	{
-		songSelectParams.push_back(ssprintf("BPMRANGE=%f..%f", entry.songCriteria.m_fMinBPM, entry.songCriteria.m_fMaxBPM));
+		songSelectParams.push_back(ssprintf("BPMRANGE=%f-%f", entry.songCriteria.m_fMinBPM, entry.songCriteria.m_fMaxBPM));
 	}
 	if(entry.stepsCriteria.m_iLowMeter > 0 && entry.stepsCriteria.m_iHighMeter > 0 )
 	{
-		songSelectParams.push_back(ssprintf("METER=%d..%d", entry.stepsCriteria.m_iLowMeter, entry.stepsCriteria.m_iHighMeter));
+		songSelectParams.push_back(ssprintf("METER=%d-%d", entry.stepsCriteria.m_iLowMeter, entry.stepsCriteria.m_iHighMeter));
 	}
 	if( entry.iGainLives > 0 )
 	{
