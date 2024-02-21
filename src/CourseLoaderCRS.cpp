@@ -554,7 +554,9 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 		RString sParamName = sParamParts[0];
 		RString sParamValue = sParamParts[1];
 
-		// For params that accept multiple items, if someone were to define it twice in one #SONGSELECT, should we overwrite the first, or append?
+		// For params that accept multiple items, if someone were to define it twice in one #SONGSELECT, 
+		// should we overwrite the first, or append? Currently, it just appends it all together.
+
 		if( sParamName.EqualsNoCase("TITLE") )
 		{
 			std::vector<RString> songTitles;
@@ -630,21 +632,21 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 		else if( sParamName.EqualsNoCase("DURATION") )
 		{
 			std::vector<RString> durations;	
-			split(sParamValue, "..", durations);
+			split(sParamValue, "-", durations);
 			new_entry.songCriteria.m_fMinDurationSeconds = StringToFloat(durations[0]);
 			new_entry.songCriteria.m_fMaxDurationSeconds = StringToFloat(durations[1]);
 		}
 		else if( sParamName.EqualsNoCase("BPMRANGE") )
 		{
 			std::vector<RString> bpms;	
-			split(sParamValue, "..", bpms);
+			split(sParamValue, "-", bpms);
 			new_entry.songCriteria.m_fMinBPM = StringToFloat(bpms[0]);
 			new_entry.songCriteria.m_fMaxBPM = StringToFloat(bpms[1]);
 		}
 		else if( sParamName.EqualsNoCase("METER") )
 		{
 			std::vector<RString> meters;
-			split(sParamValue, "..", meters);
+			split(sParamValue, "-", meters);
 			new_entry.stepsCriteria.m_iLowMeter = StringToInt(meters[0]);
 			new_entry.stepsCriteria.m_iHighMeter = StringToInt(meters[1]);
 		}
@@ -677,57 +679,10 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 			}
 			new_entry.sModifiers = join( ",", mods );
 		}
-	}
-	return true;
-}
-
-bool CourseLoaderCRS::ParseCourseSongSort(RString sParam, CourseEntry &new_entry, const RString &sPath)
-{
-	int iNumSongs = SONGMAN->GetNumSongs();
-	if( sParam.Left(strlen("BEST")) == "BEST" )
-	{
-		int iChooseIndex = StringToInt( sParam.Right(sParam.size()-strlen("BEST")) ) - 1;
-		if( iChooseIndex > iNumSongs )
+		else
 		{
-			// looking up a song that doesn't exist.
-			LOG->UserLog( "Course file", sPath, "is trying to load BEST%i with only %i songs installed. "
-						"This entry will be ignored.", iChooseIndex, iNumSongs);
-			return false; // skip this #SONG
+			LOG->UserLog( "Course file", sPath, "has an unexpected parameter named '%s', ignoring.", sParamName.c_str() );
 		}
-
-		new_entry.iChooseIndex = iChooseIndex;
-		CLAMP( new_entry.iChooseIndex, 0, 500 );
-		new_entry.songSort = SongSort_MostPlays;
-	}
-	// least played
-	else if( sParam.Left(strlen("WORST")) == "WORST" )
-	{
-		int iChooseIndex = StringToInt( sParam.Right(sParam.size()-strlen("WORST")) ) - 1;
-		if( iChooseIndex > iNumSongs )
-		{
-			// looking up a song that doesn't exist.
-			LOG->UserLog( "Course file", sPath, "is trying to load WORST%i with only %i songs installed. "
-						"This entry will be ignored.", iChooseIndex, iNumSongs);
-			return false; // skip this #SONG
-		}
-
-		new_entry.iChooseIndex = iChooseIndex;
-		CLAMP( new_entry.iChooseIndex, 0, 500 );
-		new_entry.songSort = SongSort_FewestPlays;
-	}
-	// best grades
-	else if( sParam.Left(strlen("GRADEBEST")) == "GRADEBEST" )
-	{
-		new_entry.iChooseIndex = StringToInt( sParam.Right(sParam.size()-strlen("GRADEBEST")) ) - 1;
-		CLAMP( new_entry.iChooseIndex, 0, 500 );
-		new_entry.songSort = SongSort_TopGrades;
-	}
-	// worst grades
-	else if( sParam.Left(strlen("GRADEWORST")) == "GRADEWORST" )
-	{
-		new_entry.iChooseIndex = StringToInt( sParam.Right(sParam.size()-strlen("GRADEWORST")) ) - 1;
-		CLAMP( new_entry.iChooseIndex, 0, 500 );
-		new_entry.songSort = SongSort_LowestGrades;
 	}
 	return true;
 }
