@@ -69,7 +69,7 @@ public:
 	float fGainSeconds;	// time gained back at the beginning of the song.  LifeMeterTime only.
 	int iGainLives;			// lives gained back at the beginning of the next song
 
-	CourseEntry(): bSecret(false), songID(), songCriteria(),
+	CourseEntry(): bSecret(false), bUseSongSelect(false), songID(), songCriteria(),
 		stepsCriteria(), bNoDifficult(false),
 		songSort(SongSort_Randomize), iChooseIndex(0),
 		sModifiers(RString("")), attacks(), fGainSeconds(0),
