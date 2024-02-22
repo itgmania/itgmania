@@ -88,7 +88,7 @@ Complete Course Template
 
 
 
-#SONGSELECT:GROUP=Stepmania 5:BPMRANGE=120..160:Difficulty=Medium:MODS=2x;
+#SONGSELECT:GROUP=Stepmania 5:BPMRANGE=120-160:Difficulty=Medium:MODS=2x;
 -- #SONGSELECT is a new alternative to the #SONG tag, which will (hopefully)
 -- be easier to use and understand. Instead of relying on values input in a
 -- very specific and poorly-documented order, this tag is composed of 
@@ -150,7 +150,7 @@ Complete Course Template
 #SONGSELECT:DIFFICULTY=Medium,Hard;
 
 --  METER= A minimum and maximum value of a song's difficulty meter,
---  separated by EXACTLY TWO (2) periods.
+--  separated by a dash `-`.
 --  Notes:
 --  - This is independent of the DIFFICULTY parameter, which can be used
 --    along with METER to further refine a specific song hardness.
@@ -160,10 +160,10 @@ Complete Course Template
 --  - These values are inclusive, meaning that song with a meter that is exactly
 --    the value of minimum or maximum can be chosen.
 --  Example:
-#SONGSELECT:METER=8..12;
+#SONGSELECT:METER=8-12;
 
 --  BPMRANGE= A minimum and maximum value of a song's bpm, 
---  separated by EXACTLY TWO (2) periods.
+--  separated by a dash `-`.
 --  Notes:
 --  - The "bpm" values refer to the displayed bpm value/range of a song.
 --    This means that a song may be chosen if its #DISPLAYBPM matches the 
@@ -174,19 +174,19 @@ Complete Course Template
 --  - This range is inclusive, meaning that a song with a bpm that is exactly
 --    the value of the lower or upper range can also be chosen. 
 --  - This also means that if you want to choose songs of a very specific bpm,
---    like songs that are exactly 120 bpm, you can specify BPMRANGE=120..120
+--    like songs that are exactly 120 bpm, you can specify BPMRANGE=120-120
 -- Example:
-#SONGSELECT:BPMRANGE=120..150;
+#SONGSELECT:BPMRANGE=120-150;
 
 --  DURATION= A minimum and maximum value, in seconds, for the length of a song,
---            separated by EXACTLY TWO (2) periods.
+--  separated by a dash `-`.
 --  Notes:
 --  - The "duration" values refers to either the song file's actual length, or
 --    The simfile's #MUSICLENGTH value, if specified.
 --  - These values should only be whole numbers (no decimal places).
 --  - This range is inclusive.
 --  Example:
-#SONGSELECT:DURATION=90..125;
+#SONGSELECT:DURATION=90-125;
 
 --  SORT= A set of two values that specify a sort type and a number, separated
 --  by a comma. For example, SORT=MostPlays,1 selects the #1 most played song on
@@ -231,4 +231,4 @@ Finally, here's an example course:
 #SONGSELECT:GROUP=Stepmania 5:MODS=Overhead;
 #SONGSELECT:ARTIST=Kommisar:MODS=2x;
 #SONGSELECT:GROUP=In The Groove:TITLE=Mouth;
-#SONGSELECT:BPMRANGE=110..160:DIFFICULTY=Medium;
+#SONGSELECT:BPMRANGE=110-160:DIFFICULTY=Medium;
