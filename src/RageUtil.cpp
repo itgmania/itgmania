@@ -705,31 +705,53 @@ RString join( const RString &sDelimitor, std::vector<RString>::const_iterator be
 	return sRet;
 }
 
-RString SmEscape( const RString &sUnescaped )
+RString SmEscape( const RString &sUnescaped, const std::vector<char> charsToEscape )
 {
-	return SmEscape( sUnescaped.c_str(), sUnescaped.size() );
+	return SmEscape(sUnescaped.c_str(), sUnescaped.size(), charsToEscape);
 }
 
-RString SmEscape( const char *cUnescaped, int len )
+RString SmEscape ( const char *cUnescaped, int len, const std::vector<char> charsToEscape )
 {
 	RString answer = "";
 	for( int i = 0; i < len; ++i )
 	{
-		// Other characters we could theoretically escape:
-		// NotesWriterSM.cpp used to claim ',' should be escaped, but there was no explanation why
-		// '#' is both a control character and a valid part of a parameter.  The only way for there to be
-		//   any confusion is in a misformatted .sm file, though, so it is unnecessary to escape it.
 		if( cUnescaped[i] == '/' && i + 1 < len && cUnescaped[i + 1] == '/' )
 		{
 			answer += "\\/\\/";
 			++i; // increment here so we skip both //s
 			continue;
 		}
-		if( cUnescaped[i] == '\\' || cUnescaped[i] == ':' || cUnescaped[i] == ';' )
-		    answer += "\\";
+		for(char escapeChar: charsToEscape)
+		{
+			if(cUnescaped[i] == escapeChar)
+			{
+				answer += "\\";
+				break;
+			}
+		}
+		
 		answer += cUnescaped[i];
 	}
 	return answer;
+}
+
+std::vector<RString> SmEscape(const std::vector<RString> &vUnescaped, const std::vector<char> charsToEscape)
+{
+	std::vector<RString> escaped;
+	for(RString unescaped: vUnescaped)
+	{
+		escaped.push_back(SmEscape(unescaped, charsToEscape));
+	}
+	return escaped;
+}
+
+RString SmUnescape( const RString &sEscaped )
+{
+	RString unescaped = sEscaped;
+	unescaped.Replace("\\\\", "||escaped-backslash||");
+	unescaped.Replace("\\", "");
+	unescaped.Replace("||escaped-backslash||", "\\");
+	return unescaped;
 }
 
 RString DwiEscape( const RString &sUnescaped )

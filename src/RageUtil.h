@@ -422,8 +422,12 @@ RString join( const RString &sDelimitor, const std::vector<RString>& sSource );
 RString join( const RString &sDelimitor, std::vector<RString>::const_iterator begin, std::vector<RString>::const_iterator end );
 
 // These methods escapes a string for saving in a .sm or .crs file
-RString SmEscape( const RString &sUnescaped );
-RString SmEscape( const char *cUnescaped, int len );
+RString SmEscape(const RString &sUnescaped, const std::vector<char> charsToEscape = {'\\', ':', ';'});
+RString SmEscape( const char *cUnescaped, int len, const std::vector<char> charsToEscape = {'\\', ':', ';'} );
+// Escapes each element in a std::vector<RString>, returns a new vector
+std::vector<RString> SmEscape(const std::vector<RString> &vUnescaped, const std::vector<char> charsToEscape = {'\\', ':', ';'});
+
+RString SmUnescape( const RString &sEscaped );
 
 // These methods "escape" a string for .dwi by turning = into -, ] into I, etc.  That is "lossy".
 RString DwiEscape( const RString &sUnescaped );
