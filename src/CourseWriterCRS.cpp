@@ -226,25 +226,26 @@ bool CourseWriterCRS::WriteSongSelectCourseEntry( const CourseEntry &entry, Rage
 
 	std::vector<RString> songSelectParams;
 
+	//TODO: Re-escape everything
 	if( entry.songCriteria.m_vsSongNames.size() > 0 )
 	{
-		RString songNames = join(",", entry.songCriteria.m_vsSongNames);
+		RString songNames = join(",", SmEscape( entry.songCriteria.m_vsSongNames, {'\\', ':', ';', '#', ','} ));
 		songSelectParams.push_back(ssprintf("TITLE=%s", songNames.c_str()));
 	}
 	if( entry.songCriteria.m_vsGroupNames.size() > 0)
 	{
-		RString groupNames = join(",", entry.songCriteria.m_vsGroupNames);
+		RString groupNames = join(",", SmEscape( entry.songCriteria.m_vsGroupNames, {'\\', ':', ';', '#', ','} ));
 		songSelectParams.push_back(ssprintf("GROUP=%s", groupNames.c_str()));
 	}
 	if( entry.songCriteria.m_vsArtistNames.size() > 0)
 	{
-		RString artistNames = join(",", entry.songCriteria.m_vsArtistNames);
+		RString artistNames = join(",", SmEscape( entry.songCriteria.m_vsArtistNames, {'\\', ':', ';', '#', ','} ));
 		songSelectParams.push_back(ssprintf("ARTIST=%s", artistNames.c_str()));
 	}
 	if( entry.songCriteria.m_bUseSongAllowedList &&
 		entry.songCriteria.m_vsSongGenreAllowedList.size() > 0)
 	{
-		RString genreNames = join(",", entry.songCriteria.m_vsSongGenreAllowedList);
+		RString genreNames = join(",", SmEscape( entry.songCriteria.m_vsSongGenreAllowedList, {'\\', ':', ';', '#', ','} ));
 		songSelectParams.push_back(ssprintf("GENRE=%s", genreNames.c_str()));
 	}
 	if( entry.stepsCriteria.m_vDifficulties.size() > 0 )

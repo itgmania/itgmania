@@ -49,7 +49,7 @@ static CourseDifficulty CRSStringToDifficulty( const RString& s )
 bool CourseLoaderCRS::LoadFromBuffer( const RString &sPath, const RString &sBuffer, Course &out )
 {
 	MsdFile msd;
-	msd.ReadFromString( sBuffer, false );  // don't unescape
+	msd.ReadFromString( sBuffer, false );  // don't unescape here, it gets handled later
 	return LoadFromMsd( sPath, msd, out, true );
 }
 
@@ -254,7 +254,7 @@ bool CourseLoaderCRS::LoadFromCRSFile( const RString &_sPath, Course &out )
 	}
 
 	MsdFile msd;
-	if( !msd.ReadFile( sPath, false ) ) // don't unescape
+	if( !msd.ReadFile( sPath, false ) ) // don't unescape here, it gets handled later
 	{
 		LOG->UserLog( "Course file", sPath, "couldn't be opened: %s.", msd.GetError().c_str() );
 		return false;
@@ -289,7 +289,7 @@ bool CourseLoaderCRS::LoadEditFromFile( const RString &sEditFilePath, ProfileSlo
 	}
 
 	MsdFile msd;
-	if( !msd.ReadFile( sEditFilePath, false ) )  // don't unescape
+	if( !msd.ReadFile( sEditFilePath, false ) )  // don't unescape here, it gets handled later
 	{
 		LOG->UserLog( "Edit file", sEditFilePath, "couldn't be opened: %s", msd.GetError().c_str() );
 		return false;
@@ -545,28 +545,32 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 
 		if( sParamName.EqualsNoCase("TITLE") )
 		{
-			std::vector<RString> songTitles;
-			split(sParamValue, ",", songTitles);
-			new_entry.songCriteria.m_vsSongNames.insert(new_entry.songCriteria.m_vsSongNames.end(), songTitles.begin(), songTitles.end());
+			if(ParseCommaSeparatedList(sParamValue, new_entry.songCriteria.m_vsSongNames, sParamName, sPath) == false)
+			{
+				return false;
+			}
 		}
 		else if( sParamName.EqualsNoCase("GROUP") )
 		{
-			std::vector<RString> groups;
-			split(sParamValue, ",", groups);
-			new_entry.songCriteria.m_vsGroupNames.insert(new_entry.songCriteria.m_vsGroupNames.end(), groups.begin(), groups.end());
+			if(ParseCommaSeparatedList(sParamValue, new_entry.songCriteria.m_vsGroupNames, sParamName, sPath) == false)
+			{
+				return false;
+			}
 		}
 		else if( sParamName.EqualsNoCase("ARTIST") )
 		{
-			std::vector<RString> artists;
-			split(sParamValue, ",", artists);
-			new_entry.songCriteria.m_vsArtistNames.insert(new_entry.songCriteria.m_vsArtistNames.end(), artists.begin(), artists.end());
+			if(ParseCommaSeparatedList(sParamValue, new_entry.songCriteria.m_vsArtistNames, sParamName, sPath) == false)
+			{
+				return false;
+			}
 		}
 		else if( sParamName.EqualsNoCase("GENRE") )
 		{
+			if(ParseCommaSeparatedList(sParamValue, new_entry.songCriteria.m_vsSongGenreAllowedList, sParamName, sPath) == false)
+			{
+				return false;
+			}
 			new_entry.songCriteria.m_bUseSongGenreAllowedList = true;
-			std::vector<RString> genres;
-			split(sParamValue, ",", genres);
-			new_entry.songCriteria.m_vsSongGenreAllowedList.insert(new_entry.songCriteria.m_vsSongGenreAllowedList.end(), genres.begin(), genres.end());
 		}
 		else if( sParamName.EqualsNoCase("DIFFICULTY") )
 		{
@@ -584,6 +588,10 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 				if( diff != Difficulty_Invalid )
 				{
 					difficulties.push_back(diff);
+				}
+				else
+				{
+					LOG->UserLog( "Course file", sPath, "has an invalid DIFFICULTY sub-parameter, \"%s\"", difficultyStrs[d].c_str());
 				}
 			}
 			new_entry.stepsCriteria.m_vDifficulties.insert(new_entry.stepsCriteria.m_vDifficulties.end(), difficulties.begin(), difficulties.end());
@@ -617,24 +625,24 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 		}
 		else if( sParamName.EqualsNoCase("DURATION") )
 		{
-			std::vector<RString> durations;	
-			split(sParamValue, "-", durations);
-			new_entry.songCriteria.m_fMinDurationSeconds = StringToFloat(durations[0]);
-			new_entry.songCriteria.m_fMaxDurationSeconds = StringToFloat(durations[1]);
+			if(ParseRangedValue(sParamValue, new_entry.songCriteria.m_fMinDurationSeconds, new_entry.songCriteria.m_fMaxDurationSeconds, sParamName, sPath) == false)
+			{
+				return false;
+			}
 		}
 		else if( sParamName.EqualsNoCase("BPMRANGE") )
 		{
-			std::vector<RString> bpms;	
-			split(sParamValue, "-", bpms);
-			new_entry.songCriteria.m_fMinBPM = StringToFloat(bpms[0]);
-			new_entry.songCriteria.m_fMaxBPM = StringToFloat(bpms[1]);
+			if(ParseRangedValue(sParamValue, new_entry.songCriteria.m_fMinBPM, new_entry.songCriteria.m_fMaxBPM, sParamName, sPath) == false)
+			{
+				return false;
+			}
 		}
 		else if( sParamName.EqualsNoCase("METER") )
 		{
-			std::vector<RString> meters;
-			split(sParamValue, "-", meters);
-			new_entry.stepsCriteria.m_iLowMeter = StringToInt(meters[0]);
-			new_entry.stepsCriteria.m_iHighMeter = StringToInt(meters[1]);
+			if(ParseRangedValue(sParamValue, new_entry.stepsCriteria.m_iLowMeter, new_entry.stepsCriteria.m_iHighMeter, sParamName, sPath) == false)
+			{
+				return false;
+			}
 		}
 		else if( sParamName.EqualsNoCase("GAINLIVES") )
 		{
@@ -673,10 +681,62 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 	return true;
 }
 
+bool CourseLoaderCRS::ParseCommaSeparatedList(const RString &sParamValue, std::vector<RString> &dest, const RString &sParamName, const RString &sPath)
+{
+	std::vector<RString> items;
+	//...and here is where the string unescaping gets handled
+	// Because we're dealing with a comma-separated list, we have to handle any escaped commas 
+	// as a special case. Hopefully nobody writes a song called "||escaped-comma||"
+	RString unescapedParamValue = sParamValue;
+	unescapedParamValue.Replace("\\,", "||escaped-comma||");
+	unescapedParamValue = SmUnescape(unescapedParamValue);
+	split(unescapedParamValue, ",", items);
+	if(items.size() == 0)
+	{
+		LOG->UserLog( "Course file", sPath, "has an invalid %s parameter, expected at least one sub-parameter, but found none.", sParamName.c_str() );
+		return false;
+	}
+	for (unsigned long i = 0; i < items.size(); i++)
+	{
+		items[i].Replace("||escaped-comma||", ",");
+		Trim(items[i]);
+	}
+	dest.insert(dest.end(), items.begin(), items.end());
+	return true;
+}
+
+template <typename T>
+bool CourseLoaderCRS::ParseRangedValue(const RString& sParamValue, T &minValue, T &maxValue, const RString &sParamName, const RString &sPath)
+{
+	std::vector<RString> values;
+	split(sParamValue, "-", values);
+	if(values.size() == 0)
+	{
+LOG->UserLog( "Course file", sPath, "has an invalid %s parameter, expected at least one value, but found none.", sParamName.c_str() );
+		return false;
+	}
+	else if(values.size() > 2)
+	{
+		LOG->UserLog( "Course file", sPath, "has an invalid %s parameter, expected at most 2, value, but found %zu.", sParamName.c_str(), values.size() );
+		return false;
+	}
+	float first_val = StringToFloat(values.front());
+	float last_val = StringToFloat(values.back());
+	if( first_val > last_val)
+	{
+		LOG->UserLog( "Course file", sPath, "has an invalid %s parameter value '%s': first value %f should be less than %f ", sParamName.c_str(), sParamValue.c_str(), first_val, last_val );
+		return false;
+	}
+	minValue = static_cast<T>(first_val);
+	maxValue = static_cast<T>(last_val);
+	return true;
+}
+
 bool CourseLoaderCRS::SetCourseSongSort(CourseEntry &new_entry, SongSort sort, int index, const RString &sPath)
 {
 	if( sort == SongSort_Invalid )
 	{
+		LOG->UserLog("Course file", sPath, "is trying to explicitly set a SongSort value of SongSort_Invalid.");
 		return false;
 	}
 	if( sort == SongSort_Randomize )
@@ -699,6 +759,7 @@ bool CourseLoaderCRS::SetCourseSongSort(CourseEntry &new_entry, SongSort sort, i
 	new_entry.songSort = sort;
 	return true;
 }
+
 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard
