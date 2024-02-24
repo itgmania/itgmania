@@ -705,8 +705,6 @@ bool CourseLoaderCRS::ParseCommaSeparatedList(const RString &sParamValue, std::v
 {
 	std::vector<RString> items;
 	//...and here is where the string unescaping gets handled
-	// Because we're dealing with a comma-separated list, we have to handle any escaped commas 
-	// as a special case. Hopefully nobody writes a song called "||escaped-comma||"
 	RString unescapedParamValue = sParamValue;
 
 	split_minding_escaped_delims(sParamValue, ",", items);
