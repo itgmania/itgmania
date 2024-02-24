@@ -32,6 +32,25 @@ const char *g_CRSDifficultyNames[] =
 	"Edit",
 };
 
+// This is a convenience function to handle splitting a string that potentially has 
+// escaped delimitor characters.
+// We need to split the string while still maintaining those escaped characters.
+// So first, replace escaped characters with "||escaped-delim||"
+// Then, replace any remaining delimitor characters with "||regular-delim||"
+// Then, put the escaped characters back, by replacing "||escaped-delim||" with "\\" + sDelimitor
+// And finally, split the string by instances of "||regular-delim||"
+// So for instance, "Thing 1, Thing\,2" becomes "Thing 1||regular-delim||Thing \, 2"
+void split_minding_escaped_delims(const RString &sSource, const RString &sDelimitor, std::vector<RString>& asAddit)
+{
+	RString sourceCopy = sSource;
+	RString escaped_delim = "||escaped-delim||";
+	RString regular_delim = "||regular-delim||";
+	sourceCopy.Replace("\\" + sDelimitor, escaped_delim);
+	sourceCopy.Replace(sDelimitor, regular_delim);
+	sourceCopy.Replace(escaped_delim, "\\" + sDelimitor);
+	split(sourceCopy, regular_delim, asAddit);
+}
+
 /**
  * @brief Retrieve the course difficulty based on the string name.
  * @param s the name of the difficulty.
@@ -531,7 +550,8 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 	for( unsigned i = 1; i < sParams.params.size(); ++i )
 	{
 		std::vector<RString> sParamParts;
-		split(sParams[i], "=", sParamParts);
+		split_minding_escaped_delims(sParams[i], "=", sParamParts);
+
 		if( sParamParts.size() != 2 )
 		{
 			LOG->UserLog( "Course file", sPath, "has an invalid SONGSELECT sub-parameter, \"%s\"", sParams[i].c_str());
@@ -688,9 +708,8 @@ bool CourseLoaderCRS::ParseCommaSeparatedList(const RString &sParamValue, std::v
 	// Because we're dealing with a comma-separated list, we have to handle any escaped commas 
 	// as a special case. Hopefully nobody writes a song called "||escaped-comma||"
 	RString unescapedParamValue = sParamValue;
-	unescapedParamValue.Replace("\\,", "||escaped-comma||");
-	unescapedParamValue = SmUnescape(unescapedParamValue);
-	split(unescapedParamValue, ",", items);
+
+	split_minding_escaped_delims(sParamValue, ",", items);
 	if(items.size() == 0)
 	{
 		LOG->UserLog( "Course file", sPath, "has an invalid %s parameter, expected at least one sub-parameter, but found none.", sParamName.c_str() );
@@ -698,7 +717,7 @@ bool CourseLoaderCRS::ParseCommaSeparatedList(const RString &sParamValue, std::v
 	}
 	for (unsigned long i = 0; i < items.size(); i++)
 	{
-		items[i].Replace("||escaped-comma||", ",");
+		items[i] = SmUnescape(items[i]);
 		Trim(items[i]);
 	}
 	dest.insert(dest.end(), items.begin(), items.end());

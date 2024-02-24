@@ -111,15 +111,18 @@ Complete Course Template
 --  - Unlike the #SONG tag, this will not take into account group names.
 --    If you want to specify a specific song from a specific group, use
 --    this along with the GROUP parameter.
---  - This does not support names that have commmas.
+--  - Commas, and other control characters (`#`,`;`, `=`, and `:`) can be used, 
+--    but they must be escaped (like `\#`, `\,`, etc).
 --  Example: 
 #SONGSELECT:TITLE=Goin' Under,Springtime;  
+#SONGSELECT:TITLE=thank u\, next;
 
 --  GROUP= A list of one or more song groups, separated by commas.
 --  Notes:
 --  - The "group" refers to the directory name of the song group.
---  - This does not support folders that have commas in their name.
 --  - Group names must be an *exact match*.
+--  - Commas, and other control characters (`#`,`;`, `=`, and `:`) can be used, 
+--    but they must be escaped (like `\#`, `\,`, etc).
 --  Example: 
 #SONGSELECT:GROUP=Stepmania 5,In The Groove;
   
@@ -127,13 +130,16 @@ Complete Course Template
 --  Notes:
 --  - The "artist" refers to either the #ARTIST or #ARTISTTRANSLIT value
 --    of the simfile.
---  - This does not support artist names that contain commas.
+--  - Commas, and other control characters (`#`,`;`, `=`, and `:`) can be used, 
+--    but they must be escaped (like `\#`, `\,`, etc).
 -- Example:
 #SONGSELECT:ARTIST=Kommisar,NegaRen;
 
 --  GENRE= A list of one or more song genres, separated by commas.
 --  Notes:
 --  - The "genre" refers to the #GENRE tag of a song.
+--  - Commas, and other control characters (`#`,`;`, `=`, and `:`) can be used, 
+--    but they must be escaped (like `\#`, `\,`, etc).
 --  - Most songs don't actually have a #GENRE defined, which unfortunately
 --    makes this parameter not terribly useful at this time.
 -- Example:
