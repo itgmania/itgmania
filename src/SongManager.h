@@ -143,6 +143,7 @@ public:
 	const std::vector<Song *> &GetAllSongsOfCurrentGame() const;
 
 	void GetPreferredSortSongs( std::vector<Song*> &AddTo ) const;
+	std::map<RString, std::vector<Song*>> GetPreferredSortSongsMap() const { return m_mapPreferredSectionToSongs;};
 	RString SongToPreferredSortSectionName( const Song *pSong ) const;
 	std::vector<RString> GetPreferredSortSectionNames() const;
 	std::vector<Song*> GetPreferredSortSongsBySectionName( const RString &sSectionName ) const;
@@ -229,6 +230,8 @@ protected:
 		RString sName;
 		std::vector<Song*> vpSongs;
 	};
+	/** @brief All preferred songs, keyed by section */
+	std::map<RString, std::vector<Song*>> m_mapPreferredSectionToSongs;
 	std::vector<PreferredSortSection> m_vPreferredSongSort;
 	std::vector<RString>		m_sSongGroupNames;
 	std::vector<RString>		m_sSongGroupBannerPaths; // each song group may have a banner associated with it

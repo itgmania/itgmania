@@ -682,24 +682,19 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 			{
 				if( bUseSections )
 				{
-					// Get all section names
-					std::vector<RString> vsSectionNames = SONGMAN->GetPreferredSortSectionNames();
-					for( unsigned i=0; i<vsSectionNames.size(); i++ )
+					// Get mappping of section names to songs
+					std::map<RString, std::vector<Song*>> preferredSortSongsMap = SONGMAN->GetPreferredSortSongsMap();
+					for (auto const& [sectionName, songs] : SONGMAN->GetPreferredSortSongsMap())
 					{
-						
-						// Get all songs in this section
-						std::vector<Song*> vsSongsInSection = SONGMAN->GetPreferredSortSongsBySectionName( vsSectionNames[i] );
-						
 						// todo: preferred sort section color handling? -aj
 						RageColor colorSection = SECTION_COLORS.GetValue(iSectionColorIndex);
 						iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
-
 						// Add the section item
-						arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, vsSectionNames[i], nullptr, SONGMAN->GetSongGroupColor(vsSectionNames[i]), vsSongsInSection.size()) );
+						arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sectionName, nullptr, colorSection, songs.size()) );
 						// Add all the songs in this section
-						for( unsigned j=0; j<vsSongsInSection.size(); j++ )
+						for (auto const& song : songs)
 						{
-							arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, vsSongsInSection[j], vsSectionNames[i], nullptr, SONGMAN->GetSongColor(vsSongsInSection[j]), 0) );
+							arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, song, sectionName, nullptr, SONGMAN->GetSongColor(song), 0) );
 						}
 					}
 				}
@@ -725,7 +720,6 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 							iSectionCount = j-i;
 
 							// new section, make a section item
-							// todo: preferred sort section color handling? -aj
 							RageColor colorSection = (so==SORT_GROUP) ? SONGMAN->GetSongGroupColor(pSong->m_sGroupName) : SECTION_COLORS.GetValue(iSectionColorIndex);
 							iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
 							arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sThisSection, nullptr, colorSection, iSectionCount) );

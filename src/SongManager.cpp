@@ -848,14 +848,10 @@ RString SongManager::SongToPreferredSortSectionName( const Song *pSong ) const
 
 void SongManager::GetPreferredSortSongsBySectionName( const RString &sSectionName, std::vector<Song*> &AddTo ) const
 {
-	for (PreferredSortSection const &v : m_vPreferredSongSort)
-	{
-		if (v.sName == sSectionName)
-		{
-			AddTo.insert( AddTo.end(), v.vpSongs.begin(), v.vpSongs.end() );
-			return;
-		}
-	}
+	// Use m_mapPreferredSectionToSongs
+	std::map<RString, SongPointerVector>::const_iterator iter = m_mapPreferredSectionToSongs.find( sSectionName );
+	if( iter != m_mapPreferredSectionToSongs.end() )
+		AddTo.insert( AddTo.end(), iter->second.begin(), iter->second.end() );
 }
 
 std::vector<Song*> SongManager::GetPreferredSortSongsBySectionName( const RString &sSectionName ) const
@@ -868,11 +864,11 @@ std::vector<Song*> SongManager::GetPreferredSortSongsBySectionName( const RStrin
 std::vector<RString> SongManager::GetPreferredSortSectionNames() const
 {
 	std::vector<RString> sectionNames;
-	for (PreferredSortSection const &v : m_vPreferredSongSort)
-	{
-		sectionNames.push_back(v.sName);
-	}
+	// Use m_mapPreferredSectionToSongs
+	for (std::pair<RString const, SongPointerVector> const &iter : m_mapPreferredSectionToSongs)
+		sectionNames.push_back(iter.first);
 	return sectionNames;
+
 }
 	
 void SongManager::GetPreferredSortCourses( CourseType ct, std::vector<Course*> &AddTo, bool bIncludeAutogen ) const
@@ -1635,6 +1631,7 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 	ASSERT( UNLOCKMAN != nullptr );
 
 	m_vPreferredSongSort.clear();
+	m_mapPreferredSectionToSongs.clear();
 	std::vector<RString> asLines;
 	RString sFile = sPreferredSongs;
 	if (!bIsAbsolute)
@@ -1654,6 +1651,7 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 			if( !section.vpSongs.empty() )
 			{
 				m_vPreferredSongSort.push_back( section );
+				m_mapPreferredSectionToSongs[section.sName] = section.vpSongs;
 				section = PreferredSortSection();
 			}
 
@@ -1693,6 +1691,7 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 	if( !section.vpSongs.empty() )
 	{
 		m_vPreferredSongSort.push_back( section );
+		m_mapPreferredSectionToSongs[section.sName] = section.vpSongs;
 		section = PreferredSortSection();
 	}
 
@@ -1711,25 +1710,31 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 			}
 		}
 
-		for (std::vector<PreferredSortSection>::iterator v = m_vPreferredSongSort.begin(); v != m_vPreferredSongSort.end(); ++v)
-		{
-			for( int i=v->vpSongs.size()-1; i>=0; i-- )
-			{
-				Song *pSong = v->vpSongs[i];
-				if( find(PFSection.vpSongs.begin(),PFSection.vpSongs.end(),pSong) != PFSection.vpSongs.end() )
-				{
-					v->vpSongs.erase( v->vpSongs.begin()+i );
-				}
-			}
-		}
-
+		// NOTE(crashcringle): This code removed the unlocks from other sections they might have been in.
+		// This was needed due to the previous 1:1 relationship between songs and section in order for the song to appear in the Unlocks section correctly.
+		// Commented out for now.
+		// for (std::vector<PreferredSortSection>::iterator v = m_vPreferredSongSort.begin(); v != m_vPreferredSongSort.end(); ++v)
+		// {
+		// 	for( int i=v->vpSongs.size()-1; i>=0; i-- )
+		// 	{
+		// 		Song *pSong = v->vpSongs[i];
+		// 		if( find(PFSection.vpSongs.begin(),PFSection.vpSongs.end(),pSong) != PFSection.vpSongs.end() )
+		// 		{
+		// 			v->vpSongs.erase( v->vpSongs.begin()+i );
+		// 		}
+		// 	}
+		// }
+		
 		m_vPreferredSongSort.push_back( PFSection );
+		m_mapPreferredSectionToSongs[PFSection.sName] = PFSection.vpSongs;
 	}
 
 	// prune empty groups
 	for( int i=m_vPreferredSongSort.size()-1; i>=0; i-- )
-		if( m_vPreferredSongSort[i].vpSongs.empty() )
+		if( m_vPreferredSongSort[i].vpSongs.empty() ) {
 			m_vPreferredSongSort.erase( m_vPreferredSongSort.begin()+i );
+			m_mapPreferredSectionToSongs.erase( m_vPreferredSongSort[i].sName );
+		}
 
 	for (PreferredSortSection const &i : m_vPreferredSongSort)
 	{
