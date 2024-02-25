@@ -1245,8 +1245,8 @@ void MusicWheel::ChangeMusic( int iDist )
 bool MusicWheel::ChangeSort( SortOrder new_so, bool allowSameSort )	// return true if change successful
 {
 	ASSERT( new_so < NUM_SortOrder );
-	// Ignore allowSameSort if we're using SORT_PREFERRED
-	// Each player has their own preferred songs which sorts the songs differently -crashcringle
+	// NOTE(crashcringle): Ignore allowSameSort if we're using SORT_PREFERRED.
+	// Each player has their own preferred songs which sorts the songs differently
 	if( GAMESTATE->m_SortOrder == new_so && (!allowSameSort && new_so != SORT_PREFERRED ))
 	{
 		return false;

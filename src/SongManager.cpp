@@ -861,14 +861,7 @@ void SongManager::GetPreferredSortSongsBySectionName( const RString &sSectionNam
 std::vector<Song*> SongManager::GetPreferredSortSongsBySectionName( const RString &sSectionName ) const
 {
 	std::vector<Song*> AddTo;
-	for (PreferredSortSection const &v : m_vPreferredSongSort)
-	{
-		if (v.sName == sSectionName)
-		{
-			AddTo.insert( AddTo.end(), v.vpSongs.begin(), v.vpSongs.end() );
-			return AddTo;
-		}
-	}
+	GetPreferredSortSongsBySectionName(sSectionName, AddTo);
 	return AddTo;
 }
 
