@@ -214,7 +214,6 @@ void SongManager::Reload( bool bAllowFastLoad, LoadingWindow *ld )
 		PREFSMAN->m_bFastLoad.Set( oldVal );
 
 	UpdatePreferredSort();
-	UpdateMeterSort();
 }
 
 void SongManager::LoadAdditions( LoadingWindow *ld )
@@ -228,7 +227,6 @@ void SongManager::LoadAdditions( LoadingWindow *ld )
 	UNLOCKMAN->Reload();
 
 	UpdatePreferredSort();
-	UpdateMeterSort();
 }
 
 void SongManager::InitSongsFromDisk( LoadingWindow *ld, bool onlyAdditions )
@@ -1237,7 +1235,6 @@ void SongManager::Invalidate( const Song *pStaleSong )
 
 	UpdatePopular();
 	UpdateShuffled();
-	UpdateMeterSort();
 	RefreshCourseGroupInfo();
 }
 
@@ -1630,17 +1627,19 @@ void SongManager::UpdatePopular()
 	}
 }
 
-void SongManager::UpdateMeterSort() {
-	std::vector<Song*> apDifficultSongs = m_pSongs;
+std::map<int, std::vector<Song*>> SongManager::UpdateMeterSort( std::vector<Song*> songs) {
+	// Empty the map
+	m_mapSongsByDifficulty.clear();
+	std::vector<Song*> apDifficultSongs = songs;
 	// For each song, for each step
 	for( unsigned i = 0; i < apDifficultSongs.size(); ++i )
 	{
-		const std::vector<Steps*> &vSteps = apDifficultSongs[i]->GetAllSteps();
-		for( unsigned j = 0; j < vSteps.size(); ++j )
+		std::vector<Steps*>	vpSteps;
+		SongUtil::GetPlayableSteps( apDifficultSongs[i], vpSteps );
+		for( unsigned j = 0; j < vpSteps.size(); ++j )
 		{
-			Steps *pSteps = vSteps[j];
+			Steps *pSteps = vpSteps[j];
 			// Check if the meter is already in m_mapSongsByDifficulty
-			
 			if (std::find(m_mapSongsByDifficulty[pSteps->GetMeter()].begin(), m_mapSongsByDifficulty[pSteps->GetMeter()].end(), apDifficultSongs[i]) != m_mapSongsByDifficulty[pSteps->GetMeter()].end())
 				continue;
 			else {			
@@ -1648,12 +1647,7 @@ void SongManager::UpdateMeterSort() {
 			}
 		}
 	}
-
-	// For each meter in m_mapSongsByDifficulty, sort the songs by title
-	for( unsigned i = 0; i < m_mapSongsByDifficulty.size(); ++i )
-	{
-		SongUtil::SortSongPointerArrayByTitle( m_mapSongsByDifficulty[i] );
-	}
+	return m_mapSongsByDifficulty;
 }
 
 

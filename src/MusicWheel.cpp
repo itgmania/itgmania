@@ -571,6 +571,8 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 			switch( so )
 			{
 				case SORT_METER:
+					SONGMAN->UpdateMeterSort(arraySongs);
+					break;
 				case SORT_PREFERRED:
 					// obey order specified by the preferred sort list
 					break;
@@ -715,12 +717,9 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 					}
 					break;
 				case SORT_METER:
-					// If the sort order is Preferred handle it differently because we already know the sections
 					if( bUseSections )
 					{
 						int iSectionCount = 0;
-						// // Get all section names
-						std::map<int, std::vector<Song*>> meterSortSongsMap = SONGMAN->GetMeterToSongsMap();
 						for (auto const& [sectionName, songs] : SONGMAN->GetMeterToSongsMap()) {
 							RageColor colorSection = SECTION_COLORS.GetValue(iSectionColorIndex);
 							iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
