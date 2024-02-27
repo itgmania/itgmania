@@ -189,7 +189,7 @@ public:
 
 	void UpdatePopular();
 	void UpdateShuffled();	// re-shuffle songs and courses
-	void UpdateMeterSort();
+	std::map<int, std::vector<Song*>> UpdateMeterSort( std::vector<Song*> songs);
 	void SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute = false);
 	void SetPreferredCourses(RString sPreferredCourses, bool bIsAbsolute = false);
 	void UpdatePreferredSort(RString sPreferredSongs = "PreferredSongs.txt", RString sPreferredCourses = "PreferredCourses.txt");
