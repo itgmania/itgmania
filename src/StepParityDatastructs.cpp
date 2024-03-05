@@ -8,6 +8,26 @@ using namespace StepParity;
 // Graph/Node methods
 //
 
+StepParityNode * StepParityGraph::addOrGetExistingNode(const State &state)
+{
+	// this is silly, but the start node has a rowIndex of -1
+	// which doesn't work as an array index.
+	int rowIndex = state.rowIndex + 1; 
+	while (static_cast<int>(stateNodeMap.size()) <= rowIndex)
+	{
+		stateNodeMap.push_back(std::map<State, StepParityNode *, StateComparator>());
+	}
+	
+	if(stateNodeMap[rowIndex].find(state) == stateNodeMap[rowIndex].end())
+	{
+		StepParityNode* newNode = new StepParityNode(state);
+		newNode->id = nodes.size();
+		nodes.push_back(newNode);
+		stateNodeMap[rowIndex][state] = newNode;
+	}
+
+	return stateNodeMap[rowIndex][state];
+}
 
 
 //
@@ -118,7 +138,7 @@ Json::Value StepParityNode::ToJson()
 }
 
 
-Json::Value Row::ToJsonRows(std::vector<Row> rows, bool useStrings)
+Json::Value Row::ToJsonRows(const std::vector<Row> & rows, bool useStrings)
 {
 	Json::Value root;
 	for(Row row: rows)
@@ -128,7 +148,7 @@ Json::Value Row::ToJsonRows(std::vector<Row> rows, bool useStrings)
 	return root;
 }
 
-Json::Value Row::ParityRowsJson(std::vector<Row> rows)
+Json::Value Row::ParityRowsJson(const std::vector<Row> & rows)
 {
 	Json::Value root;
 	for(Row row: rows)

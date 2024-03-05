@@ -141,8 +141,8 @@ namespace StepParity {
 		}
 
 		Json::Value ToJson(bool useStrings);
-		static Json::Value ToJsonRows(std::vector<Row> rows, bool useStrings);
-		static Json::Value ParityRowsJson(std::vector<Row> rows);
+		static Json::Value ToJsonRows(const std::vector<Row> & rows, bool useStrings);
+		static Json::Value ParityRowsJson(const std::vector<Row> & rows);
 	};
 
 	/// @brief A counter used while creating rows
@@ -216,7 +216,7 @@ namespace StepParity {
 		State state;
 
 		std::unordered_map<StepParityNode *, float> neighbors; // Connections to, and the cost of moving to, the connected nodes
-		StepParityNode(State _state)
+		StepParityNode(const State &_state)
 		{
 			state = _state;
 		}
@@ -242,7 +242,7 @@ namespace StepParity {
 	{
 	private:
 		std::vector<StepParityNode *> nodes; 
-		std::unordered_map<int, std::map<State, StepParityNode *, StateComparator>> stateNodeMap;
+		std::vector<std::map<State, StepParityNode *, StateComparator>> stateNodeMap;
 
 	public:
 		StepParityNode * startNode;	// This represents the very start of the song, before any notes
@@ -259,23 +259,8 @@ namespace StepParity {
 		/// @brief Returns a pointer to a StepParityNode that represents the given state within the graph.
 		/// If a node already exists, it is returned, otherwise a new one is created and added to the graph.
 		/// @param state 
-		/// @return 
-		StepParityNode* addOrGetExistingNode(State state)
-		{
-			if (stateNodeMap.find(state.rowIndex) == stateNodeMap.end()) {
-				stateNodeMap[state.rowIndex] = std::map<State, StepParityNode*, StateComparator>();
-			}
-			if(stateNodeMap[state.rowIndex].find(state) == stateNodeMap[state.rowIndex].end())
-			{
-				StepParityNode* newNode = new StepParityNode(state);
-				newNode->id = nodes.size();
-				nodes.push_back(newNode);
-				stateNodeMap[state.rowIndex][state] = newNode;
-			}
-
-			return stateNodeMap[state.rowIndex][state];
-		}
-
+		/// @return
+		StepParityNode *addOrGetExistingNode(const State &state);
 
 		void addEdge(StepParityNode* from, StepParityNode* to, float cost) {
 			from->neighbors[to] = cost;
