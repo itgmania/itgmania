@@ -96,8 +96,7 @@ Complete Course Template
 
 -- The following parameters are available for selecting a song:
 -- TITLE, GROUP, ARTIST, GENRE, DIFFICULTY, METER, BPMRANGE, DURATION, SORT
--- With the exception of SORT, these can be used in any combination and order.
--- (See the SORT parameter description below for a better explanation)
+-- These can be used in any combination and order.
 -- If none are specified, then a song and difficulty will be chosen completely at random.
 -- If a combination is specified that results in no possible songs to select,
 -- then that #SONGSELECT entry is skipped.
@@ -198,16 +197,18 @@ Complete Course Template
 --  by a comma. For example, SORT=MostPlays,1 selects the #1 most played song on
 --  the machine, SORT=LowestGrades,10 selects the song that you've gotten your 10th
 --  worst score on.
+--  One possible use for this would be to create a course to force you to play songs 
+--  from certain groups that you likely haven't played before, by combining this with
+--  the GROUP parameter, eg "#SONGSELECT:GROUP=In the Groove:SORT=FewestPlays,1;"
+--  
 --  Notes:
 --  - Like DIFFICULTY, there are several acceptable values that are equivalent to each other.
 --    The old style values are Best, Worst, GradeBest, or GradeWorst. 
 --    For the sake of consistency and clarity, please consider using:
 --    MostPlays, FewestPlays, TopGrades, or LowestGrades.
 --  - The number value can be between 1 and 500.
---  - As noted at the beginning of the description of #SONGSELECT, this parameter isn't
---    really intended to be used with other selection parameters.
---    It's not really accurate to say that it *can't* be used with them, but you're much
---    more likely to find yourself with an entry that can't select any songs.
+--  - As of right now, the results from using this parameter aren't exactly accurate.
+--    I can't quite work out how/why it makes the choices that it does.
 -- Example:
 #SONGSELECT:SORT=MostPlays,4;
 
