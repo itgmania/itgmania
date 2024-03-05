@@ -60,39 +60,34 @@ void StepParityGenerator::buildStateGraph(std::vector<Row> &rows, StepParityGrap
 	StepParityNode *startNode = graph.addOrGetExistingNode(beginningState);
 
 	graph.startNode = startNode;
-
-	std::queue<State> previousStates;
-	previousStates.push(beginningState);
+	
+	std::queue<StepParityNode *> previousNodes;
+	previousNodes.push(startNode);
 	StepParityCost costCalculator(layout);
 
 	for (unsigned long i = 0; i < rows.size(); i++)
 	{
-		std::vector<State> uniqueStates;
+		std::set<StepParityNode *> uniqueNodes;
 		Row &row = rows[i];
-		while (!previousStates.empty())
+		std::vector<FootPlacement> *PermuteFootPlacements = getFootPlacementPermutations(row);
+		while (!previousNodes.empty())
 		{
-			State state = previousStates.front();
-			StepParityNode *initialNode = graph.addOrGetExistingNode(state);
-
-			std::vector<FootPlacement> *PermuteFootPlacements = getFootPlacementPermutations(row);
+			StepParityNode *initialNode = previousNodes.front();
 
 			for(auto it = PermuteFootPlacements->begin(); it != PermuteFootPlacements->end(); it++)
 			{
-				State resultState = initResultState(state, row, *it);
-				float cost = costCalculator.getActionCost(&state, &resultState, rows, i);
+				State resultState = initResultState(initialNode->state, row, *it);
+				float cost = costCalculator.getActionCost(&(initialNode->state), &resultState, rows, i);
 				StepParityNode *resultNode = graph.addOrGetExistingNode(resultState);
 				graph.addEdge(initialNode, resultNode, cost);
-				if(std::find(uniqueStates.begin(), uniqueStates.end(), resultState) == uniqueStates.end())
-				{
-					uniqueStates.push_back(resultState);
-				}
+				uniqueNodes.insert(resultNode);
 			}
-			previousStates.pop();
+			previousNodes.pop();
 		}
 		
-		for (State s : uniqueStates)
+		for(StepParityNode * n: uniqueNodes)
 		{
-			previousStates.push(s);
+			previousNodes.push(n);
 		}
 	}
 	
@@ -103,12 +98,11 @@ void StepParityGenerator::buildStateGraph(std::vector<Row> &rows, StepParityGrap
 	endState.second = rows[rows.size() - 1].second + 1;
 	StepParityNode *endNode = graph.addOrGetExistingNode(endState);
 	graph.endNode = endNode;
-	while(!previousStates.empty())
+	while(!previousNodes.empty())
 	{
-		State state = previousStates.front();
-		StepParityNode *node = graph.addOrGetExistingNode(state);
+		StepParityNode *node = previousNodes.front();
 		graph.addEdge(node, endNode, 0);
-		previousStates.pop();
+		previousNodes.pop();
 	}
 }
 
