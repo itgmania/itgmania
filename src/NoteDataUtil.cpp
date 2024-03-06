@@ -1398,6 +1398,44 @@ static void GetTrackMapping( StepsType st, NoteDataUtil::TrackMapping tt, int Nu
 			iTakeFromTrack[4] = 1;
 			iTakeFromTrack[5] = 0;
 			break;
+		case StepsType_pump_single:
+			iTakeFromTrack[0] = 4;
+			iTakeFromTrack[1] = 3;
+			iTakeFromTrack[3] = 1;
+			iTakeFromTrack[4] = 0;
+			break;
+		case StepsType_pump_halfdouble:
+			iTakeFromTrack[0] = 5;
+			iTakeFromTrack[1] = 4;
+			iTakeFromTrack[2] = 3;
+			iTakeFromTrack[3] = 2;
+			iTakeFromTrack[4] = 1;
+			iTakeFromTrack[5] = 0;
+			break;
+		case StepsType_pump_double:
+			iTakeFromTrack[0] = 9;
+			iTakeFromTrack[1] = 8;
+			iTakeFromTrack[2] = 7;
+			iTakeFromTrack[3] = 6;
+			iTakeFromTrack[4] = 5;
+			iTakeFromTrack[5] = 4;
+			iTakeFromTrack[6] = 3;
+			iTakeFromTrack[7] = 2;
+			iTakeFromTrack[8] = 1;
+			iTakeFromTrack[9] = 0;
+			break;
+		case StepsType_pump_couple:
+			iTakeFromTrack[0] = 9;
+			iTakeFromTrack[1] = 8;
+			iTakeFromTrack[2] = 7;
+			iTakeFromTrack[3] = 6;
+			iTakeFromTrack[4] = 5;
+			iTakeFromTrack[5] = 4;
+			iTakeFromTrack[6] = 3;
+			iTakeFromTrack[7] = 2;
+			iTakeFromTrack[8] = 1;
+			iTakeFromTrack[9] = 0;
+			break;
 		default: break;
 		}
 		break;
@@ -1409,18 +1447,46 @@ static void GetTrackMapping( StepsType st, NoteDataUtil::TrackMapping tt, int Nu
 			iTakeFromTrack[2] = 1;
 			break;
 		case StepsType_dance_double:
-			iTakeFromTrack[0] = 0;
 			iTakeFromTrack[1] = 2;
 			iTakeFromTrack[2] = 1;
-			iTakeFromTrack[3] = 3;
-			iTakeFromTrack[4] = 4;
 			iTakeFromTrack[5] = 6;
 			iTakeFromTrack[6] = 5;
-			iTakeFromTrack[7] = 7;
 			break;
 		case StepsType_dance_solo:
 			iTakeFromTrack[2] = 3;
 			iTakeFromTrack[3] = 2;
+			break;
+		case StepsType_pump_single:
+			iTakeFromTrack[0] = 1;
+			iTakeFromTrack[1] = 0;
+			iTakeFromTrack[3] = 4;
+			iTakeFromTrack[4] = 3;
+			break;
+		case StepsType_pump_halfdouble:
+			iTakeFromTrack[1] = 2;
+			iTakeFromTrack[2] = 1;
+			iTakeFromTrack[3] = 4;
+			iTakeFromTrack[4] = 3;
+			break;
+		case StepsType_pump_double:
+			iTakeFromTrack[0] = 1;
+			iTakeFromTrack[1] = 0;
+			iTakeFromTrack[3] = 4;
+			iTakeFromTrack[4] = 3;
+			iTakeFromTrack[5] = 6;
+			iTakeFromTrack[6] = 5;
+			iTakeFromTrack[8] = 9;
+			iTakeFromTrack[9] = 8;
+			break;
+		case StepsType_pump_couple:
+			iTakeFromTrack[0] = 1;
+			iTakeFromTrack[1] = 0;
+			iTakeFromTrack[3] = 4;
+			iTakeFromTrack[4] = 3;
+			iTakeFromTrack[5] = 6;
+			iTakeFromTrack[6] = 5;
+			iTakeFromTrack[8] = 9;
+			iTakeFromTrack[9] = 8;
 			break;
 		default: break;
 		}
