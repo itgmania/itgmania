@@ -1375,6 +1375,56 @@ static void GetTrackMapping( StepsType st, NoteDataUtil::TrackMapping tt, int Nu
 
 	switch( tt )
 	{
+	case NoteDataUtil::lrmirror:
+		switch( st )
+		{
+		case StepsType_dance_single:
+			iTakeFromTrack[0] = 3;
+			iTakeFromTrack[3] = 0;
+			break;
+		case StepsType_dance_double:
+			iTakeFromTrack[0] = 7;
+			iTakeFromTrack[1] = 5;
+			iTakeFromTrack[2] = 6;
+			iTakeFromTrack[3] = 4;
+			iTakeFromTrack[4] = 3;
+			iTakeFromTrack[5] = 1;
+			iTakeFromTrack[6] = 2;
+			iTakeFromTrack[7] = 0;
+			break;
+		case StepsType_dance_solo:
+			iTakeFromTrack[0] = 5;
+			iTakeFromTrack[1] = 4;
+			iTakeFromTrack[4] = 1;
+			iTakeFromTrack[5] = 0;
+			break;
+		default: break;
+		}
+		break;
+	case NoteDataUtil::udmirror:
+		switch( st )
+		{
+		case StepsType_dance_single:
+			iTakeFromTrack[1] = 2;
+			iTakeFromTrack[2] = 1;
+			break;
+		case StepsType_dance_double:
+			iTakeFromTrack[0] = 0;
+			iTakeFromTrack[1] = 2;
+			iTakeFromTrack[2] = 1;
+			iTakeFromTrack[3] = 3;
+			iTakeFromTrack[4] = 4;
+			iTakeFromTrack[5] = 6;
+			iTakeFromTrack[6] = 5;
+			iTakeFromTrack[7] = 7;
+			break;
+		case StepsType_dance_solo:
+			iTakeFromTrack[2] = 3;
+			iTakeFromTrack[3] = 2;
+			break;
+		default: break;
+		}
+		break;
 	case NoteDataUtil::left:
 	case NoteDataUtil::right:
 		// Is there a way to do this without handling each StepsType? -Chris
@@ -2955,6 +3005,8 @@ void NoteDataUtil::TransformNoteData( NoteData &nd, TimingData const& timing_dat
 
 	// Apply turns and shuffles last so that they affect inserts.
 	if( po.m_bTurns[PlayerOptions::TURN_MIRROR] )			NoteDataUtil::Turn( nd, st, NoteDataUtil::mirror, iStartIndex, iEndIndex );
+	if( po.m_bTurns[PlayerOptions::TURN_LRMIRROR] )			NoteDataUtil::Turn( nd, st, NoteDataUtil::lrmirror, iStartIndex, iEndIndex );
+	if( po.m_bTurns[PlayerOptions::TURN_UDMIRROR] )			NoteDataUtil::Turn( nd, st, NoteDataUtil::udmirror, iStartIndex, iEndIndex );
 	if( po.m_bTurns[PlayerOptions::TURN_BACKWARDS] )	NoteDataUtil::Turn( nd, st, NoteDataUtil::backwards, iStartIndex, iEndIndex );
 	if( po.m_bTurns[PlayerOptions::TURN_LEFT] )			NoteDataUtil::Turn( nd, st, NoteDataUtil::left, iStartIndex, iEndIndex );
 	if( po.m_bTurns[PlayerOptions::TURN_RIGHT] )			NoteDataUtil::Turn( nd, st, NoteDataUtil::right, iStartIndex, iEndIndex );
