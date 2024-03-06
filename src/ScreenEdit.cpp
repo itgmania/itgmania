@@ -846,7 +846,7 @@ static MenuDef g_AlterMenu(
 	      EditMode_Practice, true, true, 0,
 	      "4th","8th","12th","16th","24th","32nd","48th","64th","192nd"),
 	MenuRowDef(ScreenEdit::turn,				"Turn",					true,
-	      EditMode_Practice, true, true, 0, "Left","Right","Mirror","Backwards","Shuffle","SuperShuffle","HyperShuffle" ),
+	      EditMode_Practice, true, true, 0, "Left","Right","Mirror","LRMirror","UDMirror","Backwards","Shuffle","SuperShuffle","HyperShuffle" ),
 	MenuRowDef(ScreenEdit::transform,			"Transform",				true,
 	      EditMode_Practice, true, true, 0, "NoHolds","NoMines","Little","Wide",
 	      "Big","Quick","Skippy","Mines","Echo","Stomp","Planted","Floored",
@@ -5168,6 +5168,8 @@ void ScreenEdit::HandleAlterMenuChoice(AlterMenuChoice c, const std::vector<int>
 				case left:		NoteDataUtil::Turn( m_Clipboard, st, NoteDataUtil::left );		break;
 				case right:		NoteDataUtil::Turn( m_Clipboard, st, NoteDataUtil::right );		break;
 				case mirror:		NoteDataUtil::Turn( m_Clipboard, st, NoteDataUtil::mirror );		break;
+				case lrmirror:		NoteDataUtil::Turn( m_Clipboard, st, NoteDataUtil::lrmirror );		break;
+				case udmirror:		NoteDataUtil::Turn( m_Clipboard, st, NoteDataUtil::udmirror );		break;
 				case turn_backwards:		NoteDataUtil::Turn( m_Clipboard, st, NoteDataUtil::backwards );		break;
 				case shuffle:		NoteDataUtil::Turn( m_Clipboard, st, NoteDataUtil::shuffle );		break;
 				case super_shuffle:	NoteDataUtil::Turn( m_Clipboard, st, NoteDataUtil::super_shuffle );	break;

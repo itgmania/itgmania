@@ -359,6 +359,8 @@ void StatsManager::SavePadmissScore( const StageStats *pSS, PlayerNumber pn )
 
 	XNode *turns = mods->AppendChild( "Turns" );
 	ADD_BOOLEAN_OPTION( turns, TURN_MIRROR, opts.m_bTurns );
+	ADD_BOOLEAN_OPTION( turns, TURN_LRMIRROR, opts.m_bTurns );
+	ADD_BOOLEAN_OPTION( turns, TURN_UDMIRROR, opts.m_bTurns );
 	ADD_BOOLEAN_OPTION( turns, TURN_BACKWARDS, opts.m_bTurns );
 	ADD_BOOLEAN_OPTION( turns, TURN_LEFT, opts.m_bTurns );
 	ADD_BOOLEAN_OPTION( turns, TURN_RIGHT, opts.m_bTurns );
