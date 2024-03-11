@@ -879,18 +879,39 @@ BitmapText::Attribute BitmapText::GetDefaultAttribute() const
 void BitmapText::AddAttribute( std::size_t iPos, const Attribute &attr )
 {
 	// Fixup position for new lines.
+	Attribute newAttr = attr;
+	std::vector<std::wstring>::const_iterator lineIter = m_wTextLines.cbegin();
+
 	int iLines = 0;
 	std::size_t iAdjustedPos = iPos;
 
-	for (std::wstring const & line : m_wTextLines)
+	for( ; lineIter != m_wTextLines.cend(); ++lineIter )
 	{
-		std::size_t length = line.length();
-		if( length >= iAdjustedPos )
+		std::size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
+		if( length > iAdjustedPos )
 			break;
 		iAdjustedPos -= length;
 		++iLines;
 	}
-	m_mAttributes[iPos-iLines] = attr;
+
+	if( newAttr.length > 0 )
+	{
+		// Fixup length for new lines.
+		std::size_t iAdjustedEndPos = iAdjustedPos + newAttr.length;
+		for( ; lineIter != m_wTextLines.cend(); ++lineIter )
+		{
+			std::size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
+			if( length > iAdjustedEndPos || newAttr.length == 0 )
+				break;
+			iAdjustedEndPos -= length;
+			newAttr.length -= 1;
+		}
+	}
+
+	if( newAttr.length == 0 ) // Attribute doesn't cover any printable characters
+		return;
+
+	m_mAttributes[iPos-iLines] = newAttr;
 	m_bHasGlowAttribute = m_bHasGlowAttribute || attr.glow.a > 0.0001f;
 }
 
