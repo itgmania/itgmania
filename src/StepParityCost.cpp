@@ -595,29 +595,31 @@ bool StepParityCost::didDoubleStep(State * initialState, State * resultState, st
 bool StepParityCost::didJackLeft(State * initialState, State * resultState, int leftHeel, int leftToe, bool movedLeft, bool didJump, int columnCount)
 {
 	bool jackedLeft = false;
-	if(!didJump)
+	if(!didJump && movedLeft)
 	{
-		if (leftHeel != -1 && movedLeft)
-		{
-			if (
+		
+			if ( leftHeel > -1 &&
 			initialState->columns[leftHeel] == LEFT_HEEL &&
 			!vectorIncludes(resultState->holdFeet, LEFT_HEEL, columnCount) &&
 			((vectorIncludes(initialState->movedFeet, LEFT_HEEL, columnCount) &&
 				!vectorIncludes(initialState->holdFeet, LEFT_HEEL, columnCount)) ||
 				(vectorIncludes(initialState->movedFeet, LEFT_TOE, columnCount) &&
 				!vectorIncludes(initialState->holdFeet, LEFT_TOE, columnCount)))
-			)
-			jackedLeft = true;
+                ) {
+                jackedLeft = true;
+            }
 			if (
+                leftToe > -1 &&
 			initialState->columns[leftToe] == LEFT_TOE &&
 			!vectorIncludes(resultState->holdFeet, LEFT_TOE, columnCount) &&
 			((vectorIncludes(initialState->movedFeet, LEFT_HEEL, columnCount) &&
 				!vectorIncludes(initialState->holdFeet, LEFT_HEEL, columnCount)) ||
 				(vectorIncludes(initialState->movedFeet, LEFT_TOE, columnCount) &&
 				!vectorIncludes(initialState->holdFeet, LEFT_TOE, columnCount)))
-			)
-			jackedLeft = true;
-		}
+                ){
+                    jackedLeft = true;
+                }
+        
 	}
 	return jackedLeft;
 }
@@ -625,28 +627,28 @@ bool StepParityCost::didJackLeft(State * initialState, State * resultState, int 
 bool StepParityCost::didJackRight(State * initialState, State * resultState, int rightHeel, int rightToe, bool movedRight, bool didJump, int columnCount)
 {
 	bool jackedRight = false;
-	if(!didJump)
+	if(!didJump && movedRight)
 	{
-		if (rightHeel != -1 && movedRight) {
-		if (
+		if ( rightHeel > -1 &&
 		  initialState->columns[rightHeel] == RIGHT_HEEL &&
 		  !vectorIncludes(resultState->holdFeet, RIGHT_HEEL, columnCount) &&
 		  ((vectorIncludes(initialState->movedFeet, RIGHT_HEEL, columnCount) &&
 			!vectorIncludes(initialState->holdFeet, RIGHT_HEEL, columnCount)) ||
 			(vectorIncludes(initialState->movedFeet, RIGHT_TOE, columnCount) &&
 			  !vectorIncludes(initialState->holdFeet, RIGHT_TOE, columnCount)))
-		)
-		  jackedRight = true;
-		if (
+            ) {
+                jackedRight = true;
+            }
+		if ( rightToe > -1 &&
 		  initialState->columns[rightToe] == RIGHT_TOE &&
 		  !vectorIncludes(resultState->holdFeet, RIGHT_TOE, columnCount) &&
 		  ((vectorIncludes(initialState->movedFeet, RIGHT_HEEL, columnCount) &&
 			!vectorIncludes(initialState->holdFeet, RIGHT_HEEL, columnCount)) ||
 			(vectorIncludes(initialState->movedFeet, RIGHT_TOE, columnCount) &&
 			  !vectorIncludes(initialState->holdFeet, RIGHT_TOE, columnCount)))
-		)
-		  jackedRight = true;
-	  }
+            ) {
+                jackedRight = true;
+            }
 	}
 	return jackedRight;
 }

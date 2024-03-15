@@ -96,14 +96,14 @@ namespace StepParity {
 	struct IntermediateNoteData {
 		TapNoteType type = TapNoteType_Empty; 	// type of the note
 		TapNoteSubType subtype = TapNoteSubType_Invalid;
-		int col;			// column/track number
-		int row;			// row on which the note occurs
-		float beat;			// beat on which the note occurs
-		float hold_length;	// If type is TapNoteType_HoldTail, length of hold, in beats
+		int col = 0;			// column/track number
+		int row = 0;			// row on which the note occurs
+		float beat = 0;			// beat on which the note occurs
+		float hold_length = 0;	// If type is TapNoteType_HoldTail, length of hold, in beats
 
-		bool warped;		// Is this note warped?
-		bool fake;			// Is this note fake (besides being TapNoteType_Fake)?
-		float second;		// time into the song on which the note occurs
+		bool warped = false;		// Is this note warped?
+		bool fake = false;			// Is this note fake (besides being TapNoteType_Fake)?
+		float second = false;		// time into the song on which the note occurs
 
 		Foot parity = NONE; 		// Which foot (and which part of the foot) will most likely be used
 		Json::Value ToJson(bool useStrings);
@@ -130,11 +130,11 @@ namespace StepParity {
 		Row(int _columnCount)
 		{
 			columnCount = _columnCount;
-			notes.resize(columnCount);
-			holds.resize(columnCount);
+            notes = std::vector<IntermediateNoteData>(columnCount);
+            holds = std::vector<IntermediateNoteData>(columnCount);
 			holdTails.clear();
-			mines.resize(columnCount);
-			fakeMines.resize(columnCount);
+            mines = std::vector<float>(columnCount, 0);
+            fakeMines = std::vector<float>(columnCount, 0);
 			second = 0;
 			beat = 0;
 			rowIndex = 0;

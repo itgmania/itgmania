@@ -101,7 +101,7 @@ void TechCountsCalculator::CalculateTechCountsFromRows(const std::vector<StepPar
 	int previousFootPlacement[StepParity::NUM_Foot];
 	int currentFootPlacement[StepParity::NUM_Foot];
 
-	for (int f = static_cast<int>(StepParity::LEFT_HEEL); f < StepParity::NUM_Foot; f++)
+	for (int f = 0; f < StepParity::NUM_Foot; f++)
 	{
 		previousFootPlacement[f] = -1;
 		currentFootPlacement[f] = -1;
@@ -209,7 +209,7 @@ void TechCountsCalculator::CalculateTechCountsFromRows(const std::vector<StepPar
 
 		// Move the values from currentFootPlacement to previousFootPlacement,
 		// and reset currentFootPlacement
-		for (int f = static_cast<int>(StepParity::LEFT_HEEL); f < StepParity::NUM_Foot; f++)
+		for (int f = 0; f < StepParity::NUM_Foot; f++)
 		{
 			previousFootPlacement[f] = currentFootPlacement[f];
 			currentFootPlacement[f] = -1;
