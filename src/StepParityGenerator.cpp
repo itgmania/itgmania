@@ -69,12 +69,11 @@ void StepParityGenerator::buildStateGraph(std::vector<Row> &rows, StepParityGrap
 	{
 		std::vector<State> uniqueStates;
 		Row &row = rows[i];
+        std::vector<FootPlacement> *PermuteFootPlacements = getFootPlacementPermutations(row);
 		while (!previousStates.empty())
 		{
 			State state = previousStates.front();
 			StepParityNode *initialNode = graph.addOrGetExistingNode(state);
-
-			std::vector<FootPlacement> *PermuteFootPlacements = getFootPlacementPermutations(row);
 
 			for(auto it = PermuteFootPlacements->begin(); it != PermuteFootPlacements->end(); it++)
 			{
