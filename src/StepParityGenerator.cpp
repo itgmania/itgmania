@@ -13,7 +13,7 @@ using namespace StepParity;
 const std::map<RString, StageLayout> Layouts = {
 	{"dance-single", {{-1, 0}, {0, -1}, {0, 1}, {1, 0}}}};
 
-void StepParityGenerator::analyzeNoteData(const NoteData &in, std::vector<StepParity::Row> &out, RString stepsTypeStr)
+void StepParityGenerator::analyzeNoteData(const NoteData &in, RString stepsTypeStr)
 {	
 	if(Layouts.find(stepsTypeStr) == Layouts.end())
 	{
@@ -22,22 +22,22 @@ void StepParityGenerator::analyzeNoteData(const NoteData &in, std::vector<StepPa
 	}
 
 	layout = Layouts.at(stepsTypeStr);
-	int columnCount = in.GetNumTracks();
-	CreateRows(in, out);
+	columnCount = in.GetNumTracks();
+    
+	CreateRows(in);
 
-	if(out.size() == 0)
+	if(rows.size() == 0)
 	{
 		LOG->Trace("StepParityGenerator::analyze no rows, bailing out");
 		return;
 	}
-	StepParityGraph graph;
-	buildStateGraph(out, graph, columnCount);
-	analyzeGraph(out, graph, columnCount);
+	buildStateGraph();
+	analyzeGraph();
 }
 
 
-void StepParityGenerator::analyzeGraph(std::vector<Row> &rows, const StepParityGraph & graph, int columnCount) {
-	std::vector<int> nodes_for_rows = computeCheapestPath(graph);
+void StepParityGenerator::analyzeGraph() {
+	nodes_for_rows = computeCheapestPath();
 	ASSERT_M(nodes_for_rows.size() == rows.size(), "nodes_for_rows should be the same length as rows!");
 
 	for (unsigned long i = 0; i < rows.size(); i++)
@@ -52,7 +52,7 @@ void StepParityGenerator::analyzeGraph(std::vector<Row> &rows, const StepParityG
 }
 
 
-void StepParityGenerator::buildStateGraph(std::vector<Row> &rows, StepParityGraph &graph, int columnCount)
+void StepParityGenerator::buildStateGraph()
 {
 	State beginningState(columnCount);
 	beginningState.rowIndex = -1;
@@ -226,7 +226,7 @@ std::vector<FootPlacement> StepParityGenerator::PermuteFootPlacements(const Row 
 }
 
 
-std::vector<int> StepParityGenerator::computeCheapestPath(const StepParityGraph & graph)
+std::vector<int> StepParityGenerator::computeCheapestPath()
 {
 	int start = graph.startNode->id;
 	int end = graph.endNode->id;
@@ -303,7 +303,7 @@ void StepParityGenerator::CreateIntermediateNoteData(const NoteData &in, std::ve
 }
 
 
-void StepParityGenerator::CreateRows(const NoteData &in, std::vector<StepParity::Row> &out)
+void StepParityGenerator::CreateRows(const NoteData &in)
 {
 	layout = Layouts.at("dance-single"); // TODO remove this
 	
@@ -312,7 +312,6 @@ void StepParityGenerator::CreateRows(const NoteData &in, std::vector<StepParity:
 
 	RowCounter counter = RowCounter(columnCount);
 
-	std::vector<StepParity::Row> rows;
 	std::vector<IntermediateNoteData> noteData;
 
 	CreateIntermediateNoteData(in, noteData);
@@ -362,7 +361,7 @@ void StepParityGenerator::CreateRows(const NoteData &in, std::vector<StepParity:
 			// we're past the previous row, so save all of the previous row's data
 			if (counter.lastColumnSecond != CLM_SECOND_INVALID)
 			{
-				Row newRow = CreateRow(counter, columnCount);
+				Row newRow = CreateRow(counter);
 				newRow.rowIndex = rows.size();
 				rows.push_back(newRow);
 			}
@@ -393,14 +392,13 @@ void StepParityGenerator::CreateRows(const NoteData &in, std::vector<StepParity:
 		}
 	}
 
-	Row newRow = CreateRow(counter, columnCount);
+	Row newRow = CreateRow(counter);
 	newRow.rowIndex = rows.size();
 	rows.push_back(newRow);
-	out.assign(rows.begin(), rows.end());
 }
 
 
-Row StepParityGenerator::CreateRow(RowCounter &counter, int columnCount)
+Row StepParityGenerator::CreateRow(RowCounter &counter)
 {
 	Row row = Row(columnCount);
 	row.notes.assign(counter.notes.begin(), counter.notes.end());
@@ -446,6 +444,19 @@ int StepParityGenerator::getPermuteCacheKey(const Row &row)
 		}
 	}
 	return key;
+}
+
+Json::Value StepParityGenerator::SMEditorParityJson()
+{
+    Json::Value root;
+    
+    for (unsigned long i = 0; i < nodes_for_rows.size(); i++)
+    {
+        StepParityNode *node = graph[nodes_for_rows[i]];
+        root.append(node->state.ToJson(false));
+    }
+    
+    return root;
 }
 
 bool StepParityGenerator::bracketCheck(int column1, int column2)

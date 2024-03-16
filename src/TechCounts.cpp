@@ -80,18 +80,16 @@ void TechCounts::FromString( RString sTechCounts )
 
 }
 
-
 void TechCountsCalculator::CalculateTechCounts(const NoteData &in, TechCounts &out)
 {
 	if(in.GetNumTracks() != 4)
 	{
 		return;
 	}
-	std::vector<StepParity::Row> rows;
+	
 	StepParity::StepParityGenerator gen;
-	gen.analyzeNoteData(in, rows, "dance-single"); // TODO: don't hard-code the stepsType
-
-	CalculateTechCountsFromRows(rows, out);
+	gen.analyzeNoteData(in, "dance-single"); // TODO: don't hard-code the stepsType
+	CalculateTechCountsFromRows(gen.rows, out);
 }
 
 void TechCountsCalculator::CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, TechCounts &out)

@@ -404,9 +404,30 @@ void Steps::CalculateTechCounts()
 	// TODO: Do this more better
 	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
 
-	TechCountsCalculator::CalculateTechCounts(tempNoteData, m_CachedTechCounts[0]);
+    
+    StepParity::StepParityGenerator gen;
+    gen.analyzeNoteData(tempNoteData, "dance-single"); // TODO: don't hard-code the stepsType
+    TechCountsCalculator::CalculateTechCountsFromRows(gen.rows, m_CachedTechCounts[0]);
 	std::fill_n( m_CachedTechCounts + 1, NUM_PLAYERS-1, m_CachedTechCounts[0] );
 
+    
+    
+#define OUTPUT_PARITY_JSON
+    
+#ifdef OUTPUT_PARITY_JSON
+    RString filename = m_pSong->GetTranslitMainTitle() + DifficultyToString(m_Difficulty);
+//    Json::Value v = StepParity::Row::ToJsonRows(gen.rows, false);
+//    Json::Value g = gen.graph.ToJson();
+//    Json::Value n = gen.graph.NodeStateJson();
+    Json::Value s = gen.SMEditorParityJson();
+//    JsonUtil::WriteFile(v, "Save/song-full-jsons/" + filename + ".json", false);
+//    JsonUtil::WriteFile(g, "Save/graph-jsons/" + filename + ".json", false);
+//    JsonUtil::WriteFile(n, "Save/node-jsons/" + filename + ".json", false);
+    JsonUtil::WriteFile(s, "Save/smeditor-parity-jsons/" + filename + ".json", false);
+
+#endif
+
+    
 	GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
