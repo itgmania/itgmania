@@ -4,46 +4,10 @@
 #include "GameConstantsAndTypes.h"
 class NoteData;
 
-/** @brief Container for stats on a given measure */
-
-struct MeasureStat
-{
-	int startRow;
-	int endRow;
-	int rowCount;
-	int tapCount;
-	int mineCount;
-	float nps;
-	float duration;
-
-	MeasureStat()
-	{
-		startRow = -1;
-		endRow = -1;
-		rowCount = 0;
-		tapCount = 0;
-		mineCount = 0;
-		nps = 0;
-		duration = 0;
-	}
-
-	bool operator==( const MeasureStat& other ) const
-	{
-		return (this->startRow == other.startRow
-			&& this->endRow == other.endRow
-			&& this->rowCount == other.rowCount
-			&& this->tapCount == other.tapCount
-			&& this->mineCount == other.mineCount
-			&& this->nps == other.nps
-			&& this->duration == other.duration
-			);
-	}
-
-	bool operator!=(const MeasureStat& other ) const
-	{
-		return !this->operator==(other);
-	}
-};
+/** This is a container for per-measure stats of a stepchart.
+ This data is calculated and saved to the song cache files as the #MEASUREINFO tag.
+ This data is provided to the theme via lua functions in Steps.cpp and Trail.cpp,
+ */
 
 struct MeasureInfo
 {
@@ -67,16 +31,7 @@ struct MeasureInfo
 
 	RString ToString() const;
 	void FromString( RString sValues );
-};
-
-namespace MeasureInfoCalculator
-{
-	void CalculateMeasureInfo(const NoteData &in, MeasureInfo &out);
-	/** @brief Returns an array containing the count of notes for each measure.	*/
-	std::vector<int> notesPerMeasure(std::vector<MeasureStat> stats);
-	
-	/** @brief Returns an array containing the notes-per-second for each measure. */
-	std::vector<float> npsPerMeasure(std::vector<MeasureStat> stats);
+	static void CalculateMeasureInfo(const NoteData &in, MeasureInfo &out);
 };
 
 #endif

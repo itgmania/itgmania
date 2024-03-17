@@ -28,10 +28,10 @@ void MeasureInfo::FromString(RString sValues)
 {
 	std::vector<RString> asValues;
 	split( sValues, ",", asValues, true );
-	unsigned half_size = asValues.size() / 2;
+	int half_size = static_cast<int>(asValues.size()) / 2;
 
 	float peak_nps = 0;
-	for (unsigned i = 0; i < half_size; i++)
+	for (int i = 0; i < half_size; i++)
 	{
 		float nps = StringToFloat(asValues[i]);
 		this->npsPerMeasure.push_back(nps);
@@ -48,7 +48,7 @@ void MeasureInfo::FromString(RString sValues)
 	this->peakNps = peak_nps;
 }
 
-void MeasureInfoCalculator::CalculateMeasureInfo(const NoteData &in, MeasureInfo &out)
+void MeasureInfo::CalculateMeasureInfo(const NoteData &in, MeasureInfo &out)
 {
 	int lastRow = in.GetLastRow();
 	int lastRowMeasureIndex = 0;
@@ -58,8 +58,13 @@ void MeasureInfoCalculator::CalculateMeasureInfo(const NoteData &in, MeasureInfo
 	timing->NoteRowToMeasureAndBeat(lastRow, lastRowMeasureIndex, lastRowBeatIndex, lastRowRemainder);
 
 	int totalMeasureCount = lastRowMeasureIndex + 1;
-
-	std::vector<MeasureStat> counters(totalMeasureCount, MeasureStat());
+	
+	out.notesPerMeasure.clear();
+	out.npsPerMeasure.clear();
+	
+	out.notesPerMeasure.resize(totalMeasureCount, 0);
+	out.npsPerMeasure.resize(totalMeasureCount, 0);
+	
 	NoteData::all_tracks_const_iterator curr_note = in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
 
 	int iMeasureIndexOut = 0;
@@ -74,90 +79,55 @@ void MeasureInfoCalculator::CalculateMeasureInfo(const NoteData &in, MeasureInfo
 	{
 		if(curr_note.Row() != curr_row)
 		{
-			// Before moving on to a new row, update the row count, start and end rows for the "current" measure
-			counters[iMeasureIndexOut].rowCount += 1;
-			counters[iMeasureIndexOut].endRow = curr_row;
-			counters[iMeasureIndexOut].tapCount += (notes_this_row > 0 ? 1 : 0);
-			if (counters[iMeasureIndexOut].startRow == -1)
-			{
-				counters[iMeasureIndexOut].startRow = curr_row;
-			}
-
+			// Before moving on to a new row, update the row count for the "current" measure
+			// Note that we're only add
+			out.notesPerMeasure[iMeasureIndexOut] += notes_this_row;
 			// Update iMeasureIndex for the current row
 			timing->NoteRowToMeasureAndBeat(curr_note.Row(), iMeasureIndexOut, iBeatIndexOut, iRowsRemainder);
 			curr_row = curr_note.Row();
 			notes_this_row = 0;
 		}
 		// Update tap and mine count for the current measure
+		// Regardless of how many notes are on this row, it's only considered 1 "note" when we want to
+		// calculate nps. So jumps/brackets don't inflate the nps value. Maybe we should call it
+		// "steps per second" or something like that?
 		if (curr_note->type == TapNoteType_Tap || curr_note->type == TapNoteType_HoldHead)
 		{
-			notes_this_row += 1;
+			notes_this_row = 1;
 		}
-		else if(curr_note->type == TapNoteType_Mine)
-		{
-			counters[iMeasureIndexOut].mineCount += 1;
-		}
-		
 		++curr_note;
 	}
+	
 	// And handle the final note...
-	counters[iMeasureIndexOut].rowCount += 1;
-	counters[iMeasureIndexOut].endRow = curr_row;
-	counters[iMeasureIndexOut].tapCount += (notes_this_row > 0 ? 1 : 0);
+	out.notesPerMeasure[iMeasureIndexOut] += notes_this_row;
 
 	// Now that all of the notes have been parsed, calculate nps for each measure
-	for (unsigned m = 0; m < counters.size(); m++)
+	for (int m = 0; m < totalMeasureCount; m++)
 	{
-		if(counters[m].rowCount == 0)
+		if(out.notesPerMeasure[m] == 0)
 		{
-			counters[m].nps = 0;
+			out.npsPerMeasure[m] = 0;
 			continue;
 		}
 		
 		float measureDuration = timing->GetElapsedTimeFromBeat(4 * (m+1)) - timing->GetElapsedTimeFromBeat(4 * m);
-		counters[m].duration = measureDuration;
+		float nps = out.notesPerMeasure[m] / measureDuration;
+		
 		if(measureDuration < 0.12)
 		{
-			counters[m].nps = 0;
+			out.npsPerMeasure[m] = 0;
 		}
 		else
 		{
-			counters[m].nps = counters[m].tapCount / measureDuration;
+			out.npsPerMeasure[m] = nps;
 		}
 
-		if(counters[m].nps > peak_nps)
+		if(nps > peak_nps)
 		{
-			peak_nps = counters[m].nps;
+			peak_nps = nps;
 		}
 	}
 
 	out.peakNps = peak_nps;
 	out.measureCount = totalMeasureCount;
-	std::vector<int> notesPerMeasure = MeasureInfoCalculator::notesPerMeasure(counters);
-	std::vector<float> npsPerMeasure = MeasureInfoCalculator::npsPerMeasure(counters);
-	out.notesPerMeasure.clear();
-	out.notesPerMeasure.assign(notesPerMeasure.begin(), notesPerMeasure.end());
-	out.npsPerMeasure.clear();
-	out.npsPerMeasure.assign(npsPerMeasure.begin(), npsPerMeasure.end());
-}
-
-std::vector<int> MeasureInfoCalculator::notesPerMeasure(std::vector<MeasureStat> stats)
-{
-	std::vector<int> notesPerMeasure(stats.size(), 0);
-	for (unsigned i = 0; i < stats.size(); i++)
-	{
-		notesPerMeasure[i] = stats[i].tapCount;
-	}
-
-	return notesPerMeasure;
-}
-
-std::vector<float> MeasureInfoCalculator::npsPerMeasure(std::vector<MeasureStat> stats)
-{
-	std::vector<float> npsPerMeasure(stats.size(), 0);
-	for (unsigned i = 0; i < stats.size(); i++)
-	{
-		npsPerMeasure[i] = stats[i].nps;
-	}
-	return npsPerMeasure;
 }

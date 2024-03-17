@@ -4,7 +4,7 @@
 #include "NoteData.h"
 #include "TimingData.h"
 
-void ColumnCueCalculator::CalculateColumnCues(const NoteData &in, std::vector<ColumnCue> &out, float minDuration)
+void ColumnCue::CalculateColumnCues(const NoteData &in, std::vector<ColumnCue> &out, float minDuration)
 {
 	TimingData *timing = GAMESTATE->GetProcessedTimingData();
 	NoteData::all_tracks_const_iterator curr_note = in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);

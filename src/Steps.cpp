@@ -412,7 +412,7 @@ void Steps::CalculateTechCounts()
 
     
     
-#define OUTPUT_PARITY_JSON
+//#define OUTPUT_PARITY_JSON
     
 #ifdef OUTPUT_PARITY_JSON
     RString filename = m_pSong->GetTranslitMainTitle() + DifficultyToString(m_Difficulty);
@@ -459,7 +459,7 @@ void Steps::CalculateMeasureInfo()
 		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
 		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
 		{
-			MeasureInfoCalculator::CalculateMeasureInfo(vParts[pn], m_CachedMeasureInfo[pn]);
+			MeasureInfo::CalculateMeasureInfo(vParts[pn], m_CachedMeasureInfo[pn]);
 		}
 	}
 	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
@@ -468,14 +468,14 @@ void Steps::CalculateMeasureInfo()
 		// XXX: Assumption that couple will always have an even number of notes.
 		const int tracks = tempNoteData.GetNumTracks() / 2;
 		p1.SetNumTracks(tracks);
-		MeasureInfoCalculator::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[PLAYER_1]);
+        MeasureInfo::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[PLAYER_1]);
 		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
 		tempNoteData.SetNumTracks(tracks);
-		MeasureInfoCalculator::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[PLAYER_2]);
+        MeasureInfo::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[PLAYER_2]);
 	}
 	else
 	{
-		MeasureInfoCalculator::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[0]);
+        MeasureInfo::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[0]);
 		std::fill_n( m_CachedMeasureInfo + 1, NUM_PLAYERS-1, m_CachedMeasureInfo[0] );
 	}
 	GAMESTATE->SetProcessedTimingData(nullptr);
@@ -988,7 +988,7 @@ std::vector<ColumnCue> Steps::GetColumnCues(float minDuration)
 	NoteData noteData;
 	this->GetNoteData( noteData );
 	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
-	ColumnCueCalculator::CalculateColumnCues(noteData, cues, minDuration);
+	ColumnCue::CalculateColumnCues(noteData, cues, minDuration);
 	GAMESTATE->SetProcessedTimingData(nullptr);
 	return cues;
 }
