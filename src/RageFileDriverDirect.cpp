@@ -143,7 +143,7 @@ bool RageFileDriverDirect::Move( const RString &sOldPath_, const RString &sNewPa
 		const RString sDir = Dirname(sNewPath);
 		CreateDirectories( m_sRoot + sDir );
 	}
-	int size = FDB->GetFileSize( sOldPath );
+	std::int64_t size = FDB->GetFileSize( sOldPath );
 	int hash = FDB->GetFileHash( sOldPath );
 	TRACE( ssprintf("rename \"%s\" -> \"%s\"", (m_sRoot + sOldPath).c_str(), (m_sRoot + sNewPath).c_str()) );
 	if( DoRename(m_sRoot + sOldPath, m_sRoot + sNewPath) == -1 )

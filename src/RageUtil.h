@@ -593,7 +593,7 @@ bool DeleteRecursive( RageFileDriver *prfd, const RString &sDir );	/* delete the
 bool DoesFileExist( const RString &sPath );
 bool IsAFile( const RString &sPath );
 bool IsADirectory( const RString &sPath );
-int GetFileSizeInBytes( const RString &sFilePath );
+std::int64_t GetFileSizeInBytes( const RString &sFilePath );
 
 // call FixSlashesInPlace on any path that came from the user
 void FixSlashesInPlace( RString &sPath );

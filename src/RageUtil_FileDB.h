@@ -24,7 +24,7 @@ struct File
 	}
 
 	bool dir;
-	int size;
+	std::int64_t size;
 	/* Modification time of the file.  The contents of this is undefined, except that
 	 * when the file has been modified, this value will change. */
 	int hash;
@@ -84,7 +84,7 @@ struct FileSet
 	void GetFilesEqualTo( const RString &pat, std::vector<RString> &out, bool bOnlyDirs ) const;
 
 	RageFileManager::FileType GetFileType( const RString &sPath ) const;
-	int GetFileSize( const RString &sPath ) const;
+	std::int64_t GetFileSize( const RString &sPath ) const;
 	int GetFileHash( const RString &sPath ) const;
 };
 /** @brief A container for a file listing. */
@@ -95,7 +95,7 @@ public:
 		m_Mutex("FilenameDB"), ExpireSeconds( -1 ) { }
 	virtual ~FilenameDB() { FlushDirCache(); }
 
-	void AddFile( const RString &sPath, int iSize, int iHash, void *pPriv=nullptr );
+	void AddFile( const RString &sPath, std::int64_t iSize, int iHash, void *pPriv=nullptr );
 	void DelFile( const RString &sPath );
 	void *GetFilePriv( const RString &sPath );
 

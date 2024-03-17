@@ -462,7 +462,7 @@ bool CourseLoaderCRS::LoadEditFromFile( const RString &sEditFilePath, ProfileSlo
 {
 	LOG->Trace( "CourseLoaderCRS::LoadEdit(%s)", sEditFilePath.c_str() );
 
-	int iBytes = FILEMAN->GetFileSizeInBytes( sEditFilePath );
+	std::int64_t iBytes = FILEMAN->GetFileSizeInBytes( sEditFilePath );
 	if( iBytes > MAX_EDIT_COURSE_SIZE_BYTES )
 	{
 		LOG->UserLog( "Edit file", sEditFilePath, "is unreasonably large. It won't be loaded." );
