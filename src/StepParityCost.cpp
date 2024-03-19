@@ -9,7 +9,7 @@ using namespace StepParity;
 
 template <typename T>
 bool vectorIncludes(const std::vector<T>& vec, const T& value, int columnCount) {
-    for (int i = 0; i < columnCount; i++)
+	for (int i = 0; i < columnCount; i++)
 	{
 		if(vec[i] == value)
 		{
@@ -77,6 +77,8 @@ float StepParityCost::getActionCost(State * initialState, State * resultState, s
 		case RIGHT_TOE:
 		  rightToe = i;
 		  break;
+	  default:
+		  break;
 	  }
 	}
 
@@ -88,10 +90,12 @@ float StepParityCost::getActionCost(State * initialState, State * resultState, s
 	bool movedLeft =
 	  vectorIncludes(resultState->movedFeet, LEFT_HEEL, columnCount) ||
 	  vectorIncludes(resultState->movedFeet, LEFT_TOE, columnCount);
+	
 	bool movedRight =
 	  vectorIncludes(resultState->movedFeet, RIGHT_HEEL, columnCount) ||
 	  vectorIncludes(resultState->movedFeet, RIGHT_TOE, columnCount);
 
+	// Note that this is checking whether the previous state was a jump, not whether the current state is
 	bool didJump =
 	  ((vectorIncludes(initialState->movedFeet, LEFT_HEEL, columnCount) &&
 		!vectorIncludes(initialState->holdFeet, LEFT_HEEL, columnCount)) ||
@@ -127,17 +131,24 @@ float StepParityCost::getActionCost(State * initialState, State * resultState, s
 	return cost;
 }
 
+// This merges the `columns` properties of initialState and resultState, which
+// fully represents the player's position on the dance stage.
+// For example:
+// initialState.columns = [1,0,0,3]
+// resultState.columns = [0,1,0,0]
+// combinedColumns = [0,1,0,3]
+// This eventually gets saved back to resultState
 void StepParityCost::mergeInitialAndResultPosition(State * initialState, State * resultState, std::vector<StepParity::Foot> & combinedColumns, int columnCount)
 {
 	// Merge initial + result position
 	for (int i = 0; i < columnCount; i++) {
-	  // copy in data from b over the top which overrides it, as long as it's not nothing
+	  // copy in data from resultState over the top which overrides it, as long as it's not nothing
 	  if (resultState->columns[i] != NONE) {
 		combinedColumns[i] = resultState->columns[i];
 		continue;
 	  }
 
-	  // copy in data from a first, if it wasn't moved
+	  // copy in data from initialState, if it wasn't moved
 	  if (
 		initialState->columns[i] == LEFT_HEEL ||
 		initialState->columns[i] == RIGHT_HEEL
@@ -605,21 +616,21 @@ bool StepParityCost::didJackLeft(State * initialState, State * resultState, int 
 				!vectorIncludes(initialState->holdFeet, LEFT_HEEL, columnCount)) ||
 				(vectorIncludes(initialState->movedFeet, LEFT_TOE, columnCount) &&
 				!vectorIncludes(initialState->holdFeet, LEFT_TOE, columnCount)))
-                ) {
-                jackedLeft = true;
-            }
+				) {
+				jackedLeft = true;
+			}
 			if (
-                leftToe > -1 &&
+				leftToe > -1 &&
 			initialState->columns[leftToe] == LEFT_TOE &&
 			!vectorIncludes(resultState->holdFeet, LEFT_TOE, columnCount) &&
 			((vectorIncludes(initialState->movedFeet, LEFT_HEEL, columnCount) &&
 				!vectorIncludes(initialState->holdFeet, LEFT_HEEL, columnCount)) ||
 				(vectorIncludes(initialState->movedFeet, LEFT_TOE, columnCount) &&
 				!vectorIncludes(initialState->holdFeet, LEFT_TOE, columnCount)))
-                ){
-                    jackedLeft = true;
-                }
-        
+				){
+					jackedLeft = true;
+				}
+		
 	}
 	return jackedLeft;
 }
@@ -636,9 +647,9 @@ bool StepParityCost::didJackRight(State * initialState, State * resultState, int
 			!vectorIncludes(initialState->holdFeet, RIGHT_HEEL, columnCount)) ||
 			(vectorIncludes(initialState->movedFeet, RIGHT_TOE, columnCount) &&
 			  !vectorIncludes(initialState->holdFeet, RIGHT_TOE, columnCount)))
-            ) {
-                jackedRight = true;
-            }
+			) {
+				jackedRight = true;
+			}
 		if ( rightToe > -1 &&
 		  initialState->columns[rightToe] == RIGHT_TOE &&
 		  !vectorIncludes(resultState->holdFeet, RIGHT_TOE, columnCount) &&
@@ -646,9 +657,9 @@ bool StepParityCost::didJackRight(State * initialState, State * resultState, int
 			!vectorIncludes(initialState->holdFeet, RIGHT_HEEL, columnCount)) ||
 			(vectorIncludes(initialState->movedFeet, RIGHT_TOE, columnCount) &&
 			  !vectorIncludes(initialState->holdFeet, RIGHT_TOE, columnCount)))
-            ) {
-                jackedRight = true;
-            }
+			) {
+				jackedRight = true;
+			}
 	}
 	return jackedRight;
 }

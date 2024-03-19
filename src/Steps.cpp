@@ -401,33 +401,32 @@ void Steps::CalculateTechCounts()
 		return;
 	}
 
-	// TODO: Do this more better
 	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
 
-    
-    StepParity::StepParityGenerator gen;
-    gen.analyzeNoteData(tempNoteData, "dance-single"); // TODO: don't hard-code the stepsType
-    TechCountsCalculator::CalculateTechCountsFromRows(gen.rows, m_CachedTechCounts[0]);
+	
+	StepParity::StepParityGenerator gen;
+	gen.analyzeNoteData(tempNoteData, this->m_StepsType);
+	TechCounts::CalculateTechCountsFromRows(gen.rows, m_CachedTechCounts[0]);
 	std::fill_n( m_CachedTechCounts + 1, NUM_PLAYERS-1, m_CachedTechCounts[0] );
 
-    
-    
+	
+	
 //#define OUTPUT_PARITY_JSON
-    
+	
 #ifdef OUTPUT_PARITY_JSON
-    RString filename = m_pSong->GetTranslitMainTitle() + DifficultyToString(m_Difficulty);
+	RString filename = m_pSong->GetTranslitMainTitle() + DifficultyToString(m_Difficulty);
 //    Json::Value v = StepParity::Row::ToJsonRows(gen.rows, false);
 //    Json::Value g = gen.graph.ToJson();
 //    Json::Value n = gen.graph.NodeStateJson();
-    Json::Value s = gen.SMEditorParityJson();
+	Json::Value s = gen.SMEditorParityJson();
 //    JsonUtil::WriteFile(v, "Save/song-full-jsons/" + filename + ".json", false);
 //    JsonUtil::WriteFile(g, "Save/graph-jsons/" + filename + ".json", false);
 //    JsonUtil::WriteFile(n, "Save/node-jsons/" + filename + ".json", false);
-    JsonUtil::WriteFile(s, "Save/smeditor-parity-jsons/" + filename + ".json", false);
+	JsonUtil::WriteFile(s, "Save/smeditor-parity-jsons/" + filename + ".json", false);
 
 #endif
 
-    
+	
 	GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
@@ -468,14 +467,14 @@ void Steps::CalculateMeasureInfo()
 		// XXX: Assumption that couple will always have an even number of notes.
 		const int tracks = tempNoteData.GetNumTracks() / 2;
 		p1.SetNumTracks(tracks);
-        MeasureInfo::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[PLAYER_1]);
+		MeasureInfo::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[PLAYER_1]);
 		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
 		tempNoteData.SetNumTracks(tracks);
-        MeasureInfo::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[PLAYER_2]);
+		MeasureInfo::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[PLAYER_2]);
 	}
 	else
 	{
-        MeasureInfo::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[0]);
+		MeasureInfo::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[0]);
 		std::fill_n( m_CachedMeasureInfo + 1, NUM_PLAYERS-1, m_CachedMeasureInfo[0] );
 	}
 	GAMESTATE->SetProcessedTimingData(nullptr);

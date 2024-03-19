@@ -15,8 +15,6 @@
 #include <vector>
 
 
-RString StepsTypeToString( StepsType st );
-
 static std::vector<RString> GenerateRankingToFillInMarker()
 {
 	std::vector<RString> vRankings;

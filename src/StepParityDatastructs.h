@@ -130,11 +130,11 @@ namespace StepParity {
 		Row(int _columnCount)
 		{
 			columnCount = _columnCount;
-            notes = std::vector<IntermediateNoteData>(columnCount);
-            holds = std::vector<IntermediateNoteData>(columnCount);
+			notes = std::vector<IntermediateNoteData>(columnCount);
+			holds = std::vector<IntermediateNoteData>(columnCount);
 			holdTails.clear();
-            mines = std::vector<float>(columnCount, 0);
-            fakeMines = std::vector<float>(columnCount, 0);
+			mines = std::vector<float>(columnCount, 0);
+			fakeMines = std::vector<float>(columnCount, 0);
 			second = 0;
 			beat = 0;
 			rowIndex = 0;
@@ -225,7 +225,7 @@ namespace StepParity {
 		
 		int neighborCount()
 		{
-			return neighbors.size();
+			return static_cast<int>(neighbors.size());
 		}
 	};
 
@@ -268,7 +268,7 @@ namespace StepParity {
 
 		int nodeCount() const
 		{
-			return nodes.size();
+			return static_cast<int>(nodes.size());
 		}
 		
 		Json::Value ToJson();

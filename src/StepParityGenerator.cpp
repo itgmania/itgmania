@@ -10,20 +10,21 @@
 
 using namespace StepParity;
 
-const std::map<RString, StageLayout> Layouts = {
-	{"dance-single", {{-1, 0}, {0, -1}, {0, 1}, {1, 0}}}};
+const std::map<StepsType, StageLayout> Layouts = {
+	{StepsType_dance_single, {{-1, 0}, {0, -1}, {0, 1}, {1, 0}}}
+	};
 
-void StepParityGenerator::analyzeNoteData(const NoteData &in, RString stepsTypeStr)
+void StepParityGenerator::analyzeNoteData(const NoteData &in, StepsType stepsType)
 {	
-	if(Layouts.find(stepsTypeStr) == Layouts.end())
+	if(Layouts.find(stepsType) == Layouts.end())
 	{
-		LOG->Warn("Tried to call StepParityGenerator::analyze with an unsupported StepsType %s", stepsTypeStr.c_str());
+		LOG->Warn("Tried to call StepParityGenerator::analyze with an unsupported StepsType %s", StepsTypeToString(stepsType).c_str());
 		return;
 	}
 
-	layout = Layouts.at(stepsTypeStr);
+	layout = Layouts.at(stepsType);
 	columnCount = in.GetNumTracks();
-    
+	
 	CreateRows(in);
 
 	if(rows.size() == 0)
@@ -54,6 +55,8 @@ void StepParityGenerator::analyzeGraph() {
 
 void StepParityGenerator::buildStateGraph()
 {
+	// The first node of the graph is beginningState, which represents the time before
+	// the first note (and so it's roIndex is considered -1)
 	State beginningState(columnCount);
 	beginningState.rowIndex = -1;
 	beginningState.second = rows[0].second - 1;
@@ -69,7 +72,7 @@ void StepParityGenerator::buildStateGraph()
 	{
 		std::vector<State> uniqueStates;
 		Row &row = rows[i];
-        std::vector<FootPlacement> *PermuteFootPlacements = getFootPlacementPermutations(row);
+		std::vector<FootPlacement> *PermuteFootPlacements = getFootPlacementPermutations(row);
 		while (!previousStates.empty())
 		{
 			State state = previousStates.front();
@@ -304,9 +307,7 @@ void StepParityGenerator::CreateIntermediateNoteData(const NoteData &in, std::ve
 
 
 void StepParityGenerator::CreateRows(const NoteData &in)
-{
-	layout = Layouts.at("dance-single"); // TODO remove this
-	
+{	
 	TimingData *timing = GAMESTATE->GetProcessedTimingData();
 	int columnCount = in.GetNumTracks();
 
@@ -448,15 +449,15 @@ int StepParityGenerator::getPermuteCacheKey(const Row &row)
 
 Json::Value StepParityGenerator::SMEditorParityJson()
 {
-    Json::Value root;
-    
-    for (unsigned long i = 0; i < nodes_for_rows.size(); i++)
-    {
-        StepParityNode *node = graph[nodes_for_rows[i]];
-        root.append(node->state.ToJson(false));
-    }
-    
-    return root;
+	Json::Value root;
+	
+	for (unsigned long i = 0; i < nodes_for_rows.size(); i++)
+	{
+		StepParityNode *node = graph[nodes_for_rows[i]];
+		root.append(node->state.ToJson(false));
+	}
+	
+	return root;
 }
 
 bool StepParityGenerator::bracketCheck(int column1, int column2)

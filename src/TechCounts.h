@@ -5,12 +5,6 @@
 #include "StepParityGenerator.h"
 class NoteData;
 
-enum Foot
-{
-	Foot_None = -1,
-	Foot_Left = 0,
-	Foot_Right
-};
 
 /** @brief Unknown radar values are given a default value. */
 #define TECHCOUNTS_VAL_UNKNOWN -1
@@ -83,12 +77,7 @@ public:
 	void FromString( RString sValues );
 
 	void PushSelf( lua_State *L );
-};
-
-namespace TechCountsCalculator
-{
-	void CalculateTechCounts(const NoteData &in, TechCounts &out);
-	void CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, TechCounts &out);
+	static void CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, TechCounts &out);
 };
 
 #endif

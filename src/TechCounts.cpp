@@ -80,19 +80,7 @@ void TechCounts::FromString( RString sTechCounts )
 
 }
 
-void TechCountsCalculator::CalculateTechCounts(const NoteData &in, TechCounts &out)
-{
-	if(in.GetNumTracks() != 4)
-	{
-		return;
-	}
-	
-	StepParity::StepParityGenerator gen;
-	gen.analyzeNoteData(in, "dance-single"); // TODO: don't hard-code the stepsType
-	CalculateTechCountsFromRows(gen.rows, out);
-}
-
-void TechCountsCalculator::CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, TechCounts &out)
+void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, TechCounts &out)
 {
 	// arrays to hold the column for each Foot enum.
 	// A value of -1 means that Foot is not on any column
@@ -105,15 +93,20 @@ void TechCountsCalculator::CalculateTechCountsFromRows(const std::vector<StepPar
 		currentFootPlacement[f] = -1;
 	}
 
+	// arrays to hold the foot placements for the current row and previos row.
+	// They're basically just so we don't have to reference currentRow.notes[c].parity everywhere
 	std::vector<StepParity::Foot> previousColumns(rows[0].columnCount, StepParity::NONE);
 	std::vector<StepParity::Foot> currentColumns(rows[0].columnCount, StepParity::NONE);
+	
 	for (unsigned long i = 1; i < rows.size(); i++)
 	{
 		const StepParity::Row &currentRow = rows[i];
 		int noteCount = 0;
+		
+		// copy the foot placement for the current row into currentColumns,
+		// and count up how many notes there are in this row
 		for (int c = 0; c < currentRow.columnCount; c++)
 		{
-			
 			StepParity::Foot currFoot = currentRow.notes[c].parity;
 			TapNoteType currType = currentRow.notes[c].type;
 
@@ -128,10 +121,9 @@ void TechCountsCalculator::CalculateTechCountsFromRows(const std::vector<StepPar
 			noteCount += 1;
 		}
 
-				/*
-
-				Jacks are same arrow same foot
-				Doublestep is same foot on successive arrows
+		/*
+		Jacks are same arrow same foot
+		Doublestep is same foot on successive arrows
 		Brackets are jumps with one foot
 
 		Footswitch is different foot on the up or down arrow
@@ -185,6 +177,7 @@ void TechCountsCalculator::CalculateTechCountsFromRows(const std::vector<StepPar
 			// this same column was stepped on in the previous row, but not by the same foot ==> footswitch or sideswitch
 			if(previousColumns[c] != StepParity::NONE && previousColumns[c] != currentColumns[c])
 			{
+				// this is assuming only 4-panel single
 				if(c == 0 || c == 3)
 				{
 					out[TechCountsCategory_Sideswitches] += 1;
@@ -195,11 +188,13 @@ void TechCountsCalculator::CalculateTechCountsFromRows(const std::vector<StepPar
 				}
 			}
 			// if the right foot is pressing the left arrow, or the left foot is pressing the right ==> crossover
-			else if(c == 0 && previousColumns[c] == StepParity::NONE && (currentColumns[c] == StepParity::RIGHT_HEEL|| currentColumns[c] == StepParity::RIGHT_TOE))
+			else if(c == 0 && previousColumns[c] == StepParity::NONE &&
+					(currentColumns[c] == StepParity::RIGHT_HEEL || currentColumns[c] == StepParity::RIGHT_TOE))
 			{
 				out[TechCountsCategory_Crossovers] += 1;
 			}
-			else if(c == 3 && previousColumns[c] == StepParity::NONE && (currentColumns[c] == StepParity::LEFT_HEEL || currentColumns[c] == StepParity::LEFT_TOE))
+			else if(c == 3 && previousColumns[c] == StepParity::NONE &&
+					(currentColumns[c] == StepParity::LEFT_HEEL || currentColumns[c] == StepParity::LEFT_TOE))
 			{
 				out[TechCountsCategory_Crossovers] += 1;
 			}

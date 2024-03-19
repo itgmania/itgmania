@@ -154,6 +154,7 @@ const RadarValues &Trail::GetRadarValues() const
 	}
 }
 
+// I have no idea whether or not this will work correctly.
 TechCounts &Trail::GetTechCounts()
 {
 	if(m_bTechCountsCached)
@@ -166,30 +167,8 @@ TechCounts &Trail::GetTechCounts()
 	for (TrailEntry const &e : m_vEntries)
 	{
 		const Steps *pSteps = e.pSteps;
-		ASSERT( pSteps != nullptr );
-		// Hack: don't calculate for autogen entries
-		if( !pSteps->IsAutogen() && e.ContainsTransformOrTurn() )
-		{
-			NoteData nd;
-			pSteps->GetNoteData( nd );
-			GAMESTATE->SetProcessedTimingData(const_cast<TimingData *>(pSteps->GetTimingData()));
-			PlayerOptions po;
-			po.FromString( e.Modifiers );
-			if( po.ContainsTransformOrTurn() )
-			{
-				NoteDataUtil::TransformNoteData(nd, *(pSteps->GetTimingData()), po, pSteps->m_StepsType);
-			}
-			NoteDataUtil::TransformNoteData(nd, *(pSteps->GetTimingData()), e.Attacks, pSteps->m_StepsType, e.pSong);
-			TechCounts ts = TechCounts();
-			TechCountsCalculator::CalculateTechCounts(nd, ts);
-			GAMESTATE->SetProcessedTimingData(nullptr);
-			techCounts += ts;
-		}
-		else
-		{
-			TechCounts ts = pSteps->GetTechCounts(PLAYER_1);
-			techCounts += ts;
-		}
+		TechCounts ts = pSteps->GetTechCounts(PLAYER_1);
+		techCounts += ts;
 	}
 	const_cast<Trail *>(this)->SetTechCounts(techCounts);
 	return m_CachedTechCounts;
