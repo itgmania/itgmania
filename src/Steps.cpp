@@ -291,7 +291,7 @@ void Steps::TidyUpData()
 		else				SetDifficulty( Difficulty_Hard );
 	}
 
-	if( GetMeter() < 1) // meter is invalid
+	if( GetMeter() < 0) // meter is invalid
 		SetMeter( int(PredictMeter()) );
 }
 
