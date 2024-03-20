@@ -72,3 +72,16 @@ jobs:
         run: cmake -B build
       - name: Build
         run: cmake --build build
+
+  validate-xml-docs:
+    name: Validate Lua.xml, LuaDocumentation.xml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y
+          libxml2-utils
+      - name: Validate Lua.xml
+        run: xmllint --noout Docs/Luadoc/Lua.xml
+      - name: Validate LuaDocumentation.xml
+        run: xmllint --noout Docs/Luadoc/LuaDocumentation.xml
