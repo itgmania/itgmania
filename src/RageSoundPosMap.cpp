@@ -17,7 +17,7 @@ struct pos_map_t
 {
 	std::int64_t m_iSourceFrame;
 	std::int64_t m_iDestFrame;
-	int m_iFrames;
+	int64 m_iFrames; 
 	float m_fSourceToDestRatio;
 
 	pos_map_t() { m_iSourceFrame = 0; m_iDestFrame = 0; m_iFrames = 0; m_fSourceToDestRatio = 1.0f; }
@@ -62,7 +62,7 @@ void pos_map_queue::Insert( std::int64_t iSourceFrame, int iFrames, std::int64_t
 		pos_map_t &last = m_pImpl->m_Queue.back();
 		if( last.m_iSourceFrame + last.m_iFrames == iSourceFrame &&
 		    last.m_fSourceToDestRatio == fSourceToDestRatio &&
-		    llabs(last.m_iDestFrame + std::lrint(last.m_iFrames * last.m_fSourceToDestRatio) - iDestFrame) <= 1 )
+		    llabs(last.m_iDestFrame + RageUtil::fastround(last.m_iFrames * last.m_fSourceToDestRatio) - iDestFrame) <= 1 )
 		{
 			last.m_iFrames += iFrames;
 
@@ -84,7 +84,7 @@ void pos_map_queue::Insert( std::int64_t iSourceFrame, int iFrames, std::int64_t
 
 				next.m_iSourceFrame += iDeleteFrames;
 				next.m_iFrames -= iDeleteFrames;
-				next.m_iDestFrame += std::lrint( iDeleteFrames * next.m_fSourceToDestRatio );
+				next.m_iDestFrame += RageUtil::fastround( iDeleteFrames * next.m_fSourceToDestRatio );
 
 				m_pImpl->m_Queue.push_back( next );
 			}
@@ -95,7 +95,7 @@ void pos_map_queue::Insert( std::int64_t iSourceFrame, int iFrames, std::int64_t
 		}
 	}
 
-	m_pImpl->m_Queue.push_back( pos_map_t() );
+	m_pImpl->m_Queue.emplace_back(); // we don't need to copy back the whole posmap here, only the queue is used, this can improve performance
 	pos_map_t &m = m_pImpl->m_Queue.back();
 	m.m_iSourceFrame = iSourceFrame;
 	m.m_iDestFrame = iDestFrame;
@@ -134,18 +134,21 @@ std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame, bool *bApproximat
 	}
 
 	/* iSourceFrame is probably in pos_map.  Search to figure out what position
-	 * it maps to. */
+	 * it maps to. 
+	 pClosestBlock isn't needed so we comment it out everywhere we see it.*/
+	 
+	
 	std::int64_t iClosestPosition = 0, iClosestPositionDist = INT_MAX;
-	const pos_map_t *pClosestBlock = &*m_pImpl->m_Queue.begin(); /* print only */
+	//const pos_map_t *pClosestBlock = &*m_pImpl->m_Queue.begin(); /* print only */
 	for (pos_map_t const &pm : m_pImpl->m_Queue)
 	{
 		if( iSourceFrame >= pm.m_iSourceFrame &&
 			iSourceFrame < pm.m_iSourceFrame+pm.m_iFrames )
 		{
 			/* iSourceFrame lies in this block; it's an exact match.  Figure
-			 * out the exact position. */
-			int iDiff = int(iSourceFrame - pm.m_iSourceFrame);
-			iDiff = std::lrint( iDiff * pm.m_fSourceToDestRatio );
+			 * out the exact position. also idiff is a int64_t now */
+			int64_t iDiff = int(iSourceFrame - pm.m_iSourceFrame);
+			iDiff = RageUtil::fastround( iDiff * pm.m_fSourceToDestRatio );
 			return pm.m_iDestFrame + iDiff;
 		}
 
@@ -154,7 +157,7 @@ std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame, bool *bApproximat
 		if( dist < iClosestPositionDist )
 		{
 			iClosestPositionDist = dist;
-			pClosestBlock = &pm;
+			//pClosestBlock = &pm;
 			iClosestPosition = pm.m_iDestFrame;
 		}
 
@@ -163,8 +166,8 @@ std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame, bool *bApproximat
 		if( dist < iClosestPositionDist )
 		{
 			iClosestPositionDist = dist;
-			pClosestBlock = &pm;
-			iClosestPosition = pm.m_iDestFrame + std::lrint( pm.m_iFrames * pm.m_fSourceToDestRatio );
+			//pClosestBlock = &pm;
+			iClosestPosition = pm.m_iDestFrame + RageUtil::fastround( pm.m_iFrames * pm.m_fSourceToDestRatio );
 		}
 	}
 
@@ -177,7 +180,9 @@ std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame, bool *bApproximat
 	 * 2. After GetDataToPlay returns EOF and the sound has flushed, but before
 	 *    SoundStopped has been called.
 	 * 3. Underflow; we'll be given a larger frame number than we know about.
-	 */
+	 
+	 also........... we dont need this whole statement below, ok to skip straight to the iClosestPosition code
+	 
 	static RageTimer last;
 	if( last.PeekDeltaTime() >= 1.0f )
 	{
@@ -187,7 +192,7 @@ std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame, bool *bApproximat
 		   << pClosestBlock->m_iDestFrame << ".." << (pClosestBlock->m_iDestFrame+pClosestBlock->m_iFrames)
 		   << " (dist " << iClosestPositionDist << "), closest position is " << iClosestPosition;
 		LOG->Trace( "%s", ss.str().c_str() );
-	}
+	} */
 
 	if( bApproximate )
 		*bApproximate = true;

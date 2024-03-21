@@ -14,9 +14,9 @@ int RageSoundReader::RetriedRead( float *pBuffer, int iFrames, int *iSourceFrame
 	/* pReader may return 0, which means "try again immediately".  As a failsafe,
 	 * only try this a finite number of times.  Use a high number, because in
 	 * principle each filter in the stack may cause this. */
-	int iTries = 100;
-	while( --iTries )
-	{
+	//int iTries = 100;
+	//while( --iTries )
+	//{
 		if( fRate )
 			*fRate = this->GetStreamToSourceRatio();
 		if( iSourceFrame )
@@ -29,12 +29,15 @@ int RageSoundReader::RetriedRead( float *pBuffer, int iFrames, int *iSourceFrame
 
 		if( iGotFrames != 0 )
 			return iGotFrames;
-	}
+	//}
 
-	LOG->Warn( "Read() busy looping" );
-
+	//LOG->Warn( "Read() busy looping" );
+	//i commented this line out bc outfox was not using it in their example. feel free to put it back in.
+	
 	/* Pretend we got EOF. */
-	return RageSoundReader::END_OF_FILE;
+	//return RageSoundReader::END_OF_FILE;
+	
+	return 0;
 }
 
 /*

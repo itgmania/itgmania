@@ -291,9 +291,13 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 	* acting on song beat from last frame */
 	HandleInputEvents(fDeltaTime);
 
+	/* note this might be negatively impacting performance but we dont know 100% for sure. we should test this commented and uncommented.
+	outfox doesn't use it right now. outfox also doesn't have the LIGHTSMAN line below it at all, so i've commented it out too.
+	
 	//bandaid for low max audio sample counter
 	SOUNDMAN->low_sample_count_workaround();
 	LIGHTSMAN->Update(fDeltaTime);
+	*/ 
 
 }
 
@@ -317,10 +321,16 @@ void GameLoop::RunGameLoop()
 			DoChangeTheme();
 		}
 
+		/* (compuerr) all you need is CheckFocus(); and then UpdateAllButDraw, OR move SCREENMAN->Draw before input devices changed,
+		this will reduce stuttering. i chose to comment out all the stuff outfox isn't using.  */
+
 		CheckFocus();
 
 		UpdateAllButDraw(false);
 
+		/*   ~ this code runs every tick, so its really not needed and especially makes ltek/fsr pad users lives hard,
+		so lets try not having it here, and if it causes trouble being gone lets put it after screenman->draw.
+		
 		if( INPUTMAN->DevicesChanged() )
 		{
 			INPUTFILTER->Reset();	// fix "buttons stuck" once per frame if button held while unplugged
@@ -328,9 +338,10 @@ void GameLoop::RunGameLoop()
 			RString sMessage;
 			if( INPUTMAPPER->CheckForChangedInputDevicesAndRemap(sMessage) )
 				SCREENMAN->SystemMessage( sMessage );
-		}
+		} 
 
-		SCREENMAN->Draw();
+		SCREENMAN->Draw();  // removed this too because it can cause stuttering but, again, put this back if it's probelmatic to have it gone
+		*/
 	}
 
 	// If we ended mid-game, finish up.

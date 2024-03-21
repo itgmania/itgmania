@@ -150,19 +150,19 @@ void ArchHooks_Win32::SetTime( tm newtime )
 
 void ArchHooks_Win32::BoostPriority()
 {
-	/* We just want a slight boost, so we don't skip needlessly if something happens
-	 * in the background.  We don't really want to be high-priority--above normal should
-	 * be enough.  However, ABOVE_NORMAL_PRIORITY_CLASS is only supported in Win2000
-	 * and later. */
-#ifndef ABOVE_NORMAL_PRIORITY_CLASS
-#define ABOVE_NORMAL_PRIORITY_CLASS 0x00008000
+	/* in the past this was ABOVE_NORMAL_PRIORITY_CLASS for compatibility with windows 2000/xp systems.
+	 * we want HIGH_PRIORITY_CLASS instead so that things like OBS don't steal the rendering thread. */
+#ifndef HIGH_PRIORITY_CLASS
+#define HIGH_PRIORITY_CLASS 0x00008000
 #endif
 
 	DWORD pri = HIGH_PRIORITY_CLASS;
+	
+	/* commenting this out too since its irrelevant now that itgm is 64bit only
 	if( IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN2K), LOBYTE(_WIN32_WINNT_WIN2K), 0) )
 		pri = ABOVE_NORMAL_PRIORITY_CLASS;
 
-	/* Be sure to boost the app, not the thread, to make sure the
+	   Be sure to boost the app, not the thread, to make sure the
 	 * sound thread stays higher priority than the main thread. */
 	SetPriorityClass( GetCurrentProcess(), pri );
 }

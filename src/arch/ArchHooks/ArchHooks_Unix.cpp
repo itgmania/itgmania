@@ -148,8 +148,10 @@ namespace
 
 clockid_t ArchHooks_Unix::GetClock()
 {
-	OpenGetTime();
-	return g_Clock;
+	// we wanna get rid of this and force return CLOCK_MONOTONIC to prevent pulseaudio from desyncing!!!
+	//OpenGetTime();
+	//return g_Clock;
+	return CLOCK_MONOTONIC;
 }
 
 std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
@@ -159,7 +161,8 @@ std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
 	timespec ts;
 	clock_gettime( g_Clock, &ts );
 
-	std::int64_t iRet = std::int64_t(ts.tv_sec) * 1000000 + std::int64_t(ts.tv_nsec)/1000;
+	//std::int64_t iRet = std::int64_t(ts.tv_sec) * 1000000 + std::int64_t(ts.tv_nsec)/1000;
+	// (compuerr) we can remove the above line because clock monotonic is being forced.
 	if( g_Clock != CLOCK_MONOTONIC )
 		iRet = ArchHooks::FixupTimeIfBackwards( iRet );
 	return iRet;

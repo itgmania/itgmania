@@ -331,7 +331,7 @@ void RageSound::StartPlaying()
 	ASSERT( !m_bPlaying );
 
 	// Move to the start position.
-	SetPositionFrames( std::lrint(m_Param.m_StartSecond * samplerate()) );
+	SetPositionFrames( std::int(roundf(m_Param.m_StartSecond * samplerate())) );
 
 	/* If m_StartTime is in the past, then we probably set a start time but took too
 	 * long loading.  We don't want that; log it, since it can be unobvious. */

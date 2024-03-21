@@ -90,6 +90,18 @@ namespace
 		}
 	}
 
+	//fastround feature borrowed from outfox
+	static int fastround(const float num)
+	{
+		return static_cast<int>(num);
+	}
+	
+	static int fastround(const double num)
+	{
+		return static_cast<int>(num);
+	}
+	//end new stuff borrowed from outfox
+
 	const luaL_Reg MersenneTwisterTable[] =
 	{
 		LIST_METHOD( Seed ),

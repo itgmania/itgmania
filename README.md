@@ -1,73 +1,65 @@
-ITGmania
-========
+ITGmania fork :3
 
-ITGmania is a fork of [StepMania 5.1](https://github.com/stepmania/stepmania/tree/5_1-new), an advanced cross-platform rhythm game for home and arcade use.
 
-[![Continuous integration](https://github.com/itgmania/itgmania/workflows/Continuous%20integration/badge.svg?branch=beta)](https://github.com/itgmania/itgmania/actions?query=workflow%3A%22Continuous+integration%22+branch%3Abeta)
 
-## Changes to StepMania 5.1
+here are my messy notes for this fork. massive greetz to Squirrel from outfox for pointing us on the right direction here.
 
-- Built-in network functionality
-- Reload new songs from within the song select screen
-- The mine fix applied (courtesy of [DinsFire64](https://gist.github.com/DinsFire64/4a3f763cd3033afd55a176980b32a3b5))
-- Held misses tracked in the engine for pad debugging
-- Fixed overlapping hold bug
-- Per-player visual delay
-- Per-player disabling of timing windows
-- New preference to control note render ordering
-- Increased the Stats.xml file size limit to 100MB
-- Changed the default binding for P2/back from hyphen to backslash
 
-## Installation
-### From Packages
 
-For those that do not wish to compile the game on their own and use a binary right away, be aware of the following issues:
+most important:
 
-* Windows 7 is the minimum supported version.
-* macOS users need to have macOS 11 (Big Sur) or higher to run ITGmania.
-* Linux users should receive all they need from the package manager of their choice.
+- windows uses non monolithic time  but  linux/mac uses monolithic time which is directly tied in with the issue and why windows users are seeing it worst
 
-### From Source
+- get rid of std:lrint() / lrintf, replace with int(roundf  [optimizes a lot faster than lrintf]
+  
+  - definitely change any in ragesound, but Squirrel suggests changing ANY lrint except in the arrow effects math
+  - if youre running on vsync, you only have 1 tick to catch up on; if the game lags 8ms or more with vsync off it cant catch up until the next tick
 
-ITGmania can be compiled using [CMake](http://www.cmake.org/). More information about using CMake can be found in both the `Build` directory and CMake's documentation.
+- lines 17-18 in RageSoundReader.cpp causes stutter by messing up the posmap if the read time is slow, causing the 'Approximate sound time' issue, https://github.com/itgmania/itgmania/blob/04647648765b082414993e6f2ce420b2d950840b/src/RageSoundReader.cpp#L17-L18  
+  proposed fix. this is not needed anymore because the problem this was addressing is not present since sm3.9:
 
-## Resources
+```
+if ( fRate )
+    *fRate = this->GetStreamToSourceRatio();
+if ( iSourceFrame )
+    *iSourceFrame = this->GetNextSourceFrame();
 
-* [ITGmania Website](https://www.itgmania.com/)
-* [StepMania 5.1 to ITGmania Migration Guide](Docs/Userdocs/sm5_migration.md)
-* [Lua for ITGmania](https://itgmania.github.io/lua-for-itgmania/)
-* Lua API Documentation can be found in the Docs folder.
+int iGotFrames = this->Read( pBuffer, iFrames );
 
-## Licensing Terms
+if( iGotFrames == RageSoundReader::STREAM_LOOPED )
+    iGotFrames = 0;
 
-In short- you can do anything you like with the game (including sell products made with it), provided you *do not*:
+if( iGotFrames != 0 )
+    return iGotFrames;
+```
 
-1. Sell the game *with the included songs*
-2. Claim to have created the engine yourself or remove the credits
-3. Not provide source code for any build which differs from any official release which includes MP3 support.
+- in RageSoundPosMap, change int m_iFrames to int64, https://github.com/itgmania/itgmania/blob/04647648765b082414993e6f2ce420b2d950840b/src/RageSoundPosMap.cpp#L20
+  
+  - refer to screenshot for replacement code at lines 129-152
+  - pClosestBlock isn't used at all so its safe to comment out anywhere in this file
+  - also comment out 181-189, dont do the deltatime here
+  - make sure to get the lrint's too, use a fastround here
+  - line 98ish,   you dont need to mplace the whole map, make it so its   `->m_Queue.emplace_back();`
 
-(It's not required, but we would also appreciate it if you link back to [ITGmania](https://github.com/itgmania/itgmania) as well as [StepMania](https://github.com/stepmania/stepmania).)
+- Note for testing on Dimo's setup: please try with this code commented out https://github.com/itgmania/itgmania/blob/04647648765b082414993e6f2ce420b2d950840b/src/GameLoop.cpp#L295
+  
+  - note in outfox there is no `LIGHTSMAN->Update(fDeltaTime);` in the line after the SCREENMAN->Draw
 
-For specific information/legalese:
+other stuff related to the sync bug:
 
-* All of our source code is under the [MIT license](http://opensource.org/licenses/MIT).
-* Songs included within the 'StepMania 5' folder are under the [<abbr title="Creative Commons Non-Commercial">CC-NC</abbr> license](https://creativecommons.org/).
-* Simply Love is licensed under the GPLv3, or (at your option) any later version.
-* The copyright for songs in the 'Club Fantastic' folders rests with the original authors. The content is explicitly NOT placed under a Creative Commons license (or similar license), but has been provided free of charge, for personal or public use, including online broadcasting, tournaments, and other purposes. Go to the [Club Fantastic](https://www.clubfantastic.com/) website for more information.
-* The [MAD library](http://www.underbit.com/products/mad/) and [FFmpeg codecs](https://www.ffmpeg.org/) when built with our code use the [GPL license](http://www.gnu.org).
+- suggested to comment out the following code in the main GameLoop.cpp, https://github.com/itgmania/itgmania/blob/04647648765b082414993e6f2ce420b2d950840b/src/GameLoop.cpp#L324-L331 - all you need is CheckFocus(); and then UpdateAllButDraw, OR move SCREENMAN->Draw before input devices changed, this will reduce stuttering
 
-## Credits
+other stuff to note:
 
-### ITGmania Team
-- Martin Natano (natano)
-- teejusb
+- ragesoundreader has to stay even with a new sound backend
+- DR_MP3_IMPLEMENTATION in RageSoundReader_MP3 should be changed to get rid of the libmad dependency
+- they found ragesoundreader cant actually handle audio drivers bc year 2001 code where it counts audio frames processed by the cpu which are then sent to the sound card. they estimate ~8 months constant work to remove this but intend to open source it in the future
+- outfox has a separate clock that uses chrono time that hooks back into ragetimer, this is to prevent the clock from going backwards on windows (which it cant do on mac or linux), windows has like 6 different clocks but you dont actually know what clock you get hooked onto, so it can snap back and forth trying to compensate for this. their chrono based clock prevents that
+- screenman->draw can cause stuttering on popups possibly
+- set this to HIGH_PRIORITY_CLASS to prevent OBS from stealing the rendering thread https://github.com/itgmania/itgmania/blob/04647648765b082414993e6f2ce420b2d950840b/src/arch/ArchHooks/ArchHooks_Win32.cpp#L157-L158
+  
+  
 
-### Contributors
-- [Club Fantastic](https://wiki.clubfantastic.dance/en/Credits)
-- [DinsFire64](https://gist.github.com/DinsFire64/4a3f763cd3033afd55a176980b32a3b5) (Mine Fix)
-- [EvocaitArt](https://twitter.com/EvocaitArt) (Enchantment NoteSkin)
-- [jenx](https://www.amarion.net/) (Fast Profile Switching)
-- [LightningXCE](https://twitter.com/lightningxce) (Cyber NoteSkin)
-- [MegaSphere](https://github.com/Pete-Lawrence/Peters-Noteskins) (Note/Rainbow/Vivid NoteSkins)
-- [StepMania 5](Docs/credits_SM5.txt)
-- [Old StepMania Team](Docs/credits_old_Stepmania_Team.txt)
+noted for din's image, instantly kills any drift on linux!!!: 
+
+- in ArchHooks_Unix, there is a bug with the test code for g_Clock,  force return it as CLOCK_MONOTONIC, OpenGetTime() is not providing the right answer so just have GetClock() return CLOCK_MONOTONIC. this prevents pulseaudio from skewing. Line 164  is the line that causes stutter,  because it takes negative time into account, if CLOCK_MONOTONIC is forced then this can be removed.
