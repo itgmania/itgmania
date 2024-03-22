@@ -281,7 +281,7 @@ bool EventImpl_Pthreads::Wait( RageTimer *pTimeout )
 	abstime.tv_sec = static_cast<time_t>(uSecs / 1000000);
 	// We can't know exactly what type this will have, so cast it like this.
 	using tv_nsec_t = decltype(abstime.tv_nsec);
-	abstime.tv_nsec = static_cast<tv_nsec_t>(uSecs % 1000 * 1000);
+	abstime.tv_nsec = static_cast<tv_nsec_t>(uSecs % 1000000 * 1000);
 
 	int iRet = pthread_cond_timedwait( &m_Cond, &m_pParent->mutex, &abstime );
 	return iRet != ETIMEDOUT;
