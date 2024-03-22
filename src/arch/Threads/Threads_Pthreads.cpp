@@ -347,32 +347,21 @@ bool EventImpl_Pthreads::Wait( RageTimer *pTimeout )
 		return true;
 	}
 
-	/* If the clock is not CLOCK_MONOTONIC, or we can't change the wait clock
-	 * (no condattr_setclock), pthread_cond_timedwait has an inherent race
-	 * condition: the system clock may change before we call it. */
 	timespec abstime;
-	if( g_CondattrSetclock != nullptr || GetClock() == CLOCK_REALTIME )
-	{
-		/* If we support condattr_setclock, we'll set the condition to use
-		 * the same clock as RageTimer and can use it directly. If the
-		 * clock is CLOCK_REALTIME, that's the default anyway. */
-		abstime.tv_sec = pTimeout->m_secs;
-		abstime.tv_nsec = pTimeout->m_us * 1000;
-	}
-	else
-	{
-		// The RageTimer clock is different than the wait clock; convert it.
-		timeval tv;
-		gettimeofday( &tv, nullptr );
+	// The RageTimer clock is different than the wait clock; convert it.
+	timeval tv;
+	gettimeofday( &tv, nullptr );
 
-		RageTimer timeofday( tv.tv_sec, tv.tv_usec );
+	RageTimer timeofday( tv.tv_sec, tv.tv_usec );
 
-		float fSecondsInFuture = -pTimeout->Ago();
-		timeofday += fSecondsInFuture;
+	float fSecondsInFuture = -pTimeout->Ago();
+	timeofday += fSecondsInFuture;
+	const auto uSecs = timeofday.GetUsecsSinceZero();
 
-		abstime.tv_sec = timeofday.m_secs;
-		abstime.tv_nsec = timeofday.m_us * 1000;
-	}
+	abstime.tv_sec = static_cast<time_t>(uSecs / 1000000);
+	// We can't know exactly what type this will have, so cast it like this.
+	using tv_nsec_t = decltype(abstime.tv_nsec);
+	abstime.tv_nsec = static_cast<tv_nsec_t>(uSecs % 1000 * 1000);
 
 	int iRet = pthread_cond_timedwait( &m_Cond, &m_pParent->mutex, &abstime );
 	return iRet != ETIMEDOUT;

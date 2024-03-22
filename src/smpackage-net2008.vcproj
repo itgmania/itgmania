@@ -483,10 +483,6 @@
 						RelativePath=".\arch\ArchHooks\ArchHooks_Win32Static.cpp"
 						>
 					</File>
-					<File
-						RelativePath=".\arch\ArchHooks\ArchHooksUtil.cpp"
-						>
-					</File>
 				</Filter>
 				<Filter
 					Name="Dialog"

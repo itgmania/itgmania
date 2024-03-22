@@ -4,28 +4,32 @@
 #define RAGE_TIMER_H
 
 #include <cstdint>
+#include <chrono>
 
 class RageTimer
 {
 public:
-	RageTimer(): m_secs(0), m_us(0) { Touch(); }
-	RageTimer( int secs, int us ): m_secs(secs), m_us(us) { }
+	RageTimer( ) { Touch(); }
+	RageTimer( int secs, int us );
 
 	/* Time ago this RageTimer represents. */
 	float Ago() const;
 	void Touch();
-	inline bool IsZero() const { return m_secs == 0 && m_us == 0; }
-	inline void SetZero() { m_secs = m_us = 0; }
+	inline bool IsZero() const { return m_time_point == sm_time_point(); }
+	inline void SetZero() { m_time_point = sm_time_point(); }
 
 	/* Time between last call to GetDeltaTime() (Ago() + Touch()): */
 	float GetDeltaTime();
 	/* (alias) */
 	float PeekDeltaTime() const { return Ago(); }
+	std::uint64_t GetUsecsSinceZero() const;
 
 	/* deprecated: */
 	static float GetTimeSinceStart( bool bAccurate = true );	// seconds since the program was started
 	static float GetTimeSinceStartFast() { return GetTimeSinceStart(false); }
 	static std::uint64_t GetUsecsSinceStart();
+
+	static RageTimer GetZeroTimer() { return RageTimer(sm_time_point()); }
 
 	/* Get a timer representing half of the time ago as this one. */
 	RageTimer Half() const;
@@ -41,13 +45,20 @@ public:
 
 	bool operator<( const RageTimer &rhs ) const;
 
-	/* "float" is bad for a "time since start" RageTimer.  If the game is running for
-	 * several days, we'll lose a lot of resolution.  I don't want to use double
-	 * everywhere, since it's slow.  I'd rather not use double just for RageTimers, since
-	 * it's too easy to get a type wrong and end up with obscure resolution problems. */
-	unsigned m_secs, m_us;
+	// If the high-resolution clock implementation provided is steady (i.e. monotonic)
+	// use it. If it isn't monotonic, use the best monotonic clock we have.
+	using sm_clock = std::conditional<
+		std::chrono::high_resolution_clock::is_steady,
+		std::chrono::high_resolution_clock,
+		std::chrono::steady_clock>::type;
+	using sm_time_point = std::chrono::time_point<sm_clock>;
+	using sm_duration = sm_clock::duration;
 
 private:
+	sm_time_point m_time_point;
+
+	RageTimer( sm_time_point point );
+
 	static RageTimer Sum( const RageTimer &lhs, float tm );
 	static float Difference( const RageTimer &lhs, const RageTimer &rhs );
 };
@@ -97,4 +108,3 @@ extern const RageTimer RageZeroTimer;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

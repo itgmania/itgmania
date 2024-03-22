@@ -28,21 +28,6 @@ static void InitTimer()
 	timeBeginPeriod( 1 );
 }
 
-std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
-{
-	if( !g_bTimerInitialized )
-		InitTimer();
-
-	std::int64_t ret = timeGetTime() * std::int64_t(1000);
-	if( bAccurate )
-	{
-		ret = FixupTimeIfLooped( ret );
-		ret = FixupTimeIfBackwards( ret );
-	}
-
-	return ret;
-}
-
 static RString GetMountDir( const RString &sDirOfExecutable )
 {
 	/* All Windows data goes in the directory one level above the executable. */
