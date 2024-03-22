@@ -60,9 +60,10 @@ RageTimer::RageTimer(sm_time_point point)
 
 RageTimer::RageTimer(int secs, int us)
 {
+	// The old implementation represented these as unsigned.
 	const auto castSecs = static_cast<unsigned>(secs);
 	const auto castUs = static_cast<unsigned>(us);
-	const auto totalUs = static_cast<microseconds::rep>(secs) * 1000000 + us;
+	const auto totalUs = static_cast<microseconds::rep>(castSecs) * 1000000 + castUs;
 	const auto argumentDuration = microseconds(totalUs);
 	m_time_point = sm_clock::time_point() + duration_cast<sm_duration>(argumentDuration);
 }
