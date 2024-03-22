@@ -271,17 +271,18 @@ bool EventImpl_Pthreads::Wait( RageTimer *pTimeout )
 	// The RageTimer clock is different than the wait clock; convert it.
 	timeval tv;
 	gettimeofday( &tv, nullptr );
+	const auto iNanosecondsInFuture = -pTimeout->NsecsAgo();
 
-	RageTimer timeofday( tv.tv_sec, tv.tv_usec );
+	// If you call pthread_cond_timedwait with a time in the past, it will always return
+	// ETIMEDOUT.
+	if (iNanosecondsInFuture < 0) {
+		return false;
+	}
 
-	float fSecondsInFuture = -pTimeout->Ago();
-	timeofday += fSecondsInFuture;
-	const auto ns = timeofday.GetNsecs();
-
-	abstime.tv_sec = static_cast<time_t>(ns / UINT64_C(1000000000));
+	abstime.tv_sec = tv.tv_sec + static_cast<time_t>(iNanosecondsInFuture / INT64_C(1000000000));
 	// We can't know exactly what type this will have, so cast it like this.
 	using tv_nsec_t = decltype(abstime.tv_nsec);
-	abstime.tv_nsec = static_cast<tv_nsec_t>(ns % UINT64_C(1000000000));
+	abstime.tv_nsec = tv.tv_usec + static_cast<tv_nsec_t>(iNanosecondsInFuture % INT64_C(1000000000));
 
 	int iRet = pthread_cond_timedwait( &m_Cond, &m_pParent->mutex, &abstime );
 	return iRet != ETIMEDOUT;

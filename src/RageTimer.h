@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <chrono>
+using namespace std::chrono;
 
 class RageTimer
 {
@@ -22,7 +23,11 @@ public:
 	float GetDeltaTime();
 	/* (alias) */
 	float PeekDeltaTime() const { return Ago(); }
-	std::uint64_t GetNsecs() const;
+	std::int64_t NsecsAgo() const
+	{
+		const auto duration = duration_cast<nanoseconds>(sm_clock::now() - m_time_point);
+		return static_cast<std::int64_t>(duration.count());
+	}
 
 	/* deprecated: */
 	static float GetTimeSinceStart( bool bAccurate = true );	// seconds since the program was started
@@ -35,15 +40,25 @@ public:
 	RageTimer Half() const;
 
 	/* Add (or subtract) a duration from a timestamp.  The result is another timestamp. */
-	RageTimer operator+( float tm ) const;
+	RageTimer operator+( float tm ) const
+	{
+		return Sum(*this, tm);
+	}
+
 	RageTimer operator-( float tm ) const { return *this + -tm; }
 	void operator+=( float tm ) { *this = *this + tm; }
 	void operator-=( float tm ) { *this = *this + -tm; }
 
 	/* Find the amount of time between two timestamps.  The result is a duration. */
-	float operator-( const RageTimer &rhs ) const;
+	float operator-( const RageTimer &rhs ) const
+	{
+		return Difference(*this, rhs);
+	}
 
-	bool operator<( const RageTimer &rhs ) const;
+	bool operator<( const RageTimer &rhs ) const
+	{
+		return m_time_point < rhs.m_time_point;
+	}
 
 	// If the high-resolution clock implementation provided is steady (i.e. monotonic)
 	// use it. If it isn't monotonic, use the best monotonic clock we have.
@@ -59,8 +74,36 @@ private:
 
 	RageTimer( sm_time_point point );
 
-	static RageTimer Sum( const RageTimer &lhs, float tm );
-	static float Difference( const RageTimer &lhs, const RageTimer &rhs );
+	using float_seconds = duration<float, std::ratio<1, 1>>;
+
+	static constexpr std::uint64_t GetDurationAsMicros(const sm_duration duration)
+	{
+		const auto micros = duration_cast<microseconds>(duration);
+		return static_cast<std::uint64_t>(micros.count());
+	}
+
+	static constexpr float SMDurationToFloat(const sm_duration duration)
+	{
+		return duration_cast<float_seconds>(duration).count();
+	}
+
+	static constexpr sm_duration FloatToSMDuration(const float sec)
+	{
+		return duration_cast<RageTimer::sm_duration>(float_seconds(sec));
+	}
+
+	static RageTimer Sum( const RageTimer &lhs, const float tm )
+	{
+		return RageTimer(lhs.m_time_point + FloatToSMDuration(tm));
+	}
+
+	static float Difference( const RageTimer &lhs, const RageTimer &rhs )
+	{
+		const auto difference = lhs.m_time_point - rhs.m_time_point;
+		return SMDurationToFloat(difference);
+	}
+
+
 };
 
 extern const RageTimer RageZeroTimer;

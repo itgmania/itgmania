@@ -35,24 +35,6 @@ static_assert(RageTimer::sm_duration::period::num == 1
 	&& RageTimer::sm_duration::period::den >= TIMESTAMP_RESOLUTION,
 	"This platform does not provide an accurate enough monotonic timer for ITGMania.");
 
-static constexpr std::uint64_t GetDurationAsMicros(const RageTimer::sm_duration duration)
-{
-	const auto micros = duration_cast<microseconds>(duration);
-	return static_cast<std::uint64_t>(micros.count());
-}
-
-using float_seconds = duration<float, std::ratio<1, 1>>;
-
-static constexpr RageTimer::sm_duration FloatToSMDuration(const float sec)
-{
-	return duration_cast<RageTimer::sm_duration>(float_seconds(sec));
-}
-
-static constexpr float SMDurationToFloat(const RageTimer::sm_duration duration)
-{
-	return duration_cast<float_seconds>(duration).count();
-}
-
 RageTimer::RageTimer(sm_time_point point)
 {
 	m_time_point = point;
@@ -106,12 +88,6 @@ float RageTimer::GetDeltaTime()
 	return diff;
 }
 
-std::uint64_t RageTimer::GetNsecs() const
-{
-	const auto nsDuration = duration_cast<nanoseconds>(m_time_point - sm_clock::time_point());
-	return static_cast<std::uint64_t>(nsDuration.count());
-}
-
 /*
  * Get a timer representing half of the time ago as this one.  This is
  * useful for averaging time.  For example,
@@ -125,32 +101,6 @@ RageTimer RageTimer::Half() const
 {
 	const auto halfTicks = (sm_clock::now() - m_time_point).count() / 2;
 	return RageTimer(m_time_point + sm_duration(halfTicks));
-}
-
-RageTimer RageTimer::operator+(float tm) const
-{
-	return Sum(*this, tm);
-}
-
-float RageTimer::operator-(const RageTimer &rhs) const
-{
-	return Difference(*this, rhs);
-}
-
-bool RageTimer::operator<( const RageTimer &rhs ) const
-{
-	return m_time_point < rhs.m_time_point;
-}
-
-RageTimer RageTimer::Sum(const RageTimer &lhs, float tm)
-{
-	return RageTimer(lhs.m_time_point + FloatToSMDuration(tm));
-}
-
-float RageTimer::Difference(const RageTimer &lhs, const RageTimer &rhs)
-{
-	const auto difference = lhs.m_time_point - rhs.m_time_point;
-	return SMDurationToFloat(difference);
 }
 
 #include "LuaManager.h"
