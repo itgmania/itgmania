@@ -22,7 +22,7 @@ public:
 	float GetDeltaTime();
 	/* (alias) */
 	float PeekDeltaTime() const { return Ago(); }
-	std::uint64_t GetUsecsSinceZero() const;
+	std::uint64_t GetNsecs() const;
 
 	/* deprecated: */
 	static float GetTimeSinceStart( bool bAccurate = true );	// seconds since the program was started

@@ -31,8 +31,8 @@ using namespace std::chrono;
 
 static constexpr int TIMESTAMP_RESOLUTION = 1000000;
 
-static_assert(RageTimer::sm_duration::period::den != 1
-	|| RageTimer::sm_duration::period::num < TIMESTAMP_RESOLUTION,
+static_assert(RageTimer::sm_duration::period::num == 1
+	&& RageTimer::sm_duration::period::den >= TIMESTAMP_RESOLUTION,
 	"This platform does not provide an accurate enough monotonic timer for ITGMania.");
 
 static constexpr std::uint64_t GetDurationAsMicros(const RageTimer::sm_duration duration)
@@ -77,11 +77,6 @@ static RageTimer::sm_duration GetDurationSinceStart()
 	return RageTimer::sm_clock::now() - g_StartTimePoint;
 }
 
-static std::uint64_t GetTime( bool /* bAccurate */ )
-{
-	return GetDurationAsMicros(RageTimer::sm_clock::now().time_since_epoch());
-}
-
 std::uint64_t RageTimer::GetUsecsSinceStart()
 {
 	return GetDurationAsMicros(GetDurationSinceStart());
@@ -111,9 +106,10 @@ float RageTimer::GetDeltaTime()
 	return diff;
 }
 
-std::uint64_t RageTimer::GetUsecsSinceZero() const
+std::uint64_t RageTimer::GetNsecs() const
 {
-	return GetDurationAsMicros(m_time_point - sm_clock::time_point());
+	const auto nsDuration = duration_cast<nanoseconds>(m_time_point - sm_clock::time_point());
+	return static_cast<std::uint64_t>(nsDuration.count());
 }
 
 /*

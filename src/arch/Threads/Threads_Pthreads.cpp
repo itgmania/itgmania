@@ -276,12 +276,12 @@ bool EventImpl_Pthreads::Wait( RageTimer *pTimeout )
 
 	float fSecondsInFuture = -pTimeout->Ago();
 	timeofday += fSecondsInFuture;
-	const auto uSecs = timeofday.GetUsecsSinceZero();
+	const auto ns = timeofday.GetNsecs();
 
-	abstime.tv_sec = static_cast<time_t>(uSecs / 1000000);
+	abstime.tv_sec = static_cast<time_t>(ns / UINT64_C(1000000000));
 	// We can't know exactly what type this will have, so cast it like this.
 	using tv_nsec_t = decltype(abstime.tv_nsec);
-	abstime.tv_nsec = static_cast<tv_nsec_t>(uSecs % 1000000 * 1000);
+	abstime.tv_nsec = static_cast<tv_nsec_t>(ns % UINT64_C(1000000000));
 
 	int iRet = pthread_cond_timedwait( &m_Cond, &m_pParent->mutex, &abstime );
 	return iRet != ETIMEDOUT;
