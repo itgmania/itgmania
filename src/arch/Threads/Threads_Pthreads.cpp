@@ -279,10 +279,19 @@ bool EventImpl_Pthreads::Wait( RageTimer *pTimeout )
 		return false;
 	}
 
-	abstime.tv_sec = tv.tv_sec + static_cast<time_t>(iNanosecondsInFuture / INT64_C(1000000000));
-	// We can't know exactly what type this will have, so cast it like this.
-	using tv_nsec_t = decltype(abstime.tv_nsec);
-	abstime.tv_nsec = tv.tv_usec + static_cast<tv_nsec_t>(iNanosecondsInFuture % INT64_C(1000000000));
+	time_t effectiveSec = tv.tv_sec + static_cast<time_t>(iNanosecondsInFuture / INT64_C(1000000000));
+
+	using nsec_t = decltype(abstime.tv_nsec);
+	nsec_t effectiveNsec = static_cast<nsec_t>(tv.tv_usec) * 1000
+		+ static_cast<nsec_t>(iNanosecondsInFuture % INT64_C(1000000000));
+
+	// Remove extra seconds from the number of nanoseconds.
+	nsec_t spareSeconds = effectiveNsec / 1000000000;
+	effectiveSec += static_cast<time_t>(spareSeconds);
+	effectiveNsec -= spareSeconds * 1000000000;
+
+	abstime.tv_sec = effectiveSec;
+	abstime.tv_nsec = effectiveNsec;
 
 	int iRet = pthread_cond_timedwait( &m_Cond, &m_pParent->mutex, &abstime );
 	return iRet != ETIMEDOUT;
