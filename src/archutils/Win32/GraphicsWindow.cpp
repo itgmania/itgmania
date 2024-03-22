@@ -111,7 +111,8 @@ static LRESULT CALLBACK GraphicsWindow_WndProc( HWND hWnd, UINT msg, WPARAM wPar
 		case WM_SETCURSOR:
 			if( !g_CurrentParams.windowed )
 			{
-				SetCursor(nullptr);
+				//Don't hide the cursor when full screened since we have ShowMouseCursor as an option.
+				//SetCursor(nullptr);
 				return 1;
 			}
 			break;
