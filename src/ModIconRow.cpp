@@ -98,6 +98,8 @@ static const OptionColumnEntry g_OptionColumnEntries[] =
 	{"RandomVanish",2},
 	//--------------------//
 	{"Mirror",		3},
+	{"LRMirror",	3},
+	{"UDMirror",	3},
 	{"Left",		3},
 	{"Right",		3},
 	{"Shuffle",		3},

@@ -142,8 +142,14 @@ public:
 	 * @return the songs within the game that have at least one valid Step. */
 	const std::vector<Song *> &GetAllSongsOfCurrentGame() const;
 
+	std::map<int, std::vector<Song*>> GetMeterToSongsMap() const { return m_mapSongsByDifficulty; }
 	void GetPreferredSortSongs( std::vector<Song*> &AddTo ) const;
+	std::map<RString, std::vector<Song*>> GetPreferredSortSongsMap() const { return m_mapPreferredSectionToSongs;};
 	RString SongToPreferredSortSectionName( const Song *pSong ) const;
+	std::vector<RString> GetPreferredSortSectionNames() const;
+	std::vector<Song*> GetPreferredSortSongsBySectionName( const RString &sSectionName ) const;
+	void GetPreferredSortSongsBySectionName( const RString &sSectionName, std::vector<Song*> &AddTo ) const;
+	std::vector<Song*> GetSongsByMeter( int iMeter ) const;
 	const std::vector<Course*> &GetPopularCourses( CourseType ct ) const { return m_pPopularCourses[ct]; }
 	Song *FindSong( RString sPath ) const;
 	Song *FindSong( RString sGroup, RString sSong ) const;
@@ -183,6 +189,7 @@ public:
 
 	void UpdatePopular();
 	void UpdateShuffled();	// re-shuffle songs and courses
+	std::map<int, std::vector<Song*>> UpdateMeterSort( std::vector<Song*> songs);
 	void SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute = false);
 	void SetPreferredCourses(RString sPreferredCourses, bool bIsAbsolute = false);
 	void UpdatePreferredSort(RString sPreferredSongs = "PreferredSongs.txt", RString sPreferredCourses = "PreferredCourses.txt");
@@ -220,11 +227,17 @@ protected:
 	/** @brief The most popular songs ranked by number of plays. */
 	std::vector<Song*>	m_pPopularSongs;
 	std::vector<Song*>	m_pShuffledSongs;	// used by GetRandomSong
+
+	/** @brief Meter numbers and the songs with Steps that are within.*/
+	std::map<int, std::vector<Song*>> m_mapSongsByDifficulty;
+	
 	struct PreferredSortSection
 	{
 		RString sName;
 		std::vector<Song*> vpSongs;
 	};
+	/** @brief All preferred songs, keyed by section */
+	std::map<RString, std::vector<Song*>> m_mapPreferredSectionToSongs;
 	std::vector<PreferredSortSection> m_vPreferredSongSort;
 	std::vector<RString>		m_sSongGroupNames;
 	std::vector<RString>		m_sSongGroupBannerPaths; // each song group may have a banner associated with it

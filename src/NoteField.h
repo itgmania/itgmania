@@ -69,6 +69,7 @@ public:
 
 	void SetBeatBars(bool active);
 	bool GetBeatBars();
+	void SetBeatBarsAlpha(float measure, float fourth, float eighth, float sixteenth);
 
 protected:
 	void CacheNoteSkin( const RString &sNoteSkin );
@@ -131,6 +132,10 @@ protected:
 	Quad		m_rectAreaHighlight;
 
 	bool m_bShowBeatBars;
+	float m_fBarMeasureAlpha;
+	float m_fBar4thAlpha;
+	float m_fBar8thAlpha;
+	float m_fBar16thAlpha;
 };
 
 #endif

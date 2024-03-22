@@ -47,6 +47,10 @@ NoteField::NoteField()
 	m_pCurDisplay = nullptr;
 	m_drawing_board_primitive= false;
 	m_bShowBeatBars = SHOW_BEAT_BARS;
+	m_fBarMeasureAlpha = BAR_MEASURE_ALPHA;
+	m_fBar4thAlpha = BAR_4TH_ALPHA;
+	m_fBar8thAlpha = BAR_8TH_ALPHA;
+	m_fBar16thAlpha = BAR_16TH_ALPHA;
 
 	m_textMeasureNumber.LoadFromFont( THEME->GetPathF("NoteField","MeasureNumber") );
 	m_textMeasureNumber.SetZoom( 1.0f );
@@ -105,6 +109,14 @@ void NoteField::SetBeatBars(bool active)
 bool NoteField::GetBeatBars()
 {
 	return m_bShowBeatBars;
+}
+
+void NoteField::SetBeatBarsAlpha(float measure, float fourth, float eighth, float sixteenth)
+{
+	m_fBarMeasureAlpha = measure;
+	m_fBar4thAlpha = fourth;
+	m_fBar8thAlpha = eighth;
+	m_fBar16thAlpha = sixteenth;
 }
 
 void NoteField::CacheNoteSkin( const RString &sNoteSkin_ )
@@ -397,7 +409,7 @@ void NoteField::DrawBeatBar( const float fBeat, BeatBarType type, int iMeasureIn
 
 	if( bIsMeasure )
 	{
-		fAlpha = BAR_MEASURE_ALPHA;
+		fAlpha = m_fBarMeasureAlpha;
 		iState = 0;
 	}
 	else
@@ -417,15 +429,15 @@ void NoteField::DrawBeatBar( const float fBeat, BeatBarType type, int iMeasureIn
 			DEFAULT_FAIL( type );
 			case measure: // handled above
 			case beat:
-				fAlpha = BAR_4TH_ALPHA;
+				fAlpha = m_fBar4thAlpha;
 				iState = 1;
 				break;
 			case half_beat:
-				fAlpha = SCALE(fScrollSpeed,1.0f,2.0f,0.0f,BAR_8TH_ALPHA);
+				fAlpha = SCALE(fScrollSpeed,1.0f,2.0f,0.0f,m_fBar8thAlpha);
 				iState = 2;
 				break;
 			case quarter_beat:
-				fAlpha = SCALE(fScrollSpeed,2.0f,4.0f,0.0f,BAR_16TH_ALPHA);
+				fAlpha = SCALE(fScrollSpeed,2.0f,4.0f,0.0f,m_fBar16thAlpha);
 				iState = 3;
 				break;
 		}
@@ -1290,6 +1302,12 @@ public:
 		return 0;
 	}
 
+	static int SetBeatBarsAlpha(T* p, lua_State* L)
+	{
+		p->SetBeatBarsAlpha(FArg(1), FArg(2), FArg(3), FArg(4));
+		return 0;
+	}
+
 	LunaNoteField()
 	{
 		ADD_METHOD(set_step_callback);
@@ -1303,6 +1321,7 @@ public:
 		ADD_METHOD(get_column_actors);
 		ADD_METHOD(GetBeatBars);
 		ADD_METHOD(SetBeatBars);
+		ADD_METHOD(SetBeatBarsAlpha);
 	}
 };
 
