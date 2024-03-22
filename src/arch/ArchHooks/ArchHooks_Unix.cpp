@@ -119,63 +119,6 @@ static void TestTLS()
 }
 #endif
 
-#if 1
-/* If librt is available, use CLOCK_MONOTONIC to implement GetMicrosecondsSinceStart,
- * if supported, so changes to the system clock don't cause problems. */
-namespace
-{
-	clockid_t g_Clock = CLOCK_REALTIME;
-
-	void OpenGetTime()
-	{
-		static bool bInitialized = false;
-		if( bInitialized )
-			return;
-		bInitialized = true;
-
-		/* Check whether the clock is actually supported. */
-		timespec ts;
-		if( clock_getres(CLOCK_MONOTONIC, &ts) == -1 )
-			return;
-
-		/* If the resolution is worse than a millisecond, fall back on CLOCK_REALTIME. */
-		if( ts.tv_sec > 0 || ts.tv_nsec > 1000000 )
-			return;
-
-		g_Clock = CLOCK_MONOTONIC;
-	}
-};
-
-clockid_t ArchHooks_Unix::GetClock()
-{
-	OpenGetTime();
-	return g_Clock;
-}
-
-std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
-{
-	OpenGetTime();
-
-	timespec ts;
-	clock_gettime( g_Clock, &ts );
-
-	std::int64_t iRet = std::int64_t(ts.tv_sec) * 1000000 + std::int64_t(ts.tv_nsec)/1000;
-	if( g_Clock != CLOCK_MONOTONIC )
-		iRet = ArchHooks::FixupTimeIfBackwards( iRet );
-	return iRet;
-}
-#else
-std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
-{
-	struct timeval tv;
-	gettimeofday( &tv, nullptr );
-
-	std::int64_t iRet = std::int64_t(tv.tv_sec) * 1000000 + std::int64_t(tv.tv_usec);
-	ret = FixupTimeIfBackwards( ret );
-	return iRet;
-}
-#endif
-
 RString ArchHooks::GetPreferredLanguage()
 {
 	RString locale;

@@ -242,92 +242,12 @@ MutexImpl *MakeMutex( RageMutex *pParent )
 	return new MutexImpl_Pthreads( pParent );
 }
 
-/* Check if condattr_setclock is supported, and supports the clock that
- * RageTimer selected. */
-#if defined(UNIX)
-#include <dlfcn.h>
-#include "arch/ArchHooks/ArchHooks_Unix.h"
-#endif
-namespace
-{
-	typedef int (* CONDATTR_SET_CLOCK)( pthread_condattr_t *attr, clockid_t clock_id );
-	CONDATTR_SET_CLOCK g_CondattrSetclock = nullptr;
-	bool bInitialized = false;
-
-#if defined(UNIX)
-	clockid_t GetClock()
-	{
-		return ArchHooks_Unix::GetClock();
-	}
-
-	void InitMonotonic()
-	{
-		if( bInitialized )
-			return;
-		bInitialized = true;
-
-		void *pLib = nullptr;
-
-		do {
-			{
-				pLib = dlopen( nullptr, RTLD_LAZY );
-				if( pLib == nullptr )
-					break;
-
-				g_CondattrSetclock = (CONDATTR_SET_CLOCK) dlsym( pLib, "pthread_condattr_setclock" );
-
-				if( g_CondattrSetclock == nullptr )
-					break;
-			}
-
-			// Make sure that we can set up the clock attribute.
-			pthread_condattr_t condattr;
-			pthread_condattr_init( &condattr );
-
-			if( g_CondattrSetclock(&condattr, GetClock()) != 0 )
-			{
-				printf( "pthread_condattr_setclock failed\n" );
-				pthread_condattr_destroy( &condattr );
-				break;
-			}
-			pthread_condattr_destroy( &condattr );
-
-			/* Everything seems to work. */
-			return;
-		} while(0);
-
-		g_CondattrSetclock = nullptr;
-		if( pLib != nullptr )
-			dlclose( pLib );
-		pLib = nullptr;
-	}
-#elif defined(MACOSX)
-	void InitMonotonic() { bInitialized = true; }
-	clockid_t GetClock() { return CLOCK_MONOTONIC; }
-#else
-	void InitMonotonic()
-	{
-		bInitialized = true;
-	}
-
-	clockid_t GetClock()
-	{
-		return CLOCK_REALTIME;
-	}
-#endif
-};
-
 EventImpl_Pthreads::EventImpl_Pthreads( MutexImpl_Pthreads *pParent )
 {
 	m_pParent = pParent;
 
-	InitMonotonic();
-
 	pthread_condattr_t condattr;
 	pthread_condattr_init( &condattr );
-
-	if( g_CondattrSetclock != nullptr )
-		g_CondattrSetclock( &condattr, GetClock() );
 
 	pthread_cond_init( &m_Cond, &condattr );
 	pthread_condattr_destroy( &condattr );
@@ -347,32 +267,35 @@ bool EventImpl_Pthreads::Wait( RageTimer *pTimeout )
 		return true;
 	}
 
-	/* If the clock is not CLOCK_MONOTONIC, or we can't change the wait clock
-	 * (no condattr_setclock), pthread_cond_timedwait has an inherent race
-	 * condition: the system clock may change before we call it. */
 	timespec abstime;
-	if( g_CondattrSetclock != nullptr || GetClock() == CLOCK_REALTIME )
+	// The RageTimer clock is different than the wait clock; convert it.
+	timeval tv;
+	gettimeofday( &tv, nullptr );
+	const auto iNanosecondsInFuture = -pTimeout->NsecsAgo();
+
+	// If you call pthread_cond_timedwait with a time in the past, it will always return
+	// ETIMEDOUT.
+	if (iNanosecondsInFuture < 0)
 	{
-		/* If we support condattr_setclock, we'll set the condition to use
-		 * the same clock as RageTimer and can use it directly. If the
-		 * clock is CLOCK_REALTIME, that's the default anyway. */
-		abstime.tv_sec = pTimeout->m_secs;
-		abstime.tv_nsec = pTimeout->m_us * 1000;
+		return false;
 	}
-	else
+
+	time_t effectiveSec = tv.tv_sec + static_cast<time_t>(iNanosecondsInFuture / INT64_C(1000000000));
+
+	using nsec_t = decltype(abstime.tv_nsec);
+	nsec_t effectiveNsec = static_cast<nsec_t>(tv.tv_usec) * 1000
+		+ static_cast<nsec_t>(iNanosecondsInFuture % INT64_C(1000000000));
+
+	// Remove extra seconds from the number of nanoseconds.
+	// There can be at most 1 extra second.
+	if (effectiveNsec >= 1000000000)
 	{
-		// The RageTimer clock is different than the wait clock; convert it.
-		timeval tv;
-		gettimeofday( &tv, nullptr );
-
-		RageTimer timeofday( tv.tv_sec, tv.tv_usec );
-
-		float fSecondsInFuture = -pTimeout->Ago();
-		timeofday += fSecondsInFuture;
-
-		abstime.tv_sec = timeofday.m_secs;
-		abstime.tv_nsec = timeofday.m_us * 1000;
+		effectiveSec += 1;
+		effectiveNsec -= 1000000000;
 	}
+
+	abstime.tv_sec = effectiveSec;
+	abstime.tv_nsec = effectiveNsec;
 
 	int iRet = pthread_cond_timedwait( &m_Cond, &m_pParent->mutex, &abstime );
 	return iRet != ETIMEDOUT;

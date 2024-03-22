@@ -25,53 +25,53 @@
 #include "RageLog.h"
 #include "RageUtil.h"
 
-#include "arch/ArchHooks/ArchHooks.h"
-
 #include <cmath>
 #include <cstdint>
+using namespace std::chrono;
 
-#define TIMESTAMP_RESOLUTION 1000000
+static constexpr int TIMESTAMP_RESOLUTION = 1000000;
 
-const RageTimer RageZeroTimer(0,0);
-static std::uint64_t g_iStartTime = ArchHooks::GetMicrosecondsSinceStart( true );
+static_assert(RageTimer::sm_duration::period::num == 1
+	&& RageTimer::sm_duration::period::den >= TIMESTAMP_RESOLUTION,
+	"This platform does not provide an accurate enough monotonic timer for ITGMania.");
 
-static std::uint64_t GetTime( bool /* bAccurate */ )
+RageTimer::RageTimer(sm_time_point point)
 {
-	return ArchHooks::GetMicrosecondsSinceStart( true );
-
-	/* This isn't threadsafe, and locking it would undo any benefit of not
-	 * calling GetMicrosecondsSinceStart. */
-#if 0
-	// if !bAccurate, then don't call ArchHooks to find the current time.  Just return the
-	// last calculated time.  GetMicrosecondsSinceStart is slow on some archs.
-	static std::uint64_t usecs = 0;
-	if( bAccurate )
-		usecs = ArchHooks::GetMicrosecondsSinceStart( true );
-	return usecs;
-#endif
+	m_time_point = point;
 }
 
-float RageTimer::GetTimeSinceStart( bool bAccurate )
+RageTimer::RageTimer(int secs, int us)
 {
-	std::uint64_t usecs = GetTime( bAccurate );
-	usecs -= g_iStartTime;
-	/* Avoid using doubles for hardware that doesn't support them.
-	 * This is writing usecs = high*2^32 + low and doing
-	 * usecs/10^6 = high * (2^32/10^6) + low/10^6. */
-	return std::uint32_t(usecs>>32) * 4294.967296f + std::uint32_t(usecs)/1000000.f;
+	// The old implementation represented these as unsigned.
+	const auto castSecs = static_cast<unsigned>(secs);
+	const auto castUs = static_cast<unsigned>(us);
+	const auto totalUs = static_cast<microseconds::rep>(castSecs) * 1000000 + castUs;
+	const auto argumentDuration = microseconds(totalUs);
+	m_time_point = sm_clock::time_point() + duration_cast<sm_duration>(argumentDuration);
+}
+
+// time_point() returns a time at "the epoch".
+const RageTimer RageZeroTimer = RageTimer::GetZeroTimer();
+static RageTimer::sm_time_point g_StartTimePoint = RageTimer::sm_clock::now();
+
+static RageTimer::sm_duration GetDurationSinceStart()
+{
+	return RageTimer::sm_clock::now() - g_StartTimePoint;
 }
 
 std::uint64_t RageTimer::GetUsecsSinceStart()
 {
-	return GetTime(true) - g_iStartTime;
+	return GetDurationAsMicros(GetDurationSinceStart());
+}
+
+float RageTimer::GetTimeSinceStart( bool /* bAccurate */ )
+{
+	return SMDurationToFloat(GetDurationSinceStart());
 }
 
 void RageTimer::Touch()
 {
-	std::uint64_t usecs = GetTime( true );
-
-	this->m_secs = unsigned(usecs / 1000000);
-	this->m_us = unsigned(usecs % 1000000);
+	m_time_point = sm_clock::now();
 }
 
 float RageTimer::Ago() const
@@ -99,60 +99,8 @@ float RageTimer::GetDeltaTime()
  */
 RageTimer RageTimer::Half() const
 {
-	const float fProbableDelay = Ago() / 2;
-	return *this + fProbableDelay;
-}
-
-
-RageTimer RageTimer::operator+(float tm) const
-{
-	return Sum(*this, tm);
-}
-
-float RageTimer::operator-(const RageTimer &rhs) const
-{
-	return Difference(*this, rhs);
-}
-
-bool RageTimer::operator<( const RageTimer &rhs ) const
-{
-	if( m_secs != rhs.m_secs ) return m_secs < rhs.m_secs;
-	return m_us < rhs.m_us;
-
-}
-
-RageTimer RageTimer::Sum(const RageTimer &lhs, float tm)
-{
-	/* tm == 5.25  -> secs =  5, us = 5.25  - ( 5) = .25
-	 * tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75 */
-	int seconds = std::floor(tm);
-	int us = int( (tm - seconds) * TIMESTAMP_RESOLUTION );
-
-	RageTimer ret(0,0); // Prevent unnecessarily checking the time
-	ret.m_secs = seconds + lhs.m_secs;
-	ret.m_us = us + lhs.m_us;
-
-	if( ret.m_us >= TIMESTAMP_RESOLUTION )
-	{
-		ret.m_us -= TIMESTAMP_RESOLUTION;
-		++ret.m_secs;
-	}
-
-	return ret;
-}
-
-float RageTimer::Difference(const RageTimer &lhs, const RageTimer &rhs)
-{
-	int secs = lhs.m_secs - rhs.m_secs;
-	int us = lhs.m_us - rhs.m_us;
-
-	if( us < 0 )
-	{
-		us += TIMESTAMP_RESOLUTION;
-		--secs;
-	}
-
-	return float(secs) + float(us) / TIMESTAMP_RESOLUTION;
+	const auto halfTicks = (sm_clock::now() - m_time_point).count() / 2;
+	return RageTimer(m_time_point + sm_duration(halfTicks));
 }
 
 #include "LuaManager.h"
@@ -182,4 +130,3 @@ LuaFunction(GetTimeSinceStart, RageTimer::GetTimeSinceStartFast())
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

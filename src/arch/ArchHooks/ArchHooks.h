@@ -64,32 +64,6 @@ public:
 	static void SetToggleWindowed();
 
 	/*
-	 * Return the amount of time since the program started.  (This may actually be
-	 * since the initialization of HOOKS.
-	 *
-	 * Full microsecond accuracy may not be available.
-	 *
-	 * bAccurate is a hint: it specifies whether to prefer short-term precision
-	 * or long-term accuracy.  If false, the implementation may give higher resolution
-	 * results, but not be as stable over long periods (eg. may drift depending on
-	 * clock speed shifts on laptops).  If true, lower precision results (usually with
-	 * no less than a 1ms granularity) are returned, but the results should be stable
-	 * over long periods of time.
-	 *
-	 * Note that bAccurate may change the result significantly; it may use a different
-	 * timer, and may have a different concept of when the program "started".
-	 *
-	 * This is a static function, implemented in whichever ArchHooks source is used,
-	 * so it can be used at any time (such as in global constructors), before HOOKS
-	 * is initialized.
-	 *
-	 * RageTimer layers on top of this, and attempts to correct wrapping, as the
-	 * underlying timers may be 32-bit, but implementations should try to avoid
-	 * wrapping if possible.
-	 */
-	static std::int64_t GetMicrosecondsSinceStart( bool bAccurate );
-
-	/*
 	 * Add file search paths, higher priority first.
 	 */
 	static void MountInitialFilesystems( const RString &sDirOfExecutable );
@@ -129,10 +103,6 @@ public:
 	void RegisterWithLua();
 
 private:
-	/* This are helpers for GetMicrosecondsSinceStart on systems with a timer
-	 * that may loop or move backwards. */
-	static std::int64_t FixupTimeIfLooped( std::int64_t usecs );
-	static std::int64_t FixupTimeIfBackwards( std::int64_t usecs );
 
 	static bool g_bQuitting;
 	static bool g_bToggleWindowed;

@@ -4,52 +4,106 @@
 #define RAGE_TIMER_H
 
 #include <cstdint>
+#include <chrono>
+using namespace std::chrono;
 
 class RageTimer
 {
 public:
-	RageTimer(): m_secs(0), m_us(0) { Touch(); }
-	RageTimer( int secs, int us ): m_secs(secs), m_us(us) { }
+	RageTimer( ) { Touch(); }
+	RageTimer( int secs, int us );
 
 	/* Time ago this RageTimer represents. */
 	float Ago() const;
 	void Touch();
-	inline bool IsZero() const { return m_secs == 0 && m_us == 0; }
-	inline void SetZero() { m_secs = m_us = 0; }
+	inline bool IsZero() const { return m_time_point == sm_time_point(); }
+	inline void SetZero() { m_time_point = sm_time_point(); }
 
 	/* Time between last call to GetDeltaTime() (Ago() + Touch()): */
 	float GetDeltaTime();
 	/* (alias) */
 	float PeekDeltaTime() const { return Ago(); }
+	std::int64_t NsecsAgo() const
+	{
+		const auto duration = duration_cast<nanoseconds>(sm_clock::now() - m_time_point);
+		return static_cast<std::int64_t>(duration.count());
+	}
 
 	/* deprecated: */
 	static float GetTimeSinceStart( bool bAccurate = true );	// seconds since the program was started
 	static float GetTimeSinceStartFast() { return GetTimeSinceStart(false); }
 	static std::uint64_t GetUsecsSinceStart();
 
+	static RageTimer GetZeroTimer() { return RageTimer(sm_time_point()); }
+
 	/* Get a timer representing half of the time ago as this one. */
 	RageTimer Half() const;
 
 	/* Add (or subtract) a duration from a timestamp.  The result is another timestamp. */
-	RageTimer operator+( float tm ) const;
+	RageTimer operator+( float tm ) const
+	{
+		return Sum(*this, tm);
+	}
+
 	RageTimer operator-( float tm ) const { return *this + -tm; }
 	void operator+=( float tm ) { *this = *this + tm; }
 	void operator-=( float tm ) { *this = *this + -tm; }
 
 	/* Find the amount of time between two timestamps.  The result is a duration. */
-	float operator-( const RageTimer &rhs ) const;
+	float operator-( const RageTimer &rhs ) const
+	{
+		return Difference(*this, rhs);
+	}
 
-	bool operator<( const RageTimer &rhs ) const;
+	bool operator<( const RageTimer &rhs ) const
+	{
+		return m_time_point < rhs.m_time_point;
+	}
 
-	/* "float" is bad for a "time since start" RageTimer.  If the game is running for
-	 * several days, we'll lose a lot of resolution.  I don't want to use double
-	 * everywhere, since it's slow.  I'd rather not use double just for RageTimers, since
-	 * it's too easy to get a type wrong and end up with obscure resolution problems. */
-	unsigned m_secs, m_us;
+	// If the high-resolution clock implementation provided is steady (i.e. monotonic)
+	// use it. If it isn't monotonic, use the best monotonic clock we have.
+	using sm_clock = std::conditional<
+		std::chrono::high_resolution_clock::is_steady,
+		std::chrono::high_resolution_clock,
+		std::chrono::steady_clock>::type;
+	using sm_time_point = std::chrono::time_point<sm_clock>;
+	using sm_duration = sm_clock::duration;
 
 private:
-	static RageTimer Sum( const RageTimer &lhs, float tm );
-	static float Difference( const RageTimer &lhs, const RageTimer &rhs );
+	sm_time_point m_time_point;
+
+	RageTimer( sm_time_point point );
+
+	using float_seconds = duration<float, std::ratio<1, 1>>;
+
+	static constexpr std::uint64_t GetDurationAsMicros(const sm_duration duration)
+	{
+		const auto micros = duration_cast<microseconds>(duration);
+		return static_cast<std::uint64_t>(micros.count());
+	}
+
+	static constexpr float SMDurationToFloat(const sm_duration duration)
+	{
+		return duration_cast<float_seconds>(duration).count();
+	}
+
+	static constexpr sm_duration FloatToSMDuration(const float sec)
+	{
+		return duration_cast<RageTimer::sm_duration>(float_seconds(sec));
+	}
+
+	static RageTimer Sum( const RageTimer &lhs, const float tm )
+	{
+		return RageTimer(lhs.m_time_point + FloatToSMDuration(tm));
+	}
+
+	static float Difference( const RageTimer &lhs, const RageTimer &rhs )
+	{
+		const auto difference = lhs.m_time_point - rhs.m_time_point;
+		return SMDurationToFloat(difference);
+	}
+
+
 };
 
 extern const RageTimer RageZeroTimer;
@@ -97,4 +151,3 @@ extern const RageTimer RageZeroTimer;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

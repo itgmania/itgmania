@@ -257,22 +257,6 @@ bool ArchHooks_MacOSX::GoToURL( RString sUrl )
 	CFRelease( url );
 	return result == 0;
 }
-
-std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
-{
-	// http://developer.apple.com/qa/qa2004/qa1398.html
-	static double factor = 0.0;
-
-	if( unlikely(factor == 0.0) )
-	{
-		mach_timebase_info_data_t timeBase;
-
-		mach_timebase_info( &timeBase );
-		factor = timeBase.numer / ( 1000.0 * timeBase.denom );
-	}
-	return std::int64_t( mach_absolute_time() * factor );
-}
-
 #include "RageFileManager.h"
 
 void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
