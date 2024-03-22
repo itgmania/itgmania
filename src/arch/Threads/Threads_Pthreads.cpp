@@ -275,7 +275,8 @@ bool EventImpl_Pthreads::Wait( RageTimer *pTimeout )
 
 	// If you call pthread_cond_timedwait with a time in the past, it will always return
 	// ETIMEDOUT.
-	if (iNanosecondsInFuture < 0) {
+	if (iNanosecondsInFuture < 0)
+	{
 		return false;
 	}
 
@@ -286,9 +287,12 @@ bool EventImpl_Pthreads::Wait( RageTimer *pTimeout )
 		+ static_cast<nsec_t>(iNanosecondsInFuture % INT64_C(1000000000));
 
 	// Remove extra seconds from the number of nanoseconds.
-	nsec_t spareSeconds = effectiveNsec / 1000000000;
-	effectiveSec += static_cast<time_t>(spareSeconds);
-	effectiveNsec -= spareSeconds * 1000000000;
+	// There can be at most 1 extra second.
+	if (effectiveNsec > 1000000000)
+	{
+		effectiveSec += 1;
+		effectiveNsec -= 1000000000;
+	}
 
 	abstime.tv_sec = effectiveSec;
 	abstime.tv_nsec = effectiveNsec;
