@@ -288,7 +288,7 @@ bool EventImpl_Pthreads::Wait( RageTimer *pTimeout )
 
 	// Remove extra seconds from the number of nanoseconds.
 	// There can be at most 1 extra second.
-	if (effectiveNsec > 1000000000)
+	if (effectiveNsec >= 1000000000)
 	{
 		effectiveSec += 1;
 		effectiveNsec -= 1000000000;
