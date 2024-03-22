@@ -242,92 +242,12 @@ MutexImpl *MakeMutex( RageMutex *pParent )
 	return new MutexImpl_Pthreads( pParent );
 }
 
-/* Check if condattr_setclock is supported, and supports the clock that
- * RageTimer selected. */
-#if defined(UNIX)
-#include <dlfcn.h>
-#include "arch/ArchHooks/ArchHooks_Unix.h"
-#endif
-namespace
-{
-	typedef int (* CONDATTR_SET_CLOCK)( pthread_condattr_t *attr, clockid_t clock_id );
-	CONDATTR_SET_CLOCK g_CondattrSetclock = nullptr;
-	bool bInitialized = false;
-
-#if defined(UNIX)
-	clockid_t GetClock()
-	{
-		return ArchHooks_Unix::GetClock();
-	}
-
-	void InitMonotonic()
-	{
-		if( bInitialized )
-			return;
-		bInitialized = true;
-
-		void *pLib = nullptr;
-
-		do {
-			{
-				pLib = dlopen( nullptr, RTLD_LAZY );
-				if( pLib == nullptr )
-					break;
-
-				g_CondattrSetclock = (CONDATTR_SET_CLOCK) dlsym( pLib, "pthread_condattr_setclock" );
-
-				if( g_CondattrSetclock == nullptr )
-					break;
-			}
-
-			// Make sure that we can set up the clock attribute.
-			pthread_condattr_t condattr;
-			pthread_condattr_init( &condattr );
-
-			if( g_CondattrSetclock(&condattr, GetClock()) != 0 )
-			{
-				printf( "pthread_condattr_setclock failed\n" );
-				pthread_condattr_destroy( &condattr );
-				break;
-			}
-			pthread_condattr_destroy( &condattr );
-
-			/* Everything seems to work. */
-			return;
-		} while(0);
-
-		g_CondattrSetclock = nullptr;
-		if( pLib != nullptr )
-			dlclose( pLib );
-		pLib = nullptr;
-	}
-#elif defined(MACOSX)
-	void InitMonotonic() { bInitialized = true; }
-	clockid_t GetClock() { return CLOCK_MONOTONIC; }
-#else
-	void InitMonotonic()
-	{
-		bInitialized = true;
-	}
-
-	clockid_t GetClock()
-	{
-		return CLOCK_REALTIME;
-	}
-#endif
-};
-
 EventImpl_Pthreads::EventImpl_Pthreads( MutexImpl_Pthreads *pParent )
 {
 	m_pParent = pParent;
 
-	InitMonotonic();
-
 	pthread_condattr_t condattr;
 	pthread_condattr_init( &condattr );
-
-	if( g_CondattrSetclock != nullptr )
-		g_CondattrSetclock( &condattr, GetClock() );
 
 	pthread_cond_init( &m_Cond, &condattr );
 	pthread_condattr_destroy( &condattr );
