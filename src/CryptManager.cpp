@@ -305,7 +305,7 @@ bool CryptManager::VerifyFileWithFile( RString sPath, RString sSignatureFile, RS
 	if( !GetFileContents(sPublicKeyFile, sPublicKey) )
 		return false;
 
-	int iBytes = FILEMAN->GetFileSizeInBytes( sSignatureFile );
+	std::int64_t iBytes = FILEMAN->GetFileSizeInBytes( sSignatureFile );
 	if( iBytes > MAX_SIGNATURE_SIZE_BYTES )
 		return false;
 

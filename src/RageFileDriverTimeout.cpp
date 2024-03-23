@@ -721,7 +721,7 @@ public:
 		}
 	}
 
-	int GetFileSize() const
+	std::int64_t GetFileSize() const
 	{
 		return m_iFileSize;
 	}
@@ -764,7 +764,7 @@ public:
 	}
 
 protected:
-	int SeekInternal( int iPos )
+	std::int64_t SeekInternal( std::int64_t iPos )
 	{
 		RString sError;
 		int iRet = m_pWorker->Seek( m_pFile, iPos, sError );

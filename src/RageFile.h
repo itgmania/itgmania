@@ -56,9 +56,9 @@ public:
 	RString GetError() const;
 	void ClearError();
 
-	int Tell() const;
-	int Seek( int offset );
-	int GetFileSize() const;
+	std::int64_t Tell() const;
+	std::int64_t Seek( std::int64_t offset );
+	std::int64_t GetFileSize() const;
 	int GetFD();
 
 	/* Raw I/O: */
@@ -71,7 +71,7 @@ public:
 	/* These are just here to make wrappers (eg. vorbisfile, SDL_rwops) easier. */
 	int Write( const void *buffer, std::size_t bytes, int nmemb );
 	int Read( void *buffer, std::size_t bytes, int nmemb );
-	int Seek( int offset, int whence );
+	std::int64_t Seek( std::int64_t offset, int whence );
 
 	/* Line-based I/O: */
 	int GetLine( RString &out );
@@ -101,7 +101,7 @@ namespace FileReading
 	 * non-empty, nothing happens. */
 	void ReadBytes( RageFileBasic &f, void *buf, int size, RString &sError );
 	void SkipBytes( RageFileBasic &f, int size, RString &sError );
-	void Seek( RageFileBasic &f, int iOffset, RString &sError );
+	void Seek( RageFileBasic &f, std::int64_t iOffset, RString &sError );
 	RString ReadString( RageFileBasic &f, int size, RString &sError );
 	std::uint8_t read_8( RageFileBasic &f, RString &sError );
 	std::int16_t read_16_le( RageFileBasic &f, RString &sError );

@@ -25,7 +25,7 @@ static std::size_t OggRageFile_read_func( void *ptr, std::size_t size, std::size
 static int OggRageFile_seek_func( void *datasource, ogg_int64_t offset, int whence )
 {
 	RageFileBasic *f = (RageFileBasic *) datasource;
-	return f->Seek( (int) offset, whence );
+	return f->Seek( offset, whence );
 }
 
 static int OggRageFile_close_func( void *datasource )

@@ -15,22 +15,22 @@ class RageFileObjInflate: public RageFileObj
 public:
 	/* By default, pFile will not be freed.  To implement GetFileSize(), the
 	 * container format must store the file size. */
-	RageFileObjInflate( RageFileBasic *pFile, int iUncompressedSize );
+	RageFileObjInflate( RageFileBasic *pFile, std::int64_t iUncompressedSize );
 	RageFileObjInflate( const RageFileObjInflate &cpy );
 	~RageFileObjInflate();
 	int ReadInternal( void *pBuffer, std::size_t iBytes );
 	int WriteInternal( const void * /* pBuffer */, std::size_t /* iBytes */ ) { SetError( "Not implemented" ); return -1; }
-	int SeekInternal( int iOffset );
-	int GetFileSize() const { return m_iUncompressedSize; }
+	std::int64_t SeekInternal( std::int64_t iOffset );
+	std::int64_t GetFileSize() const { return m_iUncompressedSize; }
 	int GetFD() { return m_pFile->GetFD(); }
 	RageFileObjInflate *Copy() const;
 
 	void DeleteFileWhenFinished() { m_bFileOwned = true; }
 
 private:
-	int m_iUncompressedSize;
+	std::int64_t m_iUncompressedSize;
 	RageFileBasic *m_pFile;
-	int m_iFilePos;
+	std::int64_t m_iFilePos;
 	bool m_bFileOwned;
 
 	z_stream *m_pInflate;
@@ -46,7 +46,7 @@ public:
 	RageFileObjDeflate( RageFileBasic *pOutput );
 	~RageFileObjDeflate();
 
-	int GetFileSize() const { return m_pFile->GetFileSize(); }
+	std::int64_t GetFileSize() const { return m_pFile->GetFileSize(); }
 	void DeleteFileWhenFinished() { m_bFileOwned = true; }
 
 protected:
@@ -67,7 +67,7 @@ public:
 	int Finish();
 
 private:
-	int m_iDataStartOffset;
+	std::int64_t m_iDataStartOffset;
 };
 
 RageFileObjInflate *GunzipFile( RageFileBasic *pFile, RString &sError, std::uint32_t *iCRC32 );

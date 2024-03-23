@@ -99,7 +99,7 @@ RageFileDriverReadAhead *RageFileDriverReadAhead::Copy() const
 
 void RageFileDriverReadAhead::FillBuffer( int iBytes )
 {
-	int iOldPos = m_pFile->Tell();
+	std::int64_t iOldPos = m_pFile->Tell();
 	m_pFile->Seek( 0 );
 
 	m_sBuffer = "";
@@ -107,8 +107,9 @@ void RageFileDriverReadAhead::FillBuffer( int iBytes )
 
 	/* Seek back to where we were.  If we're going back to the cached region, seek past it,
 	 * like SeekInternal does. */
-	if( iOldPos < (int) m_sBuffer.size() )
-		iOldPos = m_sBuffer.size();
+	std::int64_t bufferSize = m_sBuffer.size();
+	if( iOldPos < bufferSize)
+		iOldPos = bufferSize;
 	m_pFile->Seek( iOldPos );
 
 	/* Now that we're done moving the file pointer around, set the file's read-ahead hint,
@@ -155,14 +156,15 @@ int RageFileDriverReadAhead::ReadInternal( void *pBuffer, std::size_t iBytes )
 
 }
 
-int RageFileDriverReadAhead::SeekInternal( int iOffset )
+std::int64_t RageFileDriverReadAhead::SeekInternal( std::int64_t iOffset )
 {
-	if( iOffset < (int) m_sBuffer.size() )
+	std::int64_t bufferSize = m_sBuffer.size();
+	if( iOffset < bufferSize )
 	{
 		/* This assumes that seeking the file won't block.  This seems to be true in Linux, at least.
 		 * Seek the actual file to just past our buffer, so the RageFileManagerReadAhead::ReadAhead
 		 * call will read ahead from the correct position. */
-		m_pFile->Seek( m_sBuffer.size() );
+		m_pFile->Seek( bufferSize );
 		m_iFilePos = iOffset;
 		return iOffset;
 	}

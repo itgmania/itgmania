@@ -1055,7 +1055,7 @@ bool SSCLoader::LoadEditFromFile( RString sEditFilePath, ProfileSlot slot, bool 
 {
 	LOG->Trace( "SSCLoader::LoadEditFromFile(%s)", sEditFilePath.c_str() );
 
-	int iBytes = FILEMAN->GetFileSizeInBytes( sEditFilePath );
+	std::int64_t iBytes = FILEMAN->GetFileSizeInBytes( sEditFilePath );
 	if( iBytes > MAX_EDIT_STEPS_SIZE_BYTES )
 	{
 		LOG->UserLog("Edit file",

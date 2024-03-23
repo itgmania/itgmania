@@ -15,7 +15,7 @@
 #if defined(WIN32)
 #define DoOpen _open
 #define DoRmdir _rmdir
-#define DoLseek _lseek
+#define DoLseek _lseeki64
 #define DoClose _close
 #define DoRead _read
 #define DoWrite _write
@@ -23,7 +23,7 @@
 #else
 #define DoOpen open
 #define DoRmdir rmdir
-#define DoLseek lseek
+#define DoLseek lseek64
 #define DoClose close
 #define DoRead read
 #define DoWrite write
