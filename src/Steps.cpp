@@ -403,12 +403,14 @@ void Steps::CalculateTechCounts()
 
 	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
 
-	
+	RageTimer start;
 	StepParity::StepParityGenerator gen;
 	gen.analyzeNoteData(tempNoteData, this->m_StepsType);
 	TechCounts::CalculateTechCountsFromRows(gen.rows, m_CachedTechCounts[0]);
 	std::fill_n( m_CachedTechCounts + 1, NUM_PLAYERS-1, m_CachedTechCounts[0] );
-
+	RageTimer end;
+	LOG->Trace("Steps::CalculateTechCounts	song: %s	difficulty: %s	time: %f", m_pSong->GetTranslitMainTitle().c_str(),
+			   DifficultyToString(m_Difficulty).c_str(), end - start);
 	
 	
 //#define OUTPUT_PARITY_JSON

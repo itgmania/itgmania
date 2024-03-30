@@ -7,6 +7,49 @@ using namespace StepParity;
 //
 // Graph/Node methods
 //
+int calculateVectorHash(const std::vector<Foot> &vec)
+{
+	int value = 0;
+	for(Foot f : vec)
+	{
+		value *= 5;
+		value += f;
+	}
+	return value;
+}
+
+bool State::operator==(const State &other) const
+{
+   return rowIndex == other.rowIndex &&
+   columns == other.columns &&
+   movedFeet == other.movedFeet &&
+   holdFeet == other.holdFeet;
+}
+
+bool State::operator<(const State &other) const
+{
+
+	if(rowIndex != other.rowIndex) {
+		return rowIndex < other.rowIndex;
+	}
+	if(columnsHash != other.columnsHash) {
+		return columnsHash < other.columnsHash;
+	}
+	if(movedFeetHash != other.movedFeetHash) {
+		return movedFeetHash < other.movedFeetHash;
+	}
+	if(holdFeetHash != other.holdFeetHash) {
+		return holdFeetHash < other.holdFeetHash;
+	}
+	return false;
+}
+
+void State::calculateHashes()
+{
+	columnsHash = calculateVectorHash(columns);
+	movedFeetHash = calculateVectorHash(movedFeet);
+	holdFeetHash = calculateVectorHash(holdFeet);
+}
 
 StepParityNode * StepParityGraph::addOrGetExistingNode(const State &state)
 {
@@ -132,9 +175,9 @@ Json::Value StepParityNode::ToJson()
 		n["cost"] = it->second;
 		jsonNeighbors.append(n);
 	}
-		root["id"] = id;
-		root["neighbors"] = jsonNeighbors;
-		return root;
+	root["id"] = id;
+	root["neighbors"] = jsonNeighbors;
+	return root;
 }
 
 

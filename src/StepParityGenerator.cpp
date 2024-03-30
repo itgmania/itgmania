@@ -82,6 +82,7 @@ void StepParityGenerator::buildStateGraph()
 			{
 				State resultState = initResultState(state, row, *it);
 				float cost = costCalculator.getActionCost(&state, &resultState, rows, i);
+				resultState.calculateHashes();
 				StepParityNode *resultNode = graph.addOrGetExistingNode(resultState);
 				graph.addEdge(initialNode, resultNode, cost);
 				if(std::find(uniqueStates.begin(), uniqueStates.end(), resultState) == uniqueStates.end())
@@ -326,6 +327,35 @@ void StepParityGenerator::CreateRows(const NoteData &in)
 
 		if (note.type == TapNoteType_Mine)
 		{
+			// If this mine occurs on the same row as everything else that's been counted
+			// (in other words, if this note doesn't represent the start of a new row),
+			// and this isn't the very first row, put it in nextMines??
+			// I honestly don't know why this works the way it does, it all feels
+			// really backwards to me.
+			// I think the complication comes from the fact that this is getting handled
+			// before checking whether or not this note represens a new row.
+			// But we only want to create a new Row if it has at least one note.
+			// So probably something like
+			
+			/*
+			 
+			 for(note of notes)
+			 {
+				if(note is empty note)
+				 {
+					continue
+				 }
+				if(note is on new row and counter has at least one note)
+				{
+					create new row
+					reset counter
+				}
+				check if note is a mine or fake mine
+				if note is fake continue
+				put note into counter.notes
+				
+			 }
+			 */
 			if (note.second == counter.lastColumnSecond && rows.size() > 0)
 			{
 				if (note.fake)
@@ -362,9 +392,7 @@ void StepParityGenerator::CreateRows(const NoteData &in)
 			// we're past the previous row, so save all of the previous row's data
 			if (counter.lastColumnSecond != CLM_SECOND_INVALID)
 			{
-				Row newRow = CreateRow(counter);
-				newRow.rowIndex = rows.size();
-				rows.push_back(newRow);
+				AddRow(counter);
 			}
 
 			// Move mines and fakeMines to "next", and reset counters
@@ -393,11 +421,15 @@ void StepParityGenerator::CreateRows(const NoteData &in)
 		}
 	}
 
+	AddRow(counter);
+}
+
+void StepParityGenerator::AddRow(RowCounter &counter)
+{
 	Row newRow = CreateRow(counter);
 	newRow.rowIndex = rows.size();
 	rows.push_back(newRow);
 }
-
 
 Row StepParityGenerator::CreateRow(RowCounter &counter)
 {

@@ -41,7 +41,7 @@ namespace StepParity {
 	/// foot placement on the dance stage.
 	typedef std::vector<Foot> FootPlacement;
 
-	/// @brief Represents a specific possible state of the player's position 
+	/// @brief Represents a specific possible state of the player's position
 	/// for a given row of the step chart.
 	struct State {
 		FootPlacement columns;	 // The position of the player
@@ -49,7 +49,13 @@ namespace StepParity {
 		FootPlacement holdFeet;  // Any feet that stayed in place due to a hold/roll note.
 		float second;			 // The time of the song represented by this state
 		int rowIndex;			 // The index of the row represented by this state
-
+		
+		// These hashes are used in operator<() to speed up the comparison of the vectors.
+		// Their values are computed by calculateHashes(), which is used in StepParityGenerator::buildStateGraph().
+		int columnsHash = 0;
+		int movedFeetHash = 0;
+		int holdFeetHash = 0;
+		
 		State()
 		{
 			State(4);
@@ -63,32 +69,13 @@ namespace StepParity {
 			second = 0;
 			rowIndex = 0;
 		}
-
+		
 		Json::Value ToJson(bool useStrings);
-
-		bool operator==(const State& other) const {
-			return rowIndex == other.rowIndex &&
-				   columns == other.columns &&
-				   movedFeet == other.movedFeet &&
-				   holdFeet == other.holdFeet;
-		}
-
-		bool operator<(const State& other) const {
-
-			if(rowIndex != other.rowIndex) {
-				return rowIndex < other.rowIndex;
-			}
-			if(columns != other.columns) {
-				return std::lexicographical_compare(columns.begin(), columns.end(), other.columns.begin(), other.columns.end());
-			}
-			if(movedFeet != other.movedFeet) {
-				return std::lexicographical_compare(movedFeet.begin(), movedFeet.end(), other.movedFeet.begin(), other.movedFeet.end());
-			}
-			if(holdFeet != other.holdFeet) {
-				return std::lexicographical_compare(holdFeet.begin(), holdFeet.end(), other.holdFeet.begin(), other.holdFeet.end());
-			}
-			return false;
-		}
+		
+		bool operator==(const State& other) const;		
+		bool operator<(const State& other) const;
+		
+		void calculateHashes();
 	};
 
 	/// @brief A convenience struct used to encapsulate data from NoteData in an 
@@ -113,20 +100,28 @@ namespace StepParity {
 	/// @brief A slightly complicated structure to encapsulate all of the data for a given 
 	/// row of a step chart.
 	/// 'notes' and 'holds' will always have 'columnCount' entries. "Empty" columns will have a type of TapNoteType_Empty.
+	/// This shouldn't be confused with the idea of "rows" elsewhere in SM. Here, we only use
+	/// these Rows to represent a row that isn't empty.
 	struct Row {
 
 		
 		std::vector<IntermediateNoteData> notes; // notes for the given row
-		std::vector<IntermediateNoteData> holds; // Any active hold notes, including ones thta started before this row
+		std::vector<IntermediateNoteData> holds; // Any active hold notes, including ones that started before this row
 		std::set<int> holdTails;				 // Column index of any holds that end on this row
-		std::vector<float> mines;				 // The time at which the last mine occurred for each column
-		std::vector<float> fakeMines;			 // The time at which the last fake mine occurred for each column
+		std::vector<float> mines;				 // If a mine occurred either on this row, or on a row on its own immediately
+												 // preceding this one, the time of when that mine occurred, indexed by column.
+		std::vector<float> fakeMines;			 // The same thing, but for fake mines
 
 		float second = 0;
 		float beat = 0;
 		int rowIndex = 0;
 		int columnCount = 0;
 
+		Row()
+		{
+			Row(0);
+		}
+		
 		Row(int _columnCount)
 		{
 			columnCount = _columnCount;
@@ -148,16 +143,21 @@ namespace StepParity {
 	/// @brief A counter used while creating rows
 	struct RowCounter
 	{
-		std::vector<IntermediateNoteData> notes;
-		std::vector<IntermediateNoteData> activeHolds;
+		std::vector<IntermediateNoteData> notes; 		// Notes for the "current" row being generated
+		std::vector<IntermediateNoteData> activeHolds;	// Any holds that are active for the current row
 		float lastColumnSecond = CLM_SECOND_INVALID;
 		float lastColumnBeat = CLM_SECOND_INVALID;
 
-		std::vector<float> mines;
-		std::vector<float> fakeMines;
-		std::vector<float> nextMines;
-		std::vector<float> nextFakeMines;
-
+		std::vector<float> mines;						// The time at which a mine occurred for the current row,
+														// indexed by column
+		std::vector<float> fakeMines;					// The time at which a fake mine occurred for the current row,
+														// indexed by column
+		
+		std::vector<float> nextMines;					// The time at which a mine occurred in the _previous_ row,
+														// indexed by column
+		std::vector<float> nextFakeMines;				// The time at which a fake mine occurred in the _previous_ row,
+														// indexed by column
+		int noteCount = 0;								// number of "notes" added to the counter for the current row.
 		RowCounter(int columnCount)
 		{
 
@@ -170,40 +170,6 @@ namespace StepParity {
 
 			lastColumnSecond = CLM_SECOND_INVALID;
 			lastColumnBeat = CLM_SECOND_INVALID;
-		}
-
-		StepParity::Row CreateRow(int columnCount)
-		{
-			Row row = Row(columnCount);
-			row.notes.assign(notes.begin(), notes.end());
-			row.mines.assign(nextMines.begin(), nextMines.end());
-			row.fakeMines.assign(nextFakeMines.begin(), nextFakeMines.end());
-			row.second = lastColumnSecond;
-			row.beat = lastColumnBeat;
-
-			for (int c = 0; c < columnCount; c++)
-			{
-				// save any active holds
-				if (activeHolds[c].type == TapNoteType_Empty || activeHolds[c].second >= lastColumnSecond)
-				{
-					row.holds[c] = IntermediateNoteData();
-				}
-				else
-				{
-					row.holds[c] = activeHolds[c];
-				}
-
-				// save any hold tails
-
-				if (activeHolds[c].type != TapNoteType_Empty)
-				{
-					if (abs(activeHolds[c].beat + activeHolds[c].hold_length - lastColumnBeat) < 0.0005)
-					{
-						row.holdTails.insert(c);
-					}
-				}
-			}
-			return row;
 		}
 	};
 

@@ -60,7 +60,7 @@ namespace StepParity {
 		/// @return
 		std::vector<FootPlacement> PermuteFootPlacements(const Row &row, FootPlacement columns, unsigned long column);
 
-		/// @brief Computes the "cheapest" path through the    given graph.
+		/// @brief Computes the "cheapest" path through the given graph.
 		/// This relies on the fact that the nodes stored in the graph are topologically sorted (that is, all
 		/// of the nodes are ordered in such a way that each node comes before all the nodes it points to.)
 		/// This allows us to find the cheapest path in a single pass.
@@ -69,9 +69,11 @@ namespace StepParity {
 		/// @return A vector of node indices, making up the cheapest path through the step chart.
 		std::vector<int> computeCheapestPath();
 		
-		
+		/// @brief Converts NoteData into an intermediate form that's a little more convenient
+		/// to work with when creating rows.
 		void CreateIntermediateNoteData(const NoteData &in, std::vector<IntermediateNoteData> &out);
 		void CreateRows(const NoteData &in);
+		void AddRow(RowCounter &counter);
 		Row CreateRow(RowCounter &counter);
 		int getPermuteCacheKey(const Row &row);
 		bool bracketCheck(int column1, int column2);

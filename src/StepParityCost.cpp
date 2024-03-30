@@ -682,6 +682,8 @@ float StepParityCost::getPlayerAngle(StepParity::StagePoint left, StepParity::St
 }
 
 
+
+
 float StepParityCost::getXDifference(int leftIndex, int rightIndex) {
 	if (leftIndex == rightIndex) return 0;
 	float dx = layout[rightIndex].x - layout[leftIndex].x;
@@ -690,7 +692,7 @@ float StepParityCost::getXDifference(int leftIndex, int rightIndex) {
 	float distance = sqrt(dx * dx + dy * dy);
 	dx /= distance;
 
-	float negative = dx <= 0;
+	bool negative = dx <= 0;
 
 	dx = pow(dx, 4);
 
@@ -707,7 +709,7 @@ float StepParityCost::getXDifference(int leftIndex, int rightIndex) {
 	float distance = sqrt(dx * dx + dy * dy);
 	dy /= distance;
 
-	float negative = dy <= 0;
+	bool negative = dy <= 0;
 
 	dy = pow(dy, 4);
 
