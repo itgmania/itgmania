@@ -772,6 +772,7 @@ void SMLoader::ProcessDelays( TimingData &out, const RString line, const int row
 void SMLoader::ProcessTimeSignatures( TimingData &out, const RString line, const int rowsPerBeat )
 {
 	std::vector<RString> vs1;
+	std::vector<TimeSignatureSegment> segments;
 	split( line, ",", vs1 );
 
 	for (RString const &s1 : vs1)
@@ -818,8 +819,21 @@ void SMLoader::ProcessTimeSignatures( TimingData &out, const RString line, const
 				     fBeat, iDenominator );
 			continue;
 		}
+		segments.push_back( TimeSignatureSegment(BeatToNoteRow(fBeat), iNumerator, iDenominator) );
+	}
+	
+	// If there are any time signatures defined, but there isn't one
+	// for the very first beat of the song, then add one.
+	// Without it, calls to functions like TimingData::NoteRowToMeasureAndBeat
+	// can fail for charts that are otherwise valid.
+	if ( segments.size() > 0 && segments[0].GetRow() > 0 )
+	{
+		out.AddSegment( TimeSignatureSegment(0, 4, 4) );
+	}
 
-		out.AddSegment( TimeSignatureSegment(BeatToNoteRow(fBeat), iNumerator, iDenominator) );
+	for( TimeSignatureSegment segment: segments )
+	{
+		out.AddSegment( segment );
 	}
 }
 

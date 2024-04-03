@@ -261,12 +261,12 @@ RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 	return RString();
 }
 
-static int GetWindowStyle( bool bWindowed )
+static int GetWindowStyle( bool bWindowed , bool bWindowIsFullscreenBorderless)
 {
-	if( bWindowed )
+	if( bWindowed && !bWindowIsFullscreenBorderless )
 		return WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 	else
-		return WS_POPUP;
+		return WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 }
 
 /* Set the final window size, set the window text and icon, and then unhide the
@@ -280,7 +280,7 @@ void GraphicsWindow::CreateGraphicsWindow( const VideoModeParams &p, bool bForce
 
 	if( g_hWndMain == nullptr || bForceRecreateWindow )
 	{
-		int iWindowStyle = GetWindowStyle( p.windowed );
+		int iWindowStyle = GetWindowStyle( p.windowed , p.bWindowIsFullscreenBorderless );
 
 		AppInstance inst;
 		HWND hWnd = CreateWindow( g_sClassName, "app", iWindowStyle,
@@ -331,7 +331,7 @@ void GraphicsWindow::CreateGraphicsWindow( const VideoModeParams &p, bool bForce
 
 	/* The window style may change as a result of switching to or from fullscreen;
 	 * apply it. Don't change the WS_VISIBLE bit. */
-	int iWindowStyle = GetWindowStyle( p.windowed );
+	int iWindowStyle = GetWindowStyle(p.windowed, p.bWindowIsFullscreenBorderless);
 	if( GetWindowLong( g_hWndMain, GWL_STYLE ) & WS_VISIBLE )
 		iWindowStyle |= WS_VISIBLE;
 	SetWindowLong( g_hWndMain, GWL_STYLE, iWindowStyle );

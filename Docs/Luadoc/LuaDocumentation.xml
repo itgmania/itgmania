@@ -1475,16 +1475,16 @@ end
 <pre><code>
 Def.ActorFrame{
 	Name="AF",
-	
+
 	Def.Sprite{ Name="sun", Texture="sun.png" },
-	
+
 	Def.ActorFrame{
 		Name="AF2",
 		InitCommand=function(self)
 			-- bounce() will be applied to AF2, airhorn, and catchphrase
 			self:RunCommandsRecursively( function(actor) actor:bounce() end )
 		end,
-		
+
 		Def.Sprite{ Name="airhorn", Texture="airhorn.png" },
 		Def.BitmapText{ Name="catchphrase", Font="Common Normal", Text="Yo!" }
 	}
@@ -1788,9 +1788,9 @@ Def.ActorFrame{
 		-- bounce() will be applied to sun and AF2
 		self:RunCommandsOnChildren( function(child) child:bounce() end )
 	end,
-	
+
 	Def.Sprite{ Name="sun", Texture="sun.png" },
-	
+
 	Def.ActorFrame{
 		Name="AF2",
 		Def.Sprite{ Name="airhorn", Texture="airhorn.png" },
@@ -1810,9 +1810,9 @@ Def.ActorFrame{
 		-- bounce() will be applied to sun, airhorn, and catchphrase
 		self:runcommandsonleaves( function(leaf) leaf:bounce() end )
 	end,
-	
+
 	Def.Sprite{ Name="sun", Texture="sun.png" },
-	
+
 	Def.ActorFrame{
 		Name="AF2",
 		Def.Sprite{ Name="airhorn", Texture="airhorn.png" },
@@ -3877,6 +3877,7 @@ NETWORK:WebSocket{
 <Class name='NoteField'>
 	<Description>
 		All functions in this class have camel case equivalents, use whichever naming style you prefer.<br />
+		Camel case functions do not have snake case equivalents, though.<br />
 	</Description>
 	<Function name='did_hold_note' return='' arguments='int column, TapNoteScore tns, bool bright'>
 		Makes the NoteField act as if a hold note was hit in the column, with the given score and bright setting. <br />
@@ -3886,9 +3887,19 @@ NETWORK:WebSocket{
 		Makes the NoteField act as if a tap note was hit in the column, with the given score and bright setting. <br />
 		The callback for did_tap_note will not be called.
 	</Function>
+	<Function name='GetBeatBars' return='bool' arguments='' since='ITGmania 0.8.0'>
+		Returns whether beat bars are enabled on this NoteField.
+	</Function>
 	<Function name='get_column_actors' return='{NoteColumnRenderer}' arguments=''>
 		Returns a table of the actors for the columns.  This means that each column is an actor, so you can move it around or animate it like an actor.  See the NoteColumnRenderer class for a list of special functions for the column's actor.
 	</Function>
+	<Function name='SetBeatBars' return='bool' arguments='bool enabled' since='ITGmania 0.8.0'>
+		Sets whether beat bars are enabled on this NoteField.
+	</Functions>
+	<Function name='SetBeatBarsAlpha' return='bool' arguments='float measure, float fourth, float eighth, float sixteenth' since='ITGmania 0.8.0'>
+		Sets the alpha for the beat bars on this NoteField.
+		Specify the alpha for the measure, fourth, eighth, and sixteenth beat bars at the same time.
+	</Functions>
 	<Function name='set_did_hold_note_callback' return= '' arguments='function callback'>
 		Same as SetDidTapNoteCallback, but for hold notes.  Uses HoldNoteScore instead of TapNoteScore.
 	</Function>
@@ -5901,6 +5912,9 @@ local args = {
 	<Function name='SongToPreferredSortSectionName' return='string' arguments='Song s'>
 		Returns the preferred sort section name for the specified Song.
 	</Function>
+	<Function name='GetPreferredSortSongsBySectionName' return='{Song}' arguments='string sSectionName' since='ITGmania 0.8.0'>
+		Returns a table containing all songs in the specified preferred sort section.
+	</Function>
 	<Function name='WasLoadedFromAdditionalCourses' return='bool' arguments='Course c'>
 		[Deprecated] Always returns <code>false</code>.
 	</Function>
@@ -6845,7 +6859,7 @@ for i, diff in ipairs(Difficulty) do
 	local filename = diff .. ".png"
 
 	-- load files like "Difficulty_Beginner.png",
-	-- "Difficulty_Easy.png", etc. from the directory 
+	-- "Difficulty_Easy.png", etc. from the directory
 	-- where this code is run, and offset each vertically
 	af[#af+1] = LoadActor( filename )..{
 		InitCommand=function(self) self:y( i * 100 ) end

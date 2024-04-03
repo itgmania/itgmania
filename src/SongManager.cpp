@@ -845,6 +845,32 @@ RString SongManager::SongToPreferredSortSectionName( const Song *pSong ) const
 	return RString();
 }
 
+
+void SongManager::GetPreferredSortSongsBySectionName( const RString &sSectionName, std::vector<Song*> &AddTo ) const
+{
+	// Use m_mapPreferredSectionToSongs
+	std::map<RString, SongPointerVector>::const_iterator iter = m_mapPreferredSectionToSongs.find( sSectionName );
+	if( iter != m_mapPreferredSectionToSongs.end() )
+		AddTo.insert( AddTo.end(), iter->second.begin(), iter->second.end() );
+}
+
+std::vector<Song*> SongManager::GetPreferredSortSongsBySectionName( const RString &sSectionName ) const
+{
+	std::vector<Song*> AddTo;
+	GetPreferredSortSongsBySectionName(sSectionName, AddTo);
+	return AddTo;
+}
+
+std::vector<RString> SongManager::GetPreferredSortSectionNames() const
+{
+	std::vector<RString> sectionNames;
+	// Use m_mapPreferredSectionToSongs
+	for (std::pair<RString const, SongPointerVector> const &iter : m_mapPreferredSectionToSongs)
+		sectionNames.push_back(iter.first);
+	return sectionNames;
+
+}
+	
 void SongManager::GetPreferredSortCourses( CourseType ct, std::vector<Course*> &AddTo, bool bIncludeAutogen ) const
 {
 	if( m_vPreferredCourseSort.empty() )
@@ -861,6 +887,16 @@ void SongManager::GetPreferredSortCourses( CourseType ct, std::vector<Course*> &
 				AddTo.push_back( pCourse );
 		}
 	}
+}
+
+std::vector<Song*> SongManager::GetSongsByMeter(const int iMeter) const {
+    std::vector<Song*> AddTo;
+    auto iter = m_mapSongsByDifficulty.find(iMeter);
+    if (iter != m_mapSongsByDifficulty.end()) {
+        // Found the level, add the songs to AddTo
+        AddTo.insert(AddTo.end(), iter->second.begin(), iter->second.end());
+    }
+    return AddTo;
 }
 
 int SongManager::GetNumSongs() const
@@ -1591,6 +1627,30 @@ void SongManager::UpdatePopular()
 	}
 }
 
+std::map<int, std::vector<Song*>> SongManager::UpdateMeterSort( std::vector<Song*> songs) {
+	// Empty the map
+	m_mapSongsByDifficulty.clear();
+	std::vector<Song*> apDifficultSongs = songs;
+	// For each song, for each step
+	for( unsigned i = 0; i < apDifficultSongs.size(); ++i )
+	{
+		std::vector<Steps*>	vpSteps;
+		SongUtil::GetPlayableSteps( apDifficultSongs[i], vpSteps );
+		for( unsigned j = 0; j < vpSteps.size(); ++j )
+		{
+			Steps *pSteps = vpSteps[j];
+			// Check if the meter is already in m_mapSongsByDifficulty
+			if (std::find(m_mapSongsByDifficulty[pSteps->GetMeter()].begin(), m_mapSongsByDifficulty[pSteps->GetMeter()].end(), apDifficultSongs[i]) != m_mapSongsByDifficulty[pSteps->GetMeter()].end())
+				continue;
+			else {			
+				m_mapSongsByDifficulty[pSteps->GetMeter()].push_back(apDifficultSongs[i]);
+			}
+		}
+	}
+	return m_mapSongsByDifficulty;
+}
+
+
 void SongManager::UpdateShuffled()
 {
 	// update shuffled
@@ -1605,7 +1665,7 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 	ASSERT( UNLOCKMAN != nullptr );
 
 	m_vPreferredSongSort.clear();
-
+	m_mapPreferredSectionToSongs.clear();
 	std::vector<RString> asLines;
 	RString sFile = sPreferredSongs;
 	if (!bIsAbsolute)
@@ -1625,6 +1685,7 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 			if( !section.vpSongs.empty() )
 			{
 				m_vPreferredSongSort.push_back( section );
+				m_mapPreferredSectionToSongs[section.sName] = section.vpSongs;
 				section = PreferredSortSection();
 			}
 
@@ -1664,6 +1725,7 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 	if( !section.vpSongs.empty() )
 	{
 		m_vPreferredSongSort.push_back( section );
+		m_mapPreferredSectionToSongs[section.sName] = section.vpSongs;
 		section = PreferredSortSection();
 	}
 
@@ -1682,25 +1744,31 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 			}
 		}
 
-		for (std::vector<PreferredSortSection>::iterator v = m_vPreferredSongSort.begin(); v != m_vPreferredSongSort.end(); ++v)
-		{
-			for( int i=v->vpSongs.size()-1; i>=0; i-- )
-			{
-				Song *pSong = v->vpSongs[i];
-				if( find(PFSection.vpSongs.begin(),PFSection.vpSongs.end(),pSong) != PFSection.vpSongs.end() )
-				{
-					v->vpSongs.erase( v->vpSongs.begin()+i );
-				}
-			}
-		}
-
+		// NOTE(crashcringle): This code removed the unlocks from other sections they might have been in.
+		// This was needed due to the previous 1:1 relationship between songs and section in order for the song to appear in the Unlocks section correctly.
+		// Commented out for now.
+		// for (std::vector<PreferredSortSection>::iterator v = m_vPreferredSongSort.begin(); v != m_vPreferredSongSort.end(); ++v)
+		// {
+		// 	for( int i=v->vpSongs.size()-1; i>=0; i-- )
+		// 	{
+		// 		Song *pSong = v->vpSongs[i];
+		// 		if( find(PFSection.vpSongs.begin(),PFSection.vpSongs.end(),pSong) != PFSection.vpSongs.end() )
+		// 		{
+		// 			v->vpSongs.erase( v->vpSongs.begin()+i );
+		// 		}
+		// 	}
+		// }
+		
 		m_vPreferredSongSort.push_back( PFSection );
+		m_mapPreferredSectionToSongs[PFSection.sName] = PFSection.vpSongs;
 	}
 
 	// prune empty groups
 	for( int i=m_vPreferredSongSort.size()-1; i>=0; i-- )
-		if( m_vPreferredSongSort[i].vpSongs.empty() )
+		if( m_vPreferredSongSort[i].vpSongs.empty() ) {
 			m_vPreferredSongSort.erase( m_vPreferredSongSort.begin()+i );
+			m_mapPreferredSectionToSongs.erase( m_vPreferredSongSort[i].sName );
+		}
 
 	for (PreferredSortSection const &i : m_vPreferredSongSort)
 	{
@@ -2219,6 +2287,14 @@ public:
 		lua_pushstring(L, p->SongToPreferredSortSectionName(pSong));
 		return 1;
 	}
+	static int GetPreferredSortSongsBySectionName( T* p, lua_State *L )
+	{
+		std::vector<Song*> v;
+		p->GetPreferredSortSongsBySectionName(SArg(1), v);
+		LuaHelpers::CreateTableFromArray<Song*>( v, L );
+		return 1;
+	}
+
 	static int WasLoadedFromAdditionalSongs( T* p, lua_State *L )	{ lua_pushboolean(L, false); return 1; }	// deprecated
 	static int WasLoadedFromAdditionalCourses( T* p, lua_State *L )	{ lua_pushboolean(L, false); return 1; }	// deprecated
 
@@ -2261,6 +2337,7 @@ public:
 		ADD_METHOD( GetPopularSongs );
 		ADD_METHOD( GetPopularCourses );
 		ADD_METHOD( SongToPreferredSortSectionName );
+		ADD_METHOD( GetPreferredSortSongsBySectionName );
 		ADD_METHOD( WasLoadedFromAdditionalSongs );	// deprecated
 		ADD_METHOD( WasLoadedFromAdditionalCourses );	// deprecated
 	}

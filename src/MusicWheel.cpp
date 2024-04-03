@@ -537,6 +537,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 			}
 			break;
 		}
+		case SORT_METER:
 		case SORT_PREFERRED:
 		case SORT_ROULETTE:
 		case SORT_GROUP:
@@ -544,6 +545,8 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 		case SORT_BPM:
 		case SORT_POPULARITY:
 		case SORT_TOP_GRADES:
+		case SORT_TOP_GRADES_P1:
+		case SORT_TOP_GRADES_P2:
 		case SORT_ARTIST:
 		case SORT_GENRE:
 		case SORT_BEGINNER_METER:
@@ -567,6 +570,9 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 			// sort the songs
 			switch( so )
 			{
+				case SORT_METER:
+					SONGMAN->UpdateMeterSort(arraySongs);
+					break;
 				case SORT_PREFERRED:
 					// obey order specified by the preferred sort list
 					break;
@@ -600,7 +606,16 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 					bUseSections = false;
 					break;
 				case SORT_TOP_GRADES:
-					SongUtil::SortSongPointerArrayByGrades( arraySongs, true );
+						SongUtil::SortSongPointerArrayByGrades( arraySongs, true );
+					break;
+				case SORT_TOP_GRADES_P1:
+					// Check if player profile is persistent
+					if( PROFILEMAN->IsPersistentProfile(PLAYER_1) )
+						SongUtil::SortSongPointerArrayByProfileGrades( arraySongs, true, PLAYER_1);
+					break;
+				case SORT_TOP_GRADES_P2:
+					if( PROFILEMAN->IsPersistentProfile(PLAYER_2) )
+						SongUtil::SortSongPointerArrayByProfileGrades( arraySongs, true, PLAYER_2);
 					break;
 				case SORT_ARTIST:
 					SongUtil::SortSongPointerArrayByArtist( arraySongs );
@@ -663,8 +678,11 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 				/* We're using sections, so use the section name as the top-level sort. */
 				switch( so )
 				{
+					case SORT_METER:
 					case SORT_PREFERRED:
 					case SORT_TOP_GRADES:
+					case SORT_TOP_GRADES_P1:
+					case SORT_TOP_GRADES_P2:
 					case SORT_BPM:
 					case SORT_LENGTH:
 						break;	// don't sort by section
@@ -673,38 +691,79 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 						break;
 				}
 			}
-
 			// make WheelItemDatas with sections
 			RString sLastSection = "";
 			int iSectionColorIndex = 0;
-			for( unsigned i=0; i< arraySongs.size(); i++ )
-			{
-				Song* pSong = arraySongs[i];
-				if( bUseSections )
-				{
-					RString sThisSection = SongUtil::GetSectionNameFromSongAndSort( pSong, so );
-
-					if( sThisSection != sLastSection )
+			switch (so) {
+				case SORT_PREFERRED:
+					// If the sort order is Preferred handle it differently because we already know the sections
+					if( bUseSections )
+					{
+						// Get mappping of section names to songs
+						std::map<RString, std::vector<Song*>> preferredSortSongsMap = SONGMAN->GetPreferredSortSongsMap();
+						for (auto const& [sectionName, songs] : SONGMAN->GetPreferredSortSongsMap())
+						{
+							// todo: preferred sort section color handling? -aj
+							RageColor colorSection = SECTION_COLORS.GetValue(iSectionColorIndex);
+							iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
+							// Add the section item
+							arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sectionName, nullptr, colorSection, songs.size()) );
+							// Add all the songs in this section
+							for (auto const& song : songs)
+							{
+								arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, song, sectionName, nullptr, SONGMAN->GetSongColor(song), 0) );
+							}
+						}
+					}
+					break;
+				case SORT_METER:
+					if( bUseSections )
 					{
 						int iSectionCount = 0;
-						// Count songs in this section
-						unsigned j;
-						for( j=i; j < arraySongs.size(); j++ )
-						{
-							if( SongUtil::GetSectionNameFromSongAndSort( arraySongs[j], so ) != sThisSection )
-								break;
-						}
-						iSectionCount = j-i;
-
-						// new section, make a section item
-						// todo: preferred sort section color handling? -aj
-						RageColor colorSection = (so==SORT_GROUP) ? SONGMAN->GetSongGroupColor(pSong->m_sGroupName) : SECTION_COLORS.GetValue(iSectionColorIndex);
-						iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
-						arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sThisSection, nullptr, colorSection, iSectionCount) );
-						sLastSection = sThisSection;
+						for (auto const& [sectionName, songs] : SONGMAN->GetMeterToSongsMap()) {
+							RageColor colorSection = SECTION_COLORS.GetValue(iSectionColorIndex);
+							iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
+							// Add the section item
+							arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, ssprintf("%d",sectionName), nullptr, colorSection, songs.size()) );
+							// Add all the songs in this section
+							for (auto const& song : songs)
+							{
+								arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, song, ssprintf("%d",sectionName), nullptr, SONGMAN->GetSongColor(song), 0) );
+							}
+						} 
 					}
-				}
-				arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, pSong, sLastSection, nullptr, SONGMAN->GetSongColor(pSong), 0) );
+					break;
+				default:
+					for( unsigned i=0; i< arraySongs.size(); i++ )
+					{
+						Song* pSong = arraySongs[i];
+						if( bUseSections )
+						{
+							RString sThisSection = SongUtil::GetSectionNameFromSongAndSort( pSong, so );
+
+							if( sThisSection != sLastSection )
+							{
+								int iSectionCount = 0;
+								// Count songs in this section
+								unsigned j;
+								for( j=i; j < arraySongs.size(); j++ )
+								{
+									if( SongUtil::GetSectionNameFromSongAndSort( arraySongs[j], so ) != sThisSection )
+										break;
+								}
+								iSectionCount = j-i;
+
+								// new section, make a section item
+								// todo: preferred sort section color handling? -aj
+								RageColor colorSection = (so==SORT_GROUP) ? SONGMAN->GetSongGroupColor(pSong->m_sGroupName) : SECTION_COLORS.GetValue(iSectionColorIndex);
+								iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
+								arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sThisSection, nullptr, colorSection, iSectionCount) );
+								sLastSection = sThisSection;
+							}
+						}
+						arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, pSong, sLastSection, nullptr, SONGMAN->GetSongColor(pSong), 0) );
+					}
+					break;
 			}
 
 			if( so != SORT_ROULETTE )
@@ -908,8 +967,11 @@ void MusicWheel::readyWheelItemsData(SortOrder so) {
 			BuildWheelItemDatas(  aUnFilteredDatas, so );
 		}
 		FilterWheelItemDatas( aUnFilteredDatas, m__WheelItemDatas[so], so );
-		m_WheelItemDatasStatus[so]=VALID;
-
+		// The preferred sort's songs are subject to change during a session (particularly if two players have different preferred songs) 
+		// thus it's status should remain invalid so the wheel items are rebuilt each time in case of change.
+		if (so != SORT_PREFERRED) {
+			m_WheelItemDatasStatus[so]=VALID;
+		}
 		LOG->Trace( "MusicWheel sorting took: %f", timer.GetTimeSinceStart() );
 	}
 
@@ -1200,7 +1262,9 @@ void MusicWheel::ChangeMusic( int iDist )
 bool MusicWheel::ChangeSort( SortOrder new_so, bool allowSameSort )	// return true if change successful
 {
 	ASSERT( new_so < NUM_SortOrder );
-	if( GAMESTATE->m_SortOrder == new_so && !allowSameSort )
+	// NOTE(crashcringle): Ignore allowSameSort if we're using SORT_PREFERRED.
+	// Each player has their own preferred songs which sorts the songs differently
+	if( GAMESTATE->m_SortOrder == new_so && (!allowSameSort && new_so != SORT_PREFERRED ))
 	{
 		return false;
 	}

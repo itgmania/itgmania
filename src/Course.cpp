@@ -34,7 +34,35 @@ static const char *SongSortNames[] = {
 };
 XToString( SongSort );
 XToLocalizedString( SongSort );
+StringToX( SongSort );
 
+struct OldStyleStringToSongSortMapHolder
+{
+	std::map<RString, SongSort> conversion_map;
+	
+	OldStyleStringToSongSortMapHolder()
+	{
+		conversion_map["best"] = SongSort_MostPlays;
+		conversion_map["worst"] = SongSort_FewestPlays;
+		conversion_map["gradebest"] = SongSort_TopGrades;
+		conversion_map["gradeworst"] = SongSort_LowestGrades;
+	}
+};
+
+OldStyleStringToSongSortMapHolder OldStyleStringToSongSortMapHolder_converter;
+
+SongSort OldStyleStringToSongSort(const RString &ss)
+{
+	RString s2 = ss;
+	s2.MakeLower();
+	std::map<RString, SongSort>::iterator diff=
+		OldStyleStringToSongSortMapHolder_converter.conversion_map.find(s2);
+	if(diff != OldStyleStringToSongSortMapHolder_converter.conversion_map.end())
+	{
+		return diff->second;
+	}
+	return SongSort_Invalid;
+}
 
 /* Maximum lower value of ranges when difficult: */
 const int MAX_BOTTOM_RANGE = 10;
@@ -56,20 +84,31 @@ RString CourseEntry::GetTextDescription() const
 		vsEntryDescription.push_back( pSong->GetTranslitFullTitle() );
 	else
 		vsEntryDescription.push_back( "Random" );
-	if( !songCriteria.m_sGroupName.empty() )
-		vsEntryDescription.push_back( songCriteria.m_sGroupName );
+	if( songCriteria.m_vsGroupNames.size() > 0 )
+		vsEntryDescription.push_back("Groups: " + join(",", songCriteria.m_vsGroupNames));
 	if( songCriteria.m_bUseSongGenreAllowedList )
 		vsEntryDescription.push_back( join(",",songCriteria.m_vsSongGenreAllowedList) );
+	if( songCriteria.m_vsArtistNames.size() > 0 )
+		vsEntryDescription.push_back("Artists: " + join(",", songCriteria.m_vsArtistNames));
 	if( stepsCriteria.m_difficulty != Difficulty_Invalid  &&  stepsCriteria.m_difficulty != Difficulty_Medium )
 		vsEntryDescription.push_back( CourseDifficultyToLocalizedString(stepsCriteria.m_difficulty) );
 	if( stepsCriteria.m_iLowMeter != -1 )
 		vsEntryDescription.push_back( ssprintf("Low meter: %d", stepsCriteria.m_iLowMeter) );
 	if( stepsCriteria.m_iHighMeter != -1 )
 		vsEntryDescription.push_back( ssprintf("High meter: %d", stepsCriteria.m_iHighMeter) );
-	if( songSort != SongSort_Randomize )
-		vsEntryDescription.push_back( "Sort: %d" + SongSortToLocalizedString(songSort) );
-	if( songSort != SongSort_Randomize && iChooseIndex != 0 )
-		vsEntryDescription.push_back( "Choose " + FormatNumberAndSuffix(iChooseIndex) + " match" );
+	if( songCriteria.m_fMinBPM != -1 )
+		vsEntryDescription.push_back(ssprintf("Min BPM: %.3f", songCriteria.m_fMinBPM));
+	if( songCriteria.m_fMaxBPM != -1 )
+		vsEntryDescription.push_back(ssprintf("Max BPM: %.3f", songCriteria.m_fMaxBPM));
+	if( songCriteria.m_fMinDurationSeconds != -1 )
+		vsEntryDescription.push_back(ssprintf("Min Duration: %.3f seconds", songCriteria.m_fMinDurationSeconds));
+	if( songCriteria.m_fMaxDurationSeconds != -1 )
+		vsEntryDescription.push_back(ssprintf("Max Duration: %.3f seconds", songCriteria.m_fMaxDurationSeconds));
+
+	if (songSort != SongSort_Randomize)
+		vsEntryDescription.push_back("Sort: " + SongSortToLocalizedString(songSort));
+	if( songSort != SongSort_Randomize && iChooseIndex != -1 )
+		vsEntryDescription.push_back( "Choose " + FormatNumberAndSuffix(iChooseIndex+1) + " match" );
 	int iNumModChanges = GetNumModChanges();
 	if( iNumModChanges != 0 )
 		vsEntryDescription.push_back( ssprintf("%d mod changes", iNumModChanges) );
@@ -368,9 +407,8 @@ bool Course::GetTrailSorted( StepsType st, CourseDifficulty cd, Trail &trail ) c
 // TODO: Move Course initialization after PROFILEMAN is created
 static void CourseSortSongs( SongSort sort, std::vector<Song*> &vpPossibleSongs, RandomGen &rnd )
 {
-	switch( sort )
+	switch (sort)
 	{
-	DEFAULT_FAIL(sort);
 	case SongSort_Randomize:
 		std::shuffle( vpPossibleSongs.begin(), vpPossibleSongs.end(), rnd );
 		break;
@@ -383,12 +421,18 @@ static void CourseSortSongs( SongSort sort, std::vector<Song*> &vpPossibleSongs,
 			SongUtil::SortSongPointerArrayByNumPlays( vpPossibleSongs, PROFILEMAN->GetMachineProfile(), false );	// ascending
 		break;
 	case SongSort_TopGrades:
-		if( PROFILEMAN )
+		// SongUtil::SortSongPointerArrayByGrades() will crash if called in a state where there's no current master player 
+		// (for instance when returning to the Title Menu). 
+		// A workaround is to just not call it if we know that GAMESTATE->GetMasterPlayerNumber() == PlayerNumber_Invalid
+		if( PROFILEMAN && GAMESTATE->GetMasterPlayerNumber() != PlayerNumber_Invalid )
 			SongUtil::SortSongPointerArrayByGrades( vpPossibleSongs, true );	// descending
 		break;
 	case SongSort_LowestGrades:
-		if( PROFILEMAN )
+		if( PROFILEMAN && GAMESTATE->GetMasterPlayerNumber() != PlayerNumber_Invalid )
 			SongUtil::SortSongPointerArrayByGrades( vpPossibleSongs, false );	// ascending
+		break;
+	default:
+		LOG->Trace("CourseSortSongs sort= %d | %s invalid??", sort, SongSortToString(sort).c_str());
 		break;
 	}
 }
@@ -517,8 +561,8 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 				if( v.size() == 1 )
 					vpSongs.push_back( sas->pSong );
 			}
-
-			CourseSortSongs( e->songSort, vpSongs, rnd );
+			
+			CourseSortSongs(e->songSort, vpSongs, rnd);
 
 			ASSERT( e->iChooseIndex >= 0 );
 			if( e->iChooseIndex < int( vSongAndSteps.size() ) )
@@ -594,8 +638,7 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 					if( iMaxDist == iMinDist )
 						iAdd = iMaxDist;
 					else {
-						std::uniform_int_distribution<> dist( iMinDist, iMaxDist );
-						iAdd = dist( rnd );
+						iAdd = std::floor((iMinDist + iMaxDist) / 2);
 					}
 					iLowMeter += iAdd;
 					iHighMeter += iAdd;
@@ -827,8 +870,7 @@ void Course::GetTrailUnsortedEndless( const std::vector<CourseEntry> &entries, T
 				if( iMaxDist == iMinDist )
 					iAdd = iMaxDist;
 				else {
-					std::uniform_int_distribution<> dist( iMinDist, iMaxDist );
-					iAdd = dist( rnd );
+					iAdd = std::floor((iMinDist + iMaxDist) / 2);
 				}
 				iLowMeter += iAdd;
 				iHighMeter += iAdd;

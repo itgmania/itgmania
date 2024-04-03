@@ -490,6 +490,8 @@ void PlayerOptions::GetMods( std::vector<RString> &AddTo, bool bForceNoteSkin ) 
 	AddPart( AddTo, m_fRandomSpeed,	"RandomSpeed" );
 
 	if( m_bTurns[TURN_MIRROR] )		AddTo.push_back( "Mirror" );
+	if( m_bTurns[TURN_LRMIRROR] )		AddTo.push_back( "LRMirror" );
+	if( m_bTurns[TURN_UDMIRROR] )		AddTo.push_back( "UDMirror" );
 	if( m_bTurns[TURN_BACKWARDS] )		AddTo.push_back( "Backwards" );
 	if( m_bTurns[TURN_LEFT] )			AddTo.push_back( "Left" );
 	if( m_bTurns[TURN_RIGHT] )			AddTo.push_back( "Right" );
@@ -1026,6 +1028,8 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	else if( sBit == "randomvanish" )			SET_FLOAT( fAppearances[APPEARANCE_RANDOMVANISH] )
 	else if( sBit == "turn" && !on )			ZERO( m_bTurns ); /* "no turn" */
 	else if( sBit == "mirror" )				m_bTurns[TURN_MIRROR] = on;
+	else if( sBit == "lrmirror" )				m_bTurns[TURN_LRMIRROR] = on;
+	else if( sBit == "udmirror" )				m_bTurns[TURN_UDMIRROR] = on;
 	else if( sBit == "backwards" )			m_bTurns[TURN_BACKWARDS] = on;
 	else if( sBit == "left" )				m_bTurns[TURN_LEFT] = on;
 	else if( sBit == "right" )				m_bTurns[TURN_RIGHT] = on;
@@ -2009,6 +2013,8 @@ public:
 	BOOL_INTERFACE(Cosecant, Cosecant);
 	BOOL_INTERFACE(TurnNone, Turns[PlayerOptions::TURN_NONE]);
 	BOOL_INTERFACE(Mirror, Turns[PlayerOptions::TURN_MIRROR]);
+	BOOL_INTERFACE(LRMirror, Turns[PlayerOptions::TURN_LRMIRROR]);
+	BOOL_INTERFACE(UDMirror, Turns[PlayerOptions::TURN_UDMIRROR]);
 	BOOL_INTERFACE(Backwards, Turns[PlayerOptions::TURN_BACKWARDS]);
 	BOOL_INTERFACE(Left, Turns[PlayerOptions::TURN_LEFT]);
 	BOOL_INTERFACE(Right, Turns[PlayerOptions::TURN_RIGHT]);
@@ -2555,6 +2561,8 @@ public:
 		ADD_METHOD(RandomSpeed);
 		ADD_METHOD(TurnNone);
 		ADD_METHOD(Mirror);
+		ADD_METHOD(LRMirror);
+		ADD_METHOD(UDMirror);
 		ADD_METHOD(Backwards);
 		ADD_METHOD(Left);
 		ADD_METHOD(Right);
