@@ -23,13 +23,13 @@ REGISTER_SOUND_DRIVER_CLASS2( Pulse, PulseAudio );
 /* Constructor */
 RageSoundDriver_PulseAudio::RageSoundDriver_PulseAudio()
 : RageSoundDriver(),
-m_LastPosition(0), m_SampleRate(0), m_Error(nullptr),
+m_LastPosition(0), m_Error(nullptr),
 m_Sem("Pulseaudio Synchronization Semaphore"),
 m_PulseMainLoop(nullptr), m_PulseCtx(nullptr), m_PulseStream(nullptr)
 {
-	m_SampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
-	if( m_SampleRate == 0 )
-		m_SampleRate = 44100;
+	m_ss.rate = PREFSMAN->m_iSoundPreferredSampleRate;
+	if( m_ss.rate == 0 )
+		m_ss.rate = 44100;
 }
 
 RageSoundDriver_PulseAudio::~RageSoundDriver_PulseAudio()
@@ -231,8 +231,11 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 
 	 /* connect the stream for playback */
 	LOG->Trace("Pulse: pa_stream_connect_playback()...");
+	const int flags = PA_STREAM_INTERPOLATE_TIMING
+		| PA_STREAM_NOT_MONOTONIC
+		| PA_STREAM_AUTO_TIMING_UPDATE;
 	error = pa_stream_connect_playback(m_PulseStream, nullptr, &attr,
-			PA_STREAM_AUTO_TIMING_UPDATE, nullptr, nullptr);
+			static_cast<pa_stream_flags_t>(flags), nullptr, nullptr);
 	if(error < 0)
 	{
 		if(asprintf(&m_Error, "pa_stream_connect_playback(): %s",
@@ -244,7 +247,7 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 		return;
 	}
 
-	 m_SampleRate = ss.rate;
+	m_ss = ss;
 }
 
 void RageSoundDriver_PulseAudio::CtxStateCb(pa_context *c)
@@ -305,30 +308,34 @@ void RageSoundDriver_PulseAudio::StreamStateCb(pa_stream *s)
 
 std::int64_t RageSoundDriver_PulseAudio::GetPosition() const
 {
-	return m_LastPosition;
+	pa_usec_t usec;
+	if(pa_stream_get_time(m_PulseStream, &usec) < 0)
+	{
+		RageException::Throw("Pulse: pa_stream_get_time()");
+	}
+
+	std::size_t length = pa_usec_to_bytes(usec, &m_ss);
+	return length / (sizeof(std::int16_t) * 2); /* we use 16-bit frames and 2 channels */
 }
 
-/*
- * XXX: Something here is slow and causes arrows to stutter in gameplay.
- * This needs to be looked into (and for some reason the ALSA driver is
- * useless on my laptop). - Colby
- */
 void RageSoundDriver_PulseAudio::StreamWriteCb(pa_stream *s, std::size_t length)
 {
-#if PA_API_VERSION <= 11
-	/* We have to multiply the requested length by 2 on 0.9.10
-	* maybe the requested length is given in frames instead of bytes */
-	length *= 2;
-#endif
+	void* buf;
+	if(pa_stream_begin_write(m_PulseStream, &buf, &length) < 0)
+	{
+		RageException::Throw("Pulse: pa_stream_begin_write()");
+	}
+
 	const std::size_t nbframes = length / sizeof(std::int16_t); /* we use 16-bit frames */
-	std::vector<std::int16_t> buf(nbframes);
 	std::int64_t pos1 = m_LastPosition;
 	std::int64_t pos2 = pos1 + nbframes/2; /* Mix() position in stereo frames */
-	this->Mix( buf.data(), pos2-pos1, pos1, pos2);
-	if(pa_stream_write(m_PulseStream, buf.data(), length, nullptr, 0, PA_SEEK_RELATIVE) < 0)
+	this->Mix( reinterpret_cast<std::int16_t*>(buf), pos2-pos1, pos1, pos2);
+
+	if(pa_stream_write(m_PulseStream, buf, length, nullptr, 0, PA_SEEK_RELATIVE) < 0)
 	{
 		RageException::Throw("Pulse: pa_stream_write()");
 	}
+
 	m_LastPosition = pos2;
 }
 
