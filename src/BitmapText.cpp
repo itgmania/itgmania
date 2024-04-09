@@ -880,7 +880,7 @@ void BitmapText::AddAttribute( std::size_t iPos, const Attribute &attr )
 {
 	// Fixup position for new lines.
 	Attribute newAttr = attr;
-	std::vector<std::wstring>::const_iterator lineIter = m_wTextLines.cbegin();
+	auto lineIter = m_wTextLines.cbegin();
 
 	int iLines = 0;
 	std::size_t iAdjustedPos = iPos;
@@ -911,7 +911,50 @@ void BitmapText::AddAttribute( std::size_t iPos, const Attribute &attr )
 	if( newAttr.length == 0 ) // Attribute doesn't cover any printable characters
 		return;
 
-	m_mAttributes[iPos-iLines] = newAttr;
+	// Check if there are existing attributes overlapping this one. We might need to remove or fix them up.
+	const std::size_t iStartPos = iPos - iLines;
+	const std::size_t iEndPos = iStartPos + newAttr.length;
+
+	// First attribute starting at the same position or further than the new attribute
+	const auto iterFirstAfterStart = m_mAttributes.lower_bound( iStartPos );
+	if( iterFirstAfterStart != m_mAttributes.begin() )
+	{
+		// Last attribute starting at earlier position than the new attribute (if it exists)
+		auto iterLastBeforeStart = iterFirstAfterStart;
+		--iterLastBeforeStart;
+
+		// Fixup the length so that it ends before the new attribute
+		iterLastBeforeStart->second.length = std::min( iterLastBeforeStart->second.length, static_cast<int>(iStartPos - iterLastBeforeStart->first) );
+	}
+
+	// First attribute starting after the end of the new attribute
+	auto iterLastBeforeEnd = m_mAttributes.lower_bound( iEndPos );
+	if( iterLastBeforeEnd != iterFirstAfterStart )
+	{
+		// Go back one, so that we are at the last overlapping attribute
+		--iterLastBeforeEnd;
+		const bool lastAttrOverlappingCompletely = iterLastBeforeEnd->first + iterLastBeforeEnd->second.length <= iEndPos;
+
+		auto iterEraseEnd = iterLastBeforeEnd;
+		// If it's overlapping completely, erase it as well
+		if( lastAttrOverlappingCompletely )
+			++iterEraseEnd;
+		m_mAttributes.erase( iterFirstAfterStart, iterEraseEnd );
+
+		// Otherwise it's only overlapping partially so fix it up
+		if( !lastAttrOverlappingCompletely )
+		{
+			// Fixup the length accordingly
+			Attribute lastAttr = iterLastBeforeEnd->second;
+			lastAttr.length -= iEndPos - iterLastBeforeEnd->first;
+
+			// Erase it and insert just after the new attribute
+			m_mAttributes.erase( iterLastBeforeEnd );
+			m_mAttributes[iEndPos] = lastAttr;
+		}
+	}
+
+	m_mAttributes[iStartPos] = newAttr;
 	m_bHasGlowAttribute = m_bHasGlowAttribute || attr.glow.a > 0.0001f;
 }
 
