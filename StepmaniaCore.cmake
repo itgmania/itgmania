@@ -16,6 +16,9 @@ set(SM_SRC_DIR "${CMAKE_CURRENT_LIST_DIR}/src")
 set(SM_DOC_DIR "${CMAKE_CURRENT_LIST_DIR}/Docs")
 set(SM_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
+set(SM_GENERATED_DIR "${PROJECT_BINARY_DIR}/generated")
+set(SM_GENERATED_SRC_DIR "${SM_GENERATED_DIR}/src")
+
 # TODO: Reconsile the OS dependent naming scheme.
 set(SM_EXE_NAME "ITGmania")
 
@@ -349,9 +352,9 @@ elseif(LINUX)
 endif(WIN32) # LINUX, APPLE
 
 configure_file("${SM_SRC_DIR}/config.in.hpp"
-               "${SM_SRC_DIR}/generated/config.hpp")
+               "${SM_GENERATED_SRC_DIR}/config.hpp")
 configure_file("${SM_SRC_DIR}/verstub.in.cpp"
-               "${SM_SRC_DIR}/generated/verstub.cpp")
+               "${SM_GENERATED_SRC_DIR}/verstub.cpp")
 
 # Define installer based items for cpack.
 include("${CMAKE_CURRENT_LIST_DIR}/CMake/CPackSetup.cmake")
