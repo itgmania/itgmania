@@ -32,6 +32,11 @@ if(APPLE)
   list(APPEND SMDATA_OS_HPP ${SMDATA_OS_DARWIN_HPP})
 else()
   if(WIN32)
+    configure_file("${SM_SRC_DIR}/archutils/Win32/WindowsResources.in.rc"
+                   "${SM_GENERATED_SRC_DIR}/archutils/Win32/WindowsResources.rc")
+
+    set(CMAKE_RC_STANDARD_INCLUDE_DIRECTORIES "${SM_SRC_DIR}/archutils/Win32")
+
     list(APPEND SMDATA_OS_SRC
                 "archutils/Win32/AppInstance.cpp"
                 "archutils/Win32/arch_setup.cpp"
@@ -56,7 +61,7 @@ else()
                 "archutils/Win32/VideoDriverInfo.cpp"
                 "archutils/Win32/WindowIcon.cpp"
                 "archutils/Win32/WindowsDialogBox.cpp"
-                "archutils/Win32/WindowsResources.rc")
+                "${SM_GENERATED_SRC_DIR}/archutils/Win32/WindowsResources.rc")
 
     list(APPEND SMDATA_OS_HPP
                 "archutils/Win32/AppInstance.h"
