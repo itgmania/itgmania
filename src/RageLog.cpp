@@ -188,6 +188,7 @@ void RageLog::SetShowLogOutput( bool show )
 	{
 		// create a new console window and attach standard handles
 		AllocConsole();
+		SetConsoleOutputCP(CP_UTF8);
 		freopen( "CONOUT$","wb", stdout );
 		freopen( "CONOUT$","wb", stderr );
 	}
