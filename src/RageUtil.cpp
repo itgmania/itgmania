@@ -1819,7 +1819,7 @@ void UnicodeUpperLower( wchar_t *p, std::size_t iLen, const unsigned char pMappi
 	wchar_t *pEnd = p + iLen;
 	while( p != pEnd )
 	{
-		if( *p < 256 )
+		if( *p >= 0 && *p < 256 )
 			*p = pMapping[*p];
 		++p;
 	}
