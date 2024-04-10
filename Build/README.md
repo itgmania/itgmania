@@ -49,7 +49,7 @@ Linux
 There are many package managers available for Linux. Look at your manual for more details. Either that, or utilize the All OS specific approach.
 
 
-CMake Installation
+CMake Usage
 ==
 
 There are two ways of working with cmake: the command line and the GUI.
