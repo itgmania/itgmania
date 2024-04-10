@@ -22,7 +22,7 @@ private:
 	void InputThread();
 
 	struct FileDescriptor {
-		int file = -1;
+		int fd = -1;
 		RString description = "";
 	};
 

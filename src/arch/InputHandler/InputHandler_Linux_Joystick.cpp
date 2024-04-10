@@ -42,7 +42,7 @@ InputHandler_Linux_Joystick::~InputHandler_Linux_Joystick()
 		StopThread();
 
 	for( auto& f : m_files ) {
-		if( f.file != -1 ) close(f.file);
+		if( f.fd != -1 ) close(f.fd);
 	}
 	m_files.clear();
 }
@@ -77,12 +77,12 @@ bool InputHandler_Linux_Joystick::TryDevice(RString dev)
 	/* Thread is stopped! DO NOT RETURN */
 	{
 		FileDescriptor f;
-		f.file = open( dev, O_RDONLY );
-		if(f.file != -1)
+		f.fd = open( dev, O_RDONLY );
+		if(f.fd != -1)
 		{
 			char szName[1024];
 			ZERO( szName );
-			if( ioctl(f.file, JSIOCGNAME(sizeof(szName)), szName) < 0 )
+			if( ioctl(f.fd, JSIOCGNAME(sizeof(szName)), szName) < 0 )
 				f.description = ssprintf( "Unknown joystick at %s", dev.c_str() );
 			else
 				f.description = szName;
@@ -116,11 +116,11 @@ void InputHandler_Linux_Joystick::InputThread()
 
 		for(int i = 0; i < m_files.size(); ++i)
 		{
-			if (m_files[i].file < 0)
+			if (m_files[i].fd < 0)
 				continue;
 
-			FD_SET(m_files[i].file, &fdset);
-			max_fd = std::max(max_fd, m_files[i].file);
+			FD_SET(m_files[i].fd, &fdset);
+			max_fd = std::max(max_fd, m_files[i].fd);
 		}
 
 		if(max_fd == -1)
@@ -133,28 +133,28 @@ void InputHandler_Linux_Joystick::InputThread()
 
 		for(int i = 0; i < m_files.size(); ++i)
 		{
-			if( m_files[i].file == -1 )
+			if( m_files[i].fd == -1 )
 				continue;
 
-			if(!FD_ISSET(m_files[i].file, &fdset))
+			if(!FD_ISSET(m_files[i].fd, &fdset))
 				continue;
 
 			js_event event;
-			int ret = read(m_files[i].file, &event, sizeof(event));
+			int ret = read(m_files[i].fd, &event, sizeof(event));
 
 			if(ret == -1)
 			{
 				LOG->Warn("Error reading from joystick %i: %s; disabled", i, strerror(errno));
-				close(m_files[i].file);
-				m_files[i].file = -1;
+				close(m_files[i].fd);
+				m_files[i].fd = -1;
 				continue;
 			}
 
 			if(ret != sizeof(event))
 			{
 				LOG->Warn("Unexpected packet (size %i != %i) from joystick %i; disabled", ret, (int)sizeof(event), i);
-				close(m_files[i].file);
-				m_files[i].file = -1;
+				close(m_files[i].fd);
+				m_files[i].fd = -1;
 				continue;
 			}
 
@@ -182,8 +182,8 @@ void InputHandler_Linux_Joystick::InputThread()
 
 			default:
 				LOG->Warn("Unexpected packet (type %i) from joystick %i; disabled", event.type, i);
-				close(m_files[i].file);
-				m_files[i].file = -1;
+				close(m_files[i].fd);
+				m_files[i].fd = -1;
 				continue;
 			}
 
@@ -203,7 +203,7 @@ void InputHandler_Linux_Joystick::GetDevicesAndDescriptions( std::vector<InputDe
 
 	for(int i = 0; i < m_files.size(); ++i)
 	{
-		if (m_files[i].file < 0)
+		if (m_files[i].fd < 0)
 			continue;
 
 		vDevicesOut.push_back( InputDeviceInfo(InputDevice(DEVICE_JOY1+i), m_files[i].description) );
