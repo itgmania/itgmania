@@ -554,7 +554,12 @@ void GameSoundManager::Update( float fDeltaTime )
 		{
 		case FADE_NONE: break;
 		case FADE_OUT:
-			fapproach( fVolume, g_fDimVolume, fDeltaTime/fFadeOutSpeed );
+			if( fFadeOutSpeed > 0.0 ) {
+				fapproach( fVolume, g_fDimVolume, fDeltaTime/fFadeOutSpeed );
+			} else {
+				// Treat an invalid fade speed as instant
+				fVolume = g_fDimVolume;
+			}
 			if( std::abs(fVolume-g_fDimVolume) < 0.001f )
 				g_FadeState = FADE_WAIT;
 			break;
@@ -564,7 +569,12 @@ void GameSoundManager::Update( float fDeltaTime )
 				g_FadeState = FADE_IN;
 			break;
 		case FADE_IN:
-			fapproach( fVolume, g_fOriginalVolume, fDeltaTime/fFadeInSpeed );
+			if( fFadeInSpeed > 0.0 ) {
+				fapproach( fVolume, g_fOriginalVolume, fDeltaTime/fFadeInSpeed );
+			} else {
+				// Treat an invalid fade speed as instant
+				fVolume = g_fOriginalVolume;
+			}
 			if( std::abs(fVolume-g_fOriginalVolume) < 0.001f )
 				g_FadeState = FADE_NONE;
 			break;
