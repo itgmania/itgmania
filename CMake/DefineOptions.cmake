@@ -62,3 +62,6 @@ if(LINUX)
   option(WITH_LIBXTST "Build with libXtst support" ON)
   option(WITH_X11 "Build with X11 support" ON)
 endif()
+
+option(WITH_MINIMAID "Build with Minimaid support." ON)
+
