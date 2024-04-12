@@ -190,15 +190,19 @@ list(APPEND SMDATA_ARCH_LIGHTS_HPP "arch/Lights/LightsDriver.h"
 if(NOT APPLE)
   if(WIN32)
     list(APPEND SMDATA_ARCH_LIGHTS_SRC
-                "arch/Lights/LightsDriver_Win32Minimaid.cpp"
                 "arch/Lights/LightsDriver_Win32Serial.cpp"
                 "arch/Lights/LightsDriver_Win32Parallel.cpp"
                 "arch/Lights/LightsDriver_PacDrive.cpp")
     list(APPEND SMDATA_ARCH_LIGHTS_HPP
-                "arch/Lights/LightsDriver_Win32Minimaid.h"
                 "arch/Lights/LightsDriver_Win32Parallel.h"
                 "arch/Lights/LightsDriver_Win32Serial.h"
                 "arch/Lights/LightsDriver_PacDrive.h")
+    if(WITH_MINIMAID)
+      list(APPEND SMDATA_ARCH_LIGHTS_SRC
+                  "arch/Lights/LightsDriver_Win32Minimaid.cpp")
+      list(APPEND SMDATA_ARCH_LIGHTS_HPP
+                  "arch/Lights/LightsDriver_Win32Minimaid.h")
+    endif()
   else() # Unix/Linux TODO: Linux HAVE_PARALLEL_PORT
     if(LINUX)
       list(APPEND SMDATA_LINK_LIB "udev")
@@ -209,7 +213,6 @@ if(NOT APPLE)
                   "arch/Lights/LightsDriver_Linux_PIUIOBTN_Leds.cpp"
                   "arch/Lights/LightsDriver_Linux_ITGIO.cpp"
                   "arch/Lights/LightsDriver_Linux_stac.cpp"
-                  "arch/Lights/LightsDriver_LinuxMinimaid.cpp"
                   "arch/Lights/LightsDriver_LinuxPacDrive.cpp"
                   "arch/Lights/LightsDriver_LinuxWeedTech.cpp")
       list(APPEND SMDATA_ARCH_LIGHTS_HPP
@@ -219,9 +222,15 @@ if(NOT APPLE)
                   "arch/Lights/LightsDriver_Linux_PIUIOBTN_Leds.h"
                   "arch/Lights/LightsDriver_Linux_ITGIO.h"
                   "arch/Lights/LightsDriver_Linux_stac.h"
-                  "arch/Lights/LightsDriver_LinuxMinimaid.h"
                   "arch/Lights/LightsDriver_LinuxPacDrive.h"
                   "arch/Lights/LightsDriver_LinuxWeedTech.h")
+      if(WITH_MINIMAID)
+        list(APPEND SMDATA_ARCH_LIGHTS_SRC
+                    "arch/Lights/LightsDriver_LinuxMinimaid.cpp")
+        list(APPEND SMDATA_ARCH_LIGHTS_HPP
+                    "arch/Lights/LightsDriver_LinuxMinimaid.h")
+      endif()
+
       if(WITH_PARALLEL_PORT)
         list(APPEND SMDATA_ARCH_LIGHTS_SRC
                     "arch/Lights/LightsDriver_LinuxParallel.cpp")
