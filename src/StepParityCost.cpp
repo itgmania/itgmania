@@ -287,7 +287,7 @@ float StepParityCost::calcMovingFootWhileOtherIsntOnPadCost(State * initialState
 				if (
 					!(
 						vectorIncludes(initialState->columns, LEFT_HEEL, columnCount) ||
-						vectorIncludes(initialState->columns, RIGHT_TOE, columnCount)))
+						vectorIncludes(initialState->columns, LEFT_TOE, columnCount)))
 					cost += 500;
 				break;
 			default:
