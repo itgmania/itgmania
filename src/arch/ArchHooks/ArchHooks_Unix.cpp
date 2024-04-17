@@ -10,7 +10,6 @@
 #include "archutils/Unix/GetSysInfo.h"
 #include "archutils/Common/PthreadHelpers.h"
 #include "archutils/Unix/EmergencyShutdown.h"
-#include "archutils/Unix/AssertionHandler.h"
 
 #include <cstdint>
 
@@ -221,8 +220,6 @@ void ArchHooks_Unix::Init()
 	/* Set up EmergencyShutdown, to try to shut down the window if we crash.
 	 * This might blow up, so be sure to do it after the crash handler. */
 	SignalHandler::OnClose( EmergencyShutdown );
-
-	InstallExceptionHandler();
 
 #if defined(HAVE_TLS) && !defined(BSD)
 	TestTLS();

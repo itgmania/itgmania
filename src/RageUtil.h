@@ -387,10 +387,8 @@ inline bool operator>>(const RString& lhs, T& rhs)
 }
 
 // Exception-safe wrappers around stoi and friends
-// Additional argument exceptVal will be returned if the conversion couldn't be performed
-int StringToInt( const std::string& str, std::size_t* pos = 0, int base = 10, int exceptVal = 0 );
-long StringToLong( const std::string& str, std::size_t* pos = 0, int base = 10, long exceptVal = 0 );
-long long StringToLLong( const std::string& str, std::size_t* pos = 0, int base = 10, long long exceptVal = 0 );
+// Returns 0 if the conversion couldn't be performed
+int StringToInt( const std::string& str );
 
 RString WStringToRString( const std::wstring &sString );
 RString WcharToUTF8( wchar_t c );

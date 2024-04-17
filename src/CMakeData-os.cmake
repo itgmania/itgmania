@@ -100,7 +100,6 @@ else()
                 "archutils/Unix/StackCheck.cpp")
     list(APPEND SMDATA_OS_HPP
                 "archutils/Unix/arch_setup.h"
-                "archutils/Unix/AssertionHandler.h"
                 "archutils/Unix/EmergencyShutdown.h"
                 "archutils/Unix/GetSysInfo.h"
                 "archutils/Unix/RunningUnderValgrind.h"

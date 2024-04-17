@@ -1860,49 +1860,15 @@ RString FloatToString( const float &num )
 	return ss.str();
 }
 
-int StringToInt( const std::string& str, std::size_t* pos, int base, int exceptVal )
+int StringToInt( const std::string& str )
 {
-  try
-  {
-    return std::stoi(str, pos, base);
-  }
-  catch (const std::invalid_argument & e) {
-    LOG->Warn( "stoi(%s): %s", str.c_str(), e.what() );
-  }
-  catch (const std::out_of_range & e) {
-    LOG->Warn( "stoi(%s): %s", str.c_str(), e.what() );
-  }
-  return exceptVal;
-}
-
-long StringToLong( const std::string& str, std::size_t* pos, int base, long exceptVal )
-{
-  try
-  {
-    return std::stol(str, pos, base);
-  }
-  catch (const std::invalid_argument & e) {
-    LOG->Warn( "stol(%s): %s", str.c_str(), e.what() );
-  }
-  catch (const std::out_of_range & e) {
-    LOG->Warn( "stol(%s): %s", str.c_str(), e.what() );
-  }
-  return exceptVal;
-}
-
-long long StringToLLong( const std::string& str, std::size_t* pos, int base, long long exceptVal )
-{
-  try
-  {
-    return std::stoll(str, pos, base);
-  }
-  catch (const std::invalid_argument & e) {
-    LOG->Warn( "stoll(%s): %s", str.c_str(), e.what() );
-  }
-  catch (const std::out_of_range & e) {
-    LOG->Warn( "stoll(%s): %s", str.c_str(), e.what() );
-  }
-  return exceptVal;
+	size_t pos;
+    int ret = std::stoi(str, &pos, 10);
+	if (pos != 0) {
+		return ret;
+	}
+    LOG->Warn( "stoi(%s): invalid argument", str.c_str());
+	return 0;
 }
 
 const wchar_t INVALID_CHAR = 0xFFFD; /* U+FFFD REPLACEMENT CHARACTER */

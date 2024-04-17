@@ -123,13 +123,13 @@ endif()
 
 target_compile_options("${SM_EXE_NAME}" PRIVATE
   $<$<CXX_COMPILER_ID:GNU>:
-    -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas>
+    -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -fno-exceptions>
   $<$<CXX_COMPILER_ID:Clang>:
-    -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Wno-undefined-var-template>
+    -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Wno-undefined-var-template -fno-exceptions>
   $<$<CXX_COMPILER_ID:AppleClang>:
-    -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Wno-undefined-var-template -Wno-deprecated-declarations -Wno-unused-command-line-argument>
+    -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Wno-undefined-var-template -Wno-deprecated-declarations -Wno-unused-command-line-argument -fno-exceptions>
   $<$<CXX_COMPILER_ID:MSVC>:
-    /W4 /wd4100 /wd4189 /wd4244 /wd4267 /wd4702>
+    /W4 /wd4100 /wd4189 /wd4244 /wd4267 /wd4702 /D_HAS_EXCEPTIONS=0>
 )
 
 set(SM_COMPILE_FLAGS "")

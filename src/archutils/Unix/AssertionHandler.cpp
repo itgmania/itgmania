@@ -44,37 +44,6 @@ extern "C" void __assert_perror_fail( int errnum, const char *file, unsigned int
 #endif
 }
 
-/* Catch unhandled C++ exceptions.  Note that this works in g++ even with -fno-exceptions, in
- * which case it'll be called if any exceptions are thrown at all. */
-void UnexpectedExceptionHandler()
-{
-	std::exception_ptr exptr = std::current_exception();
-	try
-	{
-		std::rethrow_exception(exptr);
-	}
-	catch (std::exception &ex)
-	{
-#if defined(CRASH_HANDLER)
-		const RString error = ssprintf("Unhandled exception: %s", ex.what());
-		sm_crash( error );
-#endif
-	}
-	// TODO: Don't throw anything not subclassing std::exception
-	catch(...)
-	{
-#if defined(CRASH_HANDLER)
-		const RString error = ssprintf("Unknown exception.");
-		sm_crash( error );
-#endif
-	}
-}
-
-void InstallExceptionHandler()
-{
-	std::set_terminate( UnexpectedExceptionHandler );
-}
-
 /*
  * (c) 2003-2004 Glenn Maynard
  * All rights reserved.
