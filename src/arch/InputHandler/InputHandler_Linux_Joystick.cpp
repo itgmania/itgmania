@@ -114,7 +114,7 @@ void InputHandler_Linux_Joystick::InputThread()
 		FD_ZERO(&fdset);
 		int max_fd = -1;
 
-		for(int i = 0; i < m_files.size(); ++i)
+		for(size_t i = 0; i < m_files.size(); ++i)
 		{
 			if (m_files[i].fd < 0)
 				continue;
@@ -131,7 +131,7 @@ void InputHandler_Linux_Joystick::InputThread()
 			continue;
 		RageTimer now;
 
-		for(int i = 0; i < m_files.size(); ++i)
+		for(size_t i = 0; i < m_files.size(); ++i)
 		{
 			if( m_files[i].fd == -1 )
 				continue;
@@ -144,7 +144,7 @@ void InputHandler_Linux_Joystick::InputThread()
 
 			if(ret == -1)
 			{
-				LOG->Warn("Error reading from joystick %i: %s; disabled", i, strerror(errno));
+				LOG->Warn("Error reading from joystick %zu: %s; disabled", i, strerror(errno));
 				close(m_files[i].fd);
 				m_files[i].fd = -1;
 				continue;
@@ -152,7 +152,7 @@ void InputHandler_Linux_Joystick::InputThread()
 
 			if(ret != sizeof(event))
 			{
-				LOG->Warn("Unexpected packet (size %i != %i) from joystick %i; disabled", ret, (int)sizeof(event), i);
+				LOG->Warn("Unexpected packet (size %i != %i) from joystick %zu; disabled", ret, (int)sizeof(event), i);
 				close(m_files[i].fd);
 				m_files[i].fd = -1;
 				continue;
@@ -181,7 +181,7 @@ void InputHandler_Linux_Joystick::InputThread()
 			}
 
 			default:
-				LOG->Warn("Unexpected packet (type %i) from joystick %i; disabled", event.type, i);
+				LOG->Warn("Unexpected packet (type %i) from joystick %zu; disabled", event.type, i);
 				close(m_files[i].fd);
 				m_files[i].fd = -1;
 				continue;
@@ -201,7 +201,7 @@ void InputHandler_Linux_Joystick::GetDevicesAndDescriptions( std::vector<InputDe
 	// and is (hopefully) in the same thread as TryDevice... so doublecheck our thread now.
 	if( m_files.empty() && !m_InputThread.IsCreated() ) StartThread();
 
-	for(int i = 0; i < m_files.size(); ++i)
+	for(size_t i = 0; i < m_files.size(); ++i)
 	{
 		if (m_files[i].fd < 0)
 			continue;
