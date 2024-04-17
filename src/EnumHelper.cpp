@@ -87,11 +87,11 @@ const RString &EnumToString( int iVal, int iMax, const char **szNameArray, std::
 		for( int i = 0; i < iMax; ++i )
 		{
 			std::unique_ptr<RString> ap( new RString( szNameArray[i] ) );
-			pNameCache[i] = move(ap);
+			pNameCache[i] = std::move(ap);
 		}
 
 		std::unique_ptr<RString> ap( new RString );
-		pNameCache[iMax+1] = move(ap);
+		pNameCache[iMax+1] = std::move(ap);
 	}
 
 	// iMax+1 is "Invalid".  iMax+0 is the NUM_ size value, which can not be converted
