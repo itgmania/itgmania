@@ -7,6 +7,7 @@
 #include "RageDisplay.h" // VideoModeParams
 #include "DisplaySpec.h"
 #include "LocalizedString.h"
+#include "RageTimer.h"
 
 #include "RageDisplay_OGL_Helpers.h"
 using namespace RageDisplay_Legacy_Helpers;
@@ -623,16 +624,20 @@ void LowLevelWindow_X11::SwapBuffers()
 		 * it's already active.
 		 */
 
-		XLockDisplay( Dpy );
+		auto now = RageTimer::GetTimeSinceStartFast();
+		if( (now - m_lastScreensaverInterrupt) > m_screensaverInterruptInterval ) {
+		  m_lastScreensaverInterrupt = now;
+		  XLockDisplay( Dpy );
 
-		int event_base, error_base, major, minor;
-		if( XTestQueryExtension( Dpy, &event_base, &error_base, &major, &minor ) )
-		{
-			XTestFakeRelativeMotionEvent( Dpy, 0, 0, 0 );
-			XSync( Dpy, False );
+		  int event_base, error_base, major, minor;
+		  if( XTestQueryExtension( Dpy, &event_base, &error_base, &major, &minor ) )
+		  {
+                    XTestFakeRelativeMotionEvent( Dpy, 0, 0, 0 );
+		    XSync( Dpy, False );
+		  }
+
+		  XUnlockDisplay( Dpy );
 		}
-
-		XUnlockDisplay( Dpy );
 #endif
 	}
 }
