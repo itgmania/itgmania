@@ -226,53 +226,53 @@ float HHMMSSToSeconds( const RString &sHHMMSS )
 	return fSeconds;
 }
 
-RString SecondsToHHMMSS( float fSecs )
+RString SecondsToHHMMSS(float fSecs)
 {
-	const int iMinsDisplay = (int)fSecs/60;
-	const int iSecsDisplay = (int)fSecs - iMinsDisplay*60;
-	RString sReturn = ssprintf( "%02d:%02d:%02d", iMinsDisplay/60, iMinsDisplay%60, iSecsDisplay );
+	const int iMinsDisplay = static_cast<int>(fSecs / 60);
+	const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60)); 
+	RString sReturn = ssprintf("%02d:%02d:%02d", iMinsDisplay / 60, iMinsDisplay % 60, iSecsDisplay);
 	return sReturn;
 }
 
-RString SecondsToMMSSMsMs( float fSecs )
+RString SecondsToMMSSMsMs(float fSecs)
 {
-	const int iMinsDisplay = (int)fSecs/60;
-	const int iSecsDisplay = (int)fSecs - iMinsDisplay*60;
-	const int iLeftoverDisplay = (int) ( (fSecs - iMinsDisplay*60 - iSecsDisplay) * 100 );
-	RString sReturn = ssprintf( "%02d:%02d.%02d", iMinsDisplay, iSecsDisplay, std::min(99,iLeftoverDisplay) );
+	const int iMinsDisplay = static_cast<int>(fSecs / 60);
+	const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60)); 
+	const int iLeftoverDisplay = static_cast<int>((fSecs - iMinsDisplay * 60 - iSecsDisplay) * 100);
+	RString sReturn = ssprintf("%02d:%02d.%02d", iMinsDisplay, iSecsDisplay, std::min(99, iLeftoverDisplay));
 	return sReturn;
 }
 
 RString SecondsToMSSMsMs( float fSecs )
 {
-	const int iMinsDisplay = (int)fSecs/60;
-	const int iSecsDisplay = (int)fSecs - iMinsDisplay*60;
-	const int iLeftoverDisplay = (int) ( (fSecs - iMinsDisplay*60 - iSecsDisplay) * 100 );
+	const int iMinsDisplay = static_cast<int>(fSecs/60);
+	const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60)); 
+	const int iLeftoverDisplay = static_cast<int>((fSecs - iMinsDisplay*60 - iSecsDisplay) * 100 );
 	RString sReturn = ssprintf( "%01d:%02d.%02d", iMinsDisplay, iSecsDisplay, std::min(99,iLeftoverDisplay) );
 	return sReturn;
 }
 
 RString SecondsToMMSSMsMsMs( float fSecs )
 {
-	const int iMinsDisplay = (int)fSecs/60;
-	const int iSecsDisplay = (int)fSecs - iMinsDisplay*60;
-	const int iLeftoverDisplay = (int) ( (fSecs - iMinsDisplay*60 - iSecsDisplay) * 1000 );
+	const int iMinsDisplay = static_cast<int>(fSecs/60);
+	const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60)); 
+	const int iLeftoverDisplay = static_cast<int>((fSecs - iMinsDisplay*60 - iSecsDisplay) * 1000 );
 	RString sReturn = ssprintf( "%02d:%02d.%03d", iMinsDisplay, iSecsDisplay, std::min(999,iLeftoverDisplay) );
 	return sReturn;
 }
 
 RString SecondsToMSS( float fSecs )
 {
-	const int iMinsDisplay = (int)fSecs/60;
-	const int iSecsDisplay = (int)fSecs - iMinsDisplay*60;
+	const int iMinsDisplay = static_cast<int>(fSecs/60);
+	const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60));
 	RString sReturn = ssprintf( "%01d:%02d", iMinsDisplay, iSecsDisplay);
 	return sReturn;
 }
 
 RString SecondsToMMSS( float fSecs )
 {
-	const int iMinsDisplay = (int)fSecs/60;
-	const int iSecsDisplay = (int)fSecs - iMinsDisplay*60;
+	const int iMinsDisplay = static_cast<int>(fSecs/60);
+	const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60));
 	RString sReturn = ssprintf( "%02d:%02d", iMinsDisplay, iSecsDisplay);
 	return sReturn;
 }
