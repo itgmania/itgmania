@@ -51,14 +51,18 @@ static std::uint64_t GetTime( bool /* bAccurate */ )
 #endif
 }
 
-float RageTimer::GetTimeSinceStart( bool bAccurate )
+/* In the past, this was float instead of double to maintain compatibility
+with legacy hardware that can't use the double type. That is not a concern
+with anything ITGMania will run on, and it's not going to cause noticeable
+performance issues for any ITGMania users by having this be double, and
+the precision benefits would be appreciated, so I am making this a double. */
+double RageTimer::GetTimeSinceStart(bool bAccurate)
 {
-	std::uint64_t usecs = GetTime( bAccurate );
+	std::uint64_t usecs = GetTime(bAccurate);
 	usecs -= g_iStartTime;
-	/* Avoid using doubles for hardware that doesn't support them.
-	 * This is writing usecs = high*2^32 + low and doing
+	/* This is writing usecs = high*2^32 + low and doing
 	 * usecs/10^6 = high * (2^32/10^6) + low/10^6. */
-	return std::uint32_t(usecs>>32) * 4294.967296f + std::uint32_t(usecs)/1000000.f;
+	return double(usecs >> 32) * 4294.967296 + double(usecs) / 1000000.0;
 }
 
 std::uint64_t RageTimer::GetUsecsSinceStart()
