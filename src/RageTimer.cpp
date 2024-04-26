@@ -52,11 +52,12 @@ static std::uint64_t GetTime( bool /* bAccurate */ )
 }
 
 /* In the past, this was float instead of double to maintain compatibility
-with legacy hardware that can't use the double type. That is not a concern
-with anything ITGMania will run on, and it's not going to cause noticeable
-performance issues for any ITGMania users by having this be double, and
-the precision benefits would be appreciated, so I am making this a double. */
-double RageTimer::GetTimeSinceStart(bool bAccurate)
+with legacy hardware that can't use the double type. On modern hardware,
+performance of double is good or better than mixing 32 bit and 64 bit wide
+types. I choose long double here to ensure consistency between different
+compilers, and because maintaining precision is directly related to the
+stability of clock sync during gameplay. */
+long double RageTimer::GetTimeSinceStart(bool bAccurate)
 {
 	std::uint64_t usecs = GetTime(bAccurate);
 	usecs -= g_iStartTime;
@@ -87,9 +88,18 @@ float RageTimer::Ago() const
 float RageTimer::GetDeltaTime()
 {
 	const RageTimer Now;
-	const float diff = Difference( Now, *this );
+	const double diff = Difference( Now, *this );
 	*this = Now;
 	return diff;
+}
+
+/* This function exists because we don't _really_ need to calculate the
+time delta when the "Approximate sound time" error is being logged. It's
+faster to reset the timer and keep going. */
+void RageTimer::ResetTimer()
+{
+	const RageTimer Now;
+	*this = Now;
 }
 
 /*
