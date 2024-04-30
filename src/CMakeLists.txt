@@ -464,7 +464,6 @@ else()
       list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
     endif()
 
-    list(APPEND SM_INCLUDE_DIRS "${LIBUSB_INCLUDE_DIRS}")
   endif()
 endif()
 

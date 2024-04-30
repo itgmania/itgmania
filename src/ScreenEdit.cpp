@@ -1667,7 +1667,7 @@ void ScreenEdit::Update( float fDeltaTime )
 	if(m_EditState == STATE_EDITING)
 	{
 		if(IsDirty() && m_next_autosave_time > -1.0f &&
-			RageTimer::GetTimeSinceStartFast() > m_next_autosave_time)
+			RageTimer::GetTimeSinceStart() > m_next_autosave_time)
 		{
 			PerformSave(true);
 		}
@@ -4362,7 +4362,7 @@ void ScreenEdit::HandleScreenMessage( const ScreenMessage SM )
 	else if( SM == SM_AutoSaveSuccessful )
 	{
 		LOG->Trace("AutoSave successful.");
-		m_next_autosave_time= RageTimer::GetTimeSinceStartFast() + time_between_autosave;
+		m_next_autosave_time= RageTimer::GetTimeSinceStart() + time_between_autosave;
 		SCREENMAN->SystemMessage(AUTOSAVE_SUCCESSFUL);
 	}
 	else if( SM == SM_SaveFailed ) // save failed; stay in the editor
@@ -4445,7 +4445,7 @@ void ScreenEdit::SetDirty(bool dirty)
 	{
 		if(!m_dirty)
 		{
-			m_next_autosave_time= RageTimer::GetTimeSinceStartFast() + time_between_autosave;
+			m_next_autosave_time= RageTimer::GetTimeSinceStart() + time_between_autosave;
 		}
 	}
 	else

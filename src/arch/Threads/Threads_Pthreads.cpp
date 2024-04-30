@@ -353,11 +353,11 @@ bool EventImpl_Pthreads::Wait( RageTimer *pTimeout )
 	timespec abstime;
 	if( g_CondattrSetclock != nullptr || GetClock() == CLOCK_REALTIME )
 	{
-		/* If we support condattr_setclock, we'll set the condition to use
-		 * the same clock as RageTimer and can use it directly. If the
-		 * clock is CLOCK_REALTIME, that's the default anyway. */
-		abstime.tv_sec = pTimeout->m_secs;
-		abstime.tv_nsec = pTimeout->m_us * 1000;
+		std::uint64_t usecs = pTimeout->GetMicroseconds();
+		std::uint64_t secs = usecs / 1000000;
+		std::uint64_t ns = (usecs - secs * 1000000) * 1000;
+		abstime.tv_sec = secs;
+		abstime.tv_nsec = ns;
 	}
 	else
 	{
@@ -370,8 +370,11 @@ bool EventImpl_Pthreads::Wait( RageTimer *pTimeout )
 		float fSecondsInFuture = -pTimeout->Ago();
 		timeofday += fSecondsInFuture;
 
-		abstime.tv_sec = timeofday.m_secs;
-		abstime.tv_nsec = timeofday.m_us * 1000;
+		std::uint64_t usecs = pTimeout->GetMicroseconds();
+		std::uint64_t secs = usecs / 1000000;
+		std::uint64_t ns = (usecs - secs * 1000000) * 1000;
+		abstime.tv_sec = secs;
+		abstime.tv_nsec = ns;
 	}
 
 	int iRet = pthread_cond_timedwait( &m_Cond, &m_pParent->mutex, &abstime );

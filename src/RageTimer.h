@@ -3,29 +3,46 @@
 #ifndef RAGE_TIMER_H
 #define RAGE_TIMER_H
 
-#include <cstdint>
+#include <chrono>
 
 class RageTimer
 {
 public:
-	RageTimer(): m_secs(0), m_us(0) { Touch(); }
-	RageTimer( int secs, int us ): m_secs(secs), m_us(us) { }
+	RageTimer() { Touch(); }
+	RageTimer(std::chrono::steady_clock::time_point tm) : timestamp(tm) {};
+	RageTimer(unsigned microseconds) : timestamp()
+	{
+		timestamp += std::chrono::microseconds(microseconds);
+	}
+	RageTimer(unsigned secs, unsigned microseconds) : timestamp()
+	{
+		auto seconds = std::chrono::seconds(secs);
+		auto microsecs = std::chrono::microseconds(microseconds);
+		timestamp += seconds + microsecs;
+	}
 
 	/* Time ago this RageTimer represents. */
 	float Ago() const;
 	void Touch();
-	inline bool IsZero() const { return m_secs == 0 && m_us == 0; }
-	inline void SetZero() { m_secs = m_us = 0; }
+	inline bool IsZero() const {
+		return timestamp == std::chrono::steady_clock::time_point();
+	}
+	inline void SetZero() {
+		timestamp = std::chrono::steady_clock::time_point();
+	}
 
 	/* Time between last call to GetDeltaTime() (Ago() + Touch()): */
 	float GetDeltaTime();
 	/* (alias) */
 	float PeekDeltaTime() const { return Ago(); }
 
-	/* deprecated: */
-	static float GetTimeSinceStart( bool bAccurate = true );	// seconds since the program was started
-	static float GetTimeSinceStartFast() { return GetTimeSinceStart(false); }
-	static std::uint64_t GetUsecsSinceStart();
+	// seconds since the program was started
+	static float GetTimeSinceStart();
+	// floats are generally used throughout the program for time tracking, but
+	// we can expose a double version to Lua.
+	static double GetTimeSinceStartDouble();
+
+	std::uint64_t GetMicroseconds() const;
 
 	/* Get a timer representing half of the time ago as this one. */
 	RageTimer Half() const;
@@ -41,11 +58,10 @@ public:
 
 	bool operator<( const RageTimer &rhs ) const;
 
-	/* "float" is bad for a "time since start" RageTimer.  If the game is running for
-	 * several days, we'll lose a lot of resolution.  I don't want to use double
-	 * everywhere, since it's slow.  I'd rather not use double just for RageTimers, since
-	 * it's too easy to get a type wrong and end up with obscure resolution problems. */
-	unsigned m_secs, m_us;
+	// NOTE: We must ensure that we're compiling with Visual Studio 2019 16.8 or
+	// later for Windows builds. Otherwise, the steady_clock is not steady.
+	// See: https://developercommunity.visualstudio.com/t/stl-steady-clock-not-steady/1105325
+	std::chrono::steady_clock::time_point timestamp;
 
 private:
 	static RageTimer Sum( const RageTimer &lhs, float tm );
@@ -53,23 +69,6 @@ private:
 };
 
 extern const RageTimer RageZeroTimer;
-
-// For profiling how long some chunk of code takes. -Kyz
-#define START_TIME(name) std::uint64_t name##_start_time= RageTimer::GetUsecsSinceStart();
-#define START_TIME_CALL_COUNT(name) START_TIME(name); ++name##_call_count;
-#define END_TIME(name) std::uint64_t name##_end_time= RageTimer::GetUsecsSinceStart();  LOG->Time(#name " time: %zu to %zu = %zu", name##_start_time, name##_end_time, name##_end_time - name##_start_time);
-#define END_TIME_ADD_TO(name) std::uint64_t name##_end_time= RageTimer::GetUsecsSinceStart();  name##_total += name##_end_time - name##_start_time;
-#define END_TIME_CALL_COUNT(name) END_TIME_ADD_TO(name); ++name##_end_count;
-
-#define DECL_TOTAL_TIME(name) extern std::uint64_t name##_total;
-#define DEF_TOTAL_TIME(name) std::uint64_t name##_total= 0;
-#define PRINT_TOTAL_TIME(name) LOG->Time(#name " total time: %zu", name##_total);
-#define DECL_TOT_CALL_PAIR(name) extern std::uint64_t name##_total; extern std::uint64_t name##_call_count;
-#define DEF_TOT_CALL_PAIR(name) std::uint64_t name##_total= 0; std::uint64_t name##_call_count= 0;
-#define PRINT_TOT_CALL_PAIR(name) LOG->Time(#name " calls: %zu, time: %zu, per: %f", name##_call_count, name##_total, static_cast<float>(name##_total) / name##_call_count);
-#define DECL_TOT_CALL_END(name) DECL_TOT_CALL_PAIR(name); extern std::uint64_t name##_end_count;
-#define DEF_TOT_CALL_END(name) DEF_TOT_CALL_PAIR(name); std::uint64_t name##_end_count= 0;
-#define PRINT_TOT_CALL_END(name) LOG->Time(#name " calls: %zu, time: %zu, early end: %zu, per: %f", name##_call_count, name##_total, name##_end_count, static_cast<float>(name##_total) / (name##_call_count - name##_end_count));
 
 #endif
 

@@ -624,7 +624,7 @@ void LowLevelWindow_X11::SwapBuffers()
 		 * it's already active.
 		 */
 
-		auto now = RageTimer::GetTimeSinceStartFast();
+		auto now = RageTimer::GetTimeSinceStart();
 		if( (now - m_lastScreensaverInterrupt) > m_screensaverInterruptInterval ) {
 		  m_lastScreensaverInterrupt = now;
 		  XLockDisplay( Dpy );
