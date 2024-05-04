@@ -82,7 +82,7 @@ void RageSoundMixBuffer::read( std::int16_t *pBuf )
 	{
 		float iOut = m_pMixbuf[iPos];
 		iOut = clamp( iOut, -1.0f, +1.0f );
-		pBuf[iPos] = std::lrint(iOut * 32767);
+		pBuf[iPos] = static_cast<int>((iOut * 32767) + 0.5);
 	}
 	m_iBufUsed = 0;
 }
