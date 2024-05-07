@@ -352,8 +352,16 @@ const glyph &Font::GetGlyph( wchar_t c ) const
 	 * with non-roman song titles, and looking at it, I'm gonna guess that
 	 * this is how ITG2 prevented crashing with them --infamouspat */
 	//ASSERT(c >= 0 && c <= 0xFFFFFF);
-	if (c < 0 || c > 0xFFFFFF)
+
+	// wchar_t can be signed or unsigned depending on the platform and the compiler.
+	// We use WCHAR_MIN to determine a valid condition that won't emit a type-limits warning.
+	#if WCHAR_MIN != 0
+	if (c < 0 || c > 0xFFFFFF) {
+	#else
+	if (c > 0xFFFFFF) {
+	#endif
 		c = 1;
+	}
 
 	// Fast path:
 	if( c < (int) ARRAYLEN(m_iCharToGlyphCache) && m_iCharToGlyphCache[c] )
