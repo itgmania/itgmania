@@ -262,23 +262,25 @@ ScreenManager::ScreenManager()
 
 ScreenManager::~ScreenManager()
 {
-	LOG->Trace( "ScreenManager::~ScreenManager()" );
-	LOG->UnmapLog( "ScreenManager::TopScreen" );
+	LOG->Trace("ScreenManager::~ScreenManager()");
+	LOG->UnmapLog("ScreenManager::TopScreen");
 
-	SAFE_DELETE( g_pSharedBGA );
-	for( unsigned i=0; i<g_ScreenStack.size(); i++ )
+	SAFE_DELETE(g_pSharedBGA);
+	for (LoadedScreen& screen : g_ScreenStack)
 	{
-		if( g_ScreenStack[i].m_bDeleteWhenDone )
-			SAFE_DELETE( g_ScreenStack[i].m_pScreen );
+		if (screen.m_bDeleteWhenDone)
+			SAFE_DELETE(screen.m_pScreen);
 	}
 	g_ScreenStack.clear();
 	DeletePreparedScreens();
-	for( unsigned i=0; i<g_OverlayScreens.size(); i++ )
-		SAFE_DELETE( g_OverlayScreens[i] );
+	for (Screen* overlayScreen : g_OverlayScreens)
+	{
+		SAFE_DELETE(overlayScreen);
+	}
 	g_OverlayScreens.clear();
 
 	// Unregister with Lua.
-	LUA->UnsetGlobal( "SCREENMAN" );
+	LUA->UnsetGlobal("SCREENMAN");
 }
 
 // This is called when we start up, and when the theme changes or is reloaded.
@@ -306,22 +308,22 @@ void ScreenManager::ThemeChanged()
 void ScreenManager::ReloadOverlayScreens()
 {
 	// unload overlay screens
-	for( unsigned i=0; i<g_OverlayScreens.size(); i++ )
-		SAFE_DELETE( g_OverlayScreens[i] );
+	for (Screen* screen : g_OverlayScreens)
+		SAFE_DELETE(screen);
 	g_OverlayScreens.clear();
 
 	// reload overlay screens
-	RString sOverlays = THEME->GetMetric( "Common","OverlayScreens" );
+	RString sOverlays = THEME->GetMetric("Common", "OverlayScreens");
 	std::vector<RString> asOverlays;
-	split( sOverlays, ",", asOverlays );
-	for( unsigned i=0; i<asOverlays.size(); i++ )
+	split(sOverlays, ",", asOverlays);
+	for (const RString& overlay : asOverlays)
 	{
-		Screen *pScreen = MakeNewScreen( asOverlays[i] );
-		if(pScreen)
+		Screen* pScreen = MakeNewScreen(overlay);
+		if (pScreen)
 		{
-			LuaThreadVariable var2( "LoadingScreen", pScreen->GetName() );
+			LuaThreadVariable var2("LoadingScreen", pScreen->GetName());
 			pScreen->BeginScreen();
-			g_OverlayScreens.push_back( pScreen );
+			g_OverlayScreens.push_back(pScreen);
 		}
 	}
 
@@ -459,23 +461,21 @@ void ScreenManager::Update( float fDeltaTime )
 	/* Loading a new screen can take seconds and cause a big jump on the new
 	 * Screen's first update.  Clamp the first update delta so that the
 	 * animations don't jump. */
-	if( pScreen && m_bZeroNextUpdate )
+	if (pScreen && m_bZeroNextUpdate)
 	{
-		LOG->Trace( "Zeroing this update.  Was %f", fDeltaTime );
+		LOG->Trace("Zeroing this update.  Was %f", fDeltaTime);
 		fDeltaTime = 0;
 		m_bZeroNextUpdate = false;
 	}
 
 	// Update screens.
-	{
-		for( unsigned i=0; i<g_ScreenStack.size(); i++ )
-			g_ScreenStack[i].m_pScreen->Update( fDeltaTime );
+	for (const LoadedScreen& screen : g_ScreenStack)
+		screen.m_pScreen->Update(fDeltaTime);
 
-		g_pSharedBGA->Update( fDeltaTime );
+	g_pSharedBGA->Update(fDeltaTime);
 
-		for( unsigned i=0; i<g_OverlayScreens.size(); i++ )
-			g_OverlayScreens[i]->Update( fDeltaTime );
-	}
+	for (Screen* overlay : g_OverlayScreens)
+		overlay->Update(fDeltaTime);
 
 	/* The music may be started on the first update. If we're reading from a CD,
 	 * it might not start immediately. Make sure we start playing the sound before
@@ -509,12 +509,11 @@ void ScreenManager::Draw()
 	g_pSharedBGA->Draw();
 	DISPLAY->CameraPopMatrix();
 
-	for( unsigned i=0; i<g_ScreenStack.size(); i++ )	// Draw all screens bottom to top
-		g_ScreenStack[i].m_pScreen->Draw();
+	for (const LoadedScreen& screen : g_ScreenStack)	// Draw all screens bottom to top
+		screen.m_pScreen->Draw();
 
-	for( unsigned i=0; i<g_OverlayScreens.size(); i++ )
-		g_OverlayScreens[i]->Draw();
-
+	for (Screen* overlayScreen : g_OverlayScreens)
+		overlayScreen->Draw();
 
 	DISPLAY->EndFrame();
 }
@@ -527,19 +526,18 @@ void ScreenManager::Input( const InputEventPlus &input )
 
 	// First, give overlay screens a shot at the input.  If Input returns
 	// true, it handled the input, so don't pass it further.
-	for( unsigned i = 0; i < g_OverlayScreens.size(); ++i )
+	for (Screen* pScreen : g_OverlayScreens)
 	{
-		Screen *pScreen = g_OverlayScreens[i];
-		bool handled= pScreen->Input(input);
-		// Pass input to the screen and lua.  Contention shouldn't be a problem
+		bool handled = pScreen->Input(input);
+		// Pass input to the screen and lua. Contention shouldn't be a problem
 		// because anybody setting an input callback is probably doing it to
 		// do something in addition to whatever the screen does.
-		if(pScreen->PassInputToLua(input) || handled)
+		if (pScreen->PassInputToLua(input) || handled)
 		{
-			if(m_bReloadOverlayScreensAfterInput)
+			if (m_bReloadOverlayScreensAfterInput)
 			{
 				ReloadOverlayScreens();
-				m_bReloadOverlayScreensAfterInput= false;
+				m_bReloadOverlayScreensAfterInput = false;
 			}
 			return;
 		}
