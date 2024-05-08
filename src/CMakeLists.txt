@@ -123,7 +123,7 @@ endif()
 
 target_compile_options("${SM_EXE_NAME}" PRIVATE
   $<$<CXX_COMPILER_ID:GNU>:
-    -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas>
+  -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Werror=type-limits>
   $<$<CXX_COMPILER_ID:Clang>:
     -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Wno-undefined-var-template>
   $<$<CXX_COMPILER_ID:AppleClang>:
