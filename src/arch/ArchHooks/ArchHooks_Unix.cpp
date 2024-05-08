@@ -125,21 +125,18 @@ static void TestTLS()
 namespace
 {
 	clockid_t g_Clock = CLOCK_REALTIME;
-
 	void OpenGetTime()
 	{
 		static bool bInitialized = false;
+		
 		if( bInitialized )
 			return;
 		bInitialized = true;
 
-		/* Check whether the clock is actually supported. */
+		/* Check whether CLOCK_MONOTONIC is supported.
+		 * If it isn't available, use CLOCK_REALTIME.*/
 		timespec ts;
-		if( clock_getres(CLOCK_MONOTONIC, &ts) == -1 )
-			return;
-
-		/* If the resolution is worse than a millisecond, fall back on CLOCK_REALTIME. */
-		if( ts.tv_sec > 0 || ts.tv_nsec > 1000000 )
+		if( clock_gettime(CLOCK_MONOTONIC, &ts) == -1 )
 			return;
 
 		g_Clock = CLOCK_MONOTONIC;
