@@ -11,6 +11,7 @@
 
 Display *X11Helper::Dpy = nullptr;
 Window X11Helper::Win = None;
+bool X11Helper::FatalError = false;
 
 static int ErrorCallback( Display*, XErrorEvent* );
 static int FatalCallback( Display* );
@@ -160,6 +161,7 @@ int ErrorCallback( Display *d, XErrorEvent *err )
 
 int FatalCallback( Display *d )
 {
+	X11Helper::FatalError = true;
 	RageException::Throw( "Fatal I/O error communicating with X server." );
 }
 
