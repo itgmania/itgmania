@@ -92,6 +92,9 @@ LowLevelWindow_X11::LowLevelWindow_X11()
 
 LowLevelWindow_X11::~LowLevelWindow_X11()
 {
+	if( FatalError )
+		return;
+
 	// Reset the display
 	if( !m_bWasWindowed )
 	{
