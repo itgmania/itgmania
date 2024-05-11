@@ -308,10 +308,24 @@ void RageSoundDriver_PulseAudio::StreamStateCb(pa_stream *s)
 
 std::int64_t RageSoundDriver_PulseAudio::GetPosition() const
 {
+	pa_threaded_mainloop_lock(m_PulseMainLoop);
+	std::int64_t position = GetPositionUnlocked();
+	pa_threaded_mainloop_unlock(m_PulseMainLoop);
+	return position;
+}
+
+std::int64_t RageSoundDriver_PulseAudio::GetPositionUnlocked() const
+{
 	pa_usec_t usec;
 	if(pa_stream_get_time(m_PulseStream, &usec) < 0)
 	{
-		RageException::Throw("Pulse: pa_stream_get_time()");
+		int paErrno = pa_context_errno(m_PulseCtx);
+
+		// We might get no data error if the stream has just been started and hasn't received any timing data yet
+		if(paErrno == PA_ERR_NODATA)
+			return 0;
+		else
+			RageException::Throw("Pulse: pa_stream_get_time() failed: %s", pa_strerror(paErrno));
 	}
 
 	std::size_t length = pa_usec_to_bytes(usec, &m_ss);
@@ -320,23 +334,29 @@ std::int64_t RageSoundDriver_PulseAudio::GetPosition() const
 
 void RageSoundDriver_PulseAudio::StreamWriteCb(pa_stream *s, std::size_t length)
 {
-	void* buf;
-	if(pa_stream_begin_write(m_PulseStream, &buf, &length) < 0)
+	std::int64_t curPos = GetPositionUnlocked();
+	while(length > 0)
 	{
-		RageException::Throw("Pulse: pa_stream_begin_write()");
+		void* buf;
+		std::size_t bufsize = length;
+		if(pa_stream_begin_write(m_PulseStream, &buf, &bufsize) < 0)
+		{
+			RageException::Throw("Pulse: pa_stream_begin_write() failed: %s", pa_strerror(pa_context_errno(m_PulseCtx)));
+		}
+
+		const std::size_t nbframes = bufsize / sizeof(std::int16_t); /* we use 16-bit frames */
+		std::int64_t pos1 = m_LastPosition;
+		std::int64_t pos2 = pos1 + nbframes/2; /* Mix() position in stereo frames */
+		this->Mix( reinterpret_cast<std::int16_t*>(buf), pos2-pos1, pos1, curPos);
+
+		if(pa_stream_write(m_PulseStream, buf, bufsize, nullptr, 0, PA_SEEK_RELATIVE) < 0)
+		{
+			RageException::Throw("Pulse: pa_stream_write() failed: %s", pa_strerror(pa_context_errno(m_PulseCtx)));
+		}
+
+		m_LastPosition = pos2;
+		length -= bufsize;
 	}
-
-	const std::size_t nbframes = length / sizeof(std::int16_t); /* we use 16-bit frames */
-	std::int64_t pos1 = m_LastPosition;
-	std::int64_t pos2 = pos1 + nbframes/2; /* Mix() position in stereo frames */
-	this->Mix( reinterpret_cast<std::int16_t*>(buf), pos2-pos1, pos1, pos2);
-
-	if(pa_stream_write(m_PulseStream, buf, length, nullptr, 0, PA_SEEK_RELATIVE) < 0)
-	{
-		RageException::Throw("Pulse: pa_stream_write()");
-	}
-
-	m_LastPosition = pos2;
 }
 
 /* Static wrappers, because pulseaudio is a C API, it uses callbacks.
