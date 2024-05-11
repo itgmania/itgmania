@@ -138,7 +138,7 @@ static DeviceButton XSymToDeviceButton( int key )
 
 InputHandler_X11::InputHandler_X11()
 {
-	if( Dpy == nullptr  || Win == None )
+	if( Dpy == nullptr || Win == None )
 		return;
 	XWindowAttributes winAttrib;
 
@@ -154,7 +154,7 @@ InputHandler_X11::InputHandler_X11()
 
 InputHandler_X11::~InputHandler_X11()
 {
-	if( Dpy == nullptr || Win == None )
+	if( Dpy == nullptr || Win == None || FatalError )
 		return;
 	// TODO: Determine if we even need to set this back (or is the window
 	// destroyed just after this?)
