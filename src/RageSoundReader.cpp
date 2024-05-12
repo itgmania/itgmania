@@ -2,39 +2,49 @@
 #include "RageSoundReader.h"
 #include "RageLog.h"
 #include "RageUtil_AutoPtr.h"
+#include <chrono>
+#include <thread>
 
 REGISTER_CLASS_TRAITS( RageSoundReader, pCopy->Copy() );
 
-/* Read(), handling the STREAM_LOOPED and empty return cases. */
 int RageSoundReader::RetriedRead( float *pBuffer, int iFrames, int *iSourceFrame, float *fRate )
 {
 	if( iFrames == 0 )
 		return 0;
 
-	/* pReader may return 0, which means "try again immediately".  As a failsafe,
-	 * only try this a finite number of times.  Use a high number, because in
-	 * principle each filter in the stack may cause this. */
-	int iTries = 100;
-	while( --iTries )
-	{
-		if( fRate )
-			*fRate = this->GetStreamToSourceRatio();
-		if( iSourceFrame )
-			*iSourceFrame = this->GetNextSourceFrame();
+	if( fRate )
+		*fRate = this->GetStreamToSourceRatio();
+	if( iSourceFrame )
+		*iSourceFrame = this->GetNextSourceFrame();
 
-		int iGotFrames = this->Read( pBuffer, iFrames );
+	int iGotFrames = this->Read( pBuffer, iFrames );
+
+	if( iGotFrames == RageSoundReader::STREAM_LOOPED )
+		iGotFrames = 0;
+
+	if( iGotFrames != 0 )
+		return iGotFrames;
+
+	// If the read fails, retry 10 times with an increased delay each time.
+	int iMaxTries = 10;
+	int iDelayMS = 1; // 1 millisecond
+	for(int iTries = 0; iTries < iMaxTries; ++iTries)
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds(iDelayMS));
+
+		iGotFrames = this->Read( pBuffer, iFrames );
 
 		if( iGotFrames == RageSoundReader::STREAM_LOOPED )
 			iGotFrames = 0;
 
 		if( iGotFrames != 0 )
 			return iGotFrames;
+
+		iDelayMS *= 2;  // Double the delay
 	}
 
-	LOG->Warn( "Read() busy looping" );
-
-	/* Pretend we got EOF. */
-	return RageSoundReader::END_OF_FILE;
+	LOG->Warn( "RageSoundReader: 10 attempts to read from the stream failed. Busy looping." );
+	return 0;
 }
 
 /*
