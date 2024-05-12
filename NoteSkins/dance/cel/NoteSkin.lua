@@ -77,6 +77,7 @@ ret.PartsToRotate =
 	["Tap Explosion Dim W5"] = true,
 	["Tap Note"] = true,
 	["Tap Fake"] = true,
+	["Tap Lift"] = true,
 	["Tap Addition"] = true,
 	["Hold Explosion"] = true,
 	["Hold Head Active"] = true,
