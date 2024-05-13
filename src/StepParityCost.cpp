@@ -174,6 +174,13 @@ void StepParityCost::mergeInitialAndResultPosition(State * initialState, State *
 	}
 }
 
+// Calculate the cost of avoiding a mine before the current step
+// If a mine occurred just before a step, add to the cost
+// ex: 00M0
+//     0010 <- add cost
+//
+//     00M0
+//     0100 <- no cost
 float StepParityCost::calcMineCost(State * initialState, State * resultState, Row &row, std::vector<StepParity::Foot>& combinedColumns, int columnCount)
 {
 	float cost = 0;
@@ -187,6 +194,10 @@ float StepParityCost::calcMineCost(State * initialState, State * resultState, Ro
 	return cost;
 }
 
+// Calculate a cost from having to switch feet in the middle of a hold.
+// Multiply the HOLDSWITCH cost by the distance that the "intial" foot
+// that was holding the note had to travel to it's new position.
+// If the initial foot doesn't move anywhere, then don't mulitply it by anything.
 float StepParityCost::calcHoldSwitchCost(State * initialState, State * resultState, Row &row, std::vector<StepParity::Foot> & combinedColumns, int columnCount)
 {
 	float cost = 0;
@@ -215,6 +226,13 @@ float StepParityCost::calcHoldSwitchCost(State * initialState, State * resultSta
 	}
 	return cost;
 }
+
+// Calculate the cost of tapping a bracket during a hold note
+//
+// ex: 0200
+//     0000
+//     1000	<- maybe bracketable, if left heel is holding Down arrow
+//     0300
 
 float StepParityCost::calcBracketTapCost(State * initialState, State * resultState, Row &row, int leftHeel, int leftToe, int rightHeel, int rightToe, float elapsedTime, int columnCount)
 {
@@ -264,6 +282,9 @@ float StepParityCost::calcBracketTapCost(State * initialState, State * resultSta
 	return cost;
 }
 
+// Calculate a cost for moving the same foot while the other
+// isn't on the pad.
+//
 float StepParityCost::calcMovingFootWhileOtherIsntOnPadCost(State * initialState, State * resultState, int columnCount)
 {
 	float cost = 0;
@@ -524,10 +545,10 @@ float StepParityCost::calcJackedNotesTooCloseTogetherCost(bool movedLeft, bool m
 {
 	float cost = 0;
 	// weighting for jacking two notes too close to eachother
-	if (elapsedTime <= 0.15 && movedLeft != movedRight) {
-	  float timeScaled = 0.15 - elapsedTime;
+	if (elapsedTime <= 0.1 && movedLeft != movedRight) {
+	  float timeScaled = 0.1 - elapsedTime;
 	  if (jackedLeft || jackedRight) {
-		cost += (1 / timeScaled - 1 / 0.15) * JACK;
+		cost += (1 / timeScaled - 1 / 0.1) * JACK;
 	  }
 	}
 
