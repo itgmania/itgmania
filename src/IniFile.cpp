@@ -33,81 +33,73 @@ bool IniFile::ReadFile( const RString &sPath )
 	return ReadFile( f );
 }
 
-bool IniFile::ReadFile( RageFileBasic &f )
+bool IniFile::ReadFile(RageFileBasic& f)
 {
 	RString keyname;
-	// keychild is used to cache the node that values are being added to. -Kyz
-	XNode* keychild= nullptr;
-	for(;;)
+	XNode* keychild = nullptr;
+
+	while (true)
 	{
 		RString line;
-		// Read lines until we reach a line that doesn't end in a backslash
-		for(;;)
+		while (true)
 		{
 			RString s;
-			switch( f.GetLine(s) )
+			int result = f.GetLine(s);
+			if (result == -1)
 			{
-			case -1:
 				m_sError = f.GetError();
 				return false;
-			case 0:
-				return true; // eof
+			}
+			else if (result == 0)
+			{
+				return true;
 			}
 
-			utf8_remove_bom( s );
+			utf8_remove_bom(s);
 
 			line += s;
 
-			if( line.empty() || line[line.size()-1] != '\\' )
+			if (line.empty() || line.back() != '\\')
 			{
 				break;
 			}
-			line.erase( line.end()-1 );
+			line.pop_back();
 		}
 
-
-		if( line.empty() )
+		if (line.empty())
 			continue;
-		switch(line[0])
+
+		if (line[0] == ';' || line[0] == '#' || (line.size() > 1 && line[0] == line[1] && (line[0] == '/' || line[0] == '-')))
+			continue;
+
+		if (line[0] == '[' && line.back() == ']')
 		{
-			case ';':
-			case '#':
-				continue; // comment
-			case '/':
-			case '-':
-				if(line.size() > 1 && line[0] == line[1])
-				{ continue; } // comment (Lua or C++ style)
-				goto keyvalue;
-			case '[':
-				if(line[line.size()-1] == ']')
+			keyname = line.substr(1, line.size() - 2);
+			keychild = GetChild(keyname);
+			if (keychild == nullptr)
+			{
+				keychild = AppendChild(keyname);
+			}
+			continue;
+		}
+
+		if (keychild != nullptr)
+		{
+			std::size_t iEqualIndex = line.find("=");
+			if (iEqualIndex != std::string::npos)
+			{
+				RString valuename = line.substr(0, iEqualIndex);
+				RString value = line.substr(iEqualIndex + 1);
+				Trim(valuename);
+				if (!valuename.empty())
 				{
-					// New section.
-					keyname = line.substr(1, line.size()-2);
-					keychild= GetChild(keyname);
-					if(keychild == nullptr)
-					{
-						keychild= AppendChild(keyname);
-					}
-					break;
+					SetKeyValue(keychild, valuename, value);
 				}
-				[[fallthrough]];
-			default:
-			keyvalue:
-				if(keychild == nullptr)
-				{ break; }
-				// New value.
-				std::size_t iEqualIndex = line.find("=");
-				if( iEqualIndex != std::string::npos )
-				{
-					RString valuename = line.Left((int) iEqualIndex);
-					RString value = line.Right(line.size()-valuename.size()-1);
-					Trim(valuename);
-					if(!valuename.empty())
-					{
-						SetKeyValue(keychild, valuename, value);
-					}
-				}
-				break;
+			}
+			else
+			{
+				LOG->Warn("Encountered line without '=' in INI file: %s", line.c_str());
+			}
 		}
 	}
 }
@@ -143,13 +135,14 @@ bool IniFile::WriteFile( RageFileBasic &f ) const
 			const RString &sName = pAttr->first;
 			const RString &sValue = pAttr->second->GetValue<RString>();
 
-			// TODO: Are there escape rules for these?
-			// take a cue from how multi-line Lua functions are parsed
+			// Ensure the name does not contain newline or equals sign characters.
+			// These characters are not valid INI file structure.
 			DEBUG_ASSERT( sName.find('\n') == sName.npos );
 			DEBUG_ASSERT( sName.find('=') == sName.npos );
 
 			if( f.PutLine( ssprintf("%s=%s", sName.c_str(), sValue.c_str()) ) == -1 )
 			{
+				LOG->Warn( "IniFile: failed to write the attribute to the file!" );
 				m_sError = f.GetError();
 				return false;
 			}
@@ -157,6 +150,7 @@ bool IniFile::WriteFile( RageFileBasic &f ) const
 
 		if( f.PutLine( "" ) == -1 )
 		{
+			LOG->Warn( "IniFile: failed to write an empty line to the file!" );
 			m_sError = f.GetError();
 			return false;
 		}
