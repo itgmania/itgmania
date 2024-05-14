@@ -8,8 +8,7 @@ if(APPLE)
               "archutils/Darwin/MouseDevice.cpp"
               "archutils/Darwin/PumpDevice.cpp"
               "archutils/Darwin/SMMain.mm"
-              "archutils/Darwin/SpecialDirs.mm"
-              "archutils/Darwin/VectorHelper.cpp")
+              "archutils/Darwin/SpecialDirs.mm")
   list(APPEND SMDATA_OS_DARWIN_HPP
               "archutils/Darwin/arch_setup.h"
               "archutils/Darwin/Crash.h"
@@ -20,8 +19,7 @@ if(APPLE)
               "archutils/Darwin/MouseDevice.h"
               "archutils/Darwin/PumpDevice.h"
               "archutils/Darwin/SpecialDirs.h"
-              "archutils/Darwin/StepMania.pch" # precompiled header.
-              "archutils/Darwin/VectorHelper.h")
+              "archutils/Darwin/StepMania.pch")
 
   source_group("OS Specific\\\\Darwin"
                FILES
