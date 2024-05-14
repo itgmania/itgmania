@@ -279,7 +279,7 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 	int iMaxFramesRead = mix.size() / m_iChannels;
 	mix.read( pBuffer );
 
-	m_iNextSourceFrame += std::lrint( iMaxFramesRead * m_fCurrentStreamToSourceRatio );
+	m_iNextSourceFrame += static_cast<int>(( iMaxFramesRead * m_fCurrentStreamToSourceRatio ) + 0.5);
 
 	return iMaxFramesRead;
 }
