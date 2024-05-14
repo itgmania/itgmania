@@ -1,6 +1,13 @@
 #ifndef GAME_LOOP_H
 #define GAME_LOOP_H
 /** @brief Main rendering and update loop. */
+
+// for BoostThreadPriorityForWin32
+#ifdef _WINDOWS 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 namespace GameLoop
 {
 	void RunGameLoop();
@@ -10,6 +17,10 @@ namespace GameLoop
 	void ChangeGame(const RString& new_game, const RString& new_theme= "");
 	void StartConcurrentRendering();
 	void FinishConcurrentRendering();
+
+#ifdef _WINDOWS
+	void BoostThreadPriorityForWin32(HANDLE hThread);
+#endif
 
 };
 

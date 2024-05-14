@@ -131,7 +131,7 @@ RageSoundDriver_DSound_Software::~RageSoundDriver_DSound_Software()
 
 void RageSoundDriver_DSound_Software::SetupDecodingThread()
 {
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
+	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST) )
 		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set decoding thread priority") );
 }
 

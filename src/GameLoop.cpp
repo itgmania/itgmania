@@ -24,6 +24,11 @@
 #include <cmath>
 #include <vector>
 
+// for BoostThreadPriorityForWin32
+#ifdef _WINDOWS 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 
 static RageTimer g_GameplayTimer;
 
@@ -404,8 +409,22 @@ void ConcurrentRenderer::Stop()
 	DISPLAY->EndConcurrentRenderingMainThread();
 }
 
+void BoostThreadPriorityForWin32(HANDLE hThread)
+{
+	if (!SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST))
+	{
+		LOG->Warn("Failed to boost thread priority in GameLoop.cpp");
+	}
+}
+
 void ConcurrentRenderer::RenderThread()
 {
+
+#ifdef _WINDOWS // Boost thread priority if running on Windows
+	HANDLE hThread = GetCurrentThread();
+	BoostThreadPriorityForWin32(hThread);
+#endif
+
 	ASSERT( SCREENMAN != nullptr );
 
 	while( !m_bShutdown )

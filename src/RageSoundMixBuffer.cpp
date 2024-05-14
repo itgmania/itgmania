@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 
 #if defined(MACOSX)
 #include "archutils/Darwin/VectorHelper.h"
@@ -14,14 +15,26 @@ static bool g_bVector = Vector::CheckForVector();
 
 RageSoundMixBuffer::RageSoundMixBuffer()
 {
-	m_iBufSize = m_iBufUsed = 0;
-	m_pMixbuf = nullptr;
+	// Set m_iBufSize to 2MB.
+	m_iBufSize = 2 * 1024 * 1024 / sizeof(float);
+
+	// Allocate memory
+	m_pMixbuf = static_cast<float*>(std::malloc(m_iBufSize * sizeof(float)));
+
+	// Check if memory allocation was successful
+	if (m_pMixbuf == nullptr) {
+		ASSERT_M(false, "Sound mixing buffer being null should not be possible.");
+	}
+
+	std::memset(m_pMixbuf, 0, m_iBufSize * sizeof(float));
+
+	m_iBufUsed = 0;
 	m_iOffset = 0;
 }
 
 RageSoundMixBuffer::~RageSoundMixBuffer()
 {
-	free( m_pMixbuf );
+	std::free(m_pMixbuf);
 }
 
 /* write() will start mixing iOffset samples into the buffer.  Be careful; this is
@@ -31,18 +44,26 @@ void RageSoundMixBuffer::SetWriteOffset( int iOffset )
 	m_iOffset = iOffset;
 }
 
-void RageSoundMixBuffer::Extend( unsigned iSamples )
+void RageSoundMixBuffer::Extend(unsigned iSamples)
 {
-	const unsigned realsize = iSamples+m_iOffset;
-	if( m_iBufSize < realsize )
+	const std::uint64_t realsize = static_cast<std::uint64_t>(iSamples) + m_iOffset;
+	if (m_iBufSize < realsize)
 	{
-		m_pMixbuf = (float *) realloc( m_pMixbuf, sizeof(float) * realsize );
-		m_iBufSize = realsize;
+		float* m_pMixbufNew = static_cast<float*>(realloc(m_pMixbuf, sizeof(float) * realsize));
+		if (m_pMixbufNew == nullptr)
+		{
+			ASSERT_M(false, "Replacement sound mixing buffer being null should not be possible.");
+		}
+		else
+		{
+			m_pMixbuf = m_pMixbufNew;
+			m_iBufSize = realsize;
+		}
 	}
 
-	if( m_iBufUsed < realsize )
+	if (m_iBufUsed < realsize)
 	{
-		memset( m_pMixbuf + m_iBufUsed, 0, (realsize - m_iBufUsed) * sizeof(float) );
+		memset(m_pMixbuf + m_iBufUsed, 0, (realsize - m_iBufUsed) * sizeof(float));
 		m_iBufUsed = realsize;
 	}
 }

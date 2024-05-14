@@ -75,42 +75,46 @@ typedef struct tagTHREADNAME_INFO
 
 static void SetThreadName( DWORD dwThreadID, LPCTSTR szThreadName )
 {
+#if defined(_MSC_VER)
 	THREADNAME_INFO info;
 	info.dwType = 0x1000;
 	info.szName = szThreadName;
 	info.dwThreadID = dwThreadID;
 	info.dwFlags = 0;
 
-	// FIXME: Need to find a GCC/GDB-friendly way to do this.
-#if defined(_MSC_VER)
 	__try {
-		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(DWORD), (ULONG_PTR *)&info);
-	} __except (EXCEPTION_CONTINUE_EXECUTION) {
+		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(DWORD), (ULONG_PTR*)&info);
 	}
+	__except (EXCEPTION_CONTINUE_EXECUTION) {
+	}
+#elif defined(__GNUC__)
+	pthread_setname_np(pthread_self(), szThreadName);
 #endif
 }
 
-static DWORD WINAPI StartThread( LPVOID pData )
+static DWORD WINAPI StartThread(LPVOID pData)
 {
-	ThreadImpl_Win32 *pThis = (ThreadImpl_Win32 *) pData;
+	ThreadImpl_Win32* pThis = static_cast<ThreadImpl_Win32*>(pData);
 
-	SetThreadName( GetCurrentThreadId(), RageThread::GetCurrentThreadName() );
+	SetThreadName(GetCurrentThreadId(), RageThread::GetCurrentThreadName());
 
-	DWORD ret = (DWORD) pThis->m_pFunc( pThis->m_pData );
+	DWORD ret = static_cast<DWORD>(pThis->m_pFunc(pThis->m_pData));
 
-	for( int i = 0; i < MAX_THREADS; ++i )
+	bool found = false;
+	std::uint64_t currentThreadId = RageThread::GetCurrentThreadID();
+	for (int i = 0; i < MAX_THREADS; ++i)
 	{
-		if( g_ThreadIds[i] == RageThread::GetCurrentThreadID() )
+		if (g_ThreadIds[i] == currentThreadId) // Use the stored value
 		{
 			g_ThreadHandles[i] = nullptr;
 			g_ThreadIds[i] = 0;
+			found = true;
 			break;
 		}
 	}
 
 	return ret;
 }
-
 static int GetOpenSlot( std::uint64_t iID )
 {
 	InitThreadIdMutex();
@@ -213,26 +217,25 @@ static bool SimpleWaitForSingleObject( HANDLE h, DWORD ms )
 	}
 }
 
-bool MutexImpl_Win32::Lock()
-{
-	int len = 15000;
-	int tries = 5;
-
-	while( tries-- )
+	bool MutexImpl_Win32::Lock()
 	{
-		// Wait for fifteen seconds. If it takes longer than that, we're probably deadlocked.
-		if( SimpleWaitForSingleObject( mutex, len ) )
+		DWORD dwWaitResult = WaitForSingleObject(mutex, INFINITE);
+		switch (dwWaitResult)
+		{
+		case WAIT_OBJECT_0:
 			return true;
+	
+		case WAIT_TIMEOUT:
+			return false;
 
-		/* Timed out; probably deadlocked. Try a couple more times, with
-		 * a smaller timeout, just in case we're debugging and happened
-		 * to stop while waiting on the mutex. */
-		len = 1000;
+		case WAIT_ABANDONED:
+			return false;
+
+		default:
+			// Possibly throw an exception?
+			return false;
+		}
 	}
-
-	return false;
-}
-
 
 bool MutexImpl_Win32::TryLock()
 {
@@ -283,55 +286,22 @@ EventImpl_Win32::~EventImpl_Win32()
 	CloseHandle( m_WaitersDone );
 }
 
-/* SignalObjectAndWait is atomic, which leads to more fair event handling.
- * However, we don't guarantee or depend upon fair events, and
- * SignalObjectAndWait is only available in NT. I also can't find a single
- * function to signal an object like SignalObjectAndWait, so we need to
- * know if the object is a mutex or an event. */
-static bool PortableSignalObjectAndWait( HANDLE hObjectToSignal, HANDLE hObjectToWaitOn, bool bFirstParamIsMutex, unsigned iMilliseconds = INFINITE )
+static bool PortableSignalObjectAndWait(HANDLE hObjectToSignal, HANDLE hObjectToWaitOn, bool bFirstParamIsMutex, unsigned iMilliseconds = INFINITE)
 {
-	static bool bSignalObjectAndWaitUnavailable = false;
-	// Watch out: SignalObjectAndWait doesn't work when iMilliseconds is zero.
-	if( !bSignalObjectAndWaitUnavailable && iMilliseconds != 0 )
+	// If the first parameter is a mutex, release it
+	if (bFirstParamIsMutex)
 	{
-		DWORD ret = SignalObjectAndWait( hObjectToSignal, hObjectToWaitOn, iMilliseconds, false );
-		switch( ret )
-		{
-		case WAIT_OBJECT_0:
-			return true;
-
-		case WAIT_ABANDONED:
-			// The docs aren't particular about what this does, but it should never happen.
-			FAIL_M( "WAIT_ABANDONED" );
-
-		case 1: // bogus Win98 return value
-		case WAIT_FAILED:
-			if( GetLastError() == ERROR_CALL_NOT_IMPLEMENTED )
-			{
-				// We're probably on 9x.
-				bSignalObjectAndWaitUnavailable = true;
-				break;
-			}
-
-			FAIL_M( werr_ssprintf(GetLastError(), "SignalObjectAndWait") );
-
-		case WAIT_TIMEOUT:
-			return false;
-
-		default:
-			FAIL_M( ssprintf("Unexpected code from SignalObjectAndWait: %d",ret ));
-		}
-	}
-
-	if( bFirstParamIsMutex )
-	{
-		const bool bRet = !!ReleaseMutex( hObjectToSignal );
-		if( !bRet )
-			sm_crash( werr_ssprintf( GetLastError(), "ReleaseMutex failed" ) );
+		const bool bRet = !!ReleaseMutex(hObjectToSignal);
+		if (!bRet)
+			sm_crash(werr_ssprintf(GetLastError(), "ReleaseMutex failed"));
 	}
 	else
-		SetEvent( hObjectToSignal );
+	{
+		// If the first parameter is not a mutex, signal the event
+		SetEvent(hObjectToSignal);
+	}
 
+	// Wait for the second object
 	DWORD ret = WaitForSingleObject( hObjectToWaitOn, iMilliseconds );
 	switch( ret )
 	{
@@ -351,7 +321,7 @@ static bool PortableSignalObjectAndWait( HANDLE hObjectToSignal, HANDLE hObjectT
 }
 
 // Event logic from http://www.cs.wustl.edu/~schmidt/win32-cv-1.html.
-bool EventImpl_Win32::Wait( RageTimer *pTimeout )
+bool EventImpl_Win32::Wait(RageTimer* pTimeout)
 {
 	EnterCriticalSection( &m_iNumWaitingLock );
 	++m_iNumWaiting;
@@ -361,7 +331,7 @@ bool EventImpl_Win32::Wait( RageTimer *pTimeout )
 	if( pTimeout != nullptr )
 	{
 		float fSecondsInFuture = -pTimeout->Ago();
-		iMilliseconds = (unsigned) std::max( 0, int( fSecondsInFuture * 1000 ) );
+		iMilliseconds = (unsigned)std::max(0, int(fSecondsInFuture * 1000));
 	}
 
 	// Unlock the mutex and wait for a signal.
@@ -383,7 +353,7 @@ bool EventImpl_Win32::Wait( RageTimer *pTimeout )
 
 	/* If we're the last waiter to wake up, and we were actually woken by
 	 * another thread (not by timeout), wake up the signaller. */
-	if( bLastWaiting && bSuccess )
+	if ( bLastWaiting && bSuccess )
 		PortableSignalObjectAndWait( m_WaitersDone, m_pParent->mutex, false );
 	else
 		WaitForSingleObject( m_pParent->mutex, INFINITE );
