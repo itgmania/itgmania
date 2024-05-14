@@ -39,12 +39,11 @@ if ( PKGCONFIG_LIBUSB_FOUND )
 else ( PKGCONFIG_LIBUSB_FOUND )
   find_path ( LIBUSB_INCLUDE_DIRS
     NAMES
-      usb.h
+      libusb.h
     PATHS
       $ENV{ProgramFiles}/LibUSB-Win32
       $ENV{LibUSB_ROOT_DIR}
-    PATH_SUFFIXES
-      include
+      ${CMAKE_SOURCE_DIR}/extern/libusb/libusb/
   )
   mark_as_advanced ( LIBUSB_INCLUDE_DIRS )
 #  message ( STATUS "LibUSB include dir: ${LIBUSB_INCLUDE_DIRS}" )
@@ -86,8 +85,8 @@ endif ( PKGCONFIG_LIBUSB_FOUND )
 
 if ( LIBUSB_FOUND )
   set ( CMAKE_REQUIRED_INCLUDES "${LIBUSB_INCLUDE_DIRS}" )
-  check_include_file ( usb.h LIBUSB_FOUND )
-#    message ( STATUS "LibUSB: usb.h is usable: ${LIBUSB_FOUND}" )
+  check_include_file ( libusb.h LIBUSB_FOUND )
+#    message ( STATUS "LibUSB: libusb.h is usable: ${LIBUSB_FOUND}" )
 endif ( LIBUSB_FOUND )
 if ( LIBUSB_FOUND )
   check_library_exists ( "${LIBUSB_LIBRARIES}" usb_open "" LIBUSB_FOUND )

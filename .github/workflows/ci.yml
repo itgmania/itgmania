@@ -5,7 +5,8 @@ on:
       - '**.md'
 
 name: Continuous integration
-
+# TODO(sukibaby): Find out why the runner gets cranky if libusb-dev is missing, even though libusb0.1 isn't used anymore.
+# On my Fedora machine, it builds fine without libusb0.1, so I'm inclined to believe it may be a Debian/Ubuntu issue.
 jobs:
   ubuntu-build:
     name: Ubuntu
@@ -15,21 +16,7 @@ jobs:
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y
-          libasound2-dev
-          libgl-dev
-          libglu1-mesa-dev
-          libgtk-3-dev
-          libjack-dev
-          libmad0-dev
-          libpulse-dev
-          libudev-dev
-          libusb-dev
-          libxinerama-dev
-          libx11-dev
-          libxrandr-dev
-          libxtst-dev
-          nasm
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libusb-dev libusb-1.0-0-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
       - name: Configure
         run: cmake -B build
       - name: Build
@@ -43,8 +30,7 @@ jobs:
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Install dependencies
-        run: brew install
-          nasm
+        run: brew install nasm
       - name: Configure
         run: cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64
       - name: Build
@@ -58,8 +44,7 @@ jobs:
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Install dependencies
-        run: brew install
-          nasm
+        run: brew install nasm
       - name: Configure
         run: cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64
       - name: Build
@@ -83,8 +68,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y
-          libxml2-utils
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
       - name: Validate Lua.xml
         run: xmllint --noout Docs/Luadoc/Lua.xml
       - name: Validate LuaDocumentation.xml

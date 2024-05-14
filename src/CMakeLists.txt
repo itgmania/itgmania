@@ -436,6 +436,13 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
     list(APPEND SMDATA_LINK_LIB ${LIBXTST_LIBRARY})
   endif()
 
+  # Find libusb
+  include_directories(../extern/libusb)
+
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(LIBUSB REQUIRED libusb-1.0)
+
+  include_directories(${LIBUSB_INCLUDE_DIRS})
   list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARIES})
 
   list(APPEND SMDATA_LINK_LIB ${XRANDR_LIBRARIES} ${XINERAMA_LIBRARIES})
