@@ -31,19 +31,36 @@ void RageSoundMixBuffer::SetWriteOffset( int iOffset )
 	m_iOffset = iOffset;
 }
 
-void RageSoundMixBuffer::Extend( unsigned iSamples )
+void RageSoundMixBuffer::Extend(unsigned iSamples)
 {
-	const unsigned realsize = iSamples+m_iOffset;
-	if( m_iBufSize < realsize )
+	const std::uint64_t intendedBufferSize = static_cast<std::uint64_t>(iSamples) + m_iOffset;
+	if (m_iBufSize < intendedBufferSize)
 	{
-		m_pMixbuf = (float *) realloc( m_pMixbuf, sizeof(float) * realsize );
-		m_iBufSize = realsize;
+		m_pMixbufBackup = static_cast<float*>(realloc(m_pMixbufBackup, sizeof(float) * m_iBufSize));
+		if (m_pMixbufBackup != nullptr && m_pMixbuf != nullptr)
+		{
+			memcpy(m_pMixbufBackup, m_pMixbuf, m_iBufSize * sizeof(float));
+		}
+
+		float *m_pMixbufNew = static_cast<float*>(realloc(m_pMixbuf, sizeof(float) * intendedBufferSize));
+		if (m_pMixbufNew == nullptr)
+		{
+			if (m_pMixbufBackup != nullptr)
+			{
+				memcpy(m_pMixbuf, m_pMixbufBackup, m_iBufSize * sizeof(float));
+			}
+		}
+		else
+		{
+			m_pMixbuf = m_pMixbufNew;
+			m_iBufSize = intendedBufferSize;
+		}
 	}
 
-	if( m_iBufUsed < realsize )
+	if (m_iBufUsed < intendedBufferSize)
 	{
-		memset( m_pMixbuf + m_iBufUsed, 0, (realsize - m_iBufUsed) * sizeof(float) );
-		m_iBufUsed = realsize;
+		memset(m_pMixbuf + m_iBufUsed, 0, (intendedBufferSize - m_iBufUsed) * sizeof(float));
+		m_iBufUsed = intendedBufferSize;
 	}
 }
 
