@@ -42,10 +42,17 @@ std::int64_t ArchHooks::GetMicrosecondsSinceStart(bool bAccurate)
 		InitTimer();
 
 	// Get the current time
-	QueryPerformanceCounter(&g_liCurrentTime);
-
-	// Calculate the elapsed time in microseconds.
-	return ((g_liCurrentTime.QuadPart - g_liStartTime.QuadPart) * 1000000.0) / g_liFrequency.QuadPart;
+	if (!QueryPerformanceCounter(&g_liCurrentTime))
+	{
+		// Just in case QPC() fails, fall back to the old method of getting time.
+		return timeGetTime() * std::int64_t(1000);
+		LOG->Warn("QueryPerformanceCounter failed - fell back to timeGetTime");
+	}
+	else
+	{
+		// Calculate the elapsed time in microseconds.
+		return ((g_liCurrentTime.QuadPart - g_liStartTime.QuadPart) * 1000000.0) / g_liFrequency.QuadPart;
+	}
 }
 
 static RString GetMountDir( const RString &sDirOfExecutable )
