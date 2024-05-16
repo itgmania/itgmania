@@ -126,7 +126,7 @@ float StepParityCost::getActionCost(State * initialState, State * resultState, s
 	
 	// To do: weighting for moving a foot a far distance in a fast time
 	cost += calcBigMovementsQuicklyCost( initialState, resultState, elapsedTime, columnCount);
-	
+    cost += calcBadBracketCost(initialState, resultState, elapsedTime, columnCount);
 	resultState->columns = combinedColumns;
 	return cost;
 }
@@ -577,6 +577,44 @@ float StepParityCost::calcBigMovementsQuicklyCost(State * initialState, State * 
 	return cost;
 }
 
+float StepParityCost::calcBadBracketCost(State * initialState, State * resultState, float elapsedTime, int columnCount)
+{
+    float cost = 0;
+    int leftHeel = indexOf(resultState->columns, LEFT_HEEL, columnCount);
+    int leftToe = indexOf(resultState->columns, LEFT_TOE, columnCount);
+    int rightHeel = indexOf(resultState->columns, RIGHT_HEEL, columnCount);
+    int rightToe = indexOf(resultState->columns, RIGHT_TOE, columnCount);
+    
+    // if we're trying to bracket with left foot, does it overlap the right foot
+    // in previous state?
+    if(
+       (leftHeel > -1 && leftToe > -1)
+       && (
+           initialState->columns[leftHeel] == RIGHT_HEEL ||
+           initialState->columns[leftHeel] == RIGHT_TOE ||
+           initialState->columns[leftToe] == RIGHT_HEEL ||
+           initialState->columns[leftToe] == RIGHT_TOE
+           )
+       )
+    {
+        cost += BADBRACKET / elapsedTime;
+    }
+    
+    // and if we're trying to bracket with right foot, does it overlap the left ?
+    if((rightHeel > -1 && rightToe > -1 )
+       && (
+           initialState->columns[rightHeel] == LEFT_HEEL ||
+           initialState->columns[rightHeel] == LEFT_TOE ||
+           initialState->columns[rightToe] == LEFT_HEEL ||
+           initialState->columns[rightToe] == LEFT_TOE
+           )
+       )
+    {
+        cost += BADBRACKET / elapsedTime;
+    }
+    
+    return cost;
+}
 
 
 bool StepParityCost::didDoubleStep(State * initialState, State * resultState, std::vector<Row> & rows, int rowIndex, bool movedLeft, bool jackedLeft, bool movedRight, bool jackedRight, int columnCount)

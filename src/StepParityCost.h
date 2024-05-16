@@ -12,7 +12,7 @@ namespace StepParity
 	const int JACK= 30;
 	const int JUMP= 30;
 	const int BRACKETTAP= 400;
-	const int HOLDSWITCH= 20;
+	const int HOLDSWITCH= 55;
 	const int MINE= 10000;
 	const int FOOTSWITCH= 5000;
 	const int MISSED_FOOTSWITCH= 500;
@@ -21,7 +21,8 @@ namespace StepParity
 	const int SPIN= 1000;
 	const int SIDESWITCH= 130;
 	const int MOVING_SINGLE_FOOT = 500;
-	
+    const int BADBRACKET = 40;
+    
 	class StepParityCost
 	{
 	private:
@@ -55,7 +56,8 @@ namespace StepParity
 		float calcSideswitchCost(State * initialState, State * resultState, int columnCount);
 		float calcJackedNotesTooCloseTogetherCost(bool movedLeft, bool movedRight, bool jackedLeft, bool jackedRight, float elapsedTime, int columnCount);
 		float calcBigMovementsQuicklyCost(State * initialState, State * resultState, float elapsedTime, int columnCount);
-
+        float calcBadBracketCost(State * initialState, State * resultState, float elapsedTime, int columnCount);
+        
 		bool didDoubleStep(State * initialState, State * resultState, std::vector<Row> &rows, int rowIndex, bool movedLeft, bool jackedLeft, bool movedRight, bool jackedRight, int columnCount);
 		bool didJackLeft(State * initialState, State * resultState, int leftHeel, int leftToe, bool movedLeft, bool didJump, int columnCount);
 		bool didJackRight(State * initialState, State * resultState, int rightHeel, int rightToe, bool movedRight, bool didJump,int columnCount);
