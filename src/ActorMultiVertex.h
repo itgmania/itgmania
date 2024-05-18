@@ -92,6 +92,7 @@ public:
 	void UnloadTexture();
 	void SetNumVertices( std::size_t n );
 
+	void ResizeVertices(std::vector<RageSpriteVertex>& vertices, int size);
 	void AddVertex();
 	void AddVertices( int Add );
 
