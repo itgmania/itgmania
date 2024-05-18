@@ -45,8 +45,8 @@ std::int64_t ArchHooks::GetMicrosecondsSinceStart(bool bAccurate)
 	if (!QueryPerformanceCounter(&g_liCurrentTime))
 	{
 		// Just in case QPC() fails, fall back to the old method of getting time.
-		return timeGetTime() * std::int64_t(1000);
 		LOG->Warn("QueryPerformanceCounter failed - fell back to timeGetTime");
+		return timeGetTime() * std::int64_t(1000);
 	}
 	else
 	{
