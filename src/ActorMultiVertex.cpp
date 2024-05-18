@@ -179,15 +179,24 @@ void ActorMultiVertex::SetNumVertices( std::size_t n )
 		AMV_start.vertices.resize( n );
 	}
 }
+ 
+void ActorMultiVertex::ResizeVertices(std::vector<RageSpriteVertex>& vertices, int size)
+{
+	if (vertices.capacity() < size)
+		{
+		vertices.reserve(size);
+		}
+	vertices.resize(size);
+}
 
 void ActorMultiVertex::AddVertex()
 {
 	for( std::size_t i = 0; i < AMV_Tweens.size(); ++i )
 	{
-		AMV_Tweens[i].vertices.push_back( RageSpriteVertex() );
+		AMV_Tweens[i].vertices.emplace_back( RageSpriteVertex() );
 	}
-	AMV_current.vertices.push_back( RageSpriteVertex() );
-	AMV_start.vertices.push_back( RageSpriteVertex() );
+	AMV_current.vertices.emplace_back( RageSpriteVertex() );
+	AMV_start.vertices.emplace_back( RageSpriteVertex() );
 }
 
 void ActorMultiVertex::AddVertices( int Add )
@@ -196,10 +205,10 @@ void ActorMultiVertex::AddVertices( int Add )
 	size += Add;
 	for( std::size_t i = 0; i < AMV_Tweens.size(); ++i )
 	{
-		AMV_Tweens[i].vertices.resize( size );
+		ResizeVertices(AMV_Tweens[i].vertices, size);
 	}
-	AMV_current.vertices.resize( size );
-	AMV_start.vertices.resize( size );
+	ResizeVertices(AMV_current.vertices, size);
+	ResizeVertices(AMV_start.vertices, size);
 }
 
 void ActorMultiVertex::SetVertexPos( int index, float x, float y, float z )
@@ -460,109 +469,120 @@ void ActorMultiVertex::UpdateAnimationState(bool force_update)
 	{
 		std::size_t first= dest.FirstToDraw;
 		std::size_t last= first+dest.GetSafeNumToDraw(dest._DrawMode, dest.NumToDraw);
-#define STATE_ID const std::size_t state_id= (_cur_state + qs[quad_id % qs.size()]) % _states.size();
+
 		switch(AMV_DestTweenState()._DrawMode)
 		{
-			case DrawMode_Quads:
-				for(std::size_t i= first; i < last; ++i)
+		case DrawMode_Quads:
+			for (std::size_t i = first; i < last; ++i)
+			{
+				const std::size_t quad_id = (i - first) / 4;
+				const std::size_t state_id = (_cur_state + qs[quad_id % qs.size()]) % _states.size();
+				const auto& rect = _states[state_id].rect;
+
+				switch ((i - first) % 4)
 				{
-					const std::size_t quad_id= (i-first)/4;
-					STATE_ID;
-					switch((i-first)%4)
-					{
-						case 0:
-							verts[i].t.x= _states[state_id].rect.left;
-							verts[i].t.y= _states[state_id].rect.top;
-							break;
-						case 1:
-							verts[i].t.x= _states[state_id].rect.right;
-							verts[i].t.y= _states[state_id].rect.top;
-							break;
-						case 2:
-							verts[i].t.x= _states[state_id].rect.right;
-							verts[i].t.y= _states[state_id].rect.bottom;
-							break;
-						case 3:
-							verts[i].t.x= _states[state_id].rect.left;
-							verts[i].t.y= _states[state_id].rect.bottom;
-							break;
-					}
+				case 0:
+					verts[i].t.x = rect.left;
+					verts[i].t.y = rect.top;
+					break;
+
+				case 1:
+					verts[i].t.x = rect.right;
+					verts[i].t.y = rect.top;
+					break;
+
+				case 2:
+					verts[i].t.x = rect.right;
+					verts[i].t.y = rect.bottom;
+					break;
+
+				case 3:
+					verts[i].t.x = rect.left;
+					verts[i].t.y = rect.bottom;
+					break;
 				}
-				break;
-			case DrawMode_QuadStrip:
-				for(std::size_t i= first; i < last; ++i)
+			}
+		case DrawMode_QuadStrip:
+			for (std::size_t i = first; i < last; ++i)
+			{
+				const std::size_t quad_id = (i - first) / 2;
+				const std::size_t state_id = (_cur_state + qs[quad_id % qs.size()]) % _states.size();
+				const auto& rect = _states[state_id].rect;
+
+				switch ((i - first) % 2)
 				{
-					const std::size_t quad_id= (i-first)/2;
-					STATE_ID;
-					switch((i-first)%2)
-					{
-						case 0:
-							verts[i].t.x= _states[state_id].rect.left;
-							verts[i].t.y= _states[state_id].rect.top;
-							break;
-						case 1:
-							verts[i].t.x= _states[state_id].rect.left;
-							verts[i].t.y= _states[state_id].rect.bottom;
-							break;
-					}
+				case 0:
+					verts[i].t.x = rect.left;
+					verts[i].t.y = rect.top;
+					break;
+				case 1:
+					verts[i].t.x = rect.left;
+					verts[i].t.y = rect.bottom;
+					break;
 				}
-				break;
-			case DrawMode_Strip:
-			case DrawMode_Fan:
-				for(std::size_t i= first; i < last; ++i)
+			}
+			break;
+		case DrawMode_Strip:
+		case DrawMode_Fan:
+			for (std::size_t i = first; i < last; ++i)
+			{
+				const std::size_t quad_id = (i - first);
+				const std::size_t state_id = (_cur_state + qs[quad_id % qs.size()]) % _states.size();
+				const auto& rect = _states[state_id].rect;
+
+				verts[i].t.x = rect.left;
+				verts[i].t.y = rect.top;
+			}
+			break;
+		case DrawMode_Triangles:
+			for (std::size_t i = first; i < last; ++i)
+			{
+				const std::size_t quad_id = (i - first) / 3;
+				const std::size_t state_id = (_cur_state + qs[quad_id % qs.size()]) % _states.size();
+				const auto& rect = _states[state_id].rect;
+
+				switch ((i - first) % 3)
 				{
-					const std::size_t quad_id= (i-first);
-					STATE_ID;
-					verts[i].t.x= _states[state_id].rect.left;
-					verts[i].t.y= _states[state_id].rect.top;
+				case 0:
+					verts[i].t.x = rect.left;
+					verts[i].t.y = rect.top;
+					break;
+				case 1:
+					verts[i].t.x = rect.right;
+					verts[i].t.y = rect.top;
+					break;
+				case 2:
+					verts[i].t.x = rect.right;
+					verts[i].t.y = rect.bottom;
+					break;
 				}
-				break;
-			case DrawMode_Triangles:
-				for(std::size_t i= first; i < last; ++i)
+			}
+			break;
+		case DrawMode_SymmetricQuadStrip:
+			for (std::size_t i = first; i < last; ++i)
+			{
+				const std::size_t quad_id = (i - first) / 3;
+				const std::size_t state_id = (_cur_state + qs[quad_id % qs.size()]) % _states.size();
+				const auto& rect = _states[state_id].rect;
+
+				switch ((i - first) % 3)
 				{
-					const std::size_t quad_id= (i-first)/3;
-					STATE_ID;
-					switch((i-first)%3)
-					{
-						case 0:
-							verts[i].t.x= _states[state_id].rect.left;
-							verts[i].t.y= _states[state_id].rect.top;
-							break;
-						case 1:
-							verts[i].t.x= _states[state_id].rect.right;
-							verts[i].t.y= _states[state_id].rect.top;
-							break;
-						case 2:
-							verts[i].t.x= _states[state_id].rect.right;
-							verts[i].t.y= _states[state_id].rect.bottom;
-							break;
-					}
+				case 0:
+				case 2:
+					verts[i].t.x = rect.left;
+					verts[i].t.y = rect.top;
+					break;
+				case 1:
+					verts[i].t.x = rect.right;
+					verts[i].t.y = rect.top;
+					break;
 				}
-				break;
-			case DrawMode_SymmetricQuadStrip:
-				for(std::size_t i= first; i < last; ++i)
-				{
-					const std::size_t quad_id= (i-first)/3;
-					STATE_ID;
-					switch((i-first)%3)
-					{
-						case 0:
-						case 2:
-							verts[i].t.x= _states[state_id].rect.left;
-							verts[i].t.y= _states[state_id].rect.top;
-							break;
-						case 1:
-							verts[i].t.x= _states[state_id].rect.right;
-							verts[i].t.y= _states[state_id].rect.top;
-							break;
-					}
-				}
-				break;
-			default:
-				break;
+			}
+			break;
+		default:
+			break;
 		}
 	}
-#undef STATE_ID
 }
 
 void ActorMultiVertex::EnableAnimation(bool bEnable)
@@ -616,13 +636,13 @@ void ActorMultiVertex::BeginTweening( float time, ITween *pTween )
 {
 	Actor::BeginTweening( time, pTween );
 
-	if( AMV_Tweens.size() >= 1 )		// if there was already a TS on the stack
+	if (!AMV_Tweens.empty()) // if there was already a TS on the stack
 	{
-		AMV_Tweens.push_back( AMV_Tweens.back() );
+		AMV_Tweens.emplace_back(AMV_Tweens.back());
 	}
 	else
 	{
-		AMV_Tweens.push_back( AMV_current );
+		AMV_Tweens.emplace_back(AMV_current);
 	}
 }
 
@@ -1032,10 +1052,10 @@ public:
 		{
 			luaL_error(L, "The texture must be set before adding states.");
 		}
-		const float width_pix= tex->GetImageToTexCoordsRatioX();
-		const float height_pix= tex->GetImageToTexCoordsRatioY();
-		const float width_ratio= 1.0f / tex->GetImageToTexCoordsRatioX();
-		const float height_ratio= 1.0f / tex->GetImageToTexCoordsRatioY();
+		const float width_pix = tex->GetImageToTexCoordsRatioX();
+		const float height_pix = tex->GetImageToTexCoordsRatioY();
+		const float width_ratio = width_pix != 0 ? 1.0f / width_pix : 0;
+		const float height_ratio = height_pix != 0 ? 1.0f / height_pix : 0;
 		const ActorMultiVertex::State& state=
 			p->GetStateData(ValidStateIndex(p, L, 1));
 		lua_createtable(L, 2, 0);
