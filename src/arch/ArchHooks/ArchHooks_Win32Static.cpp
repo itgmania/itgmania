@@ -37,22 +37,18 @@ static void InitTimer()
 
 std::int64_t ArchHooks::GetMicrosecondsSinceStart(bool bAccurate)
 {
-	// Make sure the timer is initialized
 	if (!g_bTimerInitialized)
 		InitTimer();
 
-	// Get the current time
-	if (!QueryPerformanceCounter(&g_liCurrentTime))
-	{
-		// Just in case QPC() fails, fall back to the old method of getting time.
-		LOG->Warn("QueryPerformanceCounter failed - fell back to timeGetTime");
-		return timeGetTime() * std::int64_t(1000);
-	}
-	else
-	{
-		// Calculate the elapsed time in microseconds.
-		return ((g_liCurrentTime.QuadPart - g_liStartTime.QuadPart) * 1000000.0) / g_liFrequency.QuadPart;
-	}
+	/* Starting with Win XP, QueryPerformanceCounter should never fail to return a usable value:
+     * https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter
+	 * If a user is having problems, ensure the AMD Cool'N'Quiet BIOS setting is not active because it can negatively impact performance:
+     * https://learn.microsoft.com/en-us/troubleshoot/windows-server/performance/programs-queryperformancecounter-function-perform-poorly
+	 * ITGMania doesn't run on 32 bit platforms, so the section of the information above regarding issues on 32-bit CPU's can be ignored. */
+ 	QueryPerformanceCounter(&g_liCurrentTime);
+
+	// Calculate the elapsed time in microseconds.
+	return ((g_liCurrentTime.QuadPart - g_liStartTime.QuadPart) * 1000000.0) / g_liFrequency.QuadPart;
 }
 
 static RString GetMountDir( const RString &sDirOfExecutable )
