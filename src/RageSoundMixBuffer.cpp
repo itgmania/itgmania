@@ -14,8 +14,8 @@ static bool g_bVector = Vector::CheckForVector();
 
 RageSoundMixBuffer::RageSoundMixBuffer()
 {
-	// Set m_iBufSize to 16MB.
-	m_iBufSize = 16 * 1024 * 1024 / sizeof(float);
+	// Set m_iBufSize to 4MB.
+	m_iBufSize = 4 * 1024 * 1024 / sizeof(float);
 
 	// Allocate memory
 	m_pMixbuf = static_cast<float*>(std::malloc(m_iBufSize * sizeof(float)));
