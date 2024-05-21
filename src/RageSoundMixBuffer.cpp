@@ -14,14 +14,30 @@ static bool g_bVector = Vector::CheckForVector();
 
 RageSoundMixBuffer::RageSoundMixBuffer()
 {
-	m_iBufSize = m_iBufUsed = 0;
-	m_pMixbuf = nullptr;
+	// Set m_iBufSize to 16MB.
+	m_iBufSize = 16 * 1024 * 1024 / sizeof(float);
+
+	// Allocate memory
+	m_pMixbuf = static_cast<float*>(std::malloc(m_iBufSize * sizeof(float)));
+	m_pMixbufBackup = static_cast<float*>(std::malloc(m_iBufSize * sizeof(float)));
+
+	// Check if memory allocation was successful
+	if (m_pMixbuf == nullptr || m_pMixbufBackup == nullptr)
+	{
+		std::exit(EXIT_FAILURE);
+	}
+
+	memset(m_pMixbuf, 0, m_iBufSize * sizeof(float));
+	memset(m_pMixbufBackup, 0, m_iBufSize * sizeof(float));
+
+	m_iBufUsed = 0;
 	m_iOffset = 0;
 }
 
 RageSoundMixBuffer::~RageSoundMixBuffer()
 {
-	free( m_pMixbuf );
+	std::free(m_pMixbuf);
+	std::free(m_pMixbufBackup);
 }
 
 /* write() will start mixing iOffset samples into the buffer.  Be careful; this is
@@ -36,19 +52,18 @@ void RageSoundMixBuffer::Extend(unsigned iSamples)
 	const std::uint64_t intendedBufferSize = static_cast<std::uint64_t>(iSamples) + m_iOffset;
 	if (m_iBufSize < intendedBufferSize)
 	{
-		m_pMixbufBackup = static_cast<float*>(realloc(m_pMixbufBackup, sizeof(float) * m_iBufSize));
-		if (m_pMixbufBackup != nullptr && m_pMixbuf != nullptr)
-		{
-			memcpy(m_pMixbufBackup, m_pMixbuf, m_iBufSize * sizeof(float));
-		}
+		// Swap the buffers
+		float* temp = m_pMixbuf;
+		m_pMixbuf = m_pMixbufBackup;
+		m_pMixbufBackup = temp;
 
-		float *m_pMixbufNew = static_cast<float*>(realloc(m_pMixbuf, sizeof(float) * intendedBufferSize));
+		float* m_pMixbufNew = static_cast<float*>(realloc(m_pMixbuf, sizeof(float) * intendedBufferSize));
 		if (m_pMixbufNew == nullptr)
 		{
-			if (m_pMixbufBackup != nullptr)
-			{
-				memcpy(m_pMixbuf, m_pMixbufBackup, m_iBufSize * sizeof(float));
-			}
+			// If allocation failed, swap the buffers back
+			temp = m_pMixbuf;
+			m_pMixbuf = m_pMixbufBackup;
+			m_pMixbufBackup = temp;
 		}
 		else
 		{
