@@ -70,26 +70,6 @@ static bool ChangeAppPri()
 	if( g_bNeverBoostAppPriority.Get() )
 		return false;
 
-	// if using NTPAD don't boost or else input is laggy
-#if defined(_WINDOWS)
-	{
-		std::vector<InputDeviceInfo> vDevices;
-
-		// This can get called before INPUTMAN is constructed.
-		if( INPUTMAN )
-		{
-			INPUTMAN->GetDevicesAndDescriptions(vDevices);
-			if (std::any_of(vDevices.begin(), vDevices.end(), [](InputDeviceInfo const &d) {
-				return d.sDesc.find("NTPAD") != std::string::npos;
-			}))
-			{
-				LOG->Trace( "Using NTPAD.  Don't boost priority." );
-				return false;
-			}
-		}
-	}
-#endif
-
 	// If this is a debug build, don't. It makes the VC debugger sluggish.
 #if defined(WIN32) && defined(DEBUG)
 	return false;
