@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 
-REGISTER_CLASS_TRAITS( RageFileBasic, pCopy->Copy() );
+REGISTER_CLASS_TRAITS(RageFileBasic, pCopy->Copy());
 
 RageFileObj::RageFileObj()
 {
@@ -24,14 +24,14 @@ RageFileObj::RageFileObj()
 	m_iCRC32 = 0;
 }
 
-RageFileObj::RageFileObj( const RageFileObj &cpy ):
+RageFileObj::RageFileObj(const RageFileObj& cpy) :
 	RageFileBasic(cpy)
 {
 	/* If the original file has a buffer, copy it. */
-	if( cpy.m_pReadBuffer != nullptr )
+	if (cpy.m_pReadBuffer != nullptr)
 	{
 		m_pReadBuffer = new char[BSIZE];
-		memcpy( m_pReadBuffer, cpy.m_pReadBuffer, BSIZE );
+		memcpy(m_pReadBuffer, cpy.m_pReadBuffer, BSIZE);
 
 		int iOffsetIntoBuffer = cpy.m_pReadBuf - cpy.m_pReadBuffer;
 		m_pReadBuf = m_pReadBuffer + iOffsetIntoBuffer;
@@ -41,10 +41,10 @@ RageFileObj::RageFileObj( const RageFileObj &cpy ):
 		m_pReadBuffer = nullptr;
 	}
 
-	if( cpy.m_pWriteBuffer != nullptr )
+	if (cpy.m_pWriteBuffer != nullptr)
 	{
 		m_pWriteBuffer = new char[cpy.m_iWriteBufferSize];
-		memcpy( m_pWriteBuffer, cpy.m_pWriteBuffer, m_iWriteBufferUsed );
+		memcpy(m_pWriteBuffer, cpy.m_pWriteBuffer, cpy.m_iWriteBufferUsed);
 	}
 	else
 	{
@@ -63,15 +63,15 @@ RageFileObj::RageFileObj( const RageFileObj &cpy ):
 
 RageFileObj::~RageFileObj()
 {
-	delete [] m_pReadBuffer;
-	delete [] m_pWriteBuffer;
+	delete[] m_pReadBuffer;
+	delete[] m_pWriteBuffer;
 }
 
-int RageFileObj::Seek( int iOffset )
+int RageFileObj::Seek(int iOffset)
 {
 	/* If we're already at the requested position, short circuit and don't flush
 	 * our buffer. */
-	if( iOffset == m_iFilePos )
+	if (iOffset == m_iFilePos)
 		return m_iFilePos;
 
 	m_bEOF = false;
@@ -84,145 +84,145 @@ int RageFileObj::Seek( int iOffset )
 	 * flush before seeking to do proper error checking. */
 	ResetReadBuf();
 
-	int iPos = SeekInternal( iOffset );
-	if( iPos != -1 )
-	        m_iFilePos = iPos;
+	int iPos = SeekInternal(iOffset);
+	if (iPos != -1)
+		m_iFilePos = iPos;
 	return iPos;
 }
 
-int RageFileObj::Seek( int offset, int whence )
+int RageFileObj::Seek(int offset, int whence)
 {
-	switch( whence )
+	int iOffset = static_cast<int>(offset);
+	switch (whence)
 	{
 	case SEEK_CUR:
-		return Seek( Tell() + offset );
+		return Seek(Tell() + iOffset);
 	case SEEK_END:
-		offset += GetFileSize();
+		iOffset += GetFileSize();
 	}
-	return Seek( (int) offset );
+	return Seek(iOffset);
 }
 
-int RageFileObj::Read( void *pBuffer, std::size_t iBytes )
+int RageFileObj::Read(void* pBuffer, std::size_t iBytes)
 {
-	int iRet = 0;
+	char* pDest = static_cast<char*>(pBuffer);
+	std::size_t iTotalRead = 0;
 
-	while( !m_bEOF && iBytes > 0 )
+	while (!m_bEOF && iBytes > 0)
 	{
-		if( m_pReadBuffer != nullptr && m_iReadBufAvail )
+		if (m_pReadBuffer != nullptr && m_iReadBufAvail)
 		{
 			/* Copy data out of the buffer first. */
-			int iFromBuffer = std::min( (int) iBytes, m_iReadBufAvail );
-			memcpy( pBuffer, m_pReadBuf, iFromBuffer );
-			if( m_bCRC32Enabled )
-				CRC32( m_iCRC32, pBuffer, iFromBuffer );
+			int iFromBuffer = std::min(static_cast<int>(iBytes), m_iReadBufAvail);
+			memcpy(pDest, m_pReadBuf, iFromBuffer);
+			if (m_bCRC32Enabled)
+				CRC32(m_iCRC32, pDest, iFromBuffer);
 
-			iRet += iFromBuffer;
 			m_iFilePos += iFromBuffer;
 			iBytes -= iFromBuffer;
 			m_iReadBufAvail -= iFromBuffer;
 			m_pReadBuf += iFromBuffer;
 
-			pBuffer = (char *) pBuffer + iFromBuffer;
+			pDest += iFromBuffer;
 		}
 
-		if( !iBytes )
+		if (!iBytes)
 			break;
 
-		ASSERT( m_iReadBufAvail == 0 );
+		ASSERT(m_iReadBufAvail == 0);
 
 		/* If buffering is disabled, or the block is bigger than the buffer,
-		 * read the remainder of the data directly into the desteination buffer. */
-		if( m_pReadBuffer == nullptr || iBytes >= BSIZE )
+		 * read the remainder of the data directly into the destination buffer. */
+		if (m_pReadBuffer == nullptr || iBytes >= BSIZE)
 		{
 			/* We have a lot more to read, so don't waste time copying it into the
 			 * buffer. */
-			int iFromFile = this->ReadInternal( pBuffer, iBytes );
-			if( iFromFile == -1 )
+			int iFromFile = this->ReadInternal(pDest, iBytes);
+			if (iFromFile == -1)
 				return -1;
 
-			if( iFromFile == 0 )
+			if (iFromFile == 0)
 				m_bEOF = true;
 
-			if( m_bCRC32Enabled )
-				CRC32( m_iCRC32, pBuffer, iFromFile );
-			iRet += iFromFile;
+			if (m_bCRC32Enabled)
+				CRC32(m_iCRC32, pDest, iFromFile);
+
 			m_iFilePos += iFromFile;
-			return iRet;
+			iTotalRead += iFromFile;
+			return iTotalRead;
 		}
 
 		/* If buffering is enabled, and we need more data, fill the buffer. */
 		m_pReadBuf = m_pReadBuffer;
 		int iGot = FillReadBuf();
-		if( iGot == -1 )
+		if (iGot == -1)
 			return iGot;
-		if( iGot == 0 )
+		if (iGot == 0)
 			m_bEOF = true;
 	}
 
-	return iRet;
+	iTotalRead += (pDest - static_cast<char*>(pBuffer));
+	return iTotalRead;
 }
 
-int RageFileObj::Read( RString &sBuffer, int iBytes )
+int RageFileObj::Read(RString& sBuffer, int iBytes)
 {
-	sBuffer.reserve( iBytes != -1? iBytes: this->GetFileSize() );
+	sBuffer.reserve(iBytes != -1 ? iBytes : this->GetFileSize());
 
 	int iRet = 0;
 	char buf[4096];
-	while( iBytes == -1 || iRet < iBytes )
+	while (iBytes == -1 || iRet < iBytes)
 	{
 		int ToRead = sizeof(buf);
-		if( iBytes != -1 )
-			ToRead  = std::min( ToRead, iBytes-iRet );
+		if (iBytes != -1)
+			ToRead = std::min(ToRead, iBytes - iRet);
 
-		const int iGot = Read( buf, ToRead );
-		if( iGot == 0 )
+		const int iGot = Read(buf, ToRead);
+		if (iGot == 0)
 			break;
-		if( iGot == -1 )
+		if (iGot == -1)
 			return -1;
 
-		sBuffer.append( buf, iGot );
+		sBuffer.append(buf, iGot);
 		iRet += iGot;
 	}
 
-	sBuffer.erase( sBuffer.begin()+iRet, sBuffer.end() );
+	sBuffer.erase(sBuffer.begin() + iRet, sBuffer.end());
 
 	return iRet;
 }
 
-int RageFileObj::Read( void *pBuffer, std::size_t iBytes, int iNmemb )
+int RageFileObj::Read(void* pBuffer, std::size_t iBytes, int iNmemb)
 {
-	const int iRet = Read( pBuffer, iBytes*iNmemb );
-	if( iRet == -1 )
+	// Calculate the exact number of bytes to read. No need to seek back.
+	std::size_t exactBytes = iBytes * iNmemb;
+
+	const int iRet = Read(pBuffer, exactBytes);
+	if (iRet == -1)
 		return -1;
 
-	/* If we're reading 10-byte blocks, and we got 27 bytes, we have 7 extra bytes.
-	 * Seek back.  XXX: seeking is very slow for eg. deflated ZIPs.  If the block is
-	 * small enough, we may be able to stuff the extra data into the buffer. */
-	const int iExtra = iRet % iBytes;
-	Seek( Tell()-iExtra );
-
-	return iRet/iBytes;
+	return iRet / iBytes;
 }
 
 /* Empty the write buffer to disk.  Return -1 on error, 0 on success. */
 int RageFileObj::EmptyWriteBuf()
 {
-	if( m_pWriteBuffer == nullptr )
+	if (m_pWriteBuffer == nullptr)
 		return 0;
 
-	if( m_iWriteBufferUsed )
+	if (m_iWriteBufferUsed)
 	{
 		/* The write buffer may not align with the actual file, if we've seeked.  Only
 		 * seek if needed. */
-		bool bSeeked = (m_iWriteBufferPos+m_iWriteBufferUsed != m_iFilePos);
-		if( bSeeked )
-			SeekInternal( m_iWriteBufferPos );
+		bool bSeeked = (m_iWriteBufferPos + m_iWriteBufferUsed != m_iFilePos);
+		if (bSeeked)
+			SeekInternal(m_iWriteBufferPos);
 
-		int iRet = WriteInternal( m_pWriteBuffer, m_iWriteBufferUsed );
+		int iRet = WriteInternal(m_pWriteBuffer, m_iWriteBufferUsed);
 
-		if( bSeeked )
-			SeekInternal( m_iFilePos );
-		if( iRet == -1 )
+		if (bSeeked)
+			SeekInternal(m_iFilePos);
+		if (iRet == -1)
 			return iRet;
 	}
 
@@ -231,49 +231,50 @@ int RageFileObj::EmptyWriteBuf()
 	return 0;
 }
 
-int RageFileObj::Write( const void *pBuffer, std::size_t iBytes )
+int RageFileObj::Write(const void* pBuffer, std::size_t iBytes)
 {
-	if( m_pWriteBuffer != nullptr )
+	// Initialize return value to -1 (indicating an error)
+	int iRet = -1;
+
+	if (m_pWriteBuffer != nullptr)
 	{
-		/* If the file position has moved away from the write buffer, or the
-		 * incoming data won't fit in the buffer, flush. */
-		if( m_iWriteBufferPos+m_iWriteBufferUsed != m_iFilePos || m_iWriteBufferUsed + (int)iBytes > m_iWriteBufferSize )
+		// Check if the write buffer position plus used space does not equal the file position,
+		// or if the used space plus the bytes to write exceeds the buffer size.
+		if (m_iWriteBufferPos + m_iWriteBufferUsed != m_iFilePos || m_iWriteBufferUsed + static_cast<int>(iBytes) > m_iWriteBufferSize)
 		{
-			int iRet = EmptyWriteBuf();
-			if( iRet == -1 )
+			iRet = EmptyWriteBuf(); // Attempt to empty the buffer,
+			if (iRet == -1)			// return -1 if it fails
 				return iRet;
 		}
 
-		if( m_iWriteBufferUsed + (int)iBytes <= m_iWriteBufferSize )
+		if (m_iWriteBufferUsed + static_cast<int>(iBytes) <= m_iWriteBufferSize)
 		{
-			memcpy( m_pWriteBuffer+m_iWriteBufferUsed, pBuffer, iBytes );
-			m_iWriteBufferUsed += iBytes;
-			m_iFilePos += iBytes;
-			if( m_bCRC32Enabled )
-				CRC32( m_iCRC32, pBuffer, iBytes );
-			return iBytes;
+			memcpy(m_pWriteBuffer + m_iWriteBufferUsed, pBuffer, iBytes);
+			m_iWriteBufferUsed += iBytes; // Increase the used space by the number of bytes written
+			iRet = iBytes;
 		}
-
-		/* We're writing a lot of data, and it won't fit in the buffer.  We already
-		 * flushed above, so m_iWriteBufferUsed; fall through and write the block normally. */
-		ASSERT_M( m_iWriteBufferUsed == 0, ssprintf("%i", m_iWriteBufferUsed) );
 	}
 
-	int iRet = WriteInternal( pBuffer, iBytes );
-	if( iRet != -1 )
+	if (iRet == -1)
+	{
+		iRet = WriteInternal(pBuffer, iBytes);
+	}
+
+	if (iRet != -1)
 	{
 		m_iFilePos += iRet;
-		if( m_bCRC32Enabled )
-			CRC32( m_iCRC32, pBuffer, iBytes );
+
+		if (m_bCRC32Enabled)
+			CRC32(m_iCRC32, pBuffer, iBytes);
 	}
 	return iRet;
 }
 
-int RageFileObj::Write( const void *pBuffer, std::size_t iBytes, int iNmemb )
+int RageFileObj::Write(const void* pBuffer, std::size_t iBytes, int iNmemb)
 {
 	/* Simple write.  We never return partial writes. */
-	int iRet = Write( pBuffer, iBytes*iNmemb ) / iBytes;
-	if( iRet == -1 )
+	int iRet = Write(pBuffer, iBytes * iNmemb) / iBytes;
+	if (iRet == -1)
 		return -1;
 	return iRet / iBytes;
 }
@@ -281,20 +282,20 @@ int RageFileObj::Write( const void *pBuffer, std::size_t iBytes, int iNmemb )
 int RageFileObj::Flush()
 {
 	int iRet = EmptyWriteBuf();
-	if( iRet == -1 )
+	if (iRet == -1)
 		return iRet;
 	return FlushInternal();
 }
 
 void RageFileObj::EnableReadBuffering()
 {
-	if( m_pReadBuffer == nullptr )
+	if (m_pReadBuffer == nullptr)
 		m_pReadBuffer = new char[BSIZE];
 }
 
-void RageFileObj::EnableWriteBuffering( int iBytes )
+void RageFileObj::EnableWriteBuffering(int iBytes)
 {
-	if( m_pWriteBuffer == nullptr )
+	if (m_pWriteBuffer == nullptr)
 	{
 		m_pWriteBuffer = new char[iBytes];
 		m_iWriteBufferPos = m_iFilePos;
@@ -302,9 +303,9 @@ void RageFileObj::EnableWriteBuffering( int iBytes )
 	}
 }
 
-void RageFileObj::EnableCRC32( bool bOn )
+void RageFileObj::EnableCRC32(bool bOn)
 {
-	if( !bOn )
+	if (!bOn)
 	{
 		m_bCRC32Enabled = false;
 		return;
@@ -314,9 +315,9 @@ void RageFileObj::EnableCRC32( bool bOn )
 	m_iCRC32 = 0;
 }
 
-bool RageFileObj::GetCRC32( std::uint32_t *iRet )
+bool RageFileObj::GetCRC32(std::uint32_t* iRet)
 {
-	if( !m_bCRC32Enabled )
+	if (!m_bCRC32Enabled)
 		return false;
 
 	*iRet = m_iCRC32;
@@ -325,57 +326,57 @@ bool RageFileObj::GetCRC32( std::uint32_t *iRet )
 
 /* Read up to the next \n, and return it in out.  Strip the \n.  If the \n is
  * preceded by a \r (DOS newline), strip that, too. */
-int RageFileObj::GetLine( RString &sOut )
+int RageFileObj::GetLine(RString& sOut)
 {
 	sOut = "";
 
-	if( m_bEOF )
+	if (m_bEOF)
 	{
 		return 0;
 	}
 	EnableReadBuffering();
 
 	bool bGotData = false;
-	for(;;)
+	for (;;)
 	{
 		bool bDone = false;
 
 		/* Find the end of the block we'll move to out. */
-		char *p = (char *) memchr( m_pReadBuf, '\n', m_iReadBufAvail );
+		char* p = static_cast<char*>(memchr(m_pReadBuf, '\n', m_iReadBufAvail));
 		bool bReAddCR = false;
-		if( p == nullptr )
+		if (p == nullptr)
 		{
 			/* Hack: If the last character of the buffer is \r, then it's likely that an
 			 * \r\n has been split across buffers.  Move everything else, then move the
 			 * \r to the beginning of the buffer and handle it the next time around the loop. */
-			if( m_iReadBufAvail && m_pReadBuf[m_iReadBufAvail-1] == '\r' )
+			if (m_iReadBufAvail && m_pReadBuf[m_iReadBufAvail - 1] == '\r')
 			{
 				bReAddCR = true;
 				--m_iReadBufAvail;
 			}
 
-			p = m_pReadBuf+m_iReadBufAvail; /* everything */
+			p = m_pReadBuf + m_iReadBufAvail; /* everything */
 		}
 		else
 		{
 			bDone = true;
 		}
 
-		if( p >= m_pReadBuf )
+		if (p >= m_pReadBuf)
 		{
-			char *RealEnd = p;
-			if( bDone && p > m_pReadBuf && p[-1] == '\r' )
+			char* RealEnd = p;
+			if (bDone && p > m_pReadBuf && p[-1] == '\r')
 			{
 				--RealEnd; /* not including \r */
 			}
-			sOut.append( m_pReadBuf, RealEnd );
+			sOut.append(m_pReadBuf, RealEnd);
 
-			if( bDone )
+			if (bDone)
 			{
 				++p; /* skip \n */
 			}
-			const int iUsed = p-m_pReadBuf;
-			if( iUsed )
+			const int iUsed = p - m_pReadBuf;
+			if (iUsed)
 			{
 				m_iReadBufAvail -= iUsed;
 				m_iFilePos += iUsed;
@@ -384,15 +385,15 @@ int RageFileObj::GetLine( RString &sOut )
 			}
 		}
 
-		if( bReAddCR )
+		if (bReAddCR)
 		{
-			ASSERT( m_iReadBufAvail == 0 );
+			ASSERT(m_iReadBufAvail == 0);
 			m_pReadBuf = m_pReadBuffer;
 			m_pReadBuffer[m_iReadBufAvail] = '\r';
 			++m_iReadBufAvail;
 		}
 
-		if( bDone )
+		if (bDone)
 			break;
 
 		/* We need more data. */
@@ -402,53 +403,48 @@ int RageFileObj::GetLine( RString &sOut )
 
 		/* If we've read data already, then don't mark EOF yet.  Wait until the
 		 * next time we're called. */
-		if( iSize == 0 && !bGotData )
+		if (iSize == 0 && !bGotData)
 		{
 			m_bEOF = true;
 			return 0;
 		}
-		if( iSize == -1 )
+		if (iSize == -1)
 			return -1; // error
-		if( iSize == 0 )
+		if (iSize == 0)
 			break; // EOF or error
 	}
-	return bGotData? 1:0;
+	return bGotData ? 1 : 0;
 }
 
 // Always use "\r\n".  Even though the program may be running on Unix, the
 // files written to a memory card are likely to be edited using Windows.
-//#if defined(WIN32)
 #define NEWLINE "\r\n"
-//#else
-//#define NEWLINE "\n"
-//#endif
 
-int RageFileObj::PutLine( const RString &sStr )
+int RageFileObj::PutLine(const RString& sStr)
 {
-	if( Write(sStr) == -1 )
+	if (Write(sStr) == -1)
 		return -1;
-	return Write( RString(NEWLINE) );
+	return Write(NEWLINE);
 }
 
-/* Fill the internal buffer.  This never marks EOF, since this is an internal, hidden
- * read; EOF should only be set as a result of a real read.  (That is, disabling buffering
- * shouldn't cause the results of AtEOF to change.) */
 int RageFileObj::FillReadBuf()
 {
 	/* Don't call this unless buffering is enabled. */
-	ASSERT( m_pReadBuffer != nullptr );
+	ASSERT(m_pReadBuffer != nullptr);
 
 	/* The buffer starts at m_Buffer; any data in it starts at m_pReadBuf; space between
 	 * the two is old data that we've read.  (Don't mangle that data; we can use it
 	 * for seeking backwards.) */
-	const int iBufAvail = BSIZE - (m_pReadBuf-m_pReadBuffer) - m_iReadBufAvail;
-	ASSERT_M( iBufAvail >= 0, ssprintf("%p, %p, %i", static_cast<void*>(m_pReadBuf), static_cast<void*>(m_pReadBuffer), BSIZE ) );
-	const int iSize = this->ReadInternal( m_pReadBuf+m_iReadBufAvail, iBufAvail );
+	const int iBufAvail = BSIZE - (m_pReadBuf - m_pReadBuffer) - m_iReadBufAvail;
+	ASSERT_M(iBufAvail >= 0, ssprintf("%p, %p, %i", static_cast<void*>(m_pReadBuf), static_cast<void*>(m_pReadBuffer), BSIZE));
 
-	if( iSize > 0 )
-		m_iReadBufAvail += iSize;
+	int iRead = this->ReadInternal(m_pReadBuf + m_iReadBufAvail, iBufAvail);
+	if (iRead > 0)
+	{
+		m_iReadBufAvail += iRead;
+	}
 
-	return iSize;
+	return iRead;
 }
 
 void RageFileObj::ResetReadBuf()
@@ -481,4 +477,3 @@ void RageFileObj::ResetReadBuf()
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-
