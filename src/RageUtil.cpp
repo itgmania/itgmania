@@ -1190,9 +1190,21 @@ void SortRStringArray( std::vector<RString> &arrayRStrings, const bool bSortAsce
 			bSortAscending?CompareRStringsAsc:CompareRStringsDesc );
 }
 
-float calc_mean( const float *pStart, const float *pEnd )
+float calc_mean(const float* pStart, const float* pEnd)
 {
-	return std::accumulate( pStart, pEnd, 0.f ) / std::distance( pStart, pEnd );
+	/* The Kahan summation algorithm is used here to prevent
+	 * situations where the low order bits may be lost.
+	 * https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
+	float sum = 0.0f;
+	float c = 0.0f;
+	for (const float* p = pStart; p != pEnd; ++p)
+	{
+		float y = *p - c;
+		float t = sum + y;
+		c = (t - sum) - y;
+		sum = t;
+	}
+	return sum / (pEnd - pStart);
 }
 
 float calc_stddev( const float *pStart, const float *pEnd, bool bSample )
