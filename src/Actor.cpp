@@ -911,6 +911,8 @@ void Actor::UpdateInternal(float delta_time)
 	case CLOCK_TIMER:
 		m_fSecsIntoEffect += delta_time;
 		m_fEffectDelta = delta_time;
+		// Wrap the counter, so it doesn't increase indefinitely (causing loss
+		// of precision if a screen is left to sit for a day).
 		if (m_fSecsIntoEffect > effectPeriod)
 		{
 			m_fSecsIntoEffect -= effectPeriod;
