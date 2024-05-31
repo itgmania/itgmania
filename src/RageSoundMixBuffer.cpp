@@ -4,17 +4,24 @@
 
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 
 RageSoundMixBuffer::RageSoundMixBuffer()
 {
-	m_iBufSize = m_iBufUsed = 0;
-	m_pMixbuf = nullptr;
+	m_pMixbuf = static_cast<float*>(std::malloc(BUF_SIZE));
+	if (m_pMixbuf == nullptr) {
+		ASSERT_M(false, "Failed to allocate memory for the sound mixing buffer");
+	}
+
+	std::memset(m_pMixbuf, 0, m_iBufSize * SIZE_OF_FLOAT);
+
+	m_iBufUsed = 0;
 	m_iOffset = 0;
 }
 
 RageSoundMixBuffer::~RageSoundMixBuffer()
 {
-	free( m_pMixbuf );
+	std::free(m_pMixbuf);
 }
 
 /* write() will start mixing iOffset samples into the buffer.  Be careful; this is
@@ -24,18 +31,22 @@ void RageSoundMixBuffer::SetWriteOffset( int iOffset )
 	m_iOffset = iOffset;
 }
 
-void RageSoundMixBuffer::Extend( unsigned iSamples )
+void RageSoundMixBuffer::Extend(unsigned iSamples)
 {
-	const unsigned realsize = iSamples+m_iOffset;
+	const std::uint64_t realsize = static_cast<std::uint64_t>(iSamples) + m_iOffset;
 	if( m_iBufSize < realsize )
 	{
-		m_pMixbuf = (float *) realloc( m_pMixbuf, sizeof(float) * realsize );
-		m_iBufSize = realsize;
+		m_pMixbuf = static_cast<float*>(std::realloc(m_pMixbuf, SIZE_OF_FLOAT * realsize));
+		if (m_pMixbuf == nullptr)
+		{
+			ASSERT_M(false, "Failed to re-allocate memory for the sound mixing buffer.");
+		}
+	m_iBufSize = realsize;
 	}
 
 	if( m_iBufUsed < realsize )
 	{
-		memset( m_pMixbuf + m_iBufUsed, 0, (realsize - m_iBufUsed) * sizeof(float) );
+		std::memset(m_pMixbuf + m_iBufUsed, 0, (realsize - m_iBufUsed) * SIZE_OF_FLOAT);
 		m_iBufUsed = realsize;
 	}
 }
@@ -73,7 +84,7 @@ void RageSoundMixBuffer::read( std::int16_t *pBuf )
 
 void RageSoundMixBuffer::read( float *pBuf )
 {
-	memcpy( pBuf, m_pMixbuf, m_iBufUsed*sizeof(float) );
+	std::memcpy( pBuf, m_pMixbuf, m_iBufUsed * SIZE_OF_FLOAT );
 	m_iBufUsed = 0;
 }
 

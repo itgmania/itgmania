@@ -1108,35 +1108,29 @@ void RageSoundDriver_WDMKS::Read( void *pData, int iFrames, int iLastCursorPos, 
 	/* If we need conversion, read into a temporary buffer.  Otherwise, read directly
 	 * into the target buffer. */
 	int iChannels = 2;
-	if( m_pStream->m_iDeviceOutputChannels == iChannels &&
-		m_pStream->m_DeviceSampleFormat == DeviceSampleFormat_Int16 )
-	{
-		std::int16_t *pBuf = (std::int16_t *) pData;
-		this->Mix( pBuf, iFrames, iLastCursorPos, iCurrentFrame );
-		return;
-	}
+	int iMaxFrames = std::max(iChannels, static_cast<int>(m_pStream->m_iDeviceOutputChannels));
+	int iMaxBytesPerSample = std::max(static_cast<int>(sizeof(std::int16_t)), static_cast<int>(m_pStream->m_iBytesPerOutputSample));
+	std::int16_t* pBuf = (std::int16_t*)alloca(iFrames * iMaxFrames * iMaxBytesPerSample);
 
-	std::int16_t *pBuf = (std::int16_t *) alloca( iFrames * iChannels * sizeof(std::int16_t) );
-	this->Mix( (std::int16_t *) pBuf, iFrames, iLastCursorPos, iCurrentFrame );
+	this->Mix(pBuf, iFrames, iLastCursorPos, iCurrentFrame);
 
 	/* If the device has other than 2 channels, convert. */
 	if( m_pStream->m_iDeviceOutputChannels != iChannels )
 	{
-		std::int16_t *pTempBuf = (std::int16_t *) alloca( iFrames * m_pStream->m_iBytesPerOutputSample * m_pStream->m_iDeviceOutputChannels );
-		MapChannels( (std::int16_t *) pBuf, pTempBuf, iChannels, m_pStream->m_iDeviceOutputChannels, iFrames );
+		std::int16_t* pTempBuf = pBuf + iFrames * iChannels;
+		MapChannels(pBuf, pTempBuf, iChannels, m_pStream->m_iDeviceOutputChannels, iFrames);
 		pBuf = pTempBuf;
 	}
 
-	/* If the device format isn't std::int16_t, convert. */
 	if( m_pStream->m_DeviceSampleFormat != DeviceSampleFormat_Int16 )
 	{
 		int iSamples = iFrames * m_pStream->m_iDeviceOutputChannels;
-		void *pTempBuf = alloca( iSamples * m_pStream->m_iBytesPerOutputSample );
-		MapSampleFormatFromInt16( (std::int16_t *) pBuf, pTempBuf, iSamples, m_pStream->m_DeviceSampleFormat );
+		void* pTempBuf = pBuf + iSamples;
+		MapSampleFormatFromInt16(pBuf, pTempBuf, iSamples, m_pStream->m_DeviceSampleFormat);
 		pBuf = (std::int16_t *) pTempBuf;
 	}
 
-	memcpy( pData, pBuf, iFrames * m_pStream->m_iDeviceOutputChannels * m_pStream->m_iBytesPerOutputSample );
+	std::memcpy(pData, pBuf, iFrames * m_pStream->m_iDeviceOutputChannels * m_pStream->m_iBytesPerOutputSample);
 }
 
 bool RageSoundDriver_WDMKS::Fill( int iPacket, RString &sError )
@@ -1156,10 +1150,17 @@ bool RageSoundDriver_WDMKS::Fill( int iPacket, RString &sError )
 
 void RageSoundDriver_WDMKS::MixerThread()
 {
-	/* I don't trust this driver with THREAD_PRIORITY_TIME_CRITICAL just yet. */
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST) )
-//	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL) )
-		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
+	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL) )
+		{
+		if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST) )
+			{
+			LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound mixer thread priority") );
+			}
+		else
+			{
+			LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound mixer thread priority to TIME_CRITICAL, set to HIGHEST instead") );
+			}
+	}
 
 	/* Enable priority boosting. */
 	SetThreadPriorityBoost( GetCurrentThread(), FALSE );

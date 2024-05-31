@@ -6,7 +6,13 @@
 #include "RageSoundReader_Filter.h"
 #include "RageUtil_CircularBuffer.h"
 #include "RageThreads.h"
+
 #include <list>
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 
 class RageThread;
 class RageSoundReader_ThreadedBuffer: public RageSoundReader_Filter
@@ -70,7 +76,20 @@ private:
 
 	RageThread m_Thread;
 	bool m_bShutdownThread;
-	static int StartBufferingThread( void *p ) { ((RageSoundReader_ThreadedBuffer *) p)->BufferingThread(); return 0; }
+	static int StartBufferingThread(void* p)
+	{
+#ifdef _WIN32
+		// Get the current thread handle
+		HANDLE hThread = GetCurrentThread();
+
+		// Attempt to set the thread to highest priority
+		SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
+#endif
+
+		((RageSoundReader_ThreadedBuffer*)p)->BufferingThread();
+		return 0;
+	}
+
 	void BufferingThread();
 };
 

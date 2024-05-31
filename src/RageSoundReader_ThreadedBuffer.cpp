@@ -16,7 +16,7 @@
  * takes more CPU than filling 4k frames, and may cause a skip. */
 
 // The amount of data to read at once:
-static const unsigned g_iReadBlockSizeFrames = 1024;
+static const unsigned g_iReadBlockSizeFrames = 1024; // TODO: profile this against other values
 
 // The maximum number of frames to buffer:
 static const int g_iStreamingBufferFrames = 1024*32;
@@ -44,8 +44,8 @@ RageSoundReader_ThreadedBuffer::RageSoundReader_ThreadedBuffer( RageSoundReader 
 	m_StreamPosition.back().iPositionOfFirstFrame = pSource->GetNextSourceFrame();
 	m_StreamPosition.back().fRate = pSource->GetStreamToSourceRatio();
 
-	m_Thread.SetName( "Streaming sound buffering" );
-	m_Thread.Create( StartBufferingThread, this );
+	m_Thread.SetName("Streaming sound buffering");
+	m_Thread.Create(StartBufferingThread, this);
 }
 
 RageSoundReader_ThreadedBuffer::RageSoundReader_ThreadedBuffer( const RageSoundReader_ThreadedBuffer &cpy ):
@@ -191,6 +191,12 @@ bool RageSoundReader_ThreadedBuffer::SetProperty( const RString &sProperty, floa
 
 void RageSoundReader_ThreadedBuffer::BufferingThread()
 {
+	// Calculate these values once outside the loop
+	float fTimeFilled = static_cast<float>(g_iReadBlockSizeFrames) / m_iSampleRate;
+	float fTimeToSleep = fTimeFilled / 2;
+	if (fTimeToSleep == 0)
+		fTimeToSleep = fTimeFilled;
+
 	m_Event.Lock();
 	while( !m_bShutdownThread )
 	{
@@ -204,8 +210,8 @@ void RageSoundReader_ThreadedBuffer::BufferingThread()
 		m_bFilling = true;
 
 		int iFramesToFill = g_iReadBlockSizeFrames;
-		if( GetFilledFrames() < g_iMinFillFrames )
-			iFramesToFill = std::max( iFramesToFill, g_iMinFillFrames - GetFilledFrames() );
+		if (GetFilledFrames() < g_iMinFillFrames)
+			iFramesToFill = std::max(iFramesToFill, g_iMinFillFrames - GetFilledFrames());
 
 		int iRet = FillFrames( iFramesToFill );
 
@@ -220,13 +226,7 @@ void RageSoundReader_ThreadedBuffer::BufferingThread()
 			continue;
 		}
 
-		/* Sleep proportionately to the amount of data we buffered, so we
-		 * fill at a reasonable pace. */
-		float fTimeFilled = float(g_iReadBlockSizeFrames) / m_iSampleRate;
-		float fTimeToSleep = fTimeFilled / 2;
-		if( fTimeToSleep == 0 )
-			fTimeToSleep = float(g_iReadBlockSizeFrames) / m_iSampleRate;
-
+		// Sleep proportionately to the amount of data we buffered, so we fill at a reasonable pace.
 		if( m_Event.WaitTimeoutSupported() )
 		{
 			RageTimer time;
