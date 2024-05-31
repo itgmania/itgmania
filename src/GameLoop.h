@@ -3,7 +3,7 @@
 /** @brief Main rendering and update loop. */
 
 // for BoostThreadPriorityForWin32
-#ifdef _WINDOWS 
+#ifdef _WIN32 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
@@ -18,7 +18,7 @@ namespace GameLoop
 	void StartConcurrentRendering();
 	void FinishConcurrentRendering();
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 	void BoostThreadPriorityForWin32(HANDLE hThread);
 #endif
 

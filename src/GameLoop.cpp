@@ -25,7 +25,7 @@
 #include <vector>
 
 // for BoostThreadPriorityForWin32
-#ifdef _WINDOWS 
+#ifdef _WIN32 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
@@ -76,7 +76,7 @@ static bool ChangeAppPri()
 		return false;
 
 	// if using NTPAD don't boost or else input is laggy
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 	{
 		std::vector<InputDeviceInfo> vDevices;
 
@@ -409,6 +409,7 @@ void ConcurrentRenderer::Stop()
 	DISPLAY->EndConcurrentRenderingMainThread();
 }
 
+#ifdef _WIN32
 void BoostThreadPriorityForWin32(HANDLE hThread)
 {
 	if (!SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST))
@@ -416,11 +417,12 @@ void BoostThreadPriorityForWin32(HANDLE hThread)
 		LOG->Warn("Failed to boost thread priority in GameLoop.cpp");
 	}
 }
+#endif _WIN32
 
 void ConcurrentRenderer::RenderThread()
 {
 
-#ifdef _WINDOWS // Boost thread priority if running on Windows
+#ifdef _WIN32 // Boost thread priority if running on Windows
 	HANDLE hThread = GetCurrentThread();
 	BoostThreadPriorityForWin32(hThread);
 #endif
