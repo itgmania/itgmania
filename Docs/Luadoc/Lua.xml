@@ -2880,6 +2880,11 @@
 			<EnumValue name='&apos;StyleType_OnePlayerTwoSides&apos;' value='2'/>
 			<EnumValue name='&apos;StyleType_TwoPlayersSharedSides&apos;' value='3'/>
 		</Enum>
+		<Enum name='SyncBias'>
+			<EnumValue name='&apos;SyncBias_NA&apos;' value='0'/>
+			<EnumValue name='&apos;SyncBias_Null&apos;' value='1'/>
+			<EnumValue name='&apos;SyncBias_ITG&apos;' value='2'/>
+		</Enum>
 		<Enum name='TapNoteScore'>
 			<EnumValue name='&apos;TapNoteScore_None&apos;' value='0'/>
 			<EnumValue name='&apos;TapNoteScore_HitMine&apos;' value='1'/>
