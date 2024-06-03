@@ -190,6 +190,12 @@ static StepsType GetTypeFromMode(const RString &mode)
 static NoteData ParseNoteData(RString &step1, RString &step2,
 			      Steps &out, const RString &path)
 {
+	if (step1.size() < 2 && step2.size() < 2)
+	{
+		LOG->Warn("Didn't get enough data when attempting to load a DWI file");
+		// Handle the error by returning an empty NoteData object
+		return NoteData();
+	}
 	g_mapDanceNoteToNoteDataColumn.clear();
 	switch( out.m_StepsType )
 	{
@@ -300,7 +306,7 @@ static NoteData ParseNoteData(RString &step1, RString &step2,
 						/* It's a jump.
 						 * We need to keep reading notes until we hit a >. */
 						jump = true;
-						i++;
+						c = sStepData[i++];
 					}
 
 					const int iIndex = BeatToNoteRow( (float)fCurrentBeat );
@@ -354,6 +360,10 @@ static NoteData ParseNoteData(RString &step1, RString &step2,
 								newNoteData.SetTapNote(iCol2,
 										       iIndex,
 										       TAP_ORIGINAL_HOLD_HEAD);
+						}
+
+						if (jump && i < sStepData.size()) {
+							c = sStepData[i++];
 						}
 					}
 					while( jump );
