@@ -603,6 +603,7 @@ public:
 	enum TimingDataInformationChoice
 	{
 		beat_0_offset,
+		sync_bias,
 		bpm,
 		stop,
 		delay,
