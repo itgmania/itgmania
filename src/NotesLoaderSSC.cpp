@@ -240,6 +240,10 @@ void SetOffset(SongTagInfo& info)
 {
 	info.song->m_SongTiming.m_fBeat0OffsetInSeconds = StringToFloat((*info.params)[1]);
 }
+void SetSyncBias(SongTagInfo& info)
+{
+	info.song->m_SongTiming.m_SyncBias = StringToSyncBias((*info.params)[1]);
+}
 void SetSongStops(SongTagInfo& info)
 {
 	info.loader->ProcessStops(info.song->m_SongTiming, (*info.params)[1]);
@@ -574,6 +578,7 @@ struct ssc_parser_helper_t
 		song_tag_handlers["KEYSOUNDS"]= &SetKeysounds;
 		song_tag_handlers["ATTACKS"]= &SetAttacks;
 		song_tag_handlers["OFFSET"]= &SetOffset;
+		song_tag_handlers["SYNCBIAS"]= &SetSyncBias;
 		/* Below are the song based timings that should only be used
 		 * if the steps do not have their own timing. */
 		song_tag_handlers["STOPS"]= &SetSongStops;

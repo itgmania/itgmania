@@ -415,6 +415,8 @@ public:
 			}
 		}
 
+		// TODO: COMPARE( m_fBeat0OffsetInSeconds );
+		// COMPARE( m_SyncBias );
 		return this->m_fBeat0OffsetInSeconds == other.m_fBeat0OffsetInSeconds;
 	}
 
@@ -459,6 +461,13 @@ public:
 
 	/** @brief The initial offset of a song. */
 	float	m_fBeat0OffsetInSeconds;
+
+	/**
+	 * @brief The sync bias of a song.
+	 *
+	 * Sync bias may adjust offset of the song depending on machine's sync bias.
+	 */
+	SyncBias m_SyncBias;
 
 	// XXX: this breaks encapsulation. get rid of it ASAP
 	std::vector<RString> ToVectorString(TimingSegmentType tst, int dec = 6) const;

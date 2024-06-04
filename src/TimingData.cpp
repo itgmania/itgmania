@@ -18,7 +18,7 @@ static const int INVALID_INDEX = -1;
 
 TimingSegment* GetSegmentAtRow( int iNoteRow, TimingSegmentType tst );
 
-TimingData::TimingData(float fOffset) : m_fBeat0OffsetInSeconds(fOffset)
+TimingData::TimingData(float fOffset) : m_fBeat0OffsetInSeconds(fOffset), m_SyncBias(SYNC_BIAS_NA)
 {
 }
 
@@ -28,6 +28,7 @@ void TimingData::Copy( const TimingData& cpy )
 	Clear();
 
 	m_fBeat0OffsetInSeconds = cpy.m_fBeat0OffsetInSeconds;
+	m_SyncBias = cpy.m_SyncBias;
 	m_sFile = cpy.m_sFile;
 
 	FOREACH_TimingSegmentType( tst )
