@@ -112,20 +112,18 @@ void RageSoundManager::Update()
 	/* Scan m_mapPreloadedSounds for sounds that are no longer loaded, and delete them. */
 	g_SoundManMutex.Lock(); /* lock for access to m_mapPreloadedSounds, owned_sounds */
 	{
-		std::map<RString, RageSoundReader_Preload*>::iterator it, next;
-		it = m_mapPreloadedSounds.begin();
-
-		while( it != m_mapPreloadedSounds.end() )
+		for( auto it = m_mapPreloadedSounds.begin(); it != m_mapPreloadedSounds.end(); )
 		{
-			next = it; ++next;
 			if( it->second->GetReferenceCount() == 1 )
 			{
 				LOG->Trace( "Deleted old sound \"%s\"", it->first.c_str() );
 				delete it->second;
-				m_mapPreloadedSounds.erase( it );
+				it = m_mapPreloadedSounds.erase(it);
 			}
-
-			it = next;
+			else
+			{
+				++it;
+			}
 		}
 	}
 
