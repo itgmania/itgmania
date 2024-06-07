@@ -95,6 +95,18 @@ static void CheckFocus()
 	}
 }
 
+static void CheckInputDevices()
+{
+	if (INPUTMAN->DevicesChanged())
+	{
+		INPUTFILTER->Reset();    // fix "buttons stuck" if button held while unplugged
+		INPUTMAN->LoadDrivers();
+		RString sMessage;
+		if (INPUTMAPPER->CheckForChangedInputDevicesAndRemap(sMessage))
+			SCREENMAN->SystemMessage(sMessage);
+	}
+}
+
 // On the next update, change themes, and load sNewScreen.
 static RString g_NewTheme;
 static RString g_NewGame;
@@ -281,6 +293,8 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 
 void GameLoop::RunGameLoop()
 {
+	static int CheckInputDevicesCounter = 0;
+	
 	/* People may want to do something else while songs are loading, so do
 	 * this after loading songs. */
 	if( ChangeAppPri() )
@@ -300,16 +314,15 @@ void GameLoop::RunGameLoop()
 		CheckFocus();
 
 		UpdateAllButDraw(false);
-
-		if( INPUTMAN->DevicesChanged() )
+		
+		// This loop runs every frame, so the input devices will be checked every 500 frames.
+		if (CheckInputDevicesCounter % (500) == 0)
 		{
-			INPUTFILTER->Reset();	// fix "buttons stuck" once per frame if button held while unplugged
-			INPUTMAN->LoadDrivers();
-			RString sMessage;
-			if( INPUTMAPPER->CheckForChangedInputDevicesAndRemap(sMessage) )
-				SCREENMAN->SystemMessage( sMessage );
+			CheckInputDevices();
+			CheckInputDevicesCounter = 0;
 		}
-
+		CheckInputDevicesCounter++;
+		
 		SCREENMAN->Draw();
 	}
 
