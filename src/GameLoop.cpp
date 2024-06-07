@@ -106,6 +106,25 @@ void GameLoop::ChangeGame(const RString& new_game, const RString& new_theme)
 #include "Game.h"
 namespace
 {
+	RString GetNewScreenName()
+	{
+		if (THEME->HasMetric("Common", "AfterThemeChangeScreen"))
+		{
+			RString after_screen = THEME->GetMetric("Common", "AfterThemeChangeScreen");
+			if (SCREENMAN->IsScreenNameValid(after_screen))
+			{
+				return after_screen;
+			}
+		}
+
+		RString new_screen = THEME->GetMetric("Common", "InitialScreen");
+		if (!SCREENMAN->IsScreenNameValid(new_screen))
+		{
+			return "ScreenInitialScreenIsInvalid";
+		}
+		return new_screen;
+	}
+
 	void DoChangeTheme()
 	{
 		SAFE_DELETE( SCREENMAN );
@@ -134,21 +153,10 @@ namespace
 		// So now the correct thing to do is for a theme to specify its entry
 		// point after a theme change, ensuring that we are going to a valid
 		// screen and not crashing. -Kyz
-		RString new_screen= THEME->GetMetric("Common", "InitialScreen");
-		if(THEME->HasMetric("Common", "AfterThemeChangeScreen"))
-		{
-			RString after_screen= THEME->GetMetric("Common", "AfterThemeChangeScreen");
-			if(SCREENMAN->IsScreenNameValid(after_screen))
-			{
-				new_screen= after_screen;
-			}
-		}
-		if(!SCREENMAN->IsScreenNameValid(new_screen))
-		{
-			new_screen= "ScreenInitialScreenIsInvalid";
-		}
-		SCREENMAN->SetNewScreen(new_screen);
+		RString newScreenName = GetNewScreenName();
+		SCREENMAN->SetNewScreen(newScreenName);
 
+		// Indicate no further theme change is needed
 		g_NewTheme = RString();
 	}
 
