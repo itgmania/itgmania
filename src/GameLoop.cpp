@@ -85,14 +85,6 @@ static void CheckFocus()
 
 	// If we lose focus, we may lose input events, especially key releases.
 	INPUTFILTER->Reset();
-
-	if( ChangeAppPri() )
-	{
-		if( HOOKS->AppHasFocus() )
-			HOOKS->BoostPriority();
-		else
-			HOOKS->UnBoostPriority();
-	}
 }
 
 // On the next update, change themes, and load sNewScreen.
