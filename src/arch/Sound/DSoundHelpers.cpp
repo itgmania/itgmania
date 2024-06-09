@@ -42,7 +42,7 @@ BOOL CALLBACK DSound::EnumCallback( LPGUID lpGuid, LPCSTR lpcstrDescription, LPC
 void DSound::SetPrimaryBufferMode()
 {
 	DSBUFFERDESC format;
-	memset( &format, 0, sizeof(format) );
+	ZeroMemory( &format, sizeof(format) );
 	format.dwSize = sizeof(format);
 	format.dwFlags = DSBCAPS_PRIMARYBUFFER;
 	format.dwBufferBytes = 0;
@@ -57,7 +57,7 @@ void DSound::SetPrimaryBufferMode()
 	}
 
 	WAVEFORMATEX waveformat;
-	memset( &waveformat, 0, sizeof(waveformat) );
+	ZeroMemory(&waveformat, sizeof(waveformat));
 	waveformat.cbSize = 0;
 	waveformat.wFormatTag = WAVE_FORMAT_PCM;
 	waveformat.wBitsPerSample = 16;
@@ -78,6 +78,9 @@ void DSound::SetPrimaryBufferMode()
 	else if( waveformat.nSamplesPerSec != 44100 )
 		LOG->Warn( "Primary buffer set to %i instead of 44100", waveformat.nSamplesPerSec );
 
+	pBuffer->Release();
+}
+
 	/*
 	 * MS docs:
 	 *
@@ -90,13 +93,7 @@ void DSound::SetPrimaryBufferMode()
 	 * short breaks of silence, you can force the mixer engine to remain active by calling the
 	 * IDirectSoundBuffer::Play method for the primary buffer. The mixer will continue to run
 	 * silently.
-	 *
-	 * However, I just added the above code and I don't want to change more until it's tested.
 	 */
-//	pBuffer->Play( 0, 0, DSBPLAY_LOOPING );
-
-	pBuffer->Release();
-}
 
 DSound::DSound()
 {
@@ -186,8 +183,7 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 
 	/* The size of the actual DSound buffer.  This can be large; we generally
 	 * won't fill it completely. */
-	m_iBufferSize = 1024*64;
-	m_iBufferSize = std::max( m_iBufferSize, m_iWriteAhead );
+	m_iBufferSize = KB_512_AS_BYTES;
 
 	WAVEFORMATEX waveformat;
 	memset( &waveformat, 0, sizeof(waveformat) );
@@ -366,58 +362,54 @@ void DSoundBuf::CheckWriteahead( int iCursorStart, int iCursorEnd )
 /* Figure out if we've underrun, and act if appropriate. */
 void DSoundBuf::CheckUnderrun( int iCursorStart, int iCursorEnd )
 {
-	/* If the buffer is full, we can't be underrunning. */
-	if( m_iBufferBytesFilled >= m_iBufferSize )
-		return;
+	// Store the buffer size in a variable to avoid multiple calls
+	int storedSizeOfBuffer = m_iBufferSize;
 
-	/* If nothing is expected to be filled, we can't underrun. */
-	if( iCursorStart == iCursorEnd )
-		return;
-
-	/* If we're already in a recovering-from-underrun state, stop. */
-	if( m_iExtraWriteahead )
+	// If the buffer is full or nothing is expected to be filled, stop.
+	if( m_iBufferBytesFilled >= storedSizeOfBuffer || iCursorStart == iCursorEnd || m_iExtraWriteahead )
 		return;
 
 	int iFirstByteFilled = m_iWriteCursor - m_iBufferBytesFilled;
-	wrap( iFirstByteFilled, m_iBufferSize );
+	wrap( iFirstByteFilled, storedSizeOfBuffer );
 
-	/* If the end of the play cursor has data, we haven't underrun. */
+	// If the end of the play cursor has data, we haven't underrun.
 	if( m_iBufferBytesFilled > 0 && contained(iFirstByteFilled, m_iWriteCursor, iCursorEnd) )
 		return;
 
-	/* Extend the writeahead to force fill as much as required to stop underrunning.
-	 * This has a major benefit: if we havn't skipped so long we've passed a whole
-	 * buffer (64k = ~350ms), this doesn't break stride.  We'll skip forward, but
-	 * the beat won't be lost, which is a lot easier to recover from in play. */
-	/* XXX: If this happens repeatedly over a period of time, increase writeahead. */
-	/* XXX: What was I doing here?  This isn't working.  We want to know the writeahead
-	 * value needed to fill from the current iFirstByteFilled all the way to iCursorEnd. */
-	// int iNeededWriteahead = (iCursorStart + writeahead) - m_iWriteCursor;
+	// Calculate the required write-ahead size. This is the distance from the first filled byte
+	// to the end of the play cursor. If the buffer wraps around, the wrap function adjusts the value.
 	int iNeededWriteahead = iCursorEnd - iFirstByteFilled;
-	wrap( iNeededWriteahead, m_iBufferSize );
+	wrap( iNeededWriteahead, storedSizeOfBuffer );
+
+	// If the required write-ahead size is greater than the current write-ahead size,
+	// it means we're not keeping enough data in the buffer to prevent underruns.
+	// In this case, we increase the write-ahead size to match the required size.
 	if( iNeededWriteahead > m_iWriteAhead )
 	{
+		// The extra write-ahead is the amount by which we need to increase the write-ahead size.
 		m_iExtraWriteahead = iNeededWriteahead - m_iWriteAhead;
+
+		// Update the write-ahead size.
 		m_iWriteAhead = iNeededWriteahead;
 	}
 
 	int iMissedBy = iCursorEnd - m_iWriteCursor;
-	wrap( iMissedBy, m_iBufferSize );
+	wrap( iMissedBy, storedSizeOfBuffer );
 
-	RString s = ssprintf( "underrun: %i..%i (%i) filled but cursor at %i..%i; missed it by %i",
-		iFirstByteFilled, m_iWriteCursor, m_iBufferBytesFilled, iCursorStart, iCursorEnd, iMissedBy );
+	RString s = ssprintf("underrun: %i..%i (%i) filled but cursor at %i..%i; missed it by %i",
+		iFirstByteFilled, m_iWriteCursor, m_iBufferBytesFilled, iCursorStart, iCursorEnd, iMissedBy);
 
 	if( m_iExtraWriteahead )
 		s += ssprintf( "; extended writeahead by %i to %i", m_iExtraWriteahead, m_iWriteAhead );
 
 	s += "; last: ";
-	for( int i = 0; i < 4; ++i )
-		s += ssprintf( "%i, %i; ", m_iLastCursors[i][0], m_iLastCursors[i][1] );
+	for (int i = 0; i < 4; ++i)
+		s += ssprintf("%i, %i; ", m_iLastCursors[i][0], m_iLastCursors[i][1]);
 
 	LOG->Trace( "%s", s.c_str() );
 }
 
-bool DSoundBuf::get_output_buf( char **pBuffer, unsigned *pBufferSize, int iChunksize )
+bool DSoundBuf::get_output_buf(char** pBuffer, unsigned* pBufferSize, int iChunksize)
 {
 	ASSERT( !m_bBufferLocked );
 
@@ -441,7 +433,7 @@ bool DSoundBuf::get_output_buf( char **pBuffer, unsigned *pBufferSize, int iChun
 		return false;
 	}
 
-	memmove( &m_iLastCursors[0][0], &m_iLastCursors[1][0], sizeof(int)*6 );
+	memmove(&m_iLastCursors[0][0], &m_iLastCursors[1][0], sizeof(int) * 6);
 	m_iLastCursors[3][0] = iCursorStart;
 	m_iLastCursors[3][1] = iCursorEnd;
 

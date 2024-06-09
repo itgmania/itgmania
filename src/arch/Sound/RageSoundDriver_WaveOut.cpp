@@ -19,14 +19,18 @@
 
 REGISTER_SOUND_DRIVER_CLASS( WaveOut );
 
-const int channels = 2;
-const int bytes_per_frame = channels*2;		/* 16-bit */
-const int buffersize_frames = 1024*8;	/* in frames */
-const int buffersize = buffersize_frames * bytes_per_frame; /* in bytes */
+// To do: Implement the following functions:
+// - allow the user to set the desired buffer size in Preferences.ini
+// - pull in that value here, WDMKS, DSound, PulseAudio, etc
+// - eventually add it to the Audio Options screen
 
-const int num_chunks = 8;
+const int channels = 2;
+const int bytes_per_frame = channels * 2; // 16-bit
+const int num_chunks = 20;
+const int buffersize_frames = 8192;
 const int chunksize_frames = buffersize_frames / num_chunks;
-const int chunksize = buffersize / num_chunks; /* in bytes */
+const int chunksize = chunksize_frames * bytes_per_frame;
+const int buffersize = buffersize_frames * bytes_per_frame;
 
 static RString wo_ssprintf( MMRESULT err, const char *szFmt, ...)
 {
@@ -49,8 +53,17 @@ int RageSoundDriver_WaveOut::MixerThread_start( void *p )
 
 void RageSoundDriver_WaveOut::MixerThread()
 {
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
-		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
+	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL) )
+		{
+		if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST) )
+			{
+			LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound mixer thread priority") );
+			}
+		else
+			{
+			LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound mixer thread priority to TIME_CRITICAL, set to HIGHEST instead") );
+			}
+	}
 
 	while( !m_bShutdown )
 	{
@@ -89,7 +102,7 @@ bool RageSoundDriver_WaveOut::GetData()
 void RageSoundDriver_WaveOut::SetupDecodingThread()
 {
 	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) )
-		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
+		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound decoding thread priority") );
 }
 
 std::int64_t RageSoundDriver_WaveOut::GetPosition() const
@@ -152,9 +165,8 @@ RString RageSoundDriver_WaveOut::Init()
 		return wo_ssprintf( ret, "waveOutOpen failed" );
 	}
 
-
-	ZERO( m_aBuffers );
-	for(int b = 0; b < num_chunks; ++b)
+	m_aBuffers.resize(num_chunks);
+	for( int b = 0; b < num_chunks; ++b )
 	{
 		m_aBuffers[b].dwBufferLength = chunksize;
 		m_aBuffers[b].lpData = new char[chunksize];
@@ -191,7 +203,7 @@ RageSoundDriver_WaveOut::~RageSoundDriver_WaveOut()
 
 	if( m_hWaveOut != nullptr )
 	{
-		for( int b = 0; b < num_chunks && m_aBuffers[b].lpData != nullptr; ++b )
+		for( int b = 0; b < num_chunks; ++b )
 		{
 			waveOutUnprepareHeader( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
 			delete [] m_aBuffers[b].lpData;

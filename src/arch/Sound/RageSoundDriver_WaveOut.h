@@ -29,7 +29,7 @@ private:
 
 	HWAVEOUT m_hWaveOut;
 	HANDLE m_hSoundEvent;
-	WAVEHDR m_aBuffers[8];
+	std::vector<WAVEHDR> m_aBuffers;
 	int m_iSampleRate;
 	bool m_bShutdown;
 	int m_iLastCursorPos;

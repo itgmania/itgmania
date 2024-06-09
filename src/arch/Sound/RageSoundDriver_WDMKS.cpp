@@ -1022,6 +1022,7 @@ bool WinWdmStream::SubmitPacket( int iPacket, RString &sError )
 
 
 #include <windows.h>
+#define WIN32_LEAN_AND_MEAN
 namespace
 {
 	void MapChannels( const std::int16_t *pIn, std::int16_t *pOut, int iInChannels, int iOutChannels, int iFrames, const int *pChannelMap )
@@ -1072,15 +1073,17 @@ namespace
 		{
 		case DeviceSampleFormat_Float32: // untested
 		{
-			float *pOutBuf = (float *) pOut;
+			auto* pOutBuf = static_cast<float*>(pOut);
 			for( int i = 0; i < iSamples; ++i )
+			{
 				pOutBuf[i] = SCALE( pIn[i], -32768, +32767, -1.0f, +1.0f ); // [-32768, 32767] -> [-1,+1]
+			}
 			break;
 		}
 		case DeviceSampleFormat_Int24:
 		{
-			const unsigned char *pInBytes = (unsigned char *) pIn;
-			unsigned char *pOutBuf = (unsigned char *) pOut;
+			const auto* pInBytes = reinterpret_cast<const unsigned char*>(pIn);
+			auto* pOutBuf = static_cast<unsigned char*>(pOut);
 			for( int i = 0; i < iSamples; ++i )
 			{
 				*pOutBuf++ = 0;
@@ -1091,7 +1094,7 @@ namespace
 		}
 		case DeviceSampleFormat_Int32:
 		{
-			std::int16_t *pOutBuf = (std::int16_t *) pOut;
+			auto* pOutBuf = static_cast<std::int16_t*>(pOut);
 			for( int i = 0; i < iSamples; ++i )
 			{
 				*pOutBuf++ = 0;
@@ -1099,31 +1102,31 @@ namespace
 			}
 			break;
 		}
+		default:
+			LOG->Warn("Unsupported sample format %d", FromFormat);
+			break;
 		}
 	}
 }
 
 void RageSoundDriver_WDMKS::Read( void *pData, int iFrames, int iLastCursorPos, int iCurrentFrame )
 {
-	/* If we need conversion, read into a temporary buffer.  Otherwise, read directly
-	 * into the target buffer. */
 	int iChannels = 2;
 	if( m_pStream->m_iDeviceOutputChannels == iChannels &&
 		m_pStream->m_DeviceSampleFormat == DeviceSampleFormat_Int16 )
 	{
-		std::int16_t *pBuf = (std::int16_t *) pData;
+		std::int16_t* pBuf = static_cast<std::int16_t*>(pData);
 		this->Mix( pBuf, iFrames, iLastCursorPos, iCurrentFrame );
 		return;
 	}
 
-	std::int16_t *pBuf = (std::int16_t *) alloca( iFrames * iChannels * sizeof(std::int16_t) );
-	this->Mix( (std::int16_t *) pBuf, iFrames, iLastCursorPos, iCurrentFrame );
+	std::int16_t* pBuf = static_cast<std::int16_t*>(alloca(iFrames * iChannels * sizeof(std::int16_t)));
+	this->Mix(pBuf, iFrames, iLastCursorPos, iCurrentFrame);
 
-	/* If the device has other than 2 channels, convert. */
 	if( m_pStream->m_iDeviceOutputChannels != iChannels )
 	{
-		std::int16_t *pTempBuf = (std::int16_t *) alloca( iFrames * m_pStream->m_iBytesPerOutputSample * m_pStream->m_iDeviceOutputChannels );
-		MapChannels( (std::int16_t *) pBuf, pTempBuf, iChannels, m_pStream->m_iDeviceOutputChannels, iFrames );
+		std::int16_t* pTempBuf = static_cast<std::int16_t*>(alloca(iFrames * m_pStream->m_iBytesPerOutputSample * m_pStream->m_iDeviceOutputChannels));
+		MapChannels(pBuf, pTempBuf, iChannels, m_pStream->m_iDeviceOutputChannels, iFrames);
 		pBuf = pTempBuf;
 	}
 
@@ -1132,8 +1135,8 @@ void RageSoundDriver_WDMKS::Read( void *pData, int iFrames, int iLastCursorPos, 
 	{
 		int iSamples = iFrames * m_pStream->m_iDeviceOutputChannels;
 		void *pTempBuf = alloca( iSamples * m_pStream->m_iBytesPerOutputSample );
-		MapSampleFormatFromInt16( (std::int16_t *) pBuf, pTempBuf, iSamples, m_pStream->m_DeviceSampleFormat );
-		pBuf = (std::int16_t *) pTempBuf;
+		MapSampleFormatFromInt16( static_cast<std::int16_t *>(pBuf), pTempBuf, iSamples, m_pStream->m_DeviceSampleFormat );
+		pBuf = static_cast<std::int16_t*>(pTempBuf);
 	}
 
 	memcpy( pData, pBuf, iFrames * m_pStream->m_iDeviceOutputChannels * m_pStream->m_iBytesPerOutputSample );
@@ -1156,70 +1159,77 @@ bool RageSoundDriver_WDMKS::Fill( int iPacket, RString &sError )
 
 void RageSoundDriver_WDMKS::MixerThread()
 {
-	/* I don't trust this driver with THREAD_PRIORITY_TIME_CRITICAL just yet. */
-	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST) )
-//	if( !SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL) )
-		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
-
-	/* Enable priority boosting. */
-	SetThreadPriorityBoost( GetCurrentThread(), FALSE );
-
-	ASSERT( m_pStream->m_pPlaybackPin != nullptr );
-
-	/* Some drivers (stock USB audio in XP) misbehave if we go from KSSTATE_STOP to
-	 * KSSTATE_RUN.  Always transition through KSSTATE_PAUSE. */
-	RString sError;
-	if( !m_pStream->m_pPlaybackPin->SetState(KSSTATE_PAUSE, sError) ||
-	    !m_pStream->m_pPlaybackPin->SetState(KSSTATE_RUN, sError) )
-	    FAIL_M( sError );
-
-	/* Submit initial buffers. */
-	for( int i = 0; i < m_pStream->m_iWriteAheadChunks; ++i )
-		Fill( i, sError );
-
-	int iNextBufferToSend = m_pStream->m_iWriteAheadChunks;
-	iNextBufferToSend %= MAX_CHUNKS;
-
-	int iWaitFor = 0;
-
-	while( !m_bShutdown )
+    // Set the thread priority to highest. This is done to ensure that audio processing
+    // is given high priority, reducing the chance of audio glitches.
+	if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST))
 	{
-		/* Wait for next output buffer to finish. */
-		HANDLE aEventHandles[2] = { m_hSignal, m_pStream->m_Signal[iWaitFor].hEvent };
-		unsigned long iWait = WaitForMultipleObjects( 2, aEventHandles, FALSE, 1000 );
+		LOG->Warn(werr_ssprintf(GetLastError(), "Failed to set sound mixing thread priority"));
 
-		if( iWait == WAIT_FAILED )
+		// Attempt to set the thread priority to real-time if setting it to highest fails
+		if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL))
 		{
-			LOG->Warn( werr_ssprintf(GetLastError(), "WaitForMultipleObjects") );
-			break;
+			LOG->Warn(werr_ssprintf(GetLastError(), "Failed to set sound mixing thread priority a second time, not trying further"));
 		}
-		if( iWait == WAIT_TIMEOUT )
-			continue;
-
-		if( iWait == WAIT_OBJECT_0 )
-		{
-			/* Abort event */
-			ASSERT( m_bShutdown ); /* Should have been set */
-			continue;
-		}
-		++iWaitFor;
-		iWaitFor %= MAX_CHUNKS;
-
-		if( !Fill(iNextBufferToSend, sError) )
-		{
-			LOG->Warn( "Fill(): %s", sError.c_str() );
-			break;
-		}
-
-		++iNextBufferToSend;
-		iNextBufferToSend %= MAX_CHUNKS;
 	}
 
-	/* Finished, either normally or aborted */
-	m_pStream->m_pPlaybackPin->SetState( KSSTATE_PAUSE, sError );
-	m_pStream->m_pPlaybackPin->SetState( KSSTATE_STOP, sError );
-}
+    // Enable priority boosting for the thread.
+    SetThreadPriorityBoost( GetCurrentThread(), FALSE );
 
+    // Ensure that the playback pin is not null before proceeding.
+    ASSERT( m_pStream->m_pPlaybackPin != nullptr );
+
+    // Drivers will likely misbehave if we go from KSSTATE_STOP to KSSTATE_RUN.
+    // Always transition through KSSTATE_PAUSE to ensure a smooth transition.
+    RString errorMessage;
+    if( !m_pStream->m_pPlaybackPin->SetState(KSSTATE_PAUSE, errorMessage) ||
+        !m_pStream->m_pPlaybackPin->SetState(KSSTATE_RUN, errorMessage) )
+        FAIL_M( errorMessage );
+
+	// The following loop pre-fills the audio buffers before playback starts
+	// to ensure that there is enough data available for play back without interruption.
+	for (int bufferIndex = 0; bufferIndex < m_pStream->m_iWriteAheadChunks; ++bufferIndex)
+		Fill(bufferIndex, errorMessage);
+
+	int nextBufferIndex = m_pStream->m_iWriteAheadChunks % MAX_CHUNKS;
+	int waitForBufferIndex = 0;
+
+    // Main loop for the mixer thread.
+    while( !m_bShutdown )
+    {
+        // Wait for next output buffer to finish.
+        HANDLE eventHandles[2] = { m_hSignal, m_pStream->m_Signal[waitForBufferIndex].hEvent };
+        unsigned long waitResult = WaitForMultipleObjects( 2, eventHandles, FALSE, 1000 );
+
+        if( waitResult == WAIT_FAILED )
+        {
+            LOG->Warn( werr_ssprintf(GetLastError(), "WaitForMultipleObjects") );
+            break;
+        }
+        if( waitResult == WAIT_TIMEOUT )
+            continue;
+
+        if( waitResult == WAIT_OBJECT_0 )
+        {
+            ASSERT( m_bShutdown ); // Should have been set, abort
+            continue;
+        }
+        ++waitForBufferIndex;
+        waitForBufferIndex %= MAX_CHUNKS;
+
+        if( !Fill(nextBufferIndex, errorMessage) )
+        {
+            LOG->Warn( "Fill(): %s", errorMessage.c_str() );
+            break;
+        }
+
+        ++nextBufferIndex;
+        nextBufferIndex %= MAX_CHUNKS;
+    }
+
+    // We finished up, so transition the state back to KSSTATE_STOP.
+    m_pStream->m_pPlaybackPin->SetState( KSSTATE_PAUSE, errorMessage );
+    m_pStream->m_pPlaybackPin->SetState( KSSTATE_STOP, errorMessage );
+}
 
 REGISTER_SOUND_DRIVER_CLASS( WDMKS );
 
