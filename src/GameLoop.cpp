@@ -24,6 +24,11 @@
 #include <cmath>
 #include <vector>
 
+// for BoostThreadPriorityForWin32
+#ifdef _WIN32 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 
 static RageTimer g_GameplayTimer;
 
@@ -85,17 +90,13 @@ static void CheckFocus()
 
 	// If we lose focus, we may lose input events, especially key releases.
 	INPUTFILTER->Reset();
-}
 
-static void CheckInputDevices()
-{
-	if (INPUTMAN->DevicesChanged())
+	if( ChangeAppPri() )
 	{
-		INPUTFILTER->Reset();    // fix "buttons stuck" if button held while unplugged
-		INPUTMAN->LoadDrivers();
-		RString sMessage;
-		if (INPUTMAPPER->CheckForChangedInputDevicesAndRemap(sMessage))
-			SCREENMAN->SystemMessage(sMessage);
+		if( HOOKS->AppHasFocus() )
+			HOOKS->BoostPriority();
+		else
+			HOOKS->UnBoostPriority();
 	}
 }
 
@@ -118,25 +119,6 @@ void GameLoop::ChangeGame(const RString& new_game, const RString& new_theme)
 #include "Game.h"
 namespace
 {
-	RString GetNewScreenName()
-	{
-		if (THEME->HasMetric("Common", "AfterThemeChangeScreen"))
-		{
-			RString after_screen = THEME->GetMetric("Common", "AfterThemeChangeScreen");
-			if (SCREENMAN->IsScreenNameValid(after_screen))
-			{
-				return after_screen;
-			}
-		}
-
-		RString new_screen = THEME->GetMetric("Common", "InitialScreen");
-		if (!SCREENMAN->IsScreenNameValid(new_screen))
-		{
-			return "ScreenInitialScreenIsInvalid";
-		}
-		return new_screen;
-	}
-
 	void DoChangeTheme()
 	{
 		SAFE_DELETE( SCREENMAN );
@@ -165,10 +147,21 @@ namespace
 		// So now the correct thing to do is for a theme to specify its entry
 		// point after a theme change, ensuring that we are going to a valid
 		// screen and not crashing. -Kyz
-		RString newScreenName = GetNewScreenName();
-		SCREENMAN->SetNewScreen(newScreenName);
+		RString new_screen= THEME->GetMetric("Common", "InitialScreen");
+		if(THEME->HasMetric("Common", "AfterThemeChangeScreen"))
+		{
+			RString after_screen= THEME->GetMetric("Common", "AfterThemeChangeScreen");
+			if(SCREENMAN->IsScreenNameValid(after_screen))
+			{
+				new_screen= after_screen;
+			}
+		}
+		if(!SCREENMAN->IsScreenNameValid(new_screen))
+		{
+			new_screen= "ScreenInitialScreenIsInvalid";
+		}
+		SCREENMAN->SetNewScreen(new_screen);
 
-		// Indicate no further theme change is needed
 		g_NewTheme = RString();
 	}
 
@@ -293,8 +286,6 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 
 void GameLoop::RunGameLoop()
 {
-	static int CheckInputDevicesCounter = 0;
-	
 	/* People may want to do something else while songs are loading, so do
 	 * this after loading songs. */
 	if( ChangeAppPri() )
@@ -314,15 +305,16 @@ void GameLoop::RunGameLoop()
 		CheckFocus();
 
 		UpdateAllButDraw(false);
-		
-		// This loop runs every frame, so the input devices will be checked every 500 frames.
-		if (CheckInputDevicesCounter % (500) == 0)
+
+		if( INPUTMAN->DevicesChanged() )
 		{
-			CheckInputDevices();
-			CheckInputDevicesCounter = 0;
+			INPUTFILTER->Reset();	// fix "buttons stuck" once per frame if button held while unplugged
+			INPUTMAN->LoadDrivers();
+			RString sMessage;
+			if( INPUTMAPPER->CheckForChangedInputDevicesAndRemap(sMessage) )
+				SCREENMAN->SystemMessage( sMessage );
 		}
-		CheckInputDevicesCounter++;
-		
+
 		SCREENMAN->Draw();
 	}
 
@@ -397,8 +389,27 @@ void ConcurrentRenderer::Stop()
 	DISPLAY->EndConcurrentRenderingMainThread();
 }
 
+#ifdef _WIN32
+void BoostThreadPriorityForWin32(HANDLE hThread)
+{
+	if (!SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST))
+	{
+		if (!SetThreadPriority(hThread, THREAD_PRIORITY_TIME_CRITICAL))
+		{
+			LOG->Warn("Failed to boost thread priority in GameLoop.cpp");
+		}
+	}
+}
+#endif _WIN32
+
 void ConcurrentRenderer::RenderThread()
 {
+
+#ifdef _WIN32 // Boost thread priority if running on Windows
+	HANDLE hThread = GetCurrentThread();
+	BoostThreadPriorityForWin32(hThread);
+#endif
+
 	ASSERT( SCREENMAN != nullptr );
 
 	while( !m_bShutdown )
