@@ -42,8 +42,16 @@ RageSoundReader_Chain::~RageSoundReader_Chain()
 
 RageSoundReader_Chain *RageSoundReader_Chain::Copy() const
 {
-	// XXX
-	FAIL_M("unimplemented");
+	RageSoundReader_Chain* copy = new RageSoundReader_Chain();
+	copy->m_iPreferredSampleRate = this->m_iPreferredSampleRate;
+	copy->m_iActualSampleRate = this->m_iActualSampleRate;
+	copy->m_iChannels = this->m_iChannels;
+	copy->m_iCurrentFrame = this->m_iCurrentFrame;
+	copy->m_iNextSound = this->m_iNextSound;
+	copy->m_apActiveSounds = this->m_apActiveSounds; // Shallow copy
+	copy->m_apLoadedSounds = this->m_apLoadedSounds; // Shallow copy
+	copy->m_aSounds = this->m_aSounds; // Shallow copy
+	return copy;
 }
 
 /* The same sound may be used several times, and by several different chains.  Avoid
@@ -200,15 +208,18 @@ int RageSoundReader_Chain::SetPosition( int iFrame )
 			break;
 
 		/* Find the RageSoundReader. */
-		ActivateSound( pSound );
-		RageSoundReader *pReader = pSound->pSound;
-
-		int iOffsetFrames = iFrame - iOffsetFrame;
-		if( pReader->SetPosition(iOffsetFrames) == 0 )
+		if (pSound->pSound == nullptr) // Only activate if not already active
 		{
-			/* We're past the end of this sound. */
-			ReleaseSound( pSound );
-			continue;
+			ActivateSound(pSound);
+			RageSoundReader* pReader = pSound->pSound;
+
+			int iOffsetFrames = iFrame - iOffsetFrame;
+			if (pReader->SetPosition(iOffsetFrames) == 0)
+			{
+				/* We're past the end of this sound. */
+				ReleaseSound(pSound);
+				continue;
+			}
 		}
 	}
 
