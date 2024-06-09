@@ -9,18 +9,21 @@
 #include <cstdint>
 #include <list>
 
-/* The number of frames we should keep pos_map data for.  This being too high
- * is mostly harmless; the data is small. */
-const int pos_map_backlog_frames = 100000;
+/* The number of frames we should keep pos_map data for.
+This comes out to about ~800kb in audio frames, assuming 44.1khz.
+File bitrate, metadata, etc will factor in here. If the queue is
+TOO big it will make things slow, but 200k frames is no problem.
+Making the queue larger than 200k hasn't been tested yet. */
+const int pos_map_backlog_frames = 200000;
 
 struct pos_map_t
 {
 	std::int64_t m_iSourceFrame;
 	std::int64_t m_iDestFrame;
-	int m_iFrames;
-	float m_fSourceToDestRatio;
+	std::int64_t m_iFrames;
+	double m_fSourceToDestRatio;
 
-	pos_map_t() { m_iSourceFrame = 0; m_iDestFrame = 0; m_iFrames = 0; m_fSourceToDestRatio = 1.0f; }
+	pos_map_t() { m_iSourceFrame = 0; m_iDestFrame = 0; m_iFrames = 0; m_fSourceToDestRatio = 1.0; }
 };
 
 struct pos_map_impl
@@ -54,71 +57,53 @@ pos_map_queue &pos_map_queue::operator=( const pos_map_queue &rhs )
 	return *this;
 }
 
-void pos_map_queue::Insert( std::int64_t iSourceFrame, int iFrames, std::int64_t iDestFrame, float fSourceToDestRatio )
+void pos_map_queue::Insert(std::int64_t iSourceFrame, std::int64_t iFrames, std::int64_t iDestFrame, double fSourceToDestRatio)
 {
-	if( !m_pImpl->m_Queue.empty() )
+	bool merged = false;
+	if (!m_pImpl->m_Queue.empty())
 	{
-		/* Optimization: If the last entry lines up with this new entry, just merge them. */
-		pos_map_t &last = m_pImpl->m_Queue.back();
-		if( last.m_iSourceFrame + last.m_iFrames == iSourceFrame &&
-		    last.m_fSourceToDestRatio == fSourceToDestRatio &&
-		    llabs(last.m_iDestFrame + std::lrint(last.m_iFrames * last.m_fSourceToDestRatio) - iDestFrame) <= 1 )
+		// Check if the last entry can be merged with the new entry
+		pos_map_t& last = m_pImpl->m_Queue.back();
+		if (last.m_iSourceFrame + last.m_iFrames == iSourceFrame &&
+			last.m_fSourceToDestRatio == fSourceToDestRatio &&
+
+			// llabs() is used instead of abs() because abs() would be susceptible to an integer overflow.
+			llabs(last.m_iDestFrame + static_cast<int64_t>((last.m_iFrames * last.m_fSourceToDestRatio) + 0.5) - iDestFrame) <= 1)
+
 		{
+			// Merge the frames and set the merged flag to true.
 			last.m_iFrames += iFrames;
-
-			/* Make sure that m_Frames doesn't grow too large and overflow an int. */
-			if( !m_pImpl->m_Queue.empty() && last.m_iFrames > pos_map_backlog_frames * 2 )
-			{
-				/*
-				 * Split this entry into two smaller entries.  This will cause up to one
-				 * sample of rounding error in m_iDestFrame.  This will not accumulate;
-				 * if we split again and it becomes two frames of error, the next Insert()
-				 * will be beyond the tolerance of the above iDestFrame check, and new
-				 * data will be added to a new entry.
-				 */
-				int iDeleteFrames = last.m_iFrames - pos_map_backlog_frames;
-
-				pos_map_t next(last);
-
-				last.m_iFrames = iDeleteFrames;
-
-				next.m_iSourceFrame += iDeleteFrames;
-				next.m_iFrames -= iDeleteFrames;
-				next.m_iDestFrame += std::lrint( iDeleteFrames * next.m_fSourceToDestRatio );
-
-				m_pImpl->m_Queue.push_back( next );
-			}
-
-			m_pImpl->Cleanup();
-
-			return;
+			merged = true;
 		}
 	}
 
-	m_pImpl->m_Queue.push_back( pos_map_t() );
-	pos_map_t &m = m_pImpl->m_Queue.back();
-	m.m_iSourceFrame = iSourceFrame;
-	m.m_iDestFrame = iDestFrame;
-	m.m_iFrames = iFrames;
-	m.m_fSourceToDestRatio = fSourceToDestRatio;
+	if (!merged)
+	{
+		m_pImpl->m_Queue.push_back(pos_map_t());
+		pos_map_t& m = m_pImpl->m_Queue.back();
+		m.m_iSourceFrame = iSourceFrame;
+		m.m_iDestFrame = iDestFrame;
+		m.m_iFrames = iFrames;
+		m.m_fSourceToDestRatio = fSourceToDestRatio;
+	}
 
 	m_pImpl->Cleanup();
 }
 
 void pos_map_impl::Cleanup()
 {
-	/* Scan backwards until we have at least pos_map_backlog_frames. */
 	std::list<pos_map_t>::iterator it = m_Queue.end();
-	int iTotalFrames = 0;
-	while( iTotalFrames < pos_map_backlog_frames )
+	std::int64_t iTotalFrames = 0;
+	// Scan backwards until we have at least pos_map_backlog_frames.
+	while (iTotalFrames < pos_map_backlog_frames)
 	{
-		if( it == m_Queue.begin() )
+		if (it == m_Queue.begin())
 			break;
 		--it;
 		iTotalFrames += it->m_iFrames;
 	}
 
-	m_Queue.erase( m_Queue.begin(), it );
+	m_Queue.erase(m_Queue.begin(), it);
 }
 
 std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame, bool *bApproximate ) const
@@ -133,38 +118,34 @@ std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame, bool *bApproximat
 		return 0;
 	}
 
-	/* iSourceFrame is probably in pos_map.  Search to figure out what position
-	 * it maps to. */
-	std::int64_t iClosestPosition = 0, iClosestPositionDist = INT_MAX;
-	const pos_map_t *pClosestBlock = &*m_pImpl->m_Queue.begin(); /* print only */
+	// iSourceFrame is probably in pos_map.  Search to figure out what position it maps to.
+	std::int64_t iClosestPosition = 0, iClosestPositionDist = std::numeric_limits<int64_t>::max();
 	for (pos_map_t const &pm : m_pImpl->m_Queue)
 	{
+		// Loop over the queue until we know generally where iSourceFrame is
 		if( iSourceFrame >= pm.m_iSourceFrame &&
 			iSourceFrame < pm.m_iSourceFrame+pm.m_iFrames )
 		{
-			/* iSourceFrame lies in this block; it's an exact match.  Figure
-			 * out the exact position. */
-			int iDiff = int(iSourceFrame - pm.m_iSourceFrame);
-			iDiff = std::lrint( iDiff * pm.m_fSourceToDestRatio );
+			// If we are in the correct block, calculate its current position
+			std::int64_t iDiff = static_cast<std::int64_t>(iSourceFrame - pm.m_iSourceFrame);
+			iDiff = static_cast<int64_t>(( iDiff * pm.m_fSourceToDestRatio) + 0.5 ); 
 			return pm.m_iDestFrame + iDiff;
 		}
 
-		/* See if the current position is close to the beginning of this block. */
+		// See if the current position is close to the beginning of this block.
 		std::int64_t dist = llabs( pm.m_iSourceFrame - iSourceFrame );
 		if( dist < iClosestPositionDist )
 		{
 			iClosestPositionDist = dist;
-			pClosestBlock = &pm;
 			iClosestPosition = pm.m_iDestFrame;
 		}
 
-		/* See if the current position is close to the end of this block. */
+		// See if the current position is close to the end of this block.
 		dist = llabs( pm.m_iSourceFrame + pm.m_iFrames - iSourceFrame );
 		if( dist < iClosestPositionDist )
 		{
 			iClosestPositionDist = dist;
-			pClosestBlock = &pm;
-			iClosestPosition = pm.m_iDestFrame + std::lrint( pm.m_iFrames * pm.m_fSourceToDestRatio );
+			iClosestPosition = pm.m_iDestFrame + static_cast<int64_t>((pm.m_iFrames * pm.m_fSourceToDestRatio) + 0.5 );
 		}
 	}
 
@@ -181,12 +162,8 @@ std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame, bool *bApproximat
 	static RageTimer last;
 	if( last.PeekDeltaTime() >= 1.0f )
 	{
-		last.GetDeltaTime();
-		std::stringstream ss;
-		ss << "Approximate sound time: driver frame " << iSourceFrame << ", m_pImpl->m_Queue frame "
-		   << pClosestBlock->m_iDestFrame << ".." << (pClosestBlock->m_iDestFrame+pClosestBlock->m_iFrames)
-		   << " (dist " << iClosestPositionDist << "), closest position is " << iClosestPosition;
-		LOG->Trace( "%s", ss.str().c_str() );
+		last.Touch();
+		LOG->Trace("Audio frame was out of range of the data sent - possible buffer underflow? This is not always an error, however if you see it frequently there could be sound buffer problems.");
 	}
 
 	if( bApproximate )

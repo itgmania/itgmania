@@ -66,11 +66,10 @@ RageSound::~RageSound()
 
 RageSound::RageSound( const RageSound &cpy ):
 	RageSoundBase( cpy ),
-	m_Mutex( "RageSound" )
+	m_Mutex( "RageSound" ),
+	m_pSource( nullptr )
 {
 	ASSERT(SOUNDMAN != nullptr);
-
-	m_pSource = nullptr;
 
 	*this = cpy;
 }
@@ -283,7 +282,7 @@ int RageSound::GetDataToPlay( float *pBuffer, int iFrames, std::int64_t &iStream
 	while( iFrames > 0 )
 	{
 		float fRate = 1.0f;
-		int iSourceFrame;
+		int iSourceFrame = 0;
 
 		/* Read data from our source. */
 		int iGotFrames = m_pSource->RetriedRead( pBuffer + (iFramesStored * m_pSource->GetNumChannels()), iFrames, &iSourceFrame, &fRate );
@@ -291,6 +290,7 @@ int RageSound::GetDataToPlay( float *pBuffer, int iFrames, std::int64_t &iStream
 		if( iGotFrames == RageSoundReader::ERROR )
 		{
 			m_sError = m_pSource->GetError();
+			// This error probably indicates an I/O error, rather than a decoding error.
 			LOG->Warn( "Decoding %s failed: %s", GetLoadedFilePath().c_str(), m_sError.c_str() );
 		}
 
@@ -331,7 +331,7 @@ void RageSound::StartPlaying()
 	ASSERT( !m_bPlaying );
 
 	// Move to the start position.
-	SetPositionFrames( std::lrint(m_Param.m_StartSecond * samplerate()) );
+	SetPositionFrames( static_cast<int>((m_Param.m_StartSecond * samplerate())) + 0.5 );
 
 	/* If m_StartTime is in the past, then we probably set a start time but took too
 	 * long loading.  We don't want that; log it, since it can be unobvious. */
@@ -510,8 +510,9 @@ float RageSound::GetPositionSeconds( bool *bApproximate, RageTimer *pTimestamp )
 		*bApproximate = false;
 
 	/* If we're not playing, just report the static position. */
+	float sampleRate = static_cast<float>(samplerate());
 	if( !IsPlaying() )
-		return m_iStoppedSourceFrame / float(samplerate());
+		return m_iStoppedSourceFrame / sampleRate;
 
 	/* If we don't yet have any position data, CommitPlayingPosition hasn't yet been called at all,
 	 * so guess what we think the real time is. */
@@ -520,11 +521,11 @@ float RageSound::GetPositionSeconds( bool *bApproximate, RageTimer *pTimestamp )
 		// LOG->Trace( "no data yet; %i", m_iStoppedSourceFrame );
 		if( bApproximate )
 			*bApproximate = true;
-		return m_iStoppedSourceFrame / float(samplerate());
+		return m_iStoppedSourceFrame / sampleRate;
 	}
 
 	int iSourceFrame = GetSourceFrameFromHardwareFrame( iCurrentHardwareFrame, bApproximate );
-	return iSourceFrame / float(samplerate());
+	return iSourceFrame / sampleRate;
 }
 
 
@@ -539,16 +540,17 @@ bool RageSound::SetPositionFrames( int iFrames )
 	}
 
 	int iRet = m_pSource->SetPosition( iFrames );
+	RString filePath = GetLoadedFilePath();
 	if( iRet == -1 )
 	{
 		m_sError = m_pSource->GetError();
-		LOG->Warn( "SetPositionFrames: seek %s failed: %s", GetLoadedFilePath().c_str(), m_sError.c_str() );
+		LOG->Warn( "SetPositionFrames: seek %s failed: %s", filePath.c_str(), m_sError.c_str() );
 	}
 	else if( iRet == 0 )
 	{
 		/* Seeked past EOF. */
 		LOG->Warn( "SetPositionFrames: %i samples is beyond EOF in %s",
-			iFrames, GetLoadedFilePath().c_str() );
+			iFrames, filePath.c_str() );
 	}
 	else
 	{
@@ -642,7 +644,7 @@ void RageSound::SetStopModeFromString( const RString &sStopMode )
 	}
 	else
 	{
-		// error
+		LOG->Warn("Invalid stop mode \"%s\" for sound \"%s\"", sStopMode.c_str(), m_sFilePath.c_str());
 	}
 }
 

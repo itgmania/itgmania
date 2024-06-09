@@ -670,96 +670,93 @@ void Actor::PreDraw() // calculate actor properties
 	}
 }
 
-void Actor::BeginDraw() // set the world matrix
+void Actor::BeginDraw()
 {
-	DISPLAY->PushMatrix();
+	DISPLAY->PushMatrix(); // Save the current transformation matrix
 
-	if( m_pTempState->pos.x != 0 || m_pTempState->pos.y != 0 || m_pTempState->pos.z != 0 )
+	// Get the position of the actor
+	const float posX = m_pTempState->pos.x;
+	const float posY = m_pTempState->pos.y;
+	const float posZ = m_pTempState->pos.z;
+
+	if (posX != 0 || posY != 0 || posZ != 0)
 	{
 		RageMatrix m;
-		RageMatrixTranslate(
-			&m,
-			m_pTempState->pos.x,
-			m_pTempState->pos.y,
-			m_pTempState->pos.z
-			);
-		DISPLAY->PreMultMatrix( m );
+		RageMatrixTranslate(&m, posX, posY, posZ);
+		DISPLAY->PreMultMatrix(m);
 	}
 
+	// Get the rotation of the actor
 	{
-		/* The only time rotation and quat should normally be used simultaneously
-		 * is for m_baseRotation. Most objects aren't rotated at all, so optimize
-		 * that case. */
-		const float fRotateX = m_pTempState->rotation.x + m_baseRotation.x;
-		const float fRotateY = m_pTempState->rotation.y + m_baseRotation.y;
-		const float fRotateZ = m_pTempState->rotation.z + m_baseRotation.z;
+		const float rotationX = m_pTempState->rotation.x + m_baseRotation.x;
+		const float rotationY = m_pTempState->rotation.y + m_baseRotation.y;
+		const float rotationZ = m_pTempState->rotation.z + m_baseRotation.z;
 
-		if( fRotateX != 0 || fRotateY != 0 || fRotateZ != 0 )
+		if (rotationX != 0 || rotationY != 0 || rotationZ != 0)
 		{
 			RageMatrix m;
-			RageMatrixRotationXYZ( &m, fRotateX, fRotateY, fRotateZ );
-			DISPLAY->PreMultMatrix( m );
+			RageMatrixRotationXYZ(&m, rotationX, rotationY, rotationZ);
+			DISPLAY->PreMultMatrix(m);
 		}
 	}
 
-	// handle scaling
+	// Get the scale of the actor
 	{
-		const float fScaleX = m_pTempState->scale.x * m_baseScale.x;
-		const float fScaleY = m_pTempState->scale.y * m_baseScale.y;
-		const float fScaleZ = m_pTempState->scale.z * m_baseScale.z;
+		const float scaleX = m_pTempState->scale.x * m_baseScale.x;
+		const float scaleY = m_pTempState->scale.y * m_baseScale.y;
+		const float scaleZ = m_pTempState->scale.z * m_baseScale.z;
 
-		if( fScaleX != 1 || fScaleY != 1 || fScaleZ != 1 )
+		if (scaleX != 1 || scaleY != 1 || scaleZ != 1)
 		{
 			RageMatrix m;
-			RageMatrixScale(
-				&m,
-				fScaleX,
-				fScaleY,
-				fScaleZ );
-			DISPLAY->PreMultMatrix( m );
+			RageMatrixScale(&m, scaleX, scaleY, scaleZ);
+			DISPLAY->PreMultMatrix(m);
 		}
 	}
 
-	// handle alignment; most actors have default alignment.
-	if( unlikely(m_fHorizAlign != 0.5f || m_fVertAlign != 0.5f) )
+	// Adjust the alignment of the actor
+	if (unlikely(m_fHorizAlign != 0.5f || m_fVertAlign != 0.5f))
 	{
-		float fX = SCALE( m_fHorizAlign, 0.0f, 1.0f, +m_size.x/2.0f, -m_size.x/2.0f );
-		float fY = SCALE( m_fVertAlign, 0.0f, 1.0f, +m_size.y/2.0f, -m_size.y/2.0f );
+		float fX = SCALE(m_fHorizAlign, 0.0f, 1.0f, +m_size.x / 2.0f, -m_size.x / 2.0f);
+		float fY = SCALE(m_fVertAlign, 0.0f, 1.0f, +m_size.y / 2.0f, -m_size.y / 2.0f);
 		RageMatrix m;
-		RageMatrixTranslate(
-			&m,
-			fX,
-			fY,
-			0
-			);
-		DISPLAY->PreMultMatrix( m );
+		RageMatrixTranslate(&m, fX, fY, 0);
+		DISPLAY->PreMultMatrix(m);
 	}
 
-	if( m_pTempState->quat.x != 0 ||  m_pTempState->quat.y != 0 ||  m_pTempState->quat.z != 0 || m_pTempState->quat.w != 1 )
+	// Get the quaternion of the actor
+	const float quatX = m_pTempState->quat.x;
+	const float quatY = m_pTempState->quat.y;
+	const float quatZ = m_pTempState->quat.z;
+	const float quatW = m_pTempState->quat.w;
+
+	if (quatX != 0 || quatY != 0 || quatZ != 0 || quatW != 1)
 	{
 		RageMatrix mat;
-		RageMatrixFromQuat( &mat, m_pTempState->quat );
-
+		RageMatrixFromQuat(&mat, m_pTempState->quat);
 		DISPLAY->MultMatrix(mat);
 	}
 
-	// handle skews
-	if( m_pTempState->fSkewX != 0 )
+	// Get the skew of the actor along the X-axis
+	const float skewX = m_pTempState->fSkewX;
+	if (skewX != 0)
 	{
-		DISPLAY->SkewX( m_pTempState->fSkewX );
+		DISPLAY->SkewX(skewX); 
 	}
 
-	if( m_pTempState->fSkewY != 0 )
+	// Get the skew of the actor along the Y-axis
+	const float skewY = m_pTempState->fSkewY;
+	if (skewY != 0)
 	{
-		DISPLAY->SkewY( m_pTempState->fSkewY );
+		DISPLAY->SkewY(skewY);
 	}
 
-	if( m_texTranslate.x != 0 || m_texTranslate.y != 0 )
+	// If the texture is not at the origin, translate the texture
+	if (m_texTranslate.x != 0 || m_texTranslate.y != 0)
 	{
 		DISPLAY->TexturePushMatrix();
-		DISPLAY->TextureTranslate( m_texTranslate.x, m_texTranslate.y );
+		DISPLAY->TextureTranslate(m_texTranslate.x, m_texTranslate.y);
 	}
-
 }
 
 void Actor::SetGlobalRenderStates()
@@ -799,68 +796,69 @@ void Actor::EndDraw()
 
 void Actor::CalcPercentThroughTween()
 {
-	TweenState &TS = m_Tweens[0]->state;
-	TweenInfo  &TI = m_Tweens[0]->info;
-	const float percent_through = 1-(TI.m_fTimeLeftInTween / TI.m_fTweenTime);
+	TweenState& TS = m_Tweens[0]->state;
+	TweenInfo& TI = m_Tweens[0]->info;
+	const float percent_through = 1 - (TI.m_fTimeLeftInTween / TI.m_fTweenTime);
 	// distort the percentage if appropriate
 	float percent_along = TI.m_pTween->Tween(percent_through);
 	TweenState::MakeWeightedAverage(m_current, m_start, TS, percent_along);
 	UpdatePercentThroughTween(percent_along);
 }
 
-void Actor::UpdateTweening( float fDeltaTime )
+void Actor::UpdateTweening(float fDeltaTime)
 {
-	if(fDeltaTime < 0.0 && !m_Tweens.empty())
+	if (fDeltaTime < 0.0 && !m_Tweens.empty())
 	{
-		m_Tweens[0]->info.m_fTimeLeftInTween-= fDeltaTime;
+		m_Tweens[0]->info.m_fTimeLeftInTween -= fDeltaTime;
 		CalcPercentThroughTween();
 		return;
 	}
-	while( !m_Tweens.empty() // something to do
-		&& fDeltaTime > 0 )	// something will change
+	while (!m_Tweens.empty() // something to do
+		&& fDeltaTime > 0)    // something will change
 	{
 		// update current tween state
 		// earliest tween
-		TweenState &TS = m_Tweens[0]->state;
-		TweenInfo  &TI = m_Tweens[0]->info;
+		auto& firstTween = m_Tweens[0];
+		TweenState& TS = firstTween->state;
+		TweenInfo& TI = firstTween->info;
 
 		bool bBeginning = TI.m_fTimeLeftInTween == TI.m_fTweenTime;
 
-		float fSecsToSubtract = std::min( TI.m_fTimeLeftInTween, fDeltaTime );
+		float fSecsToSubtract = std::min(TI.m_fTimeLeftInTween, fDeltaTime);
 		TI.m_fTimeLeftInTween -= fSecsToSubtract;
 		fDeltaTime -= fSecsToSubtract;
 
 		RString sCommand = TI.m_sCommandName;
-		if( bBeginning )			// we are just beginning this tween
+		if (bBeginning)            // we are just beginning this tween
 		{
-			m_start = m_current;	// set the start position
+			m_start = m_current;    // set the start position
 			SetCurrentTweenStart();
 		}
 
-		if( TI.m_fTimeLeftInTween == 0 )	// Current tween is over.  Stop.
+		if (TI.m_fTimeLeftInTween == 0)    // Current tween is over.  Stop.
 		{
 			m_current = TS;
 
 			// delete the head tween
-			delete m_Tweens.front();
-			m_Tweens.erase( m_Tweens.begin() );
+			delete firstTween;
+			m_Tweens.erase(m_Tweens.begin());
 			EraseHeadTween();
 		}
-		else	// in the middle of tweening. Recalcute the current position.
+		else    // in the middle of tweening. Recalcute the current position.
 		{
 			CalcPercentThroughTween();
 		}
 
-		if( bBeginning )
+		if (bBeginning)
 		{
 			// Execute the command in this tween (if any). Do this last, and don't
 			// access TI or TS after, since this may modify the tweening queue.
-			if( !sCommand.empty() )
+			if (!sCommand.empty())
 			{
-				if( sCommand.Left(1) == "!" )
-					MESSAGEMAN->Broadcast( sCommand.substr(1) );
+				if (sCommand.Left(1) == "!")
+					MESSAGEMAN->Broadcast(sCommand.substr(1));
 				else
-					this->PlayCommand( sCommand );
+					this->PlayCommand(sCommand);
 			}
 		}
 	}
@@ -904,75 +902,67 @@ static void generic_global_timer_update(float new_time, float& effect_delta_time
 
 void Actor::UpdateInternal(float delta_time)
 {
-	if( m_bFirstUpdate )
+	if (m_bFirstUpdate)
 		m_bFirstUpdate = false;
 
-	switch(m_EffectClock)
+	const float effectPeriod = GetEffectPeriod();
+	switch (m_EffectClock)
 	{
-		case CLOCK_TIMER:
-			m_fSecsIntoEffect+= delta_time;
-			m_fEffectDelta= delta_time;
-			// Wrap the counter, so it doesn't increase indefinitely (causing loss
-			// of precision if a screen is left to sit for a day).
-			if(m_fSecsIntoEffect > GetEffectPeriod())
-			{
-				m_fSecsIntoEffect-= GetEffectPeriod();
-			}
-			break;
-		case CLOCK_TIMER_GLOBAL:
-			generic_global_timer_update(RageTimer::GetUsecsSinceStart(),
-				m_fEffectDelta, m_fSecsIntoEffect);
-			break;
-		case CLOCK_BGM_BEAT:
-			generic_global_timer_update(g_fCurrentBGMBeat,
-				m_fEffectDelta, m_fSecsIntoEffect);
-			break;
-		case CLOCK_BGM_BEAT_PLAYER1:
-			generic_global_timer_update(g_vfCurrentBGMBeatPlayer[PLAYER_1],
-				m_fEffectDelta, m_fSecsIntoEffect);
-			break;
-		case CLOCK_BGM_BEAT_PLAYER2:
-			generic_global_timer_update(g_vfCurrentBGMBeatPlayer[PLAYER_2],
-				m_fEffectDelta, m_fSecsIntoEffect);
-			break;
-		case CLOCK_BGM_TIME:
-			generic_global_timer_update(g_fCurrentBGMTime,
-				m_fEffectDelta, m_fSecsIntoEffect);
-			break;
-		case CLOCK_BGM_BEAT_NO_OFFSET:
-			generic_global_timer_update(g_fCurrentBGMBeatNoOffset,
-				m_fEffectDelta, m_fSecsIntoEffect);
-			break;
-		case CLOCK_BGM_TIME_NO_OFFSET:
-			generic_global_timer_update(g_fCurrentBGMTimeNoOffset,
-				m_fEffectDelta, m_fSecsIntoEffect);
-			break;
-		default:
-			if(m_EffectClock >= CLOCK_LIGHT_1 && m_EffectClock <= CLOCK_LIGHT_LAST)
-			{
-				generic_global_timer_update(
-					g_fCabinetLights[m_EffectClock - CLOCK_LIGHT_1],
-					m_fEffectDelta, m_fSecsIntoEffect);
-			}
-			break;
+	case CLOCK_TIMER:
+		m_fSecsIntoEffect += delta_time;
+		m_fEffectDelta = delta_time;
+		// Wrap the counter, so it doesn't increase indefinitely (causing loss
+		// of precision if a screen is left to sit for a day).
+		if (m_fSecsIntoEffect > effectPeriod)
+		{
+			m_fSecsIntoEffect -= effectPeriod;
+		}
+		break;
+	case CLOCK_TIMER_GLOBAL:
+		generic_global_timer_update(RageTimer::GetUsecsSinceStart(), m_fEffectDelta, m_fSecsIntoEffect);
+		break;
+	case CLOCK_BGM_BEAT:
+		generic_global_timer_update(g_fCurrentBGMBeat, m_fEffectDelta, m_fSecsIntoEffect);
+		break;
+	case CLOCK_BGM_BEAT_PLAYER1:
+		generic_global_timer_update(g_vfCurrentBGMBeatPlayer[PLAYER_1], m_fEffectDelta, m_fSecsIntoEffect);
+		break;
+	case CLOCK_BGM_BEAT_PLAYER2:
+		generic_global_timer_update(g_vfCurrentBGMBeatPlayer[PLAYER_2], m_fEffectDelta, m_fSecsIntoEffect);
+		break;
+	case CLOCK_BGM_TIME:
+		generic_global_timer_update(g_fCurrentBGMTime, m_fEffectDelta, m_fSecsIntoEffect);
+		break;
+	case CLOCK_BGM_BEAT_NO_OFFSET:
+		generic_global_timer_update(g_fCurrentBGMBeatNoOffset, m_fEffectDelta, m_fSecsIntoEffect);
+		break;
+	case CLOCK_BGM_TIME_NO_OFFSET:
+		generic_global_timer_update(g_fCurrentBGMTimeNoOffset, m_fEffectDelta, m_fSecsIntoEffect);
+		break;
+	default:
+		if (m_EffectClock >= CLOCK_LIGHT_1 && m_EffectClock <= CLOCK_LIGHT_LAST)
+		{
+			int lightIndex = m_EffectClock - CLOCK_LIGHT_1;
+			generic_global_timer_update(g_fCabinetLights[lightIndex], m_fEffectDelta, m_fSecsIntoEffect);
+		}
+		break;
 	}
 
 	// update effect
-	// todo: account for SSC_FUTURES -aj
-	switch( m_Effect )
+	switch (m_Effect)
 	{
-		case spin:
-			m_current.rotation += m_fEffectDelta*m_vEffectMagnitude;
-			wrap( m_current.rotation.x, 360 );
-			wrap( m_current.rotation.y, 360 );
-			wrap( m_current.rotation.z, 360 );
-			break;
-		default: break;
+	case spin:
+		m_current.rotation += m_fEffectDelta * m_vEffectMagnitude;
+		wrap(m_current.rotation.x, 360);
+		wrap(m_current.rotation.y, 360);
+		wrap(m_current.rotation.z, 360);
+		break;
+	default: break;
 	}
 
-	if(m_tween_uses_effect_delta)
+	if (m_tween_uses_effect_delta)
 	{
-		delta_time= m_fEffectDelta;
+		delta_time = m_fEffectDelta;
 	}
 	this->UpdateTweening(delta_time);
 }
@@ -1166,23 +1156,22 @@ void Actor::SetEffectPeriod(float time)
 bool Actor::SetEffectTiming(float ramp_toh, float at_half, float ramp_tof, float at_full, float at_zero, RString& err)
 {
 	// No negative timings
-	if(ramp_toh < 0 || at_half < 0 || ramp_tof < 0 || at_full < 0 || at_zero < 0)
+	if (ramp_toh < 0 || at_half < 0 || ramp_tof < 0 || at_full < 0 || at_zero < 0)
 	{
-		err= ssprintf("Effect timings (%f,%f,%f,%f,%f) must not be negative;",
-			ramp_toh, at_half, ramp_tof, at_zero, at_full);
+		err = ssprintf("Effect timings (%f,%f,%f,%f,%f) must not be negative;", ramp_toh, at_half, ramp_tof, at_zero, at_full);
 		return false;
 	}
 	// and at least one positive timing.
-	if(ramp_toh <= 0 && at_half <= 0 && ramp_tof <= 0 && at_full <= 0 && at_zero <= 0)
+	if (ramp_toh <= 0 && at_half <= 0 && ramp_tof <= 0 && at_full <= 0 && at_zero <= 0)
 	{
-		err= ssprintf("Effect timings (0,0,0,0,0) must not all be zero;");
+		err = "Effect timings (0,0,0,0,0) must not all be zero;";
 		return false;
 	}
-	m_effect_ramp_to_half= ramp_toh;
-	m_effect_hold_at_half= at_half;
-	m_effect_ramp_to_full= ramp_tof;
-	m_effect_hold_at_full= at_full;
-	m_effect_hold_at_zero= at_zero;
+	m_effect_ramp_to_half = ramp_toh;
+	m_effect_hold_at_half = at_half;
+	m_effect_ramp_to_full = ramp_tof;
+	m_effect_hold_at_full = at_full;
+	m_effect_hold_at_zero = at_zero;
 	RecalcEffectPeriod();
 	return true;
 }

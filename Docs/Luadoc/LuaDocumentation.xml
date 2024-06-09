@@ -3895,11 +3895,11 @@ NETWORK:WebSocket{
 	</Function>
 	<Function name='SetBeatBars' return='bool' arguments='bool enabled' since='ITGmania 0.8.0'>
 		Sets whether beat bars are enabled on this NoteField.
-	</Functions>
+	</Function>
 	<Function name='SetBeatBarsAlpha' return='bool' arguments='float measure, float fourth, float eighth, float sixteenth' since='ITGmania 0.8.0'>
 		Sets the alpha for the beat bars on this NoteField.
 		Specify the alpha for the measure, fourth, eighth, and sixteenth beat bars at the same time.
-	</Functions>
+	</Function>
 	<Function name='set_did_hold_note_callback' return= '' arguments='function callback'>
 		Same as SetDidTapNoteCallback, but for hold notes.  Uses HoldNoteScore instead of TapNoteScore.
 	</Function>

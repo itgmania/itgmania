@@ -182,8 +182,8 @@ IDI_ICON1               ICON                    "smzip.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,0,0,0
- PRODUCTVERSION 5,0,0,0
+ FILEVERSION @SM_VERSION_MAJOR@,@SM_VERSION_MINOR@,@SM_VERSION_PATCH@,0
+ PRODUCTVERSION @SM_VERSION_MAJOR@,@SM_VERSION_MINOR@,@SM_VERSION_PATCH@,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -200,12 +200,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "ITGmania Team \n https://www.itgmania.com/"
             VALUE "FileDescription", "ITGmania"
-            VALUE "FileVersion", "0, 5, 1, 0"
+            VALUE "FileVersion", "@SM_VERSION_GIT@"
             VALUE "InternalName", "ITGmania"
-            VALUE "LegalCopyright", "Copyright © 2022"
+            VALUE "LegalCopyright", "Copyright © 2024"
             VALUE "OriginalFilename", "ITGmania.exe"
             VALUE "ProductName", "ITGmania"
-            VALUE "ProductVersion", "0, 5, 1, 0"
+            VALUE "ProductVersion", "@SM_VERSION_GIT@"
         END
     END
     BLOCK "VarFileInfo"

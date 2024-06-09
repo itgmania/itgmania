@@ -16,7 +16,7 @@ Make sure you initialize the submodules after cloning the repository. This is re
 ```sh
 git clone --depth=1 https://github.com/itgmania/itgmania.git
 cd itgmania
-git submodule update --init
+git submodule update --init --recursive
 ```
 
 After that, you can follow the cmake instructions below to create the build.
@@ -49,7 +49,7 @@ Linux
 There are many package managers available for Linux. Look at your manual for more details. Either that, or utilize the All OS specific approach.
 
 
-CMake Installation
+CMake Usage
 ==
 
 There are two ways of working with cmake: the command line and the GUI.

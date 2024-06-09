@@ -397,11 +397,7 @@ void HighScoreList::LoadFromNode( const XNode* pHighScoreList )
 			vHighScores.resize( vHighScores.size()+1 );
 			vHighScores.back().LoadFromNode( p );
 
-			// ignore all high scores that are 0
-			if( vHighScores.back().GetScore() == 0 )
-				vHighScores.pop_back();
-			else
-				HighGrade = std::min( vHighScores.back().GetGrade(), HighGrade );
+			HighGrade = std::min( vHighScores.back().GetGrade(), HighGrade );
 		}
 	}
 }

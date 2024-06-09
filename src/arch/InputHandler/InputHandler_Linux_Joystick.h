@@ -6,11 +6,9 @@
 
 #include <vector>
 
-
 class InputHandler_Linux_Joystick: public InputHandler
 {
 public:
-	enum { NUM_JOYSTICKS = 4 };
 	InputHandler_Linux_Joystick();
 	~InputHandler_Linux_Joystick();
 	bool TryDevice(RString dev);
@@ -23,11 +21,15 @@ private:
 	static int InputThread_Start( void *p );
 	void InputThread();
 
-	int fds[NUM_JOYSTICKS];
-	int m_iLastFd;
-	RString m_sDescription[NUM_JOYSTICKS];
+	struct FileDescriptor {
+		int fd = -1;
+		RString description = "";
+	};
+
+	std::vector<FileDescriptor> m_files;
 	RageThread m_InputThread;
-	bool m_bShutdown, m_bDevicesChanged;
+	bool m_bShutdown = false;
+	bool m_bDevicesChanged = false;
 };
 
 #endif

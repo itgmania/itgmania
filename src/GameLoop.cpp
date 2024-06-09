@@ -70,26 +70,6 @@ static bool ChangeAppPri()
 	if( g_bNeverBoostAppPriority.Get() )
 		return false;
 
-	// if using NTPAD don't boost or else input is laggy
-#if defined(_WINDOWS)
-	{
-		std::vector<InputDeviceInfo> vDevices;
-
-		// This can get called before INPUTMAN is constructed.
-		if( INPUTMAN )
-		{
-			INPUTMAN->GetDevicesAndDescriptions(vDevices);
-			if (std::any_of(vDevices.begin(), vDevices.end(), [](InputDeviceInfo const &d) {
-				return d.sDesc.find("NTPAD") != std::string::npos;
-			}))
-			{
-				LOG->Trace( "Using NTPAD.  Don't boost priority." );
-				return false;
-			}
-		}
-	}
-#endif
-
 	// If this is a debug build, don't. It makes the VC debugger sluggish.
 #if defined(WIN32) && defined(DEBUG)
 	return false;
@@ -105,13 +85,17 @@ static void CheckFocus()
 
 	// If we lose focus, we may lose input events, especially key releases.
 	INPUTFILTER->Reset();
+}
 
-	if( ChangeAppPri() )
+static void CheckInputDevices()
+{
+	if (INPUTMAN->DevicesChanged())
 	{
-		if( HOOKS->AppHasFocus() )
-			HOOKS->BoostPriority();
-		else
-			HOOKS->UnBoostPriority();
+		INPUTFILTER->Reset();    // fix "buttons stuck" if button held while unplugged
+		INPUTMAN->LoadDrivers();
+		RString sMessage;
+		if (INPUTMAPPER->CheckForChangedInputDevicesAndRemap(sMessage))
+			SCREENMAN->SystemMessage(sMessage);
 	}
 }
 
@@ -134,6 +118,25 @@ void GameLoop::ChangeGame(const RString& new_game, const RString& new_theme)
 #include "Game.h"
 namespace
 {
+	RString GetNewScreenName()
+	{
+		if (THEME->HasMetric("Common", "AfterThemeChangeScreen"))
+		{
+			RString after_screen = THEME->GetMetric("Common", "AfterThemeChangeScreen");
+			if (SCREENMAN->IsScreenNameValid(after_screen))
+			{
+				return after_screen;
+			}
+		}
+
+		RString new_screen = THEME->GetMetric("Common", "InitialScreen");
+		if (!SCREENMAN->IsScreenNameValid(new_screen))
+		{
+			return "ScreenInitialScreenIsInvalid";
+		}
+		return new_screen;
+	}
+
 	void DoChangeTheme()
 	{
 		SAFE_DELETE( SCREENMAN );
@@ -162,21 +165,10 @@ namespace
 		// So now the correct thing to do is for a theme to specify its entry
 		// point after a theme change, ensuring that we are going to a valid
 		// screen and not crashing. -Kyz
-		RString new_screen= THEME->GetMetric("Common", "InitialScreen");
-		if(THEME->HasMetric("Common", "AfterThemeChangeScreen"))
-		{
-			RString after_screen= THEME->GetMetric("Common", "AfterThemeChangeScreen");
-			if(SCREENMAN->IsScreenNameValid(after_screen))
-			{
-				new_screen= after_screen;
-			}
-		}
-		if(!SCREENMAN->IsScreenNameValid(new_screen))
-		{
-			new_screen= "ScreenInitialScreenIsInvalid";
-		}
-		SCREENMAN->SetNewScreen(new_screen);
+		RString newScreenName = GetNewScreenName();
+		SCREENMAN->SetNewScreen(newScreenName);
 
+		// Indicate no further theme change is needed
 		g_NewTheme = RString();
 	}
 
@@ -254,6 +246,8 @@ namespace
 
 void GameLoop::RunGameLoop()
 {
+	static int CheckInputDevicesCounter = 0;
+	
 	/* People may want to do something else while songs are loading, so do
 	 * this after loading songs. */
 	if( ChangeAppPri() )
@@ -297,16 +291,15 @@ void GameLoop::RunGameLoop()
 		/* Important: Process input AFTER updating game logic, or input will be
 		* acting on song beat from last frame */
 		HandleInputEvents(fDeltaTime);
-
-		if( INPUTMAN->DevicesChanged() )
+		
+		// This loop runs every frame, so the input devices will be checked every 500 frames.
+		if (CheckInputDevicesCounter % (500) == 0)
 		{
-			INPUTFILTER->Reset();	// fix "buttons stuck" once per frame if button held while unplugged
-			INPUTMAN->LoadDrivers();
-			RString sMessage;
-			if( INPUTMAPPER->CheckForChangedInputDevicesAndRemap(sMessage) )
-				SCREENMAN->SystemMessage( sMessage );
+			CheckInputDevices();
+			CheckInputDevicesCounter = 0;
 		}
-
+    
+		CheckInputDevicesCounter++;
 		LIGHTSMAN->Update(fDeltaTime);
 		
 		// Render

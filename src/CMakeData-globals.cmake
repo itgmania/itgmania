@@ -3,10 +3,10 @@ list(APPEND SMDATA_GLOBAL_FILES_SRC
             "global.cpp"
             "SpecialFiles.cpp"
             "StepMania.cpp" # TODO: Refactor into separate main project.
-            "${SM_SRC_DIR}/generated/verstub.cpp")
+            "${SM_GENERATED_SRC_DIR}/verstub.cpp")
 
 list(APPEND SMDATA_GLOBAL_FILES_HPP
-            "generated/config.hpp"
+            "${SM_GENERATED_SRC_DIR}/config.hpp"
             "GameLoop.h"
             "global.h"
             "ProductInfo.h" # TODO: Have this be auto-generated.

@@ -1,5 +1,3 @@
-file(MAKE_DIRECTORY "${SM_SRC_DIR}/generated")
-
 if(MSVC)
   # Add the mapconv program of the past to allow for debugging information.
   include("CMakeProject-mapconv.cmake")
@@ -125,7 +123,7 @@ endif()
 
 target_compile_options("${SM_EXE_NAME}" PRIVATE
   $<$<CXX_COMPILER_ID:GNU>:
-    -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas>
+  -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Werror=type-limits>
   $<$<CXX_COMPILER_ID:Clang>:
     -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Wno-undefined-var-template>
   $<$<CXX_COMPILER_ID:AppleClang>:
@@ -325,7 +323,10 @@ endif()
 set_property(TARGET "${SM_EXE_NAME}" PROPERTY FOLDER "Internal Libraries")
 
 list(APPEND SMDATA_LINK_LIB "lua-5.1" "miniz")
-include(../extern/CMakeProject-mmmagic.cmake)
+
+if(WITH_MINIMAID)
+  include(../extern/CMakeProject-mmmagic.cmake)
+endif()
 
 list(APPEND SMDATA_LINK_LIB "mad"
                             "pcre"
@@ -448,7 +449,7 @@ endif()
 target_link_libraries("${SM_EXE_NAME}" ${SMDATA_LINK_LIB})
 
 list(APPEND SM_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
-            "${SM_SRC_DIR}/generated")
+            "${SM_GENERATED_SRC_DIR}")
 
 if(APPLE)
   list(APPEND SM_INCLUDE_DIRS "archutils/Unix")

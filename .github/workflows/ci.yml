@@ -1,4 +1,8 @@
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+    paths-ignore:
+      - '**.md'
 
 name: Continuous integration
 
@@ -9,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Checkout submodules
-        run: git submodule update --init
+        run: git submodule update --init --recursive
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y
           libasound2-dev
@@ -37,7 +41,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Checkout submodules
-        run: git submodule update --init
+        run: git submodule update --init --recursive
       - name: Install dependencies
         run: brew install
           nasm
@@ -48,11 +52,11 @@ jobs:
 
   macos-build-x86_64:
     name: macOS (Intel)
-    runs-on: macos-latest
+    runs-on: macos-12
     steps:
       - uses: actions/checkout@v4
       - name: Checkout submodules
-        run: git submodule update --init
+        run: git submodule update --init --recursive
       - name: Install dependencies
         run: brew install
           nasm
@@ -67,8 +71,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Checkout submodules
-        run: git submodule update --init
+        run: git submodule update --init --recursive
       - name: Configure
         run: cmake -B build
       - name: Build
         run: cmake --build build
+
+  validate-xml-docs:
+    name: Validate Lua.xml, LuaDocumentation.xml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y
+          libxml2-utils
+      - name: Validate Lua.xml
+        run: xmllint --noout Docs/Luadoc/Lua.xml
+      - name: Validate LuaDocumentation.xml
+        run: xmllint --noout Docs/Luadoc/LuaDocumentation.xml

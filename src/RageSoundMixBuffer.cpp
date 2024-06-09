@@ -5,13 +5,6 @@
 #include <cmath>
 #include <cstdint>
 
-#if defined(MACOSX)
-#include "archutils/Darwin/VectorHelper.h"
-#ifdef USE_VEC
-static bool g_bVector = Vector::CheckForVector();
-#endif
-#endif
-
 RageSoundMixBuffer::RageSoundMixBuffer()
 {
 	m_iBufSize = m_iBufUsed = 0;
@@ -52,20 +45,11 @@ void RageSoundMixBuffer::write( const float *pBuf, unsigned iSize, int iSourceSt
 	if( iSize == 0 )
 		return;
 
-	/* iSize = 3, iDestStride = 2 uses 4 frames.  Don't allocate the stride of the
-	 * last sample. */
+	// iSize = 3, iDestStride = 2 uses 4 frames.  Don't allocate the stride of the last sample.
 	Extend( iSize * iDestStride - (iDestStride-1) );
 
-	/* Scale volume and add. */
+	// Scale volume and add.
 	float *pDestBuf = m_pMixbuf+m_iOffset;
-
-#ifdef USE_VEC
-	if( g_bVector && iSourceStride == 1 && iDestStride == 1 )
-	{
-		Vector::FastSoundWrite( pDestBuf, pBuf, iSize );
-		return;
-	}
-#endif
 
 	while( iSize )
 	{
@@ -82,7 +66,7 @@ void RageSoundMixBuffer::read( std::int16_t *pBuf )
 	{
 		float iOut = m_pMixbuf[iPos];
 		iOut = clamp( iOut, -1.0f, +1.0f );
-		pBuf[iPos] = std::lrint(iOut * 32767);
+		pBuf[iPos] = static_cast<int>((iOut * 32767) + 0.5);
 	}
 	m_iBufUsed = 0;
 }

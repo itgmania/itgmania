@@ -32,7 +32,7 @@ const RString &CourseDifficultyToLocalizedString( CourseDifficulty x )
 		FOREACH_ENUM( Difficulty,i)
 		{
 			std::unique_ptr<LocalizedString> ap( new LocalizedString("CourseDifficulty", DifficultyToString(i)) );
-			g_CourseDifficultyName[i] = move(ap);
+			g_CourseDifficultyName[i] = std::move(ap);
 		}
 	}
 	return g_CourseDifficultyName[x]->GetValue();

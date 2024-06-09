@@ -215,7 +215,7 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 			/* A sound is being delayed to resync it; clamp the number of frames we
 			 * read now, so we don't advance past it. */
 			int iMaxSourceFramesToRead = aNextSourceFrames[i] - iMinPosition;
-			int iMaxStreamFramesToRead = std::lrint( iMaxSourceFramesToRead / m_fCurrentStreamToSourceRatio );
+			int iMaxStreamFramesToRead = static_cast<int>((iMaxSourceFramesToRead / m_fCurrentStreamToSourceRatio) + 0.5 );
 			iFrames = std::min( iFrames, iMaxStreamFramesToRead );
 //			LOG->Warn( "RageSoundReader_Merge: sound positions moving at different rates" );
 		}
@@ -227,7 +227,7 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 		RageSoundReader *pSound = m_aSounds.front();
 		iFrames = pSound->Read( pBuffer, iFrames );
 		if( iFrames > 0 )
-			m_iNextSourceFrame += std::lrint( iFrames * m_fCurrentStreamToSourceRatio );
+			m_iNextSourceFrame += static_cast<int>((iFrames * m_fCurrentStreamToSourceRatio) + 0.5 );
 		aNextSourceFrames.front() = pSound->GetNextSourceFrame();
 		aRatios.front() = pSound->GetStreamToSourceRatio();
 		return iFrames;
@@ -249,9 +249,9 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 //			if( i == 0 )
 //LOG->Trace( "*** %i", Difference(aNextSourceFrames[i], m_iNextSourceFrame + std::lrint(iFramesRead * aRatios[i])) );
 
-			if( Difference(aNextSourceFrames[i], m_iNextSourceFrame + std::lrint(iFramesRead * aRatios[i])) > ERROR_CORRECTION_THRESHOLD )
+			if( Difference(aNextSourceFrames[i], m_iNextSourceFrame + static_cast<int>((iFramesRead * aRatios[i]) + 0.5)) > ERROR_CORRECTION_THRESHOLD )
 			{
-				LOG->Trace( "*** hurk %i", Difference(aNextSourceFrames[i], m_iNextSourceFrame + std::lrint(iFramesRead * aRatios[i])) );
+				LOG->Trace( "*** hurk %i", Difference(aNextSourceFrames[i], m_iNextSourceFrame + static_cast<int>((iFramesRead * aRatios[i]) + 0.5 )) );
 				break;
 			}
 
@@ -279,7 +279,7 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 	int iMaxFramesRead = mix.size() / m_iChannels;
 	mix.read( pBuffer );
 
-	m_iNextSourceFrame += std::lrint( iMaxFramesRead * m_fCurrentStreamToSourceRatio );
+	m_iNextSourceFrame += static_cast<int>(( iMaxFramesRead * m_fCurrentStreamToSourceRatio ) + 0.5);
 
 	return iMaxFramesRead;
 }
