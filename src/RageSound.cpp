@@ -287,7 +287,7 @@ int RageSound::GetDataToPlay( float *pBuffer, int iFrames, std::int64_t &iStream
 		/* Read data from our source. */
 		int iGotFrames = m_pSource->RetriedRead( pBuffer + (iFramesStored * m_pSource->GetNumChannels()), iFrames, &iSourceFrame, &fRate );
 
-		if( iGotFrames == RageSoundReader::ERROR )
+		if( iGotFrames == -1 ) // -1 = RageSoundReader::ERROR
 		{
 			m_sError = m_pSource->GetError();
 			// This error probably indicates an I/O error, rather than a decoding error.
