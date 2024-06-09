@@ -11,10 +11,15 @@ public:
 	RageSoundMixBuffer();
 	~RageSoundMixBuffer();
 
-	/* Mix the given buffer of samples. */
+	// See how many samples we can stuff into BUFFER_SIZE_IN_MEGABYTES.
+	static constexpr std::size_t SIZE_OF_FLOAT = sizeof(float);
+	static constexpr std::uint64_t BUFFER_SIZE_IN_MEGABYTES = 2;
+	static const std::uint64_t BUF_SIZE = BUFFER_SIZE_IN_MEGABYTES * 1024 * 1024 / SIZE_OF_FLOAT;
+
+	// Mix the given buffer of samples.
 	void write( const float *pBuf, unsigned iSize, int iSourceStride = 1, int iDestStride = 1 );
 
-	/* Extend the buffer as if write() was called with a buffer of silence. */
+	// Extend the buffer as if write() was called with a buffer of silence.
 	void Extend( unsigned iSamples );
 
 	void read( std::int16_t *pBuf );
@@ -26,8 +31,8 @@ public:
 
 private:
 	float *m_pMixbuf;
-	unsigned m_iBufSize; /* actual allocated samples */
-	unsigned m_iBufUsed; /* used samples */
+	std::uint64_t m_iBufSize; // actual allocated samples
+	std::uint64_t m_iBufUsed; // used samples
 	int m_iOffset;
 };
 
