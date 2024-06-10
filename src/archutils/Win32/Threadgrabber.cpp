@@ -8,18 +8,24 @@ it avoids a clunky situation where we have to pass the thread priority level as 
 You can call it like this:
 
 #ifdef _WIN32
-	ThreadPriorityManager::SetThreadPriorityForWin32(ThreadPriorityManager::GetPriorityLevel(THREAD_PRIORITY_HIGHEST));
+	ThreadPriorityManager::SetThreadPriorityForWin32(ThreadPriorityManager::HIGHEST);
+#endif
+
+or you can directly pass it an integer:
+
+#ifdef _WIN32
+	ThreadPriorityManager::SetThreadPriorityForWin32(6); // 6 corresponds to THREAD_PRIORITY_HIGHEST
 #endif
 
  Options for the priority level:
 
-THREAD_PRIORITY_TIME_CRITICAL	
-THREAD_PRIORITY_HIGHEST			
-THREAD_PRIORITY_ABOVE_NORMAL	
-THREAD_PRIORITY_NORMAL			
-THREAD_PRIORITY_BELOW_NORMAL	
-THREAD_PRIORITY_LOWEST			
-THREAD_PRIORITY_IDLE			
+THREAD_PRIORITY_TIME_CRITICAL	7
+THREAD_PRIORITY_HIGHEST			6
+THREAD_PRIORITY_ABOVE_NORMAL	5
+THREAD_PRIORITY_NORMAL			4
+THREAD_PRIORITY_BELOW_NORMAL	3
+THREAD_PRIORITY_LOWEST			2
+THREAD_PRIORITY_IDLE			1
 
 Please maintain this priority structure for the threads:
 
@@ -44,13 +50,9 @@ Sukibaby 2024
 #include <windows.h>
 #define WIN32_LEAN_AND_MEAN
 
-int GetPriorityLevel(int priorityLevelCode)
-{
-	return priorityLevelCode;
-}
-
 void SetThreadPriorityForWin32(int priorityLevel)
 {
 	HANDLE hThread = GetCurrentThread();
 	SetThreadPriority(hThread, priorityLevel);
 }
+

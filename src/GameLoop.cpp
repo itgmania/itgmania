@@ -404,7 +404,7 @@ void ConcurrentRenderer::RenderThread()
 {
 	
 #ifdef _WIN32 // Boost thread priority if running on Windows
-	ThreadPriorityManager::SetThreadPriorityForWin32(ThreadPriorityManager::GetPriorityLevel(THREAD_PRIORITY_HIGHEST));
+	ThreadPriorityManager::SetThreadPriorityForWin32(ThreadPriorityManager::HIGHEST);
 #endif
 	
 	ASSERT( SCREENMAN != nullptr );

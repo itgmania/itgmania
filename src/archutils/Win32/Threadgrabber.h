@@ -3,15 +3,20 @@
 class ThreadPriorityManager
 {
 public:
-	static int GetPriorityLevel(int priorityLevelCode)
+	enum PriorityLevel
 	{
-		// Return the priority level code as is, since it's already an integer
-		return priorityLevelCode;
-	}
+		TIME_CRITICAL = 7,
+		HIGHEST = 6,
+		ABOVE_NORMAL = 5,
+		NORMAL = 4,
+		BELOW_NORMAL = 3,
+		LOWEST = 2,
+		IDLE = 1
+	};
 
-	static void SetThreadPriorityForWin32(int priorityLevel)
+	static void SetThreadPriorityForWin32(PriorityLevel priorityLevel)
 	{
 		HANDLE hThread = GetCurrentThread();
-		SetThreadPriority(hThread, priorityLevel);
+		SetThreadPriority(hThread, static_cast<int>(priorityLevel));
 	}
 };
