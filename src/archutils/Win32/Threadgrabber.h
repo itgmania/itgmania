@@ -1,5 +1,8 @@
 /* 2024 sukibaby */
 
+#include <windows.h>
+#define WIN32_LEAN_AND_MEAN
+
 class ThreadPriorityManager
 {
 public:
