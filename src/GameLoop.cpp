@@ -24,8 +24,8 @@
 #include <cmath>
 #include <vector>
 
-#ifdef _WIN32 
-#include "archutils/Win32/Threadgrabber.h"
+#ifdef _WINDOWS
+#include "archutils/Win32/ThreadPriorityManager.h"
 #endif
 
 static RageTimer g_GameplayTimer;
@@ -403,7 +403,7 @@ void ConcurrentRenderer::Stop()
 void ConcurrentRenderer::RenderThread()
 {
 	
-#ifdef _WIN32 // Boost thread priority if running on Windows
+#ifdef _WINDOWS // Boost thread priority if running on Windows
 	ThreadPriorityManager::SetThreadPriorityForWin32(ThreadPriorityManager::HIGHEST);
 #endif
 	
