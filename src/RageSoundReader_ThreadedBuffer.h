@@ -8,6 +8,10 @@
 #include "RageThreads.h"
 #include <list>
 
+#ifdef _WIN32
+#include "archutils/Win32/ThreadPriorityHelper.h"
+#endif
+
 class RageThread;
 class RageSoundReader_ThreadedBuffer: public RageSoundReader_Filter
 {
@@ -70,7 +74,19 @@ private:
 
 	RageThread m_Thread;
 	bool m_bShutdownThread;
-	static int StartBufferingThread( void *p ) { ((RageSoundReader_ThreadedBuffer *) p)->BufferingThread(); return 0; }
+	static int StartBufferingThread(void* p)
+	{
+#ifdef _WIN32
+		bool setThreadSuccess = BoostThreadPriorityToHighest();
+		if (!setThreadSuccess)
+		{
+			ASSERT_M(0, "Failed to set thread priority to highest.");
+		}
+#endif
+		((RageSoundReader_ThreadedBuffer*)p)->BufferingThread();
+		return 0;
+	}
+
 	void BufferingThread();
 };
 
