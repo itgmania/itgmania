@@ -24,6 +24,9 @@
 #include <cmath>
 #include <vector>
 
+#ifdef _WIN32
+#include "archutils/Win32/ThreadPriorityHelper.h"
+#endif
 
 static RageTimer g_GameplayTimer;
 
@@ -410,6 +413,13 @@ void ConcurrentRenderer::RenderThread()
 
 		if( m_State == RENDERING_START )
 		{
+#ifdef _WIN32
+			bool setThreadSuccess = BoostThreadPriorityToHighest();
+			if (!setThreadSuccess)
+			{
+				ASSERT_M(0, "Failed to set thread priority to highest.");
+			}
+#endif
 			/* We're starting to render. Set up, and then kick the event to wake
 			 * up the calling thread. */
 			DISPLAY->BeginConcurrentRendering();
