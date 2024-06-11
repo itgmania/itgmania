@@ -191,6 +191,13 @@ bool RageSoundReader_ThreadedBuffer::SetProperty( const RString &sProperty, floa
 
 void RageSoundReader_ThreadedBuffer::BufferingThread()
 {
+	/* Sleep proportionately to the amount of data we buffered, so we
+	 * fill at a reasonable pace. */
+	float fTimeFilled = static_cast<float>(g_iReadBlockSizeFrames) / m_iSampleRate;
+	float fTimeToSleep = fTimeFilled / 2;
+	if (fTimeToSleep == 0)
+		fTimeToSleep = fTimeFilled;
+	
 	m_Event.Lock();
 	while( !m_bShutdownThread )
 	{
@@ -219,13 +226,6 @@ void RageSoundReader_ThreadedBuffer::BufferingThread()
 			m_bEnabled = false;
 			continue;
 		}
-
-		/* Sleep proportionately to the amount of data we buffered, so we
-		 * fill at a reasonable pace. */
-		float fTimeFilled = float(g_iReadBlockSizeFrames) / m_iSampleRate;
-		float fTimeToSleep = fTimeFilled / 2;
-		if( fTimeToSleep == 0 )
-			fTimeToSleep = float(g_iReadBlockSizeFrames) / m_iSampleRate;
 
 		if( m_Event.WaitTimeoutSupported() )
 		{

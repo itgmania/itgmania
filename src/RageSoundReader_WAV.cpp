@@ -368,7 +368,7 @@ public:
 			if( m_iBufferUsed == m_iBufferAvail )
 			{
 				if( !DecodeADPCMBlock() )
-					return RageSoundReader::ERROR;
+					return RageSoundReader::READ_ERROR;
 			}
 			if( m_iBufferAvail == 0 )
 			{
