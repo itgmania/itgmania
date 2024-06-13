@@ -158,12 +158,6 @@ include(ExternalProject)
 
 find_package(nasm)
 find_package(yasm)
-
-find_package(BZip2)
-if(NOT ${BZIP2_FOUND} AND NOT MSVC)
-  message(FATAL_ERROR "Bzip2 support required.")
-endif()
-
 find_package(Iconv)
 
 find_package(Threads)
