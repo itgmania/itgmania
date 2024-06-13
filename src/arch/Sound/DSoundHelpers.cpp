@@ -183,7 +183,7 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 
 	/* The size of the actual DSound buffer.  This can be large; we generally
 	 * won't fill it completely. */
-	m_iBufferSize = KB_512_AS_BYTES;
+	m_iBufferSize = 512 * 1024; // 512kb
 
 	WAVEFORMATEX waveformat;
 	memset( &waveformat, 0, sizeof(waveformat) );
