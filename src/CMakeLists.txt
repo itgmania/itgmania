@@ -387,7 +387,6 @@ elseif(APPLE)
               ${MAC_FRAME_COREAUDIO}
               ${MAC_FRAME_CORESERVICES}
               ${MAC_FRAME_SYSTEM}
-              "${BZIP2_LIBRARY_RELEASE}"
               "${ICONV_LIBRARIES}"
               "${SM_FFMPEG_LIB}/libavformat.a"
               "${SM_FFMPEG_LIB}/libavcodec.a"
@@ -412,7 +411,7 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
     list(APPEND SMDATA_LINK_LIB "${GTK3_LIBRARIES}")
   endif()
 
-  list(APPEND SMDATA_LINK_LIB "${BZIP2_LIBRARIES}" "${CMAKE_THREAD_LIBS_INIT}")
+  list(APPEND SMDATA_LINK_LIB "${CMAKE_THREAD_LIBS_INIT}")
 
   if(HAS_ALSA)
     list(APPEND SMDATA_LINK_LIB ${ALSA_LIBRARIES})
