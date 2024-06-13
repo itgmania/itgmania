@@ -1020,9 +1020,8 @@ bool WinWdmStream::SubmitPacket( int iPacket, RString &sError )
 	return false;
 }
 
-
-#include <windows.h>
 #define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 namespace
 {
 	void MapChannels( const std::int16_t *pIn, std::int16_t *pOut, int iInChannels, int iOutChannels, int iFrames, const int *pChannelMap )

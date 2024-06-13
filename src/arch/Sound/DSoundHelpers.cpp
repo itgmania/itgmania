@@ -365,16 +365,16 @@ void DSoundBuf::CheckUnderrun( int iCursorStart, int iCursorEnd )
 	// Store the buffer size in a variable to avoid multiple calls
 	int storedSizeOfBuffer = m_iBufferSize;
 
-	// If the buffer is full or nothing is expected to be filled, stop.
-	if( m_iBufferBytesFilled >= storedSizeOfBuffer || iCursorStart == iCursorEnd || m_iExtraWriteahead )
+	/* If nothing is expected to be filled, we can't underrun. */
+	if( iCursorStart == iCursorEnd )
+		return;
+
+	// If we're already in a recovering-from-underrun state, stop.
+	if( m_iExtraWriteahead )
 		return;
 
 	int iFirstByteFilled = m_iWriteCursor - m_iBufferBytesFilled;
 	wrap( iFirstByteFilled, storedSizeOfBuffer );
-
-	// If the end of the play cursor has data, we haven't underrun.
-	if( m_iBufferBytesFilled > 0 && contained(iFirstByteFilled, m_iWriteCursor, iCursorEnd) )
-		return;
 
 	// Calculate the required write-ahead size. This is the distance from the first filled byte
 	// to the end of the play cursor. If the buffer wraps around, the wrap function adjusts the value.

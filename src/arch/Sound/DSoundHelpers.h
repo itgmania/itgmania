@@ -31,8 +31,6 @@ private:
 class DSoundBuf
 {
 public:
-	static constexpr int KB_512_AS_BYTES = 524288; /* 512k for setting the buffer */
-
 	enum hw { HW_HARDWARE, HW_SOFTWARE, HW_DONT_CARE };
 
 	/* If samplerate is DYNAMIC_SAMPLERATE, then call SetSampleRate before
