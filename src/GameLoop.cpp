@@ -247,7 +247,6 @@ namespace
 void GameLoop::RunGameLoop()
 {
 	static int CheckInputDevicesCounter = 0;
-	
 	/* People may want to do something else while songs are loading, so do
 	 * this after loading songs. */
 	if( ChangeAppPri() )
@@ -264,34 +263,35 @@ void GameLoop::RunGameLoop()
 			DoChangeTheme();
 		}
 
-		CheckFocus();
-
-		// Update our stuff
+		// Update
 		float fDeltaTime = g_GameplayTimer.GetDeltaTime();
 
-		if (g_fConstantUpdateDeltaSeconds > 0)
+		if( g_fConstantUpdateDeltaSeconds > 0 )
 			fDeltaTime = g_fConstantUpdateDeltaSeconds;
-
-		CheckGameLoopTimerSkips(fDeltaTime);
+		
+		CheckGameLoopTimerSkips( fDeltaTime );
 
 		fDeltaTime *= g_fUpdateRate;
+
+		CheckFocus();
 
 		// Update SOUNDMAN early (before any RageSound::GetPosition calls), to flush position data.
 		SOUNDMAN->Update();
 
 		/* Update song beat information -before- calling update on all the classes that
-		* depend on it. If you don't do this first, the classes are all acting on old
-		* information and will lag. (but no longer fatally, due to timestamping -glenn) */
-		SOUND->Update(fDeltaTime);
-		TEXTUREMAN->Update(fDeltaTime);
-		GAMESTATE->Update(fDeltaTime);
-		SCREENMAN->Update(fDeltaTime);
+		 * depend on it. If you don't do this first, the classes are all acting on old 
+		 * information and will lag. (but no longer fatally, due to timestamping -glenn) */
+		SOUND->Update( fDeltaTime );
+		TEXTUREMAN->Update( fDeltaTime );
+		GAMESTATE->Update( fDeltaTime );
+		SCREENMAN->Update( fDeltaTime );
 		MEMCARDMAN->Update();
+		NSMAN->Update( fDeltaTime );
 
 		/* Important: Process input AFTER updating game logic, or input will be
-		* acting on song beat from last frame */
-		HandleInputEvents(fDeltaTime);
-		
+		 * acting on song beat from last frame */
+		HandleInputEvents( fDeltaTime );
+
 		// This loop runs every frame, so the input devices will be checked every 500 frames.
 		if (CheckInputDevicesCounter % (500) == 0)
 		{
@@ -300,8 +300,9 @@ void GameLoop::RunGameLoop()
 		}
     
 		CheckInputDevicesCounter++;
-		LIGHTSMAN->Update(fDeltaTime);
-		
+
+		LIGHTSMAN->Update( fDeltaTime );
+
 		// Render
 		SCREENMAN->Draw();
 	}
