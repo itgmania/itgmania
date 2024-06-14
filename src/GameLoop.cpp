@@ -286,22 +286,20 @@ void GameLoop::RunGameLoop()
 		GAMESTATE->Update( fDeltaTime );
 		SCREENMAN->Update( fDeltaTime );
 		MEMCARDMAN->Update();
-		NSMAN->Update( fDeltaTime );
 
 		/* Important: Process input AFTER updating game logic, or input will be
 		 * acting on song beat from last frame */
 		HandleInputEvents( fDeltaTime );
 
+		LIGHTSMAN->Update( fDeltaTime );
+		
 		// This loop runs every frame, so the input devices will be checked every 500 frames.
 		if (CheckInputDevicesCounter % (500) == 0)
 		{
 			CheckInputDevices();
 			CheckInputDevicesCounter = 0;
 		}
-    
 		CheckInputDevicesCounter++;
-
-		LIGHTSMAN->Update( fDeltaTime );
 
 		// Render
 		SCREENMAN->Draw();
