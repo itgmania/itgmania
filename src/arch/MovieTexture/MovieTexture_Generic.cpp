@@ -10,7 +10,9 @@
 #include "Sprite.h"
 
 #include <cmath>
+#include <chrono>
 #include <cstdint>
+#include <numeric>
 
 #if defined(WIN32)
 #include "archutils/Win32/ErrorStrings.h"
@@ -19,7 +21,6 @@
 
 
 static Preference<bool> g_bMovieTextureDirectUpdates( "MovieTextureDirectUpdates", true );
-
 MovieTexture_Generic::MovieTexture_Generic( RageTextureID ID, MovieDecoder *pDecoder ):
 	RageMovieTexture( ID )
 {
@@ -33,40 +34,47 @@ MovieTexture_Generic::MovieTexture_Generic( RageTextureID ID, MovieDecoder *pDec
 	m_bLoop = true;
 	m_pSurface = nullptr;
 	m_pTextureLock = nullptr;
-	m_ImageWaiting = FRAME_NONE;
-	m_fRate = 1;
-	m_bWantRewind = false;
+
 	m_fClock = 0;
-	m_bFrameSkipMode = false;
 	m_pSprite = new Sprite;
+	m_fRate = 1;
 }
 
 RString MovieTexture_Generic::Init()
 {
-	RString sError = m_pDecoder->Open( GetID().filename );
+	RString sError = m_pDecoder->Open(GetID().filename);
 	if( sError != "" )
 		return sError;
 
 	CreateTexture();
 	CreateFrameRects();
 
-	/* Decode one frame, to guarantee that the texture is drawn when this function returns. */
-	int ret = m_pDecoder->DecodeFrame( -1 );
-	if( ret == -1 )
-		return ssprintf( "%s: error getting first frame", GetID().filename.c_str() );
-	if( ret == 0 )
-	{
-		/* There's nothing there. */
-		return ssprintf( "%s: EOF getting first frame", GetID().filename.c_str() );
-	}
 
-	m_ImageWaiting = FRAME_DECODED;
-
-	LOG->Trace( "Resolution: %ix%i (%ix%i, %ix%i)",
-			m_iSourceWidth, m_iSourceHeight,
-			m_iImageWidth, m_iImageHeight, m_iTextureWidth, m_iTextureHeight );
-
+	// Draw the first frame immediately, to guarantee that the texture is drawn
+	// when this function returns
+	m_pDecoder->DecodeFrame(0);
 	UpdateFrame();
+	typedef std::chrono::high_resolution_clock Time;
+	typedef std::chrono::milliseconds ms;
+	typedef std::chrono::duration<float> fsec;
+	using std::chrono::operator""ms;
+
+	// Start decoding in a background thread
+	decoding_thread = std::make_unique<std::thread>([this]() {
+		LOG->Trace("Beginning to decode video file \"%s\"", GetID().filename.c_str());
+		auto t0 = Time::now();
+
+		m_pDecoder->DecodeMovie();
+
+		auto t1 = Time::now();
+		fsec duration = t1 - t0;
+		LOG->Trace("Done decoding video file \"%s\", took %f seconds", GetID().filename.c_str(), duration.count());
+		});
+
+
+	LOG->Trace("Resolution: %ix%i (%ix%i, %ix%i)",
+		m_iSourceWidth, m_iSourceHeight,
+		m_iImageWidth, m_iImageHeight, m_iTextureWidth, m_iTextureHeight);
 
 	CHECKPOINT_M("Generic initialization completed. No errors found.");
 
@@ -75,8 +83,11 @@ RString MovieTexture_Generic::Init()
 
 MovieTexture_Generic::~MovieTexture_Generic()
 {
-	if( m_pDecoder )
+	if (m_pDecoder) {
+		m_pDecoder->Cancel();
+		decoding_thread->join();
 		m_pDecoder->Close();
+	}
 
 	/* m_pSprite may reference the texture; delete it before DestroyTexture. */
 	delete m_pSprite;
@@ -120,12 +131,6 @@ public:
 		m_PixFmt = pixfmt;
 		m_iSourceWidth = iWidth;
 		m_iSourceHeight = iHeight;
-/*		int iMaxSize = std::min( GetID().iMaxSize, DISPLAY->GetMaxTextureSize() );
-		m_iImageWidth = std::min( m_iSourceWidth, iMaxSize );
-		m_iImageHeight = std::min( m_iSourceHeight, iMaxSize );
-		m_iTextureWidth = power_of_two( m_iImageWidth );
-		m_iTextureHeight = power_of_two( m_iImageHeight );
-*/
 
 		m_iImageWidth = iImageWidth;
 		m_iImageHeight = iImageHeight;
@@ -303,62 +308,6 @@ void MovieTexture_Generic::CreateTexture()
 	m_uTexHandle = DISPLAY->CreateTexture( pixfmt, m_pSurface, false );
 }
 
-/* Handle decoding for a frame.  Return true if a frame was decoded, false if not
- * (due to quit, error, EOF, etc).  If true is returned, we'll be in FRAME_DECODED. */
-bool MovieTexture_Generic::DecodeFrame()
-{
-	bool bTriedRewind = false;
-	do
-	{
-		if( m_bWantRewind )
-		{
-			if( bTriedRewind )
-			{
-				LOG->Trace( "File \"%s\" looped more than once in one frame", GetID().filename.c_str() );
-				return false;
-			}
-			m_bWantRewind = false;
-			bTriedRewind = true;
-
-			/* When resetting the clock, set it back by the length of the last frame,
-			 * so it has a proper delay. */
-			float fDelay = m_pDecoder->GetFrameDuration();
-
-			/* Restart. */
-			m_pDecoder->Rewind();
-
-			m_fClock = -fDelay;
-		}
-
-		/* Read a frame. */
-		float fTargetTime = -1;
-		if( m_bFrameSkipMode && m_fClock > m_pDecoder->GetTimestamp() )
-			fTargetTime = m_fClock;
-
-		int ret = m_pDecoder->DecodeFrame( fTargetTime );
-		if( ret == -1 )
-			return false;
-
-		if( m_bWantRewind && m_pDecoder->GetTimestamp() == 0 )
-			m_bWantRewind = false; /* ignore */
-
-		if( ret == 0 )
-		{
-			/* EOF. */
-			if( !m_bLoop )
-				return false;
-
-			LOG->Trace( "File \"%s\" looping", GetID().filename.c_str() );
-			m_bWantRewind = true;
-			continue;
-		}
-
-		/* We got a frame. */
-	} while( m_bWantRewind );
-
-	return true;
-}
-
 /*
  * Returns:
  *  == 0 if the currently decoded frame is ready to be displayed
@@ -366,83 +315,29 @@ bool MovieTexture_Generic::DecodeFrame()
  */
 float MovieTexture_Generic::CheckFrameTime()
 {
-	if( m_fRate == 0 )
+	if (m_fRate == 0)
 		return 1;	// "a long time until the next frame"
 
-	const float fOffset = (m_pDecoder->GetTimestamp() - m_fClock) / m_fRate;
 
-	/* If we're ahead, we're decoding too fast; delay. */
-	if( fOffset > 0.00001f )
-	{
-		if( m_bFrameSkipMode )
-		{
-			/* We're caught up; stop skipping frames. */
-			LOG->Trace( "stopped skipping frames" );
-			m_bFrameSkipMode = false;
-		}
-		return fOffset;
-	}
-
-	/*
-	 * We're behind by -Offset seconds.
-	 *
-	 * If we're just slightly behind, don't worry about it; we'll simply
-	 * not sleep, so we'll move as fast as we can to catch up.
-	 *
-	 * If we're far behind, we're short on CPU.  Skip texture updates; this
-	 * is a big bottleneck on many systems.
-	 *
-	 * If we hit a threshold, start skipping frames via #1.  If we do that,
-	 * don't stop once we hit the threshold; keep doing it until we're fully
-	 * caught up.
-	 *
-	 * We should try to notice if we simply don't have enough CPU for the video;
-	 * it's better to just stay in frame skip mode than to enter and exit it
-	 * constantly, but we don't want to do that due to a single timing glitch.
-	 */
-	const float FrameSkipThreshold = 0.5f;
-
-	if( -fOffset >= FrameSkipThreshold && !m_bFrameSkipMode )
-	{
-		LOG->Trace( "(%s) Time is %f, and the movie is at %f.  Entering frame skip mode.",
-			GetID().filename.c_str(), m_fClock, m_pDecoder->GetTimestamp() );
-		m_bFrameSkipMode = true;
-	}
-
-	return 0;
+	return (m_pDecoder->GetTimestamp() - m_fClock) / m_fRate;
 }
 
 /* Decode data. */
-void MovieTexture_Generic::DecodeSeconds( float fSeconds )
+void MovieTexture_Generic::DecodeSeconds(float fSeconds)
 {
 	m_fClock += fSeconds * m_fRate;
 
-	/* We might need to decode more than one frame per update.  However, there
-	 * have been bugs in ffmpeg that cause it to not handle EOF properly, which
-	 * could make this never return, so let's play it safe. */
-	int iMax = 4;
-	while( --iMax )
-	{
-		/* If we don't have a frame decoded, decode one. */
-		if( m_ImageWaiting == FRAME_NONE )
-		{
-			if( !DecodeFrame() )
-				break;
+	float fTime = CheckFrameTime();
+	bool fReady = m_pDecoder->IsCurrentFrameReady();
 
-			m_ImageWaiting = FRAME_DECODED;
-		}
-
-		/* If we have a frame decoded, see if it's time to display it. */
-		float fTime = CheckFrameTime();
-		if ( fTime <= 0 )
-		{
-			UpdateFrame();
-			m_ImageWaiting = FRAME_NONE;
-		}
+	// If the frame isn't ready, don't update the frame. This does mean the video
+	// will "speed up" to catch up when decoding does outpace display.
+	//
+	// In practice, display should rarely, if ever, outpace decoding.
+	if (fTime <= 0 && fReady) {
+		UpdateFrame();
 		return;
 	}
-
-	LOG->MapLog( "movie_looping", "MovieTexture_Generic::Update looping" );
 }
 
 void MovieTexture_Generic::UpdateFrame()
@@ -450,42 +345,56 @@ void MovieTexture_Generic::UpdateFrame()
 	/* Just in case we were invalidated: */
 	CreateTexture();
 
-	if( m_pTextureLock != nullptr )
+	if (m_pTextureLock != nullptr)
 	{
-		std::uintptr_t iHandle = m_pTextureIntermediate != nullptr? m_pTextureIntermediate->GetTexHandle(): this->GetTexHandle();
-		m_pTextureLock->Lock( iHandle, m_pSurface );
+		std::uintptr_t iHandle = m_pTextureIntermediate != nullptr ? m_pTextureIntermediate->GetTexHandle() : this->GetTexHandle();
+		m_pTextureLock->Lock(iHandle, m_pSurface);
 	}
 
-	m_pDecoder->GetFrame( m_pSurface );
-	if( m_pTextureLock != nullptr )
-		m_pTextureLock->Unlock( m_pSurface, true );
+	/* Are we looping? */
+	if (m_pDecoder->GetFrame(m_pSurface) && m_bLoop) {
+		LOG->Trace("File \"%s\" looping", GetID().filename.c_str());
+		m_pDecoder->Rewind();
+		// There's a gap in the audio when the music preview loops. This value
+		// is dynamic based on the ending and starting beats (see
+		// GameSoundManager.cpp::StartMusic).
+		//
+		// This means that the video will be off-sync during the loop, since
+		// the movie texture doesn't have access to the SoundManager's offset.
+		// Until it does, we can either freeze at the end of the video banner,
+		// or give it a effort approximation (0.5 seconds).
+		m_fClock = 0.5;
+	};
 
-	if( m_pRenderTarget != nullptr )
+	if (m_pTextureLock != nullptr)
+		m_pTextureLock->Unlock(m_pSurface, true);
+
+	if (m_pRenderTarget != nullptr)
 	{
-		CHECKPOINT_M( "About to upload the texture.");
+		CHECKPOINT_M("About to upload the texture.");
 
 		/* If we have no m_pTextureLock, we still have to upload the texture. */
-		if( m_pTextureLock == nullptr )
+		if (m_pTextureLock == nullptr)
 		{
 			DISPLAY->UpdateTexture(
 				m_pTextureIntermediate->GetTexHandle(),
 				m_pSurface,
 				0, 0,
-				m_pSurface->w, m_pSurface->h );
+				m_pSurface->w, m_pSurface->h);
 		}
-		m_pRenderTarget->BeginRenderingTo( false );
+		m_pRenderTarget->BeginRenderingTo(false);
 		m_pSprite->Draw();
 		m_pRenderTarget->FinishRenderingTo();
 	}
 	else
 	{
-		if( m_pTextureLock == nullptr )
+		if (m_pTextureLock == nullptr)
 		{
 			DISPLAY->UpdateTexture(
 				m_uTexHandle,
 				m_pSurface,
 				0, 0,
-				m_iImageWidth, m_iImageHeight );
+				m_iImageWidth, m_iImageHeight);
 		}
 	}
 }
@@ -508,9 +417,8 @@ void MovieTexture_Generic::Reload()
 
 void MovieTexture_Generic::SetPosition( float fSeconds )
 {
-	/* We can reset to 0, but I don't think this API supports fast seeking
-	 * yet.  I don't think we ever actually seek except to 0 right now,
-	 * anyway. XXX */
+	// In theory, we can math out fSeconds and frame counts to seek the video,
+	// but there's likely no practical use case of this.
 	if( fSeconds != 0 )
 	{
 		LOG->Warn( "MovieTexture_Generic::SetPosition(%f): non-0 seeking unsupported; ignored", fSeconds );
@@ -518,7 +426,8 @@ void MovieTexture_Generic::SetPosition( float fSeconds )
 	}
 
 	LOG->Trace( "Seek to %f", fSeconds );
-	m_bWantRewind = true;
+	m_fClock = 0;
+	m_pDecoder->Rewind();
 }
 
 std::uintptr_t MovieTexture_Generic::GetTexHandle() const

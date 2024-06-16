@@ -1299,7 +1299,7 @@ public:
 	DEFINE_METHOD(GetDecodeMovie, m_DecodeMovie);
 	static int SetDecodeMovie(T* p, lua_State *L)
 	{
-		p->m_DecodeMovie= BArg(1);
+		p->m_DecodeMovie = BArg(1);
 		COMMON_RETURN_SELF;
 	}
 	static int LoadFromCached( T* p, lua_State *L )

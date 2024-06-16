@@ -4,6 +4,7 @@
 #include "MovieTexture.h"
 
 #include <cstdint>
+#include <thread>
 
 class FFMpeg_Helper;
 struct RageSurface;
@@ -38,12 +39,16 @@ public:
 	 * Otherwise, fTargetTime will be -1, and the next frame should be
 	 * decoded; skip frames only if necessary to recover from errors.
 	 */
-	virtual int DecodeFrame( float fTargetTime ) = 0;
+	virtual int DecodeFrame(int frameNumber) = 0;
+	virtual void DecodeMovie() = 0;
+
+	// Returns true if the frame we want to display has been decoded already.
+	virtual bool IsCurrentFrameReady() = 0;
 
 	/*
 	 * Get the currently-decoded frame.
 	 */
-	virtual void GetFrame( RageSurface *pOut ) = 0;
+	virtual bool GetFrame(RageSurface* pOut) = 0;
 
 	/* Return the dimensions of the image, in pixels (before aspect ratio
 	 * adjustments). */
@@ -74,8 +79,13 @@ public:
 	 * displayed.  The first frame will always be 0. */
 	virtual float GetTimestamp() const = 0;
 
+	virtual void Cancel() = 0;
+
 	/* Get the duration, in seconds, to display the current frame. */
 	virtual float GetFrameDuration() const = 0;
+
+	/* Get the total number of frames in the movie. */
+	virtual int GetTotalFrames() const = 0;
 };
 
 
@@ -100,17 +110,12 @@ public:
 	static EffectMode GetEffectMode( MovieDecoderPixelFormatYCbCr fmt );
 
 private:
-	MovieDecoder *m_pDecoder;
+	MovieDecoder* m_pDecoder;
+
+	std::unique_ptr<std::thread> decoding_thread;
 
 	float m_fRate;
-	enum {
-		FRAME_NONE, /* no frame available; call GetFrame to get one */
-		FRAME_DECODED /* frame decoded; waiting until it's time to display it */
-	} m_ImageWaiting;
 	bool m_bLoop;
-	bool m_bWantRewind;
-
-	enum State { DECODER_QUIT, DECODER_RUNNING } m_State;
 
 	std::uintptr_t m_uTexHandle;
 	RageTextureRenderTarget *m_pRenderTarget;
@@ -123,14 +128,12 @@ private:
 
 	/* The time the movie is actually at: */
 	float m_fClock;
-	bool m_bFrameSkipMode;
 
 	void UpdateFrame();
 
 	void CreateTexture();
 	void DestroyTexture();
 
-	bool DecodeFrame();
 	float CheckFrameTime();
 };
 
