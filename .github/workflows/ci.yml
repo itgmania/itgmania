@@ -4,7 +4,7 @@ on:
     paths-ignore:
       - '**.md'
 
-name: Continuous Integration
+name: Continuous integration
 
 jobs:
   build:
