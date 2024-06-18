@@ -4,87 +4,59 @@ on:
     paths-ignore:
       - '**.md'
 
-name: Continuous integration
+name: Continuous Integration
 
 jobs:
-  ubuntu-build:
-    name: Ubuntu
-    runs-on: ubuntu-latest
+  build:
+    name: ${{ matrix.os }} Build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-13, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y
-          libasound2-dev
-          libgl-dev
-          libglu1-mesa-dev
-          libgtk-3-dev
-          libjack-dev
-          libmad0-dev
-          libpulse-dev
-          libudev-dev
-          libusb-dev
-          libxinerama-dev
-          libx11-dev
-          libxrandr-dev
-          libxtst-dev
-          nasm
+        run: |
+          if [[ ${{ runner.os }} == 'Linux' ]]; then
+            sudo apt-get update && sudo apt-get install -y \
+              libasound2-dev \
+              libgl-dev \
+              libglu1-mesa-dev \
+              libgtk-3-dev \
+              libjack-dev \
+              libmad0-dev \
+              libpulse-dev \
+              libudev-dev \
+              libusb-dev \
+              libxinerama-dev \
+              libx11-dev \
+              libxrandr-dev \
+              libxtst-dev \
+              nasm
+          elif [[ ${{ runner.os }} == 'macOS' ]]; then
+            brew install nasm
+          fi
       - name: Configure
-        run: cmake -B build
-      - name: Build
-        run: cmake --build build
-
-  macos-build-arm64:
-    name: macOS (M1)
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Checkout submodules
-        run: git submodule update --init --recursive
-      - name: Install dependencies
-        run: brew install
-          nasm
-      - name: Configure
-        run: cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64
-      - name: Build
-        run: cmake --build build
-
-  macos-build-x86_64:
-    name: macOS (Intel)
-    runs-on: macos-13
-    steps:
-      - uses: actions/checkout@v4
-      - name: Checkout submodules
-        run: git submodule update --init --recursive
-      - name: Install dependencies
-        run: brew install
-          nasm
-      - name: Configure
-        run: cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64
-      - name: Build
-        run: cmake --build build
-
-  windows-build:
-    name: Windows
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Checkout submodules
-        run: git submodule update --init --recursive
-      - name: Configure
-        run: cmake -B build
+        run: |
+          if [[ ${{ runner.os }} == 'macOS' && ${{ runner.arch }} == 'arm64 ]]; then
+            cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64
+          elif [[ ${{ runner.os }} == 'macOS' && [ ${{ runner.arch }} == 'X64' || ${{ runner.arch }} == 'X86' ] ]]; then
+            cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64
+          else
+            cmake -B build
+          fi
       - name: Build
         run: cmake --build build
 
   validate-xml-docs:
     name: Validate Lua.xml, LuaDocumentation.xml
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Only needed on Ubuntu for this specific job
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y
-          libxml2-utils
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
       - name: Validate Lua.xml
         run: xmllint --noout Docs/Luadoc/Lua.xml
       - name: Validate LuaDocumentation.xml
