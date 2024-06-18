@@ -40,7 +40,7 @@ jobs:
           fi
       - name: Configure
         run: |
-          if [[ ${{ runner.os }} == 'macOS' && ${{ runner.arch }} == 'arm64 ]]; then
+          if [[ ${{ runner.os }} == 'macOS' && ${{ runner.arch }} == 'ARM64' ]]; then
             cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64
           elif [[ ${{ runner.os }} == 'macOS' && [ ${{ runner.arch }} == 'X64' || ${{ runner.arch }} == 'X86' ] ]]; then
             cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64
