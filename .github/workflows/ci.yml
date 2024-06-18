@@ -52,7 +52,7 @@ jobs:
 
   macos-build-x86_64:
     name: macOS (Intel)
-    runs-on: macos-12
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
       - name: Checkout submodules
