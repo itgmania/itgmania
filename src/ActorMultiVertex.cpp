@@ -182,10 +182,10 @@ void ActorMultiVertex::SetNumVertices( std::size_t n )
  
 void ActorMultiVertex::ResizeVertices(std::vector<RageSpriteVertex>& vertices, int size)
 {
-	if (vertices.capacity() < size)
-		{
+	if (vertices.capacity() < static_cast<std::size_t>(size))
+	{
 		vertices.reserve(size);
-		}
+	}
 	vertices.resize(size);
 }
 
