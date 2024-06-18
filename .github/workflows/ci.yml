@@ -19,7 +19,7 @@ jobs:
         run: git submodule update --init --recursive
       - name: Install dependencies
         run: |
-          if [[ ${{ runner.os }} == 'Linux' ]]; then
+          if [[ "${{ runner.os }}" == "Linux" ]]; then
             sudo apt-get update && sudo apt-get install -y \
               libasound2-dev \
               libgl-dev \
@@ -35,14 +35,14 @@ jobs:
               libxrandr-dev \
               libxtst-dev \
               nasm
-          elif [[ ${{ runner.os }} == 'macOS' ]]; then
+          elif [[ "${{ runner.os }}" == "macOS" ]]; then
             brew install nasm
           fi
       - name: Configure
         run: |
-          if [[ ${{ runner.os }} == 'macOS' && ${{ runner.arch }} == 'ARM64' ]]; then
+          if [[ "${{ runner.os }}" == 'macOS' && "${{ runner.arch }}" == 'ARM64' ]]; then
             cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64
-          elif [[ ${{ runner.os }} == 'macOS' && [ ${{ runner.arch }} == 'X64' || ${{ runner.arch }} == 'X86' ] ]]; then
+          elif [[ "${{ runner.os }}" == "macOS" && [ "${{ runner.arch }}" == "X64" || "${{ runner.arch }}" == "X86" ] ]]; then
             cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64
           else
             cmake -B build
