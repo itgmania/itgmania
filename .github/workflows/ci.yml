@@ -37,6 +37,8 @@ jobs:
               nasm
           elif [[ "${{ runner.os }}" == "macOS" ]]; then
             brew install nasm
+          else
+            exit 0
           fi
       - name: Configure
         run: |
