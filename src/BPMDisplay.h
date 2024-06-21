@@ -61,6 +61,13 @@ public:
 	/** @brief Have the GameState determine which BPMs to display. */
 	void SetFromGameState();
 
+    // I need to be able to access this from TimingData.cpp as a backup method to get the BPM.
+    static float PublicGetActiveBPM()
+    {
+		BPMDisplay display;
+		return display.GetActiveBPM();
+    }
+
 	// Lua
 	virtual void PushSelf( lua_State *L );
 

@@ -6,7 +6,7 @@
 #include "RageLog.h"
 #include "ThemeManager.h"
 #include "NoteTypes.h"
-
+#include "BPMDisplay.h"
 #include <cfloat>
 #include <cmath>
 #include <cstddef>
@@ -753,9 +753,60 @@ bool TimingData::DoesLabelExist( const RString& sLabel ) const
 	return false;
 }
 
+float TimingData::GetCurrentBPM() const
+{
+	// Get the current beat
+	float currentBeat = static_cast<float>(GAMESTATE->m_Position.m_fSongBeat);
+
+	// Convert beat to row
+	int currentNoteRow = BeatToNoteRow(currentBeat);
+
+	// Retrieve the BPM segment for the current row
+	const TimingSegment* segment = GetSegmentAtRow(currentNoteRow, SEGMENT_BPM);
+
+	// Extract the BPM value
+	if (segment != DummySegments[SEGMENT_BPM])
+	{
+		const BPMSegment* bpmSegment = static_cast<const BPMSegment*>(segment);
+		if (bpmSegment)
+		{
+			return bpmSegment->GetBPM();
+		}
+	}
+
+	// If for some reason the above if loop fails out, let's use BPMDisplay's
+	// method to retrieve the BPM as a fallback. If we ever reach this point,
+	// it's most likely due to a corrupted DummySegment or a nullptr segment.
+	LOG->Warn("GetCurrentBPM: No BPM segment found at row %d", currentNoteRow);
+	float backupBPM = BPMDisplay::PublicGetActiveBPM();
+	LOG->Trace("GetCurrentBPM: Using BPMDisplay's active BPM as a fallback: %f", backupBPM);
+	return backupBPM;
+
+}
+
+float TimingData::GetAdjustedGlobalOffset() const
+{
+	// Get the BPM at the calculated row in seconds,
+	// then convert the global offset to beats.
+	float bpm = GetCurrentBPM();
+	return PREFSMAN->m_fGlobalOffsetSeconds / 60.0f;
+}
+
 void TimingData::GetBeatAndBPSFromElapsedTime(GetBeatArgs& args) const
 {
-	args.elapsed_time += GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate * PREFSMAN->m_fGlobalOffsetSeconds;
+	/* The if - else statements are needed to keep
+	 * theme side stuff working as it should.
+	 * Otherwise, stuff like NPS and density graph
+	 * calculations will be incorrect. */
+	if (GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate != 1)
+	{
+		float globalOffsetInBeats = GetAdjustedGlobalOffset();
+		args.elapsed_time += globalOffsetInBeats / GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+	}
+	else
+	{
+		args.elapsed_time += PREFSMAN->m_fGlobalOffsetSeconds;
+	}
 	GetBeatAndBPSFromElapsedTimeNoOffset(args);
 }
 
@@ -993,10 +1044,27 @@ float TimingData::GetElapsedTimeInternal(GetBeatStarts& start, float beat,
 	return start.last_time;
 }
 
-float TimingData::GetElapsedTimeFromBeat( float fBeat ) const
+float TimingData::GetElapsedTimeFromBeat(float fBeat) const
 {
-	return TimingData::GetElapsedTimeFromBeatNoOffset( fBeat )
-		- GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate * PREFSMAN->m_fGlobalOffsetSeconds;
+	/* The if - else statements are needed to keep
+	 * theme side stuff working as it should.
+	 * Otherwise, stuff like NPS and density graph
+	 * calculations will be incorrect. */
+	if (GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate != 1)
+	{
+		float bpm = GetCurrentBPM();
+		float bps = bpm / 60.0f;
+		float globalOffsetInSeconds = PREFSMAN->m_fGlobalOffsetSeconds;
+		float elapsedTime = TimingData::GetElapsedTimeFromBeatNoOffset(fBeat) - globalOffsetInSeconds;
+		return elapsedTime / bps * GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+		/* We need to convert globalOffsetInBeats back to
+		 * seconds to adjust the elapsed time correctly.
+		 * globalOffsetInBeats * (1/bps) = globalOffsetInSeconds */
+	}
+	else
+	{
+		return TimingData::GetElapsedTimeFromBeatNoOffset(fBeat) - PREFSMAN->m_fGlobalOffsetSeconds;
+	}
 }
 
 float TimingData::GetElapsedTimeFromBeatNoOffset( float fBeat ) const

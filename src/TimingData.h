@@ -135,6 +135,8 @@ public:
 	void DumpOneTable(const beat_start_lookup_t& lookup, const RString& name);
 	void DumpLookupTables();
 
+	float GetCurrentBPM() const;
+	float GetAdjustedGlobalOffset() const;
 	int GetSegmentIndexAtRow(TimingSegmentType tst, int row) const;
 	int GetSegmentIndexAtBeat(TimingSegmentType tst, float beat) const
 	{
