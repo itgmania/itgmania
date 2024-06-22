@@ -93,7 +93,7 @@ void LightsDriver_SextetStream::Set(const LightsState *ls)
 
 REGISTER_LIGHTS_DRIVER_CLASS(SextetStreamToFile);
 
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 	#define DEFAULT_OUTPUT_FILENAME "\\\\.\\pipe\\StepMania-Lights-SextetStream"
 #else
 	#define DEFAULT_OUTPUT_FILENAME "Data/StepMania-Lights-SextetStream.out"

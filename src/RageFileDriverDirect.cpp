@@ -14,17 +14,16 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if !defined(WIN32)
-
-#if defined(HAVE_DIRENT_H)
-#include <dirent.h>
-#endif
-
+#if defined(_WIN32)
+    #include "archutils/Win32/ErrorStrings.h"
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
+    #include <io.h>
 #else
-#include "archutils/Win32/ErrorStrings.h"
-#include <windows.h>
-#include <io.h>
-#endif // !defined(WIN32)
+    #if defined(HAVE_DIRENT_H)
+        #include <dirent.h>
+    #endif
+#endif
 
 /* Direct filesystem access: */
 static struct FileDriverEntry_DIR: public FileDriverEntry
@@ -255,7 +254,7 @@ RageFileObjDirect::RageFileObjDirect( const RString &sPath, int iFD, int iMode )
 
 namespace
 {
-#if !defined(WIN32)
+#if !defined(_WIN32)
 	bool FlushDir( RString sPath, RString &sError )
 	{
 		/* Wait for the directory to be flushed. */
@@ -351,7 +350,7 @@ RageFileObjDirect::~RageFileObjDirect()
 		RString sOldPath = MakeTempFilename(m_sPath);
 		RString sNewPath = m_sPath;
 
-#if defined(WIN32)
+#if defined(_WIN32)
 		if( WinMoveFile(DoPathReplace(sOldPath), DoPathReplace(sNewPath)) )
 			return;
 

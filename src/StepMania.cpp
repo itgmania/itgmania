@@ -73,7 +73,8 @@
 #include <ctime>
 #include <vector>
 
-#if defined(WIN32)
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
@@ -386,13 +387,13 @@ RString StepMania::GetSelectMusicScreen()
 	return SELECT_MUSIC_SCREEN.GetValue();
 }
 
-#if defined(WIN32)
+#if defined(_WIN32)
 static Preference<int> g_iLastSeenMemory( "LastSeenMemory", 0 );
 #endif
 
 static void AdjustForChangedSystemCapabilities()
 {
-#if defined(WIN32)
+#if defined(_WIN32)
 	// Has the amount of memory changed?
 	MEMORYSTATUS mem;
 	GlobalMemoryStatus(&mem);
@@ -429,7 +430,7 @@ static void AdjustForChangedSystemCapabilities()
 #endif
 }
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #include "RageDisplay_D3D.h"
 #include "archutils/Win32/VideoDriverInfo.h"
 #endif
@@ -508,7 +509,7 @@ struct VideoCardDefaults
 
 static RString GetVideoDriverName()
 {
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 	return GetPrimaryVideoDriverName();
 #else
 	return "OpenGL";

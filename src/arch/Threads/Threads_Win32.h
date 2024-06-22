@@ -4,7 +4,7 @@
 #include <cstdint>
 
 #include "Threads.h"
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 #  include <windows.h>
 #else
 #  include <windef.h>

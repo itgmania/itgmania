@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 #include <windows.h>
 #include <wtypes.h>
 #endif

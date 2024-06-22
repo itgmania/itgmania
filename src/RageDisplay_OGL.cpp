@@ -549,7 +549,7 @@ RString RageDisplay_Legacy::Init( const VideoModeParams &p, bool bAllowUnacceler
 		LOG->Warn( "Low-performance OpenGL renderer: %s", sError.c_str() );
 	}
 
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 	/* GLDirect is a Direct3D wrapper for OpenGL.  It's rather buggy; and if in
 	 * any case GLDirect can successfully render us, we should be able to do so
 	 * too using Direct3D directly.  (If we can't, it's a bug that we can work
