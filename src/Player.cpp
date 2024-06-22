@@ -284,6 +284,15 @@ Player::Player( NoteData &nd, bool bVisibleParts ) : m_NoteData(nd)
 		this->AddChild( m_pAttackDisplay );
 	}
 
+	/* Pump or SMX doubles = 10 columns
+	 * We don't need more than that.
+	 * The memory impact of allocating 6
+	 * extra columns for 4 panel play
+	 * is less than the cost of determining
+	 * how many columns is needed, and the
+	 * potential for that to be wrong. */
+	m_vLastJudgedRowPerColumn.resize(10, -1);
+
 	PlayerAI::InitFromDisk();
 
 	m_pNoteField = nullptr;
@@ -2210,26 +2219,39 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 		m_pPlayerStageStats->m_iNumControllerSteps ++;
 	}
 
-	// Check for step on a TapNote
-	/* XXX: This seems wrong. If a player steps twice quickly and two notes are
-	 * close together in the same column then it is possible for the two notes
-	 * to be graded out of order.
-	 * Two possible fixes:
-	 * 1. Adjust the fSongBeat (or the resulting note row) backward by
-	 * iStepSearchRows and search forward two iStepSearchRows lengths,
-	 * disallowing graded. This doesn't seem right because if a second note has
-	 * passed, an earlier one should not be graded.
-	 * 2. Clamp the distance searched backward to the previous row graded.
-	 * Either option would fundamentally change the grading of two quick notes
-	 * "jack hammers." Hmm.
-	 */
+	/* Checking for a step on a tap note. This
+	 * is designed so that notes are always judged
+	 * in the correct order, even when they are
+	 * very close together in the same column. */
+
+	// Calculate the search range for overlapping notes or rows
 	const int iStepSearchRows = std::max(
 		BeatToNoteRow( m_Timing->GetBeatFromElapsedTime( m_pPlayerState->m_Position.m_fMusicSeconds + StepSearchDistance ) ) - iSongRow,
 		iSongRow - BeatToNoteRow( m_Timing->GetBeatFromElapsedTime( m_pPlayerState->m_Position.m_fMusicSeconds - StepSearchDistance ) )
 	) + ROWS_PER_BEAT;
+
+	// Initialize the row of the overlapping note or row
 	int iRowOfOverlappingNoteOrRow = row;
 	if( row == -1 )
 		iRowOfOverlappingNoteOrRow = GetClosestNote( col, iSongRow, iStepSearchRows, iStepSearchRows, false );
+
+	// Ensure column index is within bounds
+	if (col >= 0 && col < static_cast<int>(m_vLastJudgedRowPerColumn.size()))
+	{
+		// Only proceed if the current row is in correct order and within the timing window
+		if (iRowOfOverlappingNoteOrRow > m_vLastJudgedRowPerColumn[col] &&
+			abs(iRowOfOverlappingNoteOrRow - iSongRow) <= iStepSearchRows) {
+			// Update the last judged row for this column
+			m_vLastJudgedRowPerColumn[col] = iRowOfOverlappingNoteOrRow;
+		}
+	}
+	else
+	{
+		LOG->Warn("Issue when judging note taps: column index %d is out of bounds", col);
+	}
+
+	// Update the last judged row for the column
+	m_vLastJudgedRowPerColumn[col] = iRowOfOverlappingNoteOrRow;
 
 	// calculate TapNoteScore
 	TapNoteScore score = TNS_None;

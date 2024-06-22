@@ -196,6 +196,7 @@ protected:
 	NoteField		*m_pNoteField;
 
 	std::vector<HoldJudgment*>	m_vpHoldJudgment;
+	std::vector<int> m_vLastJudgedRowPerColumn;
 
 	AutoActor		m_sprJudgment;
 	AutoActor		m_sprCombo;
