@@ -509,16 +509,15 @@ void ActorMultiVertex::UpdateAnimationState(bool force_update)
 				const std::size_t state_id = (_cur_state + qs[quad_id % qs.size()]) % _states.size();
 				const auto& rect = _states[state_id].rect;
 
-				switch ((i - first) % 2)
+				if ((i - first) % 2 == 0)
 				{
-				case 0:
 					verts[i].t.x = rect.left;
 					verts[i].t.y = rect.top;
-					break;
-				case 1:
+				}
+				else
+				{
 					verts[i].t.x = rect.left;
 					verts[i].t.y = rect.bottom;
-					break;
 				}
 			}
 			break;
