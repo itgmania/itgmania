@@ -24,7 +24,7 @@
 #include "arch/Dialog/Dialog.h"
 
 #if defined(CRASH_HANDLER)
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 #include "archutils/Win32/crash.h"
 #elif defined(LINUX) || defined(MACOSX)
 #include "archutils/Unix/CrashHandler.h"

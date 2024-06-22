@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <cstdio>
 
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 #include <tchar.h>
 #else
 #define _tcslen strlen

@@ -15,7 +15,8 @@
 #include <sstream>
 #include <vector>
 
-#if defined(WIN32)
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #elif defined(UNIX) || defined(MACOSX)
 #include <paths.h>
@@ -339,7 +340,7 @@ static RString GetDirOfExecutable( RString argv0 )
 	// argv[0] can be wrong in most OS's; try to avoid using it.
 
 	RString sPath;
-#if defined(WIN32)
+#if defined(_WIN32)
 	char szBuf[MAX_PATH];
 	GetModuleFileName( nullptr, szBuf, sizeof(szBuf) );
 	sPath = szBuf;
@@ -352,7 +353,7 @@ static RString GetDirOfExecutable( RString argv0 )
 	bool bIsAbsolutePath = false;
 	if( sPath.size() == 0 || sPath[0] == '/' )
 		bIsAbsolutePath = true;
-#if defined(WIN32)
+#if defined(_WIN32)
 	if( sPath.size() > 2 && sPath[1] == ':' && sPath[2] == '/' )
 		bIsAbsolutePath = true;
 #endif

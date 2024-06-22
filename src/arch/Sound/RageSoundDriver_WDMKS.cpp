@@ -16,6 +16,7 @@
 #define DEFINE_WAVEFORMATEX_GUID(x) (USHORT)(x), 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71
 #endif
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winioctl.h>
 #include <ks.h>

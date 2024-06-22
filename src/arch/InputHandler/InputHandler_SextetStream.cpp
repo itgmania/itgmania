@@ -316,7 +316,7 @@ InputHandler_SextetStream::~InputHandler_SextetStream()
 
 REGISTER_INPUT_HANDLER_CLASS (SextetStreamFromFile);
 
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 	#define DEFAULT_INPUT_FILENAME "\\\\.\\pipe\\StepMania-Input-SextetStream"
 #else
 	#define DEFAULT_INPUT_FILENAME "Data/StepMania-Input-SextetStream.in"
