@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 #include <windows.h>
 #endif
 
@@ -183,7 +183,7 @@ void RageLog::SetShowLogOutput( bool show )
 {
 	m_bShowLogOutput = show;
 
-#if defined(WIN32)
+#if defined(_WIN32)
 	if( m_bShowLogOutput )
 	{
 		// create a new console window and attach standard handles

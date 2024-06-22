@@ -8,7 +8,7 @@
 #include <cmath>
 #include <cstdint>
 
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 #include <mmsystem.h>
 #endif
 #define DIRECTSOUND_VERSION 0x0700

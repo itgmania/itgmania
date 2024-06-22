@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <memory>
 
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 #include "zlib.h"
 #if defined(_MSC_VER)
 #if defined(BINARY_ZDL)
