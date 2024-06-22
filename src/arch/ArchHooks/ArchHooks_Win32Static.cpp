@@ -30,12 +30,14 @@ static void InitTimer()
 		return;
 	g_bTimerInitialized = true;
 
-	// Grab important information for QPC during the timer initialization
+	/* Grab important information for QPC during
+	 * the timer initialization. The frequency is
+	 * constant, so we only need to grab it once. */
 	QueryPerformanceCounter(&g_liStartTime);
 	QueryPerformanceFrequency(&g_liFrequency);
 }
 
-std::int64_t ArchHooks::GetMicrosecondsSinceStart(bool bAccurate)
+std::uint64_t ArchHooks::GetMicrosecondsSinceStart(bool bAccurate)
 {
 	// Make sure the timer is initialized
 	if (!g_bTimerInitialized)
@@ -45,7 +47,7 @@ std::int64_t ArchHooks::GetMicrosecondsSinceStart(bool bAccurate)
 	QueryPerformanceCounter(&g_liCurrentTime);
 
 	// Calculate the elapsed time in microseconds.
-	return ((g_liCurrentTime.QuadPart - g_liStartTime.QuadPart) * 1000000.0) / g_liFrequency.QuadPart;
+	return ((g_liCurrentTime.QuadPart - g_liStartTime.QuadPart) * 1000000ULL) / g_liFrequency.QuadPart;
 }
 
 static RString GetMountDir( const RString &sDirOfExecutable )

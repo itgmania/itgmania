@@ -149,26 +149,27 @@ clockid_t ArchHooks_Unix::GetClock()
 	return g_Clock;
 }
 
-std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
+std::uint64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
 {
 	OpenGetTime();
-
 	timespec ts;
-	clock_gettime( g_Clock, &ts );
-
-	std::int64_t iRet = std::int64_t(ts.tv_sec) * 1000000 + std::int64_t(ts.tv_nsec)/1000;
+	if (clock_gettime(g_Clock, &ts) == -1)
+	{
+		ASSERT_M(false, "clock_gettime returned -1");
+	}
+	std::uint64_t iRet = static_cast<std::uint64_t>(ts.tv_sec) * 1000000ULL + static_cast<std::uint64_t>(ts.tv_nsec) / 1000;
 	if( g_Clock != CLOCK_MONOTONIC )
-		iRet = ArchHooks::FixupTimeIfBackwards( iRet );
+		iRet = ArchHooks::FixupTimeIfBackwards(iRet);
 	return iRet;
 }
 #else
-std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
+std::uint64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
 {
 	struct timeval tv;
 	gettimeofday( &tv, nullptr );
 
-	std::int64_t iRet = std::int64_t(tv.tv_sec) * 1000000 + std::int64_t(tv.tv_usec);
-	ret = FixupTimeIfBackwards( ret );
+	std::uint64_t iRet = static_cast<std::uint64_t>(tv.tv_sec) * 1000000ULL + static_cast<std::uint64_t>(tv.tv_usec);
+	iRet = FixupTimeIfBackwards( iRet );
 	return iRet;
 }
 #endif
