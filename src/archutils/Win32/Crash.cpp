@@ -187,8 +187,11 @@ static const char *CrashGetModuleBaseName(HMODULE hmod, char *pszBaseName)
 
 void RunChild()
 {
-	HANDLE hProcess, hToStdin, hFromStdout;
-	StartChild( hProcess, hToStdin, hFromStdout );
+	HANDLE hProcess = nullptr, hToStdin = nullptr, hFromStdout = nullptr;
+	if (!StartChild(hProcess, hToStdin, hFromStdout))
+	{
+		ASSERT_M(0, "Failed to start child process");
+	}
 
 	// 0. Send a handle of this process to the crash handling process, which it
 	// can use to handle symbol lookups.
@@ -200,7 +203,7 @@ void RunChild()
 			hProcess,
 			&hTargetHandle,
 			0,
-			false,
+			FALSE,
 			DUPLICATE_SAME_ACCESS
 		);
 
@@ -676,4 +679,3 @@ void CrashHandler::ForceCrash( const char *reason )
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-
