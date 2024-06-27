@@ -175,7 +175,7 @@ GameState::GameState() :
 	m_Environment = new LuaTable;
 
 	m_bDopefish = false;
-
+	sLastOpenSection = "";
 	sExpandedSectionName = "";
 
 	// Don't reset yet; let the first screen do it, so we can use PREFSMAN and THEME.

@@ -222,6 +222,8 @@ public:
 
 	RString sExpandedSectionName;
 
+	RString sLastOpenSection;
+
 	static int GetNumStagesMultiplierForSong( const Song* pSong );
 	static int GetNumStagesForSongAndStyleType( const Song* pSong, StyleType st );
 	int GetNumStagesForCurrentSongAndStepsOrCourse() const;
