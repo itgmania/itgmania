@@ -64,8 +64,10 @@ StepParityNode * StepParityGraph::addOrGetExistingNode(const State &state)
 	if(stateNodeMap[rowIndex].find(state) == stateNodeMap[rowIndex].end())
 	{
 		StepParityNode* newNode = new StepParityNode(state);
-		newNode->id = nodes.size();
-		nodes.push_back(newNode);
+        newNode->id = int(nodes.size());
+        nodes.push_back(newNode);
+        newNode->state.idx = int(states.size());
+        states.push_back(&(newNode->state));
 		stateNodeMap[rowIndex][state] = newNode;
 	}
 
@@ -102,8 +104,9 @@ Json::Value State::ToJson(bool useStrings)
 	Json::Value jsonColumns = FeetToJson(columns, useStrings);
 	Json::Value jsonMovedFeet = FeetToJson(movedFeet, useStrings);
 	Json::Value jsonHoldFeet = FeetToJson(holdFeet, useStrings);
-
-	root["columns"] = jsonColumns;
+    
+    root["idx"] = idx;
+    root["columns"] = jsonColumns;
 	root["movedFeet"] = jsonMovedFeet;
 	root["holdFeet"] = jsonHoldFeet;
 	root["second"] = second;
@@ -172,10 +175,17 @@ Json::Value StepParityNode::ToJson()
 	{
 		Json::Value n;
 		n["id"] = it->first->id;
-		n["cost"] = it->second;
+        Json::Value jsonCosts;
+        float * costs = it->second;
+        for(int i = 0; i < NUM_Cost; i++)
+        {
+            jsonCosts[COST_LABELS[i]] = costs[i];
+        }
+        n["costs"] = jsonCosts;
 		jsonNeighbors.append(n);
 	}
 	root["id"] = id;
+    root["stateIdx"] = state.idx;
 	root["neighbors"] = jsonNeighbors;
 	return root;
 }
@@ -209,11 +219,20 @@ Json::Value Row::ParityRowsJson(const std::vector<Row> & rows)
 
 Json::Value StepParityGraph::ToJson()
 {
-	Json::Value root;
+    Json::Value jsonNodes;
 	for(auto node: nodes)
 	{
-		root.append(node->ToJson());
+        jsonNodes.append(node->ToJson());
 	}
+    Json::Value jsonStates;
+    for(auto state: states)
+    {
+        jsonStates.append(state->ToJson(false));
+    }
+    
+    Json::Value root;
+    root["nodes"] = jsonNodes;
+    root["states"] = jsonStates;
 	return root;
 }
 

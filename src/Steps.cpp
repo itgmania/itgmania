@@ -413,18 +413,18 @@ void Steps::CalculateTechCounts()
 			   DifficultyToString(m_Difficulty).c_str(), end - start);
 	
 	
-//#define OUTPUT_PARITY_JSON
+#define OUTPUT_PARITY_JSON
 	
 #ifdef OUTPUT_PARITY_JSON
-	RString filename = m_pSong->GetTranslitMainTitle() + DifficultyToString(m_Difficulty);
+	RString filename = m_pSong->GetTranslitMainTitle() + "-" + DifficultyToString(m_Difficulty);
 //    Json::Value v = StepParity::Row::ToJsonRows(gen.rows, false);
-//    Json::Value g = gen.graph.ToJson();
+    Json::Value g = gen.graph.ToJson();
 //    Json::Value n = gen.graph.NodeStateJson();
-	Json::Value s = gen.SMEditorParityJson();
+//	Json::Value s = gen.SMEditorParityJson();
 //    JsonUtil::WriteFile(v, "Save/song-full-jsons/" + filename + ".json", false);
-//    JsonUtil::WriteFile(g, "Save/graph-jsons/" + filename + ".json", false);
+    JsonUtil::WriteFile(g, "Save/graph-jsons/" + filename + ".json", false);
 //    JsonUtil::WriteFile(n, "Save/node-jsons/" + filename + ".json", false);
-	JsonUtil::WriteFile(s, "Save/smeditor-parity-jsons/" + filename + ".json", false);
+//	JsonUtil::WriteFile(s, "Save/smeditor-parity-jsons/" + filename + ".json", false);
 
 #endif
 

@@ -81,10 +81,10 @@ void StepParityGenerator::buildStateGraph()
 			for(auto it = PermuteFootPlacements->begin(); it != PermuteFootPlacements->end(); it++)
 			{
 				State resultState = initResultState(state, row, *it);
-				float cost = costCalculator.getActionCost(&state, &resultState, rows, i);
+				float* costs = costCalculator.getActionCost(&state, &resultState, rows, i);
 				resultState.calculateHashes();
 				StepParityNode *resultNode = graph.addOrGetExistingNode(resultState);
-				graph.addEdge(initialNode, resultNode, cost);
+				graph.addEdge(initialNode, resultNode, costs);
 				if(std::find(uniqueStates.begin(), uniqueStates.end(), resultState) == uniqueStates.end())
 				{
 					uniqueStates.push_back(resultState);
@@ -110,7 +110,12 @@ void StepParityGenerator::buildStateGraph()
 	{
 		State state = previousStates.front();
 		StepParityNode *node = graph.addOrGetExistingNode(state);
-		graph.addEdge(node, endNode, 0);
+        float * emptyCosts = new float[NUM_Cost];
+        for(int i = 0; i < NUM_Cost; i++)
+        {
+            emptyCosts[i] = 0;
+        }
+		graph.addEdge(node, endNode, emptyCosts);
 		previousStates.pop();
 	}
 }
@@ -127,6 +132,8 @@ State StepParityGenerator::initResultState(State &initialState, Row &row, const 
 		if(columns[i] == NONE) {
 			continue;
 		}
+        resultState.whereTheFeetAre[columns[i]] = i;
+        
 		if(row.holds[i].type == TapNoteType_Empty)
 		{
 			resultState.movedFeet[i] = columns[i];
@@ -245,7 +252,8 @@ std::vector<int> StepParityGenerator::computeCheapestPath()
 		for(auto neighbor: node->neighbors)
 		{
 			int neighbor_id = neighbor.first->id;
-			float weight = neighbor.second;
+			float weight = neighbor.second[COST_TOTAL];
+//            printf("computeCheapestPath:: weight = %f", weight);
 			if(cost[i] + weight < cost[neighbor_id])
 			{
 				cost[neighbor_id] = cost[i] + weight;

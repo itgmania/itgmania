@@ -28,6 +28,47 @@ namespace StepParity {
 	const RString TapNoteTypeShortNames[] = { "Empty", "Tap",  "Mine",  "Attack", "AutoKeySound", "Fake", "", "" };
 	const RString TapNoteSubTypeShortNames[] = { "Hold", "Roll", "", "" };	
 
+    enum Cost
+    {
+        COST_DOUBLESTEP = 0,
+        COST_BRACKETJACK,
+        COST_JACK,
+        COST_JUMP,
+        COST_BRACKETTAP,
+        COST_HOLDSWITCH,
+        COST_MINE,
+        COST_FOOTSWITCH,
+        COST_MISSED_FOOTSWITCH,
+        COST_FACING,
+        COST_DISTANCE,
+        COST_SPIN,
+        COST_SIDESWITCH,
+        COST_CROWDED_BRACKET ,
+        COST_OTHER,
+        COST_TOTAL,
+        NUM_Cost
+    };
+    const RString COST_LABELS[] = {
+        "DOUBLESTEP",
+        "BRACKETJACK",
+        "JACK",
+        "JUMP",
+        "BRACKETTAP",
+        "HOLDSWITCH",
+        "MINE",
+        "FOOTSWITCH",
+        "MISSED_FOOTSWITCH",
+        "FACING",
+        "DISTANCE",
+        "SPIN",
+        "SIDESWITCH",
+        "CROWDED_BRACKET",
+        "OTHER",
+        "TOTAL"
+    };
+    
+    
+    
 	struct StagePoint {
 		float x;
 		float y;
@@ -49,7 +90,10 @@ namespace StepParity {
 		FootPlacement holdFeet;  // Any feet that stayed in place due to a hold/roll note.
 		float second;			 // The time of the song represented by this state
 		int rowIndex;			 // The index of the row represented by this state
-		
+        int idx;
+        
+        int whereTheFeetAre[NUM_Foot]; // basically the inverse of columns
+        
 		// These hashes are used in operator<() to speed up the comparison of the vectors.
 		// Their values are computed by calculateHashes(), which is used in StepParityGenerator::buildStateGraph().
 		int columnsHash = 0;
@@ -68,6 +112,11 @@ namespace StepParity {
 			holdFeet = FootPlacement(columnCount, NONE);
 			second = 0;
 			rowIndex = 0;
+            idx = -1;
+            for(int i = 0; i < NUM_Foot; i++)
+            {
+                whereTheFeetAre[i] = -1;
+            }
 		}
 		
 		Json::Value ToJson(bool useStrings);
@@ -181,7 +230,7 @@ namespace StepParity {
 		int id = 0;	// The index of this node in its graph
 		State state;
 
-		std::unordered_map<StepParityNode *, float> neighbors; // Connections to, and the cost of moving to, the connected nodes
+		std::unordered_map<StepParityNode *, float*> neighbors; // Connections to, and the cost of moving to, the connected nodes
 		StepParityNode(const State &_state)
 		{
 			state = _state;
@@ -207,7 +256,8 @@ namespace StepParity {
 	class StepParityGraph
 	{
 	private:
-		std::vector<StepParityNode *> nodes; 
+		std::vector<StepParityNode *> nodes;
+        std::vector<State *> states;
 		std::vector<std::map<State, StepParityNode *, StateComparator>> stateNodeMap;
 
 	public:
@@ -216,10 +266,12 @@ namespace StepParity {
 
 		~StepParityGraph()
 		{
+            states.clear();
 			for(StepParityNode * node: nodes)
 			{
 				delete node;
 			}
+            
 		}
 
 		/// @brief Returns a pointer to a StepParityNode that represents the given state within the graph.
@@ -228,8 +280,8 @@ namespace StepParity {
 		/// @return
 		StepParityNode *addOrGetExistingNode(const State &state);
 
-		void addEdge(StepParityNode* from, StepParityNode* to, float cost) {
-			from->neighbors[to] = cost;
+		void addEdge(StepParityNode* from, StepParityNode* to, float* costs) {
+			from->neighbors[to] = costs;
 		}
 
 		int nodeCount() const
