@@ -92,6 +92,14 @@ void RageSoundMixBuffer::read( float *pBuf )
 	m_iBufUsed = 0;
 }
 
+int RageSoundMixBuffer::copyBufferAndReturnSize( float* pBuf )
+{
+	std::memcpy( pBuf, m_pMixbuf, m_iBufUsed * sizeof(float) );
+	int iBufUsed = m_iBufUsed;
+	m_iBufUsed = 0;
+	return iBufUsed;
+}
+
 void RageSoundMixBuffer::read_deinterlace( float **pBufs, int channels )
 {
 	for( unsigned i = 0; i < m_iBufUsed / channels; ++i )

@@ -310,38 +310,55 @@ float RageSoundReader_Chain::GetStreamToSourceRatio() const
  * sounds; a sound may be needed by more than one other sound. */
 int RageSoundReader_Chain::Read( float *pBuffer, int iFrames )
 {
-	while( m_iNextSound < m_aSounds.size() && m_iCurrentFrame == m_aSounds[m_iNextSound].GetOffsetFrame(m_iActualSampleRate) )
+	// The following if loop first checks if m_iNextSound is at the end of the chain.
+	// If it is, and there are no active sounds, we know we've reached the end of the chain.
+	// Next, the for loop activates all sounds that have the same offset frame
+	// as the current frame. This is necessary because we can't guarantee that the
+	// sounds are sorted by offset frame. After activating the sound, m_iNextSound
+	// is incremented, to move to the next sound in m_aSounds that needs to be activated.
+	if( m_iNextSound < m_aSounds.size() && m_iCurrentFrame == m_aSounds[m_iNextSound].GetOffsetFrame(m_iActualSampleRate) )
 	{
-		Sound *pSound = &m_aSounds[m_iNextSound];
-		ActivateSound( pSound );
-		++m_iNextSound;
+		for (; m_iNextSound < m_aSounds.size() && m_iCurrentFrame == m_aSounds[m_iNextSound].GetOffsetFrame(m_iActualSampleRate); ++m_iNextSound)
+		{
+			ActivateSound(&m_aSounds[m_iNextSound]);
+		}
 	}
 
 	if( m_iNextSound == m_aSounds.size() && m_apActiveSounds.empty() )
+	{
 		return END_OF_FILE;
+	}
 
 	/* Clamp iFrames to the beginning of the next sound we need to start. */
 	if( m_iNextSound < m_aSounds.size() )
 	{
 		int iOffsetFrame = m_aSounds[m_iNextSound].GetOffsetFrame( m_iActualSampleRate );
-		ASSERT_M( iOffsetFrame >= m_iCurrentFrame, ssprintf("%i %i", iOffsetFrame, m_iCurrentFrame) );
-		int iFramesToRead = iOffsetFrame - m_iCurrentFrame;
-		iFrames = std::min( iFramesToRead, iFrames );
+		iFrames = std::min( (iOffsetFrame - m_iCurrentFrame), iFrames );
 	}
 
-	if( m_apActiveSounds.size() == 1 &&
-		m_apActiveSounds.front()->pSound->GetNumChannels() == m_iChannels &&
-		m_apActiveSounds.front()->pSound->GetSampleRate() == m_iActualSampleRate )
+	if( m_apActiveSounds.size() == 1 )
 	{
-		/* We have only one source, and it matches our target.  Don't mix; read
+		/* If we have only one source, and it matches our target, don't mix; read
 		 * directly from the source into the destination.  This is to optimize
 		 * the common case of having one BGM track and no autoplay sounds. */
-		iFrames = m_apActiveSounds.front()->pSound->Read( pBuffer, iFrames );
-		if( iFrames < 0 )
-			ReleaseSound( m_apActiveSounds.front() );
-		if( iFrames > 0 )
-			m_iCurrentFrame += iFrames;
-		return iFrames;
+		Sound* iFrontSound = m_apActiveSounds[0];
+		RageSoundReader* z = iFrontSound->pSound;
+		int iNumChan = z->GetNumChannels();
+		int iSampleRate = z->GetSampleRate();
+
+        if (static_cast<unsigned>(iNumChan) == static_cast<unsigned>(m_iChannels) && iSampleRate == m_iActualSampleRate)
+		{
+			iFrames = z->Read(pBuffer, iFrames);
+			if( iFrames < 0 )
+			{
+				ReleaseSound(iFrontSound);
+			}
+			else
+			{
+				m_iCurrentFrame += iFrames;
+			}
+			return iFrames;
+		}
 	}
 
 	if( m_apActiveSounds.empty() )
@@ -354,42 +371,48 @@ int RageSoundReader_Chain::Read( float *pBuffer, int iFrames )
 	}
 
 	RageSoundMixBuffer mix;
-	/* Read iFrames from each sound. */
 	float Buffer[2048];
-	iFrames = std::min( iFrames, (int) (ARRAYLEN(Buffer) / m_iChannels) );
-	for( unsigned i = 0; i < m_apActiveSounds.size(); )
-	{
-		RageSoundReader *pSound = m_apActiveSounds[i]->pSound;
-		ASSERT( pSound->GetNumChannels() == m_iChannels ); // guaranteed by ActivateSound and Finish
+	int iFrameSize = m_iChannels * sizeof(float);
+	int iMaxFramesInBuf = static_cast<int>(sizeof(Buffer) / iFrameSize);
+	iFrames = std::min(iFrames, iMaxFramesInBuf);
+
 
 		/* If we receive less than we were asked for, keep asking for more data.  Most
 		 * filters would simply return what they have in this situation, but we want
 		 * to deal transparently with separate sounds returning differently-sized partial
 		 * blocks. */
+
+	for (auto i = m_apActiveSounds.begin(); i != m_apActiveSounds.end(); )
+	{
+		RageSoundReader *pSound = (*i)->pSound;
 		int iFramesRead = 0;
 		while( iFramesRead < iFrames )
 		{
-			int iGotFrames = pSound->RetriedRead( Buffer, iFrames - iFramesRead );
+			int iGotFrames = pSound->RetriedRead( Buffer + (iFramesRead * pSound->GetNumChannels()), (iFrames - iFramesRead) );
+
 			if( iGotFrames < 0 )
 			{
 				iFramesRead = iGotFrames;
 				break;
 			}
 
-			mix.SetWriteOffset( iFramesRead * pSound->GetNumChannels() );
-			mix.write( Buffer, iGotFrames * pSound->GetNumChannels() );
 			iFramesRead += iGotFrames;
 		}
 
 		if( iFramesRead < 0 )
-			ReleaseSound( m_apActiveSounds[i] );
+		{
+			i = m_apActiveSounds.erase(i);
+			delete pSound;
+		}
 		else
+		{
+			mix.write(Buffer, iFramesRead * pSound->GetNumChannels());
 			++i;
+		}
 	}
 
 	/* Read mixed frames into the output buffer. */
-	int iMaxFramesRead = mix.size() / m_iChannels;
-	mix.read( pBuffer );
+	int iMaxFramesRead = mix.copyBufferAndReturnSize( pBuffer ) / m_iChannels;
 	m_iCurrentFrame += iMaxFramesRead;
 
 	return iMaxFramesRead;

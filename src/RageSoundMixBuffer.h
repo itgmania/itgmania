@@ -19,6 +19,7 @@ public:
 
 	void read( std::int16_t *pBuf );
 	void read( float *pBuf );
+	int copyBufferAndReturnSize( float* pBuf );
 	void read_deinterlace( float **pBufs, int channels );
 	float *read() { return m_pMixbuf; }
 	unsigned size() const { return m_iBufUsed; }
