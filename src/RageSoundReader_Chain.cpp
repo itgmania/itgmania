@@ -208,18 +208,15 @@ int RageSoundReader_Chain::SetPosition( int iFrame )
 			break;
 
 		/* Find the RageSoundReader. */
-		if (pSound->pSound == nullptr) // Only activate if not already active
-		{
-			ActivateSound(pSound);
-			RageSoundReader* pReader = pSound->pSound;
+		ActivateSound( pSound );
+		RageSoundReader *pReader = pSound->pSound;
 
-			int iOffsetFrames = iFrame - iOffsetFrame;
-			if (pReader->SetPosition(iOffsetFrames) == 0)
-			{
-				/* We're past the end of this sound. */
-				ReleaseSound(pSound);
-				continue;
-			}
+		int iOffsetFrames = iFrame - iOffsetFrame;
+		if( pReader->SetPosition(iOffsetFrames) == 0 )
+		{
+			/* We're past the end of this sound. */
+			ReleaseSound( pSound );
+			continue;
 		}
 	}
 
