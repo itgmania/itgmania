@@ -41,9 +41,21 @@ std::int64_t ArchHooks::GetMicrosecondsSinceStart(bool bAccurate)
 	if (!g_bTimerInitialized)
 		InitTimer();
 
+	/* Retrieve the current thread handle.
+	 * To prevent sync issues caused by the
+	 * OS moving the thread to another core,
+	 * the thread is restricted to the first
+	 * core. This is more of a concern with
+	 * AMD/Ryzen CPU's than it is with Intel,
+	 * as of the time of writing. sukibaby */
+	HANDLE hThread = GetCurrentThread();
+	DWORD_PTR dwOriginalAffinity = SetThreadAffinityMask(hThread, 1);
+	SetThreadAffinityMask(hThread, 1);
+	
 	// Get the current time
 	QueryPerformanceCounter(&g_liCurrentTime);
-
+	SetThreadAffinityMask(hThread, dwOriginalAffinity);
+	
 	// Calculate the elapsed time in microseconds.
 	return ((g_liCurrentTime.QuadPart - g_liStartTime.QuadPart) * 1000000.0) / g_liFrequency.QuadPart;
 }
