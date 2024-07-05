@@ -121,7 +121,7 @@ public:
 	{
 		float first;
 		GetBeatStarts second;
-	lookup_item_t(float f, GetBeatStarts& s) :first(f), second(s) {}
+		lookup_item_t(float f, GetBeatStarts& s) :first(f), second(s) {}
 	};
 	typedef std::vector<lookup_item_t> beat_start_lookup_t;
 	beat_start_lookup_t m_beat_start_lookup;
@@ -367,6 +367,9 @@ public:
 	}
 	float GetElapsedTimeFromBeat( float fBeat ) const;
 
+	/**
+	 * @brief Gets beat and BPS from elapsed time without global offset applied
+	 */
 	void GetBeatAndBPSFromElapsedTimeNoOffset(GetBeatArgs& args) const;
 	float GetBeatFromElapsedTimeNoOffset(float elapsed_time) const	// shortcut for places that care only about the beat
 	{
@@ -394,6 +397,9 @@ public:
 	 */
 	bool operator==( const TimingData &other ) const
 	{
+		// COMPARE( m_fBeat0OffsetInSeconds );
+		// COMPARE( m_SyncBias );
+
 		FOREACH_ENUM( TimingSegmentType, tst )
 		{
 			const std::vector<TimingSegment*> &us = m_avpTimingSegments[tst];
