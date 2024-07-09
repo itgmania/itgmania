@@ -1271,32 +1271,24 @@ void GameState::UpdateSongPosition( float fPositionSeconds, const TimingData &ti
 {
 	/* It's not uncommon to get a lot of duplicated positions from the sound
 	 * driver, like so: 13.120953,13.130975,13.130975,13.130975,13.140998,...
-	 * This causes visual stuttering of the arrows. To compensate, keep a
-	 * RageTimer since the last change. */
-	if(fPositionSeconds == m_LastPositionSeconds && !m_paused)
-		fPositionSeconds += m_LastPositionTimer.Ago();
-	else
+	 * This causes visual stuttering of the arrows, so we'll skip updating
+	 * when this occurs, since we know this will be called again soon. */
+	if( !m_paused && fPositionSeconds != m_LastPositionSeconds )
 	{
-		//LOG->Info("Time difference: %+f",
-		//	m_LastPositionTimer.Ago() - (fPositionSeconds - m_LastPositionSeconds)
-		//);
-		m_LastPositionTimer.Touch();
 		m_LastPositionSeconds = fPositionSeconds;
-	}
+		m_Position.UpdateSongPosition( fPositionSeconds, timing, timestamp );
 
-	m_Position.UpdateSongPosition( fPositionSeconds, timing, timestamp );
-
-	FOREACH_EnabledPlayer( pn )
-	{
-		if( m_pCurSteps[pn] )
+		FOREACH_EnabledPlayer( pn )
 		{
-			float fAdditionalVisualDelay = m_pPlayerState[pn]->m_PlayerOptions.GetPreferred().m_fVisualDelay;
-			m_pPlayerState[pn]->m_Position.UpdateSongPosition( fPositionSeconds, *m_pCurSteps[pn]->GetTimingData(), timestamp, fAdditionalVisualDelay );
-			Actor::SetPlayerBGMBeat( pn, m_pPlayerState[pn]->m_Position.m_fSongBeatVisible, m_pPlayerState[pn]->m_Position.m_fSongBeatNoOffset );
+			if (m_pCurSteps[pn])
+			{
+				float fAdditionalVisualDelay = m_pPlayerState[pn]->m_PlayerOptions.GetPreferred().m_fVisualDelay;
+				m_pPlayerState[pn]->m_Position.UpdateSongPosition(fPositionSeconds, *m_pCurSteps[pn]->GetTimingData(), timestamp, fAdditionalVisualDelay);
+				Actor::SetPlayerBGMBeat(pn, m_pPlayerState[pn]->m_Position.m_fSongBeatVisible, m_pPlayerState[pn]->m_Position.m_fSongBeatNoOffset);
+			}
 		}
+		Actor::SetBGMTime( GAMESTATE->m_Position.m_fMusicSecondsVisible, GAMESTATE->m_Position.m_fSongBeatVisible, fPositionSeconds, GAMESTATE->m_Position.m_fSongBeatNoOffset );
 	}
-	Actor::SetBGMTime( GAMESTATE->m_Position.m_fMusicSecondsVisible, GAMESTATE->m_Position.m_fSongBeatVisible, fPositionSeconds, GAMESTATE->m_Position.m_fSongBeatNoOffset );
-//	LOG->Trace( "m_fMusicSeconds = %f, m_fSongBeat = %f, m_fCurBPS = %f, m_bFreeze = %f", m_fMusicSeconds, m_fSongBeat, m_fCurBPS, m_bFreeze );
 }
 
 /*
