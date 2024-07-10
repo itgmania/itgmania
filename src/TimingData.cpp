@@ -259,8 +259,7 @@ void TimingData::CopyRange(int start_row, int end_row,
 	}
 }
 
-void TimingData::ShiftRange(int start_row, int end_row,
-	TimingSegmentType shift_type, int shift_amount)
+void TimingData::ShiftRange(int start_row, int end_row,	TimingSegmentType shift_type, int shift_amount)
 {
 	FOREACH_TimingSegmentType(seg_type)
 	{
@@ -282,28 +281,26 @@ void TimingData::ShiftRange(int start_row, int end_row,
 			for(std::size_t i= first_affected; i <= static_cast<std::size_t>(last_affected) && i < segs.size(); ++i)
 			{
 				int seg_row= segs[i]->GetRow();
-				if(seg_row > 0 && seg_row >= start_row && seg_row <= end_row)
+				if(seg_row >= start_row && seg_row <= end_row)
 				{
-					int dest_row= std::max(seg_row + shift_amount, 0);
-					segs[i]->SetRow(dest_row);
+					segs[i]->SetRow(std::max(seg_row + shift_amount, 0));
 				}
 			}
 #define ERASE_SEG(s) if(segs.size() > 1) { EraseSegment(segs, s, segs[s]); --i; --last_affected; erased= true; }
-			for(std::size_t i= first_affected; i <= static_cast<std::size_t>(last_affected) && i < segs.size(); ++i)
+			for(std::size_t i= first_affected; i <= static_cast<std::size_t>(last_affected) && i < segs.size();)
 			{
 				bool erased= false;
 				int seg_row= segs[i]->GetRow();
 				if(i < segs.size() - 1)
 				{
 					int next_row= segs[i+1]->GetRow();
-					// This is a loop so that it will go back through and remove all
-					// segments that were run over. -Kyz
-					while(seg_row >= next_row && seg_row < start_row)
+					while (seg_row >= next_row && seg_row < start_row && segs.size() > 1)
 					{
 						ERASE_SEG(i);
 						if(i < segs.size())
 						{
 							seg_row= segs[i]->GetRow();
+							next_row = (i < segs.size() - 1) ? segs[i + 1]->GetRow() : -1;
 						}
 						else
 						{
@@ -318,6 +315,10 @@ void TimingData::ShiftRange(int start_row, int end_row,
 					{
 						ERASE_SEG(i);
 					}
+				}
+				if (!erased)
+				{
+					++i; // to avoid skipping elements
 				}
 			}
 #undef ERASE_SEG
