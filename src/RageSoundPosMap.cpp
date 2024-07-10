@@ -64,16 +64,18 @@ void pos_map_queue::Insert(std::int64_t iSourceFrame, std::int64_t iFrames, std:
 	{
 		// Check if the last entry can be merged with the new entry
 		pos_map_t& last = m_pImpl->m_Queue.back();
-		if (last.m_iSourceFrame + last.m_iFrames == iSourceFrame &&
-			last.m_fSourceToDestRatio == fSourceToDestRatio &&
-
-			// llabs() is used instead of abs() because abs() would be susceptible to an integer overflow.
-			llabs(last.m_iDestFrame + static_cast<int64_t>((last.m_iFrames * last.m_fSourceToDestRatio) + 0.5) - iDestFrame) <= 1)
-
+		if (last.m_iSourceFrame + last.m_iFrames == iSourceFrame)
 		{
-			// Merge the frames and set the merged flag to true.
-			last.m_iFrames += iFrames;
-			merged = true;
+			if (last.m_fSourceToDestRatio == fSourceToDestRatio)
+			{
+				// llabs() is used instead of abs() because abs() would be susceptible to an integer overflow.
+				if (llabs(last.m_iDestFrame + static_cast<int64_t>((last.m_iFrames * last.m_fSourceToDestRatio) + 0.5) - iDestFrame) <= 1)
+				{
+					// Merge the frames and set the merged flag to true.
+					last.m_iFrames += iFrames;
+					merged = true;
+				}
+			}
 		}
 	}
 
@@ -123,13 +125,15 @@ std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame, bool *bApproximat
 	for (pos_map_t const &pm : m_pImpl->m_Queue)
 	{
 		// Loop over the queue until we know generally where iSourceFrame is
-		if( iSourceFrame >= pm.m_iSourceFrame &&
-			iSourceFrame < pm.m_iSourceFrame+pm.m_iFrames )
+		if (iSourceFrame >= pm.m_iSourceFrame)
 		{
-			// If we are in the correct block, calculate its current position
-			std::int64_t iDiff = static_cast<std::int64_t>(iSourceFrame - pm.m_iSourceFrame);
-			iDiff = static_cast<int64_t>(( iDiff * pm.m_fSourceToDestRatio) + 0.5 ); 
-			return pm.m_iDestFrame + iDiff;
+			if (iSourceFrame < pm.m_iSourceFrame + pm.m_iFrames)
+			{
+				// If we are in the correct block, calculate its current position
+				std::int64_t iDiff = static_cast<std::int64_t>(iSourceFrame - pm.m_iSourceFrame);
+				iDiff = static_cast<int64_t>(( iDiff * pm.m_fSourceToDestRatio) + 0.5 ); 
+				return pm.m_iDestFrame + iDiff;
+			}
 		}
 
 		// See if the current position is close to the beginning of this block.
