@@ -937,17 +937,14 @@ float TimingData::GetElapsedTimeInternal(GetBeatStarts& start, float beat,
 	unsigned int curr_segment= start.bpm+start.warp+start.stop+start.delay;
 
 	float bps= GetBPMAtRow(start.last_row) / 60.0f;
-#define INC_INDEX(index) ++curr_segment; ++index;
 	bool find_marker= beat < FLT_MAX;
 
 	while(curr_segment < max_segment)
 	{
 		int event_row= INT_MAX;
 		int event_type= NOT_FOUND;
-		FindEvent(event_row, event_type, start, beat, find_marker, bpms, warps, stops,
-			delays);
-		float time_to_next_event= start.is_warping ? 0 :
-			NoteRowToBeat(event_row - start.last_row) / bps;
+		FindEvent(event_row, event_type, start, beat, find_marker, bpms, warps, stops, delays);
+		float time_to_next_event= start.is_warping ? 0 : NoteRowToBeat(event_row - start.last_row) / bps;
 		float next_event_time= start.last_time + time_to_next_event;
 		start.last_time= next_event_time;
 		switch(event_type)
@@ -957,20 +954,23 @@ float TimingData::GetElapsedTimeInternal(GetBeatStarts& start, float beat,
 				break;
 			case FOUND_BPM_CHANGE:
 				bps= ToBPM(bpms[start.bpm])->GetBPS();
-				INC_INDEX(start.bpm);
+				++start.bpm;
+				++curr_segment;
 				break;
 			case FOUND_STOP:
 			case FOUND_STOP_DELAY:
 				time_to_next_event= ToStop(stops[start.stop])->GetPause();
 				next_event_time= start.last_time + time_to_next_event;
 				start.last_time= next_event_time;
-				INC_INDEX(start.stop);
+				++start.stop;
+				++curr_segment;
 				break;
 			case FOUND_DELAY:
 				time_to_next_event= ToDelay(delays[start.delay])->GetPause();
 				next_event_time= start.last_time + time_to_next_event;
 				start.last_time= next_event_time;
-				INC_INDEX(start.delay);
+				++start.delay;
+				++curr_segment;
 				break;
 			case FOUND_MARKER:
 				return start.last_time;
@@ -983,13 +983,13 @@ float TimingData::GetElapsedTimeInternal(GetBeatStarts& start, float beat,
 					{
 						start.warp_destination= warp_sum;
 					}
-					INC_INDEX(start.warp);
+					++start.warp;
+					++curr_segment;
 					break;
 				}
 		}
 		start.last_row= event_row;
 	}
-#undef INC_INDEX
 	return start.last_time;
 }
 
