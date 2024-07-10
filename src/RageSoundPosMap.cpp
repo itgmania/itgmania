@@ -9,11 +9,11 @@
 #include <cstdint>
 #include <list>
 
-/* The number of frames we should keep pos_map data for.
-This comes out to about ~800kb in audio frames, assuming 44.1khz.
-File bitrate, metadata, etc will factor in here. If the queue is
-TOO big it will make things slow, but 200k frames is no problem.
-Making the queue larger than 200k hasn't been tested yet. */
+// The number of frames we should keep pos_map data for.
+// This comes out to about ~800kb in audio frames, assuming 44.1khz.
+// File bitrate, metadata, etc will factor in here. If the queue is
+// TOO big it will make things slow, but 200k frames is no problem.
+// Making the queue larger than 200k hasn't been tested extensively.
 const int pos_map_backlog_frames = 200000;
 
 struct pos_map_t
@@ -50,9 +50,11 @@ pos_map_queue::pos_map_queue( const pos_map_queue &cpy )
 
 pos_map_queue &pos_map_queue::operator=( const pos_map_queue &rhs )
 {
-	if (this != &rhs){
-		delete m_pImpl;
-		m_pImpl = new pos_map_impl( *rhs.m_pImpl );
+	if (this != &rhs)
+	{
+		pos_map_impl* tempImpl = new pos_map_impl(*rhs.m_pImpl);
+		std::swap(m_pImpl, tempImpl);
+		delete tempImpl;
 	}
 	return *this;
 }
