@@ -8,14 +8,11 @@
 
 RageSoundMixBuffer::RageSoundMixBuffer()
 {
-	// See how many samples we can stuff into 2MB.
-	size_t BUF_SIZE = 2 * 1024 * 1024 / sizeof(float);
-	
 	m_pMixbuf = static_cast<float*>(std::malloc(BUF_SIZE * sizeof(float)));
-	if (m_pMixbuf == nullptr) {
+	if (m_pMixbuf == nullptr)
+	{
 		ASSERT_M(false, "Failed to allocate memory for the sound mixing buffer");
 	}
-	
 	m_iBufSize = BUF_SIZE;
 	std::memset(m_pMixbuf, 0, m_iBufSize * sizeof(float));
 	m_iBufUsed = 0;

@@ -11,6 +11,9 @@ public:
 	RageSoundMixBuffer();
 	~RageSoundMixBuffer();
 
+	// See how many samples we can stuff into 2MB.
+	static constexpr size_t BUF_SIZE = 2 * 1024 * 1024 / sizeof(float);
+
 	// Mix the given buffer of samples.
 	void write( const float *pBuf, unsigned iSize, int iSourceStride = 1, int iDestStride = 1 );
 
