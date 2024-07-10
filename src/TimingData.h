@@ -12,9 +12,6 @@
 
 struct lua_State;
 
-/** @brief Compare a TimingData segment's properties with one another. */
-#define COMPARE(x) if(this->x!=other.x) return false;
-
 /* convenience functions to handle static casting */
 template<class T>
 inline T ToDerived( const TimingSegment *t, TimingSegmentType tst )
@@ -418,8 +415,7 @@ public:
 			}
 		}
 
-		COMPARE( m_fBeat0OffsetInSeconds );
-		return true;
+		return this->m_fBeat0OffsetInSeconds == other.m_fBeat0OffsetInSeconds;
 	}
 
 	/**
@@ -473,8 +469,6 @@ protected:
 	// All of the following vectors must be sorted before gameplay.
 	std::array<std::vector<TimingSegment *>, NUM_TimingSegmentType> m_avpTimingSegments;
 };
-
-#undef COMPARE
 
 #endif
 
