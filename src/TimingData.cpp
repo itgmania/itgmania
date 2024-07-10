@@ -809,21 +809,17 @@ void TimingData::GetBeatInternal(GetBeatStarts& start, GetBeatArgs& args,
 	unsigned int curr_segment= start.bpm+start.warp+start.stop+start.delay;
 
 	float bps= GetBPMAtRow(start.last_row) / 60.0f;
-#define INC_INDEX(index) ++curr_segment; ++index;
-
 	while(curr_segment < max_segment)
 	{
 		int event_row= INT_MAX;
 		int event_type= NOT_FOUND;
-		FindEvent(event_row, event_type, start, 0, false, bpms, warps, stops,
-			delays);
+		FindEvent(event_row, event_type, start, 0, false, bpms, warps, stops, delays);
 		if(event_type == NOT_FOUND)
 		{
 			break;
 		}
-		float time_to_next_event= start.is_warping ? 0 :
-			NoteRowToBeat(event_row - start.last_row) / bps;
-		float next_event_time= start.last_time + time_to_next_event;
+		float time_to_next_event = start.is_warping ? 0 : NoteRowToBeat(event_row - start.last_row) / bps;
+		float next_event_time = start.last_time + time_to_next_event;
 		if(args.elapsed_time < next_event_time)
 		{
 			break;
@@ -836,7 +832,8 @@ void TimingData::GetBeatInternal(GetBeatStarts& start, GetBeatArgs& args,
 				break;
 			case FOUND_BPM_CHANGE:
 				bps= ToBPM(bpms[start.bpm])->GetBPS();
-				INC_INDEX(start.bpm);
+				++start.bpm;
+				++curr_segment;
 				break;
 			case FOUND_DELAY:
 			case FOUND_STOP_DELAY:
@@ -853,7 +850,8 @@ void TimingData::GetBeatInternal(GetBeatStarts& start, GetBeatArgs& args,
 						return;
 					}
 					start.last_time= next_event_time;
-					INC_INDEX(start.delay);
+					++start.delay;
+					++curr_segment;
 					if(event_type == FOUND_DELAY)
 					{
 						break;
@@ -874,7 +872,8 @@ void TimingData::GetBeatInternal(GetBeatStarts& start, GetBeatArgs& args,
 						return;
 					}
 					start.last_time= next_event_time;
-					INC_INDEX(start.stop);
+					++start.stop;
+					++curr_segment;
 					break;
 				}
 			case FOUND_WARP:
@@ -888,13 +887,13 @@ void TimingData::GetBeatInternal(GetBeatStarts& start, GetBeatArgs& args,
 					}
 					args.warp_begin_out= event_row;
 					args.warp_dest_out= start.warp_destination;
-					INC_INDEX(start.warp);
+					++start.warp;
+					++curr_segment;
 					break;
 				}
 		}
 		start.last_row= event_row;
 	}
-#undef INC_INDEX
 	if(args.elapsed_time == FLT_MAX)
 	{
 		args.elapsed_time= start.last_time;
