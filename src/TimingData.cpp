@@ -1381,8 +1381,10 @@ public:
 		std::vector<float> vBPMs;
 		const std::vector<TimingSegment*> &bpms = p->GetTimingSegments(SEGMENT_BPM);
 
-		for (unsigned i = 0; i < bpms.size(); i++)
-			vBPMs.push_back( ToBPM(bpms[i])->GetBPM() );
+		for (TimingSegment* bpm : bpms)
+		{
+			vBPMs.push_back( ToBPM(bpm)->GetBPM() );
+		}
 
 		LuaHelpers::CreateTableFromArray(vBPMs, L);
 		return 1;
