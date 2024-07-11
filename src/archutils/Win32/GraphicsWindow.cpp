@@ -89,6 +89,7 @@ static LRESULT CALLBACK GraphicsWindow_WndProc( HWND hWnd, UINT msg, WPARAM wPar
 				{
 					ChangeDisplaySettings( &g_FullScreenDevMode, CDS_FULLSCREEN );
 					ShowWindow( g_hWndMain, SW_SHOWNORMAL );
+					SetWindowPos( g_hWndMain, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
 				}
 				else if( !g_bHasFocus && bHadFocus )
 				{
