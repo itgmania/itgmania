@@ -8,10 +8,13 @@ REGISTER_CLASS_TRAITS( RageSoundReader, pCopy->Copy() );
 /* Read(), handling the STREAM_LOOPED and empty return cases. */
 int RageSoundReader::RetriedRead( float *pBuffer, int iFrames, int *iSourceFrame, float *fRate )
 {
+	if( iFrames == 0 )
+		return 0;
+
 	/* pReader may return 0, which means "try again immediately".  As a failsafe,
 	 * only try this a finite number of times.  Use a high number, because in
 	 * principle each filter in the stack may cause this. */
-	int iTries = 10;
+	int iTries = 100;
 	while( --iTries )
 	{
 		if( fRate )
@@ -26,12 +29,9 @@ int RageSoundReader::RetriedRead( float *pBuffer, int iFrames, int *iSourceFrame
 
 		if( iGotFrames != 0 )
 			return iGotFrames;
-
-		// If the user is having I/O issues, give them a hint in the logs.
-		LOG->Warn( "Read() failed, retrying..." );
 	}
 
-	LOG->Warn( "Read() returned a failure status after 10 attempts to read the file; likely an I/O error" );
+	LOG->Warn( "Read() busy looping" );
 
 	/* Pretend we got EOF. */
 	return RageSoundReader::END_OF_FILE;
