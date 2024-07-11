@@ -278,7 +278,6 @@ void TimingData::ShiftRange(int start_row, int end_row,
 					segs[i]->SetRow(dest_row);
 				}
 			}
-#define ERASE_SEG(s) if(segs.size() > 1) { EraseSegment(segs, s, segs[s]); --i; --last_affected; erased= true; }
 			for(std::size_t i= first_affected; i <= static_cast<std::size_t>(last_affected) && i < segs.size(); ++i)
 			{
 				bool erased= false;
@@ -290,7 +289,13 @@ void TimingData::ShiftRange(int start_row, int end_row,
 					// segments that were run over. -Kyz
 					while(seg_row >= next_row && seg_row < start_row)
 					{
-						ERASE_SEG(i);
+						if(segs.size() > 1)
+						{
+							EraseSegment(segs, i, segs[i]);
+							--i;
+							--last_affected;
+							erased = true;
+						}
 						if(i < segs.size())
 						{
 							seg_row= segs[i]->GetRow();
@@ -306,11 +311,16 @@ void TimingData::ShiftRange(int start_row, int end_row,
 					int prev_row= segs[i-1]->GetRow();
 					if(prev_row >= seg_row)
 					{
-						ERASE_SEG(i);
+						if(segs.size() > 1)
+						{
+							EraseSegment(segs, i, segs[i]);
+							--i;
+							--last_affected;
+							erased = true;
+						}
 					}
 				}
 			}
-#undef ERASE_SEG
 		}
 	}
 }
