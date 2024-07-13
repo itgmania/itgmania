@@ -396,38 +396,16 @@ void Steps::CalculateTechCounts()
 			.Zero();
 
 	// For now, we're only supporting dance-single
-	if(this->m_StepsType != StepsType_dance_single)
+	if(this->m_StepsType != StepsType_dance_single && this->m_StepsType != StepsType_dance_double)
 	{
 		return;
 	}
 
 	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
-
-	RageTimer start;
 	StepParity::StepParityGenerator gen;
 	gen.analyzeNoteData(tempNoteData, this->m_StepsType);
 	TechCounts::CalculateTechCountsFromRows(gen.rows, m_CachedTechCounts[0]);
 	std::fill_n( m_CachedTechCounts + 1, NUM_PLAYERS-1, m_CachedTechCounts[0] );
-	RageTimer end;
-	LOG->Trace("Steps::CalculateTechCounts	song: %s	difficulty: %s	time: %f", m_pSong->GetTranslitMainTitle().c_str(),
-			   DifficultyToString(m_Difficulty).c_str(), end - start);
-	
-	
-#define OUTPUT_PARITY_JSON
-	
-#ifdef OUTPUT_PARITY_JSON
-	RString filename = m_pSong->GetTranslitMainTitle() + "-" + DifficultyToString(m_Difficulty);
-//    Json::Value v = StepParity::Row::ToJsonRows(gen.rows, false);
-    Json::Value g = gen.graph.ToJson();
-//    Json::Value n = gen.graph.NodeStateJson();
-//	Json::Value s = gen.SMEditorParityJson();
-//    JsonUtil::WriteFile(v, "Save/song-full-jsons/" + filename + ".json", false);
-    JsonUtil::WriteFile(g, "Save/graph-jsons/" + filename + ".json", false);
-//    JsonUtil::WriteFile(n, "Save/node-jsons/" + filename + ".json", false);
-//	JsonUtil::WriteFile(s, "Save/smeditor-parity-jsons/" + filename + ".json", false);
-
-#endif
-
 	
 	GAMESTATE->SetProcessedTimingData(nullptr);
 }

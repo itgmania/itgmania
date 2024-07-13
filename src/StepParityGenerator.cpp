@@ -11,7 +11,23 @@
 using namespace StepParity;
 
 const std::map<StepsType, StageLayout> Layouts = {
-	{StepsType_dance_single, {{-1, 0}, {0, -1}, {0, 1}, {1, 0}}}
+    {StepsType_dance_single, {
+        {0, 1},  // Left
+        {1, 0},  // Down
+        {1, 2},  // Up
+        {2, 1}   // Right
+    }},
+    {StepsType_dance_double, {
+        {0, 1},  // P1 Left
+        {1, 0},  // P1 Down
+        {1, 2},  // P1 Up
+        {2, 1},  // P1 Right
+        
+        {3, 1},  // P2 Left
+        {4, 0},  // P2 Down
+        {4, 2},  // P2 Up
+        {5, 1}   // P2 Right
+    }}
 	};
 
 void StepParityGenerator::analyzeNoteData(const NoteData &in, StepsType stepsType)
