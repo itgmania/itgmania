@@ -61,7 +61,7 @@ namespace StepParity
 		float calcSideswitchCost(State * initialState, State * resultState, int columnCount);
 		float calcJackedNotesTooCloseTogetherCost(bool movedLeft, bool movedRight, bool jackedLeft, bool jackedRight, float elapsedTime, int columnCount);
 		float calcBigMovementsQuicklyCost(State * initialState, State * resultState, float elapsedTime, int columnCount);
-        float calcBadBracketCost(State * initialState, State * resultState, float elapsedTime, int columnCount);
+        float calcCrowdedBracketCost(State * initialState, State * resultState, float elapsedTime, int columnCount);
         
 		bool didDoubleStep(State * initialState, State * resultState, std::vector<Row> &rows, int rowIndex, bool movedLeft, bool jackedLeft, bool movedRight, bool jackedRight, int columnCount);
 		bool didJackLeft(State * initialState, State * resultState, int leftHeel, int leftToe, bool movedLeft, bool didJump, int columnCount);

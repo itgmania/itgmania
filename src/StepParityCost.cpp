@@ -134,7 +134,7 @@ float* StepParityCost::getActionCost(State * initialState, State * resultState, 
 	
 	// To do: weighting for moving a foot a far distance in a fast time
 	costs[COST_DISTANCE] += calcBigMovementsQuicklyCost( initialState, resultState, elapsedTime, columnCount);
-    costs[COST_CROWDED_BRACKET] += calcBadBracketCost(initialState, resultState, elapsedTime, columnCount);
+    costs[COST_CROWDED_BRACKET] += calcCrowdedBracketCost(initialState, resultState, elapsedTime, columnCount);
 	resultState->columns = combinedColumns;
     for(int i = 0; i < columnCount; i++)
     {
@@ -647,7 +647,7 @@ float StepParityCost::calcBigMovementsQuicklyCost(State * initialState, State * 
 // Are we trying to bracket a column that the other foot was just on,
 // or are we trying to hit a note that the other foot was just bracketing?
 
-float StepParityCost::calcBadBracketCost(State * initialState, State * resultState, float elapsedTime, int columnCount)
+float StepParityCost::calcCrowdedBracketCost(State * initialState, State * resultState, float elapsedTime, int columnCount)
 {
     float cost = 0;
     
