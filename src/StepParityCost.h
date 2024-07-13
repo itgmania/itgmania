@@ -51,7 +51,7 @@ namespace StepParity
 		float calcHoldSwitchCost(State * initialState, State * resultState, Row &row, std::vector<StepParity::Foot> &combinedColumns, int columnCount);
 		float calcBracketTapCost(State * initialState, State * resultState, Row &row, int leftHeel, int leftToe, int rightHeel, int rightToe, float elapsedTime, int columnCount);
 		float calcMovingFootWhileOtherIsntOnPadCost(State * initialState, State * resultState, int columnCount);
-		float calcJackCost(State * initialState, State * resultState, std::vector<Row> &rows, int rowIndex, bool movedLeft, bool movedRight, bool jackedLeft, bool jackedRight, bool didJump, int columnCount);
+		float calcBracketJackCost(State * initialState, State * resultState, std::vector<Row> &rows, int rowIndex, bool movedLeft, bool movedRight, bool jackedLeft, bool jackedRight, bool didJump, int columnCount);
         float calcDoublestepCost(State * initialState, State * resultState, std::vector<Row> & rows, int rowIndex, bool movedLeft, bool movedRight, bool jackedLeft, bool jackedRight, bool didJump, int columnCount);
 		float calcJumpCost(Row &row, bool movedLeft, bool movedRight, float elapsedTime, int columnCount);
 		float calcMissedFootswitchCost(Row &row, bool jackedLeft, bool jackedRight, int columnCount);
@@ -59,7 +59,7 @@ namespace StepParity
         float calcSpinCosts(State * initialState, State * resultState, std::vector<StepParity::Foot> & combinedColumns, int columnCount);
 		float caclFootswitchCost(State * initialState, State * resultState, Row &row, std::vector<StepParity::Foot> &combinedColumns, float elapsedTime, int columnCount);
 		float calcSideswitchCost(State * initialState, State * resultState, int columnCount);
-		float calcJackedNotesTooCloseTogetherCost(bool movedLeft, bool movedRight, bool jackedLeft, bool jackedRight, float elapsedTime, int columnCount);
+		float calcJackCost(bool movedLeft, bool movedRight, bool jackedLeft, bool jackedRight, float elapsedTime, int columnCount);
 		float calcBigMovementsQuicklyCost(State * initialState, State * resultState, float elapsedTime, int columnCount);
         float calcCrowdedBracketCost(State * initialState, State * resultState, float elapsedTime, int columnCount);
         

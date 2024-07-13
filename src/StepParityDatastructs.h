@@ -92,7 +92,9 @@ namespace StepParity {
 		int rowIndex;			 // The index of the row represented by this state
         int idx;
         
-        int whereTheFeetAre[NUM_Foot]; // basically the inverse of columns
+        int whereTheFeetAre[NUM_Foot]; // the inverse of columns
+        bool didTheFootMove[NUM_Foot]; // the inverse of movedFeet
+        bool isTheFootHolding[NUM_Foot]; //inverse of holdFeet
         
 		// These hashes are used in operator<() to speed up the comparison of the vectors.
 		// Their values are computed by calculateHashes(), which is used in StepParityGenerator::buildStateGraph().
@@ -116,6 +118,8 @@ namespace StepParity {
             for(int i = 0; i < NUM_Foot; i++)
             {
                 whereTheFeetAre[i] = -1;
+                didTheFootMove[i] = false;
+                isTheFootHolding[i] = false;
             }
 		}
 		

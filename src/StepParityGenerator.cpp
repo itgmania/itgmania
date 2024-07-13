@@ -153,11 +153,13 @@ State StepParityGenerator::initResultState(State &initialState, Row &row, const 
 		if(row.holds[i].type == TapNoteType_Empty)
 		{
 			resultState.movedFeet[i] = columns[i];
+            resultState.didTheFootMove[columns[i]] = true;
 			continue;
 		}
 		if(initialState.columns[i] != columns[i])
 		{
 			resultState.movedFeet[i] = columns[i];
+            resultState.didTheFootMove[columns[i]] = true;
 		}
 	}
 
@@ -170,6 +172,7 @@ State StepParityGenerator::initResultState(State &initialState, Row &row, const 
 		if(row.holds[i].type != TapNoteType_Empty)
 		{
 			resultState.holdFeet[i] = columns[i];
+            resultState.isTheFootHolding[columns[i]] = true;
 		}
 	}
 	resultState.second = row.second;
