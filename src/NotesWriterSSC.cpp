@@ -391,7 +391,7 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 	}
 	lines.push_back( ssprintf( "#RADARVALUES:%s;", join(",",asRadarValues).c_str() ) );
 
-	lines.push_back(ssprintf("#CREDIT:%s;", SmEscape(in.GetCredit()).c_str()));
+    lines.push_back( ssprintf( "#CREDIT:%s;", SmEscape(in.GetCredit()).c_str() ) );
 
 	// If the Steps TimingData is not empty, then they have their own
 	// timing.  Write out the corresponding tags.

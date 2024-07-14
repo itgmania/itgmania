@@ -45,7 +45,7 @@ void TimingData::Clear()
 	FOREACH_TimingSegmentType( tst )
 	{
 		std::vector<TimingSegment*> &vSegs = m_avpTimingSegments[tst];
-		for (unsigned i = 0; i < vSegs.size(); ++i)
+        for( unsigned i = 0; i < vSegs.size(); ++i )
 		{
 			SAFE_DELETE( vSegs[i] );
 		}

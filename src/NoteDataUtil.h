@@ -14,7 +14,7 @@ class Song;
 struct AttackArray;
 class TimingData;
 
-void PlaceAutoKeysound(NoteData &out, int row, TapNote akTap);
+void PlaceAutoKeysound( NoteData &out, int row, TapNote akTap );
 int FindLongestOverlappingHoldNoteForAnyTrack( const NoteData &in, int iRow );
 void LightTransformHelper( const NoteData &in, NoteData &out, const std::vector<int> &aiTracks );
 

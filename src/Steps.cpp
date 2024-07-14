@@ -33,7 +33,6 @@
 #include <cstddef>
 #include <vector>
 #include <iomanip>
-#include <sstream>
 
 #include "StepParityGenerator.h"
 
@@ -42,10 +41,6 @@
 
 // For hashing hart keys - Mina
 #include "CryptManager.h"
-
-#include "json/json.h"
-#include "JsonUtil.h"
-#include <fstream>
 
 static const char *DisplayBPMNames[] =
 {
@@ -395,7 +390,7 @@ void Steps::CalculateTechCounts()
 		m_CachedTechCounts[pn]
 			.Zero();
 
-	// For now, we're only supporting dance-single
+	// For now, we're only supporting dance-single and dance-double
 	if(this->m_StepsType != StepsType_dance_single && this->m_StepsType != StepsType_dance_double)
 	{
 		return;

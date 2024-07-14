@@ -591,6 +591,7 @@ float StepParityCost::caclFootswitchCost(State * initialState, State * resultSta
 	  return cost;
 }
 
+// TODO: This doesn't work for doubles, since it's only checking P1 left and P1 right
 float StepParityCost::calcSideswitchCost(State * initialState, State * resultState, int columnCount)
 {
 	float cost = 0;
