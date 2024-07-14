@@ -28,6 +28,8 @@ const int num_chunks = 8;
 const int chunksize_frames = buffersize_frames / num_chunks;
 const int chunksize = buffersize / num_chunks; /* in bytes */
 
+int m_iLastFreeBufferIndex = 0;
+
 static RString wo_ssprintf( MMRESULT err, const char *szFmt, ...)
 {
 	char szBuf[MAXERRORLENGTH];
@@ -65,22 +67,33 @@ void RageSoundDriver_WaveOut::MixerThread()
 
 bool RageSoundDriver_WaveOut::GetData()
 {
-	/* Look for a free buffer. */
-	int b;
-	for( b = 0; b < num_chunks; ++b )
+	int b = m_iLastFreeBufferIndex;
+	bool found = false;
+
+	// Check for a free buffer
+	for( int i = 0; i < num_chunks; ++i )
+	{
 		if( m_aBuffers[b].dwFlags & WHDR_DONE )
+		{
+			found = true;
 			break;
-	if( b == num_chunks )
+		}
+		// Update and wrap index
+		b = (b + 1) % num_chunks;
+	}
+	if (!found)
 		return false;
 
-	/* Call the callback. */
-	this->Mix( (std::int16_t *) m_aBuffers[b].lpData, chunksize_frames, m_iLastCursorPos, GetPosition() );
+	// Start from the next buffer in the next call
+	m_iLastFreeBufferIndex = (b + 1) % num_chunks;
+
+	this->Mix( reinterpret_cast<std::int16_t*>(m_aBuffers[b].lpData), chunksize_frames, m_iLastCursorPos, GetPosition() );
 
 	MMRESULT ret = waveOutWrite( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
-  	if( ret != MMSYSERR_NOERROR )
+	if( ret != MMSYSERR_NOERROR )
 		FAIL_M( wo_ssprintf(ret, "waveOutWrite failed") );
 
-	/* Increment m_iLastCursorPos. */
+	// Increment m_iLastCursorPos.
 	m_iLastCursorPos += chunksize_frames;
 
 	return true;
