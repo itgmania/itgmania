@@ -21,6 +21,18 @@ public:
 	int GetSampleRate() const { return m_iSampleRate; }
 
 private:
+	// Note: it's better to have more buffers of smaller size.
+	// You can give WaveOut as many buffers as you want,
+	// but if they are each too large, then we won't fill data
+	// as fast as we'd hope to, and that can lead to underrun.
+	static const int channels = 2;
+	static const int bytes_per_frame = channels * 2;  /* 16-bit */
+	static const int buffersize_frames = 1024 * 8;	  /* in frames */
+	static const int buffersize = buffersize_frames * bytes_per_frame; /* in bytes */
+	static const int num_chunks = 16;
+	static const int chunksize_frames = buffersize_frames / num_chunks;
+	static const int chunksize = buffersize / num_chunks; /* in bytes */
+
 	static int MixerThread_start( void *p );
 	void MixerThread();
 	RageThread MixingThread;
@@ -29,7 +41,7 @@ private:
 
 	HWAVEOUT m_hWaveOut;
 	HANDLE m_hSoundEvent;
-	WAVEHDR m_aBuffers[8];
+	WAVEHDR m_aBuffers[num_chunks];
 	int m_iSampleRate;
 	bool m_bShutdown;
 	int m_iLastCursorPos;
