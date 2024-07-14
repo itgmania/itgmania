@@ -115,18 +115,17 @@ RageSoundDriver_WaveOut::RageSoundDriver_WaveOut()
 
 RString RageSoundDriver_WaveOut::Init()
 {
-	m_iSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
-	if( m_iSampleRate == 0 )
-		m_iSampleRate = 44100;
+	m_iSampleRate = PREFSMAN->m_iSoundPreferredSampleRate ? PREFSMAN->m_iSoundPreferredSampleRate : 44100;
 
-	WAVEFORMATEX fmt;
-	fmt.wFormatTag = WAVE_FORMAT_PCM;
-	fmt.nChannels = channels;
-	fmt.cbSize = 0;
-	fmt.nSamplesPerSec = m_iSampleRate;
-	fmt.wBitsPerSample = 16;
-	fmt.nBlockAlign = fmt.nChannels * fmt.wBitsPerSample / 8;
-	fmt.nAvgBytesPerSec = fmt.nSamplesPerSec * fmt.nBlockAlign;
+	WAVEFORMATEX fmt = {
+		WAVE_FORMAT_PCM, // wFormatTag
+		static_cast<WORD>(channels), // nChannels
+		static_cast<DWORD>(m_iSampleRate), // nSamplesPerSec
+		static_cast<DWORD>(m_iSampleRate * bytes_per_frame), // nAvgBytesPerSec
+		static_cast<WORD>(bytes_per_frame), // nBlockAlign
+		16, // wBitsPerSample
+		0 // cbSize
+	};
 
 	std::vector<UINT> deviceIds;
 	if (!PREFSMAN->m_iSoundDevice.Get().empty()) {
@@ -152,23 +151,23 @@ RString RageSoundDriver_WaveOut::Init()
 		return wo_ssprintf( ret, "waveOutOpen failed" );
 	}
 
-
-	ZERO( m_aBuffers );
-	for(int b = 0; b < num_chunks; ++b)
+	for (auto& buffer : m_aBuffers)
 	{
-		m_aBuffers[b].dwBufferLength = chunksize;
-		m_aBuffers[b].lpData = new char[chunksize];
-		ret = waveOutPrepareHeader( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
-		if( ret != MMSYSERR_NOERROR )
-			return wo_ssprintf( ret, "waveOutPrepareHeader failed" );
-		m_aBuffers[b].dwFlags |= WHDR_DONE;
+		buffer = WAVEHDR{ 0 };
+		buffer.dwBufferLength = chunksize;
+		buffer.lpData = new char[chunksize];
+		ret = waveOutPrepareHeader( m_hWaveOut, &buffer, sizeof(WAVEHDR) );
+		if (ret != MMSYSERR_NOERROR) {
+			return wo_ssprintf(ret, "waveOutPrepareHeader failed");
+		}
+		buffer.dwFlags |= WHDR_DONE;
 	}
 
 	LOG->Info( "WaveOut software mixing at %i hz", m_iSampleRate );
 
 	/* We have a very large writeahead; make sure we have a large enough decode
 	 * buffer to recover cleanly from underruns. */
-	SetDecodeBufferSize( buffersize_frames * 3/2 );
+	SetDecodeBufferSize( buffersize_frames * 2 );
 	StartDecodeThread();
 
 	MixingThread.SetName( "Mixer thread" );
