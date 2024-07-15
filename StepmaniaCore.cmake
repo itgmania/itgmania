@@ -254,7 +254,7 @@ elseif(MACOSX)
       "Neither NASM nor YASM were found. Please install at least one of them."
     )
   endif()
-elseif(LINUX)
+elseif(LINUX OR BSD)
   if(WITH_GTK3)
     find_package("GTK3" 2.0)
     if(${GTK3_FOUND})
@@ -343,7 +343,7 @@ elseif(LINUX)
   if(NOT LIBUSB_FOUND)
     message(FATAL_ERROR "libusb was not found.")
   endif()
-endif(WIN32) # LINUX, APPLE
+endif(WIN32) # LINUX OR BSD, APPLE
 
 configure_file("${SM_SRC_DIR}/config.in.hpp"
                "${SM_GENERATED_SRC_DIR}/config.hpp")
