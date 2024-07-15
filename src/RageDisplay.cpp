@@ -51,7 +51,7 @@ static std::vector<Centering> g_CenteringStack( 1, Centering(0, 0, 0, 0) );
 
 RageDisplay*		DISPLAY	= nullptr; // global and accessible from anywhere in our program
 
-Preference<bool>  LOG_FPS( "LogFPS", true );
+Preference<bool>  LOG_FPS( "LogFPS", false );
 Preference<float> g_fFrameLimitPercent( "FrameLimitPercent", 0.0f );
 
 static const char *RagePixelFormatNames[] = {
