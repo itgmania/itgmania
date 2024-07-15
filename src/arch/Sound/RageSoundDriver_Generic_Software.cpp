@@ -539,34 +539,27 @@ std::int64_t RageSoundDriver::GetHardwareFrame( RageTimer *pTimestamp=nullptr ) 
 	if( pTimestamp == nullptr )
 		return ClampHardwareFrame( GetPosition() );
 
-	/*
-	 * We may have unpredictable scheduling delays between updating the timestamp
-	 * and reading the sound position.  If we're preempted while doing this and
-	 * it may have caused the timestamp to not match the returned time, retry.
-	 *
-	 * As a failsafe, only allow a few attempts.  If this has to try more than
-	 * a few times, then probably we have thread contention that's causing more
-	 * severe performance problems, anyway.
-	 */
-	int iTries = 3;
-	std::int64_t iPositionFrames;
-	do
-	{
+	std::int64_t iPositionFrames = GetPosition();
+	if (pTimestamp) {
+		// Immediately get the position and update the timestamp to the current time.
 		pTimestamp->Touch();
-		iPositionFrames = GetPosition();
-	} while( --iTries && pTimestamp->Ago() > 0.002f );
 
-	if( iTries == 0 )
-	{
-		static bool bLogged = false;
-		if( !bLogged )
-		{
-			bLogged = true;
-			LOG->Warn( "RageSoundDriver::GetHardwareFrame: too many tries" );
+		// Maximum allowed delay, in seconds
+		constexpr float maxAllowedDelay = 0.002f;
+
+		// Store the time difference.
+		float elapsed = pTimestamp->Ago();
+		
+		if (elapsed > maxAllowedDelay) {
+			// If the elapsed time since touching the timestamp is too high, log a warning.
+			// This indicates potential thread contention or other issues affecting timing accuracy.
+			// Afterwards, attempt to get the correct time once again.
+			LOG->Warn("RageSoundDriver::GetHardwareFrame: Timestamp delay exceeded %.3f seconds", elapsed);
+			pTimestamp->Touch();
+			iPositionFrames = GetPosition();
 		}
 	}
-
-	return ClampHardwareFrame( iPositionFrames );
+	return ClampHardwareFrame(iPositionFrames);
 }
 
 /*
