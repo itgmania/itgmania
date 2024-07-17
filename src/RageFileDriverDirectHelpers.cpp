@@ -28,31 +28,39 @@ RString DoPathReplace(const RString &sPath)
 #if defined(_WIN32)
 static bool WinMoveFileInternal( const RString &sOldPath, const RString &sNewPath )
 {
-	static bool Win9x = false;
-
-	/* Windows botches rename: it returns error if the file exists. In NT,
-	 * we can use MoveFileEx( new, old, MOVEFILE_REPLACE_EXISTING ) (though I
-	 * don't know if it has similar atomicity guarantees to rename). In
-	 * 9x, we're screwed, so just delete any existing file (we aren't going
-	 * to be robust on 9x anyway). */
-	if( !Win9x )
-	{
-		if( MoveFileEx( sOldPath, sNewPath, MOVEFILE_REPLACE_EXISTING ) )
-			return true;
-
-		// On Win9x, MoveFileEx is expected to fail (returns ERROR_CALL_NOT_IMPLEMENTED).
-		DWORD err = GetLastError();
-		if( err == ERROR_CALL_NOT_IMPLEMENTED )
-			Win9x = true;
-		else
-			return false;
-	}
-
-	if( MoveFile( sOldPath, sNewPath ) )
+	if( MoveFileEx( sOldPath, sNewPath, MOVEFILE_REPLACE_EXISTING ) )
 		return true;
 
-	if( GetLastError() != ERROR_ALREADY_EXISTS )
-		return false;
+	DWORD err = GetLastError();
+	// Possible error values stored by GetLastError():
+	//
+	// - ERROR_PATH_NOT_FOUND - 3 
+	//  - implies something in the file path does not exist
+	//
+	// - ERROR_SHARING_VIOLATION - 32 
+	//  - implies a need to use a temporary name somewhere
+	//
+	// - ERROR_FILE_EXISTS, ERROR_ALREADY_EXISTS - 80 
+	//  - implies MOVEFILE_REPLACE_EXISTING flag is not set,
+	//    but it is usually expected behavior when this occurs
+	//
+	// - ERROR_INVALID_PARAMETER - 87 
+	//  - implies the file paths are invalid
+	//
+	// - ERROR_NOT_SAME_DEVICE - 17 
+	//  - implies the file paths are on different devices
+
+	if( err )
+	{
+		// Log the error with the specific error code
+		WARN(ssprintf("MoveFileEx(%s, %s) failed: %lu", sOldPath.c_str(), sNewPath.c_str(), err));
+    
+		// Check if the error is related to the file not existing
+		if (err != ERROR_FILE_EXISTS && err != ERROR_ALREADY_EXISTS)
+		{
+			return false;
+		}
+	}
 
 	if( !DeleteFile( sNewPath ) )
 		return false;
