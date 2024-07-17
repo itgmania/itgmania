@@ -6,9 +6,6 @@
 #include <vector>
 
 #define PI		(3.141592653589793f)
-#define DegreeToRadian( degree ) ((degree) * (PI / 180.0f))
-#define RadianToDegree( radian ) ((radian) * (180.0f / PI))
-
 
 struct lua_State;
 struct RageVector2;
