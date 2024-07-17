@@ -172,47 +172,29 @@ void TimingData::DumpLookupTables()
 TimingData::beat_start_lookup_t::const_iterator FindEntryInLookup(
 	const TimingData::beat_start_lookup_t& lookup, float entry)
 {
-	if(lookup.empty())
+	if(lookup.empty() || lookup.front().first > entry)
 	{
 		return lookup.end();
 	}
-	std::size_t lower= 0;
-	std::size_t upper= lookup.size()-1;
-	if(lookup[lower].first > entry)
+	
+	auto iLookItUp = std::lower_bound(
+    lookup.begin(),
+    lookup.end(),
+    entry,
+
+    [](const auto& elementFromLookupTable, float entryValue) {
+        return elementFromLookupTable.first < entryValue;
+    });
+
+	if (iLookItUp == lookup.end() || iLookItUp == lookup.begin())
 	{
-		return lookup.end();
-	}
-	if(lookup[upper].first < entry)
-	{
-		// See explanation at the end of this function. -Kyz
-		return lookup.begin() + upper - 1;
-	}
-	while(upper - lower > 1)
-	{
-		std::size_t next= (upper + lower) / 2;
-		if(lookup[next].first > entry)
-		{
-			upper= next;
-		}
-		else if(lookup[next].first < entry)
-		{
-			lower= next;
-		}
-		else
-		{
-			lower= next;
-			break;
-		}
+		return lookup.end(); // no suitable entry was found
 	}
 	// If the time or beat being looked up is close enough to the starting
 	// point that is returned, such as putting the time inside a stop or delay,
 	// then it can make arrows unhittable.  So always return the entry before
 	// the closest one to prevent that. -Kyz
-	if(lower == 0)
-	{
-		return lookup.end();
-	}
-	return lookup.begin() + lower - 1;
+	return --iLookItUp;
 }
 
 bool TimingData::empty() const
