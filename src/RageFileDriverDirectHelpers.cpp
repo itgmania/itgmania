@@ -167,10 +167,11 @@ void DirectFilenameDB::CacheFile( const RString &sPath )
 		return;
 	}
 	while( !pFileSet->m_bFilled )
+	{
 		m_Mutex.Wait();
+	}
 
 #if defined(_WIN32)
-	// There is almost surely a better way to do this
 	WIN32_FIND_DATA fd;
 	HANDLE hFind = DoFindFirstFile( root+sPath, &fd );
 	if( hFind == INVALID_HANDLE_VALUE )
@@ -180,8 +181,8 @@ void DirectFilenameDB::CacheFile( const RString &sPath )
 	}
 	File f( fd.cFileName );
 	f.dir = !!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-	f.size = fd.nFileSizeLow;
-	f.hash = fd.ftLastWriteTime.dwLowDateTime;
+	f.size = static_cast<int64_t>(fd.nFileSizeHigh) << 32 | fd.nFileSizeLow;
+	f.hash = static_cast<int64_t>(fd.ftLastWriteTime.dwHighDateTime) << 32 | fd.ftLastWriteTime.dwLowDateTime;
 
 	pFileSet->files.insert( f );
 	FindClose( hFind );
@@ -191,16 +192,12 @@ void DirectFilenameDB::CacheFile( const RString &sPath )
 	struct stat st;
 	if( DoStat(root+sPath, &st) == -1 )
 	{
-		int iError = errno;
-		// If it's a broken symlink, ignore it.  Otherwise, warn.
-		// Huh?
-		WARN( ssprintf("File '%s' is gone! (%s)",
-				sPath.c_str(), strerror(iError)) );
+		WARN(ssprintf("File '%s' is gone! (%s)", sPath.c_str(), strerror(errno)));
 	}
 	else
 	{
-		f.dir = (st.st_mode & S_IFDIR);
-		f.size = (int)st.st_size;
+		f.dir = S_ISDIR(st.st_mode);
+		f.size = static_cast<int>(st.st_size);
 		f.hash = st.st_mtime;
 	}
 
