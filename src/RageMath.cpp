@@ -626,18 +626,24 @@ float RageFastSin(float angle)
 	first_index%= sine_index_mod;
 	float first= 0.0f;
 	float second= 0.0f;
-#define SET_SAMPLE(sample) \
-	if(sample##_index >= static_cast<int>(sine_table_size)) \
-	{ \
-		sample= -sine_table[sample##_index - sine_table_size]; \
-	} \
-	else \
-	{ \
-		sample= sine_table[sample##_index]; \
+	
+	if (first_index >= static_cast<int>(sine_table_size))
+	{
+		first = -sine_table[first_index - sine_table_size];
 	}
-	SET_SAMPLE(first);
-	SET_SAMPLE(second);
-#undef SET_SAMPLE
+	else
+	{
+		first = sine_table[first_index];
+	}
+
+	if (second_index >= static_cast<int>(sine_table_size))
+	{
+		second = -sine_table[second_index - sine_table_size];
+	}
+	else
+	{
+		second = sine_table[second_index];
+	}
 	return lerp(remainder, first, second);
 }
 
