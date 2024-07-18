@@ -303,7 +303,7 @@ bool msAnimation::LoadMilkshapeAsciiBones( RString sAniName, RString sPath )
 				if (sscanf (sLine, "%f %f %f %f", &fTime, &Position[0], &Position[1], &Position[2]) != 4)
 					THROW;
 
-				msPositionKey key;
+				msPositionKey key = {};
 				key.fTime = fTime;
 				key.Position = RageVector3( Position[0], Position[1], Position[2] );
 				Bone.PositionKeys[j] = key;
@@ -328,7 +328,7 @@ bool msAnimation::LoadMilkshapeAsciiBones( RString sAniName, RString sPath )
 					THROW;
 				Rotation = RadianToDegree(Rotation);
 
-				msRotationKey key;
+				msRotationKey key = {};
 				key.fTime = fTime;
 				Rotation = RageVector3( Rotation[0], Rotation[1], Rotation[2] );
 				RageQuatFromHPR( &key.Rotation, Rotation );
