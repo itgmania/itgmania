@@ -544,7 +544,7 @@ void Actor::PreDraw() // calculate actor properties
 			ssprintf("PercentThroughEffect: %f", fPercentThroughEffect) );
 
 		bool bBlinkOn = fPercentThroughEffect > 0.5f;
-		float fPercentBetweenColors = RageFastSin( (fPercentThroughEffect + 0.25f) * 2 * PI ) / 2 + 0.5f;
+		float fPercentBetweenColors = std::sin( (fPercentThroughEffect + 0.25f) * 2 * PI ) / 2 + 0.5f;
 		ASSERT_M( fPercentBetweenColors >= 0 && fPercentBetweenColors <= 1,
 			ssprintf("PercentBetweenColors: %f, PercentThroughEffect: %f", fPercentBetweenColors, fPercentThroughEffect) );
 		float fOriginalAlpha = m_current_with_effects.diffuse[0].a;
@@ -590,15 +590,15 @@ void Actor::PreDraw() // calculate actor properties
 			break;
 		case rainbow:
 			m_current_with_effects.diffuse[0] = RageColor(
-				RageFastCos( fPercentBetweenColors*2*PI ) * 0.5f + 0.5f,
-				RageFastCos( fPercentBetweenColors*2*PI + PI * 2.0f / 3.0f ) * 0.5f + 0.5f,
-				RageFastCos( fPercentBetweenColors*2*PI + PI * 4.0f / 3.0f) * 0.5f + 0.5f,
+				std::cos( fPercentBetweenColors*2*PI ) * 0.5f + 0.5f,
+				std::cos( fPercentBetweenColors*2*PI + PI * 2.0f / 3.0f ) * 0.5f + 0.5f,
+				std::cos( fPercentBetweenColors*2*PI + PI * 4.0f / 3.0f) * 0.5f + 0.5f,
 				fOriginalAlpha );
 			for( int i=1; i<NUM_DIFFUSE_COLORS; i++ )
 				m_current_with_effects.diffuse[i] = m_current_with_effects.diffuse[0];
 			break;
 		case wag:
-			m_current_with_effects.rotation += m_vEffectMagnitude * RageFastSin( fPercentThroughEffect * 2.0f * PI );
+			m_current_with_effects.rotation += m_vEffectMagnitude * std::sin( fPercentThroughEffect * 2.0f * PI );
 			break;
 		case spin:
 			// nothing needs to be here
@@ -610,13 +610,13 @@ void Actor::PreDraw() // calculate actor properties
 			break;
 		case bounce:
 			{
-				float fPercentOffset = RageFastSin( fPercentThroughEffect*PI );
+				float fPercentOffset = std::sin( fPercentThroughEffect*PI );
 				m_current_with_effects.pos += m_vEffectMagnitude * fPercentOffset;
 			}
 			break;
 		case bob:
 			{
-				float fPercentOffset = RageFastSin( fPercentThroughEffect*PI*2 );
+				float fPercentOffset = std::sin( fPercentThroughEffect*PI*2 );
 				m_current_with_effects.pos += m_vEffectMagnitude * fPercentOffset;
 			}
 			break;
@@ -624,7 +624,7 @@ void Actor::PreDraw() // calculate actor properties
 			{
 				float fMinZoom = m_vEffectMagnitude[0];
 				float fMaxZoom = m_vEffectMagnitude[1];
-				float fPercentOffset = RageFastSin( fPercentThroughEffect*PI );
+				float fPercentOffset = std::sin( fPercentThroughEffect*PI );
 				float fZoom = SCALE( fPercentOffset, 0.f, 1.f, fMinZoom, fMaxZoom );
 				m_current_with_effects.scale *= fZoom;
 
