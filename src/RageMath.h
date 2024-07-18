@@ -55,11 +55,6 @@ RageMatrix RageLookAt(
 void RageMatrixAngles( RageMatrix* pOut, const RageVector3 &angles );
 void RageMatrixTranspose( RageMatrix* pOut, const RageMatrix* pIn );
 
-float RageFastSin( float x ) CONST_FUNCTION;
-float RageFastCos( float x ) CONST_FUNCTION;
-float RageFastTan( float x ) CONST_FUNCTION;
-float RageFastCsc( float x ) CONST_FUNCTION;
-
 float RageSquare( float x) CONST_FUNCTION;
 float RageTriangle( float x) CONST_FUNCTION;
 
