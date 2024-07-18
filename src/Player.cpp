@@ -2,7 +2,6 @@
 #include "Player.h"
 #include "GameConstantsAndTypes.h"
 #include "RageUtil.h"
-#include "RageTimer.h"
 #include "PrefsManager.h"
 #include "GameManager.h"
 #include "InputMapper.h"
@@ -40,6 +39,7 @@
 #include "GameCommand.h"
 #include "LocalizedString.h"
 #include "AdjustSync.h"
+#include "RandomSeed.h"
 
 #include <cmath>
 #include <cstddef>
@@ -3475,11 +3475,7 @@ RString Player::ApplyRandomAttack()
 	if( GAMESTATE->m_RandomAttacks.size() < 1 )
 		return "";
 
-	//int iAttackToUse = rand() % GAMESTATE->m_RandomAttacks.size();
-	DateTime now = DateTime::GetNowDate();
-	int iSeed = now.tm_hour * now.tm_min * now.tm_sec * now.tm_mday;
-	RandomGen rnd( GAMESTATE->m_iStageSeed * iSeed );
-	int iAttackToUse = rnd() % GAMESTATE->m_RandomAttacks.size();
+	int iAttackToUse = GetRandomInt() % GAMESTATE->m_RandomAttacks.size();
 	return GAMESTATE->m_RandomAttacks[iAttackToUse];
 }
 
