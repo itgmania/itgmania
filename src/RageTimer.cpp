@@ -55,9 +55,21 @@ double RageTimer::GetTimeSinceStart(bool bAccurate)
 	return usecs / 1000000.0;
 }
 
+float RageTimer::GetTimeSinceStartFast()
+{
+	long double seconds = static_cast<long double>(GetSecsSinceStart());
+	return static_cast<float>(seconds);
+}
+
 std::uint64_t RageTimer::GetUsecsSinceStart()
 {
 	return GetTime(true) - g_iStartTime;
+}
+
+std::uint64_t RageTimer::GetSecsSinceStart()
+{
+    std::uint64_t usecs = GetTime(true) - g_iStartTime;
+    return usecs / TIMESTAMP_RESOLUTION;
 }
 
 void RageTimer::Touch()
