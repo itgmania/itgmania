@@ -328,6 +328,7 @@ float HHMMSSToSeconds( const RString &sHMS );
 RString SecondsToHHMMSS( float fSecs );
 RString SecondsToMSSMsMs( float fSecs );
 RString SecondsToMMSSMsMs( float fSecs );
+RString UsecsToMMSSMsMsMs( std::uint64_t usecs );
 RString SecondsToMMSSMsMsMs( float fSecs );
 RString SecondsToMSS( float fSecs );
 RString SecondsToMMSS( float fSecs );

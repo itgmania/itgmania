@@ -261,6 +261,16 @@ RString SecondsToMMSSMsMsMs( float fSecs )
 	return sReturn;
 }
 
+RString UsecsToMMSSMsMsMs( std::uint64_t usecs )
+{
+	std::uint64_t totalSeconds = usecs / 1000000;
+	std::uint64_t minutes = totalSeconds / 60;
+	std::uint64_t seconds = totalSeconds % 60;
+	std::uint64_t milliseconds = (usecs % 1000000) / 1000;
+	RString result = ssprintf("%02llu:%02llu.%03llu", minutes, seconds, milliseconds);
+	return result;
+}
+
 RString SecondsToMSS( float fSecs )
 {
 	const int iMinsDisplay = static_cast<int>(fSecs/60);

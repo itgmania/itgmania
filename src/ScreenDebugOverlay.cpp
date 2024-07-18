@@ -1319,7 +1319,7 @@ class DebugLineForceCrash : public IDebugLine
 class DebugLineUptime : public IDebugLine
 {
 	virtual RString GetDisplayTitle() { return UPTIME.GetValue(); }
-	virtual RString GetDisplayValue() { return SecondsToMMSSMsMsMs(RageTimer::GetTimeSinceStart()); }
+	virtual RString GetDisplayValue() { return UsecsToMMSSMsMsMs(RageTimer::GetUsecsSinceStart()); }
 	virtual bool IsEnabled() { return false; }
 	virtual void DoAndLog( RString &sMessageOut ) {}
 };
