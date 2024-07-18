@@ -300,16 +300,19 @@ void Model::DrawCelShaded()
 	// First pass: shell. We only want the backfaces for this.
 	DISPLAY->SetCelShaded(1);
 	DISPLAY->SetCullMode(CULL_FRONT);
-	this->SetZWrite(false); // XXX: Why on earth isn't the culling working? -Colby
-	this->Draw();
+	SetZWrite(false);
+	Draw();
 
 	// Second pass: cel shading
 	DISPLAY->SetCelShaded(2);
 	DISPLAY->SetCullMode(CULL_BACK);
-	this->SetZWrite(true);
-	this->Draw();
+	SetZWrite(true);
+	Draw();
 
+	// Reset render states
 	DISPLAY->SetCelShaded(0);
+	SetZWrite(true);
+	DISPLAY->SetCullMode(CULL_BACK);
 }
 
 void Model::DrawPrimitives()
