@@ -970,23 +970,20 @@ std::vector<MusicWheelItemData *> & MusicWheel::getWheelItemsData(SortOrder so) 
 }
 
 void MusicWheel::readyWheelItemsData(SortOrder so) {
-	if(m_WheelItemDatasStatus[so]!=VALID) {
-		RageTimer timer;
+	if(m_WheelItemDatasStatus[so] == VALID && so != SORT_PREFERRED)
+		return;
 
-		std::vector<MusicWheelItemData*> &aUnFilteredDatas = m__UnFilteredWheelItemDatas[so];
+	std::vector<MusicWheelItemData*> &aUnFilteredDatas = m__UnFilteredWheelItemDatas[so];
 
-		if(m_WheelItemDatasStatus[so]==INVALID) {
-			BuildWheelItemDatas(  aUnFilteredDatas, so );
-		}
-		FilterWheelItemDatas( aUnFilteredDatas, m__WheelItemDatas[so], so );
-		// The preferred sort's songs are subject to change during a session (particularly if two players have different preferred songs) 
-		// thus it's status should remain invalid so the wheel items are rebuilt each time in case of change.
-		if (so != SORT_PREFERRED) {
-			m_WheelItemDatasStatus[so]=VALID;
-		}
-		LOG->Trace( "MusicWheel sorting took: %f", timer.GetTimeSinceStart() );
+	if(m_WheelItemDatasStatus[so]==INVALID) {
+		BuildWheelItemDatas(  aUnFilteredDatas, so );
 	}
-
+	FilterWheelItemDatas( aUnFilteredDatas, m__WheelItemDatas[so], so );
+	// The preferred sort's songs are subject to change during a session (particularly if two players have different preferred songs) 
+	// thus it's status should remain invalid so the wheel items are rebuilt each time in case of change.
+	if (so != SORT_PREFERRED) {
+		m_WheelItemDatasStatus[so]=VALID;
+	}
 }
 
 void MusicWheel::FilterWheelItemDatas(std::vector<MusicWheelItemData *> &aUnFilteredDatas, std::vector<MusicWheelItemData *> &aFilteredData, SortOrder so )
