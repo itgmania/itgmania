@@ -127,8 +127,8 @@ class LockMutex
 	RageMutex &mutex;
 
 	const char *file;
-	int line;
-	float locked_at;
+	std::int64_t line;
+	std::int64_t locked_at;
 	bool locked;
 
 public:

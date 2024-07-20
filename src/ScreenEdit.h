@@ -340,7 +340,7 @@ protected:
 
 	/** @brief Has the NoteData been changed such that a user should be prompted to save? */
 	bool			m_dirty;
-	float m_next_autosave_time;
+	std::int64_t	m_next_autosave_time;
 
 	/** @brief The sound that is played when a note is added. */
 	RageSound		m_soundAddNote;

@@ -30,12 +30,16 @@
 #include <cmath>
 #include <cstdint>
 
-#define TIMESTAMP_RESOLUTION 1000000
+// constants to ensure time math is being done in the proper resolution
+constexpr    std::int64_t   USEC_TO_SEC_AS_INTEGER  = 1000000;
+constexpr    float          USEC_TO_SEC_AS_FLOAT    = 1000000.0f;
+constexpr    double         USEC_TO_SEC_AS_DOUBLE   = 1000000.0;
 
-const RageTimer RageZeroTimer(0,0);
-static std::uint64_t g_iStartTime = ArchHooks::GetMicrosecondsSinceStart( true );
+// local constants
+const		 RageTimer		RageZeroTimer(0,0);
+const static std::int64_t g_iStartTime = ArchHooks::GetMicrosecondsSinceStart( true );
 
-static std::uint64_t GetTime( bool /* bAccurate */ )
+static std::int64_t GetTime( bool /* bAccurate */ )
 {
 	return ArchHooks::GetMicrosecondsSinceStart( true );
 }
@@ -50,12 +54,36 @@ static std::uint64_t GetTime( bool /* bAccurate */ )
  * and do thorough testing if you change anything here. -sukibaby */
 double RageTimer::GetTimeSinceStart(bool bAccurate)
 {
-	std::uint64_t usecs = GetTime(bAccurate);
+	std::int64_t usecs = GetTime(bAccurate);
 	usecs -= g_iStartTime;
-	return usecs / 1000000.0;
+	return usecs / USEC_TO_SEC_AS_DOUBLE;
 }
 
-std::uint64_t RageTimer::GetUsecsSinceStart()
+float RageTimer::GetTimeSinceStartFast(bool bAccurate)
+{
+	std::int64_t usecs = GetTime(bAccurate);
+	usecs -= g_iStartTime;
+	return usecs / USEC_TO_SEC_AS_FLOAT;
+}
+
+std::uint64_t RageTimer::deltaSecondsAsUnsigned()
+{
+    std::uint64_t usecs = static_cast<std::uint64_t>(GetTime(true) - g_iStartTime);
+    return usecs / USEC_TO_SEC_AS_INTEGER;
+}
+
+std::int64_t RageTimer::deltaSecondsAsSigned()
+{
+    std::int64_t usecs = (GetTime(true) - g_iStartTime);
+    return usecs / USEC_TO_SEC_AS_INTEGER;
+}
+
+std::uint64_t RageTimer::deltaMicrosecondsAsUnsigned()
+{
+	return static_cast<uint64_t>(GetTime(true) - g_iStartTime);
+}
+
+std::int64_t RageTimer::deltaMicrosecondsAsSigned()
 {
 	return GetTime(true) - g_iStartTime;
 }
@@ -64,8 +92,8 @@ void RageTimer::Touch()
 {
 	std::uint64_t usecs = GetTime( true );
 
-	this->m_secs = std::uint64_t(usecs / TIMESTAMP_RESOLUTION);
-	this->m_us = std::uint64_t(usecs % TIMESTAMP_RESOLUTION);
+	this->m_secs = std::uint64_t(usecs / USEC_TO_SEC_AS_INTEGER);
+	this->m_us = std::uint64_t(usecs % USEC_TO_SEC_AS_INTEGER);
 }
 
 float RageTimer::Ago() const
@@ -119,8 +147,8 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 	/* Calculate the seconds and microseconds from the time:
 	 * tm == 5.25  -> secs =  5, us = 5.25  - ( 5) = .25
 	 * tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75 */
-	int64_t seconds = std::floor(tm);
-	int64_t us = int64_t((tm - seconds) * TIMESTAMP_RESOLUTION);
+	std::int64_t seconds = std::floor(tm);
+	std::int64_t us = static_cast<int64_t>((tm - seconds) * USEC_TO_SEC_AS_INTEGER);
 
 	// Prevent unnecessarily checking the time
 	RageTimer ret(0, 0);
@@ -129,10 +157,10 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 	ret.m_secs = seconds + lhs.m_secs;
 	ret.m_us = us + lhs.m_us;
 
-	// Adjust the seconds and microseconds if microseconds is greater than or equal to TIMESTAMP_RESOLUTION
-	if (ret.m_us >= TIMESTAMP_RESOLUTION)
+	// Adjust the seconds and microseconds if microseconds is greater than or equal to USEC_TO_SEC_AS_INTEGER
+	if (ret.m_us >= USEC_TO_SEC_AS_INTEGER)
 	{
-		ret.m_us -= TIMESTAMP_RESOLUTION;
+		ret.m_us -= USEC_TO_SEC_AS_INTEGER;
 		++ret.m_secs;
 	}
 
@@ -142,18 +170,18 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 double RageTimer::Difference(const RageTimer& lhs, const RageTimer& rhs)
 {
 	// Calculate the difference in seconds and microseconds respectively
-	int64_t secs = lhs.m_secs - rhs.m_secs;
-	int64_t us = lhs.m_us - rhs.m_us;
+	std::int64_t secs = lhs.m_secs - rhs.m_secs;
+	std::int64_t us = lhs.m_us - rhs.m_us;
 
 	// Adjust seconds and microseconds if microseconds is negative
 	if ( us < 0 )
 	{
-		us += TIMESTAMP_RESOLUTION;
+		us += USEC_TO_SEC_AS_INTEGER;
 		--secs;
 	}
 
 	// Return the difference as a double to preserve the fractional part
-	return static_cast<double>(secs) + static_cast<double>(us) / TIMESTAMP_RESOLUTION;
+	return static_cast<double>(secs) + static_cast<double>(us) / USEC_TO_SEC_AS_INTEGER;
 }
 
 #include "LuaManager.h"

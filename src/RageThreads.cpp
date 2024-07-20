@@ -15,6 +15,7 @@
 #include "RageTimer.h"
 #include "RageLog.h"
 #include "RageUtil.h"
+#include <cinttypes>
 
 #include <cerrno>
 #include <cstdint>
@@ -662,7 +663,7 @@ LockMutex::LockMutex( RageMutex &pMutex, const char *file_, int line_ ):
 	mutex( pMutex ),
 	file( file_ ),
 	line( line_ ),
-	locked_at( RageTimer::GetTimeSinceStart() ),
+	locked_at( RageTimer::deltaMicrosecondsAsSigned() ),
 	locked(false) // ensure it gets locked inside.
 {
 	mutex.Lock();
@@ -684,9 +685,9 @@ void LockMutex::Unlock()
 
 	if( file && locked_at != -1 )
 	{
-		const float dur = RageTimer::GetTimeSinceStart() - locked_at;
-		if( dur > 0.015f )
-			LOG->Trace( "Lock at %s:%i took %f", file, line, dur );
+		const std::int64_t dur = RageTimer::deltaMicrosecondsAsSigned() - locked_at;
+		if( dur > 15000 ) // 0.015 seconds
+			LOG->Trace( "Lock at %s:%" PRId64 " took %" PRId64, file, line, dur );
 	}
 }
 
