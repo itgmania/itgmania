@@ -92,7 +92,7 @@ public:
 	virtual void Reload();
 
 	virtual void SetPosition( float fSeconds );
-	virtual void DecodeSeconds( float fSeconds );
+	virtual void UpdateMovie( float fSeconds );
 	virtual void SetPlaybackRate( float fRate ) { m_fRate = fRate; }
 	void SetLooping( bool bLooping=true ) { m_bLoop = bLooping; }
 	std::uintptr_t GetTexHandle() const;

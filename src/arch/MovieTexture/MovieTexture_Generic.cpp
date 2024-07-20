@@ -413,7 +413,7 @@ float MovieTexture_Generic::CheckFrameTime()
 }
 
 /* Decode data. */
-void MovieTexture_Generic::DecodeSeconds( float fSeconds )
+void MovieTexture_Generic::UpdateMovie( float fSeconds )
 {
 	m_fClock += fSeconds * m_fRate;
 
