@@ -474,7 +474,7 @@ void Sprite::Update( float fDelta )
 
 	// If the texture is a movie, decode frames.
 	if(!bSkipThisMovieUpdate && m_DecodeMovie)
-		m_pTexture->DecodeSeconds( std::max(0.0f, fTimePassed) );
+		m_pTexture->UpdateMovie( std::max(0.0f, fTimePassed) );
 
 	// update scrolling
 	if( m_fTexCoordVelocityX != 0 || m_fTexCoordVelocityY != 0 )
