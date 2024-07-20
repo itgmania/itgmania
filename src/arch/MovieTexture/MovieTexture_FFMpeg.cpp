@@ -156,6 +156,7 @@ void MovieDecoder_FFMpeg::Init()
 	m_fTimestamp = 0;
 	m_fLastFrameDelay = 0;
 	m_iFrameNumber = -1; /* decode one frame and you're on the 0th */
+	m_totalFrames = 0;
 	m_fTimestampOffset = 0;
 	m_fLastFrame = 0;
 	m_swsctx = nullptr;
@@ -453,8 +454,17 @@ RString MovieDecoder_FFMpeg::Open( RString sFile )
 	if( !sError.empty() )
 		return ssprintf( "AVCodec (%s): %s", sFile.c_str(), sError.c_str() );
 
-	LOG->Trace( "Bitrate: %i", static_cast<int>(m_pStreamCodec->bit_rate) );
-	LOG->Trace( "Codec pixel format: %s", avcodec::av_get_pix_fmt_name(m_pStreamCodec->pix_fmt) );
+	LOG->Trace("Bitrate: %i", static_cast<int>(m_pStreamCodec->bit_rate));
+	LOG->Trace("Codec pixel format: %s", avcodec::av_get_pix_fmt_name(m_pStreamCodec->pix_fmt));
+	m_totalFrames = m_pStream->nb_frames;
+	if (m_totalFrames <= 0) {
+		// Sometimes we might not get a correct frame count.
+		// In that case, approximate and fix it later.
+		m_totalFrames = m_fctx->duration // microseconds
+			* (m_pStream->avg_frame_rate.num) / (m_pStream->avg_frame_rate.den) / (1000000);
+		LOG->Trace("Number of frames provided is inaccurate, estimating.");
+	}
+	LOG->Trace("Number of frames detected: %i", m_totalFrames);
 
 	return RString();
 }

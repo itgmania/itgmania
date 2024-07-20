@@ -6,6 +6,7 @@
 #include "MovieTexture_Generic.h"
 
 #include <cstdint>
+#include <mutex>
 
 struct RageSurface;
 
@@ -22,6 +23,27 @@ namespace avcodec
 
 #define STEPMANIA_FFMPEG_BUFFER_SIZE 4096
 static const int sws_flags = SWS_BICUBIC; // XXX: Reasonable default?
+
+struct FrameHolder {
+	avcodec::AVFrame frame;
+	avcodec::AVPacket packet;
+	float frameTimestamp;
+	float frameDelay;
+	bool decoded = false;
+	std::mutex lock; // Protects the frame as it's being initialized.
+
+	FrameHolder() = default;
+
+	// Copy constructor, unused but we need to make the compiler not copy
+	// the mutex.
+	FrameHolder(const FrameHolder& fh) {
+		frame = fh.frame;
+		packet = fh.packet;
+		frameTimestamp = fh.frameTimestamp;
+		frameDelay = fh.frameDelay;
+		decoded = fh.decoded;
+	}
+};
 
 class MovieTexture_FFMpeg: public MovieTexture_Generic
 {
@@ -76,6 +98,7 @@ private:
 	float m_fTimestampOffset;
 	float m_fLastFrameDelay;
 	int m_iFrameNumber;
+	int m_totalFrames; // Total number of frames in the movie.
 
 	unsigned char *m_buffer;
 	avcodec::AVIOContext *m_avioContext;
