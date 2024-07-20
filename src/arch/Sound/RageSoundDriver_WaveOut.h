@@ -21,6 +21,21 @@ public:
 	int GetSampleRate() const { return m_iSampleRate; }
 
 private:
+	// This is always 2 for stereo audio.
+	static const int channels = 2;
+	// 16-bit audio, so 2 bytes per sample per channel
+	static const int bytes_per_frame = channels * 2;
+	// Number of audio frames in the buffer
+	static const int buffersize_frames = 1024 * 8;
+	// Total buffer size in bytes
+	static const int buffersize = buffersize_frames * bytes_per_frame;
+	// More chunks can help prevent underrun
+	static const int num_chunks = 16;
+	// Number of frames per chunk
+	static const int chunksize_frames = buffersize_frames / num_chunks;
+	// Total buffer size in bytes divided by number of chunks
+	static const int chunksize = buffersize / num_chunks;
+
 	static int MixerThread_start( void *p );
 	void MixerThread();
 	RageThread MixingThread;
@@ -29,7 +44,7 @@ private:
 
 	HWAVEOUT m_hWaveOut;
 	HANDLE m_hSoundEvent;
-	WAVEHDR m_aBuffers[8];
+	WAVEHDR m_aBuffers[num_chunks];
 	int m_iSampleRate;
 	bool m_bShutdown;
 	int m_iLastCursorPos;

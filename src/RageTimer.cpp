@@ -1,24 +1,3 @@
-/*
- * This can be used in two ways: as a timestamp or as a timer.
- *
- * As a timer,
- * RageTimer Timer;
- * for(;;) {
- *   printf( "Will be approximately: %f", Timer.PeekDeltaTime()) ;
- *   float fDeltaTime = Timer.GetDeltaTime();
- * }
- *
- * or as a timestamp:
- * void foo( RageTimer &timestamp ) {
- *     if( timestamp.IsZero() )
- *         printf( "The timestamp isn't set." );
- *     else
- *         printf( "The timestamp happened %f ago", timestamp.Ago() );
- *     timestamp.Touch();
- *     printf( "Near zero: %f", timestamp.Age() );
- * }
- */
-
 #include "global.h"
 
 #include "RageTimer.h"
@@ -30,49 +9,108 @@
 #include <cmath>
 #include <cstdint>
 
-#define TIMESTAMP_RESOLUTION 1000000
+constexpr std::int64_t USEC_TO_SEC_AS_INTEGER = 1000000;
+constexpr float USEC_TO_SEC_AS_FLOAT = 1000000.0f;
+constexpr double USEC_TO_SEC_AS_DOUBLE = 1000000.0;
+const RageTimer	RageZeroTimer(0,0);
+const static std::int64_t g_iStartTime = ArchHooks::GetMicrosecondsSinceStart( true );
 
-const RageTimer RageZeroTimer(0,0);
-static std::uint64_t g_iStartTime = ArchHooks::GetMicrosecondsSinceStart( true );
-
-static std::uint64_t GetTime( bool /* bAccurate */ )
+static std::int64_t GetTime( bool /* bAccurate */ )
 {
 	return ArchHooks::GetMicrosecondsSinceStart( true );
 }
 
-/* The accuracy of RageTimer::GetTimeSinceStart() is directly tied to the
- * stability of the clock sync. Maintaining precision here is crucial. Too
- * much error here will manifest as a drastic shift in the game's sync, and
- * will feel like the global offset suddenly changed. Incorrect math here will
- * manifest as a _consistent_ sync offset in game. Resolution mismatches or
- * values truncated or rounded when they shouldn't be can cause errors when
- * this is calculated and manifest as a _sudden_ drift of sync. Use caution
- * and do thorough testing if you change anything here. -sukibaby */
 double RageTimer::GetTimeSinceStart(bool bAccurate)
 {
-	std::uint64_t usecs = GetTime(bAccurate);
+	std::int64_t usecs = GetTime(bAccurate);
 	usecs -= g_iStartTime;
-	return usecs / 1000000.0;
+	return usecs / USEC_TO_SEC_AS_DOUBLE;
 }
 
-std::uint64_t RageTimer::GetUsecsSinceStart()
+float RageTimer::GetTimeSinceStartFast(bool bAccurate)
+{
+	std::int64_t usecs = GetTime(bAccurate);
+	usecs -= g_iStartTime;
+	return usecs / USEC_TO_SEC_AS_FLOAT;
+}
+
+std::uint64_t RageTimer::DeltaSecondsAsUnsigned()
+{
+    std::uint64_t usecs = static_cast<std::uint64_t>(GetTime(true) - g_iStartTime);
+    return usecs / USEC_TO_SEC_AS_INTEGER;
+}
+
+std::int64_t RageTimer::DeltaSecondsAsSigned()
+{
+    std::int64_t usecs = (GetTime(true) - g_iStartTime);
+    return usecs / USEC_TO_SEC_AS_INTEGER;
+}
+
+std::uint64_t RageTimer::DeltaMicrosecondsAsUnsigned()
+{
+	return static_cast<uint64_t>(GetTime(true) - g_iStartTime);
+}
+
+std::int64_t RageTimer::DeltaMicrosecondsAsSigned()
 {
 	return GetTime(true) - g_iStartTime;
 }
+
+/*++
+
+Function Description:
+
+   Split the current time as microseconds into two
+   integers (one for the integer part, and one for
+   the fractional part).
+   
+Return Type:
+
+   None (sets values of m_secs and m_us)
+   
+--*/
 
 void RageTimer::Touch()
 {
 	std::uint64_t usecs = GetTime( true );
 
-	this->m_secs = std::uint64_t(usecs / TIMESTAMP_RESOLUTION);
-	this->m_us = std::uint64_t(usecs % TIMESTAMP_RESOLUTION);
+	this->m_secs = std::uint64_t(usecs / USEC_TO_SEC_AS_INTEGER);
+	this->m_us = std::uint64_t(usecs % USEC_TO_SEC_AS_INTEGER);
 }
+
+/*++
+
+Function Description:
+
+   Return the difference in time since a RageTimer
+   object was initialized. It does not modify the
+   state of the RageTimer.
+   
+Return Type:
+
+   Floating point
+   
+--*/
 
 float RageTimer::Ago() const
 {
 	const RageTimer Now;
 	return Now - *this;
 }
+
+/*++
+
+Function Description:
+
+   Return the difference in time since a RageTimer
+   object was last checked. It modifies the state
+   of the RageTimer.
+   
+Return Type:
+
+   Floating point
+   
+--*/
 
 float RageTimer::GetDeltaTime()
 {
@@ -82,20 +120,32 @@ float RageTimer::GetDeltaTime()
 	return diff;
 }
 
-/* Get a timer representing half of the time ago as this one.  This is	
- * useful for averaging time.  For example,	
- *	
- * RageTimer tm;	
- * ... do stuff ...	
- * RageTimer AverageTime = tm.Half();	
- * printf( "Something happened approximately %f seconds ago.\n", tm.Ago() ); 
- * Note this has been reverted to the original SM3.95 function. */
+/*++
+
+Function Description:
+
+   Return a point in time halfway between the current
+   time and the time stored by the RageTimer.
+   
+Return Type:
+
+   RageTimer
+   
+--*/
+
 RageTimer RageTimer::Half() const
 {
 	const float fProbableDelay = Ago() / 2;
 	return *this + fProbableDelay;
 }
 
+/*++
+
+Routine Description:
+
+   Operator overloads for RageTimer methods
+   
+--*/
 
 RageTimer RageTimer::operator+(float tm) const
 {
@@ -114,46 +164,69 @@ bool RageTimer::operator<( const RageTimer &rhs ) const
 
 }
 
+/*++
+
+Function Description:
+
+   Calculate the seconds and microseconds from the given
+   time values, prevent unnecessarily checking the time,
+   and Adjust the seconds and microseconds if microseconds
+   is greater than or equal to 1,000,000.
+
+Return Type:
+
+   RageTimer
+   
+--*/
+
 RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 {
 	/* Calculate the seconds and microseconds from the time:
 	 * tm == 5.25  -> secs =  5, us = 5.25  - ( 5) = .25
 	 * tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75 */
-	int64_t seconds = std::floor(tm);
-	int64_t us = int64_t((tm - seconds) * TIMESTAMP_RESOLUTION);
+	std::int64_t seconds = std::floor(tm);
+	std::int64_t us = static_cast<int64_t>((tm - seconds) * USEC_TO_SEC_AS_INTEGER);
 
-	// Prevent unnecessarily checking the time
-	RageTimer ret(0, 0);
+	RageTimer ret(0, 0); // Prevent unnecessarily checking the time
 
-	// Calculate the sum of the seconds and microseconds
 	ret.m_secs = seconds + lhs.m_secs;
 	ret.m_us = us + lhs.m_us;
 
-	// Adjust the seconds and microseconds if microseconds is greater than or equal to TIMESTAMP_RESOLUTION
-	if (ret.m_us >= TIMESTAMP_RESOLUTION)
+	if (ret.m_us >= USEC_TO_SEC_AS_INTEGER)
 	{
-		ret.m_us -= TIMESTAMP_RESOLUTION;
+		ret.m_us -= USEC_TO_SEC_AS_INTEGER;
 		++ret.m_secs;
 	}
 
 	return ret;
 }
 
+/*++
+
+Function Description:
+
+   Calculate the difference in seconds and microseconds
+   respectively, adjust for negative microseconds, and
+   return the time difference.
+   
+Return Type:
+
+   Floating point
+   
+--*/
+
 double RageTimer::Difference(const RageTimer& lhs, const RageTimer& rhs)
 {
-	// Calculate the difference in seconds and microseconds respectively
-	int64_t secs = lhs.m_secs - rhs.m_secs;
-	int64_t us = lhs.m_us - rhs.m_us;
+	std::int64_t secs = lhs.m_secs - rhs.m_secs;
+	std::int64_t us = lhs.m_us - rhs.m_us;
 
-	// Adjust seconds and microseconds if microseconds is negative
 	if ( us < 0 )
 	{
-		us += TIMESTAMP_RESOLUTION;
+		us += USEC_TO_SEC_AS_INTEGER;
 		--secs;
 	}
 
-	// Return the difference as a double to preserve the fractional part
-	return static_cast<double>(secs) + static_cast<double>(us) / TIMESTAMP_RESOLUTION;
+	return static_cast<double>(secs) + static_cast<double>(us) / USEC_TO_SEC_AS_INTEGER;
 }
 
 #include "LuaManager.h"

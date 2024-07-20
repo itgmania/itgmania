@@ -1,44 +1,23 @@
 #include "global.h"
-#include "RageSoundReader.h"
-#include "RageLog.h"
-#include "RageUtil_AutoPtr.h"
+#include "RandomSeed.h"
+#include <random>
 
-REGISTER_CLASS_TRAITS( RageSoundReader, pCopy->Copy() );
-
-/* Read(), handling the STREAM_LOOPED and empty return cases. */
-int RageSoundReader::RetriedRead( float *pBuffer, int iFrames, int *iSourceFrame, float *fRate )
+int GetRandomInt()
 {
-	if( iFrames == 0 )
-		return 0;
+	static std::random_device rd;
+	static std::mt19937 gen(rd());
+	return std::uniform_int_distribution<int>(0, INT_MAX)(gen);
+}
 
-	/* pReader may return 0, which means "try again immediately".  As a failsafe,
-	 * only try this a finite number of times.  Use a high number, because in
-	 * principle each filter in the stack may cause this. */
-	int iTries = 100;
-	while( --iTries )
-	{
-		if( fRate )
-			*fRate = this->GetStreamToSourceRatio();
-		if( iSourceFrame )
-			*iSourceFrame = this->GetNextSourceFrame();
-
-		int iGotFrames = this->Read( pBuffer, iFrames );
-
-		if( iGotFrames == RageSoundReader::STREAM_LOOPED )
-			iGotFrames = 0;
-
-		if( iGotFrames != 0 )
-			return iGotFrames;
-	}
-
-	LOG->Warn( "Read() busy looping" );
-
-	/* Pretend we got EOF. */
-	return RageSoundReader::END_OF_FILE;
+float GetRandomFloat()
+{
+	std::mt19937 gen(GetRandomInt());
+	std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+	return dist(gen);
 }
 
 /*
- * Copyright (c) 2006 Glenn Maynard
+ * (c) 2024 sukibaby
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a

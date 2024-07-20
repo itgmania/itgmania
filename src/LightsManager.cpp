@@ -217,8 +217,8 @@ void LightsManager::Update( float fDeltaTime )
 
 		case LIGHTSMODE_ATTRACT:
 		{
-			int iSec = (int)RageTimer::GetTimeSinceStartFast();
-			int iTopIndex = iSec % 4;
+			std::uint64_t iSec = RageTimer::DeltaSecondsAsUnsigned();
+			std::uint64_t iTopIndex = iSec % 4;
 
 			// Aldo: Disabled this line, apparently it was a forgotten initialization
 			//CabinetLight cl = CabinetLight_Invalid;

@@ -23,9 +23,23 @@ public:
 	/* (alias) */
 	float PeekDeltaTime() const { return Ago(); }
 
-	static double GetTimeSinceStart( bool bAccurate = true );	// seconds since the program was started
-	static float GetTimeSinceStartFast() { return GetTimeSinceStart(false); }
-	static std::uint64_t GetUsecsSinceStart();
+	// Time storage variables
+		// Time since the program was started in seconds.
+		static double GetTimeSinceStart( bool bAccurate = true );
+		static float GetTimeSinceStartFast( bool bAccurate = true );
+		static std::uint64_t DeltaSecondsAsUnsigned();
+		static std::int64_t DeltaSecondsAsSigned();
+
+		// Time since the program was started in microseconds.
+		static std::uint64_t DeltaMicrosecondsAsUnsigned();
+		static std::int64_t DeltaMicrosecondsAsSigned();
+
+		/* The following is a "time since start" RageTimer. Splitting the seconds and
+		 * microseconds values into two integers and combining them later allows for
+		 * better precision. Use caution when changing data types, since resolution
+		 * mismatch errors are easy to cause when changing things in RageTimer. */
+		std::uint64_t m_secs, m_us;
+	// End time storage variables
 
 	/* Get a timer representing half of the time ago as this one. */
 	RageTimer Half() const;
@@ -41,12 +55,6 @@ public:
 
 	bool operator<( const RageTimer &rhs ) const;
 
-	/* The following is a "time since start" RageTimer. Splitting the seconds and
-	 * microseconds values into two integers and combining them later allows for
-	 * better precision. Use caution when changing data types, since resolution
-	 * mismatch errors are easy to cause when changing things in RageTimer. */
-	std::uint64_t m_secs, m_us;
-
 private:
 	static RageTimer Sum( const RageTimer &lhs, float tm );
 	static double Difference( const RageTimer &lhs, const RageTimer &rhs );
@@ -55,10 +63,10 @@ private:
 extern const RageTimer RageZeroTimer;
 
 // For profiling how long some chunk of code takes. -Kyz
-#define START_TIME(name) std::uint64_t name##_start_time= RageTimer::GetUsecsSinceStart();
+#define START_TIME(name) std::uint64_t name##_start_time= RageTimer::DeltaMicrosecondsAsUnsigned();
 #define START_TIME_CALL_COUNT(name) START_TIME(name); ++name##_call_count;
-#define END_TIME(name) std::uint64_t name##_end_time= RageTimer::GetUsecsSinceStart();  LOG->Time(#name " time: %zu to %zu = %zu", name##_start_time, name##_end_time, name##_end_time - name##_start_time);
-#define END_TIME_ADD_TO(name) std::uint64_t name##_end_time= RageTimer::GetUsecsSinceStart();  name##_total += name##_end_time - name##_start_time;
+#define END_TIME(name) std::uint64_t name##_end_time= RageTimer::DeltaMicrosecondsAsUnsigned();  LOG->Time(#name " time: %zu to %zu = %zu", name##_start_time, name##_end_time, name##_end_time - name##_start_time);
+#define END_TIME_ADD_TO(name) std::uint64_t name##_end_time= RageTimer::DeltaMicrosecondsAsUnsigned();  name##_total += name##_end_time - name##_start_time;
 #define END_TIME_CALL_COUNT(name) END_TIME_ADD_TO(name); ++name##_end_count;
 
 #define DECL_TOTAL_TIME(name) extern std::uint64_t name##_total;

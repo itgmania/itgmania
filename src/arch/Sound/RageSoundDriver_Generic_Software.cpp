@@ -6,6 +6,7 @@
 #include "RageUtil.h"
 #include "RageSoundMixBuffer.h"
 #include "RageSoundReader.h"
+#include "RageTimer.h"
 
 #include <cmath>
 #include <cstdint>
@@ -440,11 +441,6 @@ void RageSoundDriver::SetDecodeBufferSize( int iFrames )
 	frames_to_buffer = iFrames;
 }
 
-void RageSoundDriver::low_sample_count_workaround()
-{
-	if (soundDriverMaxSamples != 0) GetHardwareFrame(nullptr);
-}
-
 RageSoundDriver::RageSoundDriver():
 	m_Mutex("RageSoundDriver"),
 	m_SoundListMutex("SoundListMutex")
@@ -474,99 +470,77 @@ RageSoundDriver::~RageSoundDriver()
 	}
 }
 
-std::int64_t RageSoundDriver::ClampHardwareFrame( std::int64_t iHardwareFrame ) const
+std::int64_t RageSoundDriver::ClampHardwareFrame( std::int64_t positionFromDriver ) const
 {
-	/* It's sometimes possible for the hardware position to move backwards, usually
-	 * on underrun.  We can try to prevent this in each driver, but it's an obscure
-	 * error, so let's clamp the result here instead. */
+	// An incorrect hardware position can make the game think it
+	// is running early or late, when in fact there are no issues.
+	// This would typically result in incorrect judgements.
+	//
+	// For example, if the player was stepping perfectly on time,
+	// it might drift out to the early or late Great window.
+	//
+	// It ultimately returns the highest known hardware frame position.
+	const static std::int64_t expected_intmax = 2147483647;
 
-	/* New extra logic for devices and drivers that cant return large numbers in their sample position
-	* calculate a diff and if the current sample # is >= 0 and less than a minute based on sample rate
-	* check if the user set soundDriverMaxSamples to a value, if they did
-	* (this is usually 134217728 aka 2^27 for some reason) hndle the wrap around to a rolling counter
-	* otherwise do the old logic for underrun
-	*/
+    if (positionFromDriver > expected_intmax)
+    {
+        positionFromDriver = expected_intmax;
+		LOG->Trace("RageSoundDriver: clamped faulty hardware frame value!");
+    }
 
+    if (positionFromDriver > m_iMaxHardwareFrame)
+    {
+        m_iMaxHardwareFrame = positionFromDriver;
+    }
 
-	//iHardwareFrame %= 0x800000; // debug test a sample value max of about 3 minutes so I dont have to spend an hour per test
-	std::int64_t diff = iHardwareFrame - m_iMaxHardwareFrame;
-	if( diff < 0 )
-	{
-		diff = 0;
-		int iMinuteSampleRate = GetSampleRate()*60; //get one minute worth of grace -- if you need more, there is very likely some other problem going on
-		//if we have a sample clamp and the new hardware frame is within a fresh minute of the sample rate max and have 'underrun'
-		if ((soundDriverMaxSamples>0) && (iHardwareFrame<iMinuteSampleRate) && iHardwareFrame >= 0)
-		{
-			LOG->Trace("RageSoundDriver: driver position mask adjustment hardware frame number: %d, last max frame number: %d, soundDriverMaxSamples: %d, iMinuteSampleRate: %d, m_iVMaxHardwareFrame: %d",
-																			(int)iHardwareFrame,    (int)m_iMaxHardwareFrame,  soundDriverMaxSamples,  iMinuteSampleRate, (int) m_iVMaxHardwareFrame);
-			diff = (soundDriverMaxSamples - m_iMaxHardwareFrame) + iHardwareFrame;
-			m_iMaxHardwareFrame = 0;
-		}
-		else
-		{
-			/* Clamp the output to one per second, so one underruns don't cascade due to
-			 * output spam. */
-			static RageTimer last(RageZeroTimer);
-			if (last.IsZero() || last.Ago() > 1.0f)
-			{
-
-				//try to hand hold the user if their audio driver is possibly bad
-				int p = 21; // save some time, assume the buffer has at least a minute of cd quality audio -- 2^21
-				while (std::pow(2,p) < m_iMaxHardwareFrame)
-				{
-					if (p == 31)  break; //do not want to go beyond signed DWORD size
-					p++;
-				}
-
-				LOG->Trace("RageSoundDriver: driver returned a lesser position (%d < %d). If this is a recurrent driver problem with your sound card and not an underrun, try setting the preference RageSoundSampleCountClamp to %d",
-					(int)iHardwareFrame, (int)m_iMaxHardwareFrame, (int)std::floor(std::pow(2.0, p)));
-				last.Touch();
-			}
-
-			//return m_iMaxHardwareFrame;
-
-		}
-	}
-
-	m_iMaxHardwareFrame = iHardwareFrame = std::max( iHardwareFrame, m_iMaxHardwareFrame );
-	//return iHardwareFrame;
-	m_iVMaxHardwareFrame += diff;
-	return m_iVMaxHardwareFrame;
+    return m_iMaxHardwareFrame;
 }
 
-std::int64_t RageSoundDriver::GetHardwareFrame( RageTimer *pTimestamp=nullptr ) const
+std::int64_t RageSoundDriver::GetHardwareFrame() const
 {
-	if( pTimestamp == nullptr )
-		return ClampHardwareFrame( GetPosition() );
+    // We may have unpredictable scheduling delays between
+	// updating the timestamp and reading the sound position.
+	//
+	// To mitigate this, we use a high-resolution timer
+	// and an adaptive retry mechanism.
+	//
+	// The usleep in the loop is necessary to yield the processor.
+	//
+	// The boolean is used to determine whether to log the warning
+	// to ensure the warning is only logged once per function call.
+	//
+	// The time values below are measured in microseconds.
+    const int retry_count = 3;
+    const int sleep_interval = 100;
+    const std::int64_t duration_threshold = 2000;
+    std::int64_t startTime = RageTimer::DeltaMicrosecondsAsSigned();
+    std::int64_t loop_duration = 0;
+    std::int64_t iPositionFrames = 0;
 
-	/*
-	 * We may have unpredictable scheduling delays between updating the timestamp
-	 * and reading the sound position.  If we're preempted while doing this and
-	 * it may have caused the timestamp to not match the returned time, retry.
-	 *
-	 * As a failsafe, only allow a few attempts.  If this has to try more than
-	 * a few times, then probably we have thread contention that's causing more
-	 * severe performance problems, anyway.
-	 */
-	int iTries = 3;
-	std::int64_t iPositionFrames;
-	do
-	{
-		pTimestamp->Touch();
-		iPositionFrames = GetPosition();
-	} while( --iTries && pTimestamp->Ago() > 0.002f );
+    for (int i = 0; i < retry_count; ++i)
+    {
+        iPositionFrames = GetPosition();
+        loop_duration = RageTimer::DeltaMicrosecondsAsSigned() - startTime;
 
-	if( iTries == 0 )
-	{
-		static bool bLogged = false;
-		if( !bLogged )
-		{
-			bLogged = true;
-			LOG->Warn( "RageSoundDriver::GetHardwareFrame: too many tries" );
-		}
-	}
+        if (loop_duration < duration_threshold)
+        {
+            break;
+        }
 
-	return ClampHardwareFrame( iPositionFrames );
+        usleep(sleep_interval);
+    }
+
+    if (loop_duration >= duration_threshold)
+    {
+        static bool bLogged = false;
+        if (!bLogged)
+        {
+            bLogged = true;
+            LOG->Warn("RageSoundDriver::GetHardwareFrame: too many tries");
+        }
+    }
+
+    return ClampHardwareFrame(iPositionFrames);
 }
 
 /*

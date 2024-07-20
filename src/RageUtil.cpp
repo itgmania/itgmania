@@ -226,6 +226,26 @@ float HHMMSSToSeconds( const RString &sHHMMSS )
 	return fSeconds;
 }
 
+RString DeltaToMMSSMsMs(std::int64_t fMicrosecs)
+{
+    const std::int64_t fSecs = fMicrosecs / 1000000;
+    const std::int64_t iMinsDisplay = fSecs / 60;
+    const std::int64_t iSecsDisplay = fSecs % 60; 
+    const std::int64_t iLeftoverDisplay = (fMicrosecs / 10000) % 100;
+    RString sReturn = ssprintf("%02lld:%02lld.%02lld", iMinsDisplay, iSecsDisplay, iLeftoverDisplay);
+    return sReturn;
+}
+
+RString DeltaToMMSSMsMsMs(std::int64_t fMicrosecs)
+{
+    const std::int64_t fSecs = fMicrosecs / 1000000;
+    const std::int64_t iMinsDisplay = fSecs / 60;
+    const std::int64_t iSecsDisplay = fSecs % 60; 
+    const std::int64_t iLeftoverDisplay = (fMicrosecs / 1000) % 1000;
+    RString sReturn = ssprintf("%02lld:%02lld.%03lld", iMinsDisplay, iSecsDisplay, iLeftoverDisplay);
+    return sReturn;
+}
+
 RString SecondsToHHMMSS(float fSecs)
 {
 	const int iMinsDisplay = static_cast<int>(fSecs / 60);

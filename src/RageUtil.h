@@ -325,6 +325,8 @@ RString BinaryToHex( const RString &sString );
 bool HexToBinary( const RString &s, unsigned char *stringOut );
 bool HexToBinary( const RString &s, RString *sOut );
 float HHMMSSToSeconds( const RString &sHMS );
+RString DeltaToMMSSMsMs(std::int64_t fMicrosecs);
+RString DeltaToMMSSMsMsMs(std::int64_t fMicrosecs);
 RString SecondsToHHMMSS( float fSecs );
 RString SecondsToMSSMsMs( float fSecs );
 RString SecondsToMMSSMsMs( float fSecs );

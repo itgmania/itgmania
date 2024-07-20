@@ -132,8 +132,8 @@ void Inventory::Update( float fDelta )
 		GAMESTATE->m_Position.m_fSongBeat < song.GetLastBeat() )
 	{
 		// every 1 seconds, try to use an item
-		int iLastSecond = (int)(RageTimer::GetTimeSinceStartFast() - fDelta);
-		int iThisSecond = (int)RageTimer::GetTimeSinceStartFast();
+		std::uint64_t iLastSecond = RageTimer::DeltaSecondsAsUnsigned() - static_cast<uint64_t>(fDelta);
+		std::uint64_t iThisSecond = RageTimer::DeltaSecondsAsUnsigned();
 		if( iLastSecond != iThisSecond )
 		{
 			for( int s=0; s<NUM_INVENTORY_SLOTS; s++ )

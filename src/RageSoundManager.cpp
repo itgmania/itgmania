@@ -58,10 +58,10 @@ RageSoundManager::~RageSoundManager()
 }
 
 
-void RageSoundManager::low_sample_count_workaround()
-{
-	m_pDriver->low_sample_count_workaround();
-}
+//void RageSoundManager::low_sample_count_workaround()
+//{
+//	m_pDriver->low_sample_count_workaround();
+//}
 
 void RageSoundManager::fix_bogus_sound_driver_pref(RString const& valid_setting)
 {
@@ -104,7 +104,7 @@ std::int64_t RageSoundManager::GetPosition( RageTimer *pTimer ) const
 {
 	if( m_pDriver == nullptr )
 		return 0;
-	return m_pDriver->GetHardwareFrame( pTimer );
+	return m_pDriver->GetHardwareFrame();
 }
 
 void RageSoundManager::Update()
