@@ -6,6 +6,7 @@
 #include "MovieTexture_Generic.h"
 
 #include <cstdint>
+#include <mutex>
 
 struct RageSurface;
 
@@ -29,6 +30,19 @@ struct FrameHolder {
 	float frameTimestamp;
 	float frameDelay;
 	bool decoded = false;
+	std::mutex lock; // Protects the frame as it's being initialized.
+
+	FrameHolder() = default;
+
+	// Copy constructor, unused but we need to make the compiler not copy
+	// the mutex.
+	FrameHolder(const FrameHolder& fh) {
+		frame = fh.frame;
+		packet = fh.packet;
+		frameTimestamp = fh.frameTimestamp;
+		frameDelay = fh.frameDelay;
+		decoded = fh.decoded;
+	}
 };
 
 class MovieTexture_FFMpeg: public MovieTexture_Generic
@@ -61,7 +75,7 @@ public:
 	bool GetFrame(RageSurface* pOut);
 
 	// Decode a single frame.  Return -2 on cancel, -1 on error, 0 on EOF, 1 if we have a frame.
-	int DecodeFrame(int frameNumber);
+	int DecodeNextFrame();
 
 	// Decode the entire movie.
 	// If we let this decode as fast as possible, it could come at the expense
@@ -72,7 +86,9 @@ public:
 	// speed of 1000fps should be more than sufficient to ensure we never
 	// run behind. This rate limiting is only needed in case itgmania is
 	// running on a low performance machine, or the movie is REALLY long.
-	void DecodeMovie();
+	//
+	// Returns 0 on success, -1 on fatal error, -2 on cancel.
+	int DecodeMovie();
 	bool IsCurrentFrameReady();
 
 	int GetWidth() const { return m_pStreamCodec->width; }
@@ -94,11 +110,11 @@ private:
 	RString OpenCodec();
 	// Read a packet and send it to our frame data buffer.
 	// Returns -2 on cancel, -1 on error, 0 on EOF, 1 on OK.
-	int SendPacketToBuffer(int frameNumber);
+	int SendPacketToBuffer();
 
 	// Decode frame data from the packet in the buffer.
 	// Returns -2 on cancel, -1 on error, 0 if the packet is finished.
-	int DecodePacketInBuffer(int frameNumber);
+	int DecodePacketInBuffer();
 
 	avcodec::AVStream *m_pStream;
 	avcodec::AVFrame *m_Frame;
@@ -109,27 +125,23 @@ private:
 	avcodec::AVFormatContext *m_fctx;
 	float m_fTimestamp;
 	float m_fTimestampOffset;
-	float m_fLastFrameDelay;
-	int m_iFrameNumber; // What frame we're currently displaying, not the one we're decoding.
+	int m_iFrameNumber; // What frame we're currently displaying.
 	int m_totalFrames; // Total number of frames in the movie.
 
 	unsigned char *m_buffer;
 	avcodec::AVIOContext *m_avioContext;
 
-	avcodec::AVPacket m_Packet;
-
 	// The movie buffer.
 	std::vector<FrameHolder> m_FrameBuffer;
 
-	int m_iCurrentPacketOffset; // Where we are in decoding
-	int m_iCurrentDisplayPacketOffset; // Where we are in displaying
-	float m_fLastFrame;
+	int m_iCurrentPacketOffset; // Where we are in decoding the packet
 
 	/* 0 = no EOF
 	 * 1 = EOF while decoding
 	 */
 	int m_iEOF;
 	bool cancel = false;
+	bool firstFrame = true;
 };
 
 static struct AVPixelFormat_t

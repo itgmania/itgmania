@@ -150,9 +150,7 @@ void MovieDecoder_FFMpeg::Init()
 {
 	m_iEOF = 0;
 	m_fTimestamp = 0;
-	m_fLastFrameDelay = 0;
 	m_iFrameNumber = 0;
-	m_fLastFrame = 0;
 	m_totalFrames = 0;
 	m_swsctx = nullptr;
 	m_avioContext = nullptr;
@@ -168,28 +166,28 @@ void MovieDecoder_FFMpeg::Cancel() {
 	cancel = true;
 }
 
-int MovieDecoder_FFMpeg::DecodePacketInBuffer(int frameNumber) {
+int MovieDecoder_FFMpeg::DecodePacketInBuffer() {
 	if (cancel) return -2;
 	if (m_iEOF == 0 && m_iCurrentPacketOffset == -1)
 		return 0; /* no packet */
 
-	while (m_iEOF == 0 && m_iCurrentPacketOffset <= m_FrameBuffer[frameNumber].packet.size)
+	while (m_iEOF == 0 && m_iCurrentPacketOffset <= m_FrameBuffer.back().packet.size)
 	{
 		/* If we have no data on the first frame, just return EOF; passing an empty packet
 		 * to avcodec_decode_video in this case is crashing it.  However, passing an empty
 		 * packet is normal with B-frames, to flush.  This may be unnecessary in newer
 		 * versions of avcodec, but I'm waiting until a new stable release to upgrade. */
-		if (m_FrameBuffer[frameNumber].packet.size == 0 && frameNumber == 0)
+		if (m_FrameBuffer.back().packet.size == 0 && firstFrame)
 			return 0; /* eof */
 
 		int iGotFrame;
 		int len;
 		/* Hack: we need to send size = 0 to flush frames at the end, but we have
 		 * to give it a buffer to read from since it tries to read anyway. */
-		m_FrameBuffer[frameNumber].packet.data = m_FrameBuffer[frameNumber].packet.size ? m_FrameBuffer[frameNumber].packet.data : nullptr;
-		len = m_FrameBuffer[frameNumber].packet.size;
-		avcodec::avcodec_send_packet(m_pStreamCodec, &m_FrameBuffer[frameNumber].packet);
-		iGotFrame = !avcodec::avcodec_receive_frame(m_pStreamCodec, &m_FrameBuffer[frameNumber].frame);
+		m_FrameBuffer.back().packet.data = m_FrameBuffer.back().packet.size ? m_FrameBuffer.back().packet.data : nullptr;
+		len = m_FrameBuffer.back().packet.size;
+		avcodec::avcodec_send_packet(m_pStreamCodec, &m_FrameBuffer.back().packet);
+		iGotFrame = !avcodec::avcodec_receive_frame(m_pStreamCodec, &m_FrameBuffer.back().frame);
 
 		if (len < 0)
 		{
@@ -201,32 +199,32 @@ int MovieDecoder_FFMpeg::DecodePacketInBuffer(int frameNumber) {
 
 		if (!iGotFrame)
 		{
-			LOG->Warn("Frame number %i not successfully decoded into buffer.", frameNumber);
+			LOG->Warn("Frame number %i not successfully decoded into buffer.", static_cast<int>(m_FrameBuffer.size() - 1));
 			continue;
 		}
 
-		if (m_FrameBuffer[frameNumber].frame.pkt_dts != AV_NOPTS_VALUE)
+		if (m_FrameBuffer.back().frame.pkt_dts != AV_NOPTS_VALUE)
 		{
-			m_FrameBuffer[frameNumber].frameTimestamp = (float)(m_FrameBuffer[frameNumber].frame.pkt_dts * av_q2d(m_pStream->time_base));
+			m_FrameBuffer.back().frameTimestamp = (float)(m_FrameBuffer.back().frame.pkt_dts * av_q2d(m_pStream->time_base));
 		}
 		else
 		{
 			/* If the timestamp is zero, this frame is to be played at the
 			 * time of the last frame plus the length of the last frame. */
-			if (frameNumber > 0) {
-				m_FrameBuffer[frameNumber].frameTimestamp += m_FrameBuffer[frameNumber-1].frameDelay;
+			if (!firstFrame) {
+				m_FrameBuffer.back().frameTimestamp += m_FrameBuffer[m_FrameBuffer.size() - 2].frameDelay;
 			}
 			else {
-				m_FrameBuffer[frameNumber].frameTimestamp = 0;
+				m_FrameBuffer.back().frameTimestamp = 0;
 			}
 		}
 
 		// Length of this frame, only used as a fallback for getting the frame
 		// timestamp above.
-		m_FrameBuffer[frameNumber].frameDelay = (float)av_q2d(m_pStream->time_base);
-		m_FrameBuffer[frameNumber].frameDelay += m_FrameBuffer[frameNumber].frame.repeat_pict * (m_FrameBuffer[frameNumber].frameDelay * 0.5f);
+		m_FrameBuffer.back().frameDelay = (float)av_q2d(m_pStream->time_base);
+		m_FrameBuffer.back().frameDelay += m_FrameBuffer.back().frame.repeat_pict * (m_FrameBuffer.back().frameDelay * 0.5f);
 
-		m_FrameBuffer[frameNumber].decoded = true;
+		m_FrameBuffer.back().decoded = true;
 
 		return 1;
 	}
@@ -234,16 +232,19 @@ int MovieDecoder_FFMpeg::DecodePacketInBuffer(int frameNumber) {
 	return 0; /* packet done */
 }
 
-int MovieDecoder_FFMpeg::DecodeFrame(int frameNumber)
+int MovieDecoder_FFMpeg::DecodeNextFrame()
 {
-	int ret = SendPacketToBuffer(frameNumber);
+	// Add in a new FrameBuffer entry, and lock it immediately.
+	m_FrameBuffer.push_back(FrameHolder());
+	std::lock_guard<std::mutex>(m_FrameBuffer.back().lock);
+	int ret = SendPacketToBuffer();
 	if (ret < 0) return ret;
-	ret = DecodePacketInBuffer(frameNumber);
-	if (ret < 0) return ret;
-	return 0;
+	ret = DecodePacketInBuffer();
+	if (firstFrame) firstFrame = false;
+	return ret;
 }
 
-void MovieDecoder_FFMpeg::DecodeMovie()
+int MovieDecoder_FFMpeg::DecodeMovie()
 {
 	typedef std::chrono::high_resolution_clock Time;
 	typedef std::chrono::milliseconds ms;
@@ -255,71 +256,64 @@ void MovieDecoder_FFMpeg::DecodeMovie()
 	int frameNum = 0;
 	while (!m_iEOF){
 		auto wake_up = Time::now() + 1ms;
-		auto start = Time::now();
 
-		int ret = DecodeFrame(frameNum);
+		int ret = DecodeNextFrame();
 
-		// If cancelled (quitting a song, scrolling the banner), stop decoding.
-		if (ret == -2) {
-			break;
-		};
+		// If cancelled (quitting a song, scrolling the banner), or fatal error,
+		// stop decoding.
+		if (ret < 0) return ret;
 
-		// As long as we didn't error out, increment our frame.
-		if (ret != -1) {
-			frameNum++;
+		frameNum++;
 
-			// This means when opening the file, less frames were detected than
-			// there actually are. Increment to keep up so we don't end the video
-			// early during display.
-			if (frameNum - 1 > m_totalFrames) {
-				m_totalFrames++;
-			}
+		// This means when opening the file, less frames were detected than
+		// there actually are. Increment to keep up so we don't end the video
+		// early during display.
+		if (frameNum - 1 > m_totalFrames) {
+			m_totalFrames++;
 		}
 
-		auto end = Time::now();
 		std::this_thread::sleep_until(wake_up);
-		std::chrono::duration<double, std::milli> elapsed{ Time::now() - start };
 	}
+	return 0;
 }
 
-int MovieDecoder_FFMpeg::SendPacketToBuffer(int frameNumber)
+int MovieDecoder_FFMpeg::SendPacketToBuffer()
 {
 	if (cancel) return -2;
 	if (m_iEOF > 0) return 0;
 
-	// Add in a new MovieBufferEntry
-	m_FrameBuffer.push_back(FrameHolder());
-
 	for (;;)
 	{
-		int ret = avcodec::av_read_frame(m_fctx, &m_FrameBuffer[frameNumber].packet);
+		int ret = avcodec::av_read_frame(m_fctx, &m_FrameBuffer.back().packet);
 		/* XXX: why is avformat returning AVERROR_NOMEM on EOF? */
 		if (ret < 0)
 		{
 			/* EOF. */
 			m_iEOF = 1;
-			m_Packet.size = 0;
+			m_FrameBuffer.pop_back(); // Don't display an EoF frame.
 			// If we had to approximate the number of frames, set the actual
 			// total number of frames. This is benign even if we did have an
 			// accurate frame count at the start.
-			m_totalFrames = frameNumber;
+			m_totalFrames = m_FrameBuffer.size();
 			return 0;
 		}
 
-		if (m_FrameBuffer[frameNumber].packet.stream_index == m_pStream->index)
+		if (m_FrameBuffer.back().packet.stream_index == m_pStream->index)
 		{
 			m_iCurrentPacketOffset = 0;
 			return 1;
 		}
 		/* It's not for the video stream; ignore it. */
-		avcodec::av_packet_unref(&m_FrameBuffer[frameNumber].packet);
+		avcodec::av_packet_unref(&m_FrameBuffer.back().packet);
 	}
 }
 
 float MovieDecoder_FFMpeg::GetTimestamp() const
 {
-	if (m_iFrameNumber == 0) return 0; // Always display the first frame.
-	if (m_iFrameNumber >= m_FrameBuffer.size()) return 0; // Shouldn't ever happen, but just in case
+	if (m_iFrameNumber == 0) return 0;
+
+	// In a logical situation, this means that display is outpacing decoding.
+	if (m_iFrameNumber >= m_FrameBuffer.size()) return 0;
 	return m_FrameBuffer[m_iFrameNumber].frameTimestamp;
 }
 
@@ -330,6 +324,7 @@ float MovieDecoder_FFMpeg::GetFrameDuration() const
 }
 
 bool MovieDecoder_FFMpeg::IsCurrentFrameReady() {
+	std::lock_guard<std::mutex>(m_FrameBuffer[m_iFrameNumber].lock);
 	if (!m_FrameBuffer[m_iFrameNumber].decoded) {
 		LOG->Info("Frame %i not decoded, total frames: %i", m_iFrameNumber, m_totalFrames);
 	}
@@ -461,7 +456,6 @@ RString MovieDecoder_FFMpeg::Open( RString sFile )
 
 	LOG->Trace("Bitrate: %i", static_cast<int>(m_pStreamCodec->bit_rate));
 	LOG->Trace("Codec pixel format: %s", avcodec::av_get_pix_fmt_name(m_pStreamCodec->pix_fmt));
-	m_pStream->nb_frames;
 	m_totalFrames = m_pStream->nb_frames;
 	if (m_totalFrames <= 0) {
 		// Sometimes we might not get a correct frame count.

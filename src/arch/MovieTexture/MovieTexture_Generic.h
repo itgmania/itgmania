@@ -29,18 +29,10 @@ public:
 	virtual void Close() = 0;
 	virtual void Rewind() = 0;
 
-	/*
-	 * Decode a frame.  Return 1 on success, 0 on EOF, -1 on fatal error.
-	 *
-	 * If we're lagging behind the video, fTargetTime will be the target
-	 * timestamp.  The decoder may skip frames to catch up.  On return,
-	 * the current timestamp must be <= fTargetTime.
-	 *
-	 * Otherwise, fTargetTime will be -1, and the next frame should be
-	 * decoded; skip frames only if necessary to recover from errors.
-	 */
-	virtual int DecodeFrame(int frameNumber) = 0;
-	virtual void DecodeMovie() = 0;
+	// Decode the next frame.
+	// Return 1 on success, 0 on EOF, -1 on fatal error, -2 on cancel.
+	virtual int DecodeNextFrame() = 0;
+	virtual int DecodeMovie() = 0;
 
 	// Returns true if the frame we want to display has been decoded already.
 	virtual bool IsCurrentFrameReady() = 0;
@@ -102,7 +94,10 @@ public:
 	virtual void Reload();
 
 	virtual void SetPosition( float fSeconds );
-	virtual void DecodeSeconds( float fSeconds );
+	// UpdateMovie tells the MovieTexture to update the displayed frame based
+	// on fSeconds passed in. (e.g., 5.9 input means show the frame that should
+	// be displayed 5.9 seconds into the movie).
+	virtual void UpdateMovie( float fSeconds );
 	virtual void SetPlaybackRate( float fRate ) { m_fRate = fRate; }
 	void SetLooping( bool bLooping=true ) { m_bLoop = bLooping; }
 	std::uintptr_t GetTexHandle() const;
@@ -116,6 +111,9 @@ private:
 
 	float m_fRate;
 	bool m_bLoop;
+
+	// If true, halts all decoding and display.
+	bool m_failure = false;
 
 	std::uintptr_t m_uTexHandle;
 	RageTextureRenderTarget *m_pRenderTarget;

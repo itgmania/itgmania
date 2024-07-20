@@ -6,11 +6,11 @@
 #include "RageSurface.h"
 #include "RageTextureManager.h"
 #include "RageTextureRenderTarget.h"
+#include "RageTimer.h"
 #include "RageUtil.h"
 #include "Sprite.h"
 
 #include <cmath>
-#include <chrono>
 #include <cstdint>
 #include <numeric>
 
@@ -51,24 +51,24 @@ RString MovieTexture_Generic::Init()
 
 
 	// Draw the first frame immediately, to guarantee that the texture is drawn
-	// when this function returns
-	m_pDecoder->DecodeFrame(0);
+	// when this function returns--if possible.
+	if (m_pDecoder->DecodeNextFrame() < 0) {
+		LOG->Trace("Failure to decode first frame of video file \"%s\"", GetID().filename.c_str());
+		m_failure = true;
+		return RString("Failure to display movie.");
+	};
 	UpdateFrame();
-	typedef std::chrono::high_resolution_clock Time;
-	typedef std::chrono::milliseconds ms;
-	typedef std::chrono::duration<float> fsec;
-	using std::chrono::operator""ms;
 
-	// Start decoding in a background thread
 	decoding_thread = std::make_unique<std::thread>([this]() {
 		LOG->Trace("Beginning to decode video file \"%s\"", GetID().filename.c_str());
-		auto t0 = Time::now();
+		auto timer = RageTimer();
 
-		m_pDecoder->DecodeMovie();
+		int ret = m_pDecoder->DecodeMovie();
+		if (ret == -1) {
+			m_failure = true;
+		}
 
-		auto t1 = Time::now();
-		fsec duration = t1 - t0;
-		LOG->Trace("Done decoding video file \"%s\", took %f seconds", GetID().filename.c_str(), duration.count());
+		LOG->Trace("Done decoding video file \"%s\", took %f seconds", GetID().filename.c_str(), timer.Ago());
 		});
 
 
@@ -310,8 +310,8 @@ void MovieTexture_Generic::CreateTexture()
 
 /*
  * Returns:
- *  == 0 if the currently decoded frame is ready to be displayed
- *   > 0 (seconds) if it's not yet time to display;
+ *  <= 0 if it's time for the next frame to display
+ *   > 0 (seconds) if it's not yet time to display
  */
 float MovieTexture_Generic::CheckFrameTime()
 {
@@ -322,19 +322,16 @@ float MovieTexture_Generic::CheckFrameTime()
 	return (m_pDecoder->GetTimestamp() - m_fClock) / m_fRate;
 }
 
-/* Decode data. */
-void MovieTexture_Generic::DecodeSeconds(float fSeconds)
+void MovieTexture_Generic::UpdateMovie(float fSeconds)
 {
+	if (m_failure) return;
 	m_fClock += fSeconds * m_fRate;
 
-	float fTime = CheckFrameTime();
-	bool fReady = m_pDecoder->IsCurrentFrameReady();
-
-	// If the frame isn't ready, don't update the frame. This does mean the video
+	// If the frame isn't ready, don't update. This does mean the video
 	// will "speed up" to catch up when decoding does outpace display.
 	//
 	// In practice, display should rarely, if ever, outpace decoding.
-	if (fTime <= 0 && fReady) {
+	if (m_pDecoder->IsCurrentFrameReady() && CheckFrameTime() <= 0) {
 		UpdateFrame();
 		return;
 	}

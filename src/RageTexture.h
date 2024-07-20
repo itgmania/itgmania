@@ -23,7 +23,7 @@ public:
 
 	// movie texture/animated texture stuff
 	virtual void SetPosition( float /* fSeconds */ ) {} // seek
-	virtual void DecodeSeconds( float /* fSeconds */ ) {} // decode
+	virtual void UpdateMovie( float /* fSeconds */ ) {} // decode
 	virtual void SetPlaybackRate( float ) {}
 	virtual bool IsAMovie() const { return false; }
 	virtual void SetLooping(bool) { }
