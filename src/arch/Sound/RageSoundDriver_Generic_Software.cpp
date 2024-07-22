@@ -9,6 +9,14 @@
 
 #include <cmath>
 #include <cstdint>
+#include <cinttypes>
+#if defined(_MSC_VER) && !defined(PRIu64)
+	#define PRIu64 "I64u"
+#endif
+/* Note(sukibaby): If you need to activate a log method
+ * below, and it's casting a variable to int instead of
+ * using the correct format specifier, please modify it
+ * to use PRId64 for int64_t, or PRIu64 for uint64_t */
 
 static const int channels = 2;
 
@@ -480,59 +488,24 @@ std::int64_t RageSoundDriver::ClampHardwareFrame( std::int64_t iHardwareFrame ) 
 	/* It's sometimes possible for the hardware position to move backwards, usually
 	 * on underrun.  We can try to prevent this in each driver, but it's an obscure
 	 * error, so let's clamp the result here instead. */
-
-	/* New extra logic for devices and drivers that cant return large numbers in their sample position
-	* calculate a diff and if the current sample # is >= 0 and less than a minute based on sample rate
-	* check if the user set soundDriverMaxSamples to a value, if they did
-	* (this is usually 134217728 aka 2^27 for some reason) hndle the wrap around to a rolling counter
-	* otherwise do the old logic for underrun
-	*/
-
-
-	//iHardwareFrame %= 0x800000; // debug test a sample value max of about 3 minutes so I dont have to spend an hour per test
-	std::int64_t diff = iHardwareFrame - m_iMaxHardwareFrame;
-	if( diff < 0 )
+	if( iHardwareFrame < m_iMaxHardwareFrame )
 	{
-		diff = 0;
-		int iMinuteSampleRate = GetSampleRate()*60; //get one minute worth of grace -- if you need more, there is very likely some other problem going on
-		//if we have a sample clamp and the new hardware frame is within a fresh minute of the sample rate max and have 'underrun'
-		if ((soundDriverMaxSamples>0) && (iHardwareFrame<iMinuteSampleRate) && iHardwareFrame >= 0)
+		/* Clamp the output to one per second, so one underruns don't cascade due to
+		 * output spam. */
+		static std::int64_t lastTime = 0;
+		std::int64_t currentTime = RageTimer::GetUsecsSinceStart();
+		if( lastTime == 0 || (currentTime - lastTime) > 1000000 )
 		{
-			LOG->Trace("RageSoundDriver: driver position mask adjustment hardware frame number: %d, last max frame number: %d, soundDriverMaxSamples: %d, iMinuteSampleRate: %d, m_iVMaxHardwareFrame: %d",
-																			(int)iHardwareFrame,    (int)m_iMaxHardwareFrame,  soundDriverMaxSamples,  iMinuteSampleRate, (int) m_iVMaxHardwareFrame);
-			diff = (soundDriverMaxSamples - m_iMaxHardwareFrame) + iHardwareFrame;
-			m_iMaxHardwareFrame = 0;
+			LOG->Trace("RageSoundDriver: driver returned a lesser position (%" PRId64 " < %" PRId64 ")", iHardwareFrame, m_iMaxHardwareFrame);
+			lastTime = currentTime;
 		}
-		else
-		{
-			/* Clamp the output to one per second, so one underruns don't cascade due to
-			 * output spam. */
-			static RageTimer last(RageZeroTimer);
-			if (last.IsZero() || last.Ago() > 1.0f)
-			{
-
-				//try to hand hold the user if their audio driver is possibly bad
-				int p = 21; // save some time, assume the buffer has at least a minute of cd quality audio -- 2^21
-				while (std::pow(2,p) < m_iMaxHardwareFrame)
-				{
-					if (p == 31)  break; //do not want to go beyond signed DWORD size
-					p++;
-				}
-
-				LOG->Trace("RageSoundDriver: driver returned a lesser position (%d < %d). If this is a recurrent driver problem with your sound card and not an underrun, try setting the preference RageSoundSampleCountClamp to %d",
-					(int)iHardwareFrame, (int)m_iMaxHardwareFrame, (int)std::floor(std::pow(2.0, p)));
-				last.Touch();
-			}
-
-			//return m_iMaxHardwareFrame;
-
-		}
+		return m_iMaxHardwareFrame;
 	}
-
-	m_iMaxHardwareFrame = iHardwareFrame = std::max( iHardwareFrame, m_iMaxHardwareFrame );
-	//return iHardwareFrame;
-	m_iVMaxHardwareFrame += diff;
-	return m_iVMaxHardwareFrame;
+	if( iHardwareFrame > m_iMaxHardwareFrame )
+	{
+		m_iMaxHardwareFrame = iHardwareFrame;
+	}
+	return m_iMaxHardwareFrame;
 }
 
 std::int64_t RageSoundDriver::GetHardwareFrame( RageTimer *pTimestamp=nullptr ) const
@@ -551,11 +524,16 @@ std::int64_t RageSoundDriver::GetHardwareFrame( RageTimer *pTimestamp=nullptr ) 
 	 */
 	int iTries = 3;
 	std::int64_t iPositionFrames;
+	std::uint64_t iStartTime;
+	const std::uint64_t iThreshold = 2000ULL;
+
 	do
 	{
-		pTimestamp->Touch();
+		iStartTime = RageTimer::GetUsecsSinceStart();
 		iPositionFrames = GetPosition();
-	} while( --iTries && pTimestamp->Ago() > 0.002f );
+		std::uint64_t elapsedTime = RageTimer::GetUsecsSinceStart() - iStartTime;
+		if (elapsedTime <= iThreshold) break;
+	} while (--iTries);
 
 	if( iTries == 0 )
 	{
