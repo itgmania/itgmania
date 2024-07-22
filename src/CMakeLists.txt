@@ -52,11 +52,13 @@ if(MSVC OR APPLE)
   set(SM_NAME_DEBUG "ITGmania-debug")
   set(SM_NAME_MINSIZEREL "ITGmania-min-size")
   set(SM_NAME_RELWITHDEBINFO "ITGmania-release-symbols")
+  set(SM_NAME_DEBWITHASAN "ITGMania-debug-asan")
 else()
   set(SM_NAME_RELEASE "itgmania")
   set(SM_NAME_DEBUG "itgmania-debug")
   set(SM_NAME_MINSIZEREL "itgmania-min-size")
   set(SM_NAME_RELWITHDEBINFO "itgmania-release-symbols")
+  set(SM_NAME_DEBWITHASAN "itgmania-debug-asan")
 endif()
 
 if(APPLE)
@@ -94,7 +96,8 @@ set_target_properties("${SM_EXE_NAME}"
                                  RELEASE_OUTPUT_NAME "${SM_NAME_RELEASE}"
                                  DEBUG_OUTPUT_NAME "${SM_NAME_DEBUG}"
                                  MINSIZEREL_OUTPUT_NAME "${SM_NAME_MINSIZEREL}"
-                                 RELWITHDEBINFO_OUTPUT_NAME "${SM_NAME_RELWITHDEBINFO}")
+                                 RELWITHDEBINFO_OUTPUT_NAME "${SM_NAME_RELWITHDEBINFO}"
+                                 DEBWITHASAN_OUTPUT_NAME "${SM_NAME_DEBWITHASAN}")
 
 if(WITH_LTO)
   include(CheckIPOSupported)
@@ -115,6 +118,7 @@ target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:Release>:RELEASE>
 target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:MinSizeRel>:MINSIZEREL>)
 target_compile_definitions("${SM_EXE_NAME}" PRIVATE
                            $<$<CONFIG:RelWithDebInfo>:RELWITHDEBINFO>)
+target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:DebWithAsan>:DEBWITHASAN>)
 
 # For Apple Clang, CMAKE_<LANG>_COMPILER_ID will be set to AppleClang instead of Clang.
 if (POLICY CMP0025)
@@ -131,6 +135,9 @@ target_compile_options("${SM_EXE_NAME}" PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:
     /W4 /wd4100 /wd4189 /wd4244 /wd4267 /wd4702>
 )
+
+set (CMAKE_CXX_FLAGS_DEBWITHASAN "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+set (CMAKE_LINKER_FLAGS_DEBWITHASAN "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 
 set(SM_COMPILE_FLAGS "")
 
@@ -159,7 +166,8 @@ set_target_properties("${SM_EXE_NAME}"
 set_target_properties("${SM_EXE_NAME}"
                       PROPERTIES OUTPUT_NAME_DEBUG "${SM_NAME_DEBUG}"
                                  OUTPUT_NAME_MINSIZEREL "${SM_NAME_MINSIZEREL}"
-                                 OUTPUT_NAME_RELWITHDEBINFO "${SM_NAME_RELWITHDEBINFO}")
+                                 OUTPUT_NAME_RELWITHDEBINFO "${SM_NAME_RELWITHDEBINFO}"
+                                 OUTPUT_NAME_DEBWITHASAN "${SM_NAME_DEBWITHASAN}")
 
 if(WIN32)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE WINDOWS)
@@ -208,6 +216,8 @@ elseif(APPLE)
       "${SM_ROOT_DIR}"
       RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO
       "${SM_ROOT_DIR}"
+      RUNTIME_OUTPUT_DIRECTORY_DEBWITHASAN
+      "${SM_ROOT_DIR}"
       MACOSX_BUNDLE_INFO_PLIST
       "${SM_XCODE_DIR}/Info.plist.in")
 
@@ -236,6 +246,8 @@ elseif(APPLE)
     set(SM_APP_RELEASE_NAME "${SM_NAME_MINSIZEREL}")
   elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     set(SM_APP_RELEASE_NAME "${SM_NAME_RELWITHDEBINFO}")
+  elseif(CMAKE_BUILD_TYPE STREQUAL "DebugWithAsan")
+    set(SM_APP_RELEASE_NAME "${SM_NAME_DEBWITHASAN}")
   else()
     set(SM_APP_RELEASE_NAME "${SM_NAME_RELEASE}")
   endif()
@@ -258,7 +270,10 @@ else() # Linux
                                    RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL
                                    "${SM_ROOT_DIR}"
                                    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO
-                                   "${SM_ROOT_DIR}")
+                                   "${SM_ROOT_DIR}"
+                                   RUNTIME_OUTPUT_DIRECTORY_DEBWITHASAN
+                                   "${SM_ROOT_DIR}"
+                                   )
 
   if(${WITH_CRASH_HANDLER})
     target_compile_definitions("${SM_EXE_NAME}" PRIVATE CRASH_HANDLER)
@@ -374,6 +389,8 @@ if(WIN32)
                         PROPERTIES LINK_FLAGS_MINSIZEREL "/SUBSYSTEM:WINDOWS")
 
 elseif(APPLE)
+  set_target_properties("${SM_EXE_NAME}"
+                        PROPERTIES LINK_FLAGS_DEBWITHASAN "-fsanitize=address")
   list(INSERT SMDATA_LINK_LIB
               0
               ${MAC_FRAME_ACCELERATE}

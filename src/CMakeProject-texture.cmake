@@ -59,6 +59,8 @@ set_target_properties("TextureFontGenerator"
                                  RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL
                                  "${SM_PROGRAM_DIR}"
                                  RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO
+                                 "${SM_PROGRAM_DIR}"
+                                 RUNTIME_OUTPUT_DIRECTORY_DEBWITHASAN
                                  "${SM_PROGRAM_DIR}")
 
 set_target_properties("TextureFontGenerator"
@@ -71,4 +73,6 @@ set_target_properties("TextureFontGenerator"
                                  MINSIZEREL_OUTPUT_NAME
                                  "Texture Font Generator"
                                  RELWITHDEBINFO_OUTPUT_NAME
+                                 "Texture Font Generator"
+                                 DEBWITHASAN_OUTPUT_NAME
                                  "Texture Font Generator")
