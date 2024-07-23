@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <vector>
+#include <iomanip>
 
 /* register DisplayBPM with StringConversion */
 #include "EnumHelper.h"
@@ -759,6 +760,13 @@ RString Steps::MinimizedChartString()
 	}
 	return minimizedNoteData;
 }
+
+void Steps::SetCachedGrooveStatsHash(const RString key)
+{
+	GrooveStatsHash = key;
+	m_bIsCachedGrooveStatsHashJustLoaded = true;
+}
+
 
 RString Steps::GenerateChartKey()
 {
