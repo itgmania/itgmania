@@ -9,6 +9,7 @@
 #include "Difficulty.h"
 #include "RageUtil_AutoPtr.h"
 #include "TimingData.h"
+#include "ColumnCues.h"
 
 #include <vector>
 
@@ -210,6 +211,8 @@ public:
 	{
 		return join(":", this->m_sAttackString);
 	}
+    
+    std::vector<ColumnCue> GetColumnCues(float minDuration);
 
 private:
 	inline const Steps *Real() const		{ return parent ? parent : this; }
