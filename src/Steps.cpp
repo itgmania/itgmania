@@ -701,6 +701,20 @@ RString Steps::GenerateChartKey(NoteData &nd, TimingData *td)
 	return o;
 }
 
+std::vector<ColumnCue> Steps::GetColumnCues(float minDuration)
+{
+	// TODO: Should we worry about getting the right steps per player?
+	// It seems like this is only necessary when dealing with Couples charts
+
+	std::vector<ColumnCue> cues;
+	NoteData noteData;
+	this->GetNoteData( noteData );
+	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
+	ColumnCue::CalculateColumnCues(noteData, cues, minDuration);
+	GAMESTATE->SetProcessedTimingData(nullptr);
+	return cues;
+}
+
 
 // lua start
 #include "LuaBinding.h"
@@ -799,6 +813,50 @@ public:
 		return 1;
 	}
 
+	static int GetColumnCues(T *p, lua_State*L)
+	{
+		float minDuration = 1.5;
+		if (lua_isnumber(L, 1))
+		{
+			minDuration = lua_tonumber(L, 1);
+		}
+		std::vector<ColumnCue> cues = p->GetColumnCues(minDuration);
+		lua_createtable(L, cues.size(), 0);
+
+		for (unsigned i = 0; i < cues.size(); i++)
+		{
+			lua_newtable(L);
+			lua_pushstring(L, "startTime");
+			lua_pushnumber(L, cues[i].startTime);
+			lua_settable(L, -3);
+
+			lua_pushstring(L, "duration");
+			lua_pushnumber(L, cues[i].duration);
+			lua_settable(L, -3);
+
+			lua_pushstring(L, "columns");
+			lua_createtable(L, cues[i].columns.size(), 0);
+
+			for (unsigned c = 0; c < cues[i].columns.size(); c++)
+			{
+				lua_newtable(L);
+				lua_pushstring(L, "colNum");
+				lua_pushinteger(L, cues[i].columns[c].colNum);
+				lua_settable(L, -3);
+
+				lua_pushstring(L, "isMine");
+				lua_pushboolean(L, cues[i].columns[c].isMine);
+				lua_settable(L, -3);
+
+				lua_rawseti(L, -2, c + 1);
+			}
+
+			lua_settable(L, -3);
+			lua_rawseti(L, -2, i + 1);
+		}
+		return 1;
+	}
+	
 	LunaSteps()
 	{
 		ADD_METHOD( GetAuthorCredit );
@@ -824,6 +882,7 @@ public:
 		ADD_METHOD( IsDisplayBpmRandom );
 		ADD_METHOD( PredictMeter );
 		ADD_METHOD( GetDisplayBPMType );
+		ADD_METHOD( GetColumnCues );
 	}
 };
 
