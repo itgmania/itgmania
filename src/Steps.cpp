@@ -55,6 +55,7 @@ Steps::Steps(Song *song): m_StepsType(StepsType_Invalid), m_pSong(song),
 	m_sDescription(""), m_sChartStyle(""),
 	m_Difficulty(Difficulty_Invalid), m_iMeter(0),
 	m_bAreCachedRadarValuesJustLoaded(false),
+	m_bAreCachedMeasureInfoJustLoaded(false),
 	m_sCredit(""), displayBPMType(DISPLAY_BPM_ACTUAL),
 	specifiedBPMMin(0), specifiedBPMMax(0) {}
 
@@ -354,6 +355,58 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 	GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
+void Steps::CalculateMeasureInfo()
+{
+	if(parent != nullptr)
+	{
+		return;
+	}
+
+	if( m_bAreCachedMeasureInfoJustLoaded )
+	{
+		m_bAreCachedMeasureInfoJustLoaded = false;
+		return;
+	}
+
+	NoteData tempNoteData;
+	this->GetNoteData( tempNoteData );
+
+	FOREACH_PlayerNumber(pn)
+		m_CachedMeasureInfo[pn]
+			.Zero();
+
+	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
+
+	if( tempNoteData.IsComposite() )
+	{
+		std::vector<NoteData> vParts;
+		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
+		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
+		{
+			MeasureInfo::CalculateMeasureInfo(vParts[pn], m_CachedMeasureInfo[pn]);
+		}
+	}
+	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
+	{
+		NoteData p1 = tempNoteData;
+		// XXX: Assumption that couple will always have an even number of notes.
+		const int tracks = tempNoteData.GetNumTracks() / 2;
+		p1.SetNumTracks(tracks);
+		MeasureInfo::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[PLAYER_1]);
+		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
+		tempNoteData.SetNumTracks(tracks);
+		MeasureInfo::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[PLAYER_2]);
+	}
+	else
+	{
+		MeasureInfo::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[0]);
+		std::fill_n( m_CachedMeasureInfo + 1, NUM_PLAYERS-1, m_CachedMeasureInfo[0] );
+	}
+	GAMESTATE->SetProcessedTimingData(nullptr);
+}
+
+
+
 void Steps::ChangeFilenamesForCustomSong()
 {
 	m_sFilename= custom_songify_path(m_sFilename);
@@ -503,6 +556,7 @@ void Steps::DeAutogen( bool bCopyNoteData )
 	m_Difficulty		= Real()->m_Difficulty;
 	m_iMeter		= Real()->m_iMeter;
 	std::copy( Real()->m_CachedRadarValues, Real()->m_CachedRadarValues + NUM_PLAYERS, m_CachedRadarValues );
+	std::copy( Real()->m_CachedMeasureInfo, Real()->m_CachedMeasureInfo + NUM_PLAYERS, m_CachedMeasureInfo );
 	m_sCredit		= Real()->m_sCredit;
 	parent = nullptr;
 
@@ -629,6 +683,13 @@ void Steps::SetCachedRadarValues( const RadarValues v[NUM_PLAYERS] )
 	DeAutogen();
 	std::copy( v, v + NUM_PLAYERS, m_CachedRadarValues );
 	m_bAreCachedRadarValuesJustLoaded = true;
+}
+
+void Steps::SetCachedMeasureInfo(const MeasureInfo ms[NUM_PLAYERS])
+{
+	DeAutogen();
+	std::copy(ms, ms + NUM_PLAYERS, m_CachedMeasureInfo);
+	m_bAreCachedMeasureInfoJustLoaded = true;
 }
 
 RString Steps::GenerateChartKey()
@@ -813,6 +874,40 @@ public:
 		return 1;
 	}
 
+	static int GetNPSPerMeasure(T *p, lua_State *L)
+	{
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		MeasureInfo &ts = const_cast<MeasureInfo &>(p->GetMeasureInfo(pn));
+		LuaHelpers::CreateTableFromArray(ts.npsPerMeasure, L);
+		return 1;
+	}
+
+	static int GetNotesPerMeasure(T *p, lua_State * L)
+	{
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		MeasureInfo &ts = const_cast<MeasureInfo &>(p->GetMeasureInfo(pn));
+		LuaHelpers::CreateTableFromArray(ts.notesPerMeasure, L);
+
+		return 1;
+	}
+
+	static int GetPeakNPS(T *p, lua_State *L)
+	{
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		MeasureInfo &ts = const_cast<MeasureInfo &>(p->GetMeasureInfo(pn));
+		lua_pushnumber(L, ts.peakNps);
+		return 1;
+	}
+
 	static int GetColumnCues(T *p, lua_State*L)
 	{
 		float minDuration = 1.5;
@@ -856,7 +951,7 @@ public:
 		}
 		return 1;
 	}
-	
+
 	LunaSteps()
 	{
 		ADD_METHOD( GetAuthorCredit );
@@ -883,6 +978,9 @@ public:
 		ADD_METHOD( PredictMeter );
 		ADD_METHOD( GetDisplayBPMType );
 		ADD_METHOD( GetColumnCues );
+		ADD_METHOD( GetNPSPerMeasure );
+		ADD_METHOD( GetNotesPerMeasure );
+		ADD_METHOD( GetPeakNPS );
 	}
 };
 

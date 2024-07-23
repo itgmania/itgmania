@@ -428,6 +428,14 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 	}
 	if (bSavingCache)
 	{
+		std::vector<RString> asMeasureInfo;
+		FOREACH_PlayerNumber( pn )
+		{
+			const MeasureInfo &ms = in.GetMeasureInfo(pn);
+			asMeasureInfo.push_back(ms.ToString());
+		}
+		lines.push_back(ssprintf("#MEASUREINFO:%s;", join("|", asMeasureInfo).c_str()));
+		
 		lines.push_back(ssprintf("#STEPFILENAME:%s;", in.GetFilename().c_str()));
 	}
 	else
