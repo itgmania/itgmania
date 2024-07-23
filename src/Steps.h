@@ -155,6 +155,7 @@ public:
 	void SetCachedNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure);
 	void SetCachedNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure);
 	void SetPeakNps(std::vector<float>& peakNps);
+	void SetCachedGrooveStatsHash(const RString key);
 	float PredictMeter() const;
 
 	unsigned GetHash() const;

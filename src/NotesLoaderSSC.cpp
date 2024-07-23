@@ -412,7 +412,6 @@ void SetNpsPerMeasure(StepsTagInfo& info)
 {
 	if (info.from_cache || info.for_load_edit)
 	{
-		
 		std::vector<RString> valuesPerPlayer;
 		split((*info.params)[1], "|", valuesPerPlayer, true);
 		
@@ -502,6 +501,16 @@ void SetPeakNps(StepsTagInfo& info)
 		// just recalc at time.
 	}
 	info.ssc_format= true;
+}
+
+void SetGrooveStatsHash(StepsTagInfo& info)
+{
+	if (info.from_cache || info.for_load_edit)
+	{
+		RString value = (*info.params)[1];
+		info.steps->SetCachedGrooveStatsHash(value);
+	}
+	info.ssc_format = true;
 }
 
 void SetCredit(StepsTagInfo& info)
@@ -748,6 +757,7 @@ struct ssc_parser_helper_t
 		steps_tag_handlers["NPSPERMEASURE"] = &SetNpsPerMeasure;
 		steps_tag_handlers["NOTESPERMEASURE"] = &SetNotesPerMeasure;
 		steps_tag_handlers["PEAKNPS"] = &SetPeakNps;
+		steps_tag_handlers["GROOVESTATSHASH"] = &SetGrooveStatsHash;
 		/* If this is called, the chart does not use the same attacks
 		 * as the Song's timing. No other changes are required. */
 		steps_tag_handlers["ATTACKS"]= &SetStepsAttacks;
