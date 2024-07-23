@@ -893,6 +893,10 @@ public:
 
 	static int GetGrooveStatsHash(T *p, lua_State *L)
 	{
+		if(p->GetGrooveStatsHash().empty())
+		{
+			p->CalculateGrooveStatsHash();
+		}
 		lua_pushstring(L, p->GetGrooveStatsHash());
 		return 1;
 	}
