@@ -55,6 +55,7 @@ Steps::Steps(Song *song): m_StepsType(StepsType_Invalid), m_pSong(song),
 	m_sDescription(""), m_sChartStyle(""),
 	m_Difficulty(Difficulty_Invalid), m_iMeter(0),
 	m_bAreCachedRadarValuesJustLoaded(false),
+	m_bIsCachedGrooveStatsHashJustLoaded(false),
 	m_sCredit(""), displayBPMType(DISPLAY_BPM_ACTUAL),
 	specifiedBPMMin(0), specifiedBPMMax(0) {}
 
