@@ -906,6 +906,13 @@ RString Steps::MinimizedChartString()
 	return minimizedNoteData;
 }
 
+void Steps::SetCachedGrooveStatsHash(const RString key)
+{
+	GrooveStatsHash = key;
+	m_bIsCachedGrooveStatsHashJustLoaded = true;
+}
+
+
 RString Steps::GenerateChartKey()
 {
 	ChartKey = this->GenerateChartKey(*m_pNoteData, this->GetTimingData());
