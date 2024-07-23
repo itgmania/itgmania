@@ -134,6 +134,13 @@ public:
 	RString GetChartKey();
 	void SetChartKey(const RString &k) { ChartKey = k; }
 
+	/** @brief Generates a hash used for GrooveStats integration. */
+	void CalculateGrooveStatsHash();
+	const RString GetGrooveStatsHash() const;
+	
+	/** @brief Produces a chart that's reduced to it's smallest unique representable form. */
+	RString MinimizedChartString();
+	
 	void ChangeFilenamesForCustomSong();
 
 	void SetLoadedFromProfile( ProfileSlot slot )	{ m_LoadedFromProfile = slot; }
@@ -253,6 +260,10 @@ private:
 	/** @brief The radar values used for each player. */
 	RadarValues			m_CachedRadarValues[NUM_PLAYERS];
 	bool                m_bAreCachedRadarValuesJustLoaded;
+	
+	RString GrooveStatsHash;
+	bool m_bIsCachedGrooveStatsHashJustLoaded;
+	
 	/** @brief The name of the person who created the Steps. */
 	RString				m_sCredit;
 	/** @brief The name of the chart. */
