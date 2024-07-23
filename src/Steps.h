@@ -139,6 +139,13 @@ public:
 	/** @brief Produces a chart that's reduced to it's smallest unique representable form. */
 	RString MinimizedChartString();
 
+	/** @brief Generates a hash used for GrooveStats integration. */
+	void CalculateGrooveStatsHash();
+	const RString GetGrooveStatsHash() const;
+	
+	/** @brief Produces a chart that's reduced to it's smallest unique representable form. */
+	RString MinimizedChartString();
+	
 	void ChangeFilenamesForCustomSong();
 
 	void SetLoadedFromProfile( ProfileSlot slot )	{ m_LoadedFromProfile = slot; }
@@ -295,6 +302,9 @@ private:
 	
 	
 	
+
+	RString GrooveStatsHash;
+	bool m_bIsCachedGrooveStatsHashJustLoaded;
 
 	/** @brief The name of the person who created the Steps. */
 	RString				m_sCredit;
