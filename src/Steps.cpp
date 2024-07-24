@@ -987,40 +987,6 @@ public:
 		return 1;
 	}
 
-	static int GetNPSPerMeasure(T *p, lua_State *L)
-	{
-		PlayerNumber pn = PLAYER_1;
-		if (!lua_isnil(L, 1)) {
-			pn = Enum::Check<PlayerNumber>(L, 1);
-		}
-		MeasureInfo &ts = const_cast<MeasureInfo &>(p->GetMeasureInfo(pn));
-		LuaHelpers::CreateTableFromArray(ts.npsPerMeasure, L);
-		return 1;
-	}
-
-	static int GetNotesPerMeasure(T *p, lua_State * L)
-	{
-		PlayerNumber pn = PLAYER_1;
-		if (!lua_isnil(L, 1)) {
-			pn = Enum::Check<PlayerNumber>(L, 1);
-		}
-		MeasureInfo &ts = const_cast<MeasureInfo &>(p->GetMeasureInfo(pn));
-		LuaHelpers::CreateTableFromArray(ts.notesPerMeasure, L);
-
-		return 1;
-	}
-
-	static int GetPeakNPS(T *p, lua_State *L)
-	{
-		PlayerNumber pn = PLAYER_1;
-		if (!lua_isnil(L, 1)) {
-			pn = Enum::Check<PlayerNumber>(L, 1);
-		}
-		MeasureInfo &ts = const_cast<MeasureInfo &>(p->GetMeasureInfo(pn));
-		lua_pushnumber(L, ts.peakNps);
-		return 1;
-	}
-
 	static int GetColumnCues(T *p, lua_State*L)
 	{
 		float minDuration = 1.5;

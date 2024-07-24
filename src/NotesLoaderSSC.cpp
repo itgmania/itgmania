@@ -430,16 +430,6 @@ void SetMeasureInfo(StepsTagInfo& info)
 	info.ssc_format= true;
 }
 
-void SetGrooveStatsHash(StepsTagInfo& info)
-{
-	if (info.from_cache || info.for_load_edit)
-	{
-		RString value = (*info.params)[1];
-		info.steps->SetCachedGrooveStatsHash(value);
-	}
-	info.ssc_format = true;
-}
-
 void SetCredit(StepsTagInfo& info)
 {
 	info.steps->SetCredit((*info.params)[1]);
