@@ -108,11 +108,11 @@ public:
 	void TidyUpData( bool fromCache = false, bool duringCache = false );
 
 	/**
-	 * @brief Get the new radar values, and determine the last second at the same time.
+	 * @brief Get the new step stats, and determine the last second at the same time.
 	 * This is called by TidyUpData, after saving the Song.
 	 * @param fromCache was this data loaded from the cache file?
 	 * @param duringCache was this data loaded during the cache process? */
-	void ReCalculateRadarValuesAndLastSecond(bool fromCache = false, bool duringCache = false);
+	void ReCalculateStepStatsAndLastSecond(bool fromCache = false, bool duringCache = false);
 	/**
 	 * @brief Translate any titles that aren't in english.
 	 * This is called by TidyUpData. */

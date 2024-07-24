@@ -3436,7 +3436,7 @@ void ScreenEdit::TransitionEditState( EditState em )
 			Steps* pSteps = GAMESTATE->m_pCurSteps[main_player_];
 			ASSERT(pSteps != nullptr);
 			pSteps->SetNoteData(m_NoteDataEdit);
-			m_pSong->ReCalculateRadarValuesAndLastSecond();
+			m_pSong->ReCalculateStepStatsAndLastSecond();
 
 			// TODO: Background videos don't support seeking, when they do, make sure
 			// to load the appropriate part of the video.
@@ -4470,7 +4470,7 @@ void ScreenEdit::PerformSave(bool autosave)
 				ASSERT( m_pSteps->IsAnEdit() );
 
 				RString sError;
-				m_pSteps->CalculateRadarValues( m_pSong->m_fMusicLengthSeconds );
+				m_pSteps->CalculateStepStats( m_pSong->m_fMusicLengthSeconds );
 				if( !NotesWriterSM::WriteEditFileToMachine(m_pSong, m_pSteps, sError) )
 				{
 					ScreenPrompt::Prompt( SM_None, sError );
