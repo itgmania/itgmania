@@ -53,12 +53,14 @@ if(MSVC OR APPLE)
   set(SM_NAME_MINSIZEREL "ITGmania-min-size")
   set(SM_NAME_RELWITHDEBINFO "ITGmania-release-symbols")
   set(SM_NAME_DEBWITHASAN "ITGMania-debug-asan")
+  set(SM_NAME_DEBWITHUBSAN "ITGMania-debug-ubsan")
 else()
   set(SM_NAME_RELEASE "itgmania")
   set(SM_NAME_DEBUG "itgmania-debug")
   set(SM_NAME_MINSIZEREL "itgmania-min-size")
   set(SM_NAME_RELWITHDEBINFO "itgmania-release-symbols")
   set(SM_NAME_DEBWITHASAN "itgmania-debug-asan")
+  set(SM_NAME_DEBWITHUBSAN "itgmania-debug-ubsan")
 endif()
 
 if(APPLE)
@@ -97,7 +99,8 @@ set_target_properties("${SM_EXE_NAME}"
                                  DEBUG_OUTPUT_NAME "${SM_NAME_DEBUG}"
                                  MINSIZEREL_OUTPUT_NAME "${SM_NAME_MINSIZEREL}"
                                  RELWITHDEBINFO_OUTPUT_NAME "${SM_NAME_RELWITHDEBINFO}"
-                                 DEBWITHASAN_OUTPUT_NAME "${SM_NAME_DEBWITHASAN}")
+                                 DEBWITHASAN_OUTPUT_NAME "${SM_NAME_DEBWITHASAN}"
+                                 DEBWITHUBSAN_OUTPUT_NAME "${SM_NAME_DEBWITHUBSAN}")
 
 if(WITH_LTO)
   include(CheckIPOSupported)
@@ -119,6 +122,7 @@ target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:MinSizeRel>:MINSI
 target_compile_definitions("${SM_EXE_NAME}" PRIVATE
                            $<$<CONFIG:RelWithDebInfo>:RELWITHDEBINFO>)
 target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:DebWithAsan>:DEBWITHASAN>)
+target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:DebWithUbsan>:DEBWITHUBSAN>)
 
 # For Apple Clang, CMAKE_<LANG>_COMPILER_ID will be set to AppleClang instead of Clang.
 if (POLICY CMP0025)
@@ -138,6 +142,9 @@ target_compile_options("${SM_EXE_NAME}" PRIVATE
 
 set (CMAKE_CXX_FLAGS_DEBWITHASAN "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
 set (CMAKE_LINKER_FLAGS_DEBWITHASAN "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=address")
+
+set (CMAKE_CXX_FLAGS_DEBWITHUBSAN "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=undefined -O0 -fno-sanitize-recover=all")
+set (CMAKE_LINKER_FLAGS_DEBWITHUBSAN "${CMAKE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fsanitize=undefined -O0 -fno-sanitize-recover=all")
 
 set(SM_COMPILE_FLAGS "")
 
@@ -167,7 +174,8 @@ set_target_properties("${SM_EXE_NAME}"
                       PROPERTIES OUTPUT_NAME_DEBUG "${SM_NAME_DEBUG}"
                                  OUTPUT_NAME_MINSIZEREL "${SM_NAME_MINSIZEREL}"
                                  OUTPUT_NAME_RELWITHDEBINFO "${SM_NAME_RELWITHDEBINFO}"
-                                 OUTPUT_NAME_DEBWITHASAN "${SM_NAME_DEBWITHASAN}")
+                                 OUTPUT_NAME_DEBWITHASAN "${SM_NAME_DEBWITHASAN}"
+                                 OUTPUT_NAME_DEBWITHUBSAN "${SM_NAME_DEBWITHUBSAN}")
 
 if(WIN32)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE WINDOWS)
@@ -218,6 +226,8 @@ elseif(APPLE)
       "${SM_ROOT_DIR}"
       RUNTIME_OUTPUT_DIRECTORY_DEBWITHASAN
       "${SM_ROOT_DIR}"
+      RUNTIME_OUTPUT_DIRECTORY_DEBWITHUBSAN
+      "${SM_ROOT_DIR}"
       MACOSX_BUNDLE_INFO_PLIST
       "${SM_XCODE_DIR}/Info.plist.in")
 
@@ -248,6 +258,8 @@ elseif(APPLE)
     set(SM_APP_RELEASE_NAME "${SM_NAME_RELWITHDEBINFO}")
   elseif(CMAKE_BUILD_TYPE STREQUAL "DebugWithAsan")
     set(SM_APP_RELEASE_NAME "${SM_NAME_DEBWITHASAN}")
+    elseif(CMAKE_BUILD_TYPE STREQUAL "DebugWithUbsan")
+    set(SM_APP_RELEASE_NAME "${SM_NAME_DEBWITHUBSAN}")
   else()
     set(SM_APP_RELEASE_NAME "${SM_NAME_RELEASE}")
   endif()
@@ -272,6 +284,8 @@ else() # Linux
                                    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO
                                    "${SM_ROOT_DIR}"
                                    RUNTIME_OUTPUT_DIRECTORY_DEBWITHASAN
+                                   "${SM_ROOT_DIR}"
+                                   RUNTIME_OUTPUT_DIRECTORY_DEBWITHUBSAN
                                    "${SM_ROOT_DIR}"
                                    )
 
@@ -390,7 +404,9 @@ if(WIN32)
 
 elseif(APPLE)
   set_target_properties("${SM_EXE_NAME}"
-                        PROPERTIES LINK_FLAGS_DEBWITHASAN "-fsanitize=address")
+                        PROPERTIES LINK_FLAGS_DEBWITHASAN "-fsanitize=address -O0")
+  set_target_properties("${SM_EXE_NAME}"
+                        PROPERTIES LINK_FLAGS_DEBWITHUBSAN "-fsanitize=undefined -O0")
   list(INSERT SMDATA_LINK_LIB
               0
               ${MAC_FRAME_ACCELERATE}
@@ -413,6 +429,10 @@ elseif(APPLE)
               "${MAC_FRAME_COREVIDEO}"
               "${MAC_FRAME_VIDEOTOOLBOX}")
 else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
+  set_target_properties("${SM_EXE_NAME}"
+                        PROPERTIES LINK_FLAGS_DEBWITHASAN "-fsanitize=address")
+  set_target_properties("${SM_EXE_NAME}"
+                        PROPERTIES LINK_FLAGS_DEBWITHUBSAN "-fsanitize=undefined")
   list(APPEND SMDATA_LINK_LIB
               "${SM_FFMPEG_LIB}/libavformat.a"
               "${SM_FFMPEG_LIB}/libavcodec.a"
