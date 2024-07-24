@@ -1142,7 +1142,7 @@ float ArrowEffects::GetAlpha( const PlayerState* pPlayerState, int iCol, float f
 	if( fYPosWithoutReverse > fFullAlphaY )
 	{
 		float f = SCALE( fYPosWithoutReverse, fFullAlphaY, fDrawDistanceBeforeTargetsPixels, 1.0f, 0.0f );
-		return f;
+		return CLAMP( f, 0.0, 1.0 ); // SCALE can return -inf when fFullAlphaY - fDrawDistanceBeforeTargetsPixels == 0
 	}
 	return (fPercentVisible>0.5f) ? 1.0f : 0.0f;
 }

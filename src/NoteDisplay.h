@@ -291,7 +291,7 @@ private:
 
 struct NoteColumnRenderer : public Actor
 {
-	NoteDisplay* m_displays[PLAYER_INVALID+1];
+	NoteDisplay* m_displays[4];
 	NoteFieldRenderArgs* m_field_render_args;
 	NoteColumnRenderArgs m_column_render_args;
 	int m_column;

@@ -867,6 +867,8 @@ int sm_main(int argc, char* argv[])
 	HOOKS->Init();
 
 	LUA		= new LuaManager;
+	GAMEMAN		= new GameManager;
+	LUA -> RegisterTypes();
 	HOOKS->RegisterWithLua();
 
 	// Initialize the file extension type lists so everything can ask ActorUtil
@@ -949,7 +951,6 @@ int sm_main(int argc, char* argv[])
 
 	AdjustForChangedSystemCapabilities();
 
-	GAMEMAN		= new GameManager;
 	THEME		= new ThemeManager;
 	ANNOUNCER	= new AnnouncerManager;
 	NOTESKIN	= new NoteSkinManager;

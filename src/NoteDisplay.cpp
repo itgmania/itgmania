@@ -1550,8 +1550,8 @@ void NoteColumnRenderer::DrawPrimitives()
 	// lists to the displays to draw.
 	// The vector in the NUM_PlayerNumber slot should stay empty, not worth
 	// optimizing it out. -Kyz
-	std::vector<std::vector<NoteData::TrackMap::const_iterator> > holds(PLAYER_INVALID+1);
-	std::vector<std::vector<NoteData::TrackMap::const_iterator> > taps(PLAYER_INVALID+1);
+	std::vector<std::vector<NoteData::TrackMap::const_iterator> > holds(4);
+	std::vector<std::vector<NoteData::TrackMap::const_iterator> > taps(4);
 	NoteData::TrackMap::const_iterator begin, end;
 	m_field_render_args->note_data->GetTapNoteRangeInclusive(m_column,
 		m_field_render_args->first_row, m_field_render_args->last_row+1, begin, end);

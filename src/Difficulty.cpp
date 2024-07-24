@@ -50,6 +50,17 @@ CourseDifficulty GetNextShownCourseDifficulty( CourseDifficulty cd )
 	return Difficulty_Invalid;
 }
 
+CourseDifficulty GetFirstShownCourseDifficulty()
+{
+	CourseDifficulty d = Difficulty_Beginner;
+	for( ; d<NUM_Difficulty; enum_add(d, 1) )
+	{
+		if( GAMESTATE->IsCourseDifficultyShown(d) )
+			return d;
+	}
+	return Difficulty_Invalid;
+}
+
 struct OldStyleStringToDifficultyMapHolder
 {
 	std::map<RString, Difficulty> conversion_map;

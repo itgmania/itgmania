@@ -148,7 +148,8 @@ public:
 		ACCEL_TAN_EXPAND,
 		ACCEL_TAN_EXPAND_PERIOD,
 		ACCEL_BOOMERANG, /**< The arrows start from above the targets, go down, then come back up. */
-		NUM_ACCELS
+		NUM_ACCELS,
+		ACCEL_INVALID
 	};
 	enum Effect	{
 		EFFECT_DRUNK,
@@ -273,7 +274,8 @@ public:
 		EFFECT_XMODE,
 		EFFECT_TWIRL,
 		EFFECT_ROLL,
-		NUM_EFFECTS
+		NUM_EFFECTS,
+		EFFECT_INVALID
 	};
 	/** @brief The various appearance mods. */
 	enum Appearance {
@@ -284,7 +286,8 @@ public:
 		APPEARANCE_STEALTH, /**< The arrows are not shown at all. */
 		APPEARANCE_BLINK, /**< The arrows blink constantly. */
 		APPEARANCE_RANDOMVANISH, /**< The arrows disappear, and then reappear in a different column. */
-		NUM_APPEARANCES
+		NUM_APPEARANCES,
+		APPEARANCE_INVALID
 	};
 	/** @brief The various turn mods. */
 	enum Turn {
@@ -299,7 +302,8 @@ public:
 		TURN_SOFT_SHUFFLE, /**< Only shuffle arrow columns on an axis of symmetry. */
 		TURN_SUPER_SHUFFLE, /**< Every arrow is placed on a random column. */
 		TURN_HYPER_SHUFFLE, /**< Every arrow is placed on a random column, but more fairly than SuperShuffle. */
-		NUM_TURNS
+		NUM_TURNS,
+		TURN_INVALID
 	};
 	enum Transform {
 		TRANSFORM_NOHOLDS,
@@ -325,7 +329,8 @@ public:
 		TRANSFORM_NOFAKES,
 		TRANSFORM_NOQUADS,
 		TRANSFORM_NOSTRETCH,
-		NUM_TRANSFORMS
+		NUM_TRANSFORMS,
+		TRANSFORM_INVALID
 	};
 	enum Scroll {
 		SCROLL_REVERSE=0,
@@ -333,7 +338,8 @@ public:
 		SCROLL_ALTERNATE,
 		SCROLL_CROSS,
 		SCROLL_CENTERED,
-		NUM_SCROLLS
+		NUM_SCROLLS,
+		SCROLL_INVALID
 	};
 
 	float GetReversePercentForColumn( int iCol ) const; // accounts for all Directions

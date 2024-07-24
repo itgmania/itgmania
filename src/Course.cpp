@@ -39,7 +39,7 @@ StringToX( SongSort );
 struct OldStyleStringToSongSortMapHolder
 {
 	std::map<RString, SongSort> conversion_map;
-	
+
 	OldStyleStringToSongSortMapHolder()
 	{
 		conversion_map["best"] = SongSort_MostPlays;
@@ -421,8 +421,8 @@ static void CourseSortSongs( SongSort sort, std::vector<Song*> &vpPossibleSongs,
 			SongUtil::SortSongPointerArrayByNumPlays( vpPossibleSongs, PROFILEMAN->GetMachineProfile(), false );	// ascending
 		break;
 	case SongSort_TopGrades:
-		// SongUtil::SortSongPointerArrayByGrades() will crash if called in a state where there's no current master player 
-		// (for instance when returning to the Title Menu). 
+		// SongUtil::SortSongPointerArrayByGrades() will crash if called in a state where there's no current master player
+		// (for instance when returning to the Title Menu).
 		// A workaround is to just not call it if we know that GAMESTATE->GetMasterPlayerNumber() == PlayerNumber_Invalid
 		if( PROFILEMAN && GAMESTATE->GetMasterPlayerNumber() != PlayerNumber_Invalid )
 			SongUtil::SortSongPointerArrayByGrades( vpPossibleSongs, true );	// descending
@@ -561,7 +561,7 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 				if( v.size() == 1 )
 					vpSongs.push_back( sas->pSong );
 			}
-			
+
 			CourseSortSongs(e->songSort, vpSongs, rnd);
 
 			ASSERT( e->iChooseIndex >= 0 );

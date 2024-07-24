@@ -29,7 +29,7 @@ InputMode StringToInputMode( const RString& str );
 
 /** @brief A custom foreach loop for the player options for each player. */
 #define FOREACH_OptionsPlayer( pn ) \
-	for( PlayerNumber pn=GetNextHumanPlayer((PlayerNumber)-1); \
+	for( PlayerNumber pn=GAMESTATE->GetFirstHumanPlayer(); \
 	pn!=PLAYER_INVALID && (m_InputMode==INPUTMODE_INDIVIDUAL || pn==0); \
 	pn=GetNextHumanPlayer(pn) )
 

@@ -166,9 +166,9 @@ Actor::Actor()
 	m_size = RageVector2( 1, 1 );
 	InitState();
 	m_pParent = nullptr;
-	m_FakeParent= nullptr;
+	m_FakeParent = nullptr;
 	m_bFirstUpdate = true;
-	m_tween_uses_effect_delta= false;
+	m_tween_uses_effect_delta = false;
 }
 
 Actor::~Actor()
@@ -215,6 +215,7 @@ Actor::Actor( const Actor &cpy ):
 		m_Tweens.push_back( new TweenStateAndInfo(*cpy.m_Tweens[i]) );
 
 	CPY( m_bFirstUpdate );
+	CPY (m_tween_uses_effect_delta );
 
 	CPY( m_fHorizAlign );
 	CPY( m_fVertAlign );
@@ -741,7 +742,7 @@ void Actor::BeginDraw()
 	const float skewX = m_pTempState->fSkewX;
 	if (skewX != 0)
 	{
-		DISPLAY->SkewX(skewX); 
+		DISPLAY->SkewX(skewX);
 	}
 
 	// Get the skew of the actor along the Y-axis

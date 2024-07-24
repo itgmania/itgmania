@@ -91,6 +91,7 @@ HighScoreImpl::HighScoreImpl()
 	ZERO( iHoldNoteScores );
 	radarValues.MakeUnknown();
 	fLifeRemainingSeconds = 0;
+	bDisqualified = false;
 }
 
 XNode *HighScoreImpl::CreateNode() const
@@ -441,7 +442,7 @@ void HighScoreList::MergeFromOtherHSL(HighScoreList& other, bool is_machine)
 	vHighScores.erase(unique_end, vHighScores.end());
 	// Reverse it because sort moved the lesser scores to the top.
 	std::reverse(vHighScores.begin(), vHighScores.end());
-	
+
 	if (!PREFSMAN->m_bAllowMultipleHighScoreWithSameName)
 	{
 		// erase all but the highest score for each name
