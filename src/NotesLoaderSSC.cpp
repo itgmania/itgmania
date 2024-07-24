@@ -384,6 +384,30 @@ void SetRadarValues(StepsTagInfo& info)
 	info.ssc_format= true;
 }
 
+void SetTechCounts(StepsTagInfo& info)
+{
+	if (info.from_cache || info.for_load_edit)
+	{
+		std::vector<RString> values;
+		split((*info.params)[1], ",", values, true);
+		std::size_t cats_per_player= values.size() / NUM_PlayerNumber;
+		TechCounts v[NUM_PLAYERS];
+		FOREACH_PlayerNumber(pn)
+		{
+			for(std::size_t i= 0; i < cats_per_player; ++i)
+			{
+				v[pn][i]= StringToFloat(values[pn * cats_per_player + i]);
+			}
+		}
+		info.steps->SetCachedTechCounts(v);
+	}
+	else
+	{
+		// just recalc at time.
+	}
+	info.ssc_format= true;
+}
+
 void SetMeasureInfo(StepsTagInfo& info)
 {
 	if (info.from_cache || info.for_load_edit)
@@ -406,6 +430,15 @@ void SetMeasureInfo(StepsTagInfo& info)
 	info.ssc_format= true;
 }
 
+void SetGrooveStatsHash(StepsTagInfo& info)
+{
+	if (info.from_cache || info.for_load_edit)
+	{
+		RString value = (*info.params)[1];
+		info.steps->SetCachedGrooveStatsHash(value);
+	}
+	info.ssc_format = true;
+}
 
 void SetCredit(StepsTagInfo& info)
 {
@@ -647,8 +680,9 @@ struct ssc_parser_helper_t
 		steps_tag_handlers["SCROLLS"]= &SetStepsScrolls;
 		steps_tag_handlers["FAKES"]= &SetStepsFakes;
 		steps_tag_handlers["LABELS"]= &SetStepsLabels;
+		steps_tag_handlers["TECHCOUNTS"] = &SetTechCounts;
 		steps_tag_handlers["MEASUREINFO"] = &SetMeasureInfo;
-		
+
 		/* If this is called, the chart does not use the same attacks
 		 * as the Song's timing. No other changes are required. */
 		steps_tag_handlers["ATTACKS"]= &SetStepsAttacks;
