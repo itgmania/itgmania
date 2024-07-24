@@ -10,8 +10,8 @@
 #include "RageUtil_AutoPtr.h"
 #include "TimingData.h"
 #include "ColumnCues.h"
+#include "TechCounts.h"
 #include "MeasureInfo.h"
-
 #include <vector>
 
 
@@ -136,11 +136,15 @@ public:
 	RString GetChartKey();
 	void SetChartKey(const RString &k) { ChartKey = k; }
 
+	/** @brief Produces a chart that's reduced to it's smallest unique representable form. */
+	RString MinimizedChartString();
+
 	void ChangeFilenamesForCustomSong();
 
 	void SetLoadedFromProfile( ProfileSlot slot )	{ m_LoadedFromProfile = slot; }
 	void SetMeter( int meter );
 	void SetCachedRadarValues( const RadarValues v[NUM_PLAYERS] );
+	void SetCachedTechCounts(const TechCounts ts[NUM_PLAYERS]);
 	void SetCachedMeasureInfo(const MeasureInfo ms[NUM_PLAYERS]);
 	float PredictMeter() const;
 
@@ -164,7 +168,14 @@ public:
 	bool IsNoteDataEmpty() const;
 
 	void TidyUpData();
-	void CalculateRadarValues( float fMusicLengthSeconds );
+
+	/** @brief Convenience function to calculate Radar Values, Tech Stats, Measure Stats, and GrooveStats key.*/
+	void CalculateStepStats(float fMusicLengthSeconds);
+
+	void CalculateRadarValues (float fMusicLengthSeconds );
+
+	void CalculateTechCounts();
+	const TechCounts &GetTechCounts(PlayerNumber pn) const { return Real()->m_CachedTechCounts[pn]; }
 
 	void CalculateMeasureInfo();
 	const MeasureInfo &GetMeasureInfo(PlayerNumber pn) const { return Real()->m_CachedMeasureInfo[pn]; }
@@ -261,6 +272,10 @@ private:
 	/** @brief The radar values used for each player. */
 	RadarValues			m_CachedRadarValues[NUM_PLAYERS];
 	bool                m_bAreCachedRadarValuesJustLoaded;
+
+	/** @brief The tech stats used for each player */
+	mutable TechCounts m_CachedTechCounts[NUM_PLAYERS];
+	bool m_bAreCachedTechCountsValuesJustLoaded;
 
 	mutable MeasureInfo m_CachedMeasureInfo[NUM_PLAYERS];
 	bool m_bAreCachedMeasureInfoJustLoaded;
