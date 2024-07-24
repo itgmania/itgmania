@@ -54,14 +54,22 @@ list(APPEND SM_DATA_NOTEDATA_SRC
             "NoteDataUtil.cpp"
             "NoteDataWithScoring.cpp"
             "ColumnCues.cpp"
-            "MeasureInfo.cpp")
+            "TechCounts.cpp"
+            "MeasureInfo.cpp"
+            "StepParityGenerator.cpp"
+            "StepParityDatastructs.cpp"
+            "StepParityCost.cpp")
 
 list(APPEND SM_DATA_NOTEDATA_HPP
             "NoteData.h"
             "NoteDataUtil.h"
             "NoteDataWithScoring.h"
             "ColumnCues.h"
-            "MeasureInfo.h")
+            "TechCounts.h"
+            "MeasureInfo.h"
+            "StepParityGenerator.h"
+            "StepParityDatastructs.h"
+            "StepParityCost.h")
 
 source_group("Data Structures\\\\Note Data"
              FILES
