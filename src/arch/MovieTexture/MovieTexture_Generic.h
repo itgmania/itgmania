@@ -74,6 +74,9 @@ public:
 	 * displayed.  The first frame will always be 0. */
 	virtual float GetTimestamp() const = 0;
 
+	// Cancels the decoding of the movie.
+	virtual void Cancel() = 0;
+
 	/* Get the duration, in seconds, to display the current frame. */
 	virtual float GetFrameDuration() const = 0;
 };
