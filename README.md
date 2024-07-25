@@ -33,7 +33,9 @@ You can choose between using the installer or using the portable build. Using th
 
 **macOS users need to have macOS 11 (Big Sur) or higher to run ITGmania.**
 * Move ITGmania.app to the Applications folder, and then run the following command in Terminal:
+
    * `xattr -dr com.apple.quarantine /Applications/ITGmania`
+   
 * You should then add ITGmania to the "Input Monitoring" section of System Preferences (under Security & Privacy)
 
 ### Linux
@@ -50,7 +52,7 @@ You can choose between using the installer or using the portable build. Using th
 
 *  **Arch Linux**:
 
-   * `sudo pacman install mesa gtk3 libusb-compat libxinerama libxtst llvm-libs`
+   * `sudo pacman -S mesa gtk3 libusb-compat libxinerama libxtst llvm-libs`
 
 * **OpenSUSE**:
 
