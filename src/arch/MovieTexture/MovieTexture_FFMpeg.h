@@ -81,11 +81,21 @@ public:
 	float GetTimestamp() const;
 	float GetFrameDuration() const;
 
+	void Cancel() { cancel = true; };
+
 private:
 	void Init();
 	RString OpenCodec();
 	int ReadPacket();
 	int DecodePacket( float fTargetTime );
+
+	// Read a packet and send it to our frame data buffer.
+	// Returns -2 on cancel, -1 on error, 0 on EOF, 1 on OK.
+	int SendPacketToBuffer();
+
+	// Decode frame data from the packet in the buffer.
+	// Returns -2 on cancel, -1 on error, 0 if the packet is finished.
+	int DecodePacketInBuffer();
 
 	avcodec::AVStream *m_pStream;
 	avcodec::AVFrame *m_Frame;
@@ -103,6 +113,9 @@ private:
 	unsigned char *m_buffer;
 	avcodec::AVIOContext *m_avioContext;
 
+	// The movie buffer.
+	std::vector<FrameHolder> m_FrameBuffer;
+
 	avcodec::AVPacket m_Packet;
 	int m_iCurrentPacketOffset;
 	float m_fLastFrame;
@@ -111,6 +124,10 @@ private:
 	 * 1 = EOF from ReadPacket
 	 * 2 = EOF from ReadPacket and DecodePacket */
 	int m_iEOF;
+
+	// If true, received a cancel signal from the MovieTexture.
+	bool cancel = false;
+	bool firstFrame = true;
 };
 
 static struct AVPixelFormat_t
