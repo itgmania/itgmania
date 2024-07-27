@@ -890,6 +890,20 @@ bool ScreenGameplay::Center1Player() const
 		GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StyleType == StyleType_OnePlayerOneSide;
 }
 
+bool ScreenGameplay::MenuRestart( const InputEventPlus &input )
+{
+	if( IsTransitioning() )
+		return false;
+
+	m_DancingState = STATE_OUTRO;
+	m_pSoundMusic->StopPlaying();
+	m_GameplayAssist.StopPlaying(); // Stop any queued assist ticks.
+
+	SCREENMAN->GetTopScreen()->SetNextScreenName("ScreenGameplay");
+	m_Cancel.StartTransitioning( SM_GoToNextScreen );
+	return true;
+}
+
 // fill in m_apSongsQueue, m_vpStepsQueue, m_asModifiersQueue
 void ScreenGameplay::InitSongQueues()
 {
@@ -2402,6 +2416,12 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 			}
 		}
 		return false;
+	}
+
+	if (input.MenuI == GAME_BUTTON_RESTART && input.type == IET_FIRST_PRESS &&
+		GAMESTATE->IsEventMode() && !GAMESTATE->IsCourseMode())
+	{
+		return MenuRestart(input);
 	}
 
 	if(m_DancingState != STATE_OUTRO  &&

@@ -729,6 +729,13 @@ bool ScreenEvaluation::Input( const InputEventPlus &input )
 	if( IsTransitioning() )
 		return false;
 
+	if (input.MenuI == GAME_BUTTON_RESTART && input.type == IET_FIRST_PRESS &&
+		GAMESTATE->IsEventMode() && !GAMESTATE->IsCourseMode())
+	{
+		return MenuRestart(input);
+	}
+
+
 	if( input.GameI.IsValid() )
 	{
 		if( CodeDetector::EnteredCode(input.GameI.controller, CODE_SAVE_SCREENSHOT1) ||
@@ -792,6 +799,16 @@ bool ScreenEvaluation::MenuStart( const InputEventPlus &input )
 	m_soundStart.Play(true);
 
 	HandleMenuStart();
+	return true;
+}
+
+bool ScreenEvaluation::MenuRestart( const InputEventPlus &input )
+{
+	if( IsTransitioning() )
+		return false;
+
+	SCREENMAN->GetTopScreen()->SetNextScreenName("ScreenGameplay");
+	StartTransitioningScreen( SM_GoToNextScreen );
 	return true;
 }
 

@@ -1208,6 +1208,7 @@ static const InputScheme::GameButtonInfo g_CommonGameButtonInfo[] =
 	{ "Start",	GAME_BUTTON_START },
 	{ "Select",	GAME_BUTTON_SELECT },
 	{ "Back",	GAME_BUTTON_BACK },
+	{ "Restart",	GAME_BUTTON_RESTART },
 	{ "Coin",	GAME_BUTTON_COIN },
 	{ "Operator",	GAME_BUTTON_OPERATOR },
 	{ "EffectUp",	GAME_BUTTON_EFFECT_UP },
