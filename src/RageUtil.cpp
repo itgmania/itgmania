@@ -1195,6 +1195,10 @@ float calc_mean(const float* pStart, const float* pEnd)
 	/* The Kahan summation algorithm is used here to prevent
 	 * situations where the low order bits may be lost.
 	 * https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
+
+	if (pStart == pEnd)
+		return 0.0f;
+	
 	float sum = 0.0f;
 	float c = 0.0f;
 	for (const float* p = pStart; p != pEnd; ++p)
