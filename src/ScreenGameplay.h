@@ -165,6 +165,8 @@ public:
 	 * @return true if we center the solo player, false otherwise. */
 	bool Center1Player() const;
 
+	bool MenuRestart( const InputEventPlus &input );
+
 	// Lua
 	virtual void PushSelf( lua_State *L );
 	Song *GetNextCourseSong() const;

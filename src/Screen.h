@@ -141,6 +141,7 @@ public:
 	virtual bool MenuRight(const InputEventPlus &) { return false; }
 	virtual bool MenuStart(const InputEventPlus &) { return false; }
 	virtual bool MenuSelect(const InputEventPlus &) { return false; }
+	virtual bool MenuRestart(const InputEventPlus &) { return false; }
 	virtual bool MenuBack(const InputEventPlus &) { return false; }
 	virtual bool MenuCoin(const InputEventPlus &) { return false; }
 	// todo? -aj
