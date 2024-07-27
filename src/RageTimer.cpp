@@ -1,23 +1,58 @@
-/*
- * This can be used in two ways: as a timestamp or as a timer.
- *
- * As a timer,
- * RageTimer Timer;
- * for(;;) {
- *   printf( "Will be approximately: %f", Timer.PeekDeltaTime()) ;
- *   float fDeltaTime = Timer.GetDeltaTime();
- * }
- *
- * or as a timestamp:
- * void foo( RageTimer &timestamp ) {
- *     if( timestamp.IsZero() )
- *         printf( "The timestamp isn't set." );
- *     else
- *         printf( "The timestamp happened %f ago", timestamp.Ago() );
- *     timestamp.Touch();
- *     printf( "Near zero: %f", timestamp.Age() );
- * }
- */
+/*++
+
+Source file:
+
+    RageTimer.cpp
+
+Abstract:
+
+    1) Provide the time since game start as seconds or microseconds,
+    2) Provide methods to perform time calculations on RageTimer objects   
+
+Notes:
+
+    Floating-point time math is slower than integer time methods,
+    and is prone to precision loss by having the fractional part
+    lost during type conversion, for this reason usage of
+    floating-point values for a time-since-start value should be
+    avoided whenever possible.
+
+    Use caution and do thorough testing if you change anything here.
+    The engine is very sensitive to fluctuations or errors in time math.
+
+    The most precise way to calculate time differences is to calculate
+    the difference between two microsecond precision time since start values.
+    
+    RageTimer objects should be used for non-time critical functions.
+
+    Fluctuations in time reported by the OS can manifest as a sudden
+    shift in the game's sync (though this is more likely due to buffer
+    underrun somewhere).
+    
+    Incorrect time math or floating-point precision loss will manifest
+    as a consistent sync offset, as if the global offset value shifted.
+    
+Practical limits on data types for time storage:
+
+    32-bit signed integer
+     seconds = 68 years
+     milliseconds = Almost 600 hours
+     microseconds = Just under 36 minutes
+
+    64-bit signed integer
+     seconds = >1 million years
+     milliseconds = >1 million years
+     microseconds = Almost 300,000 years
+
+    The maximum value a single-precision float can store
+    with millisecond accuracy is 1e7f (10,000,000).
+   
+    The maximum value a double-precision float can store
+    with millisecond accuracy is 1e15 (1,000,000,000,000,000).
+   
+    3 decimal places is chosen because 1 millisecond is 0.001 seconds.
+
+--*/
 
 #include "global.h"
 
@@ -40,14 +75,20 @@ static std::uint64_t GetTime( bool /* bAccurate */ )
 	return ArchHooks::GetMicrosecondsSinceStart( true );
 }
 
-/* The accuracy of RageTimer::GetTimeSinceStart() is directly tied to the
- * stability of the clock sync. Maintaining precision here is crucial. Too
- * much error here will manifest as a drastic shift in the game's sync, and
- * will feel like the global offset suddenly changed. Incorrect math here will
- * manifest as a _consistent_ sync offset in game. Resolution mismatches or
- * values truncated or rounded when they shouldn't be can cause errors when
- * this is calculated and manifest as a _sudden_ drift of sync. Use caution
- * and do thorough testing if you change anything here. -sukibaby */
+/*++
+
+Function Description:
+
+   Get the time since the game was started, using the
+   time in microseconds as reported by the OS, and
+   then convert it to a floating point value.
+   
+Time resolutions:
+
+   Seconds
+   
+--*/
+
 double RageTimer::GetTimeSinceStart(bool bAccurate)
 {
 	std::uint64_t usecs = GetTime(bAccurate);
@@ -55,10 +96,49 @@ double RageTimer::GetTimeSinceStart(bool bAccurate)
 	return usecs / 1000000.0;
 }
 
+/*++
+
+Function Description:
+
+   Get the time since the game was started, using the
+   time in microseconds as reported by the OS.
+   
+Time resolutions:
+
+   Microseconds 
+   
+--*/
+
 std::uint64_t RageTimer::GetUsecsSinceStart()
 {
 	return GetTime(true) - g_iStartTime;
 }
+
+// RageTimer objects functions
+//
+// - IsZero           checks if m_sec and m_us are 0
+// - SetZero          sets m_sec and m_us to 0
+// - Touch            no return (void)
+// - Ago              returns float
+// - GetDeltaTime     returns float
+// - PeekDeltaTime    alias for Ago
+// - Half             returns RageTimer
+// - Sum              calculate the seconds and microseconds from the time given
+// - Difference       calculate the difference in seconds and microseconds respectively
+
+/*++
+
+Function Description:
+
+   Split the current time as microseconds into two
+   integers (one for the integer part, and one for
+   the fractional part).
+   
+Return Type:
+
+   None (sets values of m_secs and m_us)
+   
+--*/
 
 void RageTimer::Touch()
 {
@@ -68,11 +148,39 @@ void RageTimer::Touch()
 	this->m_us = std::uint64_t(usecs % TIMESTAMP_RESOLUTION);
 }
 
+/*++
+
+Function Description:
+
+   Return the difference in time since a RageTimer
+   object was initialized. It does not modify the
+   state of the RageTimer.
+   
+Return Type:
+
+   Single-precision floating point
+   
+--*/
+
 float RageTimer::Ago() const
 {
 	const RageTimer Now;
 	return Now - *this;
 }
+
+/*++
+
+Function Description:
+
+   Return the difference in time since a RageTimer
+   object was last checked. It modifies the state
+   of the RageTimer.
+   
+Return Type:
+
+   Floating point
+   
+--*/
 
 float RageTimer::GetDeltaTime()
 {
@@ -82,20 +190,32 @@ float RageTimer::GetDeltaTime()
 	return diff;
 }
 
-/* Get a timer representing half of the time ago as this one.  This is	
- * useful for averaging time.  For example,	
- *	
- * RageTimer tm;	
- * ... do stuff ...	
- * RageTimer AverageTime = tm.Half();	
- * printf( "Something happened approximately %f seconds ago.\n", tm.Ago() ); 
- * Note this has been reverted to the original SM3.95 function. */
+/*++
+
+Function Description:
+
+   Return a point in time halfway between the current
+   time and the time stored by the RageTimer.
+   
+Return Type:
+
+   RageTimer
+   
+--*/
+
 RageTimer RageTimer::Half() const
 {
 	const float fProbableDelay = Ago() / 2;
 	return *this + fProbableDelay;
 }
 
+/*++
+
+Routine Description:
+
+   Operator overloads for RageTimer methods
+   
+--*/
 
 RageTimer RageTimer::operator+(float tm) const
 {
@@ -113,6 +233,21 @@ bool RageTimer::operator<( const RageTimer &rhs ) const
 	return m_us < rhs.m_us;
 
 }
+
+/*++
+
+Function Description:
+
+   Calculate the seconds and microseconds from the given
+   time values, prevent unnecessarily checking the time,
+   and Adjust the seconds and microseconds if microseconds
+   is greater than or equal to 1,000,000.
+   
+Return Type:
+
+   RageTimer
+   
+--*/
 
 RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 {
@@ -138,6 +273,20 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 
 	return ret;
 }
+
+/*++
+
+Function Description:
+
+   Calculate the difference in seconds and microseconds
+   respectively, adjust for negative microseconds, and
+   return the time difference.
+   
+Return Type:
+
+   Floating point
+   
+--*/
 
 double RageTimer::Difference(const RageTimer& lhs, const RageTimer& rhs)
 {
