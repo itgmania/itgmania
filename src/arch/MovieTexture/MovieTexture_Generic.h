@@ -4,6 +4,7 @@
 #include "MovieTexture.h"
 
 #include <cstdint>
+#include <thread>
 
 class FFMpeg_Helper;
 struct RageSurface;
@@ -51,7 +52,7 @@ public:
 	/*
 	 * Get the currently-decoded frame.
 	 */
-	virtual void GetFrame( RageSurface *pOut ) = 0;
+	virtual bool GetFrame( RageSurface *pOut ) = 0;
 
 	/* Return the dimensions of the image, in pixels (before aspect ratio
 	 * adjustments). */
@@ -117,12 +118,17 @@ public:
 private:
 	MovieDecoder *m_pDecoder;
 
+	std::unique_ptr<std::thread> decoding_thread;
+
 	float m_fRate;
 	enum {
 		FRAME_NONE, /* no frame available; call GetFrame to get one */
 		FRAME_DECODED /* frame decoded; waiting until it's time to display it */
 	} m_ImageWaiting;
 	bool m_bLoop;
+
+	// If true, halts all decoding and display.
+	bool m_failure = false;
 	bool m_bWantRewind;
 
 	enum State { DECODER_QUIT, DECODER_RUNNING } m_State;
