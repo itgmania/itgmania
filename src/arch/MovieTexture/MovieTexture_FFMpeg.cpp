@@ -124,11 +124,6 @@ MovieDecoder_FFMpeg::MovieDecoder_FFMpeg()
 
 MovieDecoder_FFMpeg::~MovieDecoder_FFMpeg()
 {
-	if( m_iCurrentPacketOffset != -1 )
-	{
-		avcodec::av_packet_unref( &m_Packet );
-		m_iCurrentPacketOffset = -1;
-	}
 	if (m_swsctx)
 	{
 		avcodec::sws_freeContext(m_swsctx);
@@ -156,19 +151,13 @@ void MovieDecoder_FFMpeg::Init()
 	m_iEOF = 0;
 	m_fTimestamp = 0;
 	m_fLastFrameDelay = 0;
-	m_iFrameNumber = -1; /* decode one frame and you're on the 0th */
+	m_iFrameNumber = 0;
 	m_totalFrames = 0;
 	m_fTimestampOffset = 0;
 	m_fLastFrame = 0;
 	m_swsctx = nullptr;
 	m_avioContext = nullptr;
 	m_buffer = nullptr;
-
-	if( m_iCurrentPacketOffset != -1 )
-	{
-		avcodec::av_packet_unref( &m_Packet );
-		m_iCurrentPacketOffset = -1;
-	}
 }
 
 /* Read until we get a frame, EOF or error.  Return -1 on error, 0 on EOF, 1 if we have a frame. */
@@ -211,10 +200,28 @@ int MovieDecoder_FFMpeg::DecodeFrame( float fTargetTime )
 
 float MovieDecoder_FFMpeg::GetTimestamp() const
 {
-	return m_fTimestamp - m_fTimestampOffset;
+	// Always display the first frame.
+	if (m_iFrameNumber == 0) {
+		return 0;
+	}
+
+	// In a logical situation, this means that display is outpacing decoding.
+	if (m_iFrameNumber >= m_FrameBuffer.size()) {
+		return 0;
+	}
+	return m_FrameBuffer[m_iFrameNumber].frameTimestamp;
 }
 
 bool MovieDecoder_FFMpeg::IsCurrentFrameReady() {
+	// We're displaying faster than decoding. Do not even try to display the frame.
+	if (m_iFrameNumber >= m_FrameBuffer.size()) {
+		return false;
+	}
+	// If the whole movie is decoded, then the frame is definitely ready.
+	if (m_iEOF) {
+		return true;
+	}
+
 	std::lock_guard<std::mutex>(m_FrameBuffer[m_iFrameNumber].lock);
 	if (!m_FrameBuffer[m_iFrameNumber].decoded) {
 		LOG->Info("Frame %i not decoded, total frames: %i", m_iFrameNumber, m_totalFrames);
@@ -503,32 +510,41 @@ int MovieDecoder_FFMpeg::DecodePacket( float fTargetTime )
 	return 0; /* packet done */
 }
 
-void MovieDecoder_FFMpeg::GetFrame( RageSurface *pSurface )
+bool MovieDecoder_FFMpeg::GetFrame(RageSurface* pSurface)
 {
 	avcodec::AVFrame pict;
-	pict.data[0] = (unsigned char *) pSurface->pixels;
+	pict.data[0] = (unsigned char*)pSurface->pixels;
 	pict.linesize[0] = pSurface->pitch;
 
 	/* XXX 1: Do this in one of the Open() methods instead?
 	 * XXX 2: The problem of doing this in Open() is that m_AVTexfmt is not
 	 * already initialized with its correct value.
 	 */
-	if( m_swsctx == nullptr )
+	if (m_swsctx == nullptr)
 	{
-		m_swsctx = avcodec::sws_getCachedContext( m_swsctx,
-				GetWidth(), GetHeight(), m_pStreamCodec->pix_fmt,
-				GetWidth(), GetHeight(), m_AVTexfmt,
-				sws_flags, nullptr, nullptr, nullptr );
-		if( m_swsctx == nullptr )
+		m_swsctx = avcodec::sws_getCachedContext(m_swsctx,
+			GetWidth(), GetHeight(), m_pStreamCodec->pix_fmt,
+			GetWidth(), GetHeight(), m_AVTexfmt,
+			sws_flags, nullptr, nullptr, nullptr);
+		if (m_swsctx == nullptr)
 		{
 			LOG->Warn("Cannot initialize sws conversion context for (%d,%d) %d->%d", GetWidth(), GetHeight(), m_pStreamCodec->pix_fmt, m_AVTexfmt);
-			return;
+			return false;
 		}
 	}
 
-	avcodec::sws_scale( m_swsctx,
-			m_Frame->data, m_Frame->linesize, 0, GetHeight(),
-			pict.data, pict.linesize );
+	avcodec::sws_scale(m_swsctx,
+		m_FrameBuffer[m_iFrameNumber].frame.data, m_FrameBuffer[m_iFrameNumber].frame.linesize, 0, GetHeight(),
+		pict.data, pict.linesize);
+
+	// Don't advance the frame number past the (potential) end of the buffer.
+	// This can happen if display is outpacing decoding, or if we're at the
+	// end of file.
+	if (m_iFrameNumber >= (m_totalFrames - 1)) {
+		return m_iEOF;
+	}
+	m_iFrameNumber++;
+	return false;
 }
 
 static RString averr_ssprintf( int err, const char *fmt, ... )
@@ -677,8 +693,7 @@ void MovieDecoder_FFMpeg::Close()
 
 void MovieDecoder_FFMpeg::Rewind()
 {
-	avcodec::av_seek_frame( m_fctx, -1, 0, 0 );
-	OpenCodec();
+	m_iFrameNumber = 0;
 }
 
 RageSurface *MovieDecoder_FFMpeg::CreateCompatibleSurface( int iTextureWidth, int iTextureHeight, bool bPreferHighColor, MovieDecoderPixelFormatYCbCr &fmtout )
