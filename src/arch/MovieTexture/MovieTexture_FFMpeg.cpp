@@ -10,6 +10,7 @@
 #include <cerrno>
 #include <cstddef>
 #include <cstdint>
+#include <thread>
 
 static void FixLilEndian()
 {
@@ -213,9 +214,69 @@ float MovieDecoder_FFMpeg::GetTimestamp() const
 	return m_fTimestamp - m_fTimestampOffset;
 }
 
+bool MovieDecoder_FFMpeg::IsCurrentFrameReady() {
+	std::lock_guard<std::mutex>(m_FrameBuffer[m_iFrameNumber].lock);
+	if (!m_FrameBuffer[m_iFrameNumber].decoded) {
+		LOG->Info("Frame %i not decoded, total frames: %i", m_iFrameNumber, m_totalFrames);
+	}
+	return m_FrameBuffer[m_iFrameNumber].decoded;
+}
+
 float MovieDecoder_FFMpeg::GetFrameDuration() const
 {
 	return m_fLastFrameDelay;
+}
+
+int MovieDecoder_FFMpeg::DecodeNextFrame()
+{
+	// Add in a new FrameBuffer entry, and lock it immediately.
+	m_FrameBuffer.push_back(FrameHolder());
+	std::lock_guard<std::mutex>(m_FrameBuffer.back().lock);
+	int status = SendPacketToBuffer();
+	if (status < 0) {
+		return status;
+	}
+	status = DecodePacketInBuffer();
+	if (firstFrame) {
+		firstFrame = false;
+	}
+	return status;
+}
+
+int MovieDecoder_FFMpeg::DecodeMovie()
+{
+	using std::chrono::operator""ms;
+
+	// The first frame expected to be decoded and drawn already,
+	// that is handled by MovieTexture_Generic::Init().
+	int frameNum = 0;
+	while (!m_iEOF) {
+		// This wake up time could be tied to the RageTimer, but as it doesn't
+		// need to sync with other parts of ITGm, using chrono is fine.
+		// The 1ms time here is arbitrary, and means that the game will decode
+		// at a maximum speed of 1 frame per ms (or 1000 fps).
+		auto wake_up = std::chrono::steady_clock::now() + 1ms;
+
+		int status = DecodeNextFrame();
+
+		// If cancelled (quitting a song, scrolling the banner), or fatal error,
+		// stop decoding.
+		if (status < 0) {
+			return status;
+		}
+
+		frameNum++;
+
+		// This means when opening the file, less frames were detected than
+		// there actually are. Increment to keep up so we don't end the video
+		// early during display.
+		if (frameNum - 1 > m_totalFrames) {
+			m_totalFrames++;
+		}
+
+		std::this_thread::sleep_until(wake_up);
+	}
+	return 0;
 }
 
 int MovieDecoder_FFMpeg::SendPacketToBuffer()
