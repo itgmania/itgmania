@@ -70,7 +70,9 @@ public:
 	void Close();
 	void Rewind();
 
-	void GetFrame( RageSurface *pOut );
+	// This draws a frame from the buffer onto the provided RageSurface.
+	// Returns true if returning the last frame in the movie.
+	bool GetFrame(RageSurface* pOut);
 	int DecodeFrame( float fTargetTime );
 
 	// Decode a single frame.  Return -2 on cancel, -1 on error, 0 on EOF, 1 if we have a frame.
