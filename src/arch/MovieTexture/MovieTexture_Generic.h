@@ -28,6 +28,14 @@ public:
 	virtual void Close() = 0;
 	virtual void Rewind() = 0;
 
+	// Decode the next frame.
+	// Return 1 on success, 0 on EOF, -1 on fatal error, -2 on cancel.
+	virtual int DecodeNextFrame() = 0;
+	virtual int DecodeMovie() = 0;
+
+	// Returns true if the frame we want to display has been decoded already.
+	virtual bool IsCurrentFrameReady() = 0;
+
 	/*
 	 * Decode a frame.  Return 1 on success, 0 on EOF, -1 on fatal error.
 	 *
@@ -95,6 +103,10 @@ public:
 	virtual void Reload();
 
 	virtual void SetPosition( float fSeconds );
+
+	// UpdateMovie tells the MovieTexture to update the displayed frame based
+	// on fSeconds passed in. (e.g., 5.9 input means show the frame that should
+	// be displayed 5.9 seconds into the movie).
 	virtual void UpdateMovie( float fSeconds );
 	virtual void SetPlaybackRate( float fRate ) { m_fRate = fRate; }
 	void SetLooping( bool bLooping=true ) { m_bLoop = bLooping; }

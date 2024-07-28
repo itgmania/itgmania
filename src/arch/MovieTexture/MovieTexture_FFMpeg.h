@@ -73,6 +73,23 @@ public:
 	void GetFrame( RageSurface *pOut );
 	int DecodeFrame( float fTargetTime );
 
+	// Decode a single frame.  Return -2 on cancel, -1 on error, 0 on EOF, 1 if we have a frame.
+	int DecodeNextFrame();
+
+	// Decode the entire movie.
+	// If we let this decode as fast as possible, it could come at the expense
+	// of gameplay performance. Since dropping frames is undesirable, an
+	// artificial rate limit is introduced.
+	//
+	// Given that most movies will display at 30fps or 60fps, decoding at a
+	// speed of 1000fps should be more than sufficient to ensure we never
+	// run behind. This rate limiting is only needed in case itgmania is
+	// running on a low performance machine, or the movie is REALLY long.
+	//
+	// Returns 0 on success, -1 on fatal error, -2 on cancel.
+	int DecodeMovie();
+	bool IsCurrentFrameReady();
+
 	int GetWidth() const { return m_pStreamCodec->width; }
 	int GetHeight() const { return m_pStreamCodec->height; }
 
