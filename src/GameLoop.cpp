@@ -282,13 +282,8 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 	* acting on song beat from last frame */
 	HandleInputEvents(fDeltaTime);
 
-	//bandaid for low max audio sample counter
-	SOUNDMAN->low_sample_count_workaround();
 	LIGHTSMAN->Update(fDeltaTime);
-
 }
-
-
 
 void GameLoop::RunGameLoop()
 {

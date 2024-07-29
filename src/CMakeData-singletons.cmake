@@ -19,6 +19,7 @@ list(APPEND SMDATA_GLOBAL_SINGLETON_SRC
             "NoteSkinManager.cpp"
             "PrefsManager.cpp"
             "ProfileManager.cpp"
+            "RandomSeed.cpp"
             "ScreenManager.cpp"
             "SongManager.cpp"
             "StatsManager.cpp"
@@ -45,12 +46,13 @@ list(APPEND SMDATA_GLOBAL_SINGLETON_HPP
             "NoteSkinManager.h"
             "PrefsManager.h"
             "ProfileManager.h"
+            "RandomSeed.h"
             "ScreenManager.h"
             "SongManager.h"
             "StatsManager.h"
             "ThemeManager.h"
-            "UnlockManager.h")
-
+            "UnlockManager.h"
+            "Wallclock.h")
 source_group("Global Singletons"
              FILES
              ${SMDATA_GLOBAL_SINGLETON_SRC}

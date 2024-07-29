@@ -1,52 +1,13 @@
-#include "global.h"
-#include "RageSoundDriver_Null.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "PrefsManager.h"
-#include "Wallclock.h"
+#ifndef RANDOMSEED_H
+#define RANDOMSEED_H
 
-#include <cstdint>
+int GetRandomInt();
+float GetRandomFloat();
 
-REGISTER_SOUND_DRIVER_CLASS( Null );
-
-const int channels = 2;
-
-void RageSoundDriver_Null::Update()
-{
-	/* "Play" frames. */
-	while( m_iLastCursorPos < GetPosition()+1024*4 )
-	{
-		std::int16_t buf[256*channels];
-		this->Mix( buf, 256, m_iLastCursorPos, GetPosition() );
-		m_iLastCursorPos += 256;
-	}
-
-	RageSoundDriver::Update();
-}
-
-std::int64_t RageSoundDriver_Null::GetPosition() const
-{
-	std::int64_t usec = Wallclock::GetSystemTime();
-	std::int64_t sampleRate = static_cast<int64_t>(m_iSampleRate);
-	return usec * sampleRate;
-}
-
-RageSoundDriver_Null::RageSoundDriver_Null()
-{
-	m_iSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
-	if( m_iSampleRate == 0 )
-		m_iSampleRate = 44100;
-	m_iLastCursorPos = GetPosition();
-	StartDecodeThread();
-}
-
-int RageSoundDriver_Null::GetSampleRate() const
-{
-	return m_iSampleRate;
-}
+#endif // RANDOMSEED_H
 
 /*
- * (c) 2002-2004 Glenn Maynard, Aaron VonderHaar
+ * (c) 2024 sukibaby
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a

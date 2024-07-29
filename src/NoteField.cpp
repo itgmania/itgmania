@@ -5,7 +5,7 @@
 #include "ArrowEffects.h"
 #include "GameManager.h"
 #include "GameState.h"
-#include "RageTimer.h"
+#include "Wallclock.h"
 #include "RageLog.h"
 #include "RageMath.h"
 #include "ThemeManager.h"
@@ -868,7 +868,7 @@ void NoteField::DrawPrimitives()
 		ASSERT(GAMESTATE->m_pCurSong != nullptr);
 
 		const TimingData &timing = *pTiming;
-		const RageColor text_glow= RageColor(1,1,1,RageFastCos(RageTimer::GetTimeSinceStartFast()*2)/2+0.5f);
+		const RageColor text_glow= RageColor(1,1,1,std::cos(Wallclock::GetElapsedGameTime()*2)/2+0.5f);
 
 		float horiz_align= align_right;
 		float side_sign= 1;
@@ -1055,7 +1055,7 @@ void NoteField::DrawPrimitives()
 		*m_FieldRenderArgs.selection_end_marker != -1)
 	{
 		m_FieldRenderArgs.selection_glow= SCALE(
-			RageFastCos(RageTimer::GetTimeSinceStartFast()*2), -1, 1, 0.1f, 0.3f);
+			std::cos(Wallclock::GetElapsedGameTime()*2), -1, 1, 0.1f, 0.3f);
 	}
 	m_FieldRenderArgs.fade_before_targets= FADE_BEFORE_TARGETS_PERCENT;
 

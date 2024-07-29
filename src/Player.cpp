@@ -40,6 +40,7 @@
 #include "GameCommand.h"
 #include "LocalizedString.h"
 #include "AdjustSync.h"
+#include "RandomSeed.h"
 
 #include <cmath>
 #include <cstddef>
@@ -3476,10 +3477,8 @@ RString Player::ApplyRandomAttack()
 		return "";
 
 	//int iAttackToUse = rand() % GAMESTATE->m_RandomAttacks.size();
-	DateTime now = DateTime::GetNowDate();
-	int iSeed = now.tm_hour * now.tm_min * now.tm_sec * now.tm_mday;
-	RandomGen rnd( GAMESTATE->m_iStageSeed * iSeed );
-	int iAttackToUse = rnd() % GAMESTATE->m_RandomAttacks.size();
+	int iSeed = GetRandomInt();
+	int iAttackToUse = iSeed % GAMESTATE->m_RandomAttacks.size();
 	return GAMESTATE->m_RandomAttacks[iAttackToUse];
 }
 

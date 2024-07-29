@@ -210,6 +210,26 @@ bool HexToBinary( const RString &s, RString &sOut )
 	return HexToBinary(s, (unsigned char *) sOut.data());
 }
 
+RString DeltaToMMSSMsMs(std::int64_t fMicrosecs)
+{
+    const std::int64_t fSecs = fMicrosecs / 1000000;
+    const std::int64_t iMinsDisplay = fSecs / 60;
+    const std::int64_t iSecsDisplay = fSecs % 60; 
+    const std::int64_t iLeftoverDisplay = (fMicrosecs / 10000) % 100;
+    RString sReturn = ssprintf("%02lld:%02lld.%02lld", iMinsDisplay, iSecsDisplay, iLeftoverDisplay);
+    return sReturn;
+}
+
+RString DeltaToMMSSMsMsMs(std::int64_t fMicrosecs)
+{
+    const std::int64_t fSecs = fMicrosecs / 1000000;
+    const std::int64_t iMinsDisplay = fSecs / 60;
+    const std::int64_t iSecsDisplay = fSecs % 60; 
+    const std::int64_t iLeftoverDisplay = (fMicrosecs / 1000) % 1000;
+    RString sReturn = ssprintf("%02lld:%02lld.%03lld", iMinsDisplay, iSecsDisplay, iLeftoverDisplay);
+    return sReturn;
+}
+
 float HHMMSSToSeconds( const RString &sHHMMSS )
 {
 	std::vector<RString> arrayBits;

@@ -1,7 +1,7 @@
 #include "global.h"
 #include "LightsManager.h"
 #include "GameState.h"
-#include "RageTimer.h"
+#include "Wallclock.h"
 #include "arch/Lights/LightsDriver.h"
 #include "RageUtil.h"
 #include "GameInput.h"	// for GameController
@@ -217,7 +217,7 @@ void LightsManager::Update( float fDeltaTime )
 
 		case LIGHTSMODE_ATTRACT:
 		{
-			int iSec = (int)RageTimer::GetTimeSinceStartFast();
+			int iSec = Wallclock::GetSystemTimeInSeconds();
 			int iTopIndex = iSec % 4;
 
 			// Aldo: Disabled this line, apparently it was a forgotten initialization

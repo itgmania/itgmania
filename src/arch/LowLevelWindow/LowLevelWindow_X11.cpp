@@ -7,7 +7,7 @@
 #include "RageDisplay.h" // VideoModeParams
 #include "DisplaySpec.h"
 #include "LocalizedString.h"
-#include "RageTimer.h"
+#include "Wallclock.h"
 
 #include "RageDisplay_OGL_Helpers.h"
 using namespace RageDisplay_Legacy_Helpers;
@@ -627,7 +627,7 @@ void LowLevelWindow_X11::SwapBuffers()
 		 * it's already active.
 		 */
 
-		auto now = RageTimer::GetTimeSinceStartFast();
+		auto now = Wallclock::GetSystemTimeInSeconds();
 		if( (now - m_lastScreensaverInterrupt) > m_screensaverInterruptInterval ) {
 		  m_lastScreensaverInterrupt = now;
 		  XLockDisplay( Dpy );

@@ -1,24 +1,3 @@
-/*
- * This can be used in two ways: as a timestamp or as a timer.
- *
- * As a timer,
- * RageTimer Timer;
- * for(;;) {
- *   printf( "Will be approximately: %f", Timer.PeekDeltaTime()) ;
- *   float fDeltaTime = Timer.GetDeltaTime();
- * }
- *
- * or as a timestamp:
- * void foo( RageTimer &timestamp ) {
- *     if( timestamp.IsZero() )
- *         printf( "The timestamp isn't set." );
- *     else
- *         printf( "The timestamp happened %f ago", timestamp.Ago() );
- *     timestamp.Touch();
- *     printf( "Near zero: %f", timestamp.Age() );
- * }
- */
-
 #include "global.h"
 
 #include "RageTimer.h"
@@ -30,42 +9,14 @@
 #include <cmath>
 #include <cstdint>
 
-#define TIMESTAMP_RESOLUTION 1000000
-
 const RageTimer RageZeroTimer(0,0);
-static std::uint64_t g_iStartTime = ArchHooks::GetMicrosecondsSinceStart( true );
-
-static std::uint64_t GetTime( bool /* bAccurate */ )
-{
-	return ArchHooks::GetMicrosecondsSinceStart( true );
-}
-
-/* The accuracy of RageTimer::GetTimeSinceStart() is directly tied to the
- * stability of the clock sync. Maintaining precision here is crucial. Too
- * much error here will manifest as a drastic shift in the game's sync, and
- * will feel like the global offset suddenly changed. Incorrect math here will
- * manifest as a _consistent_ sync offset in game. Resolution mismatches or
- * values truncated or rounded when they shouldn't be can cause errors when
- * this is calculated and manifest as a _sudden_ drift of sync. Use caution
- * and do thorough testing if you change anything here. -sukibaby */
-double RageTimer::GetTimeSinceStart(bool bAccurate)
-{
-	std::uint64_t usecs = GetTime(bAccurate);
-	usecs -= g_iStartTime;
-	return usecs / 1000000.0;
-}
-
-std::uint64_t RageTimer::GetUsecsSinceStart()
-{
-	return GetTime(true) - g_iStartTime;
-}
 
 void RageTimer::Touch()
 {
-	std::uint64_t usecs = GetTime( true );
+	std::uint64_t usecs = ArchHooks::GetMicrosecondsSinceStart( true );
 
-	this->m_secs = std::uint64_t(usecs / TIMESTAMP_RESOLUTION);
-	this->m_us = std::uint64_t(usecs % TIMESTAMP_RESOLUTION);
+	this->m_secs = std::uint64_t(usecs / 1000000);
+	this->m_us = std::uint64_t(usecs % 1000000);
 }
 
 float RageTimer::Ago() const
@@ -120,7 +71,7 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 	 * tm == 5.25  -> secs =  5, us = 5.25  - ( 5) = .25
 	 * tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75 */
 	int64_t seconds = std::floor(tm);
-	int64_t us = int64_t((tm - seconds) * TIMESTAMP_RESOLUTION);
+	int64_t us = int64_t((tm - seconds) * 1000000);
 
 	// Prevent unnecessarily checking the time
 	RageTimer ret(0, 0);
@@ -129,10 +80,11 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 	ret.m_secs = seconds + lhs.m_secs;
 	ret.m_us = us + lhs.m_us;
 
-	// Adjust the seconds and microseconds if microseconds is greater than or equal to TIMESTAMP_RESOLUTION
-	if (ret.m_us >= TIMESTAMP_RESOLUTION)
+	// Adjust the seconds and microseconds if microseconds is greater than
+	// or equal to 1000000 (usec <-> sec conversion factor)
+	if (ret.m_us >= 1000000)
 	{
-		ret.m_us -= TIMESTAMP_RESOLUTION;
+		ret.m_us -= 1000000;
 		++ret.m_secs;
 	}
 
@@ -148,12 +100,28 @@ double RageTimer::Difference(const RageTimer& lhs, const RageTimer& rhs)
 	// Adjust seconds and microseconds if microseconds is negative
 	if ( us < 0 )
 	{
-		us += TIMESTAMP_RESOLUTION;
+		us += 1000000;
 		--secs;
 	}
 
 	// Return the difference as a double to preserve the fractional part
-	return static_cast<double>(secs) + static_cast<double>(us) / TIMESTAMP_RESOLUTION;
+	return static_cast<double>(secs) + static_cast<double>(us) / 1000000.0;
+}
+
+/*
+ * The following is not thread-safe or accurate, but Lua depends on
+ * it being here, so this function should be left alone as it only exists
+ * for legacy compatibility.
+ * 
+ * Use Wallclock.h instead if you need to interact with the system clock.
+ */
+static std::uint64_t g_iStartTime = ArchHooks::GetMicrosecondsSinceStart( true );
+
+float RageTimer::GetTimeSinceStart( bool bAccurate )
+{
+	std::uint64_t usecs = ArchHooks::GetMicrosecondsSinceStart( true );
+	usecs -= g_iStartTime;
+	return usecs / 1000000.0;
 }
 
 #include "LuaManager.h"

@@ -13,6 +13,7 @@
 #include "LightsManager.h" // for NUM_CabinetLight
 #include "ActorUtil.h"
 #include "Preference.h"
+#include "Wallclock.h"
 
 #include <cmath>
 #include <cstddef>
@@ -919,7 +920,7 @@ void Actor::UpdateInternal(float delta_time)
 		}
 		break;
 	case CLOCK_TIMER_GLOBAL:
-		generic_global_timer_update(RageTimer::GetUsecsSinceStart(), m_fEffectDelta, m_fSecsIntoEffect);
+		generic_global_timer_update(Wallclock::GetSystemTime(), m_fEffectDelta, m_fSecsIntoEffect);
 		break;
 	case CLOCK_BGM_BEAT:
 		generic_global_timer_update(g_fCurrentBGMBeat, m_fEffectDelta, m_fSecsIntoEffect);

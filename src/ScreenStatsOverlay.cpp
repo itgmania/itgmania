@@ -5,6 +5,7 @@
 #include "RageDisplay.h"
 #include "RageLog.h"
 #include "ScreenDimensions.h"
+#include "Wallclock.h"
 
 REGISTER_SCREEN_CLASS( ScreenStatsOverlay );
 
@@ -125,7 +126,7 @@ void ScreenStatsOverlay::UpdateSkips()
 
 	if( skip )
 	{
-		RString sTime( SecondsToMMSSMsMs(RageTimer::GetTimeSinceStartFast()) );
+		RString sTime( DeltaToMMSSMsMs(Wallclock::GetElapsedGameTime()) );
 
 		static const RageColor colors[] =
 		{

@@ -984,7 +984,7 @@ void MusicWheel::readyWheelItemsData(SortOrder so) {
 		if (so != SORT_PREFERRED) {
 			m_WheelItemDatasStatus[so]=VALID;
 		}
-		LOG->Trace( "MusicWheel sorting took: %f", timer.GetTimeSinceStart() );
+		LOG->Trace( "MusicWheel sorting took: %f", timer.Ago() );
 	}
 
 }

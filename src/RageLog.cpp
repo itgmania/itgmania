@@ -1,7 +1,7 @@
 #include "global.h"
 #include "RageLog.h"
 #include "RageUtil.h"
-#include "RageTimer.h"
+#include "Wallclock.h"
 #include "RageFile.h"
 #include "RageThreads.h"
 
@@ -268,7 +268,7 @@ void RageLog::Write( int where, const RString &sLine )
 		puts( sWarningSeparator );
 	}
 
-	RString sTimestamp = SecondsToMMSSMsMsMs( RageTimer::GetTimeSinceStart() ) + ": ";
+	RString sTimestamp = DeltaToMMSSMsMsMs( Wallclock::GetElapsedGameTime() ) + ": ";
 	RString sWarning;
 	if( where & WRITE_LOUD )
 		sWarning = "WARNING: ";

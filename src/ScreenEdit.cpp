@@ -37,6 +37,7 @@
 #include "TimingData.h"
 #include "Game.h"
 #include "RageSoundReader.h"
+#include "Wallclock.h"
 
 #include <cfloat>
 #include <cmath>
@@ -48,9 +49,9 @@ static Preference<float> g_iDefaultRecordLength( "DefaultRecordLength", 4 );
 static Preference<bool> g_bEditorShowBGChangesPlay( "EditorShowBGChangesPlay", true );
 
 /** @brief How long must the button be held to generate a hold in record mode? */
-const float record_hold_default= 0.3f;
-float record_hold_seconds = record_hold_default;
-const float time_between_autosave= 300.0f; // 5 minutes. -Kyz
+const std::int64_t record_hold_default= 0.3;
+std::int64_t record_hold_seconds = record_hold_default;
+const std::int64_t time_between_autosave= 300; // 5 minutes. -Kyz
 
 #define PLAYER_X		(SCREEN_CENTER_X)
 #define PLAYER_Y		(SCREEN_CENTER_Y)
@@ -1667,7 +1668,7 @@ void ScreenEdit::Update( float fDeltaTime )
 	if(m_EditState == STATE_EDITING)
 	{
 		if(IsDirty() && m_next_autosave_time > -1.0f &&
-			RageTimer::GetTimeSinceStartFast() > m_next_autosave_time)
+			Wallclock::GetSystemTime() > m_next_autosave_time)
 		{
 			PerformSave(true);
 		}
@@ -4362,7 +4363,7 @@ void ScreenEdit::HandleScreenMessage( const ScreenMessage SM )
 	else if( SM == SM_AutoSaveSuccessful )
 	{
 		LOG->Trace("AutoSave successful.");
-		m_next_autosave_time= RageTimer::GetTimeSinceStartFast() + time_between_autosave;
+		m_next_autosave_time= Wallclock::GetSystemTime() + time_between_autosave;
 		SCREENMAN->SystemMessage(AUTOSAVE_SUCCESSFUL);
 	}
 	else if( SM == SM_SaveFailed ) // save failed; stay in the editor
@@ -4438,19 +4439,19 @@ void ScreenEdit::SetDirty(bool dirty)
 	if(EDIT_MODE.GetValue() != EditMode_Full)
 	{
 		m_dirty= false;
-		m_next_autosave_time= -1.0f;
+		m_next_autosave_time= -1;
 		return;
 	}
 	if(dirty)
 	{
 		if(!m_dirty)
 		{
-			m_next_autosave_time= RageTimer::GetTimeSinceStartFast() + time_between_autosave;
+			m_next_autosave_time= Wallclock::GetSystemTime() + time_between_autosave;
 		}
 	}
 	else
 	{
-		m_next_autosave_time= -1.0f;
+		m_next_autosave_time= -1;
 	}
 	m_dirty= dirty;
 }

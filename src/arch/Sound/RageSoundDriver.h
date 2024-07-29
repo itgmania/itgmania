@@ -50,9 +50,8 @@ public:
 
 	/* Get the current hardware frame position, in the same time base as passed to
 	 * RageSound::CommitPlayingPosition. */
-	std::int64_t GetHardwareFrame( RageTimer *pTimer ) const;
+	std::int64_t GetHardwareFrame() const;
 	virtual std::int64_t GetPosition() const = 0;
-	void low_sample_count_workaround();
 
 	/* When a sound is finished playing (GetDataToPlay returns 0) and the sound has
 	 * been completely flushed (so GetPosition is no longer meaningful), call

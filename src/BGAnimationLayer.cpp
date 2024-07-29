@@ -13,6 +13,7 @@
 #include "LuaManager.h"
 #include "AutoActor.h"
 #include "ThemeManager.h"
+#include "Wallclock.h"
 
 #include <cmath>
 
@@ -611,7 +612,7 @@ void BGAnimationLayer::UpdateInternal( float fDeltaTime )
 		break;
 	case TYPE_TILES:
 		{
-			float fSecs = RageTimer::GetTimeSinceStartFast();
+			float fSecs = Wallclock::FloatingPointTimeInSeconds();
 			float fTotalWidth = m_iNumTilesWide * m_fTilesSpacingX;
 			float fTotalHeight = m_iNumTilesHigh * m_fTilesSpacingY;
 

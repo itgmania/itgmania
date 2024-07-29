@@ -3,7 +3,7 @@
 #include "ThemeManager.h"
 #include "RageUtil.h"
 #include "GameState.h"
-#include "RageTimer.h"
+#include "Wallclock.h"
 #include "PrefsManager.h"
 #include "Song.h"
 #include "ScreenManager.h"
@@ -132,8 +132,8 @@ void Inventory::Update( float fDelta )
 		GAMESTATE->m_Position.m_fSongBeat < song.GetLastBeat() )
 	{
 		// every 1 seconds, try to use an item
-		int iLastSecond = (int)(RageTimer::GetTimeSinceStartFast() - fDelta);
-		int iThisSecond = (int)RageTimer::GetTimeSinceStartFast();
+		float iLastSecond = static_cast<float>(Wallclock::FloatingPointTimeInSeconds()) - fDelta;
+		float iThisSecond = static_cast<float>(Wallclock::FloatingPointTimeInSeconds());
 		if( iLastSecond != iThisSecond )
 		{
 			for( int s=0; s<NUM_INVENTORY_SLOTS; s++ )
