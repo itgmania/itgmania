@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#define PI		(3.141592653589793f)
+constexpr float PI = 3.1415926536f;
 
 struct lua_State;
 struct RageVector2;

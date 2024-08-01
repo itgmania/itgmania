@@ -8,6 +8,7 @@ ITGmania is a fork of [StepMania 5.1](https://github.com/stepmania/stepmania/tre
 ## Changes to StepMania 5.1
 
 - Built-in network functionality
+- Fully 64-bit, optimized for modern OSes
 - Reload new songs from within the song select screen
 - The mine fix applied (courtesy of [DinsFire64](https://gist.github.com/DinsFire64/4a3f763cd3033afd55a176980b32a3b5))
 - Held misses tracked in the engine for pad debugging
@@ -19,15 +20,46 @@ ITGmania is a fork of [StepMania 5.1](https://github.com/stepmania/stepmania/tre
 - Changed the default binding for P2/back from hyphen to backslash
 
 ## Installation
-### From Packages
 
-For those that do not wish to compile the game on their own and use a binary right away, be aware of the following issues:
+You can choose between using the installer or using the portable build. Using the installer is recommended, because it makes upgrading to new versions easier.
 
-* Windows 7 is the minimum supported version.
-* macOS users need to have macOS 11 (Big Sur) or higher to run ITGmania.
-* Linux users should receive all they need from the package manager of their choice.
+### Windows
 
-### From Source
+**Windows 7 is the minimum supported version.**
+
+ * You will likely have to manually allow the installer to start.
+
+### macOS
+
+**macOS users need to have macOS 11 (Big Sur) or higher to run ITGmania.**
+* Move ITGmania.app to the Applications folder, and then run the following command in Terminal:
+
+   * `xattr -dr com.apple.quarantine /Applications/ITGmania`
+   
+* You should then add ITGmania to the "Input Monitoring" section of System Preferences (under Security & Privacy)
+
+### Linux
+
+**Linux users should receive all they need from the package manager of their choice.**
+
+* **Debian-based**:
+
+  * `sudo apt install libgdk-pixbuf-2.0-0 libgl1 libglu1-mesa libglvnd0 libgtk-3-0 libusb-0.1-4 libxinerama1 libxtst6`
+
+* **Fedora-based**:
+
+  * `sudo yum install gdk-pixbuf2 mesa-libGLU gtk3 libusb-compat-0.1 libXinerama libXtst`
+
+*  **Arch Linux**:
+
+   * `sudo pacman -S mesa gtk3 libusb-compat libxinerama libxtst llvm-libs`
+
+* **OpenSUSE**:
+
+   * `sudo zypper install libGLU1`
+
+
+### Build From Source
 
 ITGmania can be compiled using [CMake](http://www.cmake.org/). More information about using CMake can be found in both the `Build` directory and CMake's documentation.
 

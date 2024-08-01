@@ -275,42 +275,11 @@ public:
  *
  * should output the same value (+-1) 256 times.  If this function is
  * incorrect, the first and/or last values may be biased. */
-#ifdef CPU_AARCH64
 inline unsigned char FTOC(float a)
 {
-	const float v = a < 0.0f ? 0.0f : (a > 1.0f ? 1.0f : a);
-	return static_cast<unsigned char>(v * 255.0f);
+	int value = static_cast<int>(a * 256.0f);
+	return static_cast<unsigned char>(clamp(value, 0, 255));
 }
-#else
-inline unsigned char FTOC(float a)
-{
-	//This value is 2^52 * 1.5.
-	const double INT_MANTISSA = 6755399441055744.0;
-
-	/* Be sure to truncate (not round) positive values. The highest value that
-	* should be converted to 1 is roughly(1 / 256 - 0.00001); if we don't
-	* truncate, values up to (1/256 + 0.5) will be converted to 1, which is
-	* wrong. */
-	double base = double(a * 256.f - 0.5f);
-
-	/* INT_MANTISSA is chosen such that, when added to a sufficiently small
-	* double, the mantissa bits of that double can be reinterpreted as that
-	* number rounded to an integer. This is done to improve performance. */
-	base += INT_MANTISSA;
-	int ret = reinterpret_cast<int&>(base);
-
-	/* Benchmarking shows that clamping here, as integers, is much faster than clamping
-	* before the conversion, as floats. */
-	if (ret < 0) {
-		return 0;
-	}
-	if (ret > 255) {
-		return 255;
-	}
-
-	return static_cast<unsigned char>(ret);
-}
-#endif
 
 /* Color type used only in vertex lists.  OpenGL expects colors in
  * r, g, b, a order, independent of endianness, so storing them this

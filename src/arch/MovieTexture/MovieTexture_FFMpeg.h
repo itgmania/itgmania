@@ -6,6 +6,7 @@
 #include "MovieTexture_Generic.h"
 
 #include <cstdint>
+#include <mutex>
 
 struct RageSurface;
 
@@ -22,6 +23,27 @@ namespace avcodec
 
 #define STEPMANIA_FFMPEG_BUFFER_SIZE 4096
 static const int sws_flags = SWS_BICUBIC; // XXX: Reasonable default?
+
+struct FrameHolder {
+	avcodec::AVFrame frame;
+	avcodec::AVPacket packet;
+	float frameTimestamp;
+	float frameDelay;
+	bool decoded = false;
+	std::mutex lock; // Protects the frame as it's being initialized.
+
+	FrameHolder() = default;
+
+	// Copy constructor, unused but we need to make the compiler not copy
+	// the mutex.
+	FrameHolder(const FrameHolder& fh) {
+		frame = fh.frame;
+		packet = fh.packet;
+		frameTimestamp = fh.frameTimestamp;
+		frameDelay = fh.frameDelay;
+		decoded = fh.decoded;
+	}
+};
 
 class MovieTexture_FFMpeg: public MovieTexture_Generic
 {
@@ -59,11 +81,21 @@ public:
 	float GetTimestamp() const;
 	float GetFrameDuration() const;
 
+	void Cancel() { cancel = true; };
+
 private:
 	void Init();
 	RString OpenCodec();
 	int ReadPacket();
 	int DecodePacket( float fTargetTime );
+
+	// Read a packet and send it to our frame data buffer.
+	// Returns -2 on cancel, -1 on error, 0 on EOF, 1 on OK.
+	int SendPacketToBuffer();
+
+	// Decode frame data from the packet in the buffer.
+	// Returns -2 on cancel, -1 on error, 0 if the packet is finished.
+	int DecodePacketInBuffer();
 
 	avcodec::AVStream *m_pStream;
 	avcodec::AVFrame *m_Frame;
@@ -76,9 +108,13 @@ private:
 	float m_fTimestampOffset;
 	float m_fLastFrameDelay;
 	int m_iFrameNumber;
+	int m_totalFrames; // Total number of frames in the movie.
 
 	unsigned char *m_buffer;
 	avcodec::AVIOContext *m_avioContext;
+
+	// The movie buffer.
+	std::vector<FrameHolder> m_FrameBuffer;
 
 	avcodec::AVPacket m_Packet;
 	int m_iCurrentPacketOffset;
@@ -88,6 +124,10 @@ private:
 	 * 1 = EOF from ReadPacket
 	 * 2 = EOF from ReadPacket and DecodePacket */
 	int m_iEOF;
+
+	// If true, received a cancel signal from the MovieTexture.
+	bool cancel = false;
+	bool firstFrame = true;
 };
 
 static struct AVPixelFormat_t
