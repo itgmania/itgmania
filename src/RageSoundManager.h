@@ -47,7 +47,12 @@ public:
 	void AddLoadedSound( const RString &sPath, RageSoundReader_Preload *pSound );
 
 	void fix_bogus_sound_driver_pref(RString const& valid_setting);
-
+/*   THIS CHANGE IS ONLY INCLUDED TO PROVIDE A FULLY WORKING PATCH
+ *     DEMONSTRATING A COMPLETE RAGETIMER REMOVAL.
+ *	 
+ *	 ALL CHANGES TO THIS FILE WILL BE REMOVED BEFORE THE PR IS MERGED.
+ *   
+ */
 private:
 	std::map<RString, RageSoundReader_Preload *> m_mapPreloadedSounds;
 

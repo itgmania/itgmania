@@ -984,6 +984,12 @@ void MusicWheel::readyWheelItemsData(SortOrder so) {
 		if (so != SORT_PREFERRED) {
 			m_WheelItemDatasStatus[so]=VALID;
 		}
+		/*   THIS CHANGE IS ONLY INCLUDED TO PROVIDE A FULLY WORKING PATCH
+ *     DEMONSTRATING A COMPLETE RAGETIMER REMOVAL.
+ *	 
+ *	 ALL CHANGES TO THIS FILE WILL BE REMOVED BEFORE THE PR IS MERGED.
+ *   
+ */
 		LOG->Trace( "MusicWheel sorting took: %f", timer.Ago() );
 	}
 

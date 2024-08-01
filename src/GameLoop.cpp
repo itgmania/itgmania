@@ -281,7 +281,12 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 	/* Important: Process input AFTER updating game logic, or input will be
 	* acting on song beat from last frame */
 	HandleInputEvents(fDeltaTime);
-
+/*   THIS CHANGE IS ONLY INCLUDED TO PROVIDE A FULLY WORKING PATCH
+ *     DEMONSTRATING A COMPLETE RAGETIMER REMOVAL.
+ *	 
+ *	 ALL CHANGES TO THIS FILE WILL BE REMOVED BEFORE THE PR IS MERGED.
+ *   
+ */
 	LIGHTSMAN->Update(fDeltaTime);
 }
 

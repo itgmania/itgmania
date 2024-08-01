@@ -41,7 +41,12 @@
 #include "LocalizedString.h"
 #include "AdjustSync.h"
 #include "RandomSeed.h"
-
+/*   THIS CHANGE IS ONLY INCLUDED TO PROVIDE A FULLY WORKING PATCH
+ *     DEMONSTRATING A COMPLETE RAGETIMER REMOVAL.
+ *	 
+ *	 ALL CHANGES TO THIS FILE WILL BE REMOVED BEFORE THE PR IS MERGED.
+ *   
+ */
 #include <cmath>
 #include <cstddef>
 #include <vector>

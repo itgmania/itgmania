@@ -3,13 +3,21 @@
 #include "XmlFile.h"
 #include "FontManager.h"
 #include "RageLog.h"
-#include "RageTimer.h"
+//#include "RageTimer.h"
 #include "RageDisplay.h"
 #include "ThemeManager.h"
 #include "Font.h"
 #include "ActorUtil.h"
 #include "LuaBinding.h"
 #include "RandomSeed.h"
+
+/*   THIS CHANGE IS ONLY INCLUDED TO PROVIDE A FULLY WORKING PATCH
+ *     DEMONSTRATING A COMPLETE RAGETIMER REMOVAL.
+ *	 
+ *	 ALL CHANGES TO THIS FILE WILL BE REMOVED BEFORE THE PR IS MERGED.
+ *   
+ */
+
 
 #include <cmath>
 #include <cstddef>

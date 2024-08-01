@@ -292,7 +292,12 @@ void RageSoundDriver::Update()
 		m_Sounds[i].m_State = Sound::HALTING;
 //		LOG->Trace("set (#%i) %p from STOPPING to HALTING", i, m_Sounds[i].m_pSound);
 	}
-
+/*   THIS CHANGE IS ONLY INCLUDED TO PROVIDE A FULLY WORKING PATCH
+ *     DEMONSTRATING A COMPLETE RAGETIMER REMOVAL.
+ *	 
+ *	 ALL CHANGES TO THIS FILE WILL BE REMOVED BEFORE THE PR IS MERGED.
+ *   
+ */
 	static std::int64_t fNext = 0;
 	if( Wallclock::GetSystemTime() >= fNext )
 	{

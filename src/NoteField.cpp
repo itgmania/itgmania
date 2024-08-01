@@ -6,6 +6,14 @@
 #include "GameManager.h"
 #include "GameState.h"
 #include "Wallclock.h"
+
+/*   THIS CHANGE IS ONLY INCLUDED TO PROVIDE A FULLY WORKING PATCH
+ *     DEMONSTRATING A COMPLETE RAGETIMER REMOVAL.
+ *	 
+ *	 ALL CHANGES TO THIS FILE WILL BE REMOVED BEFORE THE PR IS MERGED.
+ *   
+ */
+
 #include "RageLog.h"
 #include "RageMath.h"
 #include "ThemeManager.h"

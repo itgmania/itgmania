@@ -52,7 +52,12 @@ public:
 	 * RageSound::CommitPlayingPosition. */
 	std::int64_t GetHardwareFrame() const;
 	virtual std::int64_t GetPosition() const = 0;
-
+/*   THIS CHANGE IS ONLY INCLUDED TO PROVIDE A FULLY WORKING PATCH
+ *     DEMONSTRATING A COMPLETE RAGETIMER REMOVAL.
+ *	 
+ *	 ALL CHANGES TO THIS FILE WILL BE REMOVED BEFORE THE PR IS MERGED.
+ *   
+ */
 	/* When a sound is finished playing (GetDataToPlay returns 0) and the sound has
 	 * been completely flushed (so GetPosition is no longer meaningful), call
 	 * RageSoundBase::SoundIsFinishedPlaying(). */

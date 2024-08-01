@@ -1,3 +1,6 @@
+// RandomSeed might make sense to merge in the same PR as Wallclock,
+// but for now I intend to keep them separate.
+
 #ifndef RANDOMSEED_H
 #define RANDOMSEED_H
 

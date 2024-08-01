@@ -56,7 +56,12 @@ RageSoundManager::~RageSoundManager()
 		delete s.second;
 	m_mapPreloadedSounds.clear();
 }
-
+/*   THIS CHANGE IS ONLY INCLUDED TO PROVIDE A FULLY WORKING PATCH
+ *     DEMONSTRATING A COMPLETE RAGETIMER REMOVAL.
+ *	 
+ *	 ALL CHANGES TO THIS FILE WILL BE REMOVED BEFORE THE PR IS MERGED.
+ *   
+ */
 void RageSoundManager::fix_bogus_sound_driver_pref(RString const& valid_setting)
 {
 	g_sSoundDrivers.Set(valid_setting);
