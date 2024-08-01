@@ -87,7 +87,7 @@ public:
 	 * underlying timers may be 32-bit, but implementations should try to avoid
 	 * wrapping if possible.
 	 */
-	static std::int64_t GetMicrosecondsSinceStart( bool bAccurate );
+	static std::int64_t GetMicrosecondsSinceStart( bool bAccurate ) noexcept;
 
 	/*
 	 * Add file search paths, higher priority first.

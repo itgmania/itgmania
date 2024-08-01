@@ -1,3 +1,5 @@
+#pragma once
+
 #include "global.h"
 #include "ArchHooks.h"
 #include "RageUtil.h"
@@ -9,20 +11,22 @@
 #include <cstdint>
 #include <vector>
 
-// for QueryPerformanceCounter
 #include <windows.h>
 #include <mmsystem.h>
 #if defined(_MSC_VER)
 #pragma comment(lib, "winmm.lib")
 #endif
 
-static bool g_bTimerInitialized;
-
-/* QueryPerformanceCounter variables below.
- * QueryPerformanceCounter and QueryPerformanceFrequency expect
+/* QueryPerformanceCounter and QueryPerformanceFrequency expect
  * a LARGE_INTEGER, which is a union. These functions store data
- * in the QuadPart of the LARGE_INTEGER, which is a 64-bit integer. */
-LARGE_INTEGER g_liFrequency, g_liStartTime, g_liCurrentTime;
+ * in the QuadPart of the LARGE_INTEGER, which is a 64-bit integer.
+ * The QuadPart is accessed directly to avoid the overhead of
+ * converting the LARGE_INTEGER to a 64-bit integer.
+ * A constant representing the number of microseconds in a second
+ * is used to convert the performance counter ticks to microseconds. */
+LARGE_INTEGER g_liFrequency, g_liCurrentTime;
+const LARGE_INTEGER g_liMicrosecondsInSecond = { 1000000LL };
+static bool g_bTimerInitialized;
 
 static void InitTimer()
 {
@@ -31,21 +35,22 @@ static void InitTimer()
 	g_bTimerInitialized = true;
 
 	// Grab important information for QPC during the timer initialization
-	QueryPerformanceCounter(&g_liStartTime);
 	QueryPerformanceFrequency(&g_liFrequency);
 }
 
-std::int64_t ArchHooks::GetMicrosecondsSinceStart(bool bAccurate)
+std::int64_t ArchHooks::GetMicrosecondsSinceStart(bool bAccurate) noexcept
 {
-	// Make sure the timer is initialized
-	if (!g_bTimerInitialized)
-		InitTimer();
+	// Make sure the timer only initialized a single time
+	static bool initialized = (InitTimer(), true);
 
-	// Get the current time
+	// Get the current time in ticks
 	QueryPerformanceCounter(&g_liCurrentTime);
 
-	// Calculate the elapsed time in microseconds.
-	return ((g_liCurrentTime.QuadPart - g_liStartTime.QuadPart) * 1000000.0) / g_liFrequency.QuadPart;
+	// Calculate the elapsed time in microseconds by multiplying the time counter
+	// by the number of microseconds in a second. The performance counter frequency
+	// represents the number of ticks per second. By dividing the product by the
+	// frequency, the value is converted from ticks to microseconds.
+	return ((g_liCurrentTime.QuadPart * g_liMicrosecondsInSecond.QuadPart) / g_liFrequency.QuadPart);
 }
 
 static RString GetMountDir( const RString &sDirOfExecutable )

@@ -149,7 +149,7 @@ clockid_t ArchHooks_Unix::GetClock()
 	return g_Clock;
 }
 
-std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
+std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate ) noexcept
 {
 	OpenGetTime();
 
@@ -162,7 +162,7 @@ std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
 	return iRet;
 }
 #else
-std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
+std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate ) noexcept
 {
 	struct timeval tv;
 	gettimeofday( &tv, nullptr );
