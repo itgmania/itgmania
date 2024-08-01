@@ -78,7 +78,7 @@ static int FindCompatibleAVFormat( bool bHighColor )
 	return -1;
 }
 
-RageSurface *RageMovieTextureDriver_FFMpeg::AVCodecCreateCompatibleSurface( int iTextureWidth, int iTextureHeight, bool bPreferHighColor, int &iAVTexfmt, MovieDecoderPixelFormatYCbCr &fmtout )
+RageSurface *RageMovieTextureDriver_FFMpeg::AVCodecCreateCompatibleSurface( int iTextureWidth, int iTextureHeight, bool bPreferHighColor, avcodec::AVPixelFormat* AVTexfmt, MovieDecoderPixelFormatYCbCr &fmtout )
 {
 	FixLilEndian();
 
@@ -97,11 +97,11 @@ RageSurface *RageMovieTextureDriver_FFMpeg::AVCodecCreateCompatibleSurface( int 
 	}
 
 	const AVPixelFormat_t *pfd = &AVPixelFormats[iAVTexfmtIndex];
-	iAVTexfmt = pfd->pf;
+	*AVTexfmt = pfd->pf;
 	fmtout = pfd->YUV;
 
-	LOG->Trace( "Texture pixel format: %i %i (%ibpp, %08x %08x %08x %08x)", iAVTexfmt, fmtout,
-		pfd->bpp, pfd->masks[0], pfd->masks[1], pfd->masks[2], pfd->masks[3] );
+	LOG->Trace( "Texture pixel format: %i %i (%ibpp, %08x %08x %08x %08x)", static_cast<int>(*AVTexfmt), fmtout,
+		pfd->bpp, pfd->masks[0], pfd->masks[1], pfd->masks[2], pfd->masks[3] );  // TODO this is wrong for enum. use underlying_type?
 
 	if( pfd->YUV == PixelFormatYCbCr_YUYV422 )
 		iTextureWidth /= 2;
@@ -698,7 +698,7 @@ void MovieDecoder_FFMpeg::Rewind()
 
 RageSurface *MovieDecoder_FFMpeg::CreateCompatibleSurface( int iTextureWidth, int iTextureHeight, bool bPreferHighColor, MovieDecoderPixelFormatYCbCr &fmtout )
 {
-	return RageMovieTextureDriver_FFMpeg::AVCodecCreateCompatibleSurface( iTextureWidth, iTextureHeight, bPreferHighColor, *ConvertValue<int>(&m_AVTexfmt), fmtout );
+	return RageMovieTextureDriver_FFMpeg::AVCodecCreateCompatibleSurface( iTextureWidth, iTextureHeight, bPreferHighColor, &m_AVTexfmt, fmtout );
 }
 
 MovieTexture_FFMpeg::MovieTexture_FFMpeg( RageTextureID ID ):
