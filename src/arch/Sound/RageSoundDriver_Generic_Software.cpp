@@ -26,6 +26,11 @@ RageSoundDriver::Sound::Sound()
 	m_bPaused = false;
 }
 
+int RageSoundDriver::GetUnderruns()
+{
+    return underruns;
+}
+
 void RageSoundDriver::Sound::Allocate( int iFrames )
 {
 	/* Reserve enough blocks in the buffer to hold the buffer.  Add one, to account for
@@ -296,7 +301,7 @@ void RageSoundDriver::Update()
 	if( RageTimer::GetTimeSinceStart() >= fNext )
 	{
 		/* Lockless: only Mix() can write to underruns. */
-		int current_underruns = underruns;
+		int current_underruns = RageSoundDriver::GetUnderruns();
 		if( current_underruns > logged_underruns )
 		{
 			LOG->MapLog( "GenericMixingUnderruns", "Mixing underruns: %i", current_underruns - logged_underruns );

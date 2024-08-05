@@ -58,7 +58,9 @@ public:
 	 * been completely flushed (so GetPosition is no longer meaningful), call
 	 * RageSoundBase::SoundIsFinishedPlaying(). */
 
-
+	/* Exists to protect the value of underruns from being modified by another
+	 * thread unexpectedly.  */
+	static int GetUnderruns();
 
 	/* Optional, if needed:  */
 	virtual void Update();
