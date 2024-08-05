@@ -242,25 +242,36 @@ namespace
 		g_NewTheme= RString();
 	}
 }
-static bool m_bUpdatedDuringVBLANK = false;
+
 void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 {
-	//if we are running our once per frame routine and we were already run from VBLANK, we did the work already
+	// Flag to indicate whether an update has been processed during the VBLANK period.
+	static bool m_bUpdatedDuringVBLANK = false;
+
+	// If we're running from VBLANK, and we've already updated during the VBLANK period,
+	// don't update again. This is to prevent multiple updates during the same VBLANK period.
 	if (!bRunningFromVBLANK && m_bUpdatedDuringVBLANK)
 	{
 		m_bUpdatedDuringVBLANK = false;
-		return; //would it kill us to run it again or do we want to draw asap?
+		return;
 	}
 
-	//if vblank called us, we will tell the game loop we received an update for the frame it wants to process
-	if (bRunningFromVBLANK)	m_bUpdatedDuringVBLANK = true;
-	else m_bUpdatedDuringVBLANK = false;
+	// If we're running from VBLANK, indicate we've updated during the VBLANK period.
+	// Otherwise, make sure the flag is cleared.
+	if (bRunningFromVBLANK)
+	{
+		m_bUpdatedDuringVBLANK = true;
+	}
+	else
+	{
+		m_bUpdatedDuringVBLANK = false;
+	}
 
-	// Update our stuff
-	float fDeltaTime = g_GameplayTimer.GetDeltaTime();
-
-	if (g_fConstantUpdateDeltaSeconds > 0)
-		fDeltaTime = g_fConstantUpdateDeltaSeconds;
+	// If the constant update delta is set, use that value. Otherwise, use the delta
+	// time from the gameplay timer.
+	float fDeltaTime = (g_fConstantUpdateDeltaSeconds > 0) 
+		? g_fConstantUpdateDeltaSeconds 
+		: g_GameplayTimer.GetDeltaTime();
 
 	CheckGameLoopTimerSkips(fDeltaTime);
 
@@ -270,8 +281,8 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 	SOUNDMAN->Update();
 
 	/* Update song beat information -before- calling update on all the classes that
-	* depend on it. If you don't do this first, the classes are all acting on old
-	* information and will lag. (but no longer fatally, due to timestamping -glenn) */
+	 * depend on it. If you don't do this first, the classes are all acting on old
+	 * information and will lag. (but no longer fatally, due to timestamping -glenn) */
 	SOUND->Update(fDeltaTime);
 	TEXTUREMAN->Update(fDeltaTime);
 	GAMESTATE->Update(fDeltaTime);
@@ -279,16 +290,19 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 	MEMCARDMAN->Update();
 
 	/* Important: Process input AFTER updating game logic, or input will be
-	* acting on song beat from last frame */
+	 * acting on song beat from last frame */
 	HandleInputEvents(fDeltaTime);
 
-	//bandaid for low max audio sample counter
+	// Legacy hack to work around low sample count in some sound drivers.
+	// This is a workaround for a bug in the Windows sound system that causes
+	// the sound to be cut off if the sample count is too low. This is a
+	// workaround for the bug, but it's not a fix. It should probably be
+	// removed or localized to the DirectSound driver. --sukibaby
 	SOUNDMAN->low_sample_count_workaround();
+
+	// Update the lights
 	LIGHTSMAN->Update(fDeltaTime);
-
 }
-
-
 
 void GameLoop::RunGameLoop()
 {
