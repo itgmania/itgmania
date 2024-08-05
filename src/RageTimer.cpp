@@ -29,13 +29,19 @@
 
 #include <cmath>
 #include <cstdint>
+#include <atomic>
 
 #define TIMESTAMP_RESOLUTION 1000000
 
 const RageTimer RageZeroTimer(0,0);
-static std::uint64_t g_iStartTime = ArchHooks::GetMicrosecondsSinceStart( true );
 
-static std::uint64_t GetTime( bool /* bAccurate */ )
+// Global atomic start time for initialization
+static std::atomic<std::uint64_t> g_iGlobalStartTime = ArchHooks::GetMicrosecondsSinceStart(true);
+
+// Thread-local start time
+thread_local std::uint64_t g_iThreadStartTime = g_iGlobalStartTime.load();
+
+static std::uint64_t GetTime(bool /* bAccurate */)
 {
 	return ArchHooks::GetMicrosecondsSinceStart( true );
 }
@@ -51,13 +57,13 @@ static std::uint64_t GetTime( bool /* bAccurate */ )
 double RageTimer::GetTimeSinceStart(bool bAccurate)
 {
 	std::uint64_t usecs = GetTime(bAccurate);
-	usecs -= g_iStartTime;
+	usecs -= g_iThreadStartTime;
 	return usecs / 1000000.0;
 }
 
 std::uint64_t RageTimer::GetUsecsSinceStart()
 {
-	return GetTime(true) - g_iStartTime;
+	return GetTime(true) - g_iThreadStartTime;
 }
 
 void RageTimer::Touch()
