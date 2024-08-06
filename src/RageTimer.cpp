@@ -31,7 +31,9 @@
 #include <cstdint>
 #include <atomic>
 
-#define TIMESTAMP_RESOLUTION 1000000
+const std::uint64_t ONE_SECOND_IN_MICROSECONDS_ULL = 1000000ULL;
+const std::int64_t ONE_SECOND_IN_MICROSECONDS_LL = 1000000LL;
+const double ONE_SECOND_IN_MICROSECONDS_DBL = 1000000.0;
 
 const RageTimer RageZeroTimer(0,0);
 
@@ -41,7 +43,7 @@ static std::atomic<std::uint64_t> g_iGlobalStartTime = ArchHooks::GetMicrosecond
 // Thread-local start time
 thread_local std::uint64_t g_iThreadStartTime = g_iGlobalStartTime.load();
 
-static std::uint64_t GetTime(bool /* bAccurate */)
+static std::uint64_t GetTime( bool /* bAccurate */ )
 {
 	return ArchHooks::GetMicrosecondsSinceStart( true );
 }
@@ -58,7 +60,7 @@ double RageTimer::GetTimeSinceStart(bool bAccurate)
 {
 	std::uint64_t usecs = GetTime(bAccurate);
 	usecs -= g_iThreadStartTime;
-	return usecs / 1000000.0;
+	return usecs / ONE_SECOND_IN_MICROSECONDS_DBL;
 }
 
 std::uint64_t RageTimer::GetUsecsSinceStart()
@@ -70,8 +72,8 @@ void RageTimer::Touch()
 {
 	std::uint64_t usecs = GetTime( true );
 
-	this->m_secs = std::uint64_t(usecs / TIMESTAMP_RESOLUTION);
-	this->m_us = std::uint64_t(usecs % TIMESTAMP_RESOLUTION);
+	this->m_secs = std::uint64_t(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
+	this->m_us = std::uint64_t(usecs % ONE_SECOND_IN_MICROSECONDS_ULL);
 }
 
 float RageTimer::Ago() const
@@ -125,8 +127,8 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 	/* Calculate the seconds and microseconds from the time:
 	 * tm == 5.25  -> secs =  5, us = 5.25  - ( 5) = .25
 	 * tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75 */
-	int64_t seconds = std::floor(tm);
-	int64_t us = int64_t((tm - seconds) * TIMESTAMP_RESOLUTION);
+	std::int64_t seconds = std::floor(tm);
+	std::int64_t us = static_cast<int64_t>((tm - seconds) * ONE_SECOND_IN_MICROSECONDS_LL);
 
 	// Prevent unnecessarily checking the time
 	RageTimer ret(0, 0);
@@ -136,9 +138,9 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 	ret.m_us = us + lhs.m_us;
 
 	// Adjust the seconds and microseconds if microseconds is greater than or equal to TIMESTAMP_RESOLUTION
-	if (ret.m_us >= TIMESTAMP_RESOLUTION)
+	if (ret.m_us >= ONE_SECOND_IN_MICROSECONDS_ULL)
 	{
-		ret.m_us -= TIMESTAMP_RESOLUTION;
+		ret.m_us -= ONE_SECOND_IN_MICROSECONDS_ULL;
 		++ret.m_secs;
 	}
 
@@ -148,18 +150,18 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 double RageTimer::Difference(const RageTimer& lhs, const RageTimer& rhs)
 {
 	// Calculate the difference in seconds and microseconds respectively
-	int64_t secs = lhs.m_secs - rhs.m_secs;
-	int64_t us = lhs.m_us - rhs.m_us;
+	std::int64_t secs = lhs.m_secs - rhs.m_secs;
+	std::int64_t us = lhs.m_us - rhs.m_us;
 
 	// Adjust seconds and microseconds if microseconds is negative
 	if ( us < 0 )
 	{
-		us += TIMESTAMP_RESOLUTION;
+		us += ONE_SECOND_IN_MICROSECONDS_LL;
 		--secs;
 	}
 
 	// Return the difference as a double to preserve the fractional part
-	return static_cast<double>(secs) + static_cast<double>(us) / TIMESTAMP_RESOLUTION;
+	return static_cast<double>(secs) + static_cast<double>(us) / ONE_SECOND_IN_MICROSECONDS_DBL;
 }
 
 #include "LuaManager.h"
