@@ -29,13 +29,14 @@
 
 #include <cmath>
 #include <cstdint>
+#include <atomic>
 
 const std::uint64_t ONE_SECOND_IN_MICROSECONDS_ULL = 1000000ULL;
 const std::int64_t ONE_SECOND_IN_MICROSECONDS_LL = 1000000LL;
 const double ONE_SECOND_IN_MICROSECONDS_DBL = 1000000.0;
 
 const RageTimer RageZeroTimer(0,0);
-static std::uint64_t g_iStartTime = ArchHooks::GetMicrosecondsSinceStart( true );
+static std::atomic<std::uint64_t> g_iStartTime = ArchHooks::GetMicrosecondsSinceStart(true);
 
 static std::uint64_t GetTime( bool /* bAccurate */ )
 {
@@ -53,13 +54,13 @@ static std::uint64_t GetTime( bool /* bAccurate */ )
 double RageTimer::GetTimeSinceStart(bool bAccurate)
 {
 	std::uint64_t usecs = GetTime(bAccurate);
-	usecs -= g_iStartTime;
+	usecs -= g_iStartTime.load();
 	return usecs / ONE_SECOND_IN_MICROSECONDS_DBL;
 }
 
 std::uint64_t RageTimer::GetUsecsSinceStart()
 {
-	return GetTime(true) - g_iStartTime;
+	return GetTime(true) - g_iStartTime.load();
 }
 
 void RageTimer::Touch()
