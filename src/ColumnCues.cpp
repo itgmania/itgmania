@@ -26,13 +26,13 @@ void ColumnCue::CalculateColumnCues(const NoteData &in, std::vector<ColumnCue> &
 			curr_row = curr_note.Row();
 		}
 
-		if (curr_note->type == TapNoteType_Tap || curr_note->type == TapNoteType_HoldHead)
+		
+		if (curr_note->type == TapNoteType_Tap
+			|| curr_note->type == TapNoteType_HoldHead
+			|| curr_note->type == TapNoteType_Mine
+			|| curr_note->type == TapNoteType_Lift)
 		{
-			currentCue.columns.push_back(ColumnCueColumn(curr_note.Track() + 1, false));
-		}
-		else if(curr_note->type == TapNoteType_Mine)
-		{
-			currentCue.columns.push_back(ColumnCueColumn(curr_note.Track() + 1, true));
+			currentCue.columns.push_back(ColumnCueColumn(curr_note.Track() + 1, curr_note->type));
 		}
 		
 		++curr_note;
