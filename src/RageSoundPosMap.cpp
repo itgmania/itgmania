@@ -9,12 +9,12 @@
 #include <cstdint>
 #include <list>
 
-// The number of frames we should keep pos_map data for.
-// This comes out to about ~800kb in audio frames, assuming 44.1khz.
-// File bitrate, metadata, etc will factor in here. If the queue is
-// TOO big it will make things slow, but 200k frames is no problem.
-// Making the queue larger than 200k hasn't been tested extensively.
-const int pos_map_backlog_frames = 200000;
+// NOTE(sukibaby): The number of frames we should keep pos_map data for.
+// File bitrate, metadata, etc will factor in here. 80k is a safe value
+// to provide a good balance of stability and low latency. It is stable
+// up to 200k, but increased latency is the main reason not to increase
+// this to a very large number. 
+static int pos_map_backlog_frames = 80000;
 
 struct pos_map_t
 {
@@ -160,7 +160,7 @@ std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame ) const
 	if( last.PeekDeltaTime() >= 1.0f )
 	{
 		last.Touch();
-		LOG->Trace("Audio frame was out of range of the data sent - possible buffer underflow? This is not always an error, however if you see it frequently there could be sound buffer problems.");
+		LOG->Trace("Audio frame (%lld) was out of range of the data sent - possible buffer underflow? This is not always an error, however if you see it frequently there could be sound buffer problems.", iSourceFrame);
 	}
 
 	return iClosestPosition;
