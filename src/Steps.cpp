@@ -844,8 +844,8 @@ public:
 				lua_pushinteger(L, cues[i].columns[c].colNum);
 				lua_settable(L, -3);
 
-				lua_pushstring(L, "isMine");
-				lua_pushboolean(L, cues[i].columns[c].isMine);
+				lua_pushstring(L, "noteType");
+				lua_pushinteger(L, cues[i].columns[c].noteType);
 				lua_settable(L, -3);
 
 				lua_rawseti(L, -2, c + 1);

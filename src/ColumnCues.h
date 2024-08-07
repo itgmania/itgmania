@@ -2,6 +2,8 @@
 #define COLUMN_CUES_H
 
 #include "GameConstantsAndTypes.h"
+#include "NoteTypes.h"
+
 class NoteData;
 
 /* ColumnCues are used to indicate to the player which column the next note will occur
@@ -11,16 +13,16 @@ class NoteData;
 struct ColumnCueColumn
 {
 	int colNum;
-	bool isMine;
+	TapNoteType noteType;
 	ColumnCueColumn()
 	{
 		colNum = 0;
-		isMine = false;
+		noteType = TapNoteType_Invalid;
 	}
-	ColumnCueColumn(int c, bool m)
+	ColumnCueColumn(int c, TapNoteType n)
 	{
 		colNum = c;
-		isMine = m;
+		noteType = n;
 	}
 };
 
