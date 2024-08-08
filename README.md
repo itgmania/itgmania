@@ -44,11 +44,11 @@ You can choose between using the installer or using the portable build. Using th
 
 * **Debian-based**:
 
-  * `sudo apt install libgdk-pixbuf-2.0-0 libgl1 libglu1-mesa libglvnd0 libgtk-3-0 libusb-0.1-4 libxinerama1 libxtst6`
+  * `sudo apt install libgdk-pixbuf-2.0-0 libgl1 libglvnd0 libgtk-3-0 libusb-0.1-4 libxinerama1 libxtst6`
 
 * **Fedora-based**:
 
-  * `sudo yum install gdk-pixbuf2 mesa-libGLU gtk3 libusb-compat-0.1 libXinerama libXtst`
+  * `sudo yum install gdk-pixbuf2 gtk3 libusb-compat-0.1 libXinerama libXtst`
 
 *  **Arch Linux**:
 
@@ -56,7 +56,7 @@ You can choose between using the installer or using the portable build. Using th
 
 * **OpenSUSE**:
 
-   * `sudo zypper install libGLU1`
+   * OpenSUSE comes with everything you need pre-installed.
 
 
 ### Build From Source
