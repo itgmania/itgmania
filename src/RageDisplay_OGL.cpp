@@ -484,12 +484,11 @@ RString RageDisplay_Legacy::Init( const VideoModeParams &p, bool bAllowUnacceler
 
 	// Log driver details
 	g_pWind->LogDebugInformation();
-	LOG->Info( "OGL Vendor: %s", glGetString(GL_VENDOR) );
-	LOG->Info( "OGL Renderer: %s", glGetString(GL_RENDERER) );
-	LOG->Info( "OGL Version: %s", glGetString(GL_VERSION) );
-	LOG->Info( "OGL Max texture size: %i", GetMaxTextureSize() );
-	LOG->Info( "OGL Texture units: %i", g_iMaxTextureUnits );
-	LOG->Info( "GLU Version: %s", gluGetString(GLU_VERSION) );
+	LOG->Info("OGL Vendor: %s", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+	LOG->Info("OGL Renderer: %s", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+	LOG->Info("OGL Version: %s", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+	LOG->Info("OGL Max texture size: %i", GetMaxTextureSize());
+	LOG->Info("OGL Texture units: %i", g_iMaxTextureUnits);
 
 	/* Pretty-print the extension string: */
 	LOG->Info( "OGL Extensions:" );
@@ -2288,38 +2287,30 @@ std::uintptr_t RageDisplay_Legacy::CreateTexture(
 		ASSERT( iRealFormat == GL_RGBA8 );
 	}
 
-	LOG->Trace( "%s (format %s, %ix%i, format %s, type %s, pixfmt %i, imgpixfmt %i)",
-		bGenerateMipMaps? "gluBuild2DMipmaps":"glTexImage2D",
+	LOG->Trace("%s (format %s, %ix%i, format %s, type %s, pixfmt %i, imgpixfmt %i)",
+		"glTexImage2D",
 		GLToString(glTexFormat).c_str(),
 		pImg->w, pImg->h,
 		GLToString(glImageFormat).c_str(),
-		GLToString(glImageType).c_str(), pixfmt, SurfacePixFmt );
+		GLToString(glImageType).c_str(), pixfmt, SurfacePixFmt);
 
 	DebugFlushGLErrors();
 
-	if (bGenerateMipMaps)
-	{
-		GLenum error = gluBuild2DMipmaps(
-			GL_TEXTURE_2D, glTexFormat,
+	glTexImage2D(
+		GL_TEXTURE_2D, 0, glTexFormat,
+		power_of_two(pImg->w), power_of_two(pImg->h), 0,
+		glImageFormat, glImageType, nullptr );
+	if (pImg->pixels)
+		glTexSubImage2D( GL_TEXTURE_2D, 0,
+			0, 0,
 			pImg->w, pImg->h,
 			glImageFormat, glImageType, pImg->pixels );
-		ASSERT_M( error == 0, (char *) gluErrorString(error) );
-	}
-	else
-	{
-		glTexImage2D(
-			GL_TEXTURE_2D, 0, glTexFormat,
-			power_of_two(pImg->w), power_of_two(pImg->h), 0,
-			glImageFormat, glImageType, nullptr );
-		if (pImg->pixels)
-			glTexSubImage2D( GL_TEXTURE_2D, 0,
-				0, 0,
-				pImg->w, pImg->h,
-				glImageFormat, glImageType, pImg->pixels );
 
-		DebugAssertNoGLError();
+	if (bGenerateMipMaps) {
+		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 
+	DebugAssertNoGLError();
 
 	/* Sanity check: */
 	if (pixfmt == RagePixelFormat_PAL)
