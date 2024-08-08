@@ -6,34 +6,34 @@
 REGISTER_CLASS_TRAITS( RageSoundReader, pCopy->Copy() );
 
 /* Read(), handling the STREAM_LOOPED and empty return cases. */
-int RageSoundReader::RetriedRead( float *pBuffer, int iFrames, int *iSourceFrame, float *fRate )
-{
-	/* pReader may return 0, which means "try again immediately".  As a failsafe,
-	 * only try this a finite number of times.  Use a high number, because in
-	 * principle each filter in the stack may cause this. */
-	int iTries = 10;
-	while( --iTries )
-	{
-		if( fRate )
-			*fRate = this->GetStreamToSourceRatio();
-		if( iSourceFrame )
-			*iSourceFrame = this->GetNextSourceFrame();
-
-		int iGotFrames = this->Read( pBuffer, iFrames );
-
-		if( iGotFrames == RageSoundReader::STREAM_LOOPED )
-			iGotFrames = 0;
-
-		if( iGotFrames != 0 )
-			return iGotFrames;
-
-		// If the user is having I/O issues, give them a hint in the logs.
-		LOG->Warn( "Read() failed, retrying..." );
+int RageSoundReader::RetriedRead(float* pBuffer, int iFrames, int* iSourceFrame, float* fRate) {
+	if (iFrames == 0) {
+		return 0;
 	}
 
-	LOG->Warn( "Read() returned a failure status after 10 attempts to read the file; likely an I/O error" );
+	// pReader may return 0, which means "try again immediately". As a failsafe,
+	// only try this a finite number of times. Use a high number, because in
+	// principle each filter in the stack may cause this.
+	std::uint8_t retryCount = 50;
+	while (--retryCount) {
+		if (fRate) {
+			*fRate = this->GetStreamToSourceRatio();
+		}
+		if (iSourceFrame) {
+			*iSourceFrame = this->GetNextSourceFrame();
+		}
+		int framesRead = this->Read(pBuffer, iFrames);
+		if (framesRead == RageSoundReader::STREAM_LOOPED) {
+			framesRead = 0;
+		}
+		if (framesRead != 0) {
+			return framesRead;
+		}
+	}
 
-	/* Pretend we got EOF. */
+	LOG->Warn("WARNING: could not read from the sound file. Giving up.");
+
+	// Pretend we got EOF.
 	return RageSoundReader::END_OF_FILE;
 }
 
