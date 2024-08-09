@@ -293,8 +293,9 @@ void RageSoundDriver::Update()
 //		LOG->Trace("set (#%i) %p from STOPPING to HALTING", i, m_Sounds[i].m_pSound);
 	}
 
-	static float fNext = 0;
-	if( RageTimer::GetTimeSinceStart() >= fNext )
+	constexpr std::uint_fast64_t kUsecs = 1000000;
+	static std::uint_fast64_t fNextUsecs = 0;
+	if (RageTimer::GetTimeSinceStartMicroseconds() >= fNextUsecs)
 	{
 		/* Lockless: only Mix() can write to underruns. */
 		int current_underruns = underruns;
@@ -306,7 +307,7 @@ void RageSoundDriver::Update()
 
 			/* Don't log again for at least a second, or we'll burst output
 			 * and possibly cause more underruns. */
-			fNext = RageTimer::GetTimeSinceStart() + 1;
+			fNextUsecs = RageTimer::GetTimeSinceStartMicroseconds() + kUsecs;
 		}
 	}
 

@@ -329,6 +329,8 @@ RString SecondsToHHMMSS( float fSecs );
 RString SecondsToMSSMsMs( float fSecs );
 RString SecondsToMMSSMsMs( float fSecs );
 RString SecondsToMMSSMsMsMs( float fSecs );
+RString UsecsToMMSSMsMs(uint64_t usecs);
+RString UsecsToMMSSMsMsMs(uint64_t usecs);
 RString SecondsToMSS( float fSecs );
 RString SecondsToMMSS( float fSecs );
 RString PrettyPercent( float fNumerator, float fDenominator );

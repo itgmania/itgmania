@@ -252,6 +252,16 @@ RString SecondsToMSSMsMs( float fSecs )
 	return sReturn;
 }
 
+RString UsecsToMMSSMsMs(uint64_t usecs)
+{
+    const uint64_t totalSeconds = usecs / 1000000;
+    const uint64_t iMinsDisplay = totalSeconds / 60;
+    const uint64_t iSecsDisplay = totalSeconds % 60;
+    const uint64_t iLeftoverDisplay = (usecs % 1000000) / 10000; // Adjusted for two decimal places
+    RString sReturn = ssprintf("%02llu:%02llu.%02llu", iMinsDisplay, iSecsDisplay, std::min<uint64_t>(99, iLeftoverDisplay));
+    return sReturn;
+}
+
 RString SecondsToMMSSMsMsMs( float fSecs )
 {
 	const int iMinsDisplay = static_cast<int>(fSecs/60);
@@ -259,6 +269,16 @@ RString SecondsToMMSSMsMsMs( float fSecs )
 	const int iLeftoverDisplay = static_cast<int>((fSecs - iMinsDisplay*60 - iSecsDisplay) * 1000 );
 	RString sReturn = ssprintf( "%02d:%02d.%03d", iMinsDisplay, iSecsDisplay, std::min(999,iLeftoverDisplay) );
 	return sReturn;
+}
+
+RString UsecsToMMSSMsMsMs(uint64_t usecs)
+{
+    const uint64_t totalSeconds = usecs / 1000000;
+    const uint64_t iMinsDisplay = totalSeconds / 60;
+    const uint64_t iSecsDisplay = totalSeconds % 60;
+    const uint64_t iLeftoverDisplay = (usecs % 1000000) / 1000;
+    RString sReturn = ssprintf("%02llu:%02llu.%03llu", iMinsDisplay, iSecsDisplay, std::min<uint64_t>(999, iLeftoverDisplay));
+    return sReturn;
 }
 
 RString SecondsToMSS( float fSecs )
