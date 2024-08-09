@@ -54,6 +54,9 @@ public:
 	 */
 	virtual bool GetFrame( RageSurface *pOut ) = 0;
 
+	// Returns true if the frame should be skipped.
+	virtual bool SkipNextFrame() = 0;
+
 	/* Return the dimensions of the image, in pixels (before aspect ratio
 	 * adjustments). */
 	virtual int GetWidth() const  = 0;
