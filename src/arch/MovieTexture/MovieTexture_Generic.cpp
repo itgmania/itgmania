@@ -407,6 +407,10 @@ void MovieTexture_Generic::UpdateFrame()
 	/* Just in case we were invalidated: */
 	CreateTexture();
 
+	if (m_pDecoder->SkipNextFrame()) {
+		return;
+	}
+
 	if(m_pTextureLock != nullptr)
 	{
 		std::uintptr_t iHandle = m_pTextureIntermediate != nullptr ? m_pTextureIntermediate->GetTexHandle(): this->GetTexHandle();
