@@ -223,8 +223,12 @@ bool MovieDecoder_FFMpeg::IsCurrentFrameReady() {
 	}
 
 	std::lock_guard<std::mutex>(m_FrameBuffer[m_iFrameNumber].lock);
+	if (m_FrameBuffer[m_iFrameNumber].skip) {
+		LOG->Info("Frame %i not decoded, skipping...", m_iFrameNumber);
+		return true;
+	}
 	if (!m_FrameBuffer[m_iFrameNumber].decoded) {
-		LOG->Info("Frame %i not decoded, total frames: %i", m_iFrameNumber, m_totalFrames);
+		LOG->Info("Frame %i not decoded and was not skipped, total frames: %i", m_iFrameNumber, m_totalFrames);
 	}
 	return m_FrameBuffer[m_iFrameNumber].decoded;
 }
@@ -344,19 +348,22 @@ int MovieDecoder_FFMpeg::DecodePacketInBuffer() {
 		m_FrameBuffer.back().packet.data = m_FrameBuffer.back().packet.size ? m_FrameBuffer.back().packet.data : nullptr;
 		int len = m_FrameBuffer.back().packet.size;
 		avcodec::avcodec_send_packet(m_pStreamCodec, &m_FrameBuffer.back().packet);
-		int iGotFrame = !avcodec::avcodec_receive_frame(m_pStreamCodec, &m_FrameBuffer.back().frame);
+		int avcodec_return = avcodec::avcodec_receive_frame(m_pStreamCodec, &m_FrameBuffer.back().frame);
 
 		if (len < 0)
 		{
-			LOG->Warn("avcodec_decode_video2: %i", len);
+			LOG->Warn("avcodec_decode_video2 fatal error, packet size negative: %i", len);
 			return -1;
 		}
 
 		m_iCurrentPacketOffset += len;
 
-		if (!iGotFrame)
+		if (avcodec_return != 0)
 		{
-			LOG->Warn("Frame number %i not successfully decoded into buffer.", static_cast<int>(m_FrameBuffer.size() - 1));
+			LOG->Warn(
+				"Frame number %i not successfully decoded into buffer. avcodec_receive_frame status: %i",
+				static_cast<int>(m_FrameBuffer.size() - 1),
+				avcodec_return);
 			continue;
 		}
 
@@ -383,6 +390,13 @@ int MovieDecoder_FFMpeg::DecodePacketInBuffer() {
 		m_FrameBuffer.back().decoded = true;
 
 		return 1;
+	}
+
+	// This if statement means the packet did not decode correctly. This is not
+	// necessarily fatal for video playback, but out of caution the frame should
+	// be skipped.
+	if (!m_FrameBuffer.back().decoded) {
+		m_FrameBuffer.back().skip = true;
 	}
 
 	return 0; /* packet done */
@@ -508,6 +522,17 @@ int MovieDecoder_FFMpeg::DecodePacket( float fTargetTime )
 	}
 
 	return 0; /* packet done */
+}
+
+bool MovieDecoder_FFMpeg::SkipNextFrame() {
+	if (m_iFrameNumber > (m_totalFrames - 1)) {
+		return true;
+	}
+	if (m_FrameBuffer[m_iFrameNumber].skip) {
+		m_iFrameNumber++;
+		return true;
+	}
+	return false;
 }
 
 bool MovieDecoder_FFMpeg::GetFrame(RageSurface* pSurface)
