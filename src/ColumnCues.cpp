@@ -1,7 +1,6 @@
 #include "global.h"
 #include "ColumnCues.h"
 #include "GameState.h"
-#include "NoteData.h"
 #include "TimingData.h"
 
 void ColumnCue::CalculateColumnCues(const NoteData &in, std::vector<ColumnCue> &out, float minDuration)

@@ -3,8 +3,7 @@
 
 #include "GameConstantsAndTypes.h"
 #include "NoteTypes.h"
-
-class NoteData;
+#include "NoteData.h"
 
 /* ColumnCues are used to indicate to the player which column the next note will occur
  after a long gap in the stepchart.
