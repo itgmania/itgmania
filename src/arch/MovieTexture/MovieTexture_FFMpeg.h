@@ -100,7 +100,6 @@ public:
 	RageSurface *CreateCompatibleSurface( int iTextureWidth, int iTextureHeight, bool bPreferHighColor, MovieDecoderPixelFormatYCbCr &fmtout );
 
 	float GetTimestamp() const;
-	float GetFrameDuration() const;
 
 	void Cancel() { cancel = true; };
 
@@ -110,8 +109,6 @@ public:
 private:
 	void Init();
 	RString OpenCodec();
-	int ReadPacket();
-	int DecodePacket( float fTargetTime );
 
 	// Read a packet and send it to our frame data buffer.
 	// Returns -2 on cancel, -1 on error, 0 on EOF, 1 on OK.
@@ -130,7 +127,6 @@ private:
 	avcodec::AVFormatContext *m_fctx;
 	float m_fTimestamp;
 	float m_fTimestampOffset;
-	float m_fLastFrameDelay;
 	int m_iFrameNumber;
 	int m_totalFrames; // Total number of frames in the movie.
 
@@ -140,13 +136,10 @@ private:
 	// The movie buffer.
 	std::vector<FrameHolder> m_FrameBuffer;
 
-	avcodec::AVPacket m_Packet;
 	int m_iCurrentPacketOffset;
-	float m_fLastFrame;
 
-	/* 0 = no EOF
-	 * 1 = EOF from ReadPacket
-	 * 2 = EOF from ReadPacket and DecodePacket */
+	// 0 = no EOF
+	// 1 = EOF while decoding
 	int m_iEOF;
 
 	// If true, received a cancel signal from the MovieTexture.
