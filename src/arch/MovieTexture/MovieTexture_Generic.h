@@ -38,18 +38,6 @@ public:
 	virtual bool IsCurrentFrameReady() = 0;
 
 	/*
-	 * Decode a frame.  Return 1 on success, 0 on EOF, -1 on fatal error.
-	 *
-	 * If we're lagging behind the video, fTargetTime will be the target
-	 * timestamp.  The decoder may skip frames to catch up.  On return,
-	 * the current timestamp must be <= fTargetTime.
-	 *
-	 * Otherwise, fTargetTime will be -1, and the next frame should be
-	 * decoded; skip frames only if necessary to recover from errors.
-	 */
-	virtual int DecodeFrame( float fTargetTime ) = 0;
-
-	/*
 	 * Get the currently-decoded frame.
 	 */
 	virtual bool GetFrame( RageSurface *pOut ) = 0;
@@ -88,9 +76,6 @@ public:
 
 	// Cancels the decoding of the movie.
 	virtual void Cancel() = 0;
-
-	/* Get the duration, in seconds, to display the current frame. */
-	virtual float GetFrameDuration() const = 0;
 };
 
 
@@ -124,17 +109,10 @@ private:
 	std::unique_ptr<std::thread> decoding_thread;
 
 	float m_fRate;
-	enum {
-		FRAME_NONE, /* no frame available; call GetFrame to get one */
-		FRAME_DECODED /* frame decoded; waiting until it's time to display it */
-	} m_ImageWaiting;
 	bool m_bLoop;
 
 	// If true, halts all decoding and display.
 	bool m_failure = false;
-	bool m_bWantRewind;
-
-	enum State { DECODER_QUIT, DECODER_RUNNING } m_State;
 
 	std::uintptr_t m_uTexHandle;
 	RageTextureRenderTarget *m_pRenderTarget;
@@ -147,7 +125,6 @@ private:
 
 	/* The time the movie is actually at: */
 	float m_fClock;
-	bool m_bFrameSkipMode;
 
 	void UpdateFrame();
 
