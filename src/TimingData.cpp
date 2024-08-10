@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <vector>
 
+TrackRowData g_TrackRowData = { -1, 0 };
 
 static void EraseSegment(std::vector<TimingSegment*> &vSegs, int index, TimingSegment *cur);
 static const int INVALID_INDEX = -1;

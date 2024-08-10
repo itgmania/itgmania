@@ -470,6 +470,15 @@ protected:
 	std::array<std::vector<TimingSegment *>, NUM_TimingSegmentType> m_avpTimingSegments;
 };
 
+// for grabbing the last known row and track arbitrarily
+struct TrackRowData
+{
+    int iTrack;
+    unsigned iRow;
+};
+
+extern TrackRowData g_TrackRowData;
+
 #endif
 
 /**

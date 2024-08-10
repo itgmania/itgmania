@@ -119,6 +119,9 @@ const TapNote &NoteDataWithScoring::LastTapNoteWithResult( const NoteData &in, u
 	if( iTrack == -1 )
 		return TAP_EMPTY;
 
+	g_TrackRowData.iTrack = iTrack;
+	g_TrackRowData.iRow = iRow;
+
 	//LOG->Trace( ssprintf("returning in.GetTapNote(iTrack=%i, iRow=%i)", iTrack, iRow) );
 	return in.GetTapNote( iTrack, iRow );
 }
