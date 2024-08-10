@@ -127,12 +127,14 @@ void ScreenMiniMenu::ImportOptions( int r, const std::vector<PlayerNumber> &vpns
 		optrow.SetOneSharedSelection( mr.iDefaultChoice );
 }
 
-void ScreenMiniMenu::ExportOptions( int r, const std::vector<PlayerNumber> &vpns )
+void ScreenMiniMenu::ExportOptions(int r, const std::vector<PlayerNumber>& vpns)
 {
-	if( r == GetCurrentRow() )
+	PlayerNumber main_player = vpns.empty() ? PLAYER_1 : vpns.front();
+	if (r == GetCurrentRow(main_player)) {
 		s_iLastRowCode = m_vMenuRows[r].iRowCode;
-	s_viLastAnswers.resize( m_vMenuRows.size() );
-	s_viLastAnswers[r] = m_pRows[r]->GetOneSharedSelection( true );
+	}
+	s_viLastAnswers.resize(m_vMenuRows.size());
+	s_viLastAnswers[r] = m_pRows[r]->GetOneSharedSelection(true);
 }
 
 void ScreenMiniMenu::HandleScreenMessage( const ScreenMessage SM )
