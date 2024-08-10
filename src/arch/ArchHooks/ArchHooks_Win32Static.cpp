@@ -22,30 +22,35 @@ static bool g_bTimerInitialized;
  * QueryPerformanceCounter and QueryPerformanceFrequency expect
  * a LARGE_INTEGER, which is a union. These functions store data
  * in the QuadPart of the LARGE_INTEGER, which is a 64-bit integer. */
-LARGE_INTEGER g_liFrequency, g_liStartTime, g_liCurrentTime;
+namespace {
+    LARGE_INTEGER g_liFrequency;
+    LARGE_INTEGER g_liCurrentTime;
+}  // namespace
 
 static void InitTimer()
 {
-	if( g_bTimerInitialized )
+	if( g_bTimerInitialized ) {
 		return;
+	}
+	
 	g_bTimerInitialized = true;
 
-	// Grab important information for QPC during the timer initialization
-	QueryPerformanceCounter(&g_liStartTime);
+	// Retrieve the number of ticks per second.
 	QueryPerformanceFrequency(&g_liFrequency);
 }
 
 std::int64_t ArchHooks::GetMicrosecondsSinceStart(bool bAccurate)
 {
-	// Make sure the timer is initialized
-	if (!g_bTimerInitialized)
+	// Make sure the timer is initialized.
+	if (!g_bTimerInitialized) {
 		InitTimer();
+	}
 
-	// Get the current time
+	// Get the current time.
 	QueryPerformanceCounter(&g_liCurrentTime);
 
 	// Calculate the elapsed time in microseconds.
-	return ((g_liCurrentTime.QuadPart - g_liStartTime.QuadPart) * 1000000.0) / g_liFrequency.QuadPart;
+	return (g_liCurrentTime.QuadPart * 1000000) / g_liFrequency.QuadPart;
 }
 
 static RString GetMountDir( const RString &sDirOfExecutable )
