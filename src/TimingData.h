@@ -460,6 +460,15 @@ public:
 	/** @brief The initial offset of a song. */
 	float	m_fBeat0OffsetInSeconds;
 
+	struct LastProcessedValues {
+		float lastProcessedBeat;
+		float lastProcessedTime;
+	};
+
+    LastProcessedValues GetLastProcessedValues() const {
+        return {g_lastProcessedBeat, g_lastProcessedTime};
+    }
+
 	// XXX: this breaks encapsulation. get rid of it ASAP
 	std::vector<RString> ToVectorString(TimingSegmentType tst, int dec = 6) const;
 protected:
@@ -468,6 +477,9 @@ protected:
 
 	// All of the following vectors must be sorted before gameplay.
 	std::array<std::vector<TimingSegment *>, NUM_TimingSegmentType> m_avpTimingSegments;
+private:
+	float g_lastProcessedBeat;
+	float g_lastProcessedTime;
 };
 
 #endif

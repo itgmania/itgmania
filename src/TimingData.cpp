@@ -119,6 +119,12 @@ void TimingData::PrepareLookup()
 	{
 		ReleaseLookup();
 	}
+	else
+	{
+		// Retrieve the last element in the vector
+		g_lastProcessedBeat = m_beat_start_lookup.back().first;
+		g_lastProcessedTime = m_time_start_lookup.back().first;
+	}
 	// DumpLookupTables();
 }
 
