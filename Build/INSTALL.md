@@ -9,7 +9,7 @@ Then, follow the guide based on your operating system.
 
 Windows
 ===
-Using Visual Studio, simply build and it will place the .exe file in the correct directory.
+Using Visual Studio, simply build and it will place the .exe file in the correct directory. You will need Visual Studio, MSVC, C++ ATL, C++ MFC, and the Windows SDK; all of which can be installed with Visual Studio Installer.
 
 macOS
 ===
@@ -17,8 +17,7 @@ Using Xcode, simply build in Xcode and it will place the .app file in the correc
 
 Linux
 ===
-Using the command line, simply type make and it will place stepmania in the root ITGmania
-directory. There is no more need to symlink the files.
+From the `itgmania` directory (not `src`), run `cmake -B build` followed by `sudo make install`. The `itgmania` executable will be in the same directory you are in, so you can type `./itgmania` to run the game.
 
 Installing ITGmania
 ==

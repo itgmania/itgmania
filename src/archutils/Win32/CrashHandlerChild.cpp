@@ -26,7 +26,7 @@
 
 #include <windows.h>
 #include <commctrl.h>
-#include "archutils/Win32/ddk/dbghelp.h"
+#include "dbghelp.h"
 #include <io.h>
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
