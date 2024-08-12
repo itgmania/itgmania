@@ -110,13 +110,8 @@ void pos_map_impl::Cleanup()
 
 std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame, bool *bApproximate ) const
 {
-	if( bApproximate )
-		*bApproximate = false;
-
 	if( IsEmpty() )
 	{
-		if( bApproximate )
-			*bApproximate = true;
 		return 0;
 	}
 
@@ -168,8 +163,6 @@ std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame, bool *bApproximat
 		LOG->Trace("Audio frame was out of range of the data sent - possible buffer underflow? This is not always an error, however if you see it frequently there could be sound buffer problems.");
 	}
 
-	if( bApproximate )
-		*bApproximate = true;
 	return iClosestPosition;
 }
 
