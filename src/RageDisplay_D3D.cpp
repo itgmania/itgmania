@@ -394,7 +394,7 @@ RString SetD3DParams( bool &bNewDeviceOut )
 	// Palettes were lost by Reset(), so mark them unloaded.
 	g_TexResourceToPaletteIndex.clear();
 
-	return RString();
+	return RSTRING_SUCCESS;
 }
 
 // If the given parameters have failed, try to lower them.
@@ -556,7 +556,7 @@ RString RageDisplay_D3D::TryVideoMode( const VideoModeParams &_p, bool &bNewDevi
 
 	ResolutionChanged();
 
-	return RString(); // mode change successful
+	return RSTRING_SUCCESS; // mode change successful
 }
 
 void RageDisplay_D3D::ResolutionChanged()

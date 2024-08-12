@@ -168,7 +168,7 @@ namespace
 		SCREENMAN->SetNewScreen(newScreenName);
 
 		// Indicate no further theme change is needed
-		g_NewTheme = RString();
+		g_NewTheme = RSTRING_SUCCESS;
 	}
 
 	void DoChangeGame()
@@ -238,8 +238,8 @@ namespace
 		 * what it'd be. -aj */
 		THEME->UpdateLuaGlobals();
 		THEME->ReloadMetrics();
-		g_NewGame= RString();
-		g_NewTheme= RString();
+		g_NewGame= RSTRING_SUCCESS;
+		g_NewTheme= RSTRING_SUCCESS;
 	}
 }
 

@@ -562,7 +562,7 @@ RString RageDisplay_Legacy::Init( const VideoModeParams &p, bool bAllowUnacceler
 	glGetFloatv( GL_LINE_WIDTH_RANGE, g_line_range );
 	glGetFloatv( GL_POINT_SIZE_RANGE, g_point_range );
 
-	return RString();
+	return RSTRING_SUCCESS;
 }
 
 RageDisplay_Legacy::~RageDisplay_Legacy()
@@ -822,7 +822,7 @@ RString RageDisplay_Legacy::TryVideoMode( const VideoModeParams &p, bool &bNewDe
 
 	ResolutionChanged();
 
-	return RString();	// successfully set mode
+	return RSTRING_SUCCESS;	// successfully set mode
 }
 
 int RageDisplay_Legacy::GetMaxTextureSize() const
@@ -2718,7 +2718,7 @@ RString RageDisplay_Legacy::GetTextureDiagnostics(std::uintptr_t iTexture) const
 			break;
 		}
 */
-	return RString();
+	return RSTRING_SUCCESS;
 }
 
 /*

@@ -182,7 +182,7 @@ RString RageSoundDriver_WaveOut::Init()
 	MixingThread.Create( MixerThread_start, this );
 
 	b_InitSuccess = true;
-	return RString();
+	return RSTRING_SUCCESS;
 }
 
 RageSoundDriver_WaveOut::~RageSoundDriver_WaveOut()

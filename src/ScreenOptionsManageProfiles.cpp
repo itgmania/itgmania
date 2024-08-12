@@ -503,7 +503,7 @@ RString ScreenOptionsManageProfiles::GetLocalProfileIDWithFocus() const
 {
 	int iIndex = GetLocalProfileIndexWithFocus();
 	if( iIndex == -1 )
-		return RString();
+		return RSTRING_SUCCESS;
 	return m_vsLocalProfileID[iIndex];
 }
 

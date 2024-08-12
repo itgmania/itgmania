@@ -110,7 +110,7 @@ RString RageSoundDriver_DSound_Software::Init()
 	m_MixingThread.SetName("Mixer thread");
 	m_MixingThread.Create( MixerThread_start, this );
 
-	return RString();
+	return RSTRING_SUCCESS;
 }
 
 RageSoundDriver_DSound_Software::~RageSoundDriver_DSound_Software()

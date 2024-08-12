@@ -503,7 +503,7 @@ RString MovieDecoder_FFMpeg::Open( RString sFile )
 	}
 	LOG->Trace("Number of frames detected: %i", m_totalFrames);
 
-	return RString();
+	return RSTRING_SUCCESS;
 }
 
 RString MovieDecoder_FFMpeg::OpenCodec()
@@ -529,7 +529,7 @@ RString MovieDecoder_FFMpeg::OpenCodec()
 		return RString( averr_ssprintf(ret, "Couldn't open codec \"%s\"", pCodec->name) );
 	ASSERT( m_pStreamCodec->codec != nullptr );
 
-	return RString();
+	return RSTRING_SUCCESS;
 }
 
 void MovieDecoder_FFMpeg::Close()

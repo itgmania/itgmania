@@ -949,7 +949,7 @@ RString ThemeManager::GetMetricsGroupFallback( const RString &sMetricsGroup )
 	// always look in iniMetrics for "Fallback"
 	RString sFallback;
 	if( !GetMetricRawRecursive(g_pLoadedThemeData->iniMetrics,sMetricsGroup,"Fallback",sFallback) )
-		return RString();
+		return RSTRING_SUCCESS;
 
 	Lua *L = LUA->Get();
 	LuaHelpers::RunExpression( L, sFallback );
@@ -1034,7 +1034,7 @@ RString ThemeManager::GetMetricRaw( const IniFile &ini, const RString &sMetricsG
 					"could not be found in \"%s\" or \"%s\".",
 					sCurMetricPath.c_str(),
 					sDefaultMetricPath.c_str() );
-				return RString();
+				return RSTRING_SUCCESS;
 			default:
 				FAIL_M("Unexpected answer to Abort/Retry/Ignore dialog");
 		}
@@ -1271,7 +1271,7 @@ RString ThemeManager::GetString( const RString &sMetricsGroup, const RString &sV
 			if( pos == s.npos )
 			{
 				sTranslated += PseudoLocalize( s );
-				s = RString();
+				s = RSTRING_SUCCESS;
 				break;
 			}
 			else

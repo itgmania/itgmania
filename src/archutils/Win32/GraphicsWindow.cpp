@@ -229,7 +229,7 @@ RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 		// We're going windowed. If we were previously fullscreen, reset.
 		ChangeDisplaySettings( nullptr, 0 );
 
-		return RString();
+		return RSTRING_SUCCESS;
 	}
 
 	DEVMODE DevMode;
@@ -259,7 +259,7 @@ RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 		return "Couldn't set screen mode";
 
 	g_FullScreenDevMode = DevMode;
-	return RString();
+	return RSTRING_SUCCESS;
 }
 
 static int GetWindowStyle( bool bWindowed , bool bWindowIsFullscreenBorderless)

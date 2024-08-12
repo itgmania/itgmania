@@ -107,7 +107,7 @@ void ShowWarningOrTrace( const char *file, int line, const char *message, bool b
 typedef StdString::CStdString RString;
 
 #include "RageException.h"
-
+const RString RSTRING_SUCCESS = RString();
 /* Don't include our own headers here, since they tend to change often. */
 
 #endif

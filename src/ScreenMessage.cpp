@@ -36,7 +36,7 @@ RString	ScreenMessageHelpers::ScreenMessageToString( ScreenMessage SM )
 		if( SM == it.second )
 			return it.first;
 
-	return RString();
+	return RSTRING_SUCCESS;
 }
 
 /*

@@ -80,7 +80,7 @@ RString GetRandomFileInDir( RString sDir )
 	std::vector<RString> asFiles;
 	GetDirListing( sDir, asFiles, false, true );
 	if( asFiles.empty() )
-		return RString();
+		return RString(); // empty rstring indicates no file was selected
 	else
 		return asFiles[RandomInt(asFiles.size())];
 }
@@ -91,7 +91,7 @@ RString Character::GetModelPath() const
 	if( DoesFileExist(s) )
 		return s;
 	else
-		return RString();
+		return RString(); // empty rstring indicates model.txt does not exist
 }
 
 RString Character::GetRestAnimationPath() const	{ return DerefRedir(GetRandomFileInDir(m_sCharDir + "Rest/")); }
@@ -106,7 +106,7 @@ RString Character::GetTakingABreakPath() const
 	GetDirListing( m_sCharDir+"break.gif", as, false, true );
 	GetDirListing( m_sCharDir+"break.bmp", as, false, true );
 	if( as.empty() )
-		return RString();
+		return RString(); // empty rstring indicates no file was selected
 	else
 		return as[0];
 }
@@ -131,7 +131,7 @@ RString Character::GetSongSelectIconPath() const
 		GetDirListing( m_sCharDir+"icon.gif", as, false, true );
 		GetDirListing( m_sCharDir+"icon.bmp", as, false, true );
 		if( as.empty() )
-			return RString();
+			return RString(); // empty rstring indicates no file was selected
 		else
 			return as[0];
 	}
@@ -159,7 +159,7 @@ RString Character::GetStageIconPath() const
 		GetDirListing( m_sCharDir+"card.gif", as, false, true );
 		GetDirListing( m_sCharDir+"card.bmp", as, false, true );
 		if( as.empty() )
-			return RString();
+			return RString(); // empty rstring indicates no file was selected
 		else
 			return as[0];
 	}

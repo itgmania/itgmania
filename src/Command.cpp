@@ -12,7 +12,7 @@
 RString Command::GetName() const
 {
 	if( m_vsArgs.empty() )
-		return RString();
+		return RSTRING_SUCCESS;
 	RString s = m_vsArgs[0];
 	Trim( s );
 	return s;

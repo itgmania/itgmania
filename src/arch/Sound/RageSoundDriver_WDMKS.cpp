@@ -1326,7 +1326,7 @@ RString RageSoundDriver_WDMKS::Init()
 	MixingThread.SetName( "Mixer thread" );
 	MixingThread.Create( MixerThread_start, this );
 
-	return RString();
+	return RSTRING_SUCCESS;
 }
 
 RageSoundDriver_WDMKS::~RageSoundDriver_WDMKS()

@@ -81,7 +81,7 @@ RString RageDisplay_Null::Init( const VideoModeParams &p, bool /* bAllowUnaccele
 {
 	bool bIgnore = false;
 	SetVideoMode( p, bIgnore );
-	return RString();
+	return RSTRING_SUCCESS;
 }
 
 void RageDisplay_Null::GetDisplaySpecs(DisplaySpecs &out) const

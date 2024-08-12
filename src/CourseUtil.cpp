@@ -597,7 +597,7 @@ RString CourseID::ToString() const
 		return sPath;
 	if( !sFullTitle.empty() )
 		return sFullTitle;
-	return RString();
+	return RSTRING_SUCCESS;
 }
 
 bool CourseID::IsValid() const

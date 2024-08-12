@@ -123,7 +123,7 @@ public:
 					bpp(0), rate(0), vsync(false), interlaced(false),
 					bSmoothLines(false), bTrilinearFiltering(false),
 					bAnisotropicFiltering(false), bWindowIsFullscreenBorderless(false),
-					sWindowTitle(RString()), sIconFile(RString()),
+					sWindowTitle(RSTRING_SUCCESS), sIconFile(RSTRING_SUCCESS),
 					PAL(false), fDisplayAspectRatio(0.0f) {}
 
 	// Subclassing VideoModeParams in ActualVideoModeParams. Make destructor virtual just in case
@@ -362,7 +362,7 @@ public:
 	};
 	bool SaveScreenshot( RString sPath, GraphicsFileFormat format );
 
-	virtual RString GetTextureDiagnostics( std::uintptr_t /* id */ ) const { return RString(); }
+	virtual RString GetTextureDiagnostics( std::uintptr_t /* id */ ) const { return RSTRING_SUCCESS; }
 	virtual RageSurface* CreateScreenshot() = 0;	// allocates a surface.  Caller must delete it.
 	virtual RageSurface *GetTexture( std::uintptr_t /* iTexture */ ) { return nullptr; } // allocates a surface.  Caller must delete it.
 
@@ -377,7 +377,7 @@ protected:
 	virtual void DrawSymmetricQuadStripInternal( const RageSpriteVertex v[], int iNumVerts ) = 0;
 	virtual void DrawCircleInternal( const RageSpriteVertex &v, float radius );
 
-	// return RString() if mode change was successful, an error message otherwise.
+	// return RSTRING_SUCCESS if mode change was successful, an error message otherwise.
 	// bNewDeviceOut is set true if a new device was created and textures
 	// need to be reloaded.
 	virtual RString TryVideoMode( const VideoModeParams &p, bool &bNewDeviceOut ) = 0;

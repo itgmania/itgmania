@@ -699,7 +699,7 @@ RString FontPageSettings::MapRange( RString sMapping, int iMapOffset, int iGlyph
 			iCount--;
 		}
 
-		return RString();
+		return RSTRING_SUCCESS;
 	}
 
 	const wchar_t *pMapping = FontCharmaps::get_char_map( sMapping );
@@ -730,7 +730,7 @@ RString FontPageSettings::MapRange( RString sMapping, int iMapOffset, int iGlyph
 	if( iCount )
 		return "Map overflow"; // there aren't enough characters in the map
 
-	return RString();
+	return RSTRING_SUCCESS;
 }
 
 static std::vector<RString> LoadStack;

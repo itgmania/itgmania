@@ -30,7 +30,7 @@ static RString GetUSBDevicePath( int iNum )
 		nullptr, &guid, iNum, &DeviceInterface) )
 	{
 		SetupDiDestroyDeviceInfoList( DeviceInfo );
-		return RString();
+		return RSTRING_SUCCESS;
 	}
 
 	unsigned long iSize;

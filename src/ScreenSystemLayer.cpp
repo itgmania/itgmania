@@ -127,7 +127,7 @@ namespace
 				// Probably something like "Please Wait" or "Cannot Join"? -freem
 			}
 		}
-		return RString();
+		return RSTRING_SUCCESS;
 	}
 
 };

@@ -84,7 +84,7 @@ RString FindSystemFile( RString sFile )
 			return sPath;
 	}
 
-	return RString();
+	return RSTRING_SUCCESS;
 }
 
 /* Get the full path of the process running in iProcessID. On error, false is

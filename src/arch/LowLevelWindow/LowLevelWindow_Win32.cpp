@@ -262,7 +262,7 @@ RString LowLevelWindow_Win32::TryVideoMode( const VideoModeParams &p, bool &bNew
 			return hr_ssprintf( err, "wglCreateContext" );
 		}
 	}
-	return RString();	// we set the video mode successfully
+	return RSTRING_SUCCESS;
 }
 
 bool LowLevelWindow_Win32::SupportsThreadedRendering()

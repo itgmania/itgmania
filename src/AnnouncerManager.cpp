@@ -142,7 +142,7 @@ RString AnnouncerManager::GetPathTo( RString sAnnouncerName, RString sFolderName
 	temp.Open( AnnouncerPath+sFolderName + "/announcer files go here.txt", RageFile::WRITE );
 #endif
 
-	return RString();
+	return RString(); // no announcer found or usable
 }
 
 RString AnnouncerManager::GetPathTo( RString sFolderName )
