@@ -118,24 +118,6 @@ void RageSound::Unload()
 	m_sFilePath = "";
 }
 
-/* The sound will self-delete itself when it stops playing. If the sound is not
- * playing, the sound will be deleted immediately. The caller loses ownership
- * of the sound. */
-void RageSound::DeleteSelfWhenFinishedPlaying()
-{
-	m_Mutex.Lock();
-
-	if( !m_bPlaying )
-	{
-		m_Mutex.Unlock();
-		delete this;
-		return;
-	}
-
-	m_bDeleteWhenFinished = true;
-	m_Mutex.Unlock();
-}
-
 bool RageSound::IsLoaded() const
 {
 	return m_pSource != nullptr;
@@ -372,14 +354,13 @@ void RageSound::SoundIsFinishedPlaying()
 	if( !m_bPlaying )
 		return;
 
-	/* Get our current hardware position. */
 	std::int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition(nullptr);
 
 	m_Mutex.Lock();
 
-	if( m_bDeleteWhenFinished )
+	// Check if the sound is still playing after creating the lock, and delete the sound if it is not.
+	if( !m_bPlaying )
 	{
-		m_bDeleteWhenFinished = false;
 		m_Mutex.Unlock();
 		delete this;
 		return;
@@ -390,13 +371,10 @@ void RageSound::SoundIsFinishedPlaying()
 	if( !m_HardwareToStreamMap.IsEmpty() && !m_StreamToSourceMap.IsEmpty() )
 		m_iStoppedSourceFrame = (int) GetSourceFrameFromHardwareFrame( iCurrentHardwareFrame );
 
-//	LOG->Trace("set playing false for %p (SoundIsFinishedPlaying) (%s)", this, this->GetLoadedFilePath().c_str());
 	m_bPlaying = false;
 
 	m_HardwareToStreamMap.Clear();
 	m_StreamToSourceMap.Clear();
-
-//	LOG->Trace("SoundIsFinishedPlaying %p finished (%s)", this, this->GetLoadedFilePath().c_str());
 
 	m_Mutex.Unlock();
 }
@@ -437,7 +415,8 @@ void RageSound::PlayCopy(bool is_action, const RageSoundParams *pParams) const
 		pSound->SetParams( *pParams );
 
 	pSound->StartPlaying();
-	pSound->DeleteSelfWhenFinishedPlaying();
+	if( !pSound->IsPlaying() )
+		delete pSound;
 }
 
 void RageSound::Stop()

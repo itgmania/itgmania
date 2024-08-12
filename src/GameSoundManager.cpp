@@ -286,7 +286,8 @@ static void DoPlayOnce( RString sPath )
 	pSound->Load( sPath, false );
 
 	pSound->Play(false);
-	pSound->DeleteSelfWhenFinishedPlaying();
+	if( !pSound->IsPlaying() )
+		delete pSound;
 }
 
 static void DoPlayOnceFromDir( RString sPath )
