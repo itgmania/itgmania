@@ -42,9 +42,6 @@ void GameLoop::SetUpdateRate( float fUpdateRate )
 
 static void CheckGameLoopTimerSkips( float fDeltaTime )
 {
-	if( !PREFSMAN->m_bLogSkips )
-		return;
-
 	static int iLastFPS = 0;
 	int iThisFPS = DISPLAY->GetFPS();
 
@@ -273,7 +270,13 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 		? g_fConstantUpdateDeltaSeconds 
 		: g_GameplayTimer.GetDeltaTime();
 
-	CheckGameLoopTimerSkips(fDeltaTime);
+	// Use a static boolean to check the preference once per game launch.
+	// This is a rarely used debug feature, so we try to skip it if possible.
+	static bool bLogSkips = PREFSMAN->m_bLogSkips;
+	if (bLogSkips)
+	{
+		CheckGameLoopTimerSkips(fDeltaTime);
+	}
 
 	fDeltaTime *= g_fUpdateRate;
 
