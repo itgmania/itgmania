@@ -31,9 +31,9 @@ jobs:
           libxtst-dev
           nasm
       - name: Configure
-        run: cmake -B build
+        run: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)"
       - name: Build
-        run: cmake --build build
+        run: cmake --build build --parallel "$(nproc)"
 
   macos-build-arm64:
     name: macOS (M1)
@@ -46,9 +46,9 @@ jobs:
         run: brew install
           nasm
       - name: Configure
-        run: cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64
+        run: cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
       - name: Build
-        run: cmake --build build
+        run: cmake --build build --parallel "$(sysctl -n hw.logicalcpu)"
 
   macos-build-x86_64:
     name: macOS (Intel)
@@ -61,9 +61,9 @@ jobs:
         run: brew install
           nasm
       - name: Configure
-        run: cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64
+        run: cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
       - name: Build
-        run: cmake --build build
+        run: cmake --build build --parallel "$(sysctl -n hw.logicalcpu)"
 
   windows-build:
     name: Windows
@@ -73,9 +73,9 @@ jobs:
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Configure
-        run: cmake -B build
+        run: cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
       - name: Build
-        run: cmake --build build
+        run: cmake --build build --parallel "$env:NUMBER_OF_PROCESSORS"
 
   validate-xml-docs:
     name: Validate Lua.xml, LuaDocumentation.xml
