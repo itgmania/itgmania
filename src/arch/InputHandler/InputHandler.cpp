@@ -36,7 +36,7 @@ void InputHandler::ButtonPressed( DeviceInput di )
 		 * a timestamp are counted; if the driver provides its own timestamps, UpdateTimer is
 		 * optional.
 		 */
-		LOG->Warn( "InputHandler::ButtonPressed: Driver sent many updates without calling UpdateTimer" );
+		LOG->Warn("InputHandler::ButtonPressed: Driver sent many updates without calling UpdateTimer. Device ID: %d", di.uniqueID);
 		FAIL_M("x");
 	}
 }
@@ -128,6 +128,8 @@ RString InputHandler::GetDeviceSpecificInputString( const DeviceInput &di )
 	if( di.device == InputDevice_Invalid )
 		return RString();
 
+    RString deviceString = InputDeviceToString(di.device) + " (ID: " + std::to_string(di.uniqueID) + ")";
+
 	if( di.device == DEVICE_KEYBOARD )
 	{
 		if( di.button >= KEY_KP_C0 && di.button <= KEY_KP_ENTER )
@@ -144,30 +146,35 @@ RString InputHandler::GetDeviceSpecificInputString( const DeviceInput &di )
 	return s;
 }
 
-RString InputHandler::GetLocalizedInputString( const DeviceInput &di )
+RString InputHandler::GetLocalizedInputString(const DeviceInput &di)
 {
-	switch( di.button )
+	RString localizedString;
+
+	switch (di.button)
 	{
-	case KEY_HOME:		return HOME.GetValue();
-	case KEY_END:		return END.GetValue();
-	case KEY_UP:		return UP.GetValue();
-	case KEY_DOWN:		return DOWN.GetValue();
-	case KEY_SPACE:	return SPACE.GetValue();
-	case KEY_LSHIFT:	case KEY_RSHIFT:	return SHIFT.GetValue();
-	case KEY_LCTRL:	case KEY_RCTRL:	return CTRL.GetValue();
-	case KEY_LALT:		case KEY_RALT:		return ALT.GetValue();
-	case KEY_INSERT:	return INSERT.GetValue();
-	case KEY_DEL:		return DEL.GetValue();
-	case KEY_PGUP:		return PGUP.GetValue();
-	case KEY_PGDN:		return PGDN.GetValue();
-	case KEY_BACKSLASH:	return BACKSLASH.GetValue();
+	case KEY_HOME: localizedString = HOME.GetValue(); break;
+	case KEY_END: localizedString = END.GetValue(); break;
+	case KEY_UP: localizedString = UP.GetValue(); break;
+	case KEY_DOWN: localizedString = DOWN.GetValue(); break;
+	case KEY_SPACE: localizedString = SPACE.GetValue(); break;
+	case KEY_LSHIFT: case KEY_RSHIFT: localizedString = SHIFT.GetValue(); break;
+	case KEY_LCTRL: case KEY_RCTRL: localizedString = CTRL.GetValue(); break;
+	case KEY_LALT: case KEY_RALT: localizedString = ALT.GetValue(); break;
+	case KEY_INSERT: localizedString = INSERT.GetValue(); break;
+	case KEY_DEL: localizedString = DEL.GetValue(); break;
+	case KEY_PGUP: localizedString = PGUP.GetValue(); break;
+	case KEY_PGDN: localizedString = PGDN.GetValue(); break;
+	case KEY_BACKSLASH: localizedString = BACKSLASH.GetValue(); break;
 	default:
 		wchar_t c = DeviceButtonToChar( di.button, false );
 		if( c && c != L' ' ) // Don't show "Key  " for space.
-			return Capitalize( WStringToRString(std::wstring()+c) );
-
-		return DeviceButtonToString( di.button );
+			localizedString = Capitalize(WStringToRString(std::wstring() + c));
+		else
+			localizedString = DeviceButtonToString(di.button);
+		break;
 	}
+
+	return localizedString + " (ID: " + std::to_string(di.uniqueID) + ")";
 }
 
 DriverList InputHandler::m_pDriverList;
