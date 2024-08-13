@@ -39,8 +39,6 @@
 #include <cmath>
 #include <cstdint>
 
-#define samplerate() m_pSource->GetSampleRate()
-
 RageSoundParams::RageSoundParams():
 	m_StartSecond(0), m_LengthSeconds(-1), m_fFadeInSeconds(0),
 	m_fFadeOutSeconds(0), m_Volume(1.0f), m_fAttractVolume(1.0f),
@@ -282,10 +280,10 @@ int RageSound::GetDataToPlay( float *pBuffer, int iFrames, std::int64_t &iStream
 	while( iFrames > 0 )
 	{
 		float fRate = 1.0f;
-		int iSourceFrame = 0;
+		std::int_fast32_t iSourceFrame = 0;
 
 		/* Read data from our source. */
-		int iGotFrames = m_pSource->RetriedRead( pBuffer + (iFramesStored * m_pSource->GetNumChannels()), iFrames, &iSourceFrame, &fRate );
+		std::int_fast32_t iGotFrames = m_pSource->RetriedRead( pBuffer + (iFramesStored * m_pSource->GetNumChannels()), iFrames, &iSourceFrame, &fRate );
 
 		if( iGotFrames == RageSoundReader::ERROR )
 		{
@@ -331,7 +329,7 @@ void RageSound::StartPlaying()
 	ASSERT( !m_bPlaying );
 
 	// Move to the start position.
-	SetPositionFrames( static_cast<int>((m_Param.m_StartSecond * samplerate())) + 0.5 );
+	SetPositionFrames( m_Param.m_StartSecond, m_pSource->GetSampleRate() );
 
 	/* If m_StartTime is in the past, then we probably set a start time but took too
 	 * long loading.  We don't want that; log it, since it can be unobvious. */
@@ -510,7 +508,7 @@ float RageSound::GetPositionSeconds( bool *bApproximate, RageTimer *pTimestamp )
 		*bApproximate = false;
 
 	/* If we're not playing, just report the static position. */
-	float sampleRate = static_cast<float>(samplerate());
+	float sampleRate = static_cast<float>(m_pSource->GetSampleRate());
 	if( !IsPlaying() )
 		return m_iStoppedSourceFrame / sampleRate;
 
@@ -528,18 +526,18 @@ float RageSound::GetPositionSeconds( bool *bApproximate, RageTimer *pTimestamp )
 	return iSourceFrame / sampleRate;
 }
 
-
-bool RageSound::SetPositionFrames( int iFrames )
+bool RageSound::SetPositionFrames(float startSecond, int sampleRate)
 {
-	LockMut( m_Mutex );
+    std::int_fast32_t iFrames = CalculateFrames(startSecond, sampleRate);
+	LockMut(m_Mutex);
 
 	if( m_pSource == nullptr )
 	{
-		LOG->Warn( "RageSound::SetPositionFrames(%d): sound not loaded", iFrames );
+		LOG->Warn( "RageSound::SetPositionFrames(%lld): sound not loaded", iFrames );
 		return false;
 	}
 
-	int iRet = m_pSource->SetPosition( iFrames );
+	std::int_fast32_t iRet = m_pSource->SetPosition(iFrames);
 	RString filePath = GetLoadedFilePath();
 	if( iRet == -1 )
 	{
@@ -549,12 +547,11 @@ bool RageSound::SetPositionFrames( int iFrames )
 	else if( iRet == 0 )
 	{
 		/* Seeked past EOF. */
-		LOG->Warn( "SetPositionFrames: %i samples is beyond EOF in %s",
-			iFrames, filePath.c_str() );
+		LOG->Warn("SetPositionFrames: %lld samples is beyond EOF in %s", iFrames, filePath.c_str());
 	}
 	else
 	{
-		m_iStoppedSourceFrame = iFrames;
+		m_iStoppedSourceFrame = static_cast<int>(iFrames);
 	}
 
 	return iRet == 1;
