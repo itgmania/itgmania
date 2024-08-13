@@ -29,9 +29,6 @@ int device_id_handler(const std::string& itg_device_persistent_id)
     }
 }
 
-//DeviceInput::DeviceInput(InputDevice dev, DeviceButton btn, const std::string& itg_device_persistent_id)
-//    : device(dev), button(btn), unique_id(device_id_handler(itg_device_persistent_id)), level(0), z(0), b_down(false), ts(RageZeroTimer) {}
-
 static const char *InputDeviceStateNames[] = {
 	"Connected",
 	"Unplugged",

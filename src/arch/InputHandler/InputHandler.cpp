@@ -128,8 +128,6 @@ RString InputHandler::GetDeviceSpecificInputString( const DeviceInput &di )
 	if( di.device == InputDevice_Invalid )
 		return RString();
 
-    RString deviceString = InputDeviceToString(di.device) + " (ID: " + std::to_string(di.uniqueID) + ")";
-
 	if( di.device == DEVICE_KEYBOARD )
 	{
 		if( di.button >= KEY_KP_C0 && di.button <= KEY_KP_ENTER )
