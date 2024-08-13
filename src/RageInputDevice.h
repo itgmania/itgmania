@@ -315,11 +315,14 @@ enum DeviceButton
 RString DeviceButtonToString( DeviceButton i );
 DeviceButton StringToDeviceButton( const RString& s );
 
+int device_id_handler(const std::string& itg_device_persistent_id);
+
 struct DeviceInput
 {
 public:
 	InputDevice device;
 	DeviceButton button;
+	int uniqueID;
 
 	/* This is usually 0 or 1. Analog joystick inputs can set this to a percentage
 	 * (0..1). This should be 0 for analog axes within the dead zone. */
@@ -335,19 +338,20 @@ public:
 	bool bDown;
 
 	RageTimer ts;
+	
+	DeviceInput(InputDevice dev, DeviceButton btn, const std::string& itgDevicePersistentID)
+		: device(dev), button(btn), uniqueID(device_id_handler(itgDevicePersistentID)), level(0), z(0), bDown(false), ts(RageZeroTimer) {}
 
-	DeviceInput(): device(InputDevice_Invalid), button(DeviceButton_Invalid), level(0), z(0), bDown(false), ts(RageZeroTimer) { }
-	DeviceInput( InputDevice d, DeviceButton b, float l=0 ): device(d), button(b), level(l), z(0), bDown(l > 0.5f), ts(RageZeroTimer) { }
-	DeviceInput( InputDevice d, DeviceButton b, float l, const RageTimer &t ):
-		device(d), button(b), level(l), z(0), bDown(level > 0.5f), ts(t) { }
-	DeviceInput( InputDevice d, DeviceButton b, const RageTimer &t, int zVal=0 ):
-		device(d), button(b), level(0), z(zVal), bDown(false), ts(t) { }
+	DeviceInput(): device(InputDevice_Invalid), button(DeviceButton_Invalid), uniqueID(-1), level(0), z(0), bDown(false), ts(RageZeroTimer) {}
+	DeviceInput(InputDevice d, DeviceButton b, float l=0): device(d), button(b), uniqueID(-1), level(l), z(0), bDown(l > 0.5f), ts(RageZeroTimer) {}
+	DeviceInput(InputDevice d, DeviceButton b, float l, const RageTimer &t): device(d), button(b), uniqueID(-1), level(l), z(0), bDown(level > 0.5f), ts(t) {}
+	DeviceInput(InputDevice d, DeviceButton b, const RageTimer &t, int zVal=0): device(d), button(b), uniqueID(-1), level(0), z(zVal), bDown(false), ts(t) {}
 
 	RString ToString() const;
-	bool FromString( const RString &s );
+	bool FromString(const RString &s);
 
-	bool IsValid() const { return device != InputDevice_Invalid; };
-	void MakeInvalid() { device = InputDevice_Invalid; };
+	bool IsValid() const { return device != InputDevice_Invalid; }
+	void MakeInvalid() { device = InputDevice_Invalid; }
 
 	bool IsJoystick() const { return ::IsJoystick(device); }
 	bool IsMouse() const { return ::IsMouse(device); }

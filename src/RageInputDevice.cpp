@@ -5,6 +5,32 @@
 #include "RageInputDevice.h"
 #include "RageUtil.h"
 #include "LocalizedString.h"
+#include <unordered_map>
+#include <string>
+#include <mutex>
+
+std::unordered_map<std::string, int> dev_id_map;
+int next_unique_id = 1;
+std::mutex dev_id_mutex;
+
+int device_id_handler(const std::string& itg_device_persistent_id)
+{
+    std::lock_guard<std::mutex> lock(dev_id_mutex);
+    std::unordered_map<std::string, int>::iterator it = dev_id_map.find(itg_device_persistent_id);
+    if (it != dev_id_map.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        int new_id = next_unique_id++;
+        dev_id_map[itg_device_persistent_id] = new_id;
+        return new_id;
+    }
+}
+
+//DeviceInput::DeviceInput(InputDevice dev, DeviceButton btn, const std::string& itg_device_persistent_id)
+//    : device(dev), button(btn), unique_id(device_id_handler(itg_device_persistent_id)), level(0), z(0), b_down(false), ts(RageZeroTimer) {}
 
 static const char *InputDeviceStateNames[] = {
 	"Connected",
