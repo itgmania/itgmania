@@ -176,11 +176,15 @@ private:
 	RString m_sError;
 
 	int GetSourceFrameFromHardwareFrame( std::int64_t iHardwareFrame, bool *bApproximate = nullptr ) const;
-
-	bool SetPositionFrames( int frames = -1 );
+	bool SetPositionFrames( float startSecond, int sampleRate );
 	RageSoundParams::StopMode_t GetStopMode() const; // resolves M_AUTO
 
 	void SoundIsFinishedPlaying(); // called by sound drivers
+	
+	static inline std::int_fast32_t CalculateFrames(float startSecond, int sampleRate)
+	{
+		return static_cast<std::int_fast32_t>(startSecond * sampleRate + 0.5f);
+	}
 
 public:
 	// These functions are called only by sound drivers.
