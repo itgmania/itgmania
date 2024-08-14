@@ -2,6 +2,8 @@
 #include "DirectXHelpers.h"
 #include "RageUtil.h"
 
+#include <cstdarg>
+
 RString hr_ssprintf( int hr, const char *fmt, ... )
 {
 	va_list	va;

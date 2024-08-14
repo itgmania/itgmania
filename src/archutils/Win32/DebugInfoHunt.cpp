@@ -6,6 +6,7 @@
 #include "RegistryAccess.h"
 
 #include <vector>
+#include <cstdarg>
 
 #include <windows.h>
 #include <mmsystem.h>

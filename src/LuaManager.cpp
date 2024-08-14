@@ -21,6 +21,7 @@
 #include <map>
 #include <sstream> // conversion for lua functions.
 #include <vector>
+#include <cstdarg>
 
 LuaManager *LUA = nullptr;
 struct Impl

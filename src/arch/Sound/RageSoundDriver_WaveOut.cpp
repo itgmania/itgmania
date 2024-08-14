@@ -15,7 +15,7 @@
 
 #include <cstdint>
 #include <vector>
-
+#include <cstdarg>
 
 REGISTER_SOUND_DRIVER_CLASS( WaveOut );
 

@@ -8,6 +8,7 @@
 #include <ctime>
 #include <map>
 #include <vector>
+#include <cstdarg>
 
 #if defined(_WIN32)
 #include <windows.h>

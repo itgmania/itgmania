@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <cstdarg>
 
 #if defined(_WIN32)
 #include <tchar.h>

@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <thread>
+#include <cstdarg>
 
 static void FixLilEndian()
 {

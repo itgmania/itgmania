@@ -12,6 +12,7 @@
 #include <json/json.h>
 #include <pcre.h>
 
+#include <cstdarg>
 #include <cfloat>
 #include <cmath>
 #include <cstddef>

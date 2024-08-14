@@ -1,7 +1,7 @@
 #include "global.h"
 #include "ErrorStrings.h"
 #include "RageUtil.h"
-
+#include <cstdarg>
 #include <windows.h>
 
 RString werr_ssprintf( int err, const char *fmt, ... )
