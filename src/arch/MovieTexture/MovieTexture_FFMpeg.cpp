@@ -166,7 +166,7 @@ float MovieDecoder_FFMpeg::GetTimestamp() const
 	}
 
 	// In a logical situation, this means that display is outpacing decoding.
-	if (m_iFrameNumber >= m_FrameBuffer.size()) {
+	if (m_iFrameNumber >= static_cast<int>(m_FrameBuffer.size())) {
 		return 0;
 	}
 	return m_FrameBuffer[m_iFrameNumber].frameTimestamp;
@@ -174,7 +174,7 @@ float MovieDecoder_FFMpeg::GetTimestamp() const
 
 bool MovieDecoder_FFMpeg::IsCurrentFrameReady() {
 	// We're displaying faster than decoding. Do not even try to display the frame.
-	if (m_iFrameNumber >= m_FrameBuffer.size()) {
+	if (m_iFrameNumber >= static_cast<int>(m_FrameBuffer.size())) {
 		return false;
 	}
 	// If the whole movie is decoded, then the frame is definitely ready.
