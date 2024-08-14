@@ -182,7 +182,7 @@ bool MovieDecoder_FFMpeg::IsCurrentFrameReady() {
 		return true;
 	}
 
-	std::lock_guard<std::mutex>(m_FrameBuffer[m_iFrameNumber].lock);
+	std::lock_guard<std::mutex> lock(m_FrameBuffer[m_iFrameNumber].lock);
 	if (m_FrameBuffer[m_iFrameNumber].skip) {
 		LOG->Info("Frame %i not decoded, skipping...", m_iFrameNumber);
 		return true;
@@ -197,7 +197,7 @@ int MovieDecoder_FFMpeg::DecodeNextFrame()
 {
 	// Add in a new FrameBuffer entry, and lock it immediately.
 	m_FrameBuffer.push_back(FrameHolder());
-	std::lock_guard<std::mutex>(m_FrameBuffer.back().lock);
+	std::lock_guard<std::mutex> lock(m_FrameBuffer.back().lock);
 	int status = SendPacketToBuffer();
 	if (status < 0) {
 		return status;
