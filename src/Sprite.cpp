@@ -33,7 +33,7 @@ Sprite::Sprite()
 	m_bUsingCustomTexCoords = false;
 	m_bUsingCustomPosCoords = false;
 	m_bSkipNextUpdate = true;
-	m_DecodeMovie= true;
+	m_DecodeMovie = false;
 	m_EffectMode = EffectMode_Normal;
 
 	m_fRememberedClipWidth = -1;
@@ -359,10 +359,19 @@ void Sprite::LoadFromTexture( RageTextureID ID )
 	// LOG->Trace( "Sprite::LoadFromTexture( %s )", ID.filename.c_str() );
 
 	RageTexture *pTexture = nullptr;
-	if( m_pTexture && m_pTexture->GetID() == ID )
+	if( m_pTexture && m_pTexture->GetID() == ID ) 
+	{
 		pTexture = m_pTexture;
-	else
+	}
+	else 
+	{
 		pTexture = TEXTUREMAN->LoadTexture( ID );
+	}
+
+	if (ActorUtil::GetFileType(ID.filename) == FT_Movie) 
+	{
+		m_DecodeMovie = true;
+	}
 
 	SetTexture( pTexture );
 }
