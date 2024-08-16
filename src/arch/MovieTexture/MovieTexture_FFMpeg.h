@@ -25,25 +25,32 @@ namespace avcodec
 static const int sws_flags = SWS_BICUBIC; // XXX: Reasonable default?
 
 struct FrameHolder {
-	avcodec::AVFrame frame;
-	avcodec::AVPacket packet;
-	float frameTimestamp;
-	float frameDelay;
+	avcodec::AVFrame* frame = avcodec::av_frame_alloc();
+	avcodec::AVPacket* packet = avcodec::av_packet_alloc();
+	float frameTimestamp = 0;
+	float frameDelay = 0;
 	bool decoded = false;
 	bool skip = false;
 	std::mutex lock; // Protects the frame as it's being initialized.
 
 	FrameHolder() = default;
 
-	// Copy constructor, unused but we need to make the compiler not copy
-	// the mutex.
 	FrameHolder(const FrameHolder& fh) {
-		frame = fh.frame;
-		packet = fh.packet;
+		avcodec::av_frame_ref(frame, fh.frame);
+		avcodec::av_packet_ref(packet, fh.packet);
 		frameTimestamp = fh.frameTimestamp;
 		frameDelay = fh.frameDelay;
 		decoded = fh.decoded;
 		skip = fh.skip;
+	}
+
+	~FrameHolder() {
+		if (packet != nullptr) {
+			avcodec::av_packet_free(&packet);
+		}
+		if (frame != nullptr) {
+			avcodec::av_frame_free(&frame);
+		}
 	}
 };
 
@@ -134,7 +141,7 @@ private:
 	avcodec::AVIOContext *m_avioContext;
 
 	// The movie buffer.
-	std::vector<FrameHolder> m_FrameBuffer;
+	std::vector<std::unique_ptr<FrameHolder>> m_FrameBuffer;
 
 	int m_iCurrentPacketOffset;
 
