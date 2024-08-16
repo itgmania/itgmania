@@ -6,6 +6,7 @@
 #include "RageUtil.h"
 #include "RageFile.h"
 #include "RageSurface.h"
+#include "RageTimer.h"
 
 #include <cerrno>
 #include <cstddef>
@@ -211,17 +212,22 @@ int MovieDecoder_FFMpeg::DecodeNextFrame()
 
 int MovieDecoder_FFMpeg::DecodeMovie()
 {
-	using std::chrono::operator""ms;
+	// The 1ms time here is arbitrary, and means that the game will decode
+	// at a maximum speed of 1 frame per ms (or 1000 fps).
+	static const float f_Threshold  = 0.001f;
+	RageTimer MovieTimer;
+	MovieTimer.Touch();
 
 	// The first frame expected to be decoded and drawn already,
 	// that is handled by MovieTexture_Generic::Init().
 	int frameNum = 0;
 	while (!m_iEOF) {
-		// This wake up time could be tied to the RageTimer, but as it doesn't
-		// need to sync with other parts of ITGm, using chrono is fine.
-		// The 1ms time here is arbitrary, and means that the game will decode
-		// at a maximum speed of 1 frame per ms (or 1000 fps).
-		auto wake_up = std::chrono::steady_clock::now() + 1ms;
+		// We will skip the update if that much time hasn't passed.
+		if (MovieTimer.Ago() < f_Threshold) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			continue; 
+		}
+		MovieTimer.Touch();
 
 		int status = DecodeNextFrame();
 
@@ -239,8 +245,6 @@ int MovieDecoder_FFMpeg::DecodeMovie()
 		if (frameNum - 1 > m_totalFrames) {
 			m_totalFrames++;
 		}
-
-		std::this_thread::sleep_until(wake_up);
 	}
 	return 0;
 }
