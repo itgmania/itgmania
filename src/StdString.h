@@ -88,14 +88,12 @@
 
 typedef const char*		PCSTR;
 typedef char*			PSTR;
+typedef const wchar_t*	PCWSTR;
+typedef wchar_t*		PWSTR;
 
 // Standard headers needed
 #include <string>			// basic_string
 #include <algorithm>			// for_each, etc.
-
-#if defined(WIN32)
-#include <malloc.h>			// _alloca
-#endif
 
 #include <cctype>
 #include <cstdarg>
@@ -148,13 +146,15 @@ namespace StdString
  * @param ch the character to convert.
  * @return the converted character.
  */
-inline char sstoupper(char ch)		{ return (ch >= 'a' && ch <= 'z')? char(ch + 'A' - 'a'): ch; }
+char sstoupper(char ch) noexcept;
+wchar_t sstoupper(wchar_t ch) noexcept;
 /**
  * @brief Turn the character into its lowercase equivalent.
  * @param ch the character to convert.
  * @return the converted character.
  */
-inline char sstolower(char ch)		{ return (ch >= 'A' && ch <= 'Z')? char(ch + 'a' - 'A'): ch; }
+char sstolower(char ch) noexcept;
+wchar_t sstolower(wchar_t ch) noexcept;
 
 // -----------------------------------------------------------------------------
 // ssasn: assignment functions -- assign "sSrc" to "sDst"
@@ -167,23 +167,16 @@ typedef std::string::pointer		SS_PTRTYPE;
  * @param sDst the destination string.
  * @param sSrc the source string.
  */
-inline void	ssasn(std::string& sDst, const std::string& sSrc)
-{
-	if ( sDst.c_str() != sSrc.c_str() )
-	{
-		sDst.erase();
-		sDst.assign(sSrc);
-	}
-}
+void ssasn(std::string& sDst, const std::string& sSrc) noexcept;
+void ssasn(std::wstring& sDst, const std::wstring& sSrc) noexcept;
 /**
  * @brief Assign one string to another.
  * @param sDst the destination string.
  * @param pA the source string.
  */
-inline void	ssasn(std::string& sDst, PCSTR pA)
-{
-		sDst.assign(pA);
-}
+void ssasn(std::string& sDst, PCSTR pA) noexcept;
+void ssasn(std::wstring& sDst, PCWSTR pA) noexcept;
+
 #undef StrSizeType
 
 
@@ -195,34 +188,15 @@ inline void	ssasn(std::string& sDst, PCSTR pA)
  * @param sDst the original string.
  * @param sSrc the string being added.
  */
-inline void	ssadd(std::string& sDst, const std::string& sSrc)
-{
-	sDst += sSrc;
-}
+void ssadd(std::string& sDst, const std::string& sSrc) noexcept;
+void ssadd(std::wstring& sDst, const std::wstring& sSrc) noexcept;
 /**
  * @brief Concatenate one string with another.
  * @param sDst the original string.
  * @param pA the string being added.
  */
-inline void	ssadd(std::string& sDst, PCSTR pA)
-{
-	// If the string being added is our internal string or a part of our
-	// internal string, then we must NOT do any reallocation without
-	// first copying that string to another object (since we're using a
-	// direct pointer)
-
-	if ( pA >= sDst.c_str() && pA <= sDst.c_str()+sDst.length())
-	{
-		if ( sDst.capacity() <= sDst.size()+strlen(pA) )
-			sDst.append(std::string(pA));
-		else
-			sDst.append(pA);
-	}
-	else
-	{
-		sDst.append(pA);
-	}
-}
+void ssadd(std::string& sDst, PCSTR pA) noexcept;
+void ssadd(std::wstring& sDst, PCWSTR pA) noexcept;
 
 // -----------------------------------------------------------------------------
 // ssicmp: comparison (case insensitive )
