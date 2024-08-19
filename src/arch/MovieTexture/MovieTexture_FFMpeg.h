@@ -109,7 +109,7 @@ public:
 private:
 	void Init();
 	RString OpenCodec();
-
+	static std::mutex m_avcodec_mutex;
 	// Read a packet and send it to our frame data buffer.
 	// Returns -2 on cancel, -1 on error, 0 on EOF, 1 on OK.
 	int SendPacketToBuffer();

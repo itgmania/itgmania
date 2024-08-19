@@ -12,6 +12,8 @@
 #include <cstdint>
 #include <thread>
 
+std::mutex MovieDecoder_FFMpeg::m_avcodec_mutex;
+
 static void FixLilEndian()
 {
 	if constexpr ( !Endian::little ) {
@@ -212,6 +214,9 @@ int MovieDecoder_FFMpeg::DecodeNextFrame()
 int MovieDecoder_FFMpeg::DecodeMovie()
 {
 	using std::chrono::operator""ms;
+
+	// Ensure only one thread can run this function at a time
+	std::lock_guard<std::mutex> lock(m_avcodec_mutex);
 
 	// The first frame expected to be decoded and drawn already,
 	// that is handled by MovieTexture_Generic::Init().
