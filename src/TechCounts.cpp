@@ -23,7 +23,7 @@ XToLocalizedString( TechCountsCategory );
 LuaFunction(TechCountsCategoryToLocalizedString, TechCountsCategoryToLocalizedString(Enum::Check<TechCountsCategory>(L, 1)) );
 LuaXType( TechCountsCategory );
 
-
+const float JACK_CUTOFF = 0.176; // 170bpm 1/8th notes, anything slower isn't considered a jack
 // TechCounts methods
 
 TechCounts::TechCounts()
@@ -86,7 +86,7 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 	// A value of -1 means that Foot is not on any column
 	int previousFootPlacement[StepParity::NUM_Foot];
 	int currentFootPlacement[StepParity::NUM_Foot];
-
+	int previousNoteCount = 0;
 	for (int f = 0; f < StepParity::NUM_Foot; f++)
 	{
 		previousFootPlacement[f] = -1;
@@ -101,6 +101,8 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 	for (unsigned long i = 1; i < rows.size(); i++)
 	{
 		const StepParity::Row &currentRow = rows[i];
+		const StepParity::Row &previousRow = rows[i - 1];
+			
 		int noteCount = 0;
 		
 		// copy the foot placement for the current row into currentColumns,
@@ -143,7 +145,10 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 				
 				if(previousFootPlacement[foot] == currentFootPlacement[foot])
 				{
-					out[TechCountsCategory_Jacks] += 1;
+					if(previousNoteCount == 1 && currentRow.second - previousRow.second < JACK_CUTOFF)
+					{
+						out[TechCountsCategory_Jacks] += 1;
+					}
 				}
 				else
 				{
@@ -212,6 +217,8 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 			previousColumns[c] = currentColumns[c];
 			currentColumns[c] = StepParity::NONE;
 		}
+		
+		previousNoteCount = noteCount;
 	}
 }
 

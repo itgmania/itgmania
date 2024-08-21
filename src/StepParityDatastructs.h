@@ -24,6 +24,11 @@ namespace StepParity {
 	};
 
 	const std::vector<StepParity::Foot> FEET = {LEFT_HEEL, LEFT_TOE, RIGHT_HEEL, RIGHT_TOE};
+	// A map for getting the other part of the foot, when you don't actually care
+	// what part it is.
+	// OTHER_PART_OF_FOOT[LEFT_HEEL] == LEFT_TOE
+	const std::vector<StepParity::Foot> OTHER_PART_OF_FOOT = {NONE, LEFT_TOE, LEFT_HEEL, RIGHT_TOE, RIGHT_HEEL};
+	
 	const RString FEET_LABELS[] = {"N", "L", "l", "R", "r", "5??", "6??"};
 	const RString TapNoteTypeShortNames[] = { "Empty", "Tap",  "Mine",  "Attack", "AutoKeySound", "Fake", "", "" };
 	const RString TapNoteSubTypeShortNames[] = { "Hold", "Roll", "", "" };	
