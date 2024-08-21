@@ -28,10 +28,11 @@ public:
 	virtual RString Open( RString sFile ) = 0;
 	virtual void Close() = 0;
 	virtual void Rewind() = 0;
+	virtual void Rollover() = 0;
 
 	// Decode the next frame.
 	// Return 1 on success, 0 on EOF, -1 on fatal error, -2 on cancel.
-	virtual int DecodeNextFrame() = 0;
+	virtual int DecodeFrame() = 0;
 	virtual int DecodeMovie() = 0;
 
 	// Returns true if the frame we want to display has been decoded already.
@@ -40,10 +41,7 @@ public:
 	/*
 	 * Get the currently-decoded frame.
 	 */
-	virtual bool GetFrame( RageSurface *pOut ) = 0;
-
-	// Returns true if the frame should be skipped.
-	virtual bool SkipNextFrame() = 0;
+	virtual int GetFrame( RageSurface *pOut ) = 0;
 
 	/* Return the dimensions of the image, in pixels (before aspect ratio
 	 * adjustments). */
@@ -76,6 +74,12 @@ public:
 
 	// Cancels the decoding of the movie.
 	virtual void Cancel() = 0;
+
+	// Sets the looping property on the decoder.
+	virtual void SetLooping(bool loop) = 0;
+
+	// Returns true if the the final frame was displayed.
+	virtual bool EndOfMovie() = 0;
 };
 
 
@@ -110,6 +114,7 @@ private:
 
 	float m_fRate;
 	bool m_bLoop;
+	bool finished_ = false;
 
 	// If true, halts all decoding and display.
 	bool m_failure = false;
@@ -131,7 +136,6 @@ private:
 	void CreateTexture();
 	void DestroyTexture();
 
-	bool DecodeFrame();
 	float CheckFrameTime();
 };
 
