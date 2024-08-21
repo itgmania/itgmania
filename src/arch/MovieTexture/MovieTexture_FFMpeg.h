@@ -26,30 +26,28 @@ static const int kSwsFlags = SWS_BICUBIC; // XXX: Reasonable default?
 
 struct FrameHolder {
 	avcodec::AVFrame* frame = avcodec::av_frame_alloc();
+	bool displayed = false;
+	int packet_num = -1; // Used as a sanity check during display.
+	std::mutex lock; // Protects the frame as it's being initialized.
+	~FrameHolder() {
+		if (frame != nullptr) {
+			avcodec::av_frame_free(&frame);
+		}
+	}
+};
+
+struct PacketHolder {
 	avcodec::AVPacket* packet = avcodec::av_packet_alloc();
 	float frame_timestamp = 0;
 	float frame_delay = 0;
 	bool decoded = false;
-	bool skip = false;
-	std::mutex lock; // Protects the frame as it's being initialized.
+	std::mutex lock; // Protects the packet as it's being initialized.
 
-	FrameHolder() = default;
+	PacketHolder() = default;
 
-	FrameHolder(const FrameHolder& fh) {
-		avcodec::av_frame_ref(frame, fh.frame);
-		avcodec::av_packet_ref(packet, fh.packet);
-		frame_timestamp = fh.frame_timestamp;
-		frame_delay = fh.frame_delay;
-		decoded = fh.decoded;
-		skip = fh.skip;
-	}
-
-	~FrameHolder() {
+	~PacketHolder() {
 		if (packet != nullptr) {
 			avcodec::av_packet_free(&packet);
-		}
-		if (frame != nullptr) {
-			avcodec::av_frame_free(&frame);
 		}
 	}
 };
@@ -77,27 +75,37 @@ public:
 
 	RString Open(RString sFile);
 	void Close();
+
+	// Rewind sends the reset signal to DecodeMovie. See DecodeMovie
+	// and HandleReset for more information.
 	void Rewind();
 
-	// This draws a frame from the buffer onto the provided RageSurface.
-	// Returns true if returning the last frame in the movie.
-	bool GetFrame(RageSurface* pOut);
-	int DecodeFrame(float fTargetTime);
+	// Like rewind, but handles the case that a looping video reached the end,
+	// and the next frame to display is the first one of the movie.
+	void Rollover();
 
-	// Decode a single frame.  Return -2 on cancel, -1 on error, 0 on EOF, 1 if we have a frame.
-	int DecodeNextFrame();
+	// This draws a frame from the buffer onto the provided RageSurface.
+	// Returns 1 if the last frame of the movie, -1 if there's an issue
+	// with the frame and we should skip.
+	int GetFrame(RageSurface* pOut);
+
+	// Handles the next packet in decoding.
+	int HandleNextPacket();
+
+	// Decode a single frame.
+	// Return -2 on cancel
+	//        -1 on error
+	//         0 on success
+	//         1 on success and end_of_file_ set
+	int DecodeFrame();
 
 	// Decode the entire movie.
-	// If we let this decode as fast as possible, it could come at the expense
-	// of gameplay performance. Since dropping frames is undesirable, an
-	// artificial rate limit is introduced.
+	// Works via a sliding window between packet_buffer_ and frame_buffer_.
+	// The frame_buffer_, when full, will not reuse a FrameHolder until the
+	// frame at frame_buffer_position_ has been displayed.
 	//
-	// Given that most movies will display at 30fps or 60fps, decoding at a
-	// speed of 1000fps should be more than sufficient to ensure we never
-	// run behind. This rate limiting is only needed in case itgmania is
-	// running on a low performance machine, or the movie is REALLY long.
-	//
-	// Returns 0 on success, -1 on fatal error, -2 on cancel.
+	// Returns 0 on success, -1 on fatal error, -2 on cancel. Looping movies
+	// never exit until destruction.
 	int DecodeMovie();
 	bool IsCurrentFrameReady();
 
@@ -108,10 +116,17 @@ public:
 
 	float GetTimestamp() const;
 
+	// Cancel decoding.
 	void Cancel() { cancel_ = true; };
 
-	// If the next frame to display had an issue decoding, skip it.
-	bool SkipNextFrame();
+	// Called by the MovieTexture to tell the decoder if the movie loops.
+	void SetLooping(bool loop) { looping_ = loop; }
+
+	// Are we displaying the last frame?
+	bool LastFrame() { return display_frame_num_ == (total_frames_ - 1); }
+
+	// The signal if the final frame of the movie was just displayed.
+	bool EndOfMovie() { return end_of_movie_; }
 
 private:
 	void Init();
@@ -121,34 +136,51 @@ private:
 	// Returns -2 on cancel, -1 on error, 0 on EOF, 1 on OK.
 	int SendPacketToBuffer();
 
-	// Decode frame data from the packet in the buffer.
+	// Send the packet at packet_buffer_position_ to the frame buffer
+	// at the next open position.
 	// Returns -2 on cancel, -1 on error, 0 if the packet is finished.
-	int DecodePacketInBuffer();
+	int DecodePacketToFrame();
+	void HandleReset();
 
 	avcodec::AVStream* av_stream_;
 	avcodec::AVPixelFormat av_pixel_format_;	/* pixel format of output surface */
 	avcodec::SwsContext* av_sws_context_;
 	avcodec::AVCodecContext* av_stream_codec_;
-
 	avcodec::AVFormatContext* av_format_context_;
-	int display_frame_num_;
 	int total_frames_; // Total number of frames in the movie.
 
 	unsigned char* av_buffer_;
 	avcodec::AVIOContext* av_io_context_;
 
-	// The movie buffer.
+	// The movie's buffers. This uses a sliding window from FrameBuffer to
+	// PacketBuffer. AVPackets are small enough that keeping the whole movie's
+	// packets in memory is trivial, but AVFrames can quickly overwhelm RAM.
+	// Therefore, the FrameBuffer represents a sliding window along the PacketBuffer.
+	std::vector<std::unique_ptr<PacketHolder>> packet_buffer_;
 	std::vector<std::unique_ptr<FrameHolder>> frame_buffer_;
+	int frame_buffer_position_ = 0;
+	int packet_buffer_position_ = 0;
 
-	int current_packet_offset_;
+	// Offset for the frame_buffer_ when a looping movie goes back to
+	// the zeroeth frame. next_offset_ is written when the zeroeth frame
+	// is decoded, and when the last frame is displayed, it is applied to
+	// offset_.
+	int offset_ = 0;
+	int next_offset_ = 0;
+
+	// display_frame_num_ will often be the start of the sliding window,
+	// or the oldest Frame that is currently decoded.
+	int display_frame_num_ = 0;
 
 	// 0 = no EOF
 	// 1 = EOF while decoding
 	int end_of_file_;
 
-	// If true, received a cancel signal from the MovieTexture.
+	// The various flags used to signal the decoding thread to do something.
 	bool cancel_ = false;
-	bool first_frame_ = true;
+	bool looping_ = false;
+	bool reset_ = false;
+	bool end_of_movie_ = false;
 };
 
 static struct AVPixelFormat_t

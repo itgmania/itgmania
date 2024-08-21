@@ -47,16 +47,7 @@ RString MovieTexture_Generic::Init()
 
 	CreateTexture();
 	CreateFrameRects();
-
-
-	// Draw the first frame immediately, to guarantee that the texture is drawn
-	// when this function returns--if possible.
-	if (m_pDecoder->DecodeNextFrame() < 0) {
-		LOG->Trace("Failure to decode first frame of video file \"%s\"", GetID().filename.c_str());
-		m_failure = true;
-		return RString("Failure to display movie.");
-	};
-	UpdateMovie(0);
+	m_pDecoder->SetLooping(m_bLoop);
 
 	decoding_thread = std::make_unique<std::thread>([this]() {
 		LOG->Trace("Beginning to decode video file \"%s\"", GetID().filename.c_str());
@@ -339,12 +330,12 @@ void MovieTexture_Generic::UpdateMovie(float fSeconds)
 
 void MovieTexture_Generic::UpdateFrame()
 {
-	/* Just in case we were invalidated: */
-	CreateTexture();
-
-	if (m_pDecoder->SkipNextFrame()) {
+	if (finished_) {
 		return;
 	}
+
+	/* Just in case we were invalidated: */
+	CreateTexture();
 
 	if(m_pTextureLock != nullptr)
 	{
@@ -352,10 +343,13 @@ void MovieTexture_Generic::UpdateFrame()
 		m_pTextureLock->Lock(iHandle, m_pSurface);
 	}
 
-	/* Are we looping? */
-	if (m_pDecoder->GetFrame(m_pSurface) && m_bLoop) {
+	int frame_ret = m_pDecoder->GetFrame(m_pSurface);
+
+	// Are we looping?
+	if (m_pDecoder->EndOfMovie() && m_bLoop) {
 		LOG->Trace("File \"%s\" looping", GetID().filename.c_str());
-		m_pDecoder->Rewind();
+		m_pDecoder->Rollover();
+
 		// There's a gap in the audio when the music preview loops. This value
 		// is dynamic based on the ending and starting beats (see
 		// GameSoundManager.cpp::StartMusic).
@@ -365,7 +359,20 @@ void MovieTexture_Generic::UpdateFrame()
 		// Until it does, we can either freeze at the end of the video banner,
 		// or give it a best effort approximation (0.5 seconds).
 		m_fClock = 0.5;
-	};
+	}
+	else if (m_pDecoder->EndOfMovie()) {
+		// At the end of the movie, and not looping.
+		finished_ = true;
+	}
+
+	// There's an issue with the frame, make sure it does not get
+	// uploaded.
+	if (frame_ret == -1) {
+		if (m_pTextureLock != nullptr) {
+			m_pTextureLock->Unlock(m_pSurface, true);
+		}
+		return;
+	}
 
 	if (m_pTextureLock != nullptr) {
 		m_pTextureLock->Unlock(m_pSurface, true);
@@ -416,8 +423,9 @@ void MovieTexture_Generic::Reload()
 
 void MovieTexture_Generic::SetPosition(float fSeconds)
 {
-	// In theory, we can math out fSeconds and frame counts to seek the video,
-	// but there's likely no practical use case of this.
+	// TODO: The only non-zero use case of this function would be practice mode.
+	// Implement this by mathing out fSeconds and frame counts to seek the
+	// video.
 	if (fSeconds != 0)
 	{
 		LOG->Warn("MovieTexture_Generic::SetPosition(%f): non-0 seeking unsupported; ignored", fSeconds);
