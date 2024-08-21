@@ -180,7 +180,10 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 			}
 
 			// this same column was stepped on in the previous row, but not by the same foot ==> footswitch or sideswitch
-			if(previousColumns[c] != StepParity::NONE && previousColumns[c] != currentColumns[c])
+			if(previousColumns[c] != StepParity::NONE 
+			   && previousColumns[c] != currentColumns[c]
+			   && StepParity::OTHER_PART_OF_FOOT[previousColumns[c]] != currentColumns[c]
+			   )
 			{
 				// this is assuming only 4-panel single
 				if(c == 0 || c == 3)
