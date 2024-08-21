@@ -30,7 +30,6 @@ struct FrameHolder {
 	float frameTimestamp = 0;
 	float frameDelay = 0;
 	bool decoded = false;
-	bool skip = false;
 	std::mutex lock; // Protects the frame as it's being initialized.
 
 	FrameHolder() = default;
@@ -41,7 +40,6 @@ struct FrameHolder {
 		frameTimestamp = fh.frameTimestamp;
 		frameDelay = fh.frameDelay;
 		decoded = fh.decoded;
-		skip = fh.skip;
 	}
 
 	~FrameHolder() {
@@ -109,9 +107,6 @@ public:
 	float GetTimestamp() const;
 
 	void Cancel() { cancel = true; };
-
-	// If the next frame to display had an issue decoding, skip it.
-	bool SkipNextFrame();
 
 private:
 	void Init();

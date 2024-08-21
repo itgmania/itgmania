@@ -185,12 +185,8 @@ bool MovieDecoder_FFMpeg::IsCurrentFrameReady() {
 
 
 	std::lock_guard<std::mutex> lock(m_FrameBuffer[m_iFrameNumber]->lock);
-	if (m_FrameBuffer[m_iFrameNumber]->skip) {
-		LOG->Info("Frame %i not decoded, skipping...", m_iFrameNumber);
-		return true;
-	}
 	if (!m_FrameBuffer[m_iFrameNumber]->decoded) {
-		LOG->Info("Frame %i not decoded and was not skipped, total frames: %i", m_iFrameNumber, m_totalFrames);
+		LOG->Info("Frame %i not decoded, total frames: %i", m_iFrameNumber, m_totalFrames);
 	}
 	return m_FrameBuffer[m_iFrameNumber]->decoded;
 }
@@ -323,10 +319,15 @@ int MovieDecoder_FFMpeg::DecodePacketInBuffer() {
 		if (avcodec_return != 0)
 		{
 			LOG->Warn(
-				"Frame number %i not successfully decoded into buffer. avcodec_receive_frame status: %i",
+				"Frame %i saw nonzero avcodec_receive_frame status: %i",
 				static_cast<int>(m_FrameBuffer.size() - 1),
 				avcodec_return);
-			continue;
+
+			// Not a fatal decoding error, and the FFMpeg code is robust enough to handle displaying
+			// somewhat mangled frames.
+			if (m_iCurrentPacketOffset <= m_FrameBuffer.back()->packet->size) {
+				continue;
+			}
 		}
 
 		if (m_FrameBuffer.back()->frame->pkt_dts != AV_NOPTS_VALUE)
@@ -354,25 +355,7 @@ int MovieDecoder_FFMpeg::DecodePacketInBuffer() {
 		return 1;
 	}
 
-	// This if statement means the packet did not decode correctly. This is not
-	// necessarily fatal for video playback, but out of caution the frame should
-	// be skipped.
-	if (!m_FrameBuffer.back()->decoded) {
-		m_FrameBuffer.back()->skip = true;
-	}
-
 	return 0; /* packet done */
-}
-
-bool MovieDecoder_FFMpeg::SkipNextFrame() {
-	if (m_iFrameNumber > (m_totalFrames - 1)) {
-		return true;
-	}
-	if (m_FrameBuffer[m_iFrameNumber]->skip) {
-		m_iFrameNumber++;
-		return true;
-	}
-	return false;
 }
 
 bool MovieDecoder_FFMpeg::GetFrame(RageSurface* pSurface)
