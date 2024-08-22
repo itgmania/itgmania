@@ -134,7 +134,7 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 		*/
 
 		// check for jacks and doublesteps
-		if(noteCount == 1)
+		if(noteCount == 1 && previousNoteCount == 1)
 		{
 			for (StepParity::Foot foot: StepParity::FEET)
 			{
@@ -145,7 +145,7 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 				
 				if(previousFootPlacement[foot] == currentFootPlacement[foot])
 				{
-					if(previousNoteCount == 1 && currentRow.second - previousRow.second < JACK_CUTOFF)
+					if(currentRow.second - previousRow.second < JACK_CUTOFF)
 					{
 						out[TechCountsCategory_Jacks] += 1;
 					}
