@@ -39,23 +39,6 @@ static Impl *pImpl = nullptr;
 	#pragma warning (disable : 4611)
 #endif
 
-/** @brief Utilities for working with Lua. */
-namespace LuaHelpers
-{
-	template<> void Push<bool>( lua_State *L, const bool &Object );
-	template<> void Push<float>( lua_State *L, const float &Object );
-	template<> void Push<int>( lua_State *L, const int &Object );
-	template<> void Push<RString>( lua_State *L, const RString &Object );
-
-	template<> bool FromStack<bool>( Lua *L, bool &Object, int iOffset );
-	template<> bool FromStack<float>( Lua *L, float &Object, int iOffset );
-	template<> bool FromStack<int>( Lua *L, int &Object, int iOffset );
-	template<> bool FromStack<unsigned int>( Lua *L, unsigned int &Object, int iOffset );
-	template<> bool FromStack<RString>( Lua *L, RString &Object, int iOffset );
-
-	bool InReportScriptError= false;
-}
-
 void LuaManager::SetGlobal( const RString &sName, int val )
 {
 	Lua *L = Get();
@@ -107,6 +90,8 @@ namespace LuaHelpers
 
 		return pStr != nullptr;
 	}
+
+	bool InReportScriptError = false;
 }
 
 void LuaHelpers::CreateTableFromArrayB( Lua *L, const std::vector<bool> &aIn )
