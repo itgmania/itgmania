@@ -13,7 +13,15 @@
 #include <dirent.h>
 #endif
 
+#if defined(HAVE_FCNTL_H)
+#include <fcntl.h>
+#endif
+
+#include <linux/input.h>
+
 #include <errno.h>
+
+Preference<bool> g_bInputLinuxOrderByLocation( "InputLinuxOrderByLocation", false );
 
 RString getDevice(RString inputDir, RString type)
 {
@@ -21,7 +29,7 @@ RString getDevice(RString inputDir, RString type)
 	DIR* dir = opendir( inputDir.c_str() );
 	if(dir == nullptr)
 		{ LOG->Warn("LinuxInputManager: Couldn't open %s: %s.", inputDir.c_str(), strerror(errno) ); return ""; }
-	
+
 	struct dirent* d;
 	while( ( d = readdir(dir) ) != nullptr)
 		if( strncmp( type.c_str(), d->d_name, type.size() ) == 0)
@@ -29,7 +37,7 @@ RString getDevice(RString inputDir, RString type)
 			result = RString("/dev/input/") + d->d_name;
 			break;
 		}
-	
+
 	closedir(dir);
 	return result;
 }
@@ -46,10 +54,10 @@ LinuxInputManager::LinuxInputManager()
 	// HACK: If empty, assume both are enabled
 	if( g_sInputDrivers.Get() == "" )
 		{ m_bEventEnabled = true; m_bJoystickEnabled = true; }
-	
+
 	m_EventDriver = nullptr;
 	m_JoystickDriver = nullptr;
-	
+
 	// XXX: Can I use RageFile for this?
 	DIR* sysClassInput = opendir("/sys/class/input");
 	if( sysClassInput == nullptr)
@@ -58,31 +66,91 @@ LinuxInputManager::LinuxInputManager()
 		LOG->Warn("Couldn't open /sys/class/input: %s. Joysticks will not work!", strerror(errno) );
 		return;
 	}
-	
+
 	struct dirent* d;
 	while( ( d = readdir(sysClassInput) ) != nullptr)
 	{
 		if( strncmp( "input", d->d_name, 5) != 0) continue;
-		
+
 		RString dName = RString("/sys/class/input/") + d->d_name;
-		
+
 		bool bEventPresent = getDevice(dName, "event") != "";
-		if( m_bEventEnabled && bEventPresent ) 
+		if( m_bEventEnabled && bEventPresent )
 			{ m_vsPendingEventDevices.push_back(dName); continue; }
-		
+
 		bool bJoystickPresent = getDevice(dName, "js") != "";
 		if( m_bJoystickEnabled && bJoystickPresent )
 			{ m_vsPendingJoystickDevices.push_back(dName); continue; }
-			
+
 		if( !bEventPresent && !bJoystickPresent )
 			LOG->Info("LinuxInputManager: %s seems to have no eventNN or jsNN.", dName.c_str() );
 	}
 
-	// Sort devices for more consistent numbering.
-	std::sort(m_vsPendingEventDevices.begin(), m_vsPendingEventDevices.end(), cmpDevices);
-	std::sort(m_vsPendingJoystickDevices.begin(), m_vsPendingJoystickDevices.end(), cmpDevices);
+	if(g_bInputLinuxOrderByLocation)
+	{
+		// use Presort to sort the devices by unique location (like USB port/hub number.)
+		PresortPhysical(m_vsPendingEventDevices, "event");
+		PresortPhysical(m_vsPendingJoystickDevices, "js");
+	}
+	else
+	{
+		// Sort devices for more consistent numbering.
+		std::sort(m_vsPendingEventDevices.begin(), m_vsPendingEventDevices.end(), cmpDevices);
+		std::sort(m_vsPendingJoystickDevices.begin(), m_vsPendingJoystickDevices.end(), cmpDevices);
+	}
 
 	closedir(sysClassInput);
+}
+
+
+static bool presort_cmpDevices(LinuxInputSort a, LinuxInputSort b)
+{
+	return a.UniqueString < b.UniqueString;
+}
+
+void LinuxInputManager::PresortPhysical(std::vector<RString>& sortingArray, RString sortBy)
+{
+	m_vPreSort.clear();
+
+	for (RString &dev : sortingArray)
+	{
+		LinuxInputSort entry;
+
+		entry.DeviceName = dev;
+		entry.UniqueString = "";
+
+		int m_iFD = open(getDevice(dev, sortBy.c_str()).c_str(), O_RDWR);
+
+		if(m_iFD >= 0)
+		{
+			char szLocation[1024];
+
+			// EVIOCGPHYS can return values like "usb-0000:0d:00.3-4"
+			// telling us where the device is located physically on the computer.
+			if(ioctl(m_iFD, EVIOCGPHYS(sizeof(szLocation)), szLocation) != -1)
+			{
+				entry.UniqueString += szLocation;
+			}
+
+			close(m_iFD);
+		}
+
+		// in the event we didn't get a unique location from ioctl
+		// default to the name so that sorting by number still works as intended.
+		entry.UniqueString += entry.DeviceName;
+
+		m_vPreSort.push_back(entry);
+	}
+
+	std::sort(m_vPreSort.begin(), m_vPreSort.end(), presort_cmpDevices);
+
+	sortingArray.clear();
+
+	for (LinuxInputSort &dev : m_vPreSort)
+	{
+		// LOG->Info("%s -> %s", dev.DeviceName.c_str(), dev.UniqueString.c_str());
+		sortingArray.push_back(dev.DeviceName);
+	}
 }
 
 void LinuxInputManager::InitDriver(InputHandler_Linux_Event* driver)
@@ -93,7 +161,7 @@ void LinuxInputManager::InitDriver(InputHandler_Linux_Event* driver)
 	{
 		RString devFile = getDevice(dev, "event");
 		ASSERT( devFile != "" );
-		
+
 		if( ! driver->TryDevice(devFile) && m_bJoystickEnabled && getDevice(dev, "js") != "" )
 			m_vsPendingJoystickDevices.push_back(dev);
 	}
@@ -105,7 +173,7 @@ void LinuxInputManager::InitDriver(InputHandler_Linux_Event* driver)
 void LinuxInputManager::InitDriver(InputHandler_Linux_Joystick* driver)
 {
 	m_JoystickDriver = driver;
-	// Discard all the joystick devices if they were assigned manually via 
+	// Discard all the joystick devices if they were assigned manually via
 	// 	InputDeviceOrder
 	if( g_sInputDeviceOrder.Get() != "" ) {
 		m_vsPendingJoystickDevices.clear();
@@ -115,7 +183,7 @@ void LinuxInputManager::InitDriver(InputHandler_Linux_Joystick* driver)
 	{
 		RString devFile = getDevice(dev, "js");
 		ASSERT( devFile != "" );
-		
+
 		driver->TryDevice(devFile);
 	}
 
@@ -134,7 +202,7 @@ LinuxInputManager* LINUXINPUT = nullptr; // global and accessible anywhere in ou
 /*
  * (c) 2013 Ben "root" Anderson
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -144,7 +212,7 @@ LinuxInputManager* LINUXINPUT = nullptr; // global and accessible anywhere in ou
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
