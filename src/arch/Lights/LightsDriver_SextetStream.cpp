@@ -16,21 +16,21 @@
 
 namespace
 {
-	class Impl
+	class SextetImpl
 	{
 	protected:
 		std::uint8_t lastOutput[FULL_SEXTET_COUNT];
 		RageFile * out;
 
 	public:
-		Impl(RageFile * file) {
+		SextetImpl(RageFile * file) {
 			out = file;
 
 			// Ensure a non-match the first time
 			lastOutput[0] = 0;
 		}
 
-		virtual ~Impl() {
+		virtual ~SextetImpl() {
 			if(out != nullptr)
 			{
 				out->Flush();
@@ -61,12 +61,8 @@ namespace
 	};
 }
 
-
 // LightsDriver_SextetStream interface
-// (Wrapper for Impl)
-
-#define IMPL ((Impl*)_impl)
-
+// (Wrapper for SextetImpl)
 LightsDriver_SextetStream::LightsDriver_SextetStream()
 {
 	_impl = nullptr;
@@ -74,20 +70,19 @@ LightsDriver_SextetStream::LightsDriver_SextetStream()
 
 LightsDriver_SextetStream::~LightsDriver_SextetStream()
 {
-	if(IMPL != nullptr)
+	if(static_cast<SextetImpl*>(_impl) != nullptr)
 	{
-		delete IMPL;
+		delete static_cast<SextetImpl*>(_impl);
 	}
 }
 
 void LightsDriver_SextetStream::Set(const LightsState *ls)
 {
-	if(IMPL != nullptr)
+	if(static_cast<SextetImpl*>(_impl) != nullptr)
 	{
-		IMPL->Set(ls);
+		static_cast<SextetImpl*>(_impl)->Set(ls);
 	}
 }
-
 
 // LightsDriver_SextetStreamToFile implementation
 
@@ -116,17 +111,17 @@ inline RageFile * openOutputStream(const RString& filename)
 
 LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(RageFile * file)
 {
-	_impl = new Impl(file);
+	_impl = new SextetImpl(file);
 }
 
 LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(const RString& filename)
 {
-	_impl = new Impl(openOutputStream(filename));
+	_impl = new SextetImpl(openOutputStream(filename));
 }
 
 LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile()
 {
-	_impl = new Impl(openOutputStream(g_sSextetStreamOutputFilename));
+	_impl = new SextetImpl(openOutputStream(g_sSextetStreamOutputFilename));
 }
 
 /*
