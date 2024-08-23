@@ -18,7 +18,7 @@ public:
 	std::int64_t GetPosition() const;
 	float GetPlayLatency() const;
 	int GetSampleRate() const { return m_iSampleRate; }
-
+	static const int NUM_BUFFERS = 32;
 private:
 	static int MixerThread_start( void *p );
 	void MixerThread();
@@ -28,7 +28,7 @@ private:
 
 	HWAVEOUT m_hWaveOut;
 	HANDLE m_hSoundEvent;
-	WAVEHDR m_aBuffers[8];
+	WAVEHDR m_aBuffers[NUM_BUFFERS];
 	int m_iSampleRate;
 	bool m_bShutdown;
 	int m_iLastCursorPos;
