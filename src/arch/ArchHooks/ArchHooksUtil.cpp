@@ -4,7 +4,7 @@
 #include <cstdint>
 
 /*
- * This is a helper for GetMicrosecondsSinceStart on systems with a system
+ * This is a helper for GetElapsedSystemMicroseconds on systems with a system
  * timer that may loop or move backwards.
  *
  * The time may decrease last for at least two reasons:
@@ -23,7 +23,7 @@
  *
  * This helper only needs to be used if one or both of the above conditions can occur.
  * If the underlying timer is reliable, this doesn't need to be used (for a small
- * efficiency bonus).  Also, you may omit this for GetMicrosecondsSinceStart() when
+ * efficiency bonus).  Also, you may omit this for GetElapsedSystemMicroseconds() when
  * bAccurate == false.
  */
 

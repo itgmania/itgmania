@@ -39,7 +39,7 @@ static void InitTimer()
 	QueryPerformanceFrequency(&g_liFrequency);
 }
 
-std::int64_t ArchHooks::GetMicrosecondsSinceStart(bool bAccurate)
+std::int64_t ArchHooks::GetElapsedSystemMicroseconds(bool bAccurate) noexcept
 {
 	// Make sure the timer is initialized.
 	if (!g_bTimerInitialized) {

@@ -120,7 +120,7 @@ static void TestTLS()
 #endif
 
 #if 1
-/* If librt is available, use CLOCK_MONOTONIC to implement GetMicrosecondsSinceStart,
+/* If librt is available, use CLOCK_MONOTONIC to implement GetElapsedSystemMicroseconds,
  * if supported, so changes to the system clock don't cause problems. */
 namespace
 {
@@ -149,7 +149,7 @@ clockid_t ArchHooks_Unix::GetClock()
 	return g_Clock;
 }
 
-std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
+std::int64_t ArchHooks::GetElapsedSystemMicroseconds( bool bAccurate ) noexcept
 {
 	OpenGetTime();
 
@@ -162,7 +162,7 @@ std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
 	return iRet;
 }
 #else
-std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
+std::int64_t ArchHooks::GetElapsedSystemMicroseconds( bool bAccurate ) noexcept
 {
 	struct timeval tv;
 	gettimeofday( &tv, nullptr );

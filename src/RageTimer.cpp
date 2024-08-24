@@ -35,11 +35,11 @@ const std::int64_t ONE_SECOND_IN_MICROSECONDS_LL = 1000000LL;
 const double ONE_SECOND_IN_MICROSECONDS_DBL = 1000000.0;
 
 const RageTimer RageZeroTimer(0,0);
-static std::uint64_t g_iStartTime = ArchHooks::GetMicrosecondsSinceStart( true );
+static std::uint64_t g_iStartTime = ArchHooks::GetElapsedSystemMicroseconds( true );
 
 static std::uint64_t GetTime( bool /* bAccurate */ )
 {
-	return ArchHooks::GetMicrosecondsSinceStart( true );
+	return ArchHooks::GetElapsedSystemMicroseconds( true );
 }
 
 /* The accuracy of RageTimer::GetTimeSinceStart() is directly tied to the
