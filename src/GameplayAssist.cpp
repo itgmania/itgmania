@@ -43,13 +43,8 @@ void GameplayAssist::PlayTicks( const NoteData &nd, const PlayerState *ps )
 		int iClapRow = -1;
 		// for each index we crossed since the last update:
 		FOREACH_NONEMPTY_ROW_ALL_TRACKS_RANGE( nd, r, iRowLastCrossed+1, iSongRow+1 )
-		{
 			if( nd.IsThereATapOrHoldHeadAtRow( r ) )
-			{
 				iClapRow = r;
-				break;
-			}
-		}
 
 		if( iClapRow != -1 && timing.IsJudgableAtRow(iClapRow))
 		{
