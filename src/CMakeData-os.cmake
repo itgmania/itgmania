@@ -30,8 +30,6 @@ if(APPLE)
   list(APPEND SMDATA_OS_HPP ${SMDATA_OS_DARWIN_HPP})
 else()
   if(WIN32)
-    configure_file("${SM_SRC_DIR}/archutils/Win32/StepMania.in.manifest"
-                   "${SM_GENERATED_SRC_DIR}/archutils/Win32/StepMania.manifest")
     configure_file("${SM_SRC_DIR}/archutils/Win32/WindowsResources.in.rc"
                    "${SM_GENERATED_SRC_DIR}/archutils/Win32/WindowsResources.rc")
 
@@ -62,7 +60,6 @@ else()
                 "archutils/Win32/VideoDriverInfo.cpp"
                 "archutils/Win32/WindowIcon.cpp"
                 "archutils/Win32/WindowsDialogBox.cpp"
-                "${SM_GENERATED_SRC_DIR}/archutils/Win32/StepMania.manifest"
                 "${SM_GENERATED_SRC_DIR}/archutils/Win32/WindowsResources.rc")
 
     list(APPEND SMDATA_OS_HPP
