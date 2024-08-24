@@ -106,9 +106,6 @@ void Screen::EndScreen()
 {
 	this->PlayCommand( "End" );
 	m_bRunning = false;
-
-	m_InputCallbacks.clear();
-	m_DelayedCallbackRemovals.clear();
 }
 
 void Screen::Update( float fDeltaTime )

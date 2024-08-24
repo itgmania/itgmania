@@ -93,6 +93,13 @@ private:
 	// It's "AfterInput" because the debug overlay carries out actions in Input.
 	bool m_bReloadOverlayScreensAfterInput;
 
+	// m_input_redirected exists to allow the theme to prevent input being
+	// passed to the normal Screen::Input function, on a per-player basis.
+	// Input is still passed to lua callbacks, so it's intended for the case
+	// where someone has a custom menu on a screen and needs to disable normal
+	// input for navigating the custom menu to work. -Kyz
+	std::vector<bool> m_input_redirected;
+
 	Screen *MakeNewScreen( const RString &sName );
 	void LoadDelayedScreen();
 	bool ActivatePreparedScreenAndBackground( const RString &sScreenName );

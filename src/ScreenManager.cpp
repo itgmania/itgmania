@@ -96,20 +96,12 @@ namespace ScreenManagerUtil
 		 * and was given to us for use, and it's not ours to free. */
 		bool m_bDeleteWhenDone;
 
-		// m_input_redirected exists to allow the theme to prevent input being
-		// passed to the normal Screen::Input function, on a per-player basis.
-		// Input is still passed to lua callbacks, so it's intended for the case
-		// where someone has a custom menu on a screen and needs to disable normal
-		// input for navigating the custom menu to work. -Kyz
-		bool m_input_redirected[NUM_PLAYERS];
-
 		ScreenMessage m_SendOnPop;
 
 		LoadedScreen()
 		{
 			m_pScreen = nullptr;
 			m_bDeleteWhenDone = true;
-			ZERO( m_input_redirected );
 			m_SendOnPop = SM_None;
 		}
 	};
@@ -375,15 +367,20 @@ bool ScreenManager::IsStackedScreen( const Screen *pScreen ) const
 
 bool ScreenManager::get_input_redirected(PlayerNumber pn)
 {
-	if(g_ScreenStack.empty() || pn < 0 || pn >= NUM_PLAYERS)
+	if(pn >= m_input_redirected.size())
+	{
 		return false;
-	return g_ScreenStack.back().m_input_redirected[pn];
+	}
+	return m_input_redirected[pn];
 }
 
 void ScreenManager::set_input_redirected(PlayerNumber pn, bool redir)
 {
-	if(!g_ScreenStack.empty() && pn >= 0 && pn < NUM_PLAYERS)
-		g_ScreenStack.back().m_input_redirected[pn]= redir;
+	while(pn >= m_input_redirected.size())
+	{
+		m_input_redirected.push_back(false);
+	}
+	m_input_redirected[pn]= redir;
 }
 
 /* Pop the top screen off the stack, sending SM_LoseFocus messages and
@@ -400,7 +397,6 @@ ScreenMessage ScreenManager::PopTopScreenInternal( bool bSendLoseFocus )
 	if( bSendLoseFocus )
 		ls.m_pScreen->HandleScreenMessage( SM_LoseFocus );
 	ls.m_pScreen->EndScreen();
-	ZERO( ls.m_input_redirected );
 
 	if( g_setPersistantScreens.find(ls.m_pScreen->GetName()) != g_setPersistantScreens.end() )
 	{
