@@ -34,8 +34,11 @@ MovieTexture_Generic::MovieTexture_Generic( RageTextureID ID, MovieDecoder *pDec
 	m_bLoop = true;
 	m_pSurface = nullptr;
 	m_pTextureLock = nullptr;
+	m_ImageWaiting = FRAME_NONE;
 	m_fRate = 1;
+	m_bWantRewind = false;
 	m_fClock = 0;
+	m_bFrameSkipMode = false;
 	m_pSprite = new Sprite;
 }
 
@@ -129,6 +132,12 @@ public:
 		m_PixFmt = pixfmt;
 		m_iSourceWidth = iWidth;
 		m_iSourceHeight = iHeight;
+/*		int iMaxSize = std::min( GetID().iMaxSize, DISPLAY->GetMaxTextureSize() );
+		m_iImageWidth = std::min( m_iSourceWidth, iMaxSize );
+		m_iImageHeight = std::min( m_iSourceHeight, iMaxSize );
+		m_iTextureWidth = power_of_two( m_iImageWidth );
+		m_iTextureHeight = power_of_two( m_iImageHeight );
+*/
 
 		m_iImageWidth = iImageWidth;
 		m_iImageHeight = iImageHeight;
@@ -304,6 +313,62 @@ void MovieTexture_Generic::CreateTexture()
 	}
 
 	m_uTexHandle = DISPLAY->CreateTexture( pixfmt, m_pSurface, false );
+}
+
+/* Handle decoding for a frame.  Return true if a frame was decoded, false if not
+ * (due to quit, error, EOF, etc).  If true is returned, we'll be in FRAME_DECODED. */
+bool MovieTexture_Generic::DecodeFrame()
+{
+	bool bTriedRewind = false;
+	do
+	{
+		if( m_bWantRewind )
+		{
+			if( bTriedRewind )
+			{
+				LOG->Trace( "File \"%s\" looped more than once in one frame", GetID().filename.c_str() );
+				return false;
+			}
+			m_bWantRewind = false;
+			bTriedRewind = true;
+
+			/* When resetting the clock, set it back by the length of the last frame,
+			 * so it has a proper delay. */
+			float fDelay = m_pDecoder->GetFrameDuration();
+
+			/* Restart. */
+			m_pDecoder->Rewind();
+
+			m_fClock = -fDelay;
+		}
+
+		/* Read a frame. */
+		float fTargetTime = -1;
+		if( m_bFrameSkipMode && m_fClock > m_pDecoder->GetTimestamp() )
+			fTargetTime = m_fClock;
+
+		int ret = m_pDecoder->DecodeFrame( fTargetTime );
+		if( ret == -1 )
+			return false;
+
+		if( m_bWantRewind && m_pDecoder->GetTimestamp() == 0 )
+			m_bWantRewind = false; /* ignore */
+
+		if( ret == 0 )
+		{
+			/* EOF. */
+			if( !m_bLoop )
+				return false;
+
+			LOG->Trace( "File \"%s\" looping", GetID().filename.c_str() );
+			m_bWantRewind = true;
+			continue;
+		}
+
+		/* We got a frame. */
+	} while( m_bWantRewind );
+
+	return true;
 }
 
 /*

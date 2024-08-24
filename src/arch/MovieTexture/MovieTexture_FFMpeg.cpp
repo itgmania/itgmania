@@ -151,12 +151,52 @@ void MovieDecoder_FFMpeg::Init()
 {
 	m_iEOF = 0;
 	m_fTimestamp = 0;
+	m_fLastFrameDelay = 0;
 	m_iFrameNumber = 0;
 	m_totalFrames = 0;
 	m_fTimestampOffset = 0;
+	m_fLastFrame = 0;
 	m_swsctx = nullptr;
 	m_avioContext = nullptr;
 	m_buffer = nullptr;
+}
+
+/* Read until we get a frame, EOF or error.  Return -1 on error, 0 on EOF, 1 if we have a frame. */
+int MovieDecoder_FFMpeg::DecodeFrame( float fTargetTime )
+{
+	//hack to filter out stuttering
+	if(fTargetTime<m_fLastFrame)
+	{
+		fTargetTime=m_fLastFrame;
+	}
+	else
+	{
+		m_fLastFrame=fTargetTime;
+	}
+
+	for(;;)
+	{
+		int ret = DecodePacket( fTargetTime );
+
+		if( ret == 1 )
+		{
+			return 1;
+		}
+		if( ret == -1 )
+		{
+			return -1;
+		}
+		if( ret == 0 && m_iEOF > 0 )
+		{
+			return 0; /* eof */
+		}
+		ASSERT( ret == 0 );
+		ret = ReadPacket();
+		if( ret < 0 )
+		{
+			return ret; /* error */
+		}
+	}
 }
 
 float MovieDecoder_FFMpeg::GetTimestamp() const
@@ -193,6 +233,11 @@ bool MovieDecoder_FFMpeg::IsCurrentFrameReady() {
 		LOG->Info("Frame %i not decoded and was not skipped, total frames: %i", m_iFrameNumber, m_totalFrames);
 	}
 	return m_FrameBuffer[m_iFrameNumber]->decoded;
+}
+
+float MovieDecoder_FFMpeg::GetFrameDuration() const
+{
+	return m_fLastFrameDelay;
 }
 
 int MovieDecoder_FFMpeg::DecodeNextFrame()
@@ -359,6 +404,128 @@ int MovieDecoder_FFMpeg::DecodePacketInBuffer() {
 	// be skipped.
 	if (!m_FrameBuffer.back()->decoded) {
 		m_FrameBuffer.back()->skip = true;
+	}
+
+	return 0; /* packet done */
+}
+
+
+/* Read a packet.  Return -1 on error, 0 on EOF, 1 on OK. */
+int MovieDecoder_FFMpeg::ReadPacket()
+{
+	if( m_iEOF > 0 )
+		return 0;
+
+	for(;;)
+	{
+		if( m_iCurrentPacketOffset != -1 )
+		{
+			m_iCurrentPacketOffset = -1;
+			avcodec::av_packet_unref( &m_Packet );
+		}
+
+		int ret = avcodec::av_read_frame( m_fctx, &m_Packet );
+		/* XXX: why is avformat returning AVERROR_NOMEM on EOF? */
+		if( ret < 0 )
+		{
+			/* EOF. */
+			m_iEOF = 1;
+			m_Packet.size = 0;
+
+			return 0;
+		}
+
+		if( m_Packet.stream_index == m_pStream->index )
+		{
+			m_iCurrentPacketOffset = 0;
+			return 1;
+		}
+
+		/* It's not for the video stream; ignore it. */
+		avcodec::av_packet_unref( &m_Packet );
+	}
+}
+
+/* Decode data from the current packet.  Return -1 on error, 0 if the packet is finished,
+ * and 1 if we have a frame (we may have more data in the packet). */
+int MovieDecoder_FFMpeg::DecodePacket( float fTargetTime )
+{
+	if( m_iEOF == 0 && m_iCurrentPacketOffset == -1 )
+		return 0; /* no packet */
+
+	while( m_iEOF == 1 || (m_iEOF == 0 && m_iCurrentPacketOffset < m_Packet.size) )
+	{
+		/* If we have no data on the first frame, just return EOF; passing an empty packet
+		 * to avcodec_decode_video in this case is crashing it.  However, passing an empty
+		 * packet is normal with B-frames, to flush.  This may be unnecessary in newer
+		 * versions of avcodec, but I'm waiting until a new stable release to upgrade. */
+		if( m_Packet.size == 0 && m_iFrameNumber == -1 )
+			return 0; /* eof */
+
+		bool bSkipThisFrame =
+			fTargetTime != -1 &&
+			GetTimestamp() + GetFrameDuration() < fTargetTime &&
+			(m_pStreamCodec->frame_number % 2) == 0;
+
+		int iGotFrame;
+		int len;
+		/* Hack: we need to send size = 0 to flush frames at the end, but we have
+		 * to give it a buffer to read from since it tries to read anyway. */
+		m_Packet.data = m_Packet.size ? m_Packet.data : nullptr;
+		len = m_Packet.size;
+		avcodec::avcodec_send_packet(m_pStreamCodec, &m_Packet);
+		iGotFrame = !avcodec::avcodec_receive_frame(m_pStreamCodec, m_Frame);
+
+		if( len < 0 )
+		{
+			LOG->Warn("avcodec_decode_video2: %i", len);
+			return -1; // XXX
+		}
+
+		m_iCurrentPacketOffset += len;
+
+		if( !iGotFrame )
+		{
+			if( m_iEOF == 1 )
+				m_iEOF = 2;
+			continue;
+		}
+
+		if( m_Frame->pkt_dts != AV_NOPTS_VALUE )
+		{
+			m_fTimestamp = (float) (m_Frame->pkt_dts * av_q2d(m_pStream->time_base));
+		}
+		else
+		{
+			/* If the timestamp is zero, this frame is to be played at the
+			 * time of the last frame plus the length of the last frame. */
+			m_fTimestamp += m_fLastFrameDelay;
+		}
+
+		/* Length of this frame: */
+		m_fLastFrameDelay = (float) av_q2d(m_pStream->time_base);
+		m_fLastFrameDelay += m_Frame->repeat_pict * (m_fLastFrameDelay * 0.5f);
+
+		++m_iFrameNumber;
+
+		if( m_iFrameNumber == 0 )
+		{
+			/* Some videos start with a timestamp other than 0.  I think this is used
+			 * when audio starts before the video.  We don't want to honor that, since
+			 * the DShow renderer doesn't and we don't want to break sync compatibility. */
+			const float expect = 0;
+			const float actual = m_fTimestamp;
+			if( actual - expect > 0 )
+			{
+				LOG->Trace("Expect %f, got %f -> %f", expect, actual, actual - expect );
+				m_fTimestampOffset = actual - expect;
+			}
+		}
+
+		if( bSkipThisFrame )
+			continue;
+
+		return 1;
 	}
 
 	return 0; /* packet done */
