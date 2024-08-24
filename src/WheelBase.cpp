@@ -288,17 +288,16 @@ bool WheelBase::Select()	// return true if this selection can end the screen
 	case WheelItemDataType_Section:
 		{
 			RString sThisItemSectionName = m_CurWheelItemData[m_iSelection]->m_sText;
-			// Keep track of the open section so that we can restore it
-			// when navigating back to ScreenSelectMusic.
-			GAMESTATE->sLastOpenSection = sThisItemSectionName;
 			if( m_sExpandedSectionName == sThisItemSectionName ) // already expanded
 			{
+				GAMESTATE->sLastOpenSection = sThisItemSectionName; // remember this section
 				SetOpenSection( "" ); // collapse it
 				m_soundCollapse.Play(true);
 			}
 			else // already collapsed
 			{
 				SetOpenSection( sThisItemSectionName ); // expand it
+				GAMESTATE->sLastOpenSection = sThisItemSectionName; // remember this section
 				m_soundExpand.Play(true);
 			}
 		}
