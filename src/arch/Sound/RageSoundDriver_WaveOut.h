@@ -15,6 +15,7 @@ public:
 	RageSoundDriver_WaveOut();
 	~RageSoundDriver_WaveOut();
 	RString Init();
+
 	std::int64_t GetPosition() const;
 	float GetPlayLatency() const;
 	int GetSampleRate() const { return m_iSampleRate; }
@@ -32,7 +33,6 @@ private:
 	int m_iSampleRate;
 	bool m_bShutdown;
 	int m_iLastCursorPos;
-	bool b_InitSuccess;
 };
 
 #endif

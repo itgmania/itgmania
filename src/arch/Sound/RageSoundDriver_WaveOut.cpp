@@ -77,14 +77,8 @@ bool RageSoundDriver_WaveOut::GetData()
 	this->Mix( (std::int16_t *) m_aBuffers[b].lpData, chunksize_frames, m_iLastCursorPos, GetPosition() );
 
 	MMRESULT ret = waveOutWrite( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
-	if( ret != MMSYSERR_NOERROR )
-	{
-		Init();
-		if (b_InitSuccess == false)
-		{
-			FAIL_M(wo_ssprintf(ret, "waveOutWrite failed"));
-		}
-	}
+  	if( ret != MMSYSERR_NOERROR )
+		FAIL_M( wo_ssprintf(ret, "waveOutWrite failed") );
 
 	/* Increment m_iLastCursorPos. */
 	m_iLastCursorPos += chunksize_frames;
@@ -121,7 +115,6 @@ RageSoundDriver_WaveOut::RageSoundDriver_WaveOut()
 
 RString RageSoundDriver_WaveOut::Init()
 {
-	b_InitSuccess = false;
 	m_iSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
 	if( m_iSampleRate == 0 )
 		m_iSampleRate = 44100;
@@ -181,7 +174,6 @@ RString RageSoundDriver_WaveOut::Init()
 	MixingThread.SetName( "Mixer thread" );
 	MixingThread.Create( MixerThread_start, this );
 
-	b_InitSuccess = true;
 	return RString();
 }
 
