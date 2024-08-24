@@ -878,7 +878,7 @@ RageFileManager::FileType RageFileManager::GetFileType( const RString &sPath_ )
 }
 
 
-int RageFileManager::GetFileSizeInBytes( const RString &sPath_ )
+std::int64_t RageFileManager::GetFileSizeInBytes( const RString &sPath_ )
 {
 	RString sPath = sPath_;
 
@@ -887,7 +887,7 @@ int RageFileManager::GetFileSizeInBytes( const RString &sPath_ )
 	std::vector<LoadedDriver *> apDriverList;
 	ReferenceAllDrivers( apDriverList );
 
-	int iRet = -1;
+	std::int64_t iRet = -1;
 	for( unsigned i = 0; i < apDriverList.size(); ++i )
 	{
 		const RString p = apDriverList[i]->GetPath( sPath );
@@ -1151,7 +1151,7 @@ bool IsADirectory( const RString &sPath )
 	return FILEMAN->IsADirectory( sPath );
 }
 
-int GetFileSizeInBytes( const RString &sPath )
+std::int64_t GetFileSizeInBytes( const RString &sPath )
 {
 	return FILEMAN->GetFileSizeInBytes( sPath );
 }

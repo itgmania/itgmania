@@ -451,7 +451,7 @@ static std::int64_t AVIORageFile_Seek( void *opaque, std::int64_t offset, int wh
 		return -1;
 	}
 
-	return f->Seek( (int) offset, whence );
+	return f->Seek( offset, whence );
 }
 
 RString MovieDecoder_FFMpeg::Open( RString sFile )

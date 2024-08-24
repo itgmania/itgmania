@@ -57,7 +57,7 @@ int RageFileObjMem::ReadInternal( void *buffer, std::size_t bytes )
 {
 	LockMut(m_pFile->m_Mutex);
 
-	m_iFilePos = std::min( m_iFilePos, GetFileSize() );
+	m_iFilePos = std::min( (std::int64_t) m_iFilePos, GetFileSize() );
 	bytes = std::min( bytes, (std::size_t) GetFileSize() - m_iFilePos );
 	if( bytes == 0 )
 		return 0;
@@ -77,13 +77,13 @@ int RageFileObjMem::WriteInternal( const void *buffer, std::size_t bytes )
 	return bytes;
 }
 
-int RageFileObjMem::SeekInternal( int offset )
+std::int64_t RageFileObjMem::SeekInternal( std::int64_t offset )
 {
-	m_iFilePos = clamp( offset, 0, GetFileSize() );
+	m_iFilePos = clamp( offset, (std::int64_t) 0, GetFileSize() );
 	return m_iFilePos;
 }
 
-int RageFileObjMem::GetFileSize() const
+std::int64_t RageFileObjMem::GetFileSize() const
 {
 	LockMut(m_pFile->m_Mutex);
 	return m_pFile->m_sBuf.size();

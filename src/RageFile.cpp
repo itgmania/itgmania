@@ -152,19 +152,19 @@ int RageFile::Read( void *pBuffer, std::size_t iBytes )
 	return m_File->Read( pBuffer, iBytes );
 }
 
-int RageFile::Seek( int offset )
+std::int64_t RageFile::Seek( std::int64_t offset )
 {
 	ASSERT_READ;
 	return m_File->Seek( offset );
 }
 
-int RageFile::Tell() const
+std::int64_t RageFile::Tell() const
 {
 	ASSERT_READ;
 	return m_File->Tell();
 }
 
-int RageFile::GetFileSize() const
+std::int64_t RageFile::GetFileSize() const
 {
 	ASSERT_READ;
 	return m_File->GetFileSize();
@@ -212,7 +212,7 @@ int RageFile::Read( void *buffer, std::size_t bytes, int nmemb )
 	return m_File->Read( buffer, bytes, nmemb );
 }
 
-int RageFile::Seek( int offset, int whence )
+std::int64_t RageFile::Seek( std::int64_t offset, int whence )
 {
 	ASSERT_READ;
 	return m_File->Seek( offset, whence );
@@ -249,16 +249,16 @@ void FileReading::SkipBytes( RageFileBasic &f, int iBytes, RString &sError )
 	if( sError.size() != 0 )
 		return;
 
-	iBytes += f.Tell();
-	FileReading::Seek( f, iBytes, sError );
+	std::int64_t dest = f.Tell() + iBytes;
+	FileReading::Seek( f, dest, sError );
 }
 
-void FileReading::Seek( RageFileBasic &f, int iOffset, RString &sError )
+void FileReading::Seek( RageFileBasic &f, std::int64_t iOffset, RString &sError )
 {
 	if( sError.size() != 0 )
 		return;
 
-	int iGot = f.Seek( iOffset );
+	std::int64_t iGot = f.Seek( iOffset );
 	if( iGot == iOffset )
 		return;
 	if( iGot == -1 )

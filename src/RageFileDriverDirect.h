@@ -40,10 +40,10 @@ public:
 	virtual int ReadInternal( void *pBuffer, std::size_t iBytes );
 	virtual int WriteInternal( const void *pBuffer, std::size_t iBytes );
 	virtual int FlushInternal();
-	virtual int SeekInternal( int offset );
+	virtual std::int64_t SeekInternal( std::int64_t offset );
 	virtual RageFileObjDirect *Copy() const;
 	virtual RString GetDisplayPath() const { return m_sPath; }
-	virtual int GetFileSize() const;
+	virtual std::int64_t GetFileSize() const;
 	virtual int GetFD();
 
 private:

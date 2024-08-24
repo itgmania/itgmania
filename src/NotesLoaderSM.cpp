@@ -1188,7 +1188,7 @@ bool SMLoader::LoadEditFromFile( RString sEditFilePath, ProfileSlot slot, bool b
 {
 	LOG->Trace( "SMLoader::LoadEditFromFile(%s)", sEditFilePath.c_str() );
 
-	int iBytes = FILEMAN->GetFileSizeInBytes( sEditFilePath );
+	std::int64_t iBytes = FILEMAN->GetFileSizeInBytes( sEditFilePath );
 	if( iBytes > MAX_EDIT_STEPS_SIZE_BYTES )
 	{
 		LOG->UserLog( "Edit file", sEditFilePath, "is unreasonably large. It won't be loaded." );

@@ -1694,7 +1694,7 @@ ProfileLoadResult Profile::LoadEditableDataFromDir( RString sDir )
 	RString fn = sDir + EDITABLE_INI;
 
 	// Don't load unreasonably large editable.xml files.
-	int iBytes = FILEMAN->GetFileSizeInBytes( fn );
+	std::int64_t iBytes = FILEMAN->GetFileSizeInBytes( fn );
 	if( iBytes > MAX_EDITABLE_INI_SIZE_BYTES )
 	{
 		LuaHelpers::ReportScriptErrorFmt( "The file '%s' is unreasonably large. It won't be loaded.", fn.c_str() );

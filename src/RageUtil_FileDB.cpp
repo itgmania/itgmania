@@ -82,7 +82,7 @@ RageFileManager::FileType FileSet::GetFileType( const RString &sPath ) const
 	return i->dir? RageFileManager::TYPE_DIR:RageFileManager::TYPE_FILE;
 }
 
-int FileSet::GetFileSize( const RString &sPath ) const
+std::int64_t FileSet::GetFileSize( const RString &sPath ) const
 {
 	std::set<File>::const_iterator i = files.find( File(sPath) );
 	if( i == files.end() )
@@ -381,7 +381,7 @@ FileSet *FilenameDB::GetFileSet( const RString &sDir_, bool bCreate )
 
 /* Add the file or directory "sPath".  sPath is a directory if it ends with
  * a slash. */
-void FilenameDB::AddFile( const RString &sPath_, int iSize, int iHash, void *pPriv )
+void FilenameDB::AddFile( const RString &sPath_, std::int64_t iSize, int iHash, void *pPriv )
 {
 	RString sPath(sPath_);
 
