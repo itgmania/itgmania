@@ -36,8 +36,6 @@ class AnimatedTexture
 public:
 	AnimatedTexture();
 	~AnimatedTexture();
-	
-	RageVector3 RadianToDegree(RageVector3 radian);
 
 	void LoadBlank();
 	void Load(const RString &sTexOrIniFile);
