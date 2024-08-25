@@ -1321,7 +1321,7 @@ PlayerOptions::Accel PlayerOptions::GetFirstAccel()
 	for( int i=0; i<NUM_ACCELS; i++ )
 		if( m_fAccels[i] == 1.f )
 			return (Accel)i;
-	return (Accel)-1;
+	return ACCEL_INVALID;
 }
 
 PlayerOptions::Effect PlayerOptions::GetFirstEffect()
@@ -1329,7 +1329,7 @@ PlayerOptions::Effect PlayerOptions::GetFirstEffect()
 	for( int i=0; i<NUM_EFFECTS; i++ )
 		if( m_fEffects[i] == 1.f )
 			return (Effect)i;
-	return (Effect)-1;
+	return EFFECT_INVALID;
 }
 
 PlayerOptions::Appearance PlayerOptions::GetFirstAppearance()
@@ -1337,7 +1337,7 @@ PlayerOptions::Appearance PlayerOptions::GetFirstAppearance()
 	for( int i=0; i<NUM_APPEARANCES; i++ )
 		if( m_fAppearances[i] == 1.f )
 			return (Appearance)i;
-	return (Appearance)-1;
+	return APPEARANCE_INVALID;
 }
 
 PlayerOptions::Scroll PlayerOptions::GetFirstScroll()
@@ -1345,7 +1345,7 @@ PlayerOptions::Scroll PlayerOptions::GetFirstScroll()
 	for( int i=0; i<NUM_SCROLLS; i++ )
 		if( m_fScrolls[i] == 1.f )
 			return (Scroll)i;
-	return (Scroll)-1;
+	return SCROLL_INVALID;
 }
 
 void PlayerOptions::SetOneAccel( Accel a )

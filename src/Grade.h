@@ -10,7 +10,7 @@
  * TODO: Look into a more flexible system without a fixed number of grades. -Wolfman2000
  */
 enum Grade
-{ 
+{
 	Grade_Tier01,	/**< Usually an AAAA */
 	Grade_Tier02,	/**< Usually an AAA */
 	Grade_Tier03,	/**< Usually an AA */
@@ -32,7 +32,7 @@ enum Grade
 	Grade_Tier19,
 	Grade_Tier20,
 	Grade_Failed,	/**< Usually an E */
-	NUM_Grade, 
+	NUM_Grade,
 	Grade_Invalid,
 };
 /** @brief Have an alternative for if there is no data for grading. */
@@ -84,8 +84,7 @@ extern ThemeMetric<int> NUM_GRADE_TIERS_USED;
  * @return the next Grade. */
 Grade GetNextPossibleGrade( Grade g );
 /** @brief Loop through each possible Grade. */
-#define FOREACH_PossibleGrade( g ) \
-for( Grade g = (Grade)(0); g != Grade_Invalid; g = GetNextPossibleGrade(g) )
+#define FOREACH_PossibleGrade( g ) FOREACH_ENUM( Grade, g )
 
 #endif
 
@@ -94,7 +93,7 @@ for( Grade g = (Grade)(0); g != Grade_Invalid; g = GetNextPossibleGrade(g) )
  * @author Chris Danford (c) 2001-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -104,7 +103,7 @@ for( Grade g = (Grade)(0); g != Grade_Invalid; g = GetNextPossibleGrade(g) )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

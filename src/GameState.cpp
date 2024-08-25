@@ -1744,9 +1744,13 @@ int GameState::GetNumHumanPlayers() const
 
 PlayerNumber GameState::GetFirstHumanPlayer() const
 {
-	FOREACH_HumanPlayer( pn )
-		return pn;
+	PlayerNumber pn = PLAYER_1;
+
+	for( ; pn < NUM_PLAYERS; enum_add(pn, 1) )
+		if( GAMESTATE->IsHumanPlayer(pn) )
+			return pn;
 	return PLAYER_INVALID;
+
 }
 
 PlayerNumber GameState::GetFirstDisabledPlayer() const
@@ -2701,9 +2705,29 @@ PlayerNumber GetNextEnabledPlayer( PlayerNumber pn )
 	return PLAYER_INVALID;
 }
 
+PlayerNumber GetFirstEnabledPlayer()
+{
+	PlayerNumber pn = PLAYER_1;
+
+	for( ; pn < NUM_PLAYERS; enum_add(pn, 1) )
+		if( GAMESTATE->IsPlayerEnabled(pn) )
+			return pn;
+	return PLAYER_INVALID;
+}
+
 PlayerNumber GetNextCpuPlayer( PlayerNumber pn )
 {
 	for( enum_add(pn, 1); pn < NUM_PLAYERS; enum_add(pn, 1) )
+		if( GAMESTATE->IsCpuPlayer(pn) )
+			return pn;
+	return PLAYER_INVALID;
+}
+
+PlayerNumber GetFirstCpuPlayer()
+{
+	PlayerNumber pn = PLAYER_1;
+
+	for( ; pn < NUM_PLAYERS; enum_add(pn, 1) )
 		if( GAMESTATE->IsCpuPlayer(pn) )
 			return pn;
 	return PLAYER_INVALID;
@@ -2717,9 +2741,29 @@ PlayerNumber GetNextPotentialCpuPlayer( PlayerNumber pn )
 	return PLAYER_INVALID;
 }
 
+PlayerNumber GetFirstPotentialCpuPlayer()
+{
+	PlayerNumber pn = PLAYER_1;
+
+	for( ; pn < NUM_PLAYERS; enum_add(pn, 1) )
+		if( !GAMESTATE->IsHumanPlayer(pn) )
+			return pn;
+	return PLAYER_INVALID;
+}
+
 MultiPlayer GetNextEnabledMultiPlayer( MultiPlayer mp )
 {
 	for( enum_add(mp, 1); mp < NUM_MultiPlayer; enum_add(mp, 1) )
+		if( GAMESTATE->IsMultiPlayerEnabled(mp) )
+			return mp;
+	return MultiPlayer_Invalid;
+}
+
+MultiPlayer GetFirstEnabledMultiPlayer()
+{
+	MultiPlayer mp = MultiPlayer_P1;
+
+	for( ; mp < NUM_MultiPlayer; enum_add(mp, 1) )
 		if( GAMESTATE->IsMultiPlayerEnabled(mp) )
 			return mp;
 	return MultiPlayer_Invalid;

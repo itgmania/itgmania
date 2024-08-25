@@ -24,6 +24,10 @@ set_target_properties("mapconv"
                                  RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL
                                  "${SM_PROGRAM_DIR}"
                                  RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO
+                                 "${SM_PROGRAM_DIR}"
+                                 RUNTIME_OUTPUT_DIRECTORY_DEBWITHASAN
+                                 "${SM_PROGRAM_DIR}"
+                                 RUNTIME_OUTPUT_DIRECTORY_DEBWITHUBSAN
                                  "${SM_PROGRAM_DIR}")
 
 set_target_properties("mapconv"
@@ -36,4 +40,8 @@ set_target_properties("mapconv"
                                  MINSIZEREL_OUTPUT_NAME
                                  "mapconv"
                                  RELWITHDEBINFO_OUTPUT_NAME
+                                 "mapconv"
+                                 DEBWITHASAN_OUTPUT_NAME
+                                 "mapconv"
+                                 DEBWITHUBSAN_OUTPUT_NAME
                                  "mapconv")

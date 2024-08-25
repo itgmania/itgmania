@@ -341,7 +341,11 @@ int RageFileObj::GetLine( RString &sOut )
 		bool bDone = false;
 
 		/* Find the end of the block we'll move to out. */
-		char *p = (char *) memchr( m_pReadBuf, '\n', m_iReadBufAvail );
+		char *p = nullptr;
+		if (m_pReadBuf && m_iReadBufAvail)
+		{
+			p = (char *) memchr( m_pReadBuf, '\n', m_iReadBufAvail );
+		}
 		bool bReAddCR = false;
 		if( p == nullptr )
 		{
@@ -481,4 +485,3 @@ void RageFileObj::ResetReadBuf()
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

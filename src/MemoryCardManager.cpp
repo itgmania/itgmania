@@ -140,7 +140,8 @@ bool ThreadedMemoryCardWorker::StorageDevicesChanged( std::vector<UsbStorageDevi
 
 ThreadedMemoryCardWorker::ThreadedMemoryCardWorker():
 	RageWorkerThread("MemoryCardWorker"),
-	UsbStorageDevicesMutex("UsbStorageDevicesMutex")
+	UsbStorageDevicesMutex("UsbStorageDevicesMutex"),
+	m_bUsbStorageDevicesChanged(false)
 {
 	if( g_bMemoryCards )
 		m_pDriver = MemoryCardDriver::Create();

@@ -8,12 +8,12 @@
 
 enum ModsLevel
 {
-	ModsLevel_Preferred,	// user-chosen player options.  Does not include any forced mods.
+	ModsLevel_Preferred = 0,	// user-chosen player options.  Does not include any forced mods.
 	ModsLevel_Stage,	// Preferred + forced stage mods
 	ModsLevel_Song,		// Stage + forced attack mods
 	ModsLevel_Current, // Approaches Song
 	NUM_ModsLevel,
-	ModsLevel_Invalid
+	ModsLevel_Invalid = -1
 };
 LuaDeclareType( ModsLevel );
 

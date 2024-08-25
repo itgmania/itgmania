@@ -372,7 +372,7 @@ static void do_backtrace( const void **buf, std::size_t size, const BacktraceCon
 				buf[i++] = *p;
 
 			/* The frame pointer is invalid.  Just move forward one word. */
-			frame = (StackFrame *) (((char *)frame)+4);
+			frame = (StackFrame *) (((char *)frame)+sizeof(void*));
 			continue;
 		}
 

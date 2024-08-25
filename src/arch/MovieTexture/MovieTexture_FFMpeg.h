@@ -59,14 +59,14 @@ class MovieTexture_FFMpeg: public MovieTexture_Generic
 public:
 	MovieTexture_FFMpeg( RageTextureID ID );
 
-	static RageSurface *AVCodecCreateCompatibleSurface( int iTextureWidth, int iTextureHeight, bool bPreferHighColor, int &iAVTexfmt, MovieDecoderPixelFormatYCbCr &fmtout );
+	static RageSurface *AVCodecCreateCompatibleSurface( int iTextureWidth, int iTextureHeight, bool bPreferHighColor, avcodec::AVPixelFormat* AVTexfmt, MovieDecoderPixelFormatYCbCr &fmtout );
 };
 
 class RageMovieTextureDriver_FFMpeg: public RageMovieTextureDriver
 {
 public:
 	virtual RageMovieTexture *Create( RageTextureID ID, RString &sError );
-	static RageSurface *AVCodecCreateCompatibleSurface( int iTextureWidth, int iTextureHeight, bool bPreferHighColor, int &iAVTexfmt, MovieDecoderPixelFormatYCbCr &fmtout );
+	static RageSurface *AVCodecCreateCompatibleSurface( int iTextureWidth, int iTextureHeight, bool bPreferHighColor, avcodec::AVPixelFormat* AVTexfmt, MovieDecoderPixelFormatYCbCr &fmtout );
 };
 
 class MovieDecoder_FFMpeg: public MovieDecoder

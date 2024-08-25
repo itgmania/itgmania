@@ -271,8 +271,6 @@ LuaManager::LuaManager()
 	// Store the thread pool in a table on the stack, in the main thread.
 #define THREAD_POOL 1
 	lua_newtable( L );
-
-	RegisterTypes();
 }
 
 LuaManager::~LuaManager()
