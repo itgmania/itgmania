@@ -821,6 +821,11 @@ void SMLoader::ProcessTimeSignatures( TimingData &out, const RString line, const
 
 		out.AddSegment( TimeSignatureSegment(BeatToNoteRow(fBeat), iNumerator, iDenominator) );
 	}
+
+	if (!hasInitialValue)
+	{
+		out.AddSegment(TimeSignatureSegment(0, 4));
+	}
 }
 
 void SMLoader::ProcessTickcounts( TimingData &out, const RString line, const int rowsPerBeat )
@@ -1115,6 +1120,9 @@ bool SMLoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCache
 	out.m_sSongFileName = sPath;
 
 	SMSongTagInfo reused_song_info(&*this, &out, sPath);
+
+	// Reset hasInitialValue for the new song
+	hasInitialValue = false;
 
 	for( unsigned i=0; i<msd.GetNumValues(); i++ )
 	{

@@ -225,6 +225,15 @@ private:
 	RString songTitle;
 
 	std::vector<RString> m_SongDirFiles;
+
+	// NOTE(mjvotaw): If there are any time signatures defined, but there isn't
+	// one for the very first beat of the song, then add one.
+	// Without it, calls to functions like TimingData::NoteRowToMeasureAndBeat
+	// can fail for charts that are otherwise valid.
+	// NOTE(sukibaby): I'm using a boolean to track if there is an initial value
+	// and only apply the default if there isn't one. This is to optimize for the
+	// common case where there is an initial value.
+	bool hasInitialValue = false;
 };
 
 #endif

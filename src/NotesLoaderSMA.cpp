@@ -82,8 +82,17 @@ void SMALoader::ProcessBeatsPerMeasure( TimingData &out, const RString sParam )
 				     fBeat, iNumerator );
 			continue;
 		}
+		if (fBeat == 0)
+		{
+			hasInitialValue = true;
+		}
 
-		out.AddSegment( TimeSignatureSegment(BeatToNoteRow(fBeat), iNumerator) );
+		out.AddSegment(TimeSignatureSegment(BeatToNoteRow(fBeat), iNumerator));
+	}
+
+	if (!hasInitialValue)
+	{
+		out.AddSegment(TimeSignatureSegment(0, 4));
 	}
 }
 
@@ -167,6 +176,9 @@ bool SMALoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCach
 	Steps* pNewNotes = nullptr;
 	int iRowsPerBeat = -1; // Start with an invalid value: needed for checking.
 	std::vector<std::pair<float, float>> vBPMChanges, vStops;
+
+	// Reset hasInitialValue for the new song
+	hasInitialValue = false;
 
 	for( unsigned i=0; i<msd.GetNumValues(); i++ )
 	{
