@@ -529,7 +529,6 @@ void PlayerOptions::GetMods( std::vector<RString> &AddTo, bool bForceNoteSkin ) 
 	{
 	case FailType_Immediate:							break;
 	case FailType_ImmediateContinue:		AddTo.push_back("FailImmediateContinue");	break;
-	case FailType_EndOfSong:			AddTo.push_back("FailAtEnd");	break;
 	case FailType_Off:				AddTo.push_back("FailOff");	break;
 	default:
 		FAIL_M(ssprintf("Invalid FailType: %i", m_FailType));
@@ -1122,7 +1121,6 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 		 sBit == "failimmediate" )			m_FailType = FailType_Immediate;
 	else if( sBit == "failendofsong" ||
 		 sBit == "failimmediatecontinue" )		m_FailType = FailType_ImmediateContinue;
-	else if( sBit == "failatend" )				m_FailType = FailType_EndOfSong;
 	else if( sBit == "failoff" )				m_FailType = FailType_Off;
 	else if( sBit == "faildefault" )
 	{

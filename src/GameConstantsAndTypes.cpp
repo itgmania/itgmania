@@ -514,7 +514,6 @@ LuaFunction( CourseTypeToLocalizedString, CourseTypeToLocalizedString( Enum::Che
 static const char *FailTypeNames[] = {
 	"Immediate",
 	"ImmediateContinue",
-	"EndOfSong",
 	"Off",
 };
 XToString( FailType );

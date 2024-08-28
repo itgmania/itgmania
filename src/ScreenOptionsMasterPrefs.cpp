@@ -361,7 +361,6 @@ static void DefaultFailChoices(std::vector<RString>& out)
 {
 	out.push_back("Immediate");
 	out.push_back("ImmediateContinue");
-	out.push_back("EndOfSong");
 	out.push_back("Off");
 }
 
