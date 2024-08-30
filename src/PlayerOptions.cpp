@@ -56,7 +56,6 @@ ThemeMetric<float> RANDOM_HIDDEN_CHANCE		( "PlayerOptions", "RandomHiddenChance"
 ThemeMetric<float> RANDOM_SUDDEN_CHANCE		( "PlayerOptions", "RandomSuddenChance" );
 
 static const float CMOD_DEFAULT= 250.0f;
-// Is there a better place for this?
 // It needs to be a named constant because it's used in several places in
 // this file, but nothing else has a named constant for its default value.
 // -Kyz
