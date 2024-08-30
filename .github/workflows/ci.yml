@@ -103,14 +103,6 @@ jobs:
           $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
           &"$vsPath\VC\Auxiliary\Build\vcvarsall.bat" x64
         shell: pwsh
-      - name: Cache CMake build directory
-        uses: actions/cache@v4
-        with:
-          path: |
-            build
-          key: ${{ runner.os }}-cmake-build-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-cmake-build-
       - name: Configure
         run: cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
       - name: Build
