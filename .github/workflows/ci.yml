@@ -96,6 +96,13 @@ jobs:
       - uses: actions/checkout@v4
       - name: Checkout submodules
         run: git submodule update --init --recursive
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+      - name: Set up Visual Studio environment
+        run: |
+          $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          &"$vsPath\VC\Auxiliary\Build\vcvarsall.bat" x64
+        shell: pwsh
       - name: Cache CMake build directory
         uses: actions/cache@v4
         with:
