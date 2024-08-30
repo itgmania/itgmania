@@ -14,7 +14,7 @@ int RageSoundReader::RetriedRead(float* pBuffer, int iFrames, int* iSourceFrame,
 	// pReader may return 0, which means "try again immediately". As a failsafe,
 	// only try this a finite number of times. Use a high number, because in
 	// principle each filter in the stack may cause this.
-	std::uint8_t retryCount = 50;
+	unsigned retryCount = 50;
 	while (--retryCount) {
 		if (fRate) {
 			*fRate = this->GetStreamToSourceRatio();
