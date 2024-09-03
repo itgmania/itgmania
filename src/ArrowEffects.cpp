@@ -1124,7 +1124,7 @@ float ArrowGetPercentVisible(float fYPosWithoutReverse, int iCol, float fYOffset
 			* fAppearances[PlayerOptions::APPEARANCE_RANDOMVANISH];
 	}
 
-	return clamp(1 + fVisibleAdjust, 0.0f, 1.0f);
+	return std::clamp(1 + fVisibleAdjust, 0.0f, 1.0f);
 }
 
 float ArrowEffects::GetAlpha( const PlayerState* pPlayerState, int iCol, float fYOffset, float fPercentFadeToFail, float fYReverseOffsetPixels, float fDrawDistanceBeforeTargetsPixels, float fFadeInPercentOfDrawFar)

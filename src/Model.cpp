@@ -570,7 +570,7 @@ void Model::PlayAnimation( const RString &sAniName, float fPlayRate )
 void Model::SetPosition( float fSeconds )
 {
 	m_fCurFrame = FRAMES_PER_SECOND * fSeconds;
-	m_fCurFrame = clamp( m_fCurFrame, (float) 0, (float) m_pCurAnimation->nTotalFrames );
+	m_fCurFrame = std::clamp( m_fCurFrame, (float) 0, (float) m_pCurAnimation->nTotalFrames );
 }
 
 void Model::AdvanceFrame( float fDeltaTime )
@@ -596,7 +596,7 @@ void Model::AdvanceFrame( float fDeltaTime )
 		else if( m_bLoop )
 			wrap( m_fCurFrame, (float) m_pCurAnimation->nTotalFrames );
 		else
-			m_fCurFrame = clamp( m_fCurFrame, (float) 0, (float) m_pCurAnimation->nTotalFrames );
+			m_fCurFrame = std::clamp( m_fCurFrame, (float) 0, (float) m_pCurAnimation->nTotalFrames );
 	}
 
 	SetBones( m_pCurAnimation, m_fCurFrame, m_vpBones );

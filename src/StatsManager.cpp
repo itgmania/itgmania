@@ -131,7 +131,7 @@ void AddPlayerStatsToProfile( Profile *pProfile, const StageStats &ss, PlayerNum
 		pProfile->m_iNumSongsPlayedByStyle[sID] ++;
 		pProfile->m_iNumSongsPlayedByDifficulty[pSteps->GetDifficulty()] ++;
 
-		int iMeter = clamp( pSteps->GetMeter(), 0, MAX_METER );
+		int iMeter = std::clamp( pSteps->GetMeter(), 0, MAX_METER );
 		pProfile->m_iNumSongsPlayedByMeter[iMeter] ++;
 	}
 

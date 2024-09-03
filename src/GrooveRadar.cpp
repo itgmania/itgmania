@@ -110,7 +110,7 @@ void GrooveRadar::GrooveRadarValueMap::SetFromSteps( const RadarValues &rv )
 	{
 		const float fValueCurrent = m_fValuesOld[c] * (1-m_PercentTowardNew) + m_fValuesNew[c] * m_PercentTowardNew;
 		m_fValuesOld[c] = fValueCurrent;
-		m_fValuesNew[c] = clamp(rv[c], 0.0f, 1.0f);
+		m_fValuesNew[c] = std::clamp(rv[c], 0.0f, 1.0f);
 	}
 
 	if( !m_bValuesVisible ) // the values WERE invisible

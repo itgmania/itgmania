@@ -1243,7 +1243,7 @@ void ScreenGameplay::LoadNextSong()
 				int iMeter = pSteps->GetMeter();
 				int iNewSkill = SCALE( iMeter, MIN_METER, MAX_METER, 0, NUM_SKILL_LEVELS-1 );
 				/* Watch out: songs aren't actually bound by MAX_METER. */
-				iNewSkill = clamp( iNewSkill, 0, NUM_SKILL_LEVELS-1 );
+				iNewSkill = std::clamp( iNewSkill, 0, NUM_SKILL_LEVELS-1 );
 				pi->GetPlayerState()->m_iCpuSkill = iNewSkill;
 			}
 			else

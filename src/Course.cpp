@@ -585,7 +585,7 @@ bool Course::GetTrailUnsorted( StepsType st, CourseDifficulty cd, Trail &trail )
 			if( cd != Difficulty_Medium  &&  !e->bNoDifficult )
 			{
 				Difficulty new_dc = ( Difficulty )( dc + cd - Difficulty_Medium );
-				new_dc = clamp( new_dc, ( Difficulty )0, ( Difficulty )( Difficulty_Edit - 1 ) );
+				new_dc = std::clamp( new_dc, ( Difficulty )0, ( Difficulty )( Difficulty_Edit - 1 ) );
 				/*
 				// re-edit this code to work using the metric.
 				Difficulty new_dc;
@@ -817,7 +817,7 @@ void Course::GetTrailUnsortedEndless( const std::vector<CourseEntry> &entries, T
 			{
 				new_dc = cd;
 			}
-			new_dc = clamp( new_dc, ( Difficulty )0, ( Difficulty )( Difficulty_Edit - 1 ) );
+			new_dc = std::clamp( new_dc, ( Difficulty )0, ( Difficulty )( Difficulty_Edit - 1 ) );
 			/*
 			// re-edit this code to work using the metric.
 			Difficulty new_dc;

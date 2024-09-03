@@ -1613,8 +1613,8 @@ void RageDisplay_Legacy::DrawLineStripInternal( const RageSpriteVertex v[], int 
 
 	/* Clamp the width to the hardware max for both lines and points (whichever
 	 * is more restrictive). */
-	fLineWidth = clamp( fLineWidth, g_line_range[0], g_line_range[1] );
-	fLineWidth = clamp( fLineWidth, g_point_range[0], g_point_range[1] );
+	fLineWidth = std::clamp( fLineWidth, g_line_range[0], g_line_range[1] );
+	fLineWidth = std::clamp( fLineWidth, g_point_range[0], g_point_range[1] );
 
 	/* Hmm.  The granularity of lines and points might be different; for example,
 	 * if lines are .5 and points are .25, we might want to snap the width to the
