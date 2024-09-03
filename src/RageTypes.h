@@ -278,7 +278,7 @@ public:
 inline unsigned char FTOC(float a)
 {
 	int value = static_cast<int>(a * 256.0f);
-	return static_cast<unsigned char>(clamp(value, 0, 255));
+	return static_cast<unsigned char>(std::clamp(value, 0, 255));
 }
 
 /* Color type used only in vertex lists.  OpenGL expects colors in

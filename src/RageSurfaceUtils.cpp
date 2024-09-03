@@ -431,10 +431,10 @@ void RageSurfaceUtils::BlitTransform( const RageSurface *src, RageSurface *dst,
 			src_y[1] = src_y[0] + 1;
 
 			// Emulate GL_REPEAT.
-			src_x[0] = clamp(src_x[0], 0, src->w);
-			src_x[1] = clamp(src_x[1], 0, src->w);
-			src_y[0] = clamp(src_y[0], 0, src->h);
-			src_y[1] = clamp(src_y[1], 0, src->h);
+			src_x[0] = std::clamp(src_x[0], 0, src->w);
+			src_x[1] = std::clamp(src_x[1], 0, src->w);
+			src_y[0] = std::clamp(src_y[0], 0, src->h);
+			src_y[1] = std::clamp(src_y[1], 0, src->h);
 
 			// Decode our four pixels.
 			std::uint8_t v[4][4];
@@ -456,7 +456,7 @@ void RageSurfaceUtils::BlitTransform( const RageSurface *src, RageSurface *dst,
 				sum += v[1][i] * (1-weight_x) * (weight_y);
 				sum += v[2][i] * (weight_x)   * (1-weight_y);
 				sum += v[3][i] * (weight_x)   * (weight_y);
-				out[i] = (std::uint8_t) clamp( std::lrint(sum), 0L, 255L );
+				out[i] = (std::uint8_t) std::clamp( std::lrint(sum), 0L, 255L );
 			}
 
 			// If the source has no alpha, set the destination to opaque.
@@ -865,10 +865,10 @@ RageSurface *RageSurfaceUtils::PalettizeToGrayscale( const RageSurface *src_surf
 		const unsigned int A = (index & Amask) >> Ashift;
 
 		// if only one intensity value, always fullbright
-		const std::uint8_t ScaledI = Ivalues == 1 ? 255 : clamp( std::lrint(I * (255.0f / (Ivalues-1))), 0L, 255L );
+		const std::uint8_t ScaledI = Ivalues == 1 ? 255 : std::clamp( std::lrint(I * (255.0f / (Ivalues-1))), 0L, 255L );
 
 		// if only one alpha value, always opaque
-		const std::uint8_t ScaledA = Avalues == 1 ? 255 : clamp( std::lrint(A * (255.0f / (Avalues-1))), 0L, 255L );
+		const std::uint8_t ScaledA = Avalues == 1 ? 255 : std::clamp( std::lrint(A * (255.0f / (Avalues-1))), 0L, 255L );
 
 		RageSurfaceColor c;
 		c.r = ScaledI;
