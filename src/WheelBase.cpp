@@ -381,8 +381,10 @@ void WheelBase::Move(int n)
 	if (!MoveSpecific(n))
 		return;
 
-	m_TimeBeforeMovingBegins = 1/4.0f;
-	m_SpinSpeed = float(PREFSMAN->m_iMusicWheelSwitchSpeed);
+	static constexpr float fTimeBeforeMovingBegins = 1/4.0f;
+
+	m_TimeBeforeMovingBegins = fTimeBeforeMovingBegins;
+	m_SpinSpeed = static_cast<float>(PREFSMAN->m_iMusicWheelSwitchSpeed);
 	m_Moving = n;
 
 	if( m_Moving )
