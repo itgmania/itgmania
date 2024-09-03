@@ -9,6 +9,7 @@
 #include "ScoreKeeperNormal.h"
 #include "PrefsManager.h"
 #include "CommonMetrics.h"
+#include "Constexprs.h"
 
 #include <cfloat>
 #include <cmath>
@@ -58,8 +59,8 @@ void PlayerStageStats::InternalInit()
 	m_iNumControllerSteps = 0;
 	m_fCaloriesBurned = 0;
 
-	ZERO( m_iTapNoteScores );
-	ZERO( m_iHoldNoteScores );
+	ZERO_MEMORY( m_iTapNoteScores );
+	ZERO_MEMORY( m_iHoldNoteScores );
 	m_radarPossible.Zero();
 	m_radarActual.Zero();
 
@@ -124,8 +125,8 @@ void PlayerStageStats::AddStats( const PlayerStageStats& other )
 	// so add 1 second between the stages so that the last element of this
 	// stage's record isn't overwritten by the first element of the other
 	// stage's record. -Kyz
-	const float fOtherFirstSecond = other.m_fFirstSecond + m_fLastSecond + 1.0f;
-	const float fOtherLastSecond = other.m_fLastSecond + m_fLastSecond + 1.0f;
+	const float fOtherFirstSecond = other.m_fFirstSecond + m_fLastSecond + ONE;
+	const float fOtherLastSecond = other.m_fLastSecond + m_fLastSecond + ONE;
 	m_fLastSecond = fOtherLastSecond;
 
 	std::map<float, float>::const_iterator it;
@@ -257,13 +258,13 @@ float PlayerStageStats::MakePercentScore( int iActual, int iPossible )
 	float fPercent =  iActual / (float)iPossible;
 
 	// don't allow negative
-	fPercent = std::max(0.0f, fPercent);
+	fPercent = std::max(ZERO, fPercent);
 
 	int iPercentTotalDigits = 3 + CommonMetrics::PERCENT_SCORE_DECIMAL_PLACES;	// "100" + "." + "00"
 
 	// TRICKY: printf will round, but we want to truncate. Otherwise, we may display
 	// a percent score that's too high and doesn't match up with the calculated grade.
-	float fTruncInterval = std::pow( 0.1f, (float)iPercentTotalDigits-1 );
+	float fTruncInterval = std::pow( POINT_ONE, (float)iPercentTotalDigits-1 );
 
 	// TRICKY: ftruncf is rounding 1.0000000 to 0.99990004. Give a little boost
 	// to fPercentDancePoints to correct for this.
@@ -338,7 +339,7 @@ int PlayerStageStats::GetLessonScoreActual() const
 
 int PlayerStageStats::GetLessonScoreNeeded() const
 {
-	float fScore = std::accumulate(m_vpPossibleSteps.begin(), m_vpPossibleSteps.end(), 0.f,
+	float fScore = std::accumulate(m_vpPossibleSteps.begin(), m_vpPossibleSteps.end(), ZERO,
 		[](float total, Steps const *steps) { return total + steps->GetRadarValues(PLAYER_1)[RadarCategory_TapsAndHolds]; });
 	return std::lrint( fScore * LESSON_PASS_THRESHOLD );
 }
@@ -463,7 +464,7 @@ void PlayerStageStats::GetLifeRecord( float *fLifeOut, int iNumSamples, float fS
 {
 	for( int i = 0; i < iNumSamples; ++i )
 	{
-		float from = SCALE( i, 0, (float)iNumSamples, 0.0f, fStepsEndSecond );
+		float from = SCALE( i, 0, (float)iNumSamples, ZERO, fStepsEndSecond );
 		fLifeOut[i] = GetLifeRecordLerpAt( from );
 	}
 }
@@ -675,7 +676,7 @@ void PlayerStageStats::CalcAwards( PlayerNumber p, bool bGaveUp, bool bUsedAutop
 			vPdas.push_back( StageAward_80PercentW3 );
 		if( fPercentW3s >= 0.9f )
 			vPdas.push_back( StageAward_90PercentW3 );
-		if( fPercentW3s >= 1.f )
+		if( fPercentW3s >= ONE )
 			vPdas.push_back( StageAward_100PercentW3 );
 	}
 
@@ -835,7 +836,7 @@ public:
 		for(int i= 0; i < samples; ++i)
 		{
 			// The scale from range is [0, samples-1] because that is i's range.
-			float from= SCALE(i, 0, (float)samples-1.0f, 0.0f, last_second);
+			float from= SCALE(i, 0, (float)samples-ONE, ZERO, last_second);
 			float curr= p->GetLifeRecordLerpAt(from);
 			lua_pushnumber(L, curr);
 			lua_rawseti(L, -2, i+1);

@@ -13,6 +13,7 @@
 #include "GameManager.h"
 #include "CommonMetrics.h"
 #include "Style.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstddef>
@@ -21,7 +22,7 @@
 
 const RString DEFAULT_LIGHTS_DRIVER = "SystemMessage,Export";
 static Preference<RString> g_sLightsDriver( "LightsDriver", "" ); // "" == DEFAULT_LIGHTS_DRIVER
-Preference<float>	g_fLightsFalloffSeconds( "LightsFalloffSeconds", 0.1f );
+Preference<float>	g_fLightsFalloffSeconds( "LightsFalloffSeconds", POINT_ONE );
 Preference<float>	g_fLightsAheadSeconds( "LightsAheadSeconds", 0.05f );
 static Preference<bool>	g_bBlinkGameplayButtonLightsOnNote( "BlinkGameplayButtonLightsOnNote", false );
 
@@ -106,10 +107,10 @@ LightsManager*	LIGHTSMAN = nullptr;	// global and accessible from anywhere in ou
 
 LightsManager::LightsManager()
 {
-	ZERO( m_fSecsLeftInCabinetLightBlink );
-	ZERO( m_fSecsLeftInGameButtonBlink );
-	ZERO( m_fActorLights );
-	ZERO( m_fSecsLeftInActorLightBlink );
+	ZERO_MEMORY( m_fSecsLeftInCabinetLightBlink );
+	ZERO_MEMORY( m_fSecsLeftInGameButtonBlink );
+	ZERO_MEMORY( m_fActorLights );
+	ZERO_MEMORY( m_fSecsLeftInActorLightBlink );
 	m_iQueuedCoinCounterPulses = 0;
 	m_CoinCounterTimer.SetZero();
 
@@ -184,8 +185,8 @@ void LightsManager::Update( float fDeltaTime )
 
 	// Set new lights state cabinet lights
 	{
-		ZERO( m_LightsState.m_bCabinetLights );
-		ZERO( m_LightsState.m_bGameButtonLights );
+		ZERO_MEMORY( m_LightsState.m_bCabinetLights );
+		ZERO_MEMORY( m_LightsState.m_bGameButtonLights );
 	}
 
 	{
@@ -341,7 +342,7 @@ void LightsManager::Update( float fDeltaTime )
 			float fLightSongBeat = GAMESTATE->m_Position.m_fLightSongBeat;
 
 			/* Blink menu lights on the first half of the beat */
-			if( fracf(fLightSongBeat) <= 0.5f )
+			if( fracf(fLightSongBeat) <= ONE_HALF )
 			{
 				FOREACH_PlayerNumber( pn )
 				{
@@ -415,7 +416,7 @@ void LightsManager::Update( float fDeltaTime )
 			GetUsedGameInputs( vGI );
 			wrap( index, vGI.size() );
 
-			ZERO( m_LightsState.m_bGameButtonLights );
+			ZERO_MEMORY( m_LightsState.m_bGameButtonLights );
 
 			GameController gc = vGI[index].controller;
 			GameButton gb = vGI[index].button;
@@ -426,7 +427,7 @@ void LightsManager::Update( float fDeltaTime )
 
 		case LIGHTSMODE_TEST_MANUAL_CYCLE:
 		{
-			ZERO( m_LightsState.m_bGameButtonLights );
+			ZERO_MEMORY( m_LightsState.m_bGameButtonLights );
 
 			std::vector<GameInput> vGI;
 			GetUsedGameInputs( vGI );

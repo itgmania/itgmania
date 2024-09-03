@@ -4,6 +4,7 @@
 #include "RageUtil.h"
 #include "RageLog.h"
 #include "RageFile.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstddef>
@@ -424,10 +425,10 @@ void RageSurfaceUtils::BlitTransform( const RageSurface *src, RageSurface *dst,
 			 * pixel[1]; 2 indicates 50% pixel[1], 50% pixel[2] (which is clamped
 			 * to pixel[1]). */
 			int src_x[2], src_y[2];
-			src_x[0] = std::trunc(src_xp - 0.5f);
+			src_x[0] = std::trunc(src_xp - ONE_HALF);
 			src_x[1] = src_x[0] + 1;
 
-			src_y[0] = std::trunc(src_yp - 0.5f);
+			src_y[0] = std::trunc(src_yp - ONE_HALF);
 			src_y[1] = src_y[0] + 1;
 
 			// Emulate GL_REPEAT.
@@ -444,8 +445,8 @@ void RageSurfaceUtils::BlitTransform( const RageSurface *src, RageSurface *dst,
 			GetRawRGBAV_XY(src, v[3], src_x[1], src_y[1]);
 
 			// Distance from the pixel chosen:
-			float weight_x = src_xp - (src_x[0] + 0.5f);
-			float weight_y = src_yp - (src_y[0] + 0.5f);
+			float weight_x = src_xp - (src_x[0] + ONE_HALF);
+			float weight_y = src_yp - (src_y[0] + ONE_HALF);
 
 			// Filter:
 			std::uint8_t out[4] = { 0,0,0,0 };

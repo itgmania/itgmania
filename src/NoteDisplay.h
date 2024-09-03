@@ -6,6 +6,7 @@
 #include "NoteData.h"
 #include "PlayerNumber.h"
 #include "GameInput.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -135,8 +136,8 @@ struct NCSplineHandler
 		m_spline.redimension(3);
 		m_spline.m_owned_by_actor= true;
 		m_spline_mode= NCSM_Disabled;
-		m_receptor_t= 0.0f;
-		m_beats_per_t= 1.0f;
+		m_receptor_t= ZERO;
+		m_beats_per_t= ONE;
 		m_subtract_song_beat_from_curr= true;
 	}
 	float BeatToTValue(float song_beat, float note_beat) const;

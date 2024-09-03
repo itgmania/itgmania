@@ -8,6 +8,7 @@
 #include "ActorUtil.h"
 #include "InputEventPlus.h"
 #include "InputMapper.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -115,7 +116,7 @@ void Screen::Update( float fDeltaTime )
 {
 	ActorFrame::Update( fDeltaTime );
 
-	m_fLockInputSecs = std::max( 0.0f, m_fLockInputSecs-fDeltaTime );
+	m_fLockInputSecs = std::max( ZERO, m_fLockInputSecs-fDeltaTime );
 
 	/* We need to ensure two things:
 	 * 1. Messages must be sent in the order of delay. If two messages are sent
@@ -156,7 +157,7 @@ void Screen::Update( float fDeltaTime )
 	 * already, this won't cause messages to be mistimed. */
 	for( unsigned i=0; i<m_QueuedMessages.size(); i++ )
 	{
-		if( m_QueuedMessages[i].fDelayRemaining > 0.0f )
+		if( m_QueuedMessages[i].fDelayRemaining > ZERO )
 			continue; /* not yet */
 
 		// Remove the message from the list.
@@ -257,9 +258,9 @@ void Screen::HandleScreenMessage( const ScreenMessage SM )
 	}
 	else if( SM == SM_GainFocus )
 	{
-		if( REPEAT_RATE != -1.0f )
+		if( REPEAT_RATE != NEGATIVE_ONE )
 			INPUTFILTER->SetRepeatRate( REPEAT_RATE );
-		if( REPEAT_DELAY != -1.0f )
+		if( REPEAT_DELAY != NEGATIVE_ONE )
 			INPUTFILTER->SetRepeatDelay( REPEAT_DELAY );
 
 		LIGHTSMAN->SetLightsMode( LIGHTS_MODE );
@@ -318,7 +319,7 @@ void Screen::ClearMessageQueue( const ScreenMessage SM )
 
 bool Screen::PassInputToLua(const InputEventPlus& input)
 {
-	if(m_InputCallbacks.empty() || m_fLockInputSecs > 0.0f
+	if(m_InputCallbacks.empty() || m_fLockInputSecs > ZERO
 		|| !AllowCallbackInput())
 	{
 		return false;

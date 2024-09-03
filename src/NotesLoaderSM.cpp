@@ -12,6 +12,7 @@
 #include "Steps.h"
 #include "Attack.h"
 #include "PrefsManager.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <vector>
@@ -416,8 +417,8 @@ void SMLoader::ProcessAttacks( AttackArray &attacks, MsdFile::value_t params )
 				end = -9999;
 			}
 
-			if( attack.fSecsRemaining < 0.0f )
-				attack.fSecsRemaining = 0.0f;
+			if( attack.fSecsRemaining < ZERO )
+				attack.fSecsRemaining = ZERO;
 
 			attacks.push_back( attack );
 		}
@@ -758,7 +759,7 @@ void SMLoader::ProcessDelays( TimingData &out, const RString line, const int row
 		const float fFreezeSeconds = StringToFloat( arrayDelayValues[1] );
 		// LOG->Trace( "Adding a delay segment: beat: %f, seconds = %f", new_seg.m_fStartBeat, new_seg.m_fStopSeconds );
 
-		if(fFreezeSeconds > 0.0f)
+		if(fFreezeSeconds > ZERO)
 			out.AddSegment( DelaySegment(BeatToNoteRow(fFreezeBeat), fFreezeSeconds) );
 		else
 			LOG->UserLog(

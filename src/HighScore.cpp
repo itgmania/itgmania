@@ -87,8 +87,8 @@ HighScoreImpl::HighScoreImpl()
 	sPlayerGuid = "";
 	sMachineGuid = "";
 	iProductID = 0;
-	ZERO( iTapNoteScores );
-	ZERO( iHoldNoteScores );
+	ZERO_MEMORY( iTapNoteScores );
+	ZERO_MEMORY( iHoldNoteScores );
 	radarValues.MakeUnknown();
 	fLifeRemainingSeconds = 0;
 }

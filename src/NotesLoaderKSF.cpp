@@ -8,6 +8,7 @@
 #include "NoteTypes.h"
 #include "Song.h"
 #include "Steps.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -37,7 +38,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 	// this is the value we read for TICKCOUNT
 	int iTickCount = -1;
 	// used to adapt weird tickcounts
-	//float fScrollRatio = 1.0f; -- uncomment when ready to use.
+	//float fScrollRatio = ONE; -- uncomment when ready to use.
 	std::vector<RString> vNoteRows;
 
 	// According to Aldo_MX, there is a default BPM and it's 60. -aj
@@ -283,8 +284,8 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 
 	bool bTickChangeNeeded = false;
 	int newTick = -1;
-	float fCurBeat = 0.0f;
-	float prevBeat = 0.0f; // Used for hold tails.
+	float fCurBeat = ZERO;
+	float prevBeat = ZERO; // Used for hold tails.
 
 	for( unsigned r=0; r<vNoteRows.size(); r++ )
 	{
@@ -458,7 +459,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 			notedata.SetTapNote(t, BeatToNoteRow(fCurBeat), tap);
 		}
 		prevBeat = fCurBeat;
-		fCurBeat = prevBeat + 1.0f / iTickCount;
+		fCurBeat = prevBeat + ONE / iTickCount;
 	}
 
 	out.SetNoteData( notedata );
@@ -671,7 +672,7 @@ static bool LoadGlobalData( const RString &sPath, Song &out, bool &bKIUCompliant
 	}
 	else
 	{
-		float fCurBeat = 0.0f;
+		float fCurBeat = ZERO;
 		bool bDMRequired = false;
 
 		for( unsigned i=0; i < vNoteRows.size(); ++i )
@@ -702,7 +703,7 @@ static bool LoadGlobalData( const RString &sPath, Song &out, bool &bKIUCompliant
 				//continue;
 			}
 
-			fCurBeat += 1.0f / iTickCount;
+			fCurBeat += ONE / iTickCount;
 		}
 	}
 

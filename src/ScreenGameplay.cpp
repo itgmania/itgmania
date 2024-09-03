@@ -60,6 +60,7 @@
 #include "XmlFileUtil.h"
 #include "Profile.h" // for replay data stuff
 #include "RageDisplay.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstddef>
@@ -365,12 +366,12 @@ void ScreenGameplay::Init()
 	m_HasteTurningPoints.push_back(0.3f);
 	m_HasteTurningPoints.push_back(1);
 	m_HasteAddAmounts.clear();
-	m_HasteAddAmounts.push_back(-0.5f);
+	m_HasteAddAmounts.push_back(-ONE_HALF);
 	m_HasteAddAmounts.push_back(0);
 	m_HasteAddAmounts.push_back(0.2f);
-	m_HasteAddAmounts.push_back(0.5f);
+	m_HasteAddAmounts.push_back(ONE_HALF);
 	m_fHasteTimeBetweenUpdates= 4;
-	m_fHasteLifeSwitchPoint= 0.5f;
+	m_fHasteLifeSwitchPoint= ONE_HALF;
 	m_fCurrHasteRate= 1; // Should this be in BeginSong?  Not sure whether it should carry over between songs.
 
 	if( UseSongBackgroundAndForeground() )
@@ -554,15 +555,15 @@ void ScreenGameplay::Init()
 			RString marge= "Margin value must be a number.";
 			margins[PLAYER_1][0]= SafeFArg(L, -3, marge, 40);
 			float center= SafeFArg(L, -2, marge, 80);
-			margins[PLAYER_1][1]= center / 2.0f;
-			margins[PLAYER_2][0]= center / 2.0f;
+			margins[PLAYER_1][1]= center / TWO;
+			margins[PLAYER_2][0]= center / TWO;
 			margins[PLAYER_2][1]= SafeFArg(L, -1, marge, 40);
 		}
 		lua_settop(L, 0);
 		LUA->Release(L);
 	}
 
-	float left_edge[NUM_PLAYERS]= {0.0f, SCREEN_WIDTH / 2.0f};
+	float left_edge[NUM_PLAYERS]= {ZERO, SCREEN_WIDTH / TWO};
 	FOREACH_EnabledPlayerInfo( m_vPlayerInfo, pi )
 	{
 		RString sName = ssprintf("Player%s", pi->GetName().c_str());
@@ -577,7 +578,7 @@ void ScreenGameplay::Init()
 		float right_marge;
 #define CENTER_PLAYER_BLOCK \
 		{ \
-			edge= 0.0f; \
+			edge= ZERO; \
 			screen_space= SCREEN_WIDTH; \
 			left_marge= margins[PLAYER_1][0]; \
 			right_marge= margins[PLAYER_2][1]; \
@@ -589,7 +590,7 @@ void ScreenGameplay::Init()
 		CENTER_PLAYER_BLOCK
 		else
 		{
-			screen_space= SCREEN_WIDTH / 2.0f;
+			screen_space= SCREEN_WIDTH / TWO;
 			left_marge= margins[pi->m_pn][0];
 			right_marge= margins[pi->m_pn][1];
 			field_space= screen_space - left_marge - right_marge;
@@ -600,7 +601,7 @@ void ScreenGameplay::Init()
 			CENTER_PLAYER_BLOCK
 		}
 #undef CENTER_PLAYER_BLOCK
-		float player_x= edge + left_marge + (field_space / 2.0f);
+		float player_x= edge + left_marge + (field_space / TWO);
 		float field_zoom= field_space / style_width;
 		/*
 		LuaHelpers::ReportScriptErrorFmt("Positioning player %d at %.0f:  "
@@ -609,7 +610,7 @@ void ScreenGameplay::Init()
 			pi->m_pn+1, player_x, screen_space, left_edge[pi->m_pn], field_space,
 			left_marge, right_marge, style_width, field_zoom);
 		*/
-		pi->GetPlayerState()->m_NotefieldZoom= std::min(1.0f, field_zoom);
+		pi->GetPlayerState()->m_NotefieldZoom= std::min(ONE, field_zoom);
 
 		pi->m_pPlayer->SetX(player_x);
 		pi->m_pPlayer->RunCommands( PLAYER_INIT_COMMAND );
@@ -671,7 +672,7 @@ void ScreenGameplay::Init()
 				if( !GAMESTATE->IsPlayerEnabled(pi->m_pn) && SHOW_LIFE_METER_FOR_DISABLED_PLAYERS )
 				{
 					if(pi->GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType == LifeType_Bar)
-						static_cast<LifeMeterBar*>(pi->m_pLifeMeter)->ChangeLife(-1.0f);
+						static_cast<LifeMeterBar*>(pi->m_pLifeMeter)->ChangeLife(NEGATIVE_ONE);
 				}
 			}
 			break;
@@ -713,7 +714,7 @@ void ScreenGameplay::Init()
 			pi->m_ptextCourseSongNumber->SetName( ssprintf("SongNumber%s",pi->GetName().c_str()) );
 			LOAD_ALL_COMMANDS_AND_SET_XY( pi->m_ptextCourseSongNumber );
 			pi->m_ptextCourseSongNumber->SetText( "" );
-			//pi->m_ptextCourseSongNumber->SetDiffuse( RageColor(0,0.5f,1,1) );	// light blue
+			//pi->m_ptextCourseSongNumber->SetDiffuse( RageColor(0,ONE_HALF,1,1) );	// light blue
 			this->AddChild( pi->m_ptextCourseSongNumber );
 		}
 
@@ -1659,7 +1660,7 @@ void ScreenGameplay::Update( float fDeltaTime )
 	}
 	else
 	{
-		const float fRate = PREFSMAN->m_bRateModsAffectTweens ? GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate : 1.0f;
+		const float fRate = PREFSMAN->m_bRateModsAffectTweens ? GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate : ONE;
 		Screen::Update( fDeltaTime * fRate );
 	}
 
@@ -1719,11 +1720,11 @@ void ScreenGameplay::Update( float fDeltaTime )
 
 	{
 		float fSpeed = GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
-		if( GAMESTATE->m_SongOptions.GetCurrent().m_fHaste != 0.0f )
+		if( GAMESTATE->m_SongOptions.GetCurrent().m_fHaste != ZERO )
 			fSpeed *= GetHasteRate();
 
 		RageSoundParams p = m_pSoundMusic->GetParams();
-		if( std::abs(p.m_fSpeed - fSpeed) > 0.01f && fSpeed >= 0.0f)
+		if( std::abs(p.m_fSpeed - fSpeed) > POINT_ZERO_ONE && fSpeed >= ZERO)
 		{
 			p.m_fSpeed = fSpeed;
 			m_pSoundMusic->SetParams( p );
@@ -1828,7 +1829,7 @@ void ScreenGameplay::Update( float fDeltaTime )
 
 				UpdateHasteRate();
 
-				if( GAMESTATE->m_SongOptions.GetCurrent().m_fHaste != 0.0f )
+				if( GAMESTATE->m_SongOptions.GetCurrent().m_fHaste != ZERO )
 				{
 					float fHasteRate = GetHasteRate();
 					// For negative haste, accumulate seconds while the song is slowed down.
@@ -2056,8 +2057,8 @@ void ScreenGameplay::UpdateHasteRate()
 		}
 
 		if( bAnyPlayerHitAllNotes )
-			GAMESTATE->m_fHasteRate += 0.1f;
-		CLAMP( GAMESTATE->m_fHasteRate, -1.0f, +1.0f );
+			GAMESTATE->m_fHasteRate += POINT_ONE;
+		CLAMP( GAMESTATE->m_fHasteRate, NEGATIVE_ONE, +ONE );
 
 		GAMESTATE->m_fLastHasteUpdateMusicSeconds = GAMESTATE->m_Position.m_fMusicSeconds;
 	}
@@ -2080,10 +2081,10 @@ void ScreenGameplay::UpdateHasteRate()
 		}
 	}
 	if( fMaxLife <= m_fHasteLifeSwitchPoint )
-		GAMESTATE->m_fHasteRate = SCALE( fMaxLife, 0.0f, m_fHasteLifeSwitchPoint, -1.0f, 0.0f );
-	CLAMP( GAMESTATE->m_fHasteRate, -1.0f, +1.0f );
+		GAMESTATE->m_fHasteRate = SCALE( fMaxLife, ZERO, m_fHasteLifeSwitchPoint, NEGATIVE_ONE, ZERO );
+	CLAMP( GAMESTATE->m_fHasteRate, NEGATIVE_ONE, +ONE );
 
-	float fSpeed = 1.0f;
+	float fSpeed = ONE;
 	// If there are no turning points or no add amounts, the bad themer probably thinks that's a way to disable haste.
 	// Since we're outside a lua function, crashing (asserting) won't point back to the source of the problem.
 	if(m_HasteTurningPoints.size() < 2 || m_HasteAddAmounts.size() < 2 ||
@@ -2116,7 +2117,7 @@ void ScreenGameplay::UpdateHasteRate()
 	{
 		speed_add= scale_to_high * options_haste;
 	}
-	CLAMP(speed_add, -1.0f, 1.0f);
+	CLAMP(speed_add, NEGATIVE_ONE, ONE);
 
 	// Only adjust speed_add by AccumulatedHasteSeconds when the player is losing seconds.  Otherwise, gaining the first second is interfered with.
 	bool losing_seconds= false;
@@ -2138,7 +2139,7 @@ void ScreenGameplay::UpdateHasteRate()
 		 * means that the player is only eligible to slow the song down when
 		 * they are down to their last accumulated second. -Kyz */
 		// 1 second left is full speed_add, 0 seconds left is no speed_add.
-		float clamp_secs= std::max(0.0f, GAMESTATE->m_fAccumulatedHasteSeconds);
+		float clamp_secs= std::max(ZERO, GAMESTATE->m_fAccumulatedHasteSeconds);
 		speed_add = speed_add * clamp_secs;
 	}
 	fSpeed += speed_add;
@@ -2154,8 +2155,8 @@ void ScreenGameplay::UpdateLights()
 
 	bool bBlinkCabinetLight[NUM_CabinetLight];
 	bool bBlinkGameButton[NUM_GameController][NUM_GameButton];
-	ZERO( bBlinkCabinetLight );
-	ZERO( bBlinkGameButton );
+	ZERO_MEMORY( bBlinkCabinetLight );
+	ZERO_MEMORY( bBlinkGameButton );
 	{
 		const float fSongBeat = GAMESTATE->m_Position.m_fLightSongBeat;
 		const int iSongRow = BeatToNoteRowNotRounded( fSongBeat );
@@ -2484,7 +2485,7 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 		{
 			if( ((!PREFSMAN->m_bDelayedBack && input.type==IET_FIRST_PRESS) ||
 				(input.DeviceI.device==DEVICE_KEYBOARD && input.type==IET_REPEAT) ||
-				(input.DeviceI.device!=DEVICE_KEYBOARD && INPUTFILTER->GetSecsHeld(input.DeviceI) >= 1.0f)) )
+				(input.DeviceI.device!=DEVICE_KEYBOARD && INPUTFILTER->GetSecsHeld(input.DeviceI) >= ONE)) )
 			{
 				LOG->Trace("Player %i went back", input.pn+1);
 				BeginBackingOutFromGameplay();
@@ -3082,7 +3083,7 @@ void ScreenGameplay::HandleMessage( const Message &msg )
 				bOn = tns != TNS_Miss;
 
 			if( pSoundReader )
-				pSoundReader->SetProperty( "Volume", bOn? 1.0f:0.0f );
+				pSoundReader->SetProperty( "Volume", bOn? ONE:ZERO );
 		}
 	}
 

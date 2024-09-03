@@ -6,6 +6,7 @@
 #include "GameState.h"
 #include "PlayerState.h"
 #include "Style.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <vector>
@@ -73,7 +74,7 @@ void ReceptorArrowRow::Update( float fDeltaTime )
 		{
 			fBaseAlpha *= (1 - m_fFadeToFailPercent);
 		}
-		CLAMP( fBaseAlpha, 0.0f, 1.0f );
+		CLAMP( fBaseAlpha, ZERO, ONE );
 		m_ReceptorArrow[c]->SetBaseAlpha( fBaseAlpha );
 
 		if(m_renderers != nullptr)

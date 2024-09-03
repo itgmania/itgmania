@@ -9,6 +9,7 @@
 #include "RageUtil.h"
 #include "RageLog.h"
 #include "SpecialFiles.h"
+#include "Constexprs.h"
 
 //DEFAULTS_INI_PATH	= "Data/Defaults.ini";		// these can be overridden
 //PREFERENCES_INI_PATH	// overlay on Defaults.ini, contains the user's choices
@@ -192,7 +193,7 @@ PrefsManager::PrefsManager() :
 	m_bOnlyDedicatedMenuButtons	( "OnlyDedicatedMenuButtons",	false ),
 	m_bMenuTimer			( "MenuTimer",			false ),
 
-	m_fLifeDifficultyScale		( "LifeDifficultyScale",	1.0f ),
+	m_fLifeDifficultyScale		( "LifeDifficultyScale",	ONE ),
 
 	m_bRateModsAffectTweens		( "RateModsAffectFGChanges",	false ),
 
@@ -260,7 +261,7 @@ PrefsManager::PrefsManager() :
 	m_fDebounceCoinInputTime	( "DebounceCoinInputTime",		0 ),
 
 	m_fPadStickSeconds		( "PadStickSeconds",			0 ),
-	m_EditRecordModeLeadIn		("EditRecordModeLeadIn",		1.0f ),
+	m_EditRecordModeLeadIn		("EditRecordModeLeadIn",		ONE ),
 	m_EditClearPromptThreshold	("EditClearPromptThreshold",		50),
 	m_bForceMipMaps			( "ForceMipMaps",			false ),
 	m_bTrilinearFiltering		( "TrilinearFiltering",			false ),

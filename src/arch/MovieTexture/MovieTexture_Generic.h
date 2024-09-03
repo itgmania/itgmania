@@ -2,6 +2,7 @@
 #define RAGE_MOVIE_TEXTURE_GENERIC_H
 
 #include "MovieTexture.h"
+#include "Constexprs.h"
 
 #include <cstdint>
 #include <thread>
@@ -51,7 +52,7 @@ public:
 	virtual int GetHeight() const  = 0;
 
 	/* Return the aspect ratio of a pixel in the image.  Usually 1. */
-	virtual float GetSourceAspectRatio() const { return 1.0f; }
+	virtual float GetSourceAspectRatio() const { return ONE; }
 
 	/*
 	 * Create a surface acceptable to pass to GetFrame.  This should be

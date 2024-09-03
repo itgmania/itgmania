@@ -11,6 +11,7 @@
 #include "NotesLoader.h"
 #include "PrefsManager.h"
 #include "Difficulty.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <map>
@@ -603,10 +604,10 @@ bool DWILoader::LoadFromDir( const RString &sPath_, Song &out, std::set<RString>
 		{
 			const float fBPM = StringToFloat( sParams[1] );
 
-			if( unlikely(fBPM <= 0.0f && !PREFSMAN->m_bQuirksMode) )
+			if( unlikely(fBPM <= ZERO && !PREFSMAN->m_bQuirksMode) )
 			{
 				LOG->UserLog("Song file", sPath, "has an invalid BPM change at beat %f, BPM %f.",
-					0.0f, fBPM );
+					ZERO, fBPM );
 			}
 			else
 			{
@@ -669,7 +670,7 @@ bool DWILoader::LoadFromDir( const RString &sPath_, Song &out, std::set<RString>
 					LOG->UserLog( "Song file", sPath, "has an invalid FREEZE: '%s'.", arrayFreezeExpressions[f].c_str() );
 					continue;
 				}
-				int iFreezeRow = BeatToNoteRow( StringToFloat(arrayFreezeValues[0]) / 4.0f );
+				int iFreezeRow = BeatToNoteRow( StringToFloat(arrayFreezeValues[0]) / FOUR );
 				float fFreezeSeconds = StringToFloat( arrayFreezeValues[1] ) / 1000.0f;
 
 				out.m_SongTiming.AddSegment( StopSegment(iFreezeRow, fFreezeSeconds) );
@@ -692,9 +693,9 @@ bool DWILoader::LoadFromDir( const RString &sPath_, Song &out, std::set<RString>
 					continue;
 				}
 
-				int iStartIndex = BeatToNoteRow( StringToFloat(arrayBPMChangeValues[0]) / 4.0f );
+				int iStartIndex = BeatToNoteRow( StringToFloat(arrayBPMChangeValues[0]) / FOUR );
 				float fBPM = StringToFloat( arrayBPMChangeValues[1] );
-				if( fBPM > 0.0f )
+				if( fBPM > ZERO )
 					out.m_SongTiming.AddSegment( BPMSegment(iStartIndex, fBPM) );
 				else
 					LOG->UserLog( "Song file", sPath, "has an invalid BPM change at beat %f, BPM %f.",

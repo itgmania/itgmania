@@ -17,6 +17,7 @@
 #include "BackgroundUtil.h"
 #include "ActorUtil.h"
 #include "RageFileManager.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <vector>
@@ -1275,10 +1276,10 @@ bool BMSChartReader::ReadNoteData()
 	for( int i = 0; i < tracks; i ++ ) reverseTransform[transform[i]] = i;
 
 	int trackMeasure = -1;
-	float measureStartBeat = 0.0f;
-	double measureSize = 0.0f;
-	float adjustedMeasureSize = 0.0f;
-	float measureAdjust = 1.0f;
+	float measureStartBeat = ZERO;
+	double measureSize = ZERO;
+	float adjustedMeasureSize = ZERO;
+	float measureAdjust = ONE;
 	int firstNoteMeasure = 0;
 
 	for( unsigned i = 0; i < in->objects.size(); i ++ )
@@ -1301,11 +1302,11 @@ bool BMSChartReader::ReadNoteData()
 		{
 			trackMeasure ++;
 			measureStartBeat += adjustedMeasureSize;
-			measureSize = 4.0f;
+			measureSize = FOUR;
 			BMSMeasures::iterator it = in->measures.find(trackMeasure);
 			if( it != in->measures.end() ) measureSize = it->second.size * 4.0;
 			adjustedMeasureSize = measureSize;
-			if( trackMeasure < firstNoteMeasure ) adjustedMeasureSize = measureSize = 4.0f;
+			if( trackMeasure < firstNoteMeasure ) adjustedMeasureSize = measureSize = FOUR;
 
 			// measure size adjustment
 			{
@@ -1669,7 +1670,7 @@ void BMSSongLoader::AddToSong()
 									 BackgroundChange(NoteRowToBeat(it->first),
 													  it->second,
 													  "",
-													  1.f,
+													  ONE,
 													  it->second.substr(it->second.length()-4)==".lua"?SBE_Centered:SBE_StretchNoLoop));
 		}
 

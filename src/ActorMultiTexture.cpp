@@ -9,6 +9,7 @@
 #include "ActorUtil.h"
 #include "LuaBinding.h"
 #include "LuaManager.h"
+#include "Constexprs.h"
 
 #include <cassert>
 #include <cstddef>
@@ -92,10 +93,10 @@ void ActorMultiTexture::DrawPrimitives()
 	Actor::SetGlobalRenderStates();	// set Actor-specified render states
 
 	RectF quadVerticies;
-	quadVerticies.left   = -m_size.x/2.0f;
-	quadVerticies.right  = +m_size.x/2.0f;
-	quadVerticies.top    = -m_size.y/2.0f;
-	quadVerticies.bottom = +m_size.y/2.0f;
+	quadVerticies.left   = -m_size.x/TWO;
+	quadVerticies.right  = +m_size.x/TWO;
+	quadVerticies.top    = -m_size.y/TWO;
+	quadVerticies.bottom = +m_size.y/TWO;
 
 	DISPLAY->ClearAllTextures();
 	for( std::size_t i = 0; i < m_aTextureUnits.size(); ++i )

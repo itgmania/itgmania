@@ -14,6 +14,7 @@
 #include "Style.h"
 #include "ThemeMetric.h"
 #include "ScreenDimensions.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <vector>
@@ -117,7 +118,7 @@ void WheelBase::UpdateScrollbar()
 	{
 		float fSize = float(NUM_WHEEL_ITEMS) / iTotalNumItems;
 		float fCenter = fItemAt / iTotalNumItems;
-		fSize *= 0.5f;
+		fSize *= ONE_HALF;
 
 		m_ScrollBar.SetPercentage( fCenter, fSize );
 	}
@@ -174,7 +175,7 @@ void WheelBase::Update( float fDeltaTime )
 	if( m_Moving )
 	{
 		m_TimeBeforeMovingBegins -= fDeltaTime;
-		m_TimeBeforeMovingBegins = std::max(m_TimeBeforeMovingBegins, 0.0f);
+		m_TimeBeforeMovingBegins = std::max(m_TimeBeforeMovingBegins, ZERO);
 	}
 
 	// update wheel state
@@ -189,7 +190,7 @@ void WheelBase::Update( float fDeltaTime )
 		float fTime = fDeltaTime;
 		while( fTime > 0 )
 		{
-			float t = std::min( fTime, 0.1f );
+			float t = std::min( fTime, POINT_ONE );
 			fTime -= t;
 
 			m_fPositionOffsetFromSelection = clamp( m_fPositionOffsetFromSelection, -0.3f, +0.3f );
@@ -202,7 +203,7 @@ void WheelBase::Update( float fDeltaTime )
 
 			m_fPositionOffsetFromSelection  += m_fLockedWheelVelocity*t;
 
-			if( std::abs(m_fPositionOffsetFromSelection) < 0.01f  &&  std::abs(m_fLockedWheelVelocity) < 0.01f )
+			if( std::abs(m_fPositionOffsetFromSelection) < POINT_ZERO_ONE  &&  std::abs(m_fLockedWheelVelocity) < POINT_ZERO_ONE )
 			{
 				m_fPositionOffsetFromSelection = 0;
 				m_fLockedWheelVelocity = 0;
@@ -218,7 +219,7 @@ void WheelBase::Update( float fDeltaTime )
 
 		/* Make sure that we don't go further than 1 away, in case the speed is
 		 * very high or we miss a lot of frames. */
-		m_fPositionOffsetFromSelection  = clamp(m_fPositionOffsetFromSelection, -1.0f, 1.0f);
+		m_fPositionOffsetFromSelection  = clamp(m_fPositionOffsetFromSelection, NEGATIVE_ONE, ONE);
 
 		// If it passed the selection, move again.
 		if((m_Moving == -1 && m_fPositionOffsetFromSelection >= 0) ||
@@ -231,7 +232,7 @@ void WheelBase::Update( float fDeltaTime )
 		}
 
 		if( PREFSMAN->m_iMusicWheelSwitchSpeed >= MAX_WHEEL_SOUND_SPEED &&
-			m_MovingSoundTimer.PeekDeltaTime() >= 1.0f / MAX_WHEEL_SOUND_SPEED )
+			m_MovingSoundTimer.PeekDeltaTime() >= ONE / MAX_WHEEL_SOUND_SPEED )
 		{
 			m_MovingSoundTimer.GetDeltaTime();
 			m_soundChangeMusic.Play(true);
@@ -381,7 +382,7 @@ void WheelBase::Move(int n)
 	if (!MoveSpecific(n))
 		return;
 
-	m_TimeBeforeMovingBegins = 1/4.0f;
+	m_TimeBeforeMovingBegins = 1/FOUR;
 	m_SpinSpeed = float(PREFSMAN->m_iMusicWheelSwitchSpeed);
 	m_Moving = n;
 
@@ -414,7 +415,7 @@ bool WheelBase::MoveSpecific( int n )
 		/* We were moving, and now we're stopping.  If we're really close to
 		 * the selection, move to the next one, so we have a chance to spin down
 		 * smoothly. */
-		if(std::abs(m_fPositionOffsetFromSelection) < 0.25f )
+		if(std::abs(m_fPositionOffsetFromSelection) < ONE_QUARTER )
 			ChangeMusic(m_Moving);
 
 		/* Make sure the user always gets an SM_SongChanged when

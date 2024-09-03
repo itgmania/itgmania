@@ -6,6 +6,7 @@
 #include "PrefsManager.h"
 #include "RageFileManager.h"
 #include "TimingData.h"
+#include "Constexprs.h"
 
 void run()
 {
@@ -76,11 +77,11 @@ void run()
 	CHECK( test.GetBPMAtBeat(9.99), 60.0f );
 	CHECK( test.GetBPMAtBeat(10), 120.0f );
 
-	CHECK( test.GetBeatFromElapsedTime(1), 1.0f );
-	CHECK( test.GetBeatFromElapsedTime(2), 2.0f );
-	CHECK( test.GetBeatFromElapsedTime(5), 5.0f ); // stopped
-	CHECK( test.GetBeatFromElapsedTime(6), 5.0f ); // stopped
-	CHECK( test.GetBeatFromElapsedTime(7), 5.0f ); // stop finished
+	CHECK( test.GetBeatFromElapsedTime(1), ONE );
+	CHECK( test.GetBeatFromElapsedTime(2), TWO );
+	CHECK( test.GetBeatFromElapsedTime(5), FIVE ); // stopped
+	CHECK( test.GetBeatFromElapsedTime(6), FIVE ); // stopped
+	CHECK( test.GetBeatFromElapsedTime(7), FIVE ); // stop finished
 	CHECK( test.GetBeatFromElapsedTime(8), 6.0f );
 	CHECK( test.GetBeatFromElapsedTime(12), 10.0f ); // bpm changes to 120
 	CHECK( test.GetBeatFromElapsedTime(13), 12.0f );
@@ -91,10 +92,10 @@ void run()
 	CHECK( test.GetBeatFromElapsedTime(19.5f), 15.0f ); // stop finished
 	CHECK( test.GetBeatFromElapsedTime(20), 16.0f );
 
-	CHECK( test.GetElapsedTimeFromBeat(1), 1.0f );
-	CHECK( test.GetElapsedTimeFromBeat(2), 2.0f );
-	CHECK( test.GetElapsedTimeFromBeat(5), 5.0f ); // stopped
-	CHECK( test.GetElapsedTimeFromBeat(6), 8.0f );
+	CHECK( test.GetElapsedTimeFromBeat(1), ONE );
+	CHECK( test.GetElapsedTimeFromBeat(2), TWO );
+	CHECK( test.GetElapsedTimeFromBeat(5), FIVE ); // stopped
+	CHECK( test.GetElapsedTimeFromBeat(6), EIGHT );
 	CHECK( test.GetElapsedTimeFromBeat(10), 12.0f ); // bpm changes to 120
 	CHECK( test.GetElapsedTimeFromBeat(12), 13.0f );
 	CHECK( test.GetElapsedTimeFromBeat(14), 14.0f );
@@ -128,14 +129,14 @@ LOG->Trace("... %i in %f", q, foobar.GetDeltaTime());
 	test2.AddBPMSegment( BPMSegment(0, 60) );
 	test2.AddStopSegment( StopSegment(0, 1) );
 	//test2.AddWarpSegment( WarpSegment() );
-	CHECK( test2.GetBeatFromElapsedTime(-1), -1.0f );
-	CHECK( test2.GetBeatFromElapsedTime(0), 0.0f );
-	CHECK( test2.GetBeatFromElapsedTime(1), 0.0f );
-	CHECK( test2.GetBeatFromElapsedTime(2), 1.0f );
-	CHECK( test2.GetElapsedTimeFromBeat(-1), -1.0f );
-	CHECK( test2.GetElapsedTimeFromBeat(0), 0.0f );
-	CHECK( test2.GetElapsedTimeFromBeat(1), 2.0f );
-	CHECK( test2.GetElapsedTimeFromBeat(2), 3.0f );
+	CHECK( test2.GetBeatFromElapsedTime(-1), NEGATIVE_ONE );
+	CHECK( test2.GetBeatFromElapsedTime(0), ZERO );
+	CHECK( test2.GetBeatFromElapsedTime(1), ZERO );
+	CHECK( test2.GetBeatFromElapsedTime(2), ONE );
+	CHECK( test2.GetElapsedTimeFromBeat(-1), NEGATIVE_ONE );
+	CHECK( test2.GetElapsedTimeFromBeat(0), ZERO );
+	CHECK( test2.GetElapsedTimeFromBeat(1), TWO );
+	CHECK( test2.GetElapsedTimeFromBeat(2), THREE );
 }
 
 int main( int argc, char *argv[] )

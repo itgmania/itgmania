@@ -5,6 +5,7 @@
 #include "RageDisplay.h"
 #include "RageLog.h"
 #include "ScreenDimensions.h"
+#include "Constexprs.h"
 
 REGISTER_SCREEN_CLASS( ScreenStatsOverlay );
 
@@ -90,7 +91,7 @@ void ScreenStatsOverlay::AddTimestampLine( const RString &txt, const RageColor &
 	m_textSkips[m_LastSkip].SetDiffuse( RageColor(1,1,1,1) );
 	m_textSkips[m_LastSkip].BeginTweening( 0.2f );
 	m_textSkips[m_LastSkip].SetDiffuse( color );
-	m_textSkips[m_LastSkip].BeginTweening( 3.0f );
+	m_textSkips[m_LastSkip].BeginTweening( THREE );
 	m_textSkips[m_LastSkip].BeginTweening( 0.2f );
 	m_textSkips[m_LastSkip].SetDiffuse( RageColor(1,1,1,0) );
 
@@ -110,13 +111,13 @@ void ScreenStatsOverlay::UpdateSkips()
 		return;
 
 	/* We want to display skips.  We expect to get updates of about 1.0/FPS ms. */
-	const float ExpectedUpdate = 1.0f / DISPLAY->GetFPS();
+	const float ExpectedUpdate = ONE / DISPLAY->GetFPS();
 
 	/* These are thresholds for severity of skips.  The smallest
 	 * is slightly above expected, to tolerate normal jitter. */
 	const float Thresholds[] =
 	{
-		ExpectedUpdate * 2.0f, ExpectedUpdate * 4.0f, 0.1f, -1
+		ExpectedUpdate * TWO, ExpectedUpdate * FOUR, POINT_ONE, -1
 	};
 
 	int skip = 0;
@@ -130,9 +131,9 @@ void ScreenStatsOverlay::UpdateSkips()
 		static const RageColor colors[] =
 		{
 			RageColor(0,0,0,0),			/* unused */
-			RageColor(1.0f,1.0f,1.0f,1),	/* white*/
-			RageColor(1.0f,1.0f,0.0f,1),	/* yellow */
-			RageColor(1.0f,0.4f,0.4f,1)		/* light red */
+			RageColor(ONE,ONE,ONE,1),	/* white*/
+			RageColor(ONE,ONE,ZERO,1),	/* yellow */
+			RageColor(ONE,0.4f,0.4f,1)		/* light red */
 		};
 
 		AddTimestampLine( ssprintf("%s: %.0fms (%.0f)", sTime.c_str(), 1000*UpdateTime, UpdateTime/ExpectedUpdate), colors[skip] );

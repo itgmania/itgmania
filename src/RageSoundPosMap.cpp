@@ -3,6 +3,7 @@
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "RageTimer.h"
+#include "Constexprs.h"
 
 #include <climits>
 #include <cmath>
@@ -162,7 +163,7 @@ std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame, bool *bApproximat
 	 * 3. Underflow; we'll be given a larger frame number than we know about.
 	 */
 	static RageTimer last;
-	if( last.PeekDeltaTime() >= 1.0f )
+	if( last.PeekDeltaTime() >= ONE )
 	{
 		last.Touch();
 		LOG->Trace("Audio frame was out of range of the data sent - possible buffer underflow? This is not always an error, however if you see it frequently there could be sound buffer problems.");

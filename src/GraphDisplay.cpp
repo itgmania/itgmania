@@ -10,6 +10,7 @@
 #include "StageStats.h"
 #include "Song.h"
 #include "XmlFile.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <vector>
@@ -53,7 +54,7 @@ public:
 
 		for( int i = 0; i < iSubdivisions+1; ++i )
 		{
-			const float fRotation = float(i) / iSubdivisions * 2*PI;
+			const float fRotation = float(i) / iSubdivisions * TWO_PI;
 			const float fX = std::cos(fRotation) * fRadius;
 			const float fY = -std::sin(fRotation) * fRadius;
 			pVerts[1+i] = v;
@@ -80,7 +81,7 @@ public:
 
 			float opp = p2.p.x - p1.p.x;
 			float adj = p2.p.y - p1.p.y;
-			float hyp = std::pow(opp*opp + adj*adj, 0.5f);
+			float hyp = std::pow(opp*opp + adj*adj, ONE_HALF);
 
 			float lsin = opp/hyp;
 			float lcos = adj/hyp;
@@ -175,7 +176,7 @@ void GraphDisplay::Set( const StageStats &ss, const PlayerStageStats &pss )
 	m_Values.resize( VALUE_RESOLUTION );
 	pss.GetLifeRecord( &m_Values[0], VALUE_RESOLUTION, ss.GetTotalPossibleStepsSeconds() );
 	for( unsigned i=0; i<ARRAYLEN(m_Values); i++ )
-		CLAMP( m_Values[i], 0.f, 1.f );
+		CLAMP( m_Values[i], ZERO, ONE );
 
 	UpdateVerts();
 
@@ -196,7 +197,7 @@ void GraphDisplay::Set( const StageStats &ss, const PlayerStageStats &pss )
 	if( !pss.m_bFailed )
 	{
 		// Search for the min life record to show "Just Barely!"
-		float fMinLifeSoFar = 1.0f;
+		float fMinLifeSoFar = ONE;
 		int iMinLifeSoFarAt = 0;
 
 		for( int i = 0; i < VALUE_RESOLUTION; ++i )
@@ -209,9 +210,9 @@ void GraphDisplay::Set( const StageStats &ss, const PlayerStageStats &pss )
 			}
 		}
 
-		if( fMinLifeSoFar > 0.0f  &&  fMinLifeSoFar < 0.1f )
+		if( fMinLifeSoFar > ZERO  &&  fMinLifeSoFar < POINT_ONE )
 		{
-			float fX = SCALE( float(iMinLifeSoFarAt), 0.0f, float(VALUE_RESOLUTION-1), m_quadVertices.left, m_quadVertices.right );
+			float fX = SCALE( float(iMinLifeSoFarAt), ZERO, float(VALUE_RESOLUTION-1), m_quadVertices.left, m_quadVertices.right );
 			m_sprBarely->SetX( fX );
 		}
 		else
@@ -255,8 +256,8 @@ void GraphDisplay::UpdateVerts()
 	RageSpriteVertex LineStrip[VALUE_RESOLUTION];
 	for( int i = 0; i < VALUE_RESOLUTION; ++i )
 	{
-		const float fX = SCALE( float(i), 0.0f, float(VALUE_RESOLUTION-1), m_quadVertices.left, m_quadVertices.right );
-		const float fY = SCALE( m_Values[i], 0.0f, 1.0f, m_quadVertices.bottom, m_quadVertices.top );
+		const float fX = SCALE( float(i), ZERO, float(VALUE_RESOLUTION-1), m_quadVertices.left, m_quadVertices.right );
+		const float fY = SCALE( m_Values[i], ZERO, ONE, m_quadVertices.bottom, m_quadVertices.top );
 
 		m_pGraphBody->m_Slices[i*2+0].p = RageVector3( fX, fY, 0 );
 		m_pGraphBody->m_Slices[i*2+1].p = RageVector3( fX, m_quadVertices.bottom, 0 );

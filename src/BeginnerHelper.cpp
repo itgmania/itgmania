@@ -11,6 +11,7 @@
 #include "Model.h"
 #include "ScreenDimensions.h"
 #include "ThemeManager.h"
+#include "Constexprs.h"
 
 // "PLAYER_X" offsets are relative to the pad.
 // ex: Setting this to 10, and the HELPER to 300, will put the dancer at 310.
@@ -248,7 +249,7 @@ void BeginnerHelper::DrawPrimitives()
 			DISPLAY->SetLighting( true );
 			DISPLAY->SetLightDirectional( 
 				0, 
-				RageColor(0.5f,0.5f,0.5f,1), 
+				RageColor(ONE_HALF,ONE_HALF,ONE_HALF,1), 
 				RageColor(1,1,1,1),
 				RageColor(0,0,0,1),
 				RageVector3(0, 0, 1) );
@@ -277,7 +278,7 @@ void BeginnerHelper::DrawPrimitives()
 		DISPLAY->SetLighting( true );
 		DISPLAY->SetLightDirectional( 
 			0, 
-			RageColor(0.5f,0.5f,0.5f,1), 
+			RageColor(ONE_HALF,ONE_HALF,ONE_HALF,1), 
 			RageColor(1,1,1,1),
 			RageColor(0,0,0,1),
 			RageVector3(0, 0, 1) );
@@ -336,7 +337,7 @@ void BeginnerHelper::Step( PlayerNumber pn, int CSTEP )
 	m_sFlash.StopTweening();
 	m_sFlash.Sleep( GAMESTATE->m_Position.m_fCurBPS/16 );
 	m_sFlash.SetDiffuseAlpha( 1 );
-	m_sFlash.BeginTweening( 1/GAMESTATE->m_Position.m_fCurBPS * 0.5f );
+	m_sFlash.BeginTweening( 1/GAMESTATE->m_Position.m_fCurBPS * ONE_HALF );
 	m_sFlash.SetDiffuseAlpha( 0 );
 }
 

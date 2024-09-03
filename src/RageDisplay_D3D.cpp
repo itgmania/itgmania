@@ -12,6 +12,7 @@
 #include "EnumHelper.h"
 #include "DisplaySpec.h"
 #include "LocalizedString.h"
+#include "Constexprs.h"
 
 #include <d3d9.h>
 
@@ -477,7 +478,7 @@ static bool D3DReduceParams( D3DPRESENT_PARAMETERS *pp )
 
 static void SetPresentParametersFromVideoModeParams( const VideoModeParams &p, D3DPRESENT_PARAMETERS *pD3Dpp )
 {
-	ZERO( *pD3Dpp );
+	ZERO_MEMORY( *pD3Dpp );
 
 	pD3Dpp->BackBufferWidth		= p.width;
 	pD3Dpp->BackBufferHeight	= p.height;
@@ -591,7 +592,7 @@ bool RageDisplay_D3D::BeginFrame()
 	}
 
 	g_pd3dDevice->Clear( 0, nullptr, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,
-						 D3DCOLOR_XRGB(0,0,0), 1.0f, 0x00000000 );
+						 D3DCOLOR_XRGB(0,0,0), ONE, 0x00000000 );
 	g_pd3dDevice->BeginScene();
 
 	return RageDisplay::BeginFrame();
@@ -719,7 +720,7 @@ void RageDisplay_D3D::SendCurrentMatrices()
 	RageMatrixMultiply( &m, GetCentering(), GetProjectionTop() );
 
 	// Convert to OpenGL-style "pixel-centered" coords
-	RageMatrix m2 = GetCenteringMatrix( -0.5f, -0.5f, 0, 0 );
+	RageMatrix m2 = GetCenteringMatrix( -ONE_HALF, -ONE_HALF, 0, 0 );
 	RageMatrix projection;
 	RageMatrixMultiply( &projection, &m2, &m );
 	g_pd3dDevice->SetTransform( D3DTS_PROJECTION, (D3DMATRIX*)&projection );
@@ -743,10 +744,10 @@ void RageDisplay_D3D::SendCurrentMatrices()
 		{
 			static const RageMatrix tex = RageMatrix
 			(
-				0.5f,   0.0f,  0.0f, 0.0f,
-				0.0f,  -0.5f,  0.0f, 0.0f,
-				0.0f,   0.0f,  0.0f, 0.0f,
-				0.5f,  -0.5f,  0.0f, 1.0f
+				ONE_HALF,   ZERO,  ZERO, ZERO,
+				ZERO,  -ONE_HALF,  ZERO, ZERO,
+				ZERO,   ZERO,  ZERO, ZERO,
+				ONE_HALF,  -ONE_HALF,  ZERO, ONE
 			);
 			g_pd3dDevice->SetTransform( (D3DTRANSFORMSTATETYPE)(D3DTS_TEXTURE0+Enum::to_integral(tu)), (D3DMATRIX*)&tex );
 
@@ -1216,8 +1217,8 @@ void RageDisplay_D3D::SetZBias( float f )
 {
 	D3DVIEWPORT9 viewData;
 	g_pd3dDevice->GetViewport( &viewData );
-	viewData.MinZ = SCALE( f, 0.0f, 1.0f, 0.05f, 0.0f );
-	viewData.MaxZ = SCALE( f, 0.0f, 1.0f, 1.0f, 0.95f );
+	viewData.MinZ = SCALE( f, ZERO, ONE, 0.05f, ZERO );
+	viewData.MaxZ = SCALE( f, ZERO, ONE, ONE, 0.95f );
 	g_pd3dDevice->SetViewport( &viewData );
 }
 
@@ -1252,7 +1253,7 @@ void RageDisplay_D3D::SetZTestMode( ZTestMode mode )
 
 void RageDisplay_D3D::ClearZBuffer()
 {
-	g_pd3dDevice->Clear( 0, nullptr, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0,0,0), 1.0f, 0x00000000 );
+	g_pd3dDevice->Clear( 0, nullptr, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0,0,0), ONE, 0x00000000 );
 }
 
 void RageDisplay_D3D::SetTextureWrapping( TextureUnit tu, bool b )
@@ -1321,7 +1322,7 @@ void RageDisplay_D3D::SetLightDirectional(
 	g_pd3dDevice->LightEnable( index, true );
 
 	D3DLIGHT9 light;
-	ZERO( light );
+	ZERO_MEMORY( light );
 	light.Type = D3DLIGHT_DIRECTIONAL;
 
 	/* Z for lighting is flipped for D3D compared to OpenGL.
@@ -1464,10 +1465,10 @@ RageMatrix RageDisplay_D3D::GetOrthoMatrix( float l, float r, float b, float t, 
 
 	// Convert from OpenGL's [-1,+1] Z values to D3D's [0,+1].
 	RageMatrix tmp;
-	RageMatrixScaling( &tmp, 1, 1, 0.5f );
+	RageMatrixScaling( &tmp, 1, 1, ONE_HALF );
 	RageMatrixMultiply( &m, &tmp, &m );
 
-	RageMatrixTranslation( &tmp, 0, 0, 0.5f );
+	RageMatrixTranslation( &tmp, 0, 0, ONE_HALF );
 	RageMatrixMultiply( &m, &tmp, &m );
 
 	return m;

@@ -9,6 +9,7 @@
 #include "GameSoundManager.h"
 #include "MemoryCardDisplay.h"
 #include "InputEventPlus.h"
+#include "Constexprs.h"
 
 #define TIMER_STEALTH				THEME->GetMetricB(m_sName,"TimerStealth")
 #define SHOW_STAGE_DISPLAY			THEME->GetMetricB(m_sName,"ShowStageDisplay")
@@ -52,7 +53,7 @@ void ScreenWithMenuElements::Init()
 		}
 	}
 
-	if( TIMER_SECONDS != -1.0f )
+	if( TIMER_SECONDS != NEGATIVE_ONE )
 	{
 		ASSERT( m_MenuTimer == nullptr );	// don't load twice
 		m_MenuTimer = new MenuTimer;
@@ -239,7 +240,7 @@ void ScreenWithMenuElements::StartPlayingMusic()
 		if(!pmp.sFile.empty())
 		{
 			pmp.bAlignBeat = MUSIC_ALIGN_BEAT;
-			if(DELAY_MUSIC_SECONDS > 0.0f)
+			if(DELAY_MUSIC_SECONDS > ZERO)
 			{
 				pmp.fStartSecond = -DELAY_MUSIC_SECONDS;
 			}
@@ -258,7 +259,7 @@ void ScreenWithMenuElements::ResetTimer()
 	if( m_MenuTimer == nullptr )
 		return;
 
-	if( TIMER_SECONDS > 0.0f && (PREFSMAN->m_bMenuTimer || FORCE_TIMER) )
+	if( TIMER_SECONDS > ZERO && (PREFSMAN->m_bMenuTimer || FORCE_TIMER) )
 	{
 		m_MenuTimer->SetSeconds( TIMER_SECONDS );
 		m_MenuTimer->Start();
@@ -279,7 +280,7 @@ void ScreenWithMenuElements::StartTransitioningScreen( ScreenMessage smSendWhenD
 		// Time the transition so that it finishes exactly when all actors have 
 		// finished tweening.
 		float fSecondsUntilFinished = GetTweenTimeLeft();
-		float fSecondsUntilBeginOff = std::max( fSecondsUntilFinished - m_Out.GetTweenTimeLeft(), 0.0f );
+		float fSecondsUntilBeginOff = std::max( fSecondsUntilFinished - m_Out.GetTweenTimeLeft(), ZERO );
 		m_Out.SetHibernate( fSecondsUntilBeginOff );
 	}
 }

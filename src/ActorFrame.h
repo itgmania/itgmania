@@ -2,6 +2,7 @@
 #define ACTORFRAME_H
 
 #include "Actor.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -77,7 +78,7 @@ public:
 	virtual void FinishTweening();
 	virtual void HurryTweening( float factor );
 
-	void SetUpdateRate(float rate) { if(rate > 0.0f) { m_fUpdateRate = rate; }}
+	void SetUpdateRate(float rate) { if(rate > ZERO) { m_fUpdateRate = rate; }}
 	float GetUpdateRate() { return m_fUpdateRate; }
 	void SetFOV( float fFOV ) { m_fFOV = fFOV; }
 	void SetVanishPoint( float fX, float fY) { m_fVanishX = fX; m_fVanishY = fY; }

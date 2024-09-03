@@ -13,6 +13,7 @@
 #include "CourseWriterCRS.h"
 #include "RageUtil.h"
 #include "CourseUtil.h"
+#include "Constexprs.h"
 
 #include <cfloat>
 #include <vector>
@@ -352,7 +353,7 @@ bool CourseLoaderCRS::ParseCourseMods( const MsdFile::value_t &sParams, AttackAr
 
 		Trim( sBits[0] );
 		if( !sBits[0].CompareNoCase("TIME") )
-			attack.fStartSecond = std::max( StringToFloat(sBits[1]), 0.0f );
+			attack.fStartSecond = std::max( StringToFloat(sBits[1]), ZERO );
 		else if( !sBits[0].CompareNoCase("LEN") )
 			attack.fSecsRemaining = StringToFloat( sBits[1] );
 		else if( !sBits[0].CompareNoCase("END") )
@@ -367,10 +368,10 @@ bool CourseLoaderCRS::ParseCourseMods( const MsdFile::value_t &sParams, AttackAr
 				end = -9999;
 			}
 
-			if( attack.fSecsRemaining <= 0.0f)
+			if( attack.fSecsRemaining <= ZERO)
 			{
 				LOG->UserLog( "Course file", sPath, "has an attack with a nonpositive length: %s", sBits[1].c_str() );
-				attack.fSecsRemaining = 0.0f;
+				attack.fSecsRemaining = ZERO;
 			}
 
 			// warn on invalid so we catch typos on load

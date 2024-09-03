@@ -8,6 +8,7 @@ list(APPEND SMDATA_GLOBAL_FILES_SRC
 
 list(APPEND SMDATA_GLOBAL_FILES_HPP
             "${SM_GENERATED_SRC_DIR}/config.hpp"
+            "Constexprs.h"
             "GameLoop.h"
             "global.h"
             "ProductInfo.h" # TODO: Have this be auto-generated.

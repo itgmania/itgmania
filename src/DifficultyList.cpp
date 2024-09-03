@@ -9,6 +9,7 @@
 #include "CommonMetrics.h"
 #include "SongUtil.h"
 #include "XmlFile.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <vector>
@@ -193,15 +194,15 @@ void StepsDisplayList::UpdatePositions()
 	{
 		float ItemPosition;
 		if( i < first_start )
-			ItemPosition = -0.5f;
+			ItemPosition = -ONE_HALF;
 		else if( i < first_end )
 			ItemPosition = (float) pos++;
 		else if( i < second_start )
-			ItemPosition = halfsize - 0.5f;
+			ItemPosition = halfsize - ONE_HALF;
 		else if( i < second_end )
 			ItemPosition = (float) pos++;
 		else
-			ItemPosition = (float) total - 0.5f;
+			ItemPosition = (float) total - ONE_HALF;
 
 		Row &row = Rows[i];
 
@@ -229,7 +230,7 @@ void StepsDisplayList::PositionItems()
 		if( !m_bShown )
 			bHidden = true;
 
-		const float fDiffuseAlpha = bHidden? 0.0f:1.0f;
+		const float fDiffuseAlpha = bHidden? ZERO:ONE;
 		if( m_Lines[m].m_Meter.GetDestY() != row.m_fY ||
 			m_Lines[m].m_Meter.DestTweenState().diffuse[0][3] != fDiffuseAlpha )
 		{
@@ -246,7 +247,7 @@ void StepsDisplayList::PositionItems()
 		if( m_bShown && m < m_Rows.size() )
 			bHidden = m_Rows[m].m_bHidden;
 
-		float fDiffuseAlpha = bHidden?0.0f:1.0f;
+		float fDiffuseAlpha = bHidden?ZERO:ONE;
 
 		m_Lines[m].m_Meter.SetDiffuseAlpha( fDiffuseAlpha );
 	}
@@ -329,7 +330,7 @@ void StepsDisplayList::TweenOnScreen()
 	for( std::size_t m = 0; m < MAX_METERS; ++m )
 		ON_COMMAND( m_Lines[m].m_Meter );
 
-	this->SetHibernate( 0.5f );
+	this->SetHibernate( ONE_HALF );
 	m_bShown = true;
 	for( unsigned m = 0; m < m_Rows.size(); ++m )
 	{

@@ -5,6 +5,7 @@
 #include "RageUtil.h"
 #include "PrefsManager.h"
 #include "archutils/Win32/ErrorStrings.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -1075,7 +1076,7 @@ namespace
 		{
 			float *pOutBuf = (float *) pOut;
 			for( int i = 0; i < iSamples; ++i )
-				pOutBuf[i] = SCALE( pIn[i], -32768, +32767, -1.0f, +1.0f ); // [-32768, 32767] -> [-1,+1]
+				pOutBuf[i] = SCALE( pIn[i], -32768, +32767, NEGATIVE_ONE, +ONE ); // [-32768, 32767] -> [-1,+1]
 			break;
 		}
 		case DeviceSampleFormat_Int24:
@@ -1356,7 +1357,7 @@ float RageSoundDriver_WDMKS::GetPlayLatency() const
 {
 	/* If we have a 1000-byte buffer, and we fill 500 bytes at a time, we
 	 * almost always have between 500 and 1000 bytes filled; on average, 750. */
-	return (m_pStream->m_iFramesPerChunk + m_pStream->m_iFramesPerChunk/2) * (1.0f / m_pStream->m_iSampleRate);
+	return (m_pStream->m_iFramesPerChunk + m_pStream->m_iFramesPerChunk/2) * (ONE / m_pStream->m_iSampleRate);
 }
 
 /*

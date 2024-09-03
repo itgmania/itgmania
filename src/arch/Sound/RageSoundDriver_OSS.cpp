@@ -4,6 +4,7 @@
 #include "RageLog.h"
 #include "RageSound.h"
 #include "RageSoundManager.h"
+#include "Constexprs.h"
 
 #include <cerrno>
 #include <cstdint>
@@ -226,7 +227,7 @@ RageSoundDriver_OSS::~RageSoundDriver_OSS()
 
 float RageSoundDriver_OSS::GetPlayLatency() const
 {
-	return 0; // (1.0f / samplerate) * (buffersize_frames - chunksize_frames);
+	return 0; // (ONE / samplerate) * (buffersize_frames - chunksize_frames);
 }
 
 /*

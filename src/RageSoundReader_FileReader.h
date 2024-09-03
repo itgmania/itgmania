@@ -5,6 +5,7 @@
 
 #include "RageSoundReader.h"
 #include "RageUtil_AutoPtr.h"
+#include "Constexprs.h"
 class RageFileBasic;
 
 #define SoundReader_FileReader RageSoundReader_FileReader
@@ -28,7 +29,7 @@ public:
 
 	/* Takes ownership of pFile (even on failure). */
 	virtual OpenResult Open( RageFileBasic *pFile ) = 0;
-	virtual float GetStreamToSourceRatio() const { return 1.0f; }
+	virtual float GetStreamToSourceRatio() const { return ONE; }
 	virtual RString GetError() const { return m_sError; }
 
 	/* Open a file.  If pPrebuffer is non-nullptr, and the file is sufficiently small,

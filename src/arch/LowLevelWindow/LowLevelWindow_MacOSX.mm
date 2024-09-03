@@ -5,6 +5,7 @@
 #import "RageThreads.h"
 #import "RageDisplay_OGL_Helpers.h"
 #import "arch/ArchHooks/ArchHooks.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -451,7 +452,7 @@ void LowLevelWindow_MacOSX::ShutDownFullScreen()
 
 	// Clear the front and back framebuffers before switching out of FullScreen mode.
 	// (This is not strictly necessary, but avoids an untidy flash of garbage.)
-	glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+	glClearColor( ZERO, ZERO, ZERO, ZERO );
 	glClear( GL_COLOR_BUFFER_BIT );
 	[m_Context flushBuffer];
 	glClear( GL_COLOR_BUFFER_BIT );

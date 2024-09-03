@@ -18,6 +18,7 @@
 #include "LocalizedString.h"
 #include "Preference.h"
 #include "RageSoundReader_PostBuffering.h"
+#include "Constexprs.h"
 
 #include "arch/Sound/RageSoundDriver.h"
 
@@ -38,7 +39,7 @@ static Preference<RString> g_sSoundDrivers( "SoundDrivers", "" ); // "" == DEFAU
 RageSoundManager *SOUNDMAN = nullptr;
 
 RageSoundManager::RageSoundManager(): m_pDriver(nullptr),
-	m_fVolumeOfNonCriticalSounds(1.0f) {}
+	m_fVolumeOfNonCriticalSounds(ONE) {}
 
 static LocalizedString COULDNT_FIND_SOUND_DRIVER( "RageSoundManager", "Couldn't find a sound driver that works" );
 void RageSoundManager::Init()
@@ -183,7 +184,7 @@ void RageSoundManager::AddLoadedSound( const RString &sPath_, RageSoundReader_Pr
 	m_mapPreloadedSounds[sPath] = pSound->Copy();
 }
 
-static Preference<float> g_fSoundVolume( "SoundVolume", 1.0f );
+static Preference<float> g_fSoundVolume( "SoundVolume", ONE );
 
 void RageSoundManager::SetMixVolume()
 {

@@ -5,6 +5,7 @@
 #include "PrefsManager.h"
 #include "ThemeMetric.h"
 #include "ActorUtil.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 
@@ -59,12 +60,12 @@ CombinedLifeMeterTug::CombinedLifeMeterTug()
 void CombinedLifeMeterTug::Update( float fDelta )
 {
 	float fPercentToShow = GAMESTATE->m_fTugLifePercentP1;
-	CLAMP( fPercentToShow, 0.f, 1.f );
+	CLAMP( fPercentToShow, ZERO, ONE );
 
 	m_Stream[PLAYER_1].SetPercent( fPercentToShow );
 	m_Stream[PLAYER_2].SetPercent( 1-fPercentToShow );
 
-	float fSeparatorX = SCALE( fPercentToShow, 0.f, 1.f, -METER_WIDTH/2.f, +METER_WIDTH/2.f );
+	float fSeparatorX = SCALE( fPercentToShow, ZERO, ONE, -METER_WIDTH/2.f, +METER_WIDTH/2.f );
 
 	m_sprSeparator->SetX( fSeparatorX );
 
@@ -126,8 +127,8 @@ void CombinedLifeMeterTug::ChangeLife( PlayerNumber pn, float fPercentToMove )
 		}
 
 		/* Clamp the life meter only for calculating the multiplier. */
-		fLifePercentage = clamp( fLifePercentage, 0.0f, 1.0f );
-		fPercentToMove *= SCALE( fLifePercentage, 0.f, 1.f, 0.2f, 1.f);
+		fLifePercentage = clamp( fLifePercentage, ZERO, ONE );
+		fPercentToMove *= SCALE( fLifePercentage, ZERO, ONE, 0.2f, ONE);
 	}
 
 	switch( pn )

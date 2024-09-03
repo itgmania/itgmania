@@ -37,6 +37,7 @@
 #include "TimingData.h"
 #include "Game.h"
 #include "RageSoundReader.h"
+#include "Constexprs.h"
 
 #include <cfloat>
 #include <cmath>
@@ -1477,7 +1478,7 @@ void ScreenEdit::Init()
 		}
 	}
 	m_PlayerStateEdit.SetPlayerNumber(PLAYER_1);
-	m_PlayerStateEdit.m_NotefieldZoom= 1.0f;
+	m_PlayerStateEdit.m_NotefieldZoom= ONE;
 	// If we always go with the GAMESTATE NoteSkin, we will have fun effects
 	// like Vivid or Flat in the editor notefield. This is not conducive to
 	// productive editing.
@@ -1655,7 +1656,7 @@ void ScreenEdit::Update( float fDeltaTime )
 {
 	m_PlayerStateEdit.Update( fDeltaTime );
 
-	const float fRate = PREFSMAN->m_bRateModsAffectTweens ? GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate : 1.0f;
+	const float fRate = PREFSMAN->m_bRateModsAffectTweens ? GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate : ONE;
 
 	if( m_pSoundMusic->IsPlaying() )
 	{
@@ -1666,7 +1667,7 @@ void ScreenEdit::Update( float fDeltaTime )
 
 	if(m_EditState == STATE_EDITING)
 	{
-		if(IsDirty() && m_next_autosave_time > -1.0f &&
+		if(IsDirty() && m_next_autosave_time > NEGATIVE_ONE &&
 			RageTimer::GetTimeSinceStartFast() > m_next_autosave_time)
 		{
 			PerformSave(true);
@@ -1682,7 +1683,7 @@ void ScreenEdit::Update( float fDeltaTime )
 		{
 			std::vector<GameInput> GameI;
 			GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->StyleInputToGameInput( t, PLAYER_1, GameI );
-			float fSecsHeld= 0.0f;
+			float fSecsHeld= ZERO;
 			for(std::size_t i= 0; i < GameI.size(); ++i)
 			{
 				fSecsHeld= std::max(fSecsHeld, INPUTMAPPER->GetSecsHeld(GameI[i]));
@@ -1750,7 +1751,7 @@ void ScreenEdit::Update( float fDeltaTime )
 		if( bButtonIsBeingPressed && m_EditState == STATE_RECORDING )
 		{
 			float fSeconds = m_pSteps->GetTimingData()->GetElapsedTimeFromBeat( fLastBeat );
-			fLastBeat = m_pSteps->GetTimingData()->GetBeatFromElapsedTime( fSeconds + 0.5f );
+			fLastBeat = m_pSteps->GetTimingData()->GetBeatFromElapsedTime( fSeconds + ONE_HALF );
 		}
 
 		float fStopAtSeconds = m_pSteps->GetTimingData()->GetElapsedTimeFromBeat( NoteRowToBeat(m_iStopPlayingAt) ) + 1;
@@ -2242,7 +2243,7 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 			PlayerState *pPlayerState = const_cast<PlayerState *> (m_NoteFieldEdit.GetPlayerState());
 			float fScrollSpeed = pPlayerState->m_PlayerOptions.GetSong().m_fScrollSpeed;
 
-			const float fSpeeds[] = { 1.0f, 1.5f, 2.0f, 3.0f, 4.0f, 6.0f, 8.0f };
+			const float fSpeeds[] = { ONE, 1.5f, TWO, THREE, FOUR, 6.0f, EIGHT };
 			int iSpeed = 0;
 			for( unsigned i = 0; i < ARRAYLEN(fSpeeds); ++i )
 			{
@@ -2526,14 +2527,14 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 			}
 			else if( input.type == IET_REPEAT )
 			{
-				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < ONE )
 					fDelta *= 10;
 				else
 					fDelta *= 40;
 			}
 
 			float fNewBPM = fBPM + fDelta;
-			if(fNewBPM > 0.0f)
+			if(fNewBPM > ZERO)
 			{
 				GetAppropriateTimingForUpdate().AddSegment(BPMSegment(GetRow(), fNewBPM));
 			}
@@ -2557,7 +2558,7 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 			}
 			else if( input.type == IET_REPEAT )
 			{
-				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < ONE )
 					fDelta *= 10;
 				else
 					fDelta *= 40;
@@ -2603,7 +2604,7 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 			}
 			else if( input.type == IET_REPEAT )
 			{
-				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < ONE )
 					fDelta *= 10;
 				else
 					fDelta *= 40;
@@ -2648,7 +2649,7 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 			}
 			else if( input.type == IET_REPEAT )
 			{
-				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < ONE )
 					fDelta *= 10;
 				else
 					fDelta *= 40;
@@ -2684,7 +2685,7 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 
 			if( input.type == IET_REPEAT )
 			{
-				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < ONE )
 					fDelta *= 10;
 				else
 					fDelta *= 40;
@@ -2693,12 +2694,12 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 			if( EditB == EDIT_BUTTON_SAMPLE_LENGTH_DOWN || EditB == EDIT_BUTTON_SAMPLE_LENGTH_UP )
 			{
 				m_pSong->m_fMusicSampleLengthSeconds += fDelta;
-				m_pSong->m_fMusicSampleLengthSeconds = std::max(m_pSong->m_fMusicSampleLengthSeconds, 0.0f);
+				m_pSong->m_fMusicSampleLengthSeconds = std::max(m_pSong->m_fMusicSampleLengthSeconds, ZERO);
 			}
 			else
 			{
 				m_pSong->m_fMusicSampleStartSeconds += fDelta;
-				m_pSong->m_fMusicSampleStartSeconds = std::max(m_pSong->m_fMusicSampleStartSeconds, 0.0f);
+				m_pSong->m_fMusicSampleStartSeconds = std::max(m_pSong->m_fMusicSampleStartSeconds, ZERO);
 			}
 			(fDelta>0 ? m_soundValueIncrease : m_soundValueDecrease).Play(true);
 			SetDirty( true );
@@ -2781,7 +2782,7 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 				menu.rows[delete_change].bEnabled = bAlreadyBGChangeHere;
 
 				// set default choices
-				menu.rows[rate].					SetDefaultChoiceIfPresent( ssprintf("%2.0f%%",bgChange.m_fRate*100) );
+				menu.rows[rate].					SetDefaultChoiceIfPresent( ssprintf("%TWO%%",bgChange.m_fRate*100) );
 				menu.rows[transition].					SetDefaultChoiceIfPresent( bgChange.m_sTransition );
 				menu.rows[effect].					SetDefaultChoiceIfPresent( bgChange.m_def.m_sEffect );
 				menu.rows[file1_type].iDefaultChoice			= none;
@@ -3060,9 +3061,9 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 
 	case EDIT_BUTTON_RECORD_HOLD_LESS:
 		record_hold_seconds-= .01f;
-		if(record_hold_seconds <= 0.0f)
+		if(record_hold_seconds <= ZERO)
 		{
-			record_hold_seconds= 0.0f;
+			record_hold_seconds= ZERO;
 		}
 		return true;
 
@@ -3284,7 +3285,7 @@ bool ScreenEdit::InputPlay( const InputEventPlus &input, EditButton EditB )
 			}
 			else if( input.type == IET_REPEAT )
 			{
-				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+				if( INPUTFILTER->GetSecsHeld(input.DeviceI) < ONE )
 					fOffsetDelta *= 10;
 				else
 					fOffsetDelta *= 40;
@@ -3391,7 +3392,7 @@ void ScreenEdit::TransitionEditState( EditState em )
 		m_Foreground.Unload();
 
 		// Restore the cursor position + Quantize + Clamp
-		SetBeat( std::max( 0.0f, Quantize( m_fBeatToReturnTo, NoteTypeToBeat(m_SnapDisplay.GetNoteType()) ) ) );
+		SetBeat( std::max( ZERO, Quantize( m_fBeatToReturnTo, NoteTypeToBeat(m_SnapDisplay.GetNoteType()) ) ) );
 		GAMESTATE->m_bInStepEditor = true;
 		break;
 
@@ -3607,7 +3608,7 @@ void ScreenEdit::HandleMessage( const Message &msg )
 				bOn = tns != TNS_Miss;
 
 			if( pSoundReader )
-				pSoundReader->SetProperty( "Volume", bOn? 1.0f:0.0f );
+				pSoundReader->SetProperty( "Volume", bOn? ONE:ZERO );
 		}
 	}
 	if( msg == Message_SongModified )
@@ -3635,7 +3636,7 @@ void ScreenEdit::HandleScreenMessage( const ScreenMessage SM )
 	if( SM == SM_UpdateTextInfo )
 	{
 		UpdateTextInfo();
-		this->PostScreenMessage( SM_UpdateTextInfo, 0.1f );
+		this->PostScreenMessage( SM_UpdateTextInfo, POINT_ONE );
 	}
 	else if( SM == SM_GoToNextScreen )
 	{
@@ -4438,7 +4439,7 @@ void ScreenEdit::SetDirty(bool dirty)
 	if(EDIT_MODE.GetValue() != EditMode_Full)
 	{
 		m_dirty= false;
-		m_next_autosave_time= -1.0f;
+		m_next_autosave_time= NEGATIVE_ONE;
 		return;
 	}
 	if(dirty)
@@ -4450,7 +4451,7 @@ void ScreenEdit::SetDirty(bool dirty)
 	}
 	else
 	{
-		m_next_autosave_time= -1.0f;
+		m_next_autosave_time= NEGATIVE_ONE;
 	}
 	m_dirty= dirty;
 }
@@ -5267,10 +5268,10 @@ void ScreenEdit::HandleAlterMenuChoice(AlterMenuChoice c, const std::vector<int>
 			switch( tt )
 			{
 					DEFAULT_FAIL( tt );
-				case compress_2x:	fScale = 0.5f;		break;
-				case compress_3_2:	fScale = 2.0f/3;	break;
-				case compress_4_3:	fScale = 0.75f;		break;
-				case expand_4_3:	fScale = 4.0f/3;	break;
+				case compress_2x:	fScale = ONE_HALF;		break;
+				case compress_3_2:	fScale = TWO/3;	break;
+				case compress_4_3:	fScale = THREE_QUARTERS;		break;
+				case expand_4_3:	fScale = FOUR/3;	break;
 				case expand_3_2:	fScale = 1.5f;		break;
 				case expand_2x:		fScale = 2;		break;
 			}

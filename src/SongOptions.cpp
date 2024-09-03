@@ -176,7 +176,7 @@ bool SongOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut )
 	else if( sBit == "randombg" )				m_bRandomBGOnly = on;
 	else if( sBit == "savescore" )				m_bSaveScore = on;
 	else if( sBit == "savereplay" )			m_bSaveReplay = on;
-	else if( sBit == "haste" )				m_fHaste = on? 1.0f:0.0f;
+	else if( sBit == "haste" )				m_fHaste = on? ONE:ZERO;
 	else
 		return false;
 
@@ -218,8 +218,8 @@ public:
 	BOOL_INTERFACE(RandomBGOnly, RandomBGOnly);
 	BOOL_INTERFACE(SaveScore, SaveScore);
 	BOOL_INTERFACE(SaveReplay, SaveReplay);
-	FLOAT_INTERFACE(MusicRate, MusicRate, (v > 0.0f && v <= 3.0f)); // Greater than 3 seems to crash frequently, haven't investigated why. -Kyz
-	FLOAT_INTERFACE(Haste, Haste, (v >= -1.0f && v <= 1.0f));
+	FLOAT_INTERFACE(MusicRate, MusicRate, (v > ZERO && v <= THREE)); // Greater than 3 seems to crash frequently, haven't investigated why. -Kyz
+	FLOAT_INTERFACE(Haste, Haste, (v >= NEGATIVE_ONE && v <= ONE));
 
 	LunaSongOptions()
 	{

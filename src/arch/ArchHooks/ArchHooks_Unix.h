@@ -16,7 +16,7 @@ public:
 	std::int64_t GetMicrosecondsSinceStart();
 
 	void MountInitialFilesystems( const RString &sDirOfExecutable );
-	float GetDisplayAspectRatio() { return 4.0f/3; }
+	float GetDisplayAspectRatio() { return FOUR/3; }
 
 	bool GoToURL( RString sUrl );
 

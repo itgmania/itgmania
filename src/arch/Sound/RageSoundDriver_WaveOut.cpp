@@ -1,5 +1,6 @@
 #include "global.h"
 #include "RageSoundDriver_WaveOut.h"
+#include "Constexprs.h"
 
 #if defined(_MSC_VER)
 #pragma comment(lib, "winmm.lib")
@@ -161,7 +162,7 @@ RString RageSoundDriver_WaveOut::Init()
 	}
 
 
-	ZERO( m_aBuffers );
+	ZERO_MEMORY( m_aBuffers );
 	for(int b = 0; b < NUM_CHUNKS; ++b)
 	{
 		m_aBuffers[b].dwBufferLength = CHUNKSIZE;
@@ -216,7 +217,7 @@ float RageSoundDriver_WaveOut::GetPlayLatency() const
 {
 	/* If we have a 1000-byte buffer, and we fill 100 bytes at a time, we
 	 * almost always have between 900 and 1000 bytes filled; on average, 950. */
-	return (BUFFERSIZE_FRAMES - CHUNKSIZE_FRAMES/2) * (1.0f / m_iSampleRate);
+	return (BUFFERSIZE_FRAMES - CHUNKSIZE_FRAMES/2) * (ONE / m_iSampleRate);
 }
 
 /*

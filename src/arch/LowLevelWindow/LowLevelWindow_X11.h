@@ -5,6 +5,7 @@
 
 #include "RageDisplay.h" // VideoModeParams
 #include "LowLevelWindow.h"
+#include "Constexprs.h"
 
 class LowLevelWindow_X11 : public LowLevelWindow
 {
@@ -39,7 +40,7 @@ private:
 	bool m_bWasWindowed;
 	ActualVideoModeParams CurrentParams;
 
-	float m_lastScreensaverInterrupt = 0.0f;
+	float m_lastScreensaverInterrupt = ZERO;
 	float m_screensaverInterruptInterval = 60.0f;
 };
 

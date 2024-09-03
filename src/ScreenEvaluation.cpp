@@ -29,6 +29,7 @@
 #include "CommonMetrics.h"
 #include "ScoreKeeperNormal.h"
 #include "InputEventPlus.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstddef>
@@ -141,11 +142,11 @@ void ScreenEvaluation::Init()
 			ss.m_player[p].m_vpPossibleSteps.push_back( GAMESTATE->m_pCurSteps[PLAYER_1] );
 			ss.m_player[p].m_iStepsPlayed = 1;
 
-			PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage, m_fScrollSpeed, 2.0f );
+			PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage, m_fScrollSpeed, TWO );
 			PO_GROUP_CALL( GAMESTATE->m_pPlayerState[p]->m_PlayerOptions, ModsLevel_Stage, ChooseRandomModifiers );
 		}
 
-		for( float f = 0; f < 100.0f; f += 1.0f )
+		for( float f = 0; f < 100.0f; f += ONE )
 		{
 			float fP1 = std::fmod(f/100*4+.3f,1);
 			ss.m_player[PLAYER_1].SetLifeRecordAt( fP1, f );
@@ -169,7 +170,7 @@ void ScreenEvaluation::Init()
 			ss.m_player[p].m_iCurCombo = 0;
 			ss.m_player[p].UpdateComboList( 0.15f * fSeconds, false );
 			ss.m_player[p].m_iCurCombo = 1;
-			ss.m_player[p].UpdateComboList( 0.25f * fSeconds, false );
+			ss.m_player[p].UpdateComboList( ONE_QUARTER * fSeconds, false );
 			ss.m_player[p].m_iCurCombo = 50;
 			ss.m_player[p].UpdateComboList( 0.35f * fSeconds, false );
 			ss.m_player[p].m_iCurCombo = 0;
@@ -231,7 +232,7 @@ void ScreenEvaluation::Init()
 	}
 	m_pStageStats = &STATSMAN->m_vPlayedStageStats.back();
 
-	ZERO( m_bSavedScreenshot );
+	ZERO_MEMORY( m_bSavedScreenshot );
 
 	// Figure out which statistics and songs we're going to display
 	SUMMARY.Load( m_sName, "Summary" );
@@ -392,7 +393,7 @@ void ScreenEvaluation::Init()
 	if( SHOW_BONUS_AREA )
 	{
 		// In course mode, we need to make sure the bar doesn't overflow. -aj
-		float fDivider = 1.0f;
+		float fDivider = ONE;
 		if( GAMESTATE->IsCourseMode() )
 			fDivider = fDivider / GAMESTATE->m_pCurCourse->m_vEntries.size();
 

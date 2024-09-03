@@ -25,6 +25,7 @@
 #include "Game.h"
 #include "CharacterManager.h"
 #include "Character.h"
+#include "Constexprs.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -191,8 +192,8 @@ void Profile::InitGeneralData()
 	for( int i=0; i<MAX_METER+1; i++ )
 		m_iNumSongsPlayedByMeter[i] = 0;
 	m_iNumTotalSongsPlayed = 0;
-	ZERO( m_iNumStagesPassedByPlayMode );
-	ZERO( m_iNumStagesPassedByGrade );
+	ZERO_MEMORY( m_iNumStagesPassedByPlayMode );
+	ZERO_MEMORY( m_iNumStagesPassedByGrade );
 
 	m_UserTable.Unset();
 }
@@ -1952,7 +1953,7 @@ float Profile::CalculateCaloriesFromHeartRate(float HeartRate, float Duration)
 	// Assumes male and unknown voomax.
 	float gender_factor= -55.0969f;
 	float heart_factor= 0.6309f;
-	float voo_factor= 0.0f;
+	float voo_factor= ZERO;
 	float weight_factor= 0.1988f;
 	float age_factor= 0.2017f;
 	if(m_Voomax > 0)

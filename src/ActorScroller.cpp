@@ -7,6 +7,7 @@
 #include "RageLog.h"
 #include "ActorUtil.h"
 #include "LuaBinding.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <vector>
@@ -101,8 +102,8 @@ void ActorScroller::DisableMask()
 
 void ActorScroller::ScrollThroughAllItems()
 {
-	m_fCurrentItem = ( m_bLoop || m_bWrap )? +m_fNumItemsToDraw/2.0f : -(m_fNumItemsToDraw/2.0f)-1;
-	m_fDestinationItem = (float)(m_iNumItems+m_fNumItemsToDraw/2.0f+1);
+	m_fCurrentItem = ( m_bLoop || m_bWrap )? +m_fNumItemsToDraw/TWO : -(m_fNumItemsToDraw/TWO)-1;
+	m_fDestinationItem = (float)(m_iNumItems+m_fNumItemsToDraw/TWO+1);
 }
 
 void ActorScroller::ScrollWithPadding( float fItemPaddingStart, float fItemPaddingEnd )

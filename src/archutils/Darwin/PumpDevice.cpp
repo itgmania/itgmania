@@ -1,5 +1,6 @@
 #include "global.h"
 #include "PumpDevice.h"
+#include "Constexprs.h"
 
 #include <cstdint>
 #include <vector>
@@ -49,9 +50,9 @@ void PumpDevice::GetButtonPresses( std::vector<DeviceInput>& vPresses, IOHIDElem
 		break;
 	}
 	if( db1 != DeviceButton_Invalid )
-		vPresses.push_back( DeviceInput(m_Id, db1, pressed1 ? 1.0f : 0.0f , now) );
+		vPresses.push_back( DeviceInput(m_Id, db1, pressed1 ? ONE : ZERO , now) );
 	if( db2 != DeviceButton_Invalid )
-		vPresses.push_back( DeviceInput(m_Id, db2, pressed2 ? 1.0f : 0.0f , now) );
+		vPresses.push_back( DeviceInput(m_Id, db2, pressed2 ? ONE : ZERO , now) );
 }
 
 int PumpDevice::AssignIDs( InputDevice startID )

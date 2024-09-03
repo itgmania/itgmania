@@ -15,6 +15,7 @@
 #include "StreamDisplay.h"
 #include "Steps.h"
 #include "Course.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 
@@ -93,7 +94,7 @@ void LifeMeterBar::Load( const PlayerState *pPlayerState, PlayerStageStats *pPla
 			/* These types only go down, so they always start at full. */
 		case DrainType_NoRecover:
 		case DrainType_SuddenDeath:
-			m_fLifePercentage = 1.0f;	break;
+			m_fLifePercentage = ONE;	break;
 		default:
 			FAIL_M(ssprintf("Invalid DrainType: %i", dtype));
 	}
@@ -136,11 +137,11 @@ void LifeMeterBar::ChangeLife( TapNoteScore score )
 	case DrainType_Normal:
 		break;
 	case DrainType_NoRecover:
-		fDeltaLife = std::min( fDeltaLife, 0.0f );
+		fDeltaLife = std::min( fDeltaLife, ZERO );
 		break;
 	case DrainType_SuddenDeath:
 		if( score < MIN_STAY_ALIVE )
-			fDeltaLife = -1.0f;
+			fDeltaLife = NEGATIVE_ONE;
 		else
 			fDeltaLife = 0;
 		break;
@@ -181,7 +182,7 @@ void LifeMeterBar::ChangeLife( HoldNoteScore score, TapNoteScore tscore )
 		switch( score )
 		{
 		case HNS_Held:		fDeltaLife = +0;	break;
-		case HNS_LetGo:	fDeltaLife = -1.0f;	break;
+		case HNS_LetGo:	fDeltaLife = NEGATIVE_ONE;	break;
 		case HNS_Missed:	fDeltaLife = +0;	break;
 		default:
 			FAIL_M(ssprintf("Invalid HoldNoteScore: %i", score));
@@ -198,7 +199,7 @@ void LifeMeterBar::ChangeLife( float fDeltaLife )
 {
 	bool bUseMercifulDrain = m_bMercifulBeginnerInEffect || PREFSMAN->m_bMercifulDrain;
 	if( bUseMercifulDrain  &&  fDeltaLife < 0 )
-		fDeltaLife *= SCALE( m_fLifePercentage, 0.f, 1.f, 0.5f, 1.f);
+		fDeltaLife *= SCALE( m_fLifePercentage, ZERO, ONE, ONE_HALF, ONE);
 
 	// handle progressiveness and ComboToRegainLife here
 	if( fDeltaLife >= 0 )
@@ -206,7 +207,7 @@ void LifeMeterBar::ChangeLife( float fDeltaLife )
 		m_iMissCombo = 0;
 		m_iComboToRegainLife = std::max( m_iComboToRegainLife-1, 0 );
 		if ( m_iComboToRegainLife > 0 )
-			fDeltaLife = 0.0f;
+			fDeltaLife = ZERO;
 	}
 	else
 	{
@@ -236,9 +237,9 @@ void LifeMeterBar::ChangeLife( float fDeltaLife )
 				fDeltaLife /= m_fLifeDifficulty;
 			break;
 		case DrainType_SuddenDeath:
-			// This should always -1.0f;
+			// This should always NEGATIVE_ONE;
 			if( fDeltaLife < 0 )
-				fDeltaLife = -1.0f;
+				fDeltaLife = NEGATIVE_ONE;
 			else
 				fDeltaLife = 0;
 			break;
@@ -387,7 +388,7 @@ void LifeMeterBar::UpdateNonstopLifebar()
 
 	// first eight values don't matter
 	float fDifficultyValues[16] = {0,0,0,0,0,0,0,0,
-		0.3f, 0.25f, 0.2f, 0.16f, 0.14f, 0.12f, 0.10f, 0.08f};
+		0.3f, ONE_QUARTER, 0.2f, 0.16f, 0.14f, 0.12f, 0.10f, 0.08f};
 
 	if( iLifeDifficulty >= 16 )
 	{
@@ -408,7 +409,7 @@ void LifeMeterBar::FillForHowToPlay( int NumW2s, int NumMisses )
 	float AmountForMiss	= NumMisses / m_fLifeDifficulty * 0.08f;
 
 	m_fLifePercentage = AmountForMiss - AmountForW2;
-	CLAMP( m_fLifePercentage, 0.0f, 1.0f );
+	CLAMP( m_fLifePercentage, ZERO, ONE );
 	AfterLifeChanged();
 }
 

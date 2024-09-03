@@ -2,6 +2,7 @@
 #define DARWIN_THREAD_HELPERS_H
 
 #include <cstdint>
+#include "Constexprs.h"
 
 /**
  * @brief Attempt to suspend the specified thread.
@@ -20,8 +21,8 @@ std::uint64_t GetCurrentThreadId();
 /**
  * @brief Set the precedence for the thread.
  *
- * Valid values for the thread are from 0.0f to 1.0f.
- * 0.5f is the default.
+ * Valid values for the thread are from ZERO to ONE.
+ * ONE_HALF is the default.
  * @param prec the precedence to set. */
 RString SetThreadPrecedence( float prec );
 

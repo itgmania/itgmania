@@ -18,6 +18,7 @@
 #include "SongUtil.h"
 #include "Character.h"
 #include "LifeMeterBar.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -177,7 +178,7 @@ void ScreenHowToPlay::Init()
 			ActorUtil::LoadAllCommandsAndSetXY( m_Player, m_sName );
 
 			// Don't show judgment
-			PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions, ModsLevel_Stage, m_fBlind, 1.0f );
+			PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions, ModsLevel_Stage, m_fBlind, ONE );
 			GAMESTATE->m_bDemonstrationOrJukebox = true;
 		}
 	}

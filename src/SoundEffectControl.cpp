@@ -6,12 +6,13 @@
 #include "NoteData.h"
 #include "PlayerState.h"
 #include "RageSoundReader.h"
+#include "Constexprs.h"
 
 SoundEffectControl::SoundEffectControl()
 {
 	m_bLocked = false;
-	m_fSample = 0.0f;
-	m_fLastLevel = 0.0f;
+	m_fSample = ZERO;
+	m_fLastLevel = ZERO;
 	m_pPlayerState = nullptr;
 	m_pNoteData = nullptr;
 }
@@ -40,7 +41,7 @@ void SoundEffectControl::Update( float fDeltaTime )
 
 	float fLevel = INPUTMAPPER->GetLevel( GAME_BUTTON_EFFECT_UP, m_pPlayerState->m_PlayerNumber );
 	fLevel -= INPUTMAPPER->GetLevel( GAME_BUTTON_EFFECT_DOWN, m_pPlayerState->m_PlayerNumber );
-	CLAMP( fLevel, -1.0f, +1.0f );
+	CLAMP( fLevel, NEGATIVE_ONE, +ONE );
 
 	if( LOCK_TO_HOLD )
 	{
@@ -56,8 +57,8 @@ void SoundEffectControl::Update( float fDeltaTime )
 		/* If the button is released, unlock it when the level crosses or reaches 0. */
 		if( m_bLocked )
 		{
-			if( (fLevel <= 0.0f && m_fLastLevel >= 0.0f) ||
-				(fLevel >= 0.0f && m_fLastLevel <= 0.0f) )
+			if( (fLevel <= ZERO && m_fLastLevel >= ZERO) ||
+				(fLevel >= ZERO && m_fLastLevel <= ZERO) )
 				m_bLocked = false;
 		}
 	}
@@ -65,7 +66,7 @@ void SoundEffectControl::Update( float fDeltaTime )
 	m_fLastLevel = fLevel;
 
 	if( m_bLocked )
-		fLevel = 0.0f;
+		fLevel = ZERO;
 
 	m_fSample = fLevel;
 	m_pPlayerState->m_EffectHistory.AddSample( m_fSample, fDeltaTime );
@@ -76,9 +77,9 @@ void SoundEffectControl::Update( float fDeltaTime )
 
 	float fCurrent;
 	if( m_fSample < 0 )
-		fCurrent = SCALE( m_fSample, 0.0f, -1.0f, fPropertyCenter, fPropertyMin );
+		fCurrent = SCALE( m_fSample, ZERO, NEGATIVE_ONE, fPropertyCenter, fPropertyMin );
 	else
-		fCurrent = SCALE( m_fSample, 0.0f, +1.0f, fPropertyCenter, fPropertyMax );
+		fCurrent = SCALE( m_fSample, ZERO, +ONE, fPropertyCenter, fPropertyMax );
 
 	if( m_pSoundReader )
 		m_pSoundReader->SetProperty( SOUND_PROPERTY, fCurrent );

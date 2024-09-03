@@ -1204,7 +1204,7 @@ void GameState::ResetMusicStatistics()
 {
 	m_Position.Reset();
 	m_LastPositionTimer.Touch();
-	m_LastPositionSeconds = 0.0f;
+	m_LastPositionSeconds = ZERO;
 
 	Actor::SetBGMTime( 0, 0, 0, 0 );
 
@@ -1242,7 +1242,7 @@ void GameState::ResetStageStatistics()
 	m_fHasteRate = 0;
 	m_fLastHasteUpdateMusicSeconds = 0;
 	m_fAccumulatedHasteSeconds = 0;
-	m_fTugLifePercentP1 = 0.5f;
+	m_fTugLifePercentP1 = ONE_HALF;
 	FOREACH_PlayerNumber( p )
 	{
 		m_pPlayerState[p]->m_fSuperMeter = 0;
@@ -1857,12 +1857,12 @@ StageResult GameState::GetStageResult( PlayerNumber pn ) const
 	{
 		case PLAY_MODE_BATTLE:
 		case PLAY_MODE_RAVE:
-			if( std::abs(m_fTugLifePercentP1 - 0.5f) < 0.0001f )
+			if( std::abs(m_fTugLifePercentP1 - ONE_HALF) < 0.0001f )
 				return RESULT_DRAW;
 			switch( pn )
 			{
-			case PLAYER_1:	return (m_fTugLifePercentP1>=0.5f)?RESULT_WIN:RESULT_LOSE;
-			case PLAYER_2:	return (m_fTugLifePercentP1<0.5f)?RESULT_WIN:RESULT_LOSE;
+			case PLAYER_1:	return (m_fTugLifePercentP1>=ONE_HALF)?RESULT_WIN:RESULT_LOSE;
+			case PLAYER_2:	return (m_fTugLifePercentP1<ONE_HALF)?RESULT_WIN:RESULT_LOSE;
 			default:	FAIL_M("Invalid player for battle! Aborting...");
 			}
 		default: break;
@@ -3352,7 +3352,7 @@ public:
 		std::size_t si= static_cast<std::size_t>(i);
 		while(si >= p->m_autogen_fargs.size())
 		{
-			p->m_autogen_fargs.push_back(0.0f);
+			p->m_autogen_fargs.push_back(ZERO);
 		}
 		p->m_autogen_fargs[si]= v;
 		COMMON_RETURN_SELF;

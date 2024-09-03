@@ -22,6 +22,7 @@
 #include "LocalizedString.h"
 #include "arch/ArchHooks/ArchHooks.h"
 #include "ScreenPrompt.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <vector>
@@ -68,8 +69,8 @@ void GameCommand::Init()
 	m_bStopMusic = false;
 	m_bApplyDefaultOptions = false;
 	m_bFadeMusic = false;
-	m_fMusicFadeOutVolume = -1.0f;
-	m_fMusicFadeOutSeconds = -1.0f;
+	m_fMusicFadeOutVolume = NEGATIVE_ONE;
+	m_fMusicFadeOutSeconds = NEGATIVE_ONE;
 }
 
 class SongOptions;

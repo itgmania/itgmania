@@ -7,8 +7,6 @@ class Steps;
 class Trail;
 struct lua_State;
 
-#define ONE( arr ) { for( unsigned Z = 0; Z < ARRAYLEN(arr); ++Z ) arr[Z]=1.0f; }
-
 #include "GameConstantsAndTypes.h"
 #include "PlayerNumber.h"
 #include "PrefsManager.h"
@@ -16,6 +14,12 @@ struct lua_State;
 #include <bitset>
 #include <vector>
 
+template <typename T, std::size_t N>
+inline void setToOne(T (&arr)[N]) {
+    for (std::size_t i = 0; i < N; ++i) {
+        arr[i] = 1.0f;
+    }
+}
 
 enum LifeType
 {
@@ -93,22 +97,22 @@ public:
 	{
 		m_sNoteSkin = "";
 		m_fVisualDelay = 0.0f;
-		ZERO( m_fAccels );	ONE( m_SpeedfAccels );
-		ZERO( m_fEffects );	ONE( m_SpeedfEffects );
-		ZERO( m_fAppearances );	ONE( m_SpeedfAppearances );
-		ZERO( m_fScrolls );	ONE( m_SpeedfScrolls );
-		ZERO( m_bTurns );	ZERO( m_bTransforms );
-		ZERO( m_fMovesX );	ONE( m_SpeedfMovesX );
-		ZERO( m_fMovesY );	ONE( m_SpeedfMovesY );
-		ZERO( m_fMovesZ );	ONE( m_SpeedfMovesZ );
-		ZERO( m_fConfusionX );	ONE( m_SpeedfConfusionX );
-		ZERO( m_fConfusionY );	ONE( m_SpeedfConfusionY );
-		ZERO( m_fConfusionZ );	ONE( m_SpeedfConfusionZ );
-		ZERO( m_fDarks );	ONE( m_SpeedfDarks );
-		ZERO( m_fStealth );	ONE( m_SpeedfStealth );
-		ZERO( m_fTiny );	ONE( m_SpeedfTiny );
-		ZERO( m_fBumpy );	ONE( m_SpeedfBumpy );
-		ZERO( m_fReverse );	ONE( m_SpeedfReverse );
+		ZERO_MEMORY( m_fAccels );	setToOne( m_SpeedfAccels );
+		ZERO_MEMORY( m_fEffects );	setToOne( m_SpeedfEffects );
+		ZERO_MEMORY( m_fAppearances );	setToOne( m_SpeedfAppearances );
+		ZERO_MEMORY( m_fScrolls );	setToOne( m_SpeedfScrolls );
+		ZERO_MEMORY( m_bTurns );	ZERO_MEMORY( m_bTransforms );
+		ZERO_MEMORY( m_fMovesX );	setToOne( m_SpeedfMovesX );
+		ZERO_MEMORY( m_fMovesY );	setToOne( m_SpeedfMovesY );
+		ZERO_MEMORY( m_fMovesZ );	setToOne( m_SpeedfMovesZ );
+		ZERO_MEMORY( m_fConfusionX );	setToOne( m_SpeedfConfusionX );
+		ZERO_MEMORY( m_fConfusionY );	setToOne( m_SpeedfConfusionY );
+		ZERO_MEMORY( m_fConfusionZ );	setToOne( m_SpeedfConfusionZ );
+		ZERO_MEMORY( m_fDarks );	setToOne( m_SpeedfDarks );
+		ZERO_MEMORY( m_fStealth );	setToOne( m_SpeedfStealth );
+		ZERO_MEMORY( m_fTiny );	setToOne( m_SpeedfTiny );
+		ZERO_MEMORY( m_fBumpy );	setToOne( m_SpeedfBumpy );
+		ZERO_MEMORY( m_fReverse );	setToOne( m_SpeedfReverse );
 	};
 	void Init();
 	void Approach( const PlayerOptions& other, float fDeltaSeconds );

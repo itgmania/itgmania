@@ -1035,7 +1035,7 @@ float InputMapper::GetSecsHeld( const GameInput &GameI, MultiPlayer mp ) const
 {
 	if(GameI.button == GameButton_Invalid)
 	{
-		return 0.f;
+		return ZERO;
 	}
 	float fMaxSecsHeld = 0;
 
@@ -1057,7 +1057,7 @@ float InputMapper::GetSecsHeld( GameButton MenuI, PlayerNumber pn ) const
 {
 	if(MenuI == GameButton_Invalid)
 	{
-		return 0.f;
+		return ZERO;
 	}
 	float fMaxSecsHeld = 0;
 
@@ -1099,7 +1099,7 @@ float InputMapper::GetLevel( const GameInput &GameI ) const
 {
 	if(GameI.button == GameButton_Invalid)
 	{
-		return 0.f;
+		return ZERO;
 	}
 	float fLevel = 0;
 	for( int i=0; i<NUM_GAME_TO_DEVICE_SLOTS; i++ )
@@ -1116,7 +1116,7 @@ float InputMapper::GetLevel( GameButton MenuI, PlayerNumber pn ) const
 {
 	if(MenuI == GameButton_Invalid)
 	{
-		return 0.f;
+		return ZERO;
 	}
 	std::vector<GameInput> GameI;
 	MenuToGame( MenuI, pn, GameI );

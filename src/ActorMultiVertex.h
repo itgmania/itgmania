@@ -5,6 +5,7 @@
 #include "RageDisplay.h"
 #include "RageMath.h"
 #include "RageTextureID.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <vector>
@@ -42,7 +43,7 @@ public:
 	struct AMV_TweenState
 	{
 	AMV_TweenState(): _DrawMode(DrawMode_Invalid), FirstToDraw(0),
-			NumToDraw(-1), line_width(1.0f)
+			NumToDraw(-1), line_width(ONE)
 		{}
 		static void MakeWeightedAverage(AMV_TweenState& average_out, const AMV_TweenState& ts1, const AMV_TweenState& ts2, float percent_between);
 		bool operator==(const AMV_TweenState& other) const;

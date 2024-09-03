@@ -8,6 +8,7 @@
 #include "archutils/Darwin/MouseDevice.h"
 #include "archutils/Darwin/JoystickDevice.h"
 #include "archutils/Darwin/PumpDevice.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -58,7 +59,7 @@ int InputHandler_MacOSX_HID::Run( void *data )
 
 	This->StartDevices();
 	{
-		const RString sError = SetThreadPrecedence( 1.0f );
+		const RString sError = SetThreadPrecedence( ONE );
 		if( !sError.empty() )
 			LOG->Warn( "Could not set precedence of the input thread: %s", sError.c_str() );
 	}

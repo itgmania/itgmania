@@ -10,6 +10,7 @@
 #include "LocalizedString.h"
 #include "AdjustSync.h"
 #include "ActorUtil.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -203,7 +204,7 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 				case IET_RELEASE:	fDelta *= 0;	break;
 				case IET_REPEAT:
 				{
-					if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+					if( INPUTFILTER->GetSecsHeld(input.DeviceI) < ONE )
 						fDelta *= 0;
 					else
 						fDelta *= 10;
@@ -245,7 +246,7 @@ bool ScreenSyncOverlay::Input( const InputEventPlus &input )
 				case IET_RELEASE:	fDelta *= 0;	break;
 				case IET_REPEAT:
 				{
-					if( INPUTFILTER->GetSecsHeld(input.DeviceI) < 1.0f )
+					if( INPUTFILTER->GetSecsHeld(input.DeviceI) < ONE )
 						fDelta *= 0;
 					else
 						fDelta *= 10;

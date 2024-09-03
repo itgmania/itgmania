@@ -5,6 +5,7 @@
 
 #include "RageTypes.h"
 #include "RageTextureID.h"
+#include "Constexprs.h"
 
 #include <cstdint>
 #include <vector>
@@ -47,10 +48,10 @@ public:
 
 	// Use these to convert between the different coordinate systems:
 	float GetSourceToImageCoordsRatioX() const { return float(GetImageWidth()) / GetSourceWidth(); }
-	float GetImageToTexCoordsRatioX() const { return 1.0f / GetTextureWidth(); }
+	float GetImageToTexCoordsRatioX() const { return ONE / GetTextureWidth(); }
 	float GetSourceToTexCoordsRatioX() const { return GetSourceToImageCoordsRatioX() * GetImageToTexCoordsRatioX(); }
 	float GetSourceToImageCoordsRatioY() const { return float(GetImageHeight()) / GetSourceHeight(); }
-	float GetImageToTexCoordsRatioY() const { return 1.0f / GetTextureHeight(); }
+	float GetImageToTexCoordsRatioY() const { return ONE / GetTextureHeight(); }
 	float GetSourceToTexCoordsRatioY() const { return GetSourceToImageCoordsRatioY() * GetImageToTexCoordsRatioY(); }
 
 	const RectF *GetTextureCoordRect( int frameNo ) const;

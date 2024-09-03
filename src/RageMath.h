@@ -4,6 +4,7 @@
 #define RAGE_MATH_H
 
 #include <vector>
+#include "Constexprs.h"
 
 constexpr float PI = 3.1415926536f;
 

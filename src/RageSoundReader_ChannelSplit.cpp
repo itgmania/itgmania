@@ -38,6 +38,7 @@
 #include "RageUtil.h"
 #include "RageSoundMixBuffer.h"
 #include "RageSoundUtil.h"
+#include "Constexprs.h"
 
 #include <climits>
 #include <set>
@@ -88,7 +89,7 @@ int RageSoundReader_Split::GetLength_Fast() const { return m_pImpl->m_pSource->G
 int RageSoundReader_Split::GetSampleRate() const { return m_pImpl->m_pSource->GetSampleRate(); }
 unsigned RageSoundReader_Split::GetNumChannels() const { return m_iNumOutputChannels; }
 int RageSoundReader_Split::GetNextSourceFrame() const { return m_iPositionFrame; }
-float RageSoundReader_Split::GetStreamToSourceRatio() const { return 1.0f; }
+float RageSoundReader_Split::GetStreamToSourceRatio() const { return ONE; }
 RString RageSoundReader_Split::GetError() const { return m_pImpl->m_pSource->GetError(); }
 
 RageSoundReader_Split::RageSoundReader_Split( RageSoundSplitterImpl *pImpl )

@@ -9,6 +9,7 @@
 #include "ScreenDimensions.h"
 #include "InputEventPlus.h"
 #include "LocalizedString.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <vector>
@@ -228,8 +229,8 @@ void ScreenMapControllers::BeginScreen()
 	AfterChangeFocus();
 	m_fLockInputSecs= THEME->GetMetricF(m_sName, "LockInputSecs");
 	m_AutoDismissWarningSecs= THEME->GetMetricF(m_sName, "AutoDismissWarningSecs");
-	m_AutoDismissNoSetListPromptSecs= 0.0f;
-	m_AutoDismissSanitySecs= 0.0f;
+	m_AutoDismissNoSetListPromptSecs= ZERO;
+	m_AutoDismissSanitySecs= ZERO;
 	if(m_AutoDismissWarningSecs > 0.25)
 	{
 		m_Warning->PlayCommand("TweenOn");
@@ -252,27 +253,27 @@ void ScreenMapControllers::Update( float fDeltaTime )
 {
 	ScreenWithMenuElements::Update( fDeltaTime );
 
-	if(m_fLockInputSecs <= 0.0f)
+	if(m_fLockInputSecs <= ZERO)
 	{
-		bool was_above= m_AutoDismissWarningSecs > 0.0f;
+		bool was_above= m_AutoDismissWarningSecs > ZERO;
 		m_AutoDismissWarningSecs-= fDeltaTime;
-		if(was_above && m_AutoDismissWarningSecs <= 0.0f)
+		if(was_above && m_AutoDismissWarningSecs <= ZERO)
 		{
 			DismissWarning();
 		}
 	}
-	if(m_AutoDismissNoSetListPromptSecs > 0.0f)
+	if(m_AutoDismissNoSetListPromptSecs > ZERO)
 	{
 		m_AutoDismissNoSetListPromptSecs-= fDeltaTime;
-		if(m_AutoDismissNoSetListPromptSecs <= 0.0f)
+		if(m_AutoDismissNoSetListPromptSecs <= ZERO)
 		{
 			m_NoSetListPrompt->PlayCommand("TweenOff");
 		}
 	}
-	if(m_AutoDismissSanitySecs > 0.0f)
+	if(m_AutoDismissSanitySecs > ZERO)
 	{
 		m_AutoDismissSanitySecs-= fDeltaTime;
-		if(m_AutoDismissSanitySecs <= 0.0f)
+		if(m_AutoDismissSanitySecs <= ZERO)
 		{
 			m_SanityMessage->PlayCommand("TweenOff");
 		}
@@ -351,42 +352,42 @@ static bool IsAxis( const DeviceInput& DeviceI )
 
 bool ScreenMapControllers::Input( const InputEventPlus &input )
 {
-	if(m_fLockInputSecs > 0.0f)
+	if(m_fLockInputSecs > ZERO)
 	{
 		return false;
 	}
 
-	if(m_AutoDismissWarningSecs > 0.0f)
+	if(m_AutoDismissWarningSecs > ZERO)
 	{
 		if(input.type == IET_FIRST_PRESS &&
 			input.DeviceI.device == DEVICE_KEYBOARD &&
 			input.DeviceI.button == KEY_ENTER)
 		{
-			m_AutoDismissWarningSecs = 0.0f;
+			m_AutoDismissWarningSecs = ZERO;
 			DismissWarning();
 		}
 		return false;
 	}
 
-	if(m_AutoDismissNoSetListPromptSecs > 0.0f)
+	if(m_AutoDismissNoSetListPromptSecs > ZERO)
 	{
 		if(input.type == IET_FIRST_PRESS &&
 			input.DeviceI.device == DEVICE_KEYBOARD &&
 			input.DeviceI.button == KEY_ENTER)
 		{
-			m_AutoDismissNoSetListPromptSecs = 0.0f;
+			m_AutoDismissNoSetListPromptSecs = ZERO;
 			m_NoSetListPrompt->PlayCommand("TweenOff");
 		}
 		return false;
 	}
 
-	if(m_AutoDismissSanitySecs > 0.0f)
+	if(m_AutoDismissSanitySecs > ZERO)
 	{
 		if(input.type == IET_FIRST_PRESS &&
 			input.DeviceI.device == DEVICE_KEYBOARD &&
 			input.DeviceI.button == KEY_ENTER)
 		{
-			m_AutoDismissSanitySecs = 0.0f;
+			m_AutoDismissSanitySecs = ZERO;
 			m_SanityMessage->PlayCommand("TweenOff");
 		}
 		return false;

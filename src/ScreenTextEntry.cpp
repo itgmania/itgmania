@@ -14,6 +14,7 @@
 #include "RageLog.h"
 #include "LuaBinding.h"
 #include "arch/ArchHooks/ArchHooks.h" // HOOKS->GetClipboard()
+#include "Constexprs.h"
 
 #include <cmath>
 
@@ -196,7 +197,7 @@ void ScreenTextEntry::Update( float fDelta )
 {
 	ScreenWithMenuElements::Update( fDelta );
 
-	if( m_timerToggleCursor.PeekDeltaTime() > 0.25f )
+	if( m_timerToggleCursor.PeekDeltaTime() > ONE_QUARTER )
 	{
 		m_timerToggleCursor.Touch();
 		m_bShowAnswerCaret = !m_bShowAnswerCaret;

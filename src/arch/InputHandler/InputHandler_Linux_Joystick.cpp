@@ -4,6 +4,7 @@
 #include "RageUtil.h"
 #include "LinuxInputManager.h"
 #include "RageInputDevice.h" // NUM_JOYSTICKS
+#include "Constexprs.h"
 
 #include <cerrno>
 #include <set>
@@ -81,7 +82,7 @@ bool InputHandler_Linux_Joystick::TryDevice(RString dev)
 		if(f.fd != -1)
 		{
 			char szName[1024];
-			ZERO( szName );
+			ZERO_MEMORY( szName );
 			if( ioctl(f.fd, JSIOCGNAME(sizeof(szName)), szName) < 0 )
 				f.description = ssprintf( "Unknown joystick at %s", dev.c_str() );
 			else
@@ -174,9 +175,9 @@ void InputHandler_Linux_Joystick::InputThread()
 			case JS_EVENT_AXIS: {
 				DeviceButton neg = enum_add2(JOY_LEFT, 2*event.number);
 				DeviceButton pos = enum_add2(JOY_RIGHT, 2*event.number);
-                                float l = SCALE( int(event.value), 0.0f, 32767, 0.0f, 1.0f );
-				ButtonPressed( DeviceInput(id, neg, std::max(-l, 0.0f), now) );
-				ButtonPressed( DeviceInput(id, pos, std::max(+l, 0.0f), now) );
+                                float l = SCALE( int(event.value), ZERO, 32767, ZERO, ONE );
+				ButtonPressed( DeviceInput(id, neg, std::max(-l, ZERO), now) );
+				ButtonPressed( DeviceInput(id, pos, std::max(+l, ZERO), now) );
 				break;
 			}
 

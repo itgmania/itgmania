@@ -22,6 +22,7 @@
 #include "BackgroundUtil.h"
 #include "Song.h"
 #include "AutoActor.h"
+#include "Constexprs.h"
 
 #include <cfloat>
 #include <vector>
@@ -138,7 +139,7 @@ protected:
 static RageColor GetBrightnessColor( float fBrightnessPercent )
 {
 	RageColor cBrightness = RageColor( 0,0,0,1-fBrightnessPercent );
-	RageColor cClamp = RageColor( 0.5f,0.5f,0.5f,CLAMP_OUTPUT_PERCENT );
+	RageColor cClamp = RageColor( ONE_HALF,ONE_HALF,ONE_HALF,CLAMP_OUTPUT_PERCENT );
 
 	// blend the two colors above as if cBrightness is drawn, then cClamp drawn on top
 	cBrightness.a *= (1-cClamp.a);	// premultiply alpha
@@ -518,7 +519,7 @@ void BackgroundImpl::LoadFromSong( const Song* pSong )
 	m_pSong = pSong;
 	m_StaticBackgroundDef.m_sFile1 = SONG_BACKGROUND_FILE;
 
-	if( g_fBGBrightness == 0.0f )
+	if( g_fBGBrightness == ZERO )
 		return;
 
 	// Choose a bunch of backgrounds that we'll use for the random file marker
@@ -733,7 +734,7 @@ void BackgroundImpl::Layer::UpdateCurBGChange( const Song *pSong, float fLastMus
 	pSong->m_SongTiming.GetBeatAndBPSFromElapsedTime(beat_info);
 
 	// Calls to Update() should *not* be scaled by music rate unless RateModsAffectFGChanges is enabled; fCurrentTime is. Undo it.
-	const float fRate = PREFSMAN->m_bRateModsAffectTweens ? 1.0f : GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+	const float fRate = PREFSMAN->m_bRateModsAffectTweens ? ONE : GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
 
 	// Find the BGSegment we're in
 	const int i = FindBGSegmentForBeat(beat_info.beat);
@@ -814,7 +815,7 @@ void BackgroundImpl::Layer::UpdateCurBGChange( const Song *pSong, float fLastMus
 	}
 
 	/* This is unaffected by the music rate. */
-	float fDeltaTimeNoMusicRate = std::max( fDeltaTime / fRate, 0.0f );
+	float fDeltaTimeNoMusicRate = std::max( fDeltaTime / fRate, ZERO );
 
 	if( m_pCurrentBGA )
 		m_pCurrentBGA->Update( fDeltaTimeNoMusicRate );
@@ -846,7 +847,7 @@ void BackgroundImpl::Update( float fDeltaTime )
 
 void BackgroundImpl::DrawPrimitives()
 {
-	if( g_fBGBrightness == 0.0f )
+	if( g_fBGBrightness == ZERO )
 		return;
 
 	if( IsDangerAllVisible() )
@@ -948,7 +949,7 @@ void BrightnessOverlay::SetActualBrightness()
 	/*
 	// HACK: Always show training in full brightness
 	if( GAMESTATE->m_pCurSong && GAMESTATE->m_pCurSong->IsTutorial() )
-		fBaseBGBrightness = 1.0f;
+		fBaseBGBrightness = ONE;
 	*/
 
 	fLeftBrightness *= fBaseBGBrightness;

@@ -6,6 +6,7 @@
 #include "RageUtil.h"
 #include "RageSoundMixBuffer.h"
 #include "RageSoundReader.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstdint>
@@ -508,7 +509,7 @@ std::int64_t RageSoundDriver::ClampHardwareFrame( std::int64_t iHardwareFrame ) 
 			/* Clamp the output to one per second, so one underruns don't cascade due to
 			 * output spam. */
 			static RageTimer last(RageZeroTimer);
-			if (last.IsZero() || last.Ago() > 1.0f)
+			if (last.IsZero() || last.Ago() > ONE)
 			{
 
 				//try to hand hold the user if their audio driver is possibly bad

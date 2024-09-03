@@ -5,6 +5,7 @@
 #include "RadarValues.h"
 #include "Steps.h"
 #include "Song.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -18,7 +19,7 @@ PlayerState::PlayerState()
 
 void PlayerState::Reset()
 {
-	m_NotefieldZoom= 1.0f;
+	m_NotefieldZoom= ONE;
 	m_PlayerOptions.Init();
 
 	m_fLastDrawnBeat = -100;
@@ -91,7 +92,7 @@ void PlayerState::Update( float fDelta )
 	m_PlayerOptions.Update( fDelta );
 
 	if( m_fSecondsUntilAttacksPhasedOut > 0 )
-		m_fSecondsUntilAttacksPhasedOut = std::max( 0.0f, m_fSecondsUntilAttacksPhasedOut - fDelta );
+		m_fSecondsUntilAttacksPhasedOut = std::max( ZERO, m_fSecondsUntilAttacksPhasedOut - fDelta );
 }
 
 void PlayerState::SetPlayerNumber(PlayerNumber pn)

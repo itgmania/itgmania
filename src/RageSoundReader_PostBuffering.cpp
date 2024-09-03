@@ -3,6 +3,7 @@
 #include "RageSoundUtil.h"
 #include "RageThreads.h"
 #include "RageUtil.h"
+#include "Constexprs.h"
 
 /*
  * This filter is normally inserted after extended buffering, implementing
@@ -10,12 +11,12 @@
  * changed with low latency.
  */
 RageMutex g_Mutex("PostBuffering");
-static float g_fMasterVolume = 1.0f;
+static float g_fMasterVolume = ONE;
 
 RageSoundReader_PostBuffering::RageSoundReader_PostBuffering( RageSoundReader *pSource ):
 	RageSoundReader_Filter( pSource )
 {
-	m_fVolume = 1.0f;
+	m_fVolume = ONE;
 }
 
 void RageSoundReader_PostBuffering::SetMasterVolume(float fVolume) {
@@ -35,10 +36,10 @@ int RageSoundReader_PostBuffering::Read( float *pBuf, int iFrames )
 	// Square the master so lower volumes are more sensitive.
 	// This lines up better with perceived volume.
 	float fVolume = m_fVolume * g_fMasterVolume * g_fMasterVolume;
-	fVolume = clamp( fVolume, 0.0f, 1.0f );
+	fVolume = clamp( fVolume, ZERO, ONE );
 	g_Mutex.Unlock();
 
-	if( fVolume != 1.0f )
+	if( fVolume != ONE )
 		RageSoundUtil::Attenuate( pBuf, iFrames * this->GetNumChannels(), fVolume );
 
 	return iFrames;

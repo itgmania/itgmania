@@ -9,6 +9,7 @@
 #include "RageInput.h"
 #include "InputEventPlus.h"
 #include "LocalizedString.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -45,12 +46,12 @@ class InputList: public BitmapText
 		INPUTFILTER->GetPressedButtons( DeviceInputs );
 		for (DeviceInput const &di : DeviceInputs)
 		{
-			if( !di.bDown && di.level == 0.0f )
+			if( !di.bDown && di.level == ZERO )
 				continue;
 
 			RString sTemp;
 			sTemp += INPUTMAN->GetDeviceSpecificInputString(di);
-			if( di.level == 1.0f )
+			if( di.level == ONE )
 				sTemp += ssprintf(" - 1 " );
 			else
 				sTemp += ssprintf(" - %.3f ", di.level );

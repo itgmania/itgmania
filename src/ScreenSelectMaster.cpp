@@ -10,6 +10,7 @@
 #include "ActorUtil.h"
 #include "RageLog.h"
 #include "InputEventPlus.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <set>
@@ -43,9 +44,9 @@ if( SHARED_SELECTION ) { \
 
 ScreenSelectMaster::ScreenSelectMaster()
 {
-	ZERO( m_iChoice );
-	ZERO( m_bChosen );
-	ZERO( m_bDoubleChoice );
+	ZERO_MEMORY( m_iChoice );
+	ZERO_MEMORY( m_bChosen );
+	ZERO_MEMORY( m_bDoubleChoice );
 }
 
 void ScreenSelectMaster::Init()
@@ -140,7 +141,7 @@ void ScreenSelectMaster::Init()
 					for(std::size_t p= 1; p <= poses; ++p)
 					{
 						lua_rawgeti(L, -1, p);
-						RageVector3 pos(0.0f, 0.0f, 0.0f);
+						RageVector3 pos(ZERO, ZERO, ZERO);
 						if(!lua_istable(L, -1))
 						{
 							LuaHelpers::ReportScriptErrorFmt("Position %zu is not a table.", p);

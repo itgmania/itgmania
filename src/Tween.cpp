@@ -4,6 +4,7 @@
 #include "RageMath.h"
 #include "LuaManager.h"
 #include "EnumHelper.h"
+#include "Constexprs.h"
 
 static const char *TweenTypeNames[] = {
 	"Linear",

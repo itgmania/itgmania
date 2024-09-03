@@ -36,6 +36,7 @@
 #include "LyricsLoader.h"
 #include "ActorUtil.h"
 #include "CommonMetrics.h"
+#include "Constexprs.h"
 
 #include <cfloat>
 #include <cmath>
@@ -1022,7 +1023,7 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 
 				/* Some songs have overlarge banners. Check if the ratio is reasonable
 				 * (over 2:1; usually over 3:1), and large (not a cdtitle). */
-				if(!m_bHasBanner && width > 200 && float(width) / height > 2.0f)
+				if(!m_bHasBanner && width > 200 && float(width) / height > TWO)
 				{
 					m_sBannerFile = image_list[i];
 					m_bHasBanner= true;
@@ -1088,7 +1089,7 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 				if(movie_list.size() == 1)
 				{
 					this->AddBackgroundChange(BACKGROUND_LAYER_1,
-						BackgroundChange(0, movie_list[0], "", 1.f,
+						BackgroundChange(0, movie_list[0], "", ONE,
 							SBE_StretchNoLoop));
 				}
 			}
@@ -1857,7 +1858,7 @@ float Song::GetPreviewStartSeconds() const
 	{
 		return m_fMusicSampleStartSeconds;
 	}
-	return 0.0f;
+	return ZERO;
 }
 
 RString Song::GetDisplayMainTitle() const

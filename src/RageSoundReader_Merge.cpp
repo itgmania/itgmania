@@ -6,6 +6,7 @@
 #include "RageUtil.h"
 #include "RageSoundMixBuffer.h"
 #include "RageSoundUtil.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <vector>
@@ -16,7 +17,7 @@ RageSoundReader_Merge::RageSoundReader_Merge()
 	m_iSampleRate = -1;
 	m_iChannels = 0;
 	m_iNextSourceFrame = 0;
-	m_fCurrentStreamToSourceRatio = 1.0f;
+	m_fCurrentStreamToSourceRatio = ONE;
 }
 
 RageSoundReader_Merge::~RageSoundReader_Merge()

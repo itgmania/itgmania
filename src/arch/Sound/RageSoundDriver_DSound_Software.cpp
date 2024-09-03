@@ -7,6 +7,7 @@
 #include "RageSoundManager.h"
 #include "PrefsManager.h"
 #include "archutils/Win32/ErrorStrings.h"
+#include "Constexprs.h"
 
 #include <cstdint>
 
@@ -137,7 +138,7 @@ void RageSoundDriver_DSound_Software::SetupDecodingThread()
 
 float RageSoundDriver_DSound_Software::GetPlayLatency() const
 {
-	return (1.0f / m_iSampleRate) * g_iMaxWriteahead;
+	return (ONE / m_iSampleRate) * g_iMaxWriteahead;
 }
 
 int RageSoundDriver_DSound_Software::GetSampleRate() const

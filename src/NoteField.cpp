@@ -18,6 +18,7 @@
 #include "Course.h"
 #include "NoteData.h"
 #include "RageDisplay.h"
+#include "Constexprs.h"
 
 #include <cfloat>
 #include <cmath>
@@ -52,11 +53,11 @@ NoteField::NoteField()
 	m_fBar16thAlpha = BAR_16TH_ALPHA;
 
 	m_textMeasureNumber.LoadFromFont( THEME->GetPathF("NoteField","MeasureNumber") );
-	m_textMeasureNumber.SetZoom( 1.0f );
+	m_textMeasureNumber.SetZoom( ONE );
 	m_textMeasureNumber.SetShadowLength( 2 );
 	m_textMeasureNumber.SetWrapWidthPixels( 300 );
 
-	m_rectMarkerBar.SetEffectDiffuseShift( 2, RageColor(1,1,1,0.5f), RageColor(0.5f,0.5f,0.5f,0.5f) );
+	m_rectMarkerBar.SetEffectDiffuseShift( 2, RageColor(1,1,1,ONE_HALF), RageColor(ONE_HALF,ONE_HALF,ONE_HALF,ONE_HALF) );
 
 	m_sprBoard.Load( THEME->GetPathG("NoteField","board") );
 	m_sprBoard->SetName("Board");
@@ -370,7 +371,7 @@ void NoteField::Update( float fDeltaTime )
 	cur->m_GhostArrowRow.Update( fDeltaTime );
 
 	if( m_FieldRenderArgs.fail_fade >= 0 )
-		m_FieldRenderArgs.fail_fade = std::min( m_FieldRenderArgs.fail_fade + fDeltaTime/FADE_FAIL_TIME, 1.0f );
+		m_FieldRenderArgs.fail_fade = std::min( m_FieldRenderArgs.fail_fade + fDeltaTime/FADE_FAIL_TIME, ONE );
 
 	// Update fade to failed
 	m_pCurDisplay->m_ReceptorArrowRow.SetFadeToFailPercent( m_FieldRenderArgs.fail_fade );
@@ -432,11 +433,11 @@ void NoteField::DrawBeatBar( const float fBeat, BeatBarType type, int iMeasureIn
 				iState = 1;
 				break;
 			case half_beat:
-				fAlpha = SCALE(fScrollSpeed,1.0f,2.0f,0.0f,m_fBar8thAlpha);
+				fAlpha = SCALE(fScrollSpeed,ONE,TWO,ZERO,m_fBar8thAlpha);
 				iState = 2;
 				break;
 			case quarter_beat:
-				fAlpha = SCALE(fScrollSpeed,2.0f,4.0f,0.0f,m_fBar16thAlpha);
+				fAlpha = SCALE(fScrollSpeed,TWO,FOUR,ZERO,m_fBar16thAlpha);
 				iState = 3;
 				break;
 		}
@@ -488,7 +489,7 @@ void NoteField::DrawBoard( int iDrawDistanceAfterTargetsPixels, int iDrawDistanc
 
 		// top half
 		const float fHeight = iDrawDistanceBeforeTargetsPixels - iDrawDistanceAfterTargetsPixels;
-		const float fY = fYPosAt0 - ((iDrawDistanceBeforeTargetsPixels + iDrawDistanceAfterTargetsPixels) / 2.0f);
+		const float fY = fYPosAt0 - ((iDrawDistanceBeforeTargetsPixels + iDrawDistanceAfterTargetsPixels) / TWO);
 
 		pSprite->ZoomToHeight( fHeight );
 		pSprite->SetY( fY );
@@ -575,7 +576,7 @@ void NoteField::set_text_measure_number_for_draw(
 	const float y_offset= ArrowEffects::GetYOffset(m_pPlayerState, 0, beat);
 	const float y_pos= ArrowEffects::GetYPos(m_pPlayerState, 0, y_offset, m_fYReverseOffsetPixels);
 	const float zoom= ArrowEffects::GetZoom(m_pPlayerState, y_offset, 0);
-	const float x_base= GetWidth() * .5f;
+	const float x_base= GetWidth() * ONE_HALF;
 	x_offset*= zoom;
 
 	m_textMeasureNumber.SetZoom(zoom);
@@ -656,7 +657,7 @@ float FindFirstDisplayedBeat( const PlayerState* pPlayerState, int iDrawDistance
 
 	if( !bHasCache )
 	{
-		fLow = fHigh - 4.0f;
+		fLow = fHigh - FOUR;
 	}
 
 	const int NUM_ITERATIONS = 24;
@@ -667,7 +668,7 @@ float FindFirstDisplayedBeat( const PlayerState* pPlayerState, int iDrawDistance
 	for( int i = 0; i < NUM_ITERATIONS; i ++ )
 	{
 
-		float fMid = (fLow + fHigh) / 2.0f;
+		float fMid = (fLow + fHigh) / TWO;
 
 		bool bIsPastPeakYOffset;
 		float fPeakYOffset;
@@ -757,12 +758,12 @@ void NoteField::CalcPixelsBeforeAndAfterTargets()
 		curr_options.m_fScrolls[PlayerOptions::SCROLL_CENTERED] *
 		curr_options.m_fAccels[PlayerOptions::ACCEL_BOOMERANG];
 	m_FieldRenderArgs.draw_pixels_after_targets +=
-		int(SCALE(centered_times_boomerang, 0.f, 1.f, 0.f, -SCREEN_HEIGHT/2));
+		int(SCALE(centered_times_boomerang, ZERO, ONE, ZERO, -SCREEN_HEIGHT/2));
 	m_FieldRenderArgs.draw_pixels_before_targets =
 		m_iDrawDistanceBeforeTargetsPixels * (1.f + curr_options.m_fDrawSize);
 
 	float draw_scale= 1;
-	draw_scale*= 1 + 0.5f * std::abs(curr_options.m_fPerspectiveTilt);
+	draw_scale*= 1 + ONE_HALF * std::abs(curr_options.m_fPerspectiveTilt);
 	draw_scale*= 1 + std::abs(curr_options.m_fEffects[PlayerOptions::EFFECT_MINI]);
 
 	m_FieldRenderArgs.draw_pixels_after_targets=
@@ -867,7 +868,7 @@ void NoteField::DrawPrimitives()
 		ASSERT(GAMESTATE->m_pCurSong != nullptr);
 
 		const TimingData &timing = *pTiming;
-		const RageColor text_glow= RageColor(1,1,1,std::cos(RageTimer::GetTimeSinceStartFast()*2)/2+0.5f);
+		const RageColor text_glow= RageColor(1,1,1,std::cos(RageTimer::GetTimeSinceStartFast()*2)/2+ONE_HALF);
 
 		float horiz_align= align_right;
 		float side_sign= 1;
@@ -1054,7 +1055,7 @@ void NoteField::DrawPrimitives()
 		*m_FieldRenderArgs.selection_end_marker != -1)
 	{
 		m_FieldRenderArgs.selection_glow= SCALE(
-			std::cos(RageTimer::GetTimeSinceStartFast()*2), -1, 1, 0.1f, 0.3f);
+			std::cos(RageTimer::GetTimeSinceStartFast()*2), -1, 1, POINT_ONE, 0.3f);
 	}
 	m_FieldRenderArgs.fade_before_targets= FADE_BEFORE_TARGETS_PERCENT;
 
@@ -1080,7 +1081,7 @@ void NoteField::DrawBoardPrimitive()
 
 void NoteField::FadeToFail()
 {
-	m_FieldRenderArgs.fail_fade = std::max( 0.0f, m_FieldRenderArgs.fail_fade );	// this will slowly increase every Update()
+	m_FieldRenderArgs.fail_fade = std::max( ZERO, m_FieldRenderArgs.fail_fade );	// this will slowly increase every Update()
 		// don't fade all over again if this is called twice
 }
 

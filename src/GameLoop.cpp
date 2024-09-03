@@ -20,6 +20,7 @@
 #include "LightsManager.h"
 #include "RageTimer.h"
 #include "RageInput.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <vector>
@@ -57,7 +58,7 @@ static void CheckGameLoopTimerSkips( float fDeltaTime )
 		return;
 	}
 
-	const float fExpectedTime = 1.0f / iThisFPS;
+	const float fExpectedTime = ONE / iThisFPS;
 	const float fDifference = fDeltaTime - fExpectedTime;
 	if( std::abs(fDifference) > 0.002f && std::abs(fDifference) < 0.100f )
 		LOG->Trace( "GameLoop timer skip: %i FPS, expected %.3f, got %.3f (%.3f difference)",

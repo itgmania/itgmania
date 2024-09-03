@@ -9,6 +9,7 @@
 #include "GameState.h"
 #include "RadarValues.h"
 #include "TimingData.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstddef>
@@ -352,7 +353,7 @@ void NoteDataUtil::GetSMNoteDataString( const NoteData &in, RString &sRet )
 {
 	// Get note data
 	std::vector<NoteData> parts;
-	float fLastBeat = -1.0f;
+	float fLastBeat = NEGATIVE_ONE;
 
 	SplitCompositeNoteData( in, parts );
 
@@ -875,11 +876,11 @@ void NoteDataUtil::AutogenKickbox(const NoteData& in, NoteData& out, const Timin
 	kickbox_limb prev_limb_used= invalid_limb;
 	// Kicks are only allowed if there is enough setup/recovery time.
 	float kick_recover_time= GAMESTATE->GetAutoGenFarg(0);
-	if(kick_recover_time <= 0.0f)
+	if(kick_recover_time <= ZERO)
 	{
 		kick_recover_time= .25f;
 	}
-	float prev_note_time= -1.0f;
+	float prev_note_time= NEGATIVE_ONE;
 	int rows_done= 0;
 #define RAND_FIST ((rnd() % 2) ? left_fist : right_fist)
 #define RAND_FOOT ((rnd() % 2) ? left_foot : right_foot)
@@ -934,12 +935,12 @@ void NoteDataUtil::AutogenKickbox(const NoteData& in, NoteData& out, const Timin
 				// Multiple kicks in a row are allowed if they're on the same foot.
 				// Allow the last note to be a kick.
 				// Switch feet if there's enough time.
-				if(next_note_time - this_note_time > kick_recover_time * 2.0f)
+				if(next_note_time - this_note_time > kick_recover_time * TWO)
 				{
 					this_limb= prev_limb_used == left_foot ? right_foot : left_foot;
 				}
-				else if((next_note_time - this_note_time > kick_recover_time * .5f ||
-						next_note_time < 0.0f) && (rnd() % 2))
+				else if((next_note_time - this_note_time > kick_recover_time * ONE_HALF ||
+						next_note_time < ZERO) && (rnd() % 2))
 				{
 					this_limb= prev_limb_used;
 				}
@@ -952,7 +953,7 @@ void NoteDataUtil::AutogenKickbox(const NoteData& in, NoteData& out, const Timin
 			case right_fist:
 				if(this_note_time - prev_note_time > kick_recover_time &&
 					(next_note_time - this_note_time > kick_recover_time ||
-						next_note_time < 0.0f) && have_feet)
+						next_note_time < ZERO) && have_feet)
 				{
 					this_limb= RAND_FOOT;
 				}
@@ -1045,7 +1046,7 @@ void NoteDataUtil::CalculateRadarValues( const NoteData &in, float fSongSeconds,
 	// total_taps exists because the stream calculation needs GetNumTapNotes,
 	// but TapsAndHolds + Jumps + Hands would be inaccurate. -Kyz
 	float total_taps= 0;
-	const float voltage_window_beats= 8.0f;
+	const float voltage_window_beats= EIGHT;
 	const int voltage_window= BeatToNoteRow(voltage_window_beats);
 	std::size_t max_notes_in_voltage_window= 0;
 	int num_chaos_rows= 0;
@@ -1162,7 +1163,7 @@ void NoteDataUtil::CalculateRadarValues( const NoteData &in, float fSongSeconds,
 	DoRowEndRadarCalc(state, out);
 
 	// Walking the notes complete, now assign any values that remain. -Kyz
-	if(fSongSeconds > 0.0f)
+	if(fSongSeconds > ZERO)
 	{
 		out[RadarCategory_Stream]= (total_taps / fSongSeconds) / 7.0f;
 		// As seen in GetVoltageRadarValue:  Don't use the timing data, just
@@ -1173,7 +1174,7 @@ void NoteDataUtil::CalculateRadarValues( const NoteData &in, float fSongSeconds,
 			10.0f;
 		out[RadarCategory_Air]= out[RadarCategory_Jumps] / fSongSeconds;
 		out[RadarCategory_Freeze]= out[RadarCategory_Holds] / fSongSeconds;
-		out[RadarCategory_Chaos]= num_chaos_rows / fSongSeconds * .5f;
+		out[RadarCategory_Chaos]= num_chaos_rows / fSongSeconds * ONE_HALF;
 	}
 	// Sorry, there's not an assert here anymore for making sure all fields
 	// are set.  There's a comment in the RadarCategory enum to direct
@@ -2300,11 +2301,11 @@ void NoteDataUtil::Little( NoteData &inout, int iStartIndex, int iEndIndex )
 void NoteDataUtil::Wide( NoteData &inout, int iStartIndex, int iEndIndex )
 {
 	/* Start on an even beat. */
-	iStartIndex = Quantize( iStartIndex, BeatToNoteRow(2.0f) );
+	iStartIndex = Quantize( iStartIndex, BeatToNoteRow(TWO) );
 
 	FOREACH_NONEMPTY_ROW_ALL_TRACKS_RANGE( inout, i, iStartIndex, iEndIndex )
 	{
-		if( i % BeatToNoteRow(2.0f) != 0 )
+		if( i % BeatToNoteRow(TWO) != 0 )
 			continue;	// even beats only
 
 		bool bHoldNoteAtBeat = false;
@@ -2352,13 +2353,13 @@ void NoteDataUtil::Wide( NoteData &inout, int iStartIndex, int iEndIndex )
 void NoteDataUtil::Big( NoteData &inout, int iStartIndex, int iEndIndex )
 {
 	// add 8ths between 4ths
-	InsertIntelligentTaps( inout,BeatToNoteRow(1.0f), BeatToNoteRow(0.5f), BeatToNoteRow(1.0f), false,iStartIndex,iEndIndex );
+	InsertIntelligentTaps( inout,BeatToNoteRow(ONE), BeatToNoteRow(ONE_HALF), BeatToNoteRow(ONE), false,iStartIndex,iEndIndex );
 }
 
 void NoteDataUtil::Quick( NoteData &inout, int iStartIndex, int iEndIndex )
 {
 	// add 16ths between 8ths
-	InsertIntelligentTaps( inout, BeatToNoteRow(0.5f), BeatToNoteRow(0.25f), BeatToNoteRow(1.0f), false,iStartIndex,iEndIndex );
+	InsertIntelligentTaps( inout, BeatToNoteRow(ONE_HALF), BeatToNoteRow(ONE_QUARTER), BeatToNoteRow(ONE), false,iStartIndex,iEndIndex );
 }
 
 // Due to popular request by people annoyed with the "new" implementation of Quick, we now have
@@ -2372,7 +2373,7 @@ void NoteDataUtil::BMRize( NoteData &inout, int iStartIndex, int iEndIndex )
 void NoteDataUtil::Skippy( NoteData &inout, int iStartIndex, int iEndIndex )
 {
 	// add 16ths between 4ths
-	InsertIntelligentTaps( inout, BeatToNoteRow(1.0f), BeatToNoteRow(0.75f),BeatToNoteRow(1.0f), true,iStartIndex,iEndIndex );
+	InsertIntelligentTaps( inout, BeatToNoteRow(ONE), BeatToNoteRow(THREE_QUARTERS),BeatToNoteRow(ONE), true,iStartIndex,iEndIndex );
 }
 
 void NoteDataUtil::InsertIntelligentTaps(
@@ -2559,13 +2560,13 @@ void NoteDataUtil::AddMines( NoteData &inout, int iStartIndex, int iEndIndex )
 			if( tn.type != TapNoteType_HoldHead )
 				continue;
 
-			int iMineRow = r + tn.iDuration + BeatToNoteRow(0.5f);
+			int iMineRow = r + tn.iDuration + BeatToNoteRow(ONE_HALF);
 			if( iMineRow < iStartIndex || iMineRow > iEndIndex )
 				continue;
 
 			// Only place a mines if there's not another step nearby
-			int iMineRangeBegin = iMineRow - BeatToNoteRow( 0.5f ) + 1;
-			int iMineRangeEnd = iMineRow + BeatToNoteRow( 0.5f ) - 1;
+			int iMineRangeBegin = iMineRow - BeatToNoteRow( ONE_HALF ) + 1;
+			int iMineRangeEnd = iMineRow + BeatToNoteRow( ONE_HALF ) - 1;
 			if( !inout.IsRangeEmpty(iTrack, iMineRangeBegin, iMineRangeEnd) )
 				continue;
 
@@ -2588,7 +2589,7 @@ void NoteDataUtil::Echo( NoteData &inout, int iStartIndex, int iEndIndex )
 	// add 8th note tap "echos" after all taps
 	int iEchoTrack = -1;
 
-	const int rows_per_interval = BeatToNoteRow( 0.5f );
+	const int rows_per_interval = BeatToNoteRow( ONE_HALF );
 	iStartIndex = Quantize( iStartIndex, rows_per_interval );
 
 	/* Clamp iEndIndex to the last real tap note.  Otherwise, we'll keep adding
@@ -2728,8 +2729,8 @@ void NoteDataUtil::Stomp( NoteData &inout, StepsType st, int iStartIndex, int iE
 			{
 				// Look to see if there is enough empty space on either side of the note
 				// to turn this into a jump.
-				int iRowWindowBegin = r - BeatToNoteRow(0.5f);
-				int iRowWindowEnd = r + BeatToNoteRow(0.5f);
+				int iRowWindowBegin = r - BeatToNoteRow(ONE_HALF);
+				int iRowWindowEnd = r + BeatToNoteRow(ONE_HALF);
 
 				bool bTapInMiddle = false;
 				FOREACH_NONEMPTY_ROW_ALL_TRACKS_RANGE( inout, r2, iRowWindowBegin+1, iRowWindowEnd-1 )

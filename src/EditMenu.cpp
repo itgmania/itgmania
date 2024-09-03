@@ -130,7 +130,7 @@ void EditMenu::Load( const RString &sType )
 
 	m_SelectedRow = GetFirstRow();
 
-	ZERO( m_iSelection );
+	ZERO_MEMORY( m_iSelection );
 
 	FOREACH_EditMenuRow( r )
 	{

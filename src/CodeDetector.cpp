@@ -10,7 +10,7 @@
 #include "PlayerState.h"
 #include "InputEventPlus.h"
 #include "OptionRowHandler.h"
-
+#include "Constexprs.h"
 
 const char *CodeNames[] = {
 	"PrevSteps1",
@@ -134,8 +134,8 @@ bool CodeDetector::EnteredNextOpList( GameController controller )
 // Using this can give us unlisted scroll speeds on the Options screen.
 // Zmey: done.
 // AJ: thanks Zmey! :D
-#define  INCREMENT_SCROLL_SPEED(s)	(s==0.5f) ? s=0.75f : (s==0.75f) ? s=1.0f : (s==1.0f) ? s=1.5f : (s==1.5f) ? s=2.0f : (s==2.0f) ? s=3.0f : (s==3.0f) ? s=4.0f : (s==4.0f) ? s=5.0f : (s==5.0f) ? s=8.0f : s=0.5f;
-#define  DECREMENT_SCROLL_SPEED(s)	(s==0.75f) ? s=0.5f : (s==1.0f) ? s=0.75f : (s==1.5f) ? s=1.0f : (s==2.0f) ? s=1.5f : (s==3.0f) ? s=2.0f : (s==4.0f) ? s=3.0f : (s==5.0f) ? s=4.0f : (s==8.0f) ? s=4.0f : s=8.0f;
+#define  INCREMENT_SCROLL_SPEED(s)	(s==ONE_HALF) ? s=THREE_QUARTERS : (s==THREE_QUARTERS) ? s=ONE : (s==ONE) ? s=1.5f : (s==1.5f) ? s=TWO : (s==TWO) ? s=THREE : (s==THREE) ? s=FOUR : (s==FOUR) ? s=FIVE : (s==FIVE) ? s=EIGHT : s=ONE_HALF;
+#define  DECREMENT_SCROLL_SPEED(s)	(s==THREE_QUARTERS) ? s=ONE_HALF : (s==ONE) ? s=THREE_QUARTERS : (s==1.5f) ? s=ONE : (s==TWO) ? s=1.5f : (s==THREE) ? s=TWO : (s==FOUR) ? s=THREE : (s==FIVE) ? s=FOUR : (s==EIGHT) ? s=FOUR : s=EIGHT;
 
 // from Pumpmania
 void CodeDetector::ChangeScrollSpeed( GameController controller, bool bIncrement )
@@ -231,11 +231,11 @@ bool CodeDetector::DetectAndAdjustMusicOptions( GameController controller )
 			case CODE_DARK:				FLOAT_TOGGLE( po.m_fDark );				break;
 			case CODE_CANCEL_ALL:			GAMESTATE->GetDefaultPlayerOptions( po );		break;
 			case CODE_HIDDEN:
-				ZERO(po.m_fAppearances);
+				ZERO_MEMORY(po.m_fAppearances);
 				po.m_fAppearances[PlayerOptions::APPEARANCE_HIDDEN] = 1;
 				break;
 			case CODE_RANDOMVANISH:
-				ZERO(po.m_fAppearances);
+				ZERO_MEMORY(po.m_fAppearances);
 				po.m_fAppearances[PlayerOptions::APPEARANCE_RANDOMVANISH] = 1;
 				break;
 			default:	break;

@@ -16,6 +16,7 @@ using namespace RageDisplay_Legacy_Helpers;
 #include "EnumHelper.h"
 #include "DisplaySpec.h"
 #include "LocalizedString.h"
+#include "Constexprs.h"
 
 #include "arch/LowLevelWindow/LowLevelWindow.h"
 
@@ -1962,8 +1963,8 @@ void RageDisplay_Legacy::SetZWrite( bool b )
 
 void RageDisplay_Legacy::SetZBias( float f )
 {
-	float fNear = SCALE( f, 0.0f, 1.0f, 0.05f, 0.0f );
-	float fFar = SCALE( f, 0.0f, 1.0f, 1.0f, 0.95f );
+	float fNear = SCALE( f, ZERO, ONE, 0.05f, ZERO );
+	float fFar = SCALE( f, ZERO, ONE, ONE, 0.95f );
 
 	glDepthRange( fNear, fFar );
 }

@@ -4,6 +4,7 @@
 #define SONG_OPTIONS_H
 
 #include "EnumHelper.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -51,9 +52,9 @@ public:
 	 * @brief Set up the SongOptions with reasonable defaults.
 	 */
 	SongOptions(): m_bAssistClap(false),
-		m_bAssistMetronome(false), m_fMusicRate(1.0f),
-		m_SpeedfMusicRate(1.0f), m_fHaste(0.0f),
-		m_SpeedfHaste(1.0f), m_AutosyncType(AutosyncType_Off),
+		m_bAssistMetronome(false), m_fMusicRate(ONE),
+		m_SpeedfMusicRate(ONE), m_fHaste(ZERO),
+		m_SpeedfHaste(ONE), m_AutosyncType(AutosyncType_Off),
 		m_SoundEffectType(SoundEffectType_Off),
 		m_bStaticBackground(false), m_bRandomBGOnly(false),
 		m_bSaveScore(true), m_bSaveReplay(false) {};

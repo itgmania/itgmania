@@ -170,7 +170,7 @@ int Trail::GetTotalMeter() const
 
 float Trail::GetLengthSeconds() const
 {
-	return std::accumulate(m_vEntries.begin(), m_vEntries.end(), 0.f, [](float total, TrailEntry const &e) {
+	return std::accumulate(m_vEntries.begin(), m_vEntries.end(), ZERO, [](float total, TrailEntry const &e) {
 		return total + e.pSong->m_fMusicLengthSeconds;
 	});
 }

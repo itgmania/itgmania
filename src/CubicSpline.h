@@ -2,6 +2,7 @@
 #define CUBIC_SPLINE_H
 
 #include "RageTypes.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <vector>
@@ -10,7 +11,7 @@ struct lua_State;
 
 struct CubicSpline
 {
-CubicSpline() :m_spatial_extent(0.0f) {}
+CubicSpline() :m_spatial_extent(ZERO) {}
 	void solve_looped();
 	void solve_straight();
 	void solve_polygonal();

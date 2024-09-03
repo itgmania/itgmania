@@ -13,6 +13,7 @@
 #include "LightsManager.h" // for NUM_CabinetLight
 #include "ActorUtil.h"
 #include "Preference.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstddef>
@@ -20,7 +21,7 @@
 #include <vector>
 
 static Preference<bool> g_bShowMasks("ShowMasks", false);
-static const float default_effect_period= 1.0f;
+static const float default_effect_period= ONE;
 
 /**
  * @brief Set up a hidden Actor that won't be drawn.
@@ -101,8 +102,8 @@ void Actor::InitState()
 	m_start.Init();
 	m_current.Init();
 
-	m_fHorizAlign = 0.5f;
-	m_fVertAlign = 0.5f;
+	m_fHorizAlign = ONE_HALF;
+	m_fVertAlign = ONE_HALF;
 #if defined(SSC_FUTURES)
 	for( unsigned i = 0; i < m_Effects.size(); ++i )
 		m_Effects[i] = no_effect;
@@ -121,7 +122,7 @@ void Actor::InitState()
 	m_bVisible = true;
 	m_fShadowLengthX = 0;
 	m_fShadowLengthY = 0;
-	m_ShadowColor = RageColor(0,0,0,0.5f);
+	m_ShadowColor = RageColor(0,0,0,ONE_HALF);
 	m_bIsAnimating = true;
 	m_fHibernateSecondsLeft = 0;
 	m_iDrawOrder = 0;
@@ -521,20 +522,20 @@ void Actor::PreDraw() // calculate actor properties
 		if(fTimeIntoEffect < m_effect_ramp_to_half)
 		{
 			fPercentThroughEffect = SCALE(fTimeIntoEffect,
-				0, m_effect_ramp_to_half, 0.0f, 0.5f);
+				0, m_effect_ramp_to_half, ZERO, ONE_HALF);
 		}
 		else if(fTimeIntoEffect < rup_plus_ath)
 		{
-			fPercentThroughEffect = 0.5f;
+			fPercentThroughEffect = ONE_HALF;
 		}
 		else if(fTimeIntoEffect < rupath_plus_rdown)
 		{
 			fPercentThroughEffect = SCALE(fTimeIntoEffect,
-				rup_plus_ath, rupath_plus_rdown, 0.5f, 1.0f);
+				rup_plus_ath, rupath_plus_rdown, ONE_HALF, ONE);
 		}
 		else if(fTimeIntoEffect < rupathrdown_plus_atf)
 		{
-			fPercentThroughEffect= 1.0f;
+			fPercentThroughEffect= ONE;
 		}
 		else
 		{
@@ -543,8 +544,8 @@ void Actor::PreDraw() // calculate actor properties
 		ASSERT_M( fPercentThroughEffect >= 0 && fPercentThroughEffect <= 1,
 			ssprintf("PercentThroughEffect: %f", fPercentThroughEffect) );
 
-		bool bBlinkOn = fPercentThroughEffect > 0.5f;
-		float fPercentBetweenColors = std::sin( (fPercentThroughEffect + 0.25f) * 2 * PI ) / 2 + 0.5f;
+		bool bBlinkOn = fPercentThroughEffect > ONE_HALF;
+		float fPercentBetweenColors = std::sin( (fPercentThroughEffect + ONE_QUARTER) * TWO_PI ) / TWO + ONE_HALF;
 		ASSERT_M( fPercentBetweenColors >= 0 && fPercentBetweenColors <= 1,
 			ssprintf("PercentBetweenColors: %f, PercentThroughEffect: %f", fPercentBetweenColors, fPercentThroughEffect) );
 		float fOriginalAlpha = m_current_with_effects.diffuse[0].a;
@@ -565,14 +566,14 @@ void Actor::PreDraw() // calculate actor properties
 		case diffuse_shift:
 			for(int i=0; i<NUM_DIFFUSE_COLORS; i++)
 			{
-				m_current_with_effects.diffuse[i] = m_effectColor1*fPercentBetweenColors + m_effectColor2*(1.0f-fPercentBetweenColors);
+				m_current_with_effects.diffuse[i] = m_effectColor1*fPercentBetweenColors + m_effectColor2*(ONE-fPercentBetweenColors);
 				m_current_with_effects.diffuse[i].a *= fOriginalAlpha;	// multiply the alphas so we can fade even while an effect is playing
 			}
 			break;
 		case diffuse_ramp:
 			for(int i=0; i<NUM_DIFFUSE_COLORS; i++)
 			{
-				m_current_with_effects.diffuse[i] = m_effectColor1*fPercentThroughEffect + m_effectColor2*(1.0f-fPercentThroughEffect);
+				m_current_with_effects.diffuse[i] = m_effectColor1*fPercentThroughEffect + m_effectColor2*(ONE-fPercentThroughEffect);
 				m_current_with_effects.diffuse[i].a *= fOriginalAlpha;	// multiply the alphas so we can fade even while an effect is playing
 			}
 			break;
@@ -581,32 +582,32 @@ void Actor::PreDraw() // calculate actor properties
 			m_current_with_effects.glow.a *= fOriginalAlpha;	// don't glow if the Actor is transparent!
 			break;
 		case glow_shift:
-			m_current_with_effects.glow = m_effectColor1*fPercentBetweenColors + m_effectColor2*(1.0f-fPercentBetweenColors);
+			m_current_with_effects.glow = m_effectColor1*fPercentBetweenColors + m_effectColor2*(ONE-fPercentBetweenColors);
 			m_current_with_effects.glow.a *= fOriginalAlpha;	// don't glow if the Actor is transparent!
 			break;
 		case glow_ramp:
-			m_current_with_effects.glow = m_effectColor1*fPercentThroughEffect + m_effectColor2*(1.0f-fPercentThroughEffect);
+			m_current_with_effects.glow = m_effectColor1*fPercentThroughEffect + m_effectColor2*(ONE-fPercentThroughEffect);
 			m_current_with_effects.glow.a *= fOriginalAlpha;	// don't glow if the Actor is transparent!
 			break;
 		case rainbow:
 			m_current_with_effects.diffuse[0] = RageColor(
-				std::cos( fPercentBetweenColors*2*PI ) * 0.5f + 0.5f,
-				std::cos( fPercentBetweenColors*2*PI + PI * 2.0f / 3.0f ) * 0.5f + 0.5f,
-				std::cos( fPercentBetweenColors*2*PI + PI * 4.0f / 3.0f) * 0.5f + 0.5f,
+				std::cos( fPercentBetweenColors*TWO_PI ) * ONE_HALF + ONE_HALF,
+				std::cos( fPercentBetweenColors*TWO_PI + PI * TWO / THREE ) * ONE_HALF + ONE_HALF,
+				std::cos( fPercentBetweenColors*TWO_PI + PI * FOUR / THREE) * ONE_HALF + ONE_HALF,
 				fOriginalAlpha );
 			for( int i=1; i<NUM_DIFFUSE_COLORS; i++ )
 				m_current_with_effects.diffuse[i] = m_current_with_effects.diffuse[0];
 			break;
 		case wag:
-			m_current_with_effects.rotation += m_vEffectMagnitude * std::sin( fPercentThroughEffect * 2.0f * PI );
+			m_current_with_effects.rotation += m_vEffectMagnitude * std::sin( fPercentThroughEffect * TWO * PI );
 			break;
 		case spin:
 			// nothing needs to be here
 			break;
 		case vibrate:
-			m_current_with_effects.pos.x += m_vEffectMagnitude.x * randomf(-1.0f, 1.0f) * GetZoom();
-			m_current_with_effects.pos.y += m_vEffectMagnitude.y * randomf(-1.0f, 1.0f) * GetZoom();
-			m_current_with_effects.pos.z += m_vEffectMagnitude.z * randomf(-1.0f, 1.0f) * GetZoom();
+			m_current_with_effects.pos.x += m_vEffectMagnitude.x * randomf(NEGATIVE_ONE, ONE) * GetZoom();
+			m_current_with_effects.pos.y += m_vEffectMagnitude.y * randomf(NEGATIVE_ONE, ONE) * GetZoom();
+			m_current_with_effects.pos.z += m_vEffectMagnitude.z * randomf(NEGATIVE_ONE, ONE) * GetZoom();
 			break;
 		case bounce:
 			{
@@ -616,7 +617,7 @@ void Actor::PreDraw() // calculate actor properties
 			break;
 		case bob:
 			{
-				float fPercentOffset = std::sin( fPercentThroughEffect*PI*2 );
+				float fPercentOffset = std::sin( fPercentThroughEffect*TWO_PI );
 				m_current_with_effects.pos += m_vEffectMagnitude * fPercentOffset;
 			}
 			break;
@@ -625,11 +626,11 @@ void Actor::PreDraw() // calculate actor properties
 				float fMinZoom = m_vEffectMagnitude[0];
 				float fMaxZoom = m_vEffectMagnitude[1];
 				float fPercentOffset = std::sin( fPercentThroughEffect*PI );
-				float fZoom = SCALE( fPercentOffset, 0.f, 1.f, fMinZoom, fMaxZoom );
+				float fZoom = SCALE( fPercentOffset, ZERO, ONE, fMinZoom, fMaxZoom );
 				m_current_with_effects.scale *= fZoom;
 
 				// Use the color as a Vector3 to scale the effect for added control
-				RageColor c = SCALE( fPercentOffset, 0.f, 1.f, m_effectColor1, m_effectColor2 );
+				RageColor c = SCALE( fPercentOffset, ZERO, ONE, m_effectColor1, m_effectColor2 );
 				m_current_with_effects.scale.x *= c.r;
 				m_current_with_effects.scale.y *= c.g;
 				m_current_with_effects.scale.z *= c.b;
@@ -715,10 +716,10 @@ void Actor::BeginDraw()
 	}
 
 	// Adjust the alignment of the actor
-	if (unlikely(m_fHorizAlign != 0.5f || m_fVertAlign != 0.5f))
+	if (unlikely(m_fHorizAlign != ONE_HALF || m_fVertAlign != ONE_HALF))
 	{
-		float fX = SCALE(m_fHorizAlign, 0.0f, 1.0f, +m_size.x / 2.0f, -m_size.x / 2.0f);
-		float fY = SCALE(m_fVertAlign, 0.0f, 1.0f, +m_size.y / 2.0f, -m_size.y / 2.0f);
+		float fX = SCALE(m_fHorizAlign, ZERO, ONE, +m_size.x / TWO, -m_size.x / TWO);
+		float fY = SCALE(m_fVertAlign, ZERO, ONE, +m_size.y / TWO, -m_size.y / TWO);
 		RageMatrix m;
 		RageMatrixTranslate(&m, fX, fY, 0);
 		DISPLAY->PreMultMatrix(m);
@@ -770,7 +771,7 @@ void Actor::SetGlobalRenderStates()
 	// BLEND_NO_EFFECT is used to draw masks to the Z-buffer, which always wants
 	// Z-bias enabled.
 	if( m_fZBias == 0 && m_BlendMode == BLEND_NO_EFFECT )
-		DISPLAY->SetZBias( 1.0f );
+		DISPLAY->SetZBias( ONE );
 	else
 		DISPLAY->SetZBias( m_fZBias );
 
@@ -1077,7 +1078,7 @@ void Actor::ScaleTo( const RectF &rect, StretchType st )
 	float fNewZoomX = std::abs(rect_width  / m_size.x);
 	float fNewZoomY = std::abs(rect_height / m_size.y);
 
-	float fNewZoom = 0.f;
+	float fNewZoom = ZERO;
 	switch( st )
 	{
 	case cover:
@@ -1124,8 +1125,8 @@ void Actor::StretchTo( const RectF &r )
 	float height = r.GetHeight();
 
 	// center of the rectangle
-	float cx = r.left + width/2.0f;
-	float cy = r.top  + height/2.0f;
+	float cx = r.left + width/TWO;
+	float cy = r.top  + height/TWO;
 
 	// zoom fActor needed to scale the Actor to fill the rectangle
 	float fNewZoomX = width  / m_size.x;
@@ -1683,7 +1684,7 @@ public:
 	static int hurrytweening( T* p, lua_State *L )
 	{
 		float time= FArg(1);
-		if(time < 0.0f)
+		if(time < ZERO)
 		{
 			luaL_error(L, "Tweening hurry factor cannot be negative. %f", time);
 		}
@@ -1759,17 +1760,17 @@ public:
 	static int vertalign( T* p, lua_State *L )		{ p->SetVertAlign(Enum::Check<VertAlign>(L, 1)); COMMON_RETURN_SELF; }
 	static int halign( T* p, lua_State *L )			{ p->SetHorizAlign(FArg(1)); COMMON_RETURN_SELF; }
 	static int valign( T* p, lua_State *L )			{ p->SetVertAlign(FArg(1)); COMMON_RETURN_SELF; }
-	static int diffuseblink( T* p, lua_State *L )		{ p->SetEffectDiffuseBlink(1.0f, RageColor(0.5f,0.5f,0.5f,0.5f), RageColor(1,1,1,1)); COMMON_RETURN_SELF; }
-	static int diffuseshift( T* p, lua_State *L )		{ p->SetEffectDiffuseShift(1.0f, RageColor(0,0,0,1), RageColor(1,1,1,1)); COMMON_RETURN_SELF; }
-	static int diffuseramp( T* p, lua_State *L )		{ p->SetEffectDiffuseRamp(1.0f, RageColor(0,0,0,1), RageColor(1,1,1,1)); COMMON_RETURN_SELF; }
-	static int glowblink( T* p, lua_State *L )		{ p->SetEffectGlowBlink(1.0f, RageColor(1,1,1,0.2f), RageColor(1,1,1,0.8f)); COMMON_RETURN_SELF; }
-	static int glowshift( T* p, lua_State *L )		{ p->SetEffectGlowShift(1.0f, RageColor(1,1,1,0.2f), RageColor(1,1,1,0.8f)); COMMON_RETURN_SELF; }
-	static int glowramp( T* p, lua_State *L )		{ p->SetEffectGlowRamp(1.0f, RageColor(1,1,1,0.2f), RageColor(1,1,1,0.8f)); COMMON_RETURN_SELF; }
-	static int rainbow( T* p, lua_State *L )			{ p->SetEffectRainbow(2.0f); COMMON_RETURN_SELF; }
-	static int wag( T* p, lua_State *L )			{ p->SetEffectWag(2.0f, RageVector3(0,0,20)); COMMON_RETURN_SELF; }
-	static int bounce( T* p, lua_State *L )			{ p->SetEffectBounce(2.0f, RageVector3(0,20,0)); COMMON_RETURN_SELF; }
-	static int bob( T* p, lua_State *L )			{ p->SetEffectBob(2.0f, RageVector3(0,20,0)); COMMON_RETURN_SELF; }
-	static int pulse( T* p, lua_State *L )			{ p->SetEffectPulse(2.0f, 0.5f, 1.0f); COMMON_RETURN_SELF; }
+	static int diffuseblink( T* p, lua_State *L )		{ p->SetEffectDiffuseBlink(ONE, RageColor(ONE_HALF,ONE_HALF,ONE_HALF,ONE_HALF), RageColor(1,1,1,1)); COMMON_RETURN_SELF; }
+	static int diffuseshift( T* p, lua_State *L )		{ p->SetEffectDiffuseShift(ONE, RageColor(0,0,0,1), RageColor(1,1,1,1)); COMMON_RETURN_SELF; }
+	static int diffuseramp( T* p, lua_State *L )		{ p->SetEffectDiffuseRamp(ONE, RageColor(0,0,0,1), RageColor(1,1,1,1)); COMMON_RETURN_SELF; }
+	static int glowblink( T* p, lua_State *L )		{ p->SetEffectGlowBlink(ONE, RageColor(1,1,1,0.2f), RageColor(1,1,1,0.8f)); COMMON_RETURN_SELF; }
+	static int glowshift( T* p, lua_State *L )		{ p->SetEffectGlowShift(ONE, RageColor(1,1,1,0.2f), RageColor(1,1,1,0.8f)); COMMON_RETURN_SELF; }
+	static int glowramp( T* p, lua_State *L )		{ p->SetEffectGlowRamp(ONE, RageColor(1,1,1,0.2f), RageColor(1,1,1,0.8f)); COMMON_RETURN_SELF; }
+	static int rainbow( T* p, lua_State *L )			{ p->SetEffectRainbow(TWO); COMMON_RETURN_SELF; }
+	static int wag( T* p, lua_State *L )			{ p->SetEffectWag(TWO, RageVector3(0,0,20)); COMMON_RETURN_SELF; }
+	static int bounce( T* p, lua_State *L )			{ p->SetEffectBounce(TWO, RageVector3(0,20,0)); COMMON_RETURN_SELF; }
+	static int bob( T* p, lua_State *L )			{ p->SetEffectBob(TWO, RageVector3(0,20,0)); COMMON_RETURN_SELF; }
+	static int pulse( T* p, lua_State *L )			{ p->SetEffectPulse(TWO, ONE_HALF, ONE); COMMON_RETURN_SELF; }
 	static int spin( T* p, lua_State *L )			{ p->SetEffectSpin(RageVector3(0,0,180)); COMMON_RETURN_SELF; }
 	static int vibrate( T* p, lua_State *L )			{ p->SetEffectVibrate(RageVector3(10,10,10)); COMMON_RETURN_SELF; }
 	static int stopeffect( T* p, lua_State *L )		{ p->StopEffect(); COMMON_RETURN_SELF; }

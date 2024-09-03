@@ -30,6 +30,7 @@
 #include "ScreenSyncOverlay.h"
 #include "ThemeMetric.h"
 #include "XmlToLua.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -419,7 +420,7 @@ void ScreenDebugOverlay::UpdateText()
 	{
 		/* More than once I've paused the game accidentally and wasted time
 		 * figuring out why, so warn. */
-		if( g_HaltTimer.Ago() >= 5.0f )
+		if( g_HaltTimer.Ago() >= FIVE )
 		{
 			g_HaltTimer.Touch();
 			LOG->Warn( "Game halted" );
@@ -538,7 +539,7 @@ void ChangeVolume( float fDelta )
 	Preference<float> *pRet = Preference<float>::GetPreferenceByName("SoundVolume");
 	float fVol = pRet->Get();
 	fVol += fDelta;
-	CLAMP( fVol, 0.0f, 1.0f );
+	CLAMP( fVol, ZERO, ONE );
 	pRet->Set( fVol );
 	SOUNDMAN->SetMixVolume();
 }
@@ -548,7 +549,7 @@ void ChangeVisualDelay( float fDelta )
 	Preference<float> *pRet = Preference<float>::GetPreferenceByName("VisualDelaySeconds");
 	float fSecs = pRet->Get();
 	fSecs += fDelta;
-	CLAMP( fSecs, -1.0f, 1.0f );
+	CLAMP( fSecs, NEGATIVE_ONE, ONE );
 	pRet->Set( fSecs );
 }
 
@@ -905,7 +906,7 @@ static void FillProfileStats( Profile *pProfile )
 	static int s_iCount = 0;
 	// Choose a percent for all scores. This is useful for testing unlocks
 	// where some elements are unlocked at a certain percent complete.
-	float fPercentDP = s_iCount ? randomf( 0.6f, 1.0f ) : 1.0f;
+	float fPercentDP = s_iCount ? randomf( 0.6f, ONE ) : ONE;
 	s_iCount = (s_iCount+1)%2;
 
 
@@ -1235,7 +1236,7 @@ class DebugLinePullBackCamera : public IDebugLine
 	virtual void DoAndLog( RString &sMessageOut )
 	{
 		if( g_fImageScaleDestination == 1 )
-			g_fImageScaleDestination = 0.5f;
+			g_fImageScaleDestination = ONE_HALF;
 		else
 			g_fImageScaleDestination = 1;
 		IDebugLine::DoAndLog( sMessageOut );
@@ -1249,7 +1250,7 @@ class DebugLineVolumeUp : public IDebugLine
 	virtual bool IsEnabled() { return true; }
 	virtual void DoAndLog( RString &sMessageOut )
 	{
-		ChangeVolume( +0.1f );
+		ChangeVolume( +POINT_ONE );
 		IDebugLine::DoAndLog( sMessageOut );
 	}
 	Preference<float> *GetPref()
@@ -1265,7 +1266,7 @@ class DebugLineVolumeDown : public IDebugLine
 	virtual bool IsEnabled() { return true; }
 	virtual void DoAndLog( RString &sMessageOut )
 	{
-		ChangeVolume( -0.1f );
+		ChangeVolume( NEGATIVE_POINT_ONE );
 		IDebugLine::DoAndLog( sMessageOut );
 		sMessageOut += " - " + ssprintf("%.0f%%",GetPref()->Get()*100);
 	}

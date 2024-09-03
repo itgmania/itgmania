@@ -6,6 +6,7 @@
 #include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil_CircularBuffer.h"
+#include "Constexprs.h"
 
 #include <cstdint>
 
@@ -65,7 +66,7 @@ public:
 
 	/* Sound startup latency--delay between Play() being called and actually
 	 * hearing it.  (This isn't necessarily the same as the buffer latency.) */
-	virtual float GetPlayLatency() const { return 0.0f; }
+	virtual float GetPlayLatency() const { return ZERO; }
 
 	virtual int GetSampleRate() const { return 44100; }
 

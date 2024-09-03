@@ -18,6 +18,7 @@
 #include "PlayerOptions.h"
 #include "PlayerState.h"
 #include "Player.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstddef>
@@ -396,7 +397,7 @@ void StatsManager::SavePadmissScore( const StageStats *pSS, PlayerNumber pn )
 #define ADD_FLOAT_OPTION( parent, name, opts ) \
 	do { \
 		float val = opts[ PlayerOptions::name ]; \
-		if ( val != 0.0f ) \
+		if ( val != ZERO ) \
 			parent->AppendChild( #name, val ); \
 	} while (0)
 

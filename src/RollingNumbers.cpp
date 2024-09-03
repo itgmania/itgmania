@@ -6,6 +6,7 @@
 #include "ActorUtil.h"
 #include "LuaManager.h"
 #include "ThemeManager.h"
+#include "Constexprs.h"
 
 #include <cmath>
 
@@ -83,7 +84,7 @@ void RollingNumbers::DrawPrimitives()
 		std::max((float) 0, original_crop_left), std::max(1-f, original_crop_right));
 	// draw regular color part
 	DrawPart(diffuse_orig, stroke_orig,
-		std::max(f, original_crop_left), std::max(0.0f, original_crop_right));
+		std::max(f, original_crop_left), std::max(ZERO, original_crop_right));
 
 	m_pTempState->crop.left= original_crop_left;
 	m_pTempState->crop.right= original_crop_right;

@@ -9,6 +9,7 @@
 #include "LuaBinding.h"
 #include "XmlFile.h"
 #include "XmlFileUtil.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <map>
@@ -264,7 +265,7 @@ struct frame_t
 {
 	int frame;
 	float delay;
-	frame_t() :frame(0), delay(0.0f) {}
+	frame_t() :frame(0), delay(ZERO) {}
 };
 
 struct actor_template_t

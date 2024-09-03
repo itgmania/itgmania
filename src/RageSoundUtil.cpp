@@ -1,6 +1,7 @@
 #include "global.h"
 #include "RageSoundUtil.h"
 #include "RageUtil.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstdint>
@@ -27,8 +28,8 @@ void RageSoundUtil::Pan( float *buffer, int frames, float fPos )
 	float fLeftFactors[2] ={ 1-fPos, 0 };
 	float fRightFactors[2] =
 	{
-		SCALE( fPos, 0, 1, 0.5f, 0 ),
-		SCALE( fPos, 0, 1, 0.5f, 1 )
+		SCALE( fPos, 0, 1, ONE_HALF, 0 ),
+		SCALE( fPos, 0, 1, ONE_HALF, 1 )
 	};
 
 	if( bSwap )
@@ -57,7 +58,7 @@ void RageSoundUtil::Fade( float *pBuffer, int iFrames, int iChannels, float fSta
 	{
 		float fVolPercent = SCALE( iFrame, 0, iFrames, fStartVolume, fEndVolume );
 
-		fVolPercent = clamp( fVolPercent, 0.f, 1.f );
+		fVolPercent = clamp( fVolPercent, ZERO, ONE );
 		for( int i = 0; i < iChannels; ++i )
 		{
 			*pBuffer *= fVolPercent;

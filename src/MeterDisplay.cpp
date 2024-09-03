@@ -7,6 +7,7 @@
 #include "XmlFile.h"
 #include "RageLog.h"
 #include "LuaManager.h"
+#include "Constexprs.h"
 
 REGISTER_ACTOR_CLASS(MeterDisplay);
 REGISTER_ACTOR_CLASS(SongMeterDisplay);
@@ -24,7 +25,7 @@ void MeterDisplay::Load( RString sStreamPath, float fStreamWidth, RString sTipPa
 	this->AddChild( m_sprTip );
 
 	SetStreamWidth( fStreamWidth );
-	SetPercent( 0.5f );
+	SetPercent( ONE_HALF );
 }
 
 void MeterDisplay::LoadFromNode( const XNode* pNode )
@@ -55,7 +56,7 @@ void MeterDisplay::LoadFromNode( const XNode* pNode )
 	pNode->GetAttrValue( "StreamWidth", fStreamWidth );
 	SetStreamWidth( fStreamWidth );
 
-	SetPercent( 0.5f );
+	SetPercent( ONE_HALF );
 
 	ActorFrame::LoadFromNode( pNode );
 }
@@ -67,7 +68,7 @@ void MeterDisplay::SetPercent( float fPercent )
 	m_sprStream->SetCropRight( 1-fPercent );
 
 	if( m_sprTip.IsLoaded() )
-		m_sprTip->SetX( SCALE(fPercent, 0.f, 1.f, -m_fStreamWidth/2, m_fStreamWidth/2) );
+		m_sprTip->SetX( SCALE(fPercent, ZERO, ONE, -m_fStreamWidth/2, m_fStreamWidth/2) );
 }
 
 void MeterDisplay::SetStreamWidth( float fStreamWidth )
@@ -82,7 +83,7 @@ void SongMeterDisplay::Update( float fDeltaTime )
 	{
 		float fSongStartSeconds = GAMESTATE->m_pCurSong->GetFirstSecond();
 		float fSongEndSeconds = GAMESTATE->m_pCurSong->GetLastSecond();
-		float fPercentPositionSong = SCALE( GAMESTATE->m_Position.m_fMusicSeconds, fSongStartSeconds, fSongEndSeconds, 0.0f, 1.0f );
+		float fPercentPositionSong = SCALE( GAMESTATE->m_Position.m_fMusicSeconds, fSongStartSeconds, fSongEndSeconds, ZERO, ONE );
 		CLAMP( fPercentPositionSong, 0, 1 );
 
 		SetPercent( fPercentPositionSong );

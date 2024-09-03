@@ -40,6 +40,7 @@
 #include "LocalizedString.h"
 #include "AdjustSync.h"
 #include "RandomSeed.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstddef>
@@ -104,7 +105,7 @@ RString ATTACK_DISPLAY_X_NAME( std::size_t p, std::size_t both_sides )	{ return 
  * @brief Distance to search for a note in Step(), in seconds.
  *
  * TODO: This should be calculated based on the max size of the current judgment windows. */
-static const float StepSearchDistance = 1.0f;
+static const float StepSearchDistance = ONE;
 
 void TimingWindowSecondsInit( std::size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut )
 {
@@ -160,7 +161,7 @@ void ValidateMinTNSToScoreNotes(TapNoteScore& tns) {
 	}
 }
 
-static Preference<float> m_fTimingWindowScale	( "TimingWindowScale",		1.0f );
+static Preference<float> m_fTimingWindowScale	( "TimingWindowScale",		ONE );
 static Preference<float> m_fTimingWindowAdd	( "TimingWindowAdd",		0 );
 static Preference1D<float> m_fTimingWindowSeconds( TimingWindowSecondsInit, NUM_TimingWindow );
 static Preference<float> m_fTimingWindowJump	( "TimingWindowJump",		0.25 );
@@ -477,7 +478,7 @@ void Player::Init(
 			fMaxBPM = (M_MOD_HIGH_CAP > 0 ?
 				   bpms.GetMaxWithin(M_MOD_HIGH_CAP) :
 				   bpms.GetMax());
-			fMaxBPM = std::max( 0.0f, fMaxBPM );
+			fMaxBPM = std::max( ZERO, fMaxBPM );
 		}
 
 		// we can't rely on the displayed BPMs, so manually calculate.
@@ -568,7 +569,7 @@ void Player::Init(
 	m_vbFretIsDown.resize( GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)->m_iColsPerPlayer );
 	std::fill_n(m_vbFretIsDown.begin(), m_vbFretIsDown.size(), false);
 
-	m_fActiveRandomAttackStart = -1.0f;
+	m_fActiveRandomAttackStart = NEGATIVE_ONE;
 }
 /**
  * @brief Determine if a TapNote needs a tap note style judgment.
@@ -622,9 +623,9 @@ static void GenerateCacheDataStructure(PlayerState *pPlayerState, const NoteData
 
 	const std::vector<TimingSegment*> vScrolls = pPlayerState->GetDisplayedTiming().GetTimingSegments( SEGMENT_SCROLL );
 
-	float displayedBeat = 0.0f;
-	float lastRealBeat = 0.0f;
-	float lastRatio = 1.0f;
+	float displayedBeat = ZERO;
+	float lastRealBeat = ZERO;
+	float lastRatio = ONE;
 	for ( unsigned i = 0; i < vScrolls.size(); i++ )
 	{
 		ScrollSegment *seg = ToScroll( vScrolls[i] );
@@ -872,12 +873,12 @@ void Player::Update( float fDeltaTime )
 			const float fAttackRunTime = ATTACK_RUN_TIME_RANDOM;
 
 			// Don't start until 1 seconds into game, minimum
-			if( fCurrentGameTime > 1.0f )
+			if( fCurrentGameTime > ONE )
 			{
 				/* Update the attack if there are no others currently running.
 				 * Note that we have a new one activate a little early; This is
 				 * to have a bit of overlap rather than an abrupt change. */
-				if( (fCurrentGameTime - m_fActiveRandomAttackStart) > (fAttackRunTime - 0.5f) )
+				if( (fCurrentGameTime - m_fActiveRandomAttackStart) > (fAttackRunTime - ONE_HALF) )
 				{
 					m_fActiveRandomAttackStart = fCurrentGameTime;
 
@@ -899,19 +900,19 @@ void Player::Update( float fDeltaTime )
 
 		float fMiniPercent = m_pPlayerState->m_PlayerOptions.GetCurrent().m_fEffects[PlayerOptions::EFFECT_MINI];
 		float fTinyPercent = m_pPlayerState->m_PlayerOptions.GetCurrent().m_fEffects[PlayerOptions::EFFECT_TINY];
-		float fJudgmentZoom = std::min( std::pow(0.5f, fMiniPercent+fTinyPercent), 1.0f );
+		float fJudgmentZoom = std::min( std::pow(ONE_HALF, fMiniPercent+fTinyPercent), ONE );
 
 		// Update Y positions
 		{
 			for( int c=0; c<GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)->m_iColsPerPlayer; c++ )
 			{
 				float fPercentReverse = m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(c);
-				float fHoldJudgeYPos = SCALE( fPercentReverse, 0.f, 1.f, HOLD_JUDGMENT_Y_STANDARD, HOLD_JUDGMENT_Y_REVERSE );
-				//float fGrayYPos = SCALE( fPercentReverse, 0.f, 1.f, GRAY_ARROWS_Y_STANDARD, GRAY_ARROWS_Y_REVERSE );
+				float fHoldJudgeYPos = SCALE( fPercentReverse, ZERO, ONE, HOLD_JUDGMENT_Y_STANDARD, HOLD_JUDGMENT_Y_REVERSE );
+				//float fGrayYPos = SCALE( fPercentReverse, ZERO, ONE, GRAY_ARROWS_Y_STANDARD, GRAY_ARROWS_Y_REVERSE );
 
 				float fX = ArrowEffects::GetXPos( m_pPlayerState, c, 0 );
 				const float fZ = ArrowEffects::GetZPos( m_pPlayerState, c, 0);
-				fX *= ( 1 - fMiniPercent * 0.5f );
+				fX *= ( 1 - fMiniPercent * ONE_HALF );
 
 				m_vpHoldJudgment[c]->SetX( fX );
 				m_vpHoldJudgment[c]->SetY( fHoldJudgeYPos );
@@ -941,7 +942,7 @@ void Player::Update( float fDeltaTime )
 			Actor::TweenState::MakeWeightedAverage( m_pActorWithComboPosition->DestTweenState(), ts1, ts2, fPercentCentered );
 		}
 
-		float field_zoom = 1 - fMiniPercent*0.5f;
+		float field_zoom = 1 - fMiniPercent*ONE_HALF;
 		if(m_pNoteField)
 		{
 			if(m_oitg_zoom_mode)
@@ -999,7 +1000,7 @@ void Player::Update( float fDeltaTime )
 				continue;
 			if( tn.HoldResult.hns != HNS_None )
 				continue;
-			if( tn.HoldResult.fLife >= 0.5f )
+			if( tn.HoldResult.fLife >= ONE_HALF )
 				continue;
 
 			Step( iTrack, iHeadRow, now, false, false );
@@ -1020,7 +1021,7 @@ void Player::Update( float fDeltaTime )
 	// be a miss or a hit, so we have to track for all notes whether they
 	// were held at some point before getting judged.
 	{
-		float largestWindow = 0.0f;
+		float largestWindow = ZERO;
 		const auto &disabledWindows = m_pPlayerState->m_PlayerOptions.GetCurrent().m_twDisabledWindows;
 		if (!disabledWindows[TW_W1])
 			largestWindow = std::max(largestWindow, GetWindowSeconds(TW_W1));
@@ -1411,7 +1412,7 @@ void Player::UpdateHoldNotes( int iSongRow, float fDeltaTime, std::vector<TrackR
 				//LOG->Trace("fLife before minus: %f",fLife);
 				fLife -= fDeltaTime / GetWindowSeconds(window);
 				//LOG->Trace("fLife before clamp: %f",fLife);
-				fLife = std::max(0.0f, fLife);
+				fLife = std::max(ZERO, fLife);
 				//LOG->Trace("fLife after: %f",fLife);
 			}
 			break;
@@ -1427,7 +1428,7 @@ void Player::UpdateHoldNotes( int iSongRow, float fDeltaTime, std::vector<TrackR
 
 			// Decrease life
 			fLife -= fDeltaTime/GetWindowSeconds(TW_Roll);
-			fLife = std::max( fLife, 0.0f );	// clamp
+			fLife = std::max( fLife, ZERO );	// clamp
 			break;
 		/*
 		case TapNoteSubType_Mine:
@@ -1573,8 +1574,8 @@ void Player::UpdateHoldNotes( int iSongRow, float fDeltaTime, std::vector<TrackR
 
 			if( tn.iKeysoundIndex >= 0 && tn.iKeysoundIndex < (int) m_vKeysounds.size() )
 			{
-				float factor = (tn.subType == TapNoteSubType_Roll ? 2.0f * fLifeFraction : 10.0f * fLifeFraction - 8.5f);
-				m_vKeysounds[tn.iKeysoundIndex].SetProperty ("Volume", std::max(0.0f, std::min(1.0f, factor)) * fVol);
+				float factor = (tn.subType == TapNoteSubType_Roll ? TWO * fLifeFraction : 10.0f * fLifeFraction - 8.5f);
+				m_vKeysounds[tn.iKeysoundIndex].SetProperty ("Volume", std::max(ZERO, std::min(ONE, factor)) * fVol);
 			}
 		}
 	}
@@ -1687,7 +1688,7 @@ void Player::PushPlayerMatrix(float x, float skew, float center_y)
 	DISPLAY->CameraPushMatrix();
 	DISPLAY->PushMatrix();
 	DISPLAY->LoadMenuPerspective(45, SCREEN_WIDTH, SCREEN_HEIGHT,
-		SCALE(skew, 0.1f, 1.0f, x, SCREEN_CENTER_X), center_y);
+		SCALE(skew, POINT_ONE, ONE, x, SCREEN_CENTER_X), center_y);
 }
 
 void Player::PopPlayerMatrix()
@@ -1710,21 +1711,21 @@ Player::PlayerNoteFieldPositioner::PlayerNoteFieldPositioner(
 	player->PushPlayerMatrix(x, skew, center_y);
 	float reverse_mult= (reverse ? -1 : 1);
 	original_y= player->m_pNoteField->GetY();
-	float tilt_degrees= SCALE(tilt, -1.f, +1.f, +30, -30) * reverse_mult;
-	float zoom= SCALE(mini, 0.f, 1.f, 1.f, .5f);
+	float tilt_degrees= SCALE(tilt, NEGATIVE_ONE, +ONE, +30, -30) * reverse_mult;
+	float zoom= SCALE(mini, ZERO, ONE, ONE, ONE_HALF);
 	// Something strange going on here.  Notice that the range for tilt's
 	// effect on y_offset goes to -45 when positive, but -20 when negative.
 	// I don't know why it's done this why, simply preserving old behavior.
 	// -Kyz
 	if(tilt > 0)
 	{
-		zoom*= SCALE(tilt, 0.f, 1.f, 1.f, 0.9f);
-		y_offset= SCALE(tilt, 0.f, 1.f, 0.f, -45.f) * reverse_mult;
+		zoom*= SCALE(tilt, ZERO, ONE, ONE, 0.9f);
+		y_offset= SCALE(tilt, ZERO, ONE, ZERO, -45.f) * reverse_mult;
 	}
 	else
 	{
-		zoom*= SCALE(tilt, 0.f, -1.f, 1.f, 0.9f);
-		y_offset= SCALE(tilt, 0.f, -1.f, 0.f, -20.f) * reverse_mult;
+		zoom*= SCALE(tilt, ZERO, NEGATIVE_ONE, ONE, 0.9f);
+		y_offset= SCALE(tilt, ZERO, NEGATIVE_ONE, ZERO, -20.f) * reverse_mult;
 	}
 	player->m_pNoteField->SetY(original_y + y_offset);
 	if(player->m_oitg_zoom_mode)
@@ -1850,7 +1851,7 @@ void Player::ChangeLifeRecord()
 	{
 		fLife = GAMESTATE->m_fTugLifePercentP1;
 		if( pn == PLAYER_2 )
-			fLife = 1.0f - fLife;
+			fLife = ONE - fLife;
 	}
 	if( fLife != -1 )
 		if( m_pPlayerStageStats )
@@ -2181,7 +2182,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 		{
 			std::vector<GameInput> GameI;
 			GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)->StyleInputToGameInput( t, pn, GameI );
-			float secs_held= 0.0f;
+			float secs_held= ZERO;
 			for(std::size_t i= 0; i < GameI.size(); ++i)
 			{
 				secs_held= std::max(secs_held, INPUTMAPPER->GetSecsHeld( GameI[i] ));
@@ -2237,7 +2238,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 	if( iRowOfOverlappingNoteOrRow != -1 )
 	{
 		// compute the score for this hit
-		float fNoteOffset = 0.0f;
+		float fNoteOffset = ZERO;
 		// we need this later if we are autosyncing
 		const float fStepBeat = NoteRowToBeat( iRowOfOverlappingNoteOrRow );
 		const float fStepSeconds = m_Timing->GetElapsedTimeFromBeat(fStepBeat);
@@ -2289,7 +2290,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 				break;
 			case TapNoteType_HoldHead:
 				// oh wow, this was causing the trigger before the hold heads
-				// bug. (It was fNoteOffset > 0.f before) -DaisuMaster
+				// bug. (It was fNoteOffset > ZERO before) -DaisuMaster
 				if( !REQUIRE_STEP_ON_HOLD_HEADS && ( fNoteOffset <= GetWindowSeconds( TW_W5 ) && GetWindowSeconds( TW_W5 ) != 0 ) )
 				{
 					// Set it to the first non-disabled window.
@@ -2376,7 +2377,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 
 			// Put some small, random amount in fNoteOffset so that demonstration
 			// show a mix of late and early. - Chris (StepMania r15628)
-			//fNoteOffset = randomf( -0.1f, 0.1f );
+			//fNoteOffset = randomf( NEGATIVE_POINT_ONE, POINT_ONE );
 			// Since themes may use the offset in a visual graph, the above
 			// behavior is not the best thing to do. Instead, random numbers
 			// should be generated based on the TapNoteScore, so that they can
@@ -2394,9 +2395,9 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 				else
 				{
 					// figure out overlap.
-					float fLowerBound = 0.0f; // negative upper limit
-					float fUpperBound = 0.0f; // positive lower limit
-					float fCompareWindow = 0.0f; // filled in here:
+					float fLowerBound = ZERO; // negative upper limit
+					float fUpperBound = ZERO; // positive lower limit
+					float fCompareWindow = ZERO; // filled in here:
 					if ( score == TNS_W2 )
 					{
 						fLowerBound = -fWindowW1;
@@ -2520,7 +2521,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 			//    incur unnecessary life bar hits. This option is a bit complicated so
 			//    for now we'll stick with 1.
 			int iNumTracksWithNotes = m_NoteData.GetNumTracksWithTapOrHoldHead(iRowOfOverlappingNoteOrRow);
-			if (badTns && -fNoteOffset < 0.0f && iNumTracksWithNotes == 1) {
+			if (badTns && -fNoteOffset < ZERO && iNumTracksWithNotes == 1) {
 				// If a player gets an early way off as well as an early decent, we only
 				// want to change the life once.
 				if (pTN->result.earlyTns == TNS_None) {
@@ -2879,7 +2880,7 @@ void Player::CrossedRows( int iLastRowCrossed, const RageTimer &now )
 					PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
 					std::vector<GameInput> GameI;
 					GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)->StyleInputToGameInput( iTrack, pn, GameI );
-					if( PREFSMAN->m_fPadStickSeconds > 0.f )
+					if( PREFSMAN->m_fPadStickSeconds > ZERO )
 					{
 						for(std::size_t i= 0; i < GameI.size(); ++i)
 						{
@@ -2907,7 +2908,7 @@ void Player::CrossedRows( int iLastRowCrossed, const RageTimer &now )
 				PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
 				std::vector<GameInput> GameI;
 				GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)->StyleInputToGameInput( iTrack, pn, GameI );
-				if( PREFSMAN->m_fPadStickSeconds > 0.0f )
+				if( PREFSMAN->m_fPadStickSeconds > ZERO )
 				{
 					for(std::size_t i= 0; i < GameI.size(); ++i)
 					{
@@ -3295,7 +3296,7 @@ void Player::SetJudgment( int iRow, int iTrack, const TapNote &tn, TapNoteScore 
 		msg.SetParam( "MultiPlayer", m_pPlayerState->m_mp );
 		msg.SetParam( "FirstTrack", iTrack );
 		msg.SetParam( "TapNoteScore", tns );
-		msg.SetParam( "Early", fTapNoteOffset < 0.0f );
+		msg.SetParam( "Early", fTapNoteOffset < ZERO );
 		msg.SetParam( "TapNoteOffset", tn.result.fTapNoteOffset );
 		msg.SetParam( "EarlyTapNoteScore", tn.result.earlyTns );
 		msg.SetParam( "EarlyTapNoteOffset", tn.result.fEarlyTapNoteOffset );

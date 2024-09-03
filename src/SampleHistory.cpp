@@ -2,20 +2,21 @@
 #include "SampleHistory.h"
 #include "RageLog.h"
 #include "RageUtil.h"
+#include "Constexprs.h"
 
 #include <cmath>
 
 
 inline float sample_step_size(int samples_per_second)
 {
-	return 1.0f / samples_per_second;
+	return ONE / samples_per_second;
 }
 
 SampleHistory::SampleHistory()
 {
 	m_iLastHistory = 0;
 	m_iHistorySamplesPerSecond = 60;
-	m_fHistorySeconds = 0.0f;
+	m_fHistorySeconds = ZERO;
 	m_fToSample = sample_step_size(m_iHistorySamplesPerSecond);
 	m_fHistorySeconds = 10.0f;
 	int iSamples = std::lrint( m_iHistorySamplesPerSecond * m_fHistorySeconds );
@@ -28,7 +29,7 @@ float SampleHistory::GetSampleNum( float fSamplesAgo ) const
 	if( fSamplesAgo < 0 )
 		fSamplesAgo = 0;
 	if( m_afHistory.size() == 0 )
-		return 0.0f;
+		return ZERO;
 
 	float fSample = m_iLastHistory - fSamplesAgo - 1;
 

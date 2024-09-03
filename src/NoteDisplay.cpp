@@ -26,9 +26,6 @@
 
 static Preference<bool> g_bRenderEarlierNotesOnTop( "RenderEarlierNotesOnTop", false );
 
-static const double PI_180= PI / 180.0;
-static const double PI_180R= 180.0 / PI;
-
 const RString& NoteNotePartToString( NotePart i );
 /** @brief A foreach loop going through the different NoteParts. */
 #define FOREACH_NotePart( i ) FOREACH_ENUM( NotePart, i )
@@ -341,7 +338,7 @@ void NCSplineHandler::MakeWeightedAverage(NCSplineHandler& out,
 #define BOOLS_FROM_CLOSEST(closest) \
 	out.m_spline_mode= closest.m_spline_mode; \
 	out.m_subtract_song_beat_from_curr= closest.m_subtract_song_beat_from_curr;
-	if(between >= 0.5f)
+	if(between >= ONE_HALF)
 	{
 		BOOLS_FROM_CLOSEST(to);
 	}
@@ -675,19 +672,19 @@ void NoteDisplay::SetActiveFrame( float fNoteBeat, Actor &actorToSet, float fAni
 
 	if( bVivid )
 	{
-		float fNoteBeatFraction = std::fmod( fNoteBeat, 1.0f );
+		float fNoteBeatFraction = std::fmod( fNoteBeat, ONE );
 
-		const float fInterval = 1.f / fAnimationLength;
+		const float fInterval = ONE / fAnimationLength;
 		fPercentIntoAnimation += QuantizeDown( fNoteBeatFraction, fInterval );
 
 		// just in case somehow we're majorly negative with the subtraction
-		wrap( fPercentIntoAnimation, 1.f );
+		wrap( fPercentIntoAnimation, ONE );
 	}
 	else
 	{
 		/* 0 ... 1, wrapped */
 		if( fPercentIntoAnimation < 0 )
-			fPercentIntoAnimation += 1.0f;
+			fPercentIntoAnimation += ONE;
 	}
 
 	float fLengthSeconds = actorToSet.GetAnimationLengthSeconds();
@@ -831,10 +828,10 @@ void NoteDisplay::DrawHoldPart(std::vector<Sprite*> &vpSpr,
 			// Shift texture coord to fit hold length If hold length is less than
 			// bottomcap frame height. (translated by hanubeki)
 			if (offset>0){
-				add_to_tex_coord = SCALE(offset, 0.0f, unzoomed_frame_height, 0.0f, 1.0f);
+				add_to_tex_coord = SCALE(offset, ZERO, unzoomed_frame_height, ZERO, ONE);
 			}
 			else{
-				add_to_tex_coord = 0.0f;
+				add_to_tex_coord = ZERO;
 			}
 		}
 	}
@@ -846,8 +843,8 @@ void NoteDisplay::DrawHoldPart(std::vector<Sprite*> &vpSpr,
 	const float fTexCoordCenter	= (fTexCoordLeft+fTexCoordRight)/2;
 
 	// pos_z_vec will be used later to orient the hold.  Read below. -Kyz
-	static const RageVector3 pos_z_vec(0.0f, 0.0f, 1.0f);
-	static const RageVector3 pos_y_vec(0.0f, 1.0f, 0.0f);
+	static const RageVector3 pos_z_vec(ZERO, ZERO, ONE);
+	static const RageVector3 pos_y_vec(ZERO, ONE, ZERO);
 	StripBuffer queue;
 	for(float fY = y_start_pos; !last_vert_set; fY += part_args.y_step)
 	{
@@ -898,7 +895,7 @@ void NoteDisplay::DrawHoldPart(std::vector<Sprite*> &vpSpr,
 		// ArrowEffects only contributes to the Y component of the vector to
 		// maintain the old behavior of how holds are drawn when they wave back
 		// and forth. -Kyz
-		RageVector3 render_forward(0.0f, 1.0f, 0.0f);
+		RageVector3 render_forward(ZERO, ONE, ZERO);
 		column_args.spae_pos_for_beat(m_pPlayerState, cur_beat,
 			fYOffset, m_fYReverseOffsetPixels, sp_pos, ae_pos);
 		// fX and fZ are sp_pos.x + ae_pos.x and sp_pos.z + ae_pos.z. -Kyz
@@ -915,8 +912,8 @@ void NoteDisplay::DrawHoldPart(std::vector<Sprite*> &vpSpr,
 				RageVec3Normalize(&sp_pos_forward, &sp_pos_forward);
 				break;
 			case NCSM_Position:
-				ae_pos.y= 0.0f;
-				render_forward.y= 0.0f;
+				ae_pos.y= ZERO;
+				render_forward.y= ZERO;
 				column_args.pos_handler->EvalDerivForBeat(column_args.song_beat, cur_beat, sp_pos_forward);
 				RageVec3Normalize(&sp_pos_forward, &sp_pos_forward);
 				break;
@@ -997,7 +994,7 @@ void NoteDisplay::DrawHoldPart(std::vector<Sprite*> &vpSpr,
 			RageVec3Cross(&render_left, &pos_z_vec, &render_forward);
 		}
 		RageAARotate(&render_left, &render_forward, render_roty);
-		const float half_width= fScaledFrameWidth * .5f;
+		const float half_width= fScaledFrameWidth * ONE_HALF;
 		render_left.x*= half_width;
 		render_left.y*= half_width;
 		render_left.z*= half_width;
@@ -1079,7 +1076,7 @@ void NoteDisplay::DrawHoldBodyInternal(std::vector<Sprite*>& sprite_top,
 	part_args.wrapping = true;
 	DrawHoldPart(sprite_body, field_args, column_args, part_args, glow, hpt_body);
 	// Draw the bottom cap
-	float overlap_hack = 1.0f;
+	float overlap_hack = ONE;
 	part_args.y_top = y_tail + overlap_hack;
 	part_args.y_bottom = tail_plus_bottom + overlap_hack;
 	part_args.top_beat = bottom_beat;
@@ -1120,7 +1117,7 @@ void NoteDisplay::DrawHoldBody(const TapNote& tn,
 		vpSprBottom.push_back( pSprBottom );
 	}
 
-	const bool reverse = m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(column_args.column) > 0.5f;
+	const bool reverse = m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(column_args.column) > ONE_HALF;
 	part_args.flip_texture_vertically = reverse && cache->m_bFlipHoldBodyWhenReverse;
 	if(part_args.flip_texture_vertically)
 	{
@@ -1193,7 +1190,7 @@ void NoteDisplay::DrawHold(const TapNote& tn,
 
 	// bDrawGlowOnly is a little hacky.  We need to draw the diffuse part and the glow part one pass at a time to minimize state changes
 
-	bool bReverse = m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(column_args.column) > 0.5f;
+	bool bReverse = m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(column_args.column) > ONE_HALF;
 	float fStartBeat = NoteRowToBeat( std::max(tn.HoldResult.iLastHeldRow, iRow) );
 	float fThrowAway = 0;
 
@@ -1223,7 +1220,7 @@ void NoteDisplay::DrawHold(const TapNote& tn,
 	const float fYHead= ArrowEffects::GetYPos(m_pPlayerState, column_args.column, fStartYOffset, m_fYReverseOffsetPixels);
 	const float fYTail= ArrowEffects::GetYPos(m_pPlayerState, column_args.column, fEndYOffset, m_fYReverseOffsetPixels);
 
-	const float fColorScale		= SCALE( tn.HoldResult.fLife, 0.0f, 1.0f, cache->m_fHoldLetGoGrayPercent, 1.0f );
+	const float fColorScale		= SCALE( tn.HoldResult.fLife, ZERO, ONE, cache->m_fHoldLetGoGrayPercent, ONE );
 
 	bool bFlipHeadAndTail = bReverse && cache->m_bFlipHeadAndTailWhenReverse;
 
@@ -1347,21 +1344,21 @@ void NoteDisplay::DrawActor(const TapNote& tn, Actor* pActor, NotePart part,
 	if( bNeedsTranslate )
 	{
 		DISPLAY->TexturePushMatrix();
-		float color = 0.0f;
+		float color = ZERO;
 		//this is only used for ProgressAlternate but must be declared here
-		float fScaledBeat = 0.0f;
+		float fScaledBeat = ZERO;
 		switch( cache->m_NoteColorType[part] )
 		{
 		case NoteColorType_Denominator:
 			color = float( BeatToNoteType( fBeat ) );
-			color = clamp( color, 0.0f, (float) (cache->m_iNoteColorCount[part]-1) );
+			color = clamp( color, ZERO, (float) (cache->m_iNoteColorCount[part]-1) );
 			break;
 		case NoteColorType_Progress:
 			color = std::fmod( std::ceil( fBeat * cache->m_iNoteColorCount[part] ), (float)cache->m_iNoteColorCount[part] );
 			break;
 		case NoteColorType_ProgressAlternate:
 			fScaledBeat = fBeat * cache->m_iNoteColorCount[part];
-			if( fScaledBeat - std::int64_t(fScaledBeat) == 0.0f )
+			if( fScaledBeat - std::int64_t(fScaledBeat) == ZERO )
 				//we're on a boundary, so move to the previous frame.
 				//doing it this way ensures that fScaledBeat is never negative so std::fmod works.
 				fScaledBeat += cache->m_iNoteColorCount[part] - 1;
@@ -1459,7 +1456,7 @@ void NoteDisplay::DrawTap(const TapNote& tn,
 
 	const float fYOffset = ArrowEffects::GetYOffset( m_pPlayerState, column_args.column, fBeat );
 	// this is the line that forces the (1,1,1,x) part of the noteskin diffuse -aj
-	DrawActor(tn, pActor, part, field_args, column_args, fYOffset, fBeat, bIsAddition, fPercentFadeToFail, 1.0f, false);
+	DrawActor(tn, pActor, part, field_args, column_args, fYOffset, fBeat, bIsAddition, fPercentFadeToFail, ONE, false);
 
 	if( tn.type == TapNoteType_Attack )
 		pActor->PlayCommand( "UnsetAttack" );
@@ -1651,9 +1648,9 @@ void NoteColumnRenderer::FinishTweening()
 
 NoteColumnRenderer::NCR_TweenState::NCR_TweenState()
 {
-	m_rot_handler.m_spline.set_spatial_extent(0, PI*2.0f);
-	m_rot_handler.m_spline.set_spatial_extent(1, PI*2.0f);
-	m_rot_handler.m_spline.set_spatial_extent(2, PI*2.0f);
+	m_rot_handler.m_spline.set_spatial_extent(0, PI*TWO);
+	m_rot_handler.m_spline.set_spatial_extent(1, PI*TWO);
+	m_rot_handler.m_spline.set_spatial_extent(2, PI*TWO);
 }
 
 void NoteColumnRenderer::NCR_TweenState::MakeWeightedAverage(

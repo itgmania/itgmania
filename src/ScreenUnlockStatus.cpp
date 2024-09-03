@@ -9,6 +9,7 @@
 #include "ActorUtil.h"
 #include "Song.h"
 #include "Course.h"
+#include "Constexprs.h"
 
 #define UNLOCK_TEXT_SCROLL_X		THEME->GetMetricF("ScreenUnlockStatus","UnlockTextScrollX");
 #define UNLOCK_TEXT_SCROLL_START_Y	THEME->GetMetricF("ScreenUnlockStatus","UnlockTextScrollStartY")
@@ -127,7 +128,7 @@ void ScreenUnlockStatus::Init()
 				break;
 			default:
 				text->SetText( "" );
-				text->SetDiffuse( RageColor(0.5f,0,0,1) );
+				text->SetDiffuse( RageColor(ONE_HALF,0,0,1) );
 				break;
 			}
 
@@ -150,7 +151,7 @@ void ScreenUnlockStatus::Init()
 
 			if (UNLOCK_TEXT_SCROLL == 3 && UNLOCK_TEXT_SCROLL_ROWS + i > NumUnlocks)
 			{   // special command for last unlocks when scrolling is in effect
-				float TargetRow = -0.5f + i + UNLOCK_TEXT_SCROLL_ROWS - NumUnlocks;
+				float TargetRow = -ONE_HALF + i + UNLOCK_TEXT_SCROLL_ROWS - NumUnlocks;
 				float StopOffPoint = ScrollingTextEndY - TargetRow / UNLOCK_TEXT_SCROLL_ROWS * (ScrollingTextEndY - ScrollingTextStartY);
 				float FirstCycleTime = (UNLOCK_TEXT_SCROLL_ROWS - TargetRow) * SECS_PER_CYCLE;
 				float SecondCycleTime = (6 + TargetRow) * SECS_PER_CYCLE - FirstCycleTime;
@@ -182,7 +183,7 @@ void ScreenUnlockStatus::Init()
 
 				if (UNLOCK_TEXT_SCROLL == 3 && UNLOCK_TEXT_SCROLL_ROWS + i > NumUnlocks)
 				{
-					float TargetRow = -0.5f + i + UNLOCK_TEXT_SCROLL_ROWS - NumUnlocks;
+					float TargetRow = -ONE_HALF + i + UNLOCK_TEXT_SCROLL_ROWS - NumUnlocks;
 					float StopOffPoint = ScrollingTextEndY - TargetRow / UNLOCK_TEXT_SCROLL_ROWS * (ScrollingTextEndY - ScrollingTextStartY);
 					float FirstCycleTime = (UNLOCK_TEXT_SCROLL_ROWS - TargetRow) * SECS_PER_CYCLE;
 					float SecondCycleTime = (6 + TargetRow) * SECS_PER_CYCLE - FirstCycleTime;

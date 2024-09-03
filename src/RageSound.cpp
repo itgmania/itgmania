@@ -26,6 +26,7 @@
 #include "RageLog.h"
 #include "PrefsManager.h"
 #include "RageSoundUtil.h"
+#include "Constexprs.h"
 
 #include "RageSoundReader_Extend.h"
 #include "RageSoundReader_Pan.h"
@@ -43,8 +44,8 @@
 
 RageSoundParams::RageSoundParams():
 	m_StartSecond(0), m_LengthSeconds(-1), m_fFadeInSeconds(0),
-	m_fFadeOutSeconds(0), m_Volume(1.0f), m_fAttractVolume(1.0f),
-	m_fPitch(1.0f), m_fSpeed(1.0f), m_StartTime( RageZeroTimer ),
+	m_fFadeOutSeconds(0), m_Volume(ONE), m_fAttractVolume(ONE),
+	m_fPitch(ONE), m_fSpeed(ONE), m_StartTime( RageZeroTimer ),
 	StopMode(M_AUTO), m_bIsCriticalSound(false) {}
 
 RageSoundLoadParams::RageSoundLoadParams():
@@ -152,7 +153,7 @@ public:
 	int GetSampleRate() const { return 44100; }
 	unsigned GetNumChannels() const { return 1; }
 	int GetNextSourceFrame() const { return 0; }
-	float GetStreamToSourceRatio() const { return 1.0f; }
+	float GetStreamToSourceRatio() const { return ONE; }
 	RString GetError() const { return ""; }
 };
 
@@ -281,7 +282,7 @@ int RageSound::GetDataToPlay( float *pBuffer, int iFrames, std::int64_t &iStream
 
 	while( iFrames > 0 )
 	{
-		float fRate = 1.0f;
+		float fRate = ONE;
 		int iSourceFrame = 0;
 
 		/* Read data from our source. */
@@ -596,13 +597,13 @@ void RageSound::ApplyParams()
 	switch( GetStopMode() )
 	{
 		case RageSoundParams::M_LOOP:
-			m_pSource->SetProperty( "Loop", 1.0f );
+			m_pSource->SetProperty( "Loop", ONE );
 			break;
 		case RageSoundParams::M_STOP:
-			m_pSource->SetProperty( "Stop", 1.0f );
+			m_pSource->SetProperty( "Stop", ONE );
 			break;
 		case RageSoundParams::M_CONTINUE:
-			m_pSource->SetProperty( "Continue", 1.0f );
+			m_pSource->SetProperty( "Continue", ONE );
 			break;
 		default: break;
 	}
@@ -661,7 +662,7 @@ public:
 		RageSoundReader* reader= p->GetSoundReader();
 		if(reader == nullptr)
 		{
-			lua_pushnumber(L, -1.0f);
+			lua_pushnumber(L, NEGATIVE_ONE);
 		}
 		else
 		{

@@ -77,7 +77,7 @@ ActorMultiVertex::ActorMultiVertex()
 	_skip_next_update= true;
 	_decode_movie= true;
 	_use_animation_state= false;
-	_secs_into_state= 0.0f;
+	_secs_into_state= ZERO;
 	_cur_state= 0;
 }
 
@@ -359,9 +359,9 @@ void ActorMultiVertex::SetVertsFromSplinesInternal(std::size_t num_splines, std:
 	std::vector<RageSpriteVertex>& verts= AMV_DestTweenState().vertices;
 	std::size_t first= AMV_DestTweenState().FirstToDraw + offset;
 	std::size_t num_verts= AMV_DestTweenState().GetSafeNumToDraw(AMV_DestTweenState()._DrawMode, AMV_DestTweenState().NumToDraw) - offset;
-	std::vector<float> tper(num_splines, 0.0f);
+	std::vector<float> tper(num_splines, ZERO);
 	float num_parts= (static_cast<float>(num_verts) /
-		static_cast<float>(num_splines)) - 1.0f;
+		static_cast<float>(num_splines)) - ONE;
 	for(std::size_t i= 0; i < num_splines; ++i)
 	{
 		tper[i]= _splines[i].get_max_t() / num_parts;
@@ -416,7 +416,7 @@ void ActorMultiVertex::SetState(int i)
 {
 	ASSERT(i >= 0 && static_cast<std::size_t>(i) < _states.size());
 	_cur_state= i;
-	_secs_into_state= 0.0f;
+	_secs_into_state= ZERO;
 }
 
 void ActorMultiVertex::SetAllStateDelays(float delay)
@@ -432,7 +432,7 @@ float ActorMultiVertex::GetAnimationLengthSeconds() const
 	auto calcDelay = [](float total, State const &s) {
 		return total + s.delay;
 	};
-	return std::accumulate(_states.begin(), _states.end(), 0.f, calcDelay);
+	return std::accumulate(_states.begin(), _states.end(), ZERO, calcDelay);
 }
 
 void ActorMultiVertex::SetSecondsIntoAnimation(float seconds)
@@ -611,7 +611,7 @@ void ActorMultiVertex::Update(float fDelta)
 	UpdateAnimationState();
 	if(!skip_this_movie_update && _decode_movie)
 	{
-		_Texture->UpdateMovie(std::max(0.0f, time_passed));
+		_Texture->UpdateMovie(std::max(ZERO, time_passed));
 	}
 }
 
@@ -1053,8 +1053,8 @@ public:
 		}
 		const float width_pix = tex->GetImageToTexCoordsRatioX();
 		const float height_pix = tex->GetImageToTexCoordsRatioY();
-		const float width_ratio = width_pix != 0 ? 1.0f / width_pix : 0;
-		const float height_ratio = height_pix != 0 ? 1.0f / height_pix : 0;
+		const float width_ratio = width_pix != 0 ? ONE / width_pix : 0;
+		const float height_ratio = height_pix != 0 ? ONE / height_pix : 0;
 		const ActorMultiVertex::State& state=
 			p->GetStateData(ValidStateIndex(p, L, 1));
 		lua_createtable(L, 2, 0);

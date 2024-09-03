@@ -41,6 +41,7 @@
 #include "LocalizedString.h"
 #include "PrefsManager.h"
 #include "ScreenManager.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstddef>
@@ -48,12 +49,12 @@
 
 
 std::vector<TimingData> AdjustSync::s_vpTimingDataOriginal;
-float AdjustSync::s_fGlobalOffsetSecondsOriginal = 0.0f;
+float AdjustSync::s_fGlobalOffsetSecondsOriginal = ZERO;
 int AdjustSync::s_iAutosyncOffsetSample = 0;
 float AdjustSync::s_fAutosyncOffset[AdjustSync::OFFSET_SAMPLE_COUNT];
-float AdjustSync::s_fStandardDeviation = 0.0f;
+float AdjustSync::s_fStandardDeviation = ZERO;
 std::vector<std::pair<float, float>> AdjustSync::s_vAutosyncTempoData;
-float AdjustSync::s_fAverageError = 0.0f;
+float AdjustSync::s_fAverageError = ZERO;
 const float AdjustSync::ERROR_TOO_HIGH = 0.025f;
 int AdjustSync::s_iStepsFiltered = 0;
 
@@ -117,8 +118,8 @@ void AdjustSync::SaveSyncChanges()
 	if( s_fGlobalOffsetSecondsOriginal != PREFSMAN->m_fGlobalOffsetSeconds )
 		PREFSMAN->SavePrefsToDisk();
 	ResetOriginalSyncData();
-	s_fStandardDeviation = 0.0f;
-	s_fAverageError = 0.0f;
+	s_fStandardDeviation = ZERO;
+	s_fAverageError = ZERO;
 }
 
 void AdjustSync::RevertSyncChanges()
@@ -139,8 +140,8 @@ void AdjustSync::RevertSyncChanges()
 	}
 
 	ResetOriginalSyncData();
-	s_fStandardDeviation = 0.0f;
-	s_fAverageError = 0.0f;
+	s_fStandardDeviation = ZERO;
+	s_fAverageError = ZERO;
 }
 
 static LocalizedString AUTOSYNC_CORRECTION_APPLIED	( "AdjustSync", "Autosync: Correction applied." );
@@ -234,8 +235,8 @@ void AdjustSync::AutosyncOffset()
 
 void AdjustSync::AutosyncTempo()
 {
-	float fSlope = 0.0f;
-	float fIntercept = 0.0f;
+	float fSlope = ZERO;
+	float fIntercept = ZERO;
 	if( !CalcLeastSquares( s_vAutosyncTempoData, fSlope, fIntercept, s_fAverageError ) )
 	{
 		s_vAutosyncTempoData.clear();
@@ -258,7 +259,7 @@ void AdjustSync::AutosyncTempo()
 			return;
 
 		GAMESTATE->m_pCurSong->m_SongTiming.m_fBeat0OffsetInSeconds += fIntercept;
-		const float fScaleBPM = 1.0f/(1.0f - fSlope);
+		const float fScaleBPM = ONE/(ONE - fSlope);
 		TimingData &timing = GAMESTATE->m_pCurSong->m_SongTiming;
 
 		const std::vector<TimingSegment*> &bpms = timing.GetTimingSegments(SEGMENT_BPM);
@@ -275,14 +276,14 @@ void AdjustSync::AutosyncTempo()
 		for (unsigned i = 0; i < stops.size(); i++)
 		{
 			const StopSegment *s = ToStop( stops[i] );
-			timing.AddSegment( StopSegment(s->GetRow(), s->GetPause() * (1.0f - fSlope)) );
+			timing.AddSegment( StopSegment(s->GetRow(), s->GetPause() * (ONE - fSlope)) );
 		}
 		// Do the same for delays.
 		const std::vector<TimingSegment*> &delays = timing.GetTimingSegments(SEGMENT_DELAY);
 		for (unsigned i = 0; i < delays.size(); i++)
 		{
 			const DelaySegment *s = ToDelay( delays[i] );
-			timing.AddSegment( DelaySegment(s->GetRow(), s->GetPause() * (1.0f - fSlope)) );
+			timing.AddSegment( DelaySegment(s->GetRow(), s->GetPause() * (ONE - fSlope)) );
 		}
 
 		SCREENMAN->SystemMessage( AUTOSYNC_CORRECTION_APPLIED.GetValue() );
@@ -431,7 +432,7 @@ void AdjustSync::GetSyncChangeTextSong( std::vector<RString> &vsAddTo )
 			vsAddTo.push_back( s );
 		}
 
-		if( vsAddTo.size() > iOriginalSize && s_fAverageError > 0.0f )
+		if( vsAddTo.size() > iOriginalSize && s_fAverageError > ZERO )
 		{
 			vsAddTo.push_back( ssprintf(ERROR.GetValue(), s_fAverageError) );
 		}

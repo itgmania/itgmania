@@ -11,6 +11,7 @@
 #include "InputFilter.h"
 #include "PrefsManager.h"
 #include "GamePreferences.h" //needed for Axis Fix
+#include "Constexprs.h"
 
 #include "InputHandler_DirectInputHelper.h"
 
@@ -516,9 +517,9 @@ void InputHandler_DInput::UpdatePolled( DIDevice &device, const RageTimer &tm )
 
 						if( neg != DeviceButton_Invalid )
 						{
-							float l = SCALE( int(val), 0.0f, 100.0f, 0.0f, 1.0f );
-							ButtonPressed( DeviceInput(dev, neg, std::max(-l, 0.0f), tm) );
-							ButtonPressed( DeviceInput(dev, pos, std::max(+l, 0.0f), tm) );
+							float l = SCALE( int(val), ZERO, 100.0f, ZERO, ONE );
+							ButtonPressed( DeviceInput(dev, neg, std::max(-l, ZERO), tm) );
+							ButtonPressed( DeviceInput(dev, pos, std::max(+l, ZERO), tm) );
 						}
 
 						break;
@@ -635,8 +636,8 @@ void InputHandler_DInput::UpdateBuffered( DIDevice &device, const RageTimer &tm 
 	}
 
 	// reset mousewheel
-	ButtonPressed( DeviceInput(device.dev, MOUSE_WHEELUP, 0.0f, tm) );
-	ButtonPressed( DeviceInput(device.dev, MOUSE_WHEELDOWN, 0.0f, tm) );
+	ButtonPressed( DeviceInput(device.dev, MOUSE_WHEELUP, ZERO, tm) );
+	ButtonPressed( DeviceInput(device.dev, MOUSE_WHEELDOWN, ZERO, tm) );
 
 	for( int i = 0; i < (int) numevents; ++i )
 	{
@@ -692,11 +693,11 @@ void InputHandler_DInput::UpdateBuffered( DIDevice &device, const RageTimer &tm 
 							{
 								up = MOUSE_WHEELUP; down = MOUSE_WHEELDOWN;
 								float fWheelDelta = l;
-								//l = SCALE( int(evtbuf[i].dwData), -WHEEL_DELTA, WHEEL_DELTA, 1.0f, -1.0f );
+								//l = SCALE( int(evtbuf[i].dwData), -WHEEL_DELTA, WHEEL_DELTA, ONE, NEGATIVE_ONE );
 								if( l > 0 )
 								{
-									DeviceInput diUp = DeviceInput(dev, up, 1.0f, tm);
-									DeviceInput diDown = DeviceInput(dev, down, 0.0f, tm);
+									DeviceInput diUp = DeviceInput(dev, up, ONE, tm);
+									DeviceInput diDown = DeviceInput(dev, down, ZERO, tm);
 									// This if statement used to be a while loop.  But Kevin
 									// reported that scrolling the mouse wheel locked up input.
 									// I assume that fWheelDelta was some absurdly large value,
@@ -714,8 +715,8 @@ void InputHandler_DInput::UpdateBuffered( DIDevice &device, const RageTimer &tm 
 								}
 								else if( l < 0 )
 								{
-									DeviceInput diDown = DeviceInput(dev, down, 1.0f, tm);
-									DeviceInput diUp = DeviceInput(dev, up, 0.0f, tm);
+									DeviceInput diDown = DeviceInput(dev, down, ONE, tm);
+									DeviceInput diUp = DeviceInput(dev, up, ZERO, tm);
 									// See comment for the l > 0 case. -Kyz
 									if( fWheelDelta <= -WHEEL_DELTA )
 									{
@@ -727,9 +728,9 @@ void InputHandler_DInput::UpdateBuffered( DIDevice &device, const RageTimer &tm 
 								}
 								else
 								{
-									DeviceInput diUp = DeviceInput(dev, up, 0.0f, tm);
+									DeviceInput diUp = DeviceInput(dev, up, ZERO, tm);
 									ButtonPressed( diUp );
-									DeviceInput diDown = DeviceInput(dev, down, 0.0f, tm);
+									DeviceInput diDown = DeviceInput(dev, down, ZERO, tm);
 									ButtonPressed( diDown );
 								}
 							}
@@ -753,7 +754,7 @@ void InputHandler_DInput::UpdateBuffered( DIDevice &device, const RageTimer &tm 
 										 "Controller '%s' is returning an unknown joystick offset, %i",
 										 device.m_sName.c_str(), in.ofs );
 
-						float l = SCALE( int(evtbuf[i].dwData), 0.0f, 100.0f, 0.0f, 1.0f );
+						float l = SCALE( int(evtbuf[i].dwData), ZERO, 100.0f, ZERO, ONE );
 						if(GamePreferences::m_AxisFix)
 						{
 						  ButtonPressed( DeviceInput(dev, up, (l == 0) || (l == -1), tm) );
@@ -762,8 +763,8 @@ void InputHandler_DInput::UpdateBuffered( DIDevice &device, const RageTimer &tm 
 						}
 						else
 						{
-						  ButtonPressed( DeviceInput(dev, up, std::max(-l, 0.0f), tm) );
-						  ButtonPressed( DeviceInput(dev, down, std::max(+l, 0.0f), tm) );
+						  ButtonPressed( DeviceInput(dev, up, std::max(-l, ZERO), tm) );
+						  ButtonPressed( DeviceInput(dev, down, std::max(+l, ZERO), tm) );
 						}
 					}
 					break;
@@ -792,29 +793,29 @@ void InputHandler_DInput::UpdateXInput( XIDevice &device, const RageTimer &tm )
 	if (XInputGetState(device.m_dwXInputSlot, &state) == ERROR_SUCCESS)
 	{
 		// map joysticks
-		float lx = 0.f;
-		float ly = 0.f;
+		float lx = ZERO;
+		float ly = ZERO;
 		if (std::sqrt(std::pow(state.Gamepad.sThumbLX, 2) + std::pow(state.Gamepad.sThumbLY, 2)) > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)
 		{
-			lx = SCALE(state.Gamepad.sThumbLX + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f, XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
-			ly = SCALE(state.Gamepad.sThumbLY + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f, XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
+			lx = SCALE(state.Gamepad.sThumbLX + ZERO, XINPUT_GAMEPAD_THUMB_MIN + ZERO, XINPUT_GAMEPAD_THUMB_MAX + ZERO, NEGATIVE_ONE, ONE);
+			ly = SCALE(state.Gamepad.sThumbLY + ZERO, XINPUT_GAMEPAD_THUMB_MIN + ZERO, XINPUT_GAMEPAD_THUMB_MAX + ZERO, NEGATIVE_ONE, ONE);
 		}
-		ButtonPressed(DeviceInput(device.dev, JOY_LEFT, std::max(-lx, 0.f), tm));
-		ButtonPressed(DeviceInput(device.dev, JOY_RIGHT, std::max(+lx, 0.f), tm));
-		ButtonPressed(DeviceInput(device.dev, JOY_UP, std::max(+ly, 0.f), tm));
-		ButtonPressed(DeviceInput(device.dev, JOY_DOWN, std::max(-ly, 0.f), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_LEFT, std::max(-lx, ZERO), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_RIGHT, std::max(+lx, ZERO), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_UP, std::max(+ly, ZERO), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_DOWN, std::max(-ly, ZERO), tm));
 
-		float rx = 0.f;
-		float ry = 0.f;
+		float rx = ZERO;
+		float ry = ZERO;
 		if (std::sqrt(std::pow(state.Gamepad.sThumbRX, 2) + std::pow(state.Gamepad.sThumbRY, 2)) > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE)
 		{
-			rx = SCALE(state.Gamepad.sThumbRX + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f, XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
-			ry = SCALE(state.Gamepad.sThumbRY + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f, XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
+			rx = SCALE(state.Gamepad.sThumbRX + ZERO, XINPUT_GAMEPAD_THUMB_MIN + ZERO, XINPUT_GAMEPAD_THUMB_MAX + ZERO, NEGATIVE_ONE, ONE);
+			ry = SCALE(state.Gamepad.sThumbRY + ZERO, XINPUT_GAMEPAD_THUMB_MIN + ZERO, XINPUT_GAMEPAD_THUMB_MAX + ZERO, NEGATIVE_ONE, ONE);
 		}
-		ButtonPressed(DeviceInput(device.dev, JOY_LEFT_2, std::max(-rx, 0.f), tm));
-		ButtonPressed(DeviceInput(device.dev, JOY_RIGHT_2, std::max(+rx, 0.f), tm));
-		ButtonPressed(DeviceInput(device.dev, JOY_UP_2, std::max(+ry, 0.f), tm));
-		ButtonPressed(DeviceInput(device.dev, JOY_DOWN_2, std::max(-ry, 0.f), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_LEFT_2, std::max(-rx, ZERO), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_RIGHT_2, std::max(+rx, ZERO), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_UP_2, std::max(+ry, ZERO), tm));
+		ButtonPressed(DeviceInput(device.dev, JOY_DOWN_2, std::max(-ry, ZERO), tm));
 
 		// map buttons
 		ButtonPressed(DeviceInput(device.dev, JOY_BUTTON_1, !!(state.Gamepad.wButtons & XINPUT_GAMEPAD_A), tm));
@@ -896,7 +897,7 @@ void InputHandler_DInput::Update()
 }
 
 const float POLL_FOR_JOYSTICK_CHANGES_LENGTH_SECONDS = 15.0f;
-const float POLL_FOR_JOYSTICK_CHANGES_EVERY_SECONDS = 0.25f;
+const float POLL_FOR_JOYSTICK_CHANGES_EVERY_SECONDS = ONE_QUARTER;
 
 bool InputHandler_DInput::DevicesChanged()
 {
@@ -1037,7 +1038,7 @@ static wchar_t ScancodeAndKeysToChar( DWORD scancode, unsigned char keys[256] )
 	}
 
 	unsigned short result[2]; // ToAscii writes a max of 2 chars
-	ZERO( result );
+	ZERO_MEMORY( result );
 
 	if( pToUnicodeEx != nullptr )
 	{
@@ -1082,7 +1083,7 @@ wchar_t InputHandler_DInput::DeviceButtonToChar( DeviceButton button, bool bUseC
 				continue;
 
 			unsigned char keys[256];
-			ZERO( keys );
+			ZERO_MEMORY( keys );
 			if( bUseCurrentKeyModifiers )
 				GetKeyboardState(keys);
 			// todo: handle Caps Lock -freem

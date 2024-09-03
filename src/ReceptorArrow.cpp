@@ -6,6 +6,7 @@
 #include "RageUtil.h"
 #include "Style.h"
 #include "PlayerState.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -36,7 +37,7 @@ void ReceptorArrow::Load( const PlayerState* pPlayerState, int iColNo )
 	m_pReceptor.Load( NOTESKIN->LoadActor(sButton, "Receptor") );
 	this->AddChild( m_pReceptor );
 
-	bool bReverse = m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(m_iColNo) > 0.5f;
+	bool bReverse = m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(m_iColNo) > ONE_HALF;
 	m_pReceptor->PlayCommand( bReverse? "ReverseOn":"ReverseOff" );
 	m_bWasReverse = bReverse;
 }
@@ -45,7 +46,7 @@ void ReceptorArrow::Update( float fDeltaTime )
 {
 	ActorFrame::Update( fDeltaTime );
 
-	bool bReverse = m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(m_iColNo) > 0.5f;
+	bool bReverse = m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(m_iColNo) > ONE_HALF;
 	if( bReverse != m_bWasReverse )
 	{
 		m_pReceptor->PlayCommand( bReverse? "ReverseOn":"ReverseOff" );

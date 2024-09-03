@@ -80,7 +80,7 @@ void FadingBanner::Load( RageTextureID ID, bool bLowResToHighRes )
 	RageTexture *pTexture = m_Banner[m_iIndexLatest].GetTexture();
 	if( !pTexture || !pTexture->IsAMovie() )
 		return;
-	m_Banner[m_iIndexLatest].SetSecondsIntoAnimation( 0.f );
+	m_Banner[m_iIndexLatest].SetSecondsIntoAnimation( ZERO );
 	for( int i = 1; i < NUM_BANNERS; ++i )
 	{
 		int index = m_iIndexLatest - i;

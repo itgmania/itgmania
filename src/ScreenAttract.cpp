@@ -11,11 +11,12 @@
 #include "GameSoundManager.h"
 #include "InputEventPlus.h"
 #include "RageSoundManager.h"
+#include "Constexprs.h"
 
 #define START_SCREEN(sScreenName)	THEME->GetMetric (sScreenName,"StartScreen")
 
 ThemeMetric<bool>	BACK_GOES_TO_START_SCREEN( "ScreenAttract", "BackGoesToStartScreen" );
-Preference<float>	g_fSoundVolumeAttract( "SoundVolumeAttract", 1.0f );
+Preference<float>	g_fSoundVolumeAttract( "SoundVolumeAttract", ONE );
 
 REGISTER_SCREEN_CLASS( ScreenAttract );
 void ScreenAttract::Init()
@@ -54,11 +55,11 @@ void ScreenAttract::SetAttractVolume( bool bInAttract )
 		if( GAMESTATE->IsTimeToPlayAttractSounds() )
 			SOUNDMAN->SetVolumeOfNonCriticalSounds( g_fSoundVolumeAttract ); // unmute attract sounds
 		else
-			SOUNDMAN->SetVolumeOfNonCriticalSounds( 0.0f ); // mute attract sounds
+			SOUNDMAN->SetVolumeOfNonCriticalSounds( ZERO ); // mute attract sounds
 	}
 	else
 	{
-		SOUNDMAN->SetVolumeOfNonCriticalSounds( 1.0f ); // unmute all sounds
+		SOUNDMAN->SetVolumeOfNonCriticalSounds( ONE ); // unmute all sounds
 	}
 }
 

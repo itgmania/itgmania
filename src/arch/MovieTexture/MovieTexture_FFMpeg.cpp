@@ -6,6 +6,7 @@
 #include "RageUtil.h"
 #include "RageFile.h"
 #include "RageSurface.h"
+#include "Constexprs.h"
 
 #include <cerrno>
 #include <cstddef>
@@ -345,7 +346,7 @@ int MovieDecoder_FFMpeg::DecodePacketInBuffer() {
 		// Length of this frame, only used as a fallback for getting the frame
 		// timestamp above.
 		frame_buffer_.back()->frame_delay = (float)av_q2d(av_stream_->time_base);
-		frame_buffer_.back()->frame_delay += frame_buffer_.back()->frame->repeat_pict * (frame_buffer_.back()->frame_delay * 0.5f);
+		frame_buffer_.back()->frame_delay += frame_buffer_.back()->frame->repeat_pict * (frame_buffer_.back()->frame_delay * ONE_HALF);
 		frame_buffer_.back()->decoded = true;
 
 		return 1;

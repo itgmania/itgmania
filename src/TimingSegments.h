@@ -2,6 +2,7 @@
 #define TIMING_SEGMENTS_H
 
 #include "NoteTypes.h" // Converting rows to beats and vice~versa.
+#include "Constexprs.h"
 
 #include <cmath>
 #include <vector>
@@ -270,7 +271,7 @@ struct TickcountSegment : public TimingSegment
 	void SetTicks( int iTicks ) { m_iTicksPerBeat = iTicks; }
 
 	RString ToString( int dec ) const;
-	std::vector<float> GetValues() const { return std::vector<float>(1, GetTicks() * 1.f); }
+	std::vector<float> GetValues() const { return std::vector<float>(1, GetTicks() * ONE); }
 
 	bool operator==( const TickcountSegment &other ) const
 	{
@@ -409,7 +410,7 @@ struct BPMSegment : public TimingSegment
 	TimingSegment* Copy() const { return new BPMSegment(*this); }
 
 	// note that this takes a BPM, not a BPS (compatibility)
-	BPMSegment( int iStartRow = ROW_INVALID, float fBPM = 0.0f ) :
+	BPMSegment( int iStartRow = ROW_INVALID, float fBPM = ZERO ) :
 		TimingSegment(iStartRow) { SetBPM(fBPM); }
 
 	BPMSegment( const BPMSegment &other ) :
@@ -539,8 +540,8 @@ struct SpeedSegment : public TimingSegment
 	/** @brief The type of unit used for segment scaling. */
 	enum BaseUnit { UNIT_BEATS, UNIT_SECONDS };
 
-	SpeedSegment( int iStartRow = ROW_INVALID, float fRatio = 1.0f,
-	  float fDelay = 0.0f, BaseUnit unit = UNIT_BEATS ) :
+	SpeedSegment( int iStartRow = ROW_INVALID, float fRatio = ONE,
+	  float fDelay = ZERO, BaseUnit unit = UNIT_BEATS ) :
 		TimingSegment(iStartRow), m_fRatio(fRatio), m_fDelay(fDelay),
 		m_Unit(unit) { }
 
@@ -611,7 +612,7 @@ struct ScrollSegment : public TimingSegment
 
 	TimingSegment* Copy() const { return new ScrollSegment(*this); }
 
-	ScrollSegment( int iStartRow = ROW_INVALID, float fRatio = 1.0f ) :
+	ScrollSegment( int iStartRow = ROW_INVALID, float fRatio = ONE ) :
 		TimingSegment(iStartRow), m_fRatio(fRatio) { }
 
 	ScrollSegment(const ScrollSegment &other) :
@@ -656,7 +657,7 @@ struct StopSegment : public TimingSegment
 
 	TimingSegment* Copy() const { return new StopSegment(*this); }
 
-	StopSegment( int iStartRow = ROW_INVALID, float fSeconds = 0.0f ) :
+	StopSegment( int iStartRow = ROW_INVALID, float fSeconds = ZERO ) :
 		TimingSegment(iStartRow), m_fSeconds(fSeconds) { }
 
 	StopSegment (const StopSegment &other) :

@@ -9,6 +9,7 @@
 #include "ThemeMetric.h"
 #include "PlayerState.h"
 #include "NoteTypes.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 
@@ -60,7 +61,7 @@ void ScoreKeeperRave::HandleTapRowScore( const NoteData &nd, int iRow )
 {
 	TapNoteScore scoreOfLastTap;
 	int iNumTapsInRow;
-	float fPercentToMove = 0.0f;
+	float fPercentToMove = ZERO;
 
 	GetScoreOfLastTapInRow( nd, iRow, scoreOfLastTap, iNumTapsInRow );
 	if( iNumTapsInRow <= 0 )
@@ -82,7 +83,7 @@ void ScoreKeeperRave::HandleHoldScore( const TapNote &tn )
 {
 	// todo: should hit mine be handled in HandleTapRow score instead? -aj
 	TapNoteScore tapScore = tn.result.tns;
-	float fPercentToMove = 0.0f;
+	float fPercentToMove = ZERO;
 	switch( tapScore )
 	{
 		case TNS_HitMine:
@@ -119,7 +120,7 @@ void ScoreKeeperRave::AddSuperMeterDelta( float fUnscaledPercentChange )
 	if( PREFSMAN->m_bMercifulDrain  &&  fUnscaledPercentChange<0 )
 	{
 		float fSuperPercentage = m_pPlayerState->m_fSuperMeter / Enum::to_integral(NUM_ATTACK_LEVELS);
-		fUnscaledPercentChange *= SCALE( fSuperPercentage, 0.f, 1.f, 0.5f, 1.f);
+		fUnscaledPercentChange *= SCALE( fSuperPercentage, ZERO, ONE, ONE_HALF, ONE);
 	}
 
 	// more mercy: Grow super meter slower or faster depending on life.
@@ -133,22 +134,22 @@ void ScoreKeeperRave::AddSuperMeterDelta( float fUnscaledPercentChange )
 		default:
 			FAIL_M(ssprintf("Invalid player number: %i", m_pPlayerState->m_PlayerNumber));
 		}
-		CLAMP( fLifePercentage, 0.f, 1.f );
+		CLAMP( fLifePercentage, ZERO, ONE );
 		if( fUnscaledPercentChange > 0 )
-			fUnscaledPercentChange *= SCALE( fLifePercentage, 0.f, 1.f, 1.7f, 0.3f);
+			fUnscaledPercentChange *= SCALE( fLifePercentage, ZERO, ONE, 1.7f, 0.3f);
 		else	// fUnscaledPercentChange <= 0
-			fUnscaledPercentChange /= SCALE( fLifePercentage, 0.f, 1.f, 1.7f, 0.3f);
+			fUnscaledPercentChange /= SCALE( fLifePercentage, ZERO, ONE, 1.7f, 0.3f);
 	}
 
 	// mercy: drop super meter faster if at a higher level
 	if( fUnscaledPercentChange < 0 )
-		fUnscaledPercentChange *= SCALE( m_pPlayerState->m_fSuperMeter, 0.f, 1.f, 0.01f, 1.f );
+		fUnscaledPercentChange *= SCALE( m_pPlayerState->m_fSuperMeter, ZERO, ONE, POINT_ZERO_ONE, ONE );
 
 	AttackLevel oldAL = (AttackLevel)(int)m_pPlayerState->m_fSuperMeter;
 
 	float fPercentToMove = fUnscaledPercentChange;
 	m_pPlayerState->m_fSuperMeter += fPercentToMove * m_pPlayerState->m_fSuperMeterGrowthScale;
-	CLAMP( m_pPlayerState->m_fSuperMeter, 0.f, NUM_ATTACK_LEVELS );
+	CLAMP( m_pPlayerState->m_fSuperMeter, ZERO, NUM_ATTACK_LEVELS );
 
 	AttackLevel newAL = (AttackLevel)(int)m_pPlayerState->m_fSuperMeter;
 
@@ -156,7 +157,7 @@ void ScoreKeeperRave::AddSuperMeterDelta( float fUnscaledPercentChange )
 	{
 		LaunchAttack( oldAL );
 		if( newAL == NUM_ATTACK_LEVELS )	// hit upper bounds of meter
-			m_pPlayerState->m_fSuperMeter -= 1.f;
+			m_pPlayerState->m_fSuperMeter -= ONE;
 	}
 
 	// mercy: if losing remove attacks on life drain
@@ -165,8 +166,8 @@ void ScoreKeeperRave::AddSuperMeterDelta( float fUnscaledPercentChange )
 		bool bWinning;
 		switch( m_pPlayerState->m_PlayerNumber )
 		{
-		case PLAYER_1:	bWinning = GAMESTATE->m_fTugLifePercentP1 > 0.5f;	break;
-		case PLAYER_2:	bWinning = GAMESTATE->m_fTugLifePercentP1 < 0.5f;	break;
+		case PLAYER_1:	bWinning = GAMESTATE->m_fTugLifePercentP1 > ONE_HALF;	break;
+		case PLAYER_2:	bWinning = GAMESTATE->m_fTugLifePercentP1 < ONE_HALF;	break;
 		default:
 			bWinning = false;
 			FAIL_M(ssprintf("Invalid player number: %i", m_pPlayerState->m_PlayerNumber));

@@ -22,6 +22,7 @@
 #include "CommonMetrics.h"
 #include "MessageManager.h"
 #include "LocalizedString.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstddef>
@@ -1221,7 +1222,7 @@ void MusicWheel::UpdateSwitch()
 		else
 		{
 			--m_iSwitchesLeftInSpinDown;
-			const float SwitchTimes[] = { 0.5f, 1.3f, 0.8f, 0.4f, 0.2f };
+			const float SwitchTimes[] = { ONE_HALF, 1.3f, 0.8f, 0.4f, 0.2f };
 			ASSERT( m_iSwitchesLeftInSpinDown >= 0 && m_iSwitchesLeftInSpinDown <= 4 );
 			m_fTimeLeftInState = SwitchTimes[m_iSwitchesLeftInSpinDown];
 			m_Moving = 0;
@@ -1229,7 +1230,7 @@ void MusicWheel::UpdateSwitch()
 			LOG->Trace( "m_iSwitchesLeftInSpinDown id %d, m_fTimeLeftInState is %f", m_iSwitchesLeftInSpinDown, m_fTimeLeftInState );
 
 			if( m_iSwitchesLeftInSpinDown == 0 )
-				ChangeMusic( randomf(0,1) >= 0.5f? 1:-1 );
+				ChangeMusic( randomf(0,1) >= ONE_HALF? 1:-1 );
 			else
 				ChangeMusic( 1 );
 		}
@@ -1354,7 +1355,7 @@ bool MusicWheel::Select()	// return true if this selection ends the screen
 		case STATE_ROULETTE_SPINNING:
 			m_WheelState = STATE_ROULETTE_SLOWING_DOWN;
 			m_iSwitchesLeftInSpinDown = ROULETTE_SLOW_DOWN_SWITCHES/2+1 + RandomInt( ROULETTE_SLOW_DOWN_SWITCHES/2 );
-			m_fTimeLeftInState = 0.1f;
+			m_fTimeLeftInState = POINT_ONE;
 			return false;
 		case STATE_RANDOM_SPINNING:
 			m_fPositionOffsetFromSelection = std::max(m_fPositionOffsetFromSelection, 0.3f);
@@ -1400,7 +1401,7 @@ void MusicWheel::StartRoulette()
 	m_WheelState = STATE_ROULETTE_SPINNING;
 	m_Moving = 1;
 	m_TimeBeforeMovingBegins = 0;
-	m_SpinSpeed = 1.0f/ROULETTE_SWITCH_SECONDS;
+	m_SpinSpeed = ONE/ROULETTE_SWITCH_SECONDS;
 	GAMESTATE->m_SortOrder.Set( SORT_ROULETTE );
 	SetOpenSection( "" );
 	RebuildWheelItems();
@@ -1427,7 +1428,7 @@ void MusicWheel::StartRandom()
 
 	m_Moving = -1;
 	m_TimeBeforeMovingBegins = 0;
-	m_SpinSpeed = 1.0f/ROULETTE_SWITCH_SECONDS;
+	m_SpinSpeed = ONE/ROULETTE_SWITCH_SECONDS;
 	m_SpinSpeed *= 20.0f; /* faster! */
 	m_WheelState = STATE_RANDOM_SPINNING;
 

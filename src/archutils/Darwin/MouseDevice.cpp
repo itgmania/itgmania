@@ -1,5 +1,6 @@
 #include "global.h"
 #include "MouseDevice.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -119,9 +120,9 @@ void MouseDevice::GetButtonPresses( std::vector<DeviceInput>& vPresses, IOHIDEle
 	}
 	else if( m.z_axis == cookie )
 	{
-		float level = SCALE( value, m.z_min, m.z_max, -1.0f, 1.0f );
-		INPUTFILTER->ButtonPressed( DeviceInput(DEVICE_MOUSE, MOUSE_WHEELUP, std::max(-level, 0.0f), now) );
-		INPUTFILTER->ButtonPressed( DeviceInput(DEVICE_MOUSE, MOUSE_WHEELDOWN, std::max(+level, 0.0f), now) );
+		float level = SCALE( value, m.z_min, m.z_max, NEGATIVE_ONE, ONE );
+		INPUTFILTER->ButtonPressed( DeviceInput(DEVICE_MOUSE, MOUSE_WHEELUP, std::max(-level, ZERO), now) );
+		INPUTFILTER->ButtonPressed( DeviceInput(DEVICE_MOUSE, MOUSE_WHEELDOWN, std::max(+level, ZERO), now) );
 	}
 	else
 	{

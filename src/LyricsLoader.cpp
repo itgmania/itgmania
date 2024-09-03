@@ -5,6 +5,7 @@
 #include "ThemeManager.h"
 #include "RageFile.h"
 #include "Song.h"
+#include "Constexprs.h"
 
 #include <map>
 #include <vector>
@@ -90,7 +91,7 @@ bool LyricsLoader::LoadFromLRCFile(const RString& sPath, Song& out)
 
 		// todo: handle [offset:xxxx] tag? -aj (xxxx is milliseconds)
 		// offsets each timestamp after the offset by that amount.
-		//float fLyricOffset = 0.0f;
+		//float fLyricOffset = ZERO;
 
 		// Enforce strict timestamp format to prevent crashing the program.
 		std::vector<RString> dummy;

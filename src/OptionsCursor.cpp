@@ -3,6 +3,7 @@
 #include "RageUtil.h"
 #include "ThemeManager.h"
 #include "ActorUtil.h"
+#include "Constexprs.h"
 
 #include <cmath>
 
@@ -110,7 +111,7 @@ void OptionsCursor::BeginTweening( float fSecs, TweenType tt )
 
 void OptionsCursor::SetBarWidth( int iWidth )
 {
-	float fWidth = std::ceil(iWidth/2.0f)*2.0f; // round up to nearest even number
+	float fWidth = std::ceil(iWidth/TWO)*TWO; // round up to nearest even number
 
 	m_sprMiddle->ZoomToWidth( fWidth );
 

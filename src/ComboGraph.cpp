@@ -5,6 +5,7 @@
 #include "ActorUtil.h"
 #include "BitmapText.h"
 #include "XmlFile.h"
+#include "Constexprs.h"
 
 const int MinComboSizeToShow = 5;
 
@@ -86,10 +87,10 @@ void ComboGraph::Set( const StageStats &s, const PlayerStageStats &pss )
 		LOG->Trace( "combo %i is %f+%f of %f", i, combo.m_fStartSecond, combo.m_fSizeSeconds, fLastSecond );
 		Actor *pSprite = bIsMax? m_pMaxCombo->Copy() : m_pNormalCombo->Copy();
 
-		const float fStart = SCALE( combo.m_fStartSecond, fFirstSecond, fLastSecond, 0.0f, 1.0f );
-		const float fSize = SCALE( combo.m_fSizeSeconds, 0, fLastSecond-fFirstSecond, 0.0f, 1.0f );
-		pSprite->SetCropLeft ( SCALE( fSize, 0.0f, 1.0f, 0.5f, 0.0f ) );
-		pSprite->SetCropRight( SCALE( fSize, 0.0f, 1.0f, 0.5f, 0.0f ) );
+		const float fStart = SCALE( combo.m_fStartSecond, fFirstSecond, fLastSecond, ZERO, ONE );
+		const float fSize = SCALE( combo.m_fSizeSeconds, 0, fLastSecond-fFirstSecond, ZERO, ONE );
+		pSprite->SetCropLeft ( SCALE( fSize, ZERO, ONE, ONE_HALF, ZERO ) );
+		pSprite->SetCropRight( SCALE( fSize, ZERO, ONE, ONE_HALF, ZERO ) );
 
 		pSprite->SetCropLeft( fStart );
 		pSprite->SetCropRight( 1 - (fSize + fStart) );
@@ -112,11 +113,11 @@ void ComboGraph::Set( const StageStats &s, const PlayerStageStats &pss )
 
 		BitmapText *pText = m_pComboNumber->Copy();
 
-		const float fStart = SCALE( combo.m_fStartSecond, fFirstSecond, fLastSecond, 0.0f, 1.0f );
-		const float fSize = SCALE( combo.m_fSizeSeconds, 0, fLastSecond-fFirstSecond, 0.0f, 1.0f );
+		const float fStart = SCALE( combo.m_fStartSecond, fFirstSecond, fLastSecond, ZERO, ONE );
+		const float fSize = SCALE( combo.m_fSizeSeconds, 0, fLastSecond-fFirstSecond, ZERO, ONE );
 
 		const float fCenterPercent = fStart + fSize/2;
-		const float fCenterXPos = SCALE( fCenterPercent, 0.0f, 1.0f, -BODY_WIDTH/2.0f, BODY_WIDTH/2.0f );
+		const float fCenterXPos = SCALE( fCenterPercent, ZERO, ONE, -BODY_WIDTH/TWO, BODY_WIDTH/TWO );
 		pText->SetX( fCenterXPos );
 
 		pText->SetText( ssprintf("%i",combo.GetStageCnt()) );

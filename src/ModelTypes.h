@@ -4,6 +4,7 @@
 #define MODEL_TYPES_H
 
 #include "RageTypes.h"
+#include "Constexprs.h"
 
 #include <cstdint>
 #include <vector>
@@ -100,7 +101,7 @@ struct msPositionKey
 	float fTime;
 	RageVector3 Position;
 
-	msPositionKey() : fTime(0.0f) {}
+	msPositionKey() : fTime(ZERO) {}
 };
 
 struct msRotationKey
@@ -108,7 +109,7 @@ struct msRotationKey
 	float fTime;
 	RageVector4 Rotation;
 
-	msRotationKey() : fTime(0.0f) {}
+	msRotationKey() : fTime(ZERO) {}
 };
 
 struct msBone

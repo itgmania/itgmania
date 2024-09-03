@@ -674,7 +674,7 @@ void UnlockManager::Reload()
 float UnlockManager::PointsUntilNextUnlock( UnlockRequirement t ) const
 {
 	float fScores[NUM_UnlockRequirement];
-	ZERO( fScores );
+	ZERO_MEMORY( fScores );
 	GetPoints( PROFILEMAN->GetMachineProfile(), fScores );
 
 	float fSmallestPoints = FLT_MAX;   // or an arbitrarily large value

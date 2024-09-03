@@ -6,6 +6,7 @@
 #include "RageLog.h"
 #include "ThemeManager.h"
 #include "NoteTypes.h"
+#include "Constexprs.h"
 
 #include <cfloat>
 #include <cmath>
@@ -360,7 +361,7 @@ void TimingData::GetActualBPM( float &fMinBPMOut, float &fMaxBPMOut, float highe
 	for (unsigned i = 0; i < bpms.size(); i++)
 	{
 		const float fBPM = ToBPM(bpms[i])->GetBPM();
-		fMaxBPMOut = clamp(std::max( fBPM, fMaxBPMOut ), 0.0f, highest);
+		fMaxBPMOut = clamp(std::max( fBPM, fMaxBPMOut ), ZERO, highest);
 		fMinBPMOut = std::min( fBPM, fMinBPMOut );
 	}
 }
@@ -494,7 +495,7 @@ bool TimingData::IsWarpAtRow( int iNoteRow ) const
 		{
 			return true;
 		}
-		if( GetStopAtRow(iNoteRow) != 0.0f || GetDelayAtRow(iNoteRow) != 0.0f )
+		if( GetStopAtRow(iNoteRow) != ZERO || GetDelayAtRow(iNoteRow) != ZERO )
 		{
 			return false;
 		}
@@ -1138,7 +1139,7 @@ float TimingData::GetDisplayedSpeedPercent( float fSongBeat, float fMusicSeconds
 #ifdef DEBUG
 		LOG->Trace("No speed segments found: using default value.");
 #endif
-		return 1.0f;
+		return ONE;
 	}
 
 	const int index = GetSegmentIndexAtBeat( SEGMENT_SPEED, fSongBeat );
@@ -1163,7 +1164,7 @@ float TimingData::GetDisplayedSpeedPercent( float fSongBeat, float fMusicSeconds
 
 	if( ( index == 0 && first->GetDelay() > 0.0 ) && fCurTime < fStartTime )
 	{
-		return 1.0f;
+		return ONE;
 	}
 	else if( fEndTime >= fCurTime && ( index > 0 || first->GetDelay() > 0.0 ) )
 	{

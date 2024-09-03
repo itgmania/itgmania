@@ -4,6 +4,7 @@
 #include "RageLog.h"
 #include "ThemeManager.h"
 #include "ActorUtil.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -51,7 +52,7 @@ void HelpDisplay::Update( float fDeltaTime )
 	if( m_arrayTips.empty() )
 		return;
 
-	m_fSecsUntilSwitch -= std::max( fDeltaTime - fHibernate, 0.0f );
+	m_fSecsUntilSwitch -= std::max( fDeltaTime - fHibernate, ZERO );
 	if( m_fSecsUntilSwitch > 0 )
 		return;
 

@@ -8,6 +8,7 @@
 #include "RageUtil.h"
 #include "RageSoundMixBuffer.h"
 #include "RageSoundUtil.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <vector>
@@ -235,7 +236,7 @@ void RageSoundReader_Chain::ActivateSound( Sound *s )
 
 	/* Add a balance filter.  If this source has the same number of channels
 	 * as this sound, and does not need to be panned, we can omit this. */
-	if( s->fPan != 0.0f || s->pSound->GetNumChannels() != this->GetNumChannels() )
+	if( s->fPan != ZERO || s->pSound->GetNumChannels() != this->GetNumChannels() )
 	{
 		s->pSound = new RageSoundReader_Pan( s->pSound );
 		s->pSound->SetProperty( "Pan", s->fPan );
@@ -291,7 +292,7 @@ int RageSoundReader_Chain::GetNextSourceFrame() const
 float RageSoundReader_Chain::GetStreamToSourceRatio() const
 {
 	if( m_apActiveSounds.empty() )
-		return 1.0f;
+		return ONE;
 
 	float iRate = m_apActiveSounds[0]->pSound->GetStreamToSourceRatio();
 	for( unsigned i = 1; i < m_apActiveSounds.size(); ++i )

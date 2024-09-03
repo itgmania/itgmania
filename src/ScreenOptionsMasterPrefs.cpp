@@ -17,6 +17,7 @@
 #include "LocalizedString.h"
 #include "SpecialFiles.h"
 #include "RageLog.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -389,19 +390,19 @@ static void BGBrightness( int &sel, bool ToSel, const ConfOption *pConfOption )
 	// TODO: I hate the way the list of numbers is duplicated here and where the
 	// option is created. Try to find a way to only use the same list once.
 	// Do that for all of these float and int lists.
-	const float mapping[] = { 0.0f,0.1f,0.2f,0.3f,0.4f,0.5f,0.6f,0.7f,0.8f,0.9f,1.0f };
+	const float mapping[] = { ZERO,POINT_ONE,0.2f,0.3f,0.4f,ONE_HALF,0.6f,0.7f,0.8f,0.9f,ONE };
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
 static void BGBrightnessNoZero( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
-	const float mapping[] = { 0.1f,0.2f,0.3f,0.4f,0.5f,0.6f,0.7f,0.8f,0.9f,1.0f };
+	const float mapping[] = { POINT_ONE,0.2f,0.3f,0.4f,ONE_HALF,0.6f,0.7f,0.8f,0.9f,ONE };
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
 static void BGBrightnessOrStatic( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
-	const float mapping[] = { 0.5f,0.25f,0.5f,0.75f };
+	const float mapping[] = { ONE_HALF,ONE_QUARTER,ONE_HALF,THREE_QUARTERS };
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 
 	IPreference *pSongBackgroundsPref = IPreference::GetPreferenceByName( "SongBackgrounds" );
@@ -426,7 +427,7 @@ static void MusicWheelSwitchSpeed( int &sel, bool ToSel, const ConfOption *pConf
 
 static void InputDebounceTime(int& sel, bool to_sel, ConfOption const* conf_option)
 {
-	float const mapping[]= {0.0f, 0.01f, 0.02f, 0.03f, 0.04f, 0.05f, 0.06f, 0.07f, 0.08f, 0.09f, 0.1f};
+	float const mapping[]= {ZERO, POINT_ZERO_ONE, 0.02f, 0.03f, 0.04f, 0.05f, 0.06f, 0.07f, 0.08f, 0.09f, POINT_ONE};
 	MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
@@ -500,7 +501,7 @@ static void SongsPerPlayOrEventMode( int &sel, bool ToSel, const ConfOption *pCo
 static void TimingWindowScale( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
 	// StepMania 5 values (implemented 2008/03/12)
-	//const float mapping[] = { 2.0f,1.66f,1.33f,1.00f,0.75f,0.50f,0.25f };
+	//const float mapping[] = { TWO,1.66f,1.33f,1.00f,THREE_QUARTERS,0.50f,ONE_QUARTER };
 
 	// StepMania 3.9 and 4.0 values:
 	const float mapping[] = { 1.50f,1.33f,1.16f,1.00f,0.84f,0.66f,0.50f,0.33f,0.20f };
@@ -511,9 +512,9 @@ static void TimingWindowScale( int &sel, bool ToSel, const ConfOption *pConfOpti
 static void LifeDifficulty( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
 	// original StepMania 5 values (implemented 2008/03/12)
-	//const float mapping[] = { 2.0f,1.50f,1.00f,0.66f,0.33f };
+	//const float mapping[] = { TWO,1.50f,1.00f,0.66f,0.33f };
 	// 3.9 modified so that L6 is L4 (in SM5 some time after)
-	//const float mapping[] = { 1.20f,1.00f,0.80f,0.60f,0.40f,0.33f,0.25f };
+	//const float mapping[] = { 1.20f,1.00f,0.80f,0.60f,0.40f,0.33f,ONE_QUARTER };
 
 	// StepMania 3.9 and 4.0 values:
 	const float mapping[] = { 1.60f,1.40f,1.20f,1.00f,0.80f,0.60f,0.40f };
@@ -655,7 +656,7 @@ static void RefreshRate( int &sel, bool ToSel, const ConfOption *pConfOption )
 
 static void DisplayAspectRatio( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
-	const float mapping[] = { 3/4.f, 1, 4/3.0f, 5/4.0f, 16/10.0f, 16/9.f, 8/3.f };
+	const float mapping[] = { 3/4.f, 1, 4/THREE, 5/FOUR, 16/10.0f, 16/9.f, 8/3.f };
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
@@ -663,13 +664,13 @@ static void DisplayAspectRatio( int &sel, bool ToSel, const ConfOption *pConfOpt
  * "On" can be 16:9 or 16:10. */
 static void WideScreen16_10( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
-	const float mapping[] = { 4/3.0f, 16/10.0f };
+	const float mapping[] = { 4/THREE, 16/10.0f };
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
 static void WideScreen16_9( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
-	const float mapping[] = { 4/3.0f, 16/9.0f };
+	const float mapping[] = { 4/THREE, 16/9.0f };
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
@@ -685,19 +686,19 @@ static void BackgroundCache( int &sel, bool ToSel, const ConfOption *pConfOption
 // Sound options
 static void SoundVolume( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
-	const float mapping[] = { 0.0f,0.1f,0.2f,0.3f,0.4f,0.5f,0.6f,0.7f,0.8f,0.9f,1.0f };
+	const float mapping[] = { ZERO,POINT_ONE,0.2f,0.3f,0.4f,ONE_HALF,0.6f,0.7f,0.8f,0.9f,ONE };
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
 static void SoundVolumeAttract( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
-	const float mapping[] = { 0.0f,0.1f,0.2f,0.3f,0.4f,0.5f,0.6f,0.7f,0.8f,0.9f,1.0f };
+	const float mapping[] = { ZERO,POINT_ONE,0.2f,0.3f,0.4f,ONE_HALF,0.6f,0.7f,0.8f,0.9f,ONE };
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
 static void VisualDelaySeconds( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
-	const float mapping[] = { -0.125f,-0.1f,-0.075f,-0.05f,-0.025f,0.0f,0.025f,0.05f,0.075f,0.1f,0.125f };
+	const float mapping[] = { -0.125f,NEGATIVE_POINT_ONE,-0.075f,-0.05f,-0.025f,ZERO,0.025f,0.05f,0.075f,POINT_ONE,0.125f };
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
@@ -705,7 +706,7 @@ static void GlobalOffsetSeconds( int &sel, bool ToSel, const ConfOption *pConfOp
 {
 	float mapping[41];
 	for( int i = 0; i < 41; ++i )
-		mapping[i] = SCALE( i, 0.0f, 40.0f, -0.1f, +0.1f );
+		mapping[i] = SCALE( i, ZERO, 40.0f, NEGATIVE_POINT_ONE, +POINT_ONE );
 
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }

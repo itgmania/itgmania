@@ -10,6 +10,7 @@
 #include "FontCharmaps.h"
 #include "FontCharAliases.h"
 #include "arch/Dialog/Dialog.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstddef>
@@ -121,14 +122,14 @@ void FontPage::Load( const FontPageSettings &cfg )
 	iBaseline = cfg.m_iBaseline;
 	if( iBaseline == -1 )
 	{
-		float center = m_FontPageTextures.m_pTextureMain->GetSourceFrameHeight()/2.0f;
+		float center = m_FontPageTextures.m_pTextureMain->GetSourceFrameHeight()/TWO;
 		iBaseline = int( center + m_iLineSpacing/2 );
 	}
 
 	int iTop = cfg.m_iTop;
 	if( iTop == -1 )
 	{
-		float center = m_FontPageTextures.m_pTextureMain->GetSourceFrameHeight()/2.0f;
+		float center = m_FontPageTextures.m_pTextureMain->GetSourceFrameHeight()/TWO;
 		iTop = int( center - m_iLineSpacing/2 );
 	}
 	m_iHeight = iBaseline - iTop;
@@ -212,8 +213,8 @@ void FontPage::SetExtraPixels( int iDrawExtraPixelsLeft, int iDrawExtraPixelsRig
 		/* Extra pixels to draw to the left and right.  We don't have to
 		 * worry about alignment here; fCharWidth is always even (by
 		 * SetTextureCoords) and iFrameWidth are almost always even. */
-		float fExtraLeft = std::min( float(iDrawExtraPixelsLeft), (iFrameWidth-fCharWidth)/2.0f );
-		float fExtraRight = std::min( float(iDrawExtraPixelsRight), (iFrameWidth-fCharWidth)/2.0f );
+		float fExtraLeft = std::min( float(iDrawExtraPixelsLeft), (iFrameWidth-fCharWidth)/TWO );
+		float fExtraRight = std::min( float(iDrawExtraPixelsRight), (iFrameWidth-fCharWidth)/TWO );
 
 		// Move left and expand right.
 		m_aGlyphs[i].m_TexRect.left -= fExtraLeft * m_FontPageTextures.m_pTextureMain->GetSourceToTexCoordsRatioX();
@@ -904,7 +905,7 @@ void Font::Load( const RString &sIniPath, RString sChars )
 	if( LoadStack.empty() )
 	{
 		// Cache ASCII glyphs.
-		ZERO( m_iCharToGlyphCache );
+		ZERO_MEMORY( m_iCharToGlyphCache );
 		std::map<wchar_t,glyph*>::iterator it;
 		for( it = m_iCharToGlyph.begin(); it != m_iCharToGlyph.end(); ++it )
 			if( it->first < (int) ARRAYLEN(m_iCharToGlyphCache) )

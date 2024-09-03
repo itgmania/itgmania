@@ -10,6 +10,7 @@
 #include "Course.h"
 #include "Style.h"
 #include "ActorUtil.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstddef>
@@ -41,7 +42,7 @@ OptionRow::OptionRow( const OptionRowType *pSource )
 	m_pHand = nullptr;
 
 	m_textTitle = nullptr;
-	ZERO( m_ModIcons );
+	ZERO_MEMORY( m_ModIcons );
 
 	Clear();
 	this->AddChild( &m_Frame );
@@ -74,8 +75,8 @@ void OptionRow::Clear()
 	SAFE_DELETE( m_pHand );
 
 	m_bFirstItemGoesDown = false;
-	ZERO( m_bRowHasFocus );
-	ZERO( m_iChoiceInRowWithFocus );
+	ZERO_MEMORY( m_bRowHasFocus );
+	ZERO_MEMORY( m_iChoiceInRowWithFocus );
 }
 
 void OptionRowType::Load( const RString &sMetricsGroup, Actor *pParent )
@@ -285,7 +286,7 @@ void OptionRow::InitText( RowType type )
 	}
 
 	// If the items will go off the edge of the screen, then force LAYOUT_SHOW_ONE_IN_ROW.
-	float fBaseZoom = 1.0f;
+	float fBaseZoom = ONE;
 	{
 		BitmapText bt( m_pParentType->m_textItem );
 		bt.PlayCommand( "On" );
@@ -472,7 +473,7 @@ void OptionRow::PositionUnderlines( PlayerNumber pn )
 
 		int iChoiceWithFocus = (m_pHand->m_Def.m_layoutType == LAYOUT_SHOW_ONE_IN_ROW) ? GetChoiceInRowWithFocus(pn) : i;
 
-		float fAlpha = 1.0f;
+		float fAlpha = ONE;
 		if( m_pHand->m_Def.m_layoutType == LAYOUT_SHOW_ONE_IN_ROW )
 		{
 			bool bRowEnabled = m_pHand->m_Def.m_vEnabledForPlayers.find(pn) != m_pHand->m_Def.m_vEnabledForPlayers.end();
@@ -549,7 +550,7 @@ void OptionRow::SetDestination( Actor::TweenState &ts, bool bTween )
 	if( m_Frame.DestTweenState() != ts )
 	{
 		m_Frame.StopTweening();
-		if( bTween && m_pParentType->TWEEN_SECONDS != 0.0f )
+		if( bTween && m_pParentType->TWEEN_SECONDS != ZERO )
 			m_Frame.BeginTweening( m_pParentType->TWEEN_SECONDS );
 		m_Frame.DestTweenState() = ts;
 	}

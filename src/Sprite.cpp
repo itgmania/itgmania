@@ -12,6 +12,7 @@
 #include "LuaManager.h"
 #include "ImageCache.h"
 #include "ThemeMetric.h"
+#include "Constexprs.h"
 #include <numeric>
 
 #include <cassert>
@@ -28,8 +29,8 @@ Sprite::Sprite()
 {
 	m_pTexture = nullptr;
 	m_iCurState = 0;
-	m_fSecsIntoState = 0.0f;
-	m_animation_length_seconds= 0.0f;
+	m_fSecsIntoState = ZERO;
+	m_animation_length_seconds= ZERO;
 	m_bUsingCustomTexCoords = false;
 	m_bUsingCustomPosCoords = false;
 	m_bSkipNextUpdate = true;
@@ -118,7 +119,7 @@ void Sprite::InitState()
 {
 	Actor::InitState();
 	m_iCurState = 0;
-	m_fSecsIntoState = 0.0f;
+	m_fSecsIntoState = ZERO;
 	m_bSkipNextUpdate = true;
 }
 
@@ -209,7 +210,7 @@ void Sprite::LoadFromNode( const XNode* pNode )
 			/* All attributes are optional.  If Frame is omitted, use the previous state's
 			 * frame (or 0 if the first).
 			 * Frames = {
-			 *  { Delay=1.0f; Frame=0; { x=0, y=0 }, { x=1, y=1 } };
+			 *  { Delay=ONE; Frame=0; { x=0, y=0 }, { x=1, y=1 } };
 			 * }
 			 */
 			int iFrameIndex = 0;
@@ -222,7 +223,7 @@ void Sprite::LoadFromNode( const XNode* pNode )
 				State newState;
 				if( !pFrame->GetAttrValue("Delay", newState.fDelay) )
 				{
-					newState.fDelay = 0.1f;
+					newState.fDelay = POINT_ONE;
 				}
 
 				pFrame->GetAttrValue( "Frame", iFrameIndex );
@@ -238,16 +239,16 @@ void Sprite::LoadFromNode( const XNode* pNode )
 				{
 					RectF r = newState.rect;
 
-					float fX = 1.0f, fY = 1.0f;
+					float fX = ONE, fY = ONE;
 					pPoints[0]->GetAttrValue( "x", fX );
 					pPoints[0]->GetAttrValue( "y", fY );
-					newState.rect.left = SCALE( fX, 0.0f, 1.0f, r.left, r.right );
-					newState.rect.top = SCALE( fY, 0.0f, 1.0f, r.top, r.bottom );
+					newState.rect.left = SCALE( fX, ZERO, ONE, r.left, r.right );
+					newState.rect.top = SCALE( fY, ZERO, ONE, r.top, r.bottom );
 
 					pPoints[1]->GetAttrValue( "x", fX );
 					pPoints[1]->GetAttrValue( "y", fY );
-					newState.rect.right = SCALE( fX, 0.0f, 1.0f, r.left, r.right );
-					newState.rect.bottom = SCALE( fY, 0.0f, 1.0f, r.top, r.bottom );
+					newState.rect.right = SCALE( fX, ZERO, ONE, r.left, r.right );
+					newState.rect.bottom = SCALE( fY, ZERO, ONE, r.top, r.bottom );
 				}
 
 				aStates.push_back( newState );
@@ -405,7 +406,7 @@ void Sprite::LoadStatesFromTexture()
 	if( m_pTexture == nullptr )
 	{
 		State newState;
-		newState.fDelay = 0.1f;
+		newState.fDelay = POINT_ONE;
 		newState.rect = RectF( 0, 0, 1, 1 );
 		m_States.push_back( newState );
 		return;
@@ -414,7 +415,7 @@ void Sprite::LoadStatesFromTexture()
 	for( int i=0; i<m_pTexture->GetNumFrames(); ++i )
 	{
 		State newState;
-		newState.fDelay = 0.1f;
+		newState.fDelay = POINT_ONE;
 		newState.rect = *m_pTexture->GetTextureCoordRect( i );
 		m_States.push_back( newState );
 	}
@@ -483,7 +484,7 @@ void Sprite::Update( float fDelta )
 
 	// If the texture is a movie, decode frames.
 	if(!bSkipThisMovieUpdate && m_DecodeMovie)
-		m_pTexture->UpdateMovie( std::max(0.0f, fTimePassed) );
+		m_pTexture->UpdateMovie( std::max(ZERO, fTimePassed) );
 
 	// update scrolling
 	if( m_fTexCoordVelocityX != 0 || m_fTexCoordVelocityY != 0 )
@@ -548,10 +549,10 @@ void Sprite::DrawTexture( const TweenState *state )
 
 	// use m_temp_* variables to draw the object
 	RectF quadVerticies;
-	quadVerticies.left   = -m_size.x/2.0f;
-	quadVerticies.right  = +m_size.x/2.0f;
-	quadVerticies.top    = -m_size.y/2.0f;
-	quadVerticies.bottom = +m_size.y/2.0f;
+	quadVerticies.left   = -m_size.x/TWO;
+	quadVerticies.right  = +m_size.x/TWO;
+	quadVerticies.top    = -m_size.y/TWO;
+	quadVerticies.bottom = +m_size.y/TWO;
 
 	/* Don't draw anything outside of the texture's image area.  Texels outside
 	 * of the image area aren't guaranteed to be initialized. */
@@ -566,7 +567,7 @@ void Sprite::DrawTexture( const TweenState *state )
 #define IF_CROP_POS(side,opp_side) \
 	if(state->crop.side!=0) \
 		croppedQuadVerticies.side = \
-			SCALE( crop.side, 0.f, 1.f, quadVerticies.side, quadVerticies.opp_side )
+			SCALE( crop.side, ZERO, ONE, quadVerticies.side, quadVerticies.opp_side )
 	IF_CROP_POS( left, right );
 	IF_CROP_POS( top, bottom );
 	IF_CROP_POS( right, left );
@@ -693,22 +694,22 @@ void Sprite::DrawPrimitives()
 		RectF FadeSize = FadeDist;
 
 		// If the cropped size is less than the fade distance in either dimension, clamp.
-		const float HorizRemaining = 1.0f - (m_pTempState->crop.left + m_pTempState->crop.right);
+		const float HorizRemaining = ONE - (m_pTempState->crop.left + m_pTempState->crop.right);
 		if( FadeDist.left+FadeDist.right > 0 &&
 			HorizRemaining < FadeDist.left+FadeDist.right )
 		{
 			const float LeftPercent = FadeDist.left/(FadeDist.left+FadeDist.right);
 			FadeSize.left = LeftPercent * HorizRemaining;
-			FadeSize.right = (1.0f-LeftPercent) * HorizRemaining;
+			FadeSize.right = (ONE-LeftPercent) * HorizRemaining;
 		}
 
-		const float VertRemaining = 1.0f - (m_pTempState->crop.top + m_pTempState->crop.bottom);
+		const float VertRemaining = ONE - (m_pTempState->crop.top + m_pTempState->crop.bottom);
 		if( FadeDist.top+FadeDist.bottom > 0 &&
 			VertRemaining < FadeDist.top+FadeDist.bottom )
 		{
 			const float TopPercent = FadeDist.top/(FadeDist.top+FadeDist.bottom);
 			FadeSize.top = TopPercent * VertRemaining;
-			FadeSize.bottom = (1.0f-TopPercent) * VertRemaining;
+			FadeSize.bottom = (ONE-TopPercent) * VertRemaining;
 		}
 
 		// Alpha value of the un-faded side of each fade rect:
@@ -848,7 +849,7 @@ void Sprite::SetState( int iNewState )
 
 	CLAMP(iNewState, 0, (int)m_States.size()-1);
 	m_iCurState = iNewState;
-	m_fSecsIntoState = 0.0f;
+	m_fSecsIntoState = ZERO;
 }
 
 void Sprite::RecalcAnimationLengthSeconds()
@@ -998,7 +999,7 @@ void Sprite::ScaleToClipped( float fWidth, float fHeight )
 		if( bXDimNeedsToBeCropped ) // crop X
 		{
 			float fPercentageToCutOff = (this->GetZoomedWidth() - fWidth) / this->GetZoomedWidth();
-			fPercentageToCutOff = std::max( fPercentageToCutOff-fScaleFudgePercent, 0.0f );
+			fPercentageToCutOff = std::max( fPercentageToCutOff-fScaleFudgePercent, ZERO );
 			float fPercentageToCutOffEachSide = fPercentageToCutOff / 2;
 
 			// generate a rectangle with new texture coordinates
@@ -1012,7 +1013,7 @@ void Sprite::ScaleToClipped( float fWidth, float fHeight )
 		else // crop Y
 		{
 			float fPercentageToCutOff = (this->GetZoomedHeight() - fHeight) / this->GetZoomedHeight();
-			fPercentageToCutOff = std::max( fPercentageToCutOff-fScaleFudgePercent, 0.0f );
+			fPercentageToCutOff = std::max( fPercentageToCutOff-fScaleFudgePercent, ZERO );
 			float fPercentageToCutOffEachSide = fPercentageToCutOff / 2;
 
 			// generate a rectangle with new texture coordinates
@@ -1174,7 +1175,7 @@ public:
 			coords[i]= FArg(i+1);
 			if( std::isnan(coords[i]) )
 			{
-				coords[i]= 0.0f;
+				coords[i]= ZERO;
 			}
 		}
 		p->SetCustomPosCoords(coords);
@@ -1248,10 +1249,10 @@ public:
 				// I have no idea why the points are from 0 to 1 and make it use only
 				// a portion of the state.  This is just copied from LoadFromNode.
 				// -Kyz
-				new_state.rect.left= SCALE(FArg(-1), 0.0f, 1.0f, r.left, r.right);
+				new_state.rect.left= SCALE(FArg(-1), ZERO, ONE, r.left, r.right);
 				lua_pop(L, 1);
 				lua_rawgeti(L, -1, 2);
-				new_state.rect.top= SCALE(FArg(-1), 0.0f, 1.0f, r.top, r.bottom);
+				new_state.rect.top= SCALE(FArg(-1), ZERO, ONE, r.top, r.bottom);
 				lua_pop(L, 1);
 			}
 			lua_pop(L, 1);
@@ -1262,10 +1263,10 @@ public:
 				// I have no idea why the points are from 0 to 1 and make it use only
 				// a portion of the state.  This is just copied from LoadFromNode.
 				// -Kyz
-				new_state.rect.right= SCALE(FArg(-1), 0.0f, 1.0f, r.left, r.right);
+				new_state.rect.right= SCALE(FArg(-1), ZERO, ONE, r.left, r.right);
 				lua_pop(L, 1);
 				lua_rawgeti(L, -1, 2);
-				new_state.rect.bottom= SCALE(FArg(-1), 0.0f, 1.0f, r.top, r.bottom);
+				new_state.rect.bottom= SCALE(FArg(-1), ZERO, ONE, r.top, r.bottom);
 				lua_pop(L, 1);
 			}
 			lua_pop(L, 1);

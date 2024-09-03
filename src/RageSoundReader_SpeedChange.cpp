@@ -2,6 +2,7 @@
 #include "RageSoundReader_SpeedChange.h"
 #include "RageUtil.h"
 #include "RageLog.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstddef>
@@ -12,9 +13,9 @@ RageSoundReader_SpeedChange::RageSoundReader_SpeedChange( RageSoundReader *pSour
 	RageSoundReader_Filter( pSource )
 {
 	m_Channels.resize( pSource->GetNumChannels() );
-	m_fSpeedRatio = m_fTrailingSpeedRatio = 1.0f;
+	m_fSpeedRatio = m_fTrailingSpeedRatio = ONE;
 	m_iDataBufferAvailFrames = 0;
-	SetSpeedRatio( 1.0f );
+	SetSpeedRatio( ONE );
 	Reset();
 }
 
@@ -242,7 +243,7 @@ int RageSoundReader_SpeedChange::Read( float *pBuf, int iFrames )
 {
 	for(;;)
 	{
-		if( m_iDataBufferAvailFrames == 0 && m_fTrailingSpeedRatio == m_fSpeedRatio && m_fSpeedRatio == 1.0f )
+		if( m_iDataBufferAvailFrames == 0 && m_fTrailingSpeedRatio == m_fSpeedRatio && m_fSpeedRatio == ONE )
 		{
 			/* Fast path: the buffer is empty, and we're not scaling the audio.  Read directly
 			 * into the output buffer, to eliminate memory and copying overhead. */

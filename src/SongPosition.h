@@ -6,6 +6,7 @@
 #include "LightsManager.h"
 #include "MessageManager.h"
 #include "TimingData.h"
+#include "Constexprs.h"
 struct lua_State;
 
 class SongPosition
@@ -29,19 +30,19 @@ public:
 	float m_fSongBeatVisible;
 
 	SongPosition()
-		: m_fMusicSeconds(0.0f),
-		  m_fSongBeat(0.0f),
-		  m_fSongBeatNoOffset(0.0f),
-		  m_fCurBPS(0.0f),
-		  m_fLightSongBeat(0.0f),
+		: m_fMusicSeconds(ZERO),
+		  m_fSongBeat(ZERO),
+		  m_fSongBeatNoOffset(ZERO),
+		  m_fCurBPS(ZERO),
+		  m_fLightSongBeat(ZERO),
 		  //m_bStop(false),
 		  m_bFreeze(false),
 		  m_bDelay(false),
 		  m_iWarpBeginRow(0),
-		  m_fWarpDestination(0.0f),
+		  m_fWarpDestination(ZERO),
 		  m_LastBeatUpdate(RageZeroTimer),
-		  m_fMusicSecondsVisible(0.0f),
-		  m_fSongBeatVisible(0.0f)
+		  m_fMusicSecondsVisible(ZERO),
+		  m_fSongBeatVisible(ZERO)
 	{
 	}
 
@@ -51,7 +52,7 @@ public:
 		float fPositionSeconds,
 		const TimingData &timing,
 		const RageTimer &timestamp = RageZeroTimer,
-		float fAdditionalVisualDelay = 0.0f
+		float fAdditionalVisualDelay = ZERO
 	);
 
 	// Lua

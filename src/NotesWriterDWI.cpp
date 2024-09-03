@@ -396,7 +396,7 @@ bool NotesWriterDWI::Write( RString sPath, const Song &out )
 		for( unsigned i=0; i<stops.size(); i++ )
 		{
 			const StopSegment *fs = static_cast<StopSegment *>(stops[i]);
-			f.Write( ssprintf("%.3f=%.3f", fs->GetRow() * 4.0f / ROWS_PER_BEAT,
+			f.Write( ssprintf("%.3f=%.3f", fs->GetRow() * FOUR / ROWS_PER_BEAT,
 				std::round(fs->GetPause()*1000)) );
 			if( i != stops.size()-1 )
 				f.Write( "," );
@@ -410,7 +410,7 @@ bool NotesWriterDWI::Write( RString sPath, const Song &out )
 		for( unsigned i=1; i<bpms.size(); i++ )
 		{
 			const BPMSegment *bs = static_cast<BPMSegment *>(bpms[i]);
-			f.Write( ssprintf("%.3f=%.3f", bs->GetRow() * 4.0f / ROWS_PER_BEAT, bs->GetBPM() ) );
+			f.Write( ssprintf("%.3f=%.3f", bs->GetRow() * FOUR / ROWS_PER_BEAT, bs->GetBPM() ) );
 			if( i != bpms.size()-1 )
 				f.Write( "," );
 		}

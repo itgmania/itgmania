@@ -31,6 +31,7 @@
 #include "RageInput.h"
 #include "OptionsList.h"
 #include "RageFileManager.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <vector>
@@ -275,10 +276,10 @@ void ScreenSelectMusic::BeginScreen()
 	m_MusicWheel.BeginScreen();
 
 	m_SelectionState = SelectionState_SelectingSong;
-	ZERO( m_bStepsChosen );
+	ZERO_MEMORY( m_bStepsChosen );
 	m_bGoToOptions = false;
 	m_bAllowOptionsMenu = m_bAllowOptionsMenuRepeat = false;
-	ZERO( m_iSelection );
+	ZERO_MEMORY( m_iSelection );
 
 	if( USE_OPTIONS_LIST )
 		FOREACH_PlayerNumber( pn )
@@ -1515,7 +1516,7 @@ bool ScreenSelectMusic::MenuStart( const InputEventPlus &input )
 			 * annoying). */
 			if(PREFSMAN->m_AllowHoldForOptions.Get())
 			{
-				this->PostScreenMessage( SM_AllowOptionsMenuRepeat, 0.5f );
+				this->PostScreenMessage( SM_AllowOptionsMenuRepeat, ONE_HALF );
 			}
 
 			StartTransitioningScreen( SM_None );

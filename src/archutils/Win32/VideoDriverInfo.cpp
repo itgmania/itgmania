@@ -31,7 +31,7 @@ RString GetPrimaryVideoName()
 	for( int i=0; true; ++i )
 	{
 		DISPLAY_DEVICE dd;
-		ZERO( dd );
+		ZERO_MEMORY( dd );
 		dd.cb = sizeof(dd);
 		if( !EnumDisplayDevices(nullptr, i, &dd, 0) )
 			break;

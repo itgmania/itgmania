@@ -3,6 +3,7 @@
 #include "RageSurface.h"
 #include "RageSurfaceUtils.h"
 #include "RageUtil.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstdint>
@@ -27,12 +28,12 @@ static void InitVectors( std::vector<int> &s0, std::vector<int> &s1, std::vector
 			 * going 512->256, then dst[0] should come from the pixels from 0..1 and
 			 * 1..2, so sax[0] is 1. sx is the total number of pixels, so sx/2 is the
 			 * distance from the start of the sample to its center. */
-			const float sax = sx*x + sx/2.0f;
+			const float sax = sx*x + sx/TWO;
 
 			/* sx/2 is the distance from the start of the sample to the center;
 			 * sx/4 is the distance from the center of the sample to the center of
 			 * either pixel. */
-			const float xstep = sx/4.0f;
+			const float xstep = sx/FOUR;
 
 			// source x coordinates of left and right pixels to sample
 			s0.push_back(int(sax-xstep));
@@ -47,11 +48,11 @@ static void InitVectors( std::vector<int> &s0, std::vector<int> &s1, std::vector
 				const int xdist = s1[x] - s0[x];
 
 				// fleft is the left pixel sampled; +.5 is the center:
-				const float fleft = s0[x] + .5f;
+				const float fleft = s0[x] + ONE_HALF;
 
 				/* sax is somewhere between the centers of both sampled
 				 * pixels; find the percentage: */
-				const float p = (1.0f - (sax - fleft) / xdist) * 16777216.0f;
+				const float p = (ONE - (sax - fleft) / xdist) * 16777216.0f;
 				percent.push_back( std::uint32_t(p) );
 			}
 		}
@@ -74,7 +75,7 @@ static void InitVectors( std::vector<int> &s0, std::vector<int> &s1, std::vector
 			s0.push_back( clamp(int(sax), 0, src-1));
 			s1.push_back( clamp(int(sax+1), 0, src-1) );
 
-			const float p = (1.0f - (sax - std::floor(sax))) * 16777216.0f;
+			const float p = (ONE - (sax - std::floor(sax))) * 16777216.0f;
 			percent.push_back( std::uint32_t(p) );
 		}
 	}
@@ -155,8 +156,8 @@ void RageSurfaceUtils::Zoom( RageSurface *&src, int dstwidth, int dstheight )
 		/* Our filter is a simple linear filter, so it can't scale to less than
 		 * 1:2 or more than 2:1 very well. If we need to go beyond that, do it
 		 * iteratively. */
-		xscale = clamp( xscale, .5f, 2.0f );
-		yscale = clamp( yscale, .5f, 2.0f );
+		xscale = clamp( xscale, ONE_HALF, TWO );
+		yscale = clamp( yscale, ONE_HALF, TWO );
 
 		int target_width = std::lrint( src->w*xscale );
 		int target_height = std::lrint( src->h*yscale );

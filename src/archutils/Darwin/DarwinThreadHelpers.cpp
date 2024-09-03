@@ -62,7 +62,7 @@ bool GetThreadBacktraceContext( std::uint64_t iID, BacktraceContext *ctx )
 RString SetThreadPrecedence( float prec )
 {
 	// Real values are between 0 and 63.
-	DEBUG_ASSERT( 0.0f <= prec && prec <= 1.0f );
+	DEBUG_ASSERT( ZERO <= prec && prec <= ONE );
 	thread_precedence_policy po = { integer_t( std::lrint(prec * 63) ) };
 	kern_return_t ret = thread_policy_set( mach_thread_self(), THREAD_PRECEDENCE_POLICY,
 					       (thread_policy_t)&po, THREAD_PRECEDENCE_POLICY_COUNT );

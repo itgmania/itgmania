@@ -30,6 +30,7 @@
 #include "RageSoundManager.h"
 #include "RageLog.h"
 #include "RageSoundReader_FileReader.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -94,7 +95,7 @@ void AutoKeysounds::LoadAutoplaySoundsInto( RageSoundReader_Chain *pChain )
 					float fPan = 0;
 					// If two players are playing, pan the keysounds to each player's respective side
 					if( GAMESTATE->GetNumPlayersEnabled() == 2 )
-						fPan = (pn == PLAYER_1)? -1.0f:+1.0f;
+						fPan = (pn == PLAYER_1)? NEGATIVE_ONE:+ONE;
 					int iIndex = pChain->LoadSound( sKeysoundFilePath );
 					pChain->AddSound( iIndex, fSeconds, fPan );
 				}
@@ -230,8 +231,8 @@ void AutoKeysounds::LoadTracks( const Song *pSong, RageSoundReader *&pShared, Ra
 	//	/* We have two players, but only two tracks.  Use the same track for both
 	//	 * players. */
 	//	pPlayer2 = pPlayer1->Copy();
-	//	pPlayer1->SetProperty( "Balance", -1.0f );
-	//	pPlayer2->SetProperty( "Balance", +1.0f );
+	//	pPlayer1->SetProperty( "Balance", NEGATIVE_ONE );
+	//	pPlayer2->SetProperty( "Balance", +ONE );
 	//}
 }
 
@@ -255,7 +256,7 @@ void AutoKeysounds::FinishLoading()
 			if( m_pSharedSound )
 			{
 				int iIndex = pChain->LoadSound( m_pSharedSound );
-				pChain->AddSound( iIndex, 0.0f, 0 );
+				pChain->AddSound( iIndex, ZERO, 0 );
 			}
 			pChain->Finish();
 			m_pSharedSound = new RageSoundReader_Extend(pChain);

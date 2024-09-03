@@ -8,6 +8,7 @@
 #include "ThemeMetric.h"
 #include "RageLog.h"
 #include "TimingData.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <vector>
@@ -162,8 +163,8 @@ float GetActualVoltageRadarValue( const NoteData &in, float fSongSeconds, const 
 	 * length of the longest recorded combo. This is only subtly different:
 	 * it's the percent of the song the longest combo took to get. */
 	const PlayerStageStats::Combo_t MaxCombo = pss.GetMaxCombo();
-	float fComboPercent = SCALE(MaxCombo.m_fSizeSeconds, 0, fSongSeconds, 0.0f, 1.0f);
-	return clamp( fComboPercent, 0.0f, 1.0f );
+	float fComboPercent = SCALE(MaxCombo.m_fSizeSeconds, 0, fSongSeconds, ZERO, ONE);
+	return clamp( fComboPercent, ZERO, ONE );
 }
 
 // Return the ratio of actual to possible dance points.
@@ -174,7 +175,7 @@ float GetActualChaosRadarValue( const NoteData &in, float fSongSeconds, const Pl
 		return 1;
 
 	const int ActualDP = pss.m_iActualDancePoints;
-	return clamp( float(ActualDP)/iPossibleDP, 0.0f, 1.0f );
+	return clamp( float(ActualDP)/iPossibleDP, ZERO, ONE );
 }
 }
 
@@ -391,7 +392,7 @@ void NoteDataWithScoring::GetActualRadarValues(const NoteData &in,
 	int jump_count= out[RadarCategory_Jumps];
 	int hold_count= out[RadarCategory_Holds];
 	int tap_count= out[RadarCategory_TapsAndHolds];
-	float hittable_steps_length= std::max(0.0f,
+	float hittable_steps_length= std::max(ZERO,
 		timing->GetElapsedTimeFromBeat(NoteRowToBeat(last_hittable_row)) -
 		timing->GetElapsedTimeFromBeat(NoteRowToBeat(first_hittable_row)));
 	// The for loop and the assert are used to ensure that all fields of
@@ -401,16 +402,16 @@ void NoteDataWithScoring::GetActualRadarValues(const NoteData &in,
 		switch(rc)
 		{
 			case RadarCategory_Stream:
-				out[rc]= note_count == 0 ? 0.0f : clamp(float(state.notes_hit_for_stream) / note_count, 0.0f, 1.0f);
+				out[rc]= note_count == 0 ? ZERO : clamp(float(state.notes_hit_for_stream) / note_count, ZERO, ONE);
 				break;
 			case RadarCategory_Voltage:
 				out[rc]= GetActualVoltageRadarValue(in, hittable_steps_length, pss);
 				break;
 			case RadarCategory_Air:
-				out[rc]= jump_count == 0 ? 0.0f : clamp(float(state.jumps_hit_for_air) / jump_count, 0.0f, 1.0f);
+				out[rc]= jump_count == 0 ? ZERO : clamp(float(state.jumps_hit_for_air) / jump_count, ZERO, ONE);
 				break;
 			case RadarCategory_Freeze:
-				out[rc]= hold_count == 0 ? 0.0f : clamp(float(state.holds_held) / hold_count, 0.0f, 1.0f);
+				out[rc]= hold_count == 0 ? ZERO : clamp(float(state.holds_held) / hold_count, ZERO, ONE);
 				break;
 			case RadarCategory_Chaos:
 				out[rc]= GetActualChaosRadarValue(in, song_seconds, pss);

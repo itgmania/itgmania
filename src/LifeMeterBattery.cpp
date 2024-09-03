@@ -6,6 +6,7 @@
 #include "PlayerState.h"
 #include "Course.h"
 #include "ActorUtil.h"
+#include "Constexprs.h"
 
 #include <cmath>
 
@@ -62,8 +63,8 @@ void LifeMeterBattery::Load( const PlayerState *pPlayerState, PlayerStageStats *
 	}
 	// old hardcoded commands:
 	/*
-	m_sprFrame.SetZoomX( pn==PLAYER_1 ? 1.0f : -1.0f );
-	m_sprBattery.SetZoomX( pn==PLAYER_1 ? 1.0f : -1.0f );
+	m_sprFrame.SetZoomX( pn==PLAYER_1 ? ONE : NEGATIVE_ONE );
+	m_sprBattery.SetZoomX( pn==PLAYER_1 ? ONE : NEGATIVE_ONE );
 	m_sprBattery.SetX( BATTERY_X[pn] );
 	m_textNumLives.SetX( NUM_X[pn] );
 	m_textNumLives.SetY( NUM_Y );
@@ -74,7 +75,7 @@ void LifeMeterBattery::Load( const PlayerState *pPlayerState, PlayerStageStats *
 		m_Percent.Load( pPlayerState, pPlayerStageStats, "LifeMeterBattery Percent", true );
 		// old hardcoded commands (this is useful, but let the themer decide
 		// what they want to do, please -aj)
-		//m_Percent.SetZoomX( pn==PLAYER_1 ? 1.0f : -1.0f );
+		//m_Percent.SetZoomX( pn==PLAYER_1 ? ONE : NEGATIVE_ONE );
 		this->AddChild( &m_Percent );
 	}
 

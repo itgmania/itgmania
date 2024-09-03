@@ -35,7 +35,7 @@ static void DestroyGraphicsWindowAndOpenGLContext()
 		g_HGLRC_Background = nullptr;
 	}
 
-	ZERO( g_CurrentPixelFormat );
+	ZERO_MEMORY( g_CurrentPixelFormat );
 
 	GraphicsWindow::DestroyGraphicsWindow();
 }
@@ -82,7 +82,7 @@ int ChooseWindowPixelFormat( const VideoModeParams &p, PIXELFORMATDESCRIPTOR *pi
 	ASSERT( GraphicsWindow::GetHwnd() != nullptr );
 	ASSERT( GraphicsWindow::GetHDC() != nullptr );
 
-	ZERO( *pixfmt );
+	ZERO_MEMORY( *pixfmt );
 	pixfmt->nSize		= sizeof(PIXELFORMATDESCRIPTOR);
 	pixfmt->nVersion		= 1;
 	pixfmt->dwFlags		= PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL;
@@ -175,7 +175,7 @@ RString LowLevelWindow_Win32::TryVideoMode( const VideoModeParams &p, bool &bNew
 		/* We'll need to recreate it if the pixel format is going to change.  We
 		 * aren't allowed to change the pixel format twice. */
 		PIXELFORMATDESCRIPTOR DestPixelFormat;
-		ZERO( DestPixelFormat );
+		ZERO_MEMORY( DestPixelFormat );
 		DescribePixelFormat( GraphicsWindow::GetHDC(), iPixelFormat, sizeof(PIXELFORMATDESCRIPTOR), &DestPixelFormat );
 		if( memcmp( &DestPixelFormat, &g_CurrentPixelFormat, sizeof(PIXELFORMATDESCRIPTOR) ) )
 		{

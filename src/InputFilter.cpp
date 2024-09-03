@@ -11,6 +11,7 @@
 // for mouse stuff: -aj
 #include "PrefsManager.h"
 #include "ScreenDimensions.h"
+#include "Constexprs.h"
 
 #include <set>
 #include <vector>
@@ -325,7 +326,7 @@ void InputFilter::Update( float fDeltaTime )
 	 * like "key pressed, key release, key repeat". */
 	LockMut(*queuemutex);
 
-	DeviceInput di( InputDevice_Invalid, DeviceButton_Invalid, 1.0f, now );
+	DeviceInput di( InputDevice_Invalid, DeviceButton_Invalid, ONE, now );
 
 	MakeButtonStateList( g_CurrentState );
 
@@ -346,7 +347,7 @@ void InputFilter::Update( float fDeltaTime )
 			// If the key isn't pressed, and hasn't been pressed for a while
 			// (so debouncing isn't interested in it), purge the entry.
 			if( now - bs.m_LastReportTime > g_fInputDebounceTime &&
-				 bs.m_DeviceInput.level == 0.0f )
+				 bs.m_DeviceInput.level == ZERO )
 				ButtonsToErase.push_back( b );
 			continue;
 		}
@@ -425,7 +426,7 @@ float InputFilter::GetLevel( const DeviceInput &di, const DeviceInputList *pButt
 		pButtonState = &g_CurrentState;
 	const DeviceInput *pDI = FindItemBinarySearch( pButtonState->begin(), pButtonState->end(), di );
 	if( pDI == nullptr )
-		return 0.0f;
+		return ZERO;
 	return pDI->level;
 }
 

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "TextureFont.h"
 #include "Utils.h"
+#include "Constexprs.h"
 
 #include <cassert>
 #include <cmath>
@@ -293,7 +294,7 @@ void TextureFont::FormatFontPage( int iPage, HDC hDC )
 	pPage->m_iFrameWidth = std::ceil( pPage->m_iFrameWidth /(double)iDimensionMultiple ) * iDimensionMultiple;
 	pPage->m_iFrameHeight = std::ceil( pPage->m_iFrameHeight /(double)iDimensionMultiple ) * iDimensionMultiple;
 
-	pPage->m_iNumFramesX = std::ceil( std::pow( (float) Desc.chars.size(), 0.5f ) );
+	pPage->m_iNumFramesX = std::ceil( std::pow( (float) Desc.chars.size(), ONE_HALF ) );
 	pPage->m_iNumFramesY = std::ceil( (float) Desc.chars.size() / pPage->m_iNumFramesX );
 
 	pPage->Create( pPage->m_iNumFramesX*pPage->m_iFrameWidth, pPage->m_iNumFramesY*pPage->m_iFrameHeight );
@@ -312,8 +313,8 @@ void TextureFont::FormatFontPage( int iPage, HDC hDC )
 		 * horizontally in the frame.  We can align it however we want
 		 * vertically, as long as we align the baselines. */
 		float fOffsetX = (float) pPage->m_iFrameWidth*iCol; /* origin -> frame top-left */
-		fOffsetX += pPage->m_iFrameWidth/2.0f; /* frame top-left -> frame center */
-		fOffsetX -= (abc.abcA+abc.abcB+abc.abcC)/2.0f;
+		fOffsetX += pPage->m_iFrameWidth/TWO; /* frame top-left -> frame center */
+		fOffsetX -= (abc.abcA+abc.abcB+abc.abcC)/TWO;
 		fOffsetX += abc.abcA;
 
 		/* Truncate, so we don't blit to half a pixel: */

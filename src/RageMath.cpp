@@ -8,6 +8,7 @@
 #include "RageLog.h"
 #include "RageMath.h"
 #include "RageTypes.h"
+#include "Constexprs.h"
 
 #include <cfloat>
 #include <cmath>
@@ -32,14 +33,14 @@ void RageVec3AddToBounds( const RageVector3 &p, RageVector3 &mins, RageVector3 &
 
 void RageVec2Normalize( RageVector2* pOut, const RageVector2* pV )
 {
-	float scale = 1.0f / std::sqrt( pV->x*pV->x + pV->y*pV->y );
+	float scale = ONE / std::sqrt( pV->x*pV->x + pV->y*pV->y );
 	pOut->x = pV->x * scale;
 	pOut->y = pV->y * scale;
 }
 
 void RageVec3Normalize( RageVector3* pOut, const RageVector3* pV )
 {
-	float scale = 1.0f / std::sqrt( pV->x*pV->x + pV->y*pV->y + pV->z*pV->z );
+	float scale = ONE / std::sqrt( pV->x*pV->x + pV->y*pV->y + pV->z*pV->z );
 	pOut->x = pV->x * scale;
 	pOut->y = pV->y * scale;
 	pOut->z = pV->z * scale;
@@ -48,7 +49,7 @@ void RageVec3Normalize( RageVector3* pOut, const RageVector3* pV )
 void VectorFloatNormalize(std::vector<float>& v)
 {
 	ASSERT_M(v.size() == 3, "Can't normalize a non-3D vector.");
-	float scale = 1.0f / std::sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+	float scale = ONE / std::sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
 	v[0]*= scale;
 	v[1]*= scale;
 	v[2]*= scale;
@@ -63,14 +64,14 @@ void RageVec3Cross(RageVector3* ret, RageVector3 const* a, RageVector3 const* b)
 
 void RageVec3TransformCoord( RageVector3* pOut, const RageVector3* pV, const RageMatrix* pM )
 {
-	RageVector4 temp( pV->x, pV->y, pV->z, 1.0f );	// translate
+	RageVector4 temp( pV->x, pV->y, pV->z, ONE );	// translate
 	RageVec4TransformCoord( &temp, &temp, pM );
 	*pOut = RageVector3( temp.x/temp.w, temp.y/temp.w, temp.z/temp.w );
 }
 
 void RageVec3TransformNormal( RageVector3* pOut, const RageVector3* pV, const RageMatrix* pM )
 {
-	RageVector4 temp( pV->x, pV->y, pV->z, 0.0f );	// don't translate
+	RageVector4 temp( pV->x, pV->y, pV->z, ZERO );	// don't translate
 	RageVec4TransformCoord( &temp, &temp, pM );
 	*pOut = RageVector3( temp.x, temp.y, temp.z );
 }
@@ -336,12 +337,12 @@ void RageMatrixRotationXYZ( RageMatrix* pOut, float rX, float rY, float rZ )
 
 void RageAARotate(RageVector3* inret, RageVector3 const* axis, float angle)
 {
-	float ha= angle/2.0f;
+	float ha= angle/TWO;
 	float ca2= std::cos(ha);
 	float sa2= std::sin(ha);
 	RageVector4 quat(axis->x * sa2, axis->y * sa2, axis->z * sa2, ca2);
 	RageVector4 quatc(-quat.x, -quat.y, -quat.z, ca2);
-	RageVector4 point(inret->x, inret->y, inret->z, 0.0f);
+	RageVector4 point(inret->x, inret->y, inret->z, ZERO);
 	RageQuatMultiply(&point, quat, point);
 	RageQuatMultiply(&point, point, quatc);
 	inret->x= point.x;
@@ -362,7 +363,7 @@ void RageQuatMultiply( RageVector4* pOut, const RageVector4 &pA, const RageVecto
 	square = out.x * out.x + out.y * out.y + out.z * out.z + out.w * out.w;
 
 	if (square > 0.0)
-		dist = 1.0f / std::sqrt(square);
+		dist = ONE / std::sqrt(square);
 	else dist = 1;
 
 	out.x *= dist;
@@ -376,7 +377,7 @@ void RageQuatMultiply( RageVector4* pOut, const RageVector4 &pA, const RageVecto
 RageVector4 RageQuatFromH(float theta )
 {
 	theta *= PI/180.0f;
-	theta /= 2.0f;
+	theta /= TWO;
 	theta *= -1;
 	const float c = std::cos(theta);
 	const float s = std::sin(theta);
@@ -387,7 +388,7 @@ RageVector4 RageQuatFromH(float theta )
 RageVector4 RageQuatFromP(float theta )
 {
 	theta *= PI/180.0f;
-	theta /= 2.0f;
+	theta /= TWO;
 	theta *= -1;
 	const float c = std::cos(theta);
 	const float s = std::sin(theta);
@@ -398,7 +399,7 @@ RageVector4 RageQuatFromP(float theta )
 RageVector4 RageQuatFromR(float theta )
 {
 	theta *= PI/180.0f;
-	theta /= 2.0f;
+	theta /= TWO;
 	theta *= -1;
 	const float c = std::cos(theta);
 	const float s = std::sin(theta);
@@ -414,7 +415,7 @@ void RageQuatFromHPR(RageVector4* pOut, RageVector3 hpr )
 {
 	hpr *= PI;
 	hpr /= 180.0f;
-	hpr /= 2.0f;
+	hpr /= TWO;
 
 	const float sX = std::sin(hpr.x);
 	const float cX = std::cos(hpr.x);
@@ -439,7 +440,7 @@ void RageQuatFromPRH(RageVector4* pOut, RageVector3 prh )
 {
 	prh *= PI;
 	prh /= 180.0f;
-	prh /= 2.0f;
+	prh /= TWO;
 
 	/* Set cX to the cosine of the angle we want to rotate on the X axis,
 	 * and so on.  Here, hpr.z (roll) rotates on the Z axis, hpr.x (heading)
@@ -511,14 +512,14 @@ void RageQuatSlerp(RageVector4 *pOut, const RageVector4 &from, const RageVector4
 		// standard case (slerp)
 		float omega = std::acos(cosom);
 		float sinom = std::sin(omega);
-		scale0 = std::sin((1.0f - t) * omega) / sinom;
+		scale0 = std::sin((ONE - t) * omega) / sinom;
 		scale1 = std::sin(t * omega) / sinom;
 	}
 	else
 	{
 		// "from" and "to" quaternions are very close
 		//  ... so we can do a linear interpolation
-		scale0 = 1.0f - t;
+		scale0 = ONE - t;
 		scale1 = t;
 	}
 	// calculate final values
@@ -568,7 +569,7 @@ RageMatrix RageLookAt(
 
 void RageMatrixAngles( RageMatrix* pOut, const RageVector3 &angles )
 {
-	const RageVector3 angles_radians( angles * 2*PI / 360 );
+	const RageVector3 angles_radians( angles * TWO_PI / 360 );
 
 	const float sy = std::sin( angles_radians[2] );
 	const float cy = std::cos( angles_radians[2] );
@@ -601,21 +602,21 @@ void RageMatrixTranspose( RageMatrix* pOut, const RageMatrix* pIn )
 
 float RageSquare( float angle )
 {
-	float fAngle = std::fmod( angle , (PI * 2) );
+	float fAngle = std::fmod( angle , (TWO_PI) );
 		//Hack: This ensures the hold notes don't flicker right before they're hit.
-		if(fAngle < 0.01f)
+		if(fAngle < POINT_ZERO_ONE)
 		{
-		    fAngle+= PI * 2;
+		    fAngle+= TWO_PI;
 		}
 	return fAngle >= PI ? -1.0 : 1.0;
 }
 
 float RageTriangle( float angle )
 {
-	float fAngle= std::fmod(angle, PI * 2.0f);
+	float fAngle= std::fmod(angle, PI * TWO);
 	if(fAngle < 0.0)
 	{
-		fAngle+= PI * 2.0;
+		fAngle+= TWO_PI;
 	}
 	double result= fAngle * (1 / PI);
 	if(result < .5)
@@ -642,16 +643,16 @@ float RageQuadratic::Evaluate( float fT ) const
 void RageQuadratic::SetFromBezier( float fX1, float fX2, float fX3, float fX4 )
 {
 	m_fD = fX1;
-	m_fC = 3.0f * (fX2 - fX1);
-	m_fB = 3.0f * (fX3 - fX2) - m_fC;
+	m_fC = THREE * (fX2 - fX1);
+	m_fB = THREE * (fX3 - fX2) - m_fC;
 	m_fA = fX4 - fX1 - m_fC - m_fB;
 }
 
 void RageQuadratic::GetBezier( float &fX1, float &fX2, float &fX3, float &fX4 ) const
 {
 	fX1 = m_fD;
-	fX2 = m_fD + m_fC/3.0f;
-	fX3 = m_fD + 2*m_fC/3.0f + m_fB/3.0f;
+	fX2 = m_fD + m_fC/THREE;
+	fX3 = m_fD + 2*m_fC/THREE + m_fB/THREE;
 	fX4 = m_fD + m_fC + m_fB + m_fA;
 }
 
@@ -659,9 +660,9 @@ void RageQuadratic::GetBezier( float &fX1, float &fX2, float &fX3, float &fX4 ) 
  * interpolate between 0 and 1. */
 void RageQuadratic::SetFromCubic( float fX1, float fX2, float fX3, float fX4 )
 {
-	m_fA = -1.0f/6.0f*fX1 + +3.0f/6.0f*fX2 + -3.0f/6.0f*fX3 + 1.0f/6.0f*fX4;
-	m_fB =  3.0f/6.0f*fX1 + -6.0f/6.0f*fX2 +  3.0f/6.0f*fX3;
-	m_fC = -2.0f/6.0f*fX1 + -3.0f/6.0f*fX2 +            fX3 + -1.0f/6.0f*fX4;
+	m_fA = NEGATIVE_ONE/6.0f*fX1 + +THREE/6.0f*fX2 + -THREE/6.0f*fX3 + ONE/6.0f*fX4;
+	m_fB =  THREE/6.0f*fX1 + -6.0f/6.0f*fX2 +  THREE/6.0f*fX3;
+	m_fC = -TWO/6.0f*fX1 + -THREE/6.0f*fX2 +            fX3 + NEGATIVE_ONE/6.0f*fX4;
 	m_fD =                             fX2;
 }
 

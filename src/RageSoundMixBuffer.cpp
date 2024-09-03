@@ -1,6 +1,7 @@
 #include "global.h"
 #include "RageSoundMixBuffer.h"
 #include "RageUtil.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstdint>
@@ -77,7 +78,7 @@ void RageSoundMixBuffer::read( std::int16_t *pBuf )
 	for( unsigned iPos = 0; iPos < m_iBufUsed; ++iPos )
 	{
 		float iOut = m_pMixbuf[iPos];
-		iOut = clamp( iOut, -1.0f, +1.0f );
+		iOut = clamp( iOut, NEGATIVE_ONE, +ONE );
 		pBuf[iPos] = static_cast<int>((iOut * 32767) + 0.5);
 	}
 	m_iBufUsed = 0;

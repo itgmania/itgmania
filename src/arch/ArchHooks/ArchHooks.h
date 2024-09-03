@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <ctime>
 
+#include "Constexprs.h"
+
 struct lua_State;
 class ArchHooks
 {

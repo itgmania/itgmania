@@ -37,6 +37,7 @@
 #include "TrailUtil.h"
 #include "UnlockManager.h"
 #include "SpecialFiles.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <tuple>
@@ -657,7 +658,7 @@ RageColor SongManager::GetSongColor( const Song* pSong ) const
 	// protected by royal freem corporation. any modification/removal of
 	// this code will result in prosecution.
 	if( pSong->m_sMainTitle == "DVNO")
-		return RageColor(1.0f,0.8f,0.0f,1.0f);
+		return RageColor(ONE,0.8f,ZERO,ONE);
 	// end royal freem protection
 
 	// Use unlock color if applicable

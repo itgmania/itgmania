@@ -9,6 +9,7 @@
 #include "ActorUtil.h"
 #include "LuaBinding.h"
 #include "RandomSeed.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstddef>
@@ -51,7 +52,7 @@ BitmapText::BitmapText()
 
 	m_bRainbowScroll = false;
 	m_bJitter = false;
-	m_fDistortion= 0.0f;
+	m_fDistortion= ZERO;
 	m_bUsingDistortion= false;
 	m_mult_attrs_with_diffuse= false;
 
@@ -263,7 +264,7 @@ void BitmapText::BuildChars()
 
 	/* Ensure that the width is always even. This maintains pixel alignment;
 	 * fX below will always be an integer. */
-	m_size.x = QuantizeUp( m_size.x, 2.0f );
+	m_size.x = QuantizeUp( m_size.x, TWO );
 
 	m_aVertices.clear();
 	m_vpFontPageTextures.clear();
@@ -281,7 +282,7 @@ void BitmapText::BuildChars()
 	m_size.y += iPadding * int(m_wTextLines.size()-1);
 
 	// the top position of the first row of characters
-	int iY = std::lrint(-m_size.y/2.0f);
+	int iY = std::lrint(-m_size.y/TWO);
 
 	for( unsigned i=0; i<m_wTextLines.size(); i++ ) // foreach line
 	{
@@ -292,7 +293,7 @@ void BitmapText::BuildChars()
 			reverse( sLine.begin(), sLine.end() );
 		const int iLineWidth = m_iLineWidths[i];
 
-		float fX = SCALE( m_fHorizAlign, 0.0f, 1.0f, -m_size.x/2.0f, +m_size.x/2.0f - iLineWidth );
+		float fX = SCALE( m_fHorizAlign, ZERO, ONE, -m_size.x/TWO, +m_size.x/TWO - iLineWidth );
 		int iX = std::lrint( fX );
 
 		for( unsigned j = 0; j < sLine.size(); ++j )
@@ -336,8 +337,8 @@ void BitmapText::BuildChars()
 			float h= m_aVertices[i+2].p.y - m_aVertices[i].p.y;
 			for(unsigned int ioff= 0; ioff < 4; ++ioff)
 			{
-				m_aVertices[i+ioff].p.x += ((GetRandomInt() % 9) / 8.0f - .5f) * m_fDistortion * w;
-				m_aVertices[i+ioff].p.y += ((GetRandomInt() % 9) / 8.0f - .5f) * m_fDistortion * h;
+				m_aVertices[i+ioff].p.x += ((GetRandomInt() % 9) / EIGHT - ONE_HALF) * m_fDistortion * w;
+				m_aVertices[i+ioff].p.y += ((GetRandomInt() % 9) / EIGHT - ONE_HALF) * m_fDistortion * h;
 			}
 		}
 	}
@@ -351,8 +352,8 @@ void BitmapText::DrawChars( bool bUseStrokeTexture )
 		return;
 
 	const int iNumGlyphs = m_vpFontPageTextures.size();
-	int iStartGlyph = std::lrint( SCALE( m_pTempState->crop.left, 0.f, 1.f, 0, (float) iNumGlyphs ) );
-	int iEndGlyph = std::lrint( SCALE( m_pTempState->crop.right, 0.f, 1.f, (float) iNumGlyphs, 0 ) );
+	int iStartGlyph = std::lrint( SCALE( m_pTempState->crop.left, ZERO, ONE, 0, (float) iNumGlyphs ) );
+	int iEndGlyph = std::lrint( SCALE( m_pTempState->crop.right, ZERO, ONE, (float) iNumGlyphs, 0 ) );
 	iStartGlyph = clamp( iStartGlyph, 0, iNumGlyphs );
 	iEndGlyph = clamp( iEndGlyph, 0, iNumGlyphs );
 
@@ -368,13 +369,13 @@ void BitmapText::DrawChars( bool bUseStrokeTexture )
 		RectF FadeSize = FadeDist;
 
 		// If the cropped size is less than the fade distance, clamp.
-		const float fHorizRemaining = 1.0f - (m_pTempState->crop.left + m_pTempState->crop.right);
+		const float fHorizRemaining = ONE - (m_pTempState->crop.left + m_pTempState->crop.right);
 		if( FadeDist.left+FadeDist.right > 0 &&
 			fHorizRemaining < FadeDist.left+FadeDist.right )
 		{
 			const float LeftPercent = FadeDist.left/(FadeDist.left+FadeDist.right);
 			FadeSize.left = LeftPercent * fHorizRemaining;
-			FadeSize.right = (1.0f-LeftPercent) * fHorizRemaining;
+			FadeSize.right = (ONE-LeftPercent) * fHorizRemaining;
 		}
 
 		/* We fade from 0 to LeftColor, then from RightColor to 0. (We won't fade
@@ -384,31 +385,31 @@ void BitmapText::DrawChars( bool bUseStrokeTexture )
 
 		const float fStartFadeLeftPercent = m_pTempState->crop.left;
 		const float fStopFadeLeftPercent = m_pTempState->crop.left + FadeSize.left;
-		const float fLeftFadeStartGlyph = SCALE( fStartFadeLeftPercent, 0.f, 1.f, 0, (float) iNumGlyphs );
-		const float fLeftFadeStopGlyph = SCALE( fStopFadeLeftPercent, 0.f, 1.f, 0, (float) iNumGlyphs );
+		const float fLeftFadeStartGlyph = SCALE( fStartFadeLeftPercent, ZERO, ONE, 0, (float) iNumGlyphs );
+		const float fLeftFadeStopGlyph = SCALE( fStopFadeLeftPercent, ZERO, ONE, 0, (float) iNumGlyphs );
 
 		const float fStartFadeRightPercent = 1-(m_pTempState->crop.right + FadeSize.right);
 		const float fStopFadeRightPercent = 1-(m_pTempState->crop.right);
-		const float fRightFadeStartGlyph = SCALE( fStartFadeRightPercent, 0.f, 1.f, 0, (float) iNumGlyphs );
-		const float fRightFadeStopGlyph = SCALE( fStopFadeRightPercent, 0.f, 1.f, 0, (float) iNumGlyphs );
+		const float fRightFadeStartGlyph = SCALE( fStartFadeRightPercent, ZERO, ONE, 0, (float) iNumGlyphs );
+		const float fRightFadeStopGlyph = SCALE( fStopFadeRightPercent, ZERO, ONE, 0, (float) iNumGlyphs );
 
 		for( int start = iStartGlyph; start < iEndGlyph; ++start )
 		{
 			int i = start*4;
 
-			float fAlpha = 1.0f;
+			float fAlpha = ONE;
 			if( FadeSize.left > 0.001f )
 			{
 				// Add .5, so we fade wrt. the center of the vert, not the left side.
-				float fPercent = SCALE( start+0.5f, fLeftFadeStartGlyph, fLeftFadeStopGlyph, 0.0f, 1.0f );
-				fPercent = clamp( fPercent, 0.0f, 1.0f );
+				float fPercent = SCALE( start+ONE_HALF, fLeftFadeStartGlyph, fLeftFadeStopGlyph, ZERO, ONE );
+				fPercent = clamp( fPercent, ZERO, ONE );
 				fAlpha *= fPercent * fLeftAlpha;
 			}
 
 			if( FadeSize.right > 0.001f )
 			{
-				float fPercent = SCALE( start+0.5f, fRightFadeStartGlyph, fRightFadeStopGlyph, 1.0f, 0.0f );
-				fPercent = clamp( fPercent, 0.0f, 1.0f );
+				float fPercent = SCALE( start+ONE_HALF, fRightFadeStartGlyph, fRightFadeStopGlyph, ONE, ZERO );
+				fPercent = clamp( fPercent, ZERO, ONE );
 				fAlpha *= fPercent * fRightAlpha;
 			}
 

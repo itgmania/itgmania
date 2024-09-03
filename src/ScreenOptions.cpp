@@ -14,6 +14,7 @@
 #include "OptionRowHandler.h"
 #include "LuaBinding.h"
 #include "InputEventPlus.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <vector>
@@ -677,9 +678,9 @@ void ScreenOptions::PositionRows( bool bTween )
 
 		float fPos = (float) pos;
 
-		if( i < first_start )				fPos = -0.5f;
-		else if( i >= first_end && i < second_start )	fPos = ((int)NUM_ROWS_SHOWN)/2-0.5f;
-		else if( i >= second_end )			fPos = ((int)NUM_ROWS_SHOWN)-0.5f;
+		if( i < first_start )				fPos = -ONE_HALF;
+		else if( i >= first_end && i < second_start )	fPos = ((int)NUM_ROWS_SHOWN)/2-ONE_HALF;
+		else if( i >= second_end )			fPos = ((int)NUM_ROWS_SHOWN)-ONE_HALF;
 
 		Actor::TweenState tsDestination = m_exprRowPositionTransformFunction.GetTransformCached( fPos, i, std::min( (int)Rows.size(), (int)NUM_ROWS_SHOWN ) );
 
@@ -688,7 +689,7 @@ void ScreenOptions::PositionRows( bool bTween )
 			(i >= first_end && i < second_start) ||
 			i >= second_end;
 		for( int j=0; j<NUM_DIFFUSE_COLORS; j++ )
-			tsDestination.diffuse[j].a = bHidden? 0.0f:1.0f;
+			tsDestination.diffuse[j].a = bHidden? ZERO:ONE;
 		if( !bHidden )
 			pos++;
 		row.SetDestination( tsDestination, bTween );
@@ -701,7 +702,7 @@ void ScreenOptions::PositionRows( bool bTween )
 		tsDestination.pos.y = SEPARATE_EXIT_ROW_Y;
 
 		for( int j=0; j<NUM_DIFFUSE_COLORS; j++ )
-			tsDestination.diffuse[j].a = 1.0f;
+			tsDestination.diffuse[j].a = ONE;
 		pSeparateExitRow->SetDestination( tsDestination, bTween );
 	}
 }

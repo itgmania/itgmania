@@ -13,6 +13,7 @@
 #include "Steps.h"
 #include "Attack.h"
 #include "PrefsManager.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <vector>
@@ -769,7 +770,7 @@ void SSCLoader::ProcessLabels( TimingData &out, const RString sParam )
 		const float fBeat = StringToFloat( arrayLabelValues[0] );
 		RString sLabel = arrayLabelValues[1];
 		TrimRight(sLabel);
-		if( fBeat >= 0.0f )
+		if( fBeat >= ZERO )
 			out.AddSegment( LabelSegment(BeatToNoteRow(fBeat), sLabel) );
 		else
 		{

@@ -19,6 +19,7 @@
 #include "PlayerState.h"
 #include "CommonMetrics.h"
 #include "InputEventPlus.h"
+#include "Constexprs.h"
 
 #include <cmath>
 
@@ -43,15 +44,15 @@ ScreenEnding::ScreenEnding()
 		STATSMAN->m_CurStageStats.m_player[PLAYER_2].m_vpPossibleSteps.push_back( GAMESTATE->m_pCurSteps[PLAYER_2] );
 		STATSMAN->m_CurStageStats.m_player[PLAYER_1].m_iStepsPlayed = 1;
 		STATSMAN->m_CurStageStats.m_player[PLAYER_2].m_iStepsPlayed = 1;
-		PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions, ModsLevel_Stage, m_fScrollSpeed, 2.0f );
-		PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[PLAYER_2]->m_PlayerOptions, ModsLevel_Stage, m_fScrollSpeed, 2.0f );
+		PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions, ModsLevel_Stage, m_fScrollSpeed, TWO );
+		PO_GROUP_ASSIGN( GAMESTATE->m_pPlayerState[PLAYER_2]->m_PlayerOptions, ModsLevel_Stage, m_fScrollSpeed, TWO );
 		GAMESTATE->m_iCurrentStageIndex = 0;
 		FOREACH_ENUM( PlayerNumber, p )
 			GAMESTATE->m_iPlayerStageTokens[p] = 1;
 		PO_GROUP_CALL( GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions, ModsLevel_Stage, ChooseRandomModifiers );
 		PO_GROUP_CALL( GAMESTATE->m_pPlayerState[PLAYER_2]->m_PlayerOptions, ModsLevel_Stage, ChooseRandomModifiers );
 
-		for( float f = 0; f < 100.0f; f += 1.0f )
+		for( float f = 0; f < 100.0f; f += ONE )
 		{
 			float fP1 = std::fmod(f/100*4+.3f,1);
 			STATSMAN->m_CurStageStats.m_player[PLAYER_1].SetLifeRecordAt( fP1, f );

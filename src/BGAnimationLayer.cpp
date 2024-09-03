@@ -13,6 +13,7 @@
 #include "LuaManager.h"
 #include "AutoActor.h"
 #include "ThemeManager.h"
+#include "Constexprs.h"
 
 #include <cmath>
 
@@ -191,10 +192,10 @@ void BGAnimationLayer::LoadFromAniLayerFile( const RString& sPath )
 
 			switch( effect )
 			{
-				case EFFECT_STRETCH_SCROLL_LEFT:	m_fTexCoordVelocityX = +0.5f; m_fTexCoordVelocityY = 0;	break;
-				case EFFECT_STRETCH_SCROLL_RIGHT:	m_fTexCoordVelocityX = -0.5f; m_fTexCoordVelocityY = 0;	break;
-				case EFFECT_STRETCH_SCROLL_UP:		m_fTexCoordVelocityX = 0; m_fTexCoordVelocityY = +0.5f;	break;
-				case EFFECT_STRETCH_SCROLL_DOWN:	m_fTexCoordVelocityX = 0; m_fTexCoordVelocityY = -0.5f;	break;
+				case EFFECT_STRETCH_SCROLL_LEFT:	m_fTexCoordVelocityX = +ONE_HALF; m_fTexCoordVelocityY = 0;	break;
+				case EFFECT_STRETCH_SCROLL_RIGHT:	m_fTexCoordVelocityX = -ONE_HALF; m_fTexCoordVelocityY = 0;	break;
+				case EFFECT_STRETCH_SCROLL_UP:		m_fTexCoordVelocityX = 0; m_fTexCoordVelocityY = +ONE_HALF;	break;
+				case EFFECT_STRETCH_SCROLL_DOWN:	m_fTexCoordVelocityX = 0; m_fTexCoordVelocityY = -ONE_HALF;	break;
 				default: break;
 			}
 		}
@@ -333,7 +334,7 @@ void BGAnimationLayer::LoadFromAniLayerFile( const RString& sPath )
 						pSprite->SetEffectSpin( RageVector3(0,180,0) );
 						break;
 					case EFFECT_TILE_PULSE:
-						pSprite->SetEffectPulse( 1, 0.3f, 1.f );
+						pSprite->SetEffectPulse( 1, 0.3f, ONE );
 						break;
 					default:
 						FAIL_M(ssprintf("Not a tile effect: %i", effect));

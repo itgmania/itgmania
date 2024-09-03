@@ -4,6 +4,7 @@
 #include "LuaManager.h"
 #include "XmlFile.h"
 #include "LocalizedString.h"
+#include "Constexprs.h"
 
 TapNote TAP_EMPTY	( TapNoteType_Empty,	TapNoteSubType_Invalid,	TapNoteSource_Original, "", 0, -1 );
 TapNote TAP_ORIGINAL_TAP	( TapNoteType_Tap,	TapNoteSubType_Invalid,	TapNoteSource_Original, "", 0, -1 );
@@ -75,16 +76,16 @@ float NoteTypeToBeat( NoteType nt )
 {
 	switch( nt )
 	{
-	case NOTE_TYPE_4TH:	return 1.0f;	// quarter notes
-	case NOTE_TYPE_8TH:	return 1.0f/2;	// eighth notes
-	case NOTE_TYPE_12TH:	return 1.0f/3;	// quarter note triplets
-	case NOTE_TYPE_16TH:	return 1.0f/4;	// sixteenth notes
-	case NOTE_TYPE_24TH:	return 1.0f/6;	// eighth note triplets
-	case NOTE_TYPE_32ND:	return 1.0f/8;	// thirty-second notes
-	case NOTE_TYPE_48TH:	return 1.0f/12; // sixteenth note triplets
-	case NOTE_TYPE_64TH:	return 1.0f/16; // sixty-fourth notes
-	case NOTE_TYPE_192ND:	return 1.0f/48; // sixty-fourth note triplets
-	case NoteType_Invalid:	return 1.0f/48;
+    case NOTE_TYPE_4TH:    return _NOTE_TYPE_4TH;    // quarter notes
+    case NOTE_TYPE_8TH:    return _NOTE_TYPE_8TH;    // eighth notes
+    case NOTE_TYPE_12TH:   return _NOTE_TYPE_12TH;   // quarter note triplets
+    case NOTE_TYPE_16TH:   return _NOTE_TYPE_16TH;   // sixteenth notes
+    case NOTE_TYPE_24TH:   return _NOTE_TYPE_24TH;   // eighth note triplets
+    case NOTE_TYPE_32ND:   return _NOTE_TYPE_32ND;   // thirty-second notes
+    case NOTE_TYPE_48TH:   return _NOTE_TYPE_48TH;   // sixteenth note triplets
+    case NOTE_TYPE_64TH:   return _NOTE_TYPE_64TH;   // sixty-fourth notes
+    case NOTE_TYPE_192ND:  return _NOTE_TYPE_192ND;  // sixty-fourth note triplets
+    case NoteType_Invalid: return _NOTE_TYPE_INVALID; // invalid note type
 	default:
 		FAIL_M(ssprintf("Unrecognized note type: %i", nt));
 	}

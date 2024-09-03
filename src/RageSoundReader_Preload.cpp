@@ -6,6 +6,7 @@
 #include "RageUtil.h"
 #include "RageSoundUtil.h"
 #include "Preference.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstdint>
@@ -38,7 +39,7 @@ bool RageSoundReader_Preload::PreloadSound( RageSoundReader *&pSound )
 
 RageSoundReader_Preload::RageSoundReader_Preload():
 	m_Buffer( new RString ), m_bBufferIs16Bit(false),
-	m_iPosition(0), m_iSampleRate(0), m_iChannels(0), m_fRate(0.0f)
+	m_iPosition(0), m_iSampleRate(0), m_iChannels(0), m_fRate(ZERO)
 {
 	m_bBufferIs16Bit = g_bSoundPreload16bit.Get();
 }

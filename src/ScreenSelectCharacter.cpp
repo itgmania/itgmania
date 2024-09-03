@@ -12,6 +12,7 @@
 #include "RageTextureManager.h"
 #include "CharacterManager.h"
 #include "InputEventPlus.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -222,7 +223,7 @@ void ScreenSelectCharacter::AfterRowChange( PlayerNumber pn )
 	{
 		case CHOOSING_CPU_CHARACTER:
 		case CHOOSING_HUMAN_CHARACTER:
-			m_sprCardArrows[pnAffected].SetEffectGlowShift(1.0f, RageColor(1,1,1,0.2f), RageColor(1,1,1,0.8f));
+			m_sprCardArrows[pnAffected].SetEffectGlowShift(ONE, RageColor(1,1,1,0.2f), RageColor(1,1,1,0.8f));
 			break;
 		default: break;
 	}
@@ -261,7 +262,7 @@ void ScreenSelectCharacter::AfterValueChange( PlayerNumber pn )
 				Banner &banner = m_sprIcons[pnAffected][i];
 				banner.LoadIconFromCharacter( pCharacter );
 				float fX = (pnAffected==PLAYER_1) ? 320-ICON_WIDTH : 320+ICON_WIDTH;
-				float fY = SCALE( i, 0.f, MAX_CHAR_ICONS_TO_SHOW-1.f, 240-(MAX_CHAR_ICONS_TO_SHOW/2*ICON_HEIGHT), 240+(MAX_CHAR_ICONS_TO_SHOW/2*ICON_HEIGHT));
+				float fY = SCALE( i, ZERO, MAX_CHAR_ICONS_TO_SHOW-1.f, 240-(MAX_CHAR_ICONS_TO_SHOW/2*ICON_HEIGHT), 240+(MAX_CHAR_ICONS_TO_SHOW/2*ICON_HEIGHT));
 				banner.SetXY( fX, fY );
 			}
 		}

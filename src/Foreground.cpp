@@ -7,7 +7,7 @@
 #include "ActorUtil.h"
 #include "Song.h"
 #include "BackgroundUtil.h"
-
+#include "Constexprs.h"
 
 Foreground::~Foreground()
 {
@@ -73,7 +73,7 @@ void Foreground::LoadFromSong( const Song *pSong )
 void Foreground::Update( float fDeltaTime )
 {
 	// Calls to Update() should *not* be scaled by music rate unless RateModsAffectFGChanges is enabled. Undo it.
-	const float fRate = PREFSMAN->m_bRateModsAffectTweens ? 1.0f : GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+	const float fRate = PREFSMAN->m_bRateModsAffectTweens ? ONE : GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
 
 	for( unsigned i=0; i < m_BGAnimations.size(); ++i )
 	{
@@ -108,7 +108,7 @@ void Foreground::Update( float fDeltaTime )
 		}
 
 		// This shouldn't go down, but be safe:
-		lDeltaTime = std::max( lDeltaTime, 0.0f );
+		lDeltaTime = std::max( lDeltaTime, ZERO );
 
 		bga.m_bga->Update( lDeltaTime / fRate );
 

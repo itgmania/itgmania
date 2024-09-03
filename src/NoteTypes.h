@@ -6,6 +6,7 @@
 #include "GameConstantsAndTypes.h"
 #include "PlayerNumber.h"
 #include "RageLog.h"
+#include "Constexprs.h"
 
 #include <cmath>
 
@@ -15,7 +16,7 @@ class XNode;
 struct TapNoteResult
 {
 	/** @brief Set up the TapNoteResult with default values. */
-	TapNoteResult() : tns(TNS_None), fTapNoteOffset(0.f), bHidden(false), bHeld(false) { }
+	TapNoteResult() : tns(TNS_None), fTapNoteOffset(ZERO), bHidden(false), bHeld(false) { }
 	/** @brief The TapNoteScore that was achieved by the player. */
 	TapNoteScore	tns;
 	/** @brief The TapNoteScore of any early hits of this tap note. */
@@ -54,7 +55,7 @@ struct TapNoteResult
 /** @brief The result of holding (or letting go of) a hold note. */
 struct HoldNoteResult
 {
-	HoldNoteResult() : hns(HNS_None), fLife(1.f), fOverlappedTime(0), iLastHeldRow(0), iCheckpointsHit(0), iCheckpointsMissed(0), bHeld(false), bActive(false) { }
+	HoldNoteResult() : hns(HNS_None), fLife(ONE), fOverlappedTime(0), iLastHeldRow(0), iCheckpointsHit(0), iCheckpointsMissed(0), bHeld(false), bActive(false) { }
 	float GetLastHeldBeat() const;
 
 	HoldNoteScore	hns;
@@ -182,7 +183,7 @@ struct TapNote
 		subType = TapNoteSubType_Invalid;
 		source = TapNoteSource_Original;
 		pn = PLAYER_INVALID,
-		fAttackDurationSeconds = 0.f;
+		fAttackDurationSeconds = ZERO;
 		iKeysoundIndex = -1;
 		iDuration = 0;
 	}

@@ -1,6 +1,7 @@
 #include "global.h"
 #include "JoystickDevice.h"
 #include "RageLog.h"
+#include "Constexprs.h"
 
 #include <cstdint>
 #include <vector>
@@ -160,69 +161,69 @@ void JoystickDevice::GetButtonPresses( std::vector<DeviceInput>& vPresses, IOHID
 	{
 		if( js.x_axis == cookie )
 		{
-			float level = SCALE( value, js.x_min, js.x_max, -1.0f, 1.0f );
+			float level = SCALE( value, js.x_min, js.x_max, NEGATIVE_ONE, ONE );
 
-			vPresses.push_back( DeviceInput(js.id, JOY_LEFT, std::max(-level, 0.0f), now) );
-			vPresses.push_back( DeviceInput(js.id, JOY_RIGHT, std::max(level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_LEFT, std::max(-level, ZERO), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_RIGHT, std::max(level, ZERO), now) );
 			break;
 		}
 		else if( js.y_axis == cookie )
 		{
-			float level = SCALE( value, js.y_min, js.y_max, -1.0f, 1.0f );
+			float level = SCALE( value, js.y_min, js.y_max, NEGATIVE_ONE, ONE );
 
-			vPresses.push_back( DeviceInput(js.id, JOY_UP, std::max(-level, 0.0f), now) );
-			vPresses.push_back( DeviceInput(js.id, JOY_DOWN, std::max(level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_UP, std::max(-level, ZERO), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_DOWN, std::max(level, ZERO), now) );
 			break;
 		}
 		else if( js.z_axis == cookie )
 		{
-			float level = SCALE( value, js.z_min, js.z_max, -1.0f, 1.0f );
+			float level = SCALE( value, js.z_min, js.z_max, NEGATIVE_ONE, ONE );
 
-			vPresses.push_back( DeviceInput(js.id, JOY_Z_UP, std::max(-level, 0.0f), now) );
-			vPresses.push_back( DeviceInput(js.id, JOY_Z_DOWN, std::max(level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_Z_UP, std::max(-level, ZERO), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_Z_DOWN, std::max(level, ZERO), now) );
 			break;
 		}
 		else if( js.x_rot == cookie )
 		{
-			float level = SCALE( value, js.rx_min, js.rx_max, -1.0f, 1.0f );
+			float level = SCALE( value, js.rx_min, js.rx_max, NEGATIVE_ONE, ONE );
 
-			vPresses.push_back( DeviceInput(js.id, JOY_ROT_LEFT, std::max(-level, 0.0f), now) );
-			vPresses.push_back( DeviceInput(js.id, JOY_ROT_RIGHT, std::max(level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_ROT_LEFT, std::max(-level, ZERO), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_ROT_RIGHT, std::max(level, ZERO), now) );
 			break;
 		}
 		else if( js.y_rot == cookie )
 		{
-			float level = SCALE( value, js.ry_min, js.ry_max, -1.0f, 1.0f );
+			float level = SCALE( value, js.ry_min, js.ry_max, NEGATIVE_ONE, ONE );
 
-			vPresses.push_back( DeviceInput(js.id, JOY_ROT_UP, std::max(-level, 0.0f), now) );
-			vPresses.push_back( DeviceInput(js.id, JOY_ROT_DOWN, std::max(level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_ROT_UP, std::max(-level, ZERO), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_ROT_DOWN, std::max(level, ZERO), now) );
 			break;
 		}
 		else if( js.z_rot == cookie )
 		{
-			float level = SCALE( value, js.rz_min, js.rz_max, -1.0f, 1.0f );
+			float level = SCALE( value, js.rz_min, js.rz_max, NEGATIVE_ONE, ONE );
 
-			vPresses.push_back( DeviceInput(js.id, JOY_ROT_Z_UP, std::max(-level, 0.0f), now) );
-			vPresses.push_back( DeviceInput(js.id, JOY_ROT_Z_DOWN, std::max(level, 0.0f), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_ROT_Z_UP, std::max(-level, ZERO), now) );
+			vPresses.push_back( DeviceInput(js.id, JOY_ROT_Z_DOWN, std::max(level, ZERO), now) );
 			break;
 		}
 		else if( js.hat == cookie )
 		{
-			float levelUp = 0.f, levelRight = 0.f, levelDown = 0.f, levelLeft = 0.f;
+			float levelUp = ZERO, levelRight = ZERO, levelDown = ZERO, levelLeft = ZERO;
 
 			value -= js.hat_min; // Probably just subtracting 0.
 			if( js.hat_max - js.hat_min == 3 )
 				value *= 2;
 			switch( value )
 			{
-			case 0:	levelUp = 1.f;		break;	// U
-			case 1:	levelUp = 1.f;		levelRight = 1.f;	break;	// UR
-			case 2:	levelRight = 1.f;	break;	// R
-			case 3:	levelDown = 1.f;	levelRight = 1.f;	break;	// DR
-			case 4:	levelDown = 1.f;	break;	// D
-			case 5:	levelDown = 1.f;	levelLeft = 1.f;	break;	// DL
-			case 6:	levelLeft = 1.f;	break;	// L
-			case 7:	levelUp = 1.f;		levelLeft = 1.f;	break;	// UL
+			case 0:	levelUp = ONE;		break;	// U
+			case 1:	levelUp = ONE;		levelRight = ONE;	break;	// UR
+			case 2:	levelRight = ONE;	break;	// R
+			case 3:	levelDown = ONE;	levelRight = ONE;	break;	// DR
+			case 4:	levelDown = ONE;	break;	// D
+			case 5:	levelDown = ONE;	levelLeft = ONE;	break;	// DL
+			case 6:	levelLeft = ONE;	break;	// L
+			case 7:	levelUp = ONE;		levelLeft = ONE;	break;	// UL
 			}
 			vPresses.push_back( DeviceInput(js.id, JOY_HAT_UP,	levelUp,	now) );
 			vPresses.push_back( DeviceInput(js.id, JOY_HAT_RIGHT,	levelRight,	now) );

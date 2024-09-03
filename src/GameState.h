@@ -12,6 +12,7 @@
 #include "SongOptions.h"
 #include "SongPosition.h"
 #include "Preference.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <deque>
@@ -419,7 +420,7 @@ public:
 	// something when autogen is generalized and more customizable. -Kyz
 	float GetAutoGenFarg(std::size_t i)
 	{
-		if(i >= m_autogen_fargs.size()) { return 0.0f; }
+		if(i >= m_autogen_fargs.size()) { return ZERO; }
 		return m_autogen_fargs[i];
 	}
 	std::vector<float> m_autogen_fargs;

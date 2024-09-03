@@ -4,6 +4,7 @@
 #import "RageUtil.h"
 #import "RageFile.h"
 #include "ThemeManager.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -27,11 +28,11 @@
 {
 	NSSize size = [image size];
 	NSRect viewRect, windowRect;
-	float height = 0.0f;
-	float padding = 5.0f;
+	float height = ZERO;
+	float padding = FIVE;
 
 	NSRect progressIndicatorRect;
-	progressIndicatorRect = NSMakeRect(padding, padding, size.width-padding*2.0f, 0);
+	progressIndicatorRect = NSMakeRect(padding, padding, size.width-padding*TWO, 0);
 	m_ProgressIndicator = [[NSProgressIndicator alloc] initWithFrame:progressIndicatorRect];
 	[m_ProgressIndicator sizeToFit];
 	[m_ProgressIndicator setIndeterminate:YES];
@@ -41,7 +42,7 @@
 	progressIndicatorRect = [m_ProgressIndicator frame];
 	float progressHeight = progressIndicatorRect.size.height;
 
-	NSFont *font = [NSFont systemFontOfSize:0.0f];
+	NSFont *font = [NSFont systemFontOfSize:ZERO];
 	NSRect textRect;
 	// Just give it a size until it is created.
 	textRect = NSMakeRect( 0, progressHeight + padding, size.width, size.height );

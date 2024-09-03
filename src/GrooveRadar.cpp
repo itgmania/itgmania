@@ -12,6 +12,7 @@
 #include "ActorUtil.h"
 // I feel weird about this coupling, but it has to be done. -aj
 #include "GameState.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -21,7 +22,7 @@ REGISTER_ACTOR_CLASS(GrooveRadar);
 static const ThemeMetric<float>	RADAR_EDGE_WIDTH	("GrooveRadar","EdgeWidth");
 static const ThemeMetric<float>	RADAR_CENTER_ALPHA	("GrooveRadar","CenterAlpha");
 
-static float RADAR_VALUE_ROTATION( int iValueIndex ) {	return PI/2 + PI*2 / 5.0f * iValueIndex; }
+static float RADAR_VALUE_ROTATION( int iValueIndex ) {	return PI/2 + TWO_PI / FIVE * iValueIndex; }
 
 static const int NUM_SHOWN_RADAR_CATEGORIES = 5;
 
@@ -110,7 +111,7 @@ void GrooveRadar::GrooveRadarValueMap::SetFromSteps( const RadarValues &rv )
 	{
 		const float fValueCurrent = m_fValuesOld[c] * (1-m_PercentTowardNew) + m_fValuesNew[c] * m_PercentTowardNew;
 		m_fValuesOld[c] = fValueCurrent;
-		m_fValuesNew[c] = clamp(rv[c], 0.0f, 1.0f);
+		m_fValuesNew[c] = clamp(rv[c], ZERO, ONE);
 	}
 
 	if( !m_bValuesVisible ) // the values WERE invisible
@@ -139,7 +140,7 @@ void GrooveRadar::GrooveRadarValueMap::Update( float fDeltaTime )
 {
 	ActorFrame::Update( fDeltaTime );
 
-	m_PercentTowardNew = std::min( m_PercentTowardNew + 4.0f * fDeltaTime, 1.0f );
+	m_PercentTowardNew = std::min( m_PercentTowardNew + FOUR * fDeltaTime, ONE );
 }
 
 void GrooveRadar::GrooveRadarValueMap::DrawPrimitives()
@@ -147,7 +148,7 @@ void GrooveRadar::GrooveRadarValueMap::DrawPrimitives()
 	ActorFrame::DrawPrimitives();
 
 	// draw radar filling
-	const float fRadius = GetUnzoomedWidth()/2.0f*1.1f;
+	const float fRadius = GetUnzoomedWidth()/TWO*1.1f;
 
 	DISPLAY->ClearAllTextures();
 	DISPLAY->SetTextureMode( TextureUnit_1, TextureMode_Modulate );
@@ -160,7 +161,7 @@ void GrooveRadar::GrooveRadarValueMap::DrawPrimitives()
 
 	// use a fan to draw the volume
 	RageColor color = this->m_pTempState->diffuse[0];
-	color.a = 0.5f;
+	color.a = ONE_HALF;
 	v[0].p = RageVector3( 0, 0, 0 );
 	RageColor midcolor = color;
 	midcolor.a = RADAR_CENTER_ALPHA;

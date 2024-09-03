@@ -11,6 +11,7 @@
 #include "RageSurface.h"
 #include "RageTextureManager.h"
 #include "DisplaySpec.h"
+#include "Constexprs.h"
 
 #include "arch/LowLevelWindow/LowLevelWindow.h"
 
@@ -422,7 +423,7 @@ bool RageDisplay_GLES2::BeginFrame()
 
 	glViewport( 0, 0, fWidth, fHeight );
 
-	glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+	glClearColor( ZERO, ZERO, ZERO, ONE );
 	SetZWrite( true );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
@@ -704,8 +705,8 @@ RageDisplay_GLES2::SetZWrite( bool b )
 void
 RageDisplay_GLES2::SetZBias( float f )
 {
-	float fNear = SCALE( f, 0.0f, 1.0f, 0.05f, 0.0f );
-	float fFar = SCALE( f, 0.0f, 1.0f, 1.0f, 0.95f );
+	float fNear = SCALE( f, ZERO, ONE, 0.05f, ZERO );
+	float fFar = SCALE( f, ZERO, ONE, ONE, 0.95f );
 
 	glDepthRange( fNear, fFar );
 }

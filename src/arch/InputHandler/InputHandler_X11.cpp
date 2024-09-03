@@ -5,6 +5,7 @@
 #include "RageDisplay.h"
 #include "InputFilter.h"
 #include "archutils/Unix/X11Helper.h"
+#include "Constexprs.h"
 
 #include <vector>
 
@@ -272,7 +273,7 @@ void InputHandler_X11::RegisterKeyEvent( unsigned long timestamp, bool keyDown, 
 	DeviceInput di(
 		DEVICE_KEYBOARD,
 		button,
-		keyDown ? 1.0f:0.0f,
+		keyDown ? ONE:ZERO,
 		timer);
 
 	ButtonPressed( di );

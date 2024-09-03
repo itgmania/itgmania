@@ -19,6 +19,7 @@
 #include "NoteSkinManager.h"
 #include "InputEventPlus.h"
 #include "InputMapper.h"
+#include "Constexprs.h"
 
 // used in TestScreen section
 #include "SongManager.h"
@@ -76,14 +77,14 @@ void ScreenNameEntry::ScrollingText::DrawPrimitives()
 	{
 		const RString c = CHARS_CHOICES.substr( iCharIndex, 1 );
 		float fZoom = g_fCharsZoomSmall;
-		float fAlpha = 1.f;
+		float fAlpha = ONE;
 
 		if( iCharIndex == iClosestIndex )
-			fZoom = SCALE( std::abs(fClosestYOffset), 0, 0.5f, g_fCharsZoomLarge, g_fCharsZoomSmall );
+			fZoom = SCALE( std::abs(fClosestYOffset), 0, ONE_HALF, g_fCharsZoomLarge, g_fCharsZoomSmall );
 		if( i == 0 )
-			fAlpha *= SCALE( fClosestYOffset, -0.5f, 0.f, 0.f, 1.f );
+			fAlpha *= SCALE( fClosestYOffset, -ONE_HALF, ZERO, ZERO, ONE );
 		if( i == g_iNumCharsToDrawTotal-1 )
-			fAlpha *= SCALE( fClosestYOffset, 0.f, 0.5f, 1.f, 0.f );
+			fAlpha *= SCALE( fClosestYOffset, ZERO, ONE_HALF, ONE, ZERO );
 
 		m_Stamp.SetZoom( fZoom );
 		m_Stamp.SetDiffuseAlpha( fAlpha );
@@ -101,17 +102,17 @@ void ScreenNameEntry::ScrollingText::DrawPrimitives()
 
 char ScreenNameEntry::ScrollingText::GetClosestChar( float fFakeBeat ) const
 {
-	ASSERT( fFakeBeat >= 0.f );
+	ASSERT( fFakeBeat >= ZERO );
 	return CHARS_CHOICES[std::lrint(fFakeBeat) % CHARS_CHOICES.size()];
 }
 
 // return value is relative to gray arrows
 float ScreenNameEntry::ScrollingText::GetClosestCharYOffset( float fFakeBeat ) const
 {
-	float f = std::fmod(fFakeBeat, 1.0f);
-	if( f > 0.5f )
+	float f = std::fmod(fFakeBeat, ONE);
+	if( f > ONE_HALF )
 		f -= 1;
-	ASSERT( f>-0.5f && f<=0.5f );
+	ASSERT( f>-ONE_HALF && f<=ONE_HALF );
 	return -f;
 }
 

@@ -23,6 +23,7 @@
 #include "HighScore.h"
 #include "Character.h"
 #include "CharacterManager.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <vector>
@@ -1104,7 +1105,7 @@ int ProfileManager::GetSongNumTimesPlayed( const Song* pSong, ProfileSlot slot )
 void ProfileManager::AddStepsScore( const Song* pSong, const Steps* pSteps, PlayerNumber pn, const HighScore &hs_, int &iPersonalIndexOut, int &iMachineIndexOut )
 {
 	HighScore hs = hs_;
-	hs.SetPercentDP( std::max(0.0f, hs.GetPercentDP()) ); // bump up negative scores
+	hs.SetPercentDP( std::max(ZERO, hs.GetPercentDP()) ); // bump up negative scores
 
 	iPersonalIndexOut = -1;
 	iMachineIndexOut = -1;
@@ -1158,7 +1159,7 @@ void ProfileManager::IncrementStepsPlayCount( const Song* pSong, const Steps* pS
 void ProfileManager::AddCourseScore( const Course* pCourse, const Trail* pTrail, PlayerNumber pn, const HighScore &hs_, int &iPersonalIndexOut, int &iMachineIndexOut )
 {
 	HighScore hs = hs_;
-	hs.SetPercentDP(std::max( 0.0f, hs.GetPercentDP()) ); // bump up negative scores
+	hs.SetPercentDP(std::max( ZERO, hs.GetPercentDP()) ); // bump up negative scores
 
 	iPersonalIndexOut = -1;
 	iMachineIndexOut = -1;

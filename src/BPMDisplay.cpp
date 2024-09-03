@@ -10,6 +10,7 @@
 #include "LocalizedString.h"
 #include "Song.h"
 #include "Steps.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <climits>
@@ -24,7 +25,7 @@ BPMDisplay::BPMDisplay()
 	m_iCurrentBPM = 0;
 	m_BPMS.push_back(0);
 	m_fPercentInState = 0;
-	m_fCycleTime = 1.0f;
+	m_fCycleTime = ONE;
 }
 
 void BPMDisplay::Load()
@@ -191,7 +192,7 @@ void BPMDisplay::SetBpmFromSong( const Song* pSong )
 			DisplayBpms bpms;
 			pSong->GetDisplayBpms( bpms );
 			SetBPMRange( bpms );
-			m_fCycleTime = 1.0f;
+			m_fCycleTime = ONE;
 		}
 		break;
 	case DISPLAY_BPM_RANDOM:
@@ -210,7 +211,7 @@ void BPMDisplay::SetBpmFromSteps( const Steps* pSteps )
 	pSteps->GetTimingData()->GetActualBPM( fMinBPM, fMaxBPM );
 	bpms.Add( fMinBPM );
 	bpms.Add( fMaxBPM );
-	m_fCycleTime = 1.0f;
+	m_fCycleTime = ONE;
 }
 
 void BPMDisplay::SetBpmFromCourse( const Course* pCourse )

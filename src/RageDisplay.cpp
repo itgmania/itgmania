@@ -52,7 +52,7 @@ static std::vector<Centering> g_CenteringStack( 1, Centering(0, 0, 0, 0) );
 RageDisplay*		DISPLAY	= nullptr; // global and accessible from anywhere in our program
 
 Preference<bool>  LOG_FPS( "LogFPS", false );
-Preference<float> g_fFrameLimitPercent( "FrameLimitPercent", 0.0f );
+Preference<float> g_fFrameLimitPercent( "FrameLimitPercent", ZERO );
 
 static const char *RagePixelFormatNames[] = {
 	"RGBA8",
@@ -135,7 +135,7 @@ void RageDisplay::ProcessStatsOnFlip()
 	g_iFramesRenderedSinceLastCheck++;
 	g_iFramesRenderedSinceLastReset++;
 
-	if( g_LastCheckTimer.PeekDeltaTime() >= 1.0f )	// update stats every 1 sec.
+	if( g_LastCheckTimer.PeekDeltaTime() >= ONE )	// update stats every 1 sec.
 	{
 		float fActualTime = g_LastCheckTimer.GetDeltaTime();
 		g_iNumChecksSinceLastReset++;
@@ -205,7 +205,7 @@ void RageDisplay::DrawPolyLine(const RageSpriteVertex &p1, const RageSpriteVerte
 	// soh cah toa strikes strikes again!
 	float opp = p2.p.x - p1.p.x;
 	float adj = p2.p.y - p1.p.y;
-	float hyp = std::pow(opp*opp + adj*adj, 0.5f);
+	float hyp = std::pow(opp*opp + adj*adj, ONE_HALF);
 
 	float lsin = opp/hyp;
 	float lcos = adj/hyp;
@@ -254,7 +254,7 @@ void RageDisplay::DrawCircleInternal( const RageSpriteVertex &p, float radius )
 
 	for(int i = 0; i < subdivisions+1; ++i)
 	{
-		const float fRotation = float(i) / subdivisions * 2*PI;
+		const float fRotation = float(i) / subdivisions * TWO_PI;
 		const float fX = std::cos(fRotation) * radius;
 		const float fY = -std::sin(fRotation) * radius;
 		v[1+i] = v[0];
@@ -581,7 +581,7 @@ void RageDisplay::LoadMenuPerspective( float fovDegrees, float fWidth, float fHe
 	}
 	else
 	{
-		CLAMP( fovDegrees, 0.1f, 179.9f );
+		CLAMP( fovDegrees, POINT_ONE, 179.9f );
 		float fovRadians = fovDegrees / 180.f * PI;
 		float theta = fovRadians/2;
 		float fDistCameraFromImage = fWidth/2 / std::tan( theta );
@@ -606,7 +606,7 @@ void RageDisplay::LoadMenuPerspective( float fovDegrees, float fWidth, float fHe
 			RageLookAt(
 				-fVanishPointX+fWidth/2, -fVanishPointY+fHeight/2, fDistCameraFromImage,
 				-fVanishPointX+fWidth/2, -fVanishPointY+fHeight/2, 0,
-				0.0f, 1.0f, 0.0f) );
+				ZERO, ONE, ZERO) );
 	}
 }
 
@@ -738,10 +738,10 @@ RageMatrix RageDisplay::GetCenteringMatrix( float fTranslateX, float fTranslateY
 	// in screen space, left edge = -1, right edge = 1, bottom edge = -1. top edge = 1
 	float fWidth = (float) GetActualVideoModeParams().windowWidth;
 	float fHeight = (float) GetActualVideoModeParams().windowHeight;
-	float fPercentShiftX = SCALE( fTranslateX, 0, fWidth, 0, +2.0f );
-	float fPercentShiftY = SCALE( fTranslateY, 0, fHeight, 0, -2.0f );
-	float fPercentScaleX = SCALE( fAddWidth, 0, fWidth, 1.0f, 2.0f );
-	float fPercentScaleY = SCALE( fAddHeight, 0, fHeight, 1.0f, 2.0f );
+	float fPercentShiftX = SCALE( fTranslateX, 0, fWidth, 0, +TWO );
+	float fPercentShiftY = SCALE( fTranslateY, 0, fHeight, 0, -TWO );
+	float fPercentScaleX = SCALE( fAddWidth, 0, fWidth, ONE, TWO );
+	float fPercentScaleY = SCALE( fAddHeight, 0, fHeight, ONE, TWO );
 
 	RageMatrix m1;
 	RageMatrix m2;
@@ -937,10 +937,10 @@ void RageDisplay::FrameLimitBeforeVsync( int iFPS )
 	ASSERT( iFPS != 0 );
 
 	int iDelayMicroseconds = 0;
-	if( g_fFrameLimitPercent.Get() > 0.0f && !g_LastFrameEndedAt.IsZero() )
+	if( g_fFrameLimitPercent.Get() > ZERO && !g_LastFrameEndedAt.IsZero() )
 	{
 		float fFrameTime = g_LastFrameEndedAt.GetDeltaTime();
-		float fExpectedTime = 1.0f / iFPS;
+		float fExpectedTime = ONE / iFPS;
 
 		/* This is typically used to turn some of the delay that would normally
 		 * be waiting for vsync and turn it into a usleep, to make sure we give
@@ -962,7 +962,7 @@ void RageDisplay::FrameLimitBeforeVsync( int iFPS )
 
 void RageDisplay::FrameLimitAfterVsync()
 {
-	if( g_fFrameLimitPercent.Get() == 0.0f )
+	if( g_fFrameLimitPercent.Get() == ZERO )
 		return;
 
 	g_LastFrameEndedAt.Touch();
@@ -1003,7 +1003,7 @@ void RageCompiledGeometry::Set( const std::vector<msMesh> &vMeshes, bool bNeedsN
 
 		for( unsigned j = 0; j < Vertices.size(); ++j )
 		{
-			if( Vertices[j].TextureMatrixScale.x != 1.0f || Vertices[j].TextureMatrixScale.y != 1.0f )
+			if( Vertices[j].TextureMatrixScale.x != ONE || Vertices[j].TextureMatrixScale.y != ONE )
 			{
 				meshInfo.m_bNeedsTextureMatrixScale = true;
 				m_bAnyNeedsTextureMatrixScale = true;

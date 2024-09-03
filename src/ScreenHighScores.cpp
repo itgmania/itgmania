@@ -5,6 +5,7 @@
 #include "Song.h"
 #include "RageLog.h"
 #include "UnlockManager.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <vector>
@@ -93,8 +94,8 @@ bool ScoreScroller::Scroll( int iDir )
 	float fDest = GetDestinationItem();
 	float fOldDest = fDest;
 	fDest += iDir;
-	float fLowClamp = (SCROLLER_ITEMS_TO_DRAW-1)/2.0f;
-	float fHighClamp = m_vScoreRowItemData.size()-(SCROLLER_ITEMS_TO_DRAW-1)/2.0f-1;
+	float fLowClamp = (SCROLLER_ITEMS_TO_DRAW-1)/TWO;
+	float fHighClamp = m_vScoreRowItemData.size()-(SCROLLER_ITEMS_TO_DRAW-1)/TWO-1;
 	CLAMP( fDest, fLowClamp, fHighClamp );
 	if( fOldDest != fDest )
 	{
@@ -109,7 +110,7 @@ bool ScoreScroller::Scroll( int iDir )
 
 void ScoreScroller::ScrollTop()
 {
-	SetCurrentAndDestinationItem( (SCROLLER_ITEMS_TO_DRAW-1)/2.0f );
+	SetCurrentAndDestinationItem( (SCROLLER_ITEMS_TO_DRAW-1)/TWO );
 }
 
 void ScoreScroller::ConfigureActor( Actor *pActor, int iItem )

@@ -11,6 +11,7 @@
 #include "RageUtil.h"
 #include "RageMath.h"
 #include "RageThreads.h"
+#include "Constexprs.h"
 
 #include <cmath>
 #include <cstddef>
@@ -38,7 +39,7 @@ namespace
 		{
 			float y = fX / 3.75f;
 			y *= y;
-			float fRet = 1.0f+y*(+3.5156229f+y*(+3.0899424f+y*(+1.2067492f+y*(+0.2659732f+y*(+0.0360768f+y*+0.0045813f)))));
+			float fRet = ONE+y*(+3.5156229f+y*(+3.0899424f+y*(+1.2067492f+y*(+0.2659732f+y*(+0.0360768f+y*+0.0045813f)))));
 			return fRet;
 		}
 		else
@@ -63,11 +64,11 @@ namespace
 	void ApplyKaiserWindow( float *pBuf, int iLen, float fBeta )
 	{
 		const float fDenom = BesselI0(fBeta);
-		float p = (iLen-1)/2.0f;
+		float p = (iLen-1)/TWO;
 		for( int n = 0; n < iLen; ++n )
 		{
 			float fN1 = std::abs((n-p)/p);
-			float fNum = fBeta * std::sqrt( std::max(1.0f - fN1*fN1, 0.0f) );
+			float fNum = fBeta * std::sqrt( std::max(ONE - fN1*fN1, ZERO) );
 			fNum = BesselI0( fNum );
 			float fVal = fNum/fDenom;
 			pBuf[n] *= fVal;
@@ -82,11 +83,11 @@ namespace
 
 	void GenerateSincLowPassFilter( float *pFIR, int iWinSize, float fCutoff )
 	{
-		float p = (iWinSize-1)/2.0f;
+		float p = (iWinSize-1)/TWO;
 		for( int n = 0; n < iWinSize; ++n )
 		{
 			float fN1 = (n-p);
-			float fVal = sincf(2*PI*fCutoff * fN1)*(2*fCutoff);
+			float fVal = sincf(TWO_PI*fCutoff * fN1)*(2*fCutoff);
 			// printf( "n %i, %f, %f -> %f\n", n, p, fN1, fVal );
 			pFIR[n] = fVal;
 		}
@@ -107,7 +108,7 @@ namespace
 
 	void NormalizeVector( float *pBuf, int iSize )
 	{
-		float fTotal = std::accumulate( &pBuf[0], &pBuf[iSize], 0.0f );
+		float fTotal = std::accumulate( &pBuf[0], &pBuf[iSize], ZERO );
 		MultiplyVector( &pBuf[0], &pBuf[iSize], 1/fTotal );
 	}
 
@@ -520,8 +521,8 @@ private:
 		 */
 
 		float fCutoffFrequency;
-		fCutoffFrequency = 1.0f / (2*m_iUpFactor);
-		fCutoffFrequency = std::min( fCutoffFrequency, 1.0f / (2*iDownFactor) );
+		fCutoffFrequency = ONE / (2*m_iUpFactor);
+		fCutoffFrequency = std::min( fCutoffFrequency, ONE / (2*iDownFactor) );
 		return fCutoffFrequency;
 	}
 
@@ -654,7 +655,7 @@ int RageSoundReader_Resample_Good::Read( float *pBuf, int iFrames )
 	int iDownFactor, iUpFactor;
 	GetFactors( iDownFactor, iUpFactor );
 
-	if( m_apResamplers[0]->GetFilled() == 0 && iDownFactor == iUpFactor && GetRate() == 1.0f )
+	if( m_apResamplers[0]->GetFilled() == 0 && iDownFactor == iUpFactor && GetRate() == ONE )
 		return m_pSource->Read( pBuf, iFrames );
 
 	{
@@ -711,7 +712,7 @@ void RageSoundReader_Resample_Good::SetRate( float fRatio )
 float RageSoundReader_Resample_Good::GetRate() const
 {
 	if( m_fRate == -1 )
-		return 1.0f;
+		return ONE;
 	else
 		return m_fRate;
 }

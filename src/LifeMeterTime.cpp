@@ -14,7 +14,7 @@
 
 #include <cstddef>
 
-const float FULL_LIFE_SECONDS = 1.5f*60;
+constexpr float FULL_LIFE_SECONDS = 1.5f*60;
 
 static ThemeMetric<float> METER_WIDTH		("LifeMeterTime","MeterWidth");
 static ThemeMetric<float> METER_HEIGHT		("LifeMeterTime","MeterHeight");
@@ -30,11 +30,11 @@ static const float g_fTimeMeterSecondsChangeInit[] =
 	-0.5f, // SE_W3
 	-1.0f, // SE_W4
 	-2.0f, // SE_W5
-	-4.0f, // SE_Miss
+	-FOUR, // SE_Miss
 	-2.0f, // SE_HitMine
 	-0.0f, // SE_CheckpointMiss
 	-0.0f, // SE_Held
-	-4.0f, // SE_LetGo
+	-FOUR, // SE_LetGo
 	-0.0f, // SE_Missed
 };
 static_assert( ARRAYLEN(g_fTimeMeterSecondsChangeInit) == NUM_ScoreEvent );
@@ -75,7 +75,7 @@ void LifeMeterTime::Load( const PlayerState *pPlayerState, PlayerStageStats *pPl
 	m_quadDangerGlow.ZoomToWidth( METER_WIDTH );
 	m_quadDangerGlow.ZoomToHeight( METER_HEIGHT );
 	// hardcoded effects...
-	m_quadDangerGlow.SetEffectDiffuseShift( 1.0f, RageColor(1,0,0,0.8f), RageColor(1,0,0,0) );
+	m_quadDangerGlow.SetEffectDiffuseShift( ONE, RageColor(1,0,0,0.8f), RageColor(1,0,0,0) );
 	m_quadDangerGlow.SetEffectClock( Actor::CLOCK_BGM_BEAT );
 	this->AddChild( &m_quadDangerGlow );
 
@@ -117,7 +117,7 @@ void LifeMeterTime::OnLoadSong()
 		RadarValues radars= steps->GetRadarValues(m_pPlayerState->m_PlayerNumber);
 		float scorable_things= radars[RadarCategory_TapsAndHolds] +
 			radars[RadarCategory_Lifts];
-		if(g_fTimeMeterSecondsChange[SE_Held] > 0.0f)
+		if(g_fTimeMeterSecondsChange[SE_Held] > ZERO)
 		{
 			scorable_things+= radars[RadarCategory_Holds] +
 				radars[RadarCategory_Rolls];
@@ -230,7 +230,7 @@ void LifeMeterTime::Update( float fDeltaTime )
 {
 	// update current stage stats so ScoreDisplayLifeTime can show the right thing
 	float fSecs = GetLifeSeconds();
-	fSecs = std::max( 0.0f, fSecs );
+	fSecs = std::max( ZERO, fSecs );
 	m_pPlayerStageStats->m_fLifeRemainingSeconds = fSecs;
 
 	LifeMeter::Update( fDeltaTime );

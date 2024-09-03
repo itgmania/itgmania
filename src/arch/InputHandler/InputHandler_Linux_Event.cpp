@@ -4,6 +4,7 @@
 #include "RageUtil.h"
 #include "LinuxInputManager.h"
 #include "GamePreferences.h" //needed for Axis Fix
+#include "Constexprs.h"
 
 #include <cerrno>
 #include <cstdint>
@@ -409,7 +410,7 @@ void InputHandler_Linux_Event::InputThread()
 				DeviceButton neg = g_apEventDevices[i]->aiAbsMappingLow[event.code];
 				DeviceButton pos = g_apEventDevices[i]->aiAbsMappingHigh[event.code];
 
-				float l = SCALE( int(event.value), (float) g_apEventDevices[i]->aiAbsMin[event.code], (float) g_apEventDevices[i]->aiAbsMax[event.code], -1.0f, 1.0f );
+				float l = SCALE( int(event.value), (float) g_apEventDevices[i]->aiAbsMin[event.code], (float) g_apEventDevices[i]->aiAbsMax[event.code], NEGATIVE_ONE, ONE );
 				if (GamePreferences::m_AxisFix)
 				{
 				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, neg, (l < -0.5)||((l > 0.0001)&&(l < 0.5)), now) ); //Up if between 0.0001 and 0.5 or if less than -0.5
@@ -417,8 +418,8 @@ void InputHandler_Linux_Event::InputThread()
 				}
 				else
 				{
-				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, neg, std::max(-l, 0.0f), now) );
-				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, pos, std::max(+l, 0.0f), now) );
+				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, neg, std::max(-l, ZERO), now) );
+				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, pos, std::max(+l, ZERO), now) );
 				}
 				break;
 			}

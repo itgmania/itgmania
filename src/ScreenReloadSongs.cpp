@@ -6,6 +6,7 @@
 #include "RageLog.h"
 #include "ThemeManager.h"
 #include "ScreenDimensions.h"
+#include "Constexprs.h"
 
 #include "arch/LoadingWindow/LoadingWindow.h"
 
@@ -31,7 +32,7 @@ public:
 	{
 		/* We load songs much faster than we draw frames. Cap the draw rate,
 		 * so we don't slow down the reload. */
-		if( m_LastDraw.PeekDeltaTime() < 1.0f/DrawFrameRate )
+		if( m_LastDraw.PeekDeltaTime() < ONE/DrawFrameRate )
 			return;
 		m_LastDraw.GetDeltaTime();
 

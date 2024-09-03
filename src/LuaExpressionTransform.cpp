@@ -2,6 +2,7 @@
 #include "LuaExpressionTransform.h"
 #include "LuaManager.h"
 #include "RageUtil.h"
+#include "Constexprs.h"
 
 LuaExpressionTransform::LuaExpressionTransform()
 {
@@ -46,7 +47,7 @@ const Actor::TweenState &LuaExpressionTransform::GetTransformCached( float fPosi
 
 void LuaExpressionTransform::TransformItemCached( Actor &a, float fPositionOffsetFromCenter, int iItemIndex, int iNumItems )
 {
-	float fInterval = 1.0f / m_iNumSubdivisions;
+	float fInterval = ONE / m_iNumSubdivisions;
 	float fFloor = QuantizeDown( fPositionOffsetFromCenter, fInterval );
 	float fCeil = QuantizeUp( fPositionOffsetFromCenter, fInterval );
 
@@ -59,7 +60,7 @@ void LuaExpressionTransform::TransformItemCached( Actor &a, float fPositionOffse
 		const Actor::TweenState &tsFloor = GetTransformCached( fFloor, iItemIndex, iNumItems );
 		const Actor::TweenState &tsCeil = GetTransformCached( fCeil, iItemIndex, iNumItems );
 
-		float fPercentTowardCeil = SCALE( fPositionOffsetFromCenter, fFloor, fCeil, 0.0f, 1.0f );
+		float fPercentTowardCeil = SCALE( fPositionOffsetFromCenter, fFloor, fCeil, ZERO, ONE );
 		Actor::TweenState::MakeWeightedAverage( a.DestTweenState(), tsFloor, tsCeil, fPercentTowardCeil );
 	}
 }

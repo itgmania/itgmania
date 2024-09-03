@@ -8,6 +8,7 @@
 #include "Background.h"
 #include "RageFileManager.h"
 #include "ActorUtil.h"
+#include "Constexprs.h"
 
 #include <set>
 #include <vector>
@@ -59,7 +60,7 @@ RString BackgroundChange::GetTextDescription() const
 	std::vector<RString> vsParts;
 	if( !m_def.m_sFile1.empty() )	vsParts.push_back( m_def.m_sFile1 );
 	if( !m_def.m_sFile2.empty() )	vsParts.push_back( m_def.m_sFile2 );
-	if( m_fRate!=1.0f )				vsParts.push_back( ssprintf("%.2f%%",m_fRate*100) );
+	if( m_fRate!=ONE )				vsParts.push_back( ssprintf("%.2f%%",m_fRate*100) );
 	if( !m_sTransition.empty() )	vsParts.push_back( m_sTransition );
 	if( !m_def.m_sEffect.empty() )	vsParts.push_back( m_def.m_sEffect );
 	if( !m_def.m_sColor1.empty() )	vsParts.push_back( m_def.m_sColor1 );

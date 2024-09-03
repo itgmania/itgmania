@@ -16,7 +16,7 @@ ScoreDisplayRave::ScoreDisplayRave()
 	for( int i=0; i<NUM_ATTACK_LEVELS; i++ )
 	{
 		m_sprMeter[i].Load( THEME->GetPathG("ScoreDisplayRave",ssprintf("stream level%d",i+1)) );
-		m_sprMeter[i].SetCropRight( 1.f );
+		m_sprMeter[i].SetCropRight( ONE );
 	}
 
 	m_textLevel.LoadFromFont( THEME->GetPathF("ScoreDisplayRave","level") );
@@ -60,7 +60,7 @@ void ScoreDisplayRave::Update( float fDelta )
 
 	if( level != m_lastLevelSeen )
 	{
-		m_sprMeter[m_lastLevelSeen].SetCropRight( 1.f );
+		m_sprMeter[m_lastLevelSeen].SetCropRight( ONE );
 		m_lastLevelSeen = level;
 		m_textLevel.SetText( ssprintf("%d",level+1) );
 	}

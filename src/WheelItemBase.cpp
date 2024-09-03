@@ -1,6 +1,7 @@
 #include "global.h"
 #include "WheelItemBase.h"
 #include "LuaManager.h"
+#include "Constexprs.h"
 
 static const char *WheelItemDataTypeNames[] = {
 	"Generic",
@@ -46,7 +47,7 @@ WheelItemBase::WheelItemBase(RString sType)
 
 void WheelItemBase::Load( RString sType )
 {
-	m_colorLocked = RageColor(0,0,0,0.25f);
+	m_colorLocked = RageColor(0,0,0,ONE_QUARTER);
 }
 
 void WheelItemBase::LoadFromWheelItemData( const WheelItemBaseData* pWID, int iIndex, bool bHasFocus, int iDrawIndex )

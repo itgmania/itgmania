@@ -3,6 +3,7 @@
 #include "RageLog.h"
 #include "PrefsManager.h"
 #include "archutils/Darwin/DarwinThreadHelpers.h"
+#include "Constexprs.h"
 
 #include <cstdint>
 
@@ -214,7 +215,7 @@ std::int64_t RageSoundDriver_AU::GetPosition() const
 void RageSoundDriver_AU::SetupDecodingThread()
 {
 	/* Increase the scheduling precedence of the decoder thread. */
-	const RString sError = SetThreadPrecedence( 0.75f );
+	const RString sError = SetThreadPrecedence( THREE_QUARTERS );
 	if( !sError.empty() )
 		LOG->Warn( "Could not set precedence of the decoding thread: %s", sError.c_str() );
 }
@@ -231,7 +232,7 @@ float RageSoundDriver_AU::GetPlayLatency() const
 					  kAudioUnitScope_Global, 0, &OutputDevice, &size)) )
 	{
 		LOG->Warn("No output device: %s", FormatOSError(error));
-		return 0.0f;
+		return ZERO;
 	}
 
 	AudioObjectPropertyAddress RateAddr = {
@@ -244,7 +245,7 @@ float RageSoundDriver_AU::GetPlayLatency() const
 	if( (error = AudioObjectGetPropertyData(OutputDevice, &RateAddr, 0, nullptr, &size, &sampleRate)) )
 	{
 		LOG->Warn("Couldn't get the device sample rate: %s", FormatOSError(error));
-		return 0.0f;
+		return ZERO;
 	}
 
 	AudioObjectPropertyAddress BufferAddr = {

@@ -1,7 +1,7 @@
 #include "global.h"
 #include "SongPosition.h"
 
-static Preference<float> g_fVisualDelaySeconds( "VisualDelaySeconds", 0.0f );
+static Preference<float> g_fVisualDelaySeconds( "VisualDelaySeconds", ZERO );
 
 void SongPosition::UpdateSongPosition( float fPositionSeconds, const TimingData &timing, const RageTimer &timestamp, float fAdditionalVisualDelay )
 {

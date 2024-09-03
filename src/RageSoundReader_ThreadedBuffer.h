@@ -6,6 +6,8 @@
 #include "RageSoundReader_Filter.h"
 #include "RageUtil_CircularBuffer.h"
 #include "RageThreads.h"
+#include "Constexprs.h"
+
 #include <list>
 
 class RageThread;
@@ -54,7 +56,7 @@ private:
 		int iPositionOfFirstFrame;
 		float fRate;
 		Mapping(): iFramesBuffered(0), iPositionOfFirstFrame(0),
-			fRate(1.0f) {}
+			fRate(ONE) {}
 	};
 	std::list<Mapping> m_StreamPosition;
 

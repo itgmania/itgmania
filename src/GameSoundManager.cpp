@@ -17,6 +17,7 @@
 #include "LightsManager.h"
 #include "SongUtil.h"
 #include "LuaManager.h"
+#include "Constexprs.h"
 
 #include "arch/Sound/RageSoundDriver.h"
 
@@ -47,9 +48,9 @@ static bool g_bFlushing = false;
 
 enum FadeState { FADE_NONE, FADE_OUT, FADE_WAIT, FADE_IN };
 static FadeState g_FadeState = FADE_NONE;
-static float g_fDimVolume = 1.0f;
-static float g_fOriginalVolume = 1.0f;
-static float g_fDimDurationRemaining = 0.0f;
+static float g_fDimVolume = ONE;
+static float g_fOriginalVolume = ONE;
+static float g_fDimDurationRemaining = ZERO;
 static bool g_bWasPlayingOnLastUpdate = false;
 
 struct MusicPlaying
@@ -195,7 +196,7 @@ static void StartMusic( MusicToPlay &ToPlay )
 
 		float fBeatDifference = fStartBeatFraction - fEndBeatFraction;
 		if( fBeatDifference < 0 )
-			fBeatDifference += 1.0f; /* unwrap */
+			fBeatDifference += ONE; /* unwrap */
 
 		fEndBeat += fBeatDifference;
 
@@ -243,7 +244,7 @@ static void StartMusic( MusicToPlay &ToPlay )
 
 		float fCurBeatToStartOn = std::trunc(fCurBeat) + fStartBeatFraction;
 		if( fCurBeatToStartOn < fCurBeat )
-			fCurBeatToStartOn += 1.0f;
+			fCurBeatToStartOn += ONE;
 
 		const float fSecondToStartOn = g_Playing->m_Timing.GetElapsedTimeFromBeatNoOffset( fCurBeatToStartOn );
 		const float fMaximumDistance = 2;
@@ -506,13 +507,13 @@ float GameSoundManager::GetFrameTimingAdjustment( float fDeltaTime )
 		return 0;
 	}
 
-	const float fExpectedDelay = 1.0f / iThisFPS;
+	const float fExpectedDelay = ONE / iThisFPS;
 	const float fExtraDelay = fDeltaTime - fExpectedDelay;
 	if( std::abs(fExtraDelay) >= fExpectedDelay/2 )
 		return 0;
 
 	/* Subtract the extra delay. */
-	return std::min( -fExtraDelay, 0.0f );
+	return std::min( -fExtraDelay, ZERO );
 }
 
 void GameSoundManager::Update( float fDeltaTime )
@@ -819,7 +820,7 @@ float GameSoundManager::GetPlayerBalance( PlayerNumber pn )
 {
 	/* If two players are active, play sounds on each players' side. */
 	if( GAMESTATE->GetNumPlayersEnabled() == 2 )
-		return (pn == PLAYER_1)? -1.0f:1.0f;
+		return (pn == PLAYER_1)? NEGATIVE_ONE:ONE;
 	else
 		return 0;
 }

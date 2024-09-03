@@ -11,6 +11,7 @@
 #include "RageUtil_WorkerThread.h"
 #include "arch/MemoryCard/MemoryCardDriver_Null.h"
 #include "LuaManager.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <vector>
@@ -148,7 +149,7 @@ ThreadedMemoryCardWorker::ThreadedMemoryCardWorker():
 		m_pDriver = new MemoryCardDriver_Null;
 
 	m_MountThreadState = detect_and_mount;
-	SetHeartbeat( 0.1f );
+	SetHeartbeat( POINT_ONE );
 
 	StartThread();
 }

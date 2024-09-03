@@ -14,6 +14,7 @@
 #include "RageSoundReader_SpeedChange.h"
 #include "RageSoundReader_Resample_Good.h"
 #include "RageLog.h"
+#include "Constexprs.h"
 
 static Preference<bool> g_bRateModPreservesPitch( "RateModPreservesPitch", true );
 
@@ -32,8 +33,8 @@ RageSoundReader_PitchChange::RageSoundReader_PitchChange( RageSoundReader *pSour
 		m_pResample = new RageSoundReader_Resample_Good( pSource, pSource->GetSampleRate() );
 	}
 	m_pSource = m_pResample;
-	m_fSpeedRatio = 1.0f;
-	m_fPitchRatio = 1.0f;
+	m_fSpeedRatio = ONE;
+	m_fPitchRatio = ONE;
 	m_fLastSetSpeedRatio = m_fSpeedRatio;
 	m_fLastSetPitchRatio = m_fPitchRatio;
 }

@@ -25,11 +25,11 @@ void DualScrollBar::Load( const RString &sType )
 		this->AddChild( m_sprScrollThumbOverHalf[pn] );
 	}
 
-	m_sprScrollThumbUnderHalf[0]->SetCropLeft( .5f );
-	m_sprScrollThumbUnderHalf[1]->SetCropRight( .5f );
+	m_sprScrollThumbUnderHalf[0]->SetCropLeft( ONE_HALF );
+	m_sprScrollThumbUnderHalf[1]->SetCropRight( ONE_HALF );
 
-	m_sprScrollThumbOverHalf[0]->SetCropRight( .5f );
-	m_sprScrollThumbOverHalf[1]->SetCropLeft( .5f );
+	m_sprScrollThumbOverHalf[0]->SetCropRight( ONE_HALF );
+	m_sprScrollThumbOverHalf[1]->SetCropLeft( ONE_HALF );
 
 	FOREACH_PlayerNumber( pn )
 		SetPercentage( pn, 0 );

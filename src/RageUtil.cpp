@@ -1197,10 +1197,10 @@ float calc_mean(const float* pStart, const float* pEnd)
 	 * https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
 
 	if (pStart == pEnd)
-		return 0.0f;
+		return ZERO;
 	
-	float sum = 0.0f;
-	float c = 0.0f;
+	float sum = ZERO;
+	float c = ZERO;
 	for (const float* p = pStart; p != pEnd; ++p)
 	{
 		float y = *p - c;
@@ -1217,7 +1217,7 @@ float calc_stddev( const float *pStart, const float *pEnd, bool bSample )
 	float fMean = calc_mean( pStart, pEnd );
 
 	/* Calculate stddev. */
-	float fDev = 0.0f;
+	float fDev = ZERO;
 	for( const float *i=pStart; i != pEnd; ++i )
 		fDev += (*i - fMean) * (*i - fMean);
 	fDev /= std::distance( pStart, pEnd ) - (bSample ? 1 : 0);
@@ -1231,7 +1231,7 @@ bool CalcLeastSquares( const std::vector<std::pair<float, float>> &vCoordinates,
 {
 	if( vCoordinates.empty() )
 		return false;
-	float fSumXX = 0.0f, fSumXY = 0.0f, fSumX = 0.0f, fSumY = 0.0f;
+	float fSumXX = ZERO, fSumXY = ZERO, fSumX = ZERO, fSumY = ZERO;
 	for( unsigned i = 0; i < vCoordinates.size(); ++i )
 	{
 		fSumXX += vCoordinates[i].first * vCoordinates[i].first;
@@ -1243,7 +1243,7 @@ bool CalcLeastSquares( const std::vector<std::pair<float, float>> &vCoordinates,
 	fSlope = (vCoordinates.size() * fSumXY - fSumX * fSumY) / fDenominator;
 	fIntercept = (fSumXX * fSumY - fSumX * fSumXY) / fDenominator;
 
-	fError = 0.0f;
+	fError = ZERO;
 	for( unsigned i = 0; i < vCoordinates.size(); ++i )
 	{
 		const float fOneError = fIntercept + fSlope * vCoordinates[i].first - vCoordinates[i].second;
@@ -1863,7 +1863,7 @@ float StringToFloat( const RString &sString )
 	float fOut = std::strtof(sString, nullptr);
 	if (!std::isfinite(fOut))
 	{
-		fOut = 0.0f;
+		fOut = ZERO;
 	}
 	return fOut;
 }
@@ -2717,7 +2717,7 @@ int LuaFunc_approach(lua_State* L)
 {
 	// Args:  current, goal, speed
 	// Returns:  new_current
-	luafunc_approach_internal(L, 1, 2, 3, 1.0f, 1);
+	luafunc_approach_internal(L, 1, 2, 3, ONE, 1);
 	return 1;
 }
 LUAFUNC_REGISTER_COMMON(approach);
@@ -2738,7 +2738,7 @@ int LuaFunc_multiapproach(lua_State* L)
 	std::size_t currents_len= lua_objlen(L, 1);
 	std::size_t goals_len= lua_objlen(L, 2);
 	std::size_t speeds_len= lua_objlen(L, 3);
-	float mult= 1.0f;
+	float mult= ONE;
 	if(lua_isnumber(L, 4))
 	{
 		mult= lua_tonumber(L, 4);

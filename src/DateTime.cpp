@@ -12,7 +12,7 @@ DateTime::DateTime()
 
 void DateTime::Init()
 {
-	ZERO( *this );
+	ZERO_MEMORY( *this );
 }
 
 bool DateTime::operator<( const DateTime& other ) const
@@ -305,7 +305,7 @@ tm GetDayInYearAndYear( int iDayInYearIndex, int iYear )
 	 * round it.  This shouldn't suffer from the macOS mktime() issue described
 	 * above, since we're not giving it negative values. */
 	tm when;
-	ZERO( when );
+	ZERO_MEMORY( when );
 	when.tm_mon = 0;
 	when.tm_mday = iDayInYearIndex+1;
 	when.tm_year = iYear - 1900;

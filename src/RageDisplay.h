@@ -5,6 +5,7 @@
 
 #include "RageTypes.h"
 #include "ModelTypes.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -124,7 +125,7 @@ public:
 					bSmoothLines(false), bTrilinearFiltering(false),
 					bAnisotropicFiltering(false), bWindowIsFullscreenBorderless(false),
 					sWindowTitle(RString()), sIconFile(RString()),
-					PAL(false), fDisplayAspectRatio(0.0f) {}
+					PAL(false), fDisplayAspectRatio(ZERO) {}
 
 	// Subclassing VideoModeParams in ActualVideoModeParams. Make destructor virtual just in case
 	// someone tries to delete one of those through a pointer to base...

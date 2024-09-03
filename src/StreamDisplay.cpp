@@ -4,6 +4,7 @@
 #include "RageDisplay.h"
 #include "ThemeManager.h"
 #include "EnumHelper.h"
+#include "Constexprs.h"
 
 #include <cfloat>
 #include <cmath>
@@ -99,22 +100,22 @@ void StreamDisplay::Update( float fDeltaSecs )
 
 	// Don't clamp life percentage a little outside the visible range so
 	// that the clamp doesn't dampen the "jiggle" of the meter.
-	CLAMP( m_fTrailingPercent, -0.1f, 1.1f );
+	CLAMP( m_fTrailingPercent, NEGATIVE_POINT_ONE, 1.1f );
 
 
 	// set crop of pills
-	const float fPillWidthPercent = 1.0f / m_vpSprPill[0].size();
+	const float fPillWidthPercent = ONE / m_vpSprPill[0].size();
 	FOREACH_ENUM( StreamType, st )
 	{
 		for( int i=0; i<(int)m_vpSprPill[st].size(); i++ )
 		{
 			Sprite *pSpr = m_vpSprPill[st][i];
-			float fPercentFilledThisPill = SCALE( m_fTrailingPercent, fPillWidthPercent*i, fPillWidthPercent*(i+1), 0.0f, 1.0f );
-			CLAMP( fPercentFilledThisPill, 0.0f, 1.0f );
+			float fPercentFilledThisPill = SCALE( m_fTrailingPercent, fPillWidthPercent*i, fPillWidthPercent*(i+1), ZERO, ONE );
+			CLAMP( fPercentFilledThisPill, ZERO, ONE );
 
 			// XXX scale by current song speed
 
-			pSpr->SetCropRight( 1.0f - fPercentFilledThisPill );
+			pSpr->SetCropRight( ONE - fPercentFilledThisPill );
 			pSpr->SetTexCoordVelocity( -1, 0 );
 
 			// Optimization: Don't draw pills that are covered up
@@ -142,7 +143,7 @@ void StreamDisplay::SetPercent( float fPercent )
 #ifdef DEBUG
 	float fLifeMultiplier = THEME->GetMetricF("LifeMeterBar","LifeMultiplier");
 #endif
-	DEBUG_ASSERT( fPercent >= 0.0f && fPercent <= 1.0f * fLifeMultiplier );
+	DEBUG_ASSERT( fPercent >= ZERO && fPercent <= ONE * fLifeMultiplier );
 	if( std::isnan(fPercent) )
 	{
 		DEBUG_ASSERT_M( 0, "fPercent is NaN" );

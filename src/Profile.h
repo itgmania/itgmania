@@ -129,8 +129,8 @@ public:
 		for( int i=0; i<MAX_METER+1; i++ )
 			m_iNumSongsPlayedByMeter[i] = 0;
 
-		ZERO( m_iNumStagesPassedByPlayMode );
-		ZERO( m_iNumStagesPassedByGrade );
+		ZERO_MEMORY( m_iNumStagesPassedByPlayMode );
+		ZERO_MEMORY( m_iNumStagesPassedByGrade );
 		m_UserTable.Unset();
 
 		FOREACH_ENUM( StepsType,st )

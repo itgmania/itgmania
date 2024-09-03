@@ -5,6 +5,7 @@
 #include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
+#include "Constexprs.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -642,7 +643,7 @@ void NetworkPostData::HttpThread()
 
 	// Begin connecting.
 	m_pStream->Open( m_sHost, m_iPort );
-	SetProgress( 0.25f );
+	SetProgress( ONE_QUARTER );
 
 	// Send the form.
 	m_pStream->Write( sBuf.data(), sBuf.size() );
@@ -665,7 +666,7 @@ void NetworkPostData::HttpThread()
 		sResult += tmp;
 	}
 
-	SetProgress( 1.0f );
+	SetProgress( ONE );
 
 	// Parse the results.
 	int iStart = 0, iSize = -1;
