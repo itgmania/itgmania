@@ -413,17 +413,17 @@ void ActorFrame::PushChildTable(lua_State* L, const RString &sName)
 	{
 		if(a->GetName() == sName)
 		{
-			switch(found)
+			if (found == 0)
 			{
-				case 0:
-					a->PushSelf(L);
-					break;
-				case 1:
-					CreateChildTable(L, a);
-					break;
-				default:
-					AddToChildTable(L, a);
-					break;
+				a->PushSelf(L);
+			}
+			else if (found == 1)
+			{
+				CreateChildTable(L, a);
+			}
+			else
+			{
+				AddToChildTable(L, a);
 			}
 			++found;
 		}
