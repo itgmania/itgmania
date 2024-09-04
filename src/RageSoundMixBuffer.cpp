@@ -9,35 +9,36 @@
 
 void RageSoundMixBuffer::Extend(unsigned iSamples) noexcept
 {
-	static const std::int_fast64_t chunksize = 1024; // in samples
+	// Ensure the extended size is a multiple of 1024.
+	static const std::int_fast64_t chunksize = 1024;
 	const std::int_fast64_t realsize = static_cast<std::int_fast64_t>(iSamples) + m_iOffset;
-	std::int_fast64_t newsize = ((realsize + chunksize - 1) / chunksize) * chunksize; // find the next multiple of 1024
+	std::int_fast64_t newsize = ((realsize + chunksize - 1) / chunksize) * chunksize;
 
-	if( m_iBufSize < newsize )
+	if (m_iBufSize < newsize)
 	{
 		m_pMixbuf.resize(newsize);
 		m_iBufSize = newsize;
 	}
 
-	if( m_iBufUsed < realsize )
+	if (m_iBufUsed < realsize)
 	{
 		std::fill(m_pMixbuf.begin() + m_iBufUsed, m_pMixbuf.begin() + realsize, 0.0f);
 		m_iBufUsed = realsize;
 	}
 }
 
-void RageSoundMixBuffer::write( const float *pBuf, unsigned iSize, int iSourceStride, int iDestStride ) noexcept
+void RageSoundMixBuffer::write(const float* pBuf, unsigned iSize, int iSourceStride, int iDestStride) noexcept
 {
-	if( iSize == 0 )
+	if (iSize == 0)
 		return;
 
 	// iSize = 3, iDestStride = 2 uses 4 frames.  Don't allocate the stride of the last sample.
-	Extend( iSize * iDestStride - (iDestStride-1) );
+	Extend(iSize * iDestStride - (iDestStride - 1));
 
 	// Scale volume and add.
-	float *pDestBuf = m_pMixbuf.data() + m_iOffset;
+	float* pDestBuf = m_pMixbuf.data() + m_iOffset;
 
-	while( iSize )
+	while (iSize)
 	{
 		*pDestBuf += *pBuf;
 		pBuf += iSourceStride;
@@ -46,10 +47,10 @@ void RageSoundMixBuffer::write( const float *pBuf, unsigned iSize, int iSourceSt
 	}
 }
 
-void RageSoundMixBuffer::read_deinterlace( float **pBufs, int channels ) noexcept
+void RageSoundMixBuffer::read_deinterlace(float** pBufs, int channels) noexcept
 {
-	for( unsigned i = 0; i < m_iBufUsed / channels; ++i )
-		for( int ch = 0; ch < channels; ++ch )
+	for (unsigned i = 0; i < m_iBufUsed / channels; ++i)
+		for (int ch = 0; ch < channels; ++ch)
 			pBufs[ch][i] = m_pMixbuf[channels * i + ch];
 	m_iBufUsed = 0;
 }
