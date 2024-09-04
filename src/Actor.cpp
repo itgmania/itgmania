@@ -1078,13 +1078,14 @@ void Actor::ScaleTo( const RectF &rect, StretchType st )
 	float fNewZoomY = std::abs(rect_height / m_size.y);
 
 	float fNewZoom = 0.f;
-	switch( st )
+
+	switch (st)
 	{
-	case cover:
-		fNewZoom = fNewZoomX>fNewZoomY ? fNewZoomX : fNewZoomY;	// use larger zoom
+	case kCover:
+		fNewZoom = fNewZoomX > fNewZoomY ? fNewZoomX : fNewZoomY; // use larger zoom
 		break;
-	case fit_inside:
-		fNewZoom = fNewZoomX>fNewZoomY ? fNewZoomY : fNewZoomX; // use smaller zoom
+	case kFitInside:
+		fNewZoom = fNewZoomX > fNewZoomY ? fNewZoomY : fNewZoomX; // use smaller zoom
 		break;
 	}
 
