@@ -501,12 +501,12 @@ public:
 	/** @brief How do we handle stretching the Actor? */
 	enum StretchType
 	{
-		fit_inside, /**< Have the Actor fit inside its parent, using the smaller zoom. */
-		cover /**< Have the Actor cover its parent, using the larger zoom. */
+		kFitInside, /**< Have the Actor fit inside its parent, using the smaller zoom. */
+		kCover /**< Have the Actor cover its parent, using the larger zoom. */
 	};
 
-	void ScaleToCover( const RectF &rect )		{ ScaleTo( rect, cover ); }
-	void ScaleToFitInside( const RectF &rect )	{ ScaleTo( rect, fit_inside); };
+	void ScaleToCover( const RectF &rect )		{ ScaleTo( rect, kCover ); }
+	void ScaleToFitInside( const RectF &rect )	{ ScaleTo( rect, kFitInside); };
 	void ScaleTo( const RectF &rect, StretchType st );
 
 	void StretchTo( const RectF &rect );
