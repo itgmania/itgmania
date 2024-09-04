@@ -57,7 +57,7 @@ void RageSoundUtil::Fade( float *pBuffer, int iFrames, int iChannels, float fSta
 	{
 		float fVolPercent = SCALE( iFrame, 0, iFrames, fStartVolume, fEndVolume );
 
-		fVolPercent = clamp( fVolPercent, 0.f, 1.f );
+		fVolPercent = std::clamp( fVolPercent, 0.f, 1.f );
 		for( int i = 0; i < iChannels; ++i )
 		{
 			*pBuffer *= fVolPercent;
@@ -95,7 +95,7 @@ void RageSoundUtil::ConvertFloatToNativeInt16( const float *pFrom, std::int16_t 
 	for( int i = 0; i < iSamples; ++i )
 	{
 		int iOut = static_cast<int>((pFrom[i] * 32768.0f) + 0.5);
-		pTo[i] = clamp( iOut, -32768, 32767 );
+		pTo[i] = std::clamp( iOut, -32768, 32767 );
 	}
 }
 

@@ -95,7 +95,7 @@ RageSoundMixBuffer &RageSoundDriver::MixIntoBuffer( int iFrames, std::int64_t iF
 			const std::int64_t iFramesUntilThisBuffer = iFrameNumber - iCurrentFrame;
 			const float fSecondsBeforeStart = -s.m_StartTime.Ago();
 			const std::int64_t iFramesBeforeStart = std::int64_t(fSecondsBeforeStart * GetSampleRate());
-			const int iSilentFramesInThisBuffer = clamp( int(iFramesBeforeStart-iFramesUntilThisBuffer), 0, iFramesLeft );
+			const int iSilentFramesInThisBuffer = std::clamp( int(iFramesBeforeStart-iFramesUntilThisBuffer), 0, iFramesLeft );
 
 			iGotFrames += iSilentFramesInThisBuffer;
 			iFramesLeft -= iSilentFramesInThisBuffer;

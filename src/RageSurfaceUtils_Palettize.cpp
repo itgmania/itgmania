@@ -218,7 +218,7 @@ void RageSurfaceUtils::Palettize( RageSurface *&pImg, int iColors, bool bDither 
 				for( int c = 0; c < 4; ++c )
 				{
 					sc[c] = pixel[c] + thiserr[col + 1].c[c] / FS_SCALE;
-					sc[c] = clamp( sc[c], 0, (std::int32_t) maxval );
+					sc[c] = std::clamp( sc[c], 0, (std::int32_t) maxval );
 				}
 
 				PAM_ASSIGN( pixel, (std::uint8_t)sc[0], (std::uint8_t)sc[1], (std::uint8_t)sc[2], (std::uint8_t)sc[3] );

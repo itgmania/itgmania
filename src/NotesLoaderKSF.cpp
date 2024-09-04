@@ -349,7 +349,7 @@ static bool LoadFromKSFFile( const RString &sPath, Steps &out, Song &song, bool 
 				// duh
 				iTickCount = static_cast<int>(numTemp);
 				// I have been owned by the man -DaisuMaster
-				stepsTiming.SetTickcountAtBeat( fCurBeat, clamp(iTickCount, 0, ROWS_PER_BEAT) );
+				stepsTiming.SetTickcountAtBeat( fCurBeat, std::clamp(iTickCount, 0, ROWS_PER_BEAT) );
 			}
 			else if (BeginsWith(sRowString, "|B"))
 			{

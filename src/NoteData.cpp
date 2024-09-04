@@ -155,8 +155,8 @@ void NoteData::CopyRange( const NoteData& from, int rowFromBegin, int rowFromEnd
 				int iStartRow = lBegin->first + iMoveBy;
 				int iEndRow = iStartRow + head.iDuration;
 
-				iStartRow = clamp( iStartRow, rowToBegin, rowToEnd );
-				iEndRow = clamp( iEndRow, rowToBegin, rowToEnd );
+				iStartRow = std::clamp( iStartRow, rowToBegin, rowToEnd );
+				iEndRow = std::clamp( iEndRow, rowToBegin, rowToEnd );
 
 				this->AddHoldNote( t, iStartRow, iEndRow, head );
 			}

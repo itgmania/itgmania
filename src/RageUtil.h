@@ -30,9 +30,6 @@ class RageFileDriver;
 
 extern const RString CUSTOM_SONG_PATH;
 
-/** @brief If outside the range from low to high, bring it within range. */
-#define clamp(val,low,high)	std::clamp( val, low, high )
-
 /**
  * @brief Scales x so that l1 corresponds to l2 and h1 corresponds to h2.
  *

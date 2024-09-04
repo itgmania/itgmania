@@ -310,7 +310,7 @@ void ScreenSelectMaster::Init()
 				if( dir == MenuDir_Auto || (bool)WRAP_CURSOR )
 					wrap( m_mapCurrentChoiceToNextChoice[dir][c], m_aGameCommands.size() );
 				else
-					m_mapCurrentChoiceToNextChoice[dir][c] = clamp( m_mapCurrentChoiceToNextChoice[dir][c], 0, (int)m_aGameCommands.size()-1 );
+					m_mapCurrentChoiceToNextChoice[dir][c] = std::clamp( m_mapCurrentChoiceToNextChoice[dir][c], 0, (int)m_aGameCommands.size()-1 );
 			}
 		}
 	}

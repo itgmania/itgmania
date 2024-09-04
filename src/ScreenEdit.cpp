@@ -2263,7 +2263,7 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 				INVERT_SCROLL_BUTTONS ? --iSpeed : ++iSpeed;
 				break;
 			}
-			iSpeed = clamp( iSpeed, 0, (int) ARRAYLEN(fSpeeds)-1 );
+			iSpeed = std::clamp( iSpeed, 0, (int) ARRAYLEN(fSpeeds)-1 );
 
 			if( fSpeeds[iSpeed] != fScrollSpeed )
 			{
