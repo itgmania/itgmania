@@ -502,6 +502,7 @@ void ActorMultiVertex::UpdateAnimationState(bool force_update)
 					break;
 				}
 			}
+        [[fallthrough]];
 		case DrawMode_QuadStrip:
 			for (std::size_t i = first; i < last; ++i)
 			{
