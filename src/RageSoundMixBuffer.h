@@ -36,7 +36,6 @@ private:
 	std::int_fast64_t m_iOffset = 0; // the offset in samples to start mixing into the buffer
 };
 
-// Inline functions
 inline void RageSoundMixBuffer::read(std::int16_t *pBuf) noexcept
 {
 	constexpr int16_t MAX_INT16 = 32767;
