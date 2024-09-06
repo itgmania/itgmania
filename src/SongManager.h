@@ -18,7 +18,7 @@ struct lua_State;
 #include "ThemeMetric.h"
 #include "RageTexturePreloader.h"
 #include "RageUtil.h"
-
+#include "Song.h"
 #include <cstddef>
 #include <vector>
 
@@ -62,7 +62,7 @@ public:
 	int GetNumStepsLoadedFromProfile();
 	void FreeAllLoadedFromProfile( ProfileSlot slot = ProfileSlot_Invalid );
 
-	void LoadGroupSymLinks( RString sDir, RString sGroupFolder );
+	void LoadGroupSymLinks( RString sDir, RString sGroupFolder);
 
 	/**
 	 * @brief Initialize all courses from disk
@@ -146,6 +146,9 @@ public:
 	void GetPreferredSortSongs( std::vector<Song*> &AddTo ) const;
 	std::map<RString, std::vector<Song*>> GetPreferredSortSongsMap() const { return m_mapPreferredSectionToSongs;};
 	RString SongToPreferredSortSectionName( const Song *pSong ) const;
+	std::map<RString, Pack> GetGroupPackMap() const { return m_mapGroupToPack;};
+	std::map<RString, std::vector<Pack*>> GetSeriesPackMap() const { return m_mapSeries;};
+	Pack* GetPackFromGroupName(  const RString &sGroupName ) const;
 	std::vector<RString> GetPreferredSortSectionNames() const;
 	std::vector<Song*> GetPreferredSortSongsBySectionName( const RString &sSectionName ) const;
 	void GetPreferredSortSongsBySectionName( const RString &sSectionName, std::vector<Song*> &AddTo ) const;
@@ -212,7 +215,7 @@ protected:
 	void LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditions );
 	bool GetExtraStageInfoFromCourse( bool bExtra2, RString sPreferredGroup, Song*& pSongOut, Steps*& pStepsOut, StepsType stype );
 	void SanityCheckGroupDir( RString sDir ) const;
-	void AddGroup( RString sDir, RString sGroupDirName );
+	void AddGroup( RString sDir, RString sGroupDirName, Pack pack );
 	int GetNumEditsLoadedFromProfile( ProfileSlot slot ) const;
 
 	void AddSongToList(Song* new_song);
@@ -220,6 +223,7 @@ protected:
 	std::vector<Song*>		m_pSongs;
 	std::map<RString, Song*> m_SongsByDir;
 	std::set<RString> m_GroupsToNeverCache;
+
 
 	/** @brief Hold pointers to all the songs that have been deleted from disk but must at least be kept temporarily alive for smooth audio transitions. */
 	std::vector<Song*>	m_pDeletedSongs;
@@ -242,6 +246,8 @@ protected:
 	std::vector<RString>		m_sSongGroupNames;
 	std::vector<RString>		m_sSongGroupBannerPaths; // each song group may have a banner associated with it
 	//vector<RString>		m_sSongGroupBackgroundPaths; // each song group may have a background associated with it (very rarely)
+	std::map<RString, Pack> m_mapGroupToPack;
+	std::map<RString, std::vector<Pack*>>	m_mapSeries;
 
 	struct Comp { bool operator()(const RString& s, const RString &t) const { return CompareRStringsAsc(s,t); } };
 	typedef std::vector<Song*> SongPointerVector;

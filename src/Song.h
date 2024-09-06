@@ -64,6 +64,20 @@ struct LyricSegment
 	RageColor m_Color; /** @brief The color of the lyrics. */
 };
 
+
+struct Pack
+{
+	RString m_sDisplayTitle;
+	RString m_sSortTitle;
+	RString m_sPath;
+	RString m_sGroupName;
+	RString m_sTranslitTitle;
+	RString m_sSeries;
+	int m_iSyncOffset;
+	bool m_bHasPackIni;
+	int iTotalSongs;
+};
+
 /** @brief Holds all music metadata and steps for one song. */
 class Song
 {
@@ -196,6 +210,7 @@ public:
 	/** @brief The transliterated artist of the Song, if it exists. */
 	RString m_sArtistTranslit;
 
+
 	RString m_sFileHash;
 	RString GetFileHash();
 
@@ -205,6 +220,8 @@ public:
 	RString GetDisplaySubTitle() const;
 	RString GetDisplayArtist() const;
 	RString GetMainTitle() const;
+
+	Pack* GetPack() const;
 
 	/**
 	 * @brief Retrieve the transliterated title, or the main title if there is no translit.
@@ -276,7 +293,7 @@ public:
 	RString GetBannerPath() const;
 	RString GetJacketPath() const;
 	RString GetCDImagePath() const;
-	RString GetDiscPath() const;
+	RString GetDiscPath() const; 
 	RString	GetLyricsPath() const;
 	RString GetBackgroundPath() const;
 	RString GetCDTitlePath() const;

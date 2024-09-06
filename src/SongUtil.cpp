@@ -595,13 +595,31 @@ void SongUtil::SortSongPointerArrayByGenre( std::vector<Song*> &vpSongsInOut )
 
 int SongUtil::CompareSongPointersByGroup(const Song *pSong1, const Song *pSong2)
 {
-	return pSong1->m_sGroupName < pSong2->m_sGroupName;
+	// Check if the sort title exists
+	if( pSong1->GetPack()->m_sSortTitle.empty() || pSong2->GetPack()->m_sSortTitle.empty() ) {
+		// LOG the DEETS
+		LOG->Warn("SongUtil::CompareSongPointersByGroup: Song %s or %s has an empty group name. Using group name instead.", pSong1->m_sSongName.c_str(), pSong2->m_sSongName.c_str());
+		return pSong1->m_sGroupName < pSong2->m_sGroupName;
+	} else {
+		return pSong1->GetPack()->m_sSortTitle < pSong2->GetPack()->m_sSortTitle;
+	}
 }
 
 static int CompareSongPointersByGroupAndTitle( const Song *pSong1, const Song *pSong2 )
 {
-	const RString &sGroup1 = pSong1->m_sGroupName;
-	const RString &sGroup2 = pSong2->m_sGroupName;
+
+	LOG->Trace("SongUtil::CompareSongPointersByGroupAndTitle: %s %s", pSong1->m_sSongName.c_str(), pSong2->m_sSongName.c_str());
+	// Check if the sort title exists
+	const RString &sGroup1 = pSong1->GetPack()->m_sSortTitle;
+	const RString &sGroup2 = pSong2->GetPack()->m_sSortTitle;
+	LOG->Trace(pSong1->GetDisplayMainTitle().c_str());
+	LOG->Trace(sGroup1.c_str());
+	LOG->Trace(sGroup2.c_str());
+	LOG->Trace(pSong2->GetPack()->m_sGroupName.c_str());
+	LOG->Trace(pSong2->GetPack()->m_sDisplayTitle.c_str());
+	// Log whether bHasPackIni is true or false
+	LOG->Trace("bHasPackIni: %s", pSong1->GetPack()->m_bHasPackIni ? "true" : "false");
+	LOG->Trace("EUREKA!!! %s %s", sGroup1.c_str(), sGroup2.c_str());	
 
 	if( sGroup1 < sGroup2 )
 		return true;
@@ -610,6 +628,7 @@ static int CompareSongPointersByGroupAndTitle( const Song *pSong1, const Song *p
 
 	/* Same group; compare by name. */
 	return CompareSongPointersByTitle( pSong1, pSong2 );
+	
 }
 
 void SongUtil::SortSongPointerArrayByGroupAndTitle( std::vector<Song*> &vpSongsInOut )
@@ -645,7 +664,7 @@ RString SongUtil::GetSectionNameFromSongAndSort( const Song* pSong, SortOrder so
 		return SONGMAN->SongToPreferredSortSectionName( pSong );
 	case SORT_GROUP:
 		// guaranteed not empty
-		return pSong->m_sGroupName;
+		return pSong->GetPack()->m_sSortTitle;
 	case SORT_TITLE:
 	case SORT_ARTIST:
 		{
