@@ -306,8 +306,6 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 
 void GameLoop::RunGameLoop()
 {
-	static int CheckInputDevicesCounter = 0;
-	
 	/* People may want to do something else while songs are loading, so do
 	 * this after loading songs. */
 	if( ChangeAppPri() )
@@ -328,13 +326,12 @@ void GameLoop::RunGameLoop()
 
 		UpdateAllButDraw(false);
 		
-		// This loop runs every frame, so the input devices will be checked every 500 frames.
-		if (CheckInputDevicesCounter % (500) == 0)
+		// Check input devices every 255 frames (uint8_t can hold 0-255).
+		static uint8_t i_CheckInputDevices = 0;
+		if (++i_CheckInputDevices == 0)
 		{
 			CheckInputDevices();
-			CheckInputDevicesCounter = 0;
 		}
-		CheckInputDevicesCounter++;
 		
 		SCREENMAN->Draw();
 	}
