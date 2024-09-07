@@ -128,7 +128,7 @@ float* StepParityCost::getActionCost(State * initialState, State * resultState, 
     costs[COST_SPIN] += calcSpinCosts(initialState, resultState, combinedColumns, columnCount);
 	costs[COST_FOOTSWITCH] += caclFootswitchCost( initialState, resultState, row, combinedColumns, elapsedTime, columnCount);
 	costs[COST_SIDESWITCH] += calcSideswitchCost( initialState, resultState, columnCount);
-	costs[COST_MISSED_FOOTSWITCH] += calcMissedFootswitchCost( row, jackedLeft, jackedRight, columnCount)
+	costs[COST_MISSED_FOOTSWITCH] += calcMissedFootswitchCost( row, jackedLeft, jackedRight, columnCount);
 	costs[COST_JACK] += calcJackCost( movedLeft, movedRight, jackedLeft, jackedRight, elapsedTime, columnCount);
 	costs[COST_DISTANCE] += calcBigMovementsQuicklyCost( initialState, resultState, elapsedTime, columnCount);
 //    costs[COST_CROWDED_BRACKET] += calcCrowdedBracketCost(initialState, resultState, elapsedTime, columnCount);
