@@ -39,6 +39,8 @@ namespace StepParity {
         COST_BRACKETJACK,
         COST_JACK,
         COST_JUMP,
+		COST_SLOW_BRACKET,
+		COST_TWISTED_FOOT,
         COST_BRACKETTAP,
         COST_HOLDSWITCH,
         COST_MINE,

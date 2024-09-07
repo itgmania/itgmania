@@ -23,9 +23,18 @@ XToLocalizedString( TechCountsCategory );
 LuaFunction(TechCountsCategoryToLocalizedString, TechCountsCategoryToLocalizedString(Enum::Check<TechCountsCategory>(L, 1)) );
 LuaXType( TechCountsCategory );
 
-const float JACK_CUTOFF = 0.176; // 170bpm 1/8th notes, anything slower isn't considered a jack
-// TechCounts methods
 
+// 0.176 ~= 1/8th at 175bpm
+// Anything slower isn't counted as a jack
+const float JACK_CUTOFF = 0.176;
+// 0.3 = 1/4th at 200bpm (or 3/16th at 150bpm)
+// Anything slower isn't counted as a footswitch
+const float FOOTSWITCH_CUTOFF = 0.3;
+// 0.235 ~= 1/8th at 128bpm
+// Anything slower isn't counted as a doublestep
+const float DOUBLESTEP_CUTOFF = 0.235;
+
+// TechCounts methods
 TechCounts::TechCounts()
 {
 	MakeUnknown();
@@ -104,6 +113,7 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 		const StepParity::Row &previousRow = rows[i - 1];
 			
 		int noteCount = 0;
+		float elapsedTime = currentRow.second - previousRow.second;
 		
 		// copy the foot placement for the current row into currentColumns,
 		// and count up how many notes there are in this row
@@ -145,14 +155,17 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 				
 				if(previousFootPlacement[foot] == currentFootPlacement[foot])
 				{
-					if(currentRow.second - previousRow.second < JACK_CUTOFF)
+					if(elapsedTime < JACK_CUTOFF)
 					{
 						out[TechCountsCategory_Jacks] += 1;
 					}
 				}
 				else
 				{
-					out[TechCountsCategory_Doublesteps] += 1;
+					if(elapsedTime < DOUBLESTEP_CUTOFF)
+					{
+						out[TechCountsCategory_Doublesteps] += 1;
+					}
 				}
 			}
 		}
@@ -183,6 +196,7 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 			if(previousColumns[c] != StepParity::NONE 
 			   && previousColumns[c] != currentColumns[c]
 			   && StepParity::OTHER_PART_OF_FOOT[previousColumns[c]] != currentColumns[c]
+			   && elapsedTime < FOOTSWITCH_CUTOFF
 			   )
 			{
 				// this is assuming only 4-panel single

@@ -91,7 +91,7 @@ float* StepParityCost::getActionCost(State * initialState, State * resultState, 
     
 	costs[COST_HOLDSWITCH] += calcHoldSwitchCost( initialState, resultState, row, combinedColumns, columnCount);
 	costs[COST_BRACKETTAP] += calcBracketTapCost( initialState, resultState, row, leftHeel, leftToe, rightHeel, rightToe, elapsedTime, columnCount);
-	costs[COST_OTHER] += calcMovingFootWhileOtherIsntOnPadCost( initialState, resultState, columnCount);
+//	costs[COST_OTHER] += calcMovingFootWhileOtherIsntOnPadCost( initialState, resultState, columnCount);
 
 	bool movedLeft =
 	  resultState->didTheFootMove[LEFT_HEEL] ||
@@ -121,20 +121,17 @@ float* StepParityCost::getActionCost(State * initialState, State * resultState, 
 
 	costs[COST_BRACKETJACK] += calcBracketJackCost( initialState, resultState, rows, rowIndex, movedLeft, movedRight, jackedLeft, jackedRight, didJump, columnCount);
     costs[COST_DOUBLESTEP] += calcDoublestepCost(initialState, resultState, rows, rowIndex, movedLeft, movedRight, jackedLeft, jackedRight, didJump, columnCount);
-	costs[COST_JUMP] += calcJumpCost( row, movedLeft, movedRight, elapsedTime, columnCount);
+//	costs[COST_JUMP] += calcJumpCost( row, movedLeft, movedRight, elapsedTime, columnCount);
+	costs[COST_SLOW_BRACKET] += calcSlowBracketCost(row, movedLeft, movedRight, elapsedTime);
+	costs[COST_TWISTED_FOOT] += calcTwistedFootCost(resultState);
 	costs[COST_FACING] += calcFacingCosts( initialState, resultState, combinedColumns, columnCount);
     costs[COST_SPIN] += calcSpinCosts(initialState, resultState, combinedColumns, columnCount);
 	costs[COST_FOOTSWITCH] += caclFootswitchCost( initialState, resultState, row, combinedColumns, elapsedTime, columnCount);
 	costs[COST_SIDESWITCH] += calcSideswitchCost( initialState, resultState, columnCount);
-	costs[COST_MISSED_FOOTSWITCH] += calcMissedFootswitchCost( row, jackedLeft, jackedRight, columnCount);
-
-	// To do: small weighting for swapping heel with toe or toe with heel (both add up)
-	// To do: huge weighting for having foot direction opposite of eachother (can't twist one leg 180 degrees)
+	costs[COST_MISSED_FOOTSWITCH] += calcMissedFootswitchCost( row, jackedLeft, jackedRight, columnCount)
 	costs[COST_JACK] += calcJackCost( movedLeft, movedRight, jackedLeft, jackedRight, elapsedTime, columnCount);
-	
-	// To do: weighting for moving a foot a far distance in a fast time
 	costs[COST_DISTANCE] += calcBigMovementsQuicklyCost( initialState, resultState, elapsedTime, columnCount);
-    costs[COST_CROWDED_BRACKET] += calcCrowdedBracketCost(initialState, resultState, elapsedTime, columnCount);
+//    costs[COST_CROWDED_BRACKET] += calcCrowdedBracketCost(initialState, resultState, elapsedTime, columnCount);
     
     // I don't like that we're updating columns here like this.
     // We're basically updating columns with the final position of the feet
@@ -405,6 +402,45 @@ float StepParityCost::calcJumpCost(Row & row, bool movedLeft, bool movedRight, f
 	return cost;
 }
 
+// Jumps should be prioritized over brackets below a certain speed
+float StepParityCost::calcSlowBracketCost(Row & row, bool movedLeft, bool movedRight, float elapsedTime)
+{
+	float cost = 0;
+	if(elapsedTime > SLOW_BRACKET_THRESHOLD && movedLeft != movedRight &&
+	   std::count_if(row.notes.begin(), row.notes.end(), [](StepParity::IntermediateNoteData note)
+					 { return note.type != TapNoteType_Empty; }) >= 2)
+	{
+		float timediff = elapsedTime - SLOW_BRACKET_THRESHOLD;
+		cost += timediff * SLOW_BRACKET;
+	}
+	return cost;
+}
+
+// Does this placement result in one of the feet being twisted around?
+// This should probably be getting filtered out as an invalid positioning before
+// we even get to calculating costs.
+float StepParityCost::calcTwistedFootCost(State * resultState)
+{
+	float cost = 0;
+	int leftHeel = resultState->whereTheFeetAre[LEFT_HEEL];
+	int leftToe = resultState->whereTheFeetAre[LEFT_TOE];
+	int rightHeel = resultState->whereTheFeetAre[RIGHT_HEEL];
+	int rightToe = resultState->whereTheFeetAre[RIGHT_TOE];
+	
+	StagePoint leftPos = averagePoint(leftHeel, leftToe);
+	StagePoint rightPos = averagePoint(rightHeel, rightToe);
+	
+	bool crossedOver = rightPos.x < leftPos.x;
+	bool rightBackwards = rightHeel != -1 && rightToe != -1 ? layout[rightToe].y < layout[rightHeel].y : false;
+	bool leftBackwards = leftHeel != -1 && leftToe != -1 ? layout[leftToe].y < layout[leftHeel].y : false;
+	
+	if(!crossedOver && (rightBackwards || leftBackwards))
+	{
+		cost += TWISTED_FOOT;
+	}
+	   return cost;
+}
+
 float StepParityCost::calcMissedFootswitchCost(Row & row, bool jackedLeft, bool jackedRight, int columnCount)
 {
 	float cost = 0;
@@ -554,40 +590,39 @@ float StepParityCost::calcSpinCosts(State * initialState, State * resultState, s
     return cost;
 }
 
-// Footswitches are harder the slower they are.
-// Add a penalty when they get slower than 8ths at 120bpm (0.25 seconds)
+// Footswitches are harder to do when they get too slow.
+// Notes with an elapsed time greater than this will incur a penalty
 float StepParityCost::caclFootswitchCost(State * initialState, State * resultState, Row & row, std::vector<StepParity::Foot> & combinedColumns, float elapsedTime, int columnCount)
 {
 	float cost = 0;
-	// ignore footswitch with 24 or less distance (8th note); penalise slower footswitches based on distance
-	if (elapsedTime >= 0.25) {
+	if (elapsedTime >= SLOW_FOOTSWITCH_THRESHOLD && elapsedTime < SLOW_FOOTSWITCH_IGNORE) {
 		// footswitching has no penalty if there's a mine nearby
-	if (
-		std::all_of(row.mines.begin(), row.mines.end(), [](int mine)
-					{ return mine == 0; }) &&
-		std::all_of(row.fakeMines.begin(), row.fakeMines.end(), [](int mine)
-					{ return mine == 0; }))
-	{
-		float timeScaled = elapsedTime - 0.25;
-
-		for (int i = 0; i < columnCount; i++)
+		if (
+			std::all_of(row.mines.begin(), row.mines.end(), [](int mine)
+						{ return mine == 0; }) &&
+			std::all_of(row.fakeMines.begin(), row.fakeMines.end(), [](int mine)
+						{ return mine == 0; }))
 		{
-			if (
-				initialState->columns[i] == NONE ||
-				resultState->columns[i] == NONE)
-				continue;
+			float timeScaled = elapsedTime - SLOW_FOOTSWITCH_THRESHOLD;
 
-			if (
-				initialState->columns[i] != resultState->columns[i] &&
-				!resultState->didTheFootMove[initialState->columns[i]])
+			for (int i = 0; i < columnCount; i++)
 			{
-				cost += pow(timeScaled / 2.0f, 2) * FOOTSWITCH;
-				break;
+				if (
+					initialState->columns[i] == NONE ||
+					resultState->columns[i] == NONE)
+					continue;
+
+				if (
+					initialState->columns[i] != resultState->columns[i] &&
+					initialState->columns[i] != OTHER_PART_OF_FOOT[resultState->columns[i]]
+					)
+				{
+					cost += (timeScaled / (SLOW_FOOTSWITCH_THRESHOLD + timeScaled)) * FOOTSWITCH;
+					break;
+				}
 			}
 		}
-	  }
 	}
-
 	  return cost;
 }
 
@@ -637,17 +672,35 @@ float StepParityCost::calcBigMovementsQuicklyCost(State * initialState, State * 
 	for (StepParity::Foot foot : resultState->movedFeet)
 	{
 		if(foot == NONE)
+		{
 			continue;
-		int idxFoot = initialState->whereTheFeetAre[foot];
-		if (idxFoot == -1)
+		}
+		
+		int initialPosition = initialState->whereTheFeetAre[foot];
+		if(initialPosition == -1)
+		{
 			continue;
-		cost +=
-			(sqrt(
-				 getDistanceSq(
-					 layout[idxFoot],
-					 layout[resultState->whereTheFeetAre[foot]])) *
-			 DISTANCE) /
-			elapsedTime;
+		}
+		
+		int resultPosition = resultState->whereTheFeetAre[foot];
+		
+		
+		// If we're bracketing something, and the toes are now where the heel
+		// was, then we don't need to worry about it, we're not actually moving
+		// the foot very far
+		bool isBracketing = resultState->whereTheFeetAre[OTHER_PART_OF_FOOT[foot]] != -1;
+		if(isBracketing && resultState->whereTheFeetAre[OTHER_PART_OF_FOOT[foot]] == initialPosition)
+		{
+			continue;
+		}
+		
+		float dist = (sqrt(getDistanceSq(layout[initialPosition], layout[resultPosition])) * DISTANCE) / elapsedTime;
+		// Otherwise if we're still bracketing, this is probably a less drastic movement
+		if(isBracketing)
+		{
+			dist = dist * 0.2;
+		}
+		cost += dist;
 	}
 
 	return cost;
