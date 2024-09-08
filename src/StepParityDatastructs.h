@@ -74,16 +74,43 @@ namespace StepParity {
         "TOTAL"
     };
     
-    
-    
 	struct StagePoint {
 		float x;
 		float y;
 	};
-
-	/// @brief A vector of StagePoints, which represents the 
-	/// relative position of each arrow on the dance stage. 
-	typedef std::vector<StagePoint> StageLayout;
+	
+	// StageLayout represents the relative position of each panel on the dance stage,
+	// and provides some basic math function
+	struct StageLayout {
+		StepsType type;
+		int columnCount;
+		std::vector<StagePoint> columns;
+		std::vector<int> upArrows;
+		std::vector<int> downArrows;
+		std::vector<int> sideArrows;
+		
+		
+		StageLayout(StepsType t,
+					 const std::vector<StagePoint>& c,
+					 const std::vector<int> & u,
+					 const std::vector<int> & d,
+					 const std::vector<int> & s) :type(t), columns(c), upArrows(u), downArrows(d), sideArrows(s) {
+			this->columnCount = static_cast<int>(this->columns.size());
+		}
+		
+		
+		bool bracketCheck(int column1, int column2);
+		bool isSideArrow(int column);
+		bool isUpArrow(int column);
+		bool isDownArrow(int column);
+		float getDistanceSq(int c1, int c2);
+		float getDistanceSq(StagePoint p1, StagePoint p2);
+		float getXDifference(int leftIndex, int rightIndex);
+		float getYDifference(int leftIndex, int rightIndex);
+		StagePoint averagePoint(int leftIndex, int rightIndex);
+		float getPlayerAngle(int c1, int c2);
+		float getPlayerAngle(StepParity::StagePoint left, StepParity::StagePoint right);
+	};
 
 	/// @brief A vector of Foot values, which represents the player's
 	/// foot placement on the dance stage.

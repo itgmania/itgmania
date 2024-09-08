@@ -10,6 +10,26 @@
 
 namespace StepParity {
 	
+	const std::map<StepsType, StageLayout> Layouts = {
+		{StepsType_dance_single, StageLayout(StepsType_dance_single, {
+			{0, 1},  // Left
+			{1, 0},  // Down
+			{1, 2},  // Up
+			{2, 1}   // Right
+		}, {2}, {1}, {0,3})},
+		{StepsType_dance_double, StageLayout(StepsType_dance_double, {
+			{0, 1},  // P1 Left
+			{1, 0},  // P1 Down
+			{1, 2},  // P1 Up
+			{2, 1},  // P1 Right
+			
+			{3, 1},  // P2 Left
+			{4, 0},  // P2 Down
+			{4, 2},  // P2 Up
+			{5, 1}   // P2 Right
+		}, {26}, {1,5}, {0,3,4,7})}
+	};
+	
 	/// @brief This class handles most of the work for generating step parities for a step chart.
 	class StepParityGenerator 
 	{
@@ -23,11 +43,12 @@ namespace StepParity {
 		std::vector<int> nodes_for_rows;
 		int columnCount;
 		
+		StepParityGenerator(const StageLayout & l) : layout(l) {
+		}
 		/// @brief Analyzes the given NoteData to generate a vector of StepParity::Rows, with each step annotated with
 		/// a foot placement.
 		/// @param in The NoteData to analyze
-		/// @param stepsTypeStr StepsType, currently only supports "dance-single"
-		void analyzeNoteData(const NoteData &in, StepsType stepsType);
+		void analyzeNoteData(const NoteData &in);
 
 		/// @brief Analyzes the given graph to find the least costly path from the beginnning to the end of the stepchart.
 		/// Sets the `parity` for the relevant notes of each row in rows.

@@ -5,40 +5,13 @@
 #include "TechCounts.h"
 #include "GameState.h"
 
-// Generates foot parity given notedata
-// Original algorithm by Jewel, polished by tillvit, then ported to C++
 
 using namespace StepParity;
 
-const std::map<StepsType, StageLayout> Layouts = {
-    {StepsType_dance_single, {
-        {0, 1},  // Left
-        {1, 0},  // Down
-        {1, 2},  // Up
-        {2, 1}   // Right
-    }},
-    {StepsType_dance_double, {
-        {0, 1},  // P1 Left
-        {1, 0},  // P1 Down
-        {1, 2},  // P1 Up
-        {2, 1},  // P1 Right
-        
-        {3, 1},  // P2 Left
-        {4, 0},  // P2 Down
-        {4, 2},  // P2 Up
-        {5, 1}   // P2 Right
-    }}
-	};
 
-void StepParityGenerator::analyzeNoteData(const NoteData &in, StepsType stepsType)
+
+void StepParityGenerator::analyzeNoteData(const NoteData &in)
 {	
-	if(Layouts.find(stepsType) == Layouts.end())
-	{
-		LOG->Warn("Tried to call StepParityGenerator::analyze with an unsupported StepsType %s", StepsTypeToString(stepsType).c_str());
-		return;
-	}
-
-	layout = Layouts.at(stepsType);
 	columnCount = in.GetNumTracks();
 	
 	CreateRows(in);
@@ -224,12 +197,12 @@ std::vector<FootPlacement> StepParityGenerator::PermuteFootPlacements(const Row 
 		}
 		if (leftHeelIndex != -1 && leftToeIndex != -1)
 		{
-			if (!bracketCheck(leftHeelIndex, leftToeIndex))
+			if (!layout.bracketCheck(leftHeelIndex, leftToeIndex))
 				return std::vector<FootPlacement>();
 		}
 		if (rightHeelIndex != -1 && rightToeIndex != -1)
 		{
-			if (!bracketCheck(rightHeelIndex, rightToeIndex))
+			if (!layout.bracketCheck(rightHeelIndex, rightToeIndex))
 				return std::vector<FootPlacement>();
 		}
 		return {columns};
@@ -517,16 +490,4 @@ Json::Value StepParityGenerator::SMEditorParityJson()
 	}
 	
 	return root;
-}
-
-bool StepParityGenerator::bracketCheck(int column1, int column2)
-{
-	StagePoint p1 = layout[column1];
-	StagePoint p2 = layout[column2];
-	return getDistanceSq(p1, p2) <= 2;
-}
-
-float StepParityGenerator::getDistanceSq(StepParity::StagePoint p1, StepParity::StagePoint p2)
-{
-	return (p1.y - p2.y) * (p1.y - p2.y) + (p1.x - p2.x) * (p1.x - p2.x);
 }

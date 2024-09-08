@@ -389,16 +389,17 @@ void Steps::CalculateTechCounts()
 		m_CachedTechCounts[pn]
 			.Zero();
 
-	// For now, we're only supporting dance-single and dance-double
-	if(this->m_StepsType != StepsType_dance_single && this->m_StepsType != StepsType_dance_double)
+	
+	// If we don't have a valid layout for this StepsType, then don't even bother
+	if(StepParity::Layouts.find(this->m_StepsType) == StepParity::Layouts.end())
 	{
 		return;
 	}
-
+	StepParity::StageLayout layout = StepParity::Layouts.at(this->m_StepsType);
 	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
-	StepParity::StepParityGenerator gen;
-	gen.analyzeNoteData(tempNoteData, this->m_StepsType);
-	TechCounts::CalculateTechCountsFromRows(gen.rows, m_CachedTechCounts[0]);
+	StepParity::StepParityGenerator gen = StepParity::StepParityGenerator(layout);
+	gen.analyzeNoteData(tempNoteData);
+	TechCounts::CalculateTechCountsFromRows(gen.rows, layout, m_CachedTechCounts[0]);
 	std::fill_n( m_CachedTechCounts + 1, NUM_PLAYERS-1, m_CachedTechCounts[0] );
 
 	GAMESTATE->SetProcessedTimingData(nullptr);

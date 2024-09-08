@@ -8,30 +8,6 @@ using namespace StepParity;
 
 
 template <typename T>
-bool vectorIncludes(const std::vector<T>& vec, const T& value, int columnCount) {
-	for (int i = 0; i < columnCount; i++)
-	{
-		if(vec[i] == value)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-template <typename T>
-int indexOf(const std::vector<T>& vec, const T& value, int columnCount) {
-	for (int i = 0; i < columnCount; i++)
-	{
-		if(vec[i] == value)
-		{
-			return i;
-		}
-	}
-	return -1;
-}
-
-template <typename T>
 bool isEmpty(const std::vector<T> & vec, int columnCount) {
 	for (int i = 0; i < columnCount; i++)
 	{
@@ -241,7 +217,7 @@ float StepParityCost::calcHoldSwitchCost(State * initialState, State * resultSta
 		  (previousFoot == -1
 			? 1
 			: sqrt(
-				getDistanceSq(layout[c], layout[previousFoot])
+				layout.getDistanceSq(c, previousFoot)
 			  ));
 	  }
 	}
@@ -427,12 +403,12 @@ float StepParityCost::calcTwistedFootCost(State * resultState)
 	int rightHeel = resultState->whereTheFeetAre[RIGHT_HEEL];
 	int rightToe = resultState->whereTheFeetAre[RIGHT_TOE];
 	
-	StagePoint leftPos = averagePoint(leftHeel, leftToe);
-	StagePoint rightPos = averagePoint(rightHeel, rightToe);
+	StagePoint leftPos = layout.averagePoint(leftHeel, leftToe);
+	StagePoint rightPos = layout.averagePoint(rightHeel, rightToe);
 	
 	bool crossedOver = rightPos.x < leftPos.x;
-	bool rightBackwards = rightHeel != -1 && rightToe != -1 ? layout[rightToe].y < layout[rightHeel].y : false;
-	bool leftBackwards = leftHeel != -1 && leftToe != -1 ? layout[leftToe].y < layout[leftHeel].y : false;
+	bool rightBackwards = rightHeel != -1 && rightToe != -1 ? layout.columns[rightToe].y < layout.columns[rightHeel].y : false;
+	bool leftBackwards = leftHeel != -1 && leftToe != -1 ? layout.columns[leftToe].y < layout.columns[leftHeel].y : false;
 	
 	if(!crossedOver && (rightBackwards || leftBackwards))
 	{
@@ -493,19 +469,19 @@ float StepParityCost::calcFacingCosts(State * initialState, State * resultState,
 	// facing backwards gives a bit of bad weight (scaled heavily the further back you angle, so crossovers aren't Too bad; less bad than doublesteps)
 	float heelFacing =
 	  endLeftHeel != -1 && endRightHeel != -1
-		? getXDifference(endLeftHeel, endRightHeel)
+		? layout.getXDifference(endLeftHeel, endRightHeel)
 		: 0;
 	float toeFacing =
 	  endLeftToe != -1 && endRightToe != -1
-		? getXDifference(endLeftToe, endRightToe)
+		? layout.getXDifference(endLeftToe, endRightToe)
 		: 0;
 	float leftFacing =
 	  endLeftHeel != -1 && endLeftToe != -1
-		? getYDifference(endLeftHeel, endLeftToe)
+		? layout.getYDifference(endLeftHeel, endLeftToe)
 		: 0;
 	float rightFacing =
 	  endRightHeel != -1 && endRightToe != -1
-		? getYDifference(endRightHeel, endRightToe)
+		? layout.getYDifference(endRightHeel, endRightToe)
 		: 0;
 
 
@@ -560,16 +536,16 @@ float StepParityCost::calcSpinCosts(State * initialState, State * resultState, s
     if (endRightToe == -1) endRightToe = endRightHeel;
     
     // spin
-    StagePoint previousLeftPos = averagePoint(
+    StagePoint previousLeftPos = layout.averagePoint(
      initialState->whereTheFeetAre[LEFT_HEEL],
      initialState->whereTheFeetAre[LEFT_TOE]
     );
-    StagePoint previousRightPos = averagePoint(
+    StagePoint previousRightPos = layout.averagePoint(
      initialState->whereTheFeetAre[RIGHT_HEEL],
      initialState->whereTheFeetAre[RIGHT_TOE]
     );
-    StagePoint leftPos = averagePoint(endLeftHeel, endLeftToe);
-    StagePoint rightPos = averagePoint(endRightHeel, endRightToe);
+    StagePoint leftPos = layout.averagePoint(endLeftHeel, endLeftToe);
+    StagePoint rightPos = layout.averagePoint(endRightHeel, endRightToe);
 
     if (
       rightPos.x < leftPos.x &&
@@ -626,26 +602,19 @@ float StepParityCost::caclFootswitchCost(State * initialState, State * resultSta
 	  return cost;
 }
 
-// TODO: This doesn't work for doubles, since it's only checking P1 left and P1 right
 float StepParityCost::calcSideswitchCost(State * initialState, State * resultState, int columnCount)
 {
 	float cost = 0;
-	if (
-		initialState->columns[0] != resultState->columns[0] &&
-		resultState->columns[0] != NONE &&
-		initialState->columns[0] != NONE &&
-		!resultState->didTheFootMove[initialState->columns[0]])
+	for(auto c : layout.sideArrows)
 	{
-		cost += SIDESWITCH;
-	}
-
-	if (
-	  initialState->columns[3] != resultState->columns[3] &&
-	  resultState->columns[3] != NONE &&
-	  initialState->columns[3] != NONE &&
-	  !resultState->didTheFootMove[initialState->columns[3]]
-	) {
-	  cost += SIDESWITCH;
+		if (
+			initialState->columns[c] != resultState->columns[c] &&
+			resultState->columns[c] != NONE &&
+			initialState->columns[c] != NONE &&
+			!resultState->didTheFootMove[initialState->columns[c]])
+		{
+			cost += SIDESWITCH;
+		}
 	}
 	return cost;
 }
@@ -694,7 +663,7 @@ float StepParityCost::calcBigMovementsQuicklyCost(State * initialState, State * 
 			continue;
 		}
 		
-		float dist = (sqrt(getDistanceSq(layout[initialPosition], layout[resultPosition])) * DISTANCE) / elapsedTime;
+		float dist = (sqrt(layout.getDistanceSq(initialPosition, resultPosition)) * DISTANCE) / elapsedTime;
 		// Otherwise if we're still bracketing, this is probably a less drastic movement
 		if(isBracketing)
 		{
@@ -878,67 +847,3 @@ bool StepParityCost::didJackRight(State * initialState, State * resultState, int
 	}
 	return jackedRight;
 }
-
-
-float StepParityCost::getDistanceSq(StepParity::StagePoint p1, StepParity::StagePoint p2)
-{
-	return (p1.y - p2.y) * (p1.y - p2.y) + (p1.x - p2.x) * (p1.x - p2.x);
-}
-
-float StepParityCost::getPlayerAngle(StepParity::StagePoint left, StepParity::StagePoint right)
-{
-	float x1 = right.x - left.x;
-	float y1 = right.y - left.y;
-	float x2 = 1;
-	float y2 = 0;
-	float dot = x1 * x2 + y1 * y2;
-	float det = x1 * y2 - y1 * x2;
-	return atan2f(det, dot);
-}
-
-
-
-
-float StepParityCost::getXDifference(int leftIndex, int rightIndex) {
-	if (leftIndex == rightIndex) return 0;
-	float dx = layout[rightIndex].x - layout[leftIndex].x;
-	float dy = layout[rightIndex].y - layout[leftIndex].y;
-
-	float distance = sqrt(dx * dx + dy * dy);
-	dx /= distance;
-
-	bool negative = dx <= 0;
-
-	dx = pow(dx, 4);
-
-	if (negative) dx = -dx;
-
-	return dx;
-  }
-
-  float StepParityCost::getYDifference(int leftIndex, int rightIndex) {
-	if (leftIndex == rightIndex) return 0;
-	float dx = layout[rightIndex].x - layout[leftIndex].x;
-	float dy = layout[rightIndex].y - layout[leftIndex].y;
-
-	float distance = sqrt(dx * dx + dy * dy);
-	dy /= distance;
-
-	bool negative = dy <= 0;
-
-	dy = pow(dy, 4);
-
-	if (negative) dy = -dy;
-
-	return dy;
-  }
-
-StagePoint StepParityCost::averagePoint(int leftIndex, int rightIndex) {
-	if (leftIndex == -1 && rightIndex == -1) return { 0,0 };
-	if (leftIndex == -1) return layout[rightIndex];
-	if (rightIndex == -1) return layout[leftIndex];
-	return {
-	  (layout[leftIndex].x + layout[rightIndex].x) / 2.0f,
-	  (layout[leftIndex].y + layout[rightIndex].y) / 2.0f,
-	};
-  }

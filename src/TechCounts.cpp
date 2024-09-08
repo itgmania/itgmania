@@ -11,7 +11,9 @@
 
 static const char *TechCountsCategoryNames[] = {
 	"Crossovers",
-	"Footswitches",
+	"Total Footswitches",
+	"Up Footswitches",
+	"Down Footswitches",
 	"Sideswitches",
 	"Jacks",
 	"Brackets",
@@ -89,7 +91,7 @@ void TechCounts::FromString( RString sTechCounts )
 
 }
 
-void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, TechCounts &out)
+void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, StepParity::StageLayout & layout, TechCounts &out)
 {
 	// arrays to hold the column for each Foot enum.
 	// A value of -1 means that Foot is not on any column
@@ -200,13 +202,21 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 			   )
 			{
 				// this is assuming only 4-panel single
-				if(c == 0 || c == 3)
+				if(layout.isSideArrow(c))
 				{
 					out[TechCountsCategory_Sideswitches] += 1;
 				}
 				else
 				{
-					out[TechCountsCategory_Footswitches] += 1;
+					out[TechCountsCategory_TotalFootswitches] += 1;
+					if(layout.isUpArrow(c))
+					{
+						out[TechCountsCategory_UpFootswitches] += 1;
+					}
+					else if(layout.isDownArrow(c))
+					{
+						out[TechCountsCategory_DownFootswitches] += 1;
+					}
 				}
 			}
 			// if the right foot is pressing the left arrow, or the left foot is pressing the right ==> crossover

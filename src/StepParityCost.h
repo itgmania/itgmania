@@ -45,9 +45,7 @@ namespace StepParity
 		StageLayout layout;
 
 	public:
-		StepParityCost(StageLayout _layout)
-		{
-			layout = _layout;
+		StepParityCost(const StageLayout& _layout): layout(_layout){
 		}
 
 		/// @brief Computes and returns a cost value for the player moving from initialState to resultState.
@@ -81,14 +79,6 @@ namespace StepParity
 		bool didDoubleStep(State * initialState, State * resultState, std::vector<Row> &rows, int rowIndex, bool movedLeft, bool jackedLeft, bool movedRight, bool jackedRight, int columnCount);
 		bool didJackLeft(State * initialState, State * resultState, int leftHeel, int leftToe, bool movedLeft, bool didJump, int columnCount);
 		bool didJackRight(State * initialState, State * resultState, int rightHeel, int rightToe, bool movedRight, bool didJump,int columnCount);
-
-		float getDistanceSq(StepParity::StagePoint p1, StepParity::StagePoint p2);
-		float getPlayerAngle(StepParity::StagePoint left, StepParity::StagePoint right);
-
-		float getXDifference(int leftIndex, int rightIndex);
-		float getYDifference(int leftIndex, int rightIndex);
-		StagePoint averagePoint(int leftIndex, int rightIndex);
-
 	};
 };
 
