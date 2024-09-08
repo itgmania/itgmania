@@ -102,7 +102,6 @@ namespace StepParity {
         int whereTheFeetAre[NUM_Foot]; // the inverse of columns
         bool didTheFootMove[NUM_Foot]; // the inverse of movedFeet
         bool isTheFootHolding[NUM_Foot]; //inverse of holdFeet
-        
 		// These hashes are used in operator<() to speed up the comparison of the vectors.
 		// Their values are computed by calculateHashes(), which is used in StepParityGenerator::buildStateGraph().
 		int columnsHash = 0;
@@ -242,6 +241,15 @@ namespace StepParity {
 		State state;
 
 		std::unordered_map<StepParityNode *, float*> neighbors; // Connections to, and the cost of moving to, the connected nodes
+		
+		~StepParityNode()
+		{
+			for(auto neighbor: neighbors)
+			{
+				delete[] neighbor.second;
+			}
+			neighbors.clear();
+		}
 		StepParityNode(const State &_state)
 		{
 			state = _state;
