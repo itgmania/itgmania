@@ -60,6 +60,8 @@ namespace StepParity {
         "BRACKETJACK",
         "JACK",
         "JUMP",
+		"SLOW_BRACKET",
+		"TWISTED_FOOT",
         "BRACKETTAP",
         "HOLDSWITCH",
         "MINE",
@@ -198,11 +200,14 @@ namespace StepParity {
 												 // preceding this one, the time of when that mine occurred, indexed by column.
 		std::vector<float> fakeMines;			 // The same thing, but for fake mines
 
+		FootPlacement columns;
+		std::vector<int> whereTheFeetAre;
+		
 		float second = 0;
 		float beat = 0;
 		int rowIndex = 0;
 		int columnCount = 0;
-
+		int noteCount = 0;
 		Row()
 		{
 			Row(0);
@@ -216,10 +221,11 @@ namespace StepParity {
 			holdTails.clear();
 			mines = std::vector<float>(columnCount, 0);
 			fakeMines = std::vector<float>(columnCount, 0);
-			second = 0;
-			beat = 0;
-			rowIndex = 0;
+			columns = std::vector<StepParity::Foot>(columnCount, StepParity::NONE);
+			whereTheFeetAre = std::vector<int>(StepParity::NUM_Foot, -1);
 		}
+		
+		void setFootPlacement(const std::vector<Foot> & footPlacement);
 
 		Json::Value ToJson(bool useStrings);
 		static Json::Value ToJsonRows(const std::vector<Row> & rows, bool useStrings);

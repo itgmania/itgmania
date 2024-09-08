@@ -170,6 +170,23 @@ float StageLayout::getPlayerAngle(StepParity::StagePoint left, StepParity::Stage
 }
 
 //
+// Row
+//
+
+void Row::setFootPlacement(const std::vector<Foot> & footPlacement)
+{
+	for (int c = 0; c < columnCount; c++) {
+		if(notes[c].type != TapNoteType_Empty) {
+			notes[c].parity = footPlacement[c];
+			columns[c] = footPlacement[c];
+			whereTheFeetAre[footPlacement[c]] = c;
+			noteCount += 1;
+		}
+	}
+}
+
+
+//
 // Json methods
 //
 

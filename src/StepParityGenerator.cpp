@@ -33,11 +33,7 @@ void StepParityGenerator::analyzeGraph() {
 	for (unsigned long i = 0; i < rows.size(); i++)
 	{
 		StepParityNode *node = graph[nodes_for_rows[i]];
-		for (int j = 0; j < rows[i].columnCount; j++) {
-			if(rows[i].notes[j].type != TapNoteType_Empty) {
-				rows[i].notes[j].parity = node->state.columns[j];
-			}
-		}
+		rows[i].setFootPlacement(node->state.columns);
 	}
 }
 
