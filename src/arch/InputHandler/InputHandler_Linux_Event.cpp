@@ -391,7 +391,7 @@ void InputHandler_Linux_Event::InputThread()
 				if (event.code >= BTN_JOYSTICK && event.code <= BTN_JOYSTICK + 0xf) {
 					// These guys have arbitrary names, but the kernel code in hid-input.c maps exactly 0xf of them.
 					iNum = event.code - BTN_JOYSTICK;
-				} else if (event.code >= BTN_GAMEPAD && event.code <= BTN_THUMBR) {
+				} else if (event.code >= BTN_GAMEPAD && event.code <= BTN_GAMEPAD + 0x0f) {
 					iNum = event.code - BTN_GAMEPAD;
 				} else if (event.code >= BTN_TRIGGER_HAPPY1 && event.code <= BTN_TRIGGER_HAPPY40) {
 					// Actually, we only have 32 buttons defined.
