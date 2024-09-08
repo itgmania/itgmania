@@ -12,7 +12,9 @@ class NoteData;
 enum TechCountsCategory
 {
 	TechCountsCategory_Crossovers = 0,
-	TechCountsCategory_TotalFootswitches,
+	TechCountsCategory_HalfCrossovers,
+	TechCountsCategory_FullCrossovers,
+	TechCountsCategory_Footswitches,
 	TechCountsCategory_UpFootswitches,
 	TechCountsCategory_DownFootswitches,
 	TechCountsCategory_Sideswitches,
@@ -80,6 +82,8 @@ public:
 
 	void PushSelf( lua_State *L );
 	static void CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, StepParity::StageLayout & layout, TechCounts &out);
+private:
+	static bool isFootswitch(int c, const StepParity::Row & currentRow, const StepParity::Row & previousRow, float elapsedTime);
 };
 
 #endif

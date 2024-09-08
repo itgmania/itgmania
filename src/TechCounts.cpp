@@ -11,9 +11,11 @@
 
 static const char *TechCountsCategoryNames[] = {
 	"Crossovers",
-	"Total Footswitches",
-	"Up Footswitches",
-	"Down Footswitches",
+	"HalfCrossovers",
+	"FullCrossovers",
+	"Footswitches",
+	"UpFootswitches",
+	"DownFootswitches",
 	"Sideswitches",
 	"Jacks",
 	"Brackets",
@@ -91,50 +93,16 @@ void TechCounts::FromString( RString sTechCounts )
 
 }
 
+
 void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, StepParity::StageLayout & layout, TechCounts &out)
 {
-	// arrays to hold the column for each Foot enum.
-	// A value of -1 means that Foot is not on any column
-	int previousFootPlacement[StepParity::NUM_Foot];
-	int currentFootPlacement[StepParity::NUM_Foot];
-	int previousNoteCount = 0;
-	for (int f = 0; f < StepParity::NUM_Foot; f++)
-	{
-		previousFootPlacement[f] = -1;
-		currentFootPlacement[f] = -1;
-	}
-
-	// arrays to hold the foot placements for the current row and previos row.
-	// They're basically just so we don't have to reference currentRow.notes[c].parity everywhere
-	std::vector<StepParity::Foot> previousColumns(rows[0].columnCount, StepParity::NONE);
-	std::vector<StepParity::Foot> currentColumns(rows[0].columnCount, StepParity::NONE);
-	
 	for (unsigned long i = 1; i < rows.size(); i++)
 	{
 		const StepParity::Row &currentRow = rows[i];
 		const StepParity::Row &previousRow = rows[i - 1];
 			
-		int noteCount = 0;
 		float elapsedTime = currentRow.second - previousRow.second;
 		
-		// copy the foot placement for the current row into currentColumns,
-		// and count up how many notes there are in this row
-		for (int c = 0; c < currentRow.columnCount; c++)
-		{
-			StepParity::Foot currFoot = currentRow.notes[c].parity;
-			TapNoteType currType = currentRow.notes[c].type;
-
-			// If this isn't either a tap or the beginning of a hold, skip it
-			if(currType != TapNoteType_Tap && currType != TapNoteType_HoldHead)
-			{
-				continue;
-			}
-
-			currentFootPlacement[currFoot] = c;
-			currentColumns[c] = currFoot;
-			noteCount += 1;
-		}
-
 		/*
 		Jacks are same arrow same foot
 		Doublestep is same foot on successive arrows
@@ -146,16 +114,16 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 		*/
 
 		// check for jacks and doublesteps
-		if(noteCount == 1 && previousNoteCount == 1)
+		if(currentRow.noteCount == 1 && previousRow.noteCount == 1)
 		{
 			for (StepParity::Foot foot: StepParity::FEET)
 			{
-				if(currentFootPlacement[foot] == -1 || previousFootPlacement[foot] == -1)
+				if(currentRow.whereTheFeetAre[foot] == -1 || previousRow.whereTheFeetAre[foot] == -1)
 				{
 					continue;
 				}
 				
-				if(previousFootPlacement[foot] == currentFootPlacement[foot])
+				if(previousRow.whereTheFeetAre[foot] == currentRow.whereTheFeetAre[foot])
 				{
 					if(elapsedTime < JACK_CUTOFF)
 					{
@@ -173,80 +141,149 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 		}
 
 		// check for brackets
-		if(noteCount >= 2)
+		if(currentRow.noteCount >= 2)
 		{
-			if(currentFootPlacement[StepParity::LEFT_HEEL] != -1 && currentFootPlacement[StepParity::LEFT_TOE] != -1)
+			if(currentRow.whereTheFeetAre[StepParity::LEFT_HEEL] != -1 && currentRow.whereTheFeetAre[StepParity::LEFT_TOE] != -1)
 			{
 				out[TechCountsCategory_Brackets] += 1;
 			}
 
-			if(currentFootPlacement[StepParity::RIGHT_HEEL] != -1 && currentFootPlacement[StepParity::RIGHT_TOE] != -1)
+			if(currentRow.whereTheFeetAre[StepParity::RIGHT_HEEL] != -1 && currentRow.whereTheFeetAre[StepParity::RIGHT_TOE] != -1)
 			{
 				out[TechCountsCategory_Brackets] += 1;
 			}
 		}
 
-		// Check for footswitches, sideswitches, and crossovers
-		for (int c = 0; c < currentRow.columnCount; c++)
+		// Check for up footswitches
+		for(int c : layout.upArrows)
 		{
-			if(currentColumns[c] == StepParity::NONE)
+			if(isFootswitch(c, currentRow, previousRow, elapsedTime))
 			{
-				continue;
+				out[TechCountsCategory_UpFootswitches] += 1;
+				out[TechCountsCategory_Footswitches] += 1;
 			}
-
-			// this same column was stepped on in the previous row, but not by the same foot ==> footswitch or sideswitch
-			if(previousColumns[c] != StepParity::NONE 
-			   && previousColumns[c] != currentColumns[c]
-			   && StepParity::OTHER_PART_OF_FOOT[previousColumns[c]] != currentColumns[c]
-			   && elapsedTime < FOOTSWITCH_CUTOFF
-			   )
+		}
+		// Check for down footswitches
+		for(int c: layout.downArrows)
+		{
+			if(isFootswitch(c, currentRow, previousRow, elapsedTime))
 			{
-				// this is assuming only 4-panel single
-				if(layout.isSideArrow(c))
+				out[TechCountsCategory_DownFootswitches] += 1;
+				out[TechCountsCategory_Footswitches] += 1;
+			}
+		}
+		
+		// Check for sideswitches
+		for(int c: layout.sideArrows)
+		{
+			if(isFootswitch(c, currentRow, previousRow, elapsedTime))
+			{
+				out[TechCountsCategory_Sideswitches] += 1;
+			}
+		}
+		
+		// Check for crossovers
+		
+		int leftHeel = currentRow.whereTheFeetAre[StepParity::LEFT_HEEL];
+		int leftToe = currentRow.whereTheFeetAre[StepParity::LEFT_TOE];
+		int rightHeel = currentRow.whereTheFeetAre[StepParity::RIGHT_HEEL];
+		int rightToe = currentRow.whereTheFeetAre[StepParity::RIGHT_TOE];
+		
+		int previousLeftHeel = previousRow.whereTheFeetAre[StepParity::LEFT_HEEL];
+		int previousLeftToe = previousRow.whereTheFeetAre[StepParity::LEFT_TOE];
+		int previousRightHeel = previousRow.whereTheFeetAre[StepParity::RIGHT_HEEL];
+		int previousRightToe = previousRow.whereTheFeetAre[StepParity::RIGHT_TOE];
+		
+		// Check for the following:
+		// - We moved the right foot on this row,
+		// - we moved the left foot on this row,
+		// - we didn't move the right foot on this row
+		// - Is the position of the right foot farther left than the left foot
+		// - If so, check the row before the previous row for the following:
+		//   - Was the right foot on a difference position
+		//   - Was the right foot farther right than the left?
+		//     - If so, then this was a full crossover (like RDL, starting on right foot)
+		//     - otherwise, then this was probably a half crossover (like UDL, starting on right foot)
+		if(rightHeel != -1 && previousLeftHeel != -1 && previousRightHeel == -1)
+		{
+			StepParity::StagePoint leftPos = layout.averagePoint(previousLeftHeel, previousLeftToe);
+			StepParity::StagePoint rightPos = layout.averagePoint(rightHeel, rightToe);
+			
+			if(rightPos.x < leftPos.x)
+			{
+				if(i > 1)
 				{
-					out[TechCountsCategory_Sideswitches] += 1;
+					const StepParity::Row & previousPreviousRow = rows[i - 2];
+					if(previousPreviousRow.whereTheFeetAre[StepParity::RIGHT_HEEL] != rightHeel)
+					{
+						StepParity::StagePoint previousPreviousRightPos = layout.columns[previousPreviousRow.whereTheFeetAre[StepParity::RIGHT_HEEL]];
+						if(previousPreviousRightPos.x > leftPos.x)
+						{
+							out[TechCountsCategory_FullCrossovers] += 1;
+						}
+						else
+						{
+							out[TechCountsCategory_HalfCrossovers] += 1;
+						}
+						out[TechCountsCategory_Crossovers] += 1;
+					}
 				}
 				else
 				{
-					out[TechCountsCategory_TotalFootswitches] += 1;
-					if(layout.isUpArrow(c))
-					{
-						out[TechCountsCategory_UpFootswitches] += 1;
-					}
-					else if(layout.isDownArrow(c))
-					{
-						out[TechCountsCategory_DownFootswitches] += 1;
-					}
+					out[TechCountsCategory_HalfCrossovers] += 1;
+					out[TechCountsCategory_Crossovers] += 1;
 				}
 			}
-			// if the right foot is pressing the left arrow, or the left foot is pressing the right ==> crossover
-			else if(c == 0 && previousColumns[c] == StepParity::NONE &&
-					(currentColumns[c] == StepParity::RIGHT_HEEL || currentColumns[c] == StepParity::RIGHT_TOE))
-			{
-				out[TechCountsCategory_Crossovers] += 1;
-			}
-			else if(c == 3 && previousColumns[c] == StepParity::NONE &&
-					(currentColumns[c] == StepParity::LEFT_HEEL || currentColumns[c] == StepParity::LEFT_TOE))
-			{
-				out[TechCountsCategory_Crossovers] += 1;
-			}
 		}
-
-		// Move the values from currentFootPlacement to previousFootPlacement,
-		// and reset currentFootPlacement
-		for (int f = 0; f < StepParity::NUM_Foot; f++)
+		// and check the same thing, starting with left foot
+		else if(leftHeel != -1 && previousRightHeel != -1 && previousLeftHeel == -1)
 		{
-			previousFootPlacement[f] = currentFootPlacement[f];
-			currentFootPlacement[f] = -1;
+			StepParity::StagePoint leftPos = layout.averagePoint(leftHeel, leftToe);
+			StepParity::StagePoint rightPos = layout.averagePoint(previousRightHeel, previousRightToe);
+			
+			if(rightPos.x < leftPos.x)
+			{
+				if(i > 1)
+				{
+					const StepParity::Row & previousPreviousRow = rows[i - 2];
+					if(previousPreviousRow.whereTheFeetAre[StepParity::LEFT_HEEL] != leftHeel)
+					{
+						StepParity::StagePoint previousPreviousLeftPos = layout.columns[previousPreviousRow.whereTheFeetAre[StepParity::LEFT_HEEL]];
+						if(rightPos.x > previousPreviousLeftPos.x)
+						{
+							out[TechCountsCategory_FullCrossovers] += 1;
+						}
+						else
+						{
+							out[TechCountsCategory_HalfCrossovers] += 1;
+						}
+						out[TechCountsCategory_Crossovers] += 1;
+					}
+				}
+				else
+				{
+					out[TechCountsCategory_HalfCrossovers] += 1;
+					out[TechCountsCategory_Crossovers] += 1;
+				}
+			}
 		}
-		for (int c = 0; c < currentRow.columnCount; c++)
-		{
-			previousColumns[c] = currentColumns[c];
-			currentColumns[c] = StepParity::NONE;
-		}
-		
-		previousNoteCount = noteCount;
 	}
+}
+
+bool TechCounts::isFootswitch(int c, const StepParity::Row & currentRow, const StepParity::Row & previousRow, float elapsedTime)
+{
+	if(currentRow.columns[c] == StepParity::NONE || previousRow.columns[c] == StepParity::NONE)
+	{
+		return false;
+	}
+	
+	if(previousRow.columns[c] != currentRow.columns[c]
+	   && StepParity::OTHER_PART_OF_FOOT[previousRow.columns[c]] != currentRow.columns[c]
+	   && elapsedTime < FOOTSWITCH_CUTOFF)
+	{
+		return true;
+	}
+	return false;
 }
 
 // lua start
