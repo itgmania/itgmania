@@ -258,7 +258,7 @@ bool ArchHooks_MacOSX::GoToURL( RString sUrl )
 	return result == 0;
 }
 
-std::int64_t ArchHooks::GetMicrosecondsSinceStart()
+std::int64_t ArchHooks::GetSystemTimeInMicroseconds()
 {
 	// http://developer.apple.com/qa/qa2004/qa1398.html
 	static double factor = 0.0;

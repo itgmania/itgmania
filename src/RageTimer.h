@@ -25,7 +25,8 @@ public:
 
 	static double GetTimeSinceStart();	// seconds since the program was started
 	static float GetTimeSinceStartFast() { return GetTimeSinceStart(); }
-	static std::uint64_t GetUsecsSinceStart();
+	static int GetTimeSinceStartSeconds();
+	static uint_fast64_t GetTimeSinceStartMicroseconds();
 
 	/* Get a timer representing half of the time ago as this one. */
 	RageTimer Half() const;
