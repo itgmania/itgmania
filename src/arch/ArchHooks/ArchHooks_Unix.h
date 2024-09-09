@@ -13,7 +13,7 @@ public:
 	void DumpDebugInfo();
 
 	void SetTime( tm newtime );
-	std::int64_t GetMicrosecondsSinceStart();
+	std::int64_t GetSystemTimeInMicroseconds();
 
 	void MountInitialFilesystems( const RString &sDirOfExecutable );
 	float GetDisplayAspectRatio() { return 4.0f/3; }
