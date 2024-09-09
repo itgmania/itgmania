@@ -27,36 +27,182 @@ inline T ToDerived( const TimingSegment *t, TimingSegmentType tst )
 	return static_cast<T>( t );
 }
 
-#define TimingSegmentToXWithName(Seg, SegName, SegType) \
-	inline const Seg* To##SegName( const TimingSegment *t ) \
-	{ \
-		ASSERT( t->GetType() == SegType ); \
-		return static_cast<const Seg*>( t ); \
-	} \
-	inline Seg* To##SegName( TimingSegment *t ) \
-	{ \
-		ASSERT( t->GetType() == SegType ); \
-		return static_cast<Seg*>( t ); \
-	}
+/// NOTE(sukibaby): Below is a large section of visually similar code, which all
+///  cast a TimingSegment pointer to a specific segment type.  They will ASSERT
+///  to ensure that the segment type matches the expected type.  
+/// 
+///  These segments are represented in the following functions:
+/// 
+///   - ToBPM
+///   - ToStop
+///   - ToDelay
+///   - ToTimeSignature
+///   - ToWarp
+///   - ToLabel
+///   - ToTickcount
+///   - ToCombo
+///   - ToSpeed
+///   - ToScroll
+///   - ToFake
+///  
+///  Each section is marked with a comment to indicate which segment that block is
+///  handling. You can use the following regex to find the start of each block:
+/// 
+///   ^\s*\/\/\s*(.*)
 
-#define TimingSegmentToX(Seg, SegType) \
-	TimingSegmentToXWithName(Seg##Segment, Seg, SEGMENT_##SegType)
+	// ToBPM
 
-/* ToBPM(TimingSegment*), ToTimeSignature(TimingSegment*), etc. */
-TimingSegmentToX( BPM, BPM );
-TimingSegmentToX( Stop, STOP );
-TimingSegmentToX( Delay, DELAY );
-TimingSegmentToX( TimeSignature, TIME_SIG );
-TimingSegmentToX( Warp, WARP );
-TimingSegmentToX( Label, LABEL );
-TimingSegmentToX( Tickcount, TICKCOUNT );
-TimingSegmentToX( Combo, COMBO );
-TimingSegmentToX( Speed, SPEED );
-TimingSegmentToX( Scroll, SCROLL );
-TimingSegmentToX( Fake, FAKE );
+inline const BPMSegment* ToBPM(const TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_BPM);
+	return static_cast<const BPMSegment*>(t);
+}
 
-#undef TimingSegmentToXWithName
-#undef TimingSegmentToX
+inline BPMSegment* ToBPM(TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_BPM);
+	return static_cast<BPMSegment*>(t);
+}
+
+	// ToStop
+
+inline const StopSegment* ToStop(const TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_STOP);
+	return static_cast<const StopSegment*>(t);
+}
+
+inline StopSegment* ToStop(TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_STOP);
+	return static_cast<StopSegment*>(t);
+}
+
+	// ToDelay
+
+inline const DelaySegment* ToDelay(const TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_DELAY);
+	return static_cast<const DelaySegment*>(t);
+}
+
+inline DelaySegment* ToDelay(TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_DELAY);
+	return static_cast<DelaySegment*>(t);
+}
+
+	// ToTimeSignature
+
+inline const TimeSignatureSegment* ToTimeSignature(const TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_TIME_SIG);
+	return static_cast<const TimeSignatureSegment*>(t);
+}
+
+inline TimeSignatureSegment* ToTimeSignature(TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_TIME_SIG);
+	return static_cast<TimeSignatureSegment*>(t);
+}
+
+	// ToWarp
+
+inline const WarpSegment* ToWarp(const TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_WARP);
+	return static_cast<const WarpSegment*>(t);
+}
+
+inline WarpSegment* ToWarp(TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_WARP);
+	return static_cast<WarpSegment*>(t);
+}
+
+	// ToLabel
+
+inline const LabelSegment* ToLabel(const TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_LABEL);
+	return static_cast<const LabelSegment*>(t);
+}
+
+inline LabelSegment* ToLabel(TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_LABEL);
+	return static_cast<LabelSegment*>(t);
+}
+
+	// ToTickcount
+
+inline const TickcountSegment* ToTickcount(const TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_TICKCOUNT);
+	return static_cast<const TickcountSegment*>(t);
+}
+
+inline TickcountSegment* ToTickcount(TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_TICKCOUNT);
+	return static_cast<TickcountSegment*>(t);
+}
+
+	// ToCombo
+	
+inline const ComboSegment* ToCombo(const TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_COMBO);
+	return static_cast<const ComboSegment*>(t);
+}
+
+inline ComboSegment* ToCombo(TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_COMBO);
+	return static_cast<ComboSegment*>(t);
+}
+
+	// ToSpeed
+	
+inline const SpeedSegment* ToSpeed(const TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_SPEED);
+	return static_cast<const SpeedSegment*>(t);
+}
+
+inline SpeedSegment* ToSpeed(TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_SPEED);
+	return static_cast<SpeedSegment*>(t);
+}
+
+	// ToScroll
+	
+inline const ScrollSegment* ToScroll(const TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_SCROLL);
+	return static_cast<const ScrollSegment*>(t);
+}
+
+inline ScrollSegment* ToScroll(TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_SCROLL);
+	return static_cast<ScrollSegment*>(t);
+}
+
+	// ToFake
+
+inline const FakeSegment* ToFake(const TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_FAKE);
+	return static_cast<const FakeSegment*>(t);
+}
+
+inline FakeSegment* ToFake(TimingSegment* t)
+{
+	ASSERT(t->GetType() == SEGMENT_FAKE);
+	return static_cast<FakeSegment*>(t);
+}
 
 /**
  * @brief Holds data for translating beats<->seconds.
