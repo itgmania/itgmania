@@ -301,8 +301,9 @@ void RageSoundDriver::Update()
 //		LOG->Trace("set (#%i) %p from STOPPING to HALTING", i, m_Sounds[i].m_pSound);
 	}
 
-	static float fNext = 0;
-	if( RageTimer::GetTimeSinceStart() >= fNext )
+	constexpr std::uint_fast64_t kUsecs = 1000000;
+	static std::uint_fast64_t fNextUsecs = 0;
+	if (RageTimer::GetTimeSinceStartMicroseconds() >= fNextUsecs)
 	{
 		/* Lockless: only Mix() can write to underruns. */
 		int current_underruns = underruns;
@@ -314,7 +315,7 @@ void RageSoundDriver::Update()
 
 			/* Don't log again for at least a second, or we'll burst output
 			 * and possibly cause more underruns. */
-			fNext = RageTimer::GetTimeSinceStart() + 1;
+			fNextUsecs = RageTimer::GetTimeSinceStartMicroseconds() + kUsecs;
 		}
 	}
 
@@ -493,7 +494,7 @@ std::int64_t RageSoundDriver::ClampHardwareFrame( std::int64_t iHardwareFrame ) 
 		/* Clamp the output to one per second, so one underruns don't cascade due to
 		 * output spam. */
 		static std::int64_t lastTime = 0;
-		std::int64_t currentTime = RageTimer::GetUsecsSinceStart();
+		std::int64_t currentTime = RageTimer::GetTimeSinceStartMicroseconds();
 		if( lastTime == 0 || (currentTime - lastTime) > 1000000 )
 		{
 			LOG->Trace("RageSoundDriver: driver returned a lesser position (%" PRId64 " < %" PRId64 ")", iHardwareFrame, m_iMaxHardwareFrame);
@@ -529,9 +530,9 @@ std::int64_t RageSoundDriver::GetHardwareFrame( RageTimer *pTimestamp=nullptr ) 
 
 	do
 	{
-		iStartTime = RageTimer::GetUsecsSinceStart();
+		iStartTime = RageTimer::GetTimeSinceStartMicroseconds();
 		iPositionFrames = GetPosition();
-		std::uint64_t elapsedTime = RageTimer::GetUsecsSinceStart() - iStartTime;
+		std::uint64_t elapsedTime = RageTimer::GetTimeSinceStartMicroseconds() - iStartTime;
 		if (elapsedTime <= iThreshold) break;
 	} while (--iTries);
 

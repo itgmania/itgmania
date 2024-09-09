@@ -32,14 +32,16 @@
 
 const std::uint64_t ONE_SECOND_IN_MICROSECONDS_ULL = 1000000ULL;
 const std::int64_t ONE_SECOND_IN_MICROSECONDS_LL = 1000000LL;
+const std::uint_fast64_t ONE_SECOND_IN_MICROSECONDS_FAST64 = 1000000;
 const double ONE_SECOND_IN_MICROSECONDS_DBL = 1000000.0;
 
 const RageTimer RageZeroTimer(0,0);
-static std::uint64_t g_iStartTime = ArchHooks::GetMicrosecondsSinceStart( true );
+static const std::uint64_t g_iStartTime = ArchHooks::GetSystemTimeAsMicroseconds( true );
+static std::uint_fast64_t g_iStartTimeFast64 = g_iStartTime;
 
 static std::uint64_t GetTime( bool /* bAccurate */ )
 {
-	return ArchHooks::GetMicrosecondsSinceStart( true );
+	return ArchHooks::GetSystemTimeAsMicroseconds( true );
 }
 
 /* The accuracy of RageTimer::GetTimeSinceStart() is directly tied to the
@@ -52,14 +54,19 @@ static std::uint64_t GetTime( bool /* bAccurate */ )
  * and do thorough testing if you change anything here. -sukibaby */
 double RageTimer::GetTimeSinceStart(bool bAccurate)
 {
-	std::uint64_t usecs = GetTime(bAccurate);
-	usecs -= g_iStartTime;
-	return usecs / ONE_SECOND_IN_MICROSECONDS_DBL;
+	constexpr double USEC_TO_SEC = 1.0 / 1000000.0;
+	return static_cast<double>(RageTimer::GetTimeSinceStartMicroseconds()) * USEC_TO_SEC;
 }
 
-std::uint64_t RageTimer::GetUsecsSinceStart()
+int RageTimer::GetTimeSinceStartSeconds()
 {
-	return GetTime(true) - g_iStartTime;
+    std::uint_fast64_t usec = RageTimer::GetTimeSinceStartMicroseconds();
+    return static_cast<int>(usec / ONE_SECOND_IN_MICROSECONDS_FAST64);
+}
+
+std::uint_fast64_t RageTimer::GetTimeSinceStartMicroseconds()
+{
+	return GetTime(true) - g_iStartTimeFast64;
 }
 
 void RageTimer::Touch()

@@ -86,9 +86,10 @@ void WheelNotifyIcon::Update( float fDeltaTime )
 		/* We should probably end up parsing the vector and then dynamically
 		 * insert flag icons based on "priority". Easy to do, hopefully
 			- Midiman */
-		const float fSecondFraction = std::fmod( RageTimer::GetTimeSinceStartFast(), 1 );
-		const int index = (int)(fSecondFraction*m_vIconsToShow.size());
-		Sprite::SetState( m_vIconsToShow[index] );
+        static std::uint_fast32_t updateCounter = 0;
+        updateCounter++;
+        const int index = updateCounter % m_vIconsToShow.size();
+        Sprite::SetState(m_vIconsToShow[index]);
 	}
 
 	Sprite::Update( fDeltaTime );

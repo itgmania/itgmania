@@ -101,13 +101,13 @@ float ArrowEffects::GetTime()
 	{
 	    case ModTimerType_Default:
 	    case ModTimerType_Game:
-		return (RageTimer::GetTimeSinceStartFast()+offset)*mult;
+		return (RageTimer::GetTimeSinceStart()+offset)*mult;
 	    case ModTimerType_Beat:
 		return (GAMESTATE->m_Position.m_fSongBeatVisible+offset)*mult;
 	    case ModTimerType_Song:
 		return (GAMESTATE->m_Position.m_fMusicSeconds+offset)*mult;
 	    default:
-		return RageTimer::GetTimeSinceStartFast()+offset;
+		return RageTimer::GetTimeSinceStart()+offset;
 	}
 }
 
@@ -316,7 +316,7 @@ void ArrowEffects::Init(PlayerNumber pn)
 void ArrowEffects::Update()
 {
 	static float fLastTime = 0;
-	float fTime = RageTimer::GetTimeSinceStartFast();
+	float fTime = RageTimer::GetTimeSinceStart();
 
 	FOREACH_EnabledPlayer( pn )
 	{
