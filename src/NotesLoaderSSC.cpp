@@ -419,7 +419,6 @@ void SetMeasureInfo(StepsTagInfo& info)
 		FOREACH_PlayerNumber(pn)
 		{
 			v[pn].FromString(values[pn]);
-			
 		}
 		info.steps->SetCachedMeasureInfo(v);
 	}

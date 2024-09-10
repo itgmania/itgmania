@@ -3,8 +3,7 @@
 
 #include "GameConstantsAndTypes.h"
 #include "StepParityGenerator.h"
-class NoteData;
-
+#include "NoteData.h"
 
 /** @brief Unknown radar values are given a default value. */
 #define TECHCOUNTS_VAL_UNKNOWN -1

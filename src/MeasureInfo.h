@@ -2,7 +2,7 @@
 #define MEASURE_INFO_H
 
 #include "GameConstantsAndTypes.h"
-class NoteData;
+#include "NoteData.h"
 
 /** This is a container for per-measure stats of a stepchart.
  This data is calculated and saved to the song cache files as the #MEASUREINFO tag.
@@ -30,7 +30,7 @@ struct MeasureInfo
 	}
 
 	RString ToString() const;
-	void FromString( RString sValues );
+	void FromString(const RString& sValues );
 	static void CalculateMeasureInfo(const NoteData &in, MeasureInfo &out);
 };
 

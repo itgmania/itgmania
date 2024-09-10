@@ -448,7 +448,7 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 		}
 		lines.push_back(ssprintf("#MEASUREINFO:%s;", join("|", asMeasureInfo).c_str()));
 
-		// MV: #STEPFILENAME has to be at the end of the cache tags,
+		// NOTE(MV): #STEPFILENAME has to be at the end of the cache tags,
 		// because it's used in SSCLoader::LoadFromSimfile to determine when
 		// to switch the state back to GETTING_SONG_INFO, which means any tags
 		// after it will be ignored.

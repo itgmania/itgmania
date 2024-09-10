@@ -8,7 +8,6 @@
 #include <queue>
 #include <unordered_map>
 
-
 namespace StepParity {
 
 	const float CLM_SECOND_INVALID = -1;
@@ -33,48 +32,48 @@ namespace StepParity {
 	const RString TapNoteTypeShortNames[] = { "Empty", "Tap",  "Mine",  "Attack", "AutoKeySound", "Fake", "", "" };
 	const RString TapNoteSubTypeShortNames[] = { "Hold", "Roll", "", "" };	
 
-    enum Cost
-    {
-        COST_DOUBLESTEP = 0,
-        COST_BRACKETJACK,
-        COST_JACK,
-        COST_JUMP,
+	enum Cost
+	{
+		COST_DOUBLESTEP = 0,
+		COST_BRACKETJACK,
+		COST_JACK,
+		COST_JUMP,
 		COST_SLOW_BRACKET,
 		COST_TWISTED_FOOT,
-        COST_BRACKETTAP,
-        COST_HOLDSWITCH,
-        COST_MINE,
-        COST_FOOTSWITCH,
-        COST_MISSED_FOOTSWITCH,
-        COST_FACING,
-        COST_DISTANCE,
-        COST_SPIN,
-        COST_SIDESWITCH,
-        COST_CROWDED_BRACKET ,
-        COST_OTHER,
-        COST_TOTAL,
-        NUM_Cost
-    };
-    const RString COST_LABELS[] = {
-        "DOUBLESTEP",
-        "BRACKETJACK",
-        "JACK",
-        "JUMP",
+		COST_BRACKETTAP,
+		COST_HOLDSWITCH,
+		COST_MINE,
+		COST_FOOTSWITCH,
+		COST_MISSED_FOOTSWITCH,
+		COST_FACING,
+		COST_DISTANCE,
+		COST_SPIN,
+		COST_SIDESWITCH,
+		COST_CROWDED_BRACKET ,
+		COST_OTHER,
+		COST_TOTAL,
+		NUM_Cost
+	};
+	const RString COST_LABELS[] = {
+		"DOUBLESTEP",
+		"BRACKETJACK",
+		"JACK",
+		"JUMP",
 		"SLOW_BRACKET",
 		"TWISTED_FOOT",
-        "BRACKETTAP",
-        "HOLDSWITCH",
-        "MINE",
-        "FOOTSWITCH",
-        "MISSED_FOOTSWITCH",
-        "FACING",
-        "DISTANCE",
-        "SPIN",
-        "SIDESWITCH",
-        "CROWDED_BRACKET",
-        "OTHER",
-        "TOTAL"
-    };
+		"BRACKETTAP",
+		"HOLDSWITCH",
+		"MINE",
+		"FOOTSWITCH",
+		"MISSED_FOOTSWITCH",
+		"FACING",
+		"DISTANCE",
+		"SPIN",
+		"SIDESWITCH",
+		"CROWDED_BRACKET",
+		"OTHER",
+		"TOTAL"
+	};
     
 	struct StagePoint {
 		float x;
@@ -91,12 +90,11 @@ namespace StepParity {
 		std::vector<int> downArrows;
 		std::vector<int> sideArrows;
 		
-		
 		StageLayout(StepsType t,
 					 const std::vector<StagePoint>& c,
 					 const std::vector<int> & u,
 					 const std::vector<int> & d,
-					 const std::vector<int> & s) :type(t), columns(c), upArrows(u), downArrows(d), sideArrows(s) {
+					 const std::vector<int> & s) : type(t), columns(c), upArrows(u), downArrows(d), sideArrows(s) {
 			this->columnCount = static_cast<int>(this->columns.size());
 		}
 		
@@ -126,11 +124,11 @@ namespace StepParity {
 		FootPlacement holdFeet;  // Any feet that stayed in place due to a hold/roll note.
 		float second;			 // The time of the song represented by this state
 		int rowIndex;			 // The index of the row represented by this state
-        int idx;
-        
-        int whereTheFeetAre[NUM_Foot]; // the inverse of columns
-        bool didTheFootMove[NUM_Foot]; // the inverse of movedFeet
-        bool isTheFootHolding[NUM_Foot]; //inverse of holdFeet
+		int idx;
+
+		int whereTheFeetAre[NUM_Foot]; // the inverse of columns
+		bool didTheFootMove[NUM_Foot]; // the inverse of movedFeet
+		bool isTheFootHolding[NUM_Foot]; //inverse of holdFeet
 		// These hashes are used in operator<() to speed up the comparison of the vectors.
 		// Their values are computed by calculateHashes(), which is used in StepParityGenerator::buildStateGraph().
 		int columnsHash = 0;
@@ -149,13 +147,13 @@ namespace StepParity {
 			holdFeet = FootPlacement(columnCount, NONE);
 			second = 0;
 			rowIndex = 0;
-            idx = -1;
-            for(int i = 0; i < NUM_Foot; i++)
-            {
-                whereTheFeetAre[i] = -1;
-                didTheFootMove[i] = false;
-                isTheFootHolding[i] = false;
-            }
+			idx = -1;
+			for(int i = 0; i < NUM_Foot; i++)
+			{
+				whereTheFeetAre[i] = -1;
+				didTheFootMove[i] = false;
+				isTheFootHolding[i] = false;
+			}
 		}
 		
 		Json::Value ToJson(bool useStrings);
@@ -191,14 +189,17 @@ namespace StepParity {
 	/// This shouldn't be confused with the idea of "rows" elsewhere in SM. Here, we only use
 	/// these Rows to represent a row that isn't empty.
 	struct Row {
-
-		
-		std::vector<IntermediateNoteData> notes; // notes for the given row
-		std::vector<IntermediateNoteData> holds; // Any active hold notes, including ones that started before this row
-		std::set<int> holdTails;				 // Column index of any holds that end on this row
-		std::vector<float> mines;				 // If a mine occurred either on this row, or on a row on its own immediately
-												 // preceding this one, the time of when that mine occurred, indexed by column.
-		std::vector<float> fakeMines;			 // The same thing, but for fake mines
+		// notes for the given row
+		std::vector<IntermediateNoteData> notes;
+		// Any active hold notes, including ones that started before this row
+		std::vector<IntermediateNoteData> holds;
+		// Column index of any holds that end on this row
+		std::set<int> holdTails;
+		// If a mine occurred either on this row, or on a row on its own immediately
+		// preceding this one, the time of when that mine occurred, indexed by column.
+		std::vector<float> mines;
+		// The same thing, but for fake mines
+		std::vector<float> fakeMines;
 
 		FootPlacement columns;
 		std::vector<int> whereTheFeetAre;
@@ -235,24 +236,30 @@ namespace StepParity {
 	/// @brief A counter used while creating rows
 	struct RowCounter
 	{
-		std::vector<IntermediateNoteData> notes; 		// Notes for the "current" row being generated
-		std::vector<IntermediateNoteData> activeHolds;	// Any holds that are active for the current row
+		// Notes for the "current" row being generated
+		std::vector<IntermediateNoteData> notes;
+		// Any holds that are active for the current row
+		std::vector<IntermediateNoteData> activeHolds;
 		float lastColumnSecond = CLM_SECOND_INVALID;
 		float lastColumnBeat = CLM_SECOND_INVALID;
 
-		std::vector<float> mines;						// The time at which a mine occurred for the current row,
-														// indexed by column
-		std::vector<float> fakeMines;					// The time at which a fake mine occurred for the current row,
-														// indexed by column
-		
-		std::vector<float> nextMines;					// The time at which a mine occurred in the _previous_ row,
-														// indexed by column
-		std::vector<float> nextFakeMines;				// The time at which a fake mine occurred in the _previous_ row,
-														// indexed by column
-		int noteCount = 0;								// number of "notes" added to the counter for the current row.
+		// The time at which a mine occurred for the current row,
+		// indexed by column
+		std::vector<float> mines;
+		// The time at which a fake mine occurred for the current row,
+		// indexed by column
+		std::vector<float> fakeMines;
+
+		// The time at which a mine occurred in the _previous_ row,
+		// indexed by column
+		std::vector<float> nextMines;
+		// The time at which a fake mine occurred in the _previous_ row,
+		// indexed by column
+		std::vector<float> nextFakeMines;
+		// number of "notes" added to the counter for the current row.
+		int noteCount = 0;
 		RowCounter(int columnCount)
 		{
-
 			notes = std::vector<IntermediateNoteData>(columnCount);
 			activeHolds = std::vector<IntermediateNoteData>(columnCount);
 			mines = std::vector<float>(columnCount, 0);
@@ -270,10 +277,12 @@ namespace StepParity {
 	/// following row of the step chart.
 	struct StepParityNode
 	{
-		int id = 0;	// The index of this node in its graph
+		// The index of this node in its graph
+		int id = 0;
 		State state;
 
-		std::unordered_map<StepParityNode *, float*> neighbors; // Connections to, and the cost of moving to, the connected nodes
+		// Connections to, and the cost of moving to, the connected nodes
+		std::unordered_map<StepParityNode *, float*> neighbors;
 		
 		~StepParityNode()
 		{
@@ -313,17 +322,18 @@ namespace StepParity {
 		std::vector<std::map<State, StepParityNode *, StateComparator>> stateNodeMap;
 
 	public:
-		StepParityNode * startNode;	// This represents the very start of the song, before any notes
-		StepParityNode *endNode;	// This represents the end of the song, after all of the notes
+		// This represents the very start of the song, before any notes
+		StepParityNode * startNode;
+		// This represents the end of the song, after all of the notes
+		StepParityNode *endNode;
 
 		~StepParityGraph()
 		{
-            states.clear();
+			states.clear();
 			for(StepParityNode * node: nodes)
 			{
 				delete node;
 			}
-            
 		}
 
 		/// @brief Returns a pointer to a StepParityNode that represents the given state within the graph.
@@ -332,7 +342,8 @@ namespace StepParity {
 		/// @return
 		StepParityNode *addOrGetExistingNode(const State &state);
 
-		void addEdge(StepParityNode* from, StepParityNode* to, float* costs) {
+		void addEdge(StepParityNode* from, StepParityNode* to, float* costs)
+		{
 			from->neighbors[to] = costs;
 		}
 
@@ -348,8 +359,6 @@ namespace StepParity {
 			return nodes[index];
 		}
 	};
-
-
 };
 
 #endif

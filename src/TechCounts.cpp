@@ -8,7 +8,6 @@
 #include "GameState.h"
 #include "RageTimer.h"
 
-
 static const char *TechCountsCategoryNames[] = {
 	"Crossovers",
 	"HalfCrossovers",
@@ -26,7 +25,6 @@ XToString( TechCountsCategory );
 XToLocalizedString( TechCountsCategory );
 LuaFunction(TechCountsCategoryToLocalizedString, TechCountsCategoryToLocalizedString(Enum::Check<TechCountsCategory>(L, 1)) );
 LuaXType( TechCountsCategory );
-
 
 // 0.176 ~= 1/8th at 175bpm
 // Anything slower isn't counted as a jack
@@ -90,9 +88,7 @@ void TechCounts::FromString( RString sTechCounts )
 	{
 		(*this)[rc] = StringToFloat(saValues[rc]);
 	}
-
 }
-
 
 void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, StepParity::StageLayout & layout, TechCounts &out)
 {
@@ -103,17 +99,15 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 			
 		float elapsedTime = currentRow.second - previousRow.second;
 		
-		/*
-		Jacks are same arrow same foot
-		Doublestep is same foot on successive arrows
-		Brackets are jumps with one foot
+		// Jacks are same arrow same foot
+		// Doublestep is same foot on successive arrows
+		// Brackets are jumps with one foot
 
-		Footswitch is different foot on the up or down arrow
-		Sideswitch is footswitch on left or right arrow
-		Crossovers are left foot on right arrow or vice versa
-		*/
+		// Footswitch is different foot on the up or down arrow
+		// Sideswitch is footswitch on left or right arrow
+		// Crossovers are left foot on right arrow or vice versa
 
-		// check for jacks and doublesteps
+		// Check for jacks and doublesteps
 		if(currentRow.noteCount == 1 && previousRow.noteCount == 1)
 		{
 			for (StepParity::Foot foot: StepParity::FEET)
@@ -140,7 +134,7 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 			}
 		}
 
-		// check for brackets
+		// Check for brackets
 		if(currentRow.noteCount >= 2)
 		{
 			if(currentRow.whereTheFeetAre[StepParity::LEFT_HEEL] != -1 && currentRow.whereTheFeetAre[StepParity::LEFT_TOE] != -1)
@@ -183,7 +177,6 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 		}
 		
 		// Check for crossovers
-		
 		int leftHeel = currentRow.whereTheFeetAre[StepParity::LEFT_HEEL];
 		int leftToe = currentRow.whereTheFeetAre[StepParity::LEFT_TOE];
 		int rightHeel = currentRow.whereTheFeetAre[StepParity::RIGHT_HEEL];
@@ -235,7 +228,7 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 				}
 			}
 		}
-		// and check the same thing, starting with left foot
+		// And check the same thing, starting with left foot
 		else if(leftHeel != -1 && previousRightHeel != -1 && previousLeftHeel == -1)
 		{
 			StepParity::StagePoint leftPos = layout.averagePoint(leftHeel, leftToe);
@@ -287,12 +280,9 @@ bool TechCounts::isFootswitch(int c, const StepParity::Row & currentRow, const S
 }
 
 // lua start
-
 class LunaTechCounts: public Luna<TechCounts>
 {
 public:
-
-
 	static int GetValue( T* p, lua_State *L ) { lua_pushnumber( L, (*p)[Enum::Check<TechCountsCategory>(L, 1)] ); return 1; }
 
 	LunaTechCounts()

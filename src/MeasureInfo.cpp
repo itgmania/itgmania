@@ -24,7 +24,7 @@ RString MeasureInfo::ToString() const
 	return join(",", asMeasureInfo);
 }
 
-void MeasureInfo::FromString(RString sValues)
+void MeasureInfo::FromString(const RString& sValues)
 {
 	std::vector<RString> asValues;
 	split( sValues, ",", asValues, true );

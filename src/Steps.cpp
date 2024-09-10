@@ -332,8 +332,7 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 	this->GetNoteData( tempNoteData );
 
 	FOREACH_PlayerNumber(pn)
-		m_CachedRadarValues[pn]
-			.Zero();
+		m_CachedRadarValues[pn].Zero();
 
 	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
 	if( tempNoteData.IsComposite() )
@@ -389,7 +388,7 @@ void Steps::CalculateTechCounts()
 		m_CachedTechCounts[pn]
 			.Zero();
 
-	
+
 	// If we don't have a valid layout for this StepsType, then don't even bother
 	if(StepParity::Layouts.find(this->m_StepsType) == StepParity::Layouts.end())
 	{
@@ -1045,8 +1044,8 @@ public:
 		ADD_METHOD( HasAttacks );
 		ADD_METHOD( GetRadarValues );
 		ADD_METHOD( GetTechCounts );
-		ADD_METHOD(CalculateTechCounts);
-		ADD_METHOD(GetTimingData);
+		ADD_METHOD( CalculateTechCounts );
+		ADD_METHOD( GetTimingData );
 		ADD_METHOD( GetChartName );
 		//ADD_METHOD( GetSMNoteData );
 		ADD_METHOD( GetStepsType );
