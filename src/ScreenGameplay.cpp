@@ -1583,7 +1583,7 @@ void ScreenGameplay::UpdateSongPosition( float fDeltaTime )
 		return;
 
 	RageTimer tm;
-	const float fSeconds = m_pSoundMusic->GetPositionSeconds( nullptr, &tm );
+	const float fSeconds = m_pSoundMusic->GetPositionSeconds( &tm );
 	const float fAdjust = SOUND->GetFrameTimingAdjustment( fDeltaTime );
 	GAMESTATE->UpdateSongPosition( fSeconds+fAdjust, GAMESTATE->m_pCurSong->m_SongTiming, tm+fAdjust );
 }

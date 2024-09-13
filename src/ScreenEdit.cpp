@@ -1660,7 +1660,7 @@ void ScreenEdit::Update( float fDeltaTime )
 	if( m_pSoundMusic->IsPlaying() )
 	{
 		RageTimer tm;
-		const float fSeconds = m_pSoundMusic->GetPositionSeconds( nullptr, &tm );
+		const float fSeconds = m_pSoundMusic->GetPositionSeconds( &tm );
 		GAMESTATE->UpdateSongPosition( fSeconds, GAMESTATE->m_pCurSong->m_SongTiming, tm );
 	}
 

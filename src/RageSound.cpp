@@ -473,16 +473,13 @@ float RageSound::GetLengthSeconds()
 	return iLength / 1000.f; // ms -> secs
 }
 
-int RageSound::GetSourceFrameFromHardwareFrame( std::int64_t iHardwareFrame, bool *bApproximate ) const
+int RageSound::GetSourceFrameFromHardwareFrame( std::int64_t iHardwareFrame ) const
 {
 	if( m_HardwareToStreamMap.IsEmpty() || m_StreamToSourceMap.IsEmpty() )
 		return 0;
 
-	// TODO(sukibaby): The nullptrs passed to the functions below are part of a gradual
-	// procedure to remove bApproximate from the code base. Until it's fully removed,
-	// this will remain nullptr for now. In the future, these nullptr's should be removed.
-	std::int64_t iStreamFrame = m_HardwareToStreamMap.Search( iHardwareFrame, nullptr );
-	return static_cast<int>(m_StreamToSourceMap.Search( iStreamFrame, nullptr ));
+	std::int64_t iStreamFrame = m_HardwareToStreamMap.Search( iHardwareFrame );
+	return static_cast<int>(m_StreamToSourceMap.Search( iStreamFrame ));
 }
 
 /* If non-nullptr, approximate is set to true if the returned time is approximated because of
@@ -492,7 +489,7 @@ int RageSound::GetSourceFrameFromHardwareFrame( std::int64_t iHardwareFrame, boo
  * position.  We might take a variable amount of time before grabbing the timestamp (to
  * lock SOUNDMAN); we might lose the scheduler after grabbing it, when releasing SOUNDMAN.
  */
-float RageSound::GetPositionSeconds( bool *bApproximate, RageTimer *pTimestamp ) const
+float RageSound::GetPositionSeconds( RageTimer *pTimestamp ) const
 {
 	// Get our current hardware position.
 	std::int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition(pTimestamp);
@@ -514,7 +511,7 @@ float RageSound::GetPositionSeconds( bool *bApproximate, RageTimer *pTimestamp )
 		return static_cast<float>(m_iStoppedSourceFrame) / fSampleRate;
 	}
 
-	int iSourceFrame = GetSourceFrameFromHardwareFrame( iCurrentHardwareFrame, bApproximate );
+	int iSourceFrame = GetSourceFrameFromHardwareFrame( iCurrentHardwareFrame );
 	return static_cast<float>(iSourceFrame) / fSampleRate;
 }
 
