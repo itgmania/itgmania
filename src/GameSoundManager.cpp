@@ -601,12 +601,10 @@ void GameSoundManager::Update( float fDeltaTime )
 	}
 
 	/* There's a delay between us calling Play() and the sound actually playing.
-	 * During this time, m_bApproximate will be true.  Keep using the previous timing
-	 * data until we get a non-approximate time, indicating that the sound has actually
-	 * started playing. */
-	bool m_bApproximate;
+	 * Keep using the previous timing data until we get a non-approximate time,
+	 * indicating that the sound has actually started playing. */
 	RageTimer tm;
-	const float fSeconds = g_Playing->m_Music->GetPositionSeconds( &m_bApproximate, &tm );
+	const float fSeconds = g_Playing->m_Music->GetPositionSeconds( &tm );
 
 	// Check for song timing skips.
 	if( PREFSMAN->m_bLogSkips && !g_Playing->m_bTimingDelayed )
@@ -627,7 +625,7 @@ void GameSoundManager::Update( float fDeltaTime )
 
 	// If g_Playing->m_bTimingDelayed, we're waiting for the new music to actually start
 	// playing.
-	if( g_Playing->m_bTimingDelayed && !m_bApproximate )
+	if( g_Playing->m_bTimingDelayed )
 	{
 		/* Load up the new timing data. */
 		g_Playing->m_Timing = g_Playing->m_NewTiming;

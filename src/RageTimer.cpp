@@ -35,11 +35,11 @@ const std::int64_t ONE_SECOND_IN_MICROSECONDS_LL = 1000000LL;
 const double ONE_SECOND_IN_MICROSECONDS_DBL = 1000000.0;
 
 const RageTimer RageZeroTimer(0,0);
-static std::uint64_t g_iStartTime = ArchHooks::GetMicrosecondsSinceStart( true );
+static std::uint64_t g_iStartTime = ArchHooks::GetMicrosecondsSinceStart();
 
-static std::uint64_t GetTime( bool /* bAccurate */ )
+static std::uint64_t GetTime()
 {
-	return ArchHooks::GetMicrosecondsSinceStart( true );
+	return ArchHooks::GetMicrosecondsSinceStart();
 }
 
 /* The accuracy of RageTimer::GetTimeSinceStart() is directly tied to the
@@ -50,21 +50,21 @@ static std::uint64_t GetTime( bool /* bAccurate */ )
  * values truncated or rounded when they shouldn't be can cause errors when
  * this is calculated and manifest as a _sudden_ drift of sync. Use caution
  * and do thorough testing if you change anything here. -sukibaby */
-double RageTimer::GetTimeSinceStart(bool bAccurate)
+double RageTimer::GetTimeSinceStart()
 {
-	std::uint64_t usecs = GetTime(bAccurate);
+	std::uint64_t usecs = GetTime();
 	usecs -= g_iStartTime;
 	return usecs / ONE_SECOND_IN_MICROSECONDS_DBL;
 }
 
 std::uint64_t RageTimer::GetUsecsSinceStart()
 {
-	return GetTime(true) - g_iStartTime;
+	return GetTime() - g_iStartTime;
 }
 
 void RageTimer::Touch()
 {
-	std::uint64_t usecs = GetTime( true );
+	std::uint64_t usecs = GetTime();
 
 	this->m_secs = std::uint64_t(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
 	this->m_us = std::uint64_t(usecs % ONE_SECOND_IN_MICROSECONDS_ULL);

@@ -131,7 +131,7 @@ public:
 	bool Pause( bool bPause );
 
 	float GetLengthSeconds();
-	float GetPositionSeconds( bool *approximate=nullptr, RageTimer *Timestamp=nullptr ) const;
+	float GetPositionSeconds( RageTimer *Timestamp=nullptr ) const;
 	RString GetLoadedFilePath() const { return m_sFilePath; }
 	bool IsPlaying() const { return m_bPlaying; }
 
@@ -175,7 +175,7 @@ private:
 
 	RString m_sError;
 
-	int GetSourceFrameFromHardwareFrame( std::int64_t iHardwareFrame, bool *bApproximate = nullptr ) const;
+	int GetSourceFrameFromHardwareFrame( std::int64_t iHardwareFrame ) const;
 
 	bool SetPositionFrames( int frames = -1 );
 	RageSoundParams::StopMode_t GetStopMode() const; // resolves M_AUTO

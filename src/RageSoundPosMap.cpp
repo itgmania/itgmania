@@ -108,7 +108,7 @@ void pos_map_impl::Cleanup()
 	m_Queue.erase(m_Queue.begin(), it);
 }
 
-std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame, bool *bApproximate ) const
+std::int64_t pos_map_queue::Search( std::int64_t iSourceFrame ) const
 {
 	if( IsEmpty() )
 	{

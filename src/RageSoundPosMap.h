@@ -19,7 +19,7 @@ public:
 	void Insert( std::int64_t iSourceFrame, std::int64_t iFrames, std::int64_t iDestFrame, double fSourceToDestRatio = 1.0 );
 
 	/* Return the iDestFrame for the given iSourceFrame. */
-	std::int64_t Search( std::int64_t iSourceFrame, bool *bApproximate ) const;
+	std::int64_t Search( std::int64_t iSourceFrame ) const;
 
 	/* Erase all mappings. */
 	void Clear();
