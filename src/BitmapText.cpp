@@ -672,8 +672,44 @@ bool BitmapText::EarlyAbortDraw() const
 	return m_wTextLines.empty();
 }
 
-// draw text at x, y using colorTop blended down to colorBottom, with size multiplied by scale
-void BitmapText::DrawPrimitives()
+// constexpr functions used for operations on vertices in DrawPrimitives
+namespace {
+	inline void SetVertexColor(std::vector<RageSpriteVertex>& vertices, size_t i, const RageColor* color)
+	{
+		vertices[i + 0].c = color[0];
+		vertices[i + 1].c = color[2];
+		vertices[i + 2].c = color[3];
+		vertices[i + 3].c = color[1];
+	}
+
+	inline void ApplyJitter(std::vector<RageSpriteVertex>& vertices, size_t i, const RageVector3& jitter)
+	{
+		vertices[i + 0].p += jitter;
+		vertices[i + 1].p += jitter;
+		vertices[i + 2].p += jitter;
+		vertices[i + 3].p += jitter;
+	}
+
+	inline void UndoJitter(std::vector<RageSpriteVertex>& vertices, size_t i, const RageVector3& jitter)
+	{
+		vertices[i + 0].p -= jitter;
+		vertices[i + 1].p -= jitter;
+		vertices[i + 2].p -= jitter;
+		vertices[i + 3].p -= jitter;
+	}
+
+	constexpr size_t ClampToVertexSize(size_t iEnd, size_t verticesSize)
+	{
+		return (iEnd < verticesSize) ? iEnd : verticesSize;
+	}
+
+	constexpr size_t CalculateEndIndex(bool isEnd, size_t verticesSize, size_t iterFirst)
+	{
+		return isEnd ? verticesSize : iterFirst * 4;
+	}
+}  // namespace
+
+void BitmapText::DrawPrimitives() noexcept
 {
 	Actor::SetGlobalRenderStates(); // set Actor-specified render states
 	DISPLAY->SetTextureMode( TextureUnit_1, TextureMode_Modulate );
@@ -689,20 +725,24 @@ void BitmapText::DrawPrimitives()
 
 			RageColor c = m_ShadowColor;
 			c.a *= m_pTempState->diffuse[0].a;
-			for( unsigned i=0; i<m_aVertices.size(); i++ )
-				m_aVertices[i].c = c;
+			
+			for (auto& vertex : m_aVertices)
+			{
+				vertex.c = c;
+			}
+			
 			DrawChars( false );
 
 			DISPLAY->PopMatrix();
 		}
 
 		// render the stroke
-		RageColor stroke_color= GetCurrStrokeColor();
+		RageColor stroke_color = GetCurrStrokeColor();
 		if( stroke_color.a > 0 )
 		{
 			stroke_color.a *= m_pTempState->diffuse[0].a;
-			for( unsigned i=0; i<m_aVertices.size(); i++ )
-				m_aVertices[i].c = stroke_color;
+			for (auto& vertex : m_aVertices)
+				vertex.c = stroke_color;
 			DrawChars( true );
 		}
 
@@ -710,10 +750,10 @@ void BitmapText::DrawPrimitives()
 		if( m_bRainbowScroll )
 		{
 			int color_index = (GetRandomInt() % RAINBOW_COLORS.size());
-			for( unsigned i=0; i<m_aVertices.size(); i+=4 )
+			for (size_t i = 0; i < m_aVertices.size(); i += 4)
 			{
 				const RageColor color = RAINBOW_COLORS[color_index];
-				for( unsigned j=i; j<i+4; j++ )
+				for (size_t j = i; j < i + 4; j++)
 					m_aVertices[j].c = color;
 
 				color_index = (color_index+1) % RAINBOW_COLORS.size();
@@ -726,14 +766,11 @@ void BitmapText::DrawPrimitives()
 			while( i < m_aVertices.size() )
 			{
 				// Set the colors up to the next attribute.
-				std::size_t iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
-				iEnd = std::min( iEnd, m_aVertices.size() );
-				for( ; i < iEnd; i += 4 )
+				size_t iEnd = CalculateEndIndex(iter == m_mAttributes.end(), m_aVertices.size(), iter->first);
+				iEnd = ClampToVertexSize(iEnd, m_aVertices.size());
+				for (; i < iEnd; i += 4)
 				{
-					m_aVertices[i+0].c = m_pTempState->diffuse[0];	// top left
-					m_aVertices[i+1].c = m_pTempState->diffuse[2];	// bottom left
-					m_aVertices[i+2].c = m_pTempState->diffuse[3];	// bottom right
-					m_aVertices[i+3].c = m_pTempState->diffuse[1];	// top right
+					SetVertexColor(m_aVertices, i, m_pTempState->diffuse);
 				}
 				if( iter == m_mAttributes.end() )
 					break;
@@ -741,10 +778,10 @@ void BitmapText::DrawPrimitives()
 				const Attribute &attr = iter->second;
 				++iter;
 				if( attr.length < 0 )
-					iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
+					iEnd = CalculateEndIndex(iter == m_mAttributes.end(), m_aVertices.size(), iter->first);
 				else
 					iEnd = i + attr.length*4;
-				iEnd = std::min( iEnd, m_aVertices.size() );
+				iEnd = ClampToVertexSize(iEnd, m_aVertices.size());
 				std::vector<RageColor> temp_attr_diffuse(NUM_DIFFUSE_COLORS, m_internalDiffuse);
 				for(std::size_t c= 0; c < NUM_DIFFUSE_COLORS; ++c)
 				{
@@ -756,10 +793,7 @@ void BitmapText::DrawPrimitives()
 				}
 				for( ; i < iEnd; i += 4 )
 				{
-					m_aVertices[i+0].c = temp_attr_diffuse[0];	// top left
-					m_aVertices[i+1].c = temp_attr_diffuse[2];	// bottom left
-					m_aVertices[i+2].c = temp_attr_diffuse[3];	// bottom right
-					m_aVertices[i+3].c = temp_attr_diffuse[1];	// top right
+					SetVertexColor(m_aVertices, i, attr.diffuse);
 				}
 			}
 		}
@@ -768,15 +802,12 @@ void BitmapText::DrawPrimitives()
 		std::vector<RageVector3> vGlyphJitter;
 		if( m_bJitter )
 		{
-			for( unsigned i=0; i<m_aVertices.size(); i+=4 )
+			for (size_t i = 0; i < m_aVertices.size(); i += 4)
 			{
 				RageVector3 jitter( GetRandomInt() % 2, GetRandomInt() % 3, 0);
 				vGlyphJitter.push_back( jitter );
 
-				m_aVertices[i+0].p += jitter;	// top left
-				m_aVertices[i+1].p += jitter;	// bottom left
-				m_aVertices[i+2].p += jitter;	// bottom right
-				m_aVertices[i+3].p += jitter;	// top right
+				ApplyJitter(m_aVertices, i, jitter);
 			}
 		}
 
@@ -786,14 +817,11 @@ void BitmapText::DrawPrimitives()
 		if( m_bJitter )
 		{
 			ASSERT( vGlyphJitter.size() == m_aVertices.size()/4 );
-			for( unsigned i=0; i<m_aVertices.size(); i+=4 )
+			for (size_t i = 0; i < m_aVertices.size(); i += 4)
 			{
 				const RageVector3 &jitter = vGlyphJitter[i/4];;
 
-				m_aVertices[i+0].p -= jitter;	// top left
-				m_aVertices[i+1].p -= jitter;	// bottom left
-				m_aVertices[i+2].p -= jitter;	// bottom right
-				m_aVertices[i+3].p -= jitter;	// top right
+				UndoJitter(m_aVertices, i, jitter);
 			}
 		}
 	}
@@ -804,24 +832,28 @@ void BitmapText::DrawPrimitives()
 		DISPLAY->SetTextureMode( TextureUnit_1, TextureMode_Glow );
 
 		std::size_t i = 0;
-		std::map<std::size_t,Attribute>::const_iterator iter = m_mAttributes.begin();
+		auto iter = m_mAttributes.begin();
 		while( i < m_aVertices.size() )
 		{
 			// Set the glow up to the next attribute.
-			std::size_t iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
-			iEnd = std::min( iEnd, m_aVertices.size() );
+			std::size_t iEnd = CalculateEndIndex(iter == m_mAttributes.end(), m_aVertices.size(), iter->first);
+			iEnd = ClampToVertexSize(iEnd, m_aVertices.size());
 			for( ; i < iEnd; ++i )
+			{
 				m_aVertices[i].c = m_pTempState->glow;
+			}
 			if( iter == m_mAttributes.end() )
+			{
 				break;
+			}
 			// Set the glow according to this attribute.
 			const Attribute &attr = iter->second;
 			++iter;
 			if( attr.length < 0 )
-				iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
+				iEnd = CalculateEndIndex(iter == m_mAttributes.end(), m_aVertices.size(), iter->first);
 			else
 				iEnd = i + attr.length*4;
-			iEnd = std::min( iEnd, m_aVertices.size() );
+			iEnd = ClampToVertexSize(iEnd, m_aVertices.size());
 			for( ; i < iEnd; ++i )
 			{
 				if( m_internalGlow.a > 0 )
@@ -875,7 +907,7 @@ void BitmapText::AddAttribute( std::size_t iPos, const Attribute &attr )
 {
 	// Fixup position for new lines.
 	Attribute newAttr = attr;
-	auto lineIter = m_wTextLines.cbegin();
+	std::vector<std::wstring>::const_iterator lineIter = m_wTextLines.cbegin();
 
 	int iLines = 0;
 	std::size_t iAdjustedPos = iPos;

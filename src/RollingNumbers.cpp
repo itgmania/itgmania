@@ -43,7 +43,7 @@ void RollingNumbers::DrawPart(RageColor const* diffuse, RageColor const& stroke,
 	BitmapText::DrawPrimitives();
 }
 
-void RollingNumbers::DrawPrimitives()
+void RollingNumbers::DrawPrimitives() noexcept
 {
 	if(!m_metrics_loaded)
 	{

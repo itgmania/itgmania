@@ -15,7 +15,7 @@ public:
 
 	void DrawPart(RageColor const* diffuse, RageColor const& stroke,
 		float crop_left, float crop_right);
-	virtual void DrawPrimitives();
+	virtual void DrawPrimitives() noexcept;
 	virtual void Update( float fDeltaTime );
 
 	/** 
