@@ -28,8 +28,6 @@ REGISTER_ACTOR_CLASS( BitmapText );
  * a waste, when we're usually setting them all to the same value. Rainbow and
  * fading are annoying to optimize, but rarely used. Iterating over every
  * character in Draw() is dumb. */
-#define NUM_RAINBOW_COLORS	THEME->GetMetricI("BitmapText","NumRainbowColors")
-#define RAINBOW_COLOR(n)	THEME->GetMetricC("BitmapText",ssprintf("RainbowColor%i", n+1))
 
 static std::vector<RageColor> RAINBOW_COLORS;
 
@@ -40,9 +38,11 @@ BitmapText::BitmapText()
 	static int iReloadCounter = 0;
 	if( iReloadCounter % 20==0 )
 	{
-		RAINBOW_COLORS.resize( NUM_RAINBOW_COLORS );
-		for( unsigned i = 0; i < RAINBOW_COLORS.size(); ++i )
-			RAINBOW_COLORS[i] = RAINBOW_COLOR(i);
+		RAINBOW_COLORS.resize(THEME->GetMetricI("BitmapText", "NumRainbowColors"));
+		for (unsigned i = 0; i < RAINBOW_COLORS.size(); ++i)
+		{
+			RAINBOW_COLORS[i] = THEME->GetMetricC("BitmapText", ssprintf("RainbowColor%i", i + 1));
+		}
 	}
 	iReloadCounter++;
 
