@@ -598,28 +598,44 @@ void BitmapText::UpdateBaseZoom()
 	// Never apply a zoom greater than 1.
 	// Factor in the non-base zoom so that maxwidth will be in terms of theme
 	// pixels when zoom is used.
-#define APPLY_DIMENSION_ZOOM(dimension_max, dimension_get, dimension_zoom_get, base_zoom_set) \
-	if(dimension_max == 0) \
-	{ \
-		base_zoom_set(1); \
-	} \
-	else \
-	{ \
-		float dimension= dimension_get(); \
-		if(m_MaxDimensionUsesZoom) \
-		{ \
-			dimension/= dimension_zoom_get(); \
-		} \
-		if(dimension != 0) \
-		{ \
-			const float zoom= std::fmin(1, dimension_max / dimension); \
-			base_zoom_set(zoom); \
-		} \
+
+	constexpr float maxZoom = 1.0f;
+
+	if (m_fMaxWidth == 0)
+	{
+		SetBaseZoomX(1);
+	}
+	else
+	{
+		float width = GetUnzoomedWidth();
+		if (m_MaxDimensionUsesZoom)
+		{
+			width /= GetZoomX();
+		}
+		if (width != 0)
+		{
+			const float zoom = std::fmin(maxZoom, m_fMaxWidth / width);
+			SetBaseZoomX(zoom);
+		}
 	}
 
-	APPLY_DIMENSION_ZOOM(m_fMaxWidth, GetUnzoomedWidth, GetZoomX, SetBaseZoomX);
-	APPLY_DIMENSION_ZOOM(m_fMaxHeight, GetUnzoomedHeight, GetZoomY, SetBaseZoomY);
-#undef APPLY_DIMENSION_ZOOM
+	if (m_fMaxHeight == 0)
+	{
+		SetBaseZoomY(1);
+	}
+	else
+	{
+		float height = GetUnzoomedHeight();
+		if (m_MaxDimensionUsesZoom)
+		{
+			height /= GetZoomY();
+		}
+		if (height != 0)
+		{
+			const float zoom = std::fmin(maxZoom, m_fMaxHeight / height);
+			SetBaseZoomY(zoom);
+		}
+	}
 }
 
 bool BitmapText::StringWillUseAlternate( const RString& sText, const RString& sAlternateText ) const
