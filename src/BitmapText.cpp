@@ -79,29 +79,27 @@ BitmapText & BitmapText::operator=(const BitmapText &cpy)
 {
 	Actor::operator=(cpy);
 
-#define CPY(a) a = cpy.a
-	CPY( m_bUppercase );
-	CPY( m_sText );
-	CPY( m_wTextLines );
-	CPY( m_iLineWidths );
-	CPY( m_iWrapWidthPixels );
-	CPY( m_fMaxWidth );
-	CPY( m_fMaxHeight );
-	CPY( m_bRainbowScroll );
-	CPY( m_bJitter );
-	CPY( m_fDistortion );
-	CPY( m_bUsingDistortion );
-	CPY( m_mult_attrs_with_diffuse );
-	CPY( m_iVertSpacing );
-	CPY( m_MaxDimensionUsesZoom );
-	CPY( m_aVertices );
-	CPY( m_vpFontPageTextures );
-	CPY( m_mAttributes );
-	CPY( m_bHasGlowAttribute );
-	CPY( BMT_Tweens );
-	CPY( BMT_current );
-	CPY( BMT_start );
-#undef CPY
+	m_bUppercase = cpy.m_bUppercase;
+	m_sText = cpy.m_sText;
+	m_wTextLines = cpy.m_wTextLines;
+	m_iLineWidths = cpy.m_iLineWidths;
+	m_iWrapWidthPixels = cpy.m_iWrapWidthPixels;
+	m_fMaxWidth = cpy.m_fMaxWidth;
+	m_fMaxHeight = cpy.m_fMaxHeight;
+	m_bRainbowScroll = cpy.m_bRainbowScroll;
+	m_bJitter = cpy.m_bJitter;
+	m_fDistortion = cpy.m_fDistortion;
+	m_bUsingDistortion = cpy.m_bUsingDistortion;
+	m_mult_attrs_with_diffuse = cpy.m_mult_attrs_with_diffuse;
+	m_iVertSpacing = cpy.m_iVertSpacing;
+	m_MaxDimensionUsesZoom = cpy.m_MaxDimensionUsesZoom;
+	m_aVertices = cpy.m_aVertices;
+	m_vpFontPageTextures = cpy.m_vpFontPageTextures;
+	m_mAttributes = cpy.m_mAttributes;
+	m_bHasGlowAttribute = cpy.m_bHasGlowAttribute;
+	BMT_Tweens = cpy.BMT_Tweens;
+	BMT_current = cpy.BMT_current;
+	BMT_start = cpy.BMT_start;
 
 	if( m_pFont )
 		FONT->UnloadFont( m_pFont );
