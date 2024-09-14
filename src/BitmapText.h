@@ -70,7 +70,7 @@ public:
 	void CropToWidth(int width);
 
 	virtual bool EarlyAbortDraw() const override;
-	virtual void DrawPrimitives() override;
+	virtual void DrawPrimitives() noexcept override;
 
 	void SetUppercase( bool b );
 	void SetRainbowScroll( bool b )	{ m_bRainbowScroll = b; }
