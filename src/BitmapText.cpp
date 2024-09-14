@@ -643,13 +643,13 @@ bool BitmapText::StringWillUseAlternate( const RString& sText, const RString& sA
 	return true;
 }
 
-void BitmapText::CropLineToWidth(std::size_t l, int width)
+void BitmapText::CropLineToWidth(size_t l, int width)
 {
 	if(l < m_wTextLines.size())
 	{
 		int used_width= width;
 		std::wstring& line= m_wTextLines[l];
-		const std::size_t fit= m_pFont->GetGlyphsThatFit(line, &used_width);
+		const size_t fit= m_pFont->GetGlyphsThatFit(line, &used_width);
 		if(fit < line.size())
 		{
 			line.erase(line.begin()+fit, line.end());
@@ -660,7 +660,7 @@ void BitmapText::CropLineToWidth(std::size_t l, int width)
 
 void BitmapText::CropToWidth(int width)
 {
-	for(std::size_t l= 0; l < m_wTextLines.size(); ++l)
+	for(size_t l= 0; l < m_wTextLines.size(); ++l)
 	{
 		CropLineToWidth(l, width);
 	}
@@ -761,8 +761,8 @@ void BitmapText::DrawPrimitives() noexcept
 		}
 		else
 		{
-			std::size_t i = 0;
-			std::map<std::size_t,Attribute>::const_iterator iter = m_mAttributes.begin();
+			size_t i = 0;
+			std::map<size_t,Attribute>::const_iterator iter = m_mAttributes.begin();
 			while( i < m_aVertices.size() )
 			{
 				// Set the colors up to the next attribute.
@@ -783,7 +783,7 @@ void BitmapText::DrawPrimitives() noexcept
 					iEnd = i + attr.length*4;
 				iEnd = ClampToVertexSize(iEnd, m_aVertices.size());
 				std::vector<RageColor> temp_attr_diffuse(NUM_DIFFUSE_COLORS, m_internalDiffuse);
-				for(std::size_t c= 0; c < NUM_DIFFUSE_COLORS; ++c)
+				for(size_t c= 0; c < NUM_DIFFUSE_COLORS; ++c)
 				{
 					temp_attr_diffuse[c]*= attr.diffuse[c];
 					if(m_mult_attrs_with_diffuse)
@@ -831,12 +831,12 @@ void BitmapText::DrawPrimitives() noexcept
 	{
 		DISPLAY->SetTextureMode( TextureUnit_1, TextureMode_Glow );
 
-		std::size_t i = 0;
+		size_t i = 0;
 		auto iter = m_mAttributes.begin();
 		while( i < m_aVertices.size() )
 		{
 			// Set the glow up to the next attribute.
-			std::size_t iEnd = CalculateEndIndex(iter == m_mAttributes.end(), m_aVertices.size(), iter->first);
+			size_t iEnd = CalculateEndIndex(iter == m_mAttributes.end(), m_aVertices.size(), iter->first);
 			iEnd = ClampToVertexSize(iEnd, m_aVertices.size());
 			for( ; i < iEnd; ++i )
 			{
@@ -903,18 +903,18 @@ BitmapText::Attribute BitmapText::GetDefaultAttribute() const
 	return attr;
 }
 
-void BitmapText::AddAttribute( std::size_t iPos, const Attribute &attr )
+void BitmapText::AddAttribute( size_t iPos, const Attribute &attr )
 {
 	// Fixup position for new lines.
 	Attribute newAttr = attr;
 	std::vector<std::wstring>::const_iterator lineIter = m_wTextLines.cbegin();
 
 	int iLines = 0;
-	std::size_t iAdjustedPos = iPos;
+	size_t iAdjustedPos = iPos;
 
 	for( ; lineIter != m_wTextLines.cend(); ++lineIter )
 	{
-		std::size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
+		size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
 		if( length > iAdjustedPos )
 			break;
 		iAdjustedPos -= length;
@@ -924,10 +924,10 @@ void BitmapText::AddAttribute( std::size_t iPos, const Attribute &attr )
 	if( newAttr.length > 0 )
 	{
 		// Fixup length for new lines.
-		std::size_t iAdjustedEndPos = iAdjustedPos + newAttr.length;
+		size_t iAdjustedEndPos = iAdjustedPos + newAttr.length;
 		for( ; lineIter != m_wTextLines.cend(); ++lineIter )
 		{
-			std::size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
+			size_t length = lineIter->length() + 1; // +1 to account for implicit newline at the end
 			if( length > iAdjustedEndPos || newAttr.length == 0 )
 				break;
 			iAdjustedEndPos -= length;
@@ -939,8 +939,8 @@ void BitmapText::AddAttribute( std::size_t iPos, const Attribute &attr )
 		return;
 
 	// Check if there are existing attributes overlapping this one. We might need to remove or fix them up.
-	const std::size_t iStartPos = iPos - iLines;
-	const std::size_t iEndPos = iStartPos + newAttr.length;
+	const size_t iStartPos = iPos - iLines;
+	const size_t iEndPos = iStartPos + newAttr.length;
 
 	// First attribute starting at the same position or further than the new attribute
 	const auto iterFirstAfterStart = m_mAttributes.lower_bound( iStartPos );
@@ -1082,7 +1082,7 @@ public:
 	static int GetText( T* p, lua_State *L )		{ lua_pushstring( L, p->GetText() ); return 1; }
 	static int AddAttribute( T* p, lua_State *L )
 	{
-		std::size_t iPos = IArg(1);
+		size_t iPos = IArg(1);
 		BitmapText::Attribute attr = p->GetDefaultAttribute();
 
 		attr.FromStack( L, 2 );
