@@ -235,7 +235,7 @@ int RageSoundReader_Merge::Read( float *pBuffer, int iFrames )
 
 	RageSoundMixBuffer mix;
 	float Buffer[2048];
-	iFrames = std::min( iFrames, (int) (ARRAYLEN(Buffer) / m_iChannels) );
+	iFrames = FastMin(iFrames, static_cast<int>(ArrayLenInt(Buffer) / m_iChannels));
 
 	/* Read iFrames from each sound. */
 	for( unsigned i = 0; i < m_aSounds.size(); ++i )

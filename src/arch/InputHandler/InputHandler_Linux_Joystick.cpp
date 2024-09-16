@@ -81,7 +81,7 @@ bool InputHandler_Linux_Joystick::TryDevice(RString dev)
 		if(f.fd != -1)
 		{
 			char szName[1024];
-			ZERO( szName );
+			ZeroArray( szName );
 			if( ioctl(f.fd, JSIOCGNAME(sizeof(szName)), szName) < 0 )
 				f.description = ssprintf( "Unknown joystick at %s", dev.c_str() );
 			else

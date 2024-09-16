@@ -60,7 +60,7 @@ BOOL CSmpackageApp::InitInstance()
 
 
 	TCHAR szCurrentDirectory[MAX_PATH];
-	GetCurrentDirectory( ARRAYLEN(szCurrentDirectory), szCurrentDirectory );
+	GetCurrentDirectory( ArrayLenInt(szCurrentDirectory), szCurrentDirectory );
 	if( CAN_INSTALL_PACKAGES && SMPackageUtil::IsValidInstallDir(szCurrentDirectory) )
 	{
 		SMPackageUtil::AddGameInstallDir( szCurrentDirectory );	// add this if it doesn't already exist

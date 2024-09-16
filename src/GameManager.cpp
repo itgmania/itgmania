@@ -102,7 +102,7 @@ static const StepsTypeInfo g_StepsTypeInfos[] = {
 	{ "kickbox-insect", 6, true, StepsTypeCategory_Single },
 	{ "kickbox-arachnid", 8, true, StepsTypeCategory_Single },
 };
-static_assert( ARRAYLEN(g_StepsTypeInfos) == NUM_StepsType, "ARRAYLEN(g_StepsTypeInfos) != NUM_StepsType" );
+static_assert((sizeof(g_StepsTypeInfos) / sizeof((g_StepsTypeInfos)[0])) == NUM_StepsType, "ARRAYLEN(g_StepsTypeInfos) != NUM_StepsType");
 
 // Important:  Every game must define the buttons: "Start", "Back", "MenuLeft", "Operator" and "MenuRight"
 static const AutoMappings g_AutoKeyMappings_Dance = AutoMappings (
@@ -3270,7 +3270,8 @@ void GameManager::GetStylesForGame( const Game *pGame, std::vector<const Style*>
 
 const Game *GameManager::GetGameForStyle( const Style *pStyle )
 {
-	for( std::size_t g=0; g<ARRAYLEN(g_Games); ++g )
+	const std::size_t iArrayLen = ArrayLenSizeT(g_Games);
+	for( std::size_t g=0; g<iArrayLen; ++g )
 	{
 		const Game *pGame = g_Games[g];
 		for( int s=0; pGame->m_apStyles[s]; ++s )
@@ -3284,7 +3285,8 @@ const Game *GameManager::GetGameForStyle( const Style *pStyle )
 
 const Style* GameManager::GetEditorStyleForStepsType( StepsType st )
 {
-	for( std::size_t g=0; g<ARRAYLEN(g_Games); ++g )
+	const std::size_t iArrayLen = ArrayLenSizeT(g_Games);
+	for( std::size_t g=0; g<iArrayLen; ++g )
 	{
 		const Game *pGame = g_Games[g];
 		for( int s=0; pGame->m_apStyles[s]; ++s )
@@ -3395,7 +3397,8 @@ const Style *GameManager::GetFirstCompatibleStyle( const Game *pGame, int iNumPl
 
 void GameManager::GetEnabledGames( std::vector<const Game*>& aGamesOut )
 {
-	for( std::size_t g=0; g<ARRAYLEN(g_Games); ++g )
+	const std::size_t iArrayLen = ArrayLenSizeT(g_Games);
+	for( std::size_t g=0; g<iArrayLen; ++g )
 	{
 		const Game *pGame = g_Games[g];
 		if( IsGameEnabled( pGame ) )
@@ -3408,7 +3411,8 @@ const Game* GameManager::GetDefaultGame()
 	const Game *pDefault = nullptr;
 	if( pDefault == nullptr )
 	{
-		for( std::size_t i=0; pDefault == nullptr && i < ARRAYLEN(g_Games); ++i )
+		const std::size_t iArrayLen = ArrayLenSizeT(g_Games);
+		for( std::size_t i=0; pDefault == nullptr && i < iArrayLen; ++i )
 		{
 			if( IsGameEnabled(g_Games[i]) )
 				pDefault = g_Games[i];
@@ -3423,7 +3427,8 @@ const Game* GameManager::GetDefaultGame()
 
 int GameManager::GetIndexFromGame( const Game* pGame )
 {
-	for( std::size_t g=0; g<ARRAYLEN(g_Games); ++g )
+	const std::size_t iArrayLen = ArrayLenSizeT(g_Games);
+	for( std::size_t g=0; g<iArrayLen; ++g )
 	{
 		if( g_Games[g] == pGame )
 			return g;
@@ -3434,7 +3439,7 @@ int GameManager::GetIndexFromGame( const Game* pGame )
 const Game* GameManager::GetGameFromIndex( int index )
 {
 	ASSERT( index >= 0 );
-	ASSERT( index < (int) ARRAYLEN(g_Games) );
+	ASSERT( index < ArrayLenInt(g_Games) );
 	return g_Games[index];
 }
 
@@ -3472,7 +3477,8 @@ RString GameManager::StyleToLocalizedString( const Style* style )
 
 const Game* GameManager::StringToGame( RString sGame )
 {
-	for( std::size_t i=0; i<ARRAYLEN(g_Games); ++i )
+	const std::size_t iArrayLen = ArrayLenSizeT(g_Games);
+	for( std::size_t i=0; i<iArrayLen; ++i )
 		if( !sGame.CompareNoCase(g_Games[i]->m_szName) )
 			return g_Games[i];
 

@@ -58,8 +58,8 @@ void PlayerStageStats::InternalInit()
 	m_iNumControllerSteps = 0;
 	m_fCaloriesBurned = 0;
 
-	ZERO( m_iTapNoteScores );
-	ZERO( m_iHoldNoteScores );
+	ZeroArray( m_iTapNoteScores );
+	ZeroArray( m_iHoldNoteScores );
 	m_radarPossible.Zero();
 	m_radarActual.Zero();
 

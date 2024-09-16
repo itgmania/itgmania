@@ -69,7 +69,7 @@ public:
 		m_bRequirePassChallengeSteps(false), m_bRoulette(false),
 		m_sEntryID(RString(""))
 	{
-		ZERO( m_fRequirement );
+		ZeroArray( m_fRequirement );
 	}
 
 	UnlockRewardType m_Type;

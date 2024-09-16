@@ -231,7 +231,7 @@ void ScreenEvaluation::Init()
 	}
 	m_pStageStats = &STATSMAN->m_vPlayedStageStats.back();
 
-	ZERO( m_bSavedScreenshot );
+	ZeroArray( m_bSavedScreenshot );
 
 	// Figure out which statistics and songs we're going to display
 	SUMMARY.Load( m_sName, "Summary" );

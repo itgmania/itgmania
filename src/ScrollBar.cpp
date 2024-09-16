@@ -24,7 +24,8 @@ ScrollBar::ScrollBar()
 	m_sprScrollTickThumb.Load( THEME->GetPathG(sMetricsGroup,"TickThumb") );
 	this->AddChild( m_sprScrollTickThumb );
 
-	for( unsigned i=0; i<ARRAYLEN(m_sprScrollStretchThumb); i++ )
+	const unsigned iArrayLen = ArrayLenUnsigned(m_sprScrollStretchThumb);
+	for( unsigned i=0; i<iArrayLen; i++ )
 	{
 		m_sprScrollStretchThumb[i].Load( THEME->GetPathG(sMetricsGroup,"StretchThumb") );
 		this->AddChild( m_sprScrollStretchThumb[i] );
@@ -40,7 +41,8 @@ void ScrollBar::SetBarHeight( int iHeight )
 	m_sprTop->SetY( -m_iBarHeight/2.0f );
 	m_sprBottom->SetY( +m_iBarHeight/2.0f );
 	m_sprScrollTickThumb->SetY( 0 );
-	for( unsigned i=0; i<ARRAYLEN(m_sprScrollStretchThumb); i++ )
+	const unsigned iArrayLen = ArrayLenUnsigned(m_sprScrollStretchThumb);
+	for( unsigned i=0; i<iArrayLen; i++ )
 		m_sprScrollStretchThumb[i]->SetY( 0 );
 }
 
@@ -84,7 +86,8 @@ void ScrollBar::SetPercentage( float fCenterPercent, float fSizePercent )
 		fPartBottomY[1] = (((1.0f) - (0.0f)) * ((+iBarContentHeight / 2.0f) - (-iBarContentHeight / 2.0f)) / ((1.0f) - (0.0f)) + (-iBarContentHeight / 2.0f));
 	}
 
-	for( unsigned i=0; i<ARRAYLEN(m_sprScrollStretchThumb); i++ )
+	const unsigned iArrayLen = ArrayLenUnsigned(m_sprScrollStretchThumb);
+	for( unsigned i=0; i<iArrayLen; i++ )
 	{
 		RectF rect(
 			-m_sprScrollStretchThumb[i]->GetUnzoomedWidth()/2,

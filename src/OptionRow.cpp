@@ -41,7 +41,7 @@ OptionRow::OptionRow( const OptionRowType *pSource )
 	m_pHand = nullptr;
 
 	m_textTitle = nullptr;
-	ZERO( m_ModIcons );
+	ZeroArray( m_ModIcons );
 
 	Clear();
 	this->AddChild( &m_Frame );
@@ -74,8 +74,8 @@ void OptionRow::Clear()
 	SAFE_DELETE( m_pHand );
 
 	m_bFirstItemGoesDown = false;
-	ZERO( m_bRowHasFocus );
-	ZERO( m_iChoiceInRowWithFocus );
+	ZeroArray( m_bRowHasFocus );
+	ZeroArray( m_iChoiceInRowWithFocus );
 }
 
 void OptionRowType::Load( const RString &sMetricsGroup, Actor *pParent )
@@ -842,7 +842,7 @@ void OptionRow::Reload()
 	if( m_pHand->m_Def.m_bExportOnChange )
 	{
 		bool bRowHasFocus[NUM_PLAYERS];
-		ZERO( bRowHasFocus );
+		ZeroArray( bRowHasFocus );
 		ExportOptions( vpns, bRowHasFocus );
 	}
 	*/
@@ -880,7 +880,7 @@ void OptionRow::Reload()
 	if( m_pHand->m_Def.m_bExportOnChange )
 	{
 		bool bRowHasFocus[NUM_PLAYERS];
-		ZERO( bRowHasFocus );
+		ZeroArray( bRowHasFocus );
 		ExportOptions( vpns, bRowHasFocus );
 	}
 	*/

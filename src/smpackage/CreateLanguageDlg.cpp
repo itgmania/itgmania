@@ -45,7 +45,8 @@ BOOL CreateLanguageDlg::OnInitDialog()
 	// TODO: Add extra initialization here
 	DialogUtil::LocalizeDialogAndContents( *this );
 
-	for( int i = 0; i < ARRAYLEN(g_aListedLanguageCodes); ++i )
+	const int iArrayLen = ArrayLenInt(g_aListedLanguageCodes);
+	for( int i = 0; i < iArrayLen); ++i )
 	{
 		RString s = SMPackageUtil::GetLanguageDisplayString(g_aListedLanguageCodes[i]);
 		RString sLanguage = ConvertUTF8ToACP( s );

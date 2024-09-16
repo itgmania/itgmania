@@ -73,10 +73,10 @@ void PlayerOptions::Init()
 	m_fTimeSpacing = 0;		m_SpeedfTimeSpacing = 1.0f;
 	m_fScrollSpeed = 1.0f;		m_SpeedfScrollSpeed = 1.0f;
 	m_fScrollBPM = CMOD_DEFAULT;		m_SpeedfScrollBPM = 1.0f;
-	ZERO( m_fAccels );		ONE( m_SpeedfAccels );
-	ZERO( m_fEffects );		ONE( m_SpeedfEffects );
-	ZERO( m_fAppearances );		ONE( m_SpeedfAppearances );
-	ZERO( m_fScrolls );		ONE( m_SpeedfScrolls );
+	ZeroArray( m_fAccels );		SetArrayToOne( m_SpeedfAccels );
+	ZeroArray( m_fEffects );		SetArrayToOne( m_SpeedfEffects );
+	ZeroArray( m_fAppearances );		SetArrayToOne( m_SpeedfAppearances );
+	ZeroArray( m_fScrolls );		SetArrayToOne( m_SpeedfScrolls );
 	m_fDark = 0;			m_SpeedfDark = 1.0f;
 	m_fBlind = 0;			m_SpeedfBlind = 1.0f;
 	m_fCover = 0;			m_SpeedfCover = 1.0f;
@@ -91,8 +91,8 @@ void PlayerOptions::Init()
 	m_fModTimerOffset = 0;		m_SpeedfModTimerOffset = 1.0f;
 	m_fDrawSize = 0;		m_SpeedfDrawSize = 1.0f;
 	m_fDrawSizeBack = 0;		m_SpeedfDrawSizeBack = 1.0f;
-	ZERO( m_bTurns );
-	ZERO( m_bTransforms );
+	ZeroArray( m_bTurns );
+	ZeroArray( m_bTransforms );
 	m_bMuteOnError = false;
 	m_bStealthType = false;
 	m_bStealthPastReceptors = false;
@@ -102,17 +102,17 @@ void PlayerOptions::Init()
 	m_sNoteSkin = "";
 	m_fVisualDelay = 0.0f;
 	m_twDisabledWindows.reset();
-	ZERO( m_fMovesX );		ONE( m_SpeedfMovesX );
-	ZERO( m_fMovesY );		ONE( m_SpeedfMovesY );
-	ZERO( m_fMovesZ );		ONE( m_SpeedfMovesZ );
-	ZERO( m_fConfusionX );		ONE( m_SpeedfConfusionX );
-	ZERO( m_fConfusionY );		ONE( m_SpeedfConfusionY );
-	ZERO( m_fConfusionZ );		ONE( m_SpeedfConfusionZ );
-	ZERO( m_fDarks );		ONE( m_SpeedfDarks );
-	ZERO( m_fStealth );		ONE( m_SpeedfStealth );
-	ZERO( m_fTiny );		ONE( m_SpeedfTiny );
-	ZERO( m_fBumpy );		ONE( m_SpeedfBumpy );
-	ZERO( m_fReverse );		ONE( m_SpeedfReverse );
+	ZeroArray( m_fMovesX );		SetArrayToOne( m_SpeedfMovesX );
+	ZeroArray( m_fMovesY );		SetArrayToOne( m_SpeedfMovesY );
+	ZeroArray( m_fMovesZ );		SetArrayToOne( m_SpeedfMovesZ );
+	ZeroArray( m_fConfusionX );		SetArrayToOne( m_SpeedfConfusionX );
+	ZeroArray( m_fConfusionY );		SetArrayToOne( m_SpeedfConfusionY );
+	ZeroArray( m_fConfusionZ );		SetArrayToOne( m_SpeedfConfusionZ );
+	ZeroArray( m_fDarks );		SetArrayToOne( m_SpeedfDarks );
+	ZeroArray( m_fStealth );		SetArrayToOne( m_SpeedfStealth );
+	ZeroArray( m_fTiny );		SetArrayToOne( m_SpeedfTiny );
+	ZeroArray( m_fBumpy );		SetArrayToOne( m_SpeedfBumpy );
+	ZeroArray( m_fReverse );		SetArrayToOne( m_SpeedfReverse );
 
 }
 
@@ -1026,7 +1026,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	}
 	else if( sBit == "blink" )				SET_FLOAT( fAppearances[APPEARANCE_BLINK] )
 	else if( sBit == "randomvanish" )			SET_FLOAT( fAppearances[APPEARANCE_RANDOMVANISH] )
-	else if( sBit == "turn" && !on )			ZERO( m_bTurns ); /* "no turn" */
+	else if( sBit == "turn" && !on )			ZeroArray( m_bTurns ); /* "no turn" */
 	else if( sBit == "mirror" )				m_bTurns[TURN_MIRROR] = on;
 	else if( sBit == "lrmirror" )				m_bTurns[TURN_LRMIRROR] = on;
 	else if( sBit == "udmirror" )				m_bTurns[TURN_UDMIRROR] = on;
@@ -1350,32 +1350,32 @@ PlayerOptions::Scroll PlayerOptions::GetFirstScroll()
 
 void PlayerOptions::SetOneAccel( Accel a )
 {
-	ZERO( m_fAccels );
+	ZeroArray( m_fAccels );
 	m_fAccels[a] = 1;
 }
 
 void PlayerOptions::SetOneEffect( Effect e )
 {
-	ZERO( m_fEffects );
+	ZeroArray( m_fEffects );
 	m_fEffects[e] = 1;
 }
 
 void PlayerOptions::SetOneAppearance( Appearance a )
 {
-	ZERO( m_fAppearances );
+	ZeroArray( m_fAppearances );
 	m_fAppearances[a] = 1;
 }
 
 void PlayerOptions::SetOneScroll( Scroll s )
 {
-	ZERO( m_fScrolls );
+	ZeroArray( m_fScrolls );
 	m_fScrolls[s] = 1;
 }
 
 void PlayerOptions::ToggleOneTurn( Turn t )
 {
 	bool bWasOn = m_bTurns[t];
-	ZERO( m_bTurns );
+	ZeroArray( m_bTurns );
 	m_bTurns[t] = !bWasOn;
 }
 

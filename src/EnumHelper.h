@@ -80,7 +80,7 @@ const RString &EnumToString( int iVal, int iMax, const char **szNameArray, std::
 
 #define XToString(X) \
 const RString& X##ToString(X x); \
-static_assert( NUM_##X == ARRAYLEN(X##Names) ); \
+static_assert( NUM_##X == (sizeof(X##Names) / sizeof((X##Names)[0])) ); \
 const RString& X##ToString( X x ) \
 {	\
 	static std::unique_ptr<RString> as_##X##Name[NUM_##X+2]; \
@@ -107,7 +107,7 @@ const RString &X##ToLocalizedString( X x ) \
 X StringTo##X(const RString&); \
 X StringTo##X( const RString& s ) \
 {	\
-	for( unsigned i = 0; i < ARRAYLEN(X##Names); ++i )	\
+	for( unsigned i = 0; i < (sizeof(X##Names) / sizeof((X##Names)[0])); ++i )	\
 		if( !s.CompareNoCase(X##Names[i]) )	\
 			return (X)i;	\
 	return X##_Invalid;	\

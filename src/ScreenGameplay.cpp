@@ -2154,8 +2154,8 @@ void ScreenGameplay::UpdateLights()
 
 	bool bBlinkCabinetLight[NUM_CabinetLight];
 	bool bBlinkGameButton[NUM_GameController][NUM_GameButton];
-	ZERO( bBlinkCabinetLight );
-	ZERO( bBlinkGameButton );
+	ZeroArray( bBlinkCabinetLight );
+	ZeroArray( bBlinkGameButton );
 	{
 		const float fSongBeat = GAMESTATE->m_Position.m_fLightSongBeat;
 		const int iSongRow = BeatToNoteRowNotRounded( fSongBeat );

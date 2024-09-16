@@ -72,7 +72,9 @@ RageSoundMixBuffer &RageSoundDriver::MixIntoBuffer( int iFrames, std::int64_t iF
 
 	static RageSoundMixBuffer mix;
 
-	for( unsigned i = 0; i < ARRAYLEN(m_Sounds); ++i )
+	unsigned iArrayLen = ArrayLenUnsigned(m_Sounds);
+	unsigned i = 0;
+	for( i = 0; i < iArrayLen; ++i )
 	{
 		/* s.m_pSound can not safely be accessed from here. */
 		Sound &s = m_Sounds[i];
@@ -206,7 +208,9 @@ void RageSoundDriver::DecodeThread()
 		LockMut( m_Mutex );
 //		LOG->Trace("begin mix");
 
-		for( unsigned i = 0; i < ARRAYLEN(m_Sounds); ++i )
+		unsigned iArrayLen = ArrayLenUnsigned(m_Sounds);
+		unsigned i = 0;
+		for( i = 0; i < iArrayLen; ++i )
 		{
 			if( m_Sounds[i].m_State != Sound::PLAYING )
 				continue;
@@ -244,7 +248,7 @@ int RageSoundDriver::GetDataForSound( Sound &s )
 	ASSERT( psize[0] > 0 );
 
 	sound_block *pBlock = p[0];
-	int size = ARRAYLEN(pBlock->m_Buffer)/channels;
+	int size = ArrayLenInt(pBlock->m_Buffer)/channels;
 	int iRet = s.m_pSound->GetDataToPlay( pBlock->m_Buffer, size, pBlock->m_iPosition, pBlock->m_FramesInBuffer );
 	if( iRet > 0 )
 	{
@@ -262,7 +266,9 @@ int RageSoundDriver::GetDataForSound( Sound &s )
 void RageSoundDriver::Update()
 {
 	m_Mutex.Lock();
-	for( unsigned i = 0; i < ARRAYLEN(m_Sounds); ++i )
+	unsigned iArrayLen = ArrayLenUnsigned(m_Sounds);
+	unsigned i = 0;
+	for( i = 0; i < iArrayLen; ++i )
 	{
 		{
 			Sound::QueuedPosMap p;
@@ -326,11 +332,13 @@ void RageSoundDriver::StartMixing( RageSoundBase *pSound )
 	/* Lock available m_Sounds[], and reserve a slot. */
 	m_SoundListMutex.Lock();
 
-	unsigned i;
-	for( i = 0; i < ARRAYLEN(m_Sounds); ++i )
+	const unsigned iArrayLen = ArrayLenUnsigned(m_Sounds);
+
+	unsigned i = 0;
+	for( i = 0; i < iArrayLen; ++i )
 		if( m_Sounds[i].m_State == Sound::AVAILABLE )
 			break;
-	if( i == ARRAYLEN(m_Sounds) )
+	if( i == iArrayLen )
 	{
 		m_SoundListMutex.Unlock();
 		return;
@@ -374,11 +382,13 @@ void RageSoundDriver::StopMixing( RageSoundBase *pSound )
 	m_Mutex.Lock();
 
 	/* Find the sound. */
-	unsigned i;
-	for( i = 0; i < ARRAYLEN(m_Sounds); ++i )
+	const unsigned iArrayLen = ArrayLenUnsigned(m_Sounds);
+
+	unsigned i = 0;
+	for( i = 0; i < iArrayLen; ++i )
 		if( m_Sounds[i].m_State != Sound::AVAILABLE && m_Sounds[i].m_pSound == pSound )
 			break;
-	if( i == ARRAYLEN(m_Sounds) )
+	if( i == iArrayLen )
 	{
 		m_Mutex.Unlock();
 		LOG->Trace( "not stopping a sound because it's not playing" );
@@ -415,15 +425,17 @@ bool RageSoundDriver::PauseMixing( RageSoundBase *pSound, bool bStop )
 	LockMut( m_Mutex );
 
 	/* Find the sound. */
-	unsigned i;
-	for( i = 0; i < ARRAYLEN(m_Sounds); ++i )
+	const unsigned iArrayLen = ArrayLenUnsigned(m_Sounds);
+
+	unsigned i = 0;
+	for( i = 0; i < iArrayLen; ++i )
 		if( m_Sounds[i].m_State != Sound::AVAILABLE && m_Sounds[i].m_pSound == pSound )
 			break;
 
 	/* A sound can be paused in PLAYING or STOPPING.  (STOPPING means the sound
 	 * has been decoded to the end, and we're waiting for that data to finish, so
 	 * externally it looks and acts like PLAYING.) */
-	if( i == ARRAYLEN(m_Sounds) ||
+	if( i == iArrayLen ||
 		(m_Sounds[i].m_State != Sound::PLAYING && m_Sounds[i].m_State != Sound::STOPPING) )
 	{
 		LOG->Trace( "not pausing a sound because it's not playing" );

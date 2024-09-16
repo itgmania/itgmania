@@ -231,11 +231,11 @@ bool CodeDetector::DetectAndAdjustMusicOptions( GameController controller )
 			case CODE_DARK:				FLOAT_TOGGLE( po.m_fDark );				break;
 			case CODE_CANCEL_ALL:			GAMESTATE->GetDefaultPlayerOptions( po );		break;
 			case CODE_HIDDEN:
-				ZERO(po.m_fAppearances);
+				ZeroArray(po.m_fAppearances);
 				po.m_fAppearances[PlayerOptions::APPEARANCE_HIDDEN] = 1;
 				break;
 			case CODE_RANDOMVANISH:
-				ZERO(po.m_fAppearances);
+				ZeroArray(po.m_fAppearances);
 				po.m_fAppearances[PlayerOptions::APPEARANCE_RANDOMVANISH] = 1;
 				break;
 			default:	break;

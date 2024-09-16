@@ -477,7 +477,7 @@ static bool D3DReduceParams( D3DPRESENT_PARAMETERS *pp )
 
 static void SetPresentParametersFromVideoModeParams( const VideoModeParams &p, D3DPRESENT_PARAMETERS *pD3Dpp )
 {
-	ZERO( *pD3Dpp );
+	ZeroArray( *pD3Dpp );
 
 	pD3Dpp->BackBufferWidth		= p.width;
 	pD3Dpp->BackBufferHeight	= p.height;
@@ -1321,7 +1321,7 @@ void RageDisplay_D3D::SetLightDirectional(
 	g_pd3dDevice->LightEnable( index, true );
 
 	D3DLIGHT9 light;
-	ZERO( light );
+	ZeroArray( light );
 	light.Type = D3DLIGHT_DIRECTIONAL;
 
 	/* Z for lighting is flipped for D3D compared to OpenGL.

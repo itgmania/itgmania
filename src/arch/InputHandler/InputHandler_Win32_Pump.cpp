@@ -71,7 +71,9 @@ void InputHandler_Win32_Pump::HandleInput( int iDevice, int iEvent )
 
 	InputDevice id = InputDevice( DEVICE_PUMP1 + iDevice );
 
-	for( int iButton = 0; iButton < ARRAYLEN(bits); ++iButton )
+	const int iArrayLen = ArrayLenInt(bits);
+
+	for( int iButton = 0; iButton < iArrayLen; ++iButton )
 	{
 		DeviceInput di( id, enum_add2(JOY_BUTTON_1, iButton), !(iEvent & bits[iButton]) );
 

@@ -132,9 +132,14 @@ int OptionToPreferredColumn( RString sOptionText )
 		return 0;
 	}
 
-	for( unsigned i=0; i<ARRAYLEN(g_OptionColumnEntries); i++ )
-		if( g_OptionColumnEntries[i].szString == sOptionText )
-			return g_OptionColumnEntries[i].iSlotIndex;
+	const unsigned iArrayLen = ArrayLenUnsigned(g_OptionColumnEntries);
+    for (unsigned i = 0; i < iArrayLen; i++)
+    {
+        if (g_OptionColumnEntries[i].szString == sOptionText)
+        {
+            return g_OptionColumnEntries[i].iSlotIndex;
+        }
+    }
 
 	// This warns about C1234 and noteskins.
 //	LOG->Warn("Unknown option: '%s'", sOptionText.c_str() );

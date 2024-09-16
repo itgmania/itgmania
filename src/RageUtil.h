@@ -21,12 +21,39 @@ class RageFileDriver;
 /** @brief Safely delete array pointers. */
 #define SAFE_DELETE_ARRAY(p) do { delete[] (p);   (p)=nullptr; } while( false )
 
-/** @brief Zero out the memory. */
-#define ZERO(x)	memset(&(x), 0, sizeof(x))
-/** @brief Copy from a to b. */
-#define COPY(a,b) do { ASSERT(sizeof(a)==sizeof(b)); memcpy(&(a), &(b), sizeof(a)); } while( false )
-/** @brief Get the length of the array. */
-#define ARRAYLEN(a) (sizeof(a) / sizeof((a)[0]))
+// A constexpr function to initialize an array to zero.
+template <typename T>
+constexpr void ZeroArray(T& x) noexcept
+{
+    std::memset(&x, 0, sizeof(x));
+}
+
+// Get the length of an array without using .size() as a size_t
+template <typename T, std::size_t N>
+constexpr std::size_t ArrayLenSizeT(const T (&)[N]) noexcept
+{
+    return N;
+}
+
+// Get the length of an array without using .size() as an unsigned int
+template <typename T, std::size_t N>
+constexpr unsigned ArrayLenUnsigned(const T (&)[N]) noexcept
+{
+    return static_cast<unsigned>(N);
+}
+
+// Get the length of an array without using .size() as an int
+template <typename T, std::size_t N>
+constexpr int ArrayLenInt(const T (&)[N]) noexcept
+{
+    return static_cast<int>(N);
+}
+
+// A constexpr function to use where std::min might fail due to being different types.
+constexpr int FastMin(int a, int b)
+{
+    return (a < b) ? a : b;
+}
 
 extern const RString CUSTOM_SONG_PATH;
 

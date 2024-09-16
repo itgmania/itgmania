@@ -120,7 +120,7 @@ static RageSurfaceUtils::OpenResult LoadBMP( RageFile &f, RageSurface *&img, RSt
 	if( iBPP == 8 )
 	{
 		RageSurfaceColor Palette[256];
-		ZERO( Palette );
+		ZeroArray( Palette );
 
 		if( iColors > 256 )
 			FATAL_ERROR( ssprintf( "unexpected colors %i", iColors ) );

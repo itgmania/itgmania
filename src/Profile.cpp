@@ -191,8 +191,8 @@ void Profile::InitGeneralData()
 	for( int i=0; i<MAX_METER+1; i++ )
 		m_iNumSongsPlayedByMeter[i] = 0;
 	m_iNumTotalSongsPlayed = 0;
-	ZERO( m_iNumStagesPassedByPlayMode );
-	ZERO( m_iNumStagesPassedByGrade );
+	ZeroArray( m_iNumStagesPassedByPlayMode );
+	ZeroArray( m_iNumStagesPassedByGrade );
 
 	m_UserTable.Unset();
 }

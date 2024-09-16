@@ -275,10 +275,10 @@ void ScreenSelectMusic::BeginScreen()
 	m_MusicWheel.BeginScreen();
 
 	m_SelectionState = SelectionState_SelectingSong;
-	ZERO( m_bStepsChosen );
+	ZeroArray( m_bStepsChosen );
 	m_bGoToOptions = false;
 	m_bAllowOptionsMenu = m_bAllowOptionsMenuRepeat = false;
-	ZERO( m_iSelection );
+	ZeroArray( m_iSelection );
 
 	if( USE_OPTIONS_LIST )
 		FOREACH_PlayerNumber( pn )

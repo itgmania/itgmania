@@ -402,7 +402,9 @@ static EffectMode EffectModes[] =
 {
 	EffectMode_YUYV422,
 };
-static_assert( ARRAYLEN(EffectModes) == NUM_PixelFormatYCbCr );
+// Ensure that the number of EffectModes matches the number of PixelFormatYCbCr formats
+constexpr std::size_t NumEffectModes = sizeof(EffectModes) / sizeof(EffectModes[0]);
+static_assert( NumEffectModes == NUM_PixelFormatYCbCr );
 
 EffectMode MovieTexture_Generic::GetEffectMode( MovieDecoderPixelFormatYCbCr fmt )
 {

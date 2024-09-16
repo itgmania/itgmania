@@ -33,7 +33,7 @@ static const Game::PerButtonInfo g_CommonButtonInfo[] =
 
 const Game::PerButtonInfo *Game::GetPerButtonInfo( GameButton gb ) const
 {
-	static_assert( GAME_BUTTON_NEXT == ARRAYLEN(g_CommonButtonInfo) );
+	static_assert(GAME_BUTTON_NEXT == (sizeof(g_CommonButtonInfo) / sizeof((g_CommonButtonInfo)[0])));
 	if( gb < GAME_BUTTON_NEXT )
 		return &g_CommonButtonInfo[gb];
 	else

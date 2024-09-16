@@ -637,13 +637,15 @@ static const LanguageInfo g_langs[] =
 
 void GetLanguageInfos( std::vector<const LanguageInfo*> &vAddTo )
 {
-	for( unsigned i=0; i<ARRAYLEN(g_langs); ++i )
+	const unsigned iArrayLen = ArrayLenUnsigned(g_langs);
+	for( unsigned i=0; i<iArrayLen; ++i )
 		vAddTo.push_back( &g_langs[i] );
 }
 
 const LanguageInfo *GetLanguageInfo( const RString &sIsoCode )
 {
-	for( unsigned i=0; i<ARRAYLEN(g_langs); ++i )
+	const unsigned iArrayLen = ArrayLenUnsigned(g_langs);
+	for( unsigned i=0; i<iArrayLen; ++i )
 	{
 		if( sIsoCode.EqualsNoCase(g_langs[i].szIsoCode) )
 			return &g_langs[i];

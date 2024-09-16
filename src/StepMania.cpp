@@ -525,8 +525,9 @@ bool CheckVideoDefaultSettings()
 
 	VideoCardDefaults defaults;
 
-	unsigned i;
-	for( i=0; i<ARRAYLEN(g_VideoCardDefaults); i++ )
+	const unsigned iArrayLen = ArrayLenUnsigned(g_VideoCardDefaults);
+	unsigned i = 0;
+	for( i=0; i<iArrayLen; i++ )
 	{
 		defaults = g_VideoCardDefaults[i];
 
@@ -538,7 +539,7 @@ bool CheckVideoDefaultSettings()
 			break;
 		}
 	}
-	if (i >= ARRAYLEN(g_VideoCardDefaults))
+	if (i >= iArrayLen)
 	{
 		FAIL_M("Failed to match video driver");
 	}

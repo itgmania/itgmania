@@ -355,7 +355,7 @@ bool RunTests( RageSoundReader *snd, const TestFile &tf )
 		if( !Identical )
 		{
 			LOG->Trace("Expected data:");
-			dump( tf.initial, ARRAYLEN(tf.initial) );
+			dump( tf.initial, sizeof(tf.initial) / sizeof(tf.initial[0]) );
 			LOG->Trace(" ");
 			bFailed = true;
 		}
@@ -373,7 +373,7 @@ bool RunTests( RageSoundReader *snd, const TestFile &tf )
 		if( !Identical )
 		{
 			LOG->Trace("Expected half second data:");
-                        dump( tf.later, ARRAYLEN(tf.later) );
+                        dump( tf.later, sizeof(tf.later) / sizeof(tf.later[0]) );
 			LOG->Trace("Got half second data:");
 			dump( LaterData, 16 );
 
@@ -416,7 +416,7 @@ bool RunTests( RageSoundReader *snd, const TestFile &tf )
 	while(1)
 	{
 		float buf[4096];
-		int got = snd->Read( buf, ARRAYLEN(buf) / snd->GetNumChannels() );
+		int got = snd->Read( buf, sizeof(buf) / sizeof(buf[0]) / snd->GetNumChannels() );
 		if( got == RageSoundReader::END_OF_FILE )
 			break;
 		ASSERT( got >= 0 );

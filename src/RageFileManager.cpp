@@ -983,7 +983,8 @@ static bool PathUsesSlowFlush( const RString &sPath )
 		"Save/"
 	};
 
-	for( unsigned i = 0; i < ARRAYLEN(FlushPaths); ++i )
+	const unsigned iArrayLen = ArrayLenUnsigned(FlushPaths);
+	for( unsigned i = 0; i < iArrayLen; ++i )
 		if( !strncmp( sPath, FlushPaths[i], strlen(FlushPaths[i]) ) )
 			return true;
 	return false;

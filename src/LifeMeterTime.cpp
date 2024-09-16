@@ -37,7 +37,7 @@ static const float g_fTimeMeterSecondsChangeInit[] =
 	-4.0f, // SE_LetGo
 	-0.0f, // SE_Missed
 };
-static_assert( ARRAYLEN(g_fTimeMeterSecondsChangeInit) == NUM_ScoreEvent );
+static_assert((sizeof(g_fTimeMeterSecondsChangeInit) / sizeof((g_fTimeMeterSecondsChangeInit)[0])) == NUM_ScoreEvent);
 
 static void TimeMeterSecondsChangeInit( std::size_t /*ScoreEvent*/ i, RString &sNameOut, float &defaultValueOut )
 {

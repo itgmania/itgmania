@@ -65,7 +65,7 @@ void DialogUtil::LocalizeDialogAndContents( HWND hdlg )
 	RString sGroup;
 
 	{
-		::GetWindowText( hdlg, szTemp, ARRAYLEN(szTemp) );
+		::GetWindowText(hdlg, szTemp, (sizeof(szTemp) / sizeof((szTemp)[0])));
 		RString s = szTemp;
 		sGroup = "Dialog-"+s;
 		s = THEME->GetString( sGroup, s );
@@ -74,7 +74,7 @@ void DialogUtil::LocalizeDialogAndContents( HWND hdlg )
 
 	for( HWND hwndChild = ::GetTopWindow(hdlg); hwndChild != nullptr; hwndChild = ::GetNextWindow(hwndChild,GW_HWNDNEXT) )
 	{
-		::GetWindowText( hwndChild, szTemp, ARRAYLEN(szTemp) );
+		::GetWindowText(hwndChild, szTemp, (sizeof(szTemp) / sizeof((szTemp)[0])));
 		RString s = szTemp;
 		if( s.empty() )
 			continue;

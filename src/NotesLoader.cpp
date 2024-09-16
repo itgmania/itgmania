@@ -16,7 +16,9 @@ void NotesLoader::GetMainAndSubTitlesFromFullTitle( const RString &sFullTitle, R
 {
 	const RString sLeftSeps[]  = { "\t", " -", " ~", " (", " [" };
 
-	for( unsigned i=0; i<ARRAYLEN(sLeftSeps); i++ )
+	const unsigned iArrayLen = ArrayLenUnsigned(sLeftSeps);
+	unsigned i = 0;
+	for( i = 0; i<iArrayLen; i++ )
 	{
 		std::size_t iBeginIndex = sFullTitle.find( sLeftSeps[i] );
 		if( iBeginIndex == std::string::npos )

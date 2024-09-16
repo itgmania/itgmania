@@ -666,7 +666,8 @@ void InputMapper::AutoMapJoysticksForCurrentGame()
 		}
 
 		// hard-coded automaps
-		for( unsigned j=0; j<ARRAYLEN(g_AutoMappings); j++ )
+		const unsigned iArrayLen = ArrayLenUnsigned(g_AutoMappings);
+		for( unsigned j=0; j<iArrayLen; j++ )
 		{
 			const AutoMappings& mapping = g_AutoMappings[j];
 			if( mapping.m_sGame.EqualsNoCase(m_pInputScheme->m_szName) )
@@ -1217,7 +1218,7 @@ static const InputScheme::GameButtonInfo g_CommonGameButtonInfo[] =
 
 const InputScheme::GameButtonInfo *InputScheme::GetGameButtonInfo( GameButton gb ) const
 {
-	static_assert( GAME_BUTTON_NEXT == ARRAYLEN(g_CommonGameButtonInfo) );
+	static_assert(GAME_BUTTON_NEXT == (sizeof(g_CommonGameButtonInfo) / sizeof((g_CommonGameButtonInfo)[0])));
 	if( gb < GAME_BUTTON_NEXT )
 		return &g_CommonGameButtonInfo[gb];
 	else

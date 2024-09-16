@@ -90,7 +90,7 @@ void ScreenOptionsMaster::ExportOptions( int r, const std::vector<PlayerNumber> 
 
 	OptionRow &row = *m_pRows[r];
 	bool bRowHasFocus[NUM_PLAYERS];
-	ZERO( bRowHasFocus );
+	ZeroArray( bRowHasFocus );
 	for (PlayerNumber const &p : vpns)
 	{
 		int iCurRow = m_iCurrentRow[p];

@@ -135,7 +135,7 @@ namespace VDDebugInfo
 
 		pctx->sRawBlock = RString();
 		pctx->pRVAHeap = nullptr;
-		GetVDIPath( pctx->sFilename, ARRAYLEN(pctx->sFilename) );
+		GetVDIPath( pctx->sFilename, ArrayLenInt(pctx->sFilename) );
 		pctx->sError = RString();
 
 		HANDLE h = CreateFile( pctx->sFilename, GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr );

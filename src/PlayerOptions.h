@@ -7,15 +7,12 @@ class Steps;
 class Trail;
 struct lua_State;
 
-#define ONE( arr ) { for( unsigned Z = 0; Z < ARRAYLEN(arr); ++Z ) arr[Z]=1.0f; }
-
 #include "GameConstantsAndTypes.h"
 #include "PlayerNumber.h"
 #include "PrefsManager.h"
 
 #include <bitset>
 #include <vector>
-
 
 enum LifeType
 {
@@ -53,6 +50,13 @@ enum ModTimerType
 const RString& ModTimerTypeToString( ModTimerType cat );
 const RString& ModTimerTypeToLocalizedString( ModTimerType cat );
 LuaDeclareType( ModTimerType );
+
+template <typename T, std::size_t N>
+constexpr void SetArrayToOne(T (&arr)[N]) noexcept {
+	for (std::size_t i = 0; i < (sizeof(arr) / sizeof((arr)[0])); ++i) {
+        arr[i] = 1.0f;
+    }
+}
 
 /** @brief Per-player options that are not saved between sessions. */
 class PlayerOptions
@@ -93,22 +97,22 @@ public:
 	{
 		m_sNoteSkin = "";
 		m_fVisualDelay = 0.0f;
-		ZERO( m_fAccels );	ONE( m_SpeedfAccels );
-		ZERO( m_fEffects );	ONE( m_SpeedfEffects );
-		ZERO( m_fAppearances );	ONE( m_SpeedfAppearances );
-		ZERO( m_fScrolls );	ONE( m_SpeedfScrolls );
-		ZERO( m_bTurns );	ZERO( m_bTransforms );
-		ZERO( m_fMovesX );	ONE( m_SpeedfMovesX );
-		ZERO( m_fMovesY );	ONE( m_SpeedfMovesY );
-		ZERO( m_fMovesZ );	ONE( m_SpeedfMovesZ );
-		ZERO( m_fConfusionX );	ONE( m_SpeedfConfusionX );
-		ZERO( m_fConfusionY );	ONE( m_SpeedfConfusionY );
-		ZERO( m_fConfusionZ );	ONE( m_SpeedfConfusionZ );
-		ZERO( m_fDarks );	ONE( m_SpeedfDarks );
-		ZERO( m_fStealth );	ONE( m_SpeedfStealth );
-		ZERO( m_fTiny );	ONE( m_SpeedfTiny );
-		ZERO( m_fBumpy );	ONE( m_SpeedfBumpy );
-		ZERO( m_fReverse );	ONE( m_SpeedfReverse );
+		ZeroArray( m_fAccels );	SetArrayToOne( m_SpeedfAccels );
+		ZeroArray( m_fEffects );	SetArrayToOne( m_SpeedfEffects );
+		ZeroArray( m_fAppearances );	SetArrayToOne( m_SpeedfAppearances );
+		ZeroArray( m_fScrolls );	SetArrayToOne( m_SpeedfScrolls );
+		ZeroArray( m_bTurns );	ZeroArray( m_bTransforms );
+		ZeroArray( m_fMovesX );	SetArrayToOne( m_SpeedfMovesX );
+		ZeroArray( m_fMovesY );	SetArrayToOne( m_SpeedfMovesY );
+		ZeroArray( m_fMovesZ );	SetArrayToOne( m_SpeedfMovesZ );
+		ZeroArray( m_fConfusionX );	SetArrayToOne( m_SpeedfConfusionX );
+		ZeroArray( m_fConfusionY );	SetArrayToOne( m_SpeedfConfusionY );
+		ZeroArray( m_fConfusionZ );	SetArrayToOne( m_SpeedfConfusionZ );
+		ZeroArray( m_fDarks );	SetArrayToOne( m_SpeedfDarks );
+		ZeroArray( m_fStealth );	SetArrayToOne( m_SpeedfStealth );
+		ZeroArray( m_fTiny );	SetArrayToOne( m_SpeedfTiny );
+		ZeroArray( m_fBumpy );	SetArrayToOne( m_SpeedfBumpy );
+		ZeroArray( m_fReverse );	SetArrayToOne( m_SpeedfReverse );
 	};
 	void Init();
 	void Approach( const PlayerOptions& other, float fDeltaSeconds );

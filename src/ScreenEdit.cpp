@@ -2243,8 +2243,9 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 			float fScrollSpeed = pPlayerState->m_PlayerOptions.GetSong().m_fScrollSpeed;
 
 			const float fSpeeds[] = { 1.0f, 1.5f, 2.0f, 3.0f, 4.0f, 6.0f, 8.0f };
+			const unsigned iArrayLen = ArrayLenUnsigned(fSpeeds);
 			int iSpeed = 0;
-			for( unsigned i = 0; i < ARRAYLEN(fSpeeds); ++i )
+			for( unsigned i = 0; i < iArrayLen; ++i )
 			{
 				if( fSpeeds[i] == fScrollSpeed )
 				{
@@ -2263,7 +2264,7 @@ bool ScreenEdit::InputEdit( const InputEventPlus &input, EditButton EditB )
 				INVERT_SCROLL_BUTTONS ? --iSpeed : ++iSpeed;
 				break;
 			}
-			iSpeed = std::clamp( iSpeed, 0, (int) ARRAYLEN(fSpeeds)-1 );
+			iSpeed = std::clamp( iSpeed, 0, ArrayLenInt(fSpeeds)-1 );
 
 			if( fSpeeds[iSpeed] != fScrollSpeed )
 			{
@@ -6532,7 +6533,8 @@ void ScreenEdit::DoHelp()
 {
 	g_EditHelp.rows.clear();
 
-	for( unsigned i=0; i<ARRAYLEN(g_EditHelpLines); ++i )
+	const unsigned iArrayLen = ArrayLenUnsigned(g_EditHelpLines);
+	for( unsigned i=0; i<iArrayLen; ++i )
 	{
 		const EditHelpLine &hl = g_EditHelpLines[i];
 

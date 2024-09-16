@@ -245,7 +245,7 @@ bool EventDevice::Open( RString sFile, InputDevice dev )
 		}
 		else
 		{
-			if( iNextExtraAxis < (int) ARRAYLEN(iExtraAxes) )
+			if( iNextExtraAxis < ArrayLenInt(iExtraAxes) )
 			{
 				aiAbsMappingLow[i] = iExtraAxes[iNextExtraAxis];
 				aiAbsMappingHigh[i] = enum_add2( aiAbsMappingLow[i], 1 );

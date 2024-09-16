@@ -102,7 +102,7 @@ bool GetProcessFileName( std::uint32_t iProcessID, RString &sName )
 		}
 
 		MODULEENTRY32 me;
-		ZERO( me );
+		ZeroArray( me );
 		me.dwSize = sizeof(MODULEENTRY32);
 		bool bRet = !!Module32First( hSnap, &me );
 		CloseHandle( hSnap );

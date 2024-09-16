@@ -137,7 +137,7 @@ void ArchHooks_Win32::RestartProgram()
 void ArchHooks_Win32::SetTime( tm newtime )
 {
 	SYSTEMTIME st;
-	ZERO( st );
+	ZeroArray( st );
 	st.wYear = (WORD)newtime.tm_year+1900;
 	st.wMonth = (WORD)newtime.tm_mon+1;
 	st.wDay = (WORD)newtime.tm_mday;
@@ -172,7 +172,7 @@ bool ArchHooks_Win32::GoToURL( RString sUrl )
 float ArchHooks_Win32::GetDisplayAspectRatio()
 {
 	DEVMODE dm;
-	ZERO( dm );
+	ZeroArray( dm );
 	dm.dmSize = sizeof(dm);
 	BOOL bResult = EnumDisplaySettings( nullptr, ENUM_REGISTRY_SETTINGS, &dm );
 	ASSERT( bResult != 0 );

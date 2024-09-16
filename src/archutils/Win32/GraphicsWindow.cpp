@@ -189,7 +189,7 @@ static LRESULT CALLBACK GraphicsWindow_WndProc( HWND hWnd, UINT msg, WPARAM wPar
 static void AdjustVideoModeParams( VideoModeParams &p )
 {
 	DEVMODE dm;
-	ZERO( dm );
+	ZeroArray( dm );
 	dm.dmSize = sizeof(dm);
 	if( !EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &dm) )
 	{
@@ -233,7 +233,7 @@ RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 	}
 
 	DEVMODE DevMode;
-	ZERO( DevMode );
+	ZeroArray( DevMode );
 	DevMode.dmSize = sizeof(DEVMODE);
 	DevMode.dmPelsWidth = p.width;
 	DevMode.dmPelsHeight = p.height;

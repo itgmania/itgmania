@@ -2952,7 +2952,8 @@ const ValidRow g_ValidRows[] =
 void NoteDataUtil::RemoveStretch( NoteData &inout, StepsType st, int iStartIndex, int iEndIndex )
 {
 	std::vector<const ValidRow*> vpValidRowsToCheck;
-	for( unsigned i=0; i<ARRAYLEN(g_ValidRows); i++ )
+	const unsigned iArrayLen = ArrayLenUnsigned(g_ValidRows);
+	for( unsigned i=0; i<iArrayLen; i++ )
 	{
 		if( g_ValidRows[i].st == st )
 			vpValidRowsToCheck.push_back( &g_ValidRows[i] );
@@ -3104,7 +3105,7 @@ void NoteDataUtil::AddTapAttacks( NoteData &nd, Song* pSong )
 			TapNoteType_Attack,
 			TapNoteSubType_Invalid,
 			TapNoteSource_Original,
-			szAttacks[RandomInt(ARRAYLEN(szAttacks))],
+			szAttacks[RandomInt((sizeof(szAttacks) / sizeof((szAttacks)[0])))],
 			15.0f,
 			-1 );
 		nd.SetTapNote( iTrack, BeatToNoteRow(fBeat), tn );

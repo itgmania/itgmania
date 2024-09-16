@@ -144,7 +144,7 @@ public:
 		Actor::SetTextureRenderStates();
 
 		DISPLAY->SetTextureMode( TextureUnit_1, TextureMode_Modulate );
-		DISPLAY->DrawQuadStrip( m_Slices, ARRAYLEN(m_Slices) );
+		DISPLAY->DrawQuadStrip(m_Slices, (sizeof(m_Slices) / sizeof((m_Slices)[0])));
 	}
 
 	RageTexture* m_pTexture;
@@ -174,7 +174,8 @@ void GraphDisplay::Set( const StageStats &ss, const PlayerStageStats &pss )
 
 	m_Values.resize( VALUE_RESOLUTION );
 	pss.GetLifeRecord( &m_Values[0], VALUE_RESOLUTION, ss.GetTotalPossibleStepsSeconds() );
-	for( unsigned i=0; i<ARRAYLEN(m_Values); i++ )
+	const unsigned iArrayLen = m_Values.size();
+	for( unsigned i=0; i<iArrayLen; i++ )
 		CLAMP( m_Values[i], 0.f, 1.f );
 
 	UpdateVerts();

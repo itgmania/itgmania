@@ -109,7 +109,7 @@ namespace ScreenManagerUtil
 		{
 			m_pScreen = nullptr;
 			m_bDeleteWhenDone = true;
-			ZERO( m_input_redirected );
+			ZeroArray( m_input_redirected );
 			m_SendOnPop = SM_None;
 		}
 	};
@@ -400,7 +400,7 @@ ScreenMessage ScreenManager::PopTopScreenInternal( bool bSendLoseFocus )
 	if( bSendLoseFocus )
 		ls.m_pScreen->HandleScreenMessage( SM_LoseFocus );
 	ls.m_pScreen->EndScreen();
-	ZERO( ls.m_input_redirected );
+	ZeroArray( ls.m_input_redirected );
 
 	if( g_setPersistantScreens.find(ls.m_pScreen->GetName()) != g_setPersistantScreens.end() )
 	{

@@ -42,7 +42,7 @@ struct acolorhash_hash
 	acolorhist_list hash[HASH_SIZE];
 	acolorhash_hash()
 	{
-		ZERO( hash );
+		ZeroArray( hash );
 	}
 
 	~acolorhash_hash()

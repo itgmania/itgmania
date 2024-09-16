@@ -106,10 +106,10 @@ LightsManager*	LIGHTSMAN = nullptr;	// global and accessible from anywhere in ou
 
 LightsManager::LightsManager()
 {
-	ZERO( m_fSecsLeftInCabinetLightBlink );
-	ZERO( m_fSecsLeftInGameButtonBlink );
-	ZERO( m_fActorLights );
-	ZERO( m_fSecsLeftInActorLightBlink );
+	ZeroArray( m_fSecsLeftInCabinetLightBlink );
+	ZeroArray( m_fSecsLeftInGameButtonBlink );
+	ZeroArray( m_fActorLights );
+	ZeroArray( m_fSecsLeftInActorLightBlink );
 	m_iQueuedCoinCounterPulses = 0;
 	m_CoinCounterTimer.SetZero();
 
@@ -184,8 +184,8 @@ void LightsManager::Update( float fDeltaTime )
 
 	// Set new lights state cabinet lights
 	{
-		ZERO( m_LightsState.m_bCabinetLights );
-		ZERO( m_LightsState.m_bGameButtonLights );
+		ZeroArray( m_LightsState.m_bCabinetLights );
+		ZeroArray( m_LightsState.m_bGameButtonLights );
 	}
 
 	{
@@ -415,7 +415,7 @@ void LightsManager::Update( float fDeltaTime )
 			GetUsedGameInputs( vGI );
 			wrap( index, vGI.size() );
 
-			ZERO( m_LightsState.m_bGameButtonLights );
+			ZeroArray( m_LightsState.m_bGameButtonLights );
 
 			GameController gc = vGI[index].controller;
 			GameButton gb = vGI[index].button;
@@ -426,7 +426,7 @@ void LightsManager::Update( float fDeltaTime )
 
 		case LIGHTSMODE_TEST_MANUAL_CYCLE:
 		{
-			ZERO( m_LightsState.m_bGameButtonLights );
+			ZeroArray( m_LightsState.m_bGameButtonLights );
 
 			std::vector<GameInput> vGI;
 			GetUsedGameInputs( vGI );

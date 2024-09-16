@@ -50,7 +50,8 @@ static DeviceButton XSymToDeviceButton( int key )
 	};
 
 	/* 32...127: */
-	if( key < int(ARRAYLEN(ASCIIKeySyms)))
+	int iArrayLen = ArrayLenInt(ASCIIKeySyms);
+	if( key < iArrayLen )
 		return ASCIIKeySyms[key];
 
 	/* XK_KP_0 ... XK_KP_9 to KEY_KP_C0 ... KEY_KP_C9 */

@@ -655,7 +655,7 @@ XNode *LuaHelpers::GetLuaInformation()
 
 	//const RString BuiltInPackages[] = { "_G", "coroutine", "debug", "math", "package", "string", "table" };
 	const RString BuiltInPackages[] = { "_G", "coroutine", "debug", "math", "package", "string", "table" };
-	const RString *const end = BuiltInPackages+ARRAYLEN(BuiltInPackages);
+	const RString* const end = BuiltInPackages + (sizeof(BuiltInPackages) / sizeof((BuiltInPackages)[0]));
 	FOREACH_LUATABLE( L, -1 )
 	{
 		RString sNamespace;
