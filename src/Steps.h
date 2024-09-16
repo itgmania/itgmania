@@ -140,7 +140,7 @@ public:
 	RString MinimizedChartString();
 
 	/** @brief Generates a hash used for GrooveStats integration. */
-	void CalculateGrooveStatsHash();
+	void CalculateGrooveStatsHash(bool forceRecalculate);
 	const RString GetGrooveStatsHash() const;
 	
 	/** @brief Produces a chart that's reduced to it's smallest unique representable form. */
