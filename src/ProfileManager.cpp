@@ -97,9 +97,9 @@ ProfileManager::~ProfileManager()
 	// Unregister with Lua.
 	LUA->UnsetGlobal( "PROFILEMAN" );
 
-	SAFE_DELETE( m_pMachineProfile );
+	RageUtil::SafeDelete( m_pMachineProfile );
 	FOREACH_PlayerNumber(pn)
-		SAFE_DELETE( m_pMemoryCardProfile[pn] );
+		RageUtil::SafeDelete( m_pMemoryCardProfile[pn] );
 }
 
 void ProfileManager::Init()

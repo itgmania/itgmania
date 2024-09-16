@@ -88,7 +88,7 @@ RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 			return pRet;
 		}
 		LOG->Info( "Couldn't load driver %s: %s", driverString, sError.c_str() );
-		SAFE_DELETE( pRet );
+		RageUtil::SafeDelete( pRet );
 	}
 	return nullptr;
 }

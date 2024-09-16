@@ -649,7 +649,7 @@ RageMovieTexture* RageMovieTextureDriver_FFMpeg::Create(RageTextureID ID, RStrin
 	MovieTexture_FFMpeg* pRet = new MovieTexture_FFMpeg(ID);
 	sError = pRet->Init();
 	if (!sError.empty())
-		SAFE_DELETE(pRet);
+		RageUtil::SafeDelete(pRet);
 	return pRet;
 }
 

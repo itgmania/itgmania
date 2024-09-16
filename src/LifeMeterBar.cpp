@@ -75,7 +75,7 @@ LifeMeterBar::LifeMeterBar()
 
 LifeMeterBar::~LifeMeterBar()
 {
-	SAFE_DELETE( m_pStream );
+	RageUtil::SafeDelete( m_pStream );
 }
 
 void LifeMeterBar::Load( const PlayerState *pPlayerState, PlayerStageStats *pPlayerStageStats )

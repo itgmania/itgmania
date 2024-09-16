@@ -799,7 +799,7 @@ bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
 	if( !out.Open( sPath, RageFile::WRITE ) )
 	{
 		LOG->Trace("Couldn't write %s: %s", sPath.c_str(), out.GetError().c_str() );
-		SAFE_DELETE( surface );
+		RageUtil::SafeDelete( surface );
 		return false;
 	}
 
@@ -824,7 +824,7 @@ bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
 	}
 //	LOG->Trace( "Saving Screenshot file took %f seconds.", timer.GetDeltaTime() );
 
-	SAFE_DELETE( surface );
+	RageUtil::SafeDelete( surface );
 
 	if( !bSuccess )
 	{

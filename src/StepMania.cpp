@@ -298,43 +298,43 @@ void ShutdownGame()
 		LIGHTSMAN->TurnOffAllLights();
 	}
 
-	SAFE_DELETE( SCREENMAN );
-	SAFE_DELETE( STATSMAN );
-	SAFE_DELETE( MESSAGEMAN );
-	SAFE_DELETE( NETWORK );
+	RageUtil::SafeDelete( SCREENMAN );
+	RageUtil::SafeDelete( STATSMAN );
+	RageUtil::SafeDelete( MESSAGEMAN );
+	RageUtil::SafeDelete( NETWORK );
 	/* Delete INPUTMAN before the other INPUTFILTER handlers, or an input
 	 * driver may try to send a message to INPUTFILTER after we delete it. */
-	SAFE_DELETE( INPUTMAN );
-	SAFE_DELETE( INPUTQUEUE );
-	SAFE_DELETE( INPUTMAPPER );
-	SAFE_DELETE( INPUTFILTER );
-	SAFE_DELETE( MODELMAN );
-	SAFE_DELETE( PROFILEMAN ); // PROFILEMAN needs the songs still loaded
-	SAFE_DELETE( CHARMAN );
-	SAFE_DELETE( UNLOCKMAN );
-	SAFE_DELETE( CRYPTMAN );
-	SAFE_DELETE( MEMCARDMAN );
-	SAFE_DELETE( SONGMAN );
-	SAFE_DELETE( IMAGECACHE );
-	SAFE_DELETE( SONGINDEX );
-	SAFE_DELETE( SOUND ); // uses GAMESTATE, PREFSMAN
-	SAFE_DELETE( PREFSMAN );
-	SAFE_DELETE( GAMESTATE );
-	SAFE_DELETE( GAMEMAN );
-	SAFE_DELETE( NOTESKIN );
-	SAFE_DELETE( THEME );
-	SAFE_DELETE( ANNOUNCER );
-	SAFE_DELETE( BOOKKEEPER );
-	SAFE_DELETE( LIGHTSMAN );
-	SAFE_DELETE( SOUNDMAN );
-	SAFE_DELETE( FONT );
-	SAFE_DELETE( TEXTUREMAN );
-	SAFE_DELETE( DISPLAY );
+	RageUtil::SafeDelete( INPUTMAN );
+	RageUtil::SafeDelete( INPUTQUEUE );
+	RageUtil::SafeDelete( INPUTMAPPER );
+	RageUtil::SafeDelete( INPUTFILTER );
+	RageUtil::SafeDelete( MODELMAN );
+	RageUtil::SafeDelete( PROFILEMAN ); // PROFILEMAN needs the songs still loaded
+	RageUtil::SafeDelete( CHARMAN );
+	RageUtil::SafeDelete( UNLOCKMAN );
+	RageUtil::SafeDelete( CRYPTMAN );
+	RageUtil::SafeDelete( MEMCARDMAN );
+	RageUtil::SafeDelete( SONGMAN );
+	RageUtil::SafeDelete( IMAGECACHE );
+	RageUtil::SafeDelete( SONGINDEX );
+	RageUtil::SafeDelete( SOUND ); // uses GAMESTATE, PREFSMAN
+	RageUtil::SafeDelete( PREFSMAN );
+	RageUtil::SafeDelete( GAMESTATE );
+	RageUtil::SafeDelete( GAMEMAN );
+	RageUtil::SafeDelete( NOTESKIN );
+	RageUtil::SafeDelete( THEME );
+	RageUtil::SafeDelete( ANNOUNCER );
+	RageUtil::SafeDelete( BOOKKEEPER );
+	RageUtil::SafeDelete( LIGHTSMAN );
+	RageUtil::SafeDelete( SOUNDMAN );
+	RageUtil::SafeDelete( FONT );
+	RageUtil::SafeDelete( TEXTUREMAN );
+	RageUtil::SafeDelete( DISPLAY );
 	Dialog::Shutdown();
-	SAFE_DELETE( LOG );
-	SAFE_DELETE( FILEMAN );
-	SAFE_DELETE( LUA );
-	SAFE_DELETE( HOOKS );
+	RageUtil::SafeDelete( LOG );
+	RageUtil::SafeDelete( FILEMAN );
+	RageUtil::SafeDelete( LUA );
+	RageUtil::SafeDelete( HOOKS );
 }
 
 static void HandleException( const RString &sError )
@@ -672,7 +672,7 @@ RageDisplay *CreateDisplay()
 		if( !sError.empty() )
 		{
 			error += ssprintf(ERROR_INITIALIZING.GetValue(), sRenderer.c_str())+"\n" + sError;
-			SAFE_DELETE( pRet );
+			RageUtil::SafeDelete( pRet );
 			error += "\n\n\n";
 			continue;
 		}
@@ -1013,7 +1013,7 @@ int sm_main(int argc, char* argv[])
 	// Initialize which courses are ranking courses here.
 	SONGMAN->UpdateRankingCourses();
 
-	SAFE_DELETE( pLoadingWindow ); // destroy this before init'ing Display
+	RageUtil::SafeDelete( pLoadingWindow ); // destroy this before init'ing Display
 
 	/* If the user has tried to quit during the loading, do it before creating
 	* the main window. This prevents going to full screen just to quit. */

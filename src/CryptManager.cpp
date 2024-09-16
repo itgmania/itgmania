@@ -138,7 +138,7 @@ void CryptManager::GenerateGlobalKeys()
 
 CryptManager::~CryptManager()
 {
-	SAFE_DELETE( g_pPRNG );
+	RageUtil::SafeDelete( g_pPRNG );
 	// Unregister with Lua.
 	LUA->UnsetGlobal( "CRYPTMAN" );
 }

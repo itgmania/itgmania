@@ -292,10 +292,10 @@ void ThreadedFileWorker::HandleRequest( int iRequest )
 void ThreadedFileWorker::RequestTimedOut()
 {
 	/* The event timed out.  Clean up any residue from the last action. */
-	SAFE_DELETE( m_pRequestFile );
-	SAFE_DELETE( m_pResultFile );
-	SAFE_DELETE_ARRAY( m_pRequestBuffer );
-	SAFE_DELETE_ARRAY( m_pResultBuffer );
+	RageUtil::SafeDelete( m_pRequestFile );
+	RageUtil::SafeDelete( m_pResultFile );
+	RageUtil::SafeDeleteArray( m_pRequestBuffer );
+	RageUtil::SafeDeleteArray( m_pResultBuffer );
 }
 
 RageFileBasic *ThreadedFileWorker::Open( const RString &sPath, int iMode, int &iErr )

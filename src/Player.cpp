@@ -299,16 +299,16 @@ Player::Player( NoteData &nd, bool bVisibleParts ) : m_NoteData(nd)
 
 Player::~Player()
 {
-	SAFE_DELETE( m_pAttackDisplay );
-	SAFE_DELETE( m_pNoteField );
+	RageUtil::SafeDelete( m_pAttackDisplay );
+	RageUtil::SafeDelete( m_pNoteField );
 	for( unsigned i = 0; i < m_vpHoldJudgment.size(); ++i )
-		SAFE_DELETE( m_vpHoldJudgment[i] );
-	SAFE_DELETE( m_pJudgedRows );
-	SAFE_DELETE( m_pIterNeedsTapJudging );
-	SAFE_DELETE( m_pIterNeedsHoldJudging );
-	SAFE_DELETE( m_pIterUncrossedRows );
-	SAFE_DELETE( m_pIterUnjudgedRows );
-	SAFE_DELETE( m_pIterUnjudgedMineRows );
+		RageUtil::SafeDelete( m_vpHoldJudgment[i] );
+	RageUtil::SafeDelete( m_pJudgedRows );
+	RageUtil::SafeDelete( m_pIterNeedsTapJudging );
+	RageUtil::SafeDelete( m_pIterNeedsHoldJudging );
+	RageUtil::SafeDelete( m_pIterUncrossedRows );
+	RageUtil::SafeDelete( m_pIterUnjudgedRows );
+	RageUtil::SafeDelete( m_pIterUnjudgedMineRows );
 
 }
 
@@ -788,19 +788,19 @@ void Player::Load()
 	if( m_pPlayerStageStats )
 		SendComboMessages( m_pPlayerStageStats->m_iCurCombo, m_pPlayerStageStats->m_iCurMissCombo );
 
-	SAFE_DELETE( m_pIterNeedsTapJudging );
+	RageUtil::SafeDelete( m_pIterNeedsTapJudging );
 	m_pIterNeedsTapJudging = new NoteData::all_tracks_iterator( m_NoteData.GetTapNoteRangeAllTracks(iNoteRow, MAX_NOTE_ROW) );
 
-	SAFE_DELETE( m_pIterNeedsHoldJudging );
+	RageUtil::SafeDelete( m_pIterNeedsHoldJudging );
 	m_pIterNeedsHoldJudging = new NoteData::all_tracks_iterator( m_NoteData.GetTapNoteRangeAllTracks(iNoteRow, MAX_NOTE_ROW ) );
 
-	SAFE_DELETE( m_pIterUncrossedRows );
+	RageUtil::SafeDelete( m_pIterUncrossedRows );
 	m_pIterUncrossedRows = new NoteData::all_tracks_iterator( m_NoteData.GetTapNoteRangeAllTracks(iNoteRow, MAX_NOTE_ROW ) );
 
-	SAFE_DELETE( m_pIterUnjudgedRows );
+	RageUtil::SafeDelete( m_pIterUnjudgedRows );
 	m_pIterUnjudgedRows = new NoteData::all_tracks_iterator( m_NoteData.GetTapNoteRangeAllTracks(iNoteRow, MAX_NOTE_ROW ) );
 
-	SAFE_DELETE( m_pIterUnjudgedMineRows );
+	RageUtil::SafeDelete( m_pIterUnjudgedMineRows );
 	m_pIterUnjudgedMineRows = new NoteData::all_tracks_iterator( m_NoteData.GetTapNoteRangeAllTracks(iNoteRow, MAX_NOTE_ROW ) );
 }
 

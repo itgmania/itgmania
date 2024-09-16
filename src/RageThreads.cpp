@@ -80,7 +80,7 @@ struct ThreadSlot
 
 	void Release()
 	{
-		SAFE_DELETE( m_pImpl );
+		RageUtil::SafeDelete( m_pImpl );
 		Init();
 	}
 

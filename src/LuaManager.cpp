@@ -278,7 +278,7 @@ LuaManager::LuaManager()
 LuaManager::~LuaManager()
 {
 	lua_close( m_pLuaMain );
-	SAFE_DELETE( pImpl );
+	RageUtil::SafeDelete( pImpl );
 }
 
 Lua *LuaManager::Get()

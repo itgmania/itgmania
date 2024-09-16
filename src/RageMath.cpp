@@ -795,7 +795,7 @@ struct LunaRageBezier2D : Luna<RageBezier2D>
 	}
 	static int destroy(T* p, lua_State* L)
 	{
-		SAFE_DELETE(p);
+		RageUtil::SafeDelete(p);
 		return 0;
 	}
 	LunaRageBezier2D()

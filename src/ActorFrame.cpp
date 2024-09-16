@@ -736,7 +736,7 @@ public:
 		if(child)
 		{
 			p->RemoveChild(child);
-			SAFE_DELETE(child);
+			RageUtil::SafeDelete(child);
 		}
 		COMMON_RETURN_SELF;
 	}

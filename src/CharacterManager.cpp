@@ -24,7 +24,7 @@ CharacterManager::CharacterManager()
 	}
 
 	for( unsigned i=0; i<m_pCharacters.size(); i++ )
-		SAFE_DELETE( m_pCharacters[i] );
+		RageUtil::SafeDelete( m_pCharacters[i] );
 	m_pCharacters.clear();
 
 	std::vector<RString> as;
@@ -60,7 +60,7 @@ CharacterManager::CharacterManager()
 CharacterManager::~CharacterManager()
 {
 	for( unsigned i=0; i<m_pCharacters.size(); i++ )
-		SAFE_DELETE( m_pCharacters[i] );
+		RageUtil::SafeDelete( m_pCharacters[i] );
 
 	// Unregister with Lua.
 	LUA->UnsetGlobal( "CHARMAN" );

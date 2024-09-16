@@ -114,10 +114,10 @@ RageLog::~RageLog()
 	g_fileUserLog->Close();
 	g_fileTimeLog->Close();
 
-	SAFE_DELETE( g_Mutex );
-	SAFE_DELETE( g_fileLog );
-	SAFE_DELETE( g_fileInfo );
-	SAFE_DELETE( g_fileUserLog );
+	RageUtil::SafeDelete( g_Mutex );
+	RageUtil::SafeDelete( g_fileLog );
+	RageUtil::SafeDelete( g_fileInfo );
+	RageUtil::SafeDelete( g_fileUserLog );
 }
 
 void RageLog::SetLogToDisk( bool b )

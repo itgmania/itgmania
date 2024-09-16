@@ -1148,7 +1148,7 @@ bool SSCLoader::LoadEditFromMsd(const MsdFile &msd,
 					{
 						LOG->UserLog("Edit file", sEditFilePath,
 							"is a duplicate of another edit that was already loaded.");
-						SAFE_DELETE(pNewNotes);
+						RageUtil::SafeDelete(pNewNotes);
 						return false;
 					}
 				}

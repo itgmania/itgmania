@@ -733,7 +733,7 @@ INT_PTR CrashDialog::HandleMessage( UINT msg, WPARAM wParam, LPARAM lParam )
 				KillTimer( hDlg, 0 );
 
 				SetDialogInitial();
-				SAFE_DELETE( m_pPost );
+				RageUtil::SafeDelete( m_pPost );
 				return TRUE;
 			}
 
@@ -817,7 +817,7 @@ INT_PTR CrashDialog::HandleMessage( UINT msg, WPARAM wParam, LPARAM lParam )
 				if( sError.empty() && sResult.empty() )
 					sError = "No data received";
 
-				SAFE_DELETE( m_pPost );
+				RageUtil::SafeDelete( m_pPost );
 
 				XNode xml;
 				if( sError.empty() )

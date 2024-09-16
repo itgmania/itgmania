@@ -72,7 +72,7 @@ void RageSoundManager::low_sample_count_workaround()
  */
 void RageSoundManager::Shutdown()
 {
-	SAFE_DELETE( m_pDriver );
+	RageUtil::SafeDelete( m_pDriver );
 }
 
 void RageSoundManager::StartMixing( RageSoundBase *pSound )

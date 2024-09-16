@@ -677,7 +677,7 @@ ZRESULT TZip::open_file(const TCHAR *fn)
 	hfin = new RageFile();
 	if( !hfin->Open(fn) )
 	{
-		SAFE_DELETE( hfin );
+		RageUtil::SafeDelete( hfin );
 		return ZR_NOFILE;
 	}
 	isize = hfin->GetFileSize();
@@ -755,7 +755,7 @@ unsigned TZip::read(char *srcbuf, unsigned size)
 ZRESULT TZip::iclose()
 {
 	if (hfin!=0)
-		SAFE_DELETE( hfin);
+		RageUtil::SafeDelete( hfin);
 	bool mismatch = (isize!=-1 && isize!=ired);
 	isize=ired; // and crc has been being updated anyway
 	if (mismatch)

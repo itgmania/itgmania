@@ -71,7 +71,7 @@ void OptionRow::Clear()
 		for (RString const &m : m_pHand->m_vsReloadRowMessages)
 			MESSAGEMAN->Unsubscribe( this, m );
 	}
-	SAFE_DELETE( m_pHand );
+	RageUtil::SafeDelete( m_pHand );
 
 	m_bFirstItemGoesDown = false;
 	ZERO( m_bRowHasFocus );

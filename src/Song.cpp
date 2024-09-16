@@ -99,12 +99,12 @@ Song::~Song()
 {
 	for (Steps *s : m_vpSteps)
 	{
-		SAFE_DELETE( s );
+		RageUtil::SafeDelete( s );
 	}
 	m_vpSteps.clear();
 	for (Steps *s : m_UnknownStyleSteps)
 	{
-		SAFE_DELETE(s);
+		RageUtil::SafeDelete(s);
 	}
 	m_UnknownStyleSteps.clear();
 
@@ -170,14 +170,14 @@ void Song::Reset()
 {
 	for (Steps *s : m_vpSteps)
 	{
-		SAFE_DELETE( s );
+		RageUtil::SafeDelete( s );
 	}
 	m_vpSteps.clear();
 	FOREACH_ENUM( StepsType, st )
 		m_vpStepsByType[st].clear();
 	for (Steps *s : m_UnknownStyleSteps)
 	{
-		SAFE_DELETE(s);
+		RageUtil::SafeDelete(s);
 	}
 	m_UnknownStyleSteps.clear();
 

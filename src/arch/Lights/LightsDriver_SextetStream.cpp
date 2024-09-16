@@ -35,7 +35,7 @@ namespace
 			{
 				out->Flush();
 				out->Close();
-				SAFE_DELETE(out);
+				RageUtil::SafeDelete(out);
 			}
 		}
 
@@ -102,7 +102,7 @@ inline RageFile * openOutputStream(const RString& filename)
 	if(!file->Open(filename, RageFile::WRITE|RageFile::STREAMED))
 	{
 		LOG->Warn("Error opening file '%s' for output: %s", filename.c_str(), file->GetError().c_str());
-		SAFE_DELETE(file);
+		RageUtil::SafeDelete(file);
 		file = nullptr;
 	}
 

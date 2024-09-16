@@ -197,13 +197,13 @@ GameState::~GameState()
 	LUA->UnsetGlobal( "GAMESTATE" );
 
 	FOREACH_PlayerNumber( p )
-		SAFE_DELETE( m_pPlayerState[p] );
+		RageUtil::SafeDelete( m_pPlayerState[p] );
 	FOREACH_MultiPlayer( p )
-		SAFE_DELETE( m_pMultiPlayerState[p] );
+		RageUtil::SafeDelete( m_pMultiPlayerState[p] );
 
-	SAFE_DELETE( m_Environment );
-	SAFE_DELETE( g_pImpl );
-	SAFE_DELETE( processedTiming );
+	RageUtil::SafeDelete( m_Environment );
+	RageUtil::SafeDelete( g_pImpl );
+	RageUtil::SafeDelete( processedTiming );
 }
 
 PlayerNumber GameState::GetMasterPlayerNumber() const
