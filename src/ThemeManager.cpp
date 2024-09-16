@@ -177,7 +177,7 @@ ThemeManager::ThemeManager()
 ThemeManager::~ThemeManager()
 {
 	g_vThemes.clear();
-	SAFE_DELETE( g_pLoadedThemeData );
+	RageUtil::SafeDelete( g_pLoadedThemeData );
 
 	// Unregister with Lua.
 	LUA->UnsetGlobal( "THEME" );

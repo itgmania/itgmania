@@ -39,7 +39,7 @@ InputHandler_Win32_Para::InputHandler_Win32_Para()
 	{
 		LOG->Info("Para controller initialized");
 	}
-	SAFE_DELETE( dev );
+	RageUtil::SafeDelete( dev );
 }
 
 void InputHandler_Win32_Para::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut )

@@ -220,7 +220,7 @@ namespace ScreenManagerUtil
 		BeforeDeleteScreen();
 		for (Actor *a : apActorsToDelete)
 		{
-			SAFE_DELETE( a );
+			RageUtil::SafeDelete( a );
 		}
 		AfterDeleteScreen();
 	}
@@ -265,17 +265,17 @@ ScreenManager::~ScreenManager()
 	LOG->Trace("ScreenManager::~ScreenManager()");
 	LOG->UnmapLog("ScreenManager::TopScreen");
 
-	SAFE_DELETE(g_pSharedBGA);
+	RageUtil::SafeDelete(g_pSharedBGA);
 	for (LoadedScreen& screen : g_ScreenStack)
 	{
 		if (screen.m_bDeleteWhenDone)
-			SAFE_DELETE(screen.m_pScreen);
+			RageUtil::SafeDelete(screen.m_pScreen);
 	}
 	g_ScreenStack.clear();
 	DeletePreparedScreens();
 	for (Screen* overlayScreen : g_OverlayScreens)
 	{
-		SAFE_DELETE(overlayScreen);
+		RageUtil::SafeDelete(overlayScreen);
 	}
 	g_OverlayScreens.clear();
 
@@ -301,7 +301,7 @@ void ScreenManager::ThemeChanged()
 	ReloadOverlayScreens();
 
 	// force recreate of new BGA
-	SAFE_DELETE( g_pSharedBGA );
+	RageUtil::SafeDelete( g_pSharedBGA );
 	g_pSharedBGA = new Actor;
 }
 
@@ -309,7 +309,7 @@ void ScreenManager::ReloadOverlayScreens()
 {
 	// unload overlay screens
 	for (Screen* screen : g_OverlayScreens)
-		SAFE_DELETE(screen);
+		RageUtil::SafeDelete(screen);
 	g_OverlayScreens.clear();
 
 	// reload overlay screens
@@ -412,7 +412,7 @@ ScreenMessage ScreenManager::PopTopScreenInternal( bool bSendLoseFocus )
 		if( ls.m_bDeleteWhenDone )
 		{
 			BeforeDeleteScreen();
-			SAFE_DELETE( ls.m_pScreen );
+			RageUtil::SafeDelete( ls.m_pScreen );
 			AfterDeleteScreen();
 		}
 	}
@@ -778,7 +778,7 @@ void ScreenManager::LoadDelayedScreen()
 		BeforeDeleteScreen();
 		for (Actor *a : apActorsToDelete)
 		{
-			SAFE_DELETE( a );
+			RageUtil::SafeDelete( a );
 		}
 		AfterDeleteScreen();
 	}

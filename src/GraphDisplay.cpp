@@ -161,11 +161,11 @@ GraphDisplay::~GraphDisplay()
 {
 	for (Actor *p : m_vpSongBoundaries)
 	{
-		SAFE_DELETE( p );
+		RageUtil::SafeDelete( p );
 	}
 	m_vpSongBoundaries.clear();
-	SAFE_DELETE( m_pGraphLine );
-	SAFE_DELETE( m_pGraphBody );
+	RageUtil::SafeDelete( m_pGraphLine );
+	RageUtil::SafeDelete( m_pGraphBody );
 }
 
 void GraphDisplay::Set( const StageStats &ss, const PlayerStageStats &pss )

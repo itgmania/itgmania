@@ -986,7 +986,7 @@ struct LunaCubicSplineN : Luna<CubicSplineN>
 			luaL_error(L, "This spline cannot be destroyed because it is "
 				"owned by an actor that relies on it existing.");
 		}
-		SAFE_DELETE(p);
+		RageUtil::SafeDelete(p);
 		return 0;
 	}
 	LunaCubicSplineN()

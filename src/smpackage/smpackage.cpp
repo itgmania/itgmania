@@ -157,9 +157,9 @@ BOOL CSmpackageApp::InitInstance()
 		int nResponse = dlg.DoModal();
 	}
 
-	SAFE_DELETE( THEME );
-	SAFE_DELETE( LUA );
-	SAFE_DELETE( FILEMAN );
+	RageUtil::SafeDelete( THEME );
+	RageUtil::SafeDelete( LUA );
+	RageUtil::SafeDelete( FILEMAN );
 
 
 	// Since the dialog has been closed, return FALSE so that we exit the

@@ -37,7 +37,7 @@ ScreenMapControllers::~ScreenMapControllers()
 {
 	for(std::size_t i= 0; i < m_Line.size(); ++i)
 	{
-		SAFE_DELETE(m_Line[i]);
+		RageUtil::SafeDelete(m_Line[i]);
 	}
 }
 

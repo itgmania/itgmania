@@ -39,7 +39,7 @@ WheelBase::~WheelBase()
 {
 	for (WheelItemBase *i : m_WheelBaseItems)
 	{
-		SAFE_DELETE( i );
+		RageUtil::SafeDelete( i );
 	}
 	m_WheelBaseItems.clear();
 	m_LastSelection = nullptr;
@@ -77,7 +77,7 @@ void WheelBase::Load( RString sType )
 		DEBUG_ASSERT( pItem );
 		m_WheelBaseItems.push_back( pItem );
 	}
-	SAFE_DELETE( pTempl );
+	RageUtil::SafeDelete( pTempl );
 
 	// draw outside->inside
 	for( int i=0; i<NUM_WHEEL_ITEMS/2; i++ )

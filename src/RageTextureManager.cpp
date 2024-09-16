@@ -50,7 +50,7 @@ RageTextureManager::~RageTextureManager()
 		RageTexture* pTexture = i.second;
 		if( pTexture->m_iRefCount )
 			LOG->Trace( "TEXTUREMAN LEAK: '%s', RefCount = %d.", i.first.filename.c_str(), pTexture->m_iRefCount );
-		SAFE_DELETE( pTexture );
+		RageUtil::SafeDelete( pTexture );
 	}
 	m_textures_to_update.clear();
 	m_texture_ids_by_pointer.clear();
@@ -244,7 +244,7 @@ void RageTextureManager::DeleteTexture( RageTexture *t )
 		if(tex_entry != m_mapPathToTexture.end())
 		{
 			m_mapPathToTexture.erase(tex_entry);
-			SAFE_DELETE(t);
+			RageUtil::SafeDelete(t);
 		}
 		std::map<RageTextureID, RageTexture*>::iterator tex_update_entry=
 			m_textures_to_update.find(id_entry->second);

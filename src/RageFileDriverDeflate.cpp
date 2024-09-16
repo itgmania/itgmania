@@ -543,7 +543,7 @@ bool GunzipString( const RString &sIn, RString &sOut, RString &sError )
 	/* Check the CRC. */
 	unsigned iRet;
 	ASSERT( pFile->GetCRC32( &iRet ) );
-	SAFE_DELETE( pFile );
+	RageUtil::SafeDelete( pFile );
 
 	if( iRet != iCRC32 )
 	{

@@ -671,7 +671,7 @@ ScreenTextEntryVisual::~ScreenTextEntryVisual()
 {
 	FOREACH_KeyboardRow( r )
 		for( int x=0; x<KEYS_PER_ROW; ++x )
-			SAFE_DELETE( m_ptextKeys[r][x] );
+			RageUtil::SafeDelete( m_ptextKeys[r][x] );
 }
 
 void ScreenTextEntryVisual::BeginScreen()

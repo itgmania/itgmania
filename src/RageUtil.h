@@ -16,10 +16,24 @@
 
 class RageFileDriver;
 
-/** @brief Safely delete pointers. */
-#define SAFE_DELETE(p)       do { delete (p);     (p)=nullptr; } while( false )
-/** @brief Safely delete array pointers. */
-#define SAFE_DELETE_ARRAY(p) do { delete[] (p);   (p)=nullptr; } while( false )
+class RageUtil {
+public:
+	// Safely delete pointers.
+	template <typename T>
+	inline static void SafeDelete(T*& p) noexcept
+	{
+		delete p;
+		p = nullptr;
+	}
+
+	// Safely delete array pointers.
+	template <typename T>
+	inline static void SafeDeleteArray(T*& p) noexcept
+	{
+		delete[] p;
+		p = nullptr;
+	}
+};
 
 /** @brief Zero out the memory. */
 #define ZERO(x)	memset(&(x), 0, sizeof(x))

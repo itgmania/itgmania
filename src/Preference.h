@@ -168,7 +168,7 @@ public:
 	~Preference1D()
 	{
 		for( std::size_t i=0; i<m_v.size(); ++i )
-			SAFE_DELETE( m_v[i] );
+			RageUtil::SafeDelete( m_v[i] );
 	}
 	const Preference<T>& operator[]( std::size_t i ) const
 	{

@@ -161,11 +161,11 @@ void ScreenWithMenuElements::HandleScreenMessage( const ScreenMessage SM )
 
 ScreenWithMenuElements::~ScreenWithMenuElements()
 {
-	SAFE_DELETE( m_MenuTimer );
+	RageUtil::SafeDelete( m_MenuTimer );
 	FOREACH_PlayerNumber( p )
 	{
 		if( m_MemoryCardDisplay[p] != nullptr )
-			SAFE_DELETE( m_MemoryCardDisplay[p] );
+			RageUtil::SafeDelete( m_MemoryCardDisplay[p] );
 	}
 	for (Actor *actor : m_vDecorations)
 		delete actor;

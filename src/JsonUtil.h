@@ -4,6 +4,7 @@
 
 class RageFileBasic;
 #include "json/json.h"
+#include "RageUtil.h"
 
 #include <vector>
 
@@ -164,7 +165,7 @@ namespace JsonUtil
 	static void DeserializeVectorPointers(std::vector<T*> &v, void fn(T &, const Json::Value &), const Json::Value &root)
 	{
 		for(unsigned i=0; i<v.size(); i++)
-			SAFE_DELETE(v[i]);
+			RageUtil::SafeDelete(v[i]);
 		v.resize(root.size());
 		for(unsigned i=0; i<v.size(); i++)
 		{
@@ -177,7 +178,7 @@ namespace JsonUtil
 	static void DeserializeVectorPointers(std::vector<T*> &v, void fn(T *, const Json::Value &), const Json::Value &root)
 	{
 		for(unsigned i=0; i<v.size(); i++)
-			SAFE_DELETE(v[i]);
+			RageUtil::SafeDelete(v[i]);
 		v.resize(root.size());
 		for(unsigned i=0; i<v.size(); i++)
 		{
@@ -191,7 +192,7 @@ namespace JsonUtil
 	static void DeserializeVectorPointersParam(std::vector<T*> &v, void fn(T &, const Json::Value &), const Json::Value &root, const P param)
 	{
 		for(unsigned i=0; i<v.size(); i++)
-			SAFE_DELETE(v[i]);
+			RageUtil::SafeDelete(v[i]);
 		v.resize(root.size());
 		for(unsigned i=0; i<v.size(); i++)
 		{

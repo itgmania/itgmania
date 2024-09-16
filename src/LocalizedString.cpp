@@ -59,12 +59,12 @@ LocalizedString::~LocalizedString()
 {
 	m_Subscribers.Unsubscribe( this );
 
-	SAFE_DELETE( m_pImpl );
+	RageUtil::SafeDelete( m_pImpl );
 }
 
 void LocalizedString::CreateImpl()
 {
-	SAFE_DELETE( m_pImpl );
+	RageUtil::SafeDelete( m_pImpl );
 	m_pImpl = g_pMakeLocalizedStringImpl();
 	m_pImpl->Load(  m_sGroup, m_sName );
 }

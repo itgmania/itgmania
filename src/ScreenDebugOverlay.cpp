@@ -104,16 +104,16 @@ ScreenDebugOverlay::~ScreenDebugOverlay()
 
 	for (BitmapText *p : m_vptextPages)
 	{
-		SAFE_DELETE(p);
+		RageUtil::SafeDelete(p);
 	}
 	for (BitmapText *p : m_vptextButton)
 	{
-		SAFE_DELETE(p);
+		RageUtil::SafeDelete(p);
 	}
 	m_vptextButton.clear();
 	for (BitmapText *p : m_vptextFunction)
 	{
-		SAFE_DELETE(p);
+		RageUtil::SafeDelete(p);
 	}
 	m_vptextFunction.clear();
 }

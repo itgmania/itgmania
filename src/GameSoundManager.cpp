@@ -476,8 +476,8 @@ GameSoundManager::~GameSoundManager()
 	MusicThread.Wait();
 	LOG->Trace("Music start thread shut down.");
 
-	SAFE_DELETE( g_Playing );
-	SAFE_DELETE( g_Mutex );
+	RageUtil::SafeDelete( g_Playing );
+	RageUtil::SafeDelete( g_Mutex );
 }
 
 float GameSoundManager::GetFrameTimingAdjustment( float fDeltaTime )

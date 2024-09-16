@@ -552,14 +552,14 @@ void SongManager::FreeSongs()
 
 	for (Song *song : m_pSongs)
 	{
-		SAFE_DELETE( song );
+		RageUtil::SafeDelete( song );
 	}
 	m_pSongs.clear();
 	m_SongsByDir.clear();
 
 	// also free the songs that have been deleted from disk
 	for ( unsigned i=0; i<m_pDeletedSongs.size(); ++i )
-		SAFE_DELETE( m_pDeletedSongs[i] );
+		RageUtil::SafeDelete( m_pDeletedSongs[i] );
 	m_pDeletedSongs.clear();
 
 	m_mapSongGroupIndex.clear();

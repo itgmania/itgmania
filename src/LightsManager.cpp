@@ -126,7 +126,7 @@ LightsManager::~LightsManager()
 {
 	for (LightsDriver *iter : m_vpDrivers)
 	{
-		SAFE_DELETE( iter );
+		RageUtil::SafeDelete( iter );
 	}
 	m_vpDrivers.clear();
 }

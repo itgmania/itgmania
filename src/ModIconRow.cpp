@@ -27,7 +27,7 @@ ModIconRow::~ModIconRow()
 {
 	for (ModIcon *p : m_vpModIcon)
 	{
-		SAFE_DELETE( p );
+		RageUtil::SafeDelete( p );
 	}
 	this->RemoveAllChildren();
 }

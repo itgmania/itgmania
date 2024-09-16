@@ -177,7 +177,7 @@ Actor::~Actor()
 	UnsubscribeAll();
 	for(std::size_t i= 0; i < m_WrapperStates.size(); ++i)
 	{
-		SAFE_DELETE(m_WrapperStates[i]);
+		RageUtil::SafeDelete(m_WrapperStates[i]);
 	}
 	m_WrapperStates.clear();
 }
@@ -987,7 +987,7 @@ void Actor::AddWrapperState()
 void Actor::RemoveWrapperState(std::size_t i)
 {
 	ASSERT(i < m_WrapperStates.size());
-	SAFE_DELETE(m_WrapperStates[i]);
+	RageUtil::SafeDelete(m_WrapperStates[i]);
 	m_WrapperStates.erase(m_WrapperStates.begin()+i);
 }
 

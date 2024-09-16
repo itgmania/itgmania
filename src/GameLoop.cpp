@@ -135,7 +135,7 @@ namespace
 
 	void DoChangeTheme()
 	{
-		SAFE_DELETE( SCREENMAN );
+		RageUtil::SafeDelete( SCREENMAN );
 		TEXTUREMAN->DoDelayedDelete();
 
 		// In case the previous theme overloaded class bindings, reinitialize them.
@@ -188,7 +188,7 @@ namespace
 
 		if(theme_changing)
 		{
-			SAFE_DELETE(SCREENMAN);
+			RageUtil::SafeDelete(SCREENMAN);
 			TEXTUREMAN->DoDelayedDelete();
 			LUA->RegisterTypes();
 			THEME->SwitchThemeAndLanguage(g_NewTheme, THEME->GetCurLanguage(),
