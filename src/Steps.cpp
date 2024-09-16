@@ -638,9 +638,9 @@ const RString Steps::GetGrooveStatsHash() const
 	return GrooveStatsHash;
 }
 
-void Steps::CalculateGrooveStatsHash()
+void Steps::CalculateGrooveStatsHash(bool forceRecalculate)
 {
-	if (m_bIsCachedGrooveStatsHashJustLoaded == true)
+	if (!forceRecalculate && m_bIsCachedGrooveStatsHashJustLoaded == true)
 	{
 		m_bIsCachedGrooveStatsHashJustLoaded = false;
 		return;
@@ -904,8 +904,15 @@ public:
 	{
 		if(p->GetGrooveStatsHash().empty())
 		{
-			p->CalculateGrooveStatsHash();
+			p->CalculateGrooveStatsHash(true);
 		}
+		lua_pushstring(L, p->GetGrooveStatsHash());
+		return 1;
+	}
+	
+	static int CalculateGrooveStatsHash(T *p, lua_State *L)
+	{
+		p->CalculateGrooveStatsHash(true);
 		lua_pushstring(L, p->GetGrooveStatsHash());
 		return 1;
 	}
@@ -963,6 +970,7 @@ public:
 		ADD_METHOD( GetHash );
 		ADD_METHOD( GetMinimizedChartString );
 		ADD_METHOD( GetGrooveStatsHash );
+		ADD_METHOD( CalculateGrooveStatsHash );
 		ADD_METHOD( GetMeter );
 		ADD_METHOD( HasSignificantTimingChanges );
 		ADD_METHOD( HasAttacks );
