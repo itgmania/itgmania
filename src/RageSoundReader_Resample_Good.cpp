@@ -638,9 +638,9 @@ RageSoundReader_Resample_Good::~RageSoundReader_Resample_Good()
 /* iFrame is in the destination rate.  Seek the source in its own sample rate. */
 int RageSoundReader_Resample_Good::SetPosition( int iFrame )
 {
-	Reset();
-	iFrame = (int) SCALE( iFrame, 0, (std::int64_t) m_iSampleRate, 0, (std::int64_t) m_pSource->GetSampleRate() );
-	return m_pSource->SetPosition( iFrame );
+    Reset();
+    std::int64_t iFrame64 = static_cast<std::int64_t>(iFrame) * m_pSource->GetSampleRate() / m_iSampleRate;
+    return m_pSource->SetPosition(static_cast<int>(iFrame64));
 }
 
 int RageSoundReader_Resample_Good::Read( float *pBuf, int iFrames )

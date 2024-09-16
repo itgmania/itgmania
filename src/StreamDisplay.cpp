@@ -109,7 +109,7 @@ void StreamDisplay::Update( float fDeltaSecs )
 		for( int i=0; i<(int)m_vpSprPill[st].size(); i++ )
 		{
 			Sprite *pSpr = m_vpSprPill[st][i];
-			float fPercentFilledThisPill = SCALE( m_fTrailingPercent, fPillWidthPercent*i, fPillWidthPercent*(i+1), 0.0f, 1.0f );
+			float fPercentFilledThisPill = (((m_fTrailingPercent)-(fPillWidthPercent * i)) * ((1.0f) - (0.0f)) / ((fPillWidthPercent * (i + 1)) - (fPillWidthPercent * i)) + (0.0f));
 			CLAMP( fPercentFilledThisPill, 0.0f, 1.0f );
 
 			// XXX scale by current song speed

@@ -705,7 +705,7 @@ static void GlobalOffsetSeconds( int &sel, bool ToSel, const ConfOption *pConfOp
 {
 	float mapping[41];
 	for( int i = 0; i < 41; ++i )
-		mapping[i] = SCALE( i, 0.0f, 40.0f, -0.1f, +0.1f );
+		mapping[i] = (((i)-(0.0f)) * ((+0.1f) - (-0.1f)) / ((40.0f) - (0.0f)) + (-0.1f));
 
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }

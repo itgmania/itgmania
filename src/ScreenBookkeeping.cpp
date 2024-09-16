@@ -48,7 +48,7 @@ void ScreenBookkeeping::Init()
 		m_textData[i].LoadFromFont( THEME->GetPathF(m_sName,"data") );
 		m_textData[i].SetName( "Data" );
 		LOAD_ALL_COMMANDS_AND_SET_XY( m_textData[i] );
-		float fX = SCALE( i, 0.f, NUM_BOOKKEEPING_COLS-1, SCREEN_LEFT+50, SCREEN_RIGHT-160 );
+		float fX = (((i)-(0.f)) * (((ScreenDimensions::GetScreenWidth()) - 160) - ((0) + 50)) / ((NUM_BOOKKEEPING_COLS - 1) - (0.f)) + ((0) + 50));
 		m_textData[i].SetX( fX );
 		this->AddChild( &m_textData[i] );
 	}

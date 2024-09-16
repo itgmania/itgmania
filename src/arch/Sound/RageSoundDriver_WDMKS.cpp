@@ -1075,7 +1075,7 @@ namespace
 		{
 			float *pOutBuf = (float *) pOut;
 			for( int i = 0; i < iSamples; ++i )
-				pOutBuf[i] = SCALE( pIn[i], -32768, +32767, -1.0f, +1.0f ); // [-32768, 32767] -> [-1,+1]
+				pOutBuf[i] = (((pIn[i]) - (-32768)) * ((+1.0f) - (-1.0f)) / ((+32767) - (-32768)) + (-1.0f)); // [-32768, 32767] -> [-1,+1]
 			break;
 		}
 		case DeviceSampleFormat_Int24:

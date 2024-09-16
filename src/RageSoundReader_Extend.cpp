@@ -124,8 +124,8 @@ int RageSoundReader_Extend::Read( float *pBuffer, int iFrames )
 		{
 			const int iStartSecond = m_iPositionFrames;
 			const int iEndSecond = m_iPositionFrames + iFramesRead;
-			const float fStartVolume = SCALE( iStartSecond, iFullVolumePositionFrames, iSilencePositionFrames, 1.0f, 0.0f );
-			const float fEndVolume = SCALE( iEndSecond, iFullVolumePositionFrames, iSilencePositionFrames, 1.0f, 0.0f );
+			const float fStartVolume = (((iStartSecond)-(iFullVolumePositionFrames)) * ((0.0f) - (1.0f)) / ((iSilencePositionFrames)-(iFullVolumePositionFrames)) + (1.0f));
+			const float fEndVolume = (((iEndSecond)-(iFullVolumePositionFrames)) * ((0.0f) - (1.0f)) / ((iSilencePositionFrames)-(iFullVolumePositionFrames)) + (1.0f));
 			RageSoundUtil::Fade( pBuffer, iFramesRead, this->GetNumChannels(), fStartVolume, fEndVolume );
 		}
 

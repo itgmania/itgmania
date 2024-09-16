@@ -76,9 +76,9 @@ void SoundEffectControl::Update( float fDeltaTime )
 
 	float fCurrent;
 	if( m_fSample < 0 )
-		fCurrent = SCALE( m_fSample, 0.0f, -1.0f, fPropertyCenter, fPropertyMin );
+		fCurrent = (((m_fSample)-(0.0f)) * ((fPropertyMin)-(fPropertyCenter)) / ((-1.0f) - (0.0f)) + (fPropertyCenter));
 	else
-		fCurrent = SCALE( m_fSample, 0.0f, +1.0f, fPropertyCenter, fPropertyMax );
+		fCurrent = (((m_fSample)-(0.0f)) * ((fPropertyMax)-(fPropertyCenter)) / ((+1.0f) - (0.0f)) + (fPropertyCenter));
 
 	if( m_pSoundReader )
 		m_pSoundReader->SetProperty( SOUND_PROPERTY, fCurrent );

@@ -51,11 +51,11 @@ void DualScrollBar::SetPercentage( PlayerNumber pn, float fPercent )
 	/* Position both thumbs. */
 	m_sprScrollThumbUnderHalf[pn]->StopTweening();
 	m_sprScrollThumbUnderHalf[pn]->BeginTweening( m_fBarTime );
-	m_sprScrollThumbUnderHalf[pn]->SetY( SCALE( fPercent, 0, 1, top, bottom ) );
+	m_sprScrollThumbUnderHalf[pn]->SetY((((fPercent)-(0)) * ((bottom)-(top)) / ((1) - (0)) + (top)));
 
 	m_sprScrollThumbOverHalf[pn]->StopTweening();
 	m_sprScrollThumbOverHalf[pn]->BeginTweening( m_fBarTime );
-	m_sprScrollThumbOverHalf[pn]->SetY( SCALE( fPercent, 0, 1, top, bottom ) );
+	m_sprScrollThumbOverHalf[pn]->SetY((((fPercent)-(0)) * ((bottom)-(top)) / ((1) - (0)) + (top)));
 }
 
 /*

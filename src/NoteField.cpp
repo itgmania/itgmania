@@ -432,11 +432,11 @@ void NoteField::DrawBeatBar( const float fBeat, BeatBarType type, int iMeasureIn
 				iState = 1;
 				break;
 			case half_beat:
-				fAlpha = SCALE(fScrollSpeed,1.0f,2.0f,0.0f,m_fBar8thAlpha);
+				fAlpha = (fScrollSpeed - 1.0f) * m_fBar8thAlpha;
 				iState = 2;
 				break;
 			case quarter_beat:
-				fAlpha = SCALE(fScrollSpeed,2.0f,4.0f,0.0f,m_fBar16thAlpha);
+				fAlpha = (fScrollSpeed - 2.0f) * m_fBar16thAlpha / 2.0f;
 				iState = 3;
 				break;
 		}
@@ -450,7 +450,12 @@ void NoteField::DrawBeatBar( const float fBeat, BeatBarType type, int iMeasureIn
 	m_sprBeatBars.SetY( fYPos );
 	m_sprBeatBars.SetDiffuse( RageColor(1,1,1,fAlpha) );
 	m_sprBeatBars.SetState( iState );
-	m_sprBeatBars.SetCustomTextureRect( RectF(0,SCALE(iState,0.f,4.f,0.f,1.f), fWidth/fFrameWidth, SCALE(iState+1,0.f,4.f,0.f,1.f)) );
+	m_sprBeatBars.SetCustomTextureRect(RectF(
+		0,
+		iState / 4.0f,
+		fWidth / fFrameWidth,
+		(iState + 1) / 4.0f
+	));
 	m_sprBeatBars.SetZoomX( fWidth/m_sprBeatBars.GetUnzoomedWidth() );
 	m_sprBeatBars.Draw();
 
@@ -757,7 +762,7 @@ void NoteField::CalcPixelsBeforeAndAfterTargets()
 		curr_options.m_fScrolls[PlayerOptions::SCROLL_CENTERED] *
 		curr_options.m_fAccels[PlayerOptions::ACCEL_BOOMERANG];
 	m_FieldRenderArgs.draw_pixels_after_targets +=
-		int(SCALE(centered_times_boomerang, 0.f, 1.f, 0.f, -SCREEN_HEIGHT/2));
+		int((((centered_times_boomerang)-(0.f)) * ((-ScreenDimensions::GetScreenHeight() / 2) - (0.f)) / ((1.f) - (0.f)) + (0.f)));
 	m_FieldRenderArgs.draw_pixels_before_targets =
 		m_iDrawDistanceBeforeTargetsPixels * (1.f + curr_options.m_fDrawSize);
 
@@ -1061,8 +1066,7 @@ void NoteField::DrawPrimitives()
 	if(*m_FieldRenderArgs.selection_begin_marker != -1 &&
 		*m_FieldRenderArgs.selection_end_marker != -1)
 	{
-		m_FieldRenderArgs.selection_glow= SCALE(
-			std::cos(RageTimer::GetTimeSinceStartFast()*2), -1, 1, 0.1f, 0.3f);
+		m_FieldRenderArgs.selection_glow = (((std::cos(RageTimer::GetTimeSinceStartFast() * 2)) - (-1)) * ((0.3f) - (0.1f)) / ((1) - (-1)) + (0.1f));
 	}
 	m_FieldRenderArgs.fade_before_targets= FADE_BEFORE_TARGETS_PERCENT;
 

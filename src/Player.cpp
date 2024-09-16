@@ -906,7 +906,7 @@ void Player::Update( float fDeltaTime )
 			for( int c=0; c<GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)->m_iColsPerPlayer; c++ )
 			{
 				float fPercentReverse = m_pPlayerState->m_PlayerOptions.GetCurrent().GetReversePercentForColumn(c);
-				float fHoldJudgeYPos = SCALE( fPercentReverse, 0.f, 1.f, HOLD_JUDGMENT_Y_STANDARD, HOLD_JUDGMENT_Y_REVERSE );
+				float fHoldJudgeYPos = (((fPercentReverse)-(0.f)) * ((HOLD_JUDGMENT_Y_REVERSE)-(HOLD_JUDGMENT_Y_STANDARD)) / ((1.f) - (0.f)) + (HOLD_JUDGMENT_Y_STANDARD));
 				//float fGrayYPos = SCALE( fPercentReverse, 0.f, 1.f, GRAY_ARROWS_Y_STANDARD, GRAY_ARROWS_Y_REVERSE );
 
 				float fX = ArrowEffects::GetXPos( m_pPlayerState, c, 0 );
@@ -1687,7 +1687,7 @@ void Player::PushPlayerMatrix(float x, float skew, float center_y)
 	DISPLAY->CameraPushMatrix();
 	DISPLAY->PushMatrix();
 	DISPLAY->LoadMenuPerspective(45, SCREEN_WIDTH, SCREEN_HEIGHT,
-		SCALE(skew, 0.1f, 1.0f, x, SCREEN_CENTER_X), center_y);
+		(((skew)-(0.1f)) * ((((0) + ((ScreenDimensions::GetScreenWidth()) - (0)) / 2.0f)) - (x)) / ((1.0f) - (0.1f)) + (x)), center_y);
 }
 
 void Player::PopPlayerMatrix()
@@ -1710,21 +1710,21 @@ Player::PlayerNoteFieldPositioner::PlayerNoteFieldPositioner(
 	player->PushPlayerMatrix(x, skew, center_y);
 	float reverse_mult= (reverse ? -1 : 1);
 	original_y= player->m_pNoteField->GetY();
-	float tilt_degrees= SCALE(tilt, -1.f, +1.f, +30, -30) * reverse_mult;
-	float zoom= SCALE(mini, 0.f, 1.f, 1.f, .5f);
+	float tilt_degrees = (((tilt)-(-1.f)) * ((-30) - (+30)) / ((+1.f) - (-1.f)) + (+30)) * reverse_mult;
+	float zoom = (((mini)-(0.f)) * ((.5f) - (1.f)) / ((1.f) - (0.f)) + (1.f));
 	// Something strange going on here.  Notice that the range for tilt's
 	// effect on y_offset goes to -45 when positive, but -20 when negative.
 	// I don't know why it's done this why, simply preserving old behavior.
 	// -Kyz
 	if(tilt > 0)
 	{
-		zoom*= SCALE(tilt, 0.f, 1.f, 1.f, 0.9f);
-		y_offset= SCALE(tilt, 0.f, 1.f, 0.f, -45.f) * reverse_mult;
+		zoom *= (((tilt)-(0.f)) * ((0.9f) - (1.f)) / ((1.f) - (0.f)) + (1.f));
+		y_offset = (((tilt)-(0.f)) * ((-45.f) - (0.f)) / ((1.f) - (0.f)) + (0.f)) * reverse_mult;
 	}
 	else
 	{
-		zoom*= SCALE(tilt, 0.f, -1.f, 1.f, 0.9f);
-		y_offset= SCALE(tilt, 0.f, -1.f, 0.f, -20.f) * reverse_mult;
+		zoom *= (((tilt)-(0.f)) * ((0.9f) - (1.f)) / ((-1.f) - (0.f)) + (1.f));
+		y_offset = (((tilt)-(0.f)) * ((-20.f) - (0.f)) / ((-1.f) - (0.f)) + (0.f)) * reverse_mult;
 	}
 	player->m_pNoteField->SetY(original_y + y_offset);
 	if(player->m_oitg_zoom_mode)
@@ -2199,9 +2199,9 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 			[[fallthrough]];
 		default:
 			{
-				float fCalsFor100Lbs = SCALE( iNumTracksHeld, 1, 2, 0.023f, 0.077f );
-				float fCalsFor200Lbs = SCALE( iNumTracksHeld, 1, 2, 0.041f, 0.133f );
-				fCals = SCALE( pProfile->GetCalculatedWeightPounds(), 100.f, 200.f, fCalsFor100Lbs, fCalsFor200Lbs );
+			float fCalsFor100Lbs = (((iNumTracksHeld)-(1)) * ((0.077f) - (0.023f)) / ((2) - (1)) + (0.023f));
+			float fCalsFor200Lbs = (((iNumTracksHeld)-(1)) * ((0.133f) - (0.041f)) / ((2) - (1)) + (0.041f));
+			fCals = (((pProfile->GetCalculatedWeightPounds()) - (100.f)) * ((fCalsFor200Lbs)-(fCalsFor100Lbs)) / ((200.f) - (100.f)) + (fCalsFor100Lbs));
 			}
 			break;
 		}

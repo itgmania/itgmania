@@ -38,7 +38,7 @@ extern const RString CUSTOM_SONG_PATH;
  *
  * One such example: SCALE(x, 0, 1, L, H); interpolate between L and H.
  */
-#define SCALE(x, l1, h1, l2, h2)	(((x) - (l1)) * ((h2) - (l2)) / ((h1) - (l1)) + (l2))
+//#define SCALE(x, l1, h1, l2, h2)	(((x) - (l1)) * ((h2) - (l2)) / ((h1) - (l1)) + (l2))
 
 template<typename T, typename U>
 inline U lerp( T x, U l, U h )

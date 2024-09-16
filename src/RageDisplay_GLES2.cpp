@@ -704,8 +704,8 @@ RageDisplay_GLES2::SetZWrite( bool b )
 void
 RageDisplay_GLES2::SetZBias( float f )
 {
-	float fNear = SCALE( f, 0.0f, 1.0f, 0.05f, 0.0f );
-	float fFar = SCALE( f, 0.0f, 1.0f, 1.0f, 0.95f );
+	float fNear = (((f)-(0.0f)) * ((0.0f) - (0.05f)) / ((1.0f) - (0.0f)) + (0.05f));
+	float fFar = (((f)-(0.0f)) * ((0.95f) - (1.0f)) / ((1.0f) - (0.0f)) + (1.0f));
 
 	glDepthRange( fNear, fFar );
 }

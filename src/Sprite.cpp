@@ -241,13 +241,13 @@ void Sprite::LoadFromNode( const XNode* pNode )
 					float fX = 1.0f, fY = 1.0f;
 					pPoints[0]->GetAttrValue( "x", fX );
 					pPoints[0]->GetAttrValue( "y", fY );
-					newState.rect.left = SCALE( fX, 0.0f, 1.0f, r.left, r.right );
-					newState.rect.top = SCALE( fY, 0.0f, 1.0f, r.top, r.bottom );
+					newState.rect.left = (((fX)-(0.0f)) * ((r.right) - (r.left)) / ((1.0f) - (0.0f)) + (r.left));
+					newState.rect.top = (((fY)-(0.0f)) * ((r.bottom) - (r.top)) / ((1.0f) - (0.0f)) + (r.top));
 
 					pPoints[1]->GetAttrValue( "x", fX );
 					pPoints[1]->GetAttrValue( "y", fY );
-					newState.rect.right = SCALE( fX, 0.0f, 1.0f, r.left, r.right );
-					newState.rect.bottom = SCALE( fY, 0.0f, 1.0f, r.top, r.bottom );
+					newState.rect.right = (((fX)-(0.0f)) * ((r.right) - (r.left)) / ((1.0f) - (0.0f)) + (r.left));
+					newState.rect.bottom = (((fY)-(0.0f)) * ((r.bottom) - (r.top)) / ((1.0f) - (0.0f)) + (r.top));
 				}
 
 				aStates.push_back( newState );
@@ -563,14 +563,23 @@ void Sprite::DrawTexture( const TweenState *state )
 	CLAMP( crop.bottom, 0, 1 );
 
 	RectF croppedQuadVerticies = quadVerticies;
-#define IF_CROP_POS(side,opp_side) \
-	if(state->crop.side!=0) \
-		croppedQuadVerticies.side = \
-			SCALE( crop.side, 0.f, 1.f, quadVerticies.side, quadVerticies.opp_side )
-	IF_CROP_POS( left, right );
-	IF_CROP_POS( top, bottom );
-	IF_CROP_POS( right, left );
-	IF_CROP_POS( bottom, top );
+
+	if (state->crop.left != 0)
+	{
+		croppedQuadVerticies.left = (((state->crop.left) - (0.f)) * ((quadVerticies.right) - (quadVerticies.left)) / ((1.f) - (0.f)) + (quadVerticies.left));
+	}
+	if (state->crop.top != 0)
+	{
+		croppedQuadVerticies.top = (((state->crop.top) - (0.f)) * ((quadVerticies.bottom) - (quadVerticies.top)) / ((1.f) - (0.f)) + (quadVerticies.top));
+	}
+	if (state->crop.right != 0)
+	{
+		croppedQuadVerticies.right = (((state->crop.right) - (0.f)) * ((quadVerticies.left) - (quadVerticies.right)) / ((1.f) - (0.f)) + (quadVerticies.right));
+	}
+	if (state->crop.bottom != 0)
+	{
+		croppedQuadVerticies.bottom = (((state->crop.bottom) - (0.f)) * ((quadVerticies.top) - (quadVerticies.bottom)) / ((1.f) - (0.f)) + (quadVerticies.bottom));
+	}
 
 	static RageSpriteVertex v[4];
 	v[0].p = RageVector3( croppedQuadVerticies.left,	croppedQuadVerticies.top,	0 );	// top left
@@ -608,18 +617,30 @@ void Sprite::DrawTexture( const TweenState *state )
 				RageVector2( f[6], f[7] ) 	// top right
 			};
 
-			for( int i = 0; i < 4; ++i )
-			{
-				RageSpriteVertex *pVert = &v[i];
+		float quadWidth = quadVerticies.right - quadVerticies.left;
+		float quadHeight = quadVerticies.bottom - quadVerticies.top;
 
-				float fTopX = SCALE( pVert->p.x, quadVerticies.left, quadVerticies.right, texCoords[0].x, texCoords[3].x );
-				float fBottomX = SCALE( pVert->p.x, quadVerticies.left, quadVerticies.right, texCoords[1].x, texCoords[2].x );
-				pVert->t.x = SCALE( pVert->p.y, quadVerticies.top, quadVerticies.bottom, fTopX, fBottomX );
+		float texWidthTop = texCoords[3].x - texCoords[0].x;
+		float texWidthBottom = texCoords[2].x - texCoords[1].x;
+		float texHeightLeft = texCoords[1].y - texCoords[0].y;
+		float texHeightRight = texCoords[2].y - texCoords[3].y;
 
-				float fLeftY = SCALE( pVert->p.y, quadVerticies.top, quadVerticies.bottom, texCoords[0].y, texCoords[1].y );
-				float fRightY = SCALE( pVert->p.y, quadVerticies.top, quadVerticies.bottom, texCoords[3].y, texCoords[2].y );
-				pVert->t.y = SCALE( pVert->p.x, quadVerticies.left, quadVerticies.right, fLeftY, fRightY );
-			}
+		for (int i = 0; i < 4; ++i)
+		{
+			RageSpriteVertex *pVert = &v[i];
+
+			float pVertX = pVert->p.x - quadVerticies.left;
+			float pVertY = pVert->p.y - quadVerticies.top;
+
+			float fTopX = (pVertX * texWidthTop / quadWidth) + texCoords[0].x;
+			float fBottomX = (pVertX * texWidthBottom / quadWidth) + texCoords[1].x;
+			pVert->t.x = (pVertY * (fBottomX - fTopX) / quadHeight) + fTopX;
+
+			float fLeftY = (pVertY * texHeightLeft / quadHeight) + texCoords[0].y;
+			float fRightY = (pVertY * texHeightRight / quadHeight) + texCoords[3].y;
+			pVert->t.y = (pVertX * (fRightY - fLeftY) / quadWidth) + fLeftY;
+		}
+
 		}
 		else
 		{
@@ -712,10 +733,10 @@ void Sprite::DrawPrimitives()
 		}
 
 		// Alpha value of the un-faded side of each fade rect:
-		const float RightAlpha  = SCALE( FadeSize.right,  FadeDist.right,  0, 1, 0 );
-		const float LeftAlpha   = SCALE( FadeSize.left,   FadeDist.left,   0, 1, 0 );
-		const float TopAlpha    = SCALE( FadeSize.top,    FadeDist.top,    0, 1, 0 );
-		const float BottomAlpha = SCALE( FadeSize.bottom, FadeDist.bottom, 0, 1, 0 );
+		const float RightAlpha = (((FadeSize.right) - (FadeDist.right)) * ((0) - (1)) / ((0) - (FadeDist.right)) + (1));
+		const float LeftAlpha = (((FadeSize.left) - (FadeDist.left)) * ((0) - (1)) / ((0) - (FadeDist.left)) + (1));
+		const float TopAlpha = (((FadeSize.top) - (FadeDist.top)) * ((0) - (1)) / ((0) - (FadeDist.top)) + (1));
+		const float BottomAlpha = (((FadeSize.bottom) - (FadeDist.bottom)) * ((0) - (1)) / ((0) - (FadeDist.bottom)) + (1));
 
 		// Draw the inside:
 		TweenState ts = *m_pTempState;
@@ -1248,10 +1269,10 @@ public:
 				// I have no idea why the points are from 0 to 1 and make it use only
 				// a portion of the state.  This is just copied from LoadFromNode.
 				// -Kyz
-				new_state.rect.left= SCALE(FArg(-1), 0.0f, 1.0f, r.left, r.right);
+				new_state.rect.left = (((((float)luaL_checknumber(L, (-1)))) - (0.0f)) * ((r.right) - (r.left)) / ((1.0f) - (0.0f)) + (r.left));
 				lua_pop(L, 1);
 				lua_rawgeti(L, -1, 2);
-				new_state.rect.top= SCALE(FArg(-1), 0.0f, 1.0f, r.top, r.bottom);
+				new_state.rect.top = (((((float)luaL_checknumber(L, (-1)))) - (0.0f)) * ((r.bottom) - (r.top)) / ((1.0f) - (0.0f)) + (r.top));
 				lua_pop(L, 1);
 			}
 			lua_pop(L, 1);
@@ -1262,10 +1283,10 @@ public:
 				// I have no idea why the points are from 0 to 1 and make it use only
 				// a portion of the state.  This is just copied from LoadFromNode.
 				// -Kyz
-				new_state.rect.right= SCALE(FArg(-1), 0.0f, 1.0f, r.left, r.right);
+				new_state.rect.right = (((((float)luaL_checknumber(L, (-1)))) - (0.0f)) * ((r.right) - (r.left)) / ((1.0f) - (0.0f)) + (r.left));
 				lua_pop(L, 1);
 				lua_rawgeti(L, -1, 2);
-				new_state.rect.bottom= SCALE(FArg(-1), 0.0f, 1.0f, r.top, r.bottom);
+				new_state.rect.bottom = (((((float)luaL_checknumber(L, (-1)))) - (0.0f)) * ((r.bottom) - (r.top)) / ((1.0f) - (0.0f)) + (r.top));
 				lua_pop(L, 1);
 			}
 			lua_pop(L, 1);

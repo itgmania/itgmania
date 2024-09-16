@@ -516,7 +516,7 @@ void InputHandler_DInput::UpdatePolled( DIDevice &device, const RageTimer &tm )
 
 						if( neg != DeviceButton_Invalid )
 						{
-							float l = SCALE( int(val), 0.0f, 100.0f, 0.0f, 1.0f );
+							float l = (((int(val)) - (0.0f)) * ((1.0f) - (0.0f)) / ((100.0f) - (0.0f)) + (0.0f));
 							ButtonPressed( DeviceInput(dev, neg, std::max(-l, 0.0f), tm) );
 							ButtonPressed( DeviceInput(dev, pos, std::max(+l, 0.0f), tm) );
 						}
@@ -693,6 +693,8 @@ void InputHandler_DInput::UpdateBuffered( DIDevice &device, const RageTimer &tm 
 								up = MOUSE_WHEELUP; down = MOUSE_WHEELDOWN;
 								float fWheelDelta = l;
 								//l = SCALE( int(evtbuf[i].dwData), -WHEEL_DELTA, WHEEL_DELTA, 1.0f, -1.0f );
+								// note: the SCALE macro is removed, for reference the macro was as follows:
+								// (((x)-(l1))* ((h2)-(l2)) / ((h1)-(l1)) + (l2))
 								if( l > 0 )
 								{
 									DeviceInput diUp = DeviceInput(dev, up, 1.0f, tm);
@@ -753,7 +755,7 @@ void InputHandler_DInput::UpdateBuffered( DIDevice &device, const RageTimer &tm 
 										 "Controller '%s' is returning an unknown joystick offset, %i",
 										 device.m_sName.c_str(), in.ofs );
 
-						float l = SCALE( int(evtbuf[i].dwData), 0.0f, 100.0f, 0.0f, 1.0f );
+						float l = (((int(evtbuf[i].dwData)) - (0.0f)) * ((1.0f) - (0.0f)) / ((100.0f) - (0.0f)) + (0.0f));
 						if(GamePreferences::m_AxisFix)
 						{
 						  ButtonPressed( DeviceInput(dev, up, (l == 0) || (l == -1), tm) );
@@ -796,8 +798,8 @@ void InputHandler_DInput::UpdateXInput( XIDevice &device, const RageTimer &tm )
 		float ly = 0.f;
 		if (std::sqrt(std::pow(state.Gamepad.sThumbLX, 2) + std::pow(state.Gamepad.sThumbLY, 2)) > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE)
 		{
-			lx = SCALE(state.Gamepad.sThumbLX + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f, XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
-			ly = SCALE(state.Gamepad.sThumbLY + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f, XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
+			lx = (((state.Gamepad.sThumbLX + 0.f) - (XINPUT_GAMEPAD_THUMB_MIN + 0.f)) * ((1.0f) - (-1.0f)) / ((XINPUT_GAMEPAD_THUMB_MAX + 0.f) - (XINPUT_GAMEPAD_THUMB_MIN + 0.f)) + (-1.0f));
+			ly = (((state.Gamepad.sThumbLY + 0.f) - (XINPUT_GAMEPAD_THUMB_MIN + 0.f)) * ((1.0f) - (-1.0f)) / ((XINPUT_GAMEPAD_THUMB_MAX + 0.f) - (XINPUT_GAMEPAD_THUMB_MIN + 0.f)) + (-1.0f));
 		}
 		ButtonPressed(DeviceInput(device.dev, JOY_LEFT, std::max(-lx, 0.f), tm));
 		ButtonPressed(DeviceInput(device.dev, JOY_RIGHT, std::max(+lx, 0.f), tm));
@@ -808,8 +810,8 @@ void InputHandler_DInput::UpdateXInput( XIDevice &device, const RageTimer &tm )
 		float ry = 0.f;
 		if (std::sqrt(std::pow(state.Gamepad.sThumbRX, 2) + std::pow(state.Gamepad.sThumbRY, 2)) > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE)
 		{
-			rx = SCALE(state.Gamepad.sThumbRX + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f, XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
-			ry = SCALE(state.Gamepad.sThumbRY + 0.f, XINPUT_GAMEPAD_THUMB_MIN + 0.f, XINPUT_GAMEPAD_THUMB_MAX + 0.f, -1.0f, 1.0f);
+			rx = (((state.Gamepad.sThumbRX + 0.f) - (XINPUT_GAMEPAD_THUMB_MIN + 0.f)) * ((1.0f) - (-1.0f)) / ((XINPUT_GAMEPAD_THUMB_MAX + 0.f) - (XINPUT_GAMEPAD_THUMB_MIN + 0.f)) + (-1.0f));
+			ry = (((state.Gamepad.sThumbRY + 0.f) - (XINPUT_GAMEPAD_THUMB_MIN + 0.f)) * ((1.0f) - (-1.0f)) / ((XINPUT_GAMEPAD_THUMB_MAX + 0.f) - (XINPUT_GAMEPAD_THUMB_MIN + 0.f)) + (-1.0f));
 		}
 		ButtonPressed(DeviceInput(device.dev, JOY_LEFT_2, std::max(-rx, 0.f), tm));
 		ButtonPressed(DeviceInput(device.dev, JOY_RIGHT_2, std::max(+rx, 0.f), tm));

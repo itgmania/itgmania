@@ -686,8 +686,8 @@ void ScreenTextEntryVisual::BeginScreen()
 		for( int x=0; x<KEYS_PER_ROW; ++x )
 		{
 			BitmapText &bt = *m_ptextKeys[r][x];
-			float fX = std::round( SCALE( x, 0, KEYS_PER_ROW-1, ROW_START_X, ROW_END_X ) );
-			float fY = std::round( SCALE( r, 0, NUM_KeyboardRow-1, ROW_START_Y, ROW_END_Y ) );
+			float fX = std::round((((x)-(0)) * ((ROW_END_X)-(ROW_START_X)) / ((KEYS_PER_ROW - 1) - (0)) + (ROW_START_X)));
+			float fY = std::round((((r)-(0)) * ((ROW_END_Y)-(ROW_START_Y)) / ((NUM_KeyboardRow - 1) - (0)) + (ROW_START_Y)));
 			bt.SetXY( fX, fY );
 		}
 	}

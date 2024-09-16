@@ -572,10 +572,10 @@ static bool blit_rgba_to_rgba( const RageSurface *src_surf, const RageSurface *d
 			 * strange; what's wrong here? */
 			if( max_src_val > max_dst_val )
 				for( std::uint32_t i = 0; i <= max_src_val; ++i )
-					lookup[c][i] = (std::uint8_t) SCALE( i, 0, max_src_val+1, 0, max_dst_val+1 );
+					lookup[c][i] = (std::uint8_t)(((i)-(0)) * ((max_dst_val + 1) - (0)) / ((max_src_val + 1) - (0)) + (0));
 			else
 				for( std::uint32_t i = 0; i <= max_src_val; ++i )
-					lookup[c][i] = (std::uint8_t) SCALE( i, 0, max_src_val, 0, max_dst_val );
+					lookup[c][i] = (std::uint8_t)(((i)-(0)) * ((max_dst_val)-(0)) / ((max_src_val)-(0)) + (0));
 		}
 	}
 

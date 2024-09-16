@@ -630,7 +630,7 @@ void Model::SetBones( const msAnimation* pAnimation, float fFrame, std::vector<m
 		RageVector3 vPos;
 		if( pLastPositionKey != nullptr && pThisPositionKey != nullptr )
 		{
-			const float s = SCALE( fFrame, pLastPositionKey->fTime, pThisPositionKey->fTime, 0, 1 );
+			const float s = (((fFrame)-(pLastPositionKey->fTime)) * ((1) - (0)) / ((pThisPositionKey->fTime) - (pLastPositionKey->fTime)) + (0));
 			vPos = pLastPositionKey->Position + (pThisPositionKey->Position - pLastPositionKey->Position) * s;
 		}
 		else if( pLastPositionKey == nullptr )
@@ -654,7 +654,7 @@ void Model::SetBones( const msAnimation* pAnimation, float fFrame, std::vector<m
 		RageVector4 vRot;
 		if( pLastRotationKey != nullptr && pThisRotationKey != nullptr )
 		{
-			const float s = SCALE( fFrame, pLastRotationKey->fTime, pThisRotationKey->fTime, 0, 1 );
+			const float s = (((fFrame)-(pLastRotationKey->fTime)) * ((1) - (0)) / ((pThisRotationKey->fTime) - (pLastRotationKey->fTime)) + (0));
 			RageQuatSlerp( &vRot, pLastRotationKey->Rotation, pThisRotationKey->Rotation, s );
 		}
 		else if( pLastRotationKey == nullptr )

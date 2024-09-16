@@ -1216,8 +1216,8 @@ void RageDisplay_D3D::SetZBias( float f )
 {
 	D3DVIEWPORT9 viewData;
 	g_pd3dDevice->GetViewport( &viewData );
-	viewData.MinZ = SCALE( f, 0.0f, 1.0f, 0.05f, 0.0f );
-	viewData.MaxZ = SCALE( f, 0.0f, 1.0f, 1.0f, 0.95f );
+	viewData.MinZ = (((f)-(0.0f)) * ((0.0f) - (0.05f)) / ((1.0f) - (0.0f)) + (0.05f));
+	viewData.MaxZ = (((f)-(0.0f)) * ((0.95f) - (1.0f)) / ((1.0f) - (0.0f)) + (1.0f));
 	g_pd3dDevice->SetViewport( &viewData );
 }
 

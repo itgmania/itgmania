@@ -261,7 +261,7 @@ void ScreenSelectCharacter::AfterValueChange( PlayerNumber pn )
 				Banner &banner = m_sprIcons[pnAffected][i];
 				banner.LoadIconFromCharacter( pCharacter );
 				float fX = (pnAffected==PLAYER_1) ? 320-ICON_WIDTH : 320+ICON_WIDTH;
-				float fY = SCALE( i, 0.f, MAX_CHAR_ICONS_TO_SHOW-1.f, 240-(MAX_CHAR_ICONS_TO_SHOW/2*ICON_HEIGHT), 240+(MAX_CHAR_ICONS_TO_SHOW/2*ICON_HEIGHT));
+				float fY = (((i)-(0.f)) * ((240 + (11 / 2 * THEME->GetMetricF("ScreenSelectCharacter", "IconHeight"))) - (240 - (11 / 2 * THEME->GetMetricF("ScreenSelectCharacter", "IconHeight")))) / ((11 - 1.f) - (0.f)) + (240 - (11 / 2 * THEME->GetMetricF("ScreenSelectCharacter", "IconHeight"))));
 				banner.SetXY( fX, fY );
 			}
 		}

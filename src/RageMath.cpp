@@ -681,7 +681,7 @@ float RageBezier2D::EvaluateYFromX( float fX ) const
 	/* Quickly approximate T using Newton-Raphelson successive optimization (see
 	 * http://www.tinaja.com/text/bezmath.html).  This usually finds T within an
 	 * acceptable error margin in a few steps. */
-	float fT = SCALE( fX, m_X.GetBezierStart(), m_X.GetBezierEnd(), 0, 1 );
+	float fT = (((fX)-(m_X.GetBezierStart())) * ((1) - (0)) / ((m_X.GetBezierEnd()) - (m_X.GetBezierStart())) + (0));
 	// Don't try more than 100 times, the curve might be a bit nonsensical. -Kyz
 	for(int i= 0; i < 100; ++i)
 	{

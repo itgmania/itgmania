@@ -79,11 +79,11 @@ void ScreenNameEntry::ScrollingText::DrawPrimitives()
 		float fAlpha = 1.f;
 
 		if( iCharIndex == iClosestIndex )
-			fZoom = SCALE( std::abs(fClosestYOffset), 0, 0.5f, g_fCharsZoomLarge, g_fCharsZoomSmall );
+			fZoom = (((std::abs(fClosestYOffset)) - (0)) * ((g_fCharsZoomSmall)-(g_fCharsZoomLarge)) / ((0.5f) - (0)) + (g_fCharsZoomLarge));
 		if( i == 0 )
-			fAlpha *= SCALE( fClosestYOffset, -0.5f, 0.f, 0.f, 1.f );
+			fAlpha *= (((fClosestYOffset)-(-0.5f)) * ((1.f) - (0.f)) / ((0.f) - (-0.5f)) + (0.f));
 		if( i == g_iNumCharsToDrawTotal-1 )
-			fAlpha *= SCALE( fClosestYOffset, 0.f, 0.5f, 1.f, 0.f );
+			fAlpha *= (((fClosestYOffset)-(0.f)) * ((0.f) - (1.f)) / ((0.5f) - (0.f)) + (1.f));
 
 		m_Stamp.SetZoom( fZoom );
 		m_Stamp.SetDiffuseAlpha( fAlpha );
