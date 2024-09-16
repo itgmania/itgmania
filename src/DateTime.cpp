@@ -12,46 +12,45 @@ DateTime::DateTime()
 
 void DateTime::Init()
 {
-	ZeroArray( *this );
+	tm_year = 0;
+	tm_mon = 0;
+	tm_mday = 0;
+	tm_hour = 0;
+	tm_min = 0;
+	tm_sec = 0;
 }
 
 bool DateTime::operator<( const DateTime& other ) const
 {
-#define COMPARE( v ) if(v!=other.v) return v<other.v;
-	COMPARE( tm_year );
-	COMPARE( tm_mon );
-	COMPARE( tm_mday );
-	COMPARE( tm_hour );
-	COMPARE( tm_min );
-	COMPARE( tm_sec );
-#undef COMPARE
+	if (tm_year != other.tm_year) return tm_year < other.tm_year;
+	if (tm_mon != other.tm_mon) return tm_mon < other.tm_mon;
+	if (tm_mday != other.tm_mday) return tm_mday < other.tm_mday;
+	if (tm_hour != other.tm_hour) return tm_hour < other.tm_hour;
+	if (tm_min != other.tm_min) return tm_min < other.tm_min;
+	if (tm_sec != other.tm_sec) return tm_sec < other.tm_sec;
 	// they're equal
 	return false;
 }
 
 bool DateTime::operator==( const DateTime& other ) const 
 {
-#define COMPARE(x)	if( x!=other.x )	return false;
-	COMPARE( tm_year );
-	COMPARE( tm_mon );
-	COMPARE( tm_mday );
-	COMPARE( tm_hour );
-	COMPARE( tm_min );
-	COMPARE( tm_sec );
-#undef COMPARE
+	if (tm_year != other.tm_year) return false;
+	if (tm_mon != other.tm_mon) return false;
+	if (tm_mday != other.tm_mday) return false;
+	if (tm_hour != other.tm_hour) return false;
+	if (tm_min != other.tm_min) return false;
+	if (tm_sec != other.tm_sec) return false;
 	return true;
 }
 
 bool DateTime::operator>( const DateTime& other ) const
 {
-#define COMPARE( v ) if(v!=other.v) return v>other.v;
-	COMPARE( tm_year );
-	COMPARE( tm_mon );
-	COMPARE( tm_mday );
-	COMPARE( tm_hour );
-	COMPARE( tm_min );
-	COMPARE( tm_sec );
-#undef COMPARE
+	if (tm_year != other.tm_year) return tm_year > other.tm_year;
+	if (tm_mon != other.tm_mon) return tm_mon > other.tm_mon;
+	if (tm_mday != other.tm_mday) return tm_mday > other.tm_mday;
+	if (tm_hour != other.tm_hour) return tm_hour > other.tm_hour;
+	if (tm_min != other.tm_min) return tm_min > other.tm_min;
+	if (tm_sec != other.tm_sec) return tm_sec > other.tm_sec;
 	// they're equal
 	return false;
 }
@@ -60,16 +59,14 @@ DateTime DateTime::GetNowDateTime()
 {
 	time_t now = time(nullptr);
 	tm tNow;
-	localtime_r( &now, &tNow );
+	localtime_r(&now, &tNow);
 	DateTime dtNow;
-#define COPY_M( v ) dtNow.v = tNow.v;
-	COPY_M( tm_year );
-	COPY_M( tm_mon );
-	COPY_M( tm_mday );
-	COPY_M( tm_hour );
-	COPY_M( tm_min );
-	COPY_M( tm_sec );
-#undef COPY_M
+	dtNow.tm_year = tNow.tm_year;
+	dtNow.tm_mon = tNow.tm_mon;
+	dtNow.tm_mday = tNow.tm_mday;
+	dtNow.tm_hour = tNow.tm_hour;
+	dtNow.tm_min = tNow.tm_min;
+	dtNow.tm_sec = tNow.tm_sec;
 	return dtNow;
 }
 
