@@ -16,10 +16,21 @@
 
 class RageFileDriver;
 
-/** @brief Safely delete pointers. */
-#define SAFE_DELETE(p)       do { delete (p);     (p)=nullptr; } while( false )
-/** @brief Safely delete array pointers. */
-#define SAFE_DELETE_ARRAY(p) do { delete[] (p);   (p)=nullptr; } while( false )
+// Safely delete pointers.
+template <typename T>
+inline void SAFE_DELETE(T*& p) noexcept
+{
+    delete p;
+    p = nullptr;
+}
+
+// Safely delete array pointers.
+template <typename T>
+inline void SAFE_DELETE_ARRAY(T*& p) noexcept
+{
+    delete[] p;
+    p = nullptr;
+}
 
 // A constexpr function to initialize an array to zero.
 template <typename T>
@@ -56,16 +67,6 @@ constexpr int FastMin(int a, int b)
 }
 
 extern const RString CUSTOM_SONG_PATH;
-
-/**
- * @brief Scales x so that l1 corresponds to l2 and h1 corresponds to h2.
- *
- * This does not modify x, so it MUST assign the result to something!
- * Do the multiply before the divide to that integer scales have more precision.
- *
- * One such example: SCALE(x, 0, 1, L, H); interpolate between L and H.
- */
-//#define SCALE(x, l1, h1, l2, h2)	(((x) - (l1)) * ((h2) - (l2)) / ((h1) - (l1)) + (l2))
 
 template<typename T, typename U>
 inline U lerp( T x, U l, U h )
