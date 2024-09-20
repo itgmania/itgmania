@@ -1,6 +1,14 @@
+ITGmania, as of 2024/09/20, is now licensed under the GPLv3, or
+(at your option) any later version.. See LICENSE for the full license text.
+
+The contents of the file below this line are the still the same as before
+that date.
+
+******************************************************************************
+
 The following license applies to most of the sm-ssc additions:
 
-sm-ssc is copyright © AJ Kelly, Midiman, shakesoda (referred to as
+sm-ssc is copyright Â© AJ Kelly, Midiman, shakesoda (referred to as
 "the spinal shark collective" hereafter), and other contributors.
 All rights reserved.
 
