@@ -19,19 +19,19 @@ class LuaClass;
 typedef AutoPtrCopyOnWrite<LuaReference> apActorCommands;
 
 /** @brief The background layer. */
-constexpr int DRAW_ORDER_BEFORE_EVERYTHING = -200;
+const int DRAW_ORDER_BEFORE_EVERYTHING = -200;
 /** @brief The underlay layer. */
-constexpr int DRAW_ORDER_UNDERLAY = -100;
+const int DRAW_ORDER_UNDERLAY = -100;
 /** @brief The decorations layer. */
-constexpr int DRAW_ORDER_DECORATIONS = 0;
+const int DRAW_ORDER_DECORATIONS = 0;
 /** @brief The overlay layer.
  *
  * Normal screen elements go here. */
-constexpr int DRAW_ORDER_OVERLAY = 100;
+const int DRAW_ORDER_OVERLAY = 100;
 /** @brief The transitions layer. */
-constexpr int DRAW_ORDER_TRANSITIONS = 200;
+const int DRAW_ORDER_TRANSITIONS = 200;
 /** @brief The over everything layer. */
-constexpr int DRAW_ORDER_AFTER_EVERYTHING = 300;
+const int DRAW_ORDER_AFTER_EVERYTHING = 300;
 
 /** @brief The different horizontal alignments. */
 enum HorizAlign
@@ -56,24 +56,24 @@ enum VertAlign
 LuaDeclareType( VertAlign );
 
 /** @brief The left horizontal alignment constant. */
-constexpr float align_left = 0.0f;
+const float align_left = 0.0f;
 /** @brief The center horizontal alignment constant. */
-constexpr float align_center = 0.5f;
+const float align_center = 0.5f;
 /** @brief The right horizontal alignment constant. */
-constexpr float align_right = 1.0f;
+const float align_right = 1.0f;
 /** @brief The top vertical alignment constant. */
-constexpr float align_top = 0.0f;
+const float align_top = 0.0f;
 /** @brief The middle vertical alignment constant. */
-constexpr float align_middle = 0.5f;
+const float align_middle = 0.5f;
 /** @brief The bottom vertical alignment constant. */
-constexpr float align_bottom = 1.0f;
+const float align_bottom = 1.0f;
 
 // This is the number of colors in Actor::diffuse.  Actor has multiple
 // diffuse colors so that each edge can be a different color, and the actor
 // is drawn with a gradient between them.
 // I doubt I actually found all the places that touch diffuse and rely on the
 // number of diffuse colors, so change this at your own risk. -Kyz
-constexpr int NUM_DIFFUSE_COLORS = 4;
+const int NUM_DIFFUSE_COLORS = 4;
 
 // ssc futures:
 /*
