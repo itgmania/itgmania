@@ -61,7 +61,7 @@ You can choose between using the installer or using the portable build. Using th
 
 ### Build From Source
 
-ITGmania can be compiled using [CMake](http://www.cmake.org/). More information about using CMake can be found in both the `Build` directory and CMake's documentation.
+ITGmania can be compiled using [CMake](http://www.cmake.org/). More information about using CMake to build ITGmania can be found in both the `Build` directory and CMake's documentation.
 
 ## Resources
 
@@ -72,19 +72,15 @@ ITGmania can be compiled using [CMake](http://www.cmake.org/). More information 
 
 ## Licensing Terms
 
-In short- you can do anything you like with the game (including sell products made with it), provided you *do not*:
+ITGmania, as well as the Simply Love theme, are both under the GPLv3 license, or at your option, any later version.
 
-1. Sell the game *with the included songs*
-2. Claim to have created the engine yourself or remove the credits
-3. Not provide source code for any build which differs from any official release which includes MP3 support.
-
-(It's not required, but we would also appreciate it if you link back to [ITGmania](https://github.com/itgmania/itgmania) as well as [StepMania](https://github.com/stepmania/stepmania).)
+If ITGmania code is used in your project, we would also appreciate it if you link back to [ITGmania](https://github.com/itgmania/itgmania) as well as [StepMania](https://github.com/stepmania/stepmania).
 
 For specific information/legalese:
 
-* All of our source code is under the [MIT license](http://opensource.org/licenses/MIT).
+* All of our source code is under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
 * Songs included within the 'StepMania 5' folder are under the [<abbr title="Creative Commons Non-Commercial">CC-NC</abbr> license](https://creativecommons.org/).
-* Simply Love is licensed under the GPLv3, or (at your option) any later version.
+* Simply Love is licensed under the GPLv3, or, at your option, any later version.
 * The copyright for songs in the 'Club Fantastic' folders rests with the original authors. The content is explicitly NOT placed under a Creative Commons license (or similar license), but has been provided free of charge, for personal or public use, including online broadcasting, tournaments, and other purposes. Go to the [Club Fantastic](https://www.clubfantastic.com/) website for more information.
 * The [MAD library](http://www.underbit.com/products/mad/) and [FFmpeg codecs](https://www.ffmpeg.org/) when built with our code use the [GPL license](http://www.gnu.org).
 
