@@ -36,12 +36,12 @@ const std::uint_fast64_t ONE_SECOND_IN_MICROSECONDS_FAST64 = 1000000;
 const double ONE_SECOND_IN_MICROSECONDS_DBL = 1000000.0;
 
 const RageTimer RageZeroTimer(0,0);
-static const std::uint64_t g_iStartTime = ArchHooks::GetSystemTimeAsMicroseconds( true );
+static const std::uint64_t g_iStartTime = ArchHooks::GetSystemTimeAsMicroseconds();
 static std::uint_fast64_t g_iStartTimeFast64 = g_iStartTime;
 
 static std::uint64_t GetTime( bool /* bAccurate */ )
 {
-	return ArchHooks::GetSystemTimeAsMicroseconds( true );
+	return ArchHooks::GetSystemTimeAsMicroseconds();
 }
 
 /* The accuracy of RageTimer::GetTimeSinceStart() is directly tied to the
@@ -71,7 +71,7 @@ std::uint_fast64_t RageTimer::GetTimeSinceStartMicroseconds()
 
 void RageTimer::Touch()
 {
-	std::uint64_t usecs = GetTime( true );
+	std::uint64_t usecs = GetTime();
 
 	this->m_secs = std::uint64_t(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
 	this->m_us = std::uint64_t(usecs % ONE_SECOND_IN_MICROSECONDS_ULL);
