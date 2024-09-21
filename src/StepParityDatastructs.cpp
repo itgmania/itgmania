@@ -61,10 +61,10 @@ StepParityNode * StepParityGraph::addOrGetExistingNode(const State &state)
 	if(stateNodeMap[rowIndex].find(state) == stateNodeMap[rowIndex].end())
 	{
 		StepParityNode* newNode = new StepParityNode(state);
-        newNode->id = int(nodes.size());
-        nodes.push_back(newNode);
-        newNode->state.idx = int(states.size());
-        states.push_back(&(newNode->state));
+		newNode->id = int(nodes.size());
+		nodes.push_back(newNode);
+		newNode->state.idx = int(states.size());
+		states.push_back(&(newNode->state));
 		stateNodeMap[rowIndex][state] = newNode;
 	}
 
@@ -314,7 +314,7 @@ Json::Value Row::ParityRowsJson(const std::vector<Row> & rows)
 
 Json::Value StepParityGraph::ToJson()
 {
-    Json::Value jsonNodes;
+	Json::Value jsonNodes;
 	for(auto node: nodes)
 	{
 		jsonNodes.append(node->ToJson());
