@@ -23,6 +23,7 @@ public:
 	NoteField();
 	~NoteField();
 	virtual void Update( float fDeltaTime );
+	inline bool IsBeatOnScreen(float fBeat, float first_beat_to_draw, float last_beat_to_draw) const;
 	virtual void DrawPrimitives();
 	void CalcPixelsBeforeAndAfterTargets();
 	void DrawBoardPrimitive();

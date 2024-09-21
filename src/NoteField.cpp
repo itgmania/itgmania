@@ -771,6 +771,12 @@ void NoteField::CalcPixelsBeforeAndAfterTargets()
 		(int)(m_FieldRenderArgs.draw_pixels_before_targets * draw_scale);
 }
 
+inline bool NoteField::IsBeatOnScreen(float fBeat, float first_beat_to_draw, float last_beat_to_draw) const
+{
+	return first_beat_to_draw <= fBeat && fBeat <= last_beat_to_draw &&
+	 IsOnScreen(fBeat, 0, m_FieldRenderArgs.draw_pixels_after_targets, m_FieldRenderArgs.draw_pixels_before_targets);
+}
+
 void NoteField::DrawPrimitives()
 {
 	//LOG->Trace( "NoteField::DrawPrimitives()" );
@@ -850,7 +856,7 @@ void NoteField::DrawPrimitives()
 					type = half_beat;
 				float fBeat = NoteRowToBeat(j);
 
-				if( IS_ON_SCREEN(fBeat) )
+				if( IsBeatOnScreen(fBeat, first_beat_to_draw, last_beat_to_draw) )
 				{
 					DrawBeatBar( fBeat, type, iMeasureIndex );
 				}
@@ -887,7 +893,7 @@ void NoteField::DrawPrimitives()
 			const name##Segment* seg= To##name((*segs[SEGMENT_##caps_name])[i]); \
 			if(seg->GetRow() >= m_FieldRenderArgs.first_row && \
 				seg->GetRow() <= m_FieldRenderArgs.last_row && \
-				IS_ON_SCREEN(seg->GetBeat())) \
+				IsBeatOnScreen(seg->GetBeat(), first_beat_to_draw, last_beat_to_draw)) \
 			{ \
 				draw_timing_segment_text(str_exp, seg->GetBeat(), side_sign, \
 					caps_name##_OFFSETX, horiz_align, caps_name##_COLOR, text_glow); \
@@ -926,7 +932,7 @@ void NoteField::DrawPrimitives()
 
 				if( BeatToNoteRow(fBeat) >= m_FieldRenderArgs.first_row &&
 					BeatToNoteRow(fBeat) <= m_FieldRenderArgs.last_row &&
-					IS_ON_SCREEN(fBeat))
+					IsBeatOnScreen(fBeat, first_beat_to_draw, last_beat_to_draw))
 				{
 					DrawAttackText(fBeat, a, text_glow);
 				}
@@ -942,7 +948,7 @@ void NoteField::DrawPrimitives()
 				float fBeat = timing.GetBeatFromElapsedTime(a.fStartSecond);
 				if (BeatToNoteRow(fBeat) >= m_FieldRenderArgs.first_row &&
 					BeatToNoteRow(fBeat) <= m_FieldRenderArgs.last_row &&
-					IS_ON_SCREEN(fBeat))
+					IsBeatOnScreen(fBeat, first_beat_to_draw, last_beat_to_draw))
 				{
 					this->DrawAttackText(fBeat, a, text_glow);
 				}
@@ -998,7 +1004,7 @@ void NoteField::DrawPrimitives()
 								break;
 							}
 
-							if( IS_ON_SCREEN(fLowestBeat) )
+							if( IsBeatOnScreen(fLowestBeat, first_beat_to_draw, last_beat_to_draw) )
 							{
 								std::vector<RString> vsBGChanges;
 								for (BackgroundLayer const &bl : viLowestIndex)
