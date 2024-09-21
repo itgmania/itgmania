@@ -832,10 +832,11 @@ void NoteField::DrawPrimitives()
 	{
 		const std::vector<TimingSegment *> &tSigs = *segs[SEGMENT_TIME_SIG];
 		int iMeasureIndex = 0;
-		for (std::size_t i = 0; i < tSigs.size(); i++)
+		const size_t iSizeOfSigs = tSigs.size();
+		for (std::size_t i = 0; i < iSizeOfSigs; i++)
 		{
 			const TimeSignatureSegment *ts = ToTimeSignature(tSigs[i]);
-			int iSegmentEndRow = (i + 1 == tSigs.size()) ? m_FieldRenderArgs.last_row : tSigs[i+1]->GetRow();
+			int iSegmentEndRow = (i + 1 == iSizeOfSigs) ? m_FieldRenderArgs.last_row : tSigs[i + 1]->GetRow();
 
 			// beat bars every 16th note
 			int iDrawBeatBarsEveryRows = BeatToNoteRow( ((float)ts->GetDen()) / 4 ) / 4;
