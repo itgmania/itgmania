@@ -63,11 +63,6 @@ void RageSoundManager::low_sample_count_workaround()
 	m_pDriver->low_sample_count_workaround();
 }
 
-void RageSoundManager::fix_bogus_sound_driver_pref(RString const& valid_setting)
-{
-	g_sSoundDrivers.Set(valid_setting);
-}
-
 /*
  * Previously, we went to some lengths to shut down sounds before exiting threads.
  * The only other thread that actually starts sounds is SOUND.  Doing this was ugly;

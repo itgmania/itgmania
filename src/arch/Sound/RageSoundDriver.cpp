@@ -9,46 +9,66 @@
 #include <cstddef>
 #include <vector>
 
+namespace
+{
+	void WarnUserAboutBadSoundDriverEntry()
+	{
+		#if defined(_WIN32)
+			LOG->Trace(" - Valid sound drivers for your OS are: WaveOut, DirectSound-sw, WDMKS, Null");
+		#elif defined(MACOSX)
+			LOG->Trace(" - Valid sound drivers for your OS are: AudioUnit, Null");
+		#else // assume linux/unix if we reach this point
+			LOG->Trace(" - Valid sound drivers for your OS are: ALSA-sw, OSS, JACK, Pulse, Null");
+		#endif
+			LOG->Trace(" - Make sure the driver entry is spelled correctly, and is supported on your OS.");
+	}
+}  // namespace
 
 DriverList RageSoundDriver::m_pDriverList;
 
 RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 {
-	std::vector<RString> drivers_to_try;
+	std::vector<RString> driversToTry;
 	if(drivers.empty())
 	{
-		split(DEFAULT_SOUND_DRIVER_LIST, ",", drivers_to_try);
+		driversToTry = GetDefaultSoundDriverList();
 	}
 	else
 	{
-		split(drivers, ",", drivers_to_try);
-		std::size_t to_try= 0;
-		bool had_to_erase= false;
-		while(to_try < drivers_to_try.size())
+		std::size_t start = 0;
+		std::size_t end = drivers.find(',');
+
+		while (end != RString::npos)
 		{
-			if(m_pDriverList.m_pRegistrees->find(istring(drivers_to_try[to_try]))
-				== m_pDriverList.m_pRegistrees->end())
+			driversToTry.emplace_back(drivers.substr(start, end - start));
+			start = end + 1;
+			end = drivers.find(',', start);
+		}
+
+		driversToTry.emplace_back(drivers.substr(start));
+
+		std::size_t to_try = 0;
+
+		while (to_try < driversToTry.size())
+		{
+			if (std::find(GetDefaultSoundDriverList().begin(), GetDefaultSoundDriverList().end(), driversToTry[to_try]) == GetDefaultSoundDriverList().end())
 			{
-				LOG->Warn("Removed unusable sound driver %s", drivers_to_try[to_try].c_str());
-				drivers_to_try.erase(drivers_to_try.begin() + to_try);
-				had_to_erase= true;
+				LOG->Warn("Removed unusable sound driver %s", driversToTry[to_try].c_str());
+				WarnUserAboutBadSoundDriverEntry();
+				driversToTry.erase(driversToTry.begin() + to_try);
 			}
 			else
 			{
 				++to_try;
 			}
 		}
-		if(had_to_erase)
+		if(driversToTry.empty())
 		{
-			SOUNDMAN->fix_bogus_sound_driver_pref(join(",", drivers_to_try));
-		}
-		if(drivers_to_try.empty())
-		{
-			split(DEFAULT_SOUND_DRIVER_LIST, ",", drivers_to_try);
+			driversToTry = GetDefaultSoundDriverList();
 		}
 	}
 
-	for (RString const &Driver : drivers_to_try)
+	for (RString const &Driver : driversToTry)
 	{
 		RageDriver *pDriver = m_pDriverList.Create( Driver );
 		char const *driverString = Driver.c_str();
@@ -73,9 +93,9 @@ RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 	return nullptr;
 }
 
-RString RageSoundDriver::GetDefaultSoundDriverList()
+std::vector<RString> RageSoundDriver::GetSoundDriverList()
 {
-	return DEFAULT_SOUND_DRIVER_LIST;
+	return GetDefaultSoundDriverList();
 }
 
 /*

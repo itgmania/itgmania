@@ -20,7 +20,7 @@ public:
 	/* Pass an empty string to get the default sound driver list. */
 	static RageSoundDriver *Create( const RString &sDrivers );
 	static DriverList m_pDriverList;
-	static RString GetDefaultSoundDriverList();
+	static std::vector<RString> GetSoundDriverList();
 
 	friend class RageSoundManager;
 

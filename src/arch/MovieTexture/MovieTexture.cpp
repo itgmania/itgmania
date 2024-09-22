@@ -86,11 +86,16 @@ RageMovieTexture *RageMovieTexture::Create( RageTextureID ID )
 	DumpAVIDebugInfo( ID.filename );
 
 	RString sDrivers = g_sMovieDrivers;
-	if( sDrivers.empty() )
-		sDrivers = DEFAULT_MOVIE_DRIVER_LIST;
-
 	std::vector<RString> DriversToTry;
-	split( sDrivers, ",", DriversToTry, true );
+
+	if (sDrivers.empty())
+	{
+		DriversToTry = GetDefaultMovieDriverList();
+	}
+	else
+	{
+		DriversToTry = split(sDrivers, ',');
+	}
 
 	if( DriversToTry.empty() )
 		RageException::Throw( "%s", MOVIE_DRIVERS_EMPTY.GetValue().c_str() );

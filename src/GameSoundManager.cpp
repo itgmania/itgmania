@@ -915,8 +915,7 @@ LUA_REGISTER_CLASS(GameSoundManager);
 int LuaFunc_get_sound_driver_list(lua_State* L);
 int LuaFunc_get_sound_driver_list(lua_State* L)
 {
-	std::vector<RString> driver_names;
-	split(RageSoundDriver::GetDefaultSoundDriverList(), ",", driver_names, true);
+	std::vector<RString> driver_names = RageSoundDriver::GetSoundDriverList();
 	lua_createtable(L, driver_names.size(), 0);
 	for(std::size_t n= 0; n < driver_names.size(); ++n)
 	{
