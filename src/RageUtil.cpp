@@ -863,6 +863,14 @@ void split( const std::wstring &sSource, const std::wstring &sDelimitor, std::ve
 		do_split( sSource, sDelimitor, asAddIt, bIgnoreEmpty );
 }
 
+std::vector<RString> split( const RString& sSource, const char delimiter, const bool bIgnoreEmpty )
+{
+	std::vector<RString> result;
+	RString sDelimiter(1, delimiter); // Create an RString from the char delimiter
+	split(sSource, sDelimiter, result, bIgnoreEmpty);
+	return result;
+}
+
 /* Use:
 
 RString str="a,b,c";
