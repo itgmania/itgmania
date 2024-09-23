@@ -1081,10 +1081,10 @@ void Actor::ScaleTo( const RectF &rect, StretchType st )
 
 	switch (st)
 	{
-	case kCover:
+	case StretchType::kCover:
 		fNewZoom = fNewZoomX > fNewZoomY ? fNewZoomX : fNewZoomY; // use larger zoom
 		break;
-	case kFitInside:
+	case StretchType::kFitInside:
 		fNewZoom = fNewZoomX > fNewZoomY ? fNewZoomY : fNewZoomX; // use smaller zoom
 		break;
 	}
