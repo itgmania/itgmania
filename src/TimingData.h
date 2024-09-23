@@ -14,46 +14,48 @@ struct lua_State;
 
 /* convenience functions to handle static casting */
 template<class T>
-inline T ToDerived( const TimingSegment *t, TimingSegmentType tst )
+inline T ToDerived(const TimingSegment* t, TimingSegmentType tst)
 {
-	ASSERT_M( t && tst == t->GetType(),
+	ASSERT_M(t && tst == t->GetType(),
 		ssprintf("type mismatch (expected %s, got %s)",
-		TimingSegmentTypeToString(tst).c_str(),
-		TimingSegmentTypeToString(t->GetType()).c_str() ) );
+			TimingSegmentTypeToString(tst).c_str(),
+			TimingSegmentTypeToString(t->GetType()).c_str()));
 
-	return static_cast<T>( t );
+	return static_cast<T>(t);
 }
 
-#define TimingSegmentToXWithName(Seg, SegName, SegType) \
-	inline const Seg* To##SegName( const TimingSegment *t ) \
-	{ \
-		ASSERT( t->GetType() == SegType ); \
-		return static_cast<const Seg*>( t ); \
-	} \
-	inline Seg* To##SegName( TimingSegment *t ) \
-	{ \
-		ASSERT( t->GetType() == SegType ); \
-		return static_cast<Seg*>( t ); \
-	}
+const BPMSegment* ToBPM(const TimingSegment* t);
+BPMSegment* ToBPM(TimingSegment* t);
 
-#define TimingSegmentToX(Seg, SegType) \
-	TimingSegmentToXWithName(Seg##Segment, Seg, SEGMENT_##SegType)
+const StopSegment* ToStop(const TimingSegment* t);
+StopSegment* ToStop(TimingSegment* t);
 
-/* ToBPM(TimingSegment*), ToTimeSignature(TimingSegment*), etc. */
-TimingSegmentToX( BPM, BPM );
-TimingSegmentToX( Stop, STOP );
-TimingSegmentToX( Delay, DELAY );
-TimingSegmentToX( TimeSignature, TIME_SIG );
-TimingSegmentToX( Warp, WARP );
-TimingSegmentToX( Label, LABEL );
-TimingSegmentToX( Tickcount, TICKCOUNT );
-TimingSegmentToX( Combo, COMBO );
-TimingSegmentToX( Speed, SPEED );
-TimingSegmentToX( Scroll, SCROLL );
-TimingSegmentToX( Fake, FAKE );
+const DelaySegment* ToDelay(const TimingSegment* t);
+DelaySegment* ToDelay(TimingSegment* t);
 
-#undef TimingSegmentToXWithName
-#undef TimingSegmentToX
+const TimeSignatureSegment* ToTimeSignature(const TimingSegment* t);
+TimeSignatureSegment* ToTimeSignature(TimingSegment* t);
+
+const WarpSegment* ToWarp(const TimingSegment* t);
+WarpSegment* ToWarp(TimingSegment* t);
+
+const LabelSegment* ToLabel(const TimingSegment* t);
+LabelSegment* ToLabel(TimingSegment* t);
+
+const TickcountSegment* ToTickcount(const TimingSegment* t);
+TickcountSegment* ToTickcount(TimingSegment* t);
+
+const ComboSegment* ToCombo(const TimingSegment* t);
+ComboSegment* ToCombo(TimingSegment* t);
+
+const SpeedSegment* ToSpeed(const TimingSegment* t);
+SpeedSegment* ToSpeed(TimingSegment* t);
+
+const ScrollSegment* ToScroll(const TimingSegment* t);
+ScrollSegment* ToScroll(TimingSegment* t);
+
+const FakeSegment* ToFake(const TimingSegment* t);
+FakeSegment* ToFake(TimingSegment* t);
 
 /**
  * @brief Holds data for translating beats<->seconds.
