@@ -1525,6 +1525,27 @@ void ScreenEdit::Init()
 		SetDirty(true);
 	}
 
+
+	// There are two conditions for centering the notefield.
+	// 1. We're in EditMode
+	// 2. We're in PracticeMode, the preference is enabled,
+	//      sylte is OnePlayerOneSide, and the theme allows it.
+	//
+	// If the "center_enabled" check is modified, also modify
+	// ScreenGameplay::Center1Player().
+	ThemeMetric<bool> allow_center;
+	allow_center.Load("ScreenGameplay", "AllowCenter1Player");
+	bool center_enabled = (Preference<bool>::GetPreferenceByName("Center1Player")->Get()
+		&& GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StyleType
+			== StyleType_OnePlayerOneSide)
+		&& GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE
+		&& GAMESTATE->m_PlayMode != PLAY_MODE_RAVE
+		&& allow_center;
+
+	bool edit_mode_screen = (m_sName == "ScreenEdit");
+
+	player_manager_.SetCenter(edit_mode_screen || center_enabled);
+
 	player_manager_.AddPlayers(m_NoteDataEdit);
 	player_manager_.AddPlayersToActorFrame(*this);
 	TransitionEditState(STATE_EDITING);

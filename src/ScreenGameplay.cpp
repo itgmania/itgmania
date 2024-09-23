@@ -882,7 +882,11 @@ bool ScreenGameplay::Center1Player() const
 	/* Perhaps this should be handled better by defining a new
 	 * StyleType for ONE_PLAYER_ONE_CREDIT_AND_ONE_COMPUTER,
 	 * but for now just ignore Center1Player when it's Battle or Rave
-	 * Mode. This doesn't begin to address two-player solo (6 arrows) */
+	 * Mode. This doesn't begin to address two-player solo (6 arrows)
+	 *
+	 * If this check is modified, also modify the center check in
+	 * ScreenEdit::Init().
+	 */
 	return g_bCenter1Player &&
 		(bool)ALLOW_CENTER_1_PLAYER &&
 		GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&

@@ -16,7 +16,6 @@
 class EditModePlayerManager
 {
 public:
-
 	// Adds players based on the current gamestate.
 	void AddPlayers(const NoteData& note_data);
 
@@ -43,7 +42,11 @@ public:
 	// Play assist ticks.
 	void PlayTicks(GameplayAssist& gameplay_assist);
 
+	// Sets the "center" boolean, for centering the notefield.
+	void SetCenter(bool center) { center_ = center;  }
+
 private:
 	// All players that the manager is looking at. Indexable by PlayerNumber.
 	std::unordered_map<PlayerNumber, std::shared_ptr<PlayerPlus>> players_;
+	bool center_;
 };

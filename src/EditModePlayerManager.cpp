@@ -22,6 +22,10 @@ void EditModePlayerManager::AddPlayers(const NoteData& note_data) {
 		player->SetY(SCREEN_CENTER_Y);
 		player->SetZoom(SCREEN_HEIGHT / 480);
 		StyleType style_type = GAMESTATE->GetCurrentStyle(pn)->m_StyleType;
+		if (center_) {
+			// Use the doubles style positioning for centering.
+			style_type = StyleType_OnePlayerTwoSides;
+		}
 		player->SetX(THEME->GetMetricF("ScreenGameplay", ssprintf("PlayerP%d%sX", pn + 1, StyleTypeToString(style_type).c_str())));
 
 		// Initial state is to hide the notefield.
