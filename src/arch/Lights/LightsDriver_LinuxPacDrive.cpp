@@ -6,10 +6,8 @@
 #include "LightsDriver_LinuxPacDrive.h"
 
 #include <cstdint>
+#include <libusb/libusb.h>
 
-extern "C" {
-#include <usb.h>
-}
 
 REGISTER_LIGHTS_DRIVER_CLASS( LinuxPacDrive );
 
@@ -31,21 +29,33 @@ REGISTER_LIGHTS_DRIVER_CLASS( LinuxPacDrive );
 #define HID_IFACE_IN	256
 #define HID_IFACE_OUT	512
 
-
-/* PacDrives have PIDs 1500 - 1507, but we'll handle that later. */
+// PacDrives have PIDs 1500 - 1507, but we'll handle that later.
+const unsigned PACDRIVE_TIMEOUT = 10000;
 const int PACDRIVE_VENDOR_ID = 0xD209;
 const int PACDRIVE_PRODUCT_ID = 0x1500;
 
-/* I/O request timeout, in microseconds (so, 10 ms) */
-const unsigned PACDRIVE_TIMEOUT = 10000;
+// ensure the USB subsystem is initialized on start 
+void USBInit() {
+    libusb_context* context = USBContext::getInstance().getContext();
+    if (!context) {
+        LOG->Warn("libusb: Failed to initialize context");
+        return;
+    }
 
-/* static struct to ensure the USB subsystem is initialized on start */
-struct USBInit
-{
-	USBInit() { usb_init(); usb_find_busses(); usb_find_devices(); }
-};
+    libusb_device **devs;
+    ssize_t cnt = libusb_get_device_list(context, &devs);
+    if (cnt < 0) {
+        LOG->Warn("libusb: No devices found");
+        return;
+    }
 
-static struct USBInit g_USBInit;
+    // Process the device list
+    for (ssize_t i = 0; i < cnt; ++i) {
+        libusb_device *device = devs[i];
+    }
+
+    libusb_free_device_list(devs, 1);
+}
 
 //Adds new preference to allow for different light wiring setups
 static Preference<RString> g_sPacDriveLightOrdering("PacDriveLightOrdering", "openitg");
@@ -163,120 +173,153 @@ void LightsDriver_LinuxPacDrive::Set( const LightsState *ls )
 
 void LightsDriver_LinuxPacDrive::FindDevice()
 {
-	if ( usb_find_busses() < 0 )
-	{
-		LOG->Warn( "libusb: usb_find_busses: %s", usb_strerror() );
-		return;
-	}
+    libusb_device **devs;
+    libusb_device *dev;
+    int i = 0;
 
-	if ( usb_find_devices() < 0 )
-	{
-		LOG->Warn( "libusb: usb_find_devices: %s", usb_strerror() );
-		return;
-	}
+    libusb_context* context = USBContext::getInstance().getContext();
+    if (!context)
+    {
+        LOG->Warn("libusb: Failed to initialize context");
+        return;
+    }
 
-	for ( usb_bus *bus = usb_get_busses(); bus; bus = bus->next )
-		for ( struct usb_device *dev = bus->devices; dev; dev = dev->next )
-			if ( PACDRIVE_VENDOR_ID == dev->descriptor.idVendor &&
-				 PACDRIVE_PRODUCT_ID <= dev->descriptor.idProduct &&
-				 PACDRIVE_PRODUCT_ID + 8 > dev->descriptor.idProduct ) {
-				Device = dev;
-				LOG->Info( "PacDrive device was found vid: 0x%04x pid: 0x%04x", dev->descriptor.idVendor, dev->descriptor.idProduct );
-				return;
-			}
+    ssize_t cnt = libusb_get_device_list(context, &devs);
+    if (cnt < 0)
+    {
+        LOG->Warn("libusb: No devices found");
+        return;
+    }
 
-	LOG->Warn( "PacDrive was not found!" );
-	Device = NULL;
+    while ((dev = devs[i++]) != NULL)
+    {
+        struct libusb_device_descriptor desc;
+        int r = libusb_get_device_descriptor(dev, &desc);
+        if (r < 0)
+        {
+            LOG->Warn("libusb: Failed to get device descriptor");
+            return;
+        }
+
+        if (PACDRIVE_VENDOR_ID == desc.idVendor &&
+            PACDRIVE_PRODUCT_ID <= desc.idProduct &&
+            PACDRIVE_PRODUCT_ID + 8 > desc.idProduct)
+        {
+            Device = dev;
+            LOG->Info("PacDrive device was found vid: 0x%04x pid: 0x%04x", desc.idVendor, desc.idProduct);
+            return;
+        }
+    }
+
+    LOG->Warn("PacDrive was not found!");
+    Device = NULL;
+
+    libusb_free_device_list(devs, 1);
 }
 
 void LightsDriver_LinuxPacDrive::OpenDevice()
 {
-	CloseDevice();
+    CloseDevice(); // Ensure any previously opened device is closed first to prevent conflicts
+ 
+    if (!Device) return;
 
-	if ( !Device ) return;
+    libusb_context* context = USBContext::getInstance().getContext();
+    if (!context)
+    {
+        LOG->Warn("libusb: Failed to initialize context");
+        return;
+    }
 
-	DeviceHandle = usb_open( Device );
+    int result;
+    libusb_device **devs;
 
-	if ( DeviceHandle == NULL ) {
-		LOG->Warn( "libusb: usb_open: %s", usb_strerror() );
-		return;
-	}
+    libusb_set_option(context, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_INFO);
+    ssize_t cnt = libusb_get_device_list(context, &devs);
+    if (cnt < 0)
+    {
+        LOG->Warn("libusb_get_device_list: %s", libusb_error_name(cnt));
+        return;
+    }
 
-	// The device may be claimed by a kernel driver. Attempt to reclaim it.
-	for ( unsigned iface = 0; iface < Device->config->bNumInterfaces; iface++ )
-	{
-		int result = usb_detach_kernel_driver_np( DeviceHandle, iface );
+    // Check PID 1500 thru 1507
+    for (int pid = PACDRIVE_PRODUCT_ID; pid <= PACDRIVE_PRODUCT_ID + 8; ++pid)
+    {
+        DeviceHandle = libusb_open_device_with_vid_pid(context, PACDRIVE_VENDOR_ID, pid);
+        if (DeviceHandle == NULL)
+        {
+            LOG->Info("libusb_open_device_with_vid_pid: Checked PID %d, but did not find PacDrive", pid);
+        }
+        else
+        {
+            LOG->Info("libusb_open_device_with_vid_pid: Found PacDrive with PID %d", pid);
+			break;
+        }
+    }
 
-		// device doesn't understand message, no attached driver, no error -- ignore these
-		if( result == -EINVAL || result == -ENODATA || result == 0 )
-			continue;
+    libusb_free_device_list(devs, 1);
 
-		/* we have an error we can't handle; try and get more info. */
-		LOG->Warn( "usb_detach_kernel_driver_np: %s\n", usb_strerror() );
+    if (libusb_kernel_driver_active(DeviceHandle, 0) == 1)
+    {
+        LOG->Warn("Kernel Driver Active");
+        if (libusb_detach_kernel_driver(DeviceHandle, 0) == 0)
+            LOG->Warn("Kernel Driver Detached!");
+    }
 
-		// on EPERM, a driver exists and we can't detach - report which one
-		if ( result == -EPERM )
-		{
-			char szDriverName[16];
-			strcpy( szDriverName, "(unknown)" );
-			usb_get_driver_np(DeviceHandle, iface, szDriverName, 16);
+    result = libusb_claim_interface(DeviceHandle, 0);
+    if (result < 0)
+    {
+        LOG->Warn("libusb_claim_interface: Cannot Claim Interface");
+        libusb_close(DeviceHandle);
+        return;
+    }
 
-			LOG->Warn( "(cannot detach kernel driver \"%s\")", szDriverName );
-		}
-
-		CloseDevice();
-		return;
-	}
-
-	if ( usb_set_configuration( DeviceHandle, Device->config->bConfigurationValue) ) {
-		LOG->Warn( "libusb: usb_set_configuration: %s", usb_strerror() );
-		CloseDevice();
-		return;
-	}
-
-	// attempt to claim all interfaces for this device
-	for ( unsigned i = 0; i < Device->config->bNumInterfaces; i++ )
-	{
-		if ( usb_claim_interface( DeviceHandle, i ) ) {
-			LOG->Warn( "Libusb: usb_claim_interface(%i): %s", i, usb_strerror() );
-			CloseDevice();
-			return;
-		}
-	}
-}
-
-void LightsDriver_LinuxPacDrive::WriteDevice(std::uint16_t out)
-{
-	if ( !DeviceHandle ) return;
-
-	// output is within the first 16 bits - accept a
-	// 16-bit arg and cast it, for simplicity's sake.
-	std::uint32_t data = (out << 16);
-	int expected = sizeof(data);
-
-	int result = usb_control_msg( DeviceHandle, USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
-							  HID_SET_REPORT, HID_IFACE_OUT, 0, (char *)&data, expected,
-							  PACDRIVE_TIMEOUT );
-
-	if( result != expected ) {
-		LOG->Warn( "PacDrive writing failed: %i (%s)\n", result, usb_strerror() );
-		CloseDevice();
-	}
+    LOG->Info("Device claimed");
 }
 
 void LightsDriver_LinuxPacDrive::CloseDevice()
 {
-	if ( !DeviceHandle )
-		return;
+    if (!DeviceHandle)
+        return;
 
-	usb_set_altinterface( DeviceHandle, 0 );
-	usb_reset( DeviceHandle );
-	usb_close( DeviceHandle );
-	DeviceHandle = NULL;
+    int result;
+
+    result = libusb_release_interface(DeviceHandle, 0);
+    if (result != 0)
+    {
+        LOG->Warn("libusb_release_interface: %s", libusb_error_name(result));
+    }
+
+    libusb_close(DeviceHandle);
+    DeviceHandle = NULL;
+}
+
+void LightsDriver_LinuxPacDrive::WriteDevice(std::uint16_t out)
+{
+    if (!DeviceHandle) return;
+
+    // output is within the first 16 bits - accept a
+    // 16-bit arg and cast it, for simplicity's sake.
+    std::uint32_t data = (out << 16);
+    int expected = sizeof(data);
+
+    int result = libusb_control_transfer(DeviceHandle,
+                                         LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE,
+                                         HID_SET_REPORT,
+                                         HID_IFACE_OUT,
+                                         0,
+                                         (unsigned char*)&data,
+                                         expected,
+                                         PACDRIVE_TIMEOUT);
+
+    if(result != expected) {
+        LOG->Warn("PacDrive writing failed: %i (%s)\n", result, libusb_error_name(result));
+        CloseDevice();
+    }
 }
 
 /*
- * Copyright (c) 2008 BoXoRRoXoRs
+ * Rewritten for libusb 1.0 2024 sukibaby
+ * Original libusb 0.1 file Copyright (c) 2008 BoXoRRoXoRs
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
