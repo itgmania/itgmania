@@ -296,13 +296,6 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK)
 	 * acting on song beat from last frame */
 	HandleInputEvents(fDeltaTime);
 
-	// Legacy hack to work around low sample count in some sound drivers.
-	// This is a workaround for a bug in the Windows sound system that causes
-	// the sound to be cut off if the sample count is too low. This is a
-	// workaround for the bug, but it's not a fix. It should probably be
-	// removed or localized to the DirectSound driver. --sukibaby
-	SOUNDMAN->low_sample_count_workaround();
-
 	// Update the lights
 	LIGHTSMAN->Update(fDeltaTime);
 }

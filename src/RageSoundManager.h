@@ -46,8 +46,6 @@ public:
 	RageSoundReader *GetLoadedSound( const RString &sPath );
 	void AddLoadedSound( const RString &sPath, RageSoundReader_Preload *pSound );
 
-	void low_sample_count_workaround();
-
 private:
 	std::map<RString, RageSoundReader_Preload *> m_mapPreloadedSounds;
 
