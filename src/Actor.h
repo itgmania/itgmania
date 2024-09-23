@@ -499,14 +499,14 @@ public:
 	const TweenState& DestTweenState() const { return const_cast<Actor*>(this)->DestTweenState(); }
 
 	/** @brief How do we handle stretching the Actor? */
-	enum StretchType
+	enum class StretchType
 	{
 		kFitInside, /**< Have the Actor fit inside its parent, using the smaller zoom. */
 		kCover /**< Have the Actor cover its parent, using the larger zoom. */
 	};
 
-	void ScaleToCover( const RectF &rect )		{ ScaleTo( rect, kCover ); }
-	void ScaleToFitInside( const RectF &rect )	{ ScaleTo( rect, kFitInside); };
+	void ScaleToCover( const RectF &rect )		{ ScaleTo( rect, StretchType::kCover ); }
+	void ScaleToFitInside( const RectF &rect )	{ ScaleTo( rect, StretchType::kFitInside); };
 	void ScaleTo( const RectF &rect, StretchType st );
 
 	void StretchTo( const RectF &rect );
