@@ -120,38 +120,6 @@ BitmapText::BitmapText( const BitmapText &cpy ):
 	*this = cpy;
 }
 
-namespace {
-	// Helper functions used in DrawPrimitives.
-	inline void SetVertexColor(std::vector<RageSpriteVertex>& vertices, size_t i, const RageColor* color)
-	{
-		vertices[i + 0].c = color[0]; // top left
-		vertices[i + 1].c = color[2]; // bottom left
-		vertices[i + 2].c = color[3]; // bottom right
-		vertices[i + 3].c = color[1]; // top right
-	}
-
-	inline void ApplyJitter(std::vector<RageSpriteVertex>& vertices, size_t i, const RageVector3& jitter)
-	{
-		vertices[i + 0].p += jitter; // top left
-		vertices[i + 1].p += jitter; // bottom left
-		vertices[i + 2].p += jitter; // bottom right
-		vertices[i + 3].p += jitter; // top right
-	}
-
-	inline void UndoJitter(std::vector<RageSpriteVertex>& vertices, size_t i, const RageVector3& jitter)
-	{
-		vertices[i + 0].p -= jitter; // top left
-		vertices[i + 1].p -= jitter; // bottom left
-		vertices[i + 2].p -= jitter; // bottom right
-		vertices[i + 3].p -= jitter; // top right
-	}
-
-	inline size_t CalculateEndIndex(bool isEnd, size_t verticesSize, size_t iterFirst)
-	{
-		return isEnd ? verticesSize : iterFirst * 4;
-	}
-}  // namespace
-
 void BitmapText::SetCurrentTweenStart()
 {
 	BMT_start= BMT_current;
@@ -780,11 +748,14 @@ void BitmapText::DrawPrimitives() noexcept
 			while( i < m_aVertices.size() )
 			{
 				// Set the colors up to the next attribute.
-				size_t iEnd = CalculateEndIndex(iter == m_mAttributes.end(), m_aVertices.size(), iter->first);
+				size_t iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
 				iEnd = std::min(iEnd, m_aVertices.size()); // clamp to vertex size
 				for (; i < iEnd; i += 4)
 				{
-					SetVertexColor(m_aVertices, i, m_pTempState->diffuse);
+					m_aVertices[i+0].c = m_pTempState->diffuse[0];	// top left
+					m_aVertices[i+1].c = m_pTempState->diffuse[2];	// bottom left
+					m_aVertices[i+2].c = m_pTempState->diffuse[3];	// bottom right
+					m_aVertices[i+3].c = m_pTempState->diffuse[1];	// top right
 				}
 				if( iter == m_mAttributes.end() )
 				{
@@ -795,7 +766,7 @@ void BitmapText::DrawPrimitives() noexcept
 				++iter;
 				if( attr.length < 0 )
 				{
-					iEnd = CalculateEndIndex(iter == m_mAttributes.end(), m_aVertices.size(), iter->first);
+					iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
 				}
 				else
 				{
@@ -813,7 +784,10 @@ void BitmapText::DrawPrimitives() noexcept
 				}
 				for( ; i < iEnd; i += 4 )
 				{
-					SetVertexColor(m_aVertices, i, attr.diffuse);
+					m_aVertices[i+0].c = temp_attr_diffuse[0];	// top left
+					m_aVertices[i+1].c = temp_attr_diffuse[2];	// bottom left
+					m_aVertices[i+2].c = temp_attr_diffuse[3];	// bottom right
+					m_aVertices[i+3].c = temp_attr_diffuse[1];	// top right
 				}
 			}
 		}
@@ -827,7 +801,10 @@ void BitmapText::DrawPrimitives() noexcept
 				RageVector3 jitter( GetRandomInt() % 2, GetRandomInt() % 3, 0);
 				vGlyphJitter.push_back( jitter );
 
-				ApplyJitter(m_aVertices, i, jitter);
+				m_aVertices[i+0].p += jitter;	// top left
+				m_aVertices[i+1].p += jitter;	// bottom left
+				m_aVertices[i+2].p += jitter;	// bottom right
+				m_aVertices[i+3].p += jitter;	// top right
 			}
 		}
 
@@ -841,7 +818,10 @@ void BitmapText::DrawPrimitives() noexcept
 			{
 				const RageVector3 &jitter = vGlyphJitter[i/4];;
 
-				UndoJitter(m_aVertices, i, jitter);
+				m_aVertices[i+0].p -= jitter;	// top left
+				m_aVertices[i+1].p -= jitter;	// bottom left
+				m_aVertices[i+2].p -= jitter;	// bottom right
+				m_aVertices[i+3].p -= jitter;	// top right
 			}
 		}
 	}
@@ -855,8 +835,7 @@ void BitmapText::DrawPrimitives() noexcept
 		auto iter = m_mAttributes.begin();
 		while( i < m_aVertices.size() )
 		{
-			// Set the glow up to the next attribute.
-			size_t iEnd = CalculateEndIndex(iter == m_mAttributes.end(), m_aVertices.size(), iter->first);
+			size_t iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
 			iEnd = std::min(iEnd, m_aVertices.size()); // clamp to vertex size
 			for( ; i < iEnd; ++i )
 			{
@@ -871,7 +850,7 @@ void BitmapText::DrawPrimitives() noexcept
 			++iter;
 			if( attr.length < 0 )
 			{
-				iEnd = CalculateEndIndex(iter == m_mAttributes.end(), m_aVertices.size(), iter->first);
+				iEnd = iter == m_mAttributes.end()? m_aVertices.size():iter->first*4;
 			}
 			else
 			{
