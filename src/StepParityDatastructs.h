@@ -282,14 +282,10 @@ namespace StepParity {
 		State state;
 
 		// Connections to, and the cost of moving to, the connected nodes
-		std::unordered_map<StepParityNode *, float*> neighbors;
+		std::unordered_map<StepParityNode *, float> neighbors;
 		
 		~StepParityNode()
 		{
-			for(auto neighbor: neighbors)
-			{
-				delete[] neighbor.second;
-			}
 			neighbors.clear();
 		}
 		StepParityNode(const State &_state)
@@ -342,9 +338,9 @@ namespace StepParity {
 		/// @return
 		StepParityNode *addOrGetExistingNode(const State &state);
 
-		void addEdge(StepParityNode* from, StepParityNode* to, float* costs)
+		void addEdge(StepParityNode* from, StepParityNode* to, float cost)
 		{
-			from->neighbors[to] = costs;
+			from->neighbors[to] = cost;
 		}
 
 		int nodeCount() const

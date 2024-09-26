@@ -50,7 +50,7 @@ namespace StepParity
 		/// @param rows 
 		/// @param rowIndex The index of the row represented by resultState
 		/// @return The computed cost
-		float* getActionCost(State * initialState, State * resultState, std::vector<Row> &rows, int rowIndex);
+		float getActionCost(State * initialState, State * resultState, std::vector<Row> &rows, int rowIndex);
 
 	private:
 		void mergeInitialAndResultPosition(State * initialState, State * resultState, std::vector<StepParity::Foot> &combinedColumns, int columnCount);

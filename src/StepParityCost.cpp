@@ -3,7 +3,7 @@
 #include "NoteData.h"
 #include "TechCounts.h"
 #include "GameState.h"
-	
+
 using namespace StepParity;
 
 
@@ -20,22 +20,18 @@ bool isEmpty(const std::vector<T> & vec, int columnCount) {
 }
 
 
-float* StepParityCost::getActionCost(State * initialState, State * resultState, std::vector<Row>& rows, int rowIndex)
+float StepParityCost::getActionCost(State * initialState, State * resultState, std::vector<Row>& rows, int rowIndex)
 {
 	Row &row = rows[rowIndex];
 	int columnCount = row.columnCount;
 	float elapsedTime = resultState->second - initialState->second;
-	
-	float* costs = new float[NUM_Cost];
-	for(int i = 0; i < NUM_Cost; i++)
-	{
-		costs[i] = 0;
-	}
+
+	float cost = 0;
 
 	std::vector<StepParity::Foot> combinedColumns(columnCount, NONE);
 
 	mergeInitialAndResultPosition(initialState, resultState, combinedColumns, columnCount);
-	
+
 	// Mine weighting
 	int leftHeel = -1;
 	int leftToe = -1;
@@ -63,15 +59,10 @@ float* StepParityCost::getActionCost(State * initialState, State * resultState, 
 	  }
 	}
 
-	costs[COST_MINE] += calcMineCost( initialState, resultState, row, combinedColumns, columnCount);
-	costs[COST_HOLDSWITCH] += calcHoldSwitchCost( initialState, resultState, row, combinedColumns, columnCount);
-	costs[COST_BRACKETTAP] += calcBracketTapCost( initialState, resultState, row, leftHeel, leftToe, rightHeel, rightToe, elapsedTime, columnCount);
-//	costs[COST_OTHER] += calcMovingFootWhileOtherIsntOnPadCost( initialState, resultState, columnCount);
-
 	bool movedLeft =
 	  resultState->didTheFootMove[LEFT_HEEL] ||
 	  resultState->didTheFootMove[LEFT_TOE];
-	
+
 	bool movedRight =
 	  resultState->didTheFootMove[RIGHT_HEEL] ||
 	  resultState->didTheFootMove[RIGHT_TOE];
@@ -86,28 +77,25 @@ float* StepParityCost::getActionCost(State * initialState, State * resultState, 
 		!initialState->isTheFootHolding[RIGHT_HEEL]) ||
 		(initialState->didTheFootMove[RIGHT_TOE] &&
 		  !initialState->isTheFootHolding[RIGHT_TOE]));
-
-	// jacks don't matter if you did a jump before
-
+	
 	bool jackedLeft = didJackLeft(initialState, resultState, leftHeel, leftToe, movedLeft, didJump, columnCount);
 	bool jackedRight = didJackRight(initialState, resultState, rightHeel, rightToe, movedRight, didJump, columnCount);
-
-	// Doublestep weighting doesn't apply if you just did a jump or a jack
-
-	costs[COST_BRACKETJACK] += calcBracketJackCost( initialState, resultState, rows, rowIndex, movedLeft, movedRight, jackedLeft, jackedRight, didJump, columnCount);
-	costs[COST_DOUBLESTEP] += calcDoublestepCost(initialState, resultState, rows, rowIndex, movedLeft, movedRight, jackedLeft, jackedRight, didJump, columnCount);
-//	costs[COST_JUMP] += calcJumpCost( row, movedLeft, movedRight, elapsedTime, columnCount);
-	costs[COST_SLOW_BRACKET] += calcSlowBracketCost(row, movedLeft, movedRight, elapsedTime);
-	costs[COST_TWISTED_FOOT] += calcTwistedFootCost(resultState);
-	costs[COST_FACING] += calcFacingCosts( initialState, resultState, combinedColumns, columnCount);
-	costs[COST_SPIN] += calcSpinCosts(initialState, resultState, combinedColumns, columnCount);
-	costs[COST_FOOTSWITCH] += caclFootswitchCost( initialState, resultState, row, combinedColumns, elapsedTime, columnCount);
-	costs[COST_SIDESWITCH] += calcSideswitchCost( initialState, resultState, columnCount);
-	costs[COST_MISSED_FOOTSWITCH] += calcMissedFootswitchCost( row, jackedLeft, jackedRight, columnCount);
-	costs[COST_JACK] += calcJackCost( movedLeft, movedRight, jackedLeft, jackedRight, elapsedTime, columnCount);
-	costs[COST_DISTANCE] += calcBigMovementsQuicklyCost( initialState, resultState, elapsedTime, columnCount);
-//	costs[COST_CROWDED_BRACKET] += calcCrowdedBracketCost(initialState, resultState, elapsedTime, columnCount);
 	
+	cost += calcMineCost( initialState, resultState, row, combinedColumns, columnCount);
+	cost += calcHoldSwitchCost( initialState, resultState, row, combinedColumns, columnCount);
+	cost += calcBracketTapCost( initialState, resultState, row, leftHeel, leftToe, rightHeel, rightToe, elapsedTime, columnCount);
+	cost += calcBracketJackCost( initialState, resultState, rows, rowIndex, movedLeft, movedRight, jackedLeft, jackedRight, didJump, columnCount);
+	cost += calcDoublestepCost(initialState, resultState, rows, rowIndex, movedLeft, movedRight, jackedLeft, jackedRight, didJump, columnCount);
+	cost += calcSlowBracketCost(row, movedLeft, movedRight, elapsedTime);
+	cost += calcTwistedFootCost(resultState);
+	cost += calcFacingCosts( initialState, resultState, combinedColumns, columnCount);
+	cost += calcSpinCosts(initialState, resultState, combinedColumns, columnCount);
+	cost += caclFootswitchCost( initialState, resultState, row, combinedColumns, elapsedTime, columnCount);
+	cost += calcSideswitchCost( initialState, resultState, columnCount);
+	cost += calcMissedFootswitchCost( row, jackedLeft, jackedRight, columnCount);
+	cost += calcJackCost( movedLeft, movedRight, jackedLeft, jackedRight, elapsedTime, columnCount);
+	cost += calcBigMovementsQuicklyCost( initialState, resultState, elapsedTime, columnCount);
+
 	// I don't like that we're updating columns here like this.
 	// We're basically updating columns with the final position of the feet
 	// for the next iteration when this is initialState
@@ -119,12 +107,8 @@ float* StepParityCost::getActionCost(State * initialState, State * resultState, 
 			resultState->whereTheFeetAre[combinedColumns[i]] = i;
 		}
 	}
-	for(int i = 0; i < COST_TOTAL; i++)
-	{
-		costs[COST_TOTAL] += costs[i];
-	}
 
-	return costs;
+	return cost;
 }
 
 // This merges the `columns` properties of initialState and resultState, which
@@ -172,11 +156,12 @@ void StepParityCost::mergeInitialAndResultPosition(State * initialState, State *
 
 // Calculate the cost of avoiding a mine before the current step
 // If a mine occurred just before a step, add to the cost
-// ex: 00M0
-//	 0010 <- add cost
+// ex:
+// 00M0
+// 0010 <- add cost
 //
-//	 00M0
-//	 0100 <- no cost
+// 00M0
+// 0100 <- no cost
 float StepParityCost::calcMineCost(State * initialState, State * resultState, Row &row, std::vector<StepParity::Foot>& combinedColumns, int columnCount)
 {
 	float cost = 0;
@@ -225,10 +210,11 @@ float StepParityCost::calcHoldSwitchCost(State * initialState, State * resultSta
 
 // Calculate the cost of tapping a bracket during a hold note
 //
-// ex: 0200
-//	 0000
-//	 1000	<- maybe bracketable, if left heel is holding Down arrow
-//	 0300
+// ex:
+// 0200
+// 0000
+// 1000 <- maybe bracketable, if left heel is holding Down arrow
+// 0300
 
 float StepParityCost::calcBracketTapCost(State * initialState, State * resultState, Row &row, int leftHeel, int leftToe, int rightHeel, int rightToe, float elapsedTime, int columnCount)
 {
@@ -354,7 +340,7 @@ float StepParityCost::calcDoublestepCost(State * initialState, State * resultSta
 		!didJump)
 	{
 		bool doublestepped = didDoubleStep(initialState, resultState, rows, rowIndex, movedLeft, jackedLeft, movedRight, jackedRight, columnCount);
-		
+
 		if (doublestepped) {
 			cost += DOUBLESTEP;
 		}
@@ -401,14 +387,14 @@ float StepParityCost::calcTwistedFootCost(State * resultState)
 	int leftToe = resultState->whereTheFeetAre[LEFT_TOE];
 	int rightHeel = resultState->whereTheFeetAre[RIGHT_HEEL];
 	int rightToe = resultState->whereTheFeetAre[RIGHT_TOE];
-	
+
 	StagePoint leftPos = layout.averagePoint(leftHeel, leftToe);
 	StagePoint rightPos = layout.averagePoint(rightHeel, rightToe);
-	
+
 	bool crossedOver = rightPos.x < leftPos.x;
 	bool rightBackwards = rightHeel != -1 && rightToe != -1 ? layout.columns[rightToe].y < layout.columns[rightHeel].y : false;
 	bool leftBackwards = leftHeel != -1 && leftToe != -1 ? layout.columns[leftToe].y < layout.columns[leftHeel].y : false;
-	
+
 	if(!crossedOver && (rightBackwards || leftBackwards))
 	{
 		cost += TWISTED_FOOT;
@@ -505,7 +491,7 @@ float StepParityCost::calcFacingCosts(State * initialState, State * resultState,
 float StepParityCost::calcSpinCosts(State * initialState, State * resultState, std::vector<StepParity::Foot> & combinedColumns, int columnCount)
 {
 	float cost = 0;
-	
+
 	float endLeftHeel = -1;
 	float endLeftToe = -1;
 	float endRightHeel = -1;
@@ -533,7 +519,7 @@ float StepParityCost::calcSpinCosts(State * initialState, State * resultState, s
 
 	if (endLeftToe == -1) endLeftToe = endLeftHeel;
 	if (endRightToe == -1) endRightToe = endRightHeel;
-	
+
 	// spin
 	StagePoint previousLeftPos = layout.averagePoint(
 	 initialState->whereTheFeetAre[LEFT_HEEL],
@@ -643,16 +629,16 @@ float StepParityCost::calcBigMovementsQuicklyCost(State * initialState, State * 
 		{
 			continue;
 		}
-		
+
 		int initialPosition = initialState->whereTheFeetAre[foot];
 		if(initialPosition == -1)
 		{
 			continue;
 		}
-		
+
 		int resultPosition = resultState->whereTheFeetAre[foot];
-		
-		
+
+
 		// If we're bracketing something, and the toes are now where the heel
 		// was, then we don't need to worry about it, we're not actually moving
 		// the foot very far
@@ -661,7 +647,7 @@ float StepParityCost::calcBigMovementsQuicklyCost(State * initialState, State * 
 		{
 			continue;
 		}
-		
+
 		float dist = (sqrt(layout.getDistanceSq(initialPosition, resultPosition)) * DISTANCE) / elapsedTime;
 		// Otherwise if we're still bracketing, this is probably a less drastic movement
 		if(isBracketing)
@@ -680,13 +666,13 @@ float StepParityCost::calcBigMovementsQuicklyCost(State * initialState, State * 
 float StepParityCost::calcCrowdedBracketCost(State * initialState, State * resultState, float elapsedTime, int columnCount)
 {
 	float cost = 0;
-	
+
 	bool resultLeftBracket = resultState->whereTheFeetAre[LEFT_HEEL] > -1 && resultState->whereTheFeetAre[LEFT_TOE] > -1;
 	bool resultRightBracket = resultState->whereTheFeetAre[RIGHT_HEEL] > -1 && resultState->whereTheFeetAre[RIGHT_TOE] > -1;
-	
+
 	bool initialLeftBracket = initialState->whereTheFeetAre[LEFT_HEEL] > -1 && initialState->whereTheFeetAre[LEFT_TOE] > -1;
 	bool initialRightBracket = initialState->whereTheFeetAre[RIGHT_HEEL] > -1 && initialState->whereTheFeetAre[RIGHT_TOE] > -1;
-	
+
 	// if we're trying to bracket with left foot, does it overlap the right foot
 	// in previous state?
 	if(
@@ -712,7 +698,7 @@ float StepParityCost::calcCrowdedBracketCost(State * initialState, State * resul
 	{
 		cost += CROWDED_BRACKET / elapsedTime;
 	}
-	
+
 	// and if we're trying to bracket with right foot, does it overlap the left ?
 	if((resultRightBracket )
 	   && (
@@ -736,7 +722,7 @@ float StepParityCost::calcCrowdedBracketCost(State * initialState, State * resul
 	{
 		cost += CROWDED_BRACKET / elapsedTime;
 	}
-	
+
 	return cost;
 }
 
@@ -791,7 +777,7 @@ bool StepParityCost::didJackLeft(State * initialState, State * resultState, int 
 	bool jackedLeft = false;
 	if(!didJump && movedLeft)
 	{
-		
+
 			if ( leftHeel > -1 &&
 			initialState->columns[leftHeel] == LEFT_HEEL &&
 			!resultState->isTheFootHolding[LEFT_HEEL] &&
@@ -813,7 +799,7 @@ bool StepParityCost::didJackLeft(State * initialState, State * resultState, int 
 				){
 					jackedLeft = true;
 				}
-		
+
 	}
 	return jackedLeft;
 }

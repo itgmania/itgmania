@@ -273,12 +273,8 @@ Json::Value StepParityNode::ToJson()
 		Json::Value n;
 		n["id"] = it->first->id;
 		Json::Value jsonCosts;
-		float * costs = it->second;
-		for(int i = 0; i < NUM_Cost; i++)
-		{
-			jsonCosts[COST_LABELS[i]] = costs[i];
-		}
-		n["costs"] = jsonCosts;
+		float cost = it->second;
+		n["cost"] = cost;
 		jsonNeighbors.append(n);
 	}
 	root["id"] = id;
