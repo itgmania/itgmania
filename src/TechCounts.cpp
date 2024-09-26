@@ -189,8 +189,8 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 		
 		// Check for the following:
 		// - We moved the right foot on this row,
-		// - we moved the left foot on this row,
-		// - we didn't move the right foot on this row
+		// - we moved the left foot on the previous row,
+		// - we didn't move the right foot on the previous row
 		// - Is the position of the right foot farther left than the left foot
 		// - If so, check the row before the previous row for the following:
 		//   - Was the right foot on a difference position
@@ -207,9 +207,11 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 				if(i > 1)
 				{
 					const StepParity::Row & previousPreviousRow = rows[i - 2];
-					if(previousPreviousRow.whereTheFeetAre[StepParity::RIGHT_HEEL] != rightHeel)
+					int previousPreviousRightHeel = previousPreviousRow.whereTheFeetAre[StepParity::RIGHT_HEEL];
+					
+					if(previousPreviousRightHeel != -1 && previousPreviousRightHeel != rightHeel)
 					{
-						StepParity::StagePoint previousPreviousRightPos = layout.columns[previousPreviousRow.whereTheFeetAre[StepParity::RIGHT_HEEL]];
+						StepParity::StagePoint previousPreviousRightPos = layout.columns[previousPreviousRightHeel];
 						if(previousPreviousRightPos.x > leftPos.x)
 						{
 							out[TechCountsCategory_FullCrossovers] += 1;
