@@ -994,8 +994,22 @@ float TimingData::GetElapsedTimeInternal(GetBeatStarts& start, float beat,
 
 float TimingData::GetElapsedTimeFromBeat( float fBeat ) const
 {
-	return TimingData::GetElapsedTimeFromBeatNoOffset( fBeat )
-		- GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate * PREFSMAN->m_fGlobalOffsetSeconds;
+	// Calculate the elapsed time from the beat without any offsets
+	float fElapsedTime = TimingData::GetElapsedTimeFromBeatNoOffset(fBeat);
+	float fMusicRate = GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+	float fGlobalOffset = PREFSMAN->m_fGlobalOffsetSeconds;
+
+	if (fMusicRate == 1.0f)
+	{
+		// If the music rate is NOT applied, directly apply the global offset
+		return fElapsedTime - fGlobalOffset;
+	}
+	else
+	{
+		// Find the median of the unscaled and scaled global offsets
+		float medianGlobalOffset = 0.5f * (fGlobalOffset + (fGlobalOffset * fMusicRate));
+		return fElapsedTime - medianGlobalOffset;
+	}
 }
 
 float TimingData::GetElapsedTimeFromBeatNoOffset( float fBeat ) const
