@@ -1074,8 +1074,10 @@ namespace
 		case DeviceSampleFormat_Float32: // untested
 		{
 			float *pOutBuf = (float *) pOut;
-			for( int i = 0; i < iSamples; ++i )
-				pOutBuf[i] = SCALE( pIn[i], -32768, +32767, -1.0f, +1.0f ); // [-32768, 32767] -> [-1,+1]
+			for (int i = 0; i < iSamples; ++i)
+			{
+				pOutBuf[i] = (pIn[i] + 32768) * 2.0f / 65535.0f - 1.0f; // [-32768, 32767] -> [-1, +1]
+			}
 			break;
 		}
 		case DeviceSampleFormat_Int24:

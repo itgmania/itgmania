@@ -119,7 +119,7 @@ void ScoreKeeperRave::AddSuperMeterDelta( float fUnscaledPercentChange )
 	if( PREFSMAN->m_bMercifulDrain  &&  fUnscaledPercentChange<0 )
 	{
 		float fSuperPercentage = m_pPlayerState->m_fSuperMeter / Enum::to_integral(NUM_ATTACK_LEVELS);
-		fUnscaledPercentChange *= SCALE( fSuperPercentage, 0.f, 1.f, 0.5f, 1.f);
+		fUnscaledPercentChange *= RageUtil::ScaleFloat( fSuperPercentage, 0.f, 1.f, 0.5f, 1.f);
 	}
 
 	// more mercy: Grow super meter slower or faster depending on life.
@@ -135,14 +135,14 @@ void ScoreKeeperRave::AddSuperMeterDelta( float fUnscaledPercentChange )
 		}
 		CLAMP( fLifePercentage, 0.f, 1.f );
 		if( fUnscaledPercentChange > 0 )
-			fUnscaledPercentChange *= SCALE( fLifePercentage, 0.f, 1.f, 1.7f, 0.3f);
+			fUnscaledPercentChange *= RageUtil::ScaleFloat( fLifePercentage, 0.f, 1.f, 1.7f, 0.3f);
 		else	// fUnscaledPercentChange <= 0
-			fUnscaledPercentChange /= SCALE( fLifePercentage, 0.f, 1.f, 1.7f, 0.3f);
+			fUnscaledPercentChange /= RageUtil::ScaleFloat( fLifePercentage, 0.f, 1.f, 1.7f, 0.3f);
 	}
 
 	// mercy: drop super meter faster if at a higher level
 	if( fUnscaledPercentChange < 0 )
-		fUnscaledPercentChange *= SCALE( m_pPlayerState->m_fSuperMeter, 0.f, 1.f, 0.01f, 1.f );
+		fUnscaledPercentChange *= RageUtil::ScaleFloat( m_pPlayerState->m_fSuperMeter, 0.f, 1.f, 0.01f, 1.f );
 
 	AttackLevel oldAL = (AttackLevel)(int)m_pPlayerState->m_fSuperMeter;
 

@@ -1403,7 +1403,7 @@ float PlayerOptions::GetReversePercentForColumn( int iCol ) const
 	if( f > 2 )
 		f = std::fmod( f, 2 );
 	if( f > 1 )
-		f = SCALE( f, 1.f, 2.f, 1.f, 0.f );
+		f = RageUtil::ScaleFloat( f, 1.f, 2.f, 1.f, 0.f );
 	return f;
 }
 

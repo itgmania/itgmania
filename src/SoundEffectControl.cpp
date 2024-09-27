@@ -76,9 +76,9 @@ void SoundEffectControl::Update( float fDeltaTime )
 
 	float fCurrent;
 	if( m_fSample < 0 )
-		fCurrent = SCALE( m_fSample, 0.0f, -1.0f, fPropertyCenter, fPropertyMin );
+		fCurrent = RageUtil::ScaleFloat( m_fSample, 0.0f, -1.0f, fPropertyCenter, fPropertyMin );
 	else
-		fCurrent = SCALE( m_fSample, 0.0f, +1.0f, fPropertyCenter, fPropertyMax );
+		fCurrent = RageUtil::ScaleFloat( m_fSample, 0.0f, +1.0f, fPropertyCenter, fPropertyMax );
 
 	if( m_pSoundReader )
 		m_pSoundReader->SetProperty( SOUND_PROPERTY, fCurrent );

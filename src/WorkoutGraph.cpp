@@ -74,11 +74,11 @@ void WorkoutGraph::SetInternal( int iMinSongsPlayed )
 	int iBlocksHigh = MAX_METER;
 
 	const float fMaxWidth = 300;
-	float fTotalWidth = SCALE( iBlocksWide, 1.0f, 10.0f, 50.0f, fMaxWidth );
+	float fTotalWidth = RageUtil::ScaleFloat( iBlocksWide, 1.0f, 10.0f, 50.0f, fMaxWidth );
 	CLAMP( fTotalWidth, 50, fMaxWidth );
 
 	const float fMaxHeight = 130;
-	float fTotalHeight = SCALE( iBlocksHigh, 1.0f, 10.0f, 50.0f, fMaxHeight );
+	float fTotalHeight = RageUtil::ScaleFloat( iBlocksHigh, 1.0f, 10.0f, 50.0f, fMaxHeight );
 	CLAMP( fTotalHeight, 50, fMaxHeight );
 
 	float fBlockSize = std::min( fTotalWidth / iBlocksWide, fTotalHeight / iBlocksHigh );

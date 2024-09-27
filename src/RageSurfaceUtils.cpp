@@ -570,12 +570,21 @@ static bool blit_rgba_to_rgba( const RageSurface *src_surf, const RageSurface *d
 			 *
 			 * Having separate formulas for increasing and decreasing resolution seems
 			 * strange; what's wrong here? */
-			if( max_src_val > max_dst_val )
-				for( std::uint32_t i = 0; i <= max_src_val; ++i )
-					lookup[c][i] = (std::uint8_t) SCALE( i, 0, max_src_val+1, 0, max_dst_val+1 );
+			if (max_src_val > max_dst_val)
+			{
+				for (std::uint32_t i = 0; i <= max_src_val; ++i)
+				{
+					lookup[c][i] = static_cast<std::uint8_t>(i * (max_dst_val + 1) / (max_src_val + 1));
+				}
+			}
 			else
-				for( std::uint32_t i = 0; i <= max_src_val; ++i )
-					lookup[c][i] = (std::uint8_t) SCALE( i, 0, max_src_val, 0, max_dst_val );
+			{
+				for (std::uint32_t i = 0; i <= max_src_val; ++i)
+				{
+					lookup[c][i] = static_cast<std::uint8_t>(i * max_dst_val / max_src_val);
+				}
+			}
+
 		}
 	}
 

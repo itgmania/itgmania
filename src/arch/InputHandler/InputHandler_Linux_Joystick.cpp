@@ -174,7 +174,7 @@ void InputHandler_Linux_Joystick::InputThread()
 			case JS_EVENT_AXIS: {
 				DeviceButton neg = enum_add2(JOY_LEFT, 2*event.number);
 				DeviceButton pos = enum_add2(JOY_RIGHT, 2*event.number);
-                                float l = SCALE( int(event.value), 0.0f, 32767, 0.0f, 1.0f );
+                                float l = RageUtil::ScaleFloat( static_cast<int>(event.value), 0.0f, 32767, 0.0f, 1.0f );
 				ButtonPressed( DeviceInput(id, neg, std::max(-l, 0.0f), now) );
 				ButtonPressed( DeviceInput(id, pos, std::max(+l, 0.0f), now) );
 				break;

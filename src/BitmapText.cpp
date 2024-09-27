@@ -322,7 +322,7 @@ void BitmapText::BuildChars()
 			reverse( sLine.begin(), sLine.end() );
 		const int iLineWidth = m_iLineWidths[i];
 
-		float fX = SCALE( m_fHorizAlign, 0.0f, 1.0f, -m_size.x/2.0f, +m_size.x/2.0f - iLineWidth );
+		float fX = RageUtil::ScaleFloat( m_fHorizAlign, 0.0f, 1.0f, -m_size.x/2.0f, +m_size.x/2.0f - iLineWidth );
 		int iX = std::lrint( fX );
 
 		for( unsigned j = 0; j < sLine.size(); ++j )
@@ -381,8 +381,8 @@ void BitmapText::DrawChars( bool bUseStrokeTexture )
 		return;
 
 	const int iNumGlyphs = m_vpFontPageTextures.size();
-	int iStartGlyph = std::lrint( SCALE( m_pTempState->crop.left, 0.f, 1.f, 0, (float) iNumGlyphs ) );
-	int iEndGlyph = std::lrint( SCALE( m_pTempState->crop.right, 0.f, 1.f, (float) iNumGlyphs, 0 ) );
+	int iStartGlyph = std::lrint( RageUtil::ScaleFloat( m_pTempState->crop.left, 0.f, 1.f, 0, (float) iNumGlyphs ) );
+	int iEndGlyph = std::lrint( RageUtil::ScaleFloat( m_pTempState->crop.right, 0.f, 1.f, (float) iNumGlyphs, 0 ) );
 	iStartGlyph = std::clamp( iStartGlyph, 0, iNumGlyphs );
 	iEndGlyph = std::clamp( iEndGlyph, 0, iNumGlyphs );
 
@@ -409,18 +409,18 @@ void BitmapText::DrawChars( bool bUseStrokeTexture )
 
 		/* We fade from 0 to LeftColor, then from RightColor to 0. (We won't fade
 		 * all the way to 0 if the crop is beyond the outer edge.) */
-		const float fRightAlpha  = SCALE( FadeSize.right,  FadeDist.right,  0, 1, 0 );
-		const float fLeftAlpha   = SCALE( FadeSize.left,   FadeDist.left,   0, 1, 0 );
+		const float fRightAlpha  = RageUtil::ScaleFloat( FadeSize.right,  FadeDist.right,  0, 1, 0 );
+		const float fLeftAlpha   = RageUtil::ScaleFloat( FadeSize.left,   FadeDist.left,   0, 1, 0 );
 
 		const float fStartFadeLeftPercent = m_pTempState->crop.left;
 		const float fStopFadeLeftPercent = m_pTempState->crop.left + FadeSize.left;
-		const float fLeftFadeStartGlyph = SCALE( fStartFadeLeftPercent, 0.f, 1.f, 0, (float) iNumGlyphs );
-		const float fLeftFadeStopGlyph = SCALE( fStopFadeLeftPercent, 0.f, 1.f, 0, (float) iNumGlyphs );
+		const float fLeftFadeStartGlyph = RageUtil::ScaleFloat( fStartFadeLeftPercent, 0.f, 1.f, 0, static_cast<float>(iNumGlyphs) );
+		const float fLeftFadeStopGlyph = RageUtil::ScaleFloat( fStopFadeLeftPercent, 0.f, 1.f, 0, static_cast<float>(iNumGlyphs) );
 
 		const float fStartFadeRightPercent = 1-(m_pTempState->crop.right + FadeSize.right);
 		const float fStopFadeRightPercent = 1-(m_pTempState->crop.right);
-		const float fRightFadeStartGlyph = SCALE( fStartFadeRightPercent, 0.f, 1.f, 0, (float) iNumGlyphs );
-		const float fRightFadeStopGlyph = SCALE( fStopFadeRightPercent, 0.f, 1.f, 0, (float) iNumGlyphs );
+		const float fRightFadeStartGlyph = RageUtil::ScaleFloat( fStartFadeRightPercent, 0.f, 1.f, 0, static_cast<float>(iNumGlyphs) );
+		const float fRightFadeStopGlyph = RageUtil::ScaleFloat( fStopFadeRightPercent, 0.f, 1.f, 0, static_cast<float>(iNumGlyphs) );
 
 		for( int start = iStartGlyph; start < iEndGlyph; ++start )
 		{
@@ -430,14 +430,14 @@ void BitmapText::DrawChars( bool bUseStrokeTexture )
 			if( FadeSize.left > 0.001f )
 			{
 				// Add .5, so we fade wrt. the center of the vert, not the left side.
-				float fPercent = SCALE( start+0.5f, fLeftFadeStartGlyph, fLeftFadeStopGlyph, 0.0f, 1.0f );
+				float fPercent = RageUtil::ScaleFloat( start+0.5f, fLeftFadeStartGlyph, fLeftFadeStopGlyph, 0.0f, 1.0f );
 				fPercent = std::clamp( fPercent, 0.0f, 1.0f );
 				fAlpha *= fPercent * fLeftAlpha;
 			}
 
 			if( FadeSize.right > 0.001f )
 			{
-				float fPercent = SCALE( start+0.5f, fRightFadeStartGlyph, fRightFadeStopGlyph, 1.0f, 0.0f );
+				float fPercent = RageUtil::ScaleFloat( start+0.5f, fRightFadeStartGlyph, fRightFadeStopGlyph, 1.0f, 0.0f );
 				fPercent = std::clamp( fPercent, 0.0f, 1.0f );
 				fAlpha *= fPercent * fRightAlpha;
 			}

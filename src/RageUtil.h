@@ -30,15 +30,25 @@ class RageFileDriver;
 
 extern const RString CUSTOM_SONG_PATH;
 
-/**
- * @brief Scales x so that l1 corresponds to l2 and h1 corresponds to h2.
- *
- * This does not modify x, so it MUST assign the result to something!
- * Do the multiply before the divide to that integer scales have more precision.
- *
- * One such example: SCALE(x, 0, 1, L, H); interpolate between L and H.
- */
-#define SCALE(x, l1, h1, l2, h2)	(((x) - (l1)) * ((h2) - (l2)) / ((h1) - (l1)) + (l2))
+class RageUtil
+{
+public:
+	/**** Linear interpolation / scaling functions. In the old code base this was a macro `SCALE`. ****/
+	// We initialize the variables to 0 to retain the original behavior. 
+	// - Most SCALE calls want to return a float.
+	// - Some SCALE calls added 0.f to a variable to force it to evaluated as a float.
+	inline static float ScaleFloat(float x = 0.f, float l1 = 0.f, float h1 = 0.f, float l2 = 0.f, float h2 = 0.f)
+	{
+		return (((x)-(l1)) * ((h2)-(l2)) / ((h1)-(l1)) + (l2));
+	}
+
+	// Same as the above function, but returns an int.
+	// It's necessary to evaluate the arguments as floats to obtain the correct result.
+	inline static int ScaleInt(float x = 0.f, float l1 = 0.f, float h1 = 0.f, float l2 = 0.f, float h2 = 0.f)
+	{
+		return (((x)-(l1)) * ((h2)-(l2)) / ((h1)-(l1)) + (l2));
+	}
+};
 
 template<typename T, typename U>
 inline U lerp( T x, U l, U h )

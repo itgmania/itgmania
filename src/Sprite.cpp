@@ -241,13 +241,13 @@ void Sprite::LoadFromNode( const XNode* pNode )
 					float fX = 1.0f, fY = 1.0f;
 					pPoints[0]->GetAttrValue( "x", fX );
 					pPoints[0]->GetAttrValue( "y", fY );
-					newState.rect.left = SCALE( fX, 0.0f, 1.0f, r.left, r.right );
-					newState.rect.top = SCALE( fY, 0.0f, 1.0f, r.top, r.bottom );
+					newState.rect.left = RageUtil::ScaleFloat( fX, 0.0f, 1.0f, r.left, r.right );
+					newState.rect.top = RageUtil::ScaleFloat( fY, 0.0f, 1.0f, r.top, r.bottom );
 
 					pPoints[1]->GetAttrValue( "x", fX );
 					pPoints[1]->GetAttrValue( "y", fY );
-					newState.rect.right = SCALE( fX, 0.0f, 1.0f, r.left, r.right );
-					newState.rect.bottom = SCALE( fY, 0.0f, 1.0f, r.top, r.bottom );
+					newState.rect.right = RageUtil::ScaleFloat( fX, 0.0f, 1.0f, r.left, r.right );
+					newState.rect.bottom = RageUtil::ScaleFloat( fY, 0.0f, 1.0f, r.top, r.bottom );
 				}
 
 				aStates.push_back( newState );
@@ -616,13 +616,13 @@ void Sprite::DrawTexture( const TweenState *state )
 			{
 				RageSpriteVertex *pVert = &v[i];
 
-				float fTopX = SCALE( pVert->p.x, quadVerticies.left, quadVerticies.right, texCoords[0].x, texCoords[3].x );
-				float fBottomX = SCALE( pVert->p.x, quadVerticies.left, quadVerticies.right, texCoords[1].x, texCoords[2].x );
-				pVert->t.x = SCALE( pVert->p.y, quadVerticies.top, quadVerticies.bottom, fTopX, fBottomX );
+				float fTopX = RageUtil::ScaleFloat( pVert->p.x, quadVerticies.left, quadVerticies.right, texCoords[0].x, texCoords[3].x );
+				float fBottomX = RageUtil::ScaleFloat( pVert->p.x, quadVerticies.left, quadVerticies.right, texCoords[1].x, texCoords[2].x );
+				pVert->t.x = RageUtil::ScaleFloat( pVert->p.y, quadVerticies.top, quadVerticies.bottom, fTopX, fBottomX );
 
-				float fLeftY = SCALE( pVert->p.y, quadVerticies.top, quadVerticies.bottom, texCoords[0].y, texCoords[1].y );
-				float fRightY = SCALE( pVert->p.y, quadVerticies.top, quadVerticies.bottom, texCoords[3].y, texCoords[2].y );
-				pVert->t.y = SCALE( pVert->p.x, quadVerticies.left, quadVerticies.right, fLeftY, fRightY );
+				float fLeftY = RageUtil::ScaleFloat( pVert->p.y, quadVerticies.top, quadVerticies.bottom, texCoords[0].y, texCoords[1].y );
+				float fRightY = RageUtil::ScaleFloat( pVert->p.y, quadVerticies.top, quadVerticies.bottom, texCoords[3].y, texCoords[2].y );
+				pVert->t.y = RageUtil::ScaleFloat( pVert->p.x, quadVerticies.left, quadVerticies.right, fLeftY, fRightY );
 			}
 		}
 		else
@@ -716,10 +716,10 @@ void Sprite::DrawPrimitives()
 		}
 
 		// Alpha value of the un-faded side of each fade rect:
-		const float RightAlpha  = SCALE( FadeSize.right,  FadeDist.right,  0, 1, 0 );
-		const float LeftAlpha   = SCALE( FadeSize.left,   FadeDist.left,   0, 1, 0 );
-		const float TopAlpha    = SCALE( FadeSize.top,    FadeDist.top,    0, 1, 0 );
-		const float BottomAlpha = SCALE( FadeSize.bottom, FadeDist.bottom, 0, 1, 0 );
+		const float RightAlpha  = RageUtil::ScaleFloat( FadeSize.right,  FadeDist.right,  0, 1, 0 );
+		const float LeftAlpha   = RageUtil::ScaleFloat( FadeSize.left,   FadeDist.left,   0, 1, 0 );
+		const float TopAlpha    = RageUtil::ScaleFloat( FadeSize.top,    FadeDist.top,    0, 1, 0 );
+		const float BottomAlpha = RageUtil::ScaleFloat( FadeSize.bottom, FadeDist.bottom, 0, 1, 0 );
 
 		// Draw the inside:
 		TweenState ts = *m_pTempState;
@@ -1252,10 +1252,10 @@ public:
 				// I have no idea why the points are from 0 to 1 and make it use only
 				// a portion of the state.  This is just copied from LoadFromNode.
 				// -Kyz
-				new_state.rect.left= SCALE(FArg(-1), 0.0f, 1.0f, r.left, r.right);
+				new_state.rect.left= RageUtil::ScaleFloat(FArg(-1), 0.0f, 1.0f, r.left, r.right);
 				lua_pop(L, 1);
 				lua_rawgeti(L, -1, 2);
-				new_state.rect.top= SCALE(FArg(-1), 0.0f, 1.0f, r.top, r.bottom);
+				new_state.rect.top= RageUtil::ScaleFloat(FArg(-1), 0.0f, 1.0f, r.top, r.bottom);
 				lua_pop(L, 1);
 			}
 			lua_pop(L, 1);
@@ -1266,10 +1266,10 @@ public:
 				// I have no idea why the points are from 0 to 1 and make it use only
 				// a portion of the state.  This is just copied from LoadFromNode.
 				// -Kyz
-				new_state.rect.right= SCALE(FArg(-1), 0.0f, 1.0f, r.left, r.right);
+				new_state.rect.right= RageUtil::ScaleFloat(FArg(-1), 0.0f, 1.0f, r.left, r.right);
 				lua_pop(L, 1);
 				lua_rawgeti(L, -1, 2);
-				new_state.rect.bottom= SCALE(FArg(-1), 0.0f, 1.0f, r.top, r.bottom);
+				new_state.rect.bottom= RageUtil::ScaleFloat(FArg(-1), 0.0f, 1.0f, r.top, r.bottom);
 				lua_pop(L, 1);
 			}
 			lua_pop(L, 1);

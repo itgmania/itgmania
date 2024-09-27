@@ -1241,7 +1241,7 @@ void ScreenGameplay::LoadNextSong()
 			{
 				pi->GetPlayerState()->m_PlayerController = PC_CPU;
 				int iMeter = pSteps->GetMeter();
-				int iNewSkill = SCALE( iMeter, MIN_METER, MAX_METER, 0, NUM_SKILL_LEVELS-1 );
+				int iNewSkill = RageUtil::ScaleInt( iMeter, MIN_METER, MAX_METER, 0, NUM_SKILL_LEVELS-1 );
 				/* Watch out: songs aren't actually bound by MAX_METER. */
 				iNewSkill = std::clamp( iNewSkill, 0, NUM_SKILL_LEVELS-1 );
 				pi->GetPlayerState()->m_iCpuSkill = iNewSkill;
@@ -2080,7 +2080,7 @@ void ScreenGameplay::UpdateHasteRate()
 		}
 	}
 	if( fMaxLife <= m_fHasteLifeSwitchPoint )
-		GAMESTATE->m_fHasteRate = SCALE( fMaxLife, 0.0f, m_fHasteLifeSwitchPoint, -1.0f, 0.0f );
+		GAMESTATE->m_fHasteRate = RageUtil::ScaleFloat( fMaxLife, 0.0f, m_fHasteLifeSwitchPoint, -1.0f, 0.0f );
 	CLAMP( GAMESTATE->m_fHasteRate, -1.0f, +1.0f );
 
 	float fSpeed = 1.0f;
@@ -2111,7 +2111,7 @@ void ScreenGameplay::UpdateHasteRate()
 		scale_to_low= m_HasteAddAmounts[turning_point];
 	}
 	// If negative haste is being used, the game instead slows down when the player does well.
-	float speed_add= SCALE(GAMESTATE->m_fHasteRate, scale_from_low, scale_from_high, scale_to_low, scale_to_high) * options_haste;
+	float speed_add= RageUtil::ScaleFloat(GAMESTATE->m_fHasteRate, scale_from_low, scale_from_high, scale_to_low, scale_to_high) * options_haste;
 	if(scale_from_low == scale_from_high)
 	{
 		speed_add= scale_to_high * options_haste;

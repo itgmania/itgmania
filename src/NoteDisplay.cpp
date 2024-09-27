@@ -803,7 +803,7 @@ void NoteDisplay::DrawHoldPart(std::vector<Sprite*> &vpSpr,
 	{
 		if (!part_args.anchor_to_top)
 		{
-			float tex_coord_bottom= SCALE(part_args.y_bottom - part_args.y_top,
+			float tex_coord_bottom= RageUtil::ScaleFloat(part_args.y_bottom - part_args.y_top,
 				0, unzoomed_frame_height, rect.top, rect.bottom);
 			float want_tex_coord_bottom	= std::ceil(tex_coord_bottom - 0.0001f);
 			add_to_tex_coord = want_tex_coord_bottom - tex_coord_bottom;
@@ -814,7 +814,7 @@ void NoteDisplay::DrawHoldPart(std::vector<Sprite*> &vpSpr,
 			/* For very large hold notes, shift the texture coordinates to be near 0, so we
 			 * don't send very large values to the renderer. */
 			const float fDistFromTop = y_start_pos - part_args.y_top;
-			float fTexCoordTop = SCALE(fDistFromTop, 0, unzoomed_frame_height, rect.top, rect.bottom);
+			float fTexCoordTop = RageUtil::ScaleFloat(fDistFromTop, 0, unzoomed_frame_height, rect.top, rect.bottom);
 			fTexCoordTop += add_to_tex_coord;
 			add_to_tex_coord -= std::floor(fTexCoordTop);
 		}
@@ -831,7 +831,7 @@ void NoteDisplay::DrawHoldPart(std::vector<Sprite*> &vpSpr,
 			// Shift texture coord to fit hold length If hold length is less than
 			// bottomcap frame height. (translated by hanubeki)
 			if (offset>0){
-				add_to_tex_coord = SCALE(offset, 0.0f, unzoomed_frame_height, 0.0f, 1.0f);
+				add_to_tex_coord = RageUtil::ScaleFloat(offset, 0.0f, unzoomed_frame_height, 0.0f, 1.0f);
 			}
 			else{
 				add_to_tex_coord = 0.0f;
@@ -864,7 +864,7 @@ void NoteDisplay::DrawHoldPart(std::vector<Sprite*> &vpSpr,
 		float cur_beat= part_args.top_beat;
 		if(part_args.top_beat != part_args.bottom_beat)
 		{
-			cur_beat= SCALE(fY, part_args.y_top, part_args.y_bottom, part_args.top_beat, part_args.bottom_beat);
+			cur_beat= RageUtil::ScaleFloat(fY, part_args.y_top, part_args.y_bottom, part_args.top_beat, part_args.bottom_beat);
 		}
 
 		// Fun times ahead with vector math.  If the notes are being moved by the
@@ -1013,7 +1013,7 @@ void NoteDisplay::DrawHoldPart(std::vector<Sprite*> &vpSpr,
 		const float fVariableZoom	= ArrowEffects::GetZoomVariable(fYOffset, column_args.column, 1) / fPulseInnerAdj;
 
 		const float fDistFromTop	= (fY - y_start_pos) / ae_zoom;
-		float fTexCoordTop		= SCALE(fDistFromTop, 0, unzoomed_frame_height, rect.top, rect.bottom * fVariableZoom);
+		float fTexCoordTop		= RageUtil::ScaleFloat(fDistFromTop, 0, unzoomed_frame_height, rect.top, rect.bottom * fVariableZoom);
 		fTexCoordTop += add_to_tex_coord;
 
 		const float fAlpha		= ArrowGetAlphaOrGlow(glow, m_pPlayerState, column_args.column, fYOffset, part_args.percent_fade_to_fail, m_fYReverseOffsetPixels, field_args.draw_pixels_before_targets, field_args.fade_before_targets);
@@ -1223,7 +1223,7 @@ void NoteDisplay::DrawHold(const TapNote& tn,
 	const float fYHead= ArrowEffects::GetYPos(m_pPlayerState, column_args.column, fStartYOffset, m_fYReverseOffsetPixels);
 	const float fYTail= ArrowEffects::GetYPos(m_pPlayerState, column_args.column, fEndYOffset, m_fYReverseOffsetPixels);
 
-	const float fColorScale		= SCALE( tn.HoldResult.fLife, 0.0f, 1.0f, cache->m_fHoldLetGoGrayPercent, 1.0f );
+	const float fColorScale		= RageUtil::ScaleFloat( tn.HoldResult.fLife, 0.0f, 1.0f, cache->m_fHoldLetGoGrayPercent, 1.0f );
 
 	bool bFlipHeadAndTail = bReverse && cache->m_bFlipHeadAndTailWhenReverse;
 

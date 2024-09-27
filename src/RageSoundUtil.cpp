@@ -27,8 +27,8 @@ void RageSoundUtil::Pan( float *buffer, int frames, float fPos )
 	float fLeftFactors[2] ={ 1-fPos, 0 };
 	float fRightFactors[2] =
 	{
-		SCALE( fPos, 0, 1, 0.5f, 0 ),
-		SCALE( fPos, 0, 1, 0.5f, 1 )
+		RageUtil::ScaleFloat( fPos, 0, 1, 0.5f, 0 ),
+		RageUtil::ScaleFloat( fPos, 0, 1, 0.5f, 1 )
 	};
 
 	if( bSwap )
@@ -55,7 +55,7 @@ void RageSoundUtil::Fade( float *pBuffer, int iFrames, int iChannels, float fSta
 
 	for( int iFrame = 0; iFrame < iFrames; ++iFrame )
 	{
-		float fVolPercent = SCALE( iFrame, 0, iFrames, fStartVolume, fEndVolume );
+		float fVolPercent = RageUtil::ScaleFloat( iFrame, 0, iFrames, fStartVolume, fEndVolume );
 
 		fVolPercent = std::clamp( fVolPercent, 0.f, 1.f );
 		for( int i = 0; i < iChannels; ++i )

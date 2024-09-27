@@ -1962,8 +1962,8 @@ void RageDisplay_Legacy::SetZWrite( bool b )
 
 void RageDisplay_Legacy::SetZBias( float f )
 {
-	float fNear = SCALE( f, 0.0f, 1.0f, 0.05f, 0.0f );
-	float fFar = SCALE( f, 0.0f, 1.0f, 1.0f, 0.95f );
+	float fNear = RageUtil::ScaleFloat( f, 0.0f, 1.0f, 0.05f, 0.0f );
+	float fFar = RageUtil::ScaleFloat( f, 0.0f, 1.0f, 1.0f, 0.95f );
 
 	glDepthRange( fNear, fFar );
 }
@@ -2184,10 +2184,10 @@ void SetPixelMapForSurface( int glImageFormat, int glTexFormat, const RageSurfac
 
 	for( int i = 0; i < palette->ncolors; ++i )
 	{
-		buf[0][i] = SCALE( palette->colors[i].r, 0, 255, 0, 65535 );
-		buf[1][i] = SCALE( palette->colors[i].g, 0, 255, 0, 65535 );
-		buf[2][i] = SCALE( palette->colors[i].b, 0, 255, 0, 65535 );
-		buf[3][i] = SCALE( palette->colors[i].a, 0, 255, 0, 65535 );
+		buf[0][i] = RageUtil::ScaleInt( palette->colors[i].r, 0, 255, 0, 65535 );
+		buf[1][i] = RageUtil::ScaleInt( palette->colors[i].g, 0, 255, 0, 65535 );
+		buf[2][i] = RageUtil::ScaleInt( palette->colors[i].b, 0, 255, 0, 65535 );
+		buf[3][i] = RageUtil::ScaleInt( palette->colors[i].a, 0, 255, 0, 65535 );
 	}
 
 	DebugFlushGLErrors();
