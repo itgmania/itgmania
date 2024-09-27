@@ -563,14 +563,18 @@ void Sprite::DrawTexture( const TweenState *state )
 	CLAMP( crop.bottom, 0, 1 );
 
 	RectF croppedQuadVerticies = quadVerticies;
-#define IF_CROP_POS(side,opp_side) \
-	if(state->crop.side!=0) \
-		croppedQuadVerticies.side = \
-			SCALE( crop.side, 0.f, 1.f, quadVerticies.side, quadVerticies.opp_side )
-	IF_CROP_POS( left, right );
-	IF_CROP_POS( top, bottom );
-	IF_CROP_POS( right, left );
-	IF_CROP_POS( bottom, top );
+
+	if (state->crop.left != 0) 
+		croppedQuadVerticies.left = crop.left * (quadVerticies.right - quadVerticies.left) / 1.0f + quadVerticies.left;
+
+	if (state->crop.top != 0) 
+		croppedQuadVerticies.top = crop.top * (quadVerticies.bottom - quadVerticies.top) / 1.0f + quadVerticies.top;
+
+	if (state->crop.right != 0) 
+		croppedQuadVerticies.right = crop.right * (quadVerticies.left - quadVerticies.right) / 1.0f + quadVerticies.right;
+
+	if (state->crop.bottom != 0) 
+		croppedQuadVerticies.bottom = crop.bottom * (quadVerticies.top - quadVerticies.bottom) / 1.0f + quadVerticies.bottom;
 
 	static RageSpriteVertex v[4];
 	v[0].p = RageVector3( croppedQuadVerticies.left,	croppedQuadVerticies.top,	0 );	// top left
