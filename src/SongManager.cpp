@@ -465,7 +465,15 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			if (TranslitTitle.empty())
 				TranslitTitle = sDisplayTitle;
 			ini.GetValue( "Group", "Series", Series );
-			ini.GetValue( "Group", "SyncOffsetMs", fOffset );
+			RString sValue = "";
+			ini.GetValue( "Group", "SyncOffset", sValue );
+			if( sValue.CompareNoCase("null")==0 )
+				fOffset = 0;
+			else if ( sValue.CompareNoCase("itg")==0 )
+				fOffset = 0.009f;
+			else
+				fOffset = StringToFloat( sValue );
+
 			LOG->Trace("Loaded pack.ini for \"%s\"", (sDir+sGroupDirName).c_str() );
 			// LOG THE RECEIVED INFO
 			LOG->Trace("DisplayTitle: %s", sDisplayTitle.c_str());
