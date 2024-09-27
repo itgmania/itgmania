@@ -1195,45 +1195,14 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot)
 		RageTimer song_load_start_time;
 		song_load_start_time.Touch();
 		FILEMAN->GetDirListing(songs_folder + "/*", song_folders, true, true);
-		// Check for pack.ini
-
-		RString sGroupIniPath = songs_folder + "/pack.ini";
-		RString sDisplayTitle;
-		RString SortTitle;
-		RString TranslitTitle;
-		RString Series;
-		int iOffset = 0;
-		
 		Pack pack;
-		if( FILEMAN->DoesFileExist( sGroupIniPath ) )
-		{
-			IniFile ini;
-			ini.ReadFile( sGroupIniPath );
-			ini.GetValue( "Group", "DisplayTitle", sDisplayTitle );
-			if (sDisplayTitle.empty())
-				sDisplayTitle = "Custom Songs";
-			ini.GetValue( "Group", "SortTitle", SortTitle );
-			if (SortTitle.empty())
-				SortTitle = sDisplayTitle;
-			ini.GetValue( "Group", "TranslitTitle", TranslitTitle );
-			if (TranslitTitle.empty())
-				TranslitTitle = sDisplayTitle;
-			ini.GetValue( "Group", "Series", Series );
-			ini.GetValue( "Group", "Offset", iOffset );
-		} else {
-			sDisplayTitle = "Custom Songs";
-			SortTitle = "Custom Songs";
-			TranslitTitle ="";
-			Series = "";
-			iOffset = 0;
-		}
-		pack.m_sDisplayTitle = sDisplayTitle;
-		pack.m_sSortTitle = SortTitle;
-		pack.m_sTranslitTitle = TranslitTitle;
-		pack.m_sSeries = Series;
-		pack.m_iSyncOffset = iOffset;
+		pack.m_sDisplayTitle = m_sDisplayName;
+		pack.m_sSortTitle = m_sDisplayName;
+		pack.m_sTranslitTitle = m_sDisplayName;
+		pack.m_sSeries = "";
+		pack.m_iSyncOffset = 0;
 		pack.m_sPath = songs_folder;
-		pack.m_sGroupName = "Custom Songs";
+		pack.m_sGroupName = m_sDisplayName;
 
 		StripCvsAndSvn(song_folders);
 		StripMacResourceForks(song_folders);

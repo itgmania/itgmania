@@ -209,7 +209,6 @@ void MusicWheelItem::LoadFromWheelItemData( const WheelItemBaseData *pData, int 
 	{
 	DEFAULT_FAIL( pWID->m_Type );
 	case WheelItemDataType_Song:
-	LOG->Trace( "MusicWheelItem::LoadFromWheelItemData() - Song" );
 		type = MusicWheelItemType_Song;
 
 		m_TextBanner.SetFromSong( pWID->m_pSong );
@@ -223,33 +222,22 @@ void MusicWheelItem::LoadFromWheelItemData( const WheelItemBaseData *pData, int 
 		break;
 	case WheelItemDataType_Section:
 		{
-			LOG->Trace( "MusicWheelItem::LoadFromWheelItemData() - Section" );
 			if ( pWID->m_pPack == nullptr ) {
-				LOG->Trace( "MusicWheelItem::LoadFromWheelItemData() - Section with no pack" );
 				sDisplayName = SONGMAN->ShortenGroupName(pWID->m_sText);
 			}
 			else {
-				if ( pWID->m_pPack->m_sDisplayTitle == "" ) {
-					LOG->Trace( "MusicWheelItem::LoadFromWheelItemData() - Section with no display title" );
-				}
-				// Log everything about the wheel
-				LOG->Trace( "Pack Display Title: %s", pWID->m_pPack->m_sDisplayTitle.c_str() );
-				LOG->Trace( "Pack Sort Title: %s", pWID->m_pPack->m_sSortTitle.c_str() );
-				LOG->Trace( "Pack Group Name: %s", pWID->m_pPack->m_sGroupName.c_str() );
-				LOG->Trace( "Pack Has PackIni: %s", pWID->m_pPack->m_bHasPackIni ? "true" : "false" );
-				sDisplayName = SONGMAN->ShortenGroupName(pWID->m_pPack->m_sDisplayTitle);
-				LOG->Trace( "Pack Display Title Shortened: %s", sDisplayName.c_str() );
+				if ( pWID->m_pPack->m_sSeries.empty() )
+					sDisplayName = SONGMAN->ShortenGroupName(pWID->m_sText);
+				else
+					sDisplayName = SONGMAN->ShortenGroupName("["+pWID->m_pPack->m_sSeries+"] "+pWID->m_pPack->m_sDisplayTitle);
 			}
 			if( GAMESTATE->sExpandedSectionName == pWID->m_sText )
 				type = MusicWheelItemType_SectionExpanded;
 			else
 				type = MusicWheelItemType_SectionCollapsed;
 
-			LOG->Trace( "MusicWheelItem::LoadFromWheelItemData() - SectionDone1: %s", sDisplayName.c_str() );
-
 			m_pTextSectionCount->SetText( ssprintf("%d",pWID->m_iSectionCount) );
 			m_pTextSectionCount->SetVisible( true );
-			LOG->Trace( "MusicWheelItem::LoadFromWheelItemData() - SectionDone: %s", sDisplayName.c_str() );
 		}
 		break;
 	case WheelItemDataType_Course:
@@ -260,7 +248,6 @@ void MusicWheelItem::LoadFromWheelItemData( const WheelItemBaseData *pData, int 
 		m_WheelNotifyIcon.SetVisible( true );
 		break;
 	case WheelItemDataType_Sort:
-		LOG->Trace( "MusicWheelItem::LoadFromWheelItemData() - Sort" );
 		sDisplayName = pWID->m_sLabel;
 		// hack to get mode items working. -freem
 		if( pWID->m_pAction->m_pm != PlayMode_Invalid )

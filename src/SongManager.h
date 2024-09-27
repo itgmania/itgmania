@@ -246,6 +246,7 @@ protected:
 	std::vector<RString>		m_sSongGroupNames;
 	std::vector<RString>		m_sSongGroupBannerPaths; // each song group may have a banner associated with it
 	//vector<RString>		m_sSongGroupBackgroundPaths; // each song group may have a background associated with it (very rarely)
+	
 	std::map<RString, Pack> m_mapGroupToPack;
 	std::map<RString, std::vector<Pack*>>	m_mapSeries;
 

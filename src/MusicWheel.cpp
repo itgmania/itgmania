@@ -750,18 +750,9 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 					for( unsigned i=0; i< arraySongs.size(); i++ )
 					{
 						Song* pSong = arraySongs[i];
-						LOG->Trace("SORT_GROUP PREPACK");
 						Pack* pPack = pSong->GetPack();
 						if( bUseSections )
 						{
-							// Print out everything about the pack and song
-							LOG->Trace("Sort Title: %s", pPack->m_sSortTitle);
-							LOG->Trace("Group Name: %s", pPack->m_sGroupName);
-							LOG->Trace("Has PackIni: %s", pPack->m_bHasPackIni ? "true" : "false");
-							LOG->Trace("Display Title: %s", pPack->m_sDisplayTitle);
-							LOG->Trace("Song Title: %s", pSong->GetDisplayFullTitle());
-							LOG->Trace("Group Name from Song: %s", pSong->m_sGroupName.c_str());
-							LOG->Trace("Offset: %d", pPack->m_iSyncOffset);
 							RString sThisSection = pSong->GetPack()->m_sSortTitle;
 							if (pPack->m_bHasPackIni) {
 								LOG->Trace("HE GOT DA INI");
@@ -772,28 +763,22 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 								int iSectionCount = 0;
 								// Count songs in this section
 								unsigned j;
-								LOG->Trace("SORT_GROUP AYA21YA: %s", sThisSection.c_str());
 								for( j=i; j < arraySongs.size(); j++ )
 								{
 									if( SongUtil::GetSectionNameFromSongAndSort( arraySongs[j], so ) != sThisSection )
 										break;
 								}
-								LOG->Trace("SORT_GROUP AYA22YA: %s", sThisSection.c_str());
 								iSectionCount = j-i;
 
 								// new section, make a section item
 								// todo: preferred sort section color handling? -aj
 								RageColor colorSection = (so==SORT_GROUP) ? SONGMAN->GetSongGroupColor(sThisSection) : SECTION_COLORS.GetValue(iSectionColorIndex);
 								iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
-								LOG->Trace("SORT_GROUP BEFORE: %s", sThisSection.c_str());
 								arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sThisSection, nullptr, pPack, colorSection, iSectionCount) );
 								sLastSection = sThisSection;
-								LOG->Trace("SORT_GROUP AFTER: %s", sLastSection.c_str());
 							}
 						}
-						LOG->Trace("SORT_GROUP AYAYA: %s", sLastSection.c_str());
 						arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, pSong, sLastSection, nullptr, pPack, SONGMAN->GetSongColor(pSong), 0) );
-						LOG->Trace("SORT_GROUP Pushed back Successfully: %s", sLastSection.c_str());
 					}
 					break;
 
@@ -845,7 +830,6 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 
 				if( SHOW_RANDOM && bFoundAnySong )
 					arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Random, nullptr, "", nullptr, nullptr, RANDOM_COLOR, 0) );
-				LOG->Trace("CRINGLEBINGLE3");
 
 				if( SHOW_PORTAL && bFoundAnySong )
 					arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Portal, nullptr, "", nullptr, nullptr, PORTAL_COLOR, 0) );
@@ -981,7 +965,6 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 				{
 					RageColor c = SECTION_COLORS.GetValue(iSectionColorIndex);
 					iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
-					LOG->Trace("CRINGLEBINGLE7");
 					arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sThisSection, nullptr, nullptr, c, 0) );
 					sLastSection = sThisSection;
 				}

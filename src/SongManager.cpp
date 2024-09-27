@@ -277,15 +277,21 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Pack pack )
 	if( j != m_sSongGroupNames.size() )
 		return; // the group is already added
 
+	RString sBannerPath;
 	// Look for a group banner in this group folder
 	std::vector<RString> arrayGroupBanners;
+	
+	// First check if there is a banner provided in pack.ini
+	if( pack.m_sBannerPath != "" )
+	{
+		GetDirListing( sDir+sGroupDirName+"/"+pack.m_sBannerPath, arrayGroupBanners );
+	}
 	GetDirListing( sDir+sGroupDirName+"/*.png", arrayGroupBanners );
 	GetDirListing( sDir+sGroupDirName+"/*.jpg", arrayGroupBanners );
 	GetDirListing( sDir+sGroupDirName+"/*.jpeg", arrayGroupBanners );
 	GetDirListing( sDir+sGroupDirName+"/*.gif", arrayGroupBanners );
 	GetDirListing( sDir+sGroupDirName+"/*.bmp", arrayGroupBanners );
 
-	RString sBannerPath;
 	if( !arrayGroupBanners.empty() )
 		sBannerPath = sDir+sGroupDirName+"/"+arrayGroupBanners[0] ;
 	else
@@ -335,6 +341,7 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Pack pack )
 	*/
 	m_sSongGroupNames.push_back( sGroupDirName );
 	m_sSongGroupBannerPaths.push_back( sBannerPath );
+
 	if (m_mapGroupToPack.find(sGroupDirName) == m_mapGroupToPack.end())
 	{
 		m_mapGroupToPack[sGroupDirName] = pack;
@@ -345,18 +352,12 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Pack pack )
 
 
 	// Add the pack to its series if the pack has one and if the series exists
-	// if( pack.m_sSeries != "" )
-	// {
-	// 	if (m_mapSeries.find(pack.m_sSeries) == m_mapSeries.end())
-	// 	{
-	// 		m_mapSeries[pack.m_sSeries] = std::vector<Pack*>();
-	// 		m_mapSeries[pack.m_sSeries].push_back(pack);
-
-	// 	} else {
-	// 		m_mapSeries[pack.m_sSeries]->packs.push_back(pack);
-	// 	}
-	// }
-	
+	if( pack.m_sSeries != "" )
+	{
+		std::vector<Pack*>& series = m_mapSeries[pack.m_sSeries];
+		if( std::find(series.begin(), series.end(), &pack) == series.end() )
+			series.push_back(&pack);
+	}
 	//m_sSongGroupBackgroundPaths.push_back( sBackgroundPath );
 }
 
@@ -444,7 +445,8 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		RString SortTitle = sGroupDirName;
 		RString TranslitTitle = sGroupDirName;
 		RString Series = "";
-		int iOffset = 0;
+		RString bannerPath = "";
+		float fOffset = 0;
 		
 		Pack pack;
 		if( FILEMAN->DoesFileExist( sGroupIniPath ) && arraySongDirs.size() > 0 )
@@ -455,6 +457,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			ini.GetValue( "Group", "DisplayTitle", sDisplayTitle );
 			if (sDisplayTitle.empty())
 				sDisplayTitle = group_base_name;
+			ini.GetValue( "Group", "Banner", bannerPath );
 			ini.GetValue( "Group", "SortTitle", SortTitle );
 			if (SortTitle.empty())
 				SortTitle = sDisplayTitle;
@@ -462,24 +465,21 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			if (TranslitTitle.empty())
 				TranslitTitle = sDisplayTitle;
 			ini.GetValue( "Group", "Series", Series );
-			ini.GetValue( "Group", "SyncOffsetMs", iOffset );
+			ini.GetValue( "Group", "SyncOffsetMs", fOffset );
 			LOG->Trace("Loaded pack.ini for \"%s\"", (sDir+sGroupDirName).c_str() );
 			// LOG THE RECEIVED INFO
 			LOG->Trace("DisplayTitle: %s", sDisplayTitle.c_str());
 			LOG->Trace("SortTitle: %s", SortTitle.c_str());
 			pack.m_bHasPackIni = true;
 		} else {
-			LOG->Trace("No pack.ini found for \"%s\"", (sDir+sGroupDirName).c_str() );
-			LOG-> Trace("Using default values for pack.ini");
-			LOG-> Trace("DisplayTitle: %s", sDisplayTitle.c_str());
-			LOG-> Trace("SortTitle: %s", SortTitle.c_str());
 			pack.m_bHasPackIni = false;
 		}
 		pack.m_sDisplayTitle = sDisplayTitle;
 		pack.m_sSortTitle = SortTitle;
 		pack.m_sTranslitTitle = TranslitTitle;
 		pack.m_sSeries = Series;
-		pack.m_iSyncOffset = iOffset;
+		pack.m_iSyncOffset = fOffset;
+		pack.m_sBannerPath = bannerPath;
 		pack.m_sPath = sDir + sGroupDirName;
 		pack.m_sGroupName = group_base_name;
 		
@@ -517,6 +517,23 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 				delete pNewSong;
 				continue;
 			}
+			// Apply Pack Offset if applicable
+			if( pack.m_iSyncOffset != 0 )
+			{
+				LOG->Trace("Applying pack offset of %i ms to \"%s\"", pack.m_iSyncOffset, pNewSong->GetSongDir().c_str() );
+				pNewSong->m_SongTiming.m_fBeat0PackOffsetInSeconds = pack.m_iSyncOffset;
+				const std::vector<Steps*>& vpSteps = pNewSong->GetAllSteps();
+				for (Steps *s : vpSteps)
+				{
+					// Empty TimingData means it's inherited
+					// from the song and is already changed.
+					if( s->m_Timing.empty() )
+						continue;
+					s->m_Timing.m_fBeat0PackOffsetInSeconds = pack.m_iSyncOffset;
+				}
+			}
+
+
 			AddSongToList(pNewSong);
 
 			index_entry.push_back( pNewSong );
