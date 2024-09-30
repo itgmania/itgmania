@@ -23,9 +23,10 @@ void EditModePlayerManager::AddPlayers(const NoteData& note_data) {
 		player->SetZoom(SCREEN_HEIGHT / 480);
 		StyleType style_type = GAMESTATE->GetCurrentStyle(pn)->m_StyleType;
 		player->SetX(THEME->GetMetricF("ScreenGameplay", ssprintf("PlayerP%d%sX", pn + 1, StyleTypeToString(style_type).c_str())));
-	}
 
-	SetVisible(false);
+		// Initial state is to hide the notefield.
+		player->SetVisible(false);
+	}
 }
 
 
@@ -44,19 +45,32 @@ void EditModePlayerManager::ReloadNoteData(const NoteData& note_data) {
 
 
 void EditModePlayerManager::SetVisible(bool visible) {
+	// If this is a routine chart, only set visibility of PLAYER_1.
+	if (GAMESTATE->GetCurrentStyle(PLAYER_1)->m_StyleType ==
+		StyleType::StyleType_TwoPlayersSharedSides) {
+		(*players_[PLAYER_1])->SetVisible(visible);
+		return;
+	}
+
 	for (auto& player : players_) {
 		(*player.second)->SetVisible(visible);
 	}
 }
 
 bool EditModePlayerManager::HandleGameplayInput(const InputEventPlus& input, const GameButtonType& gbt) {
-	if (gbt == GameButtonType_Step && GAMESTATE->IsPlayerEnabled(input.pn)) {
-		if (GAMESTATE->m_pPlayerState[input.pn]->m_PlayerController == PC_AUTOPLAY) {
+	PlayerNumber pn = input.pn;
+
+	// Redirect Player2's inputs to P1's notefield in case of Routine charts.
+	if (GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->m_StyleType == StyleType_TwoPlayersSharedSides) {
+		pn = PLAYER_1;
+	}
+	if (gbt == GameButtonType_Step && GAMESTATE->IsPlayerEnabled(pn)) {
+		if (GAMESTATE->m_pPlayerState[pn]->m_PlayerController == PC_AUTOPLAY) {
 			return false;
 		}
-		const int iCol = GAMESTATE->GetCurrentStyle(input.pn)->GameInputToColumn(input.GameI);
+		const int iCol = GAMESTATE->GetCurrentStyle(pn)->GameInputToColumn(input.GameI);
 		if (iCol != -1) {
-			(*players_[input.pn])->Step(iCol, -1, input.DeviceI.ts, false, input.type == IET_RELEASE);
+			(*players_[pn])->Step(iCol, -1, input.DeviceI.ts, false, input.type == IET_RELEASE);
 		}
 		return true;
 	}
