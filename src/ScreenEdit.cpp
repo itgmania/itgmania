@@ -1508,7 +1508,6 @@ void ScreenEdit::Init()
 	this->AddChild( &m_NoteFieldRecord );
 
 	m_EditState = EditState_Invalid;
-	TransitionEditState( STATE_EDITING );
 
 	m_bRemoveNoteButtonDown = false;
 
@@ -1528,6 +1527,7 @@ void ScreenEdit::Init()
 
 	player_manager_.AddPlayers(m_NoteDataEdit);
 	player_manager_.AddPlayersToActorFrame(*this);
+	TransitionEditState(STATE_EDITING);
 
 	this->AddChild( &m_Foreground );
 
