@@ -274,7 +274,7 @@ RageTextureID ImageCache::LoadCachedImage( RString sImageDir, RString sImagePath
 {
 	RageTextureID ID( GetImageCachePath(sImageDir,sImagePath) );
 
-	std::size_t Found = sImagePath.find("_blank");
+	size_t Found = sImagePath.find("_blank");
 	if( sImagePath == "" || Found!=RString::npos )
 		return ID;
 

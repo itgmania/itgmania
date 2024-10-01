@@ -101,7 +101,7 @@ void StatsManager::GetFinalEvalStageStats( StageStats& statsOut ) const
 {
 	statsOut.Init();
 	std::vector<StageStats> vssToCount;
-	for(std::size_t i= 0; i < m_vPlayedStageStats.size(); ++i)
+	for(size_t i= 0; i < m_vPlayedStageStats.size(); ++i)
 	{
 		vssToCount.push_back(m_vPlayedStageStats[i]);
 	}

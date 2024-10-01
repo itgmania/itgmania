@@ -253,8 +253,8 @@ static void DoRowEndRadarActualCalc(garv_state& state, RadarValues& out)
 		{
 			if(state.worst_tns_on_row >= state.hands_tns)
 			{
-				std::size_t holds_down= 0;
-				for(std::size_t n= 0; n < state.hold_ends.size(); ++n)
+				size_t holds_down= 0;
+				for(size_t n= 0; n < state.hold_ends.size(); ++n)
 				{
 					holds_down+= (state.curr_row <= state.hold_ends[n].last_held_row);
 				}
@@ -307,7 +307,7 @@ void NoteDataWithScoring::GetActualRadarValues(const NoteData &in,
 			state.num_notes_on_curr_row= 0;
 			state.num_holds_on_curr_row= 0;
 			state.judgable= timing->IsJudgableAtRow(state.curr_row);
-			for(std::size_t n= 0; n < state.hold_ends.size(); ++n)
+			for(size_t n= 0; n < state.hold_ends.size(); ++n)
 			{
 				if(state.hold_ends[n].end_row < state.curr_row)
 				{

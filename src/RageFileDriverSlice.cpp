@@ -34,7 +34,7 @@ RageFileDriverSlice *RageFileDriverSlice::Copy() const
 	return pRet;
 }
 
-int RageFileDriverSlice::ReadInternal( void *buf, std::size_t bytes )
+int RageFileDriverSlice::ReadInternal( void *buf, size_t bytes )
 {
 	/* Make sure we're reading from the right place.  We might have been constructed
 	 * with a file not pointing to iOffset. */

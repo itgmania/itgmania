@@ -102,7 +102,7 @@ int RageFileObj::Seek( int offset, int whence )
 	return Seek( (int) offset );
 }
 
-int RageFileObj::Read( void *pBuffer, std::size_t iBytes )
+int RageFileObj::Read( void *pBuffer, size_t iBytes )
 {
 	int iRet = 0;
 
@@ -189,7 +189,7 @@ int RageFileObj::Read( RString &sBuffer, int iBytes )
 	return iRet;
 }
 
-int RageFileObj::Read( void *pBuffer, std::size_t iBytes, int iNmemb )
+int RageFileObj::Read( void *pBuffer, size_t iBytes, int iNmemb )
 {
 	const int iRet = Read( pBuffer, iBytes*iNmemb );
 	if( iRet == -1 )
@@ -231,7 +231,7 @@ int RageFileObj::EmptyWriteBuf()
 	return 0;
 }
 
-int RageFileObj::Write( const void *pBuffer, std::size_t iBytes )
+int RageFileObj::Write( const void *pBuffer, size_t iBytes )
 {
 	if( m_pWriteBuffer != nullptr )
 	{
@@ -269,7 +269,7 @@ int RageFileObj::Write( const void *pBuffer, std::size_t iBytes )
 	return iRet;
 }
 
-int RageFileObj::Write( const void *pBuffer, std::size_t iBytes, int iNmemb )
+int RageFileObj::Write( const void *pBuffer, size_t iBytes, int iNmemb )
 {
 	/* Simple write.  We never return partial writes. */
 	int iRet = Write( pBuffer, iBytes*iNmemb ) / iBytes;

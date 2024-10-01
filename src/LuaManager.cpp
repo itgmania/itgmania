@@ -98,7 +98,7 @@ namespace LuaHelpers
 	template<> bool FromStack<unsigned int>( Lua *L, unsigned int &Object, int iOffset ) { Object = lua_tointeger( L, iOffset ); return true; }
 	template<> bool FromStack<RString>( Lua *L, RString &Object, int iOffset )
 	{
-		std::size_t iLen;
+		size_t iLen;
 		const char *pStr = lua_tolstring( L, iOffset, &iLen );
 		if( pStr != nullptr )
 			Object.assign( pStr, iLen );

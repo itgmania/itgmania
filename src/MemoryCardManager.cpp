@@ -18,25 +18,25 @@
 
 MemoryCardManager*	MEMCARDMAN = nullptr;	// global and accessible from anywhere in our program
 
-static void MemoryCardOsMountPointInit( std::size_t /*PlayerNumber*/ i, RString &sNameOut, RString &defaultValueOut )
+static void MemoryCardOsMountPointInit( size_t /*PlayerNumber*/ i, RString &sNameOut, RString &defaultValueOut )
 {
 	sNameOut = ssprintf( "MemoryCardOsMountPointP%d", int(i+1) );
 	defaultValueOut = "";
 }
 
-static void MemoryCardUsbBusInit( std::size_t /*PlayerNumber*/ i, RString &sNameOut, int &defaultValueOut )
+static void MemoryCardUsbBusInit( size_t /*PlayerNumber*/ i, RString &sNameOut, int &defaultValueOut )
 {
 	sNameOut = ssprintf( "MemoryCardUsbBusP%d", int(i+1) );
 	defaultValueOut = -1;
 }
 
-static void MemoryCardUsbPortInit( std::size_t /*PlayerNumber*/ i, RString &sNameOut, int &defaultValueOut )
+static void MemoryCardUsbPortInit( size_t /*PlayerNumber*/ i, RString &sNameOut, int &defaultValueOut )
 {
 	sNameOut = ssprintf( "MemoryCardUsbPortP%d",int(i+1) );
 	defaultValueOut = -1;
 }
 
-static void MemoryCardUsbLevelInit( std::size_t /*PlayerNumber*/ i, RString &sNameOut, int &defaultValueOut )
+static void MemoryCardUsbLevelInit( size_t /*PlayerNumber*/ i, RString &sNameOut, int &defaultValueOut )
 {
 	sNameOut = ssprintf( "MemoryCardUsbLevelP%d", int(i+1) );
 	defaultValueOut = -1;

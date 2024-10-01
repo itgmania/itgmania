@@ -50,7 +50,7 @@ void FileSet::GetFilesMatching( const RString &sBeginning_, const RString &sCont
 		 * search instead of string match). */
 		if( !sContaining.empty() )
 		{
-			std::size_t pos = sPath.find( sContaining, sBeginning.size() );
+			size_t pos = sPath.find( sContaining, sBeginning.size() );
 			if( pos == sPath.npos )
 				continue; /* doesn't contain it */
 			if( pos + sContaining.size() > unsigned(end_pos) )
@@ -108,7 +108,7 @@ static void SplitPath( RString sPath, RString &sDir, RString &sName )
 	if( sPath.Right(1) == "/" )
 		sPath.erase( sPath.size()-1 );
 
-	std::size_t iSep = sPath.find_last_of( '/' );
+	size_t iSep = sPath.find_last_of( '/' );
 	if( iSep == RString::npos )
 	{
 		sDir = "";
@@ -238,14 +238,14 @@ void FilenameDB::GetFilesEqualTo( const RString &sDir, const RString &sFile, std
 void FilenameDB::GetFilesSimpleMatch( const RString &sDir, const RString &sMask, std::vector<RString> &asOut, bool bOnlyDirs )
 {
 	/* Does this contain a wildcard? */
-	std::size_t first_pos = sMask.find_first_of( '*' );
+	size_t first_pos = sMask.find_first_of( '*' );
 	if( first_pos == sMask.npos )
 	{
 		/* No; just do a regular search. */
 		GetFilesEqualTo( sDir, sMask, asOut, bOnlyDirs );
 		return;
 	}
-	std::size_t second_pos = sMask.find_first_of( '*', first_pos+1 );
+	size_t second_pos = sMask.find_first_of( '*', first_pos+1 );
 	if( second_pos == sMask.npos )
 	{
 		/* Only one *: "A*B". */
@@ -580,7 +580,7 @@ void FilenameDB::GetDirListing( const RString &sPath_, std::vector<RString> &asA
 	ASSERT( !sPath.empty() );
 
 	/* Strip off the last path element and use it as a mask. */
-	std::size_t  pos = sPath.find_last_of( '/' );
+	size_t  pos = sPath.find_last_of( '/' );
 	RString fn;
 	if( pos == sPath.npos )
 	{

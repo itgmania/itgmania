@@ -46,8 +46,8 @@
 #include <vector>
 
 
-RString ATTACK_DISPLAY_X_NAME( std::size_t p, std::size_t both_sides );
-void TimingWindowSecondsInit( std::size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut );
+RString ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides );
+void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut );
 
 /**
  * @brief Helper class to ensure that each row is only judged once without taking too much memory.
@@ -58,9 +58,9 @@ class JudgedRows
 	int m_iStart;
 	int m_iOffset;
 
-	void Resize( std::size_t iMin )
+	void Resize( size_t iMin )
 	{
-		std::size_t iNewSize = std::max( 2*m_vRows.size(), iMin );
+		size_t iNewSize = std::max( 2*m_vRows.size(), iMin );
 		std::vector<bool> vNewRows( m_vRows.begin() + m_iOffset, m_vRows.end() );
 		vNewRows.reserve( iNewSize );
 		vNewRows.insert( vNewRows.end(), m_vRows.begin(), m_vRows.begin() + m_iOffset );
@@ -98,7 +98,7 @@ public:
 };
 
 
-RString ATTACK_DISPLAY_X_NAME( std::size_t p, std::size_t both_sides )	{ return "AttackDisplayXOffset" + (both_sides ? RString("BothSides") : ssprintf("OneSideP%d",int(p+1)) ); }
+RString ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides )	{ return "AttackDisplayXOffset" + (both_sides ? RString("BothSides") : ssprintf("OneSideP%d",int(p+1)) ); }
 
 /**
  * @brief Distance to search for a note in Step(), in seconds.
@@ -106,7 +106,7 @@ RString ATTACK_DISPLAY_X_NAME( std::size_t p, std::size_t both_sides )	{ return 
  * TODO: This should be calculated based on the max size of the current judgment windows. */
 static const float StepSearchDistance = 1.0f;
 
-void TimingWindowSecondsInit( std::size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut )
+void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut )
 {
 	sNameOut = "TimingWindowSeconds" + TimingWindowToString( static_cast<TimingWindow>(i) );
 	switch( i )
@@ -2182,7 +2182,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 			std::vector<GameInput> GameI;
 			GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)->StyleInputToGameInput( t, pn, GameI );
 			float secs_held= 0.0f;
-			for(std::size_t i= 0; i < GameI.size(); ++i)
+			for(size_t i= 0; i < GameI.size(); ++i)
 			{
 				secs_held= std::max(secs_held, INPUTMAPPER->GetSecsHeld( GameI[i] ));
 			}
@@ -2881,7 +2881,7 @@ void Player::CrossedRows( int iLastRowCrossed, const RageTimer &now )
 					GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)->StyleInputToGameInput( iTrack, pn, GameI );
 					if( PREFSMAN->m_fPadStickSeconds > 0.f )
 					{
-						for(std::size_t i= 0; i < GameI.size(); ++i)
+						for(size_t i= 0; i < GameI.size(); ++i)
 						{
 							float fSecsHeld = INPUTMAPPER->GetSecsHeld(GameI[i], m_pPlayerState->m_mp);
 							if(fSecsHeld >= PREFSMAN->m_fPadStickSeconds)
@@ -2909,7 +2909,7 @@ void Player::CrossedRows( int iLastRowCrossed, const RageTimer &now )
 				GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)->StyleInputToGameInput( iTrack, pn, GameI );
 				if( PREFSMAN->m_fPadStickSeconds > 0.0f )
 				{
-					for(std::size_t i= 0; i < GameI.size(); ++i)
+					for(size_t i= 0; i < GameI.size(); ++i)
 					{
 						float fSecsHeld = INPUTMAPPER->GetSecsHeld(GameI[i], m_pPlayerState->m_mp);
 						if(fSecsHeld >= PREFSMAN->m_fPadStickSeconds)

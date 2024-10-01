@@ -24,8 +24,8 @@ public:
 	virtual RString GetError() const { return m_pFile->GetError(); }
 	virtual void ClearError()  { return m_pFile->ClearError(); }
 
-	int ReadInternal( void *pBuffer, std::size_t iBytes );
-	int WriteInternal( const void *pBuffer, std::size_t iBytes ) { return m_pFile->Write( pBuffer, iBytes ); }
+	int ReadInternal( void *pBuffer, size_t iBytes );
+	int WriteInternal( const void *pBuffer, size_t iBytes ) { return m_pFile->Write( pBuffer, iBytes ); }
 	int SeekInternal( int iOffset );
 	int GetFileSize() const { return m_pFile->GetFileSize(); }
 	int GetFD() { return m_pFile->GetFD(); }

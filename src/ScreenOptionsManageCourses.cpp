@@ -238,7 +238,7 @@ void ScreenOptionsManageCourses::ProcessMenuStart( const InputEventPlus & )
 	{
 		std::vector<Course*> vpCourses;
 		EditCourseUtil::GetAllEditCourses( vpCourses );
-		if( vpCourses.size() >= (std::size_t)EditCourseUtil::MAX_PER_PROFILE )
+		if( vpCourses.size() >= (size_t)EditCourseUtil::MAX_PER_PROFILE )
 		{
 			RString s = ssprintf( YOU_HAVE_MAX.GetValue()+"\n\n"+YOU_MUST_DELETE.GetValue(), EditCourseUtil::MAX_PER_PROFILE );
 			ScreenPrompt::Prompt( SM_None, s );

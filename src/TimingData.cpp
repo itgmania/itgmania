@@ -67,7 +67,7 @@ bool TimingData::IsSafeFullTiming()
 		needed_segments.push_back(SEGMENT_SPEED);
 		needed_segments.push_back(SEGMENT_SCROLL);
 	}
-	for(std::size_t s= 0; s < needed_segments.size(); ++s)
+	for(size_t s= 0; s < needed_segments.size(); ++s)
 	{
 		if(m_avpTimingSegments[needed_segments[s]].empty())
 		{
@@ -144,7 +144,7 @@ void TimingData::DumpOneTable(const beat_start_lookup_t& lookup, const RString& 
 	const std::vector<TimingSegment*>& stops= m_avpTimingSegments[SEGMENT_STOP];
 	const std::vector<TimingSegment*>& delays= m_avpTimingSegments[SEGMENT_DELAY];
 	LOG->Trace("%s lookup table:", name.c_str());
-	for(std::size_t lit= 0; lit < lookup.size(); ++lit)
+	for(size_t lit= 0; lit < lookup.size(); ++lit)
 	{
 		const lookup_item_t& item= lookup[lit];
 		const GetBeatStarts& starts= item.second;
@@ -176,8 +176,8 @@ TimingData::beat_start_lookup_t::const_iterator FindEntryInLookup(
 	{
 		return lookup.end();
 	}
-	std::size_t lower= 0;
-	std::size_t upper= lookup.size()-1;
+	size_t lower= 0;
+	size_t upper= lookup.size()-1;
 	if(lookup[lower].first > entry)
 	{
 		return lookup.end();
@@ -189,7 +189,7 @@ TimingData::beat_start_lookup_t::const_iterator FindEntryInLookup(
 	}
 	while(upper - lower > 1)
 	{
-		std::size_t next= (upper + lower) / 2;
+		size_t next= (upper + lower) / 2;
 		if(lookup[next].first > entry)
 		{
 			upper= next;
@@ -233,7 +233,7 @@ void TimingData::CopyRange(int start_row, int end_row,
 		if(seg_type == copy_type || copy_type == TimingSegmentType_Invalid)
 		{
 			const std::vector<TimingSegment*>& segs= GetTimingSegments(seg_type);
-			for(std::size_t i= 0; i < segs.size(); ++i)
+			for(size_t i= 0; i < segs.size(); ++i)
 			{
 				if(segs[i]->GetRow() >= start_row && segs[i]->GetRow() <= end_row)
 				{
@@ -269,7 +269,7 @@ void TimingData::ShiftRange(int start_row, int end_row,
 			// the rows of the segments, the second time removing segments that
 			// have been run over by a segment being moved.  Attempts to combine
 			// both operations into a single loop were error prone. -Kyz
-			for(std::size_t i= first_affected; i <= static_cast<std::size_t>(last_affected) && i < segs.size(); ++i)
+			for(size_t i= first_affected; i <= static_cast<size_t>(last_affected) && i < segs.size(); ++i)
 			{
 				int seg_row= segs[i]->GetRow();
 				if(seg_row > 0 && seg_row >= start_row && seg_row <= end_row)
@@ -278,7 +278,7 @@ void TimingData::ShiftRange(int start_row, int end_row,
 					segs[i]->SetRow(dest_row);
 				}
 			}
-			for(std::size_t i= first_affected; i <= static_cast<std::size_t>(last_affected) && i < segs.size(); ++i)
+			for(size_t i= first_affected; i <= static_cast<size_t>(last_affected) && i < segs.size(); ++i)
 			{
 				bool erased= false;
 				int seg_row= segs[i]->GetRow();
@@ -655,7 +655,7 @@ void TimingData::AddSegment( const TimingSegment *seg )
 			// and adding the new segment.
 			// If the new segment is also redundant, erase the next segment because
 			// that effectively moves it back to the prev segment. -Kyz
-			if(static_cast<std::size_t>(index) < vSegs.size() - 1)
+			if(static_cast<size_t>(index) < vSegs.size() - 1)
 			{
 				TimingSegment* next= vSegs[index + 1];
 				if((*seg) == (*next))
@@ -1310,7 +1310,7 @@ void TimingSegmentSetToLuaTable(TimingData* td, TimingSegmentType tst, lua_State
 	lua_createtable(L, segs.size(), 0);
 	if(tst == SEGMENT_LABEL)
 	{
-		for(std::size_t i= 0; i < segs.size(); ++i)
+		for(size_t i= 0; i < segs.size(); ++i)
 		{
 			lua_createtable(L, 2, 0);
 			lua_pushnumber(L, segs[i]->GetBeat());
@@ -1322,13 +1322,13 @@ void TimingSegmentSetToLuaTable(TimingData* td, TimingSegmentType tst, lua_State
 	}
 	else
 	{
-		for(std::size_t i= 0; i < segs.size(); ++i)
+		for(size_t i= 0; i < segs.size(); ++i)
 		{
 			std::vector<float> values= segs[i]->GetValues();
 			lua_createtable(L, values.size()+1, 0);
 			lua_pushnumber(L, segs[i]->GetBeat());
 			lua_rawseti(L, -2, 1);
-			for(std::size_t v= 0; v < values.size(); ++v)
+			for(size_t v= 0; v < values.size(); ++v)
 			{
 				lua_pushnumber(L, values[v]);
 				lua_rawseti(L, -2, v+2);

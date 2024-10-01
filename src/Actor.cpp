@@ -175,7 +175,7 @@ Actor::~Actor()
 {
 	StopTweening();
 	UnsubscribeAll();
-	for(std::size_t i= 0; i < m_WrapperStates.size(); ++i)
+	for(size_t i= 0; i < m_WrapperStates.size(); ++i)
 	{
 		RageUtil::SafeDelete(m_WrapperStates[i]);
 	}
@@ -196,7 +196,7 @@ Actor::Actor( const Actor &cpy ):
 	CPY( m_pLuaInstance );
 
 	m_WrapperStates.resize(cpy.m_WrapperStates.size());
-	for(std::size_t i= 0; i < m_WrapperStates.size(); ++i)
+	for(size_t i= 0; i < m_WrapperStates.size(); ++i)
 	{
 		m_WrapperStates[i]= new ActorFrame(*dynamic_cast<ActorFrame*>(cpy.m_WrapperStates[i]));
 	}
@@ -404,7 +404,7 @@ void Actor::Draw()
 	{
 		m_FakeParent->BeginDraw();
 	}
-	std::size_t wrapper_states_used= 0;
+	size_t wrapper_states_used= 0;
 	RageColor last_diffuse;
 	RageColor last_glow;
 	bool use_last_diffuse= false;
@@ -420,7 +420,7 @@ void Actor::Draw()
 	// wrapper[3] is the outermost frame.  wrapper[2] is inside wrapper[3].
 	// wrapper[1] is inside wrapper[2].  The actor is inside wrapper[1].
 	// -Kyz
-	for(std::size_t i= m_WrapperStates.size(); i > 0 && dont_abort_draw; --i)
+	for(size_t i= m_WrapperStates.size(); i > 0 && dont_abort_draw; --i)
 	{
 		Actor* state= m_WrapperStates[i-1];
 		if(!state->m_bVisible || state->m_fHibernateSecondsLeft > 0 ||
@@ -469,7 +469,7 @@ void Actor::Draw()
 		}
 		this->PostDraw();
 	}
-	for(std::size_t i= 0; i < wrapper_states_used; ++i)
+	for(size_t i= 0; i < wrapper_states_used; ++i)
 	{
 		Actor* state= m_WrapperStates[i];
 		if(abort_with_end_draw)
@@ -886,7 +886,7 @@ void Actor::Update( float fDeltaTime )
 		fDeltaTime = -m_fHibernateSecondsLeft;
 		m_fHibernateSecondsLeft = 0;
 	}
-	for(std::size_t i= 0; i < m_WrapperStates.size(); ++i)
+	for(size_t i= 0; i < m_WrapperStates.size(); ++i)
 	{
 		m_WrapperStates[i]->Update(fDeltaTime);
 	}
@@ -984,14 +984,14 @@ void Actor::AddWrapperState()
 	m_WrapperStates.push_back(wrapper);
 }
 
-void Actor::RemoveWrapperState(std::size_t i)
+void Actor::RemoveWrapperState(size_t i)
 {
 	ASSERT(i < m_WrapperStates.size());
 	RageUtil::SafeDelete(m_WrapperStates[i]);
 	m_WrapperStates.erase(m_WrapperStates.begin()+i);
 }
 
-Actor* Actor::GetWrapperState(std::size_t i)
+Actor* Actor::GetWrapperState(size_t i)
 {
 	ASSERT(i < m_WrapperStates.size());
 	return m_WrapperStates[i];
@@ -1964,11 +1964,11 @@ public:
 		p->GetWrapperState(p->GetNumWrapperStates()-1)->PushSelf(L);
 		return 1;
 	}
-	static std::size_t get_state_index(T* p, lua_State* L, int stack_index)
+	static size_t get_state_index(T* p, lua_State* L, int stack_index)
 	{
 		// Lua is one indexed.
 		int i= IArg(stack_index)-1;
-		const std::size_t si= static_cast<std::size_t>(i);
+		const size_t si= static_cast<size_t>(i);
 		if(i < 0 || si >= p->GetNumWrapperStates())
 		{
 			luaL_error(L, "%d is not a valid wrapper state index.", i+1);
@@ -1977,7 +1977,7 @@ public:
 	}
 	static int RemoveWrapperState(T* p, lua_State* L)
 	{
-		std::size_t si= get_state_index(p, L, 1);
+		size_t si= get_state_index(p, L, 1);
 		p->RemoveWrapperState(si);
 		COMMON_RETURN_SELF;
 	}
@@ -1988,7 +1988,7 @@ public:
 	}
 	static int GetWrapperState(T* p, lua_State* L)
 	{
-		std::size_t si= get_state_index(p, L, 1);
+		size_t si= get_state_index(p, L, 1);
 		p->GetWrapperState(si)->PushSelf(L);
 		return 1;
 	}

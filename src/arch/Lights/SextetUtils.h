@@ -12,11 +12,11 @@
  */
 
  // Number of printable characters used to encode lights
-static const std::size_t CABINET_SEXTET_COUNT = 1;
-static const std::size_t CONTROLLER_SEXTET_COUNT = 6;
+static const size_t CABINET_SEXTET_COUNT = 1;
+static const size_t CONTROLLER_SEXTET_COUNT = 6;
 
 // Number of bytes to contain the full pack and a trailing LF
-static const std::size_t FULL_SEXTET_COUNT = CABINET_SEXTET_COUNT + (NUM_GameController * CONTROLLER_SEXTET_COUNT) + 1;
+static const size_t FULL_SEXTET_COUNT = CABINET_SEXTET_COUNT + (NUM_GameController * CONTROLLER_SEXTET_COUNT) + 1;
 
 // Serialization routines
 
@@ -60,7 +60,7 @@ inline std::uint8_t packPrintableSextet(bool b0, bool b1, bool b2, bool b3, bool
 }
 
 // Packs the cabinet lights into a printable sextet and adds it to a buffer
-inline std::size_t packCabinetLights(const LightsState* ls, std::uint8_t* buffer)
+inline size_t packCabinetLights(const LightsState* ls, std::uint8_t* buffer)
 {
 	buffer[0] = packPrintableSextet(
 		ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT],
@@ -74,7 +74,7 @@ inline std::size_t packCabinetLights(const LightsState* ls, std::uint8_t* buffer
 
 // Packs the button lights for a controller into 6 printable sextets and
 // adds them to a buffer
-inline std::size_t packControllerLights(const LightsState* ls, GameController gc, std::uint8_t* buffer)
+inline size_t packControllerLights(const LightsState* ls, GameController gc, std::uint8_t* buffer)
 {
 	// Menu buttons
 	buffer[0] = packPrintableSextet(
@@ -127,9 +127,9 @@ inline std::size_t packControllerLights(const LightsState* ls, GameController gc
 	return CONTROLLER_SEXTET_COUNT;
 }
 
-inline std::size_t packLine(std::uint8_t* buffer, const LightsState* ls)
+inline size_t packLine(std::uint8_t* buffer, const LightsState* ls)
 {
-	std::size_t index = 0;
+	size_t index = 0;
 
 	index += packCabinetLights(ls, &(buffer[index]));
 

@@ -53,15 +53,15 @@ static ThemeMetric<float>	TIPSY_OFFSET_TIMER_FREQUENCY( "ArrowEffects", "TipsyOf
 static ThemeMetric<float>	TIPSY_OFFSET_COLUMN_FREQUENCY( "ArrowEffects", "TipsyOffsetColumnFrequency" );
 static ThemeMetric<float>	TIPSY_OFFSET_ARROW_MAGNITUDE( "ArrowEffects", "TipsyOffsetArrowMagnitude" );
 
-static RString TPSTL_NAME(std::size_t i) { return ssprintf("Tornado%cPositionScaleToLow", dimension_names[i]); }
+static RString TPSTL_NAME(size_t i) { return ssprintf("Tornado%cPositionScaleToLow", dimension_names[i]); }
 static ThemeMetric1D<float> TORNADO_POSITION_SCALE_TO_LOW("ArrowEffects", TPSTL_NAME, 3);
-static RString TPSTH_NAME(std::size_t i) { return ssprintf("Tornado%cPositionScaleToHigh", dimension_names[i]); }
+static RString TPSTH_NAME(size_t i) { return ssprintf("Tornado%cPositionScaleToHigh", dimension_names[i]); }
 static ThemeMetric1D<float> TORNADO_POSITION_SCALE_TO_HIGH("ArrowEffects", TPSTH_NAME, 3);
-static RString TOF_NAME(std::size_t i) { return ssprintf("Tornado%cOffsetFrequency", dimension_names[i]); }
+static RString TOF_NAME(size_t i) { return ssprintf("Tornado%cOffsetFrequency", dimension_names[i]); }
 static ThemeMetric1D<float> TORNADO_OFFSET_FREQUENCY("ArrowEffects", TOF_NAME, 3);
-static RString TOSFL_NAME(std::size_t i) { return ssprintf("Tornado%cOffsetScaleFromLow", dimension_names[i]); }
+static RString TOSFL_NAME(size_t i) { return ssprintf("Tornado%cOffsetScaleFromLow", dimension_names[i]); }
 static ThemeMetric1D<float> TORNADO_OFFSET_SCALE_FROM_LOW("ArrowEffects", TOSFL_NAME, 3);
-static RString TOSFH_NAME(std::size_t i) { return ssprintf("Tornado%cOffsetScaleFromHigh", dimension_names[i]); }
+static RString TOSFH_NAME(size_t i) { return ssprintf("Tornado%cOffsetScaleFromHigh", dimension_names[i]); }
 static ThemeMetric1D<float> TORNADO_OFFSET_SCALE_FROM_HIGH("ArrowEffects", TOSFH_NAME, 3);
 
 static ThemeMetric<float>	DRUNK_COLUMN_FREQUENCY( "ArrowEffects", "DrunkColumnFrequency" );

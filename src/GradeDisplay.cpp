@@ -27,7 +27,7 @@ void GradeDisplay::Load( RString sMetricsGroup )
 
 void GradeDisplay::SetGrade( Grade grade )
 {
-	std::size_t i = 0;
+	size_t i = 0;
 	FOREACH_PossibleGrade( g )
 	{
 		if(i >= m_vSpr.size())

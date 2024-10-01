@@ -310,7 +310,7 @@ bool IsValidFrame( const StackFrame *frame )
 /* This x86 backtracer attempts to walk the stack frames.  If we come to a
  * place that doesn't look like a valid frame, we'll look forward and try
  * to find one again. */
-static void do_backtrace( const void **buf, std::size_t size, const BacktraceContext *ctx )
+static void do_backtrace( const void **buf, size_t size, const BacktraceContext *ctx )
 {
 	/* Read /proc/pid/maps to find the address range of the stack. */
 	get_readable_ranges( g_ReadableBegin, g_ReadableEnd, 1024 );
@@ -410,7 +410,7 @@ void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc )
 #error
 #endif
 
-void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *ctx )
+void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 {
 	InitializeBacktrace();
 
@@ -543,7 +543,7 @@ static bool PointsToValidCall( vm_address_t start, const void *ptr )
 }
 
 
-void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *ctx )
+void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 {
 	InitializeBacktrace();
 
@@ -569,7 +569,7 @@ void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *c
 	vm_prot_t protection = 0;
 	vm_address_t start = 0;
 
-	std::size_t i = 0;
+	size_t i = 0;
 	if( i < size-1 && ctx->ip )
 		buf[i++] = ctx->ip;
 
@@ -668,7 +668,7 @@ void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc )
 
 void InitializeBacktrace() { }
 
-void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *ctx )
+void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 {
 	BacktraceContext CurrentCtx;
 	if( ctx == nullptr )
@@ -716,7 +716,7 @@ void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc )
 
 void InitializeBacktrace() { }
 
-void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *ctx )
+void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 {
 	BacktraceContext CurrentCtx;
 
@@ -753,7 +753,7 @@ void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc )
 	// NYI
 }
 
-void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *ctx )
+void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 {
     buf[0] = BACKTRACE_METHOD_NOT_AVAILABLE;
     buf[1] = nullptr;

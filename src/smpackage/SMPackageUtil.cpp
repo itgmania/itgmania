@@ -212,7 +212,7 @@ RString SMPackageUtil::GetLanguageCodeFromDisplayString( const RString &sDisplay
 {
 	RString s = sDisplayString;
 	// strip the space and everything after
-	std::size_t iSpace = s.find(' ');
+	size_t iSpace = s.find(' ');
 	ASSERT( iSpace != s.npos );
 	s.erase( s.begin()+iSpace, s.end() );
 	return s;
@@ -259,7 +259,7 @@ bool RageFileOsAbsolute::Open( const RString& path, int mode )
 		FILEMAN->Unmount( "dir", m_sOsDir, TEMP_MOUNT_POINT );
 
 	m_sOsDir = path;
-	std::size_t iStart = m_sOsDir.find_last_of( "/\\" );
+	size_t iStart = m_sOsDir.find_last_of( "/\\" );
 	ASSERT( iStart != m_sOsDir.npos );
 	m_sOsDir.erase( m_sOsDir.begin()+iStart, m_sOsDir.end() );
 

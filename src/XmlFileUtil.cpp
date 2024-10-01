@@ -714,7 +714,7 @@ namespace
 		lua_pop( L, 1 );
 
 		// Recursively process tables.
-		for( std::size_t i = 0; i < NodesToAdd.size(); ++i )
+		for( size_t i = 0; i < NodesToAdd.size(); ++i )
 		{
 			const RString &sNodeName = NodeNamesToAdd[i];
 			LuaReference &NodeToAdd = NodesToAdd[i];

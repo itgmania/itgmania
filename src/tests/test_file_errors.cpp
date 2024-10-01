@@ -76,8 +76,8 @@ class RageFileObjTest: public RageFileObj
 public:
 	RageFileObjTest( const RString &path );
 	RageFileObjTest( const RageFileObjTest &cpy );
-	int ReadInternal(void *buffer, std::size_t bytes);
-	int WriteInternal(const void *buffer, std::size_t bytes);
+	int ReadInternal(void *buffer, size_t bytes);
+	int WriteInternal(const void *buffer, size_t bytes);
 	int Flush();
 	void Rewind() { pos = 0; }
 	int Seek( int offset )
@@ -133,7 +133,7 @@ RageFileObjTest::RageFileObjTest( const RString &path_ )
 	pos = 0;
 }
 
-int RageFileObjTest::ReadInternal( void *buf, std::size_t bytes )
+int RageFileObjTest::ReadInternal( void *buf, size_t bytes )
 {
 	bytes = std::min( bytes, g_TestFile.size()-pos );
 
@@ -154,7 +154,7 @@ int RageFileObjTest::ReadInternal( void *buf, std::size_t bytes )
 	return bytes;
 }
 
-int RageFileObjTest::WriteInternal( const void *buf, std::size_t bytes )
+int RageFileObjTest::WriteInternal( const void *buf, size_t bytes )
 {
 	if( g_BytesUntilError != -1 )
 	{

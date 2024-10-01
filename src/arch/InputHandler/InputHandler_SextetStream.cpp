@@ -37,7 +37,7 @@ namespace
 		private:
 			// The buffer size isn't critical; the RString will simply be
 			// extended until the line is done.
-			static const std::size_t BUFFER_SIZE = 64;
+			static const size_t BUFFER_SIZE = 64;
 			char buffer[BUFFER_SIZE];
 			std::FILE * file;
 			int timeout_ms;
@@ -100,7 +100,7 @@ namespace
 			bool ReadLine(RString& line)
 			{
 				bool afterFirst = false;
-				std::size_t len;
+				size_t len;
 
 				line = "";
 
@@ -133,7 +133,7 @@ class InputHandler_SextetStream::Impl
 		}
 
 		std::uint8_t stateBuffer[STATE_BUFFER_SIZE];
-		std::size_t timeout_ms;
+		size_t timeout_ms;
 		RageThread inputThread;
 		bool continueInputThread;
 
@@ -194,8 +194,8 @@ class InputHandler_SextetStream::Impl
 
 		inline void GetNewState(std::uint8_t * buffer, RString& line)
 		{
-			std::size_t lineLen = line.length();
-			std::size_t i, cursor;
+			size_t lineLen = line.length();
+			size_t i, cursor;
 			cursor = 0;
 			memset(buffer, 0, STATE_BUFFER_SIZE);
 
@@ -215,7 +215,7 @@ class InputHandler_SextetStream::Impl
 			}
 		}
 
-		inline DeviceButton ButtonAtIndex(std::size_t index)
+		inline DeviceButton ButtonAtIndex(size_t index)
 		{
 			if(index < COUNT_JOY_BUTTON) {
 				return enum_add2(FIRST_JOY_BUTTON, index);
@@ -235,14 +235,14 @@ class InputHandler_SextetStream::Impl
 			RageTimer now;
 
 			// XOR to find differences
-			for(std::size_t i = 0; i < STATE_BUFFER_SIZE; ++i) {
+			for(size_t i = 0; i < STATE_BUFFER_SIZE; ++i) {
 				changes[i] = stateBuffer[i] ^ newStateBuffer[i];
 			}
 
 			// Report on changes
-			for(std::size_t m = 0; m < STATE_BUFFER_SIZE; ++m) {
-				for(std::size_t n = 0; n < 6; ++n) {
-					std::size_t bi = (m * 6) + n;
+			for(size_t m = 0; m < STATE_BUFFER_SIZE; ++m) {
+				for(size_t n = 0; n < 6; ++n) {
+					size_t bi = (m * 6) + n;
 					if(bi < BUTTON_COUNT) {
 						if(changes[m] & (1 << n)) {
 							bool value = newStateBuffer[m] & (1 << n);

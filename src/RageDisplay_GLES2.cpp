@@ -264,12 +264,12 @@ RageDisplay_GLES2::Init( const VideoModeParams &p, bool bAllowUnacceleratedRende
 		}
 
 		sort( extensions.begin(), extensions.end() );
-		std::size_t next = 0;
+		size_t next = 0;
 		while( next < extensions.size() )
 		{
-			std::size_t last = next;
+			size_t last = next;
 			string type;
-			for( std::size_t i = next; i<extensions.size(); ++i )
+			for( size_t i = next; i<extensions.size(); ++i )
 			{
 				std::vector<string> segments;
 				split(extensions[i], '_', segments);
@@ -311,12 +311,12 @@ RageDisplay_GLES2::Init( const VideoModeParams &p, bool bAllowUnacceleratedRende
 		std::vector<RString> asExtensions;
 		split( szExtensionString, " ", asExtensions );
 		sort( asExtensions.begin(), asExtensions.end() );
-		std::size_t iNextToPrint = 0;
+		size_t iNextToPrint = 0;
 		while( iNextToPrint < asExtensions.size() )
 		{
-			std::size_t iLastToPrint = iNextToPrint;
+			size_t iLastToPrint = iNextToPrint;
 			RString sType;
-			for( std::size_t i = iNextToPrint; i<asExtensions.size(); ++i )
+			for( size_t i = iNextToPrint; i<asExtensions.size(); ++i )
 			{
 				std::vector<RString> asBits;
 				split( asExtensions[i], "_", asBits );

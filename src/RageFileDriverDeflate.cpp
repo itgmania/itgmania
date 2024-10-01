@@ -79,13 +79,13 @@ RageFileObjInflate::~RageFileObjInflate()
 	delete m_pInflate;
 }
 
-int RageFileObjInflate::ReadInternal( void *buf, std::size_t bytes )
+int RageFileObjInflate::ReadInternal( void *buf, size_t bytes )
 {
 	/* Don't read more than m_iUncompressedSize of data.  If we don't do this, it's
 	 * possible for a .gz to contain a header claiming 500k of data, but to actually
 	 * contain much more deflated data. */
 	ASSERT_M( m_iFilePos <= m_iUncompressedSize, ssprintf("%i, %i",m_iFilePos, m_iUncompressedSize) );
-	bytes = std::min( bytes, std::size_t(m_iUncompressedSize-m_iFilePos) );
+	bytes = std::min( bytes, size_t(m_iUncompressedSize-m_iFilePos) );
 
 	bool done=false;
 	int ret = 0;
@@ -224,7 +224,7 @@ RageFileObjDeflate::~RageFileObjDeflate()
 	delete m_pDeflate;
 }
 
-int RageFileObjDeflate::WriteInternal( const void *pBuffer, std::size_t iBytes )
+int RageFileObjDeflate::WriteInternal( const void *pBuffer, size_t iBytes )
 {
 	if( iBytes == 0 )
 	{

@@ -103,10 +103,10 @@ typedef wchar_t*		PWSTR;
 #include <cstring>
 
 /* In RageUtil: */
-void MakeUpper( char *p, std::size_t iLen );
-void MakeLower( char *p, std::size_t iLen );
-void MakeUpper( wchar_t *p, std::size_t iLen );
-void MakeLower( wchar_t *p, std::size_t iLen );
+void MakeUpper( char *p, size_t iLen );
+void MakeLower( char *p, size_t iLen );
+void MakeUpper( wchar_t *p, size_t iLen );
+void MakeLower( wchar_t *p, size_t iLen );
 
 /**
  * @brief Inline functions on which CStdString relies on.
@@ -227,32 +227,32 @@ inline int ssicmp(const CT* pA1, const CT* pA2)
 // -----------------------------------------------------------------------------
 #if 0
 	template<typename CT>
-	inline void sslwr(CT* pT, std::size_t nLen)
+	inline void sslwr(CT* pT, size_t nLen)
 	{
-		for ( CT* p = pT; static_cast<std::size_t>(p - pT) < nLen; ++p)
+		for ( CT* p = pT; static_cast<size_t>(p - pT) < nLen; ++p)
 			*p = (CT)sstolower(*p);
 	}
 	template<typename CT>
-	inline void ssupr(CT* pT, std::size_t nLen)
+	inline void ssupr(CT* pT, size_t nLen)
 	{
-		for ( CT* p = pT; static_cast<std::size_t>(p - pT) < nLen; ++p)
+		for ( CT* p = pT; static_cast<size_t>(p - pT) < nLen; ++p)
 			*p = (CT)sstoupper(*p);
 	}
 #endif
 
-inline void sslwr(char *pT, std::size_t nLen)
+inline void sslwr(char *pT, size_t nLen)
 {
 	MakeLower( pT, nLen );
 }
-inline void ssupr(char *pT, std::size_t nLen)
+inline void ssupr(char *pT, size_t nLen)
 {
 	MakeUpper( pT, nLen );
 }
-inline void sslwr(wchar_t *pT, std::size_t nLen)
+inline void sslwr(wchar_t *pT, size_t nLen)
 {
 	MakeLower( pT, nLen );
 }
-inline void ssupr(wchar_t *pT, std::size_t nLen)
+inline void ssupr(wchar_t *pT, size_t nLen)
 {
 	MakeUpper( pT, nLen );
 }

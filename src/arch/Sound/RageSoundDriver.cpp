@@ -35,8 +35,8 @@ RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 	}
 	else
 	{
-		std::size_t start = 0;
-		std::size_t end = drivers.find(',');
+		size_t start = 0;
+		size_t end = drivers.find(',');
 
 		while (end != RString::npos)
 		{
@@ -47,7 +47,7 @@ RageSoundDriver *RageSoundDriver::Create( const RString& drivers )
 
 		driversToTry.emplace_back(drivers.substr(start));
 
-		std::size_t to_try = 0;
+		size_t to_try = 0;
 
 		while (to_try < driversToTry.size())
 		{

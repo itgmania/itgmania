@@ -915,7 +915,7 @@ int LuaFunc_get_sound_driver_list(lua_State* L)
 {
 	std::vector<RString> driver_names = RageSoundDriver::GetSoundDriverList();
 	lua_createtable(L, driver_names.size(), 0);
-	for(std::size_t n= 0; n < driver_names.size(); ++n)
+	for(size_t n= 0; n < driver_names.size(); ++n)
 	{
 		lua_pushstring(L, driver_names[n].c_str());
 		lua_rawseti(L, -2, n+1);

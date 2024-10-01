@@ -987,7 +987,7 @@ bool InputMapper::IsBeingPressed( GameButton MenuI, PlayerNumber pn ) const
 	}
 	std::vector<GameInput> GameI;
 	MenuToGame( MenuI, pn, GameI );
-	for( std::size_t i=0; i<GameI.size(); i++ )
+	for( size_t i=0; i<GameI.size(); i++ )
 		if( IsBeingPressed(GameI[i]) )
 			return true;
 
@@ -997,7 +997,7 @@ bool InputMapper::IsBeingPressed( GameButton MenuI, PlayerNumber pn ) const
 bool InputMapper::IsBeingPressed(const std::vector<GameInput>& GameI, MultiPlayer mp, const DeviceInputList *pButtonState ) const
 {
 	bool pressed= false;
-	for(std::size_t i= 0; i < GameI.size(); ++i)
+	for(size_t i= 0; i < GameI.size(); ++i)
 	{
 		pressed |= IsBeingPressed(GameI[i], mp, pButtonState);
 	}
@@ -1027,7 +1027,7 @@ void InputMapper::RepeatStopKey( GameButton MenuI, PlayerNumber pn )
 	}
 	std::vector<GameInput> GameI;
 	MenuToGame( MenuI, pn, GameI );
-	for( std::size_t i=0; i<GameI.size(); i++ )
+	for( size_t i=0; i<GameI.size(); i++ )
 		RepeatStopKey( GameI[i] );
 }
 
@@ -1063,7 +1063,7 @@ float InputMapper::GetSecsHeld( GameButton MenuI, PlayerNumber pn ) const
 
 	std::vector<GameInput> GameI;
 	MenuToGame( MenuI, pn, GameI );
-	for( std::size_t i=0; i<GameI.size(); i++ )
+	for( size_t i=0; i<GameI.size(); i++ )
 		fMaxSecsHeld = std::max( fMaxSecsHeld, GetSecsHeld(GameI[i]) );
 
 	return fMaxSecsHeld;
@@ -1091,7 +1091,7 @@ void InputMapper::ResetKeyRepeat( GameButton MenuI, PlayerNumber pn )
 	}
 	std::vector<GameInput> GameI;
 	MenuToGame( MenuI, pn, GameI );
-	for( std::size_t i=0; i<GameI.size(); i++ )
+	for( size_t i=0; i<GameI.size(); i++ )
 		ResetKeyRepeat( GameI[i] );
 }
 
@@ -1122,7 +1122,7 @@ float InputMapper::GetLevel( GameButton MenuI, PlayerNumber pn ) const
 	MenuToGame( MenuI, pn, GameI );
 
 	float fLevel = 0;
-	for( std::size_t i=0; i<GameI.size(); i++ )
+	for( size_t i=0; i<GameI.size(); i++ )
 		fLevel = std::max( fLevel, GetLevel(GameI[i]) );
 
 	return fLevel;

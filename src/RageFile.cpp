@@ -146,7 +146,7 @@ void RageFile::SetError( const RString &err )
 	m_sError = err;
 }
 
-int RageFile::Read( void *pBuffer, std::size_t iBytes )
+int RageFile::Read( void *pBuffer, size_t iBytes )
 {
 	ASSERT_READ;
 	return m_File->Read( pBuffer, iBytes );
@@ -182,14 +182,14 @@ int RageFile::Read( RString &buffer, int bytes )
 	return m_File->Read( buffer, bytes );
 }
 
-int RageFile::Write( const void *buffer, std::size_t bytes )
+int RageFile::Write( const void *buffer, size_t bytes )
 {
 	ASSERT_WRITE;
 	return m_File->Write( buffer, bytes );
 }
 
 
-int RageFile::Write( const void *buffer, std::size_t bytes, int nmemb )
+int RageFile::Write( const void *buffer, size_t bytes, int nmemb )
 {
 	ASSERT_WRITE;
 	return m_File->Write( buffer, bytes, nmemb );
@@ -206,7 +206,7 @@ int RageFile::Flush()
 	return m_File->Flush();
 }
 
-int RageFile::Read( void *buffer, std::size_t bytes, int nmemb )
+int RageFile::Read( void *buffer, size_t bytes, int nmemb )
 {
 	ASSERT_READ;
 	return m_File->Read( buffer, bytes, nmemb );

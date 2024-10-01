@@ -51,7 +51,7 @@ RString SongCacheIndex::GetCacheFilePath( const RString &sGroup, const RString &
 	 * so we should probably replace them with combining diacritics.
 	 * XXX How do we do this and is it even worth it? */
 	const char *invalid = "/\xc0\xc1\xfe\xff\xf8\xf9\xfa\xfb\xfc\xfd\xf5\xf6\xf7";
-	for( std::size_t pos = s.find_first_of(invalid); pos != RString::npos; pos = s.find_first_of(invalid, pos) )
+	for( size_t pos = s.find_first_of(invalid); pos != RString::npos; pos = s.find_first_of(invalid, pos) )
 		s[pos] = '_';
 	// CACHE_DIR ends with a /.
 	return ssprintf( "%s%s/%s", SpecialFiles::CACHE_DIR.c_str(), sGroup.c_str(), s.c_str() );

@@ -1406,9 +1406,9 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 
 	// strip newlines (basically operates as both split and join at the same time)
 	RString sChanges;
-	std::size_t start = 0;
+	size_t start = 0;
 	do {
-		std::size_t pos = _sChanges.find_first_of("\r\n", start);
+		size_t pos = _sChanges.find_first_of("\r\n", start);
 		if (RString::npos == pos)
 			pos = _sChanges.size();
 
@@ -1447,7 +1447,7 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 				// the string itself matches
 				if (f.EqualsNoCase(sChanges.substr(start, f.size()).c_str()))
 				{
-					std::size_t nextpos = start + f.size();
+					size_t nextpos = start + f.size();
 
 					// is this name followed by end-of-string, equals, or comma?
 					if ((nextpos == sChanges.size()) || (sChanges[nextpos] == '=') || (sChanges[nextpos] == ','))
@@ -1485,8 +1485,8 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 			if(0 == pnum) vvsAddTo.push_back(std::vector<RString>()); // first value of this set. create our vector
 
 			{
-				std::size_t eqpos = sChanges.find('=', start);
-				std::size_t compos = sChanges.find(',', start);
+				size_t eqpos = sChanges.find('=', start);
+				size_t compos = sChanges.find(',', start);
 
 				if ((eqpos == RString::npos) && (compos == RString::npos))
 				{

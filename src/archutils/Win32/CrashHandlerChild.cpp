@@ -107,10 +107,10 @@ namespace VDDebugInfo
 
 		src += 64;
 		const int* pVer = reinterpret_cast<const int*>(src);
-		const std::size_t* pRVASize = reinterpret_cast<const std::size_t*>(src + sizeof(int));
-		const std::size_t* pFNamSize = reinterpret_cast<const std::size_t*>(src + sizeof(int) + sizeof(std::size_t));
-		const int* pSegCnt = reinterpret_cast<const int*>(src + sizeof(int) + 2 * sizeof(std::size_t));
-		src += 2 * (sizeof(int) + sizeof(std::size_t));
+		const size_t* pRVASize = reinterpret_cast<const size_t*>(src + sizeof(int));
+		const size_t* pFNamSize = reinterpret_cast<const size_t*>(src + sizeof(int) + sizeof(size_t));
+		const int* pSegCnt = reinterpret_cast<const int*>(src + sizeof(int) + 2 * sizeof(size_t));
+		src += 2 * (sizeof(int) + sizeof(size_t));
 
 		pctx->nBuildNumber		= *pVer;
 		pctx->pRVAHeap			= reinterpret_cast<const unsigned char*>(src + sizeof(std::uintptr_t));
@@ -150,7 +150,7 @@ namespace VDDebugInfo
 			if( dwFileSize == INVALID_FILE_SIZE )
 				break;
 
-			char *buffer = new char[static_cast<std::size_t>(dwFileSize) + 1];
+			char *buffer = new char[static_cast<size_t>(dwFileSize) + 1];
 			std::fill(buffer, buffer + dwFileSize + 1, '\0' );
 
 			DWORD dwActual;
@@ -181,7 +181,7 @@ namespace VDDebugInfo
 		return false;
 	}
 
-	static const char *GetNameFromHeap(const char *heap, std::size_t idx)
+	static const char *GetNameFromHeap(const char *heap, size_t idx)
 	{
 		while(idx--)
 			while(*heap++);
@@ -196,7 +196,7 @@ namespace VDDebugInfo
 
 		const unsigned char *pr = pctx->pRVAHeap;
 		const unsigned char *pr_limit = (const unsigned char *)pctx->pFuncNameHeap;
-		std::size_t idx = 0;
+		size_t idx = 0;
 
 		// Linearly unpack RVA deltas and find lower_bound
 		rva -= pctx->nFirstRVA;
@@ -344,7 +344,7 @@ namespace SymbolLookup
 			return "???";
 		}
 		RString sName;
-		char *buffer = new char[static_cast<std::size_t>(iSize) + 1];
+		char *buffer = new char[static_cast<size_t>(iSize) + 1];
 		std::fill(buffer, buffer + iSize + 1, '\0');
 		if (!ReadFromParent(iFD, buffer, iSize))
 		{
@@ -491,7 +491,7 @@ static void MakeCrashReport( const CompleteCrashData &Data, RString &sOut )
 	sOut += ssprintf( "\n" );
 
 	sOut += ssprintf( "Partial log:\n" );
-	for( std::size_t  i = 0; i < Data.m_asRecent.size(); ++i )
+	for( size_t  i = 0; i < Data.m_asRecent.size(); ++i )
 		sOut += ssprintf( "%s\n", Data.m_asRecent[i].c_str() );
 	sOut += ssprintf( "\n" );
 
@@ -531,7 +531,7 @@ bool ReadCrashDataFromParent( int iFD, CompleteCrashData &Data )
 	if( !ReadFromParent(iFD, &iSize, sizeof(iSize)) )
 		return false;
 
-	char *buffer = new char[static_cast<std::size_t>(iSize) + 1];
+	char *buffer = new char[static_cast<size_t>(iSize) + 1];
 	std::fill(buffer, buffer + iSize + 1, '\0');
 	bool wasReadSuccessful = ReadFromParent(iFD, buffer, iSize);
 	RString tmp = buffer;

@@ -868,7 +868,7 @@ void NoteDataUtil::AutogenKickbox(const NoteData& in, NoteData& out, const Timin
 	}
 	// prev_limb_panels keeps track of which panel in the track list the limb
 	// hit last.
-	std::vector<std::size_t> prev_limb_panels(num_kickbox_limbs, 0);
+	std::vector<size_t> prev_limb_panels(num_kickbox_limbs, 0);
 	std::vector<int> panel_repeat_counts(num_kickbox_limbs, 0);
 	std::vector<int> panel_repeat_goals(num_kickbox_limbs, 0);
 	RandomGen rnd(nonrandom_seed);
@@ -965,7 +965,7 @@ void NoteDataUtil::AutogenKickbox(const NoteData& in, NoteData& out, const Timin
 			default:
 				break;
 		}
-		std::size_t this_panel= prev_limb_panels[this_limb];
+		size_t this_panel= prev_limb_panels[this_limb];
 		if(panel_repeat_counts[this_limb] + 1 > panel_repeat_goals[this_limb])
 		{
 			// Use a different panel.
@@ -1047,7 +1047,7 @@ void NoteDataUtil::CalculateRadarValues( const NoteData &in, float fSongSeconds,
 	float total_taps= 0;
 	const float voltage_window_beats= 8.0f;
 	const int voltage_window= BeatToNoteRow(voltage_window_beats);
-	std::size_t max_notes_in_voltage_window= 0;
+	size_t max_notes_in_voltage_window= 0;
 	int num_chaos_rows= 0;
 	crv_state state;
 
@@ -1060,7 +1060,7 @@ void NoteDataUtil::CalculateRadarValues( const NoteData &in, float fSongSeconds,
 			state.num_notes_on_curr_row= 0;
 			state.num_holds_on_curr_row= 0;
 			state.judgable= timing->IsJudgableAtRow(curr_row);
-			for(std::size_t n= 0; n < state.hold_ends.size(); ++n)
+			for(size_t n= 0; n < state.hold_ends.size(); ++n)
 			{
 				if(state.hold_ends[n] < curr_row)
 				{
@@ -1068,7 +1068,7 @@ void NoteDataUtil::CalculateRadarValues( const NoteData &in, float fSongSeconds,
 					--n;
 				}
 			}
-			for(std::size_t n= 0; n < recent_notes.size(); ++n)
+			for(size_t n= 0; n < recent_notes.size(); ++n)
 			{
 				if(recent_notes[n].row < curr_row - voltage_window)
 				{
@@ -2115,7 +2115,7 @@ static void HyperShuffleNotes( NoteData &inout, int iStartIndex, int iEndIndex)
 		std::shuffle(viTargetTracks.begin(), viTargetTracks.end(), g_RandomNumberGenerator);
 
 		// Go through the tracks in their shuffled order and drop tap notes.
-		for(std::size_t i = 0; i < viTargetTracks.size(); i++)
+		for(size_t i = 0; i < viTargetTracks.size(); i++)
 		{
 			const int targetTrack = viTargetTracks[i];
 			const TapNote current_tn = vtnTargetTaps[i];

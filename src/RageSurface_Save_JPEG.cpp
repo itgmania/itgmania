@@ -105,7 +105,7 @@ bool RageSurfaceUtils::SaveJPEG( RageSurface *surface, RageFile &f, bool bHighQu
 
 	/* Now we can initialize the JPEG compression object. */
 	jpeg::jpeg_CreateCompress(&cinfo, JPEG_LIB_VERSION, \
-		(std::size_t) sizeof(struct jpeg::jpeg_compress_struct));
+		(size_t) sizeof(struct jpeg::jpeg_compress_struct));
 
 	cinfo.image_width = surface->w; 	/* image width and height, in pixels */
 	cinfo.image_height = surface->h;

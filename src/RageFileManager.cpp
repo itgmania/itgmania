@@ -115,7 +115,7 @@ void RageFileManager::ReleaseFileDriver( RageFileDriver *pDriver )
 	g_Mutex->Unlock();
 }
 
-std::size_t zipRead(void *pOpaque, mz_uint64 file_ofs, void *pBuf, std::size_t n)
+size_t zipRead(void *pOpaque, mz_uint64 file_ofs, void *pBuf, size_t n)
 {
 	RageFile *f = static_cast<RageFile*>(pOpaque);
 
@@ -128,7 +128,7 @@ std::size_t zipRead(void *pOpaque, mz_uint64 file_ofs, void *pBuf, std::size_t n
 	return f->Read(pBuf, n);
 }
 
-std::size_t zipWriteFile(void *pOpaque, mz_uint64 file_ofs, const void *pBuf, std::size_t n)
+size_t zipWriteFile(void *pOpaque, mz_uint64 file_ofs, const void *pBuf, size_t n)
 {
 	RageFile *f = static_cast<RageFile*>(pOpaque);
 
@@ -192,7 +192,7 @@ bool RageFileManager::Unzip(const std::string &zipPath, std::string targetPath, 
 
 		for (int i = 0; i < strip; i++)
 		{
-			std::size_t pos = filename.find('/');
+			size_t pos = filename.find('/');
 			if (pos != std::string::npos)
 				pos++;
 			filename.erase(0, pos);
@@ -302,7 +302,7 @@ static RageFileDriverMountpoints *g_Mountpoints = nullptr;
 static RString ExtractDirectory( RString sPath )
 {
 	// return the directory containing sPath
-	std::size_t n = sPath.find_last_of("/");
+	size_t n = sPath.find_last_of("/");
 	if( n != sPath.npos )
 		sPath.erase(n);
 	else

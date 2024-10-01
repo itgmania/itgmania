@@ -37,7 +37,7 @@ static ThemeMetric<float> BAR_8TH_ALPHA( "NoteField", "Bar8thAlpha" );
 static ThemeMetric<float> BAR_16TH_ALPHA( "NoteField", "Bar16thAlpha" );
 static ThemeMetric<float> FADE_FAIL_TIME( "NoteField", "FadeFailTime" );
 
-static RString RoutineNoteSkinName( std::size_t i ) { return ssprintf("RoutineNoteSkinP%i",int(i+1)); }
+static RString RoutineNoteSkinName( size_t i ) { return ssprintf("RoutineNoteSkinP%i",int(i+1)); }
 static ThemeMetric1D<RString> ROUTINE_NOTESKIN( "NoteField", RoutineNoteSkinName, NUM_PLAYERS );
 
 NoteField::NoteField()
@@ -314,7 +314,7 @@ void NoteField::InitColumnRenderers()
 	m_FieldRenderArgs.ghost_row= &(m_pCurDisplay->m_GhostArrowRow);
 	m_FieldRenderArgs.note_data= m_pNoteData;
 	m_ColumnRenderers.resize(GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber)->m_iColsPerPlayer);
-	for(std::size_t ncr= 0; ncr < m_ColumnRenderers.size(); ++ncr)
+	for(size_t ncr= 0; ncr < m_ColumnRenderers.size(); ++ncr)
 	{
 		FOREACH_EnabledPlayer(pn)
 		{
@@ -339,7 +339,7 @@ void NoteField::Update( float fDeltaTime )
 	ActorFrame::Update( fDeltaTime );
 	ArrowEffects::SetCurrentOptions(&m_pPlayerState->m_PlayerOptions.GetCurrent());
 
-	for(std::size_t c= 0; c < m_ColumnRenderers.size(); ++c)
+	for(size_t c= 0; c < m_ColumnRenderers.size(); ++c)
 	{
 		m_ColumnRenderers[c].Update(fDeltaTime);
 	}
@@ -826,7 +826,7 @@ void NoteField::DrawPrimitives()
 	{
 		const std::vector<TimingSegment *> &tSigs = *segs[SEGMENT_TIME_SIG];
 		int iMeasureIndex = 0;
-		for (std::size_t i = 0; i < tSigs.size(); i++)
+		for (size_t i = 0; i < tSigs.size(); i++)
 		{
 			const TimeSignatureSegment *ts = ToTimeSignature(tSigs[i]);
 			int iSegmentEndRow = (i + 1 == tSigs.size()) ? m_FieldRenderArgs.last_row : tSigs[i+1]->GetRow();
@@ -882,7 +882,7 @@ void NoteField::DrawPrimitives()
 #define draw_all_segments(str_exp, name, caps_name)	\
 		horiz_align= caps_name##_IS_LEFT_SIDE ? align_right : align_left; \
 		side_sign= caps_name##_IS_LEFT_SIDE ? -1 : 1; \
-		for(std::size_t i= 0; i < segs[SEGMENT_##caps_name]->size(); ++i) \
+		for(size_t i= 0; i < segs[SEGMENT_##caps_name]->size(); ++i) \
 		{ \
 			const name##Segment* seg= To##name((*segs[SEGMENT_##caps_name])[i]); \
 			if(seg->GetRow() >= m_FieldRenderArgs.first_row && \
@@ -1289,7 +1289,7 @@ public:
 	static int get_column_actors(T* p, lua_State* L)
 	{
 		lua_createtable(L, p->m_ColumnRenderers.size(), 0);
-		for(std::size_t i= 0; i < p->m_ColumnRenderers.size(); ++i)
+		for(size_t i= 0; i < p->m_ColumnRenderers.size(); ++i)
 		{
 			p->m_ColumnRenderers[i].PushSelf(L);
 			lua_rawseti(L, -2, i+1);

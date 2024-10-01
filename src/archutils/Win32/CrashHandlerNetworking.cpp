@@ -73,14 +73,14 @@ public:
 	/* Read data. Block until any data is received, then return all data
 	 * available. Return the number of bytes read. The return value will always
 	 * be >= 0, unless an error or cancellation occured. */
-	virtual int Read( void *pBuffer, std::size_t iSize ) = 0;
+	virtual int Read( void *pBuffer, size_t iSize ) = 0;
 
 	/* Write data to the socket. (Design note: we always write all of the data
 	 * unless an error or cancellation occurs, and those states are checked
 	 * with GetState(). If that happens, the number of bytes written is
 	 * meaningless, since it may have simply been buffered and never sent.
 	 * So, this function returns no value.) */
-	virtual void Write( const void *pBuffer, std::size_t iSize ) = 0;
+	virtual void Write( const void *pBuffer, size_t iSize ) = 0;
 
 	/* Cancel the connection. This operation can clear an error state, aborts
 	 * any blocking calls, never fails, and will always result in the socket
@@ -128,8 +128,8 @@ public:
 	void Open( const RString &sHost, int iPort, ConnectionType ct = CONN_TCP );
 	void Shutdown();
 	void Close();
-	int Read( void *pBuffer, std::size_t iSize );
-	void Write( const void *pBuffer, std::size_t iSize );
+	int Read( void *pBuffer, size_t iSize );
+	void Write( const void *pBuffer, size_t iSize );
 
 	void Cancel();
 
@@ -492,7 +492,7 @@ void NetworkStream_Win32::Cancel()
 	m_Mutex.Unlock();
 }
 
-int NetworkStream_Win32::Read( void *pBuffer, std::size_t iSize )
+int NetworkStream_Win32::Read( void *pBuffer, size_t iSize )
 {
 	if( m_State != STATE_CONNECTED )
 		return 0;
@@ -541,7 +541,7 @@ int NetworkStream_Win32::Read( void *pBuffer, std::size_t iSize )
 	return iRead;
 }
 
-void NetworkStream_Win32::Write( const void *pBuffer, std::size_t iSize )
+void NetworkStream_Win32::Write( const void *pBuffer, size_t iSize )
 {
 	if( m_State != STATE_CONNECTED )
 		return;

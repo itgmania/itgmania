@@ -32,8 +32,8 @@ RString OptionRow::GetThemedItemText( int iChoice ) const
 	return s;
 }
 
-RString ITEMS_LONG_ROW_X_NAME( std::size_t p )	{ return ssprintf("ItemsLongRowP%dX",int(p+1)); }
-RString MOD_ICON_X_NAME( std::size_t p )		{ return ssprintf("ModIconP%dX",int(p+1)); }
+RString ITEMS_LONG_ROW_X_NAME( size_t p )	{ return ssprintf("ItemsLongRowP%dX",int(p+1)); }
+RString MOD_ICON_X_NAME( size_t p )		{ return ssprintf("ModIconP%dX",int(p+1)); }
 
 OptionRow::OptionRow( const OptionRowType *pSource )
 {

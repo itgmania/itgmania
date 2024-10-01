@@ -79,7 +79,7 @@ bool CrashHandler::IsDebuggerPresent()
 	int                 ret;
 	int                 mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid() };
 	struct kinfo_proc   info;
-	std::size_t         size;
+	size_t         size;
 
 	// Initialize the flags so that, if sysctl fails for some bizarre
 	// reason, we get a predictable result.
