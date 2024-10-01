@@ -18,7 +18,7 @@ void NotesLoader::GetMainAndSubTitlesFromFullTitle( const RString &sFullTitle, R
 
 	for( unsigned i=0; i<ARRAYLEN(sLeftSeps); i++ )
 	{
-		std::size_t iBeginIndex = sFullTitle.find( sLeftSeps[i] );
+		size_t iBeginIndex = sFullTitle.find( sLeftSeps[i] );
 		if( iBeginIndex == std::string::npos )
 			continue;
 		sMainTitleOut = sFullTitle.Left( (int) iBeginIndex );

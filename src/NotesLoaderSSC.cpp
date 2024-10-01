@@ -366,11 +366,11 @@ void SetRadarValues(StepsTagInfo& info)
 		// Instead of trying to use the version to figure out how many
 		// categories to expect, look at the number of values and split them
 		// evenly. -Kyz
-		std::size_t cats_per_player= values.size() / NUM_PlayerNumber;
+		size_t cats_per_player= values.size() / NUM_PlayerNumber;
 		RadarValues v[NUM_PLAYERS];
 		FOREACH_PlayerNumber(pn)
 		{
-			for(std::size_t i= 0; i < cats_per_player; ++i)
+			for(size_t i= 0; i < cats_per_player; ++i)
 			{
 				v[pn][i]= StringToFloat(values[pn * cats_per_player + i]);
 			}

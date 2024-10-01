@@ -62,15 +62,15 @@ public:
 	int GetFD();
 
 	/* Raw I/O: */
-	int Read( void *buffer, std::size_t bytes );
+	int Read( void *buffer, size_t bytes );
 	int Read( RString &buffer, int bytes = -1 );
-	int Write( const void *buffer, std::size_t bytes );
+	int Write( const void *buffer, size_t bytes );
 	int Write( const RString& string ) { return Write( string.data(), string.size() ); }
 	int Flush();
 
 	/* These are just here to make wrappers (eg. vorbisfile, SDL_rwops) easier. */
-	int Write( const void *buffer, std::size_t bytes, int nmemb );
-	int Read( void *buffer, std::size_t bytes, int nmemb );
+	int Write( const void *buffer, size_t bytes, int nmemb );
+	int Read( void *buffer, size_t bytes, int nmemb );
 	int Seek( int offset, int whence );
 
 	/* Line-based I/O: */

@@ -58,7 +58,7 @@ public:
 	}
 
 	template<typename U, int n>
-	inline void Assign_n( ModsLevel level, U (T::*member)[n], std::size_t index, const U &val )
+	inline void Assign_n( ModsLevel level, U (T::*member)[n], size_t index, const U &val )
 	{
 		DEBUG_ASSERT( index < n );
 		if( level != ModsLevel_Song )

@@ -232,7 +232,7 @@ void OptionsList::Load( RString sType, PlayerNumber pn )
 		m_Rows[sLineName] = pHand;
 		m_asLoadedRows.push_back( sLineName );
 
-		for( std::size_t i = 0; i < pHand->m_Def.m_vsChoices.size(); ++i )
+		for( size_t i = 0; i < pHand->m_Def.m_vsChoices.size(); ++i )
 		{
 			RString sScreen = pHand->GetScreen(i);
 			if( !sScreen.empty() )
@@ -573,7 +573,7 @@ void OptionsList::SetDefaultCurrentRow()
 
 int OptionsList::FindScreenInHandler( const OptionRowHandler *pHandler, RString sScreen )
 {
-	for( std::size_t i = 0; i < pHandler->m_Def.m_vsChoices.size(); ++i )
+	for( size_t i = 0; i < pHandler->m_Def.m_vsChoices.size(); ++i )
 	{
 		if( pHandler->GetScreen(i) == sScreen )
 			return i;

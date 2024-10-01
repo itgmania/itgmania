@@ -216,13 +216,13 @@ void StepsDisplayList::UpdatePositions()
 
 void StepsDisplayList::PositionItems()
 {
-	for( std::size_t i = 0; i < MAX_METERS; ++i )
+	for( size_t i = 0; i < MAX_METERS; ++i )
 	{
 		bool bUnused = ( i >= m_Rows.size() );
 		m_Lines[i].m_Meter.SetVisible( !bUnused );
 	}
 
-	for( std::size_t m = 0; m < m_Rows.size(); ++m )
+	for( size_t m = 0; m < m_Rows.size(); ++m )
 	{
 		Row &row = m_Rows[m];
 		bool bHidden = row.m_bHidden;
@@ -240,7 +240,7 @@ void StepsDisplayList::PositionItems()
 		m_Lines[m].m_Meter.SetY( row.m_fY );
 	}
 
-	for( std::size_t m=0; m < MAX_METERS; ++m )
+	for( size_t m=0; m < MAX_METERS; ++m )
 	{
 		bool bHidden = true;
 		if( m_bShown && m < m_Rows.size() )
@@ -306,7 +306,7 @@ void StepsDisplayList::SetFromGameState()
 	UpdatePositions();
 	PositionItems();
 
-	for( std::size_t m = 0; m < MAX_METERS; ++m )
+	for( size_t m = 0; m < MAX_METERS; ++m )
 		m_Lines[m].m_Meter.FinishTweening();
 }
 
@@ -326,7 +326,7 @@ void StepsDisplayList::TweenOnScreen()
 	FOREACH_HumanPlayer( pn )
 		ON_COMMAND( m_Cursors[pn] );
 
-	for( std::size_t m = 0; m < MAX_METERS; ++m )
+	for( size_t m = 0; m < MAX_METERS; ++m )
 		ON_COMMAND( m_Lines[m].m_Meter );
 
 	this->SetHibernate( 0.5f );

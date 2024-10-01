@@ -154,9 +154,9 @@ public:
 	typedef Preference<T> PreferenceT;
 	std::vector<PreferenceT*> m_v;
 
-	Preference1D( void pfn(std::size_t i, RString &sNameOut, T &defaultValueOut ), std::size_t N, PreferenceType type = PreferenceType::Mutable )
+	Preference1D( void pfn(size_t i, RString &sNameOut, T &defaultValueOut ), size_t N, PreferenceType type = PreferenceType::Mutable )
 	{
-		for( std::size_t i=0; i<N; ++i )
+		for( size_t i=0; i<N; ++i )
 		{
 			RString sName;
 			T defaultValue;
@@ -167,14 +167,14 @@ public:
 
 	~Preference1D()
 	{
-		for( std::size_t i=0; i<m_v.size(); ++i )
+		for( size_t i=0; i<m_v.size(); ++i )
 			RageUtil::SafeDelete( m_v[i] );
 	}
-	const Preference<T>& operator[]( std::size_t i ) const
+	const Preference<T>& operator[]( size_t i ) const
 	{
 		return *m_v[i];
 	}
-	Preference<T>& operator[]( std::size_t i )
+	Preference<T>& operator[]( size_t i )
 	{
 		return *m_v[i];
 	}

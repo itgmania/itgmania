@@ -31,7 +31,7 @@ class RageTexture;
 class ActorMultiVertex: public Actor
 {
 public:
-	static const std::size_t num_vert_splines= 4;
+	static const size_t num_vert_splines= 4;
 	ActorMultiVertex();
 	ActorMultiVertex( const ActorMultiVertex &cpy );
 	virtual ~ActorMultiVertex();
@@ -52,7 +52,7 @@ public:
 		int GetSafeNumToDraw( DrawMode dm, int num ) const;
 
 		std::vector<RageSpriteVertex> vertices;
-		std::vector<std::size_t> quad_states;
+		std::vector<size_t> quad_states;
 
 		DrawMode _DrawMode;
 		int FirstToDraw;
@@ -90,7 +90,7 @@ public:
 	void LoadFromTexture( RageTextureID ID );
 
 	void UnloadTexture();
-	void SetNumVertices( std::size_t n );
+	void SetNumVertices( size_t n );
 
 	void ResizeVertices(std::vector<RageSpriteVertex>& vertices, int size);
 	void AddVertex();
@@ -108,15 +108,15 @@ public:
 	DrawMode GetCurrDrawMode() const { return AMV_current._DrawMode; }
 	int GetCurrFirstToDraw() const					{ return AMV_current.FirstToDraw; }
 	int GetCurrNumToDraw() const					{ return AMV_current.NumToDraw; }
-	std::size_t GetNumVertices() 					{ return AMV_DestTweenState().vertices.size(); }
+	size_t GetNumVertices() 					{ return AMV_DestTweenState().vertices.size(); }
 
 	void SetVertexPos( int index , float x , float y , float z );
 	void SetVertexColor( int index , RageColor c );
 	void SetVertexCoords( int index , float TexCoordX , float TexCoordY );
 
-	inline void SetVertsFromSplinesInternal(std::size_t num_splines, std::size_t start_vert);
+	inline void SetVertsFromSplinesInternal(size_t num_splines, size_t start_vert);
 	void SetVertsFromSplines();
-	CubicSplineN* GetSpline(std::size_t i);
+	CubicSplineN* GetSpline(size_t i);
 
 	struct State
 	{
@@ -125,12 +125,12 @@ public:
 	};
 	int GetNumStates() const override { return _states.size(); }
 	void AddState(const State& new_state) { _states.push_back(new_state); }
-	void RemoveState(std::size_t i)
+	void RemoveState(size_t i)
 	{ ASSERT(i < _states.size()); _states.erase(_states.begin()+i); }
-	std::size_t GetState() { return _cur_state; }
-	State& GetStateData(std::size_t i)
+	size_t GetState() { return _cur_state; }
+	State& GetStateData(size_t i)
 	{ ASSERT(i < _states.size()); return _states[i]; }
-	void SetStateData(std::size_t i, const State& s)
+	void SetStateData(size_t i, const State& s)
 	{ ASSERT(i < _states.size()); _states[i]= s; }
 	void SetStateProperties(const std::vector<State>& new_states)
 	{ _states= new_states; SetState(0); }
@@ -139,15 +139,15 @@ public:
 	float GetAnimationLengthSeconds() const override;
 	void SetSecondsIntoAnimation(float seconds) override;
 	void UpdateAnimationState(bool force_update= false);
-	std::size_t GetNumQuadStates() const
+	size_t GetNumQuadStates() const
 	{ return AMV_DestTweenState().quad_states.size(); }
-	void AddQuadState(std::size_t s)
+	void AddQuadState(size_t s)
 	{ AMV_DestTweenState().quad_states.push_back(s); }
-	void RemoveQuadState(std::size_t i)
+	void RemoveQuadState(size_t i)
 	{ AMV_DestTweenState().quad_states.erase(AMV_DestTweenState().quad_states.begin()+i); }
-	std::size_t GetQuadState(std::size_t i)
+	size_t GetQuadState(size_t i)
 	{ return AMV_DestTweenState().quad_states[i]; }
-	void SetQuadState(std::size_t i, std::size_t s)
+	void SetQuadState(size_t i, size_t s)
 	{ AMV_DestTweenState().quad_states[i]= s; }
 	bool _use_animation_state;
 	bool _decode_movie;
@@ -174,7 +174,7 @@ private:
 
 	bool _skip_next_update;
 	float _secs_into_state;
-	std::size_t _cur_state;
+	size_t _cur_state;
 	std::vector<State> _states;
 };
 

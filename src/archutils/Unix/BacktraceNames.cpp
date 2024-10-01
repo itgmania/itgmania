@@ -81,7 +81,7 @@ RString BacktraceNames::Format() const
 	if( ShortenedPath != "" )
 	{
 		/* Abbreviate the module name. */
-		std::size_t slash = ShortenedPath.rfind('/');
+		size_t slash = ShortenedPath.rfind('/');
 		if( slash != ShortenedPath.npos )
 			ShortenedPath = ShortenedPath.substr(slash+1);
 		ShortenedPath = RString("(") + ShortenedPath + ")";
@@ -326,7 +326,7 @@ void BacktraceNames::FromString( RString s )
 
     if( MangledAndOffset != "" )
     {
-        std::size_t plus = MangledAndOffset.rfind('+');
+        size_t plus = MangledAndOffset.rfind('+');
 
         if(plus == MangledAndOffset.npos)
         {

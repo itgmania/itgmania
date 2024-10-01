@@ -18,7 +18,7 @@
 
 #include <cstddef>
 
-static RString LIFE_PERCENT_CHANGE_NAME( std::size_t i )   { return "LifePercentChange" + ScoreEventToString( (ScoreEvent)i ); }
+static RString LIFE_PERCENT_CHANGE_NAME( size_t i )   { return "LifePercentChange" + ScoreEventToString( (ScoreEvent)i ); }
 
 LifeMeterBar::LifeMeterBar()
 {

@@ -19,8 +19,8 @@ public:
 	RageFileObjMem( const RageFileObjMem &cpy );
 	~RageFileObjMem();
 
-	int ReadInternal( void *buffer, std::size_t bytes );
-	int WriteInternal( const void *buffer, std::size_t bytes );
+	int ReadInternal( void *buffer, size_t bytes );
+	int WriteInternal( const void *buffer, size_t bytes );
 	int SeekInternal( int offset );
 	int GetFileSize() const;
 	RageFileObjMem *Copy() const;

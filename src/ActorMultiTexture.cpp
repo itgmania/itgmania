@@ -98,7 +98,7 @@ void ActorMultiTexture::DrawPrimitives()
 	quadVerticies.bottom = +m_size.y/2.0f;
 
 	DISPLAY->ClearAllTextures();
-	for( std::size_t i = 0; i < m_aTextureUnits.size(); ++i )
+	for( size_t i = 0; i < m_aTextureUnits.size(); ++i )
 	{
 		TextureUnit tu = enum_add2(TextureUnit_1, i);
 		DISPLAY->SetTexture( tu, m_aTextureUnits[i].m_pTexture->GetTexHandle() );
@@ -127,7 +127,7 @@ void ActorMultiTexture::DrawPrimitives()
 
 	DISPLAY->DrawQuad( v );
 
-	for( std::size_t i = 0; i < m_aTextureUnits.size(); ++i )
+	for( size_t i = 0; i < m_aTextureUnits.size(); ++i )
 		DISPLAY->SetTexture( enum_add2(TextureUnit_1, i), 0 );
 
 	DISPLAY->SetEffectMode( EffectMode_Normal );

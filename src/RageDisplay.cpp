@@ -978,8 +978,8 @@ void RageCompiledGeometry::Set( const std::vector<msMesh> &vMeshes, bool bNeedsN
 {
 	m_bNeedsNormals = bNeedsNormals;
 
-	std::size_t totalVerts = 0;
-	std::size_t totalTriangles = 0;
+	size_t totalVerts = 0;
+	size_t totalTriangles = 0;
 
 	m_bAnyNeedsTextureMatrixScale = false;
 

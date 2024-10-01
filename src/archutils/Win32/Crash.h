@@ -10,7 +10,7 @@ namespace CrashHandler
 {
 	extern long __stdcall ExceptionHandler(struct _EXCEPTION_POINTERS *ExceptionInfo);
 
-	void do_backtrace( const void **buf, std::size_t size, HANDLE hProcess, HANDLE hThread, const CONTEXT *pContext );
+	void do_backtrace( const void **buf, size_t size, HANDLE hProcess, HANDLE hThread, const CONTEXT *pContext );
 	void SymLookup( const void *ptr, char *buf );
 	void ForceCrash( const char *reason );
 	void ForceDeadlock( RString reason, std::uint64_t iID );

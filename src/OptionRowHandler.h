@@ -210,7 +210,7 @@ inline void VerifySelected(SelectType st, std::vector<bool> &selected, const RSt
 	int num_selected = 0;
 	if( st == SELECT_ONE )
 	{
-		std::size_t first_selected= std::numeric_limits<std::size_t>::max();
+		size_t first_selected= std::numeric_limits<size_t>::max();
 		if(selected.empty())
 		{
 			LuaHelpers::ReportScriptErrorFmt("Option row %s requires only one "
@@ -218,12 +218,12 @@ inline void VerifySelected(SelectType st, std::vector<bool> &selected, const RSt
 				"elements.", sName.c_str());
 			return;
 		}
-		for(std::size_t e= 0; e < selected.size(); ++e)
+		for(size_t e= 0; e < selected.size(); ++e)
 		{
 			if(selected[e])
 			{
 				num_selected++;
-				if(first_selected == std::numeric_limits<std::size_t>::max())
+				if(first_selected == std::numeric_limits<size_t>::max())
 				{
 					first_selected= e;
 				}
@@ -234,7 +234,7 @@ inline void VerifySelected(SelectType st, std::vector<bool> &selected, const RSt
 			LuaHelpers::ReportScriptErrorFmt("Option row %s requires only one "
 				"thing to be selected, but %i out of %i things are selected.",
 				sName.c_str(), num_selected, static_cast<int>(selected.size()));
-			for(std::size_t e= 0; e < selected.size(); ++e)
+			for(size_t e= 0; e < selected.size(); ++e)
 			{
 				if(selected[e] && e != first_selected)
 				{

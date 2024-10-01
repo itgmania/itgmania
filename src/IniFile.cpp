@@ -97,7 +97,7 @@ bool IniFile::ReadFile( RageFileBasic &f )
 				if(keychild == nullptr)
 				{ break; }
 				// New value.
-				std::size_t iEqualIndex = line.find("=");
+				size_t iEqualIndex = line.find("=");
 				if( iEqualIndex != std::string::npos )
 				{
 					RString valuename = line.Left((int) iEqualIndex);

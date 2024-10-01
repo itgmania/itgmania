@@ -782,7 +782,7 @@ protected:
 	}
 
 
-	int ReadInternal( void *pBuffer, std::size_t iBytes )
+	int ReadInternal( void *pBuffer, size_t iBytes )
 	{
 		RString sError;
 		int iRet = m_pWorker->Read( m_pFile, pBuffer, iBytes, sError );
@@ -799,7 +799,7 @@ protected:
 		return iRet;
 	}
 
-	int WriteInternal( const void *pBuffer, std::size_t iBytes )
+	int WriteInternal( const void *pBuffer, size_t iBytes )
 	{
 		RString sError;
 		int iRet = m_pWorker->Write( m_pFile, pBuffer, iBytes, sError );

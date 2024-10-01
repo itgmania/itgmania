@@ -267,7 +267,7 @@ void ScreenEvaluation::Init()
 	{
 		if( SUMMARY )
 		{
-			for( std::size_t i=0; i<m_pStageStats->m_vpPlayedSongs.size()
+			for( size_t i=0; i<m_pStageStats->m_vpPlayedSongs.size()
 						 && i < MAX_SONGS_TO_SHOW; i++ )
 			{
 				Song *pSong = m_pStageStats->m_vpPlayedSongs[i];

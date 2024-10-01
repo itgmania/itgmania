@@ -86,7 +86,7 @@ void Profile::ClearSongs()
 		return;
 	}
 	Song* gamestate_curr_song= GAMESTATE->m_pCurSong;
-	for(std::size_t i= 0; i < m_songs.size(); ++i)
+	for(size_t i= 0; i < m_songs.size(); ++i)
 	{
 		Song* curr_song= m_songs[i];
 		if(curr_song == gamestate_curr_song)
@@ -925,10 +925,10 @@ void Profile::MergeScoresFromOtherProfile(Profile* other, bool skip_totals,
 	{
 		// The old screenshot count is stored so we know where to start in the
 		// list when copying the screenshot images.
-		std::size_t old_count= m_vScreenshots.size();
+		size_t old_count= m_vScreenshots.size();
 		m_vScreenshots.insert(m_vScreenshots.end(),
 			other->m_vScreenshots.begin(), other->m_vScreenshots.end());
-		for(std::size_t sid= old_count; sid < m_vScreenshots.size(); ++sid)
+		for(size_t sid= old_count; sid < m_vScreenshots.size(); ++sid)
 		{
 			RString old_path= from_dir + "Screenshots/" + m_vScreenshots[sid].sFileName;
 			RString new_path= to_dir + "Screenshots/" + m_vScreenshots[sid].sFileName;
@@ -1199,7 +1199,7 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot)
 		StripMacResourceForks(song_folders);
 		LOG->Trace("Found %i songs in profile.", int(song_folders.size()));
 		// Only songs that are successfully loaded count towards the limit. -Kyz
-		for(std::size_t song_index= 0; song_index < song_folders.size()
+		for(size_t song_index= 0; song_index < song_folders.size()
 					&& m_songs.size() < PREFSMAN->m_custom_songs_max_count;
 				++song_index)
 		{
@@ -2787,7 +2787,7 @@ public:
 	{
 		lua_createtable(L, p->m_songs.size(), 0);
 		int song_tab= lua_gettop(L);
-		for(std::size_t i= 0; i < p->m_songs.size(); ++i)
+		for(size_t i= 0; i < p->m_songs.size(); ++i)
 		{
 			p->m_songs[i]->PushSelf(L);
 			lua_rawseti(L, song_tab, i+1);

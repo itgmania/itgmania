@@ -158,7 +158,7 @@ void MemoryCardDriverThreaded_Windows::GetUSBStorageDevices( std::vector<UsbStor
 		usbd.sVolumeLabel = sVolumeLabel;
 	}
 
-	for( std::size_t i = 0; i < vDevicesOut.size(); ++i )
+	for( size_t i = 0; i < vDevicesOut.size(); ++i )
 	{
 		UsbStorageDevice &usbd = vDevicesOut[i];
 

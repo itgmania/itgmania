@@ -361,7 +361,7 @@ void GameCommand::LoadOne( const Command& cmd )
 		}
 		else
 		{
-			for(std::size_t i= 1; i < cmd.m_vsArgs.size(); i+= 2)
+			for(size_t i= 1; i < cmd.m_vsArgs.size(); i+= 2)
 			{
 				m_SetEnv[cmd.m_vsArgs[i]]= cmd.m_vsArgs[i+1];
 			}
@@ -451,7 +451,7 @@ void GameCommand::LoadOne( const Command& cmd )
 		}
 		else
 		{
-			for(std::size_t i= 1; i < cmd.m_vsArgs.size(); i+= 2)
+			for(size_t i= 1; i < cmd.m_vsArgs.size(); i+= 2)
 			{
 				if(IPreference::GetPreferenceByName(cmd.m_vsArgs[i]) == nullptr)
 				{

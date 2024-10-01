@@ -52,7 +52,7 @@ namespace __gnu_cxx
 	template<>
 	struct hash<IOHIDElementCookie> : private hash<std::uintptr_t>
 	{
-		std::size_t operator()( const IOHIDElementCookie& cookie ) const
+		size_t operator()( const IOHIDElementCookie& cookie ) const
 		{
 			return hash<unsigned long>::operator()( std::uintptr_t(cookie) );
 		}

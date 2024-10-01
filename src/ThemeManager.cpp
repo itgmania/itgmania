@@ -584,7 +584,7 @@ struct CompareLanguageTag
 	{
 		RString sLower( sFile );
 		sLower.MakeLower();
-		std::size_t iPos = sLower.find( m_sLanguageString );
+		size_t iPos = sLower.find( m_sLanguageString );
 		return iPos != RString::npos;
 	}
 };
@@ -712,7 +712,7 @@ bool ThemeManager::GetPathInfoToRaw( PathInfo &out, const RString &sThemeName_, 
 			"'%s/%s/%s'.  Please remove all but one of these matches: ",
 			sThemeName.c_str(), sCategory.c_str(), MetricsGroupAndElementToFileName(sMetricsGroup,sElement).c_str() );
 		message+= asElementPaths[1];
-		for(std::size_t i= 1; i < asElementPaths.size(); ++i)
+		for(size_t i= 1; i < asElementPaths.size(); ++i)
 		{
 			message+= ", " + asElementPaths[i];
 		}
@@ -1451,7 +1451,7 @@ public:
 	{
 		lua_createtable(L, g_vThemes.size(), 0);
 		int ret= lua_gettop(L);
-		for(std::size_t tid= 0; tid < g_vThemes.size(); ++tid)
+		for(size_t tid= 0; tid < g_vThemes.size(); ++tid)
 		{
 			lua_pushstring(L, g_vThemes[tid].sThemeName.c_str());
 			lua_rawseti(L, ret, tid+1);

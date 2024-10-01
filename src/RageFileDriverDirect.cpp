@@ -389,7 +389,7 @@ RageFileObjDirect::~RageFileObjDirect()
 	DoRemove( MakeTempFilename(m_sPath) );
 }
 
-int RageFileObjDirect::ReadInternal( void *pBuf, std::size_t iBytes )
+int RageFileObjDirect::ReadInternal( void *pBuf, size_t iBytes )
 {
 	int iRet = DoRead( m_iFD, pBuf, iBytes );
 	if( iRet == -1 )
@@ -402,7 +402,7 @@ int RageFileObjDirect::ReadInternal( void *pBuf, std::size_t iBytes )
 }
 
 // write(), but retry a couple times on EINTR.
-static int RetriedWrite( int iFD, const void *pBuf, std::size_t iCount )
+static int RetriedWrite( int iFD, const void *pBuf, size_t iCount )
 {
 	int iTries = 3, iRet;
 	do
@@ -426,7 +426,7 @@ int RageFileObjDirect::FlushInternal()
 	return 0;
 }
 
-int RageFileObjDirect::WriteInternal( const void *pBuf, std::size_t iBytes )
+int RageFileObjDirect::WriteInternal( const void *pBuf, size_t iBytes )
 {
 	if( WriteFailed() )
 	{

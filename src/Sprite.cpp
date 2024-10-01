@@ -1212,12 +1212,12 @@ public:
 			luaL_error(L, "State properties must be in a table.");
 		}
 		std::vector<Sprite::State> new_states;
-		std::size_t num_states= lua_objlen(L, 1);
+		size_t num_states= lua_objlen(L, 1);
 		if(num_states == 0)
 		{
 			luaL_error(L, "A Sprite cannot have zero states.");
 		}
-		for(std::size_t s= 0; s < num_states; ++s)
+		for(size_t s= 0; s < num_states; ++s)
 		{
 			Sprite::State new_state;
 			lua_rawgeti(L, 1, s+1);

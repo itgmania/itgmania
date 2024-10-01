@@ -488,7 +488,7 @@ static RString averr_ssprintf(int err, const char* fmt, ...)
 	RString s = vssprintf(fmt, va);
 	va_end(va);
 
-	std::size_t errbuf_size = 512;
+	size_t errbuf_size = 512;
 	char* errbuf = new char[errbuf_size];
 	avcodec::av_strerror(err, errbuf, errbuf_size);
 	RString Error = ssprintf("%i: %s", err, errbuf);

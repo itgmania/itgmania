@@ -85,7 +85,7 @@ void StepsUtil::GetAllMatchingEndless( Song *pSong, const StepsCriteria &stc, st
 {
 	const std::vector<Steps*> &vSteps = ( stc.m_st == StepsType_Invalid ? pSong->GetAllSteps() :
 		pSong->GetStepsByStepsType( stc.m_st ) );
-	const std::size_t previousSize = out.size();
+	const size_t previousSize = out.size();
 	int successful = false;
 
 	GetAllMatching( pSong, stc, out );

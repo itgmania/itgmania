@@ -605,7 +605,7 @@ void Model::AdvanceFrame( float fDeltaTime )
 
 void Model::SetBones( const msAnimation* pAnimation, float fFrame, std::vector<myBone_t> &vpBones )
 {
-	for( std::size_t i = 0; i < pAnimation->Bones.size(); ++i )
+	for( size_t i = 0; i < pAnimation->Bones.size(); ++i )
 	{
 		const msBone *pBone = &pAnimation->Bones[i];
 		if( pBone->PositionKeys.size() == 0 && pBone->RotationKeys.size() == 0 )
@@ -616,7 +616,7 @@ void Model::SetBones( const msAnimation* pAnimation, float fFrame, std::vector<m
 
 		// search for the adjacent position keys
 		const msPositionKey *pLastPositionKey = nullptr, *pThisPositionKey = nullptr;
-		for( std::size_t j = 0; j < pBone->PositionKeys.size(); ++j )
+		for( size_t j = 0; j < pBone->PositionKeys.size(); ++j )
 		{
 			const msPositionKey *pPositionKey = &pBone->PositionKeys[j];
 			if( pPositionKey->fTime >= fFrame )
@@ -640,7 +640,7 @@ void Model::SetBones( const msAnimation* pAnimation, float fFrame, std::vector<m
 
 		// search for the adjacent rotation keys
 		const msRotationKey *pLastRotationKey = nullptr, *pThisRotationKey = nullptr;
-		for( std::size_t j = 0; j < pBone->RotationKeys.size(); ++j )
+		for( size_t j = 0; j < pBone->RotationKeys.size(); ++j )
 		{
 			const msRotationKey *pRotationKey = &pBone->RotationKeys[j];
 			if( pRotationKey->fTime >= fFrame )

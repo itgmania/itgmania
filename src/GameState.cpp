@@ -1484,7 +1484,7 @@ int GameState::prepare_song_for_gameplay()
 	copy_exts.push_back("lrc");
 	std::vector<RString> files_in_dir;
 	FILEMAN->GetDirListingWithMultipleExtensions(from_dir, copy_exts, files_in_dir);
-	for(std::size_t i= 0; i < files_in_dir.size(); ++i)
+	for(size_t i= 0; i < files_in_dir.size(); ++i)
 	{
 		RString& fname= files_in_dir[i];
 		if(!FileCopy(from_dir + fname, to_dir + fname))
@@ -3336,7 +3336,7 @@ public:
 	{
 		int i= IArg(1) - 1;
 		if(i < 0) { lua_pushnil(L); return 1; }
-		std::size_t si= static_cast<std::size_t>(i);
+		size_t si= static_cast<size_t>(i);
 		if(si >= p->m_autogen_fargs.size()) { lua_pushnil(L); return 1; }
 		lua_pushnumber(L, p->GetAutoGenFarg(si));
 		return 1;
@@ -3349,7 +3349,7 @@ public:
 			luaL_error(L, "%i is not a valid autogen arg index.", i);
 		}
 		float v= FArg(2);
-		std::size_t si= static_cast<std::size_t>(i);
+		size_t si= static_cast<size_t>(i);
 		while(si >= p->m_autogen_fargs.size())
 		{
 			p->m_autogen_fargs.push_back(0.0f);

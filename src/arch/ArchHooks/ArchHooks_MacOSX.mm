@@ -155,7 +155,7 @@ void ArchHooks_MacOSX::DumpDebugInfo()
 		SystemVersion = ssprintf("macOS %s", [productVersion cStringUsingEncoding:[NSString defaultCStringEncoding]]);
 	}
 
-	std::size_t size;
+	size_t size;
 #define GET_PARAM( name, var ) (size = sizeof(var), sysctlbyname(name, &var, &size, nil, 0) )
 	// Get memory
 	float fRam;

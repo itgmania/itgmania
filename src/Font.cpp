@@ -259,7 +259,7 @@ int Font::GetLineHeightInSourcePixels( const std::wstring &szLine ) const
 }
 
 // width is a pointer so that we can return the used width through it.
-std::size_t Font::GetGlyphsThatFit(const std::wstring& line, int* width) const
+size_t Font::GetGlyphsThatFit(const std::wstring& line, int* width) const
 {
 	if(*width == 0)
 	{
@@ -267,7 +267,7 @@ std::size_t Font::GetGlyphsThatFit(const std::wstring& line, int* width) const
 		return line.size();
 	}
 	int curr_width= 0;
-	std::size_t i= 0;
+	size_t i= 0;
 	for(i= 0; i < line.size() && curr_width < *width; ++i)
 	{
 		curr_width+= GetGlyph(line[i]).m_iHadvance;
@@ -441,11 +441,11 @@ void Font::GetFontPaths( const RString &sFontIniPath, std::vector<RString> &asTe
 
 RString Font::GetPageNameFromFileName( const RString &sFilename )
 {
-	std::size_t begin = sFilename.find_first_of( '[' );
+	size_t begin = sFilename.find_first_of( '[' );
 	if( begin == std::string::npos )
 		return "main";
 
-	std::size_t end = sFilename.find_first_of( ']', begin );
+	size_t end = sFilename.find_first_of( ']', begin );
 	if( end == std::string::npos )
 		return "main";
 

@@ -338,7 +338,7 @@ void SongUtil::AdjustDuplicateSteps( Song *pSong )
  */
 static RString RemoveInitialWhitespace( RString s )
 {
-	std::size_t i = s.find_first_not_of(" \t\r\n");
+	size_t i = s.find_first_not_of(" \t\r\n");
 	if( i != s.npos )
 		s.erase( 0, i );
 	return s;

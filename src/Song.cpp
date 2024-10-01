@@ -730,7 +730,7 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 			RString file_ext= GetExtension(*filename).MakeLower();
 			if(!file_ext.empty())
 			{
-				for(std::size_t tf= 0; tf < lists_to_fill.size(); ++ tf)
+				for(size_t tf= 0; tf < lists_to_fill.size(); ++ tf)
 				{
 					for(std::vector<RString>::const_iterator ext= fill_exts[tf]->begin();
 							ext != fill_exts[tf]->end(); ++ext)
@@ -1397,7 +1397,7 @@ void Song::RemoveAutosave()
 		// Change all the steps to point to the actual file, not the autosave
 		// file.  -Kyz
 		RString extension= GetExtension(m_sSongFileName);
-		for(std::size_t i= 0; i < m_vpSteps.size(); ++i)
+		for(size_t i= 0; i < m_vpSteps.size(); ++i)
 		{
 			if(!m_vpSteps[i]->IsAutogen())
 			{
@@ -1704,13 +1704,13 @@ RString Song::GetCacheFile(RString sType)
 		for( std::pair<const int, RString> PreSet : PreSets[sType.c_str()] )
 		{
 			// Search for image using PreSets.
-			std::size_t Found = Image.find(PreSet.second.c_str());
+			size_t Found = Image.find(PreSet.second.c_str());
 			if(Found!=RString::npos)
 				return GetSongAssetPath( Image, m_sSongDir );
 		}
 		// Search for the image directly if it doesnt exist in PreSets,
 		// Or incase we define our own stuff.
-		std::size_t Found = Image.find(sType.c_str());
+		size_t Found = Image.find(sType.c_str());
 		if(Found!=RString::npos)
 			return GetSongAssetPath( Image, m_sSongDir );
 	}
@@ -2328,7 +2328,7 @@ public:
 	{
 		const std::vector<BackgroundChange>& changes= p->GetBackgroundChanges(BACKGROUND_LAYER_1);
 		lua_createtable(L, changes.size(), 0);
-		for(std::size_t c= 0; c < changes.size(); ++c)
+		for(size_t c= 0; c < changes.size(); ++c)
 		{
 			lua_createtable(L, 0, 8);
 			lua_pushnumber(L, changes[c].m_fStartBeat);

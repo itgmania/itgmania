@@ -23,8 +23,8 @@ struct lua_State;
 #include <vector>
 
 
-RString SONG_GROUP_COLOR_NAME( std::size_t i );
-RString COURSE_GROUP_COLOR_NAME( std::size_t i );
+RString SONG_GROUP_COLOR_NAME( size_t i );
+RString COURSE_GROUP_COLOR_NAME( size_t i );
 bool CompareNotesPointersForExtra(const Steps *n1, const Steps *n2);
 
 /** @brief The max number of edit steps a profile can have. */

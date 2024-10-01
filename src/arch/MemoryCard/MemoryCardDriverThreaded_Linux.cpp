@@ -239,7 +239,7 @@ void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices( std::vector<UsbStorag
 				if( !sHostPort.empty() )
 				{
 					/* Strip off the endpoint information after the colon. */
-					std::size_t pos = sHostPort.find(':');
+					size_t pos = sHostPort.find(':');
 					if( pos != std::string::npos )
 						sHostPort.erase( pos );
 

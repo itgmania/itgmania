@@ -790,7 +790,7 @@ void Course::GetTrailUnsortedEndless( const std::vector<CourseEntry> &entries, T
 		ASSERT(e->iChooseIndex >= 0);
 		// If we're trying to pick BEST100 when only 99 songs exist,
 		// we have a problem, so bail out
-		if (static_cast<std::size_t>(e->iChooseIndex) >= vpSongs.size()) {
+		if (static_cast<size_t>(e->iChooseIndex) >= vpSongs.size()) {
 			continue;
 		}
 
@@ -1317,7 +1317,7 @@ public:
 	DEFINE_METHOD( GetCourseType, GetCourseType() )
 	static int GetCourseEntry(T* p, lua_State* L)
 	{
-		std::size_t id= static_cast<std::size_t>(IArg(1));
+		size_t id= static_cast<size_t>(IArg(1));
 		if(id >= p->m_vEntries.size())
 		{
 			lua_pushnil(L);

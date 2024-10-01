@@ -318,9 +318,9 @@ public:
 	Actor* GetFakeParent() { return m_FakeParent; }
 
 	void AddWrapperState();
-	void RemoveWrapperState(std::size_t i);
-	Actor* GetWrapperState(std::size_t i);
-	std::size_t GetNumWrapperStates() const { return m_WrapperStates.size(); }
+	void RemoveWrapperState(size_t i);
+	Actor* GetWrapperState(size_t i);
+	size_t GetNumWrapperStates() const { return m_WrapperStates.size(); }
 
 	/**
 	 * @brief Retrieve the Actor's x position.

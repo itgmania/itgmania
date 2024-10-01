@@ -327,7 +327,7 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 		std::vector<NoteData> vParts;
 
 		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
-		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
+		for( size_t pn = 0; pn < std::min(vParts.size(), size_t(NUM_PLAYERS)); ++pn )
 			NoteDataUtil::CalculateRadarValues( vParts[pn], fMusicLengthSeconds, m_CachedRadarValues[pn] );
 	}
 	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
@@ -661,7 +661,7 @@ RString Steps::GenerateChartKey(NoteData &nd, TimingData *td)
 	{
 #pragma omp section
 		{
-			for (std::size_t r = 0; r < nerv.size() / 2; r++) {
+			for (size_t r = 0; r < nerv.size() / 2; r++) {
 				int row = nerv[r];
 				for (int t = 0; t < nd.GetNumTracks(); ++t) {
 					const TapNote &tn = nd.GetTapNote(t, row);
@@ -678,7 +678,7 @@ RString Steps::GenerateChartKey(NoteData &nd, TimingData *td)
 
 #pragma omp section
 		{
-			for (std::size_t r = nerv.size() / 2; r < nerv.size(); r++) {
+			for (size_t r = nerv.size() / 2; r < nerv.size(); r++) {
 				int row = nerv[r];
 				for (int t = 0; t < nd.GetNumTracks(); ++t) {
 					const TapNote &tn = nd.GetTapNote(t, row);

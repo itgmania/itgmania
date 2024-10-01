@@ -2101,7 +2101,7 @@ void ScreenGameplay::UpdateHasteRate()
 	float scale_from_high= 1;
 	float scale_to_low= 0;
 	float scale_to_high=0;
-	for(std::size_t turning_point= 0; turning_point < m_HasteTurningPoints.size();
+	for(size_t turning_point= 0; turning_point < m_HasteTurningPoints.size();
 			++turning_point)
 	{
 		float curr_turning_point= m_HasteTurningPoints[turning_point];
@@ -2203,7 +2203,7 @@ void ScreenGameplay::UpdateLights()
 				{
 					std::vector<GameInput> gi;
 					pStyle->StyleInputToGameInput( t, pi->m_pn, gi );
-					for(std::size_t i= 0; i < gi.size(); ++i)
+					for(size_t i= 0; i < gi.size(); ++i)
 					{
 						bBlinkGameButton[gi[i].controller][gi[i].button] = true;
 					}
@@ -2872,7 +2872,7 @@ void ScreenGameplay::HandleScreenMessage( const ScreenMessage SM )
 			GAMESTATE->SetNewStageSeed();
 			course->InvalidateTrailCache();
 			course->RegenerateNonFixedTrails();
-			std::size_t info_id= 0; // Can't use the player number in the playerinfo
+			size_t info_id= 0; // Can't use the player number in the playerinfo
 			// because it won't match up in 2-player.
 			FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi)
 			{
@@ -3260,13 +3260,13 @@ public:
 	static int GetHasteRate( T* p, lua_State *L )    { lua_pushnumber( L, p->GetHasteRate() ); return 1; }
 	static bool TurningPointsValid(lua_State* L, int index)
 	{
-		std::size_t size= lua_objlen(L, index);
+		size_t size= lua_objlen(L, index);
 		if(size < 2)
 		{
 			luaL_error(L, "Invalid number of entries %zu", size);
 		}
 		float prev_turning= -1;
-		for(std::size_t n= 1; n < size; ++n)
+		for(size_t n= 1; n < size; ++n)
 		{
 			lua_pushnumber(L, n);
 			lua_gettable(L, index);

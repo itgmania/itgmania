@@ -51,19 +51,19 @@ static bool ConvertFromCharset( RString &sText, const char *szCharset )
 
 	/* Copy the string into a char* for iconv */
 	ICONV_CONST char *szTextIn = const_cast<ICONV_CONST char*>( sText.data() );
-	std::size_t iInLeft = sText.size();
+	size_t iInLeft = sText.size();
 
 	/* Create a new string with enough room for the new conversion */
 	RString sBuf;
 	sBuf.resize( sText.size() * 5 );
 
 	char *sTextOut = const_cast<char*>( sBuf.data() );
-	std::size_t iOutLeft = sBuf.size();
-	std::size_t size = iconv( converter, &szTextIn, &iInLeft, &sTextOut, &iOutLeft );
+	size_t iOutLeft = sBuf.size();
+	size_t size = iconv( converter, &szTextIn, &iInLeft, &sTextOut, &iOutLeft );
 
 	iconv_close( converter );
 
-	if( size == (std::size_t)(-1) )
+	if( size == (size_t)(-1) )
 	{
 		LOG->Trace( "%s\n", strerror( errno ) );
 		return false; /* Returned an error */
@@ -103,7 +103,7 @@ static bool ConvertFromCP( RString &sText, int iCodePage )
 
 	if( old == nullptr )
 		return false;
-	const std::size_t size = CFStringGetMaximumSizeForEncoding( CFStringGetLength(old), kCFStringEncodingUTF8 );
+	const size_t size = CFStringGetMaximumSizeForEncoding( CFStringGetLength(old), kCFStringEncodingUTF8 );
 
 	char *buf = new char[size+1];
 	buf[0] = '\0';

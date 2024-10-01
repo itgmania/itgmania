@@ -97,7 +97,7 @@ ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, std::uint64_t *p
 
 	// Copy the thread name.
 	const char *rawname = RageThread::GetThreadNameByID( *piThreadID );
-	const std::size_t maxNameLen = sizeof( thread->name );
+	const size_t maxNameLen = sizeof( thread->name );
 	if (strlen(rawname) < maxNameLen) {
 		// If it fits, I sits^H^H^H^Hcopy.
 		strncpy( thread->name, rawname, maxNameLen );

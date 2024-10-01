@@ -497,12 +497,12 @@ RString RageDisplay_Legacy::Init( const VideoModeParams &p, bool bAllowUnacceler
 		std::vector<RString> asExtensions;
 		split( szExtensionString, " ", asExtensions );
 		sort( asExtensions.begin(), asExtensions.end() );
-		std::size_t iNextToPrint = 0;
+		size_t iNextToPrint = 0;
 		while( iNextToPrint < asExtensions.size() )
 		{
-			std::size_t iLastToPrint = iNextToPrint;
+			size_t iLastToPrint = iNextToPrint;
 			RString sType;
-			for( std::size_t i = iNextToPrint; i<asExtensions.size(); ++i )
+			for( size_t i = iNextToPrint; i<asExtensions.size(); ++i )
 			{
 				std::vector<RString> asBits;
 				split( asExtensions[i], "_", asBits );

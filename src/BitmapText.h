@@ -66,7 +66,7 @@ public:
 	void SetMaxHeight( float fMaxHeight );
 	void SetMaxDimUseZoom(bool use);
 	void SetWrapWidthPixels( int iWrapWidthPixels );
-	void CropLineToWidth(std::size_t l, int width);
+	void CropLineToWidth(size_t l, int width);
 	void CropToWidth(int width);
 
 	virtual bool EarlyAbortDraw() const override;
@@ -107,7 +107,7 @@ public:
 	};
 
 	Attribute GetDefaultAttribute() const;
-	void AddAttribute( std::size_t iPos, const Attribute &attr );
+	void AddAttribute( size_t iPos, const Attribute &attr );
 	void ClearAttributes();
 
 	// Commands
@@ -133,7 +133,7 @@ protected:
 	std::vector<RageSpriteVertex>	m_aVertices;
 
 	std::vector<FontPageTextures*>		m_vpFontPageTextures;
-	std::map<std::size_t, Attribute>	m_mAttributes;
+	std::map<size_t, Attribute>	m_mAttributes;
 	bool								m_bHasGlowAttribute;
 
 	TextGlowMode	m_TextGlowMode;

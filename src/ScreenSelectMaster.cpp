@@ -26,10 +26,10 @@ XToString( MenuDir );
 
 AutoScreenMessage( SM_PlayPostSwitchPage );
 
-static RString CURSOR_OFFSET_X_FROM_ICON_NAME( std::size_t p ) { return ssprintf("CursorP%dOffsetXFromIcon",int(p+1)); }
-static RString CURSOR_OFFSET_Y_FROM_ICON_NAME( std::size_t p ) { return ssprintf("CursorP%dOffsetYFromIcon",int(p+1)); }
+static RString CURSOR_OFFSET_X_FROM_ICON_NAME( size_t p ) { return ssprintf("CursorP%dOffsetXFromIcon",int(p+1)); }
+static RString CURSOR_OFFSET_Y_FROM_ICON_NAME( size_t p ) { return ssprintf("CursorP%dOffsetYFromIcon",int(p+1)); }
 // e.g. "OptionOrderLeft=0:1,1:2,2:3,3:4"
-static RString OPTION_ORDER_NAME( std::size_t dir ) { return "OptionOrder"+MenuDirToString((MenuDir)dir); }
+static RString OPTION_ORDER_NAME( size_t dir ) { return "OptionOrder"+MenuDirToString((MenuDir)dir); }
 
 REGISTER_SCREEN_CLASS( ScreenSelectMaster );
 
@@ -136,8 +136,8 @@ void ScreenSelectMaster::Init()
 				}
 				else
 				{
-					std::size_t poses= lua_objlen(L, -1);
-					for(std::size_t p= 1; p <= poses; ++p)
+					size_t poses= lua_objlen(L, -1);
+					for(size_t p= 1; p <= poses; ++p)
 					{
 						lua_rawgeti(L, -1, p);
 						RageVector3 pos(0.0f, 0.0f, 0.0f);

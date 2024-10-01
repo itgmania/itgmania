@@ -87,7 +87,7 @@ static void GetUsedGameInputs( std::vector<GameInput> &vGameInputsOut )
 			{
 				std::vector<GameInput> gi;
 				style->StyleInputToGameInput( iCol, pn, gi );
-				for(std::size_t i= 0; i < gi.size(); ++i)
+				for(size_t i= 0; i < gi.size(); ++i)
 				{
 					if(gi[i].IsValid())
 					{

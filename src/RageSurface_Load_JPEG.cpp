@@ -68,7 +68,7 @@ void RageFile_JPEG_init_source( j_decompress_ptr cinfo )
 boolean RageFile_JPEG_fill_input_buffer( j_decompress_ptr cinfo )
 {
 	RageFile_source_mgr *src = (RageFile_source_mgr *) cinfo->src;
-	std::size_t nbytes = src->file->Read( src->buffer, sizeof(src->buffer) );
+	size_t nbytes = src->file->Read( src->buffer, sizeof(src->buffer) );
 
 	if( nbytes <= 0 )
 	{

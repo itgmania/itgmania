@@ -510,11 +510,11 @@ int LowLevelWindow_MacOSX::ChangeDisplayMode( const VideoModeParams& p )
 }
 
 // http://lukassen.wordpress.com/2010/01/18/taming-snow-leopard-cgdisplaybitsperpixel-deprication/
-static std::size_t GetDisplayBitsPerPixel( CGDirectDisplayID displayId )
+static size_t GetDisplayBitsPerPixel( CGDirectDisplayID displayId )
 {
 
 	CGDisplayModeRef mode = CGDisplayCopyDisplayMode(displayId);
-	std::size_t depth = 0;
+	size_t depth = 0;
 
 	CFStringRef pixEnc = CGDisplayModeCopyPixelEncoding(mode);
 	if(CFStringCompare(pixEnc, CFSTR(IO32BitDirectPixels), kCFCompareCaseInsensitive) == kCFCompareEqualTo)

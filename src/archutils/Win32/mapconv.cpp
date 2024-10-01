@@ -224,7 +224,7 @@ int main(int argc, char **argv) {
 
 //		printf("Processing RVA entries...\n");
 
-		for (std::size_t i = 0; i < rvabuf.size(); ++i) {
+		for (size_t i = 0; i < rvabuf.size(); ++i) {
 			std::uint16_t grp;
 			std::uint32_t start;
 			std::uintptr_t rva;
@@ -240,7 +240,7 @@ int main(int argc, char **argv) {
 
 //		printf("Processing segment entries...\n");
 
-		for (std::size_t i = 0; i < segcnt; i++) {
+		for (size_t i = 0; i < segcnt; i++) {
 			segbuf[i][0] += grpstart[seggrp[i]];
 //			printf("\t#%-2zu  %p-%p\n", i + 1, reinterpret_cast<void*>(segbuf[i][0]), reinterpret_cast<void*>(segbuf[i][0] + segbuf[i][1] - 1));
 		}
@@ -288,7 +288,7 @@ int main(int argc, char **argv) {
 
 		fwrite(header, 64, 1, fo);
 
-		std::size_t t;
+		size_t t;
 
 		fwrite(&ver, sizeof ver, 1, fo);
 

@@ -417,7 +417,7 @@ public:
 
 	// Autogen stuff.  This should probably be moved to its own singleton or
 	// something when autogen is generalized and more customizable. -Kyz
-	float GetAutoGenFarg(std::size_t i)
+	float GetAutoGenFarg(size_t i)
 	{
 		if(i >= m_autogen_fargs.size()) { return 0.0f; }
 		return m_autogen_fargs[i];
