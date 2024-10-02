@@ -34,10 +34,10 @@ static const char *MusicWheelItemTypeNames[] = {
 XToString( MusicWheelItemType );
 
 MusicWheelItemData::MusicWheelItemData( WheelItemDataType type, Song* pSong, 
-				       RString sSectionName, Course* pCourse, Pack* pPack,
+				       RString sSectionName, Course* pCourse, Group* pGroup,
 				       RageColor color, int iSectionCount ):
 	WheelItemBaseData(type, sSectionName, color),
-	m_pCourse(pCourse), m_pSong(pSong), m_pPack(pPack), m_Flags(WheelNotifyIcon::Flags()),
+	m_pCourse(pCourse), m_pSong(pSong), m_pGroup(pGroup), m_Flags(WheelNotifyIcon::Flags()),
 	m_iSectionCount(iSectionCount), m_sLabel(""), m_pAction() {}
 
 MusicWheelItem::MusicWheelItem( RString sType ):
@@ -222,14 +222,14 @@ void MusicWheelItem::LoadFromWheelItemData( const WheelItemBaseData *pData, int 
 		break;
 	case WheelItemDataType_Section:
 		{
-			if ( pWID->m_pPack == nullptr ) {
+			if ( pWID->m_pGroup == nullptr ) {
 				sDisplayName = SONGMAN->ShortenGroupName(pWID->m_sText);
 			}
 			else {
-				if ( pWID->m_pPack->m_sSeries.empty() )
+				if ( pWID->m_pGroup->m_sSeries.empty() )
 					sDisplayName = SONGMAN->ShortenGroupName(pWID->m_sText);
 				else
-					sDisplayName = SONGMAN->ShortenGroupName("["+pWID->m_pPack->m_sSeries+"] "+pWID->m_pPack->m_sDisplayTitle);
+					sDisplayName = SONGMAN->ShortenGroupName("[" + pWID->m_pGroup->m_sSeries +"] " + pWID->m_pGroup->m_sDisplayTitle);
 			}
 			if( GAMESTATE->sExpandedSectionName == pWID->m_sText )
 				type = MusicWheelItemType_SectionExpanded;

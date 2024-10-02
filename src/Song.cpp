@@ -276,9 +276,9 @@ const RString &Song::GetSongFilePath() const
  * <set> into Song.h, which is heavily used. */
 static std::set<RString> BlacklistedImages;
 
-Pack* Song::GetPack() const
+Group* Song::GetGroup() const
 {
-	return SONGMAN->GetPackFromGroupName(m_sGroupName);
+	return SONGMAN->GetGroupFromName(m_sGroupName);
 }
 
 /* If PREFSMAN->m_bFastLoad is true, always load from cache if possible.
@@ -462,14 +462,11 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 	return true;	// do load this song
 }
 
-
-
 /* This function feels EXTREMELY hacky - copying things on top of pointers so
  * they don't break elsewhere.  Maybe it could be rewritten to politely ask the
  * Song/Steps objects to reload themselves. -- djpohly */
 bool Song::ReloadFromSongDir( RString sDir )
 {
-	LOG->Trace("Reload From Song Dir Pack Test: %s", GetPack()->m_sGroupName.c_str());
 	// Remove the cache file to force the song to reload from its dir instead
 	// of loading from the cache. -Kyz
 	FILEMAN->Remove(GetCacheFilePath());

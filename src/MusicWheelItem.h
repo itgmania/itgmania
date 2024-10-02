@@ -14,7 +14,7 @@
 
 class Course;
 class Song;
-struct Pack;
+struct Group;
 
 struct MusicWheelItemData;
 
@@ -64,15 +64,15 @@ private:
 
 struct MusicWheelItemData : public WheelItemBaseData
 {
-	MusicWheelItemData() : m_pCourse(nullptr), m_pSong(nullptr), m_pPack(nullptr), m_Flags(),
+	MusicWheelItemData() : m_pCourse(nullptr), m_pSong(nullptr), m_pGroup(nullptr), m_Flags(),
 		m_iSectionCount(0), m_sLabel(""), m_pAction() { }
 	MusicWheelItemData( WheelItemDataType type, Song* pSong, 
-			   RString sSectionName, Course* pCourse, Pack* pPack, 
+			   RString sSectionName, Course* pCourse, Group* pGroup, 
 			   RageColor color, int iSectionCount );
 
 	Course*			m_pCourse;
 	Song*			m_pSong;
-	Pack*			m_pPack;
+	Group*			m_pGroup;
 	WheelNotifyIcon::Flags  m_Flags;
 
 	// for TYPE_SECTION

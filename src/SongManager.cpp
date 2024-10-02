@@ -267,7 +267,7 @@ void SongManager::SanityCheckGroupDir( RString sDir ) const
 	}
 }
 
-void SongManager::AddGroup( RString sDir, RString sGroupDirName, Pack pack )
+void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group group )
 {
 	unsigned j;
 	for(j = 0; j < m_sSongGroupNames.size(); ++j)
@@ -281,10 +281,10 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Pack pack )
 	// Look for a group banner in this group folder
 	std::vector<RString> arrayGroupBanners;
 	
-	// First check if there is a banner provided in pack.ini
-	if( pack.m_sBannerPath != "" )
+	// First check if there is a banner provided in group.ini
+	if( group.m_sBannerPath != "" )
 	{
-		GetDirListing( sDir+sGroupDirName+"/"+pack.m_sBannerPath, arrayGroupBanners );
+		GetDirListing( sDir+sGroupDirName+"/"+group.m_sBannerPath, arrayGroupBanners );
 	}
 	GetDirListing( sDir+sGroupDirName+"/*.png", arrayGroupBanners );
 	GetDirListing( sDir+sGroupDirName+"/*.jpg", arrayGroupBanners );
@@ -342,21 +342,21 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Pack pack )
 	m_sSongGroupNames.push_back( sGroupDirName );
 	m_sSongGroupBannerPaths.push_back( sBannerPath );
 
-	if (m_mapGroupToPack.find(sGroupDirName) == m_mapGroupToPack.end())
+	if (m_mapGroupsByName.find(sGroupDirName) == m_mapGroupsByName.end())
 	{
-		m_mapGroupToPack[sGroupDirName] = pack;
+		m_mapGroupsByName[sGroupDirName] = group;
 	} else {
-		LOG->Trace("SongManager::AddGroup: Group %s already has a pack. Ignoring pack %s.", sGroupDirName.c_str(), pack.m_sDisplayTitle.c_str());
+		LOG->Trace("SongManager::AddGroup: Group %s already has a group. Ignoring group %s.", sGroupDirName.c_str(), group.m_sDisplayTitle.c_str());
 	}
 
 
 
-	// Add the pack to its series if the pack has one and if the series exists
-	if( pack.m_sSeries != "" )
+	// Add the group to its series if the group has one and if the series exists
+	if( group.m_sSeries != "" )
 	{
-		std::vector<Pack*>& series = m_mapSeries[pack.m_sSeries];
-		if( std::find(series.begin(), series.end(), &pack) == series.end() )
-			series.push_back(&pack);
+		std::vector<Group*>& series = m_mapSeries[group.m_sSeries];
+		if( std::find(series.begin(), series.end(), &group) == series.end() )
+			series.push_back(&group);
 	}
 	//m_sSongGroupBackgroundPaths.push_back( sBackgroundPath );
 }
@@ -440,7 +440,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		SongPointerVector& index_entry = m_mapSongGroupIndex[sGroupDirName];
 		RString group_base_name= Basename(sGroupDirName);
 
-		RString sGroupIniPath = sDir + sGroupDirName + "/pack.ini";
+		RString sGroupIniPath = sDir + sGroupDirName + "/Group.ini";
 		RString sDisplayTitle = sGroupDirName;
 		RString SortTitle = sGroupDirName;
 		RString TranslitTitle = sGroupDirName;
@@ -448,48 +448,49 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		RString bannerPath = "";
 		float fOffset = 0;
 		
-		Pack pack;
+		Group group;
 		if( FILEMAN->DoesFileExist( sGroupIniPath ) && arraySongDirs.size() > 0 )
 		{
-			LOG->Trace("Loading pack.ini for \"%s\"", (sDir+sGroupDirName).c_str() );
 			IniFile ini;
 			ini.ReadFile( sGroupIniPath );
 			ini.GetValue( "Group", "DisplayTitle", sDisplayTitle );
-			if (sDisplayTitle.empty())
+			if (sDisplayTitle.empty()) {
 				sDisplayTitle = group_base_name;
+			}
 			ini.GetValue( "Group", "Banner", bannerPath );
 			ini.GetValue( "Group", "SortTitle", SortTitle );
-			if (SortTitle.empty())
+			if (SortTitle.empty()) {
 				SortTitle = sDisplayTitle;
+			}
 			ini.GetValue( "Group", "TranslitTitle", TranslitTitle );
-			if (TranslitTitle.empty())
+			if (TranslitTitle.empty()) {
 				TranslitTitle = sDisplayTitle;
+			}
 			ini.GetValue( "Group", "Series", Series );
 			RString sValue = "";
+			
 			ini.GetValue( "Group", "SyncOffset", sValue );
-			if( sValue.CompareNoCase("null")==0 )
+			if( sValue.CompareNoCase("null")==0 ) {
 				fOffset = 0;
-			else if ( sValue.CompareNoCase("itg")==0 )
+			} else if ( sValue.CompareNoCase("itg")==0 ) {
 				fOffset = 0.009f;
-			else
+			} else {
 				fOffset = StringToFloat( sValue );
+			}
+			LOG->Trace("Loaded group.ini for \"%s\"", (sDir+sGroupDirName).c_str() );
 
-			LOG->Trace("Loaded pack.ini for \"%s\"", (sDir+sGroupDirName).c_str() );
-			// LOG THE RECEIVED INFO
-			LOG->Trace("DisplayTitle: %s", sDisplayTitle.c_str());
-			LOG->Trace("SortTitle: %s", SortTitle.c_str());
-			pack.m_bHasPackIni = true;
+			group.m_bHasGroupIni = true;
 		} else {
-			pack.m_bHasPackIni = false;
+			group.m_bHasGroupIni = false;
 		}
-		pack.m_sDisplayTitle = sDisplayTitle;
-		pack.m_sSortTitle = SortTitle;
-		pack.m_sTranslitTitle = TranslitTitle;
-		pack.m_sSeries = Series;
-		pack.m_iSyncOffset = fOffset;
-		pack.m_sBannerPath = bannerPath;
-		pack.m_sPath = sDir + sGroupDirName;
-		pack.m_sGroupName = group_base_name;
+		group.m_sDisplayTitle = sDisplayTitle;
+		group.m_sSortTitle = SortTitle;
+		group.m_sTranslitTitle = TranslitTitle;
+		group.m_sSeries = Series;
+		group.m_iSyncOffset = fOffset;
+		group.m_sBannerPath = bannerPath;
+		group.m_sPath = sDir + sGroupDirName;
+		group.m_sGroupName = group_base_name;
 		
 
 		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
@@ -525,19 +526,19 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 				delete pNewSong;
 				continue;
 			}
-			// Apply Pack Offset if applicable
-			if( pack.m_iSyncOffset != 0 )
+			// Apply Group Offset if applicable
+			if( group.m_iSyncOffset != 0 )
 			{
-				LOG->Trace("Applying pack offset of %i ms to \"%s\"", pack.m_iSyncOffset, pNewSong->GetSongDir().c_str() );
-				pNewSong->m_SongTiming.m_fBeat0PackOffsetInSeconds = pack.m_iSyncOffset;
+				LOG->Trace("Applying group offset of %i ms to \"%s\"", group.m_iSyncOffset, pNewSong->GetSongDir().c_str() );
+				pNewSong->m_SongTiming.m_fBeat0GroupOffsetInSeconds = group.m_iSyncOffset;
 				const std::vector<Steps*>& vpSteps = pNewSong->GetAllSteps();
-				for (Steps *s : vpSteps)
+				for (Steps* s : vpSteps)
 				{
 					// Empty TimingData means it's inherited
 					// from the song and is already changed.
 					if( s->m_Timing.empty() )
 						continue;
-					s->m_Timing.m_fBeat0PackOffsetInSeconds = pack.m_iSyncOffset;
+					s->m_Timing.m_fBeat0GroupOffsetInSeconds = group.m_iSyncOffset;
 				}
 			}
 
@@ -554,10 +555,10 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		// Don't add the group name if we didn't load any songs in this group.
 		if(!loaded) continue;
 		// Save amount of songs
-		pack.iTotalSongs = loaded;
+		group.iTotalSongs = loaded;
 
 		// Add this group to the group array.
-		AddGroup(sDir, sGroupDirName, pack);
+		AddGroup(sDir, sGroupDirName, group);
 		
 
 		// Cache and load the group banner. (and background if it has one -aj)
@@ -958,11 +959,11 @@ std::vector<Song*> SongManager::GetPreferredSortSongsBySectionName( const RStrin
 	return AddTo;
 }
 
-Pack* SongManager::GetPackFromGroupName( const RString &sGroupName ) const
+Group* SongManager::GetGroupFromName( const RString& sGroupName ) const
 {
-	std::map<RString, Pack>::const_iterator iter = m_mapGroupToPack.find( sGroupName );
-	if( iter != m_mapGroupToPack.end() )
-		return const_cast<Pack*>(&iter->second);
+	auto iter = m_mapGroupsByName.find( sGroupName );
+	if( iter != m_mapGroupsByName.end() )
+		return const_cast<Group*>(&iter->second);
 	return nullptr;
 }
 
