@@ -1,5 +1,6 @@
 #include "global.h"
 #include "Song.h"
+#include "Group.h"
 #include "Steps.h"
 #include "RageUtil.h"
 #include "RageLog.h"
@@ -2273,6 +2274,13 @@ public:
 		lua_pushstring(L, p->m_sGroupName);
 		return 1;
 	}
+
+	static int GetGroup( T* p, lua_State *L )
+	{
+		p->GetGroup()->PushSelf(L);
+		return 1;
+	}
+
 	static int MusicLengthSeconds( T* p, lua_State *L )
 	{
 		lua_pushnumber(L, p->m_fMusicLengthSeconds);
@@ -2492,6 +2500,7 @@ public:
 		ADD_METHOD( IsEnabled );
 		ADD_METHOD(IsCustomSong);
 		ADD_METHOD( GetGroupName );
+		ADD_METHOD( GetGroup );
 		ADD_METHOD( MusicLengthSeconds );
 		ADD_METHOD( GetSampleStart );
 		ADD_METHOD( GetSampleLength );
@@ -2535,6 +2544,8 @@ public:
 };
 
 LUA_REGISTER_CLASS( Song )
+
+
 // lua end
 
 

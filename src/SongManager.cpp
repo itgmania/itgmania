@@ -22,6 +22,7 @@
 #include "Profile.h"
 #include "ProfileManager.h"
 #include "RageFile.h"
+#include "RageUtil.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "Song.h"
@@ -37,6 +38,7 @@
 #include "TrailUtil.h"
 #include "UnlockManager.h"
 #include "SpecialFiles.h"
+#include "Group.h"
 
 #include <cstddef>
 #include <tuple>
@@ -282,9 +284,9 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group group )
 	std::vector<RString> arrayGroupBanners;
 	
 	// First check if there is a banner provided in group.ini
-	if( group.m_sBannerPath != "" )
+	if( group.GetBannerPath() != "" )
 	{
-		GetDirListing( sDir+sGroupDirName+"/"+group.m_sBannerPath, arrayGroupBanners );
+		GetDirListing( sDir+sGroupDirName+"/"+group.GetBannerPath(), arrayGroupBanners );
 	}
 	GetDirListing( sDir+sGroupDirName+"/*.png", arrayGroupBanners );
 	GetDirListing( sDir+sGroupDirName+"/*.jpg", arrayGroupBanners );
@@ -345,16 +347,12 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group group )
 	if (m_mapGroupsByName.find(sGroupDirName) == m_mapGroupsByName.end())
 	{
 		m_mapGroupsByName[sGroupDirName] = group;
-	} else {
-		LOG->Trace("SongManager::AddGroup: Group %s already has a group. Ignoring group %s.", sGroupDirName.c_str(), group.m_sDisplayTitle.c_str());
-	}
-
-
+	} 
 
 	// Add the group to its series if the group has one and if the series exists
-	if( group.m_sSeries != "" )
+	if( group.GetSeries() != "" )
 	{
-		std::vector<Group*>& series = m_mapSeries[group.m_sSeries];
+		std::vector<Group*>& series = m_mapSeries[group.GetSeries()];
 		if( std::find(series.begin(), series.end(), &group) == series.end() )
 			series.push_back(&group);
 	}
@@ -446,9 +444,12 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		RString TranslitTitle = sGroupDirName;
 		RString Series = "";
 		RString bannerPath = "";
+		RString credits = "";
+		RString authorsNotes = "";
+		// Use our new Group class
+		Group group;
 		float fOffset = 0;
 		
-		Group group;
 		if( FILEMAN->DoesFileExist( sGroupIniPath ) && arraySongDirs.size() > 0 )
 		{
 			IniFile ini;
@@ -477,21 +478,39 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			} else {
 				fOffset = StringToFloat( sValue );
 			}
+			ini.GetValue( "Group", "Credits", credits );
+			ini.GetValue( "Group", "AuthorsNotes", authorsNotes );
+
 			LOG->Trace("Loaded group.ini for \"%s\"", (sDir+sGroupDirName).c_str() );
 
-			group.m_bHasGroupIni = true;
+			group.SetGroupIni(true);
 		} else {
-			group.m_bHasGroupIni = false;
+			group.SetGroupIni(false);
 		}
-		group.m_sDisplayTitle = sDisplayTitle;
-		group.m_sSortTitle = SortTitle;
-		group.m_sTranslitTitle = TranslitTitle;
-		group.m_sSeries = Series;
-		group.m_iSyncOffset = fOffset;
-		group.m_sBannerPath = bannerPath;
-		group.m_sPath = sDir + sGroupDirName;
-		group.m_sGroupName = group_base_name;
-		
+		// group.m_sDisplayTitle = sDisplayTitle;
+		// group.m_sSortTitle = SortTitle;
+		// group.m_sTranslitTitle = TranslitTitle;
+		// group.m_sSeries = Series;
+		// group.m_iSyncOffset = fOffset;
+		// group.m_sBannerPath = bannerPath;
+		// group.m_sPath = sDir + sGroupDirName;
+		// group.m_sGroupName = group_base_name;
+		// split(credits, ";", group.m_sCredits);
+		// group.m_sAuthorsNotes = authorsNotes;
+
+		group.SetDisplayTitle(sDisplayTitle);
+		group.SetSortTitle(SortTitle);
+		group.SetTranslitTitle(TranslitTitle);
+		group.SetSeries(Series);
+		group.SetSyncOffset(fOffset);
+		group.SetBannerPath(bannerPath);
+		group.SetPath(sDir + sGroupDirName);
+		group.SetGroupName(group_base_name);
+		std::vector<RString> credits_vector;
+		split(credits, ";", credits_vector);
+		group.SetStepArtistCredits(credits_vector);
+		group.SetAuthorsNotes(authorsNotes);
+
 
 		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
 		{
@@ -527,10 +546,10 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 				continue;
 			}
 			// Apply Group Offset if applicable
-			if( group.m_iSyncOffset != 0 )
+			if( group.GetSyncOffset() != 0 )
 			{
-				LOG->Trace("Applying group offset of %i ms to \"%s\"", group.m_iSyncOffset, pNewSong->GetSongDir().c_str() );
-				pNewSong->m_SongTiming.m_fBeat0GroupOffsetInSeconds = group.m_iSyncOffset;
+				LOG->Trace("Applying group offset of %i ms to \"%s\"", group.GetSyncOffset(), pNewSong->GetSongDir().c_str() );
+				pNewSong->m_SongTiming.m_fBeat0GroupOffsetInSeconds = group.GetSyncOffset();
 				const std::vector<Steps*>& vpSteps = pNewSong->GetAllSteps();
 				for (Steps* s : vpSteps)
 				{
@@ -538,7 +557,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 					// from the song and is already changed.
 					if( s->m_Timing.empty() )
 						continue;
-					s->m_Timing.m_fBeat0GroupOffsetInSeconds = group.m_iSyncOffset;
+					s->m_Timing.m_fBeat0GroupOffsetInSeconds = group.GetSyncOffset();
 				}
 			}
 

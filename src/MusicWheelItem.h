@@ -14,7 +14,6 @@
 
 class Course;
 class Song;
-struct Group;
 
 struct MusicWheelItemData;
 

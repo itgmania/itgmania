@@ -1195,14 +1195,6 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot)
 		RageTimer song_load_start_time;
 		song_load_start_time.Touch();
 		FILEMAN->GetDirListing(songs_folder + "/*", song_folders, true, true);
-		Group group;
-		group.m_sDisplayTitle = m_sDisplayName;
-		group.m_sSortTitle = m_sDisplayName;
-		group.m_sTranslitTitle = m_sDisplayName;
-		group.m_sSeries = "";
-		group.m_iSyncOffset = 0;
-		group.m_sPath = songs_folder;
-		group.m_sGroupName = m_sDisplayName;
 
 		StripCvsAndSvn(song_folders);
 		StripMacResourceForks(song_folders);

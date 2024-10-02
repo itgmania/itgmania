@@ -8,6 +8,7 @@
 #include "RageUtil_AutoPtr.h"
 #include "RageTypes.h"
 #include "Steps.h"
+#include "Group.h"
 
 #include <set>
 #include <vector>
@@ -64,20 +65,6 @@ struct LyricSegment
 	RageColor m_Color; /** @brief The color of the lyrics. */
 };
 
-
-struct Group
-{
-	RString m_sDisplayTitle;
-	RString m_sSortTitle;
-	RString m_sPath;
-	RString m_sGroupName;
-	RString m_sTranslitTitle;
-	RString m_sSeries;
-	float m_iSyncOffset;
-	bool m_bHasGroupIni;
-	int iTotalSongs;
-	RString m_sBannerPath;
-};
 
 /** @brief Holds all music metadata and steps for one song. */
 class Song
