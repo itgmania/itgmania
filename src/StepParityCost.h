@@ -50,12 +50,11 @@ namespace StepParity
 		/// @param rows 
 		/// @param rowIndex The index of the row represented by resultState
 		/// @return The computed cost
-		float getActionCost(State * initialState, State * resultState, std::vector<Row> &rows, int rowIndex);
+		float getActionCost(State * initialState, State * resultState, std::vector<Row> &rows, int rowIndex, float elapsedTime);
 
 	private:
-		void mergeInitialAndResultPosition(State * initialState, State * resultState, std::vector<StepParity::Foot> &combinedColumns, int columnCount);
-		float calcMineCost(State * initialState, State * resultState, Row &row, std::vector<StepParity::Foot> &combinedColumns, int columnCount);
-		float calcHoldSwitchCost(State * initialState, State * resultState, Row &row, std::vector<StepParity::Foot> &combinedColumns, int columnCount);
+		float calcMineCost(State * initialState, State * resultState, Row &row, int columnCount);
+		float calcHoldSwitchCost(State * initialState, State * resultState, Row &row, int columnCount);
 		float calcBracketTapCost(State * initialState, State * resultState, Row &row, int leftHeel, int leftToe, int rightHeel, int rightToe, float elapsedTime, int columnCount);
 		float calcMovingFootWhileOtherIsntOnPadCost(State * initialState, State * resultState, int columnCount);
 		float calcBracketJackCost(State * initialState, State * resultState, std::vector<Row> &rows, int rowIndex, bool movedLeft, bool movedRight, bool jackedLeft, bool jackedRight, bool didJump, int columnCount);
@@ -64,9 +63,9 @@ namespace StepParity
 		float calcSlowBracketCost(Row & row, bool movedLeft, bool movedRight, float elapsedTime);
 		float calcTwistedFootCost(State * resultState);
 		float calcMissedFootswitchCost(Row &row, bool jackedLeft, bool jackedRight, int columnCount);
-		float calcFacingCosts(State * initialState, State * resultState, std::vector<StepParity::Foot> &combinedColumns, int columnCount);
-		float calcSpinCosts(State * initialState, State * resultState, std::vector<StepParity::Foot> & combinedColumns, int columnCount);
-		float caclFootswitchCost(State * initialState, State * resultState, Row &row, std::vector<StepParity::Foot> &combinedColumns, float elapsedTime, int columnCount);
+		float calcFacingCosts(State * initialState, State * resultState, int columnCount);
+		float calcSpinCosts(State * initialState, State * resultState, int columnCount);
+		float caclFootswitchCost(State * initialState, State * resultState, Row &row, float elapsedTime, int columnCount);
 		float calcSideswitchCost(State * initialState, State * resultState, int columnCount);
 		float calcJackCost(bool movedLeft, bool movedRight, bool jackedLeft, bool jackedRight, float elapsedTime, int columnCount);
 		float calcBigMovementsQuicklyCost(State * initialState, State * resultState, float elapsedTime, int columnCount);

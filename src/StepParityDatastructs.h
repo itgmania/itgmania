@@ -3,13 +3,12 @@
 
 #include "GameConstantsAndTypes.h"
 #include "NoteData.h"
-#include "json/json.h"
-#include "JsonUtil.h"
 #include <queue>
 #include <unordered_map>
 
 namespace StepParity {
 
+	const int INVALID_COLUMN = -1;
 	const float CLM_SECOND_INVALID = -1;
 
 	enum Foot
@@ -119,49 +118,34 @@ namespace StepParity {
 	/// @brief Represents a specific possible state of the player's position
 	/// for a given row of the step chart.
 	struct State {
-		FootPlacement columns;	 // The position of the player
+		FootPlacement columns;	 // what the feet are hitting on this row
+		FootPlacement combinedColumns; // The resulting position of the player
 		FootPlacement movedFeet; // Any feet that have moved from the previous state to this one
 		FootPlacement holdFeet;  // Any feet that stayed in place due to a hold/roll note.
-		float second;			 // The time of the song represented by this state
-		int rowIndex;			 // The index of the row represented by this state
-		int idx;
 
-		int whereTheFeetAre[NUM_Foot]; // the inverse of columns
+		int whereTheFeetAre[NUM_Foot]; // the inverse of combinedColumns
+		int whatNoteTheFootIsHitting[NUM_Foot]; // the inverse of columns
 		bool didTheFootMove[NUM_Foot]; // the inverse of movedFeet
 		bool isTheFootHolding[NUM_Foot]; //inverse of holdFeet
-		// These hashes are used in operator<() to speed up the comparison of the vectors.
-		// Their values are computed by calculateHashes(), which is used in StepParityGenerator::buildStateGraph().
-		int columnsHash = 0;
-		int movedFeetHash = 0;
-		int holdFeetHash = 0;
-		
-		State()
-		{
-			State(4);
-		}
 		
 		State(int columnCount)
 		{
 			columns = FootPlacement(columnCount, NONE);
+			combinedColumns = FootPlacement(columnCount, NONE);
 			movedFeet = FootPlacement(columnCount, NONE);
 			holdFeet = FootPlacement(columnCount, NONE);
-			second = 0;
-			rowIndex = 0;
-			idx = -1;
+			
 			for(int i = 0; i < NUM_Foot; i++)
 			{
-				whereTheFeetAre[i] = -1;
+				whatNoteTheFootIsHitting[i] = INVALID_COLUMN;
+				whereTheFeetAre[i] = INVALID_COLUMN;
 				didTheFootMove[i] = false;
 				isTheFootHolding[i] = false;
 			}
 		}
 		
-		Json::Value ToJson(bool useStrings);
 		
-		bool operator==(const State& other) const;		
-		bool operator<(const State& other) const;
-		
-		void calculateHashes();
+		bool operator==(const State& other) const;
 	};
 
 	/// @brief A convenience struct used to encapsulate data from NoteData in an 
@@ -179,7 +163,6 @@ namespace StepParity {
 		float second = false;		// time into the song on which the note occurs
 
 		Foot parity = NONE; 		// Which foot (and which part of the foot) will most likely be used
-		Json::Value ToJson(bool useStrings);
 	};
 
 
@@ -223,14 +206,13 @@ namespace StepParity {
 			mines = std::vector<float>(columnCount, 0);
 			fakeMines = std::vector<float>(columnCount, 0);
 			columns = std::vector<StepParity::Foot>(columnCount, StepParity::NONE);
-			whereTheFeetAre = std::vector<int>(StepParity::NUM_Foot, -1);
+			whereTheFeetAre = std::vector<int>(StepParity::NUM_Foot, INVALID_COLUMN);
 		}
 		
 		void setFootPlacement(const std::vector<Foot> & footPlacement);
-
-		Json::Value ToJson(bool useStrings);
-		static Json::Value ToJsonRows(const std::vector<Row> & rows, bool useStrings);
-		static Json::Value ParityRowsJson(const std::vector<Row> & rows);
+		
+		bool operator==(const Row& other) const;
+		bool operator!=(const Row& other) const;
 	};
 
 	/// @brief A counter used while creating rows
@@ -279,8 +261,10 @@ namespace StepParity {
 	{
 		// The index of this node in its graph
 		int id = 0;
-		State state;
-
+		State * state;
+		int rowIndex = 0;
+		float second = 0;
+		
 		// Connections to, and the cost of moving to, the connected nodes
 		std::unordered_map<StepParityNode *, float> neighbors;
 		
@@ -288,71 +272,16 @@ namespace StepParity {
 		{
 			neighbors.clear();
 		}
-		StepParityNode(const State &_state)
+		StepParityNode(State *_state, float _second, int _rowIndex)
 		{
 			state = _state;
+			rowIndex = _rowIndex;
+			second = _second;
 		}
-
-		Json::Value ToJson();
 		
 		int neighborCount()
 		{
 			return static_cast<int>(neighbors.size());
-		}
-	};
-
-	/// @brief A comparator, needed in order use State objects as the key in a std::map.
-	struct StateComparator
-	{
-		bool operator()(const State& lhs, const State& rhs) const {
-			return lhs < rhs;
-		}
-	};
-	
-	/// @brief A graph, representing all of the possible states for a step chart.
-	class StepParityGraph
-	{
-	private:
-		std::vector<StepParityNode *> nodes;
-        std::vector<State *> states;
-		std::vector<std::map<State, StepParityNode *, StateComparator>> stateNodeMap;
-
-	public:
-		// This represents the very start of the song, before any notes
-		StepParityNode * startNode;
-		// This represents the end of the song, after all of the notes
-		StepParityNode *endNode;
-
-		~StepParityGraph()
-		{
-			states.clear();
-			for(StepParityNode * node: nodes)
-			{
-				delete node;
-			}
-		}
-
-		/// @brief Returns a pointer to a StepParityNode that represents the given state within the graph.
-		/// If a node already exists, it is returned, otherwise a new one is created and added to the graph.
-		/// @param state 
-		/// @return
-		StepParityNode *addOrGetExistingNode(const State &state);
-
-		void addEdge(StepParityNode* from, StepParityNode* to, float cost)
-		{
-			from->neighbors[to] = cost;
-		}
-
-		int nodeCount() const
-		{
-			return static_cast<int>(nodes.size());
-		}
-		
-		Json::Value ToJson();
-		Json::Value NodeStateJson();
-		StepParityNode *operator[](int index) const
-		{
-			return nodes[index];
 		}
 	};
 };

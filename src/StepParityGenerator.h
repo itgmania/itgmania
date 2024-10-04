@@ -35,15 +35,42 @@ namespace StepParity {
 	{
 	private:
 		StageLayout layout;
-		std::map < int, std::vector<std::vector<StepParity::Foot>>> permuteCache;
-
+		std::unordered_map < int, std::vector<std::vector<StepParity::Foot>>> permuteCache;
+		std::unordered_map <std::uint64_t, StepParity::State*> stateCache;
+		std::vector<StepParity::StepParityNode*> nodes;
+		StepParity::State * beginningState = nullptr;
+		StepParity::StepParityNode * startNode = nullptr;
+		StepParity::State * endingState = nullptr;
+		StepParity::StepParityNode * endNode = nullptr;
+		
 	public:
-		StepParityGraph graph;
 		std::vector<Row> rows;
 		std::vector<int> nodes_for_rows;
 		int columnCount;
 		
 		StepParityGenerator(const StageLayout & l) : layout(l) {
+			
+		}
+		
+		~StepParityGenerator()
+		{
+			for(auto s : stateCache)
+			{
+				delete s.second;
+			}
+			for(auto n: nodes)
+			{
+				delete n;
+			}
+			if(beginningState != nullptr)
+			{
+				delete beginningState;
+			}
+			
+			if(endingState != nullptr)
+			{
+				delete endingState;
+			}
 		}
 		/// @brief Analyzes the given NoteData to generate a vector of StepParity::Rows, with each step annotated with
 		/// a foot placement.
@@ -59,14 +86,17 @@ namespace StepParity {
 		/// and one that represents the end of the song, after the final note.
 		void buildStateGraph();
 
+		void addStateToGraph(State * resultState, StepParityNode * initialNode, Row & row, std::vector<StepParityNode *> &existingNodesForThisRow, float cost);
 		/// @brief Creates a new State, which is the result of moving from the given initialState
 		/// to the steps of the given row with the given foot placements in columns.
 		/// @param initialState The state of the player prior to the next row
 		/// @param row The next row for the resulting state
 		/// @param columns The foot placement for the resulting state
 		/// @return The resulting state
-		State initResultState(State &initialState, Row &row, const FootPlacement &columns);
+		State * initResultState(State * initialState, Row &row, const FootPlacement &columns);
 
+		void mergeInitialAndResultPosition(State * initialState, State * resultState, int columnCount);
+		
 		/// @brief Returns a pointer to a vector of foot possible foot placements for the given row.
 		/// Utilizes the permuteCache to re-use vectors. The returned pointer points to a vector within the permuteCache.
 		/// @param row The row to calculate foot placement permutations for.
@@ -97,9 +127,9 @@ namespace StepParity {
 		void AddRow(RowCounter &counter);
 		Row CreateRow(RowCounter &counter);
 		int getPermuteCacheKey(const Row &row);
-		bool bracketCheck(int column1, int column2);
-		float getDistanceSq(StepParity::StagePoint p1, StepParity::StagePoint p2);
-		Json::Value SMEditorParityJson();
+		std::uint64_t getStateCacheKey(State * state);
+		StepParityNode * addNode(State *state, float second, int rowIndex);
+		void addEdge(StepParityNode* from, StepParityNode* to, float cost);
 	};
 };
 
