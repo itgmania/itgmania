@@ -29,6 +29,10 @@ Group::Group() {
     m_sAuthorsNotes = "";
 }
 
+Group::~Group() {
+    SONGMAN->GetGroupGroupMap().clear();
+    m_sCredits.clear();
+}
 Group::Group(const RString &sPath) {
     RString sGroupIniPath = sPath + "/Group.ini";
     RString credits = "";

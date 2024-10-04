@@ -146,7 +146,7 @@ public:
 	void GetPreferredSortSongs( std::vector<Song*> &AddTo ) const;
 	std::map<RString, std::vector<Song*>> GetPreferredSortSongsMap() const { return m_mapPreferredSectionToSongs;};
 	RString SongToPreferredSortSectionName( const Song *pSong ) const;
-	std::map<RString, Group> GetGroupGroupMap() const { return m_mapGroupsByName;};
+	std::map<RString, Group*> GetGroupGroupMap() const { return m_mapGroupsByName;};
 	std::map<RString, std::vector<Group*>> GetSeriesGroupMap() const { return m_mapSeries;};
 	Group* GetGroupFromName(  const RString &sGroupName ) const;
 	std::vector<RString> GetPreferredSortSectionNames() const;
@@ -215,12 +215,14 @@ protected:
 	void LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditions );
 	bool GetExtraStageInfoFromCourse( bool bExtra2, RString sPreferredGroup, Song*& pSongOut, Steps*& pStepsOut, StepsType stype );
 	void SanityCheckGroupDir( RString sDir ) const;
-	void AddGroup( RString sDir, RString sGroupDirName, Group group );
+	void AddGroup( RString sDir, RString sGroupDirName, Group* group );
 	int GetNumEditsLoadedFromProfile( ProfileSlot slot ) const;
 
 	void AddSongToList(Song* new_song);
 	/** @brief All of the songs that can be played. */
 	std::vector<Song*>		m_pSongs;
+	/** @brief All of the groups available */
+	std::vector<Group*>		m_pGroups;
 	std::map<RString, Song*> m_SongsByDir;
 	std::set<RString> m_GroupsToNeverCache;
 
@@ -246,7 +248,7 @@ protected:
 	std::vector<RString>		m_sSongGroupNames;
 	//vector<RString>		m_sSongGroupBackgroundPaths; // each song group may have a background associated with it (very rarely)
 	
-	std::map<RString, Group> m_mapGroupsByName;
+	std::map<RString, Group*> m_mapGroupsByName;
 	std::map<RString, std::vector<Group*>>	m_mapSeries;
 
 	struct Comp { bool operator()(const RString& s, const RString &t) const { return CompareRStringsAsc(s,t); } };

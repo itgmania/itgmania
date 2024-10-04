@@ -269,7 +269,7 @@ void SongManager::SanityCheckGroupDir( RString sDir ) const
 	}
 }
 
-void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group group )
+void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
 {
 	unsigned j;
 	for(j = 0; j < m_sSongGroupNames.size(); ++j)
@@ -285,9 +285,9 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group group )
 	std::vector<RString> arrayGroupBanners;
 	
 	// First check if there is a banner provided in group.ini
-	if( group.GetBannerPath() != "" )
+	if( group->GetBannerPath() != "" )
 	{
-		GetDirListing( sDir+sGroupDirName+"/"+group.GetBannerPath(), arrayGroupBanners );
+		GetDirListing( sDir+sGroupDirName+"/"+group->GetBannerPath(), arrayGroupBanners );
 	}
 	GetDirListing( sDir+sGroupDirName+"/*.png", arrayGroupBanners );
 	GetDirListing( sDir+sGroupDirName+"/*.jpg", arrayGroupBanners );
@@ -339,18 +339,20 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group group )
 	}
 */
 	m_sSongGroupNames.push_back( sGroupDirName );
-
+	// add to the group list
+	m_pGroups.push_back( group );
+	
 	if (m_mapGroupsByName.find(sGroupDirName) == m_mapGroupsByName.end())
 	{
 		m_mapGroupsByName[sGroupDirName] = group;
 	} 
 
 	// Add the group to its series if the group has one and if the series exists
-	if( group.GetSeries() != "" )
+	if( group->GetSeries() != "" )
 	{
-		std::vector<Group*>& series = m_mapSeries[group.GetSeries()];
-		if( std::find(series.begin(), series.end(), &group) == series.end() )
-			series.push_back(&group);
+		std::vector<Group*>& series = m_mapSeries[group->GetSeries()];
+		if( std::find(series.begin(), series.end(), group) == series.end() )
+			series.push_back(group);
 	}
 	//m_sSongGroupBackgroundPaths.push_back( sBackgroundPath );
 }
@@ -433,7 +435,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 
 		SongPointerVector& index_entry = m_mapSongGroupIndex[sGroupDirName];
 		RString group_base_name= Basename(sGroupDirName);
-		Group group = Group(sDir + sGroupDirName);
+		Group* group = new Group(sDir + sGroupDirName);
 
 		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
 		{
@@ -469,10 +471,10 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 				continue;
 			}
 			// Apply Group Offset if applicable
-			if( group.GetSyncOffset() != 0 )
+			if( group->GetSyncOffset() != 0 )
 			{
-				LOG->Trace("Applying group offset of %i ms to \"%s\"", group.GetSyncOffset(), pNewSong->GetSongDir().c_str() );
-				pNewSong->m_SongTiming.m_fBeat0GroupOffsetInSeconds = group.GetSyncOffset();
+				LOG->Trace("Applying group offset of %i ms to \"%s\"", group->GetSyncOffset(), pNewSong->GetSongDir().c_str() );
+				pNewSong->m_SongTiming.m_fBeat0GroupOffsetInSeconds = group->GetSyncOffset();
 				const std::vector<Steps*>& vpSteps = pNewSong->GetAllSteps();
 				for (Steps* s : vpSteps)
 				{
@@ -480,7 +482,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 					// from the song and is already changed.
 					if( s->m_Timing.empty() )
 						continue;
-					s->m_Timing.m_fBeat0GroupOffsetInSeconds = group.GetSyncOffset();
+					s->m_Timing.m_fBeat0GroupOffsetInSeconds = group->GetSyncOffset();
 				}
 			}
 
@@ -594,7 +596,13 @@ void SongManager::FreeSongs()
 	{
 		RageUtil::SafeDelete( song );
 	}
+    // Loop through all groups and delete them.
+    for (Group *group : m_pGroups) {
+        RageUtil::SafeDelete(group);
+    }
+
 	m_pSongs.clear();
+	m_pGroups.clear();
 	m_SongsByDir.clear();
 
 	// also free the songs that have been deleted from disk
@@ -899,7 +907,7 @@ Group* SongManager::GetGroupFromName( const RString& sGroupName ) const
 {
 	auto iter = m_mapGroupsByName.find( sGroupName );
 	if( iter != m_mapGroupsByName.end() )
-		return const_cast<Group*>(&iter->second);
+		return iter->second;
 	return nullptr;
 }
 
