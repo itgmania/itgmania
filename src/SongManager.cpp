@@ -279,65 +279,6 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
 	if( j != m_sSongGroupNames.size() )
 		return; // the group is already added
 
-	RString sBannerPath;
-
-	// Look for a group banner in this group folder
-	std::vector<RString> arrayGroupBanners;
-	
-	// First check if there is a banner provided in group.ini
-	if( group->GetBannerPath() != "" )
-	{
-		GetDirListing( sDir+sGroupDirName+"/"+group->GetBannerPath(), arrayGroupBanners );
-	}
-	GetDirListing( sDir+sGroupDirName+"/*.png", arrayGroupBanners );
-	GetDirListing( sDir+sGroupDirName+"/*.jpg", arrayGroupBanners );
-	GetDirListing( sDir+sGroupDirName+"/*.jpeg", arrayGroupBanners );
-	GetDirListing( sDir+sGroupDirName+"/*.gif", arrayGroupBanners );
-	GetDirListing( sDir+sGroupDirName+"/*.bmp", arrayGroupBanners );
-
-	if( !arrayGroupBanners.empty() )
-		sBannerPath = sDir+sGroupDirName+"/"+arrayGroupBanners[0] ;
-	else
-	{
-		// Look for a group banner in the parent folder
-		GetDirListing( sDir+sGroupDirName+".png", arrayGroupBanners );
-		GetDirListing( sDir+sGroupDirName+".jpg", arrayGroupBanners );
-		GetDirListing( sDir+sGroupDirName+".jpeg", arrayGroupBanners );
-		GetDirListing( sDir+sGroupDirName+".gif", arrayGroupBanners );
-		GetDirListing( sDir+sGroupDirName+".bmp", arrayGroupBanners );
-		if( !arrayGroupBanners.empty() )
-			sBannerPath = sDir+arrayGroupBanners[0];
-	}
-
-	/* Other group graphics are a bit trickier, and usually don't exist.
-	 * A themer has a few options, namely checking the aspect ratio and
-	 * operating on it. -aj
-	 * TODO: Once the files are implemented in Song, bring the extensions
-	 * from there into here. -aj */
-	// Group background
-
-	//vector<RString> arrayGroupBackgrounds;
-	//GetDirListing( sDir+sGroupDirName+"/*-bg.png", arrayGroupBanners );
-	//GetDirListing( sDir+sGroupDirName+"/*-bg.jpg", arrayGroupBanners );
-	//GetDirListing( sDir+sGroupDirName+"/*-bg.jpeg", arrayGroupBanners );
-	//GetDirListing( sDir+sGroupDirName+"/*-bg.gif", arrayGroupBanners );
-	//GetDirListing( sDir+sGroupDirName+"/*-bg.bmp", arrayGroupBanners );
-/*
-	RString sBackgroundPath;
-	if( !arrayGroupBackgrounds.empty() )
-		sBackgroundPath = sDir+sGroupDirName+"/"+arrayGroupBackgrounds[0];
-	else
-	{
-		// Look for a group background in the parent folder
-		GetDirListing( sDir+sGroupDirName+"-bg.png", arrayGroupBackgrounds );
-		GetDirListing( sDir+sGroupDirName+"-bg.jpg", arrayGroupBackgrounds );
-		GetDirListing( sDir+sGroupDirName+"-bg.jpeg", arrayGroupBackgrounds );
-		GetDirListing( sDir+sGroupDirName+"-bg.gif", arrayGroupBackgrounds );
-		GetDirListing( sDir+sGroupDirName+"-bg.bmp", arrayGroupBackgrounds );
-		if( !arrayGroupBackgrounds.empty() )
-			sBackgroundPath = sDir+arrayGroupBackgrounds[0];
-	}
-*/
 	m_sSongGroupNames.push_back( sGroupDirName );
 	// add to the group list
 	m_pGroups.push_back( group );
@@ -435,7 +376,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 
 		SongPointerVector& index_entry = m_mapSongGroupIndex[sGroupDirName];
 		RString group_base_name= Basename(sGroupDirName);
-		Group* group = new Group(sDir + sGroupDirName);
+		Group* group = new Group(sDir, sGroupDirName);
 
 		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
 		{
@@ -503,7 +444,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		AddGroup(sDir, sGroupDirName, group);
 
 		// Cache and load the group banner. (and background if it has one -aj)
-		IMAGECACHE->CacheImage( "Banner", GetSongGroupBannerPath(sGroupDirName) );
+		IMAGECACHE->CacheImage( "Banner", group->GetBannerPath() );
 
 		// Load the group sym links (if any)
 		LoadGroupSymLinks(sDir, sGroupDirName);
