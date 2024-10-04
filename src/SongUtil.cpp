@@ -596,12 +596,12 @@ void SongUtil::SortSongPointerArrayByGenre( std::vector<Song*> &vpSongsInOut )
 int SongUtil::CompareSongPointersByGroup(const Song *pSong1, const Song *pSong2)
 {
 	// Check if the sort title exists
-	if( pSong1->GetGroup()->m_sSortTitle.empty() || pSong2->GetGroup()->m_sSortTitle.empty() ) {
+	if( pSong1->GetGroup()->GetSortTitle().empty() || pSong2->GetGroup()->GetSortTitle().empty() ) {
 		// LOG the DEETS
 		LOG->Warn("SongUtil::CompareSongPointersByGroup: Song %s or %s has an empty group name. Using group name instead.", pSong1->m_sSongName.c_str(), pSong2->m_sSongName.c_str());
 		return pSong1->m_sGroupName < pSong2->m_sGroupName;
 	} else {
-		return pSong1->GetGroup()->m_sSortTitle < pSong2->GetGroup()->m_sSortTitle;
+		return pSong1->GetGroup()->GetSortTitle() < pSong2->GetGroup()->GetSortTitle();
 	}
 }
 
@@ -609,8 +609,8 @@ static int CompareSongPointersByGroupAndTitle( const Song *pSong1, const Song *p
 {
 
 	// Check if the sort title exists
-	const RString &sGroup1 = pSong1->GetGroup()->m_sSortTitle;
-	const RString &sGroup2 = pSong2->GetGroup()->m_sSortTitle;
+	const RString &sGroup1 = pSong1->GetGroup()->GetSortTitle();
+	const RString &sGroup2 = pSong2->GetGroup()->GetSortTitle();
 
 	if( sGroup1 < sGroup2 )
 		return true;
@@ -655,7 +655,7 @@ RString SongUtil::GetSectionNameFromSongAndSort( const Song* pSong, SortOrder so
 		return SONGMAN->SongToPreferredSortSectionName( pSong );
 	case SORT_GROUP:
 		// guaranteed not empty
-		return pSong->GetGroup()->m_sSortTitle;
+		return pSong->GetGroup()->GetSortTitle();
 	case SORT_TITLE:
 	case SORT_ARTIST:
 		{

@@ -280,6 +280,7 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group group )
 		return; // the group is already added
 
 	RString sBannerPath;
+
 	// Look for a group banner in this group folder
 	std::vector<RString> arrayGroupBanners;
 	
@@ -337,12 +338,7 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group group )
 			sBackgroundPath = sDir+arrayGroupBackgrounds[0];
 	}
 */
-	/*
-	LOG->Trace( "Group banner for '%s' is '%s'.", sGroupDirName.c_str(),
-				sBannerPath != ""? sBannerPath.c_str():"(none)" );
-	*/
 	m_sSongGroupNames.push_back( sGroupDirName );
-	m_sSongGroupBannerPaths.push_back( sBannerPath );
 
 	if (m_mapGroupsByName.find(sGroupDirName) == m_mapGroupsByName.end())
 	{
@@ -437,80 +433,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 
 		SongPointerVector& index_entry = m_mapSongGroupIndex[sGroupDirName];
 		RString group_base_name= Basename(sGroupDirName);
-
-		RString sGroupIniPath = sDir + sGroupDirName + "/Group.ini";
-		RString sDisplayTitle = sGroupDirName;
-		RString SortTitle = sGroupDirName;
-		RString TranslitTitle = sGroupDirName;
-		RString Series = "";
-		RString bannerPath = "";
-		RString credits = "";
-		RString authorsNotes = "";
-		// Use our new Group class
-		Group group;
-		float fOffset = 0;
-		
-		if( FILEMAN->DoesFileExist( sGroupIniPath ) && arraySongDirs.size() > 0 )
-		{
-			IniFile ini;
-			ini.ReadFile( sGroupIniPath );
-			ini.GetValue( "Group", "DisplayTitle", sDisplayTitle );
-			if (sDisplayTitle.empty()) {
-				sDisplayTitle = group_base_name;
-			}
-			ini.GetValue( "Group", "Banner", bannerPath );
-			ini.GetValue( "Group", "SortTitle", SortTitle );
-			if (SortTitle.empty()) {
-				SortTitle = sDisplayTitle;
-			}
-			ini.GetValue( "Group", "TranslitTitle", TranslitTitle );
-			if (TranslitTitle.empty()) {
-				TranslitTitle = sDisplayTitle;
-			}
-			ini.GetValue( "Group", "Series", Series );
-			RString sValue = "";
-			
-			ini.GetValue( "Group", "SyncOffset", sValue );
-			if( sValue.CompareNoCase("null")==0 ) {
-				fOffset = 0;
-			} else if ( sValue.CompareNoCase("itg")==0 ) {
-				fOffset = 0.009f;
-			} else {
-				fOffset = StringToFloat( sValue );
-			}
-			ini.GetValue( "Group", "Credits", credits );
-			ini.GetValue( "Group", "AuthorsNotes", authorsNotes );
-
-			LOG->Trace("Loaded group.ini for \"%s\"", (sDir+sGroupDirName).c_str() );
-
-			group.SetGroupIni(true);
-		} else {
-			group.SetGroupIni(false);
-		}
-		// group.m_sDisplayTitle = sDisplayTitle;
-		// group.m_sSortTitle = SortTitle;
-		// group.m_sTranslitTitle = TranslitTitle;
-		// group.m_sSeries = Series;
-		// group.m_iSyncOffset = fOffset;
-		// group.m_sBannerPath = bannerPath;
-		// group.m_sPath = sDir + sGroupDirName;
-		// group.m_sGroupName = group_base_name;
-		// split(credits, ";", group.m_sCredits);
-		// group.m_sAuthorsNotes = authorsNotes;
-
-		group.SetDisplayTitle(sDisplayTitle);
-		group.SetSortTitle(SortTitle);
-		group.SetTranslitTitle(TranslitTitle);
-		group.SetSeries(Series);
-		group.SetSyncOffset(fOffset);
-		group.SetBannerPath(bannerPath);
-		group.SetPath(sDir + sGroupDirName);
-		group.SetGroupName(group_base_name);
-		std::vector<RString> credits_vector;
-		split(credits, ";", credits_vector);
-		group.SetStepArtistCredits(credits_vector);
-		group.SetAuthorsNotes(authorsNotes);
-
+		Group group = Group(sDir + sGroupDirName);
 
 		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
 		{
@@ -573,12 +496,9 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 
 		// Don't add the group name if we didn't load any songs in this group.
 		if(!loaded) continue;
-		// Save amount of songs
-		group.iTotalSongs = loaded;
 
 		// Add this group to the group array.
 		AddGroup(sDir, sGroupDirName, group);
-		
 
 		// Cache and load the group banner. (and background if it has one -aj)
 		IMAGECACHE->CacheImage( "Banner", GetSongGroupBannerPath(sGroupDirName) );
@@ -664,7 +584,10 @@ void SongManager::PreloadSongImages()
 void SongManager::FreeSongs()
 {
 	m_sSongGroupNames.clear();
-	m_sSongGroupBannerPaths.clear();
+	m_mapGroupsByName.clear();
+	m_mapSongsByDifficulty.clear();
+	m_mapPreferredSectionToSongs.clear();
+
 	//m_sSongGroupBackgroundPaths.clear();
 
 	for (Song *song : m_pSongs)
@@ -680,7 +603,6 @@ void SongManager::FreeSongs()
 	m_pDeletedSongs.clear();
 
 	m_mapSongGroupIndex.clear();
-	m_sSongGroupBannerPaths.clear();
 
 	m_pPopularSongs.clear();
 	m_pShuffledSongs.clear();
@@ -712,13 +634,8 @@ bool SongManager::IsGroupNeverCached(const RString& group) const
 
 RString SongManager::GetSongGroupBannerPath( RString sSongGroup ) const
 {
-	for( unsigned i = 0; i < m_sSongGroupNames.size(); ++i )
-	{
-		if( sSongGroup == m_sSongGroupNames[i] )
-			return m_sSongGroupBannerPaths[i];
-	}
-
-	return RString();
+	Group* group = GetGroupFromName(sSongGroup);
+	return group->GetBannerPath();
 }
 /*
 RString SongManager::GetSongGroupBackgroundPath( RString sSongGroup ) const

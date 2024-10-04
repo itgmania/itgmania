@@ -19,87 +19,143 @@ class Group
 {
 public:
 	Group();
+    Group( const RString &sPath);
+    ~Group();
     // Lua
 	void PushSelf( lua_State *L );
-    RString m_sDisplayTitle;
-    RString m_sSortTitle;
-    RString m_sPath;
-    RString m_sGroupName;
-    RString m_sTranslitTitle;
-    RString m_sSeries;
-    float m_iSyncOffset;
-    bool m_bHasGroupIni;
-    RString m_sBannerPath;
-    std::vector<RString> m_sCredits;
-    RString m_sAuthorsNotes;
-	// Get the display title of the group.
+
+	/**
+	 * @brief This is the title of the group as its displayed to the user 
+     * and supersedes the actual folder name on disk.
+	 * 
+	 * @return The display title of the group. 
+	 */
     const RString GetDisplayTitle() const { return m_sDisplayTitle; };
 
-    // Set the display title of the group.
-    void SetDisplayTitle(const RString sDisplayTitle) { m_sDisplayTitle = sDisplayTitle; };
-
-    // Get the sort title of the group.
+    /**
+     * @brief This is the value considered when sorting the group by its title.
+     * 
+     * @return const RString
+     */
     const RString GetSortTitle() const { return m_sSortTitle; };
 
-    // Set the sort title of the group.
-    void SetSortTitle(const RString sSortTitle) { m_sSortTitle = sSortTitle; };
-
-    // Get the path of the group.
+    /**
+     * @brief The path to the group folder.
+     * 
+     * @return the path
+     */
     const RString GetPath() const { return m_sPath; };
 
-    // Set the path of the group.
-    void SetPath(const RString sPath) { m_sPath = sPath; };
-
-    // Get the group name.
+    /**
+     * @brief The actual name of the group folder on disk.
+     * 
+     * @return const RString 
+     */
     const RString GetGroupName() const { return m_sGroupName; };
 
-    // Set the group name.
-    void SetGroupName(const RString sGroupName) { m_sGroupName = sGroupName; };
 
-    // Get the transliterated title of the group.
+    /**
+     * @brief Allows transliteration of the group title.
+     * 
+     * @return const RString 
+     */
     const RString GetTranslitTitle() const { return m_sTranslitTitle; };
 
-    // Set the transliterated title of the group.
-    void SetTranslitTitle(const RString sTranslitTitle) { m_sTranslitTitle = sTranslitTitle; };
 
-    // Get the series of the group.
+    /**
+     * @brief The series the group belongs to
+     * 
+     * @return const RString 
+     */
     const RString GetSeries() const { return m_sSeries; };
 
-    // Set the series of the group.
-    void SetSeries(const RString sSeries) { m_sSeries = sSeries; };
 
-    // Get the sync offset of the group.
+    /**
+     * @brief Defines the offset applied to all songs within the group.
+     * 
+     * @return float 
+     */
     float GetSyncOffset() const { return m_iSyncOffset; };
 
-    // Set the sync offset of the group.
-    void SetSyncOffset(const float fSyncOffset) { m_iSyncOffset = fSyncOffset; };
-
-    // Determine if the group has a Group.ini file.
-
+    /**
+     * @brief Whether the group has a group.ini file.
+     * 
+     * @return true if the group has a group.ini file, false otherwise.
+     */
     bool HasGroupIni() const { return m_bHasGroupIni; };
 
-    // Set if the group has a Group.ini file.
-    void SetGroupIni(const bool bHasGroupIni) { m_bHasGroupIni = bHasGroupIni; };
     
-    // Get the banner path of the group.
+    /**
+     * @brief The path to the group's banner.
+     * 
+     * @return const RString 
+     */
     const RString GetBannerPath() const { return m_sBannerPath; };
 
-    // Set the banner path of the group.
-    void SetBannerPath(const RString sBannerPath) { m_sBannerPath = sBannerPath; };
-    
-    // Get the credits of the group.
+    /**
+     * @brief The persons who worked with the group who should be credited.
+     * 
+     * @return const std::vector<RString> 
+     */
     const std::vector<RString> GetStepArtistCredits() const { return m_sCredits; };
 
-    // Set the credits of the group.
-    void SetStepArtistCredits(const std::vector<RString> sCredits) { m_sCredits = sCredits; };
-
-    // Get the authors notes of the group.
+    /**
+     * @brief Additional notes about the group.
+     * 
+     * @return const RString 
+     */
     const RString GetAuthorsNotes() const { return m_sAuthorsNotes; };
 
-    // Set the authors notes of the group.
-    void SetAuthorsNotes(const RString sAuthorsNotes) { m_sAuthorsNotes = sAuthorsNotes; };
+    /**
+     * @brief Get the songs in the group.
+	 * @return the songs that belong in the group. */
+	const std::vector<Song*> &GetSongs() const;
 
-    int iTotalSongs;
+    /**
+     * @brief The year the group was released
+     * 
+     * @return int 
+     */
+    int GetYearReleased() const { return m_iYearReleased; };
+
+    private:
+        /**
+         * @brief This is the title of the group as its displayed to the user 
+         * and supersedes the actual folder name on disk. */
+        RString m_sDisplayTitle;
+
+        /** @brief This is the value considered when sorting the group by its title. */
+        RString m_sSortTitle;
+
+        /** @brief The path to the group folder. */
+        RString m_sPath;
+
+        /** @brief The actual name of the group folder on disk. */
+        RString m_sGroupName;
+
+        /** @brief Allows transliteration of the group title. */
+        RString m_sTranslitTitle;
+
+        /** @brief The series the group belongs to */
+        RString m_sSeries;
+
+        /** @brief Defines the offset applied to all songs within the group. */
+        float m_iSyncOffset;
+
+        /** @brief Whether the group has a group.ini file. */
+        bool m_bHasGroupIni;
+
+        /** @brief The path to the group's banner. */
+        RString m_sBannerPath;
+
+        /** @brief The persons who worked with the group who should be credited. */
+        std::vector<RString> m_sCredits;
+
+        /** @brief Additional notes about the group. */
+        RString m_sAuthorsNotes;
+
+        /** @brief The year the group was released */
+        int m_iYearReleased;
 
 };
 

@@ -752,10 +752,8 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 						Group* pGroup = pSong->GetGroup();
 						if( bUseSections )
 						{
-							RString sThisSection = pSong->GetGroup()->m_sSortTitle;
-							if (pGroup->m_bHasGroupIni) {
-								sThisSection = pGroup->m_sGroupName;
-							}
+							RString sThisSection = pSong->GetGroup()->GetSortTitle();
+
 							if( sThisSection != sLastSection )
 							{
 								int iSectionCount = 0;
