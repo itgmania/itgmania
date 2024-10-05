@@ -6,19 +6,17 @@
 #include <cstdint>
 #include <cstdlib>
 
+// Size of one kibibyte (1024 bytes)
+constexpr uint_fast64_t kOneKiB = 1024;
+
 RageSoundMixBuffer::RageSoundMixBuffer()
 {
-	m_pMixbuf = static_cast<float*>(std::malloc(BUF_SIZE * sizeof(float)));
-	if (m_pMixbuf == nullptr)
-	{
-		ASSERT_M(false, "Failed to allocate memory for the sound mixing buffer");
-	}
-	m_iBufSize = BUF_SIZE;
-	std::memset(m_pMixbuf, 0, m_iBufSize * sizeof(float));
+	static const size_t initBufSize = kOneKiB * sizeof(float);
+	m_pMixbuf = static_cast<float*>(std::malloc(initBufSize));
+	m_iBufSize = kOneKiB;
 	m_iBufUsed = 0;
 	m_iOffset = 0;
 }
-
 
 RageSoundMixBuffer::~RageSoundMixBuffer()
 {
@@ -32,23 +30,26 @@ void RageSoundMixBuffer::SetWriteOffset( int iOffset )
 	m_iOffset = iOffset;
 }
 
-void RageSoundMixBuffer::Extend(unsigned iSamples)
-{
-	const std::uint64_t realsize = static_cast<std::uint64_t>(iSamples) + static_cast<std::uint64_t>(m_iOffset);
-	if( m_iBufSize < realsize )
+/* Find the needed buffer size, and then find the next nearest multiple of 1024,
+ * so that the buffer size can be stored in memory. */
+void RageSoundMixBuffer::Extend(unsigned iSamples) noexcept
+{	
+	const uint_fast64_t requiredBufferSize = static_cast<uint_fast64_t>(iSamples) + static_cast<uint_fast64_t>(m_iOffset);
+	const uint_fast64_t allocatedBufferSize = ((requiredBufferSize + kOneKiB - 1) / kOneKiB) * kOneKiB;
+
+	if( m_iBufSize < allocatedBufferSize )
 	{
-		m_pMixbuf = static_cast<float*>(std::realloc(m_pMixbuf, sizeof(float) * realsize));
-		if (m_pMixbuf == nullptr)
-		{
-			ASSERT_M(false, "Failed to re-allocate memory for the sound mixing buffer.");
-		}
-		m_iBufSize = realsize;
+		m_pMixbuf = static_cast<float*>(std::realloc(m_pMixbuf, allocatedBufferSize * sizeof(float)));
+		m_iBufSize = allocatedBufferSize;
 	}
 
-	if( m_iBufUsed < realsize )
+	if( m_iBufUsed < requiredBufferSize )
 	{
-		std::memset(m_pMixbuf + m_iBufUsed, 0, (realsize - m_iBufUsed) * sizeof(float));
-		m_iBufUsed = realsize;
+		if (m_pMixbuf)
+		{
+			std::memset(m_pMixbuf + m_iBufUsed, 0, (requiredBufferSize - m_iBufUsed) * sizeof(float));
+		}
+		m_iBufUsed = requiredBufferSize;
 	}
 }
 
