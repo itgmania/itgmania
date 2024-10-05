@@ -13,7 +13,7 @@ RString MeasureInfo::ToString() const
 	std::vector<RString> asMeasureInfo;
 	for (unsigned i = 0; i < npsPerMeasure.size(); i++)
 	{
-		asMeasureInfo.push_back(ssprintf("%.6f", npsPerMeasure[i]));
+		asMeasureInfo.push_back(ssprintf("%.3f", npsPerMeasure[i]));
 	}
 
 	for (unsigned i = 0; i < notesPerMeasure.size(); i++)

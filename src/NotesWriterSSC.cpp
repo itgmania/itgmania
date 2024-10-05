@@ -446,7 +446,8 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 			const MeasureInfo &ms = in.GetMeasureInfo(pn);
 			asMeasureInfo.push_back(ms.ToString());
 		}
-		lines.push_back(ssprintf("#MEASUREINFO:%s;", join("|", asMeasureInfo).c_str()));
+		RString allMeasureInfo = "#MEASUREINFO:" + join("|", asMeasureInfo) + ";";
+		lines.push_back(allMeasureInfo);
 
 		// NOTE(MV): #STEPFILENAME has to be at the end of the cache tags,
 		// because it's used in SSCLoader::LoadFromSimfile to determine when
