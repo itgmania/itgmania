@@ -16,7 +16,7 @@ bool StepParityGenerator::analyzeNoteData(const NoteData &in)
 	if(rows.size() == 0)
 	{
 		LOG->Trace("StepParityGenerator::analyze no rows, bailing out");
-		return;
+		return false;
 	}
 	buildStateGraph();
 	return analyzeGraph();
