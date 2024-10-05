@@ -36,14 +36,15 @@ namespace StepParity {
 	private:
 		StageLayout layout;
 		std::unordered_map < int, std::vector<std::vector<StepParity::Foot>>> permuteCache;
-		std::unordered_map <std::uint64_t, StepParity::State*> stateCache;
-		std::vector<StepParity::StepParityNode*> nodes;
+		
 		StepParity::State * beginningState = nullptr;
 		StepParity::StepParityNode * startNode = nullptr;
 		StepParity::State * endingState = nullptr;
 		StepParity::StepParityNode * endNode = nullptr;
 		
 	public:
+		std::unordered_map <std::uint64_t, StepParity::State*> stateCache;
+		std::vector<StepParity::StepParityNode*> nodes;
 		std::vector<Row> rows;
 		std::vector<int> nodes_for_rows;
 		int columnCount;
@@ -75,11 +76,13 @@ namespace StepParity {
 		/// @brief Analyzes the given NoteData to generate a vector of StepParity::Rows, with each step annotated with
 		/// a foot placement.
 		/// @param in The NoteData to analyze
-		void analyzeNoteData(const NoteData &in);
+		/// @return false if an error was encountered while analyzing the note data
+		bool analyzeNoteData(const NoteData &in);
 
 		/// @brief Analyzes the given graph to find the least costly path from the beginnning to the end of the stepchart.
 		/// Sets the `parity` for the relevant notes of each row in rows.
-		void analyzeGraph();
+		/// @return whether or not a valid graph was generated and analyzed
+		bool analyzeGraph();
 
 		/// @brief Generates a StepParityGraph from the given vector of Rows.
 		/// The graph inserts two additional nodes: one that represent the beginning of the song, before the first note,
@@ -108,8 +111,8 @@ namespace StepParity {
 		/// @param row
 		/// @param columns
 		/// @param column
-		/// @return
-		std::vector<FootPlacement> PermuteFootPlacements(const Row &row, FootPlacement columns, unsigned long column);
+		/// @param ignoreHolds
+		std::vector<FootPlacement> PermuteFootPlacements(const Row &row, FootPlacement columns, unsigned long column, bool ignoreHolds);
 
 		/// @brief Computes the "cheapest" path through the given graph.
 		/// This relies on the fact that the nodes stored in the graph are topologically sorted (that is, all

@@ -7,8 +7,8 @@
 
 using namespace StepParity;
 
-void StepParityGenerator::analyzeNoteData(const NoteData &in)
-{	
+bool StepParityGenerator::analyzeNoteData(const NoteData &in)
+{
 	columnCount = in.GetNumTracks();
 	
 	CreateRows(in);
@@ -19,18 +19,23 @@ void StepParityGenerator::analyzeNoteData(const NoteData &in)
 		return;
 	}
 	buildStateGraph();
-	analyzeGraph();
+	return analyzeGraph();
 }
 
-void StepParityGenerator::analyzeGraph() {
+bool StepParityGenerator::analyzeGraph() {
 	nodes_for_rows = computeCheapestPath();
-	ASSERT_M(nodes_for_rows.size() == rows.size(), "nodes_for_rows should be the same length as rows!");
+	if(nodes_for_rows.size() != rows.size())
+	{
+		LOG->Info("StepParityGenerator::analyzeGraph: nodes_for_rows should be the same length as rows! This means we probably generated an invalid graph fro this chart.");
+		return false;
+	}
 
 	for (unsigned long i = 0; i < rows.size(); i++)
 	{
 		StepParityNode *node = nodes[nodes_for_rows[i]];
 		rows[i].setFootPlacement(node->state->combinedColumns);
 	}
+	return true;
 }
 
 void StepParityGenerator::buildStateGraph()
@@ -48,12 +53,13 @@ void StepParityGenerator::buildStateGraph()
 	{
 		std::vector<StepParityNode *> resultNodes;
 		Row &row = rows[i];
-		std::vector<FootPlacement> *PermuteFootPlacements = getFootPlacementPermutations(row);
+		std::vector<FootPlacement> *permutations = getFootPlacementPermutations(row);
+				
 		while (!previousNodes.empty())
 		{
 			StepParityNode *initialNode = previousNodes.front();
 			float elapsedTime = row.second - initialNode->second;
-			for(auto it = PermuteFootPlacements->begin(); it != PermuteFootPlacements->end(); it++)
+			for(auto it = permutations->begin(); it != permutations->end(); it++)
 			{
 				State * resultState = initResultState(initialNode->state, row, *it);
 				
@@ -224,14 +230,27 @@ std::vector<FootPlacement>* StepParityGenerator::getFootPlacementPermutations(co
 	if (maybePermuteFootPlacements == permuteCache.end())
 	{
 		FootPlacement blankColumns(row.columnCount, NONE);
-		std::vector<FootPlacement> computedPermutations = PermuteFootPlacements(row, blankColumns, 0);
+		std::vector<FootPlacement> computedPermutations = PermuteFootPlacements(row, blankColumns, 0, false);
+		
+		// if we didn't get any permutations, try again, ignoring holds
+		if(computedPermutations.size() == 0)
+		{
+			computedPermutations = PermuteFootPlacements(row, blankColumns, 0, true);
+		}
+		// and if we _still_ don't have any permutations, just return a blank row
+		// (this will all buildStateGraph to at least generate a fully connected graph)
+		if(computedPermutations.size() == 0)
+		{
+			computedPermutations.push_back(blankColumns);
+		}
 		permuteCache[cacheKey] = std::move(computedPermutations);
+		
 	}
 	return &permuteCache[cacheKey];
 }
 
 // Recursively generate each permutation for the given row.
-std::vector<FootPlacement> StepParityGenerator::PermuteFootPlacements(const Row &row, FootPlacement columns, unsigned long column)
+std::vector<FootPlacement> StepParityGenerator::PermuteFootPlacements(const Row &row, FootPlacement columns, unsigned long column, bool ignoreHolds)
 {
 	// If column >= columns.size(), we've reached the end of the row.
 	// Perform some final validation before returning the contents of columns
@@ -298,10 +317,14 @@ std::vector<FootPlacement> StepParityGenerator::PermuteFootPlacements(const Row 
 	// and set the current foot part to the current column.
 	// Then pass it to PermuteFootPlacements() and increment the column index.
 	// Collect each permutationm, and then return all of them.
-	
+	//
+	// The `ignoreHolds` flag is used as a workaround for situations where
+	// we can't find a valid foot placement that allows us to continue the holds
+	// (BREACH PROTOCOL doubles has  a row 0311 1000 which isn't bracketable
+	// while still holding p1 down)
 	std::vector<FootPlacement> permutations;
 	if (row.notes[column].type != TapNoteType_Empty  ||
-			row.holds[column].type != TapNoteType_Empty)
+			(ignoreHolds == false && row.holds[column].type != TapNoteType_Empty))
 	{
 	  	  for (StepParity::Foot foot: FEET) {
 		if(std::find(columns.begin(), columns.end(), foot) != columns.end())
@@ -312,7 +335,7 @@ std::vector<FootPlacement> StepParityGenerator::PermuteFootPlacements(const Row 
 		FootPlacement newColumns = columns;
 
 		newColumns[column] = foot;
-		std::vector<FootPlacement> p = PermuteFootPlacements(row, newColumns, column + 1);
+		std::vector<FootPlacement> p = PermuteFootPlacements(row, newColumns, column + 1, ignoreHolds);
 		permutations.insert(permutations.end(), p.begin(), p.end());
 	  	  }
 	  	  return permutations;
@@ -320,7 +343,7 @@ std::vector<FootPlacement> StepParityGenerator::PermuteFootPlacements(const Row 
 	// If the current column doesn't have any taps or holds,
 	// then we don't need to generate any permutations for it.
 	// Return the contents of calling PermuteFootPlacements() for the next column.
-	return PermuteFootPlacements(row, columns, column + 1);
+	return PermuteFootPlacements(row, columns, column + 1, ignoreHolds);
 }
 
 std::vector<int> StepParityGenerator::computeCheapestPath()
@@ -334,6 +357,7 @@ std::vector<int> StepParityGenerator::computeCheapestPath()
 	cost[start] = 0;
 	for (int i = start; i <= end; i++)
 	{
+		
 		StepParityNode *node = nodes[i];
 		for(auto neighbor: node->neighbors)
 		{
@@ -350,7 +374,12 @@ std::vector<int> StepParityGenerator::computeCheapestPath()
 	int current_node = end;
 	while(current_node != start)
 	{
-		ASSERT_M(current_node != -1, "WHOA");
+		
+		if(current_node == -1)
+		{
+			LOG->Info("StepParityGenerator::computeCheapestPath: encountered a value of -1 for 'current_node', this means that we did not produce a valid chart.");
+			return {};
+		}
 		if(current_node != end)
 		{
 			shortest_path.push_back(current_node);
