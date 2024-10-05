@@ -6,19 +6,19 @@
 
 using namespace StepParity;
 
-
-template <typename T>
-bool isEmpty(const std::vector<T> & vec, int columnCount) {
-	for (int i = 0; i < columnCount; i++)
-	{
-		if(static_cast<int>(vec[i]) != 0)
+namespace {
+	template <typename T>
+	bool isEmpty(const std::vector<T> & vec, int columnCount) {
+		for (int i = 0; i < columnCount; i++)
 		{
-			return false;
+			if(static_cast<int>(vec[i]) != 0)
+			{
+				return false;
+			}
 		}
+		return true;
 	}
-	return true;
 }
-
 
 float StepParityCost::getActionCost(State * initialState, State * resultState, std::vector<Row>& rows, int rowIndex, float elapsedTime)
 {
@@ -339,7 +339,7 @@ float StepParityCost::calcTwistedFootCost(State * resultState)
 	{
 		cost += TWISTED_FOOT;
 	}
-	   return cost;
+	return cost;
 }
 
 float StepParityCost::calcMissedFootswitchCost(Row & row, bool jackedLeft, bool jackedRight, int columnCount)
