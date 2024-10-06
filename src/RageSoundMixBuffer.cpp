@@ -72,7 +72,7 @@ void RageSoundMixBuffer::write( const float *pBuf, unsigned iSize, int iSourceSt
 	}
 }
 
-void RageSoundMixBuffer::read( std::int16_t *pBuf )
+void RageSoundMixBuffer::read( int16_t *pBuf )
 {
 	for( unsigned iPos = 0; iPos < m_iBufUsed; ++iPos )
 	{

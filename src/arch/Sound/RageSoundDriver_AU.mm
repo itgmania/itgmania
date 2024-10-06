@@ -205,9 +205,9 @@ RageSoundDriver_AU::~RageSoundDriver_AU()
 	delete m_pNotificationThread;
 }
 
-std::int64_t RageSoundDriver_AU::GetPosition() const
+int64_t RageSoundDriver_AU::GetPosition() const
 {
-	return std::int64_t( m_TimeScale * AudioGetCurrentHostTime() );
+	return int64_t( m_TimeScale * AudioGetCurrentHostTime() );
 }
 
 
@@ -350,8 +350,8 @@ OSStatus RageSoundDriver_AU::Render( void *inRefCon,
 		This->m_pIOThread = new RageThreadRegister( "HAL I/O thread" );
 
 	AudioBuffer &buf = ioData->mBuffers[0];
-	std::int64_t now = std::int64_t( This->m_TimeScale * AudioGetCurrentHostTime() );
-	std::int64_t next = std::int64_t( This->m_TimeScale * inTimeStamp->mHostTime );
+	int64_t now = int64_t( This->m_TimeScale * AudioGetCurrentHostTime() );
+	int64_t next = int64_t( This->m_TimeScale * inTimeStamp->mHostTime );
 
 	This->Mix( (float *)buf.mData, inNumberFrames, next, now );
 	if( unlikely(This->m_bDone) )

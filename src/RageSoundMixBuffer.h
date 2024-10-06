@@ -20,7 +20,7 @@ public:
 	// Extend the buffer as if write() was called with a buffer of silence.
 	void Extend( unsigned iSamples );
 
-	void read( std::int16_t *pBuf );
+	void read( int16_t *pBuf );
 	void read( float *pBuf );
 	void read_deinterlace( float **pBufs, int channels );
 	float *read() { return m_pMixbuf; }

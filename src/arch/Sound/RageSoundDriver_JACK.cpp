@@ -186,7 +186,7 @@ RString RageSoundDriver_JACK::ConnectPorts()
 	return ret;
 }
 
-std::int64_t RageSoundDriver_JACK::GetPosition() const
+int64_t RageSoundDriver_JACK::GetPosition() const
 {
 	return jack_frame_time(client);
 }

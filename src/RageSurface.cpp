@@ -7,7 +7,7 @@
 #include <cstdint>
 
 
-std::int32_t RageSurfacePalette::FindColor( const RageSurfaceColor &color ) const
+int32_t RageSurfacePalette::FindColor( const RageSurfaceColor &color ) const
 {
 	for( int i = 0; i < ncolors; ++i )
 		if( colors[i] == color )
@@ -16,7 +16,7 @@ std::int32_t RageSurfacePalette::FindColor( const RageSurfaceColor &color ) cons
 }
 
 /* XXX: untested */
-std::int32_t RageSurfacePalette::FindClosestColor( const RageSurfaceColor &color ) const
+int32_t RageSurfacePalette::FindClosestColor( const RageSurfaceColor &color ) const
 {
 	int iBest = -1;
 	int iBestDist = INT_MAX;
@@ -70,9 +70,9 @@ void RageSurfaceFormat::GetRGB( uint32_t val, uint8_t *r, uint8_t *g, uint8_t *b
 		*g = palette->colors[val].g;
 		*b = palette->colors[val].b;
 	} else {
-		*r = std::int8_t( (val & Mask[0]) >> Shift[0] << Loss[0] );
-		*g = std::int8_t( (val & Mask[1]) >> Shift[1] << Loss[1] );
-		*b = std::int8_t( (val & Mask[2]) >> Shift[2] << Loss[2] );
+		*r = int8_t( (val & Mask[0]) >> Shift[0] << Loss[0] );
+		*g = int8_t( (val & Mask[1]) >> Shift[1] << Loss[1] );
+		*b = int8_t( (val & Mask[2]) >> Shift[2] << Loss[2] );
 	}
 }
 
@@ -81,7 +81,7 @@ bool RageSurfaceFormat::MapRGBA( uint8_t r, uint8_t g, uint8_t b, uint8_t a, uin
 	if( BytesPerPixel == 1 )
 	{
 		RageSurfaceColor c( r, g, b, a );
-		std::int32_t n = palette->FindColor( c );
+		int32_t n = palette->FindColor( c );
 		if( n == -1 )
 			return false;
 		val = (uint32_t) n;

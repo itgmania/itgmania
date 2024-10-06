@@ -51,8 +51,8 @@ public:
 	int GetSampleRate() const { return m_iSampleRate; }
 
 	~DSoundBuf();
-	std::int64_t GetPosition() const;
-	std::int64_t GetOutputPosition() const { return m_iWriteCursorPos; }
+	int64_t GetPosition() const;
+	int64_t GetOutputPosition() const { return m_iWriteCursorPos; }
 
 private:
 	int buffersize_frames() const { return m_iBufferSize / bytes_per_frame(); }
@@ -70,8 +70,8 @@ private:
 
 	int m_iWriteCursor, m_iBufferBytesFilled; /* bytes */
 	int m_iExtraWriteahead;
-	std::int64_t m_iWriteCursorPos; /* frames */
-	mutable std::int64_t m_iLastPosition;
+	int64_t m_iWriteCursorPos; /* frames */
+	mutable int64_t m_iLastPosition;
 	bool m_bPlaying;
 
 	bool m_bBufferLocked;

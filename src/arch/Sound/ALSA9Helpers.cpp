@@ -337,7 +337,7 @@ bool Alsa9Buf::WaitUntilFramesCanBeFilled( int timeout_ms )
 	return err == 1;
 }
 
-void Alsa9Buf::Write( const std::int16_t *buffer, int frames )
+void Alsa9Buf::Write( const int16_t *buffer, int frames )
 {
 	/* We should be able to write it all.  If we don't, treat it as an error. */
 	int wrote;
@@ -388,7 +388,7 @@ bool Alsa9Buf::Recover( int r )
 	return false;
 }
 
-std::int64_t Alsa9Buf::GetPosition() const
+int64_t Alsa9Buf::GetPosition() const
 {
 	if( dsnd_pcm_state(pcm) == SND_PCM_STATE_PREPARED )
 		return last_cursor_pos;

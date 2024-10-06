@@ -189,7 +189,7 @@ namespace VDDebugInfo
 		return heap;
 	}
 
-	std::intptr_t VDDebugInfoLookupRVA( const Context *pctx, uintptr_t rva, char *buf, int buflen )
+	intptr_t VDDebugInfoLookupRVA( const Context *pctx, uintptr_t rva, char *buf, int buflen )
 	{
 		if( !PointerIsInAnySegment(pctx, rva) )
 			return -1;
@@ -201,7 +201,7 @@ namespace VDDebugInfo
 		// Linearly unpack RVA deltas and find lower_bound
 		rva -= pctx->nFirstRVA;
 
-		if( static_cast<std::intptr_t>(rva) < 0 )
+		if( static_cast<intptr_t>(rva) < 0 )
 			return -1;
 
 		while( pr < pr_limit )
@@ -218,7 +218,7 @@ namespace VDDebugInfo
 
 			rva -= diff;
 
-			if (static_cast<std::intptr_t>(rva) < 0) {
+			if (static_cast<intptr_t>(rva) < 0) {
 				rva += diff;
 				break;
 			}
@@ -237,7 +237,7 @@ namespace VDDebugInfo
 		strncpy( buf, fn_name, buflen );
 		buf[buflen-1] = 0;
 
-		return static_cast<std::intptr_t>(rva);
+		return static_cast<intptr_t>(rva);
 	}
 }
 
@@ -370,7 +370,7 @@ namespace SymbolLookup
 		VirtualQueryEx( g_hParent, ptr, &meminfo, sizeof meminfo );
 
 		char tmp[512];
-		std::intptr_t iAddress = VDDebugInfo::VDDebugInfoLookupRVA(pctx, reinterpret_cast<uintptr_t>(ptr), tmp, sizeof(tmp));
+		intptr_t iAddress = VDDebugInfo::VDDebugInfoLookupRVA(pctx, reinterpret_cast<uintptr_t>(ptr), tmp, sizeof(tmp));
 		if( iAddress >= 0 )
 		{
 			wsprintf( buf, "%" ADDRESS_ZEROS "Ix: %s [%" ADDRESS_ZEROS "Ix+%Ix+%Ix]", reinterpret_cast<uintptr_t>(ptr), Demangle(tmp),

@@ -39,9 +39,9 @@ static const char *itoa(unsigned n)
 	return p;
 }
 
-static std::intptr_t xtoi( const char *hex )
+static intptr_t xtoi( const char *hex )
 {
-	std::intptr_t ret = 0;
+	intptr_t ret = 0;
 	for(;;)
 	{
 		int val = -1;
@@ -502,7 +502,7 @@ static bool PointsToValidCall( vm_address_t start, const void *ptr )
 
 	/* We're reading buf backwards, between buf[-7] and buf[-1].  Find out how
 	* far we can read. */
-	const int len = std::min<int>(std::intptr_t(ptr) - start, 7);
+	const int len = std::min<int>(intptr_t(ptr) - start, 7);
 
 	// Permissible CALL sequences that we care about:
 	//
@@ -639,7 +639,7 @@ void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 					buf[i++] = p;
 				}
 			}
-			frame = (Frame *)(std::intptr_t(frame)+4);
+			frame = (Frame *)(intptr_t(frame)+4);
 			continue;
 		}
 		// Valid.

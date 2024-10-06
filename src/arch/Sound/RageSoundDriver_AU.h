@@ -16,7 +16,7 @@ public:
 	~RageSoundDriver_AU();
 	float GetPlayLatency() const;
 	int GetSampleRate() const { return m_iSampleRate; }
-	std::int64_t GetPosition() const;
+	int64_t GetPosition() const;
 
 protected:
 	void SetupDecodingThread();

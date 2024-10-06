@@ -306,15 +306,15 @@ void RageSoundDriver_PulseAudio::StreamStateCb(pa_stream *s)
 	}
 }
 
-std::int64_t RageSoundDriver_PulseAudio::GetPosition() const
+int64_t RageSoundDriver_PulseAudio::GetPosition() const
 {
 	pa_threaded_mainloop_lock(m_PulseMainLoop);
-	std::int64_t position = GetPositionUnlocked();
+	int64_t position = GetPositionUnlocked();
 	pa_threaded_mainloop_unlock(m_PulseMainLoop);
 	return position;
 }
 
-std::int64_t RageSoundDriver_PulseAudio::GetPositionUnlocked() const
+int64_t RageSoundDriver_PulseAudio::GetPositionUnlocked() const
 {
 	pa_usec_t usec;
 	if(pa_stream_get_time(m_PulseStream, &usec) < 0)
@@ -329,12 +329,12 @@ std::int64_t RageSoundDriver_PulseAudio::GetPositionUnlocked() const
 	}
 
 	size_t length = pa_usec_to_bytes(usec, &m_ss);
-	return length / (sizeof(std::int16_t) * 2); /* we use 16-bit frames and 2 channels */
+	return length / (sizeof(int16_t) * 2); /* we use 16-bit frames and 2 channels */
 }
 
 void RageSoundDriver_PulseAudio::StreamWriteCb(pa_stream *s, size_t length)
 {
-	std::int64_t curPos = GetPositionUnlocked();
+	int64_t curPos = GetPositionUnlocked();
 	while(length > 0)
 	{
 		void* buf;
@@ -344,10 +344,10 @@ void RageSoundDriver_PulseAudio::StreamWriteCb(pa_stream *s, size_t length)
 			RageException::Throw("Pulse: pa_stream_begin_write() failed: %s", pa_strerror(pa_context_errno(m_PulseCtx)));
 		}
 
-		const size_t nbframes = bufsize / sizeof(std::int16_t); /* we use 16-bit frames */
-		std::int64_t pos1 = m_LastPosition;
-		std::int64_t pos2 = pos1 + nbframes/2; /* Mix() position in stereo frames */
-		this->Mix( reinterpret_cast<std::int16_t*>(buf), pos2-pos1, pos1, curPos);
+		const size_t nbframes = bufsize / sizeof(int16_t); /* we use 16-bit frames */
+		int64_t pos1 = m_LastPosition;
+		int64_t pos2 = pos1 + nbframes/2; /* Mix() position in stereo frames */
+		this->Mix( reinterpret_cast<int16_t*>(buf), pos2-pos1, pos1, curPos);
 
 		if(pa_stream_write(m_PulseStream, buf, bufsize, nullptr, 0, PA_SEEK_RELATIVE) < 0)
 		{

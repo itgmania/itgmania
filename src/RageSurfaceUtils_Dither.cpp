@@ -132,7 +132,7 @@ void RageSurfaceUtils::OrderedDither( const RageSurface *src, RageSurface *dst )
 }
 
 
-static uint8_t EDDitherPixel( int x, int y, int intensity, int conv, std::int32_t &accumError )
+static uint8_t EDDitherPixel( int x, int y, int intensity, int conv, int32_t &accumError )
 {
 	// Convert the number to the destination range.
 	int out_intensity = intensity * conv;
@@ -195,7 +195,7 @@ void RageSurfaceUtils::ErrorDiffusionDither( const RageSurface *src, RageSurface
 	// For each row:
 	for(int row = 0; row < src->h; ++row)
 	{
-		std::int32_t accumError[4] = { 0, 0, 0, 0 }; // accum error values are reset every row
+		int32_t accumError[4] = { 0, 0, 0, 0 }; // accum error values are reset every row
 
 		const uint8_t *srcp = src->pixels + row * src->pitch;
 		uint8_t *dstp = dst->pixels + row * dst->pitch;
