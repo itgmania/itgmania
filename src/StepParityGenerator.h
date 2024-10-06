@@ -41,7 +41,7 @@ namespace StepParity {
 		StepParity::StepParityNode * startNode = nullptr;
 		StepParity::State * endingState = nullptr;
 		StepParity::StepParityNode * endNode = nullptr;
-		
+		StepParity::State * tmpState = nullptr;
 	public:
 		std::unordered_map <std::uint64_t, StepParity::State*> stateCache;
 		std::vector<StepParity::StepParityNode*> nodes;
@@ -71,6 +71,10 @@ namespace StepParity {
 			if(endingState != nullptr)
 			{
 				delete endingState;
+			}
+			if(tmpState != nullptr)
+			{
+				delete tmpState;
 			}
 		}
 		/// @brief Analyzes the given NoteData to generate a vector of StepParity::Rows, with each step annotated with

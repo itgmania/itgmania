@@ -108,13 +108,36 @@ void StepParityGenerator::addStateToGraph(State * resultState, StepParityNode * 
 
 State * StepParityGenerator::initResultState(State * initialState, Row &row, const FootPlacement &columns)
 {
-	State * resultState = new State(row.columnCount);
-	resultState->columns = columns;
+	if(tmpState == nullptr)
+	{
+		tmpState = new State(row.columnCount);
+	}
 	
+	State * resultState = tmpState;
 	
+
+	// reset resultState
+	
+	for(int i = 0; i < NUM_Foot; i++)
+	{
+		resultState->whereTheFeetAre[i] = INVALID_COLUMN;
+		resultState->whatNoteTheFootIsHitting[i] = INVALID_COLUMN;
+		resultState->didTheFootMove[i] = false;
+		resultState->isTheFootHolding[i] = false;
+	}
+	
+	for (unsigned long i = 0; i < columns.size(); i++)
+	{
+		resultState->columns[i] = NONE;
+		resultState->combinedColumns[i] = NONE;
+		resultState->movedFeet[i] = NONE;
+		resultState->holdFeet[i] = NONE;
+	}
+		
 	// I tried to condense this, but kept getting the logic messed up
 	for (unsigned long i = 0; i < columns.size(); i++)
 	{
+		resultState->columns[i] = columns[i];
 		if(columns[i] == NONE) {
 			continue;
 		}
@@ -155,12 +178,11 @@ State * StepParityGenerator::initResultState(State * initialState, Row &row, con
 	if(maybeState != stateCache.end())
 	{
 		State* cachedState = maybeState->second;
-		delete resultState;
 		return maybeState->second;
 	}
 	
 	stateCache.insert({stateHash, resultState});
-	
+	tmpState = nullptr;
 	return resultState;
 }
 
