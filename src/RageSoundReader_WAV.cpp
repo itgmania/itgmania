@@ -26,7 +26,7 @@ namespace
 	void Convert8bitToFloat( void *pBuf, int iSamples )
 	{
 		/* Convert in reverse, so we can do it in-place. */
-		const std::uint8_t *pIn = (std::uint8_t *) pBuf;
+		const uint8_t *pIn = (uint8_t *) pBuf;
 		float *pOut = (float *) pBuf;
 		for( int i = iSamples-1; i >= 0; --i )
 		{
@@ -309,7 +309,7 @@ public:
 			pBuffer[m_iBufferAvail++] = (std::int16_t)iSamp1[i] / 32768.0f;
 
 		std::int8_t iBufSize = 0;
-		std::uint8_t iBuf = 0;
+		uint8_t iBuf = 0;
 
 		bool bDone = false;
 		for( int i = 2; !bDone && i < m_iFramesPerBlock; ++i )
@@ -331,7 +331,7 @@ public:
 
 				/* Store the nibble in signed char, so we get an arithmetic shift. */
 				std::int8_t iErrorDelta = (std::int8_t)(iBuf) >> 4;
-				std::uint8_t iErrorDeltaUnsigned = iBuf >> 4;
+				uint8_t iErrorDeltaUnsigned = iBuf >> 4;
 				iBuf <<= 4;
 				--iBufSize;
 

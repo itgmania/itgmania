@@ -79,7 +79,7 @@ void LightsDriver_LinuxPacDrive::Set( const LightsState *ls )
 {
 	if ( !DeviceHandle ) return;
 
-	std::uint16_t outb = 0;
+	uint16_t outb = 0;
 
 	switch (iLightingOrder) {
 	case 1:
@@ -245,13 +245,13 @@ void LightsDriver_LinuxPacDrive::OpenDevice()
 	}
 }
 
-void LightsDriver_LinuxPacDrive::WriteDevice(std::uint16_t out)
+void LightsDriver_LinuxPacDrive::WriteDevice(uint16_t out)
 {
 	if ( !DeviceHandle ) return;
 
 	// output is within the first 16 bits - accept a
 	// 16-bit arg and cast it, for simplicity's sake.
-	std::uint32_t data = (out << 16);
+	uint32_t data = (out << 16);
 	int expected = sizeof(data);
 
 	int result = usb_control_msg( DeviceHandle, USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE,

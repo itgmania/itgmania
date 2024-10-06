@@ -17,10 +17,10 @@ static void InitThreadIdMutex()
 	g_pThreadIdMutex = new MutexImpl_Win32(nullptr);
 }
 
-static std::uint64_t g_ThreadIds[MAX_THREADS];
+static uint64_t g_ThreadIds[MAX_THREADS];
 static HANDLE g_ThreadHandles[MAX_THREADS];
 
-HANDLE Win32ThreadIdToHandle( std::uint64_t iID )
+HANDLE Win32ThreadIdToHandle( uint64_t iID )
 {
 	for( int i = 0; i < MAX_THREADS; ++i )
 	{
@@ -44,9 +44,9 @@ void ThreadImpl_Win32::Resume()
 	ResumeThread( ThreadHandle );
 }
 
-std::uint64_t ThreadImpl_Win32::GetThreadId() const
+uint64_t ThreadImpl_Win32::GetThreadId() const
 {
-	return (std::uint64_t) ThreadId;
+	return (uint64_t) ThreadId;
 }
 
 int ThreadImpl_Win32::Wait()
@@ -112,7 +112,7 @@ static DWORD WINAPI StartThread( LPVOID pData )
 	return ret;
 }
 
-static int GetOpenSlot( std::uint64_t iID )
+static int GetOpenSlot( uint64_t iID )
 {
 	InitThreadIdMutex();
 
@@ -157,14 +157,14 @@ ThreadImpl *MakeThisThread()
 	return thread;
 }
 
-ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, std::uint64_t *piThreadID )
+ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, uint64_t *piThreadID )
 {
 	ThreadImpl_Win32 *thread = new ThreadImpl_Win32;
 	thread->m_pFunc = pFunc;
 	thread->m_pData = pData;
 
 	thread->ThreadHandle = CreateThread( nullptr, 0, &StartThread, thread, CREATE_SUSPENDED, &thread->ThreadId );
-	*piThreadID = (std::uint64_t) thread->ThreadId;
+	*piThreadID = (uint64_t) thread->ThreadId;
 	ASSERT_M( thread->ThreadHandle != nullptr, ssprintf("%s", werr_ssprintf(GetLastError(), "CreateThread").c_str() ) );
 
 	int slot = GetOpenSlot( thread->ThreadId );
@@ -248,12 +248,12 @@ void MutexImpl_Win32::Unlock()
 		sm_crash( werr_ssprintf( GetLastError(), "ReleaseMutex failed" ) );
 }
 
-std::uint64_t GetThisThreadId()
+uint64_t GetThisThreadId()
 {
 	return GetCurrentThreadId();
 }
 
-std::uint64_t GetInvalidThreadId()
+uint64_t GetInvalidThreadId()
 {
 	return 0;
 }

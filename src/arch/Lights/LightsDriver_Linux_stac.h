@@ -52,12 +52,12 @@ public:
     const char *devicePath;
     int fd = -1;
 
-    std::uint8_t playerNumber = 0;
+    uint8_t playerNumber = 0;
     bool newState = false;
 
-    std::uint8_t outputBuffer[STAC_HIDREPORT_SIZE];
+    uint8_t outputBuffer[STAC_HIDREPORT_SIZE];
 
-    StacDevice(std::uint8_t pn);
+    StacDevice(uint8_t pn);
 
     void FindDevice();
     void Connect();

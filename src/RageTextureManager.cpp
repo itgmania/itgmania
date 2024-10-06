@@ -133,10 +133,10 @@ public:
 		m_iImageWidth = m_iImageHeight = 1;
 		CreateFrameRects();
 	}
-	std::uintptr_t GetTexHandle() const { return m_uTexHandle; }
+	uintptr_t GetTexHandle() const { return m_uTexHandle; }
 
 private:
-	std::uintptr_t m_uTexHandle;
+	uintptr_t m_uTexHandle;
 };
 
 // Load and unload textures from disk.

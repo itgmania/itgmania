@@ -30,16 +30,16 @@
 #include <cmath>
 #include <cstdint>
 
-const std::uint64_t ONE_SECOND_IN_MICROSECONDS_ULL = 1000000ULL;
+const uint64_t ONE_SECOND_IN_MICROSECONDS_ULL = 1000000ULL;
 const std::int64_t ONE_SECOND_IN_MICROSECONDS_LL = 1000000LL;
 const uint_fast64_t ONE_SECOND_IN_MICROSECONDS_FAST_ULL = 1000000ULL;
 const double ONE_SECOND_IN_MICROSECONDS_DBL = 1000000.0;
 
 const RageTimer RageZeroTimer(0,0);
-static const std::uint64_t g_iStartTime = ArchHooks::GetSystemTimeInMicroseconds();
+static const uint64_t g_iStartTime = ArchHooks::GetSystemTimeInMicroseconds();
 static uint_fast64_t g_iStartTimeFast64 = g_iStartTime;
 
-static std::uint64_t GetTime()
+static uint64_t GetTime()
 {
 	return ArchHooks::GetSystemTimeInMicroseconds();
 }
@@ -71,10 +71,10 @@ uint_fast64_t RageTimer::GetTimeSinceStartMicroseconds()
 
 void RageTimer::Touch()
 {
-	std::uint64_t usecs = GetTime();
+	uint64_t usecs = GetTime();
 
-	this->m_secs = std::uint64_t(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
-	this->m_us = std::uint64_t(usecs % ONE_SECOND_IN_MICROSECONDS_ULL);
+	this->m_secs = uint64_t(usecs / ONE_SECOND_IN_MICROSECONDS_ULL);
+	this->m_us = uint64_t(usecs % ONE_SECOND_IN_MICROSECONDS_ULL);
 }
 
 float RageTimer::Ago() const

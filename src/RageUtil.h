@@ -225,12 +225,12 @@ namespace Endian
 #define Swap16(n) __builtin_bswap16(n)
 #endif
 
-inline std::uint32_t Swap32LE( std::uint32_t n ) { return Endian::little ? n : Swap32( n ); }
-inline std::uint32_t Swap24LE( std::uint32_t n ) { return Endian::little ? n : Swap24( n ); }
-inline std::uint16_t Swap16LE( std::uint16_t n ) { return Endian::little ? n : Swap16( n ); }
-inline std::uint32_t Swap32BE( std::uint32_t n ) { return Endian::big    ? n : Swap32( n ); }
-inline std::uint32_t Swap24BE( std::uint32_t n ) { return Endian::big    ? n : Swap24( n ); }
-inline std::uint16_t Swap16BE( std::uint16_t n ) { return Endian::big    ? n : Swap16( n ); }
+inline uint32_t Swap32LE( uint32_t n ) { return Endian::little ? n : Swap32( n ); }
+inline uint32_t Swap24LE( uint32_t n ) { return Endian::little ? n : Swap24( n ); }
+inline uint16_t Swap16LE( uint16_t n ) { return Endian::little ? n : Swap16( n ); }
+inline uint32_t Swap32BE( uint32_t n ) { return Endian::big    ? n : Swap32( n ); }
+inline uint32_t Swap24BE( uint32_t n ) { return Endian::big    ? n : Swap24( n ); }
+inline uint16_t Swap16BE( uint16_t n ) { return Endian::big    ? n : Swap16( n ); }
 
 class MersenneTwister : public std::mt19937
 {

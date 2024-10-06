@@ -78,7 +78,7 @@ public:
 	int PutLine( const RString &str );
 
 	void EnableCRC32( bool on=true );
-	bool GetCRC32( std::uint32_t *iRet );
+	bool GetCRC32( uint32_t *iRet );
 
 	// Lua
 	virtual void PushSelf( lua_State *L );
@@ -103,11 +103,11 @@ namespace FileReading
 	void SkipBytes( RageFileBasic &f, int size, RString &sError );
 	void Seek( RageFileBasic &f, int iOffset, RString &sError );
 	RString ReadString( RageFileBasic &f, int size, RString &sError );
-	std::uint8_t read_8( RageFileBasic &f, RString &sError );
+	uint8_t read_8( RageFileBasic &f, RString &sError );
 	std::int16_t read_16_le( RageFileBasic &f, RString &sError );
-	std::uint16_t read_u16_le( RageFileBasic &f, RString &sError );
+	uint16_t read_u16_le( RageFileBasic &f, RString &sError );
 	std::int32_t read_32_le( RageFileBasic &f, RString &sError );
-	std::uint32_t read_u32_le( RageFileBasic &f, RString &sError );
+	uint32_t read_u32_le( RageFileBasic &f, RString &sError );
 };
 
 #endif

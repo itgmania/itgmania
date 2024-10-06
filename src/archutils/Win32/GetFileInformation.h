@@ -7,7 +7,7 @@
 
 bool GetFileVersion( RString fsFile, RString &sOut );
 RString FindSystemFile( RString sFile );
-bool GetProcessFileName( std::uint32_t iProcessID, RString &sName );
+bool GetProcessFileName( uint32_t iProcessID, RString &sName );
 
 #endif
 

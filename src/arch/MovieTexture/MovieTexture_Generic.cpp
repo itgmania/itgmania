@@ -142,7 +142,7 @@ public:
 
 	virtual void Invalidate() { m_uTexHandle = 0; }
 	virtual void Reload() { }
-	virtual std::uintptr_t GetTexHandle() const
+	virtual uintptr_t GetTexHandle() const
 	{
 		return m_uTexHandle;
 	}
@@ -165,7 +165,7 @@ private:
 		delete pSurface;
 	}
 
-	std::uintptr_t m_uTexHandle;
+	uintptr_t m_uTexHandle;
 	RageSurfaceFormat m_SurfaceFormat;
 	RagePixelFormat m_PixFmt;
 };
@@ -339,7 +339,7 @@ void MovieTexture_Generic::UpdateFrame()
 
 	if(m_pTextureLock != nullptr)
 	{
-		std::uintptr_t iHandle = m_pTextureIntermediate != nullptr ? m_pTextureIntermediate->GetTexHandle(): this->GetTexHandle();
+		uintptr_t iHandle = m_pTextureIntermediate != nullptr ? m_pTextureIntermediate->GetTexHandle(): this->GetTexHandle();
 		m_pTextureLock->Lock(iHandle, m_pSurface);
 	}
 
@@ -437,7 +437,7 @@ void MovieTexture_Generic::SetPosition(float fSeconds)
 	m_pDecoder->Rewind();
 }
 
-std::uintptr_t MovieTexture_Generic::GetTexHandle() const
+uintptr_t MovieTexture_Generic::GetTexHandle() const
 {
 	if( m_pRenderTarget != nullptr )
 		return m_pRenderTarget->GetTexHandle();

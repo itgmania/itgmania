@@ -8,22 +8,22 @@
 #include <cmath>
 #include <cstdint>
 
-bool SuspendThread( std::uint64_t threadHandle )
+bool SuspendThread( uint64_t threadHandle )
 {
 	return !thread_suspend( thread_act_t(threadHandle) );
 }
 
-bool ResumeThread( std::uint64_t threadHandle )
+bool ResumeThread( uint64_t threadHandle )
 {
 	return !thread_resume( thread_act_t(threadHandle) );
 }
 
-std::uint64_t GetCurrentThreadId()
+uint64_t GetCurrentThreadId()
 {
 	return mach_thread_self();
 }
 
-bool GetThreadBacktraceContext( std::uint64_t iID, BacktraceContext *ctx )
+bool GetThreadBacktraceContext( uint64_t iID, BacktraceContext *ctx )
 {
 	/* Can't GetThreadBacktraceContext the current thread. */
 	ASSERT( iID != GetCurrentThreadId() );

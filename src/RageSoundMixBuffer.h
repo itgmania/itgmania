@@ -29,8 +29,8 @@ public:
 
 private:
 	float *m_pMixbuf;
-	std::uint64_t m_iBufSize; // actual allocated samples
-	std::uint64_t m_iBufUsed; // used samples
+	uint64_t m_iBufSize; // actual allocated samples
+	uint64_t m_iBufUsed; // used samples
 	int m_iOffset;
 };
 

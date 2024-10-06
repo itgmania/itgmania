@@ -1142,7 +1142,7 @@ void RageSoundDriver_WDMKS::Read( void *pData, int iFrames, int iLastCursorPos, 
 
 bool RageSoundDriver_WDMKS::Fill( int iPacket, RString &sError )
 {
-	std::uint64_t iCurrentFrame = GetPosition();
+	uint64_t iCurrentFrame = GetPosition();
 //	if( iCurrentFrame == m_iLastCursorPos )
 //		LOG->Trace( "underrun" );
 

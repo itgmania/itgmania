@@ -34,7 +34,7 @@ void RageSoundMixBuffer::SetWriteOffset( int iOffset )
 
 void RageSoundMixBuffer::Extend(unsigned iSamples)
 {
-	const std::uint64_t realsize = static_cast<std::uint64_t>(iSamples) + static_cast<std::uint64_t>(m_iOffset);
+	const uint64_t realsize = static_cast<uint64_t>(iSamples) + static_cast<uint64_t>(m_iOffset);
 	if( m_iBufSize < realsize )
 	{
 		m_pMixbuf = static_cast<float*>(std::realloc(m_pMixbuf, sizeof(float) * realsize));

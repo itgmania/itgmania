@@ -519,14 +519,14 @@ std::int64_t RageSoundDriver::GetHardwareFrame( RageTimer *pTimestamp=nullptr ) 
 	 */
 	int iTries = 3;
 	std::int64_t iPositionFrames;
-	std::uint64_t iStartTime;
-	const std::uint64_t iThreshold = 2000ULL;
+	uint64_t iStartTime;
+	const uint64_t iThreshold = 2000ULL;
 
 	do
 	{
 		iStartTime = RageTimer::GetTimeSinceStartMicroseconds();
 		iPositionFrames = GetPosition();
-		std::uint64_t elapsedTime = RageTimer::GetTimeSinceStartMicroseconds() - iStartTime;
+		uint64_t elapsedTime = RageTimer::GetTimeSinceStartMicroseconds() - iStartTime;
 		if (elapsedTime <= iThreshold) break;
 	} while (--iTries);
 

@@ -55,7 +55,7 @@ public:
 	virtual int PutLine( const RString &str ) = 0;
 
 	virtual void EnableCRC32( bool on=true ) = 0;
-	virtual bool GetCRC32( std::uint32_t *iRet ) = 0;
+	virtual bool GetCRC32( uint32_t *iRet ) = 0;
 
 	virtual int GetFileSize() const = 0;
 
@@ -95,7 +95,7 @@ public:
 	int PutLine( const RString &str );
 
 	void EnableCRC32( bool on=true );
-	bool GetCRC32( std::uint32_t *iRet );
+	bool GetCRC32( uint32_t *iRet );
 
 	virtual int GetFileSize() const = 0;
 	virtual int GetFD() { return -1; }
@@ -156,7 +156,7 @@ private:
 	 * This is only meaningful if EnableCRC32() is called at the very start of the
 	 * file, and no seeking is performed. */
 	bool m_bCRC32Enabled;
-	std::uint32_t m_iCRC32;
+	uint32_t m_iCRC32;
 
 	// Swallow up warnings. If they must be used, define them.
 	RageFileObj& operator=(const RageFileObj& rhs);

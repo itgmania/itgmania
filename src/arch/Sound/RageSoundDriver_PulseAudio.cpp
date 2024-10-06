@@ -184,7 +184,7 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 	*
 	* "The server tries to assure that at least tlength bytes are always
 	*  available in the per-stream server-side playback buffer. It is
-	*  recommended to set this to (std::uint32_t) -1, which will initialize
+	*  recommended to set this to (uint32_t) -1, which will initialize
 	*  this to a value that is deemed sensible by the server. However,
 	*  this value will default to something like 2s, i.e. for applications
 	*  that have specific latency requirements this value should be set to
@@ -197,10 +197,10 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 
 	/* maxlength: Maximum length of the buffer
 	*
-	* "Setting this to (std::uint32_t) -1 will initialize this to the maximum
+	* "Setting this to (uint32_t) -1 will initialize this to the maximum
 	*  value supported by server, which is recommended."
 	*
-	* (std::uint32_t)-1 is NOT working here, setting it to tlength*2, like
+	* (uint32_t)-1 is NOT working here, setting it to tlength*2, like
 	* openal-soft-pulseaudio does.
 	*/
 	attr.maxlength = attr.tlength*2;
@@ -209,10 +209,10 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 	*
 	* "The server does not request less than minreq bytes from the client,
 	*  instead waits until the buffer is free enough to request more bytes
-	*  at once. It is recommended to set this to (std::uint32_t) -1, which will
+	*  at once. It is recommended to set this to (uint32_t) -1, which will
 	*  initialize this to a value that is deemed sensible by the server."
 	*
-	* (std::uint32_t)-1 is NOT working here, setting it to 0, like
+	* (uint32_t)-1 is NOT working here, setting it to 0, like
 	* openal-soft-pulseaudio does.
 	*/
 	attr.minreq = 0;
@@ -221,10 +221,10 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 	*
 	* "The server does not start with playback before at least prebuf
 	*  bytes are available in the buffer. It is recommended to set this
-	*  to (std::uint32_t) -1, which will initialize this to the same value as
+	*  to (uint32_t) -1, which will initialize this to the same value as
 	*  tlength"
 	*/
-	attr.prebuf = (std::uint32_t)-1;
+	attr.prebuf = (uint32_t)-1;
 
 	/* log the used target buffer length */
 	LOG->Trace("Pulse: using target buffer length of %i bytes", attr.tlength);

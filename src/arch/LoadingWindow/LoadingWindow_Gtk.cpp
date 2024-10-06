@@ -77,7 +77,7 @@ void LoadingWindow_Gtk::SetText( RString s )
 
 static void DeletePixels( guchar *pixels, gpointer data )
 {
-	delete[] (std::uint8_t *)pixels;
+	delete[] (uint8_t *)pixels;
 }
 
 static GdkPixbuf *MakePixbuf( const RageSurface *pSrc )
