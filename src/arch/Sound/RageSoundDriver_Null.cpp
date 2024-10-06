@@ -15,7 +15,7 @@ void RageSoundDriver_Null::Update()
 	/* "Play" frames. */
 	while( m_iLastCursorPos < GetPosition()+1024*4 )
 	{
-		std::int16_t buf[256*channels];
+		int16_t buf[256*channels];
 		this->Mix( buf, 256, m_iLastCursorPos, GetPosition() );
 		m_iLastCursorPos += 256;
 	}
@@ -23,7 +23,7 @@ void RageSoundDriver_Null::Update()
 	RageSoundDriver::Update();
 }
 
-std::int64_t RageSoundDriver_Null::GetPosition() const
+int64_t RageSoundDriver_Null::GetPosition() const
 {
 	return (RageTimer::GetTimeSinceStartMicroseconds() * m_iSampleRate) / 1000000;
 }

@@ -258,7 +258,7 @@ bool ArchHooks_MacOSX::GoToURL( RString sUrl )
 	return result == 0;
 }
 
-std::int64_t ArchHooks::GetSystemTimeInMicroseconds()
+int64_t ArchHooks::GetSystemTimeInMicroseconds()
 {
 	// http://developer.apple.com/qa/qa2004/qa1398.html
 	static double factor = 0.0;
@@ -270,7 +270,7 @@ std::int64_t ArchHooks::GetSystemTimeInMicroseconds()
 		mach_timebase_info( &timeBase );
 		factor = timeBase.numer / ( 1000.0 * timeBase.denom );
 	}
-	return std::int64_t( mach_absolute_time() * factor );
+	return int64_t( mach_absolute_time() * factor );
 }
 
 #include "RageFileManager.h"

@@ -27,15 +27,15 @@
  * bAccurate == false.
  */
 
-std::int64_t ArchHooks::FixupTimeIfLooped( std::int64_t usecs )
+int64_t ArchHooks::FixupTimeIfLooped( int64_t usecs )
 {
-	static std::int64_t last = 0;
-	static std::int64_t offset_us = 0;
+	static int64_t last = 0;
+	static int64_t offset_us = 0;
 
 	/* The time has wrapped if the last time was very high and the current time is very low. */
-	const std::int64_t i32BitMaxMs = uint64_t(1) << 32;
-	const std::int64_t i32BitMaxUs = i32BitMaxMs*1000;
-	const std::int64_t one_day = uint64_t(24*60*60)*1000000;
+	const int64_t i32BitMaxMs = uint64_t(1) << 32;
+	const int64_t i32BitMaxUs = i32BitMaxMs*1000;
+	const int64_t one_day = uint64_t(24*60*60)*1000000;
 	if( last > (i32BitMaxUs-one_day) && usecs < one_day )
 		offset_us += i32BitMaxUs;
 
@@ -44,10 +44,10 @@ std::int64_t ArchHooks::FixupTimeIfLooped( std::int64_t usecs )
 	return usecs + offset_us;
 }
 
-std::int64_t ArchHooks::FixupTimeIfBackwards( std::int64_t usecs )
+int64_t ArchHooks::FixupTimeIfBackwards( int64_t usecs )
 {
-	static std::int64_t last = 0;
-	static std::int64_t offset_us = 0;
+	static int64_t last = 0;
+	static int64_t offset_us = 0;
 
 	if( usecs < last )
 	{

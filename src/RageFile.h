@@ -104,9 +104,9 @@ namespace FileReading
 	void Seek( RageFileBasic &f, int iOffset, RString &sError );
 	RString ReadString( RageFileBasic &f, int size, RString &sError );
 	uint8_t read_8( RageFileBasic &f, RString &sError );
-	std::int16_t read_16_le( RageFileBasic &f, RString &sError );
+	int16_t read_16_le( RageFileBasic &f, RString &sError );
 	uint16_t read_u16_le( RageFileBasic &f, RString &sError );
-	std::int32_t read_32_le( RageFileBasic &f, RString &sError );
+	int32_t read_32_le( RageFileBasic &f, RString &sError );
 	uint32_t read_u32_le( RageFileBasic &f, RString &sError );
 };
 

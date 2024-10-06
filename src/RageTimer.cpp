@@ -31,7 +31,7 @@
 #include <cstdint>
 
 const uint64_t ONE_SECOND_IN_MICROSECONDS_ULL = 1000000ULL;
-const std::int64_t ONE_SECOND_IN_MICROSECONDS_LL = 1000000LL;
+const int64_t ONE_SECOND_IN_MICROSECONDS_LL = 1000000LL;
 const uint_fast64_t ONE_SECOND_IN_MICROSECONDS_FAST_ULL = 1000000ULL;
 const double ONE_SECOND_IN_MICROSECONDS_DBL = 1000000.0;
 
@@ -128,8 +128,8 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 	/* Calculate the seconds and microseconds from the time:
 	 * tm == 5.25  -> secs =  5, us = 5.25  - ( 5) = .25
 	 * tm == -1.25 -> secs = -2, us = -1.25 - (-2) = .75 */
-	std::int64_t seconds = std::floor(tm);
-	std::int64_t us = static_cast<int64_t>((tm - seconds) * ONE_SECOND_IN_MICROSECONDS_LL);
+	int64_t seconds = std::floor(tm);
+	int64_t us = static_cast<int64_t>((tm - seconds) * ONE_SECOND_IN_MICROSECONDS_LL);
 
 	// Prevent unnecessarily checking the time
 	RageTimer ret(0, 0);
@@ -151,8 +151,8 @@ RageTimer RageTimer::Sum(const RageTimer& lhs, float tm)
 double RageTimer::Difference(const RageTimer& lhs, const RageTimer& rhs)
 {
 	// Calculate the difference in seconds and microseconds respectively
-	std::int64_t secs = lhs.m_secs - rhs.m_secs;
-	std::int64_t us = lhs.m_us - rhs.m_us;
+	int64_t secs = lhs.m_secs - rhs.m_secs;
+	int64_t us = lhs.m_us - rhs.m_us;
 
 	// Adjust seconds and microseconds if microseconds is negative
 	if ( us < 0 )

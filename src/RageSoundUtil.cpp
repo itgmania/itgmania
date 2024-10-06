@@ -82,7 +82,7 @@ void RageSoundUtil::ConvertMonoToStereoInPlace( float *data, int iFrames )
 	}
 }
 
-void RageSoundUtil::ConvertNativeInt16ToFloat( const std::int16_t *pFrom, float *pTo, int iSamples )
+void RageSoundUtil::ConvertNativeInt16ToFloat( const int16_t *pFrom, float *pTo, int iSamples )
 {
 	for( int i = 0; i < iSamples; ++i )
 	{
@@ -90,7 +90,7 @@ void RageSoundUtil::ConvertNativeInt16ToFloat( const std::int16_t *pFrom, float 
 	}
 }
 
-void RageSoundUtil::ConvertFloatToNativeInt16( const float *pFrom, std::int16_t *pTo, int iSamples )
+void RageSoundUtil::ConvertFloatToNativeInt16( const float *pFrom, int16_t *pTo, int iSamples )
 {
 	for( int i = 0; i < iSamples; ++i )
 	{

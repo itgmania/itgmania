@@ -91,9 +91,9 @@ RageSurface *RageSurface_Load_XPM( char * const *xpm, RString &error )
 		    return nullptr;
 		}
 
-		std::int8_t *p = (std::int8_t *) img->pixels;
+		int8_t *p = (int8_t *) img->pixels;
 		p += y * img->pitch;
-		std::int32_t *p32 = (std::int32_t *) p;
+		int32_t *p32 = (int32_t *) p;
 		for( int x = 0; x < width; ++x )
 		{
 			RString color_name = row.substr( x*color_length, color_length );
@@ -108,7 +108,7 @@ RageSurface *RageSurface_Load_XPM( char * const *xpm, RString &error )
 
 			if( colors.size() <= 256 )
 			{
-				p[x] = (std::int8_t) it->second;
+				p[x] = (int8_t) it->second;
 			} else {
 				const RageSurfaceColor &color = colors[it->second];
 				p32[x] = (color.r << 24) + (color.g << 16) + (color.b << 8);

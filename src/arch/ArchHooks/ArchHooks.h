@@ -87,7 +87,7 @@ public:
 	 * underlying timers may be 32-bit, but implementations should try to avoid
 	 * wrapping if possible.
 	 */
-	static std::int64_t GetSystemTimeInMicroseconds();
+	static int64_t GetSystemTimeInMicroseconds();
 
 	/*
 	 * Add file search paths, higher priority first.
@@ -131,8 +131,8 @@ public:
 private:
 	/* This are helpers for GetSystemTimeInMicroseconds on systems with a timer
 	 * that may loop or move backwards. */
-	static std::int64_t FixupTimeIfLooped( std::int64_t usecs );
-	static std::int64_t FixupTimeIfBackwards( std::int64_t usecs );
+	static int64_t FixupTimeIfLooped( int64_t usecs );
+	static int64_t FixupTimeIfBackwards( int64_t usecs );
 
 	static bool g_bQuitting;
 	static bool g_bToggleWindowed;

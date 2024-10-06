@@ -1025,7 +1025,7 @@ bool WinWdmStream::SubmitPacket( int iPacket, RString &sError )
 #include <windows.h>
 namespace
 {
-	void MapChannels( const std::int16_t *pIn, std::int16_t *pOut, int iInChannels, int iOutChannels, int iFrames, const int *pChannelMap )
+	void MapChannels( const int16_t *pIn, int16_t *pOut, int iInChannels, int iOutChannels, int iFrames, const int *pChannelMap )
 	{
 		for( int i = 0; i < iFrames; ++i )
 		{
@@ -1049,7 +1049,7 @@ namespace
 		}
 	}
 
-	void MapChannels( const std::int16_t *pIn, std::int16_t *pOut, int iInChannels, int iOutChannels, int iFrames )
+	void MapChannels( const int16_t *pIn, int16_t *pOut, int iInChannels, int iOutChannels, int iFrames )
 	{
 		static const int i1ChannelMap[] = { -2 };
 		static const int i4ChannelMap[] = { 0, 1, 0, 1 };
@@ -1067,7 +1067,7 @@ namespace
 		MapChannels( pIn, pOut, iInChannels, iOutChannels, iFrames, pChannelMap );
 	}
 
-	void MapSampleFormatFromInt16( const std::int16_t *pIn, void *pOut, int iSamples, DeviceSampleFormat FromFormat )
+	void MapSampleFormatFromInt16( const int16_t *pIn, void *pOut, int iSamples, DeviceSampleFormat FromFormat )
 	{
 		switch( FromFormat )
 		{
@@ -1092,7 +1092,7 @@ namespace
 		}
 		case DeviceSampleFormat_Int32:
 		{
-			std::int16_t *pOutBuf = (std::int16_t *) pOut;
+			int16_t *pOutBuf = (int16_t *) pOut;
 			for( int i = 0; i < iSamples; ++i )
 			{
 				*pOutBuf++ = 0;
@@ -1112,29 +1112,29 @@ void RageSoundDriver_WDMKS::Read( void *pData, int iFrames, int iLastCursorPos, 
 	if( m_pStream->m_iDeviceOutputChannels == iChannels &&
 		m_pStream->m_DeviceSampleFormat == DeviceSampleFormat_Int16 )
 	{
-		std::int16_t *pBuf = (std::int16_t *) pData;
+		int16_t *pBuf = (int16_t *) pData;
 		this->Mix( pBuf, iFrames, iLastCursorPos, iCurrentFrame );
 		return;
 	}
 
-	std::int16_t *pBuf = (std::int16_t *) alloca( iFrames * iChannels * sizeof(std::int16_t) );
-	this->Mix( (std::int16_t *) pBuf, iFrames, iLastCursorPos, iCurrentFrame );
+	int16_t *pBuf = (int16_t *) alloca( iFrames * iChannels * sizeof(int16_t) );
+	this->Mix( (int16_t *) pBuf, iFrames, iLastCursorPos, iCurrentFrame );
 
 	/* If the device has other than 2 channels, convert. */
 	if( m_pStream->m_iDeviceOutputChannels != iChannels )
 	{
-		std::int16_t *pTempBuf = (std::int16_t *) alloca( iFrames * m_pStream->m_iBytesPerOutputSample * m_pStream->m_iDeviceOutputChannels );
-		MapChannels( (std::int16_t *) pBuf, pTempBuf, iChannels, m_pStream->m_iDeviceOutputChannels, iFrames );
+		int16_t *pTempBuf = (int16_t *) alloca( iFrames * m_pStream->m_iBytesPerOutputSample * m_pStream->m_iDeviceOutputChannels );
+		MapChannels( (int16_t *) pBuf, pTempBuf, iChannels, m_pStream->m_iDeviceOutputChannels, iFrames );
 		pBuf = pTempBuf;
 	}
 
-	/* If the device format isn't std::int16_t, convert. */
+	/* If the device format isn't int16_t, convert. */
 	if( m_pStream->m_DeviceSampleFormat != DeviceSampleFormat_Int16 )
 	{
 		int iSamples = iFrames * m_pStream->m_iDeviceOutputChannels;
 		void *pTempBuf = alloca( iSamples * m_pStream->m_iBytesPerOutputSample );
-		MapSampleFormatFromInt16( (std::int16_t *) pBuf, pTempBuf, iSamples, m_pStream->m_DeviceSampleFormat );
-		pBuf = (std::int16_t *) pTempBuf;
+		MapSampleFormatFromInt16( (int16_t *) pBuf, pTempBuf, iSamples, m_pStream->m_DeviceSampleFormat );
+		pBuf = (int16_t *) pTempBuf;
 	}
 
 	memcpy( pData, pBuf, iFrames * m_pStream->m_iDeviceOutputChannels * m_pStream->m_iBytesPerOutputSample );
@@ -1236,7 +1236,7 @@ void RageSoundDriver_WDMKS::SetupDecodingThread()
 		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
 }
 
-std::int64_t RageSoundDriver_WDMKS::GetPosition() const
+int64_t RageSoundDriver_WDMKS::GetPosition() const
 {
 	KSAUDIO_POSITION pos;
 

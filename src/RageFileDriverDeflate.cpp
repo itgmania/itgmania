@@ -366,7 +366,7 @@ RageFileObjInflate *GunzipFile( RageFileBasic *pFile_, RString &sError, uint32_t
 
 	if( iFlags & FEXTRA )
 	{
-		std::int16_t iSize = FileReading::read_16_le( *pFile, sError );
+		int16_t iSize = FileReading::read_16_le( *pFile, sError );
 		FileReading::SkipBytes( *pFile, iSize, sError );
 	}
 
@@ -386,7 +386,7 @@ RageFileObjInflate *GunzipFile( RageFileBasic *pFile_, RString &sError, uint32_t
 		ASSERT( bOK );
 
 		uint16_t iExpectedCRC16 = FileReading::read_u16_le( *pFile, sError );
-		uint16_t iActualCRC16 = std::int16_t( iActualCRC32 & 0xFFFF );
+		uint16_t iActualCRC16 = int16_t( iActualCRC32 & 0xFFFF );
 		if( sError != "" )
 			return nullptr;
 

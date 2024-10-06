@@ -203,7 +203,7 @@ void ScoreKeeperNormal::OnNextSong( int iSongInCourseIndex, const Steps* pSteps,
 	GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
-static int GetScore(int p, int Z, std::int64_t S, int n)
+static int GetScore(int p, int Z, int64_t S, int n)
 {
 	/* There's a problem with the scoring system described below. Z/S is truncated
 	 * to an int. However, in some cases we can end up with very small base scores.
@@ -221,7 +221,7 @@ static int GetScore(int p, int Z, std::int64_t S, int n)
 	return p * (Z / S) * n;
 #elif 1
 	// This doesn't round down Z/S.
-	return int(std::int64_t(p) * n * Z / S);
+	return int(int64_t(p) * n * Z / S);
 #else
 	// This also doesn't round down Z/S. Use this if you don't have 64-bit ints.
 	return int(p * n * (float(Z) / S));
@@ -282,8 +282,8 @@ void ScoreKeeperNormal::AddScoreInternal( TapNoteScore score )
 
 		m_iTapNotesHit++;
 
-		const std::int64_t N = uint64_t(m_iNumTapsAndHolds);
-		const std::int64_t sum = (N * (N + 1)) / 2;
+		const int64_t N = uint64_t(m_iNumTapsAndHolds);
+		const int64_t sum = (N * (N + 1)) / 2;
 		const int Z = m_iMaxPossiblePoints/10;
 
 		// Don't use a multiplier if the player has failed

@@ -33,11 +33,11 @@ inline bool operator!=(RageSurfaceColor const &lhs, RageSurfaceColor const &rhs)
 struct RageSurfacePalette
 {
 	RageSurfaceColor colors[256];
-	std::int32_t ncolors;
+	int32_t ncolors;
 
 	/* Find the exact color; returns -1 if not found. */
-	std::int32_t FindColor( const RageSurfaceColor &color ) const;
-	std::int32_t FindClosestColor( const RageSurfaceColor &color ) const;
+	int32_t FindColor( const RageSurfaceColor &color ) const;
+	int32_t FindClosestColor( const RageSurfaceColor &color ) const;
 };
 
 struct RageSurfaceFormat
@@ -46,8 +46,8 @@ struct RageSurfaceFormat
 	RageSurfaceFormat( const RageSurfaceFormat &cpy );
 	~RageSurfaceFormat() = default;
 
-	std::int32_t BytesPerPixel;
-	std::int32_t BitsPerPixel;
+	int32_t BytesPerPixel;
+	int32_t BitsPerPixel;
 	std::array<uint32_t, 4> Mask;
 	std::array<uint32_t, 4> Shift;
 	std::array<uint32_t, 4> Loss;
@@ -79,8 +79,8 @@ struct RageSurface
 
 	uint8_t *pixels;
 	bool pixels_owned;
-	std::int32_t w, h, pitch;
-	std::int32_t flags;
+	int32_t w, h, pitch;
+	int32_t flags;
 
 	RageSurface();
 	RageSurface( const RageSurface &cpy );

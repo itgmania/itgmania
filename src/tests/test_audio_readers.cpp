@@ -46,7 +46,7 @@ void dump_bin( const char *fn, const char *buf, int size )
 	close( fd );
 }
 
-void dump( const char *fn, const std::int16_t *buf, int samples )
+void dump( const char *fn, const int16_t *buf, int samples )
 {
 	FILE *f = fopen( fn, "w+");
 	ASSERT( f );
@@ -72,7 +72,7 @@ void dump( const char *buf, int size )
 	printf("\n\n");
 }
 
-void dump( const std::int16_t *buf, int samples )
+void dump( const int16_t *buf, int samples )
 {
 	for( int i = 0; i < samples; ++i )
 		printf( "0x%04hx,", buf[i] );
@@ -86,11 +86,11 @@ void dump( const float *buf, int samples )
 	printf( "\n" );
 }
 
-bool compare( const float *m1, const std::int16_t *m2, int iSamples )
+bool compare( const float *m1, const int16_t *m2, int iSamples )
 {
 	for( int i = 0; i < iSamples; ++i )
 	{
-		std::int16_t iSample1 = std::lrint(m1[i]*32768);
+		int16_t iSample1 = std::lrint(m1[i]*32768);
 		if( iSample1 != m2[i] )
 			return false;
 	}
@@ -99,7 +99,7 @@ bool compare( const float *m1, const std::int16_t *m2, int iSamples )
 }
 
 
-void compare_buffers( const std::int16_t *expect, const std::int16_t *got, int frames,
+void compare_buffers( const int16_t *expect, const int16_t *got, int frames,
 		int &NumInaccurateSamplesAtStart,
 		int &NumInaccurateSamples )
 {
@@ -125,7 +125,7 @@ void compare_buffers( const std::int16_t *expect, const std::int16_t *got, int f
 
 }
 
-bool compare_buffers( const std::int16_t *expect, const std::int16_t *got, int frames, int channels )
+bool compare_buffers( const int16_t *expect, const int16_t *got, int frames, int channels )
 {
 	/*
 	 * Compare each channel separately.  Try to figure out if
@@ -165,8 +165,8 @@ bool test_read( RageSoundReader *snd, float *expected_data, int frames )
 	int got = snd->Read( buf, frames );
 	ASSERT( got == frames );
 
-	//compare_buffers( (const std::int16_t *) expected_data,
-	//		 (const std::int16_t *) buf,
+	//compare_buffers( (const int16_t *) expected_data,
+	//		 (const int16_t *) buf,
 	//		 bytes/2,
 	//		 2 );
 
@@ -258,7 +258,7 @@ const int TestDataSize = 2;
 /* Find "haystack" in "needle".  Start looking at "expect" and move outward; find
  * the closest. */
 void *xmemsearch( const float *haystack, size_t iHaystackSamples,
-		const std::int16_t *needle, size_t iNeedleSamples,
+		const int16_t *needle, size_t iNeedleSamples,
 		int expect )
 {
 	if( !iNeedleSamples )
@@ -301,10 +301,10 @@ struct TestFile
 	int SilentFrames;
 
 	/* The first two frames (four samples): */
-	std::int16_t initial[TestDataSize*2];
+	int16_t initial[TestDataSize*2];
 
 	/* Frames of data half a second in: */
-	std::int16_t later[TestDataSize*2];
+	int16_t later[TestDataSize*2];
 };
 const int channels = 2;
 
@@ -378,7 +378,7 @@ bool RunTests( RageSoundReader *snd, const TestFile &tf )
 			dump( LaterData, 16 );
 
 			/* See if we can find the half second data. */
-			float *p = (float *) xmemsearch( sdata, one_second_bytes, tf.later, sizeof(tf.later), LaterOffsetSamples*sizeof(std::int16_t) );
+			float *p = (float *) xmemsearch( sdata, one_second_bytes, tf.later, sizeof(tf.later), LaterOffsetSamples*sizeof(int16_t) );
 			if( p )
 			{
 				int SamplesOff = p-sdata;
@@ -387,7 +387,7 @@ bool RunTests( RageSoundReader *snd, const TestFile &tf )
 						FramesOff, LaterOffsetFrames, FramesOff-LaterOffsetFrames );
 			}
 //			else
-//				dump( "foo", sdata, one_second/sizeof(std::int16_t) );
+//				dump( "foo", sdata, one_second/sizeof(int16_t) );
 		}
 	}
 

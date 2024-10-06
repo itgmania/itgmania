@@ -44,7 +44,7 @@ void RageSoundDriver_DSound_Software::MixerThread()
 	{
 		char *pLockedBuf;
 		unsigned iLen;
-		const std::int64_t iPlayPos = m_pPCM->GetOutputPosition(); /* must be called before get_output_buf */
+		const int64_t iPlayPos = m_pPCM->GetOutputPosition(); /* must be called before get_output_buf */
 
 		if( !m_pPCM->get_output_buf(&pLockedBuf, &iLen, chunksize()) )
 		{
@@ -52,7 +52,7 @@ void RageSoundDriver_DSound_Software::MixerThread()
 			continue;
 		}
 
-		this->Mix( (std::int16_t *) pLockedBuf, iLen/bytes_per_frame, iPlayPos, m_pPCM->GetPosition() );
+		this->Mix( (int16_t *) pLockedBuf, iLen/bytes_per_frame, iPlayPos, m_pPCM->GetPosition() );
 
 		m_pPCM->release_output_buf( pLockedBuf, iLen );
 	}
@@ -62,7 +62,7 @@ void RageSoundDriver_DSound_Software::MixerThread()
 	m_pPCM->Stop();
 }
 
-std::int64_t RageSoundDriver_DSound_Software::GetPosition() const
+int64_t RageSoundDriver_DSound_Software::GetPosition() const
 {
 	return m_pPCM->GetPosition();
 }

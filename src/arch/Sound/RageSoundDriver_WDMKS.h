@@ -18,7 +18,7 @@ public:
 	~RageSoundDriver_WDMKS();
 	RString Init();
 
-	std::int64_t GetPosition() const;
+	int64_t GetPosition() const;
 	float GetPlayLatency() const;
 	int GetSampleRate() const;
 
