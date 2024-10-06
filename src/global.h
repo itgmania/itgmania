@@ -66,13 +66,19 @@ void sm_crash( const char *reason = "Internal error" );
  *
  * This should probably be used instead of throwing an exception in most
  * cases we expect never to happen (but not in cases that we do expect,
- * such as DSound init failure.) */
-#define FAIL_M(MESSAGE) do { CHECKPOINT_M(MESSAGE); sm_crash(MESSAGE); } while(0)
-#define ASSERT_M(COND, MESSAGE) do { if(unlikely(!(COND))) { FAIL_M(MESSAGE); } } while(0)
+ * such as DSound init failure.)
+ * 
+ * There are macros here for legacy compatibility so we don't have
+ * to change or fix hundreds of calls to FAIL_M / ASSERT_M / ASSERT.
+ */
+void FailWithMessage(const char* message);
+#define FAIL_M(MESSAGE) FailWithMessage(MESSAGE)
 
+void AssertWithMessage(bool condition, const char* message);
+#define ASSERT_M(COND, MESSAGE) AssertWithMessage((COND), MESSAGE)
 
 #if !defined(CO_EXIST_WITH_MFC)
-#define ASSERT(COND) ASSERT_M((COND), "Assertion '" #COND "' failed")
+#define ASSERT(COND) AssertWithMessage((COND), "Assertion '" #COND "' failed")
 #endif
 
 /** @brief Use this to catch switching on invalid values */

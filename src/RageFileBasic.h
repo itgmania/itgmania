@@ -100,12 +100,20 @@ public:
 	virtual int GetFileSize() const = 0;
 	virtual int GetFD() { return -1; }
 	virtual RString GetDisplayPath() const { return RString(); }
-	virtual RageFileBasic *Copy() const { FAIL_M( "Copying unimplemented" ); }
+	virtual RageFileBasic* Copy() const
+	{
+		FAIL_M("Copying unimplemented");
+		return nullptr; // Return a default value - the return value is unused
+	}
 
 protected:
-	virtual int SeekInternal( int /* iOffset */ ) { FAIL_M( "Seeking unimplemented" ); }
-	virtual int ReadInternal( void *pBuffer, size_t iBytes ) = 0;
-	virtual int WriteInternal( const void *pBuffer, size_t iBytes ) = 0;
+	virtual int SeekInternal(int /* iOffset */)
+	{
+		FAIL_M("Seeking unimplemented");
+		return -1; // Return a default value - the return value is unused
+	}
+	virtual int ReadInternal(void* pBuffer, size_t iBytes) = 0;
+	virtual int WriteInternal(const void* pBuffer, size_t iBytes) = 0;
 	virtual int FlushInternal() { return 0; }
 
 	void EnableReadBuffering();
