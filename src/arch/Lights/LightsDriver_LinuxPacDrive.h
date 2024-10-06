@@ -22,7 +22,7 @@ private:
 
 	void FindDevice();
 	void OpenDevice();
-	void WriteDevice(std::uint16_t out);
+	void WriteDevice(uint16_t out);
 	void CloseDevice();
 
 	struct usb_device *Device;

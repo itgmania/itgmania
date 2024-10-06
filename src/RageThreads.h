@@ -30,11 +30,11 @@ public:
 	/* If HaltAllThreads was called (with Kill==false), resume. */
 	static void ResumeAllThreads();
 
-	static std::uint64_t GetCurrentThreadID();
+	static uint64_t GetCurrentThreadID();
 
 	static const char *GetCurrentThreadName();
-	static const char *GetThreadNameByID( std::uint64_t iID );
-	static bool EnumThreadIDs( int n, std::uint64_t &iID );
+	static const char *GetThreadNameByID( uint64_t iID );
+	static bool EnumThreadIDs( int n, uint64_t &iID );
 	int Wait();
 	bool IsCreated() const { return m_pSlot != nullptr; }
 
@@ -46,7 +46,7 @@ public:
 
 	static bool GetIsShowingDialog() { return s_bIsShowingDialog; }
 	static void SetIsShowingDialog( bool b ) { s_bIsShowingDialog = b; }
-	static std::uint64_t GetInvalidThreadID();
+	static uint64_t GetInvalidThreadID();
 
 private:
 	ThreadSlot *m_pSlot;
@@ -111,7 +111,7 @@ protected:
 
 	int m_UniqueID;
 
-	std::uint64_t m_LockedBy;
+	uint64_t m_LockedBy;
 	int m_LockCnt;
 
 	void MarkLockedMutex();

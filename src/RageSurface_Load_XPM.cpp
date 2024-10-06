@@ -60,9 +60,9 @@ RageSurface *RageSurface_Load_XPM( char * const *xpm, RString &error )
 		if( sscanf( clr, "%2x%2x%2x", &r, &g, &b ) != 3 )
 			continue;
 		RageSurfaceColor colorval;
-		colorval.r = (std::uint8_t) r;
-		colorval.g = (std::uint8_t) g;
-		colorval.b = (std::uint8_t) b;
+		colorval.r = (uint8_t) r;
+		colorval.g = (uint8_t) g;
+		colorval.b = (uint8_t) b;
 		colorval.a = 0xFF;
 
 		colors.push_back( colorval );

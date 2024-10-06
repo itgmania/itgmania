@@ -189,7 +189,7 @@ struct madlib_t
 		bitrate = 0;
 	}
 
-	std::uint8_t inbuf[16384];
+	uint8_t inbuf[16384];
 	float outbuf[8192];
 	int outpos;
 	unsigned outleft;

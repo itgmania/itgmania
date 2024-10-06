@@ -10,7 +10,7 @@
 
 struct msTriangle
 {
-    std::uint16_t nVertexIndices[3];
+    uint16_t nVertexIndices[3];
 };
 
 

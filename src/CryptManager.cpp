@@ -66,9 +66,9 @@ bool CryptManager::VerifyFileWithFile( RString sPath, RString sSignatureFile )
 
 void CryptManager::GetRandomBytes( void *pData, int iBytes )
 {
-	std::uint8_t *pBuf = (std::uint8_t *) pData;
+	uint8_t *pBuf = (uint8_t *) pData;
 	while( iBytes-- )
-		*pBuf++ = (std::uint8_t) RandomInt( 256 );
+		*pBuf++ = (uint8_t) RandomInt( 256 );
 }
 
 #else
@@ -467,7 +467,7 @@ RString CryptManager::GetPublicKeyFileName()
 /* Generate a version 4 random UUID. */
 RString CryptManager::GenerateRandomUUID()
 {
-	std::uint32_t buf[4];
+	uint32_t buf[4];
 	CryptManager::GetRandomBytes( buf, sizeof(buf) );
 
 	buf[1] &= 0xFFFF0FFF;

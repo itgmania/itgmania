@@ -599,7 +599,7 @@ void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 		// Make sure this is on the stack
 		if( !GetRegionInfo(self, frame, start, protection) || protection != PROT_RW )
 			break;
-		if( (start != g_StackPointer && start != stackPointer) || std::uintptr_t(frame)-std::uintptr_t(start) < sizeof(Frame) )
+		if( (start != g_StackPointer && start != stackPointer) || uintptr_t(frame)-uintptr_t(start) < sizeof(Frame) )
 			break;
 
 		/* The stack pointer is always 16 byte aligned _before_ the call. Thus a valid frame
@@ -617,7 +617,7 @@ void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 		 * Therefore, frame + 8 should be on a 16 byte boundary, the frame link should be
 		 * at a higher address, the link should be on the stack and it should be RW. The
 		 * return address should be EXE and point to a valid call (well, just after). */
-		if( (((std::uintptr_t)frame+8) & 0xF) != 0 ||// boundary
+		if( (((uintptr_t)frame+8) & 0xF) != 0 ||// boundary
 		    frame->link <= frame || // the frame link goes up
 		    !GetRegionInfo(self, frame->link, start, protection) ||
 		    (start != g_StackPointer && start != stackPointer) || // the link is on the stack
@@ -629,7 +629,7 @@ void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 			/* This is not a valid frame but we might be in code compiled with
 			 * -fomit-frame-pointer so look at each address on the stack that is
 			 * 4 bytes below a 16 byte boundary. */
-			if( (((std::uintptr_t)frame+4) & 0xF) == 0 )
+			if( (((uintptr_t)frame+4) & 0xF) == 0 )
 			{
 				void *p = *(void **)frame;
 				if( GetRegionInfo(self, p, start, protection) &&

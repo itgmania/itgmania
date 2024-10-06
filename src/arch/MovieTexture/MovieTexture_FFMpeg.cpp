@@ -497,7 +497,7 @@ static RString averr_ssprintf(int err, const char* fmt, ...)
 	return s + " (" + Error + ")";
 }
 
-static int AVIORageFile_ReadPacket(void* opaque, std::uint8_t* buf, int buf_size)
+static int AVIORageFile_ReadPacket(void* opaque, uint8_t* buf, int buf_size)
 {
 	RageFile* f = (RageFile*)opaque;
 	int n = f->Read(buf, buf_size);

@@ -314,7 +314,7 @@ void RageFileObj::EnableCRC32( bool bOn )
 	m_iCRC32 = 0;
 }
 
-bool RageFileObj::GetCRC32( std::uint32_t *iRet )
+bool RageFileObj::GetCRC32( uint32_t *iRet )
 {
 	if( !m_bCRC32Enabled )
 		return false;

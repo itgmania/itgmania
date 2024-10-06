@@ -11,7 +11,7 @@
 #include "archutils/Common/PthreadHelpers.h"
 
 /* These are volatile, so writes to them aren't optimized. */
-volatile std::uint64_t g_ThreadId = (std::uint64_t) -1;
+volatile uint64_t g_ThreadId = (uint64_t) -1;
 volatile int g_Counter = 0;
 volatile bool g_Finish = false;
 
@@ -31,7 +31,7 @@ int TestSuspendThread( void *p )
 	return 0;
 }
 
-void test_suspend_threadid( std::uint64_t ThreadId )
+void test_suspend_threadid( uint64_t ThreadId )
 {
 	/* Wait for g_Counter to increment a bit. */
 	usleep( 100000 );
@@ -74,13 +74,13 @@ void test_suspend_threadid( std::uint64_t ThreadId )
 void test_suspend_secondary_thread()
 {
 	ASSERT( !g_Finish );
-	ASSERT( g_ThreadId == (std::uint64_t) -1 );
+	ASSERT( g_ThreadId == (uint64_t) -1 );
 
 	RageThread testing;
 	testing.SetName( "TestSuspend" );
 	testing.Create( TestSuspendThread, NULL );
 
-	while( g_ThreadId == (std::uint64_t) -1 )
+	while( g_ThreadId == (uint64_t) -1 )
 		;
 
 	test_suspend_threadid( g_ThreadId );
@@ -88,7 +88,7 @@ void test_suspend_secondary_thread()
 	g_Finish = true;
 	testing.Wait();
 	g_Finish = false;
-	g_ThreadId = (std::uint64_t) -1;
+	g_ThreadId = (uint64_t) -1;
 }
 
 int TestSuspendMainThread( void *p )
@@ -97,7 +97,7 @@ int TestSuspendMainThread( void *p )
 
 	printf("Test thread started\n");
 
-	ASSERT( g_ThreadId != (std::uint64_t) -1 );
+	ASSERT( g_ThreadId != (uint64_t) -1 );
 	test_suspend_threadid( g_ThreadId );
 	g_Finish = true;
 
@@ -108,7 +108,7 @@ int TestSuspendMainThread( void *p )
 void test_suspend_main_thread()
 {
 	ASSERT( !g_Finish );
-	ASSERT( g_ThreadId == (std::uint64_t) -1 );
+	ASSERT( g_ThreadId == (uint64_t) -1 );
 
 	g_ThreadId = GetCurrentThreadId();
 
@@ -120,7 +120,7 @@ void test_suspend_main_thread()
 
 	testing.Wait();
 	g_Finish = false;
-	g_ThreadId = (std::uint64_t) -1;
+	g_ThreadId = (uint64_t) -1;
 }
 
 /* Run a second function, so we have two symbols to search for. */
@@ -178,7 +178,7 @@ void test_backtracing_secondary_thread()
 	testing.SetName( "TestBacktrace" );
 	testing.Create( TestBacktraceThread, NULL );
 
-	while( g_ThreadId == (std::uint64_t) -1 )
+	while( g_ThreadId == (uint64_t) -1 )
 		;
 
 	if( !test_thread_backtrace( g_ThreadId, (void *) TestBacktraceThread, (void *) TestBacktraceThreadLoop ) )
@@ -190,14 +190,14 @@ void test_backtracing_secondary_thread()
 	g_Finish = true;
 	testing.Wait();
 	g_Finish = false;
-	g_ThreadId = (std::uint64_t) -1;
+	g_ThreadId = (uint64_t) -1;
 }
 
 int TestBacktraceMainThread( void *p )
 {
 	printf("Test thread started\n");
 
-	while( g_ThreadId == (std::uint64_t) -1 )
+	while( g_ThreadId == (uint64_t) -1 )
 		;
 
 	if( !test_thread_backtrace( g_ThreadId, (void *) TestBacktraceThread, (void *) TestBacktraceThreadLoop ) )
@@ -214,7 +214,7 @@ int TestBacktraceMainThread( void *p )
 void test_backtracing_main_thread()
 {
 	ASSERT( !g_Finish );
-	ASSERT( g_ThreadId == (std::uint64_t) -1 );
+	ASSERT( g_ThreadId == (uint64_t) -1 );
 
 	RageThread testing;
 	testing.SetName( "TestBacktrace" );
@@ -224,7 +224,7 @@ void test_backtracing_main_thread()
 
 	testing.Wait();
 	g_Finish = false;
-	g_ThreadId = (std::uint64_t) -1;
+	g_ThreadId = (uint64_t) -1;
 }
 
 static RageMutex g_Mutex("test");
@@ -248,13 +248,13 @@ int TestLocksThread( void *p )
 void test_locks()
 {
 	ASSERT( !g_Finish );
-	ASSERT( g_ThreadId == (std::uint64_t) -1 );
+	ASSERT( g_ThreadId == (uint64_t) -1 );
 
 	RageThread testing;
 	testing.SetName( "TestLocks" );
 	testing.Create( TestLocksThread, NULL );
 
-	while( g_ThreadId == (std::uint64_t) -1 )
+	while( g_ThreadId == (uint64_t) -1 )
 		;
 
 	/* Stop the thread. */
@@ -277,7 +277,7 @@ void test_locks()
 	g_Finish = true;
 	testing.Wait();
 	g_Finish = false;
-	g_ThreadId = (std::uint64_t) -1;
+	g_ThreadId = (uint64_t) -1;
 }
 
 void go()

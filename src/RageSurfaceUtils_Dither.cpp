@@ -20,7 +20,7 @@ static const int DitherMat[DitherMatDim][DitherMatDim] =
 static int DitherMatCalc[DitherMatDim][DitherMatDim];
 
 // conv is the ratio from the input to the output.
-static std::uint8_t DitherPixel(int x, int y, int intensity,  int conv)
+static uint8_t DitherPixel(int x, int y, int intensity,  int conv)
 {
 	// The intensity matrix wraps. This assumes the matrix dims are a power of 2.
 	x &= DitherMatDim-1;
@@ -43,7 +43,7 @@ static std::uint8_t DitherPixel(int x, int y, int intensity,  int conv)
 	out_intensity += DitherMatCalc[y][x];
 
 	// Truncate, and add e to make sure a value of 14.999998 -> 15.
-	return std::uint8_t((out_intensity + 1) >> 16);
+	return uint8_t((out_intensity + 1) >> 16);
 }
 
 void RageSurfaceUtils::OrderedDither( const RageSurface *src, RageSurface *dst )
@@ -68,7 +68,7 @@ void RageSurfaceUtils::OrderedDither( const RageSurface *src, RageSurface *dst )
 	// We can't dither to paletted surfaces.
 	ASSERT( dst->format->BytesPerPixel > 1 );
 
-	std::uint32_t src_cbits[4], dst_cbits[4];
+	uint32_t src_cbits[4], dst_cbits[4];
 	RageSurfaceUtils::GetBitsPerChannel( src->format, src_cbits );
 	RageSurfaceUtils::GetBitsPerChannel( dst->format, dst_cbits );
 
@@ -86,18 +86,18 @@ void RageSurfaceUtils::OrderedDither( const RageSurface *src, RageSurface *dst )
 	}
 
 	// Max alpha value; used when there's no alpha source.
-	const std::uint8_t alpha_max = std::uint8_t((1 << dst_cbits[3]) - 1);
+	const uint8_t alpha_max = uint8_t((1 << dst_cbits[3]) - 1);
 
 	// For each row:
 	for( int row = 0; row < src->h; ++row )
 	{
-		const std::uint8_t *srcp = src->pixels + row * src->pitch;
-		std::uint8_t *dstp = dst->pixels + row * dst->pitch;
+		const uint8_t *srcp = src->pixels + row * src->pitch;
+		uint8_t *dstp = dst->pixels + row * dst->pitch;
 
 		// For each pixel:
 		for( int col = 0; col < src->w; ++col )
 		{
-			std::uint8_t colors[4];
+			uint8_t colors[4];
 			RageSurfaceUtils::GetRawRGBAV( srcp, src->fmt, colors );
 
 			// Note that we don't dither the alpha channel.
@@ -119,7 +119,7 @@ void RageSurfaceUtils::OrderedDither( const RageSurface *src, RageSurface *dst )
 				int out_intensity = colors[3] * conv[3];
 
 				// Round:
-				colors[3] = std::uint8_t((out_intensity + 32767) >> 16);
+				colors[3] = uint8_t((out_intensity + 32767) >> 16);
 			}
 
 			// Raw value -> int -> pixel
@@ -132,7 +132,7 @@ void RageSurfaceUtils::OrderedDither( const RageSurface *src, RageSurface *dst )
 }
 
 
-static std::uint8_t EDDitherPixel( int x, int y, int intensity, int conv, std::int32_t &accumError )
+static uint8_t EDDitherPixel( int x, int y, int intensity, int conv, std::int32_t &accumError )
 {
 	// Convert the number to the destination range.
 	int out_intensity = intensity * conv;
@@ -151,7 +151,7 @@ static std::uint8_t EDDitherPixel( int x, int y, int intensity, int conv, std::i
 	clamped_intensity &= 0xFF0000;
 
 	// Truncate.
-	std::uint8_t ret = std::uint8_t(clamped_intensity >> 16);
+	uint8_t ret = uint8_t(clamped_intensity >> 16);
 
 	accumError = out_intensity - clamped_intensity;
 
@@ -172,7 +172,7 @@ void RageSurfaceUtils::ErrorDiffusionDither( const RageSurface *src, RageSurface
 	// We can't dither to paletted surfaces.
 	ASSERT( dst->format->BytesPerPixel > 1 );
 
-	std::uint32_t src_cbits[4], dst_cbits[4];
+	uint32_t src_cbits[4], dst_cbits[4];
 	RageSurfaceUtils::GetBitsPerChannel( src->format, src_cbits );
 	RageSurfaceUtils::GetBitsPerChannel( dst->format, dst_cbits );
 
@@ -190,20 +190,20 @@ void RageSurfaceUtils::ErrorDiffusionDither( const RageSurface *src, RageSurface
 	}
 
 	// Max alpha value; used when there's no alpha source.
-	const std::uint8_t alpha_max = std::uint8_t((1 << dst_cbits[3]) - 1);
+	const uint8_t alpha_max = uint8_t((1 << dst_cbits[3]) - 1);
 
 	// For each row:
 	for(int row = 0; row < src->h; ++row)
 	{
 		std::int32_t accumError[4] = { 0, 0, 0, 0 }; // accum error values are reset every row
 
-		const std::uint8_t *srcp = src->pixels + row * src->pitch;
-		std::uint8_t *dstp = dst->pixels + row * dst->pitch;
+		const uint8_t *srcp = src->pixels + row * src->pitch;
+		uint8_t *dstp = dst->pixels + row * dst->pitch;
 
 		// For each pixel in row:
 		for( int col = 0; col < src->w; ++col )
 		{
-			std::uint8_t colors[4];
+			uint8_t colors[4];
 			RageSurfaceUtils::GetRawRGBAV( srcp, src->fmt, colors );
 
 			for( int c = 0; c < 3; ++c )
@@ -223,7 +223,7 @@ void RageSurfaceUtils::ErrorDiffusionDither( const RageSurface *src, RageSurface
 				int out_intensity = colors[3] * conv[3];
 
 				// Round:
-				colors[3] = std::uint8_t((out_intensity + 32767) >> 16);
+				colors[3] = uint8_t((out_intensity + 32767) >> 16);
 			}
 
 			RageSurfaceUtils::SetRawRGBAV( dstp, dst, colors );

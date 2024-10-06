@@ -81,7 +81,7 @@ private:
 	static int InputThread_Start( void *p );
 	void InputThreadMain();
 
-	void PushInputState(std::uint32_t newInput);
+	void PushInputState(uint32_t newInput);
 
 	bool IsLightChange(LightsState prevLS, LightsState newLS);
 	void PushLightState(LightsState newLS);

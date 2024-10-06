@@ -186,7 +186,7 @@ private:
 static struct AVPixelFormat_t
 {
 	int bpp;
-	std::uint32_t masks[4];
+	uint32_t masks[4];
 	avcodec::AVPixelFormat pf;
 	bool bHighColor;
 	bool bByteSwapOnLittleEndian;

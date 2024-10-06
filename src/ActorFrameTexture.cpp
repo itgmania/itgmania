@@ -16,7 +16,7 @@ ActorFrameTexture::ActorFrameTexture()
 	m_bAlphaBuffer = false;
 	m_bFloat = false;
 	m_bPreserveTexture = false;
-	static std::uint64_t i = 0;
+	static uint64_t i = 0;
 	++i;
 	m_sTextureName = ssprintf( ConvertI64FormatString("ActorFrameTexture %lli"), i );
 

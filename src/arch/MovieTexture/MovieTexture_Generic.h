@@ -103,7 +103,7 @@ public:
 	virtual void UpdateMovie( float fSeconds );
 	virtual void SetPlaybackRate( float fRate ) { m_fRate = fRate; }
 	void SetLooping( bool bLooping=true ) { m_bLoop = bLooping; }
-	std::uintptr_t GetTexHandle() const;
+	uintptr_t GetTexHandle() const;
 
 	static EffectMode GetEffectMode( MovieDecoderPixelFormatYCbCr fmt );
 
@@ -119,7 +119,7 @@ private:
 	// If true, halts all decoding and display.
 	bool m_failure = false;
 
-	std::uintptr_t m_uTexHandle;
+	uintptr_t m_uTexHandle;
 	RageTextureRenderTarget *m_pRenderTarget;
 	RageTexture *m_pTextureIntermediate;
 	Sprite *m_pSprite;

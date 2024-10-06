@@ -282,7 +282,7 @@ void ScoreKeeperNormal::AddScoreInternal( TapNoteScore score )
 
 		m_iTapNotesHit++;
 
-		const std::int64_t N = std::uint64_t(m_iNumTapsAndHolds);
+		const std::int64_t N = uint64_t(m_iNumTapsAndHolds);
 		const std::int64_t sum = (N * (N + 1)) / 2;
 		const int Z = m_iMaxPossiblePoints/10;
 
