@@ -638,9 +638,16 @@ const RString Steps::GetGrooveStatsHash() const
 	return GrooveStatsHash;
 }
 
+int Steps::GetGrooveStatsHashVersion() const
+{
+	return GrooveStatsHashVersion;
+}
+
 void Steps::CalculateGrooveStatsHash(bool forceRecalculate)
 {
-	if (!forceRecalculate && m_bIsCachedGrooveStatsHashJustLoaded == true)
+	if (!forceRecalculate
+		&& GrooveStatsHashVersion == CURRENT_GROOVE_STATS_HASH_VERSION
+		&& m_bIsCachedGrooveStatsHashJustLoaded == true)
 	{
 		m_bIsCachedGrooveStatsHashJustLoaded = false;
 		return;
@@ -767,6 +774,10 @@ void Steps::SetCachedGrooveStatsHash(const RString key)
 	m_bIsCachedGrooveStatsHashJustLoaded = true;
 }
 
+void Steps::SetCachedGrooveStatsHashVersion(int version)
+{
+	GrooveStatsHashVersion = version;
+}
 
 RString Steps::GenerateChartKey()
 {

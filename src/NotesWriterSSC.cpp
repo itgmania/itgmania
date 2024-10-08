@@ -431,7 +431,8 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 		lines.push_back( ssprintf( "// step cache tags:" ) );
 		RString GrooveStatsHash = in.GetGrooveStatsHash();
 		lines.push_back(ssprintf("#GROOVESTATSHASH:%s;", GrooveStatsHash.c_str()));
-		
+		int GrooveStatsHashVersion = in.GetGrooveStatsHashVersion();
+		lines.push_back(ssprintf("#GROOVESTATSHASHVERSION:%d;", GrooveStatsHashVersion));
 		// MV: #STEPFILENAME has to be at the end of the cache tags,
 		// because it's used in SSCLoader::LoadFromSimfile to determine when
 		// to switch the state back to GETTING_SONG_INFO, which means any tags
