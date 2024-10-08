@@ -26,6 +26,12 @@ struct lua_State;
  */
 const int MAX_STEPS_DESCRIPTION_LENGTH = 255;
 
+/**
+ * @brief Current version of GrooveStats hash.
+ * Increment this to invalidate previously cached values
+ */
+const int CURRENT_GROOVE_STATS_HASH_VERSION = 3;
+
 /** @brief The different ways of displaying the BPM. */
 enum DisplayBPM
 {
@@ -142,6 +148,7 @@ public:
 	/** @brief Generates a hash used for GrooveStats integration. */
 	void CalculateGrooveStatsHash(bool forceRecalculate);
 	const RString GetGrooveStatsHash() const;
+	int GetGrooveStatsHashVersion() const;
 	
 	/** @brief Produces a chart that's reduced to it's smallest unique representable form. */
 	RString MinimizedChartString();
@@ -156,6 +163,7 @@ public:
 	void SetCachedNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure);
 	void SetPeakNps(std::vector<float>& peakNps);
 	void SetCachedGrooveStatsHash(const RString key);
+	void SetCachedGrooveStatsHashVersion(int version);
 	float PredictMeter() const;
 
 	unsigned GetHash() const;
@@ -306,7 +314,8 @@ private:
 
 	RString GrooveStatsHash;
 	bool m_bIsCachedGrooveStatsHashJustLoaded;
-
+	int GrooveStatsHashVersion = 0;
+	
 	/** @brief The name of the person who created the Steps. */
 	RString				m_sCredit;
 	/** @brief The name of the chart. */
