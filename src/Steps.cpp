@@ -928,6 +928,12 @@ public:
 		return 1;
 	}
 	
+	static int GetGrooveStatsHashVersion(T *p, lua_State *L)
+	{
+		lua_pushnumber(L, p->GetGrooveStatsHashVersion());
+		return 1;
+	}
+	
 	static int GetChartName(T *p, lua_State *L)
 	{
 		lua_pushstring(L, p->GetChartName());
@@ -982,6 +988,7 @@ public:
 		ADD_METHOD( GetMinimizedChartString );
 		ADD_METHOD( GetGrooveStatsHash );
 		ADD_METHOD( CalculateGrooveStatsHash );
+		ADD_METHOD( GetGrooveStatsHashVersion );
 		ADD_METHOD( GetMeter );
 		ADD_METHOD( HasSignificantTimingChanges );
 		ADD_METHOD( HasAttacks );
