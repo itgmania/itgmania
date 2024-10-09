@@ -275,6 +275,8 @@ static int GetWindowStyle( bool bWindowed , bool bWindowIsFullscreenBorderless)
  * window. */
 void GraphicsWindow::CreateGraphicsWindow( const VideoModeParams &p, bool bForceRecreateWindow )
 {
+	SetProcessDPIAware(); // prevents DPI mismatch when Windows DPI is above 100%
+
 	g_CurrentParams = p;
 
 	// Adjust g_CurrentParams to reflect the actual display settings.
