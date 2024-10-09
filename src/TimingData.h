@@ -14,46 +14,48 @@ struct lua_State;
 
 /* convenience functions to handle static casting */
 template<class T>
-inline T ToDerived( const TimingSegment *t, TimingSegmentType tst )
+inline T ToDerived(const TimingSegment* t, TimingSegmentType tst)
 {
-	ASSERT_M( t && tst == t->GetType(),
+	ASSERT_M(t && tst == t->GetType(),
 		ssprintf("type mismatch (expected %s, got %s)",
-		TimingSegmentTypeToString(tst).c_str(),
-		TimingSegmentTypeToString(t->GetType()).c_str() ) );
+			TimingSegmentTypeToString(tst).c_str(),
+			TimingSegmentTypeToString(t->GetType()).c_str()));
 
-	return static_cast<T>( t );
+	return static_cast<T>(t);
 }
 
-#define TimingSegmentToXWithName(Seg, SegName, SegType) \
-	inline const Seg* To##SegName( const TimingSegment *t ) \
-	{ \
-		ASSERT( t->GetType() == SegType ); \
-		return static_cast<const Seg*>( t ); \
-	} \
-	inline Seg* To##SegName( TimingSegment *t ) \
-	{ \
-		ASSERT( t->GetType() == SegType ); \
-		return static_cast<Seg*>( t ); \
-	}
+const BPMSegment* ToBPM(const TimingSegment* t);
+BPMSegment* ToBPM(TimingSegment* t);
 
-#define TimingSegmentToX(Seg, SegType) \
-	TimingSegmentToXWithName(Seg##Segment, Seg, SEGMENT_##SegType)
+const StopSegment* ToStop(const TimingSegment* t);
+StopSegment* ToStop(TimingSegment* t);
 
-/* ToBPM(TimingSegment*), ToTimeSignature(TimingSegment*), etc. */
-TimingSegmentToX( BPM, BPM );
-TimingSegmentToX( Stop, STOP );
-TimingSegmentToX( Delay, DELAY );
-TimingSegmentToX( TimeSignature, TIME_SIG );
-TimingSegmentToX( Warp, WARP );
-TimingSegmentToX( Label, LABEL );
-TimingSegmentToX( Tickcount, TICKCOUNT );
-TimingSegmentToX( Combo, COMBO );
-TimingSegmentToX( Speed, SPEED );
-TimingSegmentToX( Scroll, SCROLL );
-TimingSegmentToX( Fake, FAKE );
+const DelaySegment* ToDelay(const TimingSegment* t);
+DelaySegment* ToDelay(TimingSegment* t);
 
-#undef TimingSegmentToXWithName
-#undef TimingSegmentToX
+const TimeSignatureSegment* ToTimeSignature(const TimingSegment* t);
+TimeSignatureSegment* ToTimeSignature(TimingSegment* t);
+
+const WarpSegment* ToWarp(const TimingSegment* t);
+WarpSegment* ToWarp(TimingSegment* t);
+
+const LabelSegment* ToLabel(const TimingSegment* t);
+LabelSegment* ToLabel(TimingSegment* t);
+
+const TickcountSegment* ToTickcount(const TimingSegment* t);
+TickcountSegment* ToTickcount(TimingSegment* t);
+
+const ComboSegment* ToCombo(const TimingSegment* t);
+ComboSegment* ToCombo(TimingSegment* t);
+
+const SpeedSegment* ToSpeed(const TimingSegment* t);
+SpeedSegment* ToSpeed(TimingSegment* t);
+
+const ScrollSegment* ToScroll(const TimingSegment* t);
+ScrollSegment* ToScroll(TimingSegment* t);
+
+const FakeSegment* ToFake(const TimingSegment* t);
+FakeSegment* ToFake(TimingSegment* t);
 
 /**
  * @brief Holds data for translating beats<->seconds.
@@ -190,50 +192,71 @@ public:
 		return GetSegmentAtRow( BeatToNoteRow(fBeat), tst );
 	}
 
-	#define DefineSegmentWithName(Seg, SegName, SegType) \
-		const Seg* Get##Seg##AtRow( int iNoteRow ) const \
-		{ \
-			const TimingSegment *t = GetSegmentAtRow( iNoteRow, SegType ); \
-			return To##SegName( t ); \
-		} \
-		Seg* Get##Seg##AtRow( int iNoteRow ) \
-		{ \
-			return const_cast<Seg*> (((const TimingData*)this)->Get##Seg##AtRow(iNoteRow) ); \
-		} \
-		const Seg* Get##Seg##AtBeat( float fBeat ) const \
-		{ \
-			return Get##Seg##AtRow( BeatToNoteRow(fBeat) ); \
-		} \
-		Seg* Get##Seg##AtBeat( float fBeat ) \
-		{ \
-			return const_cast<Seg*> (((const TimingData*)this)->Get##Seg##AtBeat(fBeat) ); \
-		} \
-		void AddSegment( const Seg &seg ) \
-		{ \
-			AddSegment( &seg ); \
-		}
+	const BPMSegment* GetBPMSegmentAtRow(int iNoteRow) const;
+	BPMSegment* GetBPMSegmentAtRow(int iNoteRow);
+	const BPMSegment* GetBPMSegmentAtBeat(float fBeat) const;
+	BPMSegment* GetBPMSegmentAtBeat(float fBeat);
+	void AddSegment(const BPMSegment& seg);
 
-	// "XXX: this comment (and quote mark) exists so nano won't
-	// display the rest of this file as one giant string
+	const StopSegment* GetStopSegmentAtRow(int iNoteRow) const;
+	StopSegment* GetStopSegmentAtRow(int iNoteRow);
+	const StopSegment* GetStopSegmentAtBeat(float fBeat) const;
+	StopSegment* GetStopSegmentAtBeat(float fBeat);
+	void AddSegment(const StopSegment& seg);
 
-	// (TimeSignature,TIME_SIG) -> (TimeSignatureSegment,SEGMENT_TIME_SIG)
-	#define DefineSegment(Seg, SegType ) \
-		DefineSegmentWithName( Seg##Segment, Seg, SEGMENT_##SegType )
+	const DelaySegment* GetDelaySegmentAtRow(int iNoteRow) const;
+	DelaySegment* GetDelaySegmentAtRow(int iNoteRow);
+	const DelaySegment* GetDelaySegmentAtBeat(float fBeat) const;
+	DelaySegment* GetDelaySegmentAtBeat(float fBeat);
+	void AddSegment(const DelaySegment& seg);
 
-	DefineSegment( BPM, BPM );
-	DefineSegment( Stop, STOP );
-	DefineSegment( Delay, DELAY );
-	DefineSegment( Warp, WARP );
-	DefineSegment( Label, LABEL );
-	DefineSegment( Tickcount, TICKCOUNT );
-	DefineSegment( Combo, COMBO );
-	DefineSegment( Speed, SPEED );
-	DefineSegment( Scroll, SCROLL );
-	DefineSegment( Fake, FAKE );
-	DefineSegment( TimeSignature, TIME_SIG );
+	const WarpSegment* GetWarpSegmentAtRow(int iNoteRow) const;
+	WarpSegment* GetWarpSegmentAtRow(int iNoteRow);
+	const WarpSegment* GetWarpSegmentAtBeat(float fBeat) const;
+	WarpSegment* GetWarpSegmentAtBeat(float fBeat);
+	void AddSegment(const WarpSegment& seg);
 
-	#undef DefineSegmentWithName
-	#undef DefineSegment
+	const LabelSegment* GetLabelSegmentAtRow(int iNoteRow) const;
+	LabelSegment* GetLabelSegmentAtRow(int iNoteRow);
+	const LabelSegment* GetLabelSegmentAtBeat(float fBeat) const;
+	LabelSegment* GetLabelSegmentAtBeat(float fBeat);
+	void AddSegment(const LabelSegment& seg);
+
+	const TickcountSegment* GetTickcountSegmentAtRow(int iNoteRow) const;
+	TickcountSegment* GetTickcountSegmentAtRow(int iNoteRow);
+	const TickcountSegment* GetTickcountSegmentAtBeat(float fBeat) const;
+	TickcountSegment* GetTickcountSegmentAtBeat(float fBeat);
+	void AddSegment(const TickcountSegment& seg);
+
+	const ComboSegment* GetComboSegmentAtRow(int iNoteRow) const;
+	ComboSegment* GetComboSegmentAtRow(int iNoteRow);
+	const ComboSegment* GetComboSegmentAtBeat(float fBeat) const;
+	ComboSegment* GetComboSegmentAtBeat(float fBeat);
+	void AddSegment(const ComboSegment& seg);
+
+	const SpeedSegment* GetSpeedSegmentAtRow(int iNoteRow) const;
+	SpeedSegment* GetSpeedSegmentAtRow(int iNoteRow);
+	const SpeedSegment* GetSpeedSegmentAtBeat(float fBeat) const;
+	SpeedSegment* GetSpeedSegmentAtBeat(float fBeat);
+	void AddSegment(const SpeedSegment& seg);
+
+	const ScrollSegment* GetScrollSegmentAtRow(int iNoteRow) const;
+	ScrollSegment* GetScrollSegmentAtRow(int iNoteRow);
+	const ScrollSegment* GetScrollSegmentAtBeat(float fBeat) const;
+	ScrollSegment* GetScrollSegmentAtBeat(float fBeat);
+	void AddSegment(const ScrollSegment& seg);
+
+	const FakeSegment* GetFakeSegmentAtRow(int iNoteRow) const;
+	FakeSegment* GetFakeSegmentAtRow(int iNoteRow);
+	const FakeSegment* GetFakeSegmentAtBeat(float fBeat) const;
+	FakeSegment* GetFakeSegmentAtBeat(float fBeat);
+	void AddSegment(const FakeSegment& seg);
+
+	const TimeSignatureSegment* GetTimeSignatureSegmentAtRow(int iNoteRow) const;
+	TimeSignatureSegment* GetTimeSignatureSegmentAtRow(int iNoteRow);
+	const TimeSignatureSegment* GetTimeSignatureSegmentAtBeat(float fBeat) const;
+	TimeSignatureSegment* GetTimeSignatureSegmentAtBeat(float fBeat);
+	void AddSegment(const TimeSignatureSegment& seg);
 
 	/* convenience aliases (Set functions are deprecated) */
 	float GetBPMAtRow( int iNoteRow ) const { return GetBPMSegmentAtRow(iNoteRow)->GetBPM(); }

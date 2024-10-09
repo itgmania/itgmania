@@ -1296,6 +1296,329 @@ std::vector<RString> TimingData::ToVectorString(TimingSegmentType tst, int dec) 
 	return ret;
 }
 
+// Segment adders, getters, and other functions
+const BPMSegment* ToBPM(const TimingSegment* t) {
+    return static_cast<const BPMSegment*>(t);
+}
+
+BPMSegment* ToBPM(TimingSegment* t) {
+    return static_cast<BPMSegment*>(t);
+}
+
+const StopSegment* ToStop(const TimingSegment* t) {
+    return static_cast<const StopSegment*>(t);
+}
+
+StopSegment* ToStop(TimingSegment* t) {
+    return static_cast<StopSegment*>(t);
+}
+
+const DelaySegment* ToDelay(const TimingSegment* t) {
+    return static_cast<const DelaySegment*>(t);
+}
+
+DelaySegment* ToDelay(TimingSegment* t) {
+    return static_cast<DelaySegment*>(t);
+}
+
+const TimeSignatureSegment* ToTimeSignature(const TimingSegment* t) {
+    return static_cast<const TimeSignatureSegment*>(t);
+}
+
+TimeSignatureSegment* ToTimeSignature(TimingSegment* t) {
+    return static_cast<TimeSignatureSegment*>(t);
+}
+
+const WarpSegment* ToWarp(const TimingSegment* t) {
+    return static_cast<const WarpSegment*>(t);
+}
+
+WarpSegment* ToWarp(TimingSegment* t) {
+    return static_cast<WarpSegment*>(t);
+}
+
+const LabelSegment* ToLabel(const TimingSegment* t) {
+    return static_cast<const LabelSegment*>(t);
+}
+
+LabelSegment* ToLabel(TimingSegment* t) {
+    return static_cast<LabelSegment*>(t);
+}
+
+const TickcountSegment* ToTickcount(const TimingSegment* t) {
+    return static_cast<const TickcountSegment*>(t);
+}
+
+TickcountSegment* ToTickcount(TimingSegment* t) {
+    return static_cast<TickcountSegment*>(t);
+}
+
+const ComboSegment* ToCombo(const TimingSegment* t) {
+    return static_cast<const ComboSegment*>(t);
+}
+
+ComboSegment* ToCombo(TimingSegment* t) {
+    return static_cast<ComboSegment*>(t);
+}
+
+const SpeedSegment* ToSpeed(const TimingSegment* t) {
+    return static_cast<const SpeedSegment*>(t);
+}
+
+SpeedSegment* ToSpeed(TimingSegment* t) {
+    return static_cast<SpeedSegment*>(t);
+}
+
+const ScrollSegment* ToScroll(const TimingSegment* t) {
+    return static_cast<const ScrollSegment*>(t);
+}
+
+ScrollSegment* ToScroll(TimingSegment* t) {
+    return static_cast<ScrollSegment*>(t);
+}
+
+const FakeSegment* ToFake(const TimingSegment* t) {
+    return static_cast<const FakeSegment*>(t);
+}
+
+FakeSegment* ToFake(TimingSegment* t) {
+    return static_cast<FakeSegment*>(t);
+}
+
+// Get*SegmentAtRow methods
+const BPMSegment* TimingData::GetBPMSegmentAtRow(int iNoteRow) const {
+	const TimingSegment* t = GetSegmentAtRow(iNoteRow, SEGMENT_BPM);
+	return ToBPM(t);
+}
+
+BPMSegment* TimingData::GetBPMSegmentAtRow(int iNoteRow) {
+	return const_cast<BPMSegment*>(((const TimingData*)this)->GetBPMSegmentAtRow(iNoteRow));
+}
+
+const StopSegment* TimingData::GetStopSegmentAtRow(int iNoteRow) const {
+	const TimingSegment* t = GetSegmentAtRow(iNoteRow, SEGMENT_STOP);
+	return ToStop(t);
+}
+
+StopSegment* TimingData::GetStopSegmentAtRow(int iNoteRow) {
+	return const_cast<StopSegment*>(((const TimingData*)this)->GetStopSegmentAtRow(iNoteRow));
+}
+
+const DelaySegment* TimingData::GetDelaySegmentAtRow(int iNoteRow) const {
+	const TimingSegment* t = GetSegmentAtRow(iNoteRow, SEGMENT_DELAY);
+	return ToDelay(t);
+}
+
+DelaySegment* TimingData::GetDelaySegmentAtRow(int iNoteRow) {
+	return const_cast<DelaySegment*>(((const TimingData*)this)->GetDelaySegmentAtRow(iNoteRow));
+}
+
+const WarpSegment* TimingData::GetWarpSegmentAtRow(int iNoteRow) const {
+	const TimingSegment* t = GetSegmentAtRow(iNoteRow, SEGMENT_WARP);
+	return ToWarp(t);
+}
+
+WarpSegment* TimingData::GetWarpSegmentAtRow(int iNoteRow) {
+	return const_cast<WarpSegment*>(((const TimingData*)this)->GetWarpSegmentAtRow(iNoteRow));
+}
+
+const LabelSegment* TimingData::GetLabelSegmentAtRow(int iNoteRow) const {
+	const TimingSegment* t = GetSegmentAtRow(iNoteRow, SEGMENT_LABEL);
+	return ToLabel(t);
+}
+
+LabelSegment* TimingData::GetLabelSegmentAtRow(int iNoteRow) {
+	return const_cast<LabelSegment*>(((const TimingData*)this)->GetLabelSegmentAtRow(iNoteRow));
+}
+
+const TickcountSegment* TimingData::GetTickcountSegmentAtRow(int iNoteRow) const {
+	const TimingSegment* t = GetSegmentAtRow(iNoteRow, SEGMENT_TICKCOUNT);
+	return ToTickcount(t);
+}
+
+TickcountSegment* TimingData::GetTickcountSegmentAtRow(int iNoteRow) {
+	return const_cast<TickcountSegment*>(((const TimingData*)this)->GetTickcountSegmentAtRow(iNoteRow));
+}
+
+const ComboSegment* TimingData::GetComboSegmentAtRow(int iNoteRow) const {
+	const TimingSegment* t = GetSegmentAtRow(iNoteRow, SEGMENT_COMBO);
+	return ToCombo(t);
+}
+
+ComboSegment* TimingData::GetComboSegmentAtRow(int iNoteRow) {
+	return const_cast<ComboSegment*>(((const TimingData*)this)->GetComboSegmentAtRow(iNoteRow));
+}
+
+const SpeedSegment* TimingData::GetSpeedSegmentAtRow(int iNoteRow) const {
+	const TimingSegment* t = GetSegmentAtRow(iNoteRow, SEGMENT_SPEED);
+	return ToSpeed(t);
+}
+
+SpeedSegment* TimingData::GetSpeedSegmentAtRow(int iNoteRow) {
+	return const_cast<SpeedSegment*>(((const TimingData*)this)->GetSpeedSegmentAtRow(iNoteRow));
+}
+
+const ScrollSegment* TimingData::GetScrollSegmentAtRow(int iNoteRow) const {
+	const TimingSegment* t = GetSegmentAtRow(iNoteRow, SEGMENT_SCROLL);
+	return ToScroll(t);
+}
+
+ScrollSegment* TimingData::GetScrollSegmentAtRow(int iNoteRow) {
+	return const_cast<ScrollSegment*>(((const TimingData*)this)->GetScrollSegmentAtRow(iNoteRow));
+}
+
+const FakeSegment* TimingData::GetFakeSegmentAtRow(int iNoteRow) const {
+	const TimingSegment* t = GetSegmentAtRow(iNoteRow, SEGMENT_FAKE);
+	return ToFake(t);
+}
+
+FakeSegment* TimingData::GetFakeSegmentAtRow(int iNoteRow) {
+	return const_cast<FakeSegment*>(((const TimingData*)this)->GetFakeSegmentAtRow(iNoteRow));
+}
+
+const TimeSignatureSegment* TimingData::GetTimeSignatureSegmentAtRow(int iNoteRow) const {
+	const TimingSegment* t = GetSegmentAtRow(iNoteRow, SEGMENT_TIME_SIG);
+	return ToTimeSignature(t);
+}
+
+TimeSignatureSegment* TimingData::GetTimeSignatureSegmentAtRow(int iNoteRow) {
+	return const_cast<TimeSignatureSegment*>(((const TimingData*)this)->GetTimeSignatureSegmentAtRow(iNoteRow));
+}
+
+// Get*SegmentAtBeat methods
+const BPMSegment* TimingData::GetBPMSegmentAtBeat(float fBeat) const {
+	return GetBPMSegmentAtRow(BeatToNoteRow(fBeat));
+}
+
+BPMSegment* TimingData::GetBPMSegmentAtBeat(float fBeat) {
+	return const_cast<BPMSegment*>(((const TimingData*)this)->GetBPMSegmentAtBeat(fBeat));
+}
+
+const StopSegment* TimingData::GetStopSegmentAtBeat(float fBeat) const {
+	return GetStopSegmentAtRow(BeatToNoteRow(fBeat));
+}
+
+StopSegment* TimingData::GetStopSegmentAtBeat(float fBeat) {
+	return const_cast<StopSegment*>(((const TimingData*)this)->GetStopSegmentAtBeat(fBeat));
+}
+
+const DelaySegment* TimingData::GetDelaySegmentAtBeat(float fBeat) const {
+	return GetDelaySegmentAtRow(BeatToNoteRow(fBeat));
+}
+
+DelaySegment* TimingData::GetDelaySegmentAtBeat(float fBeat) {
+	return const_cast<DelaySegment*>(((const TimingData*)this)->GetDelaySegmentAtBeat(fBeat));
+}
+
+const WarpSegment* TimingData::GetWarpSegmentAtBeat(float fBeat) const {
+	return GetWarpSegmentAtRow(BeatToNoteRow(fBeat));
+}
+
+WarpSegment* TimingData::GetWarpSegmentAtBeat(float fBeat) {
+	return const_cast<WarpSegment*>(((const TimingData*)this)->GetWarpSegmentAtBeat(fBeat));
+}
+
+const LabelSegment* TimingData::GetLabelSegmentAtBeat(float fBeat) const {
+	return GetLabelSegmentAtRow(BeatToNoteRow(fBeat));
+}
+
+LabelSegment* TimingData::GetLabelSegmentAtBeat(float fBeat) {
+	return const_cast<LabelSegment*>(((const TimingData*)this)->GetLabelSegmentAtBeat(fBeat));
+}
+
+const TickcountSegment* TimingData::GetTickcountSegmentAtBeat(float fBeat) const {
+	return GetTickcountSegmentAtRow(BeatToNoteRow(fBeat));
+}
+
+TickcountSegment* TimingData::GetTickcountSegmentAtBeat(float fBeat) {
+	return const_cast<TickcountSegment*>(((const TimingData*)this)->GetTickcountSegmentAtBeat(fBeat));
+}
+
+const ComboSegment* TimingData::GetComboSegmentAtBeat(float fBeat) const {
+	return GetComboSegmentAtRow(BeatToNoteRow(fBeat));
+}
+
+ComboSegment* TimingData::GetComboSegmentAtBeat(float fBeat) {
+	return const_cast<ComboSegment*>(((const TimingData*)this)->GetComboSegmentAtBeat(fBeat));
+}
+
+const SpeedSegment* TimingData::GetSpeedSegmentAtBeat(float fBeat) const {
+	return GetSpeedSegmentAtRow(BeatToNoteRow(fBeat));
+}
+
+SpeedSegment* TimingData::GetSpeedSegmentAtBeat(float fBeat) {
+	return const_cast<SpeedSegment*>(((const TimingData*)this)->GetSpeedSegmentAtBeat(fBeat));
+}
+
+const ScrollSegment* TimingData::GetScrollSegmentAtBeat(float fBeat) const {
+	return GetScrollSegmentAtRow(BeatToNoteRow(fBeat));
+}
+
+ScrollSegment* TimingData::GetScrollSegmentAtBeat(float fBeat) {
+	return const_cast<ScrollSegment*>(((const TimingData*)this)->GetScrollSegmentAtBeat(fBeat));
+}
+
+const FakeSegment* TimingData::GetFakeSegmentAtBeat(float fBeat) const {
+	return GetFakeSegmentAtRow(BeatToNoteRow(fBeat));
+}
+
+FakeSegment* TimingData::GetFakeSegmentAtBeat(float fBeat) {
+	return const_cast<FakeSegment*>(((const TimingData*)this)->GetFakeSegmentAtBeat(fBeat));
+}
+
+const TimeSignatureSegment* TimingData::GetTimeSignatureSegmentAtBeat(float fBeat) const {
+	return GetTimeSignatureSegmentAtRow(BeatToNoteRow(fBeat));
+}
+
+TimeSignatureSegment* TimingData::GetTimeSignatureSegmentAtBeat(float fBeat) {
+	return const_cast<TimeSignatureSegment*>(((const TimingData*)this)->GetTimeSignatureSegmentAtBeat(fBeat));
+}
+
+// AddSegment methods
+void TimingData::AddSegment(const BPMSegment& seg) {
+	AddSegment(&seg);
+}
+
+void TimingData::AddSegment(const StopSegment& seg) {
+	AddSegment(&seg);
+}
+
+void TimingData::AddSegment(const DelaySegment& seg) {
+	AddSegment(&seg);
+}
+
+void TimingData::AddSegment(const WarpSegment& seg) {
+	AddSegment(&seg);
+}
+
+void TimingData::AddSegment(const LabelSegment& seg) {
+	AddSegment(&seg);
+}
+
+void TimingData::AddSegment(const TickcountSegment& seg) {
+	AddSegment(&seg);
+}
+
+void TimingData::AddSegment(const ComboSegment& seg) {
+	AddSegment(&seg);
+}
+
+void TimingData::AddSegment(const SpeedSegment& seg) {
+	AddSegment(&seg);
+}
+
+void TimingData::AddSegment(const ScrollSegment& seg) {
+	AddSegment(&seg);
+}
+
+void TimingData::AddSegment(const FakeSegment& seg) {
+	AddSegment(&seg);
+}
+
+void TimingData::AddSegment(const TimeSignatureSegment& seg) {
+	AddSegment(&seg);
+}
+
 // lua start
 #include "LuaBinding.h"
 
