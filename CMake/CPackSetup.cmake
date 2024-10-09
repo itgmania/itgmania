@@ -63,6 +63,8 @@ elseif(MACOSX)
     set(CPACK_SYSTEM_NAME "macOS-M1")
   elseif(CMAKE_OSX_ARCHITECTURES STREQUAL "x86_64")
     set(CPACK_SYSTEM_NAME "macOS-Intel")
+  elseif(CMAKE_OSX_ARCHITECTURES STREQUAL "arm64;x86_64" OR CMAKE_OSX_ARCHITECTURES STREQUAL "x86_64;arm64")
+    set(CPACK_SYSTEM_NAME "macOS-Universal")
   else()
     message(FATAL_ERROR
       "Unsupported macOS architecture: ${CMAKE_OSX_ARCHITECTURES}, set CMAKE_OSX_ARCHITECTURES to either arm64 or x86_64"

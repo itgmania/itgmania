@@ -41,6 +41,8 @@ if(MACOSX)
     list(APPEND FFMPEG_CONFIGURE "--arch=arm64" "--extra-cflags=-arch arm64" "--extra-ldflags=-arch arm64")
   elseif(CMAKE_OSX_ARCHITECTURES STREQUAL "x86_64")
     list(APPEND FFMPEG_CONFIGURE "--arch=x86_64" "--extra-cflags=-arch x86_64" "--extra-ldflags=-arch x86_64")
+  elseif(CMAKE_OSX_ARCHITECTURES STREQUAL "arm64;x86_64" OR CMAKE_OSX_ARCHITECTURES STREQUAL "x86_64;arm64")
+    list(APPEND FFMPEG_CONFIGURE "--arch=arm64,x86_64" "--extra-cflags=-arch arm64 -arch x86_64" "--extra-ldflags=-arch arm64 -arch x86_64")
   else()
     message(FATAL_ERROR
       "Unsupported macOS architecture: ${CMAKE_OSX_ARCHITECTURES}, set CMAKE_OSX_ARCHITECTURES to either arm64 or x86_64"
