@@ -4,12 +4,46 @@
 #include "LightsDriver.h"
 
 #include <cstdint>
-
-extern "C" {
-#include <usb.h>
-}
+#include <libusb.h>
 
 #define BIT(i) (1<<(i))
+
+class USBContext
+{
+public:
+    static USBContext& getInstance()
+    {
+        static USBContext instance;
+        return instance;
+    }
+
+    libusb_context* getContext() { return context; }
+
+private:
+    USBContext()
+    {
+        int result = libusb_init_context(&context, NULL, 0);
+        if (result < 0)
+        {
+            // initialization error
+            context = nullptr;
+        }
+    }
+
+    ~USBContext()
+    {
+        if (context)
+        {
+            libusb_exit(context);
+        }
+    }
+
+    libusb_context* context;
+
+    // prevent copying
+    USBContext(const USBContext&) = delete;
+    USBContext& operator=(const USBContext&) = delete;
+};
 
 class LightsDriver_LinuxPacDrive: public LightsDriver
 {
@@ -20,13 +54,11 @@ public:
 	void Set( const LightsState *ls );
 private:
 
-	void FindDevice();
 	void OpenDevice();
-	void WriteDevice(std::uint16_t out);
+	void WriteDevice(uint16_t out);
 	void CloseDevice();
 
-	struct usb_device *Device;
-	usb_dev_handle *DeviceHandle;
+	libusb_device_handle *DeviceHandle;
 };
 
 #endif // LIGHTSDRIVER_LINUXPACDRIVE_H

@@ -25,7 +25,7 @@
 #include "CrashHandler.h"
 #include "CrashHandlerInternal.h"
 
-extern std::uint64_t GetInvalidThreadId();
+extern uint64_t GetInvalidThreadId();
 extern const char *g_pCrashHandlerArgv0;
 
 static void safe_print( int fd, ... )
@@ -315,7 +315,7 @@ static void RunCrashHandler( const CrashData *crash )
 static void BacktraceAllThreads( CrashData& crash )
 {
 	int iCnt = 1;
-	std::uint64_t iID;
+	uint64_t iID;
 
 	for( int i = 0; RageThread::EnumThreadIDs(i, iID); ++i )
 	{
@@ -348,7 +348,7 @@ void CrashHandler::ForceCrash( const char *reason )
 	RunCrashHandler( &crash );
 }
 
-void CrashHandler::ForceDeadlock( RString reason, std::uint64_t iID )
+void CrashHandler::ForceDeadlock( RString reason, uint64_t iID )
 {
 	CrashData crash;
 	memset( &crash, 0, sizeof(crash) );

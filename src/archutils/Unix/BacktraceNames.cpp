@@ -101,7 +101,7 @@ RString BacktraceNames::Format() const
 #include <dlfcn.h>
 void BacktraceNames::FromAddr( void * const p )
 {
-    Address = (std::intptr_t) p;
+    Address = (intptr_t) p;
 
     /*
      * When calling a function that doesn't return, gcc will truncate a function.
@@ -226,7 +226,7 @@ static const char *osx_find_link_edit( const struct mach_header *header )
 
 void BacktraceNames::FromAddr( void * const p )
 {
-	Address = (std::intptr_t) p;
+	Address = (intptr_t) p;
 
 	/* Find the image with the given pointer. */
 	int index = osx_find_image( p );
@@ -298,7 +298,7 @@ void BacktraceNames::FromAddr( void * const p )
 #include <execinfo.h>
 void BacktraceNames::FromAddr( void * const p )
 {
-    Address = (std::intptr_t) p;
+    Address = (intptr_t) p;
 
     char **foo = backtrace_symbols(&p, 1);
     if( foo == nullptr )
@@ -346,7 +346,7 @@ void BacktraceNames::FromString( RString s )
 #warning Undefined BACKTRACE_LOOKUP_METHOD_*
 void BacktraceNames::FromAddr( void * const p )
 {
-    Address = std::intptr_t(p);
+    Address = intptr_t(p);
     Offset = 0;
     Symbol = "";
     File = "";

@@ -32,7 +32,6 @@ jobs:
           libmad0-dev
           libpulse-dev
           libudev-dev
-          libusb-dev
           libxinerama-dev
           libx11-dev
           libxrandr-dev

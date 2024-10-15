@@ -189,8 +189,8 @@ void ImageCache::ReadFromDisk()
 
 struct ImageTexture: public RageTexture
 {
-	std::uintptr_t m_uTexHandle;
-	std::uintptr_t GetTexHandle() const { return m_uTexHandle; };	// accessed by RageDisplay
+	uintptr_t m_uTexHandle;
+	uintptr_t GetTexHandle() const { return m_uTexHandle; };	// accessed by RageDisplay
 	/* This is a reference to a pointer in g_ImagePathToImage. */
 	RageSurface *&m_pImage;
 	int m_iWidth, m_iHeight;

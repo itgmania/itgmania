@@ -10,21 +10,21 @@
 
 struct msTriangle
 {
-    std::uint16_t nVertexIndices[3];
+    uint16_t nVertexIndices[3];
 };
 
 
 struct msMesh
 {
     RString sName;
-    std::int8_t nMaterialIndex;
+    int8_t nMaterialIndex;
 	
     std::vector<RageModelVertex> Vertices;
 	
 	// OPTIMIZATION: If all verts in a mesh are transformed by the same bone,
 	// then send the transform to the graphics card for the whole mesh instead
 	// of transforming each vertex on the CPU;
-    std::int8_t m_iBoneIndex; // -1 = no bone
+    int8_t m_iBoneIndex; // -1 = no bone
 	
     std::vector<msTriangle> Triangles;
 };

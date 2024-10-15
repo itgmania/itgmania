@@ -18,13 +18,13 @@ public:
 
 	RString Init();
 
-	std::int64_t GetPosition() const;
+	int64_t GetPosition() const;
 	inline int GetSampleRate() const { return m_ss.rate; };
 
 protected:
-	std::int64_t GetPositionUnlocked() const;
+	int64_t GetPositionUnlocked() const;
 
-	std::int64_t m_LastPosition;
+	int64_t m_LastPosition;
 	pa_sample_spec m_ss;
 	char *m_Error;
 

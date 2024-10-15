@@ -18,8 +18,8 @@ class RageSoundBase
 public:
 	virtual ~RageSoundBase() { }
 	virtual void SoundIsFinishedPlaying() = 0;
-	virtual int GetDataToPlay( float *buffer, int size, std::int64_t &iStreamFrame, int &got_bytes ) = 0;
-	virtual void CommitPlayingPosition( std::int64_t iFrameno, std::int64_t iPosition, int iBytesRead ) = 0;
+	virtual int GetDataToPlay( float *buffer, int size, int64_t &iStreamFrame, int &got_bytes ) = 0;
+	virtual void CommitPlayingPosition( int64_t iFrameno, int64_t iPosition, int iBytesRead ) = 0;
 	virtual RageTimer GetStartTime() const { return RageZeroTimer; }
 	virtual RString GetLoadedFilePath() const = 0;
 };
@@ -161,7 +161,7 @@ private:
 
 	/* Current position of the output sound, in frames. If < 0, nothing will play
 	 * until it becomes positive. */
-	std::int64_t m_iStreamFrame;
+	int64_t m_iStreamFrame;
 
 	/* Hack: When we stop a playing sound, we can't ask the driver the position
 	 * (we're not playing); and we can't seek back to the current playing position
@@ -175,7 +175,7 @@ private:
 
 	RString m_sError;
 
-	int GetSourceFrameFromHardwareFrame( std::int64_t iHardwareFrame ) const;
+	int GetSourceFrameFromHardwareFrame( int64_t iHardwareFrame ) const;
 
 	bool SetPositionFrames( int frames = -1 );
 	RageSoundParams::StopMode_t GetStopMode() const; // resolves M_AUTO
@@ -189,8 +189,8 @@ public:
 	 * it signals the stream to stop; once it's flushed, SoundStopped will be
 	 * called. Until then, SOUNDMAN->GetPosition can still be called; the sound
 	 * is still playing. */
-	int GetDataToPlay( float *pBuffer, int iSize, std::int64_t &iStreamFrame, int &iBytesRead );
-	void CommitPlayingPosition( std::int64_t iHardwareFrame, std::int64_t iStreamFrame, int iGotFrames );
+	int GetDataToPlay( float *pBuffer, int iSize, int64_t &iStreamFrame, int &iBytesRead );
+	void CommitPlayingPosition( int64_t iHardwareFrame, int64_t iStreamFrame, int iGotFrames );
 };
 
 #endif

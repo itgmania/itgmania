@@ -290,7 +290,7 @@ inline unsigned char FTOC(float a)
 class RageVColor
 {
 public:
-	std::uint8_t b,g,r,a;	// specific ordering required by Direct3D
+	uint8_t b,g,r,a;	// specific ordering required by Direct3D
 
 	RageVColor(): b(0), g(0), r(0), a(0) { }
 	RageVColor(const RageColor &rc): b(0), g(0), r(0), a(0) { *this = rc; }
@@ -360,7 +360,7 @@ struct RageModelVertex	// doesn't have color.  Relies on material color
 	RageVector3 p;	// position
 	RageVector3 n;	// normal
 	RageVector2 t;	// texture coordinates
-	std::int8_t bone;
+	int8_t bone;
 	RageVector2 TextureMatrixScale; // usually 1,1
 };
 

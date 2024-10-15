@@ -17,7 +17,7 @@ public:
 	// Extend the buffer as if write() was called with a buffer of silence.
 	void Extend( unsigned iSamples ) noexcept;
 
-	void read( std::int16_t *pBuf );
+	void read( int16_t *pBuf );
 	void read( float *pBuf );
 	void read_deinterlace( float **pBufs, int channels );
 	float *read() { return m_pMixbuf; }
@@ -26,8 +26,8 @@ public:
 
 private:
 	float *m_pMixbuf;
-	uint_fast64_t m_iBufSize;
-	uint_fast64_t m_iBufUsed;
+	uint_fast64_t m_iBufSize; // actual allocated samples
+	uint_fast64_t m_iBufUsed; // used samples
 	int m_iOffset;
 };
 

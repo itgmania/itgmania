@@ -75,7 +75,7 @@ bool RageSoundDriver_WaveOut::GetData()
 		return false;
 
 	/* Call the callback. */
-	this->Mix( (std::int16_t *) m_aBuffers[b].lpData, CHUNKSIZE_FRAMES, m_iLastCursorPos, GetPosition() );
+	this->Mix( (int16_t *) m_aBuffers[b].lpData, CHUNKSIZE_FRAMES, m_iLastCursorPos, GetPosition() );
 
 	MMRESULT ret = waveOutWrite( m_hWaveOut, &m_aBuffers[b], sizeof(m_aBuffers[b]) );
 	if( ret != MMSYSERR_NOERROR )
@@ -99,7 +99,7 @@ void RageSoundDriver_WaveOut::SetupDecodingThread()
 		LOG->Warn( werr_ssprintf(GetLastError(), "Failed to set sound thread priority") );
 }
 
-std::int64_t RageSoundDriver_WaveOut::GetPosition() const
+int64_t RageSoundDriver_WaveOut::GetPosition() const
 {
 	MMTIME tm;
 	tm.wType = TIME_SAMPLES;

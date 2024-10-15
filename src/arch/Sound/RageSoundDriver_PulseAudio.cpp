@@ -184,7 +184,7 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 	*
 	* "The server tries to assure that at least tlength bytes are always
 	*  available in the per-stream server-side playback buffer. It is
-	*  recommended to set this to (std::uint32_t) -1, which will initialize
+	*  recommended to set this to (uint32_t) -1, which will initialize
 	*  this to a value that is deemed sensible by the server. However,
 	*  this value will default to something like 2s, i.e. for applications
 	*  that have specific latency requirements this value should be set to
@@ -197,10 +197,10 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 
 	/* maxlength: Maximum length of the buffer
 	*
-	* "Setting this to (std::uint32_t) -1 will initialize this to the maximum
+	* "Setting this to (uint32_t) -1 will initialize this to the maximum
 	*  value supported by server, which is recommended."
 	*
-	* (std::uint32_t)-1 is NOT working here, setting it to tlength*2, like
+	* (uint32_t)-1 is NOT working here, setting it to tlength*2, like
 	* openal-soft-pulseaudio does.
 	*/
 	attr.maxlength = attr.tlength*2;
@@ -209,10 +209,10 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 	*
 	* "The server does not request less than minreq bytes from the client,
 	*  instead waits until the buffer is free enough to request more bytes
-	*  at once. It is recommended to set this to (std::uint32_t) -1, which will
+	*  at once. It is recommended to set this to (uint32_t) -1, which will
 	*  initialize this to a value that is deemed sensible by the server."
 	*
-	* (std::uint32_t)-1 is NOT working here, setting it to 0, like
+	* (uint32_t)-1 is NOT working here, setting it to 0, like
 	* openal-soft-pulseaudio does.
 	*/
 	attr.minreq = 0;
@@ -221,10 +221,10 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 	*
 	* "The server does not start with playback before at least prebuf
 	*  bytes are available in the buffer. It is recommended to set this
-	*  to (std::uint32_t) -1, which will initialize this to the same value as
+	*  to (uint32_t) -1, which will initialize this to the same value as
 	*  tlength"
 	*/
-	attr.prebuf = (std::uint32_t)-1;
+	attr.prebuf = (uint32_t)-1;
 
 	/* log the used target buffer length */
 	LOG->Trace("Pulse: using target buffer length of %i bytes", attr.tlength);
@@ -306,15 +306,15 @@ void RageSoundDriver_PulseAudio::StreamStateCb(pa_stream *s)
 	}
 }
 
-std::int64_t RageSoundDriver_PulseAudio::GetPosition() const
+int64_t RageSoundDriver_PulseAudio::GetPosition() const
 {
 	pa_threaded_mainloop_lock(m_PulseMainLoop);
-	std::int64_t position = GetPositionUnlocked();
+	int64_t position = GetPositionUnlocked();
 	pa_threaded_mainloop_unlock(m_PulseMainLoop);
 	return position;
 }
 
-std::int64_t RageSoundDriver_PulseAudio::GetPositionUnlocked() const
+int64_t RageSoundDriver_PulseAudio::GetPositionUnlocked() const
 {
 	pa_usec_t usec;
 	if(pa_stream_get_time(m_PulseStream, &usec) < 0)
@@ -329,12 +329,12 @@ std::int64_t RageSoundDriver_PulseAudio::GetPositionUnlocked() const
 	}
 
 	size_t length = pa_usec_to_bytes(usec, &m_ss);
-	return length / (sizeof(std::int16_t) * 2); /* we use 16-bit frames and 2 channels */
+	return length / (sizeof(int16_t) * 2); /* we use 16-bit frames and 2 channels */
 }
 
 void RageSoundDriver_PulseAudio::StreamWriteCb(pa_stream *s, size_t length)
 {
-	std::int64_t curPos = GetPositionUnlocked();
+	int64_t curPos = GetPositionUnlocked();
 	while(length > 0)
 	{
 		void* buf;
@@ -344,10 +344,10 @@ void RageSoundDriver_PulseAudio::StreamWriteCb(pa_stream *s, size_t length)
 			RageException::Throw("Pulse: pa_stream_begin_write() failed: %s", pa_strerror(pa_context_errno(m_PulseCtx)));
 		}
 
-		const size_t nbframes = bufsize / sizeof(std::int16_t); /* we use 16-bit frames */
-		std::int64_t pos1 = m_LastPosition;
-		std::int64_t pos2 = pos1 + nbframes/2; /* Mix() position in stereo frames */
-		this->Mix( reinterpret_cast<std::int16_t*>(buf), pos2-pos1, pos1, curPos);
+		const size_t nbframes = bufsize / sizeof(int16_t); /* we use 16-bit frames */
+		int64_t pos1 = m_LastPosition;
+		int64_t pos2 = pos1 + nbframes/2; /* Mix() position in stereo frames */
+		this->Mix( reinterpret_cast<int16_t*>(buf), pos2-pos1, pos1, curPos);
 
 		if(pa_stream_write(m_PulseStream, buf, bufsize, nullptr, 0, PA_SEEK_RELATIVE) < 0)
 		{

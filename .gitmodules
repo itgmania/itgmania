@@ -37,3 +37,7 @@
 	path = extern/libtomcrypt
 	url = https://github.com/libtom/libtomcrypt.git
 	shallow = true
+[submodule "extern/libusb"]
+	path = extern/libusb
+	url = https://github.com/libusb/libusb-cmake.git
+	shallow = true

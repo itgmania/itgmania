@@ -50,8 +50,8 @@ public:
 
 	/* Get the current hardware frame position, in the same time base as passed to
 	 * RageSound::CommitPlayingPosition. */
-	std::int64_t GetHardwareFrame( RageTimer *pTimer ) const;
-	virtual std::int64_t GetPosition() const = 0;
+	int64_t GetHardwareFrame( RageTimer *pTimer ) const;
+	virtual int64_t GetPosition() const = 0;
 
 	/* When a sound is finished playing (GetDataToPlay returns 0) and the sound has
 	 * been completely flushed (so GetPosition is no longer meaningful), call
@@ -96,10 +96,10 @@ protected:
 	 * This function only mixes data; it will not lock any mutexes or do any file access, and
 	 * is safe to call from a realtime thread.
 	 */
-	void Mix( std::int16_t *pBuf, int iFrames, std::int64_t iFrameNumber, std::int64_t iCurrentFrame );
-	void Mix( float *pBuf, int iFrames, std::int64_t iFrameNumber, std::int64_t iCurrentFrame );
+	void Mix( int16_t *pBuf, int iFrames, int64_t iFrameNumber, int64_t iCurrentFrame );
+	void Mix( float *pBuf, int iFrames, int64_t iFrameNumber, int64_t iCurrentFrame );
 
-	void MixDeinterlaced( float **pBufs, int iChannels, int iFrames, std::int64_t iFrameNumber, std::int64_t iCurrentFrame );
+	void MixDeinterlaced( float **pBufs, int iChannels, int iFrames, int64_t iFrameNumber, int64_t iCurrentFrame );
 
 private:
 	/* This mutex is used for serializing with the decoder thread.  Locking this mutex
@@ -156,7 +156,7 @@ private:
 		float m_Buffer[samples_per_block];
 		float *m_BufferNext; // beginning of the unread data
 		int m_FramesInBuffer; // total number of frames at m_BufferNext
-		std::int64_t m_iPosition; // stream frame of m_BufferNext
+		int64_t m_iPosition; // stream frame of m_BufferNext
 		sound_block(): m_BufferNext(m_Buffer),
 			m_FramesInBuffer(0), m_iPosition(0) {}
 	};
@@ -176,8 +176,8 @@ private:
 		struct QueuedPosMap
 		{
 			int iFrames;
-			std::int64_t iStreamFrame;
-			std::int64_t iHardwareFrame;
+			int64_t iStreamFrame;
+			int64_t iHardwareFrame;
 		};
 
 		CircBuf<QueuedPosMap> m_PosMapQueue;
@@ -201,15 +201,15 @@ private:
 	/* List of currently playing sounds: XXX no vector */
 	Sound m_Sounds[32];
 
-	std::int64_t ClampHardwareFrame( std::int64_t iHardwareFrame ) const;
-	mutable std::int64_t m_iMaxHardwareFrame;
-	mutable std::int64_t m_iVMaxHardwareFrame;
+	int64_t ClampHardwareFrame( int64_t iHardwareFrame ) const;
+	mutable int64_t m_iMaxHardwareFrame;
+	mutable int64_t m_iVMaxHardwareFrame;
 
 	bool m_bShutdownDecodeThread;
 
 	static int DecodeThread_start( void *p );
 	void DecodeThread();
-	RageSoundMixBuffer &MixIntoBuffer( int iFrames, std::int64_t iFrameNumber, std::int64_t iCurrentFrame );
+	RageSoundMixBuffer &MixIntoBuffer( int iFrames, int64_t iFrameNumber, int64_t iCurrentFrame );
 	RageThread m_DecodeThread;
 
 	int GetDataForSound( Sound &s );

@@ -149,25 +149,25 @@ clockid_t ArchHooks_Unix::GetClock()
 	return g_Clock;
 }
 
-std::int64_t ArchHooks::GetSystemTimeInMicroseconds()
+int64_t ArchHooks::GetSystemTimeInMicroseconds()
 {
 	OpenGetTime();
 
 	timespec ts;
 	clock_gettime( g_Clock, &ts );
 
-	std::int64_t iRet = std::int64_t(ts.tv_sec) * 1000000 + std::int64_t(ts.tv_nsec)/1000;
+	int64_t iRet = int64_t(ts.tv_sec) * 1000000 + int64_t(ts.tv_nsec)/1000;
 	if( g_Clock != CLOCK_MONOTONIC )
 		iRet = ArchHooks::FixupTimeIfBackwards( iRet );
 	return iRet;
 }
 #else
-std::int64_t ArchHooks::GetSystemTimeInMicroseconds()
+int64_t ArchHooks::GetSystemTimeInMicroseconds()
 {
 	struct timeval tv;
 	gettimeofday( &tv, nullptr );
 
-	std::int64_t iRet = std::int64_t(tv.tv_sec) * 1000000 + std::int64_t(tv.tv_usec);
+	int64_t iRet = int64_t(tv.tv_sec) * 1000000 + int64_t(tv.tv_usec);
 	ret = FixupTimeIfBackwards( ret );
 	return iRet;
 }

@@ -19,7 +19,7 @@ namespace
 	class SextetImpl
 	{
 	protected:
-		std::uint8_t lastOutput[FULL_SEXTET_COUNT];
+		uint8_t lastOutput[FULL_SEXTET_COUNT];
 		RageFile * out;
 
 	public:
@@ -41,7 +41,7 @@ namespace
 
 		void Set(const LightsState * ls)
 		{
-			std::uint8_t buffer[FULL_SEXTET_COUNT];
+			uint8_t buffer[FULL_SEXTET_COUNT];
 
 			packLine(buffer, ls);
 

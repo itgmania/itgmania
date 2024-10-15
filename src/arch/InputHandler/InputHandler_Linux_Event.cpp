@@ -72,7 +72,7 @@ struct EventDevice
 
 static std::vector<EventDevice *> g_apEventDevices;
 
-static bool BitIsSet( const std::uint8_t *pArray, std::uint32_t iBit )
+static bool BitIsSet( const uint8_t *pArray, uint32_t iBit )
 {
 	return !!(pArray[iBit/8] & (1<<(iBit%8)));
 }
@@ -128,7 +128,7 @@ bool EventDevice::Open( RString sFile, InputDevice dev )
 			DevInfo.version, m_sName.c_str() );
 	}
 
-	std::uint8_t iABSMask[ABS_MAX/8 + 1];
+	uint8_t iABSMask[ABS_MAX/8 + 1];
 	memset( iABSMask, 0, sizeof(iABSMask) );
 	if( ioctl(m_iFD, EVIOCGBIT(EV_ABS, sizeof(iABSMask)), iABSMask) < 0 )
 		LOG->Warn( "ioctl(EVIOCGBIT(EV_ABS)): %s", strerror(errno) );
@@ -145,12 +145,12 @@ bool EventDevice::Open( RString sFile, InputDevice dev )
 		}
 	}
 
-	std::uint8_t iKeyMask[KEY_MAX/8 + 1];
+	uint8_t iKeyMask[KEY_MAX/8 + 1];
 	memset( iKeyMask, 0, sizeof(iKeyMask) );
 	if( ioctl(m_iFD, EVIOCGBIT(EV_KEY, sizeof(iKeyMask)), iKeyMask) < 0 )
 		LOG->Warn( "ioctl(EVIOCGBIT(EV_KEY)): %s", strerror(errno) );
 
-	std::uint8_t iEventTypes[EV_MAX/8];
+	uint8_t iEventTypes[EV_MAX/8];
 	memset( iEventTypes, 0, sizeof(iEventTypes) );
 	if( ioctl(m_iFD, EVIOCGBIT(0, EV_MAX), iEventTypes) == -1 )
 		LOG->Warn( "ioctl(EV_MAX): %s", strerror(errno) );

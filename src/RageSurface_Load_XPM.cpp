@@ -60,9 +60,9 @@ RageSurface *RageSurface_Load_XPM( char * const *xpm, RString &error )
 		if( sscanf( clr, "%2x%2x%2x", &r, &g, &b ) != 3 )
 			continue;
 		RageSurfaceColor colorval;
-		colorval.r = (std::uint8_t) r;
-		colorval.g = (std::uint8_t) g;
-		colorval.b = (std::uint8_t) b;
+		colorval.r = (uint8_t) r;
+		colorval.g = (uint8_t) g;
+		colorval.b = (uint8_t) b;
 		colorval.a = 0xFF;
 
 		colors.push_back( colorval );
@@ -91,9 +91,9 @@ RageSurface *RageSurface_Load_XPM( char * const *xpm, RString &error )
 		    return nullptr;
 		}
 
-		std::int8_t *p = (std::int8_t *) img->pixels;
+		int8_t *p = (int8_t *) img->pixels;
 		p += y * img->pitch;
-		std::int32_t *p32 = (std::int32_t *) p;
+		int32_t *p32 = (int32_t *) p;
 		for( int x = 0; x < width; ++x )
 		{
 			RString color_name = row.substr( x*color_length, color_length );
@@ -108,7 +108,7 @@ RageSurface *RageSurface_Load_XPM( char * const *xpm, RString &error )
 
 			if( colors.size() <= 256 )
 			{
-				p[x] = (std::int8_t) it->second;
+				p[x] = (int8_t) it->second;
 			} else {
 				const RageSurfaceColor &color = colors[it->second];
 				p32[x] = (color.r << 24) + (color.g << 16) + (color.b << 8);

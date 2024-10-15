@@ -46,7 +46,7 @@ public:
 	 * microseconds values into two integers and combining them later allows for
 	 * better precision. Use caution when changing data types, since resolution
 	 * mismatch errors are easy to cause when changing things in RageTimer. */
-	std::uint64_t m_secs, m_us;
+	uint64_t m_secs, m_us;
 
 private:
 	static RageTimer Sum( const RageTimer &lhs, float tm );

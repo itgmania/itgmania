@@ -559,7 +559,7 @@ void DSoundBuf::release_output_buf( char *pBuffer, unsigned iBufferSize )
 	m_bBufferLocked = false;
 }
 
-std::int64_t DSoundBuf::GetPosition() const
+int64_t DSoundBuf::GetPosition() const
 {
 	DWORD iCursor, iJunk;
 	HRESULT hr = m_pBuffer->GetCurrentPosition( &iCursor, &iJunk );
@@ -589,7 +589,7 @@ std::int64_t DSoundBuf::GetPosition() const
 	if( iFramesBehind < 0 )
 		iFramesBehind += buffersize_frames(); /* unwrap */
 
-	std::int64_t iRet = m_iWriteCursorPos - iFramesBehind;
+	int64_t iRet = m_iWriteCursorPos - iFramesBehind;
 
 	/* Failsafe: never return a value smaller than we've already returned.
 	 * This can happen once in a while in underrun conditions. */

@@ -111,7 +111,7 @@ void RageFile::EnableCRC32( bool on )
 	m_File->EnableCRC32( on );
 }
 
-bool RageFile::GetCRC32( std::uint32_t *iRet )
+bool RageFile::GetCRC32( uint32_t *iRet )
 {
 	ASSERT_OPEN;
 	return m_File->GetCRC32( iRet );
@@ -267,50 +267,50 @@ void FileReading::Seek( RageFileBasic &f, int iOffset, RString &sError )
 		sError = "Unexpected end of file";
 }
 
-std::uint8_t FileReading::read_8( RageFileBasic &f, RString &sError )
+uint8_t FileReading::read_8( RageFileBasic &f, RString &sError )
 {
-	std::uint8_t val;
-	ReadBytes( f, &val, sizeof(std::uint8_t), sError );
+	uint8_t val;
+	ReadBytes( f, &val, sizeof(uint8_t), sError );
 	if( sError.size() == 0 )
 		return val;
 	else
 		return 0;
 }
 
-std::uint16_t FileReading::read_u16_le( RageFileBasic &f, RString &sError )
+uint16_t FileReading::read_u16_le( RageFileBasic &f, RString &sError )
 {
-	std::uint16_t val;
-	ReadBytes( f, &val, sizeof(std::uint16_t), sError );
+	uint16_t val;
+	ReadBytes( f, &val, sizeof(uint16_t), sError );
 	if( sError.size() == 0 )
 		return Swap16LE( val );
 	else
 		return 0;
 }
 
-std::int16_t FileReading::read_16_le( RageFileBasic &f, RString &sError )
+int16_t FileReading::read_16_le( RageFileBasic &f, RString &sError )
 {
-	std::int16_t val;
-	ReadBytes( f, &val, sizeof(std::int16_t), sError );
+	int16_t val;
+	ReadBytes( f, &val, sizeof(int16_t), sError );
 	if( sError.size() == 0 )
 		return Swap16LE( val );
 	else
 		return 0;
 }
 
-std::uint32_t FileReading::read_u32_le( RageFileBasic &f, RString &sError )
+uint32_t FileReading::read_u32_le( RageFileBasic &f, RString &sError )
 {
-	std::uint32_t val;
-	ReadBytes( f, &val, sizeof(std::uint32_t), sError );
+	uint32_t val;
+	ReadBytes( f, &val, sizeof(uint32_t), sError );
 	if( sError.size() == 0 )
 		return Swap32LE( val );
 	else
 		return 0;
 }
 
-std::int32_t FileReading::read_32_le( RageFileBasic &f, RString &sError )
+int32_t FileReading::read_32_le( RageFileBasic &f, RString &sError )
 {
-	std::int32_t val;
-	ReadBytes( f, &val, sizeof(std::int32_t), sError );
+	int32_t val;
+	ReadBytes( f, &val, sizeof(int32_t), sError );
 	if( sError.size() == 0 )
 		return Swap32LE( val );
 	else

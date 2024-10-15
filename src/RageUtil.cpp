@@ -196,7 +196,7 @@ bool HexToBinary( const RString &s, unsigned char *stringOut )
 			break;
 		RString sByte = s.substr( i*2, 2 );
 
-		std::uint8_t val = 0;
+		uint8_t val = 0;
 		if( sscanf( sByte, "%hhx", &val ) != 1 )
 			return false;
 		stringOut[i] = val;

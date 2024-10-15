@@ -18,17 +18,17 @@ public:
 	 * Keep a list of child PIDs, so we can send them SIGKILL. This has
 	 * an added bonus: if this is corrupted, we'll just send signals and
 	 * they'll fail; we won't blow up (unless we're root). */
-	std::uint64_t threadHandle;
+	uint64_t threadHandle;
 
 	// These are only used during initialization.
 	int (*m_pFunc)( void *pData );
 	void *m_pData;
-	std::uint64_t *m_piThreadID;
+	uint64_t *m_piThreadID;
 	SemaImpl *m_StartFinishedSem;
 
 	void Halt( bool Kill );
 	void Resume();
-	std::uint64_t GetThreadId() const;
+	uint64_t GetThreadId() const;
 	int Wait();
 };
 

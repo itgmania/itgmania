@@ -71,7 +71,7 @@ LightsDriver_Win32Serial::~LightsDriver_Win32Serial()
 void LightsDriver_Win32Serial::Set(const LightsState* ls)
 {
 	if (serialPort != INVALID_HANDLE_VALUE) {
-		std::uint8_t buffer[FULL_SEXTET_COUNT];
+		uint8_t buffer[FULL_SEXTET_COUNT];
 
 		packLine(buffer, ls);
 

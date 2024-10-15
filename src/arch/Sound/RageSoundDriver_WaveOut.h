@@ -15,7 +15,7 @@ public:
 	RageSoundDriver_WaveOut();
 	~RageSoundDriver_WaveOut();
 	RString Init();
-	std::int64_t GetPosition() const;
+	int64_t GetPosition() const;
 	float GetPlayLatency() const;
 	int GetSampleRate() const { return m_iSampleRate; }
 	static const int NUM_BUFFERS = 32;

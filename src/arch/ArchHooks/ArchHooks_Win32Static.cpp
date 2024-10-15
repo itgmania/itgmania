@@ -39,7 +39,7 @@ static void InitTimer()
 	QueryPerformanceFrequency(&g_liFrequency);
 }
 
-std::int64_t ArchHooks::GetSystemTimeInMicroseconds()
+int64_t ArchHooks::GetSystemTimeInMicroseconds()
 {
 	// Make sure the timer is initialized.
 	if (!g_bTimerInitialized) {

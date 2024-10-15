@@ -13,7 +13,7 @@
 #include <process.h>
 
 typedef int (*thread_create_t)(
-	int (*proc)(void*), void* ctx, std::uint32_t stack_sz, unsigned int priority);
+	int (*proc)(void*), void* ctx, uint32_t stack_sz, unsigned int priority);
 typedef void (*thread_join_t)(int thread_id, int* result);
 typedef void (*thread_destroy_t)(int thread_id);
 
@@ -28,13 +28,13 @@ static DDRIO_IO_INIT ddrio_io_init;
 typedef int (*DDRIO_READ_PAD)();
 static DDRIO_READ_PAD ddrio_io_read_pad;
 
-typedef int (*DDRIO_SETLIGHTS_P3IO)(std::uint32_t lights);
+typedef int (*DDRIO_SETLIGHTS_P3IO)(uint32_t lights);
 static DDRIO_SETLIGHTS_P3IO ddrio_set_lights_p3io;
 
-typedef int (*DDRIO_SETLIGHTS_EXTIO)(std::uint32_t lights);
+typedef int (*DDRIO_SETLIGHTS_EXTIO)(uint32_t lights);
 static DDRIO_SETLIGHTS_EXTIO ddrio_set_lights_extio;
 
-typedef int (*DDRIO_SETLIGHTS_HDXSPANEL)(std::uint32_t lights);
+typedef int (*DDRIO_SETLIGHTS_HDXSPANEL)(uint32_t lights);
 static DDRIO_SETLIGHTS_HDXSPANEL ddrio_set_lights_hdxs_panel;
 
 typedef int (*DDRIO_FINI)();
@@ -69,13 +69,13 @@ static unsigned int crt_thread_shim(void* outer_ctx)
 
 
 int crt_thread_create(
-	int (*proc)(void*), void* ctx, std::uint32_t stack_sz, unsigned int priority)
+	int (*proc)(void*), void* ctx, uint32_t stack_sz, unsigned int priority)
 {
 
 	LOG->Trace("crt_thread_create");
 
 	struct shim_ctx sctx;
-	std::uintptr_t thread_id;
+	uintptr_t thread_id;
 
 	sctx.barrier = CreateEvent(NULL, TRUE, FALSE, NULL);
 	sctx.proc = proc;
@@ -96,7 +96,7 @@ void crt_thread_destroy(int thread_id)
 {
 	LOG->Trace("crt_thread_destroy %d", thread_id);
 
-	CloseHandle((HANDLE)(std::uintptr_t)thread_id);
+	CloseHandle((HANDLE)(uintptr_t)thread_id);
 }
 
 
@@ -104,11 +104,11 @@ void crt_thread_join(int thread_id, int* result)
 {
 	LOG->Trace("crt_thread_join %d", thread_id);
 
-	WaitForSingleObject((HANDLE)(std::uintptr_t)thread_id, INFINITE);
+	WaitForSingleObject((HANDLE)(uintptr_t)thread_id, INFINITE);
 
 	if (result)
 	{
-		GetExitCodeThread((HANDLE)(std::uintptr_t)thread_id, (DWORD*)result);
+		GetExitCodeThread((HANDLE)(uintptr_t)thread_id, (DWORD*)result);
 	}
 }
 
@@ -265,7 +265,7 @@ int InputHandler_Win32_ddrio::InputThread_Start( void *p )
 
 void InputHandler_Win32_ddrio::InputThreadMain()
 {
-	std::uint32_t prevInput = 0, newInput = 0;
+	uint32_t prevInput = 0, newInput = 0;
 	LightsState prevLS = { 0 };
 	LightsState newLS = { 0 };
 
@@ -294,7 +294,7 @@ void InputHandler_Win32_ddrio::InputThreadMain()
 	}
 }
 
-void InputHandler_Win32_ddrio::PushInputState(std::uint32_t newInput)
+void InputHandler_Win32_ddrio::PushInputState(uint32_t newInput)
 {
 	for (int i = 0; i < 32; i++)
 	{
@@ -337,9 +337,9 @@ bool InputHandler_Win32_ddrio::IsLightChange(LightsState prevLS, LightsState new
 
 void InputHandler_Win32_ddrio::PushLightState(LightsState newLS)
 {
-	std::uint32_t p3io = 0;
-	std::uint32_t hdxs = 0;
-	std::uint32_t extio = 0;
+	uint32_t p3io = 0;
+	uint32_t hdxs = 0;
+	uint32_t extio = 0;
 
 	//lighting state has already been verified to have changed in this method, so create the new one from scratch.
 

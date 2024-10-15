@@ -89,7 +89,7 @@ RString FindSystemFile( RString sFile )
 
 /* Get the full path of the process running in iProcessID. On error, false is
  * returned and an error message is placed in sName. */
-bool GetProcessFileName( std::uint32_t iProcessID, RString &sName )
+bool GetProcessFileName( uint32_t iProcessID, RString &sName )
 {
 	/* This method works in everything except for NT4, and only uses
 	 * kernel32.lib functions. */

@@ -190,7 +190,7 @@ public:
 	RenderTarget_MacOSX( id shareContext );
 	~RenderTarget_MacOSX();
 	void Create( const RenderTargetParam &param, int &iTextureWidthOut, int &iTextureHeightOut );
-	std::uintptr_t GetTexture() const { return static_cast<std::uintptr_t>(m_iTexHandle); }
+	uintptr_t GetTexture() const { return static_cast<uintptr_t>(m_iTexHandle); }
 	void StartRenderingTo();
 	void FinishRenderingTo();
 
@@ -326,11 +326,11 @@ void *LowLevelWindow_MacOSX::GetProcAddress( RString s )
 	// http://developer.apple.com/qa/qa2001/qa1188.html
 	// Both functions mentioned in there are deprecated in 10.4.
 	const RString& symbolName( '_' + s );
-	const std::uint32_t count = _dyld_image_count();
+	const uint32_t count = _dyld_image_count();
 	NSSymbol symbol = nil;
-	const std::uint32_t options = NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR;
+	const uint32_t options = NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR;
 
-	for( std::uint32_t i = 0; i < count && !symbol; ++i )
+	for( uint32_t i = 0; i < count && !symbol; ++i )
 		symbol = NSLookupSymbolInImage( _dyld_get_image_header(i), symbolName, options );
 	return symbol ? NSAddressOfSymbol( symbol ) : nil;
 }

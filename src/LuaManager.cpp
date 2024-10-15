@@ -422,8 +422,8 @@ LuaThreadVariable::LuaThreadVariable( lua_State *L )
 
 RString LuaThreadVariable::GetCurrentThreadIDString()
 {
-	std::uint64_t iID = RageThread::GetCurrentThreadID();
-	return ssprintf( "%08x%08x", std::uint32_t(iID >> 32), std::uint32_t(iID) );
+	uint64_t iID = RageThread::GetCurrentThreadID();
+	return ssprintf( "%08x%08x", uint32_t(iID >> 32), uint32_t(iID) );
 }
 
 bool LuaThreadVariable::PushThreadTable( lua_State *L, bool bCreate )

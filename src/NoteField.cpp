@@ -870,7 +870,7 @@ void NoteField::DrawPrimitives()
 
 		// Create an oscillating / pulsing glow effect.
 		// Converts a counter to radians and uses the cosine for a cyclic appearance.
-		static std::uint_fast16_t iGlowCounter;
+		static uint_fast16_t iGlowCounter;
 		static constexpr float fCyclical = 2.0f * 3.14159265f / 360.0f;
 		iGlowCounter = (iGlowCounter + 1) % 360;
 		float phase = iGlowCounter * fCyclical;

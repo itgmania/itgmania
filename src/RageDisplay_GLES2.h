@@ -20,18 +20,18 @@ public:
 	void SetBlendMode( BlendMode mode );
 	bool SupportsTextureFormat( RagePixelFormat pixfmt, bool realtime=false );
 	bool SupportsPerVertexMatrixScale();
-	std::uintptr_t CreateTexture(
+	uintptr_t CreateTexture(
 		RagePixelFormat pixfmt,
 		RageSurface* img,
 		bool bGenerateMipMaps );
 	void UpdateTexture(
-		std::uintptr_t iTexHandle,
+		uintptr_t iTexHandle,
 		RageSurface* img,
 		int xoffset, int yoffset, int width, int height );
-	void DeleteTexture( std::uintptr_t iTexHandle );
+	void DeleteTexture( uintptr_t iTexHandle );
 	void ClearAllTextures();
 	int GetNumTextureUnits();
-	void SetTexture( TextureUnit tu, std::uintptr_t iTexture );
+	void SetTexture( TextureUnit tu, uintptr_t iTexture );
 	void SetTextureMode( TextureUnit tu, TextureMode tm );
 	void SetTextureWrapping( TextureUnit tu, bool b );
 	int GetMaxTextureSize() const;

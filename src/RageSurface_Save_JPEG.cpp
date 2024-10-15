@@ -25,7 +25,7 @@ typedef struct
 	struct jpeg::jpeg_destination_mgr pub;
 
 	RageFile *f;
-	std::uint8_t buffer[OUTPUT_BUFFER_SIZE];
+	uint8_t buffer[OUTPUT_BUFFER_SIZE];
 } my_destination_mgr;
 
 
