@@ -48,7 +48,12 @@ inline const std::vector<RString>& GetDefaultSoundDriverList() {
 
 #elif defined(UNIX)
 #include "ArchHooks/ArchHooks_Unix.h"
+
+#if defined(WITH_SDL3)
+#include "LowLevelWindow/LowLevelWindow_SDL.h"
+#else
 #include "LowLevelWindow/LowLevelWindow_X11.h"
+#endif
 
 #if defined(LINUX)
 #include "MemoryCard/MemoryCardDriverThreaded_Linux.h"
@@ -58,7 +63,12 @@ inline const std::vector<RString>& GetDefaultSoundDriverList() {
 #include "LoadingWindow/LoadingWindow_Gtk.h"
 #endif
 
-#if defined(LINUX)
+#if defined(WITH_SDL3)
+inline const std::vector<RString>& GetDefaultInputDriverList() {
+	static const std::vector<RString> inputDriverList = { "sdl" };
+	return inputDriverList;
+}
+#elif defined(LINUX)
 inline const std::vector<RString>& GetDefaultInputDriverList() {
 	static const std::vector<RString> inputDriverList = { "X11", "LinuxEvent", "LinuxJoystick" };
 	return inputDriverList;
