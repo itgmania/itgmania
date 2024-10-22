@@ -225,6 +225,10 @@ int MovieDecoder_FFMpeg::HandleNextPacket() {
 			// total number of frames. This is benign even if we did have an
 			// accurate frame count at the start.
 			total_frames_ = packet_buffer_.size();
+			if (total_frames_ < frame_buffer_.size()) {
+				LOG->Trace("Video shorter than frame buffer, shrinking the buffer.");
+				frame_buffer_.resize(total_frames_);
+			}
 			return 1;
 		}
 		lock.unlock();
@@ -574,6 +578,10 @@ RString MovieDecoder_FFMpeg::Open(RString sFile)
 		total_frames_ = av_format_context_->duration // microseconds
 			* (av_stream_->avg_frame_rate.num) / (av_stream_->avg_frame_rate.den) / (1000000);
 		LOG->Trace("Number of frames provided is inaccurate, estimating.");
+	}
+	if (total_frames_ < frame_buffer_.size()) {
+		LOG->Trace("Video shorter than frame buffer, shrinking the buffer.");
+		frame_buffer_.resize(total_frames_);
 	}
 	LOG->Trace("Number of frames detected: %i", total_frames_);
 
