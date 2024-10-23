@@ -536,7 +536,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 			split( MODE_MENU_CHOICE_NAMES, ",", vsNames );
 			for( unsigned i=0; i<vsNames.size(); ++i )
 			{
-				MusicWheelItemData wid( WheelItemDataType_Sort, nullptr, "", nullptr, SORT_MENU_COLOR, 0 );
+				MusicWheelItemData wid( WheelItemDataType_Sort, nullptr, "", nullptr, nullptr, SORT_MENU_COLOR, 0 );
 				wid.m_pAction = HiddenPtr<GameCommand>( new GameCommand );
 				wid.m_pAction->m_sName = vsNames[i];
 				wid.m_pAction->Load( i, ParseCommands(CHOICE.GetValue(vsNames[i])) );
@@ -719,11 +719,11 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 							RageColor colorSection = SECTION_COLORS.GetValue(iSectionColorIndex);
 							iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
 							// Add the section item
-							arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sectionName, nullptr, colorSection, songs.size()) );
+							arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sectionName, nullptr, nullptr, colorSection, songs.size()) );
 							// Add all the songs in this section
 							for (auto const& song : songs)
 							{
-								arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, song, sectionName, nullptr, SONGMAN->GetSongColor(song), 0) );
+								arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, song, sectionName, nullptr, nullptr, SONGMAN->GetSongColor(song), 0) );
 							}
 						}
 					}
@@ -736,15 +736,48 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 							RageColor colorSection = SECTION_COLORS.GetValue(iSectionColorIndex);
 							iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
 							// Add the section item
-							arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, ssprintf("%d",sectionName), nullptr, colorSection, songs.size()) );
+							arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, ssprintf("%d",sectionName), nullptr, nullptr, colorSection, songs.size()) );
 							// Add all the songs in this section
 							for (auto const& song : songs)
 							{
-								arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, song, ssprintf("%d",sectionName), nullptr, SONGMAN->GetSongColor(song), 0) );
+								arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, song, ssprintf("%d",sectionName), nullptr, nullptr, SONGMAN->GetSongColor(song), 0) );
 							}
 						} 
 					}
 					break;
+				case SORT_GROUP:
+					for( unsigned i=0; i< arraySongs.size(); i++ )
+					{
+						Song* pSong = arraySongs[i];
+						Group* pGroup = pSong->GetGroup();
+						if( bUseSections )
+						{
+							RString sThisSection = pGroup->GetGroupName();
+
+							if( sThisSection != sLastSection )
+							{
+								int iSectionCount = 0;
+								// Count songs in this section
+								unsigned j;
+								for( j=i; j < arraySongs.size(); j++ )
+								{
+									if( SongUtil::GetSectionNameFromSongAndSort( arraySongs[j], so ) != sThisSection )
+										break;
+								}
+								iSectionCount = j-i;
+
+								// new section, make a section item
+								// todo: preferred sort section color handling? -aj
+								RageColor colorSection = (so==SORT_GROUP) ? SONGMAN->GetSongGroupColor(sThisSection) : SECTION_COLORS.GetValue(iSectionColorIndex);
+								iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
+								arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sThisSection, nullptr, pGroup, colorSection, iSectionCount) );
+								sLastSection = sThisSection;
+							}
+						}
+						arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, pSong, sLastSection, nullptr, pGroup, SONGMAN->GetSongColor(pSong), 0) );
+					}
+					break;
+
 				default:
 					for( unsigned i=0; i< arraySongs.size(); i++ )
 					{
@@ -767,13 +800,13 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 
 								// new section, make a section item
 								// todo: preferred sort section color handling? -aj
-								RageColor colorSection = (so==SORT_GROUP) ? SONGMAN->GetSongGroupColor(pSong->m_sGroupName) : SECTION_COLORS.GetValue(iSectionColorIndex);
+								RageColor colorSection = (so==SORT_GROUP) ? SONGMAN->GetSongGroupColor(sThisSection) : SECTION_COLORS.GetValue(iSectionColorIndex);
 								iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
-								arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sThisSection, nullptr, colorSection, iSectionCount) );
+								arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sThisSection, nullptr, nullptr, colorSection, iSectionCount) );
 								sLastSection = sThisSection;
 							}
 						}
-						arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, pSong, sLastSection, nullptr, SONGMAN->GetSongColor(pSong), 0) );
+						arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, pSong, sLastSection, nullptr, pSong->GetGroup(), SONGMAN->GetSongColor(pSong), 0) );
 					}
 					break;
 			}
@@ -782,7 +815,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 			{
 				// todo: allow themers to change the order of the items. -aj
 				if( SHOW_ROULETTE )
-					arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Roulette, nullptr, "", nullptr, ROULETTE_COLOR, 0) );
+					arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Roulette, nullptr, "", nullptr, nullptr, ROULETTE_COLOR, 0) );
 
 				// Only add WheelItemDataType_Random and WheelItemDataType_Portal if there's at least
 				// one song on the list.
@@ -792,17 +825,17 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 						bFoundAnySong = true;
 
 				if( SHOW_RANDOM && bFoundAnySong )
-					arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Random, nullptr, "", nullptr, RANDOM_COLOR, 0) );
+					arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Random, nullptr, "", nullptr, nullptr, RANDOM_COLOR, 0) );
 
 				if( SHOW_PORTAL && bFoundAnySong )
-					arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Portal, nullptr, "", nullptr, PORTAL_COLOR, 0) );
+					arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Portal, nullptr, "", nullptr, nullptr, PORTAL_COLOR, 0) );
 
 				// add custom wheel items
 				std::vector<RString> vsNames;
 				split( CUSTOM_WHEEL_ITEM_NAMES, ",", vsNames );
 				for( unsigned i=0; i<vsNames.size(); ++i )
 				{
-					MusicWheelItemData wid( WheelItemDataType_Custom, nullptr, "", nullptr, CUSTOM_CHOICE_COLORS.GetValue(vsNames[i]), 0 );
+					MusicWheelItemData wid( WheelItemDataType_Custom, nullptr, "", nullptr, nullptr, CUSTOM_CHOICE_COLORS.GetValue(vsNames[i]), 0 );
 					wid.m_pAction = HiddenPtr<GameCommand>( new GameCommand );
 					wid.m_pAction->m_sName = vsNames[i];
 					wid.m_pAction->Load( i, ParseCommands(CUSTOM_CHOICES.GetValue(vsNames[i])) );
@@ -928,12 +961,12 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 				{
 					RageColor c = SECTION_COLORS.GetValue(iSectionColorIndex);
 					iSectionColorIndex = (iSectionColorIndex+1) % NUM_SECTION_COLORS;
-					arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sThisSection, nullptr, c, 0) );
+					arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, sThisSection, nullptr, nullptr, c, 0) );
 					sLastSection = sThisSection;
 				}
 
 				RageColor c = ( pCourse->m_sGroupName.size() == 0 ) ? pCourse->GetColor() : SONGMAN->GetCourseColor(pCourse);
-				arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Course, nullptr, sThisSection, pCourse, c, 0) );
+				arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Course, nullptr, sThisSection, pCourse, nullptr, c, 0) );
 			}
 			break;
 		}
@@ -1147,7 +1180,7 @@ void MusicWheel::FilterWheelItemDatas(std::vector<MusicWheelItemData *> &aUnFilt
 
 	// If we've filtered all items, insert a dummy.
 	if( aFilteredData.empty() )
-		aFilteredData.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, EMPTY_STRING, nullptr, EMPTY_COLOR, 0) );
+		aFilteredData.push_back( new MusicWheelItemData(WheelItemDataType_Section, nullptr, EMPTY_STRING, nullptr,  nullptr, EMPTY_COLOR, 0) );
 }
 
 void MusicWheel::UpdateSwitch()

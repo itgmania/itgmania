@@ -1195,6 +1195,7 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot)
 		RageTimer song_load_start_time;
 		song_load_start_time.Touch();
 		FILEMAN->GetDirListing(songs_folder + "/*", song_folders, true, true);
+
 		StripCvsAndSvn(song_folders);
 		StripMacResourceForks(song_folders);
 		LOG->Trace("Found %i songs in profile.", int(song_folders.size()));

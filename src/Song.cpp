@@ -1,5 +1,6 @@
 #include "global.h"
 #include "Song.h"
+#include "Group.h"
 #include "Steps.h"
 #include "RageUtil.h"
 #include "RageLog.h"
@@ -276,6 +277,11 @@ const RString &Song::GetSongFilePath() const
  * <set> into Song.h, which is heavily used. */
 static std::set<RString> BlacklistedImages;
 
+Group* Song::GetGroup() const
+{
+	return SONGMAN->GetGroupFromName(m_sGroupName);
+}
+
 /* If PREFSMAN->m_bFastLoad is true, always load from cache if possible.
  * Don't read the contents of sDir if we can avoid it. That means we can't call
  * HasMusic(), HasBanner() or GetHashForDirectory().
@@ -468,6 +474,7 @@ bool Song::ReloadFromSongDir( RString sDir )
 
 	RemoveAutoGenNotes();
 	std::vector<Steps*> vOldSteps = m_vpSteps;
+
 
 	Song copy;
 	if( !copy.LoadFromSongDir( sDir ) )
@@ -2267,6 +2274,13 @@ public:
 		lua_pushstring(L, p->m_sGroupName);
 		return 1;
 	}
+
+	static int GetGroup( T* p, lua_State *L )
+	{
+		p->GetGroup()->PushSelf(L);
+		return 1;
+	}
+
 	static int MusicLengthSeconds( T* p, lua_State *L )
 	{
 		lua_pushnumber(L, p->m_fMusicLengthSeconds);
@@ -2486,6 +2500,7 @@ public:
 		ADD_METHOD( IsEnabled );
 		ADD_METHOD(IsCustomSong);
 		ADD_METHOD( GetGroupName );
+		ADD_METHOD( GetGroup );
 		ADD_METHOD( MusicLengthSeconds );
 		ADD_METHOD( GetSampleStart );
 		ADD_METHOD( GetSampleLength );
@@ -2529,6 +2544,8 @@ public:
 };
 
 LUA_REGISTER_CLASS( Song )
+
+
 // lua end
 
 
