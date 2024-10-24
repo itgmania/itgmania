@@ -467,7 +467,9 @@ else()
     list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
 
 
-
+    if(SDL3_FOUND)
+      list(APPEND SM_INCLUDE_DIRS "${SDL_INCLUDE_DIR}")
+    endif()
     if(X11_FOUND)
       list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
     endif()
