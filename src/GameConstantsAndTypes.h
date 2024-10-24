@@ -120,6 +120,8 @@ enum StepsType
 };
 LuaDeclareType( StepsType );
 
+RString StepsTypeToString( StepsType st );
+
 /** @brief The various play modes available. */
 enum PlayMode
 {

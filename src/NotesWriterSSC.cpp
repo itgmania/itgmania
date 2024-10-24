@@ -428,7 +428,34 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 	}
 	if (bSavingCache)
 	{
+		lines.push_back( ssprintf( "// step cache tags:" ) );
+		std::vector<RString> asTechCounts;
+		FOREACH_PlayerNumber( pn )
+		{
+			const TechCounts &ts = in.GetTechCounts(pn);
+			FOREACH_ENUM( TechCountsCategory, tc )
+			{
+				asTechCounts.push_back(ssprintf("%.6f", ts[tc]));
+			}
+		}
+		lines.push_back(ssprintf("#TECHCOUNTS:%s;", join(",", asTechCounts).c_str()));
+
+		std::vector<RString> asMeasureInfo;
+		FOREACH_PlayerNumber( pn )
+		{
+			const MeasureInfo &ms = in.GetMeasureInfo(pn);
+			asMeasureInfo.push_back(ms.ToString());
+		}
+		RString allMeasureInfo = "#MEASUREINFO:" + join("|", asMeasureInfo) + ";";
+		lines.push_back(allMeasureInfo);
+
+		// NOTE(MV): #STEPFILENAME has to be at the end of the cache tags,
+		// because it's used in SSCLoader::LoadFromSimfile to determine when
+		// to switch the state back to GETTING_SONG_INFO, which means any tags
+		// after it will be ignored.
+		
 		lines.push_back(ssprintf("#STEPFILENAME:%s;", in.GetFilename().c_str()));
+		lines.push_back( ssprintf( "// end step cache tags" ) );
 	}
 	else
 	{

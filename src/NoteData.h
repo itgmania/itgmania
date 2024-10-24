@@ -310,6 +310,7 @@ public:
 	int GetNumTapNotes( int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW ) const;
 	int GetNumTapNotesNoTiming( int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW ) const;
 	int GetNumTapNotesInRow( int iRow ) const;
+	int GetNumMinesInRow( int iRow ) const;
 	int GetNumMines( int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW ) const;
 	int GetNumRowsWithTap( int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW ) const;
 	int GetNumRowsWithTapOrHoldHead( int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW ) const;

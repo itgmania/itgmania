@@ -32,6 +32,9 @@
 #include <algorithm>
 #include <cstddef>
 #include <vector>
+#include <iomanip>
+
+#include "StepParityGenerator.h"
 
 /* register DisplayBPM with StringConversion */
 #include "EnumHelper.h"
@@ -55,6 +58,8 @@ Steps::Steps(Song *song): m_StepsType(StepsType_Invalid), m_pSong(song),
 	m_sDescription(""), m_sChartStyle(""),
 	m_Difficulty(Difficulty_Invalid), m_iMeter(0),
 	m_bAreCachedRadarValuesJustLoaded(false),
+	m_bAreCachedTechCountsValuesJustLoaded(false),
+	m_bAreCachedMeasureInfoJustLoaded(false),
 	m_sCredit(""), displayBPMType(DISPLAY_BPM_ACTUAL),
 	specifiedBPMMin(0), specifiedBPMMax(0) {}
 
@@ -295,6 +300,14 @@ void Steps::TidyUpData()
 		SetMeter( int(PredictMeter()) );
 }
 
+void Steps::CalculateStepStats( float fMusicLengthSeconds )
+{
+	this->CalculateRadarValues(fMusicLengthSeconds);
+	this->CalculateTechCounts();
+	this->CalculateMeasureInfo();
+//	this->CalculateGrooveStatsHash();
+}
+
 void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 {
 	// If we're autogen, don't calculate values.  GetRadarValues will take from our parent.
@@ -318,7 +331,7 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 	NoteData tempNoteData;
 	this->GetNoteData( tempNoteData );
 
-	FOREACH_PlayerNumber( pn )
+	FOREACH_PlayerNumber(pn)
 		m_CachedRadarValues[pn].Zero();
 
 	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
@@ -328,7 +341,9 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 
 		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
 		for( size_t pn = 0; pn < std::min(vParts.size(), size_t(NUM_PLAYERS)); ++pn )
+		{
 			NoteDataUtil::CalculateRadarValues( vParts[pn], fMusicLengthSeconds, m_CachedRadarValues[pn] );
+		}
 	}
 	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
 	{
@@ -350,6 +365,91 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 	{
 		NoteDataUtil::CalculateRadarValues( tempNoteData, fMusicLengthSeconds, m_CachedRadarValues[0] );
 		std::fill_n( m_CachedRadarValues + 1, NUM_PLAYERS-1, m_CachedRadarValues[0] );
+	}
+
+	GAMESTATE->SetProcessedTimingData(nullptr);
+}
+
+void Steps::CalculateTechCounts()
+{
+	if (parent != nullptr)
+		return;
+
+	if( m_bAreCachedTechCountsValuesJustLoaded )
+	{
+		m_bAreCachedTechCountsValuesJustLoaded = false;
+		return;
+	}
+
+	NoteData tempNoteData;
+	this->GetNoteData( tempNoteData );
+
+	FOREACH_PlayerNumber(pn)
+		m_CachedTechCounts[pn]
+			.Zero();
+
+
+	// If we don't have a valid layout for this StepsType, then don't even bother
+	if(StepParity::Layouts.find(this->m_StepsType) == StepParity::Layouts.end())
+	{
+		return;
+	}
+	StepParity::StageLayout layout = StepParity::Layouts.at(this->m_StepsType);
+	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
+	StepParity::StepParityGenerator gen = StepParity::StepParityGenerator(layout);
+	gen.analyzeNoteData(tempNoteData);
+	TechCounts::CalculateTechCountsFromRows(gen.rows, layout, m_CachedTechCounts[0]);
+	std::fill_n( m_CachedTechCounts + 1, NUM_PLAYERS-1, m_CachedTechCounts[0] );
+
+	GAMESTATE->SetProcessedTimingData(nullptr);
+}
+
+void Steps::CalculateMeasureInfo()
+{
+	if(parent != nullptr)
+	{
+		return;
+	}
+
+	if( m_bAreCachedMeasureInfoJustLoaded )
+	{
+		m_bAreCachedMeasureInfoJustLoaded = false;
+		return;
+	}
+
+	NoteData tempNoteData;
+	this->GetNoteData( tempNoteData );
+
+	FOREACH_PlayerNumber(pn)
+		m_CachedMeasureInfo[pn]
+			.Zero();
+
+	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
+
+	if( tempNoteData.IsComposite() )
+	{
+		std::vector<NoteData> vParts;
+		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
+		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
+		{
+			MeasureInfo::CalculateMeasureInfo(vParts[pn], m_CachedMeasureInfo[pn]);
+		}
+	}
+	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
+	{
+		NoteData p1 = tempNoteData;
+		// XXX: Assumption that couple will always have an even number of notes.
+		const int tracks = tempNoteData.GetNumTracks() / 2;
+		p1.SetNumTracks(tracks);
+		MeasureInfo::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[PLAYER_1]);
+		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
+		tempNoteData.SetNumTracks(tracks);
+		MeasureInfo::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[PLAYER_2]);
+	}
+	else
+	{
+		MeasureInfo::CalculateMeasureInfo(tempNoteData, m_CachedMeasureInfo[0]);
+		std::fill_n( m_CachedMeasureInfo + 1, NUM_PLAYERS-1, m_CachedMeasureInfo[0] );
 	}
 	GAMESTATE->SetProcessedTimingData(nullptr);
 }
@@ -503,6 +603,8 @@ void Steps::DeAutogen( bool bCopyNoteData )
 	m_Difficulty		= Real()->m_Difficulty;
 	m_iMeter		= Real()->m_iMeter;
 	std::copy( Real()->m_CachedRadarValues, Real()->m_CachedRadarValues + NUM_PLAYERS, m_CachedRadarValues );
+	std::copy( Real()->m_CachedTechCounts, Real()->m_CachedTechCounts + NUM_PLAYERS, m_CachedTechCounts );
+	std::copy( Real()->m_CachedMeasureInfo, Real()->m_CachedMeasureInfo + NUM_PLAYERS, m_CachedMeasureInfo );
 	m_sCredit		= Real()->m_sCredit;
 	parent = nullptr;
 
@@ -534,7 +636,7 @@ void Steps::CopyFrom( Steps* pSource, StepsType ntTo, float fMusicLengthSeconds 
 	this->SetDescription( pSource->GetDescription() );
 	this->SetDifficulty( pSource->GetDifficulty() );
 	this->SetMeter( pSource->GetMeter() );
-	this->CalculateRadarValues( fMusicLengthSeconds );
+	this->CalculateStepStats(fMusicLengthSeconds);
 }
 
 void Steps::CreateBlank( StepsType ntTo )
@@ -629,6 +731,20 @@ void Steps::SetCachedRadarValues( const RadarValues v[NUM_PLAYERS] )
 	DeAutogen();
 	std::copy( v, v + NUM_PLAYERS, m_CachedRadarValues );
 	m_bAreCachedRadarValuesJustLoaded = true;
+}
+
+void Steps::SetCachedTechCounts( const TechCounts ts[NUM_PLAYERS] )
+{
+	DeAutogen();
+	std::copy(ts, ts + NUM_PLAYERS, m_CachedTechCounts);
+	m_bAreCachedTechCountsValuesJustLoaded = true;
+}
+
+void Steps::SetCachedMeasureInfo(const MeasureInfo ms[NUM_PLAYERS])
+{
+	DeAutogen();
+	std::copy(ms, ms + NUM_PLAYERS, m_CachedMeasureInfo);
+	m_bAreCachedMeasureInfoJustLoaded = true;
 }
 
 RString Steps::GenerateChartKey()
@@ -754,6 +870,64 @@ public:
 		rv.PushSelf(L);
 		return 1;
 	}
+
+	static int GetTechCounts(T* p, lua_State *L )
+	{
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		TechCounts &ts = const_cast<TechCounts &>(p->GetTechCounts(pn));
+		ts.PushSelf(L);
+		return 1;
+	}
+
+	static int CalculateTechCounts(T* p, lua_State *L )
+	{
+		p->CalculateTechCounts();
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		TechCounts &ts = const_cast<TechCounts &>(p->GetTechCounts(pn));
+		ts.PushSelf(L);
+		return 1;
+	}
+
+	static int GetNPSPerMeasure(T *p, lua_State *L)
+	{
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		MeasureInfo &ts = const_cast<MeasureInfo &>(p->GetMeasureInfo(pn));
+		LuaHelpers::CreateTableFromArray(ts.npsPerMeasure, L);
+		return 1;
+	}
+
+	static int GetNotesPerMeasure(T *p, lua_State * L)
+	{
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		MeasureInfo &ts = const_cast<MeasureInfo &>(p->GetMeasureInfo(pn));
+		LuaHelpers::CreateTableFromArray(ts.notesPerMeasure, L);
+
+		return 1;
+	}
+
+	static int GetPeakNPS(T *p, lua_State *L)
+	{
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		MeasureInfo &ts = const_cast<MeasureInfo &>(p->GetMeasureInfo(pn));
+		lua_pushnumber(L, ts.peakNps);
+		return 1;
+	}
+
 	static int GetTimingData( T* p, lua_State *L )
 	{
 		p->GetTimingData()->PushSelf(L);
@@ -856,7 +1030,7 @@ public:
 		}
 		return 1;
 	}
-	
+
 	LunaSteps()
 	{
 		ADD_METHOD( GetAuthorCredit );
@@ -869,6 +1043,8 @@ public:
 		ADD_METHOD( HasSignificantTimingChanges );
 		ADD_METHOD( HasAttacks );
 		ADD_METHOD( GetRadarValues );
+		ADD_METHOD( GetTechCounts );
+		ADD_METHOD( CalculateTechCounts );
 		ADD_METHOD( GetTimingData );
 		ADD_METHOD( GetChartName );
 		//ADD_METHOD( GetSMNoteData );
@@ -883,6 +1059,9 @@ public:
 		ADD_METHOD( PredictMeter );
 		ADD_METHOD( GetDisplayBPMType );
 		ADD_METHOD( GetColumnCues );
+		ADD_METHOD( GetNPSPerMeasure );
+		ADD_METHOD( GetNotesPerMeasure );
+		ADD_METHOD( GetPeakNPS );
 	}
 };
 
