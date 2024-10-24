@@ -134,6 +134,15 @@ XToString(ProfileSortOrder);
 StringToX(ProfileSortOrder);
 LuaXType(ProfileSortOrder);
 
+static const char* SyncBiasNames[] = {
+	"N/A",
+	"Null",
+	"ITG"
+};
+XToString(SyncBias);
+StringToX(SyncBias);
+LuaXType(SyncBias);
+
 bool g_bAutoRestart = false;
 #ifdef DEBUG
 # define TRUE_IF_DEBUG true
@@ -297,6 +306,7 @@ PrefsManager::PrefsManager() :
 	m_sCoursesToShowRanking		( "CoursesToShowRanking",		"" ),
 	m_MuteActions			( "MuteActions",			false ),
 	m_bAllowSongDeletion		( "AllowSongDeletion",			false ),
+	m_SyncBias			( "SyncBias",		SYNC_BIAS_NA ),
 
 	m_bQuirksMode			( "QuirksMode",		false ),
 

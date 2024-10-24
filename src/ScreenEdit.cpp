@@ -98,7 +98,7 @@ AutoScreenMessage( SM_DoRevertToLastSave );
 AutoScreenMessage( SM_DoRevertFromDisk );
 AutoScreenMessage( SM_ConfirmClearArea );
 AutoScreenMessage( SM_BackFromTimingDataInformation );
-AutoScreenMessage(SM_BackFromTimingDataChangeInformation);
+AutoScreenMessage( SM_BackFromTimingDataChangeInformation );
 AutoScreenMessage( SM_BackFromDifficultyMeterChange );
 AutoScreenMessage( SM_BackFromBeat0Change );
 AutoScreenMessage( SM_BackFromBPMChange );
@@ -1068,6 +1068,9 @@ static MenuDef g_TimingDataInformation(
 	MenuRowDef(ScreenEdit::beat_0_offset,
 		"Beat 0 Offset",
 		true, EditMode_Full, true, true, 0, nullptr ),
+	MenuRowDef(ScreenEdit::sync_bias,
+		"Sync Bias",
+		true, EditMode_Full, true, true, 0, nullptr),
 	MenuRowDef(ScreenEdit::bpm,
 		"Edit BPM change",
 		true, EditMode_Full, true, true, 0, nullptr ),
@@ -1849,6 +1852,7 @@ static LocalizedString TIMING_MODE("ScreenEdit", "Timing Mode");
 static LocalizedString STEP_TIMING("ScreenEdit", "Step Timing");
 static LocalizedString SONG_TIMING("ScreenEdit", "Song Timing");
 static LocalizedString BEAT_0_OFFSET("ScreenEdit", "Beat 0 offset");
+static LocalizedString SYNC_BIAS("ScreenEdit", "Sync Bias");
 static LocalizedString PREVIEW_START("ScreenEdit", "Preview Start");
 static LocalizedString PREVIEW_LENGTH("ScreenEdit", "Preview Length");
 static LocalizedString RECORD_HOLD_TIME("ScreenEdit", "Record Hold Time");
@@ -1887,6 +1891,7 @@ static ThemeMetric<RString> NUM_LIFTS_FORMAT_TWO_PLAYER("ScreenEdit", "NumLiftsF
 static ThemeMetric<RString> NUM_FAKES_FORMAT_TWO_PLAYER("ScreenEdit", "NumFakesFormatTwoPlayer");
 static ThemeMetric<RString> TIMING_MODE_FORMAT("ScreenEdit", "TimingModeFormat");
 static ThemeMetric<RString> BEAT_0_OFFSET_FORMAT("ScreenEdit", "Beat0OffsetFormat");
+static ThemeMetric<RString> SYNC_BIAS_FORMAT("ScreenEdit", "SyncBiasFormat");
 static ThemeMetric<RString> PREVIEW_START_FORMAT("ScreenEdit", "PreviewStartFormat");
 static ThemeMetric<RString> PREVIEW_LENGTH_FORMAT("ScreenEdit", "PreviewLengthFormat");
 static ThemeMetric<RString> RECORD_HOLD_TIME_FORMAT("ScreenEdit", "RecordHoldTimeFormat");
@@ -2018,6 +2023,9 @@ void ScreenEdit::UpdateTextInfo()
 		sText += ssprintf( BEAT_0_OFFSET_FORMAT.GetValue(),
 				  BEAT_0_OFFSET.GetValue().c_str(),
 				  GetAppropriateTiming().m_fBeat0OffsetInSeconds );
+		sText += ssprintf( SYNC_BIAS_FORMAT.GetValue(),
+						   SYNC_BIAS.GetValue().c_str(),
+						   SyncBiasToString(GetAppropriateTiming().m_SyncBias).c_str() );
 		sText += ssprintf( PREVIEW_START_FORMAT.GetValue(), PREVIEW_START.GetValue().c_str(), m_pSong->m_fMusicSampleStartSeconds );
 		sText += ssprintf( PREVIEW_LENGTH_FORMAT.GetValue(), PREVIEW_LENGTH.GetValue().c_str(), m_pSong->m_fMusicSampleLengthSeconds );
 		if(record_hold_seconds < record_hold_default - .001f ||
@@ -4750,6 +4758,11 @@ void ScreenEdit::DisplayTimingMenu()
 	bool bHasSpeedOnThisRow = pTime.GetSpeedSegmentAtRow( row )->GetRow() == row;
 	// bool bIsSelecting = ( (m_NoteFieldEdit.m_iEndMarker != -1) && (m_NoteFieldEdit.m_iBeginMarker != -1) );
 
+	g_TimingDataInformation.rows[sync_bias].choices.clear();
+	FOREACH_ENUM( SyncBias, sb ) {
+		g_TimingDataInformation.rows[sync_bias].choices.push_back( SyncBiasToString(sb) );
+	}
+	g_TimingDataInformation.rows[sync_bias].iDefaultChoice = pTime.m_SyncBias;
 
 	g_TimingDataInformation.rows[beat_0_offset].SetOneUnthemedChoice( std::to_string(pTime.m_fBeat0OffsetInSeconds) );
 	g_TimingDataInformation.rows[bpm].SetOneUnthemedChoice( std::to_string(pTime.GetBPMAtRow( row ) ) );
@@ -5797,6 +5810,9 @@ void ScreenEdit::HandleTimingDataInformationChoice( TimingDataInformationChoice 
 			std::to_string(GetAppropriateTiming().m_fBeat0OffsetInSeconds),
 			20
 			);
+		break;
+	case sync_bias:
+		GetAppropriateTimingForUpdate().m_SyncBias = (SyncBias)iAnswers[sync_bias];
 		break;
 	case bpm:
 		ScreenTextEntry::TextEntry(

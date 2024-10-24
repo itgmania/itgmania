@@ -18,7 +18,7 @@ static const int INVALID_INDEX = -1;
 
 TimingSegment* GetSegmentAtRow( int iNoteRow, TimingSegmentType tst );
 
-TimingData::TimingData(float fOffset) : m_fBeat0OffsetInSeconds(fOffset)
+TimingData::TimingData(float fOffset) : m_fBeat0OffsetInSeconds(fOffset), m_SyncBias(SYNC_BIAS_NA)
 {
 }
 
@@ -28,6 +28,7 @@ void TimingData::Copy( const TimingData& cpy )
 	Clear();
 
 	m_fBeat0OffsetInSeconds = cpy.m_fBeat0OffsetInSeconds;
+	m_SyncBias = cpy.m_SyncBias;
 	m_sFile = cpy.m_sFile;
 
 	FOREACH_TimingSegmentType( tst )
@@ -102,6 +103,7 @@ void TimingData::PrepareLookup()
 			curr_segment < total_segments; curr_segment+= segments_per_lookup)
 	{
 		GetBeatStarts beat_start;
+		// TODO: SyncBias
 		beat_start.last_time= -m_fBeat0OffsetInSeconds;
 		GetBeatArgs args;
 		args.elapsed_time= FLT_MAX;
@@ -109,6 +111,7 @@ void TimingData::PrepareLookup()
 		m_beat_start_lookup.push_back(lookup_item_t(args.elapsed_time, beat_start));
 
 		GetBeatStarts time_start;
+		// TODO: SyncBias
 		time_start.last_time= -m_fBeat0OffsetInSeconds;
 		m_time_start_lookup.push_back(lookup_item_t(NoteRowToBeat(time_start.last_row), time_start));
 	}
@@ -916,7 +919,46 @@ void TimingData::GetBeatInternal(GetBeatStarts& start, GetBeatArgs& args,
 void TimingData::GetBeatAndBPSFromElapsedTimeNoOffset(GetBeatArgs& args) const
 {
 	GetBeatStarts start;
+	// NoOffset function
+	// probably if machine sync bias n/a skip all here
+
 	start.last_time= -m_fBeat0OffsetInSeconds;
+	// We need to recalculate real offset based on song's sync bias
+	switch(m_SyncBias)
+	{
+		case SYNC_BIAS_ITG:
+			// An author adds 0.009 to a song offset and we compensate it back:
+			// start.last_time= -(m_fBeat0OffsetInSeconds - 0.009f)
+			start.last_time += 0.009f;
+			break;
+		case SYNC_BIAS_NULL:
+			// start.last_time += 0.0f;
+			break;
+		case SYNC_BIAS_NA:
+			break;
+		default:
+			break;
+	}
+
+	switch(PREFSMAN->m_SyncBias) {
+	case SYNC_BIAS_NULL:
+		// start.last_time -= 0.0f;
+		break;
+	case SYNC_BIAS_ITG:
+		// If machine is ITG biased apply sync bias
+		start.last_time -= 0.009f;
+		break;
+	case SYNC_BIAS_NA:
+		// if machine is not configured we do not touch beat 0 offset
+		// just revert our calculations back
+		start.last_time= -m_fBeat0OffsetInSeconds;
+		break;
+	default:
+		// we don't know what is going on here so revert
+		start.last_time= -m_fBeat0OffsetInSeconds;
+		break;
+	}
+
 	beat_start_lookup_t::const_iterator looked_up_start=
 		FindEntryInLookup(m_beat_start_lookup, args.elapsed_time);
 	if(looked_up_start != m_beat_start_lookup.end())
@@ -1002,6 +1044,43 @@ float TimingData::GetElapsedTimeFromBeatNoOffset( float fBeat ) const
 {
 	GetBeatStarts start;
 	start.last_time= -m_fBeat0OffsetInSeconds;
+
+		// We need to recalculate real offset based on song's sync bias
+	switch(m_SyncBias)
+	{
+		case SYNC_BIAS_ITG:
+			// An author adds 0.009 to a song offset and we compensate it back:
+			// start.last_time= -(m_fBeat0OffsetInSeconds - 0.009f)
+			start.last_time += 0.009f;
+			break;
+		case SYNC_BIAS_NULL:
+			// start.last_time += 0.0f;
+			break;
+		case SYNC_BIAS_NA:
+			break;
+		default:
+			break;
+	}
+
+	switch(PREFSMAN->m_SyncBias) {
+	case SYNC_BIAS_NULL:
+		// start.last_time -= 0.0f;
+		break;
+	case SYNC_BIAS_ITG:
+		// If machine is ITG biased apply sync bias
+		start.last_time -= 0.009f;
+		break;
+	case SYNC_BIAS_NA:
+		// if machine is not configured we do not touch beat 0 offset
+		// just revert our calculations back
+		start.last_time= -m_fBeat0OffsetInSeconds;
+		break;
+	default:
+		// we don't know what is going on here so revert
+		start.last_time= -m_fBeat0OffsetInSeconds;
+		break;
+	}
+
 	beat_start_lookup_t::const_iterator looked_up_start=
 		FindEntryInLookup(m_time_start_lookup, fBeat);
 	if(looked_up_start != m_time_start_lookup.end())

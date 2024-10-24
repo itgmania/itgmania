@@ -858,6 +858,7 @@ static void InitializeConfOptions()
 	ADD(ConfOption("CustomSongsMaxMegabytes", CustomSongsMaxMegabytes, "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "20", "30", "1000"));
 
 	// Machine options
+	ADD( ConfOption( "SyncBias",			MovePref<SyncBias>,	"N/A","Null","ITG" ) );
 	ADD( ConfOption( "MenuTimer",			MovePref<bool>,		"Off","On" ) );
 	ADD( ConfOption( "CoinMode",			MovePref<CoinMode>,	"Home","Pay","Free Play" ) );
 	ADD( ConfOption( "CoinModeNoHome",		CoinModeNoHome,		"Pay","Free Play" ) );

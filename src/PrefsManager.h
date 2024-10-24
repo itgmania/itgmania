@@ -124,6 +124,21 @@ enum ProfileSortOrder
 	ProfileSortOrder_Invalid
 };
 
+// Machine's SyncBias option tells us weather machine is synced with ITG-biased or Null-biased offset.
+// In order to play a song on an old ITG machine authors have to add 9ms to song's offset.
+// On modern engines it is not required and we end up with at least two sets of songs.
+// This option will help us calculate proper offset if "bias" is known.
+enum SyncBias
+{
+	SYNC_BIAS_NA,   // default, we don't know bias
+	SYNC_BIAS_NULL, // machine is synced with +0ms offset song.
+	SYNC_BIAS_ITG,  // machines is synced with +9ms offset song.
+	NUM_SyncBias,
+	SyncBias_Invalid
+};
+const RString& SyncBiasToString( SyncBias sb );
+SyncBias StringToSyncBias( const RString &sb );
+
 /** @brief Holds user-chosen preferences that are saved between sessions. */
 class PrefsManager
 {
@@ -323,6 +338,8 @@ public:
 	Preference<RString>	m_sCoursesToShowRanking;
 	Preference<bool> m_MuteActions;
 	Preference<bool> m_bAllowSongDeletion; // Allow the user to remove songs from their collection through UI / keyboard shortcut
+
+	Preference<SyncBias> m_SyncBias;
 
 	/** @brief Enable some quirky behavior used by some older versions of StepMania. */
 	Preference<bool>	m_bQuirksMode;
