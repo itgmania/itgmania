@@ -274,6 +274,13 @@ elseif(LINUX OR BSD)
     set(HAS_X11 TRUE)
   endif()
 
+  SET(HAS_SDL3 FALSE)
+  if (WITH_SDL3)
+    find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
+    message("Found SDL3")
+    set(HAS_SDL3 TRUE)
+  endif()
+
   set(HAS_XRANDR FALSE)
   if(WITH_XRANDR)
     find_package(Xrandr REQUIRED)

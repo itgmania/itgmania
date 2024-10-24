@@ -41,3 +41,6 @@
 	path = extern/libusb
 	url = https://github.com/libusb/libusb-cmake.git
 	shallow = true
+[submodule "extern/SDL"]
+	path = extern/SDL
+	url = https://github.com/libsdl-org/SDL.git

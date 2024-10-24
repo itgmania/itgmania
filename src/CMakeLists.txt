@@ -443,6 +443,10 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
   list(APPEND SMDATA_LINK_LIB ${XRANDR_LIBRARIES} ${XINERAMA_LIBRARIES})
 
   list(REMOVE_DUPLICATES SMDATA_LINK_LIB)
+
+  if(SDL3_FOUND)
+    list(APPEND SMDATA_LINK_LIB SDL3::SDL3)
+  endif()
 endif()
 
 target_link_libraries("${SM_EXE_NAME}" ${SMDATA_LINK_LIB})
@@ -462,6 +466,10 @@ else()
     add_dependencies("${SM_EXE_NAME}" "ffmpeg")
     list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
 
+
+    if(SDL3_FOUND)
+      list(APPEND SM_INCLUDE_DIRS "${SDL_INCLUDE_DIR}")
+    endif()
     if(X11_FOUND)
       list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
     endif()

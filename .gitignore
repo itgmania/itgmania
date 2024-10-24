@@ -105,3 +105,5 @@ BuildLog.htm
 *.swp
 *.pc
 *.d
+
+cmake-*

@@ -39,6 +39,10 @@ extern "C"
 #include <X11/Xatom.h>
 #endif
 
+#if WITH_SDL3
+#include <SDL3/SDL.h>
+#endif
+
 static bool IsFatalSignal( int signal )
 {
 	switch( signal )
@@ -307,7 +311,9 @@ void ArchHooks_Unix::SetTime( tm newtime )
 
 RString ArchHooks_Unix::GetClipboard()
 {
-#ifdef HAVE_X11
+#ifdef WITH_SDL3
+	return SDL_GetClipboardText();
+#elif defined(HAVE_X11)
 	using namespace X11Helper;
 	// Why isn't this defined by Xlib headers?
 	Atom XA_CLIPBOARD = XInternAtom( Dpy, "CLIPBOARD", 0);

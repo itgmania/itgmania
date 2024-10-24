@@ -16,3 +16,4 @@ include(CMakeProject-miniz.cmake)
 
 # External projects
 include(CMakeProject-libusb.cmake)
+include(CMakeProject-sdl.cmake)
