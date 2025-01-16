@@ -6,6 +6,11 @@
 #include "LuaManager.h"
 #include "LocalizedString.h"
 
+#if LINUX
+// FIXME: bit gross to include this here, see GH issue #73
+#include "arch/InputHandler/LinuxInputManager.h"
+#endif
+
 #include <vector>
 
 
@@ -59,6 +64,11 @@ void RageInput::LoadDrivers()
 		delete m_InputHandlers[i].m_pDevice;
 	m_InputHandlers.clear();
 	g_mapDeviceToHandler.clear();
+
+#if LINUX
+	// Recreating this forces it to re-scan for devices.
+	LINUXINPUT = new LinuxInputManager;
+#endif
 
 	// Init optional devices.
 	std::vector<InputHandler *> apDevices;
