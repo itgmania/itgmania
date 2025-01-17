@@ -7,8 +7,8 @@ on:
 name: Continuous integration
 
 jobs:
-  ubuntu-build:
-    name: Ubuntu
+  ubuntu-build-x86_64:
+    name: Ubuntu x86_64
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,9 +19,9 @@ jobs:
         with:
           path: |
             build
-          key: ${{ runner.os }}-cmake-build-${{ github.sha }}
+          key: ${{ runner.os }}-${{ runner.arch }}-cmake-build-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-cmake-build-
+            ${{ runner.os }}-${{ runner.arch }}-cmake-build-
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y
           libasound2-dev
@@ -39,6 +39,41 @@ jobs:
           nasm
       - name: Configure
         run: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)"
+      - name: Build
+        run: cmake --build build --parallel "$(nproc)"
+
+  ubuntu-build-arm:
+    name: Ubuntu ARM
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Cache CMake build directory
+        uses: actions/cache@v4
+        with:
+          path: |
+            build
+          key: ${{ runner.os }}-${{ runner.arch }}-cmake-build-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-${{ runner.arch }}-cmake-build-
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y
+          libasound2-dev
+          libgl-dev
+          libglu1-mesa-dev
+          libgtk-3-dev
+          libjack-dev
+          libmad0-dev
+          libpulse-dev
+          libudev-dev
+          libxinerama-dev
+          libx11-dev
+          libxrandr-dev
+          libxtst-dev
+          nasm
+      - name: Configure
+        run: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)" -DWITH_MINIMAID=OFF
       - name: Build
         run: cmake --build build --parallel "$(nproc)"
 
