@@ -307,7 +307,7 @@ void Steps::CalculateStepStats( float fMusicLengthSeconds )
 	this->CalculateRadarValues(fMusicLengthSeconds);
 	this->CalculateTechCounts();
 	this->CalculateMeasureInfo();
-//	this->CalculateGrooveStatsHash();
+	this->CalculateGrooveStatsHash(false);
 }
 
 void Steps::CalculateRadarValues( float fMusicLengthSeconds )
@@ -821,6 +821,7 @@ void Steps::CalculateGrooveStatsHash(bool forceRecalculate)
 	RString gsKey = BinaryToHex(CryptManager::GetSHA1ForString(smNoteData));
 	gsKey = gsKey.substr(0, 16);
 	GrooveStatsHash = gsKey;
+	GrooveStatsHashVersion = CURRENT_GROOVE_STATS_HASH_VERSION;
 }
 
 RString Steps::MinimizedChartString()
