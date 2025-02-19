@@ -33,6 +33,7 @@
 #include <cstddef>
 #include <vector>
 #include <iomanip>
+#include <regex>
 
 #include "StepParityGenerator.h"
 
@@ -845,12 +846,17 @@ RString Steps::MinimizedChartString()
 	{
 		return "";
 	}
+	
+	// Strip any comments from smNoteData
+	std::regex commentRegex("//[^\n]*");
+	RString deCommentedNoteData = std::regex_replace(smNoteData, commentRegex, "");
+	
 	RString minimizedNoteData = "";
-
+	
 	std::vector<RString> measures;
 	Regex anyNote("[^0]");
-
-	split(smNoteData, ",", measures, true);
+	
+	split(deCommentedNoteData, ",", measures, true);
 	for (unsigned m = 0; m < measures.size(); m++)
 	{
 
