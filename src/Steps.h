@@ -150,9 +150,6 @@ public:
 	const RString GetGrooveStatsHash() const;
 	int GetGrooveStatsHashVersion() const;
 	
-	/** @brief Produces a chart that's reduced to it's smallest unique representable form. */
-	RString MinimizedChartString();
-	
 	void ChangeFilenamesForCustomSong();
 
 	void SetLoadedFromProfile( ProfileSlot slot )	{ m_LoadedFromProfile = slot; }
