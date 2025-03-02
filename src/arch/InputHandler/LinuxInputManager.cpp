@@ -91,6 +91,9 @@ LinuxInputManager::LinuxInputManager()
 	closedir(sysClassInput);
 }
 
+LinuxInputManager::~LinuxInputManager()
+{
+}
 
 static bool presort_cmpDevices(LinuxInputSort a, LinuxInputSort b)
 {

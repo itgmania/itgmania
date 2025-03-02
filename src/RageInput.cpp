@@ -68,6 +68,8 @@ void RageInput::LoadDrivers()
 
 #if LINUX
 	// Recreating this forces it to re-scan for devices.
+	if( LINUXINPUT != nullptr )
+		delete LINUXINPUT;
 	LINUXINPUT = new LinuxInputManager;
 #endif
 
