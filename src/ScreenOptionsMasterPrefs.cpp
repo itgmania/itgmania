@@ -712,7 +712,7 @@ static void GlobalOffsetSeconds( int &sel, bool ToSel, const ConfOption *pConfOp
 
 static void MachineSyncBias( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
-	constexpr std::array<float, 2> mapping = { 0.0f, 0.009f };
+	constexpr std::array<float, 2> mapping = { 0.0f, -0.009f };
 	MoveMap( sel, pConfOption, ToSel, mapping.data(), mapping.size() );
 }
 
