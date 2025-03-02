@@ -1641,6 +1641,12 @@ end
 	<Function name='zwrite' return='void' arguments='bool bWrite'>
 		Sets z writing to <code>true</code> or <code>false</code> based on <code>bWrite</code>.
 	</Function>
+	<Function name='SetRateScalingEnabled' return='void' arguments='bool b' since='ITGmania 1.0.0'>
+		Sets whether or not the actor should be affected by the system's rate scaling (i.e. Tab/Tiled).
+	</Function>
+	<Function name='GetRateScalingEnabled' return='bool' arguments='' since='ITGmania 1.0.0'>
+		Returns whether or not the actor is affected by the system's rate scaling.
+	</Function>
 	<!-- addons from scripts that come with sm-ssc (non-compat) -->
 	<Function name='bezier' theme='_fallback' return='' arguments='float time, table curve'>
 		[02 Actor.lua] Plays the commands that follow using a bezier curve to determine the rate.  The curve must have 4 or 8 elements.  This is a convenience wrapper around calling Actor:tween with TweenType_Bezier.

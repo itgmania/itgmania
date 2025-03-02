@@ -170,7 +170,7 @@ Actor::Actor()
 	m_FakeParent = nullptr;
 	m_bFirstUpdate = true;
 	m_tween_uses_effect_delta = false;
-	tab_tilde_scaling_enabled_ = true;
+	rate_scaling_enabled_ = true;
 }
 
 Actor::~Actor()
@@ -876,7 +876,8 @@ void Actor::Update( float fDeltaTime )
 //	LOG->Trace( "Actor::Update( %f )", fDeltaTime );
 
 	float rate = GameLoop::GetUpdateRate();
-	if (rate != 1 && !tab_tilde_scaling_enabled_) {
+	if (rate != 1 && !rate_scaling_enabled_) {
+		// Prevent divide by 0 when tab + tilde are both pressed.
 		if (rate != 0) {
 			fDeltaTime *= (1 / rate);
 		}
@@ -2010,10 +2011,13 @@ public:
 		COMMON_RETURN_SELF;
 	}
 
+	static int SetRateScalingEnabled( T* p, lua_State *L )	{ p->SetRateScalingEnabled(BArg(1)); COMMON_RETURN_SELF; }
+	static int GetRateScalingEnabled( T* p, lua_State *L )		{ lua_pushboolean( L, p->GetRateScalingEnabled() ); return 1; }
+
 	LunaActor()
 	{
-  		ADD_METHOD( name );
-  		ADD_METHOD( sleep );
+		ADD_METHOD( name );
+		ADD_METHOD( sleep );
 		ADD_METHOD( linear );
 		ADD_METHOD( accelerate );
 		ADD_METHOD( decelerate );
@@ -2181,6 +2185,9 @@ public:
 		ADD_METHOD( RemoveWrapperState );
 		ADD_METHOD( GetNumWrapperStates );
 		ADD_METHOD( GetWrapperState );
+
+		ADD_METHOD( SetRateScalingEnabled );
+		ADD_METHOD( GetRateScalingEnabled );
 
 		ADD_METHOD( Draw );
 	}

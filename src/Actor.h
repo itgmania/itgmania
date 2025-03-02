@@ -622,6 +622,10 @@ public:
 	virtual void SetUpdateRate( float ) {}
 	virtual float GetUpdateRate() { return 1.0f; }
 
+	// Use this to enable/disable scaling an actor's rate with tab or tilde.
+	void SetRateScalingEnabled(bool b) { rate_scaling_enabled_ = b; }
+	bool GetRateScalingEnabled() { return rate_scaling_enabled_; }
+
 	HiddenPtr<LuaClass> m_pLuaInstance;
 
 protected:
@@ -714,9 +718,6 @@ protected:
 	 * follow the effect clock.  Actor::Update must be called first. */
 	float GetEffectDeltaTime() const		{ return m_fEffectDelta; }
 
-	// Use this to disable scaling an actor's rate with tab or tilde.
-	void DisableTabTildeScaling() { tab_tilde_scaling_enabled_ = false; }
-
 	// todo: account for SSC_FUTURES by having these be vectors too -aj
 	RageColor	m_effectColor1;
 	RageColor	m_effectColor2;
@@ -756,9 +757,10 @@ protected:
 	static std::vector<float> g_vfCurrentBGMBeatPlayerNoOffset;
 
 private:
-	// Some actors shouldn't be scaled with tab or tilde. This bool does not
-	// guard against holding both at the same time (setting the rate to zero).
-	bool tab_tilde_scaling_enabled_;
+	// Some actors shouldn't be scaled by the engine i.e. using with tab for
+	// speeding up or tilde for slowing down.
+	// In the case both are pressed (setting rate to 0), this bool does nothing.
+	bool rate_scaling_enabled_;
 
 	// commands
 	std::map<RString, apActorCommands> m_mapNameToCommands;

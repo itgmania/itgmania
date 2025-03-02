@@ -489,6 +489,8 @@
 			<Function name='ztest'/>
 			<Function name='ztestmode'/>
 			<Function name='zwrite'/>
+			<Function name='SetRateScalingEnabled'/>
+			<Function name='GetRateScalingEnabled'/>
 		</Class>
 		<Class base='Actor' name='ActorFrame'>
 			<Function name='AddChildFromPath'/>

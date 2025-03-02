@@ -25,7 +25,10 @@ Banner::Banner()
 {
 	m_bScrolling = false;
 	m_fPercentScrolling = 0;
-	Actor::DisableTabTildeScaling();
+
+	// By default, don't let banners scale their rate with tab/tilde.
+	// This helps with animated/video banners.
+	Actor::SetRateScalingEnabled(false);
 }
 
 // Ugly: if sIsBanner is false, we're actually loading something other than a banner.
