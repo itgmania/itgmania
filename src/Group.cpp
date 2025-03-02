@@ -77,7 +77,7 @@ Group::Group(const RString& sDir, const RString& sGroupDirName) {
             ini.GetValue("Group", "SortTitle", sSortTitle);
             Trim(sSortTitle);
             if (sSortTitle.empty()) {
-                sSortTitle = sDisplayTitle;
+                sSortTitle = Basename(sGroupDirName);
             }
             
             ini.GetValue("Group", "TranslitTitle", sTranslitTitle);

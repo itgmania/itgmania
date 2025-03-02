@@ -231,10 +231,10 @@ void MusicWheelItem::LoadFromWheelItemData( const WheelItemBaseData *pData, int 
 					sTranslitName = SONGMAN->ShortenGroupName(pWID->m_pGroup->GetTranslitTitle());
 				}
 				else {
+					// This will eventually do something different when we eventually implement nested folders
+					// for now, use the same behavior.
 					sDisplayName = SONGMAN->ShortenGroupName(pWID->m_sText);
 					sTranslitName = SONGMAN->ShortenGroupName(pWID->m_pGroup->GetTranslitTitle());
-					// sDisplayName = SONGMAN->ShortenGroupName("[" + pWID->m_pGroup->GetSeries() +"] " + pWID->m_pGroup->GetDisplayTitle());
-					// sTranslitName = SONGMAN->ShortenGroupName("[" + pWID->m_pGroup->GetSeries() +"] " + pWID->m_pGroup->GetTranslitTitle());
 				}
 			}
 			if( GAMESTATE->sExpandedSectionName == pWID->m_sText )

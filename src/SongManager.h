@@ -148,7 +148,7 @@ public:
 	std::map<RString, std::vector<Song*>> GetPreferredSortSongsMap() const { return m_mapPreferredSectionToSongs;};
 	RString SongToPreferredSortSectionName( const Song *pSong ) const;
 	std::map<RString, Group*> GetGroupGroupMap() const { return m_mapNameToGroup;};
-	std::map<RString, std::vector<Group*>> GetSeriesGroupMap() const { return m_mapSeriesToGroup;};
+	std::map<RString, std::unordered_set<Group*>> GetSeriesGroupMap() const { return m_mapSeriesToGroup;};
 	Group* GetGroupFromName(  const RString &sGroupName ) const;
 	Group* GetGroup( const Song *pSong ) const;
 	std::vector<RString> GetPreferredSortSectionNames() const;
@@ -251,7 +251,7 @@ protected:
 	//vector<RString>		m_sSongGroupBackgroundPaths; // each song group may have a background associated with it (very rarely)
 	
 	std::map<RString, Group*> m_mapNameToGroup;
-	std::map<RString, std::vector<Group*>>	m_mapSeriesToGroup;
+	std::map<RString, std::unordered_set<Group*>>	m_mapSeriesToGroup;
 
 	struct Comp { bool operator()(const RString& s, const RString &t) const { return CompareRStringsAsc(s,t); } };
 	typedef std::vector<Song*> SongPointerVector;
