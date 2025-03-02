@@ -37,7 +37,7 @@ Group::Group() {
 }
 
 Group::~Group() {
-    SONGMAN->GetGroupGroupMap().clear();
+    SONGMAN->GetGroupGroupMap().erase(m_sGroupName);
 }
 
 Group::Group(const RString& sDir, const RString& sGroupDirName) {
@@ -48,123 +48,64 @@ Group::Group(const RString& sDir, const RString& sGroupDirName) {
     RString sSeries = "";
     RString sBannerPath = "";
     float fOffset = PREFSMAN->m_fMachineSyncBias;
-
+    m_iVersion = INI_VERSION;
+    
     if (FILEMAN->DoesFileExist(sPackIniPath)) {
         IniFile ini;
         ini.ReadFile(sPackIniPath);
-        ini.GetValue("Group", "DisplayTitle", sDisplayTitle);
-        Trim(sDisplayTitle);
-        if (sDisplayTitle.empty()) {
-            sDisplayTitle = Basename(sGroupDirName);
-        }
-        ini.GetValue("Group", "Banner", sBannerPath);
-        ini.GetValue("Group", "SortTitle", sSortTitle);
-        Trim(sSortTitle);
-        if (sSortTitle.empty()) {
-            sSortTitle = sDisplayTitle;
-        }
-        ini.GetValue("Group", "TranslitTitle", sTranslitTitle);
-        Trim(sTranslitTitle);
-        if (sTranslitTitle.empty()) {
-            sTranslitTitle = sDisplayTitle;
-        }
-        ini.GetValue("Group", "Series", sSeries);
-        RString sValue = "";
-        
-        ini.GetValue("Group", "SyncOffset", sValue);
-        Trim(sValue);
-        if (!sValue.empty()) {
-            if (sValue.CompareNoCase("null") == 0) {
-                fOffset = 0.0f;
-            } else if (sValue.CompareNoCase("itg") == 0) {
-                fOffset = -0.009f;
-            } else {
-                fOffset = StringToFloat(sValue);
-            }
-        }
-        ini.GetValue("Group", "Year", m_iYearReleased);
-        
+
         RString sVersion = "";
         ini.GetValue("Group", "Version", sVersion);
         Trim(sVersion);
+
+        // Only read the Pack.ini if the version is set
+        // Otherwise log a warning and skip reading the 
         if (!sVersion.empty()) {
+            m_bHasPackIni = true;
             m_iVersion = StringToInt(sVersion);
-        } else {
-            // If the version is not set, set it to the current version
-            // and write it to the file.
-            m_iVersion = INI_VERSION;
-            ini.SetValue("Group", "Version", INI_VERSION);
-            if( !ini.WriteFile(sPackIniPath)) {
-                RString sError = ssprintf( "Error writing pack.ini ", sPackIniPath.c_str(), ini.GetError().c_str() );
-                Dialog::OK( sError );
+            
+            ini.GetValue("Group", "DisplayTitle", sDisplayTitle);
+            Trim(sDisplayTitle);
+            if (sDisplayTitle.empty()) {
+                sDisplayTitle = Basename(sGroupDirName);
             }
-        }
+            ini.GetValue("Group", "Banner", sBannerPath);
+            if (sBannerPath.empty()) {
+                m_sBannerPath = sBannerPath;
+            }
 
-    } else {
-        m_bHasPackIni = false;
-        m_iVersion = INI_VERSION;
-        fOffset = PREFSMAN->m_fMachineSyncBias;
+            ini.GetValue("Group", "SortTitle", sSortTitle);
+            Trim(sSortTitle);
+            if (sSortTitle.empty()) {
+                sSortTitle = sDisplayTitle;
+            }
+            
+            ini.GetValue("Group", "TranslitTitle", sTranslitTitle);
+            Trim(sTranslitTitle);
+            if (sTranslitTitle.empty()) {
+                sTranslitTitle = sDisplayTitle;
+            }
+            
+            ini.GetValue("Group", "Series", sSeries);
+
+            RString sValue = "";
+            ini.GetValue("Group", "SyncOffset", sValue);
+            Trim(sValue);
+            if (!sValue.empty()) {
+                if (sValue.CompareNoCase("null") == 0) {
+                    fOffset = 0.0f;
+                } else if (sValue.CompareNoCase("itg") == 0) {
+                    fOffset = -0.009f;
+                } else {
+                    LOG->Warn("Group::Group: Invalid SyncOffset value: %s in Pack.ini. Valid values are NULL and ITG. Defaulting to NULL.", sValue.c_str());
+                }
+            }
+
+            ini.GetValue("Group", "Year", m_iYearReleased);
+        } else {
+            LOG->Warn("Group::Group: Pack.ini version not set. Using default values.");
+        }  
     }
-
-    
-	// Look for a group banner in this group folder
-	std::vector<RString> arrayGroupBanners;
-	
-	// First check if there is a banner provided in pack.ini
-	if(!sBannerPath.empty())
-	{
-		GetDirListing(sDir + sGroupDirName + "/" + sBannerPath, arrayGroupBanners);
-	}
-	GetDirListing(sDir + sGroupDirName + "/*.png", arrayGroupBanners);
-	GetDirListing(sDir + sGroupDirName + "/*.jpg", arrayGroupBanners);
-	GetDirListing(sDir + sGroupDirName + "/*.jpeg", arrayGroupBanners);
-	GetDirListing(sDir + sGroupDirName + "/*.gif", arrayGroupBanners);
-	GetDirListing(sDir + sGroupDirName + "/*.bmp", arrayGroupBanners);
-
-	if(!arrayGroupBanners.empty()) {
-		m_sBannerPath = sDir + sGroupDirName + "/" + arrayGroupBanners[0] ;
-    }
-	else
-	{
-		// Look for a group banner in the parent folder
-		GetDirListing(sDir + sGroupDirName + ".png", arrayGroupBanners);
-		GetDirListing(sDir + sGroupDirName + ".jpg", arrayGroupBanners);
-		GetDirListing(sDir + sGroupDirName + ".jpeg", arrayGroupBanners);
-		GetDirListing(sDir + sGroupDirName + ".gif", arrayGroupBanners);
-		GetDirListing(sDir + sGroupDirName + ".bmp", arrayGroupBanners);
-		if(!arrayGroupBanners.empty())
-			m_sBannerPath = sDir + arrayGroupBanners[0];
-	}
-
-        /* Other group graphics are a bit trickier, and usually don't exist.
-        * A themer has a few options, namely checking the aspect ratio and
-        * operating on it. -aj
-        * TODO: Once the files are implemented in Song, bring the extensions
-        * from there into here. -aj */
-        // Group background
-
-        //vector<RString> arrayGroupBackgrounds;
-        //GetDirListing(sDir + sGroupDirName + "/*-bg.png", arrayGroupBanners);
-        //GetDirListing(sDir + sGroupDirName + "/*-bg.jpg", arrayGroupBanners);
-        //GetDirListing(sDir + sGroupDirName + "/*-bg.jpeg", arrayGroupBanners);
-        //GetDirListing(sDir + sGroupDirName + "/*-bg.gif", arrayGroupBanners);
-        //GetDirListing(sDir + sGroupDirName + "/*-bg.bmp", arrayGroupBanners);
-    /*
-        RString sBackgroundPath;
-        if(!arrayGroupBackgrounds.empty())
-            sBackgroundPath = sDir + sGroupDirName + "/" + arrayGroupBackgrounds[0];
-        else
-        {
-            // Look for a group background in the parent folder
-            GetDirListing(sDir + sGroupDirName + "-bg.png", arrayGroupBackgrounds);
-            GetDirListing(sDir + sGroupDirName + "-bg.jpg", arrayGroupBackgrounds);
-            GetDirListing(sDir + sGroupDirName + "-bg.jpeg", arrayGroupBackgrounds);
-            GetDirListing(sDir + sGroupDirName + "-bg.gif", arrayGroupBackgrounds);
-            GetDirListing(sDir + sGroupDirName + "-bg.bmp", arrayGroupBackgrounds);
-            if(!arrayGroupBackgrounds.empty())
-                sBackgroundPath = sDir + arrayGroupBackgrounds[0];
-        }
-    */
 
     m_sDisplayTitle = sDisplayTitle;
     m_sSortTitle = sSortTitle;

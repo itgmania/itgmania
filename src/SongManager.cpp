@@ -279,22 +279,77 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
 	if( j != m_sSongGroupNames.size() )
 		return; // the group is already added
 
-	m_sSongGroupNames.push_back( sGroupDirName );
-	// add to the group list
-	if( group )
-	{
-		m_pGroups.push_back( group );
-	}
+	RString sBannerPath;
+
+	// Look for a group banner in this group folder
+	std::vector<RString> arrayGroupBanners;
 	
-	if (m_mapGroupsByName.find(sGroupDirName) == m_mapGroupsByName.end())
+	// First check if there is a banner provided in pack.ini
+	if(!group->GetBannerPath().empty())
 	{
-		m_mapGroupsByName[sGroupDirName] = group;
+		GetDirListing(sDir + sGroupDirName + "/" + group->GetBannerPath(), arrayGroupBanners);
+	}
+	GetDirListing( sDir+sGroupDirName+"/*.png", arrayGroupBanners );
+	GetDirListing( sDir+sGroupDirName+"/*.jpg", arrayGroupBanners );
+	GetDirListing( sDir+sGroupDirName+"/*.jpeg", arrayGroupBanners );
+	GetDirListing( sDir+sGroupDirName+"/*.gif", arrayGroupBanners );
+	GetDirListing( sDir+sGroupDirName+"/*.bmp", arrayGroupBanners );
+
+	if( !arrayGroupBanners.empty() )
+		sBannerPath = sDir+sGroupDirName+"/"+arrayGroupBanners[0] ;
+	else
+	{
+		// Look for a group banner in the parent folder
+		GetDirListing( sDir+sGroupDirName+".png", arrayGroupBanners );
+		GetDirListing( sDir+sGroupDirName+".jpg", arrayGroupBanners );
+		GetDirListing( sDir+sGroupDirName+".jpeg", arrayGroupBanners );
+		GetDirListing( sDir+sGroupDirName+".gif", arrayGroupBanners );
+		GetDirListing( sDir+sGroupDirName+".bmp", arrayGroupBanners );
+		if( !arrayGroupBanners.empty() )
+			sBannerPath = sDir+arrayGroupBanners[0];
+	}
+
+        /* Other group graphics are a bit trickier, and usually don't exist.
+        * A themer has a few options, namely checking the aspect ratio and
+        * operating on it. -aj
+        * TODO: Once the files are implemented in Song, bring the extensions
+        * from there into here. -aj */
+        // Group background
+
+        //vector<RString> arrayGroupBackgrounds;
+        //GetDirListing(sDir + sGroupDirName + "/*-bg.png", arrayGroupBanners);
+        //GetDirListing(sDir + sGroupDirName + "/*-bg.jpg", arrayGroupBanners);
+        //GetDirListing(sDir + sGroupDirName + "/*-bg.jpeg", arrayGroupBanners);
+        //GetDirListing(sDir + sGroupDirName + "/*-bg.gif", arrayGroupBanners);
+        //GetDirListing(sDir + sGroupDirName + "/*-bg.bmp", arrayGroupBanners);
+    /*
+        RString sBackgroundPath;
+        if(!arrayGroupBackgrounds.empty())
+            sBackgroundPath = sDir + sGroupDirName + "/" + arrayGroupBackgrounds[0];
+        else
+        {
+            // Look for a group background in the parent folder
+            GetDirListing(sDir + sGroupDirName + "-bg.png", arrayGroupBackgrounds);
+            GetDirListing(sDir + sGroupDirName + "-bg.jpg", arrayGroupBackgrounds);
+            GetDirListing(sDir + sGroupDirName + "-bg.jpeg", arrayGroupBackgrounds);
+            GetDirListing(sDir + sGroupDirName + "-bg.gif", arrayGroupBackgrounds);
+            GetDirListing(sDir + sGroupDirName + "-bg.bmp", arrayGroupBackgrounds);
+            if(!arrayGroupBackgrounds.empty())
+                sBackgroundPath = sDir + arrayGroupBackgrounds[0];
+        }
+    */
+   	m_sSongGroupBannerPaths.push_back( sBannerPath );
+	m_sSongGroupNames.push_back( sGroupDirName );
+	
+	if (m_mapNameToGroup.find(sGroupDirName) == m_mapNameToGroup.end())
+	{
+		m_mapNameToGroup[sGroupDirName] = group;
 	} 
 
 	// Add the group to its series if the group has one and if the series exists
 	if( group->GetSeries() != "" )
 	{
-		std::vector<Group*>& series = m_mapSeries[group->GetSeries()];
+		std::vector<Group*>& series = m_mapSeriesToGroup[group->GetSeries()];
 		if( std::find(series.begin(), series.end(), group) == series.end() )
 			series.push_back(group);
 	}
@@ -415,7 +470,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 				continue;
 			}
 			// Apply Group Offset if applicable
-			if( group->GetSyncOffset() != 0 )
+			if( group->GetSyncOffset() != 0.0f )
 			{
 				pNewSong->m_SongTiming.m_fBeat0GroupOffsetInSeconds = group->GetSyncOffset();
 				const std::vector<Steps*>& vpSteps = pNewSong->GetAllSteps();
@@ -444,7 +499,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		AddGroup(sDir, sGroupDirName, group);
 
 		// Cache and load the group banner. (and background if it has one -aj)
-		IMAGECACHE->CacheImage( "Banner", group->GetBannerPath() );
+		IMAGECACHE->CacheImage( "Banner", GetSongGroupBannerPath(sGroupDirName) );
 
 		// Load the group sym links (if any)
 		LoadGroupSymLinks(sDir, sGroupDirName);
@@ -527,7 +582,6 @@ void SongManager::PreloadSongImages()
 void SongManager::FreeSongs()
 {
 	m_sSongGroupNames.clear();
-	m_mapGroupsByName.clear();
 	m_mapSongsByDifficulty.clear();
 	m_mapPreferredSectionToSongs.clear();
 
@@ -537,13 +591,15 @@ void SongManager::FreeSongs()
 	{
 		RageUtil::SafeDelete( song );
 	}
-    // Loop through all groups and delete them.
-    for (Group *group : m_pGroups) {
-        RageUtil::SafeDelete(group);
-    }
+    // Loop through all groups in the mapand delete them.
+	for (auto it = m_mapNameToGroup.begin(); it != m_mapNameToGroup.end(); ++it)
+	{
+		Group* group = it->second;
+		RageUtil::SafeDelete( group );
+	}
 
 	m_pSongs.clear();
-	m_pGroups.clear();
+	m_mapNameToGroup.clear();
 	m_SongsByDir.clear();
 
 	// also free the songs that have been deleted from disk
@@ -583,13 +639,13 @@ bool SongManager::IsGroupNeverCached(const RString& group) const
 
 RString SongManager::GetSongGroupBannerPath( RString sSongGroup ) const
 {
-	Group* group = GetGroupFromName(sSongGroup);
-	if(group == nullptr)
+	for( unsigned i = 0; i < m_sSongGroupNames.size(); ++i )
 	{
-		LOG->Warn("Requested banner for song group '%s' that doesn't exist", sSongGroup.c_str());
-		return RString();
+		if( sSongGroup == m_sSongGroupNames[i] )
+			return m_sSongGroupBannerPaths[i];
 	}
-	return group->GetBannerPath();
+
+	return RString();
 }
 /*
 RString SongManager::GetSongGroupBackgroundPath( RString sSongGroup ) const
@@ -622,9 +678,6 @@ bool SongManager::HasPackIni(RString sSongGroup) const
 		return group->HasPackIni();
 	}
 	LOG->Warn("Requested pack.ini for song group '%s' that doesn't exist", sSongGroup.c_str());
-	#ifdef DEBUG
-		ASSERT_M( 0, ssprintf("requested pack.ini for song group '%s' that doesn't exist",sSongGroup.c_str()) );
-	#endif
 	return false;
 }
 
@@ -871,8 +924,8 @@ Group* SongManager::GetGroup( const Song* pSong ) const
 
 Group* SongManager::GetGroupFromName( const RString& sGroupName ) const
 {
-	auto iter = m_mapGroupsByName.find( sGroupName );
-	if( iter != m_mapGroupsByName.end() )
+	auto iter = m_mapNameToGroup.find( sGroupName );
+	if( iter != m_mapNameToGroup.end() )
 		return iter->second;
 	return nullptr;
 }

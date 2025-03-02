@@ -597,8 +597,6 @@ int SongUtil::CompareSongPointersByGroup(const Song *pSong1, const Song *pSong2)
 {
 	// Check if the sort title exists
 	if( SONGMAN->GetGroup(pSong1)->GetSortTitle().empty() || SONGMAN->GetGroup(pSong2)->GetSortTitle().empty() ) {
-		// LOG the DEETS
-		LOG->Warn("SongUtil::CompareSongPointersByGroup: Song %s or %s has an empty group name. Using group name instead.", pSong1->m_sSongName.c_str(), pSong2->m_sSongName.c_str());
 		return pSong1->m_sGroupName < pSong2->m_sGroupName;
 	} else {
 		return SONGMAN->GetGroup(pSong1)->GetSortTitle() < SONGMAN->GetGroup(pSong2)->GetSortTitle();

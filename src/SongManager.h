@@ -147,8 +147,8 @@ public:
 	void GetPreferredSortSongs( std::vector<Song*> &AddTo ) const;
 	std::map<RString, std::vector<Song*>> GetPreferredSortSongsMap() const { return m_mapPreferredSectionToSongs;};
 	RString SongToPreferredSortSectionName( const Song *pSong ) const;
-	std::map<RString, Group*> GetGroupGroupMap() const { return m_mapGroupsByName;};
-	std::map<RString, std::vector<Group*>> GetSeriesGroupMap() const { return m_mapSeries;};
+	std::map<RString, Group*> GetGroupGroupMap() const { return m_mapNameToGroup;};
+	std::map<RString, std::vector<Group*>> GetSeriesGroupMap() const { return m_mapSeriesToGroup;};
 	Group* GetGroupFromName(  const RString &sGroupName ) const;
 	Group* GetGroup( const Song *pSong ) const;
 	std::vector<RString> GetPreferredSortSectionNames() const;
@@ -223,8 +223,7 @@ protected:
 	void AddSongToList(Song* new_song);
 	/** @brief All of the songs that can be played. */
 	std::vector<Song*>		m_pSongs;
-	/** @brief All of the groups available */
-	std::vector<Group*>		m_pGroups;
+
 	std::map<RString, Song*> m_SongsByDir;
 	std::set<RString> m_GroupsToNeverCache;
 
@@ -248,10 +247,11 @@ protected:
 	std::map<RString, std::vector<Song*>> m_mapPreferredSectionToSongs;
 	std::vector<PreferredSortSection> m_vPreferredSongSort;
 	std::vector<RString>		m_sSongGroupNames;
+	std::vector<RString>		m_sSongGroupBannerPaths; // each song group may have a banner associated with it
 	//vector<RString>		m_sSongGroupBackgroundPaths; // each song group may have a background associated with it (very rarely)
 	
-	std::map<RString, Group*> m_mapGroupsByName;
-	std::map<RString, std::vector<Group*>>	m_mapSeries;
+	std::map<RString, Group*> m_mapNameToGroup;
+	std::map<RString, std::vector<Group*>>	m_mapSeriesToGroup;
 
 	struct Comp { bool operator()(const RString& s, const RString &t) const { return CompareRStringsAsc(s,t); } };
 	typedef std::vector<Song*> SongPointerVector;
