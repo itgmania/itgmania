@@ -28,17 +28,21 @@ static HBITMAP g_hBitmap = nullptr;
 static HBITMAP LoadWin32Surface( const RageSurface *pSplash, HWND hWnd )
 {
 	RageSurface *s = CreateSurface( pSplash->w, pSplash->h, 32,
-		0x00FF0000, 0x0000FF00, 0x000000FF, 0 );
-	RageSurfaceUtils::Blit( pSplash, s, -1, -1 );
+		0xFF000000, 0x00FF0000, 0x0000FF00, 0 );
+	RageSurfaceUtils::Blit( pSplash, s , -1, -1 );
 
 	/* Resize the splash image to fit the dialog.  Stretch to fit horizontally,
 	 * maintaining aspect ratio. */
-	RECT r;
-	GetClientRect(hWnd, &r);
-	int iWidth = r.right;
-	float fRatio = static_cast<float>(iWidth) / s->w;
-	int iHeight = static_cast<int>(std::round(s->h * fRatio));
-	RageSurfaceUtils::Zoom(s, iWidth, iHeight);
+	{
+		RECT r;
+		GetClientRect( hWnd, &r );
+
+		int iWidth = r.right;
+		float fRatio = (float) iWidth / s->w;
+		int iHeight = std::lrint( s->h * fRatio );
+
+		RageSurfaceUtils::Zoom( s, iWidth, iHeight );
+	}
 
 	HDC hScreen = GetDC(nullptr);
 	ASSERT_M( hScreen != nullptr, werr_ssprintf(GetLastError(), "hScreen") );
@@ -49,34 +53,22 @@ static HBITMAP LoadWin32Surface( const RageSurface *pSplash, HWND hWnd )
 	HDC BitmapDC = CreateCompatibleDC( hScreen );
 	SelectObject( BitmapDC, bitmap );
 
-	// Top-down DIB
-	BITMAPINFO bmi;
-	ZeroMemory(&bmi, sizeof(bmi));
-	bmi.bmiHeader.biSize = sizeof(bmi.bmiHeader);
-	bmi.bmiHeader.biWidth = s->w;
-	bmi.bmiHeader.biHeight = -s->h;
-	bmi.bmiHeader.biPlanes = 1;
-	bmi.bmiHeader.biBitCount = 24;
-	bmi.bmiHeader.biCompression = BI_RGB;
-
-	std::vector<uint8_t> buffer(s->w * s->h * 3);
+	/* This is silly, but simple.  We only do this once, on a small image. */
 	for( int y = 0; y < s->h; ++y )
 	{
+		unsigned const char *line = ((unsigned char *) s->pixels) + (y * s->pitch);
 		for( int x = 0; x < s->w; ++x )
 		{
-			uint8_t* srcPixel = s->pixels + y * s->pitch + x * s->format->BytesPerPixel;
-			uint8_t* dstPixel = &buffer[(y * s->w + x) * 3];
-			dstPixel[0] = srcPixel[2]; // Blue
-			dstPixel[1] = srcPixel[1]; // Green
-			dstPixel[2] = srcPixel[0]; // Red
+			unsigned const char *data = line + (x*s->format->BytesPerPixel);
+
+			SetPixelV( BitmapDC, x, y, RGB( data[3], data[2], data[1] ) );
 		}
 	}
 
-	SetDIBits(BitmapDC, bitmap, 0, s->h, buffer.data(), &bmi, DIB_RGB_COLORS);
+	SelectObject( BitmapDC, nullptr );
+	DeleteObject( BitmapDC );
 
-	SelectObject(BitmapDC, nullptr);
-	DeleteDC(BitmapDC);
-	ReleaseDC(nullptr, hScreen);
+	ReleaseDC( nullptr, hScreen );
 
 	delete s;
 	return bitmap;
@@ -198,11 +190,11 @@ void LoadingWindow_Win32::SetText( RString sText )
 	for( unsigned i = 0; i < 3; ++i )
 	{
 		if( text[i] == asMessageLines[i] )
-		{
-			text[i] = asMessageLines[i];
-			HWND hwndItem = ::GetDlgItem(hwnd, msgid[i]);
-			::SetWindowText(hwndItem, ConvertUTF8ToACP(asMessageLines[i]).c_str());
-		}
+			continue;
+		text[i] = asMessageLines[i];
+
+		HWND hwndItem = ::GetDlgItem( hwnd, msgid[i] );
+		::SetWindowText( hwndItem, ConvertUTF8ToACP(asMessageLines[i]).c_str() );
 	}
 }
 
