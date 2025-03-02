@@ -20,8 +20,8 @@ struct lua_State;
 #include "RageUtil.h"
 #include "Song.h"
 #include <cstddef>
+#include <unordered_set>
 #include <vector>
-
 
 RString SONG_GROUP_COLOR_NAME( size_t i );
 RString COURSE_GROUP_COLOR_NAME( size_t i );
@@ -147,7 +147,7 @@ public:
 	void GetPreferredSortSongs( std::vector<Song*> &AddTo ) const;
 	std::map<RString, std::vector<Song*>> GetPreferredSortSongsMap() const { return m_mapPreferredSectionToSongs;};
 	RString SongToPreferredSortSectionName( const Song *pSong ) const;
-	std::unordered_map<RString, Group*> GetGroupGroupMap() const { return m_mapNameToGroup;};
+	std::unordered_map<std::string, Group*> GetGroupGroupMap() const { return m_mapNameToGroup;};
 	std::map<RString, std::unordered_set<Group*>> GetSeriesGroupMap() const { return m_mapSeriesToGroups;};
 	Group* GetGroupFromName(  const RString &sGroupName ) const;
 	Group* GetGroup( const Song *pSong ) const;
@@ -250,8 +250,8 @@ protected:
 	std::vector<RString>		m_sSongGroupBannerPaths; // each song group may have a banner associated with it
 	//vector<RString>		m_sSongGroupBackgroundPaths; // each song group may have a background associated with it (very rarely)
 	
-	std::unordered_map<RString, Group*> m_mapNameToGroup; // maps a group's name on disk (folder) to a Group object
-	std::map<RString, std::unordered_set<Group*>>	m_mapSeriesToGroups;
+	std::unordered_map<std::string, Group*> m_mapNameToGroup; // maps a group's name on disk (folder) to a Group object
+	std::map<RString, std::unordered_set<Group*>>	m_mapSeriesToGroups; 
 
 	struct Comp { bool operator()(const RString& s, const RString &t) const { return CompareRStringsAsc(s,t); } };
 	typedef std::vector<Song*> SongPointerVector;
