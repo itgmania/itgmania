@@ -42,12 +42,16 @@ Group::~Group() {
 
 Group::Group(const RString& sDir, const RString& sGroupDirName) {
     RString sPackIniPath = sDir + sGroupDirName + "/" + INI_FILE;
-    RString sDisplayTitle = sGroupDirName;
-    RString sSortTitle = sGroupDirName;
-    RString sTranslitTitle = "";
-    RString sSeries = "";
-    RString sBannerPath = "";
-    float fOffset = PREFSMAN->m_fMachineSyncBias;
+    m_sPath = sDir + sGroupDirName;
+    m_sGroupName = Basename(sGroupDirName);
+    m_sDisplayTitle = m_sGroupName;
+    m_sSortTitle = m_sGroupName;
+    m_sTranslitTitle = m_sGroupName;
+    m_sSeries = "";
+    m_fSyncOffset = PREFSMAN->m_fMachineSyncBias;
+    m_bHasPackIni = false;
+    m_iYearReleased = 0;
+    m_sBannerPath = "";
     m_iVersion = INI_VERSION;
     
     if (FILEMAN->DoesFileExist(sPackIniPath)) {
@@ -63,39 +67,37 @@ Group::Group(const RString& sDir, const RString& sGroupDirName) {
         if (!sVersion.empty()) {
             m_bHasPackIni = true;
             m_iVersion = StringToInt(sVersion);
-            
-            ini.GetValue("Group", "DisplayTitle", sDisplayTitle);
-            Trim(sDisplayTitle);
-            if (sDisplayTitle.empty()) {
-                sDisplayTitle = Basename(sGroupDirName);
-            }
-            ini.GetValue("Group", "Banner", sBannerPath);
-            if (sBannerPath.empty()) {
-                m_sBannerPath = sBannerPath;
-            }
 
-            ini.GetValue("Group", "SortTitle", sSortTitle);
-            Trim(sSortTitle);
-            if (sSortTitle.empty()) {
-                sSortTitle = Basename(sGroupDirName);
-            }
-            
-            ini.GetValue("Group", "TranslitTitle", sTranslitTitle);
-            Trim(sTranslitTitle);
-            if (sTranslitTitle.empty()) {
-                sTranslitTitle = sDisplayTitle;
-            }
-            
-            ini.GetValue("Group", "Series", sSeries);
+            // Define a vector of key-value pairs to cleanly iterate
+            std::vector<std::pair<RString, RString&>> vPackfields = {
+                {"DisplayTitle", m_sDisplayTitle},
+                {"SortTitle", m_sSortTitle},
+                {"TranslitTitle", m_sTranslitTitle},
+                {"Series", m_sSeries},
+                {"Banner", m_sBannerPath}
+            };
 
+            for (auto& [key, value] : vPackfields) {
+                ini.GetValue("Group", key, value);
+                Trim(value);
+
+                if (value.empty()) {
+                    if (key == "DisplayTitle" || key == "SortTitle" ) {
+                        value = m_sGroupName;
+                    } else if (key == "TranslitTitle") {
+                        value = m_sDisplayTitle;
+                    } 
+                }
+            }
+            
             RString sValue = "";
             ini.GetValue("Group", "SyncOffset", sValue);
             Trim(sValue);
             if (!sValue.empty()) {
                 if (sValue.CompareNoCase("null") == 0) {
-                    fOffset = 0.0f;
+                    m_fSyncOffset = 0.0f;
                 } else if (sValue.CompareNoCase("itg") == 0) {
-                    fOffset = -0.009f;
+                    m_fSyncOffset = -0.009f;
                 } else {
                     LOG->Warn("Group::Group: Invalid SyncOffset value: %s in Pack.ini. Valid values are NULL and ITG. Defaulting to NULL.", sValue.c_str());
                 }
@@ -106,15 +108,6 @@ Group::Group(const RString& sDir, const RString& sGroupDirName) {
             LOG->Warn("Group::Group: Pack.ini version not set. Using default values.");
         }  
     }
-
-    m_sDisplayTitle = sDisplayTitle;
-    m_sSortTitle = sSortTitle;
-    m_sTranslitTitle = sTranslitTitle;
-    m_sSeries = sSeries;
-    m_sPath = sDir + sGroupDirName;
-    m_sGroupName = sGroupDirName;
-    m_fSyncOffset = fOffset;
-    
 }
 
 const std::vector<Song *> &Group::GetSongs() const
