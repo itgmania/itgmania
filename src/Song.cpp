@@ -655,9 +655,19 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 
 	m_SongTiming.TidyUpData(false);
 
+	// Apply the group offset to the song timing before we do anything else.
+	float fOffset = PREFSMAN->m_fMachineSyncBias;
+	if (SONGMAN->GetGroupFromName(m_sGroupName) != nullptr)
+	{
+		fOffset = SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset();
+	}
+	m_SongTiming.m_fBeat0GroupOffsetInSeconds = fOffset;
+
 	for (Steps *s : m_vpSteps)
 	{
 		s->m_Timing.TidyUpData(true);
+		// Apply the group offset to the step timing as well.
+		s->m_Timing.m_fBeat0GroupOffsetInSeconds = fOffset;
 	}
 
 	if(!from_cache)

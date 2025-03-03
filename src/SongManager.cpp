@@ -340,11 +340,6 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
     */
    	m_sSongGroupBannerPaths.push_back( sBannerPath );
 	m_sSongGroupNames.push_back( sGroupDirName );
-	
-	if (m_mapNameToGroup.find(sGroupDirName) == m_mapNameToGroup.end())
-	{
-		m_mapNameToGroup[sGroupDirName] = group;
-	} 
 
 	// Add the group to its series if the group has one and if the series exists
 	if( group->GetSeries() != "" )
@@ -435,6 +430,12 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		RString group_base_name= Basename(sGroupDirName);
 		Group* group = new Group(sDir, sGroupDirName);
 
+		// Add the group to the group mapping
+		if (m_mapNameToGroup.find(sGroupDirName) == m_mapNameToGroup.end())
+		{
+			m_mapNameToGroup[sGroupDirName] = group;
+		} 
+
 		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
 		{
 			RString sSongDirName = arraySongDirs[j];
@@ -468,19 +469,6 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 				delete pNewSong;
 				continue;
 			}
-			// Apply Group Offset if applicable
-			if( group->GetSyncOffset() != 0.0f )
-			{
-				pNewSong->m_SongTiming.m_fBeat0GroupOffsetInSeconds = group->GetSyncOffset();
-				const std::vector<Steps*>& vpSteps = pNewSong->GetAllSteps();
-				for (Steps* s : vpSteps)
-				{
-					if( s->m_Timing.empty() )
-						continue;
-					s->m_Timing.m_fBeat0GroupOffsetInSeconds = group->GetSyncOffset();
-				}
-			}
-
 
 			AddSongToList(pNewSong);
 
@@ -492,7 +480,16 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		LOG->Trace("Loaded %i songs from \"%s\"", loaded, (sDir+sGroupDirName).c_str() );
 
 		// Don't add the group name if we didn't load any songs in this group.
-		if(!loaded) continue;
+		if(!loaded) {
+			// Remove the group from the group mapping
+			auto it = m_mapNameToGroup.find(sGroupDirName);
+			if (it != m_mapNameToGroup.end())
+			{
+				m_mapNameToGroup.erase(it);
+			}
+			delete group;
+			continue;
+		}
 
 		// Add this group to the group array.
 		AddGroup(sDir, sGroupDirName, group);
