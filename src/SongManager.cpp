@@ -281,7 +281,7 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
 
 	if ( group == nullptr ) {
 		// Could not AddGroup 'sGroupDirName'. Group object is null.
-		LuaHelpers::ReportScriptErrorFmt("Could not AddGroup '%s'. Group object is null.", sGroupDirName.c_str() );
+		LOG->Warn( "Could not AddGroup '%s'. Group object is null.", sGroupDirName.c_str() );
 		return;
 	}
 
