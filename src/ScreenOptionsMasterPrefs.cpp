@@ -947,7 +947,7 @@ static void InitializeConfOptions()
 			c.AddOption( ssprintf("%+i ms", i) );
 		ADD( c );
 	}
-	ADD( ConfOption( "MachineSyncBias",			MachineSyncBias,		"Null","|ITG" ) );
+	ADD( ConfOption( "MachineSyncBias",			MachineSyncBias,		"NULL","|ITG" ) );
 	ADD( ConfOption( "EnableAttackSounds",		MovePref<bool>,		"No","Yes" ) );
 	ADD( ConfOption( "EnableMineHitSound",		MovePref<bool>,		"No","Yes" ) );
 	ADD( ConfOption( "RateModPreservesPitch",		MovePref<bool>,		"No","Yes") );

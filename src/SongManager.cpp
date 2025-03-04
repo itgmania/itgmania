@@ -279,6 +279,12 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
 	if( j != m_sSongGroupNames.size() )
 		return; // the group is already added
 
+	if ( group == nullptr ) {
+		// Could not AddGroup 'sGroupDirName'. Group object is null.
+		LuaHelpers::ReportScriptErrorFmt("Could not AddGroup '%s'. Group object is null.", sGroupDirName.c_str() );
+		return;
+	}
+
 	RString sBannerPath;
 
 	// Look for a group banner in this group folder
