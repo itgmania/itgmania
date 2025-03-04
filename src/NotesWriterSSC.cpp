@@ -447,7 +447,7 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 		// The vast majority of charts don't, so there's no reason to store duplicated data.
 		const std::vector<std::vector<float>> &allNpsPerMeasures = in.GetAllNpsPerMeasures();
 		std::vector<RString> npsPerMeasureStrings;
-		
+		npsPerMeasureStrings.reserve(allNpsPerMeasures.size());
 		for(std::vector<float> npsPerMeasure : allNpsPerMeasures)
 		{
 			npsPerMeasureStrings.push_back(serialize(npsPerMeasure, ",", 3));
@@ -457,7 +457,7 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 
 		const std::vector<std::vector<int>> &allNotesPerMeasures = in.GetAllNotesPerMeasures();
 		std::vector<RString> notesPerMeasureStrings;
-		
+		notesPerMeasureStrings.reserve(allNotesPerMeasures.size());
 		for(std::vector<int> notesPerMeasure : allNotesPerMeasures)
 		{
 			notesPerMeasureStrings.push_back(serialize(notesPerMeasure, ","));

@@ -724,6 +724,7 @@ RString join( const RString &sDelimitor, std::vector<RString>::const_iterator be
 RString serialize(const std::vector<float> & sSource, const RString &sDelimitor, int precision)
 {
 	std::vector<RString> values;
+	values.reserve(sSource.size());
 	RString precisionStr = ssprintf("%%.%df", precision);
 	for(float s : sSource)
 	{
@@ -735,6 +736,7 @@ RString serialize(const std::vector<float> & sSource, const RString &sDelimitor,
 RString serialize(const std::vector<int> & sSource, const RString &sDelimitor)
 {
 	std::vector<RString> values;
+	values.reserve(sSource.size());
 	for(int s : sSource)
 	{
 		values.push_back(ssprintf("%d", s));
