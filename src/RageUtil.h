@@ -349,7 +349,8 @@ inline RString PrettyPercent( int fNumerator, int fDenominator ) { return Pretty
 RString Commify( int iNum );
 RString Commify(const RString& num, const RString& sep= ",", const RString& dot= ".");
 RString FormatNumberAndSuffix( int i );
-
+/* Round num to 3 decimal places and return as string with 3 decimal places */
+RString NormalizeDecimal(float num);
 
 struct tm GetLocalTime();
 

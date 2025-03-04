@@ -32,7 +32,6 @@
 #include <algorithm>
 #include <cstddef>
 #include <vector>
-#include <iomanip>
 #include <regex>
 
 #include "StepParityGenerator.h"
@@ -805,16 +804,14 @@ void Steps::CalculateGrooveStatsHash(bool forceRecalculate)
 	TimingData * timingData = this->GetTimingData();
 	std::vector<TimingSegment *> segments = timingData->GetTimingSegments(SEGMENT_BPM);
 	std::vector<RString> bpmStrings;
+	bpmStrings.reserve(segments.size());
 	for (TimingSegment *segment : segments)
 	{
 		BPMSegment *bpmSegment = ToBPM(segment);
 		float beat = bpmSegment->GetBeat();
 		float bpm = bpmSegment->GetBPM();
-		std::ostringstream os;
-		os << std::fixed << std::setprecision(3) << beat;
-		os << "=";
-		os << std::fixed << std::setprecision(3) << bpm;
-		bpmStrings.push_back(os.str());
+		RString segmentStr = ssprintf("%s=%s", NormalizeDecimal(beat).c_str(), NormalizeDecimal(bpm).c_str());
+		bpmStrings.push_back(segmentStr);
 	}
 	RString bpmString = join(",", bpmStrings);
 

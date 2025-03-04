@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <ctime>
 #include <functional>
+#include <iomanip>
 #include <map>
 #include <numeric>
 #include <sstream>
@@ -368,6 +369,15 @@ RString FormatNumberAndSuffix( int i )
 		sSuffix = NUM_TH;
 
 	return NUM_PREFIX.GetValue() + ssprintf("%i", i) + sSuffix;
+}
+
+RString NormalizeDecimal(float num)
+{
+	float mult = 1000.0f;
+	float rounded = std::round(num * mult) / mult;
+	std::ostringstream os;
+	os << std::fixed << std::setprecision(3) << rounded;
+	return os.str();
 }
 
 struct tm GetLocalTime()
