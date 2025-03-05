@@ -41,6 +41,3 @@
 	path = extern/libusb
 	url = https://github.com/libusb/libusb-cmake.git
 	shallow = true
-[submodule "extern/libjpeg-turbo"]
-	path = extern/libjpeg-turbo
-	url = https://github.com/libjpeg-turbo/libjpeg-turbo.git

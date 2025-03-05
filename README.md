@@ -35,7 +35,7 @@ You can choose between using the installer or using the portable build. Using th
 * Move ITGmania.app to the Applications folder, and then run the following command in Terminal:
 
    * `xattr -dr com.apple.quarantine /Applications/ITGmania`
-
+   
 * You should then add ITGmania to the "Input Monitoring" section of System Preferences (under Security & Privacy)
 
 ### Linux
@@ -83,8 +83,6 @@ For specific information/legalese:
 * Simply Love is licensed under the GPLv3, or, at your option, any later version.
 * The copyright for songs in the 'Club Fantastic' folders rests with the original authors. The content is explicitly NOT placed under a Creative Commons license (or similar license), but has been provided free of charge, for personal or public use, including online broadcasting, tournaments, and other purposes. Go to the [Club Fantastic](https://www.clubfantastic.com/) website for more information.
 * The [MAD library](http://www.underbit.com/products/mad/) and [FFmpeg codecs](https://www.ffmpeg.org/) when built with our code use the [GPL license](http://www.gnu.org).
-* This software is based in part on the work of the Independent JPEG Group.
-* Check the [Docs/Licenses.txt](Docs/Licenses.txt) for the licenses of the used libraries.
 
 ## Credits
 
