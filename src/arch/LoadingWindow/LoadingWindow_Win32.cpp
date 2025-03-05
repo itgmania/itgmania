@@ -169,13 +169,16 @@ void LoadingWindow_Win32::Paint()
 {
 	SendMessage( hwnd, WM_PAINT, 0, 0 );
 
-	/* Process all queued messages since the last paint.  This allows the window to
-	 * come back if it loses focus during load. */
+	/* Process all queued messages since the last paint. If the window loses focus,
+	 * skip the missed messages and process only the current message. */
 	MSG msg;
-	while( PeekMessage( &msg, hwnd, 0, 0, PM_NOREMOVE ) )
+	HWND foregroundWindow = GetForegroundWindow();
+	while (PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE))
 	{
-		GetMessage(&msg, hwnd, 0, 0 );
-		DispatchMessage( &msg );
+		if (foregroundWindow == hwnd || msg.message == WM_PAINT)
+		{
+			DispatchMessage(&msg);
+		}
 	}
 }
 
