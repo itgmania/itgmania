@@ -1,10 +1,11 @@
 set(INSTALL_DIR ${CMAKE_BINARY_DIR}/libjpeg-turbo-install)
 set(INCLUDE_DIR ${INSTALL_DIR}/include)
+set(LIB_DIR ${INSTALL_DIR}/lib)
 
 if(WIN32)
-  set(LIB_PATH ${INSTALL_DIR}/lib/turbojpeg-static.lib)
+  set(LIB_PATH ${LIB_DIR}/turbojpeg-static.lib)
 else()
-  set(LIB_PATH ${INSTALL_DIR}/lib/libturbojpeg.a)
+  set(LIB_PATH ${LIB_DIR}/libturbojpeg.a)
 endif()
 
 if(MACOSX)
@@ -18,6 +19,7 @@ ExternalProject_Add(
   SOURCE_DIR ${SM_EXTERN_DIR}/libjpeg-turbo
   INSTALL_DIR ${INSTALL_DIR}
   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+             -DCMAKE_INSTALL_LIBDIR=${LIB_DIR}
              -DENABLE_SHARED=OFF
              -DENABLE_STATIC=ON
              ${ARCH_FLAGS}
