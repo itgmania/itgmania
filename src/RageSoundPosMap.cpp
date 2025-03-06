@@ -3,6 +3,7 @@
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "RageTimer.h"
+#include "ScreenManager.h"
 
 #include <climits>
 #include <cmath>
@@ -160,7 +161,11 @@ int64_t pos_map_queue::Search( int64_t iSourceFrame ) const
 	if( last.PeekDeltaTime() >= 1.0f )
 	{
 		last.Touch();
-		LOG->Trace("Audio frame (%lld) was out of range of the data sent - possible buffer underflow? This is not always an error, however if you see it frequently there could be sound buffer problems.", iSourceFrame);
+		if (SCREENMAN->GetTopScreenName() != RString("ScreenSelectMusic"))
+		{
+			// The user is currently picking a song in the songwheel. Underruns are expected. Don't log them.
+			LOG->Trace("Audio buffer underrun at frame %lld, using closest known position instead.", iSourceFrame);
+		}
 	}
 
 	return iClosestPosition;
