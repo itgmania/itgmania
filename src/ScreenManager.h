@@ -71,6 +71,8 @@ public:
 	bool get_input_redirected(PlayerNumber pn);
 	void set_input_redirected(PlayerNumber pn, bool redir);
 
+	RString GetTopScreenName();
+
 	// Lua
 	void PushSelf( lua_State *L );
 

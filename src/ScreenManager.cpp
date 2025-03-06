@@ -905,6 +905,16 @@ void ScreenManager::PlaySharedBackgroundOffCommand()
 	g_pSharedBGA->PlayCommand("Off");
 }
 
+RString ScreenManager::GetTopScreenName()
+{
+	Screen* topScreen = const_cast<ScreenManager*>(this)->GetTopScreen();
+	if (topScreen != nullptr)
+	{
+		return topScreen->GetName();
+	}
+	return "";
+}
+
 // lua start
 #include "LuaBinding.h"
 
