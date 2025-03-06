@@ -156,6 +156,8 @@ int64_t pos_map_queue::Search( int64_t iSourceFrame ) const
 	 * 2. After GetDataToPlay returns EOF and the sound has flushed, but before
 	 *    SoundStopped has been called.
 	 * 3. Underflow; we'll be given a larger frame number than we know about.
+	 *    This is normal while the user is selecting a song in ScreenSelectMusic,
+	 *    so it's not necessary to log an error in that case.
 	 */
 	static RageTimer last;
 	if( last.PeekDeltaTime() >= 1.0f )
@@ -163,7 +165,6 @@ int64_t pos_map_queue::Search( int64_t iSourceFrame ) const
 		last.Touch();
 		if (SCREENMAN->GetTopScreenName() != RString("ScreenSelectMusic"))
 		{
-			// The user is currently picking a song in the songwheel. Underruns are expected. Don't log them.
 			LOG->Trace("Audio buffer underrun at frame %lld, using closest known position instead.", iSourceFrame);
 		}
 	}
