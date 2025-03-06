@@ -28,12 +28,14 @@ int GetWin32CmdLine( char** &argv )
 
 	LocalFree(argvW);
 
-	argv = new char* [args.size()];
+	// args.size() + 1 to account for a null terminator
+	argv = new char* [args.size() + 1];
 	for (size_t i = 0; i < args.size(); ++i)
 	{
 		argv[i] = new char[args[i].size() + 1];
 		strcpy(argv[i], args[i].c_str());
 	}
+	argv[args.size()] = nullptr;
 
 	return argc;
 }
