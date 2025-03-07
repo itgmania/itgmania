@@ -435,12 +435,16 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		SongPointerVector& index_entry = m_mapSongGroupIndex[sGroupDirName];
 		RString group_base_name= Basename(sGroupDirName);
 		Group* group = new Group(sDir, sGroupDirName);
-
+		
+		// We need to keep track of previously loaded groups so we don't delete them if we're only loading additions
+		bool groupAlreadyLoaded = false;
 		// Add the group to the group mapping
 		if (m_mapNameToGroup.find(sGroupDirName) == m_mapNameToGroup.end())
 		{
 			m_mapNameToGroup[sGroupDirName] = group;
-		} 
+		} else {
+			groupAlreadyLoaded = true;
+		}
 
 		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
 		{
@@ -484,6 +488,11 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		}
 
 		LOG->Trace("Loaded %i songs from \"%s\"", loaded, (sDir+sGroupDirName).c_str() );
+
+		// If we're only loading additions, already loaded groups should neither be added nor deleted
+		if (groupAlreadyLoaded && onlyAdditions) {
+			continue;
+		}
 
 		// Don't add the group name if we didn't load any songs in this group.
 		if(!loaded) {
@@ -593,7 +602,7 @@ void SongManager::FreeSongs()
 	{
 		RageUtil::SafeDelete( song );
 	}
-    // Loop through all groups in the mapand delete them.
+    // Loop through all groups in the map and delete them.
 	for (auto it = m_mapNameToGroup.begin(); it != m_mapNameToGroup.end(); ++it)
 	{
 		Group* group = it->second;
