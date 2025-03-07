@@ -436,10 +436,13 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		RString group_base_name= Basename(sGroupDirName);
 		Group* group = new Group(sDir, sGroupDirName);
 
+		bool groupAdded = false;
+
 		// Add the group to the group mapping
 		if (m_mapNameToGroup.find(sGroupDirName) == m_mapNameToGroup.end())
 		{
 			m_mapNameToGroup[sGroupDirName] = group;
+			groupAdded = true;
 		} 
 
 		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
@@ -488,10 +491,12 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		// Don't add the group name if we didn't load any songs in this group.
 		if(!loaded) {
 			// Remove the group from the group mapping
-			auto it = m_mapNameToGroup.find(sGroupDirName);
-			if (it != m_mapNameToGroup.end())
-			{
-				m_mapNameToGroup.erase(it);
+			if (groupAdded) {
+				auto it = m_mapNameToGroup.find(sGroupDirName);
+				if (it != m_mapNameToGroup.end())
+				{
+					m_mapNameToGroup.erase(it);
+				}
 			}
 			delete group;
 			continue;
