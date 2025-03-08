@@ -162,6 +162,7 @@ namespace SongUtil
 	void SortByMostRecentlyPlayedForMachine( std::vector<Song*> &vpSongsInOut );
 	void SortByMostRecentlyPlayedForProfile( std::vector<Song*> &vpSongsInOut, PlayerNumber pn);
 	void SortSongPointerArrayByLength( std::vector<Song*> &vpSongsInOut );
+	void SortSongPointerArrayByGroup( std::vector<Song*> &vpSongsInOut );
 
 	int CompareSongPointersByGroup(const Song *pSong1, const Song *pSong2);
 

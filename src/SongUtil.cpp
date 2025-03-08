@@ -593,31 +593,48 @@ void SongUtil::SortSongPointerArrayByGenre( std::vector<Song*> &vpSongsInOut )
 	stable_sort( vpSongsInOut.begin(), vpSongsInOut.end(), CompareSongPointersByGenre );
 }
 
+void SongUtil::SortSongPointerArrayByGroup( std::vector<Song*> &vpSongsInOut )
+{
+	stable_sort( vpSongsInOut.begin(), vpSongsInOut.end(), CompareSongPointersByGroup );
+}
+
 int SongUtil::CompareSongPointersByGroup(const Song *pSong1, const Song *pSong2)
 {
-	// Check if the sort title exists
-	if( SONGMAN->GetGroup(pSong1)->GetSortTitle().empty() || SONGMAN->GetGroup(pSong2)->GetSortTitle().empty() ) {
+	
+	RString s1 = SONGMAN->GetGroup(pSong1)->GetSortTitle();
+	RString s2 = SONGMAN->GetGroup(pSong2)->GetSortTitle();
+	// Sort Titles are the same, fall back on group folder name
+	if( s1 == s2 )
+	{
 		return pSong1->m_sGroupName < pSong2->m_sGroupName;
-	} else {
-		return SONGMAN->GetGroup(pSong1)->GetSortTitle() < SONGMAN->GetGroup(pSong2)->GetSortTitle();
 	}
+
+	s1 = SongUtil::MakeSortString(s1);
+	s2 = SongUtil::MakeSortString(s2);
+
+	int ret = strcmp( s1, s2 );
+	return ret < 0;
 }
 
 static int CompareSongPointersByGroupAndTitle( const Song *pSong1, const Song *pSong2 )
 {
+	RString s1 = SONGMAN->GetGroup(pSong1)->GetSortTitle();
+	RString s2 = SONGMAN->GetGroup(pSong2)->GetSortTitle();
+	// Sort Titles are the same, fall back on group folder name
+	if( s1 == s2 )
+	{
+		/* Same group; compare by name. */
+		if( pSong1->m_sGroupName == pSong2->m_sGroupName )
+			return CompareSongPointersByTitle( pSong1, pSong2 );
+		else
+			return pSong1->m_sGroupName < pSong2->m_sGroupName;
+	}
 
-	// Check if the sort title exists
-	const RString &sGroup1 = SONGMAN->GetGroup(pSong1)->GetSortTitle();
-	const RString &sGroup2 = SONGMAN->GetGroup(pSong2)->GetSortTitle();
+	s1 = SongUtil::MakeSortString(s1);
+	s2 = SongUtil::MakeSortString(s2);
 
-	if( sGroup1 < sGroup2 )
-		return true;
-	if( sGroup1 > sGroup2 )
-		return false;
-
-	/* Same group; compare by name. */
-	return CompareSongPointersByTitle( pSong1, pSong2 );
-	
+	int ret = strcmp( s1, s2 );
+	return ret < 0;
 }
 
 void SongUtil::SortSongPointerArrayByGroupAndTitle( std::vector<Song*> &vpSongsInOut )
@@ -653,7 +670,7 @@ RString SongUtil::GetSectionNameFromSongAndSort( const Song* pSong, SortOrder so
 		return SONGMAN->SongToPreferredSortSectionName( pSong );
 	case SORT_GROUP:
 		// guaranteed not empty
-		return SONGMAN->GetGroup(pSong)->GetSortTitle();
+		return SONGMAN->GetGroup(pSong)->GetGroupName();
 	case SORT_TITLE:
 	case SORT_ARTIST:
 		{
