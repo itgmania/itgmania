@@ -600,9 +600,19 @@ void SongUtil::SortSongPointerArrayByGroup( std::vector<Song*> &vpSongsInOut )
 
 int SongUtil::CompareSongPointersByGroup(const Song *pSong1, const Song *pSong2)
 {
+	RString s1 = "";
+	RString s2 = "";
+
+	if( SONGMAN->GetGroup(pSong1) != nullptr )
+		s1 = SONGMAN->GetGroup(pSong1)->GetSortTitle();
+	else
+		LOG->Warn("SongUtil::CompareSongPointersByGroup: %s has no group", pSong1->GetSongDir().c_str());
+
+	if( SONGMAN->GetGroup(pSong2) != nullptr )
+		s2 = SONGMAN->GetGroup(pSong2)->GetSortTitle();
+	else
+		LOG->Warn("SongUtil::CompareSongPointersByGroup: %s has no group", pSong2->GetSongDir().c_str());
 	
-	RString s1 = SONGMAN->GetGroup(pSong1)->GetSortTitle();
-	RString s2 = SONGMAN->GetGroup(pSong2)->GetSortTitle();
 	// Sort Titles are the same, fall back on group folder name
 	if( s1 == s2 )
 	{
@@ -618,8 +628,19 @@ int SongUtil::CompareSongPointersByGroup(const Song *pSong1, const Song *pSong2)
 
 static int CompareSongPointersByGroupAndTitle( const Song *pSong1, const Song *pSong2 )
 {
-	RString s1 = SONGMAN->GetGroup(pSong1)->GetSortTitle();
-	RString s2 = SONGMAN->GetGroup(pSong2)->GetSortTitle();
+	RString s1 = "";
+	RString s2 = "";
+
+	if( SONGMAN->GetGroup(pSong1) != nullptr )
+		s1 = SONGMAN->GetGroup(pSong1)->GetSortTitle();
+	else
+		LOG->Warn("SongUtil::CompareSongPointersByGroup: %s has no group", pSong1->GetSongDir().c_str());
+
+	if( SONGMAN->GetGroup(pSong2) != nullptr )
+		s2 = SONGMAN->GetGroup(pSong2)->GetSortTitle();
+	else
+		LOG->Warn("SongUtil::CompareSongPointersByGroup: %s has no group", pSong2->GetSongDir().c_str());
+	
 	// Sort Titles are the same, fall back on group folder name
 	if( s1 == s2 )
 	{
@@ -669,8 +690,12 @@ RString SongUtil::GetSectionNameFromSongAndSort( const Song* pSong, SortOrder so
 	case SORT_PREFERRED:
 		return SONGMAN->SongToPreferredSortSectionName( pSong );
 	case SORT_GROUP:
-		// guaranteed not empty
-		return SONGMAN->GetGroup(pSong)->GetGroupName();
+		if ( SONGMAN->GetGroup(pSong) == nullptr ) {
+			LOG->Warn("SongUtil::GetSectionNameFromSongAndSort: %s has no group", pSong->GetSongDir().c_str());
+			return RString();
+		} else {
+			return SONGMAN->GetGroup(pSong)->GetGroupName();
+		}
 	case SORT_TITLE:
 	case SORT_ARTIST:
 		{

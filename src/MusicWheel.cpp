@@ -802,8 +802,12 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 								unsigned j;
 								for( j=i; j < arraySongs.size(); j++ )
 								{
-									if( SONGMAN->GetGroup(arraySongs[j])->GetGroupName() != sThisSection )
+									if ( SONGMAN->GetGroup(arraySongs[j]) == nullptr ) {
+										LOG->Warn( "Song %s has no group!", arraySongs[j]->GetSongDir().c_str() );
+										continue;
+									} else if ( SONGMAN->GetGroup(arraySongs[j])->GetGroupName() != sThisSection ) {
 										break;
+									}
 								}
 								iSectionCount = j-i;
 
@@ -847,7 +851,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 								sLastSection = sThisSection;
 							}
 						}
-						arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, pSong, sLastSection, nullptr, SONGMAN->GetGroup(pSong), SONGMAN->GetSongColor(pSong), 0) );
+						arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Song, pSong, sLastSection, nullptr, nullptr, SONGMAN->GetSongColor(pSong), 0) );
 					}
 					break;
 			}
