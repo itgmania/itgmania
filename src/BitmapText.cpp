@@ -8,7 +8,7 @@
 #include "Font.h"
 #include "ActorUtil.h"
 #include "LuaBinding.h"
-#include "RandomSeed.h"
+#include "RageTimer.h"
 
 #include <cmath>
 #include <cstddef>
@@ -328,14 +328,16 @@ void BitmapText::BuildChars()
 
 	if( m_bUsingDistortion )
 	{
+		int iSeed = std::lrint( RageTimer::GetTimeSinceStartFast()*500000.0f );
+		RandomGen rnd( iSeed );
 		for(unsigned int i= 0; i < m_aVertices.size(); i+=4)
 		{
 			float w= m_aVertices[i+2].p.x - m_aVertices[i].p.x;
 			float h= m_aVertices[i+2].p.y - m_aVertices[i].p.y;
 			for(unsigned int ioff= 0; ioff < 4; ++ioff)
 			{
-				m_aVertices[i+ioff].p.x += ((GetRandomInt() % 9) / 8.0f - .5f) * m_fDistortion * w;
-				m_aVertices[i+ioff].p.y += ((GetRandomInt() % 9) / 8.0f - .5f) * m_fDistortion * h;
+				m_aVertices[i+ioff].p.x += ((rnd()%9) / 8.0f - .5f) * m_fDistortion * w;
+				m_aVertices[i+ioff].p.y += ((rnd()%9) / 8.0f - .5f) * m_fDistortion * h;
 			}
 		}
 	}
@@ -729,7 +731,7 @@ void BitmapText::DrawPrimitives() noexcept
 		// render the diffuse pass
 		if( m_bRainbowScroll )
 		{
-			int color_index = (GetRandomInt() % RAINBOW_COLORS.size());
+			int color_index = int(RageTimer::GetTimeSinceStartFast() / 0.200) % RAINBOW_COLORS.size();
 			for (size_t i = 0; i < m_aVertices.size(); i += 4)
 			{
 				const RageColor color = RAINBOW_COLORS[color_index];
@@ -796,9 +798,12 @@ void BitmapText::DrawPrimitives() noexcept
 		std::vector<RageVector3> vGlyphJitter;
 		if( m_bJitter )
 		{
+			int iSeed = std::lrint( RageTimer::GetTimeSinceStartFast()*8 );
+			RandomGen rnd( iSeed );
 			for (size_t i = 0; i < m_aVertices.size(); i += 4)
 			{
-				RageVector3 jitter( GetRandomInt() % 2, GetRandomInt() % 3, 0);
+				
+				RageVector3 jitter( rnd()%2, rnd()%3, 0 );
 				vGlyphJitter.push_back( jitter );
 
 				m_aVertices[i+0].p += jitter;	// top left
