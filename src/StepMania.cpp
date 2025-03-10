@@ -1064,39 +1064,61 @@ int sm_main(int argc, char* argv[])
 
 RString StepMania::SaveScreenshot( RString Dir, bool SaveCompressed, bool MakeSignature, RString NamePrefix, RString NameSuffix )
 {
-	/* As of sm-ssc v1.0 rc2, screenshots are no longer named by an arbitrary
-	 * index. This was causing naming issues for some unknown reason, so we have
-	 * changed the screenshot names to a non-blocking format: date and time.
-	 * As before, we ignore the extension. -aj */
-	RString FileNameNoExtension = NamePrefix + DateTime::GetNowDateTime().GetString() + NameSuffix;
-	// replace space with underscore.
+	/* If the screenshot button is mashed, it might play the success sound, but nothing
+	 * gets saved. This seems to occur if the button is repeatedly pushed, and less than
+	 * half a second has elapsed. In my testing, half a second is long enough to ensure
+	 * the next screenshot will save properly. So first, verify that half a second has
+	 * passed since the last screenshot attempt. */
+	static RageTimer screenshot_timer;
+
+	if (screenshot_timer.Ago() < 0.5f)
+	{
+		SCREENMAN->PlayInvalidSound();
+		LOG->Trace("Screenshot button pressed too fast. Couldn't save screenshot.");
+		return RString();
+	}
+	screenshot_timer.Touch();
+
+	/* NameSuffix is almost always empty, so only add NameSuffix if it contains something */
+	RString FileNameNoExtension = NamePrefix + DateTime::GetNowDateTime().GetString();
+	if( !NameSuffix.empty() )
+	{
+		FileNameNoExtension += NameSuffix;
+	}
+
+	/* Replace spaces with underscores, and remove colons entirely. */
 	FileNameNoExtension.Replace(" ","_");
-	// colons are illegal in filenames.
 	FileNameNoExtension.Replace(":","");
 
 	// Save the screenshot. If writing lossy to a memcard, use
 	// SAVE_LOSSY_LOW_QUAL, so we don't eat up lots of space.
 	RageDisplay::GraphicsFileFormat fmt;
-	if( SaveCompressed && MEMCARDMAN->PathIsMemCard(Dir) )
-		fmt = RageDisplay::SAVE_LOSSY_LOW_QUAL;
-	else if( SaveCompressed )
+	if( SaveCompressed )
+	{
 		fmt = RageDisplay::SAVE_LOSSY_HIGH_QUAL;
+	}
 	else
+	{
 		fmt = RageDisplay::SAVE_LOSSLESS_SENSIBLE;
+	}
 
 	RString FileName = FileNameNoExtension + "." + (SaveCompressed ? "jpg" : "png");
 	RString Path = Dir+FileName;
-	bool Result = DISPLAY->SaveScreenshot( Path, fmt );
-	if( !Result )
+
+	if( !DISPLAY->SaveScreenshot( Path, fmt ) )
 	{
 		SCREENMAN->PlayInvalidSound();
 		return RString();
 	}
-
-	SCREENMAN->PlayScreenshotSound();
+	else
+	{
+		SCREENMAN->PlayScreenshotSound();
+	}
 
 	if( PREFSMAN->m_bSignProfileData && MakeSignature )
+	{
 		CryptManager::SignFileToFile( Path );
+	}
 
 	return FileName;
 }
