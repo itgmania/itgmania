@@ -117,7 +117,7 @@ bool RageSurfaceUtils::SaveJPEG( RageSurface *surface, RageFile &f, bool bHighQu
 	jpeg::jpeg_set_defaults(&cinfo);
 
 	if( bHighQual )
-		jpeg::jpeg_set_quality( &cinfo, 150, TRUE );
+		jpeg::jpeg_set_quality( &cinfo, 95, TRUE );
 	else
 		jpeg::jpeg_set_quality( &cinfo, 70, TRUE );
 
