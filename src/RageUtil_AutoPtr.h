@@ -1,7 +1,10 @@
-/* AutoPtrCopyOnWrite - Simple smart pointer template. */
+/* TODO (sukibaby):  remove this entirely; implement smart pointers directly */
 
 #ifndef RAGE_UTIL_AUTO_PTR_H
 #define RAGE_UTIL_AUTO_PTR_H
+
+#include <memory> // shared_ptr, unique_ptr
+#include <utility> // swap
 
 /*
  * This is a simple copy-on-write refcounted smart pointer.  Once constructed, all read-only
@@ -26,71 +29,43 @@ template<class T>
 class AutoPtrCopyOnWrite
 {
 public:
-	/* This constructor only exists to make us work with STL containers. */
-	inline AutoPtrCopyOnWrite(): m_pPtr(nullptr), m_iRefCount(new int(1))
-	{
-	}
+	AutoPtrCopyOnWrite() : m_pPtr(nullptr) {}
 
-	explicit inline AutoPtrCopyOnWrite( T *p ): m_pPtr(p), m_iRefCount(new int(1))
-	{
-	}
+	explicit AutoPtrCopyOnWrite(T* p) : m_pPtr(p, [](T* ptr) { delete ptr; }) {}
 
-	inline AutoPtrCopyOnWrite( const AutoPtrCopyOnWrite &rhs ):
-		m_pPtr(rhs.m_pPtr), m_iRefCount(rhs.m_iRefCount)
-	{
-		++(*m_iRefCount);
-	}
+	AutoPtrCopyOnWrite(const AutoPtrCopyOnWrite& rhs) : m_pPtr(rhs.m_pPtr) {}
 
-	void Swap( AutoPtrCopyOnWrite<T> &rhs )
+	AutoPtrCopyOnWrite& operator=(const AutoPtrCopyOnWrite& rhs)
 	{
-		std::swap( m_pPtr, rhs.m_pPtr );
-		std::swap( m_iRefCount, rhs.m_iRefCount );
-	}
-
-	inline AutoPtrCopyOnWrite<T> &operator=( const AutoPtrCopyOnWrite &rhs )
-	{
-		AutoPtrCopyOnWrite<T> obj( rhs );
-		this->Swap( obj );
+		if (this != &rhs)
+		{
+			m_pPtr = rhs.m_pPtr;
+		}
 		return *this;
 	}
 
-	~AutoPtrCopyOnWrite()
-	{
-		--(*m_iRefCount);
-		if( *m_iRefCount == 0 )
-		{
-			delete m_pPtr;
-			delete m_iRefCount;
-		}
-	}
-
-	/* Get a non-const pointer.  This will deep-copy the object if necessary. */
 	T *Get()
 	{
-		if( *m_iRefCount > 1 )
+		if (!m_pPtr.unique())
 		{
-			--*m_iRefCount;
-			m_pPtr = new T(*m_pPtr);
-			m_iRefCount = new int(1);
+			m_pPtr = std::make_shared<T>(*m_pPtr);
 		}
-
-		return m_pPtr;
+		return m_pPtr.get();
 	}
 
-	int GetReferenceCount() const { return *m_iRefCount; }
+	int GetReferenceCount() const { return m_pPtr.use_count(); }
 
-	const T &operator *() const { return *m_pPtr; }
-	const T *operator ->() const { return m_pPtr; }
+	const T& operator*() const { return *m_pPtr; }
+	const T* operator->() const { return m_pPtr.get(); }
 
 private:
-	T *m_pPtr;
-	int *m_iRefCount;
+	std::shared_ptr<T> m_pPtr;
 };
 
 template<class T>
 inline void swap( AutoPtrCopyOnWrite<T> &a, AutoPtrCopyOnWrite<T> &b )
 {
-	a.Swap(b);
+	std::swap(a.m_pPtr, b.m_pPtr);
 }
 
 /*
@@ -114,6 +89,7 @@ struct HiddenPtrTraits
 	static T *Copy( const T *pCopy );
 	static void Delete( T *p );
 };
+
 #define REGISTER_CLASS_TRAITS(T, CopyExpr) \
 	template<> T *HiddenPtrTraits<T>::Copy( const T *pCopy ) { return CopyExpr; } \
 	template<> void HiddenPtrTraits<T>::Delete( T *p ) { delete p; }
@@ -123,74 +99,57 @@ class HiddenPtr
 {
 public:
 	const T& operator*() const { return *m_pPtr; }
-	const T* operator->() const { return m_pPtr; }
+	const T* operator->() const { return m_pPtr.get(); }
 	T& operator*() { return *m_pPtr; }
-	T* operator->() { return m_pPtr; }
+	T* operator->() { return m_pPtr.get(); }
 
-	explicit HiddenPtr( T *p = nullptr ): m_pPtr(p) {}
+	explicit HiddenPtr(T* p = nullptr) : m_pPtr(p, HiddenPtrTraits<T>::Delete) {}
 
-	HiddenPtr( const HiddenPtr<T> &cpy ): m_pPtr(nullptr)
+	HiddenPtr(const HiddenPtr<T>& cpy) : m_pPtr(nullptr, HiddenPtrTraits<T>::Delete)
 	{
-		if( cpy.m_pPtr != nullptr )
-			m_pPtr = HiddenPtrTraits<T>::Copy( cpy.m_pPtr );
+		if (cpy.m_pPtr)
+		{
+			m_pPtr.reset(HiddenPtrTraits<T>::Copy(cpy.m_pPtr.get()));
+		}
 	}
 
-#if 0 // broken VC6
-	template<class U>
-	HiddenPtr( const HiddenPtr<U> &cpy )
+	HiddenPtr& operator=(T* p)
 	{
-		if( cpy.m_pPtr == nullptr )
-			m_pPtr = nullptr;
-		else
-			m_pPtr = HiddenPtrTraits<U>::Copy( cpy.m_pPtr );
-	}
-#endif
-
-	~HiddenPtr()
-	{
-		HiddenPtrTraits<T>::Delete( m_pPtr );
-	}
-	void Swap( HiddenPtr<T> &rhs ) { std::swap( m_pPtr, rhs.m_pPtr ); }
-
-	HiddenPtr<T> &operator=( T *p )
-	{
-		HiddenPtr<T> t( p );
-		Swap( t );
+		m_pPtr.reset(p);
 		return *this;
 	}
 
-	HiddenPtr<T> &operator=( const HiddenPtr &cpy )
+	HiddenPtr& operator=(const HiddenPtr& cpy)
 	{
-		HiddenPtr<T> t( cpy );
-		Swap( t );
+		if (this != &cpy)
+		{
+			if (cpy.m_pPtr)
+			{
+				m_pPtr.reset(HiddenPtrTraits<T>::Copy(cpy.m_pPtr.get()));
+			}
+			else
+			{
+				m_pPtr.reset();
+			}
+		}
 		return *this;
 	}
 
-#if 0 // broken VC6
-	template<class U>
-	HiddenPtr<T> &operator=( const HiddenPtr<U> &cpy )
-	{
-		HiddenPtr<T> t( cpy );
-		Swap( t );
-		return *this;
-	}
-#endif
-
-	bool isNull() const { return m_pPtr == nullptr; }
+	bool isNull() const { return !m_pPtr; }
+	const std::unique_ptr<T, void(*)(T*)>& getPtr() const { return m_pPtr; }
 
 private:
-	T *m_pPtr;
+	std::unique_ptr<T, void(*)(T*)> m_pPtr;
 
-#if 0 // broken VC6
+	// swap function needs to be a friend to access m_pPtr
 	template<class U>
-	friend class HiddenPtr;
-#endif
+	friend void swap(HiddenPtr<U>& a, HiddenPtr<U>& b);
 };
 
 template<class T>
 inline void swap( HiddenPtr<T> &a, HiddenPtr<T> &b )
 {
-	a.Swap(b);
+	std::swap(a.m_pPtr, b.m_pPtr);
 }
 
 #endif
