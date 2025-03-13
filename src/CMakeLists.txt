@@ -151,6 +151,7 @@ endif()
 if(MSVC)
   # TODO: Find a way to do this cleanly for non MSVC users.
   set(SM_COMPILE_FLAGS "${SM_COMPILE_FLAGS} /MP2 /utf-8")
+  set(SM_LINK_FLAGS "${SM_LINK_FLAGS} /STACK:4194304")
 endif()
 
 set_target_properties("${SM_EXE_NAME}"
