@@ -453,7 +453,8 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 			npsPerMeasureStrings.push_back(serialize(npsPerMeasure, ",", 3));
 		}
 		
-		lines.push_back( ssprintf( "#NPSPERMEASURE:%s;", join("|",npsPerMeasureStrings).c_str() ) );
+		RString npsPerMeasure = "#NPSPERMEASURE:" + join("|", npsPerMeasureStrings) + ";";
+		lines.push_back(npsPerMeasure);
 
 		const std::vector<std::vector<int>> &allNotesPerMeasures = in.GetAllNotesPerMeasures();
 		std::vector<RString> notesPerMeasureStrings;
@@ -463,7 +464,8 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 			notesPerMeasureStrings.push_back(serialize(notesPerMeasure, ","));
 		}
 		
-		lines.push_back( ssprintf( "#NOTESPERMEASURE:%s;", join("|",notesPerMeasureStrings).c_str() ) );
+		RString notesPerMeasure = "#NOTESPERMEASURE:" + join("|", notesPerMeasureStrings) + ";";
+		lines.push_back(notesPerMeasure);
 		
 		// NOTE(MV): #STEPFILENAME has to be at the end of the cache tags,
 		// because it's used in SSCLoader::LoadFromSimfile to determine when
