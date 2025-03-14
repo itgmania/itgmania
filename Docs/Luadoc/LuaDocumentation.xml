@@ -330,7 +330,7 @@ save yourself some time, copy this for undocumented things:
 	<Function name='HasAlpha' theme='_fallback' return='float' arguments='color c'>
 		[02 Colors.lua] Returns the color's alpha if it has any, otherwise returns 1.
 	</Function>
-	<Function name='HideLightSetting' return='HideLightType' arguments='arguments='HideLightType type'>
+	<Function name='HideLightSetting' return='HideLightType' arguments='arguments='HideLightType type' since='ITGmania 1.0.1'>
 		Sets which cabinet lights(Marquee,Bass,Both) shall be disabled for the player.  Returns the <Link class='ENUM' function='HideLightType' /> that was previously set.
 	</Function>
 	<Function name='HitCombo' theme='_fallback' return='int' arguments=''>
