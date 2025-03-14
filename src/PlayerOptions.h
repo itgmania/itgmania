@@ -41,6 +41,18 @@ const RString& DrainTypeToString( DrainType cat );
 const RString& DrainTypeToLocalizedString( DrainType cat );
 LuaDeclareType( DrainType );
 
+enum HideLightType {
+	HideLightType_NoHideLights = 0,
+	HideLightType_HideAllLights,
+	HideLightType_HideMarqueeLights,
+	HideLightType_HideBassLights,
+	NUM_HideLightType,
+	HideLightType_Invalid
+};
+const RString& HideLightTypeToString(HideLightType cat);
+const RString& HideLightTypeToLocalizedString(HideLightType cat);
+LuaDeclareType(HideLightType);
+
 enum ModTimerType
 {
 	ModTimerType_Game,
@@ -62,7 +74,7 @@ public:
 	 * @brief Set up the PlayerOptions with some reasonable defaults.
 	 *
 	 * This code was taken from Init() to use proper initialization. */
-	PlayerOptions(): m_LifeType(LifeType_Bar), m_DrainType(DrainType_Normal),
+	PlayerOptions(): m_LifeType(LifeType_Bar), m_DrainType(DrainType_Normal), m_HideLightType(HideLightType_NoHideLights),
 		m_ModTimerType(ModTimerType_Default),
 		m_BatteryLives(4),
 		m_bSetScrollSpeed(false),
@@ -340,6 +352,7 @@ public:
 
 	PlayerNumber m_pn; // Needed for fetching the style.
 
+	HideLightType m_HideLightType;
 	LifeType m_LifeType;
 	DrainType m_DrainType;	// only used with LifeBar
 	ModTimerType m_ModTimerType;

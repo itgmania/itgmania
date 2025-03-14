@@ -296,6 +296,7 @@ PrefsManager::PrefsManager() :
 	m_iSoundPreferredSampleRate	( "SoundPreferredSampleRate",		0 ),
 	m_sLightsStepsDifficulty	( "LightsStepsDifficulty",		"hard,medium" ),
 	m_bLightsSimplifyBass		( "LightsSimplifyBass",		false),
+	m_bLightsBassParallel       ( "LightsBassParallel",     false),
 	m_bAllowUnacceleratedRenderer	( "AllowUnacceleratedRenderer",		false ),
 	m_bThreadedInput		( "ThreadedInput",			true ),
 	m_bThreadedMovieDecode		( "ThreadedMovieDecode",		true ),
