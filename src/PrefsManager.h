@@ -124,6 +124,14 @@ enum ProfileSortOrder
 	ProfileSortOrder_Invalid
 };
 
+enum SyncBias
+{
+	SyncBias_NULL,
+	SyncBias_ITG,
+	NUM_SyncBias,
+	SyncBias_Invalid
+};
+
 /** @brief Holds user-chosen preferences that are saved between sessions. */
 class PrefsManager
 {
@@ -240,7 +248,7 @@ public:
 	Preference<ShowDancingCharacters>		m_ShowDancingCharacters;
 	Preference<bool>	m_bUseUnlockSystem;
 	Preference<float>	m_fGlobalOffsetSeconds;
-	Preference<float>	m_fMachineSyncBias;
+	Preference<SyncBias>	m_MachineSyncBias;
 	Preference<int>	m_iProgressiveLifebar;
 	Preference<int>	m_iProgressiveStageLifebar;
 	Preference<int>	m_iProgressiveNonstopLifebar;

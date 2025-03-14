@@ -161,6 +161,12 @@ void ScreenOptionsMaster::HandleScreenMessage( const ScreenMessage SM )
 		if( m_iChangeMask & OPT_APPLY_SONG )
 			SONGMAN->SetPreferences();
 
+		if( m_iChangeMask & OPT_RELOAD_SONGS )
+		{
+			SCREENMAN->GetTopScreen()->SetNextScreenName("ScreenReloadSongs");
+			StartTransitioningScreen( SM_GoToNextScreen );
+		}
+
 		CHECKPOINT_M("Transferring to the next screen now.");
 		this->HandleScreenMessage( SM_GoToNextScreen );
 		return;

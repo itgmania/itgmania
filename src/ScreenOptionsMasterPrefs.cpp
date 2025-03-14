@@ -710,12 +710,6 @@ static void GlobalOffsetSeconds( int &sel, bool ToSel, const ConfOption *pConfOp
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
-static void MachineSyncBias( int &sel, bool ToSel, const ConfOption *pConfOption )
-{
-	constexpr std::array<float, 2> mapping = { 0.0f, -0.009f };
-	MoveMap( sel, pConfOption, ToSel, mapping.data(), mapping.size() );
-}
-
 static void EditRecordModeLeadIn(int &sel, bool to_sel, const ConfOption* conf_option)
 {
 	float mapping[32];
@@ -947,7 +941,9 @@ static void InitializeConfOptions()
 			c.AddOption( ssprintf("%+i ms", i) );
 		ADD( c );
 	}
-	ADD( ConfOption( "MachineSyncBias",			MachineSyncBias,		"NULL","|ITG" ) );
+	ADD( ConfOption( "MachineSyncBias",			MovePref<SyncBias>,		"NULL","|ITG" ) );
+	g_ConfOptions.back().m_iEffects = OPT_RELOAD_SONGS;
+
 	ADD( ConfOption( "EnableAttackSounds",		MovePref<bool>,		"No","Yes" ) );
 	ADD( ConfOption( "EnableMineHitSound",		MovePref<bool>,		"No","Yes" ) );
 	ADD( ConfOption( "RateModPreservesPitch",		MovePref<bool>,		"No","Yes") );
@@ -1001,7 +997,8 @@ static const char *OptEffectNames[] = {
 	"ApplySound",
 	"ApplySong",
 	"ApplyAspectRatio",
-	"ApplyProfiles"
+	"ApplyProfiles",
+	"ReloadSongs"
 };
 XToString( OptEffect );
 StringToX( OptEffect );

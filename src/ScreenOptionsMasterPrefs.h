@@ -17,7 +17,8 @@ enum OptEffect
 	OPT_APPLY_SONG				=	(1<<5),
 	OPT_APPLY_ASPECT_RATIO		=	(1<<6),
 	OPT_APPLY_PROFILES			=	(1<<7),
-	NUM_OptEffect				=	8,
+	OPT_RELOAD_SONGS			=	(1<<8),
+	NUM_OptEffect				=	9,
 	OptEffect_Invalid			=	MAX_OPTIONS+1
 };
 const RString& OptEffectToString( OptEffect e );

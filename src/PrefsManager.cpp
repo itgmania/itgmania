@@ -134,6 +134,14 @@ XToString(ProfileSortOrder);
 StringToX(ProfileSortOrder);
 LuaXType(ProfileSortOrder);
 
+static const char* SyncBiasNames[] = {
+    "NULL",
+    "ITG"
+};
+XToString(SyncBias);
+StringToX(SyncBias);
+LuaXType(SyncBias);
+
 bool g_bAutoRestart = false;
 #ifdef DEBUG
 # define TRUE_IF_DEBUG true
@@ -237,7 +245,7 @@ PrefsManager::PrefsManager() :
 	m_ShowDancingCharacters		( "ShowDancingCharacters",		SDC_Random ),
 	m_bUseUnlockSystem		( "UseUnlockSystem",			false ),
 	m_fGlobalOffsetSeconds		( "GlobalOffsetSeconds",		-0.008f ),
-	m_fMachineSyncBias	( "MachineSyncBias",		-0.009f ),
+	m_MachineSyncBias	( "MachineSyncBias",		SyncBias_ITG ),
 	m_iProgressiveLifebar		( "ProgressiveLifebar",			0 ),
 	m_iProgressiveStageLifebar	( "ProgressiveStageLifebar",		0 ),
 	m_iProgressiveNonstopLifebar	( "ProgressiveNonstopLifebar",		0 ),
