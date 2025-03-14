@@ -22,6 +22,7 @@ void EditModePlayerManager::AddPlayers(const NoteData& note_data) {
 		PlayerPlus& player = *players_[pn];
 		player->Init("Player", GAMESTATE->m_pPlayerState[pn], nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
 		player.Load(note_data);
+		player->SetName("Player" + PlayerNumberToString(pn));
 
 		player->CacheAllUsedNoteSkins();
 		GAMESTATE->m_pPlayerState[pn]->m_PlayerController = PC_HUMAN;
