@@ -381,87 +381,22 @@ RString ssprintf( const char *fmt, ...)
 {
 	va_list	va;
 	va_start(va, fmt);
-	return vssprintf(fmt, va);
+	RString sRet = vssprintf(fmt, va);
+	va_end(va);
+	return sRet;
 }
-
-#define FMT_BLOCK_SIZE		2048 // # of bytes to increment per try
 
 RString vssprintf( const char *szFormat, va_list argList )
 {
-	RString sStr;
+	va_list tmp;
+	va_copy( tmp, argList );
+	int iNeeded = std::vsnprintf( nullptr, 0, szFormat, tmp );
+	va_end(tmp);
 
-#if defined(WIN32)
-	char *pBuf = nullptr;
-	int iChars = 1;
-	int iUsed = 0;
-	int iTry = 0;
-
-	do
-	{
-		// Grow more than linearly (e.g. 512, 1536, 3072, etc)
-		iChars += iTry * FMT_BLOCK_SIZE;
-		pBuf = (char*) _alloca( sizeof(char)*iChars );
-		iUsed = vsnprintf( pBuf, iChars-1, szFormat, argList );
-		++iTry;
-	} while( iUsed < 0 );
-
-	// assign whatever we managed to format
-	sStr.assign( pBuf, iUsed );
-#else
-	static bool bExactSizeSupported;
-	static bool bInitialized = false;
-	if( !bInitialized )
-	{
-		/* Some systems return the actual size required when snprintf
-		 * doesn't have enough space.  This lets us avoid wasting time
-		 * iterating, and wasting memory. */
-		char ignore;
-		bExactSizeSupported = ( snprintf( &ignore, 0, "Hello World" ) == 11 );
-		bInitialized = true;
-	}
-
-	if( bExactSizeSupported )
-	{
-		va_list tmp;
-		va_copy( tmp, argList );
-		char ignore;
-		int iNeeded = vsnprintf( &ignore, 0, szFormat, tmp );
-		va_end(tmp);
-
-		char *buf = new char[iNeeded + 1];
-		std::fill(buf, buf + iNeeded + 1, '\0');
-		vsnprintf( buf, iNeeded+1, szFormat, argList );
-		RString ret(buf);
-		delete [] buf;
-		return ret;
-	}
-
-	int iChars = FMT_BLOCK_SIZE;
-	int iTry = 1;
-	for (;;)
-	{
-		// Grow more than linearly (e.g. 512, 1536, 3072, etc)
-		char *buf = new char[iChars];
-		std::fill(buf, buf + iChars, '\0');
-		int used = vsnprintf( buf, iChars - 1, szFormat, argList );
-		if ( used == -1 )
-		{
-			iChars += ( ++iTry * FMT_BLOCK_SIZE );
-		}
-		else
-		{
-			/* OK */
-			sStr.assign(buf, used);
-		}
-
-		delete [] buf;
-		if (used != -1)
-		{
-			break;
-		}
-	}
-#endif
-	return sStr;
+	RString sRet;
+	std::vsnprintf( sRet.GetBuffer(iNeeded), iNeeded+1, szFormat, argList );
+	sRet.ReleaseBuffer( iNeeded );
+	return sRet;
 }
 
 /* Windows uses %I64i to format a 64-bit int, instead of %lli. Convert "a b %lli %-3llu c d"

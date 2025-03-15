@@ -257,10 +257,6 @@ inline void ssupr(wchar_t *pT, size_t nLen)
 	MakeUpper( pT, nLen );
 }
 
-#if defined(WIN32)
-#define vsnprintf _vsnprintf
-#endif
-
 //			Now we can define the template (finally!)
 // =============================================================================
 // TEMPLATE: CStdStr
