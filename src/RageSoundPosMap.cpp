@@ -4,6 +4,7 @@
 #include "RageUtil.h"
 #include "RageTimer.h"
 
+#include <cinttypes>
 #include <climits>
 #include <cmath>
 #include <cstdint>
@@ -160,7 +161,7 @@ int64_t pos_map_queue::Search( int64_t iSourceFrame ) const
 	if( last.PeekDeltaTime() >= 1.0f )
 	{
 		last.Touch();
-		LOG->Trace("Audio frame (%lld) was out of range of the data sent - possible buffer underflow? This is not always an error, however if you see it frequently there could be sound buffer problems.", iSourceFrame);
+		LOG->Trace("Audio frame (%" PRId64 ") was out of range of the data sent - possible buffer underflow? This is not always an error, however if you see it frequently there could be sound buffer problems.", iSourceFrame);
 	}
 
 	return iClosestPosition;

@@ -13,6 +13,7 @@
 #include <pcre.h>
 
 #include <cfloat>
+#include <cinttypes>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -254,7 +255,7 @@ RString MicrosecondsToMMSSMsMs(uint64_t usecs)
     const uint64_t iMinsDisplay = totalSeconds / 60;
     const uint64_t iSecsDisplay = totalSeconds % 60;
     const uint64_t iLeftoverDisplay = (usecs % 1000000) / 10000; // Adjusted for two decimal places
-    RString sReturn = ssprintf("%02llu:%02llu.%02llu", iMinsDisplay, iSecsDisplay, std::min<uint64_t>(99, iLeftoverDisplay));
+    RString sReturn = ssprintf("%02" PRIu64 ":%02" PRIu64 ".%02" PRIu64, iMinsDisplay, iSecsDisplay, std::min<uint64_t>(99, iLeftoverDisplay));
     return sReturn;
 }
 
@@ -273,7 +274,7 @@ RString MicrosecondsToMMSSMsMsMs(uint64_t usecs)
     const uint64_t iMinsDisplay = totalSeconds / 60;
     const uint64_t iSecsDisplay = totalSeconds % 60;
     const uint64_t iLeftoverDisplay = (usecs % 1000000) / 1000;
-    RString sReturn = ssprintf("%02llu:%02llu.%03llu", iMinsDisplay, iSecsDisplay, std::min<uint64_t>(999, iLeftoverDisplay));
+    RString sReturn = ssprintf("%02" PRIu64 ":%02" PRIu64 ".%03" PRIu64, iMinsDisplay, iSecsDisplay, std::min<uint64_t>(999, iLeftoverDisplay));
     return sReturn;
 }
 
