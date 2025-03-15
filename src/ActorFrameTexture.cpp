@@ -5,6 +5,7 @@
 #include "RageLog.h"
 #include "ActorUtil.h"
 
+#include <cinttypes>
 #include <cstdint>
 
 REGISTER_ACTOR_CLASS_WITH_NAME( ActorFrameTextureAutoDeleteChildren, ActorFrameTexture );
@@ -18,7 +19,7 @@ ActorFrameTexture::ActorFrameTexture()
 	m_bPreserveTexture = false;
 	static uint64_t i = 0;
 	++i;
-	m_sTextureName = ssprintf( ConvertI64FormatString("ActorFrameTexture %lli"), i );
+	m_sTextureName = ssprintf( "ActorFrameTexture %" PRIu64, i );
 
 	m_pRenderTarget = nullptr;
 }
