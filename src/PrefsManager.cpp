@@ -245,7 +245,7 @@ PrefsManager::PrefsManager() :
 	m_ShowDancingCharacters		( "ShowDancingCharacters",		SDC_Random ),
 	m_bUseUnlockSystem		( "UseUnlockSystem",			false ),
 	m_fGlobalOffsetSeconds		( "GlobalOffsetSeconds",		-0.008f ),
-	m_MachineSyncBias	( "MachineSyncBias",		SyncBias_ITG ),
+	m_DefaultSyncBias	( "DefaultSyncBias",		SyncBias_ITG ),
 	m_iProgressiveLifebar		( "ProgressiveLifebar",			0 ),
 	m_iProgressiveStageLifebar	( "ProgressiveStageLifebar",		0 ),
 	m_iProgressiveNonstopLifebar	( "ProgressiveNonstopLifebar",		0 ),

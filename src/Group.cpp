@@ -49,7 +49,7 @@ Group::Group(const RString& sDir, const RString& sGroupDirName) {
     m_sSortTitle = m_sGroupName;
     m_sTranslitTitle = m_sGroupName;
     m_sSeries = "";
-    m_fSyncOffset = PREFSMAN->m_MachineSyncBias == SyncBias_NULL ? 0 : -0.009;
+    m_fSyncOffset = PREFSMAN->m_DefaultSyncBias == SyncBias_NULL ? 0 : -0.009;
     m_bHasPackIni = false;
     m_iYearReleased = 0;
     m_sBannerPath = "";

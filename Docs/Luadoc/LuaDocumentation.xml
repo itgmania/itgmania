@@ -3433,7 +3433,7 @@ end
 	</Function>
 	<Function name='GetSyncOffset' return='float' arguments='' since='ITGmania 1.0.0'>
 		Returns the sync bias offset to be applied to this group. Returns -0.0009 if <code>ITG</code> or 0 (0ms) if <code>NULL</code>
-		If this is not set in the <code>Pack.ini</code>, the <code>fMachineSyncBias</code> preference is used instead.
+		If this is not set in the <code>Pack.ini</code>, the <code>fDefaultSyncBias</code> preference is used instead.
 	</Function>
 	<Function name='HasPackIni' return='bool' arguments='' since='ITGmania 1.0.0'>
 		Returns <code>true</code> if the group has a Pack.ini file, <code>false</code> otherwise.
