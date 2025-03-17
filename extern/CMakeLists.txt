@@ -1,3 +1,4 @@
+include(CMakeProject-hidapi.cmake)
 include(CMakeProject-lua.cmake)
 include(CMakeProject-glew.cmake)
 include(CMakeProject-json.cmake)

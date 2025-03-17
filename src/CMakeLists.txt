@@ -340,7 +340,8 @@ list(APPEND SMDATA_LINK_LIB "mad"
                             "vorbisfile"
                             "vorbis"
                             "ogg"
-                            "ixwebsocket")
+                            "ixwebsocket"
+							"hidapi")
 
 if(WIN32)
   list(APPEND SMDATA_LINK_LIB
