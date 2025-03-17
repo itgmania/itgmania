@@ -179,12 +179,14 @@ source_group("Arch Specific\\\\Loading Window"
 list(APPEND SMDATA_ARCH_LIGHTS_SRC "arch/Lights/LightsDriver.cpp"
             "arch/Lights/LightsDriver_Export.cpp"
             "arch/Lights/LightsDriver_SextetStream.cpp"
-            "arch/Lights/LightsDriver_SystemMessage.cpp")
+            "arch/Lights/LightsDriver_SystemMessage.cpp"
+			"arch/Lights/LightsDriver_HidBlueDot.cpp")
 list(APPEND SMDATA_ARCH_LIGHTS_HPP "arch/Lights/LightsDriver.h"
             "arch/Lights/LightsDriver_Export.h"
             "arch/Lights/LightsDriver_SextetStream.h"
             "arch/Lights/LightsDriver_SystemMessage.h"
-            "arch/Lights/SextetUtils.h")
+            "arch/Lights/SextetUtils.h"
+			"arch/Lights/LightsDriver_HidBlueDot.h")
 
 # TODO: Confirm if Apple can use the export.
 if(NOT APPLE)
