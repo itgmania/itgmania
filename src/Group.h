@@ -71,7 +71,7 @@ public:
 
 
     /**
-     * @brief The sync bias offset of this group
+     * @brief The sync offset of this group
      * 
      * @return float 
      */
@@ -131,7 +131,7 @@ public:
         /** @brief The series the group belongs to */
         RString m_sSeries;
 
-        /** @brief The sync bias offset of the group */
+        /** @brief The sync offset of the group */
         float m_fSyncOffset;
 
         /** @brief Whether the group has a Pack.ini file. */

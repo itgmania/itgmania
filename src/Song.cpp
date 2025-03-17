@@ -481,8 +481,8 @@ bool Song::ReloadFromSongDir( RString sDir )
 	if (SONGMAN->GetGroup(this) != nullptr) {
 		m_SongTiming.m_fBeat0GroupOffsetInSeconds = SONGMAN->GetGroup(this)->GetSyncOffset();
 	} else {
-		m_SongTiming.m_fBeat0GroupOffsetInSeconds = PREFSMAN->m_DefaultSyncBias == SyncBias_NULL ? 0 : -0.009;
-		LOG->Warn("Song %s has no group, using machine sync bias.", m_sMainTitle.c_str());
+		m_SongTiming.m_fBeat0GroupOffsetInSeconds = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+		LOG->Warn("Song %s has no group, using default sync offset.", m_sMainTitle.c_str());
 	}
 
 	/* Go through the steps, first setting their Song pointer to this song
@@ -507,8 +507,8 @@ bool Song::ReloadFromSongDir( RString sDir )
 		}
 		else
 		{
-			m_SongTiming.m_fBeat0GroupOffsetInSeconds = PREFSMAN->m_DefaultSyncBias == SyncBias_NULL ? 0 : -0.009;
-			LOG->Warn("Song %s has no group, using machine sync bias.", m_sMainTitle.c_str());
+			m_SongTiming.m_fBeat0GroupOffsetInSeconds = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+			LOG->Warn("Song %s has no group, using default sync offset.", m_sMainTitle.c_str());
 		}
 	}
 
@@ -672,7 +672,7 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 	m_SongTiming.TidyUpData(false);
 
 	// Apply the group offset to the song timing before we do anything else.
-	float fOffset = PREFSMAN->m_DefaultSyncBias == SyncBias_NULL ? 0 : -0.009;
+	float fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
 	if (SONGMAN->GetGroupFromName(m_sGroupName) != nullptr)
 	{
 		fOffset = SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset();
