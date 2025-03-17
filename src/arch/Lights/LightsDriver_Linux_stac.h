@@ -21,6 +21,7 @@
 #include "arch/Lights/LightsDriver.h"
 
 #include <cstdint>
+#include "hidapi.h"
 
 //static information about the device(s) in question.
 #define STAC_VID "04d8"
@@ -43,50 +44,16 @@ enum StacLightIndex
     STAC_LIGHTINDEX_MAX
 };
 
-class StacDevice
-{
-public:
-    const char *deviceVID;
-    const char *devicePID;
-
-    const char *devicePath;
-    int fd = -1;
-
-    uint8_t playerNumber = 0;
-    bool newState = false;
-
-    uint8_t outputBuffer[STAC_HIDREPORT_SIZE];
-
-    StacDevice(uint8_t pn);
-
-    void FindDevice();
-    void Connect();
-    void Close();
-
-    bool IsConnected()
-    {
-        //a zero/positive file descriptor is a valid one.
-        //and if we have opened it, then we are connected.
-        //if there is an error, then we close it.
-        return (fd >= 0);
-    }
-
-    void SetInBuffer(int index, bool lightState);
-
-    void PushBufferToDevice();
-};
-
 class LightsDriver_Linux_stac : public LightsDriver
 {
 private:
-    StacDevice *stacPlayer1 = new StacDevice(1);
-    StacDevice *stacPlayer2 = new StacDevice(2);
+	hid_device* handle[2];
 
-    bool haveSeenP1 = false;
-    bool haveSeenP2 = false;
+	bool stateChanged = false;
+	uint8_t outputBuffer[2][STAC_HIDREPORT_SIZE];
 
     void HandleState(const LightsState *ls, StacDevice *dev, GameController ctrlNum);
-
+	void SetBuffer(int index, bool lightState, GameController ctrlNum);
 public:
     LightsDriver_Linux_stac();
     virtual ~LightsDriver_Linux_stac();
