@@ -941,7 +941,7 @@ static void InitializeConfOptions()
 			c.AddOption( ssprintf("%+i ms", i) );
 		ADD( c );
 	}
-	ADD( ConfOption( "DefaultSyncBias",			MovePref<SyncBias>,		"NULL","|ITG" ) );
+	ADD( ConfOption( "DefaultSyncOffset",			MovePref<SyncOffset>,		"NULL","|ITG" ) );
 	g_ConfOptions.back().m_iEffects = OPT_RELOAD_SONGS;
 
 	ADD( ConfOption( "EnableAttackSounds",		MovePref<bool>,		"No","Yes" ) );

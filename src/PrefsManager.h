@@ -124,12 +124,12 @@ enum ProfileSortOrder
 	ProfileSortOrder_Invalid
 };
 
-enum SyncBias
+enum SyncOffset
 {
-	SyncBias_NULL,
-	SyncBias_ITG,
-	NUM_SyncBias,
-	SyncBias_Invalid
+	SyncOffset_NULL,
+	SyncOffset_ITG,
+	NUM_SyncOffset,
+	SyncOffset_Invalid
 };
 
 /** @brief Holds user-chosen preferences that are saved between sessions. */
@@ -248,7 +248,7 @@ public:
 	Preference<ShowDancingCharacters>		m_ShowDancingCharacters;
 	Preference<bool>	m_bUseUnlockSystem;
 	Preference<float>	m_fGlobalOffsetSeconds;
-	Preference<SyncBias>	m_DefaultSyncBias;
+	Preference<SyncOffset>	m_DefaultSyncOffset;
 	Preference<int>	m_iProgressiveLifebar;
 	Preference<int>	m_iProgressiveStageLifebar;
 	Preference<int>	m_iProgressiveNonstopLifebar;
