@@ -165,7 +165,7 @@ PrefsManager::PrefsManager() :
 
 	m_sAnnouncer			( "Announcer",			"" ),
 	m_sTheme			( "Theme",			SpecialFiles::BASE_THEME_NAME ),
-	m_sDefaultModifiers		( "DefaultModifiers",		"" ),
+	m_sDefaultModifiers		( "DefaultModifiers",		"failimmediatecontinue" ),
 
 	m_bWindowed			( "Windowed",			true ),
 	m_sDisplayId			( "DisplayId", "" ),
@@ -403,7 +403,7 @@ void PrefsManager::RestoreGamePrefs()
 	ReadPrefsFromFile( SpecialFiles::STATIC_INI_PATH, GetPreferencesSection(), true );
 }
 
-PrefsManager::GamePrefs::GamePrefs() : m_sAnnouncer(""), m_sTheme(SpecialFiles::BASE_THEME_NAME), m_sDefaultModifiers("") {}
+PrefsManager::GamePrefs::GamePrefs() : m_sAnnouncer(""), m_sTheme(SpecialFiles::BASE_THEME_NAME), m_sDefaultModifiers("failimmediatecontinue") {}
 
 void PrefsManager::ReadPrefsFromDisk()
 {
