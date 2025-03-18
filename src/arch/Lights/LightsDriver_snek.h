@@ -19,7 +19,7 @@
 #include "arch/Lights/LightsDriver.h"
 
 #include <cstdint>
-#include "hidapi.h"
+#include "archutils/Common/HidDevice.h"
 
 // static information about the device in question.
 #define SNEK_VID 0x2e8a
@@ -98,7 +98,7 @@ enum SnekLightIndex
 class LightsDriver_snek : public LightsDriver
 {
 private:
-	hid_device *handle = nullptr;
+	HidDevice dev;
 
 	bool stateChanged = false;
 	uint8_t outputBuffer[SNEK_HIDREPORT_SIZE] = {0};

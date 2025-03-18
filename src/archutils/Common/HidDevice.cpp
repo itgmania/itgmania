@@ -2,7 +2,7 @@
 #include "HidDevice.h"
 #include "RageLog.h"
 
-HidDevice::HidDevice(int vid, int pid) :vid(vid), pid(pid)
+HidDevice::HidDevice(int vid, int pid, int interfaceNum) : path{ GetPath(vid, pid, interfaceNum) }
 {
 	bool result = TryConnect();
 
@@ -14,31 +14,78 @@ HidDevice::HidDevice(int vid, int pid) :vid(vid), pid(pid)
 	}
 	else
 	{
+		path = path;
 		hid_set_nonblocking(handle, 1);
-		foundOnce = true;
 	}
 }
 
 HidDevice::~HidDevice()
 {
-	if (handle)
+	if (handle != nullptr)
 		hid_close(handle);
 
 	hid_exit();
 }
 
+void HidDevice::Close()
+{
+	hid_close(handle);
+	handle = nullptr;
+}
+
+bool HidDevice::Open()
+{
+	handle = hid_open_path(path);
+
+	return handle != nullptr;
+}
+
 bool HidDevice::TryConnect()
 {
-	handle = hid_open(vid, pid, NULL);
+	if (path == nullptr)
+		return false;
 
-	return handle != NULL;
+	return Open();
 }
 
 bool HidDevice::IsConnected() {
-	if (!handle && foundOnce)
+	if (handle == nullptr)
 		return TryConnect();
 
-	return handle != NULL;
+	return handle != nullptr;
+}
+
+char* HidDevice::GetPath(int vid, int pid, int interfaceNumber)
+{
+	struct hid_device_info* devs, * cur_dev;
+
+	devs = hid_enumerate(vid, pid);
+	cur_dev = devs;
+
+	if (devs && cur_dev)
+	{
+		// Look for the desired devices by iterating connected ones
+		while (cur_dev)
+		{
+			if (cur_dev->vendor_id == vid &&
+				cur_dev->product_id == pid)
+			{
+				if (interfaceNumber == -1)
+				{
+					return cur_dev->path;
+				}
+				else
+				{
+					if(cur_dev->interface_number == interfaceNumber)
+						return cur_dev->path;
+				}
+			}
+
+			cur_dev = cur_dev->next;
+		}
+	}
+
+	return nullptr;
 }
 
 void HidDevice::Read(unsigned char* data, size_t length)
@@ -54,5 +101,8 @@ void HidDevice::Write(const unsigned char* data, size_t length)
 	if (!IsConnected())
 		return;
 
-	hid_write(handle, data, length);
+	int result = hid_write(handle, data, length);
+
+	if (result != length)
+		Close();
 }

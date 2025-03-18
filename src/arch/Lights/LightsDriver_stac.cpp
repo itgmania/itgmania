@@ -6,61 +6,14 @@
 
 REGISTER_LIGHTS_DRIVER_CLASS(stac);
 
-LightsDriver_stac::LightsDriver_stac()
+LightsDriver_stac::LightsDriver_stac() : devs{{STAC_VID , STAC_PID_P1, STAC_LIGHTING_INTERFACE}, {STAC_VID , STAC_PID_P2, STAC_LIGHTING_INTERFACE }}
 {
-	struct hid_device_info *devs, *cur_dev;
-
 	memset(outputBuffer[GameController_1], 0x00, STAC_HIDREPORT_SIZE);
 	memset(outputBuffer[GameController_2], 0x00, STAC_HIDREPORT_SIZE);
-
-	// Enumerate through to find the lighting interface.
-	devs = hid_enumerate(STAC_VID, 0);
-	cur_dev = devs;
-
-	if (devs && cur_dev)
-	{
-		while (cur_dev)
-		{
-			if (cur_dev->vendor_id == STAC_VID &&
-				cur_dev->interface_number == STAC_LIGHTING_INTERFACE)
-			{
-				if (cur_dev->product_id == STAC_PID_P1)
-				{
-					handle[0] = hid_open_path(cur_dev->path);
-				}
-				else if (cur_dev->product_id == STAC_PID_P2)
-				{
-					handle[1] = hid_open_path(cur_dev->path);
-				}
-			}
-
-			cur_dev = cur_dev->next;
-		}
-	}
-
-	if (!handle[0])
-	{
-		LOG->Warn("stac P1 device not found.");
-	}
-
-	if (!handle[1])
-	{
-		LOG->Warn("stac P2 device not found.");
-	}
 }
 
 LightsDriver_stac::~LightsDriver_stac()
 {
-	for (int i = 0; i < STAC_MAX_NUMBER; i++)
-	{
-		if (handle[i])
-		{
-			hid_close(handle[i]);
-		}
-	}
-
-	// Finalize the hidapi library
-	hid_exit();
 }
 
 void LightsDriver_stac::SetBuffer(int index, bool lightState, GameController ctrlNum)
@@ -88,7 +41,7 @@ void LightsDriver_stac::SetBuffer(int index, bool lightState, GameController ctr
 void LightsDriver_stac::HandleState(const LightsState *ls, GameController ctrlNum)
 {
 	// do not create a message for an disconnected device.
-	if (!handle[ctrlNum])
+	if (!devs[ctrlNum].IsConnected())
 		return;
 
 	// check to see which game we are running as it can change during gameplay.
@@ -114,8 +67,7 @@ void LightsDriver_stac::HandleState(const LightsState *ls, GameController ctrlNu
 	// only push changes.
 	if (stateChanged[ctrlNum])
 	{
-		// TODO: Check for error/reconnect.
-		hid_write(handle[ctrlNum], (unsigned char *)&outputBuffer[ctrlNum], STAC_HIDREPORT_SIZE);
+		devs[ctrlNum].Write((unsigned char *)&outputBuffer[ctrlNum], STAC_HIDREPORT_SIZE);
 		stateChanged[ctrlNum] = false;
 	}
 }

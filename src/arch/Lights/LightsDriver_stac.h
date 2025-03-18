@@ -21,7 +21,7 @@
 #include "arch/Lights/LightsDriver.h"
 
 #include <cstdint>
-#include "hidapi.h"
+#include "archutils/Common/HidDevice.h"
 
 // static information about the device(s) in question.
 #define STAC_VID 0x04d8
@@ -50,7 +50,7 @@ enum StacLightIndex
 class LightsDriver_stac : public LightsDriver
 {
 private:
-	hid_device *handle[STAC_MAX_NUMBER] = {nullptr};
+	HidDevice devs[STAC_MAX_NUMBER];
 
 	bool stateChanged[STAC_MAX_NUMBER] = {false};
 	uint8_t outputBuffer[STAC_MAX_NUMBER][STAC_HIDREPORT_SIZE] = {0};

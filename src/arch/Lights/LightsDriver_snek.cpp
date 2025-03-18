@@ -6,50 +6,14 @@
 
 REGISTER_LIGHTS_DRIVER_CLASS(snek);
 
-LightsDriver_snek::LightsDriver_snek()
+LightsDriver_snek::LightsDriver_snek() : dev{ SNEK_VID , SNEK_PID , SNEK_LIGHTING_INTERFACENUM }
 {
-	struct hid_device_info *devs, *cur_dev;
-
 	memset(outputBuffer, 0x00, SNEK_HIDREPORT_SIZE);
-
-	// Enumerate through the snek device to find the lighting interface.
-	devs = hid_enumerate(SNEK_VID, SNEK_PID);
-	cur_dev = devs;
-
-	if (devs && cur_dev)
-	{
-		// Look for the desired interface number for lighting.
-		while (cur_dev)
-		{
-			if (cur_dev->vendor_id == SNEK_VID &&
-				cur_dev->product_id == SNEK_PID &&
-				cur_dev->interface_number == SNEK_LIGHTING_INTERFACENUM)
-			{
-				// Open the device via its path (only way to get interface)
-				handle = hid_open_path(cur_dev->path);
-
-				break;
-			}
-
-			cur_dev = cur_dev->next;
-		}
-	}
-
-	if (!handle)
-	{
-		LOG->Warn("snek board lighting not found.");
-	}
 }
 
 LightsDriver_snek::~LightsDriver_snek()
 {
-	if (handle)
-	{
-		hid_close(handle);
-	}
 
-	// Finalize the hidapi library
-	hid_exit();
 }
 
 void LightsDriver_snek::SetBuffer(int index, bool lightState)
@@ -76,12 +40,6 @@ void LightsDriver_snek::SetBuffer(int index, bool lightState)
 
 void LightsDriver_snek::Set(const LightsState *ls)
 {
-	// do not make a message for a non-connected device.
-	if (!handle)
-	{
-		return;
-	}
-
 	SetBuffer(SNEK_INDEX_DANCE_M_UL, ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]);
 	SetBuffer(SNEK_INDEX_DANCE_M_UR, ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]);
 	SetBuffer(SNEK_INDEX_DANCE_M_LL, ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]);
@@ -106,7 +64,7 @@ void LightsDriver_snek::Set(const LightsState *ls)
 	if (stateChanged)
 	{
 		// TODO: Check for error/reconnect.
-		hid_write(handle, (unsigned char *)&outputBuffer, SNEK_HIDREPORT_SIZE);
+		dev.Write((unsigned char *)&outputBuffer, SNEK_HIDREPORT_SIZE);
 		stateChanged = false;
 	}
 }
