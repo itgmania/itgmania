@@ -6,9 +6,11 @@
 
 REGISTER_LIGHTS_DRIVER_CLASS(snek);
 
-LightsDriver_snek::LightsDriver_snek() : dev{ SNEK_VID , SNEK_PID , SNEK_LIGHTING_INTERFACENUM }
+LightsDriver_snek::LightsDriver_snek() :
+	dev{ SNEK_VID , SNEK_PID , SNEK_LIGHTING_INTERFACENUM },
+	stateChanged{ false },
+	outputBuffer{0}
 {
-	memset(outputBuffer, 0x00, SNEK_HIDREPORT_SIZE);
 }
 
 LightsDriver_snek::~LightsDriver_snek()

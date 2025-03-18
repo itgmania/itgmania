@@ -101,7 +101,7 @@ private:
 	HidDevice dev;
 
 	bool stateChanged = false;
-	uint8_t outputBuffer[SNEK_HIDREPORT_SIZE] = {0};
+	uint8_t outputBuffer[SNEK_HIDREPORT_SIZE];
 
 	void SetBuffer(int index, bool lightState);
 

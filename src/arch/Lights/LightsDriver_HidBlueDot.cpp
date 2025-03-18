@@ -4,11 +4,11 @@
 
 REGISTER_LIGHTS_DRIVER_CLASS(HidBlueDot);
 
-LightsDriver_HidBlueDot::LightsDriver_HidBlueDot() : dev{VID, PID}
+LightsDriver_HidBlueDot::LightsDriver_HidBlueDot() :
+	dev{VID, PID},
+	m_iCabData{ 0 },
+	m_iPadData{ 0 }
 {
-	memset(m_iCabData, 0x00, sizeof(m_iCabData));
-	memset(m_iPadData, 0x00, sizeof(m_iPadData));
-
 	m_iCabData[1] = 0x01;
 	m_iPadData[1] = 0x02;
 }

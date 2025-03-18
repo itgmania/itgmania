@@ -6,10 +6,11 @@
 
 REGISTER_LIGHTS_DRIVER_CLASS(stac);
 
-LightsDriver_stac::LightsDriver_stac() : devs{{STAC_VID , STAC_PID_P1, STAC_LIGHTING_INTERFACE}, {STAC_VID , STAC_PID_P2, STAC_LIGHTING_INTERFACE }}
+LightsDriver_stac::LightsDriver_stac() :
+	devs{ {STAC_VID , STAC_PID_P1, STAC_LIGHTING_INTERFACE}, {STAC_VID , STAC_PID_P2, STAC_LIGHTING_INTERFACE } },
+	stateChanged{ false },
+	outputBuffer{ {0} }
 {
-	memset(outputBuffer[GameController_1], 0x00, STAC_HIDREPORT_SIZE);
-	memset(outputBuffer[GameController_2], 0x00, STAC_HIDREPORT_SIZE);
 }
 
 LightsDriver_stac::~LightsDriver_stac()
