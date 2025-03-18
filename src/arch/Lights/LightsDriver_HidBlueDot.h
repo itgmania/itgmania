@@ -2,7 +2,7 @@
 #define LightsDriver_HidBlueDot_H
 
 #include "arch/Lights/LightsDriver.h"
-#include "hidapi.h"
+#include "archutils/Common/HidDevice.h"
 
 #define VID 0x04BD
 #define PID 0xBD
@@ -35,8 +35,9 @@ private:
 
 	uint8_t m_iCabData[3];
 	uint8_t m_iPadData[3];
-	hid_device* handle;
+	HidDevice dev;
 
+	void SetLight(unsigned char* buffer, int index, bool value);
 	void SetPadLight(PadLightIndex index, bool value);
 	void SetCabinetLight(CabinetLightIndex index, bool value);
 public:
