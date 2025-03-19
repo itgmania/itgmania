@@ -28,7 +28,6 @@ RString DoPathReplace(const RString &sPath)
 #if defined(_WIN32)
 static bool WinMoveFileInternal( const RString &sOldPath, const RString &sNewPath )
 {
-	if( MoveFileEx( sOldPath, sNewPath, MOVEFILE_REPLACE_EXISTING ) )
 	// TODO(sukibaby): Use Unicode functions after migrating to std::string.
 	if (MoveFileExA(sOldPath.c_str(), sNewPath.c_str(), MOVEFILE_REPLACE_EXISTING))
 	{
@@ -95,6 +94,15 @@ bool WinMoveFile( RString sOldPath, RString sNewPath )
 	}
 
 	return WinMoveFileInternal( DoPathReplace(sOldPath), DoPathReplace(sNewPath) );
+}
+
+static File CreateFileFromFindData(const WIN32_FIND_DATA& fd)
+{
+	File f(fd.cFileName);
+	f.dir = !!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+	f.size = static_cast<int>(fd.nFileSizeLow);
+	f.hash = static_cast<int>(fd.ftLastWriteTime.dwLowDateTime);
+	return f;
 }
 #endif
 
@@ -204,12 +212,7 @@ void DirectFilenameDB::CacheFile( const RString &sPath )
 		m_Mutex.Unlock(); // Locked by GetFileSet()
 		return;
 	}
-	File f( fd.cFileName );
-	f.dir = !!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-	f.size = static_cast<int64_t>(fd.nFileSizeHigh) << 32 | fd.nFileSizeLow;
-	f.hash = static_cast<int64_t>(fd.ftLastWriteTime.dwHighDateTime) << 32 | fd.ftLastWriteTime.dwLowDateTime;
-
-	pFileSet->files.insert( f );
+	File f = CreateFileFromFindData(fd);
 	FindClose( hFind );
 #else
 	File f( Basename(sPath) );
@@ -257,11 +260,7 @@ void DirectFilenameDB::PopulateFileSet( FileSet &fs, const RString &path )
 		if( !strcmp(fd.cFileName, ".") || !strcmp(fd.cFileName, "..") )
 			continue;
 
-		File f;
-		f.SetName( fd.cFileName );
-		f.dir = !!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-		f.size = fd.nFileSizeLow;
-		f.hash = fd.ftLastWriteTime.dwLowDateTime;
+		File f = CreateFileFromFindData(fd);
 
 		fs.files.insert( f );
 	} while( FindNextFile( hFind, &fd ) );
