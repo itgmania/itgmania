@@ -30,10 +30,10 @@ void LightsDriver_HidBlueDot::SetPadLight(PadLightIndex index, bool value)
 
 void LightsDriver_HidBlueDot::SetLight(unsigned char* buffer, int index, bool value)
 {
-	buffer[2] &= ~(1 << index);
+	buffer[2] &= (unsigned char)~(1 << index);
 
 	if(value)
-		buffer[2] |= (1 << index);
+		buffer[2] |= (unsigned char)(1 << index);
 };
 
 void LightsDriver_HidBlueDot::Set(const LightsState *ls)

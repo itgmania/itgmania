@@ -12,25 +12,25 @@ class LightsDriver_HidBlueDot : public LightsDriver
 private:
 	enum CabinetLightIndex
 	{
-		m_Marquee_UpLeft = 0x01,
-		m_Marquee_UpRight = 0x02,
-		m_Marquee_LwLeft = 0x04,
-		m_Marquee_LwRight = 0x08,
-		m_Buttons_Left = 0x10,
-		m_Buttons_Right = 0x20,
-		m_Bass = 0x40,
+		m_Marquee_UpLeft = 0,
+		m_Marquee_UpRight,
+		m_Marquee_LwLeft,
+		m_Marquee_LwRight,
+		m_Buttons_Left,
+		m_Buttons_Right,
+		m_Bass
 	};
 
 	enum PadLightIndex
 	{
-		m_PadP1_Up = 0x01,
-		m_PadP1_Down = 0x02,
-		m_PadP1_Left = 0x04,
-		m_PadP1_Right = 0x08,
-		m_PadP2_Up = 0x10,
-		m_PadP2_Down = 0x20,
-		m_PadP2_Left = 0x40,
-		m_PadP2_Right = 0x80
+		m_PadP1_Up = 0,
+		m_PadP1_Down,
+		m_PadP1_Left,
+		m_PadP1_Right,
+		m_PadP2_Up,
+		m_PadP2_Down,
+		m_PadP2_Left,
+		m_PadP2_Right
 	};
 
 	uint8_t m_iCabData[3];
