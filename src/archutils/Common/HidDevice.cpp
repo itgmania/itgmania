@@ -2,28 +2,29 @@
 #include "HidDevice.h"
 #include "RageLog.h"
 
-HidDevice::HidDevice(int vid, int pid, int interfaceNum) : path{ GetPath(vid, pid, interfaceNum) }
+HidDevice::HidDevice(int vid, int pid, int interfaceNum, bool autoReconnection) :
+	vid{ vid },
+	pid{ pid },
+	interfaceNum{ interfaceNum },
+	autoReconnection{autoReconnection}
 {
 	bool result = TryConnect();
 
 	if (!result) {
 
 		LOG->Warn("HID device with VID/PID %x/%x not found.", vid, pid);
-		hid_exit();
 		return;
 	}
 	else
 	{
-		path = path;
+		foundOnce = true;
 		hid_set_nonblocking(handle, 1);
 	}
 }
 
 HidDevice::~HidDevice()
 {
-	if (handle != nullptr)
-		hid_close(handle);
-
+	Close();
 	hid_exit();
 }
 
@@ -33,7 +34,7 @@ void HidDevice::Close()
 	handle = nullptr;
 }
 
-bool HidDevice::Open()
+bool HidDevice::Open(const char* path)
 {
 	handle = hid_open_path(path);
 
@@ -42,16 +43,31 @@ bool HidDevice::Open()
 
 bool HidDevice::TryConnect()
 {
+	char* path = GetPath(vid, pid, interfaceNum);
+
 	if (path == nullptr)
 		return false;
 
-	return Open();
+	return Open(path);
+}
+
+bool HidDevice::CheckConnection()
+{
+	if (IsConnected())
+		return true;
+
+	if (!autoReconnection || !foundOnce)
+		return false;
+
+	return TryConnect();
+}
+
+const wchar_t* HidDevice::GetError()
+{
+	return hid_read_error(handle);
 }
 
 bool HidDevice::IsConnected() {
-	if (handle == nullptr)
-		return TryConnect();
-
 	return handle != nullptr;
 }
 
@@ -90,19 +106,27 @@ char* HidDevice::GetPath(int vid, int pid, int interfaceNumber)
 
 void HidDevice::Read(unsigned char* data, size_t length)
 {
-	if (!IsConnected())
+	if (!CheckConnection())
 		return;
+		
+	int result = hid_read(handle, data, length);
 
-	hid_read(handle, data, length);
+	if (result == -1)
+	{
+		LOG->Warn("HID device with VID/PID %x/%x read failed. Fail reason %s", vid, pid, GetError());
+	}
 }
 
 void HidDevice::Write(const unsigned char* data, size_t length)
 {
-	if (!IsConnected())
+	if (!CheckConnection())
 		return;
-
+		
 	int result = hid_write(handle, data, length);
 
 	if (result != length)
+	{
+		LOG->Warn("HID device with VID/PID %x/%x write failed. Fail reason %s", vid, pid, GetError());
 		Close();
+	}
 }

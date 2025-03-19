@@ -7,14 +7,23 @@ class HidDevice
 {
 private:
 	hid_device* handle{nullptr};
-	char* path = nullptr;
+
+	bool autoReconnection = true;
+
+	int vid;
+	int pid;
+	int interfaceNum = -1;
+
+	bool foundOnce = false;
 	void Close();
-	bool Open();
+	bool Open(const char* path);
 	bool TryConnect();
+	bool CheckConnection();
+	const wchar_t* GetError();
 public:
 	static char* GetPath(int vid, int pid, int interfaceNum = -1);
 
-	HidDevice(int vid, int pid, int interfaceNum = -1);
+	HidDevice(int vid, int pid, int interfaceNum = -1, bool autoReconnection = true);
 
 	virtual ~HidDevice();
 
