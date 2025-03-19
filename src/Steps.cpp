@@ -761,26 +761,19 @@ void Steps::SetCachedNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasur
 {
 	DeAutogen();
 	m_CachedNpsPerMeasure.assign(npsPerMeasure.begin(), npsPerMeasure.end());
-	m_PeakNps.clear();
-	
-	for(std::vector<float> n : npsPerMeasure)
-	{
-		std::vector<float>::iterator peakNps = std::max_element(n.begin(), n.end());
-		if(peakNps != n.end())
-		{
-			m_PeakNps.push_back(*peakNps);
-		}
-	}
-	
 	m_AreCachedNpsPerMeasureJustLoaded = true;
 }
 
 void Steps::SetCachedNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure)
 {
 	DeAutogen();
-	
 	m_CachedNotesPerMeasure.assign(notesPerMeasure.begin(), notesPerMeasure.end());
 	m_AreCachedNotesPerMeasureJustLoaded = true;
+}
+
+void Steps::SetPeakNps(std::vector<float> &peakNps)
+{
+	m_PeakNps.assign(peakNps.begin(), peakNps.end());
 }
 
 RString Steps::GenerateChartKey()

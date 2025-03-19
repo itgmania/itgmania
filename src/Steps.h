@@ -147,6 +147,7 @@ public:
 	void SetCachedTechCounts(const TechCounts ts[NUM_PLAYERS]);
 	void SetCachedNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure);
 	void SetCachedNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure);
+	void SetPeakNps(std::vector<float>& peakNps);
 	float PredictMeter() const;
 
 	unsigned GetHash() const;
@@ -186,7 +187,7 @@ public:
 	const std::vector<int> &GetNotesPerMeasure(PlayerNumber pn) const;
 	
 	float GetPeakNps(PlayerNumber pn) const;
-
+	const std::vector<float> & GetAllPeakNps() const { return Real()->m_PeakNps; }
 	/**
 	 * @brief The TimingData used by the Steps.
 	 *

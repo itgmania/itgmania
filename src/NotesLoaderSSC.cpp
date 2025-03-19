@@ -478,6 +478,32 @@ void SetNotesPerMeasure(StepsTagInfo& info)
 	info.ssc_format= true;
 }
 
+void SetPeakNps(StepsTagInfo& info)
+{
+	if (info.from_cache || info.for_load_edit)
+	{
+		std::vector<RString> valuesPerPlayer;
+		split((*info.params)[1], "|", valuesPerPlayer, true);
+		
+		if(valuesPerPlayer.size() > NUM_PlayerNumber)
+		{
+			LOG->Warn("#PEAKNPS has more sections (%zu) than possible number of players (%d)!", valuesPerPlayer.size(), NUM_PlayerNumber);
+		}
+		
+		std::vector<float> peakNps;
+		for(std::size_t pn = 0; pn < valuesPerPlayer.size() && pn < NUM_PlayerNumber; pn++)
+		{
+			peakNps.push_back(StringToFloat(valuesPerPlayer[pn]));
+		}
+		info.steps->SetPeakNps(peakNps);
+	}
+	else
+	{
+		// just recalc at time.
+	}
+	info.ssc_format= true;
+}
+
 void SetCredit(StepsTagInfo& info)
 {
 	info.steps->SetCredit((*info.params)[1]);
@@ -721,7 +747,7 @@ struct ssc_parser_helper_t
 		steps_tag_handlers["TECHCOUNTS"] = &SetTechCounts;
 		steps_tag_handlers["NPSPERMEASURE"] = &SetNpsPerMeasure;
 		steps_tag_handlers["NOTESPERMEASURE"] = &SetNotesPerMeasure;
-
+		steps_tag_handlers["PEAKNPS"] = &SetPeakNps;
 		/* If this is called, the chart does not use the same attacks
 		 * as the Song's timing. No other changes are required. */
 		steps_tag_handlers["ATTACKS"]= &SetStepsAttacks;
