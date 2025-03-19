@@ -29,43 +29,37 @@ RString DoPathReplace(const RString &sPath)
 static bool WinMoveFileInternal( const RString &sOldPath, const RString &sNewPath )
 {
 	if( MoveFileEx( sOldPath, sNewPath, MOVEFILE_REPLACE_EXISTING ) )
-		return true;
-
-	DWORD err = GetLastError();
-	// Possible error values stored by GetLastError():
-	//
-	// - ERROR_PATH_NOT_FOUND - 3 
-	//  - implies something in the file path does not exist
-	//
-	// - ERROR_SHARING_VIOLATION - 32 
-	//  - implies a need to use a temporary name somewhere
-	//
-	// - ERROR_FILE_EXISTS, ERROR_ALREADY_EXISTS - 80 
-	//  - implies MOVEFILE_REPLACE_EXISTING flag is not set,
-	//    but it is usually expected behavior when this occurs
-	//
-	// - ERROR_INVALID_PARAMETER - 87 
-	//  - implies the file paths are invalid
-	//
-	// - ERROR_NOT_SAME_DEVICE - 17 
-	//  - implies the file paths are on different devices
-
-	if( err )
+	// TODO(sukibaby): Use Unicode functions after migrating to std::string.
+	if (MoveFileExA(sOldPath.c_str(), sNewPath.c_str(), MOVEFILE_REPLACE_EXISTING))
 	{
-		// Log the error with the specific error code
-		WARN(ssprintf("MoveFileEx(%s, %s) failed: %lu", sOldPath.c_str(), sNewPath.c_str(), err));
-    
-		// Check if the error is related to the file not existing
-		if (err != ERROR_FILE_EXISTS && err != ERROR_ALREADY_EXISTS)
-		{
-			return false;
-		}
+		return true;
 	}
 
-	if( !DeleteFile( sNewPath ) )
-		return false;
+	DWORD err = GetLastError();
+	WARN(ssprintf("MoveFileEx(%s, %s) failed: %lu", sOldPath.c_str(), sNewPath.c_str(), err));
 
-	return !!MoveFile( sOldPath, sNewPath );
+	if( err != ERROR_FILE_EXISTS && err != ERROR_ALREADY_EXISTS )
+	{
+		return false;
+	}
+
+	if( !DeleteFileA(sNewPath.c_str()) )
+	{
+		DWORD deleteErr = GetLastError();
+		WARN(ssprintf("DeleteFile(%s) failed: %lu", sNewPath.c_str(), deleteErr));
+		return false;
+	}
+
+	if( !MoveFileA(sOldPath.c_str(), sNewPath.c_str()) )
+	{
+		DWORD moveErr = GetLastError();
+		WARN(ssprintf("MoveFile(%s, %s) failed: %lu", sOldPath.c_str(), sNewPath.c_str(), moveErr));
+		return false;
+	}
+
+	// If we reach this point, MoveFileExA failed with ERROR_FILE_EXISTS
+	// or ERROR_ALREADY_EXISTS, but either DeleteFileA or MoveFileA succeeded.
+	return true;
 }
 
 bool WinMoveFile( RString sOldPath, RString sNewPath )
