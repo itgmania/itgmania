@@ -65,11 +65,34 @@ static bool WinMoveFileInternal( const RString &sOldPath, const RString &sNewPat
 bool WinMoveFile( RString sOldPath, RString sNewPath )
 {
 	if( WinMoveFileInternal( DoPathReplace(sOldPath), DoPathReplace(sNewPath) ) )
+	{
 		return true;
-	if( GetLastError() != ERROR_ACCESS_DENIED )
+	}
+
+	DWORD err = GetLastError();
+	if (err != ERROR_ACCESS_DENIED)
+	{
+		WARN(ssprintf("WinMoveFileInternal(%s, %s) failed: %lu", sOldPath.c_str(), sNewPath.c_str(), err));
 		return false;
-	/* Try turning off the read-only bit on the file we're overwriting. */
-	SetFileAttributes( DoPathReplace(sNewPath), FILE_ATTRIBUTE_NORMAL );
+	}
+
+	// Get the current attributes of the file, and only remove the read-only attribute if set.
+	DWORD attributes = GetFileAttributes(DoPathReplace(sNewPath));
+	if (attributes == INVALID_FILE_ATTRIBUTES)
+	{
+		WARN(ssprintf("GetFileAttributes(%s) failed: %lu", sNewPath.c_str(), GetLastError()));
+		return false;
+	}
+
+	if (attributes & FILE_ATTRIBUTE_READONLY)
+	{
+		attributes &= ~FILE_ATTRIBUTE_READONLY;
+		if (!SetFileAttributes(DoPathReplace(sNewPath), attributes))
+		{
+			WARN(ssprintf("SetFileAttributes(%s) failed: %lu", sNewPath.c_str(), GetLastError()));
+			return false;
+		}
+	}
 
 	return WinMoveFileInternal( DoPathReplace(sOldPath), DoPathReplace(sNewPath) );
 }
