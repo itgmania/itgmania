@@ -271,6 +271,13 @@ void SongManager::SanityCheckGroupDir( RString sDir ) const
 
 void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
 {
+	
+	if ( group == nullptr ) {
+		// Could not AddGroup 'sGroupDirName'. Group object is null.
+		LOG->Warn( "Could not AddGroup '%s'. Group object is null.", sGroupDirName.c_str() );
+		return;
+	}
+
 	unsigned j;
 	for(j = 0; j < m_sSongGroupNames.size(); ++j)
 		if( sGroupDirName == m_sSongGroupNames[j] )
@@ -278,12 +285,6 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
 
 	if( j != m_sSongGroupNames.size() )
 		return; // the group is already added
-
-	if ( group == nullptr ) {
-		// Could not AddGroup 'sGroupDirName'. Group object is null.
-		LOG->Warn( "Could not AddGroup '%s'. Group object is null.", sGroupDirName.c_str() );
-		return;
-	}
 
 	RString sBannerPath;
 
@@ -346,7 +347,7 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
     */
    	m_sSongGroupBannerPaths.push_back( sBannerPath );
 	m_sSongGroupNames.push_back( sGroupDirName );
-
+	
 	// Add the group to its series if the group has one and if the series exists
 	if( group->GetSeries() != "" )
 	{
@@ -706,7 +707,7 @@ RageColor SongManager::GetSongGroupColor( const RString &sSongGroup ) const
 		Profile* prof= PROFILEMAN->GetProfile(pn);
 		if(prof != nullptr)
 		{
-			if(prof->GetDisplayNameOrHighScoreName() == sSongGroup)
+			if(prof->m_group->GetGroupName() == sSongGroup)
 			{
 				return profile_song_group_colors.GetValue(pn % num_profile_song_group_colors);
 			}
@@ -880,7 +881,7 @@ const std::vector<Song*> &SongManager::GetSongs( const RString &sGroupName ) con
 		Profile* prof= PROFILEMAN->GetProfile(pn);
 		if(prof != nullptr)
 		{
-			if(prof->GetDisplayNameOrHighScoreName() == sGroupName)
+			if(prof->m_group->GetGroupName() == sGroupName)
 			{
 				return prof->m_songs;
 			}
@@ -938,6 +939,17 @@ Group* SongManager::GetGroupFromName( const RString& sGroupName ) const
 	auto iter = m_mapNameToGroup.find( sGroupName );
 	if( iter != m_mapNameToGroup.end() )
 		return iter->second;
+	FOREACH_EnabledPlayer(pn)
+	{
+		Profile* prof= PROFILEMAN->GetProfile(pn);
+		if(prof != nullptr)
+		{
+			if(prof->m_group->GetGroupName() == sGroupName)
+			{
+				return prof->m_group;
+			}
+		}
+	}
 	return nullptr;
 }
 

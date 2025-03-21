@@ -41,11 +41,19 @@ Group::~Group()
 
 }
 
-Group::Group(const RString& sDir, const RString& sGroupDirName) {
-    RString sPackIniPath = sDir + sGroupDirName + "/" + INI_FILE;
-    m_sPath = sDir + sGroupDirName;
-    m_sGroupName = Basename(sGroupDirName);
-    m_sDisplayTitle = m_sGroupName;
+Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfile) {
+    RString sPackIniPath;
+    if (bFromProfile) {
+        sPackIniPath = sDir + "/" + INI_FILE;
+        m_sPath = sDir;
+        m_sGroupName = sDir.substr(1, sDir.find('/', 1) - 1);
+        m_sDisplayTitle = sGroupDirName;
+    } else {
+        sPackIniPath = sDir + sGroupDirName + "/" + INI_FILE;
+        m_sPath = sDir + sGroupDirName;
+        m_sGroupName = Basename(sGroupDirName);
+        m_sDisplayTitle = m_sGroupName;
+    }
     m_sSortTitle = m_sGroupName;
     m_sTranslitTitle = m_sGroupName;
     m_sSeries = "";

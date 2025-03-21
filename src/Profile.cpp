@@ -6,6 +6,7 @@
 #include "IniFile.h"
 #include "GameManager.h"
 #include "GameState.h"
+#include "Group.h"
 #include "RageLog.h"
 #include "Song.h"
 #include "SongManager.h"
@@ -96,6 +97,11 @@ void Profile::ClearSongs()
 		delete curr_song;
 	}
 	m_songs.clear();
+
+	if (m_group != nullptr)
+	{
+		delete m_group;
+	}
 }
 
 int Profile::HighScoresForASong::GetNumTimesPlayed() const
@@ -1181,7 +1187,7 @@ ProfileLoadResult Profile::LoadAllFromDir( RString sDir, bool bRequireSignature 
 // entire song list to remove custom songs when unloading the profile is
 // wasteful. -Kyz
 
-void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot)
+void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot, bool isMemoryCard)
 {
 	if(!PREFSMAN->m_custom_songs_enable)
 	{
@@ -1198,6 +1204,10 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot)
 
 		StripCvsAndSvn(song_folders);
 		StripMacResourceForks(song_folders);
+
+		Group* group = new Group(songs_folder, GetDisplayNameOrHighScoreName(), true);
+		m_group = group;
+
 		LOG->Trace("Found %i songs in profile.", int(song_folders.size()));
 		// Only songs that are successfully loaded count towards the limit. -Kyz
 		for(size_t song_index= 0; song_index < song_folders.size()
@@ -1224,6 +1234,11 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot)
 		}
 		float load_time= song_load_start_time.Ago();
 		LOG->Trace("Successfully loaded %zu songs in %.6f from profile.", m_songs.size(), load_time);
+		
+		if (m_songs.size() <= 0) {
+			delete m_group;
+			m_group = nullptr;
+		} 
 	}
 	else
 	{
