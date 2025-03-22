@@ -42,6 +42,9 @@ void LightsDriver_snek::SetBuffer(int index, bool lightState)
 
 void LightsDriver_snek::Set(const LightsState *ls)
 {
+	if (!dev.FoundOnce())
+		return;
+
 	SetBuffer(SNEK_INDEX_DANCE_M_UL, ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]);
 	SetBuffer(SNEK_INDEX_DANCE_M_UR, ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]);
 	SetBuffer(SNEK_INDEX_DANCE_M_LL, ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]);

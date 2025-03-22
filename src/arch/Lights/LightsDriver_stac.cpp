@@ -42,7 +42,7 @@ void LightsDriver_stac::SetBuffer(int index, bool lightState, GameController ctr
 void LightsDriver_stac::HandleState(const LightsState *ls, GameController ctrlNum)
 {
 	// do not create a message for an disconnected device.
-	if (!devs[ctrlNum].IsConnected())
+	if (!devs[ctrlNum].FoundOnce())
 		return;
 
 	// check to see which game we are running as it can change during gameplay.

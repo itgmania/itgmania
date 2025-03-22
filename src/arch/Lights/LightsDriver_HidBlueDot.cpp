@@ -38,6 +38,9 @@ void LightsDriver_HidBlueDot::SetLight(unsigned char* buffer, int index, bool va
 
 void LightsDriver_HidBlueDot::Set(const LightsState *ls)
 {
+	if (!dev.FoundOnce())
+		return;
+
 	//! Set cabinet lights.
 	SetCabinetLight(m_Marquee_UpLeft, ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]);
 	SetCabinetLight(m_Marquee_UpRight, ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]);
