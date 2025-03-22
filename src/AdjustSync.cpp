@@ -201,7 +201,10 @@ void AdjustSync::AutosyncOffset()
 		{
 			case AutosyncType_Song:
 			{
+				// Group offset must be preserved and applied to each step.
+				float groupOffset = GAMESTATE->m_pCurSong->m_SongTiming.m_fBeat0GroupOffsetInSeconds;
 				GAMESTATE->m_pCurSong->m_SongTiming.m_fBeat0OffsetInSeconds += mean;
+				GAMESTATE->m_pCurSong->m_SongTiming.m_fBeat0GroupOffsetInSeconds = groupOffset;
 				const std::vector<Steps*>& vpSteps = GAMESTATE->m_pCurSong->GetAllSteps();
 				for (Steps *s : vpSteps)
 				{
@@ -210,6 +213,7 @@ void AdjustSync::AutosyncOffset()
 					if( s->m_Timing.empty() )
 						continue;
 					s->m_Timing.m_fBeat0OffsetInSeconds += mean;
+					s->m_Timing.m_fBeat0GroupOffsetInSeconds = groupOffset;
 				}
 				break;
 			}
