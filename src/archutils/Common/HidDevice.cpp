@@ -39,6 +39,9 @@ bool HidDevice::Open(const char* path)
 	if(nonBlockingWrite)
 		hid_set_nonblocking(handle, 1);
 
+	if(handle)
+		LOG->Info("HidDevice opened %04x:%04x:%d by path %s", vid, pid, interfaceNum, path);
+
 	return handle != nullptr;
 }
 
@@ -114,7 +117,6 @@ void HidDevice::Read(unsigned char* data, size_t length)
 {
 	if (!CheckConnection())
 		return;
-		
 	int result = hid_read(handle, data, length);
 
 	if (result == -1)
@@ -127,7 +129,7 @@ void HidDevice::Write(const unsigned char* data, size_t length)
 {
 	if (!CheckConnection())
 		return;
-		
+
 	int result = hid_write(handle, data, length);
 
 	if (result != length)

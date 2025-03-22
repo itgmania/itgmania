@@ -182,6 +182,7 @@ list(APPEND SMDATA_ARCH_LIGHTS_SRC "arch/Lights/LightsDriver.cpp"
             "arch/Lights/LightsDriver_SystemMessage.cpp"
             "arch/Lights/LightsDriver_stac.cpp"
             "arch/Lights/LightsDriver_snek.cpp"
+            "arch/Lights/LightsDriver_PacDrive.cpp"
 			      "arch/Lights/LightsDriver_HidBlueDot.cpp")
 list(APPEND SMDATA_ARCH_LIGHTS_HPP "arch/Lights/LightsDriver.h"
             "arch/Lights/LightsDriver_Export.h"
@@ -190,6 +191,7 @@ list(APPEND SMDATA_ARCH_LIGHTS_HPP "arch/Lights/LightsDriver.h"
             "arch/Lights/SextetUtils.h"
             "arch/Lights/LightsDriver_stac.h"
             "arch/Lights/LightsDriver_snek.h"
+            "arch/Lights/LightsDriver_PacDrive.h"
             "arch/Lights/LightsDriver_HidBlueDot.h")
 
 # TODO: Confirm if Apple can use the export.
@@ -197,12 +199,10 @@ if(NOT APPLE)
   if(WIN32)
     list(APPEND SMDATA_ARCH_LIGHTS_SRC
                 "arch/Lights/LightsDriver_Win32Serial.cpp"
-                "arch/Lights/LightsDriver_Win32Parallel.cpp"
-                "arch/Lights/LightsDriver_PacDrive.cpp")
+                "arch/Lights/LightsDriver_Win32Parallel.cpp")
     list(APPEND SMDATA_ARCH_LIGHTS_HPP
                 "arch/Lights/LightsDriver_Win32Parallel.h"
-                "arch/Lights/LightsDriver_Win32Serial.h"
-                "arch/Lights/LightsDriver_PacDrive.h")
+                "arch/Lights/LightsDriver_Win32Serial.h")
     if(WITH_MINIMAID)
       list(APPEND SMDATA_ARCH_LIGHTS_SRC
                   "arch/Lights/LightsDriver_Win32Minimaid.cpp")
@@ -218,7 +218,6 @@ if(NOT APPLE)
                   "arch/Lights/LightsDriver_Linux_PIUIO_Leds.cpp"
                   "arch/Lights/LightsDriver_Linux_PIUIOBTN_Leds.cpp"
                   "arch/Lights/LightsDriver_Linux_ITGIO.cpp"
-                  "arch/Lights/LightsDriver_LinuxPacDrive.cpp"
                   "arch/Lights/LightsDriver_LinuxWeedTech.cpp")
       list(APPEND SMDATA_ARCH_LIGHTS_HPP
                   "arch/Lights/LightsDriver_Linux_Leds.h"
@@ -226,7 +225,6 @@ if(NOT APPLE)
                   "arch/Lights/LightsDriver_Linux_PIUIO_Leds.h"
                   "arch/Lights/LightsDriver_Linux_PIUIOBTN_Leds.h"
                   "arch/Lights/LightsDriver_Linux_ITGIO.h"
-                  "arch/Lights/LightsDriver_LinuxPacDrive.h"
                   "arch/Lights/LightsDriver_LinuxWeedTech.h")
       if(WITH_MINIMAID)
         list(APPEND SMDATA_ARCH_LIGHTS_SRC
