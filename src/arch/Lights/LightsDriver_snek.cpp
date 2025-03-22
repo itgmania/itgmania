@@ -6,8 +6,9 @@
 
 REGISTER_LIGHTS_DRIVER_CLASS(snek);
 
+
 LightsDriver_snek::LightsDriver_snek() :
-	dev{ SNEK_VID , SNEK_PID , SNEK_LIGHTING_INTERFACENUM },
+	dev{ SNEK_VID , pids, SNEK_LIGHTING_INTERFACENUM },
 	stateChanged{ false },
 	outputBuffer{0}
 {

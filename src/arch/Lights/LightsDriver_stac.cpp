@@ -7,7 +7,7 @@
 REGISTER_LIGHTS_DRIVER_CLASS(stac);
 
 LightsDriver_stac::LightsDriver_stac() :
-	devs{ {STAC_VID , STAC_PID_P1, STAC_LIGHTING_INTERFACE}, {STAC_VID , STAC_PID_P2, STAC_LIGHTING_INTERFACE } },
+	devs{ {STAC_VID , pids1, STAC_LIGHTING_INTERFACE}, {STAC_VID , pids2, STAC_LIGHTING_INTERFACE } },
 	stateChanged{ false },
 	outputBuffer{ {0} }
 {

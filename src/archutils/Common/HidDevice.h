@@ -8,11 +8,13 @@ class HidDevice
 private:
 	hid_device* handle{nullptr};
 
-	bool autoReconnection = true;
-	bool nonBlockingWrite;
+	static const RString GetPidsString(const  int pids[]);
+
 	int vid;
-	int pid;
+	const int* pids;
 	int interfaceNum = -1;
+	bool autoReconnection = true;
+	bool nonBlockingWrite = false;
 
 	bool foundOnce = false;
 	void Close();
@@ -21,16 +23,16 @@ private:
 	bool CheckConnection();
 	const wchar_t* GetError();
 public:
-	static char* GetPath(int vid, int pid, int interfaceNum = -1);
+	static char* GetPath(int vid, const int pids[], int interfaceNum = -1);
 
-	HidDevice(int vid, int pid, int interfaceNum = -1, bool autoReconnection = true, bool nonBlockingWrite = false);
+	HidDevice(int vid, const int pids[], int interfaceNum = -1, bool autoReconnection = true, bool nonBlockingWrite = false);
 
 	virtual ~HidDevice();
 
 	bool IsConnected();
 	bool FoundOnce();
 
-	void Read(unsigned char* data, size_t length);
+	int Read(unsigned char* data, size_t length);
 	void Write(const unsigned char* data, size_t length);
 };
 

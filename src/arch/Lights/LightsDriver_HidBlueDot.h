@@ -7,6 +7,8 @@
 #define VID 0x04BD
 #define PID 0xBD
 
+static constexpr int pids[] = { PID };
+
 class LightsDriver_HidBlueDot : public LightsDriver
 {
 private:
