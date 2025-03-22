@@ -2,24 +2,22 @@
 #include "HidDevice.h"
 #include "RageLog.h"
 
-HidDevice::HidDevice(int vid, int pid, int interfaceNum, bool autoReconnection) :
+HidDevice::HidDevice(int vid, int pid, int interfaceNum, bool autoReconnection, bool nonBlockingWrite) :
 	vid{ vid },
 	pid{ pid },
 	interfaceNum{ interfaceNum },
-	autoReconnection{autoReconnection}
+	autoReconnection{autoReconnection},
+	nonBlockingWrite{nonBlockingWrite}
 {
 	bool result = TryConnect();
 
 	if (!result) {
 
-		LOG->Warn("HID device with VID/PID %x/%x not found.", vid, pid);
+		LOG->Warn("HID device with VID/PID %04x/%04x not found.", vid, pid);
 		return;
 	}
 	else
-	{
 		foundOnce = true;
-		hid_set_nonblocking(handle, 1);
-	}
 }
 
 HidDevice::~HidDevice()
@@ -37,6 +35,9 @@ void HidDevice::Close()
 bool HidDevice::Open(const char* path)
 {
 	handle = hid_open_path(path);
+
+	if(nonBlockingWrite)
+		hid_set_nonblocking(handle, 1);
 
 	return handle != nullptr;
 }
@@ -69,6 +70,11 @@ const wchar_t* HidDevice::GetError()
 
 bool HidDevice::IsConnected() {
 	return handle != nullptr;
+}
+
+bool HidDevice::FoundOnce()
+{
+	return foundOnce;
 }
 
 char* HidDevice::GetPath(int vid, int pid, int interfaceNumber)
@@ -113,7 +119,7 @@ void HidDevice::Read(unsigned char* data, size_t length)
 
 	if (result == -1)
 	{
-		LOG->Warn("HID device with VID/PID %x/%x read failed. Fail reason %s", vid, pid, GetError());
+		LOG->Warn("HID device with VID/PID %04x/%04x read failed. Fail reason %ls", vid, pid, GetError());
 	}
 }
 
@@ -126,7 +132,7 @@ void HidDevice::Write(const unsigned char* data, size_t length)
 
 	if (result != length)
 	{
-		LOG->Warn("HID device with VID/PID %x/%x write failed. Fail reason %s", vid, pid, GetError());
+		LOG->Warn("HID device with VID/PID %04x/%04x write failed. Fail reason %ls", vid, pid, GetError());
 		Close();
 	}
 }

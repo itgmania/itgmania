@@ -9,7 +9,7 @@ private:
 	hid_device* handle{nullptr};
 
 	bool autoReconnection = true;
-
+	bool nonBlockingWrite;
 	int vid;
 	int pid;
 	int interfaceNum = -1;
@@ -23,12 +23,13 @@ private:
 public:
 	static char* GetPath(int vid, int pid, int interfaceNum = -1);
 
-	HidDevice(int vid, int pid, int interfaceNum = -1, bool autoReconnection = true);
+	HidDevice(int vid, int pid, int interfaceNum = -1, bool autoReconnection = true, bool nonBlockingWrite = false);
 
 	virtual ~HidDevice();
 
 	bool IsConnected();
-	
+	bool FoundOnce();
+
 	void Read(unsigned char* data, size_t length);
 	void Write(const unsigned char* data, size_t length);
 };
