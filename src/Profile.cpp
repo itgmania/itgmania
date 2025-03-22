@@ -97,10 +97,11 @@ void Profile::ClearSongs()
 		delete curr_song;
 	}
 	m_songs.clear();
-
+	LOG->Trace("Profile::ClearSongs()");
 	if (m_group != nullptr)
 	{
-		delete m_group;
+		RageUtil::SafeDelete( m_group);
+
 	}
 }
 
@@ -1235,7 +1236,7 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot, bool i
 		float load_time= song_load_start_time.Ago();
 		LOG->Trace("Successfully loaded %zu songs in %.6f from profile.", m_songs.size(), load_time);
 		
-		if (m_songs.size() <= 0) {
+		if (m_songs.empty()) {
 			delete m_group;
 			m_group = nullptr;
 		} 

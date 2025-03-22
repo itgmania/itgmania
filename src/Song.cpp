@@ -310,6 +310,7 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 	}
 	else
 	{
+		LOG->Trace("Loading song from profile2.");
 		m_LoadedFromProfile= from_profile;
 		m_sGroupName= sDir.substr(1, sDir.find('/', 1) - 1);
 		use_cache= false;

@@ -707,9 +707,12 @@ RageColor SongManager::GetSongGroupColor( const RString &sSongGroup ) const
 		Profile* prof= PROFILEMAN->GetProfile(pn);
 		if(prof != nullptr)
 		{
-			if(prof->m_group->GetGroupName() == sSongGroup)
+			if(prof->m_group != nullptr)
 			{
-				return profile_song_group_colors.GetValue(pn % num_profile_song_group_colors);
+				if(prof->m_group->GetGroupName() == sSongGroup)
+				{
+					return profile_song_group_colors.GetValue(pn % num_profile_song_group_colors);
+				}
 			}
 		}
 	}
@@ -881,9 +884,12 @@ const std::vector<Song*> &SongManager::GetSongs( const RString &sGroupName ) con
 		Profile* prof= PROFILEMAN->GetProfile(pn);
 		if(prof != nullptr)
 		{
-			if(prof->m_group->GetGroupName() == sGroupName)
+			if(prof->m_group != nullptr)
 			{
-				return prof->m_songs;
+				if(prof->m_group->GetGroupName() == sGroupName)
+				{
+					return prof->m_songs;
+				}
 			}
 		}
 	}
@@ -944,9 +950,12 @@ Group* SongManager::GetGroupFromName( const RString& sGroupName ) const
 		Profile* prof= PROFILEMAN->GetProfile(pn);
 		if(prof != nullptr)
 		{
-			if(prof->m_group->GetGroupName() == sGroupName)
+			if(prof->m_group != nullptr)
 			{
-				return prof->m_group;
+				if(prof->m_group->GetGroupName() == sGroupName)
+				{
+					return prof->m_group;
+				}
 			}
 		}
 	}
