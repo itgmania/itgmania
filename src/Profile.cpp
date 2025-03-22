@@ -1194,7 +1194,7 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot, bool i
 		return;
 	}
 	RString songs_folder= dir + "Songs";
-	if(FILEMAN->DoesFileExist(songs_folder))
+	if(FILEMAN->DoesFileExist(songs_folder) && isMemoryCard)
 	{
 		LOG->Trace("Found songs folder in profile.");
 		std::vector<RString> song_folders;
