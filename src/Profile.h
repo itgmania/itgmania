@@ -116,7 +116,7 @@ public:
 		m_LastPlayedDate(),m_iNumSongsPlayedByStyle(),
 		m_iNumTotalSongsPlayed(0), m_UserTable(), m_SongHighScores(),
 		m_CourseHighScores(), m_vScreenshots(),
-		m_mapDayToCaloriesBurned()
+		m_mapDayToCaloriesBurned(), m_group(nullptr)
 	{
 		m_lastSong.Unset();
 		m_lastCourse.Unset();
