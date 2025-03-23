@@ -67,20 +67,59 @@ void FadingBanner::DrawPrimitives()
 	}
 }
 
+/* * TODO (sukibaby):
+
+This code was written when movies were not supported for banners.
+While movies as banners will play it's not really supported
+engine side.
+
+This is a band-aid solution to a cache-related crash
+when loading movies as banners following the implementation
+of the new video decoding backend.
+
+The crash seems to be due to not having the video fully
+loaded or decoded by the time it wants to be displayed.
+A previous comment here suggested loading a blank texture
+until the video is ready. So now we load a blank texture
+via GetBlankGraphicPath(), and then load the movie right
+afterwards.
+
+It gets the job done for now but it's far from ideal.
+
+
+
+This would be a lot better if RageTexture was capable of
+handling movies in a smarter way. But, it's not, it really
+wasn't designed to have much flexibility in that regard,
+so we have to do some annoying convoluted logic where we pull
+some elements from RageTexture and some from the video handler.
+*/
 void FadingBanner::Load( RageTextureID ID, bool bLowResToHighRes )
 {
 	BeforeChange( bLowResToHighRes );
 	m_Banner[m_iIndexLatest].Load(ID);
 
-	/* XXX: Hack to keep movies from updating multiple times.
-	 * We need to either completely disallow movies in banners or support
-	 * them. There are a number of files that use them currently in the
-	 * wild. If we wanted to support them, then perhaps we should use an
-	 * all-black texture for the low quality texture. */
 	RageTexture *pTexture = m_Banner[m_iIndexLatest].GetTexture();
-	if( !pTexture || !pTexture->IsAMovie() )
+
+	if (!pTexture)
+	{
 		return;
-	m_Banner[m_iIndexLatest].SetSecondsIntoAnimation( 0.f );
+	}
+
+	if( !pTexture->IsAMovie())
+	{
+		return;
+	}
+
+	else
+	{
+		// Load the blank graphic first,
+		// THEN load the movie.
+		m_Banner[m_iIndexLatest].Load(ThemeManager::GetBlankGraphicPath());
+		m_Banner[m_iIndexLatest].SetSecondsIntoAnimation(0.0f);
+		m_Banner[m_iIndexLatest].Load(ID);
+	}
+
 	for( int i = 1; i < NUM_BANNERS; ++i )
 	{
 		int index = m_iIndexLatest - i;

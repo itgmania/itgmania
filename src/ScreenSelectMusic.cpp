@@ -2003,6 +2003,13 @@ void ScreenSelectMusic::AfterMusicChange()
 	g_bBannerWaiting = false;
 	if( bWantBanner )
 	{
+		/* TODO(sukibaby) :the log warning about a missing image cache for
+		 * video files is due to the below LoadFromCachedBanner call.
+		 * we know we're never going to have an
+		 * image cache for them, so the warning is unnecessary.
+		 * If we implement a smarter way to detect if the banner is a video,
+		 * add that logic here so we can avoid that log warning and
+		 * potentially improve handling of video banners. */
 		LOG->Trace("LoadFromCachedBanner(%s)",g_sBannerPath .c_str());
 		if( m_Banner.LoadFromCachedBanner( g_sBannerPath ) )
 		{
