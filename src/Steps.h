@@ -146,7 +146,7 @@ public:
 	RString MinimizedChartString();
 
 	/** @brief Generates a hash used for GrooveStats integration. */
-	void CalculateGrooveStatsHash(bool forceRecalculate);
+	void CalculateGrooveStatsHash();
 	const RString GetGrooveStatsHash() const;
 	int GetGrooveStatsHashVersion() const;
 	
@@ -159,7 +159,7 @@ public:
 	void SetCachedNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure);
 	void SetCachedNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure);
 	void SetPeakNps(std::vector<float>& peakNps);
-	void SetCachedGrooveStatsHash(const RString key);
+	void SetCachedGrooveStatsHash(const RString& key);
 	void SetCachedGrooveStatsHashVersion(int version);
 	float PredictMeter() const;
 
@@ -305,13 +305,10 @@ private:
 	bool m_AreCachedNotesPerMeasureJustLoaded;
 	
 	std::vector<float> m_PeakNps;
-	
-	
-	
 
-	RString GrooveStatsHash;
 	bool m_bIsCachedGrooveStatsHashJustLoaded;
-	int GrooveStatsHashVersion = 0;
+	RString m_sGrooveStatsHash;
+	int m_iGrooveStatsHashVersion;
 	
 	/** @brief The name of the person who created the Steps. */
 	RString				m_sCredit;

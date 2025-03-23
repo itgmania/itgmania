@@ -62,6 +62,7 @@ Steps::Steps(Song *song): m_StepsType(StepsType_Invalid), m_pSong(song),
 	m_AreCachedNpsPerMeasureJustLoaded(false),
 	m_AreCachedNotesPerMeasureJustLoaded(false),
 	m_bIsCachedGrooveStatsHashJustLoaded(false),
+	m_sGrooveStatsHash(""), m_iGrooveStatsHashVersion(0),
 	m_sCredit(""), displayBPMType(DISPLAY_BPM_ACTUAL),
 	specifiedBPMMin(0), specifiedBPMMax(0) { }
 
@@ -307,7 +308,7 @@ void Steps::CalculateStepStats( float fMusicLengthSeconds )
 	this->CalculateRadarValues(fMusicLengthSeconds);
 	this->CalculateTechCounts();
 	this->CalculateMeasureInfo();
-	this->CalculateGrooveStatsHash(false);
+	this->CalculateGrooveStatsHash();
 }
 
 void Steps::CalculateRadarValues( float fMusicLengthSeconds )
@@ -780,19 +781,24 @@ void Steps::SetPeakNps(std::vector<float> &peakNps)
 
 const RString Steps::GetGrooveStatsHash() const
 {
-	return GrooveStatsHash;
+	return m_sGrooveStatsHash;
 }
 
 int Steps::GetGrooveStatsHashVersion() const
 {
-	return GrooveStatsHashVersion;
+	return m_iGrooveStatsHashVersion;
 }
 
-void Steps::CalculateGrooveStatsHash(bool forceRecalculate)
+void Steps::CalculateGrooveStatsHash()
 {
-	if (!forceRecalculate
-		&& GrooveStatsHashVersion == CURRENT_GROOVE_STATS_HASH_VERSION
-		&& m_bIsCachedGrooveStatsHashJustLoaded == true)
+	// When the game first boots up, it will load the GrooveStatsHash from the
+	// cache.
+	// This should keep the initial boot snappy, especially since hashes should
+	// almost never change.
+	// If this function is then called again (say in ScreenEval), we can
+	// recalculate the hash and use that for submission.
+	if (m_iGrooveStatsHashVersion == CURRENT_GROOVE_STATS_HASH_VERSION &&
+			m_bIsCachedGrooveStatsHashJustLoaded == true)
 	{
 		m_bIsCachedGrooveStatsHashJustLoaded = false;
 		return;
@@ -818,8 +824,8 @@ void Steps::CalculateGrooveStatsHash(bool forceRecalculate)
 	smNoteData.append(bpmString);
 	RString gsKey = BinaryToHex(CryptManager::GetSHA1ForString(smNoteData));
 	gsKey = gsKey.substr(0, 16);
-	GrooveStatsHash = gsKey;
-	GrooveStatsHashVersion = CURRENT_GROOVE_STATS_HASH_VERSION;
+	m_sGrooveStatsHash = gsKey;
+	m_iGrooveStatsHashVersion = CURRENT_GROOVE_STATS_HASH_VERSION;
 }
 
 RString Steps::MinimizedChartString()
@@ -917,15 +923,15 @@ RString Steps::MinimizedChartString()
 	return minimizedNoteData;
 }
 
-void Steps::SetCachedGrooveStatsHash(const RString key)
+void Steps::SetCachedGrooveStatsHash(const RString& key)
 {
-	GrooveStatsHash = key;
+	m_sGrooveStatsHash = key;
 	m_bIsCachedGrooveStatsHashJustLoaded = true;
 }
 
 void Steps::SetCachedGrooveStatsHashVersion(int version)
 {
-	GrooveStatsHashVersion = version;
+	m_iGrooveStatsHashVersion = version;
 }
 
 RString Steps::GenerateChartKey()
@@ -1123,7 +1129,7 @@ public:
 		return 1;
 	}
 
-	static int GetNPSPerMeasure(T *p, lua_State *L)
+	static int GetNpsPerMeasure(T *p, lua_State *L)
 	{
 		PlayerNumber pn = PLAYER_1;
 		if (!lua_isnil(L, 1)) {
@@ -1145,7 +1151,7 @@ public:
 		return 1;
 	}
 
-	static int GetPeakNPS(T *p, lua_State *L)
+	static int GetPeakNps(T *p, lua_State *L)
 	{
 		PlayerNumber pn = PLAYER_1;
 		if (!lua_isnil(L, 1)) {
@@ -1171,26 +1177,9 @@ public:
 		return 1;
 	}
 	*/
-	
-	static int GetMinimizedChartString(T * p, lua_State *L)
-	{
-		lua_pushstring(L, p->MinimizedChartString());
-		return 1;
-	}
 
 	static int GetGrooveStatsHash(T *p, lua_State *L)
 	{
-		if(p->GetGrooveStatsHash().empty())
-		{
-			p->CalculateGrooveStatsHash(true);
-		}
-		lua_pushstring(L, p->GetGrooveStatsHash());
-		return 1;
-	}
-	
-	static int CalculateGrooveStatsHash(T *p, lua_State *L)
-	{
-		p->CalculateGrooveStatsHash(true);
 		lua_pushstring(L, p->GetGrooveStatsHash());
 		return 1;
 	}
@@ -1296,10 +1285,6 @@ public:
 		ADD_METHOD( GetDifficulty );
 		ADD_METHOD( GetFilename );
 		ADD_METHOD( GetHash );
-		ADD_METHOD( GetMinimizedChartString );
-		ADD_METHOD( GetGrooveStatsHash );
-		ADD_METHOD( CalculateGrooveStatsHash );
-		ADD_METHOD( GetGrooveStatsHashVersion );
 		ADD_METHOD( GetMeter );
 		ADD_METHOD( HasSignificantTimingChanges );
 		ADD_METHOD( HasAttacks );
@@ -1319,10 +1304,15 @@ public:
 		ADD_METHOD( IsDisplayBpmRandom );
 		ADD_METHOD( PredictMeter );
 		ADD_METHOD( GetDisplayBPMType );
+		// TODO: Below are experimental and may change in the future until we
+		// actually document them in lua.
+		// We expose them for testing purposes.
 		ADD_METHOD( GetColumnCues );
-		ADD_METHOD( GetNPSPerMeasure );
+		ADD_METHOD( GetNpsPerMeasure );
 		ADD_METHOD( GetNotesPerMeasure );
-		ADD_METHOD( GetPeakNPS );
+		ADD_METHOD( GetPeakNps );
+		ADD_METHOD( GetGrooveStatsHash );
+		ADD_METHOD( GetGrooveStatsHashVersion );
 	}
 };
 
