@@ -869,7 +869,7 @@ RString Steps::MinimizedChartString()
 		bool minimal = false;
 		std::vector<RString> lines;
 		split(measures[m], "\n", lines, true);
-		while (!minimal && lines.size() % 2 == 0)
+		while (lines.size() > 0 && !minimal && lines.size() % 2 == 0)
 		{
 			// If every other line is all 0s, we can minimize the measure
 			for (unsigned i = 1; i < lines.size(); i += 2)
