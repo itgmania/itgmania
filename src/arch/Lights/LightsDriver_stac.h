@@ -47,10 +47,6 @@ enum StacLightIndex
 	STAC_LIGHTINDEX_MAX
 };
 
-static constexpr int pids1[] = { STAC_PID_P1 };
-static constexpr int pids2[] = { STAC_PID_P2 };
-
-
 class LightsDriver_stac : public LightsDriver
 {
 private:

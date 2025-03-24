@@ -28,16 +28,6 @@
 #define PACDRIVE_PID 0x1500
 #define PACDRIVE_PID_MAX 8
 
-static constexpr int* GetPids()
-{
-	int vec[PACDRIVE_PID]{0};
-
-	for (int i = 0; i < PACDRIVE_PID_MAX; i++)
-		vec[i] = PACDRIVE_PID + i;
-
-	return vec;
-}
-
 #define PACDRIVE_INTERFACE 0
 
 // the first byte of the buffer is a static report id.

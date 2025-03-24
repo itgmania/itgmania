@@ -95,9 +95,6 @@ enum SnekLightIndex
 #define SNEK_INDEX_DANCE_P2_LEFT SNEK_LIGHTINDEX_CN11_FL3
 #define SNEK_INDEX_DANCE_P2_RIGHT SNEK_LIGHTINDEX_CN11_FL4
 
-static constexpr int pids[] = { SNEK_PID };
-
-
 class LightsDriver_snek : public LightsDriver
 {
 private:

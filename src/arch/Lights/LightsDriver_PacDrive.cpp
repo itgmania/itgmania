@@ -9,7 +9,7 @@ REGISTER_LIGHTS_DRIVER_CLASS(PacDrive);
 static Preference<RString> g_sPacDriveLightOrdering("PacDriveLightOrdering", "openitg");
 int iPacDriveLightOrder = 0;
 
-LightsDriver_PacDrive::LightsDriver_PacDrive() : dev{PACDRIVE_VID, GetPids(), PACDRIVE_INTERFACE}
+LightsDriver_PacDrive::LightsDriver_PacDrive() : dev{PACDRIVE_VID, make_pids(PACDRIVE_PID, PACDRIVE_PID_MAX), PACDRIVE_INTERFACE}
 {
 	prev_led_state.raw = 0;
 	memset(state.raw_state, 0x00, sizeof(state.raw_state));

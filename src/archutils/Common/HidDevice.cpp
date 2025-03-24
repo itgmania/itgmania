@@ -2,7 +2,7 @@
 #include "HidDevice.h"
 #include "RageLog.h"
 
-HidDevice::HidDevice(int vid, const int pids[], int interfaceNum, bool autoReconnection, bool nonBlockingWrite) :
+HidDevice::HidDevice(int vid, const std::vector<int> pids, int interfaceNum, bool autoReconnection, bool nonBlockingWrite) :
 	vid{ vid },
 	pids{ pids },
 	interfaceNum{ interfaceNum },
@@ -13,11 +13,16 @@ HidDevice::HidDevice(int vid, const int pids[], int interfaceNum, bool autoRecon
 
 	if (!result)
 	{
-		LOG->Warn("HID device with VID/PID %04x/%s not found.", vid, GetPidsString(pids).c_str());
+		LOG->Warn("HidDevice %04x:%s: %d not found", vid, GetPidsString(pids).c_str(), interfaceNum);
 		return;
 	}
 	else
 		foundOnce = true;
+}
+
+HidDevice::HidDevice(int vid, int pid, int interfaceNum, bool autoReconnection, bool nonBlockingWrite) :
+	HidDevice(vid, make_pids(pid, 1), interfaceNum, autoReconnection, nonBlockingWrite)
+{
 }
 
 HidDevice::~HidDevice()
@@ -40,7 +45,7 @@ bool HidDevice::Open(const char* path)
 		hid_set_nonblocking(handle, 1);
 
 	if(handle)
-		LOG->Info("HidDevice opened %04x:%04x:%d by path %s", vid, GetPidsString(pids).c_str(), interfaceNum, path);
+		LOG->Info("HidDevice %04x:%s: %d opened by path %s", vid, GetPidsString(pids).c_str(), interfaceNum, path);
 
 	return handle != nullptr;
 }
@@ -80,11 +85,11 @@ bool HidDevice::FoundOnce()
 	return foundOnce;
 }
 
-const RString HidDevice::GetPidsString(const  int pids[])
+const RString HidDevice::GetPidsString(const std::vector<int> pids)
 {
 	RString pidsString;
 	char pid[5] = { 0 };
-	size_t size = sizeof(pids) / sizeof(pids[0]);
+	size_t size = pids.size();
 
 	for (size_t i = 0; i < size; ++i)
 	{
@@ -98,10 +103,10 @@ const RString HidDevice::GetPidsString(const  int pids[])
 	return pidsString;
 }
 
-char* HidDevice::GetPath(int vid, const int pids[], int interfaceNumber)
+char* HidDevice::GetPath(int vid, const std::vector<int> pids, int interfaceNumber)
 {
 	struct hid_device_info* devs, * cur_dev;
-	size_t size = sizeof(pids) / sizeof(pids[0]);
+	size_t size = pids.size();
 
 	devs = hid_enumerate(vid, 0);
 	cur_dev = devs;
@@ -138,28 +143,30 @@ char* HidDevice::GetPath(int vid, const int pids[], int interfaceNumber)
 int HidDevice::Read(unsigned char* data, size_t length)
 {
 	if (!CheckConnection())
-		return -1;
+		return NOT_CONNECTED;
 
 	int result = hid_read(handle, data, length);
 
-	if (result == -1)
+	if (result == FAIL)
 	{
-		LOG->Warn("HID device with VID/PID %04x/%s read failed. Fail reason %ls", vid, GetPidsString(pids).c_str(), GetError());
+		LOG->Warn("HidDevice %04x:%s: %d read failed. Fail reason %ls", vid, GetPidsString(pids).c_str(), interfaceNum, GetError());
 	}
 
 	return result;
 }
 
-void HidDevice::Write(const unsigned char* data, size_t length)
+int HidDevice::Write(const unsigned char* data, size_t length)
 {
 	if (!CheckConnection())
-		return;
+		return NOT_CONNECTED;
 
 	int result = hid_write(handle, data, length);
 
 	if (result != length)
 	{
-		LOG->Warn("HID device with VID/PID %04x/%s write failed. Fail reason %ls", vid, GetPidsString(pids).c_str(), GetError());
+		LOG->Warn("HidDevice %04x:%s: %d write failed. Fail reason %ls", vid, GetPidsString(pids).c_str(), interfaceNum, GetError());
 		Close();
 	}
+
+	return result;
 }
