@@ -864,7 +864,6 @@ RString Steps::MinimizedChartString()
 	{
 
 		Trim(measures[m]);
-		bool isEmpty = true;
 		bool allZeroes = true;
 		bool minimal = false;
 		std::vector<RString> lines;
