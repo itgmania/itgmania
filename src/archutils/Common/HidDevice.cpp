@@ -142,6 +142,9 @@ void HidDevice::GetDeviceInfo(int vid, const std::vector<int> pids, int interfac
 				}
 			}
 
+			if (found)
+				break;
+
 			cur_dev = cur_dev->next;
 		}
 	}
