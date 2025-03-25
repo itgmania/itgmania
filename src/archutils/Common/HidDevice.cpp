@@ -2,26 +2,25 @@
 #include "HidDevice.h"
 #include "RageLog.h"
 
-HidDevice::HidDevice(int vid, const std::vector<int> pids, int interfaceNum, bool autoReconnection, bool nonBlockingWrite) :
+HidDevice::HidDevice(int vid, const std::vector<int> pids, int interfaceNum, bool autoReconnection, bool nonBlockingRead) :
 	vid{ vid },
 	pids{ pids },
 	interfaceNum{ interfaceNum },
 	autoReconnection{ autoReconnection },
-	nonBlockingWrite{ nonBlockingWrite }
+	nonBlockingRead{ nonBlockingRead }
 {
 	bool result = TryConnect();
 
 	if (!result)
 	{
-		LOG->Warn("HidDevice %04x:%s: %d not found", vid, GetPidsString(pids).c_str(), interfaceNum);
-		return;
+		LOG->Warn("HidDevice with vendor_id %04x and pids %s - %d not found", vid, GetPidsString(pids).c_str(), interfaceNum);
 	}
 	else
 		foundOnce = true;
 }
 
-HidDevice::HidDevice(int vid, int pid, int interfaceNum, bool autoReconnection, bool nonBlockingWrite) :
-	HidDevice(vid, make_pids(pid, 1), interfaceNum, autoReconnection, nonBlockingWrite)
+HidDevice::HidDevice(int vid, int pid, int interfaceNum, bool autoReconnection, bool nonBlockingRead) :
+	HidDevice(vid, make_pids(pid, 1), interfaceNum, autoReconnection, nonBlockingRead)
 {
 }
 
@@ -35,29 +34,34 @@ void HidDevice::Close()
 {
 	hid_close(handle);
 	handle = nullptr;
+
+	foundDeviceInfo.vid = 0;
+	foundDeviceInfo.pid = 0;
+	foundDeviceInfo.interfaceNum = 0;
+	foundDeviceInfo.path = nullptr;
 }
 
 bool HidDevice::Open(const char* path)
 {
 	handle = hid_open_path(path);
 
-	if(nonBlockingWrite)
+	if(nonBlockingRead)
 		hid_set_nonblocking(handle, 1);
 
 	if(handle)
-		LOG->Info("HidDevice %04x:%s: %d opened by path %s", vid, GetPidsString(pids).c_str(), interfaceNum, path);
+		LOG->Info("HidDevice %04x:%04x: %d opened by path %s", foundDeviceInfo.vid, foundDeviceInfo.pid, foundDeviceInfo.interfaceNum, foundDeviceInfo.path);
 
 	return handle != nullptr;
 }
 
 bool HidDevice::TryConnect()
 {
-	char* path = GetPath(vid, pids, interfaceNum);
+	GetDeviceInfo(vid, pids, interfaceNum, &foundDeviceInfo);
 
-	if (path == nullptr)
+	if (foundDeviceInfo.path == nullptr)
 		return false;
 
-	return Open(path);
+	return Open(foundDeviceInfo.path);
 }
 
 bool HidDevice::CheckConnection()
@@ -103,8 +107,9 @@ const RString HidDevice::GetPidsString(const std::vector<int> pids)
 	return pidsString;
 }
 
-char* HidDevice::GetPath(int vid, const std::vector<int> pids, int interfaceNumber)
+void HidDevice::GetDeviceInfo(int vid, const std::vector<int> pids, int interfaceNumber, HidDeviceInfo* device_info)
 {
+	bool found{ false };
 	struct hid_device_info* devs, * cur_dev;
 	size_t size = pids.size();
 
@@ -123,12 +128,16 @@ char* HidDevice::GetPath(int vid, const std::vector<int> pids, int interfaceNumb
 				{
 					if (interfaceNumber == -1)
 					{
-						return cur_dev->path;
+						found = true;
+						break;
 					}
 					else
 					{
 						if (cur_dev->interface_number == interfaceNumber)
-							return cur_dev->path;
+						{
+							found = true;
+							break;
+						}
 					}
 				}
 			}
@@ -137,36 +146,44 @@ char* HidDevice::GetPath(int vid, const std::vector<int> pids, int interfaceNumb
 		}
 	}
 
-	return nullptr;
+	if (found && cur_dev != nullptr)
+	{
+		device_info->vid = cur_dev->vendor_id;
+		device_info->pid = cur_dev->product_id;
+		device_info->interfaceNum = cur_dev->interface_number;
+		device_info->path = cur_dev->path;
+	}
 }
 
 int HidDevice::Read(unsigned char* data, size_t length)
 {
 	if (!CheckConnection())
-		return NOT_CONNECTED;
+		return NotConnected;
 
 	int result = hid_read(handle, data, length);
 
-	if (result == FAIL)
+	if (result == -1)
 	{
-		LOG->Warn("HidDevice %04x:%s: %d read failed. Fail reason %ls", vid, GetPidsString(pids).c_str(), interfaceNum, GetError());
+		LOG->Warn("HidDevice %04x:%04x: %d read failed. Fail reason %ls", foundDeviceInfo.vid, foundDeviceInfo.pid, foundDeviceInfo.interfaceNum, GetError());
+		Close();
 	}
 
 	return result;
 }
 
-int HidDevice::Write(const unsigned char* data, size_t length)
+HidResults HidDevice::Write(const unsigned char* data, size_t length)
 {
 	if (!CheckConnection())
-		return NOT_CONNECTED;
+		return NotConnected;
 
 	int result = hid_write(handle, data, length);
 
 	if (result != length)
 	{
-		LOG->Warn("HidDevice %04x:%s: %d write failed. Fail reason %ls", vid, GetPidsString(pids).c_str(), interfaceNum, GetError());
+		LOG->Warn("HidDevice %04x:%04x: %d write failed. Fail reason %ls", foundDeviceInfo.vid, foundDeviceInfo.pid, foundDeviceInfo.interfaceNum, GetError());
 		Close();
+		return OperationFailed;
 	}
 
-	return result;
+	return Success;
 }
