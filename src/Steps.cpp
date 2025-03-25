@@ -841,10 +841,14 @@ RString Steps::MinimizedChartString()
 	// 		0000
 	// 		StepMania will always generate the former since quarter notes are
 	// 		the smallest quantization.
-
-	RString smNoteData = "";
 	
-	this->GetSMNoteData(smNoteData);
+	// Instead of calling GetSMNoteData(), call NoteDataUtil::GetSMNoteDataString()
+	// to ensure that we have a consistent, valid stepchart representation.
+	RString smNoteData = "";
+	NoteData noteData;
+	this->GetNoteData(noteData);
+	NoteDataUtil::GetSMNoteDataString( noteData, smNoteData );
+	
 	if( smNoteData == "")
 	{
 		return "";
