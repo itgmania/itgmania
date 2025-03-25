@@ -203,6 +203,8 @@ public:
 	void UpdateRankingCourses();	// courses shown on the ranking screen
 	void RefreshCourseGroupInfo();
 
+	Group* GetGroupByName(const RString& groupName) const;
+
 	// Lua
 	void PushSelf( lua_State *L );
 
@@ -277,6 +279,8 @@ protected:
 	ThemeMetric1D<RageColor>	COURSE_GROUP_COLOR;
 	ThemeMetric<int> num_profile_song_group_colors;
 	ThemeMetric1D<RageColor> profile_song_group_colors;
+private:
+	std::vector<Group> m_vGroups;
 };
 
 extern SongManager*	SONGMAN;	// global and accessible from anywhere in our program

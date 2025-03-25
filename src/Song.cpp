@@ -449,6 +449,15 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 		}
 	}
 
+	// Apply the group offset to the song's timing data
+	Group* pGroup = SONGMAN->GetGroupByName(m_sGroupName);
+	if (pGroup != nullptr) {
+		m_SongTiming.m_fBeat0GroupOffsetInSeconds = pGroup->GetSyncOffset();
+	}
+	else {
+		m_SongTiming.m_fBeat0GroupOffsetInSeconds = 0.0f; // Default to NULL
+	}
+
 	// Add AutoGen pointers. (These aren't cached.)
 	AddAutoGenNotes();
 

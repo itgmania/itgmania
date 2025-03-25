@@ -521,6 +521,15 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 	}
 }
 
+Group* SongManager::GetGroupByName(const RString& groupName) const {
+	for (const auto& group : m_vGroups) {
+		if (group.GetGroupName() == groupName) {
+			return const_cast<Group*>(&group);
+		}
+	}
+	return nullptr; // if group is not found
+}
+
 // Instead of "symlinks", songs should have membership in multiple groups. -Chris
 void SongManager::LoadGroupSymLinks(RString sDir, RString sGroupFolder)
 {

@@ -57,7 +57,7 @@ Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfil
     m_sSortTitle = m_sGroupName;
     m_sTranslitTitle = m_sGroupName;
     m_sSeries = "";
-    m_fSyncOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+    m_fSyncOffset = 0.0f;  // default to NULL
     m_bHasPackIni = false;
     m_iYearReleased = 0;
     m_sBannerPath = "";
@@ -102,15 +102,12 @@ Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfil
             RString sValue = "";
             ini.GetValue("Group", "SyncOffset", sValue);
             Trim(sValue);
-            if (!sValue.empty()) {
-                if (sValue == "NULL") {
-                    m_fSyncOffset = 0.0f;
-                } else if (sValue == "ITG") {
-                    m_fSyncOffset = -0.009f;
-                } else {
-                    LOG->Warn("Group::Group: Invalid SyncOffset value: %s in Pack.ini. Valid values are NULL and ITG. Defaulting to NULL.", sValue.c_str());
-                }
-            }
+			if (sValue == "ITG") {
+				m_fSyncOffset = -0.009f;
+			}
+			else if (sValue != "NULL" && !sValue.empty()) {
+				LOG->Warn("Group::Group: Invalid SyncOffset value: %s in Pack.ini. Valid values are NULL and ITG. Defaulting to NULL.", sValue.c_str());
+			}
 
             ini.GetValue("Group", "Year", m_iYearReleased);
         } else {

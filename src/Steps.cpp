@@ -1001,6 +1001,14 @@ RString Steps::GenerateChartKey(NoteData &nd, TimingData *td)
 	}
 	k = firstHalf + secondHalf;
 
+	Group* pGroup = SONGMAN->GetGroupByName(m_pSong->m_sGroupName);
+	if (pGroup != nullptr) {
+		td->m_fBeat0GroupOffsetInSeconds = pGroup->GetSyncOffset();
+	}
+	else {
+		td->m_fBeat0GroupOffsetInSeconds = 0.0f; // Default to NULL
+	}
+
 	//ChartKeyRecord = k;
 	o.append("X");	// I was thinking of using "C" to indicate chart.. however.. X is cooler... - Mina
 	o.append(BinaryToHex(CryptManager::GetSHA1ForString(k)));
