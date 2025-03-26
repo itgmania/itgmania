@@ -14,9 +14,6 @@ LightsDriver_PacDrive::LightsDriver_PacDrive() : dev{PACDRIVE_VID, make_pids(PAC
 	prev_led_state.raw = 0;
 	memset(state.raw_state, 0x00, sizeof(state.raw_state));
 
-	// TODO: Check for all 8 of the PacDrive PIDs instead of just the first one.
-	// Uncertain how many are not just the stock value.
-
 	RString lightOrder = g_sPacDriveLightOrdering.Get();
 	if (lightOrder.CompareNoCase("lumenar") == 0 || lightOrder.CompareNoCase("openitg") == 0)
 	{
