@@ -74,7 +74,7 @@ public:
 	 * @brief Set up the PlayerOptions with some reasonable defaults.
 	 *
 	 * This code was taken from Init() to use proper initialization. */
-	PlayerOptions(): m_LifeType(LifeType_Bar), m_DrainType(DrainType_Normal), m_HideLightType(HideLightType_NoHideLights),
+	PlayerOptions(): m_HideLightType(HideLightType_NoHideLights), m_LifeType(LifeType_Bar), m_DrainType(DrainType_Normal),
 		m_ModTimerType(ModTimerType_Default),
 		m_BatteryLives(4),
 		m_bSetScrollSpeed(false),

@@ -93,14 +93,13 @@ public:
 	// When adding any new fields, add them to SwapExceptPriority.  Anything not
 	// added to SwapExceptPriority won't be swapped correctly when the user
 	// changes the list priority of a profile. -Kyz
-	Profile():
-	m_Type(ProfileType_Normal), m_ListPriority(0),
-		m_sDisplayName(""), m_sCharacterID(""),
-		m_sLastUsedHighScoreName(""), m_iWeightPounds(0),
-		m_Voomax(0), m_BirthYear(0), m_IgnoreStepCountCalories(false),
-		m_IsMale(true),
-		m_sGuid(MakeGuid()), m_sDefaultModifiers(),
-		m_SortOrder(SortOrder_Invalid),
+  Profile()
+      : m_Type(ProfileType_Normal), m_ListPriority(0), m_sDisplayName(""),
+        m_sCharacterID(""), m_sLastUsedHighScoreName(""), m_iWeightPounds(0),
+        m_Voomax(0), m_BirthYear(0), m_IgnoreStepCountCalories(false),
+        m_IsMale(true), m_sGuid(MakeGuid()), m_sDefaultModifiers(),
+        m_SortOrder(SortOrder_Invalid),
+        m_songs{}, m_group(nullptr),
 		m_LastDifficulty(Difficulty_Invalid),
 		m_LastCourseDifficulty(Difficulty_Invalid),
 		m_LastStepsType(StepsType_Invalid), m_lastSong(),
@@ -116,7 +115,7 @@ public:
 		m_LastPlayedDate(),m_iNumSongsPlayedByStyle(),
 		m_iNumTotalSongsPlayed(0), m_UserTable(), m_SongHighScores(),
 		m_CourseHighScores(), m_vScreenshots(),
-		m_mapDayToCaloriesBurned(), m_group(nullptr)
+		m_mapDayToCaloriesBurned()
 	{
 		m_lastSong.Unset();
 		m_lastCourse.Unset();
