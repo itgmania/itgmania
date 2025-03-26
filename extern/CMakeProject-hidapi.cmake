@@ -1,11 +1,5 @@
 set(HIDAPI_HPP "hidapi/hidapi/hidapi.h")
 
-if(APPLE)
-    set(HIDAPI_SRC "hidapi/mac/hid.c")
-	list(APPEND HIDAPI_HPP 
-			"hidapi/mac/hidapi_darwin.h")
-endif()
-
 if(WIN32)
     set(HIDAPI_SRC "hidapi/windows/hid.c" "hidapi/windows/hidapi_descriptor_reconstruct.c")
 	list(APPEND HIDAPI_HPP 
@@ -15,10 +9,12 @@ if(WIN32)
 			"hidapi/windows/hidapi_hidpi.h"
 			"hidapi/windows/hidapi_hidsdi.h"
 			"hidapi/windows/hidapi_winapi.h")
-endif()
-
-if(UNIX)
-    set(HIDAPI_SRC "hidapi/linux/hid.c")
+elseif(APPLE)
+	set(HIDAPI_SRC "hidapi/mac/hid.c")
+	list(APPEND HIDAPI_HPP 
+			"hidapi/mac/hidapi_darwin.h")
+else() #Unix
+	set(HIDAPI_SRC "hidapi/linux/hid.c")
 endif()
 
 source_group("" FILES ${HIDAPI_SRC} ${HIDAPI_HPP})
