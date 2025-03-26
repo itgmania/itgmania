@@ -21,7 +21,7 @@ static std::vector<int> make_pids(int base_pid, int size)
 }
 
 struct HidDeviceInfo {
-	char* path{nullptr};
+	char* path{ nullptr };
 	int pid;
 	int vid;
 	int interfaceNum;
@@ -31,7 +31,7 @@ class HidDevice
 {
 private:
 	HidDeviceInfo foundDeviceInfo{};
-	hid_device* handle{nullptr};
+	hid_device* handle{ nullptr };
 
 	static const RString GetPidsString(const std::vector<int> pids);
 

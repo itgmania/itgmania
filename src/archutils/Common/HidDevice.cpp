@@ -13,7 +13,7 @@ HidDevice::HidDevice(int vid, const std::vector<int> pids, int interfaceNum, boo
 
 	if (!result)
 	{
-		LOG->Warn("HidDevice with vendor_id %04x and pids %s - %d not found", vid, GetPidsString(pids).c_str(), interfaceNum);
+		LOG->Warn("HidDevice with vendor_id %04x and pids %s: %d not found", vid, GetPidsString(pids).c_str(), interfaceNum);
 	}
 	else
 		foundOnce = true;
@@ -45,10 +45,10 @@ bool HidDevice::Open(const char* path)
 {
 	handle = hid_open_path(path);
 
-	if(nonBlockingRead)
+	if (nonBlockingRead)
 		hid_set_nonblocking(handle, 1);
 
-	if(handle)
+	if (handle)
 		LOG->Info("HidDevice %04x:%04x: %d opened by path %s", foundDeviceInfo.vid, foundDeviceInfo.pid, foundDeviceInfo.interfaceNum, foundDeviceInfo.path);
 
 	return handle != nullptr;
