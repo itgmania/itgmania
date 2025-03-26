@@ -5,6 +5,11 @@ set(SM_VERSION_PATCH 1)
 set(SM_VERSION_TRADITIONAL
     "${SM_VERSION_MAJOR}.${SM_VERSION_MINOR}.${SM_VERSION_PATCH}")
 
+# Track the Simply Love version number as it correlates to the engine release.
+set(THEME_VERSION_MAJOR 5)
+set(THEME_VERSION_MINOR 6)
+set(THEME_VERSION_PATCH 0)
+
 execute_process(COMMAND git rev-parse --short HEAD
                 WORKING_DIRECTORY "${SM_ROOT_DIR}"
                 OUTPUT_VARIABLE SM_VERSION_GIT_HASH

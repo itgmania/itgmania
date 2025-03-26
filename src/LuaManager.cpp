@@ -1039,6 +1039,21 @@ void LuaHelpers::PushValueFunc( lua_State *L, int iArgs )
 	lua_pushcclosure( L, lua_pushvalues, iArgs+1 );
 }
 
+void CheckThemeVersion(int major, int minor, int patch) {
+	const int REQUIRED_MAJOR = THEME_VERSION_MAJOR;
+	const int REQUIRED_MINOR = THEME_VERSION_MINOR;
+	const int REQUIRED_PATCH = THEME_VERSION_PATCH;
+
+	// Simply Love theme version check
+	if (major < REQUIRED_MAJOR ||
+		(major == REQUIRED_MAJOR && minor < REQUIRED_MINOR) ||
+		(major == REQUIRED_MAJOR && minor == REQUIRED_MINOR && patch < REQUIRED_PATCH)) {
+		std::string assembled_ver_num = ssprintf("%d.%d.%d", REQUIRED_MAJOR, REQUIRED_MINOR, REQUIRED_PATCH);
+		std::string msg = "The Simply Love theme version is out of date. Please update to version " + assembled_ver_num + " or later.";
+		LuaHelpers::ReportScriptErrorFmt("%s", msg.c_str());
+	}
+}
+
 #include "ProductInfo.h"
 LuaFunction( ProductFamily, (RString) PRODUCT_FAMILY );
 LuaFunction( ProductVersion, (RString) product_version );

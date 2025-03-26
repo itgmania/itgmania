@@ -109,6 +109,11 @@ if(WITH_NO_ROLC_TOMCRYPT)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE LTC_NO_ROLC)
 endif()
 
+# For tracking Simply Love version.
+target_compile_definitions("${SM_EXE_NAME}" PRIVATE THEME_VERSION_MAJOR=${THEME_VERSION_MAJOR})
+target_compile_definitions("${SM_EXE_NAME}" PRIVATE THEME_VERSION_MINOR=${THEME_VERSION_MINOR})
+target_compile_definitions("${SM_EXE_NAME}" PRIVATE THEME_VERSION_PATCH=${THEME_VERSION_PATCH})
+
 # Compilation flags per project here.
 target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:Release>:RELEASE>)
