@@ -30,7 +30,7 @@ Group::Group() {
     m_sGroupName = "";
     m_sTranslitTitle = "";
     m_sSeries = "";
-    m_fSyncOffset = 0;
+    m_fSyncOffset = 0.0f;
     m_bHasPackIni = false;
     m_iYearReleased = 0;
     m_sBannerPath = "";
@@ -57,7 +57,7 @@ Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfil
     m_sSortTitle = m_sGroupName;
     m_sTranslitTitle = m_sGroupName;
     m_sSeries = "";
-    m_fSyncOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+    m_fSyncOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0.0f : -0.009f;
     m_bHasPackIni = false;
     m_iYearReleased = 0;
     m_sBannerPath = "";

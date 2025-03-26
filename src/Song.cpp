@@ -386,7 +386,6 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 		LoadEditsFromSongDir(sDir);
 
 		TidyUpData(false, true);
-
 		// Don't save a cache file if the autosave is being loaded, because the
 		// cache file would contain the autosave filename. -Kyz
 		// Songs loaded from removable profile are never cached, on the
@@ -429,8 +428,20 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 		m_sCDTitleFile.clear();
 	}
 
+	// Normally TidyUpData would handle setting the m_fBeat0GroupOffsetInSeconds.
+	// That is to keep the song start and end times become inaccurate in some cases.
+	// SInce there are cases where TidyUpData isn't called, we still want to guarantee the
+	// m_fBeat0GroupOffsetInSeconds is always set so we do that here. 
+	float fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+	if (SONGMAN->GetGroupFromName(m_sGroupName) != nullptr)
+	{
+		fOffset = SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset();
+	}
+	m_SongTiming.m_fBeat0GroupOffsetInSeconds = fOffset;
+
 	for (Steps *s : m_vpSteps)
 	{
+		s->m_Timing.m_fBeat0GroupOffsetInSeconds = fOffset;
 		if(m_LoadedFromProfile != ProfileSlot_Invalid)
 		{
 			s->ChangeFilenamesForCustomSong();

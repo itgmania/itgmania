@@ -415,7 +415,7 @@ public:
 			}
 		}
 
-		return this->m_fBeat0OffsetInSeconds == other.m_fBeat0OffsetInSeconds;
+		return this->m_fBeat0OffsetInSeconds == other.m_fBeat0OffsetInSeconds && this->m_fBeat0GroupOffsetInSeconds == other.m_fBeat0GroupOffsetInSeconds;
 	}
 
 	/**
