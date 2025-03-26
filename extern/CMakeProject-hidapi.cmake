@@ -3,7 +3,7 @@ set(HIDAPI_HPP "hidapi/hidapi/hidapi.h")
 if(APPLE)
     set(HIDAPI_SRC "hidapi/mac/hid.c")
 	list(APPEND HIDAPI_HPP 
-			"hidapi/windows/hidapi_darwin.h")
+			"hidapi/mac/hidapi_darwin.h")
 endif()
 
 if(WIN32)
