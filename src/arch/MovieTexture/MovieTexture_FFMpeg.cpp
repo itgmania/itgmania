@@ -388,8 +388,8 @@ int MovieDecoder_FFMpeg::DecodePacketToFrame() {
 
 		if (avcodec_return != 0)
 		{
-			LOG->Warn(
-				"Frame %i saw nonzero avcodec_receive_frame status: %i",
+			LOG->Trace(
+				"Frame %i saw nonzero avcodec_receive_frame status: %i, this is likely not fatal.",
 				static_cast<int>(packet_buffer_.size() - 1),
 				avcodec_return);
 
@@ -446,41 +446,35 @@ int MovieDecoder_FFMpeg::GetFrame(RageSurface* surface_out)
 		if (av_sws_context_ == nullptr)
 		{
 			LOG->Warn("Cannot initialize sws conversion context for (%d,%d) %d->%d", GetWidth(), GetHeight(), av_stream_codec_->pix_fmt, av_pixel_format_);
-			return false;
+			return -1;
 		}
 	}
 
 	std::size_t display_frame_in_buffer = (display_frame_num_ + offset_) % frame_buffer_.size();
 	std::lock_guard<std::mutex> lock(frame_buffer_[display_frame_in_buffer]->lock);
+	int scale_status = 0;
 
 	// Sanity check.
 	if (frame_buffer_[display_frame_in_buffer]->packet_num == display_frame_num_) {
-		int ret = avcodec::sws_scale(av_sws_context_,
+		scale_status = avcodec::sws_scale(av_sws_context_,
 			frame_buffer_[display_frame_in_buffer]->frame->data, frame_buffer_[display_frame_in_buffer]->frame->linesize, 0, GetHeight(),
 			pict.data, pict.linesize);
-
-		// If the texture couldn't scale, then it means there's an issue with the
-		// frame. Return an error status here.
-		if (ret <= 0) {
-			display_frame_num_++;
-			frame_buffer_[display_frame_in_buffer]->displayed = true;
-			return -1;
-		}
 	}
 	else {
 		LOG->Warn("Unexpected frame trying to display! display_frame_num_ = %zu, packet_num = %zu", display_frame_num_, frame_buffer_[display_frame_in_buffer]->packet_num);
 	}
 
+	// Even if scale_status returns a failure, we mark displayed as true. The
+	// frame won't be displayed, but instead skipped over.
 	frame_buffer_[display_frame_in_buffer]->displayed = true;
 
-	// Set the end of movie flag if this is the final frame.
 	if (LastFrame()) {
 		end_of_movie_ = true;
-		return 0;
+		return scale_status;
 	}
 	end_of_movie_ = false;
 	display_frame_num_++;
-	return 0;
+	return scale_status;
 }
 
 static RString averr_ssprintf(int err, const char* fmt, ...)

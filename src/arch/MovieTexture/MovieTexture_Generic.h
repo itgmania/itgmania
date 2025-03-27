@@ -108,7 +108,7 @@ public:
 	static EffectMode GetEffectMode( MovieDecoderPixelFormatYCbCr fmt );
 
 private:
-	MovieDecoder *decoder_;
+	MovieDecoder* decoder_;
 
 	std::unique_ptr<std::thread> decoding_thread_;
 

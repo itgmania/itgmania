@@ -41,9 +41,11 @@ MovieTexture_Generic::MovieTexture_Generic(RageTextureID ID, MovieDecoder* pDeco
 
 RString MovieTexture_Generic::Init()
 {
-	RString sError = decoder_->Open(GetID().filename);
-	if (sError != "")
-		return sError;
+	RString err = decoder_->Open(GetID().filename);
+	if (err != "") {
+		LOG->Warn("MovieTexture_Generic::Init: failed to open decoder for file: %s, with error:\n%s", GetID().filename.c_str(), err.c_str());
+		return err;
+	}
 
 	CreateTexture();
 	CreateFrameRects();
@@ -80,10 +82,10 @@ MovieTexture_Generic::~MovieTexture_Generic()
 
 	/* sprite_ may reference the texture; delete it before DestroyTexture. */
 	delete sprite_;
+	delete decoder_;
 
 	DestroyTexture();
 
-	delete decoder_;
 }
 
 /* Delete the surface and texture.  The decoding thread must be stopped, and this
