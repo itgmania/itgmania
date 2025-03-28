@@ -3133,6 +3133,11 @@ public:
 		StepMania::InsertCredit();
 		COMMON_RETURN_SELF;
 	}
+	static int ClearCredits(T* p, lua_State* L)
+	{
+		StepMania::ClearCredits();
+		COMMON_RETURN_SELF;
+	}
 	static int CurrentOptionsDisqualifyPlayer( T* p, lua_State *L )	{ lua_pushboolean(L, p->CurrentOptionsDisqualifyPlayer(Enum::Check<PlayerNumber>(L, 1))); return 1; }
 
 	static int ResetPlayerOptions( T* p, lua_State *L )
@@ -3482,6 +3487,7 @@ public:
 		ADD_METHOD( AddStageToPlayer );
 		ADD_METHOD( InsertCoin );
 		ADD_METHOD( InsertCredit );
+		ADD_METHOD( ClearCredits );
 		ADD_METHOD( CurrentOptionsDisqualifyPlayer );
 		ADD_METHOD( ResetPlayerOptions );
 		ADD_METHOD( RefreshNoteSkinData );
