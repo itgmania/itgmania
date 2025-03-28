@@ -352,9 +352,9 @@ public:
 
 	PlayerNumber m_pn; // Needed for fetching the style.
 
+	HideLightType m_HideLightType;
 	LifeType m_LifeType;
 	DrainType m_DrainType;	// only used with LifeBar
-	HideLightType m_HideLightType;
 	ModTimerType m_ModTimerType;
 	int m_BatteryLives;
 	/* All floats have a corresponding speed setting, which determines how fast
