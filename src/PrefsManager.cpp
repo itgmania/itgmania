@@ -267,6 +267,7 @@ PrefsManager::PrefsManager() :
 	m_bCelShadeModels		( "CelShadeModels",			false ),	// Work-In-Progress.. disable by default.
 	m_bPreferredSortUsesGroups	( "PreferredSortUsesGroups",		true ),
 	m_fDebounceCoinInputTime	( "DebounceCoinInputTime",		0 ),
+	m_bResetCoinsAtStartup		( "ResetCoinsAtStartup", false ),
 
 	m_fPadStickSeconds		( "PadStickSeconds",			0 ),
 	m_EditRecordModeLeadIn		("EditRecordModeLeadIn",		1.0f ),

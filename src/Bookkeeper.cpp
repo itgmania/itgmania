@@ -18,6 +18,13 @@ static const RString COINS_DAT = "Save/Coins.xml";
 
 Bookkeeper::Bookkeeper()
 {
+	// GameState resets the coin count, but once the Bookkeeper is initialized, the coin count is overwritten by the ReadFromDisk function.
+	// Resetting the CoinsFile before reloading allows the game to start without credits.
+	if (PREFSMAN->m_bResetCoinsAtStartup)
+	{
+		WriteCoinsFile(0);
+	}
+
 	ClearAll();
 	ReadFromDisk();
 }
