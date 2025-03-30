@@ -35,6 +35,8 @@
 #define PACDRIVE_HIDREPORT_SIZE 5
 #define PACDRIVE_HIDREPORT_ID 0x00
 
+#pragma pack(push, 1)
+
 typedef union
 {
 	struct
@@ -55,9 +57,11 @@ typedef union
 		bool led14 : 1;
 		bool led15 : 1;
 		bool led16 : 1;
-	} __attribute__((packed));
+	};
 	uint16_t raw;
 } pacdrive_leds_t;
+
+#pragma pack(pop)
 
 typedef union
 {
@@ -67,7 +71,7 @@ typedef union
 		uint8_t pad0;
 		uint8_t pad1;
 		pacdrive_leds_t leds;
-	} __attribute__((packed));
+	};
 	uint8_t raw_state[PACDRIVE_HIDREPORT_SIZE];
 } pacdrive_state_t;
 
