@@ -381,7 +381,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 	StripCvsAndSvn( arrayGroupDirs );
 	StripMacResourceForks( arrayGroupDirs );
 
-	std::vector<std::vector<RString>> arrayGroupSongDirs;
+	std::map<RString, std::vector<RString>> mapGroupSongDirs;
 	int groupIndex, songCount, songIndex;
 
 	groupIndex = 0;
@@ -410,7 +410,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			StripMacResourceForks( arraySongDirs );
 			SortRStringArray( arraySongDirs );
 
-			arrayGroupSongDirs.push_back(arraySongDirs);
+			mapGroupSongDirs[sGroupDirName] = arraySongDirs;
 			songCount += arraySongDirs.size();
 		}
 	}
@@ -422,12 +422,11 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		ld->SetTotalWork( songCount );
 	}
 
-	groupIndex = 0;
 	songIndex = 0;
-	
-	for (RString const &sGroupDirName : arrayGroupDirs)	// foreach dir in /Songs/
+	for (auto const &pair : mapGroupSongDirs)	// foreach dir in /Songs/
 	{
-		std::vector<RString> &arraySongDirs = arrayGroupSongDirs[groupIndex++];
+		RString sGroupDirName = pair.first;
+		std::vector<RString> arraySongDirs = pair.second;
 
 		LOG->Trace("Attempting to load %i songs from \"%s\"", int(arraySongDirs.size()),
 				   (sDir+sGroupDirName).c_str() );
