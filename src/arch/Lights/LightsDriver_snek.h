@@ -11,6 +11,10 @@
  *
  * SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="10a8", OWNER="dance", GROUP="dance", MODE="0660"
  *
+ * or
+ *
+ * KERNEL=="hidraw*", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="10a8", OWNER="dance", GROUP="dance", MODE="0660"
+ *
  * Refer to your distribution's documentation on how to properly apply a udev rule.
  *
  * -------------------------- NOTE --------------------------

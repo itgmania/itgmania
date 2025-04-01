@@ -9,7 +9,11 @@
  * This driver needs user read/write access to PacDrive.
  * This can be achieved by using a udev rule like this:
  *
- * SUBSYSTEMS=="usb", ATTRS{idVendor}=="D209", ATTRS{idProduct}=="1500", OWNER="dance", GROUP="dance", MODE="0660"
+ * SUBSYSTEMS=="usb", ATTRS{idVendor}=="D209", ATTRS{idProduct}=="150[0-9]", OWNER="dance", GROUP="dance", MODE="0660"
+ *
+ * or
+ *
+ * KERNEL=="hidraw*", ATTRS{idVendor}=="D209", ATTRS{idProduct}=="150[0-9]", OWNER="dance", GROUP="dance", MODE="0660"
  *
  * Refer to your distribution's documentation on how to properly apply a udev rule.
  *
