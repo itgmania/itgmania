@@ -195,7 +195,7 @@ static void child_process()
 		}
 	}
 
-	RString sCrashInfoPath = "./tmp";
+	RString sCrashInfoPath = "/tmp";
 
 #if defined(MACOSX)
 	sCrashInfoPath = CrashHandler::GetLogsDirectory();
@@ -286,7 +286,6 @@ static void child_process()
 	/* stdout may have been inadvertently closed by the crash in the parent;
 	 * write to /dev/tty instead. */
 	FILE *tty = fopen( "/dev/tty", "w" );
-
 	if( tty == nullptr )
 		tty = stderr;
 
