@@ -29,12 +29,12 @@ void RageSoundDriver_DSound_Software::MixerThread()
 
 	/* Fill a buffer before we start playing, so we don't play whatever junk is
 	 * in the buffer. */
-	char *locked_buf;
-	unsigned len;
-	while( m_pPCM->get_output_buf(&locked_buf, &len, chunksize()) )
+	char *locked_buf_init;
+	unsigned len_init;
+	while( m_pPCM->get_output_buf(&locked_buf_init, &len_init, chunksize()) )
 	{
-		memset( locked_buf, 0, len );
-		m_pPCM->release_output_buf(locked_buf, len);
+		memset( locked_buf_init, 0, len_init );
+		m_pPCM->release_output_buf(locked_buf_init, len_init);
 	}
 
 	/* Start playing. */
@@ -44,7 +44,7 @@ void RageSoundDriver_DSound_Software::MixerThread()
 	{
 		char *pLockedBuf;
 		unsigned iLen;
-		const std::int64_t iPlayPos = m_pPCM->GetOutputPosition(); /* must be called before get_output_buf */
+		const int64_t iPlayPos = m_pPCM->GetOutputPosition(); /* must be called before get_output_buf */
 
 		if( !m_pPCM->get_output_buf(&pLockedBuf, &iLen, chunksize()) )
 		{
@@ -52,7 +52,7 @@ void RageSoundDriver_DSound_Software::MixerThread()
 			continue;
 		}
 
-		this->Mix( (std::int16_t *) pLockedBuf, iLen/bytes_per_frame, iPlayPos, m_pPCM->GetPosition() );
+		this->Mix( (int16_t *) pLockedBuf, iLen/bytes_per_frame, iPlayPos, m_pPCM->GetPosition() );
 
 		m_pPCM->release_output_buf( pLockedBuf, iLen );
 	}
@@ -62,7 +62,7 @@ void RageSoundDriver_DSound_Software::MixerThread()
 	m_pPCM->Stop();
 }
 
-std::int64_t RageSoundDriver_DSound_Software::GetPosition() const
+int64_t RageSoundDriver_DSound_Software::GetPosition() const
 {
 	return m_pPCM->GetPosition();
 }
@@ -74,9 +74,8 @@ int RageSoundDriver_DSound_Software::MixerThread_start(void *p)
 }
 
 RageSoundDriver_DSound_Software::RageSoundDriver_DSound_Software()
+	: m_pPCM(nullptr), m_iSampleRate(0), m_bShutdownMixerThread(false)
 {
-	m_bShutdownMixerThread = false;
-	m_pPCM = nullptr;
 }
 
 RString RageSoundDriver_DSound_Software::Init()

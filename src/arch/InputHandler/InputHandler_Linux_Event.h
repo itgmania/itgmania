@@ -25,8 +25,14 @@ private:
 	void InputThread();
 
 	RageThread m_InputThread;
+	// Currently only m_bDevicesChanged is guarded by this mutex
+	RageMutex m_InputMutex;
 	InputDevice m_NextDevice;
 	bool m_bShutdown, m_bDevicesChanged;
+	// Used to monitor for new devices
+	int m_udev_fd;
+	struct udev* m_udev;
+	struct udev_monitor* m_udev_monitor;
 };
 #define USE_INPUT_HANDLER_LINUX_JOYSTICK
 

@@ -130,7 +130,7 @@ static void DWIcharToNoteCol( char c, GameController i, int &col1Out, int &col2O
  * @param pos the position of the step data.
  * @return true if it's a 192nd note, false otherwise.
  */
-static bool Is192( const RString &sStepData, std::size_t pos )
+static bool Is192( const RString &sStepData, size_t pos )
 {
 	while( pos < sStepData.size() )
 	{
@@ -190,6 +190,12 @@ static StepsType GetTypeFromMode(const RString &mode)
 static NoteData ParseNoteData(RString &step1, RString &step2,
 			      Steps &out, const RString &path)
 {
+	if (step1.size() < 2 && step2.size() < 2)
+	{
+		LOG->Warn("Didn't get enough data when attempting to load a DWI file");
+		// Handle the error by returning an empty NoteData object
+		return NoteData();
+	}
 	g_mapDanceNoteToNoteDataColumn.clear();
 	switch( out.m_StepsType )
 	{
@@ -248,7 +254,7 @@ static NoteData ParseNoteData(RString &step1, RString &step2,
 		double fCurrentBeat = 0;
 		double fCurrentIncrementer = 1.0/8 * BEATS_PER_MEASURE;
 
-		for( std::size_t i=0; i<sStepData.size(); )
+		for( size_t i=0; i<sStepData.size(); )
 		{
 			char c = sStepData[i++];
 			switch( c )
@@ -300,7 +306,7 @@ static NoteData ParseNoteData(RString &step1, RString &step2,
 						/* It's a jump.
 						 * We need to keep reading notes until we hit a >. */
 						jump = true;
-						i++;
+						c = sStepData[i++];
 					}
 
 					const int iIndex = BeatToNoteRow( (float)fCurrentBeat );
@@ -354,6 +360,10 @@ static NoteData ParseNoteData(RString &step1, RString &step2,
 								newNoteData.SetTapNote(iCol2,
 										       iIndex,
 										       TAP_ORIGINAL_HOLD_HEAD);
+						}
+
+						if (jump && i < sStepData.size()) {
+							c = sStepData[i++];
 						}
 					}
 					while( jump );
@@ -722,14 +732,14 @@ bool DWILoader::LoadFromDir( const RString &sPath_, Song &out, std::set<RString>
 			 * to pick up images used here as song images (eg. banners). */
 			RString param = sParams[1];
 			/* "{foo} ... {foo2}" */
-			std::size_t pos = 0;
+			size_t pos = 0;
 			while( pos < RString::npos )
 			{
 
-				std::size_t startpos = param.find('{', pos);
+				size_t startpos = param.find('{', pos);
 				if( startpos == RString::npos )
 					break;
-				std::size_t endpos = param.find('}', startpos);
+				size_t endpos = param.find('}', startpos);
 				if( endpos == RString::npos )
 					break;
 

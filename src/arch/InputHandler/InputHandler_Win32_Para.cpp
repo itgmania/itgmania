@@ -8,9 +8,9 @@
 
 // TODO: Abstract this windows-specific stuff into USBDevice.
 extern "C" {
-#include "archutils/Win32/ddk/setupapi.h"
+#include "setupapi.h"
 /* Quiet header warning: */
-#include "archutils/Win32/ddk/hidsdi.h"
+#include "hidsdi.h"
 }
 
 #include <vector>
@@ -39,7 +39,7 @@ InputHandler_Win32_Para::InputHandler_Win32_Para()
 	{
 		LOG->Info("Para controller initialized");
 	}
-	SAFE_DELETE( dev );
+	RageUtil::SafeDelete( dev );
 }
 
 void InputHandler_Win32_Para::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut )

@@ -20,7 +20,6 @@ public:
 	void UnBoostPriority();
 	void SetupConcurrentRenderingThread();
 
-	bool GoToURL( RString sUrl );
 	virtual float GetDisplayAspectRatio();
 	RString GetClipboard();
 };

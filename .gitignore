@@ -17,7 +17,6 @@ Build/
 !Build/INSTALL.md
 !Build/README.md
 verdata.*
-src/generated
 
 # Text Editor Based Items
 ___*
@@ -52,6 +51,7 @@ ___*
 *.map
 *.aps
 *.res
+.vs/
 
 # Windows General Files
 Thumbs.db

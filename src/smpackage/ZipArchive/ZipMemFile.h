@@ -38,8 +38,8 @@
 class ZIP_API CZipMemFile : public CZipAbstractFile
 {
 protected:
-	std::size_t m_nGrowBy, m_nPos;
-	std::size_t m_nBufSize, m_nDataSize;
+	size_t m_nGrowBy, m_nPos;
+	size_t m_nBufSize, m_nDataSize;
 	BYTE* m_lpBuf;
 	bool m_bAutoDelete;
 	void Free()
@@ -57,7 +57,7 @@ protected:
 		m_lpBuf = NULL;
 
 	}
-	void Grow(std::size_t nBytes);
+	void Grow(size_t nBytes);
 public:
 	bool IsClosed() const { return m_lpBuf == NULL;}
 	void Flush(){}

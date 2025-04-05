@@ -51,7 +51,7 @@ static std::vector<Centering> g_CenteringStack( 1, Centering(0, 0, 0, 0) );
 
 RageDisplay*		DISPLAY	= nullptr; // global and accessible from anywhere in our program
 
-Preference<bool>  LOG_FPS( "LogFPS", true );
+Preference<bool>  LOG_FPS( "LogFPS", false );
 Preference<float> g_fFrameLimitPercent( "FrameLimitPercent", 0.0f );
 
 static const char *RagePixelFormatNames[] = {
@@ -171,7 +171,7 @@ RString RageDisplay::GetStats() const
 
 	s = ssprintf( "%i FPS\n%i av FPS\n%i VPF", GetFPS(), GetCumFPS(), GetVPF() );
 
-//	#if defined(_WINDOWS)
+//	#if defined(_WIN32)
 	s += "\n"+this->GetApiDescription();
 //	#endif
 
@@ -255,8 +255,8 @@ void RageDisplay::DrawCircleInternal( const RageSpriteVertex &p, float radius )
 	for(int i = 0; i < subdivisions+1; ++i)
 	{
 		const float fRotation = float(i) / subdivisions * 2*PI;
-		const float fX = RageFastCos(fRotation) * radius;
-		const float fY = -RageFastSin(fRotation) * radius;
+		const float fX = std::cos(fRotation) * radius;
+		const float fY = -std::sin(fRotation) * radius;
 		v[1+i] = v[0];
 		v[1+i].p.x += fX;
 		v[1+i].p.y += fY;
@@ -656,7 +656,7 @@ RageSurface *RageDisplay::CreateSurfaceFromPixfmt( RagePixelFormat pixfmt,
 	RageSurface *surf = CreateSurfaceFrom(
 		width, height, tpf->bpp,
 		tpf->masks[0], tpf->masks[1], tpf->masks[2], tpf->masks[3],
-		(std::uint8_t *) pixels, pitch );
+		(uint8_t *) pixels, pitch );
 
 	return surf;
 }
@@ -799,7 +799,7 @@ bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
 	if( !out.Open( sPath, RageFile::WRITE ) )
 	{
 		LOG->Trace("Couldn't write %s: %s", sPath.c_str(), out.GetError().c_str() );
-		SAFE_DELETE( surface );
+		RageUtil::SafeDelete( surface );
 		return false;
 	}
 
@@ -824,7 +824,7 @@ bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
 	}
 //	LOG->Trace( "Saving Screenshot file took %f seconds.", timer.GetDeltaTime() );
 
-	SAFE_DELETE( surface );
+	RageUtil::SafeDelete( surface );
 
 	if( !bSuccess )
 	{
@@ -978,8 +978,8 @@ void RageCompiledGeometry::Set( const std::vector<msMesh> &vMeshes, bool bNeedsN
 {
 	m_bNeedsNormals = bNeedsNormals;
 
-	std::size_t totalVerts = 0;
-	std::size_t totalTriangles = 0;
+	size_t totalVerts = 0;
+	size_t totalTriangles = 0;
 
 	m_bAnyNeedsTextureMatrixScale = false;
 

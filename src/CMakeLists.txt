@@ -1,5 +1,3 @@
-file(MAKE_DIRECTORY "${SM_SRC_DIR}/generated")
-
 if(MSVC)
   # Add the mapconv program of the past to allow for debugging information.
   include("CMakeProject-mapconv.cmake")
@@ -125,7 +123,7 @@ endif()
 
 target_compile_options("${SM_EXE_NAME}" PRIVATE
   $<$<CXX_COMPILER_ID:GNU>:
-    -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas>
+  -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Werror=type-limits>
   $<$<CXX_COMPILER_ID:Clang>:
     -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Wno-undefined-var-template>
   $<$<CXX_COMPILER_ID:AppleClang>:
@@ -152,7 +150,7 @@ endif()
 
 if(MSVC)
   # TODO: Find a way to do this cleanly for non MSVC users.
-  set(SM_COMPILE_FLAGS "${SM_COMPILE_FLAGS} /MP2")
+  set(SM_COMPILE_FLAGS "${SM_COMPILE_FLAGS} /MP2 /utf-8")
 endif()
 
 set_target_properties("${SM_EXE_NAME}"
@@ -325,21 +323,25 @@ endif()
 set_property(TARGET "${SM_EXE_NAME}" PROPERTY FOLDER "Internal Libraries")
 
 list(APPEND SMDATA_LINK_LIB "lua-5.1" "miniz")
-include(../extern/CMakeProject-mmmagic.cmake)
+
+if(WITH_MINIMAID)
+  include(../extern/CMakeProject-mmmagic.cmake)
+endif()
 
 list(APPEND SMDATA_LINK_LIB "mad"
                             "pcre"
                             "glew"
                             "tomcrypt"
                             "tommath"
-                            "jpeg"
+                            "libjpeg-turbo"
                             "zlib"
                             "png"
                             "jsoncpp"
                             "vorbisfile"
                             "vorbis"
                             "ogg"
-                            "ixwebsocket")
+                            "ixwebsocket"
+							"hidapi")
 
 if(WIN32)
   list(APPEND SMDATA_LINK_LIB
@@ -356,7 +358,7 @@ if(WIN32)
 
   sm_add_link_flag("${SM_EXE_NAME}" "/LIBPATH:\"${SM_EXTERN_DIR}/ffmpeg-w32/${SM_WIN32_ARCH}\"")
   sm_add_link_flag("${SM_EXE_NAME}"
-                   "/LIBPATH:\"${SM_SRC_DIR}/archutils/Win32/ddk/${SM_WIN32_ARCH}\"")
+                   "/LIBPATH:\"$(WindowsSdkDir)Lib\\um\\${SM_WIN32_ARCH}\"")
   sm_add_link_flag("${SM_EXE_NAME}" "/ERRORREPORT:SEND")
   sm_add_link_flag("${SM_EXE_NAME}" "/MAPINFO:EXPORTS")
   sm_add_link_flag("${SM_EXE_NAME}" "/SAFESEH:NO")
@@ -386,7 +388,6 @@ elseif(APPLE)
               ${MAC_FRAME_COREAUDIO}
               ${MAC_FRAME_CORESERVICES}
               ${MAC_FRAME_SYSTEM}
-              "${BZIP2_LIBRARY_RELEASE}"
               "${ICONV_LIBRARIES}"
               "${SM_FFMPEG_LIB}/libavformat.a"
               "${SM_FFMPEG_LIB}/libavcodec.a"
@@ -411,7 +412,7 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
     list(APPEND SMDATA_LINK_LIB "${GTK3_LIBRARIES}")
   endif()
 
-  list(APPEND SMDATA_LINK_LIB "${BZIP2_LIBRARIES}" "${CMAKE_THREAD_LIBS_INIT}")
+  list(APPEND SMDATA_LINK_LIB "${CMAKE_THREAD_LIBS_INIT}")
 
   if(HAS_ALSA)
     list(APPEND SMDATA_LINK_LIB ${ALSA_LIBRARIES})
@@ -438,7 +439,7 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
     list(APPEND SMDATA_LINK_LIB ${LIBXTST_LIBRARY})
   endif()
 
-  list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARIES})
+  list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARY})
 
   list(APPEND SMDATA_LINK_LIB ${XRANDR_LIBRARIES} ${XINERAMA_LIBRARIES})
 
@@ -448,7 +449,7 @@ endif()
 target_link_libraries("${SM_EXE_NAME}" ${SMDATA_LINK_LIB})
 
 list(APPEND SM_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
-            "${SM_SRC_DIR}/generated")
+            "${SM_GENERATED_SRC_DIR}")
 
 if(APPLE)
   list(APPEND SM_INCLUDE_DIRS "archutils/Unix")
@@ -466,7 +467,7 @@ else()
       list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
     endif()
 
-    list(APPEND SM_INCLUDE_DIRS "${LIBUSB_INCLUDE_DIRS}")
+    list(APPEND SM_INCLUDE_DIRS "${LIBUSB_INCLUDE_DIR}")
   endif()
 endif()
 

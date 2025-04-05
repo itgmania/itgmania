@@ -28,15 +28,11 @@ InputHandler_Linux_Joystick::InputHandler_Linux_Joystick()
 	m_bDevicesChanged = false;
 
 	LOG->Trace( "InputHandler_Linux_Joystick::InputHandler_Linux_Joystick" );
-	for(int i = 0; i < NUM_JOYSTICKS; ++i)
-		fds[i] = -1;
-
-	m_iLastFd = 0;
 
 	if( LINUXINPUT == nullptr ) LINUXINPUT = new LinuxInputManager;
 	LINUXINPUT->InitDriver(this);
 
-	if( fds[0] != -1 ) // LinuxInputManager found at least one valid joystick for us
+	if( !m_files.empty() ) // LinuxInputManager found at least one valid joystick for us
 		StartThread();
 }
 
@@ -45,8 +41,10 @@ InputHandler_Linux_Joystick::~InputHandler_Linux_Joystick()
 	if( m_InputThread.IsCreated() )
 		StopThread();
 
-	for(int i = 0; i < NUM_JOYSTICKS; ++i)
-		if(fds[i] != -1) close(fds[i]);
+	for( auto& f : m_files ) {
+		if( f.fd != -1 ) close(f.fd);
+	}
+	m_files.clear();
 }
 
 void InputHandler_Linux_Joystick::StartThread()
@@ -78,21 +76,22 @@ bool InputHandler_Linux_Joystick::TryDevice(RString dev)
 	if( m_InputThread.IsCreated() ) { StopThread(); hotplug = true; }
 	/* Thread is stopped! DO NOT RETURN */
 	{
-		fds[m_iLastFd] = open( dev, O_RDONLY );
-
-		if(fds[m_iLastFd] != -1)
+		FileDescriptor f;
+		f.fd = open( dev, O_RDONLY );
+		if(f.fd != -1)
 		{
 			char szName[1024];
 			ZERO( szName );
-			if( ioctl(fds[m_iLastFd], JSIOCGNAME(sizeof(szName)), szName) < 0 )
-				m_sDescription[m_iLastFd] = ssprintf( "Unknown joystick at %s", dev.c_str() );
+			if( ioctl(f.fd, JSIOCGNAME(sizeof(szName)), szName) < 0 )
+				f.description = ssprintf( "Unknown joystick at %s", dev.c_str() );
 			else
-				m_sDescription[m_iLastFd] = szName;
+				f.description = szName;
 
 			LOG->Info("LinuxJoystick: Opened %s", dev.c_str() );
-			m_iLastFd++;
 			m_bDevicesChanged = true;
 			ret = true;
+
+			m_files.push_back(f);
 		}
 		else LOG->Warn("LinuxJoystick: Failed to open %s: %s", dev.c_str(), strerror(errno) );
 	}
@@ -115,13 +114,13 @@ void InputHandler_Linux_Joystick::InputThread()
 		FD_ZERO(&fdset);
 		int max_fd = -1;
 
-		for(int i = 0; i < NUM_JOYSTICKS; ++i)
+		for(size_t i = 0; i < m_files.size(); ++i)
 		{
-			if (fds[i] < 0)
+			if (m_files[i].fd < 0)
 				continue;
 
-			FD_SET(fds[i], &fdset);
-			max_fd = std::max(max_fd, fds[i]);
+			FD_SET(m_files[i].fd, &fdset);
+			max_fd = std::max(max_fd, m_files[i].fd);
 		}
 
 		if(max_fd == -1)
@@ -132,30 +131,30 @@ void InputHandler_Linux_Joystick::InputThread()
 			continue;
 		RageTimer now;
 
-		for(int i = 0; i < NUM_JOYSTICKS; ++i)
+		for(size_t i = 0; i < m_files.size(); ++i)
 		{
-			if( fds[i] == -1 )
+			if( m_files[i].fd == -1 )
 				continue;
 
-			if(!FD_ISSET(fds[i], &fdset))
+			if(!FD_ISSET(m_files[i].fd, &fdset))
 				continue;
 
 			js_event event;
-			int ret = read(fds[i], &event, sizeof(event));
+			int ret = read(m_files[i].fd, &event, sizeof(event));
 
 			if(ret == -1)
 			{
-				LOG->Warn("Error reading from joystick %i: %s; disabled", i, strerror(errno));
-				close(fds[i]);
-				fds[i] = -1;
+				LOG->Warn("Error reading from joystick %zu: %s; disabled", i, strerror(errno));
+				close(m_files[i].fd);
+				m_files[i].fd = -1;
 				continue;
 			}
 
 			if(ret != sizeof(event))
 			{
-				LOG->Warn("Unexpected packet (size %i != %i) from joystick %i; disabled", ret, (int)sizeof(event), i);
-				close(fds[i]);
-				fds[i] = -1;
+				LOG->Warn("Unexpected packet (size %i != %i) from joystick %zu; disabled", ret, (int)sizeof(event), i);
+				close(m_files[i].fd);
+				m_files[i].fd = -1;
 				continue;
 			}
 
@@ -182,9 +181,9 @@ void InputHandler_Linux_Joystick::InputThread()
 			}
 
 			default:
-				LOG->Warn("Unexpected packet (type %i) from joystick %i; disabled", event.type, i);
-				close(fds[i]);
-				fds[i] = -1;
+				LOG->Warn("Unexpected packet (type %i) from joystick %zu; disabled", event.type, i);
+				close(m_files[i].fd);
+				m_files[i].fd = -1;
 				continue;
 			}
 
@@ -200,14 +199,14 @@ void InputHandler_Linux_Joystick::GetDevicesAndDescriptions( std::vector<InputDe
 	// HACK: If IH_Linux_Joystick is constructed before IH_Linux_Event, our thread won't be started
 	// as part of the constructor. This isn't called until all InputHandlers have been constructed,
 	// and is (hopefully) in the same thread as TryDevice... so doublecheck our thread now.
-	if( fds[0] != -1 && !m_InputThread.IsCreated() ) StartThread();
+	if( m_files.empty() && !m_InputThread.IsCreated() ) StartThread();
 
-	for(int i = 0; i < NUM_JOYSTICKS; ++i)
+	for(size_t i = 0; i < m_files.size(); ++i)
 	{
-		if (fds[i] < 0)
+		if (m_files[i].fd < 0)
 			continue;
 
-		vDevicesOut.push_back( InputDeviceInfo(InputDevice(DEVICE_JOY1+i), m_sDescription[i]) );
+		vDevicesOut.push_back( InputDeviceInfo(InputDevice(DEVICE_JOY1+i), m_files[i].description) );
 	}
 	m_bDevicesChanged = false;
 }

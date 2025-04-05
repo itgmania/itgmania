@@ -38,7 +38,7 @@ void ThreadImpl_Pthreads::Resume()
 	ResumeThread( threadHandle );
 }
 
-std::uint64_t ThreadImpl_Pthreads::GetThreadId() const
+uint64_t ThreadImpl_Pthreads::GetThreadId() const
 {
 	return threadHandle;
 }
@@ -79,7 +79,7 @@ static void *StartThread( void *pData )
 	return new int(iRet);
 }
 
-ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, std::uint64_t *piThreadID )
+ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, uint64_t *piThreadID )
 {
 	ThreadImpl_Pthreads *thread = new ThreadImpl_Pthreads;
 	thread->m_pFunc = pFunc;
@@ -97,7 +97,7 @@ ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, std::uint64_t *p
 
 	// Copy the thread name.
 	const char *rawname = RageThread::GetThreadNameByID( *piThreadID );
-	const std::size_t maxNameLen = sizeof( thread->name );
+	const size_t maxNameLen = sizeof( thread->name );
 	if (strlen(rawname) < maxNameLen) {
 		// If it fits, I sits^H^H^H^Hcopy.
 		strncpy( thread->name, rawname, maxNameLen );
@@ -227,12 +227,12 @@ void MutexImpl_Pthreads::Unlock()
 	pthread_mutex_unlock( &mutex );
 }
 
-std::uint64_t GetThisThreadId()
+uint64_t GetThisThreadId()
 {
 	return GetCurrentThreadId();
 }
 
-std::uint64_t GetInvalidThreadId()
+uint64_t GetInvalidThreadId()
 {
 	return 0;
 }

@@ -9,12 +9,12 @@ class RageSoundDriver_Null: public RageSoundDriver
 {
 public:
 	RageSoundDriver_Null();
-	std::int64_t GetPosition() const;
+	int64_t GetPosition() const;
 	int GetSampleRate() const;
 	void Update();
 
 private:
-	std::int64_t m_iLastCursorPos;
+	int64_t m_iLastCursorPos;
 	int m_iSampleRate;
 };
 #define USE_RAGE_SOUND_NULL

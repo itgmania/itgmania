@@ -41,6 +41,9 @@ static RageTimer g_HaltTimer(RageZeroTimer);
 static float g_fImageScaleCurrent = 1;
 static float g_fImageScaleDestination = 1;
 
+// This will disable the debug menu ENTIRELY - including F6 for autosync, F8 for autoplay, etc
+static bool g_bEnableDebugMenu = true;
+
 // DebugLine theming
 static const ThemeMetric<RageColor>	BACKGROUND_COLOR	("ScreenDebugOverlay", "BackgroundColor");
 static const ThemeMetric<RageColor>	LINE_ON_COLOR	("ScreenDebugOverlay", "LineOnColor");
@@ -104,16 +107,16 @@ ScreenDebugOverlay::~ScreenDebugOverlay()
 
 	for (BitmapText *p : m_vptextPages)
 	{
-		SAFE_DELETE(p);
+		RageUtil::SafeDelete(p);
 	}
 	for (BitmapText *p : m_vptextButton)
 	{
-		SAFE_DELETE(p);
+		RageUtil::SafeDelete(p);
 	}
 	m_vptextButton.clear();
 	for (BitmapText *p : m_vptextFunction)
 	{
-		SAFE_DELETE(p);
+		RageUtil::SafeDelete(p);
 	}
 	m_vptextFunction.clear();
 }
@@ -179,7 +182,14 @@ static bool GetKeyFromMap( const std::map<U, V> &m, const V &val, U &key )
 static LocalizedString DEBUG_MENU( "ScreenDebugOverlay", "Debug Menu" );
 void ScreenDebugOverlay::Init()
 {
+	g_bEnableDebugMenu = PREFSMAN->m_bDebugMenuEnabled.Get();
+
 	Screen::Init();
+
+	if (!g_bEnableDebugMenu)
+	{
+		return;
+	}
 
 	// Init debug mappings
 	// TODO: Arch-specific?
@@ -318,6 +328,11 @@ void ScreenDebugOverlay::Init()
 
 void ScreenDebugOverlay::Update( float fDeltaTime )
 {
+	if (!g_bEnableDebugMenu)
+	{
+		return;
+	}
+	
 	{
 		float fRate = 1;
 		if( INPUTFILTER->IsBeingPressed(g_Mappings.holdForFast) )
@@ -439,6 +454,11 @@ static bool GetValueFromMap( const std::map<U, V> &m, const U &key, V &val )
 
 bool ScreenDebugOverlay::Input( const InputEventPlus &input )
 {
+	if (!g_bEnableDebugMenu)
+	{
+		return Screen::Input(input);
+	}
+
 	if( input.DeviceI == g_Mappings.holdForDebug1 ||
 		input.DeviceI == g_Mappings.holdForDebug2 )
 	{
@@ -1319,15 +1339,41 @@ class DebugLineForceCrash : public IDebugLine
 class DebugLineUptime : public IDebugLine
 {
 	virtual RString GetDisplayTitle() { return UPTIME.GetValue(); }
-	virtual RString GetDisplayValue() { return SecondsToMMSSMsMsMs(RageTimer::GetTimeSinceStart()); }
+	virtual RString GetDisplayValue() { return MicrosecondsToMMSSMsMsMs(RageTimer::GetTimeSinceStartMicroseconds()); }
 	virtual bool IsEnabled() { return false; }
 	virtual void DoAndLog( RString &sMessageOut ) {}
 };
 
-/* #ifdef out the lines below if you don't want them to appear on certain
- * platforms.  This is easier than #ifdefing the whole DebugLine definitions
- * that can span pages.
- */
+/* If you comment out a DECLARE_ONE at the end of the file, it will remove that debug
+ * menu line, but it will also change the arrangement of keys to debug menu options.
+ * We need a way to generate fake classes in order to preserve the Debug Menu key
+ * mappings, so we can instead swap in one of these fake classes for the class we
+ * want to remove. DEFINE_FAKE_CLASS1 handles menu options which need to return a
+ * page title, and DEFINE_FAKE_CLASS2 handles the normal (F5) menu options. */
+#define DEFINE_FAKE_CLASS1(className, pageName) \
+class className : public IDebugLine \
+{ \
+public: \
+    virtual RString GetDisplayTitle() { return "(disabled)"; } \
+    virtual RString GetDisplayValue() { return "(disabled)"; } \
+    virtual bool IsEnabled() { return false; } \
+    virtual RString GetPageName() const { return pageName; } \
+    virtual void DoAndLog(RString& sMessageOut) { sMessageOut = "(disabled)"; } \
+};
+
+#define DEFINE_FAKE_CLASS2(className) \
+class className : public IDebugLine \
+{ \
+public: \
+    virtual RString GetDisplayTitle() { return "(disabled)"; } \
+    virtual bool IsEnabled() { return false; } \
+    virtual void DoAndLog(RString& sMessageOut) { sMessageOut = "(disabled)"; } \
+};
+
+DEFINE_FAKE_CLASS1(FakeClearProfileStats, "Profiles")
+DEFINE_FAKE_CLASS1(FakeFillProfileStats, "Profiles")
+DEFINE_FAKE_CLASS2(FakeDebugLine1)
+DEFINE_FAKE_CLASS2(FakeDebugLine2)
 
 #define DECLARE_ONE( x ) static x g_##x
 DECLARE_ONE( DebugLineAutoplay );
@@ -1337,14 +1383,17 @@ DECLARE_ONE( DebugLineCoinMode );
 DECLARE_ONE( DebugLineSlow );
 DECLARE_ONE( DebugLineHalt );
 DECLARE_ONE( DebugLineLightsDebug );
-DECLARE_ONE( DebugLineMonkeyInput );
+//DECLARE_ONE( DebugLineMonkeyInput );
+DECLARE_ONE(FakeDebugLine1); // monkey input
 DECLARE_ONE( DebugLineStats );
 DECLARE_ONE( DebugLineVsync );
 DECLARE_ONE( DebugLineAllowMultitexture );
 DECLARE_ONE( DebugLineShowMasks );
 DECLARE_ONE( DebugLineProfileSlot );
-DECLARE_ONE( DebugLineClearProfileStats );
-DECLARE_ONE( DebugLineFillProfileStats );
+//DECLARE_ONE( DebugLineClearProfileStats );
+DECLARE_ONE(FakeClearProfileStats); // clear profile stats
+//DECLARE_ONE( DebugLineFillProfileStats );
+DECLARE_ONE(FakeFillProfileStats); // fill profile stats
 DECLARE_ONE( DebugLineSendNotesEnded );
 DECLARE_ONE( DebugLineReloadCurrentScreen );
 DECLARE_ONE( DebugLineRestartCurrentScreen );
@@ -1366,7 +1415,8 @@ DECLARE_ONE( DebugLineVolumeDown );
 DECLARE_ONE( DebugLineVolumeUp );
 DECLARE_ONE( DebugLineVisualDelayDown );
 DECLARE_ONE( DebugLineVisualDelayUp );
-DECLARE_ONE( DebugLineForceCrash );
+//DECLARE_ONE( DebugLineForceCrash );
+DECLARE_ONE(FakeDebugLine2); // force crash
 DECLARE_ONE( DebugLineUptime );
 DECLARE_ONE( DebugLineResetKeyMapping );
 DECLARE_ONE( DebugLineMuteActions );

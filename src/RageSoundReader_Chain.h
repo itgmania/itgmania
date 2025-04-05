@@ -62,7 +62,7 @@ private:
 		float fPan;
 		RageSoundReader *pSound; // nullptr if not activated
 
-		int GetOffsetFrame( int iSampleRate ) const { return int( std::int64_t(iOffsetMS) * iSampleRate / 1000 ); }
+		int GetOffsetFrame( int iSampleRate ) const { return int( int64_t(iOffsetMS) * iSampleRate / 1000 ); }
 		bool operator<( const Sound &rhs ) const { return iOffsetMS < rhs.iOffsetMS; }
 	};
 	std::vector<Sound> m_aSounds;

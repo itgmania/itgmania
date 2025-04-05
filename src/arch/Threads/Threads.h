@@ -18,7 +18,7 @@ public:
 	 * implementation-defined, except that each thread has exactly one ID
 	 * and each ID corresponds to one thread. (This means that Win32
 	 * thread handles are not acceptable as ThreadIds.) */
-	virtual std::uint64_t GetThreadId() const = 0;
+	virtual uint64_t GetThreadId() const = 0;
 
 	virtual int Wait() = 0;
 };
@@ -71,16 +71,16 @@ public:
 };
 
 // These functions must be implemented by the thread implementation.
-ThreadImpl *MakeThread( int (*fn)(void *), void *data, std::uint64_t *piThreadID );
+ThreadImpl *MakeThread( int (*fn)(void *), void *data, uint64_t *piThreadID );
 ThreadImpl *MakeThisThread();
 MutexImpl *MakeMutex( RageMutex *pParent );
 EventImpl *MakeEvent( MutexImpl *pMutex );
 SemaImpl *MakeSemaphore( int iInitialValue );
-std::uint64_t GetThisThreadId();
+uint64_t GetThisThreadId();
 
 /* Since ThreadId is implementation-defined, we can't define a universal
  * invalid value. Return the invalid value for this implementation. */
-std::uint64_t GetInvalidThreadId();
+uint64_t GetInvalidThreadId();
 
 #endif
 

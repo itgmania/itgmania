@@ -13,7 +13,7 @@
 #define __STDC_CONSTANT_MACROS
 
 /* Platform-specific fixes. */
-#if defined(WIN32)
+#if defined(_WIN32)
 #include "archutils/Win32/arch_setup.h"
 #elif defined(PBBUILD)
 #include "archutils/Darwin/arch_setup.h"

@@ -8,15 +8,14 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if !defined(WIN32)
-
-#if defined(HAVE_DIRENT_H)
-#include <dirent.h>
-#endif
-
+#if defined(_WIN32)
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
+    #include <io.h>
 #else
-#include <windows.h>
-#include <io.h>
+    #if defined(HAVE_DIRENT_H)
+        #include <dirent.h>
+    #endif
 #endif
 
 RString DoPathReplace(const RString &sPath)
@@ -26,34 +25,42 @@ RString DoPathReplace(const RString &sPath)
 }
 
 
-#if defined(WIN32)
+#if defined(_WIN32)
 static bool WinMoveFileInternal( const RString &sOldPath, const RString &sNewPath )
 {
-	static bool Win9x = false;
-
-	/* Windows botches rename: it returns error if the file exists. In NT,
-	 * we can use MoveFileEx( new, old, MOVEFILE_REPLACE_EXISTING ) (though I
-	 * don't know if it has similar atomicity guarantees to rename). In
-	 * 9x, we're screwed, so just delete any existing file (we aren't going
-	 * to be robust on 9x anyway). */
-	if( !Win9x )
-	{
-		if( MoveFileEx( sOldPath, sNewPath, MOVEFILE_REPLACE_EXISTING ) )
-			return true;
-
-		// On Win9x, MoveFileEx is expected to fail (returns ERROR_CALL_NOT_IMPLEMENTED).
-		DWORD err = GetLastError();
-		if( err == ERROR_CALL_NOT_IMPLEMENTED )
-			Win9x = true;
-		else
-			return false;
-	}
-
-	if( MoveFile( sOldPath, sNewPath ) )
+	if( MoveFileEx( sOldPath, sNewPath, MOVEFILE_REPLACE_EXISTING ) )
 		return true;
 
-	if( GetLastError() != ERROR_ALREADY_EXISTS )
-		return false;
+	DWORD err = GetLastError();
+	// Possible error values stored by GetLastError():
+	//
+	// - ERROR_PATH_NOT_FOUND - 3 
+	//  - implies something in the file path does not exist
+	//
+	// - ERROR_SHARING_VIOLATION - 32 
+	//  - implies a need to use a temporary name somewhere
+	//
+	// - ERROR_FILE_EXISTS, ERROR_ALREADY_EXISTS - 80 
+	//  - implies MOVEFILE_REPLACE_EXISTING flag is not set,
+	//    but it is usually expected behavior when this occurs
+	//
+	// - ERROR_INVALID_PARAMETER - 87 
+	//  - implies the file paths are invalid
+	//
+	// - ERROR_NOT_SAME_DEVICE - 17 
+	//  - implies the file paths are on different devices
+
+	if( err )
+	{
+		// Log the error with the specific error code
+		WARN(ssprintf("MoveFileEx(%s, %s) failed: %lu", sOldPath.c_str(), sNewPath.c_str(), err));
+    
+		// Check if the error is related to the file not existing
+		if (err != ERROR_FILE_EXISTS && err != ERROR_ALREADY_EXISTS)
+		{
+			return false;
+		}
+	}
 
 	if( !DeleteFile( sNewPath ) )
 		return false;
@@ -94,7 +101,7 @@ bool CreateDirectories( RString Path )
 			curpath += "/";
 		curpath += parts[i];
 
-#if defined(WIN32)
+#if defined(_WIN32)
 		if( curpath.size() == 2 && curpath[1] == ':' )  /* C: */
 		{
 			/* Don't try to create the drive letter alone. */
@@ -105,7 +112,7 @@ bool CreateDirectories( RString Path )
 		if( DoMkdir(curpath, 0777) == 0 )
 			continue;
 
-#if defined(WIN32)
+#if defined(_WIN32)
 		/* When creating a directory that already exists over Samba, Windows is
 		 * returning ENOENT instead of EEXIST. */
 		/* I can't reproduce this anymore.  If we get ENOENT, log it but keep
@@ -168,10 +175,11 @@ void DirectFilenameDB::CacheFile( const RString &sPath )
 		return;
 	}
 	while( !pFileSet->m_bFilled )
+	{
 		m_Mutex.Wait();
+	}
 
-#if defined(WIN32)
-	// There is almost surely a better way to do this
+#if defined(_WIN32)
 	WIN32_FIND_DATA fd;
 	HANDLE hFind = DoFindFirstFile( root+sPath, &fd );
 	if( hFind == INVALID_HANDLE_VALUE )
@@ -181,8 +189,8 @@ void DirectFilenameDB::CacheFile( const RString &sPath )
 	}
 	File f( fd.cFileName );
 	f.dir = !!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-	f.size = fd.nFileSizeLow;
-	f.hash = fd.ftLastWriteTime.dwLowDateTime;
+	f.size = static_cast<int64_t>(fd.nFileSizeHigh) << 32 | fd.nFileSizeLow;
+	f.hash = static_cast<int64_t>(fd.ftLastWriteTime.dwHighDateTime) << 32 | fd.ftLastWriteTime.dwLowDateTime;
 
 	pFileSet->files.insert( f );
 	FindClose( hFind );
@@ -192,16 +200,12 @@ void DirectFilenameDB::CacheFile( const RString &sPath )
 	struct stat st;
 	if( DoStat(root+sPath, &st) == -1 )
 	{
-		int iError = errno;
-		// If it's a broken symlink, ignore it.  Otherwise, warn.
-		// Huh?
-		WARN( ssprintf("File '%s' is gone! (%s)",
-				sPath.c_str(), strerror(iError)) );
+		WARN(ssprintf("File '%s' is gone! (%s)", sPath.c_str(), strerror(errno)));
 	}
 	else
 	{
-		f.dir = (st.st_mode & S_IFDIR);
-		f.size = (int)st.st_size;
+		f.dir = S_ISDIR(st.st_mode);
+		f.size = static_cast<int>(st.st_size);
 		f.hash = st.st_mtime;
 	}
 
@@ -220,7 +224,7 @@ void DirectFilenameDB::PopulateFileSet( FileSet &fs, const RString &path )
 	fs.age.GetDeltaTime(); // reset
 	fs.files.clear();
 
-#if defined(WIN32)
+#if defined(_WIN32)
 	WIN32_FIND_DATA fd;
 
 	if ( sPath.size() > 0  && sPath.Right(1) == "/" )

@@ -29,6 +29,12 @@ AnimatedTexture::~AnimatedTexture()
 	Unload();
 }
 
+RageVector3 RadianToDegree(RageVector3 radian)
+{
+	constexpr float RAD_TO_DEG = 180.0f / PI;
+	return radian * RAD_TO_DEG;
+}
+
 void AnimatedTexture::LoadBlank()
 {
 	AnimatedTextureState state(
@@ -303,7 +309,7 @@ bool msAnimation::LoadMilkshapeAsciiBones( RString sAniName, RString sPath )
 				if (sscanf (sLine, "%f %f %f %f", &fTime, &Position[0], &Position[1], &Position[2]) != 4)
 					THROW;
 
-				msPositionKey key;
+				msPositionKey key = {};
 				key.fTime = fTime;
 				key.Position = RageVector3( Position[0], Position[1], Position[2] );
 				Bone.PositionKeys[j] = key;
@@ -328,7 +334,7 @@ bool msAnimation::LoadMilkshapeAsciiBones( RString sAniName, RString sPath )
 					THROW;
 				Rotation = RadianToDegree(Rotation);
 
-				msRotationKey key;
+				msRotationKey key = {};
 				key.fTime = fTime;
 				Rotation = RageVector3( Rotation[0], Rotation[1], Rotation[2] );
 				RageQuatFromHPR( &key.Rotation, Rotation );

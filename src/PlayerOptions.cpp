@@ -34,6 +34,16 @@ XToString( DrainType );
 XToLocalizedString( DrainType );
 LuaXType( DrainType );
 
+static const char* HideLightTypeNames[] = {
+	"NoHideLights",
+	"HideAllLights",
+	"HideMarqueeLights",
+	"HideBassLights",
+};
+XToString(HideLightType);
+XToLocalizedString(HideLightType);
+LuaXType(HideLightType);
+
 static const char *ModTimerTypeNames[] = {
 	"Game",
 	"Beat",
@@ -65,6 +75,7 @@ void PlayerOptions::Init()
 {
 	m_LifeType = LifeType_Bar;
 	m_DrainType = DrainType_Normal;
+	m_HideLightType = HideLightType_NoHideLights;
 	m_ModTimerType = ModTimerType_Default;
 	m_BatteryLives = 4;
 	m_MinTNSToHideNotes= PREFSMAN->m_MinTNSToHideNotes;
@@ -127,6 +138,7 @@ void PlayerOptions::Approach( const PlayerOptions& other, float fDeltaSeconds )
 
 	DO_COPY( m_LifeType );
 	DO_COPY( m_DrainType );
+	DO_COPY( m_HideLightType );
 	DO_COPY( m_ModTimerType );
 	DO_COPY( m_BatteryLives );
 	APPROACH( fModTimerMult );
@@ -243,6 +255,24 @@ void PlayerOptions::GetMods( std::vector<RString> &AddTo, bool bForceNoteSkin ) 
 			break;
 		default:
 			FAIL_M(ssprintf("Invalid LifeType: %i", m_LifeType));
+	}
+
+	switch (m_HideLightType)
+	{
+		case HideLightType_NoHideLights:
+			AddTo.push_back("NoHideLights");
+			break;
+		case HideLightType_HideAllLights:
+			AddTo.push_back("HideAllLights");
+			break;
+		case HideLightType_HideMarqueeLights:
+			AddTo.push_back("HideMarqueeLights");
+			break;
+		case HideLightType_HideBassLights:
+			AddTo.push_back("HideBassLights");
+			break;
+		default:
+			FAIL_M(ssprintf("Invalid HideLightType: %i", m_HideLightType));
 	}
 
 	if( !m_fTimeSpacing )
@@ -490,6 +520,8 @@ void PlayerOptions::GetMods( std::vector<RString> &AddTo, bool bForceNoteSkin ) 
 	AddPart( AddTo, m_fRandomSpeed,	"RandomSpeed" );
 
 	if( m_bTurns[TURN_MIRROR] )		AddTo.push_back( "Mirror" );
+	if( m_bTurns[TURN_LRMIRROR] )		AddTo.push_back( "LRMirror" );
+	if( m_bTurns[TURN_UDMIRROR] )		AddTo.push_back( "UDMirror" );
 	if( m_bTurns[TURN_BACKWARDS] )		AddTo.push_back( "Backwards" );
 	if( m_bTurns[TURN_LEFT] )			AddTo.push_back( "Left" );
 	if( m_bTurns[TURN_RIGHT] )			AddTo.push_back( "Right" );
@@ -745,6 +777,13 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	else if( sBit == "norecover" || sBit == "power-drop" ) { m_DrainType= DrainType_NoRecover; }
 	else if( sBit == "suddendeath" || sBit == "death" ) { m_DrainType= DrainType_SuddenDeath; }
 	else if( sBit == "normal-drain" ) { m_DrainType= DrainType_Normal; }
+	else if (sBit.find("lights") != sBit.npos)
+	{
+		if (sBit == "nohidelights")				m_HideLightType = HideLightType_NoHideLights;
+		else if (sBit == "hidealllights")				m_HideLightType = HideLightType_HideAllLights;
+		else if (sBit == "hidemarqueelights")			m_HideLightType = HideLightType_HideMarqueeLights;
+		else if (sBit == "hidebasslights")			m_HideLightType = HideLightType_HideBassLights;
+	}
 	else if( sBit == "boost" )				SET_FLOAT( fAccels[ACCEL_BOOST] )
 	else if( sBit == "brake" || sBit == "land" )		SET_FLOAT( fAccels[ACCEL_BRAKE] )
 	else if( sBit.find("wave") != sBit.npos)
@@ -1026,6 +1065,8 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	else if( sBit == "randomvanish" )			SET_FLOAT( fAppearances[APPEARANCE_RANDOMVANISH] )
 	else if( sBit == "turn" && !on )			ZERO( m_bTurns ); /* "no turn" */
 	else if( sBit == "mirror" )				m_bTurns[TURN_MIRROR] = on;
+	else if( sBit == "lrmirror" )				m_bTurns[TURN_LRMIRROR] = on;
+	else if( sBit == "udmirror" )				m_bTurns[TURN_UDMIRROR] = on;
 	else if( sBit == "backwards" )			m_bTurns[TURN_BACKWARDS] = on;
 	else if( sBit == "left" )				m_bTurns[TURN_LEFT] = on;
 	else if( sBit == "right" )				m_bTurns[TURN_RIGHT] = on;
@@ -1408,6 +1449,7 @@ bool PlayerOptions::operator==( const PlayerOptions &other ) const
 #define COMPARE(x) { if( x != other.x ) return false; }
 	COMPARE(m_LifeType);
 	COMPARE(m_DrainType);
+	COMPARE(m_HideLightType);
 	COMPARE(m_ModTimerType);
 	COMPARE(m_fModTimerMult);
 	COMPARE(m_fModTimerOffset);
@@ -1491,6 +1533,7 @@ PlayerOptions& PlayerOptions::operator=(PlayerOptions const& other)
 #define CPY_SPEED(x) m_ ## x = other.m_ ## x; m_Speed ## x = other.m_Speed ## x;
 	CPY(m_LifeType);
 	CPY(m_DrainType);
+	CPY(m_HideLightType);
 	CPY(m_ModTimerType);
 	CPY_SPEED(fModTimerMult);
 	CPY_SPEED(fModTimerOffset);
@@ -1767,6 +1810,7 @@ void PlayerOptions::ResetPrefs( ResetPrefsType type )
 	}
 	CPY(m_LifeType);
 	CPY(m_DrainType);
+	CPY(m_HideLightType);
 	CPY(m_BatteryLives);
 	CPY(m_ModTimerType);
 	CPY(m_fModTimerMult);
@@ -1826,6 +1870,7 @@ public:
 
 	ENUM_INTERFACE(LifeSetting, LifeType, LifeType);
 	ENUM_INTERFACE(DrainSetting, DrainType, DrainType);
+	ENUM_INTERFACE(HideLightSetting, HideLightType, HideLightType);
 	ENUM_INTERFACE(ModTimerSetting, ModTimerType, ModTimerType)
 	INT_INTERFACE(BatteryLives, BatteryLives);
 	FLOAT_INTERFACE(ModTimerMult, ModTimerMult, true);
@@ -2009,6 +2054,8 @@ public:
 	BOOL_INTERFACE(Cosecant, Cosecant);
 	BOOL_INTERFACE(TurnNone, Turns[PlayerOptions::TURN_NONE]);
 	BOOL_INTERFACE(Mirror, Turns[PlayerOptions::TURN_MIRROR]);
+	BOOL_INTERFACE(LRMirror, Turns[PlayerOptions::TURN_LRMIRROR]);
+	BOOL_INTERFACE(UDMirror, Turns[PlayerOptions::TURN_UDMIRROR]);
 	BOOL_INTERFACE(Backwards, Turns[PlayerOptions::TURN_BACKWARDS]);
 	BOOL_INTERFACE(Left, Turns[PlayerOptions::TURN_LEFT]);
 	BOOL_INTERFACE(Right, Turns[PlayerOptions::TURN_RIGHT]);
@@ -2385,6 +2432,7 @@ public:
 
 		ADD_METHOD(LifeSetting);
 		ADD_METHOD(DrainSetting);
+		ADD_METHOD(HideLightSetting);
 		ADD_METHOD(ModTimerSetting);
 		ADD_METHOD(ModTimerMult);
 		ADD_METHOD(ModTimerOffset);
@@ -2555,6 +2603,8 @@ public:
 		ADD_METHOD(RandomSpeed);
 		ADD_METHOD(TurnNone);
 		ADD_METHOD(Mirror);
+		ADD_METHOD(LRMirror);
+		ADD_METHOD(UDMirror);
 		ADD_METHOD(Backwards);
 		ADD_METHOD(Left);
 		ADD_METHOD(Right);

@@ -9,7 +9,7 @@
 #include <map>
 #include <vector>
 
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 #include <windows.h>
 #endif
 
@@ -114,10 +114,10 @@ RageLog::~RageLog()
 	g_fileUserLog->Close();
 	g_fileTimeLog->Close();
 
-	SAFE_DELETE( g_Mutex );
-	SAFE_DELETE( g_fileLog );
-	SAFE_DELETE( g_fileInfo );
-	SAFE_DELETE( g_fileUserLog );
+	RageUtil::SafeDelete( g_Mutex );
+	RageUtil::SafeDelete( g_fileLog );
+	RageUtil::SafeDelete( g_fileInfo );
+	RageUtil::SafeDelete( g_fileUserLog );
 }
 
 void RageLog::SetLogToDisk( bool b )
@@ -183,11 +183,12 @@ void RageLog::SetShowLogOutput( bool show )
 {
 	m_bShowLogOutput = show;
 
-#if defined(WIN32)
+#if defined(_WIN32)
 	if( m_bShowLogOutput )
 	{
 		// create a new console window and attach standard handles
 		AllocConsole();
+		SetConsoleOutputCP(CP_UTF8);
 		freopen( "CONOUT$","wb", stdout );
 		freopen( "CONOUT$","wb", stderr );
 	}
@@ -267,7 +268,7 @@ void RageLog::Write( int where, const RString &sLine )
 		puts( sWarningSeparator );
 	}
 
-	RString sTimestamp = SecondsToMMSSMsMsMs( RageTimer::GetTimeSinceStart() ) + ": ";
+	RString sTimestamp = MicrosecondsToMMSSMsMsMs( RageTimer::GetTimeSinceStartMicroseconds() ) + ": ";
 	RString sWarning;
 	if( where & WRITE_LOUD )
 		sWarning = "WARNING: ";

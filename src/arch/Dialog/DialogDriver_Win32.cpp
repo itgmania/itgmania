@@ -9,7 +9,6 @@
 
 #include "archutils/win32/AppInstance.h"
 #include "archutils/win32/ErrorStrings.h"
-#include "archutils/win32/GotoURL.h"
 #include "archutils/win32/RestartProgram.h"
 #include "archutils/Win32/SpecialDirs.h"
 #if !defined(SMPACKAGE)
@@ -179,7 +178,7 @@ static INT_PTR CALLBACK ErrorWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			}
 			break;
 		case IDC_BUTTON_REPORT:
-			GotoURL( REPORT_BUG_URL );
+			// safe to remove this button?
 			break;
 		case IDC_BUTTON_RESTART:
 			Win32RestartProgram();

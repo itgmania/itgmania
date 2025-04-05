@@ -366,11 +366,11 @@ void SetRadarValues(StepsTagInfo& info)
 		// Instead of trying to use the version to figure out how many
 		// categories to expect, look at the number of values and split them
 		// evenly. -Kyz
-		std::size_t cats_per_player= values.size() / NUM_PlayerNumber;
+		size_t cats_per_player= values.size() / NUM_PlayerNumber;
 		RadarValues v[NUM_PLAYERS];
 		FOREACH_PlayerNumber(pn)
 		{
-			for(std::size_t i= 0; i < cats_per_player; ++i)
+			for(size_t i= 0; i < cats_per_player; ++i)
 			{
 				v[pn][i]= StringToFloat(values[pn * cats_per_player + i]);
 			}
@@ -383,6 +383,147 @@ void SetRadarValues(StepsTagInfo& info)
 	}
 	info.ssc_format= true;
 }
+
+void SetTechCounts(StepsTagInfo& info)
+{
+	if (info.from_cache || info.for_load_edit)
+	{
+		std::vector<RString> values;
+		split((*info.params)[1], ",", values, true);
+		std::size_t cats_per_player= values.size() / NUM_PlayerNumber;
+		TechCounts v[NUM_PLAYERS];
+		FOREACH_PlayerNumber(pn)
+		{
+			for(std::size_t i= 0; i < cats_per_player; ++i)
+			{
+				v[pn][i]= StringToFloat(values[pn * cats_per_player + i]);
+			}
+		}
+		info.steps->SetCachedTechCounts(v);
+	}
+	else
+	{
+		// just recalc at time.
+	}
+	info.ssc_format= true;
+}
+
+void SetNpsPerMeasure(StepsTagInfo& info)
+{
+	if (info.from_cache || info.for_load_edit)
+	{
+		std::vector<RString> valuesPerPlayer;
+		split((*info.params)[1], "|", valuesPerPlayer, true);
+		
+		if(valuesPerPlayer.size() > NUM_PlayerNumber)
+		{
+			LOG->Warn("#NPSPERMEASURE has more sections (%zu) than possible number of players (%d)!", valuesPerPlayer.size(), NUM_PlayerNumber);
+		}
+		
+		std::vector<std::vector<float>> npsPerMeasures;
+		for(std::size_t pn = 0; pn < valuesPerPlayer.size() && pn < NUM_PlayerNumber; pn++)
+		{
+			std::vector<RString> values;
+			split(valuesPerPlayer[pn], ",", values, true);
+			std::vector<float> npsPerMeasure;
+			npsPerMeasure.resize(values.size());
+			for(std::size_t i = 0; i < values.size(); i++)
+			{
+				npsPerMeasure[i] = StringToFloat(values[i]);
+			}
+			npsPerMeasures.push_back(npsPerMeasure);
+		}
+		info.steps->SetCachedNpsPerMeasure(npsPerMeasures);
+	}
+	else
+	{
+		// just recalc at time.
+	}
+	info.ssc_format= true;
+}
+
+void SetNotesPerMeasure(StepsTagInfo& info)
+{
+	if (info.from_cache || info.for_load_edit)
+	{
+		std::vector<RString> valuesPerPlayer;
+		split((*info.params)[1], "|", valuesPerPlayer, true);
+		
+		if(valuesPerPlayer.size() > NUM_PlayerNumber)
+		{
+			LOG->Warn("#NOTESPERMEASURE has more sections (%zu) than possible number of players (%d)!", valuesPerPlayer.size(), NUM_PlayerNumber);
+			
+		}
+		
+		std::vector<std::vector<int>> notesPerMeasures;
+		for(std::size_t pn = 0; pn < valuesPerPlayer.size() && pn < NUM_PlayerNumber; pn++)
+		{
+			std::vector<RString> values;
+			split(valuesPerPlayer[pn], ",", values, true);
+			std::vector<int> notesPerMeasure;
+			notesPerMeasure.resize(values.size());
+			for(std::size_t i = 0; i < values.size(); i++)
+			{
+				notesPerMeasure[i] = StringToInt(values[i]);
+			}
+			notesPerMeasures.push_back(notesPerMeasure);
+		}
+		info.steps->SetCachedNotesPerMeasure(notesPerMeasures);
+	}
+	else
+	{
+		// just recalc at time.
+	}
+	info.ssc_format= true;
+}
+
+void SetPeakNps(StepsTagInfo& info)
+{
+	if (info.from_cache || info.for_load_edit)
+	{
+		std::vector<RString> valuesPerPlayer;
+		split((*info.params)[1], "|", valuesPerPlayer, true);
+		
+		if(valuesPerPlayer.size() > NUM_PlayerNumber)
+		{
+			LOG->Warn("#PEAKNPS has more sections (%zu) than possible number of players (%d)!", valuesPerPlayer.size(), NUM_PlayerNumber);
+		}
+		
+		std::vector<float> peakNps;
+		for(std::size_t pn = 0; pn < valuesPerPlayer.size() && pn < NUM_PlayerNumber; pn++)
+		{
+			peakNps.push_back(StringToFloat(valuesPerPlayer[pn]));
+		}
+		info.steps->SetPeakNps(peakNps);
+	}
+	else
+	{
+		// just recalc at time.
+	}
+	info.ssc_format= true;
+}
+
+void SetGrooveStatsHash(StepsTagInfo& info)
+{
+	if (info.from_cache || info.for_load_edit)
+	{
+		RString value = (*info.params)[1];
+		info.steps->SetCachedGrooveStatsHash(value);
+	}
+	info.ssc_format = true;
+}
+
+void SetGrooveStatsHashVersion(StepsTagInfo& info)
+{
+	if (info.from_cache || info.for_load_edit)
+	{
+		RString value = (*info.params)[1];
+		int hashVersion = StringToInt(value);
+		info.steps->SetCachedGrooveStatsHashVersion(hashVersion);
+	}
+	info.ssc_format = true;
+}
+
 void SetCredit(StepsTagInfo& info)
 {
 	info.steps->SetCredit((*info.params)[1]);
@@ -623,6 +764,13 @@ struct ssc_parser_helper_t
 		steps_tag_handlers["SCROLLS"]= &SetStepsScrolls;
 		steps_tag_handlers["FAKES"]= &SetStepsFakes;
 		steps_tag_handlers["LABELS"]= &SetStepsLabels;
+		steps_tag_handlers["TECHCOUNTS"] = &SetTechCounts;
+		steps_tag_handlers["NPSPERMEASURE"] = &SetNpsPerMeasure;
+		steps_tag_handlers["NOTESPERMEASURE"] = &SetNotesPerMeasure;
+		steps_tag_handlers["PEAKNPS"] = &SetPeakNps;
+		steps_tag_handlers["GROOVESTATSHASH"] = &SetGrooveStatsHash;
+		steps_tag_handlers["GROOVESTATSHASHVERSION"] = &SetGrooveStatsHashVersion;
+		
 		/* If this is called, the chart does not use the same attacks
 		 * as the Song's timing. No other changes are required. */
 		steps_tag_handlers["ATTACKS"]= &SetStepsAttacks;
@@ -653,6 +801,10 @@ void SSCLoader::ProcessBPMs( TimingData &out, const RString sParam )
 	for( unsigned b=0; b<arrayBPMExpressions.size(); b++ )
 	{
 		std::vector<RString> arrayBPMValues;
+		Trim(arrayBPMExpressions[b]);
+		if (arrayBPMExpressions[b].empty()) {
+			continue;
+		}
 		split( arrayBPMExpressions[b], "=", arrayBPMValues );
 		if( arrayBPMValues.size() != 2 )
 		{
@@ -687,6 +839,10 @@ void SSCLoader::ProcessStops( TimingData &out, const RString sParam )
 	for( unsigned b=0; b<arrayStopExpressions.size(); b++ )
 	{
 		std::vector<RString> arrayStopValues;
+		Trim(arrayStopExpressions[b]);
+		if (arrayStopExpressions[b].empty()) {
+			continue;
+		}
 		split( arrayStopExpressions[b], "=", arrayStopValues );
 		if( arrayStopValues.size() != 2 )
 		{
@@ -719,6 +875,10 @@ void SSCLoader::ProcessWarps( TimingData &out, const RString sParam, const float
 	for( unsigned b=0; b<arrayWarpExpressions.size(); b++ )
 	{
 		std::vector<RString> arrayWarpValues;
+		Trim(arrayWarpExpressions[b]);
+		if (arrayWarpExpressions[b].empty()) {
+			continue;
+		}
 		split( arrayWarpExpressions[b], "=", arrayWarpValues );
 		if( arrayWarpValues.size() != 2 )
 		{
@@ -756,6 +916,10 @@ void SSCLoader::ProcessLabels( TimingData &out, const RString sParam )
 	for( unsigned b=0; b<arrayLabelExpressions.size(); b++ )
 	{
 		std::vector<RString> arrayLabelValues;
+		Trim(arrayLabelExpressions[b]);
+		if (arrayLabelExpressions[b].empty()) {
+			continue;
+		}
 		split( arrayLabelExpressions[b], "=", arrayLabelValues );
 		if( arrayLabelValues.size() != 2 )
 		{
@@ -1148,7 +1312,7 @@ bool SSCLoader::LoadEditFromMsd(const MsdFile &msd,
 					{
 						LOG->UserLog("Edit file", sEditFilePath,
 							"is a duplicate of another edit that was already loaded.");
-						SAFE_DELETE(pNewNotes);
+						RageUtil::SafeDelete(pNewNotes);
 						return false;
 					}
 				}

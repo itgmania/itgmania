@@ -9,7 +9,7 @@
 #include <objc/objc.h>
 
 typedef const struct __CFDictionary *CFDictionaryRef;
-typedef std::uint32_t CGDirectDisplayID;
+typedef uint32_t CGDirectDisplayID;
 
 class LowLevelWindow_MacOSX : public LowLevelWindow
 {

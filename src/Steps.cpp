@@ -32,6 +32,9 @@
 #include <algorithm>
 #include <cstddef>
 #include <vector>
+#include <regex>
+
+#include "StepParityGenerator.h"
 
 /* register DisplayBPM with StringConversion */
 #include "EnumHelper.h"
@@ -55,8 +58,13 @@ Steps::Steps(Song *song): m_StepsType(StepsType_Invalid), m_pSong(song),
 	m_sDescription(""), m_sChartStyle(""),
 	m_Difficulty(Difficulty_Invalid), m_iMeter(0),
 	m_bAreCachedRadarValuesJustLoaded(false),
+	m_bAreCachedTechCountsValuesJustLoaded(false),
+	m_AreCachedNpsPerMeasureJustLoaded(false),
+	m_AreCachedNotesPerMeasureJustLoaded(false),
+	m_bIsCachedGrooveStatsHashJustLoaded(false),
+	m_sGrooveStatsHash(""), m_iGrooveStatsHashVersion(0),
 	m_sCredit(""), displayBPMType(DISPLAY_BPM_ACTUAL),
-	specifiedBPMMin(0), specifiedBPMMax(0) {}
+	specifiedBPMMin(0), specifiedBPMMax(0) { }
 
 Steps::~Steps()
 {
@@ -295,6 +303,14 @@ void Steps::TidyUpData()
 		SetMeter( int(PredictMeter()) );
 }
 
+void Steps::CalculateStepStats( float fMusicLengthSeconds )
+{
+	this->CalculateRadarValues(fMusicLengthSeconds);
+	this->CalculateTechCounts();
+	this->CalculateMeasureInfo();
+	this->CalculateGrooveStatsHash();
+}
+
 void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 {
 	// If we're autogen, don't calculate values.  GetRadarValues will take from our parent.
@@ -318,7 +334,7 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 	NoteData tempNoteData;
 	this->GetNoteData( tempNoteData );
 
-	FOREACH_PlayerNumber( pn )
+	FOREACH_PlayerNumber(pn)
 		m_CachedRadarValues[pn].Zero();
 
 	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
@@ -327,8 +343,10 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 		std::vector<NoteData> vParts;
 
 		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
-		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
+		for( size_t pn = 0; pn < std::min(vParts.size(), size_t(NUM_PLAYERS)); ++pn )
+		{
 			NoteDataUtil::CalculateRadarValues( vParts[pn], fMusicLengthSeconds, m_CachedRadarValues[pn] );
+		}
 	}
 	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
 	{
@@ -351,6 +369,103 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 		NoteDataUtil::CalculateRadarValues( tempNoteData, fMusicLengthSeconds, m_CachedRadarValues[0] );
 		std::fill_n( m_CachedRadarValues + 1, NUM_PLAYERS-1, m_CachedRadarValues[0] );
 	}
+
+	GAMESTATE->SetProcessedTimingData(nullptr);
+}
+
+void Steps::CalculateTechCounts()
+{
+	if (parent != nullptr)
+		return;
+
+	if( m_bAreCachedTechCountsValuesJustLoaded )
+	{
+		m_bAreCachedTechCountsValuesJustLoaded = false;
+		return;
+	}
+
+	NoteData tempNoteData;
+	this->GetNoteData( tempNoteData );
+
+	FOREACH_PlayerNumber(pn)
+		m_CachedTechCounts[pn]
+			.Zero();
+
+
+	// If we don't have a valid layout for this StepsType, then don't even bother
+	if(StepParity::Layouts.find(this->m_StepsType) == StepParity::Layouts.end())
+	{
+		return;
+	}
+	StepParity::StageLayout layout = StepParity::Layouts.at(this->m_StepsType);
+	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
+	StepParity::StepParityGenerator gen = StepParity::StepParityGenerator(layout);
+	gen.analyzeNoteData(tempNoteData);
+	TechCounts::CalculateTechCountsFromRows(gen.rows, layout, m_CachedTechCounts[0]);
+	std::fill_n( m_CachedTechCounts + 1, NUM_PLAYERS-1, m_CachedTechCounts[0] );
+
+	GAMESTATE->SetProcessedTimingData(nullptr);
+}
+
+void Steps::CalculateMeasureInfo()
+{
+	if(parent != nullptr)
+	{
+		return;
+	}
+
+	if( m_AreCachedNpsPerMeasureJustLoaded )
+	{
+		m_AreCachedNpsPerMeasureJustLoaded = false;
+		return;
+	}
+
+	NoteData tempNoteData;
+	this->GetNoteData( tempNoteData );
+
+	std::vector<MeasureInfo> measureInfoPerPlayer;
+	
+	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
+
+	if( tempNoteData.IsComposite() )
+	{
+		measureInfoPerPlayer.resize(NUM_PLAYERS);
+		std::vector<NoteData> vParts;
+		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
+		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
+		{
+			MeasureInfo::CalculateMeasureInfo(vParts[pn], measureInfoPerPlayer[pn]);
+		}
+	}
+	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
+	{
+		measureInfoPerPlayer.resize(NUM_PLAYERS);
+		NoteData p1 = tempNoteData;
+		// XXX: Assumption that couple will always have an even number of notes.
+		const int tracks = tempNoteData.GetNumTracks() / 2;
+		p1.SetNumTracks(tracks);
+		MeasureInfo::CalculateMeasureInfo(tempNoteData, measureInfoPerPlayer[PLAYER_1]);
+		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
+		tempNoteData.SetNumTracks(tracks);
+		MeasureInfo::CalculateMeasureInfo(tempNoteData, measureInfoPerPlayer[PLAYER_2]);
+	}
+	else
+	{
+		measureInfoPerPlayer.resize(1);
+		MeasureInfo::CalculateMeasureInfo(tempNoteData, measureInfoPerPlayer[0]);
+	}
+	
+	m_CachedNotesPerMeasure.clear();
+	m_CachedNpsPerMeasure.clear();
+	m_PeakNps.clear();
+	
+	for(MeasureInfo & mi : measureInfoPerPlayer)
+	{
+		m_CachedNotesPerMeasure.push_back(mi.notesPerMeasure);
+		m_CachedNpsPerMeasure.push_back(mi.npsPerMeasure);
+		m_PeakNps.push_back(mi.peakNps);
+	}
+	
 	GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
@@ -503,6 +618,12 @@ void Steps::DeAutogen( bool bCopyNoteData )
 	m_Difficulty		= Real()->m_Difficulty;
 	m_iMeter		= Real()->m_iMeter;
 	std::copy( Real()->m_CachedRadarValues, Real()->m_CachedRadarValues + NUM_PLAYERS, m_CachedRadarValues );
+	std::copy( Real()->m_CachedTechCounts, Real()->m_CachedTechCounts + NUM_PLAYERS, m_CachedTechCounts );
+	
+	m_CachedNpsPerMeasure.assign(Real()->m_CachedNpsPerMeasure.begin(), Real()->m_CachedNpsPerMeasure.end());
+	m_CachedNotesPerMeasure.assign(Real()->m_CachedNotesPerMeasure.begin(), Real()->m_CachedNotesPerMeasure.end());
+	
+	
 	m_sCredit		= Real()->m_sCredit;
 	parent = nullptr;
 
@@ -534,7 +655,7 @@ void Steps::CopyFrom( Steps* pSource, StepsType ntTo, float fMusicLengthSeconds 
 	this->SetDescription( pSource->GetDescription() );
 	this->SetDifficulty( pSource->GetDifficulty() );
 	this->SetMeter( pSource->GetMeter() );
-	this->CalculateRadarValues( fMusicLengthSeconds );
+	this->CalculateStepStats(fMusicLengthSeconds);
 }
 
 void Steps::CreateBlank( StepsType ntTo )
@@ -631,6 +752,191 @@ void Steps::SetCachedRadarValues( const RadarValues v[NUM_PLAYERS] )
 	m_bAreCachedRadarValuesJustLoaded = true;
 }
 
+
+void Steps::SetCachedTechCounts( const TechCounts ts[NUM_PLAYERS] )
+{
+	DeAutogen();
+	std::copy(ts, ts + NUM_PLAYERS, m_CachedTechCounts);
+	m_bAreCachedTechCountsValuesJustLoaded = true;
+}
+
+void Steps::SetCachedNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure)
+{
+	DeAutogen();
+	m_CachedNpsPerMeasure.assign(npsPerMeasure.begin(), npsPerMeasure.end());
+	m_AreCachedNpsPerMeasureJustLoaded = true;
+}
+
+void Steps::SetCachedNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure)
+{
+	DeAutogen();
+	m_CachedNotesPerMeasure.assign(notesPerMeasure.begin(), notesPerMeasure.end());
+	m_AreCachedNotesPerMeasureJustLoaded = true;
+}
+
+void Steps::SetPeakNps(std::vector<float> &peakNps)
+{
+	m_PeakNps.assign(peakNps.begin(), peakNps.end());
+}
+
+const RString Steps::GetGrooveStatsHash() const
+{
+	return m_sGrooveStatsHash;
+}
+
+int Steps::GetGrooveStatsHashVersion() const
+{
+	return m_iGrooveStatsHashVersion;
+}
+
+void Steps::CalculateGrooveStatsHash()
+{
+	// When the game first boots up, it will load the GrooveStatsHash from the
+	// cache.
+	// This should keep the initial boot snappy, especially since hashes should
+	// almost never change.
+	// If this function is then called again (say in ScreenEval), we can
+	// recalculate the hash and use that for submission.
+	if (m_iGrooveStatsHashVersion == CURRENT_GROOVE_STATS_HASH_VERSION &&
+			m_bIsCachedGrooveStatsHashJustLoaded == true)
+	{
+		m_bIsCachedGrooveStatsHashJustLoaded = false;
+		return;
+	}
+	this->Decompress();
+
+	RString smNoteData = this->MinimizedChartString();
+
+	TimingData * timingData = this->GetTimingData();
+	std::vector<TimingSegment *> segments = timingData->GetTimingSegments(SEGMENT_BPM);
+	std::vector<RString> bpmStrings;
+	bpmStrings.reserve(segments.size());
+	for (TimingSegment *segment : segments)
+	{
+		BPMSegment *bpmSegment = ToBPM(segment);
+		float beat = bpmSegment->GetBeat();
+		float bpm = bpmSegment->GetBPM();
+		RString segmentStr = ssprintf("%s=%s", NormalizeDecimal(beat).c_str(), NormalizeDecimal(bpm).c_str());
+		bpmStrings.push_back(segmentStr);
+	}
+	RString bpmString = join(",", bpmStrings);
+
+	smNoteData.append(bpmString);
+	RString gsKey = BinaryToHex(CryptManager::GetSHA1ForString(smNoteData));
+	gsKey = gsKey.substr(0, 16);
+	m_sGrooveStatsHash = gsKey;
+	m_iGrooveStatsHashVersion = CURRENT_GROOVE_STATS_HASH_VERSION;
+}
+
+RString Steps::MinimizedChartString()
+{
+	// We can potentially minimize the chart to get the most compressed
+	// form of the actual chart data.
+	// NOTE(teejusb): This can be more compressed than the data actually
+	// generated by StepMania. This is okay because the charts would still
+	// be considered equivalent.
+	// E.g. 0000                      0000
+	// 		0000  -- minimized to -->
+	// 		0000
+	// 		0000
+	// 		StepMania will always generate the former since quarter notes are
+	// 		the smallest quantization.
+	
+	// Instead of calling GetSMNoteData(), call NoteDataUtil::GetSMNoteDataString()
+	// to ensure that we have a consistent, valid stepchart representation.
+	RString smNoteData = "";
+	NoteData noteData;
+	this->GetNoteData(noteData);
+	NoteDataUtil::GetSMNoteDataString( noteData, smNoteData );
+	
+	if( smNoteData == "")
+	{
+		return "";
+	}
+	
+	// Strip any comments from smNoteData
+	std::regex commentRegex("//[^\n]*");
+	RString deCommentedNoteData = std::regex_replace(smNoteData, commentRegex, "");
+	
+	RString minimizedNoteData = "";
+	
+	std::vector<RString> measures;
+	Regex anyNote("[^0]");
+	
+	split(deCommentedNoteData, ",", measures, true);
+	for (unsigned m = 0; m < measures.size(); m++)
+	{
+
+		Trim(measures[m]);
+		bool allZeroes = true;
+		bool minimal = false;
+		std::vector<RString> lines;
+		split(measures[m], "\n", lines, true);
+		while (lines.size() > 0 && !minimal && lines.size() % 2 == 0)
+		{
+			// If every other line is all 0s, we can minimize the measure
+			for (unsigned i = 1; i < lines.size(); i += 2)
+			{
+				Trim(lines[i]);
+				if (anyNote.Compare(lines[i]) == true)
+				{
+					allZeroes = false;
+					break;
+				}
+			}
+
+			if (allZeroes)
+			{
+				// Iterate through lines, removing every other item.
+				// Note that we're removing the odd indices, so we
+				// call `++it;` and then erase the following line
+				auto it = lines.begin();
+				while (it != lines.end())
+				{
+					++it;
+					if (it != lines.end())
+					{
+						it = lines.erase(it);
+					}
+				}
+			}
+			else
+			{
+				minimal = true;
+			}
+		}
+
+		// Once the measure has been minimized, make sure all of the lines are
+		// actually trimmed.
+		// (for some reason, the chart returned by GetSMNoteData() have a lot
+		//  of extra newlines)
+		for (unsigned l = 0; l < lines.size();  l++)
+		{
+			Trim(lines[l]);
+		}
+
+		// Then, rejoin the lines together to make a measure,
+		// and add it to minimizedNoteData.
+		minimizedNoteData += join("\n", lines);
+		if (m < measures.size() - 1)
+		{
+			minimizedNoteData += "\n,\n";
+		}
+	}
+	return minimizedNoteData;
+}
+
+void Steps::SetCachedGrooveStatsHash(const RString& key)
+{
+	m_sGrooveStatsHash = key;
+	m_bIsCachedGrooveStatsHashJustLoaded = true;
+}
+
+void Steps::SetCachedGrooveStatsHashVersion(int version)
+{
+	m_iGrooveStatsHashVersion = version;
+}
+
 RString Steps::GenerateChartKey()
 {
 	ChartKey = this->GenerateChartKey(*m_pNoteData, this->GetTimingData());
@@ -661,7 +967,7 @@ RString Steps::GenerateChartKey(NoteData &nd, TimingData *td)
 	{
 #pragma omp section
 		{
-			for (std::size_t r = 0; r < nerv.size() / 2; r++) {
+			for (size_t r = 0; r < nerv.size() / 2; r++) {
 				int row = nerv[r];
 				for (int t = 0; t < nd.GetNumTracks(); ++t) {
 					const TapNote &tn = nd.GetTapNote(t, row);
@@ -678,7 +984,7 @@ RString Steps::GenerateChartKey(NoteData &nd, TimingData *td)
 
 #pragma omp section
 		{
-			for (std::size_t r = nerv.size() / 2; r < nerv.size(); r++) {
+			for (size_t r = nerv.size() / 2; r < nerv.size(); r++) {
 				int row = nerv[r];
 				for (int t = 0; t < nd.GetNumTracks(); ++t) {
 					const TapNote &tn = nd.GetTapNote(t, row);
@@ -699,6 +1005,68 @@ RString Steps::GenerateChartKey(NoteData &nd, TimingData *td)
 	o.append("X");	// I was thinking of using "C" to indicate chart.. however.. X is cooler... - Mina
 	o.append(BinaryToHex(CryptManager::GetSHA1ForString(k)));
 	return o;
+}
+
+std::vector<ColumnCue> Steps::GetColumnCues(float minDuration)
+{
+	// TODO: Should we worry about getting the right steps per player?
+	// It seems like this is only necessary when dealing with Couples charts
+
+	std::vector<ColumnCue> cues;
+	NoteData noteData;
+	this->GetNoteData( noteData );
+	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
+	ColumnCue::CalculateColumnCues(noteData, cues, minDuration);
+	GAMESTATE->SetProcessedTimingData(nullptr);
+	return cues;
+}
+
+
+const std::vector<float> & Steps::GetNpsPerMeasure(PlayerNumber pn) const {
+	// CachedNpsPerMeasure will only have separate sets of values per-player if the
+	// steps type has different steps for each player (eg dance-couples, dance-routine).
+	// Otherwise, it will only store one copy of the values (which will be the case for like
+	// 99.9% of charts).
+	
+	static const std::vector<float> EMPTY_VECTOR;
+	if(Real()->m_CachedNpsPerMeasure.size() == 0) {
+		return EMPTY_VECTOR;
+	}
+	else if(Real()->m_CachedNpsPerMeasure.size() <= pn) {
+		return Real()->m_CachedNpsPerMeasure[PLAYER_1];
+	}
+	else {
+		return Real()->m_CachedNpsPerMeasure[pn];
+	}
+}
+
+const std::vector<int> & Steps::GetNotesPerMeasure(PlayerNumber pn) const {
+	// CachedNotesPerMeasure will only have separate sets of values per-player if the
+	// steps type has different steps for each player (eg dance-couples, dance-routine).
+	// Otherwise, it will only have one copy of the values (which will be the case for like
+	// 99.9% of charts).
+	static const std::vector<int> EMPTY_VECTOR;
+	if(Real()->m_CachedNotesPerMeasure.size() == 0) {
+		return EMPTY_VECTOR;
+	}
+	else if(Real()->m_CachedNotesPerMeasure.size() <= pn) {
+		return Real()->m_CachedNotesPerMeasure[PLAYER_1];
+	}
+	else {
+		return Real()->m_CachedNotesPerMeasure[pn];
+	}
+}
+
+float Steps::GetPeakNps(PlayerNumber pn) const {
+	if(Real()->m_PeakNps.size() == 0) {
+		return 0;
+	}
+	else if(Real()->m_PeakNps.size() <= pn) {
+		return Real()->m_PeakNps[PLAYER_1];
+	}
+	else {
+		return Real()->m_PeakNps[pn];
+	}
 }
 
 
@@ -740,6 +1108,62 @@ public:
 		rv.PushSelf(L);
 		return 1;
 	}
+
+	static int GetTechCounts(T* p, lua_State *L )
+	{
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		TechCounts &ts = const_cast<TechCounts &>(p->GetTechCounts(pn));
+		ts.PushSelf(L);
+		return 1;
+	}
+
+	static int CalculateTechCounts(T* p, lua_State *L )
+	{
+		p->CalculateTechCounts();
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		TechCounts &ts = const_cast<TechCounts &>(p->GetTechCounts(pn));
+		ts.PushSelf(L);
+		return 1;
+	}
+
+	static int GetNpsPerMeasure(T *p, lua_State *L)
+	{
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		std::vector<float> &ts = const_cast<std::vector<float> &>(p->GetNpsPerMeasure(pn));
+		LuaHelpers::CreateTableFromArray(ts, L);
+		return 1;
+	}
+
+	static int GetNotesPerMeasure(T *p, lua_State * L)
+	{
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		std::vector<int> &ts = const_cast<std::vector<int> &>(p->GetNotesPerMeasure(pn));
+		LuaHelpers::CreateTableFromArray(ts, L);
+		return 1;
+	}
+
+	static int GetPeakNps(T *p, lua_State *L)
+	{
+		PlayerNumber pn = PLAYER_1;
+		if (!lua_isnil(L, 1)) {
+			pn = Enum::Check<PlayerNumber>(L, 1);
+		}
+		lua_pushnumber(L, p->GetPeakNps(pn));
+		return 1;
+	}
+
 	static int GetTimingData( T* p, lua_State *L )
 	{
 		p->GetTimingData()->PushSelf(L);
@@ -756,6 +1180,19 @@ public:
 		return 1;
 	}
 	*/
+
+	static int GetGrooveStatsHash(T *p, lua_State *L)
+	{
+		lua_pushstring(L, p->GetGrooveStatsHash());
+		return 1;
+	}
+	
+	static int GetGrooveStatsHashVersion(T *p, lua_State *L)
+	{
+		lua_pushnumber(L, p->GetGrooveStatsHashVersion());
+		return 1;
+	}
+	
 	static int GetChartName(T *p, lua_State *L)
 	{
 		lua_pushstring(L, p->GetChartName());
@@ -799,6 +1236,50 @@ public:
 		return 1;
 	}
 
+	static int GetColumnCues(T *p, lua_State*L)
+	{
+		float minDuration = 1.5;
+		if (lua_isnumber(L, 1))
+		{
+			minDuration = lua_tonumber(L, 1);
+		}
+		std::vector<ColumnCue> cues = p->GetColumnCues(minDuration);
+		lua_createtable(L, cues.size(), 0);
+
+		for (unsigned i = 0; i < cues.size(); i++)
+		{
+			lua_newtable(L);
+			lua_pushstring(L, "startTime");
+			lua_pushnumber(L, cues[i].startTime);
+			lua_settable(L, -3);
+
+			lua_pushstring(L, "duration");
+			lua_pushnumber(L, cues[i].duration);
+			lua_settable(L, -3);
+
+			lua_pushstring(L, "columns");
+			lua_createtable(L, cues[i].columns.size(), 0);
+
+			for (unsigned c = 0; c < cues[i].columns.size(); c++)
+			{
+				lua_newtable(L);
+				lua_pushstring(L, "colNum");
+				lua_pushinteger(L, cues[i].columns[c].colNum);
+				lua_settable(L, -3);
+
+				lua_pushstring(L, "noteType");
+				lua_pushinteger(L, cues[i].columns[c].noteType);
+				lua_settable(L, -3);
+
+				lua_rawseti(L, -2, c + 1);
+			}
+
+			lua_settable(L, -3);
+			lua_rawseti(L, -2, i + 1);
+		}
+		return 1;
+	}
+
 	LunaSteps()
 	{
 		ADD_METHOD( GetAuthorCredit );
@@ -811,6 +1292,8 @@ public:
 		ADD_METHOD( HasSignificantTimingChanges );
 		ADD_METHOD( HasAttacks );
 		ADD_METHOD( GetRadarValues );
+		ADD_METHOD( GetTechCounts );
+		ADD_METHOD( CalculateTechCounts );
 		ADD_METHOD( GetTimingData );
 		ADD_METHOD( GetChartName );
 		//ADD_METHOD( GetSMNoteData );
@@ -824,6 +1307,15 @@ public:
 		ADD_METHOD( IsDisplayBpmRandom );
 		ADD_METHOD( PredictMeter );
 		ADD_METHOD( GetDisplayBPMType );
+		// TODO: Below are experimental and may change in the future until we
+		// actually document them in lua.
+		// We expose them for testing purposes.
+		ADD_METHOD( GetColumnCues );
+		ADD_METHOD( GetNpsPerMeasure );
+		ADD_METHOD( GetNotesPerMeasure );
+		ADD_METHOD( GetPeakNps );
+		ADD_METHOD( GetGrooveStatsHash );
+		ADD_METHOD( GetGrooveStatsHashVersion );
 	}
 };
 

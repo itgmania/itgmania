@@ -9,38 +9,48 @@
 #include <cstdint>
 #include <vector>
 
-// for timeGetTime
+// for QueryPerformanceCounter
 #include <windows.h>
 #include <mmsystem.h>
 #if defined(_MSC_VER)
 #pragma comment(lib, "winmm.lib")
 #endif
 
-
 static bool g_bTimerInitialized;
+
+/* QueryPerformanceCounter variables below.
+ * QueryPerformanceCounter and QueryPerformanceFrequency expect
+ * a LARGE_INTEGER, which is a union. These functions store data
+ * in the QuadPart of the LARGE_INTEGER, which is a 64-bit integer. */
+namespace {
+    LARGE_INTEGER g_liFrequency;
+    LARGE_INTEGER g_liCurrentTime;
+}  // namespace
 
 static void InitTimer()
 {
-	if( g_bTimerInitialized )
+	if( g_bTimerInitialized ) {
 		return;
+	}
+	
 	g_bTimerInitialized = true;
 
-	timeBeginPeriod( 1 );
+	// Retrieve the number of ticks per second.
+	QueryPerformanceFrequency(&g_liFrequency);
 }
 
-std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
+int64_t ArchHooks::GetSystemTimeInMicroseconds()
 {
-	if( !g_bTimerInitialized )
+	// Make sure the timer is initialized.
+	if (!g_bTimerInitialized) {
 		InitTimer();
-
-	std::int64_t ret = timeGetTime() * std::int64_t(1000);
-	if( bAccurate )
-	{
-		ret = FixupTimeIfLooped( ret );
-		ret = FixupTimeIfBackwards( ret );
 	}
 
-	return ret;
+	// Get the current time.
+	QueryPerformanceCounter(&g_liCurrentTime);
+
+	// Calculate the elapsed time in microseconds.
+	return (g_liCurrentTime.QuadPart * 1000000) / g_liFrequency.QuadPart;
 }
 
 static RString GetMountDir( const RString &sDirOfExecutable )
@@ -55,65 +65,44 @@ static RString GetMountDir( const RString &sDirOfExecutable )
 	return sDir;
 }
 
-void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
-{
-	RString sDir = GetMountDir( sDirOfExecutable );
-	FILEMAN->Mount("dirro", sDir, "/");
+void MountDirectories(const RString& baseDir) {
+	const std::vector<RString> winDirectoryStructureITGm = {
+		"/Announcers",
+		"/BGAnimations",
+		"/BackgroundEffects",
+		"/BackgroundTransitions",
+		"/Cache",
+		"/CDTitles",
+		"/Characters",
+		"/Courses",
+		"/Downloads",
+		"/Logs",
+		"/NoteSkins",
+		"/Packages",
+		"/Save",
+		"/Screenshots",
+		"/Songs",
+		"/RandomMovies",
+		"/Themes"
+	};
 
-	bool portable = DoesFileExist("/Portable.ini");
-	if (portable)
-	{
-		FILEMAN->Mount("dir", sDir + "/Announcers", "/Announcers");
-		FILEMAN->Mount("dir", sDir + "/BGAnimations", "/BGAnimations");
-		FILEMAN->Mount("dir", sDir + "/BackgroundEffects", "/BackgroundEffects");
-		FILEMAN->Mount("dir", sDir + "/BackgroundTransitions", "/BackgroundTransitions");
-		FILEMAN->Mount("dir", sDir + "/Cache", "/Cache");
-		FILEMAN->Mount("dir", sDir + "/CDTitles", "/CDTitles");
-		FILEMAN->Mount("dir", sDir + "/Characters", "/Characters");
-		FILEMAN->Mount("dir", sDir + "/Courses", "/Courses");
-		FILEMAN->Mount("dir", sDir + "/Downloads", "/Downloads");
-		FILEMAN->Mount("dir", sDir + "/Logs", "/Logs");
-		FILEMAN->Mount("dir", sDir + "/NoteSkins", "/NoteSkins");
-		FILEMAN->Mount("dir", sDir + "/Packages", "/Packages");
-		FILEMAN->Mount("dir", sDir + "/Save", "/Save");
-		FILEMAN->Mount("dir", sDir + "/Screenshots", "/Screenshots");
-		FILEMAN->Mount("dir", sDir + "/Songs", "/Songs");
-		FILEMAN->Mount("dir", sDir + "/RandomMovies", "/RandomMovies");
-		FILEMAN->Mount("dir", sDir + "/Themes", "/Themes");
+	for (const RString& dir : winDirectoryStructureITGm) {
+		FILEMAN->Mount("dir", baseDir + dir, dir);
 	}
 }
 
-void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
-{
-	/*
-	 * Look, I know what you're thinking: "Hey, let's put all this stuff into
-	 * their respective 'proper' places on the filesystem!" Stop. Now.
-	 * This was done before and it was the most ungodly confusing thing to ever
-	 * happen. Just don't do it, seriously. Keep them in one place.
-	 * - Colby
-	 */
-	RString sAppDataDir = SpecialDirs::GetAppDataDir() + PRODUCT_ID;
-	//RString sCommonAppDataDir = SpecialDirs::GetCommonAppDataDir() + PRODUCT_ID;
-	//RString sLocalAppDataDir = SpecialDirs::GetLocalAppDataDir() + PRODUCT_ID;
-	//RString sPicturesDir = SpecialDirs::GetPicturesDir() + PRODUCT_ID;
+void ArchHooks::MountInitialFilesystems(const RString& sDirOfExecutable) {
+	RString sDir = GetMountDir(sDirOfExecutable);
+	FILEMAN->Mount("dirro", sDir, "/");
 
-	FILEMAN->Mount( "dir", sAppDataDir + "/Announcers", "/Announcers" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/BGAnimations", "/BGAnimations" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/BackgroundEffects", "/BackgroundEffects" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/BackgroundTransitions", "/BackgroundTransitions" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/Cache", "/Cache" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/CDTitles", "/CDTitles" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/Characters", "/Characters" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/Courses", "/Courses" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/Downloads", "/Downloads" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/Logs", "/Logs" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/NoteSkins", "/NoteSkins" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/Packages", "/Packages" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/Save", "/Save" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/Screenshots", "/Screenshots" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/Songs", "/Songs" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/RandomMovies", "/RandomMovies" );
-	FILEMAN->Mount( "dir", sAppDataDir + "/Themes", "/Themes" );
+	if (DoesFileExist("/Portable.ini")) {
+		MountDirectories(sDir);
+	}
+}
+
+void ArchHooks::MountUserFilesystems(const RString& sDirOfExecutable) {
+	RString sAppDataDir = SpecialDirs::GetAppDataDir() + PRODUCT_ID;
+	MountDirectories(sAppDataDir);
 }
 
 static RString LangIdToString( LANGID l )

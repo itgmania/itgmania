@@ -39,7 +39,7 @@ WheelBase::~WheelBase()
 {
 	for (WheelItemBase *i : m_WheelBaseItems)
 	{
-		SAFE_DELETE( i );
+		RageUtil::SafeDelete( i );
 	}
 	m_WheelBaseItems.clear();
 	m_LastSelection = nullptr;
@@ -77,7 +77,7 @@ void WheelBase::Load( RString sType )
 		DEBUG_ASSERT( pItem );
 		m_WheelBaseItems.push_back( pItem );
 	}
-	SAFE_DELETE( pTempl );
+	RageUtil::SafeDelete( pTempl );
 
 	// draw outside->inside
 	for( int i=0; i<NUM_WHEEL_ITEMS/2; i++ )
@@ -192,7 +192,7 @@ void WheelBase::Update( float fDeltaTime )
 			float t = std::min( fTime, 0.1f );
 			fTime -= t;
 
-			m_fPositionOffsetFromSelection = clamp( m_fPositionOffsetFromSelection, -0.3f, +0.3f );
+			m_fPositionOffsetFromSelection = std::clamp( m_fPositionOffsetFromSelection, -0.3f, +0.3f );
 
 			float fSpringForce = - m_fPositionOffsetFromSelection * LOCKED_INITIAL_VELOCITY;
 			m_fLockedWheelVelocity += fSpringForce;
@@ -218,7 +218,7 @@ void WheelBase::Update( float fDeltaTime )
 
 		/* Make sure that we don't go further than 1 away, in case the speed is
 		 * very high or we miss a lot of frames. */
-		m_fPositionOffsetFromSelection  = clamp(m_fPositionOffsetFromSelection, -1.0f, 1.0f);
+		m_fPositionOffsetFromSelection  = std::clamp(m_fPositionOffsetFromSelection, -1.0f, 1.0f);
 
 		// If it passed the selection, move again.
 		if((m_Moving == -1 && m_fPositionOffsetFromSelection >= 0) ||
@@ -288,6 +288,9 @@ bool WheelBase::Select()	// return true if this selection can end the screen
 	case WheelItemDataType_Section:
 		{
 			RString sThisItemSectionName = m_CurWheelItemData[m_iSelection]->m_sText;
+			// Keep track of the open section so that we can restore it
+			// when navigating back to ScreenSelectMusic.
+			GAMESTATE->sLastOpenSection = sThisItemSectionName;
 			if( m_sExpandedSectionName == sThisItemSectionName ) // already expanded
 			{
 				SetOpenSection( "" ); // collapse it

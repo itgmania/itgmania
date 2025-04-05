@@ -222,6 +222,8 @@ public:
 
 	RString sExpandedSectionName;
 
+	RString sLastOpenSection;
+
 	static int GetNumStagesMultiplierForSong( const Song* pSong );
 	static int GetNumStagesForSongAndStyleType( const Song* pSong, StyleType st );
 	int GetNumStagesForCurrentSongAndStepsOrCourse() const;
@@ -334,6 +336,7 @@ public:
 	bool PlayerIsUsingModifier( PlayerNumber pn, const RString &sModifier );
 
 	FailType GetPlayerFailType( const PlayerState *pPlayerState ) const;
+	FailType GetPlayerFailType( PlayerNumber pn ) const { return GetPlayerFailType( m_pPlayerState[pn] ); }
 
 	// character stuff
 	Character* m_pCurCharacters[NUM_PLAYERS];
@@ -415,7 +418,7 @@ public:
 
 	// Autogen stuff.  This should probably be moved to its own singleton or
 	// something when autogen is generalized and more customizable. -Kyz
-	float GetAutoGenFarg(std::size_t i)
+	float GetAutoGenFarg(size_t i)
 	{
 		if(i >= m_autogen_fargs.size()) { return 0.0f; }
 		return m_autogen_fargs[i];

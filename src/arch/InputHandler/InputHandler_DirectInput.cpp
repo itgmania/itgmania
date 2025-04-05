@@ -41,7 +41,16 @@ static std::vector<XIDevice> XDevices;
 // Number of joysticks found:
 static int g_iNumJoysticks;
 
-#define SAFE_RELEASE(p) { if ( (p) ) { (p)->Release(); (p) = 0; } }
+template<typename T>
+inline void SafeRelease(T*& p)
+{
+    if (p)
+    {
+        p->Release();
+        p = nullptr;
+    }
+}
+
 static BOOL IsXInputDevice(const GUID* pGuidProductFromDirectInput)
 {
 	IWbemLocator*           pIWbemLocator = nullptr;
@@ -126,7 +135,7 @@ static BOOL IsXInputDevice(const GUID* pGuidProductFromDirectInput)
 					}
 				}
 			}
-			SAFE_RELEASE(pDevices[iDevice]);
+			SafeRelease(pDevices[iDevice]);
 		}
 	}
 
@@ -138,10 +147,10 @@ LCleanup:
 	if (bstrClassName)
 		SysFreeString(bstrClassName);
 	for (iDevice = 0; iDevice<20; iDevice++)
-		SAFE_RELEASE(pDevices[iDevice]);
-	SAFE_RELEASE(pEnumDevices);
-	SAFE_RELEASE(pIWbemLocator);
-	SAFE_RELEASE(pIWbemServices);
+		SafeRelease(pDevices[iDevice]);
+	SafeRelease(pEnumDevices);
+	SafeRelease(pIWbemLocator);
+	SafeRelease(pIWbemServices);
 
 	if (bCleanupCOM)
 		CoUninitialize();

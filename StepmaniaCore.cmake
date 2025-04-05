@@ -16,6 +16,9 @@ set(SM_SRC_DIR "${CMAKE_CURRENT_LIST_DIR}/src")
 set(SM_DOC_DIR "${CMAKE_CURRENT_LIST_DIR}/Docs")
 set(SM_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
+set(SM_GENERATED_DIR "${PROJECT_BINARY_DIR}/generated")
+set(SM_GENERATED_SRC_DIR "${SM_GENERATED_DIR}/src")
+
 # TODO: Reconsile the OS dependent naming scheme.
 set(SM_EXE_NAME "ITGmania")
 
@@ -155,12 +158,6 @@ include(ExternalProject)
 
 find_package(nasm)
 find_package(yasm)
-
-find_package(BZip2)
-if(NOT ${BZIP2_FOUND} AND NOT MSVC)
-  message(FATAL_ERROR "Bzip2 support required.")
-endif()
-
 find_package(Iconv)
 
 find_package(Threads)
@@ -257,7 +254,7 @@ elseif(MACOSX)
       "Neither NASM nor YASM were found. Please install at least one of them."
     )
   endif()
-elseif(LINUX)
+elseif(LINUX OR BSD)
   if(WITH_GTK3)
     find_package("GTK3" 2.0)
     if(${GTK3_FOUND})
@@ -341,17 +338,17 @@ elseif(LINUX)
 
   set(OpenGL_GL_PREFERENCE GLVND)
   find_package(OpenGL REQUIRED)
-
-  find_package(Libusb)
-  if(NOT LIBUSB_FOUND)
-    message(FATAL_ERROR "libusb was not found.")
+  if (NOT OPENGL_GLU_FOUND)  # it's an optional component of OpenGL, but we use it for glew build
+    message(FATAL_ERROR "libglu was not found")
   endif()
-endif(WIN32) # LINUX, APPLE
+
+  find_package(udev REQUIRED)
+endif(WIN32) # LINUX OR BSD, APPLE
 
 configure_file("${SM_SRC_DIR}/config.in.hpp"
-               "${SM_SRC_DIR}/generated/config.hpp")
+               "${SM_GENERATED_SRC_DIR}/config.hpp")
 configure_file("${SM_SRC_DIR}/verstub.in.cpp"
-               "${SM_SRC_DIR}/generated/verstub.cpp")
+               "${SM_GENERATED_SRC_DIR}/verstub.cpp")
 
 # Define installer based items for cpack.
 include("${CMAKE_CURRENT_LIST_DIR}/CMake/CPackSetup.cmake")

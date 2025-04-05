@@ -268,8 +268,8 @@ void ActorScroller::PositionItemsAndDrawPrimitives( bool bDrawPrimitives )
 	int iLastItemToDraw = std::ceil( fLastItemToDraw );
 	if( !m_bLoop && !m_bWrap )
 	{
-		iFirstItemToDraw = clamp( iFirstItemToDraw, 0, m_iNumItems );
-		iLastItemToDraw = clamp( iLastItemToDraw, 0, m_iNumItems );
+		iFirstItemToDraw = std::clamp( iFirstItemToDraw, 0, m_iNumItems );
+		iLastItemToDraw = std::clamp( iLastItemToDraw, 0, m_iNumItems );
 	}
 
 	std::vector<Actor*> subs;

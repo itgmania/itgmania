@@ -92,6 +92,7 @@
 		<Function name='HSVToColor'/>
 		<Function name='HSVToHex'/>
 		<Function name='HasAlpha'/>
+		<Function name='HideLightSetting' />
 		<Function name='HitCombo'/>
 		<Function name='HoldTiming'/>
 		<Function name='Hour'/>
@@ -489,6 +490,8 @@
 			<Function name='ztest'/>
 			<Function name='ztestmode'/>
 			<Function name='zwrite'/>
+			<Function name='SetRateScalingEnabled'/>
+			<Function name='GetRateScalingEnabled'/>
 		</Class>
 		<Class base='Actor' name='ActorFrame'>
 			<Function name='AddChildFromPath'/>
@@ -926,6 +929,7 @@
 			<Function name='GetNumStagesLeft'/>
 			<Function name='GetPlayMode'/>
 			<Function name='GetPlayerDisplayName'/>
+			<Function name='GetPlayerFailType'/>
 			<Function name='GetPlayerState'/>
 			<Function name='GetPreferredDifficulty'/>
 			<Function name='GetPreferredSong'/>
@@ -998,6 +1002,17 @@
 			<Function name='StoreRankingName'/>
 			<Function name='UnjoinPlayer'/>
 			<Function name='prepare_song_for_gameplay'/>
+		</Class>
+			<Class name='Group'>
+			<Function name='GetGroupName'/>
+			<Function name='GetSortTitle'/>
+			<Function name='GetDisplayTitle'/>
+			<Function name='GetTranslitTitle'/>
+			<Function name='GetSeries'/>
+			<Function name='GetSyncOffset'/>
+			<Function name='HasPackIni'/>
+			<Function name='GetBannerPath'/>
+			<Function name='GetYearReleased'/>
 		</Class>
 		<Class base='ActorFrame' name='GradeDisplay'>
 			<Function name='Load'/>
@@ -1865,12 +1880,14 @@
 			<Function name='GetSongGroupBannerPath'/>
 			<Function name='GetSongGroupColor'/>
 			<Function name='GetSongGroupNames'/>
+			<Function name='GetGroup'/>
 			<Function name='GetSongRank'/>
 			<Function name='GetSongsInGroup'/>
 			<Function name='SetPreferredCourses'/>
 			<Function name='SetPreferredSongs'/>
 			<Function name='ShortenGroupName'/>
 			<Function name='SongToPreferredSortSectionName'/>
+			<Function name='GetPreferredSortSongsBySectionName'/>
 			<Function name='WasLoadedFromAdditionalCourses'/>
 			<Function name='WasLoadedFromAdditionalSongs'/>
 		</Class>
@@ -2439,6 +2456,12 @@
 			<EnumValue name='&apos;HealthState_Danger&apos;' value='2'/>
 			<EnumValue name='&apos;HealthState_Dead&apos;' value='3'/>
 		</Enum>
+		<Enum name='HideLightType'>
+			<EnumValue name='&apos;HideLightType_NoHideLights&apos;' value='0'/>
+			<EnumValue name='&apos;HideLightType_HideAllLights&apos;' value='1'/>
+			<EnumValue name='&apos;HideLightType_HideMarqueeLights&apos;' value='2'/>
+			<EnumValue name='&apos;HideLightType_HideBassLights&apos;' value='3'/>
+		</Enum>
 		<Enum name='HighResolutionTextures'>
 			<EnumValue name='&apos;HighResolutionTextures_Auto&apos;' value='0'/>
 			<EnumValue name='&apos;HighResolutionTextures_ForceOff&apos;' value='1'/>
@@ -2878,6 +2901,10 @@
 			<EnumValue name='&apos;StyleType_TwoPlayersTwoSides&apos;' value='1'/>
 			<EnumValue name='&apos;StyleType_OnePlayerTwoSides&apos;' value='2'/>
 			<EnumValue name='&apos;StyleType_TwoPlayersSharedSides&apos;' value='3'/>
+		</Enum>
+		<Enum name='SyncOffset'>
+			<EnumValue name='&apos;SyncOffset_Null&apos;' value='1'/>
+			<EnumValue name='&apos;SyncOffset_ITG&apos;' value='2'/>
 		</Enum>
 		<Enum name='TapNoteScore'>
 			<EnumValue name='&apos;TapNoteScore_None&apos;' value='0'/>

@@ -18,13 +18,13 @@ struct lua_State;
 #include "ThemeMetric.h"
 #include "RageTexturePreloader.h"
 #include "RageUtil.h"
-
+#include "Song.h"
 #include <cstddef>
+#include <unordered_set>
 #include <vector>
 
-
-RString SONG_GROUP_COLOR_NAME( std::size_t i );
-RString COURSE_GROUP_COLOR_NAME( std::size_t i );
+RString SONG_GROUP_COLOR_NAME( size_t i );
+RString COURSE_GROUP_COLOR_NAME( size_t i );
 bool CompareNotesPointersForExtra(const Steps *n1, const Steps *n2);
 
 /** @brief The max number of edit steps a profile can have. */
@@ -62,7 +62,7 @@ public:
 	int GetNumStepsLoadedFromProfile();
 	void FreeAllLoadedFromProfile( ProfileSlot slot = ProfileSlot_Invalid );
 
-	void LoadGroupSymLinks( RString sDir, RString sGroupFolder );
+	void LoadGroupSymLinks( RString sDir, RString sGroupFolder);
 
 	/**
 	 * @brief Initialize all courses from disk
@@ -98,6 +98,7 @@ public:
 	//RString GetSongGroupBackgroundPath( RString sSongGroup ) const;
 	void GetSongGroupNames( std::vector<RString> &AddTo ) const;
 	bool DoesSongGroupExist( RString sSongGroup ) const;
+	bool HasPackIni(const RString& sSongGroup) const;
 	RageColor GetSongGroupColor( const RString &sSongGroupName ) const;
 	RageColor GetSongColor( const Song* pSong ) const;
 
@@ -142,8 +143,18 @@ public:
 	 * @return the songs within the game that have at least one valid Step. */
 	const std::vector<Song *> &GetAllSongsOfCurrentGame() const;
 
+	std::map<int, std::vector<Song*>> GetMeterToSongsMap() const { return m_mapSongsByDifficulty; }
 	void GetPreferredSortSongs( std::vector<Song*> &AddTo ) const;
+	std::map<RString, std::vector<Song*>> GetPreferredSortSongsMap() const { return m_mapPreferredSectionToSongs;};
 	RString SongToPreferredSortSectionName( const Song *pSong ) const;
+	std::unordered_map<std::string, Group*> GetGroupGroupMap() const { return m_mapNameToGroup;};
+	std::map<RString, std::unordered_set<Group*>> GetSeriesGroupMap() const { return m_mapSeriesToGroups;};
+	Group* GetGroupFromName(  const RString &sGroupName ) const;
+	Group* GetGroup( const Song *pSong ) const;
+	std::vector<RString> GetPreferredSortSectionNames() const;
+	std::vector<Song*> GetPreferredSortSongsBySectionName( const RString &sSectionName ) const;
+	void GetPreferredSortSongsBySectionName( const RString &sSectionName, std::vector<Song*> &AddTo ) const;
+	std::vector<Song*> GetSongsByMeter( int iMeter ) const;
 	const std::vector<Course*> &GetPopularCourses( CourseType ct ) const { return m_pPopularCourses[ct]; }
 	Song *FindSong( RString sPath ) const;
 	Song *FindSong( RString sGroup, RString sSong ) const;
@@ -183,6 +194,7 @@ public:
 
 	void UpdatePopular();
 	void UpdateShuffled();	// re-shuffle songs and courses
+	std::map<int, std::vector<Song*>> UpdateMeterSort( std::vector<Song*> songs);
 	void SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute = false);
 	void SetPreferredCourses(RString sPreferredCourses, bool bIsAbsolute = false);
 	void UpdatePreferredSort(RString sPreferredSongs = "PreferredSongs.txt", RString sPreferredCourses = "PreferredCourses.txt");
@@ -205,14 +217,16 @@ protected:
 	void LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditions );
 	bool GetExtraStageInfoFromCourse( bool bExtra2, RString sPreferredGroup, Song*& pSongOut, Steps*& pStepsOut, StepsType stype );
 	void SanityCheckGroupDir( RString sDir ) const;
-	void AddGroup( RString sDir, RString sGroupDirName );
+	void AddGroup( RString sDir, RString sGroupDirName, Group* group );
 	int GetNumEditsLoadedFromProfile( ProfileSlot slot ) const;
 
 	void AddSongToList(Song* new_song);
 	/** @brief All of the songs that can be played. */
 	std::vector<Song*>		m_pSongs;
+
 	std::map<RString, Song*> m_SongsByDir;
 	std::set<RString> m_GroupsToNeverCache;
+
 
 	/** @brief Hold pointers to all the songs that have been deleted from disk but must at least be kept temporarily alive for smooth audio transitions. */
 	std::vector<Song*>	m_pDeletedSongs;
@@ -220,15 +234,24 @@ protected:
 	/** @brief The most popular songs ranked by number of plays. */
 	std::vector<Song*>	m_pPopularSongs;
 	std::vector<Song*>	m_pShuffledSongs;	// used by GetRandomSong
+
+	/** @brief Meter numbers and the songs with Steps that are within.*/
+	std::map<int, std::vector<Song*>> m_mapSongsByDifficulty;
+	
 	struct PreferredSortSection
 	{
 		RString sName;
 		std::vector<Song*> vpSongs;
 	};
+	/** @brief All preferred songs, keyed by section */
+	std::map<RString, std::vector<Song*>> m_mapPreferredSectionToSongs;
 	std::vector<PreferredSortSection> m_vPreferredSongSort;
 	std::vector<RString>		m_sSongGroupNames;
 	std::vector<RString>		m_sSongGroupBannerPaths; // each song group may have a banner associated with it
 	//vector<RString>		m_sSongGroupBackgroundPaths; // each song group may have a background associated with it (very rarely)
+	
+	std::unordered_map<std::string, Group*> m_mapNameToGroup; // maps a group's name on disk (folder) to a Group object
+	std::map<RString, std::unordered_set<Group*>>	m_mapSeriesToGroups; 
 
 	struct Comp { bool operator()(const RString& s, const RString &t) const { return CompareRStringsAsc(s,t); } };
 	typedef std::vector<Song*> SongPointerVector;

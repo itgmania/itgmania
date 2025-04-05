@@ -44,7 +44,7 @@ target_link_libraries("TextureFontGenerator" ${TEXTURE_LINK_LIB})
 list(APPEND TEXTURE_INCLUDE_DIRS
             "${TEXTURE_DIR}"
             "${TEXTURE_DIR}/res"
-            "${SM_SRC_DIR}/generated")
+            "${SM_GENERATED_SRC_DIR}")
 
 target_include_directories("TextureFontGenerator"
                            PUBLIC ${TEXTURE_INCLUDE_DIRS})

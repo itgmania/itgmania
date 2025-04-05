@@ -97,7 +97,7 @@ const RString &X##ToLocalizedString( X x ) \
 		for( unsigned i = 0; i < NUM_##X; ++i ) \
 		{ \
 			std::unique_ptr<LocalizedString> ap( new LocalizedString(#X, X##ToString((X)i)) ); \
-			g_##X##Name[i] = move(ap); \
+			g_##X##Name[i] = std::move(ap); \
 		} \
 	} \
 	return g_##X##Name[x]->GetValue();  \

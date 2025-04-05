@@ -13,7 +13,7 @@ public:
 	MovieTexture_Null(RageTextureID ID);
 	virtual ~MovieTexture_Null();
 	void Invalidate() { texHandle = 0; }
-	std::uintptr_t GetTexHandle() const { return texHandle; }
+	uintptr_t GetTexHandle() const { return texHandle; }
 	void Update(float /* delta */) { }
 	void Reload() { }
 	void SetPosition(float /* seconds */) { }
@@ -23,7 +23,7 @@ public:
 private:
 	bool playing;
 	bool loop;
-	std::uintptr_t texHandle;
+	uintptr_t texHandle;
 };
 
 MovieTexture_Null::MovieTexture_Null(RageTextureID ID) : RageMovieTexture(ID)

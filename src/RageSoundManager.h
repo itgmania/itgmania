@@ -39,15 +39,12 @@ public:
 	void StartMixing( RageSoundBase *snd );	/* used by RageSound */
 	void StopMixing( RageSoundBase *snd );	/* used by RageSound */
 	bool Pause( RageSoundBase *snd, bool bPause );	/* used by RageSound */
-	std::int64_t GetPosition( RageTimer *pTimer ) const;	/* used by RageSound */
+	int64_t GetPosition( RageTimer *pTimer ) const;	/* used by RageSound */
 	float GetPlayLatency() const;
 	int GetDriverSampleRate() const;
 
 	RageSoundReader *GetLoadedSound( const RString &sPath );
 	void AddLoadedSound( const RString &sPath, RageSoundReader_Preload *pSound );
-
-	void fix_bogus_sound_driver_pref(RString const& valid_setting);
-	void low_sample_count_workaround();
 
 private:
 	std::map<RString, RageSoundReader_Preload *> m_mapPreloadedSounds;

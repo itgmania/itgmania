@@ -1627,78 +1627,112 @@ void ScreenSelectMusic::AfterStepsOrTrailChange( const std::vector<PlayerNumber>
 	}
 }
 
+void ScreenSelectMusic::SwitchPlayerStepDifficulty(PlayerNumber pn, Difficulty d)
+{
+	// Find the closest match to the given difficulty and StepsType.
+	int iCurDifference = -1;
+	int& iSelection = m_iSelection[pn];
+	int i = 0;
+	for (Steps* s : m_vpSteps)
+	{
+		// If the current steps are listed, use them.
+		if (GAMESTATE->m_pCurSteps[pn] == s)
+		{
+			iSelection = i;
+			break;
+		}
+
+		if (d != Difficulty_Invalid)
+		{
+			int iDifficultyDifference = std::abs(s->GetDifficulty() - d);
+			int iStepsTypeDifference = 0;
+			if (GAMESTATE->m_PreferredStepsType != StepsType_Invalid)
+				iStepsTypeDifference = std::abs(s->m_StepsType - GAMESTATE->m_PreferredStepsType);
+			int iTotalDifference = iStepsTypeDifference * NUM_Difficulty + iDifficultyDifference;
+
+			if (iCurDifference == -1 || iTotalDifference < iCurDifference)
+			{
+				iSelection = i;
+				iCurDifference = iTotalDifference;
+			}
+		}
+		i += 1;
+	}
+
+	CLAMP(iSelection, 0, m_vpSteps.size() - 1);
+}
+
+void ScreenSelectMusic::SwitchPlayerCourseDifficulty(PlayerNumber pn, Difficulty d)
+{
+	// Find the closest match to the given difficulty.
+	int iCurDifference = -1;
+	int& iSelection = m_iSelection[pn];
+	int i = 0;
+	for (Trail* t : m_vpTrails)
+	{
+		// If the current trail is listed, use it.
+		if (GAMESTATE->m_pCurTrail[pn] == m_vpTrails[i])
+		{
+			iSelection = i;
+			break;
+		}
+
+		if (d != Difficulty_Invalid && GAMESTATE->m_PreferredStepsType != StepsType_Invalid)
+		{
+			int iDifficultyDifference = std::abs(t->m_CourseDifficulty - d);
+			int iStepsTypeDifference = std::abs(t->m_StepsType - GAMESTATE->m_PreferredStepsType);
+			int iTotalDifference = iStepsTypeDifference * NUM_CourseDifficulty + iDifficultyDifference;
+
+			if (iCurDifference == -1 || iTotalDifference < iCurDifference)
+			{
+				iSelection = i;
+				iCurDifference = iTotalDifference;
+			}
+		}
+		i += 1;
+	}
+
+	CLAMP(iSelection, 0, m_vpTrails.size() - 1);
+}
+
+void ScreenSelectMusic::SwitchToDifficulty(Difficulty d)
+{
+	if (!GAMESTATE->m_pCurCourse)
+	{
+		FOREACH_HumanPlayer(pn)
+		{
+			SwitchPlayerStepDifficulty(pn, d);
+		}
+	}
+	else
+	{
+		FOREACH_HumanPlayer(pn)
+		{
+			SwitchPlayerCourseDifficulty(pn, d);
+		}
+	}
+
+	if (GAMESTATE->DifficultiesLocked())
+	{
+		FOREACH_HumanPlayer(p)
+			m_iSelection[p] = m_iSelection[GAMESTATE->GetMasterPlayerNumber()];
+	}
+}
+
 void ScreenSelectMusic::SwitchToPreferredDifficulty()
 {
 	if( !GAMESTATE->m_pCurCourse )
 	{
 		FOREACH_HumanPlayer( pn )
 		{
-			// Find the closest match to the user's preferred difficulty and StepsType.
-			int iCurDifference = -1;
-			int &iSelection = m_iSelection[pn];
-			int i = 0;
-			for (Steps *s : m_vpSteps)
-			{
-				// If the current steps are listed, use them.
-				if( GAMESTATE->m_pCurSteps[pn] == s )
-				{
-					iSelection = i;
-					break;
-				}
-
-				if( GAMESTATE->m_PreferredDifficulty[pn] != Difficulty_Invalid  )
-				{
-					int iDifficultyDifference = std::abs( s->GetDifficulty() - GAMESTATE->m_PreferredDifficulty[pn] );
-					int iStepsTypeDifference = 0;
-					if( GAMESTATE->m_PreferredStepsType != StepsType_Invalid )
-						iStepsTypeDifference = std::abs( s->m_StepsType - GAMESTATE->m_PreferredStepsType );
-					int iTotalDifference = iStepsTypeDifference * NUM_Difficulty + iDifficultyDifference;
-
-					if( iCurDifference == -1 || iTotalDifference < iCurDifference )
-					{
-						iSelection = i;
-						iCurDifference = iTotalDifference;
-					}
-				}
-				i += 1;
-			}
-
-			CLAMP( iSelection, 0, m_vpSteps.size()-1 );
+			SwitchPlayerStepDifficulty(pn, GAMESTATE->m_PreferredDifficulty[pn]);
 		}
 	}
 	else
 	{
 		FOREACH_HumanPlayer( pn )
 		{
-			// Find the closest match to the user's preferred difficulty.
-			int iCurDifference = -1;
-			int &iSelection = m_iSelection[pn];
-			int i = 0;
-			for (Trail *t : m_vpTrails)
-			{
-				// If the current trail is listed, use it.
-				if( GAMESTATE->m_pCurTrail[pn] == m_vpTrails[i] )
-				{
-					iSelection = i;
-					break;
-				}
-
-				if( GAMESTATE->m_PreferredCourseDifficulty[pn] != Difficulty_Invalid  &&  GAMESTATE->m_PreferredStepsType != StepsType_Invalid  )
-				{
-					int iDifficultyDifference = std::abs( t->m_CourseDifficulty - GAMESTATE->m_PreferredCourseDifficulty[pn] );
-					int iStepsTypeDifference = std::abs( t->m_StepsType - GAMESTATE->m_PreferredStepsType );
-					int iTotalDifference = iStepsTypeDifference * NUM_CourseDifficulty + iDifficultyDifference;
-
-					if( iCurDifference == -1 || iTotalDifference < iCurDifference )
-					{
-						iSelection = i;
-						iCurDifference = iTotalDifference;
-					}
-				}
-				i += 1;
-			}
-
-			CLAMP( iSelection, 0, m_vpTrails.size()-1 );
+			SwitchPlayerCourseDifficulty(pn, GAMESTATE->m_PreferredCourseDifficulty[pn]);
 		}
 	}
 
@@ -1707,6 +1741,17 @@ void ScreenSelectMusic::SwitchToPreferredDifficulty()
 		FOREACH_HumanPlayer( p )
 			m_iSelection[p] = m_iSelection[GAMESTATE->GetMasterPlayerNumber()];
 	}
+}
+
+// NOTE: This could a be a bit more robust than just looking at the extension,
+// but it's good enough for now.
+static bool IsVideoFile(const RString& path) {
+	const RString extension = GetExtension(path);
+	return extension == "mp4" ||
+		extension == "avi" ||
+		extension == "mov" ||
+		extension == "mkv" ||
+		extension == "mpg";
 }
 
 void ScreenSelectMusic::AfterMusicChange()
@@ -1882,7 +1927,21 @@ void ScreenSelectMusic::AfterMusicChange()
 		g_sCDTitlePath = pSong->GetCDTitlePath();
 		g_bWantFallbackCdTitle = true;
 
-		SwitchToPreferredDifficulty();
+		if (GAMESTATE->m_SortOrder == SORT_METER)
+		{
+			for (int i = m_vpSteps.size() - 1; i >= 0; i--)
+			{
+				if (m_vpSteps[i]->GetMeter() == StringToInt(GAMESTATE->sLastOpenSection))
+				{
+					SwitchToDifficulty(m_vpSteps[i]->GetDifficulty());
+					break;
+				}
+			}
+		}
+		else
+		{
+			SwitchToPreferredDifficulty();
+		}
 		break;
 
 	case WheelItemDataType_Course:
@@ -1956,14 +2015,27 @@ void ScreenSelectMusic::AfterMusicChange()
 	if( bWantBanner )
 	{
 		LOG->Trace("LoadFromCachedBanner(%s)",g_sBannerPath .c_str());
-		if( m_Banner.LoadFromCachedBanner( g_sBannerPath ) )
+		// TODO: We should probably have some fallback banner for videos, but for
+		// now we can just load the video file directly. This is to try an address
+		// some issues with the video banners potentially crashing the game but
+		// needs some more investigation.
+		if( IsVideoFile(g_sBannerPath) )
 		{
-			/* If the high-res banner is already loaded, just delay before
-			 * loading it, so the low-res one has time to fade in. */
-			if( !TEXTUREMAN->IsTextureRegistered( Sprite::SongBannerTexture(g_sBannerPath) ) )
-				m_BackgroundLoader.CacheFile( g_sBannerPath );
+			// Directly load the video file.
+			m_Banner.LoadFromCachedBanner(g_sBannerPath);
+			g_bBannerWaiting = false;
+		}
+		else
+		{
+			if( m_Banner.LoadFromCachedBanner( g_sBannerPath ) )
+			{
+				/* If the high-res banner is already loaded, just delay before
+				 * loading it, so the low-res one has time to fade in. */
+				if( !TEXTUREMAN->IsTextureRegistered( Sprite::SongBannerTexture(g_sBannerPath) ) )
+					m_BackgroundLoader.CacheFile( g_sBannerPath );
 
-			g_bBannerWaiting = true;
+				g_bBannerWaiting = true;
+			}
 		}
 	}
 

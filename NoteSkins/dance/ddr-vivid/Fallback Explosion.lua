@@ -20,6 +20,7 @@ local t = Def.ActorFrame {
 		W4Command=NOTESKIN:GetMetricA("GhostArrowDim", "W4Command");
 		W3Command=NOTESKIN:GetMetricA("GhostArrowDim", "W3Command");
 		W2Command=NOTESKIN:GetMetricA("GhostArrowDim", "W2Command");
+		BrightCommand=NOTESKIN:GetMetricA("GhostArrowDim", "W1Command");
 		JudgmentCommand=cmd(finishtweening);
 	};
 	--Bright Explosion Commands

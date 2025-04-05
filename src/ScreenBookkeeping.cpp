@@ -66,8 +66,6 @@ void ScreenBookkeeping::Init()
 
 void ScreenBookkeeping::Update( float fDelta )
 {
-	UpdateView();	// refresh so that counts change in real-time
-
 	ScreenWithMenuElements::Update( fDelta );
 }
 

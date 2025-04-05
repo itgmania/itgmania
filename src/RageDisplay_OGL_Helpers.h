@@ -6,7 +6,8 @@
 
 #include <cstdint>
 
-#if defined(WIN32)
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 
@@ -30,7 +31,7 @@ public:
 	virtual ~RenderTarget() { }
 	virtual void Create( const RenderTargetParam &param, int &iTextureWidthOut, int &iTextureHeightOut ) = 0;
 
-	virtual std::uintptr_t GetTexture() const = 0;
+	virtual uintptr_t GetTexture() const = 0;
 
 	/* Render to this RenderTarget. */
 	virtual void StartRenderingTo() = 0;

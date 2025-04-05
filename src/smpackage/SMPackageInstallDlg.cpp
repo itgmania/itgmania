@@ -366,8 +366,8 @@ void CSMPackageInstallDlg::OnOK()
 					goto show_error;
 				}
 
-				SAFE_DELETE( pFileFrom );
-				SAFE_DELETE( pFileTo );
+				RageUtil::SafeDelete( pFileFrom );
+				RageUtil::SafeDelete( pFileTo );
 			}
 
 			break;

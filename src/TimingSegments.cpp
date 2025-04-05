@@ -4,9 +4,6 @@
 
 #include <vector>
 
-
-const double TimingSegment::EPSILON = 1e-6;
-
 static const char *TimingSegmentTypeNames[] = {
 	"BPM",
 	"Stop",

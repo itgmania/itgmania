@@ -70,7 +70,12 @@ private:
 
 	RageThread m_Thread;
 	bool m_bShutdownThread;
-	static int StartBufferingThread( void *p ) { ((RageSoundReader_ThreadedBuffer *) p)->BufferingThread(); return 0; }
+	static int StartBufferingThread(void* p)
+	{
+		((RageSoundReader_ThreadedBuffer*)p)->BufferingThread();
+		return 0;
+	}
+
 	void BufferingThread();
 };
 

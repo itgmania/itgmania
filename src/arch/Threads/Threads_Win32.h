@@ -4,7 +4,7 @@
 #include <cstdint>
 
 #include "Threads.h"
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 #  include <windows.h>
 #else
 #  include <windef.h>
@@ -21,11 +21,11 @@ public:
 
 	void Halt( bool Kill );
 	void Resume();
-	std::uint64_t GetThreadId() const;
+	uint64_t GetThreadId() const;
 	int Wait();
 };
 
-HANDLE Win32ThreadIdToHandle( std::uint64_t iID );
+HANDLE Win32ThreadIdToHandle( uint64_t iID );
 
 class MutexImpl_Win32: public MutexImpl
 {

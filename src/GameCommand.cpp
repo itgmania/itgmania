@@ -60,7 +60,6 @@ void GameCommand::Init()
 	m_iGoalCalories = -1;
 	m_GoalType = GoalType_Invalid;
 	m_sProfileID = "";
-	m_sUrl = "";
 	m_bUrlExits = true;
 
 	m_bInsertCredit = false;
@@ -361,7 +360,7 @@ void GameCommand::LoadOne( const Command& cmd )
 		}
 		else
 		{
-			for(std::size_t i= 1; i < cmd.m_vsArgs.size(); i+= 2)
+			for(size_t i= 1; i < cmd.m_vsArgs.size(); i+= 2)
 			{
 				m_SetEnv[cmd.m_vsArgs[i]]= cmd.m_vsArgs[i+1];
 			}
@@ -402,8 +401,7 @@ void GameCommand::LoadOne( const Command& cmd )
 
 	else if( sName == "url" )
 	{
-		m_sUrl = sValue;
-		m_bUrlExits = true;
+		// url usage has been deprecated. This block exists for backwards compatibility.
 	}
 
 	else if( sName == "sound" )
@@ -439,8 +437,7 @@ void GameCommand::LoadOne( const Command& cmd )
 	// sm-ssc additions begin:
 	else if( sName == "urlnoexit" )
 	{
-		m_sUrl = sValue;
-		m_bUrlExits = false;
+		// url usage has been deprecated. This block exists for backwards compatibility.
 	}
 
 	else if( sName == "setpref" )
@@ -451,7 +448,7 @@ void GameCommand::LoadOne( const Command& cmd )
 		}
 		else
 		{
-			for(std::size_t i= 1; i < cmd.m_vsArgs.size(); i+= 2)
+			for(size_t i= 1; i < cmd.m_vsArgs.size(); i+= 2)
 			{
 				if(IPreference::GetPreferenceByName(cmd.m_vsArgs[i]) == nullptr)
 				{
@@ -832,16 +829,6 @@ void GameCommand::ApplySelf( const std::vector<PlayerNumber> &vpns ) const
 	if( !m_sProfileID.empty() )
 		for (PlayerNumber const &pn : vpns)
 			ProfileManager::m_sDefaultLocalProfileID[pn].Set( m_sProfileID );
-	if( !m_sUrl.empty() )
-	{
-		if( HOOKS->GoToURL( m_sUrl ) )
-		{
-			if( m_bUrlExits )
-				SCREENMAN->SetNewScreen( "ScreenExit" );
-		}
-		else
-			ScreenPrompt::Prompt( SM_None, COULD_NOT_LAUNCH_BROWSER );
-	}
 
 	/* If we're going to stop music, do so before preparing new screens, so we
 	 * don't stop music between preparing screens and loading screens. */
@@ -907,10 +894,11 @@ bool GameCommand::IsZero() const
 		m_iWeightPounds != -1 ||
 		m_iGoalCalories != -1 ||
 		m_GoalType != GoalType_Invalid ||
-		!m_sProfileID.empty() ||
-		!m_sUrl.empty() )
+		!m_sProfileID.empty()	 )
+		{
 		return false;
-
+		}
+	
 	return true;
 }
 
@@ -937,7 +925,11 @@ public:
 	static int GetTrail( T* p, lua_State *L )	{ if(p->m_pTrail== nullptr) lua_pushnil(L); else p->m_pTrail->PushSelf(L); return 1; }
 	static int GetCharacter( T* p, lua_State *L )	{ if(p->m_pCharacter== nullptr) lua_pushnil(L); else p->m_pCharacter->PushSelf(L); return 1; }
 	static int GetSongGroup( T* p, lua_State *L )	{ lua_pushstring(L, p->m_sSongGroup ); return 1; }
-	static int GetUrl( T* p, lua_State *L )	{ lua_pushstring(L, p->m_sUrl ); return 1; }
+	static int GetUrl(T* p, lua_State* L)
+	{
+		LOG->Warn("GetUrl usage has been deprecated.");
+		return 1;
+	}
 	static int GetAnnouncer( T* p, lua_State *L )	{ lua_pushstring(L, p->m_sAnnouncer ); return 1; }
 	static int GetPreferredModifiers( T* p, lua_State *L )	{ lua_pushstring(L, p->m_sPreferredModifiers ); return 1; }
 	static int GetStageModifiers( T* p, lua_State *L )	{ lua_pushstring(L, p->m_sStageModifiers ); return 1; }

@@ -41,7 +41,7 @@ public:
 		m_sSongGroup(""), m_SortOrder(SortOrder_Invalid),
 		m_sSoundPath(""), m_vsScreensToPrepare(), m_iWeightPounds(-1),
 		m_iGoalCalories(-1), m_GoalType(GoalType_Invalid),
-		m_sProfileID(""), m_sUrl(""), m_bUrlExits(true),
+		m_sProfileID(""), m_bUrlExits(true),
 		m_bInsertCredit(false), m_bClearCredits(false),
 		m_bStopMusic(false), m_bApplyDefaultOptions(false),
 		m_bFadeMusic(false), m_fMusicFadeOutVolume(-1),
@@ -108,7 +108,6 @@ public:
 	int		m_iGoalCalories;	// -1 == none specified
 	GoalType	m_GoalType;
 	RString		m_sProfileID;
-	RString		m_sUrl;
 	// sm-ssc adds:
 	bool		m_bUrlExits;	// for making stepmania not exit on url
 

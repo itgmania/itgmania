@@ -41,6 +41,18 @@ const RString& DrainTypeToString( DrainType cat );
 const RString& DrainTypeToLocalizedString( DrainType cat );
 LuaDeclareType( DrainType );
 
+enum HideLightType {
+	HideLightType_NoHideLights = 0,
+	HideLightType_HideAllLights,
+	HideLightType_HideMarqueeLights,
+	HideLightType_HideBassLights,
+	NUM_HideLightType,
+	HideLightType_Invalid
+};
+const RString& HideLightTypeToString(HideLightType cat);
+const RString& HideLightTypeToLocalizedString(HideLightType cat);
+LuaDeclareType(HideLightType);
+
 enum ModTimerType
 {
 	ModTimerType_Game,
@@ -62,7 +74,7 @@ public:
 	 * @brief Set up the PlayerOptions with some reasonable defaults.
 	 *
 	 * This code was taken from Init() to use proper initialization. */
-	PlayerOptions(): m_LifeType(LifeType_Bar), m_DrainType(DrainType_Normal),
+	PlayerOptions(): m_HideLightType(HideLightType_NoHideLights), m_LifeType(LifeType_Bar), m_DrainType(DrainType_Normal),
 		m_ModTimerType(ModTimerType_Default),
 		m_BatteryLives(4),
 		m_bSetScrollSpeed(false),
@@ -290,6 +302,8 @@ public:
 	enum Turn {
 		TURN_NONE=0, /**< No turning of the arrows is performed. */
 		TURN_MIRROR, /**< The arrows are mirrored from their normal position. */
+		TURN_LRMIRROR, /**< The left and right arrows are mirrored from their normal position. */
+		TURN_UDMIRROR, /**< The up and down arrows are mirrored from their normal position. */
 		TURN_BACKWARDS, /**< The arrows are turned 180 degrees. This does NOT always equal mirror. */
 		TURN_LEFT, /**< The arrows are turned 90 degrees to the left. */
 		TURN_RIGHT, /**< The arrows are turned 90 degress to the right. */
@@ -338,6 +352,7 @@ public:
 
 	PlayerNumber m_pn; // Needed for fetching the style.
 
+	HideLightType m_HideLightType;
 	LifeType m_LifeType;
 	DrainType m_DrainType;	// only used with LifeBar
 	ModTimerType m_ModTimerType;

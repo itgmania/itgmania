@@ -18,12 +18,14 @@ public:
 
 	RString Init();
 
-	inline std::int64_t GetPosition() const;
-	inline int GetSampleRate() const { return m_SampleRate; };
+	int64_t GetPosition() const;
+	inline int GetSampleRate() const { return m_ss.rate; };
 
 protected:
-	std::int64_t m_LastPosition;
-	int m_SampleRate;
+	int64_t GetPositionUnlocked() const;
+
+	int64_t m_LastPosition;
+	pa_sample_spec m_ss;
 	char *m_Error;
 
 	void m_InitStream();
@@ -36,11 +38,11 @@ protected:
 public:
 	void CtxStateCb(pa_context *c);
 	void StreamStateCb(pa_stream *s);
-	void StreamWriteCb(pa_stream *s, std::size_t length);
+	void StreamWriteCb(pa_stream *s, size_t length);
 
 	static void StaticCtxStateCb(pa_context *c, void *user);
 	static void StaticStreamStateCb(pa_stream *s, void *user);
-	static void StaticStreamWriteCb(pa_stream *s, std::size_t length, void *user);
+	static void StaticStreamWriteCb(pa_stream *s, size_t length, void *user);
 };
 
 #endif /* RAGE_SOUND_PULSEAUDIO_H */

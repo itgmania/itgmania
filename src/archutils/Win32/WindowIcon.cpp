@@ -47,8 +47,8 @@ HICON IconFromSurface( const RageSurface *pSrcImg )
 	pBitmap->biCompression = BI_RGB;
 	pBitmap->biSizeImage = pImg->h * pImg->pitch;
 
-	std::uint8_t *pImage = ((std::uint8_t *) pBitmap) + iSize;
-	std::uint8_t *pMask = pImage + pImg->h * pImg->pitch;
+	uint8_t *pImage = ((uint8_t *) pBitmap) + iSize;
+	uint8_t *pMask = pImage + pImg->h * pImg->pitch;
 
 	memcpy( pImage, pImg->pixels, pImg->h * pImg->pitch );
 
@@ -56,8 +56,8 @@ HICON IconFromSurface( const RageSurface *pSrcImg )
 	for( int y = 0; y < pImg->h; ++y )
 	{
 		int bit = 0x80;
-		std::uint32_t *pRow = (std::uint32_t *) (pImage + y*pImg->pitch);
-		std::uint8_t *pMaskRow = pMask + y*iMaskPitch;
+		uint32_t *pRow = (uint32_t *) (pImage + y*pImg->pitch);
+		uint8_t *pMaskRow = pMask + y*iMaskPitch;
 		for( int x = 0; x < pImg->w; ++x )
 		{
 			if( !(pRow[x] & pImg->fmt.Mask[3]) )

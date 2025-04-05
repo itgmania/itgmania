@@ -20,7 +20,6 @@
 #include "LocalizedString.h"
 #include "arch/Dialog/Dialog.h"
 #include "archutils/Win32/SpecialDirs.h"
-#include "archutils/Win32/GotoURL.h"
 #include "archutils/Win32/ErrorStrings.h"
 
 #include <vector>
@@ -646,6 +645,4 @@ void LanguagesDlg::OnBnClickedCheckLanguage()
 	}
 
 	file.Close();
-
-	GotoURL( ssprintf("file://%s", sFullFile.c_str()) );
 }

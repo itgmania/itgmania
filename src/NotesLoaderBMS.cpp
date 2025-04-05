@@ -412,14 +412,14 @@ struct bmsCommandTree
 			return;
 
 		// LTrim the statement to allow indentation
-		std::size_t hash = statement.find('#');
+		size_t hash = statement.find('#');
 
 		if (hash == RString::npos)
 			return;
 
 		statement = statement.substr(hash);
 
-		std::size_t space = statement.find(' ');
+		size_t space = statement.find(' ');
 		RString name = statement.substr(0, space);
 		RString value = "";
 
@@ -653,7 +653,7 @@ int BMSSong::AllocateKeysound( RString filename, RString path )
 	if( !IsAFile(dir + normalizedFilename) )
 	{
 		std::vector<RString> const& exts= ActorUtil::GetTypeExtensionList(FT_Sound);
-		for(std::size_t i = 0; i < exts.size(); ++i)
+		for(size_t i = 0; i < exts.size(); ++i)
 		{
 			RString fn = SetExtension( normalizedFilename, exts[i] );
 			if( IsAFile(dir + fn) )
@@ -720,7 +720,7 @@ bool BMSSong::GetBackground( RString filename, RString path, RString &bgfile )
 		std::vector<RString> exts;
 		ActorUtil::AddTypeExtensionsToList(FT_Movie, exts);
 		ActorUtil::AddTypeExtensionsToList(FT_Bitmap, exts);
-		for(std::size_t i = 0; i < exts.size(); ++i)
+		for(size_t i = 0; i < exts.size(); ++i)
 		{
 			RString fn = SetExtension( normalizedFilename, exts[i] );
 			if( IsAFile(dir + fn) )

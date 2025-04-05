@@ -14,17 +14,16 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if !defined(WIN32)
-
-#if defined(HAVE_DIRENT_H)
-#include <dirent.h>
-#endif
-
+#if defined(_WIN32)
+    #include "archutils/Win32/ErrorStrings.h"
+    #define WIN32_LEAN_AND_MEAN
+    #include <windows.h>
+    #include <io.h>
 #else
-#include "archutils/Win32/ErrorStrings.h"
-#include <windows.h>
-#include <io.h>
-#endif // !defined(WIN32)
+    #if defined(HAVE_DIRENT_H)
+        #include <dirent.h>
+    #endif
+#endif
 
 /* Direct filesystem access: */
 static struct FileDriverEntry_DIR: public FileDriverEntry
@@ -41,7 +40,7 @@ static struct FileDriverEntry_DIRRO: public FileDriverEntry
 } const g_RegisterDriver2;
 
 RageFileDriverDirect::RageFileDriverDirect( const RString &sRoot ):
-	RageFileDriver( new DirectFilenameDB(sRoot) )
+	RageFileDriver( new DirectFilenameDB(sRoot) ), m_sRoot(sRoot)
 {
 	Remount( sRoot );
 }
@@ -159,31 +158,30 @@ bool RageFileDriverDirect::Move( const RString &sOldPath_, const RString &sNewPa
 
 bool RageFileDriverDirect::Remove( const RString &sPath_ )
 {
-	if( m_sRoot == "(empty)" )
+	if( m_sRoot.empty() || m_sRoot == "(empty)")
 	{
 		return false;
 	}
 
 	RString sPath = sPath_;
 	FDB->ResolvePath( sPath );
+
 	RageFileManager::FileType type = this->GetFileType(sPath);
 	switch( type )
 	{
 	case RageFileManager::TYPE_FILE:
-		TRACE( ssprintf("remove '%s'", (m_sRoot + sPath).c_str()) );
 		if( DoRemove(m_sRoot + sPath) == -1 )
 		{
-			WARN( ssprintf("remove(%s) failed: %s", (m_sRoot + sPath).c_str(), strerror(errno)) );
+			WARN("remove failed: " + sPath);
 			return false;
 		}
 		FDB->DelFile( sPath );
 		return true;
 
 	case RageFileManager::TYPE_DIR:
-		TRACE( ssprintf("rmdir '%s'", (m_sRoot + sPath).c_str()) );
 		if( DoRmdir(m_sRoot + sPath) == -1 )
 		{
-			WARN( ssprintf("rmdir(%s) failed: %s", (m_sRoot + sPath).c_str(), strerror(errno)) );
+			WARN("rmdir failed: " + sPath);
 			return false;
 		}
 		FDB->DelFile( sPath );
@@ -194,6 +192,7 @@ bool RageFileDriverDirect::Remove( const RString &sPath_ )
 
 	default:
 		FAIL_M(ssprintf("Invalid FileType: %i", type));
+		return false;
 	}
 }
 
@@ -255,7 +254,7 @@ RageFileObjDirect::RageFileObjDirect( const RString &sPath, int iFD, int iMode )
 
 namespace
 {
-#if !defined(WIN32)
+#if !defined(_WIN32)
 	bool FlushDir( RString sPath, RString &sError )
 	{
 		/* Wait for the directory to be flushed. */
@@ -351,7 +350,7 @@ RageFileObjDirect::~RageFileObjDirect()
 		RString sOldPath = MakeTempFilename(m_sPath);
 		RString sNewPath = m_sPath;
 
-#if defined(WIN32)
+#if defined(_WIN32)
 		if( WinMoveFile(DoPathReplace(sOldPath), DoPathReplace(sNewPath)) )
 			return;
 
@@ -390,7 +389,7 @@ RageFileObjDirect::~RageFileObjDirect()
 	DoRemove( MakeTempFilename(m_sPath) );
 }
 
-int RageFileObjDirect::ReadInternal( void *pBuf, std::size_t iBytes )
+int RageFileObjDirect::ReadInternal( void *pBuf, size_t iBytes )
 {
 	int iRet = DoRead( m_iFD, pBuf, iBytes );
 	if( iRet == -1 )
@@ -403,7 +402,7 @@ int RageFileObjDirect::ReadInternal( void *pBuf, std::size_t iBytes )
 }
 
 // write(), but retry a couple times on EINTR.
-static int RetriedWrite( int iFD, const void *pBuf, std::size_t iCount )
+static int RetriedWrite( int iFD, const void *pBuf, size_t iCount )
 {
 	int iTries = 3, iRet;
 	do
@@ -427,7 +426,7 @@ int RageFileObjDirect::FlushInternal()
 	return 0;
 }
 
-int RageFileObjDirect::WriteInternal( const void *pBuf, std::size_t iBytes )
+int RageFileObjDirect::WriteInternal( const void *pBuf, size_t iBytes )
 {
 	if( WriteFailed() )
 	{

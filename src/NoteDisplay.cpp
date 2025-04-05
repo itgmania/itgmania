@@ -1354,14 +1354,14 @@ void NoteDisplay::DrawActor(const TapNote& tn, Actor* pActor, NotePart part,
 		{
 		case NoteColorType_Denominator:
 			color = float( BeatToNoteType( fBeat ) );
-			color = clamp( color, 0.0f, (float) (cache->m_iNoteColorCount[part]-1) );
+			color = std::clamp( color, 0.0f, (float) (cache->m_iNoteColorCount[part]-1) );
 			break;
 		case NoteColorType_Progress:
 			color = std::fmod( std::ceil( fBeat * cache->m_iNoteColorCount[part] ), (float)cache->m_iNoteColorCount[part] );
 			break;
 		case NoteColorType_ProgressAlternate:
 			fScaledBeat = fBeat * cache->m_iNoteColorCount[part];
-			if( fScaledBeat - std::int64_t(fScaledBeat) == 0.0f )
+			if( fScaledBeat - int64_t(fScaledBeat) == 0.0f )
 				//we're on a boundary, so move to the previous frame.
 				//doing it this way ensures that fScaledBeat is never negative so std::fmod works.
 				fScaledBeat += cache->m_iNoteColorCount[part] - 1;

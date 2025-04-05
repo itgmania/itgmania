@@ -48,8 +48,8 @@ void ScreenSelect::Init()
 			}
 			else
 			{
-				std::size_t len= lua_objlen(L, 1);
-				for(std::size_t i= 1; i <= len; ++i)
+				size_t len= lua_objlen(L, 1);
+				for(size_t i= 1; i <= len; ++i)
 				{
 					lua_rawgeti(L, 1, i);
 					if(!lua_isstring(L, -1))

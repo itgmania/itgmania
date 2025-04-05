@@ -6,26 +6,40 @@
 #include "archutils/Win32/ErrorStrings.h"
 
 #include <cstdint>
+#include <mutex>
+#include <memory> 
 
 const int MAX_THREADS=128;
 
-static MutexImpl_Win32 *g_pThreadIdMutex = nullptr;
+static std::unique_ptr<MutexImpl_Win32> g_pThreadIdMutex;
+static bool g_ThreadIdMutexInitialized = false;
+static std::mutex g_ThreadIdMutexInitLock;
+
 static void InitThreadIdMutex()
 {
-	if( g_pThreadIdMutex != nullptr )
+	std::lock_guard<std::mutex> lock(g_ThreadIdMutexInitLock);
+	if (g_ThreadIdMutexInitialized)
 		return;
-	g_pThreadIdMutex = new MutexImpl_Win32(nullptr);
+
+	std::unique_ptr<MutexImpl_Win32> temp = std::make_unique<MutexImpl_Win32>(nullptr);
+	g_ThreadIdMutexInitialized = true;
+
+	g_pThreadIdMutex = std::move(temp);
 }
 
-static std::uint64_t g_ThreadIds[MAX_THREADS];
+static uint64_t g_ThreadIds[MAX_THREADS];
 static HANDLE g_ThreadHandles[MAX_THREADS];
+static std::mutex g_ThreadDataMutex;
 
-HANDLE Win32ThreadIdToHandle( std::uint64_t iID )
+HANDLE Win32ThreadIdToHandle( uint64_t iID )
 {
-	for( int i = 0; i < MAX_THREADS; ++i )
+	std::lock_guard<std::mutex> lock(g_ThreadDataMutex);
+	for (int i = 0; i < MAX_THREADS; ++i)
 	{
 		if( g_ThreadIds[i] == iID )
+		{
 			return g_ThreadHandles[i];
+		}
 	}
 
 	return nullptr;
@@ -34,9 +48,13 @@ HANDLE Win32ThreadIdToHandle( std::uint64_t iID )
 void ThreadImpl_Win32::Halt( bool Kill )
 {
 	if( Kill )
-		TerminateThread( ThreadHandle, 0 );
+	{
+		ExitThread(0); // 0 indicates the thread was terminated
+	}
 	else
+	{
 		SuspendThread( ThreadHandle );
+	}
 }
 
 void ThreadImpl_Win32::Resume()
@@ -44,9 +62,9 @@ void ThreadImpl_Win32::Resume()
 	ResumeThread( ThreadHandle );
 }
 
-std::uint64_t ThreadImpl_Win32::GetThreadId() const
+uint64_t ThreadImpl_Win32::GetThreadId() const
 {
-	return (std::uint64_t) ThreadId;
+	return static_cast<uint64_t>(ThreadId);
 }
 
 int ThreadImpl_Win32::Wait()
@@ -75,30 +93,38 @@ typedef struct tagTHREADNAME_INFO
 
 static void SetThreadName( DWORD dwThreadID, LPCTSTR szThreadName )
 {
+#if defined(_MSC_VER)
 	THREADNAME_INFO info;
 	info.dwType = 0x1000;
 	info.szName = szThreadName;
 	info.dwThreadID = dwThreadID;
 	info.dwFlags = 0;
 
-	// FIXME: Need to find a GCC/GDB-friendly way to do this.
-#if defined(_MSC_VER)
-	__try {
-		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(DWORD), (ULONG_PTR *)&info);
-	} __except (EXCEPTION_CONTINUE_EXECUTION) {
+#ifdef _DEBUG
+	__try
+	{
+		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(DWORD), (ULONG_PTR*)&info);
 	}
+	__except (EXCEPTION_CONTINUE_EXECUTION) // NOTE(sukibaby): compiler suggests trying EXCEPTION_EXECUTE_HANDLER to avoid possible infinite loop.
+	{
+	}
+#endif
+
+#elif defined(__GNUC__)
+	pthread_setname_np(pthread_self(), szThreadName);
 #endif
 }
 
 static DWORD WINAPI StartThread( LPVOID pData )
 {
-	ThreadImpl_Win32 *pThis = (ThreadImpl_Win32 *) pData;
+	ThreadImpl_Win32 *pThis = static_cast<ThreadImpl_Win32 *>(pData);
 
 	SetThreadName( GetCurrentThreadId(), RageThread::GetCurrentThreadName() );
 
-	DWORD ret = (DWORD) pThis->m_pFunc( pThis->m_pData );
+	DWORD ret = static_cast<DWORD>(pThis->m_pFunc(pThis->m_pData));
 
-	for( int i = 0; i < MAX_THREADS; ++i )
+	std::lock_guard<std::mutex> lock(g_ThreadDataMutex);
+	for (int i = 0; i < MAX_THREADS; ++i)
 	{
 		if( g_ThreadIds[i] == RageThread::GetCurrentThreadID() )
 		{
@@ -111,7 +137,7 @@ static DWORD WINAPI StartThread( LPVOID pData )
 	return ret;
 }
 
-static int GetOpenSlot( std::uint64_t iID )
+static int GetOpenSlot( uint64_t iID )
 {
 	InitThreadIdMutex();
 
@@ -132,7 +158,7 @@ static int GetOpenSlot( std::uint64_t iID )
 
 ThreadImpl *MakeThisThread()
 {
-	ThreadImpl_Win32 *thread = new ThreadImpl_Win32;
+	std::unique_ptr<ThreadImpl_Win32> thread = std::make_unique<ThreadImpl_Win32>();
 
 	SetThreadName( GetCurrentThreadId(), RageThread::GetCurrentThreadName() );
 
@@ -142,9 +168,6 @@ ThreadImpl *MakeThisThread()
 
 	if( !ret )
 	{
-//		LOG->Warn( werr_ssprintf( GetLastError(), "DuplicateHandle(%p, %p) failed",
-//			CurProc, GetCurrentThread() ) );
-
 		thread->ThreadHandle = nullptr;
 	}
 
@@ -153,18 +176,18 @@ ThreadImpl *MakeThisThread()
 	int slot = GetOpenSlot( GetCurrentThreadId() );
 	g_ThreadHandles[slot] = thread->ThreadHandle;
 
-	return thread;
+	return thread.release();
 }
 
-ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, std::uint64_t *piThreadID )
+ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, uint64_t *piThreadID )
 {
-	ThreadImpl_Win32 *thread = new ThreadImpl_Win32;
+	std::unique_ptr<ThreadImpl_Win32> thread = std::make_unique<ThreadImpl_Win32>();
 	thread->m_pFunc = pFunc;
 	thread->m_pData = pData;
 
-	thread->ThreadHandle = CreateThread( nullptr, 0, &StartThread, thread, CREATE_SUSPENDED, &thread->ThreadId );
-	*piThreadID = (std::uint64_t) thread->ThreadId;
-	ASSERT_M( thread->ThreadHandle != nullptr, ssprintf("%s", werr_ssprintf(GetLastError(), "CreateThread").c_str() ) );
+	thread->ThreadHandle = CreateThread(nullptr, 0, &StartThread, thread.get(), CREATE_SUSPENDED, &thread->ThreadId);
+	*piThreadID = static_cast<uint64_t>(thread->ThreadId);
+	ASSERT_M(thread->ThreadHandle != nullptr, ssprintf("%s", werr_ssprintf(GetLastError(), "CreateThread").c_str()));
 
 	int slot = GetOpenSlot( thread->ThreadId );
 	g_ThreadHandles[slot] = thread->ThreadHandle;
@@ -172,7 +195,7 @@ ThreadImpl *MakeThread( int (*pFunc)(void *pData), void *pData, std::uint64_t *p
 	int iRet = ResumeThread( thread->ThreadHandle );
 	ASSERT_M( iRet == 1, ssprintf("%s", werr_ssprintf(GetLastError(), "ResumeThread").c_str() ) );
 
-	return thread;
+	return thread.release();
 }
 
 
@@ -188,6 +211,12 @@ MutexImpl_Win32::~MutexImpl_Win32()
 	CloseHandle( mutex );
 }
 
+/* NOTE(sukibaby):  the function name here is a bit misleading.
+ * It provides additional error handling and assertions which
+ * are not present in WaitForSingleObject.
+ * It also consolidates some switch case logic we need to use
+ * mutliple times within this file.
+ * For these reasons I've left this function alone. */
 static bool SimpleWaitForSingleObject( HANDLE h, DWORD ms )
 {
 	ASSERT( h != nullptr );
@@ -214,25 +243,23 @@ static bool SimpleWaitForSingleObject( HANDLE h, DWORD ms )
 }
 
 bool MutexImpl_Win32::Lock()
-{
-	int len = 15000;
-	int tries = 5;
-
-	while( tries-- )
 	{
-		// Wait for fifteen seconds. If it takes longer than that, we're probably deadlocked.
-		if( SimpleWaitForSingleObject( mutex, len ) )
+		DWORD dwWaitResult = WaitForSingleObject(mutex, INFINITE);
+		switch (dwWaitResult)
+		{
+		case WAIT_OBJECT_0:
 			return true;
+	
+		case WAIT_TIMEOUT:
+			return false;
 
-		/* Timed out; probably deadlocked. Try a couple more times, with
-		 * a smaller timeout, just in case we're debugging and happened
-		 * to stop while waiting on the mutex. */
-		len = 1000;
+		case WAIT_ABANDONED:
+			return false;
+
+		default:
+			FAIL_M( "WaitForSingleObject failed in a way that shouldn't have been possible" );
+		}
 	}
-
-	return false;
-}
-
 
 bool MutexImpl_Win32::TryLock()
 {
@@ -249,12 +276,12 @@ void MutexImpl_Win32::Unlock()
 		sm_crash( werr_ssprintf( GetLastError(), "ReleaseMutex failed" ) );
 }
 
-std::uint64_t GetThisThreadId()
+uint64_t GetThisThreadId()
 {
 	return GetCurrentThreadId();
 }
 
-std::uint64_t GetInvalidThreadId()
+uint64_t GetInvalidThreadId()
 {
 	return 0;
 }
@@ -283,73 +310,6 @@ EventImpl_Win32::~EventImpl_Win32()
 	CloseHandle( m_WaitersDone );
 }
 
-/* SignalObjectAndWait is atomic, which leads to more fair event handling.
- * However, we don't guarantee or depend upon fair events, and
- * SignalObjectAndWait is only available in NT. I also can't find a single
- * function to signal an object like SignalObjectAndWait, so we need to
- * know if the object is a mutex or an event. */
-static bool PortableSignalObjectAndWait( HANDLE hObjectToSignal, HANDLE hObjectToWaitOn, bool bFirstParamIsMutex, unsigned iMilliseconds = INFINITE )
-{
-	static bool bSignalObjectAndWaitUnavailable = false;
-	// Watch out: SignalObjectAndWait doesn't work when iMilliseconds is zero.
-	if( !bSignalObjectAndWaitUnavailable && iMilliseconds != 0 )
-	{
-		DWORD ret = SignalObjectAndWait( hObjectToSignal, hObjectToWaitOn, iMilliseconds, false );
-		switch( ret )
-		{
-		case WAIT_OBJECT_0:
-			return true;
-
-		case WAIT_ABANDONED:
-			// The docs aren't particular about what this does, but it should never happen.
-			FAIL_M( "WAIT_ABANDONED" );
-
-		case 1: // bogus Win98 return value
-		case WAIT_FAILED:
-			if( GetLastError() == ERROR_CALL_NOT_IMPLEMENTED )
-			{
-				// We're probably on 9x.
-				bSignalObjectAndWaitUnavailable = true;
-				break;
-			}
-
-			FAIL_M( werr_ssprintf(GetLastError(), "SignalObjectAndWait") );
-
-		case WAIT_TIMEOUT:
-			return false;
-
-		default:
-			FAIL_M( ssprintf("Unexpected code from SignalObjectAndWait: %d",ret ));
-		}
-	}
-
-	if( bFirstParamIsMutex )
-	{
-		const bool bRet = !!ReleaseMutex( hObjectToSignal );
-		if( !bRet )
-			sm_crash( werr_ssprintf( GetLastError(), "ReleaseMutex failed" ) );
-	}
-	else
-		SetEvent( hObjectToSignal );
-
-	DWORD ret = WaitForSingleObject( hObjectToWaitOn, iMilliseconds );
-	switch( ret )
-	{
-	case WAIT_OBJECT_0:
-		return true;
-
-	case WAIT_ABANDONED:
-		// The docs aren't particular about what this does, but it should never happen.
-		FAIL_M( "WAIT_ABANDONED" );
-
-	case WAIT_TIMEOUT:
-		return false;
-
-	default:
-		FAIL_M( "unknown" );
-	}
-}
-
 // Event logic from http://www.cs.wustl.edu/~schmidt/win32-cv-1.html.
 bool EventImpl_Win32::Wait( RageTimer *pTimeout )
 {
@@ -361,32 +321,38 @@ bool EventImpl_Win32::Wait( RageTimer *pTimeout )
 	if( pTimeout != nullptr )
 	{
 		float fSecondsInFuture = -pTimeout->Ago();
-		iMilliseconds = (unsigned) std::max( 0, int( fSecondsInFuture * 1000 ) );
+		iMilliseconds = static_cast<unsigned>(std::max(0, static_cast<int>(fSecondsInFuture * 1000)));
 	}
 
 	// Unlock the mutex and wait for a signal.
-	bool bSuccess = PortableSignalObjectAndWait( m_pParent->mutex, m_WakeupSema, true, iMilliseconds );
+	bool bSuccess = (SignalObjectAndWait(m_pParent->mutex, m_WakeupSema, iMilliseconds, FALSE) == WAIT_OBJECT_0);
 
 	EnterCriticalSection( &m_iNumWaitingLock );
 	if( !bSuccess )
 	{
 		/* Avoid a race condition: someone may have signalled the object
-		 * between PortableSignalObjectAndWait and EnterCriticalSection.
+		 * between SignalObjectAndWait and EnterCriticalSection.
 		 * While we hold m_iNumWaitingLock, poll (with a zero timeout) the
 		 * object one last time. */
 		if( WaitForSingleObject( m_WakeupSema, 0 ) == WAIT_OBJECT_0 )
+		{
 			bSuccess = true;
+		}
 	}
 	--m_iNumWaiting;
-	bool bLastWaiting = m_iNumWaiting == 0;
+	bool bLastWaiting = (m_iNumWaiting == 0);
 	LeaveCriticalSection( &m_iNumWaitingLock );
 
 	/* If we're the last waiter to wake up, and we were actually woken by
 	 * another thread (not by timeout), wake up the signaller. */
-	if( bLastWaiting && bSuccess )
-		PortableSignalObjectAndWait( m_WaitersDone, m_pParent->mutex, false );
+	if (bLastWaiting && bSuccess)
+	{
+		SignalObjectAndWait( m_WaitersDone, m_pParent->mutex, INFINITE, FALSE );
+	}
 	else
+	{
 		WaitForSingleObject( m_pParent->mutex, INFINITE );
+	}
 
 	return bSuccess;
 }
@@ -430,7 +396,7 @@ void EventImpl_Win32::Broadcast()
 
 EventImpl *MakeEvent( MutexImpl *pMutex )
 {
-	MutexImpl_Win32 *pWin32Mutex = (MutexImpl_Win32 *) pMutex;
+	MutexImpl_Win32 *pWin32Mutex = static_cast<MutexImpl_Win32*>(pMutex);
 
 	return new EventImpl_Win32( pWin32Mutex );
 }

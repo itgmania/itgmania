@@ -22,7 +22,7 @@ list(APPEND FFMPEG_CONFIGURE
             "--disable-programs"
             "--disable-swresample"
             "--disable-vaapi"
-            "--enable-bzlib"
+            "--disable-bzlib"
             "--enable-gpl"
             "--enable-pthreads"
             "--enable-static"

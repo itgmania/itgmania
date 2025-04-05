@@ -18,7 +18,7 @@ public:
 	RString Init();
 
 	int GetSampleRate() const;
-	std::int64_t GetPosition() const;
+	int64_t GetPosition() const;
 
 private:
 	jack_client_t *client;

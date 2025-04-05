@@ -73,10 +73,6 @@
 #include <ctime>
 #include <vector>
 
-#if defined(WIN32)
-#include <windows.h>
-#endif
-
 void ShutdownGame();
 bool HandleGlobalInputs( const InputEventPlus &input );
 void HandleInputEvents(float fDeltaTime);
@@ -297,43 +293,43 @@ void ShutdownGame()
 		LIGHTSMAN->TurnOffAllLights();
 	}
 
-	SAFE_DELETE( SCREENMAN );
-	SAFE_DELETE( STATSMAN );
-	SAFE_DELETE( MESSAGEMAN );
-	SAFE_DELETE( NETWORK );
+	RageUtil::SafeDelete( NETWORK );
+	RageUtil::SafeDelete( SCREENMAN );
+	RageUtil::SafeDelete( STATSMAN );
+	RageUtil::SafeDelete( MESSAGEMAN );
 	/* Delete INPUTMAN before the other INPUTFILTER handlers, or an input
 	 * driver may try to send a message to INPUTFILTER after we delete it. */
-	SAFE_DELETE( INPUTMAN );
-	SAFE_DELETE( INPUTQUEUE );
-	SAFE_DELETE( INPUTMAPPER );
-	SAFE_DELETE( INPUTFILTER );
-	SAFE_DELETE( MODELMAN );
-	SAFE_DELETE( PROFILEMAN ); // PROFILEMAN needs the songs still loaded
-	SAFE_DELETE( CHARMAN );
-	SAFE_DELETE( UNLOCKMAN );
-	SAFE_DELETE( CRYPTMAN );
-	SAFE_DELETE( MEMCARDMAN );
-	SAFE_DELETE( SONGMAN );
-	SAFE_DELETE( IMAGECACHE );
-	SAFE_DELETE( SONGINDEX );
-	SAFE_DELETE( SOUND ); // uses GAMESTATE, PREFSMAN
-	SAFE_DELETE( PREFSMAN );
-	SAFE_DELETE( GAMESTATE );
-	SAFE_DELETE( GAMEMAN );
-	SAFE_DELETE( NOTESKIN );
-	SAFE_DELETE( THEME );
-	SAFE_DELETE( ANNOUNCER );
-	SAFE_DELETE( BOOKKEEPER );
-	SAFE_DELETE( LIGHTSMAN );
-	SAFE_DELETE( SOUNDMAN );
-	SAFE_DELETE( FONT );
-	SAFE_DELETE( TEXTUREMAN );
-	SAFE_DELETE( DISPLAY );
+	RageUtil::SafeDelete( INPUTMAN );
+	RageUtil::SafeDelete( INPUTQUEUE );
+	RageUtil::SafeDelete( INPUTMAPPER );
+	RageUtil::SafeDelete( INPUTFILTER );
+	RageUtil::SafeDelete( MODELMAN );
+	RageUtil::SafeDelete( PROFILEMAN ); // PROFILEMAN needs the songs still loaded
+	RageUtil::SafeDelete( CHARMAN );
+	RageUtil::SafeDelete( UNLOCKMAN );
+	RageUtil::SafeDelete( CRYPTMAN );
+	RageUtil::SafeDelete( MEMCARDMAN );
+	RageUtil::SafeDelete( SONGMAN );
+	RageUtil::SafeDelete( IMAGECACHE );
+	RageUtil::SafeDelete( SONGINDEX );
+	RageUtil::SafeDelete( SOUND ); // uses GAMESTATE, PREFSMAN
+	RageUtil::SafeDelete( PREFSMAN );
+	RageUtil::SafeDelete( GAMESTATE );
+	RageUtil::SafeDelete( GAMEMAN );
+	RageUtil::SafeDelete( NOTESKIN );
+	RageUtil::SafeDelete( THEME );
+	RageUtil::SafeDelete( ANNOUNCER );
+	RageUtil::SafeDelete( BOOKKEEPER );
+	RageUtil::SafeDelete( LIGHTSMAN );
+	RageUtil::SafeDelete( SOUNDMAN );
+	RageUtil::SafeDelete( FONT );
+	RageUtil::SafeDelete( TEXTUREMAN );
+	RageUtil::SafeDelete( DISPLAY );
 	Dialog::Shutdown();
-	SAFE_DELETE( LOG );
-	SAFE_DELETE( FILEMAN );
-	SAFE_DELETE( LUA );
-	SAFE_DELETE( HOOKS );
+	RageUtil::SafeDelete( LOG );
+	RageUtil::SafeDelete( FILEMAN );
+	RageUtil::SafeDelete( LUA );
+	RageUtil::SafeDelete( HOOKS );
 }
 
 static void HandleException( const RString &sError )
@@ -386,50 +382,7 @@ RString StepMania::GetSelectMusicScreen()
 	return SELECT_MUSIC_SCREEN.GetValue();
 }
 
-#if defined(WIN32)
-static Preference<int> g_iLastSeenMemory( "LastSeenMemory", 0 );
-#endif
-
-static void AdjustForChangedSystemCapabilities()
-{
-#if defined(WIN32)
-	// Has the amount of memory changed?
-	MEMORYSTATUS mem;
-	GlobalMemoryStatus(&mem);
-
-	const int Memory = mem.dwTotalPhys / (1024*1024);
-
-	if( g_iLastSeenMemory == Memory )
-		return;
-
-	LOG->Trace( "Memory changed from %i to %i; settings changed", g_iLastSeenMemory.Get(), Memory );
-	g_iLastSeenMemory.Set( Memory );
-
-	// is this assumption outdated? -aj
-	/* Let's consider 128-meg systems low-memory, and 256-meg systems high-memory.
-	 * Cut off at 192. This is pretty conservative; many 128-meg systems can
-	 * deal with higher memory profile settings, but some can't.
-	 *
-	 * Actually, Windows lops off a meg or two; cut off a little lower to treat
-	 * 192-meg systems as high-memory. */
-	const bool HighMemory = (Memory >= 190);
-	const bool LowMemory = (Memory < 100); // 64 and 96-meg systems
-
-	/* Two memory-consuming features that we can disable are texture caching and
-	 * preloaded banners. Texture caching can use a lot of memory; disable it for
-	 * low-memory systems. */
-	PREFSMAN->m_bDelayedTextureDelete.Set( HighMemory );
-
-	/* Preloaded banners takes about 9k per song. Although it's smaller than the
-	 * actual song data, it still adds up with a lot of songs.
-	 * Disable it for 64-meg systems. */
-	PREFSMAN->m_ImageCache.Set( LowMemory ? IMGCACHE_OFF:IMGCACHE_LOW_RES_PRELOAD );
-
-	PREFSMAN->SavePrefsToDisk();
-#endif
-}
-
-#if defined(WIN32)
+#if defined(_WIN32)
 #include "RageDisplay_D3D.h"
 #include "archutils/Win32/VideoDriverInfo.h"
 #endif
@@ -508,7 +461,7 @@ struct VideoCardDefaults
 
 static RString GetVideoDriverName()
 {
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 	return GetPrimaryVideoDriverName();
 #else
 	return "OpenGL";
@@ -671,7 +624,7 @@ RageDisplay *CreateDisplay()
 		if( !sError.empty() )
 		{
 			error += ssprintf(ERROR_INITIALIZING.GetValue(), sRenderer.c_str())+"\n" + sError;
-			SAFE_DELETE( pRet );
+			RageUtil::SafeDelete( pRet );
 			error += "\n\n\n";
 			continue;
 		}
@@ -946,8 +899,6 @@ int sm_main(int argc, char* argv[])
 	LOG->Info( "TLS is %savailable", RageThread::GetSupportsTLS()? "":"not " );
 #endif
 
-	AdjustForChangedSystemCapabilities();
-
 	GAMEMAN		= new GameManager;
 	THEME		= new ThemeManager;
 	ANNOUNCER	= new AnnouncerManager;
@@ -1012,7 +963,7 @@ int sm_main(int argc, char* argv[])
 	// Initialize which courses are ranking courses here.
 	SONGMAN->UpdateRankingCourses();
 
-	SAFE_DELETE( pLoadingWindow ); // destroy this before init'ing Display
+	RageUtil::SafeDelete( pLoadingWindow ); // destroy this before init'ing Display
 
 	/* If the user has tried to quit during the loading, do it before creating
 	* the main window. This prevents going to full screen just to quit. */
@@ -1076,9 +1027,7 @@ RString StepMania::SaveScreenshot( RString Dir, bool SaveCompressed, bool MakeSi
 	// Save the screenshot. If writing lossy to a memcard, use
 	// SAVE_LOSSY_LOW_QUAL, so we don't eat up lots of space.
 	RageDisplay::GraphicsFileFormat fmt;
-	if( SaveCompressed && MEMCARDMAN->PathIsMemCard(Dir) )
-		fmt = RageDisplay::SAVE_LOSSY_LOW_QUAL;
-	else if( SaveCompressed )
+	if( SaveCompressed )
 		fmt = RageDisplay::SAVE_LOSSY_HIGH_QUAL;
 	else
 		fmt = RageDisplay::SAVE_LOSSLESS_SENSIBLE;

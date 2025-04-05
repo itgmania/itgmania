@@ -476,8 +476,8 @@ GameSoundManager::~GameSoundManager()
 	MusicThread.Wait();
 	LOG->Trace("Music start thread shut down.");
 
-	SAFE_DELETE( g_Playing );
-	SAFE_DELETE( g_Mutex );
+	RageUtil::SafeDelete( g_Playing );
+	RageUtil::SafeDelete( g_Mutex );
 }
 
 float GameSoundManager::GetFrameTimingAdjustment( float fDeltaTime )
@@ -554,7 +554,12 @@ void GameSoundManager::Update( float fDeltaTime )
 		{
 		case FADE_NONE: break;
 		case FADE_OUT:
-			fapproach( fVolume, g_fDimVolume, fDeltaTime/fFadeOutSpeed );
+			if( fFadeOutSpeed > 0.0 ) {
+				fapproach( fVolume, g_fDimVolume, fDeltaTime/fFadeOutSpeed );
+			} else {
+				// Treat an invalid fade speed as instant
+				fVolume = g_fDimVolume;
+			}
 			if( std::abs(fVolume-g_fDimVolume) < 0.001f )
 				g_FadeState = FADE_WAIT;
 			break;
@@ -564,7 +569,12 @@ void GameSoundManager::Update( float fDeltaTime )
 				g_FadeState = FADE_IN;
 			break;
 		case FADE_IN:
-			fapproach( fVolume, g_fOriginalVolume, fDeltaTime/fFadeInSpeed );
+			if( fFadeInSpeed > 0.0 ) {
+				fapproach( fVolume, g_fOriginalVolume, fDeltaTime/fFadeInSpeed );
+			} else {
+				// Treat an invalid fade speed as instant
+				fVolume = g_fOriginalVolume;
+			}
 			if( std::abs(fVolume-g_fOriginalVolume) < 0.001f )
 				g_FadeState = FADE_NONE;
 			break;
@@ -591,12 +601,10 @@ void GameSoundManager::Update( float fDeltaTime )
 	}
 
 	/* There's a delay between us calling Play() and the sound actually playing.
-	 * During this time, m_bApproximate will be true.  Keep using the previous timing
-	 * data until we get a non-approximate time, indicating that the sound has actually
-	 * started playing. */
-	bool m_bApproximate;
+	 * Keep using the previous timing data until we get a non-approximate time,
+	 * indicating that the sound has actually started playing. */
 	RageTimer tm;
-	const float fSeconds = g_Playing->m_Music->GetPositionSeconds( &m_bApproximate, &tm );
+	const float fSeconds = g_Playing->m_Music->GetPositionSeconds( &tm );
 
 	// Check for song timing skips.
 	if( PREFSMAN->m_bLogSkips && !g_Playing->m_bTimingDelayed )
@@ -617,7 +625,7 @@ void GameSoundManager::Update( float fDeltaTime )
 
 	// If g_Playing->m_bTimingDelayed, we're waiting for the new music to actually start
 	// playing.
-	if( g_Playing->m_bTimingDelayed && !m_bApproximate )
+	if( g_Playing->m_bTimingDelayed )
 	{
 		/* Load up the new timing data. */
 		g_Playing->m_Timing = g_Playing->m_NewTiming;
@@ -905,10 +913,9 @@ LUA_REGISTER_CLASS(GameSoundManager);
 int LuaFunc_get_sound_driver_list(lua_State* L);
 int LuaFunc_get_sound_driver_list(lua_State* L)
 {
-	std::vector<RString> driver_names;
-	split(RageSoundDriver::GetDefaultSoundDriverList(), ",", driver_names, true);
+	std::vector<RString> driver_names = RageSoundDriver::GetSoundDriverList();
 	lua_createtable(L, driver_names.size(), 0);
-	for(std::size_t n= 0; n < driver_names.size(); ++n)
+	for(size_t n= 0; n < driver_names.size(); ++n)
 	{
 		lua_pushstring(L, driver_names[n].c_str());
 		lua_rawseti(L, -2, n+1);

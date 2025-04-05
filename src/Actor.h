@@ -19,19 +19,19 @@ class LuaClass;
 typedef AutoPtrCopyOnWrite<LuaReference> apActorCommands;
 
 /** @brief The background layer. */
-#define DRAW_ORDER_BEFORE_EVERYTHING		-200
+constexpr int DRAW_ORDER_BEFORE_EVERYTHING = -200;
 /** @brief The underlay layer. */
-#define DRAW_ORDER_UNDERLAY			-100
+constexpr int DRAW_ORDER_UNDERLAY = -100;
 /** @brief The decorations layer. */
-#define DRAW_ORDER_DECORATIONS			   0
+constexpr int DRAW_ORDER_DECORATIONS = 0;
 /** @brief The overlay layer.
  *
  * Normal screen elements go here. */
-#define DRAW_ORDER_OVERLAY			+100
+constexpr int DRAW_ORDER_OVERLAY = 100;
 /** @brief The transitions layer. */
-#define DRAW_ORDER_TRANSITIONS			+200
+constexpr int DRAW_ORDER_TRANSITIONS = 200;
 /** @brief The over everything layer. */
-#define DRAW_ORDER_AFTER_EVERYTHING		+300
+constexpr int DRAW_ORDER_AFTER_EVERYTHING = 300;
 
 /** @brief The different horizontal alignments. */
 enum HorizAlign
@@ -56,24 +56,24 @@ enum VertAlign
 LuaDeclareType( VertAlign );
 
 /** @brief The left horizontal alignment constant. */
-#define align_left 0.0f
+constexpr float align_left = 0.0f;
 /** @brief The center horizontal alignment constant. */
-#define align_center 0.5f
+constexpr float align_center = 0.5f;
 /** @brief The right horizontal alignment constant. */
-#define align_right 1.0f
+constexpr float align_right = 1.0f;
 /** @brief The top vertical alignment constant. */
-#define align_top 0.0f
+constexpr float align_top = 0.0f;
 /** @brief The middle vertical alignment constant. */
-#define align_middle 0.5f
+constexpr float align_middle = 0.5f;
 /** @brief The bottom vertical alignment constant. */
-#define align_bottom 1.0f
+constexpr float align_bottom = 1.0f;
 
 // This is the number of colors in Actor::diffuse.  Actor has multiple
 // diffuse colors so that each edge can be a different color, and the actor
 // is drawn with a gradient between them.
 // I doubt I actually found all the places that touch diffuse and rely on the
 // number of diffuse colors, so change this at your own risk. -Kyz
-#define NUM_DIFFUSE_COLORS 4
+constexpr int NUM_DIFFUSE_COLORS = 4;
 
 // ssc futures:
 /*
@@ -318,9 +318,9 @@ public:
 	Actor* GetFakeParent() { return m_FakeParent; }
 
 	void AddWrapperState();
-	void RemoveWrapperState(std::size_t i);
-	Actor* GetWrapperState(std::size_t i);
-	std::size_t GetNumWrapperStates() const { return m_WrapperStates.size(); }
+	void RemoveWrapperState(size_t i);
+	Actor* GetWrapperState(size_t i);
+	size_t GetNumWrapperStates() const { return m_WrapperStates.size(); }
 
 	/**
 	 * @brief Retrieve the Actor's x position.
@@ -499,14 +499,14 @@ public:
 	const TweenState& DestTweenState() const { return const_cast<Actor*>(this)->DestTweenState(); }
 
 	/** @brief How do we handle stretching the Actor? */
-	enum StretchType
+	enum class StretchType
 	{
-		fit_inside, /**< Have the Actor fit inside its parent, using the smaller zoom. */
-		cover /**< Have the Actor cover its parent, using the larger zoom. */
+		kFitInside, /**< Have the Actor fit inside its parent, using the smaller zoom. */
+		kCover /**< Have the Actor cover its parent, using the larger zoom. */
 	};
 
-	void ScaleToCover( const RectF &rect )		{ ScaleTo( rect, cover ); }
-	void ScaleToFitInside( const RectF &rect )	{ ScaleTo( rect, fit_inside); };
+	void ScaleToCover( const RectF &rect )		{ ScaleTo( rect, StretchType::kCover ); }
+	void ScaleToFitInside( const RectF &rect )	{ ScaleTo( rect, StretchType::kFitInside); };
 	void ScaleTo( const RectF &rect, StretchType st );
 
 	void StretchTo( const RectF &rect );
@@ -621,6 +621,10 @@ public:
 	virtual void SetSecondsIntoAnimation( float ) {}
 	virtual void SetUpdateRate( float ) {}
 	virtual float GetUpdateRate() { return 1.0f; }
+
+	// Use this to enable/disable scaling an actor's rate with tab or tilde.
+	void SetRateScalingEnabled(bool b) { rate_scaling_enabled_ = b; }
+	bool GetRateScalingEnabled() { return rate_scaling_enabled_; }
 
 	HiddenPtr<LuaClass> m_pLuaInstance;
 
@@ -753,6 +757,11 @@ protected:
 	static std::vector<float> g_vfCurrentBGMBeatPlayerNoOffset;
 
 private:
+	// Some actors shouldn't be scaled by the engine i.e. using with tab for
+	// speeding up or tilde for slowing down.
+	// In the case both are pressed (setting rate to 0), this bool does nothing.
+	bool rate_scaling_enabled_;
+
 	// commands
 	std::map<RString, apActorCommands> m_mapNameToCommands;
 };

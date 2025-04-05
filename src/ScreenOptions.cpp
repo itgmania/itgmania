@@ -209,7 +209,7 @@ void ScreenOptions::InitMenu( const std::vector<OptionRowHandler*> &vHands )
 	for( unsigned i=0; i<m_pRows.size(); i++ )
 	{
 		m_frameContainer.RemoveChild( m_pRows[i] );
-		SAFE_DELETE( m_pRows[i] );
+		RageUtil::SafeDelete( m_pRows[i] );
 	}
 	m_pRows.clear();
 
@@ -358,7 +358,7 @@ ScreenOptions::~ScreenOptions()
 {
 	LOG->Trace( "ScreenOptions::~ScreenOptions()" );
 	for( unsigned i=0; i<m_pRows.size(); i++ )
-		SAFE_DELETE( m_pRows[i] );
+		RageUtil::SafeDelete( m_pRows[i] );
 }
 
 RString ScreenOptions::GetExplanationText( int iRow ) const

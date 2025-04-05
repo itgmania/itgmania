@@ -41,10 +41,10 @@ static RageSurfaceUtils::OpenResult LoadBMP( RageFile &f, RageSurface *&img, RSt
 
 	read_u32_le( f, sError ); /* file size */
 	read_u32_le( f, sError ); /* unused */
-	std::uint32_t iDataOffset = read_u32_le( f, sError );
-	std::uint32_t iHeaderSize = read_u32_le( f, sError );
+	uint32_t iDataOffset = read_u32_le( f, sError );
+	uint32_t iHeaderSize = read_u32_le( f, sError );
 
-	std::uint32_t iWidth, iHeight, iPlanes, iBPP, iCompression = COMP_BI_RGB, iColors = 0;
+	uint32_t iWidth, iHeight, iPlanes, iBPP, iCompression = COMP_BI_RGB, iColors = 0;
 	if( iHeaderSize == 12 )
 	{
 		/* OS/2 format */
@@ -157,7 +157,7 @@ static RageSurfaceUtils::OpenResult LoadBMP( RageFile &f, RageSurface *&img, RSt
 
 	for( int y = (int) iHeight-1; y >= 0; --y )
 	{
-		std::uint8_t *pRow = img->pixels + img->pitch*y;
+		uint8_t *pRow = img->pixels + img->pitch*y;
 		RString buf;
 
 		f.Read( buf, iFilePitch );

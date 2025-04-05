@@ -1633,7 +1633,7 @@ bool CZipArchive::SetPassword(LPCTSTR lpszPassword)
 		int iLen = WideToSingle(lpszPassword, m_pszPassword);
 		if (iLen == -1)
 			return false;
-		for (std::size_t i = 0; (int)i < iLen; i++)
+		for (size_t i = 0; (int)i < iLen; i++)
 			if (m_pszPassword[i] <= 0)
 			{
 				m_pszPassword.Release();
@@ -1800,7 +1800,7 @@ int CZipArchive::WideToSingle(LPCTSTR lpWide, CZipAutoBuffer &szSingle)
 	return ZipPlatform::WideToSingle(lpWide, szSingle);
 #else
 
-	std::size_t iLen = strlen(lpWide);
+	size_t iLen = strlen(lpWide);
 	// if not UNICODE just copy
 	// 	iLen does not include the NULL character
 	szSingle.Allocate(iLen);

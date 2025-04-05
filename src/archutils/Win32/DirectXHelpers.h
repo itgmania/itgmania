@@ -7,6 +7,10 @@ RString hr_ssprintf( int hr, const char *fmt, ... );
 
 RString GetErrorString(HRESULT hr);
 
+// These defined need to be exposed anywhere this is included.
+#define DIRECTINPUT_VERSION 0x0800
+#define DIRECTSOUND_VERSION 0x0700
+
 #endif
 
 /*

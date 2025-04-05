@@ -65,6 +65,9 @@ protected:
 
 	void ChangeSteps( PlayerNumber pn, int dir );
 	void AfterStepsOrTrailChange( const std::vector<PlayerNumber> &vpns );
+	void SwitchPlayerStepDifficulty(PlayerNumber pn, Difficulty d);
+	void SwitchPlayerCourseDifficulty(PlayerNumber pn, Difficulty d);
+	void SwitchToDifficulty(Difficulty d);
 	void SwitchToPreferredDifficulty();
 	void AfterMusicChange();
 

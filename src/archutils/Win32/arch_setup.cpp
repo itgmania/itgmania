@@ -1,18 +1,24 @@
 #include "global.h"
 #include "arch_setup.h"
-#ifdef _WINDOWS
+#ifdef _WIN32
 #  include <windows.h>
 #endif
 #include "CommandLine.h"
 
-#if defined(WINDOWS)
+#if defined(_WIN32)
 int main( int argc, char* argv[] );
 int __stdcall WinMain( HINSTANCE /* hInstance */, HINSTANCE  /* hPrevInstance */, char * /* pCmdLine */, int /* nCmdShow */ )
 {
 	char **argv;
 	int argc = GetWin32CmdLine( argv );
 
-	return main( argc, argv );
+	if (argc == -1)
+	{
+		MessageBox(nullptr, "Failed to retrieve command line arguments", "Error", MB_OK | MB_ICONERROR);
+		return -1;
+	}
+
+	return main(argc, argv);
 }
 #endif
 

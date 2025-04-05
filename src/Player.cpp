@@ -2,7 +2,6 @@
 #include "Player.h"
 #include "GameConstantsAndTypes.h"
 #include "RageUtil.h"
-#include "RageTimer.h"
 #include "PrefsManager.h"
 #include "GameManager.h"
 #include "InputMapper.h"
@@ -40,14 +39,15 @@
 #include "GameCommand.h"
 #include "LocalizedString.h"
 #include "AdjustSync.h"
+#include "RandomSeed.h"
 
 #include <cmath>
 #include <cstddef>
 #include <vector>
 
 
-RString ATTACK_DISPLAY_X_NAME( std::size_t p, std::size_t both_sides );
-void TimingWindowSecondsInit( std::size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut );
+RString ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides );
+void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut );
 
 /**
  * @brief Helper class to ensure that each row is only judged once without taking too much memory.
@@ -58,9 +58,9 @@ class JudgedRows
 	int m_iStart;
 	int m_iOffset;
 
-	void Resize( std::size_t iMin )
+	void Resize( size_t iMin )
 	{
-		std::size_t iNewSize = std::max( 2*m_vRows.size(), iMin );
+		size_t iNewSize = std::max( 2*m_vRows.size(), iMin );
 		std::vector<bool> vNewRows( m_vRows.begin() + m_iOffset, m_vRows.end() );
 		vNewRows.reserve( iNewSize );
 		vNewRows.insert( vNewRows.end(), m_vRows.begin(), m_vRows.begin() + m_iOffset );
@@ -98,7 +98,7 @@ public:
 };
 
 
-RString ATTACK_DISPLAY_X_NAME( std::size_t p, std::size_t both_sides )	{ return "AttackDisplayXOffset" + (both_sides ? RString("BothSides") : ssprintf("OneSideP%d",int(p+1)) ); }
+RString ATTACK_DISPLAY_X_NAME( size_t p, size_t both_sides )	{ return "AttackDisplayXOffset" + (both_sides ? RString("BothSides") : ssprintf("OneSideP%d",int(p+1)) ); }
 
 /**
  * @brief Distance to search for a note in Step(), in seconds.
@@ -106,7 +106,7 @@ RString ATTACK_DISPLAY_X_NAME( std::size_t p, std::size_t both_sides )	{ return 
  * TODO: This should be calculated based on the max size of the current judgment windows. */
 static const float StepSearchDistance = 1.0f;
 
-void TimingWindowSecondsInit( std::size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut )
+void TimingWindowSecondsInit( size_t /*TimingWindow*/ i, RString &sNameOut, float &defaultValueOut )
 {
 	sNameOut = "TimingWindowSeconds" + TimingWindowToString( static_cast<TimingWindow>(i) );
 	switch( i )
@@ -299,16 +299,16 @@ Player::Player( NoteData &nd, bool bVisibleParts ) : m_NoteData(nd)
 
 Player::~Player()
 {
-	SAFE_DELETE( m_pAttackDisplay );
-	SAFE_DELETE( m_pNoteField );
+	RageUtil::SafeDelete( m_pAttackDisplay );
+	RageUtil::SafeDelete( m_pNoteField );
 	for( unsigned i = 0; i < m_vpHoldJudgment.size(); ++i )
-		SAFE_DELETE( m_vpHoldJudgment[i] );
-	SAFE_DELETE( m_pJudgedRows );
-	SAFE_DELETE( m_pIterNeedsTapJudging );
-	SAFE_DELETE( m_pIterNeedsHoldJudging );
-	SAFE_DELETE( m_pIterUncrossedRows );
-	SAFE_DELETE( m_pIterUnjudgedRows );
-	SAFE_DELETE( m_pIterUnjudgedMineRows );
+		RageUtil::SafeDelete( m_vpHoldJudgment[i] );
+	RageUtil::SafeDelete( m_pJudgedRows );
+	RageUtil::SafeDelete( m_pIterNeedsTapJudging );
+	RageUtil::SafeDelete( m_pIterNeedsHoldJudging );
+	RageUtil::SafeDelete( m_pIterUncrossedRows );
+	RageUtil::SafeDelete( m_pIterUnjudgedRows );
+	RageUtil::SafeDelete( m_pIterUnjudgedMineRows );
 
 }
 
@@ -788,19 +788,19 @@ void Player::Load()
 	if( m_pPlayerStageStats )
 		SendComboMessages( m_pPlayerStageStats->m_iCurCombo, m_pPlayerStageStats->m_iCurMissCombo );
 
-	SAFE_DELETE( m_pIterNeedsTapJudging );
+	RageUtil::SafeDelete( m_pIterNeedsTapJudging );
 	m_pIterNeedsTapJudging = new NoteData::all_tracks_iterator( m_NoteData.GetTapNoteRangeAllTracks(iNoteRow, MAX_NOTE_ROW) );
 
-	SAFE_DELETE( m_pIterNeedsHoldJudging );
+	RageUtil::SafeDelete( m_pIterNeedsHoldJudging );
 	m_pIterNeedsHoldJudging = new NoteData::all_tracks_iterator( m_NoteData.GetTapNoteRangeAllTracks(iNoteRow, MAX_NOTE_ROW ) );
 
-	SAFE_DELETE( m_pIterUncrossedRows );
+	RageUtil::SafeDelete( m_pIterUncrossedRows );
 	m_pIterUncrossedRows = new NoteData::all_tracks_iterator( m_NoteData.GetTapNoteRangeAllTracks(iNoteRow, MAX_NOTE_ROW ) );
 
-	SAFE_DELETE( m_pIterUnjudgedRows );
+	RageUtil::SafeDelete( m_pIterUnjudgedRows );
 	m_pIterUnjudgedRows = new NoteData::all_tracks_iterator( m_NoteData.GetTapNoteRangeAllTracks(iNoteRow, MAX_NOTE_ROW ) );
 
-	SAFE_DELETE( m_pIterUnjudgedMineRows );
+	RageUtil::SafeDelete( m_pIterUnjudgedMineRows );
 	m_pIterUnjudgedMineRows = new NoteData::all_tracks_iterator( m_NoteData.GetTapNoteRangeAllTracks(iNoteRow, MAX_NOTE_ROW ) );
 }
 
@@ -2182,7 +2182,7 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 			std::vector<GameInput> GameI;
 			GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)->StyleInputToGameInput( t, pn, GameI );
 			float secs_held= 0.0f;
-			for(std::size_t i= 0; i < GameI.size(); ++i)
+			for(size_t i= 0; i < GameI.size(); ++i)
 			{
 				secs_held= std::max(secs_held, INPUTMAPPER->GetSecsHeld( GameI[i] ));
 			}
@@ -2881,7 +2881,7 @@ void Player::CrossedRows( int iLastRowCrossed, const RageTimer &now )
 					GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)->StyleInputToGameInput( iTrack, pn, GameI );
 					if( PREFSMAN->m_fPadStickSeconds > 0.f )
 					{
-						for(std::size_t i= 0; i < GameI.size(); ++i)
+						for(size_t i= 0; i < GameI.size(); ++i)
 						{
 							float fSecsHeld = INPUTMAPPER->GetSecsHeld(GameI[i], m_pPlayerState->m_mp);
 							if(fSecsHeld >= PREFSMAN->m_fPadStickSeconds)
@@ -2909,7 +2909,7 @@ void Player::CrossedRows( int iLastRowCrossed, const RageTimer &now )
 				GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)->StyleInputToGameInput( iTrack, pn, GameI );
 				if( PREFSMAN->m_fPadStickSeconds > 0.0f )
 				{
-					for(std::size_t i= 0; i < GameI.size(); ++i)
+					for(size_t i= 0; i < GameI.size(); ++i)
 					{
 						float fSecsHeld = INPUTMAPPER->GetSecsHeld(GameI[i], m_pPlayerState->m_mp);
 						if(fSecsHeld >= PREFSMAN->m_fPadStickSeconds)
@@ -3475,11 +3475,7 @@ RString Player::ApplyRandomAttack()
 	if( GAMESTATE->m_RandomAttacks.size() < 1 )
 		return "";
 
-	//int iAttackToUse = rand() % GAMESTATE->m_RandomAttacks.size();
-	DateTime now = DateTime::GetNowDate();
-	int iSeed = now.tm_hour * now.tm_min * now.tm_sec * now.tm_mday;
-	RandomGen rnd( GAMESTATE->m_iStageSeed * iSeed );
-	int iAttackToUse = rnd() % GAMESTATE->m_RandomAttacks.size();
+	int iAttackToUse = GetRandomInt() % GAMESTATE->m_RandomAttacks.size();
 	return GAMESTATE->m_RandomAttacks[iAttackToUse];
 }
 

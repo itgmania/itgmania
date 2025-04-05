@@ -147,7 +147,7 @@ static void LoadFromSMNoteDataStringWithPlayer( NoteData& out, const RString &sS
 					int iHeadRow;
 					if( !out.IsHoldNoteAtRow( iTrack, iIndex, &iHeadRow ) )
 					{
-						int n = std::intptr_t(endLine) - std::intptr_t(beginLine);
+						int n = intptr_t(endLine) - intptr_t(beginLine);
 						LOG->Warn( "Unmatched 3 in \"%.*s\"", n, beginLine );
 					}
 					else
@@ -752,6 +752,24 @@ void LightTransformHelper( const NoteData &in, NoteData &out, const std::vector<
 // For every track enabled in "in", enable all tracks in "out".
 void NoteDataUtil::LoadTransformedLights( const NoteData &in, NoteData &out, int iNewNumTracks )
 {
+	// make a new NoteData that is a copy of the input.
+	NoteData bass;
+	bass.Init();
+	bass.CopyAll( in );
+
+	// if the user desires,
+	// copy from the marquee data, but slim down the notes.
+	// this makes it look more bass-ish and less like the original chart.
+	if(PREFSMAN->m_bLightsSimplifyBass)
+	{
+		RemoveHoldNotes( bass );
+		Little( bass );
+	}
+
+	LoadTransformedLightsFromTwo( in, bass, out );
+
+	// old code which will make all lights blink on every note.
+	/*
 	// reset all notes
 	out.Init();
 
@@ -762,6 +780,7 @@ void NoteDataUtil::LoadTransformedLights( const NoteData &in, NoteData &out, int
 		aiTracks.push_back( i );
 
 	LightTransformHelper( in, out, aiTracks );
+	*/
 }
 
 // This transform is specific to StepsType_lights_cabinet.
@@ -849,7 +868,7 @@ void NoteDataUtil::AutogenKickbox(const NoteData& in, NoteData& out, const Timin
 	}
 	// prev_limb_panels keeps track of which panel in the track list the limb
 	// hit last.
-	std::vector<std::size_t> prev_limb_panels(num_kickbox_limbs, 0);
+	std::vector<size_t> prev_limb_panels(num_kickbox_limbs, 0);
 	std::vector<int> panel_repeat_counts(num_kickbox_limbs, 0);
 	std::vector<int> panel_repeat_goals(num_kickbox_limbs, 0);
 	RandomGen rnd(nonrandom_seed);
@@ -946,7 +965,7 @@ void NoteDataUtil::AutogenKickbox(const NoteData& in, NoteData& out, const Timin
 			default:
 				break;
 		}
-		std::size_t this_panel= prev_limb_panels[this_limb];
+		size_t this_panel= prev_limb_panels[this_limb];
 		if(panel_repeat_counts[this_limb] + 1 > panel_repeat_goals[this_limb])
 		{
 			// Use a different panel.
@@ -1028,7 +1047,7 @@ void NoteDataUtil::CalculateRadarValues( const NoteData &in, float fSongSeconds,
 	float total_taps= 0;
 	const float voltage_window_beats= 8.0f;
 	const int voltage_window= BeatToNoteRow(voltage_window_beats);
-	std::size_t max_notes_in_voltage_window= 0;
+	size_t max_notes_in_voltage_window= 0;
 	int num_chaos_rows= 0;
 	crv_state state;
 
@@ -1041,7 +1060,7 @@ void NoteDataUtil::CalculateRadarValues( const NoteData &in, float fSongSeconds,
 			state.num_notes_on_curr_row= 0;
 			state.num_holds_on_curr_row= 0;
 			state.judgable= timing->IsJudgableAtRow(curr_row);
-			for(std::size_t n= 0; n < state.hold_ends.size(); ++n)
+			for(size_t n= 0; n < state.hold_ends.size(); ++n)
 			{
 				if(state.hold_ends[n] < curr_row)
 				{
@@ -1049,7 +1068,7 @@ void NoteDataUtil::CalculateRadarValues( const NoteData &in, float fSongSeconds,
 					--n;
 				}
 			}
-			for(std::size_t n= 0; n < recent_notes.size(); ++n)
+			for(size_t n= 0; n < recent_notes.size(); ++n)
 			{
 				if(recent_notes[n].row < curr_row - voltage_window)
 				{
@@ -1356,6 +1375,122 @@ static void GetTrackMapping( StepsType st, NoteDataUtil::TrackMapping tt, int Nu
 
 	switch( tt )
 	{
+	case NoteDataUtil::lrmirror:
+		switch( st )
+		{
+		case StepsType_dance_single:
+			iTakeFromTrack[0] = 3;
+			iTakeFromTrack[3] = 0;
+			break;
+		case StepsType_dance_double:
+			iTakeFromTrack[0] = 7;
+			iTakeFromTrack[1] = 5;
+			iTakeFromTrack[2] = 6;
+			iTakeFromTrack[3] = 4;
+			iTakeFromTrack[4] = 3;
+			iTakeFromTrack[5] = 1;
+			iTakeFromTrack[6] = 2;
+			iTakeFromTrack[7] = 0;
+			break;
+		case StepsType_dance_solo:
+			iTakeFromTrack[0] = 5;
+			iTakeFromTrack[1] = 4;
+			iTakeFromTrack[4] = 1;
+			iTakeFromTrack[5] = 0;
+			break;
+		case StepsType_pump_single:
+			iTakeFromTrack[0] = 4;
+			iTakeFromTrack[1] = 3;
+			iTakeFromTrack[3] = 1;
+			iTakeFromTrack[4] = 0;
+			break;
+		case StepsType_pump_halfdouble:
+			iTakeFromTrack[0] = 5;
+			iTakeFromTrack[1] = 4;
+			iTakeFromTrack[2] = 3;
+			iTakeFromTrack[3] = 2;
+			iTakeFromTrack[4] = 1;
+			iTakeFromTrack[5] = 0;
+			break;
+		case StepsType_pump_double:
+			iTakeFromTrack[0] = 9;
+			iTakeFromTrack[1] = 8;
+			iTakeFromTrack[2] = 7;
+			iTakeFromTrack[3] = 6;
+			iTakeFromTrack[4] = 5;
+			iTakeFromTrack[5] = 4;
+			iTakeFromTrack[6] = 3;
+			iTakeFromTrack[7] = 2;
+			iTakeFromTrack[8] = 1;
+			iTakeFromTrack[9] = 0;
+			break;
+		case StepsType_pump_couple:
+			iTakeFromTrack[0] = 9;
+			iTakeFromTrack[1] = 8;
+			iTakeFromTrack[2] = 7;
+			iTakeFromTrack[3] = 6;
+			iTakeFromTrack[4] = 5;
+			iTakeFromTrack[5] = 4;
+			iTakeFromTrack[6] = 3;
+			iTakeFromTrack[7] = 2;
+			iTakeFromTrack[8] = 1;
+			iTakeFromTrack[9] = 0;
+			break;
+		default: break;
+		}
+		break;
+	case NoteDataUtil::udmirror:
+		switch( st )
+		{
+		case StepsType_dance_single:
+			iTakeFromTrack[1] = 2;
+			iTakeFromTrack[2] = 1;
+			break;
+		case StepsType_dance_double:
+			iTakeFromTrack[1] = 2;
+			iTakeFromTrack[2] = 1;
+			iTakeFromTrack[5] = 6;
+			iTakeFromTrack[6] = 5;
+			break;
+		case StepsType_dance_solo:
+			iTakeFromTrack[2] = 3;
+			iTakeFromTrack[3] = 2;
+			break;
+		case StepsType_pump_single:
+			iTakeFromTrack[0] = 1;
+			iTakeFromTrack[1] = 0;
+			iTakeFromTrack[3] = 4;
+			iTakeFromTrack[4] = 3;
+			break;
+		case StepsType_pump_halfdouble:
+			iTakeFromTrack[1] = 2;
+			iTakeFromTrack[2] = 1;
+			iTakeFromTrack[3] = 4;
+			iTakeFromTrack[4] = 3;
+			break;
+		case StepsType_pump_double:
+			iTakeFromTrack[0] = 1;
+			iTakeFromTrack[1] = 0;
+			iTakeFromTrack[3] = 4;
+			iTakeFromTrack[4] = 3;
+			iTakeFromTrack[5] = 6;
+			iTakeFromTrack[6] = 5;
+			iTakeFromTrack[8] = 9;
+			iTakeFromTrack[9] = 8;
+			break;
+		case StepsType_pump_couple:
+			iTakeFromTrack[0] = 1;
+			iTakeFromTrack[1] = 0;
+			iTakeFromTrack[3] = 4;
+			iTakeFromTrack[4] = 3;
+			iTakeFromTrack[5] = 6;
+			iTakeFromTrack[6] = 5;
+			iTakeFromTrack[8] = 9;
+			iTakeFromTrack[9] = 8;
+			break;
+		default: break;
+		}
+		break;
 	case NoteDataUtil::left:
 	case NoteDataUtil::right:
 		// Is there a way to do this without handling each StepsType? -Chris
@@ -1980,7 +2115,7 @@ static void HyperShuffleNotes( NoteData &inout, int iStartIndex, int iEndIndex)
 		std::shuffle(viTargetTracks.begin(), viTargetTracks.end(), g_RandomNumberGenerator);
 
 		// Go through the tracks in their shuffled order and drop tap notes.
-		for(std::size_t i = 0; i < viTargetTracks.size(); i++)
+		for(size_t i = 0; i < viTargetTracks.size(); i++)
 		{
 			const int targetTrack = viTargetTracks[i];
 			const TapNote current_tn = vtnTargetTaps[i];
@@ -2936,6 +3071,8 @@ void NoteDataUtil::TransformNoteData( NoteData &nd, TimingData const& timing_dat
 
 	// Apply turns and shuffles last so that they affect inserts.
 	if( po.m_bTurns[PlayerOptions::TURN_MIRROR] )			NoteDataUtil::Turn( nd, st, NoteDataUtil::mirror, iStartIndex, iEndIndex );
+	if( po.m_bTurns[PlayerOptions::TURN_LRMIRROR] )			NoteDataUtil::Turn( nd, st, NoteDataUtil::lrmirror, iStartIndex, iEndIndex );
+	if( po.m_bTurns[PlayerOptions::TURN_UDMIRROR] )			NoteDataUtil::Turn( nd, st, NoteDataUtil::udmirror, iStartIndex, iEndIndex );
 	if( po.m_bTurns[PlayerOptions::TURN_BACKWARDS] )	NoteDataUtil::Turn( nd, st, NoteDataUtil::backwards, iStartIndex, iEndIndex );
 	if( po.m_bTurns[PlayerOptions::TURN_LEFT] )			NoteDataUtil::Turn( nd, st, NoteDataUtil::left, iStartIndex, iEndIndex );
 	if( po.m_bTurns[PlayerOptions::TURN_RIGHT] )			NoteDataUtil::Turn( nd, st, NoteDataUtil::right, iStartIndex, iEndIndex );

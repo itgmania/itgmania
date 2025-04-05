@@ -15,7 +15,8 @@
 #include <sstream>
 #include <vector>
 
-#if defined(WIN32)
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #elif defined(UNIX) || defined(MACOSX)
 #include <paths.h>
@@ -114,12 +115,12 @@ void RageFileManager::ReleaseFileDriver( RageFileDriver *pDriver )
 	g_Mutex->Unlock();
 }
 
-std::size_t zipRead(void *pOpaque, mz_uint64 file_ofs, void *pBuf, std::size_t n)
+size_t zipRead(void *pOpaque, mz_uint64 file_ofs, void *pBuf, size_t n)
 {
 	RageFile *f = static_cast<RageFile*>(pOpaque);
 
 	const int pos = f->Seek(file_ofs);
-	if (pos >= 0 && static_cast<std::uint64_t>(pos) != file_ofs)
+	if (pos >= 0 && static_cast<uint64_t>(pos) != file_ofs)
 	{
 		return 0;
 	}
@@ -127,7 +128,7 @@ std::size_t zipRead(void *pOpaque, mz_uint64 file_ofs, void *pBuf, std::size_t n
 	return f->Read(pBuf, n);
 }
 
-std::size_t zipWriteFile(void *pOpaque, mz_uint64 file_ofs, const void *pBuf, std::size_t n)
+size_t zipWriteFile(void *pOpaque, mz_uint64 file_ofs, const void *pBuf, size_t n)
 {
 	RageFile *f = static_cast<RageFile*>(pOpaque);
 
@@ -191,7 +192,7 @@ bool RageFileManager::Unzip(const std::string &zipPath, std::string targetPath, 
 
 		for (int i = 0; i < strip; i++)
 		{
-			std::size_t pos = filename.find('/');
+			size_t pos = filename.find('/');
 			if (pos != std::string::npos)
 				pos++;
 			filename.erase(0, pos);
@@ -301,7 +302,7 @@ static RageFileDriverMountpoints *g_Mountpoints = nullptr;
 static RString ExtractDirectory( RString sPath )
 {
 	// return the directory containing sPath
-	std::size_t n = sPath.find_last_of("/");
+	size_t n = sPath.find_last_of("/");
 	if( n != sPath.npos )
 		sPath.erase(n);
 	else
@@ -339,7 +340,7 @@ static RString GetDirOfExecutable( RString argv0 )
 	// argv[0] can be wrong in most OS's; try to avoid using it.
 
 	RString sPath;
-#if defined(WIN32)
+#if defined(_WIN32)
 	char szBuf[MAX_PATH];
 	GetModuleFileName( nullptr, szBuf, sizeof(szBuf) );
 	sPath = szBuf;
@@ -352,7 +353,7 @@ static RString GetDirOfExecutable( RString argv0 )
 	bool bIsAbsolutePath = false;
 	if( sPath.size() == 0 || sPath[0] == '/' )
 		bIsAbsolutePath = true;
-#if defined(WIN32)
+#if defined(_WIN32)
 	if( sPath.size() > 2 && sPath[1] == ':' && sPath[2] == '/' )
 		bIsAbsolutePath = true;
 #endif
@@ -715,16 +716,13 @@ bool RageFileManager::Mount( const RString &sType, const RString &sRoot_, const 
 	RageFileDriver *pDriver = MakeFileDriver( sType, sRoot );
 	if( pDriver == nullptr )
 	{
-		CHECKPOINT_M( ssprintf("Can't mount unknown VFS type \"%s\", root \"%s\"", sType.c_str(), sRoot.c_str() ) );
-
-		if( LOG )
-			LOG->Warn("Can't mount unknown VFS type \"%s\", root \"%s\"", sType.c_str(), sRoot.c_str() );
-		else
-			fprintf( stderr, "Can't mount unknown VFS type \"%s\", root \"%s\"\n", sType.c_str(), sRoot.c_str() );
+		const RString errorMsg = ssprintf("Can't mount unknown VFS type \"%s\", root \"%s\"", sType.c_str(), sRoot.c_str());
+		CHECKPOINT_M( errorMsg );
+		LOG->Warn( "%s", errorMsg.c_str() );
 		return false;
 	}
 
-	CHECKPOINT_M("Driver %s successfully made.");
+	CHECKPOINT_M("Driver successfully made.");
 
 	LoadedDriver *pLoadedDriver = new LoadedDriver;
 	pLoadedDriver->m_pDriver = pDriver;

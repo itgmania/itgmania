@@ -312,7 +312,7 @@ int Alsa9Buf::GetNumFramesToFill()
 	const snd_pcm_sframes_t filled_frames = std::max( 0l, total_frames - avail_frames );
 
 	/* Number of frames that don't have data, that are within the writeahead: */
-	snd_pcm_sframes_t unfilled_frames = clamp( ActualWriteahead - filled_frames, 0l, (snd_pcm_sframes_t)ActualWriteahead );
+	snd_pcm_sframes_t unfilled_frames = std::clamp( ActualWriteahead - filled_frames, 0l, (snd_pcm_sframes_t)ActualWriteahead );
 
 //	LOG->Trace( "total_fr: %i; avail_fr: %i; filled_fr: %i; ActualWr %i; chunksize %i; unfilled_frames %i ",
 //			total_frames, avail_frames, filled_frames, ActualWriteahead, chunksize, unfilled_frames );
@@ -337,7 +337,7 @@ bool Alsa9Buf::WaitUntilFramesCanBeFilled( int timeout_ms )
 	return err == 1;
 }
 
-void Alsa9Buf::Write( const std::int16_t *buffer, int frames )
+void Alsa9Buf::Write( const int16_t *buffer, int frames )
 {
 	/* We should be able to write it all.  If we don't, treat it as an error. */
 	int wrote;
@@ -388,7 +388,7 @@ bool Alsa9Buf::Recover( int r )
 	return false;
 }
 
-std::int64_t Alsa9Buf::GetPosition() const
+int64_t Alsa9Buf::GetPosition() const
 {
 	if( dsnd_pcm_state(pcm) == SND_PCM_STATE_PREPARED )
 		return last_cursor_pos;

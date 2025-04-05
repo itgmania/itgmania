@@ -12,9 +12,6 @@
 
 struct lua_State;
 
-/** @brief Compare a TimingData segment's properties with one another. */
-#define COMPARE(x) if(this->x!=other.x) return false;
-
 /* convenience functions to handle static casting */
 template<class T>
 inline T ToDerived( const TimingSegment *t, TimingSegmentType tst )
@@ -67,7 +64,7 @@ public:
 	/**
 	 * @brief Sets up initial timing data with a defined offset.
 	 * @param fOffset the offset from the 0th beat. */
-	TimingData( float fOffset = 0 );
+	TimingData( float fOffset = 0);
 	~TimingData();
 
 	void Copy( const TimingData &other );
@@ -418,8 +415,7 @@ public:
 			}
 		}
 
-		COMPARE( m_fBeat0OffsetInSeconds );
-		return true;
+		return this->m_fBeat0OffsetInSeconds == other.m_fBeat0OffsetInSeconds && this->m_fBeat0GroupOffsetInSeconds == other.m_fBeat0GroupOffsetInSeconds;
 	}
 
 	/**
@@ -464,6 +460,9 @@ public:
 	/** @brief The initial offset of a song. */
 	float	m_fBeat0OffsetInSeconds;
 
+	/** @brief The sync offset of this group */
+	float	m_fBeat0GroupOffsetInSeconds;
+
 	// XXX: this breaks encapsulation. get rid of it ASAP
 	std::vector<RString> ToVectorString(TimingSegmentType tst, int dec = 6) const;
 protected:
@@ -473,8 +472,6 @@ protected:
 	// All of the following vectors must be sorted before gameplay.
 	std::array<std::vector<TimingSegment *>, NUM_TimingSegmentType> m_avpTimingSegments;
 };
-
-#undef COMPARE
 
 #endif
 

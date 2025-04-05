@@ -6,7 +6,6 @@
 #include "archutils/Win32/WindowsResources.h"
 #include "archutils/Win32/DialogUtil.h"
 #include "archutils/Win32/ErrorStrings.h"
-#include "archutils/Win32/GotoURL.h"
 #include "archutils/Win32/RestartProgram.h"
 #include "archutils/Win32/CrashHandlerNetworking.h"
 #include "archutils/Win32/WindowsDialogBox.h"
@@ -26,7 +25,7 @@
 
 #include <windows.h>
 #include <commctrl.h>
-#include "archutils/Win32/ddk/dbghelp.h"
+#include "dbghelp.h"
 #include <io.h>
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
@@ -56,10 +55,10 @@ namespace VDDebugInfo
 		int nBuildNumber;
 
 		const unsigned char *pRVAHeap;
-		std::uintptr_t nFirstRVA;
+		uintptr_t nFirstRVA;
 
 		const char *pFuncNameHeap;
-		const std::uintptr_t (*pSegments)[2];
+		const uintptr_t (*pSegments)[2];
 		int nSegments;
 		char sFilename[1024];
 		RString sError;
@@ -107,16 +106,16 @@ namespace VDDebugInfo
 
 		src += 64;
 		const int* pVer = reinterpret_cast<const int*>(src);
-		const std::size_t* pRVASize = reinterpret_cast<const std::size_t*>(src + sizeof(int));
-		const std::size_t* pFNamSize = reinterpret_cast<const std::size_t*>(src + sizeof(int) + sizeof(std::size_t));
-		const int* pSegCnt = reinterpret_cast<const int*>(src + sizeof(int) + 2 * sizeof(std::size_t));
-		src += 2 * (sizeof(int) + sizeof(std::size_t));
+		const size_t* pRVASize = reinterpret_cast<const size_t*>(src + sizeof(int));
+		const size_t* pFNamSize = reinterpret_cast<const size_t*>(src + sizeof(int) + sizeof(size_t));
+		const int* pSegCnt = reinterpret_cast<const int*>(src + sizeof(int) + 2 * sizeof(size_t));
+		src += 2 * (sizeof(int) + sizeof(size_t));
 
 		pctx->nBuildNumber		= *pVer;
-		pctx->pRVAHeap			= reinterpret_cast<const unsigned char*>(src + sizeof(std::uintptr_t));
-		pctx->nFirstRVA			= *reinterpret_cast<const std::uintptr_t*>(src);
+		pctx->pRVAHeap			= reinterpret_cast<const unsigned char*>(src + sizeof(uintptr_t));
+		pctx->nFirstRVA			= *reinterpret_cast<const uintptr_t*>(src);
 		pctx->pFuncNameHeap		= reinterpret_cast<const char*>(src + *pRVASize);
-		pctx->pSegments			= reinterpret_cast<const std::uintptr_t(*)[2]>(src + *pRVASize + *pFNamSize);
+		pctx->pSegments			= reinterpret_cast<const uintptr_t(*)[2]>(src + *pRVASize + *pFNamSize);
 		pctx->nSegments			= *pSegCnt;
 
 		return true;
@@ -150,7 +149,7 @@ namespace VDDebugInfo
 			if( dwFileSize == INVALID_FILE_SIZE )
 				break;
 
-			char *buffer = new char[static_cast<std::size_t>(dwFileSize) + 1];
+			char *buffer = new char[static_cast<size_t>(dwFileSize) + 1];
 			std::fill(buffer, buffer + dwFileSize + 1, '\0' );
 
 			DWORD dwActual;
@@ -170,7 +169,7 @@ namespace VDDebugInfo
 		return false;
 	}
 
-	static bool PointerIsInAnySegment( const Context *pctx, std::uintptr_t rva )
+	static bool PointerIsInAnySegment( const Context *pctx, uintptr_t rva )
 	{
 		for( int i=0; i<pctx->nSegments; ++i )
 		{
@@ -181,7 +180,7 @@ namespace VDDebugInfo
 		return false;
 	}
 
-	static const char *GetNameFromHeap(const char *heap, std::size_t idx)
+	static const char *GetNameFromHeap(const char *heap, size_t idx)
 	{
 		while(idx--)
 			while(*heap++);
@@ -189,25 +188,25 @@ namespace VDDebugInfo
 		return heap;
 	}
 
-	std::intptr_t VDDebugInfoLookupRVA( const Context *pctx, std::uintptr_t rva, char *buf, int buflen )
+	intptr_t VDDebugInfoLookupRVA( const Context *pctx, uintptr_t rva, char *buf, int buflen )
 	{
 		if( !PointerIsInAnySegment(pctx, rva) )
 			return -1;
 
 		const unsigned char *pr = pctx->pRVAHeap;
 		const unsigned char *pr_limit = (const unsigned char *)pctx->pFuncNameHeap;
-		std::size_t idx = 0;
+		size_t idx = 0;
 
 		// Linearly unpack RVA deltas and find lower_bound
 		rva -= pctx->nFirstRVA;
 
-		if( static_cast<std::intptr_t>(rva) < 0 )
+		if( static_cast<intptr_t>(rva) < 0 )
 			return -1;
 
 		while( pr < pr_limit )
 		{
 			unsigned char c;
-			std::uintptr_t diff = 0;
+			uintptr_t diff = 0;
 
 			do
 			{
@@ -218,7 +217,7 @@ namespace VDDebugInfo
 
 			rva -= diff;
 
-			if (static_cast<std::intptr_t>(rva) < 0) {
+			if (static_cast<intptr_t>(rva) < 0) {
 				rva += diff;
 				break;
 			}
@@ -237,7 +236,7 @@ namespace VDDebugInfo
 		strncpy( buf, fn_name, buflen );
 		buf[buflen-1] = 0;
 
-		return static_cast<std::intptr_t>(rva);
+		return static_cast<intptr_t>(rva);
 	}
 }
 
@@ -290,7 +289,7 @@ namespace SymbolLookup
 		return true;
 	}
 
-	SYMBOL_INFO *GetSym( std::uintptr_t ptr, DWORD64 &disp )
+	SYMBOL_INFO *GetSym( uintptr_t ptr, DWORD64 &disp )
 	{
 		InitDbghelp();
 
@@ -344,7 +343,7 @@ namespace SymbolLookup
 			return "???";
 		}
 		RString sName;
-		char *buffer = new char[static_cast<std::size_t>(iSize) + 1];
+		char *buffer = new char[static_cast<size_t>(iSize) + 1];
 		std::fill(buffer, buffer + iSize + 1, '\0');
 		if (!ReadFromParent(iFD, buffer, iSize))
 		{
@@ -370,12 +369,12 @@ namespace SymbolLookup
 		VirtualQueryEx( g_hParent, ptr, &meminfo, sizeof meminfo );
 
 		char tmp[512];
-		std::intptr_t iAddress = VDDebugInfo::VDDebugInfoLookupRVA(pctx, reinterpret_cast<std::uintptr_t>(ptr), tmp, sizeof(tmp));
+		intptr_t iAddress = VDDebugInfo::VDDebugInfoLookupRVA(pctx, reinterpret_cast<uintptr_t>(ptr), tmp, sizeof(tmp));
 		if( iAddress >= 0 )
 		{
-			wsprintf( buf, "%" ADDRESS_ZEROS "Ix: %s [%" ADDRESS_ZEROS "Ix+%Ix+%Ix]", reinterpret_cast<std::uintptr_t>(ptr), Demangle(tmp),
+			wsprintf( buf, "%" ADDRESS_ZEROS "Ix: %s [%" ADDRESS_ZEROS "Ix+%Ix+%Ix]", reinterpret_cast<uintptr_t>(ptr), Demangle(tmp),
 				pctx->nFirstRVA,
-				reinterpret_cast<std::uintptr_t>(ptr) - pctx->nFirstRVA - iAddress,
+				reinterpret_cast<uintptr_t>(ptr) - pctx->nFirstRVA - iAddress,
 				iAddress );
 			return;
 		}
@@ -383,21 +382,21 @@ namespace SymbolLookup
 		RString sName = CrashChildGetModuleBaseName( (HMODULE)meminfo.AllocationBase );
 
 		DWORD64 disp;
-		SYMBOL_INFO *pSymbol = GetSym( reinterpret_cast<std::uintptr_t>(ptr), disp );
+		SYMBOL_INFO *pSymbol = GetSym( reinterpret_cast<uintptr_t>(ptr), disp );
 
 		if( pSymbol )
 		{
 			wsprintf( buf, "%" ADDRESS_ZEROS "Ix: %s!%s [%" ADDRESS_ZEROS "Ix+%Ix+%Ix]",
-				reinterpret_cast<std::uintptr_t>(ptr), sName.c_str(), pSymbol->Name,
-				reinterpret_cast<std::uintptr_t>(meminfo.AllocationBase),
-				static_cast<std::uintptr_t>(pSymbol->Address) - reinterpret_cast<std::uintptr_t>(meminfo.AllocationBase),
+				reinterpret_cast<uintptr_t>(ptr), sName.c_str(), pSymbol->Name,
+				reinterpret_cast<uintptr_t>(meminfo.AllocationBase),
+				static_cast<uintptr_t>(pSymbol->Address) - reinterpret_cast<uintptr_t>(meminfo.AllocationBase),
 				static_cast<ULONG_PTR>(disp));
 			return;
 		}
 
 		wsprintf( buf, "%" ADDRESS_ZEROS "Ix: %s!%" ADDRESS_ZEROS "Ix",
-			reinterpret_cast<std::uintptr_t>(ptr), sName.c_str(),
-			reinterpret_cast<std::uintptr_t>(meminfo.AllocationBase) );
+			reinterpret_cast<uintptr_t>(ptr), sName.c_str(),
+			reinterpret_cast<uintptr_t>(meminfo.AllocationBase) );
 	}
 }
 
@@ -491,7 +490,7 @@ static void MakeCrashReport( const CompleteCrashData &Data, RString &sOut )
 	sOut += ssprintf( "\n" );
 
 	sOut += ssprintf( "Partial log:\n" );
-	for( std::size_t  i = 0; i < Data.m_asRecent.size(); ++i )
+	for( size_t  i = 0; i < Data.m_asRecent.size(); ++i )
 		sOut += ssprintf( "%s\n", Data.m_asRecent[i].c_str() );
 	sOut += ssprintf( "\n" );
 
@@ -531,7 +530,7 @@ bool ReadCrashDataFromParent( int iFD, CompleteCrashData &Data )
 	if( !ReadFromParent(iFD, &iSize, sizeof(iSize)) )
 		return false;
 
-	char *buffer = new char[static_cast<std::size_t>(iSize) + 1];
+	char *buffer = new char[static_cast<size_t>(iSize) + 1];
 	std::fill(buffer, buffer + iSize + 1, '\0');
 	bool wasReadSuccessful = ReadFromParent(iFD, buffer, iSize);
 	RString tmp = buffer;
@@ -733,7 +732,7 @@ INT_PTR CrashDialog::HandleMessage( UINT msg, WPARAM wParam, LPARAM lParam )
 				KillTimer( hDlg, 0 );
 
 				SetDialogInitial();
-				SAFE_DELETE( m_pPost );
+				RageUtil::SafeDelete( m_pPost );
 				return TRUE;
 			}
 
@@ -766,35 +765,10 @@ INT_PTR CrashDialog::HandleMessage( UINT msg, WPARAM wParam, LPARAM lParam )
 			EndDialog( hDlg, FALSE );
 			break;
 		case IDC_BUTTON_REPORT:
-			GotoURL( REPORT_BUG_URL );
+			// safe to remove button?
 			break;
 		case IDC_BUTTON_AUTO_REPORT:
-			if( !m_sUpdateURL.empty() )
-			{
-				/* We already sent the report, were told that there's an update,
-				 * and substituted the URL. */
-				GotoURL( m_sUpdateURL );
-				break;
-			}
-
-			ShowWindow( GetDlgItem(hDlg, IDC_BUTTON_AUTO_REPORT), false );
-			ShowWindow( GetDlgItem(hDlg, IDC_PROGRESS), true );
-			SetWindowText( GetDlgItem(hDlg, IDC_MAIN_TEXT), REPORTING_THE_PROBLEM.GetValue() );
-			SetWindowText( GetDlgItem(hDlg, IDC_BUTTON_CLOSE), CANCEL.GetValue() );
-			SendDlgItemMessage( hDlg, IDC_PROGRESS, PBM_SETRANGE, 0, MAKELPARAM(0,100) );
-			SendDlgItemMessage( hDlg, IDC_PROGRESS, PBM_SETPOS, 0, 0 );
-
-			// Create the form data to send.
-			m_pPost = new NetworkPostData;
-			m_pPost->SetData( "Product", PRODUCT_ID );
-			m_pPost->SetData( "Version", product_version );
-			m_pPost->SetData( "Arch", HOOKS->GetArchName().c_str() );
-			m_pPost->SetData( "Report", m_sCrashReport );
-			m_pPost->SetData( "Reason", m_CrashData.m_CrashInfo.m_CrashReason );
-
-			m_pPost->Start( CRASH_REPORT_HOST, CRASH_REPORT_PORT, CRASH_REPORT_PATH );
-
-			SetTimer( hDlg, 0, 100, nullptr );
+			// same here
 			break;
 		}
 		break;
@@ -817,7 +791,7 @@ INT_PTR CrashDialog::HandleMessage( UINT msg, WPARAM wParam, LPARAM lParam )
 				if( sError.empty() && sResult.empty() )
 					sError = "No data received";
 
-				SAFE_DELETE( m_pPost );
+				RageUtil::SafeDelete( m_pPost );
 
 				XNode xml;
 				if( sError.empty() )

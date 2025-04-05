@@ -155,8 +155,8 @@ void NoteData::CopyRange( const NoteData& from, int rowFromBegin, int rowFromEnd
 				int iStartRow = lBegin->first + iMoveBy;
 				int iEndRow = iStartRow + head.iDuration;
 
-				iStartRow = clamp( iStartRow, rowToBegin, rowToEnd );
-				iEndRow = clamp( iEndRow, rowToBegin, rowToEnd );
+				iStartRow = std::clamp( iStartRow, rowToBegin, rowToEnd );
+				iEndRow = std::clamp( iEndRow, rowToBegin, rowToEnd );
 
 				this->AddHoldNote( t, iStartRow, iEndRow, head );
 			}
@@ -543,6 +543,17 @@ int NoteData::GetNumRowsWithTap( int iStartIndex, int iEndIndex ) const
 			iNumNotes++;
 
 	return iNumNotes;
+}
+
+int NoteData::GetNumMinesInRow(int iRow) const
+{
+	int iNumMines = 0;
+	for( int t=0; t<GetNumTracks(); t++ )
+	{
+		if (this->IsMine(GetTapNote(t, iRow), iRow))
+			iNumMines++;
+	}
+	return iNumMines;
 }
 
 int NoteData::GetNumMines( int iStartIndex, int iEndIndex ) const
@@ -1411,12 +1422,12 @@ template<typename ND, typename iter, typename TN>
 		if(added)
 		{
 			int avg_row= 0;
-			for(std::size_t p= 0; p < m_PrevCurrentRows.size(); ++p)
+			for(size_t p= 0; p < m_PrevCurrentRows.size(); ++p)
 			{
 				avg_row+= m_PrevCurrentRows[p];
 			}
 			avg_row/= m_PrevCurrentRows.size();
-			for(std::size_t a= 0; a < added_or_removed_tracks.size(); ++a)
+			for(size_t a= 0; a < added_or_removed_tracks.size(); ++a)
 			{
 				int track_id= added_or_removed_tracks[a];
 				m_PrevCurrentRows.insert(m_PrevCurrentRows.begin()+track_id, avg_row);
@@ -1427,7 +1438,7 @@ template<typename ND, typename iter, typename TN>
 		}
 		else
 		{
-			for(std::size_t a= 0; a < added_or_removed_tracks.size(); ++a)
+			for(size_t a= 0; a < added_or_removed_tracks.size(); ++a)
 			{
 				int track_id= added_or_removed_tracks[a];
 				m_PrevCurrentRows.erase(m_PrevCurrentRows.begin()+track_id);

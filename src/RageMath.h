@@ -5,10 +5,7 @@
 
 #include <vector>
 
-#define PI		(3.141592653589793f)
-#define DegreeToRadian( degree ) ((degree) * (PI / 180.0f))
-#define RadianToDegree( radian ) ((radian) * (180.0f / PI))
-
+constexpr float PI = 3.1415926536f;
 
 struct lua_State;
 struct RageVector2;
@@ -54,11 +51,6 @@ RageMatrix RageLookAt(
 	float upx, float upy, float upz );
 void RageMatrixAngles( RageMatrix* pOut, const RageVector3 &angles );
 void RageMatrixTranspose( RageMatrix* pOut, const RageMatrix* pIn );
-
-float RageFastSin( float x ) CONST_FUNCTION;
-float RageFastCos( float x ) CONST_FUNCTION;
-float RageFastTan( float x ) CONST_FUNCTION;
-float RageFastCsc( float x ) CONST_FUNCTION;
 
 float RageSquare( float x) CONST_FUNCTION;
 float RageTriangle( float x) CONST_FUNCTION;

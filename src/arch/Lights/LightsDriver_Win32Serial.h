@@ -16,7 +16,7 @@
 class LightsDriver_Win32Serial : public LightsDriver
 {
 protected:
-	std::uint8_t lastOutput[FULL_SEXTET_COUNT];
+	uint8_t lastOutput[FULL_SEXTET_COUNT];
 public:
 	LightsDriver_Win32Serial();
 	virtual ~LightsDriver_Win32Serial();

@@ -8,6 +8,7 @@
 #include "RageUtil_AutoPtr.h"
 #include "RageTypes.h"
 #include "Steps.h"
+#include "Group.h"
 
 #include <set>
 #include <vector>
@@ -64,6 +65,7 @@ struct LyricSegment
 	RageColor m_Color; /** @brief The color of the lyrics. */
 };
 
+
 /** @brief Holds all music metadata and steps for one song. */
 class Song
 {
@@ -108,11 +110,11 @@ public:
 	void TidyUpData( bool fromCache = false, bool duringCache = false );
 
 	/**
-	 * @brief Get the new radar values, and determine the last second at the same time.
+	 * @brief Get the new step stats, and determine the last second at the same time.
 	 * This is called by TidyUpData, after saving the Song.
 	 * @param fromCache was this data loaded from the cache file?
 	 * @param duringCache was this data loaded during the cache process? */
-	void ReCalculateRadarValuesAndLastSecond(bool fromCache = false, bool duringCache = false);
+	void ReCalculateStepStatsAndLastSecond(bool fromCache = false, bool duringCache = false);
 	/**
 	 * @brief Translate any titles that aren't in english.
 	 * This is called by TidyUpData. */
@@ -171,6 +173,9 @@ public:
 
 	/** @brief The group this Song is in. */
 	RString m_sGroupName;
+	
+	/** @brief The base directory name that this Song is in. */
+	RString m_sSongName;
 
 	/**
 	 * @brief the Profile this came from.
@@ -192,6 +197,7 @@ public:
 	RString m_sSubTitleTranslit;
 	/** @brief The transliterated artist of the Song, if it exists. */
 	RString m_sArtistTranslit;
+
 
 	RString m_sFileHash;
 	RString GetFileHash();
@@ -273,7 +279,7 @@ public:
 	RString GetBannerPath() const;
 	RString GetJacketPath() const;
 	RString GetCDImagePath() const;
-	RString GetDiscPath() const;
+	RString GetDiscPath() const; 
 	RString	GetLyricsPath() const;
 	RString GetBackgroundPath() const;
 	RString GetCDTitlePath() const;

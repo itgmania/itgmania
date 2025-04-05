@@ -124,6 +124,14 @@ enum ProfileSortOrder
 	ProfileSortOrder_Invalid
 };
 
+enum SyncOffset
+{
+	SyncOffset_NULL,
+	SyncOffset_ITG,
+	NUM_SyncOffset,
+	SyncOffset_Invalid
+};
+
 /** @brief Holds user-chosen preferences that are saved between sessions. */
 class PrefsManager
 {
@@ -240,6 +248,7 @@ public:
 	Preference<ShowDancingCharacters>		m_ShowDancingCharacters;
 	Preference<bool>	m_bUseUnlockSystem;
 	Preference<float>	m_fGlobalOffsetSeconds;
+	Preference<SyncOffset>	m_DefaultSyncOffset;
 	Preference<int>	m_iProgressiveLifebar;
 	Preference<int>	m_iProgressiveStageLifebar;
 	Preference<int>	m_iProgressiveNonstopLifebar;
@@ -261,6 +270,7 @@ public:
 	Preference<bool>	m_bCelShadeModels;
 	Preference<bool>	m_bPreferredSortUsesGroups;
 	Preference<float>	m_fDebounceCoinInputTime; // allow users to apply a distinct debounce to coin input
+	Preference<bool>	m_bResetCoinsAtStartup;
 
 	// Number of seconds it takes for a button on the controller to release
 	// after pressed.
@@ -310,9 +320,10 @@ public:
 	Preference<bool>	m_bSmoothLines;
 	Preference<int>	m_iSoundWriteAhead;
 	Preference<RString>	m_iSoundDevice;
-	Preference<int> m_iRageSoundSampleCountClamp;
 	Preference<int>	m_iSoundPreferredSampleRate;
 	Preference<RString>	m_sLightsStepsDifficulty;
+	Preference<bool>	m_bLightsSimplifyBass;
+	Preference<bool>	m_bLightsBassParallel;
 	Preference<bool>	m_bAllowUnacceleratedRenderer;
 	Preference<bool>	m_bThreadedInput;
 	Preference<bool>	m_bThreadedMovieDecode;
@@ -334,6 +345,7 @@ public:
 	Preference<float> m_custom_songs_max_megabytes;
 
 	// Debug:
+	Preference<bool>	m_bDebugMenuEnabled;
 	Preference<bool>	m_bLogToDisk;
 	Preference<bool>	m_bForceLogFlush;
 	Preference<bool>	m_bShowLogOutput;

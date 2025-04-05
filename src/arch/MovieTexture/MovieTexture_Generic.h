@@ -4,6 +4,7 @@
 #include "MovieTexture.h"
 
 #include <cstdint>
+#include <thread>
 
 class FFMpeg_Helper;
 struct RageSurface;
@@ -24,26 +25,23 @@ class MovieDecoder
 public:
 	virtual ~MovieDecoder() { }
 
-	virtual RString Open( RString sFile ) = 0;
+	virtual RString Open(RString file) = 0;
 	virtual void Close() = 0;
 	virtual void Rewind() = 0;
+	virtual void Rollover() = 0;
 
-	/*
-	 * Decode a frame.  Return 1 on success, 0 on EOF, -1 on fatal error.
-	 *
-	 * If we're lagging behind the video, fTargetTime will be the target
-	 * timestamp.  The decoder may skip frames to catch up.  On return,
-	 * the current timestamp must be <= fTargetTime.
-	 *
-	 * Otherwise, fTargetTime will be -1, and the next frame should be
-	 * decoded; skip frames only if necessary to recover from errors.
-	 */
-	virtual int DecodeFrame( float fTargetTime ) = 0;
+	// Decode the next frame.
+	// Return 1 on success, 0 on EOF, -1 on fatal error, -2 on cancel.
+	virtual int DecodeFrame() = 0;
+	virtual int DecodeMovie() = 0;
+
+	// Returns true if the frame we want to display has been decoded already.
+	virtual bool IsCurrentFrameReady() = 0;
 
 	/*
 	 * Get the currently-decoded frame.
 	 */
-	virtual void GetFrame( RageSurface *pOut ) = 0;
+	virtual int GetFrame( RageSurface *surface_out ) = 0;
 
 	/* Return the dimensions of the image, in pixels (before aspect ratio
 	 * adjustments). */
@@ -74,8 +72,14 @@ public:
 	 * displayed.  The first frame will always be 0. */
 	virtual float GetTimestamp() const = 0;
 
-	/* Get the duration, in seconds, to display the current frame. */
-	virtual float GetFrameDuration() const = 0;
+	// Cancels the decoding of the movie.
+	virtual void Cancel() = 0;
+
+	// Sets the looping property on the decoder.
+	virtual void SetLooping(bool loop) = 0;
+
+	// Returns true if the the final frame was displayed.
+	virtual bool EndOfMovie() = 0;
 };
 
 
@@ -91,46 +95,47 @@ public:
 
 	virtual void Reload();
 
-	virtual void SetPosition( float fSeconds );
-	virtual void DecodeSeconds( float fSeconds );
-	virtual void SetPlaybackRate( float fRate ) { m_fRate = fRate; }
-	void SetLooping( bool bLooping=true ) { m_bLoop = bLooping; }
-	std::uintptr_t GetTexHandle() const;
+	virtual void SetPosition(float seconds);
+
+	// UpdateMovie tells the MovieTexture to update the displayed frame based
+	// on fSeconds passed in. (e.g., 5.9 input means show the frame that should
+	// be displayed 5.9 seconds into the movie).
+	virtual void UpdateMovie(float seconds);
+	virtual void SetPlaybackRate(float rate) { rate_ = rate; }
+	void SetLooping(bool looping = true) { loop_ = looping; }
+	uintptr_t GetTexHandle() const;
 
 	static EffectMode GetEffectMode( MovieDecoderPixelFormatYCbCr fmt );
 
 private:
-	MovieDecoder *m_pDecoder;
+	MovieDecoder* decoder_;
 
-	float m_fRate;
-	enum {
-		FRAME_NONE, /* no frame available; call GetFrame to get one */
-		FRAME_DECODED /* frame decoded; waiting until it's time to display it */
-	} m_ImageWaiting;
-	bool m_bLoop;
-	bool m_bWantRewind;
+	std::unique_ptr<std::thread> decoding_thread_;
 
-	enum State { DECODER_QUIT, DECODER_RUNNING } m_State;
+	float rate_;
+	bool loop_;
+	bool finished_ = false;
 
-	std::uintptr_t m_uTexHandle;
-	RageTextureRenderTarget *m_pRenderTarget;
-	RageTexture *m_pTextureIntermediate;
-	Sprite *m_pSprite;
+	// If true, halts all decoding and display.
+	bool failure_ = false;
 
-	RageSurface *m_pSurface;
+	uintptr_t texture_handle_;
+	RageTextureRenderTarget *render_target_;
+	RageTexture * intermediate_texture_;
+	Sprite *sprite_;
 
-	RageTextureLock *m_pTextureLock;
+	RageSurface *surface_;
+
+	RageTextureLock *texture_lock_;
 
 	/* The time the movie is actually at: */
-	float m_fClock;
-	bool m_bFrameSkipMode;
+	float clock_;
 
 	void UpdateFrame();
 
 	void CreateTexture();
 	void DestroyTexture();
 
-	bool DecodeFrame();
 	float CheckFrameTime();
 };
 

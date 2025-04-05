@@ -255,7 +255,7 @@ void CourseUtil::AutogenEndlessFromGroup( const RString &sGroupName, Difficulty 
 	// gameplay. (We might still get a repeat at the repeat boundary,
 	// but that'd be rare.) -glenn
 	CourseEntry e;
-	e.songCriteria.m_sGroupName = sGroupName;
+	e.songCriteria.m_vsGroupNames.push_back(sGroupName);
 	e.stepsCriteria.m_difficulty = diff;
 	e.bSecret = true;
 

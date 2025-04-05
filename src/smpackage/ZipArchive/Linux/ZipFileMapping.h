@@ -63,7 +63,7 @@ namespace ziparchv
 		}
 	protected:
 		void* m_pFileMap;
-		std::size_t m_iSize;
+		size_t m_iSize;
 
 	};
 }

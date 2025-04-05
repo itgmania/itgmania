@@ -1,9 +1,10 @@
+include(CMakeProject-hidapi.cmake)
 include(CMakeProject-lua.cmake)
 include(CMakeProject-glew.cmake)
 include(CMakeProject-json.cmake)
 include(CMakeProject-mad.cmake)
 include(CMakeProject-zlib.cmake)
-include(CMakeProject-jpeg.cmake)
+include(CMakeProject-libjpeg-turbo.cmake)
 include(CMakeProject-ogg.cmake)
 include(CMakeProject-vorbis.cmake)
 include(CMakeProject-vorbisfile.cmake)
@@ -13,3 +14,6 @@ include(CMakeProject-tommath.cmake)
 include(CMakeProject-png.cmake)
 include(CMakeProject-ixwebsocket.cmake)
 include(CMakeProject-miniz.cmake)
+
+# External projects
+include(CMakeProject-libusb.cmake)

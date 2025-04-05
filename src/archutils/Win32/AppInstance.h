@@ -1,7 +1,7 @@
 #ifndef APP_INSTANCE_H
 #define APP_INSTANCE_H
 
-#include "windows.h"
+#include <windows.h>
 
 /** @brief get an HINSTANCE for starting dialog boxes. */
 class AppInstance

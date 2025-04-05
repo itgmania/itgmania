@@ -3270,7 +3270,7 @@ void GameManager::GetStylesForGame( const Game *pGame, std::vector<const Style*>
 
 const Game *GameManager::GetGameForStyle( const Style *pStyle )
 {
-	for( std::size_t g=0; g<ARRAYLEN(g_Games); ++g )
+	for( size_t g=0; g<ARRAYLEN(g_Games); ++g )
 	{
 		const Game *pGame = g_Games[g];
 		for( int s=0; pGame->m_apStyles[s]; ++s )
@@ -3284,7 +3284,7 @@ const Game *GameManager::GetGameForStyle( const Style *pStyle )
 
 const Style* GameManager::GetEditorStyleForStepsType( StepsType st )
 {
-	for( std::size_t g=0; g<ARRAYLEN(g_Games); ++g )
+	for( size_t g=0; g<ARRAYLEN(g_Games); ++g )
 	{
 		const Game *pGame = g_Games[g];
 		for( int s=0; pGame->m_apStyles[s]; ++s )
@@ -3395,7 +3395,7 @@ const Style *GameManager::GetFirstCompatibleStyle( const Game *pGame, int iNumPl
 
 void GameManager::GetEnabledGames( std::vector<const Game*>& aGamesOut )
 {
-	for( std::size_t g=0; g<ARRAYLEN(g_Games); ++g )
+	for( size_t g=0; g<ARRAYLEN(g_Games); ++g )
 	{
 		const Game *pGame = g_Games[g];
 		if( IsGameEnabled( pGame ) )
@@ -3408,7 +3408,7 @@ const Game* GameManager::GetDefaultGame()
 	const Game *pDefault = nullptr;
 	if( pDefault == nullptr )
 	{
-		for( std::size_t i=0; pDefault == nullptr && i < ARRAYLEN(g_Games); ++i )
+		for( size_t i=0; pDefault == nullptr && i < ARRAYLEN(g_Games); ++i )
 		{
 			if( IsGameEnabled(g_Games[i]) )
 				pDefault = g_Games[i];
@@ -3423,7 +3423,7 @@ const Game* GameManager::GetDefaultGame()
 
 int GameManager::GetIndexFromGame( const Game* pGame )
 {
-	for( std::size_t g=0; g<ARRAYLEN(g_Games); ++g )
+	for( size_t g=0; g<ARRAYLEN(g_Games); ++g )
 	{
 		if( g_Games[g] == pGame )
 			return g;
@@ -3472,7 +3472,7 @@ RString GameManager::StyleToLocalizedString( const Style* style )
 
 const Game* GameManager::StringToGame( RString sGame )
 {
-	for( std::size_t i=0; i<ARRAYLEN(g_Games); ++i )
+	for( size_t i=0; i<ARRAYLEN(g_Games); ++i )
 		if( !sGame.CompareNoCase(g_Games[i]->m_szName) )
 			return g_Games[i];
 
@@ -3544,7 +3544,7 @@ public:
 		std::vector<const Game*> aGames;
 		p->GetEnabledGames( aGames );
 		lua_createtable(L, aGames.size(), 0);
-		for(std::size_t i= 0; i < aGames.size(); ++i)
+		for(size_t i= 0; i < aGames.size(); ++i)
 		{
 			lua_pushstring(L, aGames[i]->m_szName);
 			lua_rawseti(L, -2, i+1);

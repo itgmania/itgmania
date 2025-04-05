@@ -127,7 +127,7 @@ static int PtraceDetach( int ThreadID )
 
 
 /* Get this thread's ID (this may be a TID or a PID). */
-static std::uint64_t GetCurrentThreadIdInternal()
+static uint64_t GetCurrentThreadIdInternal()
 {
 	/* If we're under Valgrind, neither the PID nor the TID is associated with the
 	 * thread.  Return the pthread ID.  This can't be used to kill threads, etc.,
@@ -157,14 +157,14 @@ static std::uint64_t GetCurrentThreadIdInternal()
 	return getpid();
 }
 
-std::uint64_t GetCurrentThreadId()
+uint64_t GetCurrentThreadId()
 {
 #if defined(HAVE_TLS)
 	/* This is called each time we lock a mutex, and gettid() is a little slow, so
 	 * cache the result if we support TLS. */
 	if( RageThread::GetSupportsTLS() )
 	{
-		static thread_local std::uint64_t cached_tid = 0;
+		static thread_local uint64_t cached_tid = 0;
 		static thread_local bool cached = false;
 		if( !cached )
 		{
@@ -178,7 +178,7 @@ std::uint64_t GetCurrentThreadId()
 	return GetCurrentThreadIdInternal();
 }
 
-int SuspendThread( std::uint64_t ThreadID )
+int SuspendThread( uint64_t ThreadID )
 {
 	/*
 	 * Linux: We can't simply kill(SIGSTOP) (or tkill), since that will stop all processes
@@ -189,7 +189,7 @@ int SuspendThread( std::uint64_t ThreadID )
 	// kill( ThreadID, SIGSTOP );
 }
 
-int ResumeThread( std::uint64_t ThreadID )
+int ResumeThread( uint64_t ThreadID )
 {
 	return PtraceDetach( int(ThreadID) );
 	// kill( ThreadID, SIGSTOP );
@@ -205,7 +205,7 @@ int ResumeThread( std::uint64_t ThreadID )
  * This call leaves the given thread suspended, so the returned context doesn't become invalid.
  * ResumeThread() can be used to resume a thread after this call. */
 #if defined(CRASH_HANDLER)
-bool GetThreadBacktraceContext( std::uint64_t ThreadID, BacktraceContext *ctx )
+bool GetThreadBacktraceContext( uint64_t ThreadID, BacktraceContext *ctx )
 {
 	/* Can't GetThreadBacktraceContext the current thread. */
 	ASSERT( ThreadID != GetCurrentThreadId() );
@@ -266,17 +266,17 @@ RString ThreadsVersion()
 	return "(unknown)";
 }
 
-std::uint64_t GetCurrentThreadId()
+uint64_t GetCurrentThreadId()
 {
-	return std::uint64_t( pthread_self() );
+	return uint64_t( pthread_self() );
 }
 
-int SuspendThread( std::uint64_t id )
+int SuspendThread( uint64_t id )
 {
 	return pthread_kill( pthread_t(id), SIGSTOP );
 }
 
-int ResumeThread( std::uint64_t id )
+int ResumeThread( uint64_t id )
 {
 	return pthread_kill( pthread_t(id), SIGCONT );
 }

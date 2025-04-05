@@ -29,7 +29,7 @@ static inline void SerialClose()
 	fd = -1;
 }
 
-static inline void SerialOut( const char *str, std::size_t len )
+static inline void SerialOut( const char *str, size_t len )
 {
 	if( fd ==-1 )
 		return;

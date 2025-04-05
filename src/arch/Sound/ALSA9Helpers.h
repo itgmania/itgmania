@@ -13,7 +13,7 @@ private:
 	int channels, samplebits;
 	unsigned samplerate;
 	int buffersize;
-	std::int64_t last_cursor_pos;
+	int64_t last_cursor_pos;
 
 	snd_pcm_uframes_t preferred_writeahead, preferred_chunksize;
 	snd_pcm_uframes_t writeahead, chunksize;
@@ -40,15 +40,15 @@ public:
 
 	int GetNumFramesToFill();
 	bool WaitUntilFramesCanBeFilled( int timeout_ms );
-	void Write( const std::int16_t *buffer, int frames );
+	void Write( const int16_t *buffer, int frames );
 
 	void Play();
 	void Stop();
 	void SetVolume(float vol);
 	int GetSampleRate() const { return samplerate; }
 
-	std::int64_t GetPosition() const;
-	std::int64_t GetPlayPos() const { return last_cursor_pos; }
+	int64_t GetPosition() const;
+	int64_t GetPlayPos() const { return last_cursor_pos; }
 };
 #endif
 

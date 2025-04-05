@@ -110,7 +110,8 @@ class WebSocketHandle
 {
 public:
 	WebSocketHandle() {};
-
+	~WebSocketHandle();
+	
 	static int Collect(lua_State *L);
 	static int Close(lua_State *L);
 	static int Send(lua_State *L);
@@ -146,6 +147,8 @@ private:
 
 	static Preference<bool> httpEnabled;
 	static Preference<RString> httpAllowHosts;
+
+	std::vector<std::shared_ptr<WebSocketHandle>> webSocketHandles;
 };
 
 extern NetworkManager*	NETWORK;

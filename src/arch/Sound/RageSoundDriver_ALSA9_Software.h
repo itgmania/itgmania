@@ -16,7 +16,7 @@ public:
 	RString Init();
 
 	/* virtuals: */
-	std::int64_t GetPosition() const;
+	int64_t GetPosition() const;
 	float GetPlayLatency() const;
 	int GetSampleRate() const { return m_iSampleRate; }
 

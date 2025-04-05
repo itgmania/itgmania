@@ -173,16 +173,16 @@ RString InputHandler::GetLocalizedInputString( const DeviceInput &di )
 DriverList InputHandler::m_pDriverList;
 
 static LocalizedString INPUT_HANDLERS_EMPTY( "Arch", "Input Handlers cannot be empty." );
-void InputHandler::Create( const RString &drivers_, std::vector<InputHandler *> &Add )
+void InputHandler::Create( const RString &drivers_, std::vector<InputHandler *> &add )
 {
-	const RString drivers = drivers_.empty()? RString(DEFAULT_INPUT_DRIVER_LIST):drivers_;
-	std::vector<RString> DriversToTry;
-	split( drivers, ",", DriversToTry, true );
+	const std::vector<RString>& driversToTry = drivers_.empty() ? GetDefaultInputDriverList() : split(drivers_, ',', true);
 
-	if( DriversToTry.empty() )
-		RageException::Throw( "%s", INPUT_HANDLERS_EMPTY.GetValue().c_str() );
+	if (driversToTry.empty())
+	{
+		RageException::Throw("%s", INPUT_HANDLERS_EMPTY.GetValue().c_str());
+	}
 
-	for (RString const &s : DriversToTry)
+	for (const RString &s : driversToTry)
 	{
 		RageDriver *pDriver = InputHandler::m_pDriverList.Create( s );
 		if( pDriver == nullptr )
@@ -193,14 +193,13 @@ void InputHandler::Create( const RString &drivers_, std::vector<InputHandler *> 
 
 		InputHandler *ret = dynamic_cast<InputHandler *>( pDriver );
 		DEBUG_ASSERT( ret );
-		Add.push_back( ret );
+		add.push_back( ret );
 	}
 
 	// Always add
-	Add.push_back( new InputHandler_MonkeyKeyboard );
-//    Add.push_back( new InputHandler_NSEvent );
+	add.push_back(new InputHandler_MonkeyKeyboard);
+//    add.push_back(new InputHandler_NSEvent);
 }
-
 
 /*
  * (c) 2003-2004 Glenn Maynard

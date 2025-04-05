@@ -11,6 +11,8 @@
 #include "Actor.h"
 #include "Preference.h"
 #include "GameManager.h"
+#include "PlayerState.h"
+#include "GameState.h"
 #include "CommonMetrics.h"
 #include "Style.h"
 
@@ -87,7 +89,7 @@ static void GetUsedGameInputs( std::vector<GameInput> &vGameInputsOut )
 			{
 				std::vector<GameInput> gi;
 				style->StyleInputToGameInput( iCol, pn, gi );
-				for(std::size_t i= 0; i < gi.size(); ++i)
+				for(size_t i= 0; i < gi.size(); ++i)
 				{
 					if(gi[i].IsValid())
 					{
@@ -126,7 +128,7 @@ LightsManager::~LightsManager()
 {
 	for (LightsDriver *iter : m_vpDrivers)
 	{
-		SAFE_DELETE( iter );
+		RageUtil::SafeDelete( iter );
 	}
 	m_vpDrivers.clear();
 }
@@ -217,7 +219,7 @@ void LightsManager::Update( float fDeltaTime )
 
 		case LIGHTSMODE_ATTRACT:
 		{
-			int iSec = (int)RageTimer::GetTimeSinceStartFast();
+			int iSec = RageTimer::GetTimeSinceStartSeconds();
 			int iTopIndex = iSec % 4;
 
 			// Aldo: Disabled this line, apparently it was a forgotten initialization
@@ -279,9 +281,50 @@ void LightsManager::Update( float fDeltaTime )
 		case LIGHTSMODE_DEMONSTRATION:
 		case LIGHTSMODE_GAMEPLAY:
 		{
-			FOREACH_CabinetLight( cl )
-				m_LightsState.m_bCabinetLights[cl] = m_fSecsLeftInCabinetLightBlink[cl] > 0;
+			FOREACH_CabinetLight(cl)
+			{
+				int currLightPlayerNumber = (cl & 1) == 1 ? 1 : 0;
+				bool skipLightActivation = false;
 
+				auto playerOptions = GAMESTATE->m_pPlayerState[currLightPlayerNumber]->m_PlayerOptions.GetCurrent();
+
+				if (cl == LIGHT_MARQUEE_UP_LEFT ||
+					cl == LIGHT_MARQUEE_UP_RIGHT ||
+					cl == LIGHT_MARQUEE_LR_LEFT ||
+					cl == LIGHT_MARQUEE_LR_RIGHT)
+				{
+					if (GAMESTATE->IsHumanPlayer((PlayerNumber)currLightPlayerNumber))
+					{
+						skipLightActivation = playerOptions.m_HideLightType == HideLightType::HideLightType_HideMarqueeLights ||
+							playerOptions.m_HideLightType == HideLightType::HideLightType_HideAllLights;
+					}
+				}
+				else
+				{
+					bool lightsBassParallel = PREFSMAN->m_bLightsBassParallel;
+
+					int otherPn = currLightPlayerNumber == 0 ? 1 : 0;
+					auto otherPlayerOptions = GAMESTATE->m_pPlayerState[otherPn]->m_PlayerOptions.GetCurrent();
+
+					if (GAMESTATE->IsHumanPlayer((PlayerNumber)currLightPlayerNumber))
+					{
+						skipLightActivation = playerOptions.m_HideLightType == HideLightType::HideLightType_HideBassLights ||
+												playerOptions.m_HideLightType == HideLightType::HideLightType_HideAllLights ||
+							(lightsBassParallel &&
+								(otherPlayerOptions.m_HideLightType == HideLightType::HideLightType_HideBassLights ||
+									otherPlayerOptions.m_HideLightType == HideLightType::HideLightType_HideAllLights));
+					}
+					else
+					{
+						skipLightActivation = lightsBassParallel &&
+							(otherPlayerOptions.m_HideLightType == HideLightType::HideLightType_HideBassLights ||
+								otherPlayerOptions.m_HideLightType == HideLightType::HideLightType_HideAllLights);
+					}
+				}
+
+				if (!skipLightActivation)
+					m_LightsState.m_bCabinetLights[cl] = m_fSecsLeftInCabinetLightBlink[cl] > 0;
+			}
 			break;
 		}
 

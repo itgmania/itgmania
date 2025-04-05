@@ -50,8 +50,8 @@ public:
 	void DeleteFileWhenFinished() { m_bFileOwned = true; }
 
 protected:
-	int ReadInternal( void * /* pBuffer */, std::size_t /* iBytes */ ) { SetError( "Not implemented" ); return -1; }
-	int WriteInternal( const void *pBuffer, std::size_t iBytes );
+	int ReadInternal( void * /* pBuffer */, size_t /* iBytes */ ) { SetError( "Not implemented" ); return -1; }
+	int WriteInternal( const void *pBuffer, size_t iBytes );
 	int FlushInternal();
 
 	RageFileBasic *m_pFile;
@@ -70,7 +70,7 @@ private:
 	std::int64_t m_iDataStartOffset;
 };
 
-RageFileObjInflate *GunzipFile( RageFileBasic *pFile, RString &sError, std::uint32_t *iCRC32 );
+RageFileObjInflate *GunzipFile( RageFileBasic *pFile, RString &sError, uint32_t *iCRC32 );
 
 /* Quick helpers: */
 void GzipString( const RString &sIn, RString &sOut );

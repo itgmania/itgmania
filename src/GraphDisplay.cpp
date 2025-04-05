@@ -54,8 +54,8 @@ public:
 		for( int i = 0; i < iSubdivisions+1; ++i )
 		{
 			const float fRotation = float(i) / iSubdivisions * 2*PI;
-			const float fX = RageFastCos(fRotation) * fRadius;
-			const float fY = -RageFastSin(fRotation) * fRadius;
+			const float fX = std::cos(fRotation) * fRadius;
+			const float fY = -std::sin(fRotation) * fRadius;
 			pVerts[1+i] = v;
 			pVerts[1+i].p.x += fX;
 			pVerts[1+i].p.y += fY;
@@ -161,11 +161,11 @@ GraphDisplay::~GraphDisplay()
 {
 	for (Actor *p : m_vpSongBoundaries)
 	{
-		SAFE_DELETE( p );
+		RageUtil::SafeDelete( p );
 	}
 	m_vpSongBoundaries.clear();
-	SAFE_DELETE( m_pGraphLine );
-	SAFE_DELETE( m_pGraphBody );
+	RageUtil::SafeDelete( m_pGraphLine );
+	RageUtil::SafeDelete( m_pGraphBody );
 }
 
 void GraphDisplay::Set( const StageStats &ss, const PlayerStageStats &pss )

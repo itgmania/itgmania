@@ -13,12 +13,10 @@ public:
 	void DumpDebugInfo();
 
 	void SetTime( tm newtime );
-	std::int64_t GetMicrosecondsSinceStart();
+	int64_t GetSystemTimeInMicroseconds();
 
 	void MountInitialFilesystems( const RString &sDirOfExecutable );
 	float GetDisplayAspectRatio() { return 4.0f/3; }
-
-	bool GoToURL( RString sUrl );
 
 	static clockid_t GetClock();
 

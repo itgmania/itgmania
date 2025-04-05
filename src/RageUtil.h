@@ -16,10 +16,24 @@
 
 class RageFileDriver;
 
-/** @brief Safely delete pointers. */
-#define SAFE_DELETE(p)       do { delete (p);     (p)=nullptr; } while( false )
-/** @brief Safely delete array pointers. */
-#define SAFE_DELETE_ARRAY(p) do { delete[] (p);   (p)=nullptr; } while( false )
+class RageUtil {
+public:
+	// Safely delete pointers.
+	template <typename T>
+	inline static void SafeDelete(T*& p) noexcept
+	{
+		delete p;
+		p = nullptr;
+	}
+
+	// Safely delete array pointers.
+	template <typename T>
+	inline static void SafeDeleteArray(T*& p) noexcept
+	{
+		delete[] p;
+		p = nullptr;
+	}
+};
 
 /** @brief Zero out the memory. */
 #define ZERO(x)	memset(&(x), 0, sizeof(x))
@@ -29,9 +43,6 @@ class RageFileDriver;
 #define ARRAYLEN(a) (sizeof(a) / sizeof((a)[0]))
 
 extern const RString CUSTOM_SONG_PATH;
-
-/** @brief If outside the range from low to high, bring it within range. */
-#define clamp(val,low,high)	std::clamp( val, low, high )
 
 /**
  * @brief Scales x so that l1 corresponds to l2 and h1 corresponds to h2.
@@ -214,12 +225,12 @@ namespace Endian
 #define Swap16(n) __builtin_bswap16(n)
 #endif
 
-inline std::uint32_t Swap32LE( std::uint32_t n ) { return Endian::little ? n : Swap32( n ); }
-inline std::uint32_t Swap24LE( std::uint32_t n ) { return Endian::little ? n : Swap24( n ); }
-inline std::uint16_t Swap16LE( std::uint16_t n ) { return Endian::little ? n : Swap16( n ); }
-inline std::uint32_t Swap32BE( std::uint32_t n ) { return Endian::big    ? n : Swap32( n ); }
-inline std::uint32_t Swap24BE( std::uint32_t n ) { return Endian::big    ? n : Swap24( n ); }
-inline std::uint16_t Swap16BE( std::uint16_t n ) { return Endian::big    ? n : Swap16( n ); }
+inline uint32_t Swap32LE( uint32_t n ) { return Endian::little ? n : Swap32( n ); }
+inline uint32_t Swap24LE( uint32_t n ) { return Endian::little ? n : Swap24( n ); }
+inline uint16_t Swap16LE( uint16_t n ) { return Endian::little ? n : Swap16( n ); }
+inline uint32_t Swap32BE( uint32_t n ) { return Endian::big    ? n : Swap32( n ); }
+inline uint32_t Swap24BE( uint32_t n ) { return Endian::big    ? n : Swap24( n ); }
+inline uint16_t Swap16BE( uint16_t n ) { return Endian::big    ? n : Swap16( n ); }
 
 class MersenneTwister : public std::mt19937
 {
@@ -317,10 +328,10 @@ void fapproach( float& val, float other_val, float to_move );
 /* Return a positive x mod y. */
 float fmodfp( float x, float y );
 
-int power_of_two( int input );
+int power_of_two( int v );
 bool IsAnInt( const RString &s );
 bool IsHexVal( const RString &s );
-RString BinaryToHex( const void *pData_, std::size_t iNumBytes );
+RString BinaryToHex( const void *pData_, size_t iNumBytes );
 RString BinaryToHex( const RString &sString );
 bool HexToBinary( const RString &s, unsigned char *stringOut );
 bool HexToBinary( const RString &s, RString *sOut );
@@ -329,6 +340,8 @@ RString SecondsToHHMMSS( float fSecs );
 RString SecondsToMSSMsMs( float fSecs );
 RString SecondsToMMSSMsMs( float fSecs );
 RString SecondsToMMSSMsMsMs( float fSecs );
+RString MicrosecondsToMMSSMsMs(uint64_t usecs);
+RString MicrosecondsToMMSSMsMsMs(uint64_t usecs);
 RString SecondsToMSS( float fSecs );
 RString SecondsToMMSS( float fSecs );
 RString PrettyPercent( float fNumerator, float fDenominator );
@@ -336,13 +349,13 @@ inline RString PrettyPercent( int fNumerator, int fDenominator ) { return Pretty
 RString Commify( int iNum );
 RString Commify(const RString& num, const RString& sep= ",", const RString& dot= ".");
 RString FormatNumberAndSuffix( int i );
-
+/* Round num to 3 decimal places and return as string with 3 decimal places */
+RString NormalizeDecimal(float num);
 
 struct tm GetLocalTime();
 
 RString ssprintf( const char *fmt, ...) PRINTF(1,2);
 RString vssprintf( const char *fmt, va_list argList );
-RString ConvertI64FormatString( const RString &sStr );
 
 /*
  * Splits a Path into 4 parts (Directory, Drive, Filename, Extention).  Supports UNC path names.
@@ -365,16 +378,16 @@ bool FindFirstFilenameContaining(
 extern const wchar_t INVALID_CHAR;
 
 int utf8_get_char_len( char p );
-bool utf8_to_wchar( const char *s, std::size_t iLength, unsigned &start, wchar_t &ch );
+bool utf8_to_wchar( const char *s, size_t iLength, unsigned &start, wchar_t &ch );
 bool utf8_to_wchar_ec( const RString &s, unsigned &start, wchar_t &ch );
 void wchar_to_utf8( wchar_t ch, RString &out );
 wchar_t utf8_get_char( const RString &s );
 bool utf8_is_valid( const RString &s );
 void utf8_remove_bom( RString &s );
-void MakeUpper( char *p, std::size_t iLen );
-void MakeLower( char *p, std::size_t iLen );
-void MakeUpper( wchar_t *p, std::size_t iLen );
-void MakeLower( wchar_t *p, std::size_t iLen );
+void MakeUpper( char *p, size_t iLen );
+void MakeLower( char *p, size_t iLen );
+void MakeUpper( wchar_t *p, size_t iLen );
+void MakeLower( wchar_t *p, size_t iLen );
 
 // TODO: Have the three functions below be moved to better locations.
 float StringToFloat( const RString &sString );
@@ -388,9 +401,9 @@ inline bool operator>>(const RString& lhs, T& rhs)
 
 // Exception-safe wrappers around stoi and friends
 // Additional argument exceptVal will be returned if the conversion couldn't be performed
-int StringToInt( const std::string& str, std::size_t* pos = 0, int base = 10, int exceptVal = 0 );
-long StringToLong( const std::string& str, std::size_t* pos = 0, int base = 10, long exceptVal = 0 );
-long long StringToLLong( const std::string& str, std::size_t* pos = 0, int base = 10, long long exceptVal = 0 );
+int StringToInt( const std::string& str, size_t* pos = 0, int base = 10, int exceptVal = 0 );
+long StringToLong( const std::string& str, size_t* pos = 0, int base = 10, long exceptVal = 0 );
+long long StringToLLong( const std::string& str, size_t* pos = 0, int base = 10, long long exceptVal = 0 );
 
 RString WStringToRString( const std::wstring &sString );
 RString WcharToUTF8( wchar_t c );
@@ -408,6 +421,7 @@ RString GetLanguageNameFromISO639Code( RString sName );
 // Splits a RString into an std::vector<RString> according the Delimitor.
 void split( const RString &sSource, const RString &sDelimitor, std::vector<RString>& asAddIt, const bool bIgnoreEmpty = true );
 void split( const std::wstring &sSource, const std::wstring &sDelimitor, std::vector<std::wstring> &asAddIt, const bool bIgnoreEmpty = true );
+std::vector<RString> split( const RString &sSource, const char delimiter, const bool bIgnoreEmpty = true );
 
 /* In-place split. */
 void split( const RString &sSource, const RString &sDelimitor, int &iBegin, int &iSize, const bool bIgnoreEmpty = true );
@@ -421,9 +435,17 @@ void split( const std::wstring &sSource, const std::wstring &sDelimitor, int &iB
 RString join( const RString &sDelimitor, const std::vector<RString>& sSource );
 RString join( const RString &sDelimitor, std::vector<RString>::const_iterator begin, std::vector<RString>::const_iterator end );
 
+// Joins a vector of numbers to a serialized string of numbers separated by Delimitor.
+RString serialize(const std::vector<float> & sSource, const RString &sDelimitor, int precision);
+RString serialize(const std::vector<int> & sSource, const RString &sDelimitor);
+
 // These methods escapes a string for saving in a .sm or .crs file
-RString SmEscape( const RString &sUnescaped );
-RString SmEscape( const char *cUnescaped, int len );
+RString SmEscape(const RString &sUnescaped, const std::vector<char> charsToEscape = {'\\', ':', ';'});
+RString SmEscape( const char *cUnescaped, int len, const std::vector<char> charsToEscape = {'\\', ':', ';'} );
+// Escapes each element in a std::vector<RString>, returns a new vector
+std::vector<RString> SmEscape(const std::vector<RString> &vUnescaped, const std::vector<char> charsToEscape = {'\\', ':', ';'});
+
+RString SmUnescape( const RString &sEscaped );
 
 // These methods "escape" a string for .dwi by turning = into -, ] into I, etc.  That is "lossy".
 RString DwiEscape( const RString &sUnescaped );
@@ -437,7 +459,7 @@ bool GetCommandlineArgument( const RString &option, RString *argument=nullptr, i
 extern int g_argc;
 extern char **g_argv;
 
-void CRC32( unsigned int &iCRC, const void *pBuffer, std::size_t iSize );
+void CRC32( unsigned int &iCRC, const void *pBuffer, size_t iSize );
 unsigned int GetHashForString( const RString &s );
 unsigned int GetHashForFile( const RString &sPath );
 unsigned int GetHashForDirectory( const RString &sDir );	// a hash value that remains the same as long as nothing in the directory has changed
@@ -553,7 +575,7 @@ struct char_traits_char_nocase: public std::char_traits<char>
 	static inline bool lt( char c1, char c2 )
 	{ return g_UpperCase[(unsigned char)c1] < g_UpperCase[(unsigned char)c2]; }
 
-	static int compare( const char* s1, const char* s2, std::size_t n )
+	static int compare( const char* s1, const char* s2, size_t n )
 	{
 		int ret = 0;
 		while( n-- )

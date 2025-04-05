@@ -13,7 +13,7 @@
  * the HKEY_LOCAL_MACHINE constant in key. */
 static bool GetRegKeyType( const RString &sIn, RString &sOut, HKEY &key )
 {
-	std::size_t iBackslash = sIn.find( '\\' );
+	size_t iBackslash = sIn.find( '\\' );
 	if( iBackslash == sIn.npos )
 	{
 		LOG->Warn( "Invalid registry key: \"%s\" ", sIn.c_str() );

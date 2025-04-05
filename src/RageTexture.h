@@ -19,11 +19,11 @@ public:
 	virtual void Update( float /* fDeltaTime */ ) {}
 	virtual void Reload() {}
 	virtual void Invalidate() { }	/* only called by RageTextureManager::InvalidateTextures */
-	virtual std::uintptr_t GetTexHandle() const = 0;	// accessed by RageDisplay
+	virtual uintptr_t GetTexHandle() const = 0;	// accessed by RageDisplay
 
 	// movie texture/animated texture stuff
 	virtual void SetPosition( float /* fSeconds */ ) {} // seek
-	virtual void DecodeSeconds( float /* fSeconds */ ) {} // decode
+	virtual void UpdateMovie( float /* fSeconds */ ) {} // decode and update
 	virtual void SetPlaybackRate( float ) {}
 	virtual bool IsAMovie() const { return false; }
 	virtual void SetLooping(bool) { }

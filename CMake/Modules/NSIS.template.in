@@ -943,7 +943,7 @@ Function .onInit
   StrCmp $0 "" inst
 
   MessageBox MB_YESNOCANCEL|MB_ICONEXCLAMATION \
-  "@CPACK_NSIS_PACKAGE_NAME@ is already installed. $\n$\nDo you want to uninstall the old version before installing the new one?" \
+  "@CPACK_PACKAGE_NAME@ is already installed. $\n$\nDo you want to uninstall the existing version before installing this one?" \
   /SD IDYES IDYES uninst IDNO inst
   Abort
 

@@ -39,9 +39,9 @@ static const char *itoa(unsigned n)
 	return p;
 }
 
-static std::intptr_t xtoi( const char *hex )
+static intptr_t xtoi( const char *hex )
 {
-	std::intptr_t ret = 0;
+	intptr_t ret = 0;
 	for(;;)
 	{
 		int val = -1;
@@ -310,7 +310,7 @@ bool IsValidFrame( const StackFrame *frame )
 /* This x86 backtracer attempts to walk the stack frames.  If we come to a
  * place that doesn't look like a valid frame, we'll look forward and try
  * to find one again. */
-static void do_backtrace( const void **buf, std::size_t size, const BacktraceContext *ctx )
+static void do_backtrace( const void **buf, size_t size, const BacktraceContext *ctx )
 {
 	/* Read /proc/pid/maps to find the address range of the stack. */
 	get_readable_ranges( g_ReadableBegin, g_ReadableEnd, 1024 );
@@ -410,7 +410,7 @@ void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc )
 #error
 #endif
 
-void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *ctx )
+void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 {
 	InitializeBacktrace();
 
@@ -502,7 +502,7 @@ static bool PointsToValidCall( vm_address_t start, const void *ptr )
 
 	/* We're reading buf backwards, between buf[-7] and buf[-1].  Find out how
 	* far we can read. */
-	const int len = std::min<int>(std::intptr_t(ptr) - start, 7);
+	const int len = std::min<int>(intptr_t(ptr) - start, 7);
 
 	// Permissible CALL sequences that we care about:
 	//
@@ -543,7 +543,7 @@ static bool PointsToValidCall( vm_address_t start, const void *ptr )
 }
 
 
-void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *ctx )
+void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 {
 	InitializeBacktrace();
 
@@ -569,7 +569,7 @@ void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *c
 	vm_prot_t protection = 0;
 	vm_address_t start = 0;
 
-	std::size_t i = 0;
+	size_t i = 0;
 	if( i < size-1 && ctx->ip )
 		buf[i++] = ctx->ip;
 
@@ -599,7 +599,7 @@ void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *c
 		// Make sure this is on the stack
 		if( !GetRegionInfo(self, frame, start, protection) || protection != PROT_RW )
 			break;
-		if( (start != g_StackPointer && start != stackPointer) || std::uintptr_t(frame)-std::uintptr_t(start) < sizeof(Frame) )
+		if( (start != g_StackPointer && start != stackPointer) || uintptr_t(frame)-uintptr_t(start) < sizeof(Frame) )
 			break;
 
 		/* The stack pointer is always 16 byte aligned _before_ the call. Thus a valid frame
@@ -617,7 +617,7 @@ void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *c
 		 * Therefore, frame + 8 should be on a 16 byte boundary, the frame link should be
 		 * at a higher address, the link should be on the stack and it should be RW. The
 		 * return address should be EXE and point to a valid call (well, just after). */
-		if( (((std::uintptr_t)frame+8) & 0xF) != 0 ||// boundary
+		if( (((uintptr_t)frame+8) & 0xF) != 0 ||// boundary
 		    frame->link <= frame || // the frame link goes up
 		    !GetRegionInfo(self, frame->link, start, protection) ||
 		    (start != g_StackPointer && start != stackPointer) || // the link is on the stack
@@ -629,7 +629,7 @@ void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *c
 			/* This is not a valid frame but we might be in code compiled with
 			 * -fomit-frame-pointer so look at each address on the stack that is
 			 * 4 bytes below a 16 byte boundary. */
-			if( (((std::uintptr_t)frame+4) & 0xF) == 0 )
+			if( (((uintptr_t)frame+4) & 0xF) == 0 )
 			{
 				void *p = *(void **)frame;
 				if( GetRegionInfo(self, p, start, protection) &&
@@ -639,7 +639,7 @@ void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *c
 					buf[i++] = p;
 				}
 			}
-			frame = (Frame *)(std::intptr_t(frame)+4);
+			frame = (Frame *)(intptr_t(frame)+4);
 			continue;
 		}
 		// Valid.
@@ -668,7 +668,7 @@ void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc )
 
 void InitializeBacktrace() { }
 
-void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *ctx )
+void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 {
 	BacktraceContext CurrentCtx;
 	if( ctx == nullptr )
@@ -716,7 +716,7 @@ void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc )
 
 void InitializeBacktrace() { }
 
-void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *ctx )
+void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 {
 	BacktraceContext CurrentCtx;
 
@@ -753,7 +753,7 @@ void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc )
 	// NYI
 }
 
-void GetBacktrace( const void **buf, std::size_t size, const BacktraceContext *ctx )
+void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 {
     buf[0] = BACKTRACE_METHOD_NOT_AVAILABLE;
     buf[1] = nullptr;

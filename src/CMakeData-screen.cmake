@@ -3,13 +3,15 @@ list(APPEND SMDATA_SCREEN_GAMEPLAY_SRC
             "ScreenGameplayLesson.cpp"
             "ScreenGameplayNormal.cpp"
             "ScreenGameplayShared.cpp"
-            "ScreenGameplaySyncMachine.cpp")
+            "ScreenGameplaySyncMachine.cpp"
+            "GameplayHelpers.cpp")
 
 list(APPEND SMDATA_SCREEN_GAMEPLAY_HPP
             "ScreenGameplay.h"
             "ScreenGameplayNormal.h"
             "ScreenGameplayShared.h"
-            "ScreenGameplaySyncMachine.h")
+            "ScreenGameplaySyncMachine.h"
+            "GameplayHelpers.h")
 
 source_group("Screens\\\\Gameplay"
              FILES

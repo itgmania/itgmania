@@ -7,6 +7,7 @@
 #include "archutils/win32/WindowIcon.h"
 #include "archutils/win32/ErrorStrings.h"
 #include "arch/ArchHooks/ArchHooks.h"
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "CommCtrl.h"
 #include "RageSurface_Load.h"

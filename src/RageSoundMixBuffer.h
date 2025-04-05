@@ -1,37 +1,28 @@
-/* RageSoundMixBuffer - Simple audio mixing. */
+#ifndef RAGESOUNDMIXBUFFER_H
+#define RAGESOUNDMIXBUFFER_H
 
-#ifndef RAGE_SOUND_MIX_BUFFER_H
-#define RAGE_SOUND_MIX_BUFFER_H
-
+#include <vector>
 #include <cstdint>
 
-class RageSoundMixBuffer
-{
+class RageSoundMixBuffer {
 public:
 	RageSoundMixBuffer();
 	~RageSoundMixBuffer();
 
-	/* Mix the given buffer of samples. */
-	void write( const float *pBuf, unsigned iSize, int iSourceStride = 1, int iDestStride = 1 );
-
-	/* Extend the buffer as if write() was called with a buffer of silence. */
-	void Extend( unsigned iSamples );
-
-	void read( std::int16_t *pBuf );
-	void read( float *pBuf );
-	void read_deinterlace( float **pBufs, int channels );
-	float *read() { return m_pMixbuf; }
-	unsigned size() const { return m_iBufUsed; }
-	void SetWriteOffset( int iOffset );
+	void SetWriteOffset(int iOffset);
+	void Extend(unsigned iSamples);
+	void write(const float* pBuf, unsigned iSize, int iSourceStride = 1, int iDestStride = 1);
+	void read(int16_t* pBuf);
+	void read(float* pBuf);
+	void read_deinterlace(float** pBufs, int channels);
+	inline size_t size() const { return m_pMixbuf.size(); }
 
 private:
-	float *m_pMixbuf;
-	unsigned m_iBufSize; /* actual allocated samples */
-	unsigned m_iBufUsed; /* used samples */
-	int m_iOffset;
+	std::vector<float> m_pMixbuf;
+	unsigned m_iOffset;
 };
 
-#endif
+#endif // RAGESOUNDMIXBUFFER_H
 
 /*
  * Copyright (c) 2002-2004 Glenn Maynard

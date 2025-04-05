@@ -60,6 +60,7 @@
 #include "XmlFileUtil.h"
 #include "Profile.h" // for replay data stuff
 #include "RageDisplay.h"
+#include "GameplayHelpers.h"
 
 #include <cmath>
 #include <cstddef>
@@ -205,18 +206,18 @@ void PlayerInfo::LoadDummyP1( int iDummyIndex, int iAddToDifficulty )
 
 PlayerInfo::~PlayerInfo()
 {
-	SAFE_DELETE( m_pLifeMeter );
-	SAFE_DELETE( m_ptextCourseSongNumber );
-	SAFE_DELETE( m_ptextStepsDescription );
-	SAFE_DELETE( m_pPrimaryScoreDisplay );
-	SAFE_DELETE( m_pSecondaryScoreDisplay );
-	SAFE_DELETE( m_pPrimaryScoreKeeper );
-	SAFE_DELETE( m_pSecondaryScoreKeeper );
-	SAFE_DELETE( m_ptextPlayerOptions );
-	SAFE_DELETE( m_pActiveAttackList );
-	SAFE_DELETE( m_pPlayer );
-	SAFE_DELETE( m_pInventory );
-	SAFE_DELETE( m_pStepsDisplay );
+	RageUtil::SafeDelete( m_pLifeMeter );
+	RageUtil::SafeDelete( m_ptextCourseSongNumber );
+	RageUtil::SafeDelete( m_ptextStepsDescription );
+	RageUtil::SafeDelete( m_pPrimaryScoreDisplay );
+	RageUtil::SafeDelete( m_pSecondaryScoreDisplay );
+	RageUtil::SafeDelete( m_pPrimaryScoreKeeper );
+	RageUtil::SafeDelete( m_pSecondaryScoreKeeper );
+	RageUtil::SafeDelete( m_ptextPlayerOptions );
+	RageUtil::SafeDelete( m_pActiveAttackList );
+	RageUtil::SafeDelete( m_pPlayer );
+	RageUtil::SafeDelete( m_pInventory );
+	RageUtil::SafeDelete( m_pStepsDisplay );
 }
 
 void PlayerInfo::ShowOniGameOver()
@@ -519,48 +520,7 @@ void ScreenGameplay::Init()
 		this->AddChild( &m_Toasty );
 	}
 
-	// Use the margin function to calculate where the notefields should be and
-	// what size to zoom them to.  This way, themes get margins to put cut-ins
-	// in, and the engine can have players on different styles without the
-	// notefields overlapping. -Kyz
-	LuaReference margarine;
-	float margins[NUM_PLAYERS][2];
-	FOREACH_PlayerNumber(pn)
-	{
-		margins[pn][0]= 40;
-		margins[pn][1]= 40;
-	}
-	THEME->GetMetric(m_sName, "MarginFunction", margarine);
-	if(margarine.GetLuaType() != LUA_TFUNCTION)
-	{
-		LuaHelpers::ReportScriptErrorFmt("MarginFunction metric for %s must be a function.", m_sName.c_str());
-	}
-	else
-	{
-		Lua* L= LUA->Get();
-		margarine.PushSelf(L);
-		lua_createtable(L, 0, 0);
-		int next_player_slot= 1;
-		FOREACH_EnabledPlayer(pn)
-		{
-			Enum::Push(L, pn);
-			lua_rawseti(L, -2, next_player_slot);
-			++next_player_slot;
-		}
-		Enum::Push(L, GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StyleType);
-		RString err= "Error running MarginFunction:  ";
-		if(LuaHelpers::RunScriptOnStack(L, err, 2, 3, true))
-		{
-			RString marge= "Margin value must be a number.";
-			margins[PLAYER_1][0]= SafeFArg(L, -3, marge, 40);
-			float center= SafeFArg(L, -2, marge, 80);
-			margins[PLAYER_1][1]= center / 2.0f;
-			margins[PLAYER_2][0]= center / 2.0f;
-			margins[PLAYER_2][1]= SafeFArg(L, -1, marge, 40);
-		}
-		lua_settop(L, 0);
-		LUA->Release(L);
-	}
+	std::vector<NotefieldMargins> margins = GetNotefieldMargins();
 
 	float left_edge[NUM_PLAYERS]= {0.0f, SCREEN_WIDTH / 2.0f};
 	FOREACH_EnabledPlayerInfo( m_vPlayerInfo, pi )
@@ -579,8 +539,8 @@ void ScreenGameplay::Init()
 		{ \
 			edge= 0.0f; \
 			screen_space= SCREEN_WIDTH; \
-			left_marge= margins[PLAYER_1][0]; \
-			right_marge= margins[PLAYER_2][1]; \
+			left_marge= margins[PLAYER_1].left; \
+			right_marge= margins[PLAYER_2].right; \
 			field_space= screen_space - left_marge - right_marge; \
 		}
 		// If pi->m_pn is set, then the player will be visible.  If not, then it's not
@@ -590,8 +550,8 @@ void ScreenGameplay::Init()
 		else
 		{
 			screen_space= SCREEN_WIDTH / 2.0f;
-			left_marge= margins[pi->m_pn][0];
-			right_marge= margins[pi->m_pn][1];
+			left_marge= margins[pi->m_pn].left;
+			right_marge= margins[pi->m_pn].right;
 			field_space= screen_space - left_marge - right_marge;
 			if(Center1Player() ||
 				style->m_StyleType == StyleType_TwoPlayersSharedSides ||
@@ -882,12 +842,27 @@ bool ScreenGameplay::Center1Player() const
 	/* Perhaps this should be handled better by defining a new
 	 * StyleType for ONE_PLAYER_ONE_CREDIT_AND_ONE_COMPUTER,
 	 * but for now just ignore Center1Player when it's Battle or Rave
-	 * Mode. This doesn't begin to address two-player solo (6 arrows) */
+	 * Mode. This doesn't begin to address two-player solo (6 arrows)
+	 *
+	 * If this check is modified, also modify the center check in
+	 * ScreenEdit::Init().
+	 */
 	return g_bCenter1Player &&
 		(bool)ALLOW_CENTER_1_PLAYER &&
 		GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
 		GAMESTATE->m_PlayMode != PLAY_MODE_RAVE &&
 		GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StyleType == StyleType_OnePlayerOneSide;
+}
+
+bool ScreenGameplay::MenuRestart( const InputEventPlus &input )
+{
+	if (IsTransitioning()) {
+		return false;
+	}
+
+	SCREENMAN->GetTopScreen()->SetPrevScreenName("ScreenGameplay");
+	BeginBackingOutFromGameplay();
+	return true;
 }
 
 // fill in m_apSongsQueue, m_vpStepsQueue, m_asModifiersQueue
@@ -1002,13 +977,13 @@ ScreenGameplay::~ScreenGameplay()
 
 	LOG->Trace( "ScreenGameplay::~ScreenGameplay()" );
 
-	SAFE_DELETE( m_pSongBackground );
-	SAFE_DELETE( m_pSongForeground );
+	RageUtil::SafeDelete( m_pSongBackground );
+	RageUtil::SafeDelete( m_pSongForeground );
 
 	if( !GAMESTATE->m_bDemonstrationOrJukebox )
 		MEMCARDMAN->UnPauseMountingThread();
 
-	SAFE_DELETE( m_pCombinedLifeMeter );
+	RageUtil::SafeDelete( m_pCombinedLifeMeter );
 	if( m_pSoundMusic )
 		m_pSoundMusic->StopPlaying();
 
@@ -1229,7 +1204,7 @@ void ScreenGameplay::LoadNextSong()
 				int iMeter = pSteps->GetMeter();
 				int iNewSkill = SCALE( iMeter, MIN_METER, MAX_METER, 0, NUM_SKILL_LEVELS-1 );
 				/* Watch out: songs aren't actually bound by MAX_METER. */
-				iNewSkill = clamp( iNewSkill, 0, NUM_SKILL_LEVELS-1 );
+				iNewSkill = std::clamp( iNewSkill, 0, NUM_SKILL_LEVELS-1 );
 				pi->GetPlayerState()->m_iCpuSkill = iNewSkill;
 			}
 			else
@@ -1419,6 +1394,7 @@ void ScreenGameplay::LoadLights()
 	pSteps->GetNoteData( TapNoteData1 );
 
 	//taken from oitg, restores arrow -> marquee/bass light mapping.
+	//if the user has a pref for more than one difficulty to make the lighting chart...
 	if( asDifficulties.size() > 1 )
 	{
 		Difficulty d2 = StringToDifficulty( asDifficulties[1] );
@@ -1427,7 +1403,10 @@ void ScreenGameplay::LoadLights()
 
 		pSteps2 = SongUtil::GetClosestNotes( GAMESTATE->m_pCurSong, st, d2 );
 
-		if(pSteps2 != nullptr)
+		//if the difficulities are actually different
+		//then we can use them to generate a lighting chart.
+		//as the user defined.
+		if(pSteps != pSteps2)
 		{
 			NoteData TapNoteData2;
 			pSteps2->GetNoteData( TapNoteData2 );
@@ -1565,7 +1544,7 @@ void ScreenGameplay::UpdateSongPosition( float fDeltaTime )
 		return;
 
 	RageTimer tm;
-	const float fSeconds = m_pSoundMusic->GetPositionSeconds( nullptr, &tm );
+	const float fSeconds = m_pSoundMusic->GetPositionSeconds( &tm );
 	const float fAdjust = SOUND->GetFrameTimingAdjustment( fDeltaTime );
 	GAMESTATE->UpdateSongPosition( fSeconds+fAdjust, GAMESTATE->m_pCurSong->m_SongTiming, tm+fAdjust );
 }
@@ -2079,7 +2058,7 @@ void ScreenGameplay::UpdateHasteRate()
 	float scale_from_high= 1;
 	float scale_to_low= 0;
 	float scale_to_high=0;
-	for(std::size_t turning_point= 0; turning_point < m_HasteTurningPoints.size();
+	for(size_t turning_point= 0; turning_point < m_HasteTurningPoints.size();
 			++turning_point)
 	{
 		float curr_turning_point= m_HasteTurningPoints[turning_point];
@@ -2181,7 +2160,7 @@ void ScreenGameplay::UpdateLights()
 				{
 					std::vector<GameInput> gi;
 					pStyle->StyleInputToGameInput( t, pi->m_pn, gi );
-					for(std::size_t i= 0; i < gi.size(); ++i)
+					for(size_t i= 0; i < gi.size(); ++i)
 					{
 						bBlinkGameButton[gi[i].controller][gi[i].button] = true;
 					}
@@ -2398,6 +2377,12 @@ bool ScreenGameplay::Input( const InputEventPlus &input )
 			}
 		}
 		return false;
+	}
+
+	if (input.MenuI == GAME_BUTTON_RESTART && input.type == IET_FIRST_PRESS &&
+		GAMESTATE->IsEventMode() && !GAMESTATE->IsCourseMode())
+	{
+		return MenuRestart(input);
 	}
 
 	if(m_DancingState != STATE_OUTRO  &&
@@ -2844,7 +2829,7 @@ void ScreenGameplay::HandleScreenMessage( const ScreenMessage SM )
 			GAMESTATE->SetNewStageSeed();
 			course->InvalidateTrailCache();
 			course->RegenerateNonFixedTrails();
-			std::size_t info_id= 0; // Can't use the player number in the playerinfo
+			size_t info_id= 0; // Can't use the player number in the playerinfo
 			// because it won't match up in 2-player.
 			FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi)
 			{
@@ -3170,7 +3155,7 @@ void ScreenGameplay::SaveReplay()
 			RString sFileName = ssprintf( "replay%05d.xml", iIndex );
 
 			XmlFileUtil::SaveToFile( p, "Save/Replays/"+sFileName );
-			SAFE_DELETE( p );
+			RageUtil::SafeDelete( p );
 			return;
 		}
 	}
@@ -3232,13 +3217,13 @@ public:
 	static int GetHasteRate( T* p, lua_State *L )    { lua_pushnumber( L, p->GetHasteRate() ); return 1; }
 	static bool TurningPointsValid(lua_State* L, int index)
 	{
-		std::size_t size= lua_objlen(L, index);
+		size_t size= lua_objlen(L, index);
 		if(size < 2)
 		{
 			luaL_error(L, "Invalid number of entries %zu", size);
 		}
 		float prev_turning= -1;
-		for(std::size_t n= 1; n < size; ++n)
+		for(size_t n= 1; n < size; ++n)
 		{
 			lua_pushnumber(L, n);
 			lua_gettable(L, index);

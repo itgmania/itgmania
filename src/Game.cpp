@@ -24,6 +24,7 @@ static const Game::PerButtonInfo g_CommonButtonInfo[] =
 	{ GameButtonType_Menu }, // GAME_BUTTON_START
 	{ GameButtonType_Menu }, // GAME_BUTTON_SELECT
 	{ GameButtonType_Menu }, // GAME_BUTTON_BACK
+	{ GameButtonType_Menu }, // GAME_BUTTON_RESTART
 	{ GameButtonType_Menu }, // GAME_BUTTON_COIN
 	{ GameButtonType_Menu }, // GAME_BUTTON_OPERATOR
 	{ GameButtonType_Menu }, // GAME_BUTTON_EFFECT_UP

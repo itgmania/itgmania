@@ -17,8 +17,7 @@
 #include <cstdint>
 #include <numeric>
 
-/* Filter length.  This must be a power of 2. */
-#define L 8
+constexpr int FILTER_LENGTH = 8; // This must be a power of 2.
 
 namespace
 {
@@ -33,20 +32,29 @@ namespace
 	 * Functions", "Modified Bessel Functions I and K". */
 	float BesselI0( float fX )
 	{
+		constexpr float COEFFS1[] = { 3.5156229f, 3.0899424f, 1.2067492f, 0.2659732f, 0.0360768f, 0.0045813f };
+		constexpr float COEFFS2[] = { 0.39894228f, 0.01328592f, 0.00225319f, -0.00157565f, 0.00916281f, -0.02057706f, 0.02635537f, -0.01647633f, 0.00392377f };
 		float fAbsX = std::abs( fX );
 		if( fAbsX < 3.75f )
 		{
-			float y = fX / 3.75f;
-			y *= y;
-			float fRet = 1.0f+y*(+3.5156229f+y*(+3.0899424f+y*(+1.2067492f+y*(+0.2659732f+y*(+0.0360768f+y*+0.0045813f)))));
+			float y = (fX / 3.75f) * (fX / 3.75f);
+			float fRet = 1.0f;
+			for (float coeff : COEFFS1)
+			{
+				fRet += coeff * y;
+				y *= y;
+			}
 			return fRet;
 		}
 		else
 		{
-			float y = 3.75f/fAbsX;
-			float fRet = (std::exp(fAbsX)/std::sqrt(fAbsX)) *
-				  (+0.39894228f+y*(+0.01328592f+y*(+0.00225319f+y*(-0.00157565f+y*(0.00916281f+
-				y*(-0.02057706f+y*(+0.02635537f+y*(-0.01647633f+y*+0.00392377f))))))));
+			float y = 3.75f / fAbsX;
+			float fRet = std::exp(fAbsX) / std::sqrt(fAbsX);
+			for (float coeff : COEFFS2)
+			{
+				fRet += coeff * y;
+				y *= y;
+			}
 			return fRet;
 		}
 	}
@@ -62,15 +70,15 @@ namespace
 	 */
 	void ApplyKaiserWindow( float *pBuf, int iLen, float fBeta )
 	{
+		constexpr float VERY_TINY_NUMBER = 0.0000001f; // a little safer than comparing against zero
 		const float fDenom = BesselI0(fBeta);
-		float p = (iLen-1)/2.0f;
+		const float p = (iLen - 1) / 2.0f;
 		for( int n = 0; n < iLen; ++n )
 		{
-			float fN1 = std::abs((n-p)/p);
-			float fNum = fBeta * std::sqrt( std::max(1.0f - fN1*fN1, 0.0f) );
-			fNum = BesselI0( fNum );
-			float fVal = fNum/fDenom;
-			pBuf[n] *= fVal;
+			const float fN1 = std::abs((n - p) * (1.0f / p));
+			const float fN1Squared = fN1 * fN1;
+			const float fNum = BesselI0(fBeta * std::sqrt(std::max(1.0f - fN1Squared, VERY_TINY_NUMBER)));
+			pBuf[n] *= fNum / fDenom;
 		}
 	}
 
@@ -82,12 +90,13 @@ namespace
 
 	void GenerateSincLowPassFilter( float *pFIR, int iWinSize, float fCutoff )
 	{
-		float p = (iWinSize-1)/2.0f;
-		for( int n = 0; n < iWinSize; ++n )
+		constexpr double TWOPI = 2 * 3.141592653589793;
+		const float p = (iWinSize - 1) / 2.0;
+
+		for (int n = 0; n < iWinSize; ++n)
 		{
-			float fN1 = (n-p);
-			float fVal = sincf(2*PI*fCutoff * fN1)*(2*fCutoff);
-			// printf( "n %i, %f, %f -> %f\n", n, p, fN1, fVal );
+			const float fN1 = (n - p);
+			const float fVal = sincf((TWOPI * fCutoff * fN1)) * (2.0f * fCutoff);
 			pFIR[n] = fVal;
 		}
 #if 0
@@ -115,7 +124,7 @@ namespace
 	{
 		return std::gcd(i1, i2);
 	}
-}
+}  // namespace
 
 #if 0
 void RunFIRFilter( float *pIn, float *pOut, int iInputValues, float *pFIR, int iWinSize )
@@ -170,7 +179,7 @@ struct PolyphaseFilter
 	struct State
 	{
 		State( int iUpFactor ):
-			m_fBuf( L * 2 )
+			m_fBuf( FILTER_LENGTH * 2 )
 		{
 			m_iPolyIndex = iUpFactor-1;
 			m_iFilled = 0;
@@ -189,7 +198,7 @@ struct PolyphaseFilter
 	friend struct State;
 
 	PolyphaseFilter( int iUpFactor ):
-		m_pPolyphase( L*iUpFactor )
+		m_pPolyphase( FILTER_LENGTH * iUpFactor )
 	{
 		m_iUpFactor = iUpFactor;
 	}
@@ -197,7 +206,7 @@ struct PolyphaseFilter
 	void Generate( const float *pFIR );
 	int RunPolyphaseFilter( State &State, const float *pIn, int iSamplesIn, int iDownFactor,
 			float *pOut, int iSamplesOut, int iSampleStride ) const;
-	int GetLatency() const { return L/2; }
+	int GetLatency() const { return FILTER_LENGTH/2; }
 
 	int NumInputsForOutputSamples( const State &State, int iOut, int iDownFactor ) const;
 
@@ -243,12 +252,12 @@ private:
 void PolyphaseFilter::Generate( const float *pFIR )
 {
 	float *pOutput=m_pPolyphase;
-	int iInputSize = L*m_iUpFactor;
+	const int iInputSize = FILTER_LENGTH*m_iUpFactor;
 
 	for( int iRow = 0; iRow < m_iUpFactor; ++iRow )
 	{
 		int iInputOffset = (m_iUpFactor-iRow-1) % m_iUpFactor;
-		for( int iCol = 0; iCol < L; ++iCol )
+		for( int iCol = 0; iCol < FILTER_LENGTH; ++iCol )
 		{
 			*pOutput = pFIR[iInputOffset];
 			++pOutput;
@@ -298,15 +307,15 @@ int PolyphaseFilter::RunPolyphaseFilter(
 	int iPolyIndex = State.m_iPolyIndex;
 	while( pOut != pOutEnd )
 	{
-		if( iFilled < L )
+		if( iFilled < FILTER_LENGTH )
 		{
 			if( pIn == pInEnd )
 				break;
 
 			State.m_fBuf[State.m_iBufNext] = *pIn;
-			State.m_fBuf[State.m_iBufNext + L] = *pIn;
+			State.m_fBuf[State.m_iBufNext + FILTER_LENGTH] = *pIn;
 			++State.m_iBufNext;
-			State.m_iBufNext &= L-1;
+			State.m_iBufNext &= FILTER_LENGTH-1;
 
 			pIn += iSampleStride;
 			++iFilled;
@@ -315,11 +324,11 @@ int PolyphaseFilter::RunPolyphaseFilter(
 
 		while( pOut != pOutEnd )
 		{
-			const float *pCurPoly = &m_pPolyphase[iPolyIndex*L];
+			const float *pCurPoly = &m_pPolyphase[iPolyIndex*FILTER_LENGTH];
 			const float *pInData = &State.m_fBuf[State.m_iBufNext];
 
 			float fTot = 0;
-			for( int j = 0; j < L; ++j )
+			for( int j = 0; j < FILTER_LENGTH; ++j )
 				fTot += pInData[j]*pCurPoly[j];
 			*pOut = fTot;
 			pOut += iSampleStride;
@@ -354,14 +363,14 @@ int PolyphaseFilter::NumInputsForOutputSamples( const State &State, int iOut, in
 #if 0
 	while( iOut > 0 )
 	{
-		if( iFilled < L )
+		if( iFilled < FILTER_LENGTH )
 		{
-			int iToFill = L-iFilled;
+			int iToFill = FILTER_LENGTH-iFilled;
 			iIn += iToFill;
 			iFilled += iToFill;
 		}
 
-		while( iFilled == L && iOut )
+		while( iFilled == FILTER_LENGTH && iOut )
 		{
 			--iOut;
 			iPolyIndex += iDownFactor;
@@ -376,9 +385,9 @@ int PolyphaseFilter::NumInputsForOutputSamples( const State &State, int iOut, in
 
 	if( iOut > 0 )
 	{
-		if( iFilled < L )
+		if( iFilled < FILTER_LENGTH )
 		{
-			int iToFill = L-iFilled;
+			int iToFill = FILTER_LENGTH-iFilled;
 			iIn += iToFill;
 		}
 
@@ -410,7 +419,7 @@ namespace PolyphaseFilterCache
 			PolyphaseFiltersLock.Unlock();
 			return pPolyphase;
 		}
-		int iWinSize = L*iUpFactor;
+		int iWinSize = FILTER_LENGTH*iUpFactor;
 		float *pFIR = new float[iWinSize];
 		GenerateSincLowPassFilter( pFIR, iWinSize, fCutoffFrequency );
 		ApplyKaiserWindow( pFIR, iWinSize, 8 );
@@ -539,7 +548,7 @@ private:
 
 int RageSoundReader_Resample_Good::GetNextSourceFrame() const
 {
-	std::int64_t iPosition = m_pSource->GetNextSourceFrame();
+	int64_t iPosition = m_pSource->GetNextSourceFrame();
 	iPosition -= m_apResamplers[0]->GetFilled();
 
 	iPosition *= m_iSampleRate;
@@ -577,7 +586,7 @@ RageSoundReader_Resample_Good::RageSoundReader_Resample_Good( RageSoundReader *p
 /* Call this if the input position is changed or reset. */
 void RageSoundReader_Resample_Good::Reset()
 {
-	for( std::size_t iChannel = 0; iChannel < m_pSource->GetNumChannels(); ++iChannel )
+	for( size_t iChannel = 0; iChannel < m_pSource->GetNumChannels(); ++iChannel )
 		m_apResamplers[iChannel]->Reset();
 }
 
@@ -604,14 +613,14 @@ void RageSoundReader_Resample_Good::GetFactors( int &iDownFactor, int &iUpFactor
 /* Call this if the sample factor changes. */
 void RageSoundReader_Resample_Good::ReopenResampler()
 {
-	for( std::size_t iChannel = 0; iChannel < m_apResamplers.size(); ++iChannel )
+	for( size_t iChannel = 0; iChannel < m_apResamplers.size(); ++iChannel )
 		delete m_apResamplers[iChannel];
 	m_apResamplers.clear();
 
 	int iDownFactor, iUpFactor;
 	GetFactors( iDownFactor, iUpFactor );
 
-	for( std::size_t iChannel = 0; iChannel < m_pSource->GetNumChannels(); ++iChannel )
+	for( size_t iChannel = 0; iChannel < m_pSource->GetNumChannels(); ++iChannel )
 	{
 		int iMinDownFactor = iDownFactor;
 		int iMaxDownFactor = iDownFactor;
@@ -623,15 +632,15 @@ void RageSoundReader_Resample_Good::ReopenResampler()
 	}
 
 	if( m_fRate != -1 )
-		iDownFactor = std::lrint( m_fRate * iDownFactor );
+		iDownFactor = static_cast<int>((m_fRate * iDownFactor) + 0.5 );
 
-	for( std::size_t iChannel = 0; iChannel < m_apResamplers.size(); ++iChannel )
+	for( size_t iChannel = 0; iChannel < m_apResamplers.size(); ++iChannel )
 		m_apResamplers[iChannel]->SetDownFactor( iDownFactor );
 }
 
 RageSoundReader_Resample_Good::~RageSoundReader_Resample_Good()
 {
-	for( std::size_t iChannel = 0; iChannel < m_apResamplers.size(); ++iChannel )
+	for( size_t iChannel = 0; iChannel < m_apResamplers.size(); ++iChannel )
 		delete m_apResamplers[iChannel];
 }
 
@@ -639,7 +648,7 @@ RageSoundReader_Resample_Good::~RageSoundReader_Resample_Good()
 int RageSoundReader_Resample_Good::SetPosition( int iFrame )
 {
 	Reset();
-	iFrame = (int) SCALE( iFrame, 0, (std::int64_t) m_iSampleRate, 0, (std::int64_t) m_pSource->GetSampleRate() );
+	iFrame = (int) SCALE( iFrame, 0, (int64_t) m_iSampleRate, 0, (int64_t) m_pSource->GetSampleRate() );
 	return m_pSource->SetPosition( iFrame );
 }
 
@@ -699,12 +708,12 @@ void RageSoundReader_Resample_Good::SetRate( float fRatio )
 	int iDownFactor, iUpFactor;
 	GetFactors( iDownFactor, iUpFactor );
 	if( m_fRate != -1 )
-		iDownFactor = std::lrint( m_fRate * iDownFactor );
+		iDownFactor = static_cast<int>((m_fRate * iDownFactor) + 0.5 );
 
 	/* Set m_fRate to the actual rate, after quantization by iUpFactor. */
 	m_fRate = float(iDownFactor) / iUpFactor;
 
-	for( std::size_t iChannel = 0; iChannel < m_apResamplers.size(); ++iChannel )
+	for( size_t iChannel = 0; iChannel < m_apResamplers.size(); ++iChannel )
 		m_apResamplers[iChannel]->SetDownFactor( iDownFactor );
 }
 
@@ -719,7 +728,7 @@ float RageSoundReader_Resample_Good::GetRate() const
 RageSoundReader_Resample_Good::RageSoundReader_Resample_Good( const RageSoundReader_Resample_Good &cpy ):
 	RageSoundReader_Filter(cpy)
 {
-	for( std::size_t i = 0; i < cpy.m_apResamplers.size(); ++i )
+	for( size_t i = 0; i < cpy.m_apResamplers.size(); ++i )
 		this->m_apResamplers.push_back( new RageSoundResampler_Polyphase(*cpy.m_apResamplers[i]) );
 	this->m_iSampleRate = cpy.m_iSampleRate;
 	this->m_fRate = cpy.m_fRate;

@@ -106,19 +106,19 @@
 	{ \
 		int original_top= lua_gettop(L); \
 		lua_createtable(L, p->m_ ## member.size(), 0); \
-		for(std::size_t n= 0; n < p->m_ ## member.size(); ++n) \
+		for(size_t n= 0; n < p->m_ ## member.size(); ++n) \
 		{ \
 			lua_pushnumber(L, p->m_ ## member[n]); \
 			lua_rawseti(L, -2, n+1); \
 		} \
 		if(lua_istable(L, 1) && original_top >= 1) \
 		{ \
-			std::size_t size= lua_objlen(L, 1); \
+			size_t size= lua_objlen(L, 1); \
 			if(valid(L, 1)) \
 			{ \
 				p->m_ ## member.clear(); \
 				p->m_ ## member.reserve(size); \
-				for(std::size_t n= 1; n <= size; ++n) \
+				for(size_t n= 1; n <= size; ++n) \
 				{ \
 					lua_pushnumber(L, n); \
 					lua_gettable(L, 1); \

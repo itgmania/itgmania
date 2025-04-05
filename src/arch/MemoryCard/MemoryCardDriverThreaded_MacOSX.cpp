@@ -77,7 +77,7 @@ void MemoryCardDriverThreaded_MacOSX::Unmount( UsbStorageDevice *pDevice )
 	const RString& base = Basename( pDevice->sOsMountDir );
 
 	memset( &pb, 0, sizeof(pb) );
-	name[0] = std::min( base.length(), std::size_t(255) );
+	name[0] = std::min( base.length(), size_t(255) );
 	strncpy( (char *)&name[1], base, name[0] );
 	pb.volumeParam.ioNamePtr = name;
 	pb.volumeParam.ioVolIndex = -1; // Use ioNamePtr to find the volume.
@@ -127,7 +127,7 @@ static RString GetStringProperty( io_registry_entry_t entry, CFStringRef key )
 
 	CFStringRef s = CFStringRef( t );
 	RString ret;
-	const std::size_t len = CFStringGetMaximumSizeForEncoding( CFStringGetLength(s), kCFStringEncodingUTF8 );
+	const size_t len = CFStringGetMaximumSizeForEncoding( CFStringGetLength(s), kCFStringEncodingUTF8 );
 	char *buf = new char[len + 1];
 
 	if( CFStringGetCString( s, buf, len + 1, kCFStringEncodingUTF8 ) )
@@ -206,7 +206,7 @@ void MemoryCardDriverThreaded_MacOSX::GetUSBStorageDevices( std::vector<UsbStora
 
 			LOG->Trace( "Found memory card at path: %s.", fs[i].f_mntonname );
 			usbd.SetOsMountDir( fs[i].f_mntonname );
-			usbd.iVolumeSizeMB = int( (std::uint64_t(fs[i].f_blocks) * fs[i].f_bsize) >> 20 );
+			usbd.iVolumeSizeMB = int( (uint64_t(fs[i].f_blocks) * fs[i].f_bsize) >> 20 );
 
 			// Now we can get some more information from the registry tree.
 			usbd.iBus = GetIntProperty( device, CFSTR("USB Address") );

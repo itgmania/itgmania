@@ -3,31 +3,31 @@
 #include <cstdlib>
 
 #if defined(HAVE_UNISTD_H)
-#include <unistd.h>
+    #include <unistd.h>
 #endif
 
-#if defined(_WINDOWS)
-#  if defined(CRASH_HANDLER)
-#    define _WIN32_WINDOWS 0x0410 // include Win98 stuff
-#    include "windows.h"
-#    include "archutils/Win32/Crash.h"
-#  endif
-#  if defined(_MSC_VER)
-#    include <intrin.h>
-#  endif
+#if defined(_WIN32)
+    #if defined(CRASH_HANDLER)
+        #define WIN32_LEAN_AND_MEAN
+        #include "windows.h"
+        #include "archutils/Win32/Crash.h"
+    #endif
+    #if defined(_MSC_VER)
+        #include <intrin.h>
+    #endif
 #elif defined(MACOSX)
-#  include "archutils/Darwin/Crash.h"
-using CrashHandler::IsDebuggerPresent;
-using CrashHandler::DebugBreak;
+    #include "archutils/Darwin/Crash.h"
+    using CrashHandler::IsDebuggerPresent;
+    using CrashHandler::DebugBreak;
 #endif
 
 #if defined(CRASH_HANDLER) && (defined(UNIX) || defined(MACOSX))
-#include "archutils/Unix/CrashHandler.h"
+    #include "archutils/Unix/CrashHandler.h"
 #endif
 
 void sm_crash( const char *reason )
 {
-#if ( defined(_WINDOWS) && defined(CRASH_HANDLER) ) || defined(MACOSX) || defined(_XDBG)
+#if ( defined(_WIN32) && defined(CRASH_HANDLER) ) || defined(MACOSX) || defined(_XDBG)
 	/* If we're being debugged, throw a debug break so it'll suspend the process. */
 	if( IsDebuggerPresent() )
 	{
@@ -46,7 +46,7 @@ void sm_crash( const char *reason )
 	for(;;);
 #endif
 
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 	/* Do something after the above, so the call/return isn't optimized to a jmp; that
 	 * way, this function will appear in backtrace stack traces. */
 #if defined(_MSC_VER)

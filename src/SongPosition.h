@@ -6,41 +6,68 @@
 #include "LightsManager.h"
 #include "MessageManager.h"
 #include "TimingData.h"
-//XXX: where does this come from? might need another include
 struct lua_State;
 
 class SongPosition
 {
 public:
-	// Arcade - the current stage (one song).
-	// Oni/Endless - a single song in a course.
-	// Let a lot of classes access this info here so they don't have to keep their own copies.
-	float		m_fMusicSeconds;	// time into the current song, not scaled by music rate
-	float		m_fSongBeat;
-	float		m_fSongBeatNoOffset;
-	float		m_fCurBPS;
-	float		m_fLightSongBeat; // g_fLightsFalloffSeconds ahead
-	//bool		m_bStop;	// in the middle of a stop (freeze or delay)
-	/** @brief A flag to determine if we're in the middle of a freeze/stop. */
-	bool		m_bFreeze;
-	/** @brief A flag to determine if we're in the middle of a delay (Pump style stop). */
-	bool		m_bDelay;
-	/** @brief The row used to start a warp. */
-	int			m_iWarpBeginRow;
-	/** @brief The beat to warp to afterwards. */
-	float		m_fWarpDestination;
-	RageTimer	m_LastBeatUpdate; // time of last m_fSongBeat, etc. update
-	float		m_fMusicSecondsVisible;
-	float		m_fSongBeatVisible;
+	SongPosition() { SongPosition::Reset(); }
 
-	void Reset();
-	void UpdateSongPosition( float fPositionSeconds, const TimingData &timing, const RageTimer &timestamp = RageZeroTimer, float fAdditionalVisualDelay = 0.0f );
+	// Represents the time into the current song, not scaled by the music rate.
+	float m_fMusicSeconds;
+	// Represents the current beat of the song.
+	float m_fSongBeat;
+	// Same as above, but without any offset.
+	float m_fSongBeatNoOffset;
+	// Represents the current beats per second (BPS) of the song.
+	float m_fCurBPS;
+	// The sum of the song beat (for lighting effects) and g_fLightsFalloffSeconds.
+	float m_fLightSongBeat;
+	// A flag to determine if the song is in the middle of a freeze or stop.
+	bool m_bFreeze;
+	// A flag to determine if the song is in the middle of a delay (Pump style stop).
+	bool m_bDelay;
+	// The row used to start a warp.
+	int m_iWarpBeginRow;
+	// The beat to warp to after a warp begins.
+	float m_fWarpDestination;
+	// The time of the last update to m_fSongBeat and related variables.
+	RageTimer m_LastBeatUpdate;
+	// Represents the visible time into the current song.
+	float m_fMusicSecondsVisible;
+	// Represents the visible beat of the song.
+	float m_fSongBeatVisible;
+	//// A flag to determine if the song is in the middle of a stop (freeze or delay).
+	//// bool m_bStop;
+
+	void Reset()
+	{
+		m_fMusicSeconds = 0; // MUSIC_SECONDS_INVALID;
+		m_fSongBeat = 0;
+		m_fSongBeatNoOffset = 0;
+		m_fCurBPS = 10;
+		m_fLightSongBeat = 0; // Assuming initial value
+		m_bFreeze = false;
+		m_bDelay = false;
+		//m_bStop = false;
+		m_iWarpBeginRow = -1; // Set to -1 because some song may want to warp to row 0. -aj
+		m_fWarpDestination = -1; // Set when a warp is encountered. also see above. -aj
+		m_fMusicSecondsVisible = 0;
+		m_fSongBeatVisible = 0;
+	}
+	
+	void UpdateSongPosition(
+		float fPositionSeconds,
+		const TimingData &timing,
+		const RageTimer &timestamp = RageZeroTimer,
+		float fAdditionalVisualDelay = 0.0f
+	);
 
 	// Lua
 	void PushSelf( lua_State *L );
 };
 
-#endif
+#endif // SONGPOSITION_H
 
 /**
  * @file

@@ -97,8 +97,15 @@ void ScreenSyncOverlay::UpdateText()
 	set_adjustments.SetParam("visible", visible);
 	if(visible)
 	{
-		float fNew = PREFSMAN->m_fGlobalOffsetSeconds;
-		float fOld = AdjustSync::s_fGlobalOffsetSecondsOriginal;
+		float fNew;
+		float fOld;
+		if (GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType == AutosyncType_Machine) {
+			fNew = PREFSMAN->m_fGlobalOffsetSeconds;
+			fOld = AdjustSync::s_fGlobalOffsetSecondsOriginal;
+		} else {
+			fNew = GAMESTATE->m_pCurSong->m_SongTiming.m_fBeat0OffsetInSeconds;
+			fOld = AdjustSync::s_vpTimingDataOriginal[0].m_fBeat0OffsetInSeconds;
+		}
 		float fStdDev = AdjustSync::s_fStandardDeviation;
 		RString s;
 		s += OLD_OFFSET.GetValue() + ssprintf( ": %0.3f\n", fOld );

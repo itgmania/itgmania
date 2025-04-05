@@ -62,9 +62,9 @@ public:
 	int GetFD();
 
 	/* Raw I/O: */
-	int Read( void *buffer, std::size_t bytes );
+	int Read( void *buffer, size_t bytes );
 	int Read( RString &buffer, int bytes = -1 );
-	int Write( const void *buffer, std::size_t bytes );
+	int Write( const void *buffer, size_t bytes );
 	int Write( const RString& string ) { return Write( string.data(), string.size() ); }
 	int Flush();
 
@@ -78,7 +78,7 @@ public:
 	int PutLine( const RString &str );
 
 	void EnableCRC32( bool on=true );
-	bool GetCRC32( std::uint32_t *iRet );
+	bool GetCRC32( uint32_t *iRet );
 
 	// Lua
 	virtual void PushSelf( lua_State *L );
@@ -103,11 +103,11 @@ namespace FileReading
 	void SkipBytes( RageFileBasic &f, int size, RString &sError );
 	void Seek( RageFileBasic &f, std::int64_t iOffset, RString &sError );
 	RString ReadString( RageFileBasic &f, int size, RString &sError );
-	std::uint8_t read_8( RageFileBasic &f, RString &sError );
-	std::int16_t read_16_le( RageFileBasic &f, RString &sError );
-	std::uint16_t read_u16_le( RageFileBasic &f, RString &sError );
-	std::int32_t read_32_le( RageFileBasic &f, RString &sError );
-	std::uint32_t read_u32_le( RageFileBasic &f, RString &sError );
+	uint8_t read_8( RageFileBasic &f, RString &sError );
+	int16_t read_16_le( RageFileBasic &f, RString &sError );
+	uint16_t read_u16_le( RageFileBasic &f, RString &sError );
+	int32_t read_32_le( RageFileBasic &f, RString &sError );
+	uint32_t read_u32_le( RageFileBasic &f, RString &sError );
 };
 
 #endif

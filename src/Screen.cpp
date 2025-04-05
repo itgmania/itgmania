@@ -106,6 +106,9 @@ void Screen::EndScreen()
 {
 	this->PlayCommand( "End" );
 	m_bRunning = false;
+
+	m_InputCallbacks.clear();
+	m_DelayedCallbackRemovals.clear();
 }
 
 void Screen::Update( float fDeltaTime )
@@ -225,9 +228,10 @@ bool Screen::Input( const InputEventPlus &input )
 					return this->MenuBack( input );
 			}
 			return false;
-		case GAME_BUTTON_START:  return this->MenuStart ( input );
-		case GAME_BUTTON_SELECT: return this->MenuSelect( input );
-		case GAME_BUTTON_COIN:   return this->MenuCoin  ( input );
+		case GAME_BUTTON_START:   return this->MenuStart  ( input );
+		case GAME_BUTTON_SELECT:  return this->MenuSelect ( input );
+		case GAME_BUTTON_RESTART: return this->MenuRestart( input );
+		case GAME_BUTTON_COIN:    return this->MenuCoin   ( input );
 		default: return false;
 	}
 }

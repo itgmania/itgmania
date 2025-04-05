@@ -1,6 +1,14 @@
 #include "global.h"
 #include "DirectXHelpers.h"
 #include "RageUtil.h"
+#include <cstdarg>
+#include <dinput.h>
+#include <d3d9.h>
+#include <mmsystem.h> // dsound.h needs this
+#include <dsound.h>
+#include <stdexcept>
+
+RString GetErrorString(HRESULT hr);
 
 RString hr_ssprintf( int hr, const char *fmt, ... )
 {
@@ -9,17 +17,9 @@ RString hr_ssprintf( int hr, const char *fmt, ... )
 	RString s = vssprintf( fmt, va );
 	va_end(va);
 
-	const char *szError = GetErrorString( hr );
-	return s + ssprintf( " (%s)", szError );
+	RString szError = GetErrorString(hr);
+	return s + ssprintf(" (%s)", szError.c_str());
 }
-
-// needed for defines
-#define DIRECTINPUT_VERSION 0x0800
-#define DIRECTSOUND_VERSION 0x0700
-#include <dinput.h>
-#include <d3d9.h>
-#include <mmsystem.h> // dsound.h needs this
-#include <dsound.h>
 
 #define DXERRMSG(hrcode, dummy) case hrcode: return #hrcode;
 

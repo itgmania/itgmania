@@ -17,6 +17,7 @@
 #include "RageUtil.h"
 
 #include <cerrno>
+#include <cinttypes>
 #include <cstdint>
 #include <set>
 
@@ -24,7 +25,7 @@
 #include "arch/Dialog/Dialog.h"
 
 #if defined(CRASH_HANDLER)
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 #include "archutils/Win32/crash.h"
 #elif defined(LINUX) || defined(MACOSX)
 #include "archutils/Unix/CrashHandler.h"
@@ -46,7 +47,7 @@ struct ThreadSlot
 	char m_szThreadFormattedOutput[1024];
 
 	bool m_bUsed;
-	std::uint64_t m_iID;
+	uint64_t m_iID;
 
 	ThreadImpl *m_pImpl;
 
@@ -80,7 +81,7 @@ struct ThreadSlot
 
 	void Release()
 	{
-		SAFE_DELETE( m_pImpl );
+		RageUtil::SafeDelete( m_pImpl );
 		Init();
 	}
 
@@ -184,7 +185,7 @@ static void InitThreads()
 }
 
 
-static ThreadSlot *GetThreadSlotFromID( std::uint64_t iID )
+static ThreadSlot *GetThreadSlotFromID( uint64_t iID )
 {
 	InitThreads();
 
@@ -284,7 +285,7 @@ const char *RageThread::GetCurrentThreadName()
 	return GetThreadNameByID( GetCurrentThreadID() );
 }
 
-const char *RageThread::GetThreadNameByID( std::uint64_t iID )
+const char *RageThread::GetThreadNameByID( uint64_t iID )
 {
 	ThreadSlot *slot = GetThreadSlotFromID( iID );
 	if( slot == nullptr )
@@ -293,7 +294,7 @@ const char *RageThread::GetThreadNameByID( std::uint64_t iID )
 	return slot->GetThreadName();
 }
 
-bool RageThread::EnumThreadIDs( int n, std::uint64_t &iID )
+bool RageThread::EnumThreadIDs( int n, uint64_t &iID )
 {
 	if( n >= MAX_THREADS )
 		return false;
@@ -337,7 +338,7 @@ void RageThread::Resume() {
 
 void RageThread::HaltAllThreads( bool Kill )
 {
-	const std::uint64_t ThisThreadID = GetThisThreadId();
+	const uint64_t ThisThreadID = GetThisThreadId();
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
 		if( !g_ThreadSlots[entry].m_bUsed )
@@ -350,7 +351,7 @@ void RageThread::HaltAllThreads( bool Kill )
 
 void RageThread::ResumeAllThreads()
 {
-	const std::uint64_t ThisThreadID = GetThisThreadId();
+	const uint64_t ThisThreadID = GetThisThreadId();
 	for( int entry = 0; entry < MAX_THREADS; ++entry )
 	{
 		if( !g_ThreadSlots[entry].m_bUsed )
@@ -362,11 +363,11 @@ void RageThread::ResumeAllThreads()
 	}
 }
 
-std::uint64_t RageThread::GetCurrentThreadID()
+uint64_t RageThread::GetCurrentThreadID()
 {
 	return GetThisThreadId();
 }
-std::uint64_t RageThread::GetInvalidThreadID()
+uint64_t RageThread::GetInvalidThreadID()
 {
 	return GetInvalidThreadId();
 }
@@ -583,7 +584,7 @@ RageMutex::~RageMutex()
 
 void RageMutex::Lock()
 {
-	std::uint64_t iThisThreadId = GetThisThreadId();
+	uint64_t iThisThreadId = GetThisThreadId();
 	if( m_LockedBy == iThisThreadId )
 	{
 		++m_LockCnt;
@@ -607,7 +608,7 @@ void RageMutex::Lock()
 #if defined(CRASH_HANDLER)
 		/* Don't leave GetThreadSlotsLock() locked when we call ForceCrashHandlerDeadlock. */
 		GetThreadSlotsLock().Lock();
-		std::uint64_t CrashHandle = OtherSlot? OtherSlot->m_iID:0;
+		uint64_t CrashHandle = OtherSlot? OtherSlot->m_iID:0;
 		GetThreadSlotsLock().Unlock();
 
 		/* Pass the crash handle of the other thread, so it can backtrace that thread. */
@@ -662,7 +663,7 @@ LockMutex::LockMutex( RageMutex &pMutex, const char *file_, int line_ ):
 	mutex( pMutex ),
 	file( file_ ),
 	line( line_ ),
-	locked_at( RageTimer::GetTimeSinceStart() ),
+	locked_at( RageTimer::GetTimeSinceStartMicroseconds() ),
 	locked(false) // ensure it gets locked inside.
 {
 	mutex.Lock();
@@ -682,11 +683,15 @@ void LockMutex::Unlock()
 
 	mutex.Unlock();
 
-	if( file && locked_at != -1 )
+	constexpr uint64_t THRESHOLD_USEC = 15000;
+
+	if (file && locked_at != UINT64_MAX)
 	{
-		const float dur = RageTimer::GetTimeSinceStart() - locked_at;
-		if( dur > 0.015f )
-			LOG->Trace( "Lock at %s:%i took %f", file, line, dur );
+		const uint64_t current_usecs = RageTimer::GetTimeSinceStartMicroseconds();
+		const uint64_t dur_usecs = current_usecs - locked_at;
+
+		if (dur_usecs > THRESHOLD_USEC)
+			LOG->Trace("Lock at %s:%i took %" PRIu64 " microseconds", file, line, dur_usecs);
 	}
 }
 

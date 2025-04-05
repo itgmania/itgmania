@@ -21,10 +21,6 @@ void GameplayAssist::PlayTicks( const NoteData &nd, const PlayerState *ps )
 	if( !bClap  &&  !bMetronome )
 		return;
 
-	// don't play sounds for dead players
-	if( ps->m_HealthState == HealthState_Dead )
-		return;
-
 	/* Sound cards have a latency between when a sample is Play()ed and when the sound
 	 * will start coming out the speaker.  Compensate for this by boosting fPositionSeconds
 	 * ahead.  This is just to make sure that we request the sound early enough for it to
@@ -47,8 +43,13 @@ void GameplayAssist::PlayTicks( const NoteData &nd, const PlayerState *ps )
 		int iClapRow = -1;
 		// for each index we crossed since the last update:
 		FOREACH_NONEMPTY_ROW_ALL_TRACKS_RANGE( nd, r, iRowLastCrossed+1, iSongRow+1 )
+		{
 			if( nd.IsThereATapOrHoldHeadAtRow( r ) )
+			{
 				iClapRow = r;
+				break;
+			}
+		}
 
 		if( iClapRow != -1 && timing.IsJudgableAtRow(iClapRow))
 		{

@@ -51,11 +51,6 @@ bool ArchHooks::AppFocusChanged()
 	return bFocusChanged;
 }
 
-bool ArchHooks::GoToURL( RString sUrl )
-{
-	return false;
-}
-
 ArchHooks *ArchHooks::Create()
 {
 	return new ARCH_HOOKS;

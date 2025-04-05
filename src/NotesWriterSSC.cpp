@@ -428,7 +428,60 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 	}
 	if (bSavingCache)
 	{
+		lines.push_back( ssprintf( "// step cache tags:" ) );
+
+		std::vector<RString> asTechCounts;
+		FOREACH_PlayerNumber( pn )
+		{
+			const TechCounts &ts = in.GetTechCounts(pn);
+			FOREACH_ENUM( TechCountsCategory, tc )
+			{
+				asTechCounts.push_back(ssprintf("%.6f", ts[tc]));
+			}
+		}
+		lines.push_back(ssprintf("#TECHCOUNTS:%s;", join(",", asTechCounts).c_str()));
+		
+		// NpsPerMeasure and NotesPerMeasure are stored differently from Radar Values and Tech Counts,
+		// because the number of measures is variable.
+		// For charts that have different steps per player, each set of values is separated
+		// with pipes "|".
+		// The vast majority of charts don't, so there's no reason to store duplicated data.
+		const std::vector<std::vector<float>> &allNpsPerMeasures = in.GetAllNpsPerMeasures();
+		std::vector<RString> npsPerMeasureStrings;
+		npsPerMeasureStrings.reserve(allNpsPerMeasures.size());
+		for(std::vector<float> npsPerMeasure : allNpsPerMeasures)
+		{
+			npsPerMeasureStrings.push_back(serialize(npsPerMeasure, ",", 3));
+		}
+		lines.push_back( ssprintf( "#NPSPERMEASURE:%s;", join("|",npsPerMeasureStrings).c_str() ) );
+
+		const std::vector<std::vector<int>> &allNotesPerMeasures = in.GetAllNotesPerMeasures();
+		std::vector<RString> notesPerMeasureStrings;
+		notesPerMeasureStrings.reserve(allNotesPerMeasures.size());
+		for(std::vector<int> notesPerMeasure : allNotesPerMeasures)
+		{
+			notesPerMeasureStrings.push_back(serialize(notesPerMeasure, ","));
+		}
+		
+		lines.push_back( ssprintf( "#NOTESPERMEASURE:%s;", join("|",notesPerMeasureStrings).c_str() ) );
+		
+		const std::vector<float> &peakNps = in.GetAllPeakNps();
+		lines.push_back("#PEAKNPS:" + serialize(peakNps, "|", 3) + ";");
+		
+		RString GrooveStatsHash = in.GetGrooveStatsHash();
+		lines.push_back(ssprintf("#GROOVESTATSHASH:%s;", GrooveStatsHash.c_str()));
+
+		int GrooveStatsHashVersion = in.GetGrooveStatsHashVersion();
+		lines.push_back(ssprintf("#GROOVESTATSHASHVERSION:%d;", GrooveStatsHashVersion));
+		
+		// NOTE(MV): #STEPFILENAME has to be at the end of the cache tags,
+		
+		// MV: #STEPFILENAME has to be at the end of the cache tags,
+		// because it's used in SSCLoader::LoadFromSimfile to determine when
+		// to switch the state back to GETTING_SONG_INFO, which means any tags
+		// after it will be ignored.
 		lines.push_back(ssprintf("#STEPFILENAME:%s;", in.GetFilename().c_str()));
+		lines.push_back( ssprintf( "// end step cache tags" ) );
 	}
 	else
 	{

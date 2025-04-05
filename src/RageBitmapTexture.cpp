@@ -310,21 +310,6 @@ void RageBitmapTexture::Create()
 			float fBetterFrameHeight = std::ceil(fFrameHeight/iDimensionMultiple) * iDimensionMultiple;
 			float fBetterSourceWidth = this->GetFramesWide() * fBetterFrameWidth;
 			float fBetterSourceHeight = this->GetFramesHigh() * fBetterFrameHeight;
-			if( fFrameWidth!=fBetterFrameWidth || fFrameHeight!=fBetterFrameHeight )
-			{
-				RString sWarning = ssprintf(
-					"The graphic '%s' has frame dimensions that aren't a multiple of %d.\n"
-					"The entire image is %dx%d and frame size is %.1fx%.1f.\n"
-					"Image quality will be much improved if you resize the graphic to %.0fx%.0f, which is a frame size of %.0fx%.0f.",
-					actualID.filename.c_str(),
-					iDimensionMultiple,
-					this->GetSourceWidth(), this->GetSourceHeight(),
-					fFrameWidth, fFrameHeight,
-					fBetterSourceWidth, fBetterSourceHeight,
-					fBetterFrameWidth, fBetterFrameHeight );
-				LOG->Warn( "%s", sWarning.c_str() );
-				Dialog::OK( sWarning, "FRAME_DIMENSIONS_WARNING" );
-			}
 		}
 	}
 

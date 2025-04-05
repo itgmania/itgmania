@@ -98,7 +98,7 @@ namespace LuaHelpers
 	template<> bool FromStack<unsigned int>( Lua *L, unsigned int &Object, int iOffset ) { Object = lua_tointeger( L, iOffset ); return true; }
 	template<> bool FromStack<RString>( Lua *L, RString &Object, int iOffset )
 	{
-		std::size_t iLen;
+		size_t iLen;
 		const char *pStr = lua_tolstring( L, iOffset, &iLen );
 		if( pStr != nullptr )
 			Object.assign( pStr, iLen );
@@ -278,7 +278,7 @@ LuaManager::LuaManager()
 LuaManager::~LuaManager()
 {
 	lua_close( m_pLuaMain );
-	SAFE_DELETE( pImpl );
+	RageUtil::SafeDelete( pImpl );
 }
 
 Lua *LuaManager::Get()
@@ -422,8 +422,8 @@ LuaThreadVariable::LuaThreadVariable( lua_State *L )
 
 RString LuaThreadVariable::GetCurrentThreadIDString()
 {
-	std::uint64_t iID = RageThread::GetCurrentThreadID();
-	return ssprintf( "%08x%08x", std::uint32_t(iID >> 32), std::uint32_t(iID) );
+	uint64_t iID = RageThread::GetCurrentThreadID();
+	return ssprintf( "%08x%08x", uint32_t(iID >> 32), uint32_t(iID) );
 }
 
 bool LuaThreadVariable::PushThreadTable( lua_State *L, bool bCreate )
@@ -1055,7 +1055,7 @@ static float scale( float x, float l1, float h1, float l2, float h2 )
 }
 LuaFunction( scale, scale(FArg(1), FArg(2), FArg(3), FArg(4), FArg(5)) );
 
-LuaFunction( clamp, clamp(FArg(1), FArg(2), FArg(3)) );
+LuaFunction( clamp, std::clamp(FArg(1), FArg(2), FArg(3)) );
 
 #include "LuaBinding.h"
 namespace

@@ -148,7 +148,7 @@ void ActorFrame::AddChild( Actor *pActor )
 #endif
 
 	ASSERT( pActor != nullptr );
-	ASSERT( reinterpret_cast<std::uintptr_t>(pActor) != static_cast<std::uintptr_t>(0xC0000005) );
+	ASSERT( reinterpret_cast<uintptr_t>(pActor) != static_cast<uintptr_t>(0xC0000005) );
 	m_SubActors.push_back( pActor );
 
 	pActor->SetParent( this );
@@ -413,17 +413,17 @@ void ActorFrame::PushChildTable(lua_State* L, const RString &sName)
 	{
 		if(a->GetName() == sName)
 		{
-			switch(found)
+			if (found == 0)
 			{
-				case 0:
-					a->PushSelf(L);
-					break;
-				case 1:
-					CreateChildTable(L, a);
-					break;
-				default:
-					AddToChildTable(L, a);
-					break;
+				a->PushSelf(L);
+			}
+			else if (found == 1)
+			{
+				CreateChildTable(L, a);
+			}
+			else
+			{
+				AddToChildTable(L, a);
 			}
 			++found;
 		}
@@ -736,7 +736,7 @@ public:
 		if(child)
 		{
 			p->RemoveChild(child);
-			SAFE_DELETE(child);
+			RageUtil::SafeDelete(child);
 		}
 		COMMON_RETURN_SELF;
 	}

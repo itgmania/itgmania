@@ -213,7 +213,7 @@ void NoteSkinManager::GetNoteSkinNames( const Game* pGame, std::vector<RString> 
 
 bool NoteSkinManager::NoteSkinNameInList(const RString name, std::vector<RString> name_list)
 {
-	for(std::size_t i= 0; i < name_list.size(); ++i)
+	for(size_t i= 0; i < name_list.size(); ++i)
 	{
 		if(0 == strcasecmp(name, name_list[i]))
 		{

@@ -24,13 +24,13 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-void CZipMemFile::Grow(std::size_t nGrowTo)
+void CZipMemFile::Grow(size_t nGrowTo)
 {
 	if (m_nBufSize < (UINT)nGrowTo)
 	{
 		if (m_nGrowBy == 0)
 			CZipException::Throw(CZipException::memError);
-		std::size_t nNewSize = m_nBufSize;
+		size_t nNewSize = m_nBufSize;
 		while (nNewSize < nGrowTo)
 			nNewSize += m_nGrowBy;
 		BYTE* lpNew;
@@ -49,10 +49,10 @@ void CZipMemFile::Grow(std::size_t nGrowTo)
 void CZipMemFile::SetLength(ZIP_ULONGLONG nNewLen)
 {
 	if (m_nBufSize < (UINT)nNewLen)
-		Grow((std::size_t)nNewLen);
+		Grow((size_t)nNewLen);
 	else
-		m_nPos = (std::size_t)nNewLen;
-	m_nDataSize = (std::size_t)nNewLen;
+		m_nPos = (size_t)nNewLen;
+	m_nDataSize = (size_t)nNewLen;
 }
 
 UINT CZipMemFile::Read(void *lpBuf, UINT nCount)
@@ -95,6 +95,6 @@ ZIP_ULONGLONG CZipMemFile::Seek(ZIP_LONGLONG lOff, int nFrom)
 	if (lNew< 0)
 		CZipException::Throw(CZipException::memError);
 
-	m_nPos = (std::size_t)lNew;
+	m_nPos = (size_t)lNew;
 	return lNew;
 }

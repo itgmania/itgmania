@@ -18,7 +18,7 @@
 
 #include <cstddef>
 
-static RString LIFE_PERCENT_CHANGE_NAME( std::size_t i )   { return "LifePercentChange" + ScoreEventToString( (ScoreEvent)i ); }
+static RString LIFE_PERCENT_CHANGE_NAME( size_t i )   { return "LifePercentChange" + ScoreEventToString( (ScoreEvent)i ); }
 
 LifeMeterBar::LifeMeterBar()
 {
@@ -75,7 +75,7 @@ LifeMeterBar::LifeMeterBar()
 
 LifeMeterBar::~LifeMeterBar()
 {
-	SAFE_DELETE( m_pStream );
+	RageUtil::SafeDelete( m_pStream );
 }
 
 void LifeMeterBar::Load( const PlayerState *pPlayerState, PlayerStageStats *pPlayerStageStats )

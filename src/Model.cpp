@@ -544,7 +544,7 @@ void Model::PlayAnimation( const RString &sAniName, float fPlayRate )
 		{
 			// int iBoneIndex = (pMesh->m_iBoneIndex!=-1) ? pMesh->m_iBoneIndex : bone;
 			RageVector3 &pos = Vertices[j].p;
-			std::int8_t bone = Vertices[j].bone;
+			int8_t bone = Vertices[j].bone;
 			if( bone != -1 )
 			{
 				pos[0] -= m_vpBones[bone].m_Absolute.m[3][0];
@@ -570,7 +570,7 @@ void Model::PlayAnimation( const RString &sAniName, float fPlayRate )
 void Model::SetPosition( float fSeconds )
 {
 	m_fCurFrame = FRAMES_PER_SECOND * fSeconds;
-	m_fCurFrame = clamp( m_fCurFrame, (float) 0, (float) m_pCurAnimation->nTotalFrames );
+	m_fCurFrame = std::clamp( m_fCurFrame, (float) 0, (float) m_pCurAnimation->nTotalFrames );
 }
 
 void Model::AdvanceFrame( float fDeltaTime )
@@ -596,7 +596,7 @@ void Model::AdvanceFrame( float fDeltaTime )
 		else if( m_bLoop )
 			wrap( m_fCurFrame, (float) m_pCurAnimation->nTotalFrames );
 		else
-			m_fCurFrame = clamp( m_fCurFrame, (float) 0, (float) m_pCurAnimation->nTotalFrames );
+			m_fCurFrame = std::clamp( m_fCurFrame, (float) 0, (float) m_pCurAnimation->nTotalFrames );
 	}
 
 	SetBones( m_pCurAnimation, m_fCurFrame, m_vpBones );
@@ -605,7 +605,7 @@ void Model::AdvanceFrame( float fDeltaTime )
 
 void Model::SetBones( const msAnimation* pAnimation, float fFrame, std::vector<myBone_t> &vpBones )
 {
-	for( std::size_t i = 0; i < pAnimation->Bones.size(); ++i )
+	for( size_t i = 0; i < pAnimation->Bones.size(); ++i )
 	{
 		const msBone *pBone = &pAnimation->Bones[i];
 		if( pBone->PositionKeys.size() == 0 && pBone->RotationKeys.size() == 0 )
@@ -616,7 +616,7 @@ void Model::SetBones( const msAnimation* pAnimation, float fFrame, std::vector<m
 
 		// search for the adjacent position keys
 		const msPositionKey *pLastPositionKey = nullptr, *pThisPositionKey = nullptr;
-		for( std::size_t j = 0; j < pBone->PositionKeys.size(); ++j )
+		for( size_t j = 0; j < pBone->PositionKeys.size(); ++j )
 		{
 			const msPositionKey *pPositionKey = &pBone->PositionKeys[j];
 			if( pPositionKey->fTime >= fFrame )
@@ -640,7 +640,7 @@ void Model::SetBones( const msAnimation* pAnimation, float fFrame, std::vector<m
 
 		// search for the adjacent rotation keys
 		const msRotationKey *pLastRotationKey = nullptr, *pThisRotationKey = nullptr;
-		for( std::size_t j = 0; j < pBone->RotationKeys.size(); ++j )
+		for( size_t j = 0; j < pBone->RotationKeys.size(); ++j )
 		{
 			const msRotationKey *pRotationKey = &pBone->RotationKeys[j];
 			if( pRotationKey->fTime >= fFrame )
@@ -701,7 +701,7 @@ void Model::UpdateTempGeometry()
 			RageVector3 &tempNormal =		tempVertices[j].n;
 			const RageVector3 &originalPos =	origVertices[j].p;
 			const RageVector3 &originalNormal =	origVertices[j].n;
-			std::int8_t bone =				origVertices[j].bone;
+			int8_t bone =				origVertices[j].bone;
 
 			if( bone == -1 )
 			{

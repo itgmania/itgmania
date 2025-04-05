@@ -11,6 +11,7 @@
 
 Display *X11Helper::Dpy = nullptr;
 Window X11Helper::Win = None;
+bool X11Helper::FatalError = false;
 
 static int ErrorCallback( Display*, XErrorEvent* );
 static int FatalCallback( Display* );
@@ -160,6 +161,7 @@ int ErrorCallback( Display *d, XErrorEvent *err )
 
 int FatalCallback( Display *d )
 {
+	X11Helper::FatalError = true;
 	RageException::Throw( "Fatal I/O error communicating with X server." );
 }
 
@@ -206,8 +208,8 @@ bool X11Helper::SetWMFullscreenMonitors( const DisplaySpec &target )
 	{
 		auto mon = std::find_if( screens, end, [&]( XineramaScreenInfo &screen ) {
 			return screen.x_org == target.currentBounds().left && screen.y_org == target.currentBounds().top
-				   && screen.width >= 0 && static_cast<std::uint32_t>(screen.width) == target.currentMode()->width
-				   && screen.height >= 0 && static_cast<std::uint32_t>(screen.height) == target.currentMode()->height;
+				   && screen.width >= 0 && static_cast<uint32_t>(screen.width) == target.currentMode()->width
+				   && screen.height >= 0 && static_cast<uint32_t>(screen.height) == target.currentMode()->height;
 		} );
 		if (mon != end)
 		{

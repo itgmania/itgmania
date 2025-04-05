@@ -17,6 +17,8 @@
 #include "CommonMetrics.h"
 #include "LuaBinding.h"
 #include "EnumHelper.h"
+#include "PlayerNumber.h"
+
 
 #include <cmath>
 #include <cstddef>
@@ -30,8 +32,23 @@ ThemeMetric<bool> SHOW_SECTIONS_IN_LENGTH_SORT ( "MusicWheel", "ShowSectionsInLe
 
 bool SongCriteria::Matches( const Song *pSong ) const
 {
-	if( !m_sGroupName.empty()  &&  m_sGroupName != pSong->m_sGroupName )
+	if( m_vsGroupNames.size() > 0 && std::find(m_vsGroupNames.begin(), m_vsGroupNames.end(), pSong->m_sGroupName) == m_vsGroupNames.end() )
+	{
 		return false;
+	}
+
+	if( m_vsSongNames.size() > 0 && std::find(m_vsSongNames.begin(), m_vsSongNames.end(), pSong->m_sSongName) == m_vsSongNames.end()
+		&& std::find(m_vsSongNames.begin(), m_vsSongNames.end(), pSong->m_sMainTitle) == m_vsSongNames.end()
+		&& std::find(m_vsSongNames.begin(), m_vsSongNames.end(), pSong->m_sMainTitleTranslit) == m_vsSongNames.end() )
+	{
+		return false;
+	}
+
+	if(m_vsArtistNames.size() > 0 && std::find(m_vsArtistNames.begin(), m_vsArtistNames.end(), pSong->m_sArtist) == m_vsArtistNames.end()
+		&& std::find(m_vsArtistNames.begin(), m_vsArtistNames.end(), pSong->m_sArtistTranslit) == m_vsArtistNames.end() )
+	{
+		return false;
+	}
 
 	if( UNLOCKMAN->SongIsLocked(pSong) & LOCKED_DISABLED )
 		return false;
@@ -65,6 +82,30 @@ bool SongCriteria::Matches( const Song *pSong ) const
 
 	if( m_iMaxStagesForSong != -1  &&  GAMESTATE->GetNumStagesMultiplierForSong(pSong) > m_iMaxStagesForSong )
 		return false;
+
+	if(m_fMaxBPM != -1 && m_fMinBPM != -1)
+	{
+		DisplayBpms bpms;
+		pSong->GetDisplayBpms(bpms);
+		if(bpms.GetMax() > m_fMaxBPM)
+		{
+			return false;
+		}
+		if(bpms.GetMin() < m_fMinBPM)
+		{
+			return false;
+		}
+	}
+
+	if( m_fMinDurationSeconds != -1 && pSong->m_fMusicLengthSeconds < m_fMinDurationSeconds )
+	{
+		return false;
+	}
+
+	if( m_fMaxDurationSeconds != -1 && pSong->m_fMusicLengthSeconds > m_fMaxDurationSeconds )
+	{
+		return false;
+	}
 
 	switch( m_Tutorial )
 	{
@@ -297,7 +338,7 @@ void SongUtil::AdjustDuplicateSteps( Song *pSong )
  */
 static RString RemoveInitialWhitespace( RString s )
 {
-	std::size_t i = s.find_first_not_of(" \t\r\n");
+	size_t i = s.find_first_not_of(" \t\r\n");
 	if( i != s.npos )
 		s.erase( 0, i );
 	return s;
@@ -495,6 +536,35 @@ void SongUtil::SortSongPointerArrayByGrades( std::vector<Song*> &vpSongsInOut, b
 		vpSongsInOut[i] = vals[i].first;
 }
 
+void SongUtil::SortSongPointerArrayByProfileGrades( std::vector<Song*> &vpSongsInOut, bool bDescending, PlayerNumber pn )
+{
+	/* Optimize by pre-writing a string to compare, since doing
+	 * GetNumNotesWithGrade inside the sort is too slow. */
+	typedef std::pair<Song*, RString> val;
+	std::vector<val> vals;
+	vals.reserve( vpSongsInOut.size() );
+
+	for( unsigned i = 0; i < vpSongsInOut.size(); ++i )
+	{
+		Song *pSong = vpSongsInOut[i];
+
+		int iCounts[NUM_Grade];
+		const Profile *pProfile = PROFILEMAN->GetProfile(pn);
+		ASSERT( pProfile != nullptr );
+		pProfile->GetGrades( pSong, GAMESTATE->GetCurrentStyle(pn)->m_StepsType, iCounts );
+
+		RString foo;
+		foo.reserve(256);
+		for( int g=Grade_Tier01; g<NUM_Grade; ++g )
+			AppendOctal( iCounts[g], 3, foo );
+		vals.push_back( val(pSong, foo) );
+	}
+
+	sort( vals.begin(), vals.end(), bDescending ? CompDescending : CompAscending );
+
+	for( unsigned i = 0; i < vpSongsInOut.size(); ++i )
+		vpSongsInOut[i] = vals[i].first;
+}
 
 void SongUtil::SortSongPointerArrayByArtist( std::vector<Song*> &vpSongsInOut )
 {
@@ -512,6 +582,7 @@ void SongUtil::SortSongPointerArrayByDisplayArtist( std::vector<Song*> &vpSongsI
 	stable_sort( vpSongsInOut.begin(), vpSongsInOut.end(), CompareSongPointersBySortValueAscending );
 }
 
+
 static int CompareSongPointersByGenre(const Song *pSong1, const Song *pSong2)
 {
 	return pSong1->m_sGenre < pSong2->m_sGenre;
@@ -522,23 +593,69 @@ void SongUtil::SortSongPointerArrayByGenre( std::vector<Song*> &vpSongsInOut )
 	stable_sort( vpSongsInOut.begin(), vpSongsInOut.end(), CompareSongPointersByGenre );
 }
 
+void SongUtil::SortSongPointerArrayByGroup( std::vector<Song*> &vpSongsInOut )
+{
+	stable_sort( vpSongsInOut.begin(), vpSongsInOut.end(), CompareSongPointersByGroup );
+}
+
 int SongUtil::CompareSongPointersByGroup(const Song *pSong1, const Song *pSong2)
 {
-	return pSong1->m_sGroupName < pSong2->m_sGroupName;
+	RString s1 = "";
+	RString s2 = "";
+
+	if( SONGMAN->GetGroup(pSong1) != nullptr )
+		s1 = SONGMAN->GetGroup(pSong1)->GetSortTitle();
+	else
+		LOG->Warn("SongUtil::CompareSongPointersByGroup: %s has no group", pSong1->GetSongDir().c_str());
+
+	if( SONGMAN->GetGroup(pSong2) != nullptr )
+		s2 = SONGMAN->GetGroup(pSong2)->GetSortTitle();
+	else
+		LOG->Warn("SongUtil::CompareSongPointersByGroup: %s has no group", pSong2->GetSongDir().c_str());
+	
+	// Sort Titles are the same, fall back on group folder name
+	if( s1 == s2 )
+	{
+		return pSong1->m_sGroupName < pSong2->m_sGroupName;
+	}
+
+	s1 = SongUtil::MakeSortString(s1);
+	s2 = SongUtil::MakeSortString(s2);
+
+	int ret = strcmp( s1, s2 );
+	return ret < 0;
 }
 
 static int CompareSongPointersByGroupAndTitle( const Song *pSong1, const Song *pSong2 )
 {
-	const RString &sGroup1 = pSong1->m_sGroupName;
-	const RString &sGroup2 = pSong2->m_sGroupName;
+	RString s1 = "";
+	RString s2 = "";
 
-	if( sGroup1 < sGroup2 )
-		return true;
-	if( sGroup1 > sGroup2 )
-		return false;
+	if( SONGMAN->GetGroup(pSong1) != nullptr )
+		s1 = SONGMAN->GetGroup(pSong1)->GetSortTitle();
+	else
+		LOG->Warn("SongUtil::CompareSongPointersByGroup: %s has no group", pSong1->GetSongDir().c_str());
 
-	/* Same group; compare by name. */
-	return CompareSongPointersByTitle( pSong1, pSong2 );
+	if( SONGMAN->GetGroup(pSong2) != nullptr )
+		s2 = SONGMAN->GetGroup(pSong2)->GetSortTitle();
+	else
+		LOG->Warn("SongUtil::CompareSongPointersByGroup: %s has no group", pSong2->GetSongDir().c_str());
+	
+	// Sort Titles are the same, fall back on group folder name
+	if( s1 == s2 )
+	{
+		/* Same group; compare by name. */
+		if( pSong1->m_sGroupName == pSong2->m_sGroupName )
+			return CompareSongPointersByTitle( pSong1, pSong2 );
+		else
+			return pSong1->m_sGroupName < pSong2->m_sGroupName;
+	}
+
+	s1 = SongUtil::MakeSortString(s1);
+	s2 = SongUtil::MakeSortString(s2);
+
+	int ret = strcmp( s1, s2 );
+	return ret < 0;
 }
 
 void SongUtil::SortSongPointerArrayByGroupAndTitle( std::vector<Song*> &vpSongsInOut )
@@ -573,8 +690,12 @@ RString SongUtil::GetSectionNameFromSongAndSort( const Song* pSong, SortOrder so
 	case SORT_PREFERRED:
 		return SONGMAN->SongToPreferredSortSectionName( pSong );
 	case SORT_GROUP:
-		// guaranteed not empty
-		return pSong->m_sGroupName;
+		if ( SONGMAN->GetGroup(pSong) == nullptr ) {
+			LOG->Warn("SongUtil::GetSectionNameFromSongAndSort: %s has no group", pSong->GetSongDir().c_str());
+			return RString();
+		} else {
+			return SONGMAN->GetGroup(pSong)->GetGroupName();
+		}
 	case SORT_TITLE:
 	case SORT_ARTIST:
 		{
@@ -629,8 +750,38 @@ RString SongUtil::GetSectionNameFromSongAndSort( const Song* pSong, SortOrder so
 				return RString();
 		}
 	case SORT_POPULARITY:
+	case SORT_POPULARITY_P1:
+	case SORT_POPULARITY_P2:
 	case SORT_RECENT:
-		return RString();
+	case SORT_RECENT_P1:
+	case SORT_RECENT_P2:
+		return THEME->GetString("MusicWheel", ssprintf("%s%s", SortOrderToString(so).c_str(), "Text"));
+	case SORT_TOP_GRADES_P1:
+			{
+			int iCounts[NUM_Grade];
+			PROFILEMAN->GetProfile(PLAYER_1)->GetGrades( pSong, GAMESTATE->GetCurrentStyle(PLAYER_1)->m_StepsType, iCounts );
+
+			for( int i=Grade_Tier01; i<NUM_Grade; ++i )
+			{
+				Grade g = (Grade)i;
+				if( iCounts[i] > 0 )
+					return ssprintf( "%4s x %d", GradeToLocalizedString(g).c_str(), iCounts[i] );
+			}
+			return GradeToLocalizedString( Grade_NoData );
+		}
+	case SORT_TOP_GRADES_P2:
+			{
+			int iCounts[NUM_Grade];
+			PROFILEMAN->GetProfile(PLAYER_2)->GetGrades( pSong, GAMESTATE->GetCurrentStyle(PLAYER_2)->m_StepsType, iCounts );
+
+			for( int i=Grade_Tier01; i<NUM_Grade; ++i )
+			{
+				Grade g = (Grade)i;
+				if( iCounts[i] > 0 )
+					return ssprintf( "%4s x %d", GradeToLocalizedString(g).c_str(), iCounts[i] );
+			}
+			return GradeToLocalizedString( Grade_NoData );
+		}
 	case SORT_TOP_GRADES:
 		{
 			int iCounts[NUM_Grade];
@@ -663,6 +814,8 @@ RString SongUtil::GetSectionNameFromSongAndSort( const Song* pSong, SortOrder so
 				return ssprintf("%02d", pSteps->GetMeter() );
 			return SORT_NOT_AVAILABLE.GetValue();
 		}
+	case SORT_METER:
+		return RString();
 	case SORT_MODE_MENU:
 		return RString();
 	case SORT_ALL_COURSES:
@@ -729,6 +882,19 @@ void SongUtil::SortByMostRecentlyPlayedForMachine( std::vector<Song*> &vpSongsIn
 		g_mapSongSortVal[s] = val;
 	}
 
+	stable_sort( vpSongsInOut.begin(), vpSongsInOut.end(), CompareSongPointersBySortValueDescending );
+	g_mapSongSortVal.clear();
+}
+
+void SongUtil::SortByMostRecentlyPlayedForProfile( std::vector<Song*> &vpSongsInOut, PlayerNumber pn )
+{
+	Profile *pProfile = PROFILEMAN->GetProfile(pn);
+	for (Song const *s : vpSongsInOut)
+	{
+		int iNumTimesPlayed = pProfile->GetSongNumTimesPlayed( s );
+		RString val = iNumTimesPlayed ? pProfile->GetSongLastPlayedDateTime(s).GetString() : RString("0");
+		g_mapSongSortVal[s] = val;
+	}
 	stable_sort( vpSongsInOut.begin(), vpSongsInOut.end(), CompareSongPointersBySortValueDescending );
 	g_mapSongSortVal.clear();
 }

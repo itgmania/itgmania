@@ -3,11 +3,12 @@ ITGmania
 
 ITGmania is a fork of [StepMania 5.1](https://github.com/stepmania/stepmania/tree/5_1-new), an advanced cross-platform rhythm game for home and arcade use.
 
-[![Continuous integration](https://github.com/itgmania/itgmania/workflows/Continuous%20integration/badge.svg?branch=beta)](https://github.com/itgmania/itgmania/actions?query=workflow%3A%22Continuous+integration%22+branch%3Abeta)
+[![Continuous integration](https://github.com/itgmania/itgmania/actions/workflows/ci.yml/badge.svg?branch=beta)](https://github.com/itgmania/itgmania/actions/workflows/ci.yml)
 
 ## Changes to StepMania 5.1
 
 - Built-in network functionality
+- Fully 64-bit, optimized for modern OSes
 - Reload new songs from within the song select screen
 - The mine fix applied (courtesy of [DinsFire64](https://gist.github.com/DinsFire64/4a3f763cd3033afd55a176980b32a3b5))
 - Held misses tracked in the engine for pad debugging
@@ -19,17 +20,48 @@ ITGmania is a fork of [StepMania 5.1](https://github.com/stepmania/stepmania/tre
 - Changed the default binding for P2/back from hyphen to backslash
 
 ## Installation
-### From Packages
 
-For those that do not wish to compile the game on their own and use a binary right away, be aware of the following issues:
+You can choose between using the installer or using the portable build. Using the installer is recommended, because it makes upgrading to new versions easier.
 
-* Windows 7 is the minimum supported version.
-* macOS users need to have macOS 11 (Big Sur) or higher to run ITGmania.
-* Linux users should receive all they need from the package manager of their choice.
+### Windows
 
-### From Source
+**Windows 7 is the minimum supported version.**
 
-ITGmania can be compiled using [CMake](http://www.cmake.org/). More information about using CMake can be found in both the `Build` directory and CMake's documentation.
+ * You will likely have to manually allow the installer to start.
+
+### macOS
+
+**macOS users need to have macOS 11 (Big Sur) or higher to run ITGmania.**
+* Move ITGmania.app to the Applications folder, and then run the following command in Terminal:
+
+   * `xattr -dr com.apple.quarantine /Applications/ITGmania`
+
+* You should then add ITGmania to the "Input Monitoring" section of System Preferences (under Security & Privacy)
+
+### Linux
+
+**Linux users should receive all they need from the package manager of their choice.**
+
+* **Debian-based**:
+
+  * `sudo apt install libgdk-pixbuf-2.0-0 libgl1 libglvnd0 libgtk-3-0 libusb-0.1-4 libxinerama1 libxtst6`
+
+* **Fedora-based**:
+
+  * `sudo yum install gdk-pixbuf2 gtk3 libusb-compat-0.1 libXinerama libXtst`
+
+*  **Arch Linux**:
+
+   * `sudo pacman -S mesa gtk3 libusb-compat libxinerama libxtst llvm-libs`
+
+* **OpenSUSE**:
+
+   * OpenSUSE comes with everything you need pre-installed.
+
+
+### Build From Source
+
+ITGmania can be compiled using [CMake](http://www.cmake.org/). More information about using CMake to build ITGmania can be found in both the `Build` directory and CMake's documentation.
 
 ## Resources
 
@@ -40,21 +72,19 @@ ITGmania can be compiled using [CMake](http://www.cmake.org/). More information 
 
 ## Licensing Terms
 
-In short- you can do anything you like with the game (including sell products made with it), provided you *do not*:
+ITGmania, as well as the Simply Love theme, are both under the GPLv3 license, or at your option, any later version.
 
-1. Sell the game *with the included songs*
-2. Claim to have created the engine yourself or remove the credits
-3. Not provide source code for any build which differs from any official release which includes MP3 support.
-
-(It's not required, but we would also appreciate it if you link back to [ITGmania](https://github.com/itgmania/itgmania) as well as [StepMania](https://github.com/stepmania/stepmania).)
+If ITGmania code is used in your project, we would also appreciate it if you link back to [ITGmania](https://github.com/itgmania/itgmania) as well as [StepMania](https://github.com/stepmania/stepmania).
 
 For specific information/legalese:
 
-* All of our source code is under the [MIT license](http://opensource.org/licenses/MIT).
+* All of our source code is under the [GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
 * Songs included within the 'StepMania 5' folder are under the [<abbr title="Creative Commons Non-Commercial">CC-NC</abbr> license](https://creativecommons.org/).
-* Simply Love is licensed under the GPLv3, or (at your option) any later version.
+* Simply Love is licensed under the GPLv3, or, at your option, any later version.
 * The copyright for songs in the 'Club Fantastic' folders rests with the original authors. The content is explicitly NOT placed under a Creative Commons license (or similar license), but has been provided free of charge, for personal or public use, including online broadcasting, tournaments, and other purposes. Go to the [Club Fantastic](https://www.clubfantastic.com/) website for more information.
 * The [MAD library](http://www.underbit.com/products/mad/) and [FFmpeg codecs](https://www.ffmpeg.org/) when built with our code use the [GPL license](http://www.gnu.org).
+* This software is based in part on the work of the Independent JPEG Group.
+* Check the [Docs/Licenses.txt](Docs/Licenses.txt) for the licenses of the used libraries.
 
 ## Credits
 

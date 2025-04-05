@@ -22,6 +22,7 @@
 #include "Profile.h"
 #include "ProfileManager.h"
 #include "RageFile.h"
+#include "RageUtil.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "Song.h"
@@ -37,6 +38,7 @@
 #include "TrailUtil.h"
 #include "UnlockManager.h"
 #include "SpecialFiles.h"
+#include "Group.h"
 
 #include <cstddef>
 #include <tuple>
@@ -60,9 +62,9 @@ static const ThemeMetric<int>		EXTRA_STAGE2_DIFFICULTY_MAX	( "SongManager", "Ext
 static Preference<RString> g_sDisabledSongs( "DisabledSongs", "" );
 static Preference<bool> g_bHideIncompleteCourses( "HideIncompleteCourses", false );
 
-RString SONG_GROUP_COLOR_NAME( std::size_t i )   { return ssprintf( "SongGroupColor%i", (int) i+1 ); }
-RString COURSE_GROUP_COLOR_NAME( std::size_t i ) { return ssprintf( "CourseGroupColor%i", (int) i+1 ); }
-RString profile_song_group_color_name(std::size_t i) { return ssprintf("ProfileSongGroupColor%i", (int)i+1); }
+RString SONG_GROUP_COLOR_NAME( size_t i )   { return ssprintf( "SongGroupColor%i", (int) i+1 ); }
+RString COURSE_GROUP_COLOR_NAME( size_t i ) { return ssprintf( "CourseGroupColor%i", (int) i+1 ); }
+RString profile_song_group_color_name(size_t i) { return ssprintf("ProfileSongGroupColor%i", (int)i+1); }
 
 static const float next_loading_window_update= 0.02f;
 
@@ -267,8 +269,15 @@ void SongManager::SanityCheckGroupDir( RString sDir ) const
 	}
 }
 
-void SongManager::AddGroup( RString sDir, RString sGroupDirName )
+void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
 {
+	
+	if ( group == nullptr ) {
+		// Could not AddGroup 'sGroupDirName'. Group object is null.
+		LOG->Warn( "Could not AddGroup '%s'. Group object is null.", sGroupDirName.c_str() );
+		return;
+	}
+
 	unsigned j;
 	for(j = 0; j < m_sSongGroupNames.size(); ++j)
 		if( sGroupDirName == m_sSongGroupNames[j] )
@@ -277,15 +286,22 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName )
 	if( j != m_sSongGroupNames.size() )
 		return; // the group is already added
 
+	RString sBannerPath;
+
 	// Look for a group banner in this group folder
 	std::vector<RString> arrayGroupBanners;
+	
+	// First check if there is a banner provided in pack.ini
+	if(!group->GetBannerPath().empty())
+	{
+		GetDirListing(sDir + sGroupDirName + "/" + group->GetBannerPath(), arrayGroupBanners);
+	}
 	GetDirListing( sDir+sGroupDirName+"/*.png", arrayGroupBanners );
 	GetDirListing( sDir+sGroupDirName+"/*.jpg", arrayGroupBanners );
 	GetDirListing( sDir+sGroupDirName+"/*.jpeg", arrayGroupBanners );
 	GetDirListing( sDir+sGroupDirName+"/*.gif", arrayGroupBanners );
 	GetDirListing( sDir+sGroupDirName+"/*.bmp", arrayGroupBanners );
 
-	RString sBannerPath;
 	if( !arrayGroupBanners.empty() )
 		sBannerPath = sDir+sGroupDirName+"/"+arrayGroupBanners[0] ;
 	else
@@ -300,41 +316,44 @@ void SongManager::AddGroup( RString sDir, RString sGroupDirName )
 			sBannerPath = sDir+arrayGroupBanners[0];
 	}
 
-	/* Other group graphics are a bit trickier, and usually don't exist.
-	 * A themer has a few options, namely checking the aspect ratio and
-	 * operating on it. -aj
-	 * TODO: Once the files are implemented in Song, bring the extensions
-	 * from there into here. -aj */
-	// Group background
+        /* Other group graphics are a bit trickier, and usually don't exist.
+        * A themer has a few options, namely checking the aspect ratio and
+        * operating on it. -aj
+        * TODO: Once the files are implemented in Song, bring the extensions
+        * from there into here. -aj */
+        // Group background
 
-	//vector<RString> arrayGroupBackgrounds;
-	//GetDirListing( sDir+sGroupDirName+"/*-bg.png", arrayGroupBanners );
-	//GetDirListing( sDir+sGroupDirName+"/*-bg.jpg", arrayGroupBanners );
-	//GetDirListing( sDir+sGroupDirName+"/*-bg.jpeg", arrayGroupBanners );
-	//GetDirListing( sDir+sGroupDirName+"/*-bg.gif", arrayGroupBanners );
-	//GetDirListing( sDir+sGroupDirName+"/*-bg.bmp", arrayGroupBanners );
-/*
-	RString sBackgroundPath;
-	if( !arrayGroupBackgrounds.empty() )
-		sBackgroundPath = sDir+sGroupDirName+"/"+arrayGroupBackgrounds[0];
-	else
-	{
-		// Look for a group background in the parent folder
-		GetDirListing( sDir+sGroupDirName+"-bg.png", arrayGroupBackgrounds );
-		GetDirListing( sDir+sGroupDirName+"-bg.jpg", arrayGroupBackgrounds );
-		GetDirListing( sDir+sGroupDirName+"-bg.jpeg", arrayGroupBackgrounds );
-		GetDirListing( sDir+sGroupDirName+"-bg.gif", arrayGroupBackgrounds );
-		GetDirListing( sDir+sGroupDirName+"-bg.bmp", arrayGroupBackgrounds );
-		if( !arrayGroupBackgrounds.empty() )
-			sBackgroundPath = sDir+arrayGroupBackgrounds[0];
-	}
-*/
-	/*
-	LOG->Trace( "Group banner for '%s' is '%s'.", sGroupDirName.c_str(),
-				sBannerPath != ""? sBannerPath.c_str():"(none)" );
-	*/
+        //vector<RString> arrayGroupBackgrounds;
+        //GetDirListing(sDir + sGroupDirName + "/*-bg.png", arrayGroupBanners);
+        //GetDirListing(sDir + sGroupDirName + "/*-bg.jpg", arrayGroupBanners);
+        //GetDirListing(sDir + sGroupDirName + "/*-bg.jpeg", arrayGroupBanners);
+        //GetDirListing(sDir + sGroupDirName + "/*-bg.gif", arrayGroupBanners);
+        //GetDirListing(sDir + sGroupDirName + "/*-bg.bmp", arrayGroupBanners);
+    /*
+        RString sBackgroundPath;
+        if(!arrayGroupBackgrounds.empty())
+            sBackgroundPath = sDir + sGroupDirName + "/" + arrayGroupBackgrounds[0];
+        else
+        {
+            // Look for a group background in the parent folder
+            GetDirListing(sDir + sGroupDirName + "-bg.png", arrayGroupBackgrounds);
+            GetDirListing(sDir + sGroupDirName + "-bg.jpg", arrayGroupBackgrounds);
+            GetDirListing(sDir + sGroupDirName + "-bg.jpeg", arrayGroupBackgrounds);
+            GetDirListing(sDir + sGroupDirName + "-bg.gif", arrayGroupBackgrounds);
+            GetDirListing(sDir + sGroupDirName + "-bg.bmp", arrayGroupBackgrounds);
+            if(!arrayGroupBackgrounds.empty())
+                sBackgroundPath = sDir + arrayGroupBackgrounds[0];
+        }
+    */
+   	m_sSongGroupBannerPaths.push_back( sBannerPath );
 	m_sSongGroupNames.push_back( sGroupDirName );
-	m_sSongGroupBannerPaths.push_back( sBannerPath );
+	
+	// Add the group to its series if the group has one and if the series exists
+	if( group->GetSeries() != "" )
+	{
+		std::unordered_set<Group*>& series = m_mapSeriesToGroups[group->GetSeries()];
+		series.insert(group);
+	}
 	//m_sSongGroupBackgroundPaths.push_back( sBackgroundPath );
 }
 
@@ -405,6 +424,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 
 	groupIndex = 0;
 	songIndex = 0;
+	
 	for (RString const &sGroupDirName : arrayGroupDirs)	// foreach dir in /Songs/
 	{
 		std::vector<RString> &arraySongDirs = arrayGroupSongDirs[groupIndex++];
@@ -415,6 +435,18 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 
 		SongPointerVector& index_entry = m_mapSongGroupIndex[sGroupDirName];
 		RString group_base_name= Basename(sGroupDirName);
+		Group* group = new Group(sDir, sGroupDirName);
+		
+		// We need to keep track of previously loaded groups so we don't delete them if we're only loading additions
+		bool groupAlreadyLoaded = false;
+		// Add the group to the group mapping
+		if (m_mapNameToGroup.find(sGroupDirName) == m_mapNameToGroup.end())
+		{
+			m_mapNameToGroup[sGroupDirName] = group;
+		} else {
+			groupAlreadyLoaded = true;
+		}
+
 		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
 		{
 			RString sSongDirName = arraySongDirs[j];
@@ -442,12 +474,13 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			}
 
 			Song* pNewSong = new Song;
-			if( !pNewSong->LoadFromSongDir( sSongDirName ) )
+			if( !pNewSong->LoadFromSongDir( sSongDirName) )
 			{
 				// The song failed to load.
 				delete pNewSong;
 				continue;
 			}
+
 			AddSongToList(pNewSong);
 
 			index_entry.push_back( pNewSong );
@@ -457,14 +490,27 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 
 		LOG->Trace("Loaded %i songs from \"%s\"", loaded, (sDir+sGroupDirName).c_str() );
 
-		// Don't add the group name if we didn't load any songs in this group.
-		if(!loaded) continue;
+		// If we're only loading additions, already loaded groups should neither be added nor deleted
+		if (!(groupAlreadyLoaded && onlyAdditions)) {
 
-		// Add this group to the group array.
-		AddGroup(sDir, sGroupDirName);
+			// Don't add the group name if we didn't load any songs in this group.
+			if(!loaded) {
+				// Remove the group from the group mapping
+				auto it = m_mapNameToGroup.find(sGroupDirName);
+				if (it != m_mapNameToGroup.end())
+				{
+					m_mapNameToGroup.erase(it);
+				}
+				delete group;
+				continue;
+			}
 
-		// Cache and load the group banner. (and background if it has one -aj)
-		IMAGECACHE->CacheImage( "Banner", GetSongGroupBannerPath(sGroupDirName) );
+			// Add this group to the group array.
+			AddGroup(sDir, sGroupDirName, group);
+
+			// Cache and load the group banner. (and background if it has one -aj)
+			IMAGECACHE->CacheImage( "Banner", GetSongGroupBannerPath(sGroupDirName) );
+		}
 
 		// Load the group sym links (if any)
 		LoadGroupSymLinks(sDir, sGroupDirName);
@@ -547,23 +593,33 @@ void SongManager::PreloadSongImages()
 void SongManager::FreeSongs()
 {
 	m_sSongGroupNames.clear();
-	m_sSongGroupBannerPaths.clear();
+	m_mapSongsByDifficulty.clear();
+	m_mapPreferredSectionToSongs.clear();
+
 	//m_sSongGroupBackgroundPaths.clear();
 
 	for (Song *song : m_pSongs)
 	{
-		SAFE_DELETE( song );
+		RageUtil::SafeDelete( song );
 	}
+    // Loop through all groups in the map and delete them.
+	for (auto it = m_mapNameToGroup.begin(); it != m_mapNameToGroup.end(); ++it)
+	{
+		Group* group = it->second;
+		RageUtil::SafeDelete( group );
+	}
+
 	m_pSongs.clear();
+	m_mapNameToGroup.clear();
+	m_mapSeriesToGroups.clear();
 	m_SongsByDir.clear();
 
 	// also free the songs that have been deleted from disk
 	for ( unsigned i=0; i<m_pDeletedSongs.size(); ++i )
-		SAFE_DELETE( m_pDeletedSongs[i] );
+		RageUtil::SafeDelete( m_pDeletedSongs[i] );
 	m_pDeletedSongs.clear();
 
 	m_mapSongGroupIndex.clear();
-	m_sSongGroupBannerPaths.clear();
 
 	m_pPopularSongs.clear();
 	m_pShuffledSongs.clear();
@@ -579,7 +635,7 @@ void SongManager::UnlistSong(Song *song)
 	std::vector<Song*>* songVectors[3] = { &m_pSongs, &m_pPopularSongs, &m_pShuffledSongs };
 	for (int songVecIdx=0; songVecIdx<3; ++songVecIdx) {
 		std::vector<Song*>& v = *songVectors[songVecIdx];
-		for (std::size_t i=0; i<v.size(); ++i) {
+		for (size_t i=0; i<v.size(); ++i) {
 			if (v[i] == song) {
 				v.erase(v.begin()+i);
 				--i;
@@ -615,6 +671,7 @@ RString SongManager::GetSongGroupBackgroundPath( RString sSongGroup ) const
 	return RString();
 }
 */
+
 void SongManager::GetSongGroupNames( std::vector<RString> &AddTo ) const
 {
 	AddTo.insert(AddTo.end(), m_sSongGroupNames.begin(), m_sSongGroupNames.end() );
@@ -623,6 +680,17 @@ void SongManager::GetSongGroupNames( std::vector<RString> &AddTo ) const
 bool SongManager::DoesSongGroupExist( RString sSongGroup ) const
 {
 	return find( m_sSongGroupNames.begin(), m_sSongGroupNames.end(), sSongGroup ) != m_sSongGroupNames.end();
+}
+
+bool SongManager::HasPackIni(const RString& sSongGroup) const
+{
+	Group* group = GetGroupFromName(sSongGroup);
+	if(group != nullptr)
+	{
+		return group->HasPackIni();
+	}
+	LOG->Warn("Requested pack.ini for song group '%s' that doesn't exist", sSongGroup.c_str());
+	return false;
 }
 
 RageColor SongManager::GetSongGroupColor( const RString &sSongGroup ) const
@@ -639,9 +707,12 @@ RageColor SongManager::GetSongGroupColor( const RString &sSongGroup ) const
 		Profile* prof= PROFILEMAN->GetProfile(pn);
 		if(prof != nullptr)
 		{
-			if(prof->GetDisplayNameOrHighScoreName() == sSongGroup)
+			if(prof->m_group != nullptr)
 			{
-				return profile_song_group_colors.GetValue(pn % num_profile_song_group_colors);
+				if(prof->m_group->GetGroupName() == sSongGroup)
+				{
+					return profile_song_group_colors.GetValue(pn % num_profile_song_group_colors);
+				}
 			}
 		}
 	}
@@ -813,9 +884,12 @@ const std::vector<Song*> &SongManager::GetSongs( const RString &sGroupName ) con
 		Profile* prof= PROFILEMAN->GetProfile(pn);
 		if(prof != nullptr)
 		{
-			if(prof->GetDisplayNameOrHighScoreName() == sGroupName)
+			if(prof->m_group != nullptr)
 			{
-				return prof->m_songs;
+				if(prof->m_group->GetGroupName() == sGroupName)
+				{
+					return prof->m_songs;
+				}
 			}
 		}
 	}
@@ -845,6 +919,62 @@ RString SongManager::SongToPreferredSortSectionName( const Song *pSong ) const
 	return RString();
 }
 
+
+void SongManager::GetPreferredSortSongsBySectionName( const RString &sSectionName, std::vector<Song*> &AddTo ) const
+{
+	// Use m_mapPreferredSectionToSongs
+	std::map<RString, SongPointerVector>::const_iterator iter = m_mapPreferredSectionToSongs.find( sSectionName );
+	if( iter != m_mapPreferredSectionToSongs.end() )
+		AddTo.insert( AddTo.end(), iter->second.begin(), iter->second.end() );
+}
+
+std::vector<Song*> SongManager::GetPreferredSortSongsBySectionName( const RString &sSectionName ) const
+{
+	std::vector<Song*> AddTo;
+	GetPreferredSortSongsBySectionName(sSectionName, AddTo);
+	return AddTo;
+}
+
+Group* SongManager::GetGroup( const Song* pSong ) const
+{
+	if ( pSong == nullptr ) {
+		return nullptr;
+	}
+	return GetGroupFromName( pSong->m_sGroupName );
+}
+
+Group* SongManager::GetGroupFromName( const RString& sGroupName ) const
+{
+	auto iter = m_mapNameToGroup.find( sGroupName );
+	if( iter != m_mapNameToGroup.end() )
+		return iter->second;
+	FOREACH_EnabledPlayer(pn)
+	{
+		Profile* prof= PROFILEMAN->GetProfile(pn);
+		if(prof != nullptr)
+		{
+			if(prof->m_group != nullptr)
+			{
+				if(prof->m_group->GetGroupName() == sGroupName)
+				{
+					return prof->m_group;
+				}
+			}
+		}
+	}
+	return nullptr;
+}
+
+std::vector<RString> SongManager::GetPreferredSortSectionNames() const
+{
+	std::vector<RString> sectionNames;
+	// Use m_mapPreferredSectionToSongs
+	for (std::pair<RString const, SongPointerVector> const &iter : m_mapPreferredSectionToSongs)
+		sectionNames.push_back(iter.first);
+	return sectionNames;
+
+}
+	
 void SongManager::GetPreferredSortCourses( CourseType ct, std::vector<Course*> &AddTo, bool bIncludeAutogen ) const
 {
 	if( m_vPreferredCourseSort.empty() )
@@ -861,6 +991,16 @@ void SongManager::GetPreferredSortCourses( CourseType ct, std::vector<Course*> &
 				AddTo.push_back( pCourse );
 		}
 	}
+}
+
+std::vector<Song*> SongManager::GetSongsByMeter(const int iMeter) const {
+    std::vector<Song*> AddTo;
+    auto iter = m_mapSongsByDifficulty.find(iMeter);
+    if (iter != m_mapSongsByDifficulty.end()) {
+        // Found the level, add the songs to AddTo
+        AddTo.insert(AddTo.end(), iter->second.begin(), iter->second.end());
+    }
+    return AddTo;
 }
 
 int SongManager::GetNumSongs() const
@@ -1591,6 +1731,30 @@ void SongManager::UpdatePopular()
 	}
 }
 
+std::map<int, std::vector<Song*>> SongManager::UpdateMeterSort( std::vector<Song*> songs) {
+	// Empty the map
+	m_mapSongsByDifficulty.clear();
+	std::vector<Song*> apDifficultSongs = songs;
+	// For each song, for each step
+	for( unsigned i = 0; i < apDifficultSongs.size(); ++i )
+	{
+		std::vector<Steps*>	vpSteps;
+		SongUtil::GetPlayableSteps( apDifficultSongs[i], vpSteps );
+		for( unsigned j = 0; j < vpSteps.size(); ++j )
+		{
+			Steps *pSteps = vpSteps[j];
+			// Check if the meter is already in m_mapSongsByDifficulty
+			if (std::find(m_mapSongsByDifficulty[pSteps->GetMeter()].begin(), m_mapSongsByDifficulty[pSteps->GetMeter()].end(), apDifficultSongs[i]) != m_mapSongsByDifficulty[pSteps->GetMeter()].end())
+				continue;
+			else {			
+				m_mapSongsByDifficulty[pSteps->GetMeter()].push_back(apDifficultSongs[i]);
+			}
+		}
+	}
+	return m_mapSongsByDifficulty;
+}
+
+
 void SongManager::UpdateShuffled()
 {
 	// update shuffled
@@ -1605,7 +1769,7 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 	ASSERT( UNLOCKMAN != nullptr );
 
 	m_vPreferredSongSort.clear();
-
+	m_mapPreferredSectionToSongs.clear();
 	std::vector<RString> asLines;
 	RString sFile = sPreferredSongs;
 	if (!bIsAbsolute)
@@ -1625,6 +1789,7 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 			if( !section.vpSongs.empty() )
 			{
 				m_vPreferredSongSort.push_back( section );
+				m_mapPreferredSectionToSongs[section.sName] = section.vpSongs;
 				section = PreferredSortSection();
 			}
 
@@ -1664,6 +1829,7 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 	if( !section.vpSongs.empty() )
 	{
 		m_vPreferredSongSort.push_back( section );
+		m_mapPreferredSectionToSongs[section.sName] = section.vpSongs;
 		section = PreferredSortSection();
 	}
 
@@ -1682,25 +1848,31 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 			}
 		}
 
-		for (std::vector<PreferredSortSection>::iterator v = m_vPreferredSongSort.begin(); v != m_vPreferredSongSort.end(); ++v)
-		{
-			for( int i=v->vpSongs.size()-1; i>=0; i-- )
-			{
-				Song *pSong = v->vpSongs[i];
-				if( find(PFSection.vpSongs.begin(),PFSection.vpSongs.end(),pSong) != PFSection.vpSongs.end() )
-				{
-					v->vpSongs.erase( v->vpSongs.begin()+i );
-				}
-			}
-		}
-
+		// NOTE(crashcringle): This code removed the unlocks from other sections they might have been in.
+		// This was needed due to the previous 1:1 relationship between songs and section in order for the song to appear in the Unlocks section correctly.
+		// Commented out for now.
+		// for (std::vector<PreferredSortSection>::iterator v = m_vPreferredSongSort.begin(); v != m_vPreferredSongSort.end(); ++v)
+		// {
+		// 	for( int i=v->vpSongs.size()-1; i>=0; i-- )
+		// 	{
+		// 		Song *pSong = v->vpSongs[i];
+		// 		if( find(PFSection.vpSongs.begin(),PFSection.vpSongs.end(),pSong) != PFSection.vpSongs.end() )
+		// 		{
+		// 			v->vpSongs.erase( v->vpSongs.begin()+i );
+		// 		}
+		// 	}
+		// }
+		
 		m_vPreferredSongSort.push_back( PFSection );
+		m_mapPreferredSectionToSongs[PFSection.sName] = PFSection.vpSongs;
 	}
 
 	// prune empty groups
 	for( int i=m_vPreferredSongSort.size()-1; i>=0; i-- )
-		if( m_vPreferredSongSort[i].vpSongs.empty() )
+		if( m_vPreferredSongSort[i].vpSongs.empty() ) {
 			m_vPreferredSongSort.erase( m_vPreferredSongSort.begin()+i );
+			m_mapPreferredSectionToSongs.erase( m_vPreferredSongSort[i].sName );
+		}
 
 	for (PreferredSortSection const &i : m_vPreferredSongSort)
 	{
@@ -2170,6 +2342,17 @@ public:
 		return 1;
 	}
 
+	static int GetGroup( T* p, lua_State *L )
+	{
+		Song *pSong = Luna<Song>::check(L,1);
+		Group *pGroup = p->GetGroup(pSong);
+		if( pGroup != nullptr )
+			pGroup->PushSelf(L);
+		else
+			lua_pushnil(L);
+		return 1;
+	}
+
 	static int GetSongsInGroup( T* p, lua_State *L )
 	{
 		std::vector<Song*> v = p->GetSongs(SArg(1));
@@ -2219,6 +2402,14 @@ public:
 		lua_pushstring(L, p->SongToPreferredSortSectionName(pSong));
 		return 1;
 	}
+	static int GetPreferredSortSongsBySectionName( T* p, lua_State *L )
+	{
+		std::vector<Song*> v;
+		p->GetPreferredSortSongsBySectionName(SArg(1), v);
+		LuaHelpers::CreateTableFromArray<Song*>( v, L );
+		return 1;
+	}
+
 	static int WasLoadedFromAdditionalSongs( T* p, lua_State *L )	{ lua_pushboolean(L, false); return 1; }	// deprecated
 	static int WasLoadedFromAdditionalCourses( T* p, lua_State *L )	{ lua_pushboolean(L, false); return 1; }	// deprecated
 
@@ -2247,6 +2438,7 @@ public:
 		ADD_METHOD( GetCourseColor );
 		ADD_METHOD( GetSongRank );
 		ADD_METHOD( GetSongGroupNames );
+		ADD_METHOD( GetGroup );
 		ADD_METHOD( GetSongsInGroup );
 		ADD_METHOD( GetCoursesInGroup );
 		ADD_METHOD( ShortenGroupName );
@@ -2261,6 +2453,7 @@ public:
 		ADD_METHOD( GetPopularSongs );
 		ADD_METHOD( GetPopularCourses );
 		ADD_METHOD( SongToPreferredSortSectionName );
+		ADD_METHOD( GetPreferredSortSongsBySectionName );
 		ADD_METHOD( WasLoadedFromAdditionalSongs );	// deprecated
 		ADD_METHOD( WasLoadedFromAdditionalCourses );	// deprecated
 	}

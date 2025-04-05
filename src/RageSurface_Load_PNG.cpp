@@ -144,7 +144,7 @@ static RageSurface *RageSurface_Load_PNG( RageFile *f, const char *fn, char erro
 		/* Fake PNG_COLOR_TYPE_GRAY. */
 		for( int i = 0; i < 256; ++i )
 		{
-			colors[i].r = colors[i].g = colors[i].b = (std::int8_t) i;
+			colors[i].r = colors[i].g = colors[i].b = (int8_t) i;
 			colors[i].a = 0xFF;
 		}
 

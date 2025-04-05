@@ -22,7 +22,7 @@ void PumpDevice::GetButtonPresses( std::vector<DeviceInput>& vPresses, IOHIDElem
 	bool pressed1 = !(value & 0x1);
 	bool pressed2 = !(value & 0x2);
 
-	switch( std::uintptr_t(cookie) )
+	switch( uintptr_t(cookie) )
 	{
 	case 2:
 		db2 = JOY_BUTTON_1; // bit 9

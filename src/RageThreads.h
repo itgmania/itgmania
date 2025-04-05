@@ -2,6 +2,7 @@
 #define RAGE_THREADS_H
 
 #include <cstdint>
+#include <limits>
 
 struct ThreadSlot;
 class RageTimer;
@@ -27,11 +28,11 @@ public:
 	/* If HaltAllThreads was called (with Kill==false), resume. */
 	static void ResumeAllThreads();
 
-	static std::uint64_t GetCurrentThreadID();
+	static uint64_t GetCurrentThreadID();
 
 	static const char *GetCurrentThreadName();
-	static const char *GetThreadNameByID( std::uint64_t iID );
-	static bool EnumThreadIDs( int n, std::uint64_t &iID );
+	static const char *GetThreadNameByID( uint64_t iID );
+	static bool EnumThreadIDs( int n, uint64_t &iID );
 	int Wait();
 	bool IsCreated() const { return m_pSlot != nullptr; }
 
@@ -43,7 +44,7 @@ public:
 
 	static bool GetIsShowingDialog() { return s_bIsShowingDialog; }
 	static void SetIsShowingDialog( bool b ) { s_bIsShowingDialog = b; }
-	static std::uint64_t GetInvalidThreadID();
+	static uint64_t GetInvalidThreadID();
 
 private:
 	ThreadSlot *m_pSlot;
@@ -108,7 +109,7 @@ protected:
 
 	int m_UniqueID;
 
-	std::uint64_t m_LockedBy;
+	uint64_t m_LockedBy;
 	int m_LockCnt;
 
 	void MarkLockedMutex();
@@ -128,12 +129,12 @@ class LockMutex
 
 	const char *file;
 	int line;
-	float locked_at;
+	uint64_t locked_at;
 	bool locked;
 
 public:
 	LockMutex(RageMutex &mut, const char *file, int line);
-	LockMutex(RageMutex &mut): mutex(mut), file(nullptr), line(-1), locked_at(-1), locked(true) { mutex.Lock(); }
+	LockMutex(RageMutex &mut): mutex(mut), file(nullptr), line(-1), locked_at(UINT64_MAX), locked(true) { mutex.Lock(); }
 	~LockMutex();
 	LockMutex(LockMutex &cpy): mutex(cpy.mutex), file(nullptr), line(-1), locked_at(cpy.locked_at), locked(true) { mutex.Lock(); }
 

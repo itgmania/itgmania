@@ -5,6 +5,7 @@
 #include "archutils/Win32/ErrorStrings.h"
 
 #include <cmath>
+#include <memory>
 
 // Create*Font copied from MFC's CFont
 
@@ -43,17 +44,27 @@ static HFONT CreatePointFont(int nPointSize, LPCTSTR lpszFaceName)
 	return ::CreatePointFontIndirect(&logFont);
 }
 
-void DialogUtil::SetHeaderFont( HWND hdlg, int nID )
+struct FontDeleter
 {
-	ASSERT( hdlg != nullptr );
+	void operator()(HFONT font) const
+	{
+		if (font)
+		{
+			::DeleteObject(font);
+		}
+	}
+};
 
-	HWND hControl = ::GetDlgItem( hdlg, nID );
-	ASSERT( hControl != nullptr );
+void DialogUtil::SetHeaderFont(HWND hdlg, int nID)
+{
+	ASSERT(hdlg != nullptr);
 
-	// TODO: Fix font leak
-	const int FONT_POINTS = 16;
-	HFONT hfont = CreatePointFont( FONT_POINTS*10, "Arial Black" );
-	::SendMessage( hControl, WM_SETFONT, (WPARAM)hfont, TRUE );
+	HWND hControl = ::GetDlgItem(hdlg, nID);
+	ASSERT(hControl != nullptr);
+
+	static std::unique_ptr<std::remove_pointer<HFONT>::type, FontDeleter> hfont(CreatePointFont(16 * 10, "Arial Black"));
+
+	::SendMessage(hControl, WM_SETFONT, (WPARAM)hfont.get(), TRUE);
 }
 
 void DialogUtil::LocalizeDialogAndContents( HWND hdlg )

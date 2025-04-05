@@ -37,8 +37,8 @@ class RageFileObjDirect: public RageFileObj
 public:
 	RageFileObjDirect( const RString &sPath, int iFD, int iMode );
 	virtual ~RageFileObjDirect();
-	virtual int ReadInternal( void *pBuffer, std::size_t iBytes );
-	virtual int WriteInternal( const void *pBuffer, std::size_t iBytes );
+	virtual int ReadInternal( void *pBuffer, size_t iBytes );
+	virtual int WriteInternal( const void *pBuffer, size_t iBytes );
 	virtual int FlushInternal();
 	virtual std::int64_t SeekInternal( std::int64_t offset );
 	virtual RageFileObjDirect *Copy() const;

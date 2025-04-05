@@ -111,7 +111,7 @@ void GetBounds( const Surface *pSurf, RECT *out )
 static void File_png_write( png_struct *pPng, png_byte *pData, png_size_t iSize )
 {
 	FILE *f = (FILE *) png_get_io_ptr(pPng);
-	std::size_t iGot = fwrite( pData, (int) iSize, 1, f );
+	size_t iGot = fwrite( pData, (int) iSize, 1, f );
 	if( iGot == 0 )
 		png_error( pPng, strerror(errno) );
 }

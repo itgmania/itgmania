@@ -10,8 +10,8 @@
 class LightsDriver_Linux_Leds : public LightsDriver
 {
 private:
-	static const std::uint8_t LINUX_LED_STATE_ON = 255;
-	static const std::uint8_t LINUX_LED_STATE_OFF = 0;
+	static const uint8_t LINUX_LED_STATE_ON = 255;
+	static const uint8_t LINUX_LED_STATE_OFF = 0;
 	static const int LINUX_LED_MAX_DIRECTORY_LENGTH = PATH_MAX;
 
 	const InputScheme *pInput;

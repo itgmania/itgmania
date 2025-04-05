@@ -175,7 +175,7 @@ GameState::GameState() :
 	m_Environment = new LuaTable;
 
 	m_bDopefish = false;
-
+	sLastOpenSection = "";
 	sExpandedSectionName = "";
 
 	// Don't reset yet; let the first screen do it, so we can use PREFSMAN and THEME.
@@ -197,13 +197,13 @@ GameState::~GameState()
 	LUA->UnsetGlobal( "GAMESTATE" );
 
 	FOREACH_PlayerNumber( p )
-		SAFE_DELETE( m_pPlayerState[p] );
+		RageUtil::SafeDelete( m_pPlayerState[p] );
 	FOREACH_MultiPlayer( p )
-		SAFE_DELETE( m_pMultiPlayerState[p] );
+		RageUtil::SafeDelete( m_pMultiPlayerState[p] );
 
-	SAFE_DELETE( m_Environment );
-	SAFE_DELETE( g_pImpl );
-	SAFE_DELETE( processedTiming );
+	RageUtil::SafeDelete( m_Environment );
+	RageUtil::SafeDelete( g_pImpl );
+	RageUtil::SafeDelete( processedTiming );
 }
 
 PlayerNumber GameState::GetMasterPlayerNumber() const
@@ -1484,7 +1484,7 @@ int GameState::prepare_song_for_gameplay()
 	copy_exts.push_back("lrc");
 	std::vector<RString> files_in_dir;
 	FILEMAN->GetDirListingWithMultipleExtensions(from_dir, copy_exts, files_in_dir);
-	for(std::size_t i= 0; i < files_in_dir.size(); ++i)
+	for(size_t i= 0; i < files_in_dir.size(); ++i)
 	{
 		RString& fname= files_in_dir[i];
 		if(!FileCopy(from_dir + fname, to_dir + fname))
@@ -3336,7 +3336,7 @@ public:
 	{
 		int i= IArg(1) - 1;
 		if(i < 0) { lua_pushnil(L); return 1; }
-		std::size_t si= static_cast<std::size_t>(i);
+		size_t si= static_cast<size_t>(i);
 		if(si >= p->m_autogen_fargs.size()) { lua_pushnil(L); return 1; }
 		lua_pushnumber(L, p->GetAutoGenFarg(si));
 		return 1;
@@ -3349,7 +3349,7 @@ public:
 			luaL_error(L, "%i is not a valid autogen arg index.", i);
 		}
 		float v= FArg(2);
-		std::size_t si= static_cast<std::size_t>(i);
+		size_t si= static_cast<size_t>(i);
 		while(si >= p->m_autogen_fargs.size())
 		{
 			p->m_autogen_fargs.push_back(0.0f);
@@ -3357,6 +3357,13 @@ public:
 		p->m_autogen_fargs[si]= v;
 		COMMON_RETURN_SELF;
 	}
+
+	static int GetPlayerFailType(T* p, lua_State* L)
+	{
+		Enum::Push(L, p->GetPlayerFailType(Enum::Check<PlayerNumber>(L, 1)));
+		return 1;
+	}
+
 	static int prepare_song_for_gameplay(T* p, lua_State* L)
 	{
 		int result= p->prepare_song_for_gameplay();
@@ -3490,6 +3497,7 @@ public:
 		ADD_METHOD( SetStepsForEditMode );
 		ADD_METHOD( GetAutoGenFarg );
 		ADD_METHOD( SetAutoGenFarg );
+		ADD_METHOD( GetPlayerFailType );
 		ADD_METHOD(prepare_song_for_gameplay);
 	}
 };

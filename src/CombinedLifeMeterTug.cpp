@@ -10,7 +10,7 @@
 
 ThemeMetric<float> METER_WIDTH		("CombinedLifeMeterTug","MeterWidth");
 
-static void TugMeterPercentChangeInit( std::size_t /*ScoreEvent*/ i, RString &sNameOut, float &defaultValueOut )
+static void TugMeterPercentChangeInit( size_t /*ScoreEvent*/ i, RString &sNameOut, float &defaultValueOut )
 {
 	sNameOut = "TugMeterPercentChange" + ScoreEventToString( (ScoreEvent)i );
 	switch( i )
@@ -126,7 +126,7 @@ void CombinedLifeMeterTug::ChangeLife( PlayerNumber pn, float fPercentToMove )
 		}
 
 		/* Clamp the life meter only for calculating the multiplier. */
-		fLifePercentage = clamp( fLifePercentage, 0.0f, 1.0f );
+		fLifePercentage = std::clamp( fLifePercentage, 0.0f, 1.0f );
 		fPercentToMove *= SCALE( fLifePercentage, 0.f, 1.f, 0.2f, 1.f);
 	}
 

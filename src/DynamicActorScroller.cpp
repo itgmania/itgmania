@@ -24,7 +24,7 @@ void DynamicActorScroller::LoadFromNode( const XNode *pNode )
 	{
 		LuaHelpers::ReportScriptErrorFmt("%s: DynamicActorScroller: loaded %i nodes; require exactly one", ActorUtil::GetWhere(pNode).c_str(), (int)m_SubActors.size());
 		// Remove all but one.
-		for( std::size_t i=1; i<m_SubActors.size(); i++ )
+		for( size_t i=1; i<m_SubActors.size(); i++ )
 		{
 			delete m_SubActors[i];
 		}

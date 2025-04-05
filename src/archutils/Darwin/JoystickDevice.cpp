@@ -146,7 +146,7 @@ bool JoystickDevice::InitDevice( int vid, int pid )
 	if( vid != 0x0507 || pid != 0x0011 )
 		return true;
 	// It's a Para controller, so try to power it on.
-	std::uint8_t powerOn = 1;
+	uint8_t powerOn = 1;
 	IOReturn ret = SetReport( kIOHIDReportTypeFeature, 0, &powerOn, 1, 10 );
 
 	if( ret )

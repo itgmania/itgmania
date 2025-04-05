@@ -68,7 +68,7 @@ void RageFile_JPEG_init_source( j_decompress_ptr cinfo )
 boolean RageFile_JPEG_fill_input_buffer( j_decompress_ptr cinfo )
 {
 	RageFile_source_mgr *src = (RageFile_source_mgr *) cinfo->src;
-	std::size_t nbytes = src->file->Read( src->buffer, sizeof(src->buffer) );
+	size_t nbytes = src->file->Read( src->buffer, sizeof(src->buffer) );
 
 	if( nbytes <= 0 )
 	{
@@ -170,7 +170,7 @@ static RageSurface *RageSurface_Load_JPEG( RageFile *f, const char *fn, char err
 		for( int i = 0; i < 256; ++i )
 		{
 			RageSurfaceColor color;
-			color.r = color.g = color.b = (std::int8_t) i;
+			color.r = color.g = color.b = (int8_t) i;
 			color.a = 0xFF;
 			img->fmt.palette->colors[i] = color;
 		}

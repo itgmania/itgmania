@@ -262,7 +262,7 @@ ZIPINLINE bool ZipPlatform::GetSystemCaseSensitivity()
 #ifdef _UNICODE
 int ZipPlatform::WideToSingle(LPCTSTR lpWide, CZipAutoBuffer &szSingle)
 {
-	std::size_t wideLen = wcslen(lpWide);
+	size_t wideLen = wcslen(lpWide);
 	if (wideLen == 0)
 	{
 		szSingle.Release();

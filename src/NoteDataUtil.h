@@ -105,6 +105,8 @@ namespace NoteDataUtil
 		left, /**< The NoteData is arranged as if the player was facing to the left. */
 		right, /**< The NoteData is arranged as if the player was facing to the right. */
 		mirror, /**< The NoteData is arranged as if facing a straight mirror. */
+		lrmirror, /**< The NoteData is arranged so that the left and right columns are flipped. */
+		udmirror, /**< The NoteData is arranged so that the up and down columns are flipped. */
 		backwards, /**< The NoteData is arranged as if the player was facing backwards.
 					This is NOT always the same as mirror. */
 		shuffle,

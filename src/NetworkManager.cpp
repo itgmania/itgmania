@@ -27,7 +27,7 @@
 NetworkManager*	NETWORK = nullptr;	// global and accessible from anywhere in our program
 
 Preference<bool> NetworkManager::httpEnabled("HttpEnabled", true, nullptr, PreferenceType::Immutable);
-Preference<RString> NetworkManager::httpAllowHosts("HttpAllowHosts", "*.groovestats.com", nullptr, PreferenceType::Immutable);
+Preference<RString> NetworkManager::httpAllowHosts("HttpAllowHosts", "*.groovestats.com,*.itgmania.com", nullptr, PreferenceType::Immutable);
 
 static const char *HttpErrorCodeNames[] = {
 	"Blocked",
@@ -100,6 +100,12 @@ NetworkManager::~NetworkManager()
 	// Unregister with Lua.
 	LUA->UnsetGlobal("NETWORK");
 
+	// Close all WebSocket connections
+	for (auto& handle : webSocketHandles) {
+		handle->webSocket.stop();
+	}
+
+	// Set the status to uninitialized.
 	ix::uninitNetSystem();
 }
 
@@ -141,7 +147,7 @@ bool NetworkManager::IsUrlAllowed(const std::string& url)
 		// subdomain wildcards; ".domain" doesn't match "*.domain", but "a.domain" does
 		if (allowedHost.substr(0, 2) == "*." && host.length() >= allowedHost.length())
 		{
-			std::size_t pos = host.length() - allowedHost.length() + 1;
+			size_t pos = host.length() - allowedHost.length() + 1;
 			if (host.substr(pos) == allowedHost.substr(1))
 				return true;
 		}
@@ -262,6 +268,8 @@ WebSocketHandlePtr NetworkManager::WebSocket(const WebSocketArgs& args)
 
 	handle->webSocket.start();
 
+	webSocketHandles.push_back(handle);
+
 	return handle;
 }
 
@@ -316,6 +324,10 @@ int HttpRequestFuture::Cancel(lua_State *L)
 	return 0;
 }
 
+WebSocketHandle::~WebSocketHandle() {
+	webSocket.stop();
+}
+
 int WebSocketHandle::Collect(lua_State *L)
 {
 	void *udata = luaL_checkudata(L, 1, "WebSocketHandle");
@@ -328,11 +340,17 @@ int WebSocketHandle::Close(lua_State *L)
 {
 	void *udata = luaL_checkudata(L, 1, "WebSocketHandle");
 	auto handle = *static_cast<WebSocketHandlePtr*>(udata);
+
 	LUA->YieldLua();
 	handle->webSocket.stop();
-	handle->onClose();
 	LUA->UnyieldLua();
-	return 0;
+
+	if (handle->onClose)
+	{
+		handle->onClose();
+	}
+
+	return 1;
 }
 
 int WebSocketHandle::Send(lua_State *L)
@@ -340,7 +358,7 @@ int WebSocketHandle::Send(lua_State *L)
 	void *udata = luaL_checkudata(L, 1, "WebSocketHandle");
 	auto handle = *static_cast<WebSocketHandlePtr*>(udata);
 
-	std::size_t len;
+	size_t len;
 	const char *s = luaL_checklstring(L, 2, &len);
 	std::string data(s, len);
 
@@ -453,7 +471,7 @@ public:
 		{
 			if (lua_isstring(L, -1))
 			{
-				std::size_t len;
+				size_t len;
 				const char *s = lua_tolstring(L, -1, &len);
 				args.body = std::string(s, len);
 			}
@@ -469,7 +487,7 @@ public:
 		{
 			if (lua_isstring(L, -1))
 			{
-				std::size_t len;
+				size_t len;
 				const char *s = lua_tolstring(L, -1, &len);
 				args.multipartBoundary = std::string(s, len);
 			}

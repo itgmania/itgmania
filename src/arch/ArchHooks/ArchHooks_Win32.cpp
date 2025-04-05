@@ -9,7 +9,6 @@
 #include "archutils/win32/DebugInfoHunt.h"
 #include "archutils/win32/ErrorStrings.h"
 #include "archutils/win32/RestartProgram.h"
-#include "archutils/win32/GotoURL.h"
 #include "archutils/Win32/RegistryAccess.h"
 
 #include "VersionHelpers.h"
@@ -22,7 +21,7 @@ static HANDLE g_hInstanceMutex;
 static bool g_bIsMultipleInstance = false;
 
 void InvalidParameterHandler( const wchar_t *szExpression, const wchar_t *szFunction, const wchar_t *szFile,
-					  unsigned int iLine, std::uintptr_t pReserved )
+					  unsigned int iLine, uintptr_t pReserved )
 {
 	FAIL_M( "Invalid parameter" ); //TODO: Make this more informative
 }
@@ -150,21 +149,15 @@ void ArchHooks_Win32::SetTime( tm newtime )
 
 void ArchHooks_Win32::BoostPriority()
 {
-	/* We just want a slight boost, so we don't skip needlessly if something happens
-	 * in the background.  We don't really want to be high-priority--above normal should
-	 * be enough.  However, ABOVE_NORMAL_PRIORITY_CLASS is only supported in Win2000
-	 * and later. */
-#ifndef ABOVE_NORMAL_PRIORITY_CLASS
-#define ABOVE_NORMAL_PRIORITY_CLASS 0x00008000
-#endif
-
-	DWORD pri = HIGH_PRIORITY_CLASS;
-	if( IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN2K), LOBYTE(_WIN32_WINNT_WIN2K), 0) )
-		pri = ABOVE_NORMAL_PRIORITY_CLASS;
-
-	/* Be sure to boost the app, not the thread, to make sure the
-	 * sound thread stays higher priority than the main thread. */
-	SetPriorityClass( GetCurrentProcess(), pri );
+	// We just want a slight boost, so we don't skip needlessly if something happens
+	// in the background. We don't really want to be high-priority—above normal should be enough.
+	//
+	// Be sure to boost the app, not the thread, to make sure the
+	// sound thread stays higher priority than the main thread.
+	//
+	// Also note that high priority won't prevent the game from being interrupted by Windows
+	// notifications - that needs to be handled within ArchUtils.
+	SetPriorityClass( GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS );
 }
 
 void ArchHooks_Win32::UnBoostPriority()
@@ -175,11 +168,6 @@ void ArchHooks_Win32::UnBoostPriority()
 void ArchHooks_Win32::SetupConcurrentRenderingThread()
 {
 	SetThreadPriority( GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL );
-}
-
-bool ArchHooks_Win32::GoToURL( RString sUrl )
-{
-	return ::GotoURL( sUrl );
 }
 
 float ArchHooks_Win32::GetDisplayAspectRatio()

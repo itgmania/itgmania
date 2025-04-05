@@ -134,6 +134,14 @@ XToString(ProfileSortOrder);
 StringToX(ProfileSortOrder);
 LuaXType(ProfileSortOrder);
 
+static const char* SyncOffsetNames[] = {
+    "NULL",
+    "ITG"
+};
+XToString(SyncOffset);
+StringToX(SyncOffset);
+LuaXType(SyncOffset);
+
 bool g_bAutoRestart = false;
 #ifdef DEBUG
 # define TRUE_IF_DEBUG true
@@ -237,6 +245,7 @@ PrefsManager::PrefsManager() :
 	m_ShowDancingCharacters		( "ShowDancingCharacters",		SDC_Random ),
 	m_bUseUnlockSystem		( "UseUnlockSystem",			false ),
 	m_fGlobalOffsetSeconds		( "GlobalOffsetSeconds",		-0.008f ),
+	m_DefaultSyncOffset	( "DefaultSyncOffset",		SyncOffset_ITG ),
 	m_iProgressiveLifebar		( "ProgressiveLifebar",			0 ),
 	m_iProgressiveStageLifebar	( "ProgressiveStageLifebar",		0 ),
 	m_iProgressiveNonstopLifebar	( "ProgressiveNonstopLifebar",		0 ),
@@ -258,6 +267,7 @@ PrefsManager::PrefsManager() :
 	m_bCelShadeModels		( "CelShadeModels",			false ),	// Work-In-Progress.. disable by default.
 	m_bPreferredSortUsesGroups	( "PreferredSortUsesGroups",		true ),
 	m_fDebounceCoinInputTime	( "DebounceCoinInputTime",		0 ),
+	m_bResetCoinsAtStartup		( "ResetCoinsAtStartup", false ),
 
 	m_fPadStickSeconds		( "PadStickSeconds",			0 ),
 	m_EditRecordModeLeadIn		("EditRecordModeLeadIn",		1.0f ),
@@ -284,9 +294,10 @@ PrefsManager::PrefsManager() :
 	m_bSmoothLines			( "SmoothLines",			true ),
 	m_iSoundWriteAhead		( "SoundWriteAhead",			0 ),
 	m_iSoundDevice			( "SoundDevice",			"" ),
-	m_iRageSoundSampleCountClamp	("RageSoundSampleCountClamp", 0), //some sound drivers mask the sample location number, the most popular number for this is 2^27, this causes lockup after ~50 minutes at 44.1khz sample rate
 	m_iSoundPreferredSampleRate	( "SoundPreferredSampleRate",		0 ),
 	m_sLightsStepsDifficulty	( "LightsStepsDifficulty",		"hard,medium" ),
+	m_bLightsSimplifyBass		( "LightsSimplifyBass",		false),
+	m_bLightsBassParallel       ( "LightsBassParallel",     false),
 	m_bAllowUnacceleratedRenderer	( "AllowUnacceleratedRenderer",		false ),
 	m_bThreadedInput		( "ThreadedInput",			true ),
 	m_bThreadedMovieDecode		( "ThreadedMovieDecode",		true ),
@@ -307,6 +318,7 @@ PrefsManager::PrefsManager() :
 	m_custom_songs_max_megabytes("CustomSongsMaxMegabytes", 5.f),
 
 	/* Debug: */
+	m_bDebugMenuEnabled("DebugMenuEnabled", true, nullptr, PreferenceType::Immutable),
 	m_bLogToDisk			( "LogToDisk",		true ),
 #if defined(DEBUG)
 	m_bForceLogFlush		( "ForceLogFlush",	true ),

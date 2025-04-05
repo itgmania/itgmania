@@ -16,32 +16,46 @@
 
 namespace
 {
-	class Impl
+	class SextetImpl
 	{
 	protected:
-		std::uint8_t lastOutput[FULL_SEXTET_COUNT];
-		RageFile * out;
+		uint8_t lastOutput[FULL_SEXTET_COUNT];
+
+#ifdef _WIN32
+		HANDLE out;
+#else
+		RageFile* out;
+#endif
 
 	public:
-		Impl(RageFile * file) {
+
+#ifdef _WIN32
+		SextetImpl(HANDLE file) {
+#else
+		SextetImpl(RageFile * file) {
+#endif
 			out = file;
 
 			// Ensure a non-match the first time
 			lastOutput[0] = 0;
 		}
 
-		virtual ~Impl() {
+		virtual ~SextetImpl() {
 			if(out != nullptr)
 			{
+#ifdef _WIN32
+				CloseHandle(out);
+#else
 				out->Flush();
 				out->Close();
-				SAFE_DELETE(out);
+				RageUtil::SafeDelete(out);
+#endif
 			}
 		}
 
 		void Set(const LightsState * ls)
 		{
-			std::uint8_t buffer[FULL_SEXTET_COUNT];
+			uint8_t buffer[FULL_SEXTET_COUNT];
 
 			packLine(buffer, ls);
 
@@ -50,8 +64,19 @@ namespace
 			{
 				if(out != nullptr)
 				{
+#ifdef _WIN32
+					DWORD cbWritten;
+					bool fSuccess = WriteFile(
+						out,                  // pipe handle 
+						buffer,             // message 
+						FULL_SEXTET_COUNT,              // message length 
+						&cbWritten,             // bytes written 
+						NULL);                  // not overlapped 
+
+#else
 					out->Write(buffer, FULL_SEXTET_COUNT);
 					out->Flush();
+#endif
 				}
 
 				// Remember last message
@@ -61,12 +86,8 @@ namespace
 	};
 }
 
-
 // LightsDriver_SextetStream interface
-// (Wrapper for Impl)
-
-#define IMPL ((Impl*)_impl)
-
+// (Wrapper for SextetImpl)
 LightsDriver_SextetStream::LightsDriver_SextetStream()
 {
 	_impl = nullptr;
@@ -74,26 +95,25 @@ LightsDriver_SextetStream::LightsDriver_SextetStream()
 
 LightsDriver_SextetStream::~LightsDriver_SextetStream()
 {
-	if(IMPL != nullptr)
+	if(static_cast<SextetImpl*>(_impl) != nullptr)
 	{
-		delete IMPL;
+		delete static_cast<SextetImpl*>(_impl);
 	}
 }
 
 void LightsDriver_SextetStream::Set(const LightsState *ls)
 {
-	if(IMPL != nullptr)
+	if(static_cast<SextetImpl*>(_impl) != nullptr)
 	{
-		IMPL->Set(ls);
+		static_cast<SextetImpl*>(_impl)->Set(ls);
 	}
 }
-
 
 // LightsDriver_SextetStreamToFile implementation
 
 REGISTER_LIGHTS_DRIVER_CLASS(SextetStreamToFile);
 
-#if defined(_WINDOWS)
+#if defined(_WIN32)
 	#define DEFAULT_OUTPUT_FILENAME "\\\\.\\pipe\\StepMania-Lights-SextetStream"
 #else
 	#define DEFAULT_OUTPUT_FILENAME "Data/StepMania-Lights-SextetStream.out"
@@ -107,26 +127,59 @@ inline RageFile * openOutputStream(const RString& filename)
 	if(!file->Open(filename, RageFile::WRITE|RageFile::STREAMED))
 	{
 		LOG->Warn("Error opening file '%s' for output: %s", filename.c_str(), file->GetError().c_str());
-		SAFE_DELETE(file);
+		RageUtil::SafeDelete(file);
 		file = nullptr;
 	}
 
 	return file;
 }
 
-LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(RageFile * file)
+#ifdef _WIN32
+LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(HANDLE file)
 {
-	_impl = new Impl(file);
+	_impl = new SextetImpl(file);
 }
+#else
+LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(RageFile* file)
+{
+	_impl = new SextetImpl(file);
+}
+#endif // _WIN32
+
+
+
+
 
 LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(const RString& filename)
 {
-	_impl = new Impl(openOutputStream(filename));
+#ifdef WINDOWS
+	_impl = new SextetImpl(CreateFile(
+		filename,   // pipe name 
+		GENERIC_WRITE,
+		0,              // no sharing 
+		NULL,           // default security attributes
+		OPEN_EXISTING,  // opens existing pipe 
+		0,              // default attributes 
+		NULL));
+#else
+	_impl = new SextetImpl(openOutputStream(filename));
+#endif
 }
 
 LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile()
 {
-	_impl = new Impl(openOutputStream(g_sSextetStreamOutputFilename));
+#ifdef WINDOWS
+	_impl = new SextetImpl(CreateFile(
+		g_sSextetStreamOutputFilename.Get(),   // pipe name 
+		GENERIC_WRITE,
+		0,              // no sharing 
+		NULL,           // default security attributes
+		OPEN_EXISTING,  // opens existing pipe 
+		0,              // default attributes 
+		NULL));
+#else
+	_impl = new SextetImpl(openOutputStream(g_sSextetStreamOutputFilename));
+#endif
 }
 
 /*

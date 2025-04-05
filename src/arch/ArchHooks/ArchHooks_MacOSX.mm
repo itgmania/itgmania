@@ -155,13 +155,13 @@ void ArchHooks_MacOSX::DumpDebugInfo()
 		SystemVersion = ssprintf("macOS %s", [productVersion cStringUsingEncoding:[NSString defaultCStringEncoding]]);
 	}
 
-	std::size_t size;
+	size_t size;
 #define GET_PARAM( name, var ) (size = sizeof(var), sysctlbyname(name, &var, &size, nil, 0) )
 	// Get memory
 	float fRam;
 	char ramPower;
 	{
-		std::uint64_t iRam = 0;
+		uint64_t iRam = 0;
 		GET_PARAM( "hw.memsize", iRam );
 
 		fRam = float( double(iRam) / 1073741824.0 );
@@ -176,7 +176,7 @@ void ArchHooks_MacOSX::DumpDebugInfo()
 	RString sModel("Unknown");
 	do {
 		char szModel[128];
-		std::uint64_t iFreq;
+		uint64_t iFreq;
 
 		GET_PARAM( "hw.logicalcpu_max", iMaxCPUs );
 		GET_PARAM( "hw.logicalcpu", iCPUs );
@@ -248,17 +248,7 @@ RString ArchHooks::GetPreferredLanguage()
 	return ret;
 }
 
-bool ArchHooks_MacOSX::GoToURL( RString sUrl )
-{
-	CFURLRef url = CFURLCreateWithBytes( kCFAllocatorDefault, (const UInt8*)sUrl.data(),
-						 sUrl.length(), kCFStringEncodingUTF8, nil);
-	OSStatus result = LSOpenCFURLRef( url, nil);
-
-	CFRelease( url );
-	return result == 0;
-}
-
-std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
+int64_t ArchHooks::GetSystemTimeInMicroseconds()
 {
 	// http://developer.apple.com/qa/qa2004/qa1398.html
 	static double factor = 0.0;
@@ -270,7 +260,7 @@ std::int64_t ArchHooks::GetMicrosecondsSinceStart( bool bAccurate )
 		mach_timebase_info( &timeBase );
 		factor = timeBase.numer / ( 1000.0 * timeBase.denom );
 	}
-	return std::int64_t( mach_absolute_time() * factor );
+	return int64_t( mach_absolute_time() * factor );
 }
 
 #include "RageFileManager.h"

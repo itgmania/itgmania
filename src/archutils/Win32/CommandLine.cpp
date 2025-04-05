@@ -1,48 +1,38 @@
 #include "global.h"
 #include "CommandLine.h"
 #include <windows.h>
+#include <shellapi.h>
+#include <vector>
+#include <string>
 
-/* Ugh. Windows doesn't give us the argv[] parser; all it gives is
- * CommandLineToArgvW, which is NT-only, so we have to do this ourself. Don't
- * be fancy; only handle double quotes. */
+/* Use CommandLineToArgvW to parse the command line arguments. */
 int GetWin32CmdLine( char** &argv )
 {
-	char *pCmdLine = GetCommandLine();
+	LPWSTR* argvW = nullptr;
 	int argc = 0;
-	argv = nullptr;
-
-	int i = 0;
-	while( pCmdLine[i] )
+	argvW = CommandLineToArgvW(GetCommandLineW(), &argc);
+	if (argvW == nullptr)
 	{
-		argv = (char **) realloc( argv, (argc+1) * sizeof(char *) );
-		argv[argc] = pCmdLine+i;
-		++argc;
+		argv = nullptr;
+		return -1;
+	}
 
-		// Skip to the end of this argument.
-		while( pCmdLine[i] && pCmdLine[i] != ' ' )
-		{
-			if( pCmdLine[i] == '"' )
-			{
-				// Erase the quote.
-				memmove( pCmdLine+i, pCmdLine+i+1, strlen(pCmdLine+i+1)+1 );
+	std::vector<std::string> args;
+	for (int i = 0; i < argc; ++i)
+	{
+		int size_needed = WideCharToMultiByte(CP_UTF8, 0, argvW[i], -1, nullptr, 0, nullptr, nullptr);
+		std::string arg(size_needed, 0);
+		WideCharToMultiByte(CP_UTF8, 0, argvW[i], -1, &arg[0], size_needed, nullptr, nullptr);
+		args.push_back(arg);
+	}
 
-				// Skip to the close quote.
-				while( pCmdLine[i] && pCmdLine[i] != '"' )
-					++i;
+	LocalFree(argvW);
 
-				// Erase the close quote.
-				if( pCmdLine[i] == '"' )
-					memmove( pCmdLine+i, pCmdLine+i+1, strlen(pCmdLine+i+1)+1 );
-			}
-			else
-				++i;
-		}
-
-		if( pCmdLine[i] == ' ' )
-		{
-			pCmdLine[i] = '\0';
-			++i;
-		}
+	argv = new char* [args.size()];
+	for (size_t i = 0; i < args.size(); ++i)
+	{
+		argv[i] = new char[args[i].size() + 1];
+		strcpy(argv[i], args[i].c_str());
 	}
 
 	return argc;

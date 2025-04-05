@@ -611,9 +611,9 @@ void BGAnimationLayer::UpdateInternal( float fDeltaTime )
 		break;
 	case TYPE_TILES:
 		{
-			float fSecs = RageTimer::GetTimeSinceStartFast();
-			float fTotalWidth = m_iNumTilesWide * m_fTilesSpacingX;
-			float fTotalHeight = m_iNumTilesHigh * m_fTilesSpacingY;
+			double fSecs = RageTimer::GetTimeSinceStart();
+			double fTotalWidth = static_cast<double>(m_iNumTilesWide) * m_fTilesSpacingX;
+			double fTotalHeight = static_cast<double>(m_iNumTilesHigh) * m_fTilesSpacingY;
 
 			ASSERT( int(m_SubActors.size()) == m_iNumTilesWide * m_iNumTilesHigh );
 
@@ -623,8 +623,8 @@ void BGAnimationLayer::UpdateInternal( float fDeltaTime )
 				{
 					int i = y*m_iNumTilesWide + x;
 
-					float fX = m_fTilesStartX + m_fTilesSpacingX * x + fSecs * m_fTileVelocityX;
-					float fY = m_fTilesStartY + m_fTilesSpacingY * y + fSecs * m_fTileVelocityY;
+					double fX = m_fTilesStartX + m_fTilesSpacingX * x + fSecs * m_fTileVelocityX;
+					double fY = m_fTilesStartY + m_fTilesSpacingY * y + fSecs * m_fTileVelocityY;
 
 					fX += m_fTilesSpacingX/2;
 					fY += m_fTilesSpacingY/2;
@@ -638,8 +638,8 @@ void BGAnimationLayer::UpdateInternal( float fDeltaTime )
 					fX -= m_fTilesSpacingX/2;
 					fY -= m_fTilesSpacingY/2;
 
-					m_SubActors[i]->SetX( fX );
-					m_SubActors[i]->SetY( fY );
+					m_SubActors[i]->SetX(static_cast<float>(fX));
+					m_SubActors[i]->SetY(static_cast<float>(fY));
 				}
 			}
 		}

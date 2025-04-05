@@ -14,11 +14,12 @@ public:
 	pos_map_queue( const pos_map_queue &cpy );
 	pos_map_queue &operator=( const pos_map_queue &rhs );
 
-	/* Insert a mapping from iSourceFrame to iDestFrame, containing iFrames. */
-	void Insert( std::int64_t iSourceFrame, int iFrames, std::int64_t iDestFrame, float fSourceToDestRatio = 1.0f );
+	/* Insert a mapping from iSourceFrame to iDestFrame, containing iFrames.
+	 * The double type is used to prevent precision loss leading to sync drift the longer the game runs. -sukibaby */
+	void Insert( int64_t iSourceFrame, int64_t iFrames, int64_t iDestFrame, double fSourceToDestRatio = 1.0 );
 
 	/* Return the iDestFrame for the given iSourceFrame. */
-	std::int64_t Search( std::int64_t iSourceFrame, bool *bApproximate ) const;
+	int64_t Search( int64_t iSourceFrame ) const;
 
 	/* Erase all mappings. */
 	void Clear();

@@ -33,7 +33,7 @@ Sprite::Sprite()
 	m_bUsingCustomTexCoords = false;
 	m_bUsingCustomPosCoords = false;
 	m_bSkipNextUpdate = true;
-	m_DecodeMovie= true;
+	m_DecodeMovie = false;
 	m_EffectMode = EffectMode_Normal;
 
 	m_fRememberedClipWidth = -1;
@@ -359,10 +359,19 @@ void Sprite::LoadFromTexture( RageTextureID ID )
 	// LOG->Trace( "Sprite::LoadFromTexture( %s )", ID.filename.c_str() );
 
 	RageTexture *pTexture = nullptr;
-	if( m_pTexture && m_pTexture->GetID() == ID )
+	if( m_pTexture && m_pTexture->GetID() == ID ) 
+	{
 		pTexture = m_pTexture;
-	else
+	}
+	else 
+	{
 		pTexture = TEXTUREMAN->LoadTexture( ID );
+	}
+
+	if (ActorUtil::GetFileType(ID.filename) == FT_Movie) 
+	{
+		m_DecodeMovie = true;
+	}
 
 	SetTexture( pTexture );
 }
@@ -474,7 +483,7 @@ void Sprite::Update( float fDelta )
 
 	// If the texture is a movie, decode frames.
 	if(!bSkipThisMovieUpdate && m_DecodeMovie)
-		m_pTexture->DecodeSeconds( std::max(0.0f, fTimePassed) );
+		m_pTexture->UpdateMovie( std::max(0.0f, fTimePassed) );
 
 	// update scrolling
 	if( m_fTexCoordVelocityX != 0 || m_fTexCoordVelocityY != 0 )
@@ -1203,12 +1212,12 @@ public:
 			luaL_error(L, "State properties must be in a table.");
 		}
 		std::vector<Sprite::State> new_states;
-		std::size_t num_states= lua_objlen(L, 1);
+		size_t num_states= lua_objlen(L, 1);
 		if(num_states == 0)
 		{
 			luaL_error(L, "A Sprite cannot have zero states.");
 		}
-		for(std::size_t s= 0; s < num_states; ++s)
+		for(size_t s= 0; s < num_states; ++s)
 		{
 			Sprite::State new_state;
 			lua_rawgeti(L, 1, s+1);

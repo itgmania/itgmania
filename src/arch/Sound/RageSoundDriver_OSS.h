@@ -26,7 +26,7 @@ public:
 	int GetSampleRate() const { return samplerate; }
 
 	/* virtuals: */
-	std::int64_t GetPosition() const;
+	int64_t GetPosition() const;
 	float GetPlayLatency() const;
 	void SetupDecodingThread();
 

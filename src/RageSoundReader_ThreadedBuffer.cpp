@@ -237,7 +237,7 @@ void RageSoundReader_ThreadedBuffer::BufferingThread()
 		else
 		{
 			m_Event.Unlock();
-			usleep( std::lrint(fTimeToSleep * 1000000) );
+			usleep( static_cast<int>((fTimeToSleep * 1000000) + 0.5) );
 			m_Event.Lock();
 		}
 	}

@@ -41,7 +41,6 @@ private:
 
 
 	bool MADLIB_rewind();
-	int SetPosition_toc( int iSample, bool Xing );
 	int SetPosition_hard( int iSample );
 	int SetPosition_estimate( int iSample );
 

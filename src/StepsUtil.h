@@ -22,6 +22,7 @@ public:
 	 *
 	 * Don't filter here if the Difficulty is Difficulty_Invalid. */
 	Difficulty m_difficulty;
+	std::vector<Difficulty> m_vDifficulties;
 	/**
 	 * @brief The lowest meter to search for.
 	 *
@@ -51,6 +52,7 @@ public:
 
 	/** @brief Set up the initial criteria. */
 	StepsCriteria(): m_difficulty(Difficulty_Invalid),
+	m_vDifficulties(),
 		m_iLowMeter(-1), m_iHighMeter(-1),
 		m_st(StepsType_Invalid), m_Locked(Locked_DontCare)
 	{

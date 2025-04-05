@@ -27,7 +27,7 @@ ModIconRow::~ModIconRow()
 {
 	for (ModIcon *p : m_vpModIcon)
 	{
-		SAFE_DELETE( p );
+		RageUtil::SafeDelete( p );
 	}
 	this->RemoveAllChildren();
 }
@@ -98,6 +98,8 @@ static const OptionColumnEntry g_OptionColumnEntries[] =
 	{"RandomVanish",2},
 	//--------------------//
 	{"Mirror",		3},
+	{"LRMirror",	3},
+	{"UDMirror",	3},
 	{"Left",		3},
 	{"Right",		3},
 	{"Shuffle",		3},
@@ -155,7 +157,7 @@ void ModIconRow::SetFromGameState()
 	{
 		RString sOption = vsOptions[i];
 		int iPreferredCol = OptionToPreferredColumn( sOption );
-		iPreferredCol = clamp( iPreferredCol, 0, (int)m_vpModIcon.size()-1 );
+		iPreferredCol = std::clamp( iPreferredCol, 0, (int)m_vpModIcon.size()-1 );
 
 		// search for a vacant spot
 		for( int j=iPreferredCol; j<NUM_OPTION_ICONS; j++ )

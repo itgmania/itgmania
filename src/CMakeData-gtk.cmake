@@ -13,7 +13,7 @@ set_property(TARGET "LoadingWindowGtk" PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET "LoadingWindowGtk" PROPERTY CXX_EXTENSIONS ON)
 
 target_include_directories("LoadingWindowGtk" PRIVATE "${SM_SRC_DIR}"
-                                                      "${SM_SRC_DIR}/generated"
+                                                      "${SM_GENERATED_SRC_DIR}"
                                                       "${SM_SRC_DIR}/arch/LoadingWindow"
                                                       "${GTK3_INCLUDE_DIRS}")
 

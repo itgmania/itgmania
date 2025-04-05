@@ -1,7 +1,7 @@
 LICENSE
 =======
 
-ITGmania's source code and resulting binary is licensed under the MIT license. Go to http://opensource.org/licenses/MIT for more information.
+ITGmania's source code and resulting binary is licensed under the GPLv3, or (at your option) any later version.
 
 Simply Love is licensed under the GPLv3, or (at your option) any later version.
 

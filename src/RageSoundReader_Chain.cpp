@@ -42,8 +42,16 @@ RageSoundReader_Chain::~RageSoundReader_Chain()
 
 RageSoundReader_Chain *RageSoundReader_Chain::Copy() const
 {
-	// XXX
-	FAIL_M("unimplemented");
+	RageSoundReader_Chain* copy = new RageSoundReader_Chain();
+	copy->m_iPreferredSampleRate = this->m_iPreferredSampleRate;
+	copy->m_iActualSampleRate = this->m_iActualSampleRate;
+	copy->m_iChannels = this->m_iChannels;
+	copy->m_iCurrentFrame = this->m_iCurrentFrame;
+	copy->m_iNextSound = this->m_iNextSound;
+	copy->m_apActiveSounds = this->m_apActiveSounds; // Shallow copy
+	copy->m_apLoadedSounds = this->m_apLoadedSounds; // Shallow copy
+	copy->m_aSounds = this->m_aSounds; // Shallow copy
+	return copy;
 }
 
 /* The same sound may be used several times, and by several different chains.  Avoid
@@ -56,7 +64,7 @@ void RageSoundReader_Chain::AddSound( int iIndex, float fOffsetSecs, float fPan 
 
 	Sound s;
 	s.iIndex = iIndex;
-	s.iOffsetMS = std::lrint( fOffsetSecs * 1000 );
+	s.iOffsetMS = static_cast<int>((fOffsetSecs * 1000) + 0.5 );
 	s.fPan = fPan;
 	s.pSound = nullptr;
 	m_aSounds.push_back( s );

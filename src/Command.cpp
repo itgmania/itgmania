@@ -44,9 +44,9 @@ static void SplitWithQuotes( const RString sSource, const char Delimitor, std::v
 	if( sSource.empty() )
 		return;
 
-	std::size_t startpos = 0;
+	size_t startpos = 0;
 	do {
-		std::size_t pos = startpos;
+		size_t pos = startpos;
 		while( pos < sSource.size() )
 		{
 			if( sSource[pos] == Delimitor )

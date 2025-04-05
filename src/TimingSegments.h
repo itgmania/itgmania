@@ -64,7 +64,7 @@ struct TimingSegment
 		m_iStartRow( other.GetRow() ) { }
 
 	// for our purposes, two floats within this level of error are equal
-	static const double EPSILON;
+	static constexpr double EPSILON = 1e-6;
 
 	virtual ~TimingSegment() { }
 
