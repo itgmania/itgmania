@@ -205,7 +205,7 @@ void DirectFilenameDB::CacheFile( const RString &sPath )
 	else
 	{
 		f.dir = S_ISDIR(st.st_mode);
-		f.size = static_cast<int>(st.st_size);
+		f.size = static_cast<int64_t>(st.st_size);
 		f.hash = st.st_mtime;
 	}
 
