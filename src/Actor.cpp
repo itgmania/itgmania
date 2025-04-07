@@ -193,6 +193,7 @@ Actor::Actor( const Actor &cpy ):
 
 #define CPY(x) x = cpy.x
 	CPY( m_sName );
+	CPY(alias_);
 	CPY( m_pParent );
 	CPY( m_FakeParent );
 	CPY( m_pLuaInstance );
@@ -272,6 +273,7 @@ Actor &Actor::operator=(Actor other)
 	using std::swap;
 #define SWAP(x) swap(x, other.x)
 	SWAP( m_sName );
+	SWAP(alias_);
 	SWAP( m_pParent );
 	SWAP( m_FakeParent );
 	SWAP( m_pLuaInstance );
@@ -334,6 +336,14 @@ Actor &Actor::operator=(Actor other)
 	SWAP( m_mapNameToCommands );
 #undef SWAP
 	return *this;
+}
+
+
+bool Actor::IsAlias(const std::string& name) {
+	if (alias_.empty()) {
+		return false;
+	}
+	return name == alias_;
 }
 
 /* XXX: This calls InitCommand, which must happen after all other
