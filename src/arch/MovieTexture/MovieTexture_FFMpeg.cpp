@@ -653,7 +653,7 @@ RageSurface* MovieDecoder_FFMpeg::CreateCompatibleSurface(int iTextureWidth, int
 }
 
 MovieTexture_FFMpeg::MovieTexture_FFMpeg(RageTextureID ID) :
-	MovieTexture_Generic(ID, new MovieDecoder_FFMpeg)
+	MovieTexture_Generic(ID, std::make_unique<MovieDecoder_FFMpeg>())
 {
 }
 

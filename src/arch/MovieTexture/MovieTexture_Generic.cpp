@@ -21,12 +21,12 @@
 
 static Preference<bool> g_bMovieTextureDirectUpdates("MovieTextureDirectUpdates", true);
 
-MovieTexture_Generic::MovieTexture_Generic(RageTextureID ID, MovieDecoder* pDecoder) :
+MovieTexture_Generic::MovieTexture_Generic(RageTextureID ID, std::unique_ptr<MovieDecoder> pDecoder) :
 	RageMovieTexture(ID)
 {
 	LOG->Trace("MovieTexture_Generic::MovieTexture_Generic(%s)", ID.filename.c_str());
 
-	decoder_ = pDecoder;
+	decoder_ = std::move(pDecoder);
 
 	texture_handle_ = 0;
 	render_target_ = nullptr;
@@ -82,7 +82,6 @@ MovieTexture_Generic::~MovieTexture_Generic()
 
 	/* sprite_ may reference the texture; delete it before DestroyTexture. */
 	delete sprite_;
-	delete decoder_;
 
 	DestroyTexture();
 

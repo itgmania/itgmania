@@ -86,7 +86,7 @@ public:
 class MovieTexture_Generic: public RageMovieTexture
 {
 public:
-	MovieTexture_Generic( RageTextureID ID, MovieDecoder *pDecoder );
+	MovieTexture_Generic( RageTextureID ID, std::unique_ptr<MovieDecoder> pDecoder );
 	virtual ~MovieTexture_Generic();
 	RString Init();
 
@@ -108,7 +108,7 @@ public:
 	static EffectMode GetEffectMode( MovieDecoderPixelFormatYCbCr fmt );
 
 private:
-	MovieDecoder* decoder_;
+	std::unique_ptr<MovieDecoder> decoder_;
 
 	std::unique_ptr<std::thread> decoding_thread_;
 
