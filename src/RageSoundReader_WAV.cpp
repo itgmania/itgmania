@@ -537,8 +537,8 @@ RageSoundReader_FileReader::OpenResult RageSoundReader_WAV::Open( RageFileBasic 
 			m_WavData.m_iDataChunkPos = m_pFile->Tell();
 			m_WavData.m_iDataChunkSize = iChunkSize;
 
-			int iFileSize = m_pFile->GetFileSize();
-			int iMaxSize = iFileSize-m_WavData.m_iDataChunkPos;
+			int64_t iFileSize = m_pFile->GetFileSize();
+			int64_t iMaxSize = iFileSize-m_WavData.m_iDataChunkPos;
 			if( iMaxSize < m_WavData.m_iDataChunkSize )
 			{
 				LOG->Warn( "File %s truncated (%i < data chunk size %i)", m_pFile->GetDisplayPath().c_str(),

@@ -35,7 +35,7 @@ private:
 	void FillBuffer( int iBytes );
 
 	RageFileBasic *m_pFile;
-	int m_iFilePos;
+	std::int64_t m_iFilePos;
 	bool m_bFileOwned;
 	RString m_sBuffer;
 	int m_iPostBufferReadAhead;

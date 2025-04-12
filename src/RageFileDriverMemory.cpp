@@ -57,11 +57,12 @@ int RageFileObjMem::ReadInternal( void *buffer, size_t bytes )
 {
 	LockMut(m_pFile->m_Mutex);
 
-	m_iFilePos = std::min( (std::int64_t) m_iFilePos, GetFileSize() );
-	bytes = std::min( bytes, (std::size_t) GetFileSize() - m_iFilePos );
+	m_iFilePos = std::min( m_iFilePos, GetFileSize() );
+	bytes = std::min( bytes, (std::size_t)(GetFileSize() - m_iFilePos) );
 	if( bytes == 0 )
 		return 0;
-	memcpy( buffer, &m_pFile->m_sBuf[m_iFilePos], bytes );
+	size_t bufPos = m_iFilePos;
+	memcpy( buffer, &m_pFile->m_sBuf[bufPos], bytes );
 	m_iFilePos += bytes;
 
 	return bytes;

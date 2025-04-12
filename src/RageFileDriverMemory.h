@@ -31,7 +31,7 @@ public:
 
 private:
 	RageFileObjMemFile *m_pFile;
-	int m_iFilePos;
+	std::int64_t m_iFilePos;
 };
 
 class RageFileDriverMem: public RageFileDriver
