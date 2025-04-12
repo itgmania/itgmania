@@ -279,9 +279,15 @@ void ScreenMapControllers::Update( float fDeltaTime )
 	}
 
 	//
-	// Update devices text
+	// Update devices text every 120ish frames
+	// This is NOT updating the actual text shown!
+	// it is updating the names of the devices here.
 	//
-	m_textDevices.SetText( INPUTMAN->GetDisplayDevicesString() );
+	static uint8_t e= 0;
+	++e;
+	if (e == 0 || e == 127) {
+		m_textDevices.SetText(INPUTMAN->GetDisplayDevicesString());
+	}
 
 	if( !m_WaitingForPress.IsZero() && m_DeviceIToMap.IsValid() ) // we're going to map an input
 	{
