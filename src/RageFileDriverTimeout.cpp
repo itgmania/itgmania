@@ -82,9 +82,9 @@ public:
 	 * is still trying to finish the operation.  The thread will clean up afterwards. */
 	RageFileBasic *Open( const RString &sPath, int iMode, int &iErr );
 	void Close( RageFileBasic *pFile );
-	int GetFileSize( RageFileBasic *&pFile );
+	int64_t GetFileSize( RageFileBasic *&pFile );
 	int GetFD( RageFileBasic *&pFile );
-	int Seek( RageFileBasic *&pFile, int iPos, RString &sError );
+	int64_t Seek( RageFileBasic *&pFile, int64_t iPos, RString &sError );
 	int Read( RageFileBasic *&pFile, void *pBuf, int iSize, RString &sError );
 	int Write( RageFileBasic *&pFile, const void *pBuf, int iSize, RString &sError );
 	int Flush( RageFileBasic *&pFile, RString &sError );
@@ -127,14 +127,14 @@ private:
 	RageFileBasic *m_pRequestFile; /* in */
 
 	/* REQ_OPEN, REQ_GET_FILE_SIZE, REQ_READ, REQ_SEEK */
-	int m_iResultRequest; /* out */
+	int64_t m_iResultRequest; /* out */
 
 	/* REQ_READ, REQ_WRITE */
 	int m_iRequestSize; /* in */
 	RString m_sResultError; /* out */
 
 	/* REQ_SEEK */
-	int m_iRequestPos; /* in */
+	int64_t m_iRequestPos; /* in */
 
 	/* REQ_READ */
 	char *m_pResultBuffer; /* out */
@@ -215,8 +215,9 @@ void ThreadedFileWorker::HandleRequest( int iRequest )
 	case REQ_OPEN:
 		ASSERT( m_pResultFile == nullptr );
 		ASSERT( !m_sRequestPath.empty() );
-		m_iResultRequest = 0;
-		m_pResultFile = m_pChildDriver->Open( m_sRequestPath, m_iRequestMode, m_iResultRequest );
+		int err;
+		m_pResultFile = m_pChildDriver->Open( m_sRequestPath, m_iRequestMode, err );
+		m_iResultRequest = err;
 		break;
 
 	case REQ_CLOSE:
@@ -355,7 +356,7 @@ void ThreadedFileWorker::Close( RageFileBasic *pFile )
 	}
 }
 
-int ThreadedFileWorker::GetFileSize( RageFileBasic *&pFile )
+int64_t ThreadedFileWorker::GetFileSize( RageFileBasic *&pFile )
 {
 	ASSERT( m_pChildDriver != nullptr ); /* how did you get a file to begin with? */
 
@@ -411,7 +412,7 @@ int ThreadedFileWorker::GetFD( RageFileBasic *&pFile )
 	return m_iResultRequest;
 }
 
-int ThreadedFileWorker::Seek( RageFileBasic *&pFile, int iPos, RString &sError )
+int64_t ThreadedFileWorker::Seek( RageFileBasic *&pFile, int64_t iPos, RString &sError )
 {
 	ASSERT( m_pChildDriver != nullptr ); /* how did you get a file to begin with? */
 
@@ -698,7 +699,7 @@ class RageFileObjTimeout: public RageFileObj
 {
 public:
 	/* pFile will be freed by passing it to pWorker. */
-	RageFileObjTimeout( ThreadedFileWorker *pWorker, RageFileBasic *pFile, int iSize, int iMode )
+	RageFileObjTimeout( ThreadedFileWorker *pWorker, RageFileBasic *pFile, int64_t iSize, int iMode )
 	{
 		m_pWorker = pWorker;
 		m_pFile = pFile;
@@ -767,7 +768,7 @@ protected:
 	std::int64_t SeekInternal( std::int64_t iPos )
 	{
 		RString sError;
-		int iRet = m_pWorker->Seek( m_pFile, iPos, sError );
+		int64_t iRet = m_pWorker->Seek( m_pFile, iPos, sError );
 
 		if( m_pFile == nullptr )
 		{
@@ -840,7 +841,7 @@ protected:
 	ThreadedFileWorker *m_pWorker;
 
 	/* GetFileSize isn't allowed to fail, so cache the file size on load. */
-	int m_iFileSize;
+	int64_t m_iFileSize;
 	//cache filemode
 	int m_iMode;
 };
@@ -887,7 +888,7 @@ RageFileBasic *RageFileDriverTimeout::Open( const RString &sPath, int iMode, int
 
 	/* RageBasicFile::GetFileSize isn't allowed to fail, but we are; grab the file
 	 * size now and store it. */
-	int iSize = 0;
+	int64_t iSize = 0;
 	if( iMode & RageFile::READ )
 	{
 		iSize = m_pWorker->GetFileSize( pChildFile );
