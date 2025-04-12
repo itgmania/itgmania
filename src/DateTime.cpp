@@ -15,45 +15,48 @@ void DateTime::Init()
 	ZERO( *this );
 }
 
-bool DateTime::operator<( const DateTime& other ) const
-{
-#define COMPARE( v ) if(v!=other.v) return v<other.v;
-	COMPARE( tm_year );
-	COMPARE( tm_mon );
-	COMPARE( tm_mday );
-	COMPARE( tm_hour );
-	COMPARE( tm_min );
-	COMPARE( tm_sec );
-#undef COMPARE
-	// they're equal
+bool DateTime::operator<(const DateTime& other) const {
+	if (tm_year != other.tm_year) return tm_year < other.tm_year;
+	if (tm_mon != other.tm_mon) return tm_mon < other.tm_mon;
+	if (tm_mday != other.tm_mday) return tm_mday < other.tm_mday;
+	if (tm_hour != other.tm_hour) return tm_hour < other.tm_hour;
+	if (tm_min != other.tm_min) return tm_min < other.tm_min;
+	if (tm_sec != other.tm_sec) return tm_sec < other.tm_sec;
 	return false;
 }
 
-bool DateTime::operator==( const DateTime& other ) const 
-{
-#define COMPARE(x)	if( x!=other.x )	return false;
-	COMPARE( tm_year );
-	COMPARE( tm_mon );
-	COMPARE( tm_mday );
-	COMPARE( tm_hour );
-	COMPARE( tm_min );
-	COMPARE( tm_sec );
-#undef COMPARE
+bool DateTime::operator==(const DateTime& other) const {
+	if (tm_year != other.tm_year) return false;
+	if (tm_mon != other.tm_mon) return false;
+	if (tm_mday != other.tm_mday) return false;
+	if (tm_hour != other.tm_hour) return false;
+	if (tm_min != other.tm_min) return false;
+	if (tm_sec != other.tm_sec) return false;
 	return true;
 }
 
-bool DateTime::operator>( const DateTime& other ) const
-{
-#define COMPARE( v ) if(v!=other.v) return v>other.v;
-	COMPARE( tm_year );
-	COMPARE( tm_mon );
-	COMPARE( tm_mday );
-	COMPARE( tm_hour );
-	COMPARE( tm_min );
-	COMPARE( tm_sec );
-#undef COMPARE
-	// they're equal
+
+bool DateTime::operator!=(const DateTime& other) const {
+	return !(*this == other);
+}
+
+bool DateTime::operator>(const DateTime& other) const {
+	if (tm_year != other.tm_year) return tm_year > other.tm_year;
+	if (tm_mon != other.tm_mon) return tm_mon > other.tm_mon;
+	if (tm_mday != other.tm_mday) return tm_mday > other.tm_mday;
+	if (tm_hour != other.tm_hour) return tm_hour > other.tm_hour;
+	if (tm_min != other.tm_min) return tm_min > other.tm_min;
+	if (tm_sec != other.tm_sec) return tm_sec > other.tm_sec;
 	return false;
+}
+
+
+bool DateTime::operator<=(const DateTime& other) const {
+	return !(*this > other); // Reuse the > operator
+}
+
+bool DateTime::operator>=(const DateTime& other) const {
+	return !(*this < other); // Reuse the < operator
 }
 
 DateTime DateTime::GetNowDateTime()

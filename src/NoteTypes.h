@@ -209,18 +209,15 @@ struct TapNote
 	 * @brief Determine if the two TapNotes are equal to each other.
 	 * @param other the other TapNote we're checking.
 	 * @return true if the two TapNotes are equal, or false otherwise. */
-	bool operator==( const TapNote &other ) const
-	{
-#define COMPARE(x)	if(x!=other.x) return false
-		COMPARE(type);
-		COMPARE(subType);
-		COMPARE(source);
-		COMPARE(sAttackModifiers);
-		COMPARE(fAttackDurationSeconds);
-		COMPARE(iKeysoundIndex);
-		COMPARE(iDuration);
-		COMPARE(pn);
-#undef COMPARE
+	bool operator==(const TapNote& other) const {
+		if (type != other.type) return false;
+		if (subType != other.subType) return false;
+		if (source != other.source) return false;
+		if (sAttackModifiers != other.sAttackModifiers) return false;
+		if (fAttackDurationSeconds != other.fAttackDurationSeconds) return false;
+		if (iKeysoundIndex != other.iKeysoundIndex) return false;
+		if (iDuration != other.iDuration) return false;
+		if (pn != other.pn) return false;
 		return true;
 	}
 	/**

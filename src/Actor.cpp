@@ -1455,22 +1455,20 @@ void Actor::TweenState::Init()
 	aux = 0;
 }
 
-bool Actor::TweenState::operator==( const TweenState &other ) const
-{
-#define COMPARE( x )	if( x != other.x ) return false;
-	COMPARE( pos );
-	COMPARE( rotation );
-	COMPARE( quat );
-	COMPARE( scale );
-	COMPARE( fSkewX );
-	COMPARE( fSkewY );
-	COMPARE( crop );
-	COMPARE( fade );
-	for( unsigned i=0; i<ARRAYLEN(diffuse); i++ )
-		COMPARE( diffuse[i] );
-	COMPARE( glow );
-	COMPARE( aux );
-#undef COMPARE
+bool Actor::TweenState::operator==(const TweenState& other) const {
+	if (pos != other.pos) return false;
+	if (rotation != other.rotation) return false;
+	if (quat != other.quat) return false;
+	if (scale != other.scale) return false;
+	if (fSkewX != other.fSkewX) return false;
+	if (fSkewY != other.fSkewY) return false;
+	if (crop != other.crop) return false;
+	if (fade != other.fade) return false;
+	for (unsigned i = 0; i < ARRAYLEN(diffuse); i++) {
+		if (diffuse[i] != other.diffuse[i]) return false;
+	}
+	if (glow != other.glow) return false;
+	if (aux != other.aux) return false;
 	return true;
 }
 

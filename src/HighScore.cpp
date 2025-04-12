@@ -44,33 +44,32 @@ struct HighScoreImpl
 	bool operator!=( const HighScoreImpl& other ) const { return !(*this == other); }
 };
 
-bool HighScoreImpl::operator==( const HighScoreImpl& other ) const
-{
-#define COMPARE(x)	if( x!=other.x )	return false;
-	COMPARE( sName );
-	COMPARE( grade );
-	COMPARE( iScore );
-	COMPARE( iMaxCombo );
-	COMPARE( stageAward );
-	COMPARE( peakComboAward );
-	COMPARE( fPercentDP );
-	COMPARE( fSurviveSeconds );
-	COMPARE( sModifiers );
-	COMPARE( dateTime );
-	COMPARE( sPlayerGuid );
-	COMPARE( sMachineGuid );
-	COMPARE( iProductID );
-	FOREACH_ENUM( TapNoteScore, tns )
-		COMPARE( iTapNoteScores[tns] );
-	FOREACH_ENUM( HoldNoteScore, hns )
-		COMPARE( iHoldNoteScores[hns] );
-	COMPARE( radarValues );
-	COMPARE( fLifeRemainingSeconds );
-	COMPARE( bDisqualified );
-#undef COMPARE
-
+bool HighScoreImpl::operator==(const HighScoreImpl& other) const {
+	if (sName != other.sName) return false;
+	if (grade != other.grade) return false;
+	if (iScore != other.iScore) return false;
+	if (iMaxCombo != other.iMaxCombo) return false;
+	if (stageAward != other.stageAward) return false;
+	if (peakComboAward != other.peakComboAward) return false;
+	if (fPercentDP != other.fPercentDP) return false;
+	if (fSurviveSeconds != other.fSurviveSeconds) return false;
+	if (sModifiers != other.sModifiers) return false;
+	if (dateTime != other.dateTime) return false;
+	if (sPlayerGuid != other.sPlayerGuid) return false;
+	if (sMachineGuid != other.sMachineGuid) return false;
+	if (iProductID != other.iProductID) return false;
+	FOREACH_ENUM(TapNoteScore, tns) {
+		if (iTapNoteScores[tns] != other.iTapNoteScores[tns]) return false;
+	}
+	FOREACH_ENUM(HoldNoteScore, hns) {
+		if (iHoldNoteScores[hns] != other.iHoldNoteScores[hns]) return false;
+	}
+	if (radarValues != other.radarValues) return false;
+	if (fLifeRemainingSeconds != other.fLifeRemainingSeconds) return false;
+	if (bDisqualified != other.bDisqualified) return false;
 	return true;
 }
+
 
 HighScoreImpl::HighScoreImpl()
 {

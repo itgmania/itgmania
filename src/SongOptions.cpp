@@ -183,20 +183,17 @@ bool SongOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut )
 	return true;
 }
 
-bool SongOptions::operator==( const SongOptions &other ) const
-{
-#define COMPARE(x) { if( x != other.x ) return false; }
-	COMPARE( m_fMusicRate );
-	COMPARE( m_fHaste );
-	COMPARE( m_bAssistClap );
-	COMPARE( m_bAssistMetronome );
-	COMPARE( m_AutosyncType );
-	COMPARE( m_SoundEffectType );
-	COMPARE( m_bStaticBackground );
-	COMPARE( m_bRandomBGOnly );
-	COMPARE( m_bSaveScore );
-	COMPARE( m_bSaveReplay );
-#undef COMPARE
+bool SongOptions::operator==(const SongOptions& other) const {
+	if (m_fMusicRate != other.m_fMusicRate) return false;
+	if (m_fHaste != other.m_fHaste) return false;
+	if (m_bAssistClap != other.m_bAssistClap) return false;
+	if (m_bAssistMetronome != other.m_bAssistMetronome) return false;
+	if (m_AutosyncType != other.m_AutosyncType) return false;
+	if (m_SoundEffectType != other.m_SoundEffectType) return false;
+	if (m_bStaticBackground != other.m_bStaticBackground) return false;
+	if (m_bRandomBGOnly != other.m_bRandomBGOnly) return false;
+	if (m_bSaveScore != other.m_bSaveScore) return false;
+	if (m_bSaveReplay != other.m_bSaveReplay) return false;
 	return true;
 }
 
