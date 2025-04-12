@@ -139,7 +139,7 @@ RageFileManager::FileType FilenameDB::GetFileType( const RString &sPath )
 }
 
 
-int FilenameDB::GetFileSize( const RString &sPath )
+std::int64_t FilenameDB::GetFileSize( const RString &sPath )
 {
 	ASSERT( !m_Mutex.IsLockedByThisThread() );
 
@@ -147,7 +147,7 @@ int FilenameDB::GetFileSize( const RString &sPath )
 	SplitPath( sPath, sDir, sName );
 
 	const FileSet *fs = GetFileSet( sDir );
-	int ret = fs->GetFileSize( sName );
+	std::int64_t ret = fs->GetFileSize( sName );
 	m_Mutex.Unlock(); /* locked by GetFileSet */
 	return ret;
 }

@@ -109,7 +109,7 @@ public:
 	bool ResolvePath( RString &sPath );
 
 	RageFileManager::FileType GetFileType( const RString &sPath );
-	int GetFileSize( const RString &sPath );
+	std::int64_t GetFileSize( const RString &sPath );
 	int GetFileHash( const RString &sFilePath );
 	void GetDirListing( const RString &sPath, std::vector<RString> &asAddTo, bool bOnlyDirs, bool bReturnPathToo );
 
