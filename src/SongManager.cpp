@@ -423,11 +423,8 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 	}
 
 	songIndex = 0;
-	for (auto const &pair : mapGroupSongDirs)	// foreach dir in /Songs/
+	for (const auto& [sGroupDirName, arraySongDirs] : mapGroupSongDirs)	// foreach dir in /Songs/
 	{
-		RString sGroupDirName = pair.first;
-		std::vector<RString> arraySongDirs = pair.second;
-
 		LOG->Trace("Attempting to load %i songs from \"%s\"", int(arraySongDirs.size()),
 				   (sDir+sGroupDirName).c_str() );
 		int loaded = 0;
