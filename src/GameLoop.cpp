@@ -326,12 +326,7 @@ void GameLoop::RunGameLoop()
 
 		UpdateAllButDraw(false);
 		
-		// Check input devices every 255 frames (uint8_t can hold 0-255).
-		static uint8_t i_CheckInputDevices = 0;
-		if (++i_CheckInputDevices == 0)
-		{
-			CheckInputDevices();
-		}
+		CallEveryNFrames(500, CheckInputDevices);
 		
 		SCREENMAN->Draw();
 	}

@@ -278,16 +278,14 @@ void ScreenMapControllers::Update( float fDeltaTime )
 		}
 	}
 
-	//
-	// Update devices text every 120ish frames
+	// Update devices text every 500 frames.
 	// This is NOT updating the actual text shown!
-	// it is updating the names of the devices here.
-	//
-	static uint8_t e= 0;
-	++e;
-	if (e == 0 || e == 127) {
+	// This is polling every active driver for an updated
+	// list of button to device mappings.
+	CallEveryNFrames(500, [this]() {
+		// If we don't pass the `this` pointer, the lambda can't get access to the ScreenMapControllers instance.
 		m_textDevices.SetText(INPUTMAN->GetDisplayDevicesString());
-	}
+		});
 
 	if( !m_WaitingForPress.IsZero() && m_DeviceIToMap.IsValid() ) // we're going to map an input
 	{

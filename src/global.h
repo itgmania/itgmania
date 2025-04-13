@@ -108,6 +108,19 @@ typedef StdString::CStdString RString;
 
 #include "RageException.h"
 
+// Call a function every `n` frames.
+// Each call site will get its own counter.
+#include <utility>
+template <typename Func, typename... Args>
+void CallEveryNFrames(int n, Func&& f, Args&&... args) {
+	static int counter = 0;
+	++counter;
+	if (counter == n) {
+		counter = 0;
+		std::forward<Func>(f)(std::forward<Args>(args)...);
+	}
+}
+
 /* Don't include our own headers here, since they tend to change often. */
 
 #endif
