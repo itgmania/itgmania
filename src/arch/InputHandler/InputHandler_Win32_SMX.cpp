@@ -74,7 +74,7 @@ bool MapFunctions()
 }
 
 // The only way to know for-sure if the DLL is available is to actually load it, so this method attempts to load the DLL the first time it is run.
-bool InputHandler_Win32_SMX_Is_SMX_DLL_Available()
+bool IsSmxDllAvailable()
 {
 	if (_smxdll_attempted_load) {
 		return _smxdll_loaded;
@@ -93,11 +93,17 @@ bool InputHandler_Win32_SMX_Is_SMX_DLL_Available()
 }
 
 static bool __detected_pad = false;
-void InputHandler_Win32_SMX_Register_Pad() {
+bool InputHandler_Win32_SMX_Register_Pad() {
 	if (__detected_pad) {
-		return;
+		return true;
 	}
+
+	if (!IsSmxDllAvailable()) {
+		return false;
+	}
+
 	__detected_pad = true;
+	return true;
 }
 
 InputHandler_Win32_SMX::InputHandler_Win32_SMX() {
@@ -112,8 +118,10 @@ InputHandler_Win32_SMX::~InputHandler_Win32_SMX() {
 void InputHandler_Win32_SMX::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut)
 {
 	// Ensure that the SMX device is not registered unless a pad is connected.
-	if (IsPadConnected()) {
+	if (__detected_pad) {
 		vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_SMX), "SMX"));
+
+		SMX_Start();
 	}
 }
 
@@ -175,33 +183,6 @@ RString InputHandler_Win32_SMX::GetDeviceSpecificInputString(const DeviceInput &
 }
 
 static bool Is_SMX_Started = false;
-
-bool InputHandler_Win32_SMX::IsPadConnected() {
-	if (!__detected_pad) {
-		return false;
-	}
-
-	if (!InputHandler_Win32_SMX_Is_SMX_DLL_Available()) {
-		return false;
-	}
-
-	// Lazy start the SMX SDK when the DLL is loaded and a pad has been detected
-	if (!Is_SMX_Started) {
-		SMX_Start();
-	}
-
-	for (int i = 0; i < SMX_PAD_COUNT; i++) {
-		struct SMXInfo info;
-		SMX_GetInfo(i, &info);
-
-		if (info.m_bConnected) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
 void InputHandler_Win32_SMX::SMX_Start() {
 	if (Is_SMX_Started) {
 		return;

@@ -5,8 +5,7 @@
 
 static const int SMX_PAD_COUNT = 2;
 
-bool InputHandler_Win32_SMX_Is_SMX_DLL_Available();
-void InputHandler_Win32_SMX_Register_Pad();
+bool InputHandler_Win32_SMX_Register_Pad();
 
 enum SMXUpdateCallbackReason {
 	SMXUpdateCallback_Updated,
@@ -33,7 +32,6 @@ public:
 
 private:
 	uint16_t m_padInputStates[SMX_PAD_COUNT];
-	bool IsPadConnected();
 
 	void SMX_GetInfo( int pad, struct SMXInfo *info );
     uint16_t SMX_GetInputState( int pad );
