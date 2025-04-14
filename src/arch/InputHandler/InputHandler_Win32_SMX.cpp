@@ -31,6 +31,14 @@ static HINSTANCE hSMXdll = nullptr;
 
 REGISTER_INPUT_HANDLER_CLASS2(SMX, Win32_SMX);
 
+constexpr int SMX_PANEL_COUNT = 9;
+static bool _smxdll_attempted_load = false;
+static bool _smxdll_loaded = false;
+static bool __detected_pad = false;
+static bool __is_smx_started = false;
+static int __p1_pads = 0;
+static int __p2_pads = 0;
+
 namespace {
 	static void SmxCallback(int pad, SMXUpdateCallbackReason reason, void* pUser) {
 		InputHandler_Win32_SMX* inputHandler = static_cast<InputHandler_Win32_SMX*>(pUser);
@@ -39,14 +47,31 @@ namespace {
 
 	static void LogCallback(const char *log) {
 		LOG->Info("SMX SDK Log: %s", log);
+
+		// Just return after printing if it's not a device log.
+		bool isDeviceInfoLog = strstr(log, "Received device info.  Master version:");
+		bool containsP = strstr(log, "P");
+		if (!isDeviceInfoLog || !containsP) {
+			return;
+		}
+
+		// If this is a device log, check which player just connected.
+		bool isP2 = strstr(log, "P2") != nullptr;
+		if (isP2) {
+			__p2_pads += 1;
+		} else {
+			__p1_pads += 1;
+		}
+
+		// If too many of a particular player connected, issue a warning.
+		if (__p1_pads > 1) {
+			LOG->Warn("Two P1 SMX pads are connected, which will not work correctly. Please set the jumper on the right pad to P2, then remap.");
+		}
+		if (__p2_pads > 1) {
+			LOG->Warn("Two P2 SMX pads are connected, which will not work correctly. Please set the jumper on the left pad to P1, then remap.");
+		}
 	};
 }
-
-constexpr int SMX_PANEL_COUNT = 9;
-static bool _smxdll_attempted_load = false;
-static bool _smxdll_loaded = false;
-static bool __detected_pad = false;
-static bool __is_smx_started = false;
 
 int smx_filter(unsigned int, struct _EXCEPTION_POINTERS*)
 {
@@ -118,6 +143,8 @@ InputHandler_Win32_SMX::~InputHandler_Win32_SMX() {
 	// If we reset `__detected_pad` here, it allows us to stop reporting the device in `GetDevicesAndDescriptions` when a pad is disconnected. 
 	// If (a) pad(s) is still connected, it'll re-register before the next constructor runs.
 	__detected_pad = false;
+	__p1_pads = 0;
+	__p2_pads = 0;
 }
 
 void InputHandler_Win32_SMX::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut)

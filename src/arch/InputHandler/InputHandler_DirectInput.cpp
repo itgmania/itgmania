@@ -188,7 +188,7 @@ static BOOL CALLBACK EnumDevicesCallback( const DIDEVICEINSTANCE *pdidInstance, 
 
 	// Check for SMX.dll upon encountering a StepManiaX platform.
 	// If SMX.dll is available and usable, the SMX InputHandler should be used instead of DirectInput for SMX platforms.
-	bool is_smx_platform = (bool)strstr(pdidInstance->tszProductName, "StepManiaX");
+	bool is_smx_platform = strstr(pdidInstance->tszProductName, "StepManiaX") != nullptr;
 	if (is_smx_platform && InputHandler_Win32_SMX_Register_Pad()) {
 		LOG->Info("DInput: Ignoring SMX Stage HID device in favor of the SMX driver.");
 		return DIENUM_CONTINUE; // Ignore SMX platform HID device if SMX.dll is available
