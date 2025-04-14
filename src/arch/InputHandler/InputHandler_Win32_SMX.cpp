@@ -179,13 +179,13 @@ RString InputHandler_Win32_SMX::GetDeviceSpecificInputString(const DeviceInput &
 
     static const char* buttonStrings[SMX_PANEL_COUNT] =
     {
-        "up left", "up", "up right", "left", "center",
-        "right", "down left", "down", "down right"
+        "UpLeft", "Up", "UpRight", "Left", "Center",
+        "Right", "DownLeft", "Down", "DownRight"
     };
 
     const char* buttonString = (padRemovedButton >= 0 && padRemovedButton < SMX_PANEL_COUNT) ? buttonStrings[padRemovedButton] : "unknown";
 
-    return ssprintf("SMX P%d, %s", pad, buttonString);
+    return ssprintf("SMX P%d %s", pad, buttonString);
 }
 
 void InputHandler_Win32_SMX::SMX_Start() {
