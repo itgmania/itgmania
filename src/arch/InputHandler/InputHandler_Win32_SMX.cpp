@@ -9,11 +9,6 @@ typedef VOID(__stdcall* SMX_Start_t)(
 );
 static SMX_Start_t pSMX_Start = nullptr;
 
-typedef VOID(__stdcall* SMX_GetInfo_t)(
-	int pad, struct SMXInfo *info
-);
-static SMX_GetInfo_t pSMX_GetInfo = nullptr;
-
 typedef uint16_t(__stdcall* SMX_GetInputState_t)(
     int pad
 );
@@ -31,7 +26,6 @@ static HINSTANCE hSMXdll = nullptr;
 
 REGISTER_INPUT_HANDLER_CLASS2(SMX, Win32_SMX);
 
-constexpr int SMX_PANEL_COUNT = 9;
 static bool _smxdll_attempted_load = false;
 static bool _smxdll_loaded = false;
 static bool __detected_pad = false;
@@ -53,8 +47,6 @@ namespace {
 		// 1) delete all code below this comment.
 		// 2) if the static vars `__p1_pads` and `__p2_pads` are no longer used in the new solution, remove them. (if they are reused, note that outside this method, they are reset to 0 in the destructor too.)
 		
-		//TODO: Once a better solution is found and tested, pop up a UI window when multiple pads of the same value are detected.
-
 		// Just return after printing if it's not a device log.
 		bool isDeviceInfoLog = strstr(log, "Received device info.  Master version:");
 		bool containsP = strstr(log, "P");
@@ -71,11 +63,9 @@ namespace {
 		}
 
 		// If too many of a particular player connected, issue a warning.
-		if (__p1_pads > 1) {
-			LOG->Warn("Multiple P1 SMX pads are connected, which will not work correctly. Please set the jumper on the right pad to P2, then remap.");
-		}
-		if (__p2_pads > 1) {
-			LOG->Warn("Multiple P2 SMX pads are connected, which will not work correctly. Please set the jumper on the left pad to P1, then remap.");
+		if (__p1_pads > 1 || __p2_pads > 1) {
+			LOG->Warn("Both SMX stages are set to the same player ID. Please unplug one of the stages from power and USB, change the jumper position, and then restart the game.");
+			MessageBox(nullptr, "Both SMX stages are set to the same player ID. Please unplug one of the stages from power and USB, change the jumper position, and then restart the game.", "Error", MB_OK );
 		}
 	};
 }
@@ -89,11 +79,10 @@ bool MapFunctions()
 {
 	__try
 	{
-		pSMX_Start = (SMX_Start_t)GetProcAddress(hSMXdll, "SMX_Start");
-		pSMX_GetInfo = (SMX_GetInfo_t)GetProcAddress(hSMXdll, "SMX_GetInfo");
-		pSMX_GetInputState = (SMX_GetInputState_t)GetProcAddress(hSMXdll, "SMX_GetInputState");
-		pSMX_SetLogCallback = (SMX_SetLogCallback_t)GetProcAddress(hSMXdll, "SMX_SetLogCallback");
-		pSMX_Stop = (SMX_Stop_t)GetProcAddress(hSMXdll, "SMX_Stop");
+		pSMX_Start = reinterpret_cast<SMX_Start_t>(GetProcAddress(hSMXdll, "SMX_Start"));
+		pSMX_GetInputState = reinterpret_cast<SMX_GetInputState_t>(GetProcAddress(hSMXdll, "SMX_GetInputState"));
+		pSMX_SetLogCallback = reinterpret_cast<SMX_SetLogCallback_t>(GetProcAddress(hSMXdll, "SMX_SetLogCallback"));
+		pSMX_Stop = reinterpret_cast<SMX_Stop_t>(GetProcAddress(hSMXdll, "SMX_Stop"));
 	}
 	__except (smx_filter(GetExceptionCode(), GetExceptionInformation()))
 	{
@@ -231,15 +220,6 @@ void InputHandler_Win32_SMX::SMX_Start() {
         pSMX_Start(&SmxCallback, this);
 		__is_smx_started = true;
     }
-}
-
-void InputHandler_Win32_SMX::SMX_GetInfo(int pad, struct SMXInfo *info) {
-	if (__is_smx_started && pSMX_GetInfo != nullptr) {
-		pSMX_GetInfo(pad, info);
-	}
-	else {
-		info->m_bConnected = false;
-	}
 }
 
 uint16_t InputHandler_Win32_SMX::SMX_GetInputState(int pad) {

@@ -4,6 +4,7 @@
 #include "InputHandler.h"
 
 constexpr int SMX_PAD_COUNT = 2;
+constexpr int SMX_PANEL_COUNT = 9;
 
 bool InputHandler_Win32_SMX_Register_Pad();
 
@@ -33,7 +34,6 @@ public:
 private:
 	uint16_t m_padInputStates[SMX_PAD_COUNT];
 
-	void SMX_GetInfo( int pad, struct SMXInfo *info );
     uint16_t SMX_GetInputState( int pad );
 	void SMX_SetLogCallback();
 	void SMX_Stop();
