@@ -48,8 +48,8 @@ namespace {
 		// 2) if the static vars `__p1_pads` and `__p2_pads` are no longer used in the new solution, remove them. (if they are reused, note that outside this method, they are reset to 0 in the destructor too.)
 		
 		// Just return after printing if it's not a device log.
-		bool isDeviceInfoLog = strstr(log, "Received device info.  Master version:");
-		bool containsP = strstr(log, "P");
+		bool isDeviceInfoLog = strstr(log, "Received device info.  Master version:") != nullptr;
+		bool containsP = strstr(log, "P") != nullptr;
 		if (!isDeviceInfoLog || !containsP) {
 			return;
 		}
