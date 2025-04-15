@@ -3,7 +3,7 @@
 
 #include "InputHandler.h"
 
-static const int SMX_PAD_COUNT = 2;
+constexpr int SMX_PAD_COUNT = 2;
 
 bool InputHandler_Win32_SMX_Register_Pad();
 
