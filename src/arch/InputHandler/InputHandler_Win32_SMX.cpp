@@ -48,6 +48,13 @@ namespace {
 	static void LogCallback(const char *log) {
 		LOG->Info("SMX SDK Log: %s", log);
 
+		//TODO: Find more graceful means of surfacing a warning when multiple pads of the same value are detected.
+		// Note: when this happens, to remove this logic:
+		// 1) delete all code below this comment.
+		// 2) if the static vars `__p1_pads` and `__p2_pads` are no longer used in the new solution, remove them. (if they are reused, note that outside this method, they are reset to 0 in the destructor too.)
+		
+		//TODO: Once a better solution is found and tested, pop up a UI window when multiple pads of the same value are detected.
+
 		// Just return after printing if it's not a device log.
 		bool isDeviceInfoLog = strstr(log, "Received device info.  Master version:");
 		bool containsP = strstr(log, "P");
@@ -65,10 +72,10 @@ namespace {
 
 		// If too many of a particular player connected, issue a warning.
 		if (__p1_pads > 1) {
-			LOG->Warn("Two P1 SMX pads are connected, which will not work correctly. Please set the jumper on the right pad to P2, then remap.");
+			LOG->Warn("Multiple P1 SMX pads are connected, which will not work correctly. Please set the jumper on the right pad to P2, then remap.");
 		}
 		if (__p2_pads > 1) {
-			LOG->Warn("Two P2 SMX pads are connected, which will not work correctly. Please set the jumper on the left pad to P1, then remap.");
+			LOG->Warn("Multiple P2 SMX pads are connected, which will not work correctly. Please set the jumper on the left pad to P1, then remap.");
 		}
 	};
 }
