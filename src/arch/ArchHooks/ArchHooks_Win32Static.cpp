@@ -35,6 +35,9 @@ static void InitTimer()
 	
 	g_bTimerInitialized = true;
 
+	// Set the thread scheduler to let us update every 1ms.
+	timeBeginPeriod(1);
+	
 	// Retrieve the number of ticks per second.
 	QueryPerformanceFrequency(&g_liFrequency);
 }
