@@ -244,11 +244,11 @@ static void NormalizePath( RString &sPath )
 	CollapsePath( sPath, true );
 	if (sPath.size() == 0)
 	{
-		sPath = '/';
+		sPath = "/";
 	}
 	else if (sPath[0] != '/')
 	{
-		sPath = '/' + sPath;
+		sPath = "/" + sPath;
 	}
 }
 

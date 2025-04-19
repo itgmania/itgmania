@@ -175,7 +175,7 @@ bool SMALoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCach
 		return false;
 	}
 
-	out.m_SongTiming.m_sFile = sPath; // songs still have their fallback timing.
+	out.m_SongTiming.m_sFile = std::string(sPath); // songs still have their fallback timing.
 	out.m_sSongFileName = sPath;
 
 	Steps* pNewNotes = nullptr;

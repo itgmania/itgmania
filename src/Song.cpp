@@ -639,7 +639,7 @@ bool Song::LoadAutosaveFile()
 	{
 		m_loaded_from_autosave= true;
 		m_sSongFileName= song_file;
-		m_SongTiming.m_sFile= song_timing_file;
+		m_SongTiming.m_sFile= std::string(song_timing_file);
 		return true;
 	}
 	// Loading the autosave failed, reload the original. -Kyz

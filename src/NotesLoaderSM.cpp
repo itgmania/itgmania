@@ -888,7 +888,7 @@ void SMLoader::ProcessSpeeds( TimingData &out, const RString line, const int row
 		std::vector<RString> vs2;
 		split( s1, "=", vs2 );
 
-		if( vs2[0] == 0 && vs2.size() == 2 ) // First one always seems to have 2.
+		if( vs2[0] == "" && vs2.size() == 2 ) // First one always seems to have 2.
 		{
 			vs2.push_back("0");
 		}
@@ -1145,7 +1145,7 @@ bool SMLoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCache
 		return false;
 	}
 
-	out.m_SongTiming.m_sFile = sPath;
+	out.m_SongTiming.m_sFile = std::string(sPath);
 	out.m_sSongFileName = sPath;
 
 	SMSongTagInfo reused_song_info(&*this, &out, sPath);

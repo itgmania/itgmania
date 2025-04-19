@@ -6,8 +6,14 @@
 
 #include <map>
 
+struct case_insensitive_comparator {
+	bool operator() (const RString&s1, const RString&s2) const {
+		return s1.CompareNoCase(s2) < 0;
+	}
+};
+
 // Map from "&foo;" to a UTF-8 string.
-typedef std::map<RString, wchar_t, StdString::StdStringLessNoCase> aliasmap;
+typedef std::map<RString, wchar_t, case_insensitive_comparator> aliasmap;
 static aliasmap CharAliases;
 static std::map<RString,RString> CharAliasRepl;
 

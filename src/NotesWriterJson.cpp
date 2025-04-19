@@ -34,16 +34,16 @@ static void Serialize(const TimingData &td, Json::Value &root)
 static void Serialize(const LyricSegment &o, Json::Value &root)
 {
 	root["StartTime"] = (float)o.m_fStartTime;
-	root["Lyric"] = o.m_sLyric;
-	root["Color"] = o.m_Color.ToString();
+	root["Lyric"] = o.m_sLyric.c_str();
+	root["Color"] = o.m_Color.ToString().c_str();
 }
 
 static void Serialize(const BackgroundDef &o, Json::Value &root)
 {
-	root["Effect"] = o.m_sEffect;
-	root["File1"] = o.m_sFile1;
-	root["File2"] = o.m_sFile2;
-	root["Color1"] = o.m_sColor1;
+	root["Effect"] = o.m_sEffect.c_str();
+	root["File1"] = o.m_sFile1.c_str();
+	root["File2"] = o.m_sFile2.c_str();
+	root["Color1"] = o.m_sColor1.c_str();
 }
 
 static void Serialize(const BackgroundChange &o, Json::Value &root )
@@ -51,7 +51,7 @@ static void Serialize(const BackgroundChange &o, Json::Value &root )
 	Serialize( o.m_def, root["Def"] );
 	root["StartBeat"] = o.m_fStartBeat;
 	root["Rate"] = o.m_fRate;
-	root["Transition"] = o.m_sTransition;
+	root["Transition"] = o.m_sTransition.c_str();
 }
 
 static void Serialize( const TapNote &o, Json::Value &root )
@@ -64,7 +64,7 @@ static void Serialize( const TapNote &o, Json::Value &root )
 		root["SubType"] = (int)o.subType;
 	//root["Source"] = (int)source;
 	if( !o.sAttackModifiers.empty() )
-		root["AttackModifiers"] = o.sAttackModifiers;
+		root["AttackModifiers"] = o.sAttackModifiers.c_str();
 	if( o.fAttackDurationSeconds > 0 )
 		root["AttackDurationSeconds"] = o.fAttackDurationSeconds;
 	if( o.iKeysoundIndex != -1 )
@@ -101,13 +101,13 @@ static void Serialize( const RadarValues &o, Json::Value &root )
 {
 	FOREACH_ENUM( RadarCategory, rc )
 	{
-		root[ RadarCategoryToString(rc) ] = o[rc];
+		root[ RadarCategoryToString(rc).c_str() ] = o[rc];
 	}
 }
 
 static void Serialize( const Steps &o, Json::Value &root )
 {
-	root["StepsType"] = StringConversion::ToString(o.m_StepsType);
+	root["StepsType"] = StringConversion::ToString(o.m_StepsType).c_str();
 
 	o.Decompress();
 
@@ -115,8 +115,8 @@ static void Serialize( const Steps &o, Json::Value &root )
 	o.GetNoteData( nd );
 	Serialize( nd, root["NoteData"] );
 	root["Hash"] = o.GetHash();
-	root["Description"] = o.GetDescription();
-	root["Difficulty"] = DifficultyToString(o.GetDifficulty());
+	root["Description"] = o.GetDescription().c_str();
+	root["Difficulty"] = DifficultyToString(o.GetDifficulty()).c_str();
 	root["Meter"] = o.GetMeter();
 	Serialize( o.GetRadarValues( PLAYER_1 ), root["RadarValues"] );
 }
@@ -125,20 +125,20 @@ static void Serialize( const Steps &o, Json::Value &root )
 bool NotesWriterJson::WriteSong( const RString &sFile, const Song &out, bool bWriteSteps )
 {
 	Json::Value root;
-	root["SongDir"] = out.GetSongDir();
-	root["GroupName"] = out.m_sGroupName;
-	root["Title"] = out.m_sMainTitle;
-	root["SubTitle"] = out.m_sSubTitle;
-	root["Artist"] = out.m_sArtist;
-	root["TitleTranslit"] = out.m_sMainTitleTranslit;
-	root["SubTitleTranslit"] = out.m_sSubTitleTranslit;
-	root["Genre"] = out.m_sGenre;
-	root["Credit"] = out.m_sCredit;
-	root["Banner"] = out.m_sBannerFile;
-	root["Background"] = out.m_sBackgroundFile;
-	root["LyricsFile"] = out.m_sLyricsFile;
-	root["CDTitle"] = out.m_sCDTitleFile;
-	root["Music"] = out.m_sMusicFile;
+	root["SongDir"] = out.GetSongDir().c_str();
+	root["GroupName"] = out.m_sGroupName.c_str();
+	root["Title"] = out.m_sMainTitle.c_str();
+	root["SubTitle"] = out.m_sSubTitle.c_str();
+	root["Artist"] = out.m_sArtist.c_str();
+	root["TitleTranslit"] = out.m_sMainTitleTranslit.c_str();
+	root["SubTitleTranslit"] = out.m_sSubTitleTranslit.c_str();
+	root["Genre"] = out.m_sGenre.c_str();
+	root["Credit"] = out.m_sCredit.c_str();
+	root["Banner"] = out.m_sBannerFile.c_str();
+	root["Background"] = out.m_sBackgroundFile.c_str();
+	root["LyricsFile"] = out.m_sLyricsFile.c_str();
+	root["CDTitle"] = out.m_sCDTitleFile.c_str();
+	root["Music"] = out.m_sMusicFile.c_str();
 	root["Offset"] = out.m_SongTiming.m_fBeat0OffsetInSeconds;
 	root["SampleStart"] = out.m_fMusicSampleStartSeconds;
 	root["SampleLength"] = out.m_fMusicSampleLengthSeconds;
@@ -151,12 +151,12 @@ bool NotesWriterJson::WriteSong( const RString &sFile, const Song &out, bool bWr
 
 	root["FirstBeat"] = out.GetFirstBeat();
 	root["LastBeat"] = out.GetLastBeat();
-	root["SongFileName"] = out.m_sSongFileName;
+	root["SongFileName"] = out.m_sSongFileName.c_str();
 	root["HasMusic"] = out.m_bHasMusic;
 	root["HasBanner"] = out.m_bHasBanner;
 	root["MusicLengthSeconds"] = out.m_fMusicLengthSeconds;
 
-	root["DisplayBpmType"] = StringConversion::ToString(out.m_DisplayBPMType);
+	root["DisplayBpmType"] = StringConversion::ToString(out.m_DisplayBPMType).c_str();
 	if( out.m_DisplayBPMType == DISPLAY_BPM_SPECIFIED )
 	{
 		root["SpecifiedBpmMin"] = out.m_fSpecifiedBPMMin;
@@ -181,7 +181,11 @@ bool NotesWriterJson::WriteSong( const RString &sFile, const Song &out, bool bWr
 		JsonUtil::SerializeVectorObjects( vBgc, Serialize, root["ForegroundChanges"] );
 	}
 
-	JsonUtil::SerializeArrayValues( out.m_vsKeysoundFile, root["KeySounds"] );
+	std::vector<std::string> tmp;
+	for (const auto&s:out.m_vsKeysoundFile) {
+		tmp.push_back(s);
+	}
+	JsonUtil::SerializeArrayValues( tmp, root["KeySounds"] );
 
 	if( bWriteSteps )
 	{

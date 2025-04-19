@@ -111,7 +111,7 @@ RString RageDisplay::SetVideoMode( VideoModeParams p, bool &bNeedReloadTextures 
 		if (candidate.currentMode() != nullptr)
 		{
 			d = candidate;
-			if (candidate.id() == p.sDisplayId)
+			if (candidate.id() == std::string(p.sDisplayId))
 			{
 				break;
 			}

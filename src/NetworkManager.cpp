@@ -82,7 +82,7 @@ NetworkManager::NetworkManager() : httpClient(true), downloadClient(true)
 		f.Read(data);
 		f.Close();
 
-		this->tlsOptions.caFile = data;
+		this->tlsOptions.caFile = static_cast<std::string>(data);
 	}
 	else
 	{
@@ -117,12 +117,14 @@ bool NetworkManager::IsUrlAllowed(const std::string& url)
 	}
 
 	std::string protocol;
-	RString host;
+	std::string host;
 	std::string path;
 	std::string query;
 	int port;
 
 	bool valid = ix::UrlParser::parse(url, protocol, host, path, query, port);
+
+	RString hostR = host;
 
 	if (!valid)
 	{
@@ -134,7 +136,7 @@ bool NetworkManager::IsUrlAllowed(const std::string& url)
 		return false;
 	}
 
-	host.MakeLower();
+	hostR.MakeLower();
 
 	RString allowedHostsStr = this->httpAllowHosts.Get();
 	allowedHostsStr.MakeLower();
@@ -145,15 +147,15 @@ bool NetworkManager::IsUrlAllowed(const std::string& url)
 	for (const auto& allowedHost : allowedHosts)
 	{
 		// subdomain wildcards; ".domain" doesn't match "*.domain", but "a.domain" does
-		if (allowedHost.substr(0, 2) == "*." && host.length() >= allowedHost.length())
+		if (allowedHost.substr(0, 2) == "*." && hostR.length() >= allowedHost.length())
 		{
-			size_t pos = host.length() - allowedHost.length() + 1;
-			if (host.substr(pos) == allowedHost.substr(1))
+			size_t pos = hostR.length() - allowedHost.length() + 1;
+			if (hostR.substr(pos) == allowedHost.substr(1))
 				return true;
 		}
 
 		// literal match
-		if (host == allowedHost)
+		if (hostR == allowedHost)
 			return true;
 	}
 

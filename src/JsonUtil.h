@@ -117,8 +117,8 @@ namespace JsonUtil
 		for( typename V::const_iterator iter=v.begin(); iter!=v.end(); iter++ )
 		{
 			Json::Value &vv = root[i++];
-			iter->first.Serialize( vv[sKeyName] );
-			iter->second.Serialize( vv[sValueName] );
+			iter->first.Serialize( vv[sKeyName.c_str()] );
+			iter->second.Serialize( vv[sValueName.c_str()] );
 		}
 	}
 
@@ -131,8 +131,8 @@ namespace JsonUtil
 		for( typename V::const_iterator iter=v.begin(); iter!=v.end(); iter++ )
 		{
 			Json::Value &vv = root[i++];
-			iter->first.Serialize( vv[sKeyName] );
-			vv[sValueName] = iter->second;
+			iter->first.Serialize( vv[sKeyName.c_str()] );
+			vv[sValueName.c_str()] = iter->second;
 		}
 	}
 
@@ -218,10 +218,10 @@ namespace JsonUtil
 		{
 			ASSERT( (*iter).type() == Json::objectValue );
 			K k;
-			if( !k.Deserialize( (*iter)[sKeyName] ) )
+			if( !k.Deserialize( (*iter)[sKeyName.c_str()] ) )
 				continue;
 			V v;
-			if( !v.Deserialize( (*iter)[sValueName] ) )
+			if( !v.Deserialize( (*iter)[sValueName.c_str()] ) )
 				continue;
 			m[k] = v;
 		}

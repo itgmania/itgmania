@@ -103,8 +103,6 @@ void ShowWarningOrTrace( const char *file, int line, const char *message, bool b
 #define SM_UNIQUE_NAME(x) SM_UNIQUE_NAME2(x, __LINE__)
 
 #include "StdString.h"
-/** @brief Use RStrings throughout the program. */
-typedef StdString::CStdString RString;
 
 #include "RageException.h"
 

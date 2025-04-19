@@ -54,7 +54,7 @@ bool CsvFile::ReadFile( RageFileBasic &f )
 			if( line[0] == '\"' )	// quoted value
 			{
 				line.erase( line.begin() );	// eat open quote
-				RString::size_type iEnd = 0;
+				size_t iEnd = 0;
 				do
 				{
 					iEnd = line.find('\"', iEnd);
@@ -82,7 +82,7 @@ bool CsvFile::ReadFile( RageFileBasic &f )
 			}
 			else
 			{
-				RString::size_type iEnd = line.find(',');
+				size_t iEnd = line.find(',');
 				if( iEnd == line.npos )
 					iEnd = line.size();	// didn't find an end.  Take the whole line
 

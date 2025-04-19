@@ -267,7 +267,7 @@ InputHandler_DInput::InputHandler_DInput()
 		if (XInputGetState(i, &state) == ERROR_SUCCESS)
 		{
 			XIDevice xdevice;
-			xdevice.m_sName = ssprintf("XInput Device %u", i + 1);
+			xdevice.m_sName = static_cast<std::string>(ssprintf("XInput Device %u", i + 1));
 			xdevice.dev = enum_add2( InputDevice::DEVICE_JOY1, g_iNumJoysticks );
 			xdevice.m_dwXInputSlot = i;
 			g_iNumJoysticks++;

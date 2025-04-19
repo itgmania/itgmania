@@ -856,7 +856,7 @@ RString Steps::MinimizedChartString()
 	
 	// Strip any comments from smNoteData
 	std::regex commentRegex("//[^\n]*");
-	RString deCommentedNoteData = std::regex_replace(smNoteData, commentRegex, "");
+	RString deCommentedNoteData = std::regex_replace(std::string(smNoteData), commentRegex, "");
 	
 	RString minimizedNoteData = "";
 	
