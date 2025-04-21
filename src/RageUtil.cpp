@@ -405,8 +405,8 @@ RString vssprintf( const char *szFormat, va_list argList )
 	va_end(tmp);
 
 	RString sRet;
-	std::vsnprintf( sRet.GetBuffer(iNeeded), iNeeded+1, szFormat, argList );
-	sRet.ReleaseBuffer( iNeeded );
+	sRet.resize(iNeeded);
+	std::vsnprintf( &sRet.front(), iNeeded+1, szFormat, argList );
 	return sRet;
 }
 
