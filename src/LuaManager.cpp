@@ -660,7 +660,7 @@ XNode *LuaHelpers::GetLuaInformation()
 	{
 		RString sNamespace;
 		LuaHelpers::Pop( L, sNamespace );
-		if( find(BuiltInPackages, end, sNamespace) != end )
+		if( std::find(BuiltInPackages, end, sNamespace) != end )
 			continue;
 		std::vector<RString> &vNamespaceFunctions = mNamespaces[sNamespace];
 		FOREACH_LUATABLE( L, -1 )
