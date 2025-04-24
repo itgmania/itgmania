@@ -888,7 +888,7 @@ void SMLoader::ProcessSpeeds( TimingData &out, const RString line, const int row
 		std::vector<RString> vs2;
 		split( s1, "=", vs2 );
 
-		if( vs2[0] == 0 && vs2.size() == 2 ) // First one always seems to have 2.
+		if( vs2[0].empty() && vs2.size() == 2 ) // First one always seems to have 2.
 		{
 			vs2.push_back("0");
 		}
