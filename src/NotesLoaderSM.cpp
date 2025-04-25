@@ -1432,7 +1432,7 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 		if (RString::npos == pos)
 			pos = _sChanges.size();
 
-		if (pos - start > 0) {
+		if (pos != start) {
 			if ((start == 0) && (pos == _sChanges.size()))
 				sChanges = _sChanges;
 			else
