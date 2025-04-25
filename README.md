@@ -67,7 +67,7 @@ ITGmania can be compiled using [CMake](http://www.cmake.org/). More information 
 
 * [ITGmania Website](https://www.itgmania.com/)
 * [StepMania 5.1 to ITGmania Migration Guide](Docs/Userdocs/sm5_migration.md)
-* [Lua for ITGmania](https://itgmania.github.io/lua-for-itgmania/)
+* [Lua for ITGmania](https://quietly-turning.github.io/Lua-For-SM5/LuaAPI?engine=ITGmania)
 * Lua API Documentation can be found in the Docs folder.
 
 ## Licensing Terms
