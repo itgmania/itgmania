@@ -192,10 +192,7 @@ namespace StepParity {
 		int rowIndex = 0;
 		int columnCount = 0;
 		int noteCount = 0;
-		Row()
-		{
-			Row(0);
-		}
+		Row() : Row(0) {};
 		
 		Row(int _columnCount)
 		{
