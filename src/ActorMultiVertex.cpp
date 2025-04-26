@@ -89,19 +89,17 @@ ActorMultiVertex::~ActorMultiVertex()
 ActorMultiVertex::ActorMultiVertex( const ActorMultiVertex &cpy ):
 	Actor( cpy )
 {
-#define CPY(a) a = cpy.a
-	CPY( AMV_Tweens );
-	CPY( AMV_current );
-	CPY( AMV_start );
-	CPY( _EffectMode );
-	CPY( _TextureMode );
-	CPY( _splines );
-	CPY(_skip_next_update);
-	CPY(_use_animation_state);
-	CPY(_secs_into_state);
-	CPY(_cur_state);
-	CPY(_states);
-#undef CPY
+	AMV_Tweens = cpy.AMV_Tweens;
+	AMV_current = cpy.AMV_current;
+	AMV_start = cpy.AMV_start;
+	_EffectMode = cpy._EffectMode;
+	_TextureMode = cpy._TextureMode;
+	_splines = cpy._splines;
+	_skip_next_update = cpy._skip_next_update;
+	_use_animation_state = cpy._use_animation_state;
+	_secs_into_state = cpy._secs_into_state;
+	_cur_state = cpy._cur_state;
+	_states = cpy._states;
 
 	if( cpy._Texture != nullptr )
 	{
