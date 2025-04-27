@@ -250,7 +250,7 @@ void convert_lua_chunk(RString& chunk_text)
 	for(std::map<RString, RString>::iterator chunk= chunks_to_replace.begin();
 			chunk != chunks_to_replace.end(); ++chunk)
 	{
-		chunk_text.Replace(chunk->first, chunk->second);
+		chunk_text.Replace(chunk->first.c_str(), chunk->second.c_str());
 	}
 }
 

@@ -262,7 +262,7 @@ bool SongManager::SanityCheckGroupDir( RString sDir ) const
 		{
 			if(ext == aud)
 			{
-				LOG->Warn(FOLDER_CONTAINS_MUSIC_FILES.GetValue(), sDir.c_str());
+				LOG->Warn(FOLDER_CONTAINS_MUSIC_FILES.GetValue().c_str(), sDir.c_str());
 				return false;
 			}
 		}
@@ -2395,7 +2395,7 @@ public:
 	static int SongToPreferredSortSectionName( T* p, lua_State *L )
 	{
 		const Song* pSong = Luna<Song>::check(L,1);
-		lua_pushstring(L, p->SongToPreferredSortSectionName(pSong));
+		lua_pushstring(L, p->SongToPreferredSortSectionName(pSong).c_str());
 		return 1;
 	}
 	static int GetPreferredSortSongsBySectionName( T* p, lua_State *L )

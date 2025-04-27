@@ -499,10 +499,18 @@ public:
 	{
 		return ssicmp(this->c_str(), szThat);
 	}
+	int CompareNoCase(const MYTYPE& other)	const
+	{
+		return ssicmp(this->c_str(), other.c_str());
+	}
 
 	bool EqualsNoCase(PCMYSTR szThat)	const
 	{
 		return CompareNoCase(szThat) == 0;
+	}
+	bool EqualsNoCase(const MYTYPE& other)	const
+	{
+		return CompareNoCase(other.c_str()) == 0;
 	}
 
 	MYTYPE Left(int nCount) const
@@ -546,6 +554,11 @@ public:
 			nIdx += nNewLen;
 		}
 		return nReplaced;
+	}
+
+	int Replace(const MYTYPE& szOld, const MYTYPE& szNew)
+	{
+		return Replace(szOld.c_str(), szNew.c_str());
 	}
 
 	MYTYPE Right(int nCount) const

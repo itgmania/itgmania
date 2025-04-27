@@ -435,7 +435,7 @@ static bool CompareSongPointersByTitle( const Song *pSong1, const Song *pSong2 )
 	s1 = SongUtil::MakeSortString(s1);
 	s2 = SongUtil::MakeSortString(s2);
 
-	int ret = strcmp( s1, s2 );
+	int ret = strcmp( s1.c_str(), s2.c_str() );
 	if(ret < 0) return true;
 	if(ret > 0) return false;
 
@@ -622,7 +622,7 @@ int SongUtil::CompareSongPointersByGroup(const Song *pSong1, const Song *pSong2)
 	s1 = SongUtil::MakeSortString(s1);
 	s2 = SongUtil::MakeSortString(s2);
 
-	int ret = strcmp( s1, s2 );
+	int ret = strcmp( s1.c_str(), s2.c_str() );
 	return ret < 0;
 }
 
@@ -654,7 +654,7 @@ static int CompareSongPointersByGroupAndTitle( const Song *pSong1, const Song *p
 	s1 = SongUtil::MakeSortString(s1);
 	s2 = SongUtil::MakeSortString(s2);
 
-	int ret = strcmp( s1, s2 );
+	int ret = strcmp( s1.c_str(), s2.c_str() );
 	return ret < 0;
 }
 
@@ -970,9 +970,9 @@ bool SongUtil::ValidateCurrentEditStepsDescription( const RString &sAnswer, RStr
 	}
 
 	static const RString sInvalidChars = "\\/:*?\"<>|";
-	if( strpbrk(sAnswer, sInvalidChars) != nullptr )
+	if( strpbrk(sAnswer.c_str(), sInvalidChars.c_str()) != nullptr )
 	{
-		sErrorOut = ssprintf( EDIT_NAME_CANNOT_CONTAIN.GetValue(), sInvalidChars.c_str() );
+		sErrorOut = ssprintf( EDIT_NAME_CANNOT_CONTAIN.GetValue().c_str(), sInvalidChars.c_str() );
 		return false;
 	}
 
@@ -1020,9 +1020,9 @@ bool SongUtil::ValidateCurrentStepsChartName(const RString &answer, RString &err
 	if (answer.empty()) return true;
 
 	static const RString sInvalidChars = "\\/:*?\"<>|";
-	if( strpbrk(answer, sInvalidChars) != nullptr )
+	if( strpbrk(answer.c_str(), sInvalidChars.c_str()) != nullptr )
 	{
-		error = ssprintf( CHART_NAME_CANNOT_CONTAIN.GetValue(), sInvalidChars.c_str() );
+		error = ssprintf( CHART_NAME_CANNOT_CONTAIN.GetValue().c_str(), sInvalidChars.c_str() );
 		return false;
 	}
 
@@ -1054,9 +1054,9 @@ bool SongUtil::ValidateCurrentStepsCredit( const RString &sAnswer, RString &sErr
 
 	// Borrow from EditDescription testing. Perhaps this should be abstracted? -Wolfman2000
 	static const RString sInvalidChars = "\\/:*?\"<>|";
-	if( strpbrk(sAnswer, sInvalidChars) != nullptr )
+	if( strpbrk(sAnswer.c_str(), sInvalidChars.c_str()) != nullptr )
 	{
-		sErrorOut = ssprintf( AUTHOR_NAME_CANNOT_CONTAIN.GetValue(), sInvalidChars.c_str() );
+		sErrorOut = ssprintf( AUTHOR_NAME_CANNOT_CONTAIN.GetValue().c_str(), sInvalidChars.c_str() );
 		return false;
 	}
 
@@ -1076,7 +1076,7 @@ bool SongUtil::ValidateCurrentSongPreview(const RString& answer, RString& error)
 	song->m_PreviewFile= real_file;
 	if(!valid)
 	{
-		error= ssprintf(PREVIEW_DOES_NOT_EXIST.GetValue(), answer.c_str());
+		error= ssprintf(PREVIEW_DOES_NOT_EXIST.GetValue().c_str(), answer.c_str());
 	}
 	return valid;
 }
@@ -1094,7 +1094,7 @@ bool SongUtil::ValidateCurrentStepsMusic(const RString &answer, RString &error)
 	pSteps->SetMusicFile(real_file);
 	if(!valid)
 	{
-		error= ssprintf(MUSIC_DOES_NOT_EXIST.GetValue(), answer.c_str());
+		error= ssprintf(MUSIC_DOES_NOT_EXIST.GetValue().c_str(), answer.c_str());
 	}
 	return valid;
 }

@@ -1711,7 +1711,7 @@ RString Song::GetCacheFile(RString sType)
 	PreDefs["Disc"] = GetDiscPath();
 
 	// Check if Predefined images exist, And return function if they do.
-	if(PreDefs[sType.c_str()])
+	if(PreDefs[sType.c_str()].c_str())
 		return PreDefs[sType.c_str()];
 
 	// Get all image files and put them into a vector.
@@ -2142,47 +2142,47 @@ class LunaSong: public Luna<Song>
 public:
 	static int GetDisplayFullTitle( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetDisplayFullTitle() ); return 1;
+		lua_pushstring(L, p->GetDisplayFullTitle().c_str() ); return 1;
 	}
 	static int GetTranslitFullTitle( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetTranslitFullTitle() ); return 1;
+		lua_pushstring(L, p->GetTranslitFullTitle().c_str() ); return 1;
 	}
 	static int GetDisplayMainTitle( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetDisplayMainTitle() ); return 1;
+		lua_pushstring(L, p->GetDisplayMainTitle().c_str() ); return 1;
 	}
 	static int GetMainTitle(T* p, lua_State* L)
 	{
-		lua_pushstring(L, p->GetMainTitle()); return 1;
+		lua_pushstring(L, p->GetMainTitle().c_str()); return 1;
 	}
 	static int GetTranslitMainTitle( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetTranslitMainTitle() ); return 1;
+		lua_pushstring(L, p->GetTranslitMainTitle().c_str() ); return 1;
 	}
 	static int GetDisplaySubTitle( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetDisplaySubTitle() ); return 1;
+		lua_pushstring(L, p->GetDisplaySubTitle().c_str() ); return 1;
 	}
 	static int GetTranslitSubTitle( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetTranslitSubTitle() ); return 1;
+		lua_pushstring(L, p->GetTranslitSubTitle().c_str() ); return 1;
 	}
 	static int GetDisplayArtist( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetDisplayArtist() ); return 1;
+		lua_pushstring(L, p->GetDisplayArtist().c_str() ); return 1;
 	}
 	static int GetTranslitArtist( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetTranslitArtist() ); return 1;
+		lua_pushstring(L, p->GetTranslitArtist().c_str() ); return 1;
 	}
 	static int GetGenre( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->m_sGenre ); return 1;
+		lua_pushstring(L, p->m_sGenre.c_str() ); return 1;
 	}
 	static int GetOrigin( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->m_sOrigin ); return 1;
+		lua_pushstring(L, p->m_sOrigin.c_str() ); return 1;
 	}
 	static int GetAllSteps( T* p, lua_State *L )
 	{
@@ -2199,14 +2199,14 @@ public:
 	}
 	static int GetSongDir( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetSongDir() );
+		lua_pushstring(L, p->GetSongDir().c_str() );
 		return 1;
 	}
 	static int GetMusicPath( T* p, lua_State *L )
 	{
 		RString s = p->GetMusicPath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2215,7 +2215,7 @@ public:
 	{
 		RString s = p->GetBannerPath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2224,7 +2224,7 @@ public:
 	{
 		RString s = p->GetBackgroundPath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2233,7 +2233,7 @@ public:
 	{
 		RString s = p->GetPreviewVidPath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2241,14 +2241,14 @@ public:
 	static int GetPreviewMusicPath(T* p, lua_State* L)
 	{
 		RString s= p->GetPreviewMusicPath();
-		lua_pushstring(L, s);
+		lua_pushstring(L, s.c_str());
 		return 1;
 	}
 	static int GetJacketPath( T* p, lua_State *L )
 	{
 		RString s = p->GetJacketPath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2257,7 +2257,7 @@ public:
 	{
 		RString s = p->GetCDImagePath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2266,7 +2266,7 @@ public:
 	{
 		RString s = p->GetDiscPath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2275,7 +2275,7 @@ public:
 	{
 		RString s = p->GetCDTitlePath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2284,14 +2284,14 @@ public:
 	{
 		RString s = p->GetLyricsPath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
 	}
 	static int GetSongFilePath(  T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetSongFilePath() );
+		lua_pushstring(L, p->GetSongFilePath().c_str() );
 		return 1;
 	}
 	static int IsTutorial( T* p, lua_State *L )
@@ -2311,7 +2311,7 @@ public:
 	}
 	static int GetGroupName( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->m_sGroupName);
+		lua_pushstring(L, p->m_sGroupName.c_str());
 		return 1;
 	}
 

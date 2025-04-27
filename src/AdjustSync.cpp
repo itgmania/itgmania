@@ -321,7 +321,7 @@ void AdjustSync::GetSyncChangeTextGlobal( std::vector<RString> &vsAddTo )
 		if( std::abs(fDelta) > 0.0001f )
 		{
 			vsAddTo.push_back( ssprintf(
-				GLOBAL_OFFSET_FROM.GetValue(),
+				GLOBAL_OFFSET_FROM.GetValue().c_str(),
 				fOld, fNew,
 				(fDelta > 0 ? EARLIER:LATER).GetValue().c_str() ));
 		}
@@ -351,7 +351,7 @@ void AdjustSync::GetSyncChangeTextSong( std::vector<RString> &vsAddTo )
 			if( std::abs(fDelta) > 0.0001f )
 			{
 				vsAddTo.push_back( ssprintf(
-					SONG_OFFSET_FROM.GetValue(),
+					SONG_OFFSET_FROM.GetValue().c_str(),
 					fOld,
 					fNew,
 					(fDelta > 0 ? EARLIER:LATER).GetValue().c_str() ) );
@@ -375,7 +375,7 @@ void AdjustSync::GetSyncChangeTextSong( std::vector<RString> &vsAddTo )
 				break;
 			}
 
-			RString s = ssprintf( TEMPO_SEGMENT_FROM.GetValue(),
+			RString s = ssprintf( TEMPO_SEGMENT_FROM.GetValue().c_str(),
 					FormatNumberAndSuffix(i+1).c_str(), fOld, fNew );
 
 			vsAddTo.push_back( s );
@@ -400,7 +400,7 @@ void AdjustSync::GetSyncChangeTextSong( std::vector<RString> &vsAddTo )
 				break;
 			}
 
-			RString s = ssprintf( CHANGED_STOP.GetValue(), i+1, fOld, fNew, fDelta );
+			RString s = ssprintf( CHANGED_STOP.GetValue().c_str(), i+1, fOld, fNew, fDelta );
 			vsAddTo.push_back( s );
 		}
 
@@ -426,18 +426,18 @@ void AdjustSync::GetSyncChangeTextSong( std::vector<RString> &vsAddTo )
 				break;
 			}
 
-			RString s = ssprintf( CHANGED_STOP.GetValue(),
+			RString s = ssprintf( CHANGED_STOP.GetValue().c_str(),
 				i+1, fOld, fNew, fDelta );
 			vsAddTo.push_back( s );
 		}
 
 		if( vsAddTo.size() > iOriginalSize && s_fAverageError > 0.0f )
 		{
-			vsAddTo.push_back( ssprintf(ERROR.GetValue(), s_fAverageError) );
+			vsAddTo.push_back( ssprintf(ERROR.GetValue().c_str(), s_fAverageError) );
 		}
 		if( vsAddTo.size() > iOriginalSize && s_iStepsFiltered > 0 )
 		{
-			vsAddTo.push_back( ssprintf(TAPS_IGNORED.GetValue(), s_iStepsFiltered) );
+			vsAddTo.push_back( ssprintf(TAPS_IGNORED.GetValue().c_str(), s_iStepsFiltered) );
 		}
 #undef SEGMENTS_MISMATCH_MESSAGE
 	}

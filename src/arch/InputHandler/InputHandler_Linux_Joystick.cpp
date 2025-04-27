@@ -65,7 +65,7 @@ void InputHandler_Linux_Joystick::StopThread()
 bool InputHandler_Linux_Joystick::TryDevice(RString dev)
 {
 	struct stat st;
-	if( stat( dev, &st ) == -1 )
+	if( stat( dev.c_str(), &st ) == -1 )
 		{ LOG->Warn( "LinuxJoystick: Couldn't stat %s: %s", dev.c_str(), strerror(errno) ); return false; }
 
 	if( !S_ISCHR( st.st_mode ) )
@@ -77,7 +77,7 @@ bool InputHandler_Linux_Joystick::TryDevice(RString dev)
 	/* Thread is stopped! DO NOT RETURN */
 	{
 		FileDescriptor f;
-		f.fd = open( dev, O_RDONLY );
+		f.fd = open( dev.c_str(), O_RDONLY );
 		if(f.fd != -1)
 		{
 			char szName[1024];

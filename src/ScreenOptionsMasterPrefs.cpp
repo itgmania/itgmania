@@ -192,7 +192,7 @@ static void GameSel( int &sel, bool ToSel, const ConfOption *pConfOption )
 
 		sel = 0;
 		for(unsigned i = 0; i < choices.size(); ++i)
-			if( !strcasecmp(choices[i], sCurGameName) )
+			if( !strcasecmp(choices[i].c_str(), sCurGameName.c_str()) )
 				sel = i;
 	} else {
 		std::vector<const Game*> aGames;
@@ -227,12 +227,12 @@ static void Language( int &sel, bool ToSel, const ConfOption *pConfOption )
 	{
 		sel = -1;
 		for( unsigned i=0; sel == -1 && i < vs.size(); ++i )
-			if( !strcasecmp(vs[i], THEME->GetCurLanguage()) )
+			if( !strcasecmp(vs[i].c_str(), THEME->GetCurLanguage().c_str()) )
 				sel = i;
 
 		// If the current language doesn't exist, we'll show BASE_LANGUAGE, so select that.
 		for( unsigned i=0; sel == -1 && i < vs.size(); ++i )
-			if( !strcasecmp(vs[i], SpecialFiles::BASE_LANGUAGE) )
+			if( !strcasecmp(vs[i].c_str(), SpecialFiles::BASE_LANGUAGE.c_str()) )
 				sel = i;
 
 		if( sel == -1 )
@@ -291,7 +291,7 @@ static void RequestedTheme( int &sel, bool ToSel, const ConfOption *pConfOption 
 	{
 		sel = 0;
 		for( unsigned i=1; i<vsThemeNames.size(); i++ )
-			if( !strcasecmp(vsThemeNames[i], PREFSMAN->m_sTheme.Get()) )
+			if( !strcasecmp(vsThemeNames[i].c_str(), PREFSMAN->m_sTheme.Get().c_str()) )
 				sel = i;
 	}
 	else
@@ -317,7 +317,7 @@ static void Announcer( int &sel, bool ToSel, const ConfOption *pConfOption )
 	{
 		sel = 0;
 		for( unsigned i=1; i<choices.size(); i++ )
-			if( !strcasecmp(choices[i], ANNOUNCER->GetCurAnnouncerName()) )
+			if( !strcasecmp(choices[i].c_str(), ANNOUNCER->GetCurAnnouncerName().c_str()) )
 				sel = i;
 	}
 	else
@@ -344,7 +344,7 @@ static void DefaultNoteSkin( int &sel, bool ToSel, const ConfOption *pConfOption
 		po.FromString( PREFSMAN->m_sDefaultModifiers );
 		sel = 0;
 		for( unsigned i=0; i < choices.size(); i++ )
-			if( !strcasecmp(choices[i], po.m_sNoteSkin) )
+			if( !strcasecmp(choices[i].c_str(), po.m_sNoteSkin.c_str()) )
 				sel = i;
 	}
 	else

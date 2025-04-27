@@ -350,7 +350,7 @@ void SMLoader::LoadFromTokens(
 void SMLoader::ProcessBGChanges( Song &out, const RString &sValueName, const RString &sPath, const RString &sParam )
 {
 	BackgroundLayer iLayer = BACKGROUND_LAYER_1;
-	if( sscanf(sValueName, "BGCHANGES%d", &*ConvertValue<int>(&iLayer)) == 1 )
+	if( sscanf(sValueName.c_str(), "BGCHANGES%d", &*ConvertValue<int>(&iLayer)) == 1 )
 		enum_add(iLayer, -1);	// #BGCHANGES2 = BACKGROUND_LAYER_2
 
 	bool bValid = iLayer>=0 && iLayer<NUM_BackgroundLayer;
@@ -400,11 +400,11 @@ void SMLoader::ProcessAttacks( AttackArray &attacks, MsdFile::value_t params )
 		Trim( sBits[0] );
 
 		if( !sBits[0].CompareNoCase("TIME") )
-			attack.fStartSecond = strtof( sBits[1], nullptr );
+			attack.fStartSecond = strtof( sBits[1].c_str(), nullptr );
 		else if( !sBits[0].CompareNoCase("LEN") )
-			attack.fSecsRemaining = strtof( sBits[1], nullptr );
+			attack.fSecsRemaining = strtof( sBits[1].c_str(), nullptr );
 		else if( !sBits[0].CompareNoCase("END") )
-			end = strtof( sBits[1], nullptr );
+			end = strtof( sBits[1].c_str(), nullptr );
 		else if( !sBits[0].CompareNoCase("MODS") )
 		{
 			Trim(sBits[1]);
@@ -872,7 +872,7 @@ void SMLoader::ProcessTickcounts( TimingData &out, const RString line, const int
 		}
 
 		const float fTickcountBeat = RowToBeat( arrayTickcountValues[0], rowsPerBeat );
-		int iTicks = std::clamp(atoi( arrayTickcountValues[1] ), 0, ROWS_PER_BEAT);
+		int iTicks = std::clamp(atoi( arrayTickcountValues[1].c_str() ), 0, ROWS_PER_BEAT);
 
 		out.AddSegment( TickcountSegment(BeatToNoteRow(fTickcountBeat), iTicks) );
 	}

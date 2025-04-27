@@ -146,16 +146,16 @@ void Model::LoadMaterialsFromMilkshapeAscii( const RString &_sPath )
 	{
 		iLineNum++;
 
-		if( !strncmp (sLine, "//", 2) )
+		if( !strncmp (sLine.c_str(), "//", 2) )
 			continue;
 
 		int nFrame;
-		if( sscanf(sLine, "Frames: %d", &nFrame) == 1 )
+		if( sscanf(sLine.c_str(), "Frames: %d", &nFrame) == 1 )
 		{
 			// ignore
 			// m_pModel->nTotalFrames = nFrame;
 		}
-		if( sscanf(sLine, "Frame: %d", &nFrame) == 1 )
+		if( sscanf(sLine.c_str(), "Frame: %d", &nFrame) == 1 )
 		{
 			// ignore
 			// m_pModel->nFrame = nFrame;
@@ -163,7 +163,7 @@ void Model::LoadMaterialsFromMilkshapeAscii( const RString &_sPath )
 
 		// materials
 		int nNumMaterials = 0;
-		if( sscanf(sLine, "Materials: %d", &nNumMaterials) == 1 )
+		if( sscanf(sLine.c_str(), "Materials: %d", &nNumMaterials) == 1 )
 		{
 			m_Materials.resize( nNumMaterials );
 
@@ -176,7 +176,7 @@ void Model::LoadMaterialsFromMilkshapeAscii( const RString &_sPath )
 				// name
 				if( f.GetLine( sLine ) <= 0 )
 					THROW;
-				if( sscanf(sLine, "\"%255[^\"]\"", szName) != 1 )
+				if( sscanf(sLine.c_str(), "\"%255[^\"]\"", szName) != 1 )
 					THROW;
 				Material.sName = szName;
 
@@ -184,7 +184,7 @@ void Model::LoadMaterialsFromMilkshapeAscii( const RString &_sPath )
 				if( f.GetLine( sLine ) <= 0 )
 					THROW;
 				RageVector4 Ambient;
-				if( sscanf(sLine, "%f %f %f %f", &Ambient[0], &Ambient[1], &Ambient[2], &Ambient[3]) != 4 )
+				if( sscanf(sLine.c_str(), "%f %f %f %f", &Ambient[0], &Ambient[1], &Ambient[2], &Ambient[3]) != 4 )
 					THROW;
 				Material.Ambient = Ambient;
 
@@ -192,7 +192,7 @@ void Model::LoadMaterialsFromMilkshapeAscii( const RString &_sPath )
 				if( f.GetLine( sLine ) <= 0 )
 					THROW;
 				RageVector4 Diffuse;
-				if( sscanf(sLine, "%f %f %f %f", &Diffuse[0], &Diffuse[1], &Diffuse[2], &Diffuse[3]) != 4 )
+				if( sscanf(sLine.c_str(), "%f %f %f %f", &Diffuse[0], &Diffuse[1], &Diffuse[2], &Diffuse[3]) != 4 )
 					THROW;
 				Material.Diffuse = Diffuse;
 
@@ -200,7 +200,7 @@ void Model::LoadMaterialsFromMilkshapeAscii( const RString &_sPath )
 				if( f.GetLine( sLine ) <= 0 )
 					THROW;
 				RageVector4 Specular;
-				if( sscanf(sLine, "%f %f %f %f", &Specular[0], &Specular[1], &Specular[2], &Specular[3]) != 4 )
+				if( sscanf(sLine.c_str(), "%f %f %f %f", &Specular[0], &Specular[1], &Specular[2], &Specular[3]) != 4 )
 					THROW;
 				Material.Specular = Specular;
 
@@ -208,7 +208,7 @@ void Model::LoadMaterialsFromMilkshapeAscii( const RString &_sPath )
 				if( f.GetLine( sLine ) <= 0 )
 					THROW;
 				RageVector4 Emissive;
-				if( sscanf (sLine, "%f %f %f %f", &Emissive[0], &Emissive[1], &Emissive[2], &Emissive[3]) != 4 )
+				if( sscanf (sLine.c_str(), "%f %f %f %f", &Emissive[0], &Emissive[1], &Emissive[2], &Emissive[3]) != 4 )
 					THROW;
 				Material.Emissive = Emissive;
 
@@ -232,7 +232,7 @@ void Model::LoadMaterialsFromMilkshapeAscii( const RString &_sPath )
 				if( f.GetLine( sLine ) <= 0 )
 					THROW;
 				strcpy( szName, "" );
-				sscanf( sLine, "\"%255[^\"]\"", szName );
+				sscanf( sLine.c_str(), "\"%255[^\"]\"", szName );
 				RString sDiffuseTexture = szName;
 
 				if( sDiffuseTexture == "" )
@@ -254,7 +254,7 @@ void Model::LoadMaterialsFromMilkshapeAscii( const RString &_sPath )
 				if( f.GetLine( sLine ) <= 0 )
 					THROW;
 				strcpy( szName, "" );
-				sscanf( sLine, "\"%255[^\"]\"", szName );
+				sscanf( sLine.c_str(), "\"%255[^\"]\"", szName );
 				RString sAlphaTexture = szName;
 
 				if( sAlphaTexture == "" )
@@ -783,7 +783,7 @@ public:
 	static int position( T* p, lua_State *L )	{ p->SetPosition( FArg(1) ); COMMON_RETURN_SELF; }
 	static int playanimation( T* p, lua_State *L )	{ p->PlayAnimation(SArg(1),FArg(2)); COMMON_RETURN_SELF; }
 	static int SetDefaultAnimation( T* p, lua_State *L )	{ p->SetDefaultAnimation(SArg(1),FArg(2)); COMMON_RETURN_SELF; }
-	static int GetDefaultAnimation( T* p, lua_State *L )	{ lua_pushstring( L, p->GetDefaultAnimation() ); return 1; }
+	static int GetDefaultAnimation( T* p, lua_State *L )	{ lua_pushstring( L, p->GetDefaultAnimation().c_str() ); return 1; }
 	static int loop( T* p, lua_State *L )		{ p->SetLoop(BArg(1)); COMMON_RETURN_SELF; }
 	static int rate( T* p, lua_State *L )		{ p->SetRate(FArg(1)); COMMON_RETURN_SELF; }
 	static int GetNumStates( T* p, lua_State *L )		{ lua_pushnumber( L, p->GetNumStates() ); return 1; }

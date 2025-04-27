@@ -215,7 +215,7 @@ bool NoteSkinManager::NoteSkinNameInList(const RString name, std::vector<RString
 {
 	for(size_t i= 0; i < name_list.size(); ++i)
 	{
-		if(0 == strcasecmp(name, name_list[i]))
+		if(0 == strcasecmp(name.c_str(), name_list[i].c_str()))
 		{
 			return true;
 		}

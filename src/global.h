@@ -37,10 +37,15 @@
 #undef ASSERT
 #endif
 
+#include "StdString.h"
+/** @brief Use RStrings throughout the program. */
+typedef StdString::CStdString RString;
+
 /** @brief RageThreads defines (don't pull in all of RageThreads.h here) */
 namespace Checkpoints
 {
 	void SetCheckpoint( const char *file, int line, const char *message );
+	void SetCheckpoint( const char *file, int line, const RString& message );
 }
 /** @brief Set a checkpoint with no message. */
 #define CHECKPOINT (Checkpoints::SetCheckpoint(__FILE__, __LINE__, nullptr))
@@ -57,6 +62,8 @@ namespace Checkpoints
  * @param reason the crash reason as determined by prior function calls.
  * @return nothing: there is no escape without quitting the program.
  */
+[[noreturn]]
+void sm_crash(const RString& reason);
 [[noreturn]]
 void sm_crash( const char *reason = "Internal error" );
 
@@ -78,6 +85,7 @@ void sm_crash( const char *reason = "Internal error" );
 /** @brief Use this to catch switching on invalid values */
 #define DEFAULT_FAIL(i) 	default: FAIL_M( ssprintf("%s = %i", #i, (i)) )
 
+void ShowWarningOrTrace( const char *file, int line, const RString& message, bool bWarning );
 void ShowWarningOrTrace( const char *file, int line, const char *message, bool bWarning ); // don't pull in LOG here
 #define WARN(MESSAGE) (ShowWarningOrTrace(__FILE__, __LINE__, MESSAGE, true))
 #if !defined(CO_EXIST_WITH_MFC)
@@ -101,10 +109,6 @@ void ShowWarningOrTrace( const char *file, int line, const char *message, bool b
 #define SM_UNIQUE_NAME3(x,line) x##line
 #define SM_UNIQUE_NAME2(x,line) SM_UNIQUE_NAME3(x, line)
 #define SM_UNIQUE_NAME(x) SM_UNIQUE_NAME2(x, __LINE__)
-
-#include "StdString.h"
-/** @brief Use RStrings throughout the program. */
-typedef StdString::CStdString RString;
 
 #include "RageException.h"
 

@@ -127,7 +127,7 @@ static RString GetActualGraphicOptionsString()
 {
 	const VideoModeParams &params = DISPLAY->GetActualVideoModeParams();
 	RString sFormat = "%s %s %dx%d %d "+COLOR.GetValue()+" %d "+TEXTURE.GetValue()+" %dHz %s %s";
-	RString sLog = ssprintf( sFormat,
+	RString sLog = ssprintf( sFormat.c_str(),
 		DISPLAY->GetApiDescription().c_str(),
 		(params.windowed? WINDOWED : FULLSCREEN).GetValue().c_str(),
 		(int)params.width,
@@ -576,7 +576,7 @@ RageDisplay *CreateDisplay()
 	RString error = ERROR_INITIALIZING_CARD.GetValue()+"\n\n"+
 		ERROR_DONT_FILE_BUG.GetValue()+"\n\n"
 		VIDEO_TROUBLESHOOTING_URL "\n\n"+
-		ssprintf(ERROR_VIDEO_DRIVER.GetValue(), GetVideoDriverName().c_str())+"\n\n";
+		ssprintf(ERROR_VIDEO_DRIVER.GetValue().c_str(), GetVideoDriverName().c_str())+"\n\n";
 
 	std::vector<RString> asRenderers;
 	split( PREFSMAN->m_sVideoRenderers, ",", asRenderers, true );
@@ -614,7 +614,7 @@ RageDisplay *CreateDisplay()
 		}
 		else
 		{
-			RageException::Throw( ERROR_UNKNOWN_VIDEO_RENDERER.GetValue(), sRenderer.c_str() );
+			RageException::Throw( ERROR_UNKNOWN_VIDEO_RENDERER.GetValue().c_str(), sRenderer.c_str() );
 		}
 
 		if( pRet == nullptr )
@@ -623,7 +623,7 @@ RageDisplay *CreateDisplay()
 		RString sError = pRet->Init( params, PREFSMAN->m_bAllowUnacceleratedRenderer );
 		if( !sError.empty() )
 		{
-			error += ssprintf(ERROR_INITIALIZING.GetValue(), sRenderer.c_str())+"\n" + sError;
+			error += ssprintf(ERROR_INITIALIZING.GetValue().c_str(), sRenderer.c_str())+"\n" + sError;
 			RageUtil::SafeDelete( pRet );
 			error += "\n\n\n";
 			continue;
@@ -1433,7 +1433,7 @@ int LuaFunc_SaveScreenshot(lua_State *L)
 	}
 	RString path= dir + filename;
 	lua_pushboolean(L, !filename.empty());
-	lua_pushstring(L, path);
+	lua_pushstring(L, path.c_str());
 	return 2;
 }
 void LuaFunc_Register_SaveScreenshot(lua_State *L);

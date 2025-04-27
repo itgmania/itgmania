@@ -54,7 +54,7 @@ void ScreenSelect::Init()
 					lua_rawgeti(L, 1, i);
 					if(!lua_isstring(L, -1))
 					{
-						LuaHelpers::ReportScriptErrorFmt(m_sName + "::ChoiceNames element %zu is not a string.", i);
+						LuaHelpers::ReportScriptErrorFmt((m_sName + "::ChoiceNames element %zu is not a string.").c_str(), i);
 					}
 					else
 					{

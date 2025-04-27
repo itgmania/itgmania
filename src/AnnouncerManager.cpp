@@ -41,7 +41,7 @@ void AnnouncerManager::GetAnnouncerNames( std::vector<RString>& AddTo )
 
 	// strip out the empty announcer folder
 	for( int i=AddTo.size()-1; i>=0; i-- )
-		if( !strcasecmp( AddTo[i], EMPTY_ANNOUNCER_NAME ) )
+		if( !strcasecmp( AddTo[i].c_str(), EMPTY_ANNOUNCER_NAME.c_str() ) )
 			AddTo.erase(AddTo.begin()+i, AddTo.begin()+i+1 );
 }
 
@@ -53,7 +53,7 @@ bool AnnouncerManager::DoesAnnouncerExist( RString sAnnouncerName )
 	std::vector<RString> asAnnouncerNames;
 	GetAnnouncerNames( asAnnouncerNames );
 	for( unsigned i=0; i<asAnnouncerNames.size(); i++ )
-		if( 0==strcasecmp(sAnnouncerName, asAnnouncerNames[i]) )
+		if( 0==strcasecmp(sAnnouncerName.c_str(), asAnnouncerNames[i].c_str()) )
 			return true;
 	return false;
 }
@@ -203,7 +203,7 @@ public:
 		}
 		else
 		{
-			lua_pushstring(L, s );
+			lua_pushstring(L, s.c_str() );
 		}
 		return 1;
 	}
