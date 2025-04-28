@@ -3,9 +3,15 @@ set -eux
 
 cd "$(dirname $0)"
 
-docker build -f Dockerfile-linux-amd64 . -t itgmania-linux-build:amd64
+ARCH="${ARCH:-$(arch)}"
 
-docker run -i -v $(pwd)/..:/data itgmania-linux-build:amd64 sh -eux <<'EOF'
+podman build --arch=${ARCH} -f Dockerfile-linux . -t itgmania-linux-build:${ARCH}
+
+podman run --name build-itgmania-${ARCH} --replace  \
+	-i -v $(pwd)/..:/data:rw,Z,U --arch=${ARCH} \
+	itgmania-linux-build:${ARCH} sh -eux <<'EOF'
+WITH_MINIMAID=On ; [ "$(arch)" != "x86_64" ] && WITH_MINIMAID=Off
+export WITH_MINIMAID
 git config --global --add safe.directory /data
 cmake -S /data -B /tmp/Build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=On -DWITH_CLUB_FANTASTIC=On
 cmake --build /tmp/Build -j $(nproc)
