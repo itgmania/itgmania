@@ -5,11 +5,9 @@ cd "$(dirname $0)"
 
 ARCH="${ARCH:-$(arch)}"
 
-podman build --arch=${ARCH} -f Dockerfile-linux . -t itgmania-linux-build:${ARCH}
+docker build --platform=${ARCH} -f Dockerfile-linux . -t itgmania-linux-build:${ARCH}
 
-podman run --name build-itgmania-${ARCH} --replace  \
-	-i -v $(pwd)/..:/data:rw,Z,U --arch=${ARCH} \
-	itgmania-linux-build:${ARCH} sh -eux <<'EOF'
+docker run -i -v $(pwd)/..:/data:Z --platform=linux/${ARCH} itgmania-linux-build:${ARCH} sh -eux <<'EOF'
 WITH_MINIMAID=On ; [ "$(arch)" != "x86_64" ] && WITH_MINIMAID=Off
 export WITH_MINIMAID
 git config --global --add safe.directory /data
