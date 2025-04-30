@@ -820,7 +820,10 @@ bool RageDisplay::SaveScreenshot( const RString &sPath, GraphicsFileFormat forma
 	case SAVE_LOSSY_HIGH_QUAL:
 		bSuccess = RageSurfaceUtils::SaveJPEG( surface, out, true );
 		break;
-	DEFAULT_FAIL( format );
+	default:
+		LOG->Warn("Unknown graphics file format; expected bmp/png/jpg: %d", format);
+		bSuccess = false;
+		break;
 	}
 //	LOG->Trace( "Saving Screenshot file took %f seconds.", timer.GetDeltaTime() );
 
