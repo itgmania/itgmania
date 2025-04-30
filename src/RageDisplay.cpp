@@ -773,7 +773,7 @@ bool RageDisplay::SaveScreenshot( const RString &sPath, GraphicsFileFormat forma
 	RageSurface *surface = this->CreateScreenshot();
 //	LOG->Trace( "CreateScreenshot took %f seconds", timer.GetDeltaTime() );
 
-	if (nullptr == surface)
+	if (!surface)
 	{
 		LOG->Trace("CreateScreenshot failed to return a surface");
 		return false;
