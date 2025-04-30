@@ -775,7 +775,7 @@ bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
 
 	if (nullptr == surface)
 	{
-		LOG->Trace("CreateScreenshot failed to return a surface");
+		LOG->Warn("SaveScreenshot: failed to create a screenshot surface");
 		return false;
 	}
 
@@ -798,7 +798,7 @@ bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
 	RageFile out;
 	if( !out.Open( sPath, RageFile::WRITE ) )
 	{
-		LOG->Trace("Couldn't write %s: %s", sPath.c_str(), out.GetError().c_str() );
+		LOG->Warn("SaveScreenshot: Failed to open %s for writing: %s", sPath.c_str(), out.GetError().c_str() );
 		RageUtil::SafeDelete( surface );
 		return false;
 	}
@@ -828,7 +828,7 @@ bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
 
 	if( !bSuccess )
 	{
-		LOG->Trace("Couldn't write %s: %s", sPath.c_str(), out.GetError().c_str() );
+		LOG->Warn("SaveScreenshot: Failed to save screenshot to %s: %s", sPath.c_str(), out.GetError().c_str() );
 		return false;
 	}
 
