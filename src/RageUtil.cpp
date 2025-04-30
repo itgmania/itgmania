@@ -568,7 +568,7 @@ const LanguageInfo *GetLanguageInfo( const RString &sIsoCode )
 {
 	for( unsigned i=0; i<ARRAYLEN(g_langs); ++i )
 	{
-		if( sIsoCode.EqualsNoCase(g_langs[i].szIsoCode) )
+		if( EqualsNoCase(sIsoCode, g_langs[i].szIsoCode) )
 			return &g_langs[i];
 	}
 
@@ -695,9 +695,9 @@ std::vector<RString> SmEscape(const std::vector<RString> &vUnescaped, const std:
 RString SmUnescape( const RString &sEscaped )
 {
 	RString unescaped = sEscaped;
-	unescaped.Replace("\\\\", "||escaped-backslash||");
-	unescaped.Replace("\\", "");
-	unescaped.Replace("||escaped-backslash||", "\\");
+	Replace(unescaped, "\\\\", "||escaped-backslash||");
+	Replace(unescaped, "\\", "");
+	Replace(unescaped, "||escaped-backslash||", "\\");
 	return unescaped;
 }
 
@@ -976,7 +976,7 @@ bool FindFirstFilenameContaining(const std::vector<RString>& filenames,
 	for(size_t i= 0; i < filenames.size(); ++i)
 	{
 		RString lower= GetFileNameWithoutExtension(filenames[i]);
-		lower.MakeLower();
+		MakeLower(lower);
 		for(size_t s= 0; s < starts_with.size(); ++s)
 		{
 			if(!lower.compare(0, starts_with[s].size(), starts_with[s]))
@@ -1040,7 +1040,7 @@ bool GetCommandlineArgument( const RString &option, RString *argument, int iInde
 
 		const size_t i = CurArgument.find( "=" );
 		RString CurOption = CurArgument.substr(0,i);
-		if( CurOption.CompareNoCase(optstr) )
+		if( CompareNoCase(CurOption, optstr) )
 			continue; // no match
 
 		// Found it.
@@ -1131,12 +1131,12 @@ bool DirectoryIsEmpty( const RString &sDir )
 
 bool CompareRStringsAsc( const RString &sStr1, const RString &sStr2 )
 {
-	return sStr1.CompareNoCase( sStr2 ) < 0;
+	return CompareNoCase(sStr1, sStr2) < 0;
 }
 
 bool CompareRStringsDesc( const RString &sStr1, const RString &sStr2 )
 {
-	return sStr1.CompareNoCase( sStr2 ) > 0;
+	return CompareNoCase(sStr1, sStr2) > 0;
 }
 
 void SortRStringArray( std::vector<RString> &arrayRStrings, const bool bSortAscending )
@@ -1292,9 +1292,9 @@ RString URLEncode( const RString &sStr )
 // remove various version control-related files
 static bool CVSOrSVN( const RString& s )
 {
-	return s.Right(3).EqualsNoCase("CVS") ||
-			s.Right(4) == ".svn" ||
-			s.Right(3).EqualsNoCase(".hg");
+	return EqualsNoCase(Right(s, 3), "CVS") ||
+			Right(s, 4) == ".svn" ||
+			EqualsNoCase(Right(s, 3), ".hg");
 }
 
 void StripCvsAndSvn( std::vector<RString> &vs )
@@ -1304,7 +1304,7 @@ void StripCvsAndSvn( std::vector<RString> &vs )
 
 static bool MacResourceFork( const RString& s )
 {
-	return s.Left(2).EqualsNoCase("._");
+	return EqualsNoCase(Left(s, 2), "._");
 }
 
 void StripMacResourceForks( std::vector<RString> &vs )
@@ -1501,7 +1501,7 @@ bool Regex::Replace( const RString &sReplacement, const RString &sSubject, RStri
 	{
 		RString sFrom = ssprintf( "\\${%d}", i );
 		RString sTo = asMatches[i];
-		sOut.Replace(sFrom, sTo);
+		Replace(sOut, sFrom, sTo);
 	}
 
 	return true;
@@ -1961,7 +1961,7 @@ void ReplaceEntityText( RString &sText, const std::map<RString, RString> &m )
 		}
 
 		RString sElement = sText.substr( iStart+1, iEnd-iStart-1 );
-		sElement.MakeLower();
+		MakeLower(sElement);
 
 		std::map<RString, RString>::const_iterator it = m.find( sElement );
 		if( it == m.end() )
@@ -2331,7 +2331,7 @@ namespace StringConversion
 
 bool FileCopy( const RString &sSrcFile, const RString &sDstFile )
 {
-	if( !sSrcFile.CompareNoCase(sDstFile) )
+	if( !CompareNoCase(sSrcFile, sDstFile) )
 	{
 		LOG->Warn( "Tried to copy \"%s\" over itself", sSrcFile.c_str() );
 		return false;
@@ -2407,9 +2407,7 @@ LuaFunction( SecondsToMSS, SecondsToMSS( FArg(1) ) )
 LuaFunction( SecondsToMMSS, SecondsToMMSS( FArg(1) ) )
 LuaFunction( FormatNumberAndSuffix, FormatNumberAndSuffix( IArg(1) ) )
 LuaFunction( Basename, Basename( SArg(1) ) )
-static RString MakeLower( RString s ) { s.MakeLower(); return s; }
 LuaFunction( Lowercase, MakeLower( SArg(1) ) )
-static RString MakeUpper( RString s ) { s.MakeUpper(); return s; }
 LuaFunction( Uppercase, MakeUpper( SArg(1) ) )
 LuaFunction( mbstrlen, (int)RStringToWstring(SArg(1)).length() )
 LuaFunction( URLEncode, URLEncode( SArg(1) ) );

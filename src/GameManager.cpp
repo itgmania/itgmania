@@ -3451,7 +3451,7 @@ const StepsTypeInfo &GameManager::GetStepsTypeInfo( StepsType st )
 
 StepsType GameManager::StringToStepsType( RString sStepsType )
 {
-	sStepsType.MakeLower();
+	MakeLower(sStepsType);
 
 	for( int i=0; i<NUM_StepsType; i++ )
 		if( g_StepsTypeInfos[i].szName == sStepsType )
@@ -3473,7 +3473,7 @@ RString GameManager::StyleToLocalizedString( const Style* style )
 const Game* GameManager::StringToGame( RString sGame )
 {
 	for( size_t i=0; i<ARRAYLEN(g_Games); ++i )
-		if( !sGame.CompareNoCase(g_Games[i]->m_szName) )
+		if( !CompareNoCase(sGame, g_Games[i]->m_szName) )
 			return g_Games[i];
 
 	return nullptr;
@@ -3485,7 +3485,7 @@ const Style* GameManager::GameAndStringToStyle( const Game *game, RString sStyle
 	for( int s=0; game->m_apStyles[s]; ++s )
 	{
 		const Style* style = game->m_apStyles[s];
-		if( sStyle.CompareNoCase(style->m_szName) == 0 )
+		if( CompareNoCase(sStyle, style->m_szName) == 0 )
 			return style;
 	}
 

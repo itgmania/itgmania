@@ -90,7 +90,7 @@ void NoteSkinManager::RefreshNoteSkinData( const Game* pGame )
 	for( unsigned j=0; j<asNoteSkinNames.size(); j++ )
 	{
 		RString sName = asNoteSkinNames[j];
-		sName.MakeLower();
+		MakeLower(sName);
 		// Don't feel like changing the structure of this code to load the skin
 		// into a temp variable and move it, so if the load fails, then just
 		// delete it from the map. -Kyz
@@ -147,9 +147,9 @@ bool NoteSkinManager::LoadNoteSkinDataRecursive( const RString &sNoteSkinName_, 
 		IniFile ini;
 		ini.ReadFile( sDir+"metrics.ini" );
 
-		if( !sNoteSkinName.CompareNoCase(GAME_BASE_NOTESKIN_NAME) )
+		if( !CompareNoCase(sNoteSkinName, GAME_BASE_NOTESKIN_NAME) )
 			bLoadedBase = true;
-		if( !sNoteSkinName.CompareNoCase(GAME_COMMON_NOTESKIN_NAME) )
+		if( !CompareNoCase(sNoteSkinName, GAME_COMMON_NOTESKIN_NAME) )
 			bLoadedCommon = true;
 
 		RString sFallback;
@@ -294,7 +294,7 @@ RString NoteSkinManager::GetMetric( const RString &sButtonName, const RString &s
 		return "";
 	}
 	RString sNoteSkinName = m_sCurrentNoteSkin;
-	sNoteSkinName.MakeLower();
+	MakeLower(sNoteSkinName);
 	std::map<RString, NoteSkinData>::const_iterator it = g_mapNameToData.find(sNoteSkinName);
 	ASSERT_M( it != g_mapNameToData.end(), sNoteSkinName );	// this NoteSkin doesn't exist!
 	const NoteSkinData& data = it->second;
@@ -346,7 +346,7 @@ RString NoteSkinManager::GetPath( const RString &sButtonName, const RString &sEl
 		return "";
 	}
 	RString sNoteSkinName = m_sCurrentNoteSkin;
-	sNoteSkinName.MakeLower();
+	MakeLower(sNoteSkinName);
 	std::map<RString, NoteSkinData>::const_iterator iter = g_mapNameToData.find( sNoteSkinName );
 	ASSERT( iter != g_mapNameToData.end() );
 	const NoteSkinData &data = iter->second;

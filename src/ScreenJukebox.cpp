@@ -127,7 +127,7 @@ void ScreenJukebox::SetSong()
 					for (Attack const &a: aAttacks)
 					{
 						RString s = a.sModifiers;
-						s.MakeLower();
+						MakeLower(s);
 						// todo: allow themers to modify this list? -aj
 						if( s.find("dark") != std::string::npos ||
 							s.find("stealth") != std::string::npos )

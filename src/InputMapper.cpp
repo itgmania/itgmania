@@ -669,7 +669,7 @@ void InputMapper::AutoMapJoysticksForCurrentGame()
 		for( unsigned j=0; j<ARRAYLEN(g_AutoMappings); j++ )
 		{
 			const AutoMappings& mapping = g_AutoMappings[j];
-			if( mapping.m_sGame.EqualsNoCase(m_pInputScheme->m_szName) )
+			if( EqualsNoCase(mapping.m_sGame, m_pInputScheme->m_szName) )
 				vAutoMappings.push_back( mapping );
 		}
 	}

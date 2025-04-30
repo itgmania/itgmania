@@ -240,7 +240,7 @@ const UnlockEntry *UnlockManager::FindCourse( const Course *pCourse ) const
 const UnlockEntry *UnlockManager::FindModifier( const RString &sOneMod ) const
 {
 	for (UnlockEntry const &e : m_UnlockEntries)
-		if( e.GetModifier().CompareNoCase(sOneMod) == 0 )
+		if( CompareNoCase(e.GetModifier(), sOneMod) == 0 )
 			return &e;
 	return nullptr;
 }

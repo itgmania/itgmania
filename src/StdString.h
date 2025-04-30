@@ -449,27 +449,6 @@ public:
 	friend	MYTYPE	operator+ <>(PCSTR pA,				const MYTYPE& str);
 
 	// -------------------------------------------------------------------------
-	// Case changing functions
-	// -------------------------------------------------------------------------
-	MYTYPE& MakeUpper()
-	{
-		if ( !this->empty() )
-			ssupr(GetBuffer(), this->size());
-
-		return *this;
-	}
-
-	MYTYPE& MakeLower()
-	{
-		if ( !this->empty() )
-			sslwr(GetBuffer(), this->size());
-
-		return *this;
-	}
-
-
-
-	// -------------------------------------------------------------------------
 	// CStdStr -- Direct access to character buffer.  In the MS' implementation,
 	// the at() function that we use here also calls _Freeze() providing us some
 	// protection from multithreading problems associated with ref-counting.
@@ -485,88 +464,6 @@ public:
 	void ReleaseBuffer(int nNewLen=-1)
 	{
 		this->resize(static_cast<MYSIZE>(nNewLen > -1 ? nNewLen : MYTRAITS::length(this->c_str())));
-	}
-
-
-
-	// -------------------------------------------------------------------------
-	// RString Facade Functions:
-	//
-	// The following methods are intended to allow you to use this class as a
-	// drop-in replacement for CString.
-	// -------------------------------------------------------------------------
-	int CompareNoCase(PCMYSTR szThat)	const
-	{
-		return ssicmp(this->c_str(), szThat);
-	}
-	int CompareNoCase(const MYTYPE& other)	const
-	{
-		return ssicmp(this->c_str(), other.c_str());
-	}
-
-	bool EqualsNoCase(PCMYSTR szThat)	const
-	{
-		return CompareNoCase(szThat) == 0;
-	}
-	bool EqualsNoCase(const MYTYPE& other)	const
-	{
-		return CompareNoCase(other.c_str()) == 0;
-	}
-
-	MYTYPE Left(int nCount) const
-	{
-		// Range check the count.
-
-		nCount = std::max(0, std::min(nCount, static_cast<int>(this->size())));
-		return this->substr(0, static_cast<MYSIZE>(nCount));
-	}
-
-	int Replace(CT chOld, CT chNew)
-	{
-		int nReplaced	= 0;
-		for ( MYITER iter=this->begin(); iter != this->end(); iter++ )
-		{
-			if ( *iter == chOld )
-			{
-				*iter = chNew;
-				nReplaced++;
-			}
-		}
-		return nReplaced;
-	}
-
-	int Replace(PCMYSTR szOld, PCMYSTR szNew)
-	{
-		int nReplaced		= 0;
-		MYSIZE nIdx			= 0;
-		MYSIZE nOldLen		= MYTRAITS::length(szOld);
-		if ( 0 == nOldLen )
-			return 0;
-
-		static const CT ch	= CT(0);
-		MYSIZE nNewLen		= MYTRAITS::length(szNew);
-		PCMYSTR szRealNew	= szNew == 0 ? &ch : szNew;
-
-		while ( (nIdx=this->find(szOld, nIdx)) != MYBASE::npos )
-		{
-			MYBASE::replace(this->begin()+nIdx, this->begin()+nIdx+nOldLen, szRealNew);
-			nReplaced++;
-			nIdx += nNewLen;
-		}
-		return nReplaced;
-	}
-
-	int Replace(const MYTYPE& szOld, const MYTYPE& szNew)
-	{
-		return Replace(szOld.c_str(), szNew.c_str());
-	}
-
-	MYTYPE Right(int nCount) const
-	{
-		// Range check the count.
-
-		nCount = std::max(0, std::min(nCount, static_cast<int>(this->size())));
-		return this->substr(this->size()-static_cast<MYSIZE>(nCount));
 	}
 
 	// Array-indexing operators.  Required because we defined an implicit cast
@@ -662,6 +559,84 @@ struct StdStringEqualsNoCase
 //}
 
 }	// namespace StdString
+
+typedef StdString::CStdString RString;
+// FIXME: separate these into functions that either modify the argument, or
+// return a new string leaving the original unmodified.
+inline RString MakeLower(RString&& s) {
+  for (size_t i = 0; i < s.size(); ++i) {
+    s[i] = tolower(s[i]);
+  }
+  return std::move(s);
+}
+inline RString& MakeLower(RString& s) {
+  for (size_t i = 0; i < s.size(); ++i) {
+    s[i] = tolower(s[i]);
+  }
+  return s;
+}
+inline RString MakeUpper(RString&& s) {
+  for (size_t i = 0; i < s.size(); ++i) {
+    s[i] = toupper(s[i]);
+  }
+  return std::move(s);
+}
+inline RString& MakeUpper(RString& s) {
+  for (size_t i = 0; i < s.size(); ++i) {
+    s[i] = toupper(s[i]);
+  }
+  return s;
+}
+inline bool EqualsNoCase(const RString& s1, const RString& s2) {
+  if (s1.size() != s2.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < s1.size(); ++i) {
+    if (tolower(s1[i]) != tolower(s2[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+inline int CompareNoCase(const RString& s1, const RString& s2) {
+  size_t len = s1.length();
+  size_t other_len = s2.length();
+  for (size_t i = 0; i < std::min(len, other_len); ++i) {
+    int a = tolower(s1[i]);
+    int b = tolower(s2[i]);
+    if (a - b != 0) {
+      return a - b;
+    }
+  }
+  return len - other_len;
+}
+inline RString Left(const RString& s, int n) {
+  n = std::max(n, 0);
+  n = std::min(n, static_cast<int>(s.size()));
+  return s.substr(0, n);
+}
+inline RString Right(const RString& s, int n) {
+  n = std::max(n, 0);
+  n = std::min(n, static_cast<int>(s.size()));
+  return s.substr(static_cast<int>(s.size()) - n);
+}
+inline void Replace(RString& s, const RString& a, const RString& b) {
+  size_t idx = 0;
+  size_t a_len = a.length();
+  size_t b_len = b.length();
+  while (idx = s.find(a, idx), idx != RString::npos) {
+    s.replace(idx, a_len, b);
+    idx += b_len;
+  }
+}
+inline void Replace(RString& s, char a, char b) {
+  size_t len = s.length();
+  for (size_t i = 0; i < len; ++i) {
+    if (s[i] == a) {
+      s[i] = b;
+    }
+  }
+}
 
 #if defined(_MSC_VER)
 	#pragma warning (pop)

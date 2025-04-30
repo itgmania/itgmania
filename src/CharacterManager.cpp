@@ -37,9 +37,9 @@ CharacterManager::CharacterManager()
 	{
 		RString sCharName, sDummy;
 		splitpath(as[i], sDummy, sCharName, sDummy);
-		sCharName.MakeLower();
+		MakeLower(sCharName);
 
-		if( sCharName.CompareNoCase("default")==0 )
+		if( CompareNoCase(sCharName, "default")==0 )
 			FoundDefault = true;
 
 		Character* pChar = new Character;

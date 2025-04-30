@@ -187,7 +187,7 @@ bool SMALoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCach
 		int iNumParams = msd.GetNumParams(i);
 		const MsdFile::value_t &sParams = msd.GetValue(i);
 		RString sValueName = sParams[0];
-		sValueName.MakeUpper();
+		MakeUpper(sValueName);
 
 		// handle the data
 		/* Don't use GetMainAndSubTitlesFromFullTitle; that's only for heuristically
@@ -332,18 +332,18 @@ bool SMALoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCach
 
 		else if( sValueName=="SELECTABLE" )
 		{
-			if(sParams[1].EqualsNoCase("YES"))
+			if(EqualsNoCase(sParams[1], "YES"))
 				out.m_SelectionDisplay = out.SHOW_ALWAYS;
-			else if(sParams[1].EqualsNoCase("NO"))
+			else if(EqualsNoCase(sParams[1], "NO"))
 				out.m_SelectionDisplay = out.SHOW_NEVER;
 			// ROULETTE from 3.9. It was removed since UnlockManager can serve
 			// the same purpose somehow. This, of course, assumes you're using
 			// unlocks. -aj
-			else if(sParams[1].EqualsNoCase("ROULETTE"))
+			else if(EqualsNoCase(sParams[1], "ROULETTE"))
 				out.m_SelectionDisplay = out.SHOW_ALWAYS;
 			/* The following two cases are just fixes to make sure simfiles that
 			 * used 3.9+ features are not excluded here */
-			else if(sParams[1].EqualsNoCase("ES") || sParams[1].EqualsNoCase("OMES"))
+			else if(EqualsNoCase(sParams[1], "ES") || EqualsNoCase(sParams[1], "OMES"))
 				out.m_SelectionDisplay = out.SHOW_ALWAYS;
 			else if( StringToInt(sParams[1]) > 0 )
 				out.m_SelectionDisplay = out.SHOW_ALWAYS;
@@ -354,7 +354,7 @@ bool SMALoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCach
 					     sParams[1].c_str() );
 		}
 
-		else if( sValueName.Left(strlen("BGCHANGES"))=="BGCHANGES" || sValueName=="ANIMATIONS" )
+		else if( Left(sValueName, strlen("BGCHANGES"))=="BGCHANGES" || sValueName=="ANIMATIONS" )
 		{
 			SMLoader::ProcessBGChanges( out, sValueName, sPath, sParams[1]);
 		}

@@ -117,7 +117,7 @@ bool Steps::GetNoteDataFromSimfile()
 	// Replace the line below with the Steps' cache file.
 	RString stepFile = this->GetFilename();
 	RString extension = GetExtension(stepFile);
-	extension.MakeLower(); // must do this because the code is expecting lowercase
+	MakeLower(extension); // must do this because the code is expecting lowercase
 
 	if (extension.empty() || extension == "ssc"
 		|| extension == "ats") // remember cache files.
@@ -136,7 +136,7 @@ bool Steps::GetNoteDataFromSimfile()
 			*/
 			SMLoader backup_loader;
 			RString transformedStepFile = stepFile;
-			transformedStepFile.Replace(".ssc", ".sm");
+			Replace(transformedStepFile, ".ssc", ".sm");
 
 			return backup_loader.LoadNoteDataFromSimfile(transformedStepFile, *this);
 		}
@@ -692,7 +692,7 @@ bool Steps::MakeValidEditDescription( RString &sPreferredDescription )
 {
 	if( int(sPreferredDescription.size()) > MAX_STEPS_DESCRIPTION_LENGTH )
 	{
-		sPreferredDescription = sPreferredDescription.Left( MAX_STEPS_DESCRIPTION_LENGTH );
+		sPreferredDescription = Left(sPreferredDescription, MAX_STEPS_DESCRIPTION_LENGTH);
 		return true;
 	}
 	return false;

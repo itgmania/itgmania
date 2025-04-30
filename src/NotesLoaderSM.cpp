@@ -146,18 +146,18 @@ void SMSetDisplayBPM(SMSongTagInfo& info)
 }
 void SMSetSelectable(SMSongTagInfo& info)
 {
-	if((*info.params)[1].EqualsNoCase("YES"))
+	if(EqualsNoCase((*info.params)[1], "YES"))
 	{ info.song->m_SelectionDisplay = info.song->SHOW_ALWAYS; }
-	else if((*info.params)[1].EqualsNoCase("NO"))
+	else if(EqualsNoCase((*info.params)[1], "NO"))
 	{ info.song->m_SelectionDisplay = info.song->SHOW_NEVER; }
 	// ROULETTE from 3.9. It was removed since UnlockManager can serve
 	// the same purpose somehow. This, of course, assumes you're using
 	// unlocks. -aj
-	else if((*info.params)[1].EqualsNoCase("ROULETTE"))
+	else if(EqualsNoCase((*info.params)[1], "ROULETTE"))
 	{ info.song->m_SelectionDisplay = info.song->SHOW_ALWAYS; }
 	/* The following two cases are just fixes to make sure simfiles that
 	 * used 3.9+ features are not excluded here */
-	else if((*info.params)[1].EqualsNoCase("ES") || (*info.params)[1].EqualsNoCase("OMES"))
+	else if(EqualsNoCase((*info.params)[1], "ES") || EqualsNoCase((*info.params)[1], "OMES"))
 	{ info.song->m_SelectionDisplay = info.song->SHOW_ALWAYS; }
 	else if(StringToInt((*info.params)[1]) > 0)
 	{ info.song->m_SelectionDisplay = info.song->SHOW_ALWAYS; }
@@ -326,11 +326,11 @@ void SMLoader::LoadFromTokens(
 	if( out.GetDifficulty() == Difficulty_Hard )
 	{
 		// HACK: SMANIAC used to be Difficulty_Hard with a special description.
-		if( sDescription.CompareNoCase("smaniac") == 0 )
+		if( CompareNoCase(sDescription, "smaniac") == 0 )
 			out.SetDifficulty( Difficulty_Challenge );
 
 		// HACK: CHALLENGE used to be Difficulty_Hard with a special description.
-		if( sDescription.CompareNoCase("challenge") == 0 )
+		if( CompareNoCase(sDescription, "challenge") == 0 )
 			out.SetDifficulty( Difficulty_Challenge );
 	}
 
@@ -399,13 +399,13 @@ void SMLoader::ProcessAttacks( AttackArray &attacks, MsdFile::value_t params )
 
 		Trim( sBits[0] );
 
-		if( !sBits[0].CompareNoCase("TIME") )
+		if( !CompareNoCase(sBits[0], "TIME") )
 			attack.fStartSecond = strtof( sBits[1].c_str(), nullptr );
-		else if( !sBits[0].CompareNoCase("LEN") )
+		else if( !CompareNoCase(sBits[0], "LEN") )
 			attack.fSecsRemaining = strtof( sBits[1].c_str(), nullptr );
-		else if( !sBits[0].CompareNoCase("END") )
+		else if( !CompareNoCase(sBits[0], "END") )
 			end = strtof( sBits[1].c_str(), nullptr );
-		else if( !sBits[0].CompareNoCase("MODS") )
+		else if( !CompareNoCase(sBits[0], "MODS") )
 		{
 			Trim(sBits[1]);
 			attack.sModifiers = sBits[1];
@@ -983,12 +983,12 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 	{
 	case 11:
 		change.m_def.m_sColor2 = aBGChangeValues[10];
-		change.m_def.m_sColor2.Replace( '^', ',' );
+		Replace(change.m_def.m_sColor2, '^', ',');
 		change.m_def.m_sColor2 = RageColor::NormalizeColorString( change.m_def.m_sColor2 );
 		[[fallthrough]];
 	case 10:
 		change.m_def.m_sColor1 = aBGChangeValues[9];
-		change.m_def.m_sColor1.Replace( '^', ',' );
+		Replace(change.m_def.m_sColor1, '^', ',');
 		change.m_def.m_sColor1 = RageColor::NormalizeColorString( change.m_def.m_sColor1 );
 		[[fallthrough]];
 	case 9:
@@ -997,7 +997,7 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 	case 8:
 	{
 		RString tmp = aBGChangeValues[7];
-		tmp.MakeLower();
+		MakeLower(tmp);
 		if( ( tmp.find(".ini") != std::string::npos || tmp.find(".xml") != std::string::npos )
 		   && !PREFSMAN->m_bQuirksMode )
 		{
@@ -1041,7 +1041,7 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 	case 2:
 	{
 		RString tmp = aBGChangeValues[1];
-		tmp.MakeLower();
+		MakeLower(tmp);
 		if( ( tmp.find(".ini") != std::string::npos || tmp.find(".xml") != std::string::npos )
 		   && !PREFSMAN->m_bQuirksMode )
 		{
@@ -1073,7 +1073,7 @@ bool SMLoader::LoadNoteDataFromSimfile( const RString &path, Steps &out )
 		int iNumParams = msd.GetNumParams(i);
 		const MsdFile::value_t &sParams = msd.GetValue(i);
 		RString sValueName = sParams[0];
-		sValueName.MakeUpper();
+		MakeUpper(sValueName);
 
 		// The only tag we care about is the #NOTES tag.
 		if( sValueName=="NOTES" || sValueName=="NOTES2" )
@@ -1092,27 +1092,27 @@ bool SMLoader::LoadNoteDataFromSimfile( const RString &path, Steps &out )
 			RString difficulty = sParams[3];
 
 			// HACK?: If this is a .edit fudge the edit difficulty
-			if(path.Right(5).CompareNoCase(".edit") == 0) difficulty = "edit";
+			if(CompareNoCase(Right(path, 5), ".edit") == 0) difficulty = "edit";
 
 			Trim(stepsType);
 			Trim(description);
 			Trim(difficulty);
 			// Remember our old versions.
-			if (difficulty.CompareNoCase("smaniac") == 0)
+			if (CompareNoCase(difficulty, "smaniac") == 0)
 			{
 				difficulty = "Challenge";
 			}
 
 			/* Handle hacks that originated back when StepMania didn't have
 			 * Difficulty_Challenge. TODO: Remove the need for said hacks. */
-			if( difficulty.CompareNoCase("hard") == 0 )
+			if( CompareNoCase(difficulty, "hard") == 0 )
 			{
 				/* HACK: Both SMANIAC and CHALLENGE used to be Difficulty_Hard.
 				 * They were differentiated via aspecial description.
 				 * Account for the rogue charts that do this. */
 				// HACK: SMANIAC used to be Difficulty_Hard with a special description.
-				if (description.CompareNoCase("smaniac") == 0 ||
-					description.CompareNoCase("challenge") == 0)
+				if (CompareNoCase(description, "smaniac") == 0 ||
+					CompareNoCase(description, "challenge") == 0)
 					difficulty = "Challenge";
 			}
 
@@ -1155,7 +1155,7 @@ bool SMLoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCache
 		int iNumParams = msd.GetNumParams(i);
 		const MsdFile::value_t &sParams = msd.GetValue(i);
 		RString sValueName = sParams[0];
-		sValueName.MakeUpper();
+		MakeUpper(sValueName);
 
 		reused_song_info.params= &sParams;
 		song_handler_map_t::iterator handler=
@@ -1166,7 +1166,7 @@ bool SMLoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCache
 		 * splitting other formats that *don't* natively support #SUBTITLE. */
 			handler->second(reused_song_info);
 		}
-		else if(sValueName.Left(strlen("BGCHANGES")) == "BGCHANGES")
+		else if(Left(sValueName, strlen("BGCHANGES")) == "BGCHANGES")
 		{
 			SMSetBGChanges(reused_song_info);
 		}
@@ -1241,7 +1241,7 @@ bool SMLoader::LoadEditFromMsd( const MsdFile &msd, const RString &sEditFilePath
 		int iNumParams = msd.GetNumParams(i);
 		const MsdFile::value_t &sParams = msd.GetValue(i);
 		RString sValueName = sParams[0];
-		sValueName.MakeUpper();
+		MakeUpper(sValueName);
 
 		// handle the data
 		if( sValueName=="SONG" )
@@ -1256,7 +1256,7 @@ bool SMLoader::LoadEditFromMsd( const MsdFile &msd, const RString &sEditFilePath
 
 			RString sSongFullTitle = sParams[1];
 			this->SetSongTitle(sParams[1]);
-			sSongFullTitle.Replace( '\\', '/' );
+			Replace(sSongFullTitle, '\\', '/');
 
 			pSong = SONGMAN->FindSong( sSongFullTitle );
 			if( pSong == nullptr )
@@ -1351,7 +1351,7 @@ void SMLoader::TidyUpData( Song &song, bool bFromCache )
 
 		for( unsigned i = 0; !bHasNoSongBgTag && i < bg.size(); ++i )
 		{
-			if( !bg[i].m_def.m_sFile1.CompareNoCase(NO_SONG_BG_FILE) )
+			if( !CompareNoCase(bg[i].m_def.m_sFile1, NO_SONG_BG_FILE) )
 			{
 				bg.erase( bg.begin()+i );
 				bHasNoSongBgTag = true;
@@ -1373,7 +1373,7 @@ void SMLoader::TidyUpData( Song &song, bool bFromCache )
 				break;
 
 			// If the last BGA is already the song BGA, don't add a duplicate.
-			if( !bg.empty() && !bg.back().m_def.m_sFile1.CompareNoCase(song.m_sBackgroundFile) )
+			if( !bg.empty() && !CompareNoCase(bg.back().m_def.m_sFile1, song.m_sBackgroundFile) )
 				break;
 
 			if( !IsAFile( song.GetBackgroundPath() ) )
@@ -1465,7 +1465,7 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 					continue;
 
 				// the string itself matches
-				if (f.EqualsNoCase(sChanges.substr(start, f.size()).c_str()))
+				if (EqualsNoCase(f, sChanges.substr(start, f.size()).c_str()))
 				{
 					size_t nextpos = start + f.size();
 

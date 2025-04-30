@@ -125,7 +125,7 @@ RString AnnouncerManager::GetPathTo( RString sAnnouncerName, RString sFolderName
 	int i;
 	for(i = 0; aliases[i][0] != nullptr; ++i)
 	{
-		if(!sFolderName.EqualsNoCase(aliases[i][0]))
+		if(!EqualsNoCase(sFolderName, aliases[i][0]))
 			continue; /* no match */
 
 		if( !DirectoryIsEmpty(AnnouncerPath+aliases[i][1]+"/") )
@@ -168,7 +168,7 @@ void AnnouncerManager::NextAnnouncer()
 	{
 		unsigned i;
 		for( i=0; i<as.size(); i++ )
-			if( as[i].EqualsNoCase(m_sCurAnnouncerName) )
+			if( EqualsNoCase(as[i], m_sCurAnnouncerName) )
 				break;
 		if( i==as.size()-1 )
 			SwitchAnnouncer( "" );

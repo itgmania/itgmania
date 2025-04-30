@@ -351,7 +351,7 @@ public:
 	virtual ReloadChanged Reload()
 	{
 		// HACK: always reload "speed", to update the BPM text in the name of the speed line
-		if( !m_Def.m_sName.CompareNoCase("speed") )
+		if( !CompareNoCase(m_Def.m_sName, "speed") )
 			return RELOAD_CHANGED_ALL;
 
 		return OptionRowHandler::Reload();
@@ -703,7 +703,7 @@ class OptionRowHandlerListCharacters: public OptionRowHandlerList
 		{
 			Character* pCharacter = vpCharacters[i];
 			RString s = pCharacter->GetDisplayName();
-			s.MakeUpper();
+			MakeUpper(s);
 
 			m_Def.m_vsChoices.push_back( s );
 			GameCommand mc;
@@ -1570,18 +1570,18 @@ OptionRowHandler* OptionRowHandlerUtil::Make( const Commands &cmds )
 		ROW_INVALID_IF(command.m_vsArgs.size() != 2 || !sParam.size(),
 			"list row command must be 'list,name' or 'list,type'.", nullptr);
 
-		if(	 sParam.CompareNoCase("NoteSkins")==0 )		MAKE( OptionRowHandlerListNoteSkins )
-		else if( sParam.CompareNoCase("Steps")==0 )		MAKE( OptionRowHandlerListSteps )
-		else if( sParam.CompareNoCase("StepsLocked")==0 )
+		if(	 CompareNoCase(sParam, "NoteSkins")==0 )		MAKE( OptionRowHandlerListNoteSkins )
+		else if( CompareNoCase(sParam, "Steps")==0 )		MAKE( OptionRowHandlerListSteps )
+		else if( CompareNoCase(sParam, "StepsLocked")==0 )
 		{
 			MAKE( OptionRowHandlerListSteps );
 			pHand->m_Def.m_bOneChoiceForAllPlayers = true;
 		}
-		else if( sParam.CompareNoCase("Characters")==0 )	MAKE( OptionRowHandlerListCharacters )
-		else if( sParam.CompareNoCase("Styles")==0 )		MAKE( OptionRowHandlerListStyles )
-		else if( sParam.CompareNoCase("Groups")==0 )		MAKE( OptionRowHandlerListGroups )
-		else if( sParam.CompareNoCase("Difficulties")==0 )	MAKE( OptionRowHandlerListDifficulties )
-		else if( sParam.CompareNoCase("SongsInCurrentSongGroup")==0 )	MAKE( OptionRowHandlerListSongsInCurrentSongGroup )
+		else if( CompareNoCase(sParam, "Characters")==0 )	MAKE( OptionRowHandlerListCharacters )
+		else if( CompareNoCase(sParam, "Styles")==0 )		MAKE( OptionRowHandlerListStyles )
+		else if( CompareNoCase(sParam, "Groups")==0 )		MAKE( OptionRowHandlerListGroups )
+		else if( CompareNoCase(sParam, "Difficulties")==0 )	MAKE( OptionRowHandlerListDifficulties )
+		else if( CompareNoCase(sParam, "SongsInCurrentSongGroup")==0 )	MAKE( OptionRowHandlerListSongsInCurrentSongGroup )
 		else MAKE( OptionRowHandlerList )
 	}
 	else if( name == "lua" )		MAKE( OptionRowHandlerLua )
