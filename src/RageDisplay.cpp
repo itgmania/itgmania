@@ -767,7 +767,7 @@ void RageDisplay::UpdateCentering()
 		(float) p.m_iTranslateX, (float) p.m_iTranslateY, (float) p.m_iAddWidth, (float) p.m_iAddHeight );
 }
 
-bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
+bool RageDisplay::SaveScreenshot( const RString &sPath, GraphicsFileFormat format )
 {
 	RageTimer timer;
 	RageSurface *surface = this->CreateScreenshot();
