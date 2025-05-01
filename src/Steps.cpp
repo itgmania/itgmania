@@ -1069,6 +1069,37 @@ float Steps::GetPeakNps(PlayerNumber pn) const {
 	}
 }
 
+void Steps::CalculateFootPlacementData()
+{
+	// If we don't have a valid layout for this StepsType, then don't even bother
+	if(StepParity::Layouts.find(this->m_StepsType) == StepParity::Layouts.end())
+	{
+		return;
+	}
+
+	NoteData tempNoteData;
+	this->GetNoteData( tempNoteData );
+
+	StepParity::StageLayout layout = StepParity::Layouts.at(this->m_StepsType);
+	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
+	StepParity::StepParityGenerator gen = StepParity::StepParityGenerator(layout);
+	gen.analyzeNoteData(tempNoteData);
+	TechCounts::CalculateTechCountsFromRows(gen.rows, layout, m_CachedTechCounts[0]);
+	GAMESTATE->SetProcessedTimingData(nullptr);
+	// TODO: do this more better, I don't remember how right now
+	m_CachedFootPlacementData = gen.rows;
+}
+
+const std::vector<StepParity::Row> & Steps::GetFootPlacementData()
+{
+	if(m_CachedFootPlacementData.size() == 0)
+	{
+		CalculateFootPlacementData();
+	}
+
+	return m_CachedFootPlacementData;
+}
+
 
 // lua start
 #include "LuaBinding.h"
@@ -1280,6 +1311,51 @@ public:
 		return 1;
 	}
 
+	static int GetNoteAnnotations(T *p, lua_State*L)
+	{
+		const std::vector<StepParity::Row> rows = p->GetFootPlacementData();
+		
+		lua_createtable(L, rows.size(), 0);
+
+		for (unsigned i = 0; i < rows.size(); i++)
+		{
+			lua_createtable(L, 0, 4);
+			lua_pushstring(L, "beat");
+			lua_pushnumber(L, rows[i].beat);
+			lua_settable(L, -3);
+
+			// add columns
+			lua_pushstring(L, "footPlacement");
+			lua_createtable(L, 0, 0);
+			int colIndex = 1;
+			for (unsigned n = 0; n < rows[i].notes.size(); n++)
+			{
+				if(rows[i].notes[n].type != TapNoteType_Empty)
+				{
+					lua_pushnumber(L, rows[i].notes[n].col+1);
+					Enum::Push(L, rows[i].notes[n].parity);
+					lua_settable(L, -3);
+				}
+			}
+			lua_settable(L, -3);
+ 
+			// add tech
+			lua_pushstring(L, "tech");
+			lua_createtable(L, 0, 0);
+			int techIndex = 1;
+			for (size_t n = 0; n < rows[i].notes.size(); n++) {
+				for (const TechCountsCategory techVal : rows[i].notes[n].tech) {
+					Enum::Push(L, techVal);
+					lua_rawseti(L, -2, techIndex++);
+				}
+			}
+			lua_settable(L, -3);
+
+			lua_rawseti(L, -2, i + 1);
+		}
+		return 1;
+	}
+
 	LunaSteps()
 	{
 		ADD_METHOD( GetAuthorCredit );
@@ -1316,6 +1392,7 @@ public:
 		ADD_METHOD( GetPeakNps );
 		ADD_METHOD( GetGrooveStatsHash );
 		ADD_METHOD( GetGrooveStatsHashVersion );
+		ADD_METHOD( GetNoteAnnotations );
 	}
 };
 

@@ -128,17 +128,17 @@ State * StepParityGenerator::initResultState(State * initialState, Row &row, con
 	
 	for (unsigned long i = 0; i < columns.size(); i++)
 	{
-		resultState->columns[i] = NONE;
-		resultState->combinedColumns[i] = NONE;
-		resultState->movedFeet[i] = NONE;
-		resultState->holdFeet[i] = NONE;
+		resultState->columns[i] = Foot_None;
+		resultState->combinedColumns[i] = Foot_None;
+		resultState->movedFeet[i] = Foot_None;
+		resultState->holdFeet[i] = Foot_None;
 	}
 		
 	// I tried to condense this, but kept getting the logic messed up
 	for (unsigned long i = 0; i < columns.size(); i++)
 	{
 		resultState->columns[i] = columns[i];
-		if(columns[i] == NONE) {
+		if(columns[i] == Foot_None) {
 			continue;
 		}
 		resultState->whatNoteTheFootIsHitting[columns[i]] = i;
@@ -158,7 +158,7 @@ State * StepParityGenerator::initResultState(State * initialState, Row &row, con
 
 	for (unsigned long i = 0; i < columns.size(); i++)
 	{
-		if(columns[i] == NONE) {
+		if(columns[i] == Foot_None) {
 			continue;
 		}
 
@@ -198,30 +198,30 @@ void StepParityGenerator::mergeInitialAndResultPosition(State * initialState, St
 	// Merge initial + result position
 	for (int i = 0; i < columnCount; i++) {
 	  	  // copy in data from resultState over the top which overrides it, as long as it's not nothing
-	  	  if (resultState->columns[i] != NONE) {
+	  	  if (resultState->columns[i] != Foot_None) {
 		  	  resultState->combinedColumns[i] = resultState->columns[i];
 		continue;
 	  	  }
 
 	  	  // copy in data from initialState, if it wasn't moved
 	  	  if (
-		initialState->combinedColumns[i] == LEFT_HEEL ||
-		initialState->combinedColumns[i] == RIGHT_HEEL
+		initialState->combinedColumns[i] == Foot_LeftHeel ||
+		initialState->combinedColumns[i] == Foot_RightHeel
 	  	  ) {
 		if (!resultState->didTheFootMove[initialState->combinedColumns[i]]) {
 			resultState->combinedColumns[i] = initialState->combinedColumns[i];
 		}
-	  	  } else if (initialState->combinedColumns[i] == LEFT_TOE) {
+	  	  } else if (initialState->combinedColumns[i] == Foot_LeftToe) {
 		if (
-		  	  !resultState->didTheFootMove[LEFT_TOE] &&
-		  	  !resultState->didTheFootMove[LEFT_HEEL]
+		  	  !resultState->didTheFootMove[Foot_LeftToe] &&
+		  	  !resultState->didTheFootMove[Foot_LeftHeel]
 		) {
 			resultState->combinedColumns[i] = initialState->combinedColumns[i];
 		}
-	  	  } else if (initialState->combinedColumns[i] == RIGHT_TOE) {
+	  	  } else if (initialState->combinedColumns[i] == Foot_RightToe) {
 		if (
-		  	  !resultState->didTheFootMove[RIGHT_TOE] &&
-		  	  !resultState->didTheFootMove[RIGHT_HEEL]
+		  	  !resultState->didTheFootMove[Foot_RightToe] &&
+		  	  !resultState->didTheFootMove[Foot_RightHeel]
 		) {
 			resultState->combinedColumns[i] = initialState->combinedColumns[i];
 		}
@@ -230,7 +230,7 @@ void StepParityGenerator::mergeInitialAndResultPosition(State * initialState, St
 	
 	for(int i = 0; i < columnCount; i++)
 	{
-		if(resultState->combinedColumns[i] != NONE)
+		if(resultState->combinedColumns[i] != Foot_None)
 		{
 			resultState->whereTheFeetAre[resultState->combinedColumns[i]] = i;
 		}
@@ -251,7 +251,7 @@ std::vector<FootPlacement>* StepParityGenerator::getFootPlacementPermutations(co
 	
 	if (maybePermuteFootPlacements == permuteCache.end())
 	{
-		FootPlacement blankColumns(row.columnCount, NONE);
+		FootPlacement blankColumns(row.columnCount, Foot_None);
 		std::vector<FootPlacement> computedPermutations = PermuteFootPlacements(row, blankColumns, 0, false);
 		
 		// if we didn't get any permutations, try again, ignoring holds
@@ -285,23 +285,23 @@ std::vector<FootPlacement> StepParityGenerator::PermuteFootPlacements(const Row 
 		
 		for (unsigned long i = 0; i < columns.size(); i++)
 		{
-			if (columns[i] == NONE)
+			if (columns[i] == Foot_None)
 			{
 				continue;
 			}
-			if (columns[i] == LEFT_HEEL)
+			if (columns[i] == Foot_LeftHeel)
 			{
 				leftHeelIndex = i;
 			}
-			if (columns[i] == LEFT_TOE)
+			if (columns[i] == Foot_LeftToe)
 			{
 				leftToeIndex = i;
 			}
-			if (columns[i] == RIGHT_HEEL)
+			if (columns[i] == Foot_RightHeel)
 			{
 				rightHeelIndex = i;
 			}
-			if (columns[i] == RIGHT_TOE)
+			if (columns[i] == Foot_RightToe)
 			{
 				rightToeIndex = i;
 			}

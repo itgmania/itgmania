@@ -3,6 +3,7 @@
 
 #include "GameConstantsAndTypes.h"
 #include "NoteData.h"
+#include "TechCountsCategory.h"
 #include <queue>
 #include <unordered_map>
 
@@ -13,23 +14,21 @@ namespace StepParity {
 
 	enum Foot
 	{
-		NONE = 0,
-		LEFT_HEEL,
-		LEFT_TOE,
-		RIGHT_HEEL,
-		RIGHT_TOE,
-		NUM_Foot
+		Foot_None = 0,
+		Foot_LeftHeel,
+		Foot_LeftToe,
+		Foot_RightHeel,
+		Foot_RightToe,
+		NUM_Foot,
+		Foot_Invalid
 	};
 
-	const std::vector<StepParity::Foot> FEET = {LEFT_HEEL, LEFT_TOE, RIGHT_HEEL, RIGHT_TOE};
+	const std::vector<StepParity::Foot> FEET = {Foot_LeftHeel, Foot_LeftToe, Foot_RightHeel, Foot_RightToe};
 	// A map for getting the other part of the foot, when you don't actually care
 	// what part it is.
 	// OTHER_PART_OF_FOOT[LEFT_HEEL] == LEFT_TOE
-	const std::vector<StepParity::Foot> OTHER_PART_OF_FOOT = {NONE, LEFT_TOE, LEFT_HEEL, RIGHT_TOE, RIGHT_HEEL};
+	const std::vector<StepParity::Foot> OTHER_PART_OF_FOOT = {Foot_None, Foot_LeftToe, Foot_LeftHeel, Foot_RightToe, Foot_RightHeel};
 	
-	const RString FEET_LABELS[] = {"N", "L", "l", "R", "r", "5??", "6??"};
-	const RString TapNoteTypeShortNames[] = { "Empty", "Tap",  "Mine",  "Attack", "AutoKeySound", "Fake", "", "" };
-	const RString TapNoteSubTypeShortNames[] = { "Hold", "Roll", "", "" };	
 
 	enum Cost
 	{
@@ -130,10 +129,10 @@ namespace StepParity {
 		
 		State(int columnCount)
 		{
-			columns = FootPlacement(columnCount, NONE);
-			combinedColumns = FootPlacement(columnCount, NONE);
-			movedFeet = FootPlacement(columnCount, NONE);
-			holdFeet = FootPlacement(columnCount, NONE);
+			columns = FootPlacement(columnCount, Foot_None);
+			combinedColumns = FootPlacement(columnCount, Foot_None);
+			movedFeet = FootPlacement(columnCount, Foot_None);
+			holdFeet = FootPlacement(columnCount, Foot_None);
 			
 			for(int i = 0; i < NUM_Foot; i++)
 			{
@@ -162,9 +161,9 @@ namespace StepParity {
 		bool fake = false;			// Is this note fake (besides being TapNoteType_Fake)?
 		float second = false;		// time into the song on which the note occurs
 
-		Foot parity = NONE; 		// Which foot (and which part of the foot) will most likely be used
+		Foot parity = Foot_None; 		// Which foot (and which part of the foot) will most likely be used
+		std::vector<TechCountsCategory> tech;
 	};
-
 
 	/// @brief A slightly complicated structure to encapsulate all of the data for a given 
 	/// row of a step chart.
@@ -205,7 +204,7 @@ namespace StepParity {
 			holdTails.clear();
 			mines = std::vector<float>(columnCount, 0);
 			fakeMines = std::vector<float>(columnCount, 0);
-			columns = std::vector<StepParity::Foot>(columnCount, StepParity::NONE);
+			columns = std::vector<StepParity::Foot>(columnCount, StepParity::Foot_None);
 			whereTheFeetAre = std::vector<int>(StepParity::NUM_Foot, INVALID_COLUMN);
 		}
 		

@@ -1,7 +1,25 @@
 #include "global.h"
 #include "StepParityDatastructs.h"
+#include "LocalizedString.h"
+#include "LuaBinding.h"
+#include "EnumHelper.h"
 
 using namespace StepParity;
+
+
+static const char *FootNames[] = {
+	"None",
+	"LeftHeel",
+	"LeftToe",
+	"RightHeel",
+	"RightToe"
+};
+
+XToString( Foot );
+XToLocalizedString( Foot );
+LuaFunction(FootToLocalizedString, FootToLocalizedString(Enum::Check<Foot>(L, 1)) );
+LuaXType( Foot );
+
 
 
 bool State::operator==(const State &other) const
@@ -113,6 +131,13 @@ void Row::setFootPlacement(const std::vector<Foot> & footPlacement)
 			columns[c] = footPlacement[c];
 			whereTheFeetAre[footPlacement[c]] = c;
 			noteCount += 1;
+		}
+		else if(holds[c].type != TapNoteType_Empty) {
+			holds[c].parity = footPlacement[c];
+			columns[c] = footPlacement[c];
+			whereTheFeetAre[footPlacement[c]] = c;
+			// we don't increment noteCount here, since this isn't a real note,
+			// this just represents a hold body
 		}
 	}
 }

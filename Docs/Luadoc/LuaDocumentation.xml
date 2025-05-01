@@ -6282,6 +6282,26 @@ local spr = Def.Sprite{
 	<Function name='GetMeter' return='int' arguments=''>
 		Returns the numerical difficulty of the Steps.
 	</Function>
+	<Function name='GetNoteAnnotations' return='table' arguments=''>
+		Returns a table with additional information about the notes in this stepchart.
+		Each entry includes data about predicted foot placement for each note, as well as predicted tech notations for the given beat.
+		`footPlacement` is a table that maps column index to the predicted <Link class='ENUM' function='Foot'/> (NOTE that the column indexes are 1-based)
+		`tech` is an array of <Link class='ENUM' function='TechCountsCategory'/> predicted for the given beat.
+
+		*Note* that calling this function may trigger re-calculation of foot placement/tech. For very long songs (greater than 10 minutes), this may take several seconds to run. In the future, this data will be saved to cache.
+		<code>
+		[
+			{
+				"beat": 4.20,
+				"footPlacement": {
+					2: "Foot_LeftHeel",
+					3: "Foot_LeftToe"
+				},
+				"tech": ["TechCountsCategory_Brackets"]
+			}
+		]
+		</code>
+	</Function>
 	<Function name='HasAttacks' return='bool' arguments=''>
 		Returns <code>true</code> if the Steps has any attacks.
 	</Function>
