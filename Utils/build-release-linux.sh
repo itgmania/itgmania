@@ -3,7 +3,7 @@ set -eux
 
 cd "$(dirname $0)"
 
-ARCH="${ARCH:-$(arch)}"
+ARCH="${ARCH:-x86_64}"
 
 docker build --platform=${ARCH} -f Dockerfile-linux . -t itgmania-linux-build:${ARCH}
 
