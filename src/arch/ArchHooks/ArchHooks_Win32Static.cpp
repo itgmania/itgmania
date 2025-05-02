@@ -8,6 +8,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <mutex> // for call_once
 
 // for QueryPerformanceCounter
 #include <windows.h>
@@ -16,7 +17,7 @@
 #pragma comment(lib, "winmm.lib")
 #endif
 
-static bool g_bTimerInitialized;
+static std::once_flag g_timerInitFlag;
 
 /* QueryPerformanceCounter variables below.
  * QueryPerformanceCounter and QueryPerformanceFrequency expect
@@ -29,12 +30,6 @@ namespace {
 
 static void InitTimer()
 {
-	if( g_bTimerInitialized ) {
-		return;
-	}
-	
-	g_bTimerInitialized = true;
-
 	// Set the thread scheduler to let us update every 1ms.
 	timeBeginPeriod(1);
 	
@@ -45,9 +40,7 @@ static void InitTimer()
 int64_t ArchHooks::GetSystemTimeInMicroseconds()
 {
 	// Make sure the timer is initialized.
-	if (!g_bTimerInitialized) {
-		InitTimer();
-	}
+	std::call_once(g_timerInitFlag, InitTimer);
 
 	// Get the current time.
 	QueryPerformanceCounter(&g_liCurrentTime);
