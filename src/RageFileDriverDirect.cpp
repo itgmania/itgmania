@@ -40,7 +40,7 @@ static struct FileDriverEntry_DIRRO: public FileDriverEntry
 } const g_RegisterDriver2;
 
 RageFileDriverDirect::RageFileDriverDirect( const RString &sRoot ):
-	RageFileDriver( new DirectFilenameDB(sRoot) ), m_sRoot(sRoot)
+	RageFileDriver( new DirectFilenameDB(sRoot) )
 {
 	Remount( sRoot );
 }
@@ -158,7 +158,7 @@ bool RageFileDriverDirect::Move( const RString &sOldPath_, const RString &sNewPa
 
 bool RageFileDriverDirect::Remove( const RString &sPath_ )
 {
-	if( m_sRoot.empty() || m_sRoot == "(empty)")
+	if( m_sRoot == "(empty)" )
 	{
 		return false;
 	}

@@ -716,13 +716,16 @@ bool RageFileManager::Mount( const RString &sType, const RString &sRoot_, const 
 	RageFileDriver *pDriver = MakeFileDriver( sType, sRoot );
 	if( pDriver == nullptr )
 	{
-		const RString errorMsg = ssprintf("Can't mount unknown VFS type \"%s\", root \"%s\"", sType.c_str(), sRoot.c_str());
-		CHECKPOINT_M( errorMsg );
-		LOG->Warn( "%s", errorMsg.c_str() );
+		CHECKPOINT_M( ssprintf("Can't mount unknown VFS type \"%s\", root \"%s\"", sType.c_str(), sRoot.c_str() ) );
+
+		if( LOG )
+			LOG->Warn("Can't mount unknown VFS type \"%s\", root \"%s\"", sType.c_str(), sRoot.c_str() );
+		else
+			fprintf( stderr, "Can't mount unknown VFS type \"%s\", root \"%s\"\n", sType.c_str(), sRoot.c_str() );
 		return false;
 	}
 
-	CHECKPOINT_M("Driver successfully made.");
+	CHECKPOINT_M("Driver %s successfully made.");
 
 	LoadedDriver *pLoadedDriver = new LoadedDriver;
 	pLoadedDriver->m_pDriver = pDriver;
