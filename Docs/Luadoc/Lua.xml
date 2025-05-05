@@ -2959,7 +2959,7 @@
 			<EnumValue name='&apos;TechCountsCategory_Sideswitches&apos;' value='6'/>
 			<EnumValue name='&apos;TechCountsCategory_Jacks&apos;' value='7'/>
 			<EnumValue name='&apos;TechCountsCategory_Brackets&apos;' value='8'/>
-			<EnumValue name='&apos;TechCountsCategory_Doublesteps&apos;' value=9'/>
+			<EnumValue name='&apos;TechCountsCategory_Doublesteps&apos;' value='9'/>
 		</Enum>
 		<Enum name='TextGlowMode'>
 			<EnumValue name='&apos;TextGlowMode_Inner&apos;' value='0'/>
