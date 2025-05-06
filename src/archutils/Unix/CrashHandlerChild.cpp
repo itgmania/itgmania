@@ -197,7 +197,7 @@ static void child_process()
 	FILE *CrashDump = fopen( sCrashInfoPath, "w+" );
 	if(CrashDump == nullptr)
 	{
-		fprintf( stderr, "Couldn't open " + sCrashInfoPath + ": %s\n", strerror(errno) );
+		fprintf( stderr, "Couldn't open %s: %s\n", sCrashInfoPath.c_str(), strerror(errno) );
 		exit(1);
 	}
 
