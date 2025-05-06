@@ -755,7 +755,7 @@ void do_split( const S &Source, const C Delimitor, std::vector<S> &AddIt, const 
 		if( pos == Source.npos )
 			pos = Source.size();
 
-		if( pos-startpos > 0 || !bIgnoreEmpty )
+		if( pos > startpos || !bIgnoreEmpty )
 		{
 			/* Optimization: if we're copying the whole string, avoid substr; this
 			 * allows this copy to be refcounted, which is much faster. */
