@@ -341,11 +341,14 @@ int RageSoundReader_Chain::Read( float *pBuffer, int iFrames )
 		return iFrames;
 	}
 
+	// Note: this is only safe because we know pBuffer is not nullptr
+	// and iFrames and m_iChannels are reasonable sizes.
 	if( m_apActiveSounds.empty() )
 	{
 		/* If we have more sounds ahead of us, pretend we read the entire block, since
 		 * there's silence in between.  Otherwise, we're at EOF. */
-		memset( pBuffer, 0, iFrames * m_iChannels * sizeof(float) );
+		size_t pBufferSize = static_cast<size_t>(iFrames) * m_iChannels * sizeof(float);
+		memset( pBuffer, 0, pBufferSize );
 		m_iCurrentFrame += iFrames;
 		return iFrames;
 	}
