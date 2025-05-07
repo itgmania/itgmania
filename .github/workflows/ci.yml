@@ -142,7 +142,7 @@ jobs:
         with:
           path: |
             build
-          key: ${{ runner.os }}-cmake-build-${{ github.sha }}
+          key: ${{ runner.os }}-${{ runner.arch }}-cmake-build-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
           restore-keys: |
             ${{ runner.os }}-cmake-build-
       - name: Configure
