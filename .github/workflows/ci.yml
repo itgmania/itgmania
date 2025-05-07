@@ -144,7 +144,7 @@ jobs:
             build
           key: ${{ runner.os }}-${{ runner.arch }}-cmake-build-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
           restore-keys: |
-            ${{ runner.os }}-cmake-build-
+            ${{ runner.os }}-${{ runner.arch }}-cmake-build-
       - name: Configure
         run: cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
       - name: Build
