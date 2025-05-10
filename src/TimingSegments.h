@@ -40,9 +40,6 @@ const RString& TimingSegmentTypeToString( TimingSegmentType tst );
 
 const int ROW_INVALID = -1;
 
-#define COMPARE(x) if( this->x!=other.x ) return false
-#define COMPARE_FLOAT(x) if( std::abs(this->x - other.x) > EPSILON ) return false
-
 /**
  * @brief The base timing segment for make glorious benefit wolfman
  * XXX: this should be an abstract class.
@@ -65,6 +62,11 @@ struct TimingSegment
 
 	// for our purposes, two floats within this level of error are equal
 	static constexpr double EPSILON = 1e-6;
+
+	// A helper for testing equality of two floats within a level of error epsilon.
+	bool AreEqual(float f1, float f2) const {
+		return std::abs(f1 - f2) < EPSILON;
+	}
 
 	virtual ~TimingSegment() { }
 
@@ -161,7 +163,9 @@ struct FakeSegment : public TimingSegment
 
 	bool operator==( const FakeSegment &other ) const
 	{
-		COMPARE( m_iLengthRows );
+		if (m_iLengthRows != other.m_iLengthRows) {
+			return false;
+		}
 		return true;
 	}
 
@@ -219,7 +223,9 @@ struct WarpSegment : public TimingSegment
 
 	bool operator==( const WarpSegment &other ) const
 	{
-		COMPARE( m_iLengthRows );
+		if (m_iLengthRows != other.m_iLengthRows) {
+			return false;
+		}
 		return true;
 	}
 
@@ -274,7 +280,9 @@ struct TickcountSegment : public TimingSegment
 
 	bool operator==( const TickcountSegment &other ) const
 	{
-		COMPARE( m_iTicksPerBeat );
+		if (m_iTicksPerBeat != other.m_iTicksPerBeat) {
+			return false;
+		}
 		return true;
 	}
 
@@ -326,8 +334,12 @@ struct ComboSegment : public TimingSegment
 
 	bool operator==( const ComboSegment &other ) const
 	{
-		COMPARE( m_iCombo );
-		COMPARE( m_iMissCombo );
+		if (m_iCombo != other.m_iCombo) {
+			return false;
+		}
+		if (m_iMissCombo != other.m_iMissCombo) {
+			return false;
+		}
 		return true;
 	}
 
@@ -379,7 +391,9 @@ struct LabelSegment : public TimingSegment
 
 	bool operator==( const LabelSegment &other ) const
 	{
-		COMPARE( m_sLabel );
+		if (m_sLabel != other.m_sLabel) {
+			return false;
+		}
 		return true;
 	}
 
@@ -427,8 +441,7 @@ struct BPMSegment : public TimingSegment
 
 	bool operator==( const BPMSegment &other ) const
 	{
-		COMPARE_FLOAT( m_fBPS );
-		return true;
+		return AreEqual(m_fBPS, other.m_fBPS);
 	}
 
 	bool operator==( const TimingSegment &other ) const
@@ -499,8 +512,12 @@ struct TimeSignatureSegment : public TimingSegment
 
 	bool operator==( const TimeSignatureSegment &other ) const
 	{
-		COMPARE( m_iNumerator );
-		COMPARE( m_iDenominator );
+		if (m_iNumerator != other.m_iNumerator) {
+			return false;
+		}
+		if (m_iDenominator != other.m_iDenominator) {
+			return false;
+		}
 		return true;
 	}
 
@@ -566,9 +583,15 @@ struct SpeedSegment : public TimingSegment
 
 	bool operator==( const SpeedSegment &other ) const
 	{
-		COMPARE_FLOAT( m_fRatio );
-		COMPARE_FLOAT( m_fDelay );
-		COMPARE( m_Unit );
+		if (!AreEqual(m_fRatio, other.m_fRatio)) {
+			return false;
+		}
+		if (!AreEqual(m_fDelay, other.m_fDelay)) {
+			return false;
+		}
+		if (m_Unit != other.m_Unit) {
+			return false;
+		}
 		return true;
 	}
 
@@ -626,8 +649,7 @@ struct ScrollSegment : public TimingSegment
 
 	bool operator==( const ScrollSegment &other ) const
 	{
-		COMPARE_FLOAT( m_fRatio );
-		return true;
+		return AreEqual(m_fRatio, other.m_fRatio);
 	}
 
 	bool operator==( const TimingSegment &other ) const
@@ -671,8 +693,7 @@ struct StopSegment : public TimingSegment
 
 	bool operator==( const StopSegment &other ) const
 	{
-		COMPARE_FLOAT( m_fSeconds );
-		return true;
+		return AreEqual(m_fSeconds, other.m_fSeconds);
 	}
 
 	bool operator==( const TimingSegment &other ) const
@@ -715,8 +736,7 @@ struct DelaySegment : public TimingSegment
 
 	bool operator==( const DelaySegment &other ) const
 	{
-		COMPARE_FLOAT( m_fSeconds );
-		return true;
+		return AreEqual(m_fSeconds, other.m_fSeconds);
 	}
 
 	bool operator==( const TimingSegment &other ) const
@@ -730,9 +750,6 @@ private:
 	/** @brief The number of seconds to pause at the segment's row. */
 	float m_fSeconds;
 };
-
-#undef COMPARE
-#undef COMPARE_FLOAT
 
 #endif
 

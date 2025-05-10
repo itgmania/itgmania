@@ -317,7 +317,7 @@ FileSet *FilenameDB::GetFileSet( const RString &sDir_, bool bCreate )
 			continue;
 		}
 
-		if( ExpireSeconds == -1 || pFileSet->age.PeekDeltaTime() < ExpireSeconds )
+		if( ExpireSeconds == -1 || pFileSet->age.Ago() < ExpireSeconds )
 		{
 			/* Found it, and it hasn't expired. */
 			return pFileSet;

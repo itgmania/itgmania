@@ -395,7 +395,7 @@ void ScreenSelectMusic::Update( float fDeltaTime )
 {
 	if( !IsTransitioning() )
 	{
-		if( IDLE_COMMENT_SECONDS > 0  &&  m_timerIdleComment.PeekDeltaTime() >= IDLE_COMMENT_SECONDS )
+		if( IDLE_COMMENT_SECONDS > 0  &&  m_timerIdleComment.Ago() >= IDLE_COMMENT_SECONDS )
 		{
 			SOUND->PlayOnceFromAnnouncer( m_sName+" IdleComment" );
 			m_timerIdleComment.GetDeltaTime();

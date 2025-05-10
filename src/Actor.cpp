@@ -193,6 +193,7 @@ Actor::Actor( const Actor &cpy ):
 
 #define CPY(x) x = cpy.x
 	CPY( m_sName );
+	CPY(alias_);
 	CPY( m_pParent );
 	CPY( m_FakeParent );
 	CPY( m_pLuaInstance );
@@ -272,6 +273,7 @@ Actor &Actor::operator=(Actor other)
 	using std::swap;
 #define SWAP(x) swap(x, other.x)
 	SWAP( m_sName );
+	SWAP(alias_);
 	SWAP( m_pParent );
 	SWAP( m_FakeParent );
 	SWAP( m_pLuaInstance );
@@ -334,6 +336,14 @@ Actor &Actor::operator=(Actor other)
 	SWAP( m_mapNameToCommands );
 #undef SWAP
 	return *this;
+}
+
+
+bool Actor::IsAlias(const std::string& name) {
+	if (alias_.empty()) {
+		return false;
+	}
+	return name == alias_;
 }
 
 /* XXX: This calls InitCommand, which must happen after all other
@@ -1445,22 +1455,20 @@ void Actor::TweenState::Init()
 	aux = 0;
 }
 
-bool Actor::TweenState::operator==( const TweenState &other ) const
-{
-#define COMPARE( x )	if( x != other.x ) return false;
-	COMPARE( pos );
-	COMPARE( rotation );
-	COMPARE( quat );
-	COMPARE( scale );
-	COMPARE( fSkewX );
-	COMPARE( fSkewY );
-	COMPARE( crop );
-	COMPARE( fade );
-	for( unsigned i=0; i<ARRAYLEN(diffuse); i++ )
-		COMPARE( diffuse[i] );
-	COMPARE( glow );
-	COMPARE( aux );
-#undef COMPARE
+bool Actor::TweenState::operator==(const TweenState& other) const {
+	if (pos != other.pos) return false;
+	if (rotation != other.rotation) return false;
+	if (quat != other.quat) return false;
+	if (scale != other.scale) return false;
+	if (fSkewX != other.fSkewX) return false;
+	if (fSkewY != other.fSkewY) return false;
+	if (crop != other.crop) return false;
+	if (fade != other.fade) return false;
+	for (unsigned i = 0; i < ARRAYLEN(diffuse); i++) {
+		if (diffuse[i] != other.diffuse[i]) return false;
+	}
+	if (glow != other.glow) return false;
+	if (aux != other.aux) return false;
 	return true;
 }
 

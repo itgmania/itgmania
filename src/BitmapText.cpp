@@ -328,7 +328,7 @@ void BitmapText::BuildChars()
 
 	if( m_bUsingDistortion )
 	{
-		int iSeed = std::lrint( RageTimer::GetTimeSinceStartFast()*500000.0f );
+		int iSeed = RageTimer::GetTimeSinceStartSeconds() * 500000;
 		RandomGen rnd( iSeed );
 		for(unsigned int i= 0; i < m_aVertices.size(); i+=4)
 		{
@@ -731,7 +731,7 @@ void BitmapText::DrawPrimitives() noexcept
 		// render the diffuse pass
 		if( m_bRainbowScroll )
 		{
-			int color_index = int(RageTimer::GetTimeSinceStartFast() / 0.200) % RAINBOW_COLORS.size();
+			int color_index = int(RageTimer::GetTimeSinceStart() / 0.200) % RAINBOW_COLORS.size();
 			for (size_t i = 0; i < m_aVertices.size(); i += 4)
 			{
 				const RageColor color = RAINBOW_COLORS[color_index];
@@ -798,7 +798,7 @@ void BitmapText::DrawPrimitives() noexcept
 		std::vector<RageVector3> vGlyphJitter;
 		if( m_bJitter )
 		{
-			int iSeed = std::lrint( RageTimer::GetTimeSinceStartFast()*8 );
+			int iSeed = RageTimer::GetTimeSinceStartSeconds() * 8;
 			RandomGen rnd( iSeed );
 			for (size_t i = 0; i < m_aVertices.size(); i += 4)
 			{

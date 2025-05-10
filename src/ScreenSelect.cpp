@@ -121,13 +121,13 @@ void ScreenSelect::Update( float fDelta )
 {
 	if( !IsTransitioning() )
 	{
-		if( IDLE_COMMENT_SECONDS > 0  &&  m_timerIdleComment.PeekDeltaTime() >= IDLE_COMMENT_SECONDS )
+		if( IDLE_COMMENT_SECONDS > 0  &&  m_timerIdleComment.Ago() >= IDLE_COMMENT_SECONDS )
 		{
 			SOUND->PlayOnceFromAnnouncer( m_sName+" IdleComment" );
 			m_timerIdleComment.GetDeltaTime();
 		}
 
-		if( IDLE_TIMEOUT_SECONDS > 0  &&  m_timerIdleTimeout.PeekDeltaTime() >= IDLE_TIMEOUT_SECONDS )
+		if( IDLE_TIMEOUT_SECONDS > 0  &&  m_timerIdleTimeout.Ago() >= IDLE_TIMEOUT_SECONDS )
 		{
 			SCREENMAN->SetNewScreen( IDLE_TIMEOUT_SCREEN );
 			m_timerIdleTimeout.GetDeltaTime();

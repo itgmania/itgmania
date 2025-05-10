@@ -12,6 +12,7 @@
 #endif
 
 #include <cerrno>
+#include <cstdarg>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>

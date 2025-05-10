@@ -5,10 +5,10 @@
 
 #include "global.h"
 
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <map>
 #include <random>
 #include <sstream>

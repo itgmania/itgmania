@@ -28,13 +28,13 @@ LuaXType( TechCountsCategory );
 
 // 0.176 ~= 1/8th at 175bpm
 // Anything slower isn't counted as a jack
-const float JACK_CUTOFF = 0.176;
+constexpr float JACK_CUTOFF = 0.176f;
 // 0.3 = 1/4th at 200bpm (or 3/16th at 150bpm)
 // Anything slower isn't counted as a footswitch
-const float FOOTSWITCH_CUTOFF = 0.3;
+constexpr float FOOTSWITCH_CUTOFF = 0.3f;
 // 0.235 ~= 1/8th at 128bpm
 // Anything slower isn't counted as a doublestep
-const float DOUBLESTEP_CUTOFF = 0.235;
+constexpr float DOUBLESTEP_CUTOFF = 0.235f;
 
 // TechCounts methods
 TechCounts::TechCounts()

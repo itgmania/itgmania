@@ -56,19 +56,9 @@ int RageSoundDriver::DecodeThread_start( void *p )
 	return 0;
 }
 
-static int64_t g_iTotalAhead = 0;
-static int g_iTotalAheadCount = 0;
-
 RageSoundMixBuffer &RageSoundDriver::MixIntoBuffer( int iFrames, int64_t iFrameNumber, int64_t iCurrentFrame )
 {
 	ASSERT_M( m_DecodeThread.IsCreated(), "RageSoundDriver::StartDecodeThread() was never called" );
-
-	int64_t frameDifference = iFrameNumber - iCurrentFrame + static_cast<int64_t>(iFrames);
-	if (frameDifference > 0)
-	{
-		g_iTotalAhead += frameDifference;
-		++g_iTotalAheadCount;
-	}
 
 	static RageSoundMixBuffer mix;
 
@@ -472,9 +462,6 @@ RageSoundDriver::~RageSoundDriver()
 		m_DecodeThread.Wait();
 		LOG->Trace("Decode thread shut down.");
 		LOG->Flush();
-
-		LOG->Info( "Mixing %f ahead in %i Mix() calls",
-			float(g_iTotalAhead) / std::max( g_iTotalAheadCount, 1 ), g_iTotalAheadCount );
 	}
 }
 

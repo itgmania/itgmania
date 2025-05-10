@@ -39,7 +39,6 @@
 #include "GameCommand.h"
 #include "LocalizedString.h"
 #include "AdjustSync.h"
-#include "RandomSeed.h"
 
 #include <cmath>
 #include <cstddef>
@@ -3475,7 +3474,8 @@ RString Player::ApplyRandomAttack()
 	if( GAMESTATE->m_RandomAttacks.size() < 1 )
 		return "";
 
-	int iAttackToUse = GetRandomInt() % GAMESTATE->m_RandomAttacks.size();
+	int iAttackToUse = RandomInt(GAMESTATE->m_RandomAttacks.size());
+
 	return GAMESTATE->m_RandomAttacks[iAttackToUse];
 }
 

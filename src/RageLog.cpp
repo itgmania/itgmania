@@ -6,6 +6,7 @@
 #include "RageThreads.h"
 
 #include <ctime>
+#include <cstdarg>
 #include <map>
 #include <vector>
 

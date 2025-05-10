@@ -1,0 +1,7 @@
+BasedOnStyle: Google
+AlignAfterOpenBracket: AlwaysBreak
+DerivePointerAlignment: false
+PointerAlignment: Left
+QualifierAlignment: Left
+ReferenceAlignment: Left
+InsertBraces: true

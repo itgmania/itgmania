@@ -47,7 +47,7 @@ namespace StepParity {
 		std::vector<StepParity::StepParityNode*> nodes;
 		std::vector<Row> rows;
 		std::vector<int> nodes_for_rows;
-		int columnCount;
+		int columnCount_;
 		
 		StepParityGenerator(const StageLayout & l) : layout(l) {
 			

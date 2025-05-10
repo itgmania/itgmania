@@ -216,7 +216,7 @@ protected:
 	 */
 	void LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditions );
 	bool GetExtraStageInfoFromCourse( bool bExtra2, RString sPreferredGroup, Song*& pSongOut, Steps*& pStepsOut, StepsType stype );
-	void SanityCheckGroupDir( RString sDir ) const;
+	bool SanityCheckGroupDir( RString sDir ) const;
 	void AddGroup( RString sDir, RString sGroupDirName, Group* group );
 	int GetNumEditsLoadedFromProfile( ProfileSlot slot ) const;
 

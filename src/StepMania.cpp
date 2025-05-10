@@ -1034,8 +1034,8 @@ RString StepMania::SaveScreenshot( RString Dir, bool SaveCompressed, bool MakeSi
 
 	RString FileName = FileNameNoExtension + "." + (SaveCompressed ? "jpg" : "png");
 	RString Path = Dir+FileName;
-	bool Result = DISPLAY->SaveScreenshot( Path, fmt );
-	if( !Result )
+
+	if( !DISPLAY->SaveScreenshot(Path, fmt) )
 	{
 		SCREENMAN->PlayInvalidSound();
 		return RString();

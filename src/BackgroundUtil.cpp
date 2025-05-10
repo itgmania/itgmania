@@ -13,15 +13,17 @@
 #include <vector>
 
 
-bool BackgroundDef::operator<( const BackgroundDef &other ) const
-{
-#define COMPARE(x) if( x < other.x ) return true; else if( x > other.x ) return false;
-	COMPARE( m_sEffect );
-	COMPARE( m_sFile1 );
-	COMPARE( m_sFile2 );
-	COMPARE( m_sColor1 );
-	COMPARE( m_sColor2 );
-#undef COMPARE
+bool BackgroundDef::operator<(const BackgroundDef& other) const {
+	if (m_sEffect != other.m_sEffect)
+		return m_sEffect < other.m_sEffect;
+	if (m_sFile1 != other.m_sFile1)
+		return m_sFile1 < other.m_sFile1;
+	if (m_sFile2 != other.m_sFile2)
+		return m_sFile2 < other.m_sFile2;
+	if (m_sColor1 != other.m_sColor1)
+		return m_sColor1 < other.m_sColor1;
+	if (m_sColor2 != other.m_sColor2)
+		return m_sColor2 < other.m_sColor2;
 	return false;
 }
 

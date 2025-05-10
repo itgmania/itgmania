@@ -249,7 +249,7 @@ void SongManager::InitSongsFromDisk( LoadingWindow *ld, bool onlyAdditions )
 }
 
 static LocalizedString FOLDER_CONTAINS_MUSIC_FILES( "SongManager", "The folder \"%s\" appears to be a song folder.  All song folders must reside in a group folder.  For example, \"Songs/Originals/My Song\"." );
-void SongManager::SanityCheckGroupDir( RString sDir ) const
+bool SongManager::SanityCheckGroupDir( RString sDir ) const
 {
 	// Check to see if they put a song directly inside the group folder.
 	std::vector<RString> arrayFiles;
@@ -262,11 +262,12 @@ void SongManager::SanityCheckGroupDir( RString sDir ) const
 		{
 			if(ext == aud)
 			{
-				RageException::Throw(
-					FOLDER_CONTAINS_MUSIC_FILES.GetValue(), sDir.c_str());
+				LOG->Warn(FOLDER_CONTAINS_MUSIC_FILES.GetValue(), sDir.c_str());
+				return false;
 			}
 		}
 	}
+	return true;
 }
 
 void SongManager::AddGroup( RString sDir, RString sGroupDirName, Group* group )
@@ -380,7 +381,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 	StripCvsAndSvn( arrayGroupDirs );
 	StripMacResourceForks( arrayGroupDirs );
 
-	std::vector<std::vector<RString>> arrayGroupSongDirs;
+	std::map<RString, std::vector<RString>> mapGroupSongDirs;
 	int groupIndex, songCount, songIndex;
 
 	groupIndex = 0;
@@ -400,19 +401,18 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			ld->SetText(SANITY_CHECKING_GROUPS.GetValue() + ssprintf("\n%s",
 					Basename(sGroupDirName).c_str()));
 		}
-		// TODO: If this check fails, log a warning instead of crashing.
-		SanityCheckGroupDir(sDir+sGroupDirName);
+		
+		if (SanityCheckGroupDir(sDir+sGroupDirName)) {
+			// Find all Song folders in this group directory
+			std::vector<RString> arraySongDirs;
+			GetDirListing( sDir+sGroupDirName + "/*", arraySongDirs, true, true );
+			StripCvsAndSvn( arraySongDirs );
+			StripMacResourceForks( arraySongDirs );
+			SortRStringArray( arraySongDirs );
 
-		// Find all Song folders in this group directory
-		std::vector<RString> arraySongDirs;
-		GetDirListing( sDir+sGroupDirName + "/*", arraySongDirs, true, true );
-		StripCvsAndSvn( arraySongDirs );
-		StripMacResourceForks( arraySongDirs );
-		SortRStringArray( arraySongDirs );
-
-		arrayGroupSongDirs.push_back(arraySongDirs);
-		songCount += arraySongDirs.size();
-
+			mapGroupSongDirs[sGroupDirName] = arraySongDirs;
+			songCount += arraySongDirs.size();
+		}
 	}
 
 	if( songCount==0 ) return;
@@ -422,13 +422,9 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		ld->SetTotalWork( songCount );
 	}
 
-	groupIndex = 0;
 	songIndex = 0;
-	
-	for (RString const &sGroupDirName : arrayGroupDirs)	// foreach dir in /Songs/
+	for (const auto& [sGroupDirName, arraySongDirs] : mapGroupSongDirs)	// foreach dir in /Songs/
 	{
-		std::vector<RString> &arraySongDirs = arrayGroupSongDirs[groupIndex++];
-
 		LOG->Trace("Attempting to load %i songs from \"%s\"", int(arraySongDirs.size()),
 				   (sDir+sGroupDirName).c_str() );
 		int loaded = 0;
@@ -2128,7 +2124,7 @@ void SongManager::AddSongToList(Song* new_song)
 	m_pSongs.push_back(new_song);
 	RString dir= new_song->GetSongDir();
 	dir.MakeLower();
-	m_SongsByDir.insert(make_pair(dir, new_song));
+	m_SongsByDir.insert(std::make_pair(dir, new_song));
 }
 
 void SongManager::FreeAllLoadedFromProfile( ProfileSlot slot )

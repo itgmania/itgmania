@@ -436,7 +436,16 @@ static bool LoadFromDWITokens(
 	const RString &sPath )
 {
 	CHECKPOINT_M( "DWILoader::LoadFromDWITokens()" );
-
+	
+	// If there's no step data to load for this chart, bail out here, instead of letting
+	// SetNoteData() throw an assertion.
+	// If the step data isn't at least 2 characters long, ParseNoteData() runs the risk
+	// of trying to read past the end of the string.
+	if (sStepData1.size() < 2 && sStepData2.size() < 2)
+	{
+		LOG->Warn("Song file \"%s\" has malformed chart data for chart %s:%s:%s. Skipping chart.", sPath.c_str(), sMode.c_str(), sDescription.c_str(), sNumFeet.c_str());
+		return false;
+	}
 	out.m_StepsType = GetTypeFromMode(sMode);
 
 	// if the meter is empty, force it to 1.

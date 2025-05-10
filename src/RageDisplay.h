@@ -360,7 +360,7 @@ public:
 		SAVE_LOSSY_LOW_QUAL,	// jpg
 		SAVE_LOSSY_HIGH_QUAL	// jpg
 	};
-	bool SaveScreenshot( RString sPath, GraphicsFileFormat format );
+	bool SaveScreenshot( const RString &sPath, GraphicsFileFormat format );
 
 	virtual RString GetTextureDiagnostics( uintptr_t /* id */ ) const { return RString(); }
 	virtual RageSurface* CreateScreenshot() = 0;	// allocates a surface.  Caller must delete it.

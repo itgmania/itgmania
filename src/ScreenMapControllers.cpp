@@ -278,14 +278,15 @@ void ScreenMapControllers::Update( float fDeltaTime )
 		}
 	}
 
-	//
-	// Update devices text
-	//
-	m_textDevices.SetText( INPUTMAN->GetDisplayDevicesString() );
+	// We don't expect the connected devices to change frequently.
+	// As a result, delay how often we check for and update the device strings.
+	CallEveryNFrames(250, [this]() {
+		m_textDevices.SetText(INPUTMAN->GetDisplayDevicesString());
+		});
 
 	if( !m_WaitingForPress.IsZero() && m_DeviceIToMap.IsValid() ) // we're going to map an input
 	{
-		if( m_WaitingForPress.PeekDeltaTime() < g_fSecondsToWaitForInput )
+		if( m_WaitingForPress.Ago() < g_fSecondsToWaitForInput )
 			return; /* keep waiting */
 		m_WaitingForPress.SetZero();
 

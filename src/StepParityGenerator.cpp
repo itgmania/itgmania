@@ -9,7 +9,7 @@ using namespace StepParity;
 
 bool StepParityGenerator::analyzeNoteData(const NoteData &in)
 {
-	columnCount = in.GetNumTracks();
+	columnCount_ = in.GetNumTracks();
 	
 	CreateRows(in);
 
@@ -42,7 +42,7 @@ void StepParityGenerator::buildStateGraph()
 {
 	// The first node of the graph is beginningState, which represents the time before
 	// the first note (and so it's roIndex is considered -1)
-	beginningState = new State(columnCount);
+	beginningState = new State(columnCount_);
 	startNode = addNode(beginningState, rows[0].second - 1, -1);
 	
 	std::queue<StepParityNode *> previousNodes;
@@ -78,7 +78,7 @@ void StepParityGenerator::buildStateGraph()
 	
 	// at this point, previousStates holds all of the states for the very last row,
 	// which just get connected to the endState
-	endingState = new State(columnCount);
+	endingState = new State(columnCount_);
 	endNode = addNode(endingState, rows[rows.size() - 1].second + 1, rows.size());
 	
 	while(!previousNodes.empty())
@@ -540,12 +540,12 @@ void StepParityGenerator::CreateRows(const NoteData &in)
 			counter.lastColumnBeat = note.beat;
 			counter.nextMines.assign(counter.mines.begin(), counter.mines.end());
 			counter.nextFakeMines.assign(counter.fakeMines.begin(), counter.fakeMines.end());
-			counter.notes = std::vector<IntermediateNoteData>(columnCount);
-			counter.mines = std::vector<float>(columnCount);
-			counter.fakeMines = std::vector<float>(columnCount);
+			counter.notes = std::vector<IntermediateNoteData>(columnCount_);
+			counter.mines = std::vector<float>(columnCount_);
+			counter.fakeMines = std::vector<float>(columnCount_);
 
 			// Reset any now-inactive holds to empty values.
-			for (int c = 0; c < columnCount; c++)
+			for (int c = 0; c < columnCount_; c++)
 			{
 				if (counter.activeHolds[c].type == TapNoteType_Empty || note.beat > counter.activeHolds[c].beat + counter.activeHolds[c].hold_length)
 				{
@@ -573,14 +573,14 @@ void StepParityGenerator::AddRow(RowCounter &counter)
 
 Row StepParityGenerator::CreateRow(RowCounter &counter)
 {
-	Row row = Row(columnCount);
+	Row row = Row(columnCount_);
 	row.notes.assign(counter.notes.begin(), counter.notes.end());
 	row.mines.assign(counter.nextMines.begin(), counter.nextMines.end());
 	row.fakeMines.assign(counter.nextFakeMines.begin(), counter.nextFakeMines.end());
 	row.second = counter.lastColumnSecond;
 	row.beat = counter.lastColumnBeat;
 
-	for (int c = 0; c < columnCount; c++)
+	for (int c = 0; c < columnCount_; c++)
 	{
 		// save any active holds
 		if (counter.activeHolds[c].type == TapNoteType_Empty || counter.activeHolds[c].second >= counter.lastColumnSecond)

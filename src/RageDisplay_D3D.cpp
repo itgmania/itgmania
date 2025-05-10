@@ -583,8 +583,9 @@ bool RageDisplay_D3D::BeginFrame()
 		{
 			bool bIgnore = false;
 			RString sError = SetD3DParams( bIgnore );
-			if( sError != "" )
-				RageException::Throw( sError );
+			if( !sError.empty() ) {
+				RageException::Throw(sError.c_str());
+			}
 
 			break;
 		}

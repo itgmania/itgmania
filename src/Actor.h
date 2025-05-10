@@ -297,10 +297,16 @@ public:
 	 * @brief Retrieve the Actor's name.
 	 * @return the Actor's name. */
 	const RString &GetName() const			{ return m_sName; }
+	const std::string& GetAlias() { return alias_; }
+
+	// IsAlias checks first if the Actor's alias isn't empty, and if it isn't,
+	// does a simple compare against the provided name.
+	bool IsAlias(const std::string& name);
 	/**
 	 * @brief Set the Actor's name to a new one.
 	 * @param sName the new name for the Actor. */
 	virtual void SetName( const RString &sName )	{ m_sName = sName; }
+	virtual void SetAlias(const std::string alias) { alias_ = alias;  }
 	/**
 	 * @brief Give this Actor a new parent.
 	 * @param pParent the new parent Actor. */
@@ -631,6 +637,13 @@ public:
 protected:
 	/** @brief the name of the Actor. */
 	RString m_sName;
+
+	// Alias is an alternate name for the actor. The name of the actor is
+	// allowed to be empty, whereas if the alias is empty, it is ignored. The
+	// point of the alias is to help maintain backward compatability with lua
+	// in case an actor name changes
+	std::string alias_;
+
 	/** @brief the current parent of this Actor if it exists. */
 	Actor *m_pParent;
 	// m_FakeParent exists to provide a way to render the actor inside another's

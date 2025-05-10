@@ -1767,27 +1767,21 @@ RString Song::GetCacheFile(RString sType)
 
 RString Song::GetFileHash()
 {
+	static const std::vector<RString> extensions = {
+		"ssc", "sm", "dwi", "sma", "bms", "ksf", "json", "jso"
+	};
+
 	if (m_sFileHash.empty()) {
-		RString sPath = SetExtension(GetSongFilePath(), "sm");
-		if (!IsAFile(sPath))
-			sPath = SetExtension(GetSongFilePath(), "dwi");
-		if (!IsAFile(sPath))
-			sPath = SetExtension(GetSongFilePath(), "sma");
-		if (!IsAFile(sPath))
-			sPath = SetExtension(GetSongFilePath(), "bms");
-		if (!IsAFile(sPath))
-			sPath = SetExtension(GetSongFilePath(), "ksf");
-		if (!IsAFile(sPath))
-			sPath = SetExtension(GetSongFilePath(), "json");
-		if (!IsAFile(sPath))
-			sPath = SetExtension(GetSongFilePath(), "jso");
-		if (!IsAFile(sPath))
-			sPath = SetExtension(GetSongFilePath(), "ssc");
-		if (IsAFile(sPath))
-			m_sFileHash = BinaryToHex(CRYPTMAN->GetSHA1ForFile(sPath));
-		else
-			m_sFileHash = "";
+		for (const RString& ext : extensions) {
+			RString sPath = SetExtension(GetSongFilePath(), ext);
+			if (IsAFile(sPath)) {
+				m_sFileHash = BinaryToHex(CRYPTMAN->GetSHA1ForFile(sPath));
+				return m_sFileHash;
+			}
+		}
 	}
+
+	m_sFileHash = "";
 	return m_sFileHash;
 }
 
