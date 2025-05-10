@@ -17,6 +17,7 @@
 #include "RageUtil.h"
 
 #include <cerrno>
+#include <cinttypes>
 #include <cstdint>
 #include <set>
 
@@ -690,7 +691,7 @@ void LockMutex::Unlock()
 		const uint64_t dur_usecs = current_usecs - locked_at;
 
 		if (dur_usecs > THRESHOLD_USEC)
-			LOG->Trace("Lock at %s:%i took %llu microseconds", file, line, dur_usecs);
+			LOG->Trace("Lock at %s:%i took %" PRIu64 " microseconds", file, line, dur_usecs);
 	}
 }
 

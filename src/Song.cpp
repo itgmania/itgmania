@@ -52,7 +52,7 @@
  * @brief The internal version of the cache for StepMania.
  *
  * Increment this value to invalidate the current cache. */
-const int FILE_CACHE_VERSION = 229;
+const int FILE_CACHE_VERSION = 230;
 
 /** @brief How long does a song sample last by default? */
 const float DEFAULT_MUSIC_SAMPLE_LENGTH = 12.f;
@@ -310,8 +310,9 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 	}
 	else
 	{
+		LOG->Trace("Loading song from profile2.");
 		m_LoadedFromProfile= from_profile;
-		m_sGroupName= PROFILEMAN->GetProfile(from_profile)->m_sDisplayName;
+		m_sGroupName= sDir.substr(1, sDir.find('/', 1) - 1);
 		use_cache= false;
 	}
 
@@ -385,7 +386,6 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 		LoadEditsFromSongDir(sDir);
 
 		TidyUpData(false, true);
-
 		// Don't save a cache file if the autosave is being loaded, because the
 		// cache file would contain the autosave filename. -Kyz
 		// Songs loaded from removable profile are never cached, on the
@@ -428,8 +428,20 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 		m_sCDTitleFile.clear();
 	}
 
+	// Normally TidyUpData would handle setting the m_fBeat0GroupOffsetInSeconds.
+	// That is to keep the song start and end times become inaccurate in some cases.
+	// SInce there are cases where TidyUpData isn't called, we still want to guarantee the
+	// m_fBeat0GroupOffsetInSeconds is always set so we do that here. 
+	float fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+	if (SONGMAN->GetGroupFromName(m_sGroupName) != nullptr)
+	{
+		fOffset = SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset();
+	}
+	m_SongTiming.m_fBeat0GroupOffsetInSeconds = fOffset;
+
 	for (Steps *s : m_vpSteps)
 	{
+		s->m_Timing.m_fBeat0GroupOffsetInSeconds = fOffset;
 		if(m_LoadedFromProfile != ProfileSlot_Invalid)
 		{
 			s->ChangeFilenamesForCustomSong();
@@ -481,8 +493,8 @@ bool Song::ReloadFromSongDir( RString sDir )
 	if (SONGMAN->GetGroup(this) != nullptr) {
 		m_SongTiming.m_fBeat0GroupOffsetInSeconds = SONGMAN->GetGroup(this)->GetSyncOffset();
 	} else {
-		m_SongTiming.m_fBeat0GroupOffsetInSeconds = PREFSMAN->m_fMachineSyncBias;
-		LOG->Warn("Song %s has no group, using machine sync bias.", m_sMainTitle.c_str());
+		m_SongTiming.m_fBeat0GroupOffsetInSeconds = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+		LOG->Warn("Song %s has no group, using default sync offset.", m_sMainTitle.c_str());
 	}
 
 	/* Go through the steps, first setting their Song pointer to this song
@@ -507,8 +519,8 @@ bool Song::ReloadFromSongDir( RString sDir )
 		}
 		else
 		{
-			m_SongTiming.m_fBeat0GroupOffsetInSeconds = PREFSMAN->m_fMachineSyncBias;
-			LOG->Warn("Song %s has no group, using machine sync bias.", m_sMainTitle.c_str());
+			m_SongTiming.m_fBeat0GroupOffsetInSeconds = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+			LOG->Warn("Song %s has no group, using default sync offset.", m_sMainTitle.c_str());
 		}
 	}
 
@@ -672,7 +684,7 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 	m_SongTiming.TidyUpData(false);
 
 	// Apply the group offset to the song timing before we do anything else.
-	float fOffset = PREFSMAN->m_fMachineSyncBias;
+	float fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
 	if (SONGMAN->GetGroupFromName(m_sGroupName) != nullptr)
 	{
 		fOffset = SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset();

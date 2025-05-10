@@ -26,6 +26,12 @@ struct lua_State;
  */
 const int MAX_STEPS_DESCRIPTION_LENGTH = 255;
 
+/**
+ * @brief Current version of GrooveStats hash.
+ * Increment this to invalidate previously cached values
+ */
+const int CURRENT_GROOVE_STATS_HASH_VERSION = 3;
+
 /** @brief The different ways of displaying the BPM. */
 enum DisplayBPM
 {
@@ -139,6 +145,11 @@ public:
 	/** @brief Produces a chart that's reduced to it's smallest unique representable form. */
 	RString MinimizedChartString();
 
+	/** @brief Generates a hash used for GrooveStats integration. */
+	void CalculateGrooveStatsHash();
+	const RString GetGrooveStatsHash() const;
+	int GetGrooveStatsHashVersion() const;
+	
 	void ChangeFilenamesForCustomSong();
 
 	void SetLoadedFromProfile( ProfileSlot slot )	{ m_LoadedFromProfile = slot; }
@@ -147,6 +158,9 @@ public:
 	void SetCachedTechCounts(const TechCounts ts[NUM_PLAYERS]);
 	void SetCachedNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure);
 	void SetCachedNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure);
+	void SetPeakNps(std::vector<float>& peakNps);
+	void SetCachedGrooveStatsHash(const RString& key);
+	void SetCachedGrooveStatsHashVersion(int version);
 	float PredictMeter() const;
 
 	unsigned GetHash() const;
@@ -186,7 +200,7 @@ public:
 	const std::vector<int> &GetNotesPerMeasure(PlayerNumber pn) const;
 	
 	float GetPeakNps(PlayerNumber pn) const;
-
+	const std::vector<float> & GetAllPeakNps() const { return Real()->m_PeakNps; }
 	/**
 	 * @brief The TimingData used by the Steps.
 	 *
@@ -291,10 +305,11 @@ private:
 	bool m_AreCachedNotesPerMeasureJustLoaded;
 	
 	std::vector<float> m_PeakNps;
-	
-	
-	
 
+	bool m_bIsCachedGrooveStatsHashJustLoaded;
+	RString m_sGrooveStatsHash;
+	int m_iGrooveStatsHashVersion;
+	
 	/** @brief The name of the person who created the Steps. */
 	RString				m_sCredit;
 	/** @brief The name of the chart. */

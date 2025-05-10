@@ -804,8 +804,9 @@ bool ScreenEvaluation::MenuStart( const InputEventPlus &input )
 
 bool ScreenEvaluation::MenuRestart( const InputEventPlus &input )
 {
-	if( IsTransitioning() )
+	if (IsTransitioning()) {
 		return false;
+	}
 
 	SCREENMAN->GetTopScreen()->SetNextScreenName("ScreenGameplay");
 	StartTransitioningScreen( SM_GoToNextScreen );

@@ -856,15 +856,12 @@ bool ScreenGameplay::Center1Player() const
 
 bool ScreenGameplay::MenuRestart( const InputEventPlus &input )
 {
-	if( IsTransitioning() )
+	if (IsTransitioning()) {
 		return false;
+	}
 
-	m_DancingState = STATE_OUTRO;
-	m_pSoundMusic->StopPlaying();
-	m_GameplayAssist.StopPlaying(); // Stop any queued assist ticks.
-
-	SCREENMAN->GetTopScreen()->SetNextScreenName("ScreenGameplay");
-	m_Cancel.StartTransitioning( SM_GoToNextScreen );
+	SCREENMAN->GetTopScreen()->SetPrevScreenName("ScreenGameplay");
+	BeginBackingOutFromGameplay();
 	return true;
 }
 

@@ -349,16 +349,7 @@ void MovieTexture_Generic::UpdateFrame()
 	if (decoder_->EndOfMovie() && loop_) {
 		LOG->Trace("File \"%s\" looping", GetID().filename.c_str());
 		decoder_->Rollover();
-
-		// There's a gap in the audio when the music preview loops. This value
-		// is dynamic based on the ending and starting beats (see
-		// GameSoundManager.cpp::StartMusic).
-		//
-		// This means that the video will be off-sync during the loop, since
-		// the movie texture doesn't have access to the SoundManager's offset.
-		// Until it does, we can either freeze at the end of the video banner,
-		// or give it a best effort approximation (0.5 seconds).
-		clock_ = 0.5;
+		clock_ = 0.0;
 	}
 	else if (decoder_->EndOfMovie()) {
 		// At the end of the movie, and not looping.

@@ -13,11 +13,13 @@
 #include <pcre.h>
 
 #include <cfloat>
+#include <cinttypes>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <ctime>
 #include <functional>
+#include <iomanip>
 #include <map>
 #include <numeric>
 #include <sstream>
@@ -254,7 +256,7 @@ RString MicrosecondsToMMSSMsMs(uint64_t usecs)
     const uint64_t iMinsDisplay = totalSeconds / 60;
     const uint64_t iSecsDisplay = totalSeconds % 60;
     const uint64_t iLeftoverDisplay = (usecs % 1000000) / 10000; // Adjusted for two decimal places
-    RString sReturn = ssprintf("%02llu:%02llu.%02llu", iMinsDisplay, iSecsDisplay, std::min<uint64_t>(99, iLeftoverDisplay));
+    RString sReturn = ssprintf("%02" PRIu64 ":%02" PRIu64 ".%02" PRIu64, iMinsDisplay, iSecsDisplay, std::min<uint64_t>(99, iLeftoverDisplay));
     return sReturn;
 }
 
@@ -273,7 +275,7 @@ RString MicrosecondsToMMSSMsMsMs(uint64_t usecs)
     const uint64_t iMinsDisplay = totalSeconds / 60;
     const uint64_t iSecsDisplay = totalSeconds % 60;
     const uint64_t iLeftoverDisplay = (usecs % 1000000) / 1000;
-    RString sReturn = ssprintf("%02llu:%02llu.%03llu", iMinsDisplay, iSecsDisplay, std::min<uint64_t>(999, iLeftoverDisplay));
+    RString sReturn = ssprintf("%02" PRIu64 ":%02" PRIu64 ".%03" PRIu64, iMinsDisplay, iSecsDisplay, std::min<uint64_t>(999, iLeftoverDisplay));
     return sReturn;
 }
 
@@ -369,6 +371,15 @@ RString FormatNumberAndSuffix( int i )
 	return NUM_PREFIX.GetValue() + ssprintf("%i", i) + sSuffix;
 }
 
+RString NormalizeDecimal(float num)
+{
+	float mult = 1000.0f;
+	float rounded = std::round(num * mult) / mult;
+	std::ostringstream os;
+	os << std::fixed << std::setprecision(3) << rounded;
+	return os.str();
+}
+
 struct tm GetLocalTime()
 {
 	const time_t t = time(nullptr);
@@ -381,129 +392,23 @@ RString ssprintf( const char *fmt, ...)
 {
 	va_list	va;
 	va_start(va, fmt);
-	return vssprintf(fmt, va);
+	RString sRet = vssprintf(fmt, va);
+	va_end(va);
+	return sRet;
 }
-
-#define FMT_BLOCK_SIZE		2048 // # of bytes to increment per try
 
 RString vssprintf( const char *szFormat, va_list argList )
 {
-	RString sStr;
+	va_list tmp;
+	va_copy( tmp, argList );
+	int iNeeded = std::vsnprintf( nullptr, 0, szFormat, tmp );
+	va_end(tmp);
 
-#if defined(WIN32)
-	char *pBuf = nullptr;
-	int iChars = 1;
-	int iUsed = 0;
-	int iTry = 0;
-
-	do
-	{
-		// Grow more than linearly (e.g. 512, 1536, 3072, etc)
-		iChars += iTry * FMT_BLOCK_SIZE;
-		pBuf = (char*) _alloca( sizeof(char)*iChars );
-		iUsed = vsnprintf( pBuf, iChars-1, szFormat, argList );
-		++iTry;
-	} while( iUsed < 0 );
-
-	// assign whatever we managed to format
-	sStr.assign( pBuf, iUsed );
-#else
-	static bool bExactSizeSupported;
-	static bool bInitialized = false;
-	if( !bInitialized )
-	{
-		/* Some systems return the actual size required when snprintf
-		 * doesn't have enough space.  This lets us avoid wasting time
-		 * iterating, and wasting memory. */
-		char ignore;
-		bExactSizeSupported = ( snprintf( &ignore, 0, "Hello World" ) == 11 );
-		bInitialized = true;
-	}
-
-	if( bExactSizeSupported )
-	{
-		va_list tmp;
-		va_copy( tmp, argList );
-		char ignore;
-		int iNeeded = vsnprintf( &ignore, 0, szFormat, tmp );
-		va_end(tmp);
-
-		char *buf = new char[iNeeded + 1];
-		std::fill(buf, buf + iNeeded + 1, '\0');
-		vsnprintf( buf, iNeeded+1, szFormat, argList );
-		RString ret(buf);
-		delete [] buf;
-		return ret;
-	}
-
-	int iChars = FMT_BLOCK_SIZE;
-	int iTry = 1;
-	for (;;)
-	{
-		// Grow more than linearly (e.g. 512, 1536, 3072, etc)
-		char *buf = new char[iChars];
-		std::fill(buf, buf + iChars, '\0');
-		int used = vsnprintf( buf, iChars - 1, szFormat, argList );
-		if ( used == -1 )
-		{
-			iChars += ( ++iTry * FMT_BLOCK_SIZE );
-		}
-		else
-		{
-			/* OK */
-			sStr.assign(buf, used);
-		}
-
-		delete [] buf;
-		if (used != -1)
-		{
-			break;
-		}
-	}
-#endif
-	return sStr;
-}
-
-/* Windows uses %I64i to format a 64-bit int, instead of %lli. Convert "a b %lli %-3llu c d"
- * to "a b %I64 %-3I64u c d". This assumes a well-formed format string; invalid format strings
- * should not crash, but the results are undefined. */
-#if defined(WIN32)
-RString ConvertI64FormatString( const RString &sStr )
-{
 	RString sRet;
-	sRet.reserve( sStr.size() + 16 );
-
-	size_t iOffset = 0;
-	while( iOffset < sStr.size() )
-	{
-		size_t iPercent = sStr.find( '%', iOffset );
-		if( iPercent != sStr.npos )
-		{
-			sRet.append( sStr, iOffset, iPercent - iOffset );
-			iOffset = iPercent;
-		}
-
-		size_t iEnd = sStr.find_first_of( "diouxXeEfFgGaAcsCSpnm%", iOffset + 1 );
-		if( iEnd != sStr.npos && iEnd - iPercent >= 3 && iPercent > 2 && sStr[iEnd-2] == 'l' && sStr[iEnd-1] == 'l' )
-		{
-			sRet.append( sStr, iPercent, iEnd - iPercent - 2 ); // %
-			sRet.append( "I64" ); // %I64
-			sRet.append( sStr, iEnd, 1 ); // %I64i
-			iOffset = iEnd + 1;
-		}
-		else
-		{
-			if( iEnd == sStr.npos )
-				iEnd = sStr.size() - 1;
-			sRet.append( sStr, iOffset, iEnd - iOffset + 1 );
-			iOffset = iEnd + 1;
-		}
-	}
+	std::vsnprintf( sRet.GetBuffer(iNeeded), iNeeded+1, szFormat, argList );
+	sRet.ReleaseBuffer( iNeeded );
 	return sRet;
 }
-#else
-RString ConvertI64FormatString( const RString &sStr ) { return sStr; }
-#endif
 
 /* ISO-639-1 codes: http://www.loc.gov/standards/iso639-2/php/code_list.php
  * We don't use 3-letter codes, so we don't bother supporting them. */

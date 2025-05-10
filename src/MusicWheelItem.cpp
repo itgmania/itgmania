@@ -383,6 +383,11 @@ void MusicWheelItem::RefreshGrades()
 		{
 			msg.SetParam( "Grade", pHSL->HighGrade );
 			msg.SetParam( "NumTimesPlayed", pHSL->GetNumTimesPlayed() );
+
+			// Until we get a Grade for quints (need W0 support), send back the entire
+			// HighScoreList so we can determine if a player has a quint or not.
+			// TODO: Remove this once we have W0 support.
+			msg.SetParam( "HighScoreList", pHSL );
 		}
 		m_pGradeDisplay[p]->HandleMessage( msg );
 	}

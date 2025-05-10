@@ -124,6 +124,14 @@ enum ProfileSortOrder
 	ProfileSortOrder_Invalid
 };
 
+enum SyncOffset
+{
+	SyncOffset_NULL,
+	SyncOffset_ITG,
+	NUM_SyncOffset,
+	SyncOffset_Invalid
+};
+
 /** @brief Holds user-chosen preferences that are saved between sessions. */
 class PrefsManager
 {
@@ -240,7 +248,7 @@ public:
 	Preference<ShowDancingCharacters>		m_ShowDancingCharacters;
 	Preference<bool>	m_bUseUnlockSystem;
 	Preference<float>	m_fGlobalOffsetSeconds;
-	Preference<float>	m_fMachineSyncBias;
+	Preference<SyncOffset>	m_DefaultSyncOffset;
 	Preference<int>	m_iProgressiveLifebar;
 	Preference<int>	m_iProgressiveStageLifebar;
 	Preference<int>	m_iProgressiveNonstopLifebar;
@@ -314,6 +322,7 @@ public:
 	Preference<int>	m_iSoundPreferredSampleRate;
 	Preference<RString>	m_sLightsStepsDifficulty;
 	Preference<bool>	m_bLightsSimplifyBass;
+	Preference<bool>	m_bLightsBassParallel;
 	Preference<bool>	m_bAllowUnacceleratedRenderer;
 	Preference<bool>	m_bThreadedInput;
 	Preference<bool>	m_bThreadedMovieDecode;

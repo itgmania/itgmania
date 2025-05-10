@@ -415,7 +415,7 @@ public:
 			}
 		}
 
-		return this->m_fBeat0OffsetInSeconds == other.m_fBeat0OffsetInSeconds;
+		return this->m_fBeat0OffsetInSeconds == other.m_fBeat0OffsetInSeconds && this->m_fBeat0GroupOffsetInSeconds == other.m_fBeat0GroupOffsetInSeconds;
 	}
 
 	/**
@@ -460,7 +460,7 @@ public:
 	/** @brief The initial offset of a song. */
 	float	m_fBeat0OffsetInSeconds;
 
-	/** @brief The sync bias offset of this group */
+	/** @brief The sync offset of this group */
 	float	m_fBeat0GroupOffsetInSeconds;
 
 	// XXX: this breaks encapsulation. get rid of it ASAP

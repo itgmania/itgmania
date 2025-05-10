@@ -30,7 +30,7 @@ Group::Group() {
     m_sGroupName = "";
     m_sTranslitTitle = "";
     m_sSeries = "";
-    m_fSyncOffset = 0;
+    m_fSyncOffset = 0.0f;
     m_bHasPackIni = false;
     m_iYearReleased = 0;
     m_sBannerPath = "";
@@ -41,15 +41,30 @@ Group::~Group()
 
 }
 
-Group::Group(const RString& sDir, const RString& sGroupDirName) {
-    RString sPackIniPath = sDir + sGroupDirName + "/" + INI_FILE;
-    m_sPath = sDir + sGroupDirName;
-    m_sGroupName = Basename(sGroupDirName);
-    m_sDisplayTitle = m_sGroupName;
+Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfile) {
+    RString sPackIniPath;
+    if (bFromProfile) {
+        sPackIniPath = sDir + "/" + INI_FILE;
+        m_sPath = sDir;
+        m_sGroupName = sDir.substr(1, sDir.find('/', 1) - 1);
+        m_sDisplayTitle = sGroupDirName;
+    } else {
+        sPackIniPath = sDir + sGroupDirName + "/" + INI_FILE;
+        m_sPath = sDir + sGroupDirName;
+        m_sGroupName = Basename(sGroupDirName);
+        m_sDisplayTitle = m_sGroupName;
+    }
     m_sSortTitle = m_sGroupName;
     m_sTranslitTitle = m_sGroupName;
     m_sSeries = "";
-    m_fSyncOffset = PREFSMAN->m_fMachineSyncBias;
+    // The m_DefaultSyncOffset preference corresponds to what offset the user
+    // would like to assume as a "default" for packs without a Pack.ini.
+    //
+    // If the m_DefaultSyncOffset is set to ITG, we want to remove the 9ms ITG
+    // bias for all packs without a Pack.ini.
+    //
+    // We can start with that as our default value, and potentially update it below.
+    m_fSyncOffset = (PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL) ? 0.0f : -0.009f;
     m_bHasPackIni = false;
     m_iYearReleased = 0;
     m_sBannerPath = "";
@@ -94,13 +109,21 @@ Group::Group(const RString& sDir, const RString& sGroupDirName) {
             RString sValue = "";
             ini.GetValue("Group", "SyncOffset", sValue);
             Trim(sValue);
+            // If the Pack.ini is specified as SyncOffset=ITG (regardless of the
+            // m_DefaultSyncOffset value, we need to always remove the 9ms ITG
+            // bias.
+            //
+            // Otherwise, if SyncOffset=NULL, we don't need to do anything since
+            // it's already NULL synced, which is what we shift everything to.
             if (!sValue.empty()) {
                 if (sValue == "NULL") {
                     m_fSyncOffset = 0.0f;
-                } else if (sValue == "ITG") {
+                }
+                else if (sValue == "ITG") {
                     m_fSyncOffset = -0.009f;
-                } else {
-                    LOG->Warn("Group::Group: Invalid SyncOffset value: %s in Pack.ini. Valid values are NULL and ITG. Defaulting to NULL.", sValue.c_str());
+                }
+                else {
+                    LOG->Warn("Group::Group: Invalid SyncOffset value: %s in Pack.ini. Valid values are NULL and ITG. Using default value.", sValue.c_str());
                 }
             }
 

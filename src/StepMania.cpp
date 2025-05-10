@@ -73,11 +73,6 @@
 #include <ctime>
 #include <vector>
 
-#if defined(_WIN32)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-
 void ShutdownGame();
 bool HandleGlobalInputs( const InputEventPlus &input );
 void HandleInputEvents(float fDeltaTime);
@@ -385,49 +380,6 @@ ThemeMetric<RString>	SELECT_MUSIC_SCREEN	("Common","SelectMusicScreen");
 RString StepMania::GetSelectMusicScreen()
 {
 	return SELECT_MUSIC_SCREEN.GetValue();
-}
-
-#if defined(_WIN32)
-static Preference<int> g_iLastSeenMemory( "LastSeenMemory", 0 );
-#endif
-
-static void AdjustForChangedSystemCapabilities()
-{
-#if defined(_WIN32)
-	// Has the amount of memory changed?
-	MEMORYSTATUS mem;
-	GlobalMemoryStatus(&mem);
-
-	const int Memory = mem.dwTotalPhys / (1024*1024);
-
-	if( g_iLastSeenMemory == Memory )
-		return;
-
-	LOG->Trace( "Memory changed from %i to %i; settings changed", g_iLastSeenMemory.Get(), Memory );
-	g_iLastSeenMemory.Set( Memory );
-
-	// is this assumption outdated? -aj
-	/* Let's consider 128-meg systems low-memory, and 256-meg systems high-memory.
-	 * Cut off at 192. This is pretty conservative; many 128-meg systems can
-	 * deal with higher memory profile settings, but some can't.
-	 *
-	 * Actually, Windows lops off a meg or two; cut off a little lower to treat
-	 * 192-meg systems as high-memory. */
-	const bool HighMemory = (Memory >= 190);
-	const bool LowMemory = (Memory < 100); // 64 and 96-meg systems
-
-	/* Two memory-consuming features that we can disable are texture caching and
-	 * preloaded banners. Texture caching can use a lot of memory; disable it for
-	 * low-memory systems. */
-	PREFSMAN->m_bDelayedTextureDelete.Set( HighMemory );
-
-	/* Preloaded banners takes about 9k per song. Although it's smaller than the
-	 * actual song data, it still adds up with a lot of songs.
-	 * Disable it for 64-meg systems. */
-	PREFSMAN->m_ImageCache.Set( LowMemory ? IMGCACHE_OFF:IMGCACHE_LOW_RES_PRELOAD );
-
-	PREFSMAN->SavePrefsToDisk();
-#endif
 }
 
 #if defined(_WIN32)
@@ -946,8 +898,6 @@ int sm_main(int argc, char* argv[])
 #if defined(HAVE_TLS)
 	LOG->Info( "TLS is %savailable", RageThread::GetSupportsTLS()? "":"not " );
 #endif
-
-	AdjustForChangedSystemCapabilities();
 
 	GAMEMAN		= new GameManager;
 	THEME		= new ThemeManager;

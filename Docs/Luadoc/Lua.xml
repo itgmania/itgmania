@@ -92,6 +92,7 @@
 		<Function name='HSVToColor'/>
 		<Function name='HSVToHex'/>
 		<Function name='HasAlpha'/>
+		<Function name='HideLightSetting' />
 		<Function name='HitCombo'/>
 		<Function name='HoldTiming'/>
 		<Function name='Hour'/>
@@ -2455,6 +2456,12 @@
 			<EnumValue name='&apos;HealthState_Danger&apos;' value='2'/>
 			<EnumValue name='&apos;HealthState_Dead&apos;' value='3'/>
 		</Enum>
+		<Enum name='HideLightType'>
+			<EnumValue name='&apos;HideLightType_NoHideLights&apos;' value='0'/>
+			<EnumValue name='&apos;HideLightType_HideAllLights&apos;' value='1'/>
+			<EnumValue name='&apos;HideLightType_HideMarqueeLights&apos;' value='2'/>
+			<EnumValue name='&apos;HideLightType_HideBassLights&apos;' value='3'/>
+		</Enum>
 		<Enum name='HighResolutionTextures'>
 			<EnumValue name='&apos;HighResolutionTextures_Auto&apos;' value='0'/>
 			<EnumValue name='&apos;HighResolutionTextures_ForceOff&apos;' value='1'/>
@@ -2894,6 +2901,10 @@
 			<EnumValue name='&apos;StyleType_TwoPlayersTwoSides&apos;' value='1'/>
 			<EnumValue name='&apos;StyleType_OnePlayerTwoSides&apos;' value='2'/>
 			<EnumValue name='&apos;StyleType_TwoPlayersSharedSides&apos;' value='3'/>
+		</Enum>
+		<Enum name='SyncOffset'>
+			<EnumValue name='&apos;SyncOffset_Null&apos;' value='1'/>
+			<EnumValue name='&apos;SyncOffset_ITG&apos;' value='2'/>
 		</Enum>
 		<Enum name='TapNoteScore'>
 			<EnumValue name='&apos;TapNoteScore_None&apos;' value='0'/>

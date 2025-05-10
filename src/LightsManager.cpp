@@ -11,6 +11,8 @@
 #include "Actor.h"
 #include "Preference.h"
 #include "GameManager.h"
+#include "PlayerState.h"
+#include "GameState.h"
 #include "CommonMetrics.h"
 #include "Style.h"
 
@@ -279,9 +281,50 @@ void LightsManager::Update( float fDeltaTime )
 		case LIGHTSMODE_DEMONSTRATION:
 		case LIGHTSMODE_GAMEPLAY:
 		{
-			FOREACH_CabinetLight( cl )
-				m_LightsState.m_bCabinetLights[cl] = m_fSecsLeftInCabinetLightBlink[cl] > 0;
+			FOREACH_CabinetLight(cl)
+			{
+				int currLightPlayerNumber = (cl & 1) == 1 ? 1 : 0;
+				bool skipLightActivation = false;
 
+				auto playerOptions = GAMESTATE->m_pPlayerState[currLightPlayerNumber]->m_PlayerOptions.GetCurrent();
+
+				if (cl == LIGHT_MARQUEE_UP_LEFT ||
+					cl == LIGHT_MARQUEE_UP_RIGHT ||
+					cl == LIGHT_MARQUEE_LR_LEFT ||
+					cl == LIGHT_MARQUEE_LR_RIGHT)
+				{
+					if (GAMESTATE->IsHumanPlayer((PlayerNumber)currLightPlayerNumber))
+					{
+						skipLightActivation = playerOptions.m_HideLightType == HideLightType::HideLightType_HideMarqueeLights ||
+							playerOptions.m_HideLightType == HideLightType::HideLightType_HideAllLights;
+					}
+				}
+				else
+				{
+					bool lightsBassParallel = PREFSMAN->m_bLightsBassParallel;
+
+					int otherPn = currLightPlayerNumber == 0 ? 1 : 0;
+					auto otherPlayerOptions = GAMESTATE->m_pPlayerState[otherPn]->m_PlayerOptions.GetCurrent();
+
+					if (GAMESTATE->IsHumanPlayer((PlayerNumber)currLightPlayerNumber))
+					{
+						skipLightActivation = playerOptions.m_HideLightType == HideLightType::HideLightType_HideBassLights ||
+												playerOptions.m_HideLightType == HideLightType::HideLightType_HideAllLights ||
+							(lightsBassParallel &&
+								(otherPlayerOptions.m_HideLightType == HideLightType::HideLightType_HideBassLights ||
+									otherPlayerOptions.m_HideLightType == HideLightType::HideLightType_HideAllLights));
+					}
+					else
+					{
+						skipLightActivation = lightsBassParallel &&
+							(otherPlayerOptions.m_HideLightType == HideLightType::HideLightType_HideBassLights ||
+								otherPlayerOptions.m_HideLightType == HideLightType::HideLightType_HideAllLights);
+					}
+				}
+
+				if (!skipLightActivation)
+					m_LightsState.m_bCabinetLights[cl] = m_fSecsLeftInCabinetLightBlink[cl] > 0;
+			}
 			break;
 		}
 

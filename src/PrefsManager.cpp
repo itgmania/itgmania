@@ -134,6 +134,14 @@ XToString(ProfileSortOrder);
 StringToX(ProfileSortOrder);
 LuaXType(ProfileSortOrder);
 
+static const char* SyncOffsetNames[] = {
+    "NULL",
+    "ITG"
+};
+XToString(SyncOffset);
+StringToX(SyncOffset);
+LuaXType(SyncOffset);
+
 bool g_bAutoRestart = false;
 #ifdef DEBUG
 # define TRUE_IF_DEBUG true
@@ -237,7 +245,7 @@ PrefsManager::PrefsManager() :
 	m_ShowDancingCharacters		( "ShowDancingCharacters",		SDC_Random ),
 	m_bUseUnlockSystem		( "UseUnlockSystem",			false ),
 	m_fGlobalOffsetSeconds		( "GlobalOffsetSeconds",		-0.008f ),
-	m_fMachineSyncBias	( "MachineSyncBias",		-0.009f ),
+	m_DefaultSyncOffset	( "DefaultSyncOffset",		SyncOffset_ITG ),
 	m_iProgressiveLifebar		( "ProgressiveLifebar",			0 ),
 	m_iProgressiveStageLifebar	( "ProgressiveStageLifebar",		0 ),
 	m_iProgressiveNonstopLifebar	( "ProgressiveNonstopLifebar",		0 ),
@@ -288,6 +296,7 @@ PrefsManager::PrefsManager() :
 	m_iSoundPreferredSampleRate	( "SoundPreferredSampleRate",		0 ),
 	m_sLightsStepsDifficulty	( "LightsStepsDifficulty",		"hard,medium" ),
 	m_bLightsSimplifyBass		( "LightsSimplifyBass",		false),
+	m_bLightsBassParallel       ( "LightsBassParallel",     false),
 	m_bAllowUnacceleratedRenderer	( "AllowUnacceleratedRenderer",		false ),
 	m_bThreadedInput		( "ThreadedInput",			true ),
 	m_bThreadedMovieDecode		( "ThreadedMovieDecode",		true ),

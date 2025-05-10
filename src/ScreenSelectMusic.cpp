@@ -1743,6 +1743,17 @@ void ScreenSelectMusic::SwitchToPreferredDifficulty()
 	}
 }
 
+// NOTE: This could a be a bit more robust than just looking at the extension,
+// but it's good enough for now.
+static bool IsVideoFile(const RString& path) {
+	const RString extension = GetExtension(path);
+	return extension == "mp4" ||
+		extension == "avi" ||
+		extension == "mov" ||
+		extension == "mkv" ||
+		extension == "mpg";
+}
+
 void ScreenSelectMusic::AfterMusicChange()
 {
 	if( !m_MusicWheel.IsRouletting() )
@@ -2004,14 +2015,27 @@ void ScreenSelectMusic::AfterMusicChange()
 	if( bWantBanner )
 	{
 		LOG->Trace("LoadFromCachedBanner(%s)",g_sBannerPath .c_str());
-		if( m_Banner.LoadFromCachedBanner( g_sBannerPath ) )
+		// TODO: We should probably have some fallback banner for videos, but for
+		// now we can just load the video file directly. This is to try an address
+		// some issues with the video banners potentially crashing the game but
+		// needs some more investigation.
+		if( IsVideoFile(g_sBannerPath) )
 		{
-			/* If the high-res banner is already loaded, just delay before
-			 * loading it, so the low-res one has time to fade in. */
-			if( !TEXTUREMAN->IsTextureRegistered( Sprite::SongBannerTexture(g_sBannerPath) ) )
-				m_BackgroundLoader.CacheFile( g_sBannerPath );
+			// Directly load the video file.
+			m_Banner.LoadFromCachedBanner(g_sBannerPath);
+			g_bBannerWaiting = false;
+		}
+		else
+		{
+			if( m_Banner.LoadFromCachedBanner( g_sBannerPath ) )
+			{
+				/* If the high-res banner is already loaded, just delay before
+				 * loading it, so the low-res one has time to fade in. */
+				if( !TEXTUREMAN->IsTextureRegistered( Sprite::SongBannerTexture(g_sBannerPath) ) )
+					m_BackgroundLoader.CacheFile( g_sBannerPath );
 
-			g_bBannerWaiting = true;
+				g_bBannerWaiting = true;
+			}
 		}
 	}
 

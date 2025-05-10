@@ -98,7 +98,7 @@ public:
 	//RString GetSongGroupBackgroundPath( RString sSongGroup ) const;
 	void GetSongGroupNames( std::vector<RString> &AddTo ) const;
 	bool DoesSongGroupExist( RString sSongGroup ) const;
-	bool HasPackIni(RString sSongGroup) const;
+	bool HasPackIni(const RString& sSongGroup) const;
 	RageColor GetSongGroupColor( const RString &sSongGroupName ) const;
 	RageColor GetSongColor( const Song* pSong ) const;
 
