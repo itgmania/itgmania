@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest] # TODO: macos-13
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-13, windows-latest]
         include:
           - os: ubuntu-latest
             name: Ubuntu x86_64
@@ -39,6 +39,14 @@ jobs:
               cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_CLUB_FANTASTIC=Off
               cmake --build build --target package
             path: build/ITGmania-*-NIGHTLY-git-*-macOS-M1-no-songs.dmg
+          - os: macos-13
+            name: macOS (Intel)
+            install: brew install nasm
+            configure: cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
+            release: |
+              cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_CLUB_FANTASTIC=Off
+              cmake --build build --target package
+            path: build/ITGmania-*-NIGHTLY-git-*-macOS-Intel-no-songs.dmg
           - os: windows-latest
             name: Windows
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
