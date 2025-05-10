@@ -23,7 +23,7 @@
 #else
 #define DoOpen open
 #define DoRmdir rmdir
-#define DoLseek lseek64
+#define DoLseek lseek
 #define DoClose close
 #define DoRead read
 #define DoWrite write
