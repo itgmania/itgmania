@@ -15,6 +15,7 @@
 #include "GameState.h"
 #include "CommonMetrics.h"
 #include "Style.h"
+#include "StatsManager.h"
 
 #include <cmath>
 #include <cstddef>
@@ -495,6 +496,12 @@ void LightsManager::Update( float fDeltaTime )
 			if( !GAMESTATE->m_bSideIsJoined[pn] && GAMESTATE->PlayersCanJoin() && GAMESTATE->EnoughCreditsToJoin() )
 				m_LightsState.m_bGameButtonLights[pn][GAME_BUTTON_START] = bBlinkOn;
 		}
+	}
+
+	m_LightsState.m_LightMode = m_LightsMode;
+
+	FOREACH_PlayerNumber(pn) {
+		m_LightsState.combo[pn] = STATSMAN->m_CurStageStats.m_player[pn].m_iCurCombo;
 	}
 
 	// apply new light values we set above
