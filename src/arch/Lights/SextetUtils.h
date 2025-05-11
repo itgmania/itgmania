@@ -150,11 +150,7 @@ inline size_t packLine(uint8_t* buffer, const LightsState* ls)
 		index += packControllerLights(ls, gc, &(buffer[index]));
 	}
 
-	int bytes = (int)ls->m_LightMode;
-	buffer[index++] = bytes & 0xff000000;
-	buffer[index++] = bytes & 0x00ff0000;
-	buffer[index++] = bytes & 0x0000ff00;
-	buffer[index++] = bytes & 0x000000ff;
+	index += unpackType(buffer, ls->m_LightMode, index, FULL_SEXTET_COUNT);
 
 	index += unpackType(buffer, ls->combo[0], index, FULL_SEXTET_COUNT);
 	index += unpackType(buffer, ls->combo[1], index, FULL_SEXTET_COUNT);
