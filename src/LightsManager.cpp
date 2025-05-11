@@ -502,6 +502,7 @@ void LightsManager::Update( float fDeltaTime )
 
 	FOREACH_PlayerNumber(pn) {
 		m_LightsState.combo[pn] = STATSMAN->m_CurStageStats.m_player[pn].m_iCurCombo;
+		m_LightsState.score[pn] = STATSMAN->m_CurStageStats.m_player[pn].GetCurMaxPercentDancePoints();
 	}
 
 	// apply new light values we set above

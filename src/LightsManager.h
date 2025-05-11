@@ -53,6 +53,8 @@ struct LightsState
 	bool m_bGameButtonLights[NUM_GameController][NUM_GameButton];
 
 	unsigned int combo[NUM_GameController];
+	float score[NUM_GameController];
+
 	LightsMode m_LightMode;
 	// This isn't actually a light, but it's typically implemented in the same way.
 	bool m_bCoinCounter;

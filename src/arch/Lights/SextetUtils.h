@@ -16,7 +16,7 @@ static const size_t CABINET_SEXTET_COUNT = 1;
 static const size_t CONTROLLER_SEXTET_COUNT = 6;
 
 // Number of bytes to contain the full pack and a trailing LF
-static const size_t FULL_SEXTET_COUNT = CABINET_SEXTET_COUNT + (NUM_GameController * CONTROLLER_SEXTET_COUNT) + sizeof(LightsMode) + sizeof(unsigned int)  + sizeof(unsigned int) + 1;
+static const size_t FULL_SEXTET_COUNT = CABINET_SEXTET_COUNT + (NUM_GameController * CONTROLLER_SEXTET_COUNT) + sizeof(LightsMode) + sizeof(unsigned int) * 2 + sizeof(float) * 2 + 1;
 
 // Serialization routines
 
@@ -127,6 +127,18 @@ inline size_t packControllerLights(const LightsState* ls, GameController gc, uin
 	return CONTROLLER_SEXTET_COUNT;
 }
 
+template <typename T> int unpackType(uint8_t* buffer, T data, int offset, int length) {
+
+	unsigned char const* p = reinterpret_cast<unsigned char const*>(&data);
+
+	for (std::size_t i = 0; i != sizeof(T) && offset + i < length; ++i)
+	{
+		buffer[offset + i] = p[i];
+		//std::printf("The byte #%zu is 0x%02X\n", i, p[i]);
+	}
+	return sizeof(T);
+}
+
 inline size_t packLine(uint8_t* buffer, const LightsState* ls)
 {
 	size_t index = 0;
@@ -138,30 +150,46 @@ inline size_t packLine(uint8_t* buffer, const LightsState* ls)
 		index += packControllerLights(ls, gc, &(buffer[index]));
 	}
 
-	int bytes = (int) ls->m_LightMode;
+	int bytes = (int)ls->m_LightMode;
 	buffer[index++] = bytes & 0xff000000;
 	buffer[index++] = bytes & 0x00ff0000;
 	buffer[index++] = bytes & 0x0000ff00;
 	buffer[index++] = bytes & 0x000000ff;
 
-    bytes = (int)ls->combo[0];
-	buffer[index++] = bytes & 0xff000000;
-	buffer[index++] = bytes & 0x00ff0000;
-	buffer[index++] = bytes & 0x0000ff00;
-	buffer[index++] = bytes & 0x000000ff;
+	index += unpackType(buffer, ls->combo[0], index, FULL_SEXTET_COUNT);
+	index += unpackType(buffer, ls->combo[1], index, FULL_SEXTET_COUNT);
 
-	bytes = (int)ls->combo[1];
-	buffer[index++] = bytes & 0xff000000;
-	buffer[index++] = bytes & 0x00ff0000;
-	buffer[index++] = bytes & 0x0000ff00;
-	buffer[index++] = bytes & 0x000000ff;
-
+	index += unpackType(buffer, ls->score[0], index, FULL_SEXTET_COUNT);
+	index += unpackType(buffer, ls->score[1], index, FULL_SEXTET_COUNT);
 
 	// Terminate with LF
 	buffer[index++] = 0xA;
 
 	return index;
 }
+
+
+
+//inline void unpackType (uint8_t* buffer,  float data, unsigned long long dataSize) {
+//
+//	unsigned char const* p = reinterpret_cast<unsigned char const*>(&data);
+//
+//	for (std::size_t i = 0; i != sizeof(float); ++i)
+//	{
+//		std::printf("The byte #%zu is 0x%02X\n", i, p[i]);
+//	}
+//}
+//
+//inline void unpackType(uint8_t* buffer, unsigned int data, int dataSize) {
+//
+//	unsigned char const* p = reinterpret_cast<unsigned char const*>(&data);
+//
+//	for (std::size_t i = 0; i != sizeof(float); ++i)
+//	{
+//		std::printf("The byte #%zu is 0x%02X\n", i, p[i]);
+//	}
+//}
+
 #endif
 /*
  * Copyright © 2014 Peter S. May
