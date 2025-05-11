@@ -4,7 +4,6 @@
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "SextetUtils.h"
-
 #include <cstdint>
 #include <cstring>
 
@@ -16,6 +15,15 @@
 
 namespace
 {
+
+	#if defined(_WIN32)
+		#define DEFAULT_OUTPUT_FILENAME "\\\\.\\pipe\\StepMania-Lights-SextetStream"
+	#else
+		#define DEFAULT_OUTPUT_FILENAME "Data/StepMania-Lights-SextetStream.out"
+	#endif
+	static Preference<RString> g_sSextetStreamOutputFilename("SextetStreamOutputFilename", DEFAULT_OUTPUT_FILENAME);
+
+
 	class SextetImpl
 	{
 	protected:
@@ -23,6 +31,7 @@ namespace
 
 #ifdef _WIN32
 		HANDLE out;
+		long int retry = 0;
 #else
 		RageFile* out;
 #endif
@@ -71,8 +80,24 @@ namespace
 						buffer,             // message 
 						FULL_SEXTET_COUNT,              // message length 
 						&cbWritten,             // bytes written 
-						NULL);                  // not overlapped 
-
+						NULL);                  // not overlapped
+					if (!fSuccess) {
+						retry++;
+						if (retry > 30) {
+							out = CreateFile(
+								g_sSextetStreamOutputFilename.Get(),   // pipe name 
+								GENERIC_WRITE,
+								0,              // no sharing 
+								NULL,           // default security attributes
+								OPEN_EXISTING,  // opens existing pipe 
+								0,              // default attributes 
+								NULL);
+							retry = 0;
+						}
+					}
+					else {
+						retry = 0;
+					}
 #else
 					out->Write(buffer, FULL_SEXTET_COUNT);
 					out->Flush();
@@ -113,12 +138,6 @@ void LightsDriver_SextetStream::Set(const LightsState *ls)
 
 REGISTER_LIGHTS_DRIVER_CLASS(SextetStreamToFile);
 
-#if defined(_WIN32)
-	#define DEFAULT_OUTPUT_FILENAME "\\\\.\\pipe\\StepMania-Lights-SextetStream"
-#else
-	#define DEFAULT_OUTPUT_FILENAME "Data/StepMania-Lights-SextetStream.out"
-#endif
-static Preference<RString> g_sSextetStreamOutputFilename("SextetStreamOutputFilename", DEFAULT_OUTPUT_FILENAME);
 
 inline RageFile * openOutputStream(const RString& filename)
 {
