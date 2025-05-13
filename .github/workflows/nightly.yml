@@ -45,9 +45,6 @@ jobs:
           - os: windows-latest
             name: Windows
             arch: x64
-            install: |
-              $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-              &"$vsPath\VC\Auxiliary\Build\vcvarsall.bat" x64
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
             release: |
               cmake -B build -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
@@ -68,9 +65,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ matrix.arch }}-cmake-build-
       - name: Install dependencies
+        if: matrix.os != 'windows-latest'
         run: ${{ matrix.install }}
-      - name: Configure
-        run: ${{ matrix.configure }}
+      - name: Add msbuild to PATH
+        if: matrix.os == 'windows-latest'
+        uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
       - name: Create nightly release
         run: ${{ matrix.release }}
       - name: Upload artifacts
