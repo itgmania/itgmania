@@ -98,7 +98,19 @@ void TechCounts::CalculateTechCountsFromRows(std::vector<StepParity::Row> &rows,
 				{
 					continue;
 				}
-				
+				// noteCount doesn't take into account active holds, but a foot holding a note is still accounted for
+				// in Row.columns and Row.whereTheFeetAre. 
+				// Check that the current foot was actually involved in a new note (tap or hold start)
+				// on both the current row and the previous row.
+				if((currentRow.notes[currentRow.whereTheFeetAre[foot]].type != TapNoteType_Tap
+				  && currentRow.notes[currentRow.whereTheFeetAre[foot]].type != TapNoteType_HoldHead)
+					|| (previousRow.notes[previousRow.whereTheFeetAre[foot]].type != TapNoteType_Tap
+					&& previousRow.notes[previousRow.whereTheFeetAre[foot]].type != TapNoteType_HoldHead)
+				)
+				{
+					continue;
+				}
+
 				if(previousRow.whereTheFeetAre[foot] == currentRow.whereTheFeetAre[foot])
 				{
 					if(elapsedTime < JACK_CUTOFF)
