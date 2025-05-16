@@ -200,7 +200,7 @@ void TechCounts::CalculateTechCountsFromRows(std::vector<StepParity::Row> &rows,
 		//   - Was the right foot farther right than the left?
 		//     - If so, then this was a full crossover (like RDL, starting on right foot)
 		//     - otherwise, then this was probably a half crossover (like UDL, starting on right foot)
-		if(rightHeel != StepParity::INVALID_COLUMN && previousLeftHeel != StepParity::INVALID_COLUMN && previousRightHeel == StepParity::INVALID_COLUMN)
+		if(rightHeel != StepParity::INVALID_COLUMN && previousLeftHeel != StepParity::INVALID_COLUMN)
 		{
 			StepParity::StagePoint leftPos = layout.averagePoint(previousLeftHeel, previousLeftToe);
 			StepParity::StagePoint rightPos = layout.averagePoint(rightHeel, rightToe);
@@ -239,7 +239,7 @@ void TechCounts::CalculateTechCountsFromRows(std::vector<StepParity::Row> &rows,
 			}
 		}
 		// And check the same thing, starting with left foot
-		else if(leftHeel != StepParity::INVALID_COLUMN && previousRightHeel != StepParity::INVALID_COLUMN && previousLeftHeel == StepParity::INVALID_COLUMN)
+		else if(leftHeel != StepParity::INVALID_COLUMN && previousRightHeel != StepParity::INVALID_COLUMN)
 		{
 			StepParity::StagePoint leftPos = layout.averagePoint(leftHeel, leftToe);
 			StepParity::StagePoint rightPos = layout.averagePoint(previousRightHeel, previousRightToe);
