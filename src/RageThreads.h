@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <limits>
 
+#include "StdString.h"
+
 struct ThreadSlot;
 class RageTimer;
 /** @brief Thread, mutex, semaphore, and event classes. */
