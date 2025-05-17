@@ -5,7 +5,7 @@ Most users will find everything they need in this README. There are differences 
 ## Continuous Integration
 Pushes and pull requests to the `beta` branch of the repository are built with a [GitHub Actions workflow](https://github.com/itgmania/itgmania/actions/workflows/nightly.yml), in which "nightly releases" are compiled for a matrix of operating systems and architectures.
 
-By default, GitHub stores build artifacts for 90 days. They can be downloaded from the Artifacts section of the Summary page on an execution of the workflow.
+By default, GitHub stores build artifacts for 90 days. People who are signed into GitHub and have read access to a repository can download workflow artifacts. They can be downloaded from the Artifacts section of the Summary page on an execution of the workflow.
 
 ## Local Development
 
