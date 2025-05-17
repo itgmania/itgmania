@@ -38,8 +38,6 @@
 #endif
 
 #include "StdString.h"
-/** @brief Use RStrings throughout the program. */
-typedef StdString::CStdString RString;
 
 
 #include "RageThreads.h"
