@@ -49,7 +49,9 @@ jobs:
             release: |
               cmake -B build -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
               cmake --build build --config Release --target package
-            path: build/ITGmania-*-NIGHTLY-git-*-Windows-no-songs.exe
+            path: |
+              build/ITGmania-*-NIGHTLY-git-*-Windows-no-songs.exe
+              Program/ITGmania.exe
     name: ${{ matrix.name }}
     steps:
       - uses: actions/checkout@v4
