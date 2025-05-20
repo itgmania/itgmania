@@ -68,7 +68,6 @@
 #include "ThemeMetric.h"
 #include "Trail.h"
 #include "UnlockManager.h"
-#include "global.h"
 
 GameState* GAMESTATE =
     nullptr;  // global and accessible from anywhere in our program

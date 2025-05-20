@@ -18,6 +18,7 @@
 #include "LuaReference.h"
 #include "MessageManager.h"
 #include "RageException.h"
+#include "RageFile.h"
 #include "RageLog.h"
 #include "RageThreads.h"
 #include "RageTypes.h"

@@ -3,13 +3,6 @@
 #include "RageException.h"
 #include "RageFileBasic.h"
 #include "RageLog.h"
-#include "RageSoundReader.h"
-#include "RageSoundReader_FileReader.h"
-#include "RageThreads.h"
-#include "RageUtil.h"
-#include "global.h"
-#include "ogg/os_types.h"
-#include "vorbis/codec.h"
 
 #if defined(INTEGER_VORBIS)
 #include <tremor/ivorbisfile.h>

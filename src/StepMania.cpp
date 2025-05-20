@@ -1,69 +1,37 @@
 #include "StepMania.h"
 
-#include <cstdlib>
-#include <utility>
-
-#include "DateTime.h"
-#include "EnumHelper.h"
-#include "GameConstantsAndTypes.h"
-#include "GameInput.h"
-#include "PlayerNumber.h"
-#include "Preference.h"
-#include "RageException.h"
-#include "RageInputDevice.h"
-#include "RageUtil.h"
-#include "StdString.h"
-#include "ThemeMetric.h"
-#include "global.h"
-
-// Rage global classes
-#include "CodeDetector.h"
-#include "CommandLineActions.h"
-#include "CommonMetrics.h"
-#include "Game.h"
-#include "GameSoundManager.h"
-#include "InputEventPlus.h"
-#include "LocalizedString.h"
-#include "ProductInfo.h"
-#include "RageDisplay.h"
-#include "RageInput.h"
-#include "RageLog.h"
-#include "RageSoundManager.h"
-#include "RageSurface.h"
-#include "RageSurface_Load.h"
-#include "RageTextureManager.h"
-#include "RageThreads.h"
-#include "RageTimer.h"
-#include "RageUtil/Regex.h"
-#include "Screen.h"
-#include "arch/ArchHooks/ArchHooks.h"
-#include "arch/Dialog/Dialog.h"
-#include "arch/LoadingWindow/LoadingWindow.h"
-
-#if !defined(SUPPORT_OPENGL) && !defined(SUPPORT_D3D)
-#define SUPPORT_OPENGL
-#endif
-
-// StepMania global classes
 #include <cmath>
+#include <cstdlib>
 #include <ctime>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ActorUtil.h"
 #include "AnnouncerManager.h"
 #include "Bookkeeper.h"
 #include "CharacterManager.h"
+#include "CodeDetector.h"
+#include "CommandLineActions.h"
+#include "CommonMetrics.h"
 #include "CryptManager.h"
+#include "DateTime.h"
+#include "EnumHelper.h"
 #include "FontManager.h"
+#include "Game.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
 #include "GameLoop.h"
 #include "GameManager.h"
+#include "GameSoundManager.h"
 #include "GameState.h"
 #include "ImageCache.h"
+#include "InputEventPlus.h"
 #include "InputFilter.h"
 #include "InputMapper.h"
 #include "InputQueue.h"
 #include "LightsManager.h"
+#include "LocalizedString.h"
 #include "LuaDebugManager.h"
 #include "LuaManager.h"
 #include "MemoryCardManager.h"
@@ -71,18 +39,47 @@
 #include "ModelManager.h"
 #include "NetworkManager.h"
 #include "NoteSkinManager.h"
+#include "PlayerNumber.h"
+#include "Preference.h"
 #include "PrefsManager.h"
+#include "ProductInfo.h"
 #include "Profile.h"
 #include "ProfileManager.h"
+#include "RageDisplay.h"
+#include "RageException.h"
 #include "RageFileManager.h"
+#include "RageInput.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageMath.h"
+#include "RageSoundManager.h"
+#include "RageSurface.h"
+#include "RageSurface_Load.h"
+#include "RageTextureManager.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "RageUtil/Regex.h"
+#include "Screen.h"
+#include "ScreenDimensions.h"
 #include "ScreenManager.h"
 #include "SongCacheIndex.h"
 #include "SongManager.h"
 #include "SpecialFiles.h"
 #include "StatsManager.h"
+#include "StdString.h"
 #include "ThemeManager.h"
+#include "ThemeMetric.h"
 #include "UnlockManager.h"
+#include "arch/ArchHooks/ArchHooks.h"
+#include "arch/Dialog/Dialog.h"
+#include "arch/LoadingWindow/LoadingWindow.h"
+#include "global.h"
 #include "ver.h"
+
+#if !defined(SUPPORT_OPENGL) && !defined(SUPPORT_D3D)
+#define SUPPORT_OPENGL
+#endif
 
 void ShutdownGame();
 bool HandleGlobalInputs(const InputEventPlus& input);
@@ -485,8 +482,9 @@ bool CheckVideoDefaultSettings() {
 
     // Update last seen video card
     PREFSMAN->m_sLastSeenVideoDriver.Set(GetVideoDriverName());
-  } else if (CompareNoCase(
-                 PREFSMAN->m_sVideoRenderers.Get(), defaults.sVideoRenderers)) {
+  } else if (
+      CompareNoCase(
+          PREFSMAN->m_sVideoRenderers.Get(), defaults.sVideoRenderers)) {
     LOG->Warn(
         "Video renderer list has been changed from '%s' to '%s'",
         defaults.sVideoRenderers.c_str(),

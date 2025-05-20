@@ -2,7 +2,6 @@
 
 #include <pulse/error.h>
 #include <sys/resource.h>
-#include <sys/time.h>
 
 #include <cstddef>
 #include <cstdint>

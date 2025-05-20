@@ -8,17 +8,14 @@
 #include <string>
 
 #include "IniFile.h"
+#include "RageDisplay.h"
 #include "RageException.h"
 #include "RageFile.h"
+#include "RageLog.h"
 #include "RageMath.h"
 #include "RageTexture.h"
 #include "RageTextureID.h"
 #include "RageTextureManager.h"
-#include "RageTypes.h"
-#include "RageUtil.h"
-#include "StdString.h"
-#include "XmlFile.h"
-#include "global.h"
 
 #define MS_MAX_NAME 32
 

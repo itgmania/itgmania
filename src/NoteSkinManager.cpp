@@ -15,6 +15,7 @@
 #include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "PrefsManager.h"
+#include "RageDisplay.h"
 #include "RageException.h"
 #include "RageFileManager.h"
 #include "RageLog.h"

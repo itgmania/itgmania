@@ -7,14 +7,15 @@
 #include "EnumHelper.h"
 #include "Game.h"
 #include "GameConstantsAndTypes.h"
-#include "GameInput.h"  // for GameButton constants
-#include "GameLoop.h"   // for ChangeGame
+#include "GameInput.h"
+#include "GameLoop.h"
 #include "InputMapper.h"
-#include "LightsManager.h"  // for NUM_CabinetLight
+#include "LightsManager.h"
 #include "LuaManager.h"
 #include "NoteSkinManager.h"
 #include "RageException.h"
 #include "RageInputDevice.h"
+#include "RageLog.h"
 #include "RageUtil.h"
 #include "StdString.h"
 #include "StepMania.h"

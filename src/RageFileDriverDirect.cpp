@@ -13,9 +13,9 @@
 #include "RageFileDriver.h"
 #include "RageFileDriverDirectHelpers.h"
 #include "RageFileManager.h"
+#include "RageLog.h"
 #include "RageUtil.h"
 #include "RageUtil_FileDB.h"
-#include "global.h"
 
 #if defined(_WIN32)
 // clang-format off

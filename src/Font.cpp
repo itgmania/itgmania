@@ -1,7 +1,5 @@
 #include "Font.h"
 
-#include <stdint.h>
-
 #include <algorithm>
 #include <cctype>
 #include <cmath>
