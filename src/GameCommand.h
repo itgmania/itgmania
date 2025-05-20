@@ -12,6 +12,7 @@
 #include "GameConstantsAndTypes.h"
 #include "LuaReference.h"
 #include "PlayerNumber.h"
+#include "global.h"
 
 class Song;
 class Steps;

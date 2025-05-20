@@ -1,32 +1,35 @@
 #ifndef SONGMANAGER_H
 #define SONGMANAGER_H
 
+#include <algorithm>
+#include <cstddef>
 #include <map>
 #include <set>
-#include <unordered_map>
-
-#include "Group.h"
-class LoadingWindow;
-class Song;
-class Style;
-class Steps;
-class PlayerOptions;
-struct lua_State;
-
-#include <cstddef>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
 #include "Course.h"
 #include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "PlayerOptions.h"
 #include "RageTexturePreloader.h"
 #include "RageTypes.h"
 #include "RageUtil.h"
 #include "Song.h"
+#include "SongOptions.h"
+#include "StdString.h"
 #include "ThemeMetric.h"
+#include "global.h"
+
+class LoadingWindow;
+class Song;
+class Style;
+class Steps;
+class PlayerOptions;
+struct lua_State;
 
 std::string SONG_GROUP_COLOR_NAME(size_t i);
 std::string COURSE_GROUP_COLOR_NAME(size_t i);

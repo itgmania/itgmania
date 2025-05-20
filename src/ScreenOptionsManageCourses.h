@@ -1,7 +1,6 @@
 #ifndef ScreenOptionsManageCourses_H
 #define ScreenOptionsManageCourses_H
 
-#include <string>
 #include <vector>
 
 #include "GameConstantsAndTypes.h"
@@ -11,6 +10,7 @@
 #include "ScreenMessage.h"
 #include "ScreenOptions.h"
 #include "ThemeMetric.h"
+#include "global.h"
 
 class Course;
 

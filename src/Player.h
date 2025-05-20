@@ -1,21 +1,22 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include <string>
+#include <map>
+#include <utility>
 #include <vector>
 
 #include "Actor.h"
 #include "ActorFrame.h"
-#include "AttackDisplay.h"
 #include "AutoActor.h"
 #include "GameConstantsAndTypes.h"
-#include "HoldJudgment.h"
+#include "LuaManager.h"
 #include "NoteData.h"
-#include "NoteDataWithScoring.h"
+#include "NoteTypes.h"
 #include "RageSound.h"
 #include "ScreenMessage.h"
 #include "ThemeMetric.h"
 #include "TimingData.h"
+#include "global.h"
 
 class ScoreDisplay;
 class LifeMeter;

@@ -1,26 +1,20 @@
 #include "ScreenRanking.h"
 
-#include <algorithm>
 #include <cstddef>
-#include <string>
-#include <utility>
+#include <memory>
 #include <vector>
 
+#include "Actor.h"
 #include "ActorUtil.h"
-#include "Difficulty.h"
-#include "EnumHelper.h"
-#include "GameConstantsAndTypes.h"
+#include "Course.h"
 #include "GameManager.h"
 #include "GameState.h"
 #include "HighScore.h"
 #include "Profile.h"
 #include "ProfileManager.h"
-#include "RageTypes.h"
 #include "RageUtil.h"
 #include "Screen.h"
-#include "ScreenAttract.h"
 #include "ScreenManager.h"
-#include "ScreenMessage.h"
 #include "SongManager.h"
 #include "ThemeManager.h"
 #include "global.h"

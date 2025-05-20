@@ -1,20 +1,16 @@
 #include "EditModePlayerManager.h"
 
-#include <memory>
+#include <utility>
 
 #include "ActorFrame.h"
-#include "GameConstantsAndTypes.h"
-#include "GamePreferences.h"
-#include "GameState.h"
-#include "GameplayAssist.h"
 #include "InputEventPlus.h"
 #include "InputFilter.h"
-#include "Player.h"
-#include "PlayerNumber.h"
-#include "PlayerState.h"
+#include "ModsGroup.h"
+#include "PlayerOptions.h"
+#include "Preference.h"
+#include "RageInputDevice.h"
 #include "RageUtil.h"
-#include "ScreenDimensions.h"
-#include "Style.h"
+#include "StdString.h"
 #include "ThemeManager.h"
 
 void EditModePlayerManager::AddPlayers(const NoteData& note_data) {

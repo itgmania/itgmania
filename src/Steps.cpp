@@ -15,6 +15,8 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <map>
+#include <memory>
 #include <optional>
 #include <sstream>
 #include <string>
