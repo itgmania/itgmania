@@ -1,8 +1,12 @@
 #include "StepMania.h"
 
+#include <stdlib.h>
+
+#include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -43,7 +47,6 @@
 #include "Preference.h"
 #include "PrefsManager.h"
 #include "ProductInfo.h"
-#include "Profile.h"
 #include "ProfileManager.h"
 #include "RageDisplay.h"
 #include "RageException.h"
@@ -51,7 +54,6 @@
 #include "RageInput.h"
 #include "RageInputDevice.h"
 #include "RageLog.h"
-#include "RageMath.h"
 #include "RageSoundManager.h"
 #include "RageSurface.h"
 #include "RageSurface_Load.h"
@@ -59,9 +61,7 @@
 #include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
-#include "RageUtil/Regex.h"
 #include "Screen.h"
-#include "ScreenDimensions.h"
 #include "ScreenManager.h"
 #include "SongCacheIndex.h"
 #include "SongManager.h"
@@ -369,6 +369,7 @@ std::string StepMania::GetSelectMusicScreen() {
 #endif
 
 #include "RageDisplay_Null.h"
+#include "RageUtil/Regex.h"
 
 struct VideoCardDefaults {
   std::string sDriverRegex;
