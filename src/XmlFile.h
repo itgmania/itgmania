@@ -3,9 +3,12 @@
 #ifndef XML_FILE_H
 #define XML_FILE_H
 
+#include <algorithm>
 #include <map>
 #include <string>
 #include <vector>
+
+#include "global.h"
 
 struct DateTime;
 class RageFileBasic;

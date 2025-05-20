@@ -7,7 +7,10 @@ http://en.wikipedia.org/wiki/INI_file
 #include "IniFile.h"
 
 #include <cstddef>
+#include <map>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "RageFile.h"
 #include "RageLog.h"

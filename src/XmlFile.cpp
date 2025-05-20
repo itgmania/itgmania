@@ -7,15 +7,13 @@
 
 #include "XmlFile.h"
 
-#include <algorithm>
-#include <cstdlib>
-#include <map>
-#include <string>
+#include <stdlib.h>
+
 #include <utility>
 
 #include "LuaManager.h"
 #include "RageUtil.h"
-#include "global.h"
+#include "StdString.h"
 
 const std::string XNode::TEXT_ATTRIBUTE = "__TEXT__";
 

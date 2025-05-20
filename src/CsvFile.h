@@ -3,8 +3,10 @@
 #ifndef CsvFile_H
 #define CsvFile_H
 
-#include <string>
+#include <algorithm>
 #include <vector>
+
+#include "global.h"
 
 class RageFileBasic;
 

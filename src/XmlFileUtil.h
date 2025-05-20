@@ -1,7 +1,7 @@
 #ifndef XML_FILE_UTIL_H
 #define XML_FILE_UTIL_H
 
-#include <string>
+#include "global.h"
 
 class RageFileBasic;
 class XNode;

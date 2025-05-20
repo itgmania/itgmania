@@ -1,17 +1,22 @@
 #include "XmlFileUtil.h"
 
+#include <ctype.h>
+
+#include <algorithm>
 #include <cctype>
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "LuaManager.h"
 #include "RageFile.h"
+#include "RageFileBasic.h"
 #include "RageFileDriverMemory.h"
 #include "RageUtil.h"
-#include "XmlFile.h"
-#include "global.h"
+#include "StdString.h"
 
 bool XmlFileUtil::LoadFromFileShowErrors(XNode& xml, RageFileBasic& f) {
   std::string sError;
