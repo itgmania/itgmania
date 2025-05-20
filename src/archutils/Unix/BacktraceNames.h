@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <string>
 
+#include "global.h"
+
 struct BacktraceNames {
   std::string Symbol, File;
   intptr_t Address;

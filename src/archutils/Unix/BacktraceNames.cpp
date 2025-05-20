@@ -1,15 +1,12 @@
 #include "BacktraceNames.h"
 
-#include <cerrno>
-#include <cstdarg>
 #include <cstddef>
 #include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <string>
 
 #include "RageUtil.h"
+#include "StdString.h"
+#include "config.hpp"
 
 #if defined(MACOSX)
 #include "archutils/Darwin/Crash.h"

@@ -1,6 +1,5 @@
 #include "CrashHandler.h"
 
-#include <fcntl.h>
 #include <limits.h>
 #include <signal.h>
 #include <sys/signal.h>
@@ -16,12 +15,15 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <string>
 
 #include "Backtrace.h"
 #include "CrashHandlerInternal.h"
 #include "RageLog.h"
 #include "RageThreads.h"
+
+#if defined(HAVE_FCNTL_H)
+#include <fcntl.h>
+#endif
 
 extern uint64_t GetInvalidThreadId();
 extern const char* g_pCrashHandlerArgv0;

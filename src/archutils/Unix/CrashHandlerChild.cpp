@@ -1,8 +1,18 @@
+#include <signal.h>
+#include <stdlib.h>
+#include <sys/select.h>
 #include <sys/signal.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
+#include <cerrno>
 #include <csignal>
+#include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "Backtrace.h"
 #include "BacktraceNames.h"
@@ -10,19 +20,13 @@
 #include "CrashHandlerInternal.h"
 #include "ProductInfo.h"
 #include "RageUtil.h"
+#include "StdString.h"
 #include "arch/ArchHooks/ArchHooks.h"
+#include "ver.h"
 
 #if defined(MACOSX)
 #include "archutils/Darwin/Crash.h"
 #endif
-
-#include <cerrno>
-#include <cstdio>
-#include <cstring>
-#include <string>
-#include <vector>
-
-#include "ver.h"
 
 bool child_read(int fd, void* p, int size);
 
