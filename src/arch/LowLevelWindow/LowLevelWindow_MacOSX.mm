@@ -325,7 +325,7 @@ void *LowLevelWindow_MacOSX::GetProcAddress( RString s )
 {
 	// http://developer.apple.com/qa/qa2001/qa1188.html
 	// Both functions mentioned in there are deprecated in 10.4.
-	const RString& symbolName( '_' + s );
+	const RString& symbolName( '_' + s.c_str() );
 	const uint32_t count = _dyld_image_count();
 	NSSymbol symbol = nil;
 	const uint32_t options = NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR;

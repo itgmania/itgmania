@@ -46,7 +46,7 @@ void DialogDriver_MacOSX::OK( RString sMessage, RString sID )
 {
 	CFBundleRef bundle = CFBundleGetMainBundle();
 	CFStringRef sDSA = LSTRING( bundle, "Don't show again" );
-	CFOptionFlags result = ShowAlert( kCFUserNotificationNoteAlertLevel, sMessage, CFSTR("OK"), sDSA );
+	CFOptionFlags result = ShowAlert( kCFUserNotificationNoteAlertLevel, sMessage.c_str(), CFSTR("OK"), sDSA );
 
 	CFRelease( sDSA );
 	if( result == kCFUserNotificationAlternateResponse )
@@ -55,7 +55,7 @@ void DialogDriver_MacOSX::OK( RString sMessage, RString sID )
 
 void DialogDriver_MacOSX::Error( RString sError, RString sID )
 {
-	ShowAlert( kCFUserNotificationStopAlertLevel, sError, CFSTR("OK") );
+	ShowAlert( kCFUserNotificationStopAlertLevel, sError.c_str(), CFSTR("OK") );
 }
 
 Dialog::Result DialogDriver_MacOSX::OKCancel( RString sMessage, RString sID )
@@ -63,7 +63,7 @@ Dialog::Result DialogDriver_MacOSX::OKCancel( RString sMessage, RString sID )
 	CFBundleRef bundle = CFBundleGetMainBundle();
 	CFStringRef sOK = LSTRING( bundle, "OK" );
 	CFStringRef sCancel = LSTRING( bundle, "Cancel" );
-	CFOptionFlags result = ShowAlert( kCFUserNotificationNoteAlertLevel, sMessage, sOK, sCancel );
+	CFOptionFlags result = ShowAlert( kCFUserNotificationNoteAlertLevel, sMessage.c_str(), sOK, sCancel );
 
 	CFRelease( sOK );
 	CFRelease( sCancel );
@@ -85,7 +85,7 @@ Dialog::Result DialogDriver_MacOSX::AbortRetryIgnore( RString sMessage, RString 
 	CFStringRef sIgnore = LSTRING( bundle, "Ignore" );
 	CFStringRef sRetry = LSTRING( bundle, "Retry" );
 	CFStringRef sAbort = LSTRING( bundle, "Abort" );
-	CFOptionFlags result = ShowAlert( kCFUserNotificationNoteAlertLevel, sMessage, sIgnore, sRetry, sAbort );
+	CFOptionFlags result = ShowAlert( kCFUserNotificationNoteAlertLevel, sMessage.c_str(), sIgnore, sRetry, sAbort );
 
 	CFRelease( sIgnore );
 	CFRelease( sRetry );
@@ -110,7 +110,7 @@ Dialog::Result DialogDriver_MacOSX::AbortRetry( RString sMessage, RString sID )
 	CFBundleRef bundle = CFBundleGetMainBundle();
 	CFStringRef sRetry = LSTRING( bundle, "Retry" );
 	CFStringRef sAbort = LSTRING( bundle, "Abort" );
-	CFOptionFlags result = ShowAlert( kCFUserNotificationNoteAlertLevel, sMessage, sRetry, sAbort );
+	CFOptionFlags result = ShowAlert( kCFUserNotificationNoteAlertLevel, sMessage.c_str(), sRetry, sAbort );
 
 	CFRelease( sRetry );
 	CFRelease( sAbort );
@@ -131,7 +131,7 @@ Dialog::Result DialogDriver_MacOSX::YesNo( RString sMessage, RString sID )
 	CFBundleRef bundle = CFBundleGetMainBundle();
 	CFStringRef sYes = LSTRING( bundle, "Yes" );
 	CFStringRef sNo = LSTRING( bundle, "No" );
-	CFOptionFlags result = ShowAlert( kCFUserNotificationNoteAlertLevel, sMessage, sYes, sNo );
+	CFOptionFlags result = ShowAlert( kCFUserNotificationNoteAlertLevel, sMessage.c_str(), sYes, sNo );
 
 	CFRelease( sYes );
 	CFRelease( sNo );

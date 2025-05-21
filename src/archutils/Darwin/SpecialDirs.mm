@@ -2,16 +2,18 @@
 #include "SpecialDirs.h"
 #include "ProductInfo.h"
 
+#include <string>
+
 #import <Foundation/Foundation.h>
 
-RString SpecialDirs::GetDesktopDir()
+std::string SpecialDirs::GetDesktopDir()
 {
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	NSURL *url = [fileManager URLForDirectory:NSDesktopDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
 	if (url == nil)
 		return "/tmp";
 
-	return RString([url fileSystemRepresentation]) + "/" PRODUCT_ID;
+	return std::string([url fileSystemRepresentation]) + "/" PRODUCT_ID;
 }
 
 

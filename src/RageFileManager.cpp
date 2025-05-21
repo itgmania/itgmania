@@ -414,7 +414,7 @@ static void ChangeToDirOfExecutable( const RString &argv0 )
 	 * through a symlink. Assume this is the case and change to the dir of the symlink. */
 	if( Basename(RageFileManagerUtil::sDirOfExecutable) == "MacOS" )
 		CollapsePath( RageFileManagerUtil::sDirOfExecutable += "/../../../" );
-	if( chdir( RageFileManagerUtil::sDirOfExecutable ) )
+	if( chdir( RageFileManagerUtil::sDirOfExecutable.c_str() ) )
 #endif
 	{
 		LOG->Warn("Can't set current working directory to %s", RageFileManagerUtil::sDirOfExecutable.c_str());
