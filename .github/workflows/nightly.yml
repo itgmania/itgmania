@@ -73,6 +73,6 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ITGmania-${{ github.sha }}-${{ matrix.name }}-${{ matrix.arch }}
+          name: ITGmania-${{ github.sha }}-${{ matrix.name }}
           path: ${{ matrix.path }}
           compression-level: 0
