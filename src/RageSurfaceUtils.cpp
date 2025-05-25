@@ -500,7 +500,7 @@ static bool blit_same_type( const RageSurface *src_surf, const RageSurface *dst_
 	// The rows don't line up, so memcpy row by row.
 	while( height-- )
 	{
-		memcpy( dst, src, width*src_surf->format->BytesPerPixel );
+		memcpy( dst, src, (size_t)width * src_surf->format->BytesPerPixel );
 		src += src_surf->pitch;
 		dst += dst_surf->pitch;
 	}
