@@ -808,7 +808,7 @@ RageSurface *RageSurfaceUtils::LoadSurface( RString file )
 		return nullptr;
 	}
 
-	if( f.Read( img->pixels, h.height * h.pitch ) != h.height * h.pitch )
+	if( f.Read( img->pixels, static_cast<size_t>(h.height) * h.pitch ) != static_cast<size_t>(h.height) * h.pitch )
 	{
 		delete img;
 		return nullptr;
