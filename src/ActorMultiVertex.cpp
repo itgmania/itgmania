@@ -1053,7 +1053,7 @@ public:
 		lua_rawseti(L, -2, 1);
 		lua_pushnumber(L, state.rect.top * height_ratio);
 		lua_rawseti(L, -2, 2);
-		lua_pushnumber(L, (state.rect.right - width_pix) * width_ratio);
+		lua_pushnumber(L, static_cast<lua_Number>(state.rect.right - width_pix) * width_ratio);
 		lua_rawseti(L, -2, 3);
 		lua_pushnumber(L, (state.rect.bottom + height_pix) * height_ratio);
 		lua_rawseti(L, -2, 4);
