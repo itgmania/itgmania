@@ -767,7 +767,7 @@ bool RageSurfaceUtils::SaveSurface( const RageSurface *img, RString file )
 		f.Write( img->format->palette->colors, img->format->palette->ncolors * sizeof(RageSurfaceColor) );
 	}
 
-	f.Write( img->pixels, img->h * img->pitch );
+	f.Write( img->pixels, static_cast<size_t>(img->h) * img->pitch );
 
 	return true;
 }
@@ -808,7 +808,7 @@ RageSurface *RageSurfaceUtils::LoadSurface( RString file )
 		return nullptr;
 	}
 
-	if( f.Read( img->pixels, h.height * h.pitch ) != h.height * h.pitch )
+	if( f.Read( img->pixels, static_cast<size_t>(h.height) * h.pitch ) != static_cast<size_t>(h.height) * h.pitch )
 	{
 		delete img;
 		return nullptr;
