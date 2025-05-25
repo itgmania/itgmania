@@ -930,7 +930,7 @@ RageSurface *RageSurfaceUtils::MakeDummySurface( int height, int width )
 	RageSurfaceColor pink( 0xFF, 0x10, 0xFF, 0xFF );
 	ret_image->fmt.palette->colors[0] = pink;
 
-	memset( ret_image->pixels, 0, (size_t)ret_image->h * ret_image->pitch );
+	memset( ret_image->pixels, 0, static_cast<size_t>(ret_image->h) * ret_image->pitch );
 
 	return ret_image;
 }
