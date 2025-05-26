@@ -167,15 +167,23 @@ void Alsa9Buf::GetSoundCardDebugInfo()
 			continue;
 		}
 
-		snd_ctl_card_info_t *info;
-		dsnd_ctl_card_info_alloca(&info);
-		err = dsnd_ctl_card_info( handle, info );
-		if ( err < 0 )
+		snd_ctl_card_info_t *info = (snd_ctl_card_info_t *)malloc(sizeof(snd_ctl_card_info_t));
+		if (!info)
 		{
-			LOG->Info( "Couldn't get card info for card #%i (\"%s\"): %s", card, id.c_str(), dsnd_strerror(err) );
-			dsnd_ctl_close( handle );
+			LOG->Warn("Memory allocation failed for snd_ctl_card_info_t");
+			dsnd_ctl_close(handle);
 			continue;
 		}
+		err = dsnd_ctl_card_info(handle, info);
+		if (err < 0)
+		{
+			LOG->Info("Couldn't get card info for card #%i (\"%s\"): %s", card, id.c_str(), dsnd_strerror(err));
+			free(info);
+			dsnd_ctl_close(handle);
+			continue;
+		}
+		// Use `info` as needed...
+		free(info);
 
 		int dev = -1;
 		while ( dsnd_ctl_pcm_next_device( handle, &dev ) >= 0 && dev >= 0 )
