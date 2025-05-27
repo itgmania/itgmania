@@ -29,7 +29,7 @@ m_PulseMainLoop(nullptr), m_PulseCtx(nullptr), m_PulseStream(nullptr)
 {
 	m_ss.rate = PREFSMAN->m_iSoundPreferredSampleRate;
 	if( m_ss.rate == 0 )
-		m_ss.rate = 44100;
+		m_ss.rate = 48000;
 }
 
 RageSoundDriver_PulseAudio::~RageSoundDriver_PulseAudio()
@@ -133,7 +133,7 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 	ss.rate = PREFSMAN->m_iSoundPreferredSampleRate;
 	if(ss.rate == 0)
 	{
-		ss.rate = 44100;
+		ss.rate = 48000;
 	}
 
 	/* init channel map */

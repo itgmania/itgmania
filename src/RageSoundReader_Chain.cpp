@@ -23,7 +23,7 @@
  */
 RageSoundReader_Chain::RageSoundReader_Chain()
 {
-	m_iPreferredSampleRate = 44100;
+	m_iPreferredSampleRate = 48000;
 	m_iActualSampleRate = -1;
 	m_iChannels = 0;
 	m_iCurrentFrame = 0;

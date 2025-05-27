@@ -151,7 +151,7 @@ RString RageSoundDriver_AU::Init()
 	streamFormat.mBitsPerChannel = kBitsPerChannel;
 
 	if( streamFormat.mSampleRate <= 0.0 )
-		streamFormat.mSampleRate = 44100.0;
+		streamFormat.mSampleRate = 48000.0;
 	m_iSampleRate = int( streamFormat.mSampleRate );
 	m_TimeScale = streamFormat.mSampleRate / AudioGetHostClockFrequency();
 

@@ -32,7 +32,7 @@ RageSoundDriver_Null::RageSoundDriver_Null()
 {
 	m_iSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
 	if( m_iSampleRate == 0 )
-		m_iSampleRate = 44100;
+		m_iSampleRate = 48000;
 	m_iLastCursorPos = GetPosition();
 	StartDecodeThread();
 }

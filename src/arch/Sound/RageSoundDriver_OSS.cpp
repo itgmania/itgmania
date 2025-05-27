@@ -193,7 +193,7 @@ RString RageSoundDriver_OSS::Init()
 	if(i != channels)
 		return ssprintf( "RageSoundDriver_OSS: Wanted %i channels, got %i instead", channels, i );
 
-	i = 44100;
+	i = 48000;
 	if(ioctl(fd, SNDCTL_DSP_SPEED, &i) == -1 )
 		return ssprintf( "RageSoundDriver_OSS: ioctl(SNDCTL_DSP_SPEED, %i): %s", i, strerror(errno) );
 	samplerate = i;

@@ -212,7 +212,7 @@ void Alsa9Buf::GetSoundCardDebugInfo()
 
 Alsa9Buf::Alsa9Buf()
 {
-	samplerate = 44100;
+	samplerate = 48000;
 	samplebits = 16;
 	last_cursor_pos = 0;
 	preferred_writeahead = 8192;
@@ -229,7 +229,7 @@ RString Alsa9Buf::Init( int channels_,
 	preferred_writeahead = iWriteahead;
 	preferred_chunksize = iChunkSize;
 	if( iSampleRate == 0 )
-		samplerate = 44100;
+		samplerate = 48000;
 	else
 		samplerate = iSampleRate;
 
