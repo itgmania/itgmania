@@ -147,7 +147,7 @@ public:
 	int SetPosition( int iFrame )  { return 1; }
 	int Read( float *pBuf, int iFrames ) { return RageSoundReader::END_OF_FILE; }
 	RageSoundReader *Copy() const { return new RageSoundReader_Silence; }
-	int GetSampleRate() const { return 48000; }
+	int GetSampleRate() const { return 44100; } // Hardcoded to 44100
 	unsigned GetNumChannels() const { return 1; }
 	int GetNextSourceFrame() const { return 0; }
 	float GetStreamToSourceRatio() const { return 1.0f; }

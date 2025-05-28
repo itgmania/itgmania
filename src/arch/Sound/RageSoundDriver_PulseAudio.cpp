@@ -29,7 +29,7 @@ m_PulseMainLoop(nullptr), m_PulseCtx(nullptr), m_PulseStream(nullptr)
 {
 	m_ss.rate = PREFSMAN->m_iSoundPreferredSampleRate;
 	if( m_ss.rate == 0 )
-		m_ss.rate = 48000;
+		m_ss.rate = 44100;
 }
 
 RageSoundDriver_PulseAudio::~RageSoundDriver_PulseAudio()
@@ -124,27 +124,23 @@ RString RageSoundDriver_PulseAudio::Init()
 void RageSoundDriver_PulseAudio::m_InitStream(void)
 {
 	int error;
-	pa_sample_spec ss;
+	pa_sample_spec ss_local; // Use a local pa_sample_spec for setup
 	pa_channel_map map;
 
 	/* init sample spec */
-	ss.format = PA_SAMPLE_S16LE;
-	ss.channels = 2;
-	ss.rate = PREFSMAN->m_iSoundPreferredSampleRate;
-	if(ss.rate == 0)
-	{
-		ss.rate = 48000;
-	}
+	ss_local.format = PA_SAMPLE_S16LE;
+	ss_local.channels = 2;
+	ss_local.rate = m_ss.rate; // Use the rate initialized in the constructor's m_ss
 
 	/* init channel map */
 	pa_channel_map_init_stereo(&map);
 
 	/* check sample spec */
-	if(!pa_sample_spec_valid(&ss))
+	if(!pa_sample_spec_valid(&ss_local))
 	{
 		if(asprintf(&m_Error, "invalid sample spec!") == -1)
 		{
-			m_Error = nullptr;
+			m_Error = nullptr; // asprintf failed to allocate memory
 		}
 		m_Sem.Post();
 		return;
@@ -152,17 +148,17 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 
 	/* log the used sample spec */
 	char specstring[PA_SAMPLE_SPEC_SNPRINT_MAX];
-	pa_sample_spec_snprint(specstring, sizeof(specstring), &ss);
+	pa_sample_spec_snprint(specstring, sizeof(specstring), &ss_local);
 	LOG->Trace("Pulse: using sample spec: %s", specstring);
 
 	/* create the stream */
 	LOG->Trace("Pulse: pa_stream_new()...");
-	m_PulseStream = pa_stream_new(m_PulseCtx, PRODUCT_FAMILY " Audio", &ss, &map);
+	m_PulseStream = pa_stream_new(m_PulseCtx, PRODUCT_FAMILY " Audio", &ss_local, &map);
 	if(m_PulseStream == nullptr)
 	{
 		if(asprintf(&m_Error, "pa_stream_new(): %s", pa_strerror(pa_context_errno(m_PulseCtx))) == -1)
 		{
-			m_Error = nullptr;
+			m_Error = nullptr; // asprintf failed to allocate memory
 		}
 		m_Sem.Post();
 		return;
@@ -172,13 +168,13 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 	* needs data */
 	pa_stream_set_write_callback(m_PulseStream, StaticStreamWriteCb, this);
 
-	/* set the state callback, it will be called the the stream state will
+	/* set the state callback, it will be called when the stream state will
 	* change */
 	pa_stream_set_state_callback(m_PulseStream, StaticStreamStateCb, this);
 
 	/* configure attributes of the stream */
 	pa_buffer_attr attr;
-	memset(&attr, 0x00, sizeof(attr));
+	memset(&attr, 0x00, sizeof(attr)); // Initialize all members to 0/nullptr
 
 	/* tlength: Target length of the buffer.
 	*
@@ -193,7 +189,7 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 	* We don't want the default here, we want a small latency.
 	* We use pa_usec_to_bytes() to convert a latency to a buffer size.
 	*/
-	attr.tlength = pa_usec_to_bytes(20*PA_USEC_PER_MSEC, &ss);
+	attr.tlength = pa_usec_to_bytes(20*PA_USEC_PER_MSEC, &ss_local); // Use local ss_local
 
 	/* maxlength: Maximum length of the buffer
 	*
@@ -215,7 +211,7 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 	* (uint32_t)-1 is NOT working here, setting it to 0, like
 	* openal-soft-pulseaudio does.
 	*/
-	attr.minreq = 0;
+	attr.minreq = 0; // Setting to (uint32_t)-1 caused issues in some environments. 0 is safer.
 
 	/* prebuf: Pre-buffering
 	*
@@ -226,14 +222,21 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 	*/
 	attr.prebuf = (uint32_t)-1;
 
+	/* fragsize: Deprecated. Use tlength, prebuf, minreq, maxlength instead.
+	 * Ensure it's not used by setting to (uint32_t)-1, as per PA documentation.
+	 */
+	attr.fragsize = (uint32_t)-1;
+
+
 	/* log the used target buffer length */
 	LOG->Trace("Pulse: using target buffer length of %i bytes", attr.tlength);
 
 	 /* connect the stream for playback */
 	LOG->Trace("Pulse: pa_stream_connect_playback()...");
 	const int flags = PA_STREAM_INTERPOLATE_TIMING
-		| PA_STREAM_NOT_MONOTONIC
-		| PA_STREAM_AUTO_TIMING_UPDATE;
+		| PA_STREAM_NOT_MONOTONIC // mHostTime may not be monotonic in some cases
+		| PA_STREAM_AUTO_TIMING_UPDATE
+		| PA_STREAM_ADJUST_LATENCY; // Allow server to adjust latency based on our buffer_attr
 	error = pa_stream_connect_playback(m_PulseStream, nullptr, &attr,
 			static_cast<pa_stream_flags_t>(flags), nullptr, nullptr);
 	if(error < 0)
@@ -241,13 +244,21 @@ void RageSoundDriver_PulseAudio::m_InitStream(void)
 		if(asprintf(&m_Error, "pa_stream_connect_playback(): %s",
 				pa_strerror(pa_context_errno(m_PulseCtx))) == -1)
 		{
-			m_Error = nullptr;
+			m_Error = nullptr; // asprintf failed to allocate memory
 		}
 		m_Sem.Post();
 		return;
 	}
 
-	m_ss = ss;
+	// m_ss is the member variable. After successfully connecting the stream,
+	// we can be more confident about the sample spec being used.
+	// It's generally good practice to update m_ss with the spec that was
+	// actually used to create the stream, in case the server negotiated
+	// something slightly different (though with PA_SAMPLE_S16LE, 2ch, and specific rates,
+	// it's less likely to change).
+	m_ss = ss_local;
+
+	// Semaphore is posted in StreamStateCb when stream becomes PA_STREAM_READY
 }
 
 void RageSoundDriver_PulseAudio::CtxStateCb(pa_context *c)

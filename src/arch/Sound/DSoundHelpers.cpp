@@ -62,7 +62,12 @@ void DSound::SetPrimaryBufferMode()
 	waveformat.wFormatTag = WAVE_FORMAT_PCM;
 	waveformat.wBitsPerSample = 16;
 	waveformat.nChannels = 2;
-	waveformat.nSamplesPerSec = 48000;
+	int preferredSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
+	if (preferredSampleRate == 0)
+	{
+		preferredSampleRate = 44100; // Default to 44100 Hz if preference is 0
+	}
+	waveformat.nSamplesPerSec = preferredSampleRate;
 	waveformat.nBlockAlign = 4;
 	waveformat.nAvgBytesPerSec = waveformat.nSamplesPerSec * waveformat.nBlockAlign;
 
@@ -75,8 +80,8 @@ void DSound::SetPrimaryBufferMode()
 	hr = pBuffer->GetFormat( &waveformat, sizeof(waveformat), &got );
 	if( FAILED(hr) )
 		LOG->Warn( hr_ssprintf(hr, "GetFormat on primary buffer") );
-	else if( waveformat.nSamplesPerSec != 48000 )
-		LOG->Warn( "Primary buffer set to %i instead of 48000", waveformat.nSamplesPerSec );
+	else if( waveformat.nSamplesPerSec != 44100 )
+		LOG->Warn( "Primary buffer set to %i instead of 44100", waveformat.nSamplesPerSec );
 
 	/*
 	 * MS docs:
@@ -195,9 +200,9 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 	waveformat.wFormatTag = WAVE_FORMAT_PCM;
 
 	bool bNeedCtrlFrequency = false;
-	if( m_iSampleRate == DYNAMIC_SAMPLERATE )
+	if( m_iSampleRate == DYNAMIC_SAMPLERATE ) // DYNAMIC_SAMPLERATE is usually 0 or some special value
 	{
-		m_iSampleRate = 48000;
+		m_iSampleRate = 44100; // If dynamic, default to 44100 for now
 		bNeedCtrlFrequency = true;
 	}
 

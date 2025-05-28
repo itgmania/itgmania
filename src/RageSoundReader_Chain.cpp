@@ -23,7 +23,10 @@
  */
 RageSoundReader_Chain::RageSoundReader_Chain()
 {
-	m_iPreferredSampleRate = 48000;
+	m_iPreferredSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
+	if (m_iPreferredSampleRate == 0)
+		m_iPreferredSampleRate = 44100; // Default if system default (0) is chosen
+	
 	m_iActualSampleRate = -1;
 	m_iChannels = 0;
 	m_iCurrentFrame = 0;

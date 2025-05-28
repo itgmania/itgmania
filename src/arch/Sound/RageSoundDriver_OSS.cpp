@@ -181,26 +181,33 @@ RString RageSoundDriver_OSS::Init()
 	if( sError != "" )
 		return sError;
 
-	int i = AFMT_S16_LE;
-	if(ioctl(fd, SNDCTL_DSP_SETFMT, &i) == -1)
-		return ssprintf( "RageSoundDriver_OSS: ioctl(SNDCTL_DSP_SETFMT, %i): %s", i, strerror(errno) );
-	if(i != AFMT_S16_LE)
-		return ssprintf( "RageSoundDriver_OSS: Wanted format %i, got %i instead", AFMT_S16_LE, i );
+	int fmt_val = AFMT_S16_LE;
+	if(ioctl(fd, SNDCTL_DSP_SETFMT, &fmt_val) == -1)
+		return ssprintf( "RageSoundDriver_OSS: ioctl(SNDCTL_DSP_SETFMT, %i): %s", fmt_val, strerror(errno) );
+	if(fmt_val != AFMT_S16_LE)
+		return ssprintf( "RageSoundDriver_OSS: Wanted format %i, got %i instead", AFMT_S16_LE, fmt_val );
 
-	i = channels;
-	if(ioctl(fd, SNDCTL_DSP_CHANNELS, &i) == -1)
-		return ssprintf( "RageSoundDriver_OSS: ioctl(SNDCTL_DSP_CHANNELS, %i): %s", i, strerror(errno) );
-	if(i != channels)
-		return ssprintf( "RageSoundDriver_OSS: Wanted %i channels, got %i instead", channels, i );
+	int channels_val = channels;
+	if(ioctl(fd, SNDCTL_DSP_CHANNELS, &channels_val) == -1)
+		return ssprintf( "RageSoundDriver_OSS: ioctl(SNDCTL_DSP_CHANNELS, %i): %s", channels_val, strerror(errno) );
+	if(channels_val != channels)
+		return ssprintf( "RageSoundDriver_OSS: Wanted %i channels, got %i instead", channels, channels_val );
 
-	i = 48000;
-	if(ioctl(fd, SNDCTL_DSP_SPEED, &i) == -1 )
-		return ssprintf( "RageSoundDriver_OSS: ioctl(SNDCTL_DSP_SPEED, %i): %s", i, strerror(errno) );
-	samplerate = i;
-	LOG->Trace("RageSoundDriver_OSS: sample rate %i", samplerate);
-	i = (num_chunks << 16) + chunk_order;
-	if(ioctl(fd, SNDCTL_DSP_SETFRAGMENT, &i) == -1)
-		return ssprintf( "RageSoundDriver_OSS: ioctl(SNDCTL_DSP_SETFRAGMENT, %i): %s", i, strerror(errno) );
+	// Determine the target sample rate based on preference
+	int targetSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
+	if (targetSampleRate == 0) {
+		targetSampleRate = 44100; // Default to 44100 if preference is 0
+	}
+	
+	samplerate = targetSampleRate; // Attempt to set this rate
+	if(ioctl(fd, SNDCTL_DSP_SPEED, &samplerate) == -1 ) // Pass 'samplerate' (member var) by address
+		return ssprintf( "RageSoundDriver_OSS: ioctl(SNDCTL_DSP_SPEED, %i): %s", targetSampleRate, strerror(errno) );
+	// samplerate now holds the actual rate set by the driver
+	LOG->Trace("RageSoundDriver_OSS: Requested sample rate %i, got %i", targetSampleRate, samplerate);
+
+	int frag_val = (num_chunks << 16) + chunk_order;
+	if(ioctl(fd, SNDCTL_DSP_SETFRAGMENT, &frag_val) == -1)
+		return ssprintf( "RageSoundDriver_OSS: ioctl(SNDCTL_DSP_SETFRAGMENT, %i): %s", frag_val, strerror(errno) );
 	StartDecodeThread();
 
 	MixingThread.SetName( "RageSoundDriver_OSS" );

@@ -125,7 +125,7 @@ RString RageSoundDriver_WaveOut::Init()
 	b_InitSuccess = false;
 	m_iSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
 	if( m_iSampleRate == 0 )
-		m_iSampleRate = 48000;
+		m_iSampleRate = 44100;
 
 	WAVEFORMATEX fmt;
 	fmt.wFormatTag = WAVE_FORMAT_PCM;
