@@ -72,7 +72,7 @@ ITGmania can be compiled using [CMake](http://www.cmake.org/). More information 
 
 ## Licensing Terms
 
-ITGmania, as well as the Simply Love theme, are both under the GPLv3 license, or at your option, any later version.
+ITGmania, as well as the [Simply Love](https://github.com/Simply-Love/Simply-Love-SM5) theme, are both under the GPLv3 license, or at your option, any later version.
 
 If ITGmania code is used in your project, we would also appreciate it if you link back to [ITGmania](https://github.com/itgmania/itgmania) as well as [StepMania](https://github.com/stepmania/stepmania).
 
