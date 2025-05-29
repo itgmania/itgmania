@@ -6,13 +6,14 @@
 #include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil_CircularBuffer.h"
+#include "RageSound.h"
 
 #include <cstdint>
 
 class RageSoundBase;
 class RageTimer;
 class RageSoundMixBuffer;
-static const int samples_per_block = 512;
+static const int samples_per_block = 512; // This should probably be kSamplesPerBlock or similar if it's truly const and static
 
 class RageSoundDriver: public RageDriver
 {
@@ -66,7 +67,7 @@ public:
 	 * hearing it.  (This isn't necessarily the same as the buffer latency.) */
 	virtual float GetPlayLatency() const { return 0.0f; }
 
-	virtual int GetSampleRate() const { return 44100; }
+	virtual int GetSampleRate() const { return kFallbackSampleRate; }
 
 protected:
 	/* Start the decoding.  This should be called once the hardware is set up and
