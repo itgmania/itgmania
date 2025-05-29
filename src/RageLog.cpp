@@ -90,7 +90,7 @@ m_bUserLogToDisk(false), m_bFlush(false), m_bShowLogOutput(false)
 	g_fileUserLog = new RageFile;
 	g_fileTimeLog = new RageFile;
 
-	if(!g_fileTimeLog->Open(TIME_PATH, RageFile::WRITE|RageFile::STREAMED))
+	if(m_bLogToDisk && !g_fileTimeLog->Open(TIME_PATH, RageFile::WRITE|RageFile::STREAMED))
 	{ fprintf(stderr, "Couldn't open %s: %s\n", TIME_PATH, g_fileTimeLog->GetError().c_str()); }
 
 	g_Mutex = new RageMutex( "Log" );
@@ -294,7 +294,7 @@ void RageLog::Write( int where, const RString &sLine )
 		 * and stdout. */
 		sStr.insert( 0, sTimestamp );
 
-		if(where & WRITE_TO_TIME)
+		if( m_bLogToDisk && (where & WRITE_TO_TIME))
 			g_fileTimeLog->PutLine(sStr);
 
 		AddToRecentLogs( sStr );

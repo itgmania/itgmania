@@ -799,8 +799,8 @@ static void ApplyLogPreferences()
 {
 	LOG->SetShowLogOutput( PREFSMAN->m_bShowLogOutput );
 	LOG->SetLogToDisk( PREFSMAN->m_bLogToDisk );
-	LOG->SetInfoToDisk( true );
-	LOG->SetUserLogToDisk( true );
+	LOG->SetInfoToDisk( PREFSMAN->m_bLogToDisk );
+	LOG->SetUserLogToDisk( PREFSMAN->m_bLogToDisk );
 	LOG->SetFlushing( PREFSMAN->m_bForceLogFlush );
 	Checkpoints::LogCheckpoints( PREFSMAN->m_bLogCheckpoints );
 }
