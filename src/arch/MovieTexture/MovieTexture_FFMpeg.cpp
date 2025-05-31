@@ -250,6 +250,10 @@ int MovieDecoder_FFMpeg::DecodeFrame()
 }
 
 void MovieDecoder_FFMpeg::HandleReset() {
+    std::lock_guard<std::mutex> lock(reset_mutex_);
+	if (reset_ == false) {
+		return;
+	}
 	reset_ = false;
 
 	for (std::unique_ptr<FrameHolder>& frame : frame_buffer_) {
@@ -273,8 +277,11 @@ int MovieDecoder_FFMpeg::DecodeMovie()
 	// Never exit when the movie is looping. Otherwise exit when the last frame
 	// is added to the FrameBuffer.
 	while (looping_ || (!looping_ && display_frame_num_ < total_frames_)) {
-		if (reset_) {
-			HandleReset();
+		// Handle the reset flag (if necessary).
+		HandleReset();
+
+        if (IsCancelled()) {
+            return -2;
 		}
 
 		int status = DecodeFrame();
@@ -298,9 +305,6 @@ int MovieDecoder_FFMpeg::DecodeMovie()
 
 int MovieDecoder_FFMpeg::SendPacketToBuffer()
 {
-	if (cancel_) {
-		return -2;
-	}
 	if (end_of_file_ > 0) {
 		return 0;
 	}
@@ -325,10 +329,6 @@ int MovieDecoder_FFMpeg::SendPacketToBuffer()
 }
 
 int MovieDecoder_FFMpeg::DecodePacketToFrame() {
-	if (cancel_) {
-		return -2;
-	}
-
 	frame_buffer_position_ %= frame_buffer_.size();
 	packet_buffer_position_ %= total_frames_;
 	FrameHolder* frame = frame_buffer_[frame_buffer_position_].get();
@@ -340,10 +340,10 @@ int MovieDecoder_FFMpeg::DecodePacketToFrame() {
 		while (!frame->displayed) {
 			// Sleep so the CPU performance stays happy.
 			usleep(1000);  // 1ms
-			if (cancel_) {
+			if (IsCancelled()) {
 				return -2;
 			}
-			if (reset_) {
+			if (IsReset()) {
 				return 0;
 			}
 		}
@@ -636,8 +636,9 @@ void MovieDecoder_FFMpeg::Close()
 
 void MovieDecoder_FFMpeg::Rewind()
 {
-	display_frame_num_ = 0;
-	reset_ = true;
+  display_frame_num_ = 0;
+  std::lock_guard<std::mutex> lock(reset_mutex_);
+  reset_ = true;
 }
 
 void MovieDecoder_FFMpeg::Rollover()

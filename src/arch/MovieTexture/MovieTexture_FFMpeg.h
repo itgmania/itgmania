@@ -79,7 +79,11 @@ public:
 
 	// Rewind sends the reset signal to DecodeMovie. See DecodeMovie
 	// and HandleReset for more information.
-	void Rewind();
+    void Rewind();
+    bool IsReset() {
+        std::lock_guard<std::mutex> lock(reset_mutex_);
+        return reset_;
+    }
 
 	// Like rewind, but handles the case that a looping video reached the end,
 	// and the next frame to display is the first one of the movie.
@@ -118,7 +122,15 @@ public:
 	float GetTimestamp() const;
 
 	// Cancel decoding.
-	void Cancel() { cancel_ = true; };
+    void Cancel() {
+        std::lock_guard<std::mutex> lock(cancel_mutex_);
+        cancel_ = true;
+    };
+
+	bool IsCancelled() {
+      std::lock_guard<std::mutex> lock(cancel_mutex_);
+      return cancel_;
+	}
 
 	// Called by the MovieTexture to tell the decoder if the movie loops.
 	void SetLooping(bool loop) { looping_ = loop; }
@@ -182,6 +194,9 @@ private:
 	bool looping_ = false;
 	bool reset_ = false;
 	bool end_of_movie_ = false;
+
+	std::mutex cancel_mutex_;
+    std::mutex reset_mutex_;
 };
 
 static struct AVPixelFormat_t

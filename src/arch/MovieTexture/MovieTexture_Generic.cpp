@@ -54,10 +54,9 @@ RString MovieTexture_Generic::Init()
 	decoding_thread_ = std::make_unique<std::thread>([this]() {
 		LOG->Trace("Beginning to decode video file \"%s\"", GetID().filename.c_str());
 		auto timer = RageTimer();
-
 		int ret = decoder_->DecodeMovie();
-		if (ret == -1) {
-			failure_ = true;
+		if (ret < 0) {
+			SetFailure();
 		}
 
 		LOG->Trace("Done decoding video file \"%s\", took %f seconds", GetID().filename.c_str(), timer.Ago());
@@ -310,7 +309,7 @@ float MovieTexture_Generic::CheckFrameTime()
 void MovieTexture_Generic::UpdateMovie(float seconds)
 {
 	// Quick exit in case we failed to decode the movie.
-	if (failure_) {
+	if (IsFailure()) {
 		return;
 	}
 	clock_ += seconds * rate_;

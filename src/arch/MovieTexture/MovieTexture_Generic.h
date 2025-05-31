@@ -4,6 +4,7 @@
 #include "MovieTexture.h"
 
 #include <cstdint>
+#include <mutex>
 #include <thread>
 
 class FFMpeg_Helper;
@@ -103,6 +104,14 @@ public:
 	virtual void UpdateMovie(float seconds);
 	virtual void SetPlaybackRate(float rate) { rate_ = rate; }
 	void SetLooping(bool looping = true) { loop_ = looping; }
+	bool IsFailure() {
+	  std::lock_guard<std::mutex> lock(failure_mutex_);
+	  return failure_;
+	}
+	void SetFailure() {
+	  std::lock_guard<std::mutex> lock(failure_mutex_);
+	  failure_ = true;
+	}
 	uintptr_t GetTexHandle() const;
 
 	static EffectMode GetEffectMode( MovieDecoderPixelFormatYCbCr fmt );
@@ -118,6 +127,7 @@ private:
 
 	// If true, halts all decoding and display.
 	bool failure_ = false;
+	std::mutex failure_mutex_;
 
 	uintptr_t texture_handle_;
 	std::unique_ptr<RageTextureRenderTarget> render_target_;
