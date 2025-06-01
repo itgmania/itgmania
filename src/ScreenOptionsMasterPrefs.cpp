@@ -649,7 +649,7 @@ static void MovieColorDepth( int &sel, bool ToSel, const ConfOption *pConfOption
 
 static void RefreshRate( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
-	const int mapping[] = { (int) REFRESH_DEFAULT,60,70,72,75,80,85,90,100,120,150 };
+	const int mapping[] = { (int) REFRESH_DEFAULT,60,75,85,100,120,144,165,240,360 };
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
