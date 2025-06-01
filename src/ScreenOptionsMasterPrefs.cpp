@@ -192,7 +192,7 @@ static void GameSel( int &sel, bool ToSel, const ConfOption *pConfOption )
 
 		sel = 0;
 		for(unsigned i = 0; i < choices.size(); ++i)
-			if( !strcasecmp(choices[i].c_str(), sCurGameName.c_str()) )
+			if( !strcasecmp(choices[i], sCurGameName) )
 				sel = i;
 	} else {
 		std::vector<const Game*> aGames;
@@ -227,12 +227,12 @@ static void Language( int &sel, bool ToSel, const ConfOption *pConfOption )
 	{
 		sel = -1;
 		for( unsigned i=0; sel == -1 && i < vs.size(); ++i )
-			if( !strcasecmp(vs[i].c_str(), THEME->GetCurLanguage().c_str()) )
+			if( !strcasecmp(vs[i], THEME->GetCurLanguage()) )
 				sel = i;
 
 		// If the current language doesn't exist, we'll show BASE_LANGUAGE, so select that.
 		for( unsigned i=0; sel == -1 && i < vs.size(); ++i )
-			if( !strcasecmp(vs[i].c_str(), SpecialFiles::BASE_LANGUAGE.c_str()) )
+			if( !strcasecmp(vs[i], SpecialFiles::BASE_LANGUAGE) )
 				sel = i;
 
 		if( sel == -1 )
@@ -291,7 +291,7 @@ static void RequestedTheme( int &sel, bool ToSel, const ConfOption *pConfOption 
 	{
 		sel = 0;
 		for( unsigned i=1; i<vsThemeNames.size(); i++ )
-			if( !strcasecmp(vsThemeNames[i].c_str(), PREFSMAN->m_sTheme.Get().c_str()) )
+			if( !strcasecmp(vsThemeNames[i], PREFSMAN->m_sTheme.Get()) )
 				sel = i;
 	}
 	else
@@ -317,7 +317,7 @@ static void Announcer( int &sel, bool ToSel, const ConfOption *pConfOption )
 	{
 		sel = 0;
 		for( unsigned i=1; i<choices.size(); i++ )
-			if( !strcasecmp(choices[i].c_str(), ANNOUNCER->GetCurAnnouncerName().c_str()) )
+			if( !strcasecmp(choices[i], ANNOUNCER->GetCurAnnouncerName()) )
 				sel = i;
 	}
 	else
@@ -344,7 +344,7 @@ static void DefaultNoteSkin( int &sel, bool ToSel, const ConfOption *pConfOption
 		po.FromString( PREFSMAN->m_sDefaultModifiers );
 		sel = 0;
 		for( unsigned i=0; i < choices.size(); i++ )
-			if( !strcasecmp(choices[i].c_str(), po.m_sNoteSkin.c_str()) )
+			if( !strcasecmp(choices[i], po.m_sNoteSkin) )
 				sel = i;
 	}
 	else
@@ -879,7 +879,7 @@ static void InitializeConfOptions()
 	ADD( ConfOption( "DefaultFailType", DefaultFailType, DefaultFailChoices ) );
 	ADD( ConfOption( "CoinsPerCredit",		CoinsPerCredit,		"|1","|2","|3","|4","|5","|6","|7","|8","|9","|10","|11","|12","|13","|14","|15","|16" ) );
 	ADD( ConfOption( "MaxNumCredits",		MaxNumCredits,		"|20","|40","|60","|80","|100" ) );
-	ADD( ConfOption( "ResetCoinsAtStartup", MovePref<bool>, "No", "Yes"));
+
 	ADD( ConfOption( "Premium",			MovePref<Premium>,	"Off","Double for 1 Credit","2 Players for 1 Credit" ) );
 	ADD( ConfOption( "JointPremium",		JointPremium,		"Off","2 Players for 1 Credit" ) );
 	g_ConfOptions.back().m_sPrefName = "Premium";
@@ -968,7 +968,7 @@ ConfOption *ConfOption::Find( RString name )
 	{
 		ConfOption *opt = &g_ConfOptions[i];
 		RString match(opt->name);
-		if( CompareNoCase(match, name) )
+		if( match.CompareNoCase(name) )
 			continue;
 		return opt;
 	}
