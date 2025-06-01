@@ -200,7 +200,8 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 	waveformat.wFormatTag = WAVE_FORMAT_PCM;
 
 	bool bNeedCtrlFrequency = false;
-	if( m_iSampleRate == DYNAMIC_SAMPLERATE ) // DYNAMIC_SAMPLERATE is usually 0 or some special value
+	// DYNAMIC_SAMPLERATE is usually 0 or some special value
+	if( m_iSampleRate == DYNAMIC_SAMPLERATE )
 	{
 		m_iSampleRate = kFallbackSampleRate;
 		bNeedCtrlFrequency = true;

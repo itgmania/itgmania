@@ -195,7 +195,8 @@ RString RageSoundDriver_OSS::Init()
 
 	// Determine the target sample rate based on preference
 	int targetSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
-	if (targetSampleRate == 0) {
+	if (targetSampleRate == 0)
+	{
 		targetSampleRate = kFallbackSampleRate;
 	}
 	

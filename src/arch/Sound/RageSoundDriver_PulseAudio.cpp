@@ -29,7 +29,9 @@ m_PulseMainLoop(nullptr), m_PulseCtx(nullptr), m_PulseStream(nullptr)
 {
 	m_ss.rate = PREFSMAN->m_iSoundPreferredSampleRate;
 	if( m_ss.rate == 0 )
+	{
 		m_ss.rate = kFallbackSampleRate;
+	}
 }
 
 RageSoundDriver_PulseAudio::~RageSoundDriver_PulseAudio()
