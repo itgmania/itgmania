@@ -136,7 +136,7 @@ int RageSoundManager::GetDriverSampleRate() const
 		return kFallbackSampleRate;
 
 	// Returns the *actual* operating rate of the loaded driver
-	return m_pDriver->GetSampleRate(); 
+	return m_pDriver->GetSampleRate();
 }
 
 /* If the given path is loaded, return a copy; otherwise return nullptr.
