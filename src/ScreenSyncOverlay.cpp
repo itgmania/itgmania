@@ -69,6 +69,10 @@ void ScreenSyncOverlay::UpdateText()
 			FAIL_M(ssprintf("Invalid PlayerController: %i", pc));
 	}
 
+	if (GAMESTATE->m_SongOptions.GetCurrent().m_bAssistClap) {
+		vs.push_back("Assist Clap");
+	}
+
 	AutosyncType type = GAMESTATE->m_SongOptions.GetCurrent().m_AutosyncType;
 	switch( type )
 	{

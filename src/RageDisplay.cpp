@@ -135,7 +135,7 @@ void RageDisplay::ProcessStatsOnFlip()
 	g_iFramesRenderedSinceLastCheck++;
 	g_iFramesRenderedSinceLastReset++;
 
-	if( g_LastCheckTimer.PeekDeltaTime() >= 1.0f )	// update stats every 1 sec.
+	if( g_LastCheckTimer.Ago() >= 1.0f )	// update stats every 1 sec.
 	{
 		float fActualTime = g_LastCheckTimer.GetDeltaTime();
 		g_iNumChecksSinceLastReset++;
@@ -147,7 +147,7 @@ void RageDisplay::ProcessStatsOnFlip()
 		if( LOG_FPS )
 		{
 			RString sStats = GetStats();
-			sStats.Replace( "\n", ", " );
+			Replace(sStats, "\n", ", ");
 			LOG->Trace( "%s", sStats.c_str() );
 		}
 	}
@@ -767,15 +767,13 @@ void RageDisplay::UpdateCentering()
 		(float) p.m_iTranslateX, (float) p.m_iTranslateY, (float) p.m_iAddWidth, (float) p.m_iAddHeight );
 }
 
-bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
+bool RageDisplay::SaveScreenshot( const RString &sPath, GraphicsFileFormat format )
 {
-	RageTimer timer;
 	RageSurface *surface = this->CreateScreenshot();
-//	LOG->Trace( "CreateScreenshot took %f seconds", timer.GetDeltaTime() );
-
+	
 	if (nullptr == surface)
 	{
-		LOG->Trace("CreateScreenshot failed to return a surface");
+		LOG->Warn("SaveScreenshot: failed to create a screenshot surface");
 		return false;
 	}
 
@@ -790,21 +788,18 @@ bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
 		// This used to be lrint. However, lrint causes odd resolutions like
 		// 639x480 (4:3) and 853x480 (16:9). ceil gives correct values. -aj
 		int iWidth = std::ceil( iHeight * GetActualVideoModeParams().fDisplayAspectRatio );
-		timer.Touch();
 		RageSurfaceUtils::Zoom( surface, iWidth, iHeight );
-//		LOG->Trace( "%ix%i -> %ix%i (%.3f) in %f seconds", surface->w, surface->h, iWidth, iHeight, GetActualVideoModeParams().fDisplayAspectRatio, timer.GetDeltaTime() );
 	}
 
 	RageFile out;
 	if( !out.Open( sPath, RageFile::WRITE ) )
 	{
-		LOG->Trace("Couldn't write %s: %s", sPath.c_str(), out.GetError().c_str() );
+		LOG->Warn("SaveScreenshot: Failed to open %s for writing: %s", sPath.c_str(), out.GetError().c_str() );
 		RageUtil::SafeDelete( surface );
 		return false;
 	}
 
 	bool bSuccess = false;
-	timer.Touch();
 	RString strError = "";
 	switch( format )
 	{
@@ -820,19 +815,20 @@ bool RageDisplay::SaveScreenshot( RString sPath, GraphicsFileFormat format )
 	case SAVE_LOSSY_HIGH_QUAL:
 		bSuccess = RageSurfaceUtils::SaveJPEG( surface, out, true );
 		break;
-	DEFAULT_FAIL( format );
+	default:
+		LOG->Warn("SaveScreenshot: Invalid graphics file format requested %d", format);
+		bSuccess = false;
+		break;
 	}
-//	LOG->Trace( "Saving Screenshot file took %f seconds.", timer.GetDeltaTime() );
 
 	RageUtil::SafeDelete( surface );
 
 	if( !bSuccess )
 	{
-		LOG->Trace("Couldn't write %s: %s", sPath.c_str(), out.GetError().c_str() );
-		return false;
+		LOG->Warn("SaveScreenshot: Failed to save screenshot to %s: %s", sPath.c_str(), out.GetError().c_str() );
 	}
 
-	return true;
+	return bSuccess;
 }
 
 void RageDisplay::DrawQuads( const RageSpriteVertex v[], int iNumVerts )

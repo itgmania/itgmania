@@ -13,14 +13,11 @@ namespace
 {
 	void WarnUserAboutBadSoundDriverEntry()
 	{
-		#if defined(_WIN32)
-			LOG->Trace(" - Valid sound drivers for your OS are: WaveOut, DirectSound-sw, WDMKS, Null");
-		#elif defined(MACOSX)
-			LOG->Trace(" - Valid sound drivers for your OS are: AudioUnit, Null");
-		#else // assume linux/unix if we reach this point
-			LOG->Trace(" - Valid sound drivers for your OS are: ALSA-sw, OSS, JACK, Pulse, Null");
-		#endif
-			LOG->Trace(" - Make sure the driver entry is spelled correctly, and is supported on your OS.");
+		std::vector<RString> list = GetDefaultSoundDriverList();
+		RString list_string = join( ",", list );
+		RString trace = RString(" - Valid sound drivers for your OS are: ") + list_string;
+		LOG->Trace("%s", trace.c_str());
+		LOG->Trace(" - Make sure the driver entry is spelled correctly, and is supported on your OS.");
 	}
 }  // namespace
 

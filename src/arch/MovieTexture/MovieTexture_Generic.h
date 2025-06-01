@@ -86,7 +86,7 @@ public:
 class MovieTexture_Generic: public RageMovieTexture
 {
 public:
-	MovieTexture_Generic( RageTextureID ID, MovieDecoder *pDecoder );
+	MovieTexture_Generic( RageTextureID ID, std::unique_ptr<MovieDecoder> pDecoder );
 	virtual ~MovieTexture_Generic();
 	RString Init();
 
@@ -108,7 +108,7 @@ public:
 	static EffectMode GetEffectMode( MovieDecoderPixelFormatYCbCr fmt );
 
 private:
-	MovieDecoder *decoder_;
+	std::unique_ptr<MovieDecoder> decoder_;
 
 	std::unique_ptr<std::thread> decoding_thread_;
 
@@ -120,13 +120,12 @@ private:
 	bool failure_ = false;
 
 	uintptr_t texture_handle_;
-	RageTextureRenderTarget *render_target_;
-	RageTexture * intermediate_texture_;
-	Sprite *sprite_;
+	std::unique_ptr<RageTextureRenderTarget> render_target_;
+	std::unique_ptr<RageTexture> intermediate_texture_;
+	std::unique_ptr<Sprite> sprite_;
 
-	RageSurface *surface_;
-
-	RageTextureLock *texture_lock_;
+	RageSurface* surface_;
+	RageTextureLock* texture_lock_;
 
 	/* The time the movie is actually at: */
 	float clock_;

@@ -3,7 +3,7 @@ ITGmania
 
 ITGmania is a fork of [StepMania 5.1](https://github.com/stepmania/stepmania/tree/5_1-new), an advanced cross-platform rhythm game for home and arcade use.
 
-[![Continuous integration](https://github.com/itgmania/itgmania/actions/workflows/ci.yml/badge.svg?branch=beta)](https://github.com/itgmania/itgmania/actions/workflows/ci.yml)
+[![Continuous integration](https://github.com/itgmania/itgmania/actions/workflows/ci.yml/badge.svg?branch=beta)](https://github.com/itgmania/itgmania/actions/workflows/ci.yml) [![Nightly release](https://github.com/itgmania/itgmania/actions/workflows/nightly.yml/badge.svg?branch=beta&event=push)](https://github.com/itgmania/itgmania/actions/workflows/nightly.yml?query=branch%3Abeta+event%3Apush)
 
 ## Changes to StepMania 5.1
 
@@ -67,12 +67,12 @@ ITGmania can be compiled using [CMake](http://www.cmake.org/). More information 
 
 * [ITGmania Website](https://www.itgmania.com/)
 * [StepMania 5.1 to ITGmania Migration Guide](Docs/Userdocs/sm5_migration.md)
-* [Lua for ITGmania](https://itgmania.github.io/lua-for-itgmania/)
+* [Lua for ITGmania](https://quietly-turning.github.io/Lua-For-SM5/LuaAPI?engine=ITGmania)
 * Lua API Documentation can be found in the Docs folder.
 
 ## Licensing Terms
 
-ITGmania, as well as the Simply Love theme, are both under the GPLv3 license, or at your option, any later version.
+ITGmania, as well as the [Simply Love](https://github.com/Simply-Love/Simply-Love-SM5) theme, are both under the GPLv3 license, or at your option, any later version.
 
 If ITGmania code is used in your project, we would also appreciate it if you link back to [ITGmania](https://github.com/itgmania/itgmania) as well as [StepMania](https://github.com/stepmania/stepmania).
 

@@ -70,7 +70,7 @@ LoadingWindow_Gtk::~LoadingWindow_Gtk()
 
 void LoadingWindow_Gtk::SetText( RString s )
 {
-	gtk_label_set_text(GTK_LABEL(label), s);
+	gtk_label_set_text(GTK_LABEL(label), s.c_str());
 	gtk_widget_show(label);
 	gtk_main_iteration_do(FALSE);
 }

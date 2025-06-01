@@ -26,15 +26,15 @@ namespace StepParity
 
 	// 0.1 = 1/16th note at 150bpm. Jacks quicker than this are harder.
 	// Above this speed, footswitches should be prioritized
-	const float JACK_THRESHOLD = 0.1;
+	constexpr float JACK_THRESHOLD = 0.1f;
 	// 0.15 = 1/8th at 200bpm, or 3/16th at 150bpm. Below this speed, jumps should be prioritized
-	const float SLOW_BRACKET_THRESHOLD = 0.15;
+	constexpr float SLOW_BRACKET_THRESHOLD = 0.15f;
 	// 0.2 = 1/8th at 150bpm. Footswitches slower than this are harder.
 	// Below this speed, jacks should be prioritized
-	const float SLOW_FOOTSWITCH_THRESHOLD = 0.2;
+	constexpr float SLOW_FOOTSWITCH_THRESHOLD = 0.2f;
 	// 0.4 = 1/4th at 150bpm. Once a footswitch gets slow enough, though,
 	// just ignore it.
-	const float SLOW_FOOTSWITCH_IGNORE = 0.4;
+	constexpr float SLOW_FOOTSWITCH_IGNORE = 0.4f;
 	
 	class StepParityCost
 	{

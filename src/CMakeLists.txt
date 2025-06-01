@@ -150,7 +150,7 @@ endif()
 
 if(MSVC)
   # TODO: Find a way to do this cleanly for non MSVC users.
-  set(SM_COMPILE_FLAGS "${SM_COMPILE_FLAGS} /MP2 /utf-8")
+  set(SM_COMPILE_FLAGS "${SM_COMPILE_FLAGS} /MP /permissive- /utf-8")
 endif()
 
 set_target_properties("${SM_EXE_NAME}"
@@ -340,7 +340,8 @@ list(APPEND SMDATA_LINK_LIB "mad"
                             "vorbisfile"
                             "vorbis"
                             "ogg"
-                            "ixwebsocket")
+                            "ixwebsocket"
+							"hidapi")
 
 if(WIN32)
   list(APPEND SMDATA_LINK_LIB

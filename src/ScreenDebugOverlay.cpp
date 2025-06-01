@@ -159,7 +159,7 @@ static RString GetDebugButtonName( const IDebugLine *pLine )
 	case IDebugLine::all_screens:
 		return s;
 	case IDebugLine::gameplay_only:
-		return ssprintf( IN_GAMEPLAY.GetValue(), s.c_str() );
+		return ssprintf( IN_GAMEPLAY.GetValue().c_str(), s.c_str() );
 	default:
 		FAIL_M(ssprintf("Invalid debug line type: %i", type));
 	}
@@ -621,7 +621,7 @@ static LocalizedString SYNC_TEMPO		( "ScreenDebugOverlay", "Tempo" );
 
 class DebugLineAutoplay : public IDebugLine
 {
-	virtual RString GetDisplayTitle() { return AUTO_PLAY.GetValue() + " (+Shift = AI) (+Alt = hide)"; }
+	virtual RString GetDisplayTitle() { return AUTO_PLAY.GetValue() + " (+Shift = AI)"; }
 	virtual RString GetDisplayValue()
 	{
 		PlayerController pc = GamePreferences::m_AutoPlay.Get();

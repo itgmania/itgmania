@@ -109,18 +109,18 @@ struct DateTime
 	 * @brief Determine if this DateTime is not equal to some other time.
 	 * @param other the other DateTime to check.
 	 * @return true if this is not equal to the other time, or false otherwise. */
-	bool operator!=( const DateTime& other ) const { return !operator==(other); }
+	bool operator!=(const DateTime& other) const;
 	/**
 	 * @brief Determine if this DateTime is less than or equal to some other time.
 	 * @param other the other DateTime to check.
 	 * @return true if this is less than or equal to the other time, or false otherwise. */
-	bool operator<=( const DateTime& other ) const { return !operator>(other); }
+	bool operator<=(const DateTime& other) const;
 	
 	/**
 	 * @brief Determine if this DateTime is greater than or equal to some other time.
 	 * @param other the other DateTime to check.
 	 * @return true if this is greater than or equal to the other time, or false otherwise. */
-	bool operator>=( const DateTime& other ) const { return !operator<(other); }
+	bool operator>=(const DateTime& other) const;
 
 	/** 
 	 * @brief Retrieve the current date and time.

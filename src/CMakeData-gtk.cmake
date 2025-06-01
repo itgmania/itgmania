@@ -8,7 +8,7 @@ add_library("LoadingWindowGtk"
             "arch/LoadingWindow/LoadingWindow_Gtk.h")
 
 set_property(TARGET "LoadingWindowGtk" PROPERTY FOLDER "Internal Libraries")
-set_property(TARGET "LoadingWindowGtk" PROPERTY CXX_STANDARD 11)
+set_property(TARGET "LoadingWindowGtk" PROPERTY CXX_STANDARD 17)
 set_property(TARGET "LoadingWindowGtk" PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET "LoadingWindowGtk" PROPERTY CXX_EXTENSIONS ON)
 

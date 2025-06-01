@@ -1,3 +1,6 @@
+list(APPEND SMDATA_OS_SRC "archutils/Common/HidDevice.cpp")
+list(APPEND SMDATA_OS_HPP "archutils/Common/HidDevice.h")
+
 if(APPLE)
   list(APPEND SMDATA_OS_DARWIN_SRC
               "archutils/Darwin/Crash.mm"

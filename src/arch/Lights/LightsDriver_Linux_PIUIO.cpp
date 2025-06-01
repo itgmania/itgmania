@@ -48,7 +48,7 @@ void LightsDriver_Linux_PIUIO::Set( const LightsState *ls )
 	if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) buf[1] |= 0x04;
 
 	RString sInput = GAMESTATE->GetCurrentGame()->m_InputScheme.m_szName;
-	if (sInput.EqualsNoCase("dance")) {
+	if (EqualsNoCase(sInput, "dance")) {
 		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) buf[2] |= 0x04;
 		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) buf[2] |= 0x08;
 		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) buf[2] |= 0x10;
@@ -58,7 +58,7 @@ void LightsDriver_Linux_PIUIO::Set( const LightsState *ls )
 		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) buf[0] |= 0x08;
 		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) buf[0] |= 0x10;
 		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) buf[0] |= 0x20;
-	} else if (sInput.EqualsNoCase("pump")) {
+	} else if (EqualsNoCase(sInput, "pump")) {
 		if (ls->m_bGameButtonLights[GameController_1][PUMP_BUTTON_UPLEFT]) buf[0] |= 0x04;
 		if (ls->m_bGameButtonLights[GameController_1][PUMP_BUTTON_UPRIGHT]) buf[0] |= 0x08;
 		if (ls->m_bGameButtonLights[GameController_1][PUMP_BUTTON_CENTER]) buf[0] |= 0x10;

@@ -29,9 +29,9 @@ static RString GetPromptText()
 		if( !vs.empty() )
 		{
 			s += ssprintf(
-				CHANGED_TIMING_OF.GetValue()+"\n"
+				(CHANGED_TIMING_OF.GetValue()+"\n"
 				"%s:\n"
-				"\n",
+				"\n").c_str(),
 				GAMESTATE->m_pCurSong->GetDisplayFullTitle().c_str() );
 
 			s += join( "\n", vs ) + "\n\n";

@@ -171,8 +171,9 @@ Actor* ActorFrame::GetChild( const RString &sName )
 {
 	for (Actor *a : m_SubActors)
 	{
-		if( a->GetName() == sName )
+		if (a->GetName() == sName || a->IsAlias(sName)) {
 			return a;
+		}
 	}
 	return nullptr;
 }
@@ -411,7 +412,7 @@ void ActorFrame::PushChildTable(lua_State* L, const RString &sName)
 	int found= 0;
 	for (Actor *a: m_SubActors)
 	{
-		if(a->GetName() == sName)
+		if (a->GetName() == sName || a->IsAlias(sName))
 		{
 			if (found == 0)
 			{

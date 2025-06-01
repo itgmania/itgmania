@@ -22,16 +22,13 @@ struct DisplayMode {
 	 * configuration
 	 */
 
-	bool operator<( const DisplayMode &other ) const
-	{
-/** @brief A quick way to compare the two DisplayResolutions. */
-#define COMPARE(x) if( x != other.x ) return x < other.x;
-		COMPARE( width );
-		COMPARE( height );
-		COMPARE( refreshRate );
-#undef COMPARE
+	bool operator<(const DisplayMode& other) const {
+		if (width != other.width) return width < other.width;
+		if (height != other.height) return height < other.height;
+		if (refreshRate != other.refreshRate) return refreshRate < other.refreshRate;
 		return false;
 	}
+
 
 	// Lua
 	void PushSelf( lua_State *L );

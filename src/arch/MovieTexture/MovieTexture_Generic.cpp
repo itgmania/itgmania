@@ -21,12 +21,12 @@
 
 static Preference<bool> g_bMovieTextureDirectUpdates("MovieTextureDirectUpdates", true);
 
-MovieTexture_Generic::MovieTexture_Generic(RageTextureID ID, MovieDecoder* pDecoder) :
+MovieTexture_Generic::MovieTexture_Generic(RageTextureID ID, std::unique_ptr<MovieDecoder> pDecoder) :
 	RageMovieTexture(ID)
 {
 	LOG->Trace("MovieTexture_Generic::MovieTexture_Generic(%s)", ID.filename.c_str());
 
-	decoder_ = pDecoder;
+	decoder_ = std::move(pDecoder);
 
 	texture_handle_ = 0;
 	render_target_ = nullptr;
@@ -36,14 +36,16 @@ MovieTexture_Generic::MovieTexture_Generic(RageTextureID ID, MovieDecoder* pDeco
 	texture_lock_ = nullptr;
 	rate_ = 1;
 	clock_ = 0;
-	sprite_ = new Sprite;
+	sprite_ = std::make_unique<Sprite>();
 }
 
 RString MovieTexture_Generic::Init()
 {
-	RString sError = decoder_->Open(GetID().filename);
-	if (sError != "")
-		return sError;
+	RString err = decoder_->Open(GetID().filename);
+	if (err != "") {
+		LOG->Warn("MovieTexture_Generic::Init: failed to open decoder for file: %s, with error:\n%s", GetID().filename.c_str(), err.c_str());
+		return err;
+	}
 
 	CreateTexture();
 	CreateFrameRects();
@@ -79,11 +81,9 @@ MovieTexture_Generic::~MovieTexture_Generic()
 	}
 
 	/* sprite_ may reference the texture; delete it before DestroyTexture. */
-	delete sprite_;
-
+	sprite_.reset();
 	DestroyTexture();
 
-	delete decoder_;
 }
 
 /* Delete the surface and texture.  The decoding thread must be stopped, and this
@@ -102,9 +102,6 @@ void MovieTexture_Generic::DestroyTexture()
 		texture_handle_ = 0;
 	}
 
-	delete render_target_;
-	render_target_ = nullptr;
-	delete intermediate_texture_;
 	intermediate_texture_ = nullptr;
 }
 
@@ -258,7 +255,7 @@ void MovieTexture_Generic::CreateTexture()
 
 	if (fmt != PixelFormatYCbCr_Invalid)
 	{
-		RageUtil::SafeDelete(intermediate_texture_);
+		intermediate_texture_.reset();
 		sprite_->UnloadTexture();
 
 		/* Create the render target.  This will receive the final, converted texture. */
@@ -268,13 +265,13 @@ void MovieTexture_Generic::CreateTexture()
 
 		RageTextureID TargetID(GetID());
 		TargetID.filename += " target";
-		render_target_ = new RageTextureRenderTarget(TargetID, param);
+		render_target_ = std::make_unique<RageTextureRenderTarget>(TargetID, param);
 
 		/* Create the intermediate texture.  This receives the YUV image. */
 		RageTextureID IntermedID(GetID());
 		IntermedID.filename += " intermediate";
 
-		intermediate_texture_ = new RageMovieTexture_Generic_Intermediate(IntermedID,
+		intermediate_texture_ = std::make_unique<RageMovieTexture_Generic_Intermediate>(IntermedID,
 			decoder_->GetWidth(), decoder_->GetHeight(),
 			surface_->w, surface_->h,
 			power_of_two(surface_->w), power_of_two(surface_->h),
@@ -288,7 +285,7 @@ void MovieTexture_Generic::CreateTexture()
 		 * when it unloads the texture.  Normally we'd make a "copy", but we can't access
 		 * RageTextureManager from here.  Just increment the refcount. */
 		++intermediate_texture_->m_iRefCount;
-		sprite_->SetTexture(intermediate_texture_);
+		sprite_->SetTexture(intermediate_texture_.get());
 		sprite_->SetEffectMode(GetEffectMode(fmt));
 
 		return;
@@ -347,7 +344,7 @@ void MovieTexture_Generic::UpdateFrame()
 
 	// Are we looping?
 	if (decoder_->EndOfMovie() && loop_) {
-		LOG->Trace("File \"%s\" looping", GetID().filename.c_str());
+		LOG->Info("File \"%s\" looping", GetID().filename.c_str());
 		decoder_->Rollover();
 		clock_ = 0.0;
 	}

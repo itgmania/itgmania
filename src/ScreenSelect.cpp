@@ -36,9 +36,9 @@ void ScreenSelect::Init()
 	// Load choices
 	// Allow lua as an alternative to metrics.
 	RString choice_names= CHOICE_NAMES;
-	if(choice_names.Left(4) == "lua,")
+	if(Left(choice_names, 4) == "lua,")
 	{
-		RString command= choice_names.Right(choice_names.size()-4);
+		RString command= Right(choice_names, choice_names.size()-4);
 		Lua* L= LUA->Get();
 		if(LuaHelpers::RunExpression(L, command, m_sName + "::ChoiceNames"))
 		{
@@ -54,7 +54,7 @@ void ScreenSelect::Init()
 					lua_rawgeti(L, 1, i);
 					if(!lua_isstring(L, -1))
 					{
-						LuaHelpers::ReportScriptErrorFmt(m_sName + "::ChoiceNames element %zu is not a string.", i);
+						LuaHelpers::ReportScriptErrorFmt((m_sName + "::ChoiceNames element %zu is not a string.").c_str(), i);
 					}
 					else
 					{
@@ -121,13 +121,13 @@ void ScreenSelect::Update( float fDelta )
 {
 	if( !IsTransitioning() )
 	{
-		if( IDLE_COMMENT_SECONDS > 0  &&  m_timerIdleComment.PeekDeltaTime() >= IDLE_COMMENT_SECONDS )
+		if( IDLE_COMMENT_SECONDS > 0  &&  m_timerIdleComment.Ago() >= IDLE_COMMENT_SECONDS )
 		{
 			SOUND->PlayOnceFromAnnouncer( m_sName+" IdleComment" );
 			m_timerIdleComment.GetDeltaTime();
 		}
 
-		if( IDLE_TIMEOUT_SECONDS > 0  &&  m_timerIdleTimeout.PeekDeltaTime() >= IDLE_TIMEOUT_SECONDS )
+		if( IDLE_TIMEOUT_SECONDS > 0  &&  m_timerIdleTimeout.Ago() >= IDLE_TIMEOUT_SECONDS )
 		{
 			SCREENMAN->SetNewScreen( IDLE_TIMEOUT_SCREEN );
 			m_timerIdleTimeout.GetDeltaTime();

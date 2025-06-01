@@ -1,7 +1,7 @@
-/* LightsDriver_Linux_stac: Control lights for the stac by icedragon.io via direct hidraw writes. */
+/* LightsDriver_stac: Control lights for the stac by icedragon.io using hidapi */
 
-#ifndef LightsDriver_Linux_stac_H
-#define LightsDriver_Linux_stac_H
+#ifndef LightsDriver_stac_H
+#define LightsDriver_stac_H
 
 /*
  * -------------------------- NOTE --------------------------
@@ -13,7 +13,12 @@
  * SUBSYSTEMS=="usb", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="eb5b", OWNER="dance", GROUP="dance", MODE="0660"
  * SUBSYSTEMS=="usb", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="eb5a", OWNER="dance", GROUP="dance", MODE="0660"
  *
- * Refer to your distrobution's documentation on how to properly apply a udev rule.
+ *  or
+ *
+ * KERNEL=="hidraw*", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="eb5b", OWNER="dance", GROUP="dance", MODE="0660"
+ * KERNEL=="hidraw*", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="eb5a", OWNER="dance", GROUP="dance", MODE="0660"
+ *
+ * Refer to your distribution's documentation on how to properly apply a udev rule.
  *
  * -------------------------- NOTE --------------------------
  */
@@ -21,83 +26,54 @@
 #include "arch/Lights/LightsDriver.h"
 
 #include <cstdint>
+#include "archutils/Common/HidDevice.h"
 
-//static information about the device(s) in question.
-#define STAC_VID "04d8"
-#define STAC_PID_P1 "ea4b"
-#define STAC_PID_P2 "ea4a"
+// static information about the device(s) in question.
+#define STAC_VID 0x04d8
+#define STAC_PID_P1 0xea4b
+#define STAC_PID_P2 0xea4a
 #define STAC_NUMOF_LIGHTS 5
 
-//the first byte of the buffer is a static report id.
+// the first byte of the buffer is a static report id.
 #define STAC_HIDREPORT_SIZE (STAC_NUMOF_LIGHTS + 1)
 #define STAC_REPORT_ID 0x01
+#define STAC_LIGHTING_INTERFACE 0x01
 
-//all indicies contain their respective 573 pinouts
+// total number of supported devices.
+#define STAC_MAX_NUMBER 2
+
 enum StacLightIndex
 {
-    STAC_LIGHTINDEX_BTN1 = 0,
-    STAC_LIGHTINDEX_BTN2 = 1,
-    STAC_LIGHTINDEX_BTN3 = 2,
-    STAC_LIGHTINDEX_BTN4 = 3,
-    STAC_LIGHTINDEX_BTN5 = 4,
-    STAC_LIGHTINDEX_MAX
+	STAC_LIGHTINDEX_BTN1 = 0,
+	STAC_LIGHTINDEX_BTN2 = 1,
+	STAC_LIGHTINDEX_BTN3 = 2,
+	STAC_LIGHTINDEX_BTN4 = 3,
+	STAC_LIGHTINDEX_BTN5 = 4,
+	STAC_LIGHTINDEX_MAX
 };
 
-class StacDevice
-{
-public:
-    const char *deviceVID;
-    const char *devicePID;
-
-    const char *devicePath;
-    int fd = -1;
-
-    uint8_t playerNumber = 0;
-    bool newState = false;
-
-    uint8_t outputBuffer[STAC_HIDREPORT_SIZE];
-
-    StacDevice(uint8_t pn);
-
-    void FindDevice();
-    void Connect();
-    void Close();
-
-    bool IsConnected()
-    {
-        //a zero/positive file descriptor is a valid one.
-        //and if we have opened it, then we are connected.
-        //if there is an error, then we close it.
-        return (fd >= 0);
-    }
-
-    void SetInBuffer(int index, bool lightState);
-
-    void PushBufferToDevice();
-};
-
-class LightsDriver_Linux_stac : public LightsDriver
+class LightsDriver_stac : public LightsDriver
 {
 private:
-    StacDevice *stacPlayer1 = new StacDevice(1);
-    StacDevice *stacPlayer2 = new StacDevice(2);
+	HidDevice devs[STAC_MAX_NUMBER];
 
-    bool haveSeenP1 = false;
-    bool haveSeenP2 = false;
+	bool stateChanged[STAC_MAX_NUMBER];
+	uint8_t outputBuffer[STAC_MAX_NUMBER][STAC_HIDREPORT_SIZE];
 
-    void HandleState(const LightsState *ls, StacDevice *dev, GameController ctrlNum);
+	void HandleState(const LightsState *ls, GameController ctrlNum);
+	void SetBuffer(int index, bool lightState, GameController ctrlNum);
 
 public:
-    LightsDriver_Linux_stac();
-    virtual ~LightsDriver_Linux_stac();
+	LightsDriver_stac();
+	virtual ~LightsDriver_stac();
 
-    virtual void Set(const LightsState *ls);
+	virtual void Set(const LightsState *ls);
 };
 
 #endif
 
 /*
- * (c) 2021 StepMania team
+ * (c) 2025 din
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a

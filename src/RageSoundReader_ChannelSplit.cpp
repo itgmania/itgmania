@@ -162,9 +162,8 @@ int RageSoundReader_Split::Read( float *pBuf, int iFrames )
 
 	{
 		RageSoundMixBuffer mix;
-		for( int i = 0; i < (int) m_aChannels.size(); ++i )
+		for( const ChannelMap& chan : m_aChannels )
 		{
-			const ChannelMap &chan = m_aChannels[i];
 			mix.SetWriteOffset( chan.m_iToChannel );
 			mix.write( pSrc + chan.m_iFromChannel, iFramesAvailable, m_pImpl->m_pSource->GetNumChannels(), m_iNumOutputChannels );
 		}
@@ -196,7 +195,7 @@ int RageSoundSplitterImpl::ReadBuffer()
 	{
 		int iEraseFrames = iMinFrameRequested - m_iBufferPositionFrames;
 		iEraseFrames = std::min( iEraseFrames, (int) m_sBuffer.size() );
-		m_sBuffer.erase( m_sBuffer.begin(), m_sBuffer.begin() + iEraseFrames * m_pSource->GetNumChannels() );
+		m_sBuffer.erase( m_sBuffer.begin(), m_sBuffer.begin() + static_cast<size_t>(iEraseFrames) * m_pSource->GetNumChannels() );
 		m_iBufferPositionFrames += iEraseFrames;
 	}
 

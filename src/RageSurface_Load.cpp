@@ -17,13 +17,13 @@ static RageSurface *TryOpenFile( RString sPath, bool bHeaderOnly, RString &error
 {
 	RageSurface *ret = nullptr;
 	RageSurfaceUtils::OpenResult result;
-	if( !format.CompareNoCase("png") )
+	if( !CompareNoCase(format, "png") )
 		result = RageSurface_Load_PNG( sPath, ret, bHeaderOnly, error );
-	else if( !format.CompareNoCase("gif") )
+	else if( !CompareNoCase(format, "gif") )
 		result = RageSurface_Load_GIF( sPath, ret, bHeaderOnly, error );
-	else if( !format.CompareNoCase("jpg") || !format.CompareNoCase("jpeg") )
+	else if( !CompareNoCase(format, "jpg") || !CompareNoCase(format, "jpeg") )
 		result = RageSurface_Load_JPEG( sPath, ret, bHeaderOnly, error );
-	else if( !format.CompareNoCase("bmp") )
+	else if( !CompareNoCase(format, "bmp") )
 		result = RageSurface_Load_BMP( sPath, ret, bHeaderOnly, error );
 	else
 	{
@@ -96,7 +96,7 @@ RageSurface *RageSurfaceUtils::LoadFile( const RString &sPath, RString &error, b
 	}
 
 	RString format = GetExtension(sPath);
-	format.MakeLower();
+	MakeLower(format);
 
 	bool bKeepTrying = true;
 

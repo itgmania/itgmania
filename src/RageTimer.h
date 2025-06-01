@@ -20,11 +20,8 @@ public:
 
 	/* Time between last call to GetDeltaTime() (Ago() + Touch()): */
 	float GetDeltaTime();
-	/* (alias) */
-	float PeekDeltaTime() const { return Ago(); }
 
 	static double GetTimeSinceStart();	// seconds since the program was started
-	static double GetTimeSinceStartFast() { return GetTimeSinceStart(); }
 	static int GetTimeSinceStartSeconds(); 	// This is used where GetTimeSinceStart would be cast to an int without rounding.
 	static uint64_t GetTimeSinceStartMicroseconds();
 

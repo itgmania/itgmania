@@ -1,7 +1,9 @@
 #include "global.h"
 #include "DSoundHelpers.h"
+#include "PrefsManager.h"
 #include "RageUtil.h"
 #include "RageLog.h"
+#include "RageSound.h"
 #include "archutils/Win32/DirectXHelpers.h"
 #include "archutils/Win32/GetFileInformation.h"
 
@@ -62,7 +64,12 @@ void DSound::SetPrimaryBufferMode()
 	waveformat.wFormatTag = WAVE_FORMAT_PCM;
 	waveformat.wBitsPerSample = 16;
 	waveformat.nChannels = 2;
-	waveformat.nSamplesPerSec = 44100;
+	int preferredSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
+	if (preferredSampleRate == 0)
+	{
+		preferredSampleRate = kFallbackSampleRate;
+	}
+	waveformat.nSamplesPerSec = preferredSampleRate;
 	waveformat.nBlockAlign = 4;
 	waveformat.nAvgBytesPerSec = waveformat.nSamplesPerSec * waveformat.nBlockAlign;
 
@@ -195,9 +202,10 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 	waveformat.wFormatTag = WAVE_FORMAT_PCM;
 
 	bool bNeedCtrlFrequency = false;
+	// DYNAMIC_SAMPLERATE is usually 0 or some special value
 	if( m_iSampleRate == DYNAMIC_SAMPLERATE )
 	{
-		m_iSampleRate = 44100;
+		m_iSampleRate = kFallbackSampleRate;
 		bNeedCtrlFrequency = true;
 	}
 

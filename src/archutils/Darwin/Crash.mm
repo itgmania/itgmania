@@ -4,6 +4,7 @@
 #include "arch/ArchHooks/ArchHooks.h"
 
 #include <cstddef>
+#include <string>
 
 #include <CoreServices/CoreServices.h>
 #include <os/log.h>
@@ -15,20 +16,21 @@
 
 #import <Foundation/Foundation.h>
 
-RString CrashHandler::GetLogsDirectory()
+std::string CrashHandler::GetLogsDirectory()
 {
 	NSFileManager *fileManager = [NSFileManager defaultManager];
 	NSURL *url = [fileManager URLForDirectory:NSLibraryDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:nil];
 	if (url == nil)
 		return "/tmp";
 
-	return RString([url fileSystemRepresentation]) + "/Logs/" PRODUCT_ID;
+	RString path= RString([url fileSystemRepresentation]) + "/Logs/" PRODUCT_ID;
+	return std::string(path.c_str());
 }
 
 // XXX Can we use LocalizedString here instead?
 #define LSTRING(b,x) CFBundleCopyLocalizedString( (b), CFSTR(x), nullptr, CFSTR("Localizable") )
 
-void CrashHandler::InformUserOfCrash( const RString& sPath )
+void CrashHandler::InformUserOfCrash( const std::string& sPath )
 {
 	CFBundleRef bundle = CFBundleGetMainBundle();
 	CFStringRef sAlternate = LSTRING( bundle, "Quit " PRODUCT_FAMILY );

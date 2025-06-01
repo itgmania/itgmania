@@ -328,7 +328,7 @@ void BitmapText::BuildChars()
 
 	if( m_bUsingDistortion )
 	{
-		int iSeed = std::lrint( RageTimer::GetTimeSinceStartFast()*500000.0f );
+		int iSeed = RageTimer::GetTimeSinceStartSeconds() * 500000;
 		RandomGen rnd( iSeed );
 		for(unsigned int i= 0; i < m_aVertices.size(); i+=4)
 		{
@@ -463,7 +463,7 @@ void BitmapText::SetText( const RString& _sText, const RString& _sAlternateText,
 	RString sNewText = StringWillUseAlternate(_sText,_sAlternateText) ? _sAlternateText : _sText;
 
 	if( m_bUppercase )
-		sNewText.MakeUpper();
+		MakeUpper(sNewText);
 
 	if( iWrapWidthPixels == -1 )	// wrap not specified
 		iWrapWidthPixels = m_iWrapWidthPixels;
@@ -731,7 +731,7 @@ void BitmapText::DrawPrimitives() noexcept
 		// render the diffuse pass
 		if( m_bRainbowScroll )
 		{
-			int color_index = int(RageTimer::GetTimeSinceStartFast() / 0.200) % RAINBOW_COLORS.size();
+			int color_index = int(RageTimer::GetTimeSinceStart() / 0.200) % RAINBOW_COLORS.size();
 			for (size_t i = 0; i < m_aVertices.size(); i += 4)
 			{
 				const RageColor color = RAINBOW_COLORS[color_index];
@@ -798,7 +798,7 @@ void BitmapText::DrawPrimitives() noexcept
 		std::vector<RageVector3> vGlyphJitter;
 		if( m_bJitter )
 		{
-			int iSeed = std::lrint( RageTimer::GetTimeSinceStartFast()*8 );
+			int iSeed = RageTimer::GetTimeSinceStartSeconds() * 8;
 			RandomGen rnd( iSeed );
 			for (size_t i = 0; i < m_aVertices.size(); i += 4)
 			{
@@ -1069,13 +1069,13 @@ public:
 		 * it's confusing for :: to work in some strings and not others.
 		 * Eventually, all strings should be Lua expressions, but until then,
 		 * continue to support this. */
-		s.Replace("::","\n");
+		Replace(s, "::", "\n");
 		FontCharAliases::ReplaceMarkers( s );
 
 		if( lua_gettop(L) > 1 )
 		{
 			sAlt = SArg(2);
-			sAlt.Replace("::","\n");
+			Replace(sAlt, "::", "\n");
 			FontCharAliases::ReplaceMarkers( sAlt );
 		}
 
@@ -1087,7 +1087,7 @@ public:
 	static int distort( T* p, lua_State *L) { p->SetDistortion( FArg(1) ); COMMON_RETURN_SELF; }
 	static int undistort( T* p, lua_State *L) { p->UnSetDistortion(); COMMON_RETURN_SELF; }
 	GETTER_SETTER_BOOL_METHOD(mult_attrs_with_diffuse);
-	static int GetText( T* p, lua_State *L )		{ lua_pushstring( L, p->GetText() ); return 1; }
+	static int GetText( T* p, lua_State *L )		{ lua_pushstring( L, p->GetText().c_str() ); return 1; }
 	static int AddAttribute( T* p, lua_State *L )
 	{
 		size_t iPos = IArg(1);

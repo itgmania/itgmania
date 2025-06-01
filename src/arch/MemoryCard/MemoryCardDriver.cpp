@@ -26,18 +26,12 @@ LuaXType(MemoryCardDriverType);
 
 Preference<MemoryCardDriverType> g_MemoryCardDriver("MemoryCardDriver", MemoryCardDriverType_Usb, nullptr, PreferenceType::Immutable);
 
-bool UsbStorageDevice::operator==(const UsbStorageDevice& other) const
-{
-  //  LOG->Trace( "Comparing %d %d %d %s %s to %d %d %d %s %s",
-  //	      iBus, iPort, iLevel, sName.c_str(), sOsMountDir.c_str(),
-  //	      other.iBus, other.iPort, other.iLevel, other.sName.c_str(), other.sOsMountDir.c_str() );
-#define COMPARE(x) if( x != other.x ) return false
-  COMPARE( iBus );
-  COMPARE( iPort );
-  COMPARE( iLevel );
-  COMPARE( sOsMountDir );
-  return true;
-#undef COMPARE
+bool UsbStorageDevice::operator==(const UsbStorageDevice& other) const {
+	if (iBus != other.iBus) return false;
+	if (iPort != other.iPort) return false;
+	if (iLevel != other.iLevel) return false;
+	if (sOsMountDir != other.sOsMountDir) return false;
+	return true;
 }
 
 void UsbStorageDevice::SetOsMountDir( const RString &s )

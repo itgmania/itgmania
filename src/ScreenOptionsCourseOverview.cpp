@@ -168,7 +168,7 @@ void ScreenOptionsCourseOverview::HandleScreenMessage( const ScreenMessage SM )
 		{
 			if( !EditCourseUtil::RemoveAndDeleteFile(GAMESTATE->m_pCurCourse) )
 			{
-				ScreenPrompt::Prompt( SM_None, ssprintf(ERROR_DELETING_FILE.GetValue(), GAMESTATE->m_pCurCourse->m_sPath.c_str()) );
+				ScreenPrompt::Prompt( SM_None, ssprintf(ERROR_DELETING_FILE.GetValue().c_str(), GAMESTATE->m_pCurCourse->m_sPath.c_str()) );
 				return;
 			}
 

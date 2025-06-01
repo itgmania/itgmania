@@ -45,7 +45,6 @@ list(APPEND SMDATA_GLOBAL_SINGLETON_HPP
             "NoteSkinManager.h"
             "PrefsManager.h"
             "ProfileManager.h"
-            "RandomSeed.h"
             "ScreenManager.h"
             "SongManager.h"
             "StatsManager.h"

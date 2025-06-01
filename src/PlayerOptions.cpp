@@ -648,7 +648,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 
 	RString sBit = sOneMod;
 	RString sMod = "";
-	sBit.MakeLower();
+	MakeLower(sBit);
 	Trim( sBit );
 
 	/* "drunk"
@@ -677,7 +677,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 			}
 			/* If the last character is a *, they probably said "123*" when
 			 * they meant "*123". */
-			else if( s.Right(1) == "*" )
+			else if( Right(s, 1) == "*" )
 			{
 				// XXX: We know what they want, is there any reason not to handle it?
 				// Yes. We should be strict in handling the format. -Chris
@@ -691,7 +691,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 		}
 		else if( s[0]=='*' )
 		{
-			sscanf( s, "*%f", &speed );
+			sscanf( s.c_str(), "*%f", &speed );
 			if( !std::isfinite(speed) )
 				speed = 1.0f;
 		}
@@ -713,7 +713,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 		m_fTimeSpacing = 0;
 		m_fMaxScrollBPM = 0;
 	}
-	else if( sscanf( sBit, "c%f", &level ) == 1 )
+	else if( sscanf( sBit.c_str(), "c%f", &level ) == 1 )
 	{
 		if( !std::isfinite(level) || level <= 0.0f )
 			level = CMOD_DEFAULT;
@@ -723,7 +723,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 		m_fMaxScrollBPM = 0;
 	}
 	// oITG's m-mods
-	else if( sscanf( sBit, "m%f", &level ) == 1 )
+	else if( sscanf( sBit.c_str(), "m%f", &level ) == 1 )
 	{
 		// OpenITG doesn't have this block:
 		/*
@@ -1224,7 +1224,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 				break;
 
 			TimingWindow tw;
-			bool ret = StringConversion::FromString(matches[0].MakeUpper(), tw);
+			bool ret = StringConversion::FromString(MakeUpper(matches[0]), tw);
 			if (ret && TW_W1 <= tw && tw <= TW_W5)
 			{
 				m_twDisabledWindows.set(tw);
@@ -1239,7 +1239,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	{
 		// Maybe the original string is a noteskin name with a space. -Kyz
 		RString name= sOneMod;
-		name.MakeLower();
+		MakeLower(name);
 		if(NOTESKIN && NOTESKIN->DoesNoteSkinExist(name))
 		{
 			m_sNoteSkin = name;
@@ -1481,7 +1481,7 @@ bool PlayerOptions::operator==( const PlayerOptions &other ) const
 	// manager forces lowercase, but some obscure part of PlayerOptions
 	// uppercases the first letter.  The previous code that used != probably
 	// relied on RString::operator!= misbehaving. -Kyz
-	if(strcasecmp(m_sNoteSkin, other.m_sNoteSkin) != 0)
+	if(strcasecmp(m_sNoteSkin.c_str(), other.m_sNoteSkin.c_str()) != 0)
 	{
 		return false;
 	}
@@ -2133,11 +2133,11 @@ public:
 		int original_top= lua_gettop(L);
 		if( p->m_sNoteSkin.empty()  )
 		{
-			lua_pushstring( L, CommonMetrics::DEFAULT_NOTESKIN_NAME.GetValue() );
+			lua_pushstring( L, CommonMetrics::DEFAULT_NOTESKIN_NAME.GetValue().c_str() );
 		}
 		else
 		{
-			lua_pushstring( L, p->m_sNoteSkin );
+			lua_pushstring( L, p->m_sNoteSkin.c_str() );
 		}
 		if(original_top >= 1 && lua_isstring(L, 1))
 		{

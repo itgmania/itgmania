@@ -1,4 +1,5 @@
 #include "global.h"
+#include "PrefsManager.h"
 #include "RageSoundReader_Chain.h"
 #include "RageSoundReader_FileReader.h"
 #include "RageSoundReader_Resample_Good.h"
@@ -6,6 +7,7 @@
 #include "RageSoundReader_Pan.h"
 #include "RageLog.h"
 #include "RageUtil.h"
+#include "RageSound.h"
 #include "RageSoundMixBuffer.h"
 #include "RageSoundUtil.h"
 
@@ -23,7 +25,12 @@
  */
 RageSoundReader_Chain::RageSoundReader_Chain()
 {
-	m_iPreferredSampleRate = 44100;
+	m_iPreferredSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
+	if (m_iPreferredSampleRate == 0)
+	{
+		m_iPreferredSampleRate = kFallbackSampleRate;
+	}
+	
 	m_iActualSampleRate = -1;
 	m_iChannels = 0;
 	m_iCurrentFrame = 0;
@@ -72,7 +79,7 @@ void RageSoundReader_Chain::AddSound( int iIndex, float fOffsetSecs, float fPan 
 
 int RageSoundReader_Chain::LoadSound( RString sPath )
 {
-	sPath.MakeLower();
+	MakeLower(sPath);
 
 	std::map<RString, RageSoundReader*>::const_iterator it = m_apNamedSounds.find( sPath );
 	if( it != m_apNamedSounds.end() )
@@ -341,11 +348,14 @@ int RageSoundReader_Chain::Read( float *pBuffer, int iFrames )
 		return iFrames;
 	}
 
+	// Note: this is only safe because we know pBuffer is not nullptr
+	// and iFrames and m_iChannels are reasonable sizes.
 	if( m_apActiveSounds.empty() )
 	{
 		/* If we have more sounds ahead of us, pretend we read the entire block, since
 		 * there's silence in between.  Otherwise, we're at EOF. */
-		memset( pBuffer, 0, iFrames * m_iChannels * sizeof(float) );
+		size_t pBufferSize = static_cast<size_t>(iFrames) * m_iChannels * sizeof(float);
+		memset( pBuffer, 0, pBufferSize );
 		m_iCurrentFrame += iFrames;
 		return iFrames;
 	}

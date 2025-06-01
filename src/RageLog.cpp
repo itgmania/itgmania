@@ -6,6 +6,7 @@
 #include "RageThreads.h"
 
 #include <ctime>
+#include <cstdarg>
 #include <map>
 #include <vector>
 
@@ -89,7 +90,7 @@ m_bUserLogToDisk(false), m_bFlush(false), m_bShowLogOutput(false)
 	g_fileUserLog = new RageFile;
 	g_fileTimeLog = new RageFile;
 
-	if(!g_fileTimeLog->Open(TIME_PATH, RageFile::WRITE|RageFile::STREAMED))
+	if(m_bLogToDisk && !g_fileTimeLog->Open(TIME_PATH, RageFile::WRITE|RageFile::STREAMED))
 	{ fprintf(stderr, "Couldn't open %s: %s\n", TIME_PATH, g_fileTimeLog->GetError().c_str()); }
 
 	g_Mutex = new RageMutex( "Log" );
@@ -281,7 +282,7 @@ void RageLog::Write( int where, const RString &sLine )
 			sStr.insert( 0, sWarning );
 
 		if( m_bShowLogOutput || (where&WRITE_TO_INFO) )
-			puts(sStr); //fputws( (const wchar_t *)sStr.c_str(), stdout );
+			puts(sStr.c_str()); //fputws( (const wchar_t *)sStr.c_str(), stdout );
 		if( where & WRITE_TO_INFO )
 			AddToInfo( sStr );
 		if( m_bLogToDisk && (where&WRITE_TO_INFO) && g_fileInfo->IsOpen() )
@@ -293,7 +294,7 @@ void RageLog::Write( int where, const RString &sLine )
 		 * and stdout. */
 		sStr.insert( 0, sTimestamp );
 
-		if(where & WRITE_TO_TIME)
+		if( m_bLogToDisk && (where & WRITE_TO_TIME))
 			g_fileTimeLog->PutLine(sStr);
 
 		AddToRecentLogs( sStr );
@@ -364,7 +365,7 @@ void RageLog::AddToRecentLogs( const RString &str )
 	if( len > sizeof(backlog[backlog_start])-1 )
 		len = sizeof(backlog[backlog_start])-1;
 
-	strncpy( backlog[backlog_start], str, len );
+	strncpy( backlog[backlog_start], str.c_str(), len );
 	backlog[backlog_start] [ len ] = 0;
 
 	backlog_start++;
@@ -428,6 +429,11 @@ void RageLog::UnmapLog( const RString &key )
 {
 	LogMaps.erase( key );
 	UpdateMappedLog();
+}
+
+void ShowWarningOrTrace( const char *file, int line, const RString& message, bool bWarning )
+{
+	ShowWarningOrTrace(file, line, message.c_str(), bWarning);
 }
 
 void ShowWarningOrTrace( const char *file, int line, const char *message, bool bWarning )

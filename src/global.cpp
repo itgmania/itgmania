@@ -25,6 +25,11 @@
     #include "archutils/Unix/CrashHandler.h"
 #endif
 
+void sm_crash(const RString& s)
+{
+    sm_crash(s.c_str());
+}
+
 void sm_crash( const char *reason )
 {
 #if ( defined(_WIN32) && defined(CRASH_HANDLER) ) || defined(MACOSX) || defined(_XDBG)

@@ -23,6 +23,11 @@ void EditModePlayerManager::AddPlayers(const NoteData& note_data) {
 		player->Init("Player", GAMESTATE->m_pPlayerState[pn], nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
 		player.Load(note_data);
 
+		// We set the actor alias here instead of the name to maintain
+		// backward compatability with scripted stepcharts that expect
+		// the Player's actor frame to be unnamed.
+		player->SetAlias("Player" + PlayerNumberToString(pn));
+
 		player->CacheAllUsedNoteSkins();
 		GAMESTATE->m_pPlayerState[pn]->m_PlayerController = PC_HUMAN;
 		player->SetY(SCREEN_CENTER_Y);

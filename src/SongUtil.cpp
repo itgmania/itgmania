@@ -407,7 +407,7 @@ static bool CompareSongPointersBySortValueDescending( const Song *pSong1, const 
 
 RString SongUtil::MakeSortString( RString s )
 {
-	s.MakeUpper();
+	MakeUpper(s);
 
 	// Make sure that non-alphanumeric strings are placed at the very end.
 	if( s.size() > 0 )
@@ -435,13 +435,13 @@ static bool CompareSongPointersByTitle( const Song *pSong1, const Song *pSong2 )
 	s1 = SongUtil::MakeSortString(s1);
 	s2 = SongUtil::MakeSortString(s2);
 
-	int ret = strcmp( s1, s2 );
+	int ret = strcmp( s1.c_str(), s2.c_str() );
 	if(ret < 0) return true;
 	if(ret > 0) return false;
 
 	/* The titles are the same.  Ensure we get a consistent ordering
 	 * by comparing the unique SongFilePaths. */
-	return pSong1->GetSongFilePath().CompareNoCase(pSong2->GetSongFilePath()) < 0;
+	return CompareNoCase(pSong1->GetSongFilePath(), pSong2->GetSongFilePath()) < 0;
 }
 
 void SongUtil::SortSongPointerArrayByTitle( std::vector<Song*> &vpSongsInOut )
@@ -622,7 +622,7 @@ int SongUtil::CompareSongPointersByGroup(const Song *pSong1, const Song *pSong2)
 	s1 = SongUtil::MakeSortString(s1);
 	s2 = SongUtil::MakeSortString(s2);
 
-	int ret = strcmp( s1, s2 );
+	int ret = strcmp( s1.c_str(), s2.c_str() );
 	return ret < 0;
 }
 
@@ -654,7 +654,7 @@ static int CompareSongPointersByGroupAndTitle( const Song *pSong1, const Song *p
 	s1 = SongUtil::MakeSortString(s1);
 	s2 = SongUtil::MakeSortString(s2);
 
-	int ret = strcmp( s1, s2 );
+	int ret = strcmp( s1.c_str(), s2.c_str() );
 	return ret < 0;
 }
 
@@ -716,7 +716,7 @@ RString SongUtil::GetSectionNameFromSongAndSort( const Song* pSong, SortOrder so
 			else if( s[0] < 'A' || s[0] > 'Z')
 				return SORT_OTHER.GetValue();
 			else
-				return s.Left(1);
+				return Left(s, 1);
 		}
 	case SORT_GENRE:
 		if( !pSong->m_sGenre.empty() )
@@ -940,7 +940,7 @@ RString SongUtil::MakeUniqueEditDescription( const Song *pSong, StepsType st, co
 	{
 		// make name "My Edit" -> "My Edit2"
 		RString sNum = ssprintf("%d", i+1);
-		sTemp = sPreferredDescription.Left( MAX_STEPS_DESCRIPTION_LENGTH - sNum.size() ) + sNum;
+		sTemp = Left(sPreferredDescription, MAX_STEPS_DESCRIPTION_LENGTH - sNum.size()) + sNum;
 
 		if( IsEditDescriptionUnique(pSong, st, sTemp, nullptr) )
 			return sTemp;
@@ -970,9 +970,9 @@ bool SongUtil::ValidateCurrentEditStepsDescription( const RString &sAnswer, RStr
 	}
 
 	static const RString sInvalidChars = "\\/:*?\"<>|";
-	if( strpbrk(sAnswer, sInvalidChars) != nullptr )
+	if( strpbrk(sAnswer.c_str(), sInvalidChars.c_str()) != nullptr )
 	{
-		sErrorOut = ssprintf( EDIT_NAME_CANNOT_CONTAIN.GetValue(), sInvalidChars.c_str() );
+		sErrorOut = ssprintf( EDIT_NAME_CANNOT_CONTAIN.GetValue().c_str(), sInvalidChars.c_str() );
 		return false;
 	}
 
@@ -1020,9 +1020,9 @@ bool SongUtil::ValidateCurrentStepsChartName(const RString &answer, RString &err
 	if (answer.empty()) return true;
 
 	static const RString sInvalidChars = "\\/:*?\"<>|";
-	if( strpbrk(answer, sInvalidChars) != nullptr )
+	if( strpbrk(answer.c_str(), sInvalidChars.c_str()) != nullptr )
 	{
-		error = ssprintf( CHART_NAME_CANNOT_CONTAIN.GetValue(), sInvalidChars.c_str() );
+		error = ssprintf( CHART_NAME_CANNOT_CONTAIN.GetValue().c_str(), sInvalidChars.c_str() );
 		return false;
 	}
 
@@ -1054,9 +1054,9 @@ bool SongUtil::ValidateCurrentStepsCredit( const RString &sAnswer, RString &sErr
 
 	// Borrow from EditDescription testing. Perhaps this should be abstracted? -Wolfman2000
 	static const RString sInvalidChars = "\\/:*?\"<>|";
-	if( strpbrk(sAnswer, sInvalidChars) != nullptr )
+	if( strpbrk(sAnswer.c_str(), sInvalidChars.c_str()) != nullptr )
 	{
-		sErrorOut = ssprintf( AUTHOR_NAME_CANNOT_CONTAIN.GetValue(), sInvalidChars.c_str() );
+		sErrorOut = ssprintf( AUTHOR_NAME_CANNOT_CONTAIN.GetValue().c_str(), sInvalidChars.c_str() );
 		return false;
 	}
 
@@ -1076,7 +1076,7 @@ bool SongUtil::ValidateCurrentSongPreview(const RString& answer, RString& error)
 	song->m_PreviewFile= real_file;
 	if(!valid)
 	{
-		error= ssprintf(PREVIEW_DOES_NOT_EXIST.GetValue(), answer.c_str());
+		error= ssprintf(PREVIEW_DOES_NOT_EXIST.GetValue().c_str(), answer.c_str());
 	}
 	return valid;
 }
@@ -1094,7 +1094,7 @@ bool SongUtil::ValidateCurrentStepsMusic(const RString &answer, RString &error)
 	pSteps->SetMusicFile(real_file);
 	if(!valid)
 	{
-		error= ssprintf(MUSIC_DOES_NOT_EXIST.GetValue(), answer.c_str());
+		error= ssprintf(MUSIC_DOES_NOT_EXIST.GetValue().c_str(), answer.c_str());
 	}
 	return valid;
 }
@@ -1279,7 +1279,7 @@ void SongID::FromSong( const Song *p )
 
 	// HACK for backwards compatibility:
 	// Strip off leading "/".  2005/05/21 file layer changes added a leading slash.
-	if( sDir.Left(1) == "/" )
+	if( Left(sDir, 1) == "/" )
 		sDir.erase( sDir.begin() );
 }
 
@@ -1291,7 +1291,7 @@ Song *SongID::ToSong() const
 		// HACK for backwards compatibility: Re-add the leading "/".
 		// 2005/05/21 file layer changes added a leading slash.
 		RString sDir2 = sDir;
-		if(sDir2.Left(1) != "/")
+		if(Left(sDir2, 1) != "/")
 		{
 			sDir2 = "/" + sDir2;
 		}
@@ -1313,7 +1313,7 @@ void SongID::LoadFromNode( const XNode* pNode )
 	pNode->GetAttrValue("Dir", sDir);
 
 	// HACK for backwards compatibility: /AdditionalSongs has been merged into /Songs
-	if (sDir.Left(16) == "AdditionalSongs/")
+	if (Left(sDir, 16) == "AdditionalSongs/")
 		sDir.replace(0, 16, "Songs/");
 }
 

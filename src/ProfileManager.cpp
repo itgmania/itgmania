@@ -151,7 +151,7 @@ ProfileLoadResult ProfileManager::LoadProfile( PlayerNumber pn, RString sProfile
 	LOG->Trace( "LoadingProfile P%d, %s, %d", pn+1, sProfileDir.c_str(), bIsMemCard );
 
 	ASSERT( !sProfileDir.empty() );
-	ASSERT( sProfileDir.Right(1) == "/" );
+	ASSERT( Right(sProfileDir, 1) == "/" );
 
 
 	m_sProfileDir[pn] = sProfileDir;
@@ -548,7 +548,7 @@ void ProfileManager::LoadLocalProfilesByName()
 	if (PREFSMAN->m_bProfileSortOrderAscending) {
 		auto displayNameAscending = [](const DirAndProfile &a, const DirAndProfile &b)
 		{
-			return a.profile.m_sDisplayName.CompareNoCase(b.profile.m_sDisplayName) < 0;
+			return CompareNoCase(a.profile.m_sDisplayName, b.profile.m_sDisplayName) < 0;
 		};
 		std::sort(guestProfiles.begin(), guestProfiles.end(), displayNameAscending);
 		std::sort(normalProfiles.begin(), normalProfiles.end(), displayNameAscending);
@@ -556,7 +556,7 @@ void ProfileManager::LoadLocalProfilesByName()
 	} else {
 		auto displayNameDescending = [](const DirAndProfile &a, const DirAndProfile &b)
 		{
-			return a.profile.m_sDisplayName.CompareNoCase(b.profile.m_sDisplayName) > 0;
+			return CompareNoCase(a.profile.m_sDisplayName, b.profile.m_sDisplayName) > 0;
 		};
 		std::sort(guestProfiles.begin(), guestProfiles.end(), displayNameDescending);
 		std::sort(normalProfiles.begin(), normalProfiles.end(), displayNameDescending);
@@ -1348,21 +1348,21 @@ public:
 		{
 			luaL_error(L, "Profile index %d out of range.", index);
 		}
-		lua_pushstring(L, p->GetLocalProfileIDFromIndex(index) );
+		lua_pushstring(L, p->GetLocalProfileIDFromIndex(index).c_str() );
 		return 1;
 	}
 	static int GetLocalProfileIndexFromID( T* p, lua_State *L )	{ lua_pushnumber(L, p->GetLocalProfileIndexFromID(SArg(1)) ); return 1; }
 	static int GetNumLocalProfiles( T* p, lua_State *L )	{ lua_pushnumber(L, p->GetNumLocalProfiles() ); return 1; }
-	static int GetProfileDir( T* p, lua_State *L ) { lua_pushstring(L, p->GetProfileDir(Enum::Check<ProfileSlot>(L, 1)) ); return 1; }
+	static int GetProfileDir( T* p, lua_State *L ) { lua_pushstring(L, p->GetProfileDir(Enum::Check<ProfileSlot>(L, 1)).c_str() ); return 1; }
 	static int IsSongNew( T* p, lua_State *L )	{ lua_pushboolean(L, p->IsSongNew(Luna<Song>::check(L,1)) ); return 1; }
 	static int ProfileWasLoadedFromMemoryCard( T* p, lua_State *L )	{ lua_pushboolean(L, p->ProfileWasLoadedFromMemoryCard(Enum::Check<PlayerNumber>(L, 1)) ); return 1; }
 	static int LastLoadWasTamperedOrCorrupt( T* p, lua_State *L ) { lua_pushboolean(L, p->LastLoadWasTamperedOrCorrupt(Enum::Check<PlayerNumber>(L, 1)) ); return 1; }
-	static int GetPlayerName( T* p, lua_State *L )				{ PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1); lua_pushstring(L, p->GetPlayerName(pn)); return 1; }
+	static int GetPlayerName( T* p, lua_State *L )				{ PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1); lua_pushstring(L, p->GetPlayerName(pn).c_str()); return 1; }
 
 	static int LocalProfileIDToDir( T* , lua_State *L )
 	{
 		RString dir = USER_PROFILES_DIR + SArg(1) + "/";
-		lua_pushstring( L, dir );
+		lua_pushstring( L, dir.c_str() );
 		return 1;
 	}
 	static int SaveProfile( T* p, lua_State *L ) { lua_pushboolean( L, p->SaveProfile(Enum::Check<PlayerNumber>(L, 1)) ); return 1; }

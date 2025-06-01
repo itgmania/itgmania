@@ -120,7 +120,7 @@ public:
 		return m_defaultValue;
 	}
 
-	operator const T () const
+	operator const T &() const
 	{
 		return Get();
 	}

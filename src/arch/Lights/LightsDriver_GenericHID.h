@@ -11,45 +11,45 @@
 class USBContext
 {
 public:
-    static USBContext& getInstance()
-    {
-        static USBContext instance;
-        return instance;
-    }
+	static USBContext& getInstance()
+	{
+		static USBContext instance;
+		return instance;
+	}
 
-    libusb_context* getContext() { return context; }
+	libusb_context* getContext() { return context; }
 
 private:
-    USBContext()
-    {
-        int result = libusb_init_context(&context, NULL, 0);
-        if (result < 0)
-        {
-            // initialization error
-            context = nullptr;
-        }
-    }
+	USBContext()
+	{
+		int result = libusb_init_context(&context, NULL, 0);
+		if (result < 0)
+		{
+			// initialization error
+			context = nullptr;
+		}
+	}
 
-    ~USBContext()
-    {
-        if (context)
-        {
-            libusb_exit(context);
-        }
-    }
+	~USBContext()
+	{
+		if (context)
+		{
+			libusb_exit(context);
+		}
+	}
 
-    libusb_context* context;
+	libusb_context* context;
 
-    // prevent copying
-    USBContext(const USBContext&) = delete;
-    USBContext& operator=(const USBContext&) = delete;
+	// prevent copying
+	USBContext(const USBContext&) = delete;
+	USBContext& operator=(const USBContext&) = delete;
 };
 
-class LightsDriver_LinuxPacDrive: public LightsDriver
+class LightsDriver_GenericHID: public LightsDriver
 {
 public:
-	LightsDriver_LinuxPacDrive();
-	~LightsDriver_LinuxPacDrive();
+	LightsDriver_GenericHID();
+	~LightsDriver_GenericHID();
 
 	void Set( const LightsState *ls );
 private:
@@ -59,6 +59,7 @@ private:
 	void CloseDevice();
 
 	libusb_device_handle *DeviceHandle;
+	int iLightsOrder;
 };
 
 #endif // LIGHTSDRIVER_LINUXPACDRIVE_H

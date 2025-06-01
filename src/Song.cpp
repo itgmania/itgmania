@@ -289,7 +289,7 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 	ASSERT_M( sDir != "", "Songs can't be loaded from an empty directory!" );
 
 	// make sure there is a trailing slash at the end of sDir
-	if( sDir.Right(1) != "/" )
+	if( Right(sDir, 1) != "/" )
 		sDir += "/";
 
 	// save song dir
@@ -665,7 +665,7 @@ void FixupPath( RString &path, const RString &sSongPath )
 void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 {
 	// We need to do this before calling any of HasMusic, HasHasCDTitle, etc.
-	ASSERT_M(m_sSongDir.Left(3) != "../", m_sSongDir); // meaningless
+	ASSERT_M(Left(m_sSongDir, 3) != "../", m_sSongDir); // meaningless
 	FixupPath(m_sSongDir, "");
 	FixupPath(m_sMusicFile, m_sSongDir);
 	FOREACH_ENUM(InstrumentTrack, i)
@@ -773,7 +773,7 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 				filename != song_dir_listing.end(); ++filename)
 		{
 			bool matched_something= false;
-			RString file_ext= GetExtension(*filename).MakeLower();
+			RString file_ext= MakeLower(GetExtension(*filename));
 			if(!file_ext.empty())
 			{
 				for(size_t tf= 0; tf < lists_to_fill.size(); ++ tf)
@@ -807,7 +807,7 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 				m_bHasMusic= true;
 				m_sMusicFile= music_list[0];
 				if(music_list.size() > 1 &&
-					!m_sMusicFile.Left(5).CompareNoCase("intro"))
+					!CompareNoCase(Left(m_sMusicFile, 5), "intro"))
 				{
 					m_sMusicFile= music_list[1];
 				}
@@ -1012,28 +1012,28 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 
 				// ignore DWI "-char" graphics
 				RString lower = image_list[i];
-				lower.MakeLower();
+				MakeLower(lower);
 				if(BlacklistedImages.find(lower) != BlacklistedImages.end())
 				continue;	// skip
 
 				// Skip any image that we've already classified
 
-				if(m_bHasBanner && m_sBannerFile.EqualsNoCase(image_list[i]))
+				if(m_bHasBanner && EqualsNoCase(m_sBannerFile, image_list[i]))
 				continue;	// skip
 
-				if(m_bHasBackground && m_sBackgroundFile.EqualsNoCase(image_list[i]))
+				if(m_bHasBackground && EqualsNoCase(m_sBackgroundFile, image_list[i]))
 				continue;	// skip
 
-				if(has_cdtitle && m_sCDTitleFile.EqualsNoCase(image_list[i]))
+				if(has_cdtitle && EqualsNoCase(m_sCDTitleFile, image_list[i]))
 				continue;	// skip
 
-				if(has_jacket && m_sJacketFile.EqualsNoCase(image_list[i]))
+				if(has_jacket && EqualsNoCase(m_sJacketFile, image_list[i]))
 				continue;	// skip
 
-				if(has_disc && m_sDiscFile.EqualsNoCase(image_list[i]))
+				if(has_disc && EqualsNoCase(m_sDiscFile, image_list[i]))
 				continue;	// skip
 
-				if(has_cdimage && m_sCDFile.EqualsNoCase(image_list[i]))
+				if(has_cdimage && EqualsNoCase(m_sCDFile, image_list[i]))
 				continue;	// skip
 
 				RString sPath = m_sSongDir + image_list[i];
@@ -1711,7 +1711,7 @@ RString Song::GetCacheFile(RString sType)
 	PreDefs["Disc"] = GetDiscPath();
 
 	// Check if Predefined images exist, And return function if they do.
-	if(PreDefs[sType.c_str()])
+	if(PreDefs[sType.c_str()].c_str())
 		return PreDefs[sType.c_str()];
 
 	// Get all image files and put them into a vector.
@@ -1767,27 +1767,21 @@ RString Song::GetCacheFile(RString sType)
 
 RString Song::GetFileHash()
 {
+	static const std::vector<RString> extensions = {
+		"ssc", "sm", "dwi", "sma", "bms", "ksf", "json", "jso"
+	};
+
 	if (m_sFileHash.empty()) {
-		RString sPath = SetExtension(GetSongFilePath(), "sm");
-		if (!IsAFile(sPath))
-			sPath = SetExtension(GetSongFilePath(), "dwi");
-		if (!IsAFile(sPath))
-			sPath = SetExtension(GetSongFilePath(), "sma");
-		if (!IsAFile(sPath))
-			sPath = SetExtension(GetSongFilePath(), "bms");
-		if (!IsAFile(sPath))
-			sPath = SetExtension(GetSongFilePath(), "ksf");
-		if (!IsAFile(sPath))
-			sPath = SetExtension(GetSongFilePath(), "json");
-		if (!IsAFile(sPath))
-			sPath = SetExtension(GetSongFilePath(), "jso");
-		if (!IsAFile(sPath))
-			sPath = SetExtension(GetSongFilePath(), "ssc");
-		if (IsAFile(sPath))
-			m_sFileHash = BinaryToHex(CRYPTMAN->GetSHA1ForFile(sPath));
-		else
-			m_sFileHash = "";
+		for (const RString& ext : extensions) {
+			RString sPath = SetExtension(GetSongFilePath(), ext);
+			if (IsAFile(sPath)) {
+				m_sFileHash = BinaryToHex(CRYPTMAN->GetSHA1ForFile(sPath));
+				return m_sFileHash;
+			}
+		}
 	}
+
+	m_sFileHash = "";
 	return m_sFileHash;
 }
 
@@ -1821,7 +1815,7 @@ RString Song::GetSongAssetPath( RString sPath, const RString &sSongPath )
 		return sRelPath;
 
 	// The song contains a path; treat it as relative to the top SM directory.
-	if( sPath.Left(3) == "../" )
+	if( Left(sPath, 3) == "../" )
 	{
 		// The path begins with "../".  Resolve it wrt. the song directory.
 		sPath = sRelPath;
@@ -1831,7 +1825,7 @@ RString Song::GetSongAssetPath( RString sPath, const RString &sSongPath )
 
 	/* If the path still begins with "../", then there were an unreasonable number
 	 * of them at the beginning of the path. Ignore the path entirely. */
-	if( sPath.Left(3) == "../" )
+	if( Left(sPath, 3) == "../" )
 		return RString();
 
 	return sPath;
@@ -2002,13 +1996,13 @@ void Song::DeleteSteps( const Steps* pSteps, bool bReAutoGen )
 
 bool Song::Matches(RString sGroup, RString sSong) const
 {
-	if( sGroup.size() && sGroup.CompareNoCase(this->m_sGroupName) != 0)
+	if( sGroup.size() && CompareNoCase(sGroup, this->m_sGroupName) != 0)
 		return false;
 
 	// match on song dir or title (ala DWI)
-	if( !sSong.CompareNoCase(m_sSongName) )
+	if( !CompareNoCase(sSong, m_sSongName) )
 		return true;
-	if( !sSong.CompareNoCase(this->GetTranslitFullTitle()) )
+	if( !CompareNoCase(sSong, this->GetTranslitFullTitle()) )
 		return true;
 
 	return false;
@@ -2142,47 +2136,47 @@ class LunaSong: public Luna<Song>
 public:
 	static int GetDisplayFullTitle( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetDisplayFullTitle() ); return 1;
+		lua_pushstring(L, p->GetDisplayFullTitle().c_str() ); return 1;
 	}
 	static int GetTranslitFullTitle( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetTranslitFullTitle() ); return 1;
+		lua_pushstring(L, p->GetTranslitFullTitle().c_str() ); return 1;
 	}
 	static int GetDisplayMainTitle( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetDisplayMainTitle() ); return 1;
+		lua_pushstring(L, p->GetDisplayMainTitle().c_str() ); return 1;
 	}
 	static int GetMainTitle(T* p, lua_State* L)
 	{
-		lua_pushstring(L, p->GetMainTitle()); return 1;
+		lua_pushstring(L, p->GetMainTitle().c_str()); return 1;
 	}
 	static int GetTranslitMainTitle( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetTranslitMainTitle() ); return 1;
+		lua_pushstring(L, p->GetTranslitMainTitle().c_str() ); return 1;
 	}
 	static int GetDisplaySubTitle( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetDisplaySubTitle() ); return 1;
+		lua_pushstring(L, p->GetDisplaySubTitle().c_str() ); return 1;
 	}
 	static int GetTranslitSubTitle( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetTranslitSubTitle() ); return 1;
+		lua_pushstring(L, p->GetTranslitSubTitle().c_str() ); return 1;
 	}
 	static int GetDisplayArtist( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetDisplayArtist() ); return 1;
+		lua_pushstring(L, p->GetDisplayArtist().c_str() ); return 1;
 	}
 	static int GetTranslitArtist( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetTranslitArtist() ); return 1;
+		lua_pushstring(L, p->GetTranslitArtist().c_str() ); return 1;
 	}
 	static int GetGenre( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->m_sGenre ); return 1;
+		lua_pushstring(L, p->m_sGenre.c_str() ); return 1;
 	}
 	static int GetOrigin( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->m_sOrigin ); return 1;
+		lua_pushstring(L, p->m_sOrigin.c_str() ); return 1;
 	}
 	static int GetAllSteps( T* p, lua_State *L )
 	{
@@ -2199,14 +2193,14 @@ public:
 	}
 	static int GetSongDir( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetSongDir() );
+		lua_pushstring(L, p->GetSongDir().c_str() );
 		return 1;
 	}
 	static int GetMusicPath( T* p, lua_State *L )
 	{
 		RString s = p->GetMusicPath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2215,7 +2209,7 @@ public:
 	{
 		RString s = p->GetBannerPath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2224,7 +2218,7 @@ public:
 	{
 		RString s = p->GetBackgroundPath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2233,7 +2227,7 @@ public:
 	{
 		RString s = p->GetPreviewVidPath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2241,14 +2235,14 @@ public:
 	static int GetPreviewMusicPath(T* p, lua_State* L)
 	{
 		RString s= p->GetPreviewMusicPath();
-		lua_pushstring(L, s);
+		lua_pushstring(L, s.c_str());
 		return 1;
 	}
 	static int GetJacketPath( T* p, lua_State *L )
 	{
 		RString s = p->GetJacketPath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2257,7 +2251,7 @@ public:
 	{
 		RString s = p->GetCDImagePath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2266,7 +2260,7 @@ public:
 	{
 		RString s = p->GetDiscPath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2275,7 +2269,7 @@ public:
 	{
 		RString s = p->GetCDTitlePath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
@@ -2284,14 +2278,14 @@ public:
 	{
 		RString s = p->GetLyricsPath();
 		if( !s.empty() )
-			lua_pushstring(L, s);
+			lua_pushstring(L, s.c_str());
 		else
 			lua_pushnil(L);
 		return 1;
 	}
 	static int GetSongFilePath(  T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->GetSongFilePath() );
+		lua_pushstring(L, p->GetSongFilePath().c_str() );
 		return 1;
 	}
 	static int IsTutorial( T* p, lua_State *L )
@@ -2311,7 +2305,7 @@ public:
 	}
 	static int GetGroupName( T* p, lua_State *L )
 	{
-		lua_pushstring(L, p->m_sGroupName);
+		lua_pushstring(L, p->m_sGroupName.c_str());
 		return 1;
 	}
 

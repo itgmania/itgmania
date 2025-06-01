@@ -192,7 +192,7 @@ static void GameSel( int &sel, bool ToSel, const ConfOption *pConfOption )
 
 		sel = 0;
 		for(unsigned i = 0; i < choices.size(); ++i)
-			if( !strcasecmp(choices[i], sCurGameName) )
+			if( !strcasecmp(choices[i].c_str(), sCurGameName.c_str()) )
 				sel = i;
 	} else {
 		std::vector<const Game*> aGames;
@@ -227,12 +227,12 @@ static void Language( int &sel, bool ToSel, const ConfOption *pConfOption )
 	{
 		sel = -1;
 		for( unsigned i=0; sel == -1 && i < vs.size(); ++i )
-			if( !strcasecmp(vs[i], THEME->GetCurLanguage()) )
+			if( !strcasecmp(vs[i].c_str(), THEME->GetCurLanguage().c_str()) )
 				sel = i;
 
 		// If the current language doesn't exist, we'll show BASE_LANGUAGE, so select that.
 		for( unsigned i=0; sel == -1 && i < vs.size(); ++i )
-			if( !strcasecmp(vs[i], SpecialFiles::BASE_LANGUAGE) )
+			if( !strcasecmp(vs[i].c_str(), SpecialFiles::BASE_LANGUAGE.c_str()) )
 				sel = i;
 
 		if( sel == -1 )
@@ -291,7 +291,7 @@ static void RequestedTheme( int &sel, bool ToSel, const ConfOption *pConfOption 
 	{
 		sel = 0;
 		for( unsigned i=1; i<vsThemeNames.size(); i++ )
-			if( !strcasecmp(vsThemeNames[i], PREFSMAN->m_sTheme.Get()) )
+			if( !strcasecmp(vsThemeNames[i].c_str(), PREFSMAN->m_sTheme.Get().c_str()) )
 				sel = i;
 	}
 	else
@@ -317,7 +317,7 @@ static void Announcer( int &sel, bool ToSel, const ConfOption *pConfOption )
 	{
 		sel = 0;
 		for( unsigned i=1; i<choices.size(); i++ )
-			if( !strcasecmp(choices[i], ANNOUNCER->GetCurAnnouncerName()) )
+			if( !strcasecmp(choices[i].c_str(), ANNOUNCER->GetCurAnnouncerName().c_str()) )
 				sel = i;
 	}
 	else
@@ -344,7 +344,7 @@ static void DefaultNoteSkin( int &sel, bool ToSel, const ConfOption *pConfOption
 		po.FromString( PREFSMAN->m_sDefaultModifiers );
 		sel = 0;
 		for( unsigned i=0; i < choices.size(); i++ )
-			if( !strcasecmp(choices[i], po.m_sNoteSkin) )
+			if( !strcasecmp(choices[i].c_str(), po.m_sNoteSkin.c_str()) )
 				sel = i;
 	}
 	else
@@ -695,6 +695,12 @@ static void SoundVolumeAttract( int &sel, bool ToSel, const ConfOption *pConfOpt
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
+static void PreferredSampleRate( int &sel, bool ToSel, const ConfOption *pConfOption )
+{
+	const int mapping[] = { 0, 44100, 48000 };
+	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
+}
+
 static void VisualDelaySeconds( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
 	const float mapping[] = { -0.125f,-0.1f,-0.075f,-0.05f,-0.025f,0.0f,0.025f,0.05f,0.075f,0.1f,0.125f };
@@ -879,7 +885,7 @@ static void InitializeConfOptions()
 	ADD( ConfOption( "DefaultFailType", DefaultFailType, DefaultFailChoices ) );
 	ADD( ConfOption( "CoinsPerCredit",		CoinsPerCredit,		"|1","|2","|3","|4","|5","|6","|7","|8","|9","|10","|11","|12","|13","|14","|15","|16" ) );
 	ADD( ConfOption( "MaxNumCredits",		MaxNumCredits,		"|20","|40","|60","|80","|100" ) );
-
+	ADD( ConfOption( "ResetCoinsAtStartup", MovePref<bool>, "No", "Yes"));
 	ADD( ConfOption( "Premium",			MovePref<Premium>,	"Off","Double for 1 Credit","2 Players for 1 Credit" ) );
 	ADD( ConfOption( "JointPremium",		JointPremium,		"Off","2 Players for 1 Credit" ) );
 	g_ConfOptions.back().m_sPrefName = "Premium";
@@ -935,6 +941,8 @@ static void InitializeConfOptions()
 	ADD( ConfOption( "SoundVolume",			SoundVolume,		"Silent","|10%","|20%","|30%","|40%","|50%","|60%","|70%","|80%","|90%","|100%" ) );
 	g_ConfOptions.back().m_iEffects = OPT_APPLY_SOUND;
 	ADD( ConfOption( "SoundVolumeAttract",		SoundVolumeAttract,	"Silent","|10%","|20%","|30%","|40%","|50%","|60%","|70%","|80%","|90%","|100%" ) );
+	ADD( ConfOption( "PreferredSampleRate", PreferredSampleRate, "Default", "44100 Hz", "48000 Hz" ) );
+	g_ConfOptions.back().m_sPrefName = "SoundPreferredSampleRate";
 	ADD( ConfOption( "VisualDelaySeconds",		VisualDelaySeconds,	"|-5","|-4","|-3","|-2","|-1","|0","|+1","|+2","|+3","|+4","|+5" ) );
 	{
 		ConfOption c( "GlobalOffsetSeconds",		GlobalOffsetSeconds );
@@ -968,7 +976,7 @@ ConfOption *ConfOption::Find( RString name )
 	{
 		ConfOption *opt = &g_ConfOptions[i];
 		RString match(opt->name);
-		if( match.CompareNoCase(name) )
+		if( CompareNoCase(match, name) )
 			continue;
 		return opt;
 	}

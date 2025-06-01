@@ -141,9 +141,9 @@ void Actor::InitState()
 
 static bool GetMessageNameFromCommandName( const RString &sCommandName, RString &sMessageNameOut )
 {
-	if( sCommandName.Right(7) == "Message" )
+	if( Right(sCommandName, 7) == "Message" )
 	{
-		sMessageNameOut = sCommandName.Left(sCommandName.size()-7);
+		sMessageNameOut = Left(sCommandName, sCommandName.size()-7);
 		return true;
 	}
 	else
@@ -193,6 +193,7 @@ Actor::Actor( const Actor &cpy ):
 
 #define CPY(x) x = cpy.x
 	CPY( m_sName );
+	CPY(alias_);
 	CPY( m_pParent );
 	CPY( m_FakeParent );
 	CPY( m_pLuaInstance );
@@ -272,6 +273,7 @@ Actor &Actor::operator=(Actor other)
 	using std::swap;
 #define SWAP(x) swap(x, other.x)
 	SWAP( m_sName );
+	SWAP(alias_);
 	SWAP( m_pParent );
 	SWAP( m_FakeParent );
 	SWAP( m_pLuaInstance );
@@ -336,6 +338,14 @@ Actor &Actor::operator=(Actor other)
 	return *this;
 }
 
+
+bool Actor::IsAlias(const std::string& name) {
+	if (alias_.empty()) {
+		return false;
+	}
+	return name == alias_;
+}
+
 /* XXX: This calls InitCommand, which must happen after all other
  * initialization (eg. ActorFrame loading children).  However, it
  * also loads input variables, which should happen first.  The
@@ -353,7 +363,7 @@ void Actor::LoadFromNode( const XNode* pNode )
 			LuaReference *pRef = new LuaReference;
 			pValue->PushValue( L );
 			pRef->SetFromStack( L );
-			RString sCmdName = sKeyName.Left( sKeyName.size()-7 );
+			RString sCmdName = Left(sKeyName, sKeyName.size()-7);
 			AddCommand( sCmdName, apActorCommands( pRef ) );
 		}
 		else if( sKeyName == "Name" )			SetName( pValue->GetValue<RString>() );
@@ -857,7 +867,7 @@ void Actor::UpdateTweening(float fDeltaTime)
 			// access TI or TS after, since this may modify the tweening queue.
 			if (!sCommand.empty())
 			{
-				if (sCommand.Left(1) == "!")
+				if (Left(sCommand, 1) == "!")
 					MESSAGEMAN->Broadcast(sCommand.substr(1));
 				else
 					this->PlayCommand(sCommand);
@@ -1108,13 +1118,13 @@ void Actor::ScaleTo( const RectF &rect, StretchType st )
 
 void Actor::SetEffectClockString( const RString &s )
 {
-	if     (s.EqualsNoCase("timer"))	this->SetEffectClock( CLOCK_TIMER );
-	else if(s.EqualsNoCase("timerglobal"))	this->SetEffectClock( CLOCK_TIMER_GLOBAL );
-	else if(s.EqualsNoCase("beat"))		this->SetEffectClock( CLOCK_BGM_BEAT );
-	else if(s.EqualsNoCase("music"))	this->SetEffectClock( CLOCK_BGM_TIME );
-	else if(s.EqualsNoCase("bgm"))		this->SetEffectClock( CLOCK_BGM_BEAT ); // compat, deprecated
-	else if(s.EqualsNoCase("musicnooffset"))this->SetEffectClock( CLOCK_BGM_TIME_NO_OFFSET );
-	else if(s.EqualsNoCase("beatnooffset"))	this->SetEffectClock( CLOCK_BGM_BEAT_NO_OFFSET );
+	if     (EqualsNoCase(s, "timer"))	this->SetEffectClock( CLOCK_TIMER );
+	else if(EqualsNoCase(s, "timerglobal"))	this->SetEffectClock( CLOCK_TIMER_GLOBAL );
+	else if(EqualsNoCase(s, "beat"))		this->SetEffectClock( CLOCK_BGM_BEAT );
+	else if(EqualsNoCase(s, "music"))	this->SetEffectClock( CLOCK_BGM_TIME );
+	else if(EqualsNoCase(s, "bgm"))		this->SetEffectClock( CLOCK_BGM_BEAT ); // compat, deprecated
+	else if(EqualsNoCase(s, "musicnooffset"))this->SetEffectClock( CLOCK_BGM_TIME_NO_OFFSET );
+	else if(EqualsNoCase(s, "beatnooffset"))	this->SetEffectClock( CLOCK_BGM_BEAT_NO_OFFSET );
 	else
 	{
 		CabinetLight cl = StringToCabinetLight( s );
@@ -1445,22 +1455,20 @@ void Actor::TweenState::Init()
 	aux = 0;
 }
 
-bool Actor::TweenState::operator==( const TweenState &other ) const
-{
-#define COMPARE( x )	if( x != other.x ) return false;
-	COMPARE( pos );
-	COMPARE( rotation );
-	COMPARE( quat );
-	COMPARE( scale );
-	COMPARE( fSkewX );
-	COMPARE( fSkewY );
-	COMPARE( crop );
-	COMPARE( fade );
-	for( unsigned i=0; i<ARRAYLEN(diffuse); i++ )
-		COMPARE( diffuse[i] );
-	COMPARE( glow );
-	COMPARE( aux );
-#undef COMPARE
+bool Actor::TweenState::operator==(const TweenState& other) const {
+	if (pos != other.pos) return false;
+	if (rotation != other.rotation) return false;
+	if (quat != other.quat) return false;
+	if (scale != other.scale) return false;
+	if (fSkewX != other.fSkewX) return false;
+	if (fSkewY != other.fSkewY) return false;
+	if (crop != other.crop) return false;
+	if (fade != other.fade) return false;
+	for (unsigned i = 0; i < ARRAYLEN(diffuse); i++) {
+		if (diffuse[i] != other.diffuse[i]) return false;
+	}
+	if (glow != other.glow) return false;
+	if (aux != other.aux) return false;
 	return true;
 }
 
@@ -1933,7 +1941,7 @@ public:
 	static int GetHAlign( T* p, lua_State *L )	{ lua_pushnumber( L, p->GetHorizAlign() ); return 1; }
 	static int GetVAlign( T* p, lua_State *L )	{ lua_pushnumber( L, p->GetVertAlign() ); return 1; }
 
-	static int GetName( T* p, lua_State *L )		{ lua_pushstring( L, p->GetName() ); return 1; }
+	static int GetName( T* p, lua_State *L )		{ lua_pushstring( L, p->GetName().c_str() ); return 1; }
 	static int GetParent( T* p, lua_State *L )
 	{
 		Actor *pParent = p->GetParent();

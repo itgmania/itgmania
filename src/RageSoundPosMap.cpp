@@ -158,7 +158,7 @@ int64_t pos_map_queue::Search( int64_t iSourceFrame ) const
 	 * 3. Underflow; we'll be given a larger frame number than we know about.
 	 */
 	static RageTimer last;
-	if( last.PeekDeltaTime() >= 1.0f )
+	if( last.Ago() >= 1.0f )
 	{
 		last.Touch();
 		LOG->Trace("Audio frame (%" PRId64 ") was out of range of the data sent - possible buffer underflow? This is not always an error, however if you see it frequently there could be sound buffer problems.", iSourceFrame);

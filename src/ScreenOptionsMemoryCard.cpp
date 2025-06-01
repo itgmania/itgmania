@@ -215,7 +215,7 @@ void ScreenOptionsMemoryCard::ProcessMenuStart( const InputEventPlus & )
 		}
 		else
 		{
-			RString s = ssprintf(ERROR_MOUNTING_CARD.GetValue(), MEMCARDMAN->GetCardError(PLAYER_1).c_str() );
+			RString s = ssprintf(ERROR_MOUNTING_CARD.GetValue().c_str(), MEMCARDMAN->GetCardError(PLAYER_1).c_str() );
 			ScreenPrompt::Prompt( SM_None, s );
 		}
 	}

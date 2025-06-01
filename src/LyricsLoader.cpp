@@ -70,7 +70,7 @@ bool LyricsLoader::LoadFromLRCFile(const RString& sPath, Song& out)
 		StripCrnl(sValueData);
 
 		// handle the data
-		if( sValueName.EqualsNoCase("COLOUR") || sValueName.EqualsNoCase("COLOR") )
+		if( EqualsNoCase(sValueName, "COLOUR") || EqualsNoCase(sValueName, "COLOR") )
 		{
 			// set color var here for this segment
 			unsigned int r, g, b;
@@ -102,7 +102,7 @@ bool LyricsLoader::LoadFromLRCFile(const RString& sPath, Song& out)
 			seg.m_fStartTime = HHMMSSToSeconds(sValueName);
 			seg.m_sLyric = sValueData;
 
-			seg.m_sLyric.Replace( "|","\n" ); // Pipe symbols denote a new line in LRC files
+			Replace(seg.m_sLyric, "|", "\n"); // Pipe symbols denote a new line in LRC files
 			out.AddLyricSegment( seg );
 		}
 	}
