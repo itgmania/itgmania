@@ -535,7 +535,7 @@ RString MovieDecoder_FFMpeg::Open(RString file)
 		return error;
 	}
 
-	av_buffer_ = (unsigned char*)(avcodec::av_malloc(kFFMpegBufferSize));
+	av_buffer_ = static_cast<unsigned char*>(avcodec::av_malloc(kFFMpegBufferSize));
 	av_io_context_ = avcodec::avio_alloc_context(av_buffer_, kFFMpegBufferSize, 0, f, AVIORageFile_ReadPacket, nullptr, AVIORageFile_Seek);
 
 	av_format_context_->pb = av_io_context_;
