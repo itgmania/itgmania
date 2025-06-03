@@ -535,8 +535,9 @@ RString MovieDecoder_FFMpeg::Open(RString file)
 		return error;
 	}
 
-	av_buffer_ = (unsigned char*)avcodec::av_malloc(STEPMANIA_FFMPEG_BUFFER_SIZE);
-	av_io_context_ = avcodec::avio_alloc_context(av_buffer_, STEPMANIA_FFMPEG_BUFFER_SIZE, 0, f, AVIORageFile_ReadPacket, nullptr, AVIORageFile_Seek);
+	av_buffer_ = (unsigned char*)(avcodec::av_malloc(kFFMpegBufferSize));
+	av_io_context_ = avcodec::avio_alloc_context(av_buffer_, kFFMpegBufferSize, 0, f, AVIORageFile_ReadPacket, nullptr, AVIORageFile_Seek);
+
 	av_format_context_->pb = av_io_context_;
 	int ret = avcodec::avformat_open_input(&av_format_context_, file.c_str(), nullptr, nullptr);
 	if (ret < 0)
