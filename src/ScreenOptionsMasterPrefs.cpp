@@ -649,7 +649,7 @@ static void MovieColorDepth( int &sel, bool ToSel, const ConfOption *pConfOption
 
 static void RefreshRate( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
-	const int mapping[] = { (int) REFRESH_DEFAULT,60,70,72,75,80,85,90,100,120,150 };
+	const int mapping[] = { (int) REFRESH_DEFAULT,60,75,85,100,120,144,165,180,240,360 };
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
@@ -928,7 +928,7 @@ static void InitializeConfOptions()
 	ADD( ConfOption( "CelShadeModels",		MovePref<bool>,		"Off","On" ) );
 	ADD( ConfOption( "SmoothLines",			MovePref<bool>,		"Off","On" ) );
 	g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
-	ADD( ConfOption( "RefreshRate",			RefreshRate,		"Default","|60","|70","|72","|75","|80","|85","|90","|100","|120","|150" ) );
+	ADD( ConfOption( "RefreshRate",			RefreshRate,		"Default","|60","|75","|85","|100","|120","|144","|165","|180","|240","|360" ) );
 	g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
 	ADD( ConfOption( "Vsync",			MovePref<bool>,		"No", "Yes" ) );
 	g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
