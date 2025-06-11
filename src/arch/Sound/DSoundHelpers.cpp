@@ -70,7 +70,7 @@ void DSound::SetPrimaryBufferMode()
 		preferredSampleRate = kFallbackSampleRate;
 	}
 	waveformat.nSamplesPerSec = preferredSampleRate;
-	waveformat.nBlockAlign = 4;
+	waveformat.nBlockAlign = (waveformat.nChannels * waveformat.wBitsPerSample) / 8;
 	waveformat.nAvgBytesPerSec = waveformat.nSamplesPerSec * waveformat.nBlockAlign;
 
 	// Set the primary buffer's format
