@@ -189,7 +189,7 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 	m_iExtraWriteahead = 0;
 	m_iLastPosition = 0;
 	m_bPlaying = false;
-	ZERO( m_iLastCursors );
+	memset( &(m_iLastCursors), 0, sizeof(m_iLastCursors) );
 
 	/* The size of the actual DSound buffer.  This can be large; we generally
 	 * won't fill it completely. */
