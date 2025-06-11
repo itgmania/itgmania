@@ -663,6 +663,7 @@ bool RageFileManager::DeleteRecursive( const RString &sPath )
 
 void RageFileManager::CreateDir( const RString &sDir )
 {
+	if (DoesFileExist(sDir)) return;
 	RString sTempFile = sDir + "newdir.temp.newdir";
 	RageFile f;
 	f.Open( sTempFile, RageFile::WRITE );
