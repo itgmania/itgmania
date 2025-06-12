@@ -232,10 +232,12 @@ static void AdjustVideoModeParams( VideoModeParams &p )
  * The refresh setting may be ignored. */
 RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 {
+	const DWORD displaySettingsFlag = p.windowed ? CDS_RESET : CDS_FULLSCREEN;
+	
 	if( p.windowed )
 	{
 		// We're going windowed. If we were previously fullscreen, reset.
-		ChangeDisplaySettingsEx( p.sDisplayId.c_str(), nullptr, nullptr, 0, nullptr );
+		ChangeDisplaySettingsEx( p.sDisplayId.c_str(), nullptr, nullptr, displaySettingsFlag, nullptr );
 
 		return RString();
 	}
@@ -243,6 +245,14 @@ RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 	DEVMODE DevMode;
 	ZERO( DevMode );
 	DevMode.dmSize = sizeof(DEVMODE);
+
+	// Run DevMode thru EnumDisplaySettings to ensure we only provide modes supported by the display driver.
+	if( !EnumDisplaySettings(p.sDisplayId.c_str(), ENUM_CURRENT_SETTINGS, &DevMode) )
+	{
+		LOG->Warn("EnumDisplaySettings failed for display: %s", p.sDisplayId.c_str());
+		return "Failed to retrieve current display settings.";
+	}
+	
 	DevMode.dmPelsWidth = p.width;
 	DevMode.dmPelsHeight = p.height;
 	DevMode.dmBitsPerPel = p.bpp;
@@ -253,13 +263,12 @@ RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 		DevMode.dmDisplayFrequency = p.rate;
 		DevMode.dmFields |= DM_DISPLAYFREQUENCY;
 	}
-	ChangeDisplaySettingsEx(p.sDisplayId.c_str(), nullptr, nullptr, 0, nullptr);
 
-	int ret = ChangeDisplaySettingsEx( p.sDisplayId.c_str(), &DevMode, nullptr, CDS_FULLSCREEN, nullptr );
+	int ret = ChangeDisplaySettingsEx( p.sDisplayId.c_str(), &DevMode, nullptr, displaySettingsFlag, nullptr );
 	if( ret != DISP_CHANGE_SUCCESSFUL && (DevMode.dmFields & DM_DISPLAYFREQUENCY) )
 	{
 		DevMode.dmFields &= ~DM_DISPLAYFREQUENCY;
-		ret = ChangeDisplaySettingsEx( p.sDisplayId.c_str(), &DevMode, nullptr, CDS_FULLSCREEN, nullptr );
+		ret = ChangeDisplaySettingsEx( p.sDisplayId.c_str(), &DevMode, nullptr, displaySettingsFlag, nullptr );
 	}
 
 	// XXX: append error
