@@ -15,6 +15,8 @@
 #include "DirectXHelpers.h"
 #include "PrefsManager.h"
 
+#include <windows.h>
+#include <string>
 #include <set>
 
 static const RString g_sClassName = PRODUCT_ID;
