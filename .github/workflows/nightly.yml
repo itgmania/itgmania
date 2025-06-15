@@ -10,6 +10,9 @@ name: Nightly release
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      attestations: write
     strategy:
       fail-fast: false
       matrix:
@@ -71,8 +74,13 @@ jobs:
       - name: Create nightly release
         run: ${{ matrix.release }}
       - name: Upload artifacts
+        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: ITGmania-${{ github.sha }}-${{ matrix.name }}
           path: ${{ matrix.path }}
           compression-level: 0
+      - uses: actions/attest-build-provenance@v2
+          with:
+            subject-name: ITGmania-${{ github.sha }}-${{ matrix.name }}
+            subject-digest: sha256:${{ steps.upload.outputs.artifact-digest }}
