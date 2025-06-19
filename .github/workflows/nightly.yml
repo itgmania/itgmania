@@ -81,6 +81,6 @@ jobs:
           path: ${{ matrix.path }}
           compression-level: 0
       - uses: actions/attest-build-provenance@v2
-          with:
-            subject-name: ITGmania-${{ github.sha }}-${{ matrix.name }}
-            subject-digest: sha256:${{ steps.upload.outputs.artifact-digest }}
+        with:
+          subject-name: ITGmania-${{ github.sha }}-${{ matrix.name }}
+          subject-digest: sha256:${{ steps.upload.outputs.artifact-digest }}
