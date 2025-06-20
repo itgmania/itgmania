@@ -20,13 +20,29 @@
 REGISTER_SOUND_DRIVER_CLASS( WaveOut );
 
 namespace {
-	const int CHANNELS = 2;
-	const int BYTES_PER_FRAME = CHANNELS * 2; // 16 bit
-	const int BUFFERSIZE_FRAMES = 512 * RageSoundDriver_WaveOut::NUM_BUFFERS; // in frames
-	const int BUFFERSIZE = BUFFERSIZE_FRAMES * BYTES_PER_FRAME; // in bytes
-	const int NUM_CHUNKS = RageSoundDriver_WaveOut::NUM_BUFFERS;
-	const int CHUNKSIZE_FRAMES = BUFFERSIZE_FRAMES / NUM_CHUNKS; // in frames
-	const int CHUNKSIZE = CHUNKSIZE_FRAMES * BYTES_PER_FRAME; // in bytes
+	// We want to target a specific latency (118 ms) to ensure a consistent
+	// experience when using either 44100 or 48000 Hz sample rate.
+	// This value was chosen because it has the smallest difference in actual
+	// latency (0.29 ms) between these two 44100 and 48000 Hz.
+	// To achieve this, we use 512 frames per block and determine the number
+	// of blocks and buffer size in frames based on the sample rate.
+	constexpr int kTargetLatency = 118;
+	
+	// CHANNELS should be renamed CHANNELS
+	constexpr int CHANNELS = 2;
+	
+	// CHUNKSIZE_FRAMES should be renamed kBlockSizeFrames
+	constexpr int CHUNKSIZE_FRAMES = 512;
+	
+	// BYTES_PER_FRAME should be renamed kBytesPerFrame
+	constexpr int BYTES_PER_FRAME = CHANNELS * 2;  // 16 bit
+
+	inline int CalculateNumBlocks( int sampleRate )
+	{
+		return (sampleRate * kTargetLatency +
+			(1000 * CHUNKSIZE_FRAMES - 1)) /
+			(1000 * CHUNKSIZE_FRAMES);
+	}
 }  // namespace
 
 static RString wo_ssprintf( MMRESULT err, const char *szFmt, ...)
@@ -111,13 +127,18 @@ int64_t RageSoundDriver_WaveOut::GetPosition() const
 }
 
 RageSoundDriver_WaveOut::RageSoundDriver_WaveOut()
+    : m_hWaveOut(nullptr)
+    , m_hSoundEvent(CreateEvent(nullptr, false, true, nullptr))
+    , m_iLastCursorPos(0)
+    , m_iSampleRate(0)
+    , m_bShutdown(false)
+    , b_InitSuccess(false)
+    , NUM_CHUNKS(1)
+    , BUFFERSIZE_FRAMES(0)
+    , CHUNKSIZE(0)
+    , m_aBuffers{}
+    , MixingThread()
 {
-	m_bShutdown = false;
-	m_iLastCursorPos = 0;
-
-	m_hSoundEvent = CreateEvent( nullptr, false, true, nullptr );
-
-	m_hWaveOut = nullptr;
 }
 
 RString RageSoundDriver_WaveOut::Init()
@@ -128,6 +149,10 @@ RString RageSoundDriver_WaveOut::Init()
 	{
 		m_iSampleRate = kFallbackSampleRate;
 	}
+
+	NUM_CHUNKS = CalculateNumBlocks( m_iSampleRate );
+	BUFFERSIZE_FRAMES = CHUNKSIZE_FRAMES * NUM_CHUNKS;
+	CHUNKSIZE = CHUNKSIZE_FRAMES * BYTES_PER_FRAME;
 
 	WAVEFORMATEX fmt;
 	fmt.wFormatTag = WAVE_FORMAT_PCM;
