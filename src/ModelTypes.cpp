@@ -55,7 +55,7 @@ void AnimatedTexture::Load( const RString &sTexOrIniPath )
 	else
 		m_BlendMode = BLEND_NORMAL;
 
-	if( GetExtension(sTexOrIniPath).CompareNoCase("ini")==0 )
+	if( CompareNoCase(GetExtension(sTexOrIniPath), "ini")==0 )
 	{
 		IniFile ini;
 		if( !ini.ReadFile( sTexOrIniPath ) )

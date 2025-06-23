@@ -26,7 +26,7 @@ void ScreenGameplaySyncMachine::Init()
 	// Allow themers to use either a .ssc or .sm file for this. -aj
 	SSCLoader loaderSSC;
 	SMLoader loaderSM;
-	if(sFile.Right(4) == ".ssc")
+	if(Right(sFile, 4) == ".ssc")
 		loaderSSC.LoadFromSimfile( sFile, m_Song );
 	else
 		loaderSM.LoadFromSimfile( sFile, m_Song );

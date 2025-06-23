@@ -56,10 +56,10 @@ void ModIcon::Set( const RString &_sText )
 	RString sText = _sText;
 
 	for( unsigned i = 0; i < m_vStopWords.size(); i++ )
-		if( sText.EqualsNoCase(m_vStopWords[i]) )
+		if( EqualsNoCase(sText, m_vStopWords[i]) )
 			sText = "";
 
-	sText.Replace( " ", "\n" );
+	Replace(sText, " ", "\n");
 
 	bool bVacant = (sText=="");
 	m_sprFilled->SetVisible( !bVacant );

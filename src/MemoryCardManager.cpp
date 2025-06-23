@@ -380,7 +380,7 @@ void MemoryCardManager::UpdateAssignments()
 		{
 			// search for card dir match
 			if( !m_sMemoryCardOsMountPoint[p].Get().empty() &&
-				d->sOsMountDir.CompareNoCase(m_sMemoryCardOsMountPoint[p].Get()) )
+				CompareNoCase(d->sOsMountDir, m_sMemoryCardOsMountPoint[p].Get()) )
 				continue; // not a match
 
 			// search for USB bus match
@@ -678,7 +678,7 @@ void MemoryCardManager::UnmountCard( PlayerNumber pn )
 bool MemoryCardManager::PathIsMemCard( RString sDir ) const
 {
 	FOREACH_PlayerNumber( p )
-		if( !sDir.Left(MEM_CARD_MOUNT_POINT[p].size()).CompareNoCase( MEM_CARD_MOUNT_POINT[p] ) )
+		if( !CompareNoCase(Left(sDir, MEM_CARD_MOUNT_POINT[p].size()), MEM_CARD_MOUNT_POINT[p]) )
 			return true;
 	return false;
 }

@@ -44,7 +44,7 @@ void FontPage::Load( const FontPageSettings &cfg )
 	// "arial 20 16x16 [main].png" => "arial 20 16x16 [main-stroke].png"
 	if( ID2.filename.find("]") != std::string::npos )
 	{
-		ID2.filename.Replace( "]", "-stroke]" );
+		Replace(ID2.filename, "]", "-stroke]");
 		if( IsAFile(ID2.filename) )
 		{
 			m_FontPageTextures.m_pTextureStroke = TEXTUREMAN->LoadTexture( ID2 );
@@ -434,7 +434,7 @@ void Font::GetFontPaths( const RString &sFontIniPath, std::vector<RString> &asTe
 
 	for( unsigned i = 0; i < asFiles.size(); ++i )
 	{
-		if( !asFiles[i].Right(4).EqualsNoCase(".ini") )
+		if( !EqualsNoCase(Right(asFiles[i], 4), ".ini") )
 			asTexturePathsOut.push_back( asFiles[i] );
 	}
 }
@@ -496,7 +496,7 @@ void Font::LoadFontPageSettings( FontPageSettings &cfg, IniFile &ini, const RStr
 			RString sName = pAttr->first;
 			const XNodeValue *pValue = pAttr->second;
 
-			sName.MakeUpper();
+			MakeUpper(sName);
 
 			// If val is an integer, it's a width, eg. "10=27".
 			if( IsAnInt(sName) )
@@ -678,7 +678,7 @@ void Font::LoadFontPageSettings( FontPageSettings &cfg, IniFile &ini, const RStr
 
 RString FontPageSettings::MapRange( RString sMapping, int iMapOffset, int iGlyphNo, int iCount )
 {
-	if( !sMapping.CompareNoCase("Unicode") )
+	if( !CompareNoCase(sMapping, "Unicode") )
 	{
 		// Special case.
 		if( iCount == -1 )
@@ -755,7 +755,7 @@ static std::vector<RString> LoadStack;
  */
 void Font::Load( const RString &sIniPath, RString sChars )
 {
-	if(GetExtension(sIniPath).CompareNoCase("ini"))
+	if(CompareNoCase(GetExtension(sIniPath), "ini"))
 	{
 		LuaHelpers::ReportScriptErrorFmt(
 			"%s is not an ini file.  Fonts can only be loaded from ini files.",

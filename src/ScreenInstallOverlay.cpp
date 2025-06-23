@@ -50,9 +50,9 @@ static void Parse( const RString &sDir, PlayAfterLaunchInfo &out )
 {
 	std::vector<RString> vsDirParts;
 	split( sDir, "/", vsDirParts, true );
-	if( vsDirParts.size() == 3 && vsDirParts[0].EqualsNoCase("Songs") )
+	if( vsDirParts.size() == 3 && EqualsNoCase(vsDirParts[0], "Songs") )
 		out.sSongDir = "/" + sDir;
-	else if( vsDirParts.size() == 2 && vsDirParts[0].EqualsNoCase("Themes") )
+	else if( vsDirParts.size() == 2 && EqualsNoCase(vsDirParts[0], "Themes") )
 		out.sTheme = vsDirParts[1];
 }
 
@@ -72,12 +72,12 @@ static void InstallSmzip( const RString &sZipFile, PlayAfterLaunchInfo &out )
 		std::vector<RString> vsPrettyFiles;
 		for (RString const &s : vsRawFiles)
 		{
-			if( GetExtension(s).EqualsNoCase("ctl") )
+			if( EqualsNoCase(GetExtension(s), "ctl") )
 				continue;
 
 			vsFiles.push_back( s);
 
-			RString s2 = s.Right( s.length() - TEMP_ZIP_MOUNT_POINT.length() );
+			RString s2 = Right(s, s.length() - TEMP_ZIP_MOUNT_POINT.length());
 			vsPrettyFiles.push_back( s2 );
 		}
 		sort( vsPrettyFiles.begin(), vsPrettyFiles.end() );
@@ -87,7 +87,7 @@ static void InstallSmzip( const RString &sZipFile, PlayAfterLaunchInfo &out )
 	for (RString &tmpFile : vsFiles)
 	{
 		RString sDestFile = tmpFile;
-		sDestFile = sDestFile.Right( sDestFile.length() - TEMP_ZIP_MOUNT_POINT.length() );
+		sDestFile = Right(sDestFile, sDestFile.length() - TEMP_ZIP_MOUNT_POINT.length());
 
 		RString sDir, sThrowAway;
 		splitpath( sDestFile, sDir, sThrowAway, sThrowAway );
@@ -125,7 +125,7 @@ void InstallSmzipOsArg( const RString &sOsZipFile, PlayAfterLaunchInfo &out )
 static bool IsPackageFile(const RString &arg)
 {
 	RString ext = GetExtension(arg);
-	return ext.EqualsNoCase("smzip") || ext.EqualsNoCase("zip");
+	return EqualsNoCase(ext, "smzip") || EqualsNoCase(ext, "zip");
 }
 
 PlayAfterLaunchInfo DoInstalls( CommandLineActions::CommandLineArgs args )

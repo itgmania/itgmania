@@ -108,7 +108,7 @@ X StringTo##X(const RString&); \
 X StringTo##X( const RString& s ) \
 {	\
 	for( unsigned i = 0; i < ARRAYLEN(X##Names); ++i )	\
-		if( !s.CompareNoCase(X##Names[i]) )	\
+		if( !CompareNoCase(s, X##Names[i]) )	\
 			return (X)i;	\
 	return X##_Invalid;	\
 } \
@@ -148,7 +148,7 @@ static void Lua##X(lua_State* L) \
 		lua_pushnumber( L, i ); /* 0-based */ \
 		lua_rawset( L, -3 ); \
 		/* Compatibility with old, case-insensitive values */ \
-		s.MakeLower(); \
+		MakeLower(s); \
 		lua_pushstring( L, s.c_str() ); \
 		lua_pushnumber( L, i ); /* 0-based */ \
 		lua_rawset( L, -3 ); \

@@ -121,7 +121,7 @@ void NoteField::SetBeatBarsAlpha(float measure, float fourth, float eighth, floa
 void NoteField::CacheNoteSkin( const RString &sNoteSkin_ )
 {
 	RString sNoteSkinLower = sNoteSkin_;
-	sNoteSkinLower.MakeLower();
+	MakeLower(sNoteSkinLower);
 
 	if( m_NoteDisplays.find(sNoteSkinLower) != m_NoteDisplays.end() )
 		return;
@@ -142,7 +142,7 @@ void NoteField::CacheNoteSkin( const RString &sNoteSkin_ )
 void NoteField::UncacheNoteSkin( const RString &sNoteSkin_ )
 {
 	RString sNoteSkinLower = sNoteSkin_;
-	sNoteSkinLower.MakeLower();
+	MakeLower(sNoteSkinLower);
 
 	LOG->Trace("NoteField::CacheNoteSkin: release %s", sNoteSkinLower.c_str() );
 	ASSERT_M( m_NoteDisplays.find(sNoteSkinLower) != m_NoteDisplays.end(), sNoteSkinLower );
@@ -167,7 +167,7 @@ void NoteField::CacheAllUsedNoteSkins()
 	for (RString &s : asSkinsLower)
 	{
 		NOTESKIN->ValidateNoteSkinName(s);
-		s.MakeLower();
+		MakeLower(s);
 	}
 
 	for( unsigned i=0; i < asSkinsLower.size(); ++i )
@@ -187,7 +187,7 @@ void NoteField::CacheAllUsedNoteSkins()
 
 	RString sCurrentNoteSkinLower = m_pPlayerState->m_PlayerOptions.GetCurrent().m_sNoteSkin;
 	NOTESKIN->ValidateNoteSkinName(sCurrentNoteSkinLower);
-	sCurrentNoteSkinLower.MakeLower();
+	MakeLower(sCurrentNoteSkinLower);
 
 	std::map<RString, NoteDisplayCols*>::iterator it = m_NoteDisplays.find( sCurrentNoteSkinLower );
 	ASSERT_M( it != m_NoteDisplays.end(), sCurrentNoteSkinLower );
@@ -198,7 +198,7 @@ void NoteField::CacheAllUsedNoteSkins()
 	{
 		RString sNoteSkinLower = GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetCurrent().m_sNoteSkin;
 		NOTESKIN->ValidateNoteSkinName(sNoteSkinLower);
-		sNoteSkinLower.MakeLower();
+		MakeLower(sNoteSkinLower);
 		it = m_NoteDisplays.find( sNoteSkinLower );
 		ASSERT_M( it != m_NoteDisplays.end(), sNoteSkinLower );
 		m_pDisplays[pn] = it->second;
@@ -279,7 +279,7 @@ void NoteField::ensure_note_displays_have_skin()
 		m_NoteDisplays.insert(std::pair<RString, NoteDisplayCols *> (sNoteSkinLower, badIdea));
 	}
 
-	sNoteSkinLower.MakeLower();
+	MakeLower(sNoteSkinLower);
 	std::map<RString, NoteDisplayCols *>::iterator it = m_NoteDisplays.find( sNoteSkinLower );
 	ASSERT_M( it != m_NoteDisplays.end(), ssprintf("iterator != m_NoteDisplays.end() [sNoteSkinLower = %s]",sNoteSkinLower.c_str()) );
 	memset( m_pDisplays, 0, sizeof(m_pDisplays) );
@@ -299,7 +299,7 @@ void NoteField::ensure_note_displays_have_skin()
 			m_NoteDisplays.insert(std::pair<RString, NoteDisplayCols *> (sNoteSkinLower, badIdea));
 		}
 
-		sNoteSkinLower.MakeLower();
+		MakeLower(sNoteSkinLower);
 		it = m_NoteDisplays.find( sNoteSkinLower );
 		ASSERT_M( it != m_NoteDisplays.end(), sNoteSkinLower );
 		m_pDisplays[pn] = it->second;

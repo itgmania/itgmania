@@ -131,7 +131,7 @@ namespace
 		if (pActor->GetAttrValue("File", sFile) && sFile != "")
 		{
 			// Backward compatibility hacks for "special" filenames
-			if (sFile.EqualsNoCase("songbackground"))
+			if (EqualsNoCase(sFile, "songbackground"))
 			{
 				XNodeStringValue *pVal = new XNodeStringValue;
 				Song *pSong = GAMESTATE->m_pCurSong;
@@ -142,7 +142,7 @@ namespace
 				pActor->AppendAttrFrom("Texture", pVal, false);
 				return "Sprite";
 			}
-			else if (sFile.EqualsNoCase("songbanner"))
+			else if (EqualsNoCase(sFile, "songbanner"))
 			{
 				XNodeStringValue *pVal = new XNodeStringValue;
 				Song *pSong = GAMESTATE->m_pCurSong;
@@ -153,7 +153,7 @@ namespace
 				pActor->AppendAttrFrom("Texture", pVal, false);
 				return "Sprite";
 			}
-			else if (sFile.EqualsNoCase("coursebanner"))
+			else if (EqualsNoCase(sFile, "coursebanner"))
 			{
 				XNodeStringValue *pVal = new XNodeStringValue;
 				Course *pCourse = GAMESTATE->m_pCurCourse;
@@ -203,7 +203,7 @@ Actor *ActorUtil::LoadFromNode( const XNode* _pNode, Actor *pParentActor )
 		{
 			RString sPath;
 			// Handle absolute paths correctly
-			if (sFile.Left(1) == "/")
+			if (Left(sFile, 1) == "/")
 				sPath = sFile;
 			else
 				sPath = Dirname(GetSourcePath(&node)) + sFile;
@@ -332,7 +332,7 @@ Actor* ActorUtil::MakeActor( const RString &sPath_, Actor *pParentActor )
 		}
 	case FT_Directory:
 		{
-			if( sPath.Right(1) != "/" )
+			if( Right(sPath, 1) != "/" )
 				sPath += '/';
 
 			RString sXml = sPath + "default.xml";
@@ -412,7 +412,7 @@ bool ActorUtil::GetAttrPath( const XNode *pNode, const RString &sName, RString &
 	if( !pNode->GetAttrValue(sName, sOut) )
 		return false;
 
-	bool bIsRelativePath = sOut.Left(1) != "/";
+	bool bIsRelativePath = Left(sOut, 1) != "/";
 	if( bIsRelativePath )
 	{
 		RString sDir;
@@ -593,7 +593,7 @@ void ActorUtil::AddTypeExtensionsToList(FileType ft, std::vector<RString>& add_t
 FileType ActorUtil::GetFileType( const RString &sPath )
 {
 	RString sExt = GetExtension( sPath );
-	sExt.MakeLower();
+	MakeLower(sExt);
 
 	etft_cont_t::iterator conversion_entry= ExtensionToFileType.find(sExt);
 	if(conversion_entry != ExtensionToFileType.end())

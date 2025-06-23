@@ -54,7 +54,7 @@ OldStyleStringToSongSortMapHolder OldStyleStringToSongSortMapHolder_converter;
 SongSort OldStyleStringToSongSort(const RString &ss)
 {
 	RString s2 = ss;
-	s2.MakeLower();
+	MakeLower(s2);
 	std::map<RString, SongSort>::iterator diff=
 		OldStyleStringToSongSortMapHolder_converter.conversion_map.find(s2);
 	if(diff != OldStyleStringToSongSortMapHolder_converter.conversion_map.end())
@@ -980,7 +980,7 @@ const Style *Course::GetCourseStyle( const Game *pGame, int iNumPlayers ) const
 	{
 		for (RString const &style : m_setStyles)
 		{
-			if( !style.CompareNoCase(pStyle->m_szName) )
+			if( !CompareNoCase(style, pStyle->m_szName) )
 				return pStyle;
 		}
 	}
@@ -1181,7 +1181,7 @@ bool Course::IsRanking() const
 	split(THEME->GetMetric("ScreenRanking", "CoursesToShow"), ",", rankingsongs);
 
 	for(unsigned i=0; i < rankingsongs.size(); i++)
-		if (rankingsongs[i].EqualsNoCase(m_sPath))
+		if (EqualsNoCase(rankingsongs[i], m_sPath))
 			return true;
 
 	return false;
@@ -1243,21 +1243,21 @@ void Course::CalculateRadarValues()
 
 bool Course::Matches( RString sGroup, RString sCourse ) const
 {
-	if( sGroup.size() && sGroup.CompareNoCase(this->m_sGroupName) != 0)
+	if( sGroup.size() && CompareNoCase(sGroup, this->m_sGroupName) != 0)
 		return false;
 
 	RString sFile = m_sPath;
 	if( !sFile.empty() )
 	{
-		sFile.Replace("\\","/");
+		Replace(sFile, "\\", "/");
 		std::vector<RString> bits;
 		split( sFile, "/", bits );
 		const RString &sLastBit = bits[bits.size()-1];
-		if( sCourse.EqualsNoCase(sLastBit) )
+		if( EqualsNoCase(sCourse, sLastBit) )
 			return true;
 	}
 
-	if( sCourse.EqualsNoCase(this->GetTranslitFullTitle()) )
+	if( EqualsNoCase(sCourse, this->GetTranslitFullTitle()) )
 		return true;
 
 	return false;

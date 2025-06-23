@@ -49,14 +49,14 @@ void LightsDriver_stac::HandleState(const LightsState *ls, GameController ctrlNu
 	const InputScheme *pInput = &GAMESTATE->GetCurrentGame()->m_InputScheme;
 	RString sInputName = pInput->m_szName;
 
-	if (sInputName.EqualsNoCase("dance"))
+	if (EqualsNoCase(sInputName, "dance"))
 	{
 		SetBuffer(STAC_LIGHTINDEX_BTN1, ls->m_bGameButtonLights[ctrlNum][DANCE_BUTTON_UP], ctrlNum);
 		SetBuffer(STAC_LIGHTINDEX_BTN2, ls->m_bGameButtonLights[ctrlNum][DANCE_BUTTON_DOWN], ctrlNum);
 		SetBuffer(STAC_LIGHTINDEX_BTN3, ls->m_bGameButtonLights[ctrlNum][DANCE_BUTTON_LEFT], ctrlNum);
 		SetBuffer(STAC_LIGHTINDEX_BTN4, ls->m_bGameButtonLights[ctrlNum][DANCE_BUTTON_RIGHT], ctrlNum);
 	}
-	else if (sInputName.EqualsNoCase("pump"))
+	else if (EqualsNoCase(sInputName, "pump"))
 	{
 		SetBuffer(STAC_LIGHTINDEX_BTN1, ls->m_bGameButtonLights[ctrlNum][PUMP_BUTTON_UPLEFT], ctrlNum);
 		SetBuffer(STAC_LIGHTINDEX_BTN2, ls->m_bGameButtonLights[ctrlNum][PUMP_BUTTON_UPRIGHT], ctrlNum);

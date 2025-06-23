@@ -282,13 +282,13 @@ void BacktraceNames::FromAddr( void * const p )
 	 * __start   -> _start
 	 * __ZN7RageLog5TraceEPKcz -> _ZN7RageLog5TraceEPKcz (so demangling will work)
 	 */
-	if( Symbol.Left(1) == "_" )
+	if( Left(Symbol, 1) == "_" )
 		Symbol = Symbol.substr(1);
 	/* After stripping off the leading _
 	 * _GLOBAL__I__ZN5ModelC2Ev -> _ZN5ModelC2Ev
 	 * _GLOBAL__D__Z12ForceToAsciiR7CStdStrIcE -> _Z12ForceToAsciiR7CStdStrIcE
 	 */
-	if( Symbol.Left(9) == "_GLOBAL__" )
+	if( Left(Symbol, 9) == "_GLOBAL__" )
 		Symbol = Symbol.substr(11);
 
 }

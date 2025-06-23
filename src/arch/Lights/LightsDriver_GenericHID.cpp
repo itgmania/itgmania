@@ -50,7 +50,7 @@ LightsDriver_GenericHID::LightsDriver_GenericHID()
 	WriteDevice( 0 );
 
 	RString lightOrder = g_sGenericHIDLightsOrdering.Get();
-	if (lightOrder.CompareNoCase("lumenar") == 0 || lightOrder.CompareNoCase("openitg") == 0) {
+	if (CompareNoCase(lightOrder, "lumenar") == 0 || CompareNoCase(lightOrder, "openitg") == 0) {
 		iLightsOrder = 1;
 	}
 }

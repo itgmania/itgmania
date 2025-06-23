@@ -24,7 +24,7 @@ static bool CompareCoursePointersByName( const Course* pCourse1, const Course* p
 {
 	RString sName1 = pCourse1->GetDisplayFullTitle();
 	RString sName2 = pCourse2->GetDisplayFullTitle();
-	return sName1.CompareNoCase( sName2 ) < 0;
+	return CompareNoCase(sName1, sName2) < 0;
 }
 
 static bool CompareCoursePointersByAutogen( const Course* pCourse1, const Course* pCourse2 )
@@ -538,7 +538,7 @@ void CourseID::FromCourse( const Course *p )
 
 	// HACK for backwards compatibility:
 	// Strip off leading "/".  2005/05/21 file layer changes added a leading slash.
-	if( sPath.Left(1) == "/" )
+	if( Left(sPath, 1) == "/" )
 		sPath.erase( sPath.begin() );
 }
 
@@ -550,7 +550,7 @@ Course *CourseID::ToCourse() const
 		// HACK for backwards compatibility:
 		// Re-add the leading "/".  2005/05/21 file layer changes added a leading slash.
 		RString slash_path = sPath;
-		if(slash_path.Left(1) != "/")
+		if(Left(slash_path, 1) != "/")
 		{
 			slash_path = "/" + slash_path;
 		}
@@ -587,7 +587,7 @@ void CourseID::LoadFromNode( const XNode* pNode )
 		pNode->GetAttrValue( "FullTitle", sFullTitle );
 
 	// HACK for backwards compatibility: /AdditionalCourses has been merged into /Courses
-	if (sPath.Left(18) == "AdditionalCourses/")
+	if (Left(sPath, 18) == "AdditionalCourses/")
 		sPath.replace(0, 18, "Courses/");
 }
 

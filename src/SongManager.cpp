@@ -371,7 +371,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 	RageTimer loading_window_last_update_time;
 	loading_window_last_update_time.Touch();
 	// Make sure sDir has a trailing slash.
-	if( sDir.Right(1) != "/" )
+	if( Right(sDir, 1) != "/" )
 		sDir += "/";
 
 	// Find all group directories in "Songs" folder
@@ -1168,7 +1168,7 @@ void SongManager::InitAutogenCourses()
 		do {
 			RString sArtist = i >= apSongs.size()? RString(""): apSongs[i]->GetDisplayArtist();
 			RString sTranslitArtist = i >= apSongs.size()? RString(""): apSongs[i]->GetTranslitArtist();
-			if( i < apSongs.size() && !sCurArtist.CompareNoCase(sArtist) )
+			if( i < apSongs.size() && !CompareNoCase(sCurArtist, sArtist) )
 			{
 				aSongs.push_back( apSongs[i] );
 				++iCurArtistCount;
@@ -1178,8 +1178,8 @@ void SongManager::InitAutogenCourses()
 			/* Different artist, or we're at the end. If we have enough entries for
 			 * the last artist, add it. Skip blanks and "Unknown artist". */
 			if( iCurArtistCount >= 3 && sCurArtistTranslit != "" &&
-				sCurArtistTranslit.CompareNoCase("Unknown artist") &&
-				sCurArtist.CompareNoCase("Unknown artist") )
+				CompareNoCase(sCurArtistTranslit, "Unknown artist") &&
+				CompareNoCase(sCurArtist, "Unknown artist") )
 			{
 				pCourse = new Course;
 				CourseUtil::AutogenOniFromArtist( sCurArtist, sCurArtistTranslit, aSongs, Difficulty_Hard, *pCourse );
@@ -1227,7 +1227,7 @@ void SongManager::InitRandomAttacks()
 					continue;
 				}
 
-				if( !sType.EqualsNoCase("ATTACK") )
+				if( !EqualsNoCase(sType, "ATTACK") )
 				{
 					LuaHelpers::ReportScriptErrorFmt( "Got \"%s:%s\" tag with wrong declaration", sType.c_str(), sAttack.c_str() );
 					continue;
@@ -1583,11 +1583,11 @@ Course* SongManager::GetRandomCourse()
 
 Song* SongManager::GetSongFromDir(RString dir) const
 {
-	if(dir.Right(1) != "/")
+	if(Right(dir, 1) != "/")
 	{ dir += "/"; }
 
-	dir.Replace('\\', '/');
-	dir.MakeLower();
+	Replace(dir, '\\', '/');
+	MakeLower(dir);
 	std::map<RString, Song*>::const_iterator entry= m_SongsByDir.find(dir);
 	if(entry != m_SongsByDir.end())
 	{
@@ -1603,7 +1603,7 @@ Course* SongManager::GetCourseFromPath( RString sPath ) const
 
 	for (Course *c : m_pCourses)
 	{
-		if( sPath.CompareNoCase(c->m_sPath) == 0 )
+		if( CompareNoCase(sPath, c->m_sPath) == 0 )
 			return c;
 	}
 
@@ -1616,7 +1616,7 @@ Course* SongManager::GetCourseFromName( RString sName ) const
 		return nullptr;
 
 	for (Course *c : m_pCourses)
-		if( sName.CompareNoCase(c->GetDisplayFullTitle()) == 0 )
+		if( CompareNoCase(sName, c->GetDisplayFullTitle()) == 0 )
 			return c;
 
 	return nullptr;
@@ -1638,7 +1638,7 @@ Course* SongManager::GetCourseFromName( RString sName ) const
 
 Song *SongManager::FindSong( RString sPath ) const
 {
-	sPath.Replace( '\\', '/' );
+	Replace(sPath, '\\', '/');
 	std::vector<RString> bits;
 	split( sPath, "/", bits );
 
@@ -1665,7 +1665,7 @@ Song *SongManager::FindSong( RString sGroup, RString sSong ) const
 
 Course *SongManager::FindCourse( RString sPath ) const
 {
-	sPath.Replace( '\\', '/' );
+	Replace(sPath, '\\', '/');
 	std::vector<RString> bits;
 	split( sPath, "/", bits );
 
@@ -1789,7 +1789,7 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 				section = PreferredSortSection();
 			}
 
-			section.sName = sLine.Right( sLine.length() - RString("---").length() );
+			section.sName = Right(sLine, sLine.length() - RString("---").length());
 			TrimLeft( section.sName );
 			TrimRight( section.sName );
 		}
@@ -1799,7 +1799,7 @@ void SongManager::SetPreferredSongs(RString sPreferredSongs, bool bIsAbsolute) {
 				* and if it does, add all the songs in that group to the list. */
 			if( EndsWith(sLine,"/*") )
 			{
-				RString group = sLine.Left( sLine.length() - RString("/*").length() );
+				RString group = Left(sLine, sLine.length() - RString("/*").length());
 				if( DoesSongGroupExist(group) )
 				{
 					// add all songs in group
@@ -1985,7 +1985,7 @@ void SongManager::UpdateRankingCourses()
 		c->m_SortOrder_Ranking = bLotsOfStages? 3 : 2;
 
 		for( unsigned j = 0; j < RankingCourses.size(); j++ )
-			if( !RankingCourses[j].CompareNoCase(c->m_sPath) )
+			if( !CompareNoCase(RankingCourses[j], c->m_sPath) )
 				c->m_SortOrder_Ranking = 1;
 	}
 }
@@ -2123,7 +2123,7 @@ void SongManager::AddSongToList(Song* new_song)
 	new_song->SetEnabled(true);
 	m_pSongs.push_back(new_song);
 	RString dir= new_song->GetSongDir();
-	dir.MakeLower();
+	MakeLower(dir);
 	m_SongsByDir.insert(std::make_pair(dir, new_song));
 }
 

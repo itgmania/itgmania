@@ -222,7 +222,7 @@ const wchar_t *FontCharmaps::get_char_map(RString name)
 {
 	Init();
 
-	name.MakeLower();
+	MakeLower(name);
 
 	std::map<RString, const wchar_t*>::const_iterator i = charmaps.find(name);
 	if(i == charmaps.end())

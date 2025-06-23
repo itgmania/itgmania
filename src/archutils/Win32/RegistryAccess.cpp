@@ -22,11 +22,11 @@ static bool GetRegKeyType( const RString &sIn, RString &sOut, HKEY &key )
 
 	RString sType = sIn.substr( 0, iBackslash );
 
-	if( !sType.CompareNoCase( "HKEY_CLASSES_ROOT" ) )		key = HKEY_CLASSES_ROOT;
-	else if( !sType.CompareNoCase( "HKEY_CURRENT_CONFIG" ) )	key = HKEY_CURRENT_CONFIG;
-	else if( !sType.CompareNoCase( "HKEY_CURRENT_USER" ) )	key = HKEY_CURRENT_USER;
-	else if( !sType.CompareNoCase( "HKEY_LOCAL_MACHINE" ) )	key = HKEY_LOCAL_MACHINE;
-	else if( !sType.CompareNoCase( "HKEY_USERS" ) )			key = HKEY_USERS;
+	if( !CompareNoCase(sType, "HKEY_CLASSES_ROOT" ) )		key = HKEY_CLASSES_ROOT;
+	else if( !CompareNoCase(sType, "HKEY_CURRENT_CONFIG" ) )	key = HKEY_CURRENT_CONFIG;
+	else if( !CompareNoCase(sType, "HKEY_CURRENT_USER" ) )	key = HKEY_CURRENT_USER;
+	else if( !CompareNoCase(sType, "HKEY_LOCAL_MACHINE" ) )	key = HKEY_LOCAL_MACHINE;
+	else if( !CompareNoCase(sType, "HKEY_USERS" ) )			key = HKEY_USERS;
 	else
 	{
 		LOG->Warn( "Invalid registry key: \"%s\" ", sIn.c_str() );

@@ -244,7 +244,7 @@ void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices( std::vector<UsbStorag
 						sHostPort.erase( pos );
 
 					/* sHostPort is eg. 2-2.1. */
-					sHostPort.Replace( "-", "." );
+					Replace(sHostPort, "-", ".");
 					asBits.clear();
 					split( sHostPort, ".", asBits );
 					if( asBits.size() > 1 )

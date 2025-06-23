@@ -151,7 +151,7 @@ ProfileLoadResult ProfileManager::LoadProfile( PlayerNumber pn, RString sProfile
 	LOG->Trace( "LoadingProfile P%d, %s, %d", pn+1, sProfileDir.c_str(), bIsMemCard );
 
 	ASSERT( !sProfileDir.empty() );
-	ASSERT( sProfileDir.Right(1) == "/" );
+	ASSERT( Right(sProfileDir, 1) == "/" );
 
 
 	m_sProfileDir[pn] = sProfileDir;
@@ -548,7 +548,7 @@ void ProfileManager::LoadLocalProfilesByName()
 	if (PREFSMAN->m_bProfileSortOrderAscending) {
 		auto displayNameAscending = [](const DirAndProfile &a, const DirAndProfile &b)
 		{
-			return a.profile.m_sDisplayName.CompareNoCase(b.profile.m_sDisplayName) < 0;
+			return CompareNoCase(a.profile.m_sDisplayName, b.profile.m_sDisplayName) < 0;
 		};
 		std::sort(guestProfiles.begin(), guestProfiles.end(), displayNameAscending);
 		std::sort(normalProfiles.begin(), normalProfiles.end(), displayNameAscending);
@@ -556,7 +556,7 @@ void ProfileManager::LoadLocalProfilesByName()
 	} else {
 		auto displayNameDescending = [](const DirAndProfile &a, const DirAndProfile &b)
 		{
-			return a.profile.m_sDisplayName.CompareNoCase(b.profile.m_sDisplayName) > 0;
+			return CompareNoCase(a.profile.m_sDisplayName, b.profile.m_sDisplayName) > 0;
 		};
 		std::sort(guestProfiles.begin(), guestProfiles.end(), displayNameDescending);
 		std::sort(normalProfiles.begin(), normalProfiles.end(), displayNameDescending);

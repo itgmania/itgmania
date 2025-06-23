@@ -141,9 +141,9 @@ void Actor::InitState()
 
 static bool GetMessageNameFromCommandName( const RString &sCommandName, RString &sMessageNameOut )
 {
-	if( sCommandName.Right(7) == "Message" )
+	if( Right(sCommandName, 7) == "Message" )
 	{
-		sMessageNameOut = sCommandName.Left(sCommandName.size()-7);
+		sMessageNameOut = Left(sCommandName, sCommandName.size()-7);
 		return true;
 	}
 	else
@@ -363,7 +363,7 @@ void Actor::LoadFromNode( const XNode* pNode )
 			LuaReference *pRef = new LuaReference;
 			pValue->PushValue( L );
 			pRef->SetFromStack( L );
-			RString sCmdName = sKeyName.Left( sKeyName.size()-7 );
+			RString sCmdName = Left(sKeyName, sKeyName.size()-7);
 			AddCommand( sCmdName, apActorCommands( pRef ) );
 		}
 		else if( sKeyName == "Name" )			SetName( pValue->GetValue<RString>() );
@@ -867,7 +867,7 @@ void Actor::UpdateTweening(float fDeltaTime)
 			// access TI or TS after, since this may modify the tweening queue.
 			if (!sCommand.empty())
 			{
-				if (sCommand.Left(1) == "!")
+				if (Left(sCommand, 1) == "!")
 					MESSAGEMAN->Broadcast(sCommand.substr(1));
 				else
 					this->PlayCommand(sCommand);
@@ -1118,13 +1118,13 @@ void Actor::ScaleTo( const RectF &rect, StretchType st )
 
 void Actor::SetEffectClockString( const RString &s )
 {
-	if     (s.EqualsNoCase("timer"))	this->SetEffectClock( CLOCK_TIMER );
-	else if(s.EqualsNoCase("timerglobal"))	this->SetEffectClock( CLOCK_TIMER_GLOBAL );
-	else if(s.EqualsNoCase("beat"))		this->SetEffectClock( CLOCK_BGM_BEAT );
-	else if(s.EqualsNoCase("music"))	this->SetEffectClock( CLOCK_BGM_TIME );
-	else if(s.EqualsNoCase("bgm"))		this->SetEffectClock( CLOCK_BGM_BEAT ); // compat, deprecated
-	else if(s.EqualsNoCase("musicnooffset"))this->SetEffectClock( CLOCK_BGM_TIME_NO_OFFSET );
-	else if(s.EqualsNoCase("beatnooffset"))	this->SetEffectClock( CLOCK_BGM_BEAT_NO_OFFSET );
+	if     (EqualsNoCase(s, "timer"))	this->SetEffectClock( CLOCK_TIMER );
+	else if(EqualsNoCase(s, "timerglobal"))	this->SetEffectClock( CLOCK_TIMER_GLOBAL );
+	else if(EqualsNoCase(s, "beat"))		this->SetEffectClock( CLOCK_BGM_BEAT );
+	else if(EqualsNoCase(s, "music"))	this->SetEffectClock( CLOCK_BGM_TIME );
+	else if(EqualsNoCase(s, "bgm"))		this->SetEffectClock( CLOCK_BGM_BEAT ); // compat, deprecated
+	else if(EqualsNoCase(s, "musicnooffset"))this->SetEffectClock( CLOCK_BGM_TIME_NO_OFFSET );
+	else if(EqualsNoCase(s, "beatnooffset"))	this->SetEffectClock( CLOCK_BGM_BEAT_NO_OFFSET );
 	else
 	{
 		CabinetLight cl = StringToCabinetLight( s );

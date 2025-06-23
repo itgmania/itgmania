@@ -34,7 +34,7 @@ ThemeMetricDifficultiesToShow::ThemeMetricDifficultiesToShow( const RString& sGr
 }
 void ThemeMetricDifficultiesToShow::Read()
 {
-	ASSERT( GetName().Right(6) == "ToShow" );
+	ASSERT( Right(GetName(), 6) == "ToShow" );
 
 	ThemeMetric<RString>::Read();
 
@@ -73,7 +73,7 @@ ThemeMetricCourseDifficultiesToShow::ThemeMetricCourseDifficultiesToShow( const 
 }
 void ThemeMetricCourseDifficultiesToShow::Read()
 {
-	ASSERT( GetName().Right(6) == "ToShow" );
+	ASSERT( Right(GetName(), 6) == "ToShow" );
 
 	ThemeMetric<RString>::Read();
 
@@ -132,7 +132,7 @@ ThemeMetricStepsTypesToShow::ThemeMetricStepsTypesToShow( const RString& sGroup,
 }
 void ThemeMetricStepsTypesToShow::Read()
 {
-	ASSERT( GetName().Right(6) == "ToHide" );
+	ASSERT( Right(GetName(), 6) == "ToHide" );
 
 	ThemeMetric<RString>::Read();
 

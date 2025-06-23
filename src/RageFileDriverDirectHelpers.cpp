@@ -89,7 +89,7 @@ bool CreateDirectories( RString Path )
 	RString curpath;
 
 	// If Path is absolute, add the initial slash ("ignore empty" will remove it).
-	if( Path.Left(1) == "/" )
+	if( Left(Path, 1) == "/" )
 		curpath = "/";
 
 	// Ignore empty, so eg. "/foo/bar//baz" doesn't try to create "/foo/bar" twice.
@@ -156,10 +156,10 @@ void DirectFilenameDB::SetRoot( RString root_ )
 	root = root_;
 
 	// "\abcd\" -> "/abcd/":
-	root.Replace( "\\", "/" );
+	Replace(root, "\\", "/");
 
 	// "/abcd/" -> "/abcd":
-	if( root.Right(1) == "/" )
+	if( Right(root, 1) == "/" )
 		root.erase( root.size()-1, 1 );
 }
 
@@ -227,7 +227,7 @@ void DirectFilenameDB::PopulateFileSet( FileSet &fs, const RString &path )
 #if defined(_WIN32)
 	WIN32_FIND_DATA fd;
 
-	if ( sPath.size() > 0  && sPath.Right(1) == "/" )
+	if ( sPath.size() > 0  && Right(sPath, 1) == "/" )
 		sPath.erase( sPath.size() - 1 );
 
 	HANDLE hFind = DoFindFirstFile( (root+sPath+"/*").c_str(), &fd );
@@ -314,7 +314,7 @@ void DirectFilenameDB::PopulateFileSet( FileSet &fs, const RString &path )
 	{
 		if( !BeginsWith( iter->lname, IGNORE_MARKER_BEGINNING ) )
 			break;
-		RString sFileLNameToIgnore = iter->lname.Right( iter->lname.length() - IGNORE_MARKER_BEGINNING.length() );
+		RString sFileLNameToIgnore = Right(iter->lname, iter->lname.length() - IGNORE_MARKER_BEGINNING.length());
 		vsFilesToRemove.push_back( iter->name );
 		vsFilesToRemove.push_back( sFileLNameToIgnore );
 	}

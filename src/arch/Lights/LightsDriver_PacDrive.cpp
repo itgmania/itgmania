@@ -15,7 +15,7 @@ LightsDriver_PacDrive::LightsDriver_PacDrive() : dev{PACDRIVE_VID, make_pids(PAC
 	memset(state.raw_state, 0x00, sizeof(state.raw_state));
 
 	RString lightOrder = g_sPacDriveLightOrdering.Get();
-	if (lightOrder.CompareNoCase("lumenar") == 0 || lightOrder.CompareNoCase("openitg") == 0)
+	if (CompareNoCase(lightOrder, "lumenar") == 0 || CompareNoCase(lightOrder, "openitg") == 0)
 	{
 		iPacDriveLightOrder = 1;
 	}

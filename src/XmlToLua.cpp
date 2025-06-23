@@ -96,7 +96,7 @@ RString add_extension_to_relative_path_from_found_file(
 {
 	size_t rel_last_slash= after_slash_or_zero(relative_path);
 	size_t found_last_slash= after_slash_or_zero(found_file);
-	return relative_path.Left(rel_last_slash) +
+	return Left(relative_path, rel_last_slash) +
 		found_file.substr(found_last_slash, std::string::npos);
 }
 
@@ -143,7 +143,7 @@ void string_arg_conv(std::vector<RString>& args)
 }
 void lower_string_conv(std::vector<RString>& args)
 {
-	args[0].MakeLower();
+	MakeLower(args[0]);
 }
 void hidden_conv(std::vector<RString>& args)
 {
@@ -183,7 +183,7 @@ void blend_conv(std::vector<RString>& args)
 	for(int i= 0; i < NUM_BlendMode; ++i)
 	{
 		RString blend_str= BlendModeToString(static_cast<BlendMode>(i));
-		blend_str.MakeLower();
+		MakeLower(blend_str);
 		if(args[1] == blend_str)
 		{
 			args[1]= "\"BlendMode_" + BlendModeToString(static_cast<BlendMode>(i)) + "\"";
@@ -197,7 +197,7 @@ void cull_conv(std::vector<RString>& args)
 	for(int i= 0; i < NUM_CullMode; ++i)
 	{
 		RString cull_str= CullModeToString(static_cast<CullMode>(i));
-		cull_str.MakeLower();
+		MakeLower(cull_str);
 		if(args[1] == cull_str)
 		{
 			args[1]= "\"CullMode_" + CullModeToString(static_cast<CullMode>(i)) + "\"";
@@ -250,7 +250,7 @@ void convert_lua_chunk(RString& chunk_text)
 	for(std::map<RString, RString>::iterator chunk= chunks_to_replace.begin();
 			chunk != chunks_to_replace.end(); ++chunk)
 	{
-		chunk_text.Replace(chunk->first.c_str(), chunk->second.c_str());
+		Replace(chunk_text, chunk->first.c_str(), chunk->second.c_str());
 	}
 }
 
@@ -299,9 +299,9 @@ void actor_template_t::make_space_for_frame(int id)
 
 void actor_template_t::store_cmd(RString const& cmd_name, RString const& full_cmd)
 {
-	if(full_cmd.Left(1) == "%")
+	if(Left(full_cmd, 1) == "%")
 	{
-		RString cmd_text= full_cmd.Right(full_cmd.size()-1);
+		RString cmd_text= Right(full_cmd, full_cmd.size()-1);
 		convert_lua_chunk(cmd_text);
 		fields[cmd_name]= cmd_text;
 		return;
@@ -392,13 +392,13 @@ void actor_template_t::store_cmd(RString const& cmd_name, RString const& full_cm
 void actor_template_t::store_field(RString const& field_name, RString const& value, bool cmd_convert, RString const& pref, RString const& suf)
 {
 	// OITG apparently allowed "Oncommand" as valid.
-	if(field_name.Right(7).MakeLower() != "command")
+	if(MakeLower(Right(field_name, 7)) != "command")
 	{
 		cmd_convert= false;
 	}
 	if(cmd_convert)
 	{
-		RString real_field_name= field_name.Left(field_name.size()-7) + "Command";
+		RString real_field_name= Left(field_name, field_name.size()-7) + "Command";
 		store_cmd(real_field_name, value);
 	}
 	else
@@ -450,16 +450,16 @@ void actor_template_t::load_frames_from_file(RString const& fname, RString const
 		{
 			// Frame and Delay fields have names of the form "Frame0000" where the
 			// "0000" part is the id of the frame.
-			RString field_type= attr->first.Left(5);
+			RString field_type= Left(attr->first, 5);
 			if(field_type == "Frame")
 			{
-				int id= StringToInt(attr->first.Right(attr->first.size()-5));
+				int id= StringToInt(Right(attr->first, attr->first.size()-5));
 				make_space_for_frame(id);
 				attr->second->GetValue(frames[id].frame);
 			}
 			else if(field_type == "Delay")
 			{
-				int id= StringToInt(attr->first.Right(attr->first.size()-5));
+				int id= StringToInt(Right(attr->first, attr->first.size()-5));
 				make_space_for_frame(id);
 				attr->second->GetValue(frames[id].delay);
 			}
@@ -737,7 +737,7 @@ void convert_xml_file(RString const& fname, RString const& dirname)
 	condition_set_t conditions;
 	plate.load_node(xml, dirname, conditions);
 	RageFile* file= new RageFile;
-	RString out_name= fname.Left(fname.size()-4) + ".lua";
+	RString out_name= Left(fname, fname.size()-4) + ".lua";
 	if(!file->Open(out_name, RageFile::WRITE))
 	{
 		LOG->Trace("Could not open %s: %s", out_name.c_str(), file->GetError().c_str());
