@@ -146,6 +146,13 @@ RString RageSoundDriver_WaveOut::Init()
 
 	wo_num_blocks_ = CalculateNumBlocks( wo_samplerate_ );
 
+	// Clamp wo_num_blocks_ to the range of kMaximumNumBlocks.
+	if (wo_num_blocks_ < 1 || wo_num_blocks_ > kMaximumNumBlocks)
+	{
+		LOG->Warn("RageSoundDriver_WaveOut: wo_num_blocks_ out of range (%d); clamping", wo_num_blocks_);
+		wo_num_blocks_ = std::clamp(wo_num_blocks_, 1, kMaximumNumBlocks);
+	}
+
 	wo_frames_per_block_ = kBlockSizeFrames * wo_num_blocks_;
 	wo_blocksize_ = kBlockSizeFrames * kBytesPerFrame;
 
