@@ -154,6 +154,7 @@ RString RageSoundDriver_WaveOut::Init()
 	fmt.nChannels = kChannels;
 	fmt.cbSize = 0;
 	fmt.nSamplesPerSec = wo_samplerate_;
+	fmt.wBitsPerSample = 8 * (kBytesPerFrame / kChannels);
 	fmt.nBlockAlign = fmt.nChannels * fmt.wBitsPerSample / 8;
 	fmt.nAvgBytesPerSec = fmt.nSamplesPerSec * fmt.nBlockAlign;
 
