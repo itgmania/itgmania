@@ -519,7 +519,7 @@ bool Song::ReloadFromSongDir( RString sDir )
 		}
 		else
 		{
-			m_SongTiming.m_fBeat0GroupOffsetInSeconds = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
+			mNewSteps[id]->m_Timing.m_fBeat0GroupOffsetInSeconds = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
 			LOG->Warn("Song %s has no group, using default sync offset.", m_sMainTitle.c_str());
 		}
 	}
