@@ -16,11 +16,11 @@
 namespace
 {
 
-	#if defined(_WIN32)
-		#define DEFAULT_OUTPUT_FILENAME "\\\\.\\pipe\\StepMania-Lights-SextetStream"
-	#else
-		#define DEFAULT_OUTPUT_FILENAME "Data/StepMania-Lights-SextetStream.out"
-	#endif
+#if defined(_WIN32)
+#define DEFAULT_OUTPUT_FILENAME "\\\\.\\pipe\\StepMania-Lights-SextetStream"
+#else
+#define DEFAULT_OUTPUT_FILENAME "Data/StepMania-Lights-SextetStream.out"
+#endif
 	static Preference<RString> g_sSextetStreamOutputFilename("SextetStreamOutputFilename", DEFAULT_OUTPUT_FILENAME);
 
 
@@ -50,7 +50,7 @@ namespace
 		}
 
 		virtual ~SextetImpl() {
-			if(out != nullptr)
+			if (out != nullptr)
 			{
 #ifdef _WIN32
 				CloseHandle(out);
@@ -69,40 +69,47 @@ namespace
 			packLine(buffer, ls);
 
 			// Only write if the message has changed since the last write.
-			if(memcmp(buffer, lastOutput, FULL_SEXTET_COUNT) != 0)
+			if (memcmp(buffer, lastOutput, FULL_SEXTET_COUNT) != 0)
 			{
-				if(out != nullptr)
-				{
+
 #ifdef _WIN32
+				bool fSuccess = false;
+
+				if (out != nullptr)
+				{
 					DWORD cbWritten;
-					bool fSuccess = WriteFile(
+					fSuccess = WriteFile(
 						out,                  // pipe handle 
 						buffer,             // message 
 						FULL_SEXTET_COUNT,              // message length 
 						&cbWritten,             // bytes written 
 						NULL);                  // not overlapped
-					if (!fSuccess) {
-						retry++;
-						if (retry > 30) {
-							out = CreateFile(
-								g_sSextetStreamOutputFilename.Get(),   // pipe name 
-								GENERIC_WRITE,
-								0,              // no sharing 
-								NULL,           // default security attributes
-								OPEN_EXISTING,  // opens existing pipe 
-								0,              // default attributes 
-								NULL);
-							retry = 0;
-						}
-					}
-					else {
+				}
+				if (!fSuccess) {
+					retry++;
+					if (retry > 30) {
+						out = CreateFile(
+							g_sSextetStreamOutputFilename.Get(),   // pipe name 
+							GENERIC_WRITE,
+							0,              // no sharing 
+							NULL,           // default security attributes
+							OPEN_EXISTING,  // opens existing pipe 
+							0,              // default attributes 
+							NULL);
 						retry = 0;
 					}
+				}
+				else {
+					retry = 0;
+				}
 #else
+				if (out != nullptr)
+				{
 					out->Write(buffer, FULL_SEXTET_COUNT);
 					out->Flush();
-#endif
 				}
+#endif
+
 
 				// Remember last message
 				memcpy(lastOutput, buffer, FULL_SEXTET_COUNT);
@@ -120,15 +127,15 @@ LightsDriver_SextetStream::LightsDriver_SextetStream()
 
 LightsDriver_SextetStream::~LightsDriver_SextetStream()
 {
-	if(static_cast<SextetImpl*>(_impl) != nullptr)
+	if (static_cast<SextetImpl*>(_impl) != nullptr)
 	{
 		delete static_cast<SextetImpl*>(_impl);
 	}
 }
 
-void LightsDriver_SextetStream::Set(const LightsState *ls)
+void LightsDriver_SextetStream::Set(const LightsState* ls)
 {
-	if(static_cast<SextetImpl*>(_impl) != nullptr)
+	if (static_cast<SextetImpl*>(_impl) != nullptr)
 	{
 		static_cast<SextetImpl*>(_impl)->Set(ls);
 	}
@@ -139,11 +146,11 @@ void LightsDriver_SextetStream::Set(const LightsState *ls)
 REGISTER_LIGHTS_DRIVER_CLASS(SextetStreamToFile);
 
 
-inline RageFile * openOutputStream(const RString& filename)
+inline RageFile* openOutputStream(const RString& filename)
 {
-	RageFile * file = new RageFile;
+	RageFile* file = new RageFile;
 
-	if(!file->Open(filename, RageFile::WRITE|RageFile::STREAMED))
+	if (!file->Open(filename, RageFile::WRITE | RageFile::STREAMED))
 	{
 		LOG->Warn("Error opening file '%s' for output: %s", filename.c_str(), file->GetError().c_str());
 		RageUtil::SafeDelete(file);
