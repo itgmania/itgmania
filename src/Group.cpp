@@ -42,6 +42,11 @@ Group::~Group()
 }
 
 Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfile) {
+    if (sDir.empty() || sGroupDirName.empty()) {
+        LOG->Warn("Group::Group: Empty directory or group name provided.");
+        return;
+    }
+
     RString sPackIniPath;
     if (bFromProfile) {
         sPackIniPath = sDir + "/" + INI_FILE;
@@ -72,7 +77,12 @@ Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfil
     
     if (FILEMAN->DoesFileExist(sPackIniPath)) {
         IniFile ini;
-        ini.ReadFile(sPackIniPath);
+        if (!ini.ReadFile(sPackIniPath)) {
+        LOG->Warn(
+            "Group::Group: Failed to read Pack.ini file at '%s': %s",
+            sPackIniPath.c_str(), ini.GetError().c_str());
+            return;
+        }
 
         RString sVersion = "";
         ini.GetValue("Group", "Version", sVersion);
