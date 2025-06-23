@@ -877,40 +877,242 @@ void NoteField::DrawPrimitives()
 		float glow = std::cos(phase) * 0.5f + 0.5f;
 		const RageColor text_glow = RageColor(1.0f, 1.0f, 1.0f, glow);
 
-		float horiz_align= align_right;
-		float side_sign= 1;
-#define draw_all_segments(str_exp, name, caps_name)	\
-		horiz_align= caps_name##_IS_LEFT_SIDE ? align_right : align_left; \
-		side_sign= caps_name##_IS_LEFT_SIDE ? -1 : 1; \
-		for(size_t i= 0; i < segs[SEGMENT_##caps_name]->size(); ++i) \
-		{ \
-			const name##Segment* seg= To##name((*segs[SEGMENT_##caps_name])[i]); \
-			if(seg->GetRow() >= m_FieldRenderArgs.first_row && \
-				seg->GetRow() <= m_FieldRenderArgs.last_row && \
-				IS_ON_SCREEN(seg->GetBeat())) \
-			{ \
-				draw_timing_segment_text(str_exp, seg->GetBeat(), side_sign, \
-					caps_name##_OFFSETX, horiz_align, caps_name##_COLOR, text_glow); \
-			} \
+		float horiz_align = align_right;
+		float side_sign = 1;
+
+		// Scroll Segments
+		horiz_align = SCROLL_IS_LEFT_SIDE ? align_right : align_left;
+		side_sign = SCROLL_IS_LEFT_SIDE ? -1 : 1;
+		for (size_t i = 0; i < segs[SEGMENT_SCROLL]->size(); ++i)
+		{
+			const ScrollSegment* seg = ToScroll((*segs[SEGMENT_SCROLL])[i]);
+			if (seg->GetRow() >= m_FieldRenderArgs.first_row &&
+				seg->GetRow() <= m_FieldRenderArgs.last_row &&
+				IS_ON_SCREEN(seg->GetBeat()))
+			{
+				draw_timing_segment_text(
+					std::to_string(seg->GetRatio()),
+					seg->GetBeat(),
+					side_sign,
+					SCROLL_OFFSETX,
+					horiz_align,
+					SCROLL_COLOR,
+					text_glow);
+			}
 		}
 
-		draw_all_segments(std::to_string(seg->GetRatio()), Scroll, SCROLL);
-		draw_all_segments(std::to_string(seg->GetBPM()), BPM, BPM);
-		draw_all_segments(std::to_string(seg->GetPause()), Stop, STOP);
-		draw_all_segments(std::to_string(seg->GetPause()), Delay, DELAY);
-		draw_all_segments(std::to_string(seg->GetLength()), Warp, WARP);
-		draw_all_segments(ssprintf("%d\n--\n%d", seg->GetNum(), seg->GetDen()),
-			TimeSignature, TIME_SIG);
-		draw_all_segments(ssprintf("%d", seg->GetTicks()), Tickcount, TICKCOUNT);
-		draw_all_segments(
-			ssprintf("%d/%d", seg->GetCombo(), seg->GetMissCombo()), Combo, COMBO);
-		draw_all_segments(seg->GetLabel(), Label, LABEL);
-		draw_all_segments(ssprintf("%s\n%s\n%s",
-				std::to_string(seg->GetRatio()).c_str(),
-				(seg->GetUnit() == 1 ? "S" : "B"),
-				std::to_string(seg->GetDelay()).c_str()), Speed, SPEED);
-		draw_all_segments(std::to_string(seg->GetLength()), Fake, FAKE);
-#undef draw_all_segments
+		// BPM Segments
+		horiz_align = BPM_IS_LEFT_SIDE ? align_right : align_left;
+		side_sign = BPM_IS_LEFT_SIDE ? -1 : 1;
+		for (size_t i = 0; i < segs[SEGMENT_BPM]->size(); ++i)
+		{
+			const BPMSegment* seg = ToBPM((*segs[SEGMENT_BPM])[i]);
+			if (seg->GetRow() >= m_FieldRenderArgs.first_row &&
+				seg->GetRow() <= m_FieldRenderArgs.last_row &&
+				IS_ON_SCREEN(seg->GetBeat()))
+			{
+				draw_timing_segment_text(
+					std::to_string(seg->GetBPM()),
+					seg->GetBeat(),
+					side_sign,
+					BPM_OFFSETX,
+					horiz_align,
+					BPM_COLOR,
+					text_glow);
+			}
+		}
+
+		// Stop Segments
+		horiz_align = STOP_IS_LEFT_SIDE ? align_right : align_left;
+		side_sign = STOP_IS_LEFT_SIDE ? -1 : 1;
+		for (size_t i = 0; i < segs[SEGMENT_STOP]->size(); ++i)
+		{
+			const StopSegment* seg = ToStop((*segs[SEGMENT_STOP])[i]);
+			if (seg->GetRow() >= m_FieldRenderArgs.first_row &&
+				seg->GetRow() <= m_FieldRenderArgs.last_row &&
+				IS_ON_SCREEN(seg->GetBeat()))
+			{
+				draw_timing_segment_text(
+					std::to_string(seg->GetPause()),
+					seg->GetBeat(),
+					side_sign,
+					STOP_OFFSETX,
+					horiz_align,
+					STOP_COLOR,
+					text_glow);
+			}
+		}
+
+		// Delay Segments
+		horiz_align = DELAY_IS_LEFT_SIDE ? align_right : align_left;
+		side_sign = DELAY_IS_LEFT_SIDE ? -1 : 1;
+		for (size_t i = 0; i < segs[SEGMENT_DELAY]->size(); ++i)
+		{
+			const DelaySegment* seg = ToDelay((*segs[SEGMENT_DELAY])[i]);
+			if (seg->GetRow() >= m_FieldRenderArgs.first_row &&
+				seg->GetRow() <= m_FieldRenderArgs.last_row &&
+				IS_ON_SCREEN(seg->GetBeat()))
+			{
+				draw_timing_segment_text(
+					std::to_string(seg->GetPause()),
+					seg->GetBeat(),
+					side_sign,
+					DELAY_OFFSETX,
+					horiz_align,
+					DELAY_COLOR,
+					text_glow);
+			}
+		}
+
+		// Warp Segments
+		horiz_align = WARP_IS_LEFT_SIDE ? align_right : align_left;
+		side_sign = WARP_IS_LEFT_SIDE ? -1 : 1;
+		for (size_t i = 0; i < segs[SEGMENT_WARP]->size(); ++i)
+		{
+			const WarpSegment* seg = ToWarp((*segs[SEGMENT_WARP])[i]);
+			if (seg->GetRow() >= m_FieldRenderArgs.first_row &&
+				seg->GetRow() <= m_FieldRenderArgs.last_row &&
+				IS_ON_SCREEN(seg->GetBeat()))
+			{
+				draw_timing_segment_text(
+					std::to_string(seg->GetLength()),
+					seg->GetBeat(),
+					side_sign,
+					WARP_OFFSETX,
+					horiz_align,
+					WARP_COLOR,
+					text_glow);
+			}
+		}
+
+		// Time Signature Segments
+		horiz_align = TIME_SIG_IS_LEFT_SIDE ? align_right : align_left;
+		side_sign = TIME_SIG_IS_LEFT_SIDE ? -1 : 1;
+		for (size_t i = 0; i < segs[SEGMENT_TIME_SIG]->size(); ++i)
+		{
+			const TimeSignatureSegment* seg = ToTimeSignature((*segs[SEGMENT_TIME_SIG])[i]);
+			if (seg->GetRow() >= m_FieldRenderArgs.first_row &&
+				seg->GetRow() <= m_FieldRenderArgs.last_row &&
+				IS_ON_SCREEN(seg->GetBeat()))
+			{
+				draw_timing_segment_text(
+					ssprintf("%d\n--\n%d", seg->GetNum(), seg->GetDen()),
+					seg->GetBeat(),
+					side_sign,
+					TIME_SIG_OFFSETX,
+					horiz_align,
+					TIME_SIG_COLOR,
+					text_glow);
+			}
+		}
+
+		// Tickcount Segments
+		horiz_align = TICKCOUNT_IS_LEFT_SIDE ? align_right : align_left;
+		side_sign = TICKCOUNT_IS_LEFT_SIDE ? -1 : 1;
+		for (size_t i = 0; i < segs[SEGMENT_TICKCOUNT]->size(); ++i)
+		{
+			const TickcountSegment* seg = ToTickcount((*segs[SEGMENT_TICKCOUNT])[i]);
+			if (seg->GetRow() >= m_FieldRenderArgs.first_row &&
+				seg->GetRow() <= m_FieldRenderArgs.last_row &&
+				IS_ON_SCREEN(seg->GetBeat()))
+			{
+				draw_timing_segment_text(
+					ssprintf("%d", seg->GetTicks()),
+					seg->GetBeat(),
+					side_sign,
+					TICKCOUNT_OFFSETX,
+					horiz_align,
+					TICKCOUNT_COLOR,
+					text_glow);
+			}
+		}
+
+		// Combo Segments
+		horiz_align = COMBO_IS_LEFT_SIDE ? align_right : align_left;
+		side_sign = COMBO_IS_LEFT_SIDE ? -1 : 1;
+		for (size_t i = 0; i < segs[SEGMENT_COMBO]->size(); ++i)
+		{
+			const ComboSegment* seg = ToCombo((*segs[SEGMENT_COMBO])[i]);
+			if (seg->GetRow() >= m_FieldRenderArgs.first_row &&
+				seg->GetRow() <= m_FieldRenderArgs.last_row &&
+				IS_ON_SCREEN(seg->GetBeat()))
+			{
+				draw_timing_segment_text(
+					ssprintf("%d/%d", seg->GetCombo(), seg->GetMissCombo()),
+					seg->GetBeat(),
+					side_sign,
+					COMBO_OFFSETX,
+					horiz_align,
+					COMBO_COLOR,
+					text_glow);
+			}
+		}
+
+		// Label Segments
+		horiz_align = LABEL_IS_LEFT_SIDE ? align_right : align_left;
+		side_sign = LABEL_IS_LEFT_SIDE ? -1 : 1;
+		for (size_t i = 0; i < segs[SEGMENT_LABEL]->size(); ++i)
+		{
+			const LabelSegment* seg = ToLabel((*segs[SEGMENT_LABEL])[i]);
+			if (seg->GetRow() >= m_FieldRenderArgs.first_row &&
+				seg->GetRow() <= m_FieldRenderArgs.last_row &&
+				IS_ON_SCREEN(seg->GetBeat()))
+			{
+				draw_timing_segment_text(
+					seg->GetLabel(),
+					seg->GetBeat(),
+					side_sign,
+					LABEL_OFFSETX,
+					horiz_align,
+					LABEL_COLOR,
+					text_glow);
+			}
+		}
+
+		// Speed Segments
+		horiz_align = SPEED_IS_LEFT_SIDE ? align_right : align_left;
+		side_sign = SPEED_IS_LEFT_SIDE ? -1 : 1;
+		for (size_t i = 0; i < segs[SEGMENT_SPEED]->size(); ++i)
+		{
+			const SpeedSegment* seg = ToSpeed((*segs[SEGMENT_SPEED])[i]);
+			if (seg->GetRow() >= m_FieldRenderArgs.first_row &&
+				seg->GetRow() <= m_FieldRenderArgs.last_row &&
+				IS_ON_SCREEN(seg->GetBeat()))
+			{
+				draw_timing_segment_text(
+					ssprintf("%s\n%s\n%s",
+						std::to_string(seg->GetRatio()).c_str(),
+						(seg->GetUnit() == 1 ? "S" : "B"),
+						std::to_string(seg->GetDelay()).c_str()),
+					seg->GetBeat(),
+					side_sign,
+					SPEED_OFFSETX,
+					horiz_align,
+					SPEED_COLOR,
+					text_glow);
+			}
+		}
+
+		// Fake Segments
+		horiz_align = FAKE_IS_LEFT_SIDE ? align_right : align_left;
+		side_sign = FAKE_IS_LEFT_SIDE ? -1 : 1;
+		for (size_t i = 0; i < segs[SEGMENT_FAKE]->size(); ++i)
+		{
+			const FakeSegment* seg = ToFake((*segs[SEGMENT_FAKE])[i]);
+			if (seg->GetRow() >= m_FieldRenderArgs.first_row &&
+				seg->GetRow() <= m_FieldRenderArgs.last_row &&
+				IS_ON_SCREEN(seg->GetBeat()))
+			{
+				draw_timing_segment_text(
+					std::to_string(seg->GetLength()),
+					seg->GetBeat(),
+					side_sign,
+					FAKE_OFFSETX,
+					horiz_align,
+					FAKE_COLOR,
+					text_glow);
+			}
+		}
 
 		// Course mods text
 		const Course *pCourse = GAMESTATE->m_pCurCourse;
@@ -1074,6 +1276,7 @@ void NoteField::DrawPrimitives()
 
 	cur->m_GhostArrowRow.Draw();
 }
+#undef IS_ON_SCREEN
 
 void NoteField::DrawBoardPrimitive()
 {
