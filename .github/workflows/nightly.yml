@@ -25,7 +25,7 @@ jobs:
             release: |
               cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
               cmake --build build --target package
-            path: build/ITGmania-*-NIGHTLY-git-*-Linux-x86_64-no-songs.tar.gz
+            path: build/ITGmania-*-NIGHTLY-git-*-Linux-no-songs.tar.gz
           - os: ubuntu-24.04-arm
             name: Ubuntu (ARM)
             install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
@@ -33,7 +33,7 @@ jobs:
             release: |
               cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off -DWITH_MINIMAID=Off
               cmake --build build --target package
-            path: build/ITGmania-*-NIGHTLY-git-*-Linux-aarch64-no-songs.tar.gz
+            path: build/ITGmania-*-NIGHTLY-git-*-Linux-arm64-no-songs.tar.gz
           - os: macos-latest
             name: macOS (M1)
             install: brew install nasm
