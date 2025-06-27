@@ -45,14 +45,10 @@ typedef union
 {
 	struct
 	{
-		bool led01 : 1;
-		bool led02 : 1;
-		bool led03 : 1;
-		bool led04 : 1;
-		bool led05 : 1;
-		bool led06 : 1;
-		bool led07 : 1;
-		bool led08 : 1;
+		//NOTE: this is intentionally byte swapped
+		//as Ultimarc's library does this, the firmware expects this order.
+		//this matches the physical location of each output with the variable name.
+		//see this code snippet: https://github.com/itgmania/itgmania/issues/921#issuecomment-3008263137
 		bool led09 : 1;
 		bool led10 : 1;
 		bool led11 : 1;
@@ -61,6 +57,15 @@ typedef union
 		bool led14 : 1;
 		bool led15 : 1;
 		bool led16 : 1;
+
+		bool led01 : 1;
+		bool led02 : 1;
+		bool led03 : 1;
+		bool led04 : 1;
+		bool led05 : 1;
+		bool led06 : 1;
+		bool led07 : 1;
+		bool led08 : 1;
 	};
 	uint16_t raw;
 } pacdrive_leds_t;

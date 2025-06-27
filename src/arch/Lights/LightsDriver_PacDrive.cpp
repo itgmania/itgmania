@@ -33,55 +33,78 @@ void LightsDriver_PacDrive::Set(const LightsState *ls)
 	switch (iPacDriveLightOrder)
 	{
 	case 1:
-		// Sets the cabinet light values to follow LumenAR/OpenITG wiring standards
-
 		/*
-		 * OpenITG PacDrive Order:
-		 * Taken from LightsDriver_PacDrive::SetLightsMappings() in openitg.
-		 * (index of 1 as the PacDrive labels them as index 1)
+		 * OpenITG (LumenAR) Order:
+		 * http://solid-orange.com/wp-content/uploads/2014/02/ddr_oitg_pacdrive_pins.gif
+		 * Note: The bit order in OpenITG is byte swapped as PacDrive's vendor library byte
+		 * swaps the values.
 		 *
-		 * 1: Marquee UL
-		 * 2: Marquee UR
-		 * 3: Marquee DL
-		 * 4: Marquee DR
+		 * This listing mirrors the PHYSICAL pins each of the lights comes out.
 		 *
-		 * 5: P1 Button
-		 * 6: P2 Button
-		 *
-		 * 7: Bass Left
-		 * 8: Bass Right
-		 *
-		 * 9,19,11,12: P1 L R U D
-		 * 13,14,15,16: P2 L R U D
+		 * 01: P1 Left
+		 * 02: P1 Right
+		 * 03: P1 Up
+		 * 04: P1 Down
+		 * 05: P2 Left
+		 * 06: P2 Right
+		 * 07: P2 Up
+		 * 08: P2 Down
+		 * 09: Marquee UL
+		 * 10: Marquee UR
+		 * 11: Marquee LL
+		 * 12: Marquee LR
+		 * 13: P1 Start
+		 * 14: P2 Start
+		 * 15: Bass Left
+		 * 16: Bass Right
 		 */
 
-		state.leds.led01 = ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT];
-		state.leds.led02 = ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT];
-		state.leds.led03 = ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT];
-		state.leds.led04 = ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT];
+		state.leds.led01 = ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT];
+		state.leds.led02 = ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT];
+		state.leds.led03 = ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP];
+		state.leds.led04 = ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN];
 
-		state.leds.led05 = ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START];
-		state.leds.led06 = ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START];
+		state.leds.led05 = ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT];
+		state.leds.led06 = ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT];
+		state.leds.led07 = ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP];
+		state.leds.led08 = ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN];
 
-		state.leds.led07 = ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT];
-		state.leds.led08 = ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT];
+		state.leds.led09 = ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT];
+		state.leds.led10 = ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT];
+		state.leds.led11 = ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT];
+		state.leds.led12 = ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT];
 
-		state.leds.led09 = ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT];
-		state.leds.led10 = ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT];
-		state.leds.led11 = ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP];
-		state.leds.led12 = ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN];
+		state.leds.led13 = ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START];
+		state.leds.led14 = ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START];
 
-		state.leds.led13 = ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT];
-		state.leds.led14 = ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT];
-		state.leds.led15 = ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP];
-		state.leds.led16 = ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN];
+		state.leds.led15 = ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT];
+		state.leds.led16 = ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT];
+
 		break;
 
 	case 0:
 	default:
-		// If all else fails, falls back to original order
-		// reference page 7
-		// http://www.peeweepower.com/stepmania/sm509pacdriveinfo.pdf
+		/*
+		* SM5 order.
+		* see pg7 of http://www.peeweepower.com/stepmania/sm509pacdriveinfo.pdf
+		*
+		* 01: Marquee UL
+		* 02: Marquee UR
+		* 03: Marquee LL
+		* 04: Marquee LR
+		* 05: Bass (both)
+		* 06: P1 Left
+		* 07: P1 Right
+		* 08: P1 Up
+		* 09: P1 Down
+		* 10: P1 Start
+		* 11: P2 Left
+		* 12: P2 Right
+		* 13: P2 Up
+		* 14: P2 Down
+		* 15: P2 Start
+		* 16: (unused)
+		*/
 
 		state.leds.led01 = ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT];
 		state.leds.led02 = ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT];
