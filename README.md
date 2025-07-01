@@ -48,7 +48,7 @@ You can choose between using the installer or using the portable build. Using th
 
 * **Fedora-based**:
 
-  * `sudo yum install gdk-pixbuf2 gtk3 libusb-compat-0.1 libXinerama libXtst`
+  * `sudo dnf install gdk-pixbuf2 gtk3 libusb-compat-0.1 libXinerama libXtst`
 
 *  **Arch Linux**:
 
