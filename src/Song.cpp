@@ -45,9 +45,6 @@
 #include <set>
 #include <vector>
 
-//-Nick12 Used for song file hashing
-#include <CryptManager.h>
-
 /**
  * @brief The internal version of the cache for StepMania.
  *
@@ -1763,26 +1760,6 @@ RString Song::GetCacheFile(RString sType)
 	}
 	// Return empty if nothing found.
 	return "";
-}
-
-RString Song::GetFileHash()
-{
-	static const std::vector<RString> extensions = {
-		"ssc", "sm", "dwi", "sma", "bms", "ksf", "json", "jso"
-	};
-
-	if (m_sFileHash.empty()) {
-		for (const RString& ext : extensions) {
-			RString sPath = SetExtension(GetSongFilePath(), ext);
-			if (IsAFile(sPath)) {
-				m_sFileHash = BinaryToHex(CRYPTMAN->GetSHA1ForFile(sPath));
-				return m_sFileHash;
-			}
-		}
-	}
-
-	m_sFileHash = "";
-	return m_sFileHash;
 }
 
 std::vector<RString> Song::GetInstrumentTracksToVectorString() const
