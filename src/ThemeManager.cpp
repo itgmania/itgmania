@@ -421,10 +421,15 @@ void ThemeManager::SwitchThemeAndLanguage( const RString &sThemeName_, const RSt
 
 	/* We haven't actually loaded the theme yet, so we can't check whether
 	 * sLanguage exists. Just check for empty. */
-	if( sLanguage.empty() )
+	if( sLanguage.empty() ) {
 		sLanguage = GetDefaultLanguage();
-	LOG->Trace("ThemeManager::SwitchThemeAndLanguage: \"%s\", \"%s\"",
-		sThemeName.c_str(), sLanguage.c_str() );
+	}
+
+	LOG->Trace(
+		"ThemeManager::SwitchThemeAndLanguage: \"%s\", \"%s\"",
+		sThemeName.c_str(),
+		sLanguage.c_str()
+	);
 
 	bool bNothingChanging = sThemeName == m_sCurThemeName && sLanguage == m_sCurLanguage && m_bPseudoLocalize == bPseudoLocalize;
 	if( bNothingChanging && !bForceThemeReload )
