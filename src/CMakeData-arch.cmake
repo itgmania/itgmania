@@ -182,6 +182,7 @@ list(APPEND SMDATA_ARCH_LIGHTS_SRC "arch/Lights/LightsDriver.cpp"
             "arch/Lights/LightsDriver_SystemMessage.cpp"
             "arch/Lights/LightsDriver_stac.cpp"
             "arch/Lights/LightsDriver_snek.cpp"
+            "arch/Lights/LightsDriver_MinimaidHID.cpp"
             "arch/Lights/LightsDriver_PacDrive.cpp"
             "arch/Lights/LightsDriver_HidBlueDot.cpp")
 list(APPEND SMDATA_ARCH_LIGHTS_HPP "arch/Lights/LightsDriver.h"
@@ -191,6 +192,7 @@ list(APPEND SMDATA_ARCH_LIGHTS_HPP "arch/Lights/LightsDriver.h"
             "arch/Lights/SextetUtils.h"
             "arch/Lights/LightsDriver_stac.h"
             "arch/Lights/LightsDriver_snek.h"
+            "arch/Lights/LightsDriver_MinimaidHID.cpp"
             "arch/Lights/LightsDriver_PacDrive.h"
             "arch/Lights/LightsDriver_HidBlueDot.h")
 
