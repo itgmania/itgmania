@@ -1,6 +1,26 @@
 #ifndef INPUT_HANDLER_PUMPHID
 #define INPUT_HANDLER_PUMPHID
 
+/*
+ * -------------------------- NOTE --------------------------
+ *
+ * This driver needs user read/write access the device.
+ * This can be achieved by using a udev rule like this:
+ *
+ * SUBSYSTEMS=="usb", ATTRS{idVendor}=="0D2F", ATTRS{idProduct}=="1040",
+ * OWNER="dance", GROUP="dance", MODE="0660"
+ *
+ * or
+ *
+ * KERNEL=="hidraw*", ATTRS{idVendor}=="0D2F", ATTRS{idProduct}=="1020",
+ * OWNER="dance", GROUP="dance", MODE="0660"
+ *
+ * Refer to your distribution's documentation on how to properly apply a udev
+ * rule.
+ *
+ * -------------------------- NOTE --------------------------
+ */
+
 #include <vector>
 
 #include "InputHandler.h"
@@ -23,6 +43,8 @@
 #define PUMPHID_VID 0x0D2F
 #define PUMPHID_PID_V1 0x1020
 #define PUMPHID_PID_V2 0x1040
+
+#define PUMPHID_INTERFACE_NUM 0
 
 #pragma pack(push, 1)
 
@@ -103,10 +125,10 @@ typedef union {
     uint8_t mux_setting_p1 : 2;
     bool lamp_p1_ul : 1;
     bool lamp_p1_ur : 1;
-    bool lamp_p1_c : 1;
+    bool lamp_p1_cn : 1;
     bool lamp_p1_ll : 1;
     bool lamp_p1_lr : 1;
-    bool lamp_pad0 : 1;
+    bool lamp_p1_pad7 : 1;
 
     // Byte 1: Neon lights
     bool pad0 : 1;
@@ -115,16 +137,18 @@ typedef union {
     bool pad3 : 1;
     bool pad4 : 1;
     bool pad5 : 1;
-    bool lamp_led : 1;
+    bool pad6 : 1;
     bool pad7 : 1;
 
     // Byte 2: P2 lamps
     uint8_t mux_setting_p2 : 2;
     bool lamp_p2_ul : 1;
     bool lamp_p2_ur : 1;
-    bool lamp_p2_c : 1;
+    bool lamp_p2_cn : 1;
     bool lamp_p2_ll : 1;
     bool lamp_p2_lr : 1;
+    // yes this is a cab lamp in a player byte... not a mistake, it's the
+    // hardware.
     bool lamp_mar_ul : 1;
 
     // Byte 3: Cabinet lamps
@@ -143,9 +167,9 @@ typedef union {
     bool menu_p1_cn : 1;
     bool menu_p1_ll : 1;
     bool menu_p1_lr : 1;
-    bool pad5_p1 : 1;
-    bool pad6_p1 : 1;
-    bool pad7_p1 : 1;
+    bool menu_p1_pad5 : 1;
+    bool menu_p1_pad6 : 1;
+    bool menu_p1_pad7 : 1;
 
     // Byte 5: P2 menu lamps
     bool menu_p2_ul : 1;
@@ -153,9 +177,9 @@ typedef union {
     bool menu_p2_cn : 1;
     bool menu_p2_ll : 1;
     bool menu_p2_lr : 1;
-    bool pad5_p2 : 1;
-    bool pad6_p2 : 1;
-    bool pad7_p2 : 1;
+    bool menu_p2_pad5 : 1;
+    bool menu_p2_pad6 : 1;
+    bool menu_p2_pad7 : 1;
 
     // Byte 6–15: Reserved/Raw
     uint8_t byte6;
@@ -215,3 +239,28 @@ class InputHandler_PumpHID : public InputHandler {
 };
 
 #endif
+
+/*
+ * (c) 2025 din
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, and/or sell copies of the Software, and to permit persons to
+ * whom the Software is furnished to do so, provided that the above
+ * copyright notice(s) and this permission notice appear in all copies of
+ * the Software and that both the above copyright notice(s) and this
+ * permission notice appear in supporting documentation.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+ * THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS
+ * INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT
+ * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ * PERFORMANCE OF THIS SOFTWARE.
+ */
