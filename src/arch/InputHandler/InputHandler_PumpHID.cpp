@@ -107,18 +107,32 @@ void InputHandler_PumpHID::InputThreadMain() {
     msg_to_device.report_id_pad = 0;
 
     // push lighting state
-    dev->Write(msg_to_device.raw_buff, PUMPHID_PAYLOADSIZE_TODEV);
+    HidResults writeRtn =
+        dev->Write(msg_to_device.raw_buff, PUMPHID_PAYLOADSIZE_TODEV);
+
+    if (writeRtn != HidResults::Success) {
+      LOG->Warn("PumpHID write read fail %d", writeRtn);
+      continue;
+    }
 
     // pull input state
-    int rtn = dev->Read(msg_from_device.raw_buff, PUMPHID_PAYLOADSIZE_FROMDEV);
-    newInput = PumpHIDToLocalState();
+    int readRtn =
+        dev->Read(msg_from_device.raw_buff, PUMPHID_PAYLOADSIZE_FROMDEV);
 
-    // debugging pay no attention
-    // LOG->Info("%d | %08x", rtn, newInput);
+    if (readRtn != PUMPHID_PAYLOADSIZE_FROMDEV) {
+      LOG->Warn("PumpHID read fail %d", readRtn);
+      continue;
+    }
+
+    // convert it to a local value.
+    newInput = PumpHIDToLocalState();
 
     // don't flood the engine with states that are not different.
     if (prevInput != newInput) {
       PushInputStateToEngine(newInput);
+
+      // debugging pay no attention
+      // LOG->Info("%d | %08x", rtn, newInput);
     }
 
     prevLS = newLS;
