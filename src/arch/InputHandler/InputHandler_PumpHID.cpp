@@ -30,6 +30,7 @@
 #include "hidapi.h"
 // clang-format on
 
+// all of the known device pid's that use this communication protocol.
 const std::vector<int> InputHandler_PumpHID::devPIDS = {
     PUMPHID_PID_V1, PUMPHID_PID_V2};
 
@@ -38,12 +39,14 @@ REGISTER_INPUT_HANDLER_CLASS(PumpHID);
 InputHandler_PumpHID::InputHandler_PumpHID() {
   // clear buffers etc.
 
-  dev = new HidDevice(PUMPHID_VID, devPIDS, 0);
-
   memset(msg_to_device.raw_buff, PUMPHID_DEF_LIGHTS, sizeof(msg_to_device));
   memset(msg_from_device.raw_buff, PUMPHID_DEF_INPUT, sizeof(msg_from_device));
 
   m_bShutdown = false;
+
+  // ensure auto reconnect and blocking reads (since the device wants write/read
+  // cycles properly.)
+  dev = new HidDevice(PUMPHID_VID, devPIDS, PUMPHID_INTERFACE_NUM, true, false);
 
   if (IsConnected() && PREFSMAN->m_bThreadedInput) {
     InputThread.SetName("PumpHID thread");
@@ -138,7 +141,7 @@ void InputHandler_PumpHID::CreateLightingMessage(LightsState newLS) {
         newLS.m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP];
     msg_to_device.lamp_p1_ur =
         newLS.m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN];
-    msg_to_device.lamp_p1_c =
+    msg_to_device.lamp_p1_cn =
         newLS.m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT];
     msg_to_device.lamp_p1_ll =
         newLS.m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT];
@@ -147,7 +150,7 @@ void InputHandler_PumpHID::CreateLightingMessage(LightsState newLS) {
         newLS.m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP];
     msg_to_device.lamp_p2_ur =
         newLS.m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN];
-    msg_to_device.lamp_p2_c =
+    msg_to_device.lamp_p2_cn =
         newLS.m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT];
     msg_to_device.lamp_p2_ll =
         newLS.m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT];
@@ -156,7 +159,7 @@ void InputHandler_PumpHID::CreateLightingMessage(LightsState newLS) {
         newLS.m_bGameButtonLights[GameController_1][PUMP_BUTTON_UPLEFT];
     msg_to_device.lamp_p1_ur =
         newLS.m_bGameButtonLights[GameController_1][PUMP_BUTTON_UPRIGHT];
-    msg_to_device.lamp_p1_c =
+    msg_to_device.lamp_p1_cn =
         newLS.m_bGameButtonLights[GameController_1][PUMP_BUTTON_CENTER];
     msg_to_device.lamp_p1_ll =
         newLS.m_bGameButtonLights[GameController_1][PUMP_BUTTON_DOWNLEFT];
@@ -167,7 +170,7 @@ void InputHandler_PumpHID::CreateLightingMessage(LightsState newLS) {
         newLS.m_bGameButtonLights[GameController_2][PUMP_BUTTON_UPLEFT];
     msg_to_device.lamp_p2_ur =
         newLS.m_bGameButtonLights[GameController_2][PUMP_BUTTON_UPRIGHT];
-    msg_to_device.lamp_p2_c =
+    msg_to_device.lamp_p2_cn =
         newLS.m_bGameButtonLights[GameController_2][PUMP_BUTTON_CENTER];
     msg_to_device.lamp_p2_ll =
         newLS.m_bGameButtonLights[GameController_2][PUMP_BUTTON_DOWNLEFT];
@@ -202,6 +205,7 @@ void InputHandler_PumpHID::CreateLightingMessage(LightsState newLS) {
 
 uint32_t InputHandler_PumpHID::PumpHIDToLocalState() {
   // device is active low, but stepmania is active high.
+  // so bit flip them.
   for (int i = 0; i < PUMPHID_PAYLOADSIZE_FROMDEV; i++) {
     msg_from_device.raw_buff[i] = ~msg_from_device.raw_buff[i];
   }
@@ -225,11 +229,16 @@ uint32_t InputHandler_PumpHID::PumpHIDToLocalState() {
   cab |= msg_from_device.cab1.btn_COIN << 4;
 
   // we should now have a clean active high message,
-  // so let's concat it into a
-  // local message.
+  // so let's concat it into a local message.
   // squish it into bit packs of five.
-  return (p1 << 0) | (p2 << (5)) | (msg_from_device.p1_menu.raw << (10)) |
-         (msg_from_device.p2_menu.raw << (15)) | (cab << (20));
+  uint32_t final_state = 0;
+  final_state |= ((p1 & 0x1F) << 0);
+  final_state |= ((p2 & 0x1F) << 5);
+  final_state |= ((msg_from_device.p1_menu.raw & 0x1F) << 10);
+  final_state |= ((msg_from_device.p2_menu.raw & 0x1F) << 15);
+  final_state |= ((cab & 0x1F) << 20);
+
+  return final_state;
 }
 
 void InputHandler_PumpHID::PushInputStateToEngine(std::uint32_t newInput) {
