@@ -7,12 +7,12 @@
  * This driver needs user read/write access the device.
  * This can be achieved by using a udev rule like this:
  *
- * SUBSYSTEMS=="usb", ATTRS{idVendor}=="0D2F", ATTRS{idProduct}=="1040",
+ * SUBSYSTEMS=="usb", ATTRS{idVendor}=="0d2f", ATTRS{idProduct}=="1020",
  * OWNER="dance", GROUP="dance", MODE="0660"
  *
  * or
  *
- * KERNEL=="hidraw*", ATTRS{idVendor}=="0D2F", ATTRS{idProduct}=="1020",
+ * KERNEL=="hidraw*", ATTRS{idVendor}=="0d2f", ATTRS{idProduct}=="1020",
  * OWNER="dance", GROUP="dance", MODE="0660"
  *
  * Refer to your distribution's documentation on how to properly apply a udev
