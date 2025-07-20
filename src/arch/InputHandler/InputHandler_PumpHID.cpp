@@ -111,7 +111,7 @@ void InputHandler_PumpHID::InputThreadMain() {
         dev->Write(msg_to_device.raw_buff, PUMPHID_PAYLOADSIZE_TODEV);
 
     if (writeRtn != HidResults::Success) {
-      LOG->Warn("PumpHID write read fail %d", writeRtn);
+      LOG->Warn("PumpHID write fail %d", writeRtn);
       continue;
     }
 
