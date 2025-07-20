@@ -131,7 +131,7 @@ void InputHandler_PumpHID::InputThreadMain() {
       PushInputStateToEngine(newInput);
 
       // debugging pay no attention
-      // LOG->Info("%d | %08x", rtn, newInput);
+      // LOG->Info("%d | %08x", readRtn, newInput);
     }
 
     prevLS = newLS;
