@@ -28,7 +28,6 @@
 #include "arch/Lights/LightsDriver_Export.h"
 #include "archutils/Common/HidDevice.h"
 
-#define PUMPHID_DEVICEID DEVICE_JOY1
 #define PUMPHID_PAYLOADSIZE_FROMDEV 16
 
 // hidapi wants a blank report ID, but since this device doesn't use that
@@ -196,6 +195,23 @@ typedef union {
   uint8_t raw_buff[PUMPHID_PAYLOADSIZE_TODEV];
 } pumphid_input_state_t;
 
+// used to convert all of this info to 31 buttons for stepmania.
+typedef union {
+  struct {
+    uint8_t p1 : 8;
+    uint8_t p2 : 8;
+
+    uint8_t p1_menu : 5;
+    uint8_t p2_menu : 5;
+
+    uint8_t cab : 5;
+
+    // one extra bit in question.
+    uint8_t padding : 1;
+  };
+  uint32_t raw;
+} pumphid_to_stepmania_t;
+
 #pragma pack(pop)
 
 // ensure the sizes are correct
@@ -206,6 +222,10 @@ static_assert(
 static_assert(
     sizeof(pumphid_output_state_t) == PUMPHID_PAYLOADSIZE_FROMDEV,
     "pumphid_output_state_t != PUMPHID_PAYLOADSIZE_FROMDEV");
+
+// ensure that we are making a 32bit word for stepmania, 32=8*4
+static_assert(
+    sizeof(pumphid_to_stepmania_t) == 4, "pumphid_to_stepmania_t != 4");
 
 class InputHandler_PumpHID : public InputHandler {
  public:
@@ -227,7 +247,7 @@ class InputHandler_PumpHID : public InputHandler {
   bool m_bShutdown;
   RageThread InputThread;
 
-  uint32_t PumpHIDToLocalState();
+  uint32_t PumpHIDToLocalState(pumphid_output_state_t from_dev);
 
   void PushInputStateToEngine(std::uint32_t newInput);
 

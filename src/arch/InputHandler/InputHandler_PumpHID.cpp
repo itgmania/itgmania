@@ -75,9 +75,8 @@ RString InputHandler_PumpHID::GetDeviceSpecificInputString(
 
 void InputHandler_PumpHID::GetDevicesAndDescriptions(
     std::vector<InputDeviceInfo>& vDevicesOut) {
-  // We use a joystick device so we can get automatic input mapping
   vDevicesOut.push_back(
-      InputDeviceInfo(InputDevice(PUMPHID_DEVICEID), "PumpHID"));
+      InputDeviceInfo(InputDevice(DEVICE_PUMPHID), "PumpHID"));
 }
 
 int InputHandler_PumpHID::InputThread_Start(void* p) {
@@ -125,7 +124,7 @@ void InputHandler_PumpHID::InputThreadMain() {
     }
 
     // convert it to a local value.
-    newInput = PumpHIDToLocalState();
+    newInput = PumpHIDToLocalState(msg_from_device);
 
     // don't flood the engine with states that are not different.
     if (prevInput != newInput) {
@@ -217,49 +216,58 @@ void InputHandler_PumpHID::CreateLightingMessage(LightsState newLS) {
   msg_to_device.lamp_alwaysoff0 = false;
 }
 
-uint32_t InputHandler_PumpHID::PumpHIDToLocalState() {
-  // device is active low, but stepmania is active high.
-  // so bit flip them.
+uint32_t InputHandler_PumpHID::PumpHIDToLocalState(
+    pumphid_output_state_t from_dev) {
+  // active low state to stepmania
+  pumphid_to_stepmania_t state;
+  state.raw = 0;
+
+  // the device is active low, but active high easier to understand.
+  // bit flip to make the message active high.
   for (int i = 0; i < PUMPHID_PAYLOADSIZE_FROMDEV; i++) {
-    msg_from_device.raw_buff[i] = ~msg_from_device.raw_buff[i];
+    from_dev.raw_buff[i] = ~from_dev.raw_buff[i];
   }
 
   // TODO: expose the raw individual sensor values to lua to allow someone to
   // write a nice test input screen for debugging. See ITG3's theme and oITG for
   // inspiration.
-  uint8_t p1 = msg_from_device.p1_sensor0.raw | msg_from_device.p1_sensor1.raw |
-               msg_from_device.p1_sensor2.raw | msg_from_device.p1_sensor3.raw;
+  uint8_t p1 = from_dev.p1_sensor0.raw | from_dev.p1_sensor1.raw |
+               from_dev.p1_sensor2.raw | from_dev.p1_sensor3.raw;
 
-  uint8_t p2 = msg_from_device.p2_sensor0.raw | msg_from_device.p2_sensor1.raw |
-               msg_from_device.p2_sensor2.raw | msg_from_device.p2_sensor3.raw;
+  uint8_t p2 = from_dev.p2_sensor0.raw | from_dev.p2_sensor1.raw |
+               from_dev.p2_sensor2.raw | from_dev.p2_sensor3.raw;
 
   // newer firmwares of the pump hid are WEIRD about this, so just pull out the
   // bits we want test, coin, service, and clear from p1, and just coin from p2.
   uint8_t cab = 0;
-  cab |= msg_from_device.cab0.btn_TEST << 0;
-  cab |= msg_from_device.cab0.btn_SERVICE << 1;
-  cab |= msg_from_device.cab0.btn_CLR << 2;
-  cab |= msg_from_device.cab0.btn_COIN << 3;
-  cab |= msg_from_device.cab1.btn_COIN << 4;
+  cab |= from_dev.cab0.btn_TEST << 0;
+  cab |= from_dev.cab0.btn_SERVICE << 1;
+  cab |= from_dev.cab0.btn_CLR << 2;
+  cab |= from_dev.cab0.btn_COIN << 3;
+  cab |= from_dev.cab1.btn_COIN << 4;
 
-  // we should now have a clean active high message,
-  // so let's concat it into a local message.
-  // squish it into bit packs of five.
-  uint32_t final_state = 0;
-  final_state |= ((p1 & 0x1F) << 0);
-  final_state |= ((p2 & 0x1F) << 5);
-  final_state |= ((msg_from_device.p1_menu.raw & 0x1F) << 10);
-  final_state |= ((msg_from_device.p2_menu.raw & 0x1F) << 15);
-  final_state |= ((cab & 0x1F) << 20);
+  // so let's jam this all of this info into 32bits.
+  // we are reserving 8bits per player (which covers an itg cab with pumphid
+  // upgrade, since buttons are in there.) five bits per menu (matches the lx
+  // cab) and five for the cab state (test/service/clear/coin1/coin2)
 
-  return final_state;
+  state.p1 = p1;
+  state.p2 = p2;
+  state.p1_menu = (from_dev.p1_menu.raw & 0x1F);
+  state.p2_menu = (from_dev.p2_menu.raw & 0x1F);
+  state.cab = (cab & 0x1F);
+
+  // we have exactly one bit left over in this 32bit word.
+  // don't spend it all in one place.
+
+  return state.raw;
 }
 
 void InputHandler_PumpHID::PushInputStateToEngine(std::uint32_t newInput) {
   for (int i = 0; i < 32; i++) {
     bool pressed = (newInput & (1 << i));
 
-    DeviceInput di(PUMPHID_DEVICEID, enum_add2(JOY_BUTTON_1, i), pressed);
+    DeviceInput di(DEVICE_PUMPHID, enum_add2(JOY_BUTTON_1, i), pressed);
 
     // If we're in a thread, our timestamp is accurate.
     if (InputThread.IsCreated()) {
