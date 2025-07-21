@@ -32,7 +32,9 @@
 #define MM_VID 0xbeef
 #define MM_PID 0x5730
 
-#define MM_INTERFACE_NUM 0
+// TODO: verify the interface numbers
+// input should be 0, lights 1.
+#define MM_LIGHTS_INTERFACE_NUM 1
 #define MM_REPORT_ID 0
 
 #define MM_OUTPUTREPORT_SIZE 9
@@ -79,7 +81,7 @@ typedef union {
     bool b3_unused4 : 1;  // bit 28
     bool b3_unused5 : 1;  // bit 29
     bool b3_unused6 : 1;  // bit 30
-	bool b3_unused7 : 1;  // bit 31
+    bool b3_unused7 : 1;  // bit 31
   };
   uint32_t raw;
 } mm_lighting_state_ddr_t;

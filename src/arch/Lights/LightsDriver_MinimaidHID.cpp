@@ -8,7 +8,7 @@
 REGISTER_LIGHTS_DRIVER_CLASS(MinimaidHID);
 
 LightsDriver_MinimaidHID::LightsDriver_MinimaidHID()
-    : dev{MM_VID, MM_PID, MM_INTERFACE_NUM} {
+    : dev{MM_VID, MM_PID, MM_LIGHTS_INTERFACE_NUM} {
   memset(outputReport.raw, 0x00, sizeof(outputReport.raw));
 }
 
