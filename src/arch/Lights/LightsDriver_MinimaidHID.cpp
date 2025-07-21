@@ -63,6 +63,9 @@ void LightsDriver_MinimaidHID::Set(const LightsState* ls) {
   newReport.lights.p2_right =
       ls->m_bGameButtonLights[PLAYER_2][DANCE_BUTTON_RIGHT];
 
+  // tie the neons to the blue led for fun and debugging.
+  newReport.blueled = newReport.lights.neons ? 0xFF : 0x00;
+
   // only push on changes.
   if (memcmp(&newReport.raw, &outputReport.raw, MM_OUTPUTREPORT_SIZE) != 0) {
     dev.Write((unsigned char*)&outputReport.raw, MM_OUTPUTREPORT_SIZE);
