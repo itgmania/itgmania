@@ -9,13 +9,13 @@
  * This driver needs user read/write access to the minimaid board.
  * This can be achieved by using a udev rule like this:
  *
- * SUBSYSTEMS=="usb", ATTRS{idVendor}=="beef", ATTRS{idProduct}=="10a8",
- * OWNER="dance", GROUP="dance", MODE="5730"
+ * SUBSYSTEMS=="usb", ATTRS{idVendor}=="beef", ATTRS{idProduct}=="5730",
+ * OWNER="dance", GROUP="dance", MODE="0660"
  *
  * or
  *
- * KERNEL=="hidraw*", ATTRS{idVendor}=="beef", ATTRS{idProduct}=="10a8",
- * OWNER="dance", GROUP="dance", MODE="5730"
+ * KERNEL=="hidraw*", ATTRS{idVendor}=="beef", ATTRS{idProduct}=="5730",
+ * OWNER="dance", GROUP="dance", MODE="0660"
  *
  * Refer to your distribution's documentation on how to properly apply a udev
  * rule.
