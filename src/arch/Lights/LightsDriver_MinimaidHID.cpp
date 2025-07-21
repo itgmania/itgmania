@@ -24,10 +24,12 @@ void LightsDriver_MinimaidHID::Set(const LightsState* ls) {
 
   // static report id.
   newReport.report_id = MM_REPORT_ID;
-  // always ensure the keyboard is on.
+
+  // always ensure the keyboard mode is on.
   newReport.kb_enable = 1;
 
-  // always ensure the pads are turned on.
+  // always ensure the pads are turned on
+  // (this is FL5 on the schematics)
   newReport.lights.p1_pad_en = true;
   newReport.lights.p2_pad_en = true;
 
