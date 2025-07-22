@@ -115,7 +115,9 @@ class LightsDriver_MinimaidHID : public LightsDriver {
  private:
   HidDevice dev;
 
-  mm_output_report_t outputReport;
+  mm_lighting_state_ddr_t prevLights;
+
+  void sendReport(mm_lighting_state_ddr_t lights);
 
  public:
   LightsDriver_MinimaidHID();
