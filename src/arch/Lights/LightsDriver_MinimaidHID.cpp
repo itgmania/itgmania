@@ -68,8 +68,7 @@ void LightsDriver_MinimaidHID::Set(const LightsState* ls) {
 
   // only push on changes.
   if (memcmp(&newReport.raw, &outputReport.raw, MM_OUTPUTREPORT_SIZE) != 0) {
-    dev.Write((unsigned char*)&outputReport.raw, MM_OUTPUTREPORT_SIZE);
-
+    dev.Write((unsigned char*)&newReport.raw, MM_OUTPUTREPORT_SIZE);
     memcpy(&outputReport.raw, &newReport.raw, MM_OUTPUTREPORT_SIZE);
   }
 }
