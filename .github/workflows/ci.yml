@@ -22,7 +22,7 @@ jobs:
           - os: ubuntu-24.04-arm
             name: Ubuntu (ARM)
             install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
-            configure: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)" -DWITH_MINIMAID=OFF
+            configure: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)"
             build: cmake --build build --parallel "$(nproc)"
           - os: macos-latest
             name: macOS (M1)

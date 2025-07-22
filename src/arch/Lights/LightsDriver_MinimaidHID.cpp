@@ -6,6 +6,8 @@
 #include "global.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(MinimaidHID);
+// Register MinimaidHID under alias name: LinuxMinimaid for backward compatibility
+REGISTER_LIGHTS_DRIVER_ALIAS(LinuxMinimaid, MinimaidHID);
 
 LightsDriver_MinimaidHID::LightsDriver_MinimaidHID()
     : dev{MM_VID, MM_PID, MM_LIGHTS_INTERFACE_NUM} {

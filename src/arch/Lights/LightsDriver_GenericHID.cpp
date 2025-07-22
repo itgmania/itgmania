@@ -10,9 +10,8 @@
 REGISTER_LIGHTS_DRIVER_CLASS(GenericHID);
 
 // Register GenericHID under alias name: LinuxPacDrive for backward compatibility
-static RegisterRageDriver
-	register_LinuxPacDrive(&LightsDriver::m_pDriverList, "LinuxPacDrive",
-						CreateClass<LightsDriver_GenericHID, RageDriver>);
+REGISTER_LIGHTS_DRIVER_ALIAS(LinuxPacDrive, GenericHID);
+
 
 // HID Class-Specific Requests values. See section 7.2 of the HID specifications
 #define HID_GET_REPORT				0x01

@@ -28,6 +28,13 @@ public:
 	static RegisterRageDriver register_##x( &LightsDriver::m_pDriverList, #name, CreateClass<LightsDriver_##x, RageDriver> )
 #define REGISTER_LIGHTS_DRIVER_CLASS( name ) REGISTER_LIGHTS_DRIVER_CLASS2( name, name )
 
+//allows you to make a new class name, but register as an older alias name.
+//ex: REGISTER_LIGHTS_DRIVER_ALIAS(LinuxMinimaid, MinimaidHID) will allow older preference files to still use the older implementation.
+#define REGISTER_LIGHTS_DRIVER_ALIAS( alias_name, actual_class ) \
+	static RegisterRageDriver \
+	register_##alias_name( &LightsDriver::m_pDriverList, #alias_name, \
+		CreateClass<LightsDriver_##actual_class, RageDriver> )
+
 #endif
 
 /**
