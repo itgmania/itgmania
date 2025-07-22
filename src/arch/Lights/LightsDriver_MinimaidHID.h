@@ -32,9 +32,11 @@
 #define MM_VID 0xbeef
 #define MM_PID 0x5730
 
-// TODO: verify the interface numbers
-// input should be 0, lights 1.
+// input isn't used here, we are using the keyboard on the firmware
+// we are only talking to the lighting interface.
+#define MM_INPUT_INTERFACE_NUM 0
 #define MM_LIGHTS_INTERFACE_NUM 1
+
 #define MM_REPORT_ID 0
 
 #define MM_OUTPUTREPORT_SIZE 9
