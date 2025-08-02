@@ -89,7 +89,7 @@ void InputHandler_PumpHID::InputThreadMain() {
   LightsState newLS;
 
   uint32_t prevInput = 0;
-  LightsState prevLS;
+  LightsState prevLS = {};
 
   while (!m_bShutdown) {
     newLS = LightsDriver_Export::GetState();

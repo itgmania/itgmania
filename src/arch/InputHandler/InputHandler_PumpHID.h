@@ -118,7 +118,7 @@ typedef union {
 typedef union {
   struct {
     // fake padding byte for hidapi
-    uint8_t report_id_pad = 0;
+    uint8_t report_id_pad;
 
     // Byte 0: P1 lamps
     uint8_t mux_setting_p1 : 2;
@@ -198,16 +198,16 @@ typedef union {
 // used to convert all of this info to 31 buttons for stepmania.
 typedef union {
   struct {
-    uint8_t p1 : 8;
-    uint8_t p2 : 8;
+    uint16_t p1 : 8;
+    uint16_t p2 : 8;
 
-    uint8_t p1_menu : 5;
-    uint8_t p2_menu : 5;
+    uint16_t p1_menu : 5;
+    uint16_t p2_menu : 5;
 
-    uint8_t cab : 5;
+    uint16_t cab : 5;
 
     // one extra bit in question.
-    uint8_t padding : 1;
+    uint16_t padding : 1;
   };
   uint32_t raw;
 } pumphid_to_stepmania_t;
