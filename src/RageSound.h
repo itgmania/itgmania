@@ -9,6 +9,8 @@
 
 #include <cstdint>
 
+constexpr int kFallbackSampleRate = 44100;
+
 class RageSoundReader;
 struct lua_State;
 

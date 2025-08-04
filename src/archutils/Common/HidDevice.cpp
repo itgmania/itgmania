@@ -13,10 +13,12 @@ HidDevice::HidDevice(int vid, const std::vector<int> pids, int interfaceNum, boo
 
 	if (!result)
 	{
-		LOG->Warn("HidDevice with vendor_id %04x and pids %s: %d not found", vid, GetPidsString(pids).c_str(), interfaceNum);
+		LOG->Warn("HidDevice with vendor_id 0x%04x and pids 0x%s %d could not connect.", vid, GetPidsString(pids).c_str(), interfaceNum);
 	}
 	else
+	{
 		foundOnce = true;
+	}
 }
 
 HidDevice::HidDevice(int vid, int pid, int interfaceNum, bool autoReconnection, bool nonBlockingRead) :
@@ -49,7 +51,13 @@ bool HidDevice::Open(const char* path)
 		hid_set_nonblocking(handle, 1);
 
 	if (handle)
-		LOG->Info("HidDevice %04x:%04x: %d opened by path %s", foundDeviceInfo.vid, foundDeviceInfo.pid, foundDeviceInfo.interfaceNum, foundDeviceInfo.path);
+	{
+		LOG->Info("HidDevice 0x%04x:0x%04x %d opened by path %s", foundDeviceInfo.vid, foundDeviceInfo.pid, foundDeviceInfo.interfaceNum, foundDeviceInfo.path);
+	}
+	else
+	{
+		LOG->Warn("HidDevice 0x%04x:0x%04x %d could not be opened by path %s. Are permissions correct?", foundDeviceInfo.vid, foundDeviceInfo.pid, foundDeviceInfo.interfaceNum, foundDeviceInfo.path);
+	}
 
 	return handle != nullptr;
 }
@@ -148,6 +156,10 @@ void HidDevice::GetDeviceInfo(int vid, const std::vector<int> pids, int interfac
 			cur_dev = cur_dev->next;
 		}
 	}
+	else
+	{
+		LOG->Warn("HidDevice with vid 0x%04x not found, is it plugged in?", vid);
+	}
 
 	if (found && cur_dev != nullptr)
 	{
@@ -167,7 +179,7 @@ int HidDevice::Read(unsigned char* data, size_t length)
 
 	if (result == -1)
 	{
-		LOG->Warn("HidDevice %04x:%04x: %d read failed. Fail reason %ls", foundDeviceInfo.vid, foundDeviceInfo.pid, foundDeviceInfo.interfaceNum, GetError());
+		LOG->Warn("HidDevice 0x%04x:0x%04x %d read failed. Fail reason %ls", foundDeviceInfo.vid, foundDeviceInfo.pid, foundDeviceInfo.interfaceNum, GetError());
 		Close();
 	}
 
@@ -183,7 +195,7 @@ HidResults HidDevice::Write(const unsigned char* data, size_t length)
 
 	if (result != length)
 	{
-		LOG->Warn("HidDevice %04x:%04x: %d write failed. Fail reason %ls", foundDeviceInfo.vid, foundDeviceInfo.pid, foundDeviceInfo.interfaceNum, GetError());
+		LOG->Warn("HidDevice 0x%04x:0x%04x %d write failed. Fail reason %ls", foundDeviceInfo.vid, foundDeviceInfo.pid, foundDeviceInfo.interfaceNum, GetError());
 		Close();
 		return OperationFailed;
 	}

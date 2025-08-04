@@ -271,7 +271,7 @@ void ArchHooks_Unix::SetTime( tm newtime )
 		newtime.tm_sec );
 
 	LOG->Trace( "executing '%s'", sCommand.c_str() );
-	int ret = system( sCommand );
+	int ret = system( sCommand.c_str() );
 	if( ret == -1 || ret == 127 || !WIFEXITED(ret) || WEXITSTATUS(ret) )
 		LOG->Trace( "'%s' failed", sCommand.c_str() );
 

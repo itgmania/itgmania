@@ -21,7 +21,7 @@ void NotesLoader::GetMainAndSubTitlesFromFullTitle( const RString &sFullTitle, R
 		size_t iBeginIndex = sFullTitle.find(sep);
 		if (iBeginIndex != std::string::npos)
 		{
-			sMainTitleOut = sFullTitle.Left(static_cast<int>(iBeginIndex));
+			sMainTitleOut = Left(sFullTitle, static_cast<int>(iBeginIndex));
 			sSubTitleOut = sFullTitle.substr(iBeginIndex + sep.size(), fullTitleSize - iBeginIndex - sep.size());
 			return;
 		}

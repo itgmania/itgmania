@@ -1,6 +1,5 @@
 on:
   push:
-  pull_request:
     branches:
       - beta
     paths-ignore:
@@ -11,13 +10,16 @@ name: Nightly release
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    permissions:
+      id-token: write
+      attestations: write
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest] # TODO: macos-13
         include:
           - os: ubuntu-latest
-            name: Ubuntu x86_64
-            arch: x86_64
+            name: Ubuntu (x86_64)
             install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)"
             release: |
@@ -25,17 +27,15 @@ jobs:
               cmake --build build --target package
             path: build/ITGmania-*-NIGHTLY-git-*-Linux-no-songs.tar.gz
           - os: ubuntu-24.04-arm
-            name: Ubuntu ARM
-            arch: arm
+            name: Ubuntu (ARM)
             install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
-            configure: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)" -DWITH_MINIMAID=OFF
+            configure: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)"
             release: |
-              cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
+              cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off -DWITH_MINIMAID=Off
               cmake --build build --target package
-            path: build/ITGmania-*-NIGHTLY-git-*-Linux-no-songs.tar.gz
+            path: build/ITGmania-*-NIGHTLY-git-*-Linux-arm64-no-songs.tar.gz
           - os: macos-latest
             name: macOS (M1)
-            arch: arm64
             install: brew install nasm
             configure: cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
             release: |
@@ -44,10 +44,6 @@ jobs:
             path: build/ITGmania-*-NIGHTLY-git-*-macOS-M1-no-songs.dmg
           - os: windows-latest
             name: Windows
-            arch: x64
-            install: |
-              $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-              &"$vsPath\VC\Auxiliary\Build\vcvarsall.bat" x64
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
             release: |
               cmake -B build -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
@@ -64,18 +60,27 @@ jobs:
           path: |
             build/*
             !${{ matrix.path }}
-          key: ${{ runner.os }}-${{ matrix.arch }}-cmake-build-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-cmake-build-nightly-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch }}-cmake-build-
+            ${{ runner.os }}-${{ runner.arch }}-cmake-build-nightly-
       - name: Install dependencies
+        if: matrix.os != 'windows-latest'
         run: ${{ matrix.install }}
-      - name: Configure
-        run: ${{ matrix.configure }}
+      - name: Add msbuild to PATH
+        if: matrix.os == 'windows-latest'
+        uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
       - name: Create nightly release
         run: ${{ matrix.release }}
       - name: Upload artifacts
+        id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: ITGmania-${{ github.sha }}-${{ matrix.name }}-${{ matrix.arch }}
+          name: ITGmania-${{ github.sha }}-${{ matrix.name }}
           path: ${{ matrix.path }}
           compression-level: 0
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ITGmania-${{ github.sha }}-${{ matrix.name }}
+          subject-digest: sha256:${{ steps.upload.outputs.artifact-digest }}

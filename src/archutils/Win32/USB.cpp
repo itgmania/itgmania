@@ -56,7 +56,7 @@ bool USBDevice::Open( int iVID, int iPID, int iBlockSize, int iNum, void (*pfnIn
 	RString path;
 	while( (path = GetUSBDevicePath(iIndex++)) != "" )
 	{
-		HANDLE h = CreateFile( path, GENERIC_READ,
+		HANDLE h = CreateFile( path.c_str(), GENERIC_READ,
 			FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr );
 
 		if( h == INVALID_HANDLE_VALUE )
@@ -138,7 +138,7 @@ bool WindowsFileIO::Open( RString path, int iBlockSize )
 	if( m_Handle != INVALID_HANDLE_VALUE )
 		CloseHandle( m_Handle );
 
-	m_Handle = CreateFile( path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+	m_Handle = CreateFile( path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
 		nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr );
 
 	if( m_Handle == INVALID_HANDLE_VALUE )

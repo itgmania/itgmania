@@ -493,14 +493,14 @@ static bool blit_same_type( const RageSurface *src_surf, const RageSurface *dst_
 	// If possible, memcpy the whole thing.
 	if( src_surf->w == width && dst_surf->w == width && src_surf->pitch == dst_surf->pitch )
 	{
-		memcpy( dst, src, height*src_surf->pitch );
+		memcpy( dst, src, static_cast<size_t>(height) * src_surf->pitch );
 		return true;
 	}
 
 	// The rows don't line up, so memcpy row by row.
 	while( height-- )
 	{
-		memcpy( dst, src, width*src_surf->format->BytesPerPixel );
+		memcpy( dst, src, static_cast<size_t>(width) * src_surf->format->BytesPerPixel );
 		src += src_surf->pitch;
 		dst += dst_surf->pitch;
 	}
@@ -767,7 +767,7 @@ bool RageSurfaceUtils::SaveSurface( const RageSurface *img, RString file )
 		f.Write( img->format->palette->colors, img->format->palette->ncolors * sizeof(RageSurfaceColor) );
 	}
 
-	f.Write( img->pixels, img->h * img->pitch );
+	f.Write( img->pixels, static_cast<size_t>(img->h) * img->pitch );
 
 	return true;
 }
@@ -808,7 +808,7 @@ RageSurface *RageSurfaceUtils::LoadSurface( RString file )
 		return nullptr;
 	}
 
-	if( f.Read( img->pixels, h.height * h.pitch ) != h.height * h.pitch )
+	if( f.Read( img->pixels, static_cast<size_t>(h.height) * h.pitch ) != static_cast<size_t>(h.height) * h.pitch )
 	{
 		delete img;
 		return nullptr;
@@ -930,7 +930,7 @@ RageSurface *RageSurfaceUtils::MakeDummySurface( int height, int width )
 	RageSurfaceColor pink( 0xFF, 0x10, 0xFF, 0xFF );
 	ret_image->fmt.palette->colors[0] = pink;
 
-	memset( ret_image->pixels, 0, ret_image->h*ret_image->pitch );
+	memset( ret_image->pixels, 0, static_cast<size_t>(ret_image->h) * ret_image->pitch );
 
 	return ret_image;
 }

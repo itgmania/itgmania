@@ -20,7 +20,7 @@ class Group
 public:
 	Group();
     Group( const RString& sDir, const RString& sGroupDirName, bool bFromProfile = false);
-    ~Group();
+    ~Group() = default;
     // Lua
 	void PushSelf( lua_State *L );
 

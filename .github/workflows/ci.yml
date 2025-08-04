@@ -10,39 +10,32 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-13, windows-latest]
         include:
           - os: ubuntu-latest
-            name: Ubuntu x86_64
-            arch: x86_64
+            name: Ubuntu (x86_64)
             install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)"
             build: cmake --build build --parallel "$(nproc)"
           - os: ubuntu-24.04-arm
-            name: Ubuntu ARM
-            arch: arm
+            name: Ubuntu (ARM)
             install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)" -DWITH_MINIMAID=OFF
             build: cmake --build build --parallel "$(nproc)"
           - os: macos-latest
             name: macOS (M1)
-            arch: arm64
             install: brew install nasm
             configure: cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
             build: cmake --build build --parallel "$(sysctl -n hw.logicalcpu)"
           - os: macos-13
             name: macOS (Intel)
-            arch: x86_64
             install: brew install nasm
             configure: cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
             build: cmake --build build --parallel "$(sysctl -n hw.logicalcpu)"
           - os: windows-latest
             name: Windows
-            arch: x64
-            install: |
-              $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-              &"$vsPath\VC\Auxiliary\Build\vcvarsall.bat" x64
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
             build: cmake --build build --parallel "$env:NUMBER_OF_PROCESSORS"
     name: ${{ matrix.name }}
@@ -50,16 +43,23 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - name: Cache CMake build directory
-        uses: actions/cache@v4
-        with:
-          path: |
-            build
-          key: ${{ runner.os }}-${{ runner.arch }}-cmake-build-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch }}-cmake-build-
+     ### TEMPORARY FIX:  Disable cmake cache until it expires so that windows builds work for the time being
+     # - name: Cache CMake build directory
+     #   uses: actions/cache@v4
+     #   with:
+     #     path: |
+     #       build
+     #     key: ${{ runner.os }}-${{ runner.arch }}-cmake-build-ci-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
+     #     restore-keys: |
+     #       ${{ runner.os }}-${{ runner.arch }}-cmake-build-ci-
       - name: Install dependencies
+        if: matrix.os != 'windows-latest'
         run: ${{ matrix.install }}
+      - name: Add msbuild to PATH
+        if: matrix.os == 'windows-latest'
+        uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
       - name: Configure
         run: ${{ matrix.configure }}
       - name: Build

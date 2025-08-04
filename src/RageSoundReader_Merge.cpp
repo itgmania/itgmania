@@ -74,10 +74,9 @@ void RageSoundReader_Merge::Finish( int iPreferredSampleRate )
 	m_iSampleRate = GetSampleRateInternal();
 	if( m_iSampleRate == -1 )
 	{
-		for (RageSoundReader *it : m_aSounds)
+		for (size_t i = 0; i < m_aSounds.size(); ++i)
 		{
-			RageSoundReader_Resample_Good *pResample = new RageSoundReader_Resample_Good( it, iPreferredSampleRate );
-			it = pResample;
+			m_aSounds[i] = new RageSoundReader_Resample_Good(m_aSounds[i], iPreferredSampleRate);
 		}
 
 		m_iSampleRate = iPreferredSampleRate;

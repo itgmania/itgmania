@@ -22,8 +22,8 @@ namespace avcodec
 	}
 };
 
-#define STEPMANIA_FFMPEG_BUFFER_SIZE 4096
-static const int kSwsFlags = SWS_BICUBIC; // XXX: Reasonable default?
+constexpr size_t kFFMpegBufferSize = 4096;
+constexpr int kSwsFlags = SWS_BICUBIC; // XXX: Reasonable default?
 
 struct FrameHolder {
 	avcodec::AVFrame* frame = avcodec::av_frame_alloc();

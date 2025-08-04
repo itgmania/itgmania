@@ -245,7 +245,7 @@ void StepsUtil::SortStepsByTypeAndDifficulty( std::vector<Steps*> &arraySongPoin
 
 bool StepsUtil::CompareStepsPointersByDescription(const Steps *pStep1, const Steps *pStep2)
 {
-	return pStep1->GetDescription().CompareNoCase( pStep2->GetDescription() ) < 0;
+	return CompareNoCase(pStep1->GetDescription(), pStep2->GetDescription()) < 0;
 }
 
 void StepsUtil::SortStepsByDescription( std::vector<Steps*> &arraySongPointers )

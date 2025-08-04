@@ -52,8 +52,8 @@ static INT_PTR CALLBACK OKWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
 
 			// Set static text.
 			RString sMessage = g_sMessage;
-			sMessage.Replace( "\n", "\r\n" );
-			SetWindowText( GetDlgItem(hWnd, IDC_MESSAGE), sMessage );
+			Replace(sMessage, "\n", "\r\n" );
+			SetWindowText( GetDlgItem(hWnd, IDC_MESSAGE), sMessage.c_str() );
 
 			// Focus is on any of the controls in the dialog by default.
 			// I'm not sure why. Set focus to the button manually. -Chris
@@ -119,7 +119,7 @@ Dialog::Result DialogDriver_Win32::OKCancel( RString sMessage, RString sID )
 
 #if !defined(SMPACKAGE)
 	//DialogBox( handle.Get(), MAKEINTRESOURCE(IDD_OK), ::GetHwnd(), OKWndProc );
-	int result = ::MessageBox( nullptr, sMessage, GetWindowTitle(), MB_OKCANCEL );
+	int result = ::MessageBox( nullptr, sMessage.c_str(), GetWindowTitle().c_str(), MB_OKCANCEL );
 #else
 	int result = ::AfxMessageBox( ConvertUTF8ToACP(sMessage).c_str(), MB_OKCANCEL, 0 );
 #endif
@@ -148,8 +148,8 @@ static INT_PTR CALLBACK ErrorWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 			// Set static text
 			RString sMessage = g_sErrorString;
-			sMessage.Replace( "\n", "\r\n" );
-			SetWindowText( GetDlgItem(hWnd, IDC_EDIT_ERROR), sMessage );
+			Replace(sMessage, "\n", "\r\n" );
+			SetWindowText( GetDlgItem(hWnd, IDC_EDIT_ERROR), sMessage.c_str() );
 		}
 		break;
 	case WM_COMMAND:
@@ -163,7 +163,7 @@ static INT_PTR CALLBACK ErrorWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 				RString sAppDataDir = SpecialDirs::GetAppDataDir();
 				RString sCommand = "notepad \"" + sAppDataDir + PRODUCT_ID + "/Logs/log.txt\"";
-				CreateProcess(
+				CreateProcess( // TODO: resolve Warning C6335 "leaking process information"
 					nullptr,		// pointer to name of executable module
 					const_cast<char *>(sCommand.c_str()),	// pointer to command line string
 					nullptr,  // process security attributes

@@ -183,7 +183,7 @@ list(APPEND SMDATA_ARCH_LIGHTS_SRC "arch/Lights/LightsDriver.cpp"
             "arch/Lights/LightsDriver_stac.cpp"
             "arch/Lights/LightsDriver_snek.cpp"
             "arch/Lights/LightsDriver_PacDrive.cpp"
-			      "arch/Lights/LightsDriver_HidBlueDot.cpp")
+            "arch/Lights/LightsDriver_HidBlueDot.cpp")
 list(APPEND SMDATA_ARCH_LIGHTS_HPP "arch/Lights/LightsDriver.h"
             "arch/Lights/LightsDriver_Export.h"
             "arch/Lights/LightsDriver_SextetStream.h"
@@ -218,6 +218,7 @@ if(NOT APPLE)
                   "arch/Lights/LightsDriver_Linux_PIUIO_Leds.cpp"
                   "arch/Lights/LightsDriver_Linux_PIUIOBTN_Leds.cpp"
                   "arch/Lights/LightsDriver_Linux_ITGIO.cpp"
+                  "arch/Lights/LightsDriver_GenericHID.cpp"
                   "arch/Lights/LightsDriver_LinuxWeedTech.cpp")
       list(APPEND SMDATA_ARCH_LIGHTS_HPP
                   "arch/Lights/LightsDriver_Linux_Leds.h"
@@ -225,6 +226,7 @@ if(NOT APPLE)
                   "arch/Lights/LightsDriver_Linux_PIUIO_Leds.h"
                   "arch/Lights/LightsDriver_Linux_PIUIOBTN_Leds.h"
                   "arch/Lights/LightsDriver_Linux_ITGIO.h"
+                  "arch/Lights/LightsDriver_GenericHID.h"
                   "arch/Lights/LightsDriver_LinuxWeedTech.h")
       if(WITH_MINIMAID)
         list(APPEND SMDATA_ARCH_LIGHTS_SRC

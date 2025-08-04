@@ -25,8 +25,10 @@ void InputQueueCodeSet::Load( const RString &sType )
 			m_asCodeNames[c] = asBits[1];
 
 		InputQueueCode code;
-		if( !code.Load(CODE(sCodeName)) )
-			continue;
+
+		// Invalid codes are empty and we still want to make sure m_asCodeNames
+		// and m_aCodes are the same size to prevent off by ones.
+		code.Load(CODE(sCodeName));
 
 		m_aCodes.push_back( code );
 	}

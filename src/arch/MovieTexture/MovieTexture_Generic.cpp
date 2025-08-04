@@ -344,7 +344,7 @@ void MovieTexture_Generic::UpdateFrame()
 
 	// Are we looping?
 	if (decoder_->EndOfMovie() && loop_) {
-		LOG->Trace("File \"%s\" looping", GetID().filename.c_str());
+		LOG->Info("File \"%s\" looping", GetID().filename.c_str());
 		decoder_->Rollover();
 		clock_ = 0.0;
 	}

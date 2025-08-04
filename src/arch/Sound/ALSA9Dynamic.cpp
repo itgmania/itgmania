@@ -35,7 +35,7 @@ RString LoadALSA()
 
 	ASSERT( Handle == nullptr );
 
-	Handle = dlopen( lib, RTLD_NOW );
+	Handle = dlopen( lib.c_str(), RTLD_NOW );
 	if( Handle == nullptr )
 		return ssprintf("dlopen(%s): %s", lib.c_str(), dlerror());
 

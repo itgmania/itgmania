@@ -27,7 +27,7 @@ DialogDriver *DialogDriver::Create()
 
 	for (RString const &Driver : asDriversToTry)
 	{
-		std::map<istring, CreateDialogDriverFn>::const_iterator iter = RegisterDialogDriver::g_pRegistrees->find( istring(Driver) );
+		std::map<istring, CreateDialogDriverFn>::const_iterator iter = RegisterDialogDriver::g_pRegistrees->find( istring(Driver.c_str()) );
 
 		if( iter == RegisterDialogDriver::g_pRegistrees->end() )
 			continue;

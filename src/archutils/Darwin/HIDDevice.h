@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <string>
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/hid/IOHIDLib.h>
@@ -72,7 +73,7 @@ private:
 	IOHIDDeviceInterface **m_Interface;
 	IOHIDQueueInterface **m_Queue;
 	bool m_bRunning;
-	RString m_sDescription;
+	std::string m_sDescription;
 
 	static void AddLogicalDevice( const void *value, void *context );
 	static void AddElement( const void *value, void *context );
@@ -112,7 +113,7 @@ public:
 
 	bool Open( io_object_t device );
 	void StartQueue( CFRunLoopRef loopRef, IOHIDCallbackFunction callback, void *target );
-	inline const RString& GetDescription() const { return m_sDescription; }
+	inline const std::string& GetDescription() const { return m_sDescription; }
 
 	/* Add button presses (or releases) to vPresses for the given cookie. More
 	 * than one DeviceInput can be added at a time. For example, Two axes

@@ -48,7 +48,7 @@ You can choose between using the installer or using the portable build. Using th
 
 * **Fedora-based**:
 
-  * `sudo yum install gdk-pixbuf2 gtk3 libusb-compat-0.1 libXinerama libXtst`
+  * `sudo dnf install gdk-pixbuf2 gtk3 libusb-compat-0.1 libXinerama libXtst`
 
 *  **Arch Linux**:
 
@@ -72,7 +72,7 @@ ITGmania can be compiled using [CMake](http://www.cmake.org/). More information 
 
 ## Licensing Terms
 
-ITGmania, as well as the Simply Love theme, are both under the GPLv3 license, or at your option, any later version.
+ITGmania, as well as the [Simply Love](https://github.com/Simply-Love/Simply-Love-SM5) theme, are both under the GPLv3 license, or at your option, any later version.
 
 If ITGmania code is used in your project, we would also appreciate it if you link back to [ITGmania](https://github.com/itgmania/itgmania) as well as [StepMania](https://github.com/stepmania/stepmania).
 

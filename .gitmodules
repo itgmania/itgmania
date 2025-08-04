@@ -17,9 +17,10 @@
 [submodule "extern/ffmpeg"]
 	path = extern/ffmpeg
 	url = https://github.com/FFmpeg/FFmpeg.git
+	shallow = true
 [submodule "extern/libpng"]
 	path = extern/libpng
-	url = https://github.com/glennrp/libpng.git
+	url = https://github.com/pnggroup/libpng.git
 	shallow = true
 [submodule "extern/ogg"]
 	path = extern/ogg
@@ -44,6 +45,8 @@
 [submodule "extern/libjpeg-turbo"]
 	path = extern/libjpeg-turbo
 	url = https://github.com/libjpeg-turbo/libjpeg-turbo.git
+	shallow = true
 [submodule "extern/hidapi"]
 	path = extern/hidapi
 	url = https://github.com/libusb/hidapi.git
+	shallow = true

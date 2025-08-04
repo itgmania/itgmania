@@ -95,7 +95,7 @@ void ScreenMapControllers::Init()
 			text.LoadFromFont( THEME->GetPathF(m_sName,"title") );
 			PlayerNumber pn = (PlayerNumber)c;
 			text.SetName( "Label"+PlayerNumberToString(pn) );
-			RString sText = ssprintf(PLAYER_SLOTS.GetValue(), PlayerNumberToLocalizedString(pn).c_str());
+			RString sText = ssprintf(PLAYER_SLOTS.GetValue().c_str(), PlayerNumberToLocalizedString(pn).c_str());
 			text.SetText( sText );
 			ActorUtil::LoadAllCommands( text, m_sName );
 			m_Line.back()->AddChild( &m_textLabel[c] );
@@ -823,7 +823,7 @@ void ScreenMapControllers::ActionRow::Load(RString const& scr_name,
 {
 	m_action= action;
 	RString lower_name= name;
-	lower_name.MakeLower();
+	MakeLower(lower_name);
 	// Make the specific actor optional, use a fallback if it doesn't exist.
 	RString path= THEME->GetPathG(scr_name, lower_name, true);
 	if(path.empty())

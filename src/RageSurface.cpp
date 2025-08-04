@@ -137,8 +137,8 @@ RageSurface::RageSurface( const RageSurface &cpy )
 	pixels_owned = true;
 	if( cpy.pixels )
 	{
-		pixels = new uint8_t[ pitch*h ];
-		memcpy( pixels, cpy.pixels, pitch*h );
+		pixels = new uint8_t[ static_cast<size_t>(pitch) * h ];
+		memcpy( pixels, cpy.pixels, static_cast<size_t>(pitch) * h );
 	}
 	else
 		pixels = nullptr;

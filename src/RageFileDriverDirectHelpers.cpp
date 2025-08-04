@@ -33,7 +33,7 @@ static int ShortenWeakHash(int64_t hash)
 #if defined(_WIN32)
 static bool WinMoveFileInternal( const RString &sOldPath, const RString &sNewPath )
 {
-	if( MoveFileEx( sOldPath, sNewPath, MOVEFILE_REPLACE_EXISTING ) )
+	if( MoveFileEx( sOldPath.c_str(), sNewPath.c_str(), MOVEFILE_REPLACE_EXISTING ) )
 		return true;
 
 	DWORD err = GetLastError();
@@ -67,10 +67,10 @@ static bool WinMoveFileInternal( const RString &sOldPath, const RString &sNewPat
 		}
 	}
 
-	if( !DeleteFile( sNewPath ) )
+	if( !DeleteFile( sNewPath.c_str() ) )
 		return false;
 
-	return !!MoveFile( sOldPath, sNewPath );
+	return !!MoveFile( sOldPath.c_str(), sNewPath.c_str() );
 }
 
 bool WinMoveFile( RString sOldPath, RString sNewPath )
@@ -80,7 +80,7 @@ bool WinMoveFile( RString sOldPath, RString sNewPath )
 	if( GetLastError() != ERROR_ACCESS_DENIED )
 		return false;
 	/* Try turning off the read-only bit on the file we're overwriting. */
-	SetFileAttributes( DoPathReplace(sNewPath), FILE_ATTRIBUTE_NORMAL );
+	SetFileAttributes( DoPathReplace(sNewPath).c_str(), FILE_ATTRIBUTE_NORMAL );
 
 	return WinMoveFileInternal( DoPathReplace(sOldPath), DoPathReplace(sNewPath) );
 }
@@ -94,7 +94,7 @@ bool CreateDirectories( RString Path )
 	RString curpath;
 
 	// If Path is absolute, add the initial slash ("ignore empty" will remove it).
-	if( Path.Left(1) == "/" )
+	if( Left(Path, 1) == "/" )
 		curpath = "/";
 
 	// Ignore empty, so eg. "/foo/bar//baz" doesn't try to create "/foo/bar" twice.
@@ -114,7 +114,7 @@ bool CreateDirectories( RString Path )
 		}
 #endif
 
-		if( DoMkdir(curpath, 0777) == 0 )
+		if( DoMkdir(curpath.c_str(), 0777) == 0 )
 			continue;
 
 #if defined(_WIN32)
@@ -133,7 +133,7 @@ bool CreateDirectories( RString Path )
 		{
 			/* Make sure it's a directory. */
 			struct stat st;
-			if( DoStat(curpath, &st) != -1 && !(st.st_mode & S_IFDIR) )
+			if( DoStat(curpath.c_str(), &st) != -1 && !(st.st_mode & S_IFDIR) )
 			{
 				WARN( ssprintf("Couldn't create %s: path exists and is not a directory", curpath.c_str()) );
 				return false;
@@ -161,10 +161,10 @@ void DirectFilenameDB::SetRoot( RString root_ )
 	root = root_;
 
 	// "\abcd\" -> "/abcd/":
-	root.Replace( "\\", "/" );
+	Replace(root, "\\", "/");
 
 	// "/abcd/" -> "/abcd":
-	if( root.Right(1) == "/" )
+	if( Right(root, 1) == "/" )
 		root.erase( root.size()-1, 1 );
 }
 
@@ -186,7 +186,7 @@ void DirectFilenameDB::CacheFile( const RString &sPath )
 
 #if defined(_WIN32)
 	WIN32_FIND_DATA fd;
-	HANDLE hFind = DoFindFirstFile( root+sPath, &fd );
+	HANDLE hFind = DoFindFirstFile( (root+sPath).c_str(), &fd );
 	if( hFind == INVALID_HANDLE_VALUE )
 	{
 		m_Mutex.Unlock(); // Locked by GetFileSet()
@@ -204,7 +204,7 @@ void DirectFilenameDB::CacheFile( const RString &sPath )
 	File f( Basename(sPath) );
 
 	struct stat st;
-	if( DoStat(root+sPath, &st) == -1 )
+	if( DoStat((root+sPath).c_str(), &st) == -1 )
 	{
 		WARN(ssprintf("File '%s' is gone! (%s)", sPath.c_str(), strerror(errno)));
 	}
@@ -233,10 +233,10 @@ void DirectFilenameDB::PopulateFileSet( FileSet &fs, const RString &path )
 #if defined(_WIN32)
 	WIN32_FIND_DATA fd;
 
-	if ( sPath.size() > 0  && sPath.Right(1) == "/" )
+	if ( sPath.size() > 0  && Right(sPath, 1) == "/" )
 		sPath.erase( sPath.size() - 1 );
 
-	HANDLE hFind = DoFindFirstFile( root+sPath+"/*", &fd );
+	HANDLE hFind = DoFindFirstFile( (root+sPath+"/*").c_str(), &fd );
 	CHECKPOINT_M( root+sPath+"/*" );
 
 	if( hFind == INVALID_HANDLE_VALUE )
@@ -264,7 +264,7 @@ void DirectFilenameDB::PopulateFileSet( FileSet &fs, const RString &path )
 	 * for each file.  This isn't a major issue, since most large directory
 	 * scans are I/O-bound. */
 
-	DIR *pDir = opendir(root+sPath);
+	DIR *pDir = opendir((root+sPath).c_str());
 	if( pDir == nullptr )
 		return;
 
@@ -278,11 +278,11 @@ void DirectFilenameDB::PopulateFileSet( FileSet &fs, const RString &path )
 		File f( pEnt->d_name );
 
 		struct stat st;
-		if( DoStat(root+sPath + "/" + pEnt->d_name, &st) == -1 )
+		if( DoStat((root+sPath + "/" + pEnt->d_name).c_str(), &st) == -1 )
 		{
 			int iError = errno;
 			/* If it's a broken symlink, ignore it.  Otherwise, warn. */
-			if( lstat(root+sPath + "/" + pEnt->d_name, &st) == 0 )
+			if( lstat((root+sPath + "/" + pEnt->d_name).c_str(), &st) == 0 )
 				continue;
 
 			/* Huh? */
@@ -321,7 +321,7 @@ void DirectFilenameDB::PopulateFileSet( FileSet &fs, const RString &path )
 	{
 		if( !BeginsWith( iter->lname, IGNORE_MARKER_BEGINNING ) )
 			break;
-		RString sFileLNameToIgnore = iter->lname.Right( iter->lname.length() - IGNORE_MARKER_BEGINNING.length() );
+		RString sFileLNameToIgnore = Right(iter->lname, iter->lname.length() - IGNORE_MARKER_BEGINNING.length());
 		vsFilesToRemove.push_back( iter->name );
 		vsFilesToRemove.push_back( sFileLNameToIgnore );
 	}

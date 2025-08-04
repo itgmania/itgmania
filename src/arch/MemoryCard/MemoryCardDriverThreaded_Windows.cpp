@@ -29,7 +29,7 @@ static bool TestReady( const RString &sDrive, RString &sVolumeLabelOut )
 	TCHAR szFileSystemNameBuffer[MAX_PATH];
 
 	if( !GetVolumeInformation(
-		sDrive,
+		sDrive.c_str(),
 		szVolumeNameBuffer,
 		sizeof(szVolumeNameBuffer),
 		&dwVolumeSerialNumber,
@@ -76,7 +76,7 @@ static bool IsFloppyDrive( const RString &sDrive )
 {
 	char szBuf[1024];
 
-	int iRet = QueryDosDevice( sDrive, szBuf, 1024 );
+	int iRet = QueryDosDevice( sDrive.c_str(), szBuf, 1024 );
 	if( iRet == 0 )
 	{
 		LOG->Warn( werr_ssprintf(GetLastError(), "QueryDosDevice(%s)", sDrive.c_str()) );
@@ -116,7 +116,8 @@ void MemoryCardDriverThreaded_Windows::GetUSBStorageDevices( std::vector<UsbStor
 
 		LOG->Trace( sDrive );
 
-		if( IsFloppyDrive(sDrive) )
+		// we definitely don't need this lol
+		if (IsFloppyDrive(sDrive.c_str()))
 		{
 			LOG->Trace( "IsFloppyDrive" );
 			continue;
@@ -127,7 +128,7 @@ void MemoryCardDriverThreaded_Windows::GetUSBStorageDevices( std::vector<UsbStor
 
 		bool bIsSpecifiedMountPoint = false;
 		FOREACH_ENUM( PlayerNumber, p )
-			bIsSpecifiedMountPoint |= MEMCARDMAN->m_sMemoryCardOsMountPoint[p].Get().EqualsNoCase(sDrive);
+			bIsSpecifiedMountPoint |= EqualsNoCase(MEMCARDMAN->m_sMemoryCardOsMountPoint[p].Get(), sDrive.c_str());
 
 		RString sDrivePath = sDrive + "\\";
 
@@ -137,7 +138,7 @@ void MemoryCardDriverThreaded_Windows::GetUSBStorageDevices( std::vector<UsbStor
 		}
 		else
 		{
-			if( GetDriveType(sDrivePath) != DRIVE_REMOVABLE )
+			if( GetDriveType(sDrivePath.c_str()) != DRIVE_REMOVABLE )
 			{
 				LOG->Trace( "not DRIVE_REMOVABLE" );
 				continue;
@@ -145,7 +146,7 @@ void MemoryCardDriverThreaded_Windows::GetUSBStorageDevices( std::vector<UsbStor
 		}
 
 		RString sVolumeLabel;
-		if( !TestReady(sDrivePath, sVolumeLabel) )
+		if( !TestReady(sDrivePath.c_str(), sVolumeLabel) )
 		{
 			LOG->Trace( "not TestReady" );
 			continue;
@@ -153,8 +154,8 @@ void MemoryCardDriverThreaded_Windows::GetUSBStorageDevices( std::vector<UsbStor
 
 		vDevicesOut.push_back( UsbStorageDevice() );
 		UsbStorageDevice &usbd = vDevicesOut.back();
-		usbd.SetOsMountDir( sDrive );
-		usbd.sDevice = "\\\\.\\" + sDrive;
+		usbd.SetOsMountDir( sDrive.c_str() );
+		usbd.sDevice = RString("\\\\.\\") + sDrive.c_str();
 		usbd.sVolumeLabel = sVolumeLabel;
 	}
 
@@ -171,7 +172,7 @@ void MemoryCardDriverThreaded_Windows::GetUSBStorageDevices( std::vector<UsbStor
 		DWORD dwNumberOfFreeClusters;
 		DWORD dwTotalNumberOfClusters;
 		if( GetDiskFreeSpace(
-				usbd.sOsMountDir,
+				usbd.sOsMountDir.c_str(),
 				&dwSectorsPerCluster,
 				&dwBytesPerSector,
 				&dwNumberOfFreeClusters,
@@ -196,7 +197,7 @@ bool MemoryCardDriverThreaded_Windows::Mount( UsbStorageDevice* pDevice )
 void MemoryCardDriverThreaded_Windows::Unmount( UsbStorageDevice* pDevice )
 {
 	/* Try to flush the device before returning.  This requires administrator priviliges. */
-	HANDLE hDevice = CreateFile( pDevice->sDevice, GENERIC_WRITE,
+	HANDLE hDevice = CreateFile( pDevice->sDevice.c_str(), GENERIC_WRITE,
 		FILE_SHARE_READ | FILE_SHARE_WRITE,
 		nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr );
 

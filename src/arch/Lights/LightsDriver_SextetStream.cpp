@@ -154,7 +154,7 @@ LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(const RString& 
 {
 #ifdef WINDOWS
 	_impl = new SextetImpl(CreateFile(
-		filename,   // pipe name 
+		filename.c_str(),  // pipe name 
 		GENERIC_WRITE,
 		0,              // no sharing 
 		NULL,           // default security attributes
@@ -170,7 +170,7 @@ LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile()
 {
 #ifdef WINDOWS
 	_impl = new SextetImpl(CreateFile(
-		g_sSextetStreamOutputFilename.Get(),   // pipe name 
+		g_sSextetStreamOutputFilename.Get().c_str(),   // pipe name 
 		GENERIC_WRITE,
 		0,              // no sharing 
 		NULL,           // default security attributes

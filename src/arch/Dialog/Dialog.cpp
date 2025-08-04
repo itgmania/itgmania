@@ -31,13 +31,13 @@ DialogDriver *MakeDialogDriver()
 		sDriver = asDriversToTry[i];
 
 #ifdef USE_DIALOG_DRIVER_COCOA
-		if( !asDriversToTry[i].CompareNoCase("Cocoa") )	pRet = new DialogDriver_MacOSX;
+		if( !CompareNoCase(asDriversToTry[i], "Cocoa") )	pRet = new DialogDriver_MacOSX;
 #endif
 #ifdef USE_DIALOG_DRIVER_WIN32
-		if( !asDriversToTry[i].CompareNoCase("Win32") )	pRet = new DialogDriver_Win32;
+		if( !CompareNoCase(asDriversToTry[i], "Win32") )	pRet = new DialogDriver_Win32;
 #endif
 #ifdef USE_DIALOG_DRIVER_NULL
-		if( !asDriversToTry[i].CompareNoCase("Null") )	pRet = new DialogDriver_Null;
+		if( !CompareNoCase(asDriversToTry[i], "Null") )	pRet = new DialogDriver_Null;
 #endif
 
 		if( pRet == nullptr )
@@ -89,7 +89,7 @@ static bool MessageIsIgnored( RString sID )
 	std::vector<RString> asList;
 	split( g_sIgnoredDialogs, ",", asList );
 	for( unsigned i = 0; i < asList.size(); ++i )
-		if( !sID.CompareNoCase(asList[i]) )
+		if( !CompareNoCase(sID, asList[i]) )
 			return true;
 #endif
 	return false;

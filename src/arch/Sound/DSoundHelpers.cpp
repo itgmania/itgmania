@@ -1,7 +1,9 @@
 #include "global.h"
 #include "DSoundHelpers.h"
+#include "PrefsManager.h"
 #include "RageUtil.h"
 #include "RageLog.h"
+#include "RageSound.h"
 #include "archutils/Win32/DirectXHelpers.h"
 #include "archutils/Win32/GetFileInformation.h"
 
@@ -43,7 +45,7 @@ void DSound::SetPrimaryBufferMode()
 {
 	DSBUFFERDESC format;
 	memset( &format, 0, sizeof(format) );
-	format.dwSize = sizeof(format);
+	format.dwSize = sizeof(DSBUFFERDESC);
 	format.dwFlags = DSBCAPS_PRIMARYBUFFER;
 	format.dwBufferBytes = 0;
 	format.lpwfxFormat = nullptr;
@@ -62,8 +64,13 @@ void DSound::SetPrimaryBufferMode()
 	waveformat.wFormatTag = WAVE_FORMAT_PCM;
 	waveformat.wBitsPerSample = 16;
 	waveformat.nChannels = 2;
-	waveformat.nSamplesPerSec = 44100;
-	waveformat.nBlockAlign = 4;
+	int preferredSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
+	if (preferredSampleRate == 0)
+	{
+		preferredSampleRate = kFallbackSampleRate;
+	}
+	waveformat.nSamplesPerSec = preferredSampleRate;
+	waveformat.nBlockAlign = (waveformat.nChannels * waveformat.wBitsPerSample) / 8;
 	waveformat.nAvgBytesPerSec = waveformat.nSamplesPerSec * waveformat.nBlockAlign;
 
 	// Set the primary buffer's format
@@ -93,7 +100,7 @@ void DSound::SetPrimaryBufferMode()
 	 *
 	 * However, I just added the above code and I don't want to change more until it's tested.
 	 */
-//	pBuffer->Play( 0, 0, DSBPLAY_LOOPING );
+	pBuffer->Play( 0, 0, DSBPLAY_LOOPING );
 
 	pBuffer->Release();
 }
@@ -164,9 +171,27 @@ bool DSound::IsEmulated() const
 }
 
 DSoundBuf::DSoundBuf()
+:	m_pBuffer(nullptr),
+	m_iLastCursors{{0, 0}, {0, 0}, {0, 0}, {0, 0}},
+	m_pLockedBuf1(nullptr),
+	m_pLockedBuf2(nullptr),
+	m_pTempBuffer(nullptr),
+	m_iLockedSize1(0),
+	m_iLockedSize2(0),
+	m_iWriteCursor(0),
+	m_iWriteCursorPos(0),
+	m_iBufferBytesFilled(0),
+	m_iExtraWriteahead(0),
+	m_bBufferLocked(false),
+	m_bPlaying(false),
+	m_iBufferSize(0),
+	m_iChannels(0),
+	m_iLastPosition(0),
+	m_iSampleBits(0),
+	m_iSampleRate(0),
+	m_iVolume(-1),
+	m_iWriteAhead(0)
 {
-	m_pBuffer = nullptr;
-	m_pTempBuffer = nullptr;
 }
 
 RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
@@ -182,7 +207,7 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 	m_iExtraWriteahead = 0;
 	m_iLastPosition = 0;
 	m_bPlaying = false;
-	ZERO( m_iLastCursors );
+	memset( &(m_iLastCursors), 0, sizeof(m_iLastCursors) );
 
 	/* The size of the actual DSound buffer.  This can be large; we generally
 	 * won't fill it completely. */
@@ -195,9 +220,10 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 	waveformat.wFormatTag = WAVE_FORMAT_PCM;
 
 	bool bNeedCtrlFrequency = false;
+	// DYNAMIC_SAMPLERATE is usually 0 or some special value
 	if( m_iSampleRate == DYNAMIC_SAMPLERATE )
 	{
-		m_iSampleRate = 44100;
+		m_iSampleRate = kFallbackSampleRate;
 		bNeedCtrlFrequency = true;
 	}
 
@@ -211,7 +237,7 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 	/* Try to create the secondary buffer */
 	DSBUFFERDESC format;
 	memset( &format, 0, sizeof(format) );
-	format.dwSize = sizeof(format);
+	format.dwSize = sizeof(DSBUFFERDESC);
 
 	if (IsWindowsVistaOrGreater())
 	{
@@ -341,7 +367,8 @@ void DSoundBuf::CheckWriteahead( int iCursorStart, int iCursorEnd )
 	int iPrefetch = iCursorEnd - iCursorStart;
 	wrap( iPrefetch, m_iBufferSize );
 
-	if( iPrefetch >= 1024*32 )
+	constexpr int kMaxAllowedPrefetch = 1024 * 32; // 32 KB
+	if( iPrefetch >= kMaxAllowedPrefetch )
 	{
 		static bool bLogged = false;
 		if( bLogged )

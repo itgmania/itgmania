@@ -15,6 +15,8 @@
 #include "DirectXHelpers.h"
 #include "PrefsManager.h"
 
+#include <windows.h>
+#include <string>
 #include <set>
 
 static const RString g_sClassName = PRODUCT_ID;
@@ -88,13 +90,13 @@ static LRESULT CALLBACK GraphicsWindow_WndProc( HWND hWnd, UINT msg, WPARAM wPar
 				 * because that's where most other apps seem to do it. */
 				if( g_bHasFocus && !bHadFocus )
 				{
-					ChangeDisplaySettingsEx( g_CurrentParams.sDisplayId, &g_FullScreenDevMode, nullptr, CDS_FULLSCREEN, nullptr );
+					ChangeDisplaySettingsEx( g_CurrentParams.sDisplayId.c_str(), &g_FullScreenDevMode, nullptr, CDS_FULLSCREEN, nullptr );
 					ShowWindow( g_hWndMain, SW_SHOWNORMAL );
 					SetWindowPos( g_hWndMain, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
 				}
 				else if( !g_bHasFocus && bHadFocus )
 				{
-					ChangeDisplaySettingsEx(g_CurrentParams.sDisplayId, nullptr, nullptr, 0, nullptr);
+					ChangeDisplaySettingsEx(g_CurrentParams.sDisplayId.c_str(), nullptr, nullptr, 0, nullptr);
 				}
 			}
 
@@ -197,7 +199,7 @@ static void AdjustVideoModeParams( VideoModeParams &p )
 	DEVMODE dm;
 	ZERO( dm );
 	dm.dmSize = sizeof(dm);
-	if (!EnumDisplaySettings(p.sDisplayId, ENUM_CURRENT_SETTINGS, &dm))
+	if (!EnumDisplaySettings(p.sDisplayId.c_str(), ENUM_CURRENT_SETTINGS, &dm))
 	{
 		p.rate = 60;
 		LOG->Warn( "%s", werr_ssprintf(GetLastError(), "EnumDisplaySettings failed").c_str() );
@@ -230,10 +232,12 @@ static void AdjustVideoModeParams( VideoModeParams &p )
  * The refresh setting may be ignored. */
 RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 {
+	const DWORD displaySettingsFlag = p.windowed ? CDS_RESET : CDS_FULLSCREEN;
+	
 	if( p.windowed )
 	{
 		// We're going windowed. If we were previously fullscreen, reset.
-		ChangeDisplaySettingsEx( p.sDisplayId, nullptr, nullptr, 0, nullptr );
+		ChangeDisplaySettingsEx( p.sDisplayId.c_str(), nullptr, nullptr, displaySettingsFlag, nullptr );
 
 		return RString();
 	}
@@ -241,6 +245,14 @@ RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 	DEVMODE DevMode;
 	ZERO( DevMode );
 	DevMode.dmSize = sizeof(DEVMODE);
+
+	// Run DevMode thru EnumDisplaySettings to ensure we only provide modes supported by the display driver.
+	if( !EnumDisplaySettings(p.sDisplayId.c_str(), ENUM_CURRENT_SETTINGS, &DevMode) )
+	{
+		LOG->Warn("EnumDisplaySettings failed for display: %s", p.sDisplayId.c_str());
+		return "Failed to retrieve current display settings.";
+	}
+	
 	DevMode.dmPelsWidth = p.width;
 	DevMode.dmPelsHeight = p.height;
 	DevMode.dmBitsPerPel = p.bpp;
@@ -251,13 +263,12 @@ RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 		DevMode.dmDisplayFrequency = p.rate;
 		DevMode.dmFields |= DM_DISPLAYFREQUENCY;
 	}
-	ChangeDisplaySettingsEx(p.sDisplayId, nullptr, nullptr, 0, nullptr);
 
-	int ret = ChangeDisplaySettingsEx( p.sDisplayId, &DevMode, nullptr, CDS_FULLSCREEN, nullptr );
+	int ret = ChangeDisplaySettingsEx( p.sDisplayId.c_str(), &DevMode, nullptr, displaySettingsFlag, nullptr );
 	if( ret != DISP_CHANGE_SUCCESSFUL && (DevMode.dmFields & DM_DISPLAYFREQUENCY) )
 	{
 		DevMode.dmFields &= ~DM_DISPLAYFREQUENCY;
-		ret = ChangeDisplaySettingsEx( p.sDisplayId, &DevMode, nullptr, CDS_FULLSCREEN, nullptr );
+		ret = ChangeDisplaySettingsEx( p.sDisplayId.c_str(), &DevMode, nullptr, displaySettingsFlag, nullptr );
 	}
 
 	// XXX: append error
@@ -309,7 +320,7 @@ void GraphicsWindow::CreateGraphicsWindow( const VideoModeParams &p, bool bForce
 	pos.y = 0;
 
 	// Look for the preferred display's position.
-	if (EnumDisplaySettingsEx(p.sDisplayId, ENUM_CURRENT_SETTINGS, &devmode, 0) && deviceModeIsValid(devmode)
+	if (EnumDisplaySettingsEx(p.sDisplayId.c_str(), ENUM_CURRENT_SETTINGS, &devmode, 0) && deviceModeIsValid(devmode)
 		&& (devmode.dmFields & DM_POSITION))
 	{
 		pos = devmode.dmPosition;
@@ -321,7 +332,7 @@ void GraphicsWindow::CreateGraphicsWindow( const VideoModeParams &p, bool bForce
 		int iWindowStyle = GetWindowStyle( p.windowed , p.bWindowIsFullscreenBorderless );
 
 		AppInstance inst;
-		HWND hWnd = CreateWindow( g_sClassName, "app", iWindowStyle,
+		HWND hWnd = CreateWindow( g_sClassName.c_str(), "app", iWindowStyle,
 						0, 0, 0, 0, nullptr, nullptr, inst, nullptr );
 		if( hWnd == nullptr )
 			RageException::Throw( "%s", werr_ssprintf( GetLastError(), "CreateWindow" ).c_str() );
@@ -353,7 +364,7 @@ void GraphicsWindow::CreateGraphicsWindow( const VideoModeParams &p, bool bForce
 				break;
 		}
 
-		SetWindowTextA( g_hWndMain, ConvertUTF8ToACP(p.sWindowTitle) );
+		SetWindowTextA( g_hWndMain, ConvertUTF8ToACP(p.sWindowTitle).c_str() );
 	} while(0);
 
 	// Update the window icon.
@@ -425,13 +436,17 @@ void GraphicsWindow::CreateGraphicsWindow( const VideoModeParams &p, bool bForce
 /** @brief Shut down the window, but don't reset the video mode. */
 void GraphicsWindow::DestroyGraphicsWindow()
 {
+	// If we were in fullscreen, release the display mode before destroying the window
+	if( g_hWndMain && !g_CurrentParams.windowed )
+	{
+		ChangeDisplaySettingsEx(g_CurrentParams.sDisplayId, nullptr, nullptr, 0, nullptr);
+	}
+	
 	if( g_HDC != nullptr )
 	{
 		ReleaseDC( g_hWndMain, g_HDC );
 		g_HDC = nullptr;
 	}
-
-	CHECKPOINT;
 
 	if( g_hWndMain != nullptr )
 	{
@@ -440,15 +455,11 @@ void GraphicsWindow::DestroyGraphicsWindow()
 		CrashHandler::SetForegroundWindow( g_hWndMain );
 	}
 
-	CHECKPOINT;
-
 	if( g_hIcon != nullptr )
 	{
 		DestroyIcon( g_hIcon );
 		g_hIcon = nullptr;
 	}
-
-	CHECKPOINT;
 
 	MSG msg;
 	while( PeekMessage( &msg, nullptr, 0, 0, PM_NOREMOVE ) )
@@ -458,8 +469,6 @@ void GraphicsWindow::DestroyGraphicsWindow()
 		CHECKPOINT;
 		DispatchMessage( &msg );
 	}
-
-	CHECKPOINT;
 }
 
 void GraphicsWindow::Initialize( bool bD3D )
@@ -500,7 +509,7 @@ void GraphicsWindow::Initialize( bool bD3D )
 			LoadCursor( nullptr, IDC_ARROW ),	/* default cursor */
 			nullptr,			/* hbrBackground */
 			nullptr,			/* lpszMenuName */
-			g_sClassName	/* lpszClassName */
+			g_sClassName.c_str()	/* lpszClassName */
 		}; 
 
 		m_bWideWindowClass = false;
@@ -515,14 +524,8 @@ void GraphicsWindow::Shutdown()
 {
 	DestroyGraphicsWindow();
 
-	/* Return to the desktop resolution, if needed.
-	 * It'd be nice to not do this: Windows will do it when we quit, and if
-	 * we're shutting down OpenGL to try D3D, this will cause extra mode
-	 * switches. However, we need to do this before displaying dialogs. */
-	ChangeDisplaySettingsEx( g_CurrentParams.sDisplayId, nullptr, nullptr, 0, nullptr );
-
 	AppInstance inst;
-	UnregisterClass( g_sClassName, inst );
+	UnregisterClass( g_sClassName.c_str(), inst );
 }
 
 HDC GraphicsWindow::GetHDC()

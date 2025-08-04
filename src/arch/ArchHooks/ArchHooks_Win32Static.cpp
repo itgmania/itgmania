@@ -25,7 +25,6 @@ static std::once_flag g_timerInitFlag;
  * in the QuadPart of the LARGE_INTEGER, which is a 64-bit integer. */
 namespace {
     LARGE_INTEGER g_liFrequency;
-    LARGE_INTEGER g_liCurrentTime;
 }  // namespace
 
 static void InitTimer()
@@ -41,12 +40,13 @@ int64_t ArchHooks::GetSystemTimeInMicroseconds()
 {
 	// Make sure the timer is initialized.
 	std::call_once(g_timerInitFlag, InitTimer);
-
+	
 	// Get the current time.
-	QueryPerformanceCounter(&g_liCurrentTime);
+	LARGE_INTEGER current_time;
+	QueryPerformanceCounter(&current_time);
 
 	// Calculate the elapsed time in microseconds.
-	return (g_liCurrentTime.QuadPart * 1000000) / g_liFrequency.QuadPart;
+	return (current_time.QuadPart * 1000000LL) / g_liFrequency.QuadPart;
 }
 
 static RString GetMountDir( const RString &sDirOfExecutable )

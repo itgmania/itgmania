@@ -27,9 +27,9 @@ static bool CompareLayerNames( const RString& s1, const RString& s2 )
 	int i1, i2;
 	int ret;
 
-	ret = sscanf( s1, "Layer%d", &i1 );
+	ret = sscanf( s1.c_str(), "Layer%d", &i1 );
 	ASSERT( ret == 1 );
-	ret = sscanf( s2, "Layer%d", &i2 );
+	ret = sscanf( s2.c_str(), "Layer%d", &i2 );
 	ASSERT( ret == 1 );
 	return i1 < i2;
 }
@@ -42,7 +42,7 @@ void BGAnimation::AddLayersFromAniDir( const RString &_sAniDir, const XNode *pNo
 		std::vector<RString> vsLayerNames;
 		FOREACH_CONST_Child( pNode, pLayer )
 		{
-			if( strncmp(pLayer->GetName(), "Layer", 5) == 0 )
+			if( strncmp(pLayer->GetName().c_str(), "Layer", 5) == 0 )
 				vsLayerNames.push_back( pLayer->GetName() );
 		}
 
@@ -65,7 +65,7 @@ void BGAnimation::AddLayersFromAniDir( const RString &_sAniDir, const XNode *pNo
 				sImportDir = sAniDir + sImportDir;
 				CollapsePath( sImportDir );
 
-				if( sImportDir.Right(1) != "/" )
+				if( Right(sImportDir, 1) != "/" )
 					sImportDir += "/";
 
 				ASSERT_M( IsADirectory(sImportDir), sImportDir + " isn't a directory" );
@@ -96,7 +96,7 @@ void BGAnimation::LoadFromAniDir( const RString &_sAniDir )
 		 return;
 
 	RString sAniDir = _sAniDir;
-	if( sAniDir.Right(1) != "/" )
+	if( Right(sAniDir, 1) != "/" )
 		sAniDir += "/";
 
 	ASSERT_M( IsADirectory(sAniDir), sAniDir + " isn't a directory" );
@@ -149,7 +149,7 @@ void BGAnimation::LoadFromAniDir( const RString &_sAniDir )
 		for( unsigned i=0; i<asImagePaths.size(); i++ )
 		{
 			const RString sPath = asImagePaths[i];
-			if( Basename(sPath).Left(1) == "_" )
+			if( Left(Basename(sPath), 1) == "_" )
 				continue; // don't directly load files starting with an underscore
 			BGAnimationLayer* pLayer = new BGAnimationLayer;
 			pLayer->LoadFromAniLayerFile( asImagePaths[i] );

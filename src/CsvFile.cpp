@@ -72,7 +72,7 @@ bool CsvFile::ReadFile( RageFileBasic &f )
 				while(true);
 
 				RString sValue = line;
-				sValue = sValue.Left( iEnd );
+				sValue = Left(sValue, iEnd);
 				vs.push_back( sValue );
 
 				line.erase( line.begin(), line.begin()+iEnd );
@@ -87,7 +87,7 @@ bool CsvFile::ReadFile( RageFileBasic &f )
 					iEnd = line.size();	// didn't find an end.  Take the whole line
 
 				RString sValue = line;
-				sValue = sValue.Left( iEnd );
+				sValue = Left(sValue, iEnd);
 				vs.push_back( sValue );
 
 				line.erase( line.begin(), line.begin()+iEnd );
@@ -122,7 +122,7 @@ bool CsvFile::WriteFile( RageFileBasic &f ) const
 		for (auto value = line.begin(); value != line.end(); ++value)
 		{
 			RString sVal = *value;
-			sVal.Replace( "\"", "\"\"" );	// escape quotes to double-quotes
+			Replace(sVal, "\"", "\"\"");	// escape quotes to double-quotes
 			sLine += "\"" + sVal + "\"";
 			if( value != line.end()-1 )
 				sLine += ",";

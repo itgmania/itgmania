@@ -100,8 +100,8 @@ bool IniFile::ReadFile( RageFileBasic &f )
 				size_t iEqualIndex = line.find("=");
 				if( iEqualIndex != std::string::npos )
 				{
-					RString valuename = line.Left((int) iEqualIndex);
-					RString value = line.Right(line.size()-valuename.size()-1);
+					RString valuename = Left(line, (int) iEqualIndex);
+					RString value = Right(line, line.size()-valuename.size()-1);
 					Trim(valuename);
 					if(!valuename.empty())
 					{

@@ -133,8 +133,9 @@ float RageSoundManager::GetPlayLatency() const
 int RageSoundManager::GetDriverSampleRate() const
 {
 	if( m_pDriver == nullptr )
-		return 44100;
+		return kFallbackSampleRate;
 
+	// Returns the *actual* operating rate of the loaded driver
 	return m_pDriver->GetSampleRate();
 }
 
@@ -145,7 +146,7 @@ RageSoundReader *RageSoundManager::GetLoadedSound( const RString &sPath_ )
 	LockMut(g_SoundManMutex); /* lock for access to m_mapPreloadedSounds */
 
 	RString sPath(sPath_);
-	sPath.MakeLower();
+	MakeLower(sPath);
 	std::map<RString, RageSoundReader_Preload*>::const_iterator it;
 	it = m_mapPreloadedSounds.find( sPath );
 	if( it == m_mapPreloadedSounds.end() )
@@ -164,7 +165,7 @@ void RageSoundManager::AddLoadedSound( const RString &sPath_, RageSoundReader_Pr
 	/* Don't AddLoadedSound a sound that's already registered.  It should have been
 	 * used in GetLoadedSound. */
 	RString sPath(sPath_);
-	sPath.MakeLower();
+	MakeLower(sPath);
 	std::map<RString, RageSoundReader_Preload*>::const_iterator it;
 	it = m_mapPreloadedSounds.find( sPath );
 	ASSERT_M( it == m_mapPreloadedSounds.end(), sPath );

@@ -127,7 +127,7 @@ static RString GetActualGraphicOptionsString()
 {
 	const VideoModeParams &params = DISPLAY->GetActualVideoModeParams();
 	RString sFormat = "%s %s %dx%d %d "+COLOR.GetValue()+" %d "+TEXTURE.GetValue()+" %dHz %s %s";
-	RString sLog = ssprintf( sFormat,
+	RString sLog = ssprintf( sFormat.c_str(),
 		DISPLAY->GetApiDescription().c_str(),
 		(params.windowed? WINDOWED : FULLSCREEN).GetValue().c_str(),
 		(int)params.width,
@@ -525,7 +525,7 @@ bool CheckVideoDefaultSettings()
 		// Update last seen video card
 		PREFSMAN->m_sLastSeenVideoDriver.Set( GetVideoDriverName() );
 	}
-	else if( PREFSMAN->m_sVideoRenderers.Get().CompareNoCase(defaults.sVideoRenderers) )
+	else if( CompareNoCase(PREFSMAN->m_sVideoRenderers.Get(), defaults.sVideoRenderers) )
 	{
 		LOG->Warn("Video renderer list has been changed from '%s' to '%s'",
 				defaults.sVideoRenderers.c_str(), PREFSMAN->m_sVideoRenderers.Get().c_str() );
@@ -576,7 +576,7 @@ RageDisplay *CreateDisplay()
 	RString error = ERROR_INITIALIZING_CARD.GetValue()+"\n\n"+
 		ERROR_DONT_FILE_BUG.GetValue()+"\n\n"
 		VIDEO_TROUBLESHOOTING_URL "\n\n"+
-		ssprintf(ERROR_VIDEO_DRIVER.GetValue(), GetVideoDriverName().c_str())+"\n\n";
+		ssprintf(ERROR_VIDEO_DRIVER.GetValue().c_str(), GetVideoDriverName().c_str())+"\n\n";
 
 	std::vector<RString> asRenderers;
 	split( PREFSMAN->m_sVideoRenderers, ",", asRenderers, true );
@@ -589,32 +589,32 @@ RageDisplay *CreateDisplay()
 	{
 		RString sRenderer = asRenderers[i];
 
-		if( sRenderer.CompareNoCase("opengl")==0 )
+		if( CompareNoCase(sRenderer, "opengl")==0 )
 		{
 #if defined(SUPPORT_OPENGL)
 			pRet = new RageDisplay_Legacy;
 #endif
 		}
-		else if( sRenderer.CompareNoCase("gles2")==0 )
+		else if( CompareNoCase(sRenderer, "gles2")==0 )
 		{
 #if defined(SUPPORT_GLES2)
 			pRet = new RageDisplay_GLES2;
 #endif
 		}
-		else if( sRenderer.CompareNoCase("d3d")==0 )
+		else if( CompareNoCase(sRenderer, "d3d")==0 )
 		{
 // TODO: ANGLE/RageDisplay_Modern
 #if defined(SUPPORT_D3D)
 			pRet = new RageDisplay_D3D;
 #endif
 		}
-		else if( sRenderer.CompareNoCase("null")==0 )
+		else if( CompareNoCase(sRenderer, "null")==0 )
 		{
 			return new RageDisplay_Null;
 		}
 		else
 		{
-			RageException::Throw( ERROR_UNKNOWN_VIDEO_RENDERER.GetValue(), sRenderer.c_str() );
+			RageException::Throw( ERROR_UNKNOWN_VIDEO_RENDERER.GetValue().c_str(), sRenderer.c_str() );
 		}
 
 		if( pRet == nullptr )
@@ -623,7 +623,7 @@ RageDisplay *CreateDisplay()
 		RString sError = pRet->Init( params, PREFSMAN->m_bAllowUnacceleratedRenderer );
 		if( !sError.empty() )
 		{
-			error += ssprintf(ERROR_INITIALIZING.GetValue(), sRenderer.c_str())+"\n" + sError;
+			error += ssprintf(ERROR_INITIALIZING.GetValue().c_str(), sRenderer.c_str())+"\n" + sError;
 			RageUtil::SafeDelete( pRet );
 			error += "\n\n\n";
 			continue;
@@ -799,8 +799,8 @@ static void ApplyLogPreferences()
 {
 	LOG->SetShowLogOutput( PREFSMAN->m_bShowLogOutput );
 	LOG->SetLogToDisk( PREFSMAN->m_bLogToDisk );
-	LOG->SetInfoToDisk( true );
-	LOG->SetUserLogToDisk( true );
+	LOG->SetInfoToDisk( PREFSMAN->m_bLogToDisk );
+	LOG->SetUserLogToDisk( PREFSMAN->m_bLogToDisk );
 	LOG->SetFlushing( PREFSMAN->m_bForceLogFlush );
 	Checkpoints::LogCheckpoints( PREFSMAN->m_bLogCheckpoints );
 }
@@ -1020,9 +1020,9 @@ RString StepMania::SaveScreenshot( RString Dir, bool SaveCompressed, bool MakeSi
 	 * As before, we ignore the extension. -aj */
 	RString FileNameNoExtension = NamePrefix + DateTime::GetNowDateTime().GetString() + NameSuffix;
 	// replace space with underscore.
-	FileNameNoExtension.Replace(" ","_");
+	Replace(FileNameNoExtension, " ", "_");
 	// colons are illegal in filenames.
-	FileNameNoExtension.Replace(":","");
+	Replace(FileNameNoExtension, ":", "");
 
 	// Save the screenshot. If writing lossy to a memcard, use
 	// SAVE_LOSSY_LOW_QUAL, so we don't eat up lots of space.
@@ -1433,7 +1433,7 @@ int LuaFunc_SaveScreenshot(lua_State *L)
 	}
 	RString path= dir + filename;
 	lua_pushboolean(L, !filename.empty());
-	lua_pushstring(L, path);
+	lua_pushstring(L, path.c_str());
 	return 2;
 }
 void LuaFunc_Register_SaveScreenshot(lua_State *L);

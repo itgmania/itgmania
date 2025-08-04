@@ -111,7 +111,7 @@ static GameSoundManager::PlayMusicParams g_FallbackMusicParams;
 static void StartMusic( MusicToPlay &ToPlay )
 {
 	LockMutex L( *g_Mutex );
-	if( g_Playing->m_Music->IsPlaying() && g_Playing->m_Music->GetLoadedFilePath().EqualsNoCase(ToPlay.m_sFile) )
+	if( g_Playing->m_Music->IsPlaying() && EqualsNoCase(g_Playing->m_Music->GetLoadedFilePath(), ToPlay.m_sFile) )
 		return;
 
 	/* We're changing or stopping the music.  If we were dimming, reset. */
@@ -295,7 +295,7 @@ static void DoPlayOnceFromDir( RString sPath )
 		return;
 
 	// make sure there's a slash at the end of this path
-	if( sPath.Right(1) != "/" )
+	if( Right(sPath, 1) != "/" )
 		sPath += "/";
 
 	std::vector<RString> arraySoundFiles;

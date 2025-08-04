@@ -36,12 +36,12 @@ Group::Group() {
     m_sBannerPath = "";
 }
 
-Group::~Group() 
-{
-
-}
-
 Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfile) {
+    if (sDir.empty() || sGroupDirName.empty()) {
+        LOG->Warn("Group::Group: Empty directory or group name provided.");
+        return;
+    }
+
     RString sPackIniPath;
     if (bFromProfile) {
         sPackIniPath = sDir + "/" + INI_FILE;
@@ -72,7 +72,12 @@ Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfil
     
     if (FILEMAN->DoesFileExist(sPackIniPath)) {
         IniFile ini;
-        ini.ReadFile(sPackIniPath);
+        if (!ini.ReadFile(sPackIniPath)) {
+        LOG->Warn(
+            "Group::Group: Failed to read Pack.ini file at '%s': %s",
+            sPackIniPath.c_str(), ini.GetError().c_str());
+            return;
+        }
 
         RString sVersion = "";
         ini.GetValue("Group", "Version", sVersion);
@@ -123,14 +128,14 @@ Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfil
                     m_fSyncOffset = -0.009f;
                 }
                 else {
-                    LOG->Warn("Group::Group: Invalid SyncOffset value: %s in Pack.ini. Valid values are NULL and ITG. Using default value.", sValue.c_str());
+                    LOG->Warn("Group::Group: Invalid SyncOffset value: %s in Pack.ini file \"%s\". Valid values are NULL and ITG. Using default value.", sValue.c_str(), sPackIniPath.c_str());
                 }
             }
 
             ini.GetValue("Group", "Year", m_iYearReleased);
         } else {
-            LOG->Warn("Group::Group: Pack.ini version not set. Using default values.");
-        }  
+            LOG->Warn("Group::Group: Pack.ini version not set in file \"%s\". Using default values.", sPackIniPath.c_str());
+        }
     }
 }
 
@@ -148,30 +153,30 @@ class LunaGroup: public Luna<Group>
 public:
 	static int GetGroupName(T* p, lua_State *L)
 	{
-		lua_pushstring(L, p->GetGroupName());
+		lua_pushstring(L, p->GetGroupName().c_str());
 		return 1;
 	}
 	static int GetSortTitle(T* p, lua_State *L)
 	{
-		lua_pushstring(L, p->GetSortTitle());
+		lua_pushstring(L, p->GetSortTitle().c_str());
         return 1;
     }
 
     static int GetDisplayTitle(T* p, lua_State *L)
     {
-        lua_pushstring(L, p->GetDisplayTitle());
+        lua_pushstring(L, p->GetDisplayTitle().c_str());
         return 1;
     }
 
     static int GetTranslitTitle(T* p, lua_State *L)
     {
-        lua_pushstring(L, p->GetTranslitTitle());
+        lua_pushstring(L, p->GetTranslitTitle().c_str());
         return 1;
     }
 
     static int GetSeries(T* p, lua_State *L)
     {
-        lua_pushstring(L, p->GetSeries());
+        lua_pushstring(L, p->GetSeries().c_str());
         return 1;
     }
 
@@ -189,7 +194,7 @@ public:
 
     static int GetBannerPath(T* p, lua_State *L)
     {
-        lua_pushstring(L, p->GetBannerPath());
+        lua_pushstring(L, p->GetBannerPath().c_str());
         return 1;
     }
 

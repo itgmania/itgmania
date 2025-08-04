@@ -192,7 +192,7 @@ static void GameSel( int &sel, bool ToSel, const ConfOption *pConfOption )
 
 		sel = 0;
 		for(unsigned i = 0; i < choices.size(); ++i)
-			if( !strcasecmp(choices[i], sCurGameName) )
+			if( !strcasecmp(choices[i].c_str(), sCurGameName.c_str()) )
 				sel = i;
 	} else {
 		std::vector<const Game*> aGames;
@@ -227,12 +227,12 @@ static void Language( int &sel, bool ToSel, const ConfOption *pConfOption )
 	{
 		sel = -1;
 		for( unsigned i=0; sel == -1 && i < vs.size(); ++i )
-			if( !strcasecmp(vs[i], THEME->GetCurLanguage()) )
+			if( !strcasecmp(vs[i].c_str(), THEME->GetCurLanguage().c_str()) )
 				sel = i;
 
 		// If the current language doesn't exist, we'll show BASE_LANGUAGE, so select that.
 		for( unsigned i=0; sel == -1 && i < vs.size(); ++i )
-			if( !strcasecmp(vs[i], SpecialFiles::BASE_LANGUAGE) )
+			if( !strcasecmp(vs[i].c_str(), SpecialFiles::BASE_LANGUAGE.c_str()) )
 				sel = i;
 
 		if( sel == -1 )
@@ -291,7 +291,7 @@ static void RequestedTheme( int &sel, bool ToSel, const ConfOption *pConfOption 
 	{
 		sel = 0;
 		for( unsigned i=1; i<vsThemeNames.size(); i++ )
-			if( !strcasecmp(vsThemeNames[i], PREFSMAN->m_sTheme.Get()) )
+			if( !strcasecmp(vsThemeNames[i].c_str(), PREFSMAN->m_sTheme.Get().c_str()) )
 				sel = i;
 	}
 	else
@@ -317,7 +317,7 @@ static void Announcer( int &sel, bool ToSel, const ConfOption *pConfOption )
 	{
 		sel = 0;
 		for( unsigned i=1; i<choices.size(); i++ )
-			if( !strcasecmp(choices[i], ANNOUNCER->GetCurAnnouncerName()) )
+			if( !strcasecmp(choices[i].c_str(), ANNOUNCER->GetCurAnnouncerName().c_str()) )
 				sel = i;
 	}
 	else
@@ -344,7 +344,7 @@ static void DefaultNoteSkin( int &sel, bool ToSel, const ConfOption *pConfOption
 		po.FromString( PREFSMAN->m_sDefaultModifiers );
 		sel = 0;
 		for( unsigned i=0; i < choices.size(); i++ )
-			if( !strcasecmp(choices[i], po.m_sNoteSkin) )
+			if( !strcasecmp(choices[i].c_str(), po.m_sNoteSkin.c_str()) )
 				sel = i;
 	}
 	else
@@ -649,7 +649,7 @@ static void MovieColorDepth( int &sel, bool ToSel, const ConfOption *pConfOption
 
 static void RefreshRate( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
-	const int mapping[] = { (int) REFRESH_DEFAULT,60,70,72,75,80,85,90,100,120,150 };
+	const int mapping[] = { (int) REFRESH_DEFAULT,60,75,85,100,120,144,165,180,240,360 };
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
@@ -692,6 +692,12 @@ static void SoundVolume( int &sel, bool ToSel, const ConfOption *pConfOption )
 static void SoundVolumeAttract( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
 	const float mapping[] = { 0.0f,0.1f,0.2f,0.3f,0.4f,0.5f,0.6f,0.7f,0.8f,0.9f,1.0f };
+	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
+}
+
+static void PreferredSampleRate( int &sel, bool ToSel, const ConfOption *pConfOption )
+{
+	const int mapping[] = { 0, 44100, 48000 };
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
@@ -922,7 +928,7 @@ static void InitializeConfOptions()
 	ADD( ConfOption( "CelShadeModels",		MovePref<bool>,		"Off","On" ) );
 	ADD( ConfOption( "SmoothLines",			MovePref<bool>,		"Off","On" ) );
 	g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
-	ADD( ConfOption( "RefreshRate",			RefreshRate,		"Default","|60","|70","|72","|75","|80","|85","|90","|100","|120","|150" ) );
+	ADD( ConfOption( "RefreshRate",			RefreshRate,		"Default","|60","|75","|85","|100","|120","|144","|165","|180","|240","|360" ) );
 	g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
 	ADD( ConfOption( "Vsync",			MovePref<bool>,		"No", "Yes" ) );
 	g_ConfOptions.back().m_iEffects = OPT_APPLY_GRAPHICS;
@@ -935,6 +941,8 @@ static void InitializeConfOptions()
 	ADD( ConfOption( "SoundVolume",			SoundVolume,		"Silent","|10%","|20%","|30%","|40%","|50%","|60%","|70%","|80%","|90%","|100%" ) );
 	g_ConfOptions.back().m_iEffects = OPT_APPLY_SOUND;
 	ADD( ConfOption( "SoundVolumeAttract",		SoundVolumeAttract,	"Silent","|10%","|20%","|30%","|40%","|50%","|60%","|70%","|80%","|90%","|100%" ) );
+	ADD( ConfOption( "PreferredSampleRate", PreferredSampleRate, "Default", "44100 Hz", "48000 Hz" ) );
+	g_ConfOptions.back().m_sPrefName = "SoundPreferredSampleRate";
 	ADD( ConfOption( "VisualDelaySeconds",		VisualDelaySeconds,	"|-5","|-4","|-3","|-2","|-1","|0","|+1","|+2","|+3","|+4","|+5" ) );
 	{
 		ConfOption c( "GlobalOffsetSeconds",		GlobalOffsetSeconds );
@@ -968,7 +976,7 @@ ConfOption *ConfOption::Find( RString name )
 	{
 		ConfOption *opt = &g_ConfOptions[i];
 		RString match(opt->name);
-		if( match.CompareNoCase(name) )
+		if( CompareNoCase(match, name) )
 			continue;
 		return opt;
 	}
