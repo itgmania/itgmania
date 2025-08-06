@@ -23,6 +23,8 @@
 #include <cmath>
 #include <cstddef>
 #include <vector>
+#include <fstream>
+#include <cctype>
 
 
 GameSoundManager *SOUND = nullptr;
@@ -923,6 +925,40 @@ int LuaFunc_get_sound_driver_list(lua_State* L)
 	return 1;
 }
 LUAFUNC_REGISTER_COMMON(get_sound_driver_list);
+
+int LuaFunc_get_sound_device_list(lua_State* L)
+{
+    std::vector<RString> device_names;
+    /* Always include the default device */
+    device_names.push_back("default");
+
+#if defined(__linux__)
+    /* Attempt to enumerate ALSA hw devices by reading /proc/asound/cards */
+    std::ifstream cards_file("/proc/asound/cards");
+    if(cards_file.good())
+    {
+        std::string line;
+        while(std::getline(cards_file, line))
+        {
+            /* Lines describing cards typically start with the card index followed by a space. */
+            if(line.size() > 1 && std::isdigit(line[0]) && line[1] == ' ')
+            {
+                int card_num = line[0] - '0';
+                device_names.push_back(ssprintf("hw:%d", card_num));
+            }
+        }
+    }
+#endif
+
+    lua_createtable(L, device_names.size(), 0);
+    for(size_t n = 0; n < device_names.size(); ++n)
+    {
+        lua_pushstring(L, device_names[n].c_str());
+        lua_rawseti(L, -2, n + 1);
+    }
+    return 1;
+}
+LUAFUNC_REGISTER_COMMON(get_sound_device_list);
 
 
 /*
