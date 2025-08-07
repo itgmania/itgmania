@@ -43,6 +43,8 @@ public:
 
 	virtual bool MenuStart( const InputEventPlus &input );
 	virtual bool MenuBack( const InputEventPlus &input );
+	virtual void Cancel( ScreenMessage smSendWhenDone );
+	virtual void ConfirmedCancel( ScreenMessage smSendWhenDone );
 
 	// ScreenWithMenuElements override: never play music here; we do it ourself.
 	virtual void StartPlayingMusic() { }
@@ -108,6 +110,7 @@ protected:
 	ThemeMetric<bool>		CHANGE_GROUPS_WITH_GAME_BUTTONS;
 	ThemeMetric<RString>	NULL_SCORE_STRING;
 	ThemeMetric<bool>		PLAY_SOUND_ON_ENTERING_OPTIONS_MENU;
+	ThemeMetric<bool>		CONFIRM_EXIT;
 
 	bool CanChangeSong() const { return m_SelectionState == SelectionState_SelectingSong; }
 	bool CanChangeSteps() const { return TWO_PART_SELECTION ? m_SelectionState == SelectionState_SelectingSteps : m_SelectionState == SelectionState_SelectingSong; }
