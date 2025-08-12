@@ -928,11 +928,9 @@ LUAFUNC_REGISTER_COMMON(get_sound_driver_list);
 int LuaFunc_get_sound_device_list(lua_State* L);
 int LuaFunc_get_sound_device_list(lua_State* L)
 {
-	//std::vector<RString> audio_devices = SOUNDMAN->GetDriverAudioDevices();
 	std::vector<DriverAudioDevice> audio_devices = SOUNDMAN->GetDriverAudioDevices();
 
 	lua_createtable(L, audio_devices.size(), 0);
-	// User .c_str() if using RString
 	lua_newtable(L);
 	int tableIndex = 1;
 
