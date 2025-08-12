@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <map>
 #include <set>
+#include <vector>
 
 class RageSound;
 class RageSoundBase;
@@ -16,6 +17,11 @@ struct RageSoundParams;
 class RageSoundReader;
 class RageSoundReader_Preload;
 class RageTimer;
+
+struct DriverAudioDevice {
+	RString id;
+	RString readableName;
+};
 
 class RageSoundManager
 {
@@ -42,6 +48,7 @@ public:
 	int64_t GetPosition( RageTimer *pTimer ) const;	/* used by RageSound */
 	float GetPlayLatency() const;
 	int GetDriverSampleRate() const;
+	std::vector<DriverAudioDevice> GetDriverAudioDevices() const;
 
 	RageSoundReader *GetLoadedSound( const RString &sPath );
 	void AddLoadedSound( const RString &sPath, RageSoundReader_Preload *pSound );

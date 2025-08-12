@@ -925,6 +925,37 @@ int LuaFunc_get_sound_driver_list(lua_State* L)
 }
 LUAFUNC_REGISTER_COMMON(get_sound_driver_list);
 
+int LuaFunc_get_sound_device_list(lua_State* L);
+int LuaFunc_get_sound_device_list(lua_State* L)
+{
+	//std::vector<RString> audio_devices = SOUNDMAN->GetDriverAudioDevices();
+	std::vector<DriverAudioDevice> audio_devices = SOUNDMAN->GetDriverAudioDevices();
+
+	lua_createtable(L, audio_devices.size(), 0);
+	// User .c_str() if using RString
+	lua_newtable(L);
+	int tableIndex = 1;
+
+	for(size_t n= 0; n < audio_devices.size(); ++n)
+	{
+		// New added table element
+		lua_newtable(L);
+		// Add  readable name
+		lua_pushstring(L, audio_devices[n].readableName);
+		lua_setfield(L, -2, "readable_name");
+
+		//Add system name
+		lua_pushstring(L, audio_devices[n].id);
+		lua_setfield(L, -2, "system_name");
+
+		// Go to next table item
+		lua_rawseti(L, -2, tableIndex++);
+	}
+
+	return 1;
+}
+LUAFUNC_REGISTER_COMMON(get_sound_device_list);
+
 
 /*
  * Copyright (c) 2003-2005 Glenn Maynard

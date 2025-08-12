@@ -8,6 +8,9 @@
 #include "RageUtil_CircularBuffer.h"
 #include "RageSound.h"
 
+// Just to include DriverSoundDevice - this might not be ideal
+#include "RageSoundManager.h"
+
 #include <cstdint>
 
 class RageSoundBase;
@@ -68,6 +71,8 @@ public:
 	virtual float GetPlayLatency() const { return 0.0f; }
 
 	virtual int GetSampleRate() const { return kFallbackSampleRate; }
+
+	virtual std::vector<DriverAudioDevice> GetAudioDevices() const { return { DriverAudioDevice{"", "default"} }; }
 
 protected:
 	/* Start the decoding.  This should be called once the hardware is set up and
