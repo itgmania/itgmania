@@ -22,6 +22,8 @@ public:
 
 	void SetupDecodingThread();
 
+	std::vector<DriverAudioDevice> GetAudioDevices() const;
+
 private:
 	static int MixerThread_start( void *p );
 	void MixerThread();

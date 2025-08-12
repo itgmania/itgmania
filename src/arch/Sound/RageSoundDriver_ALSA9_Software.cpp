@@ -150,6 +150,17 @@ float RageSoundDriver_ALSA9_Software::GetPlayLatency() const
 	return float(g_iMaxWriteahead) / m_iSampleRate;
 }
 
+std::vector<DriverAudioDevice> RageSoundDriver_ALSA9_Software::GetAudioDevices() const
+{
+	std::vector<DriverAudioDevice> devices;
+	// Add default device
+	DriverAudioDevice defaultDevice;
+	defaultDevice.id = "";
+	defaultDevice.readableName = "Default (ALSA Placeholder for PR)";
+	devices.push_back(defaultDevice);
+	return devices;
+}
+
 /*
  * (c) 2002-2004 Glenn Maynard, Aaron VonderHaar
  * All rights reserved.
