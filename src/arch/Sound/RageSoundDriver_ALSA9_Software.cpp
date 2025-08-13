@@ -150,14 +150,70 @@ float RageSoundDriver_ALSA9_Software::GetPlayLatency() const
 	return float(g_iMaxWriteahead) / m_iSampleRate;
 }
 
+// NOTE: This is using ALSA9Helpers.cpp code here - There might be a better option to re-use the code
 std::vector<DriverAudioDevice> RageSoundDriver_ALSA9_Software::GetAudioDevices() const
 {
 	std::vector<DriverAudioDevice> devices;
 	// Add default device
-	DriverAudioDevice defaultDevice;
-	defaultDevice.id = "";
-	defaultDevice.readableName = "Default (ALSA Placeholder for PR)";
-	devices.push_back(defaultDevice);
+	devices.push_back({ "", "Default" });
+
+        int card = -1;
+        while( dsnd_card_next( &card ) >= 0 && card >= 0 )
+        {
+                const RString id = ssprintf( "hw:%d", card );
+                snd_ctl_t *handle;
+                int err;
+                err = dsnd_ctl_open( &handle, id.c_str(), 0 );
+                if ( err < 0 )
+                {
+                        LOG->Info( "Couldn't open card #%i (\"%s\") to probe: %s", card, id.c_str(), dsnd_strerror(err) );
+                        continue;
+                }
+
+                snd_ctl_card_info_t *info;
+                dsnd_ctl_card_info_alloca(&info);
+                err = dsnd_ctl_card_info( handle, info );
+                if ( err < 0 )
+                {
+                        LOG->Info( "Couldn't get card info for card #%i (\"%s\"): %s", card, id.c_str(), dsnd_strerror(err) );
+                        dsnd_ctl_close( handle );
+                        continue;
+                }
+
+                int dev = -1;
+                while ( dsnd_ctl_pcm_next_device( handle, &dev ) >= 0 && dev >= 0 )
+                {
+                        snd_pcm_info_t *pcminfo;
+                        dsnd_pcm_info_alloca(&pcminfo);
+                        dsnd_pcm_info_set_device(pcminfo, dev);
+                        dsnd_pcm_info_set_stream(pcminfo, SND_PCM_STREAM_PLAYBACK);
+
+                        err = dsnd_ctl_pcm_info(handle, pcminfo);
+                        if ( err < 0 )
+                        {
+                                if (err != -ENOENT)
+                                        LOG->Info("dsnd_ctl_pcm_info(%i) (%s) failed: %s", card, id.c_str(), dsnd_strerror(err));
+                                continue;
+                        }
+			DriverAudioDevice device;
+			device.id = ssprintf("hw:%i,%i", card, dev);
+			device.readableName = dsnd_pcm_info_get_name(pcminfo);
+			devices.push_back(device);
+
+                        LOG->Info( "ALSA Driver: %i: %s [%s], device %i: %s [%s], %i/%i subdevices avail",
+                                        card, dsnd_ctl_card_info_get_name(info), dsnd_ctl_card_info_get_id(info), dev,
+                                        dsnd_pcm_info_get_id(pcminfo), dsnd_pcm_info_get_name(pcminfo),
+                                        dsnd_pcm_info_get_subdevices_avail(pcminfo),
+                                        dsnd_pcm_info_get_subdevices_count(pcminfo) );
+
+                }
+                dsnd_ctl_close(handle);
+        }
+
+        if( card == 0 )
+                LOG->Info( "No ALSA sound cards were found.");
+
+
 	return devices;
 }
 
