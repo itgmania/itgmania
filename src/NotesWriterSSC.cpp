@@ -379,7 +379,7 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 	const RString& music= in.GetMusicFile();
 	if(!music.empty())
 	{
-		lines.push_back(ssprintf("#MUSIC:%s;", music.c_str()));
+		lines.push_back(ssprintf("#MUSIC:%s;", SmEscape(music).c_str()));
 	}
 
 	std::vector<RString> asRadarValues;
@@ -480,7 +480,7 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 		// because it's used in SSCLoader::LoadFromSimfile to determine when
 		// to switch the state back to GETTING_SONG_INFO, which means any tags
 		// after it will be ignored.
-		lines.push_back(ssprintf("#STEPFILENAME:%s;", in.GetFilename().c_str()));
+		lines.push_back(ssprintf("#STEPFILENAME:%s;", SmEscape(in.GetFilename()).c_str()));
 		lines.push_back( ssprintf( "// end step cache tags" ) );
 	}
 	else
@@ -521,7 +521,7 @@ bool NotesWriterSSC::Write( RString sPath, const Song &out, const std::vector<St
 		f.PutLine( ssprintf( "// cache tags:" ) );
 		f.PutLine( ssprintf( "#FIRSTSECOND:%.6f;", out.GetFirstSecond() ) );
 		f.PutLine( ssprintf( "#LASTSECOND:%.6f;", out.GetLastSecond() ) );
-		f.PutLine( ssprintf( "#SONGFILENAME:%s;", out.m_sSongFileName.c_str() ) );
+		f.PutLine( ssprintf( "#SONGFILENAME:%s;", SmEscape(out.m_sSongFileName).c_str() ) );
 		f.PutLine( ssprintf( "#HASMUSIC:%i;", out.m_bHasMusic ) );
 		f.PutLine( ssprintf( "#HASBANNER:%i;", out.m_bHasBanner ) );
 		f.PutLine( ssprintf( "#MUSICLENGTH:%.6f;", out.m_fMusicLengthSeconds ) );
