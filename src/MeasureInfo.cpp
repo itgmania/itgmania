@@ -109,7 +109,6 @@ void MeasureInfo::CalculateMeasureInfo(const NoteData &in, MeasureInfo &out)
 		}
 		
 		float measureDuration = timing->GetElapsedTimeFromBeat(4 * (m+1)) - timing->GetElapsedTimeFromBeat(4 * m);
-		float nps = out.notesPerMeasure[m] / measureDuration;
 		
 		// FIXME: We subtract the time at the current measure from the time at the next measure to determine
 		// the duration of this measure in seconds, and use that to calculate notes per second.
@@ -124,15 +123,10 @@ void MeasureInfo::CalculateMeasureInfo(const NoteData &in, MeasureInfo &out)
 		//
 		// As a hold over for this case, we check that the duration is <= 0.12 (instead of 0), so this only
 		// breaks for cases where charts are of 2,000 BPM (which are likely rarer than those with warps).
-		
-		if(measureDuration < 0.12)
-		{
-			out.npsPerMeasure[m] = 0;
-		}
-		else
-		{
-			out.npsPerMeasure[m] = nps;
-		}
+		float nps = measureDuration < 0.12
+			? 0 :
+			(out.notesPerMeasure[m] / measureDuration);
+		out.npsPerMeasure[m] = nps;
 
 		if(nps > peak_nps)
 		{
