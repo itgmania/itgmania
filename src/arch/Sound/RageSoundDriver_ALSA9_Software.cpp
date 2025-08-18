@@ -199,13 +199,6 @@ std::vector<DriverSoundDevice> RageSoundDriver_ALSA9_Software::GetSoundDevices()
 			device.id = ssprintf("hw:%i,%i", card, dev);
 			device.readableName = dsnd_pcm_info_get_name(pcminfo);
 			devices.push_back(device);
-
-                        LOG->Info( "ALSA Driver: %i: %s [%s], device %i: %s [%s], %i/%i subdevices avail",
-                                        card, dsnd_ctl_card_info_get_name(info), dsnd_ctl_card_info_get_id(info), dev,
-                                        dsnd_pcm_info_get_id(pcminfo), dsnd_pcm_info_get_name(pcminfo),
-                                        dsnd_pcm_info_get_subdevices_avail(pcminfo),
-                                        dsnd_pcm_info_get_subdevices_count(pcminfo) );
-
                 }
                 dsnd_ctl_close(handle);
         }
