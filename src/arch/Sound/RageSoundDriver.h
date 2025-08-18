@@ -72,7 +72,7 @@ public:
 
 	virtual int GetSampleRate() const { return kFallbackSampleRate; }
 
-	virtual std::vector<DriverAudioDevice> GetAudioDevices() const { return { DriverAudioDevice{"", "default"} }; }
+	virtual std::vector<DriverSoundDevice> GetSoundDevices() const { return { DriverSoundDevice{"", "default"} }; }
 
 protected:
 	/* Start the decoding.  This should be called once the hardware is set up and

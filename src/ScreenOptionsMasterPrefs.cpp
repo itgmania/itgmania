@@ -23,7 +23,6 @@
 #include <vector>
 
 
-
 using namespace StringConversion;
 
 static void GetPrefsDefaultModifiers( PlayerOptions &po, SongOptions &so )
@@ -706,8 +705,8 @@ static void PreferredSampleRate( int &sel, bool ToSel, const ConfOption *pConfOp
 
 static void SoundDeviceChoices( std::vector<RString> &out )
 {
-	std::vector<DriverAudioDevice> soundDevices = SOUNDMAN->GetDriverAudioDevices();
-	for( const DriverAudioDevice &device : soundDevices )
+	std::vector<DriverSoundDevice> soundDevices = SOUNDMAN->GetDriverSoundDevices();
+	for( const DriverSoundDevice &device : soundDevices )
 	{
 		out.push_back( device.readableName );
 	}
@@ -716,7 +715,7 @@ static void SoundDeviceChoices( std::vector<RString> &out )
 static void SoundDevice( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
 	// Get choices from the sound driver
-	std::vector<DriverAudioDevice> soundDevices = SOUNDMAN->GetDriverAudioDevices();
+	std::vector<DriverSoundDevice> soundDevices = SOUNDMAN->GetDriverSoundDevices();
 
 	IPreference *pSoundDevicePref = IPreference::GetPreferenceByName( pConfOption->m_sPrefName );
 

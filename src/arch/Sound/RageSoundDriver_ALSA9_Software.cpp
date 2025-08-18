@@ -151,9 +151,9 @@ float RageSoundDriver_ALSA9_Software::GetPlayLatency() const
 }
 
 // NOTE: This is using ALSA9Helpers.cpp code here - There might be a better option to re-use the code
-std::vector<DriverAudioDevice> RageSoundDriver_ALSA9_Software::GetAudioDevices() const
+std::vector<DriverSoundDevice> RageSoundDriver_ALSA9_Software::GetSoundDevices() const
 {
-	std::vector<DriverAudioDevice> devices;
+	std::vector<DriverSoundDevice> devices;
 	// Add default device
 	devices.push_back({ "", "Default" });
 
@@ -195,7 +195,7 @@ std::vector<DriverAudioDevice> RageSoundDriver_ALSA9_Software::GetAudioDevices()
                                         LOG->Info("dsnd_ctl_pcm_info(%i) (%s) failed: %s", card, id.c_str(), dsnd_strerror(err));
                                 continue;
                         }
-			DriverAudioDevice device;
+			DriverSoundDevice device;
 			device.id = ssprintf("hw:%i,%i", card, dev);
 			device.readableName = dsnd_pcm_info_get_name(pcminfo);
 			devices.push_back(device);

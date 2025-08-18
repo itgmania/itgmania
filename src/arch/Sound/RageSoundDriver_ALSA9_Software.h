@@ -22,7 +22,7 @@ public:
 
 	void SetupDecodingThread();
 
-	std::vector<DriverAudioDevice> GetAudioDevices() const;
+	std::vector<DriverSoundDevice> GetSoundDevices() const;
 
 private:
 	static int MixerThread_start( void *p );

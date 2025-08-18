@@ -139,14 +139,14 @@ int RageSoundManager::GetDriverSampleRate() const
 	return m_pDriver->GetSampleRate();
 }
 
-std::vector<DriverAudioDevice> RageSoundManager::GetDriverAudioDevices() const
+std::vector<DriverSoundDevice> RageSoundManager::GetDriverSoundDevices() const
 {
 	if( m_pDriver == nullptr ) {
 		LOG->Info("No audio driver");
 		return { {"", ""} };
 	}
 
-	return m_pDriver->GetAudioDevices();
+	return m_pDriver->GetSoundDevices();
 }
 
 /* If the given path is loaded, return a copy; otherwise return nullptr.

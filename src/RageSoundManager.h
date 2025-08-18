@@ -18,7 +18,7 @@ class RageSoundReader;
 class RageSoundReader_Preload;
 class RageTimer;
 
-struct DriverAudioDevice {
+struct DriverSoundDevice {
 	RString id;
 	RString readableName;
 };
@@ -48,7 +48,7 @@ public:
 	int64_t GetPosition( RageTimer *pTimer ) const;	/* used by RageSound */
 	float GetPlayLatency() const;
 	int GetDriverSampleRate() const;
-	std::vector<DriverAudioDevice> GetDriverAudioDevices() const;
+	std::vector<DriverSoundDevice> GetDriverSoundDevices() const;
 
 	RageSoundReader *GetLoadedSound( const RString &sPath );
 	void AddLoadedSound( const RString &sPath, RageSoundReader_Preload *pSound );
