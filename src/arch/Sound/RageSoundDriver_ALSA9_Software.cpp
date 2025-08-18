@@ -157,54 +157,54 @@ std::vector<DriverSoundDevice> RageSoundDriver_ALSA9_Software::GetSoundDevices()
 	// Add default device
 	devices.push_back({ "", "Default" });
 
-        int card = -1;
-        while( dsnd_card_next( &card ) >= 0 && card >= 0 )
-        {
-                const RString id = ssprintf( "hw:%d", card );
-                snd_ctl_t *handle;
-                int err;
-                err = dsnd_ctl_open( &handle, id.c_str(), 0 );
-                if ( err < 0 )
-                {
-                        LOG->Info( "Couldn't open card #%i (\"%s\") to probe: %s", card, id.c_str(), dsnd_strerror(err) );
-                        continue;
-                }
+	int card = -1;
+	while( dsnd_card_next( &card ) >= 0 && card >= 0 )
+	{
+		const RString id = ssprintf( "hw:%d", card );
+		snd_ctl_t *handle;
+		int err;
+		err = dsnd_ctl_open( &handle, id.c_str(), 0 );
+		if ( err < 0 )
+		{
+			LOG->Info( "Couldn't open card #%i (\"%s\") to probe: %s", card, id.c_str(), dsnd_strerror(err) );
+			continue;
+		}
 
-                snd_ctl_card_info_t *info;
-                dsnd_ctl_card_info_alloca(&info);
-                err = dsnd_ctl_card_info( handle, info );
-                if ( err < 0 )
-                {
-                        LOG->Info( "Couldn't get card info for card #%i (\"%s\"): %s", card, id.c_str(), dsnd_strerror(err) );
-                        dsnd_ctl_close( handle );
-                        continue;
-                }
+		snd_ctl_card_info_t *info;
+		dsnd_ctl_card_info_alloca(&info);
+		err = dsnd_ctl_card_info( handle, info );
+		if ( err < 0 )
+		{
+			LOG->Info( "Couldn't get card info for card #%i (\"%s\"): %s", card, id.c_str(), dsnd_strerror(err) );
+			dsnd_ctl_close( handle );
+			continue;
+		}
 
-                int dev = -1;
-                while ( dsnd_ctl_pcm_next_device( handle, &dev ) >= 0 && dev >= 0 )
-                {
-                        snd_pcm_info_t *pcminfo;
-                        dsnd_pcm_info_alloca(&pcminfo);
-                        dsnd_pcm_info_set_device(pcminfo, dev);
-                        dsnd_pcm_info_set_stream(pcminfo, SND_PCM_STREAM_PLAYBACK);
+		int dev = -1;
+		while ( dsnd_ctl_pcm_next_device( handle, &dev ) >= 0 && dev >= 0 )
+		{
+			snd_pcm_info_t *pcminfo;
+			dsnd_pcm_info_alloca(&pcminfo);
+			dsnd_pcm_info_set_device(pcminfo, dev);
+			dsnd_pcm_info_set_stream(pcminfo, SND_PCM_STREAM_PLAYBACK);
 
-                        err = dsnd_ctl_pcm_info(handle, pcminfo);
-                        if ( err < 0 )
-                        {
-                                if (err != -ENOENT)
-                                        LOG->Info("dsnd_ctl_pcm_info(%i) (%s) failed: %s", card, id.c_str(), dsnd_strerror(err));
-                                continue;
-                        }
+			err = dsnd_ctl_pcm_info(handle, pcminfo);
+			if ( err < 0 )
+			{
+				if (err != -ENOENT)
+					LOG->Info("dsnd_ctl_pcm_info(%i) (%s) failed: %s", card, id.c_str(), dsnd_strerror(err));
+				continue;
+			}
 			DriverSoundDevice device;
 			device.id = ssprintf("hw:%i,%i", card, dev);
 			device.readableName = dsnd_pcm_info_get_name(pcminfo);
 			devices.push_back(device);
-                }
-                dsnd_ctl_close(handle);
-        }
+		}
+		dsnd_ctl_close(handle);
+	}
 
-        if( card == 0 )
-                LOG->Info( "No ALSA sound cards were found.");
+	if( card == 0 )
+		LOG->Info( "No ALSA sound cards were found.");
 
 
 	return devices;
