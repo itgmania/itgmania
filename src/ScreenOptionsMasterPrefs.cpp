@@ -8,6 +8,7 @@
 #include "SongOptions.h"
 #include "RageDisplay.h"
 #include "RageUtil.h"
+#include "RageSoundManager.h"
 #include "GameManager.h"
 #include "GameState.h"
 #include "StepMania.h"
@@ -20,6 +21,7 @@
 #include "RageUtil/LanguageInfo.h"
 
 #include <vector>
+
 
 
 using namespace StringConversion;
@@ -702,6 +704,43 @@ static void PreferredSampleRate( int &sel, bool ToSel, const ConfOption *pConfOp
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
+static void SoundDeviceChoices( std::vector<RString> &out )
+{
+	std::vector<DriverAudioDevice> soundDevices = SOUNDMAN->GetDriverAudioDevices();
+	for( const DriverAudioDevice &device : soundDevices )
+	{
+		out.push_back( device.readableName );
+	}
+}
+
+static void SoundDevice( int &sel, bool ToSel, const ConfOption *pConfOption )
+{
+	// Get choices from the sound driver
+	std::vector<DriverAudioDevice> soundDevices = SOUNDMAN->GetDriverAudioDevices();
+
+	IPreference *pSoundDevicePref = IPreference::GetPreferenceByName( pConfOption->m_sPrefName );
+
+	// Given a value in "SoundDevice=", find its position in the vector
+	if( ToSel )
+	{
+		RString currentDeviceId = pSoundDevicePref->ToString();
+		sel = 0;
+		for( uint16_t i = 0; i < soundDevices.size(); ++i )
+		{
+			if( soundDevices[i].id == currentDeviceId )
+			{
+				sel = i;
+				break;
+			}
+		}
+	}
+	else
+	{
+		// Provide the system ID for a SoundDevice in position "sel"
+		pSoundDevicePref->FromString( soundDevices[sel].id );
+	}
+}
+
 static void VisualDelaySeconds( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
 	const float mapping[] = { -0.125f,-0.1f,-0.075f,-0.05f,-0.025f,0.0f,0.025f,0.05f,0.075f,0.1f,0.125f };
@@ -957,6 +996,9 @@ static void InitializeConfOptions()
 	ADD( ConfOption( "EnableAttackSounds",		MovePref<bool>,		"No","Yes" ) );
 	ADD( ConfOption( "EnableMineHitSound",		MovePref<bool>,		"No","Yes" ) );
 	ADD( ConfOption( "RateModPreservesPitch",		MovePref<bool>,		"No","Yes") );
+	ADD( ConfOption( "SoundDevice", SoundDevice, SoundDeviceChoices ) );  
+	g_ConfOptions.back().m_sPrefName = "SoundDevice";
+	g_ConfOptions.back().m_iEffects = OPT_APPLY_SOUND;
 
 	// Editor options
 	ADD( ConfOption( "EditorShowBGChangesPlay",	MovePref<bool>,		"Hide","Show") );
