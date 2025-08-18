@@ -724,7 +724,7 @@ static void SoundDevice( int &sel, bool ToSel, const ConfOption *pConfOption )
 	{
 		RString currentDeviceId = pSoundDevicePref->ToString();
 		sel = 0;
-		for( uint16_t i = 0; i < soundDevices.size(); ++i )
+		for( unsigned int i = 0; i < soundDevices.size(); ++i )
 		{
 			if( soundDevices[i].id == currentDeviceId )
 			{
