@@ -5,6 +5,7 @@
 #include "RageLog.h"
 #include "RageFile.h"
 #include "RageSurface.h"
+#include "RageUtil_Endian.h"
 
 #include <cstdint>
 

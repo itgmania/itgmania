@@ -11,6 +11,7 @@
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "RageFileDriver.h"
+#include "RageUtil_Endian.h"
 
 #include <cstddef>
 #include <cstdint>

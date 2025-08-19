@@ -16,6 +16,7 @@ using namespace RageDisplay_Legacy_Helpers;
 #include "EnumHelper.h"
 #include "DisplaySpec.h"
 #include "LocalizedString.h"
+#include "RageUtil_Endian.h"
 
 #include "arch/LowLevelWindow/LowLevelWindow.h"
 
