@@ -4,6 +4,7 @@
 #include "global.h"
 
 #include <cmath>
+#include <ctime>
 #include <random>
 
 class MersenneTwister : public std::mt19937

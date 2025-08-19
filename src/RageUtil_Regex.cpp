@@ -1,3 +1,5 @@
+#include "global.h"
+
 #include "RageUtil_Regex.h"
 #include "RageUtil.h"
 

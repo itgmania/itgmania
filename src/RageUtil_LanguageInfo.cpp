@@ -1,3 +1,5 @@
+#include "global.h"
+
 #include "RageUtil_LanguageInfo.h"
 #include "RageUtil.h"
 
