@@ -8,6 +8,7 @@
 #include "RageTypes.h"
 #include "SongUtil.h"
 #include "StepsUtil.h"
+#include "RageUtil_RandomNumbers.h"
 
 #include <map>
 #include <set>

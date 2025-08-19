@@ -39,6 +39,7 @@
 #include "UnlockManager.h"
 #include "SpecialFiles.h"
 #include "Group.h"
+#include "RageUtil_RandomNumbers.h"
 
 #include <cstddef>
 #include <tuple>

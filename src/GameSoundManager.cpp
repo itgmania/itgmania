@@ -17,6 +17,7 @@
 #include "LightsManager.h"
 #include "SongUtil.h"
 #include "LuaManager.h"
+#include "RageUtil_RandomNumbers.h"
 
 #include "arch/Sound/RageSoundDriver.h"
 

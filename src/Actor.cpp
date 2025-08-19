@@ -14,6 +14,7 @@
 #include "ActorUtil.h"
 #include "Preference.h"
 #include "GameLoop.h"
+#include "RageUtil_RandomNumbers.h"
 
 #include <cmath>
 #include <cstddef>

@@ -9,6 +9,7 @@
 #include "ActorUtil.h"
 #include "LuaBinding.h"
 #include "RageTimer.h"
+#include "RageUtil_RandomNumbers.h"
 
 #include <cmath>
 #include <cstddef>

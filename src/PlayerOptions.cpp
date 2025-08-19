@@ -9,6 +9,7 @@
 #include "ThemeManager.h"
 #include "Style.h"
 #include "CommonMetrics.h"
+#include "RageUtil_RandomNumbers.h"
 
 #include <cfloat>
 #include <cmath>

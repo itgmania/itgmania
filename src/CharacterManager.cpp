@@ -2,6 +2,7 @@
 #include "CharacterManager.h"
 #include "Character.h"
 #include "GameState.h"
+#include "RageUtil_RandomNumbers.h"
 
 #include "LuaManager.h"
 

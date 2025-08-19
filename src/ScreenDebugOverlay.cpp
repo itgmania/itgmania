@@ -30,6 +30,7 @@
 #include "ScreenSyncOverlay.h"
 #include "ThemeMetric.h"
 #include "XmlToLua.h"
+#include "RageUtil_RandomNumbers.h"
 
 #include <vector>
 

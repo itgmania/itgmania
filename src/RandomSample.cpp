@@ -3,6 +3,7 @@
 #include "RageSound.h"
 #include "RageUtil.h"
 #include "RageLog.h"
+#include "RageUtil_RandomNumbers.h"
 
 #include <vector>
 

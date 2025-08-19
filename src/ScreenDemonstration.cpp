@@ -11,6 +11,7 @@
 #include "GameManager.h"
 #include "Style.h"
 #include "ScreenAttract.h"
+#include "RageUtil_RandomNumbers.h"
 
 #include <vector>
 

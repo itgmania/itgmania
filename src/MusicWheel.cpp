@@ -22,6 +22,7 @@
 #include "CommonMetrics.h"
 #include "MessageManager.h"
 #include "LocalizedString.h"
+#include "RageUtil_RandomNumbers.h"
 
 #include <cmath>
 #include <cstddef>

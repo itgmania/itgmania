@@ -21,6 +21,7 @@
 #include "AdjustSync.h"
 #include "SongUtil.h"
 #include "Song.h"
+#include "RageUtil_RandomNumbers.h"
 
 #include <vector>
 

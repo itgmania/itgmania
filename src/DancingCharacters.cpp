@@ -10,6 +10,7 @@
 #include "StatsManager.h"
 #include "PrefsManager.h"
 #include "Model.h"
+#include "RageUtil_RandomNumbers.h"
 
 int Neg1OrPos1();
 

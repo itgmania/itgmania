@@ -5,6 +5,7 @@
 #include "archutils/Win32/ErrorStrings.h"
 #include "PlayerNumber.h"
 #include "MemoryCardManager.h"
+#include "RageUtil_RandomNumbers.h"
 
 #include <cmath>
 #include <cstddef>
