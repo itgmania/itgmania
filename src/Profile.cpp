@@ -1,6 +1,7 @@
 #include "global.h"
 #include "Profile.h"
 #include "RageUtil.h"
+#include "RageUtil_Regex.h"
 #include "PrefsManager.h"
 #include "XmlFile.h"
 #include "IniFile.h"

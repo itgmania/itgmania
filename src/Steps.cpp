@@ -17,6 +17,7 @@
 #include "GameState.h"
 #include "Song.h"
 #include "RageUtil.h"
+#include "RageUtil_Regex.h"
 #include "RageLog.h"
 #include "NoteData.h"
 #include "GameManager.h"

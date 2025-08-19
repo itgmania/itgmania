@@ -2,6 +2,7 @@
 
 #include "RageTexture.h"
 #include "RageUtil.h"
+#include "RageUtil_Regex.h"
 #include "RageTextureManager.h"
 
 #include <cstring>

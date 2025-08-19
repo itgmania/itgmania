@@ -10,6 +10,7 @@
 #include "SpecialFiles.h"
 #include "LocalizedString.h"
 #include "arch/Dialog/Dialog.h"
+#include "RageUtil_Regex.h"
 
 #include <cstddef>
 #include <vector>

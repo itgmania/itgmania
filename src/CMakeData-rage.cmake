@@ -7,6 +7,7 @@ list(APPEND SMDATA_RAGE_UTILS_SRC
             "RageUtil_FileDB.cpp"
             "RageUtil_LanguageInfo.cpp"
             "RageUtil_RandomNumbers.cpp"
+            "RageUtil_Regex.cpp"
             "RageUtil_WorkerThread.cpp")
 
 list(APPEND SMDATA_RAGE_UTILS_HPP
@@ -20,6 +21,7 @@ list(APPEND SMDATA_RAGE_UTILS_HPP
             "RageUtil_FileDB.h"
             "RageUtil_LanguageInfo.h"
             "RageUtil_RandomNumbers.h"
+            "RageUtil_Regex.h"
             "RageUtil_WorkerThread.h")
 
 source_group("Rage\\\\Utils"

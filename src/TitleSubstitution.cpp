@@ -2,6 +2,7 @@
 #include "TitleSubstitution.h"
 
 #include "RageUtil.h"
+#include "RageUtil_Regex.h"
 #include "RageLog.h"
 #include "FontCharAliases.h"
 #include "RageFile.h"

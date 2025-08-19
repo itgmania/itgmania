@@ -4,6 +4,7 @@
 #include "RageLog.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
+#include "RageUtil_Regex.h"
 #include "IniFile.h"
 #include "RageTimer.h"
 #include "FontCharAliases.h"

@@ -431,29 +431,6 @@ RString DerefRedir( const RString &sPath );
 bool GetFileContents( const RString &sPath, RString &sOut, bool bOneLine = false );
 bool GetFileContents( const RString &sFile, std::vector<RString> &asOut );
 
-class Regex
-{
-public:
-	Regex( const RString &sPat = "" );
-	Regex( const Regex &rhs );
-	Regex &operator=( const Regex &rhs );
-	~Regex();
-	bool IsSet() const { return !m_sPattern.empty(); }
-	void Set( const RString &str );
-	bool Compare( const RString &sStr );
-	bool Compare( const RString &sStr, std::vector<RString> &asMatches );
-	bool Replace( const RString &sReplacement, const RString &sSubject, RString &sOut );
-
-private:
-	void Compile();
-	void Release();
-
-	void *m_pReg;
-	unsigned m_iBackrefs;
-	RString m_sPattern;
-};
-
-
 void ReplaceEntityText( RString &sText, const std::map<RString,RString> &m );
 void ReplaceEntityText( RString &sText, const std::map<char,RString> &m );
 void Replace_Unicode_Markers( RString &Text );

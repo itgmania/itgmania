@@ -13,6 +13,7 @@
 #include "RageDisplay.h"
 #include "RageThreads.h"
 #include "LocalizedString.h"
+#include "RageUtil_Regex.h"
 
 #include "arch/ArchHooks/ArchHooks.h"
 #include "arch/LoadingWindow/LoadingWindow.h"

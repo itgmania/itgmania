@@ -1,6 +1,7 @@
 #include "global.h"
 #include "RageBitmapTexture.h"
 #include "RageUtil.h"
+#include "RageUtil_Regex.h"
 #include "RageLog.h"
 #include "RageTextureManager.h"
 #include "RageDisplay.h"

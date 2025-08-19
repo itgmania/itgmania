@@ -7,6 +7,7 @@
 #include "LanguagesDlg.h"
 #include "SpecialFiles.h"
 #include "RageUtil.h"
+#include "RageUtil_Regex.h"
 #include "IniFile.h"
 #include "languagesdlg.h"
 #include "SMPackageUtil.h"

@@ -2,6 +2,7 @@
 #include "RegistryAccess.h"
 #include "RageLog.h"
 #include "RageUtil.h"
+#include "RageUtil_Regex.h"
 #include "archutils/Win32/ErrorStrings.h"
 
 #include <cstddef>

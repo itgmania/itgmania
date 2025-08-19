@@ -61,6 +61,7 @@
 #include "Profile.h" // for replay data stuff
 #include "RageDisplay.h"
 #include "GameplayHelpers.h"
+#include "RageUtil_Regex.h"
 
 #include <cmath>
 #include <cstddef>

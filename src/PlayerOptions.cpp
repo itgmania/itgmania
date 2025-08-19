@@ -1,6 +1,7 @@
 #include "global.h"
 #include "PlayerOptions.h"
 #include "RageUtil.h"
+#include "RageUtil_Regex.h"
 #include "GameState.h"
 #include "NoteSkinManager.h"
 #include "Song.h"
