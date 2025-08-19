@@ -409,15 +409,6 @@ RString WStringToRString( const std::wstring &sString );
 RString WcharToUTF8( wchar_t c );
 std::wstring RStringToWstring( const RString &sString );
 
-struct LanguageInfo
-{
-	const char *szIsoCode;
-	const char *szEnglishName;
-};
-void GetLanguageInfos( std::vector<const LanguageInfo*> &vAddTo );
-const LanguageInfo *GetLanguageInfo( const RString &sIsoCode );
-RString GetLanguageNameFromISO639Code( RString sName );
-
 // Splits a RString into an std::vector<RString> according the Delimitor.
 void split( const RString &sSource, const RString &sDelimitor, std::vector<RString>& asAddIt, const bool bIgnoreEmpty = true );
 void split( const std::wstring &sSource, const std::wstring &sDelimitor, std::vector<std::wstring> &asAddIt, const bool bIgnoreEmpty = true );

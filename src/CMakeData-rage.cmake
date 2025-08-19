@@ -5,6 +5,7 @@ list(APPEND SMDATA_RAGE_UTILS_SRC
             "RageUtil_BackgroundLoader.cpp"
             "RageUtil_CharConversions.cpp"
             "RageUtil_FileDB.cpp"
+            "RageUtil_LanguageInfo.cpp"
             "RageUtil_WorkerThread.cpp")
 
 list(APPEND SMDATA_RAGE_UTILS_HPP
@@ -15,6 +16,7 @@ list(APPEND SMDATA_RAGE_UTILS_HPP
             "RageUtil_CharConversions.h"
             "RageUtil_CircularBuffer.h"
             "RageUtil_FileDB.h"
+            "RageUtil_LanguageInfo.h"
             "RageUtil_WorkerThread.h")
 
 source_group("Rage\\\\Utils"
