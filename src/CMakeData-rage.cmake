@@ -17,6 +17,7 @@ list(APPEND SMDATA_RAGE_UTILS_HPP
             "RageUtil_BackgroundLoader.h"
             "RageUtil_CharConversions.h"
             "RageUtil_CircularBuffer.h"
+            "RageUtil_ConvertValue.h"
             "RageUtil_Endian.h"
             "RageUtil_FileDB.h"
             "RageUtil_LanguageInfo.h"
