@@ -8,7 +8,7 @@
 #include "RageFile.h"
 #include "RageLog.h"
 #include "RageUtil.h"
-#include "RageUtil_Endian.h"
+#include "RageUtil/Endian.h"
 
 #if defined(_MSC_VER)
 #if defined(_BINARY_PNG)

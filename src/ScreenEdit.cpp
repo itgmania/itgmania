@@ -37,8 +37,8 @@
 #include "TimingData.h"
 #include "Game.h"
 #include "RageSoundReader.h"
-#include "RageUtil_ConvertValue.h"
-#include "RageUtil_RandomNumbers.h"
+#include "RageUtil/ConvertValue.h"
+#include "RageUtil/RandomNumbers.h"
 
 #include <cfloat>
 #include <cmath>

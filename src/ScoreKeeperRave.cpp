@@ -9,7 +9,7 @@
 #include "ThemeMetric.h"
 #include "PlayerState.h"
 #include "NoteTypes.h"
-#include "RageUtil_RandomNumbers.h"
+#include "RageUtil/RandomNumbers.h"
 
 #include <cstddef>
 

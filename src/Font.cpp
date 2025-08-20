@@ -4,7 +4,7 @@
 
 #include "RageTextureManager.h"
 #include "RageUtil.h"
-#include "RageUtil_Regex.h"
+#include "RageUtil/Regex.h"
 #include "RageLog.h"
 #include "FontManager.h"
 #include "ThemeManager.h"

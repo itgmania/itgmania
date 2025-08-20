@@ -15,7 +15,7 @@
 #include "LuaBinding.h"
 #include "LuaReference.h"
 #include "LuaManager.h"
-#include "RageUtil_RandomNumbers.h"
+#include "RageUtil/RandomNumbers.h"
 
 #include <cstdint>
 #include <vector>

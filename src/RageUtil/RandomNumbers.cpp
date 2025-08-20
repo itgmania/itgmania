@@ -1,6 +1,6 @@
 #include "global.h"
 
-#include "RageUtil_RandomNumbers.h"
+#include "RandomNumbers.h"
 
 #include "LuaBinding.h"
 #include "LuaManager.h"

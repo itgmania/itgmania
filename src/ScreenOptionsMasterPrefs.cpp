@@ -17,7 +17,7 @@
 #include "LocalizedString.h"
 #include "SpecialFiles.h"
 #include "RageLog.h"
-#include "RageUtil_LanguageInfo.h"
+#include "RageUtil/LanguageInfo.h"
 
 #include <vector>
 

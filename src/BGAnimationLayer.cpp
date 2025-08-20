@@ -13,7 +13,7 @@
 #include "LuaManager.h"
 #include "AutoActor.h"
 #include "ThemeManager.h"
-#include "RageUtil_RandomNumbers.h"
+#include "RageUtil/RandomNumbers.h"
 
 #include <cmath>
 

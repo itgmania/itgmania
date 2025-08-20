@@ -14,7 +14,7 @@
 #include "RageUtil.h"
 #include "RageLog.h"
 #include "RageFileBasic.h"
-#include "RageUtil_Endian.h"
+#include "RageUtil/Endian.h"
 
 #include <cstdint>
 #include <vector>

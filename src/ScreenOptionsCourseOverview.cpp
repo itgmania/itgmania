@@ -17,7 +17,7 @@
 #include "PlayerState.h"
 #include "Style.h"
 #include "PrefsManager.h"
-#include "RageUtil_RandomNumbers.h"
+#include "RageUtil/RandomNumbers.h"
 
 #include <vector>
 

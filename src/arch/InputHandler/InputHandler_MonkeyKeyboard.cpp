@@ -2,7 +2,7 @@
 #include "InputHandler_MonkeyKeyboard.h"
 #include "RageUtil.h"
 #include "PrefsManager.h"
-#include "RageUtil_RandomNumbers.h"
+#include "RageUtil/RandomNumbers.h"
 
 #include <vector>
 

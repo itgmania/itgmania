@@ -1,6 +1,6 @@
 #include "global.h"
 
-#include "RageUtil_Regex.h"
+#include "Regex.h"
 #include "RageUtil.h"
 
 #include <pcre.h>

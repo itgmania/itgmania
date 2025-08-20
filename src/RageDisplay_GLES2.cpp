@@ -11,7 +11,7 @@
 #include "RageSurface.h"
 #include "RageTextureManager.h"
 #include "DisplaySpec.h"
-#include "RageUtil_Endian.h"
+#include "RageUtil/Endian.h"
 
 #include "arch/LowLevelWindow/LowLevelWindow.h"
 

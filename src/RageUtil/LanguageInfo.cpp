@@ -1,6 +1,6 @@
 #include "global.h"
 
-#include "RageUtil_LanguageInfo.h"
+#include "LanguageInfo.h"
 #include "RageUtil.h"
 
 /* ISO-639-1 codes: http://www.loc.gov/standards/iso639-2/php/code_list.php

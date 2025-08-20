@@ -8,7 +8,7 @@
 #include "LocalizedString.h"
 #include "LuaBinding.h"
 #include "LuaManager.h"
-#include "RageUtil_Regex.h"
+#include "RageUtil/Regex.h"
 
 #include <json/json.h>
 #include <pcre.h>

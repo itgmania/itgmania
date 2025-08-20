@@ -4,7 +4,7 @@
 #include "RageUtil.h"
 #include "RageTextureID.h"
 #include "ActorUtil.h"
-#include "RageUtil_RandomNumbers.h"
+#include "RageUtil/RandomNumbers.h"
 
 #include <vector>
 

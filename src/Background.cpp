@@ -22,7 +22,7 @@
 #include "BackgroundUtil.h"
 #include "Song.h"
 #include "AutoActor.h"
-#include "RageUtil_RandomNumbers.h"
+#include "RageUtil/RandomNumbers.h"
 
 #include <cfloat>
 #include <vector>

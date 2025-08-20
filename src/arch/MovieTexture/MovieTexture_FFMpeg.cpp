@@ -4,10 +4,10 @@
 #include "RageDisplay.h"
 #include "RageLog.h"
 #include "RageUtil.h"
-#include "RageUtil_ConvertValue.h"
+#include "RageUtil/ConvertValue.h"
 #include "RageFile.h"
 #include "RageSurface.h"
-#include "RageUtil_Endian.h"
+#include "RageUtil/Endian.h"
 
 #include <cerrno>
 #include <cstddef>
