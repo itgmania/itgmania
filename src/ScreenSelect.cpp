@@ -227,8 +227,17 @@ void ScreenSelect::HandleScreenMessage( const ScreenMessage SM )
 
 		SCREENMAN->RefreshCreditsMessages();
 
-		ASSERT( !IsTransitioning() );
-		StartTransitioningScreen( SM_GoToNextScreen );
+		if( IsTransitioning() )
+		{
+			// If the player pressed Start and Back on the same frame, the
+			// Cancel transition can have started after the
+			// SM_BeginFadingOut message was queued.
+			LOG->Warn("Still transitioning when playing SM_GoToNextScreen");
+		}
+		else
+		{
+			StartTransitioningScreen( SM_GoToNextScreen );
+		}
 	}
 
 	ScreenWithMenuElements::HandleScreenMessage( SM );
