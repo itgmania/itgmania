@@ -1680,7 +1680,7 @@ bool PlayerOptions::IsEasierForSongAndSteps( Song* pSong, Steps* pSteps, PlayerN
 	if ((m_fNoAttack && pSteps->HasAttacks()) || m_fRandAttack)
 		return true;
 
-	if( m_fCover && (!pSong->GetBackgroundChanges().empty() || !pSong->GetForegroundChanges().empty())) {
+	if( m_fCover && (!pSong->GetBackgroundChanges(BACKGROUND_LAYER_1).empty() || !pSong->GetForegroundChanges().empty())) {
 		return true;
 	}
 	
