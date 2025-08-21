@@ -41,10 +41,12 @@
 #include "Group.h"
 #include "RageUtil/RandomNumbers.h"
 
+#include <atomic>
 #include <cstddef>
+#include <mutex>
+#include <thread>
 #include <tuple>
 #include <vector>
-
 
 SongManager*	SONGMAN = nullptr;	// global and accessible from anywhere in our program
 
@@ -68,6 +70,27 @@ RString COURSE_GROUP_COLOR_NAME( size_t i ) { return ssprintf( "CourseGroupColor
 RString profile_song_group_color_name(size_t i) { return ssprintf("ProfileSongGroupColor%i", (int)i+1); }
 
 static const float next_loading_window_update= 0.02f;
+
+// The fields we need to load each song. We create an entry for each song in every pack so the
+// sGroupDirNameField is duplicated for all songs in a pack. There are options for reducing the
+// duplication if that is important !
+struct SongToLoad {
+    std::string sGroupDirName;
+    std::string sSongDirName;
+};
+
+// Stores the result of loading a song, whether it succeeded or failed and the pointer to the song
+// if it did succeed.
+struct SongLoadResult {
+    enum State {
+        STATE_UNLOADED,
+        STATE_LOAD_SUCCEEDED,
+        STATE_LOAD_FAILED
+    };
+    State state = SongLoadResult::State::STATE_UNLOADED;
+    Song* pSong = NULL;
+};
+
 
 SongManager::SongManager()
 {
@@ -423,80 +446,190 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 		ld->SetTotalWork( songCount );
 	}
 
-	songIndex = 0;
+
+// Uncomment #define below this to enable loading songs across multiple threads. Otherwise, the
+// default is to use 1 thread, which is useful for testing that we haven't broken non-threaded
+// song loading. For me, when this is commented out, I'm able to load the songs and play them, but
+// its possible there is something I don't know about that is broken, so someone more knowledge-able
+// should try it out !
+// #define THREADED_LOADING
+
+#ifdef THREADED_LOADING
+    int threadCount = std::thread::hardware_concurrency();
+    if (threadCount <= 0) {
+        threadCount = 1;
+    }
+#else
+    int threadCount = 1;
+#endif
+
+    // An entry for each song that we need to load across all packs.
+    std::vector<SongToLoad> songsToLoad {};
 	for (const auto& [sGroupDirName, arraySongDirs] : mapGroupSongDirs)	// foreach dir in /Songs/
 	{
 		LOG->Trace("Attempting to load %i songs from \"%s\"", int(arraySongDirs.size()),
 				   (sDir+sGroupDirName).c_str() );
-		int loaded = 0;
-
-		SongPointerVector& index_entry = m_mapSongGroupIndex[sGroupDirName];
-		RString group_base_name= Basename(sGroupDirName);
-		
-		// We need to keep track of previously loaded groups so we don't delete them if we're only loading additions
-		bool groupAlreadyLoaded = false;
-		const auto groupIter = m_mapNameToGroup.find(sGroupDirName);
-		Group* group = nullptr;
-		
-		if (groupIter != m_mapNameToGroup.end())
-		{
-			group = groupIter->second;
-			groupAlreadyLoaded = true;
-		}
-		else
-		{
-			group = new Group(sDir, sGroupDirName);
-			m_mapNameToGroup[sGroupDirName] = group;
-		}
 
 		for( unsigned j=0; j< arraySongDirs.size(); ++j )	// for each song dir
 		{
-			RString sSongDirName = arraySongDirs[j];
-
 			// Skip already loaded songs if onlyAdditions is set.
 			if (onlyAdditions)
 			{
 				SongID songID;
-				songID.FromString(sSongDirName);
+				songID.FromString(arraySongDirs[j]);
 				if (songID.ToSong() != nullptr)
 					continue;
 			}
 
-			// this is a song directory. Load a new song.
-			if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
-			{
-				loading_window_last_update_time.Touch();
-				ld->SetProgress(songIndex);
-				ld->SetText( LOADING_SONGS.GetValue() +
-					ssprintf("\n%s\n%s",
-						group_base_name.c_str(),
-						Basename(sSongDirName).c_str()
-					)
-				);
-			}
+            songsToLoad.push_back(SongToLoad{sGroupDirName, arraySongDirs[j]});
+		}
+    }
+
+    // Holds the index of the next unloaded song for a thread to claim.
+    std::atomic<int> nextSongToLoadIndex = 0;
+
+    // Create an array for the results of the songs to load. Pre-allocating it helps us avoid
+    // needing to coordinate threads in 2 ways:
+    // - No memory re-allocations happen as songs are completed and entries are updated, which
+    //   otherwise could introduce problems with threads having stale pointers.
+    // - Threads atomically claim an index of a song to load, so when they update that entry after
+    //   loading a song, they know that no other thread will also update that entry.
+    std::vector<SongLoadResult> loadedSongs {};
+    loadedSongs.resize(songsToLoad.size());
+
+    LOG->Trace("Loading all %d songs across %d groups across %d threads",
+               (int)(songsToLoad.size()), (int)(mapGroupSongDirs.size()), threadCount);
+
+    // Create the pool of threads that will load songs.
+    std::vector<std::thread> threads {};
+    threads.reserve(threadCount);
+
+    // Define the work done in each thread.
+    auto loadSongFn = [&songsToLoad,
+                       &nextSongToLoadIndex,
+                       &loadedSongs](){
+        while(true)
+        {
+            // Atomically grab the index of the next song to load and increment it. This means
+            // that each thread gets a uniquely incremented value as they load songs and move
+            // on to the next.
+            int songToLoadIndex = nextSongToLoadIndex.fetch_add(1);
+            if (songToLoadIndex >= (int)(songsToLoad.size())) {
+                // Exit the thread when there are not more songs to load.
+                return;
+            }
+
+            SongToLoad& songToLoad = songsToLoad[songToLoadIndex];
+
+            // Is the LOG framework thread safe ?
+            LOG->Trace("Loading %s", songToLoad.sSongDirName.c_str());
 
 			Song* pNewSong = new Song;
-			if( !pNewSong->LoadFromSongDir( sSongDirName) )
+			if( !pNewSong->LoadFromSongDir( songToLoad.sSongDirName) )
 			{
 				// The song failed to load.
 				delete pNewSong;
-				continue;
-			}
+                loadedSongs[songToLoadIndex].state = SongLoadResult::State::STATE_LOAD_FAILED;
+			} else {
+                // We intentionally set the song pointer before updating the state so that when
+                // the main thread checks the state, the song will be populated. This may not be
+                // the case if we set the song pointer afterwards.
+                //
+                // Alternatively, if we find this has the potential to create a race condition,
+                // we could consider making this operation of setting both fields a single atomic
+                // operation.
+                loadedSongs[songToLoadIndex].pSong = pNewSong;
+                loadedSongs[songToLoadIndex].state = SongLoadResult::State::STATE_LOAD_SUCCEEDED;
+            }
+        }
+    };
 
-			AddSongToList(pNewSong);
+    // Start the threads.
+    for (int i = 0; i < threadCount; i++)
+    {
+        threads.emplace_back(loadSongFn);
+    }
 
-			index_entry.push_back( pNewSong );
-			loaded++;
-			songIndex++;
-		}
+    // Here in the main thread, check songs sequentially for finishing loading.
+    size_t loadedSongsProcessed = 0;
+    std::unordered_map<std::string, int> groupLoadedSongCount;
+    while (loadedSongsProcessed < songsToLoad.size())
+    {
+        SongLoadResult& loadedSong = loadedSongs[loadedSongsProcessed];
 
-		LOG->Trace("Loaded %i songs from \"%s\"", loaded, (sDir+sGroupDirName).c_str() );
+        if (loadedSong.state == SongLoadResult::State::STATE_LOAD_SUCCEEDED) {
+            // These operations didn't appear thread safe to me which is why they are in this post
+            // processing step in the main thread. Let me know if that was an incorrect assumption !
+            AddSongToList(loadedSong.pSong);
+
+            SongToLoad& songToLoad = songsToLoad[loadedSongsProcessed];
+    		SongPointerVector& index_entry = m_mapSongGroupIndex[songToLoad.sGroupDirName];
+            index_entry.push_back(loadedSong.pSong);
+
+            groupLoadedSongCount[songToLoad.sGroupDirName]++;
+
+            loadedSongsProcessed++;
+
+            // Update progress window with the song we've most recently loaded. Since songs are
+            // loading in parallel but reported sequentially, this could result in some jumpy
+            // behavior, althought the limiting on how often the window is updated may improve
+            // that.
+            if(ld && loading_window_last_update_time.Ago() > next_loading_window_update)
+            {
+                RString group_base_name = Basename(songToLoad.sGroupDirName);
+                loading_window_last_update_time.Touch();
+                ld->SetProgress(loadedSongsProcessed);
+                ld->SetText( LOADING_SONGS.GetValue() +
+                	ssprintf("\n%s\n%s",
+                		group_base_name.c_str(),
+                		Basename(songToLoad.sSongDirName).c_str()
+                	)
+                );
+            }
+        } else if (loadedSong.state == SongLoadResult::State::STATE_LOAD_FAILED) {
+            // Even if a song fails to load, just move on.
+            loadedSongsProcessed++;
+        }
+
+        // Sleeping for a short time tells the CPU it can context switch to other tasks for a bit.
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+
+    // Wait for all of the threads to exit.
+    for (int i = 0; i < threadCount; i++)
+    {
+        threads[i].join();
+    }
+
+    // Mostly unchanged group finalizing work.
+	for (const auto& [sGroupDirName, arraySongDirs] : mapGroupSongDirs)	// foreach dir in /Songs/
+	{
+		// We need to keep track of previously loaded groups so we don't delete them if we're only loading additions
+		bool groupAlreadyLoaded = false;
+
+        const auto groupIter = m_mapNameToGroup.find(sGroupDirName);
+        Group* group = nullptr;
+
+        if (groupIter != m_mapNameToGroup.end())
+        {
+            group = groupIter->second;
+            groupAlreadyLoaded = true;
+        }
+        else
+        {
+            group = new Group(sDir, sGroupDirName);
+            m_mapNameToGroup[sGroupDirName] = group;
+        }
+
+        int loadedSongCount = groupLoadedSongCount[sGroupDirName];
+
+		LOG->Trace("Loaded %d songs from \"%s\"", loadedSongCount, (sDir+sGroupDirName).c_str() );
 
 		// If we're only loading additions, already loaded groups should neither be added nor deleted
 		if (!(groupAlreadyLoaded && onlyAdditions)) {
 
 			// Don't add the group name if we didn't load any songs in this group.
-			if(!loaded) {
+			if(!loadedSongCount) {
 				// Remove the group from the group mapping
 				auto it = m_mapNameToGroup.find(sGroupDirName);
 				if (it != m_mapNameToGroup.end())
