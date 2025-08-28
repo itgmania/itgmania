@@ -50,7 +50,7 @@ jobs:
             path: build/ITGmania-*.exe
     name: ${{ matrix.name }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
       - name: Cache CMake build directory
