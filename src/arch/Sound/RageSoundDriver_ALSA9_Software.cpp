@@ -157,56 +157,37 @@ std::vector<DriverSoundDevice> RageSoundDriver_ALSA9_Software::GetSoundDevices()
 	// Add default device
 	devices.push_back({ "", "Default" });
 
-	int card = -1;
-	while( dsnd_card_next( &card ) >= 0 && card >= 0 )
-	{
-		const RString id = ssprintf( "hw:%d", card );
-		snd_ctl_t *handle;
-		int err;
-		err = dsnd_ctl_open( &handle, id.c_str(), 0 );
-		if ( err < 0 )
-		{
-			LOG->Info( "Couldn't open card #%i (\"%s\") to probe: %s", card, id.c_str(), dsnd_strerror(err) );
-			continue;
-		}
+	void **hints;
+	int err;
 
-		snd_ctl_card_info_t *info;
-		dsnd_ctl_card_info_alloca(&info);
-		err = dsnd_ctl_card_info( handle, info );
-		if ( err < 0 )
-		{
-			LOG->Info( "Couldn't get card info for card #%i (\"%s\"): %s", card, id.c_str(), dsnd_strerror(err) );
-			dsnd_ctl_close( handle );
-			continue;
-		}
+	// Get device hints for all PCM devices
+	if ((err = snd_device_name_hint(-1, "pcm", &hints)) < 0) {
+		LOG->Info( "ALSA: Could not get device list: %s",  dsnd_strerror(err) );
+	}
+	void **n = hints;
+	while (*n != NULL) {
+		char *name = snd_device_name_get_hint(*n, "NAME");
+		char *desc = snd_device_name_get_hint(*n, "DESC");
+		char *ioid = snd_device_name_get_hint(*n, "IOID");
 
-		int dev = -1;
-		while ( dsnd_ctl_pcm_next_device( handle, &dev ) >= 0 && dev >= 0 )
-		{
-			snd_pcm_info_t *pcminfo;
-			dsnd_pcm_info_alloca(&pcminfo);
-			dsnd_pcm_info_set_device(pcminfo, dev);
-			dsnd_pcm_info_set_stream(pcminfo, SND_PCM_STREAM_PLAYBACK);
+		// Only consider real PCM hw devices
+		bool is_output = (!ioid || strcmp(ioid, "Output") == 0);
+		bool has_card_id = (strstr(name, "CARD=") != NULL );
+		bool has_default_name = (strstr(name, "default") != NULL );
 
-			err = dsnd_ctl_pcm_info(handle, pcminfo);
-			if ( err < 0 )
-			{
-				if (err != -ENOENT)
-					LOG->Info("dsnd_ctl_pcm_info(%i) (%s) failed: %s", card, id.c_str(), dsnd_strerror(err));
-				continue;
-			}
+		if (name && is_output && has_card_id && !has_default_name) {
+			snd_pcm_t *handle;
 			DriverSoundDevice device;
-			device.id = ssprintf("hw:%i,%i", card, dev);
-			device.readableName = dsnd_pcm_info_get_name(pcminfo);
+			device.id = name;
+			device.readableName = desc;
 			devices.push_back(device);
 		}
-		dsnd_ctl_close(handle);
+		if (desc) free(desc);
+		if (name) free(name);
+		if (ioid) free(ioid);
+		n++;
 	}
-
-	if( card == 0 )
-		LOG->Info( "No ALSA sound cards were found.");
-
-
+	snd_device_name_free_hint(hints);
 	return devices;
 }
 
