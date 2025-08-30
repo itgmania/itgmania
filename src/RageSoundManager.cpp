@@ -44,8 +44,10 @@ static LocalizedString COULDNT_FIND_SOUND_DRIVER( "RageSoundManager", "Couldn't 
 void RageSoundManager::Init()
 {
 	m_pDriver = RageSoundDriver::Create( g_sSoundDrivers );
-	if( m_pDriver == nullptr )
-		RageException::Throw( "%s", COULDNT_FIND_SOUND_DRIVER.GetValue().c_str() );
+	if( m_pDriver == nullptr ) {
+		LOG->Warn(" %s", COULDNT_FIND_SOUND_DRIVER.GetValue().c_str() );
+		m_pDriver = RageSoundDriver::Create( "Null" );
+	}
 }
 
 RageSoundManager::~RageSoundManager()
