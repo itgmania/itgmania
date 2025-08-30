@@ -145,7 +145,7 @@ std::vector<DriverSoundDevice> RageSoundManager::GetDriverSoundDevices() const
 {
 	if( m_pDriver == nullptr ) {
 		LOG->Info("No audio driver");
-		return { {"", ""} };
+		return { {"", "No driver"} };
 	}
 
 	return m_pDriver->GetSoundDevices();
