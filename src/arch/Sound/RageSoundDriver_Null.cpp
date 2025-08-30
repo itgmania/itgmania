@@ -43,6 +43,13 @@ int RageSoundDriver_Null::GetSampleRate() const
 	return m_iSampleRate;
 }
 
+std::vector<DriverSoundDevice> RageSoundDriver_Null::GetSoundDevices() const
+{
+	std::vector<DriverSoundDevice> devices;
+	devices.push_back({ "", "Null driver" });
+	return devices;
+}
+
 /*
  * (c) 2002-2004 Glenn Maynard, Aaron VonderHaar
  * All rights reserved.
