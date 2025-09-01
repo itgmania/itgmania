@@ -355,7 +355,7 @@ void MovieTexture_Generic::UpdateFrame()
 
 	// There's an issue with the frame, make sure it does not get
 	// uploaded.
-	if (frame_ret == -1) {
+	if (frame_ret < 0) {
 		if (texture_lock_ != nullptr) {
 			texture_lock_->Unlock(surface_, true);
 		}
