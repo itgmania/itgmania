@@ -300,11 +300,12 @@ int RageSound::GetDataToPlay( float *pBuffer, int iFrames, int64_t &iStreamFrame
 				break;
 		}
 
-		m_Mutex.Lock();
-		m_StreamToSourceMap.Insert( m_iStreamFrame, iGotFrames, iSourceFrame, fRate );
-		m_Mutex.Unlock();
-
-		m_iStreamFrame += iGotFrames;
+		// Scoped global audio mutex lock while updating the position maps.
+		{
+			LockMut(m_Mutex); 
+			m_StreamToSourceMap.Insert( m_iStreamFrame, iGotFrames, iSourceFrame, fRate );
+			m_iStreamFrame += iGotFrames;
+		}
 
 		iFramesStored += iGotFrames;
 		iFrames -= iGotFrames;
