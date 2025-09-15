@@ -402,8 +402,18 @@ static RString GetSSCNoteData( const Song &song, const Steps &in, bool bSavingCa
 	}
 
 	// todo: get this to output similar to course mods -aj
-	if (song.GetAttackString() != in.GetAttackString())
-		lines.push_back( ssprintf("#ATTACKS:%s;", in.GetAttackString().c_str()));
+	RString songAttacks = song.GetAttackString();
+	RString stepAttacks = in.GetAttackString();
+	if( stepAttacks != songAttacks )
+	{
+		// When loading, Steps::m_Attacks are set to the song attacks followed
+		// by the step attacks. We need to omit the song attacks when saving.
+		// Otherwise, a second copy of the song attacks would be added on the
+		// next load.
+		if( Left(stepAttacks, songAttacks.size() + 1) == songAttacks + ":" )
+			stepAttacks = Right(stepAttacks, stepAttacks.size() - songAttacks.size() - 1);
+		lines.push_back( ssprintf("#ATTACKS:%s;", stepAttacks.c_str()));
+	}
 
 	switch( in.GetDisplayBPM() )
 	{
