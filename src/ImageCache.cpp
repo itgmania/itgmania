@@ -216,15 +216,22 @@ struct ImageTexture: public RageTexture
 		m_iSourceWidth = m_iWidth;
 		m_iSourceHeight = m_iHeight;
 
+		// To avoid the overhead of querying the hardware's maximum texture size
+		// every time a texture is loaded, we can cache the value returned by
+		// DISPLAY->GetMaxTextureSize() in RageBitmapTexture::Create(). This value
+		// remains consistent throughout runtime. For example, when using OpenGL,
+		// this is the value of GL_MAX_TEXTURE_SIZE. --sukibaby
+		static const int iMaxTextureSize = DISPLAY->GetMaxTextureSize();
+
 		/* The image width (within the texture) is always the entire texture.
 		 * Only resize if the max texture size requires it; since these images
 		 * are already scaled down, this shouldn't happen often. */
-		if( m_pImage->w > DISPLAY->GetMaxTextureSize() ||
-			m_pImage->h > DISPLAY->GetMaxTextureSize() )
+		if( m_pImage->w > iMaxTextureSize ||
+			m_pImage->h > iMaxTextureSize )
 		{
 			LOG->Warn( "Converted %s at runtime", GetID().filename.c_str() );
-			int iWidth = std::min( m_pImage->w, DISPLAY->GetMaxTextureSize() );
-			int iHeight = std::min( m_pImage->h, DISPLAY->GetMaxTextureSize() );
+			int iWidth = std::min( m_pImage->w, iMaxTextureSize );
+			int iHeight = std::min( m_pImage->h, iMaxTextureSize );
 			RageSurfaceUtils::Zoom( m_pImage, iWidth, iHeight );
 		}
 
