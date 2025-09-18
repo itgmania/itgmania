@@ -1015,6 +1015,7 @@ RageFileBasic *RageFileManager::Open( const RString &sPath_, int mode, int &err 
 
 void RageFileManager::CacheFile( const RageFileBasic *fb, const RString &sPath_ )
 {
+	g_Mutex->Lock();
 	std::map<const RageFileBasic*, LoadedDriver*>::iterator it = g_mFileDriverMap.find( fb );
 
 	ASSERT_M( it != g_mFileDriverMap.end(), ssprintf("No recorded driver for file: %s", sPath_.c_str()) );
@@ -1024,6 +1025,7 @@ void RageFileManager::CacheFile( const RageFileBasic *fb, const RString &sPath_ 
 	sPath = it->second->GetPath( sPath );
 	it->second->m_pDriver->FDB->CacheFile( sPath );
 	g_mFileDriverMap.erase( it );
+	g_Mutex->Unlock();
 }
 
 RageFileBasic *RageFileManager::OpenForReading( const RString &sPath, int mode, int &err )
@@ -1117,7 +1119,9 @@ RageFileBasic *RageFileManager::OpenForWriting( const RString &sPath, int mode, 
 		RageFileBasic *pRet = ld.m_pDriver->Open( sDriverPath, mode, iThisError );
 		if( pRet )
 		{
+			g_Mutex->Lock();
 			g_mFileDriverMap[pRet] = &ld;
+			g_Mutex->Unlock();
 			UnreferenceAllDrivers( apDriverList );
 			return pRet;
 		}
