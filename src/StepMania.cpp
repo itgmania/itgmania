@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <memory>
+#include <regex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -61,6 +62,7 @@
 #include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
+#include "RageUtil/Regex.h"
 #include "Screen.h"
 #include "ScreenManager.h"
 #include "SongCacheIndex.h"

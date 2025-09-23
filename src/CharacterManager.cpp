@@ -1,6 +1,5 @@
 #include "CharacterManager.h"
 
-#include <string>
 #include <vector>
 
 #include "Character.h"
