@@ -11,6 +11,7 @@
 #include "RageDisplay.h"
 #include "RageTexture.h"
 #include "RageTextureManager.h"
+#include "RageThreads.h"
 #include "RageSurface.h"
 #include "RageSurfaceUtils.h"
 #include "RageSurfaceUtils_Palettize.h"
@@ -55,6 +56,9 @@ ImageCache *IMAGECACHE; // global and accessible from anywhere in our program
 static std::map<RString, RageSurface*> g_ImagePathToImage;
 static int g_iDemandRefcount = 0;
 
+/* Synchronizes access to g_ImagePathToImage and ImageCache::ImageData. */
+static RageMutex g_ImageCacheMutex("ImageCache");
+
 RString ImageCache::GetImageCachePath( RString sImageDir ,RString sImagePath )
 {
 	return SongCacheIndex::GetCacheFilePath( sImageDir, sImagePath );
@@ -72,6 +76,7 @@ void ImageCache::Demand( RString sImageDir )
 	if( PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_LOAD_ON_DEMAND )
 		return;
 
+	LockMut(g_ImageCacheMutex);
 	FOREACH_CONST_Child( &ImageData, p )
 	{
 		RString sImagePath = p->GetName();
@@ -120,8 +125,11 @@ void ImageCache::LoadImage( RString sImageDir, RString sImagePath )
 
 	for( int tries = 0; tries < 2; ++tries )
 	{
-		if( g_ImagePathToImage.find(sImagePath) != g_ImagePathToImage.end() )
-			return; /* already loaded */
+		{
+			LockMut(g_ImageCacheMutex);
+			if( g_ImagePathToImage.find(sImagePath) != g_ImagePathToImage.end() )
+				return; /* already loaded */
+		}
 
 		CHECKPOINT_M( ssprintf( "ImageCache::LoadImage: %s", sCachePath.c_str() ) );
 		RageSurface *pImage = RageSurfaceUtils::LoadSurface( sCachePath );
@@ -145,12 +153,24 @@ void ImageCache::LoadImage( RString sImageDir, RString sImagePath )
 			}
 		}
 
-		g_ImagePathToImage[sImagePath] = pImage;
+		{
+			LockMut(g_ImageCacheMutex);
+			if( g_ImagePathToImage.find(sImagePath) != g_ImagePathToImage.end() )
+			{
+				/* already loaded */
+				delete pImage;
+			}
+			else
+			{
+				g_ImagePathToImage[sImagePath] = pImage;
+			}
+		}
 	}
 }
 
 void ImageCache::OutputStats() const
 {
+	LockMut(g_ImageCacheMutex);
 	int iTotalSize = 0;
 	for (auto const &it : g_ImagePathToImage)
 	{
@@ -163,6 +183,7 @@ void ImageCache::OutputStats() const
 
 void ImageCache::UnloadAllImages()
 {
+	LockMut(g_ImageCacheMutex);
 	for (auto &it: g_ImagePathToImage)
 	{
 		delete it.second;
@@ -184,6 +205,7 @@ ImageCache::~ImageCache()
 
 void ImageCache::ReadFromDisk()
 {
+	LockMut(g_ImageCacheMutex);
 	ImageData.ReadFile( IMAGE_CACHE_INDEX );	// don't care if this fails
 }
 
@@ -287,6 +309,8 @@ RageTextureID ImageCache::LoadCachedImage( RString sImageDir, RString sImagePath
 
 	//LOG->Trace( "ImageCache::LoadCachedImage(%s): %s", sImagePath.c_str(), ID.filename.c_str() );
 
+	LockMut(g_ImageCacheMutex);
+
 	/* Hack: make sure Image::Load doesn't change our return value and end up
 	 * reloading. */
 	if(sImageDir == "Banner")
@@ -362,8 +386,11 @@ void ImageCache::CacheImage( RString sImageDir, RString sImagePath )
 		{
 			unsigned CurFullHash;
 			const unsigned FullHash = GetHashForFile( sImagePath );
-			if( ImageData.GetValue( sImagePath, "FullHash", CurFullHash ) && CurFullHash == FullHash )
-				bCacheUpToDate = true;
+			{
+				LockMut(g_ImageCacheMutex);
+				if( ImageData.GetValue( sImagePath, "FullHash", CurFullHash ) && CurFullHash == FullHash )
+					bCacheUpToDate = true;
+			}
 		}
 
 		if( bCacheUpToDate )
@@ -447,33 +474,39 @@ void ImageCache::CacheImageInternal( RString sImageDir, RString sImagePath )
 	const RString sCachePath = GetImageCachePath(sImageDir,sImagePath);
 	RageSurfaceUtils::SaveSurface( pImage, sCachePath );
 
-	/* If an old image is loaded, free it. */
-	if( g_ImagePathToImage.find(sImagePath) != g_ImagePathToImage.end() )
 	{
-		RageSurface *oldimg = g_ImagePathToImage[sImagePath];
-		delete oldimg;
-		g_ImagePathToImage.erase(sImagePath);
+		LockMut(g_ImageCacheMutex);
+
+		/* If an old image is loaded, free it. */
+		if( g_ImagePathToImage.find(sImagePath) != g_ImagePathToImage.end() )
+		{
+			RageSurface *oldimg = g_ImagePathToImage[sImagePath];
+			delete oldimg;
+			g_ImagePathToImage.erase(sImagePath);
+		}
+
+		if( PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_PRELOAD )
+		{
+			/* Keep it; we're just going to load it anyway. */
+			g_ImagePathToImage[sImagePath] = pImage;
+		}
+		else
+			delete pImage;
+
+		/* Remember the original size. */
+		ImageData.SetValue( sImagePath, "Path", sCachePath );
+		ImageData.SetValue( sImagePath, "Width", iSourceWidth );
+		ImageData.SetValue( sImagePath, "Height", iSourceHeight );
+		ImageData.SetValue( sImagePath, "FullHash", GetHashForFile( sImagePath ) );
 	}
 
-	if( PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_PRELOAD )
-	{
-		/* Keep it; we're just going to load it anyway. */
-		g_ImagePathToImage[sImagePath] = pImage;
-	}
-	else
-		delete pImage;
-
-	/* Remember the original size. */
-	ImageData.SetValue( sImagePath, "Path", sCachePath );
-	ImageData.SetValue( sImagePath, "Width", iSourceWidth );
-	ImageData.SetValue( sImagePath, "Height", iSourceHeight );
-	ImageData.SetValue( sImagePath, "FullHash", GetHashForFile( sImagePath ) );
 	if (!delay_save_cache)
 		WriteToDisk();
 }
 
 void ImageCache::WriteToDisk()
 {
+	LockMut(g_ImageCacheMutex);
 	ImageData.WriteFile(IMAGE_CACHE_INDEX);
 }
 
