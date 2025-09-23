@@ -3423,7 +3423,7 @@ end
 		If this is not set in the <code>Pack.ini</code>, the <code>sGroupDirName</code> is used instead.
 	</Function>
 	<Function name='GetDisplayTitle' return='string' arguments='' since='ITGmania 1.0.0'>
-		Returns the display title of the group as its displayed to the user in the MusicWheel 
+		Returns the display title of the group as its displayed to the user in the MusicWheel
 		If this is not set in the <code>Pack.ini</code>, the <code>sGroupDirName</code> is used instead.
 	</Function>
 	<Function name='GetTranslitTitle' return='string' arguments='' since='ITGmania 1.0.0'>
@@ -5471,19 +5471,22 @@ Details of the <code>event</code> table:
 </Class>
 <Class name='ScreenOptions' grouping='Screen'>
 	<Function name='AllAreOnLastRow' return='bool'  arguments=''>
-		Returns <code>true</code> if all active players are on the last options row.
+		Returns <code>true</code> if all active players are on the last OptionRow.
 	</Function>
 	<Function name='FocusedItemEndsScreen' return='bool'  arguments='PlayerNumber pn'>
 		Returns <code>true</code> if the specified player is on an items that ends the screen.
 	</Function>
 	<Function name='GetCurrentRowIndex' return='int' arguments='PlayerNumber pn'>
-		Returns the current row that player <code>pn</code> is on. (Was previously <code>GetCurrentRow</code>.)
+		Returns the 0-based index of the current row that player <code>pn</code> is on.
 	</Function>
 	<Function name='GetNumRows' return='int' arguments=''>
 		Returns the number of rows on the screen.
 	</Function>
 	<Function name='GetOptionRow' return='OptionRow' arguments='int iRow'>
-		Returns the specified OptionRow.
+		Returns the specified <Link class='OptionRow' />.  The first row has index <code>0</code>.
+	</Function>
+	<Function name='SetOptionRowIndex' return='' arguments='PlayerNumber pn, int iRow' since='ITGmania 1.2.0'>
+		Sets OptionRow <code>iRow</code> as the active row for player <code>pn</code>.  The first row has index <code>0</code>.
 	</Function>
 </Class>
 <Class name='ScreenPlayerOptions' grouping='Screen'>

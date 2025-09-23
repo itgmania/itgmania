@@ -1342,19 +1342,6 @@ void ScreenOptions::MenuUpDown( const InputEventPlus &input, int iDir )
 	}
 }
 
-/*
-void ScreenOptions::SetOptionRowFromName( const RString& nombre )
-	{
-		FOREACH_PlayerNumber( pn )
-		{
-			for( unsigned i=0; i<m_pRows.size(); i++ )
-			{
-				if( m_pRows[i]->GetRowTitle() == nombre) && m_pRows[i]->GetRowDef().IsEnabledForPlayer(p) )
-					MoveRowAbsolute(pn,i)
-			}
-		}
-	}
-*/
 // lua start
 #include "LuaBinding.h"
 
@@ -1367,8 +1354,6 @@ public:
 	static int GetCurrentRowIndex( T* p, lua_State *L ) { lua_pushnumber( L, p->GetCurrentRow(Enum::Check<PlayerNumber>(L, 1)) ); return 1; }
 	static int GetOptionRow( T* p, lua_State *L ) {
 		int row_index= IArg(1);
-		// TODO:  Change row indices to be 1-indexed when breaking compatibility
-		// is allowed. -Kyz
 		if(row_index < 0 || row_index >= p->GetNumRows())
 		{
 			luaL_error(L, "Row index %d is invalid.", row_index);
@@ -1381,7 +1366,16 @@ public:
 		return 1;
 	}
 	DEFINE_METHOD(GetNumRows, GetNumRows());
-   //static int SetOptionRowFromName( T* p, lua_State *L ) { p->SetOptionRowFromName( SArg(1) ); return 0; }
+
+	static int SetOptionRowIndex( T* p, lua_State *L ) {
+		PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
+		int row_index = IArg(2);
+		if (row_index < 0 || row_index >= p->GetNumRows()) {
+			luaL_error(L, "Row index %d is invalid.", row_index);
+		}
+		p->MoveRowAbsolute(pn, row_index);
+		COMMON_RETURN_SELF;
+	}
 
 	LunaScreenOptions()
 	{
@@ -1390,7 +1384,7 @@ public:
 		ADD_METHOD( GetCurrentRowIndex );
 		ADD_METHOD( GetOptionRow );
 		ADD_METHOD( GetNumRows );
-        //ADD_METHOD( SetOptionRowFromName );
+		ADD_METHOD( SetOptionRowIndex );
 	}
 };
 
