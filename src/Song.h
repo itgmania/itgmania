@@ -346,6 +346,9 @@ private:
 	AutoPtrCopyOnWrite<VBackgroundChange>	m_ForegroundChanges;
 
 	std::vector<RString> GetChangesToVectorString(const std::vector<BackgroundChange> & changes) const;
+
+	void TidyUpData( bool fromCache, bool duringCache, const std::set<RString>& blacklistedImages );
+
 public:
 	const std::vector<BackgroundChange>	&GetBackgroundChanges( BackgroundLayer bl ) const;
 	std::vector<BackgroundChange>	&GetBackgroundChanges( BackgroundLayer bl );
