@@ -13,6 +13,7 @@
 #include <json/json.h>
 #include <pcre.h>
 
+#include <atomic>
 #include <cfloat>
 #include <cinttypes>
 #include <cmath>
@@ -850,10 +851,9 @@ RString GetCwd()
 void CRC32( unsigned int &iCRC, const void *pVoidBuffer, size_t iSize )
 {
 	static unsigned tab[256];
-	static bool initted = false;
-	if( !initted )
+	static std::atomic<bool> initted = false;
+	if( !initted.load(std::memory_order_acquire) )
 	{
-		initted = true;
 		const unsigned POLY = 0xEDB88320;
 
 		for( int i = 0; i < 256; ++i )
@@ -867,6 +867,7 @@ void CRC32( unsigned int &iCRC, const void *pVoidBuffer, size_t iSize )
 					tab[i] >>= 1;
 			}
 		}
+		initted.store(true, std::memory_order_release);
 	}
 
 	iCRC ^= 0xFFFFFFFF;
