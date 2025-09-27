@@ -87,7 +87,7 @@ struct SongLoadResult {
         STATE_LOAD_SUCCEEDED,
         STATE_LOAD_FAILED
     };
-    State state = SongLoadResult::State::STATE_UNLOADED;
+    std::atomic<State> state = SongLoadResult::State::STATE_UNLOADED;
     Song* pSong = NULL;
 };
 
@@ -494,8 +494,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
     //   otherwise could introduce problems with threads having stale pointers.
     // - Threads atomically claim an index of a song to load, so when they update that entry after
     //   loading a song, they know that no other thread will also update that entry.
-    std::vector<SongLoadResult> loadedSongs {};
-    loadedSongs.resize(songsToLoad.size());
+	std::unique_ptr<SongLoadResult[]> loadedSongs(new SongLoadResult[songsToLoad.size()]);
 
     LOG->Trace("Loading all %d songs across %d groups across %d threads",
                (int)(songsToLoad.size()), (int)(mapGroupSongDirs.size()), threadCount);
@@ -529,7 +528,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			{
 				// The song failed to load.
 				delete pNewSong;
-                loadedSongs[songToLoadIndex].state = SongLoadResult::State::STATE_LOAD_FAILED;
+                loadedSongs[songToLoadIndex].state.store(SongLoadResult::State::STATE_LOAD_FAILED, std::memory_order_release);
 			} else {
                 // We intentionally set the song pointer before updating the state so that when
                 // the main thread checks the state, the song will be populated. This may not be
@@ -539,7 +538,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
                 // we could consider making this operation of setting both fields a single atomic
                 // operation.
                 loadedSongs[songToLoadIndex].pSong = pNewSong;
-                loadedSongs[songToLoadIndex].state = SongLoadResult::State::STATE_LOAD_SUCCEEDED;
+                loadedSongs[songToLoadIndex].state.store(SongLoadResult::State::STATE_LOAD_SUCCEEDED, std::memory_order_release);
             }
         }
     };
@@ -556,8 +555,9 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
     while (loadedSongsProcessed < songsToLoad.size())
     {
         SongLoadResult& loadedSong = loadedSongs[loadedSongsProcessed];
+		SongLoadResult::State state = loadedSong.state.load(std::memory_order_acquire);
 
-        if (loadedSong.state == SongLoadResult::State::STATE_LOAD_SUCCEEDED) {
+        if (state == SongLoadResult::State::STATE_LOAD_SUCCEEDED) {
             // These operations didn't appear thread safe to me which is why they are in this post
             // processing step in the main thread. Let me know if that was an incorrect assumption !
             AddSongToList(loadedSong.pSong);
@@ -586,7 +586,7 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
                 	)
                 );
             }
-        } else if (loadedSong.state == SongLoadResult::State::STATE_LOAD_FAILED) {
+        } else if (state == SongLoadResult::State::STATE_LOAD_FAILED) {
             // Even if a song fails to load, just move on.
             loadedSongsProcessed++;
         }
