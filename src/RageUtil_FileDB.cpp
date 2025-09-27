@@ -449,6 +449,14 @@ void FilenameDB::DelFileSet( std::map<RString, FileSet*>::iterator dir )
 	for( std::map<RString, FileSet*>::iterator it = dirs.begin(); it != dirs.end(); ++it )
 	{
 		FileSet *Clean = it->second;
+
+		if( !Clean->m_bFilled )
+		{
+			// This directory is still being filled. Don't access the files set
+			// while another thread is modifying it.
+			continue;
+		}
+
 		for( std::set<File>::iterator f = Clean->files.begin(); f != Clean->files.end(); ++f )
 		{
 			File &ff = (File &) *f;
