@@ -4,6 +4,7 @@
 #include "RageSurface.h"
 #include "RageSurfaceUtils.h"
 
+#include <atomic>
 #include <cstdint>
 
 #define DitherMatDim 4
@@ -48,8 +49,8 @@ static uint8_t DitherPixel(int x, int y, int intensity,  int conv)
 
 void RageSurfaceUtils::OrderedDither( const RageSurface *src, RageSurface *dst )
 {
-	static bool DitherMatCalc_initted = false;
-	if( !DitherMatCalc_initted )
+	static std::atomic<bool> DitherMatCalc_initted = false;
+	if( !DitherMatCalc_initted.load(std::memory_order_acquire) )
 	{
 		for( int i = 0; i < DitherMatDim; ++i )
 		{
@@ -62,7 +63,7 @@ void RageSurfaceUtils::OrderedDither( const RageSurface *src, RageSurface *dst )
 			}
 		}
 
-		DitherMatCalc_initted = true;
+		DitherMatCalc_initted.store(true, std::memory_order_release);
 	}
 
 	// We can't dither to paletted surfaces.
