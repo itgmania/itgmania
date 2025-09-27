@@ -273,11 +273,6 @@ const RString &Song::GetSongFilePath() const
 	return m_sSongFileName;
 }
 
-/* Hack: This should be a parameter to TidyUpData, but I don't want to pull in
- * <set> into Song.h, which is heavily used. */
-static std::set<RString> BlacklistedImages;
-
-
 /* If PREFSMAN->m_bFastLoad is true, always load from cache if possible.
  * Don't read the contents of sDir if we can avoid it. That means we can't call
  * HasMusic(), HasBanner() or GetHashForDirectory().
@@ -357,10 +352,12 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 	}
 	else
 	{
+		std::set<RString> blacklistedImages;
+
 		// There was no entry in the cache for this song, or it was out of date.
 		// Let's load it from a file, then write a cache entry.
 
-		if(!NotesLoader::LoadFromDir(sDir, *this, BlacklistedImages, load_autosave))
+		if(!NotesLoader::LoadFromDir(sDir, *this, blacklistedImages, load_autosave))
 		{
 			LOG->UserLog( "Song", sDir, "has no SSC, SM, SMA, DWI, BMS, or KSF files." );
 
@@ -385,7 +382,7 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 		// loading time. -Kyz
 		LoadEditsFromSongDir(sDir);
 
-		TidyUpData(false, true);
+		TidyUpData(false, true, blacklistedImages);
 		// Don't save a cache file if the autosave is being loaded, because the
 		// cache file would contain the autosave filename. -Kyz
 		// Songs loaded from removable profile are never cached, on the
@@ -431,7 +428,7 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 	// Normally TidyUpData would handle setting the m_fBeat0GroupOffsetInSeconds.
 	// That is to keep the song start and end times become inaccurate in some cases.
 	// SInce there are cases where TidyUpData isn't called, we still want to guarantee the
-	// m_fBeat0GroupOffsetInSeconds is always set so we do that here. 
+	// m_fBeat0GroupOffsetInSeconds is always set so we do that here.
 	float fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
 	if (SONGMAN->GetGroupFromName(m_sGroupName) != nullptr)
 	{
@@ -489,7 +486,7 @@ bool Song::ReloadFromSongDir( RString sDir )
 		return false;
 	copy.RemoveAutoGenNotes();
 	*this = copy;
-	
+
 	if (SONGMAN->GetGroup(this) != nullptr) {
 		m_SongTiming.m_fBeat0GroupOffsetInSeconds = SONGMAN->GetGroup(this)->GetSyncOffset();
 	} else {
@@ -661,8 +658,14 @@ void FixupPath( RString &path, const RString &sSongPath )
 	Trim( path );
 }
 
+
+void Song::TidyUpData(bool from_cache, bool duringCache)
+{
+	Song::TidyUpData(from_cache, duringCache, std::set<RString>());
+}
+
 // Songs in BlacklistImages will never be autodetected as song images.
-void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
+void Song::TidyUpData( bool from_cache, bool /* duringCache */, const std::set<RString>& blacklistedImages )
 {
 	// We need to do this before calling any of HasMusic, HasHasCDTitle, etc.
 	ASSERT_M(Left(m_sSongDir, 3) != "../", m_sSongDir); // meaningless
@@ -1013,7 +1016,7 @@ void Song::TidyUpData( bool from_cache, bool /* duringCache */ )
 				// ignore DWI "-char" graphics
 				RString lower = image_list[i];
 				MakeLower(lower);
-				if(BlacklistedImages.find(lower) != BlacklistedImages.end())
+				if(blacklistedImages.find(lower) != blacklistedImages.end())
 				continue;	// skip
 
 				// Skip any image that we've already classified
@@ -1197,7 +1200,7 @@ void Song::ReCalculateStepStatsAndLastSecond(bool fromCache, bool duringCache)
 	{
 		Steps* pSteps = m_vpSteps[i];
 		pSteps->CalculateStepStats(m_fMusicLengthSeconds);
-		
+
 		// Must initialize before the gotos.
 		NoteData tempNoteData;
 		pSteps->GetNoteData( tempNoteData );
