@@ -144,6 +144,14 @@ static RageMutex &GetThreadSlotsLock()
 	return *pLock;
 }
 
+/* All unkown threads are put into the same slot in g_ThreadSlots. This
+ * mutex synchronizes access to that slot. */
+static RageMutex &GetUnknownThreadSlotLock()
+{
+	static RageMutex *pLock = new RageMutex( "UnknownThreadSlot" );
+	return *pLock;
+}
+
 static int FindEmptyThreadSlot()
 {
 	LockMut( GetThreadSlotsLock() );
@@ -387,17 +395,24 @@ void Checkpoints::SetCheckpoint( const char *file, int line, const RString& mess
 
 void Checkpoints::SetCheckpoint( const char *file, int line, const char *message )
 {
+	bool bUnknownThread = false;
 	ThreadSlot *slot = GetCurThreadSlot();
 	if( slot == nullptr )
+	{
+		bUnknownThread = true;
 		slot = GetUnknownThreadSlot();
-	/* We can't ASSERT here, since that uses checkpoints. */
-	if( slot == nullptr )
-		sm_crash( "GetUnknownThreadSlot() returned nullptr" );
+		/* We can't ASSERT here, since that uses checkpoints. */
+		if( slot == nullptr )
+			sm_crash( "GetUnknownThreadSlot() returned nullptr" );
+	}
 
 	/* Ignore everything up to and including the first "src/". */
 	const char *temp = strstr( file, "src/" );
 	if( temp )
 		file = temp + 4;
+
+	if( bUnknownThread ) GetUnknownThreadSlotLock().Lock();
+
 	slot->m_Checkpoints[slot->m_iCurCheckpoint].Set( file, line, message );
 
 	if( g_LogCheckpoints )
@@ -406,6 +421,8 @@ void Checkpoints::SetCheckpoint( const char *file, int line, const char *message
 	++slot->m_iCurCheckpoint;
 	slot->m_iNumCheckpoints = std::max( slot->m_iNumCheckpoints, slot->m_iCurCheckpoint );
 	slot->m_iCurCheckpoint %= CHECKPOINT_COUNT;
+
+	if( bUnknownThread ) GetUnknownThreadSlotLock().Unlock();
 }
 
 /* This is called under crash conditions.  Be careful. */
