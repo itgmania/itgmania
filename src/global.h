@@ -42,6 +42,10 @@
 typedef StdString::CStdString RString;
 
 
+#include "RageThreads.h"
+
+
+
 
 /**
  * @brief A crash has occurred, and we're not getting out of it easily.
