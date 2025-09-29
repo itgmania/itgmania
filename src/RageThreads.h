@@ -79,10 +79,12 @@ namespace Checkpoints
 {
 	void LogCheckpoints( bool yes=true );
 	void SetCheckpoint( const char *file, int line, const char *message );
+	void SetCheckpoint( const char *file, int line, const RString& message );
 	void GetLogs( char *pBuf, int iSize, const char *delim );
 };
 
 #define CHECKPOINT_M(m) (Checkpoints::SetCheckpoint(__FILE__, __LINE__, m))
+#define CHECKPOINT (Checkpoints::SetCheckpoint(__FILE__, __LINE__, nullptr))
 
 /* Mutex class that follows the behavior of Windows mutexes: if the same
  * thread locks the same mutex twice, we just increase a refcount; a mutex

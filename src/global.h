@@ -41,16 +41,6 @@
 /** @brief Use RStrings throughout the program. */
 typedef StdString::CStdString RString;
 
-/** @brief RageThreads defines (don't pull in all of RageThreads.h here) */
-namespace Checkpoints
-{
-	void SetCheckpoint( const char *file, int line, const char *message );
-	void SetCheckpoint( const char *file, int line, const RString& message );
-}
-/** @brief Set a checkpoint with no message. */
-#define CHECKPOINT (Checkpoints::SetCheckpoint(__FILE__, __LINE__, nullptr))
-/** @brief Set a checkpoint with a specified message. */
-#define CHECKPOINT_M(m) (Checkpoints::SetCheckpoint(__FILE__, __LINE__, m))
 
 
 /**
