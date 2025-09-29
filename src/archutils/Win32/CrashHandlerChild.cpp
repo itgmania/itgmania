@@ -871,7 +871,7 @@ void ChildProcess()
 #endif
 }
 
-}
+}  // namespace
 
 void CrashHandler::CrashHandlerHandleArgs( int argc, char* argv[] )
 {
