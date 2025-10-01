@@ -204,6 +204,7 @@ protected:
 
 	AttackDisplay		*m_pAttackDisplay;
 
+	float		m_LastTapNoteScoreBeat;
 	TapNoteScore		m_LastTapNoteScore;
 	LifeMeter		*m_pLifeMeter;
 	CombinedLifeMeter	*m_pCombinedLifeMeter;
