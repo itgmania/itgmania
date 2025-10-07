@@ -10,7 +10,7 @@ class RageTimer
 public:
 	/* Initialize the m_secs and m_us values to 0 and then fill them with the current time. */
 	RageTimer(): m_secs(0), m_us(0) { Touch(); }
-	RageTimer( int64_t secs, int64_t us ): m_secs(secs), m_us(us) { }
+	RageTimer( uint64_t secs, uint64_t us ): m_secs(secs), m_us(us) { }
 
 	/* Time ago this RageTimer represents. */
 	float Ago() const;
