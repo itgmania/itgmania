@@ -462,6 +462,17 @@ static const AutoMappings g_AutoMappings[] =
 	   ),
 	   AutoMappings(
 		"dance",
+		"Honey Bee Xbox360 dancepad",
+		"Honey Bee Xbox360 dancepad",
+		AutoMappingEntry( 0, JOY_BUTTON_17,     DANCE_BUTTON_LEFT,	       false ),
+		AutoMappingEntry( 0, JOY_BUTTON_18,     DANCE_BUTTON_RIGHT,      false ),
+		AutoMappingEntry( 0, JOY_BUTTON_19,     DANCE_BUTTON_UP,      false ),
+		AutoMappingEntry( 0, JOY_BUTTON_20,     DANCE_BUTTON_DOWN,     false ),
+		AutoMappingEntry( 0, JOY_BUTTON_27,     GAME_BUTTON_BACK,       false ),
+		AutoMappingEntry( 0, JOY_BUTTON_28,     GAME_BUTTON_START,      false )
+	   ),
+	   AutoMappings(
+		"dance",
 		"Raw Thrills I/O",
 		"Raw Thrills I/O",
 		AutoMappingEntry( 0, JOY_BUTTON_1,      DANCE_BUTTON_LEFT,       false ),
