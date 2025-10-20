@@ -340,18 +340,30 @@ void MovieTexture_Generic::UpdateFrame()
 		texture_lock_->Lock(iHandle, surface_);
 	}
 
-	int frame_ret = decoder_->GetFrame(surface_);
+	int frame_ret = -1;
+	// Our frame buffer should (almost) always be 50 ahead of our current frame to display, which is when
+	// IsCurrentFrameReady will evaluate to false. This loop will continue attempting to find a displayable
+	// frame until we hit that limit. If we really can't find a frame after that, then the currently
+	// displayed frame will appear stuck.
+    while (frame_ret < 0 && decoder_->IsCurrentFrameReady()) {
+        frame_ret = decoder_->GetFrame(surface_);
 
-	// Are we looping?
-	if (decoder_->EndOfMovie() && loop_) {
-		LOG->Info("File \"%s\" looping", GetID().filename.c_str());
-		decoder_->Rollover();
-		clock_ = 0.0;
-	}
-	else if (decoder_->EndOfMovie()) {
-		// At the end of the movie, and not looping.
-		finished_ = true;
-	}
+        // Are we looping?
+        if (decoder_->EndOfMovie() && loop_) {
+			LOG->Info("File \"%s\" looping", GetID().filename.c_str());
+			decoder_->Rollover();
+			clock_ = 0.0;
+        } else if (decoder_->EndOfMovie()) {
+        // At the end of the movie, and not looping.
+			finished_ = true;
+        }
+
+        // If we failed to display the frame, it's getting skipped, advance the
+        // clock.
+        if (frame_ret < 0) {
+          clock_ += (decoder_->GetTimestamp() - clock_);
+        }
+    }
 
 	// There's an issue with the frame, make sure it does not get
 	// uploaded.

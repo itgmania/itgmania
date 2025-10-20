@@ -161,6 +161,7 @@ private:
 	std::vector<std::unique_ptr<FrameHolder>> frame_buffer_;
 	std::size_t frame_buffer_position_ = 0;
 	std::size_t packet_buffer_position_ = 0;
+	float timestamp_offset_ = 0.0;
 
 	// Offset for the frame_buffer_ when a looping movie goes back to
 	// the zeroeth frame. next_offset_ is written when the zeroeth frame
