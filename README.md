@@ -54,6 +54,10 @@ You can choose between using the installer or using the portable build. Using th
 
    * `sudo pacman -S mesa gtk3 libusb-compat libxinerama libxtst llvm-libs`
 
+* **Gentoo**:
+
+   * `sudo emerge --ask dev-build/cmake media-libs/alsa-lib media-libs/glew media-libs/libglvnd dev-libs/libusb dev-lang/nasm media-libs/libpulse x11-libs/gtk+ media-sound/alsa-utils`  
+
 * **OpenSUSE**:
 
    * OpenSUSE comes with everything you need pre-installed.
