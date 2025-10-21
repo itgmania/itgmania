@@ -42,25 +42,25 @@ You can choose between using the installer or using the portable build. Using th
 
 **Linux users should receive all they need from the package manager of their choice.**
 
-* **Debian-based**:
+* **Debian-based** (Ubuntu, Mint, MX Linux, Pop!_OS, etc):
 
   * `sudo apt install libgdk-pixbuf-2.0-0 libgl1 libglvnd0 libgtk-3-0 libusb-0.1-4 libxinerama1 libxtst6`
 
-* **Fedora-based**:
+* **Fedora-based** (Bazzite, Nobara, AlmaLinux, etc):
 
   * `sudo dnf install gdk-pixbuf2 gtk3 libusb-compat-0.1 libXinerama libXtst`
 
-*  **Arch Linux**:
+*  **Arch-based** (CachyOS, EndeavourOS, Manjaro, Garuda, etc):
 
    * `sudo pacman -S mesa gtk3 libusb-compat libxinerama libxtst llvm-libs`
 
-* **Gentoo**:
+* **Gentoo Linux**:
 
    * `sudo emerge --ask dev-build/cmake media-libs/alsa-lib media-libs/glew media-libs/libglvnd dev-libs/libusb dev-lang/nasm media-libs/libpulse x11-libs/gtk+ media-sound/alsa-utils`  
 
-* **OpenSUSE**:
+* **OpenSUSE Linux**:
 
-   * OpenSUSE comes with everything you need pre-installed.
+   * All editions of OpenSUSE already have everything you need pre-installed.
 
 
 ### Build From Source
