@@ -338,7 +338,7 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 	FOREACH_PlayerNumber(pn)
 		m_CachedRadarValues[pn].Zero();
 
-	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
+	TimingData * timing = this->GetTimingData();
 	if( tempNoteData.IsComposite() )
 	{
 		std::vector<NoteData> vParts;
@@ -346,7 +346,7 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
 		for( size_t pn = 0; pn < std::min(vParts.size(), size_t(NUM_PLAYERS)); ++pn )
 		{
-			NoteDataUtil::CalculateRadarValues( vParts[pn], fMusicLengthSeconds, m_CachedRadarValues[pn] );
+			NoteDataUtil::CalculateRadarValues( vParts[pn], fMusicLengthSeconds, timing, m_CachedRadarValues[pn] );
 		}
 	}
 	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
@@ -357,21 +357,21 @@ void Steps::CalculateRadarValues( float fMusicLengthSeconds )
 		p1.SetNumTracks(tracks);
 		NoteDataUtil::CalculateRadarValues(p1,
 										   fMusicLengthSeconds,
+										   timing,
 										   m_CachedRadarValues[PLAYER_1]);
 		// at this point, p2 is tempNoteData.
 		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
 		tempNoteData.SetNumTracks(tracks);
 		NoteDataUtil::CalculateRadarValues(tempNoteData,
 										   fMusicLengthSeconds,
+										   timing,
 										   m_CachedRadarValues[PLAYER_2]);
 	}
 	else
 	{
-		NoteDataUtil::CalculateRadarValues( tempNoteData, fMusicLengthSeconds, m_CachedRadarValues[0] );
+		NoteDataUtil::CalculateRadarValues( tempNoteData, fMusicLengthSeconds, timing, m_CachedRadarValues[0] );
 		std::fill_n( m_CachedRadarValues + 1, NUM_PLAYERS-1, m_CachedRadarValues[0] );
 	}
-
-	GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
 void Steps::CalculateTechCounts()
