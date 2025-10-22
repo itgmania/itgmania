@@ -58,6 +58,7 @@ namespace NoteDataUtil
 	void AutogenKickbox(const NoteData& in, NoteData& out, const TimingData& timing, StepsType out_type, int nonrandom_seed);
 
 	void CalculateRadarValues( const NoteData &in, float fSongSeconds, RadarValues& out );
+	void CalculateRadarValues( const NoteData &in, float fSongSeconds, const TimingData * timing, RadarValues& out );
 
 	/**
 	 * @brief Remove all of the Hold notes.

@@ -1030,6 +1030,12 @@ static void DoRowEndRadarCalc(crv_state& state, RadarValues& out)
 
 void NoteDataUtil::CalculateRadarValues( const NoteData &in, float fSongSeconds, RadarValues& out )
 {
+	TimingData* timing= GAMESTATE->GetProcessedTimingData();
+	CalculateRadarValues(in, fSongSeconds, timing, out);
+}
+
+void NoteDataUtil::CalculateRadarValues( const NoteData &in, float fSongSeconds, const TimingData * timing, RadarValues& out )
+{
 	// Anybody editing this function should also examine
 	// NoteDataWithScoring::GetActualRadarValues to make sure it handles things
 	// the same way.
@@ -1042,7 +1048,7 @@ void NoteDataUtil::CalculateRadarValues( const NoteData &in, float fSongSeconds,
 	std::vector<recent_note> recent_notes;
 	NoteData::all_tracks_const_iterator curr_note=
 		in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
-	TimingData* timing= GAMESTATE->GetProcessedTimingData();
+
 	// total_taps exists because the stream calculation needs GetNumTapNotes,
 	// but TapsAndHolds + Jumps + Hands would be inaccurate. -Kyz
 	float total_taps= 0;
