@@ -7,6 +7,7 @@
 #include <queue>
 #include <unordered_map>
 #include "json/json.h"
+#include "TimingData.h"
 
 namespace StepParity {
 	
@@ -35,6 +36,7 @@ namespace StepParity {
 	{
 	private:
 		StageLayout layout;
+		TimingData * timing;
 		std::unordered_map < int, std::vector<std::vector<StepParity::Foot>>> permuteCache;
 		
 		StepParity::State * beginningState = nullptr;
@@ -49,8 +51,8 @@ namespace StepParity {
 		std::vector<int> nodes_for_rows;
 		int columnCount_;
 		
-		StepParityGenerator(const StageLayout & l) : layout(l) {
-			
+		StepParityGenerator(const StageLayout & l, TimingData * t) : layout(l) {
+			timing = t;
 		}
 		
 		~StepParityGenerator()
