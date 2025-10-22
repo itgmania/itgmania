@@ -399,13 +399,11 @@ void Steps::CalculateTechCounts()
 		return;
 	}
 	StepParity::StageLayout layout = StepParity::Layouts.at(this->m_StepsType);
-	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
-	StepParity::StepParityGenerator gen = StepParity::StepParityGenerator(layout);
+	TimingData * timing = this->GetTimingData();
+	StepParity::StepParityGenerator gen = StepParity::StepParityGenerator(layout, timing);
 	gen.analyzeNoteData(tempNoteData);
 	TechCounts::CalculateTechCountsFromRows(gen.rows, layout, m_CachedTechCounts[0]);
 	std::fill_n( m_CachedTechCounts + 1, NUM_PLAYERS-1, m_CachedTechCounts[0] );
-
-	GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
 void Steps::CalculateMeasureInfo()
@@ -426,8 +424,7 @@ void Steps::CalculateMeasureInfo()
 
 	std::vector<MeasureInfo> measureInfoPerPlayer;
 	
-	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
-
+	TimingData * timing = this->GetTimingData();
 	if( tempNoteData.IsComposite() )
 	{
 		measureInfoPerPlayer.resize(NUM_PLAYERS);
@@ -435,7 +432,7 @@ void Steps::CalculateMeasureInfo()
 		NoteDataUtil::SplitCompositeNoteData( tempNoteData, vParts );
 		for( std::size_t pn = 0; pn < std::min(vParts.size(), std::size_t(NUM_PLAYERS)); ++pn )
 		{
-			MeasureInfo::CalculateMeasureInfo(vParts[pn], measureInfoPerPlayer[pn]);
+			MeasureInfo::CalculateMeasureInfo(vParts[pn], timing, measureInfoPerPlayer[pn]);
 		}
 	}
 	else if (GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory == StepsTypeCategory_Couple)
@@ -445,15 +442,15 @@ void Steps::CalculateMeasureInfo()
 		// XXX: Assumption that couple will always have an even number of notes.
 		const int tracks = tempNoteData.GetNumTracks() / 2;
 		p1.SetNumTracks(tracks);
-		MeasureInfo::CalculateMeasureInfo(tempNoteData, measureInfoPerPlayer[PLAYER_1]);
+		MeasureInfo::CalculateMeasureInfo(tempNoteData, timing, measureInfoPerPlayer[PLAYER_1]);
 		NoteDataUtil::ShiftTracks(tempNoteData, tracks);
 		tempNoteData.SetNumTracks(tracks);
-		MeasureInfo::CalculateMeasureInfo(tempNoteData, measureInfoPerPlayer[PLAYER_2]);
+		MeasureInfo::CalculateMeasureInfo(tempNoteData, timing, measureInfoPerPlayer[PLAYER_2]);
 	}
 	else
 	{
 		measureInfoPerPlayer.resize(1);
-		MeasureInfo::CalculateMeasureInfo(tempNoteData, measureInfoPerPlayer[0]);
+		MeasureInfo::CalculateMeasureInfo(tempNoteData, timing, measureInfoPerPlayer[0]);
 	}
 	
 	m_CachedNotesPerMeasure.clear();
@@ -466,8 +463,6 @@ void Steps::CalculateMeasureInfo()
 		m_CachedNpsPerMeasure.push_back(mi.npsPerMeasure);
 		m_PeakNps.push_back(mi.peakNps);
 	}
-	
-	GAMESTATE->SetProcessedTimingData(nullptr);
 }
 
 void Steps::ChangeFilenamesForCustomSong()
@@ -1016,9 +1011,8 @@ std::vector<ColumnCue> Steps::GetColumnCues(float minDuration)
 	std::vector<ColumnCue> cues;
 	NoteData noteData;
 	this->GetNoteData( noteData );
-	GAMESTATE->SetProcessedTimingData(this->GetTimingData());
-	ColumnCue::CalculateColumnCues(noteData, cues, minDuration);
-	GAMESTATE->SetProcessedTimingData(nullptr);
+	TimingData * timing = this->GetTimingData();
+	ColumnCue::CalculateColumnCues(noteData, timing, cues, minDuration);
 	return cues;
 }
 

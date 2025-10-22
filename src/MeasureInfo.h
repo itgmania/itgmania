@@ -3,6 +3,7 @@
 
 #include "GameConstantsAndTypes.h"
 #include "NoteData.h"
+#include "TimingData.h"
 
 struct MeasureInfo
 {
@@ -26,7 +27,7 @@ struct MeasureInfo
 
 	RString ToString() const;
 	void FromString(const RString& sValues );
-	static void CalculateMeasureInfo(const NoteData &in, MeasureInfo &out);
+	static void CalculateMeasureInfo(const NoteData &in, TimingData * timing, MeasureInfo &out);
 };
 
 #endif

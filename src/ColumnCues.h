@@ -4,6 +4,7 @@
 #include "GameConstantsAndTypes.h"
 #include "NoteTypes.h"
 #include "NoteData.h"
+#include "TimingData.h"
 
 /* ColumnCues are used to indicate to the player which column the next note will occur
  after a long gap in the stepchart.
@@ -46,7 +47,7 @@ struct ColumnCue
 	/** @brief Calculates the set of ColumnCues for the given NoteData. Each "cue" is for any note that has a
 	 * minimum of minDuration seconds between it and the previous note on that same column.
 	*/
-	static void CalculateColumnCues(const NoteData &in, std::vector<ColumnCue> &out, float minDuration);
+	static void CalculateColumnCues(const NoteData &in, TimingData * timing, std::vector<ColumnCue> &out, float minDuration);
 };
 
 #endif

@@ -4,7 +4,6 @@
 #include "RageLog.h"
 #include "LocalizedString.h"
 #include "LuaBinding.h"
-#include "TimingData.h"
 #include "GameState.h"
 
 
@@ -48,13 +47,12 @@ void MeasureInfo::FromString(const RString& sValues)
 	peakNps = peak_nps;
 }
 
-void MeasureInfo::CalculateMeasureInfo(const NoteData &in, MeasureInfo &out)
+void MeasureInfo::CalculateMeasureInfo(const NoteData &in, TimingData * timing, MeasureInfo &out)
 {
 	int lastRow = in.GetLastRow();
 	int lastRowMeasureIndex = 0;
 	int lastRowBeatIndex = 0;
 	int lastRowRemainder = 0;
-	TimingData *timing = GAMESTATE->GetProcessedTimingData();
 	timing->NoteRowToMeasureAndBeat(lastRow, lastRowMeasureIndex, lastRowBeatIndex, lastRowRemainder);
 
 	int totalMeasureCount = lastRowMeasureIndex + 1;

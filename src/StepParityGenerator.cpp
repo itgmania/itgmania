@@ -415,7 +415,6 @@ std::vector<int> StepParityGenerator::computeCheapestPath()
 void StepParityGenerator::CreateIntermediateNoteData(
 		const NoteData &in, std::vector<IntermediateNoteData> &out)
 {
-	TimingData *timing = GAMESTATE->GetProcessedTimingData();
 	int columnCount = in.GetNumTracks();
 
 	NoteData::all_tracks_const_iterator curr_note = in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
@@ -451,8 +450,7 @@ void StepParityGenerator::CreateIntermediateNoteData(
 }
 
 void StepParityGenerator::CreateRows(const NoteData &in)
-{	
-	TimingData *timing = GAMESTATE->GetProcessedTimingData();
+{
 	int columnCount = in.GetNumTracks();
 
 	RowCounter counter = RowCounter(columnCount);
