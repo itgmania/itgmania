@@ -459,9 +459,20 @@ void LightsManager::Update(float fDeltaTime) {
     }
 
     case LIGHTSMODE_ATTRACT: {
-      // Blink on button presses.
+      // Blink on game button presses.
+      // GAME_BUTTON_CUSTOM_01 -> NUM_GameButton
       FOREACH_ENUM(GameController, gc) {
         FOREACH_GameButton_Custom(gb) {
+          bool bOn = INPUTMAPPER->IsBeingPressed(GameInput(gc, gb));
+          m_LightsState.m_bGameButtonLights[gc][gb] = bOn;
+        }
+      }
+
+      // Blink on each menu button press
+      // GAME_BUTTON_MENULEFT -> GAME_BUTTON_BACK
+      // left, right, up, down, start, select, and back.
+      FOREACH_ENUM(GameController, gc) {
+        FOREACH_GameButton_Menu(gb) {
           bool bOn = INPUTMAPPER->IsBeingPressed(GameInput(gc, gb));
           m_LightsState.m_bGameButtonLights[gc][gb] = bOn;
         }
