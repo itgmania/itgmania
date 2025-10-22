@@ -2,11 +2,13 @@
 #define LightsManager_H
 
 #include <vector>
+#include <queue>
 
 #include "EnumHelper.h"
 #include "GameInput.h"
 #include "PlayerNumber.h"
 #include "Preference.h"
+#include "RageThreads.h"
 #include "RageTimer.h"
 
 extern Preference<float> g_fLightsFalloffSeconds;
@@ -100,6 +102,18 @@ class LightsManager {
 
   int m_iQueuedCoinCounterPulses;
   RageTimer m_CoinCounterTimer;
+
+  bool m_LightsThreadShutdown;
+  RageThread m_LightsThread;
+  RageEvent* m_LightsMutex;
+  std::queue<LightsState> m_LightsQueue;
+
+  int LightsManThreadMain();
+
+  static int LightsManThread_Start(void* p) {
+    ((LightsManager*)p)->LightsManThreadMain();
+    return 0;
+  }
 
   int GetTestAutoCycleCurrentIndex() {
     return (int)m_fTestAutoCycleCurrentIndex;

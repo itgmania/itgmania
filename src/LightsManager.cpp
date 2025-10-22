@@ -111,13 +111,59 @@ LightsManager::LightsManager() {
   LightsDriver::Create(sDriver, m_vpDrivers);
 
   SetLightsMode(LIGHTSMODE_ATTRACT);
+
+  m_LightsMutex = new RageEvent("LightsMutex");
+  m_LightsThreadShutdown = false;
+  m_LightsThread.SetName("LightsManager thread");
+  m_LightsThread.Create(LightsManThread_Start, this);
 }
 
 LightsManager::~LightsManager() {
+  // tell the thread to quit.
+  if (m_LightsMutex != nullptr) {
+    m_LightsMutex->Lock();
+    m_LightsThreadShutdown = true;
+    m_LightsMutex->Broadcast();
+    m_LightsMutex->Unlock();
+    m_LightsThread.Wait();
+  }
+
   for (LightsDriver* iter : m_vpDrivers) {
     RageUtil::SafeDelete(iter);
   }
   m_vpDrivers.clear();
+}
+
+int LightsManager::LightsManThreadMain() {
+  while (!m_LightsThreadShutdown) {
+    m_LightsMutex->Lock();
+
+    // spin here until we get a light to push out.
+    while (m_LightsQueue.empty() && !m_LightsThreadShutdown) {
+      m_LightsMutex->Wait();
+    }
+
+    m_LightsMutex->Unlock();
+
+    // push every state on the queue to all of the devices.
+    while (!m_LightsQueue.empty()) {
+      m_LightsMutex->Lock();
+
+      // pop the first in first state out from the queue
+      LightsState push = m_LightsQueue.front();
+      m_LightsQueue.pop();
+
+      m_LightsMutex->Unlock();
+
+      // push to all of the devices
+      // could take time, it's why we are in at thread
+      for (LightsDriver* iter : m_vpDrivers) {
+        iter->Set(&push);
+      }
+    }
+  }
+
+  return 0;
 }
 
 // XXX: Allow themer to change these. (rewritten; who wrote original? -aj)
@@ -470,12 +516,16 @@ void LightsManager::Update(float fDeltaTime) {
   }
 
   // apply new light values we set above
-  for (LightsDriver* iter : m_vpDrivers) {
-    if (memcmp(&m_LightsState, &m_PrevLightsState, sizeof(m_LightsState)) !=
-        0) {
-      iter->Set(&m_LightsState);
-	  memcpy(&m_PrevLightsState, &m_LightsState, sizeof(m_LightsState));
-    }
+
+  // only push to thread on changes.
+  if (memcmp(&m_LightsState, &m_PrevLightsState, sizeof(m_LightsState)) != 0) {
+    // add lights state to queue.
+    m_LightsMutex->Lock();
+    m_LightsQueue.push(m_LightsState);
+    m_LightsMutex->Broadcast();
+    m_LightsMutex->Unlock();
+
+    memcpy(&m_PrevLightsState, &m_LightsState, sizeof(m_LightsState));
   }
 }
 
