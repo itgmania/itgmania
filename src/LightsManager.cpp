@@ -4,6 +4,7 @@
 #include "RageTimer.h"
 #include "arch/Lights/LightsDriver.h"
 #include "RageUtil.h"
+#include "RageUtil/ConvertValue.h"
 #include "GameInput.h"	// for GameController
 #include "InputMapper.h"
 #include "Game.h"
