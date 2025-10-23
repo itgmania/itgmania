@@ -1,25 +1,24 @@
+#include "global.h"
 #include "LightsManager.h"
+#include "GameState.h"
+#include "RageTimer.h"
+#include "arch/Lights/LightsDriver.h"
+#include "RageUtil.h"
+#include "GameInput.h"	// for GameController
+#include "InputMapper.h"
+#include "Game.h"
+#include "PrefsManager.h"
+#include "Actor.h"
+#include "Preference.h"
+#include "GameManager.h"
+#include "PlayerState.h"
+#include "GameState.h"
+#include "CommonMetrics.h"
+#include "Style.h"
 
 #include <cmath>
 #include <cstddef>
 #include <vector>
-
-#include "Actor.h"
-#include "CommonMetrics.h"
-#include "Game.h"
-#include "GameInput.h"  // for GameController
-#include "GameManager.h"
-#include "GameState.h"
-#include "InputMapper.h"
-#include "PlayerState.h"
-#include "Preference.h"
-#include "PrefsManager.h"
-#include "RageTimer.h"
-#include "RageUtil.h"
-#include "RageUtil/ConvertValue.h"
-#include "Style.h"
-#include "arch/Lights/LightsDriver.h"
-#include "global.h"
 
 const RString DEFAULT_LIGHTS_DRIVER = "SystemMessage,Export";
 static Preference<RString> g_sLightsDriver(
