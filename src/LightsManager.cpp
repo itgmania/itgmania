@@ -527,14 +527,14 @@ void LightsManager::Update(float fDeltaTime) {
   // apply new light values we set above
 
   // only push to thread on changes.
-  if (memcmp(&m_LightsState, &m_PrevLightsState, sizeof(m_LightsState)) != 0) {
+  if (m_LightsState != m_PrevLightsState) {
     // add lights state to queue.
     m_LightsMutex->Lock();
     m_LightsQueue.push(m_LightsState);
     m_LightsMutex->Signal();
     m_LightsMutex->Unlock();
 
-    memcpy(&m_PrevLightsState, &m_LightsState, sizeof(m_LightsState));
+    m_PrevLightsState = std::move(m_LightsState);
   }
 }
 

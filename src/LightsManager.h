@@ -53,6 +53,36 @@ struct LightsState {
   // This isn't actually a light, but it's typically implemented in the same
   // way.
   bool m_bCoinCounter;
+
+  // equality operator
+  bool operator==(const LightsState& rhs) const {
+    // compare cabinet lights
+    for (int i = 0; i < NUM_CabinetLight; ++i) {
+      if (m_bCabinetLights[i] != rhs.m_bCabinetLights[i]) {
+        return false;
+      }
+    }
+
+    // compare game button lights
+    for (int c = 0; c < NUM_GameController; ++c) {
+      for (int b = 0; b < NUM_GameButton; ++b) {
+        if (m_bGameButtonLights[c][b] != rhs.m_bGameButtonLights[c][b]) {
+          return false;
+        }
+      }
+    }
+
+    // compare coin counter
+    if (m_bCoinCounter != rhs.m_bCoinCounter) {
+      return false;
+    }
+
+    // all fields match
+    return true;
+  }
+
+  // inequality operator
+  bool operator!=(const LightsState& rhs) const { return !(*this == rhs); }
 };
 
 class LightsDriver;
