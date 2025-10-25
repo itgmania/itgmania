@@ -186,6 +186,7 @@ list(APPEND SMDATA_ARCH_LIGHTS_SRC "arch/Lights/LightsDriver.cpp"
             "arch/Lights/LightsDriver_fusion.cpp"
             "arch/Lights/LightsDriver_MinimaidHID.cpp"
             "arch/Lights/LightsDriver_PacDrive.cpp"
+            "arch/Lights/LightsDriver_gpb.cpp"
             "arch/Lights/LightsDriver_HidBlueDot.cpp")
 list(APPEND SMDATA_ARCH_LIGHTS_HPP "arch/Lights/LightsDriver.h"
             "arch/Lights/LightsDriver_Export.h"
@@ -198,6 +199,7 @@ list(APPEND SMDATA_ARCH_LIGHTS_HPP "arch/Lights/LightsDriver.h"
             "arch/Lights/LightsDriver_fusion.h"
             "arch/Lights/LightsDriver_MinimaidHID.cpp"
             "arch/Lights/LightsDriver_PacDrive.h"
+            "arch/Lights/LightsDriver_gpb.h"
             "arch/Lights/LightsDriver_HidBlueDot.h")
 
 # TODO: Confirm if Apple can use the export.
