@@ -82,7 +82,7 @@ jobs:
           ${{ matrix.package }}
       - name: Upload artifacts
         id: upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ITGmania-${{ github.sha }}-${{ matrix.name }}
           path: ${{ matrix.path }}
