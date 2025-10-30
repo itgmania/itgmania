@@ -6,10 +6,9 @@
 #include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageSoundPosMap.h"
+#include "RageSoundConstants.h"
 
 #include <cstdint>
-
-constexpr int kFallbackSampleRate = 44100;
 
 class RageSoundReader;
 struct lua_State;
