@@ -38,7 +38,7 @@ public:
 	int GetLength_Fast() const;
 	int SetPosition( int iFrame );
 	int Read( float *pBuf, int iFrames );
-	int GetSampleRate() const { return m_iActualSampleRate; }
+	int GetSampleRate() const;
 	unsigned GetNumChannels() const { return m_iChannels; }
 	bool SetProperty( const RString &sProperty, float fValue );
 	int GetNextSourceFrame() const;

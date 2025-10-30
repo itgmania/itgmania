@@ -10,6 +10,7 @@
 #include "RageSound.h"
 #include "RageSoundMixBuffer.h"
 #include "RageSoundUtil.h"
+#include "RageSoundConstants.h"
 
 #include <cmath>
 #include <vector>
@@ -25,13 +26,13 @@
  */
 RageSoundReader_Chain::RageSoundReader_Chain()
 {
-	m_iPreferredSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
-	if (m_iPreferredSampleRate == 0)
-	{
-		m_iPreferredSampleRate = kFallbackSampleRate;
-	}
-	
+	// The preferred sample rate for resampling when sounds have different rates.
+	m_iPreferredSampleRate = FALLBACK_SAMPLE_RATE;
+
+	// The actual sample rate of the audio after resampling.
+	// Used for timing calculations, such as sound offsets or frame positioning.
 	m_iActualSampleRate = -1;
+
 	m_iChannels = 0;
 	m_iCurrentFrame = 0;
 	m_iNextSound = 0;
@@ -129,6 +130,15 @@ int RageSoundReader_Chain::GetSampleRateInternal() const
 			return -1;
 	}
 	return iRate;
+}
+
+int RageSoundReader_Chain::GetSampleRate() const
+{
+	if (m_iActualSampleRate == -1)
+	{
+		return m_iPreferredSampleRate;
+	}
+	return m_iActualSampleRate;
 }
 
 void RageSoundReader_Chain::Finish()
