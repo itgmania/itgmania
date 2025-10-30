@@ -184,6 +184,7 @@ list(APPEND SMDATA_RAGE_SOUND_SRC
 
 list(APPEND SMDATA_RAGE_SOUND_HPP
             "RageSound.h"
+            "RageSoundConstants.h"
             "RageSoundManager.h"
             "RageSoundMixBuffer.h"
             "RageSoundPosMap.h"
