@@ -6,7 +6,7 @@
 #include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil_CircularBuffer.h"
-#include "RageSound.h"
+#include "RageSoundConstants.h"
 
 #include <cstdint>
 
@@ -67,7 +67,7 @@ public:
 	 * hearing it.  (This isn't necessarily the same as the buffer latency.) */
 	virtual float GetPlayLatency() const { return 0.0f; }
 
-	virtual int GetSampleRate() const { return kFallbackSampleRate; }
+	virtual int GetSampleRate() const { return FALLBACK_SAMPLE_RATE; }
 
 protected:
 	/* Start the decoding.  This should be called once the hardware is set up and

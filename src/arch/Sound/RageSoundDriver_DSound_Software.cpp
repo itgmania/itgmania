@@ -98,7 +98,7 @@ RString RageSoundDriver_DSound_Software::Init()
 	m_iSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
 	if( m_iSampleRate == 0 )
 	{
-		m_iSampleRate = kFallbackSampleRate;
+		m_iSampleRate = FALLBACK_SAMPLE_RATE;
 	}
 	// This m_iSampleRate (driver's) is then passed as the iSampleRate parameter to DSoundBuf::Init()
 	sError = m_pPCM->Init( ds, DSoundBuf::HW_DONT_CARE, channels, m_iSampleRate, 16, g_iMaxWriteahead );

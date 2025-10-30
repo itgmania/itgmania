@@ -67,7 +67,7 @@ void DSound::SetPrimaryBufferMode()
 	int preferredSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
 	if (preferredSampleRate == 0)
 	{
-		preferredSampleRate = kFallbackSampleRate;
+		preferredSampleRate = FALLBACK_SAMPLE_RATE;
 	}
 	waveformat.nSamplesPerSec = preferredSampleRate;
 	waveformat.nBlockAlign = (waveformat.nChannels * waveformat.wBitsPerSample) / 8;
@@ -223,7 +223,7 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 	// DYNAMIC_SAMPLERATE is usually 0 or some special value
 	if( m_iSampleRate == DYNAMIC_SAMPLERATE )
 	{
-		m_iSampleRate = kFallbackSampleRate;
+		m_iSampleRate = FALLBACK_SAMPLE_RATE;
 		bNeedCtrlFrequency = true;
 	}
 

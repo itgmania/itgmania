@@ -141,7 +141,7 @@ RString RageSoundDriver_WaveOut::Init()
 	wo_samplerate_ = PREFSMAN->m_iSoundPreferredSampleRate;
 	if( wo_samplerate_ == 0 )
 	{
-		wo_samplerate_ = kFallbackSampleRate;
+		wo_samplerate_ = FALLBACK_SAMPLE_RATE;
 	}
 
 	wo_num_blocks_ = CalculateNumBlocks( wo_samplerate_ );

@@ -3,6 +3,7 @@
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "PrefsManager.h"
+#include "RageSoundConstants.h"
 
 #include <cstdint>
 
@@ -32,7 +33,7 @@ RageSoundDriver_Null::RageSoundDriver_Null()
 {
 	m_iSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
 	{
-    	m_iSampleRate = kFallbackSampleRate;
+    	m_iSampleRate = FALLBACK_SAMPLE_RATE;
 	}
 	m_iLastCursorPos = GetPosition();
 	StartDecodeThread();

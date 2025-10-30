@@ -9,6 +9,8 @@
 #include <map>
 #include <set>
 
+#include "RageSoundConstants.h"
+
 class RageSound;
 class RageSoundBase;
 class RageSoundDriver;

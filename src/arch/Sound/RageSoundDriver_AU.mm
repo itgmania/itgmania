@@ -3,6 +3,7 @@
 #include "RageLog.h"
 #include "PrefsManager.h"
 #include "archutils/Darwin/DarwinThreadHelpers.h"
+#include "RageSoundConstants.h"
 
 #include <cstdint>
 
@@ -152,7 +153,7 @@ RString RageSoundDriver_AU::Init()
 
 	if( streamFormat.mSampleRate <= 0.0 )
 	{
-		streamFormat.mSampleRate = kFallbackSampleRate;
+		streamFormat.mSampleRate = FALLBACK_SAMPLE_RATE;
 	}
 	m_iSampleRate = int( streamFormat.mSampleRate );
 	m_TimeScale = streamFormat.mSampleRate / AudioGetHostClockFrequency();

@@ -30,7 +30,7 @@ m_PulseMainLoop(nullptr), m_PulseCtx(nullptr), m_PulseStream(nullptr)
 	m_ss.rate = PREFSMAN->m_iSoundPreferredSampleRate;
 	if( m_ss.rate == 0 )
 	{
-		m_ss.rate = kFallbackSampleRate;
+		m_ss.rate = FALLBACK_SAMPLE_RATE;
 	}
 }
 

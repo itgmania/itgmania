@@ -231,7 +231,7 @@ RString Alsa9Buf::Init( int channels_,
 	preferred_chunksize = iChunkSize;
 	if( iSampleRate == 0 )
 	{
-		samplerate = kFallbackSampleRate;
+		samplerate = FALLBACK_SAMPLE_RATE;
 	}
 	else
 	{
