@@ -169,8 +169,9 @@ static CFDictionaryRef GetMatchingDictionary( int usagePage, int usage )
 // Factor this out because nothing else in IH_C::AddDevices() needs to know the type of the device.
 static HIDDevice *MakeDevice( InputDevice id )
 {
-	if( id == DEVICE_KEYBOARD )
-		return new KeyboardDevice;
+	// Keyboard input is now handled by NSEvent handler to avoid Input Monitoring permission requirements
+	// if( id == DEVICE_KEYBOARD )
+	//	return new KeyboardDevice;
 	/*
 	if( id == DEVICE_MOUSE )
 		return new MouseDevice;
@@ -243,11 +244,13 @@ InputHandler_MacOSX_HID::InputHandler_MacOSX_HID() : m_Sem( "Input thread starte
 	m_NotifyPort = IONotificationPortCreate( kIOMasterPortDefault );
 
 	// Add devices.
+#if !OSX_KEYBOARD_USE_NSEVENT
 	LOG->Trace( "Finding keyboards" );
 	AddDevices( kHIDPage_GenericDesktop, kHIDUsage_GD_Keyboard, id );
 
 	LOG->Trace( "Finding mice" );
 	AddDevices( kHIDPage_GenericDesktop, kHIDUsage_GD_Mouse, id );
+#endif // !OSX_KEYBOARD_USE_NSEVENT
 
 	LOG->Trace( "Finding joysticks" );
 	id = DEVICE_JOY1;

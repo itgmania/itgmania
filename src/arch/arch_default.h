@@ -32,7 +32,7 @@ inline const std::vector<RString>& GetDefaultSoundDriverList() {
 #include "MemoryCard/MemoryCardDriverThreaded_MacOSX.h"
 
 inline const std::vector<RString>& GetDefaultInputDriverList() {
-	static const std::vector<RString> inputDriverList = { "HID" };
+	static const std::vector<RString> inputDriverList = { "HID", "NSEvent" };
 	return inputDriverList;
 }
 
