@@ -19,8 +19,6 @@
 
 Difficulty DwiCompatibleStringToDifficulty( const RString& sDC );
 
-static std::map<int,int> g_mapDanceNoteToNoteDataColumn;
-
 /** @brief The different types of core DWI arrows and pads. */
 enum DanceNotes
 {
@@ -102,18 +100,18 @@ static void DWIcharToNote( char c, GameController i, int &note1Out, int &note2Ou
  * @param col2Out The second result based on the character.
  * @param sPath the path to the file.
  */
-static void DWIcharToNoteCol( char c, GameController i, int &col1Out, int &col2Out, const RString &sPath )
+static void DWIcharToNoteCol( char c, GameController i, int &col1Out, int &col2Out, const RString &sPath, const std::map<int,int> &mapDanceNoteToNoteDataColumn )
 {
 	int note1, note2;
 	DWIcharToNote( c, i, note1, note2, sPath );
 
 	if( note1 != DANCE_NOTE_NONE )
-		col1Out = g_mapDanceNoteToNoteDataColumn[note1];
+		col1Out = mapDanceNoteToNoteDataColumn.at(note1);
 	else
 		col1Out = -1;
 
 	if( note2 != DANCE_NOTE_NONE )
-		col2Out = g_mapDanceNoteToNoteDataColumn[note2];
+		col2Out = mapDanceNoteToNoteDataColumn.at(note2);
 	else
 		col2Out = -1;
 }
@@ -188,7 +186,7 @@ static StepsType GetTypeFromMode(const RString &mode)
 }
 
 static NoteData ParseNoteData(RString &step1, RString &step2,
-			      Steps &out, const RString &path)
+	Steps &out, const RString &path )
 {
 	if (step1.size() < 2 && step2.size() < 2)
 	{
@@ -196,39 +194,40 @@ static NoteData ParseNoteData(RString &step1, RString &step2,
 		// Handle the error by returning an empty NoteData object
 		return NoteData();
 	}
-	g_mapDanceNoteToNoteDataColumn.clear();
+
+	std::map<int, int> mapDanceNoteToNoteDataColumn;
 	switch( out.m_StepsType )
 	{
 		case StepsType_dance_single:
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_LEFT] = 0;
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_DOWN] = 1;
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UP] = 2;
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_RIGHT] = 3;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_LEFT] = 0;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_DOWN] = 1;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UP] = 2;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_RIGHT] = 3;
 			break;
 		case StepsType_dance_double:
 		case StepsType_dance_couple:
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_LEFT] = 0;
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_DOWN] = 1;
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UP] = 2;
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_RIGHT] = 3;
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD2_LEFT] = 4;
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD2_DOWN] = 5;
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD2_UP] = 6;
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD2_RIGHT] = 7;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_LEFT] = 0;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_DOWN] = 1;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UP] = 2;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_RIGHT] = 3;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD2_LEFT] = 4;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD2_DOWN] = 5;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD2_UP] = 6;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD2_RIGHT] = 7;
 			break;
 		case StepsType_dance_solo:
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_LEFT] = 0;
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UPLEFT] = 1;
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_DOWN] = 2;
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UP] = 3;
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UPRIGHT] = 4;
-			g_mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_RIGHT] = 5;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_LEFT] = 0;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UPLEFT] = 1;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_DOWN] = 2;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UP] = 3;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_UPRIGHT] = 4;
+			mapDanceNoteToNoteDataColumn[DANCE_NOTE_PAD1_RIGHT] = 5;
 			break;
 			DEFAULT_FAIL( out.m_StepsType );
 	}
 
 	NoteData newNoteData;
-	newNoteData.SetNumTracks( g_mapDanceNoteToNoteDataColumn.size() );
+	newNoteData.SetNumTracks( mapDanceNoteToNoteDataColumn.size() );
 
 	for( int pad=0; pad<2; pad++ )		// foreach pad
 	{
@@ -319,11 +318,12 @@ static NoteData ParseNoteData(RString &step1, RString &step2,
 
 						int iCol1, iCol2;
 						DWIcharToNoteCol(
-								 c,
-								 (GameController)pad,
-								 iCol1,
-								 iCol2,
-								 path );
+								c,
+								(GameController)pad,
+								iCol1,
+								iCol2,
+								path,
+								mapDanceNoteToNoteDataColumn);
 
 						if( iCol1 != -1 )
 							newNoteData.SetTapNote(iCol1,
@@ -347,10 +347,11 @@ static NoteData ParseNoteData(RString &step1, RString &step2,
 							const char holdChar = sStepData[i++];
 
 							DWIcharToNoteCol(holdChar,
-									 (GameController)pad,
-									 iCol1,
-									 iCol2,
-									 path );
+									(GameController)pad,
+									iCol1,
+									iCol2,
+									path,
+									mapDanceNoteToNoteDataColumn);
 
 							if( iCol1 != -1 )
 								newNoteData.SetTapNote(iCol1,
