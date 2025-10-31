@@ -7,7 +7,10 @@
 #import <Cocoa/Cocoa.h>
 #include "ProductInfo.h"
 #include "arch/ArchHooks/ArchHooks.h"
+#include "arch/InputHandler/InputHandler_NSEvent.hpp"
+#include "archutils/Darwin/CocoaEventDispatcher.h"
 #include "StepMania.h"
+#include "RageInput.h"
 
 @interface NSApplication (PrivateShutUpWarning)
 - (void) setAppleMenu:(NSMenu *)menu;
@@ -30,6 +33,11 @@
 
 - (void)sendEvent:(NSEvent *)event
 {
+	if( INPUTMAN ) {
+		auto &dispatcher = CocoaEventDispatcher::sharedDispatcher;
+		dispatcher.DispatchEvent( event );
+	}
+	
 	if( [event type] == NSEventTypeKeyDown )
 		[[self mainMenu] performKeyEquivalent:event];
 	else

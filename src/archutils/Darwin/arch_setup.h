@@ -29,6 +29,8 @@ extern "C" int sm_main( int argc, char *argv[] );
 # define __MACOSX__
 #endif
 
+#define OSX_KEYBOARD_USE_NSEVENT 1
+
 #endif
 
 /*
