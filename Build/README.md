@@ -126,7 +126,14 @@ Confirm the installation. Once everything is installed, you can open **StepMania
 
 #### macOS
 
-Using Xcode, simply build in Xcode and it will place the .app file in the correct directory.
+For macOS, you can either install the full Xcode package or the Xcode Command Line Tools by itself. If you install Xcode from the App Store, it will install everything needed.
+
+When compiling for macOS, the build command differs depending on whether you are compiling for Intel (`x86_64`) or Apple Silicon (`arm64`). From the `itgmania` directory (not `src`), run:
+
+- Apple Silicon: `cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"`
+- Intel: `cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"`
+
+Afterwards, run `cmake --build build --parallel "$(sysctl -n hw.logicalcpu)"`. After this step is done, the newly built ITGmania.app will be in your `itgmania` directory.
 
 #### Linux
 
