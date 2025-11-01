@@ -463,6 +463,9 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
     int threadCount = 1;
 #endif
 
+	// We need to keep track of previously loaded groups so we don't delete them if we're only loading additions.
+	std::unordered_set<Group*> alreadyLoadedGroups;
+
     // An entry for each song that we need to load across all packs.
     std::vector<SongToLoad> songsToLoad {};
 	for (const auto& [sGroupDirName, arraySongDirs] : mapGroupSongDirs)	// foreach dir in /Songs/
@@ -482,6 +485,16 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 			}
 
             songsToLoad.push_back(SongToLoad{sGroupDirName, arraySongDirs[j]});
+		}
+
+		const auto groupIter = m_mapNameToGroup.find(sGroupDirName);
+		if (groupIter != m_mapNameToGroup.end())
+		{
+			alreadyLoadedGroups.insert(groupIter->second);
+		}
+		else
+		{
+			m_mapNameToGroup[sGroupDirName] = new Group(sDir, sGroupDirName);
 		}
     }
 
@@ -604,24 +617,9 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
     // Mostly unchanged group finalizing work.
 	for (const auto& [sGroupDirName, arraySongDirs] : mapGroupSongDirs)	// foreach dir in /Songs/
 	{
-		// We need to keep track of previously loaded groups so we don't delete them if we're only loading additions
-		bool groupAlreadyLoaded = false;
-
-        const auto groupIter = m_mapNameToGroup.find(sGroupDirName);
-        Group* group = nullptr;
-
-        if (groupIter != m_mapNameToGroup.end())
-        {
-            group = groupIter->second;
-            groupAlreadyLoaded = true;
-        }
-        else
-        {
-            group = new Group(sDir, sGroupDirName);
-            m_mapNameToGroup[sGroupDirName] = group;
-        }
-
+		Group* group = m_mapNameToGroup.at(sGroupDirName);
         int loadedSongCount = groupLoadedSongCount[sGroupDirName];
+		bool groupAlreadyLoaded = alreadyLoadedGroups.find(group) != alreadyLoadedGroups.end();
 
 		LOG->Trace("Loaded %d songs from \"%s\"", loadedSongCount, (sDir+sGroupDirName).c_str() );
 
