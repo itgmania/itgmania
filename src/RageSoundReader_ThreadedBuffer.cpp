@@ -16,14 +16,14 @@
  * takes more CPU than filling 4k frames, and may cause a skip. */
 
 // The amount of data to read at once:
-static const unsigned g_iReadBlockSizeFrames = 1024;
+static const unsigned g_iReadBlockSizeFrames = 4096;   // 4K frames
 
 // The maximum number of frames to buffer:
-static const int g_iStreamingBufferFrames = 1024*32;
+static const int g_iStreamingBufferFrames = 1024*128;  // 128K frames
 
 /* When a sound has fewer than g_iMinFillFrames buffered, buffer at maximum speed.
  * Once beyond that, fill at a limited rate. */
-static const int g_iMinFillFrames = 1024*4;
+static const int g_iMinFillFrames = 1024*16; 		 // 16K frames
 
 RageSoundReader_ThreadedBuffer::RageSoundReader_ThreadedBuffer( RageSoundReader *pSource ):
 	RageSoundReader_Filter( pSource ),
