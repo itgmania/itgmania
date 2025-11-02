@@ -52,7 +52,12 @@ if(NOT WITH_EXTERNAL_WARNINGS)
   list(APPEND FFMPEG_CONFIGURE "--extra-cflags=-w")
 endif()
 
-list(APPEND SM_FFMPEG_MAKE $(MAKE))
+if(CMAKE_GENERATOR STREQUAL "Xcode")
+  list(APPEND SM_FFMPEG_MAKE "make")
+else()
+  list(APPEND SM_FFMPEG_MAKE $(MAKE))
+endif()
+
 if(WITH_FFMPEG_JOBS GREATER 0)
   list(APPEND SM_FFMPEG_MAKE "-j${WITH_FFMPEG_JOBS}")
 endif()
