@@ -6,6 +6,10 @@ if(MSVC)
   endif()
 endif()
 
+if(CMAKE_GENERATOR STREQUAL "Xcode")
+  set(CMAKE_XCODE_GENERATE_SCHEME ON)
+endif()
+
 # Keep the module path local for easier grabbing.
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
