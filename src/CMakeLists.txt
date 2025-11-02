@@ -109,6 +109,10 @@ if(WITH_NO_ROLC_TOMCRYPT)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE LTC_NO_ROLC)
 endif()
 
+if(CMAKE_GENERATOR STREQUAL "Xcode")
+  target_compile_options(mbedcrypto PRIVATE -Wno-shorten-64-to-32)
+endif()
+
 # Compilation flags per project here.
 target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 target_compile_definitions("${SM_EXE_NAME}" PRIVATE $<$<CONFIG:Release>:RELEASE>)
