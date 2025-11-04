@@ -752,6 +752,35 @@ void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
 	buf[i] = nullptr;
 }
 
+#elif defined(BACKTRACE_METHOD_GENERIC_UNIX)
+#include <vector>
+#include <execinfo.h>
+
+void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc ) { }
+
+void InitializeBacktrace() { }
+
+void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx )
+{
+	if (!buf || size == 0) return;
+
+	// Ensure we can place a terminator.
+	if (size == 1) { buf[0] = nullptr; return; }
+
+	const size_t capacity = size - 1;
+	std::vector<void*> frames(capacity);
+
+	int n = backtrace(frames.data(), static_cast<int>(capacity));
+	if (n < 0) n = 0;
+
+	for (int i = 0; i < n; ++i)
+	{
+		buf[i] = frames[i];
+	}
+
+	buf[n] = nullptr;
+}
+
 #else
 
 #warning Undefined BACKTRACE_METHOD_*
