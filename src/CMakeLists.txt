@@ -191,10 +191,19 @@ if(WIN32)
   endif()
 elseif(APPLE)
   # TODO should we set CRASH_HANDLER and other things like LINUX does below? Why is that logic specfic to LINUX?
-  target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_X86_DARWIN)
+  # Use generic Unix backtrace for all Apple architectures
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_GENERIC_UNIX)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_TEXT="generic unix backtrace")
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_LOOKUP_METHOD_TEXT="dladdr")
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_LOOKUP_METHOD_DLADDR)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE MACOSX)
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE CPU_X86_64)
+  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86" OR CMAKE_SYSTEM_PROCESSOR MATCHES "i686")
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE CPU_X86)
+  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64" OR CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE CPU_AARCH64)
+  endif()
   set_target_properties(
     "${SM_EXE_NAME}"
     PROPERTIES
@@ -268,6 +277,10 @@ else() # Linux
         target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_X86_LINUX)
         target_compile_definitions("${SM_EXE_NAME}" PRIVATE
                                    BACKTRACE_METHOD_TEXT="x86 custom backtrace")
+      elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+        target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_GENERIC_UNIX)
+        target_compile_definitions("${SM_EXE_NAME}" PRIVATE
+                                   BACKTRACE_METHOD_TEXT="generic unix backtrace")
       else()
         target_compile_definitions("${SM_EXE_NAME}" PRIVATE
                                    BACKTRACE_METHOD_TEXT="no backtrace")
