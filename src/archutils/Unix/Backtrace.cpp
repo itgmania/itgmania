@@ -403,7 +403,16 @@ void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc )
 #elif defined(CPU_AARCH64)
 void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc )
 {
-	// NYI
+#if defined(MACOSX)
+	ctx->ip = (void *) uc->uc_mcontext->__ss.__pc;
+	ctx->bp = (void *) uc->uc_mcontext->__ss.__fp;
+	ctx->sp = (void *) uc->uc_mcontext->__ss.__sp;
+#elif defined(LINUX)
+	ctx->ip = (void *) uc->uc_mcontext.pc;
+	ctx->bp = (void *) uc->uc_mcontext.regs[29]; // x29 is frame pointer
+	ctx->sp = (void *) uc->uc_mcontext.sp;
+#endif
+	ctx->pid = GetCurrentThreadId();
 }
 
 #else

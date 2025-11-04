@@ -16,7 +16,7 @@ struct BacktraceContext
 	const void *ip, *bp, *sp;
 #endif
 
-#if defined(UNIX)
+#if defined(UNIX) || defined(MACOSX)
 	pid_t pid;
 #endif
 
