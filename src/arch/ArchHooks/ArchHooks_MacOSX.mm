@@ -5,9 +5,11 @@
 #include "archutils/Unix/CrashHandler.h"
 #include "archutils/Unix/SignalHandler.h"
 #include "ProductInfo.h"
+#include "SpecialFiles.h"
 
 #include <cstddef>
 #include <cstdint>
+#include <vector>
 
 #include <CoreServices/CoreServices.h>
 #include <ApplicationServices/ApplicationServices.h>
@@ -265,6 +267,32 @@ int64_t ArchHooks::GetSystemTimeInMicroseconds()
 
 #include "RageFileManager.h"
 
+void MountDirectories(const RString& baseDir) {
+	const std::vector<RString> macDirectoryStructureITGm = {
+		"/Announcers",
+		"/BGAnimations",
+		"/BackgroundEffects",
+		"/BackgroundTransitions",
+		"/Cache",
+		"/CDTitles",
+		"/Characters",
+		"/Courses",
+		"/Downloads",
+		"/Logs",
+		"/NoteSkins",
+		"/Packages",
+		"/Save",
+		"/Screenshots",
+		"/Songs",
+		"/RandomMovies",
+		"/Themes"
+	};
+
+	for (const RString& dir : macDirectoryStructureITGm) {
+		FILEMAN->Mount("dir", baseDir + dir, dir);
+	}
+}
+
 void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
 {
 	FILEMAN->Mount("dirro", sDirOfExecutable, "/");
@@ -306,23 +334,7 @@ void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
 
 	if (portable)
 	{
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Announcers", "/Announcers");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/BGAnimations", "/BGAnimations");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/BackgroundEffects", "/BackgroundEffects");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/BackgroundTransitions", "/BackgroundTransitions");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Cache", "/Cache");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/CDTitles", "/CDTitles");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Characters", "/Characters");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Courses", "/Courses");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Downloads", "/Downloads");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Logs", "/Logs");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/NoteSkins", "/NoteSkins");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Packages", "/Packages");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Save", "/Save");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Screenshots", "/Screenshots");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Songs", "/Songs");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/RandomMovies", "/RandomMovies");
-		FILEMAN->Mount("dir", sDirOfExecutable + "/Themes", "/Themes");
+		MountDirectories(sDirOfExecutable);
 	}
 }
 
@@ -338,36 +350,10 @@ static std::string PathForDirectory( NSSearchPathDirectory directory )
 
 void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
 {
-	// /Save -> ~/Library/Preferences/PRODUCT_ID
-	std::string libraryDir = PathForDirectory(NSLibraryDirectory);
-	FILEMAN->Mount( "dir", libraryDir + "/Preferences/" PRODUCT_ID, "/Save" );
-
-	// Other stuff -> ~/Library/Application Support/PRODUCT_ID/*
 	std::string appSupportDir = PathForDirectory(NSApplicationSupportDirectory);
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/Announcers", "/Announcers" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/BGAnimations", "/BGAnimations" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/BackgroundEffects", "/BackgroundEffects" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/BackgroundTransitions", "/BackgroundTransitions" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/CDTitles", "/CDTitles" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/Characters", "/Characters" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/Courses", "/Courses" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/Downloads", "/Downloads" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/NoteSkins", "/NoteSkins" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/Packages", "/Packages" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/Songs", "/Songs" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/RandomMovies", "/RandomMovies" );
-	FILEMAN->Mount( "dir", appSupportDir + "/" PRODUCT_ID "/Themes", "/Themes" );
+	RString appSupportPath = ssprintf("%s/" PRODUCT_ID, appSupportDir.c_str());
 
-	// /Screenshots -> ~/Pictures/PRODUCT_ID Screenshots
-	std::string picturesDir = PathForDirectory(NSCachesDirectory);
-	FILEMAN->Mount( "dir", picturesDir + "/" PRODUCT_ID " Screenshots", "/Screenshots" );
-
-	// /Cache -> ~/Library/Caches/PRODUCT_ID
-	std::string cachesDir = PathForDirectory(NSCachesDirectory);
-	FILEMAN->Mount( "dir", cachesDir + "/" PRODUCT_ID, "/Cache" );
-
-	// /Logs -> ~/Library/Logs/PRODUCT_ID
-	FILEMAN->Mount( "dir", libraryDir + "/Logs/" PRODUCT_ID, "/Logs" );
+	MountDirectories(appSupportPath);
 }
 
 static inline int GetIntValue( CFTypeRef r )
