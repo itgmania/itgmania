@@ -393,7 +393,13 @@ RString LowLevelWindow_MacOSX::TryVideoMode( const VideoModeParams& p, bool& new
         [m_Context makeCurrentContext];
 		m_CurrentParams.windowed = true;
 		SetActualParamsFromMode( CGDisplayCurrentMode(kCGDirectMainDisplay) );
-		m_CurrentParams.vsync = p.vsync; // hack
+		
+		if( bChangeVsync )
+		{
+			GLint swap = p.vsync ? 1 : 0;
+			CGLSetParameter([m_Context CGLContextObj], kCGLCPSwapInterval, &swap);
+			m_CurrentParams.vsync = p.vsync;
+		}
 
 		return RString();
 	}
@@ -436,7 +442,7 @@ RString LowLevelWindow_MacOSX::TryVideoMode( const VideoModeParams& p, bool& new
 	if( bChangeVsync )
 	{
 		GLint swap = p.vsync ? 1 : 0;
-		[m_Context setValues:&swap forParameter:NSOpenGLCPSwapInterval];
+		CGLSetParameter([m_Context CGLContextObj], kCGLCPSwapInterval, &swap);
 		m_CurrentParams.vsync = p.vsync;
 	}
 
