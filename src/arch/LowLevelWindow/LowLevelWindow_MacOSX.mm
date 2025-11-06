@@ -8,11 +8,11 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <dlfcn.h>
 
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
 #import <OpenGL/gl.h>
-#import <mach-o/dyld.h>
 
 // Bad header!
 extern "C" {
@@ -323,16 +323,11 @@ LowLevelWindow_MacOSX::~LowLevelWindow_MacOSX()
 
 void *LowLevelWindow_MacOSX::GetProcAddress( RString s )
 {
-	// http://developer.apple.com/qa/qa2001/qa1188.html
-	// Both functions mentioned in there are deprecated in 10.4.
-	const RString& symbolName( '_' + s.c_str() );
-	const uint32_t count = _dyld_image_count();
-	NSSymbol symbol = nil;
-	const uint32_t options = NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR;
-
-	for( uint32_t i = 0; i < count && !symbol; ++i )
-		symbol = NSLookupSymbolInImage( _dyld_get_image_header(i), symbolName.c_str(), options );
-	return symbol ? NSAddressOfSymbol( symbol ) : nil;
+	// dlsym returns NULL if symbol not found
+	static void *glHandle = nullptr;
+	if( !glHandle )
+		glHandle = dlopen( "/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL", RTLD_LAZY );
+	return dlsym( glHandle, s.c_str() );
 }
 
 RString LowLevelWindow_MacOSX::TryVideoMode( const VideoModeParams& p, bool& newDeviceOut )
