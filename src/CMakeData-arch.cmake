@@ -259,7 +259,8 @@ if(WIN32)
               "arch/InputHandler/InputHandler_Win32_Para.cpp"
               "arch/InputHandler/InputHandler_Win32_Pump.cpp"
               "arch/InputHandler/InputHandler_Win32_RTIO.cpp"
-              "arch/InputHandler/InputHandler_Win32_ddrio.cpp")
+              "arch/InputHandler/InputHandler_Win32_ddrio.cpp"
+              "arch/InputHandler/InputHandler_Win32_SMX.cpp")
   list(APPEND SMDATA_ARCH_INPUT_HPP
               "arch/InputHandler/InputHandler_DirectInput.h"
               "arch/InputHandler/InputHandler_DirectInputHelper.h"
@@ -267,7 +268,8 @@ if(WIN32)
               "arch/InputHandler/InputHandler_Win32_Para.h"
               "arch/InputHandler/InputHandler_Win32_Pump.h"
               "arch/InputHandler/InputHandler_Win32_RTIO.h"
-              "arch/InputHandler/InputHandler_Win32_ddrio.h")
+              "arch/InputHandler/InputHandler_Win32_ddrio.h"
+              "arch/InputHandler/InputHandler_Win32_SMX.h")
   if(NOT MSVC)
     list(APPEND SMDATA_ARCH_INPUT_SRC
                 "arch/InputHandler/InputHandler_SextetStream.cpp")

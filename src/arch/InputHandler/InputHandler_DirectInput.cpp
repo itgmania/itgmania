@@ -11,6 +11,7 @@
 #include "InputFilter.h"
 #include "PrefsManager.h"
 #include "GamePreferences.h" //needed for Axis Fix
+#include "InputHandler_Win32_SMX.h" // needed to check conditions around if SMX platforms should be loaded as HID devices
 
 #include "InputHandler_DirectInputHelper.h"
 
@@ -183,6 +184,14 @@ static BOOL CALLBACK EnumDevicesCallback( const DIDEVICEINSTANCE *pdidInstance, 
 		case DI8DEVTYPE_KEYBOARD: device.type = device.KEYBOARD; break;
 		case DI8DEVTYPE_MOUSE: device.type = device.MOUSE; break;
 		default: LOG->Info( "DInput: Unrecognized device ignored." ); return DIENUM_CONTINUE;
+	}
+
+	// Check for SMX.dll upon encountering a StepManiaX platform.
+	// If SMX.dll is available and usable, the SMX InputHandler should be used instead of DirectInput for SMX platforms.
+	bool is_smx_platform = strstr(pdidInstance->tszProductName, "StepManiaX") != nullptr;
+	if (is_smx_platform && InputHandler_Win32_SMX_Register_Pad()) {
+		LOG->Info("DInput: Ignoring SMX Stage HID device in favor of the SMX driver.");
+		return DIENUM_CONTINUE; // Ignore SMX platform HID device if SMX.dll is available
 	}
 
 	device.JoystickInst = *pdidInstance;

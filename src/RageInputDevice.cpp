@@ -235,6 +235,7 @@ static const char *InputDeviceNames[] = {
 	"Midi",
 	"Mouse",
 	"PIUIO",
+	"SMX",
 };
 XToString( InputDevice );
 StringToX( InputDevice );

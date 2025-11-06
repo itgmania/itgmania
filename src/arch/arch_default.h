@@ -11,7 +11,7 @@
 #include "MemoryCard/MemoryCardDriverThreaded_Windows.h"
 
 inline const std::vector<RString>& GetDefaultInputDriverList() {
-	static const std::vector<RString> inputDriverList = { "DirectInput", "Pump", "Para" };
+	static const std::vector<RString> inputDriverList = { "DirectInput", "Pump", "Para", "SMX"};
 	return inputDriverList;
 }
 
