@@ -133,6 +133,8 @@ void InputHandler_NSEvent::InitKeyCodeMap()
     m_NSKeyCodeMap[kVK_ANSI_Semicolon] = KEY_SEMICOLON;
     m_NSKeyCodeMap[kVK_Space] = KEY_SPACE;
     m_NSKeyCodeMap[kVK_Tab] = KEY_TAB;
+    m_NSKeyCodeMap[kVK_ANSI_Grave] = KEY_ACCENT;
+    m_NSKeyCodeMap[kVK_ANSI_Slash] = KEY_SLASH;
     
     m_NSKeyCodeMap[kVK_Command] = KEY_LMETA;
     m_NSKeyCodeMap[kVK_RightCommand] = KEY_RMETA;
