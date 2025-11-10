@@ -237,6 +237,18 @@ void AutoKeysounds::LoadTracks( const Song *pSong, RageSoundReader *&pShared, Ra
 
 void AutoKeysounds::FinishLoading()
 {
+	// Doesn't attempt to load any keysounds.
+	m_sSound.Unload();
+	Song* pSong = GAMESTATE->m_pCurSong;
+	LoadTracks( pSong, m_pSharedSound, m_pPlayerSounds[0], m_pPlayerSounds[1] );
+	ASSERT_M( m_pSharedSound != nullptr, ssprintf("No sound was loaded for the song %s!", pSong->m_sMainTitle.c_str() ));
+	m_pSharedSound = new RageSoundReader_PitchChange( m_pSharedSound );
+	m_pSharedSound = new RageSoundReader_PostBuffering( m_pSharedSound );
+	m_pSharedSound = new RageSoundReader_Pan( m_pSharedSound );
+	m_pChain = m_pSharedSound;
+	m_sSound.LoadSoundReader( m_pChain );
+
+#if 0 // Below is the old keysound loading code, which is currently broken.
 	m_sSound.Unload();
 
 	Song* pSong = GAMESTATE->m_pCurSong;
@@ -309,6 +321,7 @@ void AutoKeysounds::FinishLoading()
 	}
 
 	m_sSound.LoadSoundReader( m_pChain );
+#endif
 }
 
 void AutoKeysounds::Update( float fDelta )
