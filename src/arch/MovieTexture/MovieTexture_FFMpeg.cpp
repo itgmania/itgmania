@@ -341,7 +341,7 @@ int MovieDecoder_FFMpeg::DecodePacketToFrame() {
 	if (packet_buffer_.size() > frame_buffer_.size()) {
 		while (!frame->displayed) {
 			// Sleep so the CPU performance stays happy.
-			usleep(1000);  // 1ms
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			if (cancel_) {
 				return -2;
 			}
