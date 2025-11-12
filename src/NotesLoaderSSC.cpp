@@ -258,12 +258,12 @@ void SetSongFakes(SongTagInfo& info) {
 }
 void SetFirstSecond(SongTagInfo& info) {
   if (info.from_cache) {
-    info.song->SetFirstSecond(StringToFloat((*info.params)[1]));
+    info.song->SetFirstSecondNoOffset(StringToFloat((*info.params)[1]));
   }
 }
 void SetLastSecond(SongTagInfo& info) {
   if (info.from_cache) {
-    info.song->SetLastSecond(StringToFloat((*info.params)[1]));
+    info.song->SetLastSecondNoOffset(StringToFloat((*info.params)[1]));
   }
 }
 void SetSongFilename(SongTagInfo& info) {

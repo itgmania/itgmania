@@ -313,14 +313,17 @@ class Song {
   TimingData m_SongTiming;
 
   float GetFirstBeat() const;
+  float GetFirstSecondNoOffset() const;
   float GetFirstSecond() const;
   float GetLastBeat() const;
+  float GetLastSecondNoOffset() const;
   float GetLastSecond() const;
   float GetSpecifiedLastBeat() const;
+
   float GetSpecifiedLastSecond() const;
 
-  void SetFirstSecond(const float f);
-  void SetLastSecond(const float f);
+  void SetFirstSecondNoOffset(const float f);
+  void SetLastSecondNoOffset(const float f);
   void SetSpecifiedLastSecond(const float f);
 
   typedef std::vector<BackgroundChange> VBackgroundChange;

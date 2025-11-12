@@ -580,8 +580,8 @@ bool NotesWriterSSC::Write(
 
   if (bSavingCache) {
     f.PutLine(ssprintf("// cache tags:"));
-    f.PutLine(ssprintf("#FIRSTSECOND:%.6f;", out.GetFirstSecond()));
-    f.PutLine(ssprintf("#LASTSECOND:%.6f;", out.GetLastSecond()));
+    f.PutLine(ssprintf("#FIRSTSECOND:%.6f;", out.GetFirstSecondNoOffset()));
+    f.PutLine(ssprintf("#LASTSECOND:%.6f;", out.GetLastSecondNoOffset()));
     f.PutLine(
         ssprintf("#SONGFILENAME:%s;", SmEscape(out.m_sSongFileName).c_str()));
     f.PutLine(ssprintf("#HASMUSIC:%i;", out.m_bHasMusic));
