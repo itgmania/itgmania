@@ -99,7 +99,7 @@ public:
         m_Voomax(0), m_BirthYear(0), m_IgnoreStepCountCalories(false),
         m_IsMale(true), m_sGuid(MakeGuid()), m_sDefaultModifiers(),
         m_SortOrder(SortOrder_Invalid),
-        m_songs{}, m_group(nullptr),
+        m_songs{}, m_groups{},
 		m_LastDifficulty(Difficulty_Invalid),
 		m_LastCourseDifficulty(Difficulty_Invalid),
 		m_LastStepsType(StepsType_Invalid), m_lastSong(),
@@ -205,7 +205,7 @@ public:
 	std::map<RString,RString> m_sDefaultModifiers;
 	SortOrder m_SortOrder;
 	std::vector<Song*> m_songs;
-	Group* m_group;
+	std::vector<Group*> m_groups;
 	Difficulty m_LastDifficulty;
 	CourseDifficulty m_LastCourseDifficulty;
 	StepsType m_LastStepsType;
@@ -437,6 +437,9 @@ public:
 	static void MoveBackupToDir( RString sFromDir, RString sToDir );
 	static RString MakeUniqueFileNameNoExtension( RString sDir, RString sFileNameBeginning );
 	static RString MakeFileNameNoExtension( RString sFileNameBeginning, int iIndex );
+
+	RString GetCustomSongsGroupNamePrefix() const;
+	bool IsCustomSongGroup(RString sSongGroup) const;
 
 	// Lua
 	void PushSelf( lua_State *L );

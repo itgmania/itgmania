@@ -310,25 +310,37 @@ bool Song::LoadFromSongDir(RString sDir, bool load_autosave, ProfileSlot from_pr
 	}
 	else
 	{
-		LOG->Trace("Loading song from profile2.");
-		m_LoadedFromProfile= from_profile;
-		m_sGroupName= sDir.substr(1, sDir.find('/', 1) - 1);
-		use_cache= false;
+		m_LoadedFromProfile = from_profile;
+		m_sGroupName = PROFILEMAN->GetProfile(from_profile)->GetCustomSongsGroupNamePrefix();
+
+		bool isSubFolder = sDirectoryParts.size() > 6;
+		if (isSubFolder) {
+			RString subFolderName = sDirectoryParts[sDirectoryParts.size() - 3];
+			m_sGroupName += (" - " + subFolderName);
+		}
+
+		use_cache = false;
 	}
 
 	RString cache_file_path;
-	if(m_LoadedFromProfile == ProfileSlot_Invalid)
+	if (m_LoadedFromProfile == ProfileSlot_Invalid)
 	{
 		// First, look in the cache for this song (without loading NoteData)
 		unsigned uCacheHash = SONGINDEX->GetCacheHash(m_sSongDir);
 		cache_file_path = GetCacheFilePath();
 
-		if( !DoesFileExist(cache_file_path) )
-		{ use_cache = false; }
-		else if(!PREFSMAN->m_bFastLoad && GetHashForDirectory(m_sSongDir) != uCacheHash)
-		{ use_cache = false; } // this cache is out of date
-		else if(load_autosave)
-		{ use_cache= false; }
+		if (!DoesFileExist(cache_file_path))
+		{
+			use_cache = false;
+		}
+		else if (!PREFSMAN->m_bFastLoad && GetHashForDirectory(m_sSongDir) != uCacheHash)
+		{
+			use_cache = false;
+		} // this cache is out of date
+		else if (load_autosave)
+		{
+			use_cache = false;
+		}
 	}
 
 	if(use_cache)
