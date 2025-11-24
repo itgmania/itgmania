@@ -40,7 +40,7 @@ jobs:
             build: cmake --build build --parallel "$env:NUMBER_OF_PROCESSORS"
     name: ${{ matrix.name }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
      ### TEMPORARY FIX:  Disable cmake cache until it expires so that windows builds work for the time being
@@ -69,7 +69,7 @@ jobs:
     name: Validate Lua.xml, LuaDocumentation.xml
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y libxml2-utils
       - name: Validate Lua.xml
