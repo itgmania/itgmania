@@ -6548,6 +6548,11 @@ void ScreenEdit::DoHelp()
 		RString sButtons = GetDeviceButtonsLocalized( hl.veb, m_EditMappingsDeviceInput );
 		RString sDescription = THEME->GetString( "EditHelpDescription", hl.szEnglishDescription );
 
+#if defined(MACOSX)
+		Replace( sButtons, "Ctrl", "Cmd" );
+		Replace( sButtons, "Alt", "Option" );
+#endif
+		
 		// TODO: Better way of hiding routine only key on non-routine.
 		if( hl.veb[0] == EDIT_BUTTON_SWITCH_PLAYERS && m_InputPlayerNumber == PLAYER_INVALID )
 		{
