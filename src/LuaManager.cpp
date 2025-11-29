@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "Command.h"
+#include "LuaDebugManager.h"
 #include "LuaReference.h"
 #include "MessageManager.h"
 #include "RageException.h"
@@ -337,10 +338,16 @@ Lua* LuaManager::Get() {
   }
 
   pImpl->g_ActiveStates[pRet] = bLocked;
+  if (LUADEBUG) {
+    LUADEBUG->ActivateState(pRet);
+  }
   return pRet;
 }
 
 void LuaManager::Release(Lua*& p) {
+  if (LUADEBUG) {
+    LUADEBUG->DeactivateState(p);
+  }
   pImpl->g_FreeStateList.push_back(p);
 
   ASSERT(lua_gettop(p) == 0);

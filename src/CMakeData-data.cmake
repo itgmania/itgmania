@@ -13,6 +13,25 @@ source_group("Data Structures\\\\Lua"
              ${SM_DATA_LUA_SRC}
              ${SM_DATA_LUA_HPP})
 
+list(APPEND SM_DATA_LUA_DEBUG_SRC
+            "LuaDebugBreakpoint.cpp"
+            "LuaDebugDap.cpp"
+            "LuaDebugger.cpp"
+            "LuaDebugHelpers.cpp"
+            "LuaDebuggeeState.cpp")
+
+list(APPEND SM_DATA_LUA_DEBUG_HPP
+            "LuaDebugBreakpoint.h"
+            "LuaDebugDap.h"
+            "LuaDebugger.h"
+            "LuaDebugHelpers.h"
+            "LuaDebuggeeState.h")
+
+source_group("Data Structures\\\\Lua\\\\Debug"
+             FILES
+             ${SM_DATA_LUA_DEBUG_SRC}
+             ${SM_DATA_LUA_DEBUG_HPP})
+
 list(APPEND SM_DATA_FONT_SRC
             "Font.cpp"
             "FontCharAliases.cpp"
@@ -289,6 +308,7 @@ list(APPEND SMDATA_ALL_DATA_SRC
             ${SM_DATA_COURSE_SRC}
             ${SM_DATA_FONT_SRC}
             ${SM_DATA_LUA_SRC}
+            ${SM_DATA_LUA_DEBUG_SRC}
             ${SM_DATA_NOTEDATA_SRC}
             ${SM_DATA_NOTELOAD_SRC}
             ${SM_DATA_NOTEWRITE_SRC}
@@ -301,6 +321,7 @@ list(APPEND SMDATA_ALL_DATA_HPP
             ${SM_DATA_COURSE_HPP}
             ${SM_DATA_FONT_HPP}
             ${SM_DATA_LUA_HPP}
+            ${SM_DATA_LUA_DEBUG_HPP}
             ${SM_DATA_NOTEDATA_HPP}
             ${SM_DATA_NOTELOAD_HPP}
             ${SM_DATA_NOTEWRITE_HPP}
