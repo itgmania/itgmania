@@ -100,6 +100,7 @@ void Profile::ClearSongs()
 	}
 	m_songs.clear();
 	m_groups.clear();
+	songsGroups.clear();
 }
 
 int Profile::HighScoresForASong::GetNumTimesPlayed() const
@@ -1235,7 +1236,7 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot, bool i
 		// is a pack
 		else
 		{
-			// create group -> need to check at the end if has songs
+			// create group -> check in the end if has songs
 			m_groups.emplace_back(new Group(
 				folder_first_level,
 				Basename(folder_first_level),
@@ -1265,7 +1266,10 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot, bool i
 		}
 
 		song->SetEnabled(true);
-		m_songs.push_back(song.release());
+		m_songs.push_back(song.get());
+
+		// link songs with groupName to find them easily
+		songsGroups[song->m_sGroupName].push_back(song.release());
 	}
 
 	float load_time = song_load_start_time.Ago();
@@ -1279,19 +1283,11 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot, bool i
 	}
 	
 	// Remove groups that contain no songs
-	// (iterate backward to avoid index shifting)
 	for (int i = int(m_groups.size()) - 1; i >= 0; --i) {
 		Group* group = m_groups[i];
 
-		bool has_songs = std::any_of(
-			m_songs.begin(),
-			m_songs.end(),
-			[&](Song* s) {
-				return s->m_sGroupName == group->GetGroupName();
-			}
-		);
-
-		if (!has_songs) {
+		if (songsGroups.find(group->GetGroupName()) == songsGroups.end()) {
+			delete group;
 			m_groups.erase(m_groups.begin() + i);
 		}
 	}
