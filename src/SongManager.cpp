@@ -447,21 +447,11 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
 	}
 
 
-// Uncomment #define below this to enable loading songs across multiple threads. Otherwise, the
-// default is to use 1 thread, which is useful for testing that we haven't broken non-threaded
-// song loading. For me, when this is commented out, I'm able to load the songs and play them, but
-// its possible there is something I don't know about that is broken, so someone more knowledge-able
-// should try it out !
-// #define THREADED_LOADING
-
-#ifdef THREADED_LOADING
-    int threadCount = std::thread::hardware_concurrency();
-    if (threadCount <= 0) {
-        threadCount = 1;
-    }
-#else
-    int threadCount = 1;
-#endif
+	int threadCount = std::thread::hardware_concurrency();
+	if (threadCount <= 0) {
+		threadCount = 1;
+	}
+	LOG->Trace("Loading songs using %d threads", threadCount);
 
 	// We need to keep track of previously loaded groups so we don't delete them if we're only loading additions.
 	std::unordered_set<Group*> alreadyLoadedGroups;
