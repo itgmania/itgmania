@@ -463,7 +463,7 @@ void StepParityGenerator::CreateRows(const NoteData &in)
 
 	for (IntermediateNoteData note : noteData)
 	{
-		if (note.type == TapNoteType_Empty)
+		if (note.type == TapNoteType_Empty || note.type == TapNoteType_AutoKeysound)
 		{
 			continue;
 		}
