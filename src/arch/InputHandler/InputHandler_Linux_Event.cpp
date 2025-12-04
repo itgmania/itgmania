@@ -134,16 +134,32 @@ bool EventDevice::Open( RString sFile, InputDevice dev )
 	if( ioctl(m_iFD, EVIOCGBIT(EV_ABS, sizeof(iABSMask)), iABSMask) < 0 )
 		LOG->Warn( "ioctl(EVIOCGBIT(EV_ABS)): %s", strerror(errno) );
 
+	// If more exceptions need to be added, please add them here.
+	// The code below will check the device name against this list
+	// and apply an exception if a match is found.
+	static const char* kJoystickExceptions[] = {
+		"RedOctane USB Pad",
+		"Cobalt Flux Controller"
+	};
+
 	if( !BitIsSet(iABSMask, ABS_X) && !BitIsSet(iABSMask, ABS_THROTTLE) && !BitIsSet(iABSMask, ABS_WHEEL) )
 	{
 		LOG->Info( "    Not a joystick; ignoring [%s]",m_sName.c_str() );
-		if(m_sName.compare("RedOctane USB Pad") == 0)
+		bool bIsException = false;
+		for( const char* sException : kJoystickExceptions )
 		{
-			LOG->Info("RedOctane USB Pad detected, making an exception.");
-		} else if(m_sName.compare("Cobalt Flux Controller") == 0) 
-		{ 
-			LOG->Info("Cobalt Flux Controller detected, making an exception.");
-		} else {
+			if( m_sName == sException )
+			{
+				bIsException = true;
+				break;
+			}
+		}
+		if( bIsException )
+		{
+			LOG->Info( "%s detected, making an exception.", m_sName.c_str() );
+		}
+		else
+		{
 			Close();
 			return false;
 		}
