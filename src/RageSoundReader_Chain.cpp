@@ -186,19 +186,19 @@ void RageSoundReader_Chain::Finish()
 	m_iActualSampleRate = GetSampleRateInternal();
 	if( m_iActualSampleRate == -1 )
 	{
-		for (RageSoundReader *it : m_apLoadedSounds)
+		for (auto &pSound : m_apLoadedSounds)
 		{
-			RageSoundReader_Resample_Good *pResample = new RageSoundReader_Resample_Good( it, m_iPreferredSampleRate );
-			it = pResample;
+			RageSoundReader_Resample_Good *pResample = new RageSoundReader_Resample_Good( pSound, m_iPreferredSampleRate );
+			pSound = pResample;
 		}
 
 		m_iActualSampleRate = m_iPreferredSampleRate;
 	}
 
 	/* Attempt to preload all sounds. */
-	for (RageSoundReader *it : m_apLoadedSounds)
+	for (auto &pSound : m_apLoadedSounds)
 	{
-		RageSoundReader_Preload::PreloadSound( it );
+		RageSoundReader_Preload::PreloadSound( pSound );
 	}
 
 	/* Sort the sounds by start time. */
