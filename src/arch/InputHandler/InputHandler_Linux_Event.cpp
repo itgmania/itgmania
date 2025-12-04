@@ -140,6 +140,9 @@ bool EventDevice::Open( RString sFile, InputDevice dev )
 		if(m_sName.compare("RedOctane USB Pad") == 0)
 		{
 			LOG->Info("RedOctane USB Pad detected, making an exception.");
+		} else if(m_sName.compare("Cobalt Flux Controller") == 0) 
+		{ 
+			LOG->Info("Cobalt Flux Controller detected, making an exception.");
 		} else {
 			Close();
 			return false;
