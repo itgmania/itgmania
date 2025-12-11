@@ -1,0 +1,153 @@
+# .github/workflows/ffmpeg-w32.yml
+#
+# These libraries can't be built with MSVC, so we use mingw-w64 to cross-compile for Windows.
+# This workflow watches the beta branch for changes to extern/ffmpeg (submodule updates or source),
+# rebuilds the ffmpeg-w32 x86_64 prebuilts, and commits the updated binaries/headers to beta.
+
+name: Build ffmpeg-w32 libraries
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - beta
+    paths:
+      - extern/ffmpeg
+      - extern/ffmpeg/**
+
+jobs:
+  build-ffmpeg-w32:
+    runs-on: ubuntu-slim
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: beta
+        fetch-depth: 0
+        persist-credentials: true
+
+    - name: Setup build environment and dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mingw-w64 mingw-w64-tools gcc-mingw-w64-x86-64 \
+          g++-mingw-w64-x86-64 nasm pkg-config make wget tar
+        
+        # We need to custom build zlib and bzip2 for mingw.
+        # Build zlib
+        wget https://zlib.net/zlib-1.3.1.tar.gz
+        tar -xzf zlib-1.3.1.tar.gz
+        cd zlib-1.3.1
+        make -f win32/Makefile.gcc PREFIX=x86_64-w64-mingw32- SHARED_MODE=1
+        sudo make -f win32/Makefile.gcc install DESTDIR=/usr/x86_64-w64-mingw32/ INCLUDE_PATH=/include LIBRARY_PATH=/lib BINARY_PATH=/bin SHARED_MODE=1
+        cd ..
+        
+        # Build bzip2
+        wget https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz
+        tar -xzf bzip2-1.0.8.tar.gz
+        cd bzip2-1.0.8
+        make CC=x86_64-w64-mingw32-gcc AR=x86_64-w64-mingw32-ar RANLIB=x86_64-w64-mingw32-ranlib libbz2.a
+        sudo cp libbz2.a /usr/x86_64-w64-mingw32/lib/
+        sudo cp bzlib.h /usr/x86_64-w64-mingw32/include/
+        make clean
+
+    - name: Build FFmpeg for Windows using MinGW-w64
+      run: |
+        # Initialize ffmpeg submodule from the checkout
+        git submodule update --init extern/ffmpeg
+        
+        FFMPEG_SHA="$(git -C extern/ffmpeg rev-parse --short=12 HEAD)"
+        ln -s extern/ffmpeg ffmpeg-src
+        {
+          echo "FFMPEG_SHA=$FFMPEG_SHA"
+        } >> "$GITHUB_ENV"
+        
+        # Keep this list arch-neutral so we can add other targets (e.g. arm64) later.
+        # For x86_64, --cpu=generic + --disable-runtime-cpudetect avoids emitting/using newer ISA at runtime.
+        COMMON_FLAGS_FFMPEG="--cpu=generic \
+          --disable-runtime-cpudetect \
+          --disable-autodetect \
+          --disable-avdevice \
+          --disable-avfilter \
+          --disable-debug \
+          --disable-devices \
+          --disable-doc \
+          --disable-filters \
+          --disable-lzma \
+          --disable-network \
+          --disable-postproc \
+          --disable-programs \
+          --disable-static \
+          --disable-swresample \
+          --enable-bzlib \
+          --enable-d3d11va \
+          --enable-dxva2 \
+          --enable-gpl \
+          --enable-version3 \
+          --enable-shared \
+          --enable-w32threads \
+          --enable-zlib \
+          --extra-cflags=-w \
+          --extra-ldflags=-static \
+          --prefix=/"
+        
+        mkdir -p build/x64
+        cd build/x64
+        ../../ffmpeg-src/configure --arch=x86_64 --cross-prefix=x86_64-w64-mingw32- --target-os=mingw64 $COMMON_FLAGS_FFMPEG
+        make -j$(nproc)
+        cd ../..
+
+    - name: Prepare artifact for upload
+      run: |
+        mkdir -p package/x64
+        
+        cd build/x64
+        rm -f libavcodec/avcodec.dll libavformat/avformat.dll libavutil/avutil.dll libswscale/swscale.dll
+        cp libavcodec/*.{dll,def,lib} libavformat/*.{dll,def,lib} libavutil/*.{dll,def,lib} libswscale/*.{dll,def,lib} ../../package/x64/ 2>/dev/null || true
+        cd ../..
+
+        mkdir -p package/include/{libavcodec,libavformat,libavutil,libswscale}
+
+        cp ffmpeg-src/libavcodec/{ac3_parser,adts_parser,avcodec,avdct,avfft,bsf,codec_desc,codec,codec_id,codec_par,d3d11va,defs,dirac,dv_profile,dxva2,jni,mediacodec,packet,qsv,vdpau,version,version_major,videotoolbox,vorbis_parser,xvmc}.h package/include/libavcodec/ 2>/dev/null || true
+        cp ffmpeg-src/libavformat/{avformat,avio,version,version_major}.h package/include/libavformat/ 2>/dev/null || true
+        cp ffmpeg-src/libavutil/{adler32,aes_ctr,aes,attributes,audio_fifo,avassert,avconfig,avstring,avutil,base64,blowfish,bprint,bswap,buffer,camellia,cast5,channel_layout,common,cpu,crc,des,detection_bbox,dict,display,dovi_meta,downmix_info,encryption_info,error,eval,ffversion,fifo,file,film_grain_params,frame,hash,hdr_dynamic_metadata,hmac,hwcontext_cuda,hwcontext_d3d11va,hwcontext_drm,hwcontext_dxva2,hwcontext,hwcontext_mediacodec,hwcontext_opencl,hwcontext_qsv,hwcontext_vaapi,hwcontext_vdpau,hwcontext_videotoolbox,hwcontext_vulkan,imgutils,intfloat,intreadwrite,lfg,log,lzo,macros,mastering_display_metadata,mathematics,md5,mem,motion_vector,murmur3,opt,parseutils,pixdesc,pixelutils,pixfmt,random_seed,rational,rc4,replaygain,ripemd,samplefmt,sha,sha512,spherical,stereo3d,tea,threadmessage,time,timecode,timestamp,tree,twofish,tx,version,version_major,video_enc_params,xtea}.h package/include/libavutil/ 2>/dev/null || true
+        cp ffmpeg-src/libswscale/{swscale,version,version_major}.h package/include/libswscale/ 2>/dev/null || true
+        
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ffmpeg-w32
+        path: package/
+        retention-days: 30
+
+    - name: Update extern/ffmpeg-w32 from build output
+      run: |
+        set -euo pipefail
+
+        mkdir -p extern/ffmpeg-w32
+        rm -rf extern/ffmpeg-w32/include extern/ffmpeg-w32/x64 extern/ffmpeg-w32/x86
+        cp -a package/include extern/ffmpeg-w32/
+        cp -a package/x64 extern/ffmpeg-w32/
+
+    - name: Check for changes and commit to beta branch
+      if: github.event_name == 'push'
+      run: |
+        set -euo pipefail
+
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+        if git diff --quiet -- extern/ffmpeg-w32; then
+          echo "No changes to extern/ffmpeg-w32, skipping commit."
+          exit 0
+        fi
+
+        git add extern/ffmpeg-w32
+        git commit -m "Update ffmpeg-w32 prebuilts (FFmpeg ${FFMPEG_REF})" \
+          -m "FFmpeg SHA: ${FFMPEG_SHA}" \
+          -m "Generated by .github/workflows/ffmpeg-w32.yml"
+
+        # Push directly to beta.
+        git push origin HEAD:beta
