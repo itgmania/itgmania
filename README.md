@@ -34,10 +34,11 @@ You can choose between using the installer or using the portable build. Using th
 **macOS users need to have macOS 11 (Big Sur) or higher to run ITGmania.**
 * Move ITGmania.app to the Applications folder, and then run the following command in Terminal:
 
-   * `xattr -dr com.apple.quarantine /Applications/ITGmania`
+   * `xattr -c /Applications/ITGmania.app`
 
-* You should then add ITGmania to the "Input Monitoring" section of System Preferences (under Security & Privacy)
-
+* All game data will be located in the user's _Application Support_ folder (`~/Library/Application Support/ITGmania`).
+* If you are upgrading from ITGmania 1.1.0 or older, please note all user data will now be located within the _Application Support_ folder.
+ 
 ### Linux
 
 **Linux users should receive all they need from the package manager of their choice.**
