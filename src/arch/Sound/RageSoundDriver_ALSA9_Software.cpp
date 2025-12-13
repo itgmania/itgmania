@@ -150,7 +150,6 @@ float RageSoundDriver_ALSA9_Software::GetPlayLatency() const
 	return float(g_iMaxWriteahead) / m_iSampleRate;
 }
 
-// NOTE: This is using ALSA9Helpers.cpp code here - There might be a better option to re-use the code
 std::vector<DriverSoundDevice> RageSoundDriver_ALSA9_Software::GetSoundDevices() const
 {
 	std::vector<DriverSoundDevice> devices;
@@ -170,9 +169,9 @@ std::vector<DriverSoundDevice> RageSoundDriver_ALSA9_Software::GetSoundDevices()
 		char *desc = snd_device_name_get_hint(*n, "DESC");
 		char *ioid = snd_device_name_get_hint(*n, "IOID");
 
-		// Only consider real PCM hw devices
+		// Only consider direct hw devices
 		bool is_output = (!ioid || strcmp(ioid, "Output") == 0);
-		bool has_card_id = (strstr(name, "CARD=") != NULL );
+		bool has_card_id = (strncmp(name, "hw:", 3) == 0);
 		bool has_default_name = (strstr(name, "default") != NULL );
 
 		if (name && is_output && has_card_id && !has_default_name) {
