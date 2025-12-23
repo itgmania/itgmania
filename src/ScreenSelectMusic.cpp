@@ -1746,12 +1746,7 @@ void ScreenSelectMusic::SwitchToPreferredDifficulty()
 // NOTE: This could a be a bit more robust than just looking at the extension,
 // but it's good enough for now.
 static bool IsVideoFile(const RString& path) {
-	const RString extension = GetExtension(path);
-	return extension == "mp4" ||
-		extension == "avi" ||
-		extension == "mov" ||
-		extension == "mkv" ||
-		extension == "mpg";
+	return ActorUtil::GetFileType(path) == FT_Movie;
 }
 
 void ScreenSelectMusic::AfterMusicChange()
