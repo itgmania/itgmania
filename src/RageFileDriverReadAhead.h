@@ -24,18 +24,18 @@ public:
 	virtual RString GetError() const { return m_pFile->GetError(); }
 	virtual void ClearError()  { return m_pFile->ClearError(); }
 
-	int ReadInternal( void *pBuffer, size_t iBytes );
-	int WriteInternal( const void *pBuffer, size_t iBytes ) { return m_pFile->Write( pBuffer, iBytes ); }
-	int SeekInternal( int iOffset );
-	int GetFileSize() const { return m_pFile->GetFileSize(); }
+	int ReadInternal( void *pBuffer, std::size_t iBytes );
+	int WriteInternal( const void *pBuffer, std::size_t iBytes ) { return m_pFile->Write( pBuffer, iBytes ); }
+	std::int64_t SeekInternal( std::int64_t iOffset );
+	std::int64_t GetFileSize() const { return m_pFile->GetFileSize(); }
 	int GetFD() { return m_pFile->GetFD(); }
-	int Tell() const { return m_iFilePos; }
+	std::int64_t Tell() const { return m_iFilePos; }
 
 private:
 	void FillBuffer( int iBytes );
 
 	RageFileBasic *m_pFile;
-	int m_iFilePos;
+	std::int64_t m_iFilePos;
 	bool m_bFileOwned;
 	RString m_sBuffer;
 	int m_iPostBufferReadAhead;

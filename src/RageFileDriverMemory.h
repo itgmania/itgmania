@@ -19,10 +19,10 @@ public:
 	RageFileObjMem( const RageFileObjMem &cpy );
 	~RageFileObjMem();
 
-	int ReadInternal( void *buffer, size_t bytes );
-	int WriteInternal( const void *buffer, size_t bytes );
-	int SeekInternal( int offset );
-	int GetFileSize() const;
+	int ReadInternal( void *buffer, std::size_t bytes );
+	int WriteInternal( const void *buffer, std::size_t bytes );
+	std::int64_t SeekInternal( std::int64_t offset );
+	std::int64_t GetFileSize() const;
 	RageFileObjMem *Copy() const;
 
 	/* Retrieve the contents of this file. */
@@ -31,7 +31,7 @@ public:
 
 private:
 	RageFileObjMemFile *m_pFile;
-	int m_iFilePos;
+	std::int64_t m_iFilePos;
 };
 
 class RageFileDriverMem: public RageFileDriver

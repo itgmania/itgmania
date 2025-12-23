@@ -1290,7 +1290,7 @@ ProfileLoadResult Profile::LoadStatsFromDir(RString dir, bool require_signature)
 	// Don't load unreasonably large stats.xml files.
 	if(!IsMachine())	// only check stats coming from the player
 	{
-		int iBytes = pFile->GetFileSize();
+		std::int64_t iBytes = pFile->GetFileSize();
 		if(iBytes > MAX_PLAYER_STATS_XML_SIZE_BYTES)
 		{
 			LuaHelpers::ReportScriptErrorFmt("The file '%s' is unreasonably large.  It won't be loaded.", fn.c_str());
@@ -1712,7 +1712,7 @@ ProfileLoadResult Profile::LoadEditableDataFromDir( RString sDir )
 	RString fn = sDir + EDITABLE_INI;
 
 	// Don't load unreasonably large editable.xml files.
-	int iBytes = FILEMAN->GetFileSizeInBytes( fn );
+	std::int64_t iBytes = FILEMAN->GetFileSizeInBytes( fn );
 	if( iBytes > MAX_EDITABLE_INI_SIZE_BYTES )
 	{
 		LuaHelpers::ReportScriptErrorFmt( "The file '%s' is unreasonably large. It won't be loaded.", fn.c_str() );

@@ -18,7 +18,7 @@ public:
 	virtual RageFileBasic *Open( const RString &sPath, int iMode, int &iError ) = 0;
 	virtual void GetDirListing( const RString &sPath, std::vector<RString> &asAddTo, bool bOnlyDirs, bool bReturnPathToo );
 	virtual RageFileManager::FileType GetFileType( const RString &sPath );
-	virtual int GetFileSizeInBytes( const RString &sFilePath );
+	virtual std::int64_t GetFileSizeInBytes( const RString &sFilePath );
 	virtual int GetFileHash( const RString &sPath );
 	virtual int GetPathValue( const RString &sPath );
 	virtual void FlushDirCache( const RString &sPath );

@@ -171,9 +171,9 @@ void RageFileManagerReadAhead::CacheHintStreaming( RageFileBasic *pFile )
 	int iFD = pFile->GetFD();
 	if( iFD == -1 )
 		return;
-	int iPos = pFile->Tell();
+	int64_t iPos = pFile->Tell();
 	int iFrom = lseek( iFD, 0, SEEK_CUR );
-	int iBytes = pFile->GetFileSize() - iPos;
+	int64_t iBytes = pFile->GetFileSize() - iPos;
 	posix_fadvise( iFD, iFrom, iBytes, POSIX_FADV_SEQUENTIAL );
 #endif
 }

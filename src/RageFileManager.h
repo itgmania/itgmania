@@ -3,6 +3,7 @@
 
 #include <unordered_set>
 #include <vector>
+#include <cstdint>
 
 #include "global.h"
 
@@ -45,7 +46,7 @@ public:
 	bool IsADirectory( const RString &sPath );
 	bool DoesFileExist( const RString &sPath );
 
-	int GetFileSizeInBytes( const RString &sPath );
+	std::int64_t GetFileSizeInBytes( const RString &sPath );
 	int GetFileHash( const RString &sPath );
 
 	/**

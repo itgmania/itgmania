@@ -55,7 +55,7 @@ RageFileManager::FileType RageFileDriver::GetFileType( const RString &sPath )
 	return FDB->GetFileType( sPath );
 }
 
-int RageFileDriver::GetFileSizeInBytes( const RString &sPath )
+std::int64_t RageFileDriver::GetFileSizeInBytes( const RString &sPath )
 {
 	return FDB->GetFileSize( sPath );
 }

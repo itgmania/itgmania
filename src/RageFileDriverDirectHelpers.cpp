@@ -24,6 +24,11 @@ RString DoPathReplace(const RString &sPath)
 	return TempPath;
 }
 
+static int ShortenWeakHash(int64_t hash)
+{
+	const int64_t largest32bitPrime = 4294967291LL;
+	return static_cast<int>(hash % largest32bitPrime); // Shorten hash to 32 bits.
+}
 
 #if defined(_WIN32)
 static bool WinMoveFileInternal( const RString &sOldPath, const RString &sNewPath )
@@ -190,7 +195,8 @@ void DirectFilenameDB::CacheFile( const RString &sPath )
 	File f( fd.cFileName );
 	f.dir = !!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 	f.size = static_cast<int64_t>(fd.nFileSizeHigh) << 32 | fd.nFileSizeLow;
-	f.hash = static_cast<int64_t>(fd.ftLastWriteTime.dwHighDateTime) << 32 | fd.ftLastWriteTime.dwLowDateTime;
+	int64_t lastWriteTime = static_cast<int64_t>(fd.ftLastWriteTime.dwHighDateTime) << 32 | fd.ftLastWriteTime.dwLowDateTime;
+	f.hash = ShortenWeakHash(lastWriteTime);
 
 	pFileSet->files.insert( f );
 	FindClose( hFind );
@@ -205,8 +211,8 @@ void DirectFilenameDB::CacheFile( const RString &sPath )
 	else
 	{
 		f.dir = S_ISDIR(st.st_mode);
-		f.size = static_cast<int>(st.st_size);
-		f.hash = st.st_mtime;
+		f.size = static_cast<int64_t>(st.st_size);
+		f.hash = ShortenWeakHash(st.st_mtime);
 	}
 
 	pFileSet->files.insert(f);
@@ -243,8 +249,9 @@ void DirectFilenameDB::PopulateFileSet( FileSet &fs, const RString &path )
 		File f;
 		f.SetName( fd.cFileName );
 		f.dir = !!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-		f.size = fd.nFileSizeLow;
-		f.hash = fd.ftLastWriteTime.dwLowDateTime;
+		f.size = static_cast<int64_t>(fd.nFileSizeHigh) << 32 | fd.nFileSizeLow;
+		int64_t lastWriteTime = static_cast<int64_t>(fd.ftLastWriteTime.dwHighDateTime) << 32 | fd.ftLastWriteTime.dwLowDateTime;
+		f.hash = ShortenWeakHash(lastWriteTime);
 
 		fs.files.insert( f );
 	} while( FindNextFile( hFind, &fd ) );
@@ -286,8 +293,8 @@ void DirectFilenameDB::PopulateFileSet( FileSet &fs, const RString &path )
 		else
 		{
 			f.dir = (st.st_mode & S_IFDIR);
-			f.size = (int)st.st_size;
-			f.hash = st.st_mtime;
+			f.size = st.st_size;
+			f.hash = ShortenWeakHash(st.st_mtime);
 		}
 
 		fs.files.insert(f);

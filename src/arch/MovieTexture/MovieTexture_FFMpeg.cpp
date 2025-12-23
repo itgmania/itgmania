@@ -522,7 +522,7 @@ static int64_t AVIORageFile_Seek(void* opaque, int64_t offset, int whence)
 		return -1;
 	}
 
-	return f->Seek((int)offset, whence);
+	return f->Seek(offset, whence);
 }
 
 RString MovieDecoder_FFMpeg::Open(RString file)
