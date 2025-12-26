@@ -592,10 +592,10 @@ void SongManager::LoadSongDir( RString sDir, LoadingWindow *ld, bool onlyAdditio
         } else if (state == SongLoadResult::State::STATE_LOAD_FAILED) {
             // Even if a song fails to load, just move on.
             loadedSongsProcessed++;
-        }
-
-        // Sleeping for a short time tells the CPU it can context switch to other tasks for a bit.
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        } else {
+			// Sleeping for a short time tells the CPU it can context switch to other tasks for a bit.
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		}
     }
 
     // Wait for all of the threads to exit.
