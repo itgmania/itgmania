@@ -6,6 +6,7 @@
 class SongCacheIndex
 {
 	IniFile CacheIndex;
+	mutable RageMutex Mutex;
 	static RString MangleName( const RString &Name );
 
 public:
