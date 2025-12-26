@@ -57,7 +57,8 @@ RString SongCacheIndex::GetCacheFilePath( const RString &sGroup, const RString &
 	return ssprintf( "%s%s/%s", SpecialFiles::CACHE_DIR.c_str(), sGroup.c_str(), s.c_str() );
 }
 
-SongCacheIndex::SongCacheIndex()
+SongCacheIndex::SongCacheIndex():
+	Mutex("SongCacheIndex")
 {
 	ReadCacheIndex();
 }
@@ -87,6 +88,8 @@ static void EmptyDir( RString dir )
 
 void SongCacheIndex::ReadCacheIndex()
 {
+	LockMutex L(Mutex);
+
 	CacheIndex.ReadFile( CACHE_INDEX );	// don't care if this fails
 
 	int iCacheVersion = -1;
@@ -115,11 +118,13 @@ void SongCacheIndex::ReadCacheIndex()
 
 void SongCacheIndex::SaveCacheIndex()
 {
+	LockMutex L(Mutex);
 	CacheIndex.WriteFile(CACHE_INDEX);
 }
 
 void SongCacheIndex::AddCacheIndex(const RString &path, unsigned hash)
 {
+	LockMutex L(Mutex);
 	if( hash == 0 )
 		++hash; /* no 0 hash values */
 	CacheIndex.SetValue( "Cache", "CacheVersion", FILE_CACHE_VERSION );
@@ -132,6 +137,7 @@ void SongCacheIndex::AddCacheIndex(const RString &path, unsigned hash)
 
 unsigned SongCacheIndex::GetCacheHash( const RString &path ) const
 {
+	LockMutex L(Mutex);
 	unsigned iDirHash = 0;
 	if( !CacheIndex.GetValue( "Cache", MangleName(path), iDirHash ) )
 		return 0;
