@@ -1,14 +1,3 @@
-/*
- * If you're going to use threads, remember this:
- *
- * Threads suck.
- *
- * If there's any way to avoid them, take it!  Threaded code an order of
- * magnitude more complicated, harder to debug and harder to make robust.
- *
- * That said, here are a few helpers for when they're unavoidable.
- */
-
 #include "global.h"
 
 #include "RageThreads.h"
