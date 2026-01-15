@@ -1049,7 +1049,7 @@ std::vector<MusicWheelItemData *> & MusicWheel::getWheelItemsData(SortOrder so) 
 }
 
 void MusicWheel::readyWheelItemsData(SortOrder so) {
-	if(m_WheelItemDatasStatus[so] == VALID && so != SORT_PREFERRED)
+	if(m_WheelItemDatasStatus[so] == VALID && so != SORT_PREFERRED && so != SORT_ROULETTE)
 		return;
 
 	std::vector<MusicWheelItemData*> &aUnFilteredDatas = m__UnFilteredWheelItemDatas[so];
@@ -1060,7 +1060,7 @@ void MusicWheel::readyWheelItemsData(SortOrder so) {
 	FilterWheelItemDatas( aUnFilteredDatas, m__WheelItemDatas[so], so );
 	// The preferred sort's songs are subject to change during a session (particularly if two players have different preferred songs) 
 	// thus it's status should remain invalid so the wheel items are rebuilt each time in case of change.
-	if (so != SORT_PREFERRED) {
+	if (so != SORT_PREFERRED && so != SORT_ROULETTE) {
 		m_WheelItemDatasStatus[so]=VALID;
 	}
 }
@@ -1099,9 +1099,11 @@ void MusicWheel::FilterWheelItemDatas(std::vector<MusicWheelItemData *> &aUnFilt
 		MusicWheelItemData& WID = *aUnFilteredDatas[i];
 
 		/* If we have no songs, remove Random and Portal. */
-		if( WID.m_Type == WheelItemDataType_Random || WID.m_Type == WheelItemDataType_Portal )
+		if( WID.m_Type == WheelItemDataType_Random || WID.m_Type == WheelItemDataType_Portal || WID.m_Type == WheelItemDataType_Roulette)
 		{
 			if( !bFoundAnySong )
+				aiRemove[i] = true;
+			if( so == SORT_ROULETTE || STATE_ROULETTE_SPINNING == m_WheelState )
 				aiRemove[i] = true;
 			continue;
 		}
@@ -1481,8 +1483,10 @@ void MusicWheel::StartRoulette()
 	m_Moving = 1;
 	m_TimeBeforeMovingBegins = 0;
 	m_SpinSpeed = 1.0f/ROULETTE_SWITCH_SECONDS;
+	RandomGen rnd;
+	std::shuffle( getWheelItemsData(SORT_ROULETTE).begin(), getWheelItemsData(SORT_ROULETTE).end(), rnd );
 	GAMESTATE->m_SortOrder.Set( SORT_ROULETTE );
-	SetOpenSection( "" );
+	//SetOpenSection( m_sExpandedSectionName );
 	RebuildWheelItems();
 }
 
@@ -1503,7 +1507,7 @@ void MusicWheel::StartRandom()
 	{
 		GAMESTATE->m_SortOrder.Set( GAMESTATE->m_PreferredSortOrder );
 	}
-	SetOpenSection( "" );
+	//SetOpenSection( "" );
 
 	m_Moving = -1;
 	m_TimeBeforeMovingBegins = 0;
@@ -1784,40 +1788,66 @@ Song *MusicWheel::GetPreferredSelectionForRandomOrPortal()
 
 	RString sPreferredGroup = m_sExpandedSectionName;
 	std::vector<MusicWheelItemData *> &wid = getWheelItemsData(GAMESTATE->m_SortOrder);
-
-	StepsType st = GAMESTATE->GetCurrentStyle(PLAYER_INVALID)->m_StepsType;
+	StepsType st = GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->m_StepsType;
+	std::vector<Song*> vSongs;
+	if (GAMESTATE->m_SortOrder != SORT_GROUP) {
+		GetSongList( vSongs, GAMESTATE->m_SortOrder);
+	} else {
+		 vSongs = SONGMAN->GetSongs( sPreferredGroup);
+	}
+	RandomGen rnd;
+	std::shuffle(vSongs.begin(), vSongs.end(), rnd );
 
 #define NUM_PROBES 1000
 	for( int i=0; i<NUM_PROBES; i++ )
 	{
 		bool isValid = true;
-		/* Maintaining difficulties is higher priority than maintaining
-		 * the current group. */
-		if( i == NUM_PROBES/4 )
-			sPreferredGroup = "";
-		if( i == NUM_PROBES/2 )
-			vDifficultiesToRequire.clear();
-
-		int iSelection = RandomInt( wid.size() );
-		if( wid[iSelection]->m_Type != WheelItemDataType_Song )
-			continue;
-
-		const Song *pSong = wid[iSelection]->m_pSong;
-
-		if( !sPreferredGroup.empty() && wid[iSelection]->m_sText != sPreferredGroup )
-			continue;
+		int iSelection = 0;
+		// Get a number by modulo using the current time plus iSelection
+		Song *pSong;
+		if (vSongs.size() != 0) {
+			iSelection = RandomInt(vSongs.size());
+			
+			LOG->Trace( "RandomInt selected %d out of %d songs", iSelection, (int)vSongs.size() );
+			pSong = vSongs[iSelection];
+			LOG->Trace( "Probed song: %s", vSongs[iSelection]->GetDisplayFullTitle().c_str() );
+			
+		}
+		else {
+			iSelection = RandomInt(wid.size());
+			if( wid[iSelection]->m_Type != WheelItemDataType_Song )
+				continue;
+			pSong = wid[iSelection]->m_pSong;
+			if( !sPreferredGroup.empty() && pSong->m_sGroupName != sPreferredGroup )
+				continue;
+		}
+		LOG->Trace( "Probe Number: %d", i );
+		LOG->Trace( "Probed song: %s", pSong->GetDisplayFullTitle().c_str() );
 
 		// There's an off possibility that somebody might have only one song with only beginner steps.
 		if( i < 900 && pSong->IsTutorial() )
 			continue;
 
-		isValid = std::none_of(vDifficultiesToRequire.begin(), vDifficultiesToRequire.end(), [&](Difficulty const &d) {
-			return !pSong->HasStepsTypeAndDifficulty(st, d);
-		});
+		// We need to check for difficulty size because when you first enter the music wheel
+		// You may not have a preferred difficulty set yet and this would result in every song
+		// even songs in other game types, being valid.
+		
+		if( i == NUM_PROBES/2 || !PREFSMAN->m_bRandomPrioritizeDifficulty ) {
+			vDifficultiesToRequire.clear();
+		}
+		if (vDifficultiesToRequire.size() != 0) {
+			isValid = std::none_of(vDifficultiesToRequire.begin(), vDifficultiesToRequire.end(), [&](Difficulty const &d) {
+					return !pSong->HasStepsTypeAndDifficulty(st, d);
+			});
+		}
+		else {
+			isValid = pSong->HasStepsType(st);
+		}
 
-		if (isValid)
+		Song* song = pSong;
+		if (isValid && SongUtil::IsSongPlayable(song)) 
 		{
-			return wid[iSelection]->m_pSong;
+			return pSong;
 		}
 	}
 	LuaHelpers::ReportScriptError( "Couldn't find any songs" );

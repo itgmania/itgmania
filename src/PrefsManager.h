@@ -226,6 +226,11 @@ public:
 	Preference<bool>	m_ThreeKeyNavigation;
 	Preference<MusicWheelUsesSections>		m_MusicWheelUsesSections;
 	Preference<int>	m_iMusicWheelSwitchSpeed;
+	// Should Random sorts prioritize finding a song of your preferred difficulty?
+	// This means that if your preferred difficulty is Challenge, it will find a random
+	// song with a Challenge difficulty (If it can't find one after so many attempts, it will
+	// stop prioritizing difficulty and find any random playable song)
+	Preference<bool>	m_bRandomPrioritizeDifficulty;
 	Preference<AllowW1>	m_AllowW1; // this should almost always be on, given use cases. -aj
 	Preference<bool>	m_bEventMode;
 	Preference<int>	m_iCoinsPerCredit;
