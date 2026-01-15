@@ -1258,18 +1258,19 @@ void TimingData::NoteRowToMeasureAndBeat( int iNoteRow, int &iMeasureIndexOut, i
 	for (unsigned i = 0; i < tSigs.size(); i++)
 	{
 		TimeSignatureSegment *curSig = ToTimeSignature(tSigs[i]);
-		int iSegmentEndRow = (i + 1 == tSigs.size()) ? INT_MAX : curSig->GetRow();
+		int iSegmentEndRow = (i + 1 == tSigs.size()) ? INT_MAX : tSigs[i + 1]->GetRow();
 
 		int iRowsPerMeasureThisSegment = curSig->GetNoteRowsPerMeasure();
 
-		if( iNoteRow >= curSig->GetRow() )
+		if( iNoteRow < iSegmentEndRow )
 		{
 			// iNoteRow lands in this segment
 			int iNumRowsThisSegment = iNoteRow - curSig->GetRow();
 			int iNumMeasuresThisSegment = (iNumRowsThisSegment) / iRowsPerMeasureThisSegment;	// don't round up
 			iMeasureIndexOut += iNumMeasuresThisSegment;
-			iBeatIndexOut = iNumRowsThisSegment / iRowsPerMeasureThisSegment;
-			iRowsRemainder = iNumRowsThisSegment % iRowsPerMeasureThisSegment;
+			int iNumRowsThisMeasure = iNumRowsThisSegment % iRowsPerMeasureThisSegment;
+			iBeatIndexOut = iNumRowsThisMeasure / ROWS_PER_BEAT;
+			iRowsRemainder = iNumRowsThisMeasure % ROWS_PER_BEAT;
 			return;
 		}
 		else

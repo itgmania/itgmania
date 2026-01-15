@@ -351,6 +351,16 @@ public:
 
 	void MultiplyBPMInBeatRange( int iStartIndex, int iEndIndex, float fFactor );
 
+	/**
+	 * @brief Get measure and beat at a note row.
+	 * @param iNoteRow the note row
+	 * @param iMeasureIndexOut returns the number of full measures from the
+	 *                         start of the song to iNoteRow
+	 * @param iBeatIndexOut returns the number of full beats from the start
+	 *                      of the last full measure to iNoteRow
+	 * @param iRowsRemainder returns the number of rows from the start of
+	 *                       the last full beat to iNoteRow
+	 */
 	void NoteRowToMeasureAndBeat( int iNoteRow, int &iMeasureIndexOut, int &iBeatIndexOut, int &iRowsRemainder ) const;
 
 	void GetBeatInternal(GetBeatStarts& start, GetBeatArgs& args,
