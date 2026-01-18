@@ -189,8 +189,7 @@ namespace StepParity {
 		std::vector<IntermediateNoteData> notes;
 		// Any active hold notes, including ones that started before this row
 		std::vector<IntermediateNoteData> holds;
-		// Column index of any holds that end on this row
-		std::set<int> holdTails;
+		
 		// If a mine occurred either on this row, or on a row on its own immediately
 		// preceding this one, the time of when that mine occurred, indexed by column.
 		std::vector<float> mines;
@@ -199,6 +198,12 @@ namespace StepParity {
 
 		FootPlacement columns;
 		std::vector<int> whereTheFeetAre;
+		
+		// bit masks for quick comparisons
+		uint16_t note_mask = 0;
+		uint16_t hold_mask = 0;
+		uint16_t mine_mask = 0;
+		uint16_t fake_mine_mask = 0;
 		
 		float second = 0;
 		float beat = 0;
@@ -212,7 +217,6 @@ namespace StepParity {
 			columnCount = _columnCount;
 			notes = std::vector<IntermediateNoteData>(columnCount);
 			holds = std::vector<IntermediateNoteData>(columnCount);
-			holdTails.clear();
 			mines = std::vector<float>(columnCount, 0);
 			fakeMines = std::vector<float>(columnCount, 0);
 			columns = std::vector<StepParity::Foot>(columnCount, StepParity::NONE);

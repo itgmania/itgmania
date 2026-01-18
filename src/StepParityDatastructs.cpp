@@ -203,7 +203,6 @@ bool Row::operator==(const Row& other) const
 	rowIndex == other.rowIndex &&
 	columnCount == other.columnCount &&
 	noteCount == other.noteCount &&
-	holdTails == other.holdTails &&
 	mines == other.mines &&
 	fakeMines == other.fakeMines &&
 	columns == other.columns &&

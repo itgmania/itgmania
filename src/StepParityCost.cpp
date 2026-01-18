@@ -104,6 +104,10 @@ float StepParityCost::getActionCost(State * initialState, State * resultState, s
 // 0100 <- no cost
 float StepParityCost::calcMineCost(State * initialState, State * resultState, Row &row, int columnCount)
 {
+	if(row.mine_mask == 0)
+	{
+		return 0.0f;
+	}
 	float cost = 0;
 
 	for (int i = 0; i < columnCount; i++) {
@@ -121,7 +125,13 @@ float StepParityCost::calcMineCost(State * initialState, State * resultState, Ro
 // If the initial foot doesn't move anywhere, then don't mulitply it by anything.
 float StepParityCost::calcHoldSwitchCost(State * initialState, State * resultState, Row &row, int columnCount)
 {
+	if(row.hold_mask == 0)
+	{
+		return 0.0f;
+	}
+	
 	float cost = 0;
+	
 	for (int c = 0; c < columnCount; c++)
 	{
 		if (row.holds[c].type == TapNoteType_Empty)
@@ -158,6 +168,11 @@ float StepParityCost::calcHoldSwitchCost(State * initialState, State * resultSta
 
 float StepParityCost::calcBracketTapCost(State * initialState, State * resultState, Row &row, int leftHeel, int leftToe, int rightHeel, int rightToe, float elapsedTime, int columnCount)
 {
+	if(row.hold_mask == 0)
+	{
+		return 0.0f;
+	}
+	
 	// Small penalty for trying to jack a bracket during a hold
 	float cost = 0;
 	if (leftHeel != INVALID_COLUMN && leftToe != INVALID_COLUMN)
@@ -347,14 +362,11 @@ float StepParityCost::calcMissedFootswitchCost(Row & row, bool jackedLeft, bool 
 	float cost = 0;
 	if (
 		(jackedLeft || jackedRight) &&
-		(std::any_of(row.mines.begin(), row.mines.end(), [](int mine)
-					 { return mine != 0; }) ||
-		 std::any_of(row.fakeMines.begin(), row.fakeMines.end(), [](int mine)
-					 { return mine != 0; })))
+		(row.mine_mask != 0 || row.fake_mine_mask != 0)
+		)
 	{
 		cost += MISSED_FOOTSWITCH;
 	}
-
 	return cost;
 }
 
@@ -444,33 +456,34 @@ float StepParityCost::calcSpinCosts(State * initialState, State * resultState, i
 // Notes with an elapsed time greater than this will incur a penalty
 float StepParityCost::caclFootswitchCost(State * initialState, State * resultState, Row & row, float elapsedTime, int columnCount)
 {
+	if(elapsedTime < SLOW_FOOTSWITCH_THRESHOLD || elapsedTime >= SLOW_FOOTSWITCH_IGNORE)
+	{
+		return 0.0f;
+	}
+	
+	// footswitching has no penalty if there's a mine nearby
+	if(row.mine_mask != 0 || row.fake_mine_mask != 0)
+	{
+		return 0.0f;
+	}
+	
 	float cost = 0;
-	if (elapsedTime >= SLOW_FOOTSWITCH_THRESHOLD && elapsedTime < SLOW_FOOTSWITCH_IGNORE) {
-		// footswitching has no penalty if there's a mine nearby
+	float timeScaled = elapsedTime - SLOW_FOOTSWITCH_THRESHOLD;
+
+	for (int i = 0; i < columnCount; i++)
+	{
 		if (
-			std::all_of(row.mines.begin(), row.mines.end(), [](int mine)
-						{ return mine == 0; }) &&
-			std::all_of(row.fakeMines.begin(), row.fakeMines.end(), [](int mine)
-						{ return mine == 0; }))
+			initialState->combinedColumns[i] == NONE ||
+			resultState->columns[i] == NONE)
+			continue;
+
+		if (
+			initialState->combinedColumns[i] != resultState->columns[i] &&
+			initialState->combinedColumns[i] != OTHER_PART_OF_FOOT[resultState->columns[i]]
+			)
 		{
-			float timeScaled = elapsedTime - SLOW_FOOTSWITCH_THRESHOLD;
-
-			for (int i = 0; i < columnCount; i++)
-			{
-				if (
-					initialState->combinedColumns[i] == NONE ||
-					resultState->columns[i] == NONE)
-					continue;
-
-				if (
-					initialState->combinedColumns[i] != resultState->columns[i] &&
-					initialState->combinedColumns[i] != OTHER_PART_OF_FOOT[resultState->columns[i]]
-					)
-				{
-					cost += (timeScaled / (SLOW_FOOTSWITCH_THRESHOLD + timeScaled)) * FOOTSWITCH;
-					break;
-				}
-			}
+			cost += (timeScaled / (SLOW_FOOTSWITCH_THRESHOLD + timeScaled)) * FOOTSWITCH;
+			break;
 		}
 	}
 	  return cost;
