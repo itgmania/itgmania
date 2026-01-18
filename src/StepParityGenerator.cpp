@@ -589,32 +589,36 @@ Row StepParityGenerator::CreateRow(RowCounter &counter)
 		{
 			row.holds[c] = counter.activeHolds[c];
 		}
-
-		// save any hold tails
-
-		if (counter.activeHolds[c].type != TapNoteType_Empty)
+		
+		// write to masks
+		uint16_t bit = 0x1 << c;
+		if(row.notes[c].type == TapNoteType_Tap || row.notes[c].type == TapNoteType_HoldHead)
 		{
-			if (abs(counter.activeHolds[c].beat + counter.activeHolds[c].hold_length - counter.lastColumnBeat) < 0.0005)
-			{
-				row.holdTails.insert(c);
-			}
+			row.note_mask |= bit;
 		}
+		
+		if(row.holds[c].type != TapNoteType_Empty)
+		{
+			row.hold_mask |= bit;
+		}
+		
+		if(row.mines[c] != 0)
+		{
+			row.mine_mask |= bit;
+		}
+		if(row.fakeMines[c] != 0)
+		{
+			row.fake_mine_mask |= bit;
+		}
+		
 	}
 	return row;
 }
 
 int StepParityGenerator::getPermuteCacheKey(const Row &row)
 {
-	int key = 0;
-
-	for (unsigned long i = 0; i < row.notes.size() && i < row.holds.size(); i++)
-	{
-		if(row.notes[i].type != TapNoteType_Empty || row.holds[i].type != TapNoteType_Empty)
-		{
-			key += pow(2, i);
-		}
-	}
-	return key;
+	int mask_key = row.note_mask | row.hold_mask;
+	return mask_key;
 }
 
 std::uint64_t StepParityGenerator::getStateCacheKey(State * state)
