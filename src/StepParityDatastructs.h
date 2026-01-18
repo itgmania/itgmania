@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 namespace StepParity {
-
+	
 	const int INVALID_COLUMN = -1;
 	const float CLM_SECOND_INVALID = -1;
 
@@ -89,12 +89,19 @@ namespace StepParity {
 		std::vector<int> downArrows;
 		std::vector<int> sideArrows;
 		
+		std::vector<StagePoint> avgPoints;
+		std::vector<float> distances;
+		std::vector<float> facingXPenalties;
+		std::vector<float> facingYPenalties;
+		
 		StageLayout(StepsType t,
 					 const std::vector<StagePoint>& c,
 					 const std::vector<int> & u,
 					 const std::vector<int> & d,
 					 const std::vector<int> & s) : type(t), columns(c), upArrows(u), downArrows(d), sideArrows(s) {
 			this->columnCount = static_cast<int>(this->columns.size());
+			this->preCalculateStuff();
+			
 		}
 		
 		
@@ -104,11 +111,17 @@ namespace StepParity {
 		bool isDownArrow(int column);
 		float getDistanceSq(int c1, int c2);
 		float getDistanceSq(StagePoint p1, StagePoint p2);
+		float getDistance(int leftIndex, int rightIndex);
+		float getXFacingPenalty(int leftIndex, int rightIndex);
+		float getYFacingPenalty(int leftIndex, int rightIndex);
 		float getXDifference(int leftIndex, int rightIndex);
 		float getYDifference(int leftIndex, int rightIndex);
 		StagePoint averagePoint(int leftIndex, int rightIndex);
 		float getPlayerAngle(int c1, int c2);
 		float getPlayerAngle(StepParity::StagePoint left, StepParity::StagePoint right);
+		
+		void preCalculateStuff();
+		
 	};
 
 	/// @brief A vector of Foot values, which represents the player's
