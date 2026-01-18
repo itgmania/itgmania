@@ -360,71 +360,20 @@ float StepParityCost::calcMissedFootswitchCost(Row & row, bool jackedLeft, bool 
 
 float StepParityCost::calcFacingCosts(State * initialState, State * resultState, int columnCount)
 {
-
-	float cost = 0;
-
-	int endLeftHeel = INVALID_COLUMN;
-	int endLeftToe = INVALID_COLUMN;
-	int endRightHeel = INVALID_COLUMN;
-	int endRightToe = INVALID_COLUMN;
-
-	for (int i = 0; i < columnCount; i++) {
-	  switch (resultState->combinedColumns[i]) {
-		case NONE:
-		  break;
-		case LEFT_HEEL:
-		  endLeftHeel = i;
-		  break;
-		case LEFT_TOE:
-		  endLeftToe = i;
-		  break;
-		case RIGHT_HEEL:
-		  endRightHeel = i;
-		  break;
-		case RIGHT_TOE:
-		  endRightToe = i;
-		default:
-		  break;
-	  }
-	}
+	int endLeftHeel = resultState->whereTheFeetAre[LEFT_HEEL];
+	int endLeftToe = resultState->whereTheFeetAre[LEFT_TOE];
+	int endRightHeel = resultState->whereTheFeetAre[RIGHT_HEEL];
+	int endRightToe = resultState->whereTheFeetAre[RIGHT_TOE];
 
 	if (endLeftToe == INVALID_COLUMN) endLeftToe = endLeftHeel;
 	if (endRightToe == INVALID_COLUMN) endRightToe = endRightHeel;
 
-	// facing backwards gives a bit of bad weight (scaled heavily the further back you angle, so crossovers aren't Too bad; less bad than doublesteps)
-	float heelFacing =
-	  endLeftHeel != INVALID_COLUMN && endRightHeel != INVALID_COLUMN
-		? layout.getXDifference(endLeftHeel, endRightHeel)
-		: 0;
-	float toeFacing =
-	  endLeftToe != INVALID_COLUMN && endRightToe != INVALID_COLUMN
-		? layout.getXDifference(endLeftToe, endRightToe)
-		: 0;
-	float leftFacing =
-	  endLeftHeel != INVALID_COLUMN && endLeftToe != INVALID_COLUMN
-		? layout.getYDifference(endLeftHeel, endLeftToe)
-		: 0;
-	float rightFacing =
-	  endRightHeel != INVALID_COLUMN && endRightToe != INVALID_COLUMN
-		? layout.getYDifference(endRightHeel, endRightToe)
-		: 0;
+	float heelFacingPenalty = layout.getXFacingPenalty(endLeftHeel, endRightHeel) * FACING;
+	float toesFacingPenalty = layout.getXFacingPenalty(endLeftToe, endRightToe) * FACING;
+	float leftFacingPenalty = layout.getYFacingPenalty(endLeftHeel, endLeftToe) * FACING;
+	float rightFacingPenalty = layout.getYFacingPenalty(endRightHeel, endRightToe) * FACING;
 
-
-	float heelFacingPenalty = pow(-1 * std::min(heelFacing, 0.0f), 1.8) * 100;
-	float toesFacingPenalty = pow(-1 * std::min(toeFacing, 0.0f), 1.8) * 100;
-	float leftFacingPenalty = pow(-1 * std::min(leftFacing, 0.0f), 1.8) * 100;
-	float rightFacingPenalty = pow(-1 * std::min(rightFacing, 0.0f), 1.8) * 100;
-
-
-	if (heelFacingPenalty > 0)
-		cost += heelFacingPenalty * FACING;
-	if (toesFacingPenalty > 0)
-		cost += toesFacingPenalty * FACING;
-	if (leftFacingPenalty > 0)
-		cost += leftFacingPenalty * FACING;
-	if (rightFacingPenalty > 0)
-		cost += rightFacingPenalty * FACING;
-
+	float cost = heelFacingPenalty + toesFacingPenalty + leftFacingPenalty + rightFacingPenalty;
 	return cost;
 }
 
@@ -588,7 +537,7 @@ float StepParityCost::calcBigMovementsQuicklyCost(State * initialState, State * 
 			continue;
 		}
 
-		float dist = (sqrt(layout.getDistanceSq(initialPosition, resultPosition)) * DISTANCE) / elapsedTime;
+		float dist = (layout.getDistance(initialPosition, resultPosition) * DISTANCE) / elapsedTime;
 		// Otherwise if we're still bracketing, this is probably a less drastic movement
 		if(isBracketing)
 		{
