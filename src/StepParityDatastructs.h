@@ -21,6 +21,11 @@ namespace StepParity {
 		NUM_Foot
 	};
 
+	const std::vector<uint16_t> FOOT_MASKS = {0,1,2,4,8};
+	
+	const int16_t FOOT_MASK_LEFT = FOOT_MASKS[Foot::LEFT_HEEL] | FOOT_MASKS[Foot::LEFT_TOE];
+	const int16_t FOOT_MASK_RIGHT = FOOT_MASKS[Foot::RIGHT_HEEL] | FOOT_MASKS[Foot::RIGHT_TOE];
+
 	const std::vector<StepParity::Foot> FEET = {LEFT_HEEL, LEFT_TOE, RIGHT_HEEL, RIGHT_TOE};
 	// A map for getting the other part of the foot, when you don't actually care
 	// what part it is.
@@ -135,7 +140,11 @@ namespace StepParity {
 		FootPlacement combinedColumns; // The resulting position of the player
 		FootPlacement movedFeet; // Any feet that have moved from the previous state to this one
 		FootPlacement holdFeet;  // Any feet that stayed in place due to a hold/roll note.
-
+		
+		// masks that indicate which foot moved/is holding.
+		uint16_t moved_mask = 0;
+		uint16_t holding_mask = 0;
+		
 		int whereTheFeetAre[NUM_Foot]; // the inverse of combinedColumns
 		int whatNoteTheFootIsHitting[NUM_Foot]; // the inverse of columns
 		bool didTheFootMove[NUM_Foot]; // the inverse of movedFeet
