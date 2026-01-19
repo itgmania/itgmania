@@ -263,7 +263,7 @@ float StepParityCost::calcBracketJackCost(State * initialState, State * resultSt
 
 float StepParityCost::calcDoublestepCost(State * initialState, State * resultState, std::vector<Row> & rows, int rowIndex, bool movedLeft, bool movedRight, bool jackedLeft, bool jackedRight, bool didJump, int columnCount)
 {
-	if((movedLeft || movedRight) || resultState->holding_mask != 0 || didJump)
+	if((movedLeft == movedRight) || resultState->holding_mask != 0 || didJump)
 	{
 		return 0.0f;
 	}

@@ -54,7 +54,7 @@ void StepParityGenerator::buildStateGraph()
 		std::vector<StepParityNode *> resultNodes;
 		Row &row = rows[i];
 		std::vector<FootPlacement> *permutations = getFootPlacementPermutations(row);
-				
+		
 		while (!previousNodes.empty())
 		{
 			StepParityNode *initialNode = previousNodes.front();
@@ -250,135 +250,26 @@ void StepParityGenerator::mergeInitialAndResultPosition(State * initialState, St
 	}
 }
 
-// For the given row, generate all of the possible foot placements
-// (even if they're not physically possible)
-//
-// We cache this data and return a pointer for two reasons:
-// - It takes a long time to generate the permutations
-// - We end up generating a lot of redundant data, so caching it saves memory
-
 std::vector<FootPlacement>* StepParityGenerator::getFootPlacementPermutations(const Row &row)
 {
-	int cacheKey = getPermuteCacheKey(row);	
-	auto maybePermuteFootPlacements = permuteCache.find(cacheKey);
+	int cacheKey = row.note_mask | row.hold_mask;
 	
-	if (maybePermuteFootPlacements == permuteCache.end())
+	auto maybePermuteFootPlacements = layout.permuteCache.find(cacheKey);
+	
+	if (maybePermuteFootPlacements == layout.permuteCache.end())
 	{
-		FootPlacement blankColumns(row.columnCount, NONE);
-		std::vector<FootPlacement> computedPermutations = PermuteFootPlacements(row, blankColumns, 0, false);
-		
-		// if we didn't get any permutations, try again, ignoring holds
-		if(computedPermutations.size() == 0)
-		{
-			computedPermutations = PermuteFootPlacements(row, blankColumns, 0, true);
-		}
-		// and if we _still_ don't have any permutations, just return a blank row
-		// (this will all buildStateGraph to at least generate a fully connected graph)
-		if(computedPermutations.size() == 0)
-		{
-			computedPermutations.push_back(blankColumns);
-		}
-		permuteCache[cacheKey] = std::move(computedPermutations);
-		
+		maybePermuteFootPlacements = layout.permuteCache.find(row.note_mask);
 	}
-	return &permuteCache[cacheKey];
-}
-
-// Recursively generate each permutation for the given row.
-std::vector<FootPlacement> StepParityGenerator::PermuteFootPlacements(const Row &row, FootPlacement columns, unsigned long column, bool ignoreHolds)
-{
-	// If column >= columns.size(), we've reached the end of the row.
-	// Perform some final validation before returning the contents of columns
-	if (column >= columns.size())
+	
+	if(maybePermuteFootPlacements == layout.permuteCache.end())
 	{
-		int leftHeelIndex = StepParity::INVALID_COLUMN;
-		int leftToeIndex = StepParity::INVALID_COLUMN;
-		int rightHeelIndex = StepParity::INVALID_COLUMN;
-		int rightToeIndex = StepParity::INVALID_COLUMN;
-		
-		for (unsigned long i = 0; i < columns.size(); i++)
-		{
-			if (columns[i] == NONE)
-			{
-				continue;
-			}
-			if (columns[i] == LEFT_HEEL)
-			{
-				leftHeelIndex = i;
-			}
-			if (columns[i] == LEFT_TOE)
-			{
-				leftToeIndex = i;
-			}
-			if (columns[i] == RIGHT_HEEL)
-			{
-				rightHeelIndex = i;
-			}
-			if (columns[i] == RIGHT_TOE)
-			{
-				rightToeIndex = i;
-			}
-		}
-		
-		// Filter out actually invalid combinations:
-		// - We don't want permutations where the toe is on an arrow, but not the heel
-		// - We don't want impossible brackets (eg you can't bracket up and down)
-		if (
-			(leftHeelIndex == StepParity::INVALID_COLUMN && leftToeIndex != StepParity::INVALID_COLUMN) ||
-			(rightHeelIndex == StepParity::INVALID_COLUMN && rightToeIndex != StepParity::INVALID_COLUMN))
-		{
-			return std::vector<FootPlacement>();
-		}
-		if (leftHeelIndex != StepParity::INVALID_COLUMN && leftToeIndex != StepParity::INVALID_COLUMN)
-		{
-			if (!layout.bracketCheck(leftHeelIndex, leftToeIndex))
-			{
-				return std::vector<FootPlacement>();
-			}
-		}
-		if (rightHeelIndex != StepParity::INVALID_COLUMN && rightToeIndex != StepParity::INVALID_COLUMN)
-		{
-			if (!layout.bracketCheck(rightHeelIndex, rightToeIndex))
-			{
-				return std::vector<FootPlacement>();
-			}
-		}
-		return {columns};
+		return &layout.permuteCache[0];
 	}
-
-	// If this column has a valid tap/hold head, or is actively holding a note,
-	// iterate through values of StepParity::Foot. For each foot part, check that
-	// it's not already present in columns, and if not, create a copy of columns,
-	// and set the current foot part to the current column.
-	// Then pass it to PermuteFootPlacements() and increment the column index.
-	// Collect each permutationm, and then return all of them.
-	//
-	// The `ignoreHolds` flag is used as a workaround for situations where
-	// we can't find a valid foot placement that allows us to continue the holds
-	// (BREACH PROTOCOL doubles has  a row 0311 1000 which isn't bracketable
-	// while still holding p1 down)
-	std::vector<FootPlacement> permutations;
-	if (row.notes[column].type != TapNoteType_Empty  ||
-			(ignoreHolds == false && row.holds[column].type != TapNoteType_Empty))
+	else
 	{
-	  	  for (StepParity::Foot foot: FEET) {
-		if(std::find(columns.begin(), columns.end(), foot) != columns.end())
-		{
-			continue;
-		}
-
-		FootPlacement newColumns = columns;
-
-		newColumns[column] = foot;
-		std::vector<FootPlacement> p = PermuteFootPlacements(row, newColumns, column + 1, ignoreHolds);
-		permutations.insert(permutations.end(), p.begin(), p.end());
-	  	  }
-	  	  return permutations;
+		auto& value = maybePermuteFootPlacements->second;
+		return &value;
 	}
-	// If the current column doesn't have any taps or holds,
-	// then we don't need to generate any permutations for it.
-	// Return the contents of calling PermuteFootPlacements() for the next column.
-	return PermuteFootPlacements(row, columns, column + 1, ignoreHolds);
 }
 
 std::vector<int> StepParityGenerator::computeCheapestPath()
