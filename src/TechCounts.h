@@ -80,7 +80,7 @@ public:
 	void FromString( RString sValues );
 
 	void PushSelf( lua_State *L );
-	static void CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, StepParity::StageLayout & layout, TechCounts &out);
+	static void CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, const StepParity::StageLayout * layout, TechCounts &out);
 private:
 	static bool isFootswitch(int c, const StepParity::Row & currentRow, const StepParity::Row & previousRow, float elapsedTime);
 };

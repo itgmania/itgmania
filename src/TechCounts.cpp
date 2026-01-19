@@ -90,7 +90,7 @@ void TechCounts::FromString( RString sTechCounts )
 	}
 }
 
-void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, StepParity::StageLayout & layout, TechCounts &out)
+void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, const StepParity::StageLayout * layout, TechCounts &out)
 {
 	for (unsigned long i = 1; i < rows.size(); i++)
 	{
@@ -149,7 +149,7 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 		}
 
 		// Check for up footswitches
-		for(int c : layout.upArrows)
+		for(int c : layout->upArrows)
 		{
 			if(isFootswitch(c, currentRow, previousRow, elapsedTime))
 			{
@@ -158,7 +158,7 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 			}
 		}
 		// Check for down footswitches
-		for(int c: layout.downArrows)
+		for(int c: layout->downArrows)
 		{
 			if(isFootswitch(c, currentRow, previousRow, elapsedTime))
 			{
@@ -168,7 +168,7 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 		}
 		
 		// Check for sideswitches
-		for(int c: layout.sideArrows)
+		for(int c: layout->sideArrows)
 		{
 			if(isFootswitch(c, currentRow, previousRow, elapsedTime))
 			{
@@ -199,8 +199,8 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 		//     - otherwise, then this was probably a half crossover (like UDL, starting on right foot)
 		if(rightHeel != StepParity::INVALID_COLUMN && previousLeftHeel != StepParity::INVALID_COLUMN && previousRightHeel == StepParity::INVALID_COLUMN)
 		{
-			StepParity::StagePoint leftPos = layout.averagePoint(previousLeftHeel, previousLeftToe);
-			StepParity::StagePoint rightPos = layout.averagePoint(rightHeel, rightToe);
+			StepParity::StagePoint leftPos = layout->averagePoint(previousLeftHeel, previousLeftToe);
+			StepParity::StagePoint rightPos = layout->averagePoint(rightHeel, rightToe);
 			
 			if(rightPos.x < leftPos.x)
 			{
@@ -211,7 +211,7 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 					
 					if(previousPreviousRightHeel != StepParity::INVALID_COLUMN && previousPreviousRightHeel != rightHeel)
 					{
-						StepParity::StagePoint previousPreviousRightPos = layout.columns[previousPreviousRightHeel];
+						StepParity::StagePoint previousPreviousRightPos = layout->columns[previousPreviousRightHeel];
 						if(previousPreviousRightPos.x > leftPos.x)
 						{
 							out[TechCountsCategory_FullCrossovers] += 1;
@@ -233,8 +233,8 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 		// And check the same thing, starting with left foot
 		else if(leftHeel != StepParity::INVALID_COLUMN && previousRightHeel != StepParity::INVALID_COLUMN && previousLeftHeel == StepParity::INVALID_COLUMN)
 		{
-			StepParity::StagePoint leftPos = layout.averagePoint(leftHeel, leftToe);
-			StepParity::StagePoint rightPos = layout.averagePoint(previousRightHeel, previousRightToe);
+			StepParity::StagePoint leftPos = layout->averagePoint(leftHeel, leftToe);
+			StepParity::StagePoint rightPos = layout->averagePoint(previousRightHeel, previousRightToe);
 			
 			if(rightPos.x < leftPos.x)
 			{
@@ -244,7 +244,7 @@ void TechCounts::CalculateTechCountsFromRows(const std::vector<StepParity::Row> 
 					int previousPreviousLeftHeel = previousPreviousRow.whereTheFeetAre[StepParity::LEFT_HEEL];
 					if(previousPreviousLeftHeel != StepParity::INVALID_COLUMN && previousPreviousLeftHeel != leftHeel)
 					{
-						StepParity::StagePoint previousPreviousLeftPos = layout.columns[previousPreviousLeftHeel];
+						StepParity::StagePoint previousPreviousLeftPos = layout->columns[previousPreviousLeftHeel];
 						if(rightPos.x > previousPreviousLeftPos.x)
 						{
 							out[TechCountsCategory_FullCrossovers] += 1;

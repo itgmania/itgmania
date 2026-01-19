@@ -13,38 +13,39 @@ bool State::operator==(const State &other) const
 }
 
 // StageLayout
-bool StageLayout::bracketCheck(int column1, int column2)
+bool StageLayout::bracketCheck(int column1, int column2) const
 {
 	float dist =getDistance(column1, column2);
 	return (dist * dist) <= 2;
 }
 
-bool StageLayout::isSideArrow(int column)
+bool StageLayout::isSideArrow(int column) const
 {
 	return std::find(sideArrows.begin(), sideArrows.end(), column) != sideArrows.end();
 }
 
-bool StageLayout::isUpArrow(int column)
+bool StageLayout::isUpArrow(int column) const
 {
 	return std::find(upArrows.begin(), upArrows.end(), column) != upArrows.end();
 }
 
-bool StageLayout::isDownArrow(int column)
+bool StageLayout::isDownArrow(int column) const
 {
 	return std::find(downArrows.begin(), downArrows.end(), column) != downArrows.end();
 }
 
-float StageLayout::getDistanceSq(int c1, int c2)
+float StageLayout::getDistanceSq(int c1, int c2) const
 {
 	return getDistanceSq(columns[c1], columns[c2]);
 }
 
-float StageLayout::getDistanceSq(StepParity::StagePoint p1, StepParity::StagePoint p2)
+float StageLayout::getDistanceSq(StepParity::StagePoint p1, StepParity::StagePoint p2) const
 {
 	return (p1.y - p2.y) * (p1.y - p2.y) + (p1.x - p2.x) * (p1.x - p2.x);
 }
 
-float StageLayout::getDistance(int leftIndex, int rightIndex) {
+float StageLayout::getDistance(int leftIndex, int rightIndex) const
+{
 	if(leftIndex == INVALID_COLUMN || rightIndex == INVALID_COLUMN)
 	{
 		return 0;
@@ -53,7 +54,8 @@ float StageLayout::getDistance(int leftIndex, int rightIndex) {
 	return distances[idx];
 }
 
-float StageLayout::getXDifference(int leftIndex, int rightIndex) {
+float StageLayout::getXDifference(int leftIndex, int rightIndex) const
+{
 	if (leftIndex == rightIndex) return 0;
 	float dx = columns[rightIndex].x - columns[leftIndex].x;
 	float dy = columns[rightIndex].y - columns[leftIndex].y;
@@ -70,7 +72,8 @@ float StageLayout::getXDifference(int leftIndex, int rightIndex) {
 	return dx;
 }
 
-float StageLayout::getYDifference(int leftIndex, int rightIndex) {
+float StageLayout::getYDifference(int leftIndex, int rightIndex) const
+{
 	if (leftIndex == rightIndex) return 0;
 	float dx = columns[rightIndex].x - columns[leftIndex].x;
 	float dy = columns[rightIndex].y - columns[leftIndex].y;
@@ -87,7 +90,8 @@ float StageLayout::getYDifference(int leftIndex, int rightIndex) {
 	return dy;
 }
 
-float StageLayout::getXFacingPenalty(int leftIndex, int rightIndex) {
+float StageLayout::getXFacingPenalty(int leftIndex, int rightIndex) const
+{
 	if(leftIndex == INVALID_COLUMN || rightIndex == INVALID_COLUMN)
 	{
 		return 0;
@@ -97,7 +101,8 @@ float StageLayout::getXFacingPenalty(int leftIndex, int rightIndex) {
 	return facingXPenalties[idx];
 }
 
-float StageLayout::getYFacingPenalty(int leftIndex, int rightIndex) {
+float StageLayout::getYFacingPenalty(int leftIndex, int rightIndex) const
+{
 	if(leftIndex == INVALID_COLUMN || rightIndex == INVALID_COLUMN)
 	{
 		return 0;
@@ -291,7 +296,7 @@ std::vector<FootPlacement> StageLayout::PermuteFootPlacements(unsigned int mask,
 
 
 
-StagePoint StageLayout::averagePoint(int leftIndex, int rightIndex) {
+StagePoint StageLayout::averagePoint(int leftIndex, int rightIndex) const {
 	if (leftIndex == INVALID_COLUMN && rightIndex == INVALID_COLUMN) return { 0,0 };
 	if (leftIndex == INVALID_COLUMN) return columns[rightIndex];
 	if (rightIndex == INVALID_COLUMN) return columns[leftIndex];
@@ -303,11 +308,11 @@ StagePoint StageLayout::averagePoint(int leftIndex, int rightIndex) {
 	return avgPoints[idx];
 }
 
-float StageLayout::getPlayerAngle(int c1, int c2)
+float StageLayout::getPlayerAngle(int c1, int c2)const
 {
 	return getPlayerAngle(columns[c1], columns[c2]);
 }
-float StageLayout::getPlayerAngle(StepParity::StagePoint left, StepParity::StagePoint right)
+float StageLayout::getPlayerAngle(StepParity::StagePoint left, StepParity::StagePoint right) const
 {
 	float x1 = right.x - left.x;
 	float y1 = right.y - left.y;

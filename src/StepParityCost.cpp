@@ -130,7 +130,7 @@ float StepParityCost::calcHoldSwitchCost(State * initialState, State * resultSta
 		  (previousFoot == INVALID_COLUMN
 			? 1
 			: sqrt(
-				layout.getDistanceSq(c, previousFoot)
+				layout->getDistanceSq(c, previousFoot)
 			  ));
 	  }
 	}
@@ -317,12 +317,12 @@ float StepParityCost::calcTwistedFootCost(State * resultState)
 	int rightHeel = resultState->whatNoteTheFootIsHitting[RIGHT_HEEL];
 	int rightToe = resultState->whatNoteTheFootIsHitting[RIGHT_TOE];
 
-	StagePoint leftPos = layout.averagePoint(leftHeel, leftToe);
-	StagePoint rightPos = layout.averagePoint(rightHeel, rightToe);
+	StagePoint leftPos = layout->averagePoint(leftHeel, leftToe);
+	StagePoint rightPos = layout->averagePoint(rightHeel, rightToe);
 
 	bool crossedOver = rightPos.x < leftPos.x;
-	bool rightBackwards = rightHeel != INVALID_COLUMN && rightToe != INVALID_COLUMN ? layout.columns[rightToe].y < layout.columns[rightHeel].y : false;
-	bool leftBackwards = leftHeel != INVALID_COLUMN && leftToe != INVALID_COLUMN ? layout.columns[leftToe].y < layout.columns[leftHeel].y : false;
+	bool rightBackwards = rightHeel != INVALID_COLUMN && rightToe != INVALID_COLUMN ? layout->columns[rightToe].y < layout->columns[rightHeel].y : false;
+	bool leftBackwards = leftHeel != INVALID_COLUMN && leftToe != INVALID_COLUMN ? layout->columns[leftToe].y < layout->columns[leftHeel].y : false;
 
 	if(!crossedOver && (rightBackwards || leftBackwards))
 	{
@@ -354,10 +354,10 @@ float StepParityCost::calcFacingCosts(State * initialState, State * resultState,
 	if (endLeftToe == INVALID_COLUMN) endLeftToe = endLeftHeel;
 	if (endRightToe == INVALID_COLUMN) endRightToe = endRightHeel;
 
-	float heelFacingPenalty = layout.getXFacingPenalty(endLeftHeel, endRightHeel) * FACING;
-	float toesFacingPenalty = layout.getXFacingPenalty(endLeftToe, endRightToe) * FACING;
-	float leftFacingPenalty = layout.getYFacingPenalty(endLeftHeel, endLeftToe) * FACING;
-	float rightFacingPenalty = layout.getYFacingPenalty(endRightHeel, endRightToe) * FACING;
+	float heelFacingPenalty = layout->getXFacingPenalty(endLeftHeel, endRightHeel) * FACING;
+	float toesFacingPenalty = layout->getXFacingPenalty(endLeftToe, endRightToe) * FACING;
+	float leftFacingPenalty = layout->getYFacingPenalty(endLeftHeel, endLeftToe) * FACING;
+	float rightFacingPenalty = layout->getYFacingPenalty(endRightHeel, endRightToe) * FACING;
 
 	float cost = heelFacingPenalty + toesFacingPenalty + leftFacingPenalty + rightFacingPenalty;
 	return cost;
@@ -376,16 +376,16 @@ float StepParityCost::calcSpinCosts(State * initialState, State * resultState, i
 	if (endRightToe == INVALID_COLUMN) endRightToe = endRightHeel;
 
 	// spin
-	StagePoint previousLeftPos = layout.averagePoint(
+	StagePoint previousLeftPos = layout->averagePoint(
 	 initialState->whereTheFeetAre[LEFT_HEEL],
 	 initialState->whereTheFeetAre[LEFT_TOE]
 	);
-	StagePoint previousRightPos = layout.averagePoint(
+	StagePoint previousRightPos = layout->averagePoint(
 	 initialState->whereTheFeetAre[RIGHT_HEEL],
 	 initialState->whereTheFeetAre[RIGHT_TOE]
 	);
-	StagePoint leftPos = layout.averagePoint(endLeftHeel, endLeftToe);
-	StagePoint rightPos = layout.averagePoint(endRightHeel, endRightToe);
+	StagePoint leftPos = layout->averagePoint(endLeftHeel, endLeftToe);
+	StagePoint rightPos = layout->averagePoint(endRightHeel, endRightToe);
 
 	if (
 	  rightPos.x < leftPos.x &&
@@ -446,7 +446,7 @@ float StepParityCost::caclFootswitchCost(State * initialState, State * resultSta
 float StepParityCost::calcSideswitchCost(State * initialState, State * resultState, int columnCount)
 {
 	float cost = 0;
-	for(auto c : layout.sideArrows)
+	for(auto c : layout->sideArrows)
 	{
 		if (
 			initialState->combinedColumns[c] != resultState->columns[c] &&
@@ -504,7 +504,7 @@ float StepParityCost::calcBigMovementsQuicklyCost(State * initialState, State * 
 			continue;
 		}
 
-		float dist = (layout.getDistance(initialPosition, resultPosition) * DISTANCE) / elapsedTime;
+		float dist = (layout->getDistance(initialPosition, resultPosition) * DISTANCE) / elapsedTime;
 		// Otherwise if we're still bracketing, this is probably a less drastic movement
 		if(isBracketing)
 		{
