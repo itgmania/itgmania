@@ -292,18 +292,10 @@ std::vector<FootPlacement> StageLayout::PermuteFootPlacements(unsigned int mask,
 		return PermuteFootPlacements(mask, columns, column + 1);
 }
 
-
-
-
-
 StagePoint StageLayout::averagePoint(int leftIndex, int rightIndex) const {
 	if (leftIndex == INVALID_COLUMN && rightIndex == INVALID_COLUMN) return { 0,0 };
 	if (leftIndex == INVALID_COLUMN) return columns[rightIndex];
 	if (rightIndex == INVALID_COLUMN) return columns[leftIndex];
-//	return {
-//	  (columns[leftIndex].x + columns[rightIndex].x) / 2.0f,
-//	  (columns[leftIndex].y + columns[rightIndex].y) / 2.0f,
-//	};
 	int idx = leftIndex * columnCount + rightIndex;
 	return avgPoints[idx];
 }
