@@ -116,20 +116,20 @@ namespace StepParity {
 		}
 		
 		
-		bool bracketCheck(int column1, int column2);
-		bool isSideArrow(int column);
-		bool isUpArrow(int column);
-		bool isDownArrow(int column);
-		float getDistanceSq(int c1, int c2);
-		float getDistanceSq(StagePoint p1, StagePoint p2);
-		float getDistance(int leftIndex, int rightIndex);
-		float getXFacingPenalty(int leftIndex, int rightIndex);
-		float getYFacingPenalty(int leftIndex, int rightIndex);
-		float getXDifference(int leftIndex, int rightIndex);
-		float getYDifference(int leftIndex, int rightIndex);
-		StagePoint averagePoint(int leftIndex, int rightIndex);
-		float getPlayerAngle(int c1, int c2);
-		float getPlayerAngle(StepParity::StagePoint left, StepParity::StagePoint right);
+		bool bracketCheck(int column1, int column2) const;
+		bool isSideArrow(int column) const;
+		bool isUpArrow(int column) const;
+		bool isDownArrow(int column) const;
+		float getDistanceSq(int c1, int c2) const;
+		float getDistanceSq(StagePoint p1, StagePoint p2) const;
+		float getDistance(int leftIndex, int rightIndex) const;
+		float getXFacingPenalty(int leftIndex, int rightIndex) const;
+		float getYFacingPenalty(int leftIndex, int rightIndex) const;
+		float getXDifference(int leftIndex, int rightIndex) const;
+		float getYDifference(int leftIndex, int rightIndex) const;
+		StagePoint averagePoint(int leftIndex, int rightIndex) const;
+		float getPlayerAngle(int c1, int c2) const;
+		float getPlayerAngle(StepParity::StagePoint left, StepParity::StagePoint right) const;
 		
 		void preCalculateStuff();
 		void preGeneratePermutations();

@@ -35,7 +35,7 @@ namespace StepParity {
 	class StepParityGenerator 
 	{
 	private:
-		StageLayout layout;
+		const StageLayout * layout;
 		TimingData * timing;
 		
 		StepParity::State * beginningState = nullptr;
@@ -50,7 +50,7 @@ namespace StepParity {
 		std::vector<int> nodes_for_rows;
 		int columnCount_;
 		
-		StepParityGenerator(const StageLayout & l, TimingData * t) : layout(l) {
+		StepParityGenerator(const StageLayout * l, TimingData * t) : layout(l) {
 			timing = t;
 		}
 		
@@ -109,7 +109,7 @@ namespace StepParity {
 		/// Utilizes the permuteCache to re-use vectors. The returned pointer points to a vector within the permuteCache.
 		/// @param row The row to calculate foot placement permutations for.
 		/// @return A pointer to a vector of foot placements.
-		std::vector<FootPlacement>* getFootPlacementPermutations(const Row &row);
+		const std::vector<FootPlacement>* getFootPlacementPermutations(const Row &row);
 
 		/// @brief Computes the "cheapest" path through the given graph.
 		/// This relies on the fact that the nodes stored in the graph are topologically sorted (that is, all

@@ -398,7 +398,7 @@ void Steps::CalculateTechCounts()
 	{
 		return;
 	}
-	StepParity::StageLayout layout = StepParity::Layouts.at(this->m_StepsType);
+	const StepParity::StageLayout* layout = &StepParity::Layouts.at(this->m_StepsType);
 	TimingData * timing = this->GetTimingData();
 	StepParity::StepParityGenerator gen = StepParity::StepParityGenerator(layout, timing);
 	gen.analyzeNoteData(tempNoteData);

@@ -53,7 +53,7 @@ void StepParityGenerator::buildStateGraph()
 	{
 		std::vector<StepParityNode *> resultNodes;
 		Row &row = rows[i];
-		std::vector<FootPlacement> *permutations = getFootPlacementPermutations(row);
+		const std::vector<FootPlacement> *permutations = getFootPlacementPermutations(row);
 		
 		while (!previousNodes.empty())
 		{
@@ -250,20 +250,20 @@ void StepParityGenerator::mergeInitialAndResultPosition(State * initialState, St
 	}
 }
 
-std::vector<FootPlacement>* StepParityGenerator::getFootPlacementPermutations(const Row &row)
+const std::vector<FootPlacement>* StepParityGenerator::getFootPlacementPermutations(const Row &row)
 {
 	int cacheKey = row.note_mask | row.hold_mask;
 	
-	auto maybePermuteFootPlacements = layout.permuteCache.find(cacheKey);
+	auto maybePermuteFootPlacements = layout->permuteCache.find(cacheKey);
 	
-	if (maybePermuteFootPlacements == layout.permuteCache.end())
+	if (maybePermuteFootPlacements == layout->permuteCache.end())
 	{
-		maybePermuteFootPlacements = layout.permuteCache.find(row.note_mask);
+		maybePermuteFootPlacements = layout->permuteCache.find(row.note_mask);
 	}
 	
-	if(maybePermuteFootPlacements == layout.permuteCache.end())
+	if(maybePermuteFootPlacements == layout->permuteCache.end())
 	{
-		return &layout.permuteCache[0];
+		return &(layout->permuteCache.at(0));
 	}
 	else
 	{

@@ -39,10 +39,10 @@ namespace StepParity
 	class StepParityCost
 	{
 	private:
-		StageLayout layout;
+		const StageLayout* layout;
 
 	public:
-		StepParityCost(const StageLayout& _layout): layout(_layout) {}
+		StepParityCost(const StageLayout* _layout): layout(_layout) {}
 
 		/// @brief Computes and returns a cost value for the player moving from initialState to resultState.
 		/// @param initialState The starting position of the player
