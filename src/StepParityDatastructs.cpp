@@ -162,6 +162,8 @@ void StageLayout::preCalculateStuff()
 	}
 }
 
+// Counts the number of ones in the binary representation
+// of the given `x`.
 inline int popcount(unsigned int x) {
 #if defined(__GNUC__) || defined(__clang__)
 	return __builtin_popcount(x);
@@ -197,7 +199,11 @@ void StageLayout::preGeneratePermutations()
 
 std::vector<FootPlacement> StageLayout::PermuteFootPlacements(unsigned int mask, FootPlacement columns, unsigned long column)
 {
+	// MV: This is re-defined here because I was running into
+	// issues with StepParity::FEET being empty within this context?
+	// I don't understand C++ header initialization stuff
 	std::vector<StepParity::Foot> FEET = {LEFT_HEEL, LEFT_TOE, RIGHT_HEEL, RIGHT_TOE};
+	
 	// If column >= columns.size(), we've reached the end of the row.
 	// Perform some final validation before returning the contents of columns
 	if (column >= columns.size())
