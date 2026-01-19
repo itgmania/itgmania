@@ -15,7 +15,8 @@ bool State::operator==(const State &other) const
 // StageLayout
 bool StageLayout::bracketCheck(int column1, int column2)
 {
-	return getDistance(column1, column2) <= 2;
+	float dist =getDistance(column1, column2);
+	return (dist * dist) <= 2;
 }
 
 bool StageLayout::isSideArrow(int column)
