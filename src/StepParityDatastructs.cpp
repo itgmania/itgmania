@@ -157,6 +157,140 @@ void StageLayout::preCalculateStuff()
 	}
 }
 
+inline int popcount(unsigned int x) {
+#if defined(__GNUC__) || defined(__clang__)
+	return __builtin_popcount(x);
+#elif defined(_MSC_VER)
+	#include <intrin.h>
+	return __popcnt(x);
+#else
+	// Fallback implementation
+	int count = 0;
+	while (x) {
+		x &= x - 1;  // Clear the lowest set bit
+		count++;
+	}
+	return count;
+#endif
+}
+
+void StageLayout::preGeneratePermutations()
+{
+	for(unsigned int i = 0; i < pow(2, columnCount); i++)
+	{
+		int bits = popcount(i);
+		if(bits > 4)
+		{
+			continue;
+		}
+		FootPlacement blankColumns(columnCount, NONE);
+		
+		std::vector<FootPlacement> placements = PermuteFootPlacements(i, blankColumns, 0);
+		permuteCache[i] = std::move(placements);
+	}
+}
+
+std::vector<FootPlacement> StageLayout::PermuteFootPlacements(unsigned int mask, FootPlacement columns, unsigned long column)
+{
+	std::vector<StepParity::Foot> FEET = {LEFT_HEEL, LEFT_TOE, RIGHT_HEEL, RIGHT_TOE};
+	// If column >= columns.size(), we've reached the end of the row.
+	// Perform some final validation before returning the contents of columns
+	if (column >= columns.size())
+	{
+		int leftHeelIndex = StepParity::INVALID_COLUMN;
+		int leftToeIndex = StepParity::INVALID_COLUMN;
+		int rightHeelIndex = StepParity::INVALID_COLUMN;
+		int rightToeIndex = StepParity::INVALID_COLUMN;
+		
+		for (unsigned long i = 0; i < columns.size(); i++)
+		{
+			if (columns[i] == NONE)
+			{
+				continue;
+			}
+			if (columns[i] == LEFT_HEEL)
+			{
+				leftHeelIndex = i;
+			}
+			if (columns[i] == LEFT_TOE)
+			{
+				leftToeIndex = i;
+			}
+			if (columns[i] == RIGHT_HEEL)
+			{
+				rightHeelIndex = i;
+			}
+			if (columns[i] == RIGHT_TOE)
+			{
+				rightToeIndex = i;
+			}
+		}
+		
+		// Filter out actually invalid combinations:
+		// - We don't want permutations where the toe is on an arrow, but not the heel
+		// - We don't want impossible brackets (eg you can't bracket up and down)
+		if (
+			(leftHeelIndex == StepParity::INVALID_COLUMN && leftToeIndex != StepParity::INVALID_COLUMN) ||
+			(rightHeelIndex == StepParity::INVALID_COLUMN && rightToeIndex != StepParity::INVALID_COLUMN))
+		{
+			return std::vector<FootPlacement>();
+		}
+		if (leftHeelIndex != StepParity::INVALID_COLUMN && leftToeIndex != StepParity::INVALID_COLUMN)
+		{
+			if (!bracketCheck(leftHeelIndex, leftToeIndex))
+			{
+				return std::vector<FootPlacement>();
+			}
+		}
+		if (rightHeelIndex != StepParity::INVALID_COLUMN && rightToeIndex != StepParity::INVALID_COLUMN)
+		{
+			if (!bracketCheck(rightHeelIndex, rightToeIndex))
+			{
+				return std::vector<FootPlacement>();
+			}
+		}
+		return {columns};
+	}
+		// If this column has a valid tap/hold head, or is actively holding a note,
+		// iterate through values of StepParity::Foot. For each foot part, check that
+		// it's not already present in columns, and if not, create a copy of columns,
+		// and set the current foot part to the current column.
+		// Then pass it to PermuteFootPlacements() and increment the column index.
+		// Collect each permutationm, and then return all of them.
+		//
+		// The `ignoreHolds` flag is used as a workaround for situations where
+		// we can't find a valid foot placement that allows us to continue the holds
+		// (BREACH PROTOCOL doubles has  a row 0311 1000 which isn't bracketable
+		// while still holding p1 down)
+		std::vector<FootPlacement> permutations;
+		bool active = (mask & (0x1 << column)) != 0;
+	
+		if (active)
+		{
+			for (StepParity::Foot foot: FEET) {
+				if(std::find(columns.begin(), columns.end(), foot) != columns.end())
+				{
+					continue;
+				}
+
+				FootPlacement newColumns = columns;
+
+				newColumns[column] = foot;
+				std::vector<FootPlacement> p = PermuteFootPlacements(mask, newColumns, column + 1);
+				permutations.insert(permutations.end(), p.begin(), p.end());
+			}
+			  return permutations;
+		}
+		// If the current column doesn't have any taps or holds,
+		// then we don't need to generate any permutations for it.
+		// Return the contents of calling PermuteFootPlacements() for the next column.
+		return PermuteFootPlacements(mask, columns, column + 1);
+}
+
+
+
+
+
 StagePoint StageLayout::averagePoint(int leftIndex, int rightIndex) {
 	if (leftIndex == INVALID_COLUMN && rightIndex == INVALID_COLUMN) return { 0,0 };
 	if (leftIndex == INVALID_COLUMN) return columns[rightIndex];

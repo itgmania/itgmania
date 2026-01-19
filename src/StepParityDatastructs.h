@@ -21,6 +21,10 @@ namespace StepParity {
 		NUM_Foot
 	};
 
+	/// @brief A vector of Foot values, which represents the player's
+	/// foot placement on the dance stage.
+	typedef std::vector<Foot> FootPlacement;
+
 	const std::vector<uint16_t> FOOT_MASKS = {0,1,2,4,8};
 	
 	const int16_t FOOT_MASK_LEFT = FOOT_MASKS[Foot::LEFT_HEEL] | FOOT_MASKS[Foot::LEFT_TOE];
@@ -34,7 +38,7 @@ namespace StepParity {
 	
 	const RString FEET_LABELS[] = {"N", "L", "l", "R", "r", "5??", "6??"};
 	const RString TapNoteTypeShortNames[] = { "Empty", "Tap",  "Mine",  "Attack", "AutoKeySound", "Fake", "", "" };
-	const RString TapNoteSubTypeShortNames[] = { "Hold", "Roll", "", "" };	
+	const RString TapNoteSubTypeShortNames[] = { "Hold", "Roll", "", "" };
 
 	enum Cost
 	{
@@ -98,6 +102,7 @@ namespace StepParity {
 		std::vector<float> distances;
 		std::vector<float> facingXPenalties;
 		std::vector<float> facingYPenalties;
+		std::unordered_map < int, std::vector<FootPlacement>> permuteCache;
 		
 		StageLayout(StepsType t,
 					 const std::vector<StagePoint>& c,
@@ -106,6 +111,7 @@ namespace StepParity {
 					 const std::vector<int> & s) : type(t), columns(c), upArrows(u), downArrows(d), sideArrows(s) {
 			this->columnCount = static_cast<int>(this->columns.size());
 			this->preCalculateStuff();
+			this->preGeneratePermutations();
 			
 		}
 		
@@ -126,12 +132,10 @@ namespace StepParity {
 		float getPlayerAngle(StepParity::StagePoint left, StepParity::StagePoint right);
 		
 		void preCalculateStuff();
+		void preGeneratePermutations();
+		std::vector<StepParity::FootPlacement> PermuteFootPlacements(unsigned int, StepParity::FootPlacement columns, unsigned long column);
 		
 	};
-
-	/// @brief A vector of Foot values, which represents the player's
-	/// foot placement on the dance stage.
-	typedef std::vector<Foot> FootPlacement;
 
 	/// @brief Represents a specific possible state of the player's position
 	/// for a given row of the step chart.

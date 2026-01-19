@@ -37,7 +37,6 @@ namespace StepParity {
 	private:
 		StageLayout layout;
 		TimingData * timing;
-		std::unordered_map < int, std::vector<std::vector<StepParity::Foot>>> permuteCache;
 		
 		StepParity::State * beginningState = nullptr;
 		StepParity::StepParityNode * startNode = nullptr;
@@ -111,14 +110,6 @@ namespace StepParity {
 		/// @param row The row to calculate foot placement permutations for.
 		/// @return A pointer to a vector of foot placements.
 		std::vector<FootPlacement>* getFootPlacementPermutations(const Row &row);
-
-		/// @brief A recursive function that generates a vector of possible foot placements for the given row.
-		/// This function should not be used directly, instead use getFootPlacementPermutations().
-		/// @param row
-		/// @param columns
-		/// @param column
-		/// @param ignoreHolds
-		std::vector<FootPlacement> PermuteFootPlacements(const Row &row, FootPlacement columns, unsigned long column, bool ignoreHolds);
 
 		/// @brief Computes the "cheapest" path through the given graph.
 		/// This relies on the fact that the nodes stored in the graph are topologically sorted (that is, all
