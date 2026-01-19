@@ -118,6 +118,8 @@ State * StepParityGenerator::initResultState(State * initialState, Row &row, con
 
 	// reset resultState
 	
+	resultState->moved_mask = 0;
+	resultState->holding_mask = 0;
 	for(int i = 0; i < NUM_Foot; i++)
 	{
 		resultState->whereTheFeetAre[i] = INVALID_COLUMN;
@@ -166,6 +168,17 @@ State * StepParityGenerator::initResultState(State * initialState, Row &row, con
 		{
 			resultState->holdFeet[i] = columns[i];
 			resultState->isTheFootHolding[columns[i]] = true;
+		}
+		
+		uint16_t bit = 0x1 << i;
+		uint16_t foot_mask = FOOT_MASKS[columns[i]];
+		if((row.hold_mask & bit) != 0)
+		{
+			resultState->holding_mask |= foot_mask;
+		}
+		if((row.hold_mask & bit) == 0 || (initialState->combinedColumns[i] != columns[i]))
+		{
+			resultState->moved_mask |= foot_mask;
 		}
 	}
 	
