@@ -84,6 +84,9 @@ public:
 	virtual void PushSelf( lua_State *L );
 private:
 	void SetError( const RString &err );
+	void AssertOpen() const;
+	void AssertRead() const;
+	void AssertWrite() const;
 
 	RageFileBasic *m_File;
 	RString	m_Path;

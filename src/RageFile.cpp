@@ -88,37 +88,57 @@ void RageFile::Close()
 	m_File = nullptr;
 }
 
-#define ASSERT_OPEN ASSERT_M( IsOpen(), ssprintf("\"%s\" is not open.", m_Path.c_str()) );
-#define ASSERT_READ ASSERT_OPEN; ASSERT_M( !!(m_Mode&READ), ssprintf("\"%s\" is not open for reading", m_Path.c_str()) );
-#define ASSERT_WRITE ASSERT_OPEN; ASSERT_M( !!(m_Mode&WRITE), ssprintf("\"%s\" is not open for writing", m_Path.c_str()) );
+void RageFile::AssertOpen() const
+{
+	if( !IsOpen() ) {
+		sm_crash( ssprintf("File \"%s\" is not open.", m_Path.c_str()) );
+	}
+}
+
+void RageFile::AssertRead() const
+{
+	AssertOpen();
+	if( !(m_Mode & READ) ) {
+		sm_crash( ssprintf("File \"%s\" is not open for reading", m_Path.c_str()) );
+	}
+}
+
+void RageFile::AssertWrite() const
+{
+	AssertOpen();
+	if( !(m_Mode & WRITE) ) {
+		sm_crash( ssprintf("File \"%s\" is not open for writing", m_Path.c_str()) );
+	}
+}
+
 int RageFile::GetLine( RString &out )
 {
-	ASSERT_READ;
+	AssertRead();
 	return m_File->GetLine( out );
 }
 
 int RageFile::PutLine( const RString &str )
 {
-	ASSERT_WRITE;
+	AssertWrite();
 	return m_File->PutLine( str );
 }
 
 void RageFile::EnableCRC32( bool on )
 {
-	ASSERT_OPEN;
+	AssertOpen();
 	m_File->EnableCRC32( on );
 }
 
 bool RageFile::GetCRC32( uint32_t *iRet )
 {
-	ASSERT_OPEN;
+	AssertOpen();
 	return m_File->GetCRC32( iRet );
 }
 
 
 bool RageFile::AtEOF() const
 {
-	ASSERT_READ;
+	AssertRead();
 	return m_File->AtEOF();
 }
 
@@ -146,50 +166,50 @@ void RageFile::SetError( const RString &err )
 
 int RageFile::Read( void *pBuffer, size_t iBytes )
 {
-	ASSERT_READ;
+	AssertRead();
 	return m_File->Read( pBuffer, iBytes );
 }
 
 int RageFile::Seek( int offset )
 {
-	ASSERT_READ;
+	AssertRead();
 	return m_File->Seek( offset );
 }
 
 int RageFile::Tell() const
 {
-	ASSERT_READ;
+	AssertRead();
 	return m_File->Tell();
 }
 
 int RageFile::GetFileSize() const
 {
-	ASSERT_READ;
+	AssertRead();
 	return m_File->GetFileSize();
 }
 
 int RageFile::GetFD()
 {
-	ASSERT_READ;
+	AssertRead();
 	return m_File->GetFD();
 }
 
 int RageFile::Read( RString &buffer, int bytes )
 {
-	ASSERT_READ;
+	AssertRead();
 	return m_File->Read( buffer, bytes );
 }
 
 int RageFile::Write( const void *buffer, size_t bytes )
 {
-	ASSERT_WRITE;
+	AssertWrite();
 	return m_File->Write( buffer, bytes );
 }
 
 
 int RageFile::Write( const void *buffer, size_t bytes, int nmemb )
 {
-	ASSERT_WRITE;
+	AssertWrite();
 	return m_File->Write( buffer, bytes, nmemb );
 }
 
@@ -206,13 +226,13 @@ int RageFile::Flush()
 
 int RageFile::Read( void *buffer, size_t bytes, int nmemb )
 {
-	ASSERT_READ;
+	AssertRead();
 	return m_File->Read( buffer, bytes, nmemb );
 }
 
 int RageFile::Seek( int offset, int whence )
 {
-	ASSERT_READ;
+	AssertRead();
 	return m_File->Seek( offset, whence );
 }
 
