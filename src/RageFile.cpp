@@ -16,10 +16,7 @@
 #include <cstddef>
 #include <cstdint>
 
-RageFile::RageFile()
-{
-	m_File = nullptr;
-}
+RageFile::RageFile(): m_File(nullptr), m_Mode(0) {}
 
 RageFile::RageFile( const RageFile &cpy ):
 	RageFileBasic( cpy )
