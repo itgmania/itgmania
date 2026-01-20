@@ -22,7 +22,10 @@ RageFile::RageFile( const RageFile &cpy ):
 	RageFileBasic( cpy )
 {
 	/* This will copy the file driver, including its internal file pointer. */
-	m_File = cpy.m_File->Copy();
+	m_File = nullptr;
+	if (cpy.m_File != nullptr) {
+		m_File = cpy.m_File->Copy();
+	}
 	m_Path = cpy.m_Path;
 	m_Mode = cpy.m_Mode;
 }
