@@ -256,11 +256,16 @@ const std::vector<FootPlacement>* StepParityGenerator::getFootPlacementPermutati
 	
 	auto maybePermuteFootPlacements = layout->permuteCache.find(cacheKey);
 	
+	// If no valid foot placements were found for (note_mask | hold_mask), then
+	// check if there is a valid placement for just note_mask
+	// (basically, assume that the player has to drop the holds)
 	if (maybePermuteFootPlacements == layout->permuteCache.end())
 	{
 		maybePermuteFootPlacements = layout->permuteCache.find(row.note_mask);
 	}
 	
+	// And if there still aren't any valid placements, return
+	// permuteCache[0], which will be an empty array.
 	if(maybePermuteFootPlacements == layout->permuteCache.end())
 	{
 		return &(layout->permuteCache.at(0));
