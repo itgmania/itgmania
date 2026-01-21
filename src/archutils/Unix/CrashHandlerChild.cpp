@@ -148,6 +148,17 @@ static void child_process()
 	const RString CrashedThread(temp);
 	delete[] temp;
 
+	#if defined(LINUX)
+	/* 7. Read Home Directory from parent thread. */
+	if (!child_read(3, &size, sizeof(size)))
+		return;
+	temp = new char[size];
+	if (!child_read(3, temp, size))
+		return;
+	const RString home(temp);
+	delete[] temp;
+	#endif
+
 	/* Wait for the child to either finish cleaning up or die. */
 	fd_set rs;
 	struct timeval timeout = { 5, 0 }; // 5 seconds
@@ -185,12 +196,14 @@ static void child_process()
 	}
 
 	RString sCrashInfoPath = "/tmp";
+
 #if defined(MACOSX)
 	sCrashInfoPath = CrashHandler::GetLogsDirectory();
-#else
-	const char *home = getenv( "HOME" );
-	if( home )
+#elif defined(LINUX)
+	if( home ) {
 		sCrashInfoPath = home;
+		sCrashInfoPath += "/.itgmania/Logs";
+	}
 #endif
 	sCrashInfoPath += "/crashinfo.txt";
 

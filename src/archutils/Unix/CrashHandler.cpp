@@ -187,8 +187,17 @@ static void parent_process( int to_child, const CrashData *crash )
 		return;
 	if( !parent_write(to_child, p, size) )
 		return;
-}
 
+	#if defined(LINUX)
+	/* 7. Send Home directory to child. */
+	const char *home = getenv( "HOME" );
+	size = strlen(home) + 1;
+	if (!parent_write(to_child, &size, sizeof(size)))
+		return;
+	if (!parent_write(to_child, home, size))
+		return;
+	#endif
+}
 
 /* The parent process is the crashed process.  It'll send data to the
  * child, who will do stuff with it.  The parent then waits for the
