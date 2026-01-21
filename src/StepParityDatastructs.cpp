@@ -183,6 +183,11 @@ inline int popcount(unsigned int x) {
 
 void StageLayout::preGeneratePermutations()
 {
+	// Set an empty array for a bitmask of 0x0, this is used
+	// by StepParityGenerator::getFootPlacementPermutations
+	// to return an empty array
+	permuteCache[0] = {};
+	
 	for(unsigned int i = 0; i < pow(2, columnCount); i++)
 	{
 		int bits = popcount(i);
@@ -193,7 +198,10 @@ void StageLayout::preGeneratePermutations()
 		FootPlacement blankColumns(columnCount, NONE);
 		
 		std::vector<FootPlacement> placements = PermuteFootPlacements(i, blankColumns, 0);
-		permuteCache[i] = std::move(placements);
+		if(placements.size() > 0)
+		{
+			permuteCache[i] = std::move(placements);
+		}
 	}
 }
 
