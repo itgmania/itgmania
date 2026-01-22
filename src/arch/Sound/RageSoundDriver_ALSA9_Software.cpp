@@ -150,6 +150,46 @@ float RageSoundDriver_ALSA9_Software::GetPlayLatency() const
 	return float(g_iMaxWriteahead) / m_iSampleRate;
 }
 
+std::vector<DriverSoundDevice> RageSoundDriver_ALSA9_Software::GetSoundDevices() const
+{
+	std::vector<DriverSoundDevice> devices;
+	// Add default device
+	devices.push_back({ "", "Default" });
+
+	void **hints;
+	int err;
+
+	// Get device hints for all PCM devices
+	if ((err = snd_device_name_hint(-1, "pcm", &hints)) < 0) {
+		LOG->Info( "ALSA: Could not get device list: %s",  dsnd_strerror(err) );
+	}
+	void **n = hints;
+	while (*n != NULL) {
+		char *name = snd_device_name_get_hint(*n, "NAME");
+		char *desc = snd_device_name_get_hint(*n, "DESC");
+		char *ioid = snd_device_name_get_hint(*n, "IOID");
+
+		// Only consider direct hw devices
+		bool is_output = (!ioid || strcmp(ioid, "Output") == 0);
+		bool has_card_id = (strncmp(name, "hw:", 3) == 0);
+		bool has_default_name = (strstr(name, "default") != NULL );
+
+		if (name && is_output && has_card_id && !has_default_name) {
+			snd_pcm_t *handle;
+			DriverSoundDevice device;
+			device.id = name;
+			device.readableName = desc;
+			devices.push_back(device);
+		}
+		if (desc) free(desc);
+		if (name) free(name);
+		if (ioid) free(ioid);
+		n++;
+	}
+	snd_device_name_free_hint(hints);
+	return devices;
+}
+
 /*
  * (c) 2002-2004 Glenn Maynard, Aaron VonderHaar
  * All rights reserved.

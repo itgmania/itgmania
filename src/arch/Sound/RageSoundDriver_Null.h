@@ -12,6 +12,7 @@ public:
 	int64_t GetPosition() const;
 	int GetSampleRate() const;
 	void Update();
+	std::vector<DriverSoundDevice> GetSoundDevices() const;
 
 private:
 	int64_t m_iLastCursorPos;

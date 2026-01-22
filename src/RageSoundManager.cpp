@@ -44,8 +44,10 @@ static LocalizedString COULDNT_FIND_SOUND_DRIVER( "RageSoundManager", "Couldn't 
 void RageSoundManager::Init()
 {
 	m_pDriver = RageSoundDriver::Create( g_sSoundDrivers );
-	if( m_pDriver == nullptr )
-		RageException::Throw( "%s", COULDNT_FIND_SOUND_DRIVER.GetValue().c_str() );
+	if( m_pDriver == nullptr ) {
+		LOG->Warn(" %s", COULDNT_FIND_SOUND_DRIVER.GetValue().c_str() );
+		m_pDriver = RageSoundDriver::Create( "Null" );
+	}
 }
 
 RageSoundManager::~RageSoundManager()
@@ -137,6 +139,16 @@ int RageSoundManager::GetDriverSampleRate() const
 
 	// Returns the *actual* operating rate of the loaded driver
 	return m_pDriver->GetSampleRate();
+}
+
+std::vector<DriverSoundDevice> RageSoundManager::GetDriverSoundDevices() const
+{
+	if( m_pDriver == nullptr ) {
+		LOG->Info("No audio driver");
+		return { {"", "No driver"} };
+	}
+
+	return m_pDriver->GetSoundDevices();
 }
 
 /* If the given path is loaded, return a copy; otherwise return nullptr.
