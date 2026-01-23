@@ -59,9 +59,11 @@ jobs:
         git submodule update --init extern/ffmpeg
         
         FFMPEG_SHA="$(git -C extern/ffmpeg rev-parse --short=12 HEAD)"
+        FFMPEG_REF="$(git -C extern/ffmpeg describe --tags --exact-match HEAD 2>/dev/null)"
         ln -s extern/ffmpeg ffmpeg-src
         {
           echo "FFMPEG_SHA=$FFMPEG_SHA"
+          echo "FFMPEG_REF=$FFMPEG_REF"
         } >> "$GITHUB_ENV"
         
         # Keep this list arch-neutral so we can add other targets (e.g. arm64) later.
