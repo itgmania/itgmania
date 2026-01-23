@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, windows-2022] # TODO: macos-15-intel
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, macos-15-intel, windows-2022]
         include:
           - os: ubuntu-24.04
             name: Ubuntu (x86_64)
@@ -41,6 +41,14 @@ jobs:
             release-full: cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_CLUB_FANTASTIC=Off
             package: cmake --build build --target package
             path: build/ITGmania-*.dmg
+          - os: macos-15-intel
+            name: macOS (Intel)
+            install: brew install nasm
+            configure: cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
+            release-nightly: cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_CLUB_FANTASTIC=Off
+            release-full: cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_CLUB_FANTASTIC=Off
+            package: cmake --build build --target package
+            path: build/ITGmania-*-NIGHTLY-git-*-macOS-Intel-no-songs.dmg
           - os: windows-2022
             name: Windows
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
