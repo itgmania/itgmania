@@ -19,7 +19,7 @@ on:
 
 jobs:
   build-ffmpeg-w32:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-24.04
     
     steps:
     - name: Checkout repository
