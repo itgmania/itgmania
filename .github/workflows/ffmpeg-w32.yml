@@ -63,8 +63,10 @@ jobs:
         echo "FFMPEG_SHA=$FFMPEG_SHA" >> "$GITHUB_ENV"
         
         # Keep this list arch-neutral so we can add other targets (e.g. arm64) later.
-        # For x86_64, --cpu=generic + --disable-runtime-cpudetect avoids emitting/using newer ISA at runtime.
-        COMMON_FLAGS_FFMPEG="--cpu=generic \
+        # For x86_64, target baseline x86-64 (SSE2) without newer extensions.
+        # cpu=generic and disable-runtime-cpudetect won't prevent use of these
+        # extensions so they should be explicitly disabled.
+        COMMON_FLAGS_FFMPEG="--cpu=x86-64 \
           --disable-runtime-cpudetect \
           --disable-autodetect \
           --disable-avdevice \
@@ -79,6 +81,16 @@ jobs:
           --disable-programs \
           --disable-static \
           --disable-swresample \
+          --disable-sse3 \
+          --disable-ssse3 \
+          --disable-sse4 \
+          --disable-sse42 \
+          --disable-avx \
+          --disable-avx2 \
+          --disable-avx512 \
+          --disable-fma3 \
+          --disable-fma4 \
+          --disable-aesni \
           --enable-bzlib \
           --enable-d3d11va \
           --enable-dxva2 \
