@@ -10,6 +10,7 @@ namespace StepParity {
 	
 	const int INVALID_COLUMN = -1;
 	const float CLM_SECOND_INVALID = -1;
+	const int MAX_COLUMNS = 16;
 
 	enum Foot
 	{
@@ -140,36 +141,18 @@ namespace StepParity {
 	/// @brief Represents a specific possible state of the player's position
 	/// for a given row of the step chart.
 	struct State {
-		FootPlacement columns;	 // what the feet are hitting on this row
-		FootPlacement combinedColumns; // The resulting position of the player
-		FootPlacement movedFeet; // Any feet that have moved from the previous state to this one
-		FootPlacement holdFeet;  // Any feet that stayed in place due to a hold/roll note.
+		StepParity::Foot combinedColumns[MAX_COLUMNS] = {}; // The resulting position of the player
 		
 		// masks that indicate which foot moved/is holding.
 		uint16_t moved_mask = 0;
 		uint16_t holding_mask = 0;
+		// mask equivalent of combinedColumns, 3 bits for each column
+		uint32_t combined_mask = 0;
 		
-		int whereTheFeetAre[NUM_Foot]; // the inverse of combinedColumns
-		int whatNoteTheFootIsHitting[NUM_Foot]; // the inverse of columns
-		bool didTheFootMove[NUM_Foot]; // the inverse of movedFeet
-		bool isTheFootHolding[NUM_Foot]; //inverse of holdFeet
-		
-		State(int columnCount)
-		{
-			columns = FootPlacement(columnCount, NONE);
-			combinedColumns = FootPlacement(columnCount, NONE);
-			movedFeet = FootPlacement(columnCount, NONE);
-			holdFeet = FootPlacement(columnCount, NONE);
-			
-			for(int i = 0; i < NUM_Foot; i++)
-			{
-				whatNoteTheFootIsHitting[i] = INVALID_COLUMN;
-				whereTheFeetAre[i] = INVALID_COLUMN;
-				didTheFootMove[i] = false;
-				isTheFootHolding[i] = false;
-			}
-		}
-		
+		int whereTheFeetAre[NUM_Foot] = {}; // the inverse of combinedColumns
+		int whatNoteTheFootIsHitting[NUM_Foot] = {};
+		bool didTheFootMove[NUM_Foot] = {};
+		bool isTheFootHolding[NUM_Foot] = {};
 		
 		bool operator==(const State& other) const;
 	};
@@ -236,7 +219,7 @@ namespace StepParity {
 			whereTheFeetAre = std::vector<int>(StepParity::NUM_Foot, INVALID_COLUMN);
 		}
 		
-		void setFootPlacement(const std::vector<Foot> & footPlacement);
+		void setFootPlacement(const StepParity::State * state);
 		
 		bool operator==(const Row& other) const;
 		bool operator!=(const Row& other) const;

@@ -33,7 +33,7 @@ bool StepParityGenerator::analyzeGraph() {
 	for (unsigned long i = 0; i < rows.size(); i++)
 	{
 		StepParityNode *node = nodes[nodes_for_rows[i]];
-		rows[i].setFootPlacement(node->state->combinedColumns);
+		rows[i].setFootPlacement(node->state);
 	}
 	return true;
 }
@@ -42,7 +42,7 @@ void StepParityGenerator::buildStateGraph()
 {
 	// The first node of the graph is beginningState, which represents the time before
 	// the first note (and so it's roIndex is considered -1)
-	beginningState = new State(columnCount_);
+	beginningState = new State();
 	startNode = addNode(beginningState, rows[0].second - 1, -1);
 	
 	std::queue<StepParityNode *> previousNodes;
@@ -63,7 +63,7 @@ void StepParityGenerator::buildStateGraph()
 			{
 				State * resultState = initResultState(initialNode->state, row, *it);
 				
-				float cost = costCalculator.getActionCost(initialNode->state, resultState, rows, i, elapsedTime);
+				float cost = costCalculator.getActionCost(initialNode->state, resultState, rows, *it, i, elapsedTime);
 				addStateToGraph(resultState, initialNode, row, resultNodes, cost);
 				
 			}
@@ -78,7 +78,7 @@ void StepParityGenerator::buildStateGraph()
 	
 	// at this point, previousStates holds all of the states for the very last row,
 	// which just get connected to the endState
-	endingState = new State(columnCount_);
+	endingState = new State();
 	endNode = addNode(endingState, rows[rows.size() - 1].second + 1, rows.size());
 	
 	while(!previousNodes.empty())
@@ -110,7 +110,7 @@ State * StepParityGenerator::initResultState(State * initialState, Row &row, con
 {
 	if(tmpState == nullptr)
 	{
-		tmpState = new State(row.columnCount);
+		tmpState = new State();
 	}
 	
 	State * resultState = tmpState;
@@ -120,6 +120,8 @@ State * StepParityGenerator::initResultState(State * initialState, Row &row, con
 	
 	resultState->moved_mask = 0;
 	resultState->holding_mask = 0;
+	resultState->combined_mask = 0;
+	
 	for(int i = 0; i < NUM_Foot; i++)
 	{
 		resultState->whereTheFeetAre[i] = INVALID_COLUMN;
@@ -130,16 +132,12 @@ State * StepParityGenerator::initResultState(State * initialState, Row &row, con
 	
 	for (unsigned long i = 0; i < columns.size(); i++)
 	{
-		resultState->columns[i] = NONE;
 		resultState->combinedColumns[i] = NONE;
-		resultState->movedFeet[i] = NONE;
-		resultState->holdFeet[i] = NONE;
 	}
 		
 	// I tried to condense this, but kept getting the logic messed up
 	for (unsigned long i = 0; i < columns.size(); i++)
 	{
-		resultState->columns[i] = columns[i];
 		if(columns[i] == NONE) {
 			continue;
 		}
@@ -147,13 +145,12 @@ State * StepParityGenerator::initResultState(State * initialState, Row &row, con
 
 		if(row.holds[i].type == TapNoteType_Empty)
 		{
-			resultState->movedFeet[i] = columns[i];
 			resultState->didTheFootMove[columns[i]] = true;
 			continue;
 		}
+		
 		if(initialState->combinedColumns[i] != columns[i])
 		{
-			resultState->movedFeet[i] = columns[i];
 			resultState->didTheFootMove[columns[i]] = true;
 		}
 	}
@@ -166,7 +163,6 @@ State * StepParityGenerator::initResultState(State * initialState, Row &row, con
 
 		if(row.holds[i].type != TapNoteType_Empty)
 		{
-			resultState->holdFeet[i] = columns[i];
 			resultState->isTheFootHolding[columns[i]] = true;
 		}
 		
@@ -182,7 +178,7 @@ State * StepParityGenerator::initResultState(State * initialState, Row &row, con
 		}
 	}
 	
-	mergeInitialAndResultPosition(initialState, resultState, (int)columns.size());
+	mergeInitialAndResultPosition(initialState, resultState, columns, (int)columns.size());
 	
 	std::uint64_t stateHash = getStateCacheKey(resultState);
 	
@@ -199,20 +195,20 @@ State * StepParityGenerator::initResultState(State * initialState, Row &row, con
 	return resultState;
 }
 
-// This merges the `columns` properties of initialState and resultState, which
+// This merges the `combinedColumns` of initialState with the next `columns`, which
 // fully represents the player's position on the dance stage.
 // For example:
 // initialState.combinedColumns = [L,0,0,R]
-// resultState.columns = [0,L,0,0]
-// combinedColumns = [0,L,0,R]
+// columns = [0,L,0,0]
+// resultState.combinedColumns = [0,L,0,R]
 // This eventually gets saved back to resultState
-void StepParityGenerator::mergeInitialAndResultPosition(State * initialState, State * resultState, int columnCount)
+void StepParityGenerator::mergeInitialAndResultPosition(State * initialState, State * resultState, const FootPlacement & columns, int columnCount)
 {
 	// Merge initial + result position
 	for (int i = 0; i < columnCount; i++) {
-	  	  // copy in data from resultState over the top which overrides it, as long as it's not nothing
-	  	  if (resultState->columns[i] != NONE) {
-		  	  resultState->combinedColumns[i] = resultState->columns[i];
+	  	  // copy in data from columns over the top which overrides it, as long as it's not nothing
+	  	  if (columns[i] != NONE) {
+		  	  resultState->combinedColumns[i] = columns[i];
 		continue;
 	  	  }
 
@@ -247,6 +243,7 @@ void StepParityGenerator::mergeInitialAndResultPosition(State * initialState, St
 		{
 			resultState->whereTheFeetAre[resultState->combinedColumns[i]] = i;
 		}
+		resultState->combined_mask |= (static_cast<uint32_t>(resultState->combinedColumns[i])) << (i * 3);
 	}
 }
 
@@ -533,27 +530,7 @@ int StepParityGenerator::getPermuteCacheKey(const Row &row)
 std::uint64_t StepParityGenerator::getStateCacheKey(State * state)
 {
 	std::uint64_t value = 0;
-	const std::uint64_t prime = 31;
-	for(Foot f : state->columns)
-	{
-		value *= prime;
-		value += f;
-	}
-	for(Foot f : state->combinedColumns)
-	{
-		value *= prime;
-		value += f;
-	}
-	for(Foot f : state->movedFeet)
-	{
-		value *= prime;
-		value += f;
-	}
-	for(Foot f : state->holdFeet)
-	{
-		value *= prime;
-		value += f;
-	}
+	value = state->combined_mask | (static_cast<uint64_t>(state->moved_mask) << 30) | (static_cast<uint64_t>(state->holding_mask) << 46);
 	return value;
 }
 
