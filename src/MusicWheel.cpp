@@ -1483,9 +1483,8 @@ void MusicWheel::StartRoulette()
 	m_Moving = 1;
 	m_TimeBeforeMovingBegins = 0;
 	m_SpinSpeed = 1.0f/ROULETTE_SWITCH_SECONDS;
-	RandomGen rnd;
 	auto &rouletteItems = getWheelItemsData(SORT_ROULETTE);
-	std::shuffle( rouletteItems.begin(), rouletteItems.end(), rnd );
+	std::shuffle( rouletteItems.begin(), rouletteItems.end(), g_RandomNumberGenerator );
 	GAMESTATE->m_SortOrder.Set( SORT_ROULETTE );
 	//SetOpenSection( m_sExpandedSectionName );
 	RebuildWheelItems();
@@ -1500,9 +1499,8 @@ void MusicWheel::StartRandom()
 	if( RANDOM_PICKS_LOCKED_SONGS )
 	{
 		// Shuffle and use the roulette wheel.
-		RandomGen rnd;
 		auto &rouletteItems = getWheelItemsData(SORT_ROULETTE);
-		std::shuffle( rouletteItems.begin(), rouletteItems.end(), rnd );
+		std::shuffle( rouletteItems.begin(), rouletteItems.end(), g_RandomNumberGenerator );
 		GAMESTATE->m_SortOrder.Set( SORT_ROULETTE );
 	}
 	else
