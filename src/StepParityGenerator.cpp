@@ -45,8 +45,9 @@ void StepParityGenerator::buildStateGraph()
 	beginningState = new State();
 	startNode = addNode(beginningState, rows[0].second - 1, -1);
 	
-	std::queue<StepParityNode *> previousNodes;
-	previousNodes.push(startNode);
+	std::vector<StepParityNode *> previousNodes;
+	std::vector<StepParityNode *> resultNodes;
+	previousNodes.push_back(startNode);
 	StepParityCost costCalculator(layout);
 
 	// maps the current row's Nodes based on their State's cache key
@@ -55,14 +56,13 @@ void StepParityGenerator::buildStateGraph()
 	for (unsigned long i = 0; i < rows.size(); i++)
 	{
 		stateMap.clear();
+		resultNodes.clear();
 		
-		std::vector<StepParityNode *> resultNodes;
 		Row &row = rows[i];
 		const std::vector<FootPlacement> *permutations = getFootPlacementPermutations(row);
 		
-		while (!previousNodes.empty())
+		for(StepParityNode *initialNode : previousNodes)
 		{
-			StepParityNode *initialNode = previousNodes.front();
 			float elapsedTime = row.second - initialNode->second;
 			for(auto it = permutations->begin(); it != permutations->end(); it++)
 			{
@@ -95,13 +95,8 @@ void StepParityGenerator::buildStateGraph()
 					resultNodes.push_back(newNode);
 				}
 			}
-			previousNodes.pop();
 		}
-		
-		for (StepParityNode * n : resultNodes)
-		{
-			previousNodes.push(n);
-		}
+		std::swap(previousNodes, resultNodes);
 	}
 	
 	// at this point, previousStates holds all of the states for the very last row,
@@ -110,15 +105,13 @@ void StepParityGenerator::buildStateGraph()
 	endNode = addNode(endingState, rows[rows.size() - 1].second + 1, rows.size());
 	endNode->totalCost = MAXFLOAT;
 	
-	while(!previousNodes.empty())
+	for(StepParityNode *node : previousNodes)
 	{
-		StepParityNode *node = previousNodes.front();
 		if(node->totalCost < endNode->totalCost)
 		{
 			endNode->totalCost = node->totalCost;
 			endNode->previousNode = node;
 		}
-		previousNodes.pop();
 	}
 }
 
