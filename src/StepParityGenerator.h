@@ -103,7 +103,7 @@ namespace StepParity {
 		/// @return The resulting state
 		State * initResultState(State * initialState, Row &row, const FootPlacement &columns);
 
-		void mergeInitialAndResultPosition(State * initialState, State * resultState, int columnCount);
+		void mergeInitialAndResultPosition(State * initialState, State * resultState, const FootPlacement & columns, int columnCount);
 		
 		/// @brief Returns a pointer to a vector of foot possible foot placements for the given row.
 		/// Utilizes the permuteCache to re-use vectors. The returned pointer points to a vector within the permuteCache.

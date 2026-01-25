@@ -6,10 +6,9 @@ using namespace StepParity;
 
 bool State::operator==(const State &other) const
 {
-   return columns == other.columns &&
-	combinedColumns == other.combinedColumns &&
-   movedFeet == other.movedFeet &&
-   holdFeet == other.holdFeet;
+	return combined_mask == other.combined_mask &&
+	moved_mask == other.moved_mask &&
+	holding_mask == other.holding_mask;
 }
 
 // StageLayout
@@ -330,13 +329,13 @@ float StageLayout::getPlayerAngle(StepParity::StagePoint left, StepParity::Stage
 }
 
 // Row
-void Row::setFootPlacement(const std::vector<Foot> & footPlacement)
+void Row::setFootPlacement(const StepParity::State * state)
 {
 	for (int c = 0; c < columnCount; c++) {
 		if(notes[c].type != TapNoteType_Empty) {
-			notes[c].parity = footPlacement[c];
-			columns[c] = footPlacement[c];
-			whereTheFeetAre[footPlacement[c]] = c;
+			notes[c].parity = state->combinedColumns[c];
+			columns[c] = state->combinedColumns[c];
+			whereTheFeetAre[state->combinedColumns[c]] = c;
 			noteCount += 1;
 		}
 	}
