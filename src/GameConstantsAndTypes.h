@@ -192,7 +192,7 @@ enum SortOrder
 	SORT_ONI_COURSES, /**< View only the oni/survival courses. */
 	SORT_ENDLESS_COURSES, /**< View only the endless courses. */
 	SORT_LENGTH, /**< Sort the songs/courses by how long they would last. */
-	SORT_ROULETTE,
+	SORT_ROULETTE, // Note: don't call more than once per line as successive calls can clear the vector used. TODO: fix this underlying bug.
 	SORT_RECENT,
 	SORT_RECENT_P1, /**< Sort by the most recent play for P1. */
 	SORT_RECENT_P2, /**< Sort by the most recent play for P2. */
