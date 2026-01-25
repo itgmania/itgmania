@@ -94,7 +94,6 @@ namespace StepParity {
 		/// and one that represents the end of the song, after the final note.
 		void buildStateGraph();
 
-		void addStateToGraph(State * resultState, StepParityNode * initialNode, Row & row, std::vector<StepParityNode *> &existingNodesForThisRow, float cost);
 		/// @brief Creates a new State, which is the result of moving from the given initialState
 		/// to the steps of the given row with the given foot placements in columns.
 		/// @param initialState The state of the player prior to the next row
@@ -129,7 +128,6 @@ namespace StepParity {
 		int getPermuteCacheKey(const Row &row);
 		std::uint64_t getStateCacheKey(State * state);
 		StepParityNode * addNode(State *state, float second, int rowIndex);
-		void addEdge(StepParityNode* from, StepParityNode* to, float cost);
 	};
 };
 

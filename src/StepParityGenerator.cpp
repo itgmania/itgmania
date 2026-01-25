@@ -49,8 +49,13 @@ void StepParityGenerator::buildStateGraph()
 	previousNodes.push(startNode);
 	StepParityCost costCalculator(layout);
 
+	// maps the current row's Nodes based on their State's cache key
+	std::unordered_map<uint64_t, StepParityNode*> stateMap;
+	
 	for (unsigned long i = 0; i < rows.size(); i++)
 	{
+		stateMap.clear();
+		
 		std::vector<StepParityNode *> resultNodes;
 		Row &row = rows[i];
 		const std::vector<FootPlacement> *permutations = getFootPlacementPermutations(row);
@@ -62,10 +67,33 @@ void StepParityGenerator::buildStateGraph()
 			for(auto it = permutations->begin(); it != permutations->end(); it++)
 			{
 				State * resultState = initResultState(initialNode->state, row, *it);
-				
 				float cost = costCalculator.getActionCost(initialNode->state, resultState, rows, *it, i, elapsedTime);
-				addStateToGraph(resultState, initialNode, row, resultNodes, cost);
 				
+				std::uint64_t key = getStateCacheKey(resultState);
+				
+				// Do we already have a Node in this row for this same resultState?
+				// If so, and the totalCost is lower, update that node's totalCost
+				// and previousNode.
+				// Otherwise, add a new node and save it to stateMap
+				auto itn = stateMap.find(key);
+				if(itn != stateMap.end())
+				{
+					StepParityNode * existingNode = itn->second;
+					float totalCost = initialNode->totalCost + cost;
+					if(totalCost < existingNode->totalCost)
+					{
+						existingNode->totalCost = totalCost;
+						existingNode->previousNode = initialNode;
+					}
+				}
+				else
+				{
+					StepParityNode * newNode = addNode(resultState, row.second, i);
+					newNode->totalCost = initialNode->totalCost + cost;
+					newNode->previousNode = initialNode;
+					stateMap[key] = newNode;
+					resultNodes.push_back(newNode);
+				}
 			}
 			previousNodes.pop();
 		}
@@ -80,30 +108,20 @@ void StepParityGenerator::buildStateGraph()
 	// which just get connected to the endState
 	endingState = new State();
 	endNode = addNode(endingState, rows[rows.size() - 1].second + 1, rows.size());
+	endNode->totalCost = MAXFLOAT;
 	
 	while(!previousNodes.empty())
 	{
 		StepParityNode *node = previousNodes.front();
-		addEdge(node, endNode, 0);
+		if(node->totalCost < endNode->totalCost)
+		{
+			endNode->totalCost = node->totalCost;
+			endNode->previousNode = node;
+		}
 		previousNodes.pop();
 	}
 }
 
-void StepParityGenerator::addStateToGraph(State * resultState, StepParityNode * initialNode, Row & row, std::vector<StepParityNode *> &existingNodesForThisRow, float cost)
-{
-	
-	for(StepParityNode * existingNode : existingNodesForThisRow)
-	{
-		if(existingNode->state == resultState)
-		{
-			addEdge(initialNode, existingNode, cost);
-			return;
-		}
-	}
-	StepParityNode *resultNode = addNode(resultState, row.second, row.rowIndex);
-	addEdge(initialNode, resultNode, cost);
-	existingNodesForThisRow.push_back(resultNode);
-}
 
 
 State * StepParityGenerator::initResultState(State * initialState, Row &row, const FootPlacement &columns)
@@ -115,7 +133,6 @@ State * StepParityGenerator::initResultState(State * initialState, Row &row, con
 	
 	State * resultState = tmpState;
 	
-
 	// reset resultState
 	
 	resultState->moved_mask = 0;
@@ -276,48 +293,37 @@ const std::vector<FootPlacement>* StepParityGenerator::getFootPlacementPermutati
 
 std::vector<int> StepParityGenerator::computeCheapestPath()
 {
-	int start = startNode->id;
-	int end = endNode->id;
-	std::vector<int> shortest_path;
-	std::vector<float> cost(nodes.size(), FLT_MAX);
-	std::vector<int> predecessor(nodes.size(), -1);
-
-	cost[start] = 0;
-	for (int i = start; i <= end; i++)
+	// Find the best final node
+	StepParityNode* bestFinalNode = endNode->previousNode;  // If you're using the endNode approach
+	
+	// OR if you're tracking the best final node directly:
+	// StepParityNode* bestFinalNode = ... (the one with minimum totalCost)
+	
+	if (bestFinalNode == nullptr)
 	{
-		
-		StepParityNode *node = nodes[i];
-		for(auto neighbor: node->neighbors)
-		{
-			int neighbor_id = neighbor.first->id;
-			float weight = neighbor.second;
-			if(cost[i] + weight < cost[neighbor_id])
-			{
-				cost[neighbor_id] = cost[i] + weight;
-				predecessor[neighbor_id] = i;
-			}
-		}
+		LOG->Info("StepParityGenerator::computeCheapestPath: no valid path found");
+		return {};
 	}
-
-	int current_node = end;
-	while(current_node != start)
+	
+	std::vector<int> path;
+	StepParityNode* current = bestFinalNode;
+	
+	// Walk backwards using pred pointers
+	while (current != startNode && current != nullptr)
 	{
-		
-		if(current_node == -1)
-		{
-			LOG->Info("StepParityGenerator::computeCheapestPath: encountered a value of -1 for 'current_node', this means that we did not produce a valid chart.");
-			return {};
-		}
-		if(current_node != end)
-		{
-			shortest_path.push_back(current_node);
-		}
-		current_node = predecessor[current_node];
+		path.push_back(current->id);
+		current = current->previousNode;
 	}
-	std::reverse(shortest_path.begin(), shortest_path.end());
-	return shortest_path;
+	
+	if (current == nullptr)
+	{
+		LOG->Info("StepParityGenerator::computeCheapestPath: path did not reach start node");
+		return {};
+	}
+	
+	std::reverse(path.begin(), path.end());
+	return path;
 }
-
 void StepParityGenerator::CreateIntermediateNoteData(
 		const NoteData &in, std::vector<IntermediateNoteData> &out)
 {
@@ -540,9 +546,4 @@ StepParityNode * StepParityGenerator::addNode(State *state, float second, int ro
 	newNode->id = int(nodes.size());
 	nodes.push_back(newNode);
 	return newNode;
-}
-
-void StepParityGenerator::addEdge(StepParityNode* from, StepParityNode* to, float cost)
-{
-	from->neighbors[to] = cost;
 }

@@ -275,23 +275,14 @@ namespace StepParity {
 		int rowIndex = 0;
 		float second = 0;
 		
-		// Connections to, and the cost of moving to, the connected nodes
-		std::unordered_map<StepParityNode *, float> neighbors;
+		float totalCost = 0;
+		StepParityNode* previousNode = 0;
 		
-		~StepParityNode()
-		{
-			neighbors.clear();
-		}
 		StepParityNode(State *_state, float _second, int _rowIndex)
 		{
 			state = _state;
 			rowIndex = _rowIndex;
 			second = _second;
-		}
-		
-		int neighborCount()
-		{
-			return static_cast<int>(neighbors.size());
 		}
 	};
 };
