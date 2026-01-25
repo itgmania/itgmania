@@ -1508,16 +1508,11 @@ void MusicWheel::StartRandom()
 		GAMESTATE->m_SortOrder.Set( GAMESTATE->m_PreferredSortOrder );
 	}
 	//SetOpenSection( "" );
-
-	m_Moving = -1;
-	m_TimeBeforeMovingBegins = 0;
-	m_SpinSpeed = 1.0f/ROULETTE_SWITCH_SECONDS;
-	m_SpinSpeed *= 20.0f; /* faster! */
-	m_WheelState = STATE_RANDOM_SPINNING;
-
 	SelectSong( GetPreferredSelectionForRandomOrPortal() );
+	m_WheelState = STATE_LOCKED;
 
 	RebuildWheelItems();
+	SCREENMAN->PostMessageToTopScreen( SM_SongChanged, 0 );
 }
 
 void MusicWheel::SetOpenSection( RString group )
