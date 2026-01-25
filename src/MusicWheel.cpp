@@ -1795,23 +1795,16 @@ Song *MusicWheel::GetPreferredSelectionForRandomOrPortal()
 	} else {
 		 vSongs = SONGMAN->GetSongs( sPreferredGroup);
 	}
-	RandomGen rnd;
-	std::shuffle(vSongs.begin(), vSongs.end(), rnd );
 
 #define NUM_PROBES 1000
 	for( int i=0; i<NUM_PROBES; i++ )
 	{
 		bool isValid = true;
 		int iSelection = 0;
-		// Get a number by modulo using the current time plus iSelection
 		Song *pSong;
 		if (vSongs.size() != 0) {
 			iSelection = RandomInt(vSongs.size());
-			
-			LOG->Trace( "RandomInt selected %d out of %d songs", iSelection, (int)vSongs.size() );
 			pSong = vSongs[iSelection];
-			LOG->Trace( "Probed song: %s", vSongs[iSelection]->GetDisplayFullTitle().c_str() );
-			
 		}
 		else {
 			iSelection = RandomInt(wid.size());
@@ -1821,9 +1814,6 @@ Song *MusicWheel::GetPreferredSelectionForRandomOrPortal()
 			if( !sPreferredGroup.empty() && pSong->m_sGroupName != sPreferredGroup )
 				continue;
 		}
-		LOG->Trace( "Probe Number: %d", i );
-		LOG->Trace( "Probed song: %s", pSong->GetDisplayFullTitle().c_str() );
-
 		// There's an off possibility that somebody might have only one song with only beginner steps.
 		if( i < 900 && pSong->IsTutorial() )
 			continue;
