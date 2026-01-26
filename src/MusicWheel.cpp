@@ -1284,7 +1284,6 @@ void MusicWheel::UpdateSwitch()
 		m_fTimeLeftInState = 0;
 		break;
 	case STATE_ROULETTE_SPINNING:
-	case STATE_RANDOM_SPINNING:
 		break;
 	case STATE_LOCKED:
 		break;
@@ -1444,15 +1443,6 @@ bool MusicWheel::Select()	// return true if this selection ends the screen
 			m_iSwitchesLeftInSpinDown = ROULETTE_SLOW_DOWN_SWITCHES/2+1 + RandomInt( ROULETTE_SLOW_DOWN_SWITCHES/2 );
 			m_fTimeLeftInState = 0.1f;
 			return false;
-		case STATE_RANDOM_SPINNING:
-			m_fPositionOffsetFromSelection = std::max(m_fPositionOffsetFromSelection, 0.3f);
-			m_WheelState = STATE_LOCKED;
-			SCREENMAN->PlayStartSound();
-			m_fLockedWheelVelocity = 0;
-			// Set m_Moving to zero to stop the sounds from playing.
-			m_Moving = 0;
-			SCREENMAN->PostMessageToTopScreen( SM_SongChanged, 0 );
-			return true;
 		default: break;
 	}
 
@@ -1491,7 +1481,10 @@ void MusicWheel::StartRoulette()
 	m_SpinSpeed = 1.0f/ROULETTE_SWITCH_SECONDS;
 	auto &rouletteItems = getWheelItemsData(SORT_ROULETTE);
 	std::shuffle( rouletteItems.begin(), rouletteItems.end(), g_RandomNumberGenerator );
-	GAMESTATE->m_SortOrder.Set( SORT_ROULETTE );
+	if (m_sExpandedSectionName == "") {
+		GAMESTATE->m_SortOrder.Set( SORT_ROULETTE );
+	}
+	// Otherwise roulette in our current section
 	SetOpenSection( m_sExpandedSectionName );
 	RebuildWheelItems();
 }
@@ -1747,8 +1740,7 @@ void MusicWheel::PlayerJoined()
 
 bool MusicWheel::IsRouletting() const
 {
-	return m_WheelState == STATE_ROULETTE_SPINNING || m_WheelState == STATE_ROULETTE_SLOWING_DOWN ||
-		   m_WheelState == STATE_RANDOM_SPINNING;
+	return m_WheelState == STATE_ROULETTE_SPINNING || m_WheelState == STATE_ROULETTE_SLOWING_DOWN;
 }
 
 Song* MusicWheel::GetSelectedSong()
