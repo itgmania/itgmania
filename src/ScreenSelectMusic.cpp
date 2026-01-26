@@ -936,13 +936,13 @@ bool ScreenSelectMusic::DetectCodes( const InputEventPlus &input )
 	}
 	else if( CodeDetector::EnteredNextSort(input.GameI.controller) )
 	{
-		if( GAMESTATE->IsAnExtraStageAndSelectionLocked() || m_MusicWheel.WheelIsLocked() )
+		if( GAMESTATE->IsAnExtraStageAndSelectionLocked() || m_MusicWheel.WheelIsLocked() || m_MusicWheel.IsRouletting() )
 			m_soundLocked.Play(true);
 		else if( !GAMESTATE->IsCourseMode() )
 			// Only change sorts in non-course mode
 			m_MusicWheel.NextSort();
 	}
-	else if( !GAMESTATE->IsAnExtraStageAndSelectionLocked() && !m_MusicWheel.WheelIsLocked() && CodeDetector::DetectAndAdjustMusicOptions(input.GameI.controller) )
+	else if( !GAMESTATE->IsAnExtraStageAndSelectionLocked() && !m_MusicWheel.WheelIsLocked() && !m_MusicWheel.IsRouletting() && CodeDetector::DetectAndAdjustMusicOptions(input.GameI.controller) )
 	{
 		m_soundOptionsChange.Play(true);
 
@@ -954,7 +954,7 @@ bool ScreenSelectMusic::DetectCodes( const InputEventPlus &input )
 	}
 	else if( CodeDetector::EnteredNextGroup(input.GameI.controller) && !CHANGE_GROUPS_WITH_GAME_BUTTONS )
 	{
-		if( GAMESTATE->IsAnExtraStageAndSelectionLocked() || m_MusicWheel.WheelIsLocked() )
+		if( GAMESTATE->IsAnExtraStageAndSelectionLocked() || m_MusicWheel.WheelIsLocked() || m_MusicWheel.IsRouletting() )
 			m_soundLocked.Play(true);
 		else
 		{
@@ -967,7 +967,7 @@ bool ScreenSelectMusic::DetectCodes( const InputEventPlus &input )
 	}
 	else if( CodeDetector::EnteredPrevGroup(input.GameI.controller) && !CHANGE_GROUPS_WITH_GAME_BUTTONS )
 	{
-		if( GAMESTATE->IsAnExtraStageAndSelectionLocked() || m_MusicWheel.WheelIsLocked() )
+		if( GAMESTATE->IsAnExtraStageAndSelectionLocked() || m_MusicWheel.WheelIsLocked() || m_MusicWheel.IsRouletting() )
 			m_soundLocked.Play(true);
 		else
 		{
@@ -980,7 +980,7 @@ bool ScreenSelectMusic::DetectCodes( const InputEventPlus &input )
 	}
 	else if( CodeDetector::EnteredCloseFolder(input.GameI.controller) )
 	{
-		if( GAMESTATE->IsAnExtraStageAndSelectionLocked() || m_MusicWheel.WheelIsLocked() )
+		if( GAMESTATE->IsAnExtraStageAndSelectionLocked() || m_MusicWheel.WheelIsLocked() || m_MusicWheel.IsRouletting() )
 			m_soundLocked.Play(true);
 		else
 		{
