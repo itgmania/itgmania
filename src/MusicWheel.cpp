@@ -1507,12 +1507,13 @@ void MusicWheel::StartRandom()
 	{
 		GAMESTATE->m_SortOrder.Set( GAMESTATE->m_PreferredSortOrder );
 	}
-	//SetOpenSection( "" );
+	
 	SelectSong( GetPreferredSelectionForRandomOrPortal() );
-	m_WheelState = STATE_LOCKED;
-
+	
 	RebuildWheelItems();
 	SCREENMAN->PostMessageToTopScreen( SM_SongChanged, 0 );
+	TweenOnScreenForSort();
+	m_WheelState = STATE_LOCKED;
 }
 
 void MusicWheel::SetOpenSection( RString group )
@@ -1790,6 +1791,7 @@ Song *MusicWheel::GetPreferredSelectionForRandomOrPortal()
 	} else {
 		 vSongs = SONGMAN->GetSongs( sPreferredGroup);
 	}
+	std::shuffle( vSongs.begin(), vSongs.end(), g_RandomNumberGenerator );
 
 #define NUM_PROBES 1000
 	for( int i=0; i<NUM_PROBES; i++ )
@@ -1871,6 +1873,7 @@ public:
 		return 1;
 	}
 	static int IsRouletting( T* p, lua_State *L ){ lua_pushboolean( L, p->IsRouletting() ); return 1; }
+	static int IsLocked( T* p, lua_State *L ){ lua_pushboolean( L, p->WheelIsLocked() ); return 1; }
 	static int SelectSong( T* p, lua_State *L )
 	{
 		if( lua_isnil(L,1) ) { lua_pushboolean( L, false ); }
@@ -1907,6 +1910,7 @@ public:
 		ADD_METHOD( ChangeSort );
 		ADD_METHOD( GetSelectedSection );
 		ADD_METHOD( IsRouletting );
+		ADD_METHOD( IsLocked );
 		ADD_METHOD( SelectSong );
 		ADD_METHOD( SelectCourse );
 		ADD_METHOD( Move );
