@@ -1049,7 +1049,7 @@ std::vector<MusicWheelItemData *> & MusicWheel::getWheelItemsData(SortOrder so) 
 }
 
 void MusicWheel::readyWheelItemsData(SortOrder so) {
-	if(m_WheelItemDatasStatus[so] == VALID && so != SORT_PREFERRED && so != SORT_ROULETTE)
+	if(m_WheelItemDatasStatus[so] == VALID && so != SORT_PREFERRED)
 		return;
 
 	std::vector<MusicWheelItemData*> &aUnFilteredDatas = m__UnFilteredWheelItemDatas[so];
@@ -1060,7 +1060,7 @@ void MusicWheel::readyWheelItemsData(SortOrder so) {
 	FilterWheelItemDatas( aUnFilteredDatas, m__WheelItemDatas[so], so );
 	// The preferred sort's songs are subject to change during a session (particularly if two players have different preferred songs) 
 	// thus it's status should remain invalid so the wheel items are rebuilt each time in case of change.
-	if (so != SORT_PREFERRED && so != SORT_ROULETTE) {
+	if (so != SORT_PREFERRED) {
 		m_WheelItemDatasStatus[so]=VALID;
 	}
 }
@@ -1309,6 +1309,12 @@ void MusicWheel::UpdateSwitch()
 			m_Moving = 0;
 
 			LOG->Trace( "m_iSwitchesLeftInSpinDown id %d, m_fTimeLeftInState is %f", m_iSwitchesLeftInSpinDown, m_fTimeLeftInState );
+			
+			// If we land on a non-song, extend the spin down by one.
+			if ( GetCurWheelItemData(m_iSelection)->m_Type != WheelItemDataType_Song )
+			{
+				++m_iSwitchesLeftInSpinDown;
+			}
 
 			if( m_iSwitchesLeftInSpinDown == 0 )
 				ChangeMusic( randomf(0,1) >= 0.5f? 1:-1 );
@@ -1486,7 +1492,7 @@ void MusicWheel::StartRoulette()
 	auto &rouletteItems = getWheelItemsData(SORT_ROULETTE);
 	std::shuffle( rouletteItems.begin(), rouletteItems.end(), g_RandomNumberGenerator );
 	GAMESTATE->m_SortOrder.Set( SORT_ROULETTE );
-	//SetOpenSection( m_sExpandedSectionName );
+	SetOpenSection( m_sExpandedSectionName );
 	RebuildWheelItems();
 }
 
@@ -1509,7 +1515,7 @@ void MusicWheel::StartRandom()
 	}
 	
 	SelectSong( GetPreferredSelectionForRandomOrPortal() );
-	
+
 	RebuildWheelItems();
 	SCREENMAN->PostMessageToTopScreen( SM_SongChanged, 0 );
 	TweenOnScreenForSort();
