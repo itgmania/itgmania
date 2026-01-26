@@ -103,7 +103,7 @@ void StepParityGenerator::buildStateGraph()
 	// which just get connected to the endState
 	endingState = new State();
 	endNode = addNode(endingState, rows[rows.size() - 1].second + 1, rows.size());
-	endNode->totalCost = MAXFLOAT;
+	endNode->totalCost = FLT_MAX;
 	
 	for(StepParityNode *node : previousNodes)
 	{
