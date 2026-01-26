@@ -28,7 +28,7 @@ static const char *WheelStateNames[] = {
 	"FlyingOnAfterNextSort",
 	"RouletteSpinning",
 	"RouletteSlowingDown",
-	"Locked",
+	"Locked"
 };
 XToString( WheelState );
 StringToX( WheelState );

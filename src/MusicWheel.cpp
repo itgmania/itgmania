@@ -1103,9 +1103,13 @@ void MusicWheel::FilterWheelItemDatas(std::vector<MusicWheelItemData *> &aUnFilt
 		{
 			if( !bFoundAnySong )
 				aiRemove[i] = true;
-			if( so == SORT_ROULETTE || STATE_ROULETTE_SPINNING == m_WheelState )
+			if(STATE_ROULETTE_SPINNING == m_WheelState )
 				aiRemove[i] = true;
 			continue;
+		}
+
+		if (WID.m_Type == WheelItemDataType_Section && STATE_ROULETTE_SPINNING == m_WheelState) {
+			aiRemove[i] = true;
 		}
 
 		/* Filter songs that we don't have enough stages to play. */
@@ -1309,11 +1313,6 @@ void MusicWheel::UpdateSwitch()
 
 			LOG->Trace( "m_iSwitchesLeftInSpinDown id %d, m_fTimeLeftInState is %f", m_iSwitchesLeftInSpinDown, m_fTimeLeftInState );
 			
-			// If we land on a non-song, extend the spin down by one.
-			if ( GetCurWheelItemData(m_iSelection)->m_Type != WheelItemDataType_Song )
-			{
-				++m_iSwitchesLeftInSpinDown;
-			}
 
 			if( m_iSwitchesLeftInSpinDown == 0 )
 				ChangeMusic( randomf(0,1) >= 0.5f? 1:-1 );
@@ -1479,14 +1478,14 @@ void MusicWheel::StartRoulette()
 	m_Moving = 1;
 	m_TimeBeforeMovingBegins = 0;
 	m_SpinSpeed = 1.0f/ROULETTE_SWITCH_SECONDS;
-	auto &rouletteItems = getWheelItemsData(SORT_ROULETTE);
-	std::shuffle( rouletteItems.begin(), rouletteItems.end(), g_RandomNumberGenerator );
 	if (m_sExpandedSectionName == "") {
 		GAMESTATE->m_SortOrder.Set( SORT_ROULETTE );
 	}
-	// Otherwise roulette in our current section
+
+	m_WheelItemDatasStatus[GAMESTATE->m_SortOrder] = INVALID; // force rebuild
 	SetOpenSection( m_sExpandedSectionName );
-	RebuildWheelItems();
+	readyWheelItemsData(GAMESTATE->m_SortOrder);
+
 }
 
 void MusicWheel::StartRandom()
