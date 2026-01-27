@@ -130,7 +130,7 @@ jobs:
         cp ffmpeg-src/libswscale/{swscale,version,version_major}.h package/include/libswscale/ 2>/dev/null || true
         
     - name: Upload artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: ffmpeg-w32
         path: package/
