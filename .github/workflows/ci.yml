@@ -43,15 +43,6 @@ jobs:
       - uses: actions/checkout@v6
         with:
           submodules: recursive
-     ### TEMPORARY FIX:  Disable cmake cache until it expires so that windows builds work for the time being
-     # - name: Cache CMake build directory
-     #   uses: actions/cache@v4
-     #   with:
-     #     path: |
-     #       build
-     #     key: ${{ runner.os }}-${{ runner.arch }}-cmake-build-ci-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
-     #     restore-keys: |
-     #       ${{ runner.os }}-${{ runner.arch }}-cmake-build-ci-
       - name: Install dependencies
         if: matrix.os != 'windows-2022'
         run: ${{ matrix.install }}
