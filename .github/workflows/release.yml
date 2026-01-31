@@ -9,6 +9,17 @@ name: Release
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    env:
+      UBUNTU_INSTALL: |
+        sudo apt-get update && sudo apt-get install -y \
+        libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev \
+        libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev \
+        libxrandr-dev libxtst-dev nasm
+      MAC_INSTALL: brew install nasm
+      PACKAGE_CMD: cmake --build build --target package
+      PACKAGE_CMD_WINDOWS: cmake --build build --config Release --target package
+      RELEASE_NIGHTLY_FLAGS: '-DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off'
+      RELEASE_FULL_FLAGS: '-DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off -DWITH_CLUB_FANTASTIC=Off'
     permissions:
       id-token: write
       attestations: write
@@ -19,42 +30,42 @@ jobs:
         include:
           - os: ubuntu-24.04
             name: Ubuntu (x86_64)
-            install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
+            install: ${{ env.UBUNTU_INSTALL }}
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)"
-            release-nightly: cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
-            release-full: cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off -DWITH_CLUB_FANTASTIC=Off
-            package: cmake --build build --target package
+            release-nightly: ${{ env.RELEASE_NIGHTLY_FLAGS }}
+            release-full: ${{ env.RELEASE_FULL_FLAGS }}
+            package: ${{ env.PACKAGE_CMD }}
             path: build/ITGmania-*.tar.gz
           - os: ubuntu-24.04-arm
             name: Ubuntu (ARM)
-            install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
+            install: ${{ env.UBUNTU_INSTALL }}
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)"
-            release-nightly: cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
-            release-full: cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off -DWITH_CLUB_FANTASTIC=Off
-            package: cmake --build build --target package
+            release-nightly: ${{ env.RELEASE_NIGHTLY_FLAGS }}
+            release-full: ${{ env.RELEASE_FULL_FLAGS }}
+            package: ${{ env.PACKAGE_CMD }}
             path: build/ITGmania-*.tar.gz
           - os: macos-15
             name: macOS (M1)
-            install: brew install nasm
+            install: ${{ env.MAC_INSTALL }}
             configure: cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
-            release-nightly: cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_CLUB_FANTASTIC=Off
-            release-full: cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_CLUB_FANTASTIC=Off
-            package: cmake --build build --target package
+            release-nightly: ${{ env.RELEASE_NIGHTLY_FLAGS }} -DCMAKE_OSX_ARCHITECTURES=arm64
+            release-full: ${{ env.RELEASE_FULL_FLAGS }} -DCMAKE_OSX_ARCHITECTURES=arm64
+            package: ${{ env.PACKAGE_CMD }}
             path: build/ITGmania-*.dmg
           - os: macos-15-intel
             name: macOS (Intel)
-            install: brew install nasm
+            install: ${{ env.MAC_INSTALL }}
             configure: cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
-            release-nightly: cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_CLUB_FANTASTIC=Off
-            release-full: cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_CLUB_FANTASTIC=Off
-            package: cmake --build build --target package
+            release-nightly: ${{ env.RELEASE_NIGHTLY_FLAGS }} -DCMAKE_OSX_ARCHITECTURES=x86_64
+            release-full: ${{ env.RELEASE_FULL_FLAGS }} -DCMAKE_OSX_ARCHITECTURES=x86_64
+            package: ${{ env.PACKAGE_CMD }}
             path: build/ITGmania-*-NIGHTLY-git-*-macOS-Intel-no-songs.dmg
           - os: windows-2022
             name: Windows
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
-            release-nightly: cmake -B build -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
-            release-full: cmake -B build -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off -DWITH_CLUB_FANTASTIC=Off
-            package: cmake --build build --config Release --target package
+            release-nightly: ${{ env.RELEASE_NIGHTLY_FLAGS }}
+            release-full: ${{ env.RELEASE_FULL_FLAGS }}
+            package: ${{ env.PACKAGE_CMD_WINDOWS }}
             path: build/ITGmania-*.exe
     name: ${{ matrix.name }}
     steps:
@@ -80,14 +91,13 @@ jobs:
           msbuild-architecture: x64
       - name: Create nightly release
         if: github.ref_name == 'beta'
-        run: ${{ matrix.release-nightly }}
+        run: cmake -B build ${{ matrix.release-nightly }}
       - name: Create full release
         if: github.ref_name == 'release'
-        run: ${{ matrix.release-full }}
+        run: cmake -B build ${{ matrix.release-full }}
       - name: Create package
         id: package
-        run: |
-          ${{ matrix.package }}
+        run: ${{ matrix.package }}
       - name: Upload artifacts
         id: upload
         uses: actions/upload-artifact@v6
