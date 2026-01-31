@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     env:
-      UBUNTU_INSTALL: "sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm"
+      UBUNTU_INSTALL: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
       MAC_INSTALL: brew install nasm
       CMAKE_CONFIG_PREFIX: cmake -B build -DWITH_FFMPEG_JOBS=
       CMAKE_BUILD_PREFIX: cmake --build build --parallel
@@ -41,8 +41,8 @@ jobs:
             build: '$(sysctl -n hw.logicalcpu)'
           - os: windows-2022
             name: Windows
-            configure: '"$env:NUMBER_OF_PROCESSORS"'
-            build: '"$env:NUMBER_OF_PROCESSORS"'
+            configure: $env:NUMBER_OF_PROCESSORS
+            build: $env:NUMBER_OF_PROCESSORS
     name: ${{ matrix.name }}
     steps:
       - uses: actions/checkout@v6
