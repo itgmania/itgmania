@@ -30,42 +30,42 @@ jobs:
         include:
           - os: ubuntu-24.04
             name: Ubuntu (x86_64)
-            install: ${{ env.UBUNTU_INSTALL }}
+            install: ${{ UBUNTU_INSTALL }}
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)"
-            release-nightly: ${{ env.RELEASE_NIGHTLY_FLAGS }}
-            release-full: ${{ env.RELEASE_FULL_FLAGS }}
-            package: ${{ env.PACKAGE_CMD }}
+            release-nightly: ${{ RELEASE_NIGHTLY_FLAGS }}
+            release-full: ${{ RELEASE_FULL_FLAGS }}
+            package: ${{ PACKAGE_CMD }}
             path: build/ITGmania-*.tar.gz
           - os: ubuntu-24.04-arm
             name: Ubuntu (ARM)
-            install: ${{ env.UBUNTU_INSTALL }}
+            install: ${{ UBUNTU_INSTALL }}
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)"
-            release-nightly: ${{ env.RELEASE_NIGHTLY_FLAGS }}
-            release-full: ${{ env.RELEASE_FULL_FLAGS }}
-            package: ${{ env.PACKAGE_CMD }}
+            release-nightly: ${{ RELEASE_NIGHTLY_FLAGS }}
+            release-full: ${{ RELEASE_FULL_FLAGS }}
+            package: ${{ PACKAGE_CMD }}
             path: build/ITGmania-*.tar.gz
           - os: macos-15
             name: macOS (M1)
-            install: ${{ env.MAC_INSTALL }}
+            install: ${{ MAC_INSTALL }}
             configure: cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
-            release-nightly: ${{ env.RELEASE_NIGHTLY_FLAGS }} -DCMAKE_OSX_ARCHITECTURES=arm64
-            release-full: ${{ env.RELEASE_FULL_FLAGS }} -DCMAKE_OSX_ARCHITECTURES=arm64
-            package: ${{ env.PACKAGE_CMD }}
+            release-nightly: ${{ RELEASE_NIGHTLY_FLAGS }} -DCMAKE_OSX_ARCHITECTURES=arm64
+            release-full: ${{ RELEASE_FULL_FLAGS }} -DCMAKE_OSX_ARCHITECTURES=arm64
+            package: ${{ PACKAGE_CMD }}
             path: build/ITGmania-*.dmg
           - os: macos-15-intel
             name: macOS (Intel)
-            install: ${{ env.MAC_INSTALL }}
+            install: ${{ MAC_INSTALL }}
             configure: cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
-            release-nightly: ${{ env.RELEASE_NIGHTLY_FLAGS }} -DCMAKE_OSX_ARCHITECTURES=x86_64
-            release-full: ${{ env.RELEASE_FULL_FLAGS }} -DCMAKE_OSX_ARCHITECTURES=x86_64
-            package: ${{ env.PACKAGE_CMD }}
+            release-nightly: ${{ RELEASE_NIGHTLY_FLAGS }} -DCMAKE_OSX_ARCHITECTURES=x86_64
+            release-full: ${{ RELEASE_FULL_FLAGS }} -DCMAKE_OSX_ARCHITECTURES=x86_64
+            package: ${{ PACKAGE_CMD }}
             path: build/ITGmania-*-NIGHTLY-git-*-macOS-Intel-no-songs.dmg
           - os: windows-2022
             name: Windows
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
-            release-nightly: ${{ env.RELEASE_NIGHTLY_FLAGS }}
-            release-full: ${{ env.RELEASE_FULL_FLAGS }}
-            package: ${{ env.PACKAGE_CMD_WINDOWS }}
+            release-nightly: ${{ RELEASE_NIGHTLY_FLAGS }}
+            release-full: ${{ RELEASE_FULL_FLAGS }}
+            package: ${{ PACKAGE_CMD_WINDOWS }}
             path: build/ITGmania-*.exe
     name: ${{ matrix.name }}
     steps:
