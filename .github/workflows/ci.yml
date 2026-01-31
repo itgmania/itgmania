@@ -25,22 +25,22 @@ jobs:
         include:
           - os: ubuntu-24.04
             name: Ubuntu (x86_64)
-            install: $UBUNTU_INSTALL
+            install: ${{ env.UBUNTU_INSTALL }}
             configure: '$(nproc)'
             build: '$(nproc)'
           - os: ubuntu-24.04-arm
             name: Ubuntu (ARM)
-            install: $UBUNTU_INSTALL
+            install: ${{ env.UBUNTU_INSTALL }}
             configure: '$(nproc)'
             build: '$(nproc)'
           - os: macos-15
             name: macOS (M1)
-            install: $MAC_INSTALL
+            install: ${{ env.MAC_INSTALL }}
             configure: '$(sysctl -n hw.logicalcpu)'
             build: '$(sysctl -n hw.logicalcpu)'
           - os: macos-15-intel
             name: macOS (Intel)
-            install: $MAC_INSTALL
+            install: ${{ env.MAC_INSTALL }}
             configure: '$(sysctl -n hw.logicalcpu)'
             build: '$(sysctl -n hw.logicalcpu)'
           - os: windows-2022
@@ -70,9 +70,9 @@ jobs:
         with:
           msbuild-architecture: x64
       - name: Configure
-        run: $CMAKE_CONFIG_PREFIX ${{ matrix.configure }}
+        run: ${{ env.CMAKE_CONFIG_PREFIX }}${{ matrix.configure }}
       - name: Build
-        run: $CMAKE_BUILD_PREFIX${{ matrix.build }}
+        run: ${{ env.CMAKE_BUILD_PREFIX }}${{ matrix.build }}
 
   validate-xml-docs:
     name: Validate Lua.xml, LuaDocumentation.xml
