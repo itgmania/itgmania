@@ -478,6 +478,8 @@ void InputHandler_Linux_Event::InputThread()
 				} else if (event.code >= BTN_TRIGGER_HAPPY1 && event.code <= BTN_TRIGGER_HAPPY40) {
 					// Actually, we only have 32 buttons defined.
 					iNum = event.code - BTN_TRIGGER_HAPPY1 + 0x10;
+				} else if (event.code >= BTN_DPAD_UP && event.code <= BTN_DPAD_RIGHT) {
+					iNum = event.code - BTN_DPAD_UP + 0x10;
 				} else {
 					// If the button number is >40+0xf, it gets mapped to a code with no #define.
 					// I don't know if this is appropriate at all, but what else to do?
