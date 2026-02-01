@@ -1779,16 +1779,27 @@ Song *MusicWheel::GetPreferredSelectionForRandomOrPortal()
 		vDifficultiesToRequire.push_back( GAMESTATE->m_PreferredDifficulty[p] );
 	}
 
-	RString sPreferredGroup = m_sExpandedSectionName;
 	std::vector<MusicWheelItemData *> &wid = getWheelItemsData(GAMESTATE->m_SortOrder);
 	StepsType st = GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->m_StepsType;
-	std::vector<Song*> vSongs;
-	if (GAMESTATE->m_SortOrder != SORT_GROUP) {
-		GetSongList( vSongs, GAMESTATE->m_SortOrder);
+	std::vector<MusicWheelItemData*> randomSongs; 
+
+	// If we have an open section, only pick from songs in that section.
+	if (!m_sExpandedSectionName.empty()) {
+		for (unsigned i = 0; i < m_CurWheelItemData.size(); i++) {
+			MusicWheelItemData * selection = (MusicWheelItemData *) m_CurWheelItemData[i];
+			// Filter out non-songs
+			if( selection->m_Type != WheelItemDataType_Song )
+				continue;
+			// Only add songs in the open section
+			if (selection->m_sText == m_sExpandedSectionName ) {
+				randomSongs.push_back(selection);
+			}
+		}
 	} else {
-		 vSongs = SONGMAN->GetSongs( sPreferredGroup);
+		// Otherwise, pick from all songs in the current sort.
+		randomSongs = wid;
 	}
-	std::shuffle( vSongs.begin(), vSongs.end(), g_RandomNumberGenerator );
+	std::shuffle( randomSongs.begin(), randomSongs.end(), g_RandomNumberGenerator );
 
 #define NUM_PROBES 1000
 	for( int i=0; i<NUM_PROBES; i++ )
@@ -1796,18 +1807,14 @@ Song *MusicWheel::GetPreferredSelectionForRandomOrPortal()
 		bool isValid = true;
 		int iSelection = 0;
 		Song *pSong;
-		if (vSongs.size() != 0) {
-			iSelection = RandomInt(vSongs.size());
-			pSong = vSongs[iSelection];
+		iSelection = RandomInt(randomSongs.size());
+		MusicWheelItemData * selection = (MusicWheelItemData *) randomSongs[iSelection];		
+		pSong = selection->m_pSong;
+
+		if (pSong == nullptr) {
+			continue;
 		}
-		else {
-			iSelection = RandomInt(wid.size());
-			if( wid[iSelection]->m_Type != WheelItemDataType_Song )
-				continue;
-			pSong = wid[iSelection]->m_pSong;
-			if( !sPreferredGroup.empty() && pSong->m_sGroupName != sPreferredGroup )
-				continue;
-		}
+
 		// There's an off possibility that somebody might have only one song with only beginner steps.
 		if( i < 900 && pSong->IsTutorial() )
 			continue;
@@ -1835,7 +1842,7 @@ Song *MusicWheel::GetPreferredSelectionForRandomOrPortal()
 		}
 	}
 	LuaHelpers::ReportScriptError( "Couldn't find any songs" );
-	return wid[0]->m_pSong;
+	return randomSongs[0]->m_pSong;
 }
 
 void MusicWheel::FinishChangingSorts()
