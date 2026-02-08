@@ -72,27 +72,27 @@ XToString( RagePixelFormat );
  * to reload textures.  On failure, an error message is returned.
  * XXX: the renderer itself should probably be the one to try fallback modes */
 static LocalizedString SETVIDEOMODE_FAILED ( "RageDisplay", "SetVideoMode failed:" );
-RString RageDisplay::SetVideoMode( VideoModeParams p, bool &bNeedReloadTextures )
+std::string RageDisplay::SetVideoMode( VideoModeParams p, bool &bNeedReloadTextures )
 {
-	RString err;
-	std::vector<RString> vs;
+	std::string err;
+	std::vector<std::string> vs;
 
 	if( (err = this->TryVideoMode(p,bNeedReloadTextures)) == "" )
-		return RString();
+		return std::string();
 	LOG->Trace( "TryVideoMode failed: %s", err.c_str() );
 	vs.push_back( err );
 
 	// fall back to settings that will most likely work
 	p.bpp = 16;
 	if( (err = this->TryVideoMode(p,bNeedReloadTextures)) == "" )
-		return RString();
+		return std::string();
 	vs.push_back( err );
 
 	// "Intel(R) 82810E Graphics Controller" won't accept a 16 bpp surface if
 	// the desktop is 32 bpp, so try 32 bpp as well.
 	p.bpp = 32;
 	if( (err = this->TryVideoMode(p,bNeedReloadTextures)) == "" )
-		return RString();
+		return std::string();
 	vs.push_back( err );
 
 	// Fall back on a known resolution good rather than 640 x 480.
@@ -124,7 +124,7 @@ RString RageDisplay::SetVideoMode( VideoModeParams p, bool &bNeedReloadTextures 
 	p.height = supported.height;
 	p.rate = std::round(supported.refreshRate);
 	if( (err = this->TryVideoMode(p,bNeedReloadTextures)) == "" )
-		return RString();
+		return std::string();
 	vs.push_back( err );
 
 	return SETVIDEOMODE_FAILED.GetValue() + " " + join(";",vs);
@@ -146,7 +146,7 @@ void RageDisplay::ProcessStatsOnFlip()
 		g_iFramesRenderedSinceLastCheck = g_iVertsRenderedSinceLastCheck = 0;
 		if( LOG_FPS )
 		{
-			RString sStats = GetStats();
+			std::string sStats = GetStats();
 			Replace(sStats, "\n", ", ");
 			LOG->Trace( "%s", sStats.c_str() );
 		}
@@ -162,9 +162,9 @@ void RageDisplay::ResetStats()
 	g_LastCheckTimer.GetDeltaTime();
 }
 
-RString RageDisplay::GetStats() const
+std::string RageDisplay::GetStats() const
 {
-	RString s;
+	std::string s;
 	// If FPS == 0, we don't have stats yet.
 	if( !GetFPS() )
 		s = "-- FPS\n-- av FPS\n-- VPF";
@@ -767,7 +767,7 @@ void RageDisplay::UpdateCentering()
 		(float) p.m_iTranslateX, (float) p.m_iTranslateY, (float) p.m_iAddWidth, (float) p.m_iAddHeight );
 }
 
-bool RageDisplay::SaveScreenshot( const RString &sPath, GraphicsFileFormat format )
+bool RageDisplay::SaveScreenshot( const std::string &sPath, GraphicsFileFormat format )
 {
 	RageSurface *surface = this->CreateScreenshot();
 	
@@ -800,7 +800,7 @@ bool RageDisplay::SaveScreenshot( const RString &sPath, GraphicsFileFormat forma
 	}
 
 	bool bSuccess = false;
-	RString strError = "";
+	std::string strError = "";
 	switch( format )
 	{
 	case SAVE_LOSSLESS:

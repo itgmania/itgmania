@@ -135,7 +135,7 @@ void ArchHooks_MacOSX::Init()
 	CFRelease( path );
 }
 
-RString ArchHooks_MacOSX::GetArchName() const
+std::string ArchHooks_MacOSX::GetArchName() const
 {
 #if defined(__x86_64__)
 	return "macOS (x86_64)";
@@ -149,7 +149,7 @@ RString ArchHooks_MacOSX::GetArchName() const
 void ArchHooks_MacOSX::DumpDebugInfo()
 {
 	// Get system version (like 10.x.x)
-	RString SystemVersion;
+	std::string SystemVersion;
 	{
 		// http://stackoverflow.com/a/891336
 		NSDictionary *version = [NSDictionary dictionaryWithContentsOfFile:@"/System/Library/CoreServices/SystemVersion.plist"];
@@ -175,7 +175,7 @@ void ArchHooks_MacOSX::DumpDebugInfo()
 	int iCPUs = 0;
 	float fFreq;
 	char freqPower;
-	RString sModel("Unknown");
+	std::string sModel("Unknown");
 	do {
 		char szModel[128];
 		uint64_t iFreq;
@@ -211,11 +211,11 @@ void ArchHooks_MacOSX::DumpDebugInfo()
 	LOG->Info( "Memory: %.2f %cB", fRam, ramPower );
 }
 
-RString ArchHooks::GetPreferredLanguage()
+std::string ArchHooks::GetPreferredLanguage()
 {
 	CFStringRef app = kCFPreferencesCurrentApplication;
 	CFTypeRef t = CFPreferencesCopyAppValue( CFSTR("AppleLanguages"), app );
-	RString ret = "en";
+	std::string ret = "en";
 
 	if( t == nil)
 		return ret;
@@ -235,10 +235,10 @@ RString ArchHooks::GetPreferredLanguage()
 		const char *str = CFStringGetCStringPtr( lang, kCFStringEncodingMacRoman );
 		if( str )
 		{
-			ret = RString( str, 2 );
+			ret = std::string( str, 2 );
 			if (ret == "zh")
 			{
-				ret = RString(str, 7);
+				ret = std::string(str, 7);
 				ret[2] = '-';
 			}
 		}
@@ -267,8 +267,8 @@ int64_t ArchHooks::GetSystemTimeInMicroseconds()
 
 #include "RageFileManager.h"
 
-void MountDirectories(const RString& baseDir) {
-	const std::vector<RString> macDirectoryStructureITGm = {
+void MountDirectories(const std::string& baseDir) {
+	const std::vector<std::string> macDirectoryStructureITGm = {
 		"/Announcers",
 		"/BGAnimations",
 		"/BackgroundEffects",
@@ -288,12 +288,12 @@ void MountDirectories(const RString& baseDir) {
 		"/Themes"
 	};
 
-	for (const RString& dir : macDirectoryStructureITGm) {
+	for (const std::string& dir : macDirectoryStructureITGm) {
 		FILEMAN->Mount("dir", baseDir + dir, dir);
 	}
 }
 
-void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
+void ArchHooks::MountInitialFilesystems( const std::string &sDirOfExecutable )
 {
 	FILEMAN->Mount("dirro", sDirOfExecutable, "/");
 
@@ -348,10 +348,10 @@ static std::string PathForDirectory( NSSearchPathDirectory directory )
 	return [url fileSystemRepresentation];
 }
 
-void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
+void ArchHooks::MountUserFilesystems( const std::string &sDirOfExecutable )
 {
 	std::string appSupportDir = PathForDirectory(NSApplicationSupportDirectory);
-	RString appSupportPath = ssprintf("%s/" PRODUCT_ID, appSupportDir.c_str());
+	std::string appSupportPath = ssprintf("%s/" PRODUCT_ID, appSupportDir.c_str());
 
 	MountDirectories(appSupportPath);
 }

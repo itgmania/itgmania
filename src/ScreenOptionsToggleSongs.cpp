@@ -21,9 +21,9 @@ void ScreenOptionsToggleSongs::BeginScreen()
 
 	std::vector<OptionRowHandler*> vHands;
 
-	std::vector<RString> asAllGroups;
+	std::vector<std::string> asAllGroups;
 	SONGMAN->GetSongGroupNames(asAllGroups);
-	for (RString const &sGroup : asAllGroups)
+	for (std::string const &sGroup : asAllGroups)
 	{
 		vHands.push_back( OptionRowHandlerUtil::MakeNull() );
 		OptionRowDefinition &def = vHands.back()->m_Def;

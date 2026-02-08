@@ -11,12 +11,12 @@ RageFileDriver::~RageFileDriver()
 	delete FDB;
 }
 
-int RageFileDriver::GetPathValue( const RString &sPath )
+int RageFileDriver::GetPathValue( const std::string &sPath )
 {
-	std::vector<RString> asParts;
+	std::vector<std::string> asParts;
 	split( sPath, "/", asParts, true );
 
-	RString sPartialPath;
+	std::string sPartialPath;
 
 	for( unsigned i = 0; i < asParts.size(); ++i )
 	{
@@ -45,27 +45,27 @@ int RageFileDriver::GetPathValue( const RString &sPath )
 	return 0;
 }
 
-void RageFileDriver::GetDirListing( const RString &sPath, std::vector<RString> &asAddTo, bool bOnlyDirs, bool bReturnPathToo )
+void RageFileDriver::GetDirListing( const std::string &sPath, std::vector<std::string> &asAddTo, bool bOnlyDirs, bool bReturnPathToo )
 {
 	FDB->GetDirListing( sPath, asAddTo, bOnlyDirs, bReturnPathToo );
 }
 
-RageFileManager::FileType RageFileDriver::GetFileType( const RString &sPath )
+RageFileManager::FileType RageFileDriver::GetFileType( const std::string &sPath )
 {
 	return FDB->GetFileType( sPath );
 }
 
-int RageFileDriver::GetFileSizeInBytes( const RString &sPath )
+int RageFileDriver::GetFileSizeInBytes( const std::string &sPath )
 {
 	return FDB->GetFileSize( sPath );
 }
 
-int RageFileDriver::GetFileHash( const RString &sPath )
+int RageFileDriver::GetFileHash( const std::string &sPath )
 {
 	return FDB->GetFileHash( sPath );
 }
 
-void RageFileDriver::FlushDirCache( const RString &sPath )
+void RageFileDriver::FlushDirCache( const std::string &sPath )
 {
 	FDB->FlushDirCache( sPath );
 }
@@ -73,7 +73,7 @@ void RageFileDriver::FlushDirCache( const RString &sPath )
 
 const struct FileDriverEntry *g_pFileDriverList = nullptr;
 
-FileDriverEntry::FileDriverEntry( const RString &sType )
+FileDriverEntry::FileDriverEntry( const std::string &sType )
 {
 	m_pLink = g_pFileDriverList;
 	g_pFileDriverList = this;
@@ -85,7 +85,7 @@ FileDriverEntry::~FileDriverEntry()
 	g_pFileDriverList = nullptr; /* invalidate */
 }
 
-RageFileDriver *MakeFileDriver( const RString &sType, const RString &sRoot )
+RageFileDriver *MakeFileDriver( const std::string &sType, const std::string &sRoot )
 {
 	for( const FileDriverEntry *p = g_pFileDriverList; p; p = p->m_pLink )
 		if( !CompareNoCase(p->m_sType, sType) )

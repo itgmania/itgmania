@@ -228,7 +228,7 @@ public:
 	bool operator == ( const RageColor& other ) const	{ return r==other.r && g==other.g && b==other.b && a==other.a; }
 	bool operator != ( const RageColor& other ) const	{ return !operator==(other); }
 
-	bool FromString( const RString &str )
+	bool FromString( const std::string &str )
 	{
 		int result = sscanf( str.c_str(), "%f,%f,%f,%f", &r, &g, &b, &a );
 		if( result == 3 )
@@ -255,8 +255,8 @@ public:
 		return false;
 	}
 
-	RString ToString() const;
-	static RString NormalizeColorString( RString sColor );
+	std::string ToString() const;
+	static std::string NormalizeColorString( std::string sColor );
 
 	void PushTable( lua_State *L ) const;
 	void FromStack( lua_State *L, int iPos );

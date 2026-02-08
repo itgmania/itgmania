@@ -10,8 +10,8 @@
 #include <vector>
 
 
-RString COLUMN_DIFFICULTY_NAME( size_t i );
-RString COLUMN_STEPS_TYPE_NAME( size_t i );
+std::string COLUMN_DIFFICULTY_NAME( size_t i );
+std::string COLUMN_STEPS_TYPE_NAME( size_t i );
 
 static const char *HighScoresTypeNames[] = {
 	"AllSteps",
@@ -181,7 +181,7 @@ void ScoreScroller::LoadCourses( CourseType ct, int iNumRecentScores )
 		m_vScoreRowItemData[i].m_pCourse = vpCourses[i];
 }
 
-void ScoreScroller::Load( RString sMetricsGroup )
+void ScoreScroller::Load( std::string sMetricsGroup )
 {
 	SCROLLER_ITEMS_TO_DRAW.Load(sMetricsGroup, "ScrollerItemsToDraw");
 	SCROLLER_SECONDS_PER_ITEM.Load(sMetricsGroup, "ScrollerSecondsPerItem");
@@ -205,8 +205,8 @@ void ScoreScroller::Load( RString sMetricsGroup )
 
 /////////////////////////////////////////////
 
-RString COLUMN_DIFFICULTY_NAME( size_t i ) { return ssprintf("ColumnDifficulty%d",int(i+1)); }
-RString COLUMN_STEPS_TYPE_NAME( size_t i ) { return ssprintf("ColumnStepsType%d",int(i+1)); }
+std::string COLUMN_DIFFICULTY_NAME( size_t i ) { return ssprintf("ColumnDifficulty%d",int(i+1)); }
+std::string COLUMN_STEPS_TYPE_NAME( size_t i ) { return ssprintf("ColumnStepsType%d",int(i+1)); }
 
 void ScreenHighScores::Init()
 {

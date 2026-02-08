@@ -12,8 +12,8 @@ class Course;
 // Can this be done any better? -aj
 namespace ExportPackages
 {
-	RString m_sPackageType;
-	RString m_sFolder; // used for more subpages
+	std::string m_sPackageType;
+	std::string m_sFolder; // used for more subpages
 }
 
 /** @brief A menu for exporting packages. */
@@ -29,7 +29,7 @@ protected:
 
 	virtual void ProcessMenuStart( const InputEventPlus &input );
 
-	std::vector<RString> m_vsPackageTypes;
+	std::vector<std::string> m_vsPackageTypes;
 };
 
 class ScreenOptionsExportPackageSubPage : public ScreenOptions
@@ -44,7 +44,7 @@ protected:
 
 	virtual void ProcessMenuStart( const InputEventPlus &input );
 
-	std::vector<RString> m_vsPossibleDirsToExport;
+	std::vector<std::string> m_vsPossibleDirsToExport;
 };
 
 #endif

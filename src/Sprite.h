@@ -65,7 +65,7 @@ public:
 	void SetStateProperties(const std::vector<State>& new_states)
 	{ m_States= new_states; RecalcAnimationLengthSeconds(); SetState(0); }
 
-	RString	GetTexturePath() const;
+	std::string	GetTexturePath() const;
 
 	void SetCustomTextureRect( const RectF &new_texcoord_frect );
 	void SetCustomTextureCoords( float fTexCoords[8] );
@@ -81,7 +81,7 @@ public:
 	void AddImageCoords( float fX, float fY ); // in image pixel space
 	void SetEffectMode( EffectMode em ) { m_EffectMode = em; }
 
-	void LoadFromCached( const RString &sDir, const RString &sPath );
+	void LoadFromCached( const std::string &sDir, const std::string &sPath );
 
 	void SetTexCoordVelocity(float fVelX, float fVelY);
 	/**

@@ -232,7 +232,7 @@ class InputHandler_PumpHID : public InputHandler {
   InputHandler_PumpHID();
   ~InputHandler_PumpHID();
 
-  RString GetDeviceSpecificInputString(const DeviceInput& di);
+  std::string GetDeviceSpecificInputString(const DeviceInput& di);
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
   bool IsConnected() { return dev != nullptr && dev->IsConnected(); }

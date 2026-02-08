@@ -61,7 +61,7 @@ void InputHandler_Win32_RTIO::GetDevicesAndDescriptions(std::vector<InputDeviceI
 	vDevicesOut.push_back(InputDeviceInfo(InputDevice(DEVICE_JOY1), "Raw Thrills I/O"));
 }
 
-RString InputHandler_Win32_RTIO::GetDeviceSpecificInputString(const DeviceInput &di)
+std::string InputHandler_Win32_RTIO::GetDeviceSpecificInputString(const DeviceInput &di)
 {
 	switch (di.button)
 	{

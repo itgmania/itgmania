@@ -212,26 +212,26 @@ void PlayerOptions::Approach( const PlayerOptions& other, float fDeltaSeconds )
 #undef DO_COPY
 }
 
-static void AddPart( std::vector<RString> &AddTo, float level, RString name )
+static void AddPart( std::vector<std::string> &AddTo, float level, std::string name )
 {
 	if( level == 0 )
 		return;
 
-	const RString LevelStr = (level == 1)? RString(""): ssprintf( "%ld%% ", std::lrint(level*100) );
+	const std::string LevelStr = (level == 1)? std::string(""): ssprintf( "%ld%% ", std::lrint(level*100) );
 
 	AddTo.push_back( LevelStr + name );
 }
 
-RString PlayerOptions::GetString( bool bForceNoteSkin ) const
+std::string PlayerOptions::GetString( bool bForceNoteSkin ) const
 {
-	std::vector<RString> v;
+	std::vector<std::string> v;
 	GetMods( v, bForceNoteSkin );
 	return join( ", ", v );
 }
 
-void PlayerOptions::GetMods( std::vector<RString> &AddTo, bool bForceNoteSkin ) const
+void PlayerOptions::GetMods( std::vector<std::string> &AddTo, bool bForceNoteSkin ) const
 {
-	//RString sReturn;
+	//std::string sReturn;
 
 	switch(m_LifeType)
 	{
@@ -281,13 +281,13 @@ void PlayerOptions::GetMods( std::vector<RString> &AddTo, bool bForceNoteSkin ) 
 	{
 		if( m_fMaxScrollBPM )
 		{
-			RString s = ssprintf( "m%.0f", m_fMaxScrollBPM );
+			std::string s = ssprintf( "m%.0f", m_fMaxScrollBPM );
 			AddTo.push_back( s );
 		}
 		else if( m_bSetScrollSpeed || m_fScrollSpeed != 1 )
 		{
 			/* -> 1.00 */
-			RString s = ssprintf( "%2.2f", m_fScrollSpeed );
+			std::string s = ssprintf( "%2.2f", m_fScrollSpeed );
 			if( s[s.size()-1] == '0' )
 			{
 				/* -> 1.0 */
@@ -303,7 +303,7 @@ void PlayerOptions::GetMods( std::vector<RString> &AddTo, bool bForceNoteSkin ) 
 	}
 	else
 	{
-		RString s = ssprintf( "C%.0f", m_fScrollBPM );
+		std::string s = ssprintf( "C%.0f", m_fScrollBPM );
 		AddTo.push_back( s );
 	}
 
@@ -464,7 +464,7 @@ void PlayerOptions::GetMods( std::vector<RString> &AddTo, bool bForceNoteSkin ) 
 
 	for( int i=0; i<16; i++)
 	{
-		RString s = ssprintf( "MoveX%d", i+1 );
+		std::string s = ssprintf( "MoveX%d", i+1 );
 
 		AddPart( AddTo, m_fMovesX[i],				s );
 		s = ssprintf( "MoveY%d", i+1 );
@@ -595,7 +595,7 @@ void PlayerOptions::GetMods( std::vector<RString> &AddTo, bool bForceNoteSkin ) 
 	// Don't display a string if using the default NoteSkin unless we force it.
 	if( bForceNoteSkin || (!m_sNoteSkin.empty() && m_sNoteSkin != CommonMetrics::DEFAULT_NOTESKIN_NAME.GetValue()) )
 	{
-		RString s = m_sNoteSkin;
+		std::string s = m_sNoteSkin;
 		Capitalize( s );
 		AddTo.push_back( s );
 	}
@@ -629,13 +629,13 @@ void PlayerOptions::GetMods( std::vector<RString> &AddTo, bool bForceNoteSkin ) 
 
 /* Options are added to the current settings; call Init() beforehand if
  * you don't want this. */
-void PlayerOptions::FromString( const RString &sMultipleMods )
+void PlayerOptions::FromString( const std::string &sMultipleMods )
 {
-	RString sTemp = sMultipleMods;
-	std::vector<RString> vs;
+	std::string sTemp = sMultipleMods;
+	std::vector<std::string> vs;
 	split( sTemp, ",", vs, true );
-	RString sThrowAway;
-	for (RString &s : vs)
+	std::string sThrowAway;
+	for (std::string &s : vs)
 	{
 		if (!FromOneModString( s, sThrowAway ))
 		{
@@ -644,12 +644,12 @@ void PlayerOptions::FromString( const RString &sMultipleMods )
 	}
 }
 
-bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut )
+bool PlayerOptions::FromOneModString( const std::string &sOneMod, std::string &sErrorOut )
 {
 	ASSERT_M( NOTESKIN != nullptr, "The Noteskin Manager must be loaded in order to process mods." );
 
-	RString sBit = sOneMod;
-	RString sMod = "";
+	std::string sBit = sOneMod;
+	std::string sMod = "";
 	MakeLower(sBit);
 	Trim( sBit );
 
@@ -660,10 +660,10 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 
 	float level = 1;
 	float speed = 1;
-	std::vector<RString> asParts;
+	std::vector<std::string> asParts;
 	split( sBit, " ", asParts, true );
 
-	for (RString const &s : asParts)
+	for (std::string const &s : asParts)
 	{
 		if( s == "no" )
 		{
@@ -674,7 +674,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 			if ( EndsWith(s, "ms") )
 			{
 				// Strip off the "ms" before parsing and convert to seconds.
-				RString ms_value = s.substr(0, s.size()-2 );
+				std::string ms_value = s.substr(0, s.size()-2 );
 				level = StringToFloat( ms_value ) / 1000.0f;
 			}
 			/* If the last character is a *, they probably said "123*" when
@@ -706,7 +706,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 
 	static Regex mult("^([0-9]+(\\.[0-9]+)?)x$");
 	static Regex disabledWindows("(w[1-5])");
-	std::vector<RString> matches;
+	std::vector<std::string> matches;
 	if( mult.Compare(sBit, matches) )
 	{
 		StringConversion::FromString( matches[0], level );
@@ -1219,7 +1219,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 		// We come into this condition if there is at least a single window present but there may be more.
 		// To get all of the windows, we go through in a loop to extract all of them.
 		static Regex allDisabledWindows("(w[1-5])(.*)$");
-		RString input = sBit;
+		std::string input = sBit;
 		while (true)
 		{
 			if (!allDisabledWindows.Compare(input, matches))
@@ -1240,7 +1240,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	else
 	{
 		// Maybe the original string is a noteskin name with a space. -Kyz
-		RString name= sOneMod;
+		std::string name= sOneMod;
 		MakeLower(name);
 		if(NOTESKIN && NOTESKIN->DoesNoteSkinExist(name))
 		{
@@ -1482,7 +1482,7 @@ bool PlayerOptions::operator==( const PlayerOptions &other ) const
 	// The noteskin name needs to be compared case-insensitively because the
 	// manager forces lowercase, but some obscure part of PlayerOptions
 	// uppercases the first letter.  The previous code that used != probably
-	// relied on RString::operator!= misbehaving. -Kyz
+	// relied on std::string::operator!= misbehaving. -Kyz
 	if(strcasecmp(m_sNoteSkin.c_str(), other.m_sNoteSkin.c_str()) != 0)
 	{
 		return false;
@@ -1724,15 +1724,15 @@ bool PlayerOptions::IsEasierForCourseAndTrail( Course* pCourse, Trail* pTrail ) 
 	});
 }
 
-void PlayerOptions::GetLocalizedMods( std::vector<RString> &AddTo ) const
+void PlayerOptions::GetLocalizedMods( std::vector<std::string> &AddTo ) const
 {
-	std::vector<RString> vMods;
+	std::vector<std::string> vMods;
 	GetMods( vMods );
-	for (RString const &sOneMod : vMods)
+	for (std::string const &sOneMod : vMods)
 	{
 		ASSERT( !sOneMod.empty() );
 
-		std::vector<RString> asTokens;
+		std::vector<std::string> asTokens;
 		split( sOneMod, " ", asTokens );
 
 		if( asTokens.empty() )
@@ -1749,7 +1749,7 @@ void PlayerOptions::GetLocalizedMods( std::vector<RString> &AddTo ) const
 		 * characters might use modifiers that don't exist in the theme. */
 		asTokens.back() = CommonMetrics::LocalizeOptionItem( asTokens.back(), true );
 
-		RString sLocalizedMod = join( " ", asTokens );
+		std::string sLocalizedMod = join( " ", asTokens );
 		AddTo.push_back( sLocalizedMod );
 	}
 }
@@ -1769,7 +1769,7 @@ bool PlayerOptions::ContainsTransformOrTurn() const
 	return false;
 }
 
-RString PlayerOptions::GetSavedPrefsString() const
+std::string PlayerOptions::GetSavedPrefsString() const
 {
 	PlayerOptions po_prefs;
 #define SAVE(x) po_prefs.x = this->x;
@@ -2145,7 +2145,7 @@ public:
 		}
 		if(original_top >= 1 && lua_isstring(L, 1))
 		{
-			RString skin= SArg(1);
+			std::string skin= SArg(1);
 			if(NOTESKIN->DoesNoteSkinExist(skin))
 			{
 				p->m_sNoteSkin = skin;

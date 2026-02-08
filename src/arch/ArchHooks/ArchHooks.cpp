@@ -56,7 +56,7 @@ ArchHooks *ArchHooks::Create()
 	return new ARCH_HOOKS;
 }
 
-RString ArchHooks::GetClipboard()
+std::string ArchHooks::GetClipboard()
 {
 	LOG->Warn("ArchHooks: GetClipboard() NOT IMPLEMENTED");
 	return "";

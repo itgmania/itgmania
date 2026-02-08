@@ -13,7 +13,7 @@
 
 #pragma comment(lib, "version.lib")
 
-bool GetFileVersion(const RString &sFile, RString &sOut)
+bool GetFileVersion(const std::string &sFile, std::string &sOut)
 {
 	do {
 		DWORD ignore;
@@ -37,11 +37,11 @@ bool GetFileVersion(const RString &sFile, RString &sOut)
 		char *str;
 		UINT len;
 
-		RString sRes = ssprintf("\\StringFileInfo\\%04x%04x\\FileVersion", iTrans[0], iTrans[1]);
+		std::string sRes = ssprintf("\\StringFileInfo\\%04x%04x\\FileVersion", iTrans[0], iTrans[1]);
 		if (!VerQueryValue(VersionBuffer.data(), sRes.c_str(), (void**)&str, &len) || len < 1)
 			break;
 
-		sOut = RString( str, len-1 );
+		sOut = std::string( str, len-1 );
 	} while(0);
 
 	// Get the size and date.
@@ -58,7 +58,7 @@ bool GetFileVersion(const RString &sFile, RString &sOut)
 	return true;
 }
 
-RString FindSystemFile(const RString& sFile)
+std::string FindSystemFile(const std::string& sFile)
 {
 	char szWindowsPath[MAX_PATH];
 	GetWindowsDirectory( szWindowsPath, MAX_PATH );
@@ -75,18 +75,18 @@ RString FindSystemFile(const RString& sFile)
 
 	for( int i = 0; szPaths[i]; ++i )
 	{
-		RString sPath = ssprintf( "%s%s%s", szWindowsPath, szPaths[i], sFile.c_str() );
+		std::string sPath = ssprintf( "%s%s%s", szWindowsPath, szPaths[i], sFile.c_str() );
 		struct stat buf;
 		if (!stat(sPath.c_str(), &buf))
 			return sPath;
 	}
 
-	return RString();
+	return std::string();
 }
 
 /* Get the full path of the process running in iProcessID. On error, false is
  * returned and an error message is placed in sName. */
-bool GetProcessFileName( uint32_t iProcessID, RString &sName )
+bool GetProcessFileName( uint32_t iProcessID, std::string &sName )
 {
 	HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, iProcessID);
 	if (hSnap == INVALID_HANDLE_VALUE)

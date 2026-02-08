@@ -24,7 +24,7 @@ struct HighScore
 	/**
 	 * @brief Retrieve the name of the player that set the high score.
 	 * @return the name of the player. */
-	RString	GetName() const;
+	std::string	GetName() const;
 	/**
 	 * @brief Retrieve the grade earned from this score.
 	 * @return the grade.
@@ -50,10 +50,10 @@ struct HighScore
 	/**
 	 * @brief Get the modifiers used for this run.
 	 * @return the modifiers. */
-	RString GetModifiers() const;
+	std::string GetModifiers() const;
 	DateTime GetDateTime() const;
-	RString GetPlayerGuid() const;
-	RString GetMachineGuid() const;
+	std::string GetPlayerGuid() const;
+	std::string GetMachineGuid() const;
 	int GetProductID() const;
 	int GetTapNoteScore( TapNoteScore tns ) const;
 	int GetHoldNoteScore( HoldNoteScore tns ) const;
@@ -67,7 +67,7 @@ struct HighScore
 	/**
 	 * @brief Set the name of the Player that earned the score.
 	 * @param sName the name of the Player. */
-	void SetName( const RString &sName );
+	void SetName( const std::string &sName );
 	void SetGrade( Grade g );
 	void SetScore( unsigned int iScore );
 	void SetPercentDP( float f );
@@ -75,10 +75,10 @@ struct HighScore
 	void SetMaxCombo( unsigned int i );
 	void SetStageAward( StageAward a );
 	void SetPeakComboAward( PeakComboAward a );
-	void SetModifiers( RString s );
+	void SetModifiers( std::string s );
 	void SetDateTime( DateTime d );
-	void SetPlayerGuid( RString s );
-	void SetMachineGuid( RString s );
+	void SetPlayerGuid( std::string s );
+	void SetMachineGuid( std::string s );
 	void SetProductID( int i );
 	void SetTapNoteScore( TapNoteScore tns, int i );
 	void SetHoldNoteScore( HoldNoteScore tns, int i );
@@ -86,8 +86,8 @@ struct HighScore
 	void SetLifeRemainingSeconds( float f );
 	void SetDisqualified( bool b );
 
-	RString *GetNameMutable();
-	const RString *GetNameMutable() const { return const_cast<RString *> (const_cast<HighScore *>(this)->GetNameMutable()); }
+	std::string *GetNameMutable();
+	const std::string *GetNameMutable() const { return const_cast<std::string *> (const_cast<HighScore *>(this)->GetNameMutable()); }
 
 	void Unset();
 
@@ -101,7 +101,7 @@ struct HighScore
 	XNode* CreateNode() const;
 	void LoadFromNode( const XNode* pNode );
 
-	RString GetDisplayName() const;
+	std::string GetDisplayName() const;
 
 	// Lua
 	void PushSelf( lua_State *L );
@@ -159,9 +159,9 @@ private:
 struct Screenshot
 {
 	/** @brief the filename of the screen shot. There is no directory part. */
-	RString sFileName;
+	std::string sFileName;
 	/** @brief The MD5 hash of the screen shot file above. */
-	RString sMD5;
+	std::string sMD5;
 	/** @brief The actual high score in question. */
 	HighScore highScore;
 

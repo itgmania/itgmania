@@ -72,8 +72,8 @@ public:
 	void SetBeatBarsAlpha(float measure, float fourth, float eighth, float sixteenth);
 
 protected:
-	void CacheNoteSkin( const RString &sNoteSkin );
-	void UncacheNoteSkin( const RString &sNoteSkin );
+	void CacheNoteSkin( const std::string &sNoteSkin );
+	void UncacheNoteSkin( const std::string &sNoteSkin );
 
 	bool IsOnScreen( float fBeat, int iCol, int iDrawDistanceAfterTargetsPixels, int iDrawDistanceBeforeTargetsPixels ) const;
 
@@ -86,11 +86,11 @@ protected:
 	void set_text_measure_number_for_draw(
 		const float beat, const float side_sign, float x_offset,
 		const float horiz_align, const RageColor& color, const RageColor& glow);
-	void draw_timing_segment_text(const RString& text,
+	void draw_timing_segment_text(const std::string& text,
 		const float beat, const float side_sign, float x_offset,
 		const float horiz_align, const RageColor& color, const RageColor& glow);
 	void DrawAttackText(const float beat, const Attack &attack, const RageColor& glow);
-	void DrawBGChangeText(const float beat, const RString new_bg_name, const RageColor& glow);
+	void DrawBGChangeText(const float beat, const std::string new_bg_name, const RageColor& glow);
 	float GetWidth() const;
 
 	const NoteData *m_pNoteData;
@@ -116,7 +116,7 @@ protected:
 	NoteFieldRenderArgs m_FieldRenderArgs;
 
 	/* All loaded note displays, mapped by their name. */
-	std::map<RString, NoteDisplayCols *> m_NoteDisplays;
+	std::map<std::string, NoteDisplayCols *> m_NoteDisplays;
 	NoteDisplayCols		*m_pCurDisplay;
 	NoteDisplayCols		*m_pDisplays[NUM_PlayerNumber];
 

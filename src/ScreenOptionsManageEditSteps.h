@@ -28,7 +28,7 @@ protected:
 
 	std::vector<Steps*> m_vpSteps;
 
-	ThemeMetric<RString> CREATE_NEW_SCREEN;
+	ThemeMetric<std::string> CREATE_NEW_SCREEN;
 };
 
 #endif

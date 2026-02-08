@@ -15,7 +15,7 @@ class Steps;
 class Profile;
 class XNode;
 
-void AppendOctal( int n, int digits, RString &out );
+void AppendOctal( int n, int digits, std::string &out );
 
 /** @brief The criteria for dealing with songs. */
 class SongCriteria
@@ -25,12 +25,12 @@ public:
 	 * @brief What group name are we searching for for Songs?
 	 *
 	 * If an empty string, don't bother using this for searching. */
-	std::vector<RString> m_vsGroupNames;
-	std::vector<RString> m_vsSongNames;
-	std::vector<RString> m_vsArtistNames;
+	std::vector<std::string> m_vsGroupNames;
+	std::vector<std::string> m_vsSongNames;
+	std::vector<std::string> m_vsArtistNames;
 
 	bool m_bUseSongGenreAllowedList;
-	std::vector<RString> m_vsSongGenreAllowedList;
+	std::vector<std::string> m_vsSongGenreAllowedList;
 	enum Selectable { Selectable_Yes, Selectable_No, Selectable_DontCare } m_Selectable;
 	bool m_bUseSongAllowedList;
 	std::vector<Song*> m_vpSongAllowedList;
@@ -119,8 +119,8 @@ namespace SongUtil
 		Difficulty dc = Difficulty_Invalid,
 		int iMeterLow = -1,
 		int iMeterHigh = -1,
-		const RString &sDescription = "",
-		const RString &sCredit = "",
+		const std::string &sDescription = "",
+		const std::string &sCredit = "",
 		bool bIncludeAutoGen = true,
 		unsigned uHash = 0,
 		int iMaxToGet = -1
@@ -131,21 +131,21 @@ namespace SongUtil
 		Difficulty dc = Difficulty_Invalid,
 		int iMeterLow = -1,
 		int iMeterHigh = -1,
-		const RString &sDescription = "",
-		const RString &sCredit = "",
+		const std::string &sDescription = "",
+		const std::string &sCredit = "",
 		unsigned uHash = 0,
 		bool bIncludeAutoGen = true
 		);
 	Steps* GetStepsByDifficulty(	const Song *pSong, StepsType st, Difficulty dc, bool bIncludeAutoGen = true );
 	Steps* GetStepsByMeter(		const Song *pSong, StepsType st, int iMeterLow, int iMeterHigh );
-	Steps* GetStepsByDescription(	const Song *pSong, StepsType st, RString sDescription );
-	Steps* GetStepsByCredit(	const Song *pSong, StepsType st, RString sCredit );
+	Steps* GetStepsByDescription(	const Song *pSong, StepsType st, std::string sDescription );
+	Steps* GetStepsByCredit(	const Song *pSong, StepsType st, std::string sCredit );
 	Steps* GetClosestNotes(		const Song *pSong, StepsType st, Difficulty dc, bool bIgnoreLocked=false );
 
 	void AdjustDuplicateSteps( Song *pSong ); // part of TidyUpData
 	void DeleteDuplicateSteps( Song *pSong, std::vector<Steps*> &vSteps );
 
-	RString MakeSortString( RString s );
+	std::string MakeSortString( std::string s );
 	void SortSongPointerArrayByTitle( std::vector<Song*> &vpSongsInOut );
 	void SortSongPointerArrayByBPM( std::vector<Song*> &vpSongsInOut );
 	void SortSongPointerArrayByGrades( std::vector<Song*> &vpSongsInOut, bool bDescending );
@@ -157,7 +157,7 @@ namespace SongUtil
 	void SortSongPointerArrayByNumPlays( std::vector<Song*> &vpSongsInOut, ProfileSlot slot, bool bDescending );
 	void SortSongPointerArrayByNumPlays( std::vector<Song*> &vpSongsInOut, const Profile* pProfile, bool bDescending );
 	void SortSongPointerArrayByStepsTypeAndMeter( std::vector<Song*> &vpSongsInOut, StepsType st, Difficulty dc );
-	RString GetSectionNameFromSongAndSort( const Song *pSong, SortOrder so );
+	std::string GetSectionNameFromSongAndSort( const Song *pSong, SortOrder so );
 	void SortSongPointerArrayBySectionName( std::vector<Song*> &vpSongsInOut, SortOrder so );
 	void SortByMostRecentlyPlayedForMachine( std::vector<Song*> &vpSongsInOut );
 	void SortByMostRecentlyPlayedForProfile( std::vector<Song*> &vpSongsInOut, PlayerNumber pn);
@@ -174,17 +174,17 @@ namespace SongUtil
 	 * @param pExclude the steps that want the description.
 	 * @return true if it is unique, false otherwise.
 	 */
-	bool IsEditDescriptionUnique( const Song* pSong, StepsType st, const RString &sPreferredDescription, const Steps *pExclude );
-	bool IsChartNameUnique( const Song* pSong, StepsType st, const RString &name, const Steps *pExclude );
-	RString MakeUniqueEditDescription( const Song* pSong, StepsType st, const RString &sPreferredDescription );
-	bool ValidateCurrentEditStepsDescription( const RString &sAnswer, RString &sErrorOut );
-	bool ValidateCurrentStepsDescription( const RString &sAnswer, RString &sErrorOut );
-	bool ValidateCurrentStepsCredit( const RString &sAnswer, RString &sErrorOut );
-	bool ValidateCurrentStepsChartName(const RString &answer, RString &error);
-	bool ValidateCurrentSongPreview(const RString& answer, RString& error);
-	bool ValidateCurrentStepsMusic(const RString &answer, RString &error);
+	bool IsEditDescriptionUnique( const Song* pSong, StepsType st, const std::string &sPreferredDescription, const Steps *pExclude );
+	bool IsChartNameUnique( const Song* pSong, StepsType st, const std::string &name, const Steps *pExclude );
+	std::string MakeUniqueEditDescription( const Song* pSong, StepsType st, const std::string &sPreferredDescription );
+	bool ValidateCurrentEditStepsDescription( const std::string &sAnswer, std::string &sErrorOut );
+	bool ValidateCurrentStepsDescription( const std::string &sAnswer, std::string &sErrorOut );
+	bool ValidateCurrentStepsCredit( const std::string &sAnswer, std::string &sErrorOut );
+	bool ValidateCurrentStepsChartName(const std::string &answer, std::string &error);
+	bool ValidateCurrentSongPreview(const std::string& answer, std::string& error);
+	bool ValidateCurrentStepsMusic(const std::string &answer, std::string &error);
 
-	void GetAllSongGenres( std::vector<RString> &vsOut );
+	void GetAllSongGenres( std::vector<std::string> &vsOut );
 	/**
 	 * @brief Filter the selection of songs to only match certain criteria.
 	 * @param sc the intended song criteria.
@@ -210,7 +210,7 @@ namespace SongUtil
 
 class SongID
 {
-	RString sDir;
+	std::string sDir;
 
 public:
 	/**
@@ -232,8 +232,8 @@ public:
 
 	XNode* CreateNode() const;
 	void LoadFromNode( const XNode* pNode );
-	void FromString( RString _sDir ) { sDir = _sDir; }
-	RString ToString() const;
+	void FromString( std::string _sDir ) { sDir = _sDir; }
+	std::string ToString() const;
 	bool IsValid() const;
 };
 

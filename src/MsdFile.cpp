@@ -20,7 +20,7 @@
 
 void MsdFile::AddParam( const char *buf, int len )
 {
-	values.back().params.push_back( RString(buf, len) );
+	values.back().params.push_back( std::string(buf, len) );
 }
 
 void MsdFile::AddValue() /* (no extra charge) */
@@ -159,7 +159,7 @@ void MsdFile::ReadBuf( const char *buf, int len, bool bUnescape )
 }
 
 // returns true if successful, false otherwise
-bool MsdFile::ReadFile( RString sNewPath, bool bUnescape )
+bool MsdFile::ReadFile( std::string sNewPath, bool bUnescape )
 {
 	error = "";
 
@@ -172,7 +172,7 @@ bool MsdFile::ReadFile( RString sNewPath, bool bUnescape )
 	}
 
 	// allocate a string to hold the file
-	RString FileString;
+	std::string FileString;
 	FileString.reserve( f.GetFileSize() );
 
 	int iBytesRead = f.Read( FileString );
@@ -187,15 +187,15 @@ bool MsdFile::ReadFile( RString sNewPath, bool bUnescape )
 	return true;
 }
 
-void MsdFile::ReadFromString( const RString &sString, bool bUnescape )
+void MsdFile::ReadFromString( const std::string &sString, bool bUnescape )
 {
 	ReadBuf( sString.c_str(), sString.size(), bUnescape );
 }
 
-RString MsdFile::GetParam(unsigned val, unsigned par) const
+std::string MsdFile::GetParam(unsigned val, unsigned par) const
 {
 	if( val >= GetNumValues() || par >= GetNumParams(val) )
-		return RString();
+		return std::string();
 
 	return values[val].params[par];
 }

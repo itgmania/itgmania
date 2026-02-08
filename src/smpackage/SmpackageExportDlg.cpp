@@ -84,9 +84,9 @@ BOOL CSmpackageExportDlg::OnInitDialog()
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
-RString ReplaceInvalidFileNameChars( RString sOldFileName )
+std::string ReplaceInvalidFileNameChars( std::string sOldFileName )
 {
-	RString sNewFileName = sOldFileName;
+	std::string sNewFileName = sOldFileName;
 	const char charsToReplace[] = { 
 		' ', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', 
 		'+', '=', '[', ']', '{', '}', '|', ':', '\"', '\\',
@@ -98,14 +98,14 @@ RString ReplaceInvalidFileNameChars( RString sOldFileName )
 }
 
 static LocalizedString ERROR_ADDING_FILE ( "SmpackageExportDlg", "Error adding file '%s'." );
-static bool ExportPackage( const RString &sPackageName, const RString &sSourceInstallDir, const std::vector<RString>& asDirectoriesToExport, const RString &sComment )
+static bool ExportPackage( const std::string &sPackageName, const std::string &sSourceInstallDir, const std::vector<std::string>& asDirectoriesToExport, const std::string &sComment )
 {
 	CZipArchive zip;
 
 	//
 	// Create the package zip file
 	//
-	const RString sPackagePath = SpecialDirs::GetDesktopDir() + sPackageName;
+	const std::string sPackagePath = SpecialDirs::GetDesktopDir() + sPackageName;
 	try
 	{
 		zip.Open( sPackagePath, CZipArchive::zipCreate );
@@ -122,13 +122,13 @@ static bool ExportPackage( const RString &sPackageName, const RString &sSourceIn
 
 
 	/* Find files to add to zip. */
-	std::vector<RString> asFilePaths;
+	std::vector<std::string> asFilePaths;
 	{
 		RageFileDriverDirect fileDriver( sSourceInstallDir );
 
 		for( unsigned i=0; i<asDirectoriesToExport.size(); i++ )
 		{
-			RString sDir = asDirectoriesToExport[i];
+			std::string sDir = asDirectoriesToExport[i];
 			if( sDir.Right(1) != "/" )
 				sDir += "/";
 			GetDirListingRecursive( &fileDriver, sDir, "*", asFilePaths );
@@ -145,15 +145,15 @@ static bool ExportPackage( const RString &sPackageName, const RString &sSourceIn
 		IniFile ini;
 		ini.SetValue( "SMZIP", "Version", 1 );
 
-		std::set<RString> Directories;
+		std::set<std::string> Directories;
 		for( unsigned i=0; i<asFilePaths.size(); i++ )
 		{
-			const RString name = SMPackageUtil::GetPackageDirectory( asFilePaths[i] );
+			const std::string name = SMPackageUtil::GetPackageDirectory( asFilePaths[i] );
 			if( name != "" )
 				Directories.insert( name );
 		}
 
-		std::set<RString>::const_iterator it;
+		std::set<std::string>::const_iterator it;
 		int num = 0;
 		for( it = Directories.begin(); it != Directories.end(); ++it )
 			ini.SetValue( "Packages", ssprintf("%i", num++), *it );
@@ -161,7 +161,7 @@ static bool ExportPackage( const RString &sPackageName, const RString &sSourceIn
 
 		RageFileObjMem f;
 		ini.WriteFile( f );
-		RString buf = f.GetString();
+		std::string buf = f.GetString();
 
 		CZipMemFile control;
 		control.Write( buf.GetBuffer(0), buf.size() );
@@ -175,9 +175,9 @@ static bool ExportPackage( const RString &sPackageName, const RString &sSourceIn
 	//
 	for( unsigned j=0; j<asFilePaths.size(); j++ )
 	{
-		RString sFilePath = asFilePaths[j];
+		std::string sFilePath = asFilePaths[j];
 
-		RString sExt = GetExtension( sFilePath );
+		std::string sExt = GetExtension( sFilePath );
 		bool bUseCompression = true;
 		if( sExt.CompareNoCase("ogv")==0 ||
 			sExt.CompareNoCase("avi")==0 ||
@@ -209,7 +209,7 @@ static bool ExportPackage( const RString &sPackageName, const RString &sSourceIn
 	return true;
 }
 
-bool CSmpackageExportDlg::MakeComment( RString &comment )
+bool CSmpackageExportDlg::MakeComment( std::string &comment )
 {
 	bool DontAskForComment;
 	if( SMPackageUtil::GetPref("DontAskForComment", DontAskForComment) && DontAskForComment )
@@ -234,7 +234,7 @@ static LocalizedString NO_ITEMS_ARE_CHECKED	( "CSmpackageExportDlg", "No items a
 static LocalizedString SUCCESSFULLY_EXPORTED( "CSmpackageExportDlg", "Successfully exported package '%s' to your Desktop." );
 void CSmpackageExportDlg::OnButtonExportAsOne() 
 {
-	std::vector<RString> asPaths;
+	std::vector<std::string> asPaths;
 	GetCheckedPaths( asPaths );
 
 	if( asPaths.size() == 0 )
@@ -249,7 +249,7 @@ void CSmpackageExportDlg::OnButtonExportAsOne()
 	}
 
 	// Generate a package name
-	RString sPackageName;
+	std::string sPackageName;
 	EnterName nameDlg;
 	int nResponse = nameDlg.DoModal();
 	if( nResponse != IDOK )
@@ -258,7 +258,7 @@ void CSmpackageExportDlg::OnButtonExportAsOne()
 	sPackageName = ReplaceInvalidFileNameChars( sPackageName+".smzip" );
 
 	// Generate a comment
-	RString sComment;
+	std::string sComment;
 	if( !MakeComment(sComment) )
 		return;		// cancelled
 
@@ -270,7 +270,7 @@ static LocalizedString THE_FOLLOWING_PACKAGES_WERE_EXPORTED ("CSmpackageExportDl
 static LocalizedString THE_FOLLOWING_PACKAGES_FAILED ("CSmpackageExportDlg","The following packages failed to export:");
 void CSmpackageExportDlg::OnButtonExportAsIndividual() 
 {
-	std::vector<RString> asPaths;
+	std::vector<std::string> asPaths;
 	GetCheckedPaths( asPaths );
 
 	if( asPaths.size() == 0 )
@@ -280,20 +280,20 @@ void CSmpackageExportDlg::OnButtonExportAsIndividual()
 	}
 
 	// Generate a comment
-	RString sComment;
+	std::string sComment;
 	if( !MakeComment(sComment) )
 		return;		// cancelled
 
-	std::vector<RString> asExportedPackages;
-	std::vector<RString> asFailedPackages;
+	std::vector<std::string> asExportedPackages;
+	std::vector<std::string> asFailedPackages;
 	for( unsigned i=0; i<asPaths.size(); i++ )
 	{
 		// Generate a package name for every path
-		RString sPath = asPaths[i];
+		std::string sPath = asPaths[i];
 
-		RString sPackageName = ReplaceInvalidFileNameChars( sPath ) + ".smzip";
+		std::string sPackageName = ReplaceInvalidFileNameChars( sPath ) + ".smzip";
 
-		std::vector<RString> asPathsToExport;
+		std::vector<std::string> asPathsToExport;
 		asPathsToExport.push_back( sPath );
 
 		if( ExportPackage( sPackageName, GetCurrentInstallDir(), asPathsToExport, sComment ) )
@@ -302,7 +302,7 @@ void CSmpackageExportDlg::OnButtonExportAsIndividual()
 			asFailedPackages.push_back( sPackageName );
 	}
 
-	RString sMessage;
+	std::string sMessage;
 	if( asExportedPackages.size() > 0 )
 		sMessage += THE_FOLLOWING_PACKAGES_WERE_EXPORTED.GetValue()+"\n\n"+join( "\n", asExportedPackages );
 
@@ -359,7 +359,7 @@ void CSmpackageExportDlg::GetCheckedTreeItems( CArray<HTREEITEM,HTREEITEM>& aChe
 			aCheckedItemsOut.Add( aItems[i] );
 }
 
-void CSmpackageExportDlg::GetCheckedPaths( std::vector<RString>& aPathsOut )
+void CSmpackageExportDlg::GetCheckedPaths( std::vector<std::string>& aPathsOut )
 {
 	CArray<HTREEITEM,HTREEITEM> aItems;	
 
@@ -368,11 +368,11 @@ void CSmpackageExportDlg::GetCheckedPaths( std::vector<RString>& aPathsOut )
 	{
 		HTREEITEM item = aItems[i];
 
-		RString sPath;
+		std::string sPath;
 
 		while( item )
 		{
-			sPath = RString((LPCTSTR)m_tree.GetItemText(item)) + '/' + sPath;
+			sPath = std::string((LPCTSTR)m_tree.GetItemText(item)) + '/' + sPath;
 			item = m_tree.GetParentItem(item);
 		}
 
@@ -399,7 +399,7 @@ void CSmpackageExportDlg::RefreshInstallationList()
 {
 	m_comboDir.ResetContent();
 
-	std::vector<RString> asInstallDirs;
+	std::vector<std::string> asInstallDirs;
 	SMPackageUtil::GetGameInstallDirs( asInstallDirs );
 	for( unsigned i=0; i<asInstallDirs.size(); i++ )
 	{
@@ -414,11 +414,11 @@ void CSmpackageExportDlg::OnSelchangeComboDir()
 	RefreshTree();
 }
 
-RString CSmpackageExportDlg::GetCurrentInstallDir()
+std::string CSmpackageExportDlg::GetCurrentInstallDir()
 {
 	CString s;
 	m_comboDir.GetWindowText( s );
-	RString s2 = s;
+	std::string s2 = s;
 	if( s2.Right(1) != "/" )
 		s2 += "/";
 	return s2;
@@ -432,7 +432,7 @@ void CSmpackageExportDlg::RefreshTree()
 
 	// Add announcers
 	{
-		std::vector<RString> as1;
+		std::vector<std::string> as1;
 		HTREEITEM item1 = m_tree.InsertItem( "Announcers" );
 		fileDriver.GetDirListing( "Announcers/*", as1, true, false );
 		for( unsigned i=0; i<as1.size(); i++ )
@@ -441,7 +441,7 @@ void CSmpackageExportDlg::RefreshTree()
 
 	// Add characters
 	{
-		std::vector<RString> as1;
+		std::vector<std::string> as1;
 		HTREEITEM item1 = m_tree.InsertItem( "Characters" );
 		fileDriver.GetDirListing( "Characters/*", as1, true, false );
 		for( unsigned i=0; i<as1.size(); i++ )
@@ -450,7 +450,7 @@ void CSmpackageExportDlg::RefreshTree()
 
 	// Add themes
 	{
-		std::vector<RString> as1;
+		std::vector<std::string> as1;
 		HTREEITEM item1 = m_tree.InsertItem( "Themes" );
 		fileDriver.GetDirListing( "Themes/*", as1, true, false );
 		for( unsigned i=0; i<as1.size(); i++ )
@@ -459,7 +459,7 @@ void CSmpackageExportDlg::RefreshTree()
 
 	// Add BGAnimations
 	{
-		std::vector<RString> as1;
+		std::vector<std::string> as1;
 		HTREEITEM item1 = m_tree.InsertItem( "BGAnimations" );
 		fileDriver.GetDirListing( "BGAnimations/*", as1, true, false );
 		for( unsigned i=0; i<as1.size(); i++ )
@@ -468,7 +468,7 @@ void CSmpackageExportDlg::RefreshTree()
 
 	// Add RandomMovies
 	{
-		std::vector<RString> as1;
+		std::vector<std::string> as1;
 		HTREEITEM item1 = m_tree.InsertItem( "RandomMovies" );
 		fileDriver.GetDirListing( "RandomMovies/*.ogv", as1, false, false );
 		fileDriver.GetDirListing( "RandomMovies/*.avi", as1, false, false );
@@ -480,7 +480,7 @@ void CSmpackageExportDlg::RefreshTree()
 
 	// Add visualizations
 	{
-		std::vector<RString> as1;
+		std::vector<std::string> as1;
 		HTREEITEM item1 = m_tree.InsertItem( "Visualizations" );
 		fileDriver.GetDirListing( "Visualizations/*.ogv", as1, false, false );
 		fileDriver.GetDirListing( "Visualizations/*.avi", as1, false, false );
@@ -492,7 +492,7 @@ void CSmpackageExportDlg::RefreshTree()
 
 	// Add courses
 	{
-		std::vector<RString> as1;
+		std::vector<std::string> as1;
 		HTREEITEM item1 = m_tree.InsertItem( "Courses" );
 		fileDriver.GetDirListing( "Courses/*.crs", as1, false, false );
 		for( unsigned i=0; i<as1.size(); i++ )
@@ -507,12 +507,12 @@ void CSmpackageExportDlg::RefreshTree()
 	// Add NoteSkins
 	//
 	{
-		std::vector<RString> as1;
+		std::vector<std::string> as1;
 		HTREEITEM item1 = m_tree.InsertItem( "NoteSkins" );
 		fileDriver.GetDirListing( "NoteSkins/*", as1, true, false );
 		for( unsigned i=0; i<as1.size(); i++ )
 		{
-			std::vector<RString> as2;
+			std::vector<std::string> as2;
 			HTREEITEM item2 = m_tree.InsertItem( as1[i], item1 );
 			fileDriver.GetDirListing( "NoteSkins/" + as1[i] + "/*", as2, true, false );
 			for( unsigned j=0; j<as2.size(); j++ )
@@ -524,12 +524,12 @@ void CSmpackageExportDlg::RefreshTree()
 	// Add Songs
 	//
 	{
-		std::vector<RString> as1;
+		std::vector<std::string> as1;
 		HTREEITEM item1 = m_tree.InsertItem( "Songs" );
 		fileDriver.GetDirListing( "Songs/*", as1, true, false );
 		for( unsigned i=0; i<as1.size(); i++ )
 		{
-			std::vector<RString> as2;
+			std::vector<std::string> as2;
 			HTREEITEM item2 = m_tree.InsertItem( as1[i], item1 );
 			fileDriver.GetDirListing( "Songs/" + as1[i] + "/*", as2, true, false );
 			for( unsigned j=0; j<as2.size(); j++ )

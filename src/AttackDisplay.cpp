@@ -9,9 +9,9 @@
 #include "PlayerState.h"
 
 
-RString GetAttackPieceName( const RString &sAttack )
+std::string GetAttackPieceName( const std::string &sAttack )
 {
-	RString ret = ssprintf( "attack %s", sAttack.c_str() );
+	std::string ret = ssprintf( "attack %s", sAttack.c_str() );
 
 	/* 1.5x -> 1_5x.  If we pass a period to THEME->GetPathTo, it'll think
 	 * we're looking for a specific file and not search. */
@@ -42,19 +42,19 @@ void AttackDisplay::Init( const PlayerState* pPlayerState )
 		GAMESTATE->m_PlayMode != PLAY_MODE_RAVE )
 		return;
 
-	std::set<RString> attacks;
+	std::set<std::string> attacks;
 	for( int al=0; al<NUM_ATTACK_LEVELS; al++ )
 	{
 		const Character *ch = GAMESTATE->m_pCurCharacters[pn];
 		ASSERT( ch != nullptr );
-		const RString* asAttacks = ch->m_sAttacks[al];
+		const std::string* asAttacks = ch->m_sAttacks[al];
 		for( int att = 0; att < NUM_ATTACKS_PER_LEVEL; ++att )
 			attacks.insert( asAttacks[att] );
 	}
 
-	for( std::set<RString>::const_iterator it = attacks.begin(); it != attacks.end(); ++it )
+	for( std::set<std::string>::const_iterator it = attacks.begin(); it != attacks.end(); ++it )
 	{
-		const RString path = THEME->GetPathG( "AttackDisplay", GetAttackPieceName( *it ), true );
+		const std::string path = THEME->GetPathG( "AttackDisplay", GetAttackPieceName( *it ), true );
 		if( path == "" )
 		{
 			LOG->Trace( "Couldn't find \"%s\"", GetAttackPieceName( *it ).c_str() );
@@ -96,9 +96,9 @@ void AttackDisplay::Update( float fDelta )
 	}
 }
 
-void AttackDisplay::SetAttack( const RString &sText )
+void AttackDisplay::SetAttack( const std::string &sText )
 {
-	const RString path = THEME->GetPathG( "AttackDisplay", GetAttackPieceName(sText), true );
+	const std::string path = THEME->GetPathG( "AttackDisplay", GetAttackPieceName(sText), true );
 	if( path == "" )
 		return;
 
@@ -108,7 +108,7 @@ void AttackDisplay::SetAttack( const RString &sText )
 	// TODO: Remove use of PlayerNumber.
 	PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
 
-	const RString sName = ssprintf( "%sP%i", sText.c_str(), pn+1 );
+	const std::string sName = ssprintf( "%sP%i", sText.c_str(), pn+1 );
 	m_sprAttack.RunCommands( THEME->GetMetricA("AttackDisplay", sName + "OnCommand") );
 }
 

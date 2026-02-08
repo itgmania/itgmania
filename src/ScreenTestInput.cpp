@@ -39,7 +39,7 @@ class InputList: public BitmapText
 	void Update( float fDeltaTime )
 	{
 		// Update input texts
-		std::vector<RString> asInputs;
+		std::vector<std::string> asInputs;
 
 		std::vector<DeviceInput> DeviceInputs;
 		INPUTFILTER->GetPressedButtons( DeviceInputs );
@@ -48,7 +48,7 @@ class InputList: public BitmapText
 			if( !di.bDown && di.level == 0.0f )
 				continue;
 
-			RString sTemp;
+			std::string sTemp;
 			sTemp += INPUTMAN->GetDeviceSpecificInputString(di);
 			if( di.level == 1.0f )
 				sTemp += ssprintf(" - 1 " );
@@ -58,7 +58,7 @@ class InputList: public BitmapText
 			GameInput gi;
 			if( INPUTMAPPER->DeviceToGame(di,gi) )
 			{
-				RString sName = GameButtonToLocalizedString( INPUTMAPPER->GetInputScheme(), gi.button );
+				std::string sName = GameButtonToLocalizedString( INPUTMAPPER->GetInputScheme(), gi.button );
 				sTemp += ssprintf(" - %s %d %s", CONTROLLER.GetValue().c_str(), gi.controller+1, sName.c_str() );
 
 				if( !PREFSMAN->m_bOnlyDedicatedMenuButtons )
@@ -66,7 +66,7 @@ class InputList: public BitmapText
 					GameButton mb = INPUTMAPPER->GetInputScheme()->GameButtonToMenuButton( gi.button );
 					if( mb != GameButton_Invalid && mb != gi.button )
 					{
-						RString sGameButtonString = GameButtonToLocalizedString( INPUTMAPPER->GetInputScheme(), mb );
+						std::string sGameButtonString = GameButtonToLocalizedString( INPUTMAPPER->GetInputScheme(), mb );
 						sTemp += ssprintf( " - (%s %s)", sGameButtonString.c_str(), SECONDARY.GetValue().c_str() );
 					}
 				}
@@ -76,7 +76,7 @@ class InputList: public BitmapText
 				sTemp += " - "+NOT_MAPPED.GetValue();
 			}
 
-			RString sComment = INPUTFILTER->GetButtonComment( di );
+			std::string sComment = INPUTFILTER->GetButtonComment( di );
 			if( sComment != "" )
 				sTemp += " - " + sComment;
 
@@ -95,7 +95,7 @@ REGISTER_SCREEN_CLASS( ScreenTestInput );
 
 bool ScreenTestInput::Input( const InputEventPlus &input )
 {
-	RString sMessage = input.DeviceI.ToString();
+	std::string sMessage = input.DeviceI.ToString();
 	bool bHandled = false;
 	switch( input.type )
 	{

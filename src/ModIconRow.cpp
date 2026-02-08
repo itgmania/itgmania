@@ -12,7 +12,7 @@
 #include <vector>
 
 
-int OptionToPreferredColumn( RString sOptionText );
+int OptionToPreferredColumn( std::string sOptionText );
 
 REGISTER_ACTOR_CLASS( ModIconRow );
 
@@ -32,7 +32,7 @@ ModIconRow::~ModIconRow()
 	this->RemoveAllChildren();
 }
 
-void ModIconRow::Load( const RString &sMetricsGroup, PlayerNumber pn )
+void ModIconRow::Load( const std::string &sMetricsGroup, PlayerNumber pn )
 {
 	ASSERT_M( m_pn == PlayerNumber_Invalid, "Multiple calls to Load" );
 
@@ -122,7 +122,7 @@ static const OptionColumnEntry g_OptionColumnEntries[] =
 	{"Distant",		6},
 };
 
-int OptionToPreferredColumn( RString sOptionText )
+int OptionToPreferredColumn( std::string sOptionText )
 {
 	// Speedups always go in column 0. digit ... x
 	if( sOptionText.size() > 1 &&
@@ -145,17 +145,17 @@ void ModIconRow::SetFromGameState()
 {
 	PlayerNumber pn = m_pn;
 
-	RString sOptions = GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetStage().GetString();
-	std::vector<RString> vsOptions;
+	std::string sOptions = GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetStage().GetString();
+	std::vector<std::string> vsOptions;
 	split( sOptions, ", ", vsOptions, true );
 
-	std::vector<RString> vsText;	// fill these with what will be displayed on the tabs
+	std::vector<std::string> vsText;	// fill these with what will be displayed on the tabs
 	vsText.resize( m_vpModIcon.size() );
 
 	// for each option, look for the best column to place it in
 	for( unsigned i=0; i<vsOptions.size(); i++ )
 	{
-		RString sOption = vsOptions[i];
+		std::string sOption = vsOptions[i];
 		int iPreferredCol = OptionToPreferredColumn( sOption );
 		iPreferredCol = std::clamp( iPreferredCol, 0, (int)m_vpModIcon.size()-1 );
 

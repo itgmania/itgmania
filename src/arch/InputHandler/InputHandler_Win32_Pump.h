@@ -14,7 +14,7 @@ public:
 	void Update();
 	InputHandler_Win32_Pump();
 	~InputHandler_Win32_Pump();
-	RString GetDeviceSpecificInputString( const DeviceInput &di );
+	std::string GetDeviceSpecificInputString( const DeviceInput &di );
 	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut );
 
 private:

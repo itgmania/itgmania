@@ -97,9 +97,9 @@ bool HidDevice::FoundOnce()
 	return foundOnce;
 }
 
-const RString HidDevice::GetPidsString(const std::vector<int> pids)
+const std::string HidDevice::GetPidsString(const std::vector<int> pids)
 {
-	RString pidsString;
+	std::string pidsString;
 	char pid[5] = { 0 };
 	size_t size = pids.size();
 

@@ -8,8 +8,8 @@
 struct TitleFields
 {
 	void SaveToStrings(
-		RString &sTitle, RString &sSubtitle, RString &sArtist,
-		RString &sTitleTranslit, RString &sSubtitleTranslit, RString &sArtistTranslit ) const
+		std::string &sTitle, std::string &sSubtitle, std::string &sArtist,
+		std::string &sTitleTranslit, std::string &sSubtitleTranslit, std::string &sArtistTranslit ) const
 	{
 		sTitle = Title;
 		sSubtitle = Subtitle;
@@ -20,8 +20,8 @@ struct TitleFields
 	}
 
 	void LoadFromStrings(
-		RString sTitle, RString sSubtitle, RString sArtist,
-		RString sTitleTranslit, RString sSubtitleTranslit, RString sArtistTranslit )
+		std::string sTitle, std::string sSubtitle, std::string sArtist,
+		std::string sTitleTranslit, std::string sSubtitleTranslit, std::string sArtistTranslit )
 	{
 		Title = sTitle;
 		Subtitle = sSubtitle;
@@ -30,8 +30,8 @@ struct TitleFields
 		SubtitleTranslit = sSubtitleTranslit;
 		ArtistTranslit = sArtistTranslit;
 	}
-	RString Title, Subtitle, Artist;
-	RString TitleTranslit, SubtitleTranslit, ArtistTranslit;
+	std::string Title, Subtitle, Artist;
+	std::string TitleTranslit, SubtitleTranslit, ArtistTranslit;
 };
 struct TitleTrans;
 /** @brief Automatic translation for Song titles. */
@@ -41,10 +41,10 @@ class TitleSubst
 
 	void AddTrans(const TitleTrans &tr);
 public:
-	TitleSubst(const RString &section);
+	TitleSubst(const std::string &section);
 	~TitleSubst();
 
-	void Load(const RString &filename, const RString &section);
+	void Load(const std::string &filename, const std::string &section);
 
 	void Subst( TitleFields &tf );
 };

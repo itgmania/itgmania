@@ -9,7 +9,7 @@
 
 
 // this will not work on 95 and NT because of EnumDisplayDevices
-RString GetPrimaryVideoName()
+std::string GetPrimaryVideoName()
 {
 	typedef BOOL (WINAPI* pfnEnumDisplayDevices)(PVOID,DWORD,PDISPLAY_DEVICE,DWORD);
 	pfnEnumDisplayDevices EnumDisplayDevices;
@@ -17,17 +17,17 @@ RString GetPrimaryVideoName()
 
 	hInstUser32 = LoadLibrary( "User32.DLL" );
 	if( !hInstUser32 )
-		return RString();
+		return std::string();
 
 	// VC6 don't have a stub to static link with, so link dynamically.
 	EnumDisplayDevices = (pfnEnumDisplayDevices)GetProcAddress(hInstUser32,"EnumDisplayDevicesA");
 	if( EnumDisplayDevices == nullptr )
 	{
 		FreeLibrary(hInstUser32);
-		return RString();
+		return std::string();
 	}
 
-	RString sPrimaryDeviceName;
+	std::string sPrimaryDeviceName;
 	for( int i=0; true; ++i )
 	{
 		DISPLAY_DEVICE dd;
@@ -47,9 +47,9 @@ RString GetPrimaryVideoName()
 	return sPrimaryDeviceName;
 }
 
-RString GetPrimaryVideoDriverName()
+std::string GetPrimaryVideoDriverName()
 {
-	RString sPrimaryDeviceName = GetPrimaryVideoName();
+	std::string sPrimaryDeviceName = GetPrimaryVideoName();
 	if( sPrimaryDeviceName != "" )
 		return sPrimaryDeviceName;
 
@@ -66,12 +66,12 @@ RString GetPrimaryVideoDriverName()
 bool GetVideoDriverInfo( int iCardno, VideoDriverInfo &info )
 {
 	static bool bInitialized=false;
-	static std::vector<RString> lst;
+	static std::vector<std::string> lst;
 	if( !bInitialized )
 	{
 		bInitialized = true;
 
-		const RString sTopKey =
+		const std::string sTopKey =
 			"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E968-E325-11CE-BFC1-08002BE10318}";
 
 		RegistryAccess::GetRegSubKeys( sTopKey, lst, ".*", false );
@@ -97,7 +97,7 @@ bool GetVideoDriverInfo( int iCardno, VideoDriverInfo &info )
 
 	while( iCardno < (int)lst.size() )
 	{
-		const RString sKey = lst[iCardno];
+		const std::string sKey = lst[iCardno];
 
 		if( !RegistryAccess::GetRegValue( sKey, "DriverDesc", info.sDescription ) )
 		{

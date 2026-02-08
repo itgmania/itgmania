@@ -25,8 +25,8 @@
 #include <vector>
 
 
-static RString PercentScoreWeightName( size_t i ) { return "PercentScoreWeight" + ScoreEventToString( (ScoreEvent)i ); }
-static RString GradeWeightName( size_t i ) { return "GradeWeight" + ScoreEventToString( (ScoreEvent)i ); }
+static std::string PercentScoreWeightName( size_t i ) { return "PercentScoreWeight" + ScoreEventToString( (ScoreEvent)i ); }
+static std::string GradeWeightName( size_t i ) { return "GradeWeight" + ScoreEventToString( (ScoreEvent)i ); }
 
 static ThemeMetric1D<int> g_iPercentScoreWeight("ScoreKeeperNormal", PercentScoreWeightName, NUM_ScoreEvent );
 static ThemeMetric1D<int> g_iGradeWeight("ScoreKeeperNormal", GradeWeightName, NUM_ScoreEvent );
@@ -348,7 +348,7 @@ int ScoreKeeperNormal::CalcNextToastyAt(int level)
 			break;
 		case LUA_TFUNCTION:
 			{
-				RString err= "Error running ToastyTriggersAt: ";
+				std::string err= "Error running ToastyTriggersAt: ";
 				LuaHelpers::Push(L, m_pPlayerState->m_PlayerNumber);
 				lua_pushnumber(L, level);
 				if(LuaHelpers::RunScriptOnStack(L, err, 2, 1, true))

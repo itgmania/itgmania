@@ -493,7 +493,7 @@ bool test_file( const TestFile &tf, int filters )
 	const char *fn = tf.fn;
 
 	LOG->Trace("Testing: %s", fn );
-	RString error;
+	std::string error;
 	RageSoundReader *s = SoundReader_FileReader::OpenFile( fn, error );
 	s = ApplyFilters( s, filters );
 

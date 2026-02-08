@@ -35,19 +35,19 @@ RageFile *RageFile::Copy() const
 	return new RageFile( *this );
 }
 
-RString RageFile::GetPath() const
+std::string RageFile::GetPath() const
 {
 	if ( !IsOpen() )
-		return RString();
+		return std::string();
 
-	RString sRet = m_File->GetDisplayPath();
+	std::string sRet = m_File->GetDisplayPath();
 	if( sRet != "" )
 		return sRet;
 
 	return GetRealPath();
 }
 
-bool RageFile::Open( const RString& path, int mode )
+bool RageFile::Open( const std::string& path, int mode )
 {
 	ASSERT( FILEMAN != nullptr );
 	Close();
@@ -114,13 +114,13 @@ void RageFile::AssertWrite() const
 	}
 }
 
-int RageFile::GetLine( RString &out )
+int RageFile::GetLine( std::string &out )
 {
 	AssertRead();
 	return m_File->GetLine( out );
 }
 
-int RageFile::PutLine( const RString &str )
+int RageFile::PutLine( const std::string &str )
 {
 	AssertWrite();
 	return m_File->PutLine( str );
@@ -152,7 +152,7 @@ void RageFile::ClearError()
 	m_sError = "";
 }
 
-RString RageFile::GetError() const
+std::string RageFile::GetError() const
 {
 	if( m_File != nullptr && m_File->GetError() != "" )
 		return m_File->GetError();
@@ -160,7 +160,7 @@ RString RageFile::GetError() const
 }
 
 
-void RageFile::SetError( const RString &err )
+void RageFile::SetError( const std::string &err )
 {
 	if( m_File != nullptr )
 		m_File->ClearError();
@@ -197,7 +197,7 @@ int RageFile::GetFD()
 	return m_File->GetFD();
 }
 
-int RageFile::Read( RString &buffer, int bytes )
+int RageFile::Read( std::string &buffer, int bytes )
 {
 	AssertRead();
 	return m_File->Read( buffer, bytes );
@@ -239,7 +239,7 @@ int RageFile::Seek( int offset, int whence )
 	return m_File->Seek( offset, whence );
 }
 
-void FileReading::ReadBytes( RageFileBasic &f, void *buf, int size, RString &sError )
+void FileReading::ReadBytes( RageFileBasic &f, void *buf, int size, std::string &sError )
 {
 	if( sError.size() != 0 )
 		return;
@@ -251,12 +251,12 @@ void FileReading::ReadBytes( RageFileBasic &f, void *buf, int size, RString &sEr
 		sError = "Unexpected end of file";
 }
 
-RString FileReading::ReadString( RageFileBasic &f, int size, RString &sError )
+std::string FileReading::ReadString( RageFileBasic &f, int size, std::string &sError )
 {
 	if( sError.size() != 0 )
-		return RString();
+		return std::string();
 
-	RString sBuf;
+	std::string sBuf;
 	int ret = f.Read( sBuf, size );
 	if( ret == -1 )
 		sError = f.GetError();
@@ -265,7 +265,7 @@ RString FileReading::ReadString( RageFileBasic &f, int size, RString &sError )
 	return sBuf;
 }
 
-void FileReading::SkipBytes( RageFileBasic &f, int iBytes, RString &sError )
+void FileReading::SkipBytes( RageFileBasic &f, int iBytes, std::string &sError )
 {
 	if( sError.size() != 0 )
 		return;
@@ -274,7 +274,7 @@ void FileReading::SkipBytes( RageFileBasic &f, int iBytes, RString &sError )
 	FileReading::Seek( f, iBytes, sError );
 }
 
-void FileReading::Seek( RageFileBasic &f, int iOffset, RString &sError )
+void FileReading::Seek( RageFileBasic &f, int iOffset, std::string &sError )
 {
 	if( sError.size() != 0 )
 		return;
@@ -288,7 +288,7 @@ void FileReading::Seek( RageFileBasic &f, int iOffset, RString &sError )
 		sError = "Unexpected end of file";
 }
 
-uint8_t FileReading::read_8( RageFileBasic &f, RString &sError )
+uint8_t FileReading::read_8( RageFileBasic &f, std::string &sError )
 {
 	uint8_t val;
 	ReadBytes( f, &val, sizeof(uint8_t), sError );
@@ -298,7 +298,7 @@ uint8_t FileReading::read_8( RageFileBasic &f, RString &sError )
 		return 0;
 }
 
-uint16_t FileReading::read_u16_le( RageFileBasic &f, RString &sError )
+uint16_t FileReading::read_u16_le( RageFileBasic &f, std::string &sError )
 {
 	uint16_t val;
 	ReadBytes( f, &val, sizeof(uint16_t), sError );
@@ -308,7 +308,7 @@ uint16_t FileReading::read_u16_le( RageFileBasic &f, RString &sError )
 		return 0;
 }
 
-int16_t FileReading::read_16_le( RageFileBasic &f, RString &sError )
+int16_t FileReading::read_16_le( RageFileBasic &f, std::string &sError )
 {
 	int16_t val;
 	ReadBytes( f, &val, sizeof(int16_t), sError );
@@ -318,7 +318,7 @@ int16_t FileReading::read_16_le( RageFileBasic &f, RString &sError )
 		return 0;
 }
 
-uint32_t FileReading::read_u32_le( RageFileBasic &f, RString &sError )
+uint32_t FileReading::read_u32_le( RageFileBasic &f, std::string &sError )
 {
 	uint32_t val;
 	ReadBytes( f, &val, sizeof(uint32_t), sError );
@@ -328,7 +328,7 @@ uint32_t FileReading::read_u32_le( RageFileBasic &f, RString &sError )
 		return 0;
 }
 
-int32_t FileReading::read_32_le( RageFileBasic &f, RString &sError )
+int32_t FileReading::read_32_le( RageFileBasic &f, std::string &sError )
 {
 	int32_t val;
 	ReadBytes( f, &val, sizeof(int32_t), sError );
@@ -376,7 +376,7 @@ public:
 
 	static int Open( T* p, lua_State *L )
 	{
-		const RString path = SArg(1);
+		const std::string path = SArg(1);
 		int mode = IArg(2);
 
 		if ((mode & RageFile::WRITE) && FILEMAN->IsPathProtected(path))
@@ -412,7 +412,7 @@ public:
 	static int Read( T* p, lua_State *L )
 	{
 		can_safely_read(p, L);
-		RString string;
+		std::string string;
 		p->Read(string);
 		lua_pushstring( L, string.c_str() );
 		return 1;
@@ -421,7 +421,7 @@ public:
 	static int ReadBytes( T* p, lua_State *L )
 	{
 		can_safely_read(p, L);
-		RString string;
+		std::string string;
 		p->Read( string, IArg(1) );
 		lua_pushstring( L, string.c_str() );
 		return 1;
@@ -444,7 +444,7 @@ public:
 	static int GetLine( T* p, lua_State *L )
 	{
 		can_safely_read(p, L);
-		RString string;
+		std::string string;
 		p->GetLine(string);
 		lua_pushstring( L, string.c_str() );
 		return 1;
@@ -459,7 +459,7 @@ public:
 
 	static int GetError( T* p, lua_State *L )
 	{
-		RString error;
+		std::string error;
 		error = p->GetError();
 		lua_pushstring( L, error.c_str() );
 		return 1;

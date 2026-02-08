@@ -58,13 +58,13 @@ void TechCounts::Zero()
 	}
 }
 
-RString TechCounts::ToString( int iMaxValues ) const
+std::string TechCounts::ToString( int iMaxValues ) const
 {
 	if( iMaxValues == -1 )
 		iMaxValues = NUM_TechCountsCategory;
 	iMaxValues = std::min( iMaxValues, (int)NUM_TechCountsCategory );
 
-	std::vector<RString> asTechCounts;
+	std::vector<std::string> asTechCounts;
 	for( int r=0; r < iMaxValues; r++ )
 	{
 		asTechCounts.push_back(ssprintf("%.3f", (*this)[r]));
@@ -73,9 +73,9 @@ RString TechCounts::ToString( int iMaxValues ) const
 	return join( ",",asTechCounts );
 }
 
-void TechCounts::FromString( RString sTechCounts )
+void TechCounts::FromString( std::string sTechCounts )
 {
-	std::vector<RString> saValues;
+	std::vector<std::string> saValues;
 	split( sTechCounts, ",", saValues, true );
 
 	if( saValues.size() != NUM_TechCountsCategory )

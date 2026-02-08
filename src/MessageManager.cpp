@@ -93,9 +93,9 @@ XToString( MessageID );
 static RageMutex g_Mutex( "MessageManager" );
 
 typedef std::set<IMessageSubscriber*> SubscribersSet;
-static std::map<RString,SubscribersSet> g_MessageToSubscribers;
+static std::map<std::string,SubscribersSet> g_MessageToSubscribers;
 
-Message::Message( const RString &s )
+Message::Message( const std::string &s )
 {
 	m_sName = s;
 	m_pParams = new LuaTable;
@@ -109,7 +109,7 @@ Message::Message(const MessageID id)
 	m_bBroadcast = false;
 }
 
-Message::Message( const RString &s, const LuaReference &params )
+Message::Message( const std::string &s, const LuaReference &params )
 {
 	m_sName = s;
 	m_bBroadcast = false;
@@ -144,12 +144,12 @@ const LuaReference &Message::GetParamTable() const
 	return *m_pParams;
 }
 
-void Message::GetParamFromStack( lua_State *L, const RString &sName ) const
+void Message::GetParamFromStack( lua_State *L, const std::string &sName ) const
 {
 	m_pParams->Get( L, sName );
 }
 
-void Message::SetParamFromStack( lua_State *L, const RString &sName )
+void Message::SetParamFromStack( lua_State *L, const std::string &sName )
 {
 	m_pParams->Set( L, sName );
 }
@@ -173,7 +173,7 @@ MessageManager::~MessageManager()
 	LUA->UnsetGlobal( "MESSAGEMAN" );
 }
 
-void MessageManager::Subscribe( IMessageSubscriber* pSubscriber, const RString& sMessage )
+void MessageManager::Subscribe( IMessageSubscriber* pSubscriber, const std::string& sMessage )
 {
 	LockMut(g_Mutex);
 
@@ -190,7 +190,7 @@ void MessageManager::Subscribe( IMessageSubscriber* pSubscriber, MessageID m )
 	Subscribe( pSubscriber, MessageIDToString(m) );
 }
 
-void MessageManager::Unsubscribe( IMessageSubscriber* pSubscriber, const RString& sMessage )
+void MessageManager::Unsubscribe( IMessageSubscriber* pSubscriber, const std::string& sMessage )
 {
 	LockMut(g_Mutex);
 
@@ -215,7 +215,7 @@ void MessageManager::Broadcast( Message &msg ) const
 
 	LockMut(g_Mutex);
 
-	std::map<RString, SubscribersSet>::const_iterator iter = g_MessageToSubscribers.find( msg.GetName() );
+	std::map<std::string, SubscribersSet>::const_iterator iter = g_MessageToSubscribers.find( msg.GetName() );
 	if( iter == g_MessageToSubscribers.end() )
 		return;
 
@@ -225,7 +225,7 @@ void MessageManager::Broadcast( Message &msg ) const
 	}
 }
 
-void MessageManager::Broadcast( const RString& sMessage ) const
+void MessageManager::Broadcast( const std::string& sMessage ) const
 {
 	ASSERT( !sMessage.empty() );
 	Message msg(sMessage);
@@ -237,20 +237,20 @@ void MessageManager::Broadcast( MessageID m ) const
 	Broadcast( MessageIDToString(m) );
 }
 
-bool MessageManager::IsSubscribedToMessage( IMessageSubscriber* pSubscriber, const RString &sMessage ) const
+bool MessageManager::IsSubscribedToMessage( IMessageSubscriber* pSubscriber, const std::string &sMessage ) const
 {
 	SubscribersSet& subs = g_MessageToSubscribers[sMessage];
 	return subs.find( pSubscriber ) != subs.end();
 }	
 
-void IMessageSubscriber::ClearMessages( const RString sMessage )
+void IMessageSubscriber::ClearMessages( const std::string sMessage )
 {
 }
 
 MessageSubscriber::MessageSubscriber( const MessageSubscriber &cpy ):
 	IMessageSubscriber(cpy)
 {
-	for (RString const &msg : cpy.m_vsSubscribedTo)
+	for (std::string const &msg : cpy.m_vsSubscribedTo)
 		this->SubscribeToMessage( msg );
 }
 
@@ -261,13 +261,13 @@ MessageSubscriber &MessageSubscriber::operator=(const MessageSubscriber &cpy)
 
 	UnsubscribeAll();
 
-	for (RString const &msg : cpy.m_vsSubscribedTo)
+	for (std::string const &msg : cpy.m_vsSubscribedTo)
 		this->SubscribeToMessage( msg );
 
 	return *this;
 }
 
-void MessageSubscriber::SubscribeToMessage( const RString &sMessageName )
+void MessageSubscriber::SubscribeToMessage( const std::string &sMessageName )
 {
 	MESSAGEMAN->Subscribe( this, sMessageName );
 	m_vsSubscribedTo.push_back( sMessageName );
@@ -281,7 +281,7 @@ void MessageSubscriber::SubscribeToMessage( MessageID message )
 
 void MessageSubscriber::UnsubscribeAll()
 {
-	for (RString const &s : m_vsSubscribedTo)
+	for (std::string const &s : m_vsSubscribedTo)
 		MESSAGEMAN->Unsubscribe( this, s );
 	m_vsSubscribedTo.clear();
 }

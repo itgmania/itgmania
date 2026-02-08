@@ -13,14 +13,14 @@
 
 DriverList LightsDriver::m_pDriverList;
 
-void LightsDriver::Create( const RString &sDrivers, std::vector<LightsDriver *> &Add )
+void LightsDriver::Create( const std::string &sDrivers, std::vector<LightsDriver *> &Add )
 {
 	LOG->Trace( "Initializing lights drivers: %s", sDrivers.c_str() );
 
-	std::vector<RString> asDriversToTry;
+	std::vector<std::string> asDriversToTry;
 	split( sDrivers, ",", asDriversToTry, true );
 
-	for (RString const &Driver : asDriversToTry)
+	for (std::string const &Driver : asDriversToTry)
 	{
 		RageDriver *pRet = m_pDriverList.Create( Driver );
 		if( pRet == nullptr )

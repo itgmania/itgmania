@@ -22,15 +22,15 @@
 
 BOOL CALLBACK DSound::EnumCallback( LPGUID lpGuid, LPCSTR lpcstrDescription, LPCSTR lpcstrModule, LPVOID lpContext )
 {
-	RString sLine = ssprintf( "DirectSound Driver: %s", lpcstrDescription );
+	std::string sLine = ssprintf( "DirectSound Driver: %s", lpcstrDescription );
 	if( lpcstrModule[0] )
 	{
 		sLine += ssprintf( " %s", lpcstrModule );
 
-		RString sPath = FindSystemFile( lpcstrModule );
+		std::string sPath = FindSystemFile( lpcstrModule );
 		if( sPath != "" )
 		{
-			RString sVersion;
+			std::string sVersion;
 			if( GetFileVersion(sPath, sVersion) )
 				sLine += ssprintf( " %s", sVersion.c_str() );
 		}
@@ -113,7 +113,7 @@ DSound::DSound()
 	m_pDS = nullptr;
 }
 
-RString DSound::Init()
+std::string DSound::Init()
 {
 	HRESULT hr;
 	if( FAILED( hr = DirectSoundCreate(nullptr, &m_pDS, nullptr) ) )
@@ -143,7 +143,7 @@ RString DSound::Init()
 
 	SetPrimaryBufferMode();
 
-	return RString();
+	return std::string();
 }
 
 DSound::~DSound()
@@ -194,7 +194,7 @@ DSoundBuf::DSoundBuf()
 {
 }
 
-RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
+std::string DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 					  int iChannels, int iSampleRate, int iSampleBits, int iWriteAhead )
 {
 	m_iChannels = iChannels;
@@ -295,7 +295,7 @@ RString DSoundBuf::Init( DSound &ds, DSoundBuf::hw hardware,
 
 	m_pTempBuffer = new char[m_iBufferSize];
 
-	return RString();
+	return std::string();
 }
 
 void DSoundBuf::SetSampleRate( int hz )
@@ -431,7 +431,7 @@ void DSoundBuf::CheckUnderrun( int iCursorStart, int iCursorEnd )
 	int iMissedBy = iCursorEnd - m_iWriteCursor;
 	wrap( iMissedBy, m_iBufferSize );
 
-	RString s = ssprintf( "underrun: %i..%i (%i) filled but cursor at %i..%i; missed it by %i",
+	std::string s = ssprintf( "underrun: %i..%i (%i) filled but cursor at %i..%i; missed it by %i",
 		iFirstByteFilled, m_iWriteCursor, m_iBufferBytesFilled, iCursorStart, iCursorEnd, iMissedBy );
 
 	if( m_iExtraWriteahead )
@@ -522,7 +522,7 @@ bool DSoundBuf::get_output_buf( char **pBuffer, unsigned *pBufferSize, int iChun
 		if( m_iExtraWriteahead )
 		{
 			int used = std::min( m_iExtraWriteahead, bytes_played );
-			RString s = ssprintf("used %i of %i (%i..%i)", used, m_iExtraWriteahead, iCursorStart, iCursorEnd );
+			std::string s = ssprintf("used %i of %i (%i..%i)", used, m_iExtraWriteahead, iCursorStart, iCursorEnd );
 			s += "; last: ";
 			for( int i = 0; i < 4; ++i )
 				s += ssprintf( "%i, %i; ", m_iLastCursors[i][0], m_iLastCursors[i][1] );

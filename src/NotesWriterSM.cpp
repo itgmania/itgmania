@@ -141,7 +141,7 @@ static void WriteGlobalTags( RageFileBasic &f, Song &out )
 	}
 
 	f.Write( "#STOPS:" );
-	std::vector<RString> stopLines;
+	std::vector<std::string> stopLines;
 	for (std::pair<float const &, float const &> ap : allPauses)
 	{
 		stopLines.push_back(ssprintf("%.6f=%.6f", ap.first, ap.second));
@@ -197,7 +197,7 @@ static void WriteGlobalTags( RageFileBasic &f, Song &out )
  * @brief Turn a vector of lines into a single line joined by newline characters.
  * @param lines the list of lines to join.
  * @return the joined lines. */
-static RString JoinLineList( std::vector<RString> &lines )
+static std::string JoinLineList( std::vector<std::string> &lines )
 {
 	for( unsigned i = 0; i < lines.size(); ++i )
 		TrimRight( lines[i] );
@@ -215,9 +215,9 @@ static RString JoinLineList( std::vector<RString> &lines )
  * @param song the Song in question.
  * @param in the Steps in question.
  * @return the #NOTES tag. */
-static RString GetSMNotesTag( const Song &song, const Steps &in )
+static std::string GetSMNotesTag( const Song &song, const Steps &in )
 {
-	std::vector<RString> lines;
+	std::vector<std::string> lines;
 
 	lines.push_back( "" );
 	// Escape to prevent some clown from making a comment of "\r\n;"
@@ -225,12 +225,12 @@ static RString GetSMNotesTag( const Song &song, const Steps &in )
 							  in.m_StepsTypeStr.c_str(), SmEscape(in.GetDescription()).c_str()) );
 	lines.push_back( song.m_vsKeysoundFile.empty() ? "#NOTES:" : "#NOTES2:" );
 	lines.push_back( ssprintf( "     %s:", in.m_StepsTypeStr.c_str() ) );
-	RString desc = (USE_CREDIT ? in.GetCredit() : in.GetChartName());
+	std::string desc = (USE_CREDIT ? in.GetCredit() : in.GetChartName());
 	lines.push_back( ssprintf( "     %s:", SmEscape(desc).c_str() ) );
 	lines.push_back( ssprintf( "     %s:", DifficultyToString(in.GetDifficulty()).c_str() ) );
 	lines.push_back( ssprintf( "     %d:", in.GetMeter() ) );
 
-	std::vector<RString> asRadarValues;
+	std::vector<std::string> asRadarValues;
 	// OpenITG simfiles use 11 radar categories.
 	int categories = 11;
 	FOREACH_PlayerNumber( pn )
@@ -245,7 +245,7 @@ static RString GetSMNotesTag( const Song &song, const Steps &in )
 	}
 	lines.push_back( ssprintf( "     %s:", join(",",asRadarValues).c_str() ) );
 
-	RString sNoteData;
+	std::string sNoteData;
 	in.GetSMNoteData( sNoteData );
 
 	split( sNoteData, "\n", lines, true );
@@ -254,7 +254,7 @@ static RString GetSMNotesTag( const Song &song, const Steps &in )
 	return JoinLineList( lines );
 }
 
-bool NotesWriterSM::Write( RString sPath, Song &out, const std::vector<Steps*>& vpStepsToSave )
+bool NotesWriterSM::Write( std::string sPath, Song &out, const std::vector<Steps*>& vpStepsToSave )
 {
 	int flags = RageFile::WRITE;
 
@@ -276,7 +276,7 @@ bool NotesWriterSM::Write( RageFileBasic &f, Song &out, const std::vector<Steps*
 
 	for (Steps const *pSteps : vpStepsToSave)
 	{
-		RString sTag = GetSMNotesTag( out, *pSteps );
+		std::string sTag = GetSMNotesTag( out, *pSteps );
 		f.PutLine( sTag );
 	}
 	if( f.Flush() == -1 )
@@ -285,13 +285,13 @@ bool NotesWriterSM::Write( RageFileBasic &f, Song &out, const std::vector<Steps*
 	return true;
 }
 
-void NotesWriterSM::GetEditFileContents( const Song *pSong, const Steps *pSteps, RString &sOut )
+void NotesWriterSM::GetEditFileContents( const Song *pSong, const Steps *pSteps, std::string &sOut )
 {
 	sOut = "";
-	RString sDir = pSong->GetSongDir();
+	std::string sDir = pSong->GetSongDir();
 
 	// "Songs/foo/bar"; strip off "Songs/".
-	std::vector<RString> asParts;
+	std::vector<std::string> asParts;
 	split( sDir, "/", asParts );
 	if( asParts.size() )
 		sDir = join( "/", asParts.begin()+1, asParts.end() );
@@ -299,12 +299,12 @@ void NotesWriterSM::GetEditFileContents( const Song *pSong, const Steps *pSteps,
 	sOut += GetSMNotesTag( *pSong, *pSteps );
 }
 
-RString NotesWriterSM::GetEditFileName( const Song *pSong, const Steps *pSteps )
+std::string NotesWriterSM::GetEditFileName( const Song *pSong, const Steps *pSteps )
 {
 	/* Try to make a unique name. This isn't guaranteed. Edit descriptions are
 	 * case-sensitive, filenames on disk are usually not, and we decimate certain
 	 * characters for FAT filesystems. */
-	RString sFile = pSong->GetTranslitFullTitle() + " - " + pSteps->GetDescription();
+	std::string sFile = pSong->GetTranslitFullTitle() + " - " + pSteps->GetDescription();
 
 	// HACK:
 	if( pSteps->m_StepsType == StepsType_dance_double )
@@ -318,11 +318,11 @@ RString NotesWriterSM::GetEditFileName( const Song *pSong, const Steps *pSteps )
 
 static LocalizedString DESTINATION_ALREADY_EXISTS	("NotesWriterSM", "Error renaming file.  Destination file '%s' already exists.");
 static LocalizedString ERROR_WRITING_FILE		("NotesWriterSM", "Error writing file '%s'.");
-bool NotesWriterSM::WriteEditFileToMachine( const Song *pSong, Steps *pSteps, RString &sErrorOut )
+bool NotesWriterSM::WriteEditFileToMachine( const Song *pSong, Steps *pSteps, std::string &sErrorOut )
 {
-	RString sDir = PROFILEMAN->GetProfileDir( ProfileSlot_Machine ) + EDIT_STEPS_SUBDIR;
+	std::string sDir = PROFILEMAN->GetProfileDir( ProfileSlot_Machine ) + EDIT_STEPS_SUBDIR;
 
-	RString sPath = sDir + GetEditFileName(pSong,pSteps);
+	std::string sPath = sDir + GetEditFileName(pSong,pSteps);
 
 	// Check to make sure that we're not clobering an existing file before opening.
 	bool bFileNameChanging =
@@ -341,7 +341,7 @@ bool NotesWriterSM::WriteEditFileToMachine( const Song *pSong, Steps *pSteps, RS
 		return false;
 	}
 
-	RString sTag;
+	std::string sTag;
 	GetEditFileContents( pSong, pSteps, sTag );
 	if( f.PutLine(sTag) == -1 || f.Flush() == -1 )
 	{

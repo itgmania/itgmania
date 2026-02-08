@@ -21,9 +21,9 @@
 
 #include <errno.h>
 
-RString getDevice(RString inputDir, RString type)
+std::string getDevice(std::string inputDir, std::string type)
 {
-	RString result = "";
+	std::string result = "";
 	DIR* dir = opendir( inputDir.c_str() );
 	if(dir == nullptr)
 		{ LOG->Warn("LinuxInputManager: Couldn't open %s: %s.", inputDir.c_str(), strerror(errno) ); return ""; }
@@ -32,7 +32,7 @@ RString getDevice(RString inputDir, RString type)
 	while( ( d = readdir(dir) ) != nullptr)
 		if( strncmp( type.c_str(), d->d_name, type.size() ) == 0)
 		{
-			result = RString("/dev/input/") + d->d_name;
+			result = std::string("/dev/input/") + d->d_name;
 			break;
 		}
 
@@ -40,7 +40,7 @@ RString getDevice(RString inputDir, RString type)
 	return result;
 }
 
-static bool cmpDevices(RString a, RString b)
+static bool cmpDevices(std::string a, std::string b)
 {
 	return a < b;
 }
@@ -70,7 +70,7 @@ LinuxInputManager::LinuxInputManager()
 	{
 		if( strncmp( "input", d->d_name, 5) != 0) continue;
 
-		RString dName = RString("/sys/class/input/") + d->d_name;
+		std::string dName = std::string("/sys/class/input/") + d->d_name;
 
 		bool bEventPresent = getDevice(dName, "event") != "";
 		if( m_bEventEnabled && bEventPresent )
@@ -100,11 +100,11 @@ static bool presort_cmpDevices(LinuxInputSort a, LinuxInputSort b)
 	return a.UniqueString < b.UniqueString;
 }
 
-void LinuxInputManager::PresortPhysical(std::vector<RString>& sortingArray, RString sortBy)
+void LinuxInputManager::PresortPhysical(std::vector<std::string>& sortingArray, std::string sortBy)
 {
 	m_vPreSort.clear();
 
-	for (RString &dev : sortingArray)
+	for (std::string &dev : sortingArray)
 	{
 		LinuxInputSort entry;
 
@@ -149,9 +149,9 @@ void LinuxInputManager::InitDriver(InputHandler_Linux_Event* driver)
 {
 	m_EventDriver = driver;
 
-	for (RString &dev : m_vsPendingEventDevices)
+	for (std::string &dev : m_vsPendingEventDevices)
 	{
-		RString devFile = getDevice(dev, "event");
+		std::string devFile = getDevice(dev, "event");
 		ASSERT( devFile != "" );
 
 		if( ! driver->TryDevice(devFile) && m_bJoystickEnabled && getDevice(dev, "js") != "" )
@@ -171,20 +171,20 @@ void LinuxInputManager::InitDriver(InputHandler_Linux_Joystick* driver)
 		m_vsPendingJoystickDevices.clear();
 	}
 
-	for (RString &dev : m_vsPendingJoystickDevices)
+	for (std::string &dev : m_vsPendingJoystickDevices)
 	{
-		RString devFile = getDevice(dev, "js");
+		std::string devFile = getDevice(dev, "js");
 		ASSERT( devFile != "" );
 
 		driver->TryDevice(devFile);
 	}
 
 	// If any, add the manually specified devices via InputDeviceOrder
-	std::vector<RString> fixedDevices;
+	std::vector<std::string> fixedDevices;
 	split( g_sInputDeviceOrder, ",", fixedDevices, true );
 
-	for (RString dev : fixedDevices) {
-		RString devFile = dev;
+	for (std::string dev : fixedDevices) {
+		std::string devFile = dev;
 		driver->TryDevice(devFile);
 	}
 }

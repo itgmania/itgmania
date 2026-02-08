@@ -30,7 +30,7 @@ REGISTER_SCREEN_CLASS( ScreenOptionsMaster );
 
 void ScreenOptionsMaster::Init()
 {
-	std::vector<RString> asLineNames;
+	std::vector<std::string> asLineNames;
 	split( LINE_NAMES, ",", asLineNames );
 	if( asLineNames.empty() )
 	{
@@ -56,8 +56,8 @@ void ScreenOptionsMaster::Init()
 	std::vector<OptionRowHandler*> OptionRowHandlers;
 	for( unsigned i = 0; i < asLineNames.size(); ++i )
 	{
-		RString sLineName = asLineNames[i];
-		RString sRowCommands = LINE(sLineName);
+		std::string sLineName = asLineNames[i];
+		std::string sRowCommands = LINE(sLineName);
 
 		Commands cmds;
 		ParseCommands( sRowCommands, cmds, false );
@@ -137,7 +137,7 @@ void ScreenOptionsMaster::HandleScreenMessage( const ScreenMessage SM )
 		{
 			/* If the resolution or aspect ratio changes, always reload the theme.
 			 * Otherwise, only reload it if it changed. */
-			RString sNewTheme = PREFSMAN->m_sTheme.Get();
+			std::string sNewTheme = PREFSMAN->m_sTheme.Get();
 			GameLoop::ChangeTheme(sNewTheme);
 		}
 

@@ -18,7 +18,7 @@ LoadingWindow_Gtk::LoadingWindow_Gtk()
 {
 }
 
-RString LoadingWindow_Gtk::Init()
+std::string LoadingWindow_Gtk::Init()
 {
 	// Need to use external library to load this image. Native loader seems broken :/
 	const gchar *splash_image_path = "Data/splash.png";
@@ -68,7 +68,7 @@ LoadingWindow_Gtk::~LoadingWindow_Gtk()
 		gtk_main_iteration_do(FALSE);
 }
 
-void LoadingWindow_Gtk::SetText( RString s )
+void LoadingWindow_Gtk::SetText( std::string s )
 {
 	gtk_label_set_text(GTK_LABEL(label), s.c_str());
 	gtk_widget_show(label);

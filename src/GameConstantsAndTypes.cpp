@@ -15,16 +15,16 @@
 #include <vector>
 
 
-static std::vector<RString> GenerateRankingToFillInMarker()
+static std::vector<std::string> GenerateRankingToFillInMarker()
 {
-	std::vector<RString> vRankings;
+	std::vector<std::string> vRankings;
 	FOREACH_ENUM( PlayerNumber, pn )
 		vRankings.push_back( ssprintf("#P%d#", pn+1) );
 	return vRankings;
 }
-extern const std::vector<RString> RANKING_TO_FILL_IN_MARKER( GenerateRankingToFillInMarker() );
+extern const std::vector<std::string> RANKING_TO_FILL_IN_MARKER( GenerateRankingToFillInMarker() );
 
-extern const RString GROUP_ALL = "---Group All---";
+extern const std::string GROUP_ALL = "---Group All---";
 
 static const char *RadarCategoryNames[] = {
 	"Stream",
@@ -47,9 +47,9 @@ XToLocalizedString( RadarCategory );
 LuaFunction( RadarCategoryToLocalizedString, RadarCategoryToLocalizedString(Enum::Check<RadarCategory>(L, 1)) );
 LuaXType( RadarCategory );
 
-RString StepsTypeToString( StepsType st )
+std::string StepsTypeToString( StepsType st )
 {
-	RString s = GAMEMAN->GetStepsTypeInfo( st ).szName; // "dance-single"
+	std::string s = GAMEMAN->GetStepsTypeInfo( st ).szName; // "dance-single"
 	/* foo-bar -> Foo_Bar */
 	Replace(s, '-', '_');
 
@@ -68,7 +68,7 @@ RString StepsTypeToString( StepsType st )
 
 	return s;
 }
-namespace StringConversion { template<> RString ToString<StepsType>( const StepsType &value ) { return StepsTypeToString(value); } }
+namespace StringConversion { template<> std::string ToString<StepsType>( const StepsType &value ) { return StepsTypeToString(value); } }
 
 LuaXType( StepsType );
 
@@ -213,7 +213,7 @@ static const char *TapNoteScoreNames[] = {
 };
 struct tns_conversion_helper
 {
-	std::map<RString, TapNoteScore> conversion_map;
+	std::map<std::string, TapNoteScore> conversion_map;
 	tns_conversion_helper()
 	{
 		FOREACH_ENUM(TapNoteScore, tns)
@@ -231,9 +231,9 @@ struct tns_conversion_helper
 tns_conversion_helper tns_converter;
 XToString( TapNoteScore );
 LuaXType( TapNoteScore );
-TapNoteScore StringToTapNoteScore( const RString &s )
+TapNoteScore StringToTapNoteScore( const std::string &s )
 {
-	std::map<RString, TapNoteScore>::iterator tns=
+	std::map<std::string, TapNoteScore>::iterator tns=
 		tns_converter.conversion_map.find(s);
 	if(tns != tns_converter.conversion_map.end())
 	{
@@ -245,7 +245,7 @@ TapNoteScore StringToTapNoteScore( const RString &s )
 // relies on there being a StringConversion entry for enums used in prefs. -Kyz
 namespace StringConversion
 {
-	template<> bool FromString<TapNoteScore>(const RString& value, TapNoteScore& out)
+	template<> bool FromString<TapNoteScore>(const std::string& value, TapNoteScore& out)
 	{
 		out= StringToTapNoteScore(value);
 		return out != TapNoteScore_Invalid;
@@ -263,7 +263,7 @@ static const char *HoldNoteScoreNames[] = {
 };
 XToString( HoldNoteScore );
 LuaXType( HoldNoteScore );
-HoldNoteScore StringToHoldNoteScore( const RString &s )
+HoldNoteScore StringToHoldNoteScore( const std::string &s )
 {
 	// for backward compatibility
 	if     ( s == "NG" )		return HNS_LetGo;

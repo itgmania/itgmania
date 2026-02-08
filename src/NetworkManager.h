@@ -47,8 +47,8 @@ enum HttpErrorCode
 	NUM_HttpErrorCode,
 	HttpErrorCode_Invalid,
 };
-const RString& HttpErrorCodeToString(HttpErrorCode dc);
-HttpErrorCode StringToHttpErrorCode(const RString& sDC);
+const std::string& HttpErrorCodeToString(HttpErrorCode dc);
+HttpErrorCode StringToHttpErrorCode(const std::string& sDC);
 LuaDeclareType(HttpErrorCode);
 
 enum WebSocketMessageType
@@ -62,8 +62,8 @@ enum WebSocketMessageType
 	NUM_WebSocketMessageType,
 	WebSocketMessageType_Invalid,
 };
-const RString& WebSocketMessageTypeToString(WebSocketMessageType dc);
-WebSocketMessageType StringToWebSocketMessageType(const RString& sDC);
+const std::string& WebSocketMessageTypeToString(WebSocketMessageType dc);
+WebSocketMessageType StringToWebSocketMessageType(const std::string& sDC);
 LuaDeclareType(WebSocketMessageType);
 
 struct HttpRequestArgs
@@ -178,7 +178,7 @@ private:
 	ix::SocketTLSOptions tlsOptions;
 
 	static Preference<bool> httpEnabled;
-	static Preference<RString> httpAllowHosts;
+	static Preference<std::string> httpAllowHosts;
 
 	std::vector<std::shared_ptr<WebSocketHandle>> webSocketHandles;
 };

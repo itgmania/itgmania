@@ -11,7 +11,7 @@ CsvFile::CsvFile()
 {
 }
 
-bool CsvFile::ReadFile( const RString &sPath )
+bool CsvFile::ReadFile( const std::string &sPath )
 {
 	m_sPath = sPath;
 	CHECKPOINT_M( ssprintf("Reading '%s'",m_sPath.c_str()) );
@@ -35,7 +35,7 @@ bool CsvFile::ReadFile( RageFileBasic &f )
 
 	for(;;)
 	{
-		RString line;
+		std::string line;
 		switch( f.GetLine(line) )
 		{
 		case -1:
@@ -47,14 +47,14 @@ bool CsvFile::ReadFile( RageFileBasic &f )
 
 		utf8_remove_bom( line );
 
-		std::vector<RString> vs;
+		std::vector<std::string> vs;
 
 		while( !line.empty() )
 		{
 			if( line[0] == '\"' )	// quoted value
 			{
 				line.erase( line.begin() );	// eat open quote
-				RString::size_type iEnd = 0;
+				std::string::size_type iEnd = 0;
 				do
 				{
 					iEnd = line.find('\"', iEnd);
@@ -71,7 +71,7 @@ bool CsvFile::ReadFile( RageFileBasic &f )
 				}
 				while(true);
 
-				RString sValue = line;
+				std::string sValue = line;
 				sValue = Left(sValue, iEnd);
 				vs.push_back( sValue );
 
@@ -82,11 +82,11 @@ bool CsvFile::ReadFile( RageFileBasic &f )
 			}
 			else
 			{
-				RString::size_type iEnd = line.find(',');
+				std::string::size_type iEnd = line.find(',');
 				if( iEnd == line.npos )
 					iEnd = line.size();	// didn't find an end.  Take the whole line
 
-				RString sValue = line;
+				std::string sValue = line;
 				sValue = Left(sValue, iEnd);
 				vs.push_back( sValue );
 
@@ -101,7 +101,7 @@ bool CsvFile::ReadFile( RageFileBasic &f )
 	}
 }
 
-bool CsvFile::WriteFile( const RString &sPath ) const
+bool CsvFile::WriteFile( const std::string &sPath ) const
 {
 	RageFile f;
 	if( !f.Open( sPath, RageFile::WRITE ) )
@@ -118,10 +118,10 @@ bool CsvFile::WriteFile( RageFileBasic &f ) const
 {
 	for (StringVector const &line : m_vvs)
 	{
-		RString sLine;
+		std::string sLine;
 		for (auto value = line.begin(); value != line.end(); ++value)
 		{
-			RString sVal = *value;
+			std::string sVal = *value;
 			Replace(sVal, "\"", "\"\"");	// escape quotes to double-quotes
 			sLine += "\"" + sVal + "\"";
 			if( value != line.end()-1 )

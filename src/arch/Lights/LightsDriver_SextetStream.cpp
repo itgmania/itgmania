@@ -118,9 +118,9 @@ REGISTER_LIGHTS_DRIVER_CLASS(SextetStreamToFile);
 #else
 	#define DEFAULT_OUTPUT_FILENAME "Data/StepMania-Lights-SextetStream.out"
 #endif
-static Preference<RString> g_sSextetStreamOutputFilename("SextetStreamOutputFilename", DEFAULT_OUTPUT_FILENAME);
+static Preference<std::string> g_sSextetStreamOutputFilename("SextetStreamOutputFilename", DEFAULT_OUTPUT_FILENAME);
 
-inline RageFile * openOutputStream(const RString& filename)
+inline RageFile * openOutputStream(const std::string& filename)
 {
 	RageFile * file = new RageFile;
 
@@ -150,7 +150,7 @@ LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(RageFile* file)
 
 
 
-LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(const RString& filename)
+LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(const std::string& filename)
 {
 #ifdef WINDOWS
 	_impl = new SextetImpl(CreateFile(

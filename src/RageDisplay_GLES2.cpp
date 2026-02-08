@@ -229,13 +229,13 @@ RageDisplay_GLES2::RageDisplay_GLES2()
 	g_pWind = nullptr;
 }
 
-RString
+std::string
 RageDisplay_GLES2::Init( const VideoModeParams &p, bool bAllowUnacceleratedRenderer )
 {
 	g_pWind = LowLevelWindow::Create();
 
 	bool bIgnore = false;
-	RString sError = SetVideoMode( p, bIgnore );
+	std::string sError = SetVideoMode( p, bIgnore );
 	if (sError != "")
 		return sError;
 
@@ -309,19 +309,19 @@ RageDisplay_GLES2::Init( const VideoModeParams &p, bool bAllowUnacceleratedRende
 		}
 #else
 		const char *szExtensionString = (const char *) glGetString(GL_EXTENSIONS);
-		std::vector<RString> asExtensions;
+		std::vector<std::string> asExtensions;
 		split( szExtensionString, " ", asExtensions );
 		sort( asExtensions.begin(), asExtensions.end() );
 		size_t iNextToPrint = 0;
 		while( iNextToPrint < asExtensions.size() )
 		{
 			size_t iLastToPrint = iNextToPrint;
-			RString sType;
+			std::string sType;
 			for( size_t i = iNextToPrint; i<asExtensions.size(); ++i )
 			{
-				std::vector<RString> asBits;
+				std::vector<std::string> asBits;
 				split( asExtensions[i], "_", asBits );
-				RString sThisType;
+				std::string sThisType;
 				if (asBits.size() > 2)
 					sThisType = join( "_", asBits.begin(), asBits.begin()+2 );
 				if (i > iNextToPrint && sThisType != sType)
@@ -337,12 +337,12 @@ RageDisplay_GLES2::Init( const VideoModeParams &p, bool bAllowUnacceleratedRende
 				continue;
 			}
 
-			RString sList = ssprintf( "  %s: ", sType.c_str() );
+			std::string sList = ssprintf( "  %s: ", sType.c_str() );
 			while( iNextToPrint <= iLastToPrint )
 			{
-				std::vector<RString> asBits;
+				std::vector<std::string> asBits;
 				split( asExtensions[iNextToPrint], "_", asBits );
-				RString sShortExt = join( "_", asBits.begin()+2, asBits.end() );
+				std::string sShortExt = join( "_", asBits.begin()+2, asBits.end() );
 				sList += sShortExt;
 				if (iNextToPrint < iLastToPrint)
 					sList += ", ";
@@ -365,20 +365,20 @@ RageDisplay_GLES2::Init( const VideoModeParams &p, bool bAllowUnacceleratedRende
 	//glGetFloatv( GL_LINE_WIDTH_RANGE, g_line_range );
 	//glGetFloatv( GL_POINT_SIZE_RANGE, g_point_range );
 
-	return RString();
+	return std::string();
 }
 
 // Return true if mode change was successful.
 // bNewDeviceOut is set true if a new device was created and textures
 // need to be reloaded.
-RString RageDisplay_GLES2::TryVideoMode( const VideoModeParams &p, bool &bNewDeviceOut )
+std::string RageDisplay_GLES2::TryVideoMode( const VideoModeParams &p, bool &bNewDeviceOut )
 {
 	VideoModeParams vm = p;
 	vm.windowed = 1; // force windowed until I trust this thing.
 	LOG->Warn( "RageDisplay_GLES2::TryVideoMode( %d, %d, %d, %d, %d, %d )",
 		vm.windowed, vm.width, vm.height, vm.bpp, vm.rate, vm.vsync );
 
-	RString err = g_pWind->TryVideoMode( vm, bNewDeviceOut );
+	std::string err = g_pWind->TryVideoMode( vm, bNewDeviceOut );
 	if (err != "")
 		return err;	// failed to set video mode
 
@@ -406,7 +406,7 @@ RString RageDisplay_GLES2::TryVideoMode( const VideoModeParams &p, bool &bNewDev
 
 	ResolutionChanged();
 
-	return RString();
+	return std::string();
 }
 
 int RageDisplay_GLES2::GetMaxTextureSize() const
@@ -517,7 +517,7 @@ RageDisplay_GLES2::DeleteCompiledGeometry( RageCompiledGeometry *p )
 	delete p;
 }
 
-RString
+std::string
 RageDisplay_GLES2::GetApiDescription() const
 {
 	return "OpenGL ES 2.0";

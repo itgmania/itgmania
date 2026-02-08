@@ -32,7 +32,7 @@ static char THIS_FILE[] = __FILE__;
 // CSMPackageInstallDlg dialog
 
 
-CSMPackageInstallDlg::CSMPackageInstallDlg(RString sPackagePath, CWnd* pParent /*=NULL*/)
+CSMPackageInstallDlg::CSMPackageInstallDlg(std::string sPackagePath, CWnd* pParent /*=NULL*/)
 	: CDialog(CSMPackageInstallDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CSMPackageInstallDlg)
@@ -67,12 +67,12 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CSMPackageInstallDlg message handlers
 
-static bool CompareStringNoCase( const RString &s1, const RString &s2 )
+static bool CompareStringNoCase( const std::string &s1, const std::string &s2 )
 {
 	return s1.CompareNoCase( s2 ) < 0;
 }
 
-void GetSmzipFilesToExtract( RageFileDriver &zip, std::vector<RString> &vsOut )
+void GetSmzipFilesToExtract( RageFileDriver &zip, std::vector<std::string> &vsOut )
 {
 	GetDirListingRecursive( &zip, "/", "*", vsOut );
 	SMPackageUtil::StripIgnoredSmzipFiles( vsOut );
@@ -112,7 +112,7 @@ BOOL CSMPackageInstallDlg::OnInitDialog()
 	//
 	// Set the text of the first Edit box
 	//
-	RString sMessage1 = "\t" + m_sPackagePath;
+	std::string sMessage1 = "\t" + m_sPackagePath;
 	CEdit* pEdit1 = (CEdit*)GetDlgItem(IDC_EDIT_MESSAGE1);
 	pEdit1->SetWindowText( sMessage1 );
 
@@ -121,10 +121,10 @@ BOOL CSMPackageInstallDlg::OnInitDialog()
 	// Set the text of the second Edit box
 	//
 	{
-		std::vector<RString> vs;
+		std::vector<std::string> vs;
 		GetSmzipFilesToExtract( zip, vs );
 		CEdit* pEdit2 = (CEdit*)GetDlgItem(IDC_EDIT_MESSAGE2);
-		RString sText = "\t" + join( "\r\n\t", vs );
+		std::string sText = "\t" + join( "\r\n\t", vs );
 		pEdit2->SetWindowText( sText );
 	}
 
@@ -185,10 +185,10 @@ static bool CheckPackages( RageFileDriverZip &fileDriver )
 	int cnt = 0;
 	ini.GetValue( "Packages", "NumPackages", cnt );
 
-	std::vector<RString> vsDirectories;
+	std::vector<std::string> vsDirectories;
 	for( int i = 0; i < cnt; ++i )
 	{
-		RString path;
+		std::string path;
 		if( !ini.GetValue( "Packages", ssprintf("%i", i), path) )
 			continue;
 
@@ -217,13 +217,13 @@ static bool CheckPackages( RageFileDriverZip &fileDriver )
 
 	char cwd_[MAX_PATH];
 	_getcwd(cwd_, MAX_PATH);
-	RString cwd(cwd_);
+	std::string cwd(cwd_);
 	if( cwd[cwd.size()-1] != '\\' )
 		cwd += "\\";
 
 	for( int i = 0; i < (int)vsDirectories.size(); ++i )
 	{
-		RString sDir = vsDirectories[i];
+		std::string sDir = vsDirectories[i];
 		sDir += "/";
 		if( !DeleteRecursive(sDir) )	// error deleting
 		{
@@ -249,7 +249,7 @@ void CSMPackageInstallDlg::OnOK()
 	m_comboDir.EnableWindow( FALSE );
 	m_buttonEdit.EnableWindow( FALSE );
 
-	RString sInstallDir;
+	std::string sInstallDir;
 	{
 		CString s;
 		m_comboDir.GetWindowText( s );
@@ -287,7 +287,7 @@ void CSMPackageInstallDlg::OnOK()
 
 	// Show comment (if any)
 	{
-		RString sComment = zip.GetGlobalComment();
+		std::string sComment = zip.GetGlobalComment();
 		bool DontShowComment;
 		if( sComment != "" && (!SMPackageUtil::GetPref("DontShowComment", DontShowComment) || !DontShowComment) )
 		{
@@ -307,7 +307,7 @@ void CSMPackageInstallDlg::OnOK()
 
 
 	// Unzip the SMzip package into the installation folder
-	std::vector<RString> vs;
+	std::vector<std::string> vs;
 	GetSmzipFilesToExtract( zip, vs );
 	for( unsigned i=0; i<vs.size(); i++ )
 	{
@@ -338,10 +338,10 @@ void CSMPackageInstallDlg::OnOK()
 		do
 		{
 			// Extract the files
-			const RString sFile = vs[i];
+			const std::string sFile = vs[i];
 			LOG->Trace( "Extracting: "+sFile );
 
-			RString sError;
+			std::string sError;
 			{
 				int iErr;
 				RageFileBasic *pFileFrom = zip.Open( sFile, RageFile::READ, iErr );
@@ -359,7 +359,7 @@ void CSMPackageInstallDlg::OnOK()
 					goto show_error;
 				}
 
-				RString sErr;
+				std::string sErr;
 				if( !FileCopy(*pFileFrom, *pFileTo, sErr) )
 				{
 					sError = ssprintf( ERROR_COPYING_FILE.GetValue(), sFile.c_str(), sErr.c_str() );
@@ -413,7 +413,7 @@ void CSMPackageInstallDlg::RefreshInstallationList()
 {
 	m_comboDir.ResetContent();
 
-	std::vector<RString> asInstallDirs;
+	std::vector<std::string> asInstallDirs;
 	SMPackageUtil::GetGameInstallDirs( asInstallDirs );
 	for( unsigned i=0; i<asInstallDirs.size(); i++ )
 		m_comboDir.AddString( asInstallDirs[i] );

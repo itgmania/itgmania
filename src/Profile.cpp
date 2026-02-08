@@ -35,25 +35,25 @@
 #include <vector>
 
 
-const RString STATS_XML            = "Stats.xml";
-const RString STATS_XML_GZ         = "Stats.xml.gz";
+const std::string STATS_XML            = "Stats.xml";
+const std::string STATS_XML_GZ         = "Stats.xml.gz";
 /** @brief The filename for where one can edit their personal profile information. */
-const RString EDITABLE_INI         = "Editable.ini";
+const std::string EDITABLE_INI         = "Editable.ini";
 /** @brief A tiny file containing the type and list priority. */
-const RString TYPE_INI             = "Type.ini";
+const std::string TYPE_INI             = "Type.ini";
 /** @brief The filename containing the signature for STATS_XML's signature. */
-const RString DONT_SHARE_SIG       = "DontShare.sig";
-const RString PUBLIC_KEY_FILE      = "public.key";
-const RString SCREENSHOTS_SUBDIR   = "Screenshots/";
-const RString EDIT_STEPS_SUBDIR    = "Edits/";
-const RString EDIT_COURSES_SUBDIR  = "EditCourses/";
-//const RString UPLOAD_SUBDIR         = "Upload/";
-const RString RIVAL_SUBDIR         = "Rivals/";
-const RString SONGS_SUBDIR         = "Songs/";
+const std::string DONT_SHARE_SIG       = "DontShare.sig";
+const std::string PUBLIC_KEY_FILE      = "public.key";
+const std::string SCREENSHOTS_SUBDIR   = "Screenshots/";
+const std::string EDIT_STEPS_SUBDIR    = "Edits/";
+const std::string EDIT_COURSES_SUBDIR  = "EditCourses/";
+//const std::string UPLOAD_SUBDIR         = "Upload/";
+const std::string RIVAL_SUBDIR         = "Rivals/";
+const std::string SONGS_SUBDIR         = "Songs/";
 
 ThemeMetric<bool> SHOW_COIN_DATA( "Profile", "ShowCoinData" );
 static Preference<bool> g_bProfileDataCompress( "ProfileDataCompress", false );
-static ThemeMetric<RString> UNLOCK_AUTH_STRING( "Profile", "UnlockAuthString" );
+static ThemeMetric<std::string> UNLOCK_AUTH_STRING( "Profile", "UnlockAuthString" );
 #define GUID_SIZE_BYTES 8
 
 #define MAX_EDITABLE_INI_SIZE_BYTES			2*1024		// 2KB
@@ -142,14 +142,14 @@ void Profile::InitEditableData()
 void Profile::ClearStats()
 {
 	// don't reset the Guid
-	RString sGuid = m_sGuid;
+	std::string sGuid = m_sGuid;
 	InitAll();
 	m_sGuid = sGuid;
 }
 
-RString Profile::MakeGuid()
+std::string Profile::MakeGuid()
 {
-	RString s;
+	std::string s;
 	s.reserve( GUID_SIZE_BYTES*2 );
 	unsigned char buf[GUID_SIZE_BYTES];
 	CryptManager::GetRandomBytes( buf, GUID_SIZE_BYTES );
@@ -232,14 +232,14 @@ void Profile::InitCalorieData()
 	m_mapDayToCaloriesBurned.clear();
 }
 
-RString Profile::GetDisplayNameOrHighScoreName() const
+std::string Profile::GetDisplayNameOrHighScoreName() const
 {
 	if( !m_sDisplayName.empty() )
 		return m_sDisplayName;
 	else if( !m_sLastUsedHighScoreName.empty() )
 		return m_sLastUsedHighScoreName;
 	else
-		return RString();
+		return std::string();
 }
 
 Character *Profile::GetCharacter() const
@@ -254,13 +254,13 @@ Character *Profile::GetCharacter() const
 	return CHARMAN->GetDefaultCharacter();
 }
 
-void Profile::SetCharacter(const RString sCharacterID)
+void Profile::SetCharacter(const std::string sCharacterID)
 {
 	if(CHARMAN->GetCharacterFromID(sCharacterID))
 		m_sCharacterID = sCharacterID;
 }
 
-static RString FormatCalories( float fCals )
+static std::string FormatCalories( float fCals )
 {
 	return Commify((int)fCals) + " Cal";
 }
@@ -282,12 +282,12 @@ int Profile::GetAge() const
 	return (GetLocalTime().tm_year+1900) - m_BirthYear;
 }
 
-RString Profile::GetDisplayTotalCaloriesBurned() const
+std::string Profile::GetDisplayTotalCaloriesBurned() const
 {
 	return FormatCalories( m_fTotalCaloriesBurned );
 }
 
-RString Profile::GetDisplayTotalCaloriesBurnedToday() const
+std::string Profile::GetDisplayTotalCaloriesBurnedToday() const
 {
 	float fCals = GetCaloriesBurnedToday();
 	return FormatCalories( fCals );
@@ -556,9 +556,9 @@ int Profile::GetSongNumTimesPlayed( const SongID& songID ) const
  * In practice, we get the default modifiers from the theme the first time a game
  * is played, and from the profile every time thereafter.
  */
-bool Profile::GetDefaultModifiers( const Game* pGameType, RString &sModifiersOut ) const
+bool Profile::GetDefaultModifiers( const Game* pGameType, std::string &sModifiersOut ) const
 {
-	std::map<RString, RString>::const_iterator it;
+	std::map<std::string, std::string>::const_iterator it;
 	it = m_sDefaultModifiers.find( pGameType->m_szName );
 	if( it == m_sDefaultModifiers.end() )
 		return false;
@@ -566,7 +566,7 @@ bool Profile::GetDefaultModifiers( const Game* pGameType, RString &sModifiersOut
 	return true;
 }
 
-void Profile::SetDefaultModifiers( const Game* pGameType, const RString &sModifiers )
+void Profile::SetDefaultModifiers( const Game* pGameType, const std::string &sModifiers )
 {
 	if( sModifiers == "" )
 		m_sDefaultModifiers.erase( pGameType->m_szName );
@@ -574,7 +574,7 @@ void Profile::SetDefaultModifiers( const Game* pGameType, const RString &sModifi
 		m_sDefaultModifiers[pGameType->m_szName] = sModifiers;
 }
 
-bool Profile::IsCodeUnlocked( RString sUnlockEntryID ) const
+bool Profile::IsCodeUnlocked( std::string sUnlockEntryID ) const
 {
 	return m_UnlockedEntryIDs.find( sUnlockEntryID ) != m_UnlockedEntryIDs.end();
 }
@@ -796,7 +796,7 @@ void Profile::IncrementCoursePlayCount( const Course* pCourse, const Trail* pTra
 	GetCourseHighScoreList(pCourse,pTrail).IncrementPlayCount( now );
 }
 
-void Profile::GetAllUsedHighScoreNames(std::set<RString>& names)
+void Profile::GetAllUsedHighScoreNames(std::set<std::string>& names)
 {
 #define GET_NAMES_FROM_MAP(main_member, main_key_type, main_value_type, sub_member, sub_key_type, sub_value_type) \
 	for(std::map<main_key_type, main_value_type>::iterator main_entry= \
@@ -833,7 +833,7 @@ void Profile::GetAllUsedHighScoreNames(std::set<RString>& names)
 //   skipped.  This is why the skip_totals arg exists.
 // -Kyz
 void Profile::MergeScoresFromOtherProfile(Profile* other, bool skip_totals,
-	RString const& from_dir, RString const& to_dir)
+	std::string const& from_dir, std::string const& to_dir)
 {
 	if(!skip_totals)
 	{
@@ -938,8 +938,8 @@ void Profile::MergeScoresFromOtherProfile(Profile* other, bool skip_totals,
 			other->m_vScreenshots.begin(), other->m_vScreenshots.end());
 		for(size_t sid= old_count; sid < m_vScreenshots.size(); ++sid)
 		{
-			RString old_path= from_dir + "Screenshots/" + m_vScreenshots[sid].sFileName;
-			RString new_path= to_dir + "Screenshots/" + m_vScreenshots[sid].sFileName;
+			std::string old_path= from_dir + "Screenshots/" + m_vScreenshots[sid].sFileName;
+			std::string new_path= to_dir + "Screenshots/" + m_vScreenshots[sid].sFileName;
 			// Only move the old screenshot over if it exists and won't stomp an
 			// existing screenshot.
 			if(FILEMAN->DoesFileExist(old_path) && (!FILEMAN->DoesFileExist(new_path)))
@@ -1058,7 +1058,7 @@ void Profile::IncrementCategoryPlayCount( StepsType st, RankingCategory rc )
 #define WARN_AND_RETURN { WARN_PARSER; return; }
 #define WARN_AND_CONTINUE { WARN_PARSER; continue; }
 #define WARN_AND_BREAK { WARN_PARSER; break; }
-#define WARN_M(m)	ShowWarningOrTrace( __FILE__, __LINE__, RString("Error parsing file: ")+(m), true )
+#define WARN_M(m)	ShowWarningOrTrace( __FILE__, __LINE__, std::string("Error parsing file: ")+(m), true )
 #define WARN_AND_RETURN_M(m) { WARN_M(m); return; }
 #define WARN_AND_CONTINUE_M(m) { WARN_M(m); continue; }
 #define WARN_AND_BREAK_M(m) { WARN_M(m); break; }
@@ -1067,7 +1067,7 @@ void Profile::IncrementCategoryPlayCount( StepsType st, RankingCategory rc )
 	if( X== nullptr ) LOG->Warn("Failed to read section " #X); \
 	else Load##X##FromNode(X); }
 
-void Profile::LoadCustomFunction(RString sDir, PlayerNumber pn)
+void Profile::LoadCustomFunction(std::string sDir, PlayerNumber pn)
 {
 	/* Get the theme's custom load function:
 	 *   [Profile]
@@ -1091,20 +1091,20 @@ void Profile::LoadCustomFunction(RString sDir, PlayerNumber pn)
 	}
 
 	// Run it
-	RString Error= "Error running CustomLoadFunction: ";
+	std::string Error= "Error running CustomLoadFunction: ";
 	LuaHelpers::RunScriptOnStack(L, Error, 3, 0, true);
 
 	LUA->Release(L);
 }
 
-void Profile::HandleStatsPrefixChange(RString dir, bool require_signature)
+void Profile::HandleStatsPrefixChange(std::string dir, bool require_signature)
 {
 	// Temp variables to preserve stuff across the reload.
 	// Some stuff intentionally left out because the original reason for the
 	// stats prefix was to allow scores from different game types to coexist.
-	RString display_name= m_sDisplayName;
-	RString character_id= m_sCharacterID;
-	RString last_high_score_name= m_sLastUsedHighScoreName;
+	std::string display_name= m_sDisplayName;
+	std::string character_id= m_sCharacterID;
+	std::string last_high_score_name= m_sLastUsedHighScoreName;
 	int weight= m_iWeightPounds;
 	float voomax= m_Voomax;
 	int birth_year= m_BirthYear;
@@ -1112,8 +1112,8 @@ void Profile::HandleStatsPrefixChange(RString dir, bool require_signature)
 	bool male= m_IsMale;
 	ProfileType type= m_Type;
 	int priority= m_ListPriority;
-	RString guid= m_sGuid;
-	std::map<RString, RString> default_mods= m_sDefaultModifiers;
+	std::string guid= m_sGuid;
+	std::map<std::string, std::string> default_mods= m_sDefaultModifiers;
 	SortOrder sort_order= m_SortOrder;
 	Difficulty last_diff= m_LastDifficulty;
 	CourseDifficulty last_course_diff= m_LastCourseDifficulty;
@@ -1163,7 +1163,7 @@ void Profile::HandleStatsPrefixChange(RString dir, bool require_signature)
 	}
 }
 
-ProfileLoadResult Profile::LoadAllFromDir( RString sDir, bool bRequireSignature )
+ProfileLoadResult Profile::LoadAllFromDir( std::string sDir, bool bRequireSignature )
 {
 	LOG->Trace( "Profile::LoadAllFromDir( %s )", sDir.c_str() );
 
@@ -1189,17 +1189,17 @@ ProfileLoadResult Profile::LoadAllFromDir( RString sDir, bool bRequireSignature 
 // entire song list to remove custom songs when unloading the profile is
 // wasteful. -Kyz
 
-void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot, bool isMemoryCard)
+void Profile::LoadSongsFromDir(std::string const& dir, ProfileSlot prof_slot, bool isMemoryCard)
 {
 	if(!PREFSMAN->m_custom_songs_enable)
 	{
 		return;
 	}
-	RString songs_folder= dir + "Songs";
+	std::string songs_folder= dir + "Songs";
 	if(FILEMAN->DoesFileExist(songs_folder) && isMemoryCard)
 	{
 		LOG->Trace("Found songs folder in profile.");
-		std::vector<RString> song_folders;
+		std::vector<std::string> song_folders;
 		RageTimer song_load_start_time;
 		song_load_start_time.Touch();
 		FILEMAN->GetDirListing(songs_folder + "/*", song_folders, true, true);
@@ -1216,7 +1216,7 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot, bool i
 					&& m_songs.size() < PREFSMAN->m_custom_songs_max_count;
 				++song_index)
 		{
-			RString& song_dir_name= song_folders[song_index];
+			std::string& song_dir_name= song_folders[song_index];
 			Song* new_song= new Song;
 			if(!new_song->LoadFromSongDir(song_dir_name, false, prof_slot))
 			{
@@ -1248,11 +1248,11 @@ void Profile::LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot, bool i
 	}
 }
 
-ProfileLoadResult Profile::LoadStatsFromDir(RString dir, bool require_signature)
+ProfileLoadResult Profile::LoadStatsFromDir(std::string dir, bool require_signature)
 {
 	dir= dir + PROFILEMAN->GetStatsPrefix();
 	// Check for the existance of stats.xml
-	RString fn = dir + STATS_XML;
+	std::string fn = dir + STATS_XML;
 	bool compressed = false;
 	if(!IsAFile(fn))
 	{
@@ -1275,7 +1275,7 @@ ProfileLoadResult Profile::LoadStatsFromDir(RString dir, bool require_signature)
 
 	if(compressed)
 	{
-		RString sError;
+		std::string sError;
 		uint32_t iCRC32;
 		RageFileObjInflate *pInflate = GunzipFile(pFile.release(), sError, &iCRC32);
 		if(pInflate == nullptr)
@@ -1300,8 +1300,8 @@ ProfileLoadResult Profile::LoadStatsFromDir(RString dir, bool require_signature)
 
 	if(require_signature)
 	{
-		RString sStatsXmlSigFile = fn+SIGNATURE_APPEND;
-		RString sDontShareFile = dir + DONT_SHARE_SIG;
+		std::string sStatsXmlSigFile = fn+SIGNATURE_APPEND;
+		std::string sDontShareFile = dir + DONT_SHARE_SIG;
 
 		LOG->Trace("Verifying don't share signature \"%s\" against \"%s\"", sDontShareFile.c_str(), sStatsXmlSigFile.c_str());
 		// verify the stats.xml signature with the "don't share" file
@@ -1331,11 +1331,11 @@ ProfileLoadResult Profile::LoadStatsFromDir(RString dir, bool require_signature)
 	return LoadStatsXmlFromNode(&xml);
 }
 
-void Profile::LoadTypeFromDir(RString dir)
+void Profile::LoadTypeFromDir(std::string dir)
 {
 	m_Type= ProfileType_Normal;
 	m_ListPriority= 0;
-	RString fn= dir + TYPE_INI;
+	std::string fn= dir + TYPE_INI;
 	if(FILEMAN->DoesFileExist(fn))
 	{
 		IniFile ini;
@@ -1344,7 +1344,7 @@ void Profile::LoadTypeFromDir(RString dir)
 			XNode const* data= ini.GetChild("ListPosition");
 			if(data != nullptr)
 			{
-				RString type_str;
+				std::string type_str;
 				if(data->GetAttrValue("Type", type_str))
 				{
 					m_Type= StringToProfileType(type_str);
@@ -1354,7 +1354,7 @@ void Profile::LoadTypeFromDir(RString dir)
 					}
 				}
 				data->GetAttrValue("Priority", m_ListPriority);
-				RString date_str;
+				std::string date_str;
 				if (data->GetAttrValue("LastPlayedDate", date_str))
 				{
 					m_LastPlayedDate.FromString(date_str);
@@ -1378,9 +1378,9 @@ ProfileLoadResult Profile::LoadStatsXmlFromNode( const XNode *xml, bool bIgnoreE
 	}
 
 	// These are loaded from Editable, so we usually want to ignore them here.
-	RString sName = m_sDisplayName;
-	RString sCharacterID = m_sCharacterID;
-	RString sLastUsedHighScoreName = m_sLastUsedHighScoreName;
+	std::string sName = m_sDisplayName;
+	std::string sCharacterID = m_sCharacterID;
+	std::string sLastUsedHighScoreName = m_sLastUsedHighScoreName;
 	int iWeightPounds = m_iWeightPounds;
 	float Voomax= m_Voomax;
 	int BirthYear= m_BirthYear;
@@ -1409,7 +1409,7 @@ ProfileLoadResult Profile::LoadStatsXmlFromNode( const XNode *xml, bool bIgnoreE
 	return ProfileLoadResult_Success;
 }
 
-bool Profile::SaveAllToDir( RString sDir, bool bSignData ) const
+bool Profile::SaveAllToDir( std::string sDir, bool bSignData ) const
 {
 	m_sLastPlayedMachineGuid = PROFILEMAN->GetMachineProfile()->m_sGuid;
 	m_LastPlayedDate = DateTime::GetNowDate();
@@ -1446,7 +1446,7 @@ bool Profile::SaveAllToDir( RString sDir, bool bSignData ) const
 	LuaHelpers::Push(L, sDir);
 
 	// Run it
-	RString Error= "Error running CustomSaveFunction: ";
+	std::string Error= "Error running CustomSaveFunction: ";
 	LuaHelpers::RunScriptOnStack(L, Error, 2, 0, true);
 
 	LUA->Release(L);
@@ -1470,17 +1470,17 @@ XNode *Profile::SaveStatsXmlCreateNode() const
 	return xml;
 }
 
-bool Profile::SaveStatsXmlToDir( RString sDir, bool bSignData ) const
+bool Profile::SaveStatsXmlToDir( std::string sDir, bool bSignData ) const
 {
 	LOG->Trace( "SaveStatsXmlToDir: %s", sDir.c_str() );
 	std::unique_ptr<XNode> xml( SaveStatsXmlCreateNode() );
 
 	sDir= sDir + PROFILEMAN->GetStatsPrefix();
 	// Save stats.xml
-	RString fn = sDir + (g_bProfileDataCompress? STATS_XML_GZ:STATS_XML);
+	std::string fn = sDir + (g_bProfileDataCompress? STATS_XML_GZ:STATS_XML);
 
 	{
-		RString sError;
+		std::string sError;
 		RageFile f;
 		if( !f.Open(fn, RageFile::WRITE) )
 		{
@@ -1515,18 +1515,18 @@ bool Profile::SaveStatsXmlToDir( RString sDir, bool bSignData ) const
 
 	if( bSignData )
 	{
-		RString sStatsXmlSigFile = fn+SIGNATURE_APPEND;
+		std::string sStatsXmlSigFile = fn+SIGNATURE_APPEND;
 		CryptManager::SignFileToFile(fn, sStatsXmlSigFile);
 
 		// Save the "don't share" file
-		RString sDontShareFile = sDir + DONT_SHARE_SIG;
+		std::string sDontShareFile = sDir + DONT_SHARE_SIG;
 		CryptManager::SignFileToFile(sStatsXmlSigFile, sDontShareFile);
 	}
 
 	return true;
 }
 
-void Profile::SaveTypeToDir(RString dir) const
+void Profile::SaveTypeToDir(std::string dir) const
 {
 	IniFile ini;
 	ini.SetValue("ListPosition", "Type", ProfileTypeToString(m_Type));
@@ -1535,7 +1535,7 @@ void Profile::SaveTypeToDir(RString dir) const
 	ini.WriteFile(dir + TYPE_INI);
 }
 
-void Profile::SaveEditableDataToDir( RString sDir ) const
+void Profile::SaveEditableDataToDir( std::string sDir ) const
 {
 	IniFile ini;
 
@@ -1605,19 +1605,19 @@ XNode* Profile::SaveGeneralDataCreateNode() const
 
 	{
 		XNode* pDefaultModifiers = pGeneralDataNode->AppendChild("DefaultModifiers");
-		for (std::pair<RString const &, RString> it : m_sDefaultModifiers)
+		for (std::pair<std::string const &, std::string> it : m_sDefaultModifiers)
 			pDefaultModifiers->AppendChild( it.first, it.second );
 	}
 
 	{
 		XNode* pUnlocks = pGeneralDataNode->AppendChild("Unlocks");
-		for (RString const &unlockEntry : m_UnlockedEntryIDs)
+		for (std::string const &unlockEntry : m_UnlockedEntryIDs)
 		{
 			XNode *pEntry = pUnlocks->AppendChild("UnlockEntry");
 			pEntry->AppendAttr( "UnlockEntryID", unlockEntry );
 			if( !UNLOCK_AUTH_STRING.GetValue().empty() )
 			{
-				RString sUnlockAuth = BinaryToHex( CRYPTMAN->GetMD5ForString(unlockEntry + UNLOCK_AUTH_STRING.GetValue()) );
+				std::string sUnlockAuth = BinaryToHex( CRYPTMAN->GetMD5ForString(unlockEntry + UNLOCK_AUTH_STRING.GetValue()) );
 				pEntry->AppendAttr( "Auth", sUnlockAuth );
 			}
 		}
@@ -1707,9 +1707,9 @@ XNode* Profile::SaveGeneralDataCreateNode() const
 	return pGeneralDataNode;
 }
 
-ProfileLoadResult Profile::LoadEditableDataFromDir( RString sDir )
+ProfileLoadResult Profile::LoadEditableDataFromDir( std::string sDir )
 {
-	RString fn = sDir + EDITABLE_INI;
+	std::string fn = sDir + EDITABLE_INI;
 
 	// Don't load unreasonably large editable.xml files.
 	int iBytes = FILEMAN->GetFileSizeInBytes( fn );
@@ -1750,7 +1750,7 @@ void Profile::LoadGeneralDataFromNode( const XNode* pNode )
 {
 	ASSERT( pNode->GetName() == "GeneralData" );
 
-	RString s;
+	std::string s;
 	const XNode* pTemp;
 
 	pNode->GetChildValue( "DisplayName",				m_sDisplayName );
@@ -1807,17 +1807,17 @@ void Profile::LoadGeneralDataFromNode( const XNode* pNode )
 		{
 			FOREACH_CONST_Child( pUnlocks, unlock )
 			{
-				RString sUnlockEntryID;
+				std::string sUnlockEntryID;
 				if( !unlock->GetAttrValue("UnlockEntryID",sUnlockEntryID) )
 					continue;
 
 				if( !UNLOCK_AUTH_STRING.GetValue().empty() )
 				{
-					RString sUnlockAuth;
+					std::string sUnlockAuth;
 					if( !unlock->GetAttrValue("Auth", sUnlockAuth) )
 						continue;
 
-					RString sExpectedUnlockAuth = BinaryToHex( CRYPTMAN->GetMD5ForString(sUnlockEntryID + UNLOCK_AUTH_STRING.GetValue()) );
+					std::string sExpectedUnlockAuth = BinaryToHex( CRYPTMAN->GetMD5ForString(sUnlockEntryID + UNLOCK_AUTH_STRING.GetValue()) );
 					if( sUnlockAuth != sExpectedUnlockAuth )
 						continue;
 				}
@@ -2158,13 +2158,13 @@ void Profile::LoadCourseScoresFromNode( const XNode* pCourseScores )
 			Course *pC = courseID.ToCourse();
 			if( pC == nullptr )
 			{
-				RString sDir, sFName, sExt;
+				std::string sDir, sFName, sExt;
 				splitpath( courseID.GetPath(), sDir, sFName, sExt );
-				RString sFullFileName = sFName + sExt;
+				std::string sFullFileName = sFName + sExt;
 
 				for (Course *c : vpAllCourses)
 				{
-					RString sOther = Right(c->m_sPath, sFullFileName.size());
+					std::string sOther = Right(c->m_sPath, sFullFileName.size());
 
 					if( CompareNoCase(sFullFileName, sOther) == 0 )
 					{
@@ -2244,7 +2244,7 @@ void Profile::LoadCategoryScoresFromNode( const XNode* pCategoryScores )
 		if( pStepsType->GetName() != "StepsType" )
 			continue;
 
-		RString str;
+		std::string str;
 		if( !pStepsType->GetAttrValue( "Type", str ) )
 			WARN_AND_CONTINUE;
 		StepsType st = GAMEMAN->StringToStepsType( str );
@@ -2272,12 +2272,12 @@ void Profile::LoadCategoryScoresFromNode( const XNode* pCategoryScores )
 	}
 }
 
-void Profile::SaveStatsWebPageToDir( RString ) const
+void Profile::SaveStatsWebPageToDir( std::string ) const
 {
 	ASSERT( PROFILEMAN != nullptr );
 }
 
-void Profile::SaveMachinePublicKeyToDir( RString sDir ) const
+void Profile::SaveMachinePublicKeyToDir( std::string sDir ) const
 {
 	if( PREFSMAN->m_bSignProfileData && IsAFile(CRYPTMAN->GetPublicKeyFileName()) )
 		FileCopy( CRYPTMAN->GetPublicKeyFileName(), sDir+PUBLIC_KEY_FILE );
@@ -2332,7 +2332,7 @@ void Profile::LoadCalorieDataFromNode( const XNode* pCalorieData )
 		if( pCaloriesBurned->GetName() != "CaloriesBurned" )
 			WARN_AND_CONTINUE_M( pCaloriesBurned->GetName() );
 
-		RString sDate;
+		std::string sDate;
 		if( !pCaloriesBurned->GetAttrValue("Date",sDate) )
 			WARN_AND_CONTINUE;
 		DateTime date;
@@ -2379,13 +2379,13 @@ float Profile::GetCaloriesBurnedForDay( DateTime day ) const
 /*
 static void SaveRecentScore( XNode* xml )
 {
-	RString sDate = DateTime::GetNowDate().GetString();
+	std::string sDate = DateTime::GetNowDate().GetString();
 	sDate.Replace(":","-");
 
-	RString sFileNameNoExtension = Profile::MakeUniqueFileNameNoExtension(UPLOAD_SUBDIR, sDate );
-	RString fn = UPLOAD_SUBDIR + sFileNameNoExtension + ".xml";
+	std::string sFileNameNoExtension = Profile::MakeUniqueFileNameNoExtension(UPLOAD_SUBDIR, sDate );
+	std::string fn = UPLOAD_SUBDIR + sFileNameNoExtension + ".xml";
 
-	RString sStatsXmlSigFile = fn+SIGNATURE_APPEND;
+	std::string sStatsXmlSigFile = fn+SIGNATURE_APPEND;
 	CryptManager::SignFileToFile(fn, sStatsXmlSigFile);
 }
 
@@ -2511,7 +2511,7 @@ XNode* Profile::SaveCoinDataCreateNode() const
 	return pNode;
 }
 
-void Profile::MoveBackupToDir( RString sFromDir, RString sToDir )
+void Profile::MoveBackupToDir( std::string sFromDir, std::string sToDir )
 {
 	if( FILEMAN->IsAFile(sFromDir + STATS_XML) &&
 		FILEMAN->IsAFile(sFromDir+STATS_XML+SIGNATURE_APPEND) )
@@ -2532,11 +2532,11 @@ void Profile::MoveBackupToDir( RString sFromDir, RString sToDir )
 		FILEMAN->Move( sFromDir+DONT_SHARE_SIG,				sToDir+DONT_SHARE_SIG );
 }
 
-RString Profile::MakeUniqueFileNameNoExtension( RString sDir, RString sFileNameBeginning )
+std::string Profile::MakeUniqueFileNameNoExtension( std::string sDir, std::string sFileNameBeginning )
 {
 	FILEMAN->FlushDirCache( sDir );
 	// Find a file name for the screenshot
-	std::vector<RString> files;
+	std::vector<std::string> files;
 	GetDirListing( sDir + sFileNameBeginning+"*", files, false, false );
 	sort( files.begin(), files.end() );
 
@@ -2545,7 +2545,7 @@ RString Profile::MakeUniqueFileNameNoExtension( RString sDir, RString sFileNameB
 	for( int i = files.size()-1; i >= 0; --i )
 	{
 		static Regex re( "^" + sFileNameBeginning + "([0-9]{5})\\....$" );
-		std::vector<RString> matches;
+		std::vector<std::string> matches;
 		if( !re.Compare( files[i], matches ) )
 			continue;
 
@@ -2557,7 +2557,7 @@ RString Profile::MakeUniqueFileNameNoExtension( RString sDir, RString sFileNameB
 	return MakeFileNameNoExtension( sFileNameBeginning, iIndex );
 }
 
-RString Profile::MakeFileNameNoExtension( RString sFileNameBeginning, int iIndex )
+std::string Profile::MakeFileNameNoExtension( std::string sFileNameBeginning, int iIndex )
 {
 	return sFileNameBeginning + ssprintf( "%05d", iIndex );
 }
@@ -2572,7 +2572,7 @@ public:
 	static int AddScreenshot( T* p, lua_State *L )
 	{
 		HighScore* hs= Luna<HighScore>::check(L, 1);
-		RString filename= SArg(2);
+		std::string filename= SArg(2);
 		Screenshot screenshot;
 		screenshot.sFileName= filename;
 		screenshot.sMD5= BinaryToHex(CRYPTMAN->GetMD5ForFile(filename));
@@ -2667,11 +2667,11 @@ public:
 
 	static int GetAllUsedHighScoreNames( T* p, lua_State *L )
 	{
-		std::set<RString> names;
+		std::set<std::string> names;
 		p->GetAllUsedHighScoreNames(names);
 		lua_createtable(L, names.size(), 0);
 		int next_name_index= 1;
-		for(std::set<RString>::iterator name= names.begin(); name != names.end();
+		for(std::set<std::string>::iterator name= names.begin(); name != names.end();
 				++name)
 		{
 			lua_pushstring(L, name->c_str());

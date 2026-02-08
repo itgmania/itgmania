@@ -44,11 +44,11 @@ StepsDisplay::StepsDisplay()
  * so I'm trying it first in only this object.
  */
 
-void StepsDisplay::Load( const RString &sMetricsGroup, const PlayerState *pPlayerState )
+void StepsDisplay::Load( const std::string &sMetricsGroup, const PlayerState *pPlayerState )
 {
 	m_sMetricsGroup = sMetricsGroup;
 
-	/* We can't use global ThemeMetric<RString>s, because we can have multiple
+	/* We can't use global ThemeMetric<std::string>s, because we can have multiple
 	 * StepsDisplays on screen at once, with different names. */
 	m_iNumTicks.Load(m_sMetricsGroup,"NumTicks");
 	m_iMaxTicks.Load(m_sMetricsGroup,"MaxTicks");
@@ -68,7 +68,7 @@ void StepsDisplay::Load( const RString &sMetricsGroup, const PlayerState *pPlaye
 
 	if( m_bShowTicks )
 	{
-		RString sChars = "10"; // on, off (todo: make this metricable -aj)
+		std::string sChars = "10"; // on, off (todo: make this metricable -aj)
 		m_textTicks.SetName( "Ticks" );
 		m_textTicks.LoadFromTextureAndChars( THEME->GetPathF(m_sMetricsGroup,"ticks"), sChars );
 		ActorUtil::LoadAllCommandsAndSetXYAndOnCommand( m_textTicks, m_sMetricsGroup );
@@ -188,7 +188,7 @@ void StepsDisplay::SetInternal( const SetParams &params )
 	this->SetVisible( true );
 	Message msg( "Set" );
 
-	RString sCustomDifficulty;
+	std::string sCustomDifficulty;
 	if( params.pSteps )
 		sCustomDifficulty = StepsToCustomDifficulty(params.pSteps);
 	else if( params.pTrail )
@@ -197,16 +197,16 @@ void StepsDisplay::SetInternal( const SetParams &params )
 		sCustomDifficulty = GetCustomDifficulty( params.st, params.dc, params.ct );
 	msg.SetParam( "CustomDifficulty", sCustomDifficulty );
 
-	RString sDisplayDescription;
+	std::string sDisplayDescription;
 	if( params.pSteps  &&  params.pSteps->IsAnEdit() )
 		sDisplayDescription = params.pSteps->GetDescription();
 	else if( sCustomDifficulty.empty() )
-		sDisplayDescription = RString();
+		sDisplayDescription = std::string();
 	else
 		sDisplayDescription = CustomDifficultyToLocalizedString( sCustomDifficulty );
 	msg.SetParam( "DisplayDescription", sDisplayDescription );
 	
-	RString sDisplayCredit;
+	std::string sDisplayCredit;
 	if( params.pSteps )
 		sDisplayCredit = params.pSteps->GetCredit();
 
@@ -225,7 +225,7 @@ void StepsDisplay::SetInternal( const SetParams &params )
 		char on = char('1');
 		char off = '0';
 
-		RString sNewText;
+		std::string sNewText;
 		int iNumOn = std::min( (int) m_iMaxTicks, params.iMeter );
 		sNewText.insert( sNewText.end(), iNumOn, on );
 		int iNumOff = std::max( 0, m_iNumTicks-iNumOn );
@@ -242,7 +242,7 @@ void StepsDisplay::SetInternal( const SetParams &params )
 		}
 		else
 		{
-			const RString sMeter = ssprintf( m_sMeterFormatString.GetValue().c_str(), params.iMeter );
+			const std::string sMeter = ssprintf( m_sMeterFormatString.GetValue().c_str(), params.iMeter );
 			m_textMeter.SetText( sMeter );
 			m_textMeter.HandleMessage( msg );
 		}
@@ -271,7 +271,7 @@ void StepsDisplay::SetInternal( const SetParams &params )
 		if( params.st != StepsType_Invalid )
 		{
 			/*
-			RString sStepsType = GAMEMAN->GetStepsTypeInfo(params.st).szName;
+			std::string sStepsType = GAMEMAN->GetStepsTypeInfo(params.st).szName;
 			m_sprStepsType.Load( THEME->GetPathG(m_sMetricsGroup,"StepsType "+sStepsType) );
 			*/
 			m_sprStepsType->HandleMessage( msg );

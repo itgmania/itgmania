@@ -9,11 +9,11 @@
 #include <vector>
 
 
-RString Command::GetName() const
+std::string Command::GetName() const
 {
 	if( m_vsArgs.empty() )
-		return RString();
-	RString s = m_vsArgs[0];
+		return std::string();
+	std::string s = m_vsArgs[0];
 	Trim( s );
 	return s;
 }
@@ -26,18 +26,18 @@ Command::Arg Command::GetArg( unsigned index ) const
 	return a;
 }
 
-void Command::Load( const RString &sCommand )
+void Command::Load( const std::string &sCommand )
 {
 	m_vsArgs.clear();
 	split( sCommand, ",", m_vsArgs, false );	// don't ignore empty
 }
 
-RString Command::GetOriginalCommandString() const
+std::string Command::GetOriginalCommandString() const
 {
 	return join( ",", m_vsArgs );
 }
 
-static void SplitWithQuotes( const RString sSource, const char Delimitor, std::vector<RString> &asOut, const bool bIgnoreEmpty )
+static void SplitWithQuotes( const std::string sSource, const char Delimitor, std::vector<std::string> &asOut, const bool bIgnoreEmpty )
 {
 	/* Short-circuit if the source is empty; we want to return an empty vector if
 	 * the string is empty, even if bIgnoreEmpty is true. */
@@ -73,7 +73,7 @@ static void SplitWithQuotes( const RString sSource, const char Delimitor, std::v
 				asOut.push_back( sSource );
 			else
 			{
-				const RString AddCString = sSource.substr( startpos, pos-startpos );
+				const std::string AddCString = sSource.substr( startpos, pos-startpos );
 				asOut.push_back( AddCString );
 			}
 		}
@@ -82,14 +82,14 @@ static void SplitWithQuotes( const RString sSource, const char Delimitor, std::v
 	} while( startpos <= sSource.size() );
 }
 
-RString Commands::GetOriginalCommandString() const
+std::string Commands::GetOriginalCommandString() const
 {
-	return std::accumulate(v.begin(), v.end(), RString(), [](RString const &res, Command const &c) { return res + c.GetOriginalCommandString(); });
+	return std::accumulate(v.begin(), v.end(), std::string(), [](std::string const &res, Command const &c) { return res + c.GetOriginalCommandString(); });
 }
 
-void ParseCommands( const RString &sCommands, Commands &vCommandsOut, bool bLegacy )
+void ParseCommands( const std::string &sCommands, Commands &vCommandsOut, bool bLegacy )
 {
-	std::vector<RString> vsCommands;
+	std::vector<std::string> vsCommands;
 	if( bLegacy )
 		split( sCommands, ";", vsCommands, true );
 	else
@@ -103,7 +103,7 @@ void ParseCommands( const RString &sCommands, Commands &vCommandsOut, bool bLega
 	}
 }
 
-Commands ParseCommands( const RString &sCommands )
+Commands ParseCommands( const std::string &sCommands )
 {
 	Commands vCommands;
 	ParseCommands( sCommands, vCommands, false );

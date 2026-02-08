@@ -66,7 +66,7 @@ public:
 	/**
 	 * @brief Retrieve the name of the Player based on the mode.
 	 * @return the name of the Player. */
-	RString GetName() const
+	std::string GetName() const
 	{
 		if( m_bIsDummy )
 			return ssprintf("Dummy%d",m_iDummyIndex);
@@ -191,8 +191,8 @@ protected:
 
 	virtual bool UseSongBackgroundAndForeground() const { return true; }
 
-	ThemeMetric<RString> PLAYER_TYPE;
-	ThemeMetric<RString> SCORE_DISPLAY_TYPE;
+	ThemeMetric<std::string> PLAYER_TYPE;
+	ThemeMetric<std::string> SCORE_DISPLAY_TYPE;
 	ThemeMetric<apActorCommands> PLAYER_INIT_COMMAND;
 	LocalizedString GIVE_UP_START_TEXT;
 	LocalizedString GIVE_UP_BACK_TEXT;
@@ -214,7 +214,7 @@ protected:
 	ThemeMetric<int> FAIL_ON_MISS_COMBO;
 	ThemeMetric<bool> ALLOW_CENTER_1_PLAYER;
 	ThemeMetric<bool> UNPAUSE_WITH_START;
-	ThemeMetric<RString> SONG_NUMBER_FORMAT;
+	ThemeMetric<std::string> SONG_NUMBER_FORMAT;
 	ThemeMetric<bool> SURVIVAL_MOD_OVERRIDE;
 
 	bool IsLastSong();
@@ -225,8 +225,8 @@ protected:
 	void GetMusicEndTiming( float &fSecondsToStartFadingOutMusic, float &fSecondsToStartTransitioningOut );
 	void LoadLights();
 	void PauseGame( bool bPause, GameController gc = GameController_Invalid );
-	void PlayAnnouncer( const RString &type, float fSeconds, float *fDeltaSeconds );
-	void PlayAnnouncer( const RString &type, float fSeconds ) { PlayAnnouncer(type, fSeconds, &m_fTimeSinceLastDancingComment); }
+	void PlayAnnouncer( const std::string &type, float fSeconds, float *fDeltaSeconds );
+	void PlayAnnouncer( const std::string &type, float fSeconds ) { PlayAnnouncer(type, fSeconds, &m_fTimeSinceLastDancingComment); }
 	void UpdateLights();
 	void SendCrossedMessages();
 

@@ -17,7 +17,7 @@ IniFile::IniFile(): XNode("IniFile")
 {
 }
 
-bool IniFile::ReadFile( const RString &sPath )
+bool IniFile::ReadFile( const std::string &sPath )
 {
 	m_sPath = sPath;
 	CHECKPOINT_M( ssprintf("Reading '%s'",m_sPath.c_str()) );
@@ -35,16 +35,16 @@ bool IniFile::ReadFile( const RString &sPath )
 
 bool IniFile::ReadFile( RageFileBasic &f )
 {
-	RString keyname;
+	std::string keyname;
 	// keychild is used to cache the node that values are being added to. -Kyz
 	XNode* keychild= nullptr;
 	for(;;)
 	{
-		RString line;
+		std::string line;
 		// Read lines until we reach a line that doesn't end in a backslash
 		for(;;)
 		{
-			RString s;
+			std::string s;
 			switch( f.GetLine(s) )
 			{
 			case -1:
@@ -100,8 +100,8 @@ bool IniFile::ReadFile( RageFileBasic &f )
 				size_t iEqualIndex = line.find("=");
 				if( iEqualIndex != std::string::npos )
 				{
-					RString valuename = Left(line, (int) iEqualIndex);
-					RString value = Right(line, line.size()-valuename.size()-1);
+					std::string valuename = Left(line, (int) iEqualIndex);
+					std::string value = Right(line, line.size()-valuename.size()-1);
 					Trim(valuename);
 					if(!valuename.empty())
 					{
@@ -118,7 +118,7 @@ bool IniFile::ReadFile( RageFileBasic &f )
 	}
 }
 
-bool IniFile::WriteFile( const RString &sPath ) const
+bool IniFile::WriteFile( const std::string &sPath ) const
 {
 	RageFile f;
 	if( !f.Open( sPath, RageFile::WRITE ) )
@@ -147,8 +147,8 @@ bool IniFile::WriteFile( RageFileBasic &f ) const
 
 		FOREACH_CONST_Attr( pKey, pAttr )
 		{
-			const RString &sName = pAttr->first;
-			const RString &sValue = pAttr->second->GetValue<RString>();
+			const std::string &sName = pAttr->first;
+			const std::string &sValue = pAttr->second->GetValue<std::string>();
 
 			// TODO: Are there escape rules for these?
 			// take a cue from how multi-line Lua functions are parsed
@@ -173,7 +173,7 @@ bool IniFile::WriteFile( RageFileBasic &f ) const
 	return true;
 }
 
-bool IniFile::DeleteValue(const RString &keyname, const RString &valuename)
+bool IniFile::DeleteValue(const std::string &keyname, const std::string &valuename)
 {
 	XNode* pNode = GetChild( keyname );
 	if ( pNode == nullptr )
@@ -189,7 +189,7 @@ bool IniFile::DeleteValue(const RString &keyname, const RString &valuename)
 	return result;
 }
 
-bool IniFile::DeleteKey(const RString &keyname)
+bool IniFile::DeleteKey(const std::string &keyname)
 {
 	XNode* pNode = GetChild( keyname );
 	if( pNode == nullptr )
@@ -205,7 +205,7 @@ bool IniFile::DeleteKey(const RString &keyname)
 	return result;
 }
 
-bool IniFile::RenameKey(const RString &from, const RString &to)
+bool IniFile::RenameKey(const std::string &from, const std::string &to)
 {
 	// If to already exists, do nothing.
 	if( GetChild(to) != nullptr )

@@ -10,18 +10,18 @@
 #include "LowLevelWindow/LowLevelWindow_Win32.h"
 #include "MemoryCard/MemoryCardDriverThreaded_Windows.h"
 
-inline const std::vector<RString>& GetDefaultInputDriverList() {
-	static const std::vector<RString> inputDriverList = { "DirectInput", "Pump", "Para" };
+inline const std::vector<std::string>& GetDefaultInputDriverList() {
+	static const std::vector<std::string> inputDriverList = { "DirectInput", "Pump", "Para" };
 	return inputDriverList;
 }
 
-inline const std::vector<RString>& GetDefaultMovieDriverList() {
-	static const std::vector<RString> movieDriverList = { "FFMpeg", "Null" };
+inline const std::vector<std::string>& GetDefaultMovieDriverList() {
+	static const std::vector<std::string> movieDriverList = { "FFMpeg", "Null" };
 	return movieDriverList;
 }
 
-inline const std::vector<RString>& GetDefaultSoundDriverList() {
-	static const std::vector<RString> soundDriverList = { "DirectSound-sw", "WaveOut", "WDMKS", "Null" };
+inline const std::vector<std::string>& GetDefaultSoundDriverList() {
+	static const std::vector<std::string> soundDriverList = { "DirectSound-sw", "WaveOut", "WDMKS", "Null" };
 	return soundDriverList;
 }
 
@@ -31,18 +31,18 @@ inline const std::vector<RString>& GetDefaultSoundDriverList() {
 #include "LowLevelWindow/LowLevelWindow_MacOSX.h"
 #include "MemoryCard/MemoryCardDriverThreaded_MacOSX.h"
 
-inline const std::vector<RString>& GetDefaultInputDriverList() {
-	static const std::vector<RString> inputDriverList = { "HID", "NSEvent" };
+inline const std::vector<std::string>& GetDefaultInputDriverList() {
+	static const std::vector<std::string> inputDriverList = { "HID", "NSEvent" };
 	return inputDriverList;
 }
 
-inline const std::vector<RString>& GetDefaultMovieDriverList() {
-	static const std::vector<RString> movieDriverList = { "FFMpeg", "Null" };
+inline const std::vector<std::string>& GetDefaultMovieDriverList() {
+	static const std::vector<std::string> movieDriverList = { "FFMpeg", "Null" };
 	return movieDriverList;
 }
 
-inline const std::vector<RString>& GetDefaultSoundDriverList() {
-	static const std::vector<RString> soundDriverList = { "AudioUnit", "Null" };
+inline const std::vector<std::string>& GetDefaultSoundDriverList() {
+	static const std::vector<std::string> soundDriverList = { "AudioUnit", "Null" };
 	return soundDriverList;
 }
 
@@ -59,18 +59,18 @@ inline const std::vector<RString>& GetDefaultSoundDriverList() {
 #endif
 
 #if defined(LINUX)
-inline const std::vector<RString>& GetDefaultInputDriverList() {
-	static const std::vector<RString> inputDriverList = { "X11", "LinuxEvent", "LinuxJoystick" };
+inline const std::vector<std::string>& GetDefaultInputDriverList() {
+	static const std::vector<std::string> inputDriverList = { "X11", "LinuxEvent", "LinuxJoystick" };
 	return inputDriverList;
 }
 #else
-inline const std::vector<RString>& GetDefaultInputDriverList() {
-	static const std::vector<RString> inputDriverList = { "X11" };
+inline const std::vector<std::string>& GetDefaultInputDriverList() {
+	static const std::vector<std::string> inputDriverList = { "X11" };
 	return inputDriverList;
 }
 #endif
-inline const std::vector<RString>& GetDefaultMovieDriverList() {
-	static const std::vector<RString> movieDriverList = { "FFMpeg", "Null" };
+inline const std::vector<std::string>& GetDefaultMovieDriverList() {
+	static const std::vector<std::string> movieDriverList = { "FFMpeg", "Null" };
 	return movieDriverList;
 }
 // PulseAudio is the preferred Unix driver since it allows the gives non
@@ -81,8 +81,8 @@ inline const std::vector<RString>& GetDefaultMovieDriverList() {
 // JACK gives us an explicit option to NOT start a daemon, so try it last,
 // as PulseAudio will successfully Init() but not actually work if the
 // PulseAudio daemon has been suspended by/for jackd.
-inline const std::vector<RString>& GetDefaultSoundDriverList() {
-	static const std::vector<RString> soundDriverList = { "Pulse", "ALSA-sw", "OSS", "JACK", "Null" };
+inline const std::vector<std::string>& GetDefaultSoundDriverList() {
+	static const std::vector<std::string> soundDriverList = { "Pulse", "ALSA-sw", "OSS", "JACK", "Null" };
 	return soundDriverList;
 }
 #else

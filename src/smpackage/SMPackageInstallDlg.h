@@ -13,7 +13,7 @@ class CSMPackageInstallDlg : public CDialog
 {
 // Construction
 public:
-	CSMPackageInstallDlg(RString sPackagePath, CWnd* pParent = NULL);   // standard constructor
+	CSMPackageInstallDlg(std::string sPackagePath, CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CSMPackageInstallDlg)
@@ -35,7 +35,7 @@ protected:
 	void RefreshInstallationList();
 
 	HICON m_hIcon;
-	RString m_sPackagePath;
+	std::string m_sPackagePath;
 
 	// Generated message map functions
 	//{{AFX_MSG(CSMPackageInstallDlg)

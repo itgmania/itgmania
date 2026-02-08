@@ -24,7 +24,7 @@ XToString( Difficulty );
 StringToX( Difficulty );
 LuaXType( Difficulty );
 
-const RString &CourseDifficultyToLocalizedString( CourseDifficulty x )
+const std::string &CourseDifficultyToLocalizedString( CourseDifficulty x )
 {
 	static std::unique_ptr<LocalizedString> g_CourseDifficultyName[NUM_Difficulty];
 	if( g_CourseDifficultyName[0].get() == nullptr )
@@ -52,7 +52,7 @@ CourseDifficulty GetNextShownCourseDifficulty( CourseDifficulty cd )
 
 struct OldStyleStringToDifficultyMapHolder
 {
-	std::map<RString, Difficulty> conversion_map;
+	std::map<std::string, Difficulty> conversion_map;
 	OldStyleStringToDifficultyMapHolder()
 	{
 		conversion_map["beginner"]= Difficulty_Beginner;
@@ -76,11 +76,11 @@ struct OldStyleStringToDifficultyMapHolder
 	}
 };
 OldStyleStringToDifficultyMapHolder OldStyleStringToDifficulty_converter;
-Difficulty OldStyleStringToDifficulty( const RString& sDC )
+Difficulty OldStyleStringToDifficulty( const std::string& sDC )
 {
-	RString s2 = sDC;
+	std::string s2 = sDC;
 	MakeLower(s2);
-	std::map<RString, Difficulty>::iterator diff=
+	std::map<std::string, Difficulty>::iterator diff=
 		OldStyleStringToDifficulty_converter.conversion_map.find(s2);
 	if(diff != OldStyleStringToDifficulty_converter.conversion_map.end())
 	{
@@ -91,9 +91,9 @@ Difficulty OldStyleStringToDifficulty( const RString& sDC )
 
 LuaFunction( OldStyleStringToDifficulty, OldStyleStringToDifficulty(SArg(1)) );
 
-static ThemeMetric<RString> NAMES("CustomDifficulty","Names");
+static ThemeMetric<std::string> NAMES("CustomDifficulty","Names");
 
-RString GetCustomDifficulty( StepsType st, Difficulty dc, CourseType ct )
+std::string GetCustomDifficulty( StepsType st, Difficulty dc, CourseType ct )
 {
 	/* XXX GAMEMAN->GetStepsTypeInfo( StepsType_Invalid ) will crash. I'm not
 	 * sure what the correct behavior in this case should be. Should we still
@@ -106,7 +106,7 @@ RString GetCustomDifficulty( StepsType st, Difficulty dc, CourseType ct )
 		 * return "", but the comment there says that the caller should
 		 * really be checking for invalid values. */
 		if( dc == Difficulty_Invalid )
-			return RString();
+			return std::string();
 		return DifficultyToString( dc );
 	}
 
@@ -115,9 +115,9 @@ RString GetCustomDifficulty( StepsType st, Difficulty dc, CourseType ct )
 		return "Edit";
 	}
 	// OPTIMIZATION OPPORTUNITY: cache these metrics and cache the splitting
-	std::vector<RString> vsNames;
+	std::vector<std::string> vsNames;
 	split( NAMES, ",", vsNames );
-	for (RString const &sName: vsNames)
+	for (std::string const &sName: vsNames)
 	{
 		ThemeMetric<StepsType> STEPS_TYPE("CustomDifficulty",sName + "StepsType");
 		if( STEPS_TYPE == StepsType_Invalid  ||  st == STEPS_TYPE )	// match
@@ -128,7 +128,7 @@ RString GetCustomDifficulty( StepsType st, Difficulty dc, CourseType ct )
 				ThemeMetric<CourseType> COURSE_TYPE("CustomDifficulty",sName + "CourseType");
 				if( COURSE_TYPE == CourseType_Invalid  ||  ct == COURSE_TYPE )	// match
 				{
-					ThemeMetric<RString> STRING("CustomDifficulty",sName + "String");
+					ThemeMetric<std::string> STRING("CustomDifficulty",sName + "String");
 					return STRING.GetValue();
 				}
 			}
@@ -136,13 +136,13 @@ RString GetCustomDifficulty( StepsType st, Difficulty dc, CourseType ct )
 	}
 	// no matching CustomDifficulty, so use a regular difficulty name
 	if( dc == Difficulty_Invalid )
-		return RString();
+		return std::string();
 	return DifficultyToString( dc );
 }
 
 LuaFunction( GetCustomDifficulty, GetCustomDifficulty(Enum::Check<StepsType>(L,1), Enum::Check<Difficulty>(L, 2), Enum::Check<CourseType>(L, 3, true)) );
 
-RString CustomDifficultyToLocalizedString( const RString &sCustomDifficulty )
+std::string CustomDifficultyToLocalizedString( const std::string &sCustomDifficulty )
 {
 	return THEME->GetString( "CustomDifficulty", sCustomDifficulty );
 }
@@ -150,12 +150,12 @@ RString CustomDifficultyToLocalizedString( const RString &sCustomDifficulty )
 LuaFunction( CustomDifficultyToLocalizedString, CustomDifficultyToLocalizedString(SArg(1)) );
 
 
-RString StepsToCustomDifficulty( const Steps *pSteps )
+std::string StepsToCustomDifficulty( const Steps *pSteps )
 {
 	return GetCustomDifficulty( pSteps->m_StepsType, pSteps->GetDifficulty(), CourseType_Invalid );
 }
 
-RString TrailToCustomDifficulty( const Trail *pTrail )
+std::string TrailToCustomDifficulty( const Trail *pTrail )
 {
 	return GetCustomDifficulty( pTrail->m_StepsType, pTrail->m_CourseDifficulty, pTrail->m_CourseType );
 }

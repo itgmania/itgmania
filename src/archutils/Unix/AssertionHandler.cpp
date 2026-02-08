@@ -13,7 +13,7 @@
 
 extern "C" void __assert_fail( const char *assertion, const char *file, unsigned int line, const char *function ) throw()
 {
-	const RString error = ssprintf( "Assertion failure: %s: %s", function, assertion );
+	const std::string error = ssprintf( "Assertion failure: %s: %s", function, assertion );
 
 #if defined(CRASH_HANDLER)
 	Checkpoints::SetCheckpoint( file, line, error );
@@ -31,7 +31,7 @@ extern "C" void __assert_fail( const char *assertion, const char *file, unsigned
 
 extern "C" void __assert_perror_fail( int errnum, const char *file, unsigned int line, const char *function ) throw()
 {
-	const RString error = ssprintf( "Assertion failure: %s: %s", function, strerror(errnum) );
+	const std::string error = ssprintf( "Assertion failure: %s: %s", function, strerror(errnum) );
 
 #if defined(CRASH_HANDLER)
 	Checkpoints::SetCheckpoint( file, line, error );
@@ -56,7 +56,7 @@ void UnexpectedExceptionHandler()
 	catch (std::exception &ex)
 	{
 #if defined(CRASH_HANDLER)
-		const RString error = ssprintf("Unhandled exception: %s", ex.what());
+		const std::string error = ssprintf("Unhandled exception: %s", ex.what());
 		sm_crash( error );
 #endif
 	}
@@ -64,7 +64,7 @@ void UnexpectedExceptionHandler()
 	catch(...)
 	{
 #if defined(CRASH_HANDLER)
-		const RString error = ssprintf("Unknown exception.");
+		const std::string error = ssprintf("Unknown exception.");
 		sm_crash( error );
 #endif
 	}

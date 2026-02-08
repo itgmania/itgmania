@@ -16,7 +16,7 @@ struct msTriangle
 
 struct msMesh
 {
-    RString sName;
+    std::string sName;
     int8_t nMaterialIndex;
 	
     std::vector<RageModelVertex> Vertices;
@@ -40,7 +40,7 @@ public:
 	RageVector3 RadianToDegree(RageVector3 radian);
 
 	void LoadBlank();
-	void Load(const RString &sTexOrIniFile);
+	void Load(const std::string &sTexOrIniFile);
 	void Unload();
 	void Update(float fDelta);
 
@@ -81,7 +81,7 @@ private:
 struct msMaterial
 {
 	int			nFlags;
-	RString		sName;
+	std::string		sName;
 	RageColor	Ambient;
 	RageColor	Diffuse;
 	RageColor	Specular;
@@ -114,8 +114,8 @@ struct msRotationKey
 struct msBone
 {
 	int nFlags;
-	RString sName;
-	RString sParentName;
+	std::string sName;
+	std::string sParentName;
 	RageVector3 Position;
 	RageVector3 Rotation;
 
@@ -127,7 +127,7 @@ struct msBone
 
 struct msAnimation
 {
-	int FindBoneByName( const RString &sName ) const
+	int FindBoneByName( const std::string &sName ) const
 	{
 		for (unsigned i = 0; i < Bones.size(); i++)
 		{
@@ -137,7 +137,7 @@ struct msAnimation
 		return -1;
 	}
 
-	bool LoadMilkshapeAsciiBones( RString sAniName, RString sPath );
+	bool LoadMilkshapeAsciiBones( std::string sAniName, std::string sPath );
 
 	std::vector<msBone> Bones;
 	int nTotalFrames = 0;

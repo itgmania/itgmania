@@ -45,11 +45,11 @@ public:
 	float GetPlayLatency() const;
 	int GetDriverSampleRate() const;
 
-	RageSoundReader *GetLoadedSound( const RString &sPath );
-	void AddLoadedSound( const RString &sPath, RageSoundReader_Preload *pSound );
+	RageSoundReader *GetLoadedSound( const std::string &sPath );
+	void AddLoadedSound( const std::string &sPath, RageSoundReader_Preload *pSound );
 
 private:
-	std::map<RString, RageSoundReader_Preload *> m_mapPreloadedSounds;
+	std::map<std::string, RageSoundReader_Preload *> m_mapPreloadedSounds;
 
 	RageSoundDriver *m_pDriver;
 

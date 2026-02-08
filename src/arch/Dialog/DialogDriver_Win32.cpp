@@ -24,7 +24,7 @@ int __stdcall AfxMessageBox(LPCTSTR lpszText, UINT nType, UINT nIDHelp);
 REGISTER_DIALOG_DRIVER_CLASS( Win32 );
 
 static bool g_bHush;
-static RString g_sMessage;
+static std::string g_sMessage;
 static bool g_bAllowHush;
 
 #if !defined(SMPACKAGE)
@@ -51,7 +51,7 @@ static INT_PTR CALLBACK OKWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
 			SetWindowLong( hHushButton, GWL_STYLE, iStyle );
 
 			// Set static text.
-			RString sMessage = g_sMessage;
+			std::string sMessage = g_sMessage;
 			Replace(sMessage, "\n", "\r\n" );
 			SetWindowText( GetDlgItem(hWnd, IDC_MESSAGE), sMessage.c_str() );
 
@@ -90,14 +90,14 @@ static HWND GetHwnd()
 
 #if !defined(SMPACKAGE)
 static LocalizedString ERROR_WINDOW_TITLE("Dialog-Prompt", "Error");
-static RString GetWindowTitle()
+static std::string GetWindowTitle()
 {
-	RString s = ERROR_WINDOW_TITLE.GetValue();
+	std::string s = ERROR_WINDOW_TITLE.GetValue();
 	return s;
 }
 #endif
 
-void DialogDriver_Win32::OK( RString sMessage, RString sID )
+void DialogDriver_Win32::OK( std::string sMessage, std::string sID )
 {
 	g_bAllowHush = sID != "";
 	g_sMessage = sMessage;
@@ -111,7 +111,7 @@ void DialogDriver_Win32::OK( RString sMessage, RString sID )
 		Dialog::IgnoreMessage( sID );
 }
 
-Dialog::Result DialogDriver_Win32::OKCancel( RString sMessage, RString sID )
+Dialog::Result DialogDriver_Win32::OKCancel( std::string sMessage, std::string sID )
 {
 	g_bAllowHush = sID != "";
 	g_sMessage = sMessage;
@@ -136,7 +136,7 @@ Dialog::Result DialogDriver_Win32::OKCancel( RString sMessage, RString sID )
 }
 
 #if !defined(SMPACKAGE)
-static RString g_sErrorString;
+static std::string g_sErrorString;
 
 static INT_PTR CALLBACK ErrorWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
@@ -147,7 +147,7 @@ static INT_PTR CALLBACK ErrorWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 			DialogUtil::SetHeaderFont( hWnd, IDC_STATIC_HEADER_TEXT );
 
 			// Set static text
-			RString sMessage = g_sErrorString;
+			std::string sMessage = g_sErrorString;
 			Replace(sMessage, "\n", "\r\n" );
 			SetWindowText( GetDlgItem(hWnd, IDC_EDIT_ERROR), sMessage.c_str() );
 		}
@@ -161,8 +161,8 @@ static INT_PTR CALLBACK ErrorWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 				STARTUPINFO	si;
 				ZeroMemory( &si, sizeof(si) );
 
-				RString sAppDataDir = SpecialDirs::GetAppDataDir();
-				RString sCommand = "notepad \"" + sAppDataDir + PRODUCT_ID + "/Logs/log.txt\"";
+				std::string sAppDataDir = SpecialDirs::GetAppDataDir();
+				std::string sCommand = "notepad \"" + sAppDataDir + PRODUCT_ID + "/Logs/log.txt\"";
 				CreateProcess( // TODO: resolve Warning C6335 "leaking process information"
 					nullptr,		// pointer to name of executable module
 					const_cast<char *>(sCommand.c_str()),	// pointer to command line string
@@ -212,7 +212,7 @@ static INT_PTR CALLBACK ErrorWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 }
 #endif
 
-void DialogDriver_Win32::Error( RString sError, RString sID )
+void DialogDriver_Win32::Error( std::string sError, std::string sID )
 {
 #if !defined(SMPACKAGE)
 	g_sErrorString = sError;
@@ -225,7 +225,7 @@ void DialogDriver_Win32::Error( RString sError, RString sID )
 #endif
 }
 
-Dialog::Result DialogDriver_Win32::AbortRetryIgnore( RString sMessage, RString ID )
+Dialog::Result DialogDriver_Win32::AbortRetryIgnore( std::string sMessage, std::string ID )
 {
 	int iRet = 0;
 #if !defined(SMPACKAGE)
@@ -243,7 +243,7 @@ Dialog::Result DialogDriver_Win32::AbortRetryIgnore( RString sMessage, RString I
 	}
 }
 
-Dialog::Result DialogDriver_Win32::AbortRetry( RString sMessage, RString sID )
+Dialog::Result DialogDriver_Win32::AbortRetry( std::string sMessage, std::string sID )
 {
 	int iRet = 0;
 #if !defined(SMPACKAGE)
@@ -260,7 +260,7 @@ Dialog::Result DialogDriver_Win32::AbortRetry( RString sMessage, RString sID )
 	}
 }
 
-Dialog::Result DialogDriver_Win32::YesNo( RString sMessage, RString sID )
+Dialog::Result DialogDriver_Win32::YesNo( std::string sMessage, std::string sID )
 {
 	int iRet = 0;
 #if !defined(SMPACKAGE)

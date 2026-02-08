@@ -19,7 +19,7 @@ protected:
 	void GetUSBStorageDevices( std::vector<UsbStorageDevice>& vDevicesOut );
 	bool USBStorageDevicesChanged();
 	bool TestWrite( UsbStorageDevice* pDevice );
-	bool FolderExists(RString path);
+	bool FolderExists(std::string path);
 
 	int GetActivePlayerMask();
 	int m_LastDevices;

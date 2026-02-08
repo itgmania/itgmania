@@ -173,14 +173,14 @@ int64_t ArchHooks::GetSystemTimeInMicroseconds()
 }
 #endif
 
-RString ArchHooks::GetPreferredLanguage()
+std::string ArchHooks::GetPreferredLanguage()
 {
-	RString locale;
+	std::string locale;
 
 	if (getenv("LANG"))
 	{
 		locale = getenv("LANG");
-		RString region = locale.substr(3, 2);
+		std::string region = locale.substr(3, 2);
 		locale = locale.substr(0, 2);
 
 		if (locale == "zh")
@@ -230,7 +230,7 @@ void ArchHooks_Unix::Init()
 #define _CS_GNU_LIBC_VERSION 2
 #endif
 
-static RString LibcVersion()
+static std::string LibcVersion()
 {
 	char buf[1024] = "(error)";
 	int ret = confstr( _CS_GNU_LIBC_VERSION, buf, sizeof(buf) );
@@ -242,7 +242,7 @@ static RString LibcVersion()
 
 void ArchHooks_Unix::DumpDebugInfo()
 {
-	RString sys;
+	std::string sys;
 	int vers;
 	GetKernel( sys, vers );
 	LOG->Info( "OS: %s ver %06i", sys.c_str(), vers );
@@ -262,7 +262,7 @@ void ArchHooks_Unix::DumpDebugInfo()
 
 void ArchHooks_Unix::SetTime( tm newtime )
 {
-	RString sCommand = ssprintf( "date %02d%02d%02d%02d%04d.%02d",
+	std::string sCommand = ssprintf( "date %02d%02d%02d%02d%04d.%02d",
 		newtime.tm_mon+1,
 		newtime.tm_mday,
 		newtime.tm_hour,
@@ -280,14 +280,14 @@ void ArchHooks_Unix::SetTime( tm newtime )
 		LOG->Trace( "'hwclock --systohc' failed" );
 }
 
-RString ArchHooks_Unix::GetClipboard()
+std::string ArchHooks_Unix::GetClipboard()
 {
 #ifdef HAVE_X11
 	using namespace X11Helper;
 	// Why isn't this defined by Xlib headers?
 	Atom XA_CLIPBOARD = XInternAtom( Dpy, "CLIPBOARD", 0);
 	Atom pstType;
-	RString ret;
+	std::string ret;
 	unsigned char *paste;
 	unsigned long remainder;
 	int ck;
@@ -342,7 +342,7 @@ RString ArchHooks_Unix::GetClipboard()
 		return "";
 	}
 
-	ret = RString( (char*) paste);
+	ret = std::string( (char*) paste);
 	XFree(paste);
 	return ret;
 #else
@@ -351,7 +351,7 @@ RString ArchHooks_Unix::GetClipboard()
 #endif
 }
 
-void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
+void ArchHooks::MountInitialFilesystems( const std::string &sDirOfExecutable )
 {
 	FILEMAN->Mount("dirro", sDirOfExecutable, "/");
 
@@ -378,13 +378,13 @@ void ArchHooks::MountInitialFilesystems( const RString &sDirOfExecutable )
 	}
 }
 
-void ArchHooks::MountUserFilesystems( const RString &sDirOfExecutable )
+void ArchHooks::MountUserFilesystems( const std::string &sDirOfExecutable )
 {
 	/* Path to write general mutable user data when not Portable
 	 * Lowercase the PRODUCT_ID; dotfiles and directories are almost always lowercase.
 	 */
 	const char *szHome = getenv( "HOME" );
-	RString sUserDataPath = ssprintf( "%s/.%s", szHome? szHome:".", "itgmania" );
+	std::string sUserDataPath = ssprintf( "%s/.%s", szHome? szHome:".", "itgmania" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/Announcers", "/Announcers" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/BGAnimations", "/BGAnimations" );
 	FILEMAN->Mount( "dir", sUserDataPath + "/BackgroundEffects", "/BackgroundEffects" );

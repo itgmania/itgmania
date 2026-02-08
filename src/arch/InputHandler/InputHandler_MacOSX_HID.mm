@@ -58,7 +58,7 @@ int InputHandler_MacOSX_HID::Run( void *data )
 
 	This->StartDevices();
 	{
-		const RString sError = SetThreadPrecedence( 1.0f );
+		const std::string sError = SetThreadPrecedence( 1.0f );
 		if( !sError.empty() )
 			LOG->Warn( "Could not set precedence of the input thread: %s", sError.c_str() );
 	}
@@ -282,7 +282,7 @@ void InputHandler_MacOSX_HID::GetDevicesAndDescriptions( std::vector<InputDevice
 		i->GetDevicesAndDescriptions( vDevices );
 }
 
-RString InputHandler_MacOSX_HID::GetDeviceSpecificInputString( const DeviceInput &di )
+std::string InputHandler_MacOSX_HID::GetDeviceSpecificInputString( const DeviceInput &di )
 {
 	if( di.device == DEVICE_KEYBOARD )
 	{

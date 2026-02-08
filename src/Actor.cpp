@@ -140,7 +140,7 @@ void Actor::InitState()
 	m_CullMode = CULL_NONE;
 }
 
-static bool GetMessageNameFromCommandName( const RString &sCommandName, RString &sMessageNameOut )
+static bool GetMessageNameFromCommandName( const std::string &sCommandName, std::string &sMessageNameOut )
 {
 	if( Right(sCommandName, 7) == "Message" )
 	{
@@ -357,17 +357,17 @@ void Actor::LoadFromNode( const XNode* pNode )
 	FOREACH_CONST_Attr( pNode, pAttr )
 	{
 		// Load Name, if any.
-		const RString &sKeyName = pAttr->first;
+		const std::string &sKeyName = pAttr->first;
 		const XNodeValue *pValue = pAttr->second;
 		if( EndsWith(sKeyName,"Command") )
 		{
 			LuaReference *pRef = new LuaReference;
 			pValue->PushValue( L );
 			pRef->SetFromStack( L );
-			RString sCmdName = Left(sKeyName, sKeyName.size()-7);
+			std::string sCmdName = Left(sKeyName, sKeyName.size()-7);
 			AddCommand( sCmdName, apActorCommands( pRef ) );
 		}
-		else if( sKeyName == "Name" )			SetName( pValue->GetValue<RString>() );
+		else if( sKeyName == "Name" )			SetName( pValue->GetValue<std::string>() );
 		else if( sKeyName == "BaseRotationX" )		SetBaseRotationX( pValue->GetValue<float>() );
 		else if( sKeyName == "BaseRotationY" )		SetBaseRotationY( pValue->GetValue<float>() );
 		else if( sKeyName == "BaseRotationZ" )		SetBaseRotationZ( pValue->GetValue<float>() );
@@ -841,7 +841,7 @@ void Actor::UpdateTweening(float fDeltaTime)
 		TI.m_fTimeLeftInTween -= fSecsToSubtract;
 		fDeltaTime -= fSecsToSubtract;
 
-		RString sCommand = TI.m_sCommandName;
+		std::string sCommand = TI.m_sCommandName;
 		if (bBeginning)            // we are just beginning this tween
 		{
 			m_start = m_current;    // set the start position
@@ -989,9 +989,9 @@ void Actor::UpdateInternal(float delta_time)
 	this->UpdateTweening(delta_time);
 }
 
-RString Actor::GetLineage() const
+std::string Actor::GetLineage() const
 {
-	RString sPath;
+	std::string sPath;
 
 	if( m_pParent )
 		sPath = m_pParent->GetLineage() + '/';
@@ -1117,7 +1117,7 @@ void Actor::ScaleTo( const RectF &rect, StretchType st )
 	SetZoom( fNewZoom );
 }
 
-void Actor::SetEffectClockString( const RString &s )
+void Actor::SetEffectClockString( const std::string &s )
 {
 	if     (EqualsNoCase(s, "timer"))	this->SetEffectClock( CLOCK_TIMER );
 	else if(EqualsNoCase(s, "timerglobal"))	this->SetEffectClock( CLOCK_TIMER_GLOBAL );
@@ -1176,7 +1176,7 @@ void Actor::SetEffectPeriod(float time)
 	RecalcEffectPeriod();
 }
 
-bool Actor::SetEffectTiming(float ramp_toh, float at_half, float ramp_tof, float at_full, float at_zero, RString& err)
+bool Actor::SetEffectTiming(float ramp_toh, float at_half, float ramp_tof, float at_full, float at_zero, std::string& err)
 {
 	// No negative timings
 	if (ramp_toh < 0 || at_half < 0 || ramp_tof < 0 || at_full < 0 || at_zero < 0)
@@ -1199,7 +1199,7 @@ bool Actor::SetEffectTiming(float ramp_toh, float at_half, float ramp_tof, float
 	return true;
 }
 
-bool Actor::SetEffectHoldAtFull(float haf, RString& err)
+bool Actor::SetEffectHoldAtFull(float haf, std::string& err)
 {
 	return SetEffectTiming(m_effect_ramp_to_half, m_effect_hold_at_half,
 		m_effect_ramp_to_full, haf, m_effect_hold_at_zero, err);
@@ -1385,7 +1385,7 @@ void Actor::RunCommands( const LuaReference& cmds, const LuaReference *pParamTab
 		pParamTable->PushSelf( L );
 
 	// call function with 2 arguments and 0 results
-	RString Error= "Error playing command:";
+	std::string Error= "Error playing command:";
 	LuaHelpers::RunScriptOnStack(L, Error, 2, 0, true);
 
 	LUA->Release(L);
@@ -1507,14 +1507,14 @@ void Actor::Sleep( float time )
 	BeginTweening( 0, TWEEN_LINEAR );
 }
 
-void Actor::QueueCommand( const RString& sCommandName )
+void Actor::QueueCommand( const std::string& sCommandName )
 {
 	BeginTweening( 0, TWEEN_LINEAR );
 	TweenInfo  &TI = m_Tweens.back()->info;
 	TI.m_sCommandName = sCommandName;
 }
 
-void Actor::QueueMessage( const RString& sMessageName )
+void Actor::QueueMessage( const std::string& sMessageName )
 {
 	// Hack: use "!" as a marker to broadcast a command, instead of playing a
 	// command, so we don't have to add yet another element to every tween
@@ -1524,15 +1524,15 @@ void Actor::QueueMessage( const RString& sMessageName )
 	TI.m_sCommandName = "!" + sMessageName;
 }
 
-void Actor::AddCommand( const RString &sCmdName, apActorCommands apac, bool warn )
+void Actor::AddCommand( const std::string &sCmdName, apActorCommands apac, bool warn )
 {
 	if( HasCommand(sCmdName) && warn)
 	{
-		RString sWarning = GetLineage()+"'s command '"+sCmdName+"' defined twice";
+		std::string sWarning = GetLineage()+"'s command '"+sCmdName+"' defined twice";
 		LuaHelpers::ReportScriptError(sWarning, "COMMAND_DEFINED_TWICE");
 	}
 
-	RString sMessage;
+	std::string sMessage;
 	if( GetMessageNameFromCommandName(sCmdName, sMessage) )
 	{
 		SubscribeToMessage( sMessage );
@@ -1544,14 +1544,14 @@ void Actor::AddCommand( const RString &sCmdName, apActorCommands apac, bool warn
 	}
 }
 
-bool Actor::HasCommand( const RString &sCmdName ) const
+bool Actor::HasCommand( const std::string &sCmdName ) const
 {
 	return GetCommand(sCmdName) != nullptr;
 }
 
-const apActorCommands *Actor::GetCommand( const RString &sCommandName ) const
+const apActorCommands *Actor::GetCommand( const std::string &sCommandName ) const
 {
-	std::map<RString, apActorCommands>::const_iterator it = m_mapNameToCommands.find( sCommandName );
+	std::map<std::string, apActorCommands>::const_iterator it = m_mapNameToCommands.find( sCommandName );
 	if( it == m_mapNameToCommands.end() )
 		return nullptr;
 	return &it->second;
@@ -1819,7 +1819,7 @@ public:
 		{
 			haf= FArg(5);
 		}
-		RString err;
+		std::string err;
 		if(!p->SetEffectTiming(rth, hah, rtf, haf, haz, err))
 		{
 			luaL_error(L, err.c_str());
@@ -1828,7 +1828,7 @@ public:
 	}
 	static int effect_hold_at_full(T* p, lua_State*L)
 	{
-		RString err;
+		std::string err;
 		if(!p->SetEffectHoldAtFull(FArg(1), err))
 		{
 			luaL_error(L, err.c_str());

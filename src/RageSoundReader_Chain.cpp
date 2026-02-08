@@ -78,11 +78,11 @@ void RageSoundReader_Chain::AddSound( int iIndex, float fOffsetSecs, float fPan 
 	m_aSounds.push_back( s );
 }
 
-int RageSoundReader_Chain::LoadSound( RString sPath )
+int RageSoundReader_Chain::LoadSound( std::string sPath )
 {
 	MakeLower(sPath);
 
-	std::map<RString, RageSoundReader*>::const_iterator it = m_apNamedSounds.find( sPath );
+	std::map<std::string, RageSoundReader*>::const_iterator it = m_apNamedSounds.find( sPath );
 	if( it != m_apNamedSounds.end() )
 	{
 		const RageSoundReader *pReader = it->second;
@@ -93,7 +93,7 @@ int RageSoundReader_Chain::LoadSound( RString sPath )
 		FAIL_M( sPath );
 	}
 
-	RString sError;
+	std::string sError;
 	bool bPrebuffer;
 	RageSoundReader *pReader = RageSoundReader_FileReader::OpenFile( sPath, sError, &bPrebuffer );
 	if( pReader == nullptr )
@@ -274,7 +274,7 @@ void RageSoundReader_Chain::ReleaseSound( Sound *s )
 	m_apActiveSounds.erase( it );
 }
 
-bool RageSoundReader_Chain::SetProperty( const RString &sProperty, float fValue )
+bool RageSoundReader_Chain::SetProperty( const std::string &sProperty, float fValue )
 {
 	bool bRet = false;
 	for( unsigned i = 0; i < m_apActiveSounds.size(); ++i )

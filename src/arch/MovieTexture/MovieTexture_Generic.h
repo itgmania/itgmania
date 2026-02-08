@@ -25,7 +25,7 @@ class MovieDecoder
 public:
 	virtual ~MovieDecoder() { }
 
-	virtual RString Open(RString file) = 0;
+	virtual std::string Open(std::string file) = 0;
 	virtual void Close() = 0;
 	virtual void Rewind() = 0;
 	virtual void Rollover() = 0;
@@ -88,7 +88,7 @@ class MovieTexture_Generic: public RageMovieTexture
 public:
 	MovieTexture_Generic( RageTextureID ID, std::unique_ptr<MovieDecoder> pDecoder );
 	virtual ~MovieTexture_Generic();
-	RString Init();
+	std::string Init();
 
 	/* only called by RageTextureManager::InvalidateTextures */
 	void Invalidate();

@@ -23,8 +23,8 @@ class Song;
 
 struct PlayAfterLaunchInfo
 {
-	RString sSongDir;
-	RString sTheme;
+	std::string sSongDir;
+	std::string sTheme;
 	bool bAnySongChanged;
 	bool bAnyThemeChanged;
 
@@ -43,12 +43,12 @@ struct PlayAfterLaunchInfo
 	}
 };
 
-void InstallSmzipOsArg( const RString &sOsZipFile, PlayAfterLaunchInfo &out );
+void InstallSmzipOsArg( const std::string &sOsZipFile, PlayAfterLaunchInfo &out );
 PlayAfterLaunchInfo DoInstalls( CommandLineActions::CommandLineArgs args );
 
-static void Parse( const RString &sDir, PlayAfterLaunchInfo &out )
+static void Parse( const std::string &sDir, PlayAfterLaunchInfo &out )
 {
-	std::vector<RString> vsDirParts;
+	std::vector<std::string> vsDirParts;
 	split( sDir, "/", vsDirParts, true );
 	if( vsDirParts.size() == 3 && EqualsNoCase(vsDirParts[0], "Songs") )
 		out.sSongDir = "/" + sDir;
@@ -56,40 +56,40 @@ static void Parse( const RString &sDir, PlayAfterLaunchInfo &out )
 		out.sTheme = vsDirParts[1];
 }
 
-static const RString TEMP_ZIP_MOUNT_POINT = "/@temp-zip/";
-const RString TEMP_OS_MOUNT_POINT = "/@temp-os/";
+static const std::string TEMP_ZIP_MOUNT_POINT = "/@temp-zip/";
+const std::string TEMP_OS_MOUNT_POINT = "/@temp-os/";
 
-static void InstallSmzip( const RString &sZipFile, PlayAfterLaunchInfo &out )
+static void InstallSmzip( const std::string &sZipFile, PlayAfterLaunchInfo &out )
 {
 	if( !FILEMAN->Mount( "zip", sZipFile, TEMP_ZIP_MOUNT_POINT ) )
 		FAIL_M("Failed to mount " + sZipFile );
 
-	std::vector<RString> vsFiles;
+	std::vector<std::string> vsFiles;
 	{
-		std::vector<RString> vsRawFiles;
+		std::vector<std::string> vsRawFiles;
 		GetDirListingRecursive( TEMP_ZIP_MOUNT_POINT, "*", vsRawFiles);
 
-		std::vector<RString> vsPrettyFiles;
-		for (RString const &s : vsRawFiles)
+		std::vector<std::string> vsPrettyFiles;
+		for (std::string const &s : vsRawFiles)
 		{
 			if( EqualsNoCase(GetExtension(s), "ctl") )
 				continue;
 
 			vsFiles.push_back( s);
 
-			RString s2 = Right(s, s.length() - TEMP_ZIP_MOUNT_POINT.length());
+			std::string s2 = Right(s, s.length() - TEMP_ZIP_MOUNT_POINT.length());
 			vsPrettyFiles.push_back( s2 );
 		}
 		sort( vsPrettyFiles.begin(), vsPrettyFiles.end() );
 	}
 
-	RString sResult = "Success installing " + sZipFile;
-	for (RString &tmpFile : vsFiles)
+	std::string sResult = "Success installing " + sZipFile;
+	for (std::string &tmpFile : vsFiles)
 	{
-		RString sDestFile = tmpFile;
+		std::string sDestFile = tmpFile;
 		sDestFile = Right(sDestFile, sDestFile.length() - TEMP_ZIP_MOUNT_POINT.length());
 
-		RString sDir, sThrowAway;
+		std::string sDir, sThrowAway;
 		splitpath( sDestFile, sDir, sThrowAway, sThrowAway );
 
 		Parse( sDir, out );
@@ -108,11 +108,11 @@ static void InstallSmzip( const RString &sZipFile, PlayAfterLaunchInfo &out )
 	SCREENMAN->SystemMessage( sResult );
 }
 
-void InstallSmzipOsArg( const RString &sOsZipFile, PlayAfterLaunchInfo &out )
+void InstallSmzipOsArg( const std::string &sOsZipFile, PlayAfterLaunchInfo &out )
 {
 	SCREENMAN->SystemMessage("Installing " + sOsZipFile );
 
-	RString sOsDir, sFilename, sExt;
+	std::string sOsDir, sFilename, sExt;
 	splitpath( sOsZipFile, sOsDir, sFilename, sExt );
 
 	if( !FILEMAN->Mount( "dir", sOsDir, TEMP_OS_MOUNT_POINT ) )
@@ -122,9 +122,9 @@ void InstallSmzipOsArg( const RString &sOsZipFile, PlayAfterLaunchInfo &out )
 	FILEMAN->Unmount( "dir", sOsDir, TEMP_OS_MOUNT_POINT );
 }
 
-static bool IsPackageFile(const RString &arg)
+static bool IsPackageFile(const std::string &arg)
 {
-	RString ext = GetExtension(arg);
+	std::string ext = GetExtension(arg);
 	return EqualsNoCase(ext, "smzip") || EqualsNoCase(ext, "zip");
 }
 
@@ -133,7 +133,7 @@ PlayAfterLaunchInfo DoInstalls( CommandLineActions::CommandLineArgs args )
 	PlayAfterLaunchInfo ret;
 	for( int i = 0; i<(int)args.argv.size(); i++ )
 	{
-		RString s = args.argv[i];
+		std::string s = args.argv[i];
 		if( IsPackageFile(s) )
 			InstallSmzipOsArg(s, ret);
 	}
@@ -178,7 +178,7 @@ void ScreenInstallOverlay::Update( float fDeltaTime )
 	{
 		Song* pSong = nullptr;
 		GAMESTATE->Reset();
-		RString sInitialScreen;
+		std::string sInitialScreen;
 		if( playAfterLaunchInfo.sSongDir.length() > 0 )
 			pSong = SONGMAN->GetSongFromDir( playAfterLaunchInfo.sSongDir );
 		if( pSong )

@@ -8,15 +8,15 @@
 class Regex
 {
 public:
-	Regex( const RString &sPat = "" );
+	Regex( const std::string &sPat = "" );
 	Regex( const Regex &rhs );
 	Regex &operator=( const Regex &rhs );
 	~Regex();
 	bool IsSet() const { return !m_sPattern.empty(); }
-	void Set( const RString &str );
-	bool Compare( const RString &sStr );
-	bool Compare( const RString &sStr, std::vector<RString> &asMatches );
-	bool Replace( const RString &sReplacement, const RString &sSubject, RString &sOut );
+	void Set( const std::string &str );
+	bool Compare( const std::string &sStr );
+	bool Compare( const std::string &sStr, std::vector<std::string> &asMatches );
+	bool Replace( const std::string &sReplacement, const std::string &sSubject, std::string &sOut );
 
 private:
 	void Compile();
@@ -24,7 +24,7 @@ private:
 
 	void *m_pReg;
 	unsigned m_iBackrefs;
-	RString m_sPattern;
+	std::string m_sPattern;
 };
 
 #endif

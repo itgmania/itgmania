@@ -233,7 +233,7 @@ public:
 	}
 	static int GetArtists( T* p, lua_State *L )
 	{
-		std::vector<RString> asArtists, asAltArtists;
+		std::vector<std::string> asArtists, asAltArtists;
 		for (TrailEntry const &e : p->m_vEntries)
 		{
 			if( e.bSecret )

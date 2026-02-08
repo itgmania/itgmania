@@ -68,7 +68,7 @@ InputHandler_PumpHID::~InputHandler_PumpHID() {
   }
 }
 
-RString InputHandler_PumpHID::GetDeviceSpecificInputString(
+std::string InputHandler_PumpHID::GetDeviceSpecificInputString(
     const DeviceInput& di) {
   return InputHandler::GetDeviceSpecificInputString(di);
 }
@@ -147,7 +147,7 @@ void InputHandler_PumpHID::CreateLightingMessage(LightsState newLS) {
 
   // check to see which game we are running as it can change during gameplay.
   const InputScheme* pInput = &GAMESTATE->GetCurrentGame()->m_InputScheme;
-  RString sInputName = pInput->m_szName;
+  std::string sInputName = pInput->m_szName;
 
   if (EqualsNoCase(sInputName, "dance")) {
     msg_to_device.lamp_p1_ul =

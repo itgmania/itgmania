@@ -21,7 +21,7 @@ void Regex::Compile()
 	ASSERT( m_iBackrefs < 128 );
 }
 
-void Regex::Set( const RString &sStr )
+void Regex::Set( const std::string &sStr )
 {
 	Release();
 	m_sPattern = sStr;
@@ -32,15 +32,15 @@ void Regex::Release()
 {
 	pcre_free( m_pReg );
 	m_pReg = nullptr;
-	m_sPattern = RString();
+	m_sPattern = std::string();
 }
 
-Regex::Regex( const RString &sStr ): m_pReg(nullptr), m_iBackrefs(0), m_sPattern(RString())
+Regex::Regex( const std::string &sStr ): m_pReg(nullptr), m_iBackrefs(0), m_sPattern(std::string())
 {
 	Set( sStr );
 }
 
-Regex::Regex( const Regex &rhs ): m_pReg(nullptr), m_iBackrefs(0), m_sPattern(RString())
+Regex::Regex( const Regex &rhs ): m_pReg(nullptr), m_iBackrefs(0), m_sPattern(std::string())
 {
 	Set( rhs.m_sPattern );
 }
@@ -57,7 +57,7 @@ Regex::~Regex()
 	Release();
 }
 
-bool Regex::Compare( const RString &sStr )
+bool Regex::Compare( const std::string &sStr )
 {
 	int iMat[128*3];
 	int iRet = pcre_exec( (pcre *) m_pReg, nullptr, sStr.data(), sStr.size(), 0, 0, iMat, 128*3 );
@@ -68,7 +68,7 @@ bool Regex::Compare( const RString &sStr )
 	return iRet >= 0;
 }
 
-bool Regex::Compare( const RString &sStr, std::vector<RString> &asMatches )
+bool Regex::Compare( const std::string &sStr, std::vector<std::string> &asMatches )
 {
 	asMatches.clear();
 
@@ -85,7 +85,7 @@ bool Regex::Compare( const RString &sStr, std::vector<RString> &asMatches )
 	{
 		const int iStart = iMat[i*2], end = iMat[i*2+1];
 		if( iStart == -1 )
-			asMatches.push_back( RString() ); /* no match */
+			asMatches.push_back( std::string() ); /* no match */
 		else
 			asMatches.push_back( sStr.substr(iStart, end - iStart) );
 	}
@@ -95,9 +95,9 @@ bool Regex::Compare( const RString &sStr, std::vector<RString> &asMatches )
 
 // Arguments and behavior are the same are similar to
 // http://us3.php.net/manual/en/function.preg-replace.php
-bool Regex::Replace( const RString &sReplacement, const RString &sSubject, RString &sOut )
+bool Regex::Replace( const std::string &sReplacement, const std::string &sSubject, std::string &sOut )
 {
-	std::vector<RString> asMatches;
+	std::vector<std::string> asMatches;
 	if( !Compare(sSubject, asMatches) )
 		return false;
 
@@ -106,8 +106,8 @@ bool Regex::Replace( const RString &sReplacement, const RString &sSubject, RStri
 	// TODO: optimize me by iterating only once over the string
 	for( unsigned i=0; i<asMatches.size(); i++ )
 	{
-		RString sFrom = ssprintf( "\\${%d}", i );
-		RString sTo = asMatches[i];
+		std::string sFrom = ssprintf( "\\${%d}", i );
+		std::string sTo = asMatches[i];
 		::Replace(sOut, sFrom, sTo);
 	}
 

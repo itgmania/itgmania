@@ -22,7 +22,7 @@
 namespace RageDisplay_Legacy_Helpers
 {
 	void Init();
-	RString GLToString( GLenum e );
+	std::string GLToString( GLenum e );
 };
 
 class RenderTarget

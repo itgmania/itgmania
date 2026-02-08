@@ -18,12 +18,12 @@ extern const char *g_CRSDifficultyNames[]; // in CourseLoaderCRS
  * @param iVal the course difficulty.
  * @return the string.
  */
-static RString DifficultyToCRSString( CourseDifficulty iVal )
+static std::string DifficultyToCRSString( CourseDifficulty iVal )
 {
 	return g_CRSDifficultyNames[iVal];
 }
 
-bool CourseWriterCRS::Write( const Course &course, const RString &sPath, bool bSavingCache )
+bool CourseWriterCRS::Write( const Course &course, const std::string &sPath, bool bSavingCache )
 {
 	RageFile f;
 	if( !f.Open( sPath, RageFile::WRITE ) )
@@ -35,7 +35,7 @@ bool CourseWriterCRS::Write( const Course &course, const RString &sPath, bool bS
 	return CourseWriterCRS::Write( course, f, bSavingCache );
 }
 
-void CourseWriterCRS::GetEditFileContents( const Course *pCourse, RString &sOut )
+void CourseWriterCRS::GetEditFileContents( const Course *pCourse, std::string &sOut )
 {
 	RageFileObjMem mem;
 	CourseWriterCRS::Write( *pCourse, mem, true );
@@ -62,7 +62,7 @@ bool CourseWriterCRS::Write( const Course &course, RageFileBasic &f, bool bSavin
 
 	if( !course.m_setStyles.empty() )
 	{
-		std::vector<RString> asStyles;
+		std::vector<std::string> asStyles;
 		asStyles.insert( asStyles.begin(), course.m_setStyles.begin(), course.m_setStyles.end() );
 		f.PutLine( ssprintf("#STYLE:%s;", join( ",", asStyles ).c_str()) );
 	}
@@ -86,11 +86,11 @@ bool CourseWriterCRS::Write( const Course &course, RageFileBasic &f, bool bSavin
 			StepsType st = entry.first;
 			CourseDifficulty cd = entry.second;
 
-			std::vector<RString> asRadarValues;
+			std::vector<std::string> asRadarValues;
 			const RadarValues &rv = it->second;
 			for( int r=0; r < NUM_RadarCategory; r++ )
 				asRadarValues.push_back( ssprintf("%.3f", rv[r]) );
-			RString sLine = ssprintf( "#RADAR:%i:%i:", st, cd );
+			std::string sLine = ssprintf( "#RADAR:%i:%i:", st, cd );
 			sLine += join( ",", asRadarValues ) + ";";
 			f.PutLine( sLine );
 		}
@@ -154,7 +154,7 @@ bool CourseWriterCRS::WriteCourseEntry( const CourseEntry &entry, RageFileBasic 
 	else if( entry.songID.ToSong() )
 	{
 		Song *pSong = entry.songID.ToSong();
-		const RString &sSong = Basename( pSong->GetSongDir() );
+		const std::string &sSong = Basename( pSong->GetSongDir() );
 
 		f.Write( "#SONG:" );
 		if( entry.songCriteria.m_vsGroupNames.size() > 0 )
@@ -177,7 +177,7 @@ bool CourseWriterCRS::WriteCourseEntry( const CourseEntry &entry, RageFileBasic 
 		f.Write( ssprintf( "%d..%d", entry.stepsCriteria.m_iLowMeter, entry.stepsCriteria.m_iHighMeter ) );
 	f.Write( ":" );
 
-	RString sModifiers = entry.sModifiers;
+	std::string sModifiers = entry.sModifiers;
 
 	if( entry.bSecret )
 	{
@@ -224,33 +224,33 @@ bool CourseWriterCRS::WriteSongSelectCourseEntry( const CourseEntry &entry, Rage
 		f.PutLine( "" );
 	}
 
-	std::vector<RString> songSelectParams;
+	std::vector<std::string> songSelectParams;
 
 	//TODO: Re-escape everything
 	if( entry.songCriteria.m_vsSongNames.size() > 0 )
 	{
-		RString songNames = join(",", SmEscape( entry.songCriteria.m_vsSongNames, {'\\', ':', ';', '#', ',', '='} ));
+		std::string songNames = join(",", SmEscape( entry.songCriteria.m_vsSongNames, {'\\', ':', ';', '#', ',', '='} ));
 		songSelectParams.push_back(ssprintf("TITLE=%s", songNames.c_str()));
 	}
 	if( entry.songCriteria.m_vsGroupNames.size() > 0)
 	{
-		RString groupNames = join(",", SmEscape( entry.songCriteria.m_vsGroupNames, {'\\', ':', ';', '#', ',', '='} ));
+		std::string groupNames = join(",", SmEscape( entry.songCriteria.m_vsGroupNames, {'\\', ':', ';', '#', ',', '='} ));
 		songSelectParams.push_back(ssprintf("GROUP=%s", groupNames.c_str()));
 	}
 	if( entry.songCriteria.m_vsArtistNames.size() > 0)
 	{
-		RString artistNames = join(",", SmEscape( entry.songCriteria.m_vsArtistNames, {'\\', ':', ';', '#', ',', '='} ));
+		std::string artistNames = join(",", SmEscape( entry.songCriteria.m_vsArtistNames, {'\\', ':', ';', '#', ',', '='} ));
 		songSelectParams.push_back(ssprintf("ARTIST=%s", artistNames.c_str()));
 	}
 	if( entry.songCriteria.m_bUseSongAllowedList &&
 		entry.songCriteria.m_vsSongGenreAllowedList.size() > 0)
 	{
-		RString genreNames = join(",", SmEscape( entry.songCriteria.m_vsSongGenreAllowedList, {'\\', ':', ';', '#', ',', '='} ));
+		std::string genreNames = join(",", SmEscape( entry.songCriteria.m_vsSongGenreAllowedList, {'\\', ':', ';', '#', ',', '='} ));
 		songSelectParams.push_back(ssprintf("GENRE=%s", genreNames.c_str()));
 	}
 	if( entry.stepsCriteria.m_vDifficulties.size() > 0 )
 	{
-		std::vector<RString> difficulties;
+		std::vector<std::string> difficulties;
 		for (unsigned d = 0; d < entry.stepsCriteria.m_vDifficulties.size(); d++)
 		{
 			Difficulty diff = entry.stepsCriteria.m_vDifficulties[d];
@@ -263,7 +263,7 @@ bool CourseWriterCRS::WriteSongSelectCourseEntry( const CourseEntry &entry, Rage
 	}
 	if( entry.songSort != SongSort_Randomize && entry.iChooseIndex > -1)
 	{
-		RString songSort = SongSortToString(entry.songSort);
+		std::string songSort = SongSortToString(entry.songSort);
 		songSelectParams.push_back(ssprintf("SORT=%s,%d", songSort.c_str(), entry.iChooseIndex+1));
 	}
 	if(entry.songCriteria.m_fMinDurationSeconds > 0 
@@ -288,7 +288,7 @@ bool CourseWriterCRS::WriteSongSelectCourseEntry( const CourseEntry &entry, Rage
 		songSelectParams.push_back(ssprintf("GAINSECONDS=%f", entry.fGainSeconds));
 	}
 
-	std::vector<RString> mods;
+	std::vector<std::string> mods;
 	split(entry.sModifiers, ",", mods);
 
 	if (entry.bSecret)
@@ -305,7 +305,7 @@ bool CourseWriterCRS::WriteSongSelectCourseEntry( const CourseEntry &entry, Rage
 	}
 	songSelectParams.push_back("MODS=" + join(",", mods));
 
-	RString songSelect = join(":", songSelectParams);
+	std::string songSelect = join(":", songSelectParams);
 	f.PutLine(ssprintf("#SONGSELECT:%s;", songSelect.c_str()));
 
 

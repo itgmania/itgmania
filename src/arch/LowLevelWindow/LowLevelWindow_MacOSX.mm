@@ -321,7 +321,7 @@ LowLevelWindow_MacOSX::~LowLevelWindow_MacOSX()
 	[m_WindowDelegate release];
 }
 
-void *LowLevelWindow_MacOSX::GetProcAddress( RString s )
+void *LowLevelWindow_MacOSX::GetProcAddress( std::string s )
 {
 	// dlsym returns NULL if symbol not found
 	static void *glHandle = nullptr;
@@ -330,7 +330,7 @@ void *LowLevelWindow_MacOSX::GetProcAddress( RString s )
 	return dlsym( glHandle, s.c_str() );
 }
 
-RString LowLevelWindow_MacOSX::TryVideoMode( const VideoModeParams& p, bool& newDeviceOut )
+std::string LowLevelWindow_MacOSX::TryVideoMode( const VideoModeParams& p, bool& newDeviceOut )
 {
 	// Always set these params.
 	m_CurrentParams.bSmoothLines = p.bSmoothLines;
@@ -347,7 +347,7 @@ RString LowLevelWindow_MacOSX::TryVideoMode( const VideoModeParams& p, bool& new
 #undef X
 
 	if( !bChangeMode && !bChangeVsync )
-		return RString();
+		return std::string();
 
 	POOL;
 	newDeviceOut = false;
@@ -396,7 +396,7 @@ RString LowLevelWindow_MacOSX::TryVideoMode( const VideoModeParams& p, bool& new
 			m_CurrentParams.vsync = p.vsync;
 		}
 
-		return RString();
+		return std::string();
 	}
 	if( bChangeMode )
 	{
@@ -441,7 +441,7 @@ RString LowLevelWindow_MacOSX::TryVideoMode( const VideoModeParams& p, bool& new
 		m_CurrentParams.vsync = p.vsync;
 	}
 
-	return RString();
+	return std::string();
 }
 
 void LowLevelWindow_MacOSX::ShutDownFullScreen()

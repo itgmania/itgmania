@@ -210,7 +210,7 @@ InputHandler_Win32_ddrio::~InputHandler_Win32_ddrio()
 	}
 }
 
-RString InputHandler_Win32_ddrio::GetDeviceSpecificInputString( const DeviceInput &di )
+std::string InputHandler_Win32_ddrio::GetDeviceSpecificInputString( const DeviceInput &di )
 {
 	switch (di.button)
 	{

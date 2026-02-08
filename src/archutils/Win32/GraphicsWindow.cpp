@@ -19,7 +19,7 @@
 #include <string>
 #include <set>
 
-static const RString g_sClassName = PRODUCT_ID;
+static const std::string g_sClassName = PRODUCT_ID;
 
 static HWND g_hWndMain;
 static HDC g_HDC;
@@ -36,7 +36,7 @@ static bool g_bRecreatingVideoMode = false;
 
 static UINT g_iQueryCancelAutoPlayMessage = 0;
 
-static RString GetNewWindow()
+static std::string GetNewWindow()
 {
 	HWND h = GetForegroundWindow();
 	if( h == nullptr )
@@ -45,7 +45,7 @@ static RString GetNewWindow()
 	DWORD iProcessID;
 	GetWindowThreadProcessId( h, &iProcessID );
 
-	RString sName;
+	std::string sName;
 	GetProcessFileName( iProcessID, sName );
 
 	sName = Basename(sName);
@@ -72,11 +72,11 @@ static LRESULT CALLBACK GraphicsWindow_WndProc( HWND hWnd, UINT msg, WPARAM wPar
 			LOG->Trace( "WM_ACTIVATE (%i, %i): %s", bInactive, bMinimized, g_bHasFocus? "has focus":"doesn't have focus" );
 			if( !g_bHasFocus )
 			{
-				RString sName = GetNewWindow();
-				static std::set<RString> sLostFocusTo;
+				std::string sName = GetNewWindow();
+				static std::set<std::string> sLostFocusTo;
 				sLostFocusTo.insert( sName );
-				RString sStr;
-				for( std::set<RString>::const_iterator it = sLostFocusTo.begin(); it != sLostFocusTo.end(); ++it )
+				std::string sStr;
+				for( std::set<std::string>::const_iterator it = sLostFocusTo.begin(); it != sLostFocusTo.end(); ++it )
 					sStr += (sStr.size()?", ":"") + *it;
 
 				LOG->MapLog( "LOST_FOCUS", "Lost focus to: %s", sStr.c_str() );
@@ -178,7 +178,7 @@ static LRESULT CALLBACK GraphicsWindow_WndProc( HWND hWnd, UINT msg, WPARAM wPar
 		case WM_COPYDATA:
 		{
 			PCOPYDATASTRUCT pMyCDS = (PCOPYDATASTRUCT) lParam;
-			RString sCommandLine( (char*)pMyCDS->lpData, pMyCDS->cbData );
+			std::string sCommandLine( (char*)pMyCDS->lpData, pMyCDS->cbData );
 			CommandLineActions::CommandLineArgs args;
 			split( sCommandLine, "|", args.argv, false );
 			CommandLineActions::ToProcess.push_back( args );
@@ -230,14 +230,14 @@ static void AdjustVideoModeParams( VideoModeParams &p )
 
 /* Set the display mode to the given size, bit depth and refresh.
  * The refresh setting may be ignored. */
-RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
+std::string GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 {
 	if( p.windowed )
 	{
 		// We're going windowed. If we were previously fullscreen, reset.
 		ChangeDisplaySettingsEx( p.sDisplayId.c_str(), nullptr, nullptr, 0, nullptr );
 
-		return RString();
+		return std::string();
 	}
 
 	DEVMODE DevMode;
@@ -267,7 +267,7 @@ RString GraphicsWindow::SetScreenMode( const VideoModeParams &p )
 		return "Couldn't set screen mode";
 
 	g_FullScreenDevMode = DevMode;
-	return RString();
+	return std::string();
 }
 
 static int GetWindowStyle( bool bWindowed , bool bWindowIsFullscreenBorderless)
@@ -604,12 +604,12 @@ void GraphicsWindow::GetDisplaySpecs( DisplaySpecs &out )
 		}
 
 		//Clean up the device name to store as the DisplaySpec ID
-		RString sDeviceName;
+		std::string sDeviceName;
 		sDeviceName = dd.DeviceName;
 		TrimRight(sDeviceName);
 
 		//Make the DisplaySpec Name more friendly by removing the "\\.\" prefix on most Windows display devices
-		RString modeName;
+		std::string modeName;
 		modeName = sDeviceName;
 		TrimLeft(modeName, "\\");
 		TrimLeft(modeName, ".");

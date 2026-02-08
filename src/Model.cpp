@@ -21,7 +21,7 @@
 REGISTER_ACTOR_CLASS( Model );
 
 static const float FRAMES_PER_SECOND = 30;
-static const RString DEFAULT_ANIMATION_NAME = "default";
+static const std::string DEFAULT_ANIMATION_NAME = "default";
 
 Model::Model()
 {
@@ -59,11 +59,11 @@ void Model::Clear()
 		DISPLAY->DeleteCompiledGeometry( m_pTempGeometry );
 }
 
-void Model::Load( const RString &sFile )
+void Model::Load( const std::string &sFile )
 {
 	if( sFile == "" ) return;
 
-	RString sExt = GetExtension(sFile);
+	std::string sExt = GetExtension(sFile);
 	MakeLower(sExt);
 	if( sExt=="txt" )
 		LoadMilkshapeAscii( sFile );
@@ -73,12 +73,12 @@ void Model::Load( const RString &sFile )
 #define THROW RageException::Throw( "Parse error in \"%s\" at line %d: \"%s\".", sPath.c_str(), iLineNum, sLine.c_str() )
 
 // TODO: Move MS3D loading into its own class. - Colby
-void Model::LoadMilkshapeAscii( const RString &sPath )
+void Model::LoadMilkshapeAscii( const std::string &sPath )
 {
 	LoadPieces( sPath, sPath, sPath );
 }
 
-void Model::LoadPieces( const RString &sMeshesPath, const RString &sMaterialsPath, const RString &sBonesPath )
+void Model::LoadPieces( const std::string &sMeshesPath, const std::string &sMaterialsPath, const std::string &sBonesPath )
 {
 	Clear();
 
@@ -113,7 +113,7 @@ void Model::LoadPieces( const RString &sMeshesPath, const RString &sMaterialsPat
 
 void Model::LoadFromNode( const XNode* pNode )
 {
-	RString s1, s2, s3;
+	std::string s1, s2, s3;
 	ActorUtil::GetAttrPath( pNode, "Meshes", s1 );
 	ActorUtil::GetAttrPath( pNode, "Materials", s2 );
 	ActorUtil::GetAttrPath( pNode, "Bones", s3 );
@@ -128,18 +128,18 @@ void Model::LoadFromNode( const XNode* pNode )
 }
 
 
-void Model::LoadMaterialsFromMilkshapeAscii( const RString &_sPath )
+void Model::LoadMaterialsFromMilkshapeAscii( const std::string &_sPath )
 {
-	RString sPath = _sPath;
+	std::string sPath = _sPath;
 
 	FixSlashesInPlace(sPath);
-	const RString sDir = Dirname( sPath );
+	const std::string sDir = Dirname( sPath );
 
 	RageFile f;
 	if( !f.Open( sPath ) )
 		RageException::Throw( "Model::LoadMilkshapeAscii Could not open \"%s\": %s", sPath.c_str(), f.GetError().c_str() );
 
-	RString sLine;
+	std::string sLine;
 	int iLineNum = 0;
 
 	while( f.GetLine( sLine ) > 0 )
@@ -233,7 +233,7 @@ void Model::LoadMaterialsFromMilkshapeAscii( const RString &_sPath )
 					THROW;
 				strcpy( szName, "" );
 				sscanf( sLine.c_str(), "\"%255[^\"]\"", szName );
-				RString sDiffuseTexture = szName;
+				std::string sDiffuseTexture = szName;
 
 				if( sDiffuseTexture == "" )
 				{
@@ -241,7 +241,7 @@ void Model::LoadMaterialsFromMilkshapeAscii( const RString &_sPath )
 				}
 				else
 				{
-					RString sTexturePath = sDir + sDiffuseTexture;
+					std::string sTexturePath = sDir + sDiffuseTexture;
 					FixSlashesInPlace( sTexturePath );
 					CollapsePath( sTexturePath );
 					if( !IsAFile(sTexturePath) )
@@ -255,7 +255,7 @@ void Model::LoadMaterialsFromMilkshapeAscii( const RString &_sPath )
 					THROW;
 				strcpy( szName, "" );
 				sscanf( sLine.c_str(), "\"%255[^\"]\"", szName );
-				RString sAlphaTexture = szName;
+				std::string sAlphaTexture = szName;
 
 				if( sAlphaTexture == "" )
 				{
@@ -263,7 +263,7 @@ void Model::LoadMaterialsFromMilkshapeAscii( const RString &_sPath )
 				}
 				else
 				{
-					RString sTexturePath = sDir + sAlphaTexture;
+					std::string sTexturePath = sDir + sAlphaTexture;
 					FixSlashesInPlace( sTexturePath );
 					CollapsePath( sTexturePath );
 					if( !IsAFile(sTexturePath) )
@@ -276,7 +276,7 @@ void Model::LoadMaterialsFromMilkshapeAscii( const RString &_sPath )
 	}
 }
 
-bool Model::LoadMilkshapeAsciiBones( const RString &sAniName, const RString &sPath )
+bool Model::LoadMilkshapeAsciiBones( const std::string &sAniName, const std::string &sPath )
 {
 	m_mapNameToAnimation[sAniName] = msAnimation();
 	msAnimation &Animation = m_mapNameToAnimation[sAniName];
@@ -488,13 +488,13 @@ void Model::DrawMesh( int i ) const
 		DISPLAY->PopMatrix();
 }
 
-void Model::SetDefaultAnimation( RString sAnimation, float fPlayRate )
+void Model::SetDefaultAnimation( std::string sAnimation, float fPlayRate )
 {
 	m_sDefaultAnimation = sAnimation;
 	m_fDefaultAnimationRate = fPlayRate;
 }
 
-void Model::PlayAnimation( const RString &sAniName, float fPlayRate )
+void Model::PlayAnimation( const std::string &sAniName, float fPlayRate )
 {
 	if( m_mapNameToAnimation.find(sAniName) == m_mapNameToAnimation.end() )
 		return;

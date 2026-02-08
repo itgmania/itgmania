@@ -12,7 +12,7 @@
 #include "RageSoundReader_MP3.h"
 #include "RageSoundReader_Vorbisfile.h"
 
-RageSoundReader_FileReader *RageSoundReader_FileReader::TryOpenFile( RageFileBasic *pFile, RString &error, RString format, bool &bKeepTrying )
+RageSoundReader_FileReader *RageSoundReader_FileReader::TryOpenFile( RageFileBasic *pFile, std::string &error, std::string format, bool &bKeepTrying )
 {
 	RageSoundReader_FileReader *Sample = nullptr;
 
@@ -33,7 +33,7 @@ RageSoundReader_FileReader *RageSoundReader_FileReader::TryOpenFile( RageFileBas
 	if( ret == OPEN_OK )
 		return Sample;
 
-	RString err = Sample->GetError();
+	std::string err = Sample->GetError();
 	delete Sample;
 
 	LOG->Trace( "Format %s failed: %s", format.c_str(), err.c_str() );
@@ -77,7 +77,7 @@ RageSoundReader_FileReader *RageSoundReader_FileReader::TryOpenFile( RageFileBas
 
 #include "RageFileDriverMemory.h"
 
-RageSoundReader_FileReader *RageSoundReader_FileReader::OpenFile( RString filename, RString &error, bool *pPrebuffer )
+RageSoundReader_FileReader *RageSoundReader_FileReader::OpenFile( std::string filename, std::string &error, bool *pPrebuffer )
 {
 	HiddenPtr<RageFileBasic> pFile;
 	{
@@ -112,15 +112,15 @@ RageSoundReader_FileReader *RageSoundReader_FileReader::OpenFile( RString filena
 			*pPrebuffer = false;
 		}
 	}
-	std::set<RString> FileTypes;
-	std::vector<RString> const& sound_exts= ActorUtil::GetTypeExtensionList(FT_Sound);
-	for(std::vector<RString>::const_iterator curr= sound_exts.begin();
+	std::set<std::string> FileTypes;
+	std::vector<std::string> const& sound_exts= ActorUtil::GetTypeExtensionList(FT_Sound);
+	for(std::vector<std::string>::const_iterator curr= sound_exts.begin();
 			curr != sound_exts.end(); ++curr)
 	{
 		FileTypes.insert(*curr);
 	}
 
-	RString format = GetExtension( filename );
+	std::string format = GetExtension( filename );
 	MakeLower(format);
 
 	error = "";
@@ -136,7 +136,7 @@ RageSoundReader_FileReader *RageSoundReader_FileReader::OpenFile( RString filena
 		FileTypes.erase( format );
 	}
 
-	for( std::set<RString>::iterator it = FileTypes.begin(); bKeepTrying && it != FileTypes.end(); ++it )
+	for( std::set<std::string>::iterator it = FileTypes.begin(); bKeepTrying && it != FileTypes.end(); ++it )
 	{
 		RageSoundReader_FileReader *NewSample = TryOpenFile( pFile->Copy(), error, *it, bKeepTrying );
 		if( NewSample )

@@ -63,7 +63,7 @@ BOOL EditInsallations::OnInitDialog()
 	// TODO: Add extra initialization here
 	DialogUtil::LocalizeDialogAndContents( *this );
 
-	std::vector<RString> vs;
+	std::vector<std::string> vs;
 	SMPackageUtil::GetGameInstallDirs( vs );
 	for( unsigned i=0; i<vs.size(); i++ )
 		m_list.AddString( vs[i] );
@@ -99,7 +99,7 @@ static LocalizedString NOT_A_VALID_INSTALLATION_DIR	("EditInstallations","'%s' i
 void EditInsallations::OnButtonAdd()
 {
 	// TODO: Add your control notification handler code here
-	RString sNewDir;
+	std::string sNewDir;
 	{
 		CString s;
 		m_edit.GetWindowText( s );
@@ -132,19 +132,19 @@ void EditInsallations::OnButtonAdd()
 
 void EditInsallations::OnOK()
 {
-	std::vector<RString> vs;
+	std::vector<std::string> vs;
 
 	for( int i=0; i<m_list.GetCount(); i++ )
 	{
 		CString sDir;
 		m_list.GetText( i, sDir );
-		RString s = sDir;
+		std::string s = sDir;
 		vs.push_back( s );
 	}
 	SMPackageUtil::WriteGameInstallDirs( vs );
 
 	// set the new default
-	std::vector<RString> asInstallDirs;
+	std::vector<std::string> asInstallDirs;
 	SMPackageUtil::GetGameInstallDirs( asInstallDirs );
 	FILEMAN->Remount( "/", asInstallDirs[0] );
 

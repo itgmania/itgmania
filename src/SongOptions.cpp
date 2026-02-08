@@ -49,21 +49,21 @@ void SongOptions::Approach( const SongOptions& other, float fDeltaSeconds )
 #undef DO_COPY
 }
 
-static void AddPart( std::vector<RString> &AddTo, float level, RString name )
+static void AddPart( std::vector<std::string> &AddTo, float level, std::string name )
 {
 	if( level == 0 )
 		return;
 
-	const RString LevelStr = (level == 1)? RString(""): ssprintf( "%ld%% ", std::lrint(level*100) );
+	const std::string LevelStr = (level == 1)? std::string(""): ssprintf( "%ld%% ", std::lrint(level*100) );
 
 	AddTo.push_back( LevelStr + name );
 }
 
-void SongOptions::GetMods( std::vector<RString> &AddTo ) const
+void SongOptions::GetMods( std::vector<std::string> &AddTo ) const
 {
 	if( m_fMusicRate != 1 )
 	{
-		RString s = ssprintf( "%2.2f", m_fMusicRate );
+		std::string s = ssprintf( "%2.2f", m_fMusicRate );
 		if( s[s.size()-1] == '0' )
 			s.erase( s.size()-1 );
 		AddTo.push_back( s + "xMusic" );
@@ -101,25 +101,25 @@ void SongOptions::GetMods( std::vector<RString> &AddTo ) const
 		AddTo.push_back( "RandomBG" );
 }
 
-void SongOptions::GetLocalizedMods( std::vector<RString> &v ) const
+void SongOptions::GetLocalizedMods( std::vector<std::string> &v ) const
 {
 	GetMods( v );
-	for (RString &s : v)
+	for (std::string &s : v)
 	{
 		s = CommonMetrics::LocalizeOptionItem( s, true );
 	}
 }
 
-RString SongOptions::GetString() const
+std::string SongOptions::GetString() const
 {
-	std::vector<RString> v;
+	std::vector<std::string> v;
 	GetMods( v );
 	return join( ", ", v );
 }
 
-RString SongOptions::GetLocalizedString() const
+std::string SongOptions::GetLocalizedString() const
 {
-	std::vector<RString> v;
+	std::vector<std::string> v;
 	GetLocalizedMods( v );
 	return join( ", ", v );
 }
@@ -127,26 +127,26 @@ RString SongOptions::GetLocalizedString() const
 
 /* Options are added to the current settings; call Init() beforehand if
  * you don't want this. */
-void SongOptions::FromString( const RString &sMultipleMods )
+void SongOptions::FromString( const std::string &sMultipleMods )
 {
-	RString sTemp = sMultipleMods;
-	std::vector<RString> vs;
+	std::string sTemp = sMultipleMods;
+	std::vector<std::string> vs;
 	split( sTemp, ",", vs, true );
-	RString sThrowAway;
-	for (RString &s : vs)
+	std::string sThrowAway;
+	for (std::string &s : vs)
 	{
 		FromOneModString( s, sThrowAway );
 	}
 }
 
-bool SongOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut )
+bool SongOptions::FromOneModString( const std::string &sOneMod, std::string &sErrorOut )
 {
-	RString sBit = sOneMod;
+	std::string sBit = sOneMod;
 	MakeLower(sBit);
 	Trim( sBit );
 
 	Regex mult("^([0-9]+(\\.[0-9]+)?)xmusic$");
-	std::vector<RString> matches;
+	std::vector<std::string> matches;
 	if( mult.Compare(sBit, matches) )
 	{
 		m_fMusicRate = StringToFloat( matches[0] );
@@ -155,7 +155,7 @@ bool SongOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut )
 
 	matches.clear();
 
-	std::vector<RString> asParts;
+	std::vector<std::string> asParts;
 	split( sBit, " ", asParts, true );
 	bool on = true;
 	if( asParts.size() > 1 )

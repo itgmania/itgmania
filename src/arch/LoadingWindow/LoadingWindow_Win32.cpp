@@ -74,9 +74,9 @@ static HBITMAP LoadWin32Surface( const RageSurface *pSplash, HWND hWnd )
 	return bitmap;
 }
 
-static HBITMAP LoadWin32Surface( RString sFile, HWND hWnd )
+static HBITMAP LoadWin32Surface( std::string sFile, HWND hWnd )
 {
-        RString error;
+        std::string error;
         RageSurface *pSurface = RageSurfaceUtils::LoadFile( sFile, error );
         if( pSurface == nullptr )
                 return nullptr;
@@ -92,7 +92,7 @@ INT_PTR CALLBACK LoadingWindow_Win32::WndProc( HWND hWnd, UINT msg, WPARAM wPara
 	{
 	case WM_INITDIALOG:
 		{
-			std::vector<RString> vs;
+			std::vector<std::string> vs;
 			GetDirListing( "Data/splash*.png", vs, false, true );
 			if( !vs.empty() )
 				g_hBitmap = LoadWin32Surface( vs[0], hWnd );
@@ -179,9 +179,9 @@ void LoadingWindow_Win32::Paint()
 	}
 }
 
-void LoadingWindow_Win32::SetText( RString sText )
+void LoadingWindow_Win32::SetText( std::string sText )
 {
-	std::vector<RString> asMessageLines;
+	std::vector<std::string> asMessageLines;
 	split( sText, "\n", asMessageLines, false );
 	while( asMessageLines.size() < 3 )
 		asMessageLines.push_back( "" );

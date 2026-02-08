@@ -16,8 +16,8 @@ XToString( InputDeviceState );
 XToLocalizedString( InputDeviceState );
 LuaXType(InputDevice);
 
-static std::map<DeviceButton, RString> g_mapNamesToString;
-static std::map<RString, DeviceButton> g_mapStringToNames;
+static std::map<DeviceButton, std::string> g_mapNamesToString;
+static std::map<std::string, DeviceButton> g_mapStringToNames;
 static void InitNames()
 {
 	if( !g_mapNamesToString.empty() )
@@ -136,19 +136,19 @@ static void InitNames()
 	g_mapNamesToString[MOUSE_WHEELUP] = "mousewheel up";
 	g_mapNamesToString[MOUSE_WHEELDOWN] = "mousewheel down";
 
-	for (std::pair<DeviceButton const &, RString const &> m : g_mapNamesToString)
+	for (std::pair<DeviceButton const &, std::string const &> m : g_mapNamesToString)
 		g_mapStringToNames[m.second] = m.first;
 }
 
 /* Return a reversible representation of a DeviceButton. This is not affected
  * by InputDrivers, localization or the keyboard language. */
-RString DeviceButtonToString( DeviceButton key )
+std::string DeviceButtonToString( DeviceButton key )
 {
 	InitNames();
 
 	// Check the name map first to allow making names for keys that are inside
 	// the ascii range. -Kyz
-	std::map<DeviceButton, RString>::const_iterator it = g_mapNamesToString.find( key );
+	std::map<DeviceButton, std::string>::const_iterator it = g_mapNamesToString.find( key );
 	if( it != g_mapNamesToString.end() )
 		return it->second;
 
@@ -168,7 +168,7 @@ RString DeviceButtonToString( DeviceButton key )
 	return "unknown";
 }
 
-DeviceButton StringToDeviceButton( const RString& s )
+DeviceButton StringToDeviceButton( const std::string& s )
 {
 	InitNames();
 
@@ -188,7 +188,7 @@ DeviceButton StringToDeviceButton( const RString& s )
 	if( sscanf(s.c_str(), "Mouse %i", &i) == 1 )
 		return enum_add2( MOUSE_LEFT, i );
 
-	std::map<RString, DeviceButton>::const_iterator it = g_mapStringToNames.find( s );
+	std::map<std::string, DeviceButton>::const_iterator it = g_mapStringToNames.find( s );
 	if( it != g_mapStringToNames.end() )
 		return it->second;
 
@@ -242,16 +242,16 @@ StringToX( InputDevice );
 
 /* Return a reversible representation of a DeviceInput. This is not affected by
  * InputDrivers, localization or the keyboard language. */
-RString DeviceInput::ToString() const
+std::string DeviceInput::ToString() const
 {
 	if( device == InputDevice_Invalid )
-		return RString();
+		return std::string();
 
-	RString s = InputDeviceToString(device) + "_" + DeviceButtonToString(button);
+	std::string s = InputDeviceToString(device) + "_" + DeviceButtonToString(button);
 	return s;
 }
 
-bool DeviceInput::FromString( const RString &s )
+bool DeviceInput::FromString( const std::string &s )
 {
 	char szDevice[32] = "";
 	char szButton[32] = "";
