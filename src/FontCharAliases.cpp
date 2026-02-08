@@ -6,8 +6,33 @@
 
 #include <map>
 
+namespace {
+char sstolower(char ch) noexcept {
+  return (ch >= 'A' && ch <= 'Z') ? char(ch + 'a' - 'A') : ch;
+}
+
+int ssicmp(const char* pA1, const char* pA2) {
+  char f;
+  char l;
+
+  do {
+    f = sstolower(*(pA1++));
+    l = sstolower(*(pA2++));
+  } while ((f) && (f == l));
+
+  return (int)(f - l);
+}
+
+struct StdStringLessNoCase {
+  inline bool operator()(
+      const std::string& sLeft, const std::string& sRight) const {
+    return ssicmp(sLeft.c_str(), sRight.c_str()) < 0;
+  }
+};
+}
+
 // Map from "&foo;" to a UTF-8 string.
-typedef std::map<std::string, wchar_t, StdString::StdStringLessNoCase> aliasmap;
+typedef std::map<std::string, wchar_t, StdStringLessNoCase> aliasmap;
 static aliasmap CharAliases;
 static std::map<std::string,std::string> CharAliasRepl;
 
