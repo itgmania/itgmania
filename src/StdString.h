@@ -5,7 +5,7 @@
 //		This header file declares the CStdStr template.  This template derives
 //		the Standard C++ Library basic_string<> template and add to it the
 //		the following conveniences:
-//			- The full MFC RString set of functions (including implicit cast)
+//			- The full MFC std::string set of functions (including implicit cast)
 //			- writing to/reading from COM IStream interfaces
 //			- Functional objects for use in STL algorithms
 //
@@ -27,7 +27,7 @@
 //		this class.  OK, this is a long list but in my own defense, this code
 //		has undergone two major rewrites.  Many of the improvements became
 //		necessary after I rewrote the code as a template.  Others helped me
-//		improve the RString facade.
+//		improve the std::string facade.
 //
 //		Anyway, these people are (in chronological order):
 //
@@ -263,11 +263,11 @@ inline void ssupr(wchar_t *pT, size_t nLen)
 //		template<typename CT> class CStdStr : public std::basic_string<CT>
 //
 // REMARKS:
-//		This template derives from basic_string<CT> and adds some MFC RString-
+//		This template derives from basic_string<CT> and adds some MFC std::string-
 //		like functionality
 //
 //		Basically, this is my attempt to make Standard C++ library strings as
-//		easy to use as the MFC RString class.
+//		easy to use as the MFC std::string class.
 //
 //		Note that although this is a template, it makes the assumption that the
 //		template argument (CT, the character type) is either char or wchar_t.
@@ -560,34 +560,33 @@ struct StdStringEqualsNoCase
 
 }	// namespace StdString
 
-typedef std::string RString;
 // FIXME: separate these into functions that either modify the argument, or
 // return a new string leaving the original unmodified.
-inline RString MakeLower(RString&& s) {
+inline std::string MakeLower(std::string&& s) {
   for (size_t i = 0; i < s.size(); ++i) {
     s[i] = tolower(s[i]);
   }
   return std::move(s);
 }
-inline RString& MakeLower(RString& s) {
+inline std::string& MakeLower(std::string& s) {
   for (size_t i = 0; i < s.size(); ++i) {
     s[i] = tolower(s[i]);
   }
   return s;
 }
-inline RString MakeUpper(RString&& s) {
+inline std::string MakeUpper(std::string&& s) {
   for (size_t i = 0; i < s.size(); ++i) {
     s[i] = toupper(s[i]);
   }
   return std::move(s);
 }
-inline RString& MakeUpper(RString& s) {
+inline std::string& MakeUpper(std::string& s) {
   for (size_t i = 0; i < s.size(); ++i) {
     s[i] = toupper(s[i]);
   }
   return s;
 }
-inline bool EqualsNoCase(const RString& s1, const RString& s2) {
+inline bool EqualsNoCase(const std::string& s1, const std::string& s2) {
   if (s1.size() != s2.size()) {
     return false;
   }
@@ -598,7 +597,7 @@ inline bool EqualsNoCase(const RString& s1, const RString& s2) {
   }
   return true;
 }
-inline int CompareNoCase(const RString& s1, const RString& s2) {
+inline int CompareNoCase(const std::string& s1, const std::string& s2) {
   size_t len = s1.length();
   size_t other_len = s2.length();
   for (size_t i = 0; i < std::min(len, other_len); ++i) {
@@ -610,26 +609,26 @@ inline int CompareNoCase(const RString& s1, const RString& s2) {
   }
   return len - other_len;
 }
-inline RString Left(const RString& s, int n) {
+inline std::string Left(const std::string& s, int n) {
   n = std::max(n, 0);
   n = std::min(n, static_cast<int>(s.size()));
   return s.substr(0, n);
 }
-inline RString Right(const RString& s, int n) {
+inline std::string Right(const std::string& s, int n) {
   n = std::max(n, 0);
   n = std::min(n, static_cast<int>(s.size()));
   return s.substr(static_cast<int>(s.size()) - n);
 }
-inline void Replace(RString& s, const RString& a, const RString& b) {
+inline void Replace(std::string& s, const std::string& a, const std::string& b) {
   size_t idx = 0;
   size_t a_len = a.length();
   size_t b_len = b.length();
-  while (idx = s.find(a, idx), idx != RString::npos) {
+  while (idx = s.find(a, idx), idx != std::string::npos) {
     s.replace(idx, a_len, b);
     idx += b_len;
   }
 }
-inline void Replace(RString& s, char a, char b) {
+inline void Replace(std::string& s, char a, char b) {
   size_t len = s.length();
   for (size_t i = 0; i < len; ++i) {
     if (s[i] == a) {

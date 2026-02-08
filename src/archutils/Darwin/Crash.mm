@@ -23,7 +23,7 @@ std::string CrashHandler::GetLogsDirectory()
 	if (url == nil)
 		return "/tmp";
 
-	RString path= RString([url fileSystemRepresentation]) + "/Logs/" PRODUCT_ID;
+	std::string path= std::string([url fileSystemRepresentation]) + "/Logs/" PRODUCT_ID;
 	return std::string(path.c_str());
 }
 

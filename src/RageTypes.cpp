@@ -53,7 +53,7 @@ void RageColor::FromStackCompat( lua_State *L, int iPos )
 	}
 }
 
-RString RageColor::ToString() const
+std::string RageColor::ToString() const
 {
 	int iR = std::clamp( static_cast<int>(std::lrint(r * 255)), 0, 255 );
 	int iG = std::clamp( static_cast<int>(std::lrint(g * 255)), 0, 255 );
@@ -66,7 +66,7 @@ RString RageColor::ToString() const
 		return ssprintf( "#%02X%02X%02X%02X", iR, iG, iB, iA );
 }
 
-RString RageColor::NormalizeColorString( RString sColor )
+std::string RageColor::NormalizeColorString( std::string sColor )
 {
 	if( sColor.empty() )
 		return "";
@@ -213,7 +213,7 @@ LuaXType( TextGlowMode );
 
 int LuaFunc_color( lua_State *L )
 {
-	RString sColor = SArg(1);
+	std::string sColor = SArg(1);
 	RageColor c;
 	c.FromString( sColor );
 	c.PushTable( L );

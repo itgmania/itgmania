@@ -69,7 +69,7 @@ public:
 	InputHandler_Win32_ddrio();
 	~InputHandler_Win32_ddrio();
 
-	RString GetDeviceSpecificInputString( const DeviceInput &di );
+	std::string GetDeviceSpecificInputString( const DeviceInput &di );
 	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut );
 
 private:

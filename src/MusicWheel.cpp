@@ -36,10 +36,10 @@ static Preference<bool> g_bPrecacheAllSorts( "PreCacheAllWheelSorts", false);
 #define WHEEL_TEXT(s)		THEME->GetString( "MusicWheel", ssprintf("%sText",s.c_str()) );
 #define CUSTOM_ITEM_WHEEL_TEXT(s)		THEME->GetString( "MusicWheel", ssprintf("CustomItem%sText",s.c_str()) );
 
-static RString SECTION_COLORS_NAME( size_t i )	{ return ssprintf("SectionColor%d",int(i+1)); }
-static RString CHOICE_NAME( RString s )		{ return ssprintf("Choice%s",s.c_str()); }
-static RString CUSTOM_WHEEL_ITEM_NAME( RString s )		{ return ssprintf("CustomWheelItem%s",s.c_str()); }
-static RString CUSTOM_WHEEL_ITEM_COLOR( RString s )		{ return ssprintf("%sColor",s.c_str()); }
+static std::string SECTION_COLORS_NAME( size_t i )	{ return ssprintf("SectionColor%d",int(i+1)); }
+static std::string CHOICE_NAME( std::string s )		{ return ssprintf("Choice%s",s.c_str()); }
+static std::string CUSTOM_WHEEL_ITEM_NAME( std::string s )		{ return ssprintf("CustomWheelItem%s",s.c_str()); }
+static std::string CUSTOM_WHEEL_ITEM_COLOR( std::string s )		{ return ssprintf("%sColor",s.c_str()); }
 
 static LocalizedString EMPTY_STRING	( "MusicWheel", "Empty" );
 
@@ -78,7 +78,7 @@ MusicWheelItem *MusicWheel::MakeItem()
 	return new MusicWheelItem;
 }
 
-void MusicWheel::Load( RString sType )
+void MusicWheel::Load( std::string sType )
 {
 	ROULETTE_SWITCH_SECONDS		.Load(sType,"RouletteSwitchSeconds");
 	ROULETTE_SLOW_DOWN_SWITCHES	.Load(sType,"RouletteSlowDownSwitches");
@@ -98,13 +98,13 @@ void MusicWheel::Load( RString sType )
 	HIDE_INACTIVE_SECTIONS		.Load(sType,"OnlyShowActiveSection");
 	HIDE_ACTIVE_SECTION_TITLE		.Load(sType,"HideActiveSectionTitle");
 	REMIND_WHEEL_POSITIONS		.Load(sType,"RemindWheelPositions");
-	std::vector<RString> vsModeChoiceNames;
+	std::vector<std::string> vsModeChoiceNames;
 	split( MODE_MENU_CHOICE_NAMES, ",", vsModeChoiceNames );
 	CHOICE				.Load(sType,CHOICE_NAME,vsModeChoiceNames);
 	SECTION_COLORS			.Load(sType,SECTION_COLORS_NAME,NUM_SECTION_COLORS);
 
 	CUSTOM_WHEEL_ITEM_NAMES		.Load(sType,"CustomWheelItemNames");
-	std::vector<RString> vsCustomItemNames;
+	std::vector<std::string> vsCustomItemNames;
 	split( CUSTOM_WHEEL_ITEM_NAMES, ",", vsCustomItemNames );
 	CUSTOM_CHOICES.Load(sType,CUSTOM_WHEEL_ITEM_NAME,vsCustomItemNames);
 	CUSTOM_CHOICE_COLORS.Load(sType,CUSTOM_WHEEL_ITEM_COLOR,vsCustomItemNames);
@@ -139,7 +139,7 @@ void MusicWheel::Load( RString sType )
 void MusicWheel::BeginScreen()
 {
 	RageTimer timer;
-	RString times;
+	std::string times;
 	FOREACH_ENUM( SortOrder, so ) {
 		if(m_WheelItemDatasStatus[so]!=INVALID) {
 			m_WheelItemDatasStatus[so]=NEEDREFILTER;
@@ -315,7 +315,7 @@ bool MusicWheel::SelectSongOrCourse()
 	return false;
 }
 
-bool MusicWheel::SelectSection( const RString & SectionName )
+bool MusicWheel::SelectSection( const std::string & SectionName )
 {
 	for( unsigned int i = 0; i < m_CurWheelItemData.size(); ++i )
 	{
@@ -539,7 +539,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 		case SORT_MODE_MENU:
 		{
 			arrayWheelItemDatas.clear();	// clear out the previous wheel items
-			std::vector<RString> vsNames;
+			std::vector<std::string> vsNames;
 			split( MODE_MENU_CHOICE_NAMES, ",", vsNames );
 			for( unsigned i=0; i<vsNames.size(); ++i )
 			{
@@ -746,7 +746,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 				}
 			}
 			// make WheelItemDatas with sections
-			RString sLastSection = "";
+			std::string sLastSection = "";
 			int iSectionColorIndex = 0;
 			switch (so) {
 				case SORT_PREFERRED:
@@ -754,7 +754,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 					if( bUseSections )
 					{
 						// Get mappping of section names to songs
-						std::map<RString, std::vector<Song*>> preferredSortSongsMap = SONGMAN->GetPreferredSortSongsMap();
+						std::map<std::string, std::vector<Song*>> preferredSortSongsMap = SONGMAN->GetPreferredSortSongsMap();
 						for (auto const& [sectionName, songs] : SONGMAN->GetPreferredSortSongsMap())
 						{
 							// todo: preferred sort section color handling? -aj
@@ -794,7 +794,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 						Group* pGroup = SONGMAN->GetGroup(pSong);
 						if( bUseSections )
 						{
-							RString sThisSection = pGroup->GetGroupName();
+							std::string sThisSection = pGroup->GetGroupName();
 
 							if( sThisSection != sLastSection )
 							{
@@ -830,7 +830,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 						Song* pSong = arraySongs[i];
 						if( bUseSections )
 						{
-							RString sThisSection = SongUtil::GetSectionNameFromSongAndSort( pSong, so );
+							std::string sThisSection = SongUtil::GetSectionNameFromSongAndSort( pSong, so );
 
 							if( sThisSection != sLastSection )
 							{
@@ -877,7 +877,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 					arrayWheelItemDatas.push_back( new MusicWheelItemData(WheelItemDataType_Portal, nullptr, "", nullptr, nullptr, PORTAL_COLOR, 0) );
 
 				// add custom wheel items
-				std::vector<RString> vsNames;
+				std::vector<std::string> vsNames;
 				split( CUSTOM_WHEEL_ITEM_NAMES, ",", vsNames );
 				for( unsigned i=0; i<vsNames.size(); ++i )
 				{
@@ -977,7 +977,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 
 			arrayWheelItemDatas.clear();	// clear out the previous wheel items
 
-			RString sLastSection = "";
+			std::string sLastSection = "";
 			int iSectionColorIndex = 0;
 			for( unsigned i=0; i<apCourses.size(); i++ )	// foreach course
 			{
@@ -987,7 +987,7 @@ void MusicWheel::BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWh
 				if ( UNLOCKMAN->CourseIsLocked(pCourse) )
 					continue;
 
-				RString sThisSection = "";
+				std::string sThisSection = "";
 				if( so == SORT_ALL_COURSES )
 				{
 					switch( pCourse->GetPlayMode() )
@@ -1514,7 +1514,7 @@ void MusicWheel::StartRandom()
 	m_WheelState = STATE_LOCKED;
 }
 
-void MusicWheel::SetOpenSection( RString group )
+void MusicWheel::SetOpenSection( std::string group )
 {
 	//LOG->Trace( "SetOpenSection %s", group.c_str() );
 	m_sExpandedSectionName = group;
@@ -1611,7 +1611,7 @@ void MusicWheel::SetOpenSection( RString group )
 	RebuildWheelItems();
 }
 
-void MusicWheel::GetCurrentSections(std::vector<RString> &sections)
+void MusicWheel::GetCurrentSections(std::vector<std::string> &sections)
 {
 	std::vector<MusicWheelItemData *> &wiWheelItems = getWheelItemsData(GAMESTATE->m_SortOrder);
 	for( unsigned i = 0; i < wiWheelItems.size(); i++ )
@@ -1622,7 +1622,7 @@ void MusicWheel::GetCurrentSections(std::vector<RString> &sections)
 }
 
 // sm-ssc additions: jump to group
-RString MusicWheel::JumpToNextGroup()
+std::string MusicWheel::JumpToNextGroup()
 {
 	// Thanks to Juanelote for this logic:
 	if( HIDE_INACTIVE_SECTIONS )
@@ -1670,7 +1670,7 @@ RString MusicWheel::JumpToNextGroup()
 	return "";
 }
 
-RString MusicWheel::JumpToPrevGroup()
+std::string MusicWheel::JumpToPrevGroup()
 {
 	if( HIDE_INACTIVE_SECTIONS )
 	{
@@ -1871,9 +1871,9 @@ public:
 	DEFINE_METHOD(GetSelectedSection, GetSelectedSection());
 	static int GetCurrentSections( T* p, lua_State *L )
 	{
-		std::vector<RString> v;
+		std::vector<std::string> v;
 		p->GetCurrentSections(v);
-		LuaHelpers::CreateTableFromArray<RString>( v, L );
+		LuaHelpers::CreateTableFromArray<std::string>( v, L );
 		return 1;
 	}
 	static int IsRouletting( T* p, lua_State *L ){ lua_pushboolean( L, p->IsRouletting() ); return 1; }

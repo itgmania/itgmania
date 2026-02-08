@@ -22,8 +22,8 @@
 // Sorting stuff
 static bool CompareCoursePointersByName( const Course* pCourse1, const Course* pCourse2 )
 {
-	RString sName1 = pCourse1->GetDisplayFullTitle();
-	RString sName2 = pCourse2->GetDisplayFullTitle();
+	std::string sName1 = pCourse1->GetDisplayFullTitle();
+	std::string sName2 = pCourse2->GetDisplayFullTitle();
 	return CompareNoCase(sName1, sName2) < 0;
 }
 
@@ -111,19 +111,19 @@ void CourseUtil::SortCoursePointerArrayByTotalDifficulty( std::vector<Course*> &
 
 // this code isn't ready yet!!
 #if 0
-RString GetSectionNameFromCourseAndSort( const Course *pCourse, SortOrder so )
+std::string GetSectionNameFromCourseAndSort( const Course *pCourse, SortOrder so )
 {
 	if( pCourse == nullptr )
-		return RString();
+		return std::string();
 	// more code here
 }
 
 void SortCoursePointerArrayBySectionName( std::vector<Course*> &vpCoursesInOut, SortOrder so )
 {
-	RString sOther = SORT_OTHER.GetValue();
+	std::string sOther = SORT_OTHER.GetValue();
 	for(unsigned i = 0; i < vpCoursesInOut.size(); ++i)
 	{
-		RString val = GetSectionNameFromCourseAndSort( vpCoursesInOut[i], so );
+		std::string val = GetSectionNameFromCourseAndSort( vpCoursesInOut[i], so );
 
 		/* Make sure 0-9 comes first and OTHER comes last. */
 		if( val == "0-9" )			val = "0";
@@ -151,7 +151,7 @@ void CourseUtil::MoveRandomToEnd( std::vector<Course*> &vpCoursesInOut )
 	stable_sort( vpCoursesInOut.begin(), vpCoursesInOut.end(), CompareRandom );
 }
 
-static std::map<const Course*, RString> course_sort_val;
+static std::map<const Course*, std::string> course_sort_val;
 
 bool CompareCoursePointersBySortValueAscending( const Course *pSong1, const Course *pSong2 )
 {
@@ -212,7 +212,7 @@ void CourseUtil::SortByMostRecentlyPlayedForMachine( std::vector<Course*> &vpCou
 	for (Course const * c: vpCoursesInOut)
 	{
 		int iNumTimesPlayed = pProfile->GetCourseNumTimesPlayed( c );
-		RString val = iNumTimesPlayed ? pProfile->GetCourseLastPlayedDateTime(c).GetString() : RString("9999999999999");
+		std::string val = iNumTimesPlayed ? pProfile->GetCourseLastPlayedDateTime(c).GetString() : std::string("9999999999999");
 		course_sort_val[c] = val;
 	}
 
@@ -230,7 +230,7 @@ void CourseUtil::MakeDefaultEditCourseEntry( CourseEntry& out )
 // Autogen
 //////////////////////////////////
 
-void CourseUtil::AutogenEndlessFromGroup( const RString &sGroupName, Difficulty diff, Course &out )
+void CourseUtil::AutogenEndlessFromGroup( const std::string &sGroupName, Difficulty diff, Course &out )
 {
 	out.m_bIsAutogen = true;
 	out.m_bRepeat = true;
@@ -263,7 +263,7 @@ void CourseUtil::AutogenEndlessFromGroup( const RString &sGroupName, Difficulty 
 	out.m_vEntries.insert( out.m_vEntries.end(), SONGMAN->GetSongs(sGroupName).size(), e );
 }
 
-void CourseUtil::AutogenNonstopFromGroup( const RString &sGroupName, Difficulty diff, Course &out )
+void CourseUtil::AutogenNonstopFromGroup( const std::string &sGroupName, Difficulty diff, Course &out )
 {
 	AutogenEndlessFromGroup( sGroupName, diff, out );
 
@@ -278,7 +278,7 @@ void CourseUtil::AutogenNonstopFromGroup( const RString &sGroupName, Difficulty 
 		out.m_vEntries.pop_back();
 }
 
-void CourseUtil::AutogenOniFromArtist( const RString &sArtistName, RString sArtistNameTranslit, std::vector<Song*> aSongs, Difficulty dc, Course &out )
+void CourseUtil::AutogenOniFromArtist( const std::string &sArtistName, std::string sArtistNameTranslit, std::vector<Song*> aSongs, Difficulty dc, Course &out )
 {
 	out.m_bIsAutogen = true;
 	out.m_bRepeat = false;
@@ -324,16 +324,16 @@ void CourseUtil::AutogenOniFromArtist( const RString &sArtistName, RString sArti
 	}
 }
 
-void CourseUtil::WarnOnInvalidMods( RString sMods )
+void CourseUtil::WarnOnInvalidMods( std::string sMods )
 {
 	PlayerOptions po;
 	SongOptions so;
-	std::vector<RString> vs;
+	std::vector<std::string> vs;
 	split( sMods, ",", vs, true );
-	for (RString const &s : vs)
+	for (std::string const &s : vs)
 	{
 		bool bValid = false;
-		RString sErrorDetail;
+		std::string sErrorDetail;
 		bValid |= po.FromOneModString( s, sErrorDetail );
 		bValid |= so.FromOneModString( s, sErrorDetail );
 		/* ==Invalid options that used to be valid==
@@ -349,7 +349,7 @@ void CourseUtil::WarnOnInvalidMods( RString sMods )
 		 */
 		if( !bValid )
 		{
-			RString sFullError = ssprintf("Error processing '%s' in '%s'", s.c_str(), sMods.c_str() );
+			std::string sFullError = ssprintf("Error processing '%s' in '%s'", s.c_str(), sMods.c_str() );
 			if( !sErrorDetail.empty() )
 				sFullError += ": " + sErrorDetail;
 			LOG->UserLog( "", "", "%s", sFullError.c_str() );
@@ -369,20 +369,20 @@ bool EditCourseUtil::Save( Course *pCourse )
 	return EditCourseUtil::RenameAndSave( pCourse, pCourse->GetDisplayFullTitle() );
 }
 
-bool EditCourseUtil::RenameAndSave( Course *pCourse, RString sNewName )
+bool EditCourseUtil::RenameAndSave( Course *pCourse, std::string sNewName )
 {
 	ASSERT( !sNewName.empty() );
 
 	EditCourseUtil::s_bNewCourseNeedsName = false;
 
-	RString sNewFilePath;
+	std::string sNewFilePath;
 	if( pCourse->IsAnEdit() )
 	{
 		sNewFilePath = PROFILEMAN->GetProfileDir(ProfileSlot_Machine) + EDIT_COURSES_SUBDIR + sNewName + ".crs";
 	}
 	else
 	{
-		RString sDir, sName, sExt;
+		std::string sDir, sName, sExt;
 		splitpath( pCourse->m_sPath, sDir, sName, sExt );
 		sNewFilePath = sDir + sNewName + sExt;
 	}
@@ -416,7 +416,7 @@ bool EditCourseUtil::RemoveAndDeleteFile( Course *pCourse )
 static LocalizedString YOU_MUST_SUPPLY_NAME	( "CourseUtil", "You must supply a name for your course." );
 static LocalizedString EDIT_NAME_CONFLICTS	( "CourseUtil", "The name you chose conflicts with another course. Please use a different name." );
 static LocalizedString EDIT_NAME_CANNOT_CONTAIN	( "CourseUtil", "The course name cannot contain any of the following characters: %s" );
-bool EditCourseUtil::ValidateEditCourseName( const RString &sAnswer, RString &sErrorOut )
+bool EditCourseUtil::ValidateEditCourseName( const std::string &sAnswer, std::string &sErrorOut )
 {
 	if( sAnswer.empty() )
 	{
@@ -424,7 +424,7 @@ bool EditCourseUtil::ValidateEditCourseName( const RString &sAnswer, RString &sE
 		return false;
 	}
 
-	static const RString sInvalidChars = "\\/:*?\"<>|";
+	static const std::string sInvalidChars = "\\/:*?\"<>|";
 	if( strpbrk(sAnswer.c_str(), sInvalidChars.c_str()) != nullptr )
 	{
 		sErrorOut = ssprintf( EDIT_NAME_CANNOT_CONTAIN.GetValue().c_str(), sInvalidChars.c_str() );
@@ -549,7 +549,7 @@ Course *CourseID::ToCourse() const
 	{
 		// HACK for backwards compatibility:
 		// Re-add the leading "/".  2005/05/21 file layer changes added a leading slash.
-		RString slash_path = sPath;
+		std::string slash_path = sPath;
 		if(Left(slash_path, 1) != "/")
 		{
 			slash_path = "/" + slash_path;
@@ -581,8 +581,8 @@ XNode* CourseID::CreateNode() const
 void CourseID::LoadFromNode( const XNode* pNode )
 {
 	ASSERT( pNode->GetName() == "Course" );
-	sFullTitle = RString();
-	sPath = RString();
+	sFullTitle = std::string();
+	sPath = std::string();
 	if( !pNode->GetAttrValue("Path", sPath) )
 		pNode->GetAttrValue( "FullTitle", sFullTitle );
 
@@ -591,13 +591,13 @@ void CourseID::LoadFromNode( const XNode* pNode )
 		sPath.replace(0, 18, "Courses/");
 }
 
-RString CourseID::ToString() const
+std::string CourseID::ToString() const
 {
 	if( !sPath.empty() )
 		return sPath;
 	if( !sFullTitle.empty() )
 		return sFullTitle;
-	return RString();
+	return std::string();
 }
 
 bool CourseID::IsValid() const

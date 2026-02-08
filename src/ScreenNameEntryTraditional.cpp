@@ -163,7 +163,7 @@ bool ScreenNameEntryTraditional::Finish( PlayerNumber pn )
 	m_bFinalized[pn] = true;
 
 	UpdateSelectionText( pn ); /* hide NAME_ cursor */
-	RString sSelection = WStringToRString( m_sSelection[pn] );
+	std::string sSelection = WStringToRString( m_sSelection[pn] );
 
 	// save last used ranking name
 	Profile* pProfile = PROFILEMAN->GetProfile(pn);
@@ -218,7 +218,7 @@ bool ScreenNameEntryTraditional::EnterKey( PlayerNumber pn, wchar_t sLetter )
 	return true;
 }
 
-void ScreenNameEntryTraditional::SelectChar( PlayerNumber pn, const RString &sKey )
+void ScreenNameEntryTraditional::SelectChar( PlayerNumber pn, const std::string &sKey )
 {
 	Message msg("SelectKey");
 	msg.SetParam( "PlayerNumber", pn );
@@ -249,7 +249,7 @@ public:
 	static int EnterKey( T* p, lua_State *L )
 	{
 		PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
-		RString sKey = SArg(2);
+		std::string sKey = SArg(2);
 		bool bRet = p->EnterKey( pn, utf8_get_char(sKey) );
 		LuaHelpers::Push( L, bRet );
 		return 1;

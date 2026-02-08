@@ -11,14 +11,14 @@ class RageFileBasic;
 
 namespace JsonUtil
 {
-	bool LoadFromString( Json::Value &root, RString sData, RString &sErrorOut );
-	bool LoadFromStringShowErrors(Json::Value &root, const RString sData);
-	bool LoadFromFileShowErrors(Json::Value &root, const RString &sFile);
+	bool LoadFromString( Json::Value &root, std::string sData, std::string &sErrorOut );
+	bool LoadFromStringShowErrors(Json::Value &root, const std::string sData);
+	bool LoadFromFileShowErrors(Json::Value &root, const std::string &sFile);
 	bool LoadFromFileShowErrors(Json::Value &root, RageFileBasic &f);
 
-	bool WriteFile(const Json::Value &root, const RString &sFile, bool bMinified);
+	bool WriteFile(const Json::Value &root, const std::string &sFile, bool bMinified);
 
-	std::vector<RString> DeserializeArrayStrings(const Json::Value &array);
+	std::vector<std::string> DeserializeArrayStrings(const Json::Value &array);
 
 	template<class T>
 	static void SerializeVectorObjects(const std::vector<T> &v, void fn(const T &, Json::Value &), Json::Value &root)
@@ -109,7 +109,7 @@ namespace JsonUtil
 
 	// Serialize a map that has a non-string key type
 	template <typename V>
-	static void SerializeObjectToObjectMapAsArray(const V &v, const RString &sKeyName, const RString &sValueName, Json::Value &root)
+	static void SerializeObjectToObjectMapAsArray(const V &v, const std::string &sKeyName, const std::string &sValueName, Json::Value &root)
 	{
 		root = Json::Value(Json::arrayValue);
 		root.resize( v.size() );
@@ -123,7 +123,7 @@ namespace JsonUtil
 	}
 
 	template <typename V>
-	static void SerializeObjectToValueMapAsArray(const V &v, const RString &sKeyName, const RString &sValueName, Json::Value &root)
+	static void SerializeObjectToValueMapAsArray(const V &v, const std::string &sKeyName, const std::string &sValueName, Json::Value &root)
 	{
 		root = Json::Value(Json::arrayValue);
 		root.resize( v.size() );
@@ -210,7 +210,7 @@ namespace JsonUtil
 
 	// Serialize a map that has a non-string key type
 	template <typename K, typename V>
-	static void DeserializeObjectToObjectMapAsArray(std::map<K,V> &m, const RString &sKeyName, const RString &sValueName, const Json::Value &root)
+	static void DeserializeObjectToObjectMapAsArray(std::map<K,V> &m, const std::string &sKeyName, const std::string &sValueName, const Json::Value &root)
 	{
 		m.clear();
 		ASSERT( root.type() == Json::arrayValue );

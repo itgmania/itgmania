@@ -28,7 +28,7 @@ CharacterManager::CharacterManager()
 		RageUtil::SafeDelete( m_pCharacters[i] );
 	m_pCharacters.clear();
 
-	std::vector<RString> as;
+	std::vector<std::string> as;
 	GetDirListing( CHARACTERS_DIR "*", as, true, true );
 	StripCvsAndSvn( as );
 	StripMacResourceForks( as );
@@ -36,7 +36,7 @@ CharacterManager::CharacterManager()
 	bool FoundDefault = false;
 	for( unsigned i=0; i<as.size(); i++ )
 	{
-		RString sCharName, sDummy;
+		std::string sCharName, sDummy;
 		splitpath(as[i], sDummy, sCharName, sDummy);
 		MakeLower(sCharName);
 
@@ -108,7 +108,7 @@ void CharacterManager::UndemandGraphics()
 		c->UndemandGraphics();
 }
 
-Character* CharacterManager::GetCharacterFromID( RString sCharacterID )
+Character* CharacterManager::GetCharacterFromID( std::string sCharacterID )
 {
 	for( unsigned i=0; i<m_pCharacters.size(); i++ )
 	{

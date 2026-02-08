@@ -47,7 +47,7 @@ void LightsDriver_stac::HandleState(const LightsState *ls, GameController ctrlNu
 
 	// check to see which game we are running as it can change during gameplay.
 	const InputScheme *pInput = &GAMESTATE->GetCurrentGame()->m_InputScheme;
-	RString sInputName = pInput->m_szName;
+	std::string sInputName = pInput->m_szName;
 
 	if (EqualsNoCase(sInputName, "dance"))
 	{

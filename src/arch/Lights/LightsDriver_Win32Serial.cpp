@@ -8,7 +8,7 @@
 
 REGISTER_LIGHTS_DRIVER_CLASS(Win32Serial);
 
-static Preference<RString> g_sLightsComPort("LightsComPort", "COM54");
+static Preference<std::string> g_sLightsComPort("LightsComPort", "COM54");
 
 HANDLE serialPort;
 
@@ -17,9 +17,9 @@ LightsDriver_Win32Serial::LightsDriver_Win32Serial()
 	// Ensure a non-match the first time
 	lastOutput[0] = 0;
 
-	RString sComPort = g_sLightsComPort.Get();
+	std::string sComPort = g_sLightsComPort.Get();
 
-	serialPort = CreateFile(RString("\\\\.\\").append(sComPort).c_str(),
+	serialPort = CreateFile(std::string("\\\\.\\").append(sComPort).c_str(),
 		GENERIC_WRITE,
 		0,
 		NULL,

@@ -83,9 +83,9 @@ void BPMDisplay::Update( float fDeltaTime )
 		{
 			m_fBPMFrom = -1;
 			if( (bool)SHOW_QMARKS )
-				SetText( (RandomFloat(0,1)>0.90f) ? (RString)QUESTIONMARKS_TEXT : ssprintf(((RString)BPM_FORMAT_STRING).c_str(),RandomFloat(0,999)) );
+				SetText( (RandomFloat(0,1)>0.90f) ? (std::string)QUESTIONMARKS_TEXT : ssprintf(((std::string)BPM_FORMAT_STRING).c_str(),RandomFloat(0,999)) );
 			else
-				SetText( ssprintf(((RString)BPM_FORMAT_STRING).c_str(), RandomFloat(0,999)) );
+				SetText( ssprintf(((std::string)BPM_FORMAT_STRING).c_str(), RandomFloat(0,999)) );
 		}
 		else if(m_fBPMFrom == -1)
 		{
@@ -96,7 +96,7 @@ void BPMDisplay::Update( float fDeltaTime )
 	if( m_fBPMTo != -1)
 	{
 		const float fActualBPM = GetActiveBPM();
-		SetText( ssprintf(((RString)BPM_FORMAT_STRING).c_str(), fActualBPM) );
+		SetText( ssprintf(((std::string)BPM_FORMAT_STRING).c_str(), fActualBPM) );
 	}
 }
 

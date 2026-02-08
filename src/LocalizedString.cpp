@@ -11,15 +11,15 @@ class LocalizedStringImplDefault: public ILocalizedStringImpl
 public:
 	static ILocalizedStringImpl *Create() { return new LocalizedStringImplDefault; }
 
-	void Load( const RString& sGroup, const RString& sName )
+	void Load( const std::string& sGroup, const std::string& sName )
 	{
 		m_sValue = sName;
 	}
 
-	const RString &GetLocalized() const { return m_sValue; }
+	const std::string &GetLocalized() const { return m_sValue; }
 
 private:
-	RString m_sValue;
+	std::string m_sValue;
 };
 
 static LocalizedString::MakeLocalizer g_pMakeLocalizedStringImpl = LocalizedStringImplDefault::Create;
@@ -33,7 +33,7 @@ void LocalizedString::RegisterLocalizer( MakeLocalizer pFunc )
 	}
 }
 
-LocalizedString::LocalizedString( const RString& sGroup, const RString& sName )
+LocalizedString::LocalizedString( const std::string& sGroup, const std::string& sName )
 {
 	m_Subscribers.Subscribe( this );
 
@@ -69,14 +69,14 @@ void LocalizedString::CreateImpl()
 	m_pImpl->Load(  m_sGroup, m_sName );
 }
 
-void LocalizedString::Load( const RString& sGroup, const RString& sName )
+void LocalizedString::Load( const std::string& sGroup, const std::string& sName )
 {
 	m_sGroup = sGroup;
 	m_sName = sName;
 	CreateImpl();
 }
 
-const RString &LocalizedString::GetValue() const
+const std::string &LocalizedString::GetValue() const
 {
 	return m_pImpl->GetLocalized();
 }

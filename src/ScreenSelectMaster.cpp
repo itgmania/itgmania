@@ -26,10 +26,10 @@ XToString( MenuDir );
 
 AutoScreenMessage( SM_PlayPostSwitchPage );
 
-static RString CURSOR_OFFSET_X_FROM_ICON_NAME( size_t p ) { return ssprintf("CursorP%dOffsetXFromIcon",int(p+1)); }
-static RString CURSOR_OFFSET_Y_FROM_ICON_NAME( size_t p ) { return ssprintf("CursorP%dOffsetYFromIcon",int(p+1)); }
+static std::string CURSOR_OFFSET_X_FROM_ICON_NAME( size_t p ) { return ssprintf("CursorP%dOffsetXFromIcon",int(p+1)); }
+static std::string CURSOR_OFFSET_Y_FROM_ICON_NAME( size_t p ) { return ssprintf("CursorP%dOffsetYFromIcon",int(p+1)); }
 // e.g. "OptionOrderLeft=0:1,1:2,2:3,3:4"
-static RString OPTION_ORDER_NAME( size_t dir ) { return "OptionOrder"+MenuDirToString((MenuDir)dir); }
+static std::string OPTION_ORDER_NAME( size_t dir ) { return "OptionOrder"+MenuDirToString((MenuDir)dir); }
 
 REGISTER_SCREEN_CLASS( ScreenSelectMaster );
 
@@ -84,7 +84,7 @@ void ScreenSelectMaster::Init()
 	std::vector<PlayerNumber> vpns;
 	GetActiveElementPlayerNumbers( vpns );
 
-#define PLAYER_APPEND_NO_SPACE(p)	(SHARED_SELECTION ? RString() : ssprintf("P%d",(p)+1))
+#define PLAYER_APPEND_NO_SPACE(p)	(SHARED_SELECTION ? std::string() : ssprintf("P%d",(p)+1))
 	this->SubscribeToMessage( SM_MenuTimer );
 
 	// init cursor
@@ -92,7 +92,7 @@ void ScreenSelectMaster::Init()
 	{
 		for (PlayerNumber const &p : vpns)
 		{
-			RString sElement = "Cursor" + PLAYER_APPEND_NO_SPACE(p);
+			std::string sElement = "Cursor" + PLAYER_APPEND_NO_SPACE(p);
 			m_sprCursor[p].Load( THEME->GetPathG(m_sName,sElement) );
 			Replace(sElement, " ", "");
 			m_sprCursor[p]->SetName( sElement );
@@ -122,7 +122,7 @@ void ScreenSelectMaster::Init()
 			Lua* L= LUA->Get();
 			command.PushSelf(L);
 			lua_pushnumber(L, m_aGameCommands.size());
-			RString err= m_sName + "::IconChoicePosFunction: ";
+			std::string err= m_sName + "::IconChoicePosFunction: ";
 			if(!LuaHelpers::RunScriptOnStack(L, err, 1, 1, true))
 			{
 				positions_set_by_lua= false;
@@ -177,13 +177,13 @@ void ScreenSelectMaster::Init()
 		// init icon
 		if( SHOW_ICON )
 		{
-			std::vector<RString> vs;
+			std::vector<std::string> vs;
 			vs.push_back( "Icon" );
 			if( PER_CHOICE_ICON_ELEMENT )
 				vs.push_back( "Choice" + mc.m_sName );
-			RString sElement = join( " ", vs );
+			std::string sElement = join( " ", vs );
 			m_vsprIcon[c].Load( THEME->GetPathG(m_sName,sElement) );
-			RString sName = "Icon" "Choice" + mc.m_sName;
+			std::string sName = "Icon" "Choice" + mc.m_sName;
 			m_vsprIcon[c]->SetName( sName );
 			if( USE_ICON_METRICS )
 			{
@@ -214,15 +214,15 @@ void ScreenSelectMaster::Init()
 		{
 			for (PlayerNumber const &p : vpns)
 			{
-				std::vector<RString> vs;
+				std::vector<std::string> vs;
 				vs.push_back( "Scroll" );
 				if( PER_CHOICE_SCROLL_ELEMENT )
 					vs.push_back( "Choice" + mc.m_sName );
 				if( !SHARED_SELECTION )
 					vs.push_back( PLAYER_APPEND_NO_SPACE(p) );
-				RString sElement = join( " ", vs );
+				std::string sElement = join( " ", vs );
 				m_vsprScroll[p][c].Load( THEME->GetPathG(m_sName,sElement) );
-				RString sName = "Scroll" "Choice" + mc.m_sName;
+				std::string sName = "Scroll" "Choice" + mc.m_sName;
 				if( !SHARED_SELECTION )
 					sName += PLAYER_APPEND_NO_SPACE(p);
 				m_vsprScroll[p][c]->SetName( sName );
@@ -269,8 +269,8 @@ void ScreenSelectMaster::Init()
 	// init m_Next order info
 	FOREACH_MenuDir( dir )
 	{
-		const RString order = OPTION_ORDER.GetValue( dir );
-		std::vector<RString> parts;
+		const std::string order = OPTION_ORDER.GetValue( dir );
+		std::vector<std::string> parts;
 		split( order, ",", parts, true );
 
 		for( unsigned part = 0; part < parts.size(); ++part )
@@ -318,7 +318,7 @@ void ScreenSelectMaster::Init()
 	m_bDoubleChoiceNoSound = false;
 }
 
-RString ScreenSelectMaster::GetDefaultChoice()
+std::string ScreenSelectMaster::GetDefaultChoice()
 {
 	return DEFAULT_CHOICE.GetValue();
 }
@@ -330,7 +330,7 @@ void ScreenSelectMaster::BeginScreen()
 	for( unsigned c=0; c<m_aGameCommands.size(); c++ )
 	{
 		const GameCommand& mc = m_aGameCommands[c];
-		if( mc.m_sName == (RString) DEFAULT_CHOICE )
+		if( mc.m_sName == (std::string) DEFAULT_CHOICE )
 		{
 			iDefaultChoice = c;
 			break;
@@ -445,7 +445,7 @@ void ScreenSelectMaster::UpdateSelectableChoices()
 
 	for( unsigned c=0; c<m_aGameCommands.size(); c++ )
 	{
-		RString command= "Enabled";
+		std::string command= "Enabled";
 		bool disabled= false;
 		if(!m_aGameCommands[c].IsPlayable())
 		{
@@ -665,7 +665,7 @@ bool ScreenSelectMaster::ChangePage( int iNewChoice )
 	FOREACH_PlayerNumber( p )
 		m_iChoice[p] = iNewChoice;
 
-	const RString sIconAndExplanationCommand = ssprintf( "SwitchToPage%d", newPage+1 );
+	const std::string sIconAndExplanationCommand = ssprintf( "SwitchToPage%d", newPage+1 );
 	if( SHOW_ICON )
 		for( unsigned c = 0; c < m_aGameCommands.size(); ++c )
 			m_vsprIcon[c]->PlayCommand( sIconAndExplanationCommand );

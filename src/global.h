@@ -55,7 +55,7 @@
  * @return nothing: there is no escape without quitting the program.
  */
 [[noreturn]]
-void sm_crash(const RString& reason);
+void sm_crash(const std::string& reason);
 [[noreturn]]
 void sm_crash( const char *reason = "Internal error" );
 
@@ -77,7 +77,7 @@ void sm_crash( const char *reason = "Internal error" );
 /** @brief Use this to catch switching on invalid values */
 #define DEFAULT_FAIL(i) 	default: FAIL_M( ssprintf("%s = %i", #i, (i)) )
 
-void ShowWarningOrTrace( const char *file, int line, const RString& message, bool bWarning );
+void ShowWarningOrTrace( const char *file, int line, const std::string& message, bool bWarning );
 void ShowWarningOrTrace( const char *file, int line, const char *message, bool bWarning ); // don't pull in LOG here
 #define WARN(MESSAGE) (ShowWarningOrTrace(__FILE__, __LINE__, MESSAGE, true))
 #if !defined(CO_EXIST_WITH_MFC)

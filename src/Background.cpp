@@ -96,7 +96,7 @@ protected:
 	bool m_bInitted;
 	DancingCharacters*	m_pDancingCharacters;
 	const Song *m_pSong;
-	std::map<RString,BackgroundTransition> m_mapNameToTransition;
+	std::map<std::string,BackgroundTransition> m_mapNameToTransition;
 	std::deque<BackgroundDef> m_RandomBGAnimations;	// random background to choose from.  These may or may not be loaded into m_BGAnimations.
 
 	void LoadFromRandom( float fFirstBeat, float fEndBeat, const BackgroundChange &change );
@@ -111,10 +111,10 @@ protected:
 		// return true if created and added to m_BGAnimations
 		bool CreateBackground( const Song *pSong, const BackgroundDef &bd, Actor *pParent );
 		// return def of the background that was created and added to m_BGAnimations. calls CreateBackground
-		BackgroundDef CreateRandomBGA( const Song *pSong, const RString &sEffect, std::deque<BackgroundDef> &RandomBGAnimations, Actor *pParent );
+		BackgroundDef CreateRandomBGA( const Song *pSong, const std::string &sEffect, std::deque<BackgroundDef> &RandomBGAnimations, Actor *pParent );
 
 		int FindBGSegmentForBeat( float fBeat ) const;
-		void UpdateCurBGChange( const Song *pSong, float fLastMusicSeconds, float fCurrentTime, const std::map<RString,BackgroundTransition> &mapNameToTransition );
+		void UpdateCurBGChange( const Song *pSong, float fLastMusicSeconds, float fCurrentTime, const std::map<std::string,BackgroundTransition> &mapNameToTransition );
 
 		std::map<BackgroundDef,Actor*> m_BGAnimations;
 		std::vector<BackgroundChange> m_aBGChanges;
@@ -183,24 +183,24 @@ void BackgroundImpl::Init()
 	// load transitions
 	{
 		ASSERT( m_mapNameToTransition.empty() );
-		std::vector<RString> vsPaths, vsNames;
+		std::vector<std::string> vsPaths, vsNames;
 		BackgroundUtil::GetBackgroundTransitions( "", vsPaths, vsNames );
 		for( unsigned i=0; i<vsPaths.size(); i++ )
 		{
-			const RString &sPath = vsPaths[i];
-			const RString &sName = vsNames[i];
+			const std::string &sPath = vsPaths[i];
+			const std::string &sName = vsNames[i];
 
 			XNode xml;
 			XmlFileUtil::LoadFromFileShowErrors(xml, sPath);
 			ASSERT( xml.GetName() == "BackgroundTransition" );
 			BackgroundTransition &bgt = m_mapNameToTransition[sName];
 
-			RString sCmdLeaves;
+			std::string sCmdLeaves;
 			bool bSuccess = xml.GetAttrValue( "LeavesCommand", sCmdLeaves );
 			ASSERT( bSuccess );
 			bgt.cmdLeaves = ActorUtil::ParseActorCommands( sCmdLeaves );
 
-			RString sCmdRoot;
+			std::string sCmdRoot;
 			bSuccess = xml.GetAttrValue( "RootCommand", sCmdRoot );
 			ASSERT( bSuccess );
 			bgt.cmdRoot = ActorUtil::ParseActorCommands( sCmdRoot );
@@ -272,18 +272,18 @@ bool BackgroundImpl::Layer::CreateBackground( const Song *pSong, const Backgroun
 	ASSERT( m_BGAnimations.find(bd) == m_BGAnimations.end() );
 
 	// Resolve the background names
-	std::vector<RString> vsToResolve;
+	std::vector<std::string> vsToResolve;
 	vsToResolve.push_back( bd.m_sFile1 );
 	vsToResolve.push_back( bd.m_sFile2 );
 
-	std::vector<RString> vsResolved;
+	std::vector<std::string> vsResolved;
 	vsResolved.resize( vsToResolve.size() );
 	std::vector<LuaThreadVariable *> vsResolvedRef;
 	vsResolvedRef.resize( vsToResolve.size() );
 
 	for( unsigned i=0; i<vsToResolve.size(); i++ )
 	{
-		const RString &sToResolve = vsToResolve[i];
+		const std::string &sToResolve = vsToResolve[i];
 
 		if( sToResolve.empty() )
 		{
@@ -298,7 +298,7 @@ bool BackgroundImpl::Layer::CreateBackground( const Song *pSong, const Backgroun
 			* RandomMovies dir
 			* BGAnimations dir.
 		*/
-		std::vector<RString> vsPaths, vsThrowAway;
+		std::vector<std::string> vsPaths, vsThrowAway;
 
 		// Look for BGAnims in the song dir
 		if( sToResolve == SONG_BACKGROUND_FILE )
@@ -309,7 +309,7 @@ bool BackgroundImpl::Layer::CreateBackground( const Song *pSong, const Backgroun
 		if( vsPaths.empty() )	BackgroundUtil::GetGlobalBGAnimations(	pSong, sToResolve, vsPaths, vsThrowAway );
 		if( vsPaths.empty() )	BackgroundUtil::GetGlobalRandomMovies(	pSong, sToResolve, vsPaths, vsThrowAway );
 
-		RString &sResolved = vsResolved[i];
+		std::string &sResolved = vsResolved[i];
 
 		if( !vsPaths.empty() )
 		{
@@ -329,7 +329,7 @@ bool BackgroundImpl::Layer::CreateBackground( const Song *pSong, const Backgroun
 		vsResolvedRef[i] = new LuaThreadVariable( ssprintf("File%d",i+1), sResolved );
 	}
 
-	RString sEffect = bd.m_sEffect;
+	std::string sEffect = bd.m_sEffect;
 	if( sEffect.empty() )
 	{
 		FileType ft = ActorUtil::GetFileType(vsResolved[0]);
@@ -361,14 +361,14 @@ bool BackgroundImpl::Layer::CreateBackground( const Song *pSong, const Backgroun
 	ASSERT( !sEffect.empty() );
 
 	// Set Lua color globals
-	LuaThreadVariable sColor1( "Color1", bd.m_sColor1.empty() ? RString("#FFFFFFFF") : bd.m_sColor1 );
-	LuaThreadVariable sColor2( "Color2", bd.m_sColor2.empty() ? RString("#FFFFFFFF") : bd.m_sColor2 );
+	LuaThreadVariable sColor1( "Color1", bd.m_sColor1.empty() ? std::string("#FFFFFFFF") : bd.m_sColor1 );
+	LuaThreadVariable sColor2( "Color2", bd.m_sColor2.empty() ? std::string("#FFFFFFFF") : bd.m_sColor2 );
 
 	// Resolve the effect file.
-	RString sEffectFile;
+	std::string sEffectFile;
 	for( int i=0; i<2; i++ )
 	{
-		std::vector<RString> vsPaths, vsThrowAway;
+		std::vector<std::string> vsPaths, vsThrowAway;
 		BackgroundUtil::GetBackgroundEffects( sEffect, vsPaths, vsThrowAway );
 		if( vsPaths.empty() )
 		{
@@ -400,7 +400,7 @@ bool BackgroundImpl::Layer::CreateBackground( const Song *pSong, const Backgroun
 	return true;
 }
 
-BackgroundDef BackgroundImpl::Layer::CreateRandomBGA( const Song *pSong, const RString &sEffect, std::deque<BackgroundDef> &RandomBGAnimations, Actor *pParent )
+BackgroundDef BackgroundImpl::Layer::CreateRandomBGA( const Song *pSong, const std::string &sEffect, std::deque<BackgroundDef> &RandomBGAnimations, Actor *pParent )
 {
 	if( g_RandomBackgroundMode == BGMODE_OFF )
 		return BackgroundDef();
@@ -524,7 +524,7 @@ void BackgroundImpl::LoadFromSong( const Song* pSong )
 
 	// Choose a bunch of backgrounds that we'll use for the random file marker
 	{
-		std::vector<RString> vsThrowAway, vsNames;
+		std::vector<std::string> vsThrowAway, vsNames;
 		switch( g_RandomBackgroundMode )
 		{
 		default:
@@ -546,7 +546,7 @@ void BackgroundImpl::LoadFromSong( const Song* pSong )
 		int iSize = std::min( (int)g_iNumBackgrounds, (int)vsNames.size() );
 		vsNames.resize( iSize );
 
-		for (RString const &s : vsNames)
+		for (std::string const &s : vsNames)
 		{
 			BackgroundDef bd;
 			bd.m_sFile1 = s;
@@ -722,7 +722,7 @@ int BackgroundImpl::Layer::FindBGSegmentForBeat( float fBeat ) const
 }
 
 /* If the BG segment has changed, move focus to it. Send Update() calls. */
-void BackgroundImpl::Layer::UpdateCurBGChange( const Song *pSong, float fLastMusicSeconds, float fCurrentTime, const std::map<RString, BackgroundTransition> &mapNameToTransition )
+void BackgroundImpl::Layer::UpdateCurBGChange( const Song *pSong, float fLastMusicSeconds, float fCurrentTime, const std::map<std::string, BackgroundTransition> &mapNameToTransition )
 {
 	ASSERT( fCurrentTime != GameState::MUSIC_SECONDS_INVALID );
 
@@ -758,7 +758,7 @@ void BackgroundImpl::Layer::UpdateCurBGChange( const Song *pSong, float fLastMus
 		if( iter == m_BGAnimations.end() )
 		{
 			XNode *pNode = change.m_def.CreateNode();
-			RString xml = XmlFileUtil::GetXML( pNode );
+			std::string xml = XmlFileUtil::GetXML( pNode );
 			Trim( xml );
 			LuaHelpers::ReportScriptErrorFmt( "Tried to switch to a background that was never loaded:\n%s", xml.c_str() );
 			RageUtil::SafeDelete( pNode );
@@ -780,7 +780,7 @@ void BackgroundImpl::Layer::UpdateCurBGChange( const Song *pSong, float fLastMus
 
 				if( !change.m_sTransition.empty() )
 				{
-					std::map<RString, BackgroundTransition>::const_iterator lIter = mapNameToTransition.find( change.m_sTransition );
+					std::map<std::string, BackgroundTransition>::const_iterator lIter = mapNameToTransition.find( change.m_sTransition );
 					if(lIter == mapNameToTransition.end())
 					{
 						LuaHelpers::ReportScriptErrorFmt("'%s' is not the name of a BackgroundTransition file.", change.m_sTransition.c_str());

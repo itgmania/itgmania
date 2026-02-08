@@ -21,19 +21,19 @@ enum OptEffect
 	NUM_OptEffect				=	9,
 	OptEffect_Invalid			=	MAX_OPTIONS+1
 };
-const RString& OptEffectToString( OptEffect e );
+const std::string& OptEffectToString( OptEffect e );
 OptEffect StringToOptEffect( const std::string &e );
 LuaDeclareType( OptEffect );
 
 struct ConfOption
 {
-	static ConfOption *Find( RString name );
+	static ConfOption *Find( std::string name );
 
 	// Name of this option.
-	RString name;
+	std::string name;
 
 	// Name of the preference this option affects.
-	RString m_sPrefName;
+	std::string m_sPrefName;
 
 	typedef void (*MoveData_t)( int &sel, bool ToSel, const ConfOption *pConfOption );
 	MoveData_t MoveData;
@@ -46,7 +46,7 @@ struct ConfOption
 
 	/* Return the list of available selections; Get() and Put() use indexes into
 	 * this array. UpdateAvailableOptions() should be called before using this. */
-	void MakeOptionsList( std::vector<RString> &out ) const;
+	void MakeOptionsList( std::vector<std::string> &out ) const;
 
 	inline int Get() const { int sel; MoveData( sel, true, this ); return sel; }
 	inline void Put( int sel ) const { MoveData( sel, false, this ); }
@@ -64,11 +64,11 @@ struct ConfOption
 #define PUSH( c )	if(c) names.push_back(c);
 		PUSH(c0);PUSH(c1);PUSH(c2);PUSH(c3);PUSH(c4);PUSH(c5);PUSH(c6);PUSH(c7);PUSH(c8);PUSH(c9);PUSH(c10);PUSH(c11);PUSH(c12);PUSH(c13);PUSH(c14);PUSH(c15);PUSH(c16);PUSH(c17);PUSH(c18);PUSH(c19);
 	}
-	void AddOption( const RString &sName ) { PUSH(sName.c_str()); }
+	void AddOption( const std::string &sName ) { PUSH(sName.c_str()); }
 #undef PUSH
 
 	ConfOption( const char *n, MoveData_t m,
-			void (*lst)( std::vector<RString> &out ) )
+			void (*lst)( std::vector<std::string> &out ) )
 	{
 		name = n;
 		MoveData = m;
@@ -79,8 +79,8 @@ struct ConfOption
 
 
 // private:
-	std::vector<RString> names;
-	void (*MakeOptionsListCB)( std::vector<RString> &out );
+	std::vector<std::string> names;
+	void (*MakeOptionsListCB)( std::vector<std::string> &out );
 };
 
 #endif

@@ -43,9 +43,9 @@ protected:
 	void RefreshTree();
 	void GetTreeItems( CArray<HTREEITEM,HTREEITEM>& aItemsOut );
 	void GetCheckedTreeItems( CArray<HTREEITEM,HTREEITEM>& aCheckedItemsOut );
-	void GetCheckedPaths( std::vector<RString>& aCheckedItemsOut );
-	bool MakeComment( RString &comment );
-	RString GetCurrentInstallDir();
+	void GetCheckedPaths( std::vector<std::string>& aCheckedItemsOut );
+	bool MakeComment( std::string &comment );
+	std::string GetCurrentInstallDir();
 
 	// Generated message map functions
 	//{{AFX_MSG(CSmpackageExportDlg)

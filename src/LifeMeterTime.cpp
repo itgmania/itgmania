@@ -39,7 +39,7 @@ static const float g_fTimeMeterSecondsChangeInit[] =
 };
 static_assert( ARRAYLEN(g_fTimeMeterSecondsChangeInit) == NUM_ScoreEvent );
 
-static void TimeMeterSecondsChangeInit( size_t /*ScoreEvent*/ i, RString &sNameOut, float &defaultValueOut )
+static void TimeMeterSecondsChangeInit( size_t /*ScoreEvent*/ i, std::string &sNameOut, float &defaultValueOut )
 {
 	sNameOut = "TimeMeterSecondsChange" + ScoreEventToString( (ScoreEvent)i );
 	defaultValueOut = g_fTimeMeterSecondsChangeInit[i];
@@ -64,7 +64,7 @@ void LifeMeterTime::Load( const PlayerState *pPlayerState, PlayerStageStats *pPl
 {
 	LifeMeter::Load( pPlayerState, pPlayerStageStats );
 
-	const RString sType = "LifeMeterTime";
+	const std::string sType = "LifeMeterTime";
 
 	m_sprBackground.Load( THEME->GetPathG(sType,"background") );
 	m_sprBackground->SetName( "Background" );
@@ -84,7 +84,7 @@ void LifeMeterTime::Load( const PlayerState *pPlayerState, PlayerStageStats *pPl
 	m_pStream->Load( bExtra ? "StreamDisplayExtra" : "StreamDisplay" );
 	this->AddChild( m_pStream );
 
-	RString sExtra = bExtra ? "extra " : "";
+	std::string sExtra = bExtra ? "extra " : "";
 	m_sprFrame.Load( THEME->GetPathG(sType,sExtra+"frame") );
 	m_sprFrame->SetName( "Frame" );
 	this->AddChild( m_sprFrame );

@@ -10,8 +10,8 @@
 #include <cstddef>
 #include <errno.h>
 
-static RString g_TestFile;
-static RString g_TestFilename;
+static std::string g_TestFile;
+static std::string g_TestFilename;
 static int g_BytesUntilError = 6;
 
 /*
@@ -23,26 +23,26 @@ static int g_BytesUntilError = 6;
 class RageFileDriverTest: public RageFileDriver
 {
 public:
-	RageFileDriverTest( RString root );
+	RageFileDriverTest( std::string root );
 
-	RageFileObj *Open( const RString &path, int mode, int &err );
-	bool Remove( const RString &sPath ) { return false; }
+	RageFileObj *Open( const std::string &path, int mode, int &err );
+	bool Remove( const std::string &sPath ) { return false; }
 	bool Ready() { return true; }
 
 private:
-	RString root;
+	std::string root;
 };
 
 static struct FileDriverEntry_TEST: public FileDriverEntry
 {
 	FileDriverEntry_TEST(): FileDriverEntry( "TEST" ) { }
-	RageFileDriver *Create( const RString &sRoot ) const { return new RageFileDriverTest( sRoot ); }
+	RageFileDriver *Create( const std::string &sRoot ) const { return new RageFileDriverTest( sRoot ); }
 } const g_RegisterDriver;
 
 class TestFilenameDB: public FilenameDB
 {
 protected:
-	virtual void PopulateFileSet( FileSet &fs, const RString &sPath )
+	virtual void PopulateFileSet( FileSet &fs, const std::string &sPath )
 	{
 		if( sPath != "." )
 			return;
@@ -59,10 +59,10 @@ protected:
 		fs.files.insert(f);
 	}
 
-	RString root;
+	std::string root;
 
 public:
-	TestFilenameDB( RString root_ )
+	TestFilenameDB( std::string root_ )
 	{
 		root = root_;
 		if( root == "./" )
@@ -74,7 +74,7 @@ public:
 class RageFileObjTest: public RageFileObj
 {
 public:
-	RageFileObjTest( const RString &path );
+	RageFileObjTest( const std::string &path );
 	RageFileObjTest( const RageFileObjTest &cpy );
 	int ReadInternal(void *buffer, size_t bytes);
 	int WriteInternal(const void *buffer, size_t bytes);
@@ -86,16 +86,16 @@ public:
 		return pos;
 	}
 	RageFileObj *Copy() const;
-	RString GetDisplayPath() const { return path; }
+	std::string GetDisplayPath() const { return path; }
 	int GetFileSize() const { return g_TestFile.size(); }
 
 private:
-	RString path; /* for Copy */
+	std::string path; /* for Copy */
 	int pos;
 };
 
 
-RageFileDriverTest::RageFileDriverTest( RString root_ ):
+RageFileDriverTest::RageFileDriverTest( std::string root_ ):
 	RageFileDriver( new TestFilenameDB(root_) ),
 	root(root_)
 {
@@ -110,7 +110,7 @@ RageFileObjTest::RageFileObjTest( const RageFileObjTest &cpy ):
 	pos = cpy.pos;
 }
 
-RageFileObj *RageFileDriverTest::Open( const RString &path, int mode, int &err )
+RageFileObj *RageFileDriverTest::Open( const std::string &path, int mode, int &err )
 {
 	if( path != g_TestFilename )
 	{
@@ -127,7 +127,7 @@ RageFileObj *RageFileObjTest::Copy() const
 }
 
 static const unsigned int BUFSIZE = 1024*64;
-RageFileObjTest::RageFileObjTest( const RString &path_ )
+RageFileObjTest::RageFileObjTest( const std::string &path_ )
 {
 	path = path_;
 	pos = 0;
@@ -207,7 +207,7 @@ void SanityCheck()
 		if( !test.Open("/test/file", RageFile::READ ) )
 			Fail( "Sanity check Open() failed: %s", test.GetError().c_str() );
 
-		RString str;
+		std::string str;
 		int got = test.GetLine( str );
 		if( got <= 0 )
 			Fail( "Sanity check GetLine(): got %i", got );
@@ -226,7 +226,7 @@ void SanityCheck()
 		if( !test.Open("/test/file", RageFile::READ ) )
 			Fail( "Sanity check 2 Open() failed: %s", test.GetError().c_str() );
 
-		RString str;
+		std::string str;
 		int got = test.Read( str, 5 );
 		if( got != 5 )
 			Fail( "Sanity check 2 Read(): got %i", got );
@@ -281,7 +281,7 @@ void IniTest()
 		if( !test.ReadFile( "test/file" ) )
 			Fail( "INI: ReadFile failed: %s", test.GetError().c_str() );
 
-		RString sStr;
+		std::string sStr;
 		if( !test.GetValue( "test", "abc", sStr ) )
 			Fail( "INI: GetValue failed" );
 		if( sStr != "def" )
@@ -309,7 +309,7 @@ void IniTest()
 		g_BytesUntilError = 5;
 
 		IniFile test;
-		test.SetValue( "foo", "bar", RString("baz") );
+		test.SetValue( "foo", "bar", std::string("baz") );
 		if( test.WriteFile( "test/file" ) )
 			Fail( "INI: WriteFile should have failed" );
 
@@ -337,7 +337,7 @@ void MsdTest()
 			Fail( "MSD: GetNumValues: expected 1, got %i", test.GetNumValues() );
 		if( test.GetNumParams(0) != 1 )
 			Fail( "MSD: GetNumParams(0): expected 1, got %i", test.GetNumParams(0) );
-		RString sStr = test.GetValue(0)[0];
+		std::string sStr = test.GetValue(0)[0];
 		if( sStr != "FOO" )
 			Fail( "MSD: GetValue failed: expected \"FOO\", got \"%s\"", sStr.c_str() );
 	} while(false);

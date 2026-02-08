@@ -89,7 +89,7 @@ bool child_read( int fd, void *p, int size )
 }
 
 /* Once we get here, we should be * safe to do whatever we want;
-* heavyweights like malloc and RString are OK. (Don't crash!) */
+* heavyweights like malloc and std::string are OK. (Don't crash!) */
 static void child_process()
 {
 	/* 1. Read the CrashData. */
@@ -135,7 +135,7 @@ static void child_process()
 	if( !child_read(3, temp, size) )
 		return;
 
-	std::vector<RString> Checkpoints;
+	std::vector<std::string> Checkpoints;
 	split(temp, "$$", Checkpoints);
 	delete [] temp;
 
@@ -145,7 +145,7 @@ static void child_process()
 	temp = new char [size];
 	if( !child_read(3, temp, size) )
 		return;
-	const RString CrashedThread(temp);
+	const std::string CrashedThread(temp);
 	delete[] temp;
 
 	/* Wait for the child to either finish cleaning up or die. */
@@ -184,7 +184,7 @@ static void child_process()
 		}
 	}
 
-	RString sCrashInfoPath = "/tmp";
+	std::string sCrashInfoPath = "/tmp";
 #if defined(MACOSX)
 	sCrashInfoPath = CrashHandler::GetLogsDirectory();
 #else
@@ -207,7 +207,7 @@ static void child_process()
 	fprintf( CrashDump, "--------------------------------------\n" );
 	fprintf( CrashDump, "\n" );
 
-	RString reason;
+	std::string reason;
 	switch( crash.type )
 	{
 	case CrashData::SIGNAL:

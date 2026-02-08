@@ -53,8 +53,8 @@ static void LuaInformation()
 static void Version()
 {
 	#if defined(_WIN32)
-		RString sProductID = ssprintf("%s", (std::string(PRODUCT_FAMILY) + product_version).c_str() );
-		RString sVersion = ssprintf("build %s\nCompile Date: %s @ %s", ::sm_version_git_hash, version_date, version_time);
+		std::string sProductID = ssprintf("%s", (std::string(PRODUCT_FAMILY) + product_version).c_str() );
+		std::string sVersion = ssprintf("build %s\nCompile Date: %s @ %s", ::sm_version_git_hash, version_date, version_time);
 
 		AllocConsole();
 		freopen("CONOUT$","wb", stdout);

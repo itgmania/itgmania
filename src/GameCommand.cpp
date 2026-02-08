@@ -166,11 +166,11 @@ void GameCommand::Load( int iIndex, const Commands& cmds )
 
 void GameCommand::LoadOne( const Command& cmd )
 {
-	RString sName = cmd.GetName();
+	std::string sName = cmd.GetName();
 	if( sName.empty() )
 		return;
 
-	RString sValue;
+	std::string sValue;
 	for( unsigned i = 1; i < cmd.m_vsArgs.size(); ++i )
 	{
 		if( i > 1 )
@@ -286,7 +286,7 @@ void GameCommand::LoadOne( const Command& cmd )
 
 	else if( sName == "steps" )
 	{
-		RString sSteps = sValue;
+		std::string sSteps = sValue;
 
 		// This must be processed after "song" and "style" commands.
 		if( !m_bInvalid )
@@ -324,7 +324,7 @@ void GameCommand::LoadOne( const Command& cmd )
 
 	else if( sName == "trail" )
 	{
-		RString sTrail = sValue;
+		std::string sTrail = sValue;
 
 		// This must be processed after "course" and "style" commands.
 		if( !m_bInvalid )
@@ -537,7 +537,7 @@ static bool AreStyleAndPlayModeCompatible( const Style *style, PlayMode pm )
 			// This is correct for dance (ie, no rave for solo and doubles),
 			// and should be okay for pump.. not sure about other game types.
 			// Techno Motion scales down versus arrows, though, so allow this.
-			if( style->m_iColsPerPlayer >= 6 && RString(GAMESTATE->m_pCurGame->m_szName) != "techno" )
+			if( style->m_iColsPerPlayer >= 6 && std::string(GAMESTATE->m_pCurGame->m_szName) != "techno" )
 				return false;
 
 			// Don't allow battle modes if the style takes both sides.
@@ -550,7 +550,7 @@ static bool AreStyleAndPlayModeCompatible( const Style *style, PlayMode pm )
 	return true;
 }
 
-bool GameCommand::IsPlayable( RString *why ) const
+bool GameCommand::IsPlayable( std::string *why ) const
 {
 	if( m_bInvalid )
 	{
@@ -764,7 +764,7 @@ void GameCommand::ApplySelf( const std::vector<PlayerNumber> &vpns ) const
 			ASSERT( !lua_isnil(L, -1) );
 
 			lua_pushnumber( L, pn ); // 1st parameter
-			RString error= "Lua GameCommand error: ";
+			std::string error= "Lua GameCommand error: ";
 			LuaHelpers::RunScriptOnStack(L, error, 1, 0, true);
 		}
 		LUA->Release(L);
@@ -793,7 +793,7 @@ void GameCommand::ApplySelf( const std::vector<PlayerNumber> &vpns ) const
 	if( m_pCharacter )
 		for (PlayerNumber const &pn : vpns)
 			GAMESTATE->m_pCurCharacters[pn] = m_pCharacter;
-	for( std::map<RString, RString>::const_iterator i = m_SetEnv.begin(); i != m_SetEnv.end(); i++ )
+	for( std::map<std::string, std::string>::const_iterator i = m_SetEnv.begin(); i != m_SetEnv.end(); i++ )
 	{
 		Lua *L = LUA->Get();
 		GAMESTATE->m_Environment->PushSelf(L);
@@ -803,7 +803,7 @@ void GameCommand::ApplySelf( const std::vector<PlayerNumber> &vpns ) const
 		lua_pop( L, 1 );
 		LUA->Release(L);
 	}
-	for(std::map<RString, RString>::const_iterator setting= m_SetPref.begin(); setting != m_SetPref.end(); ++setting)
+	for(std::map<std::string, std::string>::const_iterator setting= m_SetPref.begin(); setting != m_SetPref.end(); ++setting)
 	{
 		IPreference* pref= IPreference::GetPreferenceByName(setting->first);
 		if(pref != nullptr)
@@ -837,7 +837,7 @@ void GameCommand::ApplySelf( const std::vector<PlayerNumber> &vpns ) const
 	if( m_bFadeMusic )
 		SOUND->DimMusic(m_fMusicFadeOutVolume, m_fMusicFadeOutSeconds);
 
-	for (RString const &s : m_vsScreensToPrepare)
+	for (std::string const &s : m_vsScreensToPrepare)
 		SCREENMAN->PrepareScreen( s );
 
 	if( m_bInsertCredit )

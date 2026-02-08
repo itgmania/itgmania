@@ -49,20 +49,20 @@ int64_t ArchHooks::GetSystemTimeInMicroseconds()
 	return (current_time.QuadPart * 1000000LL) / g_liFrequency.QuadPart;
 }
 
-static RString GetMountDir( const RString &sDirOfExecutable )
+static std::string GetMountDir( const std::string &sDirOfExecutable )
 {
 	/* All Windows data goes in the directory one level above the executable. */
 	CHECKPOINT_M( ssprintf( "DOE \"%s\"", sDirOfExecutable.c_str()) );
-	std::vector<RString> asParts;
+	std::vector<std::string> asParts;
 	split( sDirOfExecutable, "/", asParts );
 	CHECKPOINT_M( ssprintf( "... %i asParts", asParts.size()) );
 	ASSERT_M( asParts.size() > 1, ssprintf("Strange sDirOfExecutable: %s", sDirOfExecutable.c_str()) );
-	RString sDir = join( "/", asParts.begin(), asParts.end()-1 );
+	std::string sDir = join( "/", asParts.begin(), asParts.end()-1 );
 	return sDir;
 }
 
-void MountDirectories(const RString& baseDir) {
-	const std::vector<RString> winDirectoryStructureITGm = {
+void MountDirectories(const std::string& baseDir) {
+	const std::vector<std::string> winDirectoryStructureITGm = {
 		"/Announcers",
 		"/BGAnimations",
 		"/BackgroundEffects",
@@ -82,13 +82,13 @@ void MountDirectories(const RString& baseDir) {
 		"/Themes"
 	};
 
-	for (const RString& dir : winDirectoryStructureITGm) {
+	for (const std::string& dir : winDirectoryStructureITGm) {
 		FILEMAN->Mount("dir", baseDir + dir, dir);
 	}
 }
 
-void ArchHooks::MountInitialFilesystems(const RString& sDirOfExecutable) {
-	RString sDir = GetMountDir(sDirOfExecutable);
+void ArchHooks::MountInitialFilesystems(const std::string& sDirOfExecutable) {
+	std::string sDir = GetMountDir(sDirOfExecutable);
 	FILEMAN->Mount("dirro", sDir, "/");
 
 	if (DoesFileExist("/Portable.ini")) {
@@ -96,12 +96,12 @@ void ArchHooks::MountInitialFilesystems(const RString& sDirOfExecutable) {
 	}
 }
 
-void ArchHooks::MountUserFilesystems(const RString& sDirOfExecutable) {
-	RString sAppDataDir = SpecialDirs::GetAppDataDir() + PRODUCT_ID;
+void ArchHooks::MountUserFilesystems(const std::string& sDirOfExecutable) {
+	std::string sAppDataDir = SpecialDirs::GetAppDataDir() + PRODUCT_ID;
 	MountDirectories(sAppDataDir);
 }
 
-static RString LangIdToString( LANGID l )
+static std::string LangIdToString( LANGID l )
 {
 	switch( PRIMARYLANGID(l) )
 	{
@@ -201,7 +201,7 @@ static LANGID GetLanguageID()
 	return GetUserDefaultLangID();
 }
 
-RString ArchHooks::GetPreferredLanguage()
+std::string ArchHooks::GetPreferredLanguage()
 {
 	return LangIdToString( GetLanguageID() );
 }

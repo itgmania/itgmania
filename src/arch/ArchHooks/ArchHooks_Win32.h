@@ -9,7 +9,7 @@ class ArchHooks_Win32: public ArchHooks
 public:
 	ArchHooks_Win32();
 	~ArchHooks_Win32();
-	RString GetArchName() const { return "Windows"; }
+	std::string GetArchName() const { return "Windows"; }
 	void DumpDebugInfo();
 	void RestartProgram();
 	bool CheckForMultipleInstances(int argc, char* argv[]);
@@ -21,7 +21,7 @@ public:
 	void SetupConcurrentRenderingThread();
 
 	virtual float GetDisplayAspectRatio();
-	RString GetClipboard();
+	std::string GetClipboard();
 };
 
 #ifdef ARCH_HOOKS

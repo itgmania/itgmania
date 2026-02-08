@@ -15,21 +15,21 @@ public:
 	void ReadFromDisk();
 	void WriteToDisk();
 
-	RageTextureID LoadCachedImage( RString sImageDir, RString sImagePath );
-	void CacheImage( RString sImageDir, RString sImagePath );
-	void LoadImage( RString sImageDir, RString sImagePath );
+	RageTextureID LoadCachedImage( std::string sImageDir, std::string sImagePath );
+	void CacheImage( std::string sImageDir, std::string sImagePath );
+	void LoadImage( std::string sImageDir, std::string sImagePath );
 
-	void Demand( RString sImageDir );
-	void Undemand( RString sImageDir );
+	void Demand( std::string sImageDir );
+	void Undemand( std::string sImageDir );
 
 	void OutputStats() const;
 
 	bool delay_save_cache;
 
 private:
-	static RString GetImageCachePath( RString sImageDir, RString sImagePath );
+	static std::string GetImageCachePath( std::string sImageDir, std::string sImagePath );
 	void UnloadAllImages();
-	void CacheImageInternal( RString sImageDir, RString sImagePath );
+	void CacheImageInternal( std::string sImageDir, std::string sImagePath );
 
 	IniFile ImageData;
 };

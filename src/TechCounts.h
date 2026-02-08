@@ -24,13 +24,13 @@ enum TechCountsCategory
 	TechCountsCategory_Invalid
 };
 
-const RString& TechCountsCategoryToString( TechCountsCategory cat );
+const std::string& TechCountsCategoryToString( TechCountsCategory cat );
 /**
  * @brief Turn the radar category into a proper localized string.
  * @param cat the radar category.
  * @return the localized string version of the radar category.
  */
-const RString& TechCountsCategoryToLocalizedString( TechCountsCategory cat );
+const std::string& TechCountsCategoryToLocalizedString( TechCountsCategory cat );
 LuaDeclareType( TechCountsCategory );
 
 struct lua_State;
@@ -76,8 +76,8 @@ public:
 		return !operator==( other );
 	}
 
-	RString ToString( int iMaxValues = -1 ) const; // default = all
-	void FromString( RString sValues );
+	std::string ToString( int iMaxValues = -1 ) const; // default = all
+	void FromString( std::string sValues );
 
 	void PushSelf( lua_State *L );
 	static void CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, const StepParity::StageLayout * layout, TechCounts &out);

@@ -6,9 +6,9 @@
 #include "RageUtil.h"
 #include "arch/ArchHooks/ArchHooks.h"
 
-RString g_Driver = "dir", g_Root = ".";
+std::string g_Driver = "dir", g_Root = ".";
 
-RString argv0;
+std::string argv0;
 
 void test_handle_args( int argc, char *argv[] )
 {

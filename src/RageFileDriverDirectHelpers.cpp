@@ -18,15 +18,15 @@
     #endif
 #endif
 
-RString DoPathReplace(const RString &sPath)
+std::string DoPathReplace(const std::string &sPath)
 {
-	RString TempPath = sPath;
+	std::string TempPath = sPath;
 	return TempPath;
 }
 
 
 #if defined(_WIN32)
-static bool WinMoveFileInternal( const RString &sOldPath, const RString &sNewPath )
+static bool WinMoveFileInternal( const std::string &sOldPath, const std::string &sNewPath )
 {
 	if( MoveFileEx( sOldPath.c_str(), sNewPath.c_str(), MOVEFILE_REPLACE_EXISTING ) )
 		return true;
@@ -68,7 +68,7 @@ static bool WinMoveFileInternal( const RString &sOldPath, const RString &sNewPat
 	return !!MoveFile( sOldPath.c_str(), sNewPath.c_str() );
 }
 
-bool WinMoveFile( RString sOldPath, RString sNewPath )
+bool WinMoveFile( std::string sOldPath, std::string sNewPath )
 {
 	if( WinMoveFileInternal( DoPathReplace(sOldPath), DoPathReplace(sNewPath) ) )
 		return true;
@@ -82,11 +82,11 @@ bool WinMoveFile( RString sOldPath, RString sNewPath )
 #endif
 
 /* mkdir -p.  Doesn't fail if Path already exists and is a directory. */
-bool CreateDirectories( RString Path )
+bool CreateDirectories( std::string Path )
 {
 	// XXX: handle "//foo/bar" paths in Windows
-	std::vector<RString> parts;
-	RString curpath;
+	std::vector<std::string> parts;
+	std::string curpath;
 
 	// If Path is absolute, add the initial slash ("ignore empty" will remove it).
 	if( Left(Path, 1) == "/" )
@@ -144,14 +144,14 @@ bool CreateDirectories( RString Path )
 	return true;
 }
 
-DirectFilenameDB::DirectFilenameDB( RString root_ )
+DirectFilenameDB::DirectFilenameDB( std::string root_ )
 {
 	ExpireSeconds = 30;
 	SetRoot( root_ );
 }
 
 
-void DirectFilenameDB::SetRoot( RString root_ )
+void DirectFilenameDB::SetRoot( std::string root_ )
 {
 	root = root_;
 
@@ -163,10 +163,10 @@ void DirectFilenameDB::SetRoot( RString root_ )
 		root.erase( root.size()-1, 1 );
 }
 
-void DirectFilenameDB::CacheFile( const RString &sPath )
+void DirectFilenameDB::CacheFile( const std::string &sPath )
 {
 	CHECKPOINT_M( root+sPath );
-	RString sDir = Dirname( sPath );
+	std::string sDir = Dirname( sPath );
 	FileSet *pFileSet = GetFileSet( sDir, false );
 	if( pFileSet == nullptr )
 	{
@@ -214,9 +214,9 @@ void DirectFilenameDB::CacheFile( const RString &sPath )
 	m_Mutex.Unlock(); // Locked by GetFileSet()
 }
 
-void DirectFilenameDB::PopulateFileSet( FileSet &fs, const RString &path )
+void DirectFilenameDB::PopulateFileSet( FileSet &fs, const std::string &path )
 {
-	RString sPath = path;
+	std::string sPath = path;
 
 	// Resolve path cases (path/Path -> PATH/path).
 	ResolvePath( sPath );
@@ -305,21 +305,21 @@ void DirectFilenameDB::PopulateFileSet( FileSet &fs, const RString &path )
 	 * performance-critical situations.  To avoid incurring some of the overheard
 	 * due to ignore markers, delete the file instead instead of using an ignore marker.
 	 */
-	static const RString IGNORE_MARKER_BEGINNING = "ignore-";
+	static const std::string IGNORE_MARKER_BEGINNING = "ignore-";
 
-	std::vector<RString> vsFilesToRemove;
+	std::vector<std::string> vsFilesToRemove;
 	for( std::set<File>::iterator iter = fs.files.lower_bound(IGNORE_MARKER_BEGINNING);
 		 iter != fs.files.end();
 		 ++iter )
 	{
 		if( !BeginsWith( iter->lname, IGNORE_MARKER_BEGINNING ) )
 			break;
-		RString sFileLNameToIgnore = Right(iter->lname, iter->lname.length() - IGNORE_MARKER_BEGINNING.length());
+		std::string sFileLNameToIgnore = Right(iter->lname, iter->lname.length() - IGNORE_MARKER_BEGINNING.length());
 		vsFilesToRemove.push_back( iter->name );
 		vsFilesToRemove.push_back( sFileLNameToIgnore );
 	}
 
-	for (RString const &iter : vsFilesToRemove)
+	for (std::string const &iter : vsFilesToRemove)
 	{
 		// Erase the file corresponding to the ignore marker
 		File fileToDelete;

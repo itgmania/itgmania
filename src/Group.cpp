@@ -20,7 +20,7 @@
  * with the Waiei Group.ini-lua project still actively
  * being developed.
 */
-const RString INI_FILE = "Pack.ini";
+const std::string INI_FILE = "Pack.ini";
 const int INI_VERSION = 1;
 
 Group::Group() {
@@ -36,13 +36,13 @@ Group::Group() {
     m_sBannerPath = "";
 }
 
-Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfile) {
+Group::Group(const std::string& sDir, const std::string& sGroupDirName, bool bFromProfile) {
     if (sDir.empty() || sGroupDirName.empty()) {
         LOG->Warn("Group::Group: Empty directory or group name provided.");
         return;
     }
 
-    RString sPackIniPath;
+    std::string sPackIniPath;
     if (bFromProfile) {
         sPackIniPath = sDir + "/" + INI_FILE;
         m_sPath = sDir;
@@ -79,7 +79,7 @@ Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfil
             return;
         }
 
-        RString sVersion = "";
+        std::string sVersion = "";
         ini.GetValue("Group", "Version", sVersion);
         Trim(sVersion);
 
@@ -90,7 +90,7 @@ Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfil
             m_iVersion = StringToInt(sVersion);
 
             // Define a vector of key-value pairs to cleanly iterate
-            std::vector<std::pair<RString, RString&>> vPackfields = {
+            std::vector<std::pair<std::string, std::string&>> vPackfields = {
                 {"DisplayTitle", m_sDisplayTitle},
                 {"SortTitle", m_sSortTitle},
                 {"TranslitTitle", m_sTranslitTitle},
@@ -111,7 +111,7 @@ Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfil
                 }
             }
             
-            RString sValue = "";
+            std::string sValue = "";
             ini.GetValue("Group", "SyncOffset", sValue);
             Trim(sValue);
             // If the Pack.ini is specified as SyncOffset=ITG (regardless of the

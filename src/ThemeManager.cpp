@@ -35,7 +35,7 @@
 
 ThemeManager*	THEME = nullptr;	// global object accessible from anywhere in the program
 
-static const RString THEME_INFO_INI = "ThemeInfo.ini";
+static const std::string THEME_INFO_INI = "ThemeInfo.ini";
 
 static const char *ElementCategoryNames[] = {
 	"BGAnimations",
@@ -50,7 +50,7 @@ StringToX( ElementCategory );
 
 struct Theme
 {
-	RString sThemeName;
+	std::string sThemeName;
 };
 // When looking for a metric or an element, search these from head to tail.
 static std::deque<Theme> g_vThemes;
@@ -72,14 +72,14 @@ LoadedThemeData *g_pLoadedThemeData = nullptr;
 #include "SubscriptionManager.h"
 static SubscriptionManager<IThemeMetric> g_Subscribers;
 
-class LocalizedStringImplThemeMetric : public ILocalizedStringImpl, public ThemeMetric<RString>
+class LocalizedStringImplThemeMetric : public ILocalizedStringImpl, public ThemeMetric<std::string>
 {
 public:
 	static ILocalizedStringImpl *Create() { return new LocalizedStringImplThemeMetric; }
 
-	void Load( const RString& sGroup, const RString& sName )
+	void Load( const std::string& sGroup, const std::string& sName )
 	{
-		ThemeMetric<RString>::Load( sGroup, sName );
+		ThemeMetric<std::string>::Load( sGroup, sName );
 	}
 
 	virtual void Read()
@@ -91,13 +91,13 @@ public:
 		}
 	}
 
-	const RString &GetLocalized() const
+	const std::string &GetLocalized() const
 	{
 		if( IsLoaded() )
 		{
 			return GetValue();
 		}
-		RString const & curLanguage = (THEME && THEME->IsThemeLoaded() ? THEME->GetCurLanguage() : RString("current"));
+		std::string const & curLanguage = (THEME && THEME->IsThemeLoaded() ? THEME->GetCurLanguage() : std::string("current"));
 		LOG->Warn("Missing translation for %s in the %s language.", m_sName.c_str(), curLanguage.c_str());
 		return m_sName;
 	}
@@ -122,17 +122,17 @@ void ThemeManager::Unsubscribe( IThemeMetric *p )
 
 
 // We spend a lot of time doing redundant theme path lookups. Cache results.
-static std::map<RString, ThemeManager::PathInfo> g_ThemePathCache[NUM_ElementCategory];
+static std::map<std::string, ThemeManager::PathInfo> g_ThemePathCache[NUM_ElementCategory];
 void ThemeManager::ClearThemePathCache()
 {
 	for( int i = 0; i < NUM_ElementCategory; ++i )
 		g_ThemePathCache[i].clear();
 }
 
-static void FileNameToMetricsGroupAndElement( const RString &sFileName, RString &sMetricsGroupOut, RString &sElementOut )
+static void FileNameToMetricsGroupAndElement( const std::string &sFileName, std::string &sMetricsGroupOut, std::string &sElementOut )
 {
 	// split into class name and file name
-	RString::size_type iIndexOfFirstSpace = sFileName.find(" ");
+	std::string::size_type iIndexOfFirstSpace = sFileName.find(" ");
 	if( iIndexOfFirstSpace == std::string::npos ) // no space
 	{
 		sMetricsGroupOut = "";
@@ -146,7 +146,7 @@ static void FileNameToMetricsGroupAndElement( const RString &sFileName, RString 
 }
 
 
-static RString MetricsGroupAndElementToFileName( const RString &sMetricsGroup, const RString &sElement )
+static std::string MetricsGroupAndElementToFileName( const std::string &sMetricsGroup, const std::string &sElement )
 {
 	if( sMetricsGroup.empty() )
 		return sElement;
@@ -171,7 +171,7 @@ ThemeManager::ThemeManager()
 	m_sCurThemeName = "";
 	m_bPseudoLocalize = false;
 
-	std::vector<RString> arrayThemeNames;
+	std::vector<std::string> arrayThemeNames;
 	GetThemeNames( arrayThemeNames );
 }
 
@@ -184,14 +184,14 @@ ThemeManager::~ThemeManager()
 	LUA->UnsetGlobal( "THEME" );
 }
 
-void ThemeManager::GetThemeNames( std::vector<RString>& AddTo )
+void ThemeManager::GetThemeNames( std::vector<std::string>& AddTo )
 {
 	GetDirListing( SpecialFiles::THEMES_DIR + "*", AddTo, true );
 	StripCvsAndSvn( AddTo );
 	StripMacResourceForks( AddTo );
 }
 
-void ThemeManager::GetSelectableThemeNames( std::vector<RString>& AddTo )
+void ThemeManager::GetSelectableThemeNames( std::vector<std::string>& AddTo )
 {
 	GetThemeNames( AddTo );
 	for( int i=AddTo.size()-1; i>=0; i-- )
@@ -205,14 +205,14 @@ void ThemeManager::GetSelectableThemeNames( std::vector<RString>& AddTo )
 
 int ThemeManager::GetNumSelectableThemes()
 {
-	std::vector<RString> vs;
+	std::vector<std::string> vs;
 	GetSelectableThemeNames( vs );
 	return vs.size();
 }
 
-bool ThemeManager::DoesThemeExist( const RString &sThemeName )
+bool ThemeManager::DoesThemeExist( const std::string &sThemeName )
 {
-	std::vector<RString> asThemeNames;
+	std::vector<std::string> asThemeNames;
 	GetThemeNames( asThemeNames );
 	for( unsigned i=0; i<asThemeNames.size(); i++ )
 	{
@@ -222,43 +222,43 @@ bool ThemeManager::DoesThemeExist( const RString &sThemeName )
 	return false;
 }
 
-bool ThemeManager::IsThemeSelectable(RString const& name)
+bool ThemeManager::IsThemeSelectable(std::string const& name)
 {
 	return IsThemeNameValid(name) && DoesThemeExist(name);
 }
 
-bool ThemeManager::IsThemeNameValid(RString const& name)
+bool ThemeManager::IsThemeNameValid(std::string const& name)
 {
 	return Left(name, 1) != "_";
 }
 
-RString ThemeManager::GetThemeDisplayName( const RString &sThemeName )
+std::string ThemeManager::GetThemeDisplayName( const std::string &sThemeName )
 {
-	RString sDir = GetThemeDirFromName(sThemeName);
+	std::string sDir = GetThemeDirFromName(sThemeName);
 	IniFile ini;
 	ini.ReadFile( sDir + THEME_INFO_INI );
 
-	RString s;
+	std::string s;
 	if( ini.GetValue("ThemeInfo","DisplayName",s) )
 		return s;
 
 	return sThemeName;
 }
 
-RString ThemeManager::GetThemeAuthor( const RString &sThemeName )
+std::string ThemeManager::GetThemeAuthor( const std::string &sThemeName )
 {
-	RString sDir = GetThemeDirFromName(sThemeName);
+	std::string sDir = GetThemeDirFromName(sThemeName);
 	IniFile ini;
 	ini.ReadFile( sDir + THEME_INFO_INI );
 
-	RString s;
+	std::string s;
 	if( ini.GetValue("ThemeInfo","Author",s) )
 		return s;
 
 	return "[unknown author]";
 }
 
-void ThemeManager::GetLanguages( std::vector<RString>& AddTo )
+void ThemeManager::GetLanguages( std::vector<std::string>& AddTo )
 {
 	AddTo.clear();
 
@@ -267,13 +267,13 @@ void ThemeManager::GetLanguages( std::vector<RString>& AddTo )
 
 	// remove dupes
 	sort( AddTo.begin(), AddTo.end() );
-	std::vector<RString>::iterator it = unique( AddTo.begin(), AddTo.end(), EqualsNoCase );
+	std::vector<std::string>::iterator it = unique( AddTo.begin(), AddTo.end(), EqualsNoCase );
 	AddTo.erase(it, AddTo.end());
 }
 
-bool ThemeManager::DoesLanguageExist( const RString &sLanguage )
+bool ThemeManager::DoesLanguageExist( const std::string &sLanguage )
 {
-	std::vector<RString> asLanguages;
+	std::vector<std::string> asLanguages;
 	GetLanguages( asLanguages );
 
 	for( unsigned i=0; i<asLanguages.size(); i++ )
@@ -282,7 +282,7 @@ bool ThemeManager::DoesLanguageExist( const RString &sLanguage )
 	return false;
 }
 
-void ThemeManager::LoadThemeMetrics( const RString &sThemeName_, const RString &sLanguage_ )
+void ThemeManager::LoadThemeMetrics( const std::string &sThemeName_, const std::string &sLanguage_ )
 {
 	if( g_pLoadedThemeData == nullptr )
 		g_pLoadedThemeData = new LoadedThemeData;
@@ -292,8 +292,8 @@ void ThemeManager::LoadThemeMetrics( const RString &sThemeName_, const RString &
 	g_pLoadedThemeData->ClearAll();
 	g_vThemes.clear();
 
-	RString sThemeName(sThemeName_);
-	RString sLanguage(sLanguage_);
+	std::string sThemeName(sThemeName_);
+	std::string sLanguage(sLanguage_);
 
 	m_sCurThemeName = sThemeName;
 	m_sCurLanguage = sLanguage;
@@ -312,9 +312,9 @@ void ThemeManager::LoadThemeMetrics( const RString &sThemeName_, const RString &
 		iniMetrics.ReadFile( GetMetricsIniPath(sThemeName) );
 		// Load optional language inis (probably mounted by a package) first so that they can be overridden by the current theme.
 		{
-			std::vector<RString> vs;
+			std::vector<std::string> vs;
 			GetOptionalLanguageIniPaths(vs,sThemeName,sLanguage);
-			for (RString const &s : vs)
+			for (std::string const &s : vs)
 				iniStrings.ReadFile( s );
 		}
 		iniStrings.ReadFile( GetLanguageIniPath(sThemeName,SpecialFiles::BASE_LANGUAGE) );
@@ -332,7 +332,7 @@ void ThemeManager::LoadThemeMetrics( const RString &sThemeName_, const RString &
 		 * already loaded it, fall back on SpecialFiles::BASE_THEME_NAME.
 		 * That way, default theme fallbacks can be disabled with
 		 * "FallbackTheme=". */
-		RString sFallback;
+		std::string sFallback;
 		if( !iniMetrics.GetValue("Global","FallbackTheme",sFallback) )
 		{
 			if( CompareNoCase(sThemeName, SpecialFiles::BASE_THEME_NAME) && !bLoadedBase )
@@ -356,14 +356,14 @@ void ThemeManager::LoadThemeMetrics( const RString &sThemeName_, const RString &
 	}
 
 	// Overlay metrics from the command line.
-	RString sMetric;
+	std::string sMetric;
 	for( int i = 0; GetCommandlineArgument( "metric", &sMetric, i ); ++i )
 	{
 		/* sMetric must be "foo::bar=baz". "foo" and "bar" never contain "=", so
 		 * in "foo::bar=1+1=2", "baz" is always "1+1=2". Neither foo nor bar may
 		 * be empty, but baz may be. */
 		Regex re( "^([^=]+)::([^=]+)=(.*)$" );
-		std::vector<RString> sBits;
+		std::vector<std::string> sBits;
 		if( !re.Compare( sMetric, sBits ) )
 			RageException::Throw( "Invalid argument \"--metric=%s\".", sMetric.c_str() );
 
@@ -374,22 +374,22 @@ void ThemeManager::LoadThemeMetrics( const RString &sThemeName_, const RString &
 	LOG->MapLog( "language", "Language: %s", m_sCurLanguage.c_str() );
 }
 
-RString ThemeManager::GetDefaultLanguage()
+std::string ThemeManager::GetDefaultLanguage()
 {
-	RString sLangCode = HOOKS->GetPreferredLanguage();
+	std::string sLangCode = HOOKS->GetPreferredLanguage();
 	return sLangCode;
 }
 
-void ThemeManager::SwitchThemeAndLanguage( const RString &sThemeName_, const RString &sLanguage_, bool bPseudoLocalize, bool bForceThemeReload )
+void ThemeManager::SwitchThemeAndLanguage( const std::string &sThemeName_, const std::string &sLanguage_, bool bPseudoLocalize, bool bForceThemeReload )
 {
-	RString sThemeName = sThemeName_;
-	RString sLanguage = sLanguage_;
+	std::string sThemeName = sThemeName_;
+	std::string sLanguage = sLanguage_;
 	// todo: if the theme isn't selectable, find the next theme that is,
 	// and change to that instead of asserting/crashing since
 	// SpecialFiles::BASE_THEME_NAME is _fallback now. -aj
 	if(!IsThemeSelectable(sThemeName))
 	{
-		RString to_try= PREFSMAN->m_sTheme.GetDefault();
+		std::string to_try= PREFSMAN->m_sTheme.GetDefault();
 		LOG->Warn("Selected theme '%s' not found.  "
 			"Trying Theme preference default value '%s'.",
 			sThemeName.c_str(), to_try.c_str());
@@ -406,7 +406,7 @@ void ThemeManager::SwitchThemeAndLanguage( const RString &sThemeName_, const RSt
 			sThemeName = to_try;
 			if(!IsThemeSelectable(sThemeName))
 			{
-				std::vector<RString> theme_names;
+				std::vector<std::string> theme_names;
 				GetSelectableThemeNames(theme_names);
 				ASSERT_M(!theme_names.empty(), "No themes found, unable to start stepmania.");
 				to_try= theme_names[0];
@@ -493,13 +493,13 @@ void ThemeManager::ClearSubscribers()
 	}
 }
 
-void ThemeManager::RunLuaScripts( const RString &sMask, bool bUseThemeDir )
+void ThemeManager::RunLuaScripts( const std::string &sMask, bool bUseThemeDir )
 {
 	/* Run all script files with the given mask in Lua for all themes.  Start
 	 * from the deepest fallback theme and work outwards. */
 
 	/* TODO: verify whether this final check is necessary. */
-	const RString sCurThemeName = m_sCurThemeName;
+	const std::string sCurThemeName = m_sCurThemeName;
 
 	std::deque<Theme>::const_iterator iter = g_vThemes.end();
 	do
@@ -511,24 +511,24 @@ void ThemeManager::RunLuaScripts( const RString &sMask, bool bUseThemeDir )
 		 * scripts call GetThemeName(), it'll return the theme the script is in. */
 
 		m_sCurThemeName = iter->sThemeName;
-		const RString &sScriptDir = bUseThemeDir ? GetThemeDirFromName( m_sCurThemeName ) : RString("/");
+		const std::string &sScriptDir = bUseThemeDir ? GetThemeDirFromName( m_sCurThemeName ) : std::string("/");
 
-		std::vector<RString> asElementPaths;
+		std::vector<std::string> asElementPaths;
 		// get files from directories
-		std::vector<RString> asElementChildPaths;
-		std::vector<RString> arrayScriptDirs;
+		std::vector<std::string> asElementChildPaths;
+		std::vector<std::string> arrayScriptDirs;
 		GetDirListing( sScriptDir + "Scripts/*", arrayScriptDirs, true );
 		SortRStringArray( arrayScriptDirs );
 		StripCvsAndSvn( arrayScriptDirs );
 		StripMacResourceForks( arrayScriptDirs );
-		for( RString const &sScriptDirName : arrayScriptDirs )	// foreach dir in /Scripts/
+		for( std::string const &sScriptDirName : arrayScriptDirs )	// foreach dir in /Scripts/
 		{
 			// Find all Lua files in this directory, add them to asElementPaths
 			GetDirListing( sScriptDir + "Scripts/" + sScriptDirName + "/" + sMask, asElementChildPaths, false, true );
 			for( unsigned i = 0; i < asElementChildPaths.size(); ++i )
 			{
 				// push these Lua files into the main element paths
-				const RString &sPath = asElementChildPaths[i];
+				const std::string &sPath = asElementChildPaths[i];
 				asElementPaths.push_back(sPath);
 			}
 		}
@@ -539,7 +539,7 @@ void ThemeManager::RunLuaScripts( const RString &sMask, bool bUseThemeDir )
 		// load Lua files
 		for( unsigned i = 0; i < asElementPaths.size(); ++i )
 		{
-			const RString &sPath = asElementPaths[i];
+			const std::string &sPath = asElementPaths[i];
 			LOG->Trace( "Loading \"%s\" ...", sPath.c_str() );
 			LuaHelpers::RunScriptFile( sPath );
 		}
@@ -567,27 +567,27 @@ void ThemeManager::UpdateLuaGlobals()
 #endif
 }
 
-RString ThemeManager::GetThemeDirFromName( const RString &sThemeName )
+std::string ThemeManager::GetThemeDirFromName( const std::string &sThemeName )
 {
 	return SpecialFiles::THEMES_DIR + sThemeName + "/";
 }
 
 struct CompareLanguageTag
 {
-	RString m_sLanguageString;
-	CompareLanguageTag( const RString &sLang )
+	std::string m_sLanguageString;
+	CompareLanguageTag( const std::string &sLang )
 	{
-		m_sLanguageString = RString("(lang ") + sLang + ")";
+		m_sLanguageString = std::string("(lang ") + sLang + ")";
 		LOG->Trace( "try \"%s\"", sLang.c_str() );
 		MakeLower(m_sLanguageString);
 	}
 
-	bool operator()( const RString &sFile ) const
+	bool operator()( const std::string &sFile ) const
 	{
-		RString sLower( sFile );
+		std::string sLower( sFile );
 		MakeLower(sLower);
 		size_t iPos = sLower.find( m_sLanguageString );
-		return iPos != RString::npos;
+		return iPos != std::string::npos;
 	}
 };
 
@@ -600,11 +600,11 @@ struct CompareLanguageTag
  * files with the current language tag to the top, so choosing "ignore" from
  * the multiple-match dialog will cause it to default to the first entry, so
  * it'll still use a preferred language match if there were any. */
-void ThemeManager::FilterFileLanguages( std::vector<RString> &asPaths )
+void ThemeManager::FilterFileLanguages( std::vector<std::string> &asPaths )
 {
 	if( asPaths.size() <= 1 )
 		return;
-	std::vector<RString>::iterator it =
+	std::vector<std::string>::iterator it =
 		partition( asPaths.begin(), asPaths.end(), CompareLanguageTag(m_sCurLanguage) );
 
 	int iDist = distance( asPaths.begin(), it );
@@ -619,19 +619,19 @@ void ThemeManager::FilterFileLanguages( std::vector<RString> &asPaths )
 		asPaths.erase( it, asPaths.end() );
 }
 
-bool ThemeManager::GetPathInfoToRaw( PathInfo &out, const RString &sThemeName_, ElementCategory category, const RString &sMetricsGroup_, const RString &sElement_ )
+bool ThemeManager::GetPathInfoToRaw( PathInfo &out, const std::string &sThemeName_, ElementCategory category, const std::string &sMetricsGroup_, const std::string &sElement_ )
 {
 	/* Ugly: the parameters to this function may be a reference into g_vThemes,
 	 * or something else that might suddenly go away when we call ReloadMetrics,
 	 * so make a copy. */
-	const RString sThemeName = sThemeName_;
-	const RString sMetricsGroup = sMetricsGroup_;
-	const RString sElement = sElement_;
+	const std::string sThemeName = sThemeName_;
+	const std::string sMetricsGroup = sMetricsGroup_;
+	const std::string sElement = sElement_;
 
-	const RString sThemeDir = GetThemeDirFromName( sThemeName );
-	const RString &sCategory = ElementCategoryToString(category);
+	const std::string sThemeDir = GetThemeDirFromName( sThemeName );
+	const std::string &sCategory = ElementCategoryToString(category);
 
-	std::vector<RString> asElementPaths;
+	std::vector<std::string> asElementPaths;
 
 	// If sFileName already has an extension, we're looking for a specific file
 	bool bLookingForSpecificFile = sElement.find_last_of('.') != sElement.npos;
@@ -642,14 +642,14 @@ bool ThemeManager::GetPathInfoToRaw( PathInfo &out, const RString &sThemeName_, 
 	}
 	else	// look for all files starting with sFileName that have types we can use
 	{
-		std::vector<RString> asPaths;
+		std::vector<std::string> asPaths;
 		GetDirListing( sThemeDir + sCategory + "/" + MetricsGroupAndElementToFileName(sMetricsGroup,sElement) + "*",
 						asPaths, false, true );
 
 		for( unsigned p = 0; p < asPaths.size(); ++p )
 		{
 			// BGAnimations, Fonts, Graphics, Sounds, Other
-			const RString ext = GetExtension(asPaths[p]);
+			const std::string ext = GetExtension(asPaths[p]);
 			bool matches= category == EC_OTHER || ext == "redir";
 			if(!matches)
 			{
@@ -670,13 +670,13 @@ bool ThemeManager::GetPathInfoToRaw( PathInfo &out, const RString &sThemeName_, 
 						break;
 					case FT_Directory:
 						{
-							RString sXMLPath = asPaths[p] + "/default.xml";
+							std::string sXMLPath = asPaths[p] + "/default.xml";
 							if(DoesFileExist(sXMLPath))
 							{
 								asElementPaths.push_back(sXMLPath);
 								break;
 							}
-							RString sLuaPath = asPaths[p] + "/default.lua";
+							std::string sLuaPath = asPaths[p] + "/default.lua";
 							if(DoesFileExist(sLuaPath))
 							{
 								asElementPaths.push_back(sLuaPath);
@@ -709,7 +709,7 @@ bool ThemeManager::GetPathInfoToRaw( PathInfo &out, const RString &sThemeName_, 
 	{
 		g_ThemePathCache[category].clear();
 
-		RString message = ssprintf(
+		std::string message = ssprintf(
 			"ThemeManager:  There is more than one theme element that matches "
 			"'%s/%s/%s'.  Please remove all but one of these matches: ",
 			sThemeName.c_str(), sCategory.c_str(), MetricsGroupAndElementToFileName(sMetricsGroup,sElement).c_str() );
@@ -734,7 +734,7 @@ bool ThemeManager::GetPathInfoToRaw( PathInfo &out, const RString &sThemeName_, 
 	}
 
 
-	RString sPath = asElementPaths[0];
+	std::string sPath = asElementPaths[0];
 	bool bIsARedirect = CompareNoCase(GetExtension(sPath), "redir")==0;
 
 	if( !bIsARedirect )
@@ -745,10 +745,10 @@ bool ThemeManager::GetPathInfoToRaw( PathInfo &out, const RString &sThemeName_, 
 		return true;
 	}
 
-	RString sNewFileName;
+	std::string sNewFileName;
 	GetFileContents( sPath, sNewFileName, true );
 
-	RString sNewClassName, sNewFile;
+	std::string sNewClassName, sNewFile;
 	FileNameToMetricsGroupAndElement(sNewFileName, sNewClassName, sNewFile);
 
 	/* Important: We need to do a full search.  For example, BG redirs in
@@ -760,7 +760,7 @@ bool ThemeManager::GetPathInfoToRaw( PathInfo &out, const RString &sThemeName_, 
 	if( GetPathInfo(out,category,sNewClassName,sNewFile,true) )
 		return true;
 
-	RString sMessage = ssprintf(
+	std::string sMessage = ssprintf(
 			"ThemeManager:  The redirect '%s' points to the file '%s', which does not exist. "
 			"Verify that this redirect is correct.",
 			sPath.c_str(), sNewFileName.c_str());
@@ -778,9 +778,9 @@ bool ThemeManager::GetPathInfoToRaw( PathInfo &out, const RString &sThemeName_, 
 	}
 }
 
-bool ThemeManager::GetPathInfoToAndFallback( PathInfo &out, ElementCategory category, const RString &sMetricsGroup_, const RString &sElement )
+bool ThemeManager::GetPathInfoToAndFallback( PathInfo &out, ElementCategory category, const std::string &sMetricsGroup_, const std::string &sElement )
 {
-	RString sMetricsGroup( sMetricsGroup_ );
+	std::string sMetricsGroup( sMetricsGroup_ );
 
 	int n = 100;
 	while( n-- )
@@ -806,18 +806,18 @@ bool ThemeManager::GetPathInfoToAndFallback( PathInfo &out, ElementCategory cate
 	return false;
 }
 
-bool ThemeManager::GetPathInfo( PathInfo &out, ElementCategory category, const RString &sMetricsGroup_, const RString &sElement_, bool bOptional )
+bool ThemeManager::GetPathInfo( PathInfo &out, ElementCategory category, const std::string &sMetricsGroup_, const std::string &sElement_, bool bOptional )
 {
 	/* Ugly: the parameters to this function may be a reference into g_vThemes,
 	 * or something else that might suddenly go away when we call ReloadMetrics. */
-	const RString sMetricsGroup = sMetricsGroup_;
-	const RString sElement = sElement_;
+	const std::string sMetricsGroup = sMetricsGroup_;
+	const std::string sElement = sElement_;
 
-	RString sFileName = MetricsGroupAndElementToFileName( sMetricsGroup, sElement );
+	std::string sFileName = MetricsGroupAndElementToFileName( sMetricsGroup, sElement );
 
-	std::map<RString, PathInfo> &Cache = g_ThemePathCache[category];
+	std::map<std::string, PathInfo> &Cache = g_ThemePathCache[category];
 	{
-		std::map<RString, PathInfo>::const_iterator i;
+		std::map<std::string, PathInfo>::const_iterator i;
 
 		i = Cache.find( sFileName );
 		if( i != Cache.end() )
@@ -842,10 +842,10 @@ try_element_again:
 		return false;
 	}
 
-	const RString &sCategory = ElementCategoryToString(category);
+	const std::string &sCategory = ElementCategoryToString(category);
 
 	// We can't fall back on _missing in Other: the file types are unknown.
-	RString sMessage = "The theme element \"" + sCategory + "/" + sFileName +"\" is missing.";
+	std::string sMessage = "The theme element \"" + sCategory + "/" + sFileName +"\" is missing.";
 	Dialog::Result res;
 	if( category != EC_OTHER )
 		res = Dialog::AbortRetryIgnore( sMessage, "MissingThemeElement" );
@@ -858,8 +858,8 @@ try_element_again:
 		goto try_element_again;
 	case Dialog::ignore:
 		{
-			RString element = sCategory + '/' + sFileName;
-			RString error = "could not be found in \"" +
+			std::string element = sCategory + '/' + sFileName;
+			std::string error = "could not be found in \"" +
 				GetThemeDirFromName(m_sCurThemeName) + "\" or \"" +
 				GetThemeDirFromName(SpecialFiles::BASE_THEME_NAME) + "\".";
 			LOG->UserLog("Theme element", element.c_str(), "%s", error.c_str());
@@ -888,7 +888,7 @@ try_element_again:
 	}
 }
 
-RString ThemeManager::GetPath( ElementCategory category, const RString &sMetricsGroup, const RString &sElement, bool bOptional )
+std::string ThemeManager::GetPath( ElementCategory category, const std::string &sMetricsGroup, const std::string &sElement, bool bOptional )
 {
 	PathInfo pi;
 	GetPathInfo( pi, category, sMetricsGroup, sElement, bOptional );
@@ -902,14 +902,14 @@ RString ThemeManager::GetPath( ElementCategory category, const RString &sMetrics
 	return pi.sResolvedPath;
 }
 
-RString ThemeManager::GetMetricsIniPath( const RString &sThemeName )
+std::string ThemeManager::GetMetricsIniPath( const std::string &sThemeName )
 {
 	return GetThemeDirFromName( sThemeName ) + SpecialFiles::METRICS_FILE;
 }
 
-bool ThemeManager::HasMetric( const RString &sMetricsGroup, const RString &sValueName )
+bool ThemeManager::HasMetric( const std::string &sMetricsGroup, const std::string &sValueName )
 {
-	RString sThrowAway;
+	std::string sThrowAway;
 	if(sMetricsGroup == "" || sValueName == "")
 	{
 		return false;
@@ -917,9 +917,9 @@ bool ThemeManager::HasMetric( const RString &sMetricsGroup, const RString &sValu
 	return GetMetricRawRecursive( g_pLoadedThemeData->iniMetrics, sMetricsGroup, sValueName, sThrowAway );
 }
 
-bool ThemeManager::HasString( const RString &sMetricsGroup, const RString &sValueName )
+bool ThemeManager::HasString( const std::string &sMetricsGroup, const std::string &sValueName )
 {
-	RString sThrowAway;
+	std::string sThrowAway;
 	if(sMetricsGroup == "" || sValueName == "")
 	{
 		return false;
@@ -944,28 +944,28 @@ void ThemeManager::ReloadMetrics()
 }
 
 
-RString ThemeManager::GetMetricsGroupFallback( const RString &sMetricsGroup )
+std::string ThemeManager::GetMetricsGroupFallback( const std::string &sMetricsGroup )
 {
 	ASSERT( g_pLoadedThemeData != nullptr );
 
 	// always look in iniMetrics for "Fallback"
-	RString sFallback;
+	std::string sFallback;
 	if( !GetMetricRawRecursive(g_pLoadedThemeData->iniMetrics,sMetricsGroup,"Fallback",sFallback) )
-		return RString();
+		return std::string();
 
 	Lua *L = LUA->Get();
 	LuaHelpers::RunExpression( L, sFallback );
-	RString sRet;
+	std::string sRet;
 	LuaHelpers::Pop( L, sRet );
 	LUA->Release( L );
 
 	return sRet;
 }
 
-bool ThemeManager::GetMetricRawRecursive( const IniFile &ini, const RString &sMetricsGroup_, const RString &sValueName, RString &sOut )
+bool ThemeManager::GetMetricRawRecursive( const IniFile &ini, const std::string &sMetricsGroup_, const std::string &sValueName, std::string &sOut )
 {
 	ASSERT( sValueName != "" );
-	RString sMetricsGroup( sMetricsGroup_ );
+	std::string sMetricsGroup( sMetricsGroup_ );
 
 	int n = 100;
 	while( n-- )
@@ -985,24 +985,24 @@ bool ThemeManager::GetMetricRawRecursive( const IniFile &ini, const RString &sMe
 	return false;
 }
 
-RString ThemeManager::GetMetricRaw( const IniFile &ini, const RString &sMetricsGroup_, const RString &sValueName_ )
+std::string ThemeManager::GetMetricRaw( const IniFile &ini, const std::string &sMetricsGroup_, const std::string &sValueName_ )
 {
 	/* Ugly: the parameters to this function may be a reference into g_vThemes, or something
 	 * else that might suddenly go away when we call ReloadMetrics. */
-	const RString sMetricsGroup = sMetricsGroup_;
-	const RString sValueName = sValueName_;
+	const std::string sMetricsGroup = sMetricsGroup_;
+	const std::string sValueName = sValueName_;
 
 	for(;;)
 	{
-		RString ret;
+		std::string ret;
 		if( ThemeManager::GetMetricRawRecursive(ini, sMetricsGroup, sValueName, ret) )
 		{
 			return ret;
 		}
-		RString sCurMetricPath = GetMetricsIniPath( m_sCurThemeName );
-		RString sDefaultMetricPath = GetMetricsIniPath( SpecialFiles::BASE_THEME_NAME );
+		std::string sCurMetricPath = GetMetricsIniPath( m_sCurThemeName );
+		std::string sDefaultMetricPath = GetMetricsIniPath( SpecialFiles::BASE_THEME_NAME );
 
-		RString sType;
+		std::string sType;
 		if( &ini == &g_pLoadedThemeData->iniStrings )
 			sType = "String";
 		else if( &ini == &g_pLoadedThemeData->iniMetrics )
@@ -1010,7 +1010,7 @@ RString ThemeManager::GetMetricRaw( const IniFile &ini, const RString &sMetricsG
 		else
 			FAIL_M("");
 
-		RString sMessage = ssprintf( "%s \"%s::%s\" is missing.",
+		std::string sMessage = ssprintf( "%s \"%s::%s\" is missing.",
 			sType.c_str(),
 			sMetricsGroup.c_str(),
 			sValueName.c_str() );
@@ -1036,7 +1036,7 @@ RString ThemeManager::GetMetricRaw( const IniFile &ini, const RString &sMetricsG
 					"could not be found in \"%s\" or \"%s\".",
 					sCurMetricPath.c_str(),
 					sDefaultMetricPath.c_str() );
-				return RString();
+				return std::string();
 			default:
 				FAIL_M("Unexpected answer to Abort/Retry/Ignore dialog");
 		}
@@ -1044,7 +1044,7 @@ RString ThemeManager::GetMetricRaw( const IniFile &ini, const RString &sMetricsG
 }
 
 template<typename T>
-void GetAndConvertMetric( const RString &sMetricsGroup, const RString &sValueName, T &out )
+void GetAndConvertMetric( const std::string &sMetricsGroup, const std::string &sValueName, T &out )
 {
 	Lua *L = LUA->Get();
 
@@ -1056,49 +1056,49 @@ void GetAndConvertMetric( const RString &sMetricsGroup, const RString &sValueNam
 }
 
 /* Get a string metric. */
-RString ThemeManager::GetMetric( const RString &sMetricsGroup, const RString &sValueName )
+std::string ThemeManager::GetMetric( const std::string &sMetricsGroup, const std::string &sValueName )
 {
-	RString sRet;
+	std::string sRet;
 	GetAndConvertMetric( sMetricsGroup, sValueName, sRet );
 	return sRet;
 }
 
-int ThemeManager::GetMetricI( const RString &sMetricsGroup, const RString &sValueName )
+int ThemeManager::GetMetricI( const std::string &sMetricsGroup, const std::string &sValueName )
 {
 	int iRet = 0;
 	GetAndConvertMetric( sMetricsGroup, sValueName, iRet );
 	return iRet;
 }
 
-float ThemeManager::GetMetricF( const RString &sMetricsGroup, const RString &sValueName )
+float ThemeManager::GetMetricF( const std::string &sMetricsGroup, const std::string &sValueName )
 {
 	float fRet = 0;
 	GetAndConvertMetric( sMetricsGroup, sValueName, fRet );
 	return fRet;
 }
 
-bool ThemeManager::GetMetricB( const RString &sMetricsGroup, const RString &sValueName )
+bool ThemeManager::GetMetricB( const std::string &sMetricsGroup, const std::string &sValueName )
 {
 	bool bRet = 0;
 	GetAndConvertMetric( sMetricsGroup, sValueName, bRet );
 	return bRet;
 }
 
-RageColor ThemeManager::GetMetricC( const RString &sMetricsGroup, const RString &sValueName )
+RageColor ThemeManager::GetMetricC( const std::string &sMetricsGroup, const std::string &sValueName )
 {
 	RageColor ret;
 	GetAndConvertMetric( sMetricsGroup, sValueName, ret );
 	return ret;
 }
 
-LuaReference ThemeManager::GetMetricR( const RString &sMetricsGroup, const RString &sValueName )
+LuaReference ThemeManager::GetMetricR( const std::string &sMetricsGroup, const std::string &sValueName )
 {
 	LuaReference ref;
 	GetMetric( sMetricsGroup, sValueName, ref );
 	return ref;
 }
 
-void ThemeManager::PushMetric( Lua *L, const RString &sMetricsGroup, const RString &sValueName )
+void ThemeManager::PushMetric( Lua *L, const std::string &sMetricsGroup, const std::string &sValueName )
 {
 	if(sMetricsGroup == "" || sValueName == "")
 	{
@@ -1106,9 +1106,9 @@ void ThemeManager::PushMetric( Lua *L, const RString &sMetricsGroup, const RStri
 		lua_pushnil(L);
 		return;
 	}
-	RString sValue = GetMetricRaw( g_pLoadedThemeData->iniMetrics, sMetricsGroup, sValueName );
+	std::string sValue = GetMetricRaw( g_pLoadedThemeData->iniMetrics, sMetricsGroup, sValueName );
 
-	RString sName = ssprintf( "%s::%s", sMetricsGroup.c_str(), sValueName.c_str() );
+	std::string sName = ssprintf( "%s::%s", sMetricsGroup.c_str(), sValueName.c_str() );
 	if( EndsWith(sValueName, "Command") )
 	{
 		LuaHelpers::ParseCommandList( L, sValue, sName, false );
@@ -1123,7 +1123,7 @@ void ThemeManager::PushMetric( Lua *L, const RString &sMetricsGroup, const RStri
 	}
 }
 
-void ThemeManager::GetMetric( const RString &sMetricsGroup, const RString &sValueName, LuaReference &valueOut )
+void ThemeManager::GetMetric( const std::string &sMetricsGroup, const std::string &sValueName, LuaReference &valueOut )
 {
 	Lua *L = LUA->Get();
 	PushMetric( L, sMetricsGroup, sValueName );
@@ -1132,7 +1132,7 @@ void ThemeManager::GetMetric( const RString &sMetricsGroup, const RString &sValu
 }
 
 #if !defined(SMPACKAGE)
-apActorCommands ThemeManager::GetMetricA( const RString &sMetricsGroup, const RString &sValueName )
+apActorCommands ThemeManager::GetMetricA( const std::string &sMetricsGroup, const std::string &sValueName )
 {
 	LuaReference *pRef = new LuaReference;
 	GetMetric( sMetricsGroup, sValueName, *pRef );
@@ -1140,14 +1140,14 @@ apActorCommands ThemeManager::GetMetricA( const RString &sMetricsGroup, const RS
 }
 #endif
 
-void ThemeManager::EvaluateString( RString &sText )
+void ThemeManager::EvaluateString( std::string &sText )
 {
 	FontCharAliases::ReplaceMarkers( sText );
 }
 
-RString ThemeManager::GetNextTheme()
+std::string ThemeManager::GetNextTheme()
 {
-	std::vector<RString> as;
+	std::vector<std::string> as;
 	GetThemeNames( as );
 	unsigned i;
 	for( i=0; i<as.size(); i++ )
@@ -1157,9 +1157,9 @@ RString ThemeManager::GetNextTheme()
 	return as[iNewIndex];
 }
 
-RString ThemeManager::GetNextSelectableTheme()
+std::string ThemeManager::GetNextSelectableTheme()
 {
-	std::vector<RString> as;
+	std::vector<std::string> as;
 	GetSelectableThemeNames( as );
 	unsigned i;
 	for( i=0; i<as.size(); i++ )
@@ -1169,41 +1169,41 @@ RString ThemeManager::GetNextSelectableTheme()
 	return as[iNewIndex];
 }
 
-void ThemeManager::GetLanguagesForTheme( const RString &sThemeName, std::vector<RString>& asLanguagesOut )
+void ThemeManager::GetLanguagesForTheme( const std::string &sThemeName, std::vector<std::string>& asLanguagesOut )
 {
-	RString sLanguageDir = GetThemeDirFromName(sThemeName) + SpecialFiles::LANGUAGES_SUBDIR;
-	std::vector<RString> as;
+	std::string sLanguageDir = GetThemeDirFromName(sThemeName) + SpecialFiles::LANGUAGES_SUBDIR;
+	std::vector<std::string> as;
 	GetDirListing( sLanguageDir + "*.ini", as );
 
-	for (RString const &s : as)
+	for (std::string const &s : as)
 	{
 		// ignore metrics.ini
 		if( CompareNoCase(s, SpecialFiles::METRICS_FILE)==0 )
 			continue;
 
 		// Ignore filenames with a space.  These are optional language inis that probably came from a mounted package.
-		if( s.find(" ") != RString::npos )
+		if( s.find(" ") != std::string::npos )
 			continue;
 
 		// strip ".ini"
-		RString s2 = Left(s, s.size()-4);
+		std::string s2 = Left(s, s.size()-4);
 
 		asLanguagesOut.push_back( s2 );
 	}
 }
 
-RString ThemeManager::GetLanguageIniPath( const RString &sThemeName, const RString &sLanguage )
+std::string ThemeManager::GetLanguageIniPath( const std::string &sThemeName, const std::string &sLanguage )
 {
 	return GetThemeDirFromName(sThemeName) + SpecialFiles::LANGUAGES_SUBDIR + sLanguage + ".ini";
 }
 
-void ThemeManager::GetOptionalLanguageIniPaths( std::vector<RString> &vsPathsOut, const RString &sThemeName, const RString &sLanguage )
+void ThemeManager::GetOptionalLanguageIniPaths( std::vector<std::string> &vsPathsOut, const std::string &sThemeName, const std::string &sLanguage )
 {
 	// optional ini names look like: "en PackageName.ini"
 	GetDirListing( GetThemeDirFromName(sThemeName) + SpecialFiles::LANGUAGES_SUBDIR + sLanguage + " *.ini", vsPathsOut, false, true );
 }
 
-void ThemeManager::GetOptionNames( std::vector<RString>& AddTo )
+void ThemeManager::GetOptionNames( std::vector<std::string>& AddTo )
 {
 	const XNode *cur = g_pLoadedThemeData->iniStrings.GetChild( "OptionNames" );
 	if( cur )
@@ -1213,7 +1213,7 @@ void ThemeManager::GetOptionNames( std::vector<RString>& AddTo )
 	}
 }
 
-static RString PseudoLocalize( RString s )
+static std::string PseudoLocalize( std::string s )
 {
 	Replace(s, "a", "\xc3\xa0\xc3\xa1"); // àá
 	Replace(s, "A", "\xc3\x80\xc3\x80"); // ÀÀ
@@ -1237,9 +1237,9 @@ static RString PseudoLocalize( RString s )
 	return s;
 }
 
-RString ThemeManager::GetString( const RString &sMetricsGroup, const RString &sValueName_ )
+std::string ThemeManager::GetString( const std::string &sMetricsGroup, const std::string &sValueName_ )
 {
-	RString sValueName = sValueName_;
+	std::string sValueName = sValueName_;
 	if(sMetricsGroup == "" || sValueName == "")
 	{
 		LuaHelpers::ReportScriptError("PushMetric:  Attempted to fetch metric with empty group name or empty value name.");
@@ -1254,7 +1254,7 @@ RString ThemeManager::GetString( const RString &sMetricsGroup, const RString &sV
 	Replace(sValueName, "\n", "\\n");
 
 	ASSERT( g_pLoadedThemeData != nullptr );
-	RString s = GetMetricRaw( g_pLoadedThemeData->iniStrings, sMetricsGroup, sValueName );
+	std::string s = GetMetricRaw( g_pLoadedThemeData->iniStrings, sMetricsGroup, sValueName );
 	FontCharAliases::ReplaceMarkers( s );
 
 	// Don't EvalulateString.  Strings are raw and shouldn't allow Lua.
@@ -1265,15 +1265,15 @@ RString ThemeManager::GetString( const RString &sMetricsGroup, const RString &sV
 	if( m_bPseudoLocalize )
 	{
 		// pseudolocalize ignoring replace markers.  e.g.: "%{steps} steps: %{author}"
-		RString sTranslated;
+		std::string sTranslated;
 
 		for( ; true; )
 		{
-			RString::size_type pos = s.find( "%{" );
+			std::string::size_type pos = s.find( "%{" );
 			if( pos == s.npos )
 			{
 				sTranslated += PseudoLocalize( s );
-				s = RString();
+				s = std::string();
 				break;
 			}
 			else
@@ -1293,9 +1293,9 @@ RString ThemeManager::GetString( const RString &sMetricsGroup, const RString &sV
 	return s;
 }
 
-void ThemeManager::GetMetricsThatBeginWith( const RString &sMetricsGroup_, const RString &sValueName, std::set<RString> &vsValueNamesOut )
+void ThemeManager::GetMetricsThatBeginWith( const std::string &sMetricsGroup_, const std::string &sValueName, std::set<std::string> &vsValueNamesOut )
 {
-	RString sMetricsGroup( sMetricsGroup_ );
+	std::string sMetricsGroup( sMetricsGroup_ );
 	while( !sMetricsGroup.empty() )
 	{
 		const XNode *cur = g_pLoadedThemeData->iniMetrics.GetChild( sMetricsGroup );
@@ -1304,7 +1304,7 @@ void ThemeManager::GetMetricsThatBeginWith( const RString &sMetricsGroup_, const
 			// Iterate over all metrics that match.
 			for( XAttrs::const_iterator j = cur->m_attrs.lower_bound( sValueName ); j != cur->m_attrs.end(); ++j )
 			{
-				const RString &sv = j->first;
+				const std::string &sv = j->first;
 				if( Left(sv, sValueName.size()) == sValueName )
 					vsValueNamesOut.insert( sv );
 				else	// we passed the last metric that matched sValueName
@@ -1318,7 +1318,7 @@ void ThemeManager::GetMetricsThatBeginWith( const RString &sMetricsGroup_, const
 }
 
 
-RString ThemeManager::GetBlankGraphicPath()
+std::string ThemeManager::GetBlankGraphicPath()
 {
 	return SpecialFiles::THEMES_DIR + SpecialFiles::BASE_THEME_NAME + "/" + ElementCategoryToString(EC_GRAPHICS) + "/_blank.png";
 }
@@ -1335,8 +1335,8 @@ public:
 	static int HasMetric( T* p, lua_State *L )		{ lua_pushboolean(L, p->HasMetric(SArg(1),SArg(2))); return 1; }
 	static int GetMetric( T* p, lua_State *L )
 	{
-		RString group= SArg(1);
-		RString name= SArg(2);
+		std::string group= SArg(1);
+		std::string name= SArg(2);
 		if(group == "" || name == "")
 		{
 			luaL_error(L, "Cannot fetch metric with empty group name or empty value name.");
@@ -1347,8 +1347,8 @@ public:
 	static int HasString( T* p, lua_State *L )		{ lua_pushboolean(L, p->HasString(SArg(1),SArg(2))); return 1; }
 	static int GetString( T* p, lua_State *L )
 	{
-		RString group= SArg(1);
-		RString name= SArg(2);
+		std::string group= SArg(1);
+		std::string name= SArg(2);
 		if(group == "" || name == "")
 		{
 			luaL_error(L, "Cannot fetch string with empty group name or empty value name.");
@@ -1387,9 +1387,9 @@ public:
 	{
 		// pushes a table of theme folders from GetSelectableThemeNames()
 		//lua_pushnumber(L, p->GetNumSelectableThemes() );
-		std::vector<RString> sThemes;
+		std::vector<std::string> sThemes;
 		p->GetSelectableThemeNames(sThemes);
-		LuaHelpers::CreateTableFromArray<RString>( sThemes, L );
+		LuaHelpers::CreateTableFromArray<std::string>( sThemes, L );
 		return 1;
 	}
 
@@ -1406,7 +1406,7 @@ public:
 
 	static void PushMetricNamesInGroup(IniFile const& ini, lua_State* L)
 	{
-		RString group_name= SArg(1);
+		std::string group_name= SArg(1);
 		const XNode* metric_node= ini.GetChild(group_name);
 		if(metric_node != nullptr)
 		{
@@ -1440,7 +1440,7 @@ public:
 
 	static int SetTheme(T* p, lua_State* L)
 	{
-		RString theme_name= SArg(1);
+		std::string theme_name= SArg(1);
 		if(!p->IsThemeSelectable(theme_name))
 		{
 			luaL_error(L, "SetTheme: Invalid Theme: '%s'", theme_name.c_str());

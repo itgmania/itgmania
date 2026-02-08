@@ -7,7 +7,7 @@
 #include <vector>
 
 
-static const RString TEMP_MOUNT_POINT = "/@mctemptimeout/";
+static const std::string TEMP_MOUNT_POINT = "/@mctemptimeout/";
 
 enum MemoryCardDriverType {
 	MemoryCardDriverType_Usb,
@@ -34,7 +34,7 @@ bool UsbStorageDevice::operator==(const UsbStorageDevice& other) const {
 	return true;
 }
 
-void UsbStorageDevice::SetOsMountDir( const RString &s )
+void UsbStorageDevice::SetOsMountDir( const std::string &s )
 {
 	sOsMountDir = s;
 }

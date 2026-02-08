@@ -16,7 +16,7 @@ class RageSoundDriver_WDMKS: public RageSoundDriver
 public:
 	RageSoundDriver_WDMKS();
 	~RageSoundDriver_WDMKS();
-	RString Init();
+	std::string Init();
 
 	int64_t GetPosition() const;
 	float GetPlayLatency() const;
@@ -25,7 +25,7 @@ public:
 private:
 	static int MixerThread_start( void *p );
 	void MixerThread();
-	bool Fill( int iPacket, RString &sError );
+	bool Fill( int iPacket, std::string &sError );
 	void Read( void *pData, int iFrames, int iLastCursorPos, int iCurrentFrame );
 
 	RageThread MixingThread;

@@ -25,7 +25,7 @@ void LifeMeterBattery::Load( const PlayerState *pPlayerState, PlayerStageStats *
 	m_iLivesLeft = m_pPlayerState->m_PlayerOptions.GetStage().m_BatteryLives;
 	m_iTrailingLivesLeft = m_iLivesLeft;
 
-	const RString sType = "LifeMeterBattery";
+	const std::string sType = "LifeMeterBattery";
 	PlayerNumber pn = pPlayerState->m_PlayerNumber;
 
 	MIN_SCORE_TO_KEEP_LIFE.Load(sType, "MinScoreToKeepLife");
@@ -100,7 +100,7 @@ void LifeMeterBattery::OnSongEnded()
 			COURSE_SONG_REWARD_LIVES.PushSelf(L);
 			PushSelf(L);
 			LuaHelpers::Push(L, pn);
-			RString error= "Error running CourseSongRewardLives callback: ";
+			std::string error= "Error running CourseSongRewardLives callback: ";
 			LuaHelpers::RunScriptOnStack(L, error, 2, 1, true);
 			m_iLivesLeft += (int)luaL_optnumber(L, -1, 0);
 			lua_settop(L, 0);

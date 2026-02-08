@@ -32,12 +32,12 @@ void ScreenGameplayLesson::Init()
 
 	// Load pages
 	Song *pSong = GAMESTATE->m_pCurSong;
-	RString sDir = pSong->GetSongDir();
-	std::vector<RString> vs;
+	std::string sDir = pSong->GetSongDir();
+	std::vector<std::string> vs;
 	GetDirListing( sDir+"Page*", vs, true, true );
 	m_vPages.resize( vs.size() );
 	int i = 0;
-	for (RString const &s : vs)
+	for (std::string const &s : vs)
 	{
 		AutoActor &aa = m_vPages[i];
 

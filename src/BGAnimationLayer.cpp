@@ -73,17 +73,17 @@ BGAnimationLayer::~BGAnimationLayer()
 	ActorFrame::DeleteAllChildren();
 }
 
-void BGAnimationLayer::LoadFromAniLayerFile( const RString& sPath )
+void BGAnimationLayer::LoadFromAniLayerFile( const std::string& sPath )
 {
 	/* Generic BGAs are new.  Animation directories with no INI are old and obsolete.
 	 * Don't combine them. */
-	RString lcPath = sPath;
+	std::string lcPath = sPath;
 	MakeLower(lcPath);
 
-	if( lcPath.find("usesongbg") != RString::npos )
+	if( lcPath.find("usesongbg") != std::string::npos )
 	{
 		const Song* pSong = GAMESTATE->m_pCurSong;
-		RString sSongBGPath;
+		std::string sSongBGPath;
 		if( pSong && pSong->HasBackground() )
 			sSongBGPath = pSong->GetBackgroundPath();
 		else
@@ -127,7 +127,7 @@ void BGAnimationLayer::LoadFromAniLayerFile( const RString& sPath )
 		EFFECT_INVALID
 	};
 
-	const RString EFFECT_STRING[NUM_EFFECTS] = {
+	const std::string EFFECT_STRING[NUM_EFFECTS] = {
 		"center",
 		"stretchstill",
 		"stretchscrollleft",
@@ -348,26 +348,26 @@ void BGAnimationLayer::LoadFromAniLayerFile( const RString& sPath )
 	}
 
 
-	RString sHint = sPath;
+	std::string sHint = sPath;
 	MakeLower(sHint);
 
-	if( sHint.find("cyclecolor") != RString::npos )
+	if( sHint.find("cyclecolor") != std::string::npos )
 		for( unsigned i=0; i<m_SubActors.size(); i++ )
 			m_SubActors[i]->SetEffectRainbow( 5 );
 
-	if( sHint.find("cyclealpha") != RString::npos )
+	if( sHint.find("cyclealpha") != std::string::npos )
 		for( unsigned i=0; i<m_SubActors.size(); i++ )
 			m_SubActors[i]->SetEffectDiffuseShift( 2, RageColor(1,1,1,1), RageColor(1,1,1,0) );
 
-	if( sHint.find("startonrandomframe") != RString::npos )
+	if( sHint.find("startonrandomframe") != std::string::npos )
 		for( unsigned i=0; i<m_SubActors.size(); i++ )
 			m_SubActors[i]->SetState( RandomInt(m_SubActors[i]->GetNumStates()) );
 
-	if( sHint.find("dontanimate") != RString::npos )
+	if( sHint.find("dontanimate") != std::string::npos )
 		for( unsigned i=0; i<m_SubActors.size(); i++ )
 			m_SubActors[i]->StopAnimating();
 
-	if( sHint.find("add") != RString::npos )
+	if( sHint.find("add") != std::string::npos )
 		for( unsigned i=0; i<m_SubActors.size(); i++ )
 			m_SubActors[i]->SetBlendMode( BLEND_ADD );
 }
@@ -382,7 +382,7 @@ void BGAnimationLayer::LoadFromNode( const XNode* pNode )
 
 	bool bStretch = false;
 	{
-		RString type = "sprite";
+		std::string type = "sprite";
 		pNode->GetAttrValue( "Type", type );
 		MakeLower(type);
 
@@ -476,7 +476,7 @@ void BGAnimationLayer::LoadFromNode( const XNode* pNode )
 		break;
 	case TYPE_PARTICLES:
 		{
-			RString sFile;
+			std::string sFile;
 			ActorUtil::GetAttrPath( pNode, "File", sFile );
 			FixSlashesInPlace( sFile );
 
@@ -505,7 +505,7 @@ void BGAnimationLayer::LoadFromNode( const XNode* pNode )
 		break;
 	case TYPE_TILES:
 		{
-			RString sFile;
+			std::string sFile;
 			ActorUtil::GetAttrPath( pNode, "File", sFile );
 			FixSlashesInPlace( sFile );
 

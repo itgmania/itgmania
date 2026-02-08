@@ -83,7 +83,7 @@ public:
 			(m_[level].*fun)();
 	}
 
-	void FromString( ModsLevel level, const RString &str )
+	void FromString( ModsLevel level, const std::string &str )
 	{
 		if( level != ModsLevel_Song )
 			m_[ModsLevel_Current].FromString( str );

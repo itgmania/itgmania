@@ -41,9 +41,9 @@ protected:
 	/** @brief the metric's group.
 	 *
 	 * In metrics.ini, it is usually done as such: [GroupName] */
-	RString		m_sGroup;
+	std::string		m_sGroup;
 	/** @brief the metric's name. */
-	RString		m_sName;
+	std::string		m_sName;
 	/** @brief the metric's value. */
 	LuaReference	m_Value;
 	mutable T	m_currentValue;
@@ -54,7 +54,7 @@ public:
 	 * call Load() to set them.  This is done to allow initializing cached metrics
 	 * in one place for classes that don't receive their m_sName in the constructor
 	 * (everything except screens). */
-	ThemeMetric( const RString& sGroup = "", const RString& sName = "" ):
+	ThemeMetric( const std::string& sGroup = "", const std::string& sName = "" ):
 		m_sGroup( sGroup ),
 		m_sName( sName ),
 		m_Value(), m_currentValue(T()), m_bCallEachTime(false)
@@ -80,14 +80,14 @@ public:
 	 * @brief Load the chosen metric from the .ini file.
 	 * @param sGroup the group the metric is in.
 	 * @param sName the name of the metric. */
-	void Load( const RString &sGroup, const RString& sName )
+	void Load( const std::string &sGroup, const std::string& sName )
 	{
 		m_sGroup = sGroup;
 		m_sName = sName;
 		Read();
 	}
 
-	void ChangeGroup( const RString &sGroup )
+	void ChangeGroup( const std::string &sGroup )
 	{
 		m_sGroup = sGroup;
 		Read();
@@ -129,11 +129,11 @@ public:
 	/**
 	 * @brief Retrieve the metric's name.
 	 * @return the metric's name. */
-	const RString &GetName() const { return m_sName; }
+	const std::string &GetName() const { return m_sName; }
 	/**
 	 * @brief Retrieve the metric's group.
 	 * @return the metric's group. */
-	const RString &GetGroup() const { return m_sGroup; }
+	const std::string &GetGroup() const { return m_sGroup; }
 
 	/**
 	 * @brief Retrieve the metric's value.
@@ -149,7 +149,7 @@ public:
 
 			// call function with 0 arguments and 1 result
 			m_Value.PushSelf( L );
-			RString error= m_sGroup + ": " + m_sName + ": ";
+			std::string error= m_sGroup + ": " + m_sName + ": ";
 			LuaHelpers::RunScriptOnStack(L, error, 0, 1, true);
 			if(!lua_isnil(L, -1))
 			{
@@ -182,7 +182,7 @@ public:
 	bool operator == ( const T& input ) const { return GetValue() == input; }
 };
 
-typedef RString (*MetricName1D)(size_t N);
+typedef std::string (*MetricName1D)(size_t N);
 
 template <class T>
 class ThemeMetric1D : public IThemeMetric
@@ -191,15 +191,15 @@ class ThemeMetric1D : public IThemeMetric
 	std::vector<ThemeMetricT> m_metric;
 
 public:
-	ThemeMetric1D( const RString& sGroup, MetricName1D pfn, size_t N )
+	ThemeMetric1D( const std::string& sGroup, MetricName1D pfn, size_t N )
 	{
 		Load( sGroup, pfn, N );
 	}
 	ThemeMetric1D()
 	{
-		Load( RString(), nullptr, 0 );
+		Load( std::string(), nullptr, 0 );
 	}
-	void Load( const RString& sGroup, MetricName1D pfn, size_t N )
+	void Load( const std::string& sGroup, MetricName1D pfn, size_t N )
 	{
 		m_metric.resize( N );
 		for( unsigned i=0; i<N; i++ )
@@ -221,7 +221,7 @@ public:
 	}
 };
 
-typedef RString (*MetricName2D)(size_t N, size_t M);
+typedef std::string (*MetricName2D)(size_t N, size_t M);
 
 template <class T>
 class ThemeMetric2D : public IThemeMetric
@@ -231,11 +231,11 @@ class ThemeMetric2D : public IThemeMetric
 	std::vector<ThemeMetricTVector> m_metric;
 
 public:
-	ThemeMetric2D( const RString& sGroup = "", MetricName2D pfn = nullptr, size_t N = 0, size_t M = 0 )
+	ThemeMetric2D( const std::string& sGroup = "", MetricName2D pfn = nullptr, size_t N = 0, size_t M = 0 )
 	{
 		Load( sGroup, pfn, N, M );
 	}
-	void Load( const RString& sGroup, MetricName2D pfn, size_t N, size_t M )
+	void Load( const std::string& sGroup, MetricName2D pfn, size_t N, size_t M )
 	{
 		m_metric.resize( N );
 		for( unsigned i=0; i<N; i++ )
@@ -263,42 +263,42 @@ public:
 	}
 };
 
-typedef RString (*MetricNameMap)(RString s);
+typedef std::string (*MetricNameMap)(std::string s);
 
 template <class T>
 class ThemeMetricMap : public IThemeMetric
 {
 	typedef ThemeMetric<T> ThemeMetricT;
-	std::map<RString,ThemeMetricT> m_metric;
+	std::map<std::string,ThemeMetricT> m_metric;
 
 public:
-	ThemeMetricMap( const RString& sGroup = "", MetricNameMap pfn = nullptr, const std::vector<RString> vsValueNames = std::vector<RString>() )
+	ThemeMetricMap( const std::string& sGroup = "", MetricNameMap pfn = nullptr, const std::vector<std::string> vsValueNames = std::vector<std::string>() )
 	{
 		Load( sGroup, pfn, vsValueNames );
 	}
-	void Load( const RString& sGroup, MetricNameMap pfn, const std::vector<RString> vsValueNames )
+	void Load( const std::string& sGroup, MetricNameMap pfn, const std::vector<std::string> vsValueNames )
 	{
 		m_metric.clear();
-		for (RString const &s : vsValueNames)
+		for (std::string const &s : vsValueNames)
 			m_metric[s].Load( sGroup, pfn(s) );
 	}
 	void Read()
 	{
 		// HACK: GCC (3.4) takes this and pretty much nothing else.
 		// I don't know why.
-		for( typename std::map<RString,ThemeMetric<T> >::iterator m = m_metric.begin(); m != m_metric.end(); ++m )
+		for( typename std::map<std::string,ThemeMetric<T> >::iterator m = m_metric.begin(); m != m_metric.end(); ++m )
 			m->second.Read();
 	}
 	void Clear()
 	{
-		for( typename std::map<RString,ThemeMetric<T> >::iterator m = m_metric.begin(); m != m_metric.end(); ++m )
+		for( typename std::map<std::string,ThemeMetric<T> >::iterator m = m_metric.begin(); m != m_metric.end(); ++m )
 			m->second.Clear();
 	}
-	const T& GetValue( RString s ) const
+	const T& GetValue( std::string s ) const
 	{
 		// HACK: GCC (3.4) takes this and pretty much nothing else.
 		// I don't know why.
-		typename std::map<RString,ThemeMetric<T> >::const_iterator iter = m_metric.find(s);
+		typename std::map<std::string,ThemeMetric<T> >::const_iterator iter = m_metric.find(s);
 		ASSERT( iter != m_metric.end() );
 		return iter->second.GetValue();
 	}

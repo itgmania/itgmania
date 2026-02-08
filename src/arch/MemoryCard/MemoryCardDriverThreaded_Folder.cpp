@@ -24,7 +24,7 @@ MemoryCardDriverThreaded_Folder::~MemoryCardDriverThreaded_Folder()
 {
 }
 
-bool MemoryCardDriverThreaded_Folder::FolderExists(RString path)
+bool MemoryCardDriverThreaded_Folder::FolderExists(std::string path)
 {
 	if (path.empty()) {
 		return false;
@@ -61,7 +61,7 @@ int MemoryCardDriverThreaded_Folder::GetActivePlayerMask()
 
 	FOREACH_PlayerNumber( p )
 	{
-		const RString folder = MEMCARDMAN->m_sMemoryCardOsMountPoint[p];
+		const std::string folder = MEMCARDMAN->m_sMemoryCardOsMountPoint[p];
 
 		if(FolderExists(folder)) {
 			ret |= 1 << p;

@@ -169,7 +169,7 @@ class StepsID
 {
 	StepsType st;
 	Difficulty dc;
-	RString sDescription;
+	std::string sDescription;
 	unsigned uHash;
 
 public:
@@ -207,7 +207,7 @@ public:
 
 	XNode* CreateNode() const;
 	void LoadFromNode( const XNode* pNode );
-	RString ToString() const;
+	std::string ToString() const;
 	bool IsValid() const;
 
 	StepsType GetStepsType() const { return st; }

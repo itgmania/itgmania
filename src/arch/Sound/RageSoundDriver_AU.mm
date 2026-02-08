@@ -105,7 +105,7 @@ static void SetSampleRate( AudioUnit au, Float64 desiredRate )
 	}
 }
 
-RString RageSoundDriver_AU::Init()
+std::string RageSoundDriver_AU::Init()
 {
 	AudioComponentDescription desc;
 
@@ -190,7 +190,7 @@ RString RageSoundDriver_AU::Init()
 	if( (error = AudioOutputUnitStart(m_OutputUnit)) )
 		return ssprintf("Could not start the AudioUnit: %s", FormatOSError(error));
 	m_bStarted = true;
-	return RString();
+	return std::string();
 }
 
 RageSoundDriver_AU::~RageSoundDriver_AU()
@@ -217,7 +217,7 @@ int64_t RageSoundDriver_AU::GetPosition() const
 void RageSoundDriver_AU::SetupDecodingThread()
 {
 	/* Increase the scheduling precedence of the decoder thread. */
-	const RString sError = SetThreadPrecedence( 0.75f );
+	const std::string sError = SetThreadPrecedence( 0.75f );
 	if( !sError.empty() )
 		LOG->Warn( "Could not set precedence of the decoding thread: %s", sError.c_str() );
 }

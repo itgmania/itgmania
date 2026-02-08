@@ -316,12 +316,12 @@ void ScreenEvaluation::Init()
 				m_textPlayerOptions[p].SetName( ssprintf("PlayerOptionsP%d",p+1) );
 				ActorUtil::LoadAllCommands( m_textPlayerOptions[p], m_sName );
 				SET_XY( m_textPlayerOptions[p] );
-				std::vector<RString> v;
+				std::vector<std::string> v;
 				PlayerOptions po = GAMESTATE->m_pPlayerState[p]->m_PlayerOptions.GetPreferred();
 				if( PLAYER_OPTIONS_HIDE_FAIL_TYPE )
 					po.m_FailType = (FailType)0;	// blank out the fail type so that it won't show in the mods list
 				po.GetLocalizedMods( v );
-				RString sPO = join( PLAYER_OPTIONS_SEPARATOR, v );
+				std::string sPO = join( PLAYER_OPTIONS_SEPARATOR, v );
 				m_textPlayerOptions[p].SetText( sPO );
 				this->AddChild( &m_textPlayerOptions[p] );
 			}
@@ -687,7 +687,7 @@ void ScreenEvaluation::Init()
 	}
 	else if( (bOneHasFullW1Combo || bOneHasFullW2Combo || bOneHasFullW3Combo) )
 	{
-		RString sComboType = bOneHasFullW1Combo ? "W1" : ( bOneHasFullW2Combo ? "W2" : "W3" );
+		std::string sComboType = bOneHasFullW1Combo ? "W1" : ( bOneHasFullW2Combo ? "W2" : "W3" );
 		SOUND->PlayOnceFromDir( ANNOUNCER->GetPathTo("evaluation full combo "+sComboType) );
 	}
 	else
@@ -703,7 +703,7 @@ void ScreenEvaluation::Init()
 			case PLAY_MODE_BATTLE:
 				{
 					bool bWon = GAMESTATE->GetStageResult(GAMESTATE->GetMasterPlayerNumber()) == RESULT_WIN;
-					RString sResult = bWon ? "win" : "lose";
+					std::string sResult = bWon ? "win" : "lose";
 					SOUND->PlayOnceFromDir( ANNOUNCER->GetPathTo("evaluation "+sResult) );
 				}
 				break;
@@ -750,12 +750,12 @@ bool ScreenEvaluation::Input( const InputEventPlus &input )
 					MEMCARDMAN->MountCard( pn );
 
 				Profile* pProfile = PROFILEMAN->GetProfile(pn);
-				RString sDir = PROFILEMAN->GetProfileDir((ProfileSlot)pn) + "Screenshots/";
-				RString sFileName = StepMania::SaveScreenshot( sDir, true, true, "", "" );
+				std::string sDir = PROFILEMAN->GetProfileDir((ProfileSlot)pn) + "Screenshots/";
+				std::string sFileName = StepMania::SaveScreenshot( sDir, true, true, "", "" );
 
 				if( !sFileName.empty() )
 				{
-					RString sPath = sDir+sFileName;
+					std::string sPath = sDir+sFileName;
 
 					const HighScore &hs = m_pStageStats->m_player[pn].m_HighScore;
 					Screenshot screenshot;

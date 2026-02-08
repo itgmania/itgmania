@@ -16,8 +16,8 @@ class ModIcon : public ActorFrame
 public:
 	ModIcon();
 	ModIcon( const ModIcon &cpy );
-	void Load( RString sMetricsGroup );
-	void Set( const RString &sText );
+	void Load( std::string sMetricsGroup );
+	void Set( const std::string &sText );
 
 protected:
 	BitmapText	m_text;
@@ -25,8 +25,8 @@ protected:
 	AutoActor	m_sprEmpty;
 
 	ThemeMetric<int> CROP_TEXT_TO_WIDTH;
-	ThemeMetric<RString> STOP_WORDS;
-	std::vector<RString> m_vStopWords;
+	ThemeMetric<std::string> STOP_WORDS;
+	std::vector<std::string> m_vStopWords;
 };
 
 #endif

@@ -11,8 +11,8 @@
 AnnouncerManager*	ANNOUNCER = nullptr; // global and accessible from anywhere in our program
 
 
-const RString EMPTY_ANNOUNCER_NAME = "Empty";
-const RString ANNOUNCERS_DIR  = "Announcers/";
+const std::string EMPTY_ANNOUNCER_NAME = "Empty";
+const std::string ANNOUNCERS_DIR  = "Announcers/";
 
 AnnouncerManager::AnnouncerManager()
 {
@@ -32,7 +32,7 @@ AnnouncerManager::~AnnouncerManager()
 	LUA->UnsetGlobal( "ANNOUNCER" );
 }
 
-void AnnouncerManager::GetAnnouncerNames( std::vector<RString>& AddTo )
+void AnnouncerManager::GetAnnouncerNames( std::vector<std::string>& AddTo )
 {
 	GetDirListing( ANNOUNCERS_DIR+"*", AddTo, true );
 
@@ -45,12 +45,12 @@ void AnnouncerManager::GetAnnouncerNames( std::vector<RString>& AddTo )
 			AddTo.erase(AddTo.begin()+i, AddTo.begin()+i+1 );
 }
 
-bool AnnouncerManager::DoesAnnouncerExist( RString sAnnouncerName )
+bool AnnouncerManager::DoesAnnouncerExist( std::string sAnnouncerName )
 {
 	if( sAnnouncerName == "" )
 		return true;
 
-	std::vector<RString> asAnnouncerNames;
+	std::vector<std::string> asAnnouncerNames;
 	GetAnnouncerNames( asAnnouncerNames );
 	for( unsigned i=0; i<asAnnouncerNames.size(); i++ )
 		if( 0==strcasecmp(sAnnouncerName.c_str(), asAnnouncerNames[i].c_str()) )
@@ -58,12 +58,12 @@ bool AnnouncerManager::DoesAnnouncerExist( RString sAnnouncerName )
 	return false;
 }
 
-RString AnnouncerManager::GetAnnouncerDirFromName( RString sAnnouncerName )
+std::string AnnouncerManager::GetAnnouncerDirFromName( std::string sAnnouncerName )
 {
 	return ANNOUNCERS_DIR + sAnnouncerName + "/";
 }
 
-void AnnouncerManager::SwitchAnnouncer( RString sNewAnnouncerName )
+void AnnouncerManager::SwitchAnnouncer( std::string sNewAnnouncerName )
 {
 	if( !DoesAnnouncerExist(sNewAnnouncerName) )
 		m_sCurAnnouncerName = "";
@@ -111,12 +111,12 @@ static const char *aliases[][2] = {
  * then all aliases above.  Ignore directories that are empty, since we might
  * have "select difficulty intro" with sounds and an empty "ScreenSelectDifficulty
  * intro". */
-RString AnnouncerManager::GetPathTo( RString sAnnouncerName, RString sFolderName )
+std::string AnnouncerManager::GetPathTo( std::string sAnnouncerName, std::string sFolderName )
 {
 	if(sAnnouncerName == "")
-		return RString(); /* announcer disabled */
+		return std::string(); /* announcer disabled */
 
-	const RString AnnouncerPath = GetAnnouncerDirFromName(sAnnouncerName);
+	const std::string AnnouncerPath = GetAnnouncerDirFromName(sAnnouncerName);
 
 	if( !DirectoryIsEmpty(AnnouncerPath+sFolderName+"/") )
 		return AnnouncerPath+sFolderName+"/";
@@ -142,22 +142,22 @@ RString AnnouncerManager::GetPathTo( RString sAnnouncerName, RString sFolderName
 	temp.Open( AnnouncerPath+sFolderName + "/announcer files go here.txt", RageFile::WRITE );
 #endif
 
-	return RString();
+	return std::string();
 }
 
-RString AnnouncerManager::GetPathTo( RString sFolderName )
+std::string AnnouncerManager::GetPathTo( std::string sFolderName )
 {
 	return GetPathTo(m_sCurAnnouncerName, sFolderName);
 }
 
-bool AnnouncerManager::HasSoundsFor( RString sFolderName )
+bool AnnouncerManager::HasSoundsFor( std::string sFolderName )
 {
 	return !DirectoryIsEmpty( GetPathTo(sFolderName) );
 }
 
 void AnnouncerManager::NextAnnouncer()
 {
-	std::vector<RString> as;
+	std::vector<std::string> as;
 	GetAnnouncerNames( as );
 	if( as.size()==0 )
 		return;
@@ -189,14 +189,14 @@ public:
 	static int DoesAnnouncerExist( T* p, lua_State *L ) { lua_pushboolean(L, p->DoesAnnouncerExist( SArg(1) )); return 1; }
 	static int GetAnnouncerNames( T* p, lua_State *L )
 	{
-		std::vector<RString> vAnnouncers;
+		std::vector<std::string> vAnnouncers;
 		p->GetAnnouncerNames( vAnnouncers );
 		LuaHelpers::CreateTableFromArray(vAnnouncers, L);
 		return 1;
 	}
 	static int GetCurrentAnnouncer( T* p, lua_State *L )
 	{
-		RString s = p->GetCurAnnouncerName();
+		std::string s = p->GetCurAnnouncerName();
 		if( s.empty() )
 		{
 			lua_pushnil(L);
@@ -209,7 +209,7 @@ public:
 	}
 	static int SetCurrentAnnouncer( T* p, lua_State *L )
 	{
-		RString s = SArg(1);
+		std::string s = SArg(1);
 		// only bother switching if the announcer exists. -aj
 		if(p->DoesAnnouncerExist(s))
 			p->SwitchAnnouncer(s);

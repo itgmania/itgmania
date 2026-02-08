@@ -40,11 +40,11 @@ const char *g_CRSDifficultyNames[] =
 // Then, put the escaped characters back, by replacing "||escaped-delim||" with "\\" + sDelimitor
 // And finally, split the string by instances of "||regular-delim||"
 // So for instance, "Thing 1, Thing\,2" becomes "Thing 1||regular-delim||Thing \, 2"
-void split_minding_escaped_delims(const RString &sSource, const RString &sDelimitor, std::vector<RString>& asAddit)
+void split_minding_escaped_delims(const std::string &sSource, const std::string &sDelimitor, std::vector<std::string>& asAddit)
 {
-	RString sourceCopy = sSource;
-	RString escaped_delim = "||escaped-delim||";
-	RString regular_delim = "||regular-delim||";
+	std::string sourceCopy = sSource;
+	std::string escaped_delim = "||escaped-delim||";
+	std::string regular_delim = "||regular-delim||";
 	Replace(sourceCopy, "\\" + sDelimitor, escaped_delim);
 	Replace(sourceCopy, sDelimitor, regular_delim);
 	Replace(sourceCopy, escaped_delim, "\\" + sDelimitor);
@@ -56,7 +56,7 @@ void split_minding_escaped_delims(const RString &sSource, const RString &sDelimi
  * @param s the name of the difficulty.
  * @return the course difficulty.
  */
-static CourseDifficulty CRSStringToDifficulty( const RString& s )
+static CourseDifficulty CRSStringToDifficulty( const std::string& s )
 {
 	FOREACH_ENUM( Difficulty,i)
 		if( !CompareNoCase(s, g_CRSDifficultyNames[i]) )
@@ -65,20 +65,20 @@ static CourseDifficulty CRSStringToDifficulty( const RString& s )
 }
 
 
-bool CourseLoaderCRS::LoadFromBuffer( const RString &sPath, const RString &sBuffer, Course &out )
+bool CourseLoaderCRS::LoadFromBuffer( const std::string &sPath, const std::string &sBuffer, Course &out )
 {
 	MsdFile msd;
 	msd.ReadFromString( sBuffer, false );  // don't unescape here, it gets handled later
 	return LoadFromMsd( sPath, msd, out, true );
 }
 
-bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Course &out, bool bFromCache )
+bool CourseLoaderCRS::LoadFromMsd( const std::string &sPath, const MsdFile &msd, Course &out, bool bFromCache )
 {
 	AttackArray attacks;
 	float fGainSeconds = 0;
 	for( unsigned i=0; i<msd.GetNumValues(); i++ )
 	{
-		RString sValueName = msd.GetParam(i, 0);
+		std::string sValueName = msd.GetParam(i, 0);
 		const MsdFile::value_t &sParams = msd.GetValue(i);
 
 		// handle the data
@@ -92,7 +92,7 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 			out.m_sDescription = sParams[1];
 		else if( EqualsNoCase(sValueName, "REPEAT") )
 		{
-			RString str = sParams[1];
+			std::string str = sParams[1];
 			MakeLower(str);
 			if( str.find("yes") != std::string::npos )
 				out.m_bRepeat = true;
@@ -180,10 +180,10 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 		}
 		else if( EqualsNoCase(sValueName, "STYLE") )
 		{
-			RString sStyles = sParams[1];
-			std::vector<RString> asStyles;
+			std::string sStyles = sParams[1];
+			std::vector<std::string> asStyles;
 			split( sStyles, ",", asStyles );
-			for (RString const &s : asStyles)
+			for (std::string const &s : asStyles)
 				out.m_setStyles.insert( s );
 
 		}
@@ -195,9 +195,9 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 
 	if( out.m_sBannerPath.empty() )
 	{
-		const RString sFName = SetExtension( out.m_sPath, "" );
+		const std::string sFName = SetExtension( out.m_sPath, "" );
 
-		std::vector<RString> arrayPossibleBanners;
+		std::vector<std::string> arrayPossibleBanners;
 		GetDirListing( sFName + "*.png", arrayPossibleBanners, false, false );
 		GetDirListing( sFName + "*.jpg", arrayPossibleBanners, false, false );
 		GetDirListing( sFName + "*.jpeg", arrayPossibleBanners, false, false );
@@ -231,9 +231,9 @@ bool CourseLoaderCRS::LoadFromMsd( const RString &sPath, const MsdFile &msd, Cou
 	return true;
 }
 
-bool CourseLoaderCRS::LoadFromCRSFile( const RString &_sPath, Course &out )
+bool CourseLoaderCRS::LoadFromCRSFile( const std::string &_sPath, Course &out )
 {
-	RString sPath = _sPath;
+	std::string sPath = _sPath;
 
 	out.Init();
 
@@ -241,7 +241,7 @@ bool CourseLoaderCRS::LoadFromCRSFile( const RString &_sPath, Course &out )
 
 	// save group name
 	{
-		std::vector<RString> parts;
+		std::vector<std::string> parts;
 		split( sPath, "/", parts, false );
 		if( parts.size() >= 4 ) // e.g. "/Courses/blah/fun.crs"
 			out.m_sGroupName = parts[parts.size()-2];
@@ -263,7 +263,7 @@ bool CourseLoaderCRS::LoadFromCRSFile( const RString &_sPath, Course &out )
 
 	if( bUseCache )
 	{
-		RString sCacheFile = out.GetCacheFilePath();
+		std::string sCacheFile = out.GetCacheFilePath();
 		LOG->Trace( "CourseLoaderCRS::LoadFromCRSFile(\"%s\") (\"%s\")", sPath.c_str(), sCacheFile.c_str() );
 		sPath = sCacheFile;
 	}
@@ -287,7 +287,7 @@ bool CourseLoaderCRS::LoadFromCRSFile( const RString &_sPath, Course &out )
 		// If we have any cache data, write the cache file.
 		if( out.m_RadarCache.size() )
 		{
-			RString sCachePath = out.GetCacheFilePath();
+			std::string sCachePath = out.GetCacheFilePath();
 			if( CourseWriterCRS::Write(out, sCachePath, true) )
 				SONGINDEX->AddCacheIndex( out.m_sPath, GetHashForFile(out.m_sPath) );
 		}
@@ -296,7 +296,7 @@ bool CourseLoaderCRS::LoadFromCRSFile( const RString &_sPath, Course &out )
 	return true;
 }
 
-bool CourseLoaderCRS::LoadEditFromFile( const RString &sEditFilePath, ProfileSlot slot )
+bool CourseLoaderCRS::LoadEditFromFile( const std::string &sEditFilePath, ProfileSlot slot )
 {
 	LOG->Trace( "CourseLoaderCRS::LoadEdit(%s)", sEditFilePath.c_str() );
 
@@ -324,7 +324,7 @@ bool CourseLoaderCRS::LoadEditFromFile( const RString &sEditFilePath, ProfileSlo
 	return true;
 }
 
-bool CourseLoaderCRS::LoadEditFromBuffer( const RString &sBuffer, const RString &sPath, ProfileSlot slot )
+bool CourseLoaderCRS::LoadEditFromBuffer( const std::string &sBuffer, const std::string &sPath, ProfileSlot slot )
 {
 	Course *pCourse = new Course;
 	if( !LoadFromBuffer(sPath, sBuffer, *pCourse) )
@@ -339,13 +339,13 @@ bool CourseLoaderCRS::LoadEditFromBuffer( const RString &sBuffer, const RString 
 	return true;
 }
 
-bool CourseLoaderCRS::ParseCourseMods( const MsdFile::value_t &sParams, AttackArray &attacks, const RString &sPath )  
+bool CourseLoaderCRS::ParseCourseMods( const MsdFile::value_t &sParams, AttackArray &attacks, const std::string &sPath )  
 {
 	Attack attack;
 	float end = -9999;
 	for( unsigned j = 1; j < sParams.params.size(); ++j )
 	{
-		std::vector<RString> sBits;
+		std::vector<std::string> sBits;
 		split( sParams[j], "=", sBits, false );
 		if( sBits.size() < 2 )
 			continue;
@@ -386,7 +386,7 @@ bool CourseLoaderCRS::ParseCourseMods( const MsdFile::value_t &sParams, AttackAr
 	return true;
 }
 
-bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEntry &new_entry, const RString &sPath ) 
+bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEntry &new_entry, const std::string &sPath ) 
 {
 	// infer entry::Type from the first param
 	// todo: make sure these aren't generating bogus entries due
@@ -446,9 +446,9 @@ bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEn
 	else if( Right(sParams[1], 1) == "*" )
 	{
 		new_entry.bSecret = true;
-		RString sSong = sParams[1];
+		std::string sSong = sParams[1];
 		Replace(sSong, "\\", "/");
-		std::vector<RString> bits;
+		std::vector<std::string> bits;
 		split( sSong, "/", bits );
 		if( bits.size() == 2 )
 		{
@@ -469,9 +469,9 @@ bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEn
 	}
 	else
 	{
-		RString sSong = sParams[1];
+		std::string sSong = sParams[1];
 		Replace(sSong, "\\", "/");
-		std::vector<RString> bits;
+		std::vector<std::string> bits;
 		split( sSong, "/", bits );
 
 		Song *pSong = nullptr;
@@ -520,11 +520,11 @@ bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEn
 	{
 		// If "showcourse" or "noshowcourse" is in the list, force
 		// new_entry.secret on or off.
-		std::vector<RString> mods;
+		std::vector<std::string> mods;
 		split( sParams[3], ",", mods, true );
 		for( int j = (int) mods.size()-1; j >= 0 ; --j )
 		{
-			RString &sMod = mods[j];
+			std::string &sMod = mods[j];
 			TrimLeft( sMod );
 			TrimRight( sMod );
 			if( !CompareNoCase(sMod, "showcourse") )
@@ -544,12 +544,12 @@ bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEn
 	return true;
 }
 
-bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, CourseEntry &new_entry, const RString &sPath)
+bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, CourseEntry &new_entry, const std::string &sPath)
 {
 	
 	for( unsigned i = 1; i < sParams.params.size(); ++i )
 	{
-		std::vector<RString> sParamParts;
+		std::vector<std::string> sParamParts;
 		split_minding_escaped_delims(sParams[i], "=", sParamParts);
 
 		if( sParamParts.size() != 2 )
@@ -557,8 +557,8 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 			LOG->UserLog( "Course file", sPath, "has an invalid SONGSELECT sub-parameter, \"%s\"", sParams[i].c_str());
 			return false;
 		}
-		RString sParamName = sParamParts[0];
-		RString sParamValue = sParamParts[1];
+		std::string sParamName = sParamParts[0];
+		std::string sParamValue = sParamParts[1];
 
 		// For params that accept multiple items, if someone were to define it twice in one #SONGSELECT, 
 		// should we overwrite the first, or append? Currently, it just appends it all together.
@@ -594,7 +594,7 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 		}
 		else if( EqualsNoCase(sParamName, "DIFFICULTY") )
 		{
-			std::vector<RString> difficultyStrs;
+			std::vector<std::string> difficultyStrs;
 			std::vector<Difficulty> difficulties;
 			split(sParamValue, ",", difficultyStrs);
 			for (unsigned d = 0; d < difficultyStrs.size(); d++)
@@ -618,7 +618,7 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 		}
 		else if( EqualsNoCase(sParamName, "SORT") )
 		{
-			std::vector<RString> sortParams;
+			std::vector<std::string> sortParams;
 			split(sParamValue, ",", sortParams);
 			if( sortParams.size() != 2 )
 			{
@@ -674,11 +674,11 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 		}
 		else if( EqualsNoCase(sParamName, "MODS") )
 		{
-			std::vector<RString> mods;
+			std::vector<std::string> mods;
 			split( sParamValue, ",", mods, true );
 			for( int j = (int) mods.size()-1; j >= 0 ; --j )
 			{
-				RString &sMod = mods[j];
+				std::string &sMod = mods[j];
 				TrimLeft( sMod );
 				TrimRight( sMod );
 				if( !CompareNoCase(sMod, "showcourse") )
@@ -701,11 +701,11 @@ bool CourseLoaderCRS::ParseCourseSongSelect(const MsdFile::value_t &sParams, Cou
 	return true;
 }
 
-bool CourseLoaderCRS::ParseCommaSeparatedList(const RString &sParamValue, std::vector<RString> &dest, const RString &sParamName, const RString &sPath)
+bool CourseLoaderCRS::ParseCommaSeparatedList(const std::string &sParamValue, std::vector<std::string> &dest, const std::string &sParamName, const std::string &sPath)
 {
-	std::vector<RString> items;
+	std::vector<std::string> items;
 	//...and here is where the string unescaping gets handled
-	RString unescapedParamValue = sParamValue;
+	std::string unescapedParamValue = sParamValue;
 
 	split_minding_escaped_delims(sParamValue, ",", items);
 	if(items.size() == 0)
@@ -723,9 +723,9 @@ bool CourseLoaderCRS::ParseCommaSeparatedList(const RString &sParamValue, std::v
 }
 
 template <typename T>
-bool CourseLoaderCRS::ParseRangedValue(const RString& sParamValue, T &minValue, T &maxValue, const RString &sParamName, const RString &sPath)
+bool CourseLoaderCRS::ParseRangedValue(const std::string& sParamValue, T &minValue, T &maxValue, const std::string &sParamName, const std::string &sPath)
 {
-	std::vector<RString> values;
+	std::vector<std::string> values;
 	split(sParamValue, "-", values);
 	if(values.size() == 0)
 	{
@@ -749,7 +749,7 @@ LOG->UserLog( "Course file", sPath, "has an invalid %s parameter, expected at le
 	return true;
 }
 
-bool CourseLoaderCRS::SetCourseSongSort(CourseEntry &new_entry, SongSort sort, int index, const RString &sPath)
+bool CourseLoaderCRS::SetCourseSongSort(CourseEntry &new_entry, SongSort sort, int index, const std::string &sPath)
 {
 	if( sort == SongSort_Invalid )
 	{

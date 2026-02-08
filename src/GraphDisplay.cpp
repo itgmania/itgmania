@@ -116,7 +116,7 @@ REGISTER_ACTOR_CLASS( GraphLine );
 class GraphBody: public Actor
 {
 public:
-	GraphBody( RString sFile )
+	GraphBody( std::string sFile )
 	{
 		m_pTexture = TEXTUREMAN->LoadTexture( sFile );
 
@@ -222,7 +222,7 @@ void GraphDisplay::Set( const StageStats &ss, const PlayerStageStats &pss )
 	}
 }
 
-void GraphDisplay::Load( RString sMetricsGroup )
+void GraphDisplay::Load( std::string sMetricsGroup )
 {
 	m_size.x = THEME->GetMetricI( sMetricsGroup, "BodyWidth" );
 	m_size.y = THEME->GetMetricI( sMetricsGroup, "BodyHeight" );

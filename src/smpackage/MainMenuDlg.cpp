@@ -85,7 +85,7 @@ void MainMenuDlg::OnEditInstallations()
 	dlg.DoModal();
 }
 
-RString GetLastErrorString()
+std::string GetLastErrorString()
 {
 	LPVOID lpMsgBuf;
 	FormatMessage( 
@@ -102,7 +102,7 @@ RString GetLastErrorString()
 	// Process any inserts in lpMsgBuf.
 	// ...
 	// Display the string.
-	RString s = (LPCTSTR)lpMsgBuf;
+	std::string s = (LPCTSTR)lpMsgBuf;
 	// Free the buffer.
 	LocalFree( lpMsgBuf );
 
@@ -127,12 +127,12 @@ void MainMenuDlg::OnCreateSong()
 		ConvertUTF8ToACP(MUSIC_FILE.GetValue()+" (*.mp3;*.ogg)|*.mp3;*.ogg|||").c_str()
 		);
 	int iRet = dialog.DoModal();
-	RString sMusicFile = dialog.GetPathName();
+	std::string sMusicFile = dialog.GetPathName();
 	if( iRet != IDOK )
 		return;
 
-	RString sSongDirectory = "Songs/My Creations/" + GetFileNameWithoutExtension(sMusicFile) + "/";
-	RString sNewMusicFile = sSongDirectory + Basename(sMusicFile);
+	std::string sSongDirectory = "Songs/My Creations/" + GetFileNameWithoutExtension(sMusicFile) + "/";
+	std::string sNewMusicFile = sSongDirectory + Basename(sMusicFile);
 
 	if( DoesFileExist(sSongDirectory) )
 	{
@@ -144,7 +144,7 @@ void MainMenuDlg::OnCreateSong()
 	fileIn.Open( sMusicFile, RageFile::READ );
 	RageFile fileOut;
 	fileOut.Open( sNewMusicFile, RageFile::WRITE );
-	RString sError;
+	std::string sError;
 	bool bSuccess = FileCopy( fileIn, fileOut, sError );
 	if( !bSuccess )
 	{
@@ -153,7 +153,7 @@ void MainMenuDlg::OnCreateSong()
 	}
 
 	// create a blank .sm file
-	RString sNewSongFile = sMusicFile;
+	std::string sNewSongFile = sMusicFile;
 	SetExtension( sNewSongFile, "sm" );
 	RageFile file;
 	if( file.Open(sNewSongFile, RageFile::WRITE) )
@@ -217,7 +217,7 @@ void MainMenuDlg::OnBnClickedOpenPreferences()
 {
 	// TODO: Add your control notification handler code here
 	// TODO: Have RageFile* do the mapping to the OS file location.
-	RString sPreferencesOSFile = SpecialDirs::GetAppDataDir() + PRODUCT_ID + "/" + SpecialFiles::PREFERENCES_INI_PATH;
+	std::string sPreferencesOSFile = SpecialDirs::GetAppDataDir() + PRODUCT_ID + "/" + SpecialFiles::PREFERENCES_INI_PATH;
 	HINSTANCE hinst = ::ShellExecute( this->m_hWnd, "open", sPreferencesOSFile, "", "", SW_SHOWNORMAL );
 	if( (int)hinst == SE_ERR_FNF )
 		Dialog::OK( ssprintf(DOESNT_EXIST_IT_WILL_BE_CREATED.GetValue(),sPreferencesOSFile.c_str()) );

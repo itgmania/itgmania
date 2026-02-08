@@ -16,8 +16,8 @@ public:
 	RageThread( const RageThread &cpy );
 	~RageThread();
 
-	void SetName( const RString &n ) { m_sName = n; }
-	RString GetName() const { return m_sName; }
+	void SetName( const std::string &n ) { m_sName = n; }
+	std::string GetName() const { return m_sName; }
 	void Create( int (*fn)(void *), void *data );
 
 	void Halt( bool Kill=false);
@@ -50,7 +50,7 @@ public:
 
 private:
 	ThreadSlot *m_pSlot;
-	RString m_sName;
+	std::string m_sName;
 
 	static bool s_bSystemSupportsTLS;
 	static bool s_bIsShowingDialog;
@@ -67,7 +67,7 @@ private:
 class RageThreadRegister
 {
 public:
-	RageThreadRegister( const RString &sName );
+	RageThreadRegister( const std::string &sName );
 	~RageThreadRegister();
 
 private:
@@ -81,7 +81,7 @@ namespace Checkpoints
 {
 	void LogCheckpoints( bool yes=true );
 	void SetCheckpoint( const char *file, int line, const char *message );
-	void SetCheckpoint( const char *file, int line, const RString& message );
+	void SetCheckpoint( const char *file, int line, const std::string& message );
 	void GetLogs( char *pBuf, int iSize, const char *delim );
 };
 
@@ -97,19 +97,19 @@ class MutexImpl;
 class RageMutex
 {
 public:
-	RString GetName() const { return m_sName; }
-	void SetName( const RString &s ) { m_sName = s; }
+	std::string GetName() const { return m_sName; }
+	void SetName( const std::string &s ) { m_sName = s; }
 	virtual void Lock();
 	virtual bool TryLock();
 	virtual void Unlock();
 	virtual bool IsLockedByThisThread() const;
 
-	RageMutex( const RString &name );
+	RageMutex( const std::string &name );
 	virtual ~RageMutex();
 
 protected:
 	MutexImpl *m_pMutex;
-	RString m_sName;
+	std::string m_sName;
 
 	int m_UniqueID;
 
@@ -158,7 +158,7 @@ class EventImpl;
 class RageEvent: public RageMutex
 {
 public:
-	RageEvent( RString name );
+	RageEvent( std::string name );
 	~RageEvent();
 
 	/*
@@ -183,10 +183,10 @@ class SemaImpl;
 class RageSemaphore
 {
 public:
-	RageSemaphore( RString sName, int iInitialValue = 0 );
+	RageSemaphore( std::string sName, int iInitialValue = 0 );
 	~RageSemaphore();
 
-	RString GetName() const { return m_sName; }
+	std::string GetName() const { return m_sName; }
 	int GetValue() const;
 	void Post();
 	void Wait( bool bFailOnTimeout=true );
@@ -194,7 +194,7 @@ public:
 
 private:
 	SemaImpl *m_pSema;
-	RString m_sName;
+	std::string m_sName;
 
 	// Swallow up warnings. If they must be used, define them.
 	RageSemaphore& operator=(const RageSemaphore& rhs);

@@ -36,16 +36,16 @@ namespace CourseUtil
 
 	void MakeDefaultEditCourseEntry( CourseEntry &out );
 
-	void AutogenEndlessFromGroup( const RString &sGroupName, Difficulty dc, Course &out );
-	void AutogenNonstopFromGroup( const RString &sGroupName, Difficulty dc, Course &out );
-	void AutogenOniFromArtist( const RString &sArtistName, RString sArtistNameTranslit, std::vector<Song*> aSongs, Difficulty dc, Course &out );
+	void AutogenEndlessFromGroup( const std::string &sGroupName, Difficulty dc, Course &out );
+	void AutogenNonstopFromGroup( const std::string &sGroupName, Difficulty dc, Course &out );
+	void AutogenOniFromArtist( const std::string &sArtistName, std::string sArtistNameTranslit, std::vector<Song*> aSongs, Difficulty dc, Course &out );
 
-	bool ValidateEditCourseName( const RString &sAnswer, RString &sErrorOut );
+	bool ValidateEditCourseName( const std::string &sAnswer, std::string &sErrorOut );
 
-	void WarnOnInvalidMods( RString sMods );
+	void WarnOnInvalidMods( std::string sMods );
 
 	// sm-ssc additions:
-	//RString GetSectionNameFromCourseAndSort( const Course *pCourse, SortOrder so );
+	//std::string GetSectionNameFromCourseAndSort( const Course *pCourse, SortOrder so );
 };
 
 /** @brief Utility functions that deal with Edit Courses. */
@@ -55,12 +55,12 @@ namespace EditCourseUtil
 	void PrepareForPlay();
 	void LoadDefaults( Course &out );
 	bool RemoveAndDeleteFile( Course *pCourse );
-	bool ValidateEditCourseName( const RString &sAnswer, RString &sErrorOut );
+	bool ValidateEditCourseName( const std::string &sAnswer, std::string &sErrorOut );
 	void GetAllEditCourses( std::vector<Course*> &vpCoursesOut );
 	bool Save( Course *pCourse );
-	bool RenameAndSave( Course *pCourse, RString sName );
+	bool RenameAndSave( Course *pCourse, std::string sName );
 
-	bool ValidateEditCourseNametName( const RString &sAnswer, RString &sErrorOut );
+	bool ValidateEditCourseNametName( const std::string &sAnswer, std::string &sErrorOut );
 
 	extern int MAX_NAME_LENGTH;
 	extern int MAX_PER_PROFILE;
@@ -78,7 +78,7 @@ public:
 	void Unset() { FromCourse(nullptr); }
 	void FromCourse( const Course *p );
 	Course *ToCourse() const;
-	const RString &GetPath() const { return sPath; }
+	const std::string &GetPath() const { return sPath; }
 	bool operator<( const CourseID &other ) const
 	{
 		if (sPath != other.sPath)
@@ -88,13 +88,13 @@ public:
 
 	XNode* CreateNode() const;
 	void LoadFromNode( const XNode* pNode );
-	void FromPath( RString _sPath ) { sPath = _sPath; }
-	RString ToString() const;
+	void FromPath( std::string _sPath ) { sPath = _sPath; }
+	std::string ToString() const;
 	bool IsValid() const;
 
 private:
-	RString sPath;
-	RString sFullTitle;
+	std::string sPath;
+	std::string sFullTitle;
 };
 
 #endif

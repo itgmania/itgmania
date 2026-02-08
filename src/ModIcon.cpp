@@ -24,7 +24,7 @@ ModIcon::ModIcon( const ModIcon &cpy ):
 	this->AddChild( &m_text );
 }
 
-void ModIcon::Load( RString sMetricsGroup )
+void ModIcon::Load( std::string sMetricsGroup )
 {
 	m_sprFilled.Load( THEME->GetPathG(sMetricsGroup,"Filled") );
 	m_sprFilled->SetName("Filled");
@@ -51,9 +51,9 @@ void ModIcon::Load( RString sMetricsGroup )
 	Set("");
 }
 
-void ModIcon::Set( const RString &_sText )
+void ModIcon::Set( const std::string &_sText )
 {
-	RString sText = _sText;
+	std::string sText = _sText;
 
 	for( unsigned i = 0; i < m_vStopWords.size(); i++ )
 		if( EqualsNoCase(sText, m_vStopWords[i]) )

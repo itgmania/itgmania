@@ -31,12 +31,12 @@ enum EditMenuRow
  * @brief Turn the EditMenuRow into a string.
  * @param r the row.
  * @return the string. */
-const RString& EditMenuRowToString( EditMenuRow r );
+const std::string& EditMenuRowToString( EditMenuRow r );
 /**
  * @brief Turn the EditMenuRow into a localized string.
  * @param r the row.
  * @return the localized string. */
-const RString& EditMenuRowToLocalizedString( EditMenuRow r );
+const std::string& EditMenuRowToLocalizedString( EditMenuRow r );
 
 /** @brief The different actions one can take on a step. */
 enum EditMenuAction
@@ -55,12 +55,12 @@ enum EditMenuAction
  * @brief Turn the EditMenuAction into a string.
  * @param ema the action.
  * @return the string. */
-const RString& EditMenuActionToString( EditMenuAction ema );
+const std::string& EditMenuActionToString( EditMenuAction ema );
 /**
  * @brief Turn the EditMenuAction into a localized string.
  * @param ema the action.
  * @return the localized string. */
-const RString& EditMenuActionToLocalizedString( EditMenuAction ema );
+const std::string& EditMenuActionToLocalizedString( EditMenuAction ema );
 
 /** @brief How many arrows are used for the EditMenu? */
 const int NUM_ARROWS = 2;
@@ -76,7 +76,7 @@ public:
 	EditMenu();
 	/** @brief Destroy the EditMenu. */
 	~EditMenu();
-	void Load( const RString &sType );
+	void Load( const std::string &sType );
 
 	/** @brief Determine if we can move up.
 	 * @return true if we can, false otherwise. */
@@ -112,7 +112,7 @@ public:
 
 	/** @brief Retrieve the currently selected group.
 	 * @return the current group. */
-	RString	GetSelectedGroup() const
+	std::string	GetSelectedGroup() const
 	{
 		if( !SHOW_GROUPS.GetValue() ) return GROUP_ALL;
 		int groups = static_cast<int>(m_sGroups.size());
@@ -194,8 +194,8 @@ private:
 	struct StepsAndDifficulty;
 
 	void StripLockedStepsAndDifficulty( std::vector<StepsAndDifficulty> &v );
-	void GetSongsToShowForGroup( const RString &sGroup, std::vector<Song*> &vpSongsOut );
-	void GetGroupsToShow( std::vector<RString> &vsGroupsOut );
+	void GetSongsToShowForGroup( const std::string &sGroup, std::vector<Song*> &vpSongsOut );
+	void GetGroupsToShow( std::vector<std::string> &vsGroupsOut );
 
 	void UpdateArrows();
 	AutoActor	m_sprArrows[NUM_ARROWS];
@@ -223,7 +223,7 @@ private:
 	};
 
 	/** @brief The list of groups. */
-	std::vector<RString>			m_sGroups;
+	std::vector<std::string>			m_sGroups;
 	/** @brief The list of Songs in a group. */
 	std::vector<Song*>			m_pSongs;
 	std::vector<StepsType>		m_StepsTypes;
@@ -245,7 +245,7 @@ private:
 	ThemeMetric1D<float> ROW_Y;
 public:
 	ThemeMetric<EditMode> EDIT_MODE;
-	ThemeMetric<RString>  TEXT_BANNER_TYPE;
+	ThemeMetric<std::string>  TEXT_BANNER_TYPE;
 };
 
 #endif

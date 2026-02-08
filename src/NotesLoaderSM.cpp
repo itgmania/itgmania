@@ -28,9 +28,9 @@ struct SMSongTagInfo
 	SMLoader* loader;
 	Song* song;
 	const MsdFile::value_t* params;
-	const RString& path;
+	const std::string& path;
 	std::vector<std::pair<float, float>> BPMChanges, Stops;
-	SMSongTagInfo(SMLoader* l, Song* s, const RString& p)
+	SMSongTagInfo(SMLoader* l, Song* s, const std::string& p)
 		:loader(l), song(s), path(p)
 	{}
 };
@@ -171,7 +171,7 @@ void SMSetBGChanges(SMSongTagInfo& info)
 }
 void SMSetFGChanges(SMSongTagInfo& info)
 {
-	std::vector<std::vector<RString> > aFGChanges;
+	std::vector<std::vector<std::string> > aFGChanges;
 	info.loader->ParseBGChangesString((*info.params)[1], aFGChanges, info.song->GetSongDir());
 
 	for (const auto &b : aFGChanges)
@@ -191,7 +191,7 @@ void SMSetAttacks(SMSongTagInfo& info)
 	info.loader->ProcessAttacks(info.song->m_Attacks, (*info.params));
 }
 
-typedef std::map<RString, song_tag_func_t> song_handler_map_t;
+typedef std::map<std::string, song_tag_func_t> song_handler_map_t;
 
 struct sm_parser_helper_t
 {
@@ -254,26 +254,26 @@ sm_parser_helper_t sm_parser_helper;
 // End sm_parser_helper related functions. -Kyz
 /****************************************************************/
 
-void SMLoader::SetSongTitle(const RString & title)
+void SMLoader::SetSongTitle(const std::string & title)
 {
 	this->songTitle = title;
 }
 
-RString SMLoader::GetSongTitle() const
+std::string SMLoader::GetSongTitle() const
 {
 	return this->songTitle;
 }
 
-bool SMLoader::LoadFromDir( const RString &sPath, Song &out, bool load_autosave )
+bool SMLoader::LoadFromDir( const std::string &sPath, Song &out, bool load_autosave )
 {
-	std::vector<RString> aFileNames;
+	std::vector<std::string> aFileNames;
 	GetApplicableFiles( sPath, aFileNames, load_autosave );
 	return LoadFromSimfile( sPath + aFileNames[0], out );
 }
 
-float SMLoader::RowToBeat( RString line, const int rowsPerBeat )
+float SMLoader::RowToBeat( std::string line, const int rowsPerBeat )
 {
-	RString backup = line;
+	std::string backup = line;
 	Trim(line, "r");
 	Trim(line, "R");
 	if( backup != line )
@@ -287,12 +287,12 @@ float SMLoader::RowToBeat( RString line, const int rowsPerBeat )
 }
 
 void SMLoader::LoadFromTokens(
-			     RString sStepsType,
-			     RString sDescription,
-			     RString sDifficulty,
-			     RString sMeter,
-			     RString sRadarValues,
-			     RString sNoteData,
+			     std::string sStepsType,
+			     std::string sDescription,
+			     std::string sDifficulty,
+			     std::string sMeter,
+			     std::string sRadarValues,
+			     std::string sNoteData,
 			     Steps &out
 			     )
 {
@@ -348,7 +348,7 @@ void SMLoader::LoadFromTokens(
 	out.TidyUpData();
 }
 
-void SMLoader::ProcessBGChanges( Song &out, const RString &sValueName, const RString &sPath, const RString &sParam )
+void SMLoader::ProcessBGChanges( Song &out, const std::string &sValueName, const std::string &sPath, const std::string &sParam )
 {
 	BackgroundLayer iLayer = BACKGROUND_LAYER_1;
 	if( sscanf(sValueName.c_str(), "BGCHANGES%d", &*ConvertValue<int>(&iLayer)) == 1 )
@@ -361,7 +361,7 @@ void SMLoader::ProcessBGChanges( Song &out, const RString &sValueName, const RSt
 	}
 	else
 	{
-		std::vector<std::vector<RString> > aBGChanges;
+		std::vector<std::vector<std::string> > aBGChanges;
 		ParseBGChangesString(sParam, aBGChanges, out.GetSongDir());
 
 		for (const auto &b : aBGChanges)
@@ -373,11 +373,11 @@ void SMLoader::ProcessBGChanges( Song &out, const RString &sValueName, const RSt
 	}
 }
 
-void SMLoader::ProcessAttackString( std::vector<RString> & attacks, MsdFile::value_t params )
+void SMLoader::ProcessAttackString( std::vector<std::string> & attacks, MsdFile::value_t params )
 {
 	for( unsigned s=1; s < params.params.size(); ++s )
 	{
-		RString tmp = params[s];
+		std::string tmp = params[s];
 		Trim(tmp);
 		if (tmp.size() > 0)
 			attacks.push_back( tmp );
@@ -391,7 +391,7 @@ void SMLoader::ProcessAttacks( AttackArray &attacks, MsdFile::value_t params )
 
 	for( unsigned j=1; j < params.params.size(); ++j )
 	{
-		std::vector<RString> sBits;
+		std::vector<std::string> sBits;
 		split( params[j], "=", sBits, false );
 
 		// Need an identifer and a value for this to work
@@ -425,13 +425,13 @@ void SMLoader::ProcessAttacks( AttackArray &attacks, MsdFile::value_t params )
 	}
 }
 
-void SMLoader::ProcessInstrumentTracks( Song &out, const RString &sParam )
+void SMLoader::ProcessInstrumentTracks( Song &out, const std::string &sParam )
 {
-	std::vector<RString> vs1;
+	std::vector<std::string> vs1;
 	split( sParam, ",", vs1 );
-	for (RString const &s : vs1)
+	for (std::string const &s : vs1)
 	{
-		std::vector<RString> vs2;
+		std::vector<std::string> vs2;
 		split( s, "=", vs2 );
 		if( vs2.size() >= 2 )
 		{
@@ -442,14 +442,14 @@ void SMLoader::ProcessInstrumentTracks( Song &out, const RString &sParam )
 	}
 }
 
-void SMLoader::ParseBPMs( std::vector<std::pair<float, float>> &out, const RString line, const int rowsPerBeat )
+void SMLoader::ParseBPMs( std::vector<std::pair<float, float>> &out, const std::string line, const int rowsPerBeat )
 {
-	std::vector<RString> arrayBPMChangeExpressions;
+	std::vector<std::string> arrayBPMChangeExpressions;
 	split( line, ",", arrayBPMChangeExpressions );
 
 	for( unsigned b=0; b<arrayBPMChangeExpressions.size(); b++ )
 	{
-		std::vector<RString> arrayBPMChangeValues;
+		std::vector<std::string> arrayBPMChangeValues;
 		Trim(arrayBPMChangeExpressions[b]);
 		if (arrayBPMChangeExpressions[b].empty()) {
 			continue;
@@ -476,14 +476,14 @@ void SMLoader::ParseBPMs( std::vector<std::pair<float, float>> &out, const RStri
 	}
 }
 
-void SMLoader::ParseStops( std::vector<std::pair<float, float>> &out, const RString line, const int rowsPerBeat )
+void SMLoader::ParseStops( std::vector<std::pair<float, float>> &out, const std::string line, const int rowsPerBeat )
 {
-	std::vector<RString> arrayFreezeExpressions;
+	std::vector<std::string> arrayFreezeExpressions;
 	split( line, ",", arrayFreezeExpressions );
 
 	for( unsigned f=0; f<arrayFreezeExpressions.size(); f++ )
 	{
-		std::vector<RString> arrayFreezeValues;
+		std::vector<std::string> arrayFreezeValues;
 		Trim(arrayFreezeExpressions[f]);
 		if (arrayFreezeExpressions[f].empty()) {
 			continue;
@@ -746,14 +746,14 @@ void SMLoader::ProcessBPMsAndStops(TimingData &out,
 	}
 }
 
-void SMLoader::ProcessDelays( TimingData &out, const RString line, const int rowsPerBeat )
+void SMLoader::ProcessDelays( TimingData &out, const std::string line, const int rowsPerBeat )
 {
-	std::vector<RString> arrayDelayExpressions;
+	std::vector<std::string> arrayDelayExpressions;
 	split( line, ",", arrayDelayExpressions );
 
 	for( unsigned f=0; f<arrayDelayExpressions.size(); f++ )
 	{
-		std::vector<RString> arrayDelayValues;
+		std::vector<std::string> arrayDelayValues;
 		Trim(arrayDelayExpressions[f]);
 		if (arrayDelayExpressions[f].empty()) {
 			continue;
@@ -782,15 +782,15 @@ void SMLoader::ProcessDelays( TimingData &out, const RString line, const int row
 	}
 }
 
-void SMLoader::ProcessTimeSignatures( TimingData &out, const RString line, const int rowsPerBeat )
+void SMLoader::ProcessTimeSignatures( TimingData &out, const std::string line, const int rowsPerBeat )
 {
-	std::vector<RString> vs1;
+	std::vector<std::string> vs1;
 	std::vector<TimeSignatureSegment> segments;
 	split( line, ",", vs1 );
 
-	for (RString const &s1 : vs1)
+	for (std::string const &s1 : vs1)
 	{
-		std::vector<RString> vs2;
+		std::vector<std::string> vs2;
 		split( s1, "=", vs2 );
 
 		if( vs2.size() < 3 )
@@ -850,14 +850,14 @@ void SMLoader::ProcessTimeSignatures( TimingData &out, const RString line, const
 	}
 }
 
-void SMLoader::ProcessTickcounts( TimingData &out, const RString line, const int rowsPerBeat )
+void SMLoader::ProcessTickcounts( TimingData &out, const std::string line, const int rowsPerBeat )
 {
-	std::vector<RString> arrayTickcountExpressions;
+	std::vector<std::string> arrayTickcountExpressions;
 	split( line, ",", arrayTickcountExpressions );
 
 	for( unsigned f=0; f<arrayTickcountExpressions.size(); f++ )
 	{
-		std::vector<RString> arrayTickcountValues;
+		std::vector<std::string> arrayTickcountValues;
 		Trim(arrayTickcountExpressions[f]);
 		if (arrayTickcountExpressions[f].empty()) {
 			continue;
@@ -879,14 +879,14 @@ void SMLoader::ProcessTickcounts( TimingData &out, const RString line, const int
 	}
 }
 
-void SMLoader::ProcessSpeeds( TimingData &out, const RString line, const int rowsPerBeat )
+void SMLoader::ProcessSpeeds( TimingData &out, const std::string line, const int rowsPerBeat )
 {
-	std::vector<RString> vs1;
+	std::vector<std::string> vs1;
 	split( line, ",", vs1 );
 
-	for (RString const &s1 : vs1)
+	for (std::string const &s1 : vs1)
 	{
-		std::vector<RString> vs2;
+		std::vector<std::string> vs2;
 		split( s1, "=", vs2 );
 
 		if( vs2[0].empty() && vs2.size() == 2 ) // First one always seems to have 2.
@@ -939,14 +939,14 @@ void SMLoader::ProcessSpeeds( TimingData &out, const RString line, const int row
 	}
 }
 
-void SMLoader::ProcessFakes( TimingData &out, const RString line, const int rowsPerBeat )
+void SMLoader::ProcessFakes( TimingData &out, const std::string line, const int rowsPerBeat )
 {
-	std::vector<RString> arrayFakeExpressions;
+	std::vector<std::string> arrayFakeExpressions;
 	split( line, ",", arrayFakeExpressions );
 
 	for( unsigned b=0; b<arrayFakeExpressions.size(); b++ )
 	{
-		std::vector<RString> arrayFakeValues;
+		std::vector<std::string> arrayFakeValues;
 		Trim(arrayFakeExpressions[b]);
 		if (arrayFakeExpressions[b].empty()) {
 			continue;
@@ -976,7 +976,7 @@ void SMLoader::ProcessFakes( TimingData &out, const RString line, const int rows
 	}
 }
 
-bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RString> aBGChangeValues )
+bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<std::string> aBGChangeValues )
 {
 	aBGChangeValues.resize( std::min((int) aBGChangeValues.size(), 11) );
 
@@ -997,7 +997,7 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 		[[fallthrough]];
 	case 8:
 	{
-		RString tmp = aBGChangeValues[7];
+		std::string tmp = aBGChangeValues[7];
 		MakeLower(tmp);
 		if( ( tmp.find(".ini") != std::string::npos || tmp.find(".xml") != std::string::npos )
 		   && !PREFSMAN->m_bQuirksMode )
@@ -1041,7 +1041,7 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 		[[fallthrough]];
 	case 2:
 	{
-		RString tmp = aBGChangeValues[1];
+		std::string tmp = aBGChangeValues[1];
 		MakeLower(tmp);
 		if( ( tmp.find(".ini") != std::string::npos || tmp.find(".xml") != std::string::npos )
 		   && !PREFSMAN->m_bQuirksMode )
@@ -1058,7 +1058,7 @@ bool SMLoader::LoadFromBGChangesVector( BackgroundChange &change, std::vector<RS
 	return aBGChangeValues.size() >= 2;
 }
 
-bool SMLoader::LoadNoteDataFromSimfile( const RString &path, Steps &out )
+bool SMLoader::LoadNoteDataFromSimfile( const std::string &path, Steps &out )
 {
 	MsdFile msd;
 	if( !msd.ReadFile( path, true ) )  // unescape
@@ -1073,7 +1073,7 @@ bool SMLoader::LoadNoteDataFromSimfile( const RString &path, Steps &out )
 	{
 		int iNumParams = msd.GetNumParams(i);
 		const MsdFile::value_t &sParams = msd.GetValue(i);
-		RString sValueName = sParams[0];
+		std::string sValueName = sParams[0];
 		MakeUpper(sValueName);
 
 		// The only tag we care about is the #NOTES tag.
@@ -1088,9 +1088,9 @@ bool SMLoader::LoadNoteDataFromSimfile( const RString &path, Steps &out )
 				continue;
 			}
 
-			RString stepsType = sParams[1];
-			RString description = sParams[2];
-			RString difficulty = sParams[3];
+			std::string stepsType = sParams[1];
+			std::string description = sParams[2];
+			std::string difficulty = sParams[3];
 
 			// HACK?: If this is a .edit fudge the edit difficulty
 			if(CompareNoCase(Right(path, 5), ".edit") == 0) difficulty = "edit";
@@ -1125,7 +1125,7 @@ bool SMLoader::LoadNoteDataFromSimfile( const RString &path, Steps &out )
 				continue;
 			}
 
-			RString noteData = sParams[6];
+			std::string noteData = sParams[6];
 			Trim( noteData );
 			out.SetSMNoteData( noteData );
 			out.TidyUpData();
@@ -1135,7 +1135,7 @@ bool SMLoader::LoadNoteDataFromSimfile( const RString &path, Steps &out )
 	return false;
 }
 
-bool SMLoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCache )
+bool SMLoader::LoadFromSimfile( const std::string &sPath, Song &out, bool bFromCache )
 {
 	//LOG->Trace( "Song::LoadFromSMFile(%s)", sPath.c_str() );
 
@@ -1155,7 +1155,7 @@ bool SMLoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCache
 	{
 		int iNumParams = msd.GetNumParams(i);
 		const MsdFile::value_t &sParams = msd.GetValue(i);
-		RString sValueName = sParams[0];
+		std::string sValueName = sParams[0];
 		MakeUpper(sValueName);
 
 		reused_song_info.params= &sParams;
@@ -1205,7 +1205,7 @@ bool SMLoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCache
 	return true;
 }
 
-bool SMLoader::LoadEditFromFile( RString sEditFilePath, ProfileSlot slot, bool bAddStepsToSong, Song *givenSong /* =nullptr */ )
+bool SMLoader::LoadEditFromFile( std::string sEditFilePath, ProfileSlot slot, bool bAddStepsToSong, Song *givenSong /* =nullptr */ )
 {
 	LOG->Trace( "SMLoader::LoadEditFromFile(%s)", sEditFilePath.c_str() );
 
@@ -1226,14 +1226,14 @@ bool SMLoader::LoadEditFromFile( RString sEditFilePath, ProfileSlot slot, bool b
 	return LoadEditFromMsd( msd, sEditFilePath, slot, bAddStepsToSong, givenSong );
 }
 
-bool SMLoader::LoadEditFromBuffer( const RString &sBuffer, const RString &sEditFilePath, ProfileSlot slot, Song *givenSong )
+bool SMLoader::LoadEditFromBuffer( const std::string &sBuffer, const std::string &sEditFilePath, ProfileSlot slot, Song *givenSong )
 {
 	MsdFile msd;
 	msd.ReadFromString( sBuffer, true ); // unescape
 	return LoadEditFromMsd( msd, sEditFilePath, slot, true, givenSong );
 }
 
-bool SMLoader::LoadEditFromMsd( const MsdFile &msd, const RString &sEditFilePath, ProfileSlot slot, bool bAddStepsToSong, Song *givenSong /* = nullptr */ )
+bool SMLoader::LoadEditFromMsd( const MsdFile &msd, const std::string &sEditFilePath, ProfileSlot slot, bool bAddStepsToSong, Song *givenSong /* = nullptr */ )
 {
 	Song* pSong = givenSong;
 
@@ -1241,7 +1241,7 @@ bool SMLoader::LoadEditFromMsd( const MsdFile &msd, const RString &sEditFilePath
 	{
 		int iNumParams = msd.GetNumParams(i);
 		const MsdFile::value_t &sParams = msd.GetValue(i);
-		RString sValueName = sParams[0];
+		std::string sValueName = sParams[0];
 		MakeUpper(sValueName);
 
 		// handle the data
@@ -1255,7 +1255,7 @@ bool SMLoader::LoadEditFromMsd( const MsdFile &msd, const RString &sEditFilePath
 				continue;
 			}
 
-			RString sSongFullTitle = sParams[1];
+			std::string sSongFullTitle = sParams[1];
 			this->SetSongTitle(sParams[1]);
 			Replace(sSongFullTitle, '\\', '/');
 
@@ -1319,15 +1319,15 @@ bool SMLoader::LoadEditFromMsd( const MsdFile &msd, const RString &sEditFilePath
 	return false;
 }
 
-void SMLoader::GetApplicableFiles( const RString &sPath, std::vector<RString> &out, bool load_autosave )
+void SMLoader::GetApplicableFiles( const std::string &sPath, std::vector<std::string> &out, bool load_autosave )
 {
 	if(load_autosave)
 	{
-		GetDirListing( sPath + RString("*.ats" ), out );
+		GetDirListing( sPath + std::string("*.ats" ), out );
 	}
 	else
 	{
-		GetDirListing( sPath + RString("*" + this->GetFileExtension() ), out );
+		GetDirListing( sPath + std::string("*" + this->GetFileExtension() ), out );
 	}
 }
 
@@ -1389,25 +1389,25 @@ void SMLoader::TidyUpData( Song &song, bool bFromCache )
 	}
 }
 
-std::vector<RString> SMLoader::GetSongDirFiles(const RString &sSongDir)
+std::vector<std::string> SMLoader::GetSongDirFiles(const std::string &sSongDir)
 {
 	if (!m_SongDirFiles.empty())
 		return m_SongDirFiles;
 
 	ASSERT(!sSongDir.empty());
 
-	std::vector<RString> vsDirs;
+	std::vector<std::string> vsDirs;
 	vsDirs.push_back(sSongDir);
 
 	while (!vsDirs.empty())
 	{
-		RString d = vsDirs.back();
+		std::string d = vsDirs.back();
 		vsDirs.pop_back();
 
-		std::vector<RString> vsFiles;
+		std::vector<std::string> vsFiles;
 		GetDirListing(d+"*", vsFiles, false, true);
 
-		for (const RString& f : vsFiles)
+		for (const std::string& f : vsFiles)
 		{
 			if (IsADirectory(f))
 				vsDirs.push_back(f+"/");
@@ -1419,18 +1419,18 @@ std::vector<RString> SMLoader::GetSongDirFiles(const RString &sSongDir)
 	return m_SongDirFiles;
 }
 
-void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::vector<RString> > &vvsAddTo, const RString& sSongDir)
+void SMLoader::ParseBGChangesString(const std::string& _sChanges, std::vector<std::vector<std::string> > &vvsAddTo, const std::string& sSongDir)
 {
 	// short circuit: empty string
 	if (_sChanges.empty())
 		return;
 
 	// strip newlines (basically operates as both split and join at the same time)
-	RString sChanges;
+	std::string sChanges;
 	size_t start = 0;
 	do {
 		size_t pos = _sChanges.find_first_of("\r\n", start);
-		if (RString::npos == pos)
+		if (std::string::npos == pos)
 			pos = _sChanges.size();
 
 		if (pos != start) {
@@ -1447,7 +1447,7 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 		return;
 
 	// get the list of possible files/directories for the file parameters
-	std::vector<RString> vsFiles = GetSongDirFiles(sSongDir);
+	std::vector<std::string> vsFiles = GetSongDirFiles(sSongDir);
 
 	start = 0;
 	int pnum = 0;
@@ -1458,7 +1458,7 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 		case 7:
 		{
 			// see if one of the files in the song directory are listed.
-			RString found;
+			std::string found;
 			for (const auto& f : vsFiles)
 			{
 				// there aren't enough characters for this to match
@@ -1503,19 +1503,19 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 		}
 		// everything else should be safe
 		default:
-			if(0 == pnum) vvsAddTo.push_back(std::vector<RString>()); // first value of this set. create our vector
+			if(0 == pnum) vvsAddTo.push_back(std::vector<std::string>()); // first value of this set. create our vector
 
 			{
 				size_t eqpos = sChanges.find('=', start);
 				size_t compos = sChanges.find(',', start);
 
-				if ((eqpos == RString::npos) && (compos == RString::npos))
+				if ((eqpos == std::string::npos) && (compos == std::string::npos))
 				{
 					// neither = nor , were found in the remainder of the string. consume the rest of the string.
 					vvsAddTo.back().push_back(sChanges.substr(start));
 					start = sChanges.size() + 1;
 				}
-				else if ((eqpos != RString::npos) && (compos != RString::npos))
+				else if ((eqpos != std::string::npos) && (compos != std::string::npos))
 				{
 					// both were found. which came first?
 					if (eqpos < compos)
@@ -1533,7 +1533,7 @@ void SMLoader::ParseBGChangesString(const RString& _sChanges, std::vector<std::v
 						pnum = 0;
 					}
 				}
-				else if (eqpos != RString::npos)
+				else if (eqpos != std::string::npos)
 				{
 					// found only equals. consume and move on.
 					vvsAddTo.back().push_back(sChanges.substr(start, eqpos - start));

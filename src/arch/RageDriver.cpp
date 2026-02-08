@@ -10,7 +10,7 @@ void DriverList::Add( const istring &sName, CreateRageDriverFn pfn )
 	(*m_pRegistrees)[sName] = pfn;
 }
 
-RageDriver *DriverList::Create( const RString &sDriverName )
+RageDriver *DriverList::Create( const std::string &sDriverName )
 {
 	if( m_pRegistrees == nullptr )
 		return nullptr;

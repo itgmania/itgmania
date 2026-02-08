@@ -37,33 +37,33 @@ public:
 	void LoadLocalProfilesByRecent();
 	void LoadLocalProfilesByName();
 
-	const Profile *GetLocalProfile( const RString &sProfileID ) const;
-	Profile *GetLocalProfile( const RString &sProfileID ) { return (Profile*) ((const ProfileManager *) this)->GetLocalProfile(sProfileID); }
+	const Profile *GetLocalProfile( const std::string &sProfileID ) const;
+	Profile *GetLocalProfile( const std::string &sProfileID ) { return (Profile*) ((const ProfileManager *) this)->GetLocalProfile(sProfileID); }
 	Profile *GetLocalProfileFromIndex( int iIndex );
-	RString GetLocalProfileIDFromIndex( int iIndex );
+	std::string GetLocalProfileIDFromIndex( int iIndex );
 
-	bool CreateLocalProfile( RString sName, RString &sProfileIDOut );
-	void AddLocalProfileByID( Profile *pProfile, RString sProfileID ); // transfers ownership of pProfile
-	bool RenameLocalProfile( RString sProfileID, RString sNewName );
-	bool DeleteLocalProfile( RString sProfileID );
-	void GetLocalProfileIDs( std::vector<RString> &vsProfileIDsOut ) const;
-	void GetLocalProfileDisplayNames( std::vector<RString> &vsProfileDisplayNamesOut ) const;
-	int GetLocalProfileIndexFromID( RString sProfileID ) const;
+	bool CreateLocalProfile( std::string sName, std::string &sProfileIDOut );
+	void AddLocalProfileByID( Profile *pProfile, std::string sProfileID ); // transfers ownership of pProfile
+	bool RenameLocalProfile( std::string sProfileID, std::string sNewName );
+	bool DeleteLocalProfile( std::string sProfileID );
+	void GetLocalProfileIDs( std::vector<std::string> &vsProfileIDsOut ) const;
+	void GetLocalProfileDisplayNames( std::vector<std::string> &vsProfileDisplayNamesOut ) const;
+	int GetLocalProfileIndexFromID( std::string sProfileID ) const;
 	int GetNumLocalProfiles() const;
 
-	RString GetStatsPrefix() { return m_stats_prefix; }
-	void SetStatsPrefix(RString const& prefix);
+	std::string GetStatsPrefix() { return m_stats_prefix; }
+	void SetStatsPrefix(std::string const& prefix);
 
 	bool LoadFirstAvailableProfile( PlayerNumber pn, bool bLoadEdits = true );	// memory card or local profile
 	bool LoadLocalProfileFromMachine( PlayerNumber pn );
 	bool LoadProfileFromMemoryCard( PlayerNumber pn, bool bLoadEdits = true );
-	bool FastLoadProfileNameFromMemoryCard( RString sRootDir, RString &sName ) const;
+	bool FastLoadProfileNameFromMemoryCard( std::string sRootDir, std::string &sName ) const;
 	bool SaveProfile( PlayerNumber pn ) const;
-	bool SaveLocalProfile( RString sProfileID );
+	bool SaveLocalProfile( std::string sProfileID );
 	void UnloadProfile( PlayerNumber pn );
 
-	void MergeLocalProfiles(RString const& from_id, RString const& to_id);
-	void MergeLocalProfileIntoMachine(RString const& from_id, bool skip_totals);
+	void MergeLocalProfiles(std::string const& from_id, std::string const& to_id);
+	void MergeLocalProfileIntoMachine(std::string const& from_id, bool skip_totals);
 	void ChangeProfileType(int index, ProfileType new_type);
 	void MoveProfilePriority(int index, bool up);
 	void MoveProfileTopBottom(int index, bool top);
@@ -87,12 +87,12 @@ public:
 	const Profile* GetProfile( ProfileSlot slot ) const;
 	Profile* GetProfile( ProfileSlot slot ) { return (Profile*) ((const ProfileManager *) this)->GetProfile(slot); }
 
-	const RString& GetProfileDir( ProfileSlot slot ) const;
-	RString GetProfileDirImportedFrom( ProfileSlot slot ) const;
+	const std::string& GetProfileDir( ProfileSlot slot ) const;
+	std::string GetProfileDirImportedFrom( ProfileSlot slot ) const;
 
 	Profile* GetMachineProfile() { return m_pMachineProfile; }
 
-	RString GetPlayerName( PlayerNumber pn ) const;
+	std::string GetPlayerName( PlayerNumber pn ) const;
 	bool ProfileWasLoadedFromMemoryCard( PlayerNumber pn ) const;
 	bool ProfileFromMemoryCardIsNew( PlayerNumber pn ) const;
 	bool LastLoadWasTamperedOrCorrupt( PlayerNumber pn ) const;
@@ -112,26 +112,26 @@ public:
 	void AddCategoryScore( StepsType st, RankingCategory rc, PlayerNumber pn, const HighScore &hs, int &iPersonalIndexOut, int &iMachineIndexOut );
 	void IncrementCategoryPlayCount( StepsType st, RankingCategory rc, PlayerNumber pn );
 
-	static void GetMemoryCardProfileDirectoriesToTry( std::vector<RString> &asDirsToTry );
+	static void GetMemoryCardProfileDirectoriesToTry( std::vector<std::string> &asDirsToTry );
 
 	// Lua
 	void PushSelf( lua_State *L );
 
 	static Preference<bool> m_bProfileStepEdits;
 	static Preference<bool> m_bProfileCourseEdits;
-	static Preference1D<RString> m_sDefaultLocalProfileID;
+	static Preference1D<std::string> m_sDefaultLocalProfileID;
 
 private:
-	ProfileLoadResult LoadProfile( PlayerNumber pn, RString sProfileDir, bool bIsMemCard );
+	ProfileLoadResult LoadProfile( PlayerNumber pn, std::string sProfileDir, bool bIsMemCard );
 
 	// Directory that contains the profile.  Either on local machine or
 	// on a memory card.
-	RString m_sProfileDir[NUM_PLAYERS];
+	std::string m_sProfileDir[NUM_PLAYERS];
 
 	// MemoryCardProfileImportSubdirs name, if the profile was imported.
-	RString m_sProfileDirImportedFrom[NUM_PLAYERS];
+	std::string m_sProfileDirImportedFrom[NUM_PLAYERS];
 
-	RString m_stats_prefix;
+	std::string m_stats_prefix;
 
 	bool m_bWasLoadedFromMemoryCard[NUM_PLAYERS];
 	bool m_bLastLoadWasTamperedOrCorrupt[NUM_PLAYERS];	// true if Stats.xml was present, but failed to load (probably because of a signature failure)

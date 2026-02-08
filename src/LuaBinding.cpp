@@ -15,11 +15,11 @@ namespace
 			return;
 
 		/* Register base classes first. */
-		std::map<RString, LuaBinding*> mapToRegister;
+		std::map<std::string, LuaBinding*> mapToRegister;
 		for (LuaBinding *binding : *m_Subscribers.m_pSubscribers)
 			mapToRegister[binding->GetClassName()] = binding;
 
-		std::set<RString> setRegisteredAlready;
+		std::set<std::string> setRegisteredAlready;
 
 		while( !mapToRegister.empty() )
 		{
@@ -32,8 +32,8 @@ namespace
 				{
 					break;
 				}
-				RString sBase = pBinding->GetBaseClassName();
-				std::map<RString, LuaBinding*>::const_iterator it = mapToRegister.find(sBase);
+				std::string sBase = pBinding->GetBaseClassName();
+				std::map<std::string, LuaBinding*>::const_iterator it = mapToRegister.find(sBase);
 				if( it != mapToRegister.end() )
 				{
 					pBinding = it->second;
@@ -119,7 +119,7 @@ void LuaBinding::Register( lua_State *L )
 		lua_newtable( L );
 		int iHeirarchyTable = lua_gettop( L );
 
-		RString sClass = GetClassName();
+		std::string sClass = GetClassName();
 		int iIndex = 0;
 		while( !sClass.empty() )
 		{
@@ -155,7 +155,7 @@ void LuaBinding::Register( lua_State *L )
 // types (eg. "Actor.x(GAMESTATE, 10)"), which will crash or cause corruption.
 // #define FAST_LUA
 
-void LuaBinding::CreateMethodsTable( lua_State *L, const RString &sName )
+void LuaBinding::CreateMethodsTable( lua_State *L, const std::string &sName )
 {
 	lua_newtable( L );
 	lua_pushvalue( L, -1 );
@@ -255,7 +255,7 @@ static void GetGlobalTable( Lua *L )
 /* The object is on the stack.  It's either a table or a userdata.
  * If needed, associate the metatable; if a table, also add it to
  * the userdata table. */
-void LuaBinding::ApplyDerivedType( Lua *L, const RString &sClassName, void *pSelf )
+void LuaBinding::ApplyDerivedType( Lua *L, const std::string &sClassName, void *pSelf )
 {
 	int iTable = lua_gettop( L );
 
@@ -297,7 +297,7 @@ void LuaBinding::ApplyDerivedType( Lua *L, const RString &sClassName, void *pSel
 #include "RageUtil_AutoPtr.h"
 REGISTER_CLASS_TRAITS( LuaClass, new LuaClass(*pCopy) )
 
-void *LuaBinding::GetPointerFromStack( Lua *L, const RString &sType, int iArg )
+void *LuaBinding::GetPointerFromStack( Lua *L, const std::string &sType, int iArg )
 {
 	iArg = LuaHelpers::AbsIndex( L, iArg );
 

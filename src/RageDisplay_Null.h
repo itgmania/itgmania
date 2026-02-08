@@ -9,9 +9,9 @@ class RageDisplay_Null: public RageDisplay
 {
 public:
 	RageDisplay_Null();
-	virtual RString Init( const VideoModeParams &p, bool bAllowUnacceleratedRenderer );
+	virtual std::string Init( const VideoModeParams &p, bool bAllowUnacceleratedRenderer );
 
-	virtual RString GetApiDescription() const { return "Null"; }
+	virtual std::string GetApiDescription() const { return "Null"; }
 	virtual void GetDisplaySpecs(DisplaySpecs &out) const;
 	const RagePixelFormatDesc *GetPixelFormatDesc(RagePixelFormat pf) const;
 
@@ -79,7 +79,7 @@ protected:
 	void DrawSymmetricQuadStripInternal( const RageSpriteVertex v[], int /* iNumVerts */ ) { }
 
 	VideoModeParams m_Params;
-	RString TryVideoMode( const VideoModeParams &p, bool & /* bNewDeviceOut */ ) { m_Params = p; return RString(); }
+	std::string TryVideoMode( const VideoModeParams &p, bool & /* bNewDeviceOut */ ) { m_Params = p; return std::string(); }
 	RageSurface* CreateScreenshot();
 	RageMatrix GetOrthoMatrix( float l, float r, float b, float t, float zn, float zf );
 	bool SupportsSurfaceFormat( RagePixelFormat ) { return true; }

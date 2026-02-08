@@ -33,7 +33,7 @@
  */
 
 static RageMutex g_SoundManMutex("SoundMan");
-static Preference<RString> g_sSoundDrivers( "SoundDrivers", "" ); // "" == DEFAULT_SOUND_DRIVER_LIST
+static Preference<std::string> g_sSoundDrivers( "SoundDrivers", "" ); // "" == DEFAULT_SOUND_DRIVER_LIST
 
 RageSoundManager *SOUNDMAN = nullptr;
 
@@ -52,7 +52,7 @@ RageSoundManager::~RageSoundManager()
 {
 	/* Don't lock while deleting the driver (the decoder thread might deadlock). */
 	delete m_pDriver;
-	for (std::pair<RString const &, RageSoundReader_Preload *> s : m_mapPreloadedSounds)
+	for (std::pair<std::string const &, RageSoundReader_Preload *> s : m_mapPreloadedSounds)
 		delete s.second;
 	m_mapPreloadedSounds.clear();
 }
@@ -141,13 +141,13 @@ int RageSoundManager::GetDriverSampleRate() const
 
 /* If the given path is loaded, return a copy; otherwise return nullptr.
  * It's the caller's responsibility to delete the result. */
-RageSoundReader *RageSoundManager::GetLoadedSound( const RString &sPath_ )
+RageSoundReader *RageSoundManager::GetLoadedSound( const std::string &sPath_ )
 {
 	LockMut(g_SoundManMutex); /* lock for access to m_mapPreloadedSounds */
 
-	RString sPath(sPath_);
+	std::string sPath(sPath_);
 	MakeLower(sPath);
-	std::map<RString, RageSoundReader_Preload*>::const_iterator it;
+	std::map<std::string, RageSoundReader_Preload*>::const_iterator it;
 	it = m_mapPreloadedSounds.find( sPath );
 	if( it == m_mapPreloadedSounds.end() )
 		return nullptr;
@@ -158,15 +158,15 @@ RageSoundReader *RageSoundManager::GetLoadedSound( const RString &sPath_ )
 /* Add the sound to the set of loaded sounds that can be copied for reuse.
  * The sound will be kept in memory as long as there are any other references
  * to it; once we hold the last one, we'll release it. */
-void RageSoundManager::AddLoadedSound( const RString &sPath_, RageSoundReader_Preload *pSound )
+void RageSoundManager::AddLoadedSound( const std::string &sPath_, RageSoundReader_Preload *pSound )
 {
 	LockMut(g_SoundManMutex); /* lock for access to m_mapPreloadedSounds */
 
 	/* Don't AddLoadedSound a sound that's already registered.  It should have been
 	 * used in GetLoadedSound. */
-	RString sPath(sPath_);
+	std::string sPath(sPath_);
 	MakeLower(sPath);
-	std::map<RString, RageSoundReader_Preload*>::const_iterator it;
+	std::map<std::string, RageSoundReader_Preload*>::const_iterator it;
 	it = m_mapPreloadedSounds.find( sPath );
 	ASSERT_M( it == m_mapPreloadedSounds.end(), sPath );
 

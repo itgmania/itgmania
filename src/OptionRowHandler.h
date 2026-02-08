@@ -22,8 +22,8 @@ enum SelectType
 	NUM_SelectType,
 	SelectType_Invalid
 };
-const RString& SelectTypeToString( SelectType pm );
-SelectType StringToSelectType( const RString& s );
+const std::string& SelectTypeToString( SelectType pm );
+SelectType StringToSelectType( const std::string& s );
 LuaDeclareType( SelectType );
 /** @brief How many items are shown on the row? */
 enum LayoutType
@@ -33,14 +33,14 @@ enum LayoutType
 	NUM_LayoutType,
 	LayoutType_Invalid
 };
-const RString& LayoutTypeToString( LayoutType pm );
-LayoutType StringToLayoutType( const RString& s );
+const std::string& LayoutTypeToString( LayoutType pm );
+LayoutType StringToLayoutType( const std::string& s );
 LuaDeclareType( LayoutType );
 enum ReloadChanged
 {
 	RELOAD_CHANGED_NONE, RELOAD_CHANGED_ENABLED, RELOAD_CHANGED_ALL, NUM_ReloadChanged, ReloadChanged_Invalid
 };
-const RString& ReloadChangedToString( ReloadChanged rc );
+const std::string& ReloadChangedToString( ReloadChanged rc );
 ReloadChanged StringToReloadChanged( const std::string& rc );
 LuaDeclareType( ReloadChanged );
 
@@ -48,14 +48,14 @@ LuaDeclareType( ReloadChanged );
 struct OptionRowDefinition
 {
 	/** @brief the name of the option row. */
-	RString m_sName;
+	std::string m_sName;
 	/** @brief an explanation of the row's purpose. */
-	RString m_sExplanationName;
+	std::string m_sExplanationName;
 	/** @brief Do all players have to share one option from the row? */
 	bool m_bOneChoiceForAllPlayers;
 	SelectType m_selectType;
 	LayoutType m_layoutType;
-	std::vector<RString> m_vsChoices;
+	std::vector<std::string> m_vsChoices;
 	std::set<PlayerNumber> m_vEnabledForPlayers;	// only players in this set may change focus to this row
 	int m_iDefault;
 	bool	m_bExportOnChange;
@@ -153,7 +153,7 @@ class OptionRowHandler
 {
 public:
 	OptionRowDefinition m_Def;
-	std::vector<RString> m_vsReloadRowMessages;	// refresh this row on on these messages
+	std::vector<std::string> m_vsReloadRowMessages;	// refresh this row on on these messages
 
 	OptionRowHandler(): m_Def(), m_vsReloadRowMessages() { }
 	virtual ~OptionRowHandler() { }
@@ -167,8 +167,8 @@ public:
 		Init();
 		return this->LoadInternal( cmds );
 	}
-	RString OptionTitle() const;
-	RString GetThemedItemText( int iChoice ) const;
+	std::string OptionTitle() const;
+	std::string GetThemedItemText( int iChoice ) const;
 
 	virtual bool LoadInternal( const Commands & ) { return true; }
 
@@ -187,8 +187,8 @@ public:
 	virtual void ImportOption( OptionRow *, const std::vector<PlayerNumber> &, std::vector<bool> vbSelectedOut[NUM_PLAYERS] ) const { }
 	// Returns an OPT mask.
 	virtual int ExportOption( const std::vector<PlayerNumber> &, const std::vector<bool> vbSelected[NUM_PLAYERS] ) const { return 0; }
-	virtual void GetIconTextAndGameCommand( int iFirstSelection, RString &sIconTextOut, GameCommand &gcOut ) const;
-	virtual RString GetScreen( int /* iChoice */ ) const { return RString(); }
+	virtual void GetIconTextAndGameCommand( int iFirstSelection, std::string &sIconTextOut, GameCommand &gcOut ) const;
+	virtual std::string GetScreen( int /* iChoice */ ) const { return std::string(); }
 	// Exists so that a lua function can act on the selection.  Returns true if the choices should be reloaded.
 	virtual bool NotifyOfSelection(PlayerNumber pn, int choice) { return false; }
 	virtual bool GoToFirstOnStart() const { return true; }
@@ -205,7 +205,7 @@ namespace OptionRowHandlerUtil
 	int GetOneSelection( const std::vector<bool> &vbSelected );
 }
 
-inline void VerifySelected(SelectType st, std::vector<bool> &selected, const RString &sName)
+inline void VerifySelected(SelectType st, std::vector<bool> &selected, const std::string &sName)
 {
 	int num_selected = 0;
 	if( st == SELECT_ONE )

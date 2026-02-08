@@ -19,7 +19,7 @@ class Group
 {
 public:
 	Group();
-    Group( const RString& sDir, const RString& sGroupDirName, bool bFromProfile = false);
+    Group( const std::string& sDir, const std::string& sGroupDirName, bool bFromProfile = false);
     ~Group() = default;
     // Lua
 	void PushSelf( lua_State *L );
@@ -30,44 +30,44 @@ public:
 	 * 
 	 * @return The display title of the group. 
 	 */
-    const RString GetDisplayTitle() const { return m_sDisplayTitle; };
+    const std::string GetDisplayTitle() const { return m_sDisplayTitle; };
 
     /**
      * @brief This is the value considered when sorting the group by its title.
      * 
-     * @return const RString
+     * @return const std::string
      */
-    const RString GetSortTitle() const { return m_sSortTitle; };
+    const std::string GetSortTitle() const { return m_sSortTitle; };
 
     /**
      * @brief The path to the group folder.
      * 
      * @return the path
      */
-    const RString GetPath() const { return m_sPath; };
+    const std::string GetPath() const { return m_sPath; };
 
     /**
      * @brief The actual name of the group folder on disk.
      * 
-     * @return const RString 
+     * @return const std::string 
      */
-    const RString GetGroupName() const { return m_sGroupName; };
+    const std::string GetGroupName() const { return m_sGroupName; };
 
 
     /**
      * @brief Allows transliteration of the group title.
      * 
-     * @return const RString 
+     * @return const std::string 
      */
-    const RString GetTranslitTitle() const { return m_sTranslitTitle; };
+    const std::string GetTranslitTitle() const { return m_sTranslitTitle; };
 
 
     /**
      * @brief The series the group belongs to
      * 
-     * @return const RString 
+     * @return const std::string 
      */
-    const RString GetSeries() const { return m_sSeries; };
+    const std::string GetSeries() const { return m_sSeries; };
 
 
     /**
@@ -87,9 +87,9 @@ public:
     /**
      * @brief The path to the group's banner.
      * 
-     * @return const RString 
+     * @return const std::string 
      */
-    const RString GetBannerPath() const { return m_sBannerPath; };
+    const std::string GetBannerPath() const { return m_sBannerPath; };
 
     /**
      * @brief Get the songs in the group.
@@ -114,22 +114,22 @@ public:
         /**
          * @brief This is the title of the group as its displayed to the user 
          * and supersedes the actual folder name on disk. */
-        RString m_sDisplayTitle;
+        std::string m_sDisplayTitle;
 
         /** @brief This is the value considered when sorting the group by its title. */
-        RString m_sSortTitle;
+        std::string m_sSortTitle;
 
         /** @brief The path to the group folder. */
-        RString m_sPath;
+        std::string m_sPath;
 
         /** @brief The actual name of the group folder on disk. */
-        RString m_sGroupName;
+        std::string m_sGroupName;
 
         /** @brief Allows transliteration of the group title. */
-        RString m_sTranslitTitle;
+        std::string m_sTranslitTitle;
 
         /** @brief The series the group belongs to */
-        RString m_sSeries;
+        std::string m_sSeries;
 
         /** @brief The sync offset of the group */
         float m_fSyncOffset;
@@ -138,7 +138,7 @@ public:
         bool m_bHasPackIni;
 
         /** @brief The path to the group's banner. */
-        RString m_sBannerPath;
+        std::string m_sBannerPath;
 
         /** @brief The year the group was released */
         int m_iYearReleased;

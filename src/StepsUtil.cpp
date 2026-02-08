@@ -51,7 +51,7 @@ bool StepsCriteria::Matches( const Song *pSong, const Steps *pSteps ) const
 void StepsUtil::GetAllMatching( const SongCriteria &soc, const StepsCriteria &stc, std::vector<SongAndSteps> &out )
 {
 	
-	std::vector<RString> groupNames = soc.m_vsGroupNames;
+	std::vector<std::string> groupNames = soc.m_vsGroupNames;
 	if( groupNames.size() == 0 )
 	{
 		groupNames.push_back(GROUP_ALL);
@@ -119,7 +119,7 @@ void StepsUtil::GetAllMatchingEndless( Song *pSong, const StepsCriteria &stc, st
 
 bool StepsUtil::HasMatching( const SongCriteria &soc, const StepsCriteria &stc )
 {
-	std::vector<RString> groupNames = soc.m_vsGroupNames;
+	std::vector<std::string> groupNames = soc.m_vsGroupNames;
 	if( groupNames.size() == 0 )
 	{
 		groupNames.push_back(GROUP_ALL);
@@ -145,7 +145,7 @@ bool StepsUtil::HasMatching( const Song *pSong, const StepsCriteria &stc )
 }
 
 // Sorting stuff
-std::map<const Steps*, RString> steps_sort_val;
+std::map<const Steps*, std::string> steps_sort_val;
 
 static bool CompareStepsPointersBySortValueAscending(const Steps *pSteps1, const Steps *pSteps2)
 {
@@ -345,7 +345,7 @@ void StepsID::LoadFromNode( const XNode* pNode )
 {
 	ASSERT( pNode->GetName() == "Steps" );
 
-	RString sTemp;
+	std::string sTemp;
 
 	pNode->GetAttrValue( "StepsType", sTemp );
 	st = GAMEMAN->StringToStepsType( sTemp );
@@ -365,9 +365,9 @@ void StepsID::LoadFromNode( const XNode* pNode )
 	}
 }
 
-RString StepsID::ToString() const
+std::string StepsID::ToString() const
 {
-	RString s = GAMEMAN->GetStepsTypeInfo( st ).szName;
+	std::string s = GAMEMAN->GetStepsTypeInfo( st ).szName;
 	s += " " + DifficultyToString( dc );
 	if( dc == Difficulty_Edit )
 	{

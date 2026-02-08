@@ -8,22 +8,22 @@
 #include <dsound.h>
 #include <stdexcept>
 
-RString GetErrorString(HRESULT hr);
+std::string GetErrorString(HRESULT hr);
 
-RString hr_ssprintf( int hr, const char *fmt, ... )
+std::string hr_ssprintf( int hr, const char *fmt, ... )
 {
 	va_list	va;
 	va_start(va, fmt);
-	RString s = vssprintf( fmt, va );
+	std::string s = vssprintf( fmt, va );
 	va_end(va);
 
-	RString szError = GetErrorString(hr);
+	std::string szError = GetErrorString(hr);
 	return s + ssprintf(" (%s)", szError.c_str());
 }
 
 #define DXERRMSG(hrcode, dummy) case hrcode: return #hrcode;
 
-RString GetErrorString(HRESULT hr)
+std::string GetErrorString(HRESULT hr)
 {
 	switch (hr)
 	{

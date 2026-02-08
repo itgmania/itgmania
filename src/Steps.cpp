@@ -150,8 +150,8 @@ bool Steps::IsNoteDataEmpty() const
 bool Steps::GetNoteDataFromSimfile()
 {
 	// Replace the line below with the Steps' cache file.
-	RString stepFile = this->GetFilename();
-	RString extension = GetExtension(stepFile);
+	std::string stepFile = this->GetFilename();
+	std::string extension = GetExtension(stepFile);
 	MakeLower(extension); // must do this because the code is expecting lowercase
 
 	if (extension.empty() || extension == "ssc"
@@ -170,7 +170,7 @@ bool Steps::GetNoteDataFromSimfile()
 			give the user some leeway and search for a .sm replacement
 			*/
 			SMLoader backup_loader;
-			RString transformedStepFile = stepFile;
+			std::string transformedStepFile = stepFile;
 			Replace(transformedStepFile, ".ssc", ".sm");
 
 			return backup_loader.LoadNoteDataFromSimfile(transformedStepFile, *this);
@@ -225,7 +225,7 @@ void Steps::SetNoteData( const NoteData& noteDataNew )
 	*m_pNoteData = noteDataNew;
 	m_bNoteDataIsFilled = true;
 
-	m_sNoteDataCompressed = RString();
+	m_sNoteDataCompressed = std::string();
 	m_iHash = 0;
 }
 
@@ -251,7 +251,7 @@ NoteData Steps::GetNoteData() const
 	return tmp;
 }
 
-void Steps::SetSMNoteData( const RString &notes_comp_ )
+void Steps::SetSMNoteData( const std::string &notes_comp_ )
 {
 	m_pNoteData->Init();
 	m_bNoteDataIsFilled = false;
@@ -261,7 +261,7 @@ void Steps::SetSMNoteData( const RString &notes_comp_ )
 }
 
 /* XXX: this function should pull data from m_sFilename, like Decompress() */
-void Steps::GetSMNoteData( RString &notes_comp_out ) const
+void Steps::GetSMNoteData( std::string &notes_comp_out ) const
 {
 	if( m_sNoteDataCompressed.empty() )
 	{
@@ -598,7 +598,7 @@ void Steps::Compress() const
 	// Always leave lights data uncompressed.
 	if( this->m_StepsType == StepsType_lights_cabinet && m_bNoteDataIsFilled )
 	{
-		m_sNoteDataCompressed = RString();
+		m_sNoteDataCompressed = std::string();
 		return;
 	}
 
@@ -620,7 +620,7 @@ void Steps::Compress() const
 
 		/* Be careful; 'x = ""', m_sNoteDataCompressed.clear() and m_sNoteDataCompressed.reserve(0)
 		 * don't always free the allocated memory. */
-		m_sNoteDataCompressed = RString();
+		m_sNoteDataCompressed = std::string();
 		return;
 	}
 
@@ -700,7 +700,7 @@ void Steps::CreateBlank( StepsType ntTo )
 	this->SetNoteData( noteData );
 }
 
-void Steps::SetDifficultyAndDescription( Difficulty dc, RString sDescription )
+void Steps::SetDifficultyAndDescription( Difficulty dc, std::string sDescription )
 {
 	DeAutogen();
 	m_Difficulty = dc;
@@ -709,19 +709,19 @@ void Steps::SetDifficultyAndDescription( Difficulty dc, RString sDescription )
 		MakeValidEditDescription( m_sDescription );
 }
 
-void Steps::SetCredit( RString sCredit )
+void Steps::SetCredit( std::string sCredit )
 {
 	DeAutogen();
 	m_sCredit = sCredit;
 }
 
-void Steps::SetChartStyle( RString sChartStyle )
+void Steps::SetChartStyle( std::string sChartStyle )
 {
 	DeAutogen();
 	m_sChartStyle = sChartStyle;
 }
 
-bool Steps::MakeValidEditDescription( RString &sPreferredDescription )
+bool Steps::MakeValidEditDescription( std::string &sPreferredDescription )
 {
 	if( int(sPreferredDescription.size()) > MAX_STEPS_DESCRIPTION_LENGTH )
 	{
@@ -761,19 +761,19 @@ bool Steps::HasSignificantTimingChanges() const
 	return false;
 }
 
-const RString Steps::GetMusicPath() const
+const std::string Steps::GetMusicPath() const
 {
 	return Song::GetSongAssetPath(
 		m_MusicFile.empty() ? m_pSong->m_sMusicFile : m_MusicFile,
 		m_pSong->GetSongDir());
 }
 
-const RString& Steps::GetMusicFile() const
+const std::string& Steps::GetMusicFile() const
 {
 	return m_MusicFile;
 }
 
-void Steps::SetMusicFile(const RString& file)
+void Steps::SetMusicFile(const std::string& file)
 {
 	m_MusicFile= file;
 }
@@ -812,7 +812,7 @@ void Steps::SetPeakNps(std::vector<float> &peakNps)
 	m_PeakNps.assign(peakNps.begin(), peakNps.end());
 }
 
-const RString Steps::GetGrooveStatsHash() const
+const std::string Steps::GetGrooveStatsHash() const
 {
 	return m_sGrooveStatsHash;
 }
@@ -838,30 +838,30 @@ void Steps::CalculateGrooveStatsHash()
 	}
 	this->Decompress();
 
-	RString smNoteData = this->MinimizedChartString();
+	std::string smNoteData = this->MinimizedChartString();
 
 	TimingData * timingData = this->GetTimingData();
 	std::vector<TimingSegment *> segments = timingData->GetTimingSegments(SEGMENT_BPM);
-	std::vector<RString> bpmStrings;
+	std::vector<std::string> bpmStrings;
 	bpmStrings.reserve(segments.size());
 	for (TimingSegment *segment : segments)
 	{
 		BPMSegment *bpmSegment = ToBPM(segment);
 		float beat = bpmSegment->GetBeat();
 		float bpm = bpmSegment->GetBPM();
-		RString segmentStr = ssprintf("%s=%s", NormalizeDecimal(beat).c_str(), NormalizeDecimal(bpm).c_str());
+		std::string segmentStr = ssprintf("%s=%s", NormalizeDecimal(beat).c_str(), NormalizeDecimal(bpm).c_str());
 		bpmStrings.push_back(segmentStr);
 	}
-	RString bpmString = join(",", bpmStrings);
+	std::string bpmString = join(",", bpmStrings);
 
 	smNoteData.append(bpmString);
-	RString gsKey = BinaryToHex(CryptManager::GetSHA1ForString(smNoteData));
+	std::string gsKey = BinaryToHex(CryptManager::GetSHA1ForString(smNoteData));
 	gsKey = gsKey.substr(0, 16);
 	m_sGrooveStatsHash = gsKey;
 	m_iGrooveStatsHashVersion = CURRENT_GROOVE_STATS_HASH_VERSION;
 }
 
-RString Steps::MinimizedChartString()
+std::string Steps::MinimizedChartString()
 {
 	// We can potentially minimize the chart to get the most compressed
 	// form of the actual chart data.
@@ -877,7 +877,7 @@ RString Steps::MinimizedChartString()
 	
 	// Instead of calling GetSMNoteData(), call NoteDataUtil::GetSMNoteDataString()
 	// to ensure that we have a consistent, valid stepchart representation.
-	RString smNoteData = "";
+	std::string smNoteData = "";
 	NoteData noteData;
 	this->GetNoteData(noteData);
 	NoteDataUtil::GetSMNoteDataString( noteData, smNoteData );
@@ -889,11 +889,11 @@ RString Steps::MinimizedChartString()
 	
 	// Strip any comments from smNoteData
 	std::regex commentRegex("//[^\n]*");
-	RString deCommentedNoteData = std::regex_replace(smNoteData, commentRegex, "");
+	std::string deCommentedNoteData = std::regex_replace(smNoteData, commentRegex, "");
 	
-	RString minimizedNoteData = "";
+	std::string minimizedNoteData = "";
 	
-	std::vector<RString> measures;
+	std::vector<std::string> measures;
 	Regex anyNote("[^0]");
 	
 	split(deCommentedNoteData, ",", measures, true);
@@ -903,7 +903,7 @@ RString Steps::MinimizedChartString()
 		Trim(measures[m]);
 		bool allZeroes = true;
 		bool minimal = false;
-		std::vector<RString> lines;
+		std::vector<std::string> lines;
 		split(measures[m], "\n", lines, true);
 		while (lines.size() > 0 && !minimal && lines.size() % 2 == 0)
 		{
@@ -959,7 +959,7 @@ RString Steps::MinimizedChartString()
 	return minimizedNoteData;
 }
 
-void Steps::SetCachedGrooveStatsHash(const RString& key)
+void Steps::SetCachedGrooveStatsHash(const std::string& key)
 {
 	m_sGrooveStatsHash = key;
 	m_bIsCachedGrooveStatsHashJustLoaded = true;
@@ -970,12 +970,12 @@ void Steps::SetCachedGrooveStatsHashVersion(int version)
 	m_iGrooveStatsHashVersion = version;
 }
 
-RString Steps::GenerateChartKey()
+std::string Steps::GenerateChartKey()
 {
 	ChartKey = this->GenerateChartKey(*m_pNoteData, this->GetTimingData());
 	return ChartKey;
 }
-RString Steps::GetChartKey()
+std::string Steps::GetChartKey()
 {
 	if (ChartKey.empty()) {
 		this->Decompress();
@@ -984,17 +984,17 @@ RString Steps::GetChartKey()
 	}
 	return ChartKey;
 }
-RString Steps::GenerateChartKey(NoteData &nd, TimingData *td)
+std::string Steps::GenerateChartKey(NoteData &nd, TimingData *td)
 {
-	RString k = "";
-	RString o = "";
+	std::string k = "";
+	std::string o = "";
 	float bpm;
 	nd.LogNonEmptyRows();
 	std::vector<int>& nerv = nd.GetNonEmptyRowVector();
 
 
-	RString firstHalf = "";
-	RString secondHalf = "";
+	std::string firstHalf = "";
+	std::string secondHalf = "";
 
 #pragma omp parallel sections
 	{
@@ -1206,7 +1206,7 @@ public:
 	/*
 	static int GetSMNoteData( T* p, lua_State *L )
 	{
-		RString out;
+		std::string out;
 		p->GetSMNoteData( out );
 		lua_pushstring( L, out );
 		return 1;

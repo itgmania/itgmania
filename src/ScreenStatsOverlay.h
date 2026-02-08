@@ -18,7 +18,7 @@ public:
 	void Update( float fDeltaTime );
 
 private:
-	void AddTimestampLine( const RString &txt, const RageColor &color );
+	void AddTimestampLine( const std::string &txt, const RageColor &color );
 	void UpdateSkips();
 
 	BitmapText m_textStats;

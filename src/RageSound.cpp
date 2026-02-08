@@ -151,18 +151,18 @@ public:
 	unsigned GetNumChannels() const { return 1; }
 	int GetNextSourceFrame() const { return 0; }
 	float GetStreamToSourceRatio() const { return 1.0f; }
-	RString GetError() const { return ""; }
+	std::string GetError() const { return ""; }
 };
 
 
-bool RageSound::Load( RString sSoundFilePath )
+bool RageSound::Load( std::string sSoundFilePath )
 {
 	/* Automatically determine whether to precache */
 	/* TODO: Hook this up to a pref? */
 	return Load( sSoundFilePath, false );
 }
 
-bool RageSound::Load( RString sSoundFilePath, bool bPrecache, const RageSoundLoadParams *pParams )
+bool RageSound::Load( std::string sSoundFilePath, bool bPrecache, const RageSoundLoadParams *pParams )
 {
 	LOG->Trace( "RageSound: Load \"%s\" (precache: %i)", sSoundFilePath.c_str(), bPrecache );
 
@@ -178,7 +178,7 @@ bool RageSound::Load( RString sSoundFilePath, bool bPrecache, const RageSoundLoa
 	bool bNeedBuffer = true;
 	if( pSound == nullptr )
 	{
-		RString error;
+		std::string error;
 		bool bPrebuffer;
 		pSound = RageSoundReader_FileReader::OpenFile( sSoundFilePath, error, &bPrebuffer );
 		if( pSound == nullptr )
@@ -537,7 +537,7 @@ bool RageSound::SetPositionFrames( int iFrames )
 	}
 
 	int iRet = m_pSource->SetPosition( iFrames );
-	RString filePath = GetLoadedFilePath();
+	std::string filePath = GetLoadedFilePath();
 	if( iRet == -1 )
 	{
 		m_sError = m_pSource->GetError();
@@ -605,7 +605,7 @@ void RageSound::ApplyParams()
 	}
 }
 
-bool RageSound::SetProperty( const RString &sProperty, float fValue )
+bool RageSound::SetProperty( const std::string &sProperty, float fValue )
 {
 	return m_pSource->SetProperty( sProperty, fValue );
 }
@@ -621,7 +621,7 @@ RageSoundParams::StopMode_t RageSound::GetStopMode() const
 		return RageSoundParams::M_STOP;
 }
 
-void RageSound::SetStopModeFromString( const RString &sStopMode )
+void RageSound::SetStopModeFromString( const std::string &sStopMode )
 {
 	if( sStopMode.find("stop") != std::string::npos )
 	{
@@ -701,7 +701,7 @@ public:
 	{
 		RageSoundParams params( p->GetParams() );
 
-		RString val = SArg(1);
+		std::string val = SArg(1);
 		if( val == "StartSecond" ) params.m_StartSecond = FArg(2);
 		else if( val == "LengthSeconds" ) params.m_LengthSeconds = FArg(2);
 		else if( val == "FadeInSeconds" ) params.m_fFadeInSeconds = FArg(2);

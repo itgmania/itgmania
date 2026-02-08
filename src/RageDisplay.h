@@ -74,7 +74,7 @@ enum RagePixelFormat
 	NUM_RagePixelFormat,
 	RagePixelFormat_Invalid
 };
-const RString& RagePixelFormatToString( RagePixelFormat i );
+const std::string& RagePixelFormatToString( RagePixelFormat i );
 
 /** @brief The parameters used for the present Video Mode. */
 class VideoModeParams
@@ -84,7 +84,7 @@ public:
 	// are filled (in case new params are added).
 	VideoModeParams(
 		bool windowed_,
-		RString sDisplayId_,
+		std::string sDisplayId_,
 		int width_,
 		int height_,
 		int bpp_,
@@ -95,8 +95,8 @@ public:
 		bool bTrilinearFiltering_,
 		bool bAnisotropicFiltering_,
 		bool bWindowIsFullscreenBorderless_,
-		RString sWindowTitle_,
-		RString sIconFile_,
+		std::string sWindowTitle_,
+		std::string sIconFile_,
 		bool PAL_,
 		float fDisplayAspectRatio_
 	):
@@ -123,7 +123,7 @@ public:
 					bpp(0), rate(0), vsync(false), interlaced(false),
 					bSmoothLines(false), bTrilinearFiltering(false),
 					bAnisotropicFiltering(false), bWindowIsFullscreenBorderless(false),
-					sWindowTitle(RString()), sIconFile(RString()),
+					sWindowTitle(std::string()), sIconFile(std::string()),
 					PAL(false), fDisplayAspectRatio(0.0f) {}
 
 	// Subclassing VideoModeParams in ActualVideoModeParams. Make destructor virtual just in case
@@ -131,7 +131,7 @@ public:
 	virtual ~VideoModeParams() = default;
 
 	bool windowed;
-	RString sDisplayId;
+	std::string sDisplayId;
 	int width;
 	int height;
 	int bpp;
@@ -142,8 +142,8 @@ public:
 	bool bTrilinearFiltering;
 	bool bAnisotropicFiltering;
 	bool bWindowIsFullscreenBorderless;
-	RString sWindowTitle;
-	RString sIconFile;
+	std::string sWindowTitle;
+	std::string sIconFile;
 	bool PAL;
 	float fDisplayAspectRatio;
 };
@@ -226,15 +226,15 @@ public:
 	RageDisplay();
 	virtual ~RageDisplay();
 
-	virtual RString Init( const VideoModeParams &p, bool bAllowUnacceleratedRenderer ) = 0;
+	virtual std::string Init( const VideoModeParams &p, bool bAllowUnacceleratedRenderer ) = 0;
 
-	virtual RString GetApiDescription() const = 0;
+	virtual std::string GetApiDescription() const = 0;
 	virtual void GetDisplaySpecs(DisplaySpecs &out) const = 0;
 
 	// Don't override this.  Override TryVideoMode() instead.
 	// This will set the video mode to be as close as possible to params.
 	// Return true if device was re-created and we need to reload textures.
-	RString SetVideoMode( VideoModeParams p, bool &bNeedReloadTextures );
+	std::string SetVideoMode( VideoModeParams p, bool &bNeedReloadTextures );
 
 	// Call this when the resolution has been changed externally:
 	virtual void ResolutionChanged();
@@ -360,9 +360,9 @@ public:
 		SAVE_LOSSY_LOW_QUAL,	// jpg
 		SAVE_LOSSY_HIGH_QUAL	// jpg
 	};
-	bool SaveScreenshot( const RString &sPath, GraphicsFileFormat format );
+	bool SaveScreenshot( const std::string &sPath, GraphicsFileFormat format );
 
-	virtual RString GetTextureDiagnostics( uintptr_t /* id */ ) const { return RString(); }
+	virtual std::string GetTextureDiagnostics( uintptr_t /* id */ ) const { return std::string(); }
 	virtual RageSurface* CreateScreenshot() = 0;	// allocates a surface.  Caller must delete it.
 	virtual RageSurface *GetTexture( uintptr_t /* iTexture */ ) { return nullptr; } // allocates a surface.  Caller must delete it.
 
@@ -377,10 +377,10 @@ protected:
 	virtual void DrawSymmetricQuadStripInternal( const RageSpriteVertex v[], int iNumVerts ) = 0;
 	virtual void DrawCircleInternal( const RageSpriteVertex &v, float radius );
 
-	// return RString() if mode change was successful, an error message otherwise.
+	// return std::string() if mode change was successful, an error message otherwise.
 	// bNewDeviceOut is set true if a new device was created and textures
 	// need to be reloaded.
-	virtual RString TryVideoMode( const VideoModeParams &p, bool &bNewDeviceOut ) = 0;
+	virtual std::string TryVideoMode( const VideoModeParams &p, bool &bNewDeviceOut ) = 0;
 
 	void DrawPolyLine( const RageSpriteVertex &p1, const RageSpriteVertex &p2, float LineWidth );
 
@@ -394,7 +394,7 @@ public:
 	int GetCumFPS() const; // average FPS since last reset
 	virtual void ResetStats();
 	virtual void ProcessStatsOnFlip();
-	virtual RString GetStats() const;
+	virtual std::string GetStats() const;
 	void StatsAddVerts( int iNumVertsRendered );
 
 	// World matrix stack functions.

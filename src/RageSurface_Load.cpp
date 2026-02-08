@@ -13,7 +13,7 @@
 #include <vector>
 
 
-static RageSurface *TryOpenFile( RString sPath, bool bHeaderOnly, RString &error, RString format, bool &bKeepTrying )
+static RageSurface *TryOpenFile( std::string sPath, bool bHeaderOnly, std::string &error, std::string format, bool &bKeepTrying )
 {
 	RageSurface *ret = nullptr;
 	RageSurfaceUtils::OpenResult result;
@@ -76,7 +76,7 @@ static RageSurface *TryOpenFile( RString sPath, bool bHeaderOnly, RString &error
 	return nullptr;
 }
 
-RageSurface *RageSurfaceUtils::LoadFile( const RString &sPath, RString &error, bool bHeaderOnly )
+RageSurface *RageSurfaceUtils::LoadFile( const std::string &sPath, std::string &error, bool bHeaderOnly )
 {
 	{
 		RageFile TestOpen;
@@ -87,15 +87,15 @@ RageSurface *RageSurfaceUtils::LoadFile( const RString &sPath, RString &error, b
 		}
 	}
 
-	std::set<RString> FileTypes;
-	std::vector<RString> const& exts= ActorUtil::GetTypeExtensionList(FT_Bitmap);
-	for(std::vector<RString>::const_iterator curr= exts.begin();
+	std::set<std::string> FileTypes;
+	std::vector<std::string> const& exts= ActorUtil::GetTypeExtensionList(FT_Bitmap);
+	for(std::vector<std::string>::const_iterator curr= exts.begin();
 			curr != exts.end(); ++curr)
 	{
 		FileTypes.insert(*curr);
 	}
 
-	RString format = GetExtension(sPath);
+	std::string format = GetExtension(sPath);
 	MakeLower(format);
 
 	bool bKeepTrying = true;
@@ -109,7 +109,7 @@ RageSurface *RageSurfaceUtils::LoadFile( const RString &sPath, RString &error, b
 		FileTypes.erase( format );
 	}
 
-	for( std::set<RString>::iterator it = FileTypes.begin(); bKeepTrying && it != FileTypes.end(); ++it )
+	for( std::set<std::string>::iterator it = FileTypes.begin(); bKeepTrying && it != FileTypes.end(); ++it )
 	{
 		RageSurface *ret = TryOpenFile( sPath, bHeaderOnly, error, *it, bKeepTrying );
 		if( ret )

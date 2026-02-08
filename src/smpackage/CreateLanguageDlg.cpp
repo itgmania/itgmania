@@ -47,8 +47,8 @@ BOOL CreateLanguageDlg::OnInitDialog()
 
 	for( int i = 0; i < ARRAYLEN(g_aListedLanguageCodes); ++i )
 	{
-		RString s = SMPackageUtil::GetLanguageDisplayString(g_aListedLanguageCodes[i]);
-		RString sLanguage = ConvertUTF8ToACP( s );
+		std::string s = SMPackageUtil::GetLanguageDisplayString(g_aListedLanguageCodes[i]);
+		std::string sLanguage = ConvertUTF8ToACP( s );
 		m_comboLanguages.AddString( sLanguage );
 	}
 	m_comboLanguages.SetCurSel( 0 );

@@ -34,44 +34,44 @@ struct lua_State;
 class IPreference
 {
 public:
-	IPreference( const RString& sName, PreferenceType type );
+	IPreference( const std::string& sName, PreferenceType type );
 	virtual ~IPreference();
 	void ReadFrom( const XNode* pNode, bool bIsStatic );
 	void WriteTo( XNode* pNode ) const;
 	void ReadDefaultFrom( const XNode* pNode );
 
 	virtual void LoadDefault() = 0;
-	virtual void SetDefaultFromString( const RString &s ) = 0;
+	virtual void SetDefaultFromString( const std::string &s ) = 0;
 
-	virtual RString ToString() const = 0;
-	virtual void FromString( const RString &s ) = 0;
+	virtual std::string ToString() const = 0;
+	virtual void FromString( const std::string &s ) = 0;
 
 	virtual void SetFromStack( lua_State *L );
 	virtual void PushValue( lua_State *L ) const;
 
-	const RString &GetName() const { return m_sName; }
+	const std::string &GetName() const { return m_sName; }
 
-	static IPreference *GetPreferenceByName( const RString &sName );
+	static IPreference *GetPreferenceByName( const std::string &sName );
 	static void LoadAllDefaults();
 	static void ReadAllPrefsFromNode( const XNode* pNode, bool bIsStatic );
 	static void SavePrefsToNode( XNode* pNode );
 	static void ReadAllDefaultsFromNode( const XNode* pNode );
 
-	RString GetName() { return m_sName; }
+	std::string GetName() { return m_sName; }
 	bool IsImmutable() { return m_bImmutable; }
 private:
-	RString	m_sName;
+	std::string	m_sName;
 	bool m_bDoNotWrite;
 	bool m_bImmutable;
 };
 
-void BroadcastPreferenceChanged( const RString& sPreferenceName );
+void BroadcastPreferenceChanged( const std::string& sPreferenceName );
 
 template <class T>
 class Preference : public IPreference
 {
 public:
-	Preference( const RString& sName, const T& defaultValue, void (pfnValidate)(T& val) = nullptr, PreferenceType type = PreferenceType::Mutable ):
+	Preference( const std::string& sName, const T& defaultValue, void (pfnValidate)(T& val) = nullptr, PreferenceType type = PreferenceType::Mutable ):
 		IPreference( sName, type ),
 		m_currentValue( defaultValue ),
 		m_defaultValue( defaultValue ),
@@ -80,8 +80,8 @@ public:
 		LoadDefault();
 	}
 
-	RString ToString() const { return StringConversion::ToString<T>( m_currentValue ); }
-	void FromString( const RString &s )
+	std::string ToString() const { return StringConversion::ToString<T>( m_currentValue ); }
+	void FromString( const std::string &s )
 	{
 		if( !StringConversion::FromString<T>(s, m_currentValue) )
 			m_currentValue = m_defaultValue;
@@ -103,7 +103,7 @@ public:
 	{
 		m_currentValue = m_defaultValue;
 	}
-	void SetDefaultFromString( const RString &s )
+	void SetDefaultFromString( const std::string &s )
 	{
 		T def = m_defaultValue;
 		if( !StringConversion::FromString<T>(s, m_defaultValue) )
@@ -131,7 +131,7 @@ public:
 		BroadcastPreferenceChanged( GetName() );
 	}
 
-	static Preference<T> *GetPreferenceByName( const RString &sName )
+	static Preference<T> *GetPreferenceByName( const std::string &sName )
 	{
 		IPreference *pPreference = IPreference::GetPreferenceByName( sName );
 		Preference<T> *pRet = dynamic_cast<Preference<T> *>(pPreference);
@@ -154,11 +154,11 @@ public:
 	typedef Preference<T> PreferenceT;
 	std::vector<PreferenceT*> m_v;
 
-	Preference1D( void pfn(size_t i, RString &sNameOut, T &defaultValueOut ), size_t N, PreferenceType type = PreferenceType::Mutable )
+	Preference1D( void pfn(size_t i, std::string &sNameOut, T &defaultValueOut ), size_t N, PreferenceType type = PreferenceType::Mutable )
 	{
 		for( size_t i=0; i<N; ++i )
 		{
-			RString sName;
+			std::string sName;
 			T defaultValue;
 			pfn( i, sName, defaultValue );
 			m_v.push_back( new Preference<T>(sName, defaultValue, nullptr, type) );

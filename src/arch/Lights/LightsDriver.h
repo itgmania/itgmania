@@ -12,7 +12,7 @@ struct LightsState;
 class LightsDriver: public RageDriver
 {
 public:
-	static void Create( const RString &sDriver, std::vector<LightsDriver *> &apAdd );
+	static void Create( const std::string &sDriver, std::vector<LightsDriver *> &apAdd );
 	static DriverList m_pDriverList;
 
 	LightsDriver() {};

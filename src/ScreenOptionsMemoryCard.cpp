@@ -54,7 +54,7 @@ void ScreenOptionsMemoryCard::CreateMenu()
 
 	for (UsbStorageDevice const &iter : m_CurrentUsbStorageDevices)
 	{
-		std::vector<RString> vs;
+		std::vector<std::string> vs;
 		if( iter.sVolumeLabel.empty() )
 			vs.push_back( NO_LABEL );
 		else
@@ -62,12 +62,12 @@ void ScreenOptionsMemoryCard::CreateMenu()
 		if( iter.iVolumeSizeMB == 0 )
 			vs.push_back( SIZE_UNKNOWN );
 		else
-			vs.push_back( ssprintf(RString(VOLUME_SIZE).c_str(),iter.iVolumeSizeMB) );
+			vs.push_back( ssprintf(std::string(VOLUME_SIZE).c_str(),iter.iVolumeSizeMB) );
 
 		vHands.push_back( OptionRowHandlerUtil::MakeNull() );
 
 		OptionRowDefinition &def = vHands.back()->m_Def;
-		RString sDescription = join(", ", vs);
+		std::string sDescription = join(", ", vs);
 		def.m_sName = sDescription;
 		def.m_vsChoices.push_back( "" );
 		def.m_sExplanationName = "Memory Card";
@@ -129,7 +129,7 @@ void ScreenOptionsMemoryCard::HandleMessage( const Message &msg )
 			/* Remember the old mountpoint. */
 			const std::vector<UsbStorageDevice> &v = m_CurrentUsbStorageDevices;
 			int iRow = m_iCurrentRow[GAMESTATE->GetMasterPlayerNumber()];
-			RString sOldMountPoint;
+			std::string sOldMountPoint;
 			if( iRow < int(v.size()) )
 			{
 				const UsbStorageDevice &dev = v[iRow];
@@ -174,7 +174,7 @@ void ScreenOptionsMemoryCard::ExportOptions( int iRow, const std::vector<PlayerN
 	}
 }
 
-void ScreenOptionsMemoryCard::SelectRowWithMemoryCard( const RString &sOsMountPoint )
+void ScreenOptionsMemoryCard::SelectRowWithMemoryCard( const std::string &sOsMountPoint )
 {
 	if( sOsMountPoint.empty() )
 		return;
@@ -215,7 +215,7 @@ void ScreenOptionsMemoryCard::ProcessMenuStart( const InputEventPlus & )
 		}
 		else
 		{
-			RString s = ssprintf(ERROR_MOUNTING_CARD.GetValue().c_str(), MEMCARDMAN->GetCardError(PLAYER_1).c_str() );
+			std::string s = ssprintf(ERROR_MOUNTING_CARD.GetValue().c_str(), MEMCARDMAN->GetCardError(PLAYER_1).c_str() );
 			ScreenPrompt::Prompt( SM_None, s );
 		}
 	}

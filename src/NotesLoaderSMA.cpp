@@ -17,14 +17,14 @@
 #include <vector>
 
 
-void SMALoader::ProcessMultipliers( TimingData &out, const int iRowsPerBeat, const RString sParam )
+void SMALoader::ProcessMultipliers( TimingData &out, const int iRowsPerBeat, const std::string sParam )
 {
-	std::vector<RString> arrayMultiplierExpressions;
+	std::vector<std::string> arrayMultiplierExpressions;
 	split( sParam, ",", arrayMultiplierExpressions );
 
 	for( unsigned f=0; f<arrayMultiplierExpressions.size(); f++ )
 	{
-		std::vector<RString> arrayMultiplierValues;
+		std::vector<std::string> arrayMultiplierValues;
 		split( arrayMultiplierExpressions[f], "=", arrayMultiplierValues );
 		unsigned size = arrayMultiplierValues.size();
 		if( size < 2 )
@@ -45,15 +45,15 @@ void SMALoader::ProcessMultipliers( TimingData &out, const int iRowsPerBeat, con
 	}
 }
 
-void SMALoader::ProcessBeatsPerMeasure( TimingData &out, const RString sParam )
+void SMALoader::ProcessBeatsPerMeasure( TimingData &out, const std::string sParam )
 {
-	std::vector<RString> vs1;
+	std::vector<std::string> vs1;
 	std::vector<TimeSignatureSegment> segments;
 	split( sParam, ",", vs1 );
 
-	for (RString const &s1 : vs1)
+	for (std::string const &s1 : vs1)
 	{
-		std::vector<RString> vs2;
+		std::vector<std::string> vs2;
 		split( s1, "=", vs2 );
 
 		if( vs2.size() < 2 )
@@ -101,16 +101,16 @@ void SMALoader::ProcessBeatsPerMeasure( TimingData &out, const RString sParam )
 	}
 }
 
-void SMALoader::ProcessSpeeds( TimingData &out, const RString line, const int rowsPerBeat )
+void SMALoader::ProcessSpeeds( TimingData &out, const std::string line, const int rowsPerBeat )
 {
-	std::vector<RString> vs1;
+	std::vector<std::string> vs1;
 	split( line, ",", vs1 );
 
-	for (std::vector<RString>::const_iterator s1 = vs1.begin(); s1 != vs1.end(); ++s1)
+	for (std::vector<std::string>::const_iterator s1 = vs1.begin(); s1 != vs1.end(); ++s1)
 	{
-		std::vector<RString> vs2;
+		std::vector<std::string> vs2;
 		vs2.clear(); // trying something.
-		RString loopTmp = *s1;
+		std::string loopTmp = *s1;
 		Trim( loopTmp );
 		split( loopTmp, "=", vs2 );
 
@@ -131,7 +131,7 @@ void SMALoader::ProcessSpeeds( TimingData &out, const RString line, const int ro
 
 		const float fBeat = RowToBeat( vs2[0], rowsPerBeat );
 
-		RString backup = vs2[2];
+		std::string backup = vs2[2];
 		Trim(vs2[2], "s");
 		Trim(vs2[2], "S");
 
@@ -164,7 +164,7 @@ void SMALoader::ProcessSpeeds( TimingData &out, const RString line, const int ro
 	}
 }
 
-bool SMALoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCache )
+bool SMALoader::LoadFromSimfile( const std::string &sPath, Song &out, bool bFromCache )
 {
 	LOG->Trace( "Song::LoadFromSMAFile(%s)", sPath.c_str() );
 
@@ -186,7 +186,7 @@ bool SMALoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCach
 	{
 		int iNumParams = msd.GetNumParams(i);
 		const MsdFile::value_t &sParams = msd.GetValue(i);
-		RString sValueName = sParams[0];
+		std::string sValueName = sParams[0];
 		MakeUpper(sValueName);
 
 		// handle the data
@@ -308,10 +308,10 @@ bool SMALoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCach
 			 * becomes so, make adjustments to this code. */
 			if( iRowsPerBeat < 0 )
 			{
-				std::vector<RString> arrayBeatChangeExpressions;
+				std::vector<std::string> arrayBeatChangeExpressions;
 				split( sParams[1], ",", arrayBeatChangeExpressions );
 
-				std::vector<RString> arrayBeatChangeValues;
+				std::vector<std::string> arrayBeatChangeValues;
 				split( arrayBeatChangeExpressions[0], "=", arrayBeatChangeValues );
 				iRowsPerBeat = StringToInt(arrayBeatChangeValues[1]);
 			}
@@ -361,7 +361,7 @@ bool SMALoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCach
 
 		else if( sValueName=="FGCHANGES" )
 		{
-			std::vector<std::vector<RString> > aFGChanges;
+			std::vector<std::vector<std::string> > aFGChanges;
 			ParseBGChangesString(sParams[1], aFGChanges, out.GetSongDir());
 
 			for (const auto &b : aFGChanges)
@@ -405,7 +405,7 @@ bool SMALoader::LoadFromSimfile( const RString &sPath, Song &out, bool bFromCach
 		else if( sValueName=="SPEED" )
 		{
 			TimingData &timing = ( pNewNotes ? pNewNotes->m_Timing : out.m_SongTiming);
-			RString tmp = sParams[1];
+			std::string tmp = sParams[1];
 			Trim( tmp );
 			ProcessSpeeds( timing, tmp, iRowsPerBeat );
 		}

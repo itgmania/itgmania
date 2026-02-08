@@ -39,14 +39,14 @@ namespace {
 	}
 }  // namespace
 
-static RString wo_ssprintf( MMRESULT err, const char *szFmt, ...)
+static std::string wo_ssprintf( MMRESULT err, const char *szFmt, ...)
 {
 	char szBuf[MAXERRORLENGTH];
 	waveOutGetErrorText( err, szBuf, MAXERRORLENGTH );
 
 	va_list va;
 	va_start( va, szFmt );
-	RString s = vssprintf( szFmt, va );
+	std::string s = vssprintf( szFmt, va );
 	va_end( va );
 
 	return s += ssprintf( "(%s)", szBuf );
@@ -135,7 +135,7 @@ RageSoundDriver_WaveOut::RageSoundDriver_WaveOut()
 {
 }
 
-RString RageSoundDriver_WaveOut::Init()
+std::string RageSoundDriver_WaveOut::Init()
 {
 	wo_init_success_ = false;
 	wo_samplerate_ = PREFSMAN->m_iSoundPreferredSampleRate;
@@ -167,9 +167,9 @@ RString RageSoundDriver_WaveOut::Init()
 
 	std::vector<UINT> deviceIds;
 	if (!PREFSMAN->m_iSoundDevice.Get().empty()) {
-		std::vector<RString> portNames;
+		std::vector<std::string> portNames;
 		split(PREFSMAN->m_iSoundDevice.Get(), ",", portNames, true);
-		for (const RString& device : portNames) {
+		for (const std::string& device : portNames) {
 			int id = StringToInt(device, /*pos=*/0, /*base=*/10, /*exceptVal=*/-1);
 			if (id != -1) {
 				deviceIds.push_back(id);
@@ -212,7 +212,7 @@ RString RageSoundDriver_WaveOut::Init()
 	MixingThread.Create( MixerThread_start, this );
 
 	wo_init_success_ = true;
-	return RString();
+	return std::string();
 }
 
 RageSoundDriver_WaveOut::~RageSoundDriver_WaveOut()

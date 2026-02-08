@@ -37,7 +37,7 @@ void LightsDriver_fusion::Set(const LightsState* ls) {
 
   // check to see which game we are running as it can change during gameplay.
   const InputScheme* pInput = &GAMESTATE->GetCurrentGame()->m_InputScheme;
-  RString sInputName = pInput->m_szName;
+  std::string sInputName = pInput->m_szName;
 
   if (EqualsNoCase(sInputName, "dance")) {
     outputBuffer[FUSION_P1_UL] =

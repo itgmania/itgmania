@@ -23,7 +23,7 @@ class MusicWheel : public WheelBase
 
 public:
 	virtual ~MusicWheel();
-	virtual void Load( RString sType );
+	virtual void Load( std::string sType );
 	void BeginScreen();
 
 	bool ChangeSort( SortOrder new_so, bool allowSameSort = false );	// return true if change successful
@@ -36,26 +36,26 @@ public:
 	WheelItemDataType	GetSelectedType()	{ return GetCurWheelItemData(m_iSelection)->m_Type; }
 	Song			*GetSelectedSong();
 	Course			*GetSelectedCourse()	{ return GetCurWheelItemData(m_iSelection)->m_pCourse; }
-	RString			GetSelectedSection()	{ return GetCurWheelItemData(m_iSelection)->m_sText; }
+	std::string			GetSelectedSection()	{ return GetCurWheelItemData(m_iSelection)->m_sText; }
 
 	Song *GetPreferredSelectionForRandomOrPortal();
 
 	bool SelectSong( const Song *p );
 	bool SelectCourse( const Course *p );
-	bool SelectSection( const RString & SectionName );
-	void SetOpenSection( RString group );
+	bool SelectSection( const std::string & SectionName );
+	void SetOpenSection( std::string group );
 	SortOrder GetSortOrder() const { return m_SortOrder; }
 	virtual void ChangeMusic( int dist ); /* +1 or -1 */ //CHECK THIS
 	void FinishChangingSorts();
 	void PlayerJoined();
 	// sm-ssc additions
-	RString JumpToNextGroup();
-	RString JumpToPrevGroup();
+	std::string JumpToNextGroup();
+	std::string JumpToPrevGroup();
 	const MusicWheelItemData *GetCurWheelItemData( int i ) { return (const MusicWheelItemData *) m_CurWheelItemData[i]; }
 
 	virtual void ReloadSongList();
 
-	void GetCurrentSections(std::vector<RString> &sections);
+	void GetCurrentSections(std::vector<std::string> &sections);
 	// Lua
 	void PushSelf( lua_State *L );
 
@@ -71,7 +71,7 @@ protected:
 	std::vector<MusicWheelItemData *> & getWheelItemsData(SortOrder so);
 	void readyWheelItemsData(SortOrder so);
 
-	RString				m_sLastModeMenuItem;
+	std::string				m_sLastModeMenuItem;
 	SortOrder			m_SortOrder;
 	RageSound			m_soundChangeSort;
 
@@ -88,8 +88,8 @@ protected:
 	ThemeMetric<bool>		RANDOM_PICKS_LOCKED_SONGS;
 	ThemeMetric<int>		MOST_PLAYED_SONGS_TO_SHOW;
 	ThemeMetric<int>		RECENT_SONGS_TO_SHOW;
-	ThemeMetric<RString>		MODE_MENU_CHOICE_NAMES;
-	ThemeMetricMap<RString>		CHOICE;
+	ThemeMetric<std::string>		MODE_MENU_CHOICE_NAMES;
+	ThemeMetricMap<std::string>		CHOICE;
 	ThemeMetric1D<RageColor>	SECTION_COLORS;
 	ThemeMetric<LuaReference>	SORT_ORDERS;
 	ThemeMetric<bool>		SHOW_EASY_FLAG;
@@ -103,8 +103,8 @@ protected:
 	ThemeMetric<RageColor>	PORTAL_COLOR;
 	ThemeMetric<RageColor>	EMPTY_COLOR;
 	std::vector <int> m_viWheelPositions;
-	ThemeMetric<RString>	CUSTOM_WHEEL_ITEM_NAMES;
-	ThemeMetricMap<RString>	CUSTOM_CHOICES;
+	ThemeMetric<std::string>	CUSTOM_WHEEL_ITEM_NAMES;
+	ThemeMetricMap<std::string>	CUSTOM_CHOICES;
 	ThemeMetricMap<RageColor>	CUSTOM_CHOICE_COLORS;
 
 private:

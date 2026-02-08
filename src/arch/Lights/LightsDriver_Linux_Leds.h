@@ -15,7 +15,7 @@ private:
 	static const int LINUX_LED_MAX_DIRECTORY_LENGTH = PATH_MAX;
 
 	const InputScheme *pInput;
-	RString sInputName;
+	std::string sInputName;
 
 	bool WriteLight(const char *filename, bool state);
 

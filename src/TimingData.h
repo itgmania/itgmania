@@ -129,7 +129,7 @@ public:
 
 	void PrepareLookup();
 	void ReleaseLookup();
-	void DumpOneTable(const beat_start_lookup_t& lookup, const RString& name);
+	void DumpOneTable(const beat_start_lookup_t& lookup, const std::string& name);
 	void DumpLookupTables();
 
 	int GetSegmentIndexAtRow(TimingSegmentType tst, int row) const;
@@ -277,11 +277,11 @@ public:
 	int GetMissComboAtRow( int iNoteRow ) const { return GetComboSegmentAtRow(iNoteRow)->GetMissCombo(); }
 	int GetMissComboAtBeat( float fBeat ) const { return GetMissComboAtRow( BeatToNoteRow(fBeat) ); }
 
-	const RString& GetLabelAtRow( int iNoteRow ) const { return GetLabelSegmentAtRow(iNoteRow)->GetLabel(); }
-	const RString& GetLabelAtBeat( float fBeat ) const { return GetLabelAtRow( BeatToNoteRow(fBeat) ); }
-	void SetLabelAtRow( int iNoteRow, const RString& sLabel ) { AddSegment( LabelSegment(iNoteRow,sLabel) ); }
-	void SetLabelAtBeat( float fBeat, const RString sLabel ) { SetLabelAtRow( BeatToNoteRow( fBeat ), sLabel ); }
-	bool DoesLabelExist( const RString& sLabel ) const;
+	const std::string& GetLabelAtRow( int iNoteRow ) const { return GetLabelSegmentAtRow(iNoteRow)->GetLabel(); }
+	const std::string& GetLabelAtBeat( float fBeat ) const { return GetLabelAtRow( BeatToNoteRow(fBeat) ); }
+	void SetLabelAtRow( int iNoteRow, const std::string& sLabel ) { AddSegment( LabelSegment(iNoteRow,sLabel) ); }
+	void SetLabelAtBeat( float fBeat, const std::string sLabel ) { SetLabelAtRow( BeatToNoteRow( fBeat ), sLabel ); }
+	bool DoesLabelExist( const std::string& sLabel ) const;
 
 	float GetSpeedPercentAtRow( int iNoteRow ) const { return GetSpeedSegmentAtRow(iNoteRow)->GetRatio(); }
 	float GetSpeedPercentAtBeat( float fBeat ) const { return GetSpeedPercentAtRow( BeatToNoteRow(fBeat) ); }
@@ -474,7 +474,7 @@ public:
 	float	m_fBeat0GroupOffsetInSeconds;
 
 	// XXX: this breaks encapsulation. get rid of it ASAP
-	std::vector<RString> ToVectorString(TimingSegmentType tst, int dec = 6) const;
+	std::vector<std::string> ToVectorString(TimingSegmentType tst, int dec = 6) const;
 protected:
 	// don't call this directly; use the derived-type overloads.
 	void AddSegment( const TimingSegment *seg );

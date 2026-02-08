@@ -35,7 +35,7 @@ namespace
 	class LineReader
 	{
 		private:
-			// The buffer size isn't critical; the RString will simply be
+			// The buffer size isn't critical; the std::string will simply be
 			// extended until the line is done.
 			static const size_t BUFFER_SIZE = 64;
 			char buffer[BUFFER_SIZE];
@@ -43,7 +43,7 @@ namespace
 			int timeout_ms;
 
 		public:
-			LineReader(const RString& filename)
+			LineReader(const std::string& filename)
 			{
 				timeout_ms = DEFAULT_TIMEOUT_MS;
 
@@ -97,7 +97,7 @@ namespace
 			// false (line undefined) if there is an error or EOF condition,
 			// true (line = next line from stream) if a whole line is available,
 			// true (line = "") if no error but still waiting for next line.
-			bool ReadLine(RString& line)
+			bool ReadLine(std::string& line)
 			{
 				bool afterFirst = false;
 				size_t len;
@@ -124,7 +124,7 @@ class InputHandler_SextetStream::Impl
 {
 	private:
 		InputHandler_SextetStream * handler;
-		RString filename;
+		std::string filename;
 
 	protected:
 		void ButtonPressed(const DeviceInput& di)
@@ -160,7 +160,7 @@ class InputHandler_SextetStream::Impl
 		}
 
 	public:
-		Impl(InputHandler_SextetStream * _this, const RString& filename)
+		Impl(InputHandler_SextetStream * _this, const std::string& filename)
 		{
 			LOG->Info("Number of button states supported by current InputHandler_SextetStream: %u",
 				(unsigned)BUTTON_COUNT);
@@ -192,7 +192,7 @@ class InputHandler_SextetStream::Impl
 			return 0;
 		}
 
-		inline void GetNewState(uint8_t * buffer, RString& line)
+		inline void GetNewState(uint8_t * buffer, std::string& line)
 		{
 			size_t lineLen = line.length();
 			size_t i, cursor;
@@ -260,7 +260,7 @@ class InputHandler_SextetStream::Impl
 
 		void RunInputThread()
 		{
-			RString line;
+			std::string line;
 			LineReader * linereader;
 
 			LOG->Trace("Input thread started; getting line reader");
@@ -321,7 +321,7 @@ REGISTER_INPUT_HANDLER_CLASS (SextetStreamFromFile);
 #else
 	#define DEFAULT_INPUT_FILENAME "Data/StepMania-Input-SextetStream.in"
 #endif
-static Preference<RString> g_sSextetStreamInputFilename("SextetStreamInputFilename", DEFAULT_INPUT_FILENAME);
+static Preference<std::string> g_sSextetStreamInputFilename("SextetStreamInputFilename", DEFAULT_INPUT_FILENAME);
 
 InputHandler_SextetStreamFromFile::InputHandler_SextetStreamFromFile()
 {

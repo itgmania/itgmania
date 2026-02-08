@@ -25,7 +25,7 @@ struct lua_State;
 class Character;
 
 // Current file versions
-extern const RString STATS_XML;
+extern const std::string STATS_XML;
 
 /**
  * @brief The filename where one can edit their personal profile data.
@@ -34,7 +34,7 @@ extern const RString STATS_XML;
  * systems will open the ini file in an editor.  The default association for
  * XML will open in IE.  Users have a much better chance of discovering how to
  * edit this data if they don't have to fight against the file associations. */
-extern const RString EDITABLE_INI;
+extern const std::string EDITABLE_INI;
 
 /**
  * @brief The filename containing the signature for STATS_XML's signature.
@@ -46,14 +46,14 @@ extern const RString EDITABLE_INI;
  * to their own profile for use in the game unless they also have the "don't
  * share" file.  DontShare contains a piece of information that we can
  * construct using STATS_XML but the user can't construct using STATS_XML. */
-extern const RString DONT_SHARE_SIG;
+extern const std::string DONT_SHARE_SIG;
 
-extern const RString PUBLIC_KEY_FILE;
-extern const RString SCREENSHOTS_SUBDIR;
-extern const RString EDIT_STEPS_SUBDIR;
-extern const RString EDIT_COURSES_SUBDIR;
-extern const RString LASTGOOD_SUBDIR;
-// extern const RString RIVAL_SUBDIR;
+extern const std::string PUBLIC_KEY_FILE;
+extern const std::string SCREENSHOTS_SUBDIR;
+extern const std::string EDIT_STEPS_SUBDIR;
+extern const std::string EDIT_COURSES_SUBDIR;
+extern const std::string LASTGOOD_SUBDIR;
+// extern const std::string RIVAL_SUBDIR;
 
 /** @brief The max number of characters that can be used in a profile. */
 const unsigned int PROFILE_MAX_DISPLAY_NAME_LENGTH	= 32;
@@ -143,11 +143,11 @@ public:
 	void ClearSongs();
 
 	// smart accessors
-	RString GetDisplayNameOrHighScoreName() const;
+	std::string GetDisplayNameOrHighScoreName() const;
 	Character *GetCharacter() const;
-	void SetCharacter(const RString sCharacterID);
-	RString GetDisplayTotalCaloriesBurned() const;		// remove me and use Lua instead
-	RString GetDisplayTotalCaloriesBurnedToday() const;	// remove me and use Lua instead
+	void SetCharacter(const std::string sCharacterID);
+	std::string GetDisplayTotalCaloriesBurned() const;		// remove me and use Lua instead
+	std::string GetDisplayTotalCaloriesBurnedToday() const;	// remove me and use Lua instead
 	int GetCalculatedWeightPounds() const;	// returns a default value if m_iWeightPounds isn't set
 	int GetAge() const; // returns a default value if m_Age isn't set
 	float GetCaloriesBurnedToday() const;
@@ -161,9 +161,9 @@ public:
 	float GetSongsPercentComplete( StepsType st, Difficulty dc ) const;
 	float GetCoursesPercentComplete( StepsType st, CourseDifficulty cd ) const;
 	float GetSongsAndCoursesPercentCompleteAllDifficulties( StepsType st ) const;
-	bool GetDefaultModifiers( const Game* pGameType, RString &sModifiersOut ) const;
-	void SetDefaultModifiers( const Game* pGameType, const RString &sModifiers );
-	bool IsCodeUnlocked( RString sUnlockEntryID ) const;
+	bool GetDefaultModifiers( const Game* pGameType, std::string &sModifiersOut ) const;
+	void SetDefaultModifiers( const Game* pGameType, const std::string &sModifiers );
+	bool IsCodeUnlocked( std::string sUnlockEntryID ) const;
 	Song *GetMostPopularSong() const;
 	Course *GetMostPopularCourse() const;
 
@@ -179,14 +179,14 @@ public:
 	int m_ListPriority;
 
 	// Editable data
-	RString m_sDisplayName;
-	RString m_sCharacterID;
+	std::string m_sDisplayName;
+	std::string m_sCharacterID;
 	/**
 	 * @brief The last used name for high scoring purposes.
 	 *
 	 * This really shouldn't be in "editable", but it's needed in the smaller editable file
 	 * so that it can be ready quickly. */
-	RString m_sLastUsedHighScoreName;
+	std::string m_sLastUsedHighScoreName;
 	int m_iWeightPounds;	// 0 == not set
 	// Voomax and BirthYear are used for calculating calories from heart rate.
 	float m_Voomax; // 0 == not set
@@ -196,13 +196,13 @@ public:
 	// and voomax.
 	bool m_IgnoreStepCountCalories;
 	bool m_IsMale; // Used solely for calculating calories from heart rate.
-	//RString m_sProfileImageName;	// todo: add a default image -aj
+	//std::string m_sProfileImageName;	// todo: add a default image -aj
 
 	// General data
-	static RString MakeGuid();
+	static std::string MakeGuid();
 
-	RString m_sGuid;
-	std::map<RString,RString> m_sDefaultModifiers;
+	std::string m_sGuid;
+	std::map<std::string,std::string> m_sDefaultModifiers;
 	SortOrder m_SortOrder;
 	std::vector<Song*> m_songs;
 	Group* m_group;
@@ -232,14 +232,14 @@ public:
 	int m_iTotalLifts;
 	/** @brief Is this a brand new profile? */
 	bool m_bNewProfile;
-	std::set<RString> m_UnlockedEntryIDs;
+	std::set<std::string> m_UnlockedEntryIDs;
 	/**
 	 * @brief Which machine did we play on last, based on the Guid?
 	 *
 	 * This is mutable because it's overwritten on save, but is usually
 	 * const everywhere else. It was decided to keep const on the whole
 	 * save chain and keep this mutable. -Chris */
-	mutable RString m_sLastPlayedMachineGuid;
+	mutable std::string m_sLastPlayedMachineGuid;
 	mutable DateTime m_LastPlayedDate;
 	/* These stats count twice in the machine profile if two players are playing;
 	 * that's the only approach that makes sense for ByDifficulty and ByMeter. */
@@ -308,10 +308,10 @@ public:
 	DateTime GetCourseLastPlayedDateTime( const Course* pCourse ) const;
 	void IncrementCoursePlayCount( const Course* pCourse, const Trail* pTrail );
 
-	void GetAllUsedHighScoreNames(std::set<RString>& names);
+	void GetAllUsedHighScoreNames(std::set<std::string>& names);
 
 	void MergeScoresFromOtherProfile(Profile* other, bool skip_totals,
-		RString const& from_dir, RString const& to_dir);
+		std::string const& from_dir, std::string const& to_dir);
 
 	// Category high scores
 	HighScoreList m_CategoryHighScores[NUM_StepsType][NUM_RankingCategory];
@@ -401,15 +401,15 @@ public:
 	void swap(Profile& other);
 
 	// Loading and saving
-	void HandleStatsPrefixChange(RString dir, bool require_signature);
-	ProfileLoadResult LoadAllFromDir( RString sDir, bool bRequireSignature );
-	ProfileLoadResult LoadStatsFromDir(RString dir, bool require_signature);
-	void LoadSongsFromDir(RString const& dir, ProfileSlot prof_slot, bool isMemoryCard = true);
-	void LoadTypeFromDir(RString dir);
-	void LoadCustomFunction(RString sDir, PlayerNumber pn);
-	bool SaveAllToDir( RString sDir, bool bSignData ) const;
+	void HandleStatsPrefixChange(std::string dir, bool require_signature);
+	ProfileLoadResult LoadAllFromDir( std::string sDir, bool bRequireSignature );
+	ProfileLoadResult LoadStatsFromDir(std::string dir, bool require_signature);
+	void LoadSongsFromDir(std::string const& dir, ProfileSlot prof_slot, bool isMemoryCard = true);
+	void LoadTypeFromDir(std::string dir);
+	void LoadCustomFunction(std::string sDir, PlayerNumber pn);
+	bool SaveAllToDir( std::string sDir, bool bSignData ) const;
 
-	ProfileLoadResult LoadEditableDataFromDir( RString sDir );
+	ProfileLoadResult LoadEditableDataFromDir( std::string sDir );
 	ProfileLoadResult LoadStatsXmlFromNode( const XNode* pNode, bool bIgnoreEditable = true );
 	void LoadGeneralDataFromNode( const XNode* pNode );
 	void LoadSongScoresFromNode( const XNode* pNode );
@@ -418,9 +418,9 @@ public:
 	void LoadScreenshotDataFromNode( const XNode* pNode );
 	void LoadCalorieDataFromNode( const XNode* pNode );
 
-	void SaveTypeToDir(RString dir) const;
-	void SaveEditableDataToDir( RString sDir ) const;
-	bool SaveStatsXmlToDir( RString sDir, bool bSignData ) const;
+	void SaveTypeToDir(std::string dir) const;
+	void SaveEditableDataToDir( std::string sDir ) const;
+	bool SaveStatsXmlToDir( std::string sDir, bool bSignData ) const;
 	XNode* SaveStatsXmlCreateNode() const;
 	XNode* SaveGeneralDataCreateNode() const;
 	XNode* SaveSongScoresCreateNode() const;
@@ -431,12 +431,12 @@ public:
 
 	XNode* SaveCoinDataCreateNode() const;
 
-	void SaveStatsWebPageToDir( RString sDir ) const;
-	void SaveMachinePublicKeyToDir( RString sDir ) const;
+	void SaveStatsWebPageToDir( std::string sDir ) const;
+	void SaveMachinePublicKeyToDir( std::string sDir ) const;
 
-	static void MoveBackupToDir( RString sFromDir, RString sToDir );
-	static RString MakeUniqueFileNameNoExtension( RString sDir, RString sFileNameBeginning );
-	static RString MakeFileNameNoExtension( RString sFileNameBeginning, int iIndex );
+	static void MoveBackupToDir( std::string sFromDir, std::string sToDir );
+	static std::string MakeUniqueFileNameNoExtension( std::string sDir, std::string sFileNameBeginning );
+	static std::string MakeFileNameNoExtension( std::string sFileNameBeginning, int iIndex );
 
 	// Lua
 	void PushSelf( lua_State *L );

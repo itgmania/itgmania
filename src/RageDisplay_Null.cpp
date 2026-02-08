@@ -77,11 +77,11 @@ RageDisplay_Null::RageDisplay_Null()
 	LOG->MapLog("renderer", "Current renderer: null");
 }
 
-RString RageDisplay_Null::Init( const VideoModeParams &p, bool /* bAllowUnacceleratedRenderer */ )
+std::string RageDisplay_Null::Init( const VideoModeParams &p, bool /* bAllowUnacceleratedRenderer */ )
 {
 	bool bIgnore = false;
 	SetVideoMode( p, bIgnore );
-	return RString();
+	return std::string();
 }
 
 void RageDisplay_Null::GetDisplaySpecs(DisplaySpecs &out) const

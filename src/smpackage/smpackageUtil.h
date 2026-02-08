@@ -8,29 +8,29 @@ struct LanguageInfo;
 
 namespace SMPackageUtil
 {
-	void WriteGameInstallDirs( const std::vector<RString>& asInstallDirsToWrite );
-	void GetGameInstallDirs( std::vector<RString>& asInstallDirsOut );
-	void AddGameInstallDir( const RString &sNewInstallDir );
+	void WriteGameInstallDirs( const std::vector<std::string>& asInstallDirsToWrite );
+	void GetGameInstallDirs( std::vector<std::string>& asInstallDirsOut );
+	void AddGameInstallDir( const std::string &sNewInstallDir );
 	void SetDefaultInstallDir( int iInstallDirIndex );
-	void SetDefaultInstallDir( const RString &sInstallDir );
-	bool IsValidInstallDir( const RString &sInstallDir );
+	void SetDefaultInstallDir( const std::string &sInstallDir );
+	bool IsValidInstallDir( const std::string &sInstallDir );
 
-	bool GetPref( const RString &name, bool &val );
-	bool SetPref( const RString &name, bool val );
+	bool GetPref( const std::string &name, bool &val );
+	bool SetPref( const std::string &name, bool val );
 
-	RString GetPackageDirectory( const RString &path );
-	bool IsValidPackageDirectory( const RString &path );
+	std::string GetPackageDirectory( const std::string &path );
+	bool IsValidPackageDirectory( const std::string &path );
 
 	bool LaunchGame();
 
-	RString GetLanguageDisplayString( const RString &sIsoCode );
-	RString GetLanguageCodeFromDisplayString( const RString &sDisplayString );
+	std::string GetLanguageDisplayString( const std::string &sIsoCode );
+	std::string GetLanguageCodeFromDisplayString( const std::string &sDisplayString );
 
-	void StripIgnoredSmzipFiles( std::vector<RString> &vsFilesInOut );
+	void StripIgnoredSmzipFiles( std::vector<std::string> &vsFilesInOut );
 
-	bool GetFileContentsOsAbsolute( const RString &sAbsoluteOsFile, RString &sOut );
+	bool GetFileContentsOsAbsolute( const std::string &sAbsoluteOsFile, std::string &sOut );
 
-	bool DoesOsAbsoluteFileExist( const RString &sOsAbsoluteFile );
+	bool DoesOsAbsoluteFileExist( const std::string &sOsAbsoluteFile );
 }
 
 #include "RageFile.h"
@@ -38,10 +38,10 @@ namespace SMPackageUtil
 class RageFileOsAbsolute : public RageFile
 {
 public:
-	bool Open( const RString& path, int mode = READ );
+	bool Open( const std::string& path, int mode = READ );
 	~RageFileOsAbsolute();
 private:
-	RString m_sOsDir;
+	std::string m_sOsDir;
 };
 
 #endif

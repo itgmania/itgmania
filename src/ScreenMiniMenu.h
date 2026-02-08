@@ -14,19 +14,19 @@ typedef bool (*MenuRowUpdateEnabled)();
 struct MenuRowDef
 {
 	int			iRowCode;
-	RString		sName;
+	std::string		sName;
 	bool		bEnabled;
 	MenuRowUpdateEnabled	pfnEnabled;	// if ! nullptr, used instead of bEnabled
 	EditMode	emShowIn;
 	int			iDefaultChoice;
-	std::vector<RString>		choices;
+	std::vector<std::string>		choices;
 	bool		bThemeTitle;
 	bool		bThemeItems;
 
 	MenuRowDef(): iRowCode(0), sName(""), bEnabled(false),
 		pfnEnabled(), emShowIn(), iDefaultChoice(0),
 		choices(), bThemeTitle(false), bThemeItems(false) {}
-	MenuRowDef( int r, RString n, MenuRowUpdateEnabled pe, EditMode s,
+	MenuRowDef( int r, std::string n, MenuRowUpdateEnabled pe, EditMode s,
 		   bool bTT, bool bTI, int d, const char *c0=nullptr,
 		   const char *c1=nullptr, const char *c2=nullptr,
 		   const char *c3=nullptr, const char *c4=nullptr,
@@ -54,19 +54,19 @@ struct MenuRowDef
 #undef PUSH
 	}
 
-	MenuRowDef(int r, RString n, bool e, EditMode s,
-			   bool bTT, bool bTI, int d, std::vector<RString> options):
+	MenuRowDef(int r, std::string n, bool e, EditMode s,
+			   bool bTT, bool bTI, int d, std::vector<std::string> options):
 			iRowCode(r), sName(n), bEnabled(e), pfnEnabled(nullptr),
 			emShowIn(s), iDefaultChoice(d), choices(),
 			bThemeTitle(bTT), bThemeItems(bTI)
 	{
-		for (RString &str : options)
+		for (std::string &str : options)
 		{
 			if (str != "") choices.push_back(str);
 		}
 	}
 
-	MenuRowDef( int r, RString n, bool e, EditMode s, bool bTT, bool bTI,
+	MenuRowDef( int r, std::string n, bool e, EditMode s, bool bTT, bool bTI,
 		   int d, const char *c0=nullptr, const char *c1=nullptr,
 		   const char *c2=nullptr, const char *c3=nullptr,
 		   const char *c4=nullptr, const char *c5=nullptr,
@@ -93,7 +93,7 @@ struct MenuRowDef
 #undef PUSH
 	}
 
-	MenuRowDef( int r, RString n, bool e, EditMode s, bool bTT, bool bTI,
+	MenuRowDef( int r, std::string n, bool e, EditMode s, bool bTT, bool bTI,
 		   int d, int low, int high ):
 		iRowCode(r), sName(n), bEnabled(e), pfnEnabled(nullptr),
 		emShowIn(s), iDefaultChoice(d), choices(),
@@ -105,13 +105,13 @@ struct MenuRowDef
 		}
 	}
 
-	void SetOneUnthemedChoice( const RString &sChoice )
+	void SetOneUnthemedChoice( const std::string &sChoice )
 	{
 		choices.resize(1);
 		choices[0] = "|" + sChoice;
 	}
 
-	bool SetDefaultChoiceIfPresent( RString sChoice )
+	bool SetDefaultChoiceIfPresent( std::string sChoice )
 	{
 		iDefaultChoice = 0;
 		for (unsigned i = 0; i < choices.size(); ++i)
@@ -128,10 +128,10 @@ struct MenuRowDef
 
 struct MenuDef
 {
-	RString sClassName;
+	std::string sClassName;
 	std::vector<MenuRowDef> rows;
 
-	MenuDef( RString c, MenuRowDef r0=MenuRowDef(),
+	MenuDef( std::string c, MenuRowDef r0=MenuRowDef(),
 		MenuRowDef r1=MenuRowDef(), MenuRowDef r2=MenuRowDef(),
 		MenuRowDef r3=MenuRowDef(), MenuRowDef r4=MenuRowDef(),
 		MenuRowDef r5=MenuRowDef(), MenuRowDef r6=MenuRowDef(),

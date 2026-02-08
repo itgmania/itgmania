@@ -53,7 +53,7 @@ public:
 	void ResetPlayer( PlayerNumber pn );
 	void ResetPlayerOptions( PlayerNumber pn );
 	void ApplyCmdline(); // called by Reset
-	void ApplyGameCommand( const RString &sCommand, PlayerNumber pn=PLAYER_INVALID );
+	void ApplyGameCommand( const std::string &sCommand, PlayerNumber pn=PLAYER_INVALID );
 	/** @brief Start the game when the first player joins in. */
 	void BeginGame();
 	void JoinPlayer( PlayerNumber pn );
@@ -76,7 +76,7 @@ public:
 	void SaveCurrentSettingsToProfile( PlayerNumber pn );
 	Song* GetDefaultSong() const;
 
-	bool CanSafelyEnterGameplay(RString& reason);
+	bool CanSafelyEnterGameplay(std::string& reason);
 	void SetCompatibleStylesForPlayers();
 	void ForceSharedSidesMatch();
 	void ForceOtherPlayersToCompatibleSteps(PlayerNumber main);
@@ -127,7 +127,7 @@ public:
 
 	// This is set to a random number per-game/round; it can be used for a random seed.
 	int			m_iGameSeed, m_iStageSeed;
-	RString		m_sStageGUID;
+	std::string		m_sStageGUID;
 
 	void SetNewStageSeed();
 
@@ -189,8 +189,8 @@ public:
 	 * @return true if we do, or false otherwise. */
 	bool ShowW1() const;
 
-	BroadcastOnChange<RString>	m_sPreferredSongGroup;		// GROUP_ALL denotes no preferred group
-	BroadcastOnChange<RString>	m_sPreferredCourseGroup;	// GROUP_ALL denotes no preferred group
+	BroadcastOnChange<std::string>	m_sPreferredSongGroup;		// GROUP_ALL denotes no preferred group
+	BroadcastOnChange<std::string>	m_sPreferredCourseGroup;	// GROUP_ALL denotes no preferred group
 	bool		m_bFailTypeWasExplicitlySet;	// true if FailType was changed in the song options screen
 	BroadcastOnChange<StepsType>				m_PreferredStepsType;
 	BroadcastOnChange1D<Difficulty,NUM_PLAYERS>		m_PreferredDifficulty;
@@ -220,9 +220,9 @@ public:
 	// adjust for the current song cost.
 	bool m_AdjustTokensBySongCostForFinalStageCheck;
 
-	RString sExpandedSectionName;
+	std::string sExpandedSectionName;
 
-	RString sLastOpenSection;
+	std::string sLastOpenSection;
 
 	static int GetNumStagesMultiplierForSong( const Song* pSong );
 	static int GetNumStagesForSongAndStyleType( const Song* pSong, StyleType st );
@@ -242,7 +242,7 @@ public:
 	bool		IsExtraStage2() const;
 	Stage		GetCurrentStage() const;
 	int		GetCourseSongIndex() const;
-	RString		GetPlayerDisplayName( PlayerNumber pn ) const;
+	std::string		GetPlayerDisplayName( PlayerNumber pn ) const;
 
 	bool		m_bLoadingNextSong;
 	int		GetLoadingCourseSongIndex() const;
@@ -271,7 +271,7 @@ public:
 	BroadcastOnChange<bool> m_bGameplayLeadIn;
 
 	// if re-adding noteskin changes in courses, add functions and such here -aj
-	void GetAllUsedNoteSkins( std::vector<RString> &out ) const;
+	void GetAllUsedNoteSkins( std::vector<std::string> &out ) const;
 
 	static const float MUSIC_SECONDS_INVALID;
 
@@ -294,7 +294,7 @@ public:
 	float m_DanceDuration;
 
 	// Random Attacks & Attack Mines
-	std::vector<RString>		m_RandomAttacks;
+	std::vector<std::string>		m_RandomAttacks;
 
 	// used in PLAY_MODE_BATTLE
 	float	m_fOpponentHealthPercent;
@@ -327,13 +327,13 @@ public:
 	void GetDefaultPlayerOptions( PlayerOptions &po );
 	void GetDefaultSongOptions( SongOptions &so );
 	void ResetToDefaultSongOptions( ModsLevel l );
-	void ApplyPreferredModifiers( PlayerNumber pn, RString sModifiers );
-	void ApplyStageModifiers( PlayerNumber pn, RString sModifiers );
+	void ApplyPreferredModifiers( PlayerNumber pn, std::string sModifiers );
+	void ApplyStageModifiers( PlayerNumber pn, std::string sModifiers );
 	void ClearStageModifiersIllegalForCourse();
 	void ResetOptions();
 
 	bool CurrentOptionsDisqualifyPlayer( PlayerNumber pn );
-	bool PlayerIsUsingModifier( PlayerNumber pn, const RString &sModifier );
+	bool PlayerIsUsingModifier( PlayerNumber pn, const std::string &sModifier );
 
 	FailType GetPlayerFailType( const PlayerState *pPlayerState ) const;
 	FailType GetPlayerFailType( PlayerNumber pn ) const { return GetPlayerFailType( m_pPlayerState[pn] ); }
@@ -354,15 +354,15 @@ public:
 		Grade grade;
 		int iScore;
 		float fPercentDP;
-		RString Banner;
-		RString Feat;
-		RString *pStringToFill;
+		std::string Banner;
+		std::string Feat;
+		std::string *pStringToFill;
 	};
 
 	void GetRankingFeats( PlayerNumber pn, std::vector<RankingFeat> &vFeatsOut ) const;
 	bool AnyPlayerHasRankingFeats() const;
-	void StoreRankingName( PlayerNumber pn, RString name );	// Called by name entry screens
-	std::vector<RString*> m_vpsNamesThatWereFilled;	// filled on StoreRankingName,
+	void StoreRankingName( PlayerNumber pn, std::string name );	// Called by name entry screens
+	std::vector<std::string*> m_vpsNamesThatWereFilled;	// filled on StoreRankingName,
 	std::set<PlayerNumber> m_sPlayersThatWereFilled;	// filled on StoreRankingName,
 
 	// Award stuff
@@ -373,7 +373,7 @@ public:
 	// Attract stuff
 	int m_iNumTimesThroughAttract;	// negative means play regardless of m_iAttractSoundFrequency setting
 	bool IsTimeToPlayAttractSounds() const;
-	void VisitAttractScreen( const RString sScreenName );
+	void VisitAttractScreen( const std::string sScreenName );
 
 	// PlayerState
 	/** @brief Allow access to each player's PlayerState. */
@@ -407,7 +407,7 @@ public:
 	BroadcastOnChangePtr<Steps> m_pEditSourceSteps;
 	BroadcastOnChange<StepsType> m_stEditSource;
 	BroadcastOnChange<int> m_iEditCourseEntryIndex;
-	BroadcastOnChange<RString> m_sEditLocalProfileID;
+	BroadcastOnChange<std::string> m_sEditLocalProfileID;
 	Profile* GetEditLocalProfile();
 
 	// Workout stuff

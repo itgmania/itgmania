@@ -25,7 +25,7 @@
     #include "archutils/Unix/CrashHandler.h"
 #endif
 
-void sm_crash(const RString& s)
+void sm_crash(const std::string& s)
 {
     sm_crash(s.c_str());
 }

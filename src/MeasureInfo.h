@@ -25,8 +25,8 @@ struct MeasureInfo
 		notesPerMeasure.clear();
 	}
 
-	RString ToString() const;
-	void FromString(const RString& sValues );
+	std::string ToString() const;
+	void FromString(const std::string& sValues );
 	static void CalculateMeasureInfo(const NoteData &in, TimingData * timing, MeasureInfo &out);
 };
 

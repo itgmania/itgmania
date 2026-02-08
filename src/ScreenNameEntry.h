@@ -26,7 +26,7 @@ private:
 	public:
 		ScrollingText() : m_bDone(true) { }
 		inline void SetDone() { m_bDone = true; }
-		void Init( const RString &sName, const std::vector<float> &xs );
+		void Init( const std::string &sName, const std::vector<float> &xs );
 		virtual bool EarlyAbortDraw() const { return m_bDone; }
 		virtual void DrawPrimitives();
 		char GetClosestChar( float fFakeBeat ) const;
@@ -37,7 +37,7 @@ private:
 		std::vector<float>	m_Xs;
 		bool		m_bDone;
 		BitmapText	m_Stamp;
-		static RString	g_sNameChars;
+		static std::string	g_sNameChars;
 	};
 
 	enum { ABS_MAX_RANKING_NAME_LENGTH = 10 };
@@ -49,7 +49,7 @@ private:
 	RageSound		m_soundStep;
 
 	float			m_fFakeBeat;
-	RString			m_sSelectedName[NUM_PLAYERS];
+	std::string			m_sSelectedName[NUM_PLAYERS];
 	bool			m_bStillEnteringName[NUM_PLAYERS];
 
 	ScrollingText		m_Text[NUM_PLAYERS];

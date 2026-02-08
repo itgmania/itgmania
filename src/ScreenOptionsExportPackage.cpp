@@ -38,7 +38,7 @@ void ScreenOptionsExportPackage::BeginScreen()
 	// announcers, characters, others?
 
 	std::vector<OptionRowHandler*> OptionRowHandlers;
-	for (RString const &s : m_vsPackageTypes)
+	for (std::string const &s : m_vsPackageTypes)
 	{
 		OptionRowHandler *pHand = OptionRowHandlerUtil::MakeNull();
 		OptionRowDefinition &def = pHand->m_Def;
@@ -109,7 +109,7 @@ void ScreenOptionsExportPackageSubPage::BeginScreen()
 	ScreenWithMenuElements::BeginScreen();
 
 	// Check type and fill m_vsPossibleDirsToExport
-	const RString *s_packageType = &ExportPackages::m_sPackageType;
+	const std::string *s_packageType = &ExportPackages::m_sPackageType;
 	if( *s_packageType == "Themes" )
 	{
 		// add themes
@@ -118,20 +118,20 @@ void ScreenOptionsExportPackageSubPage::BeginScreen()
 	else if( *s_packageType == "NoteSkins" )
 	{
 		// add noteskins
-		std::vector<RString> vs;
+		std::vector<std::string> vs;
 		GetDirListing( SpecialFiles::NOTESKINS_DIR + "*", vs, true, true );
-		for (RString const &s : vs)
+		for (std::string const &s : vs)
 			GetDirListing( s + "*", m_vsPossibleDirsToExport, true, true );
 	}
 	else if( *s_packageType == "Courses" )
 	{
 		// Add courses. Only support courses that are in a group folder.
 		// Support for courses not in a group folder should be phased out.
-		std::vector<RString> vs;
+		std::vector<std::string> vs;
 		GetDirListing( SpecialFiles::COURSES_DIR + "*", vs, true, true );
 		StripCvsAndSvn( vs );
 		StripMacResourceForks( vs );
-		for (RString const &s : vs)
+		for (std::string const &s : vs)
 		{
 			m_vsPossibleDirsToExport.push_back( s );
 			GetDirListing( s + "/*", m_vsPossibleDirsToExport, true, true );
@@ -140,9 +140,9 @@ void ScreenOptionsExportPackageSubPage::BeginScreen()
 	else if( *s_packageType == "Songs" )
 	{
 		// Add song groups
-		std::vector<RString> asAllGroups;
+		std::vector<std::string> asAllGroups;
 		SONGMAN->GetSongGroupNames(asAllGroups);
-		for (RString const &s : asAllGroups)
+		for (std::string const &s : asAllGroups)
 		{
 			m_vsPossibleDirsToExport.push_back(s);
 		}
@@ -150,9 +150,9 @@ void ScreenOptionsExportPackageSubPage::BeginScreen()
 	else if( *s_packageType == "SubGroup" )
 	{
 		//ExportPackages::m_sFolder
-		std::vector<RString> vs;
+		std::vector<std::string> vs;
 		GetDirListing( SpecialFiles::SONGS_DIR + "/" + ExportPackages::m_sFolder + "/*", vs, true, true );
-		for (RString const &s : vs)
+		for (std::string const &s : vs)
 		{
 			m_vsPossibleDirsToExport.push_back( s );
 			GetDirListing( s + "/*", m_vsPossibleDirsToExport, true, true );
@@ -162,7 +162,7 @@ void ScreenOptionsExportPackageSubPage::BeginScreen()
 	StripMacResourceForks( m_vsPossibleDirsToExport );
 
 	std::vector<OptionRowHandler*> OptionRowHandlers;
-	for (RString const &s : m_vsPossibleDirsToExport)
+	for (std::string const &s : m_vsPossibleDirsToExport)
 	{
 		OptionRowHandler *pHand = OptionRowHandlerUtil::MakeNull();
 		OptionRowDefinition &def = pHand->m_Def;
@@ -181,9 +181,9 @@ void ScreenOptionsExportPackageSubPage::BeginScreen()
 	ScreenOptions::BeginScreen();
 }
 
-static RString ReplaceInvalidFileNameChars( RString sOldFileName )
+static std::string ReplaceInvalidFileNameChars( std::string sOldFileName )
 {
-	RString sNewFileName = sOldFileName;
+	std::string sNewFileName = sOldFileName;
 	const char charsToReplace[] = {
 		' ', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')',
 		'+', '=', '[', ']', '{', '}', '|', ':', '\"', '\\',
@@ -194,11 +194,11 @@ static RString ReplaceInvalidFileNameChars( RString sOldFileName )
 	return sNewFileName;
 }
 
-static bool ExportPackage( RString sPackageName, RString sDirToExport, RString &sErrorOut )
+static bool ExportPackage( std::string sPackageName, std::string sDirToExport, std::string &sErrorOut )
 {
 	// Mount Desktop/ for each OS.
-	RString sDesktopDir = SpecialDirs::GetDesktopDir();
-	RString fn = sDesktopDir+sPackageName;
+	std::string sDesktopDir = SpecialDirs::GetDesktopDir();
+	std::string fn = sDesktopDir+sPackageName;
 	RageFile f;
 	if( !f.Open(fn, RageFile::WRITE) )
 	{
@@ -212,11 +212,11 @@ static bool ExportPackage( RString sPackageName, RString sDirToExport, RString &
 	zip.Start();
 	zip.SetGlobalComment( sComment );
 
-	std::vector<RString> vs;
+	std::vector<std::string> vs;
 	GetDirListingRecursive( sDirToExport, "*", vs );
 	SMPackageUtil::StripIgnoredSmzipFiles( vs );
 	LOG->Trace("Adding files...");
-	for (RString &s : vs)
+	for (std::string &s : vs)
 	{
 		if( !zip.AddFile( s ) )
 		{
@@ -260,10 +260,10 @@ void ScreenOptionsExportPackageSubPage::ProcessMenuStart( const InputEventPlus &
 		return;
 	}
 
-	RString sDirToExport = m_vsPossibleDirsToExport[ iCurRow ];
-	RString sPackageName = ReplaceInvalidFileNameChars( sDirToExport + ".smzip" );
+	std::string sDirToExport = m_vsPossibleDirsToExport[ iCurRow ];
+	std::string sPackageName = ReplaceInvalidFileNameChars( sDirToExport + ".smzip" );
 
-	RString sError;
+	std::string sError;
 	if( ExportPackage(sPackageName, sDirToExport, sError) )
 		ScreenPrompt::Prompt( SM_None, ssprintf("Exported '%s' to the desktop", sDirToExport.c_str()) );
 	else

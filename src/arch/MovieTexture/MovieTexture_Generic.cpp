@@ -39,9 +39,9 @@ MovieTexture_Generic::MovieTexture_Generic(RageTextureID ID, std::unique_ptr<Mov
 	sprite_ = std::make_unique<Sprite>();
 }
 
-RString MovieTexture_Generic::Init()
+std::string MovieTexture_Generic::Init()
 {
-	RString err = decoder_->Open(GetID().filename);
+	std::string err = decoder_->Open(GetID().filename);
 	if (err != "") {
 		LOG->Warn("MovieTexture_Generic::Init: failed to open decoder for file: %s, with error:\n%s", GetID().filename.c_str(), err.c_str());
 		return err;
@@ -69,7 +69,7 @@ RString MovieTexture_Generic::Init()
 
 	CHECKPOINT_M("Generic initialization completed. No errors found.");
 
-	return RString();
+	return std::string();
 }
 
 MovieTexture_Generic::~MovieTexture_Generic()

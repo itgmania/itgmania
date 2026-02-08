@@ -12,16 +12,16 @@
 #include <vector>
 
 
-void ForceToAscii( RString &str )
+void ForceToAscii( std::string &str )
 {
 	for( unsigned i=0; i<str.size(); ++i )
 		if( str[i] < 0x20 || str[i] > 0x7E )
 			str[i] = '?';
 }
 
-bool RageMovieTexture::GetFourCC( RString fn, RString &handler, RString &type )
+bool RageMovieTexture::GetFourCC( std::string fn, std::string &handler, std::string &type )
 {
-	RString ignore, ext;
+	std::string ignore, ext;
 	splitpath( fn, ignore, ignore, ext);
 	if( !CompareNoCase(ext, ".mpg") ||
 		!CompareNoCase(ext, ".mpeg") ||
@@ -68,16 +68,16 @@ bool RageMovieTexture::GetFourCC( RString fn, RString &handler, RString &type )
 DriverList RageMovieTextureDriver::m_pDriverList;
 
 // Helper for MakeRageMovieTexture()
-static void DumpAVIDebugInfo( const RString& fn )
+static void DumpAVIDebugInfo( const std::string& fn )
 {
-	RString type, handler;
+	std::string type, handler;
 	if( !RageMovieTexture::GetFourCC( fn, handler, type ) )
 		return;
 
 	LOG->Trace( "Movie %s has handler '%s', type '%s'", fn.c_str(), handler.c_str(), type.c_str() );
 }
 
-static Preference<RString> g_sMovieDrivers( "MovieDrivers", "" ); // "" == default
+static Preference<std::string> g_sMovieDrivers( "MovieDrivers", "" ); // "" == default
 /* Try drivers in order of preference until we find one that works. */
 static LocalizedString MOVIE_DRIVERS_EMPTY		( "Arch", "Movie Drivers cannot be empty." );
 static LocalizedString COULDNT_CREATE_MOVIE_DRIVER	( "Arch", "Couldn't create a movie driver." );
@@ -85,8 +85,8 @@ RageMovieTexture *RageMovieTexture::Create( RageTextureID ID )
 {
 	DumpAVIDebugInfo( ID.filename );
 
-	RString sDrivers = g_sMovieDrivers;
-	std::vector<RString> DriversToTry;
+	std::string sDrivers = g_sMovieDrivers;
+	std::vector<std::string> DriversToTry;
 
 	if (sDrivers.empty())
 	{
@@ -102,7 +102,7 @@ RageMovieTexture *RageMovieTexture::Create( RageTextureID ID )
 
 	RageMovieTexture *ret = nullptr;
 
-	for (RString const &Driver : DriversToTry)
+	for (std::string const &Driver : DriversToTry)
 	{
 		char const * driverString = Driver.c_str();
 		LOG->Trace( "Initializing driver: %s", driverString );
@@ -117,7 +117,7 @@ RageMovieTexture *RageMovieTexture::Create( RageTextureID ID )
 		RageMovieTextureDriver *pDriver = dynamic_cast<RageMovieTextureDriver *>( pDriverBase );
 		ASSERT( pDriver != nullptr );
 
-		RString sError;
+		std::string sError;
 		ret = pDriver->Create( ID, sError );
 		delete pDriver;
 
