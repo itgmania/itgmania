@@ -2,7 +2,6 @@ list(APPEND SMDATA_GLOBAL_FILES_SRC
             "GameLoop.cpp"
             "global.cpp"
             "SpecialFiles.cpp"
-            "StdString.cpp"
             "StepMania.cpp" # TODO: Refactor into separate main project.
             "${SM_GENERATED_SRC_DIR}/verstub.cpp")
 
