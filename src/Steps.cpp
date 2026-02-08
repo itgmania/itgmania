@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <optional>
 #include <vector>
 #include <regex>
 
@@ -42,6 +43,39 @@
 
 // For hashing hart keys - Mina
 #include "CryptManager.h"
+
+std::optional<StepParity::StageLayout> getLayout(StepsType ty) {
+  switch (ty) {
+    case StepsType_dance_single:
+      return StepParity::StageLayout(
+          StepsType_dance_single,
+          {
+              {0, 1},  // Left
+              {1, 0},  // Down
+              {1, 2},  // Up
+              {2, 1}   // Right
+          },
+          {2}, {1}, {0, 3});
+
+    case StepsType_dance_double:
+      return StepParity::StageLayout(
+          StepsType_dance_double,
+          {
+              {0, 1},  // P1 Left
+              {1, 0},  // P1 Down
+              {1, 2},  // P1 Up
+              {2, 1},  // P1 Right
+
+              {3, 1},  // P2 Left
+              {4, 0},  // P2 Down
+              {4, 2},  // P2 Up
+              {5, 1}   // P2 Right
+          },
+          {2, 6}, {1, 5}, {0, 3, 4, 7});
+    default:
+      return std::nullopt;
+  }
+}
 
 static const char *DisplayBPMNames[] =
 {
@@ -392,18 +426,21 @@ void Steps::CalculateTechCounts()
 		m_CachedTechCounts[pn]
 			.Zero();
 
-
-	// If we don't have a valid layout for this StepsType, then don't even bother
-	if(StepParity::Layouts.find(this->m_StepsType) == StepParity::Layouts.end())
-	{
-		return;
-	}
-	const StepParity::StageLayout* layout = &StepParity::Layouts.at(this->m_StepsType);
-	TimingData * timing = this->GetTimingData();
-	StepParity::StepParityGenerator gen = StepParity::StepParityGenerator(layout, timing);
-	gen.analyzeNoteData(tempNoteData);
-	TechCounts::CalculateTechCountsFromRows(gen.rows, layout, m_CachedTechCounts[0]);
-	std::fill_n( m_CachedTechCounts + 1, NUM_PLAYERS-1, m_CachedTechCounts[0] );
+        const std::optional<StepParity::StageLayout> layout =
+            getLayout(this->m_StepsType);
+        // If we don't have a valid layout for this StepsType, then don't even
+        // bother
+        if (!layout) {
+          return;
+        }
+        TimingData* timing = this->GetTimingData();
+        StepParity::StepParityGenerator gen =
+            StepParity::StepParityGenerator(&*layout, timing);
+        gen.analyzeNoteData(tempNoteData);
+        TechCounts::CalculateTechCountsFromRows(
+            gen.rows, &*layout, m_CachedTechCounts[0]);
+        std::fill_n(
+            m_CachedTechCounts + 1, NUM_PLAYERS - 1, m_CachedTechCounts[0]);
 }
 
 void Steps::CalculateMeasureInfo()
