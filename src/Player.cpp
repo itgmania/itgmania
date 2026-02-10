@@ -660,6 +660,7 @@ void Player::Load()
 	m_bTickHolds = GAMESTATE->GetCurrentGame()->m_bTickHolds;
 
 	m_LastTapNoteScore = TNS_None;
+	m_LastTapNoteScoreBeat = 0;
 	// The editor can start playing in the middle of the song.
 	const int iNoteRow = BeatToNoteRowNotRounded( m_pPlayerState->m_Position.m_fSongBeat );
 	m_iFirstUncrossedRow     = iNoteRow - 1;
@@ -2544,9 +2545,12 @@ void Player::Step( int col, int row, const RageTimer &tm, bool bHeld, bool bRele
 				// Otherwise:
 				//   - this should only trigger a judgment and a score change if
 				//   	 it's not a miss and the TNS is minTnsToScore or better.
-				if (pTN->result.earlyTns == TNS_None || (score != TNS_Miss && !badTns)) {
+				if (m_LastTapNoteScoreBeat > fStepBeat) {
+					score = TNS_None;
+				} else if (pTN->result.earlyTns == TNS_None || (score != TNS_Miss && !badTns)) {
 					pTN->result.tns = score;
 					pTN->result.fTapNoteOffset = -fNoteOffset;
+					m_LastTapNoteScoreBeat = fStepBeat;
 				}
 			}
 		}
