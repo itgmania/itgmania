@@ -226,6 +226,9 @@ public:
 
 	EditState GetEditState(){ return m_EditState; }
 
+	// For seeking through the song instantly.
+	void SeekSong(float second);
+
 	// Lua
 	virtual void PushSelf( lua_State *L );
 
