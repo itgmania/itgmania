@@ -6565,18 +6565,31 @@ void ScreenEdit::DoHelp()
 	EditMiniMenu( &g_EditHelp );
 }
 
+void ScreenEdit::SeekSong(float second) {
+    float desired_beat = GetAppropriateTiming().GetBeatFromElapsedTime(second);
+    // Don't seek past the final beat of the song.
+    ScrollTo(std::min(desired_beat, GetMaximumBeatForNewNote()));
+    m_fTrailingBeat = GetBeat();
+}
+
 // lua start
 #include "LuaBinding.h"
 
 /** @brief Allow Lua to have access to ScreenEdit. */
 class LunaScreenEdit: public Luna<ScreenEdit>
 {
-public:
-	DEFINE_METHOD( GetEditState, GetEditState() )
-	LunaScreenEdit()
-	{
-		ADD_METHOD( GetEditState );
-	}
+ public:
+  static int SeekSong(T* p, lua_State* L) {
+    p->SeekSong( FArg(1) );
+    return 1;
+  }
+  DEFINE_METHOD(GetEditState, GetEditState());
+
+  LunaScreenEdit()
+  {
+    ADD_METHOD( GetEditState );
+    ADD_METHOD( SeekSong );
+  }
 };
 
 LUA_REGISTER_DERIVED_CLASS( ScreenEdit, ScreenWithMenuElements )
