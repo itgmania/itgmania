@@ -157,7 +157,7 @@ void ValidateDisplayAspectRatio( float &val )
 
 void ValidateSongsPerPlay( int &val )
 {
-	CLAMP(val,0,MAX_SONGS_PER_PLAY);
+	rage_clamp(val,0,MAX_SONGS_PER_PLAY);
 }
 
 PrefsManager::PrefsManager() :

@@ -80,7 +80,7 @@ bool ScreenBookkeeping::Input( const InputEventPlus &input )
 bool ScreenBookkeeping::MenuLeft( const InputEventPlus &input )
 {
 	m_iViewIndex--;
-	CLAMP( m_iViewIndex, 0, m_vBookkeepingViews.size()-1 );
+	rage_clamp( m_iViewIndex, 0, m_vBookkeepingViews.size()-1 );
 
 	UpdateView();
 	return true;
@@ -89,7 +89,7 @@ bool ScreenBookkeeping::MenuLeft( const InputEventPlus &input )
 bool ScreenBookkeeping::MenuRight( const InputEventPlus &input )
 {
 	m_iViewIndex++;
-	CLAMP( m_iViewIndex, 0, m_vBookkeepingViews.size()-1 );
+	rage_clamp( m_iViewIndex, 0, m_vBookkeepingViews.size()-1 );
 
 	UpdateView();
 	return true;

@@ -3520,7 +3520,7 @@ void ScreenEdit::TransitionEditState( EditState em )
 
 void ScreenEdit::ScrollTo( float fDestinationBeat )
 {
-	CLAMP( fDestinationBeat, 0, GetMaximumBeatForMoving() );
+	rage_clamp( fDestinationBeat, 0, GetMaximumBeatForMoving() );
 
 	// Don't play the sound and do the hold note logic below if our position didn't change.
 	const float fOriginalBeat = GetAppropriatePosition().m_fSongBeat;

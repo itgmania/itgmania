@@ -570,7 +570,7 @@ void EditMenu::OnRowValueChanged( EditMenuRow row )
 					break;
 				}
 			}
-			CLAMP( m_iSelection[ROW_STEPS], 0, m_vpSteps.size()-1 );
+			rage_clamp( m_iSelection[ROW_STEPS], 0, m_vpSteps.size()-1 );
 		}
 		[[fallthrough]];
 	case ROW_STEPS:
@@ -627,7 +627,7 @@ void EditMenu::OnRowValueChanged( EditMenuRow row )
 				}
 			}
 			StripLockedStepsAndDifficulty( m_vpSteps );
-			CLAMP( m_iSelection[ROW_SOURCE_STEPS], 0, m_vpSourceSteps.size()-1 );
+			rage_clamp( m_iSelection[ROW_SOURCE_STEPS], 0, m_vpSourceSteps.size()-1 );
 		}
 		[[fallthrough]];
 	case ROW_SOURCE_STEPS:

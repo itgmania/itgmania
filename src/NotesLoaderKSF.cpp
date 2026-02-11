@@ -519,7 +519,7 @@ static void ProcessTickcounts( const std::string & value, int & ticks, TimingDat
 	 * and stops. It will be called again in LoadFromKSFFile for the
 	 * actual steps. */
 	ticks = StringToInt( value );
-	CLAMP( ticks, 0, ROWS_PER_BEAT );
+	rage_clamp( ticks, 0, ROWS_PER_BEAT );
 
 	if( ticks == 0 )
 		ticks = TickcountSegment::DEFAULT_TICK_COUNT;

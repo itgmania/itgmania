@@ -59,7 +59,7 @@ CombinedLifeMeterTug::CombinedLifeMeterTug()
 void CombinedLifeMeterTug::Update( float fDelta )
 {
 	float fPercentToShow = GAMESTATE->m_fTugLifePercentP1;
-	CLAMP( fPercentToShow, 0.f, 1.f );
+	rage_clamp( fPercentToShow, 0.f, 1.f );
 
 	m_Stream[PLAYER_1].SetPercent( fPercentToShow );
 	m_Stream[PLAYER_2].SetPercent( 1-fPercentToShow );

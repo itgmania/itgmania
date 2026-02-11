@@ -340,7 +340,7 @@ void ScreenSelectMaster::BeginScreen()
 	FOREACH_PlayerNumber( p )
 	{
 		m_iChoice[p] = (iDefaultChoice!=-1) ? iDefaultChoice : 0;
-		CLAMP( m_iChoice[p], 0, (int)m_aGameCommands.size()-1 );
+		rage_clamp( m_iChoice[p], 0, (int)m_aGameCommands.size()-1 );
 		m_bChosen[p] = false;
 		m_bDoubleChoice[p] = false;
 	}

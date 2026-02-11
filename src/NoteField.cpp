@@ -440,7 +440,7 @@ void NoteField::DrawBeatBar( const float fBeat, BeatBarType type, int iMeasureIn
 				iState = 3;
 				break;
 		}
-		CLAMP( fAlpha, 0, 1 );
+		rage_clamp( fAlpha, 0, 1 );
 	}
 
 	float fWidth = GetWidth();
@@ -1031,8 +1031,8 @@ void NoteField::DrawPrimitives()
 		{
 			int iBegin = m_iBeginMarker;
 			int iEnd = m_iEndMarker;
-			CLAMP( iBegin, m_FieldRenderArgs.first_row, m_FieldRenderArgs.last_row );
-			CLAMP( iEnd, m_FieldRenderArgs.first_row, m_FieldRenderArgs.last_row );
+			rage_clamp( iBegin, m_FieldRenderArgs.first_row, m_FieldRenderArgs.last_row );
+			rage_clamp( iEnd, m_FieldRenderArgs.first_row, m_FieldRenderArgs.last_row );
 			DrawAreaHighlight( iBegin, iEnd );
 		}
 		else if( m_iBeginMarker != -1 )

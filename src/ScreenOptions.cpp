@@ -1088,7 +1088,7 @@ void ScreenOptions::ChangeValueInRowRelative( int iRow, PlayerNumber pn, int iDe
 	if( !bRepeat  &&  WRAP_VALUE_IN_ROW.GetValue() )
 		wrap( iNewChoiceWithFocus, iNumChoices );
 	else
-		CLAMP( iNewChoiceWithFocus, 0, iNumChoices-1 );
+		rage_clamp( iNewChoiceWithFocus, 0, iNumChoices-1 );
 
 	if( iCurrentChoiceWithFocus != iNewChoiceWithFocus )
 		bOneChanged = true;

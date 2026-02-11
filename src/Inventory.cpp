@@ -214,7 +214,7 @@ void Inventory::UseItem( int iSlot )
 	float fPercentHealthToDrain = (a.level+1) / 10.f;
 	ASSERT( fPercentHealthToDrain > 0 );
 	GAMESTATE->m_fOpponentHealthPercent -= fPercentHealthToDrain;
-	CLAMP( GAMESTATE->m_fOpponentHealthPercent, 0.f, 1.f );
+	rage_clamp( GAMESTATE->m_fOpponentHealthPercent, 0.f, 1.f );
 
 	// play announcer sound
 	SCREENMAN->SendMessageToTopScreen( ssprintf("SM_BattleDamageLevel%d",a.level+1) );
