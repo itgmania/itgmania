@@ -1,7 +1,11 @@
-BasedOnStyle: Google
+BasedOnStyle: Microsoft
+BracesStyle: Allman
 AlignAfterOpenBracket: AlwaysBreak
 DerivePointerAlignment: false
 PointerAlignment: Left
 QualifierAlignment: Left
 ReferenceAlignment: Left
 InsertBraces: true
+SortIncludes: false
+ReorderIncludes: false
+IncludeBlocks: Preserve
