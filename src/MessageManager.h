@@ -1,10 +1,10 @@
 #ifndef MessageManager_H
 #define MessageManager_H
 
-#include "LuaManager.h"
-
+#include <string>
 #include <vector>
 
+#include "LuaManager.h"
 
 struct lua_State;
 class LuaTable;

@@ -1,13 +1,16 @@
-#include "global.h"
 #include "InputHandler_Linux_Event.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "LinuxInputManager.h"
-#include "GamePreferences.h" //needed for Axis Fix
 
+#include <algorithm>
 #include <cerrno>
 #include <cstdint>
+#include <string>
 #include <vector>
+
+#include "GamePreferences.h"  //needed for Axis Fix
+#include "LinuxInputManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "global.h"
 
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>

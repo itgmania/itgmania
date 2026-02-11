@@ -1,18 +1,28 @@
-#include "global.h"
 #include "LifeMeterTime.h"
-#include "ThemeManager.h"
-#include "Song.h"
-#include "Steps.h"
-#include "ActorUtil.h"
-#include "Course.h"
-#include "Preference.h"
-#include "StreamDisplay.h"
-#include "GameState.h"
-#include "StatsManager.h"
-#include "PlayerState.h"
-#include "MessageManager.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <string>
+
+#include "Actor.h"
+#include "Course.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LifeMeter.h"
+#include "MessageManager.h"
+#include "PlayerStageStats.h"
+#include "PlayerState.h"
+#include "Preference.h"
+#include "RadarValues.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "StatsManager.h"
+#include "Steps.h"
+#include "StreamDisplay.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 const float FULL_LIFE_SECONDS = 1.5f*60;
 

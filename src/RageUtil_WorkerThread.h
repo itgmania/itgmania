@@ -3,6 +3,8 @@
 #ifndef RAGE_UTIL_WORKER_THREAD_H
 #define RAGE_UTIL_WORKER_THREAD_H
 
+#include <string>
+
 #include "RageThreads.h"
 #include "RageTimer.h"
 

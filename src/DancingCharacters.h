@@ -1,12 +1,12 @@
 #ifndef DancingCharacters_H
 #define DancingCharacters_H
 
-#include "ActorFrame.h"
-#include "PlayerNumber.h"
-#include "ThemeManager.h"
-#include "RageTimer.h"
-#include "AutoActor.h"
 #include <array>
+
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "PlayerNumber.h"
+#include "RageTimer.h"
 class Model;
 
 /** @brief The different animation states for the dancer. */

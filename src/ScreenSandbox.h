@@ -2,6 +2,7 @@
 #define SCREEN_SANDBOX_H
 
 #include "Screen.h"
+#include "ScreenMessage.h"
 
 class ScreenSandbox : public Screen
 {

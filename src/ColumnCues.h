@@ -1,9 +1,10 @@
 #ifndef COLUMN_CUES_H
 #define COLUMN_CUES_H
 
-#include "GameConstantsAndTypes.h"
-#include "NoteTypes.h"
+#include <vector>
+
 #include "NoteData.h"
+#include "NoteTypes.h"
 #include "TimingData.h"
 
 /* ColumnCues are used to indicate to the player which column the next note will occur

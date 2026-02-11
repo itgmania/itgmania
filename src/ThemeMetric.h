@@ -3,14 +3,15 @@
 #ifndef THEME_METRIC_H
 #define THEME_METRIC_H
 
-#include "ThemeManager.h"
-#include "LuaManager.h"
-#include "RageUtil.h"
-
 #include <cstddef>
 #include <map>
+#include <string>
 #include <vector>
 
+#include "LuaManager.h"
+#include "LuaReference.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 /** @brief The general interface for reading ThemeMetrics. */
 class IThemeMetric

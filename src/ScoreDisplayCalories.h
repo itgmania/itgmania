@@ -1,8 +1,12 @@
 #ifndef ScoreDisplayCalories_H
 #define ScoreDisplayCalories_H
 
-#include "RollingNumbers.h"
+#include <string>
+
+#include "Actor.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
+#include "RollingNumbers.h"
 
 /** @brief Shows calorie score during gameplay and some menus. */
 class ScoreDisplayCalories : public RollingNumbers

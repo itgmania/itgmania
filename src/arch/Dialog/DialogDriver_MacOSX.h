@@ -1,7 +1,10 @@
 #ifndef DIALOG_BOX_DRIVER_MACOSX_H
 #define DIALOG_BOX_DRIVER_MACOSX_H
 
+#include <string>
+
 #include "DialogDriver.h"
+#include "arch/Dialog/Dialog.h"
 
 class DialogDriver_MacOSX: public DialogDriver
 {

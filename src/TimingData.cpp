@@ -1,17 +1,21 @@
-#include "global.h"
 #include "TimingData.h"
-#include "PrefsManager.h"
-#include "GameState.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "ThemeManager.h"
-#include "NoteTypes.h"
 
+#include <algorithm>
 #include <cfloat>
+#include <climits>
 #include <cmath>
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "GameState.h"
+#include "LuaManager.h"
+#include "NoteTypes.h"
+#include "PrefsManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "TimingSegments.h"
+#include "global.h"
 
 static void EraseSegment(std::vector<TimingSegment*> &vSegs, int index, TimingSegment *cur);
 static const int INVALID_INDEX = -1;

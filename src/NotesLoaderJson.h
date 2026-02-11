@@ -3,10 +3,10 @@
 #ifndef NotesLoaderJson_H
 #define NotesLoaderJson_H
 
-#include "NotesLoader.h"
-
+#include <string>
 #include <vector>
 
+#include "NotesLoader.h"
 
 class Song;
 

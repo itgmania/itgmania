@@ -1,9 +1,6 @@
 #ifndef ARCH_SETUP_DARWIN_H
 #define ARCH_SETUP_DARWIN_H
 
-// Replace the main function.
-extern "C" int sm_main( int argc, char *argv[] );
-
 #define HAVE_CXA_DEMANGLE
 /* This must be defined to 1 because autoconf's AC_CHECK_DECLS macro decides to define
  * this in all cases. If only they could be consistent... */

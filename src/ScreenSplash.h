@@ -3,6 +3,8 @@
 #ifndef ScreenSplash_H
 #define ScreenSplash_H
 
+#include "InputQueue.h"
+#include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
 #include "ThemeMetric.h"
 

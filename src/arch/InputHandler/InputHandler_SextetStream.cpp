@@ -1,16 +1,19 @@
-#include "global.h"
 #include "InputHandler_SextetStream.h"
-#include "PrefsManager.h"
-#include "RageLog.h"
-#include "RageThreads.h"
-#include "RageUtil.h"
 
 #include <cerrno>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <string>
 #include <vector>
+
+#include "Preference.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "arch/InputHandler/InputHandler.h"
 
 // In so many words, ceil(n/6).
 #define NUMBER_OF_SEXTETS_FOR_BIT_COUNT(n) (((n) + 5) / 6)

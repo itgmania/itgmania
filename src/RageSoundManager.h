@@ -3,13 +3,9 @@
 #ifndef RAGE_SOUND_MANAGER_H
 #define RAGE_SOUND_MANAGER_H
 
-#include "RageUtil_CircularBuffer.h"
-
 #include <cstdint>
 #include <map>
-#include <set>
-
-#include "RageSoundConstants.h"
+#include <string>
 
 class RageSound;
 class RageSoundBase;

@@ -1,14 +1,15 @@
-#include "global.h"
+#include <cstdint>
+#include <mutex>  // for call_once
+#include <string>
+#include <vector>
+
 #include "ArchHooks.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "archutils/Win32/SpecialDirs.h"
 #include "ProductInfo.h"
 #include "RageFileManager.h"
-
-#include <cstdint>
-#include <vector>
-#include <mutex> // for call_once
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "archutils/Win32/SpecialDirs.h"
+#include "global.h"
 
 // for QueryPerformanceCounter
 #include <windows.h>

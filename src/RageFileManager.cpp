@@ -1,25 +1,34 @@
-#include "global.h"
 #include "RageFileManager.h"
-#include "RageFileDriver.h"
-#include "RageFile.h"
-#include "RageUtil.h"
-#include "RageUtil_FileDB.h"
-#include "RageLog.h"
-#include "RageThreads.h"
-#include "arch/ArchHooks/ArchHooks.h"
-#include "LuaManager.h"
 
+#include <algorithm>
 #include <cerrno>
 #include <cstddef>
 #include <cstdint>
-#include <sstream>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <map>
+#include <string>
+#include <utility>
 #include <vector>
+
+#include "LuaManager.h"
+#include "RageFile.h"
+#include "RageFileDriver.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "RageUtil_FileDB.h"
+#include "StdString.h"
+#include "arch/ArchHooks/ArchHooks.h"
+#include "global.h"
 
 #if defined(_WIN32)
 #include <windows.h>
 #elif defined(UNIX) || defined(MACOSX)
 #include <paths.h>
 #include <sys/types.h>
+#include <unistd.h>
 #endif
 
 #include <miniz.h>

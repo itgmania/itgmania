@@ -1,7 +1,11 @@
-#include "global.h"
 #include "RageUtil_WorkerThread.h"
-#include "RageUtil.h"
+
+#include <string>
+
 #include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "global.h"
 
 RageWorkerThread::RageWorkerThread( const std::string &sName ):
 	m_WorkerEvent( "\"" + sName + "\" worker event" ),

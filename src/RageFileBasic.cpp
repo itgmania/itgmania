@@ -1,10 +1,15 @@
-#include "global.h"
 #include "RageFileBasic.h"
-#include "RageUtil.h"
-#include "RageUtil_AutoPtr.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <string>
+
+#include "RageUtil.h"
+#include "RageUtil_AutoPtr.h"
+#include "global.h"
 
 REGISTER_CLASS_TRAITS( RageFileBasic, pCopy->Copy() );
 

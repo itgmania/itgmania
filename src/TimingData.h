@@ -1,14 +1,16 @@
 #ifndef TIMING_DATA_H
 #define TIMING_DATA_H
 
-#include "NoteTypes.h"
-#include "TimingSegments.h"
-#include "PrefsManager.h"
-
 #include <array>
 #include <cfloat>
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "NoteTypes.h"
+#include "RageUtil.h"
+#include "TimingSegments.h"
+#include "global.h"
 
 struct lua_State;
 

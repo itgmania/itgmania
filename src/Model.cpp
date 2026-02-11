@@ -1,22 +1,30 @@
-#include "global.h"
 #include "Model.h"
-#include "ModelTypes.h"
-#include "RageMath.h"
-#include "RageDisplay.h"
-#include "RageUtil.h"
-#include "RageTextureManager.h"
-#include "XmlFile.h"
-#include "RageFile.h"
-#include "RageLog.h"
-#include "ActorUtil.h"
-#include "ModelManager.h"
-#include "LuaBinding.h"
-#include "PrefsManager.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "ModelManager.h"
+#include "ModelTypes.h"
+#include "PrefsManager.h"
+#include "RageDisplay.h"
+#include "RageException.h"
+#include "RageFile.h"
+#include "RageMath.h"
+#include "RageTexture.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "XmlFile.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( Model );
 

@@ -1,12 +1,20 @@
-#include "global.h"
 #include "CombinedLifeMeterTug.h"
-#include "ThemeManager.h"
-#include "GameState.h"
-#include "PrefsManager.h"
-#include "ThemeMetric.h"
-#include "ActorUtil.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <string>
+
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "PlayerNumber.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 ThemeMetric<float> METER_WIDTH		("CombinedLifeMeterTug","MeterWidth");
 

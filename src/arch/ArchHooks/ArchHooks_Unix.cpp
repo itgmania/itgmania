@@ -1,24 +1,23 @@
-#include "global.h"
 #include "ArchHooks_Unix.h"
-#include "ProductInfo.h"
+
+#include <csignal>
+#include <cstdint>
+#include <cstdlib>
+#include <ctime>
+#include <string>
+
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
-#include "RageThreads.h"
-#include "LocalizedString.h"
-#include "archutils/Unix/SignalHandler.h"
-#include "archutils/Unix/GetSysInfo.h"
 #include "archutils/Common/PthreadHelpers.h"
-#include "archutils/Unix/EmergencyShutdown.h"
 #include "archutils/Unix/AssertionHandler.h"
-
-#include <cstdint>
+#include "archutils/Unix/EmergencyShutdown.h"
+#include "archutils/Unix/GetSysInfo.h"
+#include "archutils/Unix/SignalHandler.h"
 
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#include <sys/time.h>
-#include <sys/types.h>
 #include <sys/wait.h>
 
 #if defined(CRASH_HANDLER)

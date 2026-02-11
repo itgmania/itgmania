@@ -1,12 +1,15 @@
-#include "global.h"
 #include "RadarValues.h"
-#include "ThemeManager.h"
-#include "RageUtil.h"
-#include "XmlFile.h"
-#include "ThemeManager.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "RageUtil.h"
+#include "ThemeMetric.h"
+#include "XmlFile.h"
+#include "global.h"
 
 ThemeMetric<bool> RadarValues::WRITE_SIMPLE_VALIES( "RadarValues", "WriteSimpleValues" );
 ThemeMetric<bool> RadarValues::WRITE_COMPLEX_VALIES( "RadarValues", "WriteComplexValues" );

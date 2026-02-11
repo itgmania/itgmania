@@ -4,6 +4,7 @@
 #define RAGE_SURFACE_UTILS_H
 
 #include <cstdint>
+#include <string>
 
 struct RageSurfaceColor;
 struct RageSurfacePalette;

@@ -1,7 +1,7 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#include "config.hpp"
+#include <string>
 
 #if defined(_MSC_VER)
 #pragma once
@@ -21,9 +21,6 @@
 #include "archutils/Unix/arch_setup.h"
 #endif
 
-/* Make sure everyone has min and max: */
-#include <algorithm>
-
 /* Branch optimizations: */
 #if defined(__GNUC__)
 #define likely(x) (__builtin_expect(!!(x), 1))
@@ -37,13 +34,7 @@
 #undef ASSERT
 #endif
 
-#include "StdString.h"
-
-
 #include "RageThreads.h"
-
-
-
 
 /**
  * @brief A crash has occurred, and we're not getting out of it easily.
@@ -101,8 +92,6 @@ void ShowWarningOrTrace( const char *file, int line, const char *message, bool b
 #define SM_UNIQUE_NAME3(x,line) x##line
 #define SM_UNIQUE_NAME2(x,line) SM_UNIQUE_NAME3(x, line)
 #define SM_UNIQUE_NAME(x) SM_UNIQUE_NAME2(x, __LINE__)
-
-#include "RageException.h"
 
 /* Don't include our own headers here, since they tend to change often. */
 

@@ -1,10 +1,9 @@
-#include "global.h"
 #include "SampleHistory.h"
-#include "RageLog.h"
-#include "RageUtil.h"
 
+#include <algorithm>
 #include <cmath>
 
+#include "RageUtil.h"
 
 inline float sample_step_size(int samples_per_second)
 {

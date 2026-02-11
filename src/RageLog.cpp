@@ -1,14 +1,19 @@
-#include "global.h"
 #include "RageLog.h"
-#include "RageUtil.h"
-#include "RageTimer.h"
+
+#include <algorithm>
+#include <cstdarg>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
+#include <map>
+#include <string>
+#include <vector>
+
 #include "RageFile.h"
 #include "RageThreads.h"
-
-#include <ctime>
-#include <cstdarg>
-#include <map>
-#include <vector>
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "global.h"
 
 #if defined(_WIN32)
 #include <windows.h>

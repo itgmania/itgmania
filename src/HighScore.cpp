@@ -1,16 +1,22 @@
-#include "global.h"
 #include "HighScore.h"
-#include "PrefsManager.h"
-#include "GameConstantsAndTypes.h"
-#include "PlayerNumber.h"
-#include "ThemeManager.h"
-#include "XmlFile.h"
-#include "RadarValues.h"
 
 #include <algorithm>
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "Grade.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "RadarValues.h"
+#include "RageUtil.h"
+#include "RageUtil_AutoPtr.h"
+#include "ThemeMetric.h"
+#include "XmlFile.h"
+#include "global.h"
 
 ThemeMetric<std::string> EMPTY_NAME("HighScore","EmptyName");
 

@@ -1,9 +1,18 @@
-#include "global.h"
 #include "StepParityGenerator.h"
-#include "StepParityCost.h"
-#include "NoteData.h"
-#include "TechCounts.h"
+
+#include <algorithm>
+#include <cfloat>
+#include <cstdint>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include "GameState.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "RageLog.h"
+#include "StepParityCost.h"
+#include "StepParityDatastructs.h"
 
 using namespace StepParity;
 

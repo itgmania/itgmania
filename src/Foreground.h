@@ -1,10 +1,11 @@
 #ifndef FOREGROUND_H
 #define FOREGROUND_H
 
-#include "ActorFrame.h"
-
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "MessageManager.h"
 
 class Song;
 /** @brief Foreground in front of notes while playing. */

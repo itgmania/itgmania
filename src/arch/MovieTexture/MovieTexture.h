@@ -1,9 +1,11 @@
 #ifndef MOVIE_TEXTURE_H
 #define MOVIE_TEXTURE_H
 
+#include <string>
+
 #include "RageTexture.h"
+#include "RageTextureID.h"
 #include "arch/RageDriver.h"
-#include <map>
 
 void ForceToAscii( std::string &str );
 

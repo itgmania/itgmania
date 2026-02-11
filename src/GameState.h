@@ -1,24 +1,24 @@
 #ifndef GAMESTATE_H
 #define GAMESTATE_H
 
+#include <cstddef>
+#include <deque>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "Attack.h"
 #include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
 #include "Grade.h"
 #include "MessageManager.h"
 #include "ModsGroup.h"
-#include "RageTimer.h"
+#include "PlayerNumber.h"
 #include "PlayerOptions.h"
+#include "Preference.h"
+#include "RageTimer.h"
 #include "SongOptions.h"
 #include "SongPosition.h"
-#include "Preference.h"
-
-#include <cstddef>
-#include <deque>
-#include <map>
-#include <set>
-#include <vector>
-
 
 class Character;
 class Course;

@@ -1,19 +1,24 @@
-#include "global.h"
-#include "RageLog.h"
-#include "RageSoundReader_MP3.h"
-#include "RageTimer.h"
-#include "RageUtil.h"
-#include "RageSoundReader_Preload.h"
-#include "RageSoundReader_Resample_Good.h"
+#include <fcntl.h>
+#include <sys/fcntl.h>
+#include <unistd.h>
 
-#include "test_misc.h"
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+
+#include "RageLog.h"
+#include "RageSoundReader.h"
+#include "RageSoundReader_FileReader.h"
+#include "RageSoundReader_Preload.h"
+#include "RageSoundReader_Resample_Good.h"
+#include "RageUtil.h"
+#include "global.h"
+#include "test_misc.h"
 
 void ReadData( RageSoundReader *pReader,
 	       int iFrame,		/* start */

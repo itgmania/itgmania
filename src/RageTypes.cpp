@@ -1,8 +1,12 @@
-#include "global.h"
 #include "RageTypes.h"
-#include "LuaManager.h"
 
+#include <algorithm>
 #include <cmath>
+#include <string>
+
+#include "EnumHelper.h"
+#include "LuaManager.h"
+#include "RageUtil.h"
 
 void RageColor::PushTable( lua_State *L ) const
 {

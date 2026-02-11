@@ -1,19 +1,20 @@
-#include "global.h"
+#include <cstddef>
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "ActorUtil.h"
 #include "IniFile.h"
+#include "LuaManager.h"
 #include "RageFile.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageTypes.h"
-#include "LuaManager.h"
-#include "LuaBinding.h"
+#include "RageUtil.h"
+#include "StdString.h"
 #include "XmlFile.h"
 #include "XmlFileUtil.h"
-
-#include <cstddef>
-#include <map>
-#include <set>
-#include <vector>
 
 #define TWEEN_QUEUE_MAX 50
 

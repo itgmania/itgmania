@@ -1,20 +1,32 @@
-#include "global.h"
 #include "OptionRow.h"
-#include "RageUtil.h"
-#include "RageLog.h"
 
-#include "OptionRowHandler.h"
-#include "CommonMetrics.h"
-#include "GameState.h"
-#include "Song.h"
-#include "Course.h"
-#include "Style.h"
-#include "ActorUtil.h"
-
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "BitmapText.h"
+#include "CommonMetrics.h"
+#include "Course.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "MessageManager.h"
+#include "ModIcon.h"
+#include "OptionRowHandler.h"
+#include "OptionsCursor.h"
+#include "PlayerNumber.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "StdString.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 const std::string NEXT_ROW_NAME = "NextRow";
 const std::string EXIT_NAME = "Exit";

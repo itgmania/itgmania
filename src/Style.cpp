@@ -1,3 +1,8 @@
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
 #include "global.h"
 
 /*
@@ -13,16 +18,16 @@
  * because two players place from the same set of 4 tracks.
  */
 
-#include "Style.h"
-#include "GameState.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "InputMapper.h"
-#include "NoteData.h"
-
+#include <algorithm>
 #include <cfloat>
+#include <string>
 #include <vector>
 
+#include "GameState.h"
+#include "InputMapper.h"
+#include "NoteData.h"
+#include "RageUtil.h"
+#include "Style.h"
 
 bool Style::GetUsesCenteredArrows() const
 {

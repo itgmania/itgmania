@@ -1,5 +1,7 @@
 #ifndef ScreenMessage_H
 #define ScreenMessage_H
+
+#include <string>
 /** @brief Definition of common ScreenMessages and helpers. */
 typedef std::string ScreenMessage;
 

@@ -1,12 +1,14 @@
-#include "global.h"
 #include "AnnouncerManager.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageFile.h"
 
 #include <cstring>
+#include <string>
 #include <vector>
 
+#include "LuaManager.h"
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "StdString.h"
 
 AnnouncerManager*	ANNOUNCER = nullptr; // global and accessible from anywhere in our program
 

@@ -1,28 +1,42 @@
-#include "global.h"
-
 #include "NoteDisplay.h"
 
-#include "ActorUtil.h"
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <map>
+#include <string>
+#include <vector>
+
+#include "Actor.h"
 #include "ArrowEffects.h"
+#include "CubicSpline.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
 #include "GameState.h"
 #include "GhostArrowRow.h"
 #include "LuaBinding.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
 #include "NoteData.h"
 #include "NoteSkinManager.h"
 #include "NoteTypes.h"
+#include "PlayerNumber.h"
 #include "PlayerState.h"
 #include "Preference.h"
+#include "PrefsManager.h"
 #include "RageDisplay.h"
-#include "RageLog.h"
 #include "RageMath.h"
+#include "RageTexture.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 #include "ReceptorArrowRow.h"
 #include "Sprite.h"
 #include "Style.h"
-
-#include <cmath>
-#include <cstdint>
-#include <vector>
-
+#include "Tween.h"
+#include "global.h"
 
 static Preference<bool> g_bRenderEarlierNotesOnTop( "RenderEarlierNotesOnTop", false );
 

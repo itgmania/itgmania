@@ -1,16 +1,17 @@
-#include "global.h"
 #include "XmlFileUtil.h"
-#include "XmlFile.h"
+
+#include <cctype>
+#include <cstddef>
+#include <map>
+#include <string>
+#include <vector>
+
+#include "LuaManager.h"
 #include "RageFile.h"
 #include "RageFileDriverMemory.h"
 #include "RageUtil.h"
-#include "RageLog.h"
-#include "arch/Dialog/Dialog.h"
-#include "LuaManager.h"
-
-#include <cstddef>
-#include <vector>
-
+#include "XmlFile.h"
+#include "global.h"
 
 bool XmlFileUtil::LoadFromFileShowErrors( XNode &xml, RageFileBasic &f )
 {

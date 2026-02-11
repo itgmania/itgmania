@@ -1,6 +1,8 @@
 #ifndef ACTOR_SOUND_H
 #define ACTOR_SOUND_H
 
+#include <string>
+
 #include "Actor.h"
 #include "RageSound.h"
 /** @brief RageSound Actor interface. */

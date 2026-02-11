@@ -3,13 +3,14 @@
 #ifndef SCORE_KEEPER_NORMAL_H
 #define SCORE_KEEPER_NORMAL_H
 
-#include "ScoreKeeper.h"
-#include "Attack.h"
-#include "ScreenMessage.h"
-#include "ThemeMetric.h"
-
 #include <vector>
 
+#include "Attack.h"
+#include "GameConstantsAndTypes.h"
+#include "LuaReference.h"
+#include "ScoreKeeper.h"
+#include "ScreenMessage.h"
+#include "ThemeMetric.h"
 
 class Steps;
 class Song;

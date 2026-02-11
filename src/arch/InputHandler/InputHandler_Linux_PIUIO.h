@@ -1,11 +1,11 @@
 #ifndef INPUT_HANDLER_LINUX_PIUIO_H
 #define INPUT_HANDLER_LINUX_PIUIO_H 1
 
-#include "InputHandler.h"
-#include "RageThreads.h"
-
 #include <vector>
 
+#include "InputHandler.h"
+#include "RageInputDevice.h"
+#include "RageThreads.h"
 
 class InputHandler_Linux_PIUIO: public InputHandler
 {

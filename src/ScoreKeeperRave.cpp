@@ -1,17 +1,23 @@
-#include "global.h"
 #include "ScoreKeeperRave.h"
-#include "ThemeManager.h"
-#include "RageUtil.h"
-#include "GameState.h"
-#include "Character.h"
-#include "ScreenManager.h"
-#include "PrefsManager.h"
-#include "ThemeMetric.h"
-#include "PlayerState.h"
-#include "NoteTypes.h"
-#include "RageUtil/RandomNumbers.h"
 
 #include <cstddef>
+#include <string>
+
+#include "Attack.h"
+#include "Character.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "ScoreKeeper.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 ThemeMetric<float> ATTACK_DURATION_SECONDS	("ScoreKeeperRave","AttackDurationSeconds");
 

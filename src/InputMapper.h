@@ -1,12 +1,12 @@
 #ifndef INPUT_MAPPER_H
 #define INPUT_MAPPER_H
 
-#include "RageInputDevice.h"
-#include "GameInput.h"
-#include "PlayerNumber.h"
-
+#include <string>
 #include <vector>
 
+#include "GameInput.h"
+#include "PlayerNumber.h"
+#include "RageInputDevice.h"
 
 struct Game;
 

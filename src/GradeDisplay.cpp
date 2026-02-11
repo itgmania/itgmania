@@ -1,12 +1,16 @@
-#include "global.h"
 #include "GradeDisplay.h"
-#include "RageUtil.h"
-#include "arch/Dialog/Dialog.h"
-#include "RageLog.h"
-#include "ActorUtil.h"
-#include "ThemeManager.h"
 
 #include <cstddef>
+#include <string>
+
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "AutoActor.h"
+#include "EnumHelper.h"
+#include "Grade.h"
+#include "LuaManager.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( GradeDisplay );
 

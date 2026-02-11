@@ -1,17 +1,27 @@
-#include "global.h"
 #include "MovieTexture_Generic.h"
-#include "PrefsManager.h"
-#include "RageDisplay.h"
-#include "RageLog.h"
-#include "RageSurface.h"
-#include "RageTextureManager.h"
-#include "RageTextureRenderTarget.h"
-#include "RageTimer.h"
-#include "RageUtil.h"
-#include "Sprite.h"
 
 #include <cmath>
 #include <cstdint>
+#include <memory>
+#include <string>
+#include <thread>
+#include <utility>
+
+#include "Actor.h"
+#include "Preference.h"
+#include "RageDisplay.h"
+#include "RageLog.h"
+#include "RageSurface.h"
+#include "RageTextureID.h"
+#include "RageTextureManager.h"
+#include "RageTextureRenderTarget.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Sprite.h"
+#include "arch/MovieTexture/MovieTexture.h"
+#include "global.h"
 
 #if defined(WIN32)
 #include "archutils/Win32/ErrorStrings.h"

@@ -1,18 +1,22 @@
-#include "global.h"
 #include "WorkoutGraph.h"
-#include "RageUtil.h"
-#include "ActorUtil.h"
-#include "Sprite.h"
-#include "Trail.h"
-#include "Steps.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "StatsManager.h"
-#include "Course.h"
-#include "Style.h"
 
+#include <algorithm>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Sprite.h"
+#include "Steps.h"
+#include "ThemeManager.h"
+#include "Trail.h"
+#include "global.h"
 
 const int MAX_METERS_TO_SHOW = 50;
 

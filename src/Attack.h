@@ -3,11 +3,10 @@
 
 #define ATTACK_STARTS_NOW (-10000.f)
 
-#include "GameConstantsAndTypes.h"
-#include "PlayerNumber.h"
-
+#include <string>
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
 
 class Song;
 class PlayerState;

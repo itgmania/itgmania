@@ -13,8 +13,8 @@ extern "C" {
 #include "hidsdi.h"
 }
 
+#include <string>
 #include <vector>
-
 
 static std::string GetUSBDevicePath( int iNum )
 {

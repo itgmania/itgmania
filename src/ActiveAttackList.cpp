@@ -1,13 +1,15 @@
-#include "global.h"
 #include "ActiveAttackList.h"
-#include "RageUtil.h"
+
+#include <string>
+#include <vector>
+
+#include "Attack.h"
+#include "BitmapText.h"
 #include "GameState.h"
 #include "Inventory.h"
-#include "RageTimer.h"
 #include "PlayerOptions.h"
 #include "PlayerState.h"
-
-#include <vector>
+#include "RageUtil.h"
 
 ActiveAttackList::ActiveAttackList()
 {

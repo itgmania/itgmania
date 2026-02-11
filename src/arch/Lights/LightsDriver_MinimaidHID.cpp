@@ -1,9 +1,11 @@
 #include "LightsDriver_MinimaidHID.h"
 
-#include "Game.h"
-#include "GameState.h"
-#include "RageLog.h"
-#include "global.h"
+#include <cstring>
+
+#include "GameInput.h"
+#include "LightsManager.h"
+#include "PlayerNumber.h"
+#include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(MinimaidHID);
 // Register MinimaidHID under alias name: LinuxMinimaid for backward

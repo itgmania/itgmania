@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <ctime>
+#include <string>
 
 struct lua_State;
 class ArchHooks

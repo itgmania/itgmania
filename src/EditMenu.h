@@ -1,17 +1,21 @@
 #ifndef EDIT_MENU_H
 #define EDIT_MENU_H
 
-#include "ActorFrame.h"
-#include "FadingBanner.h"
-#include "TextBanner.h"
-#include "GameConstantsAndTypes.h"
-#include "StepsDisplay.h"
-#include "RageSound.h"
-#include "EnumHelper.h"
-#include "ThemeMetric.h"
-
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "BitmapText.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "FadingBanner.h"
+#include "GameConstantsAndTypes.h"
+#include "RageSound.h"
+#include "StepsDisplay.h"
+#include "TextBanner.h"
+#include "ThemeMetric.h"
 
 /** @brief What type of row is needed for the EditMenu? */
 enum EditMenuRow

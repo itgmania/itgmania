@@ -1,24 +1,27 @@
-#include "global.h"
 #include "ScreenServiceAction.h"
-#include "ThemeManager.h"
-#include "Bookkeeper.h"
-#include "Profile.h"
-#include "ProfileManager.h"
-#include "ScreenManager.h"
-#include "RageFileManager.h"
-#include "RageLog.h"
-#include "PrefsManager.h"
-#include "SongManager.h"
-#include "Song.h"
-#include "MemoryCardManager.h"
-#include "GameState.h"
-#include "PlayerState.h"
-#include "LocalizedString.h"
-#include "StepMania.h"
-#include "NotesLoaderSSC.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
+#include "Bookkeeper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LocalizedString.h"
+#include "MemoryCardManager.h"
+#include "NotesLoaderSSC.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageFileManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenPrompt.h"
+#include "StepMania.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 static LocalizedString BOOKKEEPING_DATA_CLEARED( "ScreenServiceAction", "Bookkeeping data cleared." );
 static std::string ClearBookkeepingData()

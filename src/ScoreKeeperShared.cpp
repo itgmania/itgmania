@@ -1,11 +1,13 @@
-#include "global.h"
 #include "ScoreKeeperShared.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "PlayerState.h"
 
 #include <vector>
 
+#include "Attack.h"
+#include "GameState.h"
+#include "NoteTypes.h"
+#include "PlayerState.h"
+#include "ScoreKeeper.h"
+#include "ScoreKeeperNormal.h"
 
 /* In Routine, we have two Players, but the master one handles all of the scoring.  The other
  * one will just receive misses for everything, and shouldn't do anything. */

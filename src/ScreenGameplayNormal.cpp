@@ -1,9 +1,11 @@
-#include "global.h"
 #include "ScreenGameplayNormal.h"
-#include "Difficulty.h"
 
 #include <vector>
 
+#include "Difficulty.h"
+#include "PlayerNumber.h"
+#include "Screen.h"
+#include "ScreenGameplay.h"
 
 REGISTER_SCREEN_CLASS( ScreenGameplayNormal );
 

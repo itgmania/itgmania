@@ -1,15 +1,18 @@
-#include "global.h"
 #include "InputHandler_Win32_ddrio.h"
 
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageInputDevice.h"
-#include "PrefsManager.h"
-
-#include <cstdint>
-#include <vector>
 #include <windows.h>
 #include <process.h>
+
+#include <cstdint>
+#include <string>
+#include <vector>
+
+#include "PrefsManager.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "arch/Lights/LightsDriver_Export.h"
+#include "global.h"
 
 typedef int (*thread_create_t)(
 	int (*proc)(void*), void* ctx, uint32_t stack_sz, unsigned int priority);

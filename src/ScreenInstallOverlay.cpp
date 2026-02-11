@@ -1,25 +1,26 @@
-#include "global.h"
 #include "ScreenInstallOverlay.h"
-#include "RageFileManager.h"
-#include "ScreenManager.h"
-#include "Preference.h"
-#include "RageLog.h"
-#include "json/json.h"
-#include "JsonUtil.h"
-#include "SpecialFiles.h"
-class Song;
-#include "SongManager.h"
-#include "GameState.h"
-#include "GameManager.h"
-#include "CommonMetrics.h"
-#include "SongManager.h"
-#include "CommandLineActions.h"
-#include "ScreenDimensions.h"
-#include "StepMania.h"
-#include "ActorUtil.h"
 
+#include <algorithm>
+
+#include "GameConstantsAndTypes.h"
+#include "PlayerNumber.h"
+#include "RageFileManager.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "global.h"
+class Song;
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "CommandLineActions.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "SongManager.h"
+#include "StepMania.h"
 
 struct PlayAfterLaunchInfo
 {

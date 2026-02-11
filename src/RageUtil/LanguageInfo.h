@@ -1,8 +1,8 @@
 #ifndef RAGEUTIL_LANGUAGEINFO_H
 #define RAGEUTIL_LANGUAGEINFO_H
 
+#include <string>
 #include <vector>
-#include "global.h"
 
 struct LanguageInfo
 {

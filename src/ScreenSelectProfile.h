@@ -3,6 +3,10 @@
 #ifndef SCREEN_SELECT_PROFILE_H
 #define SCREEN_SELECT_PROFILE_H
 
+#include "GameInput.h"
+#include "InputQueue.h"
+#include "PlayerNumber.h"
+#include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
 
 class ScreenSelectProfile : public ScreenWithMenuElements

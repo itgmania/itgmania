@@ -1,13 +1,15 @@
-#include "global.h"
 #include "RollingNumbers.h"
-#include "RageUtil.h"
-#include "GameState.h"
-#include "XmlFile.h"
-#include "ActorUtil.h"
-#include "LuaManager.h"
-#include "ThemeManager.h"
 
+#include <algorithm>
 #include <cmath>
+#include <string>
+
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "BitmapText.h"
+#include "LuaManager.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 
 REGISTER_ACTOR_CLASS( RollingNumbers );
 

@@ -1,5 +1,6 @@
-#include "global.h"
 #include "ActorProxy.h"
+
+#include "Actor.h"
 #include "ActorUtil.h"
 
 REGISTER_ACTOR_CLASS( ActorProxy );

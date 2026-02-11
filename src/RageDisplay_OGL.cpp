@@ -1,30 +1,40 @@
-#include "global.h"
-
 #include "RageDisplay_OGL.h"
-#include "RageDisplay_OGL_Helpers.h"
-using namespace RageDisplay_Legacy_Helpers;
 
-#include "RageFile.h"
-#include "RageSurface.h"
-#include "RageSurfaceUtils.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageTextureManager.h"
-#include "RageMath.h"
-#include "RageTypes.h"
-#include "RageUtil.h"
-#include "EnumHelper.h"
-#include "DisplaySpec.h"
-#include "LocalizedString.h"
-#include "RageUtil/Endian.h"
-
-#include "arch/LowLevelWindow/LowLevelWindow.h"
-
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <map>
 #include <set>
+#include <string>
+#include <utility>
 #include <vector>
+
+#include "Actor.h"
+#include "DisplaySpec.h"
+#include "EnumHelper.h"
+#include "LocalizedString.h"
+#include "ModelTypes.h"
+#include "RageDisplay.h"
+#include "RageDisplay_OGL_Helpers.h"
+#include "RageException.h"
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageMath.h"
+#include "RageSurface.h"
+#include "RageSurfaceUtils.h"
+#include "RageTextureID.h"
+#include "RageTextureManager.h"
+#include "RageTextureRenderTarget.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "RageUtil/Endian.h"
+#include "Sprite.h"
+#include "arch/LowLevelWindow/LowLevelWindow.h"
+#include "global.h"
+
+using namespace RageDisplay_Legacy_Helpers;
 
 #if defined(WINDOWS)
 #include <GL/wglew.h>

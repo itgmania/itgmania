@@ -2,6 +2,7 @@
 #define DSOUND_HELPERS 1
 
 #include <cstdint>
+#include <string>
 
 #if defined(_WIN32)
 #include <windows.h>

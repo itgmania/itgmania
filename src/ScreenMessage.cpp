@@ -1,8 +1,7 @@
-#include "global.h"
 #include "ScreenMessage.h"
-#include "RageLog.h"
 
 #include <map>
+#include <string>
 
 const ScreenMessage SM_Invalid = "";
 AutoScreenMessage(SM_None);

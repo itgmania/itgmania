@@ -1,24 +1,26 @@
 #ifndef Profile_H
 #define Profile_H
 
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
+
+#include "CourseUtil.h"  // for CourseID
+#include "DateTime.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "Grade.h"
 #include "Group.h"
 #include "HighScore.h"
-#include "DateTime.h"
-#include "SongUtil.h"	// for SongID
-#include "StepsUtil.h"	// for StepsID
-#include "CourseUtil.h"	// for CourseID
-#include "TrailUtil.h"	// for TrailID
-#include "StyleUtil.h"	// for StyleID
 #include "LuaReference.h"
 #include "PlayerNumber.h"
-
-#include <deque>
-#include <map>
-#include <set>
-#include <vector>
-
+#include "RageUtil.h"
+#include "SongUtil.h"   // for SongID
+#include "StepsUtil.h"  // for StepsID
+#include "StyleUtil.h"  // for StyleID
+#include "TrailUtil.h"  // for TrailID
 
 class XNode;
 struct lua_State;

@@ -5,16 +5,21 @@
  * a few extra sanity checks are made to check file modes.
  */
 
-#include "global.h"
-#include "RageFileBasic.h"
 #include "RageFile.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageFileDriver.h"
-#include "RageUtil/Endian.h"
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <string>
+
+#include "LuaManager.h"
+#include "RageFileBasic.h"
+#include "RageFileDriver.h"
+#include "RageFileManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RageUtil/Endian.h"
+#include "global.h"
 
 RageFile::RageFile(): m_File(nullptr), m_Mode(0) {}
 

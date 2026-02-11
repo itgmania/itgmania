@@ -1,9 +1,8 @@
 #ifndef PID_THREAD_HELPERS_H
 #define PID_THREAD_HELPERS_H
 
-#include "global.h"
-
 #include <cstdint>
+#include <string>
 
 std::string ThreadsVersion();
 

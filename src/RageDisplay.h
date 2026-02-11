@@ -3,14 +3,14 @@
 #ifndef RAGEDISPLAY_H
 #define RAGEDISPLAY_H
 
-#include "RageTypes.h"
-#include "ModelTypes.h"
-
 #include <cstddef>
 #include <cstdint>
 #include <set>
+#include <string>
 #include <vector>
 
+#include "ModelTypes.h"
+#include "RageTypes.h"
 
 class DisplaySpec;
 typedef std::set<DisplaySpec> DisplaySpecs;

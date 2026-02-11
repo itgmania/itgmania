@@ -1,8 +1,8 @@
 #ifndef CommandLineActions_H
 #define CommandLineActions_H
 
+#include <string>
 #include <vector>
-
 
 class LoadingWindow;
 

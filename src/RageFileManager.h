@@ -1,10 +1,9 @@
 #ifndef RAGE_FILE_MANAGER_H
 #define RAGE_FILE_MANAGER_H
 
+#include <string>
 #include <unordered_set>
 #include <vector>
-
-#include "global.h"
 
 /** @brief Constants for working with the RageFileManager. */
 namespace RageFileManagerUtil

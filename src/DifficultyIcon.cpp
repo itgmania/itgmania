@@ -1,15 +1,19 @@
-#include "global.h"
 #include "DifficultyIcon.h"
-#include "RageUtil.h"
-#include "GameConstantsAndTypes.h"
-#include "RageLog.h"
-#include "Steps.h"
-#include "GameState.h"
-#include "RageDisplay.h"
-#include "Trail.h"
+
+#include <string>
+
+#include "Actor.h"
 #include "ActorUtil.h"
-#include "XmlFile.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameState.h"
 #include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "RageUtil.h"
+#include "Sprite.h"
+#include "Steps.h"
+#include "Trail.h"
+#include "XmlFile.h"
 
 REGISTER_ACTOR_CLASS(DifficultyIcon);
 

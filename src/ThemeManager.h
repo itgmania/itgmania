@@ -1,12 +1,13 @@
 #ifndef THEMEMANAGER_H
 #define THEMEMANAGER_H
 
-#include "RageTypes.h"
-#include "LuaReference.h"
-
 #include <set>
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "LuaReference.h"
+#include "RageTypes.h"
 
 class IThemeMetric;
 class IniFile;

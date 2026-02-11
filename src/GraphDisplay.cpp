@@ -1,19 +1,23 @@
-#include "global.h"
 #include "GraphDisplay.h"
-#include "ThemeManager.h"
-#include "RageTextureManager.h"
-#include "RageDisplay.h"
-#include "ActorUtil.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageMath.h"
-#include "StageStats.h"
-#include "Song.h"
-#include "XmlFile.h"
 
+#include <algorithm>
 #include <cmath>
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "LuaManager.h"
+#include "RageDisplay.h"
+#include "RageMath.h"
+#include "RageTexture.h"
+#include "RageTextureManager.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "StageStats.h"
+#include "ThemeManager.h"
 
 //#define DIVIDE_LINE_WIDTH			THEME->GetMetricI(m_sName,"TexturedBottomHalf")
 REGISTER_ACTOR_CLASS( GraphDisplay );

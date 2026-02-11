@@ -1,17 +1,17 @@
-#include "global.h"
 #include "MemoryCardDriverThreaded_Folder.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "PlayerNumber.h"
-#include "MemoryCardManager.h"
 
-#include <bitset>
-#include <climits>
-#include <cstdlib>
-#include <vector>
-#include <sys/types.h>
 #include <sys/stat.h>
 
+#include <cerrno>
+#include <cstdlib>
+#include <string>
+#include <vector>
+
+#include "MemoryCardManager.h"
+#include "PlayerNumber.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "arch/MemoryCard/MemoryCardDriver.h"
 
 static int g_currentSerial = 0;
 

@@ -2,13 +2,16 @@
 #ifndef DIFFICULTY_LIST_H
 #define DIFFICULTY_LIST_H
 
+#include <vector>
+
+#include "Actor.h"
 #include "ActorFrame.h"
+#include "AutoActor.h"
+#include "Difficulty.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "StepsDisplay.h"
 #include "ThemeMetric.h"
-
-#include <vector>
-
 
 class Song;
 class Steps;

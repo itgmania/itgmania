@@ -1,20 +1,29 @@
-#include "global.h"
 #include "MemoryCardManager.h"
-#include "arch/MemoryCard/MemoryCardDriver.h"	// for UsbStorageDevice
-#include "ScreenManager.h"
-#include "ThemeManager.h"
-#include "RageLog.h"
-#include "RageFileManager.h"
-#include "RageFileDriver.h"
-#include "RageFileDriverTimeout.h"
-#include "MessageManager.h"
-#include "RageUtil_WorkerThread.h"
-#include "arch/MemoryCard/MemoryCardDriver_Null.h"
-#include "LuaManager.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "Preference.h"
+#include "RageFileDriver.h"
+#include "RageFileDriverTimeout.h"
+#include "RageFileManager.h"
+#include "RageLog.h"
+#include "RageSound.h"
+#include "RageUtil.h"
+#include "RageUtil_WorkerThread.h"
+#include "ScreenManager.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "arch/MemoryCard/MemoryCardDriver.h"  // for UsbStorageDevice
+#include "arch/MemoryCard/MemoryCardDriver_Null.h"
+#include "global.h"
 
 MemoryCardManager*	MEMCARDMAN = nullptr;	// global and accessible from anywhere in our program
 

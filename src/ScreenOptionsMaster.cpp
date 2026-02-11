@@ -1,24 +1,28 @@
-#include "global.h"
-
 #include "ScreenOptionsMaster.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "ThemeManager.h"
-#include "GameManager.h"
-#include "GameState.h"
-#include "ScreenManager.h"
-#include "SongManager.h"
-#include "ProfileManager.h"
-#include "PrefsManager.h"
-#include "StepMania.h"
-#include "RageSoundManager.h"
-#include "OptionRowHandler.h"
-#include "ScreenOptionsMasterPrefs.h"
-#include "CommonMetrics.h"
-#include "GameLoop.h"
 
-#include <array>
+#include <string>
 #include <vector>
+
+#include "Command.h"
+#include "GameLoop.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "OptionRowHandler.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "ProfileManager.h"
+#include "RageLog.h"
+#include "RageSoundManager.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
+#include "ScreenOptionsMasterPrefs.h"
+#include "SongManager.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 #define LINE_NAMES			THEME->GetMetric (m_sName,"LineNames")
 #define LINE(sLineName)		THEME->GetMetric (m_sName,ssprintf("Line%s",sLineName.c_str()))

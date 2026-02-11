@@ -1,10 +1,12 @@
-#include "global.h"
 #include "RageFileDriver.h"
-#include "RageUtil.h"
-#include "RageUtil_FileDB.h"
 
+#include <string>
 #include <vector>
 
+#include "RageFileManager.h"
+#include "RageUtil.h"
+#include "RageUtil_FileDB.h"
+#include "StdString.h"
 
 RageFileDriver::~RageFileDriver()
 {

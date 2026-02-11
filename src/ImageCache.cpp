@@ -1,28 +1,32 @@
-#include "global.h"
-
 #include "ImageCache.h"
-#include "RageDisplay.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageSurface_Load.h"
-#include "SongCacheIndex.h"
-#include "Sprite.h"
-#include "PrefsManager.h"
-#include "RageDisplay.h"
-#include "RageTexture.h"
-#include "RageTextureManager.h"
-#include "RageThreads.h"
-#include "RageSurface.h"
-#include "RageSurfaceUtils.h"
-#include "RageSurfaceUtils_Palettize.h"
-#include "RageSurfaceUtils_Dither.h"
-#include "RageSurfaceUtils_Zoom.h"
-#include "SpecialFiles.h"
-#include "Banner.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <map>
+#include <string>
+
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "RageDisplay.h"
+#include "RageLog.h"
+#include "RageSurface.h"
+#include "RageSurfaceUtils.h"
+#include "RageSurfaceUtils_Dither.h"
+#include "RageSurfaceUtils_Palettize.h"
+#include "RageSurfaceUtils_Zoom.h"
+#include "RageSurface_Load.h"
+#include "RageTexture.h"
+#include "RageTextureID.h"
+#include "RageTextureManager.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "SongCacheIndex.h"
+#include "SpecialFiles.h"
+#include "Sprite.h"
+#include "XmlFile.h"
+#include "global.h"
 
 static Preference<bool> g_bPalettedImageCache( "PalettedImageCache", false );
 

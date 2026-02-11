@@ -1,7 +1,10 @@
-#include "global.h"
-
 #include "LanguageInfo.h"
+
+#include <string>
+#include <vector>
+
 #include "RageUtil.h"
+#include "StdString.h"
 
 /* ISO-639-1 codes: http://www.loc.gov/standards/iso639-2/php/code_list.php
  * We don't use 3-letter codes, so we don't bother supporting them. */

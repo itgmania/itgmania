@@ -1,12 +1,13 @@
 #ifndef TRAIL_H
 #define TRAIL_H
 
-#include "Attack.h"
-#include "RadarValues.h"
-#include "Difficulty.h"
-
+#include <string>
 #include <vector>
 
+#include "Attack.h"
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
+#include "RadarValues.h"
 
 class Song;
 class Steps;

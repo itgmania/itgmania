@@ -3,10 +3,12 @@
 #ifndef INPUT_FILTER_H
 #define INPUT_FILTER_H
 
-#include "RageInputDevice.h"
-
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "RageInputDevice.h"
+#include "RageTimer.h"
 
 enum InputEventType
 {

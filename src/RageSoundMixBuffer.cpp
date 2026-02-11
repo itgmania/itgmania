@@ -1,4 +1,3 @@
-#include "global.h"
 #include "RageSoundMixBuffer.h"
 
 #include <cmath>

@@ -1,18 +1,37 @@
-#include "global.h"
-#include "PeriodicCaller.h"
 #include "ScreenMapControllers.h"
-#include "ScreenManager.h"
-#include "ScreenPrompt.h"
-#include "RageLog.h"
-#include "RageInput.h"
-#include "InputMapper.h"
-#include "ThemeManager.h"
-#include "ScreenDimensions.h"
-#include "InputEventPlus.h"
-#include "LocalizedString.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <set>
+#include <string>
 #include <vector>
+
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "ActorScroller.h"
+#include "ActorUtil.h"
+#include "BitmapText.h"
+#include "EnumHelper.h"
+#include "GameInput.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "LocalizedString.h"
+#include "MessageManager.h"
+#include "PeriodicCaller.h"
+#include "PlayerNumber.h"
+#include "RageInput.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenPrompt.h"
+#include "ScreenWithMenuElements.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 AutoScreenMessage(SM_DoSaveAndExit);
 #define BUTTONS_TO_MAP			THEME->GetMetric ( m_sName, "ButtonsToMap" )

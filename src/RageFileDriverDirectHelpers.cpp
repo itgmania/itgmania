@@ -1,12 +1,16 @@
-#include "global.h"
 #include "RageFileDriverDirectHelpers.h"
-#include "RageUtil.h"
-#include "RageLog.h"
 
 #include <cerrno>
+#include <cstring>
+#include <set>
+#include <string>
 #include <vector>
-#include <sys/types.h>
-#include <sys/stat.h>
+
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "RageUtil_FileDB.h"
+#include "StdString.h"
+#include "global.h"
 
 #if defined(_WIN32)
     #include <windows.h>

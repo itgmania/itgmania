@@ -1,23 +1,32 @@
-#include "global.h"
 #include "ScreenEditMenu.h"
-#include "CommonMetrics.h"
+
+#include <string>
+
+#include "ActorUtil.h"
+#include "Difficulty.h"
+#include "EditMenu.h"
 #include "GameConstantsAndTypes.h"
 #include "GameManager.h"
 #include "GameSoundManager.h"
 #include "GameState.h"
 #include "LocalizedString.h"
+#include "PlayerNumber.h"
 #include "RageFile.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
+#include "Screen.h"
 #include "ScreenManager.h"
+#include "ScreenMessage.h"
 #include "ScreenPrompt.h"
 #include "ScreenTextEntry.h"
+#include "ScreenWithMenuElements.h"
 #include "Song.h"
 #include "SongManager.h"
 #include "SongUtil.h"
 #include "Steps.h"
 #include "ThemeManager.h"
+#include "global.h"
 
 static const std::string TEMP_FILE_NAME = "--temp--";
 

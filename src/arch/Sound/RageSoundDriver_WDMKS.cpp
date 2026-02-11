@@ -1,14 +1,16 @@
-#include "global.h"
 #include "RageSoundDriver_WDMKS.h"
 
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "PrefsManager.h"
-#include "archutils/Win32/ErrorStrings.h"
-
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <vector>
+
+#include "PrefsManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "archutils/Win32/ErrorStrings.h"
+#include "global.h"
 
 #define _INC_MMREG
 #define _NTRTL_ /* Turn off default definition of DEFINE_GUIDEX */

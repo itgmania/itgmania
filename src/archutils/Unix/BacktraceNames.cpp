@@ -1,6 +1,3 @@
-/* for dladdr: */
-#define __USE_GNU
-#include "global.h"
 #include "BacktraceNames.h"
 
 #include <cerrno>
@@ -10,9 +7,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
+#include <string>
 
 #include "RageUtil.h"
 

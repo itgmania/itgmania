@@ -1,10 +1,12 @@
 #ifndef ScreenGameplayLesson_H
 #define ScreenGameplayLesson_H
 
-#include "ScreenGameplayNormal.h"
-
 #include <vector>
 
+#include "AutoActor.h"
+#include "InputEventPlus.h"
+#include "ScreenGameplayNormal.h"
+#include "ScreenMessage.h"
 
 class CourseEntry;
 

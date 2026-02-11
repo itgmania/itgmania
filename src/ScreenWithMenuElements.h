@@ -1,13 +1,16 @@
 #ifndef ScreenWithMenuElements_H
 #define ScreenWithMenuElements_H
 
-#include "Screen.h"
-#include "Transition.h"
-#include "ActorUtil.h"
-#include "ThemeMetric.h"
-
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "AutoActor.h"
+#include "PlayerNumber.h"
+#include "Screen.h"
+#include "ScreenMessage.h"
+#include "ThemeMetric.h"
+#include "Transition.h"
 
 class MenuTimer;
 class MemoryCardDisplay;

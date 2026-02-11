@@ -1,13 +1,15 @@
-#include "global.h"
 #include "Threads_Win32.h"
-#include "RageUtil.h"
+
+#include <algorithm>
+#include <cstdint>
+#include <memory>
+#include <mutex>
+
 #include "RageThreads.h"
 #include "RageTimer.h"
+#include "RageUtil.h"
 #include "archutils/Win32/ErrorStrings.h"
-
-#include <cstdint>
-#include <mutex>
-#include <memory> 
+#include "global.h"
 
 const int MAX_THREADS=128;
 

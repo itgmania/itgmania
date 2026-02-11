@@ -1,18 +1,26 @@
-#include "global.h"
 #include "StepsUtil.h"
-#include "Steps.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "Song.h"
-#include "SongManager.h"
-#include "GameManager.h"
-#include "XmlFile.h"
-#include "UnlockManager.h"
-#include "SongUtil.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <map>
+#include <string>
 #include <vector>
 
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "PlayerNumber.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "SongUtil.h"
+#include "StdString.h"
+#include "Steps.h"
+#include "UnlockManager.h"
+#include "XmlFile.h"
+#include "global.h"
 
 bool StepsCriteria::Matches( const Song *pSong, const Steps *pSteps ) const
 {

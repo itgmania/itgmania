@@ -1,13 +1,16 @@
-#include "global.h"
 #include "InputHandler_Linux_PIUIO.h"
-#include "RageLog.h"
-#include "RageUtil.h"
+
+#include <sys/fcntl.h>
 
 #include <cerrno>
-#include <cstdio>
 #include <cstring>
-#include <set>
 #include <vector>
+
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "arch/InputHandler/InputHandler.h"
 
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
@@ -16,7 +19,6 @@
 #include <fcntl.h>
 #endif
 
-#include <sys/types.h>
 #include <sys/stat.h>
 
 

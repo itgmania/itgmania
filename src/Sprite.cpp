@@ -1,24 +1,29 @@
-#include "global.h"
 #include "Sprite.h"
-#include "RageTextureManager.h"
-#include "XmlFile.h"
-#include "RageLog.h"
-#include "RageDisplay.h"
-#include "RageTexture.h"
-#include "RageTimer.h"
-#include "RageUtil.h"
-#include "ActorUtil.h"
-#include "LuaBinding.h"
-#include "LuaManager.h"
-#include "ImageCache.h"
-#include "ThemeMetric.h"
-#include <numeric>
 
+#include <algorithm>
 #include <cassert>
 #include <cfloat>
 #include <cmath>
 #include <cstddef>
+#include <cstring>
+#include <string>
 #include <vector>
+
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "EnumHelper.h"
+#include "ImageCache.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "RageDisplay.h"
+#include "RageTexture.h"
+#include "RageTextureID.h"
+#include "RageTextureManager.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
+#include "XmlFile.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( Sprite );
 

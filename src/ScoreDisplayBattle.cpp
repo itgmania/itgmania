@@ -1,14 +1,18 @@
-#include "global.h"
 #include "ScoreDisplayBattle.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "PlayerState.h"
-#include "ActorUtil.h"
 
+#include <string>
 #include <vector>
+
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "Attack.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "PlayerState.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "ScoreDisplay.h"
+#include "ThemeManager.h"
 
 #define ITEM_X( i )				THEME->GetMetricF("ScoreDisplayBattle",ssprintf("Item%dX",i+1))
 #define ITEM_Y( i )				THEME->GetMetricF("ScoreDisplayBattle",ssprintf("Item%dY",i+1))

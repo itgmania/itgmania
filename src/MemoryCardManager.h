@@ -1,14 +1,14 @@
 #ifndef MemoryCardManager_H
 #define MemoryCardManager_H
 
-#include "GameConstantsAndTypes.h"	// for MemoryCardState
-#include "PlayerNumber.h"
-#include "RageSound.h"
-#include "arch/MemoryCard/MemoryCardDriver.h"
-#include "Preference.h"
-
+#include <string>
 #include <vector>
 
+#include "GameConstantsAndTypes.h"  // for MemoryCardState
+#include "PlayerNumber.h"
+#include "Preference.h"
+#include "RageSound.h"
+#include "arch/MemoryCard/MemoryCardDriver.h"
 
 extern const std::string MEM_CARD_MOUNT_POINT[NUM_PLAYERS];
 

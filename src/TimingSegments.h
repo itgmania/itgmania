@@ -1,11 +1,12 @@
 #ifndef TIMING_SEGMENTS_H
 #define TIMING_SEGMENTS_H
 
-#include "NoteTypes.h" // Converting rows to beats and vice~versa.
-
 #include <cmath>
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "NoteTypes.h"  // Converting rows to beats and vice~versa.
 
 enum TimingSegmentType
 {

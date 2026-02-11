@@ -2,6 +2,9 @@
 #define GRAPHICS_WINDOW_H
 
 #include <windows.h>
+
+#include <string>
+
 #include "DisplaySpec.h"
 class VideoModeParams;
 class DisplayResolution;

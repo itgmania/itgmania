@@ -1,8 +1,13 @@
-#include "global.h"
 #include "EnumHelper.h"
+
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "LuaManager.h"
 #include "RageUtil.h"
-#include "RageLog.h"
+#include "StdString.h"
+#include "global.h"
 
 int CheckEnum( lua_State *L, LuaReference &table, int iPos, int iInvalid, const char *szType, bool bAllowInvalid, bool bAllowAnything )
 {

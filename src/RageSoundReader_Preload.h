@@ -3,6 +3,8 @@
 #ifndef RAGE_SOUND_READER_PRELOAD
 #define RAGE_SOUND_READER_PRELOAD
 
+#include <string>
+
 #include "RageSoundReader.h"
 #include "RageUtil_AutoPtr.h"
 

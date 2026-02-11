@@ -1,8 +1,10 @@
 #ifndef TRAIL_UTIL_H
 #define TRAIL_UTIL_H
 
-#include "GameConstantsAndTypes.h"
+#include <string>
+
 #include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
 
 class Song;
 class Trail;

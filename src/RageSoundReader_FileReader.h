@@ -3,6 +3,8 @@
 #ifndef RAGE_SOUND_READER_FILE_READER_H
 #define RAGE_SOUND_READER_FILE_READER_H
 
+#include <string>
+
 #include "RageSoundReader.h"
 #include "RageUtil_AutoPtr.h"
 class RageFileBasic;

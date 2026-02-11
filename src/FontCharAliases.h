@@ -1,6 +1,8 @@
 #ifndef FONT_CHAR_ALIASES
 #define FONT_CHAR_ALIASES
 
+#include <string>
+
 /** @brief Provides support for nonstandard characters in text. */
 namespace FontCharAliases
 {

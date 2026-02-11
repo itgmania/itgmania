@@ -3,9 +3,10 @@
 #ifndef METER_DISPLAY_H
 #define METER_DISPLAY_H
 
+#include <string>
+
 #include "ActorFrame.h"
 #include "AutoActor.h"
-
 
 class MeterDisplay : public ActorFrame
 {

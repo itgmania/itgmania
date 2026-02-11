@@ -1,13 +1,19 @@
-#include "global.h"
 #include "RageFileDriverMemory.h"
-#include "RageFile.h"
-#include "RageUtil.h"
-#include "RageUtil_FileDB.h"
 
+#include <algorithm>
 #include <cerrno>
 #include <cstddef>
+#include <cstring>
+#include <string>
 #include <vector>
 
+#include "RageFile.h"
+#include "RageFileBasic.h"
+#include "RageFileDriver.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "RageUtil_FileDB.h"
+#include "global.h"
 
 struct RageFileObjMemFile
 {

@@ -3,9 +3,10 @@
 #ifndef RAGE_FILE_DRIVER_READ_AHEAD_H
 #define RAGE_FILE_DRIVER_READ_AHEAD_H
 
-#include "RageFileBasic.h"
-
 #include <cstddef>
+#include <string>
+
+#include "RageFileBasic.h"
 
 class RageFileDriverReadAhead: public RageFileObj
 {

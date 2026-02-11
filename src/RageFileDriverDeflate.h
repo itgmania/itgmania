@@ -3,10 +3,11 @@
 #ifndef RAGE_FILE_DRIVER_DEFLATE_H
 #define RAGE_FILE_DRIVER_DEFLATE_H
 
-#include "RageFileBasic.h"
-
 #include <cstddef>
 #include <cstdint>
+#include <string>
+
+#include "RageFileBasic.h"
 
 typedef struct z_stream_s z_stream;
 

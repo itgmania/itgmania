@@ -1,10 +1,11 @@
-#include "global.h"
 #include <stdio.h>
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#include <sys/types.h>
-#include <sys/stat.h>
+
+#include <cstring>
+
+#include "EnumHelper.h"
+#include "GameInput.h"
+#include "LightsManager.h"
+#include "StdString.h"
 
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>

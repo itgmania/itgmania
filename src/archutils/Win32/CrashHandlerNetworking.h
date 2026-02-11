@@ -1,8 +1,10 @@
 #ifndef CRASH_HANDLER_NETWORKING_H
 #define CRASH_HANDLER_NETWORKING_H
 
-#include "RageThreads.h"
 #include <map>
+#include <string>
+
+#include "RageThreads.h"
 
 class NetworkStream;
 

@@ -4,8 +4,10 @@
 #define RAGE_DISPLAY_NULL_H
 
 #include <cstdint>
+#include <string>
 
 #include "RageDisplay.h"
+#include "RageTypes.h"
 
 class RageDisplay_Null: public RageDisplay
 {

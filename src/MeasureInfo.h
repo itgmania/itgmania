@@ -1,7 +1,9 @@
 #ifndef MEASURE_INFO_H
 #define MEASURE_INFO_H
 
-#include "GameConstantsAndTypes.h"
+#include <string>
+#include <vector>
+
 #include "NoteData.h"
 #include "TimingData.h"
 

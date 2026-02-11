@@ -1,8 +1,10 @@
-#include "global.h"
-
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
+#include <string>
+
+#include "global.h"
 
 #if defined(_WIN32)
 #include <tchar.h>

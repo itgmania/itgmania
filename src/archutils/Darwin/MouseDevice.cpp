@@ -1,8 +1,14 @@
-#include "global.h"
 #include "MouseDevice.h"
 
+#include <algorithm>
+#include <unordered_map>
 #include <vector>
 
+#include "InputFilter.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
 
 Mouse::Mouse() : id( InputDevice_Invalid ),
 				x_axis( 0 ), y_axis( 0 ), z_axis( 0 ),

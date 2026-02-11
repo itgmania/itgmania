@@ -7,6 +7,8 @@
 #pragma warning( push )
 #pragma warning( disable : 4565 )
 #include <tomcrypt.h>
+
+#include <string>
 #pragma warning ( pop )
 
 class PRNGWrapper

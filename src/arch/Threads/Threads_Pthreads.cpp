@@ -1,14 +1,21 @@
-#include "global.h"
-#include "Threads_Pthreads.h"
-#include "RageLog.h"
-#include "RageTimer.h"
-#include "RageThreads.h"
-#include "RageUtil.h"
+#include "arch/Threads/Threads.h"
+
+#include <pthread.h>
+#include <sys/time.h>
 
 #include <cerrno>
 #include <cstddef>
 #include <cstdint>
-#include <sys/time.h>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
+
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "Threads_Pthreads.h"
+#include "global.h"
 
 #if defined(UNIX)
 #include "archutils/Unix/RunningUnderValgrind.h"

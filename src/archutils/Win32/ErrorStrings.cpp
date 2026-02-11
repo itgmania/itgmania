@@ -1,8 +1,12 @@
-#include "global.h"
 #include "ErrorStrings.h"
-#include "RageUtil.h"
 
 #include <windows.h>
+
+#include <string>
+
+#include "RageUtil.h"
+#include "StdString.h"
+#include "global.h"
 
 std::string werr_ssprintf( int err, const char *fmt, ... )
 {

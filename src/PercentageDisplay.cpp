@@ -1,16 +1,22 @@
-#include "global.h"
-
 #include "PercentageDisplay.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "PrefsManager.h"
-#include "ActorUtil.h"
-#include "RageLog.h"
-#include "StageStats.h"
-#include "PlayerState.h"
-#include "XmlFile.h"
-#include "Course.h"
 
+#include <algorithm>
+#include <string>
+
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "Course.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "PlayerStageStats.h"
+#include "PlayerState.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "XmlFile.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( PercentageDisplay );
 

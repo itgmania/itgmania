@@ -1,14 +1,15 @@
 #ifndef RAGE_SOUND_PULSEAUDIO_H
 #define RAGE_SOUND_PULSEAUDIO_H
 
-#include "RageSound.h"
-#include "RageThreads.h"
-#include "RageSoundDriver.h"
+#include <pulse/pulseaudio.h>
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 
-#include <pulse/pulseaudio.h>
+#include "RageSound.h"
+#include "RageSoundDriver.h"
+#include "RageThreads.h"
 
 class RageSoundDriver_PulseAudio : public RageSoundDriver
 {

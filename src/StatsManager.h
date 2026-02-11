@@ -1,10 +1,12 @@
 #ifndef StatsManager_H
 #define StatsManager_H
 
-#include "StageStats.h"
-
+#include <set>
 #include <vector>
 
+#include "PlayerNumber.h"
+#include "PlayerStageStats.h"
+#include "StageStats.h"
 
 /** @brief Managed non-persisted statistics. */
 class StatsManager

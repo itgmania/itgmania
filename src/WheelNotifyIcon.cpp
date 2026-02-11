@@ -1,13 +1,14 @@
-#include "global.h"
 #include "WheelNotifyIcon.h"
-#include "RageUtil.h"
-#include "GameConstantsAndTypes.h"
-#include "MusicWheel.h"
-#include "WheelNotifyIcon.h"
-#include "RageTimer.h"
-#include "ThemeManager.h"
 
-#include <cmath>
+#include <algorithm>
+#include <cstdint>
+
+#include "RageUtil.h"
+#include "Sprite.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "WheelNotifyIcon.h"
+#include "global.h"
 
 /* todo: replace this entire thing with a set of AutoActors and a Scroller.
  * In reality, everything except the Beginner/Training icon can be replicated

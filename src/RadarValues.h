@@ -1,6 +1,9 @@
 #ifndef RARAR_VALUES_H
 #define RARAR_VALUES_H
 
+#include <string>
+
+#include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "ThemeMetric.h"
 

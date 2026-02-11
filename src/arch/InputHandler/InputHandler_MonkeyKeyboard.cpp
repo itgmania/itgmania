@@ -1,11 +1,12 @@
-#include "global.h"
 #include "InputHandler_MonkeyKeyboard.h"
-#include "RageUtil.h"
-#include "PrefsManager.h"
-#include "RageUtil/RandomNumbers.h"
 
 #include <vector>
 
+#include "PrefsManager.h"
+#include "RageInputDevice.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "arch/InputHandler/InputHandler.h"
 
 InputHandler_MonkeyKeyboard::InputHandler_MonkeyKeyboard()
 {

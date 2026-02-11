@@ -3,6 +3,9 @@
 #ifndef RAGE_SOUND_READER_PITCH_CHANGE_H
 #define RAGE_SOUND_READER_PITCH_CHANGE_H
 
+#include <string>
+
+#include "RageSoundReader.h"
 #include "RageSoundReader_Filter.h"
 class RageSoundReader_SpeedChange;
 class RageSoundReader_Resample_Good;

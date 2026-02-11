@@ -1,14 +1,15 @@
 #ifndef RAGE_SOUND_DRIVER
 #define RAGE_SOUND_DRIVER
 
-#include "RageUtil.h"
-#include "arch/RageDriver.h"
+#include <cstdint>
+#include <string>
+#include <vector>
+
+#include "RageSoundConstants.h"
 #include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil_CircularBuffer.h"
-#include "RageSoundConstants.h"
-
-#include <cstdint>
+#include "arch/RageDriver.h"
 
 class RageSoundBase;
 class RageTimer;

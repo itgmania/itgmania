@@ -1,10 +1,10 @@
 #ifndef ANNOUNCER_MANAGER_H
 #define ANNOUNCER_MANAGER_H
 
-#include "RageTypes.h"
-
+#include <string>
 #include <vector>
 
+#include "LuaManager.h"
 
 /** @brief The commentators who say seemlingly random things during gameplay. */
 class AnnouncerManager

@@ -1,15 +1,20 @@
-#include "global.h"
 #include "CommonMetrics.h"
-#include "RageUtil.h"
 
-#include "GameManager.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "ProductInfo.h"
-#include "LuaManager.h"
-
+#include <algorithm>
+#include <string>
 #include <vector>
 
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "LocalizedString.h"
+#include "LuaManager.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 ThemeMetric<std::string>		CommonMetrics::OPERATOR_MENU_SCREEN		("Common","OperatorMenuScreen");
 ThemeMetric<std::string>		CommonMetrics::FIRST_ATTRACT_SCREEN		("Common","FirstAttractScreen");

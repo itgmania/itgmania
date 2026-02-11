@@ -1,6 +1,8 @@
 #ifndef DIFFICULTY_H
 #define DIFFICULTY_H
 
+#include <string>
+
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 class Steps;

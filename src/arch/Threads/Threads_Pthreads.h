@@ -1,12 +1,9 @@
 #ifndef THREADS_PTHREADS_H
 #define THREADS_PTHREADS_H
 
-#include "Threads.h"
-
 #include <cstdint>
 
-#include <pthread.h>
-#include <semaphore.h>
+#include "Threads.h"
 
 class ThreadImpl_Pthreads: public ThreadImpl
 {

@@ -1,11 +1,12 @@
-#include "global.h"
 #include "MeasureInfo.h"
-#include "NoteData.h"
-#include "RageLog.h"
-#include "LocalizedString.h"
-#include "LuaBinding.h"
-#include "GameState.h"
 
+#include <string>
+#include <vector>
+
+#include "GameState.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "RageUtil.h"
 
 std::string MeasureInfo::ToString() const
 {

@@ -1,18 +1,23 @@
-#include "global.h"
 #include "ScreenSystemLayer.h"
-#include "ScreenManager.h"
-#include "PrefsManager.h"
-#include "ThemeManager.h"
-#include "ActorUtil.h"
+
+#include <string>
+
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
 #include "GameState.h"
+#include "LocalizedString.h"
+#include "LuaManager.h"
 #include "MemoryCardManager.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
 #include "Profile.h"
 #include "ProfileManager.h"
-#include "RageLog.h"
-#include "ScreenDimensions.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ThemeManager.h"
 #include "ThemeMetric.h"
-#include "LocalizedString.h"
-#include "PlayerState.h"
+#include "global.h"
 
 namespace
 {

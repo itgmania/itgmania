@@ -1,10 +1,10 @@
 #ifndef SCORE_KEEPER_H
 #define SCORE_KEEPER_H
 
-#include "GameConstantsAndTypes.h"
-
+#include <string>
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
 
 class NoteData;
 class Inventory;

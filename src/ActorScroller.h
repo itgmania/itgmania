@@ -1,10 +1,15 @@
 #ifndef ActorScroller_H
 #define ActorScroller_H
 
+#include <string>
+
 #include "ActorFrame.h"
-#include "Quad.h"
-class XNode;
 #include "LuaExpressionTransform.h"
+#include "LuaReference.h"
+#include "Quad.h"
+
+class XNode;
+
 /** @brief ActorFrame that moves its children. */
 class ActorScroller : public ActorFrame
 {

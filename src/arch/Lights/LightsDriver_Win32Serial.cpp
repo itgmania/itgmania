@@ -1,9 +1,11 @@
-#include "global.h"
 #include "LightsDriver_Win32Serial.h"
-#include "windows.h"
-#include "RageUtil.h"
 
 #include <cstdint>
+#include <string>
+
+#include "RageUtil.h"
+#include "global.h"
+#include "windows.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(Win32Serial);
 

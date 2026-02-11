@@ -1,10 +1,11 @@
-#include "global.h"
 #include "FontCharAliases.h"
-#include "Font.h"
-#include "RageUtil.h"
-#include "RageLog.h"
 
 #include <map>
+#include <string>
+
+#include "Font.h"
+#include "RageUtil.h"
+#include "StdString.h"
 
 namespace {
 char sstolower(char ch) noexcept {

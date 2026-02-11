@@ -1,18 +1,20 @@
-#include "global.h"
-
 #include "ScreenOptionsEditProfile.h"
-#include "ScreenManager.h"
-#include "ProfileManager.h"
-#include "ScreenPrompt.h"
-#include "RageUtil.h"
-#include "GameState.h"
-#include "Profile.h"
-#include "Character.h"
-#include "CharacterManager.h"
-#include "OptionRowHandler.h"
 
+#include <string>
 #include <vector>
 
+#include "Character.h"
+#include "CharacterManager.h"
+#include "GameState.h"
+#include "OptionRowHandler.h"
+#include "PlayerNumber.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
+#include "global.h"
 
 enum EditProfileRow
 {

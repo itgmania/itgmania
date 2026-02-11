@@ -1,11 +1,11 @@
 #ifndef StageStats_H
 #define StageStats_H
 
-#include "PlayerNumber.h"
-#include "PlayerStageStats.h"
-
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
+#include "PlayerNumber.h"
+#include "PlayerStageStats.h"
 
 class Song;
 class Style;

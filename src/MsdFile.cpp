@@ -12,11 +12,11 @@
  * we'll recover.
  */
 
-#include "global.h"
 #include "MsdFile.h"
+
+#include <string>
+
 #include "RageFile.h"
-#include "RageLog.h"
-#include "RageUtil.h"
 
 void MsdFile::AddParam( const char *buf, int len )
 {

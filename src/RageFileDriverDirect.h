@@ -1,10 +1,12 @@
 #ifndef RAGE_FILE_DRIVER_DIRECT_H
 #define RAGE_FILE_DRIVER_DIRECT_H
 
-#include "RageFile.h"
-#include "RageFileDriver.h"
-
 #include <cstddef>
+#include <string>
+
+#include "RageFile.h"
+#include "RageFileBasic.h"
+#include "RageFileDriver.h"
 
 /** @brief File driver for accessing a regular filesystem. */
 class RageFileDriverDirect: public RageFileDriver

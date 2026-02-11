@@ -3,8 +3,9 @@
 #ifndef SCREEN_DEMONSTRATION_H
 #define SCREEN_DEMONSTRATION_H
 
+#include "Screen.h"
 #include "ScreenJukebox.h"
-
+#include "ScreenMessage.h"
 
 class ScreenDemonstration : public ScreenJukebox
 {

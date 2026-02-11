@@ -2,14 +2,13 @@
 #ifndef StreamDisplay_H
 #define StreamDisplay_H
 
-#include "ActorFrame.h"
-#include "Sprite.h"
-#include "Quad.h"
-#include "LuaExpressionTransform.h"
-#include "ThemeMetric.h"
-
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "LuaExpressionTransform.h"
+#include "Sprite.h"
+#include "ThemeMetric.h"
 
 enum StreamType
 {

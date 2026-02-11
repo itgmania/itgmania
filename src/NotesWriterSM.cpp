@@ -1,13 +1,21 @@
-#include "global.h"
+#include "NotesWriterSM.h"
+
 #include <cerrno>
 #include <cstring>
-#include "NotesWriterSM.h"
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "BackgroundUtil.h"
-#include "GameManager.h"
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
 #include "LocalizedString.h"
 #include "NoteTypes.h"
+#include "PlayerNumber.h"
 #include "Profile.h"
 #include "ProfileManager.h"
+#include "RadarValues.h"
 #include "RageFile.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
@@ -15,9 +23,9 @@
 #include "Song.h"
 #include "Steps.h"
 #include "ThemeMetric.h"
-
-#include <vector>
-
+#include "TimingData.h"
+#include "TimingSegments.h"
+#include "global.h"
 
 ThemeMetric<bool> USE_CREDIT	( "NotesWriterSM", "DescriptionUsesCreditField" );
 

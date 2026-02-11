@@ -1,6 +1,10 @@
-#include "global.h"
 #include "Transition.h"
+
+#include <string>
+
+#include "ActorFrame.h"
 #include "ScreenManager.h"
+#include "ScreenMessage.h"
 
 Transition::Transition()
 {

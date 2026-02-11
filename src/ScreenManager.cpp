@@ -57,24 +57,34 @@
  * if you already have it, and you can't lose focus if you don't have it.
  */
 
-#include "global.h"
 #include "ScreenManager.h"
-#include "Preference.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "GameSoundManager.h"
-#include "RageDisplay.h"
-#include "SongManager.h"
-#include "RageTextureManager.h"
-#include "ThemeManager.h"
-#include "FontManager.h"
-#include "Screen.h"
-#include "ScreenDimensions.h"
-#include "ActorUtil.h"
-#include "InputEventPlus.h"
 
+#include <algorithm>
+#include <map>
+#include <set>
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "EnumHelper.h"
+#include "GameSoundManager.h"
+#include "InputEventPlus.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "Preference.h"
+#include "RageDisplay.h"
+#include "RageLog.h"
+#include "RageSound.h"
+#include "RageTextureManager.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenDimensions.h"
+#include "ScreenMessage.h"
+#include "SongManager.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 ScreenManager*	SCREENMAN = nullptr;	// global and accessible from anywhere in our program
 

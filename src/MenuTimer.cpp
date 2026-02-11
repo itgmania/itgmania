@@ -1,16 +1,21 @@
-#include "global.h"
 #include "MenuTimer.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "ScreenManager.h"
-#include "ThemeManager.h"
-#include "Font.h"
-#include "GameSoundManager.h"
-#include "ThemeMetric.h"
-#include "ActorUtil.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <string>
+
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "GameSoundManager.h"
+#include "LuaManager.h"
+#include "RageUtil.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 std::string WARNING_COMMAND_NAME( size_t i ) { return ssprintf("Warning%dCommand",int(i)); }
 

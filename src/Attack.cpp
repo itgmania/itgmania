@@ -1,14 +1,17 @@
-#include "global.h"
 #include "Attack.h"
-#include "GameState.h"
-#include "RageUtil.h"
-#include "Song.h"
-#include "PlayerOptions.h"
-#include "PlayerState.h"
 
+#include <algorithm>
 #include <cmath>
+#include <string>
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "global.h"
 
 void Attack::GetAttackBeats( const Song *pSong, float &fStartBeat, float &fEndBeat ) const
 {

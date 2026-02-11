@@ -1,12 +1,16 @@
-#include "global.h"
 #include "LightsDriver_SextetStream.h"
-#include "PrefsManager.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "SextetUtils.h"
 
 #include <cstdint>
 #include <cstring>
+#include <string>
+
+#include "LightsManager.h"
+#include "Preference.h"
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "SextetUtils.h"
+#include "arch/Lights/LightsDriver.h"
 
 // Private members/methods are kept out of the header using an opaque pointer `_impl`.
 // Google "pimpl idiom" for an explanation of what's going on and why it is (or might be) useful.

@@ -1,10 +1,10 @@
 #ifndef SCREEN_GAMEPLAY_ROUTINE_H
 #define SCREEN_GAMEPLAY_ROUTINE_H
 
-#include "ScreenGameplay.h"
-
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "ScreenGameplay.h"
 
 class ScreenGameplayShared : public ScreenGameplay
 {

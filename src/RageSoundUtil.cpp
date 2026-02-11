@@ -1,9 +1,9 @@
-#include "global.h"
 #include "RageSoundUtil.h"
-#include "RageUtil.h"
 
-#include <cmath>
+#include <algorithm>
 #include <cstdint>
+
+#include "RageUtil.h"
 
 void RageSoundUtil::Attenuate( float *pBuf, int iSamples, float fVolume )
 {

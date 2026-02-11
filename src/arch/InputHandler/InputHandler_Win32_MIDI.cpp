@@ -1,12 +1,14 @@
-#include "global.h"
-#include "RageUtil.h"
 #include "InputHandler_Win32_MIDI.h"
-#include "RageLog.h"
-
-#include <vector>
 
 #include <windows.h>
 #include <mmsystem.h>
+
+#include <string>
+#include <vector>
+
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "global.h"
 
 #pragma comment (lib,"winmm.lib")
 

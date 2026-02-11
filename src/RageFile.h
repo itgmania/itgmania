@@ -3,10 +3,11 @@
 #ifndef RAGE_FILE_H
 #define RAGE_FILE_H
 
-#include "RageFileBasic.h"
-
 #include <cstddef>
 #include <cstdint>
+#include <string>
+
+#include "RageFileBasic.h"
 
 struct lua_State;
 

@@ -1,15 +1,19 @@
-#include "global.h"
-#include "InputFilter.h"
-#include "RageUtil.h"
 #include "InputHandler.h"
-#include "RageLog.h"
-#include "LocalizedString.h"
-#include "arch/arch_default.h"
+
+#include "InputFilter.h"
 #include "InputHandler_MonkeyKeyboard.h"
+#include "LocalizedString.h"
+#include "RageException.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "arch/RageDriver.h"
+#include "arch/arch_default.h"
+#include "global.h"
 //#include "InputHandler_NSEvent.hpp"
 
+#include <string>
 #include <vector>
-
 
 void InputHandler::UpdateTimer()
 {

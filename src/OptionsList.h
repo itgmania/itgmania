@@ -1,18 +1,21 @@
 #ifndef SCREEN_OPTIONS_LIST_H
 #define SCREEN_OPTIONS_LIST_H
 
-#include "ScreenWithMenuElements.h"
-#include "RageSound.h"
-#include "Steps.h"
-#include "Trail.h"
-#include "OptionRowHandler.h"
-#include "BitmapText.h"
-#include "OptionsCursor.h"
-#include "CodeSet.h"
-#include "ThemeMetric.h"
-
+#include <map>
+#include <set>
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "BitmapText.h"
+#include "CodeSet.h"
+#include "GameInput.h"
+#include "InputQueue.h"
+#include "OptionRowHandler.h"
+#include "PlayerNumber.h"
+#include "ThemeMetric.h"
 
 class OptionsList;
 class OptionListRow: public ActorFrame

@@ -1,16 +1,18 @@
-#include "global.h"
 #include "CodeDetector.h"
-#include "PlayerOptions.h"
-#include "GameState.h"
-#include "InputQueue.h"
-#include "ThemeManager.h"
-#include "RageLog.h"
-#include "Game.h"
-#include "RageUtil.h"
-#include "PlayerState.h"
-#include "InputEventPlus.h"
-#include "OptionRowHandler.h"
 
+#include <string>
+
+#include "EnumHelper.h"
+#include "GameInput.h"
+#include "GameState.h"
+#include "InputMapper.h"
+#include "InputQueue.h"
+#include "ModsGroup.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
 
 const char *CodeNames[] = {
 	"PrevSteps1",

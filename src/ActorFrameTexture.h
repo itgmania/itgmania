@@ -1,6 +1,8 @@
 #ifndef ACTOR_FRAME_TEXTURE_H
 #define ACTOR_FRAME_TEXTURE_H
 
+#include <string>
+
 #include "ActorFrame.h"
 class RageTextureRenderTarget;
 

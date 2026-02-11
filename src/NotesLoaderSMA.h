@@ -1,9 +1,10 @@
 #ifndef NOTES_LOADER_SMA_H
 #define NOTES_LOADER_SMA_H
 
-#include "GameConstantsAndTypes.h"
-#include "NotesLoaderSM.h"
+#include <string>
+
 #include "BackgroundUtil.h"
+#include "NotesLoaderSM.h"
 
 class MsdFile;
 class Song;

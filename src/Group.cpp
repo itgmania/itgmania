@@ -1,19 +1,18 @@
-#include "global.h"
-#include "SongManager.h"
-#include "RageFile.h"
-#include "RageUtil.h"
-#include "RageFileManager.h"
-#include "RageLog.h"
-#include "Song.h"
-#include "SongCacheIndex.h"
-#include "SongUtil.h"
-#include "TitleSubstitution.h"
 #include "Group.h"
 
 #include <cstddef>
-#include <tuple>
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "IniFile.h"
+#include "PrefsManager.h"
+#include "RageFileManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "SongUtil.h"
 
 /** @brief The file that contains the group information.
  * We name this Pack.ini over Group.ini to avoid conflict

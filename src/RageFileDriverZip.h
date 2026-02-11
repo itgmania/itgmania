@@ -1,11 +1,11 @@
 #ifndef RAGE_FILE_DRIVER_ZIP_H
 #define RAGE_FILE_DRIVER_ZIP_H
 
-#include "RageFileDriver.h"
-#include "RageThreads.h"
-
+#include <string>
 #include <vector>
 
+#include "RageFileDriver.h"
+#include "RageThreads.h"
 
 /** @brief A read-only file driver for ZIPs. */
 class RageFileDriverZip: public RageFileDriver

@@ -1,18 +1,31 @@
-#include "global.h"
 #include "OptionsList.h"
-#include "GameState.h"
-#include "RageLog.h"
-#include "Course.h"
-#include "SongUtil.h"
-#include "StepsUtil.h"
-#include "Style.h"
-#include "InputEventPlus.h"
-#include "CodeDetector.h"
-#include "InputMapper.h"
-#include "PlayerState.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <map>
+#include <string>
+#include <utility>
 #include <vector>
+
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "CodeDetector.h"
+#include "Command.h"
+#include "GameCommand.h"
+#include "GameInput.h"
+#include "GameState.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "ModsGroup.h"
+#include "OptionRowHandler.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 #define LINE(sLineName)				THEME->GetMetric (m_sName,ssprintf("Line%s",sLineName.c_str()))
 #define MAX_ITEMS_BEFORE_SPLIT			THEME->GetMetricI(m_sName,"MaxItemsBeforeSplit")

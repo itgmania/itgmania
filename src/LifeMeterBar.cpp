@@ -1,22 +1,28 @@
-#include "global.h"
 #include "LifeMeterBar.h"
-#include "PrefsManager.h"
-#include "RageLog.h"
-#include "RageTimer.h"
-#include "GameState.h"
-#include "RageMath.h"
-#include "ThemeManager.h"
-#include "Song.h"
-#include "StatsManager.h"
-#include "ThemeMetric.h"
-#include "PlayerState.h"
-#include "Quad.h"
-#include "ActorUtil.h"
-#include "StreamDisplay.h"
-#include "Steps.h"
-#include "Course.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <string>
+
+#include "ActorUtil.h"
+#include "Course.h"
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LifeMeter.h"
+#include "LuaReference.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerStageStats.h"
+#include "PlayerState.h"
+#include "PrefsManager.h"
+#include "RageUtil.h"
+#include "Steps.h"
+#include "StreamDisplay.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 static std::string LIFE_PERCENT_CHANGE_NAME( size_t i )   { return "LifePercentChange" + ScoreEventToString( (ScoreEvent)i ); }
 

@@ -1,9 +1,15 @@
-#include "global.h"
 #include "TextBanner.h"
-#include "Song.h"
+
+#include <string>
+
+#include "ActorFrame.h"
 #include "ActorUtil.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "Song.h"
 #include "ThemeManager.h"
 #include "XmlFile.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( TextBanner );
 

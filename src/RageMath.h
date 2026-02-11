@@ -5,6 +5,8 @@
 
 #include <vector>
 
+#include "config.hpp"
+
 constexpr float PI = 3.1415926536f;
 
 struct lua_State;

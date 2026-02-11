@@ -1,9 +1,13 @@
 #ifndef CombinedLifeMeterTug_H
 #define CombinedLifeMeterTug_H
 
-#include "CombinedLifeMeter.h"
-#include "MeterDisplay.h"
 #include <array>
+
+#include "AutoActor.h"
+#include "CombinedLifeMeter.h"
+#include "GameConstantsAndTypes.h"
+#include "MeterDisplay.h"
+#include "PlayerNumber.h"
 
 /** @brief Dance Magic-like tug-o-war life meter. */
 class CombinedLifeMeterTug : public CombinedLifeMeter

@@ -1,20 +1,28 @@
-#include "global.h"
 #include "ScreenPlayerOptions.h"
-#include "ScreenManager.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "AnnouncerManager.h"
-#include "GameSoundManager.h"
-#include "ScreenSongOptions.h"
-#include "PrefsManager.h"
-#include "CodeDetector.h"
-#include "ScreenDimensions.h"
-#include "PlayerState.h"
-#include "InputEventPlus.h"
 
+#include <algorithm>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "AnnouncerManager.h"
+#include "CodeDetector.h"
+#include "GameSoundManager.h"
+#include "GameState.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "MessageManager.h"
+#include "ModsGroup.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "PrefsManager.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
+#include "ScreenOptionsMaster.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 REGISTER_SCREEN_CLASS( ScreenPlayerOptions );
 

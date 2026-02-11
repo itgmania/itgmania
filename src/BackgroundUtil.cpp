@@ -1,17 +1,21 @@
-#include "global.h"
 #include "BackgroundUtil.h"
-#include "RageUtil.h"
-#include "Song.h"
 
-#include "IniFile.h"
-#include "RageLog.h"
-#include "Background.h"
-#include "RageFileManager.h"
-#include "ActorUtil.h"
-
+#include <algorithm>
 #include <set>
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "Background.h"
+#include "IniFile.h"
+#include "RageFileManager.h"
+#include "RageLog.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "StdString.h"
+#include "XmlFile.h"
+#include "global.h"
 
 bool BackgroundDef::operator<(const BackgroundDef& other) const {
 	if (m_sEffect != other.m_sEffect)

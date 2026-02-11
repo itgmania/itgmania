@@ -8,12 +8,11 @@
  * if creating an entirely new screen.
  */
 
-#include "global.h"
 #include "ScreenSandbox.h"
-#include "ThemeManager.h"
-#include "RageDisplay.h"
-#include "RageLog.h"
 
+#include "InputQueue.h"
+#include "Screen.h"
+#include "ScreenMessage.h"
 
 REGISTER_SCREEN_CLASS( ScreenSandbox );
 

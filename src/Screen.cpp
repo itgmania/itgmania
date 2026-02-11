@@ -1,16 +1,28 @@
-#include "global.h"
 #include "Screen.h"
-#include "PrefsManager.h"
-#include "RageSound.h"
-#include "RageLog.h"
-#include "ThemeManager.h"
-#include "ScreenManager.h"
-#include "ActorUtil.h"
-#include "InputEventPlus.h"
-#include "InputMapper.h"
 
+#include <algorithm>
+#include <map>
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "EnumHelper.h"
+#include "GameInput.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "LightsManager.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 #define NEXT_SCREEN		THEME->GetMetric (m_sName,"NextScreen")
 #define PREV_SCREEN		THEME->GetMetric (m_sName,"PrevScreen")

@@ -1,22 +1,28 @@
-#include "global.h"
 #include "ScreenTextEntry.h"
-#include "RageUtil.h"
-#include "RageUtil/ConvertValue.h"
-#include "Preference.h"
-#include "ScreenManager.h"
-#include "ThemeManager.h"
-#include "FontCharAliases.h"
-#include "ScreenDimensions.h"
-#include "ScreenPrompt.h"
-#include "ActorUtil.h"
-#include "InputEventPlus.h"
-#include "RageInput.h"
-#include "LocalizedString.h"
-#include "RageLog.h"
-#include "LuaBinding.h"
-#include "arch/ArchHooks/ArchHooks.h" // HOOKS->GetClipboard()
 
 #include <cmath>
+#include <string>
+
+#include "ActorUtil.h"
+#include "BitmapText.h"
+#include "FontCharAliases.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "LocalizedString.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "RageInput.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RageUtil/ConvertValue.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenPrompt.h"
+#include "ScreenWithMenuElements.h"
+#include "ThemeManager.h"
+#include "arch/ArchHooks/ArchHooks.h"  // HOOKS->GetClipboard()
 
 static const char* g_szKeys[NUM_KeyboardRow][KEYS_PER_ROW] =
 {

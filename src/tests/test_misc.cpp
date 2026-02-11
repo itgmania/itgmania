@@ -1,5 +1,10 @@
-#include "global.h"
 #include "test_misc.h"
+
+#include <unistd.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <string>
 
 #include "RageFileManager.h"
 #include "RageLog.h"

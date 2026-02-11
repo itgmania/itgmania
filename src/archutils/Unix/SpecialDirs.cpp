@@ -1,5 +1,7 @@
-#include "global.h"
 #include "SpecialDirs.h"
+
+#include <cstdlib>
+#include <string>
 
 std::string SpecialDirs::GetDesktopDir()
 {

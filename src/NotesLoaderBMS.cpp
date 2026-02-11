@@ -1,26 +1,35 @@
-#include "global.h"
 #include "NotesLoaderBMS.h"
-#include "NoteData.h"
-#include "GameConstantsAndTypes.h"
-#include "RageLog.h"
-#include "GameManager.h"
-#include "SongManager.h"
-#include "RageFile.h"
-#include "SongUtil.h"
-#include "StepsUtil.h"
-#include "Song.h"
-#include "Steps.h"
-#include "RageUtil_CharConversions.h"
-#include "NoteTypes.h"
-#include "NotesLoader.h"
-#include "PrefsManager.h"
-#include "BackgroundUtil.h"
-#include "ActorUtil.h"
-#include "RageFileManager.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+#include <map>
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "BackgroundUtil.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "NotesLoader.h"
+#include "RageFile.h"
+#include "RageFileManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RageUtil_CharConversions.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "SongUtil.h"
+#include "StdString.h"
+#include "Steps.h"
+#include "StepsUtil.h"
+#include "TimingData.h"
+#include "global.h"
 
 /* BMS encoding:	tap-hold
  * 4&8panel:	Player1		Player2

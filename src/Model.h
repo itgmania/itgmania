@@ -3,11 +3,12 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include "Actor.h"
-#include "RageTypes.h"
-#include "ModelTypes.h"
-#include <vector>
 #include <map>
+#include <string>
+#include <vector>
+
+#include "Actor.h"
+#include "ModelTypes.h"
 
 class RageModelGeometry;
 class RageCompiledGeometry;

@@ -1,12 +1,12 @@
 #ifndef STEP_PARITY_GENERATOR_H
 #define STEP_PARITY_GENERATOR_H
 
-#include "GameConstantsAndTypes.h"
+#include <cstdint>
+#include <unordered_map>
+#include <vector>
+
 #include "NoteData.h"
 #include "StepParityDatastructs.h"
-#include <queue>
-#include <unordered_map>
-#include "json/json.h"
 #include "TimingData.h"
 
 namespace StepParity {

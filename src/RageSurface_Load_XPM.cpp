@@ -1,15 +1,17 @@
 /* This is a partial XPM reader; we only use it for reading compiled-in icons
  * and loading splashes. */
-#include "global.h"
 #include "RageSurface_Load_XPM.h"
-#include "RageFile.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageSurface.h"
 
+#include <cstddef>
 #include <cstdint>
+#include <cstdio>
+#include <cstring>
 #include <map>
+#include <string>
 #include <vector>
+
+#include "RageSurface.h"
+#include "RageUtil.h"
 
 #define CheckLine() \
 	if( xpm[line] == nullptr ) { \

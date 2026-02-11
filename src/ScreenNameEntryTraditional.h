@@ -1,10 +1,13 @@
 #ifndef SCREEN_NAME_ENTRY_TRADITIONAL_H
 #define SCREEN_NAME_ENTRY_TRADITIONAL_H
 
+#include <string>
+
+#include "InputQueue.h"
+#include "PlayerNumber.h"
+#include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
 #include "ThemeMetric.h"
-#include "LocalizedString.h"
-#include "InputQueue.h"
 /** @brief Enter a name for a new high score. */
 class ScreenNameEntryTraditional: public ScreenWithMenuElements
 {

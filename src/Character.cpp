@@ -1,13 +1,15 @@
-#include "global.h"
 #include "Character.h"
-#include "IniFile.h"
-#include "RageUtil.h"
-#include "RageTextureID.h"
-#include "ActorUtil.h"
-#include "RageUtil/RandomNumbers.h"
 
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "GameConstantsAndTypes.h"
+#include "IniFile.h"
+#include "RageTextureID.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "StdString.h"
 
 std::string GetRandomFileInDir( std::string sDir );
 

@@ -1,19 +1,24 @@
-#include "global.h"
 #include "Inventory.h"
-#include "ThemeManager.h"
-#include "RageUtil.h"
-#include "GameState.h"
-#include "RageTimer.h"
-#include "PrefsManager.h"
-#include "Song.h"
-#include "ScreenManager.h"
-#include "StatsManager.h"
-#include "ThemeMetric.h"
-#include "PlayerState.h"
-#include "RageUtil/RandomNumbers.h"
 
+#include <string>
 #include <vector>
 
+#include "Attack.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "PrefsManager.h"
+#include "RageSound.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "ScreenManager.h"
+#include "Song.h"
+#include "StatsManager.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 void ReloadItems();
 

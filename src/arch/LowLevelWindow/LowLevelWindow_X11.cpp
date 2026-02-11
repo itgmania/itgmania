@@ -13,11 +13,12 @@
 using namespace RageDisplay_Legacy_Helpers;
 using namespace X11Helper;
 
+#include <GL/glxew.h>
+
 #include <cmath>
 #include <cstdint>
 #include <set>
-
-#include <GL/glxew.h>
+#include <string>
 #define GLX_GLXEXT_PROTOTYPES
 #include <GL/glx.h>	// All sorts of stuff...
 #include <X11/Xlib.h>

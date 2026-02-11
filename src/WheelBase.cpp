@@ -1,23 +1,26 @@
-#include "global.h"
 #include "WheelBase.h"
-#include "RageUtil.h"
-#include "GameManager.h"
-#include "PrefsManager.h"
-#include "ScreenManager.h"	// for sending SM_PlayMusicSample
-#include "RageLog.h"
-#include "GameConstantsAndTypes.h"
-#include "GameState.h"
-#include "RageMath.h"
-#include "ThemeManager.h"
-#include "RageTextureManager.h"
-#include "ActorUtil.h"
-#include "Style.h"
-#include "ThemeMetric.h"
-#include "ScreenDimensions.h"
 
+#include <algorithm>
+#include <climits>
 #include <cmath>
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "EnumHelper.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "PrefsManager.h"
+#include "RageLog.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "ScreenManager.h"  // for sending SM_PlayMusicSample
+#include "ScreenMessage.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "WheelItemBase.h"
+#include "global.h"
 
 const int MAX_WHEEL_SOUND_SPEED = 15;
 AutoScreenMessage( SM_SongChanged ); // TODO: Replace this with a Message and MESSAGEMAN

@@ -1,13 +1,14 @@
-#include "global.h"
 #include "MessageManager.h"
-#include "RageUtil.h"
-#include "RageThreads.h"
+
+#include <map>
+#include <set>
+#include <string>
+
 #include "EnumHelper.h"
 #include "LuaManager.h"
 #include "RageLog.h"
-
-#include <set>
-#include <map>
+#include "RageThreads.h"
+#include "global.h"
 
 MessageManager*	MESSAGEMAN = nullptr;	// global and accessible from anywhere in our program
 

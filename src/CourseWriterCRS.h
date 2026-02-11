@@ -3,6 +3,8 @@
 #ifndef COURSE_WRITER_CRS_H
 #define COURSE_WRITER_CRS_H
 
+#include <string>
+
 class Course;
 class CourseEntry;
 class RageFileBasic;

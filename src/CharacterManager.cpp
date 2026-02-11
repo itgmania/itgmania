@@ -1,13 +1,16 @@
-#include "global.h"
 #include "CharacterManager.h"
-#include "Character.h"
-#include "GameState.h"
-#include "RageUtil/RandomNumbers.h"
 
-#include "LuaManager.h"
-
+#include <string>
 #include <vector>
 
+#include "Character.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "RageException.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "StdString.h"
+#include "global.h"
 
 #define CHARACTERS_DIR "/Characters/"
 

@@ -1,11 +1,13 @@
 #ifndef ScreenOptionsManageProfiles_H
 #define ScreenOptionsManageProfiles_H
 
-#include "ScreenOptions.h"
-#include "ScreenMiniMenu.h"
-
+#include <string>
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "PlayerNumber.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
 
 class Course;
 

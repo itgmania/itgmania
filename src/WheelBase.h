@@ -1,20 +1,20 @@
 #ifndef WHEELBASE_H
 #define WHEELBASE_H
 
-#include "AutoActor.h"
-#include "ActorFrame.h"
-#include "RageSound.h"
-#include "GameConstantsAndTypes.h"
-#include "ScreenMessage.h"
-#include "ScrollBar.h"
-#include "RageTimer.h"
-#include "WheelItemBase.h"
-#include "ThemeMetric.h"
-#include "LuaExpressionTransform.h"
-
-#include <cmath>
+#include <climits>
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "EnumHelper.h"
+#include "LuaExpressionTransform.h"
+#include "RageSound.h"
+#include "RageTimer.h"
+#include "RageTypes.h"
+#include "ScrollBar.h"
+#include "ThemeMetric.h"
+#include "WheelItemBase.h"
 
 #define NUM_WHEEL_ITEMS		((int)std::ceil(NUM_WHEEL_ITEMS_TO_DRAW+2))
 

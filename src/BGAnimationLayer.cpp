@@ -1,22 +1,28 @@
-#include "global.h"
 #include "BGAnimationLayer.h"
-#include "GameState.h"
-#include "XmlFile.h"
-#include "RageMath.h"
-#include "RageLog.h"
-#include "Song.h"
-#include "ScreenDimensions.h"
-#include "Sprite.h"
-#include "RageDisplay.h"
-#include "ActorUtil.h"
-#include "arch/ArchHooks/ArchHooks.h"
-#include "LuaManager.h"
-#include "AutoActor.h"
-#include "ThemeManager.h"
-#include "RageUtil/RandomNumbers.h"
 
+#include <algorithm>
 #include <cmath>
+#include <string>
 
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "AutoActor.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "RageMath.h"
+#include "RageTextureID.h"
+#include "RageTimer.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "ScreenDimensions.h"
+#include "Song.h"
+#include "Sprite.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "XmlFile.h"
+#include "arch/ArchHooks/ArchHooks.h"
+#include "global.h"
 
 const float PARTICLE_SPEED = 300;
 

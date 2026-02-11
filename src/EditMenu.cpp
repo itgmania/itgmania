@@ -1,21 +1,29 @@
-#include "global.h"
 #include "EditMenu.h"
-#include "RageLog.h"
-#include "SongManager.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "GameManager.h"
-#include "Steps.h"
-#include "Song.h"
-#include "StepsUtil.h"
-#include "CommonMetrics.h"
-#include "ImageCache.h"
-#include "UnlockManager.h"
-#include "SongUtil.h"
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "CommonMetrics.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "ImageCache.h"
+#include "LocalizedString.h"
+#include "PlayerNumber.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "SongUtil.h"
+#include "Steps.h"
+#include "StepsUtil.h"
+#include "ThemeManager.h"
+#include "UnlockManager.h"
+#include "global.h"
 
 static const char *EditMenuRowNames[] = {
 	"Group",

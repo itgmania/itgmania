@@ -1,19 +1,21 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "ActorFrame.h"
-#include "HoldJudgment.h"
-#include "NoteDataWithScoring.h"
-#include "RageSound.h"
-#include "AttackDisplay.h"
-#include "NoteData.h"
-#include "ScreenMessage.h"
-#include "ThemeMetric.h"
-#include "InputEventPlus.h"
-#include "TimingData.h"
-
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "AttackDisplay.h"
+#include "AutoActor.h"
+#include "GameConstantsAndTypes.h"
+#include "HoldJudgment.h"
+#include "NoteData.h"
+#include "NoteDataWithScoring.h"
+#include "RageSound.h"
+#include "ScreenMessage.h"
+#include "ThemeMetric.h"
+#include "TimingData.h"
 
 class ScoreDisplay;
 class LifeMeter;

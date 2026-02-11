@@ -1,6 +1,8 @@
 #ifndef RAGE_EXCEPTION_H
 #define RAGE_EXCEPTION_H
 
+#include <string>
+
 #include "config.hpp"
 
 /**

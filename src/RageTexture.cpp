@@ -1,13 +1,14 @@
-#include "global.h"
-
 #include "RageTexture.h"
-#include "RageUtil.h"
-#include "RageUtil/Regex.h"
-#include "RageTextureManager.h"
 
 #include <cstring>
+#include <string>
 #include <vector>
 
+#include "LuaManager.h"
+#include "RageTextureID.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "RageUtil/Regex.h"
 
 RageTexture::RageTexture( RageTextureID name ):
 	m_iRefCount(1), m_bWasUsed(false), m_ID(name),

@@ -1,14 +1,17 @@
 #ifndef OptionRowHandler_H
 #define OptionRowHandler_H
 
-#include "GameCommand.h"
-#include "LuaReference.h"
-#include "RageUtil.h"
-
 #include <cstddef>
+#include <limits>
 #include <set>
+#include <string>
 #include <vector>
 
+#include "Command.h"
+#include "EnumHelper.h"
+#include "GameCommand.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
 
 struct MenuRowDef;
 class OptionRow;

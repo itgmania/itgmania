@@ -1,13 +1,25 @@
-#include "global.h"
 #include "ScreenSetTime.h"
-#include "ScreenManager.h"
-#include "RageLog.h"
-#include "InputMapper.h"
-#include "ThemeManager.h"
+
+#include <ctime>
+#include <string>
+
+#include "BitmapText.h"
 #include "DateTime.h"
 #include "EnumHelper.h"
-#include "arch/ArchHooks/ArchHooks.h"
+#include "GameInput.h"
 #include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "ThemeManager.h"
+#include "Tween.h"
+#include "arch/ArchHooks/ArchHooks.h"
+#include "global.h"
 
 static const char *SetTimeSelectionNames[] = {
 	"Year", 

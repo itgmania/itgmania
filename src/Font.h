@@ -3,14 +3,13 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include "RageTextureID.h"
-#include "RageUtil.h"
-#include "RageTypes.h"
-
 #include <cstddef>
 #include <map>
+#include <string>
 #include <vector>
 
+#include "RageTexture.h"
+#include "RageTypes.h"
 
 class FontPage;
 class RageTexture;

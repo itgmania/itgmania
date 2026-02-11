@@ -1,6 +1,8 @@
 #ifndef RAGE_SOUNDS_H
 #define RAGE_SOUNDS_H
 
+#include <string>
+
 #include "PlayerNumber.h"
 
 class TimingData;

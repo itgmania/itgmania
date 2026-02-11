@@ -1,6 +1,8 @@
 #ifndef ARCH_HOOKS_MACOSX_H
 #define ARCH_HOOKS_MACOSX_H
 
+#include <string>
+
 #include "ArchHooks.h"
 
 class ArchHooks_MacOSX : public ArchHooks

@@ -3,10 +3,13 @@
 #ifndef RAGETYPES_H
 #define RAGETYPES_H
 
-#include "EnumHelper.h"
-
+#include <algorithm>
 #include <array>
 #include <cstdint>
+#include <cstdio>
+#include <string>
+
+#include "EnumHelper.h"
 
 enum BlendMode
 {

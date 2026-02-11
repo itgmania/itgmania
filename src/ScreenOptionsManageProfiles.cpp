@@ -1,20 +1,30 @@
-#include "global.h"
-#include "ScreenDimensions.h"
 #include "ScreenOptionsManageProfiles.h"
-#include "ScreenManager.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "CommonMetrics.h"
-#include "ScreenTextEntry.h"
-#include "ScreenPrompt.h"
-#include "ScreenMiniMenu.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "OptionRowHandler.h"
-#include "LocalizedString.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
+#include "Command.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LocalizedString.h"
+#include "OptionRowHandler.h"
+#include "PlayerNumber.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenDimensions.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenMiniMenu.h"
+#include "ScreenOptions.h"
+#include "ScreenPrompt.h"
+#include "ScreenTextEntry.h"
+#include "global.h"
 
 static LocalizedString NEW_PROFILE_DEFAULT_NAME( "ScreenOptionsManageProfiles", "NewProfileDefaultName" );
 

@@ -1,16 +1,17 @@
-#include "global.h"
 #include "DebugInfoHunt.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "VideoDriverInfo.h"
-#include "RegistryAccess.h"
-#include "ErrorStrings.h"
-
-#include <vector>
 
 #include <windows.h>
 #include <mmsystem.h>
 
+#include <string>
+#include <vector>
+
+#include "ErrorStrings.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RegistryAccess.h"
+#include "VideoDriverInfo.h"
+#include "global.h"
 
 static void LogVideoDriverInfo( VideoDriverInfo info )
 {

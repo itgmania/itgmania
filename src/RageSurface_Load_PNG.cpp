@@ -1,15 +1,22 @@
-#include "global.h"
-
 #include "RageSurface_Load_PNG.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageFile.h"
-#include "RageSurface.h"
-#include "RageUtil/Endian.h"
-
-#include <cstdint>
 
 #include <png.h>
+
+#include <csetjmp>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <string>
+
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageSurface.h"
+#include "RageSurface_Load.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "RageUtil/Endian.h"
+#include "global.h"
+#include "pngconf.h"
 
 #if defined(_MSC_VER)
 #if defined(_BINARY_PNG)

@@ -1,13 +1,13 @@
-#include "global.h"
 #include "JsonUtil.h"
-#include "RageFile.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "arch/Dialog/Dialog.h"
-#include "json/json.h"
 
+#include <string>
 #include <vector>
 
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "arch/Dialog/Dialog.h"
+#include "json/json.h"
 
 bool JsonUtil::LoadFromString(Json::Value &root, std::string sData, std::string &sErrorOut)
 {

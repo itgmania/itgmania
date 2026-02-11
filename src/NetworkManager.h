@@ -1,23 +1,30 @@
 #ifndef NETWORK_MANAGER_H
 #define NETWORK_MANAGER_H
 
-#include "Preference.h"
-#include "StdString.h"
-
-#include <atomic>
-#include <functional>
-#include <memory>
-#include <mutex>
-#include <string>
-#include <unordered_map>
-
 #include <ixwebsocket/IXHttp.h>
 #include <ixwebsocket/IXHttpClient.h>
 #include <ixwebsocket/IXSocketTLSOptions.h>
 #include <ixwebsocket/IXWebSocket.h>
 
+#include <atomic>
+#include <condition_variable>
+#include <cstddef>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <queue>
+#include <string>
+#include <thread>
+#include <unordered_map>
+#include <vector>
+
 #include "EnumHelper.h"
-#include "LuaManager.h"
+#include "Preference.h"
+#include "ixwebsocket/IXWebSocketCloseInfo.h"
+#include "ixwebsocket/IXWebSocketErrorInfo.h"
+#include "ixwebsocket/IXWebSocketMessage.h"
+#include "ixwebsocket/IXWebSocketMessageType.h"
+#include "ixwebsocket/IXWebSocketOpenInfo.h"
 
 struct lua_State;
 

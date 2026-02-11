@@ -1,21 +1,34 @@
-#include "global.h"
 #include "Font.h"
-#include "IniFile.h"
 
-#include "RageTextureManager.h"
-#include "RageUtil.h"
-#include "RageUtil/Regex.h"
-#include "RageLog.h"
-#include "FontManager.h"
-#include "ThemeManager.h"
-#include "FontCharmaps.h"
-#include "FontCharAliases.h"
-#include "arch/Dialog/Dialog.h"
+#include <stdint.h>
 
+#include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <cstddef>
+#include <cstdio>
+#include <map>
+#include <string>
 #include <vector>
 
+#include "FontCharAliases.h"
+#include "FontCharmaps.h"
+#include "FontManager.h"
+#include "IniFile.h"
+#include "LuaManager.h"
+#include "RageException.h"
+#include "RageLog.h"
+#include "RageTextureID.h"
+#include "RageTextureManager.h"
+#include "RageThreads.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "RageUtil/Regex.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "XmlFile.h"
+#include "arch/Dialog/Dialog.h"
+#include "global.h"
 
 FontPage::FontPage(): m_iHeight(0), m_iLineSpacing(0), m_fVshift(0),
 	m_iDrawExtraPixelsLeft(0), m_iDrawExtraPixelsRight(0),

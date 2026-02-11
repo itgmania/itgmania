@@ -1,14 +1,12 @@
 #ifndef LifeMeterTime_H
 #define LifeMeterTime_H
 
-#include "LifeMeter.h"
-#include "Sprite.h"
-#include "BitmapText.h"
-#include "RageSound.h"
-#include "PercentageDisplay.h"
 #include "AutoActor.h"
-#include "MeterDisplay.h"
+#include "GameConstantsAndTypes.h"
+#include "LifeMeter.h"
+#include "PercentageDisplay.h"
 #include "Quad.h"
+#include "RageSound.h"
 class StreamDisplay;
 /** @brief Battery life meter used in Survival. */
 class LifeMeterTime : public LifeMeter

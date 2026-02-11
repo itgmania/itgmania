@@ -1,23 +1,26 @@
-#include "global.h"
 #include "GraphicsWindow.h"
+
+#include <windows.h>
+
+#include <set>
+#include <string>
+
+#include "CommandLineActions.h"
+#include "DirectXHelpers.h"
+#include "DisplaySpec.h"
+#include "PrefsManager.h"
 #include "ProductInfo.h"
+#include "RageDisplay.h"
+#include "RageException.h"
 #include "RageLog.h"
 #include "RageUtil.h"
-#include "RageDisplay.h"
-#include "DisplaySpec.h"
 #include "arch/ArchHooks/ArchHooks.h"
 #include "archutils/Win32/AppInstance.h"
 #include "archutils/Win32/Crash.h"
 #include "archutils/Win32/ErrorStrings.h"
-#include "archutils/Win32/WindowIcon.h"
 #include "archutils/Win32/GetFileInformation.h"
-#include "CommandLineActions.h"
-#include "DirectXHelpers.h"
-#include "PrefsManager.h"
-
-#include <windows.h>
-#include <string>
-#include <set>
+#include "archutils/Win32/WindowIcon.h"
+#include "global.h"
 
 static const std::string g_sClassName = PRODUCT_ID;
 

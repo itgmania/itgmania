@@ -1,8 +1,13 @@
 #ifndef ScreenGameplaySyncMachine_H
 #define ScreenGameplaySyncMachine_H
 
+#include "BitmapText.h"
+#include "InputEventPlus.h"
+#include "Screen.h"
 #include "ScreenGameplayNormal.h"
+#include "ScreenMessage.h"
 #include "Song.h"
+#include "Steps.h"
 /** @brief A gameplay screen used for syncing the machine's timing. */
 class ScreenGameplaySyncMachine : public ScreenGameplayNormal
 {

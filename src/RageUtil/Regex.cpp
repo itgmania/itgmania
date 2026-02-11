@@ -1,9 +1,14 @@
-#include "global.h"
-
 #include "Regex.h"
-#include "RageUtil.h"
 
 #include <pcre.h>
+
+#include <string>
+#include <vector>
+
+#include "RageException.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "global.h"
 
 void Regex::Compile()
 {

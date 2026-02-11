@@ -5,12 +5,14 @@
 //    signature - the signature of data_file in binary format
 // test.cpp - written and placed in the public domain by Wei Dai
 
-#include "sha.h"
-#include "files.h"
-#include "rsa.h"
+#include <time.h>
 
 #include <iostream>
-#include <time.h>
+#include <string>
+
+#include "files.h"
+#include "rsa.h"
+#include "sha.h"
 
 #ifdef CRYPTOPP_WIN32_AVAILABLE
 #include <windows.h>

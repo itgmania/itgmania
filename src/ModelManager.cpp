@@ -1,9 +1,12 @@
-#include "global.h"
 #include "ModelManager.h"
-#include "arch/MovieTexture/MovieTexture.h"
-#include "RageUtil.h"
+
+#include <map>
+#include <string>
+
 #include "RageLog.h"
-#include "RageDisplay.h"
+#include "RageModelGeometry.h"
+#include "RageUtil.h"
+#include "global.h"
 
 ModelManager*		MODELMAN		= nullptr; // global and accessible from anywhere in our program
 

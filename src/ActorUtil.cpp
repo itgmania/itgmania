@@ -1,23 +1,30 @@
-#include "global.h"
 #include "ActorUtil.h"
-#include "ThemeManager.h"
+
+#include <algorithm>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
+
+#include "Actor.h"
+#include "Course.h"
+#include "EnumHelper.h"
+#include "GameState.h"
+#include "IniFile.h"
+#include "LuaManager.h"
 #include "PrefsManager.h"
+#include "RageException.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
-#include "EnumHelper.h"
+#include "Song.h"
+#include "StdString.h"
+#include "ThemeManager.h"
 #include "XmlFile.h"
 #include "XmlFileUtil.h"
-#include "IniFile.h"
-#include "LuaManager.h"
-#include "Song.h"
-#include "Course.h"
-#include "GameState.h"
-
 #include "arch/Dialog/Dialog.h"
-
-#include <vector>
-
+#include "global.h"
 
 // Actor registration
 static std::map<std::string,CreateActorFn>	*g_pmapRegistrees = nullptr;

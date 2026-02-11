@@ -1,6 +1,8 @@
 #ifndef LocalizedString_H
 #define LocalizedString_H
 
+#include <string>
+
 class ILocalizedStringImpl
 {
 public:

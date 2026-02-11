@@ -1,8 +1,14 @@
-#include "global.h"
-#include "RageLog.h"
 #include "LightsDriver_PacDrive.h"
-#include "GameState.h"
-#include "Game.h"
+
+#include <cstring>
+#include <string>
+
+#include "GameInput.h"
+#include "LightsManager.h"
+#include "Preference.h"
+#include "StdString.h"
+#include "arch/Lights/LightsDriver.h"
+#include "archutils/Common/HidDevice.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(PacDrive);
 

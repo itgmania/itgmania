@@ -3,7 +3,6 @@
 
 #include "ActorFrame.h"
 #include "AutoActor.h"
-#include "PlayerNumber.h"
 #include "GameConstantsAndTypes.h"
 
 class PlayerState;

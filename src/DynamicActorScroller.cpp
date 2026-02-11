@@ -1,14 +1,18 @@
-#include "global.h"
 #include "DynamicActorScroller.h"
-#include "XmlFile.h"
-#include "LuaManager.h"
-#include "ActorUtil.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "LuaBinding.h"
 
+#include <climits>
 #include <cmath>
 #include <cstddef>
+#include <string>
+
+#include "Actor.h"
+#include "ActorScroller.h"
+#include "ActorUtil.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "RageUtil.h"
+#include "XmlFile.h"
+#include "global.h"
 
 DynamicActorScroller *DynamicActorScroller::Copy() const { return new DynamicActorScroller(*this); }
 

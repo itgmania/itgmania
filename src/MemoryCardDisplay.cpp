@@ -1,10 +1,16 @@
-#include "global.h"
 #include "MemoryCardDisplay.h"
-#include "ThemeManager.h"
-#include "MemoryCardManager.h"
-#include "RageUtil.h"
-#include "XmlFile.h"
+
+#include <string>
+
+#include "ActorFrame.h"
 #include "ActorUtil.h"
+#include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
+#include "MemoryCardManager.h"
+#include "PlayerNumber.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
+#include "XmlFile.h"
 
 REGISTER_ACTOR_CLASS( MemoryCardDisplay );
 

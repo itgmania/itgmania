@@ -1,20 +1,14 @@
-#include "global.h"
 #include <stdio.h>
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#include <sys/types.h>
-#include <sys/stat.h>
+
+#include "GameInput.h"
+#include "LightsManager.h"
+#include "arch/Lights/LightsDriver.h"
 
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif
 
-#include <errno.h>
 #include "LightsDriver_Linux_PIUIOBTN_Leds.h"
-#include "GameState.h"
-#include "Game.h"
-#include "RageLog.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS2(PIUIOBTN_Leds, Linux_PIUIOBTN_Leds);
 

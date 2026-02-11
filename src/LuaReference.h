@@ -1,8 +1,10 @@
 #ifndef LUA_REFERENCE_H
 #define LUA_REFERENCE_H
 
-#include "RageUtil_AutoPtr.h"
+#include <string>
+
 #include "LuaManager.h"
+#include "RageUtil_AutoPtr.h"
 
 struct lua_State;
 typedef lua_State Lua;

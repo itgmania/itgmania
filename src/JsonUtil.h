@@ -2,12 +2,14 @@
 #ifndef JsonUtil_H
 #define JsonUtil_H
 
-class RageFileBasic;
-#include "json/json.h"
-#include "RageUtil.h"
-
+#include <map>
+#include <string>
 #include <vector>
 
+#include "RageFileBasic.h"
+#include "RageUtil.h"
+#include "global.h"
+#include "json/json.h"
 
 namespace JsonUtil
 {

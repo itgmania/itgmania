@@ -1,26 +1,34 @@
-#include "global.h"
-
 #include "ScreenOptionsCourseOverview.h"
-#include "ScreenManager.h"
-#include "RageUtil.h"
-#include "GameState.h"
-#include "OptionRowHandler.h"
-#include "ProfileManager.h"
-#include "ScreenMiniMenu.h"
-#include "LocalizedString.h"
-#include "SongManager.h"
-#include "SongUtil.h"
-#include "ScreenTextEntry.h"
-#include "GameManager.h"
-#include "Profile.h"
-#include "ScreenPrompt.h"
-#include "PlayerState.h"
-#include "Style.h"
-#include "PrefsManager.h"
-#include "RageUtil/RandomNumbers.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
+#include "CourseUtil.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "LocalizedString.h"
+#include "MessageManager.h"
+#include "OptionRowHandler.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenMiniMenu.h"
+#include "ScreenOptions.h"
+#include "ScreenPrompt.h"
+#include "ScreenTextEntry.h"
+#include "SongManager.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 enum CourseOverviewRow
 {

@@ -3,16 +3,20 @@
 #ifndef RAGE_UTIL_H
 #define RAGE_UTIL_H
 
-#include "config.hpp"
-#include "global.h"
-
 #include <cmath>
+#include <cstdarg>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <ctime>
 #include <map>
 #include <sstream>
+#include <string>
+#include <utility>
 #include <vector>
+
+#include "config.hpp"
+#include "global.h"
 
 class RageFileDriver;
 
@@ -407,10 +411,6 @@ std::string WcharDisplayText( wchar_t c );
 std::string Basename( const std::string &dir );
 std::string Dirname( const std::string &dir );
 std::string Capitalize( const std::string &s );
-
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h> /* correct place with correct definitions */
-#endif
 
 extern unsigned char g_UpperCase[256];
 extern unsigned char g_LowerCase[256];

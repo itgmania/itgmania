@@ -1,19 +1,37 @@
-#include "global.h"
 #include "ScreenSelectMaster.h"
-#include "ScreenManager.h"
-#include "GameManager.h"
-#include "ThemeManager.h"
+
+#include <algorithm>
+#include <cstddef>
+#include <cstdio>
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
+
+#include "ActorScroller.h"
+#include "ActorUtil.h"
+#include "AnnouncerManager.h"
+#include "AutoActor.h"
+#include "EnumHelper.h"
+#include "GameCommand.h"
+#include "GameInput.h"
 #include "GameSoundManager.h"
 #include "GameState.h"
-#include "AnnouncerManager.h"
-#include "GameCommand.h"
-#include "ActorUtil.h"
-#include "RageLog.h"
 #include "InputEventPlus.h"
-
-#include <cstddef>
-#include <set>
-#include <vector>
+#include "InputFilter.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenSelect.h"
+#include "ScreenWithMenuElements.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 static const char *MenuDirNames[] = {
 	"Up",

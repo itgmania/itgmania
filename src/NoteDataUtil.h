@@ -1,11 +1,12 @@
 #ifndef NOTEDATAUTIL_H
 #define NOTEDATAUTIL_H
 
-#include "GameConstantsAndTypes.h"
-#include "NoteTypes.h"
-
+#include <string>
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
 
 class PlayerOptions;
 struct RadarValues;

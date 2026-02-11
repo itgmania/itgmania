@@ -2,6 +2,7 @@
 #define NOTES_LOADER_H
 
 #include <set>
+#include <string>
 
 class Song;
 

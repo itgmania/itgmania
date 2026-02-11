@@ -3,8 +3,8 @@
 #ifndef CsvFile_H
 #define CsvFile_H
 
+#include <string>
 #include <vector>
-
 
 class RageFileBasic;
 

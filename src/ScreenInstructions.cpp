@@ -1,6 +1,8 @@
-#include "global.h"
 #include "ScreenInstructions.h"
 
+#include "InputQueue.h"
+#include "Screen.h"
+#include "ScreenMessage.h"
 
 REGISTER_SCREEN_CLASS( ScreenInstructions );
 

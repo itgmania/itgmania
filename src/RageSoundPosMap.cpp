@@ -1,14 +1,14 @@
-#include "global.h"
 #include "RageSoundPosMap.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageTimer.h"
 
 #include <cinttypes>
-#include <climits>
-#include <cmath>
 #include <cstdint>
+#include <cstdlib>
 #include <deque>
+#include <limits>
+#include <utility>
+
+#include "RageLog.h"
+#include "RageTimer.h"
 
 // NOTE(sukibaby): The number of frames we should keep pos_map data for.
 // File bitrate, metadata, etc will factor in here. 80k is a safe value

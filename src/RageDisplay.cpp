@@ -1,25 +1,38 @@
-#include "global.h"
 #include "RageDisplay.h"
-#include "RageTimer.h"
-#include "RageLog.h"
-#include "RageMath.h"
-#include "RageUtil.h"
-#include "RageFile.h"
-#include "RageSurface_Save_BMP.h"
-#include "RageSurface_Save_JPEG.h"
-#include "RageSurface_Save_PNG.h"
-#include "RageSurfaceUtils_Zoom.h"
-#include "RageSurface.h"
-#include "Preference.h"
-#include "LocalizedString.h"
-#include "DisplaySpec.h"
-#include "arch/ArchHooks/ArchHooks.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <string>
 #include <vector>
 
+#include "DisplaySpec.h"
+#include "EnumHelper.h"
+#include "LocalizedString.h"
+#include "LuaManager.h"
+#include "ModelTypes.h"
+#include "Preference.h"
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageMath.h"
+#include "RageSurface.h"
+#include "RageSurfaceUtils_Zoom.h"
+#include "RageSurface_Save_BMP.h"
+#include "RageSurface_Save_JPEG.h"
+#include "RageSurface_Save_PNG.h"
+#include "RageTimer.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "arch/ArchHooks/ArchHooks.h"
+#include "config.hpp"
+#include "global.h"
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 // Statistics stuff
 RageTimer	g_LastCheckTimer;

@@ -1,11 +1,14 @@
-#include "global.h"
 #include "Preference.h"
-#include "XmlFile.h"
-#include "RageLog.h"
+
+#include <string>
+
 #include "LuaManager.h"
 #include "MessageManager.h"
+#include "RageLog.h"
+#include "StdString.h"
 #include "SubscriptionManager.h"
-
+#include "XmlFile.h"
+#include "global.h"
 
 static SubscriptionManager<IPreference> m_Subscribers;
 

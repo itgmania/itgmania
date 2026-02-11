@@ -1,6 +1,9 @@
-#include "global.h"
 #include "DialogDriver_Win32.h"
+
+#include <string>
+
 #include "RageUtil.h"
+#include "global.h"
 #include "LocalizedString.h"
 #include "ThemeManager.h"
 #include "ProductInfo.h"

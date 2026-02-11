@@ -3,9 +3,11 @@
 #ifndef RAGEBITMAPTEXTURE_H
 #define RAGEBITMAPTEXTURE_H
 
-#include "RageTexture.h"
-
 #include <cstddef>
+#include <cstdint>
+
+#include "RageTexture.h"
+#include "RageTextureID.h"
 
 class RageBitmapTexture : public RageTexture
 {

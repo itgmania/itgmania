@@ -3,6 +3,7 @@
 #ifndef RAGE_UTIL_CIRCULAR_BUFFER
 #define RAGE_UTIL_CIRCULAR_BUFFER
 
+#include <algorithm>
 #include <cstring>
 
 /* Lock-free circular buffer.  This should be threadsafe if one thread is reading

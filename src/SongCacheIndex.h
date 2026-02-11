@@ -1,6 +1,8 @@
 #ifndef SONG_CACHE_INDEX_H
 #define SONG_CACHE_INDEX_H
 
+#include <string>
+
 #include "IniFile.h"
 #include "RageThreads.h"
 

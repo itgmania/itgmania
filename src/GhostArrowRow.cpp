@@ -1,18 +1,23 @@
-#include "global.h"
 #include "GhostArrowRow.h"
-#include "RageUtil.h"
-#include "GameConstantsAndTypes.h"
-#include "ArrowEffects.h"
-#include "NoteSkinManager.h"
-#include "GameState.h"
-#include "Game.h"
-#include "PlayerState.h"
-#include "Style.h"
-#include "ActorUtil.h"
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "ArrowEffects.h"
+#include "Game.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "GameState.h"
+#include "MessageManager.h"
+#include "NoteDisplay.h"
+#include "NoteSkinManager.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "RageUtil.h"
+#include "Style.h"
+#include "global.h"
 
 void GhostArrowRow::Load( const PlayerState* pPlayerState, float fYReverseOffset )
 {

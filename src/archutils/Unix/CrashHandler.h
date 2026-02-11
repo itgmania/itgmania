@@ -1,10 +1,11 @@
 #ifndef CRASH_HANDLER_H
 #define CRASH_HANDLER_H
 
+#include <sys/signal.h>
+
 #include <csignal>
 #include <cstdint>
-
-#include <ucontext.h>
+#include <string>
 
 namespace CrashHandler
 {

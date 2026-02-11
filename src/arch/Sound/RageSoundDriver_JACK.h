@@ -1,11 +1,12 @@
 #ifndef RAGE_SOUND_JACK
 #define RAGE_SOUND_JACK
 
-#include "RageSoundDriver.h"
+#include <jack/jack.h>
 
 #include <cstdint>
+#include <string>
 
-#include <jack/jack.h>
+#include "RageSoundDriver.h"
 
 #define USE_RAGE_SOUND_JACK
 

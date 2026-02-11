@@ -1,10 +1,15 @@
 #ifndef RAGE_MOVIE_TEXTURE_GENERIC_H
 #define RAGE_MOVIE_TEXTURE_GENERIC_H
 
-#include "MovieTexture.h"
-
 #include <cstdint>
+#include <memory>
+#include <string>
 #include <thread>
+
+#include "MovieTexture.h"
+#include "RageTexture.h"
+#include "RageTextureID.h"
+#include "RageTypes.h"
 
 class FFMpeg_Helper;
 struct RageSurface;

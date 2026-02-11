@@ -1,5 +1,7 @@
-#include "global.h"
 #include "GamePreferences.h"
+
+#include "GameConstantsAndTypes.h"
+#include "Preference.h"
 
 // This options has weird interactions depending on m_bEventMode;
 // use GameState::GetCoinMode().

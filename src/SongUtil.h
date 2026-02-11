@@ -2,13 +2,13 @@
 
 #ifndef SONG_UTIL_H
 #define SONG_UTIL_H
-#include "PlayerNumber.h"
-#include "GameConstantsAndTypes.h"
-#include "Difficulty.h"
-
 #include <set>
+#include <string>
 #include <vector>
 
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
+#include "PlayerNumber.h"
 
 class Song;
 class Steps;

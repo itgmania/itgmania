@@ -1,17 +1,19 @@
-#include "global.h"
-#include "ActorUtil.h"
 #include "RageSurface_Load.h"
-#include "RageSurface_Load_PNG.h"
-#include "RageSurface_Load_JPEG.h"
-#include "RageSurface_Load_GIF.h"
-#include "RageSurface_Load_BMP.h"
-#include "RageUtil.h"
-#include "RageFile.h"
-#include "RageLog.h"
 
 #include <set>
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageSurface_Load_BMP.h"
+#include "RageSurface_Load_GIF.h"
+#include "RageSurface_Load_JPEG.h"
+#include "RageSurface_Load_PNG.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "global.h"
 
 static RageSurface *TryOpenFile( std::string sPath, bool bHeaderOnly, std::string &error, std::string format, bool &bKeepTrying )
 {

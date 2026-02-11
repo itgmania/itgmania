@@ -1,11 +1,13 @@
 #ifndef HOLD_JUDGMENT_H
 #define HOLD_JUDGMENT_H
 
-#include "ActorFrame.h"
-#include "GameConstantsAndTypes.h"
-#include "PlayerNumber.h"
-#include "AutoActor.h"
+#include <string>
 
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "GameConstantsAndTypes.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
 
 class HoldJudgment : public ActorFrame
 {

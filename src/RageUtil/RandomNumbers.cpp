@@ -1,6 +1,8 @@
-#include "global.h"
 
 #include "RandomNumbers.h"
+
+#include <cmath>
+#include <random>
 
 #include "LuaBinding.h"
 #include "LuaManager.h"

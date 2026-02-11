@@ -1,6 +1,9 @@
-#include "global.h"
 #include "Game.h"
-#include "RageLog.h"
+
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "RageUtil.h"
 
 TapNoteScore Game::MapTapNoteScore( TapNoteScore tns ) const
 {

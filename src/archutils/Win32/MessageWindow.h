@@ -5,6 +5,8 @@
 
 #include <windows.h>
 
+#include <string>
+
 class MessageWindow
 {
 public:

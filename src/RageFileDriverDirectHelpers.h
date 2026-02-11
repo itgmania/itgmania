@@ -3,6 +3,8 @@
 #ifndef RAGE_FILE_DRIVER_DIRECT_HELPERS_H
 #define RAGE_FILE_DRIVER_DIRECT_HELPERS_H
 
+#include <string>
+
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif
@@ -21,6 +23,7 @@
 #define DoWrite _write
 #define DoGetCwd _getcwd
 #else
+#include <unistd.h>
 #define DoOpen open
 #define DoRmdir rmdir
 #define DoLseek lseek

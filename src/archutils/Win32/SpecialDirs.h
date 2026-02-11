@@ -1,6 +1,8 @@
 #ifndef SpecialDirs_H
 #define SpecialDirs_H
 
+#include <string>
+
 namespace SpecialDirs
 {
 	std::string GetAppDataDir();

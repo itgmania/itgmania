@@ -3,12 +3,14 @@
 #ifndef ModIconRow_H
 #define ModIconRow_H
 
-#include "ActorFrame.h"
-#include "ModIcon.h"
-#include "ThemeMetric.h"
-
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "MessageManager.h"
+#include "ModIcon.h"
+#include "PlayerNumber.h"
+#include "ThemeMetric.h"
 
 class PlayerOptions;
 struct lua_State;

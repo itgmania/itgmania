@@ -3,6 +3,7 @@
 #ifndef ScreenSaveSync_H
 #define ScreenSaveSync_H
 
+#include "ScreenMessage.h"
 #include "ScreenPrompt.h"
 
 class ScreenSaveSync : public ScreenPrompt

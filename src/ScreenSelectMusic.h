@@ -3,21 +3,32 @@
 #ifndef SCREEN_SELECT_MUSIC_H
 #define SCREEN_SELECT_MUSIC_H
 
-#include "ScreenWithMenuElements.h"
-#include "Sprite.h"
-#include "BitmapText.h"
-#include "GameConstantsAndTypes.h"
-#include "MusicWheel.h"
-#include "FadingBanner.h"
-#include "RageUtil_BackgroundLoader.h"
-#include "ThemeMetric.h"
-#include "RageTexturePreloader.h"
-#include "TimingData.h"
-#include "GameInput.h"
-#include "OptionsList.h"
-
+#include <string>
 #include <vector>
 
+#include "AutoActor.h"
+#include "BitmapText.h"
+#include "Difficulty.h"
+#include "FadingBanner.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "InputEventPlus.h"
+#include "MessageManager.h"
+#include "MusicWheel.h"
+#include "OptionsList.h"
+#include "PlayerNumber.h"
+#include "RageSound.h"
+#include "RageTexturePreloader.h"
+#include "RageTimer.h"
+#include "RageUtil_BackgroundLoader.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "Sprite.h"
+#include "Steps.h"
+#include "ThemeMetric.h"
+#include "TimingData.h"
+#include "Trail.h"
+#include "global.h"
 
 enum SelectionState
 {

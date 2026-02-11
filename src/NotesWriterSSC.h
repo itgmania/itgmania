@@ -1,8 +1,8 @@
 #ifndef NOTES_WRITER_SSC_H
 #define NOTES_WRITER_SSC_H
 
+#include <string>
 #include <vector>
-
 
 class Song;
 class Steps;

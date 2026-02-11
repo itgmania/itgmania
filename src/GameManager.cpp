@@ -1,22 +1,26 @@
-#include "global.h"
-#include "StepMania.h"
-#include "arch/Dialog/Dialog.h"
 #include "GameManager.h"
-#include "GameConstantsAndTypes.h"
-#include "GameInput.h"	// for GameButton constants
-#include "GameLoop.h"  // for ChangeGame
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "NoteSkinManager.h"
-#include "RageInputDevice.h"
-#include "ThemeManager.h"
-#include "LightsManager.h"	// for NUM_CabinetLight
-#include "Game.h"
-#include "Style.h"
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "Game.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"  // for GameButton constants
+#include "GameLoop.h"   // for ChangeGame
+#include "InputMapper.h"
+#include "LightsManager.h"  // for NUM_CabinetLight
+#include "LuaManager.h"
+#include "NoteSkinManager.h"
+#include "RageException.h"
+#include "RageInputDevice.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "StepMania.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 GameManager*	GAMEMAN = nullptr;	// global and accessable from anywhere in our program
 

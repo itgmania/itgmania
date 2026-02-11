@@ -2,6 +2,7 @@
 #define LOW_LEVEL_WINDOW_H
 
 #include <set>
+#include <string>
 
 class DisplaySpec;
 typedef std::set<DisplaySpec> DisplaySpecs;

@@ -1,22 +1,28 @@
-#include "global.h"
 #include "ActorMultiVertex.h"
-#include "RageTextureManager.h"
-#include "XmlFile.h"
-#include "RageLog.h"
-#include "RageDisplay.h"
-#include "RageTexture.h"
-#include "RageTimer.h"
-#include "RageUtil.h"
-#include "ActorUtil.h"
-#include "LuaBinding.h"
-#include "LuaManager.h"
-#include "LocalizedString.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <numeric>
+#include <string>
 #include <vector>
+
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "CubicSpline.h"
+#include "EnumHelper.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "RageDisplay.h"
+#include "RageTexture.h"
+#include "RageTextureID.h"
+#include "RageTextureManager.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Tween.h"
+#include "XmlFile.h"
+#include "global.h"
 
 const float min_state_delay= 0.0001f;
 

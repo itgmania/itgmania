@@ -1,13 +1,14 @@
+#include "GameplayHelpers.h"
+
+#include <string>
 #include <vector>
 
-#include "global.h"
-
 #include "EnumHelper.h"
-#include "GameplayHelpers.h"
 #include "GameState.h"
 #include "LuaManager.h"
-#include "ThemeManager.h"
+#include "PlayerNumber.h"
 #include "Style.h"
+#include "ThemeManager.h"
 
 std::vector<NotefieldMargins> GetNotefieldMargins() {
 	LuaReference margin_func;

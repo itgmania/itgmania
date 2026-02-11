@@ -1,35 +1,43 @@
-#include "global.h"
 #include "RageUtil.h"
-#include "RageMath.h"
-#include "RageLog.h"
-#include "RageFile.h"
-#include "RageFileDriverDirectHelpers.h"
-#include "RageSoundReader_FileReader.h"
-#include "LocalizedString.h"
-#include "LuaBinding.h"
-#include "LuaManager.h"
-#include "RageUtil/Regex.h"
 
 #include <json/json.h>
-#include <pcre.h>
+#include <stdint.h>
 
+#include <algorithm>
 #include <atomic>
+#include <cctype>
 #include <cfloat>
 #include <cinttypes>
 #include <cmath>
+#include <cstdarg>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <functional>
 #include <iomanip>
+#include <ios>
+#include <iterator>
 #include <map>
-#include <numeric>
 #include <sstream>
+#include <stdexcept>
+#include <string>
+#include <utility>
 #include <vector>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <random>
-#include <climits>
+
+#include "LocalizedString.h"
+#include "LuaManager.h"
+#include "RageException.h"
+#include "RageFile.h"
+#include "RageFileDriverDirectHelpers.h"
+#include "RageLog.h"
+#include "RageSoundReader.h"
+#include "RageSoundReader_FileReader.h"
+#include "RageUtil/Regex.h"
+#include "StdString.h"
+#include "global.h"
 
 const std::string CUSTOM_SONG_PATH= "/@mem/";
 

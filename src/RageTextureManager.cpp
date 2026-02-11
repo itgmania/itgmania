@@ -18,17 +18,26 @@
  * overrides.
  */
 
-#include "global.h"
 #include "RageTextureManager.h"
-#include "RageBitmapTexture.h"
-#include "arch/MovieTexture/MovieTexture.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageDisplay.h"
-#include "ActorUtil.h"
 
+#include <algorithm>
 #include <cstdint>
+#include <iterator>
 #include <map>
+#include <string>
+#include <utility>
+
+#include "ActorUtil.h"
+#include "RageBitmapTexture.h"
+#include "RageDisplay.h"
+#include "RageException.h"
+#include "RageLog.h"
+#include "RageTexture.h"
+#include "RageTextureID.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "arch/MovieTexture/MovieTexture.h"
+#include "global.h"
 
 RageTextureManager*		TEXTUREMAN		= nullptr; // global and accessible from anywhere in our program
 

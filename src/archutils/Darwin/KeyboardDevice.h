@@ -1,10 +1,12 @@
 #ifndef KEYBOARD_DEVICE_H
 #define KEYBOARD_DEVICE_H
 
-#include "HIDDevice.h"
-
+#include <unordered_map>
 #include <vector>
 
+#include "HIDDevice.h"
+#include "RageInputDevice.h"
+#include "RageTimer.h"
 
 class KeyboardDevice : public HIDDevice
 {

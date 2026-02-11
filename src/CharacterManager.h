@@ -1,8 +1,8 @@
 #ifndef CHARACTER_MANAGER_H
 #define CHARACTER_MANAGER_H
 
+#include <string>
 #include <vector>
-
 
 class Character;
 struct lua_State;

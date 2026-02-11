@@ -1,32 +1,32 @@
-#include "global.h"
-#include "CrashHandlerInternal.h"
-#include "Crash.h"
-
-#include "arch/ArchHooks/ArchHooks.h"
-#include "archutils/Win32/WindowsResources.h"
-#include "archutils/Win32/DialogUtil.h"
-#include "archutils/Win32/ErrorStrings.h"
-#include "archutils/Win32/RestartProgram.h"
-#include "archutils/Win32/CrashHandlerNetworking.h"
-#include "archutils/Win32/WindowsDialogBox.h"
-#include "archutils/Win32/SpecialDirs.h"
-#include "ProductInfo.h"
-#include "RageUtil.h"
-#include "XmlFile.h"
-#include "XmlFileUtil.h"
-#include "LocalizedString.h"
-#include "RageFileDriverDeflate.h"
-#include "ver.h"
+#include <windows.h>
+#include <commctrl.h>
+#include <io.h>
 
 #include <cerrno>
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <vector>
 
-#include <windows.h>
-#include <commctrl.h>
+#include "Crash.h"
+#include "CrashHandlerInternal.h"
+#include "LocalizedString.h"
+#include "ProductInfo.h"
+#include "RageFileDriverDeflate.h"
+#include "RageUtil.h"
+#include "XmlFile.h"
+#include "XmlFileUtil.h"
+#include "arch/ArchHooks/ArchHooks.h"
+#include "archutils/Win32/CrashHandlerNetworking.h"
+#include "archutils/Win32/DialogUtil.h"
+#include "archutils/Win32/ErrorStrings.h"
+#include "archutils/Win32/RestartProgram.h"
+#include "archutils/Win32/SpecialDirs.h"
+#include "archutils/Win32/WindowsDialogBox.h"
+#include "archutils/Win32/WindowsResources.h"
 #include "dbghelp.h"
-#include <io.h>
+#include "global.h"
+#include "ver.h"
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif

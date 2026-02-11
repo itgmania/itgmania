@@ -1,19 +1,22 @@
 #ifndef COURSE_H
 #define COURSE_H
 
-#include "GameConstantsAndTypes.h"
-#include "Attack.h"
-#include "EnumHelper.h"
-#include "Trail.h"
-#include "RageTypes.h"
-#include "SongUtil.h"
-#include "StepsUtil.h"
-#include "RageUtil/RandomNumbers.h"
-
 #include <map>
 #include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "Attack.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "RadarValues.h"
+#include "RageTypes.h"
+#include "RageUtil/RandomNumbers.h"
+#include "SongUtil.h"
+#include "StepsUtil.h"
+#include "Trail.h"
 
 struct lua_State;
 class Style;

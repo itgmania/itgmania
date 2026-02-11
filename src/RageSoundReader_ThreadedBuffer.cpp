@@ -1,12 +1,15 @@
-#include "global.h"
 #include "RageSoundReader_ThreadedBuffer.h"
-#include "RageUtil.h"
-#include "RageTimer.h"
-#include "RageLog.h"
 
-#include <cmath>
-#include <thread>
+#include <algorithm>
 #include <chrono>
+#include <list>
+#include <string>
+#include <thread>
+
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
+#include "RageTimer.h"
+#include "global.h"
 
 /* Implement threaded read-ahead buffering.
  *

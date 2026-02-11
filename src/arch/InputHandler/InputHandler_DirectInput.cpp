@@ -1,18 +1,18 @@
-#include "global.h"
 #include "InputHandler_DirectInput.h"
 
-#include "RageUtil.h"
+#include "GamePreferences.h"  //needed for Axis Fix
+#include "InputFilter.h"
+#include "InputHandler_DirectInputHelper.h"
+#include "PrefsManager.h"
+#include "RageException.h"
 #include "RageLog.h"
+#include "RageUtil.h"
 #include "archutils/Win32/AppInstance.h"
 #include "archutils/Win32/DirectXHelpers.h"
 #include "archutils/Win32/ErrorStrings.h"
 #include "archutils/Win32/GraphicsWindow.h"
 #include "archutils/Win32/RegistryAccess.h"
-#include "InputFilter.h"
-#include "PrefsManager.h"
-#include "GamePreferences.h" //needed for Axis Fix
-
-#include "InputHandler_DirectInputHelper.h"
+#include "global.h"
 
 #ifdef NTDDI_WIN8 // Link to Xinput9_1_0.lib on Windows 8 SDK and above to ensure linkage to Xinput9_1_0.dll
 #pragma comment(lib, "Xinput9_1_0.lib")
@@ -20,11 +20,14 @@
 #pragma comment(lib, "xinput.lib")
 #endif
 
-#include <cmath>
-#include <XInput.h>
-#include <WbemIdl.h>
 #include <OleAuto.h>
+#include <WbemIdl.h>
+#include <XInput.h>
+
+#include <algorithm>
+#include <cmath>
 #include <limits>
+#include <string>
 #include <vector>
 
 // this may not be defined if we are using an older Windows SDK. (for instance, toolsetversion v140_xp does not define it)

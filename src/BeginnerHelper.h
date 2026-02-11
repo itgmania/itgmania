@@ -1,15 +1,14 @@
 #ifndef BEGINNER_HELPER_H
 #define BEGINNER_HELPER_H
 
-#include "ActorFrame.h"
-#include "Character.h"
-#include "Sprite.h"
-#include "AutoActor.h"
-#include "PlayerNumber.h"
-#include "NoteData.h"
-#include "ThemeMetric.h"
-
 #include <array>
+
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "NoteData.h"
+#include "PlayerNumber.h"
+#include "Sprite.h"
+#include "ThemeMetric.h"
 
 class Model;
 /** @brief A dancing character that follows the steps of the Song. */

@@ -1,12 +1,19 @@
-#include "global.h"
 #include "InputQueue.h"
-#include "RageTimer.h"
-#include "RageLog.h"
-#include "InputEventPlus.h"
-#include "InputMapper.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "GameInput.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "PlayerNumber.h"
+#include "RageLog.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "StdString.h"
 
 InputQueue*	INPUTQUEUE = nullptr;	// global and accessible from anywhere in our program
 

@@ -1,14 +1,24 @@
-#include "global.h"
-#include "PrefsManager.h"
 #include "ScreenUnlockStatus.h"
-#include "ThemeManager.h"
-#include "GameState.h"
-#include "RageLog.h"
-#include "UnlockManager.h"
-#include "SongManager.h"
+
+#include <string>
+
+#include "Actor.h"
 #include "ActorUtil.h"
-#include "Song.h"
+#include "BitmapText.h"
 #include "Course.h"
+#include "GameState.h"
+#include "PrefsManager.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenAttract.h"
+#include "ScreenMessage.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "Sprite.h"
+#include "ThemeManager.h"
+#include "UnlockManager.h"
+#include "global.h"
 
 #define UNLOCK_TEXT_SCROLL_X		THEME->GetMetricF("ScreenUnlockStatus","UnlockTextScrollX");
 #define UNLOCK_TEXT_SCROLL_START_Y	THEME->GetMetricF("ScreenUnlockStatus","UnlockTextScrollStartY")

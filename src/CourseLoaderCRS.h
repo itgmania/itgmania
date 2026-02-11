@@ -3,9 +3,12 @@
 #ifndef COURSE_LOADER_CRS_H
 #define COURSE_LOADER_CRS_H
 
+#include <string>
+#include <vector>
+
+#include "Course.h"
 #include "GameConstantsAndTypes.h"
 #include "MsdFile.h"
-#include "Course.h"
 
 class Course;
 class CourseEntry;

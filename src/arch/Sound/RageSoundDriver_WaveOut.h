@@ -1,13 +1,14 @@
 #ifndef RAGE_SOUND_WAVEOUT_H
 #define RAGE_SOUND_WAVEOUT_H
 
-#include "RageSoundDriver.h"
-#include "RageThreads.h"
-
-#include <cstdint>
-
 #include <windows.h>
 #include <mmsystem.h>
+
+#include <cstdint>
+#include <string>
+
+#include "RageSoundDriver.h"
+#include "RageThreads.h"
 
 class RageSoundDriver_WaveOut: public RageSoundDriver
 {

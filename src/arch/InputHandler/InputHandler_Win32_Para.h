@@ -3,10 +3,10 @@
 #ifndef INPUT_HANDLER_WIN32_PARA_H
 #define INPUT_HANDLER_WIN32_PARA_H
 
-#include "InputHandler.h"
-
 #include <vector>
 
+#include "InputHandler.h"
+#include "RageInputDevice.h"
 
 class InputHandler_Win32_Para: public InputHandler
 {

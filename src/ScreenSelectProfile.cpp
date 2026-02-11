@@ -1,10 +1,20 @@
-#include "global.h"
 #include "ScreenSelectProfile.h"
-#include "ScreenManager.h"
-#include "ProfileManager.h"
+
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
 #include "GameState.h"
-#include "MemoryCardManager.h"
 #include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "LuaManager.h"
+#include "MemoryCardManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "ProfileManager.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
 
 REGISTER_SCREEN_CLASS( ScreenSelectProfile );
 

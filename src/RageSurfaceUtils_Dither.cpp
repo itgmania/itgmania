@@ -1,11 +1,13 @@
-#include "global.h"
 #include "RageSurfaceUtils_Dither.h"
-#include "RageUtil.h"
-#include "RageSurface.h"
-#include "RageSurfaceUtils.h"
 
+#include <algorithm>
 #include <atomic>
 #include <cstdint>
+
+#include "RageSurface.h"
+#include "RageSurfaceUtils.h"
+#include "RageUtil.h"
+#include "global.h"
 
 #define DitherMatDim 4
 

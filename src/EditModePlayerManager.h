@@ -1,15 +1,14 @@
 
-#include "global.h"
+#include <memory>
+#include <unordered_map>
 
 #include "ActorFrame.h"
+#include "GameConstantsAndTypes.h"
 #include "GameplayAssist.h"
-#include "Player.h"
+#include "InputEventPlus.h"
 #include "NoteData.h"
-
-#include <iterator>
-#include <map>
-#include <unordered_map>
-#include <vector>
+#include "Player.h"
+#include "PlayerNumber.h"
 
 // This class is intended to manage player state during edit mode playback,
 // aka practice mode.

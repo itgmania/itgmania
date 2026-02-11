@@ -1,11 +1,12 @@
 #ifndef MOUSE_DEVICE_H
 #define MOUSE_DEVICE_H
 
-#include "HIDDevice.h"
-#include "InputFilter.h"
-
+#include <unordered_map>
 #include <vector>
 
+#include "HIDDevice.h"
+#include "RageInputDevice.h"
+#include "RageTimer.h"
 
 struct Mouse
 {

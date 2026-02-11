@@ -1,5 +1,7 @@
-#include "global.h"
 #include "RageTextureID.h"
+
+#include <string>
+
 #include "RageTextureManager.h"
 #include "RageUtil.h"
 

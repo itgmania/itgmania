@@ -1,12 +1,14 @@
-#include "global.h"
 #include "RandomSample.h"
-#include "RageSound.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageUtil/RandomNumbers.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
+#include "RageLog.h"
+#include "RageSound.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "StdString.h"
 
 RandomSample::RandomSample()
 {

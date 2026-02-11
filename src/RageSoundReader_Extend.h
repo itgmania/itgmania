@@ -3,6 +3,9 @@
 #ifndef RAGE_SOUND_READER_EXTEND
 #define RAGE_SOUND_READER_EXTEND
 
+#include <string>
+
+#include "RageSoundReader.h"
 #include "RageSoundReader_Filter.h"
 
 class RageSoundReader_Extend: public RageSoundReader_Filter

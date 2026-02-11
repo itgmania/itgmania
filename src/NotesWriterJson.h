@@ -3,6 +3,8 @@
 #ifndef NotesWriterJson_H
 #define NotesWriterJson_H
 
+#include <string>
+
 class Song;
 class Steps;
 

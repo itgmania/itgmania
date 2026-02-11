@@ -1,11 +1,12 @@
 #ifndef RAGE_SOUND_GENERIC_TEST
 #define RAGE_SOUND_GENERIC_TEST
 
-#include "DSoundHelpers.h"
-#include "RageThreads.h"
-#include "RageSoundDriver.h"
-
 #include <cstdint>
+#include <string>
+
+#include "DSoundHelpers.h"
+#include "RageSoundDriver.h"
+#include "RageThreads.h"
 
 class RageSoundDriver_DSound_Software: public RageSoundDriver
 {

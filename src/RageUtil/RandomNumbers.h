@@ -1,9 +1,6 @@
 #ifndef RAGEUTIL_RANDOMNUMBERS_H
 #define RAGEUTIL_RANDOMNUMBERS_H
 
-#include "global.h"
-
-#include <cmath>
 #include <ctime>
 #include <random>
 

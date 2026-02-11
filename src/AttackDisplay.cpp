@@ -1,13 +1,20 @@
-#include "global.h"
 #include "AttackDisplay.h"
-#include "ThemeManager.h"
-#include "GameState.h"
-#include "ActorUtil.h"
-#include "Character.h"
-#include "RageLog.h"
-#include <set>
-#include "PlayerState.h"
 
+#include <set>
+#include <string>
+
+#include "ActorFrame.h"
+#include "Attack.h"
+#include "Character.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 std::string GetAttackPieceName( const std::string &sAttack )
 {

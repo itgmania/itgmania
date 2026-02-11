@@ -1,16 +1,17 @@
-#include "global.h"
 #include "ScreenOptionsToggleSongs.h"
+
+#include <string>
+#include <vector>
+
 #include "OptionRowHandler.h"
-#include "RageUtil.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "Screen.h"
 #include "ScreenManager.h"
+#include "ScreenOptions.h"
 #include "Song.h"
 #include "SongManager.h"
 #include "UnlockManager.h"
-#include "PrefsManager.h"
-#include "MessageManager.h"
-
-#include <vector>
-
 
 // main page (group list)
 REGISTER_SCREEN_CLASS( ScreenOptionsToggleSongs );

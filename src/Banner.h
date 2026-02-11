@@ -3,9 +3,11 @@
 #ifndef BANNER_H
 #define BANNER_H
 
-#include "Sprite.h"
-#include "RageTextureID.h"
+#include <string>
+
 #include "GameConstantsAndTypes.h"
+#include "RageTextureID.h"
+#include "Sprite.h"
 class Song;
 class Course;
 class Character;

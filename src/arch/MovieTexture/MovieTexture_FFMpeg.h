@@ -3,11 +3,11 @@
 #ifndef RAGE_MOVIE_TEXTURE_FFMPEG_H
 #define RAGE_MOVIE_TEXTURE_FFMPEG_H
 
-#include "MovieTexture_Generic.h"
-
 #include <cstdint>
 #include <limits>
 #include <mutex>
+
+#include "MovieTexture_Generic.h"
 
 struct RageSurface;
 

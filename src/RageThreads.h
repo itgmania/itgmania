@@ -2,9 +2,7 @@
 #define RAGE_THREADS_H
 
 #include <cstdint>
-#include <limits>
-
-#include "StdString.h"
+#include <string>
 
 struct ThreadSlot;
 class RageTimer;

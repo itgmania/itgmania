@@ -1,20 +1,12 @@
-#include "global.h"
 #include "Backtrace.h"
-#include "RageUtil.h"
+
+#include <fcntl.h>
+#include <unistd.h>
 
 #include <cerrno>
 #include <cstddef>
-#include <cstdint>
 #include <cstdlib>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
+#include <cstring>
 
 #if defined(BACKTRACE_METHOD_X86_LINUX)
 #include "archutils/Common/PthreadHelpers.h"

@@ -1,18 +1,23 @@
 #ifndef NOTE_FIELD_H
 #define NOTE_FIELD_H
 
-#include "TimingData.h"
-#include "SongPosition.h"
-#include "Sprite.h"
-#include "ActorFrame.h"
-#include "BitmapText.h"
-#include "Quad.h"
-#include "NoteDisplay.h"
-#include "ReceptorArrowRow.h"
-#include "GhostArrowRow.h"
-
+#include <map>
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "BitmapText.h"
+#include "GameConstantsAndTypes.h"
+#include "GhostArrowRow.h"
+#include "LuaReference.h"
+#include "MessageManager.h"
+#include "NoteDisplay.h"
+#include "PlayerNumber.h"
+#include "Quad.h"
+#include "RageTypes.h"
+#include "ReceptorArrowRow.h"
+#include "Sprite.h"
 
 struct Attack;
 class NoteData;

@@ -1,18 +1,18 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
-#include "ActorFrame.h"
-#include "ScreenMessage.h"
-#include "InputFilter.h"
-#include "ThemeMetric.h"
-#include "PlayerNumber.h"
-#include "InputQueue.h"
-#include "CodeSet.h"
-#include "LightsManager.h"
-#include "EnumHelper.h"
-
+#include <map>
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "CodeSet.h"
+#include "EnumHelper.h"
+#include "InputQueue.h"
+#include "LightsManager.h"
+#include "LuaReference.h"
+#include "ScreenMessage.h"
+#include "ThemeMetric.h"
 
 class InputEventPlus;
 class Screen;

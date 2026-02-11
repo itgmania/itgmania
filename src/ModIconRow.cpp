@@ -1,16 +1,22 @@
-#include "global.h"
 #include "ModIconRow.h"
-#include "ThemeManager.h"
-#include "PlayerOptions.h"
-#include "GameState.h"
-#include "RageLog.h"
-#include "PlayerState.h"
-#include "ActorUtil.h"
-#include "XmlFile.h"
-#include "LuaManager.h"
 
+#include <algorithm>
+#include <cctype>
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "EnumHelper.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "ModIcon.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "RageUtil.h"
+#include "global.h"
 
 int OptionToPreferredColumn( std::string sOptionText );
 

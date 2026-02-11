@@ -1,10 +1,10 @@
-#include "global.h"
 #include "DisplaySpec.h"
-#include "LuaBinding.h"
-#include "RageLog.h"
 
+#include <iterator>
 #include <vector>
 
+#include "LuaBinding.h"
+#include "LuaManager.h"
 
 class LunaDisplayMode: public Luna<DisplayMode>
 {

@@ -1,9 +1,12 @@
 #ifndef SCREEN_SET_TIME_H
 #define SCREEN_SET_TIME_H
 
-#include "ScreenWithMenuElements.h"
+#include <ctime>
+
 #include "BitmapText.h"
+#include "InputQueue.h"
 #include "RageSound.h"
+#include "ScreenWithMenuElements.h"
 
 enum SetTimeSelection
 { 

@@ -1,9 +1,10 @@
 #ifndef ScoreDisplayLifeTime_H
 #define ScoreDisplayLifeTime_H
 
-#include "ScoreDisplay.h"
-#include "BitmapText.h"
 #include "AutoActor.h"
+#include "BitmapText.h"
+#include "GameConstantsAndTypes.h"
+#include "ScoreDisplay.h"
 
 /**
  * @brief Display a updating count of life time remaining.

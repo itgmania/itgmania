@@ -1,8 +1,12 @@
-#include "global.h"
+#include "SignalHandler.h"
+
+#include <signal.h>
+#include <sys/cdefs.h>
+#include <sys/signal.h>
+
+#include <csignal>
 
 #include "RageLog.h"
-#include "SignalHandler.h"
-#include "GetSysInfo.h"
 
 #if defined(HAVE_LIBPTHREAD)
 #include "archutils/Common/PthreadHelpers.h"

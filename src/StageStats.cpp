@@ -1,17 +1,30 @@
-#include "global.h"
 #include "StageStats.h"
-#include "GameState.h"
-#include "Steps.h"
-#include "Song.h"
-#include "RageLog.h"
-#include "PrefsManager.h"
-#include "PlayerState.h"
-#include "Style.h"
-#include "Profile.h"
-#include "ProfileManager.h"
 
+#include <algorithm>
+#include <climits>
+#include <string>
 #include <vector>
 
+#include "DateTime.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "HighScore.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "PlayerStageStats.h"
+#include "PlayerState.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "Steps.h"
+#include "Style.h"
+#include "global.h"
 
 /* Arcade:	for the current stage (one song).
  * Nonstop/Oni/Endless:	 for current course (which usually contains multiple songs)

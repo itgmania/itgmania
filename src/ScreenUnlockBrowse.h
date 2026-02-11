@@ -1,8 +1,10 @@
 #ifndef ScreenUnlockBrowse_H
 #define ScreenUnlockBrowse_H
 
-#include "ScreenSelectMaster.h"
 #include "FadingBanner.h"
+#include "InputQueue.h"
+#include "MessageManager.h"
+#include "ScreenSelectMaster.h"
 
 class ScreenUnlockBrowse : public ScreenSelectMaster
 {

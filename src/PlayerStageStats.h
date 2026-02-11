@@ -1,14 +1,15 @@
 #ifndef PlayerStageStats_H
 #define PlayerStageStats_H
 
-#include "Grade.h"
-#include "RadarValues.h"
-#include "HighScore.h"
-#include "PlayerNumber.h"
-
 #include <map>
+#include <string>
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
+#include "Grade.h"
+#include "HighScore.h"
+#include "PlayerNumber.h"
+#include "RadarValues.h"
 
 class Steps;
 class Style;

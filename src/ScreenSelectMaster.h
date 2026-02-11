@@ -1,14 +1,23 @@
 #ifndef ScreenSelectMaster_H
 #define ScreenSelectMaster_H
 
-#include "ScreenSelect.h"
-#include "RageSound.h"
-#include "RandomSample.h"
-#include "ActorUtil.h"
-#include "ActorScroller.h"
-
+#include <map>
+#include <string>
 #include <vector>
 
+#include "ActorScroller.h"
+#include "AutoActor.h"
+#include "EnumHelper.h"
+#include "GameInput.h"
+#include "InputQueue.h"
+#include "LuaReference.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "RageSound.h"
+#include "RandomSample.h"
+#include "ScreenMessage.h"
+#include "ScreenSelect.h"
+#include "ThemeMetric.h"
 
 enum MenuDir
 {

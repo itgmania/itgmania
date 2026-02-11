@@ -1,16 +1,23 @@
-#include "global.h"
 #include "NotesLoaderKSF.h"
-#include "RageUtil_CharConversions.h"
-#include "MsdFile.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "NoteData.h"
-#include "NoteTypes.h"
-#include "Song.h"
-#include "Steps.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
+#include "MsdFile.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RageUtil_CharConversions.h"
+#include "Song.h"
+#include "StdString.h"
+#include "Steps.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
+#include "global.h"
 
 static void HandleBunki( TimingData &timing, const float fEarlyBPM,
 			const float fCurBPM, const float fGap,

@@ -3,6 +3,8 @@
 #ifndef CODE_DETECTOR_H
 #define CODE_DETECTOR_H
 
+#include <string>
+
 #include "GameInput.h"
 
 enum Code {

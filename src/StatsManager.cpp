@@ -1,28 +1,41 @@
-#include "global.h"
 #include "StatsManager.h"
-#include "RageFileManager.h"
-#include "GameState.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "PrefsManager.h"
-#include "Steps.h"
-#include "StyleUtil.h"
-#include "LuaManager.h"
-#include "Profile.h"
-#include "XmlFile.h"
-#include "CryptManager.h"
-#include "XmlFileUtil.h"
-#include "Song.h"
-#include "RageFileDriverMemory.h"
-#include "NotesWriterSM.h"
-#include "PlayerOptions.h"
-#include "PlayerState.h"
-#include "Player.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
+#include "CourseUtil.h"
+#include "CryptManager.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "Grade.h"
+#include "LuaManager.h"
+#include "ModsGroup.h"
+#include "NotesWriterSM.h"
+#include "Player.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageFileDriverMemory.h"
+#include "RageLog.h"
+#include "Song.h"
+#include "SongUtil.h"
+#include "StdString.h"
+#include "Steps.h"
+#include "StyleUtil.h"
+#include "TrailUtil.h"
+#include "XmlFile.h"
+#include "XmlFileUtil.h"
+#include "global.h"
 
 StatsManager*	STATSMAN = nullptr;	// global object accessible from anywhere in the program
 

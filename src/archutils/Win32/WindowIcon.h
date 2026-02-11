@@ -3,6 +3,8 @@
 #define WINDOW_ICON_H
 
 #include <windows.h>
+
+#include <string>
 struct RageSurface;
 
 HICON IconFromSurface( const RageSurface *pImg );

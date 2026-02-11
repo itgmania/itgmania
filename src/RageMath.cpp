@@ -4,15 +4,18 @@
  * docs for details.
  */
 
-#include "global.h"
-#include "RageLog.h"
 #include "RageMath.h"
-#include "RageTypes.h"
 
+#include <algorithm>
 #include <cfloat>
 #include <cmath>
+#include <cstring>
 #include <vector>
 
+#include "LuaManager.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "global.h"
 
 void RageVec3ClearBounds( RageVector3 &mins, RageVector3 &maxs )
 {

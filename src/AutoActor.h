@@ -1,6 +1,8 @@
 #ifndef AutoActor_H
 #define AutoActor_H
 
+#include <string>
+
 class Actor;
 class XNode;
 

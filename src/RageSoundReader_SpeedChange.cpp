@@ -1,10 +1,15 @@
-#include "global.h"
 #include "RageSoundReader_SpeedChange.h"
-#include "RageUtil.h"
-#include "RageLog.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstring>
+#include <string>
+
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
+#include "RageUtil.h"
+#include "global.h"
 
 static const int WINDOW_SIZE_MS = 30;
 

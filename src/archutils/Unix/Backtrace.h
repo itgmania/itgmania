@@ -1,6 +1,8 @@
 #ifndef BACKTRACE_H
 #define BACKTRACE_H
 
+#include <sys/types.h>
+
 #include <cstddef>
 #include <cstdint>
 

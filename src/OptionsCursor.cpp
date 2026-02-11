@@ -1,10 +1,13 @@
-#include "global.h"
 #include "OptionsCursor.h"
-#include "RageUtil.h"
-#include "ThemeManager.h"
-#include "ActorUtil.h"
 
 #include <cmath>
+#include <string>
+
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "RageTypes.h"
+#include "ThemeManager.h"
+#include "Tween.h"
 
 OptionsCursor::OptionsCursor()
 {

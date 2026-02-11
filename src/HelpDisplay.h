@@ -1,10 +1,10 @@
 #ifndef HELP_DISPLAY_H
 #define HELP_DISPLAY_H
 
-#include "BitmapText.h"
-
+#include <string>
 #include <vector>
 
+#include "BitmapText.h"
 
 struct lua_State;
 /** @brief A BitmapText that cycles through messages. */

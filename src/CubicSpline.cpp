@@ -1,12 +1,15 @@
-#include "global.h"
 #include "CubicSpline.h"
-#include "RageLog.h"
-#include "RageUtil.h"
 
+#include <cmath>
 #include <cstddef>
+#include <cstdlib>
 #include <list>
 #include <vector>
 
+#include "LuaManager.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "global.h"
 
 // Spline solving optimization:
 // The tridiagonal part of the system of equations for a spline of size n is

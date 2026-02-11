@@ -3,12 +3,12 @@
 #ifndef RAGE_TEXTURE_H
 #define RAGE_TEXTURE_H
 
-#include "RageTypes.h"
-#include "RageTextureID.h"
-
 #include <cstdint>
+#include <string>
 #include <vector>
 
+#include "RageTextureID.h"
+#include "RageTypes.h"
 
 struct lua_State;
 class RageTexture

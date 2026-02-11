@@ -1,8 +1,8 @@
 #ifndef NOTES_LOADER_KSF_H
 #define NOTES_LOADER_KSF_H
 
+#include <string>
 #include <vector>
-
 
 class Song;
 class Steps;

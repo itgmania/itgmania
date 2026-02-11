@@ -1,14 +1,4 @@
-#include "global.h"
 #include "NetworkManager.h"
-#include "LuaManager.h"
-#include "ProductInfo.h"
-#include "RageFile.h"
-#include "RageFileManager.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "SpecialFiles.h"
-#include "StdString.h"
-#include "ver.h"
 
 #include <ixwebsocket/IXHttpClient.h>
 #include <ixwebsocket/IXNetSystem.h>
@@ -19,10 +9,29 @@
 #include <climits>
 #include <cstddef>
 #include <memory>
+#include <mutex>
 #include <sstream>
+#include <string>
+#include <thread>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "LuaManager.h"
+#include "Preference.h"
+#include "ProductInfo.h"
+#include "RageFile.h"
+#include "RageFileManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "SpecialFiles.h"
+#include "StdString.h"
+#include "ixwebsocket/IXHttp.h"
+#include "ixwebsocket/IXWebSocketHttpHeaders.h"
+#include "ixwebsocket/IXWebSocketMessage.h"
+#include "ixwebsocket/IXWebSocketMessageType.h"
+#include "ver.h"
 
 NetworkManager*	NETWORK = nullptr;	// global and accessible from anywhere in our program
 

@@ -1,9 +1,9 @@
-#include "global.h"
-
 #include "ScoreDisplayPercentage.h"
-#include "ThemeManager.h"
-#include "StatsManager.h"
+
+#include "PlayerStageStats.h"
 #include "PlayerState.h"
+#include "ScoreDisplay.h"
+#include "ThemeManager.h"
 
 ScoreDisplayPercentage::ScoreDisplayPercentage()
 {

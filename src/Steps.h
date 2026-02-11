@@ -1,19 +1,20 @@
 #ifndef STEPS_H
 #define STEPS_H
 
-#include "Attack.h"
-#include "GameConstantsAndTypes.h"
-#include "PlayerNumber.h"
-#include "Grade.h"
-#include "RadarValues.h"
-#include "Difficulty.h"
-#include "RageUtil_AutoPtr.h"
-#include "TimingData.h"
-#include "ColumnCues.h"
-#include "TechCounts.h"
-#include "MeasureInfo.h"
+#include <string>
 #include <vector>
 
+#include "Attack.h"
+#include "ColumnCues.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "PlayerNumber.h"
+#include "RadarValues.h"
+#include "RageUtil.h"
+#include "RageUtil_AutoPtr.h"
+#include "TechCounts.h"
+#include "TimingData.h"
 
 class Profile;
 class NoteData;

@@ -1,19 +1,24 @@
-#include "global.h"
 #include "NotesWriterDWI.h"
-#include "NoteTypes.h"
-#include "NoteData.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageFileManager.h"
-#include "RageFile.h"
-#include "NoteDataUtil.h"
-#include "RageFile.h"
-#include "Song.h"
-#include "Steps.h"
 
+#include <algorithm>
 #include <cmath>
+#include <map>
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
+#include "NoteData.h"
+#include "NoteDataUtil.h"
+#include "NoteTypes.h"
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "Steps.h"
+#include "TimingSegments.h"
+#include "global.h"
 
 std::string OptimizeDWIString( std::string holds, std::string taps );
 

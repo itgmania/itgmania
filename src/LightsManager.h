@@ -1,12 +1,12 @@
 #ifndef LightsManager_H
 #define LightsManager_H
 
-#include <vector>
 #include <queue>
+#include <string>
+#include <vector>
 
 #include "EnumHelper.h"
 #include "GameInput.h"
-#include "PlayerNumber.h"
 #include "Preference.h"
 #include "RageThreads.h"
 #include "RageTimer.h"

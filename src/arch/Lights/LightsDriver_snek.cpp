@@ -1,8 +1,10 @@
-#include "global.h"
-#include "RageLog.h"
 #include "LightsDriver_snek.h"
-#include "GameState.h"
-#include "Game.h"
+
+#include <cstdint>
+
+#include "GameInput.h"
+#include "LightsManager.h"
+#include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(snek);
 

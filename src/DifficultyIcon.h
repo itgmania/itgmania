@@ -3,10 +3,13 @@
 #ifndef DIFFICULTY_ICON_H
 #define DIFFICULTY_ICON_H
 
-#include "Sprite.h"
-#include "PlayerNumber.h"
-#include "GameConstantsAndTypes.h"
+#include <string>
+
+#include "Actor.h"
 #include "Difficulty.h"
+#include "PlayerNumber.h"
+#include "RageTextureID.h"
+#include "Sprite.h"
 class Steps;
 class Trail;
 

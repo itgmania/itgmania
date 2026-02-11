@@ -1,10 +1,10 @@
 #ifndef CODE_SET_H
 #define CODE_SET_H
 
-#include "InputQueue.h"
-
+#include <string>
 #include <vector>
 
+#include "InputQueue.h"
 
 struct Message;
 class InputQueueCodeSet

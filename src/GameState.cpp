@@ -1,53 +1,74 @@
-#include "global.h"
 #include "GameState.h"
+
+#include <algorithm>
+#include <climits>
+#include <cmath>
+#include <cstddef>
+#include <cstdlib>
+#include <ctime>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "Actor.h"
 #include "ActorUtil.h"
 #include "AdjustSync.h"
-#include "AnnouncerManager.h"
 #include "Bookkeeper.h"
 #include "Character.h"
 #include "CharacterManager.h"
+#include "Command.h"
 #include "CommonMetrics.h"
 #include "Course.h"
 #include "CryptManager.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
 #include "Game.h"
 #include "GameCommand.h"
 #include "GameConstantsAndTypes.h"
 #include "GameManager.h"
 #include "GamePreferences.h"
+#include "Grade.h"
 #include "HighScore.h"
+#include "InputMapper.h"
 #include "LightsManager.h"
+#include "LocalizedString.h"
+#include "LuaManager.h"
 #include "LuaReference.h"
-#include "MessageManager.h"
 #include "MemoryCardManager.h"
+#include "MessageManager.h"
+#include "ModsGroup.h"
 #include "NoteData.h"
 #include "NoteSkinManager.h"
+#include "PlayerNumber.h"
+#include "PlayerStageStats.h"
 #include "PlayerState.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "Profile.h"
 #include "ProfileManager.h"
+#include "RageException.h"
 #include "RageFile.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
+#include "RageThreads.h"
 #include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
 #include "Song.h"
 #include "SongManager.h"
+#include "SongOptions.h"
 #include "SongUtil.h"
 #include "StatsManager.h"
+#include "StdString.h"
 #include "StepMania.h"
 #include "Steps.h"
+#include "StepsUtil.h"
 #include "Style.h"
 #include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "Trail.h"
 #include "UnlockManager.h"
-#include "ScreenManager.h"
-#include "Screen.h"
-
-#include <cmath>
-#include <cstddef>
-#include <ctime>
-#include <set>
-#include <vector>
-
+#include "global.h"
 
 GameState*	GAMESTATE = nullptr;	// global and accessible from anywhere in our program
 

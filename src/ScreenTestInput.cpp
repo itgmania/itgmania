@@ -1,17 +1,23 @@
-#include "global.h"
 #include "ScreenTestInput.h"
-#include "ScreenManager.h"
-#include "RageLog.h"
-#include "InputMapper.h"
-#include "ThemeManager.h"
-#include "ScreenDimensions.h"
-#include "PrefsManager.h"
-#include "RageInput.h"
-#include "InputEventPlus.h"
-#include "LocalizedString.h"
 
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "BitmapText.h"
+#include "GameInput.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "LocalizedString.h"
+#include "MessageManager.h"
+#include "PrefsManager.h"
+#include "RageInput.h"
+#include "RageInputDevice.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
 
 class DeviceList: public BitmapText
 {

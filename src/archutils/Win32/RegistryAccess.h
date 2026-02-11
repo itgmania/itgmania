@@ -3,8 +3,8 @@
 #ifndef REGISTRY_ACCESS_H
 #define REGISTRY_ACCESS_H
 
+#include <string>
 #include <vector>
-
 
 namespace RegistryAccess
 {

@@ -1,11 +1,12 @@
 #ifndef GRAPH_DISPLAY_H
 #define GRAPH_DISPLAY_H
 
-#include "ActorFrame.h"
-#include "AutoActor.h"
-
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "RageTypes.h"
 
 class StageStats;
 class PlayerStageStats;

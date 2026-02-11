@@ -1,9 +1,11 @@
 #ifndef TECH_COUNTS_H
 #define TECH_COUNTS_H
 
-#include "GameConstantsAndTypes.h"
-#include "StepParityGenerator.h"
-#include "NoteData.h"
+#include <string>
+#include <vector>
+
+#include "EnumHelper.h"
+#include "StepParityDatastructs.h"
 
 /** @brief Unknown radar values are given a default value. */
 #define TECHCOUNTS_VAL_UNKNOWN -1

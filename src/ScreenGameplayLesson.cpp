@@ -1,13 +1,28 @@
-#include "global.h"
 #include "ScreenGameplayLesson.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "GamePreferences.h"
-#include "StatsManager.h"
-#include "Song.h"
 
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "AutoActor.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GamePreferences.h"
+#include "GameState.h"
+#include "InputEventPlus.h"
+#include "LuaManager.h"
+#include "LuaReference.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "PlayerStageStats.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenGameplay.h"
+#include "ScreenGameplayNormal.h"
+#include "ScreenMessage.h"
+#include "Song.h"
+#include "StatsManager.h"
+#include "global.h"
 
 REGISTER_SCREEN_CLASS( ScreenGameplayLesson );
 ScreenGameplayLesson::ScreenGameplayLesson()

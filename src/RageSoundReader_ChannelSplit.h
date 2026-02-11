@@ -3,10 +3,10 @@
 #ifndef RAGE_SOUND_READER_CHANNEL_SPLIT
 #define RAGE_SOUND_READER_CHANNEL_SPLIT
 
-#include "RageSoundReader.h"
-
+#include <string>
 #include <vector>
 
+#include "RageSoundReader.h"
 
 class RageSoundSplitterImpl;
 

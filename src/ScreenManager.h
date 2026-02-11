@@ -1,12 +1,11 @@
 #ifndef SCREEN_MANAGER_H
 #define SCREEN_MANAGER_H
 
-#include "ScreenMessage.h"
-#include "RageSound.h"
+#include <string>
+
 #include "PlayerNumber.h"
-
-#include <vector>
-
+#include "RageSound.h"
+#include "ScreenMessage.h"
 
 class Actor;
 class Screen;

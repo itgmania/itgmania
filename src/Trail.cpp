@@ -1,17 +1,23 @@
-#include "global.h"
 #include "Trail.h"
-#include "GameState.h"
-#include "Steps.h"
-#include "Song.h"
-#include "PlayerOptions.h"
-#include "NoteData.h"
-#include "NoteDataUtil.h"
-#include "CommonMetrics.h"
 
+#include <algorithm>
 #include <cmath>
 #include <numeric>
+#include <string>
 #include <vector>
 
+#include "Attack.h"
+#include "CommonMetrics.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "NoteData.h"
+#include "NoteDataUtil.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "Song.h"
+#include "Steps.h"
+#include "global.h"
 
 void TrailEntry::GetAttackArray( AttackArray &out ) const
 {

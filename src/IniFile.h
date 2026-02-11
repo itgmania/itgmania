@@ -3,6 +3,8 @@
 #ifndef INIFILE_H
 #define INIFILE_H
 
+#include <string>
+
 #include "XmlFile.h"
 
 class RageFileBasic;

@@ -3,9 +3,11 @@
 #ifndef RAGE_DISPLAY_D3D_H
 #define RAGE_DISPLAY_D3D_H
 
-#include "RageDisplay.h"
-
 #include <cstdint>
+#include <string>
+
+#include "RageDisplay.h"
+#include "RageTypes.h"
 
 class RageDisplay_D3D: public RageDisplay
 {

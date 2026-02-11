@@ -2,7 +2,14 @@
 // compile
 
 // clang-format off
-#include "global.h"
+#include "EnumHelper.h"
+#include "GameInput.h"
+#include "InputMapper.h"
+#include "LightsManager.h"
+#include "RageInputDevice.h"
+#include "StdString.h"
+#include "arch/InputHandler/InputHandler.h"
+#include "archutils/Common/HidDevice.h"
 #include "InputHandler_PumpHID.h"
 #include "PrefsManager.h"
 #include "RageLog.h"
@@ -12,22 +19,15 @@
 #include "Game.h"
 
 #include <cerrno>
-#include <cstdio>
+#include <cstdint>
+#include <string>
 #include <cstring>
-#include <set>
 #include <vector>
 
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#include "hidapi.h"
 // clang-format on
 
 // all of the known device pid's that use this communication protocol.

@@ -1,8 +1,11 @@
 #ifndef PREFSMANAGER_H
 #define PREFSMANAGER_H
 
-#include "Preference.h"
+#include <map>
+#include <string>
+
 #include "GameConstantsAndTypes.h"
+#include "Preference.h"
 
 class IniFile;
 

@@ -3,9 +3,12 @@
 #ifndef FADING_BANNER_H
 #define FADING_BANNER_H
 
-#include "Banner.h"
+#include <string>
+
 #include "ActorFrame.h"
-#include "RageTimer.h"
+#include "Banner.h"
+#include "GameConstantsAndTypes.h"
+#include "RageTextureID.h"
 
 class FadingBanner : public ActorFrame
 {

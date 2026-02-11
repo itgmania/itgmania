@@ -1,21 +1,29 @@
-#include "global.h"
 #include "NotesLoaderDWI.h"
-#include "RageLog.h"
-#include "MsdFile.h"
-#include "RageUtil.h"
-#include "RageUtil_CharConversions.h"
-#include "NoteData.h"
-#include "Song.h"
-#include "Steps.h"
-#include "GameInput.h"
-#include "NotesLoader.h"
-#include "PrefsManager.h"
-#include "Difficulty.h"
 
 #include <cstddef>
+#include <cstdio>
 #include <map>
+#include <set>
+#include <string>
 #include <vector>
 
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "MsdFile.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "NotesLoader.h"
+#include "PrefsManager.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "RageUtil_CharConversions.h"
+#include "Song.h"
+#include "StdString.h"
+#include "Steps.h"
+#include "TimingSegments.h"
+#include "global.h"
 
 Difficulty DwiCompatibleStringToDifficulty( const std::string& sDC );
 

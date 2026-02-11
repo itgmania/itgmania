@@ -2,6 +2,7 @@
 #define BACKTRACE_NAMES_H
 
 #include <cstdint>
+#include <string>
 
 struct BacktraceNames
 {

@@ -3,18 +3,20 @@
 // DO NOT USE stdio.h!  printf() calls malloc()!
 //#include <stdio.h>
 
-#include <cstddef>
-#include <cstdint>
 #include <windows.h>
 
-#include "global.h"
+#include <cstddef>
+#include <cstdint>
+#include <string>
+
+#include "CrashHandlerInternal.h"
+#include "PrefsManager.h"  // for g_bAutoRestart
+#include "RageLog.h"       // for RageLog::GetAdditionalLog and Flush
+#include "RageThreads.h"   // for GetCheckpointLogs
+#include "RestartProgram.h"
 #include "arch/Threads/Threads_Win32.h"
 #include "crash.h"
-#include "CrashHandlerInternal.h"
-#include "RageLog.h" // for RageLog::GetAdditionalLog and Flush
-#include "RageThreads.h" // for GetCheckpointLogs
-#include "PrefsManager.h" // for g_bAutoRestart
-#include "RestartProgram.h"
+#include "global.h"
 
 // WARNING: This is called from crash-time conditions!  No malloc() or new!!!
 

@@ -1,14 +1,13 @@
 #ifndef STDSTRING_H
 #define STDSTRING_H
 
-#include <string>
-#include <algorithm>
-
 #include <cctype>
 #include <cstdarg>
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
+#include <string>
+#include <utility>
 
 /* In RageUtil: */
 void MakeUpper( char *p, size_t iLen );
@@ -56,7 +55,8 @@ inline bool EqualsNoCase(const std::string& s1, const std::string& s2) {
 inline int CompareNoCase(const std::string& s1, const std::string& s2) {
   size_t len = s1.length();
   size_t other_len = s2.length();
-  for (size_t i = 0; i < std::min(len, other_len); ++i) {
+  size_t end = len < other_len ? len : other_len;
+  for (size_t i = 0; i < end; ++i) {
     int a = tolower(s1[i]);
     int b = tolower(s2[i]);
     if (a - b != 0) {
@@ -66,13 +66,21 @@ inline int CompareNoCase(const std::string& s1, const std::string& s2) {
   return len - other_len;
 }
 inline std::string Left(const std::string& s, int n) {
-  n = std::max(n, 0);
-  n = std::min(n, static_cast<int>(s.size()));
+  if (n < 0) {
+    n = 0;
+  }
+  if (n > static_cast<int>(s.size())) {
+    n = static_cast<int>(s.size());
+  }
   return s.substr(0, n);
 }
 inline std::string Right(const std::string& s, int n) {
-  n = std::max(n, 0);
-  n = std::min(n, static_cast<int>(s.size()));
+  if (n < 0) {
+    n = 0;
+  }
+  if (n > static_cast<int>(s.size())) {
+    n = static_cast<int>(s.size());
+  }
   return s.substr(static_cast<int>(s.size()) - n);
 }
 inline void Replace(std::string& s, const std::string& a, const std::string& b) {

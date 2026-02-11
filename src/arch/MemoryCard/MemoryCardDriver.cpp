@@ -1,11 +1,16 @@
-#include "global.h"
 #include "MemoryCardDriver.h"
-#include "RageFileManager.h"
-#include "RageLog.h"
-#include "ProfileManager.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "MemoryCardDriverThreaded_Folder.h"
+#include "MemoryCardDriver_Null.h"
+#include "Preference.h"
+#include "ProfileManager.h"
+#include "RageFileManager.h"
+#include "RageLog.h"
 
 static const std::string TEMP_MOUNT_POINT = "/@mctemptimeout/";
 
@@ -134,7 +139,6 @@ bool MemoryCardDriver::DoOneUpdate( bool bMount, std::vector<UsbStorageDevice>& 
 	return true;
 }
 
-#include "arch/arch_default.h"
 MemoryCardDriver *MemoryCardDriver::Create()
 {
 	MemoryCardDriver *ret = nullptr;

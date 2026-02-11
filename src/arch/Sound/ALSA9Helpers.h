@@ -2,6 +2,7 @@
 #define ALSA9_HELPERS_H
 
 #include <cstdint>
+#include <string>
 
 #define ALSA_PCM_NEW_HW_PARAMS_API
 #define ALSA_PCM_NEW_SW_PARAMS_API

@@ -1,12 +1,15 @@
-#include "global.h"
 #include "RageSurface_Load_BMP.h"
-#include "RageFile.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageSurface.h"
-#include "RageUtil/Endian.h"
 
+#include <algorithm>
 #include <cstdint>
+#include <cstring>
+#include <string>
+
+#include "RageFile.h"
+#include "RageSurface.h"
+#include "RageSurface_Load.h"
+#include "RageUtil.h"
+#include "RageUtil/Endian.h"
 
 using namespace FileReading;
 

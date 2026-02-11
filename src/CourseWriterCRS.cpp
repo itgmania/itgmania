@@ -1,14 +1,20 @@
-#include "global.h"
 #include "CourseWriterCRS.h"
+
+#include <string>
+#include <vector>
+
+#include "Attack.h"
 #include "Course.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "RadarValues.h"
 #include "RageFile.h"
+#include "RageFileDriverMemory.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "Song.h"
-#include "RageFileDriverMemory.h"
-
-#include <vector>
-
+#include "global.h"
 
 /** @brief Load the difficulty names from CourseLoaderCRS. */
 extern const char *g_CRSDifficultyNames[]; // in CourseLoaderCRS

@@ -1,10 +1,13 @@
 #ifndef SextetUtils_H
 #define SextetUtils_H
 
-#include "LightsDriver.h"
-
 #include <cstddef>
 #include <cstdint>
+
+#include "EnumHelper.h"
+#include "GameInput.h"
+#include "LightsDriver.h"
+#include "LightsManager.h"
 
 /*
  * Utility functions that both `LightsDriver_Win32Serial` and `LightsDriver_SextetStream`

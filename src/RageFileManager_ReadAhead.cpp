@@ -1,17 +1,12 @@
-#include "global.h"
 #include "RageFileManager_ReadAhead.h"
-#include "RageThreads.h"
-#include "RageLog.h"
 
 #include <cerrno>
 #include <cstddef>
-#include <vector>
+
+#include "RageFileBasic.h"
 
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
-#endif
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
 #endif
 #if defined(HAVE_SYS_TYPES_H)
 #include <sys/types.h>

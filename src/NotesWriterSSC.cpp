@@ -1,22 +1,32 @@
-#include "global.h"
+#include "NotesWriterSSC.h"
+
 #include <cerrno>
 #include <cstring>
-#include "NotesWriterSSC.h"
+#include <string>
+#include <vector>
+
+#include "Attack.h"
 #include "BackgroundUtil.h"
-#include "GameManager.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
 #include "LocalizedString.h"
 #include "NoteTypes.h"
+#include "PlayerNumber.h"
 #include "Profile.h"
 #include "ProfileManager.h"
+#include "RadarValues.h"
 #include "RageFile.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "Song.h"
+#include "StdString.h"
 #include "Steps.h"
-
-#include <vector>
-
+#include "TechCounts.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
+#include "global.h"
 
 /**
  * @brief Turn a vector of lines into a single line joined by newline characters.

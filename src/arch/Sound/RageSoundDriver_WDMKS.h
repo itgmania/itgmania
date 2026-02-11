@@ -1,12 +1,13 @@
 #ifndef RAGE_SOUND_WAVEOUT_H
 #define RAGE_SOUND_WAVEOUT_H
 
-#include "RageSoundDriver.h"
-#include "RageThreads.h"
+#include <windows.h>
 
 #include <cstdint>
+#include <string>
 
-#include <windows.h>
+#include "RageSoundDriver.h"
+#include "RageThreads.h"
 
 struct WinWdmStream;
 struct WinWdmFilter;

@@ -1,9 +1,11 @@
-#include "global.h"
 #include "ScreenUnlockCelebrate.h"
-#include "UnlockManager.h"
-#include "LuaManager.h"
-#include "GameState.h"
 
+#include "GameState.h"
+#include "LuaManager.h"
+#include "Screen.h"
+#include "ScreenUnlockBrowse.h"
+#include "UnlockManager.h"
+#include "global.h"
 
 REGISTER_SCREEN_CLASS( ScreenUnlockCelebrate );
 

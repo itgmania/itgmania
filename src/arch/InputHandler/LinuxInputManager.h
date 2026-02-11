@@ -1,9 +1,9 @@
 #ifndef LINUX_INPUT_MANAGER
 #define LINUX_INPUT_MANAGER 1
 
+#include <string>
 #include <vector>
 
-#include "global.h"
 class InputHandler_Linux_Joystick;
 class InputHandler_Linux_Event;
 

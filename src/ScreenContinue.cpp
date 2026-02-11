@@ -1,15 +1,21 @@
-#include "global.h"
 #include "ScreenContinue.h"
-#include "ScreenManager.h"
-#include "ActorUtil.h"
-#include "GameState.h"
-#include "RageLog.h"
-#include "InputEventPlus.h"
-#include "MenuTimer.h"
-#include "MemoryCardManager.h"
 
+#include <algorithm>
 #include <cmath>
 
+#include "EnumHelper.h"
+#include "GameInput.h"
+#include "GameState.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "MemoryCardManager.h"
+#include "MenuTimer.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
 
 REGISTER_SCREEN_CLASS( ScreenContinue );
 

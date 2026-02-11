@@ -1,16 +1,28 @@
-#include "global.h"
 #include "ScreenSelect.h"
-#include "ScreenManager.h"
-#include "GameSoundManager.h"
-#include "RageLog.h"
-#include "AnnouncerManager.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "GameCommand.h"
-#include "InputEventPlus.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <string>
 #include <vector>
+
+#include "Command.h"
+#include "GameCommand.h"
+#include "GameInput.h"
+#include "GameSoundManager.h"
+#include "GameState.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 #define CHOICE_NAMES		THEME->GetMetric (m_sName,"ChoiceNames")
 #define CHOICE( s )		THEME->GetMetric (m_sName,ssprintf("Choice%s",s.c_str()))

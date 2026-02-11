@@ -1,9 +1,15 @@
 #include "LightsDriver_fusion.h"
 
+#include <cstring>
+#include <string>
+
 #include "Game.h"
+#include "GameInput.h"
 #include "GameState.h"
-#include "RageLog.h"
-#include "global.h"
+#include "InputMapper.h"
+#include "LightsManager.h"
+#include "StdString.h"
+#include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(fusion);
 

@@ -1,4 +1,4 @@
-#include "global.h"
+#include <cstdlib>
 
 /* Newer g++ versions (around 4.2) output __stack_chk_fail calls.  This is grossly
  * backwards-incompatible.  It can be disabled, but you'd have to disable it in any

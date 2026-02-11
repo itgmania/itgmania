@@ -15,24 +15,30 @@
  * for imported BMS files, which don't have an offset value, but it's annoying.
  */
 
-#include "global.h"
 #include "AutoKeysounds.h"
+
+#include <algorithm>
+#include <climits>
+#include <string>
+#include <vector>
+
+#include "EnumHelper.h"
 #include "GameState.h"
-#include "Song.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "RageSoundManager.h"
 #include "RageSoundReader_Chain.h"
-#include "RageSoundReader_ChannelSplit.h"
 #include "RageSoundReader_Extend.h"
+#include "RageSoundReader_FileReader.h"
 #include "RageSoundReader_Merge.h"
 #include "RageSoundReader_Pan.h"
 #include "RageSoundReader_PitchChange.h"
 #include "RageSoundReader_PostBuffering.h"
 #include "RageSoundReader_ThreadedBuffer.h"
-#include "RageSoundManager.h"
-#include "RageLog.h"
-#include "RageSoundReader_FileReader.h"
-
-#include <vector>
-
+#include "RageUtil.h"
+#include "Song.h"
+#include "global.h"
 
 void AutoKeysounds::Load( PlayerNumber pn, const NoteData& ndAutoKeysoundsOnly )
 {

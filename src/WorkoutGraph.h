@@ -3,11 +3,11 @@
 #ifndef WorkoutGraph_H
 #define WorkoutGraph_H
 
-#include "ActorFrame.h"
-#include "Sprite.h"
-
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "Sprite.h"
 
 class Trail;
 

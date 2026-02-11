@@ -1,22 +1,34 @@
-#include "global.h"
 #include "NoteDataUtil.h"
-#include "NoteData.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "PlayerOptions.h"
-#include "Song.h"
-#include "Style.h"
-#include "GameState.h"
-#include "RadarValues.h"
-#include "TimingData.h"
-#include "RageUtil/RandomNumbers.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
+#include "Attack.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PrefsManager.h"
+#include "RadarValues.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "Song.h"
+#include "Style.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
+#include "global.h"
 
 // TODO: Remove these constants that aren't time signature-aware
 static const int BEATS_PER_MEASURE = 4;

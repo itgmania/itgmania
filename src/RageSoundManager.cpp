@@ -8,20 +8,27 @@
  *  - sound detaching ("play and delete when done playing")
  */
 
-#include "global.h"
 #include "RageSoundManager.h"
-#include "RageUtil.h"
-#include "RageSound.h"
-#include "RageLog.h"
-#include "RageTimer.h"
-#include "RageSoundReader_Preload.h"
-#include "LocalizedString.h"
-#include "Preference.h"
-#include "RageSoundReader_PostBuffering.h"
-
-#include "arch/Sound/RageSoundDriver.h"
 
 #include <cstdint>
+#include <map>
+#include <string>
+#include <utility>
+
+#include "LocalizedString.h"
+#include "Preference.h"
+#include "RageException.h"
+#include "RageLog.h"
+#include "RageSound.h"
+#include "RageSoundConstants.h"
+#include "RageSoundReader_PostBuffering.h"
+#include "RageSoundReader_Preload.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "arch/Sound/RageSoundDriver.h"
+#include "global.h"
 
 /*
  * The lock ordering requirements are:

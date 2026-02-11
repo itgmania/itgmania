@@ -1,16 +1,17 @@
-#include "global.h"
 #include "MemoryCardDriverThreaded_Windows.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "archutils/Win32/ErrorStrings.h"
-#include "PlayerNumber.h"
-#include "MemoryCardManager.h"
-#include "RageUtil/RandomNumbers.h"
 
 #include <cmath>
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "MemoryCardManager.h"
+#include "PlayerNumber.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "archutils/Win32/ErrorStrings.h"
+#include "global.h"
 
 MemoryCardDriverThreaded_Windows::MemoryCardDriverThreaded_Windows()
 {

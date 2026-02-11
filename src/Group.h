@@ -1,18 +1,10 @@
 #ifndef GROUP_H
 #define GROUP_H
 
-#include "global.h"
-
-#include "ActorFrame.h"
-#include "GameplayAssist.h"
-#include "Player.h"
-#include "NoteData.h"
-
-#include <iterator>
-#include <map>
-#include <unordered_map>
+#include <string>
 #include <vector>
 
+#include "Attack.h"
 
 struct lua_State;
 class Group

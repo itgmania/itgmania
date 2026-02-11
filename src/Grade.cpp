@@ -1,10 +1,14 @@
-#include "global.h"
 #include "Grade.h"
-#include "RageUtil.h"
-#include "ThemeManager.h"
-#include "RageLog.h"
+
+#include <cmath>
+#include <cstdio>
+#include <string>
+
 #include "EnumHelper.h"
-#include "LuaManager.h"
+#include "RageLog.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
 
 LuaXType( Grade );
 

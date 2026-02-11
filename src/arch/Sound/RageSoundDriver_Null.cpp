@@ -1,11 +1,11 @@
-#include "global.h"
 #include "RageSoundDriver_Null.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "PrefsManager.h"
-#include "RageSoundConstants.h"
 
 #include <cstdint>
+
+#include "PrefsManager.h"
+#include "RageSoundConstants.h"
+#include "RageTimer.h"
+#include "arch/Sound/RageSoundDriver.h"
 
 REGISTER_SOUND_DRIVER_CLASS( Null );
 

@@ -1,17 +1,27 @@
-#include "global.h"
 #include "Banner.h"
+
+#include <string>
+
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "Character.h"
+#include "CharacterManager.h"
+#include "Course.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
 #include "ImageCache.h"
-#include "SongManager.h"
+#include "LuaManager.h"
+#include "PrefsManager.h"
+#include "RageTextureID.h"
+#include "RageTextureManager.h"
+#include "RageTypes.h"
 #include "RageUtil.h"
 #include "Song.h"
-#include "RageTextureManager.h"
-#include "Course.h"
-#include "Character.h"
+#include "SongManager.h"
+#include "Sprite.h"
+#include "ThemeManager.h"
 #include "ThemeMetric.h"
-#include "CharacterManager.h"
-#include "ActorUtil.h"
 #include "UnlockManager.h"
-#include "PrefsManager.h"
 
 REGISTER_ACTOR_CLASS( Banner );
 

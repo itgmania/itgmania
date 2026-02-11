@@ -3,11 +3,11 @@
 #ifndef RAGEINPUT_H
 #define RAGEINPUT_H
 
-#include "RageInputDevice.h"
-#include "Preference.h"
-
+#include <string>
 #include <vector>
 
+#include "Preference.h"
+#include "RageInputDevice.h"
 
 struct lua_State;
 class InputHandler;

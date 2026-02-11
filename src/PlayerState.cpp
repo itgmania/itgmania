@@ -1,13 +1,22 @@
-#include "global.h"
 #include "PlayerState.h"
-#include "GameState.h"
-#include "RageLog.h"
-#include "RadarValues.h"
-#include "Steps.h"
-#include "Song.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
+#include "Attack.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "ModsGroup.h"
+#include "PlayerNumber.h"
+#include "RageLog.h"
+#include "Song.h"
+#include "SongOptions.h"
+#include "SongPosition.h"
+#include "Steps.h"
+#include "global.h"
 
 PlayerState::PlayerState()
 {
