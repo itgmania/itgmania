@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "global.h"
 
 /** @brief The class that reads the various .SSC, .SM, .SMA, .DWI, and .MSD files. */
 class MsdFile

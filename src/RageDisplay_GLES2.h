@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include "RageDisplay.h"
+
 class RageDisplay_GLES2: public RageDisplay
 {
 public:

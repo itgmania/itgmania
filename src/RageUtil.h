@@ -3,6 +3,7 @@
 #ifndef RAGE_UTIL_H
 #define RAGE_UTIL_H
 
+#include "config.hpp"
 #include "global.h"
 
 #include <cmath>
