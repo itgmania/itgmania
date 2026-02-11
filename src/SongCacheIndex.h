@@ -2,6 +2,7 @@
 #define SONG_CACHE_INDEX_H
 
 #include "IniFile.h"
+#include "RageThreads.h"
 
 class SongCacheIndex
 {

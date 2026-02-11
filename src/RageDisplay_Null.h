@@ -5,6 +5,8 @@
 
 #include <cstdint>
 
+#include "RageDisplay.h"
+
 class RageDisplay_Null: public RageDisplay
 {
 public:
