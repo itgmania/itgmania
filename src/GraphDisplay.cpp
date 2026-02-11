@@ -175,7 +175,7 @@ void GraphDisplay::Set( const StageStats &ss, const PlayerStageStats &pss )
 	m_Values.resize( VALUE_RESOLUTION );
 	pss.GetLifeRecord( &m_Values[0], VALUE_RESOLUTION, ss.GetTotalPossibleStepsSeconds() );
 	for( unsigned i=0; i<ARRAYLEN(m_Values); i++ )
-		CLAMP( m_Values[i], 0.f, 1.f );
+		rage_clamp( m_Values[i], 0.f, 1.f );
 
 	UpdateVerts();
 

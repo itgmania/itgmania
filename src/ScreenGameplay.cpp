@@ -952,11 +952,11 @@ void ScreenGameplay::InitSongQueues()
 				if( iter != vpSteps.end() )
 				{
 					iIndexBase = iter - vpSteps.begin();
-					CLAMP( iIndexBase, 0, vpSteps.size() - GAMESTATE->m_iNumMultiplayerNoteFields );
+					rage_clamp( iIndexBase, 0, vpSteps.size() - GAMESTATE->m_iNumMultiplayerNoteFields );
 				}
 
 				int iIndexToUse = iIndexBase + pi->m_iAddToDifficulty;
-				CLAMP( iIndexToUse, 0, vpSteps.size()-1 );
+				rage_clamp( iIndexToUse, 0, vpSteps.size()-1 );
 
 				Steps *pSteps = vpSteps[iIndexToUse];
 				pi->m_vpStepsQueue[i] = pSteps;
@@ -2019,7 +2019,7 @@ void ScreenGameplay::UpdateHasteRate()
 
 		if( bAnyPlayerHitAllNotes )
 			GAMESTATE->m_fHasteRate += 0.1f;
-		CLAMP( GAMESTATE->m_fHasteRate, -1.0f, +1.0f );
+		rage_clamp( GAMESTATE->m_fHasteRate, -1.0f, +1.0f );
 
 		GAMESTATE->m_fLastHasteUpdateMusicSeconds = GAMESTATE->m_Position.m_fMusicSeconds;
 	}
@@ -2043,7 +2043,7 @@ void ScreenGameplay::UpdateHasteRate()
 	}
 	if( fMaxLife <= m_fHasteLifeSwitchPoint )
 		GAMESTATE->m_fHasteRate = SCALE( fMaxLife, 0.0f, m_fHasteLifeSwitchPoint, -1.0f, 0.0f );
-	CLAMP( GAMESTATE->m_fHasteRate, -1.0f, +1.0f );
+	rage_clamp( GAMESTATE->m_fHasteRate, -1.0f, +1.0f );
 
 	float fSpeed = 1.0f;
 	// If there are no turning points or no add amounts, the bad themer probably thinks that's a way to disable haste.
@@ -2078,7 +2078,7 @@ void ScreenGameplay::UpdateHasteRate()
 	{
 		speed_add= scale_to_high * options_haste;
 	}
-	CLAMP(speed_add, -1.0f, 1.0f);
+	rage_clamp(speed_add, -1.0f, 1.0f);
 
 	// Only adjust speed_add by AccumulatedHasteSeconds when the player is losing seconds.  Otherwise, gaining the first second is interfered with.
 	bool losing_seconds= false;

@@ -557,10 +557,10 @@ void Sprite::DrawTexture( const TweenState *state )
 	 * of the image area aren't guaranteed to be initialized. */
 	/* HACK: Clamp the crop values. It would be more accurate to clip the
 	 * vertices so that the diffuse value is adjusted. */
-	CLAMP( crop.left, 0, 1 );
-	CLAMP( crop.right, 0, 1 );
-	CLAMP( crop.top, 0, 1 );
-	CLAMP( crop.bottom, 0, 1 );
+	rage_clamp( crop.left, 0, 1 );
+	rage_clamp( crop.right, 0, 1 );
+	rage_clamp( crop.top, 0, 1 );
+	rage_clamp( crop.bottom, 0, 1 );
 
 	RectF croppedQuadVerticies = quadVerticies;
 #define IF_CROP_POS(side,opp_side) \
@@ -846,7 +846,7 @@ void Sprite::SetState( int iNewState )
 		}
 	}
 
-	CLAMP(iNewState, 0, (int)m_States.size()-1);
+	rage_clamp(iNewState, 0, (int)m_States.size()-1);
 	m_iCurState = iNewState;
 	m_fSecsIntoState = 0.0f;
 }

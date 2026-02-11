@@ -297,8 +297,8 @@ void ArrowEffects::Init(PlayerNumber pn)
 		{
 			int start_col= col_id - width;
 			int end_col= col_id + width;
-			CLAMP(start_col, 0, max_player_col);
-			CLAMP(end_col, 0, max_player_col);
+			rage_clamp(start_col, 0, max_player_col);
+			rage_clamp(end_col, 0, max_player_col);
 			data.m_MinTornado[dimension][col_id]= FLT_MAX;
 			data.m_MaxTornado[dimension][col_id]= FLT_MIN;
 			for(int i= start_col; i <= end_col; ++i)
@@ -539,7 +539,7 @@ float ArrowEffects::GetYOffset( const PlayerState* pPlayerState, int iCol, float
 		float fNewYOffset = fYOffset * 1.5f / ((fYOffset+fEffectHeight/1.2f)/fEffectHeight);
 		float fAccelYAdjust =	fAccels[PlayerOptions::ACCEL_BOOST] * (fNewYOffset - fYOffset);
 		// TRICKY: Clamp this value, or else BOOST+BOOMERANG will draw a ton of arrows on the screen.
-		CLAMP( fAccelYAdjust, BOOST_MOD_MIN_CLAMP, BOOST_MOD_MAX_CLAMP );
+		rage_clamp( fAccelYAdjust, BOOST_MOD_MIN_CLAMP, BOOST_MOD_MAX_CLAMP );
 		fYAdjust += fAccelYAdjust;
 	}
 	if( fAccels[PlayerOptions::ACCEL_BRAKE] != 0 )
@@ -549,7 +549,7 @@ float ArrowEffects::GetYOffset( const PlayerState* pPlayerState, int iCol, float
 		float fNewYOffset = fYOffset * fScale;
 		float fBrakeYAdjust = fAccels[PlayerOptions::ACCEL_BRAKE] * (fNewYOffset - fYOffset);
 		// TRICKY: Clamp this value the same way as BOOST so that in BOOST+BRAKE, BRAKE doesn't overpower BOOST
-		CLAMP( fBrakeYAdjust, BRAKE_MOD_MIN_CLAMP, BRAKE_MOD_MAX_CLAMP );
+		rage_clamp( fBrakeYAdjust, BRAKE_MOD_MIN_CLAMP, BRAKE_MOD_MAX_CLAMP );
 		fYAdjust += fBrakeYAdjust;
 	}
 	if( fAccels[PlayerOptions::ACCEL_WAVE] != 0 )
@@ -1102,13 +1102,13 @@ float ArrowGetPercentVisible(float fYPosWithoutReverse, int iCol, float fYOffset
 	if( fAppearances[PlayerOptions::APPEARANCE_HIDDEN] != 0 )
 	{
 		float fHiddenVisibleAdjust = SCALE( fYPos, GetHiddenStartLine(), GetHiddenEndLine(), 0, -1 );
-		CLAMP( fHiddenVisibleAdjust, -1, 0 );
+		rage_clamp( fHiddenVisibleAdjust, -1, 0 );
 		fVisibleAdjust += fAppearances[PlayerOptions::APPEARANCE_HIDDEN] * fHiddenVisibleAdjust;
 	}
 	if( fAppearances[PlayerOptions::APPEARANCE_SUDDEN] != 0 )
 	{
 		float fSuddenVisibleAdjust = SCALE( fYPos, GetSuddenStartLine(), GetSuddenEndLine(), -1, 0 );
-		CLAMP( fSuddenVisibleAdjust, -1, 0 );
+		rage_clamp( fSuddenVisibleAdjust, -1, 0 );
 		fVisibleAdjust += fAppearances[PlayerOptions::APPEARANCE_SUDDEN] * fSuddenVisibleAdjust;
 	}
 
@@ -1176,7 +1176,7 @@ float ArrowEffects::GetBrightness( const PlayerState* pPlayerState, float fNoteB
 	float fBeatsUntilStep = fNoteBeat - fSongBeat;
 
 	float fBrightness = SCALE( fBeatsUntilStep, 0, -1, 1.f, 0.f );
-	CLAMP( fBrightness, 0, 1 );
+	rage_clamp( fBrightness, 0, 1 );
 	return fBrightness;
 }
 
@@ -1417,7 +1417,7 @@ float ArrowEffects::GetFrameWidthScale( const PlayerState* pPlayerState, float f
 		float fTrailingPixels = FRAME_WIDTH_LOCK_EFFECTS_TWEEN_PIXELS;
 		float fTrailingSeconds = fTrailingPixels / fPixelsPerSecond;
 		float fScaleEffect = SCALE( fFromEndOfOverlapped, 0.0f, fTrailingSeconds, 0.0f, 1.0f );
-		CLAMP( fScaleEffect, 0.0f, 1.0f );
+		rage_clamp( fScaleEffect, 0.0f, 1.0f );
 		fWidthEffect *= fScaleEffect;
 	}
 

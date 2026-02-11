@@ -92,14 +92,14 @@ void StreamDisplay::Update( float fDeltaSecs )
 				m_fVelocity += fViscousForce * fDeltaSecs;
 		}
 
-		CLAMP( m_fVelocity, VELOCITY_MIN, VELOCITY_MAX );
+		rage_clamp( m_fVelocity, VELOCITY_MIN, VELOCITY_MAX );
 
 		m_fTrailingPercent += m_fVelocity * fDeltaSecs;
 	}
 
 	// Don't clamp life percentage a little outside the visible range so
 	// that the clamp doesn't dampen the "jiggle" of the meter.
-	CLAMP( m_fTrailingPercent, -0.1f, 1.1f );
+	rage_clamp( m_fTrailingPercent, -0.1f, 1.1f );
 
 
 	// set crop of pills
@@ -110,7 +110,7 @@ void StreamDisplay::Update( float fDeltaSecs )
 		{
 			Sprite *pSpr = m_vpSprPill[st][i];
 			float fPercentFilledThisPill = SCALE( m_fTrailingPercent, fPillWidthPercent*i, fPillWidthPercent*(i+1), 0.0f, 1.0f );
-			CLAMP( fPercentFilledThisPill, 0.0f, 1.0f );
+			rage_clamp( fPercentFilledThisPill, 0.0f, 1.0f );
 
 			// XXX scale by current song speed
 

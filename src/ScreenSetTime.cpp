@@ -146,7 +146,7 @@ void ScreenSetTime::ChangeSelection( int iDirection )
 	SetTimeSelection OldSelection = m_Selection;
 	enum_add<SetTimeSelection>( m_Selection, iDirection );
 
-	ENUM_CLAMP( m_Selection, SetTimeSelection(0), SetTimeSelection(NUM_SetTimeSelection-1) );
+	enum_clamp( m_Selection, SetTimeSelection(0), SetTimeSelection(NUM_SetTimeSelection-1) );
 	if( iDirection != 0 && m_Selection == OldSelection )
 		return; // can't move any more
 

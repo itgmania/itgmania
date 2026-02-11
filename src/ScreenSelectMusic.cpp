@@ -1026,7 +1026,7 @@ void ScreenSelectMusic::ChangeSteps( PlayerNumber pn, int dir )
 		}
 		else
 		{
-			if( CLAMP(m_iSelection[pn],0,m_vpSteps.size()-1) )
+			if( rage_clamp(m_iSelection[pn],0,m_vpSteps.size()-1) )
 				return;
 		}
 
@@ -1043,7 +1043,7 @@ void ScreenSelectMusic::ChangeSteps( PlayerNumber pn, int dir )
 		}
 		else
 		{
-			if( CLAMP(m_iSelection[pn],0,m_vpTrails.size()-1) )
+			if( rage_clamp(m_iSelection[pn],0,m_vpTrails.size()-1) )
 				return;
 		}
 
@@ -1606,7 +1606,7 @@ void ScreenSelectMusic::AfterStepsOrTrailChange( const std::vector<PlayerNumber>
 
 		if( GAMESTATE->m_pCurSong )
 		{
-			CLAMP( m_iSelection[pn], 0, m_vpSteps.size()-1 );
+			rage_clamp( m_iSelection[pn], 0, m_vpSteps.size()-1 );
 
 			Song* pSong = GAMESTATE->m_pCurSong;
 			Steps* pSteps = m_vpSteps.empty()? nullptr: m_vpSteps[m_iSelection[pn]];
@@ -1625,7 +1625,7 @@ void ScreenSelectMusic::AfterStepsOrTrailChange( const std::vector<PlayerNumber>
 		}
 		else if( GAMESTATE->m_pCurCourse )
 		{
-			CLAMP( m_iSelection[pn], 0, m_vpTrails.size()-1 );
+			rage_clamp( m_iSelection[pn], 0, m_vpTrails.size()-1 );
 
 			Course* pCourse = GAMESTATE->m_pCurCourse;
 			Trail* pTrail = m_vpTrails.empty()? nullptr: m_vpTrails[m_iSelection[pn]];
@@ -1682,7 +1682,7 @@ void ScreenSelectMusic::SwitchPlayerStepDifficulty(PlayerNumber pn, Difficulty d
 		i += 1;
 	}
 
-	CLAMP(iSelection, 0, m_vpSteps.size() - 1);
+	rage_clamp(iSelection, 0, m_vpSteps.size() - 1);
 }
 
 void ScreenSelectMusic::SwitchPlayerCourseDifficulty(PlayerNumber pn, Difficulty d)
@@ -1715,7 +1715,7 @@ void ScreenSelectMusic::SwitchPlayerCourseDifficulty(PlayerNumber pn, Difficulty
 		i += 1;
 	}
 
-	CLAMP(iSelection, 0, m_vpTrails.size() - 1);
+	rage_clamp(iSelection, 0, m_vpTrails.size() - 1);
 }
 
 void ScreenSelectMusic::SwitchToDifficulty(Difficulty d)

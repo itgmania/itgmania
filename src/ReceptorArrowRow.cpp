@@ -73,7 +73,7 @@ void ReceptorArrowRow::Update( float fDeltaTime )
 		{
 			fBaseAlpha *= (1 - m_fFadeToFailPercent);
 		}
-		CLAMP( fBaseAlpha, 0.0f, 1.0f );
+		rage_clamp( fBaseAlpha, 0.0f, 1.0f );
 		m_ReceptorArrow[c]->SetBaseAlpha( fBaseAlpha );
 
 		if(m_renderers != nullptr)

@@ -1741,7 +1741,7 @@ ProfileLoadResult Profile::LoadEditableDataFromDir( std::string sDir )
 	m_sDisplayName = WStringToRString(wstr);
 	// TODO: strip invalid chars?
 	if( m_iWeightPounds != 0 )
-		CLAMP( m_iWeightPounds, 20, 1000 );
+		rage_clamp( m_iWeightPounds, 20, 1000 );
 
 	return ProfileLoadResult_Success;
 }

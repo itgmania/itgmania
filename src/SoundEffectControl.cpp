@@ -40,7 +40,7 @@ void SoundEffectControl::Update( float fDeltaTime )
 
 	float fLevel = INPUTMAPPER->GetLevel( GAME_BUTTON_EFFECT_UP, m_pPlayerState->m_PlayerNumber );
 	fLevel -= INPUTMAPPER->GetLevel( GAME_BUTTON_EFFECT_DOWN, m_pPlayerState->m_PlayerNumber );
-	CLAMP( fLevel, -1.0f, +1.0f );
+	rage_clamp( fLevel, -1.0f, +1.0f );
 
 	if( LOCK_TO_HOLD )
 	{

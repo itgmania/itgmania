@@ -83,7 +83,7 @@ void ScreenPrompt::BeginScreen()
 	ScreenWithMenuElements::BeginScreen();
 
 	m_Answer = g_defaultAnswer;
-	ENUM_CLAMP( m_Answer, PromptAnswer(0), PromptAnswer(g_PromptType) );
+	enum_clamp( m_Answer, PromptAnswer(0), PromptAnswer(g_PromptType) );
 
 	m_textQuestion.SetText( g_sText );
 	SET_XY( m_textQuestion );

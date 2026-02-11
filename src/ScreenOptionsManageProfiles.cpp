@@ -265,7 +265,7 @@ void ScreenOptionsManageProfiles::HandleScreenMessage( const ScreenMessage SM )
 			std::vector<std::string>::const_iterator iter = find( m_vsLocalProfileID.begin(), m_vsLocalProfileID.end(), GAMESTATE->m_sEditLocalProfileID.Get() );
 			if( iter != m_vsLocalProfileID.end() )
 				iIndex = iter - m_vsLocalProfileID.begin();
-			CLAMP( iIndex, 0, m_vsLocalProfileID.size()-1 );
+			rage_clamp( iIndex, 0, m_vsLocalProfileID.size()-1 );
 			GAMESTATE->m_sEditLocalProfileID.Set( m_vsLocalProfileID[iIndex] );
 
 			PROFILEMAN->DeleteLocalProfile( GetLocalProfileIDWithFocus() );

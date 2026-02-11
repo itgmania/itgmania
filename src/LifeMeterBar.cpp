@@ -247,14 +247,14 @@ void LifeMeterBar::ChangeLife( float fDeltaLife )
 	}
 
 	m_fLifePercentage += fDeltaLife;
-	CLAMP( m_fLifePercentage, 0, LIFE_MULTIPLIER );
+	rage_clamp( m_fLifePercentage, 0, LIFE_MULTIPLIER );
 	AfterLifeChanged();
 }
 
 void LifeMeterBar::SetLife(float value)
 {
 	m_fLifePercentage= value;
-	CLAMP( m_fLifePercentage, 0, LIFE_MULTIPLIER );
+	rage_clamp( m_fLifePercentage, 0, LIFE_MULTIPLIER );
 	AfterLifeChanged();
 }
 
@@ -296,10 +296,10 @@ void LifeMeterBar::Update( float fDeltaTime )
 	LifeMeter::Update( fDeltaTime );
 
 	m_fPassingAlpha += !IsFailing() ? +fDeltaTime*2 : -fDeltaTime*2;
-	CLAMP( m_fPassingAlpha, 0, 1 );
+	rage_clamp( m_fPassingAlpha, 0, 1 );
 
 	m_fHotAlpha  += IsHot() ? + fDeltaTime*2 : -fDeltaTime*2;
-	CLAMP( m_fHotAlpha, 0, 1 );
+	rage_clamp( m_fHotAlpha, 0, 1 );
 
 	m_pStream->SetPassingAlpha( m_fPassingAlpha );
 	m_pStream->SetHotAlpha( m_fHotAlpha );
@@ -408,7 +408,7 @@ void LifeMeterBar::FillForHowToPlay( int NumW2s, int NumMisses )
 	float AmountForMiss	= NumMisses / m_fLifeDifficulty * 0.08f;
 
 	m_fLifePercentage = AmountForMiss - AmountForW2;
-	CLAMP( m_fLifePercentage, 0.0f, 1.0f );
+	rage_clamp( m_fLifePercentage, 0.0f, 1.0f );
 	AfterLifeChanged();
 }
 

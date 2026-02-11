@@ -134,7 +134,7 @@ void ScoreKeeperRave::AddSuperMeterDelta( float fUnscaledPercentChange )
 		default:
 			FAIL_M(ssprintf("Invalid player number: %i", m_pPlayerState->m_PlayerNumber));
 		}
-		CLAMP( fLifePercentage, 0.f, 1.f );
+		rage_clamp( fLifePercentage, 0.f, 1.f );
 		if( fUnscaledPercentChange > 0 )
 			fUnscaledPercentChange *= SCALE( fLifePercentage, 0.f, 1.f, 1.7f, 0.3f);
 		else	// fUnscaledPercentChange <= 0
@@ -149,7 +149,7 @@ void ScoreKeeperRave::AddSuperMeterDelta( float fUnscaledPercentChange )
 
 	float fPercentToMove = fUnscaledPercentChange;
 	m_pPlayerState->m_fSuperMeter += fPercentToMove * m_pPlayerState->m_fSuperMeterGrowthScale;
-	CLAMP( m_pPlayerState->m_fSuperMeter, 0.f, NUM_ATTACK_LEVELS );
+	rage_clamp( m_pPlayerState->m_fSuperMeter, 0.f, NUM_ATTACK_LEVELS );
 
 	AttackLevel newAL = (AttackLevel)(int)m_pPlayerState->m_fSuperMeter;
 

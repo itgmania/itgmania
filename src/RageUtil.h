@@ -60,7 +60,7 @@ inline U lerp( T x, U l, U h )
 }
 
 template<typename T, typename U, typename V>
-inline bool CLAMP(T& x, U l, V h)
+inline bool rage_clamp(T& x, U l, V h)
 {
 	if(x > static_cast<T>(h)) { x= static_cast<T>(h); return true; }
 	else if(x < static_cast<T>(l)) { x= static_cast<T>(l); return true; }
@@ -68,7 +68,7 @@ inline bool CLAMP(T& x, U l, V h)
 }
 
 template<class T>
-inline bool ENUM_CLAMP( T &x, T l, T h )
+inline bool enum_clamp( T &x, T l, T h )
 {
 	if (x > h)	{ x = h; return true; }
 	else if (x < l) { x = l; return true; }

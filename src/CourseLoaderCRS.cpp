@@ -405,7 +405,7 @@ bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEn
 		}
 
 		new_entry.iChooseIndex = iChooseIndex;
-		CLAMP( new_entry.iChooseIndex, 0, 500 );
+		rage_clamp( new_entry.iChooseIndex, 0, 500 );
 		new_entry.songSort = SongSort_MostPlays;
 	}
 	// least played
@@ -421,21 +421,21 @@ bool CourseLoaderCRS::ParseCourseSong( const MsdFile::value_t &sParams, CourseEn
 		}
 
 		new_entry.iChooseIndex = iChooseIndex;
-		CLAMP( new_entry.iChooseIndex, 0, 500 );
+		rage_clamp( new_entry.iChooseIndex, 0, 500 );
 		new_entry.songSort = SongSort_FewestPlays;
 	}
 	// best grades
 	else if( Left(sParams[1], strlen("GRADEBEST")) == "GRADEBEST" )
 	{
 		new_entry.iChooseIndex = StringToInt( Right(sParams[1], sParams[1].size()-strlen("GRADEBEST")) ) - 1;
-		CLAMP( new_entry.iChooseIndex, 0, 500 );
+		rage_clamp( new_entry.iChooseIndex, 0, 500 );
 		new_entry.songSort = SongSort_TopGrades;
 	}
 	// worst grades
 	else if( Left(sParams[1], strlen("GRADEWORST")) == "GRADEWORST" )
 	{
 		new_entry.iChooseIndex = StringToInt( Right(sParams[1], sParams[1].size()-strlen("GRADEWORST")) ) - 1;
-		CLAMP( new_entry.iChooseIndex, 0, 500 );
+		rage_clamp( new_entry.iChooseIndex, 0, 500 );
 		new_entry.songSort = SongSort_LowestGrades;
 	}
 	else if( sParams[1] == "*" )
@@ -771,7 +771,7 @@ bool CourseLoaderCRS::SetCourseSongSort(CourseEntry &new_entry, SongSort sort, i
 		return false; // skip this #SONG
 	}
 
-	CLAMP(iChooseIndex, 0, 500);
+	rage_clamp(iChooseIndex, 0, 500);
 	new_entry.iChooseIndex = iChooseIndex;
 	new_entry.songSort = sort;
 	return true;

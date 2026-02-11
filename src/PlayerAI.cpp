@@ -137,7 +137,7 @@ TapNoteScore PlayerAI::GetTapNoteScore( const PlayerState* pPlayerState )
 		ASSERT_M( pPlayerState->m_PlayerController == PC_CPU, ssprintf("%i", pPlayerState->m_PlayerController) );
 
 		iCpuSkill -= iSumOfAttackLevels*3;
-		CLAMP( iCpuSkill, 0, NUM_SKILL_LEVELS-1 );
+		rage_clamp( iCpuSkill, 0, NUM_SKILL_LEVELS-1 );
 	}
 
 	TapScoreDistribution& distribution = g_Distributions[iCpuSkill];

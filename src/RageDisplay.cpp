@@ -581,7 +581,7 @@ void RageDisplay::LoadMenuPerspective( float fovDegrees, float fWidth, float fHe
 	}
 	else
 	{
-		CLAMP( fovDegrees, 0.1f, 179.9f );
+		rage_clamp( fovDegrees, 0.1f, 179.9f );
 		float fovRadians = fovDegrees / 180.f * PI;
 		float theta = fovRadians/2;
 		float fDistCameraFromImage = fWidth/2 / std::tan( theta );
