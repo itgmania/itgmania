@@ -1,12 +1,17 @@
-#include "global.h"
-#include "RageDisplay.h"
-#include "RageTextureManager.h"
-#include "RageUtil.h"
-#include "RageLog.h"
 #include "MovieTexture_Null.h"
-#include "RageSurface.h"
 
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <string>
+
+#include "RageDisplay.h"
+#include "RageLog.h"
+#include "RageSurface.h"
+#include "RageTextureID.h"
+#include "RageUtil.h"
+#include "arch/MovieTexture/MovieTexture.h"
+#include "global.h"
 
 class MovieTexture_Null : public RageMovieTexture {
 public:

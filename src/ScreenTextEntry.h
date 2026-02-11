@@ -1,11 +1,18 @@
 #ifndef SCREEN_TEXT_ENTRY_H
 #define SCREEN_TEXT_ENTRY_H
 
-#include "ScreenWithMenuElements.h"
+#include <string>
+
+#include "AutoActor.h"
 #include "BitmapText.h"
-#include "RageSound.h"
-#include "ThemeMetric.h"
+#include "EnumHelper.h"
 #include "InputEventPlus.h"
+#include "LuaReference.h"
+#include "RageSound.h"
+#include "RageTimer.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "ThemeMetric.h"
 
 /** @brief The list of possible keyboard rows. */
 enum KeyboardRow

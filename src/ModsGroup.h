@@ -1,10 +1,13 @@
 #ifndef MODS_GROUP_H
 #define MODS_GROUP_H
 
+#include <cstddef>
+#include <string>
+
 #include "EnumHelper.h"
 #include "RageTimer.h"
-
-#include <cstddef>
+#include "RageUtil.h"
+#include "global.h"
 
 enum ModsLevel
 {

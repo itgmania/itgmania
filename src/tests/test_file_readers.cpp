@@ -1,8 +1,12 @@
-#include "global.h"
-#include "RageLog.h"
+#include <unistd.h>
+
+#include <cstdlib>
+#include <string>
+
 #include "RageFile.h"
+#include "RageLog.h"
 #include "RageUtil.h"
-#include "RageUtil_FileDB.h"
+#include "global.h"
 #include "test_misc.h"
 
 bool CreateTestFiles = false;

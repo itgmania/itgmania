@@ -1,10 +1,10 @@
 #ifndef SCREEN_SONG_OPTIONS_H
 #define SCREEN_SONG_OPTIONS_H
 
-#include "ScreenOptionsMaster.h"
-
 #include <vector>
 
+#include "PlayerNumber.h"
+#include "ScreenOptionsMaster.h"
 
 class ScreenSongOptions : public ScreenOptionsMaster
 {

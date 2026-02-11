@@ -1,22 +1,34 @@
-#include "global.h"
 #include "NotesLoaderSM.h"
+
+#include <algorithm>
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "Attack.h"
 #include "BackgroundUtil.h"
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
 #include "GameManager.h"
 #include "MsdFile.h"
 #include "NoteTypes.h"
+#include "PrefsManager.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
+#include "RageTypes.h"
 #include "RageUtil.h"
 #include "RageUtil/ConvertValue.h"
 #include "Song.h"
 #include "SongManager.h"
+#include "StdString.h"
 #include "Steps.h"
-#include "Attack.h"
-#include "PrefsManager.h"
-
-#include <cstddef>
-#include <vector>
-
+#include "TimingSegments.h"
+#include "global.h"
 
 // Everything from this line to the creation of sm_parser_helper exists to
 // speed up parsing by allowing the use of std::map.  All these functions

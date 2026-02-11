@@ -3,10 +3,10 @@
 #ifndef ACTOR_MULTI_TEXTURE_H
 #define ACTOR_MULTI_TEXTURE_H
 
-#include "Actor.h"
-#include "RageDisplay.h"
-
 #include <vector>
+
+#include "Actor.h"
+#include "RageTypes.h"
 
 class RageTexture;
 

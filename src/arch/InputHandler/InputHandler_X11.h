@@ -3,10 +3,10 @@
 #ifndef INPUT_HANDLER_X11_H
 #define INPUT_HANDLER_X11_H
 
-#include "InputHandler.h"
-
 #include <vector>
 
+#include "InputHandler.h"
+#include "RageInputDevice.h"
 
 class InputHandler_X11: public InputHandler
 {

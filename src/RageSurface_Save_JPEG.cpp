@@ -1,14 +1,13 @@
-#include "global.h"
-#include "RageSurface.h"
-#include "RageSurfaceUtils.h"
 #include "RageSurface_Save_JPEG.h"
-
-#include "RageUtil.h"
-#include "RageFile.h"
-#include "RageUtil/Endian.h"
 
 #include <cstddef>
 #include <cstdint>
+
+#include "RageFile.h"
+#include "RageSurface.h"
+#include "RageSurfaceUtils.h"
+#include "RageUtil/Endian.h"
+#include "global.h"
 
 #undef FAR // fix for VC
 /** @brief A helper to get the jpeg lib. */

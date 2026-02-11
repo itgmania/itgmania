@@ -1,8 +1,10 @@
 #ifndef DATE_TIME_H
 #define DATE_TIME_H
 
-#include "EnumHelper.h"
 #include <ctime>
+#include <string>
+
+#include "EnumHelper.h"
 
 int StringToDayInYear( std::string sDayInYear );
 

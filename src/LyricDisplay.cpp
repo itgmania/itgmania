@@ -1,10 +1,15 @@
-#include "global.h"
 #include "LyricDisplay.h"
-#include "ScreenDimensions.h"
-#include "GameState.h"
-#include "ThemeMetric.h"
-#include "Song.h"
+
+#include <algorithm>
+
+#include "ActorFrame.h"
 #include "ActorUtil.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "LuaReference.h"
+#include "Song.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
 
 static ThemeMetric<float>		IN_LENGTH	("LyricDisplay","InLength");
 static ThemeMetric<float>		OUT_LENGTH	("LyricDisplay","OutLength");

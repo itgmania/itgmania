@@ -1,7 +1,10 @@
 #ifndef MOVIE_TEXTURE_NULL_H
 #define MOVIE_TEXTURE_NULL_H
 
+#include <string>
+
 #include "MovieTexture.h"
+#include "RageTextureID.h"
 
 class RageMovieTextureDriver_Null: public RageMovieTextureDriver
 {

@@ -1,7 +1,8 @@
 #ifndef STEP_PARITY_COST_H
 #define STEP_PARITY_COST_H
 
-#include "GameConstantsAndTypes.h"
+#include <vector>
+
 #include "StepParityDatastructs.h"
 
 namespace StepParity

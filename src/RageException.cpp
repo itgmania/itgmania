@@ -1,11 +1,15 @@
-#include "global.h"
 #include "RageException.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageThreads.h"
 
 #include <cstdarg>
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "global.h"
 
 #if defined(_WIN32) && defined(DEBUG)
 #include <windows.h>

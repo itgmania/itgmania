@@ -2,8 +2,10 @@
 #define RAGE_DISPLAY_GLES2_H
 
 #include <cstdint>
+#include <string>
 
 #include "RageDisplay.h"
+#include "RageTypes.h"
 
 class RageDisplay_GLES2: public RageDisplay
 {

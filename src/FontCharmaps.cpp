@@ -1,7 +1,9 @@
-#include "global.h"
 #include "FontCharmaps.h"
 
 #include <map>
+#include <string>
+
+#include "StdString.h"
 
 const wchar_t FontCharmaps::M_SKIP = 0xFEFF;
 

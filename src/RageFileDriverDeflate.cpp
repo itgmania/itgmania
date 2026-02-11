@@ -1,14 +1,20 @@
-#include "global.h"
 #include "RageFileDriverDeflate.h"
-#include "RageFileDriverSlice.h"
-#include "RageFile.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageUtil/Endian.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <memory>
+#include <string>
+
+#include "RageException.h"
+#include "RageFile.h"
+#include "RageFileBasic.h"
+#include "RageFileDriverSlice.h"
+#include "RageUtil.h"
+#include "RageUtil/Endian.h"
+#include "global.h"
+#include "zconf.h"
 
 #if defined(_WIN32)
 #include "zlib.h"

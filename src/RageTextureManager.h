@@ -3,8 +3,9 @@
 #ifndef RAGE_TEXTURE_MANAGER_H
 #define RAGE_TEXTURE_MANAGER_H
 
-#include "RageTexture.h"
 #include "RageSurface.h"
+#include "RageTexture.h"
+#include "RageTextureID.h"
 
 struct RageTextureManagerPrefs
 {

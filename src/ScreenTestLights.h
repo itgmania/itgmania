@@ -1,9 +1,10 @@
 #ifndef SCREEN_TEST_LIGHTS_H
 #define SCREEN_TEST_LIGHTS_H
 
-#include "ScreenWithMenuElements.h"
 #include "BitmapText.h"
-
+#include "InputQueue.h"
+#include "RageTimer.h"
+#include "ScreenWithMenuElements.h"
 
 class ScreenTestLights : public ScreenWithMenuElements
 {

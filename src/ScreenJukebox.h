@@ -1,7 +1,9 @@
 #ifndef ScreenJukebox_H
 #define ScreenJukebox_H
 
+#include "InputEventPlus.h"
 #include "ScreenGameplayNormal.h"
+#include "ScreenMessage.h"
 class CourseEntry;
 
 /** @brief Plays whole songs continuously. */

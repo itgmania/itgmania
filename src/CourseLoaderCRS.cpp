@@ -1,22 +1,31 @@
-#include "global.h"
 #include "CourseLoaderCRS.h"
-#include "RageLog.h"
-#include "Course.h"
-#include "RageUtil.h"
-#include "SongCacheIndex.h"
-#include "PrefsManager.h"
-#include "PlayerOptions.h"
-#include "SongManager.h"
-#include "TitleSubstitution.h"
-#include "ImageCache.h"
-#include "RageFileManager.h"
-#include "CourseWriterCRS.h"
-#include "RageUtil.h"
-#include "CourseUtil.h"
 
+#include <algorithm>
 #include <cfloat>
+#include <cstdio>
+#include <cstring>
+#include <string>
 #include <vector>
 
+#include "Attack.h"
+#include "Course.h"
+#include "CourseUtil.h"
+#include "CourseWriterCRS.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "ImageCache.h"
+#include "MsdFile.h"
+#include "PlayerOptions.h"
+#include "PrefsManager.h"
+#include "RadarValues.h"
+#include "RageFileManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "SongCacheIndex.h"
+#include "SongManager.h"
+#include "StdString.h"
+#include "TitleSubstitution.h"
 
 /** @brief Edit courses can only be so big before they are rejected. */
 const int MAX_EDIT_COURSE_SIZE_BYTES	= 32*1024;	// 32KB

@@ -1,13 +1,9 @@
-#include "global.h"
 #include "RageDisplay_OGL_Helpers.h"
-#include "RageUtil.h"
-
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "arch/LowLevelWindow/LowLevelWindow.h"
 
 #include <map>
-#include <set>
+#include <string>
+
+#include "RageUtil.h"
 
 namespace
 {

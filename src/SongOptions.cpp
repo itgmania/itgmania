@@ -1,13 +1,15 @@
-#include "global.h"
 #include "SongOptions.h"
-#include "RageUtil.h"
-#include "RageUtil/Regex.h"
-#include "GameState.h"
-#include "CommonMetrics.h"
 
 #include <cmath>
+#include <string>
 #include <vector>
 
+#include "CommonMetrics.h"
+#include "EnumHelper.h"
+#include "RageUtil.h"
+#include "RageUtil/Regex.h"
+#include "StdString.h"
+#include "global.h"
 
 static const char *AutosyncTypeNames[] = {
 	"Off",

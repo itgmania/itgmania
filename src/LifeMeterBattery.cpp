@@ -1,13 +1,21 @@
-#include "global.h"
 #include "LifeMeterBattery.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "Steps.h"
-#include "PlayerState.h"
-#include "Course.h"
-#include "ActorUtil.h"
 
+#include <algorithm>
 #include <cmath>
+#include <string>
+
+#include "ActorUtil.h"
+#include "Course.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LifeMeter.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "PlayerStageStats.h"
+#include "PlayerState.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
 
 LifeMeterBattery::LifeMeterBattery()
 {

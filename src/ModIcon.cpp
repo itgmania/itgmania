@@ -1,9 +1,12 @@
-#include "global.h"
 #include "ModIcon.h"
-#include "ThemeManager.h"
-#include "PlayerOptions.h"
-#include "RageUtil.h"
+
+#include <string>
+
+#include "ActorFrame.h"
 #include "ActorUtil.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "ThemeManager.h"
 
 ModIcon::ModIcon()
 {

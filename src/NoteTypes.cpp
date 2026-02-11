@@ -1,9 +1,11 @@
-#include "global.h"
 #include "NoteTypes.h"
-#include "RageUtil.h"
+
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
 #include "LuaManager.h"
+#include "RageUtil.h"
 #include "XmlFile.h"
-#include "LocalizedString.h"
+#include "global.h"
 
 TapNote TAP_EMPTY	( TapNoteType_Empty,	TapNoteSubType_Invalid,	TapNoteSource_Original, "", 0, -1 );
 TapNote TAP_ORIGINAL_TAP	( TapNoteType_Tap,	TapNoteSubType_Invalid,	TapNoteSource_Original, "", 0, -1 );

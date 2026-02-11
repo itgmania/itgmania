@@ -1,13 +1,19 @@
-#include "global.h"
 #include "ControllerStateDisplay.h"
+
+#include <string>
+
+#include "ActorFrame.h"
+#include "ActorUtil.h"
 #include "EnumHelper.h"
-#include "RageUtil.h"
+#include "GameInput.h"
+#include "InputMapper.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "RageInput.h"
 #include "RageInputDevice.h"
 #include "ThemeManager.h"
-#include "InputMapper.h"
-#include "InputFilter.h"
-#include "RageLog.h"
-#include "LuaBinding.h"
+#include "global.h"
 
 static const char *ControllerStateButtonNames[] = {
 	"UpLeft",

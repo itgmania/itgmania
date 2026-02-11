@@ -5,13 +5,17 @@
 // XmlFile : XML Lite Parser Library
 // by Cho, Kyung Min: bro@shinbiro.com 2002-10-30
 
-#include "global.h"
 #include "XmlFile.h"
-#include "RageFile.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "DateTime.h"
+
+#include <algorithm>
+#include <cstdlib>
+#include <map>
+#include <string>
+#include <utility>
+
 #include "LuaManager.h"
+#include "RageUtil.h"
+#include "global.h"
 
 const std::string XNode::TEXT_ATTRIBUTE = "__TEXT__";
 

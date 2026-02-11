@@ -33,19 +33,27 @@
  * steps made.
  */
 
-#include "global.h"
-#include "Song.h"
-#include "Steps.h"
 #include "AdjustSync.h"
-#include "GameState.h"
-#include "LocalizedString.h"
-#include "PrefsManager.h"
-#include "ScreenManager.h"
 
 #include <cmath>
 #include <cstddef>
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "GameState.h"
+#include "LocalizedString.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PrefsManager.h"
+#include "RageUtil.h"
+#include "ScreenManager.h"
+#include "Song.h"
+#include "SongOptions.h"
+#include "Steps.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
+#include "global.h"
 
 std::vector<TimingData> AdjustSync::s_vpTimingDataOriginal;
 float AdjustSync::s_fGlobalOffsetSecondsOriginal = 0.0f;

@@ -1,11 +1,14 @@
-#include "global.h"
-#include "LightsDriver.h"
 #include "LightsDriver_GenericHID.h"
-#include "Preference.h"
-#include "RageLog.h"
+
+#include <libusb.h>
 
 #include <cstdint>
-#include <libusb.h>
+#include <string>
+
+#include "LightsDriver.h"
+#include "Preference.h"
+#include "RageLog.h"
+#include "global.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(GenericHID);
 

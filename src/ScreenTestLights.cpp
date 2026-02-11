@@ -1,15 +1,21 @@
-#include "global.h"
 #include "ScreenTestLights.h"
-#include "ScreenManager.h"
-#include "GameConstantsAndTypes.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "LightsManager.h"
-#include "Game.h"
-#include "ScreenDimensions.h"
+
+#include <string>
+
+#include "ActorUtil.h"
+#include "GameInput.h"
 #include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "LightsManager.h"
 #include "LocalizedString.h"
+#include "PlayerNumber.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "ThemeManager.h"
 
 REGISTER_SCREEN_CLASS( ScreenTestLights );
 

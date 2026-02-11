@@ -1,17 +1,21 @@
-#include "global.h"
 #include "ActorFrame.h"
-#include "arch/Dialog/Dialog.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "XmlFile.h"
+
+#include <algorithm>
+#include <cstdint>
+#include <string>
+#include <vector>
+
+#include "Actor.h"
 #include "ActorUtil.h"
 #include "LuaBinding.h"
-#include "ActorUtil.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
 #include "RageDisplay.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 #include "ScreenDimensions.h"
-
-#include <cstdint>
-#include <vector>
+#include "XmlFile.h"
+#include "global.h"
 
 /* Tricky: We need ActorFrames created in Lua to auto delete their children.
  * We don't want classes that derive from ActorFrame to auto delete their

@@ -1,9 +1,13 @@
-#include "global.h"
 #include "KeyboardDevice.h"
 
 #include <cstddef>
+#include <cstring>
+#include <unordered_map>
 #include <vector>
 
+#include "RageInputDevice.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
 
 using namespace __gnu_cxx;
 

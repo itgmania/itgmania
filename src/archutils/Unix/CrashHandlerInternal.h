@@ -1,7 +1,10 @@
 #ifndef CRASH_HANDLER_INTERNAL_H
 #define CRASH_HANDLER_INTERNAL_H
 
+#include <signal.h>
+
 #include "Backtrace.h"
+
 #define BACKTRACE_MAX_SIZE 128
 
 struct CrashData

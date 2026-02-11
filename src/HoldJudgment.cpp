@@ -1,11 +1,18 @@
-#include "global.h"
 #include "HoldJudgment.h"
-#include "RageUtil.h"
-#include "GameConstantsAndTypes.h"
-#include "ThemeManager.h"
-#include "ThemeMetric.h"
+
+#include <string>
+
+#include "ActorFrame.h"
 #include "ActorUtil.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 #include "XmlFile.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( HoldJudgment );
 

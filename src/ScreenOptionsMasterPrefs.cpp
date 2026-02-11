@@ -1,26 +1,31 @@
-#include "global.h"
 #include "ScreenOptionsMasterPrefs.h"
-#include "PrefsManager.h"
-#include "ThemeManager.h"
-#include "AnnouncerManager.h"
-#include "NoteSkinManager.h"
-#include "PlayerOptions.h"
-#include "SongOptions.h"
-#include "RageDisplay.h"
-#include "RageUtil.h"
-#include "GameManager.h"
-#include "GameState.h"
-#include "StepMania.h"
-#include "Game.h"
-#include "GameConstantsAndTypes.h"
-#include "DisplaySpec.h"
-#include "LocalizedString.h"
-#include "SpecialFiles.h"
-#include "RageLog.h"
-#include "RageUtil/LanguageInfo.h"
 
+#include <string>
+#include <type_traits>
 #include <vector>
 
+#include "AnnouncerManager.h"
+#include "DisplaySpec.h"
+#include "EnumHelper.h"
+#include "Game.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "LocalizedString.h"
+#include "NoteSkinManager.h"
+#include "PlayerOptions.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "RageDisplay.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RageUtil/LanguageInfo.h"
+#include "SongOptions.h"
+#include "SpecialFiles.h"
+#include "StdString.h"
+#include "StepMania.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 using namespace StringConversion;
 
@@ -533,9 +538,7 @@ static void MaxHighScoresPerListForPlayer(int& sel, bool to_sel, ConfOption cons
 	MoveMap(sel, conf_option, to_sel, mapping, ARRAYLEN(mapping));
 }
 
-
 #include "LuaManager.h"
-#include "LuaBinding.h"
 
 static int GetTimingDifficulty()
 {

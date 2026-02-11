@@ -1,12 +1,14 @@
 #ifndef BITMAP_TEXT_H
 #define BITMAP_TEXT_H
 
-#include "Actor.h"
-
 #include <cstddef>
 #include <map>
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "RageTypes.h"
+#include "Tween.h"
 
 class RageTexture;
 class Font;

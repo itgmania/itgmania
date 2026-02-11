@@ -2,9 +2,10 @@
 #define RAGE_DISPLAY_OGL_HELPERS_H
 
 /* Import RageDisplay, for types.  Do not include RageDisplay_Legacy.h. */
-#include "RageDisplay.h"
-
 #include <cstdint>
+#include <string>
+
+#include "RageDisplay.h"
 
 #if defined(_WIN32)
 #include <windows.h>

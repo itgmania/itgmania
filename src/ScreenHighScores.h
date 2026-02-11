@@ -1,12 +1,21 @@
 #ifndef ScreenHighScores_H
 #define ScreenHighScores_H
 
-#include "ScreenAttract.h"
-#include "Course.h"
-#include "DynamicActorScroller.h"
-
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "Actor.h"
+#include "Attack.h"
+#include "Course.h"
+#include "Difficulty.h"
+#include "DynamicActorScroller.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "InputQueue.h"
+#include "ScreenAttract.h"
+#include "ScreenMessage.h"
+#include "ThemeMetric.h"
 
 typedef std::pair<Difficulty, StepsType> DifficultyAndStepsType;
 

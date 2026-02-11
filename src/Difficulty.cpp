@@ -1,16 +1,22 @@
-#include "global.h"
 #include "Difficulty.h"
-#include "GameState.h"
-#include "ThemeMetric.h"
-#include "LuaManager.h"
-#include "LocalizedString.h"
-#include "GameConstantsAndTypes.h"
-#include "GameManager.h"
-#include "Steps.h"
-#include "Trail.h"
 
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LocalizedString.h"
+#include "LuaManager.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "Steps.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "Trail.h"
 
 static const char *DifficultyNames[] = {
 	"Beginner",

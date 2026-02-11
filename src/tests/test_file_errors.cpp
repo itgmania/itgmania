@@ -1,14 +1,17 @@
-#include "global.h"
+#include <errno.h>
+
+#include <algorithm>
+#include <cstddef>
+#include <string>
+
 #include "PrefsManager.h"
-#include "RageLog.h"
 #include "RageFile.h"
 #include "RageFileDriver.h"
+#include "RageLog.h"
 #include "RageUtil.h"
 #include "RageUtil_FileDB.h"
+#include "global.h"
 #include "test_misc.h"
-
-#include <cstddef>
-#include <errno.h>
 
 static std::string g_TestFile;
 static std::string g_TestFilename;

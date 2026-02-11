@@ -1,10 +1,13 @@
 #ifndef SCREENPLAYEROPTIONS_H
 #define SCREENPLAYEROPTIONS_H
 
-#include "ScreenOptionsMaster.h"
-
 #include <vector>
 
+#include "AutoActor.h"
+#include "InputEventPlus.h"
+#include "PlayerNumber.h"
+#include "ScreenMessage.h"
+#include "ScreenOptionsMaster.h"
 
 struct lua_State;
 

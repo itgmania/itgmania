@@ -3,10 +3,10 @@
 #ifndef SONG_OPTIONS_H
 #define SONG_OPTIONS_H
 
-#include "EnumHelper.h"
-
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
 
 enum AutosyncType
 {

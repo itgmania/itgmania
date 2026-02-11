@@ -3,9 +3,11 @@
 #ifndef LightsDriver_Linux_Leds_H
 #define LightsDriver_Linux_Leds_H
 
-#include "arch/Lights/LightsDriver.h"
-
 #include <cstdint>
+#include <string>
+
+#include "GameInput.h"
+#include "LightsDriver.h"
 
 class LightsDriver_Linux_Leds : public LightsDriver
 {

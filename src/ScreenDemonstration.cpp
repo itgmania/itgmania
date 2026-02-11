@@ -1,20 +1,24 @@
-#include "global.h"
 #include "ScreenDemonstration.h"
-#include "RageLog.h"
-#include "ThemeManager.h"
-#include "GameState.h"
-#include "SongManager.h"
-#include "StepMania.h"
-#include "ScreenManager.h"
-#include "RageSoundManager.h"
-#include "GameSoundManager.h"
-#include "GameManager.h"
-#include "Style.h"
-#include "ScreenAttract.h"
-#include "RageUtil/RandomNumbers.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "PlayerNumber.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "Screen.h"
+#include "ScreenAttract.h"
+#include "ScreenGameplay.h"
+#include "ScreenJukebox.h"
+#include "ScreenMessage.h"
+#include "SongManager.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 #define SECONDS_TO_SHOW			THEME->GetMetricF(m_sName,"SecondsToShow")
 #define ALLOW_STYLE_TYPES		THEME->GetMetric (m_sName,"AllowStyleTypes")

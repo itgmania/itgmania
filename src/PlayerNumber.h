@@ -3,8 +3,9 @@
 #ifndef PlayerNumber_H
 #define PlayerNumber_H
 
-#include "EnumHelper.h"
+#include <string>
 
+#include "EnumHelper.h"
 
 // Player number stuff
 enum PlayerNumber

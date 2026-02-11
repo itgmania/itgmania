@@ -1,25 +1,26 @@
-#include "global.h"
-#include "RageUtil.h"
-
 #include "LoadingWindow_Win32.h"
-#include "RageFileManager.h"
-#include "archutils/win32/WindowsResources.h"
-#include "archutils/win32/WindowIcon.h"
-#include "archutils/win32/ErrorStrings.h"
-#include "arch/ArchHooks/ArchHooks.h"
+
 #include <windows.h>
-#include "CommCtrl.h"
-#include "RageSurface_Load.h"
+#include <commctrl.h>
+
+#include <cmath>
+#include <string>
+#include <vector>
+
+#include "LocalizedString.h"
+#include "ProductInfo.h"
+#include "RageFileManager.h"
+#include "RageLog.h"
 #include "RageSurface.h"
 #include "RageSurfaceUtils.h"
 #include "RageSurfaceUtils_Zoom.h"
-#include "RageLog.h"
-#include "ProductInfo.h"
-#include "LocalizedString.h"
-
-#include <cmath>
-#include <vector>
-
+#include "RageSurface_Load.h"
+#include "RageUtil.h"
+#include "arch/ArchHooks/ArchHooks.h"
+#include "archutils/win32/ErrorStrings.h"
+#include "archutils/win32/WindowIcon.h"
+#include "archutils/win32/WindowsResources.h"
+#include "global.h"
 
 static HBITMAP g_hBitmap = nullptr;
 

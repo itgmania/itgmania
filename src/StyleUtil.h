@@ -1,6 +1,8 @@
 #ifndef STYLEUTIL_H
 #define STYLEUTIL_H
 
+#include <string>
+
 class Style;
 class Song;
 class XNode;

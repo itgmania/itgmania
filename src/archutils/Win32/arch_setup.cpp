@@ -1,9 +1,10 @@
-#include "global.h"
 #include "arch_setup.h"
+
+#include "CommandLine.h"
+
 #ifdef _WIN32
 #  include <windows.h>
 #endif
-#include "CommandLine.h"
 
 #if defined(_WIN32)
 int main( int argc, char* argv[] );

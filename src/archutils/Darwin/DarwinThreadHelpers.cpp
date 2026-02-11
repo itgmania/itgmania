@@ -1,13 +1,15 @@
+#include <mach/mach_error.h>
+#include <mach/mach_init.h>
 #include <mach/mach_types.h>
 #include <mach/thread_act.h>
-#include <mach/mach_init.h>
-#include <mach/mach_error.h>
-#include "global.h"
-#include "Backtrace.h"
+#include <mach/thread_policy.h>
 
 #include <cmath>
 #include <cstdint>
 #include <string>
+
+#include "Backtrace.h"
+#include "global.h"
 
 bool SuspendThread( uint64_t threadHandle )
 {

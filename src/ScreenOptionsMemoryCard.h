@@ -1,11 +1,16 @@
 #ifndef ScreenOptionsMemoryCard_H
 #define ScreenOptionsMemoryCard_H
 
-#include "ScreenOptions.h"
-#include "arch/MemoryCard/MemoryCardDriver.h"
-
+#include <string>
 #include <vector>
 
+#include "BitmapText.h"
+#include "InputEventPlus.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
+#include "arch/MemoryCard/MemoryCardDriver.h"
 
 class ScreenOptionsMemoryCard : public ScreenOptions
 {

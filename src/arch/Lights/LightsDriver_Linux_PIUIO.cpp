@@ -1,10 +1,16 @@
-#include "global.h"
 #include <stdio.h>
+#include <sys/fcntl.h>
+
+#include <cstring>
+#include <string>
+
+#include "GameInput.h"
+#include "LightsManager.h"
+#include "StdString.h"
+#include "arch/Lights/LightsDriver.h"
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>

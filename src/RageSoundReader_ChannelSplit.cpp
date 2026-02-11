@@ -32,17 +32,17 @@
  *   pStereo->AddSourceChannelToSound( 0, 1 );
  */
 
-#include "global.h"
 #include "RageSoundReader_ChannelSplit.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageSoundMixBuffer.h"
-#include "RageSoundUtil.h"
 
+#include <algorithm>
 #include <climits>
+#include <cstddef>
 #include <set>
+#include <string>
 #include <vector>
 
+#include "RageSoundMixBuffer.h"
+#include "RageSoundReader.h"
 
 class RageSoundReader_Split;
 

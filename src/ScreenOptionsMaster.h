@@ -1,10 +1,11 @@
 #ifndef SCREEN_OPTIONS_MASTER_H
 #define SCREEN_OPTIONS_MASTER_H
 
-#include "ScreenOptions.h"
-
 #include <vector>
 
+#include "PlayerNumber.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
 
 class OptionRowHandler;
 

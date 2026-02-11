@@ -1,5 +1,15 @@
-#include "global.h"
 #include "StepParityDatastructs.h"
+
+#include <algorithm>
+#include <cmath>
+#include <utility>
+#include <vector>
+
+#if defined(_MSC_VER)
+#include <intrin.h>
+#endif
+
+#include "NoteTypes.h"
 
 using namespace StepParity;
 
@@ -167,7 +177,6 @@ inline int popcount(unsigned int x) {
 #if defined(__GNUC__) || defined(__clang__)
 	return __builtin_popcount(x);
 #elif defined(_MSC_VER)
-	#include <intrin.h>
 	return __popcnt(x);
 #else
 	// Fallback implementation

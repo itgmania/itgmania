@@ -1,25 +1,34 @@
-#include "global.h"
 #include "LightsManager.h"
-#include "GameState.h"
-#include "RageTimer.h"
-#include "arch/Lights/LightsDriver.h"
-#include "RageUtil.h"
-#include "RageUtil/ConvertValue.h"
-#include "GameInput.h"	// for GameController
-#include "InputMapper.h"
-#include "Game.h"
-#include "PrefsManager.h"
-#include "Actor.h"
-#include "Preference.h"
-#include "GameManager.h"
-#include "PlayerState.h"
-#include "GameState.h"
-#include "CommonMetrics.h"
-#include "Style.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <set>
+#include <string>
+#include <utility>
 #include <vector>
+
+#include "Actor.h"
+#include "CommonMetrics.h"
+#include "EnumHelper.h"
+#include "Game.h"
+#include "GameInput.h"  // for GameController
+#include "GameManager.h"
+#include "GameState.h"
+#include "InputMapper.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "RageUtil/ConvertValue.h"
+#include "Style.h"
+#include "ThemeMetric.h"
+#include "arch/Lights/LightsDriver.h"
+#include "global.h"
 
 const std::string DEFAULT_LIGHTS_DRIVER = "SystemMessage,Export";
 static Preference<std::string> g_sLightsDriver(

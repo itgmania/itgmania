@@ -1,13 +1,13 @@
 #ifndef GHOSTARROWROW_H
 #define GHOSTARROWROW_H
 
-#include "ActorFrame.h"
-#include "GameConstantsAndTypes.h"
-#include "NoteTypes.h"
-#include "NoteDisplay.h"
-
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "GameConstantsAndTypes.h"
+#include "NoteDisplay.h"
+#include "NoteTypes.h"
 
 class PlayerState;
 /** @brief Row of GhostArrow Actors. */

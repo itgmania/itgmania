@@ -1,19 +1,21 @@
-#include "global.h"
 #include "LowLevelWindow_Win32.h"
+
+#include <GL/glew.h>
+
+#include <cstdint>
+#include <string>
+
+#include "LocalizedString.h"
+#include "PrefsManager.h"
+#include "RageDisplay.h"
+#include "RageDisplay_OGL.h"
+#include "RageDisplay_OGL_Helpers.h"
+#include "RageLog.h"
+#include "RageUtil.h"
 #include "archutils/Win32/DirectXHelpers.h"
 #include "archutils/Win32/ErrorStrings.h"
 #include "archutils/Win32/GraphicsWindow.h"
-#include "PrefsManager.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageDisplay.h"
-#include "LocalizedString.h"
-#include "RageDisplay_OGL_Helpers.h"
-#include "RageDisplay_OGL.h"
-
-#include <cstdint>
-
-#include <GL/glew.h>
+#include "global.h"
 
 static PIXELFORMATDESCRIPTOR g_CurrentPixelFormat;
 static HGLRC g_HGLRC = nullptr;

@@ -1,9 +1,10 @@
 #ifndef MODEL_MANAGER_H
 #define MODEL_MANAGER_H
 
-#include "RageModelGeometry.h"
-
 #include <map>
+#include <string>
+
+#include "RageModelGeometry.h"
 
 struct ModelManagerPrefs
 {

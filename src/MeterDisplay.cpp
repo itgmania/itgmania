@@ -1,12 +1,16 @@
-#include "global.h"
 #include "MeterDisplay.h"
-#include "RageUtil.h"
-#include "GameState.h"
-#include "Song.h"
+
+#include <string>
+
+#include "ActorFrame.h"
 #include "ActorUtil.h"
-#include "XmlFile.h"
-#include "RageLog.h"
+#include "GameState.h"
 #include "LuaManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "XmlFile.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS(MeterDisplay);
 REGISTER_ACTOR_CLASS(SongMeterDisplay);

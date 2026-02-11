@@ -1,18 +1,26 @@
-#include "global.h"
 #include "ScreenSyncOverlay.h"
-#include "ScreenDimensions.h"
-#include "ScreenManager.h"
-#include "GameState.h"
-#include "Song.h"
-#include "PrefsManager.h"
-#include "GamePreferences.h"
-#include "InputEventPlus.h"
-#include "LocalizedString.h"
-#include "AdjustSync.h"
-#include "ActorUtil.h"
 
+#include <string>
 #include <vector>
 
+#include "AdjustSync.h"
+#include "GameConstantsAndTypes.h"
+#include "GamePreferences.h"
+#include "GameState.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "LocalizedString.h"
+#include "MessageManager.h"
+#include "PrefsManager.h"
+#include "RageInputDevice.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "Song.h"
+#include "SongOptions.h"
+#include "ThemeManager.h"
+#include "TimingSegments.h"
+#include "global.h"
 
 static bool IsGameplay()
 {

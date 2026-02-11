@@ -1,13 +1,16 @@
 /** @brief ActorMultiVertex - An actor with mutiple vertices. Can be used to create shapes that quads can't. */
 
+#include <cstddef>
+#include <string>
+#include <vector>
+
 #include "Actor.h"
 #include "CubicSpline.h"
-#include "RageDisplay.h"
-#include "RageMath.h"
+#include "EnumHelper.h"
 #include "RageTextureID.h"
-
-#include <cstddef>
-#include <vector>
+#include "RageTypes.h"
+#include "Tween.h"
+#include "global.h"
 
 enum DrawMode
 {

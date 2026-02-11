@@ -1,7 +1,10 @@
-#include "global.h"
 #include "RageFileDriverSlice.h"
 
+#include <algorithm>
 #include <cstddef>
+
+#include "RageFileBasic.h"
+#include "global.h"
 
 RageFileDriverSlice::RageFileDriverSlice( RageFileBasic *pFile, int iOffset, int iFileSize )
 {

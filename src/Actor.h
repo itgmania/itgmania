@@ -9,12 +9,13 @@
 class XNode;
 struct lua_State;
 class LuaClass;
-#include "MessageManager.h"
-#include "Tween.h"
-
 #include <cstddef>
 #include <map>
+#include <string>
 #include <vector>
+
+#include "MessageManager.h"
+#include "Tween.h"
 
 typedef AutoPtrCopyOnWrite<LuaReference> apActorCommands;
 

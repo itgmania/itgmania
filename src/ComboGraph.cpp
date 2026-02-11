@@ -1,10 +1,17 @@
-#include "global.h"
 #include "ComboGraph.h"
-#include "RageLog.h"
-#include "StageStats.h"
+
+#include <algorithm>
+#include <string>
+
+#include "Actor.h"
+#include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "BitmapText.h"
-#include "XmlFile.h"
+#include "LuaManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "StageStats.h"
+#include "ThemeManager.h"
 
 const int MinComboSizeToShow = 5;
 

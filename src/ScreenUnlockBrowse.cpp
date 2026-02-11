@@ -1,7 +1,16 @@
-#include "global.h"
 #include "ScreenUnlockBrowse.h"
-#include "UnlockManager.h"
 
+#include "ActorUtil.h"
+#include "GameCommand.h"
+#include "InputQueue.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenMessage.h"
+#include "ScreenSelectMaster.h"
+#include "UnlockManager.h"
+#include "global.h"
 
 REGISTER_SCREEN_CLASS( ScreenUnlockBrowse );
 

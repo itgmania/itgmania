@@ -1,13 +1,21 @@
-#include "global.h"
-#include "GameplayAssist.h"
-#include "GamePreferences.h"
-#include "GameState.h"
-#include "Player.h"
-#include "PlayerState.h"
-#include "ScreenDimensions.h"
-#include "Style.h"
 #include "EditModePlayerManager.h"
 
+#include <memory>
+
+#include "ActorFrame.h"
+#include "GameConstantsAndTypes.h"
+#include "GamePreferences.h"
+#include "GameState.h"
+#include "GameplayAssist.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "Player.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "RageUtil.h"
+#include "ScreenDimensions.h"
+#include "Style.h"
+#include "ThemeManager.h"
 
 void EditModePlayerManager::AddPlayers(const NoteData& note_data) {
 	FOREACH_EnabledPlayer(pn) {

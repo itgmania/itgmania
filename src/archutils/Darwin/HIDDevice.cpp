@@ -1,5 +1,6 @@
-#include "global.h"
 #include "HIDDevice.h"
+
+#include "RageLog.h"
 #include "RageUtil.h"
 
 HIDDevice::HIDDevice() : m_Interface(nullptr), m_Queue(nullptr), m_bRunning( false )

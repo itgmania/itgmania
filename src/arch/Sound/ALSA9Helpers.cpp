@@ -1,14 +1,17 @@
-#include "global.h"
-#include "RageSound.h"
-#include "RageLog.h"
-#include "RageUtil.h"
 #include "ALSA9Helpers.h"
-#include "ALSA9Dynamic.h"
-#include "PrefsManager.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <fstream>
 #include <string>
+
+#include "ALSA9Dynamic.h"
+#include "PrefsManager.h"
+#include "RageLog.h"
+#include "RageSound.h"
+#include "RageSoundConstants.h"
+#include "RageUtil.h"
+#include "global.h"
 
 /* int err; must be defined before using this macro */
 #define ALSA_CHECK(x) \

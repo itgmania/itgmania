@@ -1,15 +1,18 @@
-#include "global.h"
-
 #include "SongCacheIndex.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageFileManager.h"
-#include "Song.h"
-#include "SpecialFiles.h"
-#include "CommonMetrics.h"
 
 #include <cstddef>
+#include <string>
 #include <vector>
+
+#include "CommonMetrics.h"
+#include "RageFileManager.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "SpecialFiles.h"
+#include "StdString.h"
+#include "global.h"
 
 /*
  * A quick explanation of song cache hashes: Each song has two hashes; a hash of the

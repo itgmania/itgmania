@@ -4,6 +4,7 @@
 #define XML_FILE_H
 
 #include <map>
+#include <string>
 #include <vector>
 
 

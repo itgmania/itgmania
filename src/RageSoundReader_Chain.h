@@ -3,12 +3,12 @@
 #ifndef RAGE_SOUND_READER_CHAIN
 #define RAGE_SOUND_READER_CHAIN
 
-#include "RageSoundReader.h"
-
 #include <cstdint>
 #include <map>
+#include <string>
 #include <vector>
 
+#include "RageSoundReader.h"
 
 class RageSoundReader_Chain: public RageSoundReader
 {

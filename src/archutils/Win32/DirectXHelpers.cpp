@@ -1,12 +1,16 @@
-#include "global.h"
 #include "DirectXHelpers.h"
-#include "RageUtil.h"
-#include <cstdarg>
-#include <dinput.h>
+
+#include <mmsystem.h>  // dsound.h needs this
 #include <d3d9.h>
-#include <mmsystem.h> // dsound.h needs this
+#include <dinput.h>
 #include <dsound.h>
+
+#include <cstdarg>
 #include <stdexcept>
+#include <string>
+
+#include "RageUtil.h"
+#include "global.h"
 
 std::string GetErrorString(HRESULT hr);
 

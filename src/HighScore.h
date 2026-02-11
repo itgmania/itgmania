@@ -1,13 +1,14 @@
 #ifndef HIGH_SCORE_H
 #define HIGH_SCORE_H
 
-#include "Grade.h"
-#include "GameConstantsAndTypes.h"
-#include "DateTime.h"
-#include "RageUtil_AutoPtr.h"
-
+#include <string>
 #include <vector>
 
+#include "DateTime.h"
+#include "GameConstantsAndTypes.h"
+#include "Grade.h"
+#include "RageUtil_AutoPtr.h"
+#include "global.h"
 
 class XNode;
 struct RadarValues;

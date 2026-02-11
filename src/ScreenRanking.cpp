@@ -1,15 +1,29 @@
-#include "global.h"
 #include "ScreenRanking.h"
-#include "ScreenManager.h"
-#include "SongManager.h"
-#include "GameState.h"
-#include "GameManager.h"
-#include "ProfileManager.h"
-#include "Profile.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "HighScore.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenAttract.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "SongManager.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 static const char *RankingTypeNames[] = {
 	"Category",

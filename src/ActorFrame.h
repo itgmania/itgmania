@@ -1,9 +1,13 @@
 #ifndef ACTORFRAME_H
 #define ACTORFRAME_H
 
-#include "Actor.h"
-
+#include <string>
 #include <vector>
+
+#include "Actor.h"
+#include "LuaReference.h"
+#include "MessageManager.h"
+#include "RageTypes.h"
 
 /** @brief A container for other Actors. */
 class ActorFrame : public Actor

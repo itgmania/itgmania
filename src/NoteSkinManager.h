@@ -1,14 +1,14 @@
 #ifndef NOTE_SKIN_MANAGER_H
 #define NOTE_SKIN_MANAGER_H
 
-#include "Actor.h"
-#include "RageTypes.h"
-#include "PlayerNumber.h"
-#include "GameInput.h"
-#include "IniFile.h"
-
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "GameInput.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "global.h"
 
 struct Game;
 struct NoteSkinData;

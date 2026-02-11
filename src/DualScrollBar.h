@@ -1,6 +1,8 @@
 #ifndef DUAL_SCROLLBAR_H
 #define DUAL_SCROLLBAR_H
 
+#include <string>
+
 #include "ActorFrame.h"
 #include "AutoActor.h"
 #include "PlayerNumber.h"

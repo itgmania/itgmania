@@ -1,13 +1,17 @@
 #ifndef SCREEN_NAME_ENTRY_H
 #define SCREEN_NAME_ENTRY_H
 
-#include "ScreenWithMenuElements.h"
-#include "BitmapText.h"
-#include "ReceptorArrowRow.h"
-#include "RageSound.h"
-
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "BitmapText.h"
+#include "InputQueue.h"
+#include "PlayerNumber.h"
+#include "RageSound.h"
+#include "ReceptorArrowRow.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
 
 /** @brief Enter a name for a new high score using a gimmicky interface. */
 class ScreenNameEntry : public ScreenWithMenuElements

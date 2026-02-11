@@ -1,25 +1,35 @@
-#include "global.h"
 #include "UnlockManager.h"
-#include "PrefsManager.h"
-#include "RageLog.h"
-#include "Song.h"
-#include "Course.h"
-#include "RageUtil.h"
-#include "SongManager.h"
-#include "GameState.h"
-#include "GameConstantsAndTypes.h" // StepsTypeToString
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "ThemeManager.h"
-#include "Steps.h"
-#include "CommonMetrics.h"
-#include "LuaManager.h"
-#include "GameManager.h"
-#include "Style.h"
 
+#include <algorithm>
 #include <cfloat>
+#include <set>
+#include <string>
 #include <vector>
 
+#include "Command.h"
+#include "CommonMetrics.h"
+#include "Course.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"  // StepsTypeToString
+#include "GameManager.h"
+#include "GameState.h"
+#include "Grade.h"
+#include "LuaManager.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "SongUtil.h"
+#include "StdString.h"
+#include "Steps.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 UnlockManager*	UNLOCKMAN = nullptr;	// global and accessible from anywhere in our program
 

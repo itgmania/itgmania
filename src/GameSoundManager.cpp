@@ -1,30 +1,40 @@
-#include "global.h"
-#include "RageSoundManager.h"
 #include "GameSoundManager.h"
-#include "RageSound.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "GameState.h"
-#include "TimingData.h"
-#include "NotesLoaderSSC.h"
-#include "NotesLoaderSM.h"
-#include "PrefsManager.h"
-#include "RageDisplay.h"
-#include "AnnouncerManager.h"
-#include "NoteData.h"
-#include "Song.h"
-#include "Steps.h"
-#include "LightsManager.h"
-#include "SongUtil.h"
-#include "LuaManager.h"
-#include "RageUtil/RandomNumbers.h"
 
-#include "arch/Sound/RageSoundDriver.h"
-
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <map>
+#include <string>
 #include <vector>
 
+#include "AnnouncerManager.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LightsManager.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "NotesLoaderSM.h"
+#include "NotesLoaderSSC.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "RageDisplay.h"
+#include "RageLog.h"
+#include "RageSound.h"
+#include "RageSoundManager.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "Song.h"
+#include "SongUtil.h"
+#include "StdString.h"
+#include "Steps.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
+#include "arch/Sound/RageSoundDriver.h"
+#include "global.h"
 
 GameSoundManager *SOUND = nullptr;
 

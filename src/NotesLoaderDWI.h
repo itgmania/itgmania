@@ -4,6 +4,7 @@
 #define NOTES_LOADER_DWI_H
 
 #include <set>
+#include <string>
 #include <vector>
 
 

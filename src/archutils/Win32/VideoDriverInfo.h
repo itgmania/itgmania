@@ -3,6 +3,8 @@
 #ifndef VIDEO_DRIVER_INFO_H
 #define VIDEO_DRIVER_INFO_H
 
+#include <string>
+
 struct VideoDriverInfo
 {
 	std::string sProvider;

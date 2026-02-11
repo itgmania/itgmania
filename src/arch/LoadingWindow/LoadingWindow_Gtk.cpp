@@ -1,13 +1,15 @@
-#include "global.h"
-#include "RageUtil.h"
+#include "LoadingWindow_Gtk.h"
+
+#include <gtk/gtk.h>
+
+#include <cstdint>
+#include <string>
+
 #include "RageSurface.h"
 #include "RageSurfaceUtils.h"
 #include "RageSurface_Load.h"
-#include "LoadingWindow_Gtk.h"
-
-#include <cstdint>
-
-#include <gtk/gtk.h>
+#include "RageUtil.h"
+#include "global.h"
 
 static GtkWidget *label;
 static GtkWidget *window;

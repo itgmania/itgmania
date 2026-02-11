@@ -1,10 +1,11 @@
-#include "global.h"
 #include "GameInput.h"
-#include "RageLog.h"
-#include "RageUtil.h"
+
+#include <cstdio>
+#include <string>
+
+#include "EnumHelper.h"
 #include "InputMapper.h"
 #include "ThemeManager.h"
-
 
 static const char *GameControllerNames[] = {
 	"1",

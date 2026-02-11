@@ -3,6 +3,8 @@
 #ifndef RAGE_FILE_DRIVER_TIMEOUT_H
 #define RAGE_FILE_DRIVER_TIMEOUT_H
 
+#include <string>
+
 #include "RageFileDriver.h"
 
 class ThreadedFileWorker;

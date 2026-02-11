@@ -1,17 +1,21 @@
-#include "global.h"
 #include "NoteDataWithScoring.h"
-#include "NoteData.h"
-#include "PlayerStageStats.h"
-#include "Game.h"
-#include "GameConstantsAndTypes.h"
-#include "GameState.h"
-#include "ThemeMetric.h"
-#include "RageLog.h"
-#include "TimingData.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "Game.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "PlayerStageStats.h"
+#include "RageUtil.h"
+#include "ThemeMetric.h"
+#include "TimingData.h"
+#include "global.h"
 
 namespace
 {

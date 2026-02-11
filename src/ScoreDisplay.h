@@ -1,7 +1,6 @@
 #ifndef SCORE_DISPLAY_H
 #define SCORE_DISPLAY_H
 
-#include "PlayerNumber.h"
 #include "ActorFrame.h"
 #include "GameConstantsAndTypes.h"
 

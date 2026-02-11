@@ -1,21 +1,23 @@
-#include "global.h"
 #include "ArchHooks_Win32.h"
-#include "RageUtil.h"
+
+#include <windows.h>
+#include <versionhelpers.h>
+
+#include <cstdint>
+#include <string>
+#include <vector>
+
+#include "ProductInfo.h"
 #include "RageLog.h"
 #include "RageThreads.h"
-#include "ProductInfo.h"
+#include "RageUtil.h"
+#include "archutils/Win32/RegistryAccess.h"
 #include "archutils/win32/AppInstance.h"
-#include "archutils/win32/crash.h"
 #include "archutils/win32/DebugInfoHunt.h"
 #include "archutils/win32/ErrorStrings.h"
 #include "archutils/win32/RestartProgram.h"
-#include "archutils/Win32/RegistryAccess.h"
-
-#include "VersionHelpers.h"
-
-#include <cstdint>
-#include <vector>
-
+#include "archutils/win32/crash.h"
+#include "global.h"
 
 static HANDLE g_hInstanceMutex;
 static bool g_bIsMultipleInstance = false;

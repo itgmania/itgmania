@@ -1,17 +1,20 @@
 /* RageThreads helpers for threads in Linux, which are based on PIDs and TIDs. */
 #include "PthreadHelpers.h"
 
-#include "global.h"
 #include "RageUtil.h"
-#include "RageThreads.h"
-#include "archutils/Unix/Backtrace.h" // HACK: This should be platform-agnosticized
+#include "archutils/Unix/Backtrace.h"  // HACK: This should be platform-agnosticized
+#include "global.h"
+
 #if defined(UNIX)
 #include "archutils/Unix/RunningUnderValgrind.h"
 #endif
 
+#include <pthread.h>
+#include <semaphore.h>
+
 #include <cerrno>
-#include <cstdint>
 #include <cstdlib>
+#include <cstring>
 
 #if defined(LINUX)
 #if defined(HAVE_UNISTD_H)

@@ -1,9 +1,11 @@
 #ifndef SCORE_DISPLAY_NORMAL_H
 #define SCORE_DISPLAY_NORMAL_H
 
-#include "ScoreDisplay.h"
-#include "RollingNumbers.h"
+#include <string>
+
 #include "AutoActor.h"
+#include "RollingNumbers.h"
+#include "ScoreDisplay.h"
 
 /** @brief Shows point score during gameplay and some menus. */
 class ScoreDisplayNormal : public ScoreDisplay

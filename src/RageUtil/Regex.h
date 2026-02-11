@@ -1,8 +1,7 @@
 #ifndef RAGEUTIL_REGEX_H
 #define RAGEUTIL_REGEX_H
 
-#include "global.h"
-
+#include <string>
 #include <vector>
 
 class Regex

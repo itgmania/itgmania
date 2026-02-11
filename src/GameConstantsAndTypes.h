@@ -3,11 +3,11 @@
 #ifndef GAME_CONSTANTS_AND_TYPES_H
 #define GAME_CONSTANTS_AND_TYPES_H
 
-#include "EnumHelper.h"
-
 #include <cfloat>
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
 
 // Note definitions
 /** @brief Define the mininum difficulty value allowed. */

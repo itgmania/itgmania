@@ -3,11 +3,13 @@
 #ifndef NOTE_TYPES_H
 #define NOTE_TYPES_H
 
+#include <cmath>
+#include <string>
+
+#include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "PlayerNumber.h"
 #include "RageLog.h"
-
-#include <cmath>
 
 class XNode;
 

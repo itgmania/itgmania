@@ -1,6 +1,7 @@
 #ifndef QUAD_H
 #define QUAD_H
 
+#include "Actor.h"
 #include "Sprite.h"
 
 /** @brief A rectangular shaped Actor with color. */

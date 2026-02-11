@@ -1,78 +1,87 @@
-#include "global.h"
-
 #include "StepMania.h"
 
+#include <cstdlib>
+#include <utility>
+
+#include "DateTime.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "PlayerNumber.h"
+#include "Preference.h"
+#include "RageException.h"
+#include "RageInputDevice.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "ThemeMetric.h"
+#include "global.h"
+
 // Rage global classes
-#include "RageLog.h"
-#include "RageTextureManager.h"
-#include "RageSoundManager.h"
-#include "GameSoundManager.h"
-#include "RageInput.h"
-#include "RageTimer.h"
-#include "RageMath.h"
-#include "RageDisplay.h"
-#include "RageThreads.h"
-#include "LocalizedString.h"
-#include "RageUtil/Regex.h"
-
-#include "arch/ArchHooks/ArchHooks.h"
-#include "arch/LoadingWindow/LoadingWindow.h"
-#include "arch/Dialog/Dialog.h"
-
-#include "ProductInfo.h"
-
-#include "Screen.h"
-#include "InputEventPlus.h"
-#include "ScreenDimensions.h"
 #include "CodeDetector.h"
+#include "CommandLineActions.h"
 #include "CommonMetrics.h"
 #include "Game.h"
+#include "GameSoundManager.h"
+#include "InputEventPlus.h"
+#include "LocalizedString.h"
+#include "ProductInfo.h"
+#include "RageDisplay.h"
+#include "RageInput.h"
+#include "RageLog.h"
+#include "RageSoundManager.h"
 #include "RageSurface.h"
 #include "RageSurface_Load.h"
-#include "CommandLineActions.h"
+#include "RageTextureManager.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageUtil/Regex.h"
+#include "Screen.h"
+#include "arch/ArchHooks/ArchHooks.h"
+#include "arch/Dialog/Dialog.h"
+#include "arch/LoadingWindow/LoadingWindow.h"
 
 #if !defined(SUPPORT_OPENGL) && !defined(SUPPORT_D3D)
 #define SUPPORT_OPENGL
 #endif
 
 // StepMania global classes
-#include "ThemeManager.h"
-#include "NoteSkinManager.h"
-#include "PrefsManager.h"
-#include "Song.h"
-#include "SongManager.h"
-#include "CharacterManager.h"
-#include "GameState.h"
+#include <cmath>
+#include <ctime>
+#include <string>
+#include <vector>
+
+#include "ActorUtil.h"
 #include "AnnouncerManager.h"
-#include "ProfileManager.h"
-#include "MemoryCardManager.h"
-#include "ScreenManager.h"
-#include "LuaManager.h"
-#include "GameManager.h"
+#include "Bookkeeper.h"
+#include "CharacterManager.h"
+#include "CryptManager.h"
 #include "FontManager.h"
+#include "GameLoop.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "ImageCache.h"
 #include "InputFilter.h"
 #include "InputMapper.h"
 #include "InputQueue.h"
-#include "SongCacheIndex.h"
-#include "ImageCache.h"
-#include "UnlockManager.h"
-#include "RageFileManager.h"
-#include "Bookkeeper.h"
 #include "LightsManager.h"
-#include "ModelManager.h"
-#include "CryptManager.h"
-#include "NetworkManager.h"
+#include "LuaManager.h"
+#include "MemoryCardManager.h"
 #include "MessageManager.h"
-#include "StatsManager.h"
-#include "GameLoop.h"
-#include "SpecialFiles.h"
+#include "ModelManager.h"
+#include "NetworkManager.h"
+#include "NoteSkinManager.h"
+#include "PrefsManager.h"
 #include "Profile.h"
-#include "ActorUtil.h"
+#include "ProfileManager.h"
+#include "RageFileManager.h"
+#include "ScreenManager.h"
+#include "SongCacheIndex.h"
+#include "SongManager.h"
+#include "SpecialFiles.h"
+#include "StatsManager.h"
+#include "ThemeManager.h"
+#include "UnlockManager.h"
 #include "ver.h"
-
-#include <cmath>
-#include <ctime>
-#include <vector>
 
 void ShutdownGame();
 bool HandleGlobalInputs( const InputEventPlus &input );

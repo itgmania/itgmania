@@ -1,14 +1,22 @@
 #ifndef ScreenRanking_H
 #define ScreenRanking_H
 
-#include "ScreenAttract.h"
-#include "BitmapText.h"
-#include "Banner.h"
-#include "Difficulty.h"
-#include "CommonMetrics.h"
-
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "AutoActor.h"
+#include "Banner.h"
+#include "BitmapText.h"
+#include "CommonMetrics.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "LocalizedString.h"
+#include "RageTypes.h"
+#include "ScreenAttract.h"
+#include "ScreenMessage.h"
+#include "ThemeMetric.h"
 
 class Course;
 class Trail;

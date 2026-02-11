@@ -1,5 +1,6 @@
-#include "global.h"
 #include "Quad.h"
+
+#include "Actor.h"
 #include "ActorUtil.h"
 #include "RageTextureManager.h"
 

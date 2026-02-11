@@ -1,29 +1,28 @@
-#define __USE_GNU
-#include "global.h"
+#include <sys/signal.h>
+#include <unistd.h>
+
+#include <csignal>
+#include <cstdlib>
 
 #include "Backtrace.h"
 #include "BacktraceNames.h"
-
-#include "RageUtil.h"
 #include "CrashHandler.h"
 #include "CrashHandlerInternal.h"
-#include "RageLog.h" /* for RageLog::GetAdditionalLog, etc. only */
 #include "ProductInfo.h"
+#include "RageUtil.h"
 #include "arch/ArchHooks/ArchHooks.h"
 
 #if defined(MACOSX)
 #include "archutils/Darwin/Crash.h"
 #endif
 
-#include "ver.h"
-
+#include <cerrno>
 #include <cstdio>
 #include <cstring>
-#include <cerrno>
+#include <string>
 #include <vector>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/select.h>
+
+#include "ver.h"
 
 bool child_read( int fd, void *p, int size );
 

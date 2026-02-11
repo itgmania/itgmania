@@ -1,13 +1,17 @@
-#include "global.h"
 #include "ScreenReloadSongs.h"
-#include "ScreenManager.h"
-#include "SongManager.h"
-#include "RageTimer.h"
-#include "RageLog.h"
-#include "ThemeManager.h"
-#include "ScreenDimensions.h"
 
+#include <string>
+
+#include "BitmapText.h"
+#include "RageTimer.h"
+#include "Screen.h"
+#include "ScreenDimensions.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "SongManager.h"
+#include "ThemeManager.h"
 #include "arch/LoadingWindow/LoadingWindow.h"
+#include "global.h"
 
 static const int DrawFrameRate = 20;
 class ScreenReloadSongsLoadingWindow: public LoadingWindow

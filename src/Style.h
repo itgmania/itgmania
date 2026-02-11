@@ -3,13 +3,13 @@
 #ifndef STYLE_H
 #define STYLE_H
 
+#include <string>
+#include <vector>
+
+#include "GameConstantsAndTypes.h"
 #include "GameInput.h"
 #include "NoteTypes.h"
 #include "PlayerNumber.h"
-#include "GameConstantsAndTypes.h"
-
-#include <vector>
-
 
 /** @brief Each style can have a maximum amount of columns to work with. */
 const int MAX_COLS_PER_PLAYER = MAX_NOTE_TRACKS;

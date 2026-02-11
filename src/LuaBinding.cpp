@@ -1,10 +1,14 @@
-#include "global.h"
 #include "LuaBinding.h"
+
+#include <map>
+#include <set>
+#include <string>
+
+#include "LuaManager.h"
 #include "LuaReference.h"
 #include "RageUtil.h"
-
-
 #include "SubscriptionManager.h"
+#include "global.h"
 static SubscriptionManager<LuaBinding> m_Subscribers;
 
 namespace

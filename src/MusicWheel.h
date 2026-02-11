@@ -3,14 +3,17 @@
 #ifndef MUSIC_WHEEL_H
 #define MUSIC_WHEEL_H
 
-#include "RageSound.h"
-#include "GameConstantsAndTypes.h"
-#include "MusicWheelItem.h"
-#include "ThemeMetric.h"
-#include "WheelBase.h"
-
+#include <string>
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
+#include "LuaReference.h"
+#include "MusicWheelItem.h"
+#include "RageSound.h"
+#include "RageTypes.h"
+#include "ThemeMetric.h"
+#include "WheelBase.h"
+#include "WheelItemBase.h"
 
 class Course;
 class Song;

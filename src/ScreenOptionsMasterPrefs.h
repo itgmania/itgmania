@@ -1,10 +1,10 @@
 #ifndef SCREEN_OPTIONS_MASTER_PREFS_H
 #define SCREEN_OPTIONS_MASTER_PREFS_H
 
-#include "EnumHelper.h"
-
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
 
 static const int MAX_OPTIONS=16;
 enum OptEffect

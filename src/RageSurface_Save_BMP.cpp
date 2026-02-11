@@ -1,12 +1,12 @@
-#include "global.h"
 #include "RageSurface_Save_BMP.h"
-#include "RageSurface.h"
-#include "RageSurfaceUtils.h"
-#include "RageUtil.h"
-#include "RageFile.h"
-#include "RageUtil/Endian.h"
 
 #include <cstdint>
+#include <string>
+
+#include "RageFile.h"
+#include "RageSurface.h"
+#include "RageSurfaceUtils.h"
+#include "RageUtil/Endian.h"
 
 static void WriteBytes( RageFile &f, std::string &sError, const void *buf, int size )
 {

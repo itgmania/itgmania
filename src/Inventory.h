@@ -1,13 +1,11 @@
 #ifndef Inventory_H
 #define Inventory_H
 
-#include "Actor.h"
-#include "PlayerNumber.h"
-#include "RageSound.h"
-#include "ScreenMessage.h"
-
 #include <vector>
 
+#include "Actor.h"
+#include "RageSound.h"
+#include "ScreenMessage.h"
 
 AutoScreenMessage( SM_BattleDamageLevel1 );
 AutoScreenMessage( SM_BattleDamageLevel2 );

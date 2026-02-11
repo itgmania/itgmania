@@ -1,6 +1,10 @@
 #ifndef DIALOG_BOX_DRIVER_H
 #define DIALOG_BOX_DRIVER_H
 
+#include <cstdio>
+#include <map>
+#include <string>
+
 #include "Dialog.h"
 #include "RageUtil.h"
 

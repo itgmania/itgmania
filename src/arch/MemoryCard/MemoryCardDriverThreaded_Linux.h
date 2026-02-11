@@ -1,10 +1,10 @@
 #ifndef MemoryCardDriverThreaded_Linux_H
 #define MemoryCardDriverThreaded_Linux_H 1
 
-#include "MemoryCardDriver.h"
-
+#include <string>
 #include <vector>
 
+#include "MemoryCardDriver.h"
 
 class MemoryCardDriverThreaded_Linux : public MemoryCardDriver
 {

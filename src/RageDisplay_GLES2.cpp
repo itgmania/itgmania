@@ -1,25 +1,27 @@
-#include "global.h"
-
-#include "RageDisplay.h"
 #include "RageDisplay_GLES2.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageTimer.h"
-#include "RageMath.h"
-#include "RageTypes.h"
-#include "RageUtil.h"
-#include "RageSurface.h"
-#include "RageTextureManager.h"
-#include "DisplaySpec.h"
-#include "RageUtil/Endian.h"
-
-#include "arch/LowLevelWindow/LowLevelWindow.h"
 
 #include <GL/glew.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <string>
 #include <vector>
+
+#include "DisplaySpec.h"
+#include "EnumHelper.h"
+#include "ModelTypes.h"
+#include "RageDisplay.h"
+#include "RageLog.h"
+#include "RageMath.h"
+#include "RageSurface.h"
+#include "RageTextureManager.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "RageUtil/Endian.h"
+#include "arch/LowLevelWindow/LowLevelWindow.h"
+#include "global.h"
 
 #ifdef NO_GL_FLUSH
 #define glFlush()

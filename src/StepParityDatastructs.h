@@ -1,10 +1,13 @@
 #ifndef STEP_PARITY_DATASTRUCTS_H
 #define STEP_PARITY_DATASTRUCTS_H
 
-#include "GameConstantsAndTypes.h"
-#include "NoteData.h"
-#include <queue>
+#include <cstdint>
+#include <string>
 #include <unordered_map>
+#include <vector>
+
+#include "GameConstantsAndTypes.h"
+#include "NoteTypes.h"
 
 namespace StepParity {
 	

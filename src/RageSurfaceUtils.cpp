@@ -1,14 +1,19 @@
-#include "global.h"
 #include "RageSurfaceUtils.h"
-#include "RageSurface.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageFile.h"
-#include "RageUtil/Endian.h"
 
+#include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <string>
+
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageSurface.h"
+#include "RageUtil.h"
+#include "RageUtil/Endian.h"
+#include "global.h"
 
 uint32_t RageSurfaceUtils::decodepixel( const uint8_t *p, int bpp )
 {

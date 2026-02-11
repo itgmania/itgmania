@@ -3,8 +3,8 @@
 #ifndef Commands_H
 #define Commands_H
 
+#include <string>
 #include <vector>
-
 
 class Command
 {

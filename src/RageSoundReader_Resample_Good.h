@@ -3,10 +3,11 @@
 #ifndef RAGE_SOUND_READER_RESAMPLE_GOOD_H
 #define RAGE_SOUND_READER_RESAMPLE_GOOD_H
 
-#include "RageSoundReader_Filter.h"
-
+#include <string>
 #include <vector>
 
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
 
 class RageSoundResampler_Polyphase;
 

@@ -1,13 +1,16 @@
-#include "global.h"
 #include "ScoreDisplayNormal.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "PlayerState.h"
-#include "StatsManager.h"
-#include "CommonMetrics.h"
+
+#include <string>
+
 #include "ActorUtil.h"
+#include "GameState.h"
+#include "LuaReference.h"
+#include "MessageManager.h"
+#include "PlayerStageStats.h"
+#include "PlayerState.h"
+#include "RageLog.h"
+#include "ScoreDisplay.h"
+#include "ThemeManager.h"
 
 ScoreDisplayNormal::ScoreDisplayNormal()
 {

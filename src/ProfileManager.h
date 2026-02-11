@@ -1,15 +1,14 @@
 #ifndef ProfileManager_H
 #define ProfileManager_H
 
-#include "PlayerNumber.h"
-#include "GameConstantsAndTypes.h"
-#include "Difficulty.h"
-#include "Preference.h"
-#include "Grade.h"
-#include "Profile.h"
-
+#include <string>
 #include <vector>
 
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
+#include "PlayerNumber.h"
+#include "Preference.h"
+#include "Profile.h"
 
 class Song;
 class Steps;

@@ -1,6 +1,9 @@
 #ifndef HidDevice_H
 #define HidDevice_H
 
+#include <cstddef>
+#include <string>
+
 #include "hidapi.h"
 #include "vector"
 

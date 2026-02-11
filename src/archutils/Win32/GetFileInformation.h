@@ -4,6 +4,7 @@
 #define GET_FILE_INFORMATION_H
 
 #include <cstdint>
+#include <string>
 
 bool GetFileVersion( const std::string& sFile, std::string& sOut );
 std::string FindSystemFile( const std::string& sFile );

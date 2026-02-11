@@ -1,11 +1,21 @@
-#include "global.h"
 #include "ScreenPrompt.h"
-#include "ScreenManager.h"
-#include "GameSoundManager.h"
-#include "ThemeManager.h"
-#include "ScreenDimensions.h"
+
+#include <string>
+
 #include "ActorUtil.h"
+#include "BitmapText.h"
+#include "EnumHelper.h"
+#include "GameSoundManager.h"
 #include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "RageInputDevice.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 PromptAnswer ScreenPrompt::s_LastAnswer = ANSWER_YES;
 bool ScreenPrompt::s_bCancelledLast = false;

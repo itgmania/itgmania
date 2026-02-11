@@ -1,23 +1,28 @@
-#include "global.h"
 #include "MemoryCardDriverThreaded_MacOSX.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-
-#include <cstddef>
-#include <cstdint>
-#include <vector>
 
 #include <Carbon/Carbon.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/storage/IOMedia.h>
-#include <IOKit/usb/USBSpec.h>
 #include <IOKit/usb/IOUSBLib.h>
+#include <IOKit/usb/USBSpec.h>
+
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <string>
+#include <vector>
+
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "arch/MemoryCard/MemoryCardDriver.h"
+#include "global.h"
 #if defined(HAVE_SYS_PARAM_H)
 #include <sys/param.h>
 #endif
-#include <sys/ucred.h>
-#include <sys/mount.h>
 #include <paths.h>
+#include <sys/mount.h>
+#include <sys/ucred.h>
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif

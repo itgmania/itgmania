@@ -1,11 +1,12 @@
 #ifndef INPUT_QUEUE_H
 #define INPUT_QUEUE_H
 
-#include "GameInput.h"
-#include "InputFilter.h"
-
+#include <cstring>
+#include <string>
 #include <vector>
 
+#include "GameInput.h"
+#include "InputFilter.h"
 
 class InputEventPlus;
 class RageTimer;

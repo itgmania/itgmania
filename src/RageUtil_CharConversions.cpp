@@ -1,9 +1,11 @@
-#include "global.h"
 #include "RageUtil_CharConversions.h"
-#include "RageUtil.h"
-#include "RageLog.h"
 
+#include <string>
 #include <vector>
+
+#include "RageException.h"
+#include "RageLog.h"
+#include "RageUtil.h"
 
 #if defined(_WIN32)
 

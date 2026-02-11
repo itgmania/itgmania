@@ -1,22 +1,25 @@
-#include "global.h"
-#include "RageDisplay.h"
 #include "RageDisplay_D3D.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageTimer.h"
-#include "RageException.h"
-#include "RageMath.h"
-#include "RageTypes.h"
-#include "RageSurface.h"
-#include "RageSurfaceUtils.h"
-#include "EnumHelper.h"
-#include "DisplaySpec.h"
-#include "LocalizedString.h"
 
 #include <d3d9.h>
 
-#include "archutils/Win32/GraphicsWindow.h"
+#include <algorithm>
+#include <string>
+
+#include "DisplaySpec.h"
+#include "EnumHelper.h"
+#include "LocalizedString.h"
+#include "RageDisplay.h"
+#include "RageException.h"
+#include "RageLog.h"
+#include "RageMath.h"
+#include "RageSurface.h"
+#include "RageSurfaceUtils.h"
+#include "RageTimer.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 #include "archutils/Win32/DirectXHelpers.h"
+#include "archutils/Win32/GraphicsWindow.h"
+#include "global.h"
 
 // Static libraries
 // load Windows D3D9 dynamically

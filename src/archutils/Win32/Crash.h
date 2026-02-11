@@ -1,9 +1,11 @@
 #ifndef CRASH_H
 #define CRASH_H
 
+#include <windows.h>
+
 #include <cstddef>
 #include <cstdint>
-#include <windows.h>
+#include <string>
 
 /** @brief Win32 crash handling. */
 namespace CrashHandler

@@ -1,27 +1,30 @@
-#include "global.h"
 #include "RageFileDriverDirect.h"
-#include "RageFileDriverDirectHelpers.h"
+
+#include <cerrno>
+#include <cstddef>
+#include <cstdio>
+#include <cstring>
+#include <string>
+
+#include "RageException.h"
 #include "RageFile.h"
+#include "RageFileDriver.h"
+#include "RageFileDriverDirectHelpers.h"
+#include "RageFileManager.h"
 #include "RageUtil.h"
 #include "RageUtil_FileDB.h"
-#include "RageLog.h"
+#include "global.h"
 
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif
-#include <cerrno>
-#include <cstddef>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #if defined(_WIN32)
-    #include "archutils/Win32/ErrorStrings.h"
-    #include <windows.h>
-    #include <io.h>
+#include <windows.h>
+#include <io.h>
+
+#include "archutils/Win32/ErrorStrings.h"
 #else
-    #if defined(HAVE_DIRENT_H)
-        #include <dirent.h>
-    #endif
 #endif
 
 /* Direct filesystem access: */

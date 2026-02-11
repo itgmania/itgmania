@@ -31,6 +31,7 @@
 
 #include <cstdint>
 
+#include "GameInput.h"
 #include "arch/Lights/LightsDriver.h"
 #include "archutils/Common/HidDevice.h"
 

@@ -1,14 +1,13 @@
-#include "global.h"
 #include "TitleSubstitution.h"
 
-#include "RageUtil.h"
-#include "RageUtil/Regex.h"
-#include "RageLog.h"
+#include <string>
+
 #include "FontCharAliases.h"
-#include "RageFile.h"
 #include "LuaManager.h"
+#include "RageUtil/Regex.h"
 #include "XmlFile.h"
 #include "XmlFileUtil.h"
+#include "global.h"
 
 static const std::string TRANSLATIONS_PATH = "Data/Translations.xml";
 static const std::string ERASE_MARKER = "-erase-";

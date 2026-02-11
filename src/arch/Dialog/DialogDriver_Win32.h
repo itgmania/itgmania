@@ -1,7 +1,10 @@
 #ifndef DIALOG_BOX_DRIVER_WIN32_H
 #define DIALOG_BOX_DRIVER_WIN32_H
 
+#include <string>
+
 #include "DialogDriver.h"
+#include "arch/Dialog/Dialog.h"
 
 class DialogDriver_Win32: public DialogDriver
 {

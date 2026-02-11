@@ -1,7 +1,7 @@
 #ifndef DIALOG_BOX_H
 #define DIALOG_BOX_H
 
-#include "global.h"
+#include <string>
 
 namespace Dialog
 {

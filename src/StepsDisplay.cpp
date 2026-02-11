@@ -1,19 +1,24 @@
-#include "global.h"
 #include "StepsDisplay.h"
-#include "RageUtil.h"
+
+#include <algorithm>
+#include <string>
+
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
-#include "ThemeManager.h"
-#include "Steps.h"
-#include "Course.h"
-#include "SongManager.h"
-#include "ActorUtil.h"
-#include "Style.h"
-#include "XmlFile.h"
 #include "LuaBinding.h"
-#include "GameManager.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
 #include "PlayerState.h"
-#include "RageLog.h"
+#include "RageUtil.h"
+#include "SongManager.h"
+#include "Steps.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( StepsDisplay );
 

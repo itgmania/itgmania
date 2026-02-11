@@ -1,12 +1,19 @@
-#include "global.h"
 #include "RageModelGeometry.h"
-#include "RageUtil.h"
-#include "RageFile.h"
-#include "RageMath.h"
-#include "RageDisplay.h"
 
 #include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <string>
 #include <vector>
+
+#include "ModelTypes.h"
+#include "RageDisplay.h"
+#include "RageException.h"
+#include "RageFile.h"
+#include "RageMath.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "global.h"
 
 #define MS_MAX_NAME	32
 

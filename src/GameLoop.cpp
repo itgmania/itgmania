@@ -1,30 +1,31 @@
-#include "global.h"
-#include "PeriodicCaller.h"
 #include "GameLoop.h"
-#include "RageLog.h"
-#include "RageTextureManager.h"
-#include "RageSoundManager.h"
-#include "PrefsManager.h"
-#include "RageDisplay.h"
-
-#include "arch/ArchHooks/ArchHooks.h"
-
-#include "GameSoundManager.h"
-#include "ThemeManager.h"
-#include "SongManager.h"
-#include "GameState.h"
-#include "MemoryCardManager.h"
-#include "ScreenManager.h"
-#include "InputFilter.h"
-#include "InputMapper.h"
-#include "RageFileManager.h"
-#include "LightsManager.h"
-#include "NetworkManager.h"
-#include "RageTimer.h"
-#include "RageInput.h"
 
 #include <cmath>
-#include <vector>
+#include <string>
+
+#include "GameSoundManager.h"
+#include "GameState.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "LightsManager.h"
+#include "LuaManager.h"
+#include "MemoryCardManager.h"
+#include "NetworkManager.h"
+#include "PeriodicCaller.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "RageDisplay.h"
+#include "RageInput.h"
+#include "RageLog.h"
+#include "RageSoundManager.h"
+#include "RageTextureManager.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "ScreenManager.h"
+#include "ThemeManager.h"
+#include "arch/ArchHooks/ArchHooks.h"
+#include "global.h"
 
 static RageTimer g_GameplayTimer;
 

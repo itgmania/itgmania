@@ -1,11 +1,13 @@
-#include "global.h"
 #include "CodeSet.h"
-#include "ThemeManager.h"
-#include "InputEventPlus.h"
-#include "MessageManager.h"
 
+#include <string>
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "InputQueue.h"
+#include "MessageManager.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
 
 #define CODE_NAMES		THEME->GetMetric (sType,"CodeNames")
 #define CODE( s )		THEME->GetMetric (sType,ssprintf("Code%s",s.c_str()))

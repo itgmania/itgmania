@@ -1,23 +1,36 @@
-#include "global.h"
 #include "ScreenOptions.h"
-#include "RageUtil.h"
-#include "ScreenManager.h"
-#include "PrefsManager.h"
-#include "GameConstantsAndTypes.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "InputMapper.h"
-#include "ActorUtil.h"
-#include "ScreenDimensions.h"
-#include "GameCommand.h"
-#include "OptionRowHandler.h"
-#include "LuaBinding.h"
-#include "InputEventPlus.h"
 
+#include <algorithm>
 #include <cmath>
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "BitmapText.h"
+#include "EnumHelper.h"
+#include "GameCommand.h"
+#include "GameInput.h"
+#include "GameState.h"
+#include "InputEventPlus.h"
+#include "InputFilter.h"
+#include "InputMapper.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "OptionRowHandler.h"
+#include "OptionsCursor.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 /*
  * These navigation types are provided:

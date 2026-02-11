@@ -1,15 +1,18 @@
-#include "global.h"
 #include "NotesLoader.h"
+
+#include <cstddef>
+#include <set>
+#include <string>
+#include <string_view>
+#include <vector>
+
+#include "NotesLoaderBMS.h"
+#include "NotesLoaderDWI.h"
+#include "NotesLoaderKSF.h"
 #include "NotesLoaderSM.h"
 #include "NotesLoaderSMA.h"
 #include "NotesLoaderSSC.h"
-#include "NotesLoaderDWI.h"
-#include "NotesLoaderBMS.h"
-#include "NotesLoaderKSF.h"
-#include "RageUtil.h"
-
-#include <cstddef>
-#include <vector>
+#include "StdString.h"
 
 void NotesLoader::GetMainAndSubTitlesFromFullTitle( const std::string &sFullTitle, std::string &sMainTitleOut, std::string &sSubTitleOut )
 {

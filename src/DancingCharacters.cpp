@@ -1,16 +1,23 @@
-#include "global.h"
 #include "DancingCharacters.h"
-#include "GameConstantsAndTypes.h"
-#include "RageDisplay.h"
-#include "RageUtil.h"
-#include "RageMath.h"
-#include "GameState.h"
-#include "Song.h"
+
+#include <string>
+
 #include "Character.h"
-#include "StatsManager.h"
-#include "PrefsManager.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
 #include "Model.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "RageDisplay.h"
+#include "RageMath.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
+#include "Song.h"
+#include "StatsManager.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 int Neg1OrPos1();
 

@@ -2,7 +2,6 @@
 #define LOADING_WINDOW_H
 
 #include <string>
-#include "global.h"
 
 struct RageSurface;
 /** @brief Opens and displays the loading banner. */

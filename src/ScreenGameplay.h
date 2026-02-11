@@ -1,24 +1,33 @@
 #ifndef SCREEN_GAMEPLAY_H
 #define SCREEN_GAMEPLAY_H
 
-#include "ScreenWithMenuElements.h"
-#include "Sprite.h"
-#include "Transition.h"
-#include "BitmapText.h"
-#include "RageSound.h"
-#include "LocalizedString.h"
-#include "BeginnerHelper.h"
-#include "LyricDisplay.h"
+#include <string>
+#include <vector>
+
+#include "Actor.h"
 #include "Attack.h"
+#include "AutoActor.h"
 #include "AutoKeysounds.h"
-#include "ThemeMetric.h"
+#include "BeginnerHelper.h"
+#include "BitmapText.h"
+#include "GameInput.h"
+#include "GameplayAssist.h"
+#include "InputEventPlus.h"
+#include "LocalizedString.h"
+#include "LyricDisplay.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
 #include "PlayerStageStats.h"
 #include "PlayerState.h"
-#include "InputEventPlus.h"
+#include "RageSound.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
 #include "SoundEffectControl.h"
-#include "GameplayAssist.h"
-
-#include <vector>
+#include "ThemeMetric.h"
+#include "Transition.h"
 
 class LyricsLoader;
 class ActiveAttackList;

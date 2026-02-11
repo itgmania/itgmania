@@ -1,20 +1,25 @@
-#include "global.h"
-#include "LocalizedString.h"
 #include "InputFilter.h"
-#include "RageLog.h"
-#include "RageInput.h"
-#include "RageUtil.h"
-#include "RageThreads.h"
-#include "Preference.h"
+
+#include "EnumHelper.h"
 #include "GameInput.h"
 #include "InputMapper.h"
+#include "LuaManager.h"
+#include "Preference.h"
+#include "RageInput.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
 // for mouse stuff: -aj
-#include "PrefsManager.h"
-#include "ScreenDimensions.h"
-
+#include <map>
 #include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "PrefsManager.h"
+#include "ScreenDimensions.h"
 
 static const char *InputEventTypeNames[] = {
 	"FirstPress",

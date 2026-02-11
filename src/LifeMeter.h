@@ -1,7 +1,6 @@
 #ifndef LIFE_METER_H
 #define LIFE_METER_H
 
-#include "PlayerNumber.h"
 #include "GameConstantsAndTypes.h"
 #include "ActorFrame.h"
 #include "PlayerOptions.h"

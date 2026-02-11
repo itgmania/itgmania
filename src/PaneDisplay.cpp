@@ -1,18 +1,26 @@
-#include "global.h"
 #include "PaneDisplay.h"
-#include "ThemeManager.h"
+
+#include <string>
+
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "Course.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
 #include "GameState.h"
+#include "HighScore.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "PlayerStageStats.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RadarValues.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
 #include "Song.h"
 #include "Steps.h"
-#include "RageLog.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "Course.h"
-#include "Style.h"
-#include "ActorUtil.h"
-#include "LuaManager.h"
+#include "ThemeManager.h"
 #include "XmlFile.h"
-#include "PlayerStageStats.h"
 
 #define SHIFT_X(pc)	THEME->GetMetricF(sMetricsGroup, ssprintf("ShiftP%iX", pc+1))
 #define SHIFT_Y(pc)	THEME->GetMetricF(sMetricsGroup, ssprintf("ShiftP%iY", pc+1))

@@ -1,11 +1,11 @@
 #ifndef INPUTHANDLER_DIRECTINPUT_H
 #define INPUTHANDLER_DIRECTINPUT_H
 
-#include "InputHandler.h"
-#include "RageThreads.h"
-
 #include <vector>
 
+#include "InputHandler.h"
+#include "RageInputDevice.h"
+#include "RageThreads.h"
 
 struct DIDevice;
 struct XIDevice;

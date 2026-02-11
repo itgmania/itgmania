@@ -5,17 +5,22 @@
  * Each conversion ratio uses some memory, but the resulting table is
  * shared, so the memory overhead per stream is negligible.
  */
-#include "global.h"
 #include "RageSoundReader_Resample_Good.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageMath.h"
-#include "RageThreads.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <map>
 #include <numeric>
+#include <string>
+#include <utility>
+
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "global.h"
 
 constexpr int FILTER_LENGTH = 8; // This must be a power of 2.
 

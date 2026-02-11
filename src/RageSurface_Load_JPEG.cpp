@@ -1,14 +1,18 @@
-#include "global.h"
 #include "RageSurface_Load_JPEG.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageFile.h"
-#include "RageSurface.h"
-#include "RageUtil/Endian.h"
 
+#include <setjmp.h>
+
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <setjmp.h>
+#include <cstdio>
+#include <cstring>
+#include <string>
+
+#include "RageFile.h"
+#include "RageSurface.h"
+#include "RageSurface_Load.h"
+#include "RageUtil/Endian.h"
 
 extern "C" {
 #include "jpeglib.h"

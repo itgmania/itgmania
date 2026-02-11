@@ -9,16 +9,21 @@
  * http://www.sonicspot.com/guide/wavefiles.html
  */
 
-#include "global.h"
 #include "RageSoundReader_WAV.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageFileBasic.h"
-#include "RageUtil/Endian.h"
 
+#include <algorithm>
 #include <cstdint>
+#include <string>
 #include <vector>
 
+#include "RageFile.h"
+#include "RageFileBasic.h"
+#include "RageLog.h"
+#include "RageSoundReader.h"
+#include "RageSoundReader_FileReader.h"
+#include "RageUtil.h"
+#include "RageUtil/Endian.h"
+#include "global.h"
 
 namespace
 {

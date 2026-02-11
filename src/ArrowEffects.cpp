@@ -1,23 +1,31 @@
-#include "global.h"
 #include "ArrowEffects.h"
-#include "Steps.h"
-#include "GameConstantsAndTypes.h"
-#include "GameManager.h"
-#include "RageTimer.h"
-#include "NoteDisplay.h"
-#include "Song.h"
-#include "RageMath.h"
-#include "ScreenDimensions.h"
-#include "PlayerState.h"
-#include "GameState.h"
-#include "Style.h"
-#include "ThemeMetric.h"
 
+#include <algorithm>
 #include <cfloat>
 #include <cmath>
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "NoteDisplay.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerState.h"
+#include "RageMath.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "ScreenDimensions.h"
+#include "Song.h"
+#include "SongPosition.h"
+#include "Steps.h"
+#include "Style.h"
+#include "ThemeMetric.h"
+#include "global.h"
 
 static char const dimension_names[4]= "XYZ";
 

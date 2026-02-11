@@ -1,7 +1,9 @@
-#include "stdafx.h"
 #include "Utils.h"
 
+#include <algorithm>
 #include <cstddef>
+
+#include "stdafx.h"
 
 Surface::Surface( const Surface &cpy )
 {

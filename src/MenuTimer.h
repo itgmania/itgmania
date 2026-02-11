@@ -3,13 +3,16 @@
 #ifndef MENU_TIMER_H
 #define MENU_TIMER_H
 
+#include <cstddef>
+#include <string>
+
+#include "Actor.h"
 #include "ActorFrame.h"
+#include "AutoActor.h"
 #include "BitmapText.h"
+#include "LuaReference.h"
 #include "RageSound.h"
 #include "ThemeMetric.h"
-#include "AutoActor.h"
-
-#include <cstddef>
 
 std::string WARNING_COMMAND_NAME( size_t i );
 

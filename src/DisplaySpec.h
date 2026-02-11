@@ -2,8 +2,11 @@
 #define DisplaySpec_H
 
 #include <set>
+#include <sstream>
+#include <string>
 
 #include "RageTypes.h"
+#include "global.h"
 
 struct DisplayMode {
 	// Width (in pixels) of the display in this mode

@@ -3,11 +3,13 @@
 #ifndef SCREEN_MINI_MENU_H
 #define SCREEN_MINI_MENU_H
 
-#include "ScreenOptions.h"
-#include "GameConstantsAndTypes.h"
-
+#include <string>
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
+#include "PlayerNumber.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
 
 typedef bool (*MenuRowUpdateEnabled)();
 

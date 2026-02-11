@@ -23,9 +23,10 @@
  * -------------------------- NOTE --------------------------
  */
 
-#include "arch/Lights/LightsDriver.h"
-
 #include <cstdint>
+
+#include "GameInput.h"
+#include "arch/Lights/LightsDriver.h"
 #include "archutils/Common/HidDevice.h"
 
 // static information about the device(s) in question.

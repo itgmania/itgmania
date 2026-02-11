@@ -1,14 +1,19 @@
-#include "global.h"
 #include "DSoundHelpers.h"
-#include "PrefsManager.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageSound.h"
-#include "archutils/Win32/DirectXHelpers.h"
-#include "archutils/Win32/GetFileInformation.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <string>
+
+#include "PrefsManager.h"
+#include "RageException.h"
+#include "RageLog.h"
+#include "RageSound.h"
+#include "RageSoundConstants.h"
+#include "RageUtil.h"
+#include "archutils/Win32/DirectXHelpers.h"
+#include "archutils/Win32/GetFileInformation.h"
+#include "global.h"
 
 #if defined(_WIN32)
 #include <mmsystem.h>

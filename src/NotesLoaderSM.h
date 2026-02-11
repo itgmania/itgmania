@@ -1,13 +1,14 @@
 #ifndef NotesLoaderSM_H
 #define NotesLoaderSM_H
 
-#include "GameConstantsAndTypes.h"
-#include "BackgroundUtil.h"
-#include "Attack.h"
-#include "MsdFile.h" // we require the struct from here.
-
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "Attack.h"
+#include "BackgroundUtil.h"
+#include "GameConstantsAndTypes.h"
+#include "MsdFile.h"  // we require the struct from here.
 
 class Song;
 class Steps;

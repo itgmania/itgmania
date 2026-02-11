@@ -1,6 +1,8 @@
 #ifndef ERROR_STRINGS_H
 #define ERROR_STRINGS_H
 
+#include <string>
+
 std::string werr_ssprintf( int err, const char *fmt, ... );
 std::string ConvertWstringToCodepage( std::wstring s, int iCodePage );
 std::string ConvertUTF8ToACP( const std::string &s );

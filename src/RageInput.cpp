@@ -1,10 +1,15 @@
-#include "global.h"
 #include "RageInput.h"
-#include "RageLog.h"
-#include "arch/InputHandler/InputHandler.h"
-#include "Preference.h"
-#include "LuaManager.h"
+
+#include <map>
+
 #include "LocalizedString.h"
+#include "LuaManager.h"
+#include "Preference.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "arch/InputHandler/InputHandler.h"
+#include "global.h"
 
 #if LINUX
 // FIXME: bit gross to include this here, see GH issue #73:
@@ -12,8 +17,8 @@
 #include "arch/InputHandler/LinuxInputManager.h"
 #endif
 
+#include <string>
 #include <vector>
-
 
 RageInput* INPUTMAN = nullptr; // global and accessible from anywhere in our program
 

@@ -1,27 +1,43 @@
-#include "global.h"
 #include "Course.h"
-#include "CourseLoaderCRS.h"
 
+#include <algorithm>
+#include <climits>
+#include <cmath>
+#include <cstddef>
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
+
+#include "Attack.h"
+#include "CourseLoaderCRS.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "Game.h"
+#include "GameConstantsAndTypes.h"
 #include "GameManager.h"
 #include "GameState.h"
-#include "LocalizedString.h"
 #include "LuaManager.h"
+#include "PlayerNumber.h"
 #include "Preference.h"
 #include "PrefsManager.h"
 #include "ProfileManager.h"
+#include "RadarValues.h"
 #include "RageLog.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
 #include "Song.h"
 #include "SongCacheIndex.h"
+#include "SongUtil.h"
+#include "StdString.h"
 #include "Steps.h"
-#include "ThemeManager.h"
-#include "UnlockManager.h"
-#include "Game.h"
+#include "StepsUtil.h"
 #include "Style.h"
-
-#include <cstddef>
-#include <climits>
-#include <vector>
-
+#include "ThemeManager.h"
+#include "Trail.h"
+#include "UnlockManager.h"
+#include "global.h"
 
 static Preference<int> MAX_SONGS_IN_EDIT_COURSE( "MaxSongsInEditCourse", -1 );
 

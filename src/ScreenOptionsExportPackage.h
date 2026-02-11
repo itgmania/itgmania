@@ -1,11 +1,12 @@
 #ifndef ScreenOptionsExportPackage_H
 #define ScreenOptionsExportPackage_H
 
-#include "ScreenOptions.h"
-#include "ScreenMiniMenu.h"
-
+#include <string>
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "PlayerNumber.h"
+#include "ScreenOptions.h"
 
 class Course;
 

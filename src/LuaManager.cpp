@@ -1,26 +1,31 @@
-#include "global.h"
 #include "LuaManager.h"
-#include "LuaReference.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageFile.h"
-#include "RageThreads.h"
-#include "arch/Dialog/Dialog.h"
-#include "XmlFile.h"
-#include "Command.h"
-#include "RageLog.h"
-#include "RageTypes.h"
-#include "MessageManager.h"
-#include "ver.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <csetjmp>
+#include <cstdarg>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <map>
-#include <sstream> // conversion for lua functions.
+#include <sstream>  // conversion for lua functions.
+#include <string>
 #include <vector>
+
+#include "Command.h"
+#include "LuaReference.h"
+#include "MessageManager.h"
+#include "RageException.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "XmlFile.h"
+#include "arch/Dialog/Dialog.h"
+#include "global.h"
+#include "ver.h"
 
 LuaManager *LUA = nullptr;
 struct Impl

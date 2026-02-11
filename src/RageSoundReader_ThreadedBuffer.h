@@ -3,10 +3,13 @@
 #ifndef RAGE_SOUND_READER_THREADED_BUFFER
 #define RAGE_SOUND_READER_THREADED_BUFFER
 
-#include "RageSoundReader_Filter.h"
-#include "RageUtil_CircularBuffer.h"
-#include "RageThreads.h"
 #include <list>
+#include <string>
+
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
+#include "RageThreads.h"
+#include "RageUtil_CircularBuffer.h"
 
 class RageThread;
 class RageSoundReader_ThreadedBuffer: public RageSoundReader_Filter

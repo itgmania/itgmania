@@ -1,16 +1,19 @@
-#include "global.h"
 #include "MovieTexture.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "MovieTexture_Null.h"
-#include "PrefsManager.h"
-#include "RageFile.h"
-#include "LocalizedString.h"
 
-#include "arch/arch_default.h"
-
+#include <string>
 #include <vector>
 
+#include "LocalizedString.h"
+#include "Preference.h"
+#include "RageException.h"
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageTextureID.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "arch/RageDriver.h"
+#include "arch/arch_default.h"
+#include "global.h"
 
 void ForceToAscii( std::string &str )
 {

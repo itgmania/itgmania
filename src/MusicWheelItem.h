@@ -1,16 +1,21 @@
 #ifndef MUSIC_WHEEL_ITEM_H
 #define MUSIC_WHEEL_ITEM_H
 
-#include "ActorFrame.h"
-#include "BitmapText.h"
-#include "WheelNotifyIcon.h"
-#include "TextBanner.h"
-#include "GameConstantsAndTypes.h"
-#include "Song.h"
-#include "GameCommand.h"
-#include "WheelItemBase.h"
+#include <string>
+
 #include "AutoActor.h"
+#include "BitmapText.h"
+#include "GameCommand.h"
+#include "Group.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "RageTypes.h"
+#include "RageUtil_AutoPtr.h"
+#include "Song.h"
+#include "TextBanner.h"
 #include "ThemeMetric.h"
+#include "WheelItemBase.h"
+#include "WheelNotifyIcon.h"
 
 class Course;
 class Song;

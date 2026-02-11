@@ -5,17 +5,18 @@
 #pragma comment(lib, "winmm.lib")
 #endif
 
-#include "RageTimer.h"
-#include "RageLog.h"
-#include "RageSound.h"
-#include "RageUtil.h"
-#include "RageSoundManager.h"
-#include "PrefsManager.h"
-#include "archutils/Win32/ErrorStrings.h"
-
+#include <algorithm>
 #include <cstdint>
+#include <string>
 #include <vector>
 
+#include "PrefsManager.h"
+#include "RageLog.h"
+#include "RageSound.h"
+#include "RageSoundManager.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "archutils/Win32/ErrorStrings.h"
 
 REGISTER_SOUND_DRIVER_CLASS( WaveOut );
 

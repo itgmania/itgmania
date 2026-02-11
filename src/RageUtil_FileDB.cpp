@@ -1,12 +1,17 @@
-#include "global.h"
-
 #include "RageUtil_FileDB.h"
-#include "RageUtil.h"
-#include "RageLog.h"
 
 #include <cstddef>
+#include <map>
+#include <set>
+#include <string>
 #include <vector>
 
+#include "RageFileManager.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "global.h"
 
 /* Search for "beginning*containing*ending". */
 void FileSet::GetFilesMatching( const std::string &sBeginning_, const std::string &sContaining_, const std::string &sEnding_, std::vector<std::string> &asOut, bool bOnlyDirs ) const

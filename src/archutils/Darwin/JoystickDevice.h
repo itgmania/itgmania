@@ -1,10 +1,12 @@
 #ifndef JOYSTICK_DEVICE_H
 #define JOYSTICK_DEVICE_H
 
-#include "HIDDevice.h"
-
+#include <unordered_map>
 #include <vector>
 
+#include "HIDDevice.h"
+#include "RageInputDevice.h"
+#include "RageTimer.h"
 
 struct Joystick
 {

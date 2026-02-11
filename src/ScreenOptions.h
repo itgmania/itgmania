@@ -1,17 +1,23 @@
 #ifndef SCREENOPTIONS_H
 #define SCREENOPTIONS_H
 
-#include "ScreenWithMenuElements.h"
-#include "DualScrollBar.h"
-#include "ThemeMetric.h"
-#include "OptionRow.h"
-#include "OptionsCursor.h"
-#include "LuaExpressionTransform.h"
-#include "InputEventPlus.h"
-#include "RageSound.h"
-
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "BitmapText.h"
+#include "DualScrollBar.h"
+#include "InputEventPlus.h"
+#include "LuaExpressionTransform.h"
+#include "OptionRow.h"
+#include "OptionsCursor.h"
+#include "PlayerNumber.h"
+#include "RageSound.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "ThemeMetric.h"
 
 class OptionRowHandler;
 

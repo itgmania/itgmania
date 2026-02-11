@@ -1,29 +1,43 @@
-#include "global.h"
 #include "SongUtil.h"
-#include "Song.h"
-#include "Steps.h"
-#include "GameState.h"
-#include "Style.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "PrefsManager.h"
-#include "SongManager.h"
-#include "XmlFile.h"
-#include "UnlockManager.h"
-#include "ThemeMetric.h"
-#include "LocalizedString.h"
-#include "RageLog.h"
-#include "GameManager.h"
-#include "CommonMetrics.h"
-#include "LuaBinding.h"
-#include "EnumHelper.h"
-#include "PlayerNumber.h"
 
-
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstring>
+#include <map>
+#include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "CommonMetrics.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "Grade.h"
+#include "LocalizedString.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "StdString.h"
+#include "Steps.h"
+#include "StepsUtil.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "UnlockManager.h"
+#include "XmlFile.h"
+#include "global.h"
 
 ThemeMetric<int> SORT_BPM_DIVISION ( "MusicWheel", "SortBPMDivision" );
 ThemeMetric<int> SORT_LENGTH_DIVISION ( "MusicWheel", "SortLengthDivision" );

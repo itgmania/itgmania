@@ -1,16 +1,18 @@
-#include "global.h"
 #include "RageSoundReader_FileReader.h"
-#include "RageFile.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "ActorUtil.h"
 
 #include <set>
+#include <string>
 #include <vector>
 
-#include "RageSoundReader_WAV.h"
+#include "ActorUtil.h"
+#include "RageFile.h"
+#include "RageLog.h"
 #include "RageSoundReader_MP3.h"
 #include "RageSoundReader_Vorbisfile.h"
+#include "RageSoundReader_WAV.h"
+#include "RageUtil.h"
+#include "RageUtil_AutoPtr.h"
+#include "StdString.h"
 
 RageSoundReader_FileReader *RageSoundReader_FileReader::TryOpenFile( RageFileBasic *pFile, std::string &error, std::string format, bool &bKeepTrying )
 {

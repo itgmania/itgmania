@@ -1,14 +1,17 @@
-#include "global.h"
 #include "ReceptorArrow.h"
-#include "GameState.h"
-#include "NoteSkinManager.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "Style.h"
-#include "PlayerState.h"
 
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
+#include "GameState.h"
+#include "NoteSkinManager.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "RageUtil.h"
+#include "Style.h"
 
 ReceptorArrow::ReceptorArrow()
 {

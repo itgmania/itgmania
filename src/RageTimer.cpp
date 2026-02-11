@@ -19,16 +19,12 @@
  * }
  */
 
-#include "global.h"
-
 #include "RageTimer.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-
-#include "arch/ArchHooks/ArchHooks.h"
 
 #include <cmath>
 #include <cstdint>
+
+#include "arch/ArchHooks/ArchHooks.h"
 
 // Intialize important variables and definitions
 constexpr uint64_t ONE_SECOND_IN_MICROSECONDS_ULL = 1000000ULL;

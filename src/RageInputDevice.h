@@ -2,11 +2,11 @@
 #ifndef RAGE_INPUT_DEVICE_H
 #define RAGE_INPUT_DEVICE_H
 
-#include "RageTimer.h"
-#include "EnumHelper.h"
-
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "RageTimer.h"
 
 const int NUM_JOYSTICKS = 32;
 const int NUM_PUMPS = 2;

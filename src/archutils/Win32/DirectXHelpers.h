@@ -1,7 +1,10 @@
 #ifndef DIRECTX_HELPERS_H
 #define DIRECTX_HELPERS_H
-#include "windows.h"
-#include "VersionHelpers.h"
+
+#include <windows.h>
+#include <versionhelpers.h>
+
+#include <string>
 
 std::string hr_ssprintf( int hr, const char *fmt, ... );
 

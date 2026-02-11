@@ -1,9 +1,15 @@
 #ifndef ENUM_HELPER_H
 #define ENUM_HELPER_H
 
+#include <memory>
+#include <string>
+#include <type_traits>
+
+#include "LocalizedString.h"
+#include "LuaManager.h"
 #include "LuaReference.h"
 #include "RageUtil.h"
-#include <memory>
+#include "StdString.h"
 
 #ifndef _MSC_VER
 extern "C"

@@ -1,7 +1,12 @@
-#include "global.h"
 #include "LuaExpressionTransform.h"
+
+#include <map>
+#include <string>
+
+#include "Actor.h"
 #include "LuaManager.h"
 #include "RageUtil.h"
+#include "global.h"
 
 LuaExpressionTransform::LuaExpressionTransform()
 {

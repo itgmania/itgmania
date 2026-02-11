@@ -3,12 +3,13 @@
 #ifndef ControllerStateDisplay_H
 #define ControllerStateDisplay_H
 
+#include <string>
+
 #include "ActorFrame.h"
-#include "ActorUtil.h"
-#include "PlayerNumber.h"
 #include "AutoActor.h"
-#include "RageInput.h"
 #include "GameInput.h"
+#include "PlayerNumber.h"
+#include "RageInputDevice.h"
 
 enum ControllerStateButton
 {

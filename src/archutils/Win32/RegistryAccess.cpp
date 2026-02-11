@@ -1,14 +1,17 @@
-#include "global.h"
 #include "RegistryAccess.h"
+
+#include <windows.h>
+
+#include <cstddef>
+#include <string>
+#include <vector>
+
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "RageUtil/Regex.h"
+#include "StdString.h"
 #include "archutils/Win32/ErrorStrings.h"
-
-#include <cstddef>
-#include <vector>
-#include <windows.h>
-
+#include "global.h"
 
 /* Given "HKEY_LOCAL_MACHINE\hardware\foo", return "hardware\foo", and place
  * the HKEY_LOCAL_MACHINE constant in key. */

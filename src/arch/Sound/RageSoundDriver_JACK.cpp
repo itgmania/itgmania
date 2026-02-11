@@ -1,13 +1,14 @@
-#include "global.h"
 #include "RageSoundDriver_JACK.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "PrefsManager.h"
-#include "ProductInfo.h"
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
+#include "PrefsManager.h"
+#include "ProductInfo.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "global.h"
 
 REGISTER_SOUND_DRIVER_CLASS( JACK );
 

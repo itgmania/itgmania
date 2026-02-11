@@ -1,11 +1,13 @@
-#include "global.h"
 #include "CsvFile.h"
-#include "RageUtil.h"
-#include "RageFile.h"
-#include "RageLog.h"
 
+#include <string>
 #include <vector>
 
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "StdString.h"
 
 CsvFile::CsvFile()
 {

@@ -1,7 +1,10 @@
-#include "global.h"
 #include "DualScrollBar.h"
-#include "ThemeManager.h"
+
+#include <string>
+
+#include "PlayerNumber.h"
 #include "RageUtil.h"
+#include "ThemeManager.h"
 
 DualScrollBar::DualScrollBar()
 {

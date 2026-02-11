@@ -1,15 +1,16 @@
-#include "global.h"
 #include "LightsDriver.h"
-#include "RageLog.h"
 
-#include "arch/arch_default.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "arch/RageDriver.h"
+#include "global.h"
 
 //We explicitly load these drivers as they should always be available.
-#include "arch/Lights/LightsDriver_SystemMessage.h"
-#include "arch/Lights/LightsDriver_Export.h"
-
+#include <string>
 #include <vector>
 
+#include "arch/Lights/LightsDriver_Export.h"
+#include "arch/Lights/LightsDriver_SystemMessage.h"
 
 DriverList LightsDriver::m_pDriverList;
 

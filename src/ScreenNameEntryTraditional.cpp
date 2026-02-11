@@ -1,21 +1,31 @@
-#include "global.h"
 #include "ScreenNameEntryTraditional.h"
-#include "PrefsManager.h"
-#include "GameState.h"
-#include "GameManager.h"
-#include "StatsManager.h"
-#include "SongManager.h"
-#include "Song.h"
-#include "Style.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "InputEventPlus.h"
-#include "RageInput.h"
-#include "RageLog.h"
-#include "CommonMetrics.h"
 
+#include <cstdlib>
+#include <string>
 #include <vector>
 
+#include "DateTime.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "Grade.h"
+#include "InputEventPlus.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "StatsManager.h"
+#include "Style.h"
+#include "global.h"
 
 REGISTER_SCREEN_CLASS( ScreenNameEntryTraditional );
 

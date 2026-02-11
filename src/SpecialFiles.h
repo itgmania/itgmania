@@ -1,6 +1,8 @@
 #ifndef SpecialFiles_H
 #define SpecialFiles_H
 
+#include <string>
+
 /** @brief The listing of the special files and directories in use. */
 namespace SpecialFiles
 {

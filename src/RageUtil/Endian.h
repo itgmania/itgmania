@@ -1,7 +1,7 @@
 #ifndef RAGEUTIL_ENDIAN_H
 #define RAGEUTIL_ENDIAN_H
 
-#include <cmath>
+#include <cstdint>
 
 namespace Endian
 {

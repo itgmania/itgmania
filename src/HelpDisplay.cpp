@@ -1,12 +1,15 @@
-#include "global.h"
 #include "HelpDisplay.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "ThemeManager.h"
-#include "ActorUtil.h"
 
+#include <algorithm>
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "BitmapText.h"
+#include "LuaManager.h"
+#include "RageUtil.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( HelpDisplay );
 

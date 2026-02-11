@@ -1,11 +1,14 @@
-#include "global.h"
 #include "RageSurface.h"
-#include "RageUtil.h"
 
 #include <climits>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <memory>
 
+#include "RageUtil.h"
+#include "global.h"
 
 int32_t RageSurfacePalette::FindColor( const RageSurfaceColor &color ) const
 {

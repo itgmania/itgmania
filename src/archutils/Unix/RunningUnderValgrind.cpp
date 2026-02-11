@@ -1,4 +1,3 @@
-#include "global.h"
 #include "RunningUnderValgrind.h"
 
 #if defined(CPU_X86) && defined(__GNUC__)

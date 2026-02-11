@@ -1,22 +1,30 @@
-#include "global.h"
 #include "NotesLoaderSSC.h"
+
+#include <cstddef>
+#include <cstring>
+#include <map>
+#include <string>
+#include <vector>
+
+#include "Attack.h"
 #include "BackgroundUtil.h"
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
 #include "GameManager.h"
-#include "MsdFile.h" // No JSON here.
+#include "MsdFile.h"  // No JSON here.
 #include "NoteTypes.h"
-#include "NotesLoaderSM.h" // For programming shortcuts.
+#include "NotesLoaderSM.h"  // For programming shortcuts.
+#include "PlayerNumber.h"
+#include "RadarValues.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "Song.h"
 #include "SongManager.h"
+#include "StdString.h"
 #include "Steps.h"
-#include "Attack.h"
-#include "PrefsManager.h"
-
-#include <cstddef>
-#include <vector>
-
+#include "TechCounts.h"
+#include "TimingSegments.h"
 
 // Everything from this line to the creation of parser_helper exists to
 // speed up parsing by allowing the use of std::map.  All these functions

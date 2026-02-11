@@ -1,8 +1,12 @@
-#include "global.h"
 #include "TimingSegments.h"
-#include "EnumHelper.h"
 
+#include <string>
 #include <vector>
+
+#include "EnumHelper.h"
+#include "NoteTypes.h"
+#include "RageLog.h"
+#include "RageUtil.h"
 
 static const char *TimingSegmentTypeNames[] = {
 	"BPM",

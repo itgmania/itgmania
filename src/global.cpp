@@ -1,6 +1,9 @@
 #include "global.h"
 
 #include <cstdlib>
+#include <string>
+
+#include "config.hpp"
 
 #if defined(HAVE_UNISTD_H)
     #include <unistd.h>

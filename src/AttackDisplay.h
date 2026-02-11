@@ -1,10 +1,11 @@
 #ifndef AttackDisplay_H
 #define AttackDisplay_H
 
+#include <string>
+
 #include "ActorFrame.h"
-#include "Sprite.h"
-#include "GameConstantsAndTypes.h"	// for TapNoteScore
 #include "RageTexturePreloader.h"
+#include "Sprite.h"
 
 std::string GetAttackPieceName( const std::string &sAttack );
 

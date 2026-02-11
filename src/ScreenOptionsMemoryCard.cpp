@@ -1,17 +1,24 @@
-#include "global.h"
 #include "ScreenOptionsMemoryCard.h"
-#include "RageLog.h"
-#include "arch/MemoryCard/MemoryCardDriver.h"
-#include "MemoryCardManager.h"
-#include "GameState.h"
-#include "ScreenManager.h"
-#include "ScreenPrompt.h"
-#include "LocalizedString.h"
-#include "OptionRowHandler.h"
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "GameState.h"
+#include "LocalizedString.h"
+#include "MemoryCardManager.h"
+#include "MessageManager.h"
+#include "OptionRowHandler.h"
+#include "PlayerNumber.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
+#include "ScreenPrompt.h"
+#include "ThemeManager.h"
+#include "arch/MemoryCard/MemoryCardDriver.h"
 
 REGISTER_SCREEN_CLASS( ScreenOptionsMemoryCard );
 

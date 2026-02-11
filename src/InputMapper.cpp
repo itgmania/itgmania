@@ -1,20 +1,30 @@
-#include "global.h"
 #include "InputMapper.h"
-#include "IniFile.h"
-#include "MessageManager.h"
-#include "RageLog.h"
-#include "InputFilter.h"
-#include "RageUtil.h"
-#include "PrefsManager.h"
-#include "RageInput.h"
-#include "SpecialFiles.h"
-#include "LocalizedString.h"
-#include "arch/Dialog/Dialog.h"
-#include "RageUtil/Regex.h"
 
+#include <algorithm>
 #include <cstddef>
+#include <map>
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "GameInput.h"
+#include "IniFile.h"
+#include "InputFilter.h"
+#include "LocalizedString.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "Preference.h"
+#include "PrefsManager.h"
+#include "RageInput.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RageUtil/Regex.h"
+#include "SpecialFiles.h"
+#include "StdString.h"
+#include "XmlFile.h"
+#include "arch/Dialog/Dialog.h"
+#include "global.h"
 
 #define AUTOMAPPINGS_DIR "/Data/AutoMappings/"
 

@@ -3,8 +3,10 @@
 #ifndef LOW_LEVEL_WINDOW_X11_H
 #define LOW_LEVEL_WINDOW_X11_H
 
-#include "RageDisplay.h" // VideoModeParams
+#include <string>
+
 #include "LowLevelWindow.h"
+#include "RageDisplay.h"  // VideoModeParams
 
 class LowLevelWindow_X11 : public LowLevelWindow
 {

@@ -1,6 +1,7 @@
 #ifndef ScreenInstructions_H
 #define ScreenInstructions_H
 
+#include "InputQueue.h"
 #include "ScreenWithMenuElements.h"
 
 class ScreenInstructions : public ScreenWithMenuElements

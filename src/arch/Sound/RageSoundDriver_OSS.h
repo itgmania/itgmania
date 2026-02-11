@@ -1,11 +1,11 @@
 #ifndef RAGE_SOUND_WAVEOUT
 #define RAGE_SOUND_WAVEOUT
 
+#include <cstdint>
+#include <string>
+
 #include "RageSoundDriver.h"
 #include "RageThreads.h"
-#include "RageTimer.h"
-
-#include <cstdint>
 
 class RageSoundDriver_OSS: public RageSoundDriver
 {

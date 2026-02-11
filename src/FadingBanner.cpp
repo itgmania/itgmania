@@ -1,15 +1,25 @@
-#include "global.h"
 #include "FadingBanner.h"
-#include "RageTextureManager.h"
-#include "ImageCache.h"
-#include "Song.h"
-#include "RageLog.h"
-#include "Course.h"
-#include "PrefsManager.h"
-#include "ThemeManager.h"
-#include "SongManager.h"
-#include "ThemeMetric.h"
+
+#include <string>
+
+#include "Actor.h"
+#include "ActorFrame.h"
 #include "ActorUtil.h"
+#include "Banner.h"
+#include "Course.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "ImageCache.h"
+#include "LuaManager.h"
+#include "PrefsManager.h"
+#include "RageTexture.h"
+#include "RageTextureID.h"
+#include "RageTextureManager.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "Sprite.h"
+#include "ThemeManager.h"
 
 REGISTER_ACTOR_CLASS( FadingBanner );
 

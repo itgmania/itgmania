@@ -1,14 +1,17 @@
 #ifndef NOTE_DISPLAY_H
 #define NOTE_DISPLAY_H
 
-#include "ActorFrame.h"
-#include "CubicSpline.h"
-#include "NoteData.h"
-#include "PlayerNumber.h"
-#include "GameInput.h"
-
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "CubicSpline.h"
+#include "EnumHelper.h"
+#include "GameInput.h"
+#include "NoteData.h"
+#include "PlayerNumber.h"
+#include "RageTypes.h"
+#include "Tween.h"
 
 class Sprite;
 class Model;

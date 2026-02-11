@@ -1,14 +1,13 @@
 #ifndef COMMON_METRICS_H
 #define COMMON_METRICS_H
 
-#include "ThemeMetric.h"
-#include "PlayerNumber.h"
+#include <string>
+#include <vector>
+
 #include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
 #include "LocalizedString.h"
-
-#include <vector>
-
+#include "ThemeMetric.h"
 
 // Types
 class ThemeMetricDifficultiesToShow : public ThemeMetric<std::string>

@@ -1,9 +1,10 @@
-#include "global.h"
 #include "PumpDevice.h"
 
 #include <cstdint>
 #include <vector>
 
+#include "RageInputDevice.h"
+#include "RageTimer.h"
 
 void PumpDevice::Open()
 {

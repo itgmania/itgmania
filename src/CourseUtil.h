@@ -1,11 +1,11 @@
 #ifndef COURSEUTIL_H
 #define COURSEUTIL_H
 
-#include "GameConstantsAndTypes.h"
-#include "Difficulty.h"
-
+#include <string>
 #include <vector>
 
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
 
 class Course;
 class Profile;

@@ -1,20 +1,30 @@
-#include "global.h"
 #include "BitmapText.h"
-#include "XmlFile.h"
-#include "FontManager.h"
-#include "RageLog.h"
-#include "RageDisplay.h"
-#include "ThemeManager.h"
-#include "Font.h"
-#include "ActorUtil.h"
-#include "LuaBinding.h"
-#include "RageTimer.h"
-#include "RageUtil/RandomNumbers.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <map>
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "EnumHelper.h"
+#include "Font.h"
+#include "FontManager.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "RageDisplay.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "Tween.h"
+#include "XmlFile.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( BitmapText );
 

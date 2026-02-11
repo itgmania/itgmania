@@ -1,18 +1,20 @@
 #ifndef SONG_H
 #define SONG_H
 
-#include "Attack.h"
-#include "TimingData.h"
-#include "Difficulty.h"
-#include "EnumHelper.h"
-#include "RageUtil_AutoPtr.h"
-#include "RageTypes.h"
-#include "Steps.h"
-#include "Group.h"
-
+#include <array>
 #include <set>
+#include <string>
 #include <vector>
 
+#include "Attack.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "RageUtil_AutoPtr.h"
+#include "Steps.h"
+#include "TimingData.h"
 
 class Style;
 class StepsID;

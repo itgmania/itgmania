@@ -1,18 +1,28 @@
-#include "global.h"
 #include "MovieTexture_FFMpeg.h"
 
-#include "RageDisplay.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageUtil/ConvertValue.h"
-#include "RageFile.h"
-#include "RageSurface.h"
-#include "RageUtil/Endian.h"
-
 #include <cerrno>
+#include <chrono>
+#include <cstdarg>
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
+#include <memory>
+#include <mutex>
+#include <string>
 #include <thread>
+
+#include "RageDisplay.h"
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageSurface.h"
+#include "RageTextureID.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "RageUtil/ConvertValue.h"
+#include "RageUtil/Endian.h"
+#include "arch/MovieTexture/MovieTexture.h"
+#include "arch/MovieTexture/MovieTexture_Generic.h"
+#include "global.h"
 
 static void FixLilEndian()
 {

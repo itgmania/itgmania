@@ -1,12 +1,14 @@
-#include "global.h"
 #include "VideoDriverInfo.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RegistryAccess.h"
 
-#include <vector>
 #include <windows.h>
 
+#include <string>
+#include <vector>
+
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RegistryAccess.h"
+#include "global.h"
 
 // this will not work on 95 and NT because of EnumDisplayDevices
 std::string GetPrimaryVideoName()

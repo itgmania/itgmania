@@ -3,16 +3,16 @@
 #ifndef PlayerState_H
 #define PlayerState_H
 
-#include "SongPosition.h"
+#include <vector>
+
 #include "Attack.h"
+#include "GameConstantsAndTypes.h"
 #include "ModsGroup.h"
 #include "PlayerNumber.h"
 #include "PlayerOptions.h"
-#include "RageTimer.h"
 #include "SampleHistory.h"
-
-#include <vector>
-
+#include "SongPosition.h"
+#include "TimingData.h"
 
 struct lua_State;
 

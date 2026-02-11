@@ -3,11 +3,11 @@
 #ifndef RAGE_UTIL_BACKGROUND_LOADER_H
 #define RAGE_UTIL_BACKGROUND_LOADER_H
 
-#include "RageThreads.h"
-
 #include <map>
+#include <string>
 #include <vector>
 
+#include "RageThreads.h"
 
 class RageFileDriverCached;
 

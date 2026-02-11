@@ -1,6 +1,8 @@
 #ifndef PLAYER_OPTIONS_H
 #define PLAYER_OPTIONS_H
 
+#include "EnumHelper.h"
+#include "RageUtil.h"
 class Course;
 class Song;
 class Steps;
@@ -9,13 +11,13 @@ struct lua_State;
 
 #define ONE( arr ) { for( unsigned Z = 0; Z < ARRAYLEN(arr); ++Z ) arr[Z]=1.0f; }
 
+#include <bitset>
+#include <string>
+#include <vector>
+
 #include "GameConstantsAndTypes.h"
 #include "PlayerNumber.h"
 #include "PrefsManager.h"
-
-#include <bitset>
-#include <vector>
-
 
 enum LifeType
 {

@@ -1,8 +1,9 @@
 #ifndef RAGESOUNDMIXBUFFER_H
 #define RAGESOUNDMIXBUFFER_H
 
-#include <vector>
+#include <cstddef>
 #include <cstdint>
+#include <vector>
 
 class RageSoundMixBuffer {
 public:

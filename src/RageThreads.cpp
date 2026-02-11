@@ -1,17 +1,19 @@
-#include "global.h"
-
 #include "RageThreads.h"
-#include "RageTimer.h"
-#include "RageLog.h"
-#include "RageUtil.h"
 
+#include <algorithm>
 #include <cerrno>
 #include <cinttypes>
 #include <cstdint>
-#include <set>
+#include <cstdio>
+#include <cstring>
+#include <string>
 
+#include "RageException.h"
+#include "RageLog.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
 #include "arch/Threads/Threads.h"
-#include "arch/Dialog/Dialog.h"
+#include "global.h"
 
 #if defined(CRASH_HANDLER)
 #if defined(_WIN32)

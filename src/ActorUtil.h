@@ -1,10 +1,13 @@
 #ifndef ActorUtil_H
 #define ActorUtil_H
 
-#include "Actor.h"
-#include "RageTexture.h"
-
+#include <string>
 #include <vector>
+
+#include "Actor.h"
+#include "LuaManager.h"
+#include "RageUtil.h"
+#include "global.h"
 
 class XNode;
 

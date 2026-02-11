@@ -21,11 +21,14 @@
  * -------------------------- NOTE --------------------------
  */
 
+#include <cstdint>
+#include <string>
 #include <vector>
 
 #include "InputHandler.h"
+#include "LightsManager.h"
+#include "RageInputDevice.h"
 #include "RageThreads.h"
-#include "arch/Lights/LightsDriver_Export.h"
 #include "archutils/Common/HidDevice.h"
 
 #define PUMPHID_PAYLOADSIZE_FROMDEV 16

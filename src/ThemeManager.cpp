@@ -1,35 +1,44 @@
-#include "global.h"
 #include "ThemeManager.h"
+
+#include <algorithm>
+#include <iterator>
+#include <map>
+#include <set>
+
+#include "Actor.h"
+#include "FontCharAliases.h"
+#include "IniFile.h"
+#include "PlayerNumber.h"
+#include "RageException.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
-#include "RageTimer.h"
+#include "RageTypes.h"
 #include "RageUtil.h"
 #include "RageUtil/Regex.h"
-#include "IniFile.h"
-#include "RageTimer.h"
-#include "FontCharAliases.h"
+#include "StdString.h"
+#include "XmlFile.h"
 #include "arch/ArchHooks/ArchHooks.h"
 #include "arch/Dialog/Dialog.h"
-#include "RageFile.h"
+#include "global.h"
 #include "ScreenManager.h"
 #include "ProfileManager.h"
 #include "Profile.h"
 #include "ActorUtil.h"
-#include "GameLoop.h" // For ChangeTheme
-#include "ThemeMetric.h"
-#include "SubscriptionManager.h"
-#include "LuaManager.h"
-#include "ScreenDimensions.h"
-#include "LocalizedString.h"
-#include "SpecialFiles.h"
-#include "EnumHelper.h"
-#include "PrefsManager.h"
-#include "XmlFileUtil.h"
-
 #include <cstddef>
 #include <deque>
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "GameLoop.h"  // For ChangeTheme
+#include "LocalizedString.h"
+#include "LuaManager.h"
+#include "PrefsManager.h"
+#include "ScreenDimensions.h"
+#include "SpecialFiles.h"
+#include "SubscriptionManager.h"
+#include "ThemeMetric.h"
+#include "XmlFileUtil.h"
 
 ThemeManager*	THEME = nullptr;	// global object accessible from anywhere in the program
 

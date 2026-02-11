@@ -1,5 +1,10 @@
-#include "global.h"
 #include "RageSoundReader_Pan.h"
+
+#include <algorithm>
+#include <string>
+
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
 #include "RageSoundUtil.h"
 
 RageSoundReader_Pan::RageSoundReader_Pan( RageSoundReader *pSource ):

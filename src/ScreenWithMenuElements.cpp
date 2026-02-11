@@ -1,14 +1,29 @@
-#include "global.h"
 #include "ScreenWithMenuElements.h"
-#include "MenuTimer.h"
-#include "RageLog.h"
-#include "ThemeManager.h"
-#include "GameState.h"
-#include "PrefsManager.h"
-#include "ScreenManager.h"
+
+#include <algorithm>
+#include <string>
+
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "AutoActor.h"
+#include "GameConstantsAndTypes.h"
 #include "GameSoundManager.h"
-#include "MemoryCardDisplay.h"
+#include "GameState.h"
 #include "InputEventPlus.h"
+#include "LuaManager.h"
+#include "MemoryCardDisplay.h"
+#include "MenuTimer.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 #define TIMER_STEALTH				THEME->GetMetricB(m_sName,"TimerStealth")
 #define SHOW_STAGE_DISPLAY			THEME->GetMetricB(m_sName,"ShowStageDisplay")

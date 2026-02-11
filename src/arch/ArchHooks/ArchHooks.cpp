@@ -1,5 +1,8 @@
-#include "global.h"
 #include "ArchHooks.h"
+
+#include <string>
+
+#include "LuaManager.h"
 #include "LuaReference.h"
 #include "RageLog.h"
 #include "RageThreads.h"

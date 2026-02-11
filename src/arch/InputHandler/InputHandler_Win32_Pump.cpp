@@ -1,15 +1,15 @@
-#include "global.h"
 #include "InputHandler_Win32_Pump.h"
 
-#include "PrefsManager.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageInputDevice.h"
-#include "archutils/Win32/ErrorStrings.h"
-#include "archutils/Win32/USB.h"
-
+#include <string>
 #include <vector>
 
+#include "PrefsManager.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "archutils/Win32/ErrorStrings.h"
+#include "archutils/Win32/USB.h"
+#include "global.h"
 
 REGISTER_INPUT_HANDLER_CLASS2( Pump, Win32_Pump );
 

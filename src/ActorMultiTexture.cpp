@@ -1,17 +1,20 @@
-#include "global.h"
 #include "ActorMultiTexture.h"
-#include "RageTextureManager.h"
-#include "XmlFile.h"
-#include "RageLog.h"
-#include "RageDisplay.h"
-#include "RageTexture.h"
-#include "RageUtil.h"
-#include "ActorUtil.h"
-#include "LuaBinding.h"
-#include "LuaManager.h"
 
 #include <cassert>
 #include <cstddef>
+
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "EnumHelper.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "RageDisplay.h"
+#include "RageLog.h"
+#include "RageTexture.h"
+#include "RageTextureManager.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "XmlFile.h"
 
 REGISTER_ACTOR_CLASS( ActorMultiTexture );
 

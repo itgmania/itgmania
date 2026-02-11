@@ -1,16 +1,23 @@
 #ifndef SCREEN_EVALUATION_H
 #define SCREEN_EVALUATION_H
 
+#include <string>
+
+#include "AutoActor.h"
+#include "Banner.h"
+#include "BitmapText.h"
+#include "GameConstantsAndTypes.h"
+#include "GradeDisplay.h"
+#include "InputQueue.h"
+#include "PercentageDisplay.h"
+#include "PlayerNumber.h"
+#include "RageSound.h"
+#include "RollingNumbers.h"
+#include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
 #include "Sprite.h"
-#include "BitmapText.h"
-#include "GradeDisplay.h"
-#include "Banner.h"
-#include "PercentageDisplay.h"
-#include "ActorUtil.h"
-#include "RageSound.h"
+#include "StageStats.h"
 #include "ThemeMetric.h"
-#include "RollingNumbers.h"
 
 /**
  * @brief How many songs are shown at the end?

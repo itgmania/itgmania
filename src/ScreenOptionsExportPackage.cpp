@@ -1,21 +1,23 @@
-#include "global.h"
 #include "ScreenOptionsExportPackage.h"
-#include "ScreenManager.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "CommonMetrics.h"
-#include "ScreenPrompt.h"
-#include "ScreenMiniMenu.h"
-#include "OptionRowHandler.h"
-#include "LocalizedString.h"
-#include "SpecialFiles.h"
-#include "ScreenPrompt.h"
-#include "SongManager.h"
-#include "RageFile.h"
-#include "archutils/SpecialDirs.h"
 
+#include <string>
 #include <vector>
 
+#include "GameState.h"
+#include "OptionRowHandler.h"
+#include "PlayerNumber.h"
+#include "RageFile.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
+#include "ScreenPrompt.h"
+#include "ScreenWithMenuElements.h"
+#include "SongManager.h"
+#include "SpecialFiles.h"
+#include "StdString.h"
+#include "archutils/SpecialDirs.h"
 
 // main page (type list)
 REGISTER_SCREEN_CLASS( ScreenOptionsExportPackage );

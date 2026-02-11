@@ -1,22 +1,35 @@
-#include "global.h"
 #include "PlayerOptions.h"
-#include "RageUtil.h"
-#include "RageUtil/Regex.h"
-#include "GameState.h"
-#include "NoteSkinManager.h"
-#include "Song.h"
-#include "Course.h"
-#include "Steps.h"
-#include "ThemeManager.h"
-#include "Style.h"
-#include "CommonMetrics.h"
-#include "RageUtil/RandomNumbers.h"
 
+#include <algorithm>
+#include <cctype>
 #include <cfloat>
 #include <cmath>
+#include <cstdio>
 #include <sstream>
+#include <string>
 #include <vector>
 
+#include "CommonMetrics.h"
+#include "Course.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "NoteSkinManager.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "RadarValues.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "RageUtil/Regex.h"
+#include "Song.h"
+#include "StdString.h"
+#include "Steps.h"
+#include "Style.h"
+#include "ThemeMetric.h"
+#include "Trail.h"
+#include "global.h"
 
 static const char *LifeTypeNames[] = {
 	"Bar",

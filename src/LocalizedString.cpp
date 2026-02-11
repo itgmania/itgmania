@@ -1,5 +1,6 @@
-#include "global.h"
 #include "LocalizedString.h"
+
+#include <string>
 
 #include "RageUtil.h"
 #include "SubscriptionManager.h"

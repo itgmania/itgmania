@@ -1,24 +1,33 @@
-#include "global.h"
 #include "NoteSkinManager.h"
-#include "RageFileManager.h"
-#include "RageLog.h"
-#include "GameInput.h"
-#include "GameState.h"
-#include "Game.h"
-#include "Style.h"
-#include "RageUtil.h"
-#include "RageDisplay.h"
-#include "arch/Dialog/Dialog.h"
-#include "PrefsManager.h"
-#include "ActorUtil.h"
-#include "XmlFileUtil.h"
-#include "Sprite.h"
-#include "SpecialFiles.h"
 
 #include <cstddef>
 #include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "Game.h"
+#include "GameInput.h"
+#include "GameState.h"
+#include "IniFile.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "PrefsManager.h"
+#include "RageException.h"
+#include "RageFileManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "SpecialFiles.h"
+#include "Sprite.h"
+#include "StdString.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "XmlFile.h"
+#include "XmlFileUtil.h"
+#include "arch/Dialog/Dialog.h"
+#include "global.h"
 
 /** @brief Have the NoteSkinManager available throughout the program. */
 NoteSkinManager*	NOTESKIN = nullptr; // global and accessible from anywhere in our program

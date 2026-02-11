@@ -3,13 +3,12 @@
 #ifndef PREFERENCE_H
 #define PREFERENCE_H
 
-#include "EnumHelper.h"
-#include "LuaManager.h"
-#include "RageUtil.h"
-
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "LuaManager.h"
+#include "RageUtil.h"
 
 class XNode;
 

@@ -1,5 +1,11 @@
-#include "global.h"
 #include "SongPosition.h"
+
+#include "LightsManager.h"
+#include "Preference.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "TimingData.h"
+#include "global.h"
 
 static Preference<float> g_fVisualDelaySeconds( "VisualDelaySeconds", 0.0f );
 

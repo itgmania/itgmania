@@ -1,5 +1,6 @@
-#include "global.h"
 #include "SpecialFiles.h"
+
+#include <string>
 
 const std::string SpecialFiles::PACKAGES_DIR = "Packages/";
 const std::string SpecialFiles::KEYMAPS_PATH = "Save/Keymaps.ini";

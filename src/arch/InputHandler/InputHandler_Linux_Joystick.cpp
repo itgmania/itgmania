@@ -1,13 +1,16 @@
-#include "global.h"
 #include "InputHandler_Linux_Joystick.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "LinuxInputManager.h"
-#include "RageInputDevice.h" // NUM_JOYSTICKS
 
+#include <algorithm>
 #include <cerrno>
 #include <set>
+#include <string>
 #include <vector>
+
+#include "LinuxInputManager.h"
+#include "RageInputDevice.h"  // NUM_JOYSTICKS
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "global.h"
 
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>

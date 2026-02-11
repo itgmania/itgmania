@@ -3,10 +3,11 @@
 #ifndef LuaBinding_H
 #define LuaBinding_H
 
-#include "LuaManager.h"
-
+#include <cstdio>
+#include <string>
 #include <vector>
 
+#include "LuaManager.h"
 
 class LuaReference;
 

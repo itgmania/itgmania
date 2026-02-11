@@ -1,14 +1,31 @@
-#include "global.h"
 #include "ScreenHighScores.h"
-#include "ScreenManager.h"
-#include "SongManager.h"
-#include "Song.h"
-#include "RageLog.h"
-#include "UnlockManager.h"
 
+#include <climits>
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "ActorUtil.h"
+#include "CourseUtil.h"
+#include "Difficulty.h"
+#include "DynamicActorScroller.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenAttract.h"
+#include "ScreenManager.h"
+#include "ScreenMessage.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "SongUtil.h"
+#include "ThemeManager.h"
+#include "Trail.h"
+#include "UnlockManager.h"
+#include "global.h"
 
 std::string COLUMN_DIFFICULTY_NAME( size_t i );
 std::string COLUMN_STEPS_TYPE_NAME( size_t i );

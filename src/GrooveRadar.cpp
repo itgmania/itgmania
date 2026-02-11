@@ -1,20 +1,23 @@
-#include "global.h"
 #include "GrooveRadar.h"
-#include "RageUtil.h"
-#include "PrefsManager.h"
-#include "GameConstantsAndTypes.h"
-#include "ThemeManager.h"
-#include "Steps.h"
+
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "EnumHelper.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
 #include "RageDisplay.h"
 #include "RageMath.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Steps.h"
+#include "ThemeManager.h"
 #include "ThemeMetric.h"
-#include "CommonMetrics.h"
-#include "ActorUtil.h"
 // I feel weird about this coupling, but it has to be done. -aj
-#include "GameState.h"
-
+#include <algorithm>
+#include <cmath>
 #include <vector>
 
+#include "GameState.h"
 
 REGISTER_ACTOR_CLASS(GrooveRadar);
 

@@ -1,13 +1,14 @@
-#include "global.h"
 #include "RageSoundDriver_OSS.h"
-
-#include "RageLog.h"
-#include "RageSound.h"
-#include "RageSoundManager.h"
 
 #include <cerrno>
 #include <cstdint>
 #include <cstring>
+#include <string>
+
+#include "RageLog.h"
+#include "RageSound.h"
+#include "RageSoundManager.h"
+#include "global.h"
 
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>

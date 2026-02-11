@@ -3,6 +3,8 @@
 #ifndef ScreenServiceAction_H
 #define ScreenServiceAction_H
 
+#include <string>
+
 #include "ScreenPrompt.h"
 
 std::string ClearMachineStats();

@@ -1,13 +1,14 @@
-#include "global.h"
 #include "CrashHandlerNetworking.h"
-#include "RageThreads.h"
+
+#include <cstddef>
+#include <cstdint>
+#include <string>
+
 #include "RageLog.h"
 #include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
-
-#include <cstddef>
-#include <cstdint>
+#include "global.h"
 
 #if defined(WINDOWS)
 #include <windows.h>

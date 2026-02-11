@@ -1,14 +1,15 @@
 #ifndef RAGE_UTIL_FILEDB
 #define RAGE_UTIL_FILEDB
 
-#include "RageTimer.h"
-#include "RageThreads.h"
-#include "RageFileManager.h"
-
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
+#include "RageFileManager.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "StdString.h"
 
 struct FileSet;
 struct File

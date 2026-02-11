@@ -1,10 +1,15 @@
 /* Define all of the input devices we know about. This is the public interface
  * for describing input devices. */
 
-#include "global.h"
 #include "RageInputDevice.h"
+
+#include <cstdio>
+#include <map>
+#include <string>
+#include <utility>
+
+#include "EnumHelper.h"
 #include "RageUtil.h"
-#include "LocalizedString.h"
 
 static const char *InputDeviceStateNames[] = {
 	"Connected",

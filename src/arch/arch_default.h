@@ -1,6 +1,7 @@
 #ifndef ARCH_DEFAULT_H
 #define ARCH_DEFAULT_H
 
+#include <string>
 #include <vector>
 
 /* Define the default driver sets. */

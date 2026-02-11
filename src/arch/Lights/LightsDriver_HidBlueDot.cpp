@@ -1,6 +1,9 @@
-#include "global.h"
-#include "RageLog.h"
 #include "LightsDriver_HidBlueDot.h"
+
+#include "GameInput.h"
+#include "LightsManager.h"
+#include "PlayerNumber.h"
+#include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(HidBlueDot);
 

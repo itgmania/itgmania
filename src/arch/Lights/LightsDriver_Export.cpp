@@ -1,5 +1,10 @@
-#include "global.h"
 #include "LightsDriver_Export.h"
+
+#include <cstring>
+
+#include "LightsManager.h"
+#include "RageThreads.h"
+#include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(Export);
 

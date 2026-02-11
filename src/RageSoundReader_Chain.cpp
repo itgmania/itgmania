@@ -1,20 +1,24 @@
-#include "global.h"
-#include "PrefsManager.h"
 #include "RageSoundReader_Chain.h"
-#include "RageSoundReader_FileReader.h"
-#include "RageSoundReader_Resample_Good.h"
-#include "RageSoundReader_Preload.h"
-#include "RageSoundReader_Pan.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageSound.h"
-#include "RageSoundMixBuffer.h"
-#include "RageSoundUtil.h"
-#include "RageSoundConstants.h"
 
-#include <cmath>
+#include <algorithm>
+#include <cstddef>
+#include <cstring>
+#include <map>
+#include <string>
 #include <vector>
 
+#include "RageLog.h"
+#include "RageSound.h"
+#include "RageSoundConstants.h"
+#include "RageSoundMixBuffer.h"
+#include "RageSoundReader.h"
+#include "RageSoundReader_FileReader.h"
+#include "RageSoundReader_Pan.h"
+#include "RageSoundReader_Preload.h"
+#include "RageSoundReader_Resample_Good.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "global.h"
 
 /*
  * Keyed sounds should pass this object to SoundReader_Preload, to preprocess it.

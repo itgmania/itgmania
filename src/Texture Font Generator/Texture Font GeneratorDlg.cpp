@@ -1,13 +1,15 @@
-#include "stdafx.h"
-#include "Texture Font Generator.h"
 #include "Texture Font GeneratorDlg.h"
-#include "TextureFont.h"
-#include "Utils.h"
 
+#include <algorithm>
 #include <cmath>
 #include <fstream>
 #include <set>
 #include <vector>
+
+#include "Texture Font Generator.h"
+#include "TextureFont.h"
+#include "Utils.h"
+#include "stdafx.h"
 
 static TextureFont *g_pTextureFont = NULL;
 

@@ -3,11 +3,12 @@
 #ifndef INPUT_HANDLER_LINUX_EVENT_H
 #define INPUT_HANDLER_LINUX_EVENT_H
 
-#include "InputHandler.h"
-#include "RageThreads.h"
-
+#include <string>
 #include <vector>
 
+#include "InputHandler.h"
+#include "RageInputDevice.h"
+#include "RageThreads.h"
 
 class InputHandler_Linux_Event: public InputHandler
 {

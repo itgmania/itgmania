@@ -1,12 +1,16 @@
-#include "global.h"
 #include "StreamDisplay.h"
-#include "GameState.h"
-#include "RageDisplay.h"
-#include "ThemeManager.h"
-#include "EnumHelper.h"
 
 #include <cfloat>
 #include <cmath>
+#include <string>
+
+#include "ActorFrame.h"
+#include "EnumHelper.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "Sprite.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 static const char *StreamTypeNames[] = {
 	"Normal",

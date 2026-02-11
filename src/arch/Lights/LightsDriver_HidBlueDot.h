@@ -1,6 +1,8 @@
 #ifndef LightsDriver_HidBlueDot_H
 #define LightsDriver_HidBlueDot_H
 
+#include <cstdint>
+
 #include "arch/Lights/LightsDriver.h"
 #include "archutils/Common/HidDevice.h"
 

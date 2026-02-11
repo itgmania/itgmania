@@ -1,8 +1,15 @@
-#include "global.h"
-#include "RageLog.h"
 #include "LightsDriver_stac.h"
-#include "GameState.h"
+
+#include <cstdint>
+#include <string>
+
 #include "Game.h"
+#include "GameInput.h"
+#include "GameState.h"
+#include "InputMapper.h"
+#include "LightsManager.h"
+#include "StdString.h"
+#include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(stac);
 

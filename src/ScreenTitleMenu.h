@@ -3,6 +3,8 @@
 #ifndef SCREEN_TITLE_MENU_H
 #define SCREEN_TITLE_MENU_H
 
+#include "InputQueue.h"
+#include "MessageManager.h"
 #include "ScreenSelectMaster.h"
 
 class ScreenTitleMenu : public ScreenSelectMaster

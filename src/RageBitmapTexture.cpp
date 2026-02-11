@@ -1,22 +1,26 @@
-#include "global.h"
 #include "RageBitmapTexture.h"
-#include "RageUtil.h"
-#include "RageUtil/Regex.h"
-#include "RageLog.h"
-#include "RageTextureManager.h"
-#include "RageDisplay.h"
-#include "RageTypes.h"
-#include "RageSurface.h"
-#include "RageSurfaceUtils.h"
-#include "RageSurfaceUtils_Zoom.h"
-#include "RageSurfaceUtils_Dither.h"
-#include "RageSurface_Load.h"
-#include "arch/Dialog/Dialog.h"
-#include "StepMania.h"
 
+#include <algorithm>
 #include <cmath>
+#include <string>
 #include <vector>
 
+#include "RageDisplay.h"
+#include "RageLog.h"
+#include "RageSurface.h"
+#include "RageSurfaceUtils.h"
+#include "RageSurfaceUtils_Dither.h"
+#include "RageSurfaceUtils_Zoom.h"
+#include "RageSurface_Load.h"
+#include "RageTexture.h"
+#include "RageTextureID.h"
+#include "RageTextureManager.h"
+#include "RageUtil.h"
+#include "RageUtil/Regex.h"
+#include "StdString.h"
+#include "StepMania.h"
+#include "arch/Dialog/Dialog.h"
+#include "global.h"
 
 static void GetResolutionFromFileName( std::string sPath, int &iWidth, int &iHeight )
 {

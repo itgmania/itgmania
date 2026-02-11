@@ -3,11 +3,11 @@
 #ifndef ScreenBookkeeping_H
 #define ScreenBookkeeping_H
 
-#include "ScreenWithMenuElements.h"
-#include "BitmapText.h"
-
 #include <vector>
 
+#include "BitmapText.h"
+#include "InputQueue.h"
+#include "ScreenWithMenuElements.h"
 
 const int NUM_BOOKKEEPING_COLS = 4;
 

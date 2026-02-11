@@ -1,13 +1,14 @@
 #ifndef INPUT_HANDLER_WIN32_DDRIO_H
 #define INPUT_HANDLER_WIN32_DDRIO_H
 
-#include "InputHandler.h"
-#include "RageThreads.h"
-#include "arch/Lights/LightsDriver_Export.h"
-
 #include <cstdint>
+#include <string>
 #include <vector>
 
+#include "InputHandler.h"
+#include "LightsManager.h"
+#include "RageInputDevice.h"
+#include "RageThreads.h"
 
 static bool _ddriodll_loaded = false;
 

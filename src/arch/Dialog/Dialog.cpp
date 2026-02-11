@@ -1,13 +1,16 @@
-#include "global.h"
 #include "Dialog.h"
-#include "DialogDriver.h"
-#include "PrefsManager.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageThreads.h"
 
+#include "DialogDriver.h"
+#include "Preference.h"
+#include "StdString.h"
+#include "global.h"
+#include "PrefsManager.h"
+#include <string>
 #include <vector>
 
+#include "RageLog.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
 
 static Preference<std::string> g_sIgnoredDialogs( "IgnoredDialogs", "" );
 

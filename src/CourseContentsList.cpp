@@ -1,14 +1,20 @@
-#include "global.h"
 #include "CourseContentsList.h"
-#include "GameConstantsAndTypes.h"
-#include "RageLog.h"
-#include "Course.h"
-#include "Trail.h"
-#include "GameState.h"
-#include "XmlFile.h"
+
+#include <string>
+
+#include "Actor.h"
+#include "ActorScroller.h"
 #include "ActorUtil.h"
+#include "Course.h"
+#include "Difficulty.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
 #include "RageUtil.h"
 #include "Steps.h"
+#include "Trail.h"
+#include "XmlFile.h"
 
 REGISTER_ACTOR_CLASS( CourseContentsList );
 

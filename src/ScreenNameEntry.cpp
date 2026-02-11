@@ -1,33 +1,43 @@
-#include "global.h"
 #include "ScreenNameEntry.h"
+
+#include "AnnouncerManager.h"
+#include "Course.h"
+#include "DateTime.h"
 #include "GameConstantsAndTypes.h"
-#include "RageUtil.h"
-#include "PrefsManager.h"
+#include "GameInput.h"
 #include "GameManager.h"
-#include "RageLog.h"
 #include "GameSoundManager.h"
 #include "GameState.h"
-#include "ThemeManager.h"
-#include "Course.h"
-#include "AnnouncerManager.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "StageStats.h"
-#include "ScreenDimensions.h"
-#include "PlayerState.h"
-#include "Style.h"
-#include "NoteSkinManager.h"
+#include "Grade.h"
 #include "InputEventPlus.h"
+#include "InputFilter.h"
 #include "InputMapper.h"
+#include "ModsGroup.h"
+#include "NoteSkinManager.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "StageStats.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 // used in TestScreen section
-#include "SongManager.h"
-#include "Song.h"
-#include "StatsManager.h"
-
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <string>
 #include <vector>
+
+#include "Song.h"
+#include "SongManager.h"
+#include "StatsManager.h"
 
 // Defines specific to ScreenNameEntry
 #define CATEGORY_Y			THEME->GetMetricF(m_sName,"CategoryY")

@@ -1,13 +1,15 @@
-#include "global.h"
 #include "ScreenSongOptions.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "PrefsManager.h"
-#include "PlayerState.h"
 
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "PrefsManager.h"
+#include "Screen.h"
+#include "ScreenOptionsMaster.h"
+#include "ThemeManager.h"
 
 REGISTER_SCREEN_CLASS( ScreenSongOptions );
 

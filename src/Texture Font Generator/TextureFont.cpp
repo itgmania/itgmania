@@ -1,11 +1,14 @@
-#include "stdafx.h"
 #include "TextureFont.h"
-#include "Utils.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <fstream>
+#include <string>
 #include <vector>
+
+#include "Utils.h"
+#include "stdafx.h"
 
 TextureFont::TextureFont()
 {

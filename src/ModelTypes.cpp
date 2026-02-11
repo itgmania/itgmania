@@ -1,16 +1,24 @@
-#include "global.h"
 #include "ModelTypes.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <cstring>
+#include <numeric>
+#include <string>
+
 #include "IniFile.h"
-#include "RageUtil.h"
+#include "RageException.h"
 #include "RageFile.h"
 #include "RageMath.h"
 #include "RageTexture.h"
+#include "RageTextureID.h"
 #include "RageTextureManager.h"
-#include "RageLog.h"
-#include "RageDisplay.h"
-
-#include <cmath>
-#include <numeric>
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "XmlFile.h"
+#include "global.h"
 
 #define MS_MAX_NAME	32
 

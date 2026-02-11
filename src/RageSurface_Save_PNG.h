@@ -3,6 +3,8 @@
 #ifndef RAGE_SURFACE_SAVE_PNG_H
 #define RAGE_SURFACE_SAVE_PNG_H
 
+#include <string>
+
 struct RageSurface;
 class RageFile;
 /** @brief Utility functions for the RageSurfaces. */

@@ -4,17 +4,22 @@
  *  row/index - corresponds to subdivisions of beats
  */
 
-#include "global.h"
 #include "NoteData.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "XmlFile.h"
-#include "GameState.h" // blame radar calculations.
-#include "RageUtil_AutoPtr.h"
 
+#include <algorithm>
+#include <climits>
 #include <cstddef>
+#include <set>
+#include <utility>
 #include <vector>
 
+#include "GameState.h"  // blame radar calculations.
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "RageUtil.h"
+#include "RageUtil_AutoPtr.h"
+#include "XmlFile.h"
+#include "global.h"
 
 REGISTER_CLASS_TRAITS( NoteData, new NoteData(*pCopy) )
 

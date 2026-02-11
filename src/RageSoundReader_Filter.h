@@ -3,6 +3,8 @@
 #ifndef RAGE_SOUND_READER_FILTER_H
 #define RAGE_SOUND_READER_FILTER_H
 
+#include <string>
+
 #include "RageSoundReader.h"
 #include "RageUtil_AutoPtr.h"
 class RageSoundReader_Filter: public RageSoundReader

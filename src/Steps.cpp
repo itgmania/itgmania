@@ -1,42 +1,56 @@
 /* This stores a single note pattern for a song.
  *
- * We can have too much data to keep everything decompressed as NoteData, so most
- * songs are kept in memory compressed as SMData until requested.  NoteData is normally
- * not requested casually during gameplay; we can move through screens, the music
- * wheel, etc. without touching any NoteData.
+ * We can have too much data to keep everything decompressed as NoteData, so
+ * most songs are kept in memory compressed as SMData until requested.  NoteData
+ * is normally not requested casually during gameplay; we can move through
+ * screens, the music wheel, etc. without touching any NoteData.
  *
- * To save more memory, if data is cached on disk, read it from disk on demand.  Not
- * all Steps will have an associated file for this purpose.  (Profile edits don't do
- * this yet.)
+ * To save more memory, if data is cached on disk, read it from disk on demand.
+ * Not all Steps will have an associated file for this purpose.  (Profile edits
+ * don't do this yet.)
  *
- * Data can be on disk (always compressed), compressed in memory, and uncompressed in
- * memory. */
-#include "global.h"
+ * Data can be on disk (always compressed), compressed in memory, and
+ * uncompressed in memory. */
 #include "Steps.h"
-#include "StepsUtil.h"
-#include "GameState.h"
-#include "Song.h"
-#include "RageUtil.h"
-#include "RageUtil/Regex.h"
-#include "RageLog.h"
-#include "NoteData.h"
-#include "GameManager.h"
-#include "SongManager.h"
-#include "NoteDataUtil.h"
-#include "NotesLoaderSSC.h"
-#include "NotesLoaderSM.h"
-#include "NotesLoaderSMA.h"
-#include "NotesLoaderDWI.h"
-#include "NotesLoaderKSF.h"
-#include "NotesLoaderBMS.h"
 
 #include <algorithm>
 #include <cstddef>
 #include <optional>
-#include <vector>
 #include <regex>
+#include <sstream>
+#include <string>
+#include <vector>
 
+#include "ColumnCues.h"
+#include "Difficulty.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "MeasureInfo.h"
+#include "NoteData.h"
+#include "NoteDataUtil.h"
+#include "NoteTypes.h"
+#include "NotesLoaderBMS.h"
+#include "NotesLoaderDWI.h"
+#include "NotesLoaderKSF.h"
+#include "NotesLoaderSM.h"
+#include "NotesLoaderSMA.h"
+#include "NotesLoaderSSC.h"
+#include "PlayerNumber.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "RageUtil/Regex.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "StdString.h"
+#include "StepParityDatastructs.h"
 #include "StepParityGenerator.h"
+#include "StepsUtil.h"
+#include "TechCounts.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
+#include "global.h"
 
 /* register DisplayBPM with StringConversion */
 #include "EnumHelper.h"

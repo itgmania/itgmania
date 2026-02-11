@@ -1,10 +1,15 @@
-#include "global.h"
 #include "JoystickDevice.h"
-#include "RageLog.h"
 
+#include <algorithm>
 #include <cstdint>
+#include <unordered_map>
 #include <vector>
 
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "global.h"
 
 Joystick::Joystick() :	id( InputDevice_Invalid ),
 			x_axis( 0 ), y_axis( 0 ), z_axis( 0 ),

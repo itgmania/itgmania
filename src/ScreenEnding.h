@@ -1,7 +1,8 @@
 #ifndef SCREEN_ENDING_H
 #define SCREEN_ENDING_H
 
-#include "BitmapText.h"
+#include "InputQueue.h"
+#include "PlayerNumber.h"
 #include "ScreenAttract.h"
 #include "Sprite.h"
 /** @brief Ending screen that shows stats. */

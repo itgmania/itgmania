@@ -4,22 +4,22 @@
 #pragma warning( push )
 #pragma warning( disable : 4565 )
 #include <tomcrypt.h>
-#pragma warning ( pop )
 
-#include "CryptManager.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageFile.h"
-#include "RageFileManager.h"
-#include "CryptHelpers.h"
-#include "LuaBinding.h"
-#include "LuaReference.h"
-#include "LuaManager.h"
-#include "RageUtil/RandomNumbers.h"
+#pragma warning(pop)
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
+#include "CryptHelpers.h"
+#include "CryptManager.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "LuaReference.h"
+#include "RageFile.h"
+#include "RageFileManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
 
 CryptManager*	CRYPTMAN	= nullptr;	// global and accessible from anywhere in our program
 

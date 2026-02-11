@@ -1,4 +1,3 @@
-#include "global.h"
 #include "RageSoundReader.h"
 #include "RageLog.h"
 #include "RageUtil_AutoPtr.h"

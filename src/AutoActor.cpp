@@ -1,8 +1,12 @@
-#include "global.h"
 #include "AutoActor.h"
-#include "ThemeManager.h"
+
+#include <string>
+
 #include "Actor.h"
 #include "ActorUtil.h"
+#include "LuaManager.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 void AutoActor::Unload()
 {

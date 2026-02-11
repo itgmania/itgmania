@@ -8,12 +8,15 @@
  * changer; this class just controls parameters on the other two real filters.
  */
 
-#include "global.h"
-#include "Preference.h"
 #include "RageSoundReader_PitchChange.h"
-#include "RageSoundReader_SpeedChange.h"
+
+#include <string>
+
+#include "Preference.h"
+#include "RageSoundReader.h"
+#include "RageSoundReader_Filter.h"
 #include "RageSoundReader_Resample_Good.h"
-#include "RageLog.h"
+#include "RageSoundReader_SpeedChange.h"
 
 static Preference<bool> g_bRateModPreservesPitch( "RateModPreservesPitch", true );
 

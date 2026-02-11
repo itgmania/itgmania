@@ -3,6 +3,9 @@
 #ifndef RAGE_SOUND_READER_POST_BUFFERING_H
 #define RAGE_SOUND_READER_POST_BUFFERING_H
 
+#include <string>
+
+#include "RageSoundReader.h"
 #include "RageSoundReader_Filter.h"
 
 class RageSoundReader_PostBuffering: public RageSoundReader_Filter

@@ -1,21 +1,32 @@
-#include "global.h"
-
 #include "ScreenOptionsEditCourse.h"
-#include "ScreenMiniMenu.h"
-#include "SongUtil.h"
-#include "SongManager.h"
-#include "OptionRowHandler.h"
-#include "Song.h"
-#include "GameState.h"
-#include "ScreenPrompt.h"
-#include "LocalizedString.h"
-#include "CourseUtil.h"
-#include "Song.h"
-#include "Style.h"
-#include "Steps.h"
 
+#include <algorithm>
+#include <cstdio>
+#include <string>
 #include <vector>
 
+#include "CourseUtil.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "InputEventPlus.h"
+#include "LocalizedString.h"
+#include "OptionRowHandler.h"
+#include "PlayerNumber.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenMessage.h"
+#include "ScreenMiniMenu.h"
+#include "ScreenOptions.h"
+#include "ScreenPrompt.h"
+#include "Song.h"
+#include "SongManager.h"
+#include "SongUtil.h"
+#include "Steps.h"
+#include "StepsUtil.h"
+#include "Style.h"
+#include "global.h"
 
 static void GetStepsForSong( Song *pSong, std::vector<Steps*> &vpStepsOut )
 {

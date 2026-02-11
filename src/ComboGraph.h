@@ -2,8 +2,10 @@
 #ifndef COMBO_GRAPH_H
 #define COMBO_GRAPH_H
 
+#include <string>
+
+#include "Actor.h"
 #include "ActorFrame.h"
-#include "PlayerNumber.h"
 #include "ThemeMetric.h"
 
 class StageStats;

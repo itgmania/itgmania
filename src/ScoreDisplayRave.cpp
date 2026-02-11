@@ -1,11 +1,14 @@
-#include "global.h"
 #include "ScoreDisplayRave.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "ThemeManager.h"
-#include "ActorUtil.h"
-#include "PlayerState.h"
 
+#include "ActorUtil.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "PlayerNumber.h"
+#include "PlayerState.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "ScoreDisplay.h"
+#include "ThemeManager.h"
 
 ScoreDisplayRave::ScoreDisplayRave()
 {

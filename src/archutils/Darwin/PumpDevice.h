@@ -1,10 +1,11 @@
 #ifndef PUMP_DEVICE_H
 #define PUMP_DEVICE_H
 
-#include "HIDDevice.h"
-
 #include <vector>
 
+#include "HIDDevice.h"
+#include "RageInputDevice.h"
+#include "RageTimer.h"
 
 class PumpDevice : public HIDDevice
 {

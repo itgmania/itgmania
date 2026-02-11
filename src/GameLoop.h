@@ -1,5 +1,7 @@
 #ifndef GAME_LOOP_H
 #define GAME_LOOP_H
+
+#include <string>
 /** @brief Main rendering and update loop. */
 namespace GameLoop
 {

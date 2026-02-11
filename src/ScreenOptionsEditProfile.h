@@ -1,11 +1,13 @@
 #ifndef ScreenOptionsEditProfile_H
 #define ScreenOptionsEditProfile_H
 
-#include "ScreenOptions.h"
-#include "Profile.h"
-
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "PlayerNumber.h"
+#include "Profile.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
 
 class ScreenOptionsEditProfile : public ScreenOptions
 {

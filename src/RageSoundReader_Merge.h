@@ -1,10 +1,10 @@
 #ifndef RAGE_SOUND_READER_MERGE
 #define RAGE_SOUND_READER_MERGE
 
-#include "RageSoundReader.h"
-
+#include <string>
 #include <vector>
 
+#include "RageSoundReader.h"
 
 /** @brief Chain different sounds together. */
 class RageSoundReader_Merge: public RageSoundReader

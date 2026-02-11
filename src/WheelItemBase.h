@@ -1,11 +1,13 @@
 #ifndef WHEEL_ITEM_BASE_H
 #define WHEEL_ITEM_BASE_H
 
+#include <string>
+
 #include "ActorFrame.h"
-#include "BitmapText.h"
-#include "ThemeMetric.h"
-#include "GameConstantsAndTypes.h"
 #include "AutoActor.h"
+#include "EnumHelper.h"
+#include "RageTypes.h"
+#include "global.h"
 
 struct WheelItemBaseData;
 /** @brief The different types of Wheel Items. */

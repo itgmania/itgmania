@@ -1,6 +1,10 @@
-#include "global.h"
 #include "SpecialDirs.h"
+
 #include <shlobj.h>
+
+#include <string>
+
+#include "global.h"
 
 static std::string GetSpecialFolderPath( int csidl )
 {

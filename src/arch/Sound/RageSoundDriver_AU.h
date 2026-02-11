@@ -1,12 +1,14 @@
 #ifndef RAGE_SOUND_DRIVER_AU_H
 #define RAGE_SOUND_DRIVER_AU_H
 
-#include "RageSoundDriver.h"
-#include "RageThreads.h"
+#include <AudioUnit/AudioUnit.h>
+#include <CoreFoundation/CoreFoundation.h>
 
 #include <cstdint>
+#include <string>
 
-#include <AudioUnit/AudioUnit.h>
+#include "RageSoundDriver.h"
+#include "RageThreads.h"
 
 class RageSoundDriver_AU: public RageSoundDriver
 {

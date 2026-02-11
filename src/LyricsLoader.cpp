@@ -1,15 +1,20 @@
-#include "global.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "RageUtil/Regex.h"
 #include "LyricsLoader.h"
-#include "ThemeManager.h"
-#include "RageFile.h"
-#include "Song.h"
 
-#include <map>
+#include <algorithm>
+#include <cstdio>
+#include <string>
 #include <vector>
 
+#include "LuaManager.h"
+#include "RageFile.h"
+#include "RageLog.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "RageUtil/Regex.h"
+#include "Song.h"
+#include "StdString.h"
+#include "ThemeManager.h"
+#include "global.h"
 
 // TODO: Use a marker for default color instead of a specific color that may
 // accidentally get written back into a lyrics file.

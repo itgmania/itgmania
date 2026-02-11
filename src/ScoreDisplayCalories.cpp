@@ -1,14 +1,15 @@
-#include "global.h"
 #include "ScoreDisplayCalories.h"
+
+#include "ActorUtil.h"
+#include "BitmapText.h"
+#include "LuaManager.h"
 #include "MessageManager.h"
 #include "PlayerNumber.h"
-#include "PlayerState.h"
-#include "RageUtil.h"
+#include "RollingNumbers.h"
 #include "StageStats.h"
-#include "XmlFile.h"
-#include "ActorUtil.h"
 #include "StatsManager.h"
-#include "LuaManager.h"
+#include "XmlFile.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS( ScoreDisplayCalories );
 

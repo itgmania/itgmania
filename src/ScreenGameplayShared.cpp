@@ -1,14 +1,13 @@
-#include "global.h"
 #include "ScreenGameplayShared.h"
-#include "GameState.h"
-#include "Player.h"
-#include "NoteDataUtil.h"
-#include "NoteDataWithScoring.h"
-#include "Song.h"
-#include "StatsManager.h"
 
 #include <vector>
 
+#include "Difficulty.h"
+#include "GameState.h"
+#include "InputEventPlus.h"
+#include "PlayerNumber.h"
+#include "Screen.h"
+#include "ScreenGameplay.h"
 
 REGISTER_SCREEN_CLASS( ScreenGameplayShared );
 

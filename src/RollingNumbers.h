@@ -1,7 +1,10 @@
 #ifndef RollingNumbers_H
 #define RollingNumbers_H
 
+#include <string>
+
 #include "BitmapText.h"
+#include "RageTypes.h"
 #include "ThemeMetric.h"
 
 /** @brief Animates from one number to another by scrolling its digits. */

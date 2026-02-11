@@ -1,6 +1,7 @@
 #ifndef LightsDriver_Linux_ITGIO_H
 #define LightsDriver_Linux_ITGIO_H
 
+#include "LightsManager.h"
 #include "arch/Lights/LightsDriver_Linux_Leds.h"
 
 class LightsDriver_Linux_ITGIO : public LightsDriver_Linux_Leds

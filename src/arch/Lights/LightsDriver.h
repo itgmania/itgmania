@@ -1,11 +1,11 @@
 #ifndef LightsDriver_H
 #define LightsDriver_H
 
-#include "LightsManager.h"
-#include "arch/RageDriver.h"
-
+#include <string>
 #include <vector>
 
+#include "LightsManager.h"
+#include "arch/RageDriver.h"
 
 struct LightsState;
 /** @brief Controls the lights. */

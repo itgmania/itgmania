@@ -1,25 +1,35 @@
-#include "global.h"
 #include "Actor.h"
-#include "ActorFrame.h"
-#include "RageDisplay.h"
-#include "RageUtil.h"
-#include "RageMath.h"
-#include "RageLog.h"
-#include "XmlFile.h"
-#include "LuaBinding.h"
-#include "ThemeManager.h"
-#include "LuaReference.h"
-#include "MessageManager.h"
-#include "LightsManager.h" // for NUM_CabinetLight
-#include "ActorUtil.h"
-#include "Preference.h"
-#include "GameLoop.h"
-#include "RageUtil/RandomNumbers.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <map>
+#include <string>
 #include <typeinfo>
 #include <vector>
+
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "EnumHelper.h"
+#include "GameLoop.h"
+#include "LightsManager.h"  // for NUM_CabinetLight
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "LuaReference.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "Preference.h"
+#include "RageDisplay.h"
+#include "RageMath.h"
+#include "RageTimer.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "RageUtil_AutoPtr.h"
+#include "StdString.h"
+#include "Tween.h"
+#include "XmlFile.h"
+#include "global.h"
 
 static Preference<bool> g_bShowMasks("ShowMasks", false);
 static const float default_effect_period= 1.0f;

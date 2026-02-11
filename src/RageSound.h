@@ -3,12 +3,12 @@
 #ifndef RAGE_SOUND_H
 #define RAGE_SOUND_H
 
+#include <cstdint>
+#include <string>
+
+#include "RageSoundPosMap.h"
 #include "RageThreads.h"
 #include "RageTimer.h"
-#include "RageSoundPosMap.h"
-#include "RageSoundConstants.h"
-
-#include <cstdint>
 
 class RageSoundReader;
 struct lua_State;

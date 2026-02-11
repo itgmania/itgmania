@@ -1,9 +1,14 @@
-#include "global.h"
 #include "DateTime.h"
-#include "RageUtil.h"
+
+#include <cstdio>
+#include <ctime>
+#include <string>
+
 #include "EnumHelper.h"
 #include "LuaManager.h"
-#include "LocalizedString.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "global.h"
 
 DateTime::DateTime()
 {

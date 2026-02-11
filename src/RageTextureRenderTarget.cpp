@@ -1,6 +1,8 @@
-#include "global.h"
 #include "RageTextureRenderTarget.h"
+
 #include "RageDisplay.h"
+#include "RageTexture.h"
+#include "RageTextureID.h"
 
 RageTextureRenderTarget::RageTextureRenderTarget( RageTextureID name, const RenderTargetParam &param ):
 	RageTexture( name ),

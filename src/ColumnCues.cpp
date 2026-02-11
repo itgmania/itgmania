@@ -1,6 +1,10 @@
-#include "global.h"
 #include "ColumnCues.h"
+
+#include <vector>
+
 #include "GameState.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
 
 void ColumnCue::CalculateColumnCues(const NoteData &in, TimingData * timing, std::vector<ColumnCue> &out, float minDuration)
 {

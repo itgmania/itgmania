@@ -3,9 +3,11 @@
 #ifndef LuaExpressionTransform_H
 #define LuaExpressionTransform_H
 
+#include <map>
+
 #include "Actor.h"
 #include "LuaReference.h"
-#include <map>
+#include "global.h"
 
 /**
  * @brief Handle transforming a list of items

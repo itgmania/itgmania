@@ -1,23 +1,34 @@
-#include "global.h"
 #include "CourseUtil.h"
-#include "Course.h"
-#include "RageTimer.h"
-#include "ProfileManager.h"
-#include "Profile.h"
-#include "SongManager.h"
-#include "XmlFile.h"
-#include "GameState.h"
-#include "Style.h"
 
-#include "GameState.h"
-#include "LocalizedString.h"
-#include "RageLog.h"
-#include "arch/Dialog/Dialog.h"
-#include "RageFileManager.h"
-#include "CourseWriterCRS.h"
-
+#include <algorithm>
+#include <cstring>
+#include <map>
+#include <string>
 #include <vector>
 
+#include "Course.h"
+#include "CourseWriterCRS.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LocalizedString.h"
+#include "PlayerNumber.h"
+#include "Profile.h"
+#include "ProfileManager.h"
+#include "RageFileManager.h"
+#include "RageLog.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
+#include "SongManager.h"
+#include "SongOptions.h"
+#include "StdString.h"
+#include "Style.h"
+#include "ThemeManager.h"
+#include "XmlFile.h"
+#include "arch/Dialog/Dialog.h"
+#include "global.h"
 
 // Sorting stuff
 static bool CompareCoursePointersByName( const Course* pCourse1, const Course* pCourse2 )

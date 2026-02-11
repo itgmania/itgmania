@@ -1,15 +1,22 @@
-#include "global.h"
-#include "RageSoundDriver.h"
-#include "PrefsManager.h"
+#include <algorithm>
+#include <cinttypes>
+#include <cstdint>
+#include <cstring>
+
 #include "RageLog.h"
 #include "RageSound.h"
-#include "RageUtil.h"
+#include "RageSoundDriver.h"
 #include "RageSoundMixBuffer.h"
 #include "RageSoundReader.h"
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "config.hpp"
+#include "global.h"
 
-#include <cmath>
-#include <cstdint>
-#include <cinttypes>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #if defined(_MSC_VER) && !defined(PRIu64)
 	#define PRIu64 "I64u"
 #endif

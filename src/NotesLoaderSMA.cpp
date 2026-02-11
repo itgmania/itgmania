@@ -1,21 +1,22 @@
-#include "global.h"
 #include "NotesLoaderSMA.h"
+
+#include <cstring>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "Attack.h"
 #include "BackgroundUtil.h"
-#include "GameManager.h"
 #include "MsdFile.h"
 #include "NoteTypes.h"
-#include "NotesLoaderSM.h" // may need this.
-#include "PrefsManager.h"
-#include "RageFileManager.h"
+#include "NotesLoaderSM.h"  // may need this.
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "Song.h"
 #include "SongManager.h"
+#include "StdString.h"
 #include "Steps.h"
-#include "Attack.h"
-
-#include <vector>
-
+#include "TimingSegments.h"
 
 void SMALoader::ProcessMultipliers( TimingData &out, const int iRowsPerBeat, const std::string sParam )
 {

@@ -1,14 +1,14 @@
-#include "global.h"
-#include "RageUtil.h"
 #include "DialogDriver_MacOSX.h"
-#include "RageThreads.h"
-#include "ProductInfo.h"
-#include "InputFilter.h"
-
-#include <vector>
 
 #include <CoreFoundation/CoreFoundation.h>
 
+#include <string>
+#include <vector>
+
+#include "InputFilter.h"
+#include "ProductInfo.h"
+#include "RageUtil.h"
+#include "global.h"
 
 REGISTER_DIALOG_DRIVER_CLASS( MacOSX );
 

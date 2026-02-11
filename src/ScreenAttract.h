@@ -3,7 +3,13 @@
 #ifndef ScreenAttract_H
 #define ScreenAttract_H
 
+#include <string>
+
+#include "InputQueue.h"
+#include "Screen.h"
+#include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
+#include "ThemeMetric.h"
 
 AutoScreenMessage( SM_GoToStartScreen );
 

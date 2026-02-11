@@ -37,11 +37,14 @@
  *   streaming files shouldn't be a problem.
  */
 
-#include "global.h"
 #include "RageFileDriverReadAhead.h"
-#include "RageLog.h"
-#include "RageUtil.h"
+
+#include <algorithm>
+#include <cstring>
+
+#include "RageFileBasic.h"
 #include "RageFileManager_ReadAhead.h"
+#include "RageUtil.h"
 
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>

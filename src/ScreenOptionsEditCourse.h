@@ -1,10 +1,12 @@
 #ifndef ScreenOptionsEditCourse_H
 #define ScreenOptionsEditCourse_H
 
-#include "ScreenOptions.h"
-
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "PlayerNumber.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
 
 class Song;
 class Steps;

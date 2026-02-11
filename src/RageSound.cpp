@@ -19,25 +19,29 @@
  * Seeking past the end of the file will throw a warning and rewind.
  */
 
-#include "global.h"
 #include "RageSound.h"
-#include "RageSoundManager.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "PrefsManager.h"
-#include "RageSoundUtil.h"
 
+#include <cstdint>
+#include <string>
+
+#include "LuaManager.h"
+#include "PrefsManager.h"
+#include "RageLog.h"
+#include "RageSoundConstants.h"
+#include "RageSoundManager.h"
 #include "RageSoundReader_Extend.h"
+#include "RageSoundReader_FileReader.h"
 #include "RageSoundReader_Pan.h"
 #include "RageSoundReader_PitchChange.h"
 #include "RageSoundReader_PostBuffering.h"
 #include "RageSoundReader_Preload.h"
 #include "RageSoundReader_Resample_Good.h"
-#include "RageSoundReader_FileReader.h"
 #include "RageSoundReader_ThreadedBuffer.h"
-
-#include <cmath>
-#include <cstdint>
+#include "RageSoundUtil.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
+#include "RageUtil.h"
+#include "global.h"
 
 RageSoundParams::RageSoundParams():
 	m_StartSecond(0), m_LengthSeconds(-1), m_fFadeInSeconds(0),

@@ -2,6 +2,8 @@
 
 #include <alsa/asoundlib.h>
 
+#include <string>
+
 /* typedef int (*foo_f)(char c) */
 #define FUNC(ret, name, proto) typedef ret (*name##_f) proto
 #include "ALSA9Functions.h"

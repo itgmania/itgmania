@@ -3,10 +3,11 @@
 #ifndef MODEL_TYPES_H
 #define MODEL_TYPES_H
 
-#include "RageTypes.h"
-
 #include <cstdint>
+#include <string>
 #include <vector>
+
+#include "RageTypes.h"
 
 struct msTriangle
 {

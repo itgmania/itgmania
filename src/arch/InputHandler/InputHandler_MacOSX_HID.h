@@ -1,10 +1,14 @@
 #ifndef INPUT_HANDLER_MACOSX_HID_H
 #define INPUT_HANDLER_MACOSX_HID_H
 
-#include <vector>
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
+
+#include <string>
+#include <vector>
+
 #include "InputHandler.h"
+#include "RageInputDevice.h"
 #include "RageThreads.h"
 
 class HIDDevice;

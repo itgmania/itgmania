@@ -3,6 +3,8 @@
 #ifndef RAGE_SURFACE_LOAD_JPEG_H
 #define RAGE_SURFACE_LOAD_JPEG_H
 
+#include <string>
+
 #include "RageSurface_Load.h"
 RageSurfaceUtils::OpenResult RageSurface_Load_JPEG( const std::string &sPath, RageSurface *&ret, bool bHeaderOnly, std::string &error );
 

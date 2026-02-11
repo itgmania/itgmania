@@ -3,10 +3,15 @@
 #ifndef ScreenStatsOverlay_H
 #define ScreenStatsOverlay_H
 
-#include "Screen.h"
+#include <array>
+#include <string>
+
 #include "BitmapText.h"
 #include "Quad.h"
-#include <array>
+#include "RageTimer.h"
+#include "RageTypes.h"
+#include "Screen.h"
+#include "ThemeMetric.h"
 
 const int NUM_SKIPS_TO_SHOW = 5;
 

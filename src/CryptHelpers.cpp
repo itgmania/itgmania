@@ -1,5 +1,10 @@
-#include "global.h"
 #include "CryptHelpers.h"
+
+#include <cstring>
+#include <string>
+
+#include "global.h"
+#include "tomcrypt.h"
 
 PRNGWrapper::PRNGWrapper( const struct ltc_prng_descriptor *pPRNGDescriptor )
 {

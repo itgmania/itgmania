@@ -3,17 +3,20 @@
 #ifndef OptionRow_H
 #define OptionRow_H
 
-#include "ActorFrame.h"
-#include "BitmapText.h"
-#include "OptionsCursor.h"
-#include "ModIcon.h"
-#include "ThemeMetric.h"
-#include "AutoActor.h"
-
 #include <array>
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "BitmapText.h"
+#include "MessageManager.h"
+#include "ModIcon.h"
+#include "OptionsCursor.h"
+#include "PlayerNumber.h"
+#include "RageTypes.h"
+#include "ThemeMetric.h"
 
 class OptionRowHandler;
 class GameCommand;

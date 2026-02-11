@@ -1,17 +1,25 @@
-#include "global.h"
 #include "NotesLoaderJson.h"
-#include "json/json.h"
-#include "TimingData.h"
-#include "RageUtil.h"
-#include "JsonUtil.h"
-#include "BackgroundUtil.h"
-#include "NoteData.h"
-#include "Song.h"
-#include "Steps.h"
-#include "GameManager.h"
 
+#include <string>
 #include <vector>
 
+#include "BackgroundUtil.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameManager.h"
+#include "JsonUtil.h"
+#include "NoteData.h"
+#include "NoteTypes.h"
+#include "PlayerNumber.h"
+#include "RadarValues.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "StdString.h"
+#include "Steps.h"
+#include "TimingData.h"
+#include "TimingSegments.h"
+#include "json/json.h"
 
 void NotesLoaderJson::GetApplicableFiles( const std::string &sPath, std::vector<std::string> &out )
 {

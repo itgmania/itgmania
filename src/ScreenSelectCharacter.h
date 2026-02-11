@@ -3,13 +3,15 @@
 #ifndef SCREEN_SELECT_CHARACTER_H
 #define SCREEN_SELECT_CHARACTER_H
 
+#include "Banner.h"
+#include "GameConstantsAndTypes.h"
+#include "InputQueue.h"
+#include "ModIcon.h"
+#include "PlayerNumber.h"
+#include "RageSound.h"
+#include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
 #include "Sprite.h"
-#include "RageSound.h"
-#include "GameConstantsAndTypes.h"
-#include "ModIcon.h"
-#include "Banner.h"
-
 
 #define MAX_CHAR_ICONS_TO_SHOW 11
 

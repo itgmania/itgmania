@@ -3,9 +3,8 @@
 #ifndef SCREEN_TEST_INPUT_H
 #define SCREEN_TEST_INPUT_H
 
+#include "InputQueue.h"
 #include "ScreenWithMenuElements.h"
-#include "BitmapText.h"
-
 
 class ScreenTestInput : public ScreenWithMenuElements
 {

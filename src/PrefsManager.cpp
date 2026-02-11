@@ -1,14 +1,21 @@
-#include "global.h"
 #include "PrefsManager.h"
+
+#include <map>
+#include <string>
+
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
 #include "IniFile.h"
 #include "LuaManager.h"
 #include "Preference.h"
 #include "ProductInfo.h"
 #include "RageDisplay.h"
-#include "RageFile.h"
-#include "RageUtil.h"
 #include "RageLog.h"
+#include "RageUtil.h"
 #include "SpecialFiles.h"
+#include "StdString.h"
+#include "XmlFile.h"
+#include "global.h"
 
 //DEFAULTS_INI_PATH	= "Data/Defaults.ini";		// these can be overridden
 //PREFERENCES_INI_PATH	// overlay on Defaults.ini, contains the user's choices

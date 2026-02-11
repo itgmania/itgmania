@@ -2,15 +2,20 @@
  * Ref: http://www.info-zip.org/pub/infozip/doc/appnote-981119-iz.zip
  */
 
-#include "global.h"
 #include "RageFileDriverZip.h"
-#include "RageFileDriverSlice.h"
-#include "RageFileDriverDeflate.h"
+
+#include <algorithm>
+#include <cerrno>
+#include <cstring>
+#include <string>
+
 #include "RageFile.h"
-#include "RageLog.h"
+#include "RageFileDriver.h"
+#include "RageFileDriverDeflate.h"
+#include "RageFileDriverSlice.h"
 #include "RageUtil.h"
 #include "RageUtil_FileDB.h"
-#include <cerrno>
+#include "global.h"
 
 static struct FileDriverEntry_ZIP: public FileDriverEntry
 {

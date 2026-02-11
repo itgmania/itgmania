@@ -3,12 +3,13 @@
 
 #include "ActorFrame.h"
 #include "ActorUtil.h"
-#include "PlayerNumber.h"
-#include "BitmapText.h"
 #include "AutoActor.h"
-#include "GameConstantsAndTypes.h"
+#include "BitmapText.h"
+#include "PlayerNumber.h"
 #include "ThemeMetric.h"
 class XNode;
+#include <string>
+
 #include "LocalizedString.h"
 
 /**

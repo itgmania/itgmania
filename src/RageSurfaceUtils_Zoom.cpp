@@ -1,12 +1,14 @@
-#include "global.h"
 #include "RageSurfaceUtils_Zoom.h"
-#include "RageSurface.h"
-#include "RageSurfaceUtils.h"
-#include "RageUtil.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <vector>
+
+#include "RageSurface.h"
+#include "RageSurfaceUtils.h"
+#include "RageUtil.h"
+#include "global.h"
 
 /* Coordinate 0x0 represents the exact top-left corner of a bitmap.  .5x.5
  * represents the center of the top-left pixel; 1x1 is the center of the top

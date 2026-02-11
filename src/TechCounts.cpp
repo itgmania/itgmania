@@ -1,12 +1,15 @@
-#include "global.h"
 #include "TechCounts.h"
-#include "NoteData.h"
-#include "RageLog.h"
-#include "LocalizedString.h"
+
+#include <algorithm>
+#include <string>
+#include <vector>
+
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
 #include "LuaBinding.h"
-#include "TimingData.h"
-#include "GameState.h"
-#include "RageTimer.h"
+#include "LuaManager.h"
+#include "RageUtil.h"
+#include "StepParityDatastructs.h"
 
 static const char *TechCountsCategoryNames[] = {
 	"Crossovers",

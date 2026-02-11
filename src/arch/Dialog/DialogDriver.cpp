@@ -1,9 +1,12 @@
-#include "global.h"
 #include "DialogDriver.h"
-#include "RageLog.h"
 
+#include <map>
+#include <string>
 #include <vector>
 
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "global.h"
 
 std::map<istring, CreateDialogDriverFn> *RegisterDialogDriver::g_pRegistrees;
 RegisterDialogDriver::RegisterDialogDriver( const istring &sName, CreateDialogDriverFn pfn )

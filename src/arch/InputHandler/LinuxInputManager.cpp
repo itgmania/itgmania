@@ -1,13 +1,15 @@
 #include "LinuxInputManager.h"
 
+#include <unistd.h>
+
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include "InputHandler_Linux_Event.h"
 #include "InputHandler_Linux_Joystick.h"
-
-#include "RageInput.h" // g_sInputDrivers g_sInputDeviceOrder
+#include "RageInput.h"  // g_sInputDrivers g_sInputDeviceOrder
 #include "RageLog.h"
-
-#include <string> // std::string::npos
-#include <vector>
 
 #if defined(HAVE_DIRENT_H)
 #include <dirent.h>

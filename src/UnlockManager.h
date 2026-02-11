@@ -3,15 +3,17 @@
 #ifndef UNLOCK_MANAGER_H
 #define UNLOCK_MANAGER_H
 
-#include "Grade.h"
-#include "Command.h"
 #include <set>
-#include "Difficulty.h"
-#include "SongUtil.h"
-#include "CourseUtil.h"
-
+#include <string>
 #include <vector>
 
+#include "Command.h"
+#include "CourseUtil.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "RageUtil.h"
+#include "SongUtil.h"
 
 class Song;
 class Course;

@@ -1,24 +1,18 @@
-#include "global.h"
 #include "CommandLineActions.h"
-#include "RageFile.h"
+
+#include <cstdlib>
+#include <string>
+#include <vector>
+
+#include "DateTime.h"
+#include "LuaManager.h"
+#include "Preference.h"
+#include "ProductInfo.h"
 #include "RageUtil.h"
-#include "IniFile.h"
 #include "XmlFile.h"
 #include "XmlFileUtil.h"
-#include "LuaManager.h"
-#include "ProductInfo.h"
-#include "DateTime.h"
-
-#include "arch/Dialog/Dialog.h"
-#include "RageFileManager.h"
-#include "SpecialFiles.h"
 #include "arch/LoadingWindow/LoadingWindow.h"
-#include "Preference.h"
-#include "JsonUtil.h"
-#include "ScreenInstallOverlay.h"
 #include "ver.h"
-
-#include <vector>
 
 // only used for Version()
 #if defined(_WIN32)

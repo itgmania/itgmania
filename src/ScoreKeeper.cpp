@@ -1,8 +1,14 @@
-#include "global.h"
 #include "ScoreKeeper.h"
+
+#include <string>
+
+#include "GameConstantsAndTypes.h"
 #include "NoteData.h"
-#include "PlayerState.h"
 #include "NoteDataWithScoring.h"
+#include "NoteTypes.h"
+#include "PlayerState.h"
+#include "RageUtil.h"
+#include "global.h"
 
 ScoreKeeper::ScoreKeeper( PlayerState *pPlayerState, PlayerStageStats *pPlayerStageStats )
 {

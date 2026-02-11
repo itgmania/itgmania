@@ -1,10 +1,7 @@
 #ifndef SONGPOSITION_H
 #define SONGPOSITION_H
 
-#include "GameConstantsAndTypes.h"
 #include "RageTimer.h"
-#include "LightsManager.h"
-#include "MessageManager.h"
 #include "TimingData.h"
 struct lua_State;
 

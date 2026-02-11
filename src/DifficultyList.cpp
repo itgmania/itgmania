@@ -1,18 +1,28 @@
-#include "global.h"
 #include "DifficultyList.h"
-#include "GameState.h"
-#include "Song.h"
-#include "Steps.h"
-#include "Style.h"
-#include "StepsDisplay.h"
-#include "StepsUtil.h"
-#include "CommonMetrics.h"
-#include "SongUtil.h"
-#include "XmlFile.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <vector>
 
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "CommonMetrics.h"
+#include "Difficulty.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "LuaManager.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "RageUtil.h"
+#include "Song.h"
+#include "SongUtil.h"
+#include "Steps.h"
+#include "StepsDisplay.h"
+#include "StepsUtil.h"
+#include "Style.h"
+#include "XmlFile.h"
+#include "global.h"
 
 /** @brief Specifies the max number of charts available for a song.
  *

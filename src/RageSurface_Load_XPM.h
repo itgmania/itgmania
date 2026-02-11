@@ -3,6 +3,8 @@
 #ifndef RAGE_SURFACE_LOAD_XPM_H
 #define RAGE_SURFACE_LOAD_XPM_H
 
+#include <string>
+
 struct RageSurface;
 RageSurface *RageSurface_Load_XPM( char * const *xpm, std::string &error );
 

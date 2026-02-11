@@ -1,15 +1,22 @@
-#include "global.h"
 #include "BGAnimation.h"
-#include "IniFile.h"
-#include "BGAnimationLayer.h"
-#include "RageUtil.h"
-#include "ActorUtil.h"
 
-#include "LuaManager.h"
-#include "PrefsManager.h"
-
+#include <algorithm>
+#include <cstdio>
+#include <cstring>
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
+#include "ActorUtil.h"
+#include "BGAnimationLayer.h"
+#include "IniFile.h"
+#include "LuaManager.h"
+#include "PrefsManager.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "XmlFile.h"
+#include "global.h"
 
 REGISTER_ACTOR_CLASS(BGAnimation);
 

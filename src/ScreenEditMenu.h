@@ -1,9 +1,11 @@
 #ifndef SCREEN_EDIT_MENU_H
 #define SCREEN_EDIT_MENU_H
 
-#include "ScreenWithMenuElements.h"
-#include "EditMenu.h"
 #include "BitmapText.h"
+#include "EditMenu.h"
+#include "InputQueue.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
 
 class ScreenEditMenu : public ScreenWithMenuElements
 {

@@ -1,13 +1,11 @@
-#include "global.h"
 #include "Command.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "arch/Dialog/Dialog.h"
 
 #include <cstddef>
 #include <numeric>
+#include <string>
 #include <vector>
 
+#include "RageUtil.h"
 
 std::string Command::GetName() const
 {
