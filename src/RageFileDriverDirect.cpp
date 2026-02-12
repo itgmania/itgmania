@@ -16,7 +16,6 @@
 
 #if defined(_WIN32)
     #include "archutils/Win32/ErrorStrings.h"
-    #define WIN32_LEAN_AND_MEAN
     #include <windows.h>
     #include <io.h>
 #else
