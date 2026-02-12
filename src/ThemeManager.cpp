@@ -11,12 +11,10 @@
 #include "arch/ArchHooks/ArchHooks.h"
 #include "arch/Dialog/Dialog.h"
 #include "RageFile.h"
-#if !defined(SMPACKAGE)
 #include "ScreenManager.h"
 #include "ProfileManager.h"
 #include "Profile.h"
 #include "ActorUtil.h"
-#endif
 #include "GameLoop.h" // For ChangeTheme
 #include "ThemeMetric.h"
 #include "SubscriptionManager.h"
@@ -448,12 +446,9 @@ void ThemeManager::SwitchThemeAndLanguage( const std::string &sThemeName_, const
 	ClearThemePathCache();
 	if(bThemeChanging || bForceThemeReload)
 	{
-#if !defined(SMPACKAGE)
 		// reload common sounds
 		if( SCREENMAN != nullptr )
 			SCREENMAN->ThemeChanged();
-
-#endif
 
 		/* Lua globals can use metrics which are cached, and vice versa.  Update Lua
 		 * globals first; it's Lua's job to explicitly update cached metrics that it
@@ -556,7 +551,6 @@ void ThemeManager::RunLuaScripts( const std::string &sMask, bool bUseThemeDir )
 
 void ThemeManager::UpdateLuaGlobals()
 {
-#if !defined(SMPACKAGE)
 	// explicitly refresh cached metrics that we use.
 	ScreenDimensions::ReloadScreenDimensions();
 
@@ -564,7 +558,6 @@ void ThemeManager::UpdateLuaGlobals()
 	RunLuaScripts( "*.lua" );
 	// run theme scripts
 	RunLuaScripts( "*.lua", true );
-#endif
 }
 
 std::string ThemeManager::GetThemeDirFromName( const std::string &sThemeName )
@@ -1131,14 +1124,12 @@ void ThemeManager::GetMetric( const std::string &sMetricsGroup, const std::strin
 	LUA->Release( L );
 }
 
-#if !defined(SMPACKAGE)
 apActorCommands ThemeManager::GetMetricA( const std::string &sMetricsGroup, const std::string &sValueName )
 {
 	LuaReference *pRef = new LuaReference;
 	GetMetric( sMetricsGroup, sValueName, *pRef );
 	return apActorCommands( pRef );
 }
-#endif
 
 void ThemeManager::EvaluateString( std::string &sText )
 {

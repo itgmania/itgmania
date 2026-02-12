@@ -22,9 +22,7 @@ void my_usleep( unsigned long usec );
 
 /* We implement the crash handler interface (though that interface isn't
  * completely uniform across platforms yet). */
-#if !defined(SMPACKAGE)
 #define CRASH_HANDLER
-#endif
 
 #endif
 
