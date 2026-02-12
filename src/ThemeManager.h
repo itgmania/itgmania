@@ -84,9 +84,7 @@ public:
 	bool		GetMetricB( const std::string &sMetricsGroup, const std::string &sValueName );
 	RageColor	GetMetricC( const std::string &sMetricsGroup, const std::string &sValueName );
 	LuaReference	GetMetricR( const std::string &sMetricsGroup, const std::string &sValueName );
-#if !defined(SMPACKAGE)
 	apActorCommands	GetMetricA( const std::string &sMetricsGroup, const std::string &sValueName );
-#endif
 
 	void	GetMetric( const std::string &sMetricsGroup, const std::string &sValueName, LuaReference &valueOut );
 

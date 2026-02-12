@@ -1,9 +1,7 @@
 #include "global.h"
 #include "Dialog.h"
 #include "DialogDriver.h"
-#if !defined(SMPACKAGE)
 #include "PrefsManager.h"
-#endif
 #include "RageUtil.h"
 #include "RageLog.h"
 #include "RageThreads.h"
@@ -11,9 +9,7 @@
 #include <vector>
 
 
-#if !defined(SMPACKAGE)
 static Preference<std::string> g_sIgnoredDialogs( "IgnoredDialogs", "" );
-#endif
 
 DialogDriver *MakeDialogDriver()
 {
@@ -85,20 +81,17 @@ void Dialog::Shutdown()
 
 static bool MessageIsIgnored( std::string sID )
 {
-#if !defined(SMPACKAGE)
 	std::vector<std::string> asList;
 	split( g_sIgnoredDialogs, ",", asList );
 	for( unsigned i = 0; i < asList.size(); ++i )
 		if( !CompareNoCase(sID, asList[i]) )
 			return true;
-#endif
 	return false;
 }
 
 void Dialog::IgnoreMessage( std::string sID )
 {
 	// We can't ignore messages before PREFSMAN is around.
-#if !defined(SMPACKAGE)
 	if( PREFSMAN == nullptr )
 	{
 		if( sID != "" && LOG )
@@ -117,7 +110,6 @@ void Dialog::IgnoreMessage( std::string sID )
 	asList.push_back( sID );
 	g_sIgnoredDialogs.Set( join(",",asList) );
 	PREFSMAN->SavePrefsToDisk();
-#endif
 }
 
 void Dialog::Error( std::string sMessage, std::string sID )
