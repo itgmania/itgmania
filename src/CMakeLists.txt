@@ -174,6 +174,9 @@ if(WIN32)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WINDOWS) # TODO: Remove this potential duplicate.
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _CRT_SECURE_NO_WARNINGS)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WINSOCK_DEPRECATED_NO_WARNINGS)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE NOMINMAX)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE WIN32_LEAN_AND_MEAN)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE VC_EXTRALEAN)
 
   set_target_properties("${SM_EXE_NAME}"
                         PROPERTIES RUNTIME_OUTPUT_DIRECTORY

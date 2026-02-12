@@ -8,7 +8,6 @@
 #if defined(_WIN32)
 
 #include "archutils/Win32/ErrorStrings.h"
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 /* Convert from the given codepage to UTF-8.  Return true if successful. */

@@ -8,7 +8,6 @@
 
 #if defined(_WIN32)
     #if defined(CRASH_HANDLER)
-        #define WIN32_LEAN_AND_MEAN
         #include "windows.h"
         #include "archutils/Win32/Crash.h"
     #endif

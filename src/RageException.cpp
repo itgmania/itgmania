@@ -8,7 +8,6 @@
 #include <cstdint>
 
 #if defined(_WIN32) && defined(DEBUG)
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #elif defined(MACOSX)
 #include "archutils/Darwin/Crash.h"
