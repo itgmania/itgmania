@@ -1,0 +1,20 @@
+name: Clang Format Checker
+on: [push, pull_request]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  clang-format-checking:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install clang-format 21
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 21
+          sudo apt-get install -y clang-format-21
+      - name: Check formatting
+        run: |
+          find src -type f \( -name '*.h' -o -name '*.hpp' -o -name '*.cpp' -o -name '*.mm' \) -print0 \
+            | xargs -0 -r clang-format-21 --dry-run --Werror --style=file:.clang-format
