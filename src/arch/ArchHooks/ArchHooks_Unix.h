@@ -7,22 +7,21 @@
 
 #include "ArchHooks.h"
 
-class ArchHooks_Unix: public ArchHooks
-{
-public:
-	void Init();
-	std::string GetArchName() const { return "Unix"; }
-	void DumpDebugInfo();
+class ArchHooks_Unix : public ArchHooks {
+ public:
+  void Init();
+  std::string GetArchName() const { return "Unix"; }
+  void DumpDebugInfo();
 
-	void SetTime( tm newtime );
-	int64_t GetSystemTimeInMicroseconds();
+  void SetTime(tm newtime);
+  int64_t GetSystemTimeInMicroseconds();
 
-	void MountInitialFilesystems( const std::string &sDirOfExecutable );
-	float GetDisplayAspectRatio() { return 4.0f/3; }
+  void MountInitialFilesystems(const std::string& sDirOfExecutable);
+  float GetDisplayAspectRatio() { return 4.0f / 3; }
 
-	static clockid_t GetClock();
+  static clockid_t GetClock();
 
-	std::string GetClipboard();
+  std::string GetClipboard();
 };
 
 #ifdef ARCH_HOOKS

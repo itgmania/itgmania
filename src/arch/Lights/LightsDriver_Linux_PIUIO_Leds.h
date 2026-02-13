@@ -4,19 +4,16 @@
 #include "LightsManager.h"
 #include "arch/Lights/LightsDriver_Linux_Leds.h"
 
-class LightsDriver_Linux_PIUIO_Leds : public LightsDriver_Linux_Leds
-{
-public:
-	LightsDriver_Linux_PIUIO_Leds() {}
-	virtual ~LightsDriver_Linux_PIUIO_Leds() {}
+class LightsDriver_Linux_PIUIO_Leds : public LightsDriver_Linux_Leds {
+ public:
+  LightsDriver_Linux_PIUIO_Leds() {}
+  virtual ~LightsDriver_Linux_PIUIO_Leds() {}
 
-	virtual void Set(const LightsState *ls);
+  virtual void Set(const LightsState* ls);
 
-	virtual const char *GetGameControllerLightFile()
-	{
-
-		return "/sys/class/leds/piuio::output%d/brightness";
-	}
+  virtual const char* GetGameControllerLightFile() {
+    return "/sys/class/leds/piuio::output%d/brightness";
+  }
 };
 
 #endif
@@ -44,6 +41,6 @@ public:
  * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
- * 
+ *
  * i love lamp
  */

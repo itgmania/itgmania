@@ -14,55 +14,53 @@
 #include "RageSound.h"
 #include "ThemeMetric.h"
 
-std::string WARNING_COMMAND_NAME( size_t i );
+std::string WARNING_COMMAND_NAME(size_t i);
 
-class MenuTimer : public ActorFrame
-{
-public:
-	MenuTimer();
-	virtual ~MenuTimer();
-	void Load( std::string sMetricsGroup );
+class MenuTimer : public ActorFrame {
+ public:
+  MenuTimer();
+  virtual ~MenuTimer();
+  void Load(std::string sMetricsGroup);
 
-	virtual void Update( float fDeltaTime );
+  virtual void Update(float fDeltaTime);
 
-	void SetSeconds( float fSeconds );
-	float GetSeconds() const { return m_fSecondsLeft; }
-	void Start();		// resume countdown from paused
-	void Pause();		// don't count down
-	void Stop();		// set to "00" and pause
-	void Disable();	// set to "99" and pause
-	void Stall();		// pause countdown for a sec
-	void EnableSilent( bool bSilent ) { m_bSilent = bSilent; } // make timer silent
-	void EnableStealth( bool bStealth ); // make timer invisible and silent
+  void SetSeconds(float fSeconds);
+  float GetSeconds() const { return m_fSecondsLeft; }
+  void Start();    // resume countdown from paused
+  void Pause();    // don't count down
+  void Stop();     // set to "00" and pause
+  void Disable();  // set to "99" and pause
+  void Stall();    // pause countdown for a sec
+  void EnableSilent(bool bSilent) { m_bSilent = bSilent; }  // make timer silent
+  void EnableStealth(bool bStealth);  // make timer invisible and silent
 
+  // Lua
+  virtual void PushSelf(lua_State* L);
 
-	// Lua
-	virtual void PushSelf( lua_State *L );
+ protected:
+  float m_fSecondsLeft;
+  float m_fStallSeconds, m_fStallSecondsLeft;
+  bool m_bPaused;
 
-protected:
-	float m_fSecondsLeft;
-	float m_fStallSeconds, m_fStallSecondsLeft;
-	bool m_bPaused;
-
-	void SetText( float fSeconds );
+  void SetText(float fSeconds);
 
 #define NUM_MENU_TIMER_TEXTS 2
 
-	bool m_bSilent;
+  bool m_bSilent;
 
-	BitmapText	m_text[NUM_MENU_TIMER_TEXTS];
+  BitmapText m_text[NUM_MENU_TIMER_TEXTS];
 
-	LuaReference	m_exprFormatText[NUM_MENU_TIMER_TEXTS];
+  LuaReference m_exprFormatText[NUM_MENU_TIMER_TEXTS];
 
-	AutoActor	m_sprFrame;
+  AutoActor m_sprFrame;
 
-	RageSound	m_soundBeep;
+  RageSound m_soundBeep;
 
-	ThemeMetric<int>		WARNING_START;
-	ThemeMetric<int>		WARNING_BEEP_START;
-	ThemeMetric<float>		MAX_STALL_SECONDS;
-	ThemeMetric<float>		HURRY_UP_TRANSITION;
-	ThemeMetric1D<apActorCommands>	*WARNING_COMMAND;
+  ThemeMetric<int> WARNING_START;
+  ThemeMetric<int> WARNING_BEEP_START;
+  ThemeMetric<float> MAX_STALL_SECONDS;
+  ThemeMetric<float> HURRY_UP_TRANSITION;
+  ThemeMetric1D<apActorCommands>* WARNING_COMMAND;
 };
 
 #endif

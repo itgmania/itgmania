@@ -8,4 +8,4 @@
 // found the root of that issue within RageSound.
 #define FALLBACK_SAMPLE_RATE 44100
 
-#endif // RAGE_SOUND_CONSTANTS_H
+#endif  // RAGE_SOUND_CONSTANTS_H

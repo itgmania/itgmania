@@ -8,38 +8,47 @@ struct lua_State;
 
 const std::string SIGNATURE_APPEND = ".sig";
 
-class CryptManager
-{
-public:
-	CryptManager();
-	~CryptManager();
+class CryptManager {
+ public:
+  CryptManager();
+  ~CryptManager();
 
-	static void GenerateGlobalKeys();
-	static void GenerateRSAKey( unsigned int keyLength, std::string &sPrivKey, std::string &sPubKey );
-	static void GenerateRSAKeyToFile( unsigned int keyLength, std::string privFilename, std::string pubFilename );
-	static void SignFileToFile( std::string sPath, std::string sSignatureFile = "" );
-	static bool Sign( std::string sPath, std::string &sSignatureOut, std::string sPrivateKey );
-	static bool VerifyFileWithFile( std::string sPath, std::string sSignatureFile = "" );
-	static bool VerifyFileWithFile( std::string sPath, std::string sSignatureFile, std::string sPublicKeyFile );
-	static bool Verify( RageFileBasic &file, std::string sSignature, std::string sPublicKey );
+  static void GenerateGlobalKeys();
+  static void GenerateRSAKey(
+      unsigned int keyLength, std::string& sPrivKey, std::string& sPubKey);
+  static void GenerateRSAKeyToFile(
+      unsigned int keyLength, std::string privFilename,
+      std::string pubFilename);
+  static void SignFileToFile(
+      std::string sPath, std::string sSignatureFile = "");
+  static bool Sign(
+      std::string sPath, std::string& sSignatureOut, std::string sPrivateKey);
+  static bool VerifyFileWithFile(
+      std::string sPath, std::string sSignatureFile = "");
+  static bool VerifyFileWithFile(
+      std::string sPath, std::string sSignatureFile,
+      std::string sPublicKeyFile);
+  static bool Verify(
+      RageFileBasic& file, std::string sSignature, std::string sPublicKey);
 
-	static void GetRandomBytes( void *pData, int iBytes );
-	static std::string GenerateRandomUUID();
+  static void GetRandomBytes(void* pData, int iBytes);
+  static std::string GenerateRandomUUID();
 
-	static std::string GetMD5ForFile( std::string fn );         // in binary
-	static std::string GetMD5ForString( std::string sData );    // in binary
-	static std::string GetSHA1ForString( std::string sData );   // in binary
-	static std::string GetSHA1ForFile( std::string fn );        // in binary
-	static std::string GetSHA256ForString( std::string sData ); // in binary
-	static std::string GetSHA256ForFile( std::string fn );      // in binary
+  static std::string GetMD5ForFile(std::string fn);          // in binary
+  static std::string GetMD5ForString(std::string sData);     // in binary
+  static std::string GetSHA1ForString(std::string sData);    // in binary
+  static std::string GetSHA1ForFile(std::string fn);         // in binary
+  static std::string GetSHA256ForString(std::string sData);  // in binary
+  static std::string GetSHA256ForFile(std::string fn);       // in binary
 
-	static std::string GetPublicKeyFileName();
+  static std::string GetPublicKeyFileName();
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 };
 
-extern CryptManager*	CRYPTMAN;	// global and accessible from anywhere in our program
+extern CryptManager*
+    CRYPTMAN;  // global and accessible from anywhere in our program
 
 #endif
 

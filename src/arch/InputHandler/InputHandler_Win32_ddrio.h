@@ -12,80 +12,78 @@
 
 static bool _ddriodll_loaded = false;
 
-//we want to use a
+// we want to use a
 #define DDRIO_DEVICEID DEVICE_JOY1
 
 enum p3io_light_bit {
-	LIGHT_P1_MENU = 0x00,
-	LIGHT_P2_MENU = 0x01,
-	LIGHT_P2_LOWER_LAMP = 0x04,
-	LIGHT_P2_UPPER_LAMP = 0x05,
-	LIGHT_P1_LOWER_LAMP = 0x06,
-	LIGHT_P1_UPPER_LAMP = 0x07,
+  LIGHT_P1_MENU = 0x00,
+  LIGHT_P2_MENU = 0x01,
+  LIGHT_P2_LOWER_LAMP = 0x04,
+  LIGHT_P2_UPPER_LAMP = 0x05,
+  LIGHT_P1_LOWER_LAMP = 0x06,
+  LIGHT_P1_UPPER_LAMP = 0x07,
 };
 
 enum hdxs_light_bit {
-	LIGHT_HD_P1_START = 0x08,
-	LIGHT_HD_P1_UP_DOWN = 0x09,
-	LIGHT_HD_P1_LEFT_RIGHT = 0x0A,
-	LIGHT_HD_P2_START = 0x0B,
-	LIGHT_HD_P2_UP_DOWN = 0x0C,
-	LIGHT_HD_P2_LEFT_RIGHT = 0x0D,
+  LIGHT_HD_P1_START = 0x08,
+  LIGHT_HD_P1_UP_DOWN = 0x09,
+  LIGHT_HD_P1_LEFT_RIGHT = 0x0A,
+  LIGHT_HD_P2_START = 0x0B,
+  LIGHT_HD_P2_UP_DOWN = 0x0C,
+  LIGHT_HD_P2_LEFT_RIGHT = 0x0D,
 };
 
 // the indexing starts from 0x20 if you're looking in geninput
 enum hdxs_rgb_light_idx {
-	LIGHT_HD_P1_SPEAKER_F_R = 0x00,
-	LIGHT_HD_P1_SPEAKER_F_G = 0x01,
-	LIGHT_HD_P1_SPEAKER_F_B = 0x02,
-	LIGHT_HD_P2_SPEAKER_F_R = 0x03,
-	LIGHT_HD_P2_SPEAKER_F_G = 0x04,
-	LIGHT_HD_P2_SPEAKER_F_B = 0x05,
-	LIGHT_HD_P1_SPEAKER_W_R = 0x06,
-	LIGHT_HD_P1_SPEAKER_W_G = 0x07,
-	LIGHT_HD_P1_SPEAKER_W_B = 0x08,
-	LIGHT_HD_P2_SPEAKER_W_R = 0x09,
-	LIGHT_HD_P2_SPEAKER_W_G = 0x0A,
-	LIGHT_HD_P2_SPEAKER_W_B = 0x0B,
+  LIGHT_HD_P1_SPEAKER_F_R = 0x00,
+  LIGHT_HD_P1_SPEAKER_F_G = 0x01,
+  LIGHT_HD_P1_SPEAKER_F_B = 0x02,
+  LIGHT_HD_P2_SPEAKER_F_R = 0x03,
+  LIGHT_HD_P2_SPEAKER_F_G = 0x04,
+  LIGHT_HD_P2_SPEAKER_F_B = 0x05,
+  LIGHT_HD_P1_SPEAKER_W_R = 0x06,
+  LIGHT_HD_P1_SPEAKER_W_G = 0x07,
+  LIGHT_HD_P1_SPEAKER_W_B = 0x08,
+  LIGHT_HD_P2_SPEAKER_W_R = 0x09,
+  LIGHT_HD_P2_SPEAKER_W_G = 0x0A,
+  LIGHT_HD_P2_SPEAKER_W_B = 0x0B,
 };
 
 enum extio_light_bit {
-	LIGHT_NEONS = 0x0E,
+  LIGHT_NEONS = 0x0E,
 
-	LIGHT_P2_RIGHT = 0x13,
-	LIGHT_P2_LEFT = 0x14,
-	LIGHT_P2_DOWN = 0x15,
-	LIGHT_P2_UP = 0x16,
+  LIGHT_P2_RIGHT = 0x13,
+  LIGHT_P2_LEFT = 0x14,
+  LIGHT_P2_DOWN = 0x15,
+  LIGHT_P2_UP = 0x16,
 
-	LIGHT_P1_RIGHT = 0x1B,
-	LIGHT_P1_LEFT = 0x1C,
-	LIGHT_P1_DOWN = 0x1D,
-	LIGHT_P1_UP = 0x1E
+  LIGHT_P1_RIGHT = 0x1B,
+  LIGHT_P1_LEFT = 0x1C,
+  LIGHT_P1_DOWN = 0x1D,
+  LIGHT_P1_UP = 0x1E
 };
 
+class InputHandler_Win32_ddrio : public InputHandler {
+ public:
+  InputHandler_Win32_ddrio();
+  ~InputHandler_Win32_ddrio();
 
-class InputHandler_Win32_ddrio: public InputHandler
-{
-public:
-	InputHandler_Win32_ddrio();
-	~InputHandler_Win32_ddrio();
+  std::string GetDeviceSpecificInputString(const DeviceInput& di);
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
-	std::string GetDeviceSpecificInputString( const DeviceInput &di );
-	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut );
+ private:
+  RageThread InputThread;
+  bool m_bShutdown;
 
-private:
-	RageThread InputThread;
-	bool m_bShutdown;
+  bool LoadDLL();
+  bool MapFunctions();
+  static int InputThread_Start(void* p);
+  void InputThreadMain();
 
-	bool LoadDLL();
-	bool MapFunctions();
-	static int InputThread_Start( void *p );
-	void InputThreadMain();
+  void PushInputState(uint32_t newInput);
 
-	void PushInputState(uint32_t newInput);
-
-	bool IsLightChange(LightsState prevLS, LightsState newLS);
-	void PushLightState(LightsState newLS);
+  bool IsLightChange(LightsState prevLS, LightsState newLS);
+  void PushLightState(LightsState newLS);
 };
 
 /*
@@ -112,6 +110,5 @@ private:
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-
 
 #endif

@@ -1,4 +1,5 @@
-/* ScreenContinue - A screen with a countdown that allows players to join/continue the game. */
+/* ScreenContinue - A screen with a countdown that allows players to
+ * join/continue the game. */
 
 #ifndef ScreenContinue_H
 #define ScreenContinue_H
@@ -9,19 +10,18 @@
 #include "ScreenWithMenuElements.h"
 #include "ThemeMetric.h"
 
-class ScreenContinue : public ScreenWithMenuElementsSimple
-{
-public:
-	virtual void Init();
+class ScreenContinue : public ScreenWithMenuElementsSimple {
+ public:
+  virtual void Init();
 
-	virtual void BeginScreen();
-	virtual bool Input( const InputEventPlus &input );
-	virtual void HandleScreenMessage( const ScreenMessage SM );
-	virtual void HandleMessage( const Message &msg );
-	virtual bool AllowLateJoin() const { return true; }
+  virtual void BeginScreen();
+  virtual bool Input(const InputEventPlus& input);
+  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleMessage(const Message& msg);
+  virtual bool AllowLateJoin() const { return true; }
 
-private:
-	ThemeMetric<bool> FORCE_TIMER_WAIT;
+ private:
+  ThemeMetric<bool> FORCE_TIMER_WAIT;
 };
 
 #endif
@@ -29,7 +29,7 @@ private:
 /*
  * (c) 2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -39,7 +39,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

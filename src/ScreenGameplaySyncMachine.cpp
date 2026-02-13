@@ -29,125 +29,126 @@
 #include "ThemeManager.h"
 #include "global.h"
 
-REGISTER_SCREEN_CLASS( ScreenGameplaySyncMachine );
+REGISTER_SCREEN_CLASS(ScreenGameplaySyncMachine);
 
-void ScreenGameplaySyncMachine::Init()
-{
-	GAMESTATE->m_PlayMode.Set( PLAY_MODE_REGULAR );
-	GAMESTATE->SetCurrentStyle( GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->m_pCurGame), PLAYER_INVALID );
-	AdjustSync::ResetOriginalSyncData();
+void ScreenGameplaySyncMachine::Init() {
+  GAMESTATE->m_PlayMode.Set(PLAY_MODE_REGULAR);
+  GAMESTATE->SetCurrentStyle(
+      GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->m_pCurGame), PLAYER_INVALID);
+  AdjustSync::ResetOriginalSyncData();
 
-	std::string sFile = THEME->GetPathO("ScreenGameplaySyncMachine","music");
-	// Allow themers to use either a .ssc or .sm file for this. -aj
-	SSCLoader loaderSSC;
-	SMLoader loaderSM;
-	if(Right(sFile, 4) == ".ssc")
-		loaderSSC.LoadFromSimfile( sFile, m_Song );
-	else
-		loaderSM.LoadFromSimfile( sFile, m_Song );
+  std::string sFile = THEME->GetPathO("ScreenGameplaySyncMachine", "music");
+  // Allow themers to use either a .ssc or .sm file for this. -aj
+  SSCLoader loaderSSC;
+  SMLoader loaderSM;
+  if (Right(sFile, 4) == ".ssc") {
+    loaderSSC.LoadFromSimfile(sFile, m_Song);
+  } else {
+    loaderSM.LoadFromSimfile(sFile, m_Song);
+  }
 
-	m_Song.SetSongDir( Dirname(sFile) );
-	m_Song.TidyUpData();
+  m_Song.SetSongDir(Dirname(sFile));
+  m_Song.TidyUpData();
 
-	GAMESTATE->m_pCurSong.Set( &m_Song );
-	// Needs proper StepsType -freem
-	std::vector<Steps*> vpSteps;
-	SongUtil::GetPlayableSteps( &m_Song, vpSteps );
-	ASSERT_M(vpSteps.size() > 0, "No playable steps for ScreenGameplaySyncMachine");
-	Steps *pSteps = vpSteps[0];
-	GAMESTATE->m_pCurSteps[GAMESTATE->GetFirstHumanPlayer()].Set( pSteps );
+  GAMESTATE->m_pCurSong.Set(&m_Song);
+  // Needs proper StepsType -freem
+  std::vector<Steps*> vpSteps;
+  SongUtil::GetPlayableSteps(&m_Song, vpSteps);
+  ASSERT_M(
+      vpSteps.size() > 0, "No playable steps for ScreenGameplaySyncMachine");
+  Steps* pSteps = vpSteps[0];
+  GAMESTATE->m_pCurSteps[GAMESTATE->GetFirstHumanPlayer()].Set(pSteps);
 
-	GamePreferences::m_AutoPlay.Set( PC_HUMAN );
+  GamePreferences::m_AutoPlay.Set(PC_HUMAN);
 
-	ScreenGameplayNormal::Init();
+  ScreenGameplayNormal::Init();
 
-	SO_GROUP_ASSIGN( GAMESTATE->m_SongOptions, ModsLevel_Stage, m_AutosyncType, AutosyncType_Machine );
+  SO_GROUP_ASSIGN(
+      GAMESTATE->m_SongOptions, ModsLevel_Stage, m_AutosyncType,
+      AutosyncType_Machine);
 
-	ClearMessageQueue();	// remove all of the messages set in ScreenGameplay that animate "ready", "here we go", etc.
+  ClearMessageQueue();  // remove all of the messages set in ScreenGameplay that
+                        // animate "ready", "here we go", etc.
 
-	GAMESTATE->m_bGameplayLeadIn.Set( false );
+  GAMESTATE->m_bGameplayLeadIn.Set(false);
 
-	m_DancingState = STATE_DANCING;
+  m_DancingState = STATE_DANCING;
 
-	m_textSyncInfo.SetName( "SyncInfo" );
-	m_textSyncInfo.LoadFromFont( THEME->GetPathF(m_sName,"SyncInfo") );
-	ActorUtil::LoadAllCommands( m_textSyncInfo, m_sName );
-	this->AddChild( &m_textSyncInfo );
+  m_textSyncInfo.SetName("SyncInfo");
+  m_textSyncInfo.LoadFromFont(THEME->GetPathF(m_sName, "SyncInfo"));
+  ActorUtil::LoadAllCommands(m_textSyncInfo, m_sName);
+  this->AddChild(&m_textSyncInfo);
 
-	this->SubscribeToMessage( Message_AutosyncChanged );
+  this->SubscribeToMessage(Message_AutosyncChanged);
 
-	RefreshText();
+  RefreshText();
 }
 
-void ScreenGameplaySyncMachine::Update( float fDelta )
-{
-	ScreenGameplayNormal::Update( fDelta );
-	RefreshText();
+void ScreenGameplaySyncMachine::Update(float fDelta) {
+  ScreenGameplayNormal::Update(fDelta);
+  RefreshText();
 }
 
-bool ScreenGameplaySyncMachine::Input( const InputEventPlus &input )
-{
-	// Hack to make this work from Player2's controls
-	InputEventPlus _input = input;
+bool ScreenGameplaySyncMachine::Input(const InputEventPlus& input) {
+  // Hack to make this work from Player2's controls
+  InputEventPlus _input = input;
 
-	if( _input.GameI.controller != GameController_Invalid )
-		_input.GameI.controller = GameController_1;
-	if( _input.pn != PLAYER_INVALID )
-		_input.pn = PLAYER_1;
+  if (_input.GameI.controller != GameController_Invalid) {
+    _input.GameI.controller = GameController_1;
+  }
+  if (_input.pn != PLAYER_INVALID) {
+    _input.pn = PLAYER_1;
+  }
 
-	return ScreenGameplay::Input( _input );
+  return ScreenGameplay::Input(_input);
 }
 
-void ScreenGameplaySyncMachine::HandleScreenMessage( const ScreenMessage SM )
-{
-	if( SM == SM_NotesEnded )
-	{
-		ResetAndRestartCurrentSong();
-		return;	// handled
-	}
+void ScreenGameplaySyncMachine::HandleScreenMessage(const ScreenMessage SM) {
+  if (SM == SM_NotesEnded) {
+    ResetAndRestartCurrentSong();
+    return;  // handled
+  }
 
-	ScreenGameplayNormal::HandleScreenMessage( SM );
+  ScreenGameplayNormal::HandleScreenMessage(SM);
 
-	if( SM == SM_GoToPrevScreen || SM == SM_GoToNextScreen )
-	{
-		FOREACH_PlayerNumber( pn )
-		{
-			GAMESTATE->m_pCurSteps[pn].Set( nullptr );
-		}
-		GAMESTATE->m_PlayMode.Set( PlayMode_Invalid );
-		GAMESTATE->SetCurrentStyle( nullptr, PLAYER_INVALID );
-		GAMESTATE->m_pCurSong.Set( nullptr );
-	}
+  if (SM == SM_GoToPrevScreen || SM == SM_GoToNextScreen) {
+    FOREACH_PlayerNumber(pn) { GAMESTATE->m_pCurSteps[pn].Set(nullptr); }
+    GAMESTATE->m_PlayMode.Set(PlayMode_Invalid);
+    GAMESTATE->SetCurrentStyle(nullptr, PLAYER_INVALID);
+    GAMESTATE->m_pCurSong.Set(nullptr);
+  }
 }
 
-void ScreenGameplaySyncMachine::ResetAndRestartCurrentSong()
-{
-	m_pSoundMusic->Stop();
-	ReloadCurrentSong();
-	StartPlayingSong( 4, 0 );
+void ScreenGameplaySyncMachine::ResetAndRestartCurrentSong() {
+  m_pSoundMusic->Stop();
+  ReloadCurrentSong();
+  StartPlayingSong(4, 0);
 
-	// reset autosync
-	AdjustSync::ResetAutosync();
+  // reset autosync
+  AdjustSync::ResetAutosync();
 }
 
-static LocalizedString OLD_OFFSET	( "ScreenGameplaySyncMachine", "Old offset" );
-static LocalizedString NEW_OFFSET	( "ScreenGameplaySyncMachine", "New offset" );
-static LocalizedString COLLECTING_SAMPLE( "ScreenGameplaySyncMachine", "Collecting sample" );
-static LocalizedString STANDARD_DEVIATION( "ScreenGameplaySyncMachine", "Standard deviation" );
-void ScreenGameplaySyncMachine::RefreshText()
-{
-	float fNew = PREFSMAN->m_fGlobalOffsetSeconds;
-	float fOld = AdjustSync::s_fGlobalOffsetSecondsOriginal;
-	float fStdDev = AdjustSync::s_fStandardDeviation;
-	std::string s;
-	s += OLD_OFFSET.GetValue() + ssprintf( ": %0.3f\n", fOld );
-	s += NEW_OFFSET.GetValue() + ssprintf( ": %0.3f\n", fNew );
-	s += STANDARD_DEVIATION.GetValue() + ssprintf( ": %0.3f\n", fStdDev );
-	s += COLLECTING_SAMPLE.GetValue() + ssprintf( ": %d / %d", AdjustSync::s_iAutosyncOffsetSample+1, AdjustSync::OFFSET_SAMPLE_COUNT );
+static LocalizedString OLD_OFFSET("ScreenGameplaySyncMachine", "Old offset");
+static LocalizedString NEW_OFFSET("ScreenGameplaySyncMachine", "New offset");
+static LocalizedString COLLECTING_SAMPLE(
+    "ScreenGameplaySyncMachine", "Collecting sample");
+static LocalizedString STANDARD_DEVIATION(
+    "ScreenGameplaySyncMachine", "Standard deviation");
+void ScreenGameplaySyncMachine::RefreshText() {
+  float fNew = PREFSMAN->m_fGlobalOffsetSeconds;
+  float fOld = AdjustSync::s_fGlobalOffsetSecondsOriginal;
+  float fStdDev = AdjustSync::s_fStandardDeviation;
+  std::string s;
+  s += OLD_OFFSET.GetValue() + ssprintf(": %0.3f\n", fOld);
+  s += NEW_OFFSET.GetValue() + ssprintf(": %0.3f\n", fNew);
+  s += STANDARD_DEVIATION.GetValue() + ssprintf(": %0.3f\n", fStdDev);
+  s += COLLECTING_SAMPLE.GetValue() +
+       ssprintf(
+           ": %d / %d", AdjustSync::s_iAutosyncOffsetSample + 1,
+           AdjustSync::OFFSET_SAMPLE_COUNT);
 
-	m_textSyncInfo.SetText( s );
+  m_textSyncInfo.SetText(s);
 }
-
 
 /*
  * (c) 2001-2004 Chris Danford

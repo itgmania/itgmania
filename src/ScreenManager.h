@@ -13,111 +13,117 @@ struct Menu;
 struct lua_State;
 class InputEventPlus;
 /** @brief Manager/container for Screens. */
-class ScreenManager
-{
-public:
-	ScreenManager();
-	~ScreenManager();
+class ScreenManager {
+ public:
+  ScreenManager();
+  ~ScreenManager();
 
-	// pass these messages along to the current state
-	void Update( float fDeltaTime );
-	void Draw();
-	void Input( const InputEventPlus &input );
+  // pass these messages along to the current state
+  void Update(float fDeltaTime);
+  void Draw();
+  void Input(const InputEventPlus& input);
 
-	// Main screen stack management
-	void SetNewScreen( const std::string &sName );
-	void AddNewScreenToTop( const std::string &sName, ScreenMessage SendOnPop=SM_None );
-	/**
-	 * @brief Create and cache the requested Screen.
-	 *
-	 * This is so that the next call to SetNewScreen for this Screen
-	 * will be very quick.
-	 * @param sScreenName the Screen to prepare. */
-	void PrepareScreen( const std::string &sScreenName );
-	void GroupScreen( const std::string &sScreenName );
-	void PersistantScreen( const std::string &sScreenName );
-	void PopTopScreen( ScreenMessage SM );
-	void PopAllScreens();
-	Screen *GetTopScreen();
-	Screen *GetScreen( int iPosition );
-	bool AllowOperatorMenuButton() const;
+  // Main screen stack management
+  void SetNewScreen(const std::string& sName);
+  void AddNewScreenToTop(
+      const std::string& sName, ScreenMessage SendOnPop = SM_None);
+  /**
+   * @brief Create and cache the requested Screen.
+   *
+   * This is so that the next call to SetNewScreen for this Screen
+   * will be very quick.
+   * @param sScreenName the Screen to prepare. */
+  void PrepareScreen(const std::string& sScreenName);
+  void GroupScreen(const std::string& sScreenName);
+  void PersistantScreen(const std::string& sScreenName);
+  void PopTopScreen(ScreenMessage SM);
+  void PopAllScreens();
+  Screen* GetTopScreen();
+  Screen* GetScreen(int iPosition);
+  bool AllowOperatorMenuButton() const;
 
-	bool IsScreenNameValid(std::string const& name) const;
+  bool IsScreenNameValid(const std::string& name) const;
 
-	// System messages
-	void SystemMessage( const std::string &sMessage );
-	void SystemMessageNoAnimate( const std::string &sMessage );
-	void HideSystemMessage();
+  // System messages
+  void SystemMessage(const std::string& sMessage);
+  void SystemMessageNoAnimate(const std::string& sMessage);
+  void HideSystemMessage();
 
-	// Screen messages
-	void PostMessageToTopScreen( ScreenMessage SM, float fDelay );
-	void SendMessageToTopScreen( ScreenMessage SM );
+  // Screen messages
+  void PostMessageToTopScreen(ScreenMessage SM, float fDelay);
+  void SendMessageToTopScreen(ScreenMessage SM);
 
-	void RefreshCreditsMessages();
-	void ThemeChanged();
-	void ReloadOverlayScreens();
-	void ReloadOverlayScreensAfterInputFinishes();
+  void RefreshCreditsMessages();
+  void ThemeChanged();
+  void ReloadOverlayScreens();
+  void ReloadOverlayScreensAfterInputFinishes();
 
-	/**
-	 * @brief Is this Screen in the main Screen stack, but not the bottommost Screen?
-	 *
-	 * If this function returns true, the screen should exit by popping
-	 * itself, not by loading another Screen.
-	 * @param pScreen the Screen to check.
-	 * @return true if it's on the stack while not on the bottom, or false otherwise. */
-	bool IsStackedScreen( const Screen *pScreen ) const;
+  /**
+   * @brief Is this Screen in the main Screen stack, but not the bottommost
+   * Screen?
+   *
+   * If this function returns true, the screen should exit by popping
+   * itself, not by loading another Screen.
+   * @param pScreen the Screen to check.
+   * @return true if it's on the stack while not on the bottom, or false
+   * otherwise. */
+  bool IsStackedScreen(const Screen* pScreen) const;
 
-	bool get_input_redirected(PlayerNumber pn);
-	void set_input_redirected(PlayerNumber pn, bool redir);
+  bool get_input_redirected(PlayerNumber pn);
+  void set_input_redirected(PlayerNumber pn, bool redir);
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-	void	PlaySharedBackgroundOffCommand();
-	void    ZeroNextUpdate();
-private:
-	Screen		*m_pInputFocus; // nullptr = top of m_ScreenStack
+  void PlaySharedBackgroundOffCommand();
+  void ZeroNextUpdate();
 
-	// Screen loads, removals, and concurrent prepares are delayed until the next update.
-	std::string		m_sDelayedScreen;
-	std::string		m_sDelayedConcurrentPrepare;
-	ScreenMessage	m_OnDonePreparingScreen;
-	ScreenMessage	m_PopTopScreen;
+ private:
+  Screen* m_pInputFocus;  // nullptr = top of m_ScreenStack
 
-	// Set this to true anywhere we create of delete objects.  These
-	// operations take a long time, and will cause a skip on the next update.
-	bool		m_bZeroNextUpdate;
+  // Screen loads, removals, and concurrent prepares are delayed until the next
+  // update.
+  std::string m_sDelayedScreen;
+  std::string m_sDelayedConcurrentPrepare;
+  ScreenMessage m_OnDonePreparingScreen;
+  ScreenMessage m_PopTopScreen;
 
-	// This exists so the debug overlay can reload the overlay screens without seg faulting.
-	// It's "AfterInput" because the debug overlay carries out actions in Input.
-	bool m_bReloadOverlayScreensAfterInput;
+  // Set this to true anywhere we create of delete objects.  These
+  // operations take a long time, and will cause a skip on the next update.
+  bool m_bZeroNextUpdate;
 
-	Screen *MakeNewScreen( const std::string &sName );
-	void LoadDelayedScreen();
-	bool ActivatePreparedScreenAndBackground( const std::string &sScreenName );
-	ScreenMessage PopTopScreenInternal( bool bSendLoseFocus = true );
+  // This exists so the debug overlay can reload the overlay screens without seg
+  // faulting. It's "AfterInput" because the debug overlay carries out actions
+  // in Input.
+  bool m_bReloadOverlayScreensAfterInput;
 
-	// Keep these sounds always loaded, because they could be
-	// played at any time.  We want to eliminate SOUND->PlayOnce
-public:
-	void PlayStartSound();
-	void PlayCoinSound();
-	void PlayCancelSound();
-	void PlayInvalidSound();
-	void PlayScreenshotSound();
+  Screen* MakeNewScreen(const std::string& sName);
+  void LoadDelayedScreen();
+  bool ActivatePreparedScreenAndBackground(const std::string& sScreenName);
+  ScreenMessage PopTopScreenInternal(bool bSendLoseFocus = true);
 
-private:
-	RageSound	m_soundStart;
-	/** @brief The sound played when a coin has been put into the machine. */
-	RageSound	m_soundCoin;
-	RageSound	m_soundCancel;
-	RageSound	m_soundInvalid;
-	/** @brief The sound played when a Player wishes to take a picture of their Score. */
-	RageSound	m_soundScreenshot;
+  // Keep these sounds always loaded, because they could be
+  // played at any time.  We want to eliminate SOUND->PlayOnce
+ public:
+  void PlayStartSound();
+  void PlayCoinSound();
+  void PlayCancelSound();
+  void PlayInvalidSound();
+  void PlayScreenshotSound();
+
+ private:
+  RageSound m_soundStart;
+  /** @brief The sound played when a coin has been put into the machine. */
+  RageSound m_soundCoin;
+  RageSound m_soundCancel;
+  RageSound m_soundInvalid;
+  /** @brief The sound played when a Player wishes to take a picture of their
+   * Score. */
+  RageSound m_soundScreenshot;
 };
 
-
-extern ScreenManager*	SCREENMAN;	// global and accessible from anywhere in our program
+extern ScreenManager*
+    SCREENMAN;  // global and accessible from anywhere in our program
 
 #endif
 

@@ -12,19 +12,18 @@
 struct Frame;
 #endif
 /* This contains the information necessary to backtrace a thread. */
-struct BacktraceContext
-{
+struct BacktraceContext {
 #if defined(CPU_X86) || defined(CPU_X86_64) || defined(__APPLE__)
-	const void *ip, *bp, *sp;
+  const void *ip, *bp, *sp;
 #endif
 
 #if defined(UNIX) || defined(MACOSX)
-	pid_t pid;
+  pid_t pid;
 #endif
 
 #if defined(CPU_PPC)
-	const Frame *FramePtr;
-	const void *PC;
+  const Frame* FramePtr;
+  const void* PC;
 #endif
 };
 
@@ -36,23 +35,24 @@ struct BacktraceContext
 void InitializeBacktrace();
 
 /* Retrieve up to size-1 backtrace pointers in buf.  The array will be
- * null-terminated.  If ctx is nullptr, retrieve the current backtrace; otherwise
- * retrieve a backtrace for the given context.  (Not all backtracers may
- * support contexts.) */
-void GetBacktrace( const void **buf, size_t size, const BacktraceContext *ctx = nullptr );
+ * null-terminated.  If ctx is nullptr, retrieve the current backtrace;
+ * otherwise retrieve a backtrace for the given context.  (Not all backtracers
+ * may support contexts.) */
+void GetBacktrace(
+    const void** buf, size_t size, const BacktraceContext* ctx = nullptr);
 
 /* Set up a BacktraceContext to get a backtrace for a thread.  ThreadID may
  * not be the current thread.  True is returned on success, false on failure. */
-bool GetThreadBacktraceContext( uint64_t ThreadID, BacktraceContext *ctx );
+bool GetThreadBacktraceContext(uint64_t ThreadID, BacktraceContext* ctx);
 
 /* Set up a BacktraceContext to get a backtrace after receiving a signal, given
  * a ucontext_t (see sigaction(2)).  (This interface is UNIX-specific.) */
 #if defined(UNIX) || defined(MACOSX)
 #include <ucontext.h>
-void GetSignalBacktraceContext( BacktraceContext *ctx, const ucontext_t *uc );
+void GetSignalBacktraceContext(BacktraceContext* ctx, const ucontext_t* uc);
 #endif
 
-#define BACKTRACE_METHOD_NOT_AVAILABLE ((void*) -1)
+#define BACKTRACE_METHOD_NOT_AVAILABLE ((void*)-1)
 
 #endif
 

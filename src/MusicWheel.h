@@ -20,104 +20,116 @@ class Song;
 
 struct CompareSongPointerArrayBySectionName;
 
-class MusicWheel : public WheelBase
-{
-	friend struct CompareSongPointerArrayBySectionName;
+class MusicWheel : public WheelBase {
+  friend struct CompareSongPointerArrayBySectionName;
 
-public:
-	virtual ~MusicWheel();
-	virtual void Load( std::string sType );
-	void BeginScreen();
+ public:
+  virtual ~MusicWheel();
+  virtual void Load(std::string sType);
+  void BeginScreen();
 
-	bool ChangeSort( SortOrder new_so, bool allowSameSort = false );	// return true if change successful
-	bool NextSort();						// return true if change successful
-	void StartRoulette();
-	void StartRandom();
-	bool IsRouletting() const;
+  bool ChangeSort(
+      SortOrder new_so,
+      bool allowSameSort = false);  // return true if change successful
+  bool NextSort();                  // return true if change successful
+  void StartRoulette();
+  void StartRandom();
+  bool IsRouletting() const;
 
-	virtual bool Select();				// return true if this selection ends the screen
-	WheelItemDataType	GetSelectedType()	{ return GetCurWheelItemData(m_iSelection)->m_Type; }
-	Song			*GetSelectedSong();
-	Course			*GetSelectedCourse()	{ return GetCurWheelItemData(m_iSelection)->m_pCourse; }
-	std::string			GetSelectedSection()	{ return GetCurWheelItemData(m_iSelection)->m_sText; }
+  virtual bool Select();  // return true if this selection ends the screen
+  WheelItemDataType GetSelectedType() {
+    return GetCurWheelItemData(m_iSelection)->m_Type;
+  }
+  Song* GetSelectedSong();
+  Course* GetSelectedCourse() {
+    return GetCurWheelItemData(m_iSelection)->m_pCourse;
+  }
+  std::string GetSelectedSection() {
+    return GetCurWheelItemData(m_iSelection)->m_sText;
+  }
 
-	Song *GetPreferredSelectionForRandomOrPortal();
+  Song* GetPreferredSelectionForRandomOrPortal();
 
-	bool SelectSong( const Song *p );
-	bool SelectCourse( const Course *p );
-	bool SelectSection( const std::string & SectionName );
-	void SetOpenSection( std::string group );
-	SortOrder GetSortOrder() const { return m_SortOrder; }
-	virtual void ChangeMusic( int dist ); /* +1 or -1 */ //CHECK THIS
-	void FinishChangingSorts();
-	void PlayerJoined();
-	// sm-ssc additions
-	std::string JumpToNextGroup();
-	std::string JumpToPrevGroup();
-	const MusicWheelItemData *GetCurWheelItemData( int i ) { return (const MusicWheelItemData *) m_CurWheelItemData[i]; }
+  bool SelectSong(const Song* p);
+  bool SelectCourse(const Course* p);
+  bool SelectSection(const std::string& SectionName);
+  void SetOpenSection(std::string group);
+  SortOrder GetSortOrder() const { return m_SortOrder; }
+  virtual void ChangeMusic(int dist); /* +1 or -1 */  // CHECK THIS
+  void FinishChangingSorts();
+  void PlayerJoined();
+  // sm-ssc additions
+  std::string JumpToNextGroup();
+  std::string JumpToPrevGroup();
+  const MusicWheelItemData* GetCurWheelItemData(int i) {
+    return (const MusicWheelItemData*)m_CurWheelItemData[i];
+  }
 
-	virtual void ReloadSongList();
+  virtual void ReloadSongList();
 
-	void GetCurrentSections(std::vector<std::string> &sections);
-	// Lua
-	void PushSelf( lua_State *L );
+  void GetCurrentSections(std::vector<std::string>& sections);
+  // Lua
+  void PushSelf(lua_State* L);
 
-protected:
-	MusicWheelItem *MakeItem();
+ protected:
+  MusicWheelItem* MakeItem();
 
-	void GetSongList( std::vector<Song*> &arraySongs, SortOrder so );
-	bool SelectSongOrCourse();
-	bool SelectModeMenuItem();
+  void GetSongList(std::vector<Song*>& arraySongs, SortOrder so);
+  bool SelectSongOrCourse();
+  bool SelectModeMenuItem();
 
-	virtual void UpdateSwitch();
+  virtual void UpdateSwitch();
 
-	std::vector<MusicWheelItemData *> & getWheelItemsData(SortOrder so);
-	void readyWheelItemsData(SortOrder so);
+  std::vector<MusicWheelItemData*>& getWheelItemsData(SortOrder so);
+  void readyWheelItemsData(SortOrder so);
 
-	std::string				m_sLastModeMenuItem;
-	SortOrder			m_SortOrder;
-	RageSound			m_soundChangeSort;
+  std::string m_sLastModeMenuItem;
+  SortOrder m_SortOrder;
+  RageSound m_soundChangeSort;
 
-	bool WheelItemIsVisible(int n);
+  bool WheelItemIsVisible(int n);
 
-	ThemeMetric<float>		ROULETTE_SWITCH_SECONDS;
-	ThemeMetric<int>		ROULETTE_SLOW_DOWN_SWITCHES;
-	ThemeMetric<int>		NUM_SECTION_COLORS;
-	ThemeMetric<RageColor>		SONG_REAL_EXTRA_COLOR;
-	ThemeMetric<RageColor>		SORT_MENU_COLOR;
-	ThemeMetric<bool>		SHOW_ROULETTE;
-	ThemeMetric<bool>		SHOW_RANDOM;
-	ThemeMetric<bool>		SHOW_PORTAL;
-	ThemeMetric<bool>		RANDOM_PICKS_LOCKED_SONGS;
-	ThemeMetric<int>		MOST_PLAYED_SONGS_TO_SHOW;
-	ThemeMetric<int>		RECENT_SONGS_TO_SHOW;
-	ThemeMetric<std::string>		MODE_MENU_CHOICE_NAMES;
-	ThemeMetricMap<std::string>		CHOICE;
-	ThemeMetric1D<RageColor>	SECTION_COLORS;
-	ThemeMetric<LuaReference>	SORT_ORDERS;
-	ThemeMetric<bool>		SHOW_EASY_FLAG;
-	// sm-ssc additions:
-	ThemeMetric<bool>		USE_SECTIONS_WITH_PREFERRED_GROUP;
-	ThemeMetric<bool>		HIDE_INACTIVE_SECTIONS;
-	ThemeMetric<bool>		HIDE_ACTIVE_SECTION_TITLE;
-	ThemeMetric<bool>		REMIND_WHEEL_POSITIONS;
-	ThemeMetric<RageColor>	ROULETTE_COLOR;
-	ThemeMetric<RageColor>	RANDOM_COLOR;
-	ThemeMetric<RageColor>	PORTAL_COLOR;
-	ThemeMetric<RageColor>	EMPTY_COLOR;
-	std::vector <int> m_viWheelPositions;
-	ThemeMetric<std::string>	CUSTOM_WHEEL_ITEM_NAMES;
-	ThemeMetricMap<std::string>	CUSTOM_CHOICES;
-	ThemeMetricMap<RageColor>	CUSTOM_CHOICE_COLORS;
+  ThemeMetric<float> ROULETTE_SWITCH_SECONDS;
+  ThemeMetric<int> ROULETTE_SLOW_DOWN_SWITCHES;
+  ThemeMetric<int> NUM_SECTION_COLORS;
+  ThemeMetric<RageColor> SONG_REAL_EXTRA_COLOR;
+  ThemeMetric<RageColor> SORT_MENU_COLOR;
+  ThemeMetric<bool> SHOW_ROULETTE;
+  ThemeMetric<bool> SHOW_RANDOM;
+  ThemeMetric<bool> SHOW_PORTAL;
+  ThemeMetric<bool> RANDOM_PICKS_LOCKED_SONGS;
+  ThemeMetric<int> MOST_PLAYED_SONGS_TO_SHOW;
+  ThemeMetric<int> RECENT_SONGS_TO_SHOW;
+  ThemeMetric<std::string> MODE_MENU_CHOICE_NAMES;
+  ThemeMetricMap<std::string> CHOICE;
+  ThemeMetric1D<RageColor> SECTION_COLORS;
+  ThemeMetric<LuaReference> SORT_ORDERS;
+  ThemeMetric<bool> SHOW_EASY_FLAG;
+  // sm-ssc additions:
+  ThemeMetric<bool> USE_SECTIONS_WITH_PREFERRED_GROUP;
+  ThemeMetric<bool> HIDE_INACTIVE_SECTIONS;
+  ThemeMetric<bool> HIDE_ACTIVE_SECTION_TITLE;
+  ThemeMetric<bool> REMIND_WHEEL_POSITIONS;
+  ThemeMetric<RageColor> ROULETTE_COLOR;
+  ThemeMetric<RageColor> RANDOM_COLOR;
+  ThemeMetric<RageColor> PORTAL_COLOR;
+  ThemeMetric<RageColor> EMPTY_COLOR;
+  std::vector<int> m_viWheelPositions;
+  ThemeMetric<std::string> CUSTOM_WHEEL_ITEM_NAMES;
+  ThemeMetricMap<std::string> CUSTOM_CHOICES;
+  ThemeMetricMap<RageColor> CUSTOM_CHOICE_COLORS;
 
-private:
-	//use getWheelItemsData instead of touching this one
-	enum {INVALID,NEEDREFILTER,VALID} m_WheelItemDatasStatus[NUM_SortOrder];
-	std::vector<MusicWheelItemData *> m__WheelItemDatas[NUM_SortOrder];
-	std::vector<MusicWheelItemData *> m__UnFilteredWheelItemDatas[NUM_SortOrder];
+ private:
+  // use getWheelItemsData instead of touching this one
+  enum { INVALID, NEEDREFILTER, VALID } m_WheelItemDatasStatus[NUM_SortOrder];
+  std::vector<MusicWheelItemData*> m__WheelItemDatas[NUM_SortOrder];
+  std::vector<MusicWheelItemData*> m__UnFilteredWheelItemDatas[NUM_SortOrder];
 
-	void BuildWheelItemDatas( std::vector<MusicWheelItemData *> &arrayWheelItems, SortOrder so );
-	void FilterWheelItemDatas(std::vector<MusicWheelItemData *> &aUnFilteredDatas, std::vector<MusicWheelItemData *> &aFilteredData, SortOrder so );
+  void BuildWheelItemDatas(
+      std::vector<MusicWheelItemData*>& arrayWheelItems, SortOrder so);
+  void FilterWheelItemDatas(
+      std::vector<MusicWheelItemData*>& aUnFilteredDatas,
+      std::vector<MusicWheelItemData*>& aFilteredData, SortOrder so);
 };
 
 #endif

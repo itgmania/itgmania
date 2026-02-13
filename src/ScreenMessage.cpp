@@ -16,32 +16,34 @@ AutoScreenMessage(SM_Pause);
 AutoScreenMessage(SM_Success);
 AutoScreenMessage(SM_Failure);
 
-static std::map<std::string, ScreenMessage> *m_pScreenMessages;
+static std::map<std::string, ScreenMessage>* m_pScreenMessages;
 
-ScreenMessage ScreenMessageHelpers::ToScreenMessage( const std::string &sName )
-{
-	if( m_pScreenMessages == nullptr )
-		m_pScreenMessages = new std::map<std::string, ScreenMessage>;
+ScreenMessage ScreenMessageHelpers::ToScreenMessage(const std::string& sName) {
+  if (m_pScreenMessages == nullptr) {
+    m_pScreenMessages = new std::map<std::string, ScreenMessage>;
+  }
 
-	if( m_pScreenMessages->find( sName ) == m_pScreenMessages->end() )
-		(*m_pScreenMessages)[sName] = (ScreenMessage)sName;
+  if (m_pScreenMessages->find(sName) == m_pScreenMessages->end()) {
+    (*m_pScreenMessages)[sName] = (ScreenMessage)sName;
+  }
 
-	return (*m_pScreenMessages)[sName];
+  return (*m_pScreenMessages)[sName];
 }
 
-std::string	ScreenMessageHelpers::ScreenMessageToString( ScreenMessage SM )
-{
-	for (auto const & it : *m_pScreenMessages)
-		if( SM == it.second )
-			return it.first;
+std::string ScreenMessageHelpers::ScreenMessageToString(ScreenMessage SM) {
+  for (const auto& it : *m_pScreenMessages) {
+    if (SM == it.second) {
+      return it.first;
+    }
+  }
 
-	return std::string();
+  return std::string();
 }
 
 /*
  * (c) 2001-2005 Chris Danford, Glenn Maynard, Charles Lohr
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -51,7 +53,7 @@ std::string	ScreenMessageHelpers::ScreenMessageToString( ScreenMessage SM )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

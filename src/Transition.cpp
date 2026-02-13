@@ -6,80 +6,73 @@
 #include "ScreenManager.h"
 #include "ScreenMessage.h"
 
-Transition::Transition()
-{
-	m_State = waiting;
+Transition::Transition() { m_State = waiting; }
+
+void Transition::Load(std::string sBGAniDir) {
+  this->RemoveAllChildren();
+
+  m_sprTransition.Load(sBGAniDir);
+  this->AddChild(m_sprTransition);
+
+  m_State = waiting;
 }
 
-void Transition::Load( std::string sBGAniDir )
-{
-	this->RemoveAllChildren();
+void Transition::UpdateInternal(float fDeltaTime) {
+  if (m_State != transitioning) {
+    return;
+  }
 
-	m_sprTransition.Load( sBGAniDir );
-	this->AddChild( m_sprTransition );
+  // Check this before running Update, so we draw the last frame of the finished
+  // transition before sending m_MessageToSendWhenDone.
+  if (m_sprTransition->GetTweenTimeLeft() == 0)  // over
+  {
+    m_State = finished;
+    SCREENMAN->SendMessageToTopScreen(m_MessageToSendWhenDone);
+  }
 
-	m_State = waiting;
+  ActorFrame::UpdateInternal(fDeltaTime);
 }
 
+void Transition::Reset() {
+  m_State = waiting;
+  m_bFirstUpdate = true;
 
-void Transition::UpdateInternal( float fDeltaTime )
-{
-	if( m_State != transitioning )
-		return;
-
-	// Check this before running Update, so we draw the last frame of the finished
-	// transition before sending m_MessageToSendWhenDone.
-	if( m_sprTransition->GetTweenTimeLeft() == 0 )	// over
-	{
-		m_State = finished;
-		SCREENMAN->SendMessageToTopScreen( m_MessageToSendWhenDone );
-	}
-
-	ActorFrame::UpdateInternal( fDeltaTime );
+  if (m_sprTransition.IsLoaded()) {
+    m_sprTransition->FinishTweening();
+  }
 }
 
-void Transition::Reset()
-{
-	m_State = waiting;
-	m_bFirstUpdate = true;
+bool Transition::EarlyAbortDraw() const { return m_State == waiting; }
 
-	if( m_sprTransition.IsLoaded() )
-		m_sprTransition->FinishTweening();
+void Transition::StartTransitioning(ScreenMessage send_when_done) {
+  if (m_State != waiting) {
+    return;  // ignore
+  }
+
+  // If transition isn't loaded don't set state to transitioning.
+  // We assume elsewhere that m_sprTransition is loaded.
+  if (!m_sprTransition.IsLoaded()) {
+    return;
+  }
+
+  m_sprTransition->PlayCommand("StartTransitioning");
+
+  m_MessageToSendWhenDone = send_when_done;
+  m_State = transitioning;
 }
 
-bool Transition::EarlyAbortDraw() const
-{
-	return m_State == waiting;
-}
+float Transition::GetTweenTimeLeft() const {
+  if (m_State != transitioning) {
+    return 0;
+  }
 
-void Transition::StartTransitioning( ScreenMessage send_when_done )
-{
-	if( m_State != waiting )
-		return;	// ignore
-	
-	// If transition isn't loaded don't set state to transitioning.
-	// We assume elsewhere that m_sprTransition is loaded.
-	if( !m_sprTransition.IsLoaded() )
-		return;
-	
-	m_sprTransition->PlayCommand( "StartTransitioning" );
-
-	m_MessageToSendWhenDone = send_when_done;
-	m_State = transitioning;
-}
-
-float Transition::GetTweenTimeLeft() const
-{
-	if( m_State != transitioning )
-		return 0;
-
-	return m_sprTransition->GetTweenTimeLeft();
+  return m_sprTransition->GetTweenTimeLeft();
 }
 
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -89,7 +82,7 @@ float Transition::GetTweenTimeLeft() const
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

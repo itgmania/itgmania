@@ -6,24 +6,26 @@
 #include <vector>
 
 class RageSoundMixBuffer {
-public:
-	RageSoundMixBuffer();
-	~RageSoundMixBuffer();
+ public:
+  RageSoundMixBuffer();
+  ~RageSoundMixBuffer();
 
-	void SetWriteOffset(int iOffset);
-	void Extend(unsigned iSamples);
-	void write(const float* pBuf, unsigned iSize, int iSourceStride = 1, int iDestStride = 1);
-	void read(int16_t* pBuf);
-	void read(float* pBuf);
-	void read_deinterlace(float** pBufs, int channels);
-	inline size_t size() const { return m_pMixbuf.size(); }
+  void SetWriteOffset(int iOffset);
+  void Extend(unsigned iSamples);
+  void write(
+      const float* pBuf, unsigned iSize, int iSourceStride = 1,
+      int iDestStride = 1);
+  void read(int16_t* pBuf);
+  void read(float* pBuf);
+  void read_deinterlace(float** pBufs, int channels);
+  inline size_t size() const { return m_pMixbuf.size(); }
 
-private:
-	std::vector<float> m_pMixbuf;
-	unsigned m_iOffset;
+ private:
+  std::vector<float> m_pMixbuf;
+  unsigned m_iOffset;
 };
 
-#endif // RAGESOUNDMIXBUFFER_H
+#endif  // RAGESOUNDMIXBUFFER_H
 
 /*
  * Copyright (c) 2002-2004 Glenn Maynard

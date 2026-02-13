@@ -11,33 +11,32 @@
 class Song;
 class Steps;
 
-class ScreenOptionsEditCourse : public ScreenOptions
-{
-public:
-	virtual ~ScreenOptionsEditCourse();
+class ScreenOptionsEditCourse : public ScreenOptions {
+ public:
+  virtual ~ScreenOptionsEditCourse();
 
-	virtual void Init();
-	virtual void BeginScreen();
+  virtual void Init();
+  virtual void BeginScreen();
 
-protected:
-private:
-	virtual void ImportOptions( int row, const std::vector<PlayerNumber> &vpns );
-	virtual void ExportOptions( int row, const std::vector<PlayerNumber> &vpns );
+ protected:
+ private:
+  virtual void ImportOptions(int row, const std::vector<PlayerNumber>& vpns);
+  virtual void ExportOptions(int row, const std::vector<PlayerNumber>& vpns);
 
-	virtual void GoToNextScreen();
-	virtual void GoToPrevScreen();
+  virtual void GoToNextScreen();
+  virtual void GoToPrevScreen();
 
-	virtual void HandleScreenMessage( const ScreenMessage SM );
-	virtual void AfterChangeRow( PlayerNumber pn );
-	virtual void AfterChangeValueInRow( int iRow, PlayerNumber pn );
-	virtual void ProcessMenuStart( const InputEventPlus &input );
+  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void AfterChangeRow(PlayerNumber pn);
+  virtual void AfterChangeValueInRow(int iRow, PlayerNumber pn);
+  virtual void ProcessMenuStart(const InputEventPlus& input);
 
-	void SetCurrentSong();
-	void SetCurrentSteps();
-	Song *GetSongForEntry( int iEntryIndex );
-	Steps *GetStepsForEntry( int iEntryIndex );
+  void SetCurrentSong();
+  void SetCurrentSteps();
+  Song* GetSongForEntry(int iEntryIndex);
+  Steps* GetStepsForEntry(int iEntryIndex);
 
-	std::vector<Song*> m_vpSongs;
+  std::vector<Song*> m_vpSongs;
 };
 
 #endif

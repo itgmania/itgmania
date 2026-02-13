@@ -9,23 +9,26 @@
 #include "Screen.h"
 #include "ScreenGameplay.h"
 
-REGISTER_SCREEN_CLASS( ScreenGameplayShared );
+REGISTER_SCREEN_CLASS(ScreenGameplayShared);
 
-void ScreenGameplayShared::FillPlayerInfo( std::vector<PlayerInfo> &vPlayerInfoOut )
-{
-	const PlayerNumber master = GAMESTATE->GetMasterPlayerNumber();
-	const PlayerNumber other = (master == PLAYER_1? PLAYER_2:PLAYER_1);
+void ScreenGameplayShared::FillPlayerInfo(
+    std::vector<PlayerInfo>& vPlayerInfoOut) {
+  const PlayerNumber master = GAMESTATE->GetMasterPlayerNumber();
+  const PlayerNumber other = (master == PLAYER_1 ? PLAYER_2 : PLAYER_1);
 
-	/* The master player is where all of the real work takes place.  The other player exists
-	 * only so we have a place to split stats out into at the end. */
-	vPlayerInfoOut.resize( 2 );
-	vPlayerInfoOut[master].Load( master, MultiPlayer_Invalid, true, Difficulty_Invalid );
-	vPlayerInfoOut[other].Load( other, MultiPlayer_Invalid, false, Difficulty_Invalid );
+  /* The master player is where all of the real work takes place.  The other
+   * player exists only so we have a place to split stats out into at the end.
+   */
+  vPlayerInfoOut.resize(2);
+  vPlayerInfoOut[master].Load(
+      master, MultiPlayer_Invalid, true, Difficulty_Invalid);
+  vPlayerInfoOut[other].Load(
+      other, MultiPlayer_Invalid, false, Difficulty_Invalid);
 }
 
-PlayerInfo &ScreenGameplayShared::GetPlayerInfoForInput( const InputEventPlus& iep )
-{
-	return m_vPlayerInfo[GAMESTATE->GetMasterPlayerNumber()];
+PlayerInfo& ScreenGameplayShared::GetPlayerInfoForInput(
+    const InputEventPlus& iep) {
+  return m_vPlayerInfo[GAMESTATE->GetMasterPlayerNumber()];
 }
 
 /*
@@ -52,4 +55,3 @@ PlayerInfo &ScreenGameplayShared::GetPlayerInfoForInput( const InputEventPlus& i
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

@@ -8,64 +8,71 @@
 #include "vector"
 
 enum HidResults {
-	OperationFailed = -1,
-	NotConnected = -2,
-	Success = 0,
+  OperationFailed = -1,
+  NotConnected = -2,
+  Success = 0,
 };
 
-static std::vector<int> make_pids(int base_pid, int size)
-{
-	std::vector<int> vec(size);
+static std::vector<int> make_pids(int base_pid, int size) {
+  std::vector<int> vec(size);
 
-	for (int i = 0; i < size; i++)
-		vec[i] = base_pid + i;
+  for (int i = 0; i < size; i++) {
+    vec[i] = base_pid + i;
+  }
 
-	return vec;
+  return vec;
 }
 
 struct HidDeviceInfo {
-	char* path{ nullptr };
-	int pid;
-	int vid;
-	int interfaceNum;
+  char* path{nullptr};
+  int pid;
+  int vid;
+  int interfaceNum;
 };
 
-class HidDevice
-{
-private:
-	HidDeviceInfo foundDeviceInfo{};
-	hid_device* handle{ nullptr };
+class HidDevice {
+ private:
+  HidDeviceInfo foundDeviceInfo{};
+  hid_device* handle{nullptr};
 
-	static const std::string GetPidsString(const std::vector<int> pids);
+  static const std::string GetPidsString(const std::vector<int> pids);
 
-	//Info necessary to search the connected device once a connection attempt is made
-	int vid;
-	const std::vector<int> pids;
-	int interfaceNum = -1;
+  // Info necessary to search the connected device once a connection attempt is
+  // made
+  int vid;
+  const std::vector<int> pids;
+  int interfaceNum = -1;
 
-	//Behaviour configuration
-	bool autoReconnection = true;
-	bool nonBlockingRead = false;
+  // Behaviour configuration
+  bool autoReconnection = true;
+  bool nonBlockingRead = false;
 
-	bool foundOnce = false;
-	void Close();
-	bool Open(const char* path);
-	bool TryConnect();
-	bool CheckConnection();
-	const wchar_t* GetError();
-public:
-	static void GetDeviceInfo(int vid, const std::vector<int> pids, int interfaceNumber, HidDeviceInfo* device_info);
+  bool foundOnce = false;
+  void Close();
+  bool Open(const char* path);
+  bool TryConnect();
+  bool CheckConnection();
+  const wchar_t* GetError();
 
-	HidDevice(int vid, const std::vector<int> pids, int interfaceNum = -1, bool autoReconnection = true, bool nonBlockingRead = false);
-	HidDevice(int vid, int pid, int interfaceNum = -1, bool autoReconnection = true, bool nonBlockingRead = false);
+ public:
+  static void GetDeviceInfo(
+      int vid, const std::vector<int> pids, int interfaceNumber,
+      HidDeviceInfo* device_info);
 
-	virtual ~HidDevice();
+  HidDevice(
+      int vid, const std::vector<int> pids, int interfaceNum = -1,
+      bool autoReconnection = true, bool nonBlockingRead = false);
+  HidDevice(
+      int vid, int pid, int interfaceNum = -1, bool autoReconnection = true,
+      bool nonBlockingRead = false);
 
-	bool IsConnected();
-	bool FoundOnce();
+  virtual ~HidDevice();
 
-	int Read(unsigned char* data, size_t length);
-	HidResults Write(const unsigned char* data, size_t length);
+  bool IsConnected();
+  bool FoundOnce();
+
+  int Read(unsigned char* data, size_t length);
+  HidResults Write(const unsigned char* data, size_t length);
 };
 
 #endif

@@ -12,67 +12,58 @@
 #include "ThemeManager.h"
 #include "global.h"
 
-REGISTER_ACTOR_CLASS( GradeDisplay );
+REGISTER_ACTOR_CLASS(GradeDisplay);
 
-void GradeDisplay::Load( std::string sMetricsGroup )
-{
-	ASSERT( m_vSpr.empty() );
-	m_vSpr.resize( NUM_POSSIBLE_GRADES );
-	int i = 0;
-	FOREACH_PossibleGrade( g )
-	{
-		AutoActor &spr = m_vSpr[i];
-		spr.Load( THEME->GetPathG(sMetricsGroup,GradeToString(g)) );
-		spr->SetVisible( false );
-		this->AddChild( spr );
-		i++;
-	}
+void GradeDisplay::Load(std::string sMetricsGroup) {
+  ASSERT(m_vSpr.empty());
+  m_vSpr.resize(NUM_POSSIBLE_GRADES);
+  int i = 0;
+  FOREACH_PossibleGrade(g) {
+    AutoActor& spr = m_vSpr[i];
+    spr.Load(THEME->GetPathG(sMetricsGroup, GradeToString(g)));
+    spr->SetVisible(false);
+    this->AddChild(spr);
+    i++;
+  }
 }
 
-void GradeDisplay::SetGrade( Grade grade )
-{
-	size_t i = 0;
-	FOREACH_PossibleGrade( g )
-	{
-		if(i >= m_vSpr.size())
-		{
-			LuaHelpers::ReportScriptError("GradeDisplay:SetGrade: No actor loaded for grade " + GradeToString(g));
-		}
-		else
-		{
-			m_vSpr[i]->SetVisible( g == grade );
-			i++;
-		}
-	}
+void GradeDisplay::SetGrade(Grade grade) {
+  size_t i = 0;
+  FOREACH_PossibleGrade(g) {
+    if (i >= m_vSpr.size()) {
+      LuaHelpers::ReportScriptError(
+          "GradeDisplay:SetGrade: No actor loaded for grade " +
+          GradeToString(g));
+    } else {
+      m_vSpr[i]->SetVisible(g == grade);
+      i++;
+    }
+  }
 }
 
 // lua start
 #include "LuaBinding.h"
 
 /** @brief Allow Lua to have access to the GradeDisplay. */
-class LunaGradeDisplay: public Luna<GradeDisplay>
-{
-public:
-	static int Load( T* p, lua_State *L )
-	{
-		p->Load( SArg(1) );
-		COMMON_RETURN_SELF;
-	}
-	static int SetGrade( T* p, lua_State *L )
-	{
-		Grade g = Enum::Check<Grade>(L, 1);
-		p->SetGrade( g );
-		COMMON_RETURN_SELF;
-	}
+class LunaGradeDisplay : public Luna<GradeDisplay> {
+ public:
+  static int Load(T* p, lua_State* L) {
+    p->Load(SArg(1));
+    COMMON_RETURN_SELF;
+  }
+  static int SetGrade(T* p, lua_State* L) {
+    Grade g = Enum::Check<Grade>(L, 1);
+    p->SetGrade(g);
+    COMMON_RETURN_SELF;
+  }
 
-	LunaGradeDisplay()
-	{
-		ADD_METHOD( Load );
-		ADD_METHOD( SetGrade );
-	}
+  LunaGradeDisplay() {
+    ADD_METHOD(Load);
+    ADD_METHOD(SetGrade);
+  }
 };
 
-LUA_REGISTER_DERIVED_CLASS( GradeDisplay, ActorFrame )
+LUA_REGISTER_DERIVED_CLASS(GradeDisplay, ActorFrame)
 // lua end
 
 /*

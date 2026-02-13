@@ -15,71 +15,70 @@
 class MenuTimer;
 class MemoryCardDisplay;
 
-class ScreenWithMenuElements : public Screen
-{
-public:
-	ScreenWithMenuElements();
-	virtual void Init();
-	virtual void BeginScreen();
-	virtual ~ScreenWithMenuElements();
+class ScreenWithMenuElements : public Screen {
+ public:
+  ScreenWithMenuElements();
+  virtual void Init();
+  virtual void BeginScreen();
+  virtual ~ScreenWithMenuElements();
 
-	virtual void HandleScreenMessage( const ScreenMessage SM );
-	void Update( float fDeltaTime );
-	void StartTransitioningScreen( ScreenMessage smSendWhenDone );
-	virtual void Cancel( ScreenMessage smSendWhenDone );
-	bool IsTransitioning();
-	virtual bool AllowCallbackInput() { return !IsTransitioning(); }
+  virtual void HandleScreenMessage(const ScreenMessage SM);
+  void Update(float fDeltaTime);
+  void StartTransitioningScreen(ScreenMessage smSendWhenDone);
+  virtual void Cancel(ScreenMessage smSendWhenDone);
+  bool IsTransitioning();
+  virtual bool AllowCallbackInput() { return !IsTransitioning(); }
 
-	void StopTimer();
-	void ResetTimer();
+  void StopTimer();
+  void ResetTimer();
 
-	// Sub-classes can hook these and do special actions that won't be triggered automatically by an "On"/"Off" command
-	virtual void TweenOnScreen();
-	virtual void TweenOffScreen();
+  // Sub-classes can hook these and do special actions that won't be triggered
+  // automatically by an "On"/"Off" command
+  virtual void TweenOnScreen();
+  virtual void TweenOffScreen();
 
-	// Lua
-	virtual void PushSelf( lua_State *L );
+  // Lua
+  virtual void PushSelf(lua_State* L);
 
-	virtual bool AllowLateJoin() const { return m_bShouldAllowLateJoin; }
-	bool m_bShouldAllowLateJoin; // So that it can be exposed to Lua.
+  virtual bool AllowLateJoin() const { return m_bShouldAllowLateJoin; }
+  bool m_bShouldAllowLateJoin;  // So that it can be exposed to Lua.
 
-protected:
-	std::string HandleLuaMusicFile(std::string const& path);
-	virtual void StartPlayingMusic();
-	void SetHelpText( std::string s );
+ protected:
+  std::string HandleLuaMusicFile(const std::string& path);
+  virtual void StartPlayingMusic();
+  void SetHelpText(std::string s);
 
-	AutoActor			m_sprUnderlay;
-	MemoryCardDisplay	*m_MemoryCardDisplay[NUM_PLAYERS];
-	MenuTimer			*m_MenuTimer;
-	AutoActor			m_sprOverlay;
-	std::vector<Actor*>		m_vDecorations;
+  AutoActor m_sprUnderlay;
+  MemoryCardDisplay* m_MemoryCardDisplay[NUM_PLAYERS];
+  MenuTimer* m_MenuTimer;
+  AutoActor m_sprOverlay;
+  std::vector<Actor*> m_vDecorations;
 
-	Transition			m_In;
-	Transition			m_Out;
-	Transition			m_Cancel;
+  Transition m_In;
+  Transition m_Out;
+  Transition m_Cancel;
 
-	ThemeMetric<bool>		PLAY_MUSIC;
-	ThemeMetric<bool>		MUSIC_ALIGN_BEAT;
-	ThemeMetric<float>		DELAY_MUSIC_SECONDS;
-	ThemeMetric<bool>		CANCEL_TRANSITIONS_OUT;
-	ThemeMetric<float>		TIMER_SECONDS;
-	ThemeMetric<std::string>	TIMER_METRICS_GROUP;
-	ThemeMetric<bool>		RESET_GAMESTATE;
+  ThemeMetric<bool> PLAY_MUSIC;
+  ThemeMetric<bool> MUSIC_ALIGN_BEAT;
+  ThemeMetric<float> DELAY_MUSIC_SECONDS;
+  ThemeMetric<bool> CANCEL_TRANSITIONS_OUT;
+  ThemeMetric<float> TIMER_SECONDS;
+  ThemeMetric<std::string> TIMER_METRICS_GROUP;
+  ThemeMetric<bool> RESET_GAMESTATE;
 
-private:
-	std::string m_sPathToMusic;
+ private:
+  std::string m_sPathToMusic;
 };
 
-class ScreenWithMenuElementsSimple: public ScreenWithMenuElements
-{
-public:
-	bool MenuStart( const InputEventPlus &input );
-	bool MenuBack( const InputEventPlus &input );
+class ScreenWithMenuElementsSimple : public ScreenWithMenuElements {
+ public:
+  bool MenuStart(const InputEventPlus& input);
+  bool MenuBack(const InputEventPlus& input);
 
-	// Lua
-	virtual void PushSelf( lua_State *L );
+  // Lua
+  virtual void PushSelf(lua_State* L);
 
-protected:
+ protected:
 };
 
 #endif

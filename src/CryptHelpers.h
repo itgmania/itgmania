@@ -4,38 +4,35 @@
 #if !defined(DISABLE_CRYPTO)
 
 // tomcrypt_cfg.h redefines malloc, realloc, calloc
-#pragma warning( push )
-#pragma warning( disable : 4565 )
+#pragma warning(push)
+#pragma warning(disable : 4565)
 #include <tomcrypt.h>
 
 #include <string>
-#pragma warning ( pop )
+#pragma warning(pop)
 
-class PRNGWrapper
-{
-public:
-	PRNGWrapper( const struct ltc_prng_descriptor *pPRNGDescriptor );
-	~PRNGWrapper();
-	void AddEntropy( const void *pData, int iSize );
-	void AddRandomEntropy();
+class PRNGWrapper {
+ public:
+  PRNGWrapper(const struct ltc_prng_descriptor* pPRNGDescriptor);
+  ~PRNGWrapper();
+  void AddEntropy(const void* pData, int iSize);
+  void AddRandomEntropy();
 
-	int m_iPRNG;
-	prng_state m_PRNG;
+  int m_iPRNG;
+  prng_state m_PRNG;
 };
 
-class RSAKeyWrapper
-{
-public:
-	RSAKeyWrapper();
-	~RSAKeyWrapper();
-	void Unload();
-	void Generate( PRNGWrapper &prng, int iKeyLenBits );
-	bool Load( const std::string &sKey, std::string &sError );
+class RSAKeyWrapper {
+ public:
+  RSAKeyWrapper();
+  ~RSAKeyWrapper();
+  void Unload();
+  void Generate(PRNGWrapper& prng, int iKeyLenBits);
+  bool Load(const std::string& sKey, std::string& sError);
 
-	rsa_key m_Key;
+  rsa_key m_Key;
 };
 
 #endif
 
 #endif
-

@@ -22,120 +22,115 @@
 #include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
 
-class ScreenMapControllers : public ScreenWithMenuElements
-{
-public:
-	ScreenMapControllers();
-	~ScreenMapControllers();
-	virtual void Init();
-	virtual void BeginScreen();
+class ScreenMapControllers : public ScreenWithMenuElements {
+ public:
+  ScreenMapControllers();
+  ~ScreenMapControllers();
+  virtual void Init();
+  virtual void BeginScreen();
 
-	virtual void Update( float fDeltaTime );
-	virtual bool Input( const InputEventPlus &input );
-	virtual void HandleMessage( const Message &msg );
-	virtual void HandleScreenMessage( const ScreenMessage SM );
+  virtual void Update(float fDeltaTime);
+  virtual bool Input(const InputEventPlus& input);
+  virtual void HandleMessage(const Message& msg);
+  virtual void HandleScreenMessage(const ScreenMessage SM);
 
-private:
+ private:
+  Actor* GetActorWithFocus();
+  void BeforeChangeFocus();
+  void AfterChangeFocus();
+  void Refresh();
+  void DismissWarning();
+  bool CursorOnAction();
+  bool CursorOnHeader();
+  bool CursorOnKey();
+  bool CursorCanGoUp();
+  bool CursorCanGoDown();
+  bool CursorCanGoLeft();
+  bool CursorCanGoRight();
+  int CurKeyIndex();
+  int CurActionIndex();
+  void SetCursorFromSetListCurrent();
+  void StartWaitingForPress();
 
-	Actor *GetActorWithFocus();
-	void BeforeChangeFocus();
-	void AfterChangeFocus();
-	void Refresh();
-	void DismissWarning();
-	bool CursorOnAction();
-	bool CursorOnHeader();
-	bool CursorOnKey();
-	bool CursorCanGoUp();
-	bool CursorCanGoDown();
-	bool CursorCanGoLeft();
-	bool CursorCanGoRight();
-	int CurKeyIndex();
-	int CurActionIndex();
-	void SetCursorFromSetListCurrent();
-	void StartWaitingForPress();
+  unsigned int m_CurController;
+  unsigned int m_CurButton;
+  unsigned int m_CurSlot;
+  unsigned int m_MaxDestItem;
 
-	unsigned int m_CurController;
-	unsigned int m_CurButton;
-	unsigned int m_CurSlot;
-	unsigned int m_MaxDestItem;
+  bool m_ChangeOccurred;
 
-	bool m_ChangeOccurred;
+  RageTimer m_WaitingForPress;
+  DeviceInput m_DeviceIToMap;
 
-	RageTimer m_WaitingForPress;
-	DeviceInput m_DeviceIToMap;
+  struct KeyToMap {
+    GameButton m_GameButton;
 
-	struct KeyToMap
-	{
-		GameButton m_GameButton;
+    // owned by m_Line
+    BitmapText* m_textMappedTo[NUM_GameController]
+                              [NUM_SHOWN_GAME_TO_DEVICE_SLOTS];
+  };
+  std::vector<KeyToMap> m_KeysToMap;
 
-		// owned by m_Line
-		BitmapText	*m_textMappedTo[NUM_GameController][NUM_SHOWN_GAME_TO_DEVICE_SLOTS];
-	};
-	std::vector<KeyToMap> m_KeysToMap;
+  BitmapText m_textDevices;
 
-	BitmapText m_textDevices;
+  BitmapText m_textLabel[NUM_GameController];
+  BitmapText m_ListHeaderCenter;
+  BitmapText m_ListHeaderLabels[NUM_GameController]
+                               [NUM_SHOWN_GAME_TO_DEVICE_SLOTS];
 
-	BitmapText m_textLabel[NUM_GameController];
-	BitmapText m_ListHeaderCenter;
-	BitmapText m_ListHeaderLabels[NUM_GameController][NUM_SHOWN_GAME_TO_DEVICE_SLOTS];
+  float m_AutoDismissWarningSecs;
+  AutoActor m_Warning;
 
-	float m_AutoDismissWarningSecs;
-	AutoActor m_Warning;
+  float m_AutoDismissNoSetListPromptSecs;
+  AutoActor m_NoSetListPrompt;
 
-	float m_AutoDismissNoSetListPromptSecs;
-	AutoActor m_NoSetListPrompt;
+  float m_AutoDismissSanitySecs;
+  AutoActor m_SanityMessage;
 
-	float m_AutoDismissSanitySecs;
-	AutoActor m_SanityMessage;
+  struct SetListEntry {
+    int m_button;
+    int m_controller;
+    int m_slot;
+    SetListEntry(int b, int c, int s)
+        : m_button(b), m_controller(c), m_slot(s) {}
+    bool operator<(const SetListEntry& rhs) const {
+      if (m_controller != rhs.m_controller) {
+        return m_controller < rhs.m_controller;
+      }
+      if (m_button != rhs.m_button) {
+        return m_button < rhs.m_button;
+      }
+      return m_slot < rhs.m_slot;
+    }
+  };
+  std::set<SetListEntry> m_SetList;
+  std::set<SetListEntry>::iterator m_SetListCurrent;
+  bool m_InSetListMode;
 
-	struct SetListEntry
-	{
-		int m_button;
-		int m_controller;
-		int m_slot;
-		SetListEntry(int b, int c, int s)
-			:m_button(b), m_controller(c), m_slot(s) {}
-		bool operator<(SetListEntry const& rhs) const
-		{
-			if(m_controller != rhs.m_controller)
-			{
-				return m_controller < rhs.m_controller;
-			}
-			if(m_button != rhs.m_button)
-			{
-				return m_button < rhs.m_button;
-			}
-			return m_slot < rhs.m_slot;
-		}
-	};
-	std::set<SetListEntry> m_SetList;
-	std::set<SetListEntry>::iterator m_SetListCurrent;
-	bool m_InSetListMode;
+  typedef void (ScreenMapControllers::*action_fun_t)();
+  struct ActionRow {
+    std::string m_name;
+    AutoActor m_actor;
+    action_fun_t m_action;
+    void Load(
+        const std::string& scr_name, const std::string& name,
+        ScreenMapControllers::action_fun_t action, ActorFrame* line,
+        ActorScroller* scroller);
+  };
+  void ClearToDefault();
+  void ReloadFromDisk();
+  void SaveToDisk();
+  void SetListMode();
+  void ExitAction();
+  bool SanityCheckWrapper();
 
-	typedef void (ScreenMapControllers::* action_fun_t)();
-	struct ActionRow
-	{
-		std::string m_name;
-		AutoActor m_actor;
-		action_fun_t m_action;
-		void Load(std::string const& scr_name, std::string const& name,
-			ScreenMapControllers::action_fun_t action, ActorFrame* line,
-			ActorScroller* scroller);
-	};
-	void ClearToDefault();
-	void ReloadFromDisk();
-	void SaveToDisk();
-	void SetListMode();
-	void ExitAction();
-	bool SanityCheckWrapper();
+  std::vector<ActionRow> m_Actions;
 
-	std::vector<ActionRow> m_Actions;
+  std::vector<ActorFrame*> m_Line;
+  ActorScroller m_LineScroller;
 
-	std::vector<ActorFrame*> m_Line;
-	ActorScroller m_LineScroller;
-
-	RageSound m_soundChange;
-	RageSound m_soundDelete;
+  RageSound m_soundChange;
+  RageSound m_soundDelete;
 };
 
 #endif

@@ -15,37 +15,37 @@
 
 /* Windows defines GL_EXT_paletted_texture incompletely: */
 #ifndef GL_TEXTURE_INDEX_SIZE_EXT
-#define GL_TEXTURE_INDEX_SIZE_EXT         0x80ED
+#define GL_TEXTURE_INDEX_SIZE_EXT 0x80ED
 #endif
 
 /** @brief Utilities for working with the RageDisplay. */
-namespace RageDisplay_Legacy_Helpers
-{
-	void Init();
-	std::string GLToString( GLenum e );
-};
+namespace RageDisplay_Legacy_Helpers {
+void Init();
+std::string GLToString(GLenum e);
+};  // namespace RageDisplay_Legacy_Helpers
 
-class RenderTarget
-{
-public:
-	virtual ~RenderTarget() { }
-	virtual void Create( const RenderTargetParam &param, int &iTextureWidthOut, int &iTextureHeightOut ) = 0;
+class RenderTarget {
+ public:
+  virtual ~RenderTarget() {}
+  virtual void Create(
+      const RenderTargetParam& param, int& iTextureWidthOut,
+      int& iTextureHeightOut) = 0;
 
-	virtual uintptr_t GetTexture() const = 0;
+  virtual uintptr_t GetTexture() const = 0;
 
-	/* Render to this RenderTarget. */
-	virtual void StartRenderingTo() = 0;
+  /* Render to this RenderTarget. */
+  virtual void StartRenderingTo() = 0;
 
-	/* Stop rendering to this RenderTarget.  Update the texture, if necessary, and
-	 * make it available. */
-	virtual void FinishRenderingTo() = 0;
+  /* Stop rendering to this RenderTarget.  Update the texture, if necessary, and
+   * make it available. */
+  virtual void FinishRenderingTo() = 0;
 
-	virtual bool InvertY() const { return false; }
+  virtual bool InvertY() const { return false; }
 
-	const RenderTargetParam &GetParam() const { return m_Param; }
+  const RenderTargetParam& GetParam() const { return m_Param; }
 
-protected:
-	RenderTargetParam m_Param;
+ protected:
+  RenderTargetParam m_Param;
 };
 
 #endif

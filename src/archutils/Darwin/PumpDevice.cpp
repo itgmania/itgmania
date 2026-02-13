@@ -6,66 +6,67 @@
 #include "RageInputDevice.h"
 #include "RageTimer.h"
 
-void PumpDevice::Open()
-{
-	AddElementToQueue( IOHIDElementCookie(2) );
-	AddElementToQueue( IOHIDElementCookie(3) );
-	AddElementToQueue( IOHIDElementCookie(4) );
-	AddElementToQueue( IOHIDElementCookie(6) );
-	AddElementToQueue( IOHIDElementCookie(7) );
-	AddElementToQueue( IOHIDElementCookie(8) );
+void PumpDevice::Open() {
+  AddElementToQueue(IOHIDElementCookie(2));
+  AddElementToQueue(IOHIDElementCookie(3));
+  AddElementToQueue(IOHIDElementCookie(4));
+  AddElementToQueue(IOHIDElementCookie(6));
+  AddElementToQueue(IOHIDElementCookie(7));
+  AddElementToQueue(IOHIDElementCookie(8));
 }
 
-void PumpDevice::GetButtonPresses( std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value, const RageTimer& now ) const
-{
-	DeviceButton db1 = DeviceButton_Invalid;
-	DeviceButton db2 = DeviceButton_Invalid;
-	bool pressed1 = !(value & 0x1);
-	bool pressed2 = !(value & 0x2);
+void PumpDevice::GetButtonPresses(
+    std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value,
+    const RageTimer& now) const {
+  DeviceButton db1 = DeviceButton_Invalid;
+  DeviceButton db2 = DeviceButton_Invalid;
+  bool pressed1 = !(value & 0x1);
+  bool pressed2 = !(value & 0x2);
 
-	switch( uintptr_t(cookie) )
-	{
-	case 2:
-		db2 = JOY_BUTTON_1; // bit 9
-		break;
-	case 3:
-		db1 = JOY_BUTTON_5; // bit 10
-		db2 = JOY_BUTTON_4; // bit 11
-		break;
-	case 4:
-		db1 = JOY_BUTTON_2; // bit 12
-		db2 = JOY_BUTTON_3; // bit 13
-		break;
-	case 6:
-		db1 = JOY_BUTTON_6; // bit 16
-		db2 = JOY_BUTTON_7; // bit 17
-		break;
-	case 7:
-		db1 = JOY_BUTTON_11; // bit 18
-		db2 = JOY_BUTTON_10; // bit 19
-		break;
-	case 8:
-		db1 = JOY_BUTTON_8; // bit 20
-		db2 = JOY_BUTTON_9; // bit 21
-		break;
-	}
-	if( db1 != DeviceButton_Invalid )
-		vPresses.push_back( DeviceInput(m_Id, db1, pressed1 ? 1.0f : 0.0f , now) );
-	if( db2 != DeviceButton_Invalid )
-		vPresses.push_back( DeviceInput(m_Id, db2, pressed2 ? 1.0f : 0.0f , now) );
+  switch (uintptr_t(cookie)) {
+    case 2:
+      db2 = JOY_BUTTON_1;  // bit 9
+      break;
+    case 3:
+      db1 = JOY_BUTTON_5;  // bit 10
+      db2 = JOY_BUTTON_4;  // bit 11
+      break;
+    case 4:
+      db1 = JOY_BUTTON_2;  // bit 12
+      db2 = JOY_BUTTON_3;  // bit 13
+      break;
+    case 6:
+      db1 = JOY_BUTTON_6;  // bit 16
+      db2 = JOY_BUTTON_7;  // bit 17
+      break;
+    case 7:
+      db1 = JOY_BUTTON_11;  // bit 18
+      db2 = JOY_BUTTON_10;  // bit 19
+      break;
+    case 8:
+      db1 = JOY_BUTTON_8;  // bit 20
+      db2 = JOY_BUTTON_9;  // bit 21
+      break;
+  }
+  if (db1 != DeviceButton_Invalid) {
+    vPresses.push_back(DeviceInput(m_Id, db1, pressed1 ? 1.0f : 0.0f, now));
+  }
+  if (db2 != DeviceButton_Invalid) {
+    vPresses.push_back(DeviceInput(m_Id, db2, pressed2 ? 1.0f : 0.0f, now));
+  }
 }
 
-int PumpDevice::AssignIDs( InputDevice startID )
-{
-	if( !IsPump(startID) )
-		return -1;
-	m_Id = startID;
-	return 1;
+int PumpDevice::AssignIDs(InputDevice startID) {
+  if (!IsPump(startID)) {
+    return -1;
+  }
+  m_Id = startID;
+  return 1;
 }
 
-void PumpDevice::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevices ) const
-{
-	vDevices.push_back( InputDeviceInfo(m_Id, "Pump USB") );
+void PumpDevice::GetDevicesAndDescriptions(
+    std::vector<InputDeviceInfo>& vDevices) const {
+  vDevices.push_back(InputDeviceInfo(m_Id, "Pump USB"));
 }
 
 /*

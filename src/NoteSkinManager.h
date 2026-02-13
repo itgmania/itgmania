@@ -14,62 +14,84 @@ struct Game;
 struct NoteSkinData;
 
 /** @brief Loads note skins. */
-class NoteSkinManager
-{
-public:
-	NoteSkinManager();
-	~NoteSkinManager();
+class NoteSkinManager {
+ public:
+  NoteSkinManager();
+  ~NoteSkinManager();
 
-	void RefreshNoteSkinData( const Game* game );
-	void GetNoteSkinNames( const Game* game, std::vector<std::string> &AddTo );
-	void GetNoteSkinNames( std::vector<std::string> &AddTo );	// looks up current const Game* in GAMESTATE
-	bool NoteSkinNameInList(const std::string name, std::vector<std::string> name_list);
-	bool DoesNoteSkinExist( const std::string &sNoteSkin );	// looks up current const Game* in GAMESTATE
-	bool DoNoteSkinsExistForGame( const Game *pGame );
-	std::string GetDefaultNoteSkinName();	// looks up current const Game* in GAMESTATE
+  void RefreshNoteSkinData(const Game* game);
+  void GetNoteSkinNames(const Game* game, std::vector<std::string>& AddTo);
+  void GetNoteSkinNames(
+      std::vector<std::string>&
+          AddTo);  // looks up current const Game* in GAMESTATE
+  bool NoteSkinNameInList(
+      const std::string name, std::vector<std::string> name_list);
+  bool DoesNoteSkinExist(
+      const std::string&
+          sNoteSkin);  // looks up current const Game* in GAMESTATE
+  bool DoNoteSkinsExistForGame(const Game* pGame);
+  std::string
+  GetDefaultNoteSkinName();  // looks up current const Game* in GAMESTATE
 
-	void ValidateNoteSkinName(std::string& name);
+  void ValidateNoteSkinName(std::string& name);
 
-	void SetCurrentNoteSkin( const std::string &sNoteSkin ) { m_sCurrentNoteSkin = sNoteSkin; }
-	const std::string &GetCurrentNoteSkin() { return m_sCurrentNoteSkin; }
-	void SetPlayerNumber( PlayerNumber pn ) { m_PlayerNumber = pn; }
-	void SetGameController( GameController gc ) { m_GameController = gc; }
-	std::string GetPath( const std::string &sButtonName, const std::string &sElement );
-	bool PushActorTemplate( Lua *L, const std::string &sButton, const std::string &sElement, bool bSpriteOnly );
-	Actor *LoadActor( const std::string &sButton, const std::string &sElement, Actor *pParent = nullptr, bool bSpriteOnly = false );
+  void SetCurrentNoteSkin(const std::string& sNoteSkin) {
+    m_sCurrentNoteSkin = sNoteSkin;
+  }
+  const std::string& GetCurrentNoteSkin() { return m_sCurrentNoteSkin; }
+  void SetPlayerNumber(PlayerNumber pn) { m_PlayerNumber = pn; }
+  void SetGameController(GameController gc) { m_GameController = gc; }
+  std::string GetPath(
+      const std::string& sButtonName, const std::string& sElement);
+  bool PushActorTemplate(
+      Lua* L, const std::string& sButton, const std::string& sElement,
+      bool bSpriteOnly);
+  Actor* LoadActor(
+      const std::string& sButton, const std::string& sElement,
+      Actor* pParent = nullptr, bool bSpriteOnly = false);
 
-	std::string		GetMetric( const std::string &sButtonName, const std::string &sValue );
-	int		GetMetricI( const std::string &sButtonName, const std::string &sValueName );
-	float		GetMetricF( const std::string &sButtonName, const std::string &sValueName );
-	bool		GetMetricB( const std::string &sButtonName, const std::string &sValueName );
-	apActorCommands	GetMetricA( const std::string &sButtonName, const std::string &sValueName );
+  std::string GetMetric(
+      const std::string& sButtonName, const std::string& sValue);
+  int GetMetricI(const std::string& sButtonName, const std::string& sValueName);
+  float GetMetricF(
+      const std::string& sButtonName, const std::string& sValueName);
+  bool GetMetricB(
+      const std::string& sButtonName, const std::string& sValueName);
+  apActorCommands GetMetricA(
+      const std::string& sButtonName, const std::string& sValueName);
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-protected:
-	std::string GetPathFromDirAndFile( const std::string &sDir, const std::string &sFileName );
-	void GetAllNoteSkinNamesForGame( const Game *pGame, std::vector<std::string> &AddTo );
+ protected:
+  std::string GetPathFromDirAndFile(
+      const std::string& sDir, const std::string& sFileName);
+  void GetAllNoteSkinNamesForGame(
+      const Game* pGame, std::vector<std::string>& AddTo);
 
-	bool LoadNoteSkinData( const std::string &sNoteSkinName, NoteSkinData& data_out );
-	bool LoadNoteSkinDataRecursive( const std::string &sNoteSkinName, NoteSkinData& data_out );
-	std::string m_sCurrentNoteSkin;
-	const Game* m_pCurGame;
+  bool LoadNoteSkinData(
+      const std::string& sNoteSkinName, NoteSkinData& data_out);
+  bool LoadNoteSkinDataRecursive(
+      const std::string& sNoteSkinName, NoteSkinData& data_out);
+  std::string m_sCurrentNoteSkin;
+  const Game* m_pCurGame;
 
-	// xxx: is this the best way to implement this? -freem
-	PlayerNumber m_PlayerNumber;
-	GameController m_GameController;
+  // xxx: is this the best way to implement this? -freem
+  PlayerNumber m_PlayerNumber;
+  GameController m_GameController;
 };
 
-extern NoteSkinManager*	NOTESKIN;	// global and accessible from anywhere in our program
+extern NoteSkinManager*
+    NOTESKIN;  // global and accessible from anywhere in our program
 
-class LockNoteSkin
-{
-public:
-	LockNoteSkin( const std::string &sNoteSkin ) { ASSERT( NOTESKIN->GetCurrentNoteSkin().empty() ); NOTESKIN->SetCurrentNoteSkin( sNoteSkin ); }
-	~LockNoteSkin() { NOTESKIN->SetCurrentNoteSkin( std::string() ); }
+class LockNoteSkin {
+ public:
+  LockNoteSkin(const std::string& sNoteSkin) {
+    ASSERT(NOTESKIN->GetCurrentNoteSkin().empty());
+    NOTESKIN->SetCurrentNoteSkin(sNoteSkin);
+  }
+  ~LockNoteSkin() { NOTESKIN->SetCurrentNoteSkin(std::string()); }
 };
-
 
 #endif
 

@@ -12,32 +12,31 @@
 struct WinWdmStream;
 struct WinWdmFilter;
 
-class RageSoundDriver_WDMKS: public RageSoundDriver
-{
-public:
-	RageSoundDriver_WDMKS();
-	~RageSoundDriver_WDMKS();
-	std::string Init();
+class RageSoundDriver_WDMKS : public RageSoundDriver {
+ public:
+  RageSoundDriver_WDMKS();
+  ~RageSoundDriver_WDMKS();
+  std::string Init();
 
-	int64_t GetPosition() const;
-	float GetPlayLatency() const;
-	int GetSampleRate() const;
+  int64_t GetPosition() const;
+  float GetPlayLatency() const;
+  int GetSampleRate() const;
 
-private:
-	static int MixerThread_start( void *p );
-	void MixerThread();
-	bool Fill( int iPacket, std::string &sError );
-	void Read( void *pData, int iFrames, int iLastCursorPos, int iCurrentFrame );
+ private:
+  static int MixerThread_start(void* p);
+  void MixerThread();
+  bool Fill(int iPacket, std::string& sError);
+  void Read(void* pData, int iFrames, int iLastCursorPos, int iCurrentFrame);
 
-	RageThread MixingThread;
-	void SetupDecodingThread();
+  RageThread MixingThread;
+  void SetupDecodingThread();
 
-	bool m_bShutdown;
-	int m_iLastCursorPos;
+  bool m_bShutdown;
+  int m_iLastCursorPos;
 
-	HANDLE m_hSignal;
-	WinWdmStream *m_pStream;
-	WinWdmFilter *m_pFilter;
+  HANDLE m_hSignal;
+  WinWdmStream* m_pStream;
+  WinWdmFilter* m_pFilter;
 };
 
 #endif

@@ -12,178 +12,173 @@
 
 REGISTER_LIGHTS_DRIVER_CLASS2(PIUIO_Leds, Linux_PIUIO_Leds);
 
-//NOTE: front usb ports are off by default, index 27 enables them.
-//It is currently unmapped.
+// NOTE: front usb ports are off by default, index 27 enables them.
+// It is currently unmapped.
 
-namespace
-{
-	const int cabinet_lights[NUM_CabinetLight] = {
-		23, //LIGHT_MARQUEE_UP_LEFT
-		26, //LIGHT_MARQUEE_UP_RIGHT
-		25, //LIGHT_MARQUEE_LR_LEFT
-		24, //LIGHT_MARQUEE_LR_RIGHT
-		10, //LIGHT_BASS_LEFT
-		10, //LIGHT_BASS_RIGHT
-	};
+namespace {
+const int cabinet_lights[NUM_CabinetLight] = {
+    23,  // LIGHT_MARQUEE_UP_LEFT
+    26,  // LIGHT_MARQUEE_UP_RIGHT
+    25,  // LIGHT_MARQUEE_LR_LEFT
+    24,  // LIGHT_MARQUEE_LR_RIGHT
+    10,  // LIGHT_BASS_LEFT
+    10,  // LIGHT_BASS_RIGHT
+};
 
-	const int player1_dance_lights[NUM_GameButton] = {
-		-1, //GAME_BUTTON_MENULEFT
-		-1, //GAME_BUTTON_MENURIGHT
-		-1, //GAME_BUTTON_MENUUP
-		-1, //GAME_BUTTON_MENUDOWN
-		-1, //GAME_BUTTON_START
-		-1, //GAME_BUTTON_SELECT
-		-1, //GAME_BUTTON_BACK
-		-1, //GAME_BUTTON_RESTART
-		-1, //GAME_BUTTON_COIN
-		-1, //GAME_BUTTON_OPERATOR
-		-1, //GAME_BUTTON_EFFECT_UP
-		-1, //GAME_BUTTON_EFFECT_DOWN
-		20, //GAME_BUTTON_CUSTOM_01
-		21, //GAME_BUTTON_CUSTOM_02
-		18, //GAME_BUTTON_CUSTOM_03
-		19, //GAME_BUTTON_CUSTOM_04
-		-1, //GAME_BUTTON_CUSTOM_05
-		-1, //GAME_BUTTON_CUSTOM_06
-		-1, //GAME_BUTTON_CUSTOM_07
-		-1, //GAME_BUTTON_CUSTOM_08
-		-1, //GAME_BUTTON_CUSTOM_09
-		-1, //GAME_BUTTON_CUSTOM_10
-		-1, //GAME_BUTTON_CUSTOM_11
-		-1, //GAME_BUTTON_CUSTOM_12
-		-1, //GAME_BUTTON_CUSTOM_13
-		-1, //GAME_BUTTON_CUSTOM_14
-		-1, //GAME_BUTTON_CUSTOM_15
-		-1, //GAME_BUTTON_CUSTOM_16
-		-1, //GAME_BUTTON_CUSTOM_17
-		-1, //GAME_BUTTON_CUSTOM_18
-		-1, //GAME_BUTTON_CUSTOM_19
-	};
+const int player1_dance_lights[NUM_GameButton] = {
+    -1,  // GAME_BUTTON_MENULEFT
+    -1,  // GAME_BUTTON_MENURIGHT
+    -1,  // GAME_BUTTON_MENUUP
+    -1,  // GAME_BUTTON_MENUDOWN
+    -1,  // GAME_BUTTON_START
+    -1,  // GAME_BUTTON_SELECT
+    -1,  // GAME_BUTTON_BACK
+    -1,  // GAME_BUTTON_RESTART
+    -1,  // GAME_BUTTON_COIN
+    -1,  // GAME_BUTTON_OPERATOR
+    -1,  // GAME_BUTTON_EFFECT_UP
+    -1,  // GAME_BUTTON_EFFECT_DOWN
+    20,  // GAME_BUTTON_CUSTOM_01
+    21,  // GAME_BUTTON_CUSTOM_02
+    18,  // GAME_BUTTON_CUSTOM_03
+    19,  // GAME_BUTTON_CUSTOM_04
+    -1,  // GAME_BUTTON_CUSTOM_05
+    -1,  // GAME_BUTTON_CUSTOM_06
+    -1,  // GAME_BUTTON_CUSTOM_07
+    -1,  // GAME_BUTTON_CUSTOM_08
+    -1,  // GAME_BUTTON_CUSTOM_09
+    -1,  // GAME_BUTTON_CUSTOM_10
+    -1,  // GAME_BUTTON_CUSTOM_11
+    -1,  // GAME_BUTTON_CUSTOM_12
+    -1,  // GAME_BUTTON_CUSTOM_13
+    -1,  // GAME_BUTTON_CUSTOM_14
+    -1,  // GAME_BUTTON_CUSTOM_15
+    -1,  // GAME_BUTTON_CUSTOM_16
+    -1,  // GAME_BUTTON_CUSTOM_17
+    -1,  // GAME_BUTTON_CUSTOM_18
+    -1,  // GAME_BUTTON_CUSTOM_19
+};
 
-	const int player2_dance_lights[NUM_GameButton] = {
-		-1, //GAME_BUTTON_MENULEFT
-		-1, //GAME_BUTTON_MENURIGHT
-		-1, //GAME_BUTTON_MENUUP
-		-1, //GAME_BUTTON_MENUDOWN
-		-1, //GAME_BUTTON_START
-		-1, //GAME_BUTTON_SELECT
-		-1, //GAME_BUTTON_BACK
-		-1, //GAME_BUTTON_RESTART
-		-1, //GAME_BUTTON_COIN
-		-1, //GAME_BUTTON_OPERATOR
-		-1, //GAME_BUTTON_EFFECT_UP
-		-1, //GAME_BUTTON_EFFECT_DOWN
-		4,	//GAME_BUTTON_CUSTOM_01
-		5,	//GAME_BUTTON_CUSTOM_02
-		2,	//GAME_BUTTON_CUSTOM_03
-		3,	//GAME_BUTTON_CUSTOM_04
-		-1, //GAME_BUTTON_CUSTOM_05
-		-1, //GAME_BUTTON_CUSTOM_06
-		-1, //GAME_BUTTON_CUSTOM_07
-		-1, //GAME_BUTTON_CUSTOM_08
-		-1, //GAME_BUTTON_CUSTOM_09
-		-1, //GAME_BUTTON_CUSTOM_10
-		-1, //GAME_BUTTON_CUSTOM_11
-		-1, //GAME_BUTTON_CUSTOM_12
-		-1, //GAME_BUTTON_CUSTOM_13
-		-1, //GAME_BUTTON_CUSTOM_14
-		-1, //GAME_BUTTON_CUSTOM_15
-		-1, //GAME_BUTTON_CUSTOM_16
-		-1, //GAME_BUTTON_CUSTOM_17
-		-1, //GAME_BUTTON_CUSTOM_18
-		-1, //GAME_BUTTON_CUSTOM_19
-	};
+const int player2_dance_lights[NUM_GameButton] = {
+    -1,  // GAME_BUTTON_MENULEFT
+    -1,  // GAME_BUTTON_MENURIGHT
+    -1,  // GAME_BUTTON_MENUUP
+    -1,  // GAME_BUTTON_MENUDOWN
+    -1,  // GAME_BUTTON_START
+    -1,  // GAME_BUTTON_SELECT
+    -1,  // GAME_BUTTON_BACK
+    -1,  // GAME_BUTTON_RESTART
+    -1,  // GAME_BUTTON_COIN
+    -1,  // GAME_BUTTON_OPERATOR
+    -1,  // GAME_BUTTON_EFFECT_UP
+    -1,  // GAME_BUTTON_EFFECT_DOWN
+    4,   // GAME_BUTTON_CUSTOM_01
+    5,   // GAME_BUTTON_CUSTOM_02
+    2,   // GAME_BUTTON_CUSTOM_03
+    3,   // GAME_BUTTON_CUSTOM_04
+    -1,  // GAME_BUTTON_CUSTOM_05
+    -1,  // GAME_BUTTON_CUSTOM_06
+    -1,  // GAME_BUTTON_CUSTOM_07
+    -1,  // GAME_BUTTON_CUSTOM_08
+    -1,  // GAME_BUTTON_CUSTOM_09
+    -1,  // GAME_BUTTON_CUSTOM_10
+    -1,  // GAME_BUTTON_CUSTOM_11
+    -1,  // GAME_BUTTON_CUSTOM_12
+    -1,  // GAME_BUTTON_CUSTOM_13
+    -1,  // GAME_BUTTON_CUSTOM_14
+    -1,  // GAME_BUTTON_CUSTOM_15
+    -1,  // GAME_BUTTON_CUSTOM_16
+    -1,  // GAME_BUTTON_CUSTOM_17
+    -1,  // GAME_BUTTON_CUSTOM_18
+    -1,  // GAME_BUTTON_CUSTOM_19
+};
 
-	const int player1_pump_lights[NUM_GameButton] = {
-		-1, //GAME_BUTTON_MENULEFT
-		-1, //GAME_BUTTON_MENURIGHT
-		-1, //GAME_BUTTON_MENUUP
-		-1, //GAME_BUTTON_MENUDOWN
-		-1, //GAME_BUTTON_START
-		-1, //GAME_BUTTON_SELECT
-		-1, //GAME_BUTTON_BACK
-		-1, //GAME_BUTTON_RESTART
-		-1, //GAME_BUTTON_COIN
-		-1, //GAME_BUTTON_OPERATOR
-		-1, //GAME_BUTTON_EFFECT_UP
-		-1, //GAME_BUTTON_EFFECT_DOWN
-		2,	//GAME_BUTTON_CUSTOM_01
-		3,	//GAME_BUTTON_CUSTOM_02
-		4,	//GAME_BUTTON_CUSTOM_03
-		5,	//GAME_BUTTON_CUSTOM_04
-		6,	//GAME_BUTTON_CUSTOM_05
-		-1, //GAME_BUTTON_CUSTOM_06
-		-1, //GAME_BUTTON_CUSTOM_07
-		-1, //GAME_BUTTON_CUSTOM_08
-		-1, //GAME_BUTTON_CUSTOM_09
-		-1, //GAME_BUTTON_CUSTOM_10
-		-1, //GAME_BUTTON_CUSTOM_11
-		-1, //GAME_BUTTON_CUSTOM_12
-		-1, //GAME_BUTTON_CUSTOM_13
-		-1, //GAME_BUTTON_CUSTOM_14
-		-1, //GAME_BUTTON_CUSTOM_15
-		-1, //GAME_BUTTON_CUSTOM_16
-		-1, //GAME_BUTTON_CUSTOM_17
-		-1, //GAME_BUTTON_CUSTOM_18
-		-1, //GAME_BUTTON_CUSTOM_19
-	};
+const int player1_pump_lights[NUM_GameButton] = {
+    -1,  // GAME_BUTTON_MENULEFT
+    -1,  // GAME_BUTTON_MENURIGHT
+    -1,  // GAME_BUTTON_MENUUP
+    -1,  // GAME_BUTTON_MENUDOWN
+    -1,  // GAME_BUTTON_START
+    -1,  // GAME_BUTTON_SELECT
+    -1,  // GAME_BUTTON_BACK
+    -1,  // GAME_BUTTON_RESTART
+    -1,  // GAME_BUTTON_COIN
+    -1,  // GAME_BUTTON_OPERATOR
+    -1,  // GAME_BUTTON_EFFECT_UP
+    -1,  // GAME_BUTTON_EFFECT_DOWN
+    2,   // GAME_BUTTON_CUSTOM_01
+    3,   // GAME_BUTTON_CUSTOM_02
+    4,   // GAME_BUTTON_CUSTOM_03
+    5,   // GAME_BUTTON_CUSTOM_04
+    6,   // GAME_BUTTON_CUSTOM_05
+    -1,  // GAME_BUTTON_CUSTOM_06
+    -1,  // GAME_BUTTON_CUSTOM_07
+    -1,  // GAME_BUTTON_CUSTOM_08
+    -1,  // GAME_BUTTON_CUSTOM_09
+    -1,  // GAME_BUTTON_CUSTOM_10
+    -1,  // GAME_BUTTON_CUSTOM_11
+    -1,  // GAME_BUTTON_CUSTOM_12
+    -1,  // GAME_BUTTON_CUSTOM_13
+    -1,  // GAME_BUTTON_CUSTOM_14
+    -1,  // GAME_BUTTON_CUSTOM_15
+    -1,  // GAME_BUTTON_CUSTOM_16
+    -1,  // GAME_BUTTON_CUSTOM_17
+    -1,  // GAME_BUTTON_CUSTOM_18
+    -1,  // GAME_BUTTON_CUSTOM_19
+};
 
-	const int player2_pump_lights[NUM_GameButton] = {
-		-1, //GAME_BUTTON_MENULEFT
-		-1, //GAME_BUTTON_MENURIGHT
-		-1, //GAME_BUTTON_MENUUP
-		-1, //GAME_BUTTON_MENUDOWN
-		-1, //GAME_BUTTON_START
-		-1, //GAME_BUTTON_SELECT
-		-1, //GAME_BUTTON_BACK
-		-1, //GAME_BUTTON_RESTART
-		-1, //GAME_BUTTON_COIN
-		-1, //GAME_BUTTON_OPERATOR
-		-1, //GAME_BUTTON_EFFECT_UP
-		-1, //GAME_BUTTON_EFFECT_DOWN
-		18, //GAME_BUTTON_CUSTOM_01
-		19, //GAME_BUTTON_CUSTOM_02
-		20, //GAME_BUTTON_CUSTOM_03
-		21, //GAME_BUTTON_CUSTOM_04
-		22, //GAME_BUTTON_CUSTOM_05
-		-1, //GAME_BUTTON_CUSTOM_06
-		-1, //GAME_BUTTON_CUSTOM_07
-		-1, //GAME_BUTTON_CUSTOM_08
-		-1, //GAME_BUTTON_CUSTOM_09
-		-1, //GAME_BUTTON_CUSTOM_10
-		-1, //GAME_BUTTON_CUSTOM_11
-		-1, //GAME_BUTTON_CUSTOM_12
-		-1, //GAME_BUTTON_CUSTOM_13
-		-1, //GAME_BUTTON_CUSTOM_14
-		-1, //GAME_BUTTON_CUSTOM_15
-		-1, //GAME_BUTTON_CUSTOM_16
-		-1, //GAME_BUTTON_CUSTOM_17
-		-1, //GAME_BUTTON_CUSTOM_18
-		-1, //GAME_BUTTON_CUSTOM_19
-	};
+const int player2_pump_lights[NUM_GameButton] = {
+    -1,  // GAME_BUTTON_MENULEFT
+    -1,  // GAME_BUTTON_MENURIGHT
+    -1,  // GAME_BUTTON_MENUUP
+    -1,  // GAME_BUTTON_MENUDOWN
+    -1,  // GAME_BUTTON_START
+    -1,  // GAME_BUTTON_SELECT
+    -1,  // GAME_BUTTON_BACK
+    -1,  // GAME_BUTTON_RESTART
+    -1,  // GAME_BUTTON_COIN
+    -1,  // GAME_BUTTON_OPERATOR
+    -1,  // GAME_BUTTON_EFFECT_UP
+    -1,  // GAME_BUTTON_EFFECT_DOWN
+    18,  // GAME_BUTTON_CUSTOM_01
+    19,  // GAME_BUTTON_CUSTOM_02
+    20,  // GAME_BUTTON_CUSTOM_03
+    21,  // GAME_BUTTON_CUSTOM_04
+    22,  // GAME_BUTTON_CUSTOM_05
+    -1,  // GAME_BUTTON_CUSTOM_06
+    -1,  // GAME_BUTTON_CUSTOM_07
+    -1,  // GAME_BUTTON_CUSTOM_08
+    -1,  // GAME_BUTTON_CUSTOM_09
+    -1,  // GAME_BUTTON_CUSTOM_10
+    -1,  // GAME_BUTTON_CUSTOM_11
+    -1,  // GAME_BUTTON_CUSTOM_12
+    -1,  // GAME_BUTTON_CUSTOM_13
+    -1,  // GAME_BUTTON_CUSTOM_14
+    -1,  // GAME_BUTTON_CUSTOM_15
+    -1,  // GAME_BUTTON_CUSTOM_16
+    -1,  // GAME_BUTTON_CUSTOM_17
+    -1,  // GAME_BUTTON_CUSTOM_18
+    -1,  // GAME_BUTTON_CUSTOM_19
+};
 
-} // namespace
+}  // namespace
 
-void LightsDriver_Linux_PIUIO_Leds::Set(const LightsState *ls)
-{
-	SetCabinetLights(cabinet_lights, ls);
+void LightsDriver_Linux_PIUIO_Leds::Set(const LightsState* ls) {
+  SetCabinetLights(cabinet_lights, ls);
 
-	//gamemode is checked here as gamemode can change during runtime
-	//...although I'd be impressed if someone wanted to swap from pump to dance
-	//on a cabinet without shutting down first...
-	//...including swapping pads from your pump cabinet to your itg cabinet...
-	if (IsDance())
-	{
-		SetGameControllerLights(GameController_1, player1_dance_lights, ls);
-		SetGameControllerLights(GameController_2, player2_dance_lights, ls);
-	}
-	else if (IsPump())
-	{
-		SetGameControllerLights(GameController_1, player1_pump_lights, ls);
-		SetGameControllerLights(GameController_2, player2_pump_lights, ls);
-	}
+  // gamemode is checked here as gamemode can change during runtime
+  //...although I'd be impressed if someone wanted to swap from pump to dance
+  // on a cabinet without shutting down first...
+  //...including swapping pads from your pump cabinet to your itg cabinet...
+  if (IsDance()) {
+    SetGameControllerLights(GameController_1, player1_dance_lights, ls);
+    SetGameControllerLights(GameController_2, player2_dance_lights, ls);
+  } else if (IsPump()) {
+    SetGameControllerLights(GameController_1, player1_pump_lights, ls);
+    SetGameControllerLights(GameController_2, player2_pump_lights, ls);
+  }
 
-	previousLS = *ls;
+  previousLS = *ls;
 }
 
 /*

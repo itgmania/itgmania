@@ -11,50 +11,48 @@
 #include "PlayerState.h"
 #include "RageUtil.h"
 
-ActiveAttackList::ActiveAttackList()
-{
+ActiveAttackList::ActiveAttackList() {}
+
+void ActiveAttackList::Init(const PlayerState* pPlayerState) {
+  m_pPlayerState = pPlayerState;
 }
 
-void ActiveAttackList::Init( const PlayerState* pPlayerState )
-{
-	m_pPlayerState = pPlayerState;
+void ActiveAttackList::Update(float fDelta) {
+  bool bTimeToRefresh =
+      IsFirstUpdate() ||  // check this before running Actor::Update()
+      m_pPlayerState->m_bAttackBeganThisUpdate ||
+      m_pPlayerState->m_bAttackEndedThisUpdate;
+
+  BitmapText::Update(fDelta);
+
+  if (bTimeToRefresh) {
+    Refresh();
+  }
 }
 
-void ActiveAttackList::Update( float fDelta )
-{
-	bool bTimeToRefresh =
-		IsFirstUpdate() || // check this before running Actor::Update()
-		m_pPlayerState->m_bAttackBeganThisUpdate ||
-		m_pPlayerState->m_bAttackEndedThisUpdate;
+void ActiveAttackList::Refresh() {
+  const AttackArray& attacks = m_pPlayerState->m_ActiveAttacks;
 
-	BitmapText::Update( fDelta );
+  std::vector<std::string> vsThemedMods;
+  for (unsigned i = 0; i < attacks.size(); i++) {
+    const Attack& attack = attacks[i];
 
-	if( bTimeToRefresh )
-		Refresh();
-}
+    if (!attack.bOn) {
+      continue;  // hasn't started yet
+    }
+    if (!attack.bShowInAttackList) {
+      continue;
+    }
 
-void ActiveAttackList::Refresh()
-{
-	const AttackArray& attacks = m_pPlayerState->m_ActiveAttacks;
+    PlayerOptions po;
+    po.FromString(attack.sModifiers);
+    po.GetLocalizedMods(vsThemedMods);
+  }
 
-	std::vector<std::string> vsThemedMods;
-	for( unsigned i=0; i<attacks.size(); i++ )
-	{
-		const Attack& attack = attacks[i];
+  std::string s = join("\n", vsThemedMods);
 
-		if( !attack.bOn )
-			continue; // hasn't started yet
-		if( !attack.bShowInAttackList )
-			continue;
-
-		PlayerOptions po;
-		po.FromString( attack.sModifiers );
-		po.GetLocalizedMods( vsThemedMods );
-	}
-
-	std::string s = join( "\n", vsThemedMods );
-
-	this->SetText( s );	// BitmapText will not rebuild vertices if these strings are the same.
+  this->SetText(s);  // BitmapText will not rebuild vertices if these strings
+                     // are the same.
 }
 
 /*

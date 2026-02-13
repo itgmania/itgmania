@@ -12,105 +12,91 @@
 #include "SextetUtils.h"
 #include "arch/Lights/LightsDriver.h"
 
-// Private members/methods are kept out of the header using an opaque pointer `_impl`.
-// Google "pimpl idiom" for an explanation of what's going on and why it is (or might be) useful.
-
+// Private members/methods are kept out of the header using an opaque pointer
+// `_impl`. Google "pimpl idiom" for an explanation of what's going on and why
+// it is (or might be) useful.
 
 // Implementation class
 
-namespace
-{
-	class SextetImpl
-	{
-	protected:
-		uint8_t lastOutput[FULL_SEXTET_COUNT];
+namespace {
+class SextetImpl {
+ protected:
+  uint8_t lastOutput[FULL_SEXTET_COUNT];
 
 #ifdef _WIN32
-		HANDLE out;
+  HANDLE out;
 #else
-		RageFile* out;
+  RageFile* out;
 #endif
 
-	public:
-
+ public:
 #ifdef _WIN32
-		SextetImpl(HANDLE file) {
+  SextetImpl(HANDLE file){
 #else
-		SextetImpl(RageFile * file) {
+  SextetImpl(RageFile* file) {
 #endif
-			out = file;
+      out = file;
 
-			// Ensure a non-match the first time
-			lastOutput[0] = 0;
-		}
-
-		virtual ~SextetImpl() {
-			if(out != nullptr)
-			{
-#ifdef _WIN32
-				CloseHandle(out);
-#else
-				out->Flush();
-				out->Close();
-				RageUtil::SafeDelete(out);
-#endif
-			}
-		}
-
-		void Set(const LightsState * ls)
-		{
-			uint8_t buffer[FULL_SEXTET_COUNT];
-
-			packLine(buffer, ls);
-
-			// Only write if the message has changed since the last write.
-			if(memcmp(buffer, lastOutput, FULL_SEXTET_COUNT) != 0)
-			{
-				if(out != nullptr)
-				{
-#ifdef _WIN32
-					DWORD cbWritten;
-					bool fSuccess = WriteFile(
-						out,                  // pipe handle 
-						buffer,             // message 
-						FULL_SEXTET_COUNT,              // message length 
-						&cbWritten,             // bytes written 
-						NULL);                  // not overlapped 
-
-#else
-					out->Write(buffer, FULL_SEXTET_COUNT);
-					out->Flush();
-#endif
-				}
-
-				// Remember last message
-				memcpy(lastOutput, buffer, FULL_SEXTET_COUNT);
-			}
-		}
-	};
+  // Ensure a non-match the first time
+  lastOutput[0] = 0;
 }
+
+virtual ~SextetImpl() {
+  if (out != nullptr) {
+#ifdef _WIN32
+    CloseHandle(out);
+#else
+      out->Flush();
+      out->Close();
+      RageUtil::SafeDelete(out);
+#endif
+  }
+}
+
+void Set(const LightsState* ls) {
+  uint8_t buffer[FULL_SEXTET_COUNT];
+
+  packLine(buffer, ls);
+
+  // Only write if the message has changed since the last write.
+  if (memcmp(buffer, lastOutput, FULL_SEXTET_COUNT) != 0) {
+    if (out != nullptr) {
+#ifdef _WIN32
+      DWORD cbWritten;
+      bool fSuccess = WriteFile(
+          out,                // pipe handle
+          buffer,             // message
+          FULL_SEXTET_COUNT,  // message length
+          &cbWritten,         // bytes written
+          NULL);              // not overlapped
+
+#else
+        out->Write(buffer, FULL_SEXTET_COUNT);
+        out->Flush();
+#endif
+    }
+
+    // Remember last message
+    memcpy(lastOutput, buffer, FULL_SEXTET_COUNT);
+  }
+}
+};  // namespace
+}  // namespace
 
 // LightsDriver_SextetStream interface
 // (Wrapper for SextetImpl)
-LightsDriver_SextetStream::LightsDriver_SextetStream()
-{
-	_impl = nullptr;
+LightsDriver_SextetStream::LightsDriver_SextetStream() { _impl = nullptr; }
+
+LightsDriver_SextetStream::~LightsDriver_SextetStream() {
+  if (static_cast<SextetImpl*>(_impl) != nullptr) {
+    delete static_cast<SextetImpl*>(_impl);
+  }
 }
 
-LightsDriver_SextetStream::~LightsDriver_SextetStream()
-{
-	if(static_cast<SextetImpl*>(_impl) != nullptr)
-	{
-		delete static_cast<SextetImpl*>(_impl);
-	}
-}
-
-void LightsDriver_SextetStream::Set(const LightsState *ls)
-{
-	if(static_cast<SextetImpl*>(_impl) != nullptr)
-	{
-		static_cast<SextetImpl*>(_impl)->Set(ls);
-	}
+void LightsDriver_SextetStream::Set(const LightsState* ls) {
+  if (static_cast<SextetImpl*>(_impl) != nullptr) {
+    static_cast<SextetImpl*>(_impl)->Set(ls);
+  }
 }
 
 // LightsDriver_SextetStreamToFile implementation
@@ -118,71 +104,66 @@ void LightsDriver_SextetStream::Set(const LightsState *ls)
 REGISTER_LIGHTS_DRIVER_CLASS(SextetStreamToFile);
 
 #if defined(_WIN32)
-	#define DEFAULT_OUTPUT_FILENAME "\\\\.\\pipe\\StepMania-Lights-SextetStream"
+#define DEFAULT_OUTPUT_FILENAME "\\\\.\\pipe\\StepMania-Lights-SextetStream"
 #else
-	#define DEFAULT_OUTPUT_FILENAME "Data/StepMania-Lights-SextetStream.out"
+#define DEFAULT_OUTPUT_FILENAME "Data/StepMania-Lights-SextetStream.out"
 #endif
-static Preference<std::string> g_sSextetStreamOutputFilename("SextetStreamOutputFilename", DEFAULT_OUTPUT_FILENAME);
+static Preference<std::string> g_sSextetStreamOutputFilename(
+    "SextetStreamOutputFilename", DEFAULT_OUTPUT_FILENAME);
 
-inline RageFile * openOutputStream(const std::string& filename)
-{
-	RageFile * file = new RageFile;
+inline RageFile* openOutputStream(const std::string& filename) {
+  RageFile* file = new RageFile;
 
-	if(!file->Open(filename, RageFile::WRITE|RageFile::STREAMED))
-	{
-		LOG->Warn("Error opening file '%s' for output: %s", filename.c_str(), file->GetError().c_str());
-		RageUtil::SafeDelete(file);
-		file = nullptr;
-	}
+  if (!file->Open(filename, RageFile::WRITE | RageFile::STREAMED)) {
+    LOG->Warn(
+        "Error opening file '%s' for output: %s", filename.c_str(),
+        file->GetError().c_str());
+    RageUtil::SafeDelete(file);
+    file = nullptr;
+  }
 
-	return file;
+  return file;
 }
 
 #ifdef _WIN32
-LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(HANDLE file)
-{
-	_impl = new SextetImpl(file);
+LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(HANDLE file) {
+  _impl = new SextetImpl(file);
 }
 #else
-LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(RageFile* file)
-{
-	_impl = new SextetImpl(file);
+LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(
+    RageFile* file) {
+  _impl = new SextetImpl(file);
 }
-#endif // _WIN32
+#endif  // _WIN32
 
-
-
-
-
-LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(const std::string& filename)
-{
+LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(
+    const std::string& filename) {
 #ifdef WINDOWS
-	_impl = new SextetImpl(CreateFile(
-		filename.c_str(),  // pipe name 
-		GENERIC_WRITE,
-		0,              // no sharing 
-		NULL,           // default security attributes
-		OPEN_EXISTING,  // opens existing pipe 
-		0,              // default attributes 
-		NULL));
+  _impl = new SextetImpl(CreateFile(
+      filename.c_str(),  // pipe name
+      GENERIC_WRITE,
+      0,              // no sharing
+      NULL,           // default security attributes
+      OPEN_EXISTING,  // opens existing pipe
+      0,              // default attributes
+      NULL));
 #else
-	_impl = new SextetImpl(openOutputStream(filename));
+  _impl = new SextetImpl(openOutputStream(filename));
 #endif
 }
 
-LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile()
-{
+LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile() {
 #ifdef WINDOWS
-	_impl = new SextetImpl(CreateFile(
-		g_sSextetStreamOutputFilename.Get().c_str(),   // pipe name 
-		GENERIC_WRITE,
-		0,              // no sharing 
-		NULL,           // default security attributes
-		OPEN_EXISTING,  // opens existing pipe 
-		0,              // default attributes 
-		NULL));
+  _impl = new SextetImpl(CreateFile(
+      g_sSextetStreamOutputFilename.Get().c_str(),  // pipe name
+      GENERIC_WRITE,
+      0,              // no sharing
+      NULL,           // default security attributes
+      OPEN_EXISTING,  // opens existing pipe
+      0,              // default attributes
+      NULL));
 #else
-	_impl = new SextetImpl(openOutputStream(g_sSextetStreamOutputFilename));
+  _impl = new SextetImpl(openOutputStream(g_sSextetStreamOutputFilename));
 #endif
 }
 

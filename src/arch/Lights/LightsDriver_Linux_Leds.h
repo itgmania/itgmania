@@ -9,35 +9,36 @@
 #include "GameInput.h"
 #include "LightsDriver.h"
 
-class LightsDriver_Linux_Leds : public LightsDriver
-{
-private:
-	static const uint8_t LINUX_LED_STATE_ON = 255;
-	static const uint8_t LINUX_LED_STATE_OFF = 0;
-	static const int LINUX_LED_MAX_DIRECTORY_LENGTH = PATH_MAX;
+class LightsDriver_Linux_Leds : public LightsDriver {
+ private:
+  static const uint8_t LINUX_LED_STATE_ON = 255;
+  static const uint8_t LINUX_LED_STATE_OFF = 0;
+  static const int LINUX_LED_MAX_DIRECTORY_LENGTH = PATH_MAX;
 
-	const InputScheme *pInput;
-	std::string sInputName;
+  const InputScheme* pInput;
+  std::string sInputName;
 
-	bool WriteLight(const char *filename, bool state);
+  bool WriteLight(const char* filename, bool state);
 
-protected:
-	LightsState previousLS;
+ protected:
+  LightsState previousLS;
 
-	bool IsDance();
-	bool IsPump();
+  bool IsDance();
+  bool IsPump();
 
-	void SetLight(const char *filename, bool previous, bool desired);
+  void SetLight(const char* filename, bool previous, bool desired);
 
-	void SetCabinetLights(const char *stringArray[], const LightsState *ls);
-	void SetCabinetLights(const int intArray[], const LightsState *ls);
+  void SetCabinetLights(const char* stringArray[], const LightsState* ls);
+  void SetCabinetLights(const int intArray[], const LightsState* ls);
 
-	void SetGameControllerLights(GameController gc, const char *stringArray[], const LightsState *ls);
-	void SetGameControllerLights(GameController gc, const int intArray[], const LightsState *ls);
+  void SetGameControllerLights(
+      GameController gc, const char* stringArray[], const LightsState* ls);
+  void SetGameControllerLights(
+      GameController gc, const int intArray[], const LightsState* ls);
 
-public:
-	virtual void Set(const LightsState *ls) = 0;
-	virtual const char *GetGameControllerLightFile() = 0;
+ public:
+  virtual void Set(const LightsState* ls) = 0;
+  virtual const char* GetGameControllerLightFile() = 0;
 };
 
 #endif

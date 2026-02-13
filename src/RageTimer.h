@@ -5,54 +5,58 @@
 
 #include <cstdint>
 
-class RageTimer
-{
-public:
-	/* Initialize the m_secs and m_us values to 0 and then fill them with the current time. */
-	RageTimer(): m_secs(0), m_us(0) { Touch(); }
-	RageTimer( uint64_t secs, uint64_t us ): m_secs(secs), m_us(us) { }
+class RageTimer {
+ public:
+  /* Initialize the m_secs and m_us values to 0 and then fill them with the
+   * current time. */
+  RageTimer() : m_secs(0), m_us(0) { Touch(); }
+  RageTimer(uint64_t secs, uint64_t us) : m_secs(secs), m_us(us) {}
 
-	/* Time ago this RageTimer represents. */
-	float Ago() const;
-	void Touch();
-	inline bool IsZero() const { return m_secs == 0 && m_us == 0; }
-	inline void SetZero() { m_secs = m_us = 0; }
+  /* Time ago this RageTimer represents. */
+  float Ago() const;
+  void Touch();
+  inline bool IsZero() const { return m_secs == 0 && m_us == 0; }
+  inline void SetZero() { m_secs = m_us = 0; }
 
-	/* Time between last call to GetDeltaTime() (Ago() + Touch()): */
-	float GetDeltaTime();
+  /* Time between last call to GetDeltaTime() (Ago() + Touch()): */
+  float GetDeltaTime();
 
-	static double GetTimeSinceStart();	// seconds since the program was started
-	static int GetTimeSinceStartSeconds(); 	// This is used where GetTimeSinceStart would be cast to an int without rounding.
-	static uint64_t GetTimeSinceStartMicroseconds();
+  static double GetTimeSinceStart();  // seconds since the program was started
+  static int
+  GetTimeSinceStartSeconds();  // This is used where GetTimeSinceStart would be
+                               // cast to an int without rounding.
+  static uint64_t GetTimeSinceStartMicroseconds();
 
-	/* Get a timer representing half of the time ago as this one. */
-	RageTimer Half() const;
+  /* Get a timer representing half of the time ago as this one. */
+  RageTimer Half() const;
 
-	/* Add (or subtract) a duration from a timestamp.  The result is another timestamp. */
-	RageTimer operator+( float tm ) const;
-	RageTimer operator-( float tm ) const { return *this + -tm; }
-	void operator+=( float tm ) { *this = *this + tm; }
-	void operator-=( float tm ) { *this = *this + -tm; }
+  /* Add (or subtract) a duration from a timestamp.  The result is another
+   * timestamp. */
+  RageTimer operator+(float tm) const;
+  RageTimer operator-(float tm) const { return *this + -tm; }
+  void operator+=(float tm) { *this = *this + tm; }
+  void operator-=(float tm) { *this = *this + -tm; }
 
-	/* Find the amount of time between two timestamps.  The result is a duration. */
-	float operator-( const RageTimer &rhs ) const;
+  /* Find the amount of time between two timestamps.  The result is a duration.
+   */
+  float operator-(const RageTimer& rhs) const;
 
-	bool operator<( const RageTimer &rhs ) const;
+  bool operator<(const RageTimer& rhs) const;
 
-	/* The following is a "time since start" RageTimer. Splitting the seconds and
-	 * microseconds values into two integers and combining them later allows for
-	 * better precision. Use caution when changing data types, since resolution
-	 * mismatch errors are easy to cause when changing things in RageTimer. */
-	uint64_t m_secs, m_us;
+  /* The following is a "time since start" RageTimer. Splitting the seconds and
+   * microseconds values into two integers and combining them later allows for
+   * better precision. Use caution when changing data types, since resolution
+   * mismatch errors are easy to cause when changing things in RageTimer. */
+  uint64_t m_secs, m_us;
 
-private:
-	static RageTimer Sum( const RageTimer &lhs, float tm );
-	static double Difference( const RageTimer &lhs, const RageTimer &rhs );
+ private:
+  static RageTimer Sum(const RageTimer& lhs, float tm);
+  static double Difference(const RageTimer& lhs, const RageTimer& rhs);
 };
 
 extern const RageTimer RageZeroTimer;
 
-#endif // RAGE_TIMER_H
+#endif  // RAGE_TIMER_H
 
 /*
  * Copyright (c) 2001-2003 Chris Danford, Glenn Maynard
@@ -78,4 +82,3 @@ extern const RageTimer RageZeroTimer;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

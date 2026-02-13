@@ -10,59 +10,54 @@
 #include <dinput.h>
 extern LPDIRECTINPUT8 g_dinput;
 
-#define INPUT_QSIZE	32
+#define INPUT_QSIZE 32
 
-struct input_t
-{
-	// DirectInput offset for this input type:
-	DWORD ofs;
+struct input_t {
+  // DirectInput offset for this input type:
+  DWORD ofs;
 
-	// Button, axis or hat:
-	enum Type { KEY, BUTTON, AXIS, HAT } type;
+  // Button, axis or hat:
+  enum Type { KEY, BUTTON, AXIS, HAT } type;
 
-	int num;
+  int num;
 
-	// Comparitor for finding the input_t with the matching ofs member in std containers.
-	class Compare
-	{
-	public:
+  // Comparitor for finding the input_t with the matching ofs member in std
+  // containers.
+  class Compare {
+   public:
+    Compare(DWORD _ofs) : ofs(_ofs) {}
 
-		Compare(DWORD _ofs) : ofs(_ofs) { }
+    bool operator()(const input_t& input) const { return input.ofs == ofs; }
 
-		bool operator()(const input_t & input) const { return input.ofs == ofs; }
-
-	private:
-
-		DWORD ofs;
-	};
+   private:
+    DWORD ofs;
+  };
 };
 
-struct DIDevice
-{
-	DIDEVICEINSTANCE JoystickInst;
-	LPDIRECTINPUTDEVICE8 Device;
-	std::string m_sName;
+struct DIDevice {
+  DIDEVICEINSTANCE JoystickInst;
+  LPDIRECTINPUTDEVICE8 Device;
+  std::string m_sName;
 
-	enum { KEYBOARD, JOYSTICK, MOUSE } type;
+  enum { KEYBOARD, JOYSTICK, MOUSE } type;
 
-	bool buffered;
-	int buttons, axes, hats;
-	std::vector<input_t> Inputs;
-	InputDevice dev;
+  bool buffered;
+  int buttons, axes, hats;
+  std::vector<input_t> Inputs;
+  InputDevice dev;
 
-	DIDevice();
+  DIDevice();
 
-	bool Open();
-	void Close();
+  bool Open();
+  void Close();
 };
 
-struct XIDevice
-{
-	std::string m_sName;
-	DWORD m_dwXInputSlot;
-	InputDevice dev;
+struct XIDevice {
+  std::string m_sName;
+  DWORD m_dwXInputSlot;
+  InputDevice dev;
 
-	XIDevice();
+  XIDevice();
 };
 
 #endif

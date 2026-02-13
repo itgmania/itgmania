@@ -19,403 +19,418 @@ static int g_BytesUntilError = 6;
 
 /*
  * This driver
- *  1: reads from a single "file", contained in g_TestFile, with fn g_TestFilename;
- *  2: writes to the bit bucket,
- *  3: triggers an error when g_BytesUntilError reaches 0.
+ *  1: reads from a single "file", contained in g_TestFile, with fn
+ * g_TestFilename; 2: writes to the bit bucket, 3: triggers an error when
+ * g_BytesUntilError reaches 0.
  */
-class RageFileDriverTest: public RageFileDriver
-{
-public:
-	RageFileDriverTest( std::string root );
+class RageFileDriverTest : public RageFileDriver {
+ public:
+  RageFileDriverTest(std::string root);
 
-	RageFileObj *Open( const std::string &path, int mode, int &err );
-	bool Remove( const std::string &sPath ) { return false; }
-	bool Ready() { return true; }
+  RageFileObj* Open(const std::string& path, int mode, int& err);
+  bool Remove(const std::string& sPath) { return false; }
+  bool Ready() { return true; }
 
-private:
-	std::string root;
+ private:
+  std::string root;
 };
 
-static struct FileDriverEntry_TEST: public FileDriverEntry
-{
-	FileDriverEntry_TEST(): FileDriverEntry( "TEST" ) { }
-	RageFileDriver *Create( const std::string &sRoot ) const { return new RageFileDriverTest( sRoot ); }
+static struct FileDriverEntry_TEST : public FileDriverEntry {
+  FileDriverEntry_TEST() : FileDriverEntry("TEST") {}
+  RageFileDriver* Create(const std::string& sRoot) const {
+    return new RageFileDriverTest(sRoot);
+  }
 } const g_RegisterDriver;
 
-class TestFilenameDB: public FilenameDB
-{
-protected:
-	virtual void PopulateFileSet( FileSet &fs, const std::string &sPath )
-	{
-		if( sPath != "." )
-			return;
-		if( g_TestFile == "" )
-			return;
+class TestFilenameDB : public FilenameDB {
+ protected:
+  virtual void PopulateFileSet(FileSet& fs, const std::string& sPath) {
+    if (sPath != ".") {
+      return;
+    }
+    if (g_TestFile == "") {
+      return;
+    }
 
-		fs.files.clear();
+    fs.files.clear();
 
-		File f;
-		f.SetName( g_TestFilename );
-		f.dir = false;
-		f.size = g_TestFile.size();
-		f.hash = GetHashForString( g_TestFile );
-		fs.files.insert(f);
-	}
+    File f;
+    f.SetName(g_TestFilename);
+    f.dir = false;
+    f.size = g_TestFile.size();
+    f.hash = GetHashForString(g_TestFile);
+    fs.files.insert(f);
+  }
 
-	std::string root;
+  std::string root;
 
-public:
-	TestFilenameDB( std::string root_ )
-	{
-		root = root_;
-		if( root == "./" )
-			root = "";
-	}
-
+ public:
+  TestFilenameDB(std::string root_) {
+    root = root_;
+    if (root == "./") {
+      root = "";
+    }
+  }
 };
 
-class RageFileObjTest: public RageFileObj
-{
-public:
-	RageFileObjTest( const std::string &path );
-	RageFileObjTest( const RageFileObjTest &cpy );
-	int ReadInternal(void *buffer, size_t bytes);
-	int WriteInternal(const void *buffer, size_t bytes);
-	int Flush();
-	void Rewind() { pos = 0; }
-	int Seek( int offset )
-	{
-		pos = std::min( offset, (int) g_TestFile.size() );
-		return pos;
-	}
-	RageFileObj *Copy() const;
-	std::string GetDisplayPath() const { return path; }
-	int GetFileSize() const { return g_TestFile.size(); }
+class RageFileObjTest : public RageFileObj {
+ public:
+  RageFileObjTest(const std::string& path);
+  RageFileObjTest(const RageFileObjTest& cpy);
+  int ReadInternal(void* buffer, size_t bytes);
+  int WriteInternal(const void* buffer, size_t bytes);
+  int Flush();
+  void Rewind() { pos = 0; }
+  int Seek(int offset) {
+    pos = std::min(offset, (int)g_TestFile.size());
+    return pos;
+  }
+  RageFileObj* Copy() const;
+  std::string GetDisplayPath() const { return path; }
+  int GetFileSize() const { return g_TestFile.size(); }
 
-private:
-	std::string path; /* for Copy */
-	int pos;
+ private:
+  std::string path; /* for Copy */
+  int pos;
 };
 
-
-RageFileDriverTest::RageFileDriverTest( std::string root_ ):
-	RageFileDriver( new TestFilenameDB(root_) ),
-	root(root_)
-{
-	if( Right(root, 1) != "/" )
-		root += '/';
+RageFileDriverTest::RageFileDriverTest(std::string root_)
+    : RageFileDriver(new TestFilenameDB(root_)), root(root_) {
+  if (Right(root, 1) != "/") {
+    root += '/';
+  }
 }
 
-RageFileObjTest::RageFileObjTest( const RageFileObjTest &cpy ):
-	RageFileObj(cpy)
-{
-	path = cpy.path;
-	pos = cpy.pos;
+RageFileObjTest::RageFileObjTest(const RageFileObjTest& cpy)
+    : RageFileObj(cpy) {
+  path = cpy.path;
+  pos = cpy.pos;
 }
 
-RageFileObj *RageFileDriverTest::Open( const std::string &path, int mode, int &err )
-{
-	if( path != g_TestFilename )
-	{
-		err = ENOENT;
-		return NULL;
-	}
+RageFileObj* RageFileDriverTest::Open(
+    const std::string& path, int mode, int& err) {
+  if (path != g_TestFilename) {
+    err = ENOENT;
+    return NULL;
+  }
 
-	return new RageFileObjTest( root + path );
+  return new RageFileObjTest(root + path);
 }
 
-RageFileObj *RageFileObjTest::Copy() const
-{
-	return new RageFileObjTest( *this );
+RageFileObj* RageFileObjTest::Copy() const {
+  return new RageFileObjTest(*this);
 }
 
-static const unsigned int BUFSIZE = 1024*64;
-RageFileObjTest::RageFileObjTest( const std::string &path_ )
-{
-	path = path_;
-	pos = 0;
+static const unsigned int BUFSIZE = 1024 * 64;
+RageFileObjTest::RageFileObjTest(const std::string& path_) {
+  path = path_;
+  pos = 0;
 }
 
-int RageFileObjTest::ReadInternal( void *buf, size_t bytes )
-{
-	bytes = std::min( bytes, g_TestFile.size()-pos );
+int RageFileObjTest::ReadInternal(void* buf, size_t bytes) {
+  bytes = std::min(bytes, g_TestFile.size() - pos);
 
-	if( g_BytesUntilError != -1 )
-	{
-		if( (int) bytes > g_BytesUntilError )
-		{
-			SetError( "Fake error" );
-			g_BytesUntilError = -1;
-			return -1;
-		}
+  if (g_BytesUntilError != -1) {
+    if ((int)bytes > g_BytesUntilError) {
+      SetError("Fake error");
+      g_BytesUntilError = -1;
+      return -1;
+    }
 
-		g_BytesUntilError -= std::min( g_BytesUntilError, (int) bytes );
-	}
+    g_BytesUntilError -= std::min(g_BytesUntilError, (int)bytes);
+  }
 
-	memcpy( buf, g_TestFile.data()+pos, bytes );
-	pos += bytes;
-	return bytes;
+  memcpy(buf, g_TestFile.data() + pos, bytes);
+  pos += bytes;
+  return bytes;
 }
 
-int RageFileObjTest::WriteInternal( const void *buf, size_t bytes )
-{
-	if( g_BytesUntilError != -1 )
-	{
-		if( (int) bytes > g_BytesUntilError )
-		{
-			SetError( "Fake error" );
-			g_BytesUntilError = -1;
-			return -1;
-		}
+int RageFileObjTest::WriteInternal(const void* buf, size_t bytes) {
+  if (g_BytesUntilError != -1) {
+    if ((int)bytes > g_BytesUntilError) {
+      SetError("Fake error");
+      g_BytesUntilError = -1;
+      return -1;
+    }
 
-		g_BytesUntilError -= std::min( g_BytesUntilError, (int) bytes );
-	}
+    g_BytesUntilError -= std::min(g_BytesUntilError, (int)bytes);
+  }
 
-	return bytes;
+  return bytes;
 }
 
 /*
  * Testing Flush() is important.  Writing may buffer.  That buffer will be
- * flushed, at the latest, when the file is closed in the RageFile dtor.  However,
- * if you wait until then, there's no way to check for an error; the file is
- * going away.  The primary purpose of Flush() is to give the user a chance to
- * check for these errors.  (Flush() is only intended to flush our buffers;
- * it is *not* intended to sync data to disk.)
+ * flushed, at the latest, when the file is closed in the RageFile dtor.
+ * However, if you wait until then, there's no way to check for an error; the
+ * file is going away.  The primary purpose of Flush() is to give the user a
+ * chance to check for these errors.  (Flush() is only intended to flush our
+ * buffers; it is *not* intended to sync data to disk.)
  */
-int RageFileObjTest::Flush()
-{
-	if( g_BytesUntilError != -1 )
-	{
-		SetError( "Fake error" );
-		g_BytesUntilError = -1;
-		return -1;
-	}
+int RageFileObjTest::Flush() {
+  if (g_BytesUntilError != -1) {
+    SetError("Fake error");
+    g_BytesUntilError = -1;
+    return -1;
+  }
 
-	return 0;
+  return 0;
 }
 
 #define Fail(s...) \
-	{ \
-		LOG->Warn( s ); break; \
-	}
+  {                \
+    LOG->Warn(s);  \
+    break;         \
+  }
 
-void SanityCheck()
-{
-	/* Read sanity check. */
-	do {
-		g_TestFile = "hello";
-		g_TestFilename = "file";
+void SanityCheck() {
+  /* Read sanity check. */
+  do {
+    g_TestFile = "hello";
+    g_TestFilename = "file";
 
-		RageFile test;
-		if( !test.Open("/test/file", RageFile::READ ) )
-			Fail( "Sanity check Open() failed: %s", test.GetError().c_str() );
+    RageFile test;
+    if (!test.Open("/test/file", RageFile::READ)) {
+      Fail("Sanity check Open() failed: %s", test.GetError().c_str());
+    }
 
-		std::string str;
-		int got = test.GetLine( str );
-		if( got <= 0 )
-			Fail( "Sanity check GetLine(): got %i", got );
+    std::string str;
+    int got = test.GetLine(str);
+    if (got <= 0) {
+      Fail("Sanity check GetLine(): got %i", got);
+    }
 
-		if( str != "hello" )
-			Fail( "Sanity check Read(): expected \"hello\", got \"%s\"", str.c_str() );
-	} while(false);
+    if (str != "hello") {
+      Fail("Sanity check Read(): expected \"hello\", got \"%s\"", str.c_str());
+    }
+  } while (false);
 
-	/* Read error sanity check. */
-	do {
-		g_TestFile = "hello world";
-		g_TestFilename = "file";
-		g_BytesUntilError = 5;
+  /* Read error sanity check. */
+  do {
+    g_TestFile = "hello world";
+    g_TestFilename = "file";
+    g_BytesUntilError = 5;
 
-		RageFile test;
-		if( !test.Open("/test/file", RageFile::READ ) )
-			Fail( "Sanity check 2 Open() failed: %s", test.GetError().c_str() );
+    RageFile test;
+    if (!test.Open("/test/file", RageFile::READ)) {
+      Fail("Sanity check 2 Open() failed: %s", test.GetError().c_str());
+    }
 
-		std::string str;
-		int got = test.Read( str, 5 );
-		if( got != 5 )
-			Fail( "Sanity check 2 Read(): got %i", got );
+    std::string str;
+    int got = test.Read(str, 5);
+    if (got != 5) {
+      Fail("Sanity check 2 Read(): got %i", got);
+    }
 
-		if( str != "hello" )
-			Fail( "Sanity check 2 Read(): expected \"hello\", got \"%s\"", str.c_str() );
+    if (str != "hello") {
+      Fail(
+          "Sanity check 2 Read(): expected \"hello\", got \"%s\"", str.c_str());
+    }
 
-		got = test.Read( str, 5 );
-		if( got != -1 )
-			Fail( "Sanity check 2 GetLine(): expected -1, got %i", got );
+    got = test.Read(str, 5);
+    if (got != -1) {
+      Fail("Sanity check 2 GetLine(): expected -1, got %i", got);
+    }
 
-		if( test.GetError() != "Fake error" )
-			Fail( "Sanity check 2 GetError(): expected \"Fake error\", got \"%s\"", test.GetError().c_str() );
-	} while(false);
+    if (test.GetError() != "Fake error") {
+      Fail(
+          "Sanity check 2 GetError(): expected \"Fake error\", got \"%s\"",
+          test.GetError().c_str());
+    }
+  } while (false);
 
-	/* Write error sanity check. */
-	do {
-		g_TestFilename = "file";
-		g_BytesUntilError = 5;
+  /* Write error sanity check. */
+  do {
+    g_TestFilename = "file";
+    g_BytesUntilError = 5;
 
-		RageFile test;
-		if( !test.Open("/test/file", RageFile::WRITE ) )
-			Fail( "Write error check Open() failed: %s", test.GetError().c_str() );
+    RageFile test;
+    if (!test.Open("/test/file", RageFile::WRITE)) {
+      Fail("Write error check Open() failed: %s", test.GetError().c_str());
+    }
 
-		int wrote = test.Write( "test", 4 );
-		if( wrote != 4 )
-			Fail( "Write error check Write(): wrote %i", wrote );
+    int wrote = test.Write("test", 4);
+    if (wrote != 4) {
+      Fail("Write error check Write(): wrote %i", wrote);
+    }
 
-		wrote = test.Write( "ing", 3 );
-		if( wrote != -1 )
-			Fail( "Write error check Write(): expected -1, got %i", wrote );
+    wrote = test.Write("ing", 3);
+    if (wrote != -1) {
+      Fail("Write error check Write(): expected -1, got %i", wrote);
+    }
 
-		if( test.GetError() != "Fake error" )
-			Fail( "Write error check GetError(): expected \"Fake error\", got \"%s\"", test.GetError().c_str() );
-	} while(false);
+    if (test.GetError() != "Fake error") {
+      Fail(
+          "Write error check GetError(): expected \"Fake error\", got \"%s\"",
+          test.GetError().c_str());
+    }
+  } while (false);
 }
 
 #include "IniFile.h"
-void IniTest()
-{
-	g_TestFilename = "file";
+void IniTest() {
+  g_TestFilename = "file";
 
-	/* Read check. */
-	do {
-		g_TestFile =
-			"[test]\n"
-			"abc=def";
+  /* Read check. */
+  do {
+    g_TestFile =
+        "[test]\n"
+        "abc=def";
 
-		g_BytesUntilError = -1;
+    g_BytesUntilError = -1;
 
-		IniFile test;
-		if( !test.ReadFile( "test/file" ) )
-			Fail( "INI: ReadFile failed: %s", test.GetError().c_str() );
+    IniFile test;
+    if (!test.ReadFile("test/file")) {
+      Fail("INI: ReadFile failed: %s", test.GetError().c_str());
+    }
 
-		std::string sStr;
-		if( !test.GetValue( "test", "abc", sStr ) )
-			Fail( "INI: GetValue failed" );
-		if( sStr != "def" )
-			Fail( "INI: GetValue failed: expected \"def\", got \"%s\"", sStr.c_str() );
-	} while(false);
+    std::string sStr;
+    if (!test.GetValue("test", "abc", sStr)) {
+      Fail("INI: GetValue failed");
+    }
+    if (sStr != "def") {
+      Fail("INI: GetValue failed: expected \"def\", got \"%s\"", sStr.c_str());
+    }
+  } while (false);
 
-	/* Read error check. */
-	do {
-		g_TestFile =
-			"[test]\n"
-			"abc=def";
+  /* Read error check. */
+  do {
+    g_TestFile =
+        "[test]\n"
+        "abc=def";
 
-		g_BytesUntilError = 5;
+    g_BytesUntilError = 5;
 
-		IniFile test;
-		if( test.ReadFile( "test/file" ) )
-			Fail( "INI: ReadFile should have failed" );
+    IniFile test;
+    if (test.ReadFile("test/file")) {
+      Fail("INI: ReadFile should have failed");
+    }
 
-		if( test.GetError() != "Fake error" )
-			Fail( "INI: ReadFile error check: wrong error return: got \"%s\"", test.GetError().c_str() );
-	} while(false);
+    if (test.GetError() != "Fake error") {
+      Fail(
+          "INI: ReadFile error check: wrong error return: got \"%s\"",
+          test.GetError().c_str());
+    }
+  } while (false);
 
-	/* Write error check. */
-	do {
-		g_BytesUntilError = 5;
+  /* Write error check. */
+  do {
+    g_BytesUntilError = 5;
 
-		IniFile test;
-		test.SetValue( "foo", "bar", std::string("baz") );
-		if( test.WriteFile( "test/file" ) )
-			Fail( "INI: WriteFile should have failed" );
+    IniFile test;
+    test.SetValue("foo", "bar", std::string("baz"));
+    if (test.WriteFile("test/file")) {
+      Fail("INI: WriteFile should have failed");
+    }
 
-		if( test.GetError() != "Fake error" )
-			Fail( "INI: ReadFile error check: wrong error return: got \"%s\"", test.GetError().c_str() );
-	} while(false);
+    if (test.GetError() != "Fake error") {
+      Fail(
+          "INI: ReadFile error check: wrong error return: got \"%s\"",
+          test.GetError().c_str());
+    }
+  } while (false);
 }
 
 #include "MsdFile.h"
-void MsdTest()
-{
-	g_TestFilename = "file";
+void MsdTest() {
+  g_TestFilename = "file";
 
-	/* Read check. */
-	do {
-		g_TestFile = "#FOO;";
+  /* Read check. */
+  do {
+    g_TestFile = "#FOO;";
 
-		g_BytesUntilError = -1;
+    g_BytesUntilError = -1;
 
-		MsdFile test;
-		if( !test.ReadFile("test/file", false) )
-			Fail( "MSD: ReadFile failed: %s", test.GetError().c_str() );
+    MsdFile test;
+    if (!test.ReadFile("test/file", false)) {
+      Fail("MSD: ReadFile failed: %s", test.GetError().c_str());
+    }
 
-		if( test.GetNumValues() != 1 )
-			Fail( "MSD: GetNumValues: expected 1, got %i", test.GetNumValues() );
-		if( test.GetNumParams(0) != 1 )
-			Fail( "MSD: GetNumParams(0): expected 1, got %i", test.GetNumParams(0) );
-		std::string sStr = test.GetValue(0)[0];
-		if( sStr != "FOO" )
-			Fail( "MSD: GetValue failed: expected \"FOO\", got \"%s\"", sStr.c_str() );
-	} while(false);
+    if (test.GetNumValues() != 1) {
+      Fail("MSD: GetNumValues: expected 1, got %i", test.GetNumValues());
+    }
+    if (test.GetNumParams(0) != 1) {
+      Fail("MSD: GetNumParams(0): expected 1, got %i", test.GetNumParams(0));
+    }
+    std::string sStr = test.GetValue(0)[0];
+    if (sStr != "FOO") {
+      Fail("MSD: GetValue failed: expected \"FOO\", got \"%s\"", sStr.c_str());
+    }
+  } while (false);
 
-	/* Read error check. */
-	do {
-		g_TestFile = "#FOO:BAR:BAZ;";
-		g_BytesUntilError = 5;
+  /* Read error check. */
+  do {
+    g_TestFile = "#FOO:BAR:BAZ;";
+    g_BytesUntilError = 5;
 
-		MsdFile test;
-		if( test.ReadFile("test/file", false) )
-			Fail( "MSD: ReadFile should have failed" );
+    MsdFile test;
+    if (test.ReadFile("test/file", false)) {
+      Fail("MSD: ReadFile should have failed");
+    }
 
-		if( test.GetError() != "Fake error" )
-			Fail( "MSD: ReadFile error check: wrong error return: got \"%s\"", test.GetError().c_str() );
-	} while(false);
+    if (test.GetError() != "Fake error") {
+      Fail(
+          "MSD: ReadFile error check: wrong error return: got \"%s\"",
+          test.GetError().c_str());
+    }
+  } while (false);
 }
 
 #include "CryptManager.h"
-void CryptoTest()
-{
-	PREFSMAN = new PrefsManager; /* CRYPTMAN needs PREFSMAN */
-	PREFSMAN->m_bSignProfileData.Set( true );
+void CryptoTest() {
+  PREFSMAN = new PrefsManager; /* CRYPTMAN needs PREFSMAN */
+  PREFSMAN->m_bSignProfileData.Set(true);
 
-	CRYPTMAN = new CryptManager;
+  CRYPTMAN = new CryptManager;
 
-	g_TestFile = "hello world";
-	g_TestFilename = "file";
-	FlushDirCache();
+  g_TestFile = "hello world";
+  g_TestFilename = "file";
+  FlushDirCache();
 
-	do {
-		g_BytesUntilError = -1;
-		CRYPTMAN->SignFileToFile( "test/file", "output" );
+  do {
+    g_BytesUntilError = -1;
+    CRYPTMAN->SignFileToFile("test/file", "output");
 
-		FlushDirCache();
+    FlushDirCache();
 
-		if( !CRYPTMAN->VerifyFileWithFile( "test/file", "output" ) )
-			Fail( "Crypto: VerifyFileWithFile failed");
-	} while(false);
+    if (!CRYPTMAN->VerifyFileWithFile("test/file", "output")) {
+      Fail("Crypto: VerifyFileWithFile failed");
+    }
+  } while (false);
 
+  /* Write error check. */
+  do {
+    g_BytesUntilError = 5;
+    CRYPTMAN->SignFileToFile("test/file", "output");
+  } while (false);
 
-	/* Write error check. */
-	do {
-		g_BytesUntilError = 5;
-		CRYPTMAN->SignFileToFile( "test/file", "output" );
-	} while(false);
+  /* Read error check. */
+  do {
+    g_BytesUntilError = 5;
+    CRYPTMAN->SignFileToFile("output", "test/file");
+  } while (false);
 
-	/* Read error check. */
-	do {
-		g_BytesUntilError = 5;
-		CRYPTMAN->SignFileToFile( "output", "test/file" );
-	} while(false);
-
-	delete PREFSMAN;
-	delete CRYPTMAN;
+  delete PREFSMAN;
+  delete CRYPTMAN;
 }
 
-int main( int argc, char *argv[] )
-{
-	test_handle_args( argc, argv );
+int main(int argc, char* argv[]) {
+  test_handle_args(argc, argv);
 
-	test_init();
+  test_init();
 
-	/* Setup. */
-	FILEMAN->Mount( "TEST", ".", "/test" );
+  /* Setup. */
+  FILEMAN->Mount("TEST", ".", "/test");
 
-	SanityCheck();
+  SanityCheck();
 
-	IniTest();
-	MsdTest();
-	CryptoTest();
+  IniTest();
+  MsdTest();
+  CryptoTest();
 
-	test_deinit();
+  test_deinit();
 
-	exit(0);
+  exit(0);
 }
 
 /*
@@ -442,4 +457,3 @@ int main( int argc, char *argv[] )
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

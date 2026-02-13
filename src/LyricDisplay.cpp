@@ -11,95 +11,101 @@
 #include "ThemeManager.h"
 #include "ThemeMetric.h"
 
-static ThemeMetric<float>		IN_LENGTH	("LyricDisplay","InLength");
-static ThemeMetric<float>		OUT_LENGTH	("LyricDisplay","OutLength");
+static ThemeMetric<float> IN_LENGTH("LyricDisplay", "InLength");
+static ThemeMetric<float> OUT_LENGTH("LyricDisplay", "OutLength");
 
-LyricDisplay::LyricDisplay()
-{
-	m_textLyrics[0].SetName( "LyricBack" );
-	ActorUtil::LoadAllCommands( m_textLyrics[0], "LyricDisplay" );
-	m_textLyrics[0].LoadFromFont( THEME->GetPathF("LyricDisplay","text") );
-	this->AddChild( &m_textLyrics[0] );
+LyricDisplay::LyricDisplay() {
+  m_textLyrics[0].SetName("LyricBack");
+  ActorUtil::LoadAllCommands(m_textLyrics[0], "LyricDisplay");
+  m_textLyrics[0].LoadFromFont(THEME->GetPathF("LyricDisplay", "text"));
+  this->AddChild(&m_textLyrics[0]);
 
-	m_textLyrics[1].SetName( "LyricFront" );
-	ActorUtil::LoadAllCommands( m_textLyrics[1], "LyricDisplay" );
-	m_textLyrics[1].LoadFromFont( THEME->GetPathF("LyricDisplay","text") );
-	this->AddChild( &m_textLyrics[1] );
+  m_textLyrics[1].SetName("LyricFront");
+  ActorUtil::LoadAllCommands(m_textLyrics[1], "LyricDisplay");
+  m_textLyrics[1].LoadFromFont(THEME->GetPathF("LyricDisplay", "text"));
+  this->AddChild(&m_textLyrics[1]);
 
-	Init();
+  Init();
 }
 
-void LyricDisplay::Init()
-{
-	for( int i=0; i<2; i++ )
-		m_textLyrics[i].SetText("");
-	m_iCurLyricNumber = 0;
+void LyricDisplay::Init() {
+  for (int i = 0; i < 2; i++) {
+    m_textLyrics[i].SetText("");
+  }
+  m_iCurLyricNumber = 0;
 
-	m_fLastSecond = -500;
-	m_bStopped = false;
+  m_fLastSecond = -500;
+  m_bStopped = false;
 }
 
-void LyricDisplay::Stop() {
-	m_bStopped = true;
-}
+void LyricDisplay::Stop() { m_bStopped = true; }
 
-void LyricDisplay::Update( float fDeltaTime )
-{
-	if( m_bStopped )
-		return;
+void LyricDisplay::Update(float fDeltaTime) {
+  if (m_bStopped) {
+    return;
+  }
 
-	ActorFrame::Update( fDeltaTime );
+  ActorFrame::Update(fDeltaTime);
 
-	if( GAMESTATE->m_pCurSong == nullptr )
-		return;
+  if (GAMESTATE->m_pCurSong == nullptr) {
+    return;
+  }
 
-	// If the song has changed (in a course), reset.
-	if( GAMESTATE->m_Position.m_fMusicSeconds < m_fLastSecond )
-		Init();
-	m_fLastSecond = GAMESTATE->m_Position.m_fMusicSeconds;
+  // If the song has changed (in a course), reset.
+  if (GAMESTATE->m_Position.m_fMusicSeconds < m_fLastSecond) {
+    Init();
+  }
+  m_fLastSecond = GAMESTATE->m_Position.m_fMusicSeconds;
 
-	if( m_iCurLyricNumber >= GAMESTATE->m_pCurSong->m_LyricSegments.size() )
-		return;
+  if (m_iCurLyricNumber >= GAMESTATE->m_pCurSong->m_LyricSegments.size()) {
+    return;
+  }
 
-	const Song *pSong = GAMESTATE->m_pCurSong;
-	const float fStartTime = (pSong->m_LyricSegments[m_iCurLyricNumber].m_fStartTime) - IN_LENGTH.GetValue();
+  const Song* pSong = GAMESTATE->m_pCurSong;
+  const float fStartTime =
+      (pSong->m_LyricSegments[m_iCurLyricNumber].m_fStartTime) -
+      IN_LENGTH.GetValue();
 
-	if( GAMESTATE->m_Position.m_fMusicSeconds < fStartTime )
-		return;
+  if (GAMESTATE->m_Position.m_fMusicSeconds < fStartTime) {
+    return;
+  }
 
-	// Clamp this lyric to the beginning of the next or the end of the music.
-	float fEndTime;
-	if( m_iCurLyricNumber+1 < GAMESTATE->m_pCurSong->m_LyricSegments.size() )
-		fEndTime = pSong->m_LyricSegments[m_iCurLyricNumber+1].m_fStartTime;
-	else
-		fEndTime = pSong->GetLastSecond();
-	
-	const float fDistance = fEndTime - pSong->m_LyricSegments[m_iCurLyricNumber].m_fStartTime;
-	const float fTweenBufferTime = IN_LENGTH.GetValue() + OUT_LENGTH.GetValue();
+  // Clamp this lyric to the beginning of the next or the end of the music.
+  float fEndTime;
+  if (m_iCurLyricNumber + 1 < GAMESTATE->m_pCurSong->m_LyricSegments.size()) {
+    fEndTime = pSong->m_LyricSegments[m_iCurLyricNumber + 1].m_fStartTime;
+  } else {
+    fEndTime = pSong->GetLastSecond();
+  }
 
-	/* If it's negative, two lyrics are so close together that there's no time
-	 * to tween properly. Lyrics should never be this brief, anyway, so just
-	 * skip it. */
-	float fShowLength = std::max( fDistance - fTweenBufferTime, 0.0f );
+  const float fDistance =
+      fEndTime - pSong->m_LyricSegments[m_iCurLyricNumber].m_fStartTime;
+  const float fTweenBufferTime = IN_LENGTH.GetValue() + OUT_LENGTH.GetValue();
 
-	// Make lyrics show faster for faster song rates.
-	fShowLength /= GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
+  /* If it's negative, two lyrics are so close together that there's no time
+   * to tween properly. Lyrics should never be this brief, anyway, so just
+   * skip it. */
+  float fShowLength = std::max(fDistance - fTweenBufferTime, 0.0f);
 
-	const LyricSegment &seg = GAMESTATE->m_pCurSong->m_LyricSegments[m_iCurLyricNumber];
+  // Make lyrics show faster for faster song rates.
+  fShowLength /= GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
 
-	LuaThreadVariable var1( "LyricText", seg.m_sLyric );
-	LuaThreadVariable var2( "LyricDuration", LuaReference::Create(fShowLength) );
-	LuaThreadVariable var3( "LyricColor", LuaReference::Create(seg.m_Color) );
+  const LyricSegment& seg =
+      GAMESTATE->m_pCurSong->m_LyricSegments[m_iCurLyricNumber];
 
-	PlayCommand( "Changed" );
+  LuaThreadVariable var1("LyricText", seg.m_sLyric);
+  LuaThreadVariable var2("LyricDuration", LuaReference::Create(fShowLength));
+  LuaThreadVariable var3("LyricColor", LuaReference::Create(seg.m_Color));
 
-	m_iCurLyricNumber++;
+  PlayCommand("Changed");
+
+  m_iCurLyricNumber++;
 }
 
 /*
  * (c) 2003-2004 Kevin Slaughter, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -109,7 +115,7 @@ void LyricDisplay::Update( float fDeltaTime )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

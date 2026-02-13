@@ -7,43 +7,46 @@
 #include "RageSoundReader.h"
 
 /** @brief Chain different sounds together. */
-class RageSoundReader_Merge: public RageSoundReader
-{
-public:
-	RageSoundReader_Merge();
-	virtual ~RageSoundReader_Merge();
-	RageSoundReader_Merge( const RageSoundReader_Merge &cpy );
-	virtual RageSoundReader_Merge *Copy() const { return new RageSoundReader_Merge( *this ); }
+class RageSoundReader_Merge : public RageSoundReader {
+ public:
+  RageSoundReader_Merge();
+  virtual ~RageSoundReader_Merge();
+  RageSoundReader_Merge(const RageSoundReader_Merge& cpy);
+  virtual RageSoundReader_Merge* Copy() const {
+    return new RageSoundReader_Merge(*this);
+  }
 
-	virtual int GetLength() const;
-	virtual int GetLength_Fast() const;
-	virtual int SetPosition( int iFrame );
-	virtual int Read( float *pBuf, int iFrames );
-	virtual int GetSampleRate() const { return m_iSampleRate; }
-	virtual unsigned GetNumChannels() const { return m_iChannels; }
-	virtual bool SetProperty( const std::string &sProperty, float fValue );
-	virtual int GetNextSourceFrame() const { return m_iNextSourceFrame; }
-	virtual float GetStreamToSourceRatio() const { return m_fCurrentStreamToSourceRatio; }
-	virtual std::string GetError() const { return ""; }
+  virtual int GetLength() const;
+  virtual int GetLength_Fast() const;
+  virtual int SetPosition(int iFrame);
+  virtual int Read(float* pBuf, int iFrames);
+  virtual int GetSampleRate() const { return m_iSampleRate; }
+  virtual unsigned GetNumChannels() const { return m_iChannels; }
+  virtual bool SetProperty(const std::string& sProperty, float fValue);
+  virtual int GetNextSourceFrame() const { return m_iNextSourceFrame; }
+  virtual float GetStreamToSourceRatio() const {
+    return m_fCurrentStreamToSourceRatio;
+  }
+  virtual std::string GetError() const { return ""; }
 
-	void AddSound( RageSoundReader *pSound );
+  void AddSound(RageSoundReader* pSound);
 
-	/**
-	 * @brief Finish adding sounds.
-	 * @param iPreferredSampleRate the sample rate for the sounds. */
-	void Finish( int iPreferredSampleRate );
+  /**
+   * @brief Finish adding sounds.
+   * @param iPreferredSampleRate the sample rate for the sounds. */
+  void Finish(int iPreferredSampleRate);
 
-private:
-	int GetSampleRateInternal() const;
+ private:
+  int GetSampleRateInternal() const;
 
-	int m_iSampleRate;
-	unsigned m_iChannels;
+  int m_iSampleRate;
+  unsigned m_iChannels;
 
-	std::vector<RageSoundReader *> m_aSounds;
+  std::vector<RageSoundReader*> m_aSounds;
 
-	/* Read state: */
-	int m_iNextSourceFrame;
-	float m_fCurrentStreamToSourceRatio;
+  /* Read state: */
+  int m_iNextSourceFrame;
+  float m_fCurrentStreamToSourceRatio;
 };
 
 #endif

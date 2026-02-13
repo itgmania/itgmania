@@ -6,61 +6,58 @@
 #include "config.hpp"
 
 #if defined(HAVE_UNISTD_H)
-    #include <unistd.h>
+#include <unistd.h>
 #endif
 
 #if defined(_WIN32)
-    #if defined(CRASH_HANDLER)
-        #include "windows.h"
-        #include "archutils/Win32/Crash.h"
-    #endif
-    #if defined(_MSC_VER)
-        #include <intrin.h>
-    #endif
+#if defined(CRASH_HANDLER)
+#include "archutils/Win32/Crash.h"
+#include "windows.h"
+#endif
+#if defined(_MSC_VER)
+#include <intrin.h>
+#endif
 #elif defined(MACOSX)
-    #include "archutils/Darwin/Crash.h"
-    using CrashHandler::IsDebuggerPresent;
-    using CrashHandler::DebugBreak;
+#include "archutils/Darwin/Crash.h"
+using CrashHandler::DebugBreak;
+using CrashHandler::IsDebuggerPresent;
 #endif
 
 #if defined(CRASH_HANDLER) && (defined(UNIX) || defined(MACOSX))
-    #include "archutils/Unix/CrashHandler.h"
+#include "archutils/Unix/CrashHandler.h"
 #endif
 
-void sm_crash(const std::string& s)
-{
-    sm_crash(s.c_str());
-}
+void sm_crash(const std::string& s) { sm_crash(s.c_str()); }
 
-void sm_crash( const char *reason )
-{
-#if ( defined(_WIN32) && defined(CRASH_HANDLER) ) || defined(MACOSX) || defined(_XDBG)
-	/* If we're being debugged, throw a debug break so it'll suspend the process. */
-	if( IsDebuggerPresent() )
-	{
-		DebugBreak();
-		for(;;); /* don't return */
-	}
+void sm_crash(const char* reason) {
+#if (defined(_WIN32) && defined(CRASH_HANDLER)) || defined(MACOSX) || \
+    defined(_XDBG)
+  /* If we're being debugged, throw a debug break so it'll suspend the process.
+   */
+  if (IsDebuggerPresent()) {
+    DebugBreak();
+    for (;;); /* don't return */
+  }
 #endif
 
 #if defined(CRASH_HANDLER)
-	CrashHandler::ForceCrash( reason );
+  CrashHandler::ForceCrash(reason);
 #else
-	std::abort();
+  std::abort();
 
-	/* This isn't actually reached.  We just do this to convince the compiler that the
-	 * function really doesn't return. */
-	for(;;);
+  /* This isn't actually reached.  We just do this to convince the compiler that
+   * the function really doesn't return. */
+  for (;;);
 #endif
 
 #if defined(_WIN32)
-	/* Do something after the above, so the call/return isn't optimized to a jmp; that
-	 * way, this function will appear in backtrace stack traces. */
+  /* Do something after the above, so the call/return isn't optimized to a jmp;
+   * that way, this function will appear in backtrace stack traces. */
 #if defined(_MSC_VER)
-	__nop();
+  __nop();
 #endif
 #else
-	_exit( 1 );
+  _exit(1);
 #endif
 }
 

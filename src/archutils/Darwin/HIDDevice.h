@@ -21,115 +21,122 @@
 /* A few helper functions. */
 
 // The result needs to be released.
-inline CFNumberRef CFInt( int n )
-{
-	return CFNumberCreate( kCFAllocatorDefault, kCFNumberIntType, &n );
+inline CFNumberRef CFInt(int n) {
+  return CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &n);
 }
 
-inline void PrintIOErr( IOReturn err, const char *s )
-{
-	LOG->Warn( "%s - %s(%x,%d)", s, mach_error_string(err), err, err & 0xFFFFFF );
+inline void PrintIOErr(IOReturn err, const char* s) {
+  LOG->Warn("%s - %s(%x,%d)", s, mach_error_string(err), err, err & 0xFFFFFF);
 }
 
-inline Boolean IntValue( CFTypeRef o, int &n )
-{
-	if( !o || CFGetTypeID(o) != CFNumberGetTypeID() )
-		return false;
-	return CFNumberGetValue( CFNumberRef(o), kCFNumberIntType, &n );
+inline Boolean IntValue(CFTypeRef o, int& n) {
+  if (!o || CFGetTypeID(o) != CFNumberGetTypeID()) {
+    return false;
+  }
+  return CFNumberGetValue(CFNumberRef(o), kCFNumberIntType, &n);
 }
 
-inline Boolean LongValue( CFTypeRef o, long &n )
-{
-	if( !o || CFGetTypeID(o) != CFNumberGetTypeID() )
-		return false;
-	return CFNumberGetValue( CFNumberRef(o), kCFNumberLongType, &n );
+inline Boolean LongValue(CFTypeRef o, long& n) {
+  if (!o || CFGetTypeID(o) != CFNumberGetTypeID()) {
+    return false;
+  }
+  return CFNumberGetValue(CFNumberRef(o), kCFNumberLongType, &n);
 }
 
-namespace __gnu_cxx
-{
+namespace __gnu_cxx {
 #ifndef __LP64__
-	template<>
-	struct hash<IOHIDElementCookie> : private hash<uintptr_t>
-	{
-		size_t operator()( const IOHIDElementCookie& cookie ) const
-		{
-			return hash<unsigned long>::operator()( uintptr_t(cookie) );
-		}
-	};
+template <>
+struct hash<IOHIDElementCookie> : private hash<uintptr_t> {
+  size_t operator()(const IOHIDElementCookie& cookie) const {
+    return hash<unsigned long>::operator()(uintptr_t(cookie));
+  }
+};
 #endif
-}
+}  // namespace __gnu_cxx
 
 /* This is just awful, these aren't objects, treating them as such
  * leads to: (*object)->function(object [, argument]...)
  * Instead, do: CALL(object, function [, argument]...)
  */
-#define CALL(o,f,...) (*(o))->f((o), ## __VA_ARGS__)
+#define CALL(o, f, ...) (*(o))->f((o), ##__VA_ARGS__)
 
-class HIDDevice
-{
-private:
-	IOHIDDeviceInterface **m_Interface;
-	IOHIDQueueInterface **m_Queue;
-	bool m_bRunning;
-	std::string m_sDescription;
+class HIDDevice {
+ private:
+  IOHIDDeviceInterface** m_Interface;
+  IOHIDQueueInterface** m_Queue;
+  bool m_bRunning;
+  std::string m_sDescription;
 
-	static void AddLogicalDevice( const void *value, void *context );
-	static void AddElement( const void *value, void *context );
+  static void AddLogicalDevice(const void* value, void* context);
+  static void AddElement(const void* value, void* context);
 
-protected:
-	/* Each physical device has zero or more logical devices. If this device
-	 * allows a logical device of type (usagePage, usage), then allocate storage
-	 * as necessary and return true, otherwise, return false. */
-	virtual bool AddLogicalDevice( int usagePage, int usage ) = 0;
+ protected:
+  /* Each physical device has zero or more logical devices. If this device
+   * allows a logical device of type (usagePage, usage), then allocate storage
+   * as necessary and return true, otherwise, return false. */
+  virtual bool AddLogicalDevice(int usagePage, int usage) = 0;
 
-	/* If the most recently added logical device cares about the state of an
-	 * element of type (usagePage, usage), store the cookie. */
-	virtual void AddElement( int usagePage, int usage, IOHIDElementCookie cookie, const CFDictionaryRef properties ) = 0;
+  /* If the most recently added logical device cares about the state of an
+   * element of type (usagePage, usage), store the cookie. */
+  virtual void AddElement(
+      int usagePage, int usage, IOHIDElementCookie cookie,
+      const CFDictionaryRef properties) = 0;
 
-	// Add any elements to the queue by calling AddElementToQueue() with the stored cookies.
-	virtual void Open() = 0;
+  // Add any elements to the queue by calling AddElementToQueue() with the
+  // stored cookies.
+  virtual void Open() = 0;
 
-	// Optional. Subclasses can initialize the device, if required.
-	virtual bool InitDevice( int vid, int pid ) { return true; }
+  // Optional. Subclasses can initialize the device, if required.
+  virtual bool InitDevice(int vid, int pid) { return true; }
 
-	// This adds the element with the given cookie to the queue to be notified of state changes.
-	inline void AddElementToQueue( IOHIDElementCookie cookie )
-	{
-		IOReturn ret = CALL( m_Queue, addElement, cookie, 0 );
-		if( ret != KERN_SUCCESS )
-			LOG->Warn( "Failed to add HID element with cookie %u to queue: %u", cookie, ret );
-	}
+  // This adds the element with the given cookie to the queue to be notified of
+  // state changes.
+  inline void AddElementToQueue(IOHIDElementCookie cookie) {
+    IOReturn ret = CALL(m_Queue, addElement, cookie, 0);
+    if (ret != KERN_SUCCESS) {
+      LOG->Warn(
+          "Failed to add HID element with cookie %u to queue: %u", cookie, ret);
+    }
+  }
 
-	// Perform a synchronous set report on the HID interface.
-	inline IOReturn SetReport( IOHIDReportType type, UInt32 reportID, void *buffer, UInt32 size, UInt32 timeoutMS )
-	{
-		return CALL( m_Interface, setReport, type, reportID, buffer, size, timeoutMS, nullptr, nullptr, nullptr );
-	}
-public:
-	HIDDevice();
-	virtual ~HIDDevice();
+  // Perform a synchronous set report on the HID interface.
+  inline IOReturn SetReport(
+      IOHIDReportType type, UInt32 reportID, void* buffer, UInt32 size,
+      UInt32 timeoutMS) {
+    return CALL(
+        m_Interface, setReport, type, reportID, buffer, size, timeoutMS,
+        nullptr, nullptr, nullptr);
+  }
 
-	bool Open( io_object_t device );
-	void StartQueue( CFRunLoopRef loopRef, IOHIDCallbackFunction callback, void *target );
-	inline const std::string& GetDescription() const { return m_sDescription; }
+ public:
+  HIDDevice();
+  virtual ~HIDDevice();
 
-	/* Add button presses (or releases) to vPresses for the given cookie. More
-	 * than one DeviceInput can be added at a time. For example, Two axes
-	 * presses may be generated by a single element. The value of the element is
-	 * passed to determine if this is a push or a release. The time is provided
-	 * as an optimization. */
-	virtual void GetButtonPresses( std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value, const RageTimer& now ) const = 0;
+  bool Open(io_object_t device);
+  void StartQueue(
+      CFRunLoopRef loopRef, IOHIDCallbackFunction callback, void* target);
+  inline const std::string& GetDescription() const { return m_sDescription; }
 
-	/* Returns the number of IDs assigned starting from startID. This is not
-	 * meaningful for devices like keyboards that all share the same InputDevice
-	 * id. If a particular device has multiple logical devices, then it must
-	 * ensure that AssignIDs does not assign an ID outside of its range.
-	 * Return -1 to indicate that the device does not share the same InputDevice
-	 * and none could be assigned. */
-	virtual int AssignIDs( InputDevice startID ) { return 0; }
+  /* Add button presses (or releases) to vPresses for the given cookie. More
+   * than one DeviceInput can be added at a time. For example, Two axes
+   * presses may be generated by a single element. The value of the element is
+   * passed to determine if this is a push or a release. The time is provided
+   * as an optimization. */
+  virtual void GetButtonPresses(
+      std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value,
+      const RageTimer& now) const = 0;
 
-	//Add a device and a description for each logical device.
-	virtual void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevices ) const = 0;
+  /* Returns the number of IDs assigned starting from startID. This is not
+   * meaningful for devices like keyboards that all share the same InputDevice
+   * id. If a particular device has multiple logical devices, then it must
+   * ensure that AssignIDs does not assign an ID outside of its range.
+   * Return -1 to indicate that the device does not share the same InputDevice
+   * and none could be assigned. */
+  virtual int AssignIDs(InputDevice startID) { return 0; }
+
+  // Add a device and a description for each logical device.
+  virtual void GetDevicesAndDescriptions(
+      std::vector<InputDeviceInfo>& vDevices) const = 0;
 };
 
 #endif

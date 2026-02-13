@@ -9,70 +9,64 @@ class TimingData;
 class RageSound;
 struct lua_State;
 
-int MusicThread_start( void *p );
+int MusicThread_start(void* p);
 
 /** @brief High-level sound utilities. */
-class GameSoundManager
-{
-public:
-	GameSoundManager();
-	~GameSoundManager();
-	void Update( float fDeltaTime );
+class GameSoundManager {
+ public:
+  GameSoundManager();
+  ~GameSoundManager();
+  void Update(float fDeltaTime);
 
-	struct PlayMusicParams
-	{
-		PlayMusicParams()
-		{
-			pTiming = nullptr;
-			bForceLoop = false;
-			fStartSecond = 0;
-			fLengthSeconds = -1;
-			fFadeInLengthSeconds = 0;
-			fFadeOutLengthSeconds = 0;
-			bAlignBeat = true;
-			bApplyMusicRate = false;
-		}
+  struct PlayMusicParams {
+    PlayMusicParams() {
+      pTiming = nullptr;
+      bForceLoop = false;
+      fStartSecond = 0;
+      fLengthSeconds = -1;
+      fFadeInLengthSeconds = 0;
+      fFadeOutLengthSeconds = 0;
+      bAlignBeat = true;
+      bApplyMusicRate = false;
+    }
 
-		std::string sFile;
-		const TimingData *pTiming;
-		bool bForceLoop;
-		float fStartSecond;
-		float fLengthSeconds;
-		float fFadeInLengthSeconds;
-		float fFadeOutLengthSeconds;
-		bool bAlignBeat;
-		bool bApplyMusicRate;
-	};
-	void PlayMusic( PlayMusicParams params, PlayMusicParams FallbackMusicParams = PlayMusicParams() );
-	void PlayMusic( 
-		std::string sFile, 
-		const TimingData *pTiming = nullptr, 
-		bool force_loop = false, 
-		float start_sec = 0, 
-		float length_sec = -1, 
-		float fFadeInLengthSeconds = 0,
-		float fade_len = 0, 
-		bool align_beat = true,
-		bool bApplyMusicRate = false );
-	void StopMusic() { PlayMusic(""); }
-	void DimMusic( float fVolume, float fDurationSeconds );
-	std::string GetMusicPath() const;
-	void Flush();
+    std::string sFile;
+    const TimingData* pTiming;
+    bool bForceLoop;
+    float fStartSecond;
+    float fLengthSeconds;
+    float fFadeInLengthSeconds;
+    float fFadeOutLengthSeconds;
+    bool bAlignBeat;
+    bool bApplyMusicRate;
+  };
+  void PlayMusic(
+      PlayMusicParams params,
+      PlayMusicParams FallbackMusicParams = PlayMusicParams());
+  void PlayMusic(
+      std::string sFile, const TimingData* pTiming = nullptr,
+      bool force_loop = false, float start_sec = 0, float length_sec = -1,
+      float fFadeInLengthSeconds = 0, float fade_len = 0,
+      bool align_beat = true, bool bApplyMusicRate = false);
+  void StopMusic() { PlayMusic(""); }
+  void DimMusic(float fVolume, float fDurationSeconds);
+  std::string GetMusicPath() const;
+  void Flush();
 
-	void PlayOnce( std::string sPath );
-	void PlayOnceFromDir( std::string sDir );
-	void PlayOnceFromAnnouncer( std::string sFolderName );
+  void PlayOnce(std::string sPath);
+  void PlayOnceFromDir(std::string sDir);
+  void PlayOnceFromAnnouncer(std::string sFolderName);
 
-	void HandleSongTimer( bool on=true );
-	float GetFrameTimingAdjustment( float fDeltaTime );
+  void HandleSongTimer(bool on = true);
+  float GetFrameTimingAdjustment(float fDeltaTime);
 
-	static float GetPlayerBalance( PlayerNumber pn );
+  static float GetPlayerBalance(PlayerNumber pn);
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 };
 
-extern GameSoundManager *SOUND;
+extern GameSoundManager* SOUND;
 #endif
 
 /*
@@ -99,4 +93,3 @@ extern GameSoundManager *SOUND;
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

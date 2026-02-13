@@ -8,26 +8,28 @@
 #include "ScoreKeeperNormal.h"
 
 /** @brief ScoreKeeper for Routine mode. */
-class ScoreKeeperShared : public ScoreKeeperNormal
-{
-public:
-	ScoreKeeperShared( PlayerState *pPlayerState, PlayerStageStats *pPlayerStageStats );
+class ScoreKeeperShared : public ScoreKeeperNormal {
+ public:
+  ScoreKeeperShared(
+      PlayerState* pPlayerState, PlayerStageStats* pPlayerStageStats);
 
-	virtual void Load(
-	const std::vector<Song*> &apSongs,
-	const std::vector<Steps*> &apSteps,
-	const std::vector<AttackArray> &asModifiers );
+  virtual void Load(
+      const std::vector<Song*>& apSongs, const std::vector<Steps*>& apSteps,
+      const std::vector<AttackArray>& asModifiers);
 
-	virtual void DrawPrimitives();
-	virtual void Update( float fDelta );
+  virtual void DrawPrimitives();
+  virtual void Update(float fDelta);
 
-	virtual void OnNextSong( int iSongInCourseIndex, const Steps* pSteps, const NoteData* pNoteData );
-	virtual void HandleTapScore( const TapNote &tn );
-	virtual void HandleTapRowScore( const NoteData &nd, int iRow );
-	virtual void HandleHoldScore( const TapNote &tn );
-	virtual void HandleHoldActiveSeconds( float fMusicSecondsHeld );
-	virtual void HandleHoldCheckpointScore( const NoteData &nd, int iRow, int iNumHoldsHeldThisRow, int iNumHoldsMissedThisRow );
-	virtual void HandleTapScoreNone();
+  virtual void OnNextSong(
+      int iSongInCourseIndex, const Steps* pSteps, const NoteData* pNoteData);
+  virtual void HandleTapScore(const TapNote& tn);
+  virtual void HandleTapRowScore(const NoteData& nd, int iRow);
+  virtual void HandleHoldScore(const TapNote& tn);
+  virtual void HandleHoldActiveSeconds(float fMusicSecondsHeld);
+  virtual void HandleHoldCheckpointScore(
+      const NoteData& nd, int iRow, int iNumHoldsHeldThisRow,
+      int iNumHoldsMissedThisRow);
+  virtual void HandleTapScoreNone();
 };
 #endif
 

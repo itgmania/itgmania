@@ -7,32 +7,31 @@
 #include "RageSoundDriver.h"
 #include "RageThreads.h"
 
-class RageSoundDriver_OSS: public RageSoundDriver
-{
-	int fd;
+class RageSoundDriver_OSS : public RageSoundDriver {
+  int fd;
 
-	bool shutdown;
-	int last_cursor_pos;
-	int samplerate;
+  bool shutdown;
+  int last_cursor_pos;
+  int samplerate;
 
-	static int MixerThread_start(void *p);
-	void MixerThread();
-	RageThread MixingThread;
+  static int MixerThread_start(void* p);
+  void MixerThread();
+  RageThread MixingThread;
 
-	static std::string CheckOSSVersion( int fd );
+  static std::string CheckOSSVersion(int fd);
 
-public:
-	bool GetData();
-	int GetSampleRate() const { return samplerate; }
+ public:
+  bool GetData();
+  int GetSampleRate() const { return samplerate; }
 
-	/* virtuals: */
-	int64_t GetPosition() const;
-	float GetPlayLatency() const;
-	void SetupDecodingThread();
+  /* virtuals: */
+  int64_t GetPosition() const;
+  float GetPlayLatency() const;
+  void SetupDecodingThread();
 
-	RageSoundDriver_OSS();
-	std::string Init();
-	~RageSoundDriver_OSS();
+  RageSoundDriver_OSS();
+  std::string Init();
+  ~RageSoundDriver_OSS();
 };
 
 #endif

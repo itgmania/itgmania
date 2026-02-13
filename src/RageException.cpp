@@ -15,55 +15,55 @@
 #include <windows.h>
 #elif defined(MACOSX)
 #include "archutils/Darwin/Crash.h"
-using CrashHandler::IsDebuggerPresent;
 using CrashHandler::DebugBreak;
+using CrashHandler::IsDebuggerPresent;
 #endif
 
 static uint64_t g_HandlerThreadID = RageThread::GetInvalidThreadID();
-static void (*g_CleanupHandler)( const std::string &sError ) = nullptr;
-void RageException::SetCleanupHandler( void (*pHandler)(const std::string &sError) )
-{
-	g_HandlerThreadID = RageThread::GetCurrentThreadID();
-	g_CleanupHandler = pHandler;
+static void (*g_CleanupHandler)(const std::string& sError) = nullptr;
+void RageException::SetCleanupHandler(
+    void (*pHandler)(const std::string& sError)) {
+  g_HandlerThreadID = RageThread::GetCurrentThreadID();
+  g_CleanupHandler = pHandler;
 }
 
 /* This is no longer actually implemented by throwing an exception, but it acts
  * the same way to code in practice. */
-void RageException::Throw( const char *sFmt, ... )
-{
-	va_list	va;
-	va_start( va, sFmt );
-	std::string error = vssprintf( sFmt, va );
-	va_end( va );
+void RageException::Throw(const char* sFmt, ...) {
+  va_list va;
+  va_start(va, sFmt);
+  std::string error = vssprintf(sFmt, va);
+  va_end(va);
 
-	std::string msg = ssprintf(
-		"\n"
-		"//////////////////////////////////////////////////////\n"
-		"Exception: %s\n"
-		"//////////////////////////////////////////////////////\n",
-		error.c_str() );
-	if( LOG )
-	{
-		LOG->Trace( "%s", msg.c_str() );
-		LOG->Flush();
-	}
-	else
-	{
-		puts( msg.c_str() );
-		fflush( stdout );
-	}
+  std::string msg = ssprintf(
+      "\n"
+      "//////////////////////////////////////////////////////\n"
+      "Exception: %s\n"
+      "//////////////////////////////////////////////////////\n",
+      error.c_str());
+  if (LOG) {
+    LOG->Trace("%s", msg.c_str());
+    LOG->Flush();
+  } else {
+    puts(msg.c_str());
+    fflush(stdout);
+  }
 
 #if (defined(WINDOWS) && defined(DEBUG)) || defined(_XDBG) || defined(MACOSX)
-	if( IsDebuggerPresent() )
-		DebugBreak();
+  if (IsDebuggerPresent()) {
+    DebugBreak();
+  }
 #endif
 
-	ASSERT_M( g_HandlerThreadID == RageThread::GetInvalidThreadID() || g_HandlerThreadID == RageThread::GetCurrentThreadID(),
-		  ssprintf("RageException::Throw() on another thread: %s", error.c_str()) );
-	if( g_CleanupHandler != nullptr )
-		g_CleanupHandler( error );
+  ASSERT_M(
+      g_HandlerThreadID == RageThread::GetInvalidThreadID() ||
+          g_HandlerThreadID == RageThread::GetCurrentThreadID(),
+      ssprintf("RageException::Throw() on another thread: %s", error.c_str()));
+  if (g_CleanupHandler != nullptr) {
+    g_CleanupHandler(error);
+  }
 
-	exit(1);
+  exit(1);
 }
 
 /*

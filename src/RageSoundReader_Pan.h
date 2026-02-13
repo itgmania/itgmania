@@ -8,17 +8,16 @@
 #include "RageSoundReader.h"
 #include "RageSoundReader_Filter.h"
 
-class RageSoundReader_Pan: public RageSoundReader_Filter
-{
-public:
-	RageSoundReader_Pan( RageSoundReader *pSource );
-	RageSoundReader_Pan *Copy() const { return new RageSoundReader_Pan(*this); }
-	virtual unsigned GetNumChannels() const;
-	virtual int Read( float *pBuf, int iFrames );
-	virtual bool SetProperty( const std::string &sProperty, float fValue );
+class RageSoundReader_Pan : public RageSoundReader_Filter {
+ public:
+  RageSoundReader_Pan(RageSoundReader* pSource);
+  RageSoundReader_Pan* Copy() const { return new RageSoundReader_Pan(*this); }
+  virtual unsigned GetNumChannels() const;
+  virtual int Read(float* pBuf, int iFrames);
+  virtual bool SetProperty(const std::string& sProperty, float fValue);
 
-private:
-	float m_fPan;
+ private:
+  float m_fPan;
 };
 
 #endif

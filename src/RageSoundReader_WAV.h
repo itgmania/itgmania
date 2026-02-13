@@ -10,34 +10,33 @@
 
 struct WavReader;
 
-std::string ReadString( RageFileBasic &f, int iSize, std::string &sError );
+std::string ReadString(RageFileBasic& f, int iSize, std::string& sError);
 
-class RageSoundReader_WAV: public RageSoundReader_FileReader
-{
-public:
-	OpenResult Open( RageFileBasic *pFile );
-	void Close();
-	int GetLength() const;
-	int SetPosition( int iFrame );
-	int Read( float *pBuf, int iFrames );
-	int GetSampleRate() const { return m_WavData.m_iSampleRate; }
-	unsigned GetNumChannels() const { return m_WavData.m_iChannels; }
-	int GetNextSourceFrame() const;
-	RageSoundReader_WAV();
-	~RageSoundReader_WAV();
-	RageSoundReader_WAV( const RageSoundReader_WAV & ); /* not defined; don't use */
-	RageSoundReader_WAV *Copy() const;
+class RageSoundReader_WAV : public RageSoundReader_FileReader {
+ public:
+  OpenResult Open(RageFileBasic* pFile);
+  void Close();
+  int GetLength() const;
+  int SetPosition(int iFrame);
+  int Read(float* pBuf, int iFrames);
+  int GetSampleRate() const { return m_WavData.m_iSampleRate; }
+  unsigned GetNumChannels() const { return m_WavData.m_iChannels; }
+  int GetNextSourceFrame() const;
+  RageSoundReader_WAV();
+  ~RageSoundReader_WAV();
+  RageSoundReader_WAV(const RageSoundReader_WAV&); /* not defined; don't use */
+  RageSoundReader_WAV* Copy() const;
 
-	struct WavData
-	{
-		int32_t m_iDataChunkPos, m_iDataChunkSize, m_iExtraFmtPos, m_iSampleRate, m_iFormatTag;
-		int16_t m_iChannels, m_iBitsPerSample, m_iBlockAlign, m_iExtraFmtBytes;
-	};
+  struct WavData {
+    int32_t m_iDataChunkPos, m_iDataChunkSize, m_iExtraFmtPos, m_iSampleRate,
+        m_iFormatTag;
+    int16_t m_iChannels, m_iBitsPerSample, m_iBlockAlign, m_iExtraFmtBytes;
+  };
 
-private:
-	WavData m_WavData;
+ private:
+  WavData m_WavData;
 
-	WavReader *m_pImpl;
+  WavReader* m_pImpl;
 };
 
 #endif

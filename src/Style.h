@@ -1,4 +1,5 @@
-/** @brief Style - A data structure that holds the definition for one of a Game's styles. */
+/** @brief Style - A data structure that holds the definition for one of a
+ * Game's styles. */
 
 #ifndef STYLE_H
 #define STYLE_H
@@ -20,87 +21,94 @@ class NoteData;
 struct Game;
 struct lua_State;
 
-class Style
-{
-public:
-	/** @brief Can this style be used for gameplay purposes? */
-	bool m_bUsedForGameplay;
-	/** @brief Can this style be used for making edits? */
-	bool m_bUsedForEdit;
-	/** @brief Can this style be used in a demonstration? */
-	bool m_bUsedForDemonstration;
-	/** @brief Can this style be used to explain how to play the game? */
-	bool m_bUsedForHowToPlay;
+class Style {
+ public:
+  /** @brief Can this style be used for gameplay purposes? */
+  bool m_bUsedForGameplay;
+  /** @brief Can this style be used for making edits? */
+  bool m_bUsedForEdit;
+  /** @brief Can this style be used in a demonstration? */
+  bool m_bUsedForDemonstration;
+  /** @brief Can this style be used to explain how to play the game? */
+  bool m_bUsedForHowToPlay;
 
-	/**
-	 * @brief The name of the style.
-	 *
-	 * Used by GameManager::GameAndStringToStyle to determine whether this is the style that matches the string. */
-	const char *		m_szName;
+  /**
+   * @brief The name of the style.
+   *
+   * Used by GameManager::GameAndStringToStyle to determine whether this is the
+   * style that matches the string. */
+  const char* m_szName;
 
-	/**
-	 * @brief Steps format used for each player.
-	 *
-	 * For example, "dance versus" reads the Steps with the tag "dance-single". */
-	StepsType		m_StepsType;
+  /**
+   * @brief Steps format used for each player.
+   *
+   * For example, "dance versus" reads the Steps with the tag "dance-single". */
+  StepsType m_StepsType;
 
-	/** @brief Style format used for each player. */
-	StyleType		m_StyleType;
+  /** @brief Style format used for each player. */
+  StyleType m_StyleType;
 
-	/**
-	 * @brief The number of total tracks/columns this style expects.
-	 *
-	 * As an example, 4 is expected for ITG style versus, but 8 for ITG style double. */
-	int			m_iColsPerPlayer;
-	/** @brief Some general column infromation */
-	struct ColumnInfo
-	{
-		int   track;		/**< Take note data from this track. */
-		float fXOffset;		/**< This is the x position of the column relative to the player's center. */
-		const char *pzName;	/**< The name of the column, or nullptr to use the button name mapped to it. */
-	};
+  /**
+   * @brief The number of total tracks/columns this style expects.
+   *
+   * As an example, 4 is expected for ITG style versus, but 8 for ITG style
+   * double. */
+  int m_iColsPerPlayer;
+  /** @brief Some general column infromation */
+  struct ColumnInfo {
+    int track;      /**< Take note data from this track. */
+    float fXOffset; /**< This is the x position of the column relative to the
+                       player's center. */
+    const char* pzName; /**< The name of the column, or nullptr to use the
+                           button name mapped to it. */
+  };
 
-	/** @brief Map each players' colun to a track in the NoteData. */
-	ColumnInfo		m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
+  /** @brief Map each players' colun to a track in the NoteData. */
+  ColumnInfo m_ColumnInfo[NUM_PLAYERS][MAX_COLS_PER_PLAYER];
 
-	/* This maps from game inputs to columns. More than one button may map to a
-	 * single column. */
-	enum { NO_MAPPING = -1, END_MAPPING = -2 };
-	/** @brief Map each input to a column, or GameButton_Invalid. */
-	int			m_iInputColumn[NUM_GameController][NUM_GameButton];
-	int			m_iColumnDrawOrder[MAX_COLS_PER_PLAYER];
-	/** @brief Does this style need to be zoomed out with two players due to too many columns? */
-	// Design change:  Instead of having a flag in the style that toggles a
-	// fixed zoom that is only applied to the columns, ScreenGameplay now
-	// calculates a zoom factor to apply to the notefield and puts it in the
-	// PlayerState. -Kyz
-	//bool		m_bNeedsZoomOutWith2Players;
-	/** @brief Can this style use the BeginnerHelper for assisting new people to the game? */
-	bool		m_bCanUseBeginnerHelper;
-	/**
-	 * @brief Should difficulty selection be locked when using this style?
-	 *
-	 * This is primarily for Couple and Routine styles. */
-	bool		m_bLockDifficulties;
+  /* This maps from game inputs to columns. More than one button may map to a
+   * single column. */
+  enum { NO_MAPPING = -1, END_MAPPING = -2 };
+  /** @brief Map each input to a column, or GameButton_Invalid. */
+  int m_iInputColumn[NUM_GameController][NUM_GameButton];
+  int m_iColumnDrawOrder[MAX_COLS_PER_PLAYER];
+  /** @brief Does this style need to be zoomed out with two players due to too
+   * many columns? */
+  // Design change:  Instead of having a flag in the style that toggles a
+  // fixed zoom that is only applied to the columns, ScreenGameplay now
+  // calculates a zoom factor to apply to the notefield and puts it in the
+  // PlayerState. -Kyz
+  // bool		m_bNeedsZoomOutWith2Players;
+  /** @brief Can this style use the BeginnerHelper for assisting new people to
+   * the game? */
+  bool m_bCanUseBeginnerHelper;
+  /**
+   * @brief Should difficulty selection be locked when using this style?
+   *
+   * This is primarily for Couple and Routine styles. */
+  bool m_bLockDifficulties;
 
-	void StyleInputToGameInput( int iCol, PlayerNumber pn, std::vector<GameInput>& ret ) const;
-	/**
-	 * @brief Retrieve the column based on the game input.
-	 * @param GameI the game input.
-	 * @return the Column number of the style, or Column_Invalid if it's an invalid column.
-	 * Examples of this include getting the upper left hand corner in a traditional four panel mode. */
-	int GameInputToColumn( const GameInput &GameI ) const;
-	std::string ColToButtonName( int iCol ) const;
+  void StyleInputToGameInput(
+      int iCol, PlayerNumber pn, std::vector<GameInput>& ret) const;
+  /**
+   * @brief Retrieve the column based on the game input.
+   * @param GameI the game input.
+   * @return the Column number of the style, or Column_Invalid if it's an
+   * invalid column. Examples of this include getting the upper left hand corner
+   * in a traditional four panel mode. */
+  int GameInputToColumn(const GameInput& GameI) const;
+  std::string ColToButtonName(int iCol) const;
 
-	bool GetUsesCenteredArrows() const;
-	void GetTransformedNoteDataForStyle( PlayerNumber pn, const NoteData& original, NoteData& noteDataOut ) const;
-	void GetMinAndMaxColX( PlayerNumber pn, float& fMixXOut, float& fMaxXOut ) const;
-	float GetWidth(PlayerNumber pn) const;
+  bool GetUsesCenteredArrows() const;
+  void GetTransformedNoteDataForStyle(
+      PlayerNumber pn, const NoteData& original, NoteData& noteDataOut) const;
+  void GetMinAndMaxColX(
+      PlayerNumber pn, float& fMixXOut, float& fMaxXOut) const;
+  float GetWidth(PlayerNumber pn) const;
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 };
-
 
 #endif
 

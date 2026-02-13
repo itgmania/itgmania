@@ -7,24 +7,23 @@
 #include "ArchHooks.h"
 class RageMutex;
 
-class ArchHooks_Win32: public ArchHooks
-{
-public:
-	ArchHooks_Win32();
-	~ArchHooks_Win32();
-	std::string GetArchName() const { return "Windows"; }
-	void DumpDebugInfo();
-	void RestartProgram();
-	bool CheckForMultipleInstances(int argc, char* argv[]);
+class ArchHooks_Win32 : public ArchHooks {
+ public:
+  ArchHooks_Win32();
+  ~ArchHooks_Win32();
+  std::string GetArchName() const { return "Windows"; }
+  void DumpDebugInfo();
+  void RestartProgram();
+  bool CheckForMultipleInstances(int argc, char* argv[]);
 
-	void SetTime( tm newtime );
+  void SetTime(tm newtime);
 
-	void BoostPriority();
-	void UnBoostPriority();
-	void SetupConcurrentRenderingThread();
+  void BoostPriority();
+  void UnBoostPriority();
+  void SetupConcurrentRenderingThread();
 
-	virtual float GetDisplayAspectRatio();
-	std::string GetClipboard();
+  virtual float GetDisplayAspectRatio();
+  std::string GetClipboard();
 };
 
 #ifdef ARCH_HOOKS
@@ -36,7 +35,7 @@ public:
 /*
  * (c) 2002-2004 Glenn Maynard, Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -46,7 +45,7 @@ public:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

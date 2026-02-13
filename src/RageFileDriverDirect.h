@@ -9,65 +9,63 @@
 #include "RageFileDriver.h"
 
 /** @brief File driver for accessing a regular filesystem. */
-class RageFileDriverDirect: public RageFileDriver
-{
-public:
-	RageFileDriverDirect( const std::string &sRoot );
+class RageFileDriverDirect : public RageFileDriver {
+ public:
+  RageFileDriverDirect(const std::string& sRoot);
 
-	RageFileBasic *Open( const std::string &sPath, int iMode, int &iError );
-	bool Move( const std::string &sOldPath, const std::string &sNewPath );
-	bool Remove( const std::string &sPath );
-	bool Remount( const std::string &sPath );
+  RageFileBasic* Open(const std::string& sPath, int iMode, int& iError);
+  bool Move(const std::string& sOldPath, const std::string& sNewPath);
+  bool Remove(const std::string& sPath);
+  bool Remount(const std::string& sPath);
 
-private:
-	std::string m_sRoot;
+ private:
+  std::string m_sRoot;
 };
 
-class RageFileDriverDirectReadOnly: public RageFileDriverDirect
-{
-public:
-	RageFileDriverDirectReadOnly( const std::string &sRoot );
-	RageFileBasic *Open( const std::string &sPath, int iMode, int &iError );
-	bool Move( const std::string &sOldPath, const std::string &sNewPath );
-	bool Remove( const std::string &sPath );
+class RageFileDriverDirectReadOnly : public RageFileDriverDirect {
+ public:
+  RageFileDriverDirectReadOnly(const std::string& sRoot);
+  RageFileBasic* Open(const std::string& sPath, int iMode, int& iError);
+  bool Move(const std::string& sOldPath, const std::string& sNewPath);
+  bool Remove(const std::string& sPath);
 };
 
 /** @brief This driver handles direct file access. */
 
-class RageFileObjDirect: public RageFileObj
-{
-public:
-	RageFileObjDirect( const std::string &sPath, int iFD, int iMode );
-	virtual ~RageFileObjDirect();
-	virtual int ReadInternal( void *pBuffer, size_t iBytes );
-	virtual int WriteInternal( const void *pBuffer, size_t iBytes );
-	virtual int FlushInternal();
-	virtual int SeekInternal( int offset );
-	virtual RageFileObjDirect *Copy() const;
-	virtual std::string GetDisplayPath() const { return m_sPath; }
-	virtual int GetFileSize() const;
-	virtual int GetFD();
+class RageFileObjDirect : public RageFileObj {
+ public:
+  RageFileObjDirect(const std::string& sPath, int iFD, int iMode);
+  virtual ~RageFileObjDirect();
+  virtual int ReadInternal(void* pBuffer, size_t iBytes);
+  virtual int WriteInternal(const void* pBuffer, size_t iBytes);
+  virtual int FlushInternal();
+  virtual int SeekInternal(int offset);
+  virtual RageFileObjDirect* Copy() const;
+  virtual std::string GetDisplayPath() const { return m_sPath; }
+  virtual int GetFileSize() const;
+  virtual int GetFD();
 
-private:
-	bool FinalFlush();
+ private:
+  bool FinalFlush();
 
-	int m_iFD;
-	int m_iMode;
-	std::string m_sPath; /* for Copy */
+  int m_iFD;
+  int m_iMode;
+  std::string m_sPath; /* for Copy */
 
-	/*
-	 * When not streaming to disk, we write to a temporary file, and rename to the
-	 * real file on completion.  If any write, this is aborted.  When streaming to
-	 * disk, allow recovering from errors.
-	 */
-	bool m_bWriteFailed;
-	bool WriteFailed() const { return !(m_iMode & RageFile::STREAMED) && m_bWriteFailed; }
+  /*
+   * When not streaming to disk, we write to a temporary file, and rename to the
+   * real file on completion.  If any write, this is aborted.  When streaming to
+   * disk, allow recovering from errors.
+   */
+  bool m_bWriteFailed;
+  bool WriteFailed() const {
+    return !(m_iMode & RageFile::STREAMED) && m_bWriteFailed;
+  }
 
-	// unused
-	RageFileObjDirect& operator=(const RageFileObjDirect& rhs);
-	RageFileObjDirect(const RageFileObjDirect& rhs);
+  // unused
+  RageFileObjDirect& operator=(const RageFileObjDirect& rhs);
+  RageFileObjDirect(const RageFileObjDirect& rhs);
 };
-
 
 #endif
 
@@ -95,4 +93,3 @@ private:
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

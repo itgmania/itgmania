@@ -6,274 +6,249 @@
 #include <algorithm>
 #include <cstring>
 
-/* Lock-free circular buffer.  This should be threadsafe if one thread is reading
- * and another is writing. */
-template<class T>
-class CircBuf
-{
-	T *buf;
-	/* read_pos is the position data is read from; write_pos is the position
-	 * data is written to.  If read_pos == write_pos, the buffer is empty.
-	 *
-	 * There will always be at least one position empty, as a completely full
-	 * buffer (read_pos == write_pos) is indistinguishable from an empty buffer.
-	 *
-	 * Invariants: read_pos < size, write_pos < size. */
-	unsigned size;
-	unsigned m_iBlockSize;
+/* Lock-free circular buffer.  This should be threadsafe if one thread is
+ * reading and another is writing. */
+template <class T>
+class CircBuf {
+  T* buf;
+  /* read_pos is the position data is read from; write_pos is the position
+   * data is written to.  If read_pos == write_pos, the buffer is empty.
+   *
+   * There will always be at least one position empty, as a completely full
+   * buffer (read_pos == write_pos) is indistinguishable from an empty buffer.
+   *
+   * Invariants: read_pos < size, write_pos < size. */
+  unsigned size;
+  unsigned m_iBlockSize;
 
-	/* These are volatile to prevent reads and writes to them from being optimized. */
-	volatile unsigned read_pos, write_pos;
+  /* These are volatile to prevent reads and writes to them from being
+   * optimized. */
+  volatile unsigned read_pos, write_pos;
 
-public:
-	CircBuf()
-	{
-		buf = nullptr;
-		clear();
-	}
+ public:
+  CircBuf() {
+    buf = nullptr;
+    clear();
+  }
 
-	~CircBuf()
-	{
-		delete[] buf;
-	}
-		
-	void swap( CircBuf &rhs )
-	{
-		std::swap( size, rhs.size );
-		std::swap( m_iBlockSize, rhs.m_iBlockSize );
-		std::swap( read_pos, rhs.read_pos );
-		std::swap( write_pos, rhs.write_pos );
-		std::swap( buf, rhs.buf );
-	}
+  ~CircBuf() { delete[] buf; }
 
-	CircBuf &operator=( const CircBuf &rhs )
-	{
-		CircBuf c( rhs );
-		this->swap( c );
-		return *this;
-	}
+  void swap(CircBuf& rhs) {
+    std::swap(size, rhs.size);
+    std::swap(m_iBlockSize, rhs.m_iBlockSize);
+    std::swap(read_pos, rhs.read_pos);
+    std::swap(write_pos, rhs.write_pos);
+    std::swap(buf, rhs.buf);
+  }
 
-	CircBuf( const CircBuf &cpy )
-	{
-		size = cpy.size;
-		read_pos = cpy.read_pos;
-		write_pos = cpy.write_pos;
-		m_iBlockSize = cpy.m_iBlockSize;
-		if( size )
-		{
-			buf = new T[size];
-			memcpy( buf, cpy.buf, size*sizeof(T) );
-		}
-		else
-		{
-			buf = nullptr;
-		}
-	}
+  CircBuf& operator=(const CircBuf& rhs) {
+    CircBuf c(rhs);
+    this->swap(c);
+    return *this;
+  }
 
-	/* Return the number of elements available to read. */
-	unsigned num_readable() const
-	{
-		const int rpos = read_pos;
-		const int wpos = write_pos;
-		if( rpos < wpos )
-			/* The buffer looks like "eeeeDDDDeeee" (e = empty, D = data). */
-			return wpos - rpos;
-		else if( rpos > wpos )
-			/* The buffer looks like "DDeeeeeeeeDD" (e = empty, D = data). */
-			return size - (rpos - wpos);
-		else // if( rpos == wpos )
-			/* The buffer looks like "eeeeeeeeeeee" (e = empty, D = data). */
-			return 0;
-	}
-	
-	/* Return the number of writable elements. */
-	unsigned num_writable() const
-	{
-		const int rpos = read_pos;
-		const int wpos = write_pos;
+  CircBuf(const CircBuf& cpy) {
+    size = cpy.size;
+    read_pos = cpy.read_pos;
+    write_pos = cpy.write_pos;
+    m_iBlockSize = cpy.m_iBlockSize;
+    if (size) {
+      buf = new T[size];
+      memcpy(buf, cpy.buf, size * sizeof(T));
+    } else {
+      buf = nullptr;
+    }
+  }
 
-		int ret;
-		if( rpos < wpos )
-			/* The buffer looks like "eeeeDDDDeeee" (e = empty, D = data). */
-			ret = size - (wpos - rpos);
-		else if( rpos > wpos )
-			/* The buffer looks like "DDeeeeeeeeDD" (e = empty, D = data). */
-			ret = rpos - wpos;
-		else // if( rpos == wpos )
-			/* The buffer looks like "eeeeeeeeeeee" (e = empty, D = data). */
-			ret = size;
+  /* Return the number of elements available to read. */
+  unsigned num_readable() const {
+    const int rpos = read_pos;
+    const int wpos = write_pos;
+    if (rpos < wpos) {
+      /* The buffer looks like "eeeeDDDDeeee" (e = empty, D = data). */
+      return wpos - rpos;
+    } else if (rpos > wpos) {
+      /* The buffer looks like "DDeeeeeeeeDD" (e = empty, D = data). */
+      return size - (rpos - wpos);
+    } else {  // if( rpos == wpos )
+      /* The buffer looks like "eeeeeeeeeeee" (e = empty, D = data). */
+      return 0;
+    }
+  }
 
-		/* Subtract the blocksize, to account for the element that we never fill
-		 * while keeping the entries aligned to m_iBlockSize. */
-		return ret - m_iBlockSize;
-	}
+  /* Return the number of writable elements. */
+  unsigned num_writable() const {
+    const int rpos = read_pos;
+    const int wpos = write_pos;
 
-	unsigned capacity() const { return size; }
+    int ret;
+    if (rpos < wpos) {
+      /* The buffer looks like "eeeeDDDDeeee" (e = empty, D = data). */
+      ret = size - (wpos - rpos);
+    } else if (rpos > wpos) {
+      /* The buffer looks like "DDeeeeeeeeDD" (e = empty, D = data). */
+      ret = rpos - wpos;
+    } else {  // if( rpos == wpos )
+      /* The buffer looks like "eeeeeeeeeeee" (e = empty, D = data). */
+      ret = size;
+    }
 
-	void reserve( unsigned n, int iBlockSize = 1 )
-	{
-		m_iBlockSize = iBlockSize;
+    /* Subtract the blocksize, to account for the element that we never fill
+     * while keeping the entries aligned to m_iBlockSize. */
+    return ret - m_iBlockSize;
+  }
 
-		clear();
-		delete[] buf;
-		buf = nullptr;
+  unsigned capacity() const { return size; }
 
-		/* Reserve an extra byte.  We'll never fill more than n bytes; the extra
-		 * byte is to guarantee that read_pos != write_pos when the buffer is full,
-		 * since that would be ambiguous with an empty buffer. */
-		if( n != 0 )
-		{
-			size = n+1;
-			size = ((size + iBlockSize - 1) / iBlockSize) * iBlockSize; // round up
+  void reserve(unsigned n, int iBlockSize = 1) {
+    m_iBlockSize = iBlockSize;
 
-			buf = new T[size];
-		}
-		else
-			size = 0;
-	}
+    clear();
+    delete[] buf;
+    buf = nullptr;
 
-	void clear()
-	{
-		read_pos = 0;
-		write_pos = 0;
-	}
+    /* Reserve an extra byte.  We'll never fill more than n bytes; the extra
+     * byte is to guarantee that read_pos != write_pos when the buffer is full,
+     * since that would be ambiguous with an empty buffer. */
+    if (n != 0) {
+      size = n + 1;
+      size = ((size + iBlockSize - 1) / iBlockSize) * iBlockSize;  // round up
 
-	/* Indicate that n elements have been written. */
-	void advance_write_pointer( int n )
-	{
-		write_pos = (write_pos + n) % size;
-	}
-	
-	/* Indicate that n elements have been read. */
-	void advance_read_pointer( int n )
-	{
-		read_pos = (read_pos + n) % size;
-	}
-	
-	void get_write_pointers( T *pPointers[2], unsigned pSizes[2] )
-	{
-		const int rpos = read_pos;
-		const int wpos = write_pos;
+      buf = new T[size];
+    } else {
+      size = 0;
+    }
+  }
 
-		if( rpos <= wpos )
-		{
-			/* The buffer looks like "eeeeDDDDeeee" or "eeeeeeeeeeee" (e = empty, D = data). */
-			pPointers[0] = buf+wpos;
-			pPointers[1] = buf;
+  void clear() {
+    read_pos = 0;
+    write_pos = 0;
+  }
 
-			pSizes[0] = size - wpos;
-			pSizes[1] = rpos;
-		}
-		else if( rpos > wpos )
-		{
-			/* The buffer looks like "DDeeeeeeeeDD" (e = empty, D = data). */
-			pPointers[0] = buf+wpos;
-			pPointers[1] = nullptr;
+  /* Indicate that n elements have been written. */
+  void advance_write_pointer(int n) { write_pos = (write_pos + n) % size; }
 
-			pSizes[0] = rpos - wpos;
-			pSizes[1] = 0;
-		}
+  /* Indicate that n elements have been read. */
+  void advance_read_pointer(int n) { read_pos = (read_pos + n) % size; }
 
-		/* Subtract the blocksize, to account for the element that we never fill
-		 * while keeping the entries aligned to m_iBlockSize. */
-		if( pSizes[1] )
-			pSizes[1] -= m_iBlockSize;
-		else
-			pSizes[0] -= m_iBlockSize;
-	}
+  void get_write_pointers(T* pPointers[2], unsigned pSizes[2]) {
+    const int rpos = read_pos;
+    const int wpos = write_pos;
 
-	/* Like get_write_pointers, but only return the first range available. */
-	T *get_write_pointer( unsigned *pSizes )
-	{
-		T *pBothPointers[2];
-		unsigned iBothSizes[2];
-		get_write_pointers( pBothPointers, iBothSizes );
-		*pSizes = iBothSizes[0];
-		return pBothPointers[0];
-	}
+    if (rpos <= wpos) {
+      /* The buffer looks like "eeeeDDDDeeee" or "eeeeeeeeeeee" (e = empty, D =
+       * data). */
+      pPointers[0] = buf + wpos;
+      pPointers[1] = buf;
 
-	void get_read_pointers( T *pPointers[2], unsigned pSizes[2] )
-	{
-		const int rpos = read_pos;
-		const int wpos = write_pos;
+      pSizes[0] = size - wpos;
+      pSizes[1] = rpos;
+    } else if (rpos > wpos) {
+      /* The buffer looks like "DDeeeeeeeeDD" (e = empty, D = data). */
+      pPointers[0] = buf + wpos;
+      pPointers[1] = nullptr;
 
-		if( rpos < wpos )
-		{
-			/* The buffer looks like "eeeeDDDDeeee" (e = empty, D = data). */
-			pPointers[0] = buf+rpos;
-			pPointers[1] = nullptr;
+      pSizes[0] = rpos - wpos;
+      pSizes[1] = 0;
+    }
 
-			pSizes[0] = wpos - rpos;
-			pSizes[1] = 0;
-		}
-		else if( rpos > wpos )
-		{
-			/* The buffer looks like "DDeeeeeeeeDD" (e = empty, D = data). */
-			pPointers[0] = buf+rpos;
-			pPointers[1] = buf;
+    /* Subtract the blocksize, to account for the element that we never fill
+     * while keeping the entries aligned to m_iBlockSize. */
+    if (pSizes[1]) {
+      pSizes[1] -= m_iBlockSize;
+    } else {
+      pSizes[0] -= m_iBlockSize;
+    }
+  }
 
-			pSizes[0] = size - rpos;
-			pSizes[1] = wpos;
-		}
-		else
-		{
-			/* The buffer looks like "eeeeeeeeeeee" (e = empty, D = data). */
-			pPointers[0] = nullptr;
-			pPointers[1] = nullptr;
+  /* Like get_write_pointers, but only return the first range available. */
+  T* get_write_pointer(unsigned* pSizes) {
+    T* pBothPointers[2];
+    unsigned iBothSizes[2];
+    get_write_pointers(pBothPointers, iBothSizes);
+    *pSizes = iBothSizes[0];
+    return pBothPointers[0];
+  }
 
-			pSizes[0] = 0;
-			pSizes[1] = 0;
-		}
-	}
-	
-	/* Write buffer_size elements from buffer, and advance the write pointer.  If
-	 * the data will not fit entirely, the write pointer will be unchanged
-	 * and false will be returned. */
-	bool write( const T *buffer, unsigned buffer_size )
-	{
-		T *p[2];
-		unsigned sizes[2];
-		get_write_pointers( p, sizes );
+  void get_read_pointers(T* pPointers[2], unsigned pSizes[2]) {
+    const int rpos = read_pos;
+    const int wpos = write_pos;
 
-		if( buffer_size > sizes[0] + sizes[1] )
-			return false;
-		
-		const int from_first = std::min( buffer_size, sizes[0] );
-		memcpy( p[0], buffer, from_first*sizeof(T) );
-		if( buffer_size > sizes[0] )
-			memcpy( p[1], buffer+from_first, (buffer_size-sizes[0])*sizeof(T) );
+    if (rpos < wpos) {
+      /* The buffer looks like "eeeeDDDDeeee" (e = empty, D = data). */
+      pPointers[0] = buf + rpos;
+      pPointers[1] = nullptr;
 
-		advance_write_pointer( buffer_size );
+      pSizes[0] = wpos - rpos;
+      pSizes[1] = 0;
+    } else if (rpos > wpos) {
+      /* The buffer looks like "DDeeeeeeeeDD" (e = empty, D = data). */
+      pPointers[0] = buf + rpos;
+      pPointers[1] = buf;
 
-		return true;
-	}
+      pSizes[0] = size - rpos;
+      pSizes[1] = wpos;
+    } else {
+      /* The buffer looks like "eeeeeeeeeeee" (e = empty, D = data). */
+      pPointers[0] = nullptr;
+      pPointers[1] = nullptr;
 
-	/* Read buffer_size elements from buffer, and advance the read pointer.  If
-	 * the buffer can not be filled completely, the read pointer will be unchanged
-	 * and false will be returned. */
-	bool read( T *buffer, unsigned buffer_size )
-	{
-		T *p[2];
-		unsigned sizes[2];
-		get_read_pointers( p, sizes );
+      pSizes[0] = 0;
+      pSizes[1] = 0;
+    }
+  }
 
-		if( buffer_size > sizes[0] + sizes[1] )
-			return false;
+  /* Write buffer_size elements from buffer, and advance the write pointer.  If
+   * the data will not fit entirely, the write pointer will be unchanged
+   * and false will be returned. */
+  bool write(const T* buffer, unsigned buffer_size) {
+    T* p[2];
+    unsigned sizes[2];
+    get_write_pointers(p, sizes);
 
-		const int from_first = std::min( buffer_size, sizes[0] );
-		memcpy( buffer, p[0], from_first*sizeof(T) );
-		if( buffer_size > sizes[0] )
-			memcpy( buffer+from_first, p[1], (buffer_size-sizes[0])*sizeof(T) );
+    if (buffer_size > sizes[0] + sizes[1]) {
+      return false;
+    }
 
-		/* Set the data that we just read to 0xFF.  This way, if we're passing pointesr
-		 * through, we can tell if we accidentally get a stale pointer. */
-		memset( p[0], 0xFF, from_first*sizeof(T) );
-		if( buffer_size > sizes[0] )
-			memset( p[1], 0xFF, (buffer_size-sizes[0])*sizeof(T) );
+    const int from_first = std::min(buffer_size, sizes[0]);
+    memcpy(p[0], buffer, from_first * sizeof(T));
+    if (buffer_size > sizes[0]) {
+      memcpy(p[1], buffer + from_first, (buffer_size - sizes[0]) * sizeof(T));
+    }
 
-		advance_read_pointer( buffer_size );
-		return true;
-	}
+    advance_write_pointer(buffer_size);
+
+    return true;
+  }
+
+  /* Read buffer_size elements from buffer, and advance the read pointer.  If
+   * the buffer can not be filled completely, the read pointer will be unchanged
+   * and false will be returned. */
+  bool read(T* buffer, unsigned buffer_size) {
+    T* p[2];
+    unsigned sizes[2];
+    get_read_pointers(p, sizes);
+
+    if (buffer_size > sizes[0] + sizes[1]) {
+      return false;
+    }
+
+    const int from_first = std::min(buffer_size, sizes[0]);
+    memcpy(buffer, p[0], from_first * sizeof(T));
+    if (buffer_size > sizes[0]) {
+      memcpy(buffer + from_first, p[1], (buffer_size - sizes[0]) * sizeof(T));
+    }
+
+    /* Set the data that we just read to 0xFF.  This way, if we're passing
+     * pointesr through, we can tell if we accidentally get a stale pointer. */
+    memset(p[0], 0xFF, from_first * sizeof(T));
+    if (buffer_size > sizes[0]) {
+      memset(p[1], 0xFF, (buffer_size - sizes[0]) * sizeof(T));
+    }
+
+    advance_read_pointer(buffer_size);
+    return true;
+  }
 };
 
 #endif

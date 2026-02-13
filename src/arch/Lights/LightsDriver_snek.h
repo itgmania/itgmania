@@ -1,4 +1,5 @@
-/* LightsDriver_snek: Control lights for the snek board by icedragon.io using hidapi */
+/* LightsDriver_snek: Control lights for the snek board by icedragon.io using
+ * hidapi */
 
 #ifndef LightsDriver_snek_H
 #define LightsDriver_snek_H
@@ -9,20 +10,23 @@
  * This driver needs user read/write access to the icedragon.io snek board.
  * This can be achieved by using a udev rule like this:
  *
- * SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="10a8", OWNER="dance", GROUP="dance", MODE="0660"
+ * SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="10a8",
+ * OWNER="dance", GROUP="dance", MODE="0660"
  *
  * or
  *
- * KERNEL=="hidraw*", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="10a8", OWNER="dance", GROUP="dance", MODE="0660"
+ * KERNEL=="hidraw*", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="10a8",
+ * OWNER="dance", GROUP="dance", MODE="0660"
  *
- * Refer to your distribution's documentation on how to properly apply a udev rule.
+ * Refer to your distribution's documentation on how to properly apply a udev
+ * rule.
  *
  * -------------------------- NOTE --------------------------
  */
 
-#include "arch/Lights/LightsDriver.h"
-
 #include <cstdint>
+
+#include "arch/Lights/LightsDriver.h"
 #include "archutils/Common/HidDevice.h"
 
 // static information about the device in question.
@@ -36,46 +40,45 @@
 #define SNEK_LIGHTING_INTERFACENUM 0x02
 
 // all indicies contain their respective 573 pinouts
-enum SnekLightIndex
-{
-	SNEK_LIGHTINDEX_CN10_FL1 = 0,
-	SNEK_LIGHTINDEX_CN10_FL2,
-	SNEK_LIGHTINDEX_CN10_FL3,
-	SNEK_LIGHTINDEX_CN10_FL4,
-	SNEK_LIGHTINDEX_CN10_FL5,
-	SNEK_LIGHTINDEX_CN10_FL6,
-	SNEK_LIGHTINDEX_CN10_FL7,
-	SNEK_LIGHTINDEX_CN10_FL8,
+enum SnekLightIndex {
+  SNEK_LIGHTINDEX_CN10_FL1 = 0,
+  SNEK_LIGHTINDEX_CN10_FL2,
+  SNEK_LIGHTINDEX_CN10_FL3,
+  SNEK_LIGHTINDEX_CN10_FL4,
+  SNEK_LIGHTINDEX_CN10_FL5,
+  SNEK_LIGHTINDEX_CN10_FL6,
+  SNEK_LIGHTINDEX_CN10_FL7,
+  SNEK_LIGHTINDEX_CN10_FL8,
 
-	SNEK_LIGHTINDEX_CN13_FL1,
-	SNEK_LIGHTINDEX_CN13_FL2,
-	SNEK_LIGHTINDEX_CN13_FL3,
-	SNEK_LIGHTINDEX_CN13_FL4,
+  SNEK_LIGHTINDEX_CN13_FL1,
+  SNEK_LIGHTINDEX_CN13_FL2,
+  SNEK_LIGHTINDEX_CN13_FL3,
+  SNEK_LIGHTINDEX_CN13_FL4,
 
-	SNEK_LIGHTINDEX_CN14_FL1,
-	SNEK_LIGHTINDEX_CN14_FL2,
-	SNEK_LIGHTINDEX_CN14_FL3,
-	SNEK_LIGHTINDEX_CN14_FL4,
+  SNEK_LIGHTINDEX_CN14_FL1,
+  SNEK_LIGHTINDEX_CN14_FL2,
+  SNEK_LIGHTINDEX_CN14_FL3,
+  SNEK_LIGHTINDEX_CN14_FL4,
 
-	SNEK_LIGHTINDEX_CN12_FL1,
-	SNEK_LIGHTINDEX_CN12_FL2,
-	SNEK_LIGHTINDEX_CN12_FL3,
-	SNEK_LIGHTINDEX_CN12_FL4,
-	SNEK_LIGHTINDEX_CN12_FL5,
-	SNEK_LIGHTINDEX_CN12_FL6,
-	SNEK_LIGHTINDEX_CN12_FL7,
-	SNEK_LIGHTINDEX_CN12_FL8,
+  SNEK_LIGHTINDEX_CN12_FL1,
+  SNEK_LIGHTINDEX_CN12_FL2,
+  SNEK_LIGHTINDEX_CN12_FL3,
+  SNEK_LIGHTINDEX_CN12_FL4,
+  SNEK_LIGHTINDEX_CN12_FL5,
+  SNEK_LIGHTINDEX_CN12_FL6,
+  SNEK_LIGHTINDEX_CN12_FL7,
+  SNEK_LIGHTINDEX_CN12_FL8,
 
-	SNEK_LIGHTINDEX_CN11_FL1,
-	SNEK_LIGHTINDEX_CN11_FL2,
-	SNEK_LIGHTINDEX_CN11_FL3,
-	SNEK_LIGHTINDEX_CN11_FL4,
-	SNEK_LIGHTINDEX_CN11_FL5,
-	SNEK_LIGHTINDEX_CN11_FL6,
-	SNEK_LIGHTINDEX_CN11_FL7,
-	SNEK_LIGHTINDEX_CN11_FL8,
+  SNEK_LIGHTINDEX_CN11_FL1,
+  SNEK_LIGHTINDEX_CN11_FL2,
+  SNEK_LIGHTINDEX_CN11_FL3,
+  SNEK_LIGHTINDEX_CN11_FL4,
+  SNEK_LIGHTINDEX_CN11_FL5,
+  SNEK_LIGHTINDEX_CN11_FL6,
+  SNEK_LIGHTINDEX_CN11_FL7,
+  SNEK_LIGHTINDEX_CN11_FL8,
 
-	SNEK_LIGHTINDEX_MAX
+  SNEK_LIGHTINDEX_MAX
 };
 
 // helper defines for dance mode.
@@ -99,21 +102,20 @@ enum SnekLightIndex
 #define SNEK_INDEX_DANCE_P2_LEFT SNEK_LIGHTINDEX_CN11_FL3
 #define SNEK_INDEX_DANCE_P2_RIGHT SNEK_LIGHTINDEX_CN11_FL4
 
-class LightsDriver_snek : public LightsDriver
-{
-private:
-	HidDevice dev;
+class LightsDriver_snek : public LightsDriver {
+ private:
+  HidDevice dev;
 
-	bool stateChanged = false;
-	uint8_t outputBuffer[SNEK_HIDREPORT_SIZE];
+  bool stateChanged = false;
+  uint8_t outputBuffer[SNEK_HIDREPORT_SIZE];
 
-	void SetBuffer(int index, bool lightState);
+  void SetBuffer(int index, bool lightState);
 
-public:
-	LightsDriver_snek();
-	virtual ~LightsDriver_snek();
+ public:
+  LightsDriver_snek();
+  virtual ~LightsDriver_snek();
 
-	virtual void Set(const LightsState *ls);
+  virtual void Set(const LightsState* ls);
 };
 
 #endif

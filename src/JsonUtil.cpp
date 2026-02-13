@@ -9,85 +9,78 @@
 #include "arch/Dialog/Dialog.h"
 #include "json/json.h"
 
-bool JsonUtil::LoadFromString(Json::Value &root, std::string sData, std::string &sErrorOut)
-{
-	Json::Reader reader;
-	bool parsingSuccessful = reader.parse(sData, root);
-	if (!parsingSuccessful)
-	{
-		std::string err = reader.getFormattedErrorMessages();
-		LOG->Warn("JSON: LoadFromFileShowErrors failed: %s", err.c_str());
-		return false;
-	}
-	return true;
+bool JsonUtil::LoadFromString(
+    Json::Value& root, std::string sData, std::string& sErrorOut) {
+  Json::Reader reader;
+  bool parsingSuccessful = reader.parse(sData, root);
+  if (!parsingSuccessful) {
+    std::string err = reader.getFormattedErrorMessages();
+    LOG->Warn("JSON: LoadFromFileShowErrors failed: %s", err.c_str());
+    return false;
+  }
+  return true;
 }
 
-bool JsonUtil::LoadFromFileShowErrors(Json::Value &root, RageFileBasic &f)
-{
-	// Optimization opportunity: read this streaming instead of at once
-	std::string sData;
-	f.Read(sData, f.GetFileSize());
-	return LoadFromStringShowErrors(root, sData);
+bool JsonUtil::LoadFromFileShowErrors(Json::Value& root, RageFileBasic& f) {
+  // Optimization opportunity: read this streaming instead of at once
+  std::string sData;
+  f.Read(sData, f.GetFileSize());
+  return LoadFromStringShowErrors(root, sData);
 }
 
-bool JsonUtil::LoadFromFileShowErrors(Json::Value &root, const std::string &sFile)
-{
-	RageFile f;
-	if(!f.Open(sFile, RageFile::READ))
-	{
-		LOG->Warn("Couldn't open %s for reading: %s", sFile.c_str(), f.GetError().c_str());
-		return false;
-	}
+bool JsonUtil::LoadFromFileShowErrors(
+    Json::Value& root, const std::string& sFile) {
+  RageFile f;
+  if (!f.Open(sFile, RageFile::READ)) {
+    LOG->Warn(
+        "Couldn't open %s for reading: %s", sFile.c_str(),
+        f.GetError().c_str());
+    return false;
+  }
 
-	return LoadFromFileShowErrors(root, f);
+  return LoadFromFileShowErrors(root, f);
 }
 
-bool JsonUtil::LoadFromStringShowErrors(Json::Value &root, std::string sData)
-{
-	std::string sError;
-	if(!LoadFromString(root, sData, sError))
-	{
-		Dialog::OK(sError, "JSON_PARSE_ERROR");
-		return false;
-	}
-	return true;
+bool JsonUtil::LoadFromStringShowErrors(Json::Value& root, std::string sData) {
+  std::string sError;
+  if (!LoadFromString(root, sData, sError)) {
+    Dialog::OK(sError, "JSON_PARSE_ERROR");
+    return false;
+  }
+  return true;
 }
 
-bool JsonUtil::WriteFile(const Json::Value &root, const std::string &sFile, bool bMinified)
-{
-	std::string s;
-	if(!bMinified)
-	{
-		Json::StyledWriter writer;
-		s = writer.write(root);
-	}
-	else
-	{
-		Json::FastWriter writer;
-		s = writer.write(root);
-	}
+bool JsonUtil::WriteFile(
+    const Json::Value& root, const std::string& sFile, bool bMinified) {
+  std::string s;
+  if (!bMinified) {
+    Json::StyledWriter writer;
+    s = writer.write(root);
+  } else {
+    Json::FastWriter writer;
+    s = writer.write(root);
+  }
 
-	RageFile f;
-	if(!f.Open(sFile, RageFile::WRITE))
-	{
-		LOG->Warn("Couldn't open %s for reading: %s", sFile.c_str(), f.GetError().c_str());
-		return false;
-	}
-	f.Write(s);
-	return true;
+  RageFile f;
+  if (!f.Open(sFile, RageFile::WRITE)) {
+    LOG->Warn(
+        "Couldn't open %s for reading: %s", sFile.c_str(),
+        f.GetError().c_str());
+    return false;
+  }
+  f.Write(s);
+  return true;
 }
 
-std::vector<std::string> JsonUtil::DeserializeArrayStrings(const Json::Value &value)
-{
-	std::vector<std::string> values;
-	for(auto &&inner_value : value)
-	{
-		if(inner_value.isConvertibleTo(Json::stringValue))
-		{
-			values.push_back(inner_value.asString());
-		}
-	}
-	return values;
+std::vector<std::string> JsonUtil::DeserializeArrayStrings(
+    const Json::Value& value) {
+  std::vector<std::string> values;
+  for (auto&& inner_value : value) {
+    if (inner_value.isConvertibleTo(Json::stringValue)) {
+      values.push_back(inner_value.asString());
+    }
+  }
+  return values;
 }
 
 /*

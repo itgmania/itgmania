@@ -1,4 +1,5 @@
-/* RageSoundReader_ChannelSplit - Split a sound channels into separate sounds. */
+/* RageSoundReader_ChannelSplit - Split a sound channels into separate sounds.
+ */
 
 #ifndef RAGE_SOUND_READER_CHANNEL_SPLIT
 #define RAGE_SOUND_READER_CHANNEL_SPLIT
@@ -10,54 +11,57 @@
 
 class RageSoundSplitterImpl;
 
-class RageSoundReader_Split: public RageSoundReader
-{
-public:
-	RageSoundReader_Split( const RageSoundReader_Split &cpy );
-	~RageSoundReader_Split();
-	virtual RageSoundReader_Split *Copy() const { return new RageSoundReader_Split(*this); }
+class RageSoundReader_Split : public RageSoundReader {
+ public:
+  RageSoundReader_Split(const RageSoundReader_Split& cpy);
+  ~RageSoundReader_Split();
+  virtual RageSoundReader_Split* Copy() const {
+    return new RageSoundReader_Split(*this);
+  }
 
-	virtual int GetLength() const;
-	virtual int GetLength_Fast() const;
-	virtual int SetPosition( int iFrame );
-	virtual int Read( float *pBuf, int iFrames );
-	virtual int GetSampleRate() const;
-	virtual unsigned GetNumChannels() const;
-	virtual bool SetProperty( const std::string &sProperty, float fValue );
-	virtual int GetNextSourceFrame() const;
-	virtual float GetStreamToSourceRatio() const;
-	virtual std::string GetError() const;
+  virtual int GetLength() const;
+  virtual int GetLength_Fast() const;
+  virtual int SetPosition(int iFrame);
+  virtual int Read(float* pBuf, int iFrames);
+  virtual int GetSampleRate() const;
+  virtual unsigned GetNumChannels() const;
+  virtual bool SetProperty(const std::string& sProperty, float fValue);
+  virtual int GetNextSourceFrame() const;
+  virtual float GetStreamToSourceRatio() const;
+  virtual std::string GetError() const;
 
-	void AddSourceChannelToSound( int iFromChannel, int iToChannel );
+  void AddSourceChannelToSound(int iFromChannel, int iToChannel);
 
-private:
-	RageSoundReader_Split( RageSoundSplitterImpl *pImpl ); // create with RageSoundSplitter
-	friend class RageSoundSplitterImpl;
-	friend class RageSoundSplitter;
+ private:
+  RageSoundReader_Split(
+      RageSoundSplitterImpl* pImpl);  // create with RageSoundSplitter
+  friend class RageSoundSplitterImpl;
+  friend class RageSoundSplitter;
 
-	RageSoundSplitterImpl *m_pImpl;
-	struct ChannelMap
-	{
-		int m_iFromChannel;
-		int m_iToChannel;
-		ChannelMap( int iFromChannel, int iToChannel ) { m_iFromChannel = iFromChannel; m_iToChannel = iToChannel; }
-	};
-	std::vector<ChannelMap> m_aChannels;
+  RageSoundSplitterImpl* m_pImpl;
+  struct ChannelMap {
+    int m_iFromChannel;
+    int m_iToChannel;
+    ChannelMap(int iFromChannel, int iToChannel) {
+      m_iFromChannel = iFromChannel;
+      m_iToChannel = iToChannel;
+    }
+  };
+  std::vector<ChannelMap> m_aChannels;
 
-	int m_iPositionFrame;
-	int m_iRequestFrames;
-	int m_iNumOutputChannels;
+  int m_iPositionFrame;
+  int m_iRequestFrames;
+  int m_iNumOutputChannels;
 };
 
-class RageSoundSplitter
-{
-public:
-	RageSoundSplitter( RageSoundReader *pSource );
-	~RageSoundSplitter();
-	RageSoundReader_Split *CreateSound();
+class RageSoundSplitter {
+ public:
+  RageSoundSplitter(RageSoundReader* pSource);
+  ~RageSoundSplitter();
+  RageSoundReader_Split* CreateSound();
 
-private:
-	RageSoundSplitterImpl *m_pImpl;
+ private:
+  RageSoundSplitterImpl* m_pImpl;
 };
 
 #endif

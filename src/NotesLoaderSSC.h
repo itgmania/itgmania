@@ -15,11 +15,10 @@ class TimingData;
 /**
  * @brief The various states while parsing a .ssc file.
  */
-enum SSCLoadingStates
-{
-	GETTING_SONG_INFO, /**< Retrieving song information. */
-	GETTING_STEP_INFO, /**< Retrieving step information. */
-	NUM_SSCLoadingStates /**< The number of states used. */
+enum SSCLoadingStates {
+  GETTING_SONG_INFO,   /**< Retrieving song information. */
+  GETTING_STEP_INFO,   /**< Retrieving step information. */
+  NUM_SSCLoadingStates /**< The number of states used. */
 };
 
 /** @brief The version where fakes started to be used as a radar category. */
@@ -40,50 +39,59 @@ const float VERSION_RADAR_NOTECOUNT = 0.83f;
 /**
  * @brief The SSCLoader handles all of the parsing needed for .ssc files.
  */
-struct SSCLoader : public SMLoader
-{
-	SSCLoader() : SMLoader(".ssc") {}
-	
-	/**
-	 * @brief Attempt to load the specified ssc file.
-	 * @param sPath a const reference to the path on the hard drive to check.
-	 * @param out a reference to the Song that will retrieve the song information.
-	 * @param bFromCache a check to see if we are getting certain information from the cache file.
-	 * @return its success or failure.
-	 */
-	virtual bool LoadFromSimfile( const std::string &sPath, Song &out, bool bFromCache = false );
-	
-	/**
-	 * @brief Attempt to load an edit from the hard drive.
-	 * @param sEditFilePath a path on the hard drive to check.
-	 * @param slot the Profile of the user with the edit.
-	 * @param bAddStepsToSong a flag to determine if we add the edit steps to the song file.
-	 * @return its success or failure.
-	 */
-	bool LoadEditFromFile( std::string sEditFilePath, ProfileSlot slot, bool bAddStepsToSong, Song *givenSong=nullptr );
-	/**
-	 * @brief Attempt to parse the edit file in question.
-	 * @param msd the edit file itself.
-	 * @param sEditFilePath a const reference to a path on the hard drive to check.
-	 * @param slot the Profile of the user with the edit.
-	 * @param bAddStepsToSong a flag to determine if we add the edit steps to the song file.
-	 * @return its success or failure.
-	 */
-	bool LoadEditFromMsd( const MsdFile &msd, const std::string &sEditFilePath, ProfileSlot slot, bool bAddStepsToSong, Song *givenSong=nullptr );
-	
-	/**
-	 * @brief Retrieve the specific NoteData from the file.
-	 * @param cachePath the path to the cache file.
-	 * @param out the Steps to receive just the particular notedata.
-	 * @return true if successful, false otherwise. */
-	virtual bool LoadNoteDataFromSimfile( const std::string &cachePath, Steps &out );
-	
-	void ProcessBPMs( TimingData &, const std::string );
-	void ProcessStops( TimingData &, const std::string );
-	void ProcessWarps( TimingData &, const std::string, const float );
-	void ProcessLabels( TimingData &, const std::string );
-	virtual void ProcessCombos( TimingData &, const std::string, const int = -1 );
-	void ProcessScrolls( TimingData &, const std::string );
+struct SSCLoader : public SMLoader {
+  SSCLoader() : SMLoader(".ssc") {}
+
+  /**
+   * @brief Attempt to load the specified ssc file.
+   * @param sPath a const reference to the path on the hard drive to check.
+   * @param out a reference to the Song that will retrieve the song information.
+   * @param bFromCache a check to see if we are getting certain information from
+   * the cache file.
+   * @return its success or failure.
+   */
+  virtual bool LoadFromSimfile(
+      const std::string& sPath, Song& out, bool bFromCache = false);
+
+  /**
+   * @brief Attempt to load an edit from the hard drive.
+   * @param sEditFilePath a path on the hard drive to check.
+   * @param slot the Profile of the user with the edit.
+   * @param bAddStepsToSong a flag to determine if we add the edit steps to the
+   * song file.
+   * @return its success or failure.
+   */
+  bool LoadEditFromFile(
+      std::string sEditFilePath, ProfileSlot slot, bool bAddStepsToSong,
+      Song* givenSong = nullptr);
+  /**
+   * @brief Attempt to parse the edit file in question.
+   * @param msd the edit file itself.
+   * @param sEditFilePath a const reference to a path on the hard drive to
+   * check.
+   * @param slot the Profile of the user with the edit.
+   * @param bAddStepsToSong a flag to determine if we add the edit steps to the
+   * song file.
+   * @return its success or failure.
+   */
+  bool LoadEditFromMsd(
+      const MsdFile& msd, const std::string& sEditFilePath, ProfileSlot slot,
+      bool bAddStepsToSong, Song* givenSong = nullptr);
+
+  /**
+   * @brief Retrieve the specific NoteData from the file.
+   * @param cachePath the path to the cache file.
+   * @param out the Steps to receive just the particular notedata.
+   * @return true if successful, false otherwise. */
+  virtual bool LoadNoteDataFromSimfile(
+      const std::string& cachePath, Steps& out);
+
+  void ProcessBPMs(TimingData&, const std::string);
+  void ProcessStops(TimingData&, const std::string);
+  void ProcessWarps(TimingData&, const std::string, const float);
+  void ProcessLabels(TimingData&, const std::string);
+  virtual void ProcessCombos(TimingData&, const std::string, const int = -1);
+  void ProcessScrolls(TimingData&, const std::string);
 };
 
 #endif
@@ -93,7 +101,7 @@ struct SSCLoader : public SMLoader
  *
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -103,7 +111,7 @@ struct SSCLoader : public SMLoader
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

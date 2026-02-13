@@ -10,34 +10,31 @@
 #include "Song.h"
 
 // Can this be done any better? -aj
-namespace ToggleSongs
-{
-	std::string m_sGroup;
+namespace ToggleSongs {
+std::string m_sGroup;
 }
 
-class ScreenOptionsToggleSongs: public ScreenOptions
-{
-public:
-	virtual void BeginScreen();
+class ScreenOptionsToggleSongs : public ScreenOptions {
+ public:
+  virtual void BeginScreen();
 
-private:
-	virtual void ImportOptions( int row, const std::vector<PlayerNumber> &vpns );
-	virtual void ExportOptions( int row, const std::vector<PlayerNumber> &vpns );
-	virtual void ProcessMenuStart( const InputEventPlus &input );
+ private:
+  virtual void ImportOptions(int row, const std::vector<PlayerNumber>& vpns);
+  virtual void ExportOptions(int row, const std::vector<PlayerNumber>& vpns);
+  virtual void ProcessMenuStart(const InputEventPlus& input);
 
-	std::vector<std::string> m_asGroups;
+  std::vector<std::string> m_asGroups;
 };
 
-class ScreenOptionsToggleSongsSubPage: public ScreenOptions
-{
-public:
-	virtual void BeginScreen();
+class ScreenOptionsToggleSongsSubPage : public ScreenOptions {
+ public:
+  virtual void BeginScreen();
 
-private:
-	virtual void ImportOptions( int row, const std::vector<PlayerNumber> &vpns );
-	virtual void ExportOptions( int row, const std::vector<PlayerNumber> &vpns );
+ private:
+  virtual void ImportOptions(int row, const std::vector<PlayerNumber>& vpns);
+  virtual void ExportOptions(int row, const std::vector<PlayerNumber>& vpns);
 
-	std::vector<Song*> m_apSongs;
+  std::vector<Song*> m_apSongs;
 };
 
 #endif

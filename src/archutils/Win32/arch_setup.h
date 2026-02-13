@@ -6,18 +6,18 @@
 
 #define PATH_MAX _MAX_PATH
 
-#include <wchar.h> // needs to be included before our fixes below
+#include <wchar.h>  // needs to be included before our fixes below
 
 #define lstat stat
 #define fsync _commit
 
 typedef time_t time_t;
 struct tm;
-struct tm *my_localtime_r( const time_t *timep, struct tm *result );
+struct tm* my_localtime_r(const time_t* timep, struct tm* result);
 #define localtime_r my_localtime_r
-struct tm *my_gmtime_r( const time_t *timep, struct tm *result );
+struct tm* my_gmtime_r(const time_t* timep, struct tm* result);
 #define gmtime_r my_gmtime_r
-void my_usleep( unsigned long usec );
+void my_usleep(unsigned long usec);
 #define usleep my_usleep
 
 /* We implement the crash handler interface (though that interface isn't

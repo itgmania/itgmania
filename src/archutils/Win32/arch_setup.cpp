@@ -3,30 +3,32 @@
 #include "CommandLine.h"
 
 #ifdef _WIN32
-#  include <windows.h>
+#include <windows.h>
 #endif
 
 #if defined(_WIN32)
-int main( int argc, char* argv[] );
-int __stdcall WinMain( HINSTANCE /* hInstance */, HINSTANCE  /* hPrevInstance */, char * /* pCmdLine */, int /* nCmdShow */ )
-{
-	char **argv;
-	int argc = GetWin32CmdLine( argv );
+int main(int argc, char* argv[]);
+int __stdcall WinMain(
+    HINSTANCE /* hInstance */, HINSTANCE /* hPrevInstance */,
+    char* /* pCmdLine */, int /* nCmdShow */) {
+  char** argv;
+  int argc = GetWin32CmdLine(argv);
 
-	if (argc == -1)
-	{
-		MessageBox(nullptr, "Failed to retrieve command line arguments", "Error", MB_OK | MB_ICONERROR);
-		return -1;
-	}
+  if (argc == -1) {
+    MessageBox(
+        nullptr, "Failed to retrieve command line arguments", "Error",
+        MB_OK | MB_ICONERROR);
+    return -1;
+  }
 
-	return main(argc, argv);
+  return main(argc, argv);
 }
 #endif
 
 /*
  * (c) 2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -36,7 +38,7 @@ int __stdcall WinMain( HINSTANCE /* hInstance */, HINSTANCE  /* hPrevInstance */
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

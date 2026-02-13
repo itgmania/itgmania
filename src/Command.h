@@ -6,42 +6,43 @@
 #include <string>
 #include <vector>
 
-class Command
-{
-public:
-	void Load( const std::string &sCommand );
+class Command {
+ public:
+  void Load(const std::string& sCommand);
 
-	std::string GetOriginalCommandString() const;	// used when reporting an error in number of args
-	std::string GetName() const;	// the command name is the first argument in all-lowercase
+  std::string GetOriginalCommandString()
+      const;  // used when reporting an error in number of args
+  std::string GetName()
+      const;  // the command name is the first argument in all-lowercase
 
-	void Clear() { m_vsArgs.clear(); }
+  void Clear() { m_vsArgs.clear(); }
 
-	struct Arg
-	{
-		std::string s;
-		Arg(): s("") {}
-	};
-	Arg GetArg( unsigned index ) const;
+  struct Arg {
+    std::string s;
+    Arg() : s("") {}
+  };
+  Arg GetArg(unsigned index) const;
 
-	std::vector<std::string> m_vsArgs;
+  std::vector<std::string> m_vsArgs;
 
-	Command(): m_vsArgs() {}
+  Command() : m_vsArgs() {}
 };
 
-class Commands
-{
-public:
-	std::vector<Command> v;
+class Commands {
+ public:
+  std::vector<Command> v;
 
-	std::string GetOriginalCommandString() const;	// used when reporting an error in number of args
+  std::string GetOriginalCommandString()
+      const;  // used when reporting an error in number of args
 };
 
 // Take a command list string and return pointers to each of the tokens in the
 // string. sCommand list is a list of commands separated by ';'.
-// TODO: This is expensive to do during the game.  Eventually,  move all calls to
-// ParseCommands to happen during load, then execute from the parsed Command structures.
-void ParseCommands( const std::string &sCmds, Commands &vCmdsOut, bool bLegacy );
-Commands ParseCommands( const std::string &sCmds );
+// TODO: This is expensive to do during the game.  Eventually,  move all calls
+// to ParseCommands to happen during load, then execute from the parsed Command
+// structures.
+void ParseCommands(const std::string& sCmds, Commands& vCmdsOut, bool bLegacy);
+Commands ParseCommands(const std::string& sCmds);
 
 #endif
 

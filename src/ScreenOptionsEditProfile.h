@@ -9,27 +9,26 @@
 #include "ScreenMessage.h"
 #include "ScreenOptions.h"
 
-class ScreenOptionsEditProfile : public ScreenOptions
-{
-public:
-	virtual ~ScreenOptionsEditProfile();
+class ScreenOptionsEditProfile : public ScreenOptions {
+ public:
+  virtual ~ScreenOptionsEditProfile();
 
-	virtual void Init();
-	virtual void BeginScreen();
+  virtual void Init();
+  virtual void BeginScreen();
 
-protected:
-private:
-	virtual void ImportOptions( int row, const std::vector<PlayerNumber> &vpns );
-	virtual void ExportOptions( int row, const std::vector<PlayerNumber> &vpns );
+ protected:
+ private:
+  virtual void ImportOptions(int row, const std::vector<PlayerNumber>& vpns);
+  virtual void ExportOptions(int row, const std::vector<PlayerNumber>& vpns);
 
-	virtual void GoToNextScreen();
-	virtual void GoToPrevScreen();
+  virtual void GoToNextScreen();
+  virtual void GoToPrevScreen();
 
-	virtual void HandleScreenMessage( const ScreenMessage SM );
-	virtual void AfterChangeValueInRow( int iRow, PlayerNumber pn );
-	virtual void ProcessMenuStart( const InputEventPlus &input );
+  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void AfterChangeValueInRow(int iRow, PlayerNumber pn);
+  virtual void ProcessMenuStart(const InputEventPlus& input);
 
-	Profile	m_Original;	// restore this on revert
+  Profile m_Original;  // restore this on revert
 };
 
 #endif

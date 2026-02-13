@@ -7,13 +7,13 @@
 #include "Screen.h"
 #include "ScreenGameplay.h"
 
-REGISTER_SCREEN_CLASS( ScreenGameplayNormal );
+REGISTER_SCREEN_CLASS(ScreenGameplayNormal);
 
-void ScreenGameplayNormal::FillPlayerInfo( std::vector<PlayerInfo> &vPlayerInfoOut )
-{
-	vPlayerInfoOut.resize( NUM_PLAYERS );
-	FOREACH_PlayerNumber( p )
-		vPlayerInfoOut[p].Load( p, MultiPlayer_Invalid, true, Difficulty_Invalid );
+void ScreenGameplayNormal::FillPlayerInfo(
+    std::vector<PlayerInfo>& vPlayerInfoOut) {
+  vPlayerInfoOut.resize(NUM_PLAYERS);
+  FOREACH_PlayerNumber(p) vPlayerInfoOut[p].Load(
+      p, MultiPlayer_Invalid, true, Difficulty_Invalid);
 };
 
 // lua end

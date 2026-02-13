@@ -2,41 +2,43 @@
 #ifndef X11_HELPER_H
 #define X11_HELPER_H
 
-#include <X11/Xlib.h>		// Window
-#include <X11/Xutil.h>
 #include <DisplaySpec.h>
+#include <X11/Xlib.h>  // Window
+#include <X11/Xutil.h>
 
-namespace X11Helper
-{
-	// All functions in here that return a bool return true on success, and
-	// false on failure.
+namespace X11Helper {
+// All functions in here that return a bool return true on success, and
+// false on failure.
 
-	// Create the connection.
-	bool OpenXConnection();
+// Create the connection.
+bool OpenXConnection();
 
-	// Destroy the connection.
-	void CloseXConnection();
+// Destroy the connection.
+void CloseXConnection();
 
-	// The current Display (connection). Initialized by the first call to
-	// OpenXConnection().
-	extern Display *Dpy;
+// The current Display (connection). Initialized by the first call to
+// OpenXConnection().
+extern Display* Dpy;
 
-	// The Window used by LowLevelWindow_X11 as the main window.
-	extern Window Win;
+// The Window used by LowLevelWindow_X11 as the main window.
+extern Window Win;
 
-	// Set to true when fatal error has occured and no further X11 calls should be made.
-	extern bool FatalError;
+// Set to true when fatal error has occured and no further X11 calls should be
+// made.
+extern bool FatalError;
 
-	// (Re)create the Window win.
-	bool MakeWindow( Window &win, int screenNum, int depth, Visual *visual,
-			 int width, int height, bool overrideRedirect );
+// (Re)create the Window win.
+bool MakeWindow(
+    Window& win, int screenNum, int depth, Visual* visual, int width,
+    int height, bool overrideRedirect);
 
-	void SetWMState( const Window &root, const Window &win, const long action, const Atom atom );
+void SetWMState(
+    const Window& root, const Window& win, const long action, const Atom atom);
 
 #ifdef HAVE_XINERAMA
-	bool SetWMFullscreenMonitors( const DisplaySpec &target );
+bool SetWMFullscreenMonitors(const DisplaySpec& target);
 #endif
-};
+};  // namespace X11Helper
 
 #endif
 

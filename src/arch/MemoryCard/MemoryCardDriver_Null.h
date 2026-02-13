@@ -1,20 +1,19 @@
 #ifndef MEMORY_CARD_ENUMERATOR_NULL_H
 #define MEMORY_CARD_ENUMERATOR_NULL_H
 
-#include "MemoryCardDriver.h"
-
 #include <vector>
 
+#include "MemoryCardDriver.h"
 
-class MemoryCardDriver_Null : public MemoryCardDriver
-{
-public:
-	MemoryCardDriver_Null() {}
-	virtual bool USBStorageDevicesChanged() { return false; }
-	virtual void GetUSBStorageDevices( std::vector<UsbStorageDevice>& vDevicesOut ) { }
-	virtual bool Mount( UsbStorageDevice* pDevice ) { return false; }
-	virtual void Unmount( UsbStorageDevice* pDevice ) {}
-	virtual void Flush( UsbStorageDevice* pDevice ) {}
+class MemoryCardDriver_Null : public MemoryCardDriver {
+ public:
+  MemoryCardDriver_Null() {}
+  virtual bool USBStorageDevicesChanged() { return false; }
+  virtual void GetUSBStorageDevices(
+      std::vector<UsbStorageDevice>& vDevicesOut) {}
+  virtual bool Mount(UsbStorageDevice* pDevice) { return false; }
+  virtual void Unmount(UsbStorageDevice* pDevice) {}
+  virtual void Flush(UsbStorageDevice* pDevice) {}
 };
 
 #endif

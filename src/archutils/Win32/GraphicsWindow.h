@@ -10,42 +10,43 @@ class VideoModeParams;
 class DisplayResolution;
 
 /** @brief Sets up a window for OpenGL/D3D. */
-namespace GraphicsWindow
-{
-	/** @brief Set up, and create a hidden window.
-	 *
-	 * This only needs to be called once. */
-	void Initialize( bool bD3D );
+namespace GraphicsWindow {
+/** @brief Set up, and create a hidden window.
+ *
+ * This only needs to be called once. */
+void Initialize(bool bD3D);
 
-	/** @brief Shut down completely. */
-	void Shutdown();
+/** @brief Shut down completely. */
+void Shutdown();
 
-	/** @brief Set the display mode.
-	 *
-	 * p will not be second-guessed, except to try disabling the refresh rate setting. */
-	std::string SetScreenMode( const VideoModeParams &p );
+/** @brief Set the display mode.
+ *
+ * p will not be second-guessed, except to try disabling the refresh rate
+ * setting. */
+std::string SetScreenMode(const VideoModeParams& p);
 
-	/** @brief Create the window.
-	 *
-	 * This also updates VideoModeParams (returned by GetParams). */
-	void CreateGraphicsWindow( const VideoModeParams &p, bool bForceRecreateWindow = false );
-	void DestroyGraphicsWindow();
+/** @brief Create the window.
+ *
+ * This also updates VideoModeParams (returned by GetParams). */
+void CreateGraphicsWindow(
+    const VideoModeParams& p, bool bForceRecreateWindow = false);
+void DestroyGraphicsWindow();
 
-	void GetDisplaySpecs( DisplaySpecs &out );
+void GetDisplaySpecs(DisplaySpecs& out);
 
-	const VideoModeParams &GetParams();
-	HDC GetHDC();
-	void Update();
+const VideoModeParams& GetParams();
+HDC GetHDC();
+void Update();
 
-	HWND GetHwnd();
-};
+HWND GetHwnd();
+};  // namespace GraphicsWindow
 
 #endif
 
 /*
  * (c) 2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -55,7 +56,7 @@ namespace GraphicsWindow
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

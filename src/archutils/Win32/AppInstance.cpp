@@ -1,40 +1,41 @@
-#include "global.h"
 #include "AppInstance.h"
-#include "RageLog.h"
+
 #include "ErrorStrings.h"
+#include "RageLog.h"
+#include "global.h"
 
-AppInstance::AppInstance()
-{
-	// Little trick to get an HINSTANCE of ourself without having access to the hwnd.
-	WCHAR szFullAppPath[MAX_PATH];
-	if (GetModuleFileNameW(nullptr, szFullAppPath, MAX_PATH) == 0)
-	{
-		LOG->Warn("GetModuleFileName failed: %s", werr_ssprintf(GetLastError(), "GetModuleFileName").c_str());
-		h = nullptr;
-		return;
-	}
+AppInstance::AppInstance() {
+  // Little trick to get an HINSTANCE of ourself without having access to the
+  // hwnd.
+  WCHAR szFullAppPath[MAX_PATH];
+  if (GetModuleFileNameW(nullptr, szFullAppPath, MAX_PATH) == 0) {
+    LOG->Warn(
+        "GetModuleFileName failed: %s",
+        werr_ssprintf(GetLastError(), "GetModuleFileName").c_str());
+    h = nullptr;
+    return;
+  }
 
-	h = LoadLibraryW(szFullAppPath);
-	if (h == nullptr)
-	{
-		LOG->Warn("LoadLibrary failed: %s", werr_ssprintf(GetLastError(), "LoadLibrary").c_str());
-	}
-	/* h will be nullptr if this fails. Most operations that take an HINSTANCE
-	 * will still work without one (but may be missing graphics); that's OK. */
+  h = LoadLibraryW(szFullAppPath);
+  if (h == nullptr) {
+    LOG->Warn(
+        "LoadLibrary failed: %s",
+        werr_ssprintf(GetLastError(), "LoadLibrary").c_str());
+  }
+  /* h will be nullptr if this fails. Most operations that take an HINSTANCE
+   * will still work without one (but may be missing graphics); that's OK. */
 }
 
-AppInstance::~AppInstance()
-{
-	if(h)
-	{
-		FreeLibrary(h);
-	}
+AppInstance::~AppInstance() {
+  if (h) {
+    FreeLibrary(h);
+  }
 }
 
 /*
  * (c) 2002-2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -44,7 +45,7 @@ AppInstance::~AppInstance()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
@@ -55,4 +56,3 @@ AppInstance::~AppInstance()
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

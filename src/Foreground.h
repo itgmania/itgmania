@@ -9,28 +9,26 @@
 
 class Song;
 /** @brief Foreground in front of notes while playing. */
-class Foreground: public ActorFrame
-{
-public:
-	~Foreground();
-	void Unload();
-	void LoadFromSong( const Song *pSong );
+class Foreground : public ActorFrame {
+ public:
+  ~Foreground();
+  void Unload();
+  void LoadFromSong(const Song* pSong);
 
-	virtual void Update( float fDeltaTime );
-	virtual void HandleMessage( const Message &msg );
+  virtual void Update(float fDeltaTime);
+  virtual void HandleMessage(const Message& msg);
 
-protected:
-	struct LoadedBGA
-	{
-		Actor			*m_bga;
-		float			m_fStartBeat;
-		float			m_fStopBeat;
-		bool			m_bFinished;
-	};
+ protected:
+  struct LoadedBGA {
+    Actor* m_bga;
+    float m_fStartBeat;
+    float m_fStopBeat;
+    bool m_bFinished;
+  };
 
-	std::vector<LoadedBGA>	m_BGAnimations;
-	float m_fLastMusicSeconds;
-	const Song *m_pSong;
+  std::vector<LoadedBGA> m_BGAnimations;
+  float m_fLastMusicSeconds;
+  const Song* m_pSong;
 };
 
 #endif

@@ -15,215 +15,206 @@
 #include "VideoDriverInfo.h"
 #include "global.h"
 
-static void LogVideoDriverInfo( VideoDriverInfo info )
-{
-	LOG->Info( "Video driver: %s [%s]", info.sDescription.c_str(), info.sProvider.c_str() );
-	LOG->Info( "              %s, %s [%s]", info.sVersion.c_str(), info.sDate.c_str(), info.sDeviceID.c_str() );
+static void LogVideoDriverInfo(VideoDriverInfo info) {
+  LOG->Info(
+      "Video driver: %s [%s]", info.sDescription.c_str(),
+      info.sProvider.c_str());
+  LOG->Info(
+      "              %s, %s [%s]", info.sVersion.c_str(), info.sDate.c_str(),
+      info.sDeviceID.c_str());
 }
 
-static void GetMemoryDebugInfo()
-{
-	MEMORYSTATUSEX mem;
-	mem.dwLength = sizeof(mem);
-	if (GlobalMemoryStatusEx(&mem))
-	{
-		LOG->Info("Memory: %lluMB total, %lluMB swap (%lluMB swap avail)",
-			mem.ullTotalPhys / (1024 * 1024),
-			mem.ullTotalPageFile / (1024 * 1024),
-			mem.ullAvailPageFile / (1024 * 1024));
-	}
-	else
-	{
-		LOG->Warn("GlobalMemoryStatusEx failed: %s", werr_ssprintf(GetLastError(), "GlobalMemoryStatusEx").c_str());
-	}
+static void GetMemoryDebugInfo() {
+  MEMORYSTATUSEX mem;
+  mem.dwLength = sizeof(mem);
+  if (GlobalMemoryStatusEx(&mem)) {
+    LOG->Info(
+        "Memory: %lluMB total, %lluMB swap (%lluMB swap avail)",
+        mem.ullTotalPhys / (1024 * 1024), mem.ullTotalPageFile / (1024 * 1024),
+        mem.ullAvailPageFile / (1024 * 1024));
+  } else {
+    LOG->Warn(
+        "GlobalMemoryStatusEx failed: %s",
+        werr_ssprintf(GetLastError(), "GlobalMemoryStatusEx").c_str());
+  }
 }
 
-static void GetDisplayDriverDebugInfo()
-{
-	std::string sPrimaryDeviceName = GetPrimaryVideoName();
+static void GetDisplayDriverDebugInfo() {
+  std::string sPrimaryDeviceName = GetPrimaryVideoName();
 
-	if( sPrimaryDeviceName == "" )
-		LOG->Info( "Primary display driver could not be determined." );
+  if (sPrimaryDeviceName == "") {
+    LOG->Info("Primary display driver could not be determined.");
+  }
 
-	bool LoggedSomething = false;
-	for( int i=0; true; i++ )
-	{
-		VideoDriverInfo info;
-		if( !GetVideoDriverInfo(i, info) )
-			break;
+  bool LoggedSomething = false;
+  for (int i = 0; true; i++) {
+    VideoDriverInfo info;
+    if (!GetVideoDriverInfo(i, info)) {
+      break;
+    }
 
-		if( sPrimaryDeviceName == "" )	// failed to get primary display name (NT4)
-		{
-			LogVideoDriverInfo( info );
-			LoggedSomething = true;
-		}
-		else if( info.sDescription == sPrimaryDeviceName )
-		{
-			LogVideoDriverInfo( info );
-			LoggedSomething = true;
-			break;
-		}
-	}
-	if( !LoggedSomething )
-	{
-		LOG->Info( "Primary display driver: %s", sPrimaryDeviceName.c_str() );
-		LOG->Warn("Couldn't find primary display driver; logging all drivers");
+    if (sPrimaryDeviceName == "")  // failed to get primary display name (NT4)
+    {
+      LogVideoDriverInfo(info);
+      LoggedSomething = true;
+    } else if (info.sDescription == sPrimaryDeviceName) {
+      LogVideoDriverInfo(info);
+      LoggedSomething = true;
+      break;
+    }
+  }
+  if (!LoggedSomething) {
+    LOG->Info("Primary display driver: %s", sPrimaryDeviceName.c_str());
+    LOG->Warn("Couldn't find primary display driver; logging all drivers");
 
-		for( int i=0; true; i++ )
-		{
-			VideoDriverInfo info;
-			if( !GetVideoDriverInfo(i, info) )
-				break;
+    for (int i = 0; true; i++) {
+      VideoDriverInfo info;
+      if (!GetVideoDriverInfo(i, info)) {
+        break;
+      }
 
-			LogVideoDriverInfo( info );
-		}
-	}
+      LogVideoDriverInfo(info);
+    }
+  }
 }
 
-static std::string wo_ssprintf( MMRESULT err, const char *fmt, ...)
-{
-	char buf[MAXERRORLENGTH];
-	waveOutGetErrorText(err, buf, MAXERRORLENGTH);
+static std::string wo_ssprintf(MMRESULT err, const char* fmt, ...) {
+  char buf[MAXERRORLENGTH];
+  waveOutGetErrorText(err, buf, MAXERRORLENGTH);
 
-	va_list	va;
-	va_start(va, fmt);
-	std::string s = vssprintf( fmt, va );
-	va_end(va);
+  va_list va;
+  va_start(va, fmt);
+  std::string s = vssprintf(fmt, va);
+  va_end(va);
 
-	return s += ssprintf( "(%s)", buf );
+  return s += ssprintf("(%s)", buf);
 }
 
-static void GetDriveDebugInfo()
-{
-	/*
-	 * HKEY_LOCAL_MACHINE\HARDWARE\DEVICEMAP\Scsi\
-	 *    Scsi Port *\
-	 *      DMAEnabled  0 or 1
-	 *      Driver      "Ultra", "atapi", etc
-	 *      Scsi Bus *\
-	 *	     Target Id *\
-	 *	 	   Logical Unit Id *\
-	 *		     Identifier  "WDC WD1200JB-75CRA0"
-	 *			 Type        "DiskPeripheral"
-	 */
-	std::vector<std::string> Ports;
-	if( !RegistryAccess::GetRegSubKeys( "HKEY_LOCAL_MACHINE\\HARDWARE\\DEVICEMAP\\Scsi", Ports ) )
-		return;
+static void GetDriveDebugInfo() {
+  /*
+   * HKEY_LOCAL_MACHINE\HARDWARE\DEVICEMAP\Scsi\
+   *    Scsi Port *\
+   *      DMAEnabled  0 or 1
+   *      Driver      "Ultra", "atapi", etc
+   *      Scsi Bus *\
+   *	     Target Id *\
+   *	 	   Logical Unit Id *\
+   *		     Identifier  "WDC WD1200JB-75CRA0"
+   *			 Type        "DiskPeripheral"
+   */
+  std::vector<std::string> Ports;
+  if (!RegistryAccess::GetRegSubKeys(
+          "HKEY_LOCAL_MACHINE\\HARDWARE\\DEVICEMAP\\Scsi", Ports)) {
+    return;
+  }
 
-	for( unsigned i = 0; i < Ports.size(); ++i )
-	{
-		int DMAEnabled = -1;
-		RegistryAccess::GetRegValue( Ports[i], "DMAEnabled", DMAEnabled );
+  for (unsigned i = 0; i < Ports.size(); ++i) {
+    int DMAEnabled = -1;
+    RegistryAccess::GetRegValue(Ports[i], "DMAEnabled", DMAEnabled);
 
-		std::string Driver;
-		RegistryAccess::GetRegValue( Ports[i], "Driver", Driver );
+    std::string Driver;
+    RegistryAccess::GetRegValue(Ports[i], "Driver", Driver);
 
-		std::vector<std::string> Busses;
-		if( !RegistryAccess::GetRegSubKeys( Ports[i], Busses, "Scsi Bus .*" ) )
-			continue;
+    std::vector<std::string> Busses;
+    if (!RegistryAccess::GetRegSubKeys(Ports[i], Busses, "Scsi Bus .*")) {
+      continue;
+    }
 
-		for( unsigned bus = 0; bus < Busses.size(); ++bus )
-		{
-			std::vector<std::string> TargetIDs;
-			if( !RegistryAccess::GetRegSubKeys( Busses[bus], TargetIDs, "Target Id .*" ) )
-				continue;
+    for (unsigned bus = 0; bus < Busses.size(); ++bus) {
+      std::vector<std::string> TargetIDs;
+      if (!RegistryAccess::GetRegSubKeys(
+              Busses[bus], TargetIDs, "Target Id .*")) {
+        continue;
+      }
 
-			for( unsigned tid = 0; tid < TargetIDs.size(); ++tid )
-			{
-				std::vector<std::string> LUIDs;
-				if( !RegistryAccess::GetRegSubKeys( TargetIDs[tid], LUIDs, "Logical Unit Id .*" ) )
-					continue;
+      for (unsigned tid = 0; tid < TargetIDs.size(); ++tid) {
+        std::vector<std::string> LUIDs;
+        if (!RegistryAccess::GetRegSubKeys(
+                TargetIDs[tid], LUIDs, "Logical Unit Id .*")) {
+          continue;
+        }
 
-				for( unsigned luid = 0; luid < LUIDs.size(); ++luid )
-				{
-					std::string Identifier;
-					RegistryAccess::GetRegValue( LUIDs[luid], "Identifier", Identifier );
-					TrimRight( Identifier );
-					LOG->Info( "Drive: \"%s\" Driver: %s DMA: %s",
-						Identifier.c_str(), Driver.c_str(), DMAEnabled == 1? "yes":DMAEnabled == -1? "N/A":"NO" );
-				}
-			}
-		}
-	}
+        for (unsigned luid = 0; luid < LUIDs.size(); ++luid) {
+          std::string Identifier;
+          RegistryAccess::GetRegValue(LUIDs[luid], "Identifier", Identifier);
+          TrimRight(Identifier);
+          LOG->Info(
+              "Drive: \"%s\" Driver: %s DMA: %s", Identifier.c_str(),
+              Driver.c_str(),
+              DMAEnabled == 1    ? "yes"
+              : DMAEnabled == -1 ? "N/A"
+                                 : "NO");
+        }
+      }
+    }
+  }
 }
 
-static void GetWindowsVersionDebugInfo()
-{
-	typedef LONG(WINAPI* RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
-	HMODULE hMod = GetModuleHandleW(L"ntdll.dll");
-	if (hMod)
-	{
-		RtlGetVersionPtr pRtlGetVersion = (RtlGetVersionPtr)GetProcAddress(hMod, "RtlGetVersion");
-		if (pRtlGetVersion)
-		{
-			OSVERSIONINFOEXW osvi = { 0 };
-			osvi.dwOSVersionInfoSize = sizeof(osvi);
-			if (pRtlGetVersion((PRTL_OSVERSIONINFOW)&osvi) == 0)
-			{
-				std::string Ver = ssprintf("Windows %lu.%lu (", osvi.dwMajorVersion, osvi.dwMinorVersion);
-				if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 1)
-				{
-					Ver += "Win7";
-				}
-				else if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 2)
-				{
-					Ver += "Win8";
-				}
-				else if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 3)
-				{
-					Ver += "Win8.1";
-				}
-				else if (osvi.dwMajorVersion == 10 && osvi.dwMinorVersion == 0 && osvi.dwBuildNumber < 22000)
-				{
-					Ver += "Win10";
-				}
-				else if (osvi.dwMajorVersion == 10 && osvi.dwMinorVersion == 0 && osvi.dwBuildNumber >= 22000)
-				{
-					Ver += "Win11";
-				}
-				else
-				{
-					Ver += "unknown";
-				}
+static void GetWindowsVersionDebugInfo() {
+  typedef LONG(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
+  HMODULE hMod = GetModuleHandleW(L"ntdll.dll");
+  if (hMod) {
+    RtlGetVersionPtr pRtlGetVersion =
+        (RtlGetVersionPtr)GetProcAddress(hMod, "RtlGetVersion");
+    if (pRtlGetVersion) {
+      OSVERSIONINFOEXW osvi = {0};
+      osvi.dwOSVersionInfoSize = sizeof(osvi);
+      if (pRtlGetVersion((PRTL_OSVERSIONINFOW)&osvi) == 0) {
+        std::string Ver = ssprintf(
+            "Windows %lu.%lu (", osvi.dwMajorVersion, osvi.dwMinorVersion);
+        if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 1) {
+          Ver += "Win7";
+        } else if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 2) {
+          Ver += "Win8";
+        } else if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 3) {
+          Ver += "Win8.1";
+        } else if (
+            osvi.dwMajorVersion == 10 && osvi.dwMinorVersion == 0 &&
+            osvi.dwBuildNumber < 22000) {
+          Ver += "Win10";
+        } else if (
+            osvi.dwMajorVersion == 10 && osvi.dwMinorVersion == 0 &&
+            osvi.dwBuildNumber >= 22000) {
+          Ver += "Win11";
+        } else {
+          Ver += "unknown";
+        }
 
-				Ver += ssprintf(") build %lu [%s]", osvi.dwBuildNumber, osvi.szCSDVersion);
-				LOG->Info("%s", Ver.c_str());
-				return;
-			}
-		}
-	}
-	LOG->Info("RtlGetVersion failed!");
+        Ver +=
+            ssprintf(") build %lu [%s]", osvi.dwBuildNumber, osvi.szCSDVersion);
+        LOG->Info("%s", Ver.c_str());
+        return;
+      }
+    }
+  }
+  LOG->Info("RtlGetVersion failed!");
 }
 
-static void GetSoundDriverDebugInfo()
-{
-	int cnt = waveOutGetNumDevs();
+static void GetSoundDriverDebugInfo() {
+  int cnt = waveOutGetNumDevs();
 
-	for(int i = 0; i < cnt; ++i)
-	{
-		WAVEOUTCAPS caps;
+  for (int i = 0; i < cnt; ++i) {
+    WAVEOUTCAPS caps;
 
-		MMRESULT ret = waveOutGetDevCaps(i, &caps, sizeof(caps));
-		if(ret != MMSYSERR_NOERROR)
-		{
-			LOG->Info(wo_ssprintf(ret, "waveOutGetDevCaps(%i) failed", i).c_str());
-			continue;
-		}
-		LOG->Info("Sound device %i: %s, %i.%i, MID %i, PID %i %s", i, caps.szPname,
-			HIBYTE(caps.vDriverVersion),
-			LOBYTE(caps.vDriverVersion),
-			caps.wMid, caps.wPid,
-			caps.dwSupport & WAVECAPS_SAMPLEACCURATE? "":"(INACCURATE)");
-	}
+    MMRESULT ret = waveOutGetDevCaps(i, &caps, sizeof(caps));
+    if (ret != MMSYSERR_NOERROR) {
+      LOG->Info(wo_ssprintf(ret, "waveOutGetDevCaps(%i) failed", i).c_str());
+      continue;
+    }
+    LOG->Info(
+        "Sound device %i: %s, %i.%i, MID %i, PID %i %s", i, caps.szPname,
+        HIBYTE(caps.vDriverVersion), LOBYTE(caps.vDriverVersion), caps.wMid,
+        caps.wPid,
+        caps.dwSupport & WAVECAPS_SAMPLEACCURATE ? "" : "(INACCURATE)");
+  }
 }
 
-void SearchForDebugInfo()
-{
-	GetWindowsVersionDebugInfo();
-	GetMemoryDebugInfo();
-	GetDisplayDriverDebugInfo();
-	GetDriveDebugInfo();
-	GetSoundDriverDebugInfo();
+void SearchForDebugInfo() {
+  GetWindowsVersionDebugInfo();
+  GetMemoryDebugInfo();
+  GetDisplayDriverDebugInfo();
+  GetDriveDebugInfo();
+  GetSoundDriverDebugInfo();
 }
 
 /*

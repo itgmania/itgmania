@@ -6,93 +6,83 @@
 #include <utility>
 
 /*
- * This is a simple copy-on-write refcounted smart pointer.  Once constructed, all read-only
- * access to the object is made without extra copying.  If you need read-write access, you
- * can get a pointer with Get(), which will cause the object to deep-copy.  (Don't free
- * the resulting pointer.)
+ * This is a simple copy-on-write refcounted smart pointer.  Once constructed,
+ * all read-only access to the object is made without extra copying.  If you
+ * need read-write access, you can get a pointer with Get(), which will cause
+ * the object to deep-copy.  (Don't free the resulting pointer.)
  *
- * Note that there are no non-const operator* or operator-> overloads, because that would
- * cause all const access by code with non-const permissions to deep-copy.  For example,
+ * Note that there are no non-const operator* or operator-> overloads, because
+ * that would cause all const access by code with non-const permissions to
+ * deep-copy.  For example,
  *
  *   AutoPtrCopyOnWrite<int> a( new int(1) );
  *   AutoPtrCopyOnWrite<int> b( a );
  *   printf( "%i\n", *a );
  *
- * If we have a non-const operator*, this *a will use it (even though it only needs const
- * access), and will copy the underlying object wastefully.  g++ std::string has this behavior,
- * which is why it's important to qualify strings as "const" when const access is desired,
- * but that's brittle, so let's make all potential deep-copying explicit.
+ * If we have a non-const operator*, this *a will use it (even though it only
+ * needs const access), and will copy the underlying object wastefully.  g++
+ * std::string has this behavior, which is why it's important to qualify strings
+ * as "const" when const access is desired, but that's brittle, so let's make
+ * all potential deep-copying explicit.
  */
 
-template<class T>
-class AutoPtrCopyOnWrite
-{
-public:
-	/* This constructor only exists to make us work with STL containers. */
-	inline AutoPtrCopyOnWrite(): m_pPtr(nullptr), m_iRefCount(new int(1))
-	{
-	}
+template <class T>
+class AutoPtrCopyOnWrite {
+ public:
+  /* This constructor only exists to make us work with STL containers. */
+  inline AutoPtrCopyOnWrite() : m_pPtr(nullptr), m_iRefCount(new int(1)) {}
 
-	explicit inline AutoPtrCopyOnWrite( T *p ): m_pPtr(p), m_iRefCount(new int(1))
-	{
-	}
+  explicit inline AutoPtrCopyOnWrite(T* p)
+      : m_pPtr(p), m_iRefCount(new int(1)) {}
 
-	inline AutoPtrCopyOnWrite( const AutoPtrCopyOnWrite &rhs ):
-		m_pPtr(rhs.m_pPtr), m_iRefCount(rhs.m_iRefCount)
-	{
-		++(*m_iRefCount);
-	}
+  inline AutoPtrCopyOnWrite(const AutoPtrCopyOnWrite& rhs)
+      : m_pPtr(rhs.m_pPtr), m_iRefCount(rhs.m_iRefCount) {
+    ++(*m_iRefCount);
+  }
 
-	void Swap( AutoPtrCopyOnWrite<T> &rhs )
-	{
-		std::swap( m_pPtr, rhs.m_pPtr );
-		std::swap( m_iRefCount, rhs.m_iRefCount );
-	}
+  void Swap(AutoPtrCopyOnWrite<T>& rhs) {
+    std::swap(m_pPtr, rhs.m_pPtr);
+    std::swap(m_iRefCount, rhs.m_iRefCount);
+  }
 
-	inline AutoPtrCopyOnWrite<T> &operator=( const AutoPtrCopyOnWrite &rhs )
-	{
-		AutoPtrCopyOnWrite<T> obj( rhs );
-		this->Swap( obj );
-		return *this;
-	}
+  inline AutoPtrCopyOnWrite<T>& operator=(const AutoPtrCopyOnWrite& rhs) {
+    AutoPtrCopyOnWrite<T> obj(rhs);
+    this->Swap(obj);
+    return *this;
+  }
 
-	~AutoPtrCopyOnWrite()
-	{
-		--(*m_iRefCount);
-		if( *m_iRefCount == 0 )
-		{
-			delete m_pPtr;
-			delete m_iRefCount;
-		}
-	}
+  ~AutoPtrCopyOnWrite() {
+    --(*m_iRefCount);
+    if (*m_iRefCount == 0) {
+      delete m_pPtr;
+      delete m_iRefCount;
+    }
+  }
 
-	/* Get a non-const pointer.  This will deep-copy the object if necessary. */
-	T *Get()
-	{
-		if( *m_iRefCount > 1 )
-		{
-			--*m_iRefCount;
-			m_pPtr = new T(*m_pPtr);
-			m_iRefCount = new int(1);
-		}
+  /* Get a non-const pointer.  This will deep-copy the object if necessary. */
+  T* Get() {
+    if (*m_iRefCount > 1) {
+      --*m_iRefCount;
+      m_pPtr = new T(*m_pPtr);
+      m_iRefCount = new int(1);
+    }
 
-		return m_pPtr;
-	}
+    return m_pPtr;
+  }
 
-	int GetReferenceCount() const { return *m_iRefCount; }
+  int GetReferenceCount() const { return *m_iRefCount; }
 
-	const T &operator *() const { return *m_pPtr; }
-	const T *operator ->() const { return m_pPtr; }
+  const T& operator*() const { return *m_pPtr; }
+  const T* operator->() const { return m_pPtr; }
 
-private:
-	T *m_pPtr;
-	int *m_iRefCount;
+ private:
+  T* m_pPtr;
+  int* m_iRefCount;
 };
 
-template<class T>
-inline void swap( AutoPtrCopyOnWrite<T> &a, AutoPtrCopyOnWrite<T> &b )
-{
-	a.Swap(b);
+template <class T>
+inline void swap(AutoPtrCopyOnWrite<T>& a, AutoPtrCopyOnWrite<T>& b) {
+  a.Swap(b);
 }
 
 /*
@@ -110,34 +100,38 @@ inline void swap( AutoPtrCopyOnWrite<T> &a, AutoPtrCopyOnWrite<T> &b )
  *
  * Concepts from http://www.gotw.ca/gotw/062.htm.
  */
-template<class T>
-struct HiddenPtrTraits
-{
-	static T *Copy( const T *pCopy );
-	static void Delete( T *p );
+template <class T>
+struct HiddenPtrTraits {
+  static T* Copy(const T* pCopy);
+  static void Delete(T* p);
 };
-#define REGISTER_CLASS_TRAITS(T, CopyExpr) \
-	template<> T *HiddenPtrTraits<T>::Copy( const T *pCopy ) { return CopyExpr; } \
-	template<> void HiddenPtrTraits<T>::Delete( T *p ) { delete p; }
+#define REGISTER_CLASS_TRAITS(T, CopyExpr)      \
+  template <>                                   \
+  T* HiddenPtrTraits<T>::Copy(const T* pCopy) { \
+    return CopyExpr;                            \
+  }                                             \
+  template <>                                   \
+  void HiddenPtrTraits<T>::Delete(T* p) {       \
+    delete p;                                   \
+  }
 
-template<class T>
-class HiddenPtr
-{
-public:
-	const T& operator*() const { return *m_pPtr; }
-	const T* operator->() const { return m_pPtr; }
-	T& operator*() { return *m_pPtr; }
-	T* operator->() { return m_pPtr; }
+template <class T>
+class HiddenPtr {
+ public:
+  const T& operator*() const { return *m_pPtr; }
+  const T* operator->() const { return m_pPtr; }
+  T& operator*() { return *m_pPtr; }
+  T* operator->() { return m_pPtr; }
 
-	explicit HiddenPtr( T *p = nullptr ): m_pPtr(p) {}
+  explicit HiddenPtr(T* p = nullptr) : m_pPtr(p) {}
 
-	HiddenPtr( const HiddenPtr<T> &cpy ): m_pPtr(nullptr)
-	{
-		if( cpy.m_pPtr != nullptr )
-			m_pPtr = HiddenPtrTraits<T>::Copy( cpy.m_pPtr );
-	}
+  HiddenPtr(const HiddenPtr<T>& cpy) : m_pPtr(nullptr) {
+    if (cpy.m_pPtr != nullptr) {
+      m_pPtr = HiddenPtrTraits<T>::Copy(cpy.m_pPtr);
+    }
+  }
 
-#if 0 // broken VC6
+#if 0  // broken VC6
 	template<class U>
 	HiddenPtr( const HiddenPtr<U> &cpy )
 	{
@@ -148,27 +142,22 @@ public:
 	}
 #endif
 
-	~HiddenPtr()
-	{
-		HiddenPtrTraits<T>::Delete( m_pPtr );
-	}
-	void Swap( HiddenPtr<T> &rhs ) { std::swap( m_pPtr, rhs.m_pPtr ); }
+  ~HiddenPtr() { HiddenPtrTraits<T>::Delete(m_pPtr); }
+  void Swap(HiddenPtr<T>& rhs) { std::swap(m_pPtr, rhs.m_pPtr); }
 
-	HiddenPtr<T> &operator=( T *p )
-	{
-		HiddenPtr<T> t( p );
-		Swap( t );
-		return *this;
-	}
+  HiddenPtr<T>& operator=(T* p) {
+    HiddenPtr<T> t(p);
+    Swap(t);
+    return *this;
+  }
 
-	HiddenPtr<T> &operator=( const HiddenPtr &cpy )
-	{
-		HiddenPtr<T> t( cpy );
-		Swap( t );
-		return *this;
-	}
+  HiddenPtr<T>& operator=(const HiddenPtr& cpy) {
+    HiddenPtr<T> t(cpy);
+    Swap(t);
+    return *this;
+  }
 
-#if 0 // broken VC6
+#if 0  // broken VC6
 	template<class U>
 	HiddenPtr<T> &operator=( const HiddenPtr<U> &cpy )
 	{
@@ -178,21 +167,20 @@ public:
 	}
 #endif
 
-	bool isNull() const { return m_pPtr == nullptr; }
+  bool isNull() const { return m_pPtr == nullptr; }
 
-private:
-	T *m_pPtr;
+ private:
+  T* m_pPtr;
 
-#if 0 // broken VC6
+#if 0  // broken VC6
 	template<class U>
 	friend class HiddenPtr;
 #endif
 };
 
-template<class T>
-inline void swap( HiddenPtr<T> &a, HiddenPtr<T> &b )
-{
-	a.Swap(b);
+template <class T>
+inline void swap(HiddenPtr<T>& a, HiddenPtr<T>& b) {
+  a.Swap(b);
 }
 
 #endif
@@ -200,7 +188,7 @@ inline void swap( HiddenPtr<T> &a, HiddenPtr<T> &b )
 /*
  * (c) 2005 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -210,7 +198,7 @@ inline void swap( HiddenPtr<T> &a, HiddenPtr<T> &b )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

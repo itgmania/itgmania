@@ -16,66 +16,62 @@
 class Song;
 class Steps;
 
-class StepsDisplayList: public ActorFrame
-{
-public:
-	StepsDisplayList();
-	virtual ~StepsDisplayList();
-	virtual StepsDisplayList *Copy() const;
-	virtual void LoadFromNode( const XNode* pNode );
+class StepsDisplayList : public ActorFrame {
+ public:
+  StepsDisplayList();
+  virtual ~StepsDisplayList();
+  virtual StepsDisplayList* Copy() const;
+  virtual void LoadFromNode(const XNode* pNode);
 
-	void HandleMessage( const Message &msg );
+  void HandleMessage(const Message& msg);
 
-	void SetFromGameState();
-	void TweenOnScreen();
-	void TweenOffScreen();
-	void Hide();
-	void Show();
+  void SetFromGameState();
+  void TweenOnScreen();
+  void TweenOffScreen();
+  void Hide();
+  void Show();
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-private:
-	void UpdatePositions();
-	void PositionItems();
-	int GetCurrentRowIndex( PlayerNumber pn ) const;
-	void HideRows();
+ private:
+  void UpdatePositions();
+  void PositionItems();
+  int GetCurrentRowIndex(PlayerNumber pn) const;
+  void HideRows();
 
-	ThemeMetric<float> ITEMS_SPACING_Y;
-	ThemeMetric<int> NUM_SHOWN_ITEMS;
-	ThemeMetric<bool> CAPITALIZE_DIFFICULTY_NAMES;
-	ThemeMetric<apActorCommands> MOVE_COMMAND;
+  ThemeMetric<float> ITEMS_SPACING_Y;
+  ThemeMetric<int> NUM_SHOWN_ITEMS;
+  ThemeMetric<bool> CAPITALIZE_DIFFICULTY_NAMES;
+  ThemeMetric<apActorCommands> MOVE_COMMAND;
 
-	AutoActor		m_Cursors[NUM_PLAYERS];
-	ActorFrame		m_CursorFrames[NUM_PLAYERS];	// contains Cursor so that color can fade independent of other tweens
+  AutoActor m_Cursors[NUM_PLAYERS];
+  ActorFrame m_CursorFrames[NUM_PLAYERS];  // contains Cursor so that color can
+                                           // fade independent of other tweens
 
-	struct Line
-	{
-		StepsDisplay m_Meter;
-	};
-	std::vector<Line>	m_Lines;
+  struct Line {
+    StepsDisplay m_Meter;
+  };
+  std::vector<Line> m_Lines;
 
-	const Song		*m_CurSong;
-	bool			m_bShown;
+  const Song* m_CurSong;
+  bool m_bShown;
 
-	struct Row
-	{
-		Row()
-		{
-			m_Steps = nullptr;
-			m_dc = Difficulty_Invalid;
-			m_fY = 0;
-			m_bHidden = false;
-		}
+  struct Row {
+    Row() {
+      m_Steps = nullptr;
+      m_dc = Difficulty_Invalid;
+      m_fY = 0;
+      m_bHidden = false;
+    }
 
-		const Steps *m_Steps;
-		Difficulty m_dc;
-		float m_fY;
-		bool m_bHidden; // currently off screen
-	};
+    const Steps* m_Steps;
+    Difficulty m_dc;
+    float m_fY;
+    bool m_bHidden;  // currently off screen
+  };
 
-	std::vector<Row>		m_Rows;
-
+  std::vector<Row> m_Rows;
 };
 
 #endif

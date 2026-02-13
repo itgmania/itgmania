@@ -12,59 +12,55 @@
 #include "ThemeManager.h"
 #include "XmlFile.h"
 
-REGISTER_ACTOR_CLASS( MemoryCardDisplay );
+REGISTER_ACTOR_CLASS(MemoryCardDisplay);
 
-MemoryCardDisplay::MemoryCardDisplay()
-{
-	m_PlayerNumber = PLAYER_INVALID;
-	m_LastSeenState = MemoryCardState_Invalid;
+MemoryCardDisplay::MemoryCardDisplay() {
+  m_PlayerNumber = PLAYER_INVALID;
+  m_LastSeenState = MemoryCardState_Invalid;
 }
 
-void MemoryCardDisplay::Load( PlayerNumber pn )
-{
-	m_PlayerNumber = pn;
+void MemoryCardDisplay::Load(PlayerNumber pn) {
+  m_PlayerNumber = pn;
 
-	for( int i=0; i<NUM_MemoryCardState; i++ )
-	{
-		MemoryCardState mcs = (MemoryCardState)i;
-		std::string sState = MemoryCardStateToString(mcs);
-		m_spr[i].Load( THEME->GetPathG("MemoryCardDisplay",ssprintf("%s p%d",sState.c_str(),pn+1)) );
-		m_spr[i].SetVisible( false );
-		this->AddChild( &m_spr[i] );
-	}
+  for (int i = 0; i < NUM_MemoryCardState; i++) {
+    MemoryCardState mcs = (MemoryCardState)i;
+    std::string sState = MemoryCardStateToString(mcs);
+    m_spr[i].Load(THEME->GetPathG(
+        "MemoryCardDisplay", ssprintf("%s p%d", sState.c_str(), pn + 1)));
+    m_spr[i].SetVisible(false);
+    this->AddChild(&m_spr[i]);
+  }
 }
 
-void MemoryCardDisplay::LoadFromNode( const XNode* pNode )
-{
-	Lua *L = LUA->Get();
-	pNode->PushAttrValue( L, "PlayerNumber" );
-	PlayerNumber pn;
-	LuaHelpers::Pop( L, pn );
-	LUA->Release(L);
+void MemoryCardDisplay::LoadFromNode(const XNode* pNode) {
+  Lua* L = LUA->Get();
+  pNode->PushAttrValue(L, "PlayerNumber");
+  PlayerNumber pn;
+  LuaHelpers::Pop(L, pn);
+  LUA->Release(L);
 
-	Load( pn );
+  Load(pn);
 
-	ActorFrame::LoadFromNode( pNode );
+  ActorFrame::LoadFromNode(pNode);
 }
 
-void MemoryCardDisplay::Update( float fDelta )
-{
-	MemoryCardState newMcs = MEMCARDMAN->GetCardState(m_PlayerNumber);
-	if( m_LastSeenState != newMcs )
-	{
-		if( m_LastSeenState != MemoryCardState_Invalid )
-			m_spr[m_LastSeenState].SetVisible( false );
-		m_LastSeenState = newMcs;
-		m_spr[m_LastSeenState].SetVisible( true );
-	}
+void MemoryCardDisplay::Update(float fDelta) {
+  MemoryCardState newMcs = MEMCARDMAN->GetCardState(m_PlayerNumber);
+  if (m_LastSeenState != newMcs) {
+    if (m_LastSeenState != MemoryCardState_Invalid) {
+      m_spr[m_LastSeenState].SetVisible(false);
+    }
+    m_LastSeenState = newMcs;
+    m_spr[m_LastSeenState].SetVisible(true);
+  }
 
-	ActorFrame::Update( fDelta );
+  ActorFrame::Update(fDelta);
 }
 
 /*
  * (c) 2003 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -74,7 +70,7 @@ void MemoryCardDisplay::Update( float fDelta )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

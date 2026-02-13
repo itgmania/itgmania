@@ -20,60 +20,61 @@ static const bool SCREEN_DEBUG = false;
 
 REGISTER_LIGHTS_DRIVER_CLASS(LinuxParallel);
 
-LightsDriver_LinuxParallel::LightsDriver_LinuxParallel()
-{
-	// Give ports permissions and reset all bits to zero
-	ioperm( PORT_ADDRESS, 1, 1 );
-	outb( 0, PORT_ADDRESS );
+LightsDriver_LinuxParallel::LightsDriver_LinuxParallel() {
+  // Give ports permissions and reset all bits to zero
+  ioperm(PORT_ADDRESS, 1, 1);
+  outb(0, PORT_ADDRESS);
 }
 
-LightsDriver_LinuxParallel::~LightsDriver_LinuxParallel()
-{
-	// Reset all bits to zero and free the port's permissions
-	outb( 0, PORT_ADDRESS );
-	ioperm( PORT_ADDRESS, 1, 0 );
+LightsDriver_LinuxParallel::~LightsDriver_LinuxParallel() {
+  // Reset all bits to zero and free the port's permissions
+  outb(0, PORT_ADDRESS);
+  ioperm(PORT_ADDRESS, 1, 0);
 }
 
-void LightsDriver_LinuxParallel::Set( const LightsState *ls )
-{
-	// Set LightState to port
-	std::string s;
+void LightsDriver_LinuxParallel::Set(const LightsState* ls) {
+  // Set LightState to port
+  std::string s;
 
-	// Prepare screen output too for debugging
-	s += "LinuxParallel Lights Driver Debug\n";
-	s += "Lights Mode: " + LightsModeToString(LIGHTSMAN->GetLightsMode()) + "\n";
+  // Prepare screen output too for debugging
+  s += "LinuxParallel Lights Driver Debug\n";
+  s += "Lights Mode: " + LightsModeToString(LIGHTSMAN->GetLightsMode()) + "\n";
 
-	// Cabinet Lights
-	int i = 0;
-	unsigned char output = 0;
-	s += "Cabinet Bits: ";
-	FOREACH_CabinetLight( cl )
-	{
-		s += ls->m_bCabinetLights[cl] ? '1' : '0';
-		if ( ls->m_bCabinetLights[cl] )
-			output += std::pow((double)2,i);
-		i++;
-	}
-	s += "\n";
+  // Cabinet Lights
+  int i = 0;
+  unsigned char output = 0;
+  s += "Cabinet Bits: ";
+  FOREACH_CabinetLight(cl) {
+    s += ls->m_bCabinetLights[cl] ? '1' : '0';
+    if (ls->m_bCabinetLights[cl]) {
+      output += std::pow((double)2, i);
+    }
+    i++;
+  }
+  s += "\n";
 
-	int iNumGameButtonsToShow = INPUTMAPPER->GetInputScheme()->ButtonNameToIndex( "Start" );
-	if( iNumGameButtonsToShow == GameButton_Invalid )
-		iNumGameButtonsToShow = INPUTMAPPER->GetInputScheme()->m_iButtonsPerController;
-	FOREACH_ENUM( GameController,  gc )
-	{
-		s += ssprintf("Controller%d Bits: ",gc+1);
-		for( int gb=0; gb<iNumGameButtonsToShow; gb++ )
-			s += ls->m_bGameButtonLights[gc][gb] ? '1' : '0';
-		s += "\n";
-	}
-	s += ssprintf("Output Port: 0x%x\n", PORT_ADDRESS);
-	s += ssprintf("Output Byte: %i\n", output);
+  int iNumGameButtonsToShow =
+      INPUTMAPPER->GetInputScheme()->ButtonNameToIndex("Start");
+  if (iNumGameButtonsToShow == GameButton_Invalid) {
+    iNumGameButtonsToShow =
+        INPUTMAPPER->GetInputScheme()->m_iButtonsPerController;
+  }
+  FOREACH_ENUM(GameController, gc) {
+    s += ssprintf("Controller%d Bits: ", gc + 1);
+    for (int gb = 0; gb < iNumGameButtonsToShow; gb++) {
+      s += ls->m_bGameButtonLights[gc][gb] ? '1' : '0';
+    }
+    s += "\n";
+  }
+  s += ssprintf("Output Port: 0x%x\n", PORT_ADDRESS);
+  s += ssprintf("Output Byte: %i\n", output);
 
-	if( SCREEN_DEBUG )
-		SCREENMAN->SystemMessageNoAnimate( s );
+  if (SCREEN_DEBUG) {
+    SCREENMAN->SystemMessageNoAnimate(s);
+  }
 
-	// Send byte to port
-	outb( output, PORT_ADDRESS );
+  // Send byte to port
+  outb(output, PORT_ADDRESS);
 }
 
 /*

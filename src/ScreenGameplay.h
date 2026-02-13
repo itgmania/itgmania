@@ -41,326 +41,370 @@ class ScoreKeeper;
 class Background;
 class Foreground;
 
-AutoScreenMessage( SM_NotesEnded );
-AutoScreenMessage( SM_BeginFailed );
-AutoScreenMessage( SM_LeaveGameplay );
+AutoScreenMessage(SM_NotesEnded);
+AutoScreenMessage(SM_BeginFailed);
+AutoScreenMessage(SM_LeaveGameplay);
 
-class PlayerInfo
-{
-public:
-	PlayerInfo();
-	~PlayerInfo();
+class PlayerInfo {
+ public:
+  PlayerInfo();
+  ~PlayerInfo();
 
-	void Load( PlayerNumber pn, MultiPlayer mp, bool bShowNoteField, int iAddToDifficulty );
-	void LoadDummyP1( int iDummyIndex, int iAddToDifficulty );
+  void Load(
+      PlayerNumber pn, MultiPlayer mp, bool bShowNoteField,
+      int iAddToDifficulty);
+  void LoadDummyP1(int iDummyIndex, int iAddToDifficulty);
 
-	/** @brief The player has lost all of their lives: show the special game over. */
-	void ShowOniGameOver();
-	/**
-	 * @brief Retrieve the player's state and stage stats index.
-	 * @return the player's state and stage stats index.
-	 */
-	MultiPlayer GetPlayerStateAndStageStatsIndex()	{ return m_pn == PLAYER_INVALID ? m_mp : (MultiPlayer)m_pn; }
-	PlayerState *GetPlayerState();
-	PlayerStageStats *GetPlayerStageStats();
-	PlayerNumber GetStepsAndTrailIndex()		{ return m_pn == PLAYER_INVALID ? PLAYER_1 : m_pn; }
-	/**
-	 * @brief Determine if the player information is enabled.
-	 * @return its success or failure. */
-	bool IsEnabled();
-	/**
-	 * @brief Determine if we're in MultiPlayer.
-	 * @return true if it is MultiPlayer, false otherwise. */
-	bool IsMultiPlayer() const { return m_mp != MultiPlayer_Invalid; }
-	/**
-	 * @brief Retrieve the name of the Player based on the mode.
-	 * @return the name of the Player. */
-	std::string GetName() const
-	{
-		if( m_bIsDummy )
-			return ssprintf("Dummy%d",m_iDummyIndex);
-		if( IsMultiPlayer() )
-			return MultiPlayerToString( m_mp );
-		else
-			return PlayerNumberToString( m_pn );
-	}
+  /** @brief The player has lost all of their lives: show the special game over.
+   */
+  void ShowOniGameOver();
+  /**
+   * @brief Retrieve the player's state and stage stats index.
+   * @return the player's state and stage stats index.
+   */
+  MultiPlayer GetPlayerStateAndStageStatsIndex() {
+    return m_pn == PLAYER_INVALID ? m_mp : (MultiPlayer)m_pn;
+  }
+  PlayerState* GetPlayerState();
+  PlayerStageStats* GetPlayerStageStats();
+  PlayerNumber GetStepsAndTrailIndex() {
+    return m_pn == PLAYER_INVALID ? PLAYER_1 : m_pn;
+  }
+  /**
+   * @brief Determine if the player information is enabled.
+   * @return its success or failure. */
+  bool IsEnabled();
+  /**
+   * @brief Determine if we're in MultiPlayer.
+   * @return true if it is MultiPlayer, false otherwise. */
+  bool IsMultiPlayer() const { return m_mp != MultiPlayer_Invalid; }
+  /**
+   * @brief Retrieve the name of the Player based on the mode.
+   * @return the name of the Player. */
+  std::string GetName() const {
+    if (m_bIsDummy) {
+      return ssprintf("Dummy%d", m_iDummyIndex);
+    }
+    if (IsMultiPlayer()) {
+      return MultiPlayerToString(m_mp);
+    } else {
+      return PlayerNumberToString(m_pn);
+    }
+  }
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-	/** @brief The present Player's number. */
-	PlayerNumber		m_pn;
-	/** @brief The present Player's multiplayer number. */
-	MultiPlayer		m_mp;
-	bool			m_bIsDummy;
-	int			m_iDummyIndex;
-	int			m_iAddToDifficulty;	// if > 0, use the Nth harder Steps
-	bool			m_bPlayerEnabled; // IsEnabled cache for iterators
-	PlayerState		m_PlayerStateDummy;
-	PlayerStageStats	m_PlayerStageStatsDummy;
-	SoundEffectControl	m_SoundEffectControl;
+  /** @brief The present Player's number. */
+  PlayerNumber m_pn;
+  /** @brief The present Player's multiplayer number. */
+  MultiPlayer m_mp;
+  bool m_bIsDummy;
+  int m_iDummyIndex;
+  int m_iAddToDifficulty;  // if > 0, use the Nth harder Steps
+  bool m_bPlayerEnabled;   // IsEnabled cache for iterators
+  PlayerState m_PlayerStateDummy;
+  PlayerStageStats m_PlayerStageStatsDummy;
+  SoundEffectControl m_SoundEffectControl;
 
-	/**
-	 * @brief The list of Steps a player has to go through in this set.
-	 *
-	 * The size may be greater than 1 if playing a course. */
-	std::vector<Steps*>		m_vpStepsQueue;
-	/**
-	 * @brief The list of attack modifiers a player has to go through in this set.
-	 *
-	 * The size may be greater than 1 if playing a course. */
-	std::vector<AttackArray>	m_asModifiersQueue;
+  /**
+   * @brief The list of Steps a player has to go through in this set.
+   *
+   * The size may be greater than 1 if playing a course. */
+  std::vector<Steps*> m_vpStepsQueue;
+  /**
+   * @brief The list of attack modifiers a player has to go through in this set.
+   *
+   * The size may be greater than 1 if playing a course. */
+  std::vector<AttackArray> m_asModifiersQueue;
 
-	/** @brief The LifeMeter showing a Player's health. */
-	LifeMeter		*m_pLifeMeter;
-	/** @brief The current Song number in a Course. */
-	BitmapText		*m_ptextCourseSongNumber;
-	/** @brief The description of the current Steps. */
-	BitmapText		*m_ptextStepsDescription;
+  /** @brief The LifeMeter showing a Player's health. */
+  LifeMeter* m_pLifeMeter;
+  /** @brief The current Song number in a Course. */
+  BitmapText* m_ptextCourseSongNumber;
+  /** @brief The description of the current Steps. */
+  BitmapText* m_ptextStepsDescription;
 
-	/** @brief The display for the primary ScoreKeeper. */
-	ScoreDisplay		*m_pPrimaryScoreDisplay;
-	/** @brief The display for the secondary ScoreKeeper. */
-	ScoreDisplay		*m_pSecondaryScoreDisplay;
-	/** @brief The primary ScoreKeeper for keeping track of the score. */
-	ScoreKeeper		*m_pPrimaryScoreKeeper;
-	/** @brief The secondary ScoreKeeper. Only used in PLAY_MODE_RAVE. */
-	ScoreKeeper		*m_pSecondaryScoreKeeper;
-	/** @brief The current PlayerOptions that are activated. */
-	BitmapText		*m_ptextPlayerOptions;
-	/** @brief The current attack modifiers that are in play for the moment. */
-	ActiveAttackList	*m_pActiveAttackList;
+  /** @brief The display for the primary ScoreKeeper. */
+  ScoreDisplay* m_pPrimaryScoreDisplay;
+  /** @brief The display for the secondary ScoreKeeper. */
+  ScoreDisplay* m_pSecondaryScoreDisplay;
+  /** @brief The primary ScoreKeeper for keeping track of the score. */
+  ScoreKeeper* m_pPrimaryScoreKeeper;
+  /** @brief The secondary ScoreKeeper. Only used in PLAY_MODE_RAVE. */
+  ScoreKeeper* m_pSecondaryScoreKeeper;
+  /** @brief The current PlayerOptions that are activated. */
+  BitmapText* m_ptextPlayerOptions;
+  /** @brief The current attack modifiers that are in play for the moment. */
+  ActiveAttackList* m_pActiveAttackList;
 
-	/** @brief The NoteData the Player has to get through. */
-	NoteData		m_NoteData;
-	/** @brief The specific Player that is going to play. */
-	Player			*m_pPlayer;
+  /** @brief The NoteData the Player has to get through. */
+  NoteData m_NoteData;
+  /** @brief The specific Player that is going to play. */
+  Player* m_pPlayer;
 
-	/**
-	 * @brief The inventory of attacks.
-	 *
-	 * This is mainly used in PLAY_MODE_BATTLE. */
-	Inventory		*m_pInventory;
+  /**
+   * @brief The inventory of attacks.
+   *
+   * This is mainly used in PLAY_MODE_BATTLE. */
+  Inventory* m_pInventory;
 
-	StepsDisplay	*m_pStepsDisplay;
+  StepsDisplay* m_pStepsDisplay;
 
-	AutoActor		m_sprOniGameOver;
+  AutoActor m_sprOniGameOver;
 };
 
-/** @brief The music plays, the notes scroll, and the Player is pressing buttons. */
-class ScreenGameplay : public ScreenWithMenuElements
-{
-public:
-	ScreenGameplay();
-	virtual void Init();
-	virtual ~ScreenGameplay();
-	virtual void BeginScreen();
+/** @brief The music plays, the notes scroll, and the Player is pressing
+ * buttons. */
+class ScreenGameplay : public ScreenWithMenuElements {
+ public:
+  ScreenGameplay();
+  virtual void Init();
+  virtual ~ScreenGameplay();
+  virtual void BeginScreen();
 
-	virtual void Update( float fDeltaTime );
-	virtual bool Input( const InputEventPlus &input );
-	virtual void HandleScreenMessage( const ScreenMessage SM );
-	virtual void HandleMessage( const Message &msg );
-	virtual void Cancel( ScreenMessage smSendWhenDone );
+  virtual void Update(float fDeltaTime);
+  virtual bool Input(const InputEventPlus& input);
+  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleMessage(const Message& msg);
+  virtual void Cancel(ScreenMessage smSendWhenDone);
 
-	virtual void DrawPrimitives();
+  virtual void DrawPrimitives();
 
-	/**
-	 * @brief Retrieve the current ScreenType.
-	 * @return the gameplay ScreenType. */
-	virtual ScreenType GetScreenType() const { return gameplay; }
+  /**
+   * @brief Retrieve the current ScreenType.
+   * @return the gameplay ScreenType. */
+  virtual ScreenType GetScreenType() const { return gameplay; }
 
-	/**
-	 * @brief Determine if we are to center the columns for just one player.
-	 * @return true if we center the solo player, false otherwise. */
-	bool Center1Player() const;
+  /**
+   * @brief Determine if we are to center the columns for just one player.
+   * @return true if we center the solo player, false otherwise. */
+  bool Center1Player() const;
 
-	bool MenuRestart( const InputEventPlus &input );
+  bool MenuRestart(const InputEventPlus& input);
 
-	// Lua
-	virtual void PushSelf( lua_State *L );
-	Song *GetNextCourseSong() const;
-	LifeMeter *GetLifeMeter( PlayerNumber pn );
-	PlayerInfo *GetPlayerInfo( PlayerNumber pn );
-	PlayerInfo *GetDummyPlayerInfo( int iDummyIndex );
-	void Pause(bool bPause) { PauseGame(bPause); }
-	bool IsPaused() const { return m_bPaused; }
-	float GetHasteRate();
+  // Lua
+  virtual void PushSelf(lua_State* L);
+  Song* GetNextCourseSong() const;
+  LifeMeter* GetLifeMeter(PlayerNumber pn);
+  PlayerInfo* GetPlayerInfo(PlayerNumber pn);
+  PlayerInfo* GetDummyPlayerInfo(int iDummyIndex);
+  void Pause(bool bPause) { PauseGame(bPause); }
+  bool IsPaused() const { return m_bPaused; }
+  float GetHasteRate();
 
-	void FailFadeRemovePlayer(PlayerInfo* pi);
-	void FailFadeRemovePlayer(PlayerNumber pn);
-	void BeginBackingOutFromGameplay();
+  void FailFadeRemovePlayer(PlayerInfo* pi);
+  void FailFadeRemovePlayer(PlayerNumber pn);
+  void BeginBackingOutFromGameplay();
 
-	std::vector<float> m_HasteTurningPoints; // Values at which the meaning of GAMESTATE->m_fHasteRate changes.
-	std::vector<float> m_HasteAddAmounts; // Amounts that are added to speed depending on what turning point has been passed.
-	float m_fHasteTimeBetweenUpdates; // Seconds between haste updates.
-	float m_fHasteLifeSwitchPoint; // Life amount below which GAMESTATE->m_fHasteRate is based on the life amount.
+  std::vector<float> m_HasteTurningPoints;  // Values at which the meaning of
+                                            // GAMESTATE->m_fHasteRate changes.
+  std::vector<float>
+      m_HasteAddAmounts;  // Amounts that are added to speed depending on what
+                          // turning point has been passed.
+  float m_fHasteTimeBetweenUpdates;  // Seconds between haste updates.
+  float m_fHasteLifeSwitchPoint;     // Life amount below which
+                                     // GAMESTATE->m_fHasteRate is based on the
+                                     // life amount.
 
-protected:
-	virtual void UpdateStageStats( MultiPlayer /* mp */ ) {};	// overridden for multiplayer
+ protected:
+  virtual void UpdateStageStats(
+      MultiPlayer /* mp */){};  // overridden for multiplayer
 
-	virtual bool UseSongBackgroundAndForeground() const { return true; }
+  virtual bool UseSongBackgroundAndForeground() const { return true; }
 
-	ThemeMetric<std::string> PLAYER_TYPE;
-	ThemeMetric<std::string> SCORE_DISPLAY_TYPE;
-	ThemeMetric<apActorCommands> PLAYER_INIT_COMMAND;
-	LocalizedString GIVE_UP_START_TEXT;
-	LocalizedString GIVE_UP_BACK_TEXT;
-	LocalizedString GIVE_UP_ABORTED_TEXT;
-	LocalizedString SKIP_SONG_TEXT;
-	ThemeMetric<float> GIVE_UP_SECONDS;
-	ThemeMetric<float> MUSIC_FADE_OUT_SECONDS;
-	ThemeMetric<float> OUT_TRANSITION_LENGTH;
-	ThemeMetric<float> COURSE_TRANSITION_LENGTH;
-	ThemeMetric<float> BEGIN_FAILED_DELAY;
-	ThemeMetric<float> MIN_SECONDS_TO_STEP;
-	ThemeMetric<float> MIN_SECONDS_TO_MUSIC;
-	ThemeMetric<float> MIN_SECONDS_TO_STEP_NEXT_SONG;
-	ThemeMetric<bool> START_GIVES_UP;
-	ThemeMetric<bool> BACK_GIVES_UP;
-	ThemeMetric<bool> SELECT_SKIPS_SONG;
-	ThemeMetric<bool> GIVING_UP_GOES_TO_PREV_SCREEN;
-	/** @brief The miss combo a player needs to fail out of a song. */
-	ThemeMetric<int> FAIL_ON_MISS_COMBO;
-	ThemeMetric<bool> ALLOW_CENTER_1_PLAYER;
-	ThemeMetric<bool> UNPAUSE_WITH_START;
-	ThemeMetric<std::string> SONG_NUMBER_FORMAT;
-	ThemeMetric<bool> SURVIVAL_MOD_OVERRIDE;
+  ThemeMetric<std::string> PLAYER_TYPE;
+  ThemeMetric<std::string> SCORE_DISPLAY_TYPE;
+  ThemeMetric<apActorCommands> PLAYER_INIT_COMMAND;
+  LocalizedString GIVE_UP_START_TEXT;
+  LocalizedString GIVE_UP_BACK_TEXT;
+  LocalizedString GIVE_UP_ABORTED_TEXT;
+  LocalizedString SKIP_SONG_TEXT;
+  ThemeMetric<float> GIVE_UP_SECONDS;
+  ThemeMetric<float> MUSIC_FADE_OUT_SECONDS;
+  ThemeMetric<float> OUT_TRANSITION_LENGTH;
+  ThemeMetric<float> COURSE_TRANSITION_LENGTH;
+  ThemeMetric<float> BEGIN_FAILED_DELAY;
+  ThemeMetric<float> MIN_SECONDS_TO_STEP;
+  ThemeMetric<float> MIN_SECONDS_TO_MUSIC;
+  ThemeMetric<float> MIN_SECONDS_TO_STEP_NEXT_SONG;
+  ThemeMetric<bool> START_GIVES_UP;
+  ThemeMetric<bool> BACK_GIVES_UP;
+  ThemeMetric<bool> SELECT_SKIPS_SONG;
+  ThemeMetric<bool> GIVING_UP_GOES_TO_PREV_SCREEN;
+  /** @brief The miss combo a player needs to fail out of a song. */
+  ThemeMetric<int> FAIL_ON_MISS_COMBO;
+  ThemeMetric<bool> ALLOW_CENTER_1_PLAYER;
+  ThemeMetric<bool> UNPAUSE_WITH_START;
+  ThemeMetric<std::string> SONG_NUMBER_FORMAT;
+  ThemeMetric<bool> SURVIVAL_MOD_OVERRIDE;
 
-	bool IsLastSong();
-	void SetupSong( int iSongIndex );
-	void ReloadCurrentSong();
-	virtual void LoadNextSong();
-	void StartPlayingSong( float fMinTimeToNotes, float fMinTimeToMusic );
-	void GetMusicEndTiming( float &fSecondsToStartFadingOutMusic, float &fSecondsToStartTransitioningOut );
-	void LoadLights();
-	void PauseGame( bool bPause, GameController gc = GameController_Invalid );
-	void PlayAnnouncer( const std::string &type, float fSeconds, float *fDeltaSeconds );
-	void PlayAnnouncer( const std::string &type, float fSeconds ) { PlayAnnouncer(type, fSeconds, &m_fTimeSinceLastDancingComment); }
-	void UpdateLights();
-	void SendCrossedMessages();
+  bool IsLastSong();
+  void SetupSong(int iSongIndex);
+  void ReloadCurrentSong();
+  virtual void LoadNextSong();
+  void StartPlayingSong(float fMinTimeToNotes, float fMinTimeToMusic);
+  void GetMusicEndTiming(
+      float& fSecondsToStartFadingOutMusic,
+      float& fSecondsToStartTransitioningOut);
+  void LoadLights();
+  void PauseGame(bool bPause, GameController gc = GameController_Invalid);
+  void PlayAnnouncer(
+      const std::string& type, float fSeconds, float* fDeltaSeconds);
+  void PlayAnnouncer(const std::string& type, float fSeconds) {
+    PlayAnnouncer(type, fSeconds, &m_fTimeSinceLastDancingComment);
+  }
+  void UpdateLights();
+  void SendCrossedMessages();
 
-	void PlayTicks();
-	void UpdateSongPosition( float fDeltaTime );
-	void UpdateLyrics( float fDeltaTime );
-	void SongFinished();
-	virtual void SaveStats();
-	virtual void StageFinished( bool bBackedOut );
-	void SaveReplay();
-	//bool LoadReplay();
-	bool AllAreFailing();
+  void PlayTicks();
+  void UpdateSongPosition(float fDeltaTime);
+  void UpdateLyrics(float fDeltaTime);
+  void SongFinished();
+  virtual void SaveStats();
+  virtual void StageFinished(bool bBackedOut);
+  void SaveReplay();
+  // bool LoadReplay();
+  bool AllAreFailing();
 
-	virtual void InitSongQueues();
+  virtual void InitSongQueues();
 
-	void UpdateHasteRate();
-	float m_fCurrHasteRate;
-	// These exist so that the haste rate isn't recalculated every time GetHasteRate is called, which is at least once per frame. -Kyz
+  void UpdateHasteRate();
+  float m_fCurrHasteRate;
+  // These exist so that the haste rate isn't recalculated every time
+  // GetHasteRate is called, which is at least once per frame. -Kyz
 
-	/** @brief The different game states of ScreenGameplay. */
-	enum DancingState {
-		STATE_INTRO = 0, /**< The starting state, pressing Back isn't allowed here. */
-		STATE_DANCING,	 /**< The main state where notes have to be pressed. */
-		STATE_OUTRO,	 /**< The ending state, pressing Back isn't allowed here. */
-		NUM_DANCING_STATES
-	}
-	/** @brief The specific point within ScreenGameplay. */ m_DancingState;
-	private:
-	bool			m_bPaused;
-	// set_paused_internal exists because GameState's pause variable needs to
-	// be kept in sync with ScreenGameplay's.
-	void set_paused_internal(bool p);
-	protected:
+  /** @brief The different game states of ScreenGameplay. */
+  enum DancingState {
+    STATE_INTRO =
+        0,         /**< The starting state, pressing Back isn't allowed here. */
+    STATE_DANCING, /**< The main state where notes have to be pressed. */
+    STATE_OUTRO,   /**< The ending state, pressing Back isn't allowed here. */
+    NUM_DANCING_STATES
+  }
+  /** @brief The specific point within ScreenGameplay. */ m_DancingState;
 
-	GameController		m_PauseController;
-	/**
-	 * @brief The songs left to play.
-	 *
-	 * The size can be greater than 1 if playing a course. */
-	std::vector<Song*>		m_apSongsQueue;
+ private:
+  bool m_bPaused;
+  // set_paused_internal exists because GameState's pause variable needs to
+  // be kept in sync with ScreenGameplay's.
+  void set_paused_internal(bool p);
 
-	float			m_fTimeSinceLastDancingComment;	// this counter is only running while STATE_DANCING
+ protected:
+  GameController m_PauseController;
+  /**
+   * @brief The songs left to play.
+   *
+   * The size can be greater than 1 if playing a course. */
+  std::vector<Song*> m_apSongsQueue;
 
-	LyricDisplay		m_LyricDisplay;
+  float m_fTimeSinceLastDancingComment;  // this counter is only running while
+                                         // STATE_DANCING
 
-	Background		*m_pSongBackground;
-	Foreground		*m_pSongForeground;
+  LyricDisplay m_LyricDisplay;
 
-	/** @brief Used between songs in a course to show the next song. */
-	Transition		m_NextSong;
+  Background* m_pSongBackground;
+  Foreground* m_pSongForeground;
 
-	CombinedLifeMeter*	m_pCombinedLifeMeter;
+  /** @brief Used between songs in a course to show the next song. */
+  Transition m_NextSong;
 
-	BitmapText		m_textSongOptions;
+  CombinedLifeMeter* m_pCombinedLifeMeter;
 
-	BitmapText		m_textDebug;
+  BitmapText m_textSongOptions;
 
-	RageTimer		m_GiveUpTimer;
-	bool m_gave_up;
-	RageTimer m_SkipSongTimer;
-	bool m_skipped_song;
-	void AbortGiveUpText(bool show_abort_text);
-	void AbortSkipSong(bool show_text);
-	void AbortGiveUp( bool bShowText );
-	void ResetGiveUpTimers(bool show_text);
+  BitmapText m_textDebug;
 
-	Transition		m_Ready;
-	Transition		m_Go;
-	/** @brief The transition to use when all players have failed. */
-	Transition		m_Failed;
-	/** @brief The transition to use when one player earns an easter egg. */
-	Transition		m_Toasty;
+  RageTimer m_GiveUpTimer;
+  bool m_gave_up;
+  RageTimer m_SkipSongTimer;
+  bool m_skipped_song;
+  void AbortGiveUpText(bool show_abort_text);
+  void AbortSkipSong(bool show_text);
+  void AbortGiveUp(bool bShowText);
+  void ResetGiveUpTimers(bool show_text);
 
-	/**
-	 * @brief How much time has the player survived in the extra stage?
-	 *
-	 * TODO: Move this into a BGA. */
-	BitmapText		m_textSurviveTime;
+  Transition m_Ready;
+  Transition m_Go;
+  /** @brief The transition to use when all players have failed. */
+  Transition m_Failed;
+  /** @brief The transition to use when one player earns an easter egg. */
+  Transition m_Toasty;
 
+  /**
+   * @brief How much time has the player survived in the extra stage?
+   *
+   * TODO: Move this into a BGA. */
+  BitmapText m_textSurviveTime;
 
-	AutoKeysounds		m_AutoKeysounds;
+  AutoKeysounds m_AutoKeysounds;
 
-	RageSound		m_soundBattleTrickLevel1;
-	RageSound		m_soundBattleTrickLevel2;
-	RageSound		m_soundBattleTrickLevel3;
+  RageSound m_soundBattleTrickLevel1;
+  RageSound m_soundBattleTrickLevel2;
+  RageSound m_soundBattleTrickLevel3;
 
-	bool			m_bZeroDeltaOnNextUpdate;
+  bool m_bZeroDeltaOnNextUpdate;
 
-	GameplayAssist		m_GameplayAssist;
-	RageSound		*m_pSoundMusic;
+  GameplayAssist m_GameplayAssist;
+  RageSound* m_pSoundMusic;
 
-	BeginnerHelper		m_BeginnerHelper;
+  BeginnerHelper m_BeginnerHelper;
 
-	/** @brief The NoteData that controls the lights on an arcade cabinet. */
-	NoteData		m_CabinetLightsNoteData;
+  /** @brief The NoteData that controls the lights on an arcade cabinet. */
+  NoteData m_CabinetLightsNoteData;
 
-	std::vector<PlayerInfo>	m_vPlayerInfo;	// filled by SGameplay derivatives in FillPlayerInfo
-	virtual void FillPlayerInfo( std::vector<PlayerInfo> &vPlayerInfoOut ) = 0;
-	virtual PlayerInfo &GetPlayerInfoForInput( const InputEventPlus& iep )  { return m_vPlayerInfo[iep.pn]; }
+  std::vector<PlayerInfo>
+      m_vPlayerInfo;  // filled by SGameplay derivatives in FillPlayerInfo
+  virtual void FillPlayerInfo(std::vector<PlayerInfo>& vPlayerInfoOut) = 0;
+  virtual PlayerInfo& GetPlayerInfoForInput(const InputEventPlus& iep) {
+    return m_vPlayerInfo[iep.pn];
+  }
 
-	RageTimer		m_timerGameplaySeconds;
+  RageTimer m_timerGameplaySeconds;
 
-	// m_delaying_ready_announce is for handling a case where the ready
-	// announcer sound needs to be delayed.  See HandleScreenMessage for more.
-	// -Kyz
-	bool m_delaying_ready_announce;
+  // m_delaying_ready_announce is for handling a case where the ready
+  // announcer sound needs to be delayed.  See HandleScreenMessage for more.
+  // -Kyz
+  bool m_delaying_ready_announce;
 };
 
-std::vector<PlayerInfo>::iterator GetNextEnabledPlayerInfo		( std::vector<PlayerInfo>::iterator iter, std::vector<PlayerInfo> &v );
-std::vector<PlayerInfo>::iterator GetNextEnabledPlayerInfoNotDummy	( std::vector<PlayerInfo>::iterator iter, std::vector<PlayerInfo> &v );
-std::vector<PlayerInfo>::iterator GetNextEnabledPlayerNumberInfo	( std::vector<PlayerInfo>::iterator iter, std::vector<PlayerInfo> &v );
-std::vector<PlayerInfo>::iterator GetNextPlayerNumberInfo		( std::vector<PlayerInfo>::iterator iter, std::vector<PlayerInfo> &v );
-std::vector<PlayerInfo>::iterator GetNextVisiblePlayerInfo		( std::vector<PlayerInfo>::iterator iter, std::vector<PlayerInfo> &v );
+std::vector<PlayerInfo>::iterator GetNextEnabledPlayerInfo(
+    std::vector<PlayerInfo>::iterator iter, std::vector<PlayerInfo>& v);
+std::vector<PlayerInfo>::iterator GetNextEnabledPlayerInfoNotDummy(
+    std::vector<PlayerInfo>::iterator iter, std::vector<PlayerInfo>& v);
+std::vector<PlayerInfo>::iterator GetNextEnabledPlayerNumberInfo(
+    std::vector<PlayerInfo>::iterator iter, std::vector<PlayerInfo>& v);
+std::vector<PlayerInfo>::iterator GetNextPlayerNumberInfo(
+    std::vector<PlayerInfo>::iterator iter, std::vector<PlayerInfo>& v);
+std::vector<PlayerInfo>::iterator GetNextVisiblePlayerInfo(
+    std::vector<PlayerInfo>::iterator iter, std::vector<PlayerInfo>& v);
 
 /** @brief Get each enabled Player's info. */
-#define FOREACH_EnabledPlayerInfo( v, pi )		for( std::vector<PlayerInfo>::iterator pi = GetNextEnabledPlayerInfo		(v.begin(),v);	pi != v.end(); pi = GetNextEnabledPlayerInfo(++pi,v) )
+#define FOREACH_EnabledPlayerInfo(v, pi)           \
+  for (std::vector<PlayerInfo>::iterator pi =      \
+           GetNextEnabledPlayerInfo(v.begin(), v); \
+       pi != v.end(); pi = GetNextEnabledPlayerInfo(++pi, v))
 /** @brief Get each enabled Player's info as long as it's not a dummy player. */
-#define FOREACH_EnabledPlayerInfoNotDummy( v, pi )	for( std::vector<PlayerInfo>::iterator pi = GetNextEnabledPlayerInfoNotDummy	(v.begin(),v);	pi != v.end(); pi = GetNextEnabledPlayerInfoNotDummy(++pi,v) )
+#define FOREACH_EnabledPlayerInfoNotDummy(v, pi)           \
+  for (std::vector<PlayerInfo>::iterator pi =              \
+           GetNextEnabledPlayerInfoNotDummy(v.begin(), v); \
+       pi != v.end(); pi = GetNextEnabledPlayerInfoNotDummy(++pi, v))
 /** @brief Get each enabled Player Number's info. */
-#define FOREACH_EnabledPlayerNumberInfo( v, pi )	for( std::vector<PlayerInfo>::iterator pi = GetNextEnabledPlayerNumberInfo	(v.begin(),v);	pi != v.end(); pi = GetNextEnabledPlayerNumberInfo(++pi,v) )
-/** @brief Get each Player Number's info, regardless of whether it's enabled or not. */
-#define FOREACH_PlayerNumberInfo( v, pi )		for( std::vector<PlayerInfo>::iterator pi = GetNextPlayerNumberInfo		(v.begin(),v);	pi != v.end(); pi = GetNextPlayerNumberInfo(++pi,v) )
+#define FOREACH_EnabledPlayerNumberInfo(v, pi)           \
+  for (std::vector<PlayerInfo>::iterator pi =            \
+           GetNextEnabledPlayerNumberInfo(v.begin(), v); \
+       pi != v.end(); pi = GetNextEnabledPlayerNumberInfo(++pi, v))
+/** @brief Get each Player Number's info, regardless of whether it's enabled or
+ * not. */
+#define FOREACH_PlayerNumberInfo(v, pi)           \
+  for (std::vector<PlayerInfo>::iterator pi =     \
+           GetNextPlayerNumberInfo(v.begin(), v); \
+       pi != v.end(); pi = GetNextPlayerNumberInfo(++pi, v))
 /** @brief Get each visible Player's info. */
-#define FOREACH_VisiblePlayerInfo( v, pi )		for( std::vector<PlayerInfo>::iterator pi = GetNextVisiblePlayerInfo		(v.begin(),v);	pi != v.end(); pi = GetNextVisiblePlayerInfo(++pi,v) )
-
+#define FOREACH_VisiblePlayerInfo(v, pi)           \
+  for (std::vector<PlayerInfo>::iterator pi =      \
+           GetNextVisiblePlayerInfo(v.begin(), v); \
+       pi != v.end(); pi = GetNextVisiblePlayerInfo(++pi, v))
 
 #endif
 

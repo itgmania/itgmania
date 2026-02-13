@@ -1,4 +1,5 @@
-/* ModelTypes - Types defined in msLib.h.  C arrays converted to use std::vector */
+/* ModelTypes - Types defined in msLib.h.  C arrays converted to use std::vector
+ */
 
 #ifndef MODEL_TYPES_H
 #define MODEL_TYPES_H
@@ -9,146 +10,137 @@
 
 #include "RageTypes.h"
 
-struct msTriangle
-{
-    uint16_t nVertexIndices[3];
+struct msTriangle {
+  uint16_t nVertexIndices[3];
 };
 
+struct msMesh {
+  std::string sName;
+  int8_t nMaterialIndex;
 
-struct msMesh
-{
-    std::string sName;
-    int8_t nMaterialIndex;
-	
-    std::vector<RageModelVertex> Vertices;
-	
-	// OPTIMIZATION: If all verts in a mesh are transformed by the same bone,
-	// then send the transform to the graphics card for the whole mesh instead
-	// of transforming each vertex on the CPU;
-    int8_t m_iBoneIndex; // -1 = no bone
-	
-    std::vector<msTriangle> Triangles;
+  std::vector<RageModelVertex> Vertices;
+
+  // OPTIMIZATION: If all verts in a mesh are transformed by the same bone,
+  // then send the transform to the graphics card for the whole mesh instead
+  // of transforming each vertex on the CPU;
+  int8_t m_iBoneIndex;  // -1 = no bone
+
+  std::vector<msTriangle> Triangles;
 };
 
 class RageTexture;
 
-class AnimatedTexture
-{
-public:
-	AnimatedTexture();
-	~AnimatedTexture();
-	
-	RageVector3 RadianToDegree(RageVector3 radian);
+class AnimatedTexture {
+ public:
+  AnimatedTexture();
+  ~AnimatedTexture();
 
-	void LoadBlank();
-	void Load(const std::string &sTexOrIniFile);
-	void Unload();
-	void Update(float fDelta);
+  RageVector3 RadianToDegree(RageVector3 radian);
 
-	RageTexture* GetCurrentTexture();
+  void LoadBlank();
+  void Load(const std::string& sTexOrIniFile);
+  void Unload();
+  void Update(float fDelta);
 
-	int GetNumStates() const;
-	void SetState(int iNewState);
-	float GetAnimationLengthSeconds() const;
-	void SetSecondsIntoAnimation(float fSeconds);
-	float GetSecondsIntoAnimation() const;
-	RageVector2 GetTextureTranslate();
+  RageTexture* GetCurrentTexture();
 
-	bool m_bSphereMapped;
-	BlendMode m_BlendMode;
+  int GetNumStates() const;
+  void SetState(int iNewState);
+  float GetAnimationLengthSeconds() const;
+  void SetSecondsIntoAnimation(float fSeconds);
+  float GetSecondsIntoAnimation() const;
+  RageVector2 GetTextureTranslate();
 
-	bool NeedsNormals() const { return m_bSphereMapped; }
+  bool m_bSphereMapped;
+  BlendMode m_BlendMode;
 
-private:
-	RageVector2 m_vTexOffset;
-	RageVector2 m_vTexVelocity;
+  bool NeedsNormals() const { return m_bSphereMapped; }
 
-	int m_iCurState;
-	float m_fSecsIntoFrame;
-	struct AnimatedTextureState
-	{
-		AnimatedTextureState(RageTexture* pTexture_, float fDelaySecs_, RageVector2 vTranslate_)
-			: pTexture(pTexture_), fDelaySecs(fDelaySecs_), vTranslate(vTranslate_)
-		{
-		}
+ private:
+  RageVector2 m_vTexOffset;
+  RageVector2 m_vTexVelocity;
 
-		RageTexture* pTexture;
-		float fDelaySecs;
-		RageVector2 vTranslate;
-	};
-	std::vector<AnimatedTextureState> vFrames;
+  int m_iCurState;
+  float m_fSecsIntoFrame;
+  struct AnimatedTextureState {
+    AnimatedTextureState(
+        RageTexture* pTexture_, float fDelaySecs_, RageVector2 vTranslate_)
+        : pTexture(pTexture_),
+          fDelaySecs(fDelaySecs_),
+          vTranslate(vTranslate_) {}
+
+    RageTexture* pTexture;
+    float fDelaySecs;
+    RageVector2 vTranslate;
+  };
+  std::vector<AnimatedTextureState> vFrames;
 };
 
-struct msMaterial
-{
-	int			nFlags;
-	std::string		sName;
-	RageColor	Ambient;
-	RageColor	Diffuse;
-	RageColor	Specular;
-	RageColor	Emissive;
-	float		fShininess;
-	float		fTransparency;
+struct msMaterial {
+  int nFlags;
+  std::string sName;
+  RageColor Ambient;
+  RageColor Diffuse;
+  RageColor Specular;
+  RageColor Emissive;
+  float fShininess;
+  float fTransparency;
 
-	AnimatedTexture	diffuse;
-	AnimatedTexture	alpha;
+  AnimatedTexture diffuse;
+  AnimatedTexture alpha;
 
-	bool NeedsNormals() const { return diffuse.NeedsNormals() || alpha.NeedsNormals() ; }
+  bool NeedsNormals() const {
+    return diffuse.NeedsNormals() || alpha.NeedsNormals();
+  }
 };
 
-struct msPositionKey
-{
-	float fTime;
-	RageVector3 Position;
+struct msPositionKey {
+  float fTime;
+  RageVector3 Position;
 
-	msPositionKey() : fTime(0.0f) {}
+  msPositionKey() : fTime(0.0f) {}
 };
 
-struct msRotationKey
-{
-	float fTime;
-	RageVector4 Rotation;
+struct msRotationKey {
+  float fTime;
+  RageVector4 Rotation;
 
-	msRotationKey() : fTime(0.0f) {}
+  msRotationKey() : fTime(0.0f) {}
 };
 
-struct msBone
-{
-	int nFlags;
-	std::string sName;
-	std::string sParentName;
-	RageVector3 Position;
-	RageVector3 Rotation;
+struct msBone {
+  int nFlags;
+  std::string sName;
+  std::string sParentName;
+  RageVector3 Position;
+  RageVector3 Rotation;
 
-	std::vector<msPositionKey> PositionKeys;
-	std::vector<msRotationKey> RotationKeys;
+  std::vector<msPositionKey> PositionKeys;
+  std::vector<msRotationKey> RotationKeys;
 
-	msBone() : nFlags(0) {}
+  msBone() : nFlags(0) {}
 };
 
-struct msAnimation
-{
-	int FindBoneByName( const std::string &sName ) const
-	{
-		for (unsigned i = 0; i < Bones.size(); i++)
-		{
-			if (Bones[i].sName == sName)
-				return i;
-		}
-		return -1;
-	}
+struct msAnimation {
+  int FindBoneByName(const std::string& sName) const {
+    for (unsigned i = 0; i < Bones.size(); i++) {
+      if (Bones[i].sName == sName) {
+        return i;
+      }
+    }
+    return -1;
+  }
 
-	bool LoadMilkshapeAsciiBones( std::string sAniName, std::string sPath );
+  bool LoadMilkshapeAsciiBones(std::string sAniName, std::string sPath);
 
-	std::vector<msBone> Bones;
-	int nTotalFrames = 0;
+  std::vector<msBone> Bones;
+  int nTotalFrames = 0;
 };
 
-struct myBone_t
-{
-	RageMatrix m_Relative;
-	RageMatrix m_Absolute;
-	RageMatrix m_Final;
+struct myBone_t {
+  RageMatrix m_Relative;
+  RageMatrix m_Absolute;
+  RageMatrix m_Final;
 };
 
 #endif

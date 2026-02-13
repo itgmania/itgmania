@@ -1,4 +1,5 @@
-/* ScreenStatsOverlay - credits and statistics drawn on top of everything else. */
+/* ScreenStatsOverlay - credits and statistics drawn on top of everything else.
+ */
 
 #ifndef ScreenStatsOverlay_H
 #define ScreenStatsOverlay_H
@@ -15,37 +16,35 @@
 
 const int NUM_SKIPS_TO_SHOW = 5;
 
-class ScreenStatsOverlay : public Screen
-{
-public:
-	virtual void Init();
-	
-	void Update( float fDeltaTime );
+class ScreenStatsOverlay : public Screen {
+ public:
+  virtual void Init();
 
-private:
-	void AddTimestampLine( const std::string &txt, const RageColor &color );
-	void UpdateSkips();
+  void Update(float fDeltaTime);
 
-	BitmapText m_textStats;
-	Quad m_quadSkipBackground;
-	std::array<BitmapText, NUM_SKIPS_TO_SHOW> m_textSkips;
-	RageTimer m_timerSkip;
-	int m_LastSkip;
+ private:
+  void AddTimestampLine(const std::string& txt, const RageColor& color);
+  void UpdateSkips();
 
-	ThemeMetric<bool>  SHOW_SKIPS;
-	ThemeMetric<float> SKIP_X;
-	ThemeMetric<float> SKIP_Y;
-	ThemeMetric<float> SKIP_SPACING_Y;
-	ThemeMetric<float> SKIP_WIDTH;
+  BitmapText m_textStats;
+  Quad m_quadSkipBackground;
+  std::array<BitmapText, NUM_SKIPS_TO_SHOW> m_textSkips;
+  RageTimer m_timerSkip;
+  int m_LastSkip;
+
+  ThemeMetric<bool> SHOW_SKIPS;
+  ThemeMetric<float> SKIP_X;
+  ThemeMetric<float> SKIP_Y;
+  ThemeMetric<float> SKIP_SPACING_Y;
+  ThemeMetric<float> SKIP_WIDTH;
 };
-
 
 #endif
 
 /*
  * (c) 2001-2005 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -55,7 +54,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

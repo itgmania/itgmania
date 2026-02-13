@@ -1,47 +1,49 @@
 #ifndef WHEEL_NOTIFY_ICON_H
 #define WHEEL_NOTIFY_ICON_H
 
-#include "Sprite.h"
-
 #include <vector>
 
+#include "Sprite.h"
 
-/** @brief A little graphic to the side of the song's text banner in the MusicWheel. */
-class WheelNotifyIcon : public Sprite
-{
-public:
-	WheelNotifyIcon();
+/** @brief A little graphic to the side of the song's text banner in the
+ * MusicWheel. */
+class WheelNotifyIcon : public Sprite {
+ public:
+  WheelNotifyIcon();
 
-	struct Flags
-	{
-		Flags() { bHasBeginnerOr1Meter = bEdits = false; iPlayersBestNumber = iStagesForSong = 0; }
-		bool bHasBeginnerOr1Meter;
-		int iPlayersBestNumber;
-		bool bEdits;
-		int iStagesForSong;
-	};
+  struct Flags {
+    Flags() {
+      bHasBeginnerOr1Meter = bEdits = false;
+      iPlayersBestNumber = iStagesForSong = 0;
+    }
+    bool bHasBeginnerOr1Meter;
+    int iPlayersBestNumber;
+    bool bEdits;
+    int iStagesForSong;
+  };
 
-	void SetFlags( Flags flags );
+  void SetFlags(Flags flags);
 
-	virtual void Update( float fDeltaTime );
-	virtual bool EarlyAbortDraw() const;
+  virtual void Update(float fDeltaTime);
+  virtual bool EarlyAbortDraw() const;
 
-protected:
-	/** @brief What types of icons are available for the Song? */
-	enum Icons
-	{
-		training=0, /**< This song is used for training new Players. */
-		best1, /**< This is the most popular Song to play. */
-		best2, /**< This is the second most popular Song to play. */
-		best3, /**< This is the third most popular Song to play. */
-		edits, /**< This Song has edits available. */
-		long_ver, /**< This Song is a long version, and will take 2 Songs in most modes. */
-		marathon, /**< This Song is a marathon version, and will take 3 Songs in most modes. */
-		empty /**< There is no icon meant for this Song. */
-	};
+ protected:
+  /** @brief What types of icons are available for the Song? */
+  enum Icons {
+    training = 0, /**< This song is used for training new Players. */
+    best1,        /**< This is the most popular Song to play. */
+    best2,        /**< This is the second most popular Song to play. */
+    best3,        /**< This is the third most popular Song to play. */
+    edits,        /**< This Song has edits available. */
+    long_ver, /**< This Song is a long version, and will take 2 Songs in most
+                 modes. */
+    marathon, /**< This Song is a marathon version, and will take 3 Songs in
+                 most modes. */
+    empty     /**< There is no icon meant for this Song. */
+  };
 
-	/** @brief the list of Icons to show. */
-	std::vector<Icons> m_vIconsToShow;
+  /** @brief the list of Icons to show. */
+  std::vector<Icons> m_vIconsToShow;
 };
 
 #endif

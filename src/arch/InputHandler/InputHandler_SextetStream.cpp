@@ -33,302 +33,274 @@
 #define DEFAULT_TIMEOUT_MS 1000
 #define STATE_BUFFER_SIZE NUMBER_OF_SEXTETS_FOR_BIT_COUNT(BUTTON_COUNT)
 
-namespace
-{
-	class LineReader
-	{
-		private:
-			// The buffer size isn't critical; the std::string will simply be
-			// extended until the line is done.
-			static const size_t BUFFER_SIZE = 64;
-			char buffer[BUFFER_SIZE];
-			std::FILE * file;
-			int timeout_ms;
+namespace {
+class LineReader {
+ private:
+  // The buffer size isn't critical; the std::string will simply be
+  // extended until the line is done.
+  static const size_t BUFFER_SIZE = 64;
+  char buffer[BUFFER_SIZE];
+  std::FILE* file;
+  int timeout_ms;
 
-		public:
-			LineReader(const std::string& filename)
-			{
-				timeout_ms = DEFAULT_TIMEOUT_MS;
+ public:
+  LineReader(const std::string& filename) {
+    timeout_ms = DEFAULT_TIMEOUT_MS;
 
-				LOG->Info("Starting InputHandler_SextetStreamFromFile from std::FILE with filename '%s'",
-					filename.c_str());
-				file = std::fopen(filename.c_str(), "rb");
+    LOG->Info(
+        "Starting InputHandler_SextetStreamFromFile from std::FILE with "
+        "filename '%s'",
+        filename.c_str());
+    file = std::fopen(filename.c_str(), "rb");
 
-				if(file == nullptr) {
-					LOG->Warn("Error opening file '%s' for input (cstdio): %s", filename.c_str(),
-						std::strerror(errno));
-				}
-				else {
-					LOG->Info("File opened");
-					// Disable buffering on the file
-					std::setbuf(file, nullptr);
-				}
-			}
+    if (file == nullptr) {
+      LOG->Warn(
+          "Error opening file '%s' for input (cstdio): %s", filename.c_str(),
+          std::strerror(errno));
+    } else {
+      LOG->Info("File opened");
+      // Disable buffering on the file
+      std::setbuf(file, nullptr);
+    }
+  }
 
-			~LineReader()
-			{
-				if(file != nullptr) {
-					std::fclose(file);
-				}
-			}
+  ~LineReader() {
+    if (file != nullptr) {
+      std::fclose(file);
+    }
+  }
 
-			bool IsValid()
-			{
-				return file != nullptr;
-			}
+  bool IsValid() { return file != nullptr; }
 
-			// Ideally, this method should return if timeout_ms passes
-			// before a line becomes available. Actually doing this may
-			// require some platform-specific non-blocking read capability.
-			// This sort of thing could be implemented using e.g. POSIX
-			// select() and Windows GetOverlappedResultEx(), both of which
-			// have timeout parameters. (I get the sense that the
-			// RageFileDriverTimeout class could be convinced to work, but
-			// there isn't a lot of code using it, so I'm lacking the proper
-			// examples.)
-			//
-			// If this method does block, almost everything will still work,
-			// but the blocking may prevent the loop from checking
-			// continueInputThread in a timely fashion. If the stream ceases
-			// to produce new data before this object is destroyed, the
-			// current thread will hang until the other side of the
-			// connection closes the stream (or produces a line of data). A
-			// workaround for that would be to have the far side of the
-			// connection repeat its last line every second or so as a
-			// keepalive.
-			//
-			// false (line undefined) if there is an error or EOF condition,
-			// true (line = next line from stream) if a whole line is available,
-			// true (line = "") if no error but still waiting for next line.
-			bool ReadLine(std::string& line)
-			{
-				bool afterFirst = false;
-				size_t len;
+  // Ideally, this method should return if timeout_ms passes
+  // before a line becomes available. Actually doing this may
+  // require some platform-specific non-blocking read capability.
+  // This sort of thing could be implemented using e.g. POSIX
+  // select() and Windows GetOverlappedResultEx(), both of which
+  // have timeout parameters. (I get the sense that the
+  // RageFileDriverTimeout class could be convinced to work, but
+  // there isn't a lot of code using it, so I'm lacking the proper
+  // examples.)
+  //
+  // If this method does block, almost everything will still work,
+  // but the blocking may prevent the loop from checking
+  // continueInputThread in a timely fashion. If the stream ceases
+  // to produce new data before this object is destroyed, the
+  // current thread will hang until the other side of the
+  // connection closes the stream (or produces a line of data). A
+  // workaround for that would be to have the far side of the
+  // connection repeat its last line every second or so as a
+  // keepalive.
+  //
+  // false (line undefined) if there is an error or EOF condition,
+  // true (line = next line from stream) if a whole line is available,
+  // true (line = "") if no error but still waiting for next line.
+  bool ReadLine(std::string& line) {
+    bool afterFirst = false;
+    size_t len;
 
-				line = "";
+    line = "";
 
-				if(file != nullptr) {
-					while(fgets(buffer, BUFFER_SIZE, file) != nullptr) {
-						afterFirst = true;
-						line += buffer;
-						len = line.length();
-						if(len > 0 && line[len - 1] == 0xA) {
-							break;
-						}
-					}
-				}
+    if (file != nullptr) {
+      while (fgets(buffer, BUFFER_SIZE, file) != nullptr) {
+        afterFirst = true;
+        line += buffer;
+        len = line.length();
+        if (len > 0 && line[len - 1] == 0xA) {
+          break;
+        }
+      }
+    }
 
-				return afterFirst;
-			}
-	};
-}
+    return afterFirst;
+  }
+};
+}  // namespace
 
-class InputHandler_SextetStream::Impl
-{
-	private:
-		InputHandler_SextetStream * handler;
-		std::string filename;
+class InputHandler_SextetStream::Impl {
+ private:
+  InputHandler_SextetStream* handler;
+  std::string filename;
 
-	protected:
-		void ButtonPressed(const DeviceInput& di)
-		{
-			handler->ButtonPressed(di);
-		}
+ protected:
+  void ButtonPressed(const DeviceInput& di) { handler->ButtonPressed(di); }
 
-		uint8_t stateBuffer[STATE_BUFFER_SIZE];
-		size_t timeout_ms;
-		RageThread inputThread;
-		bool continueInputThread;
+  uint8_t stateBuffer[STATE_BUFFER_SIZE];
+  size_t timeout_ms;
+  RageThread inputThread;
+  bool continueInputThread;
 
-		inline void clearStateBuffer()
-		{
-			memset(stateBuffer, 0, STATE_BUFFER_SIZE);
-		}
+  inline void clearStateBuffer() { memset(stateBuffer, 0, STATE_BUFFER_SIZE); }
 
-		inline void createThread()
-		{
-			continueInputThread = true;
-			inputThread.SetName("SextetStream input thread");
-			inputThread.Create(StartInputThread, this);
-		}
+  inline void createThread() {
+    continueInputThread = true;
+    inputThread.SetName("SextetStream input thread");
+    inputThread.Create(StartInputThread, this);
+  }
 
-		LineReader * getLineReader()
-		{
-			LineReader * linereader = new LineReader(filename);
-			if(!linereader->IsValid()) {
-				delete linereader;
-				linereader = nullptr;
-			}
-			return linereader;
-		}
+  LineReader* getLineReader() {
+    LineReader* linereader = new LineReader(filename);
+    if (!linereader->IsValid()) {
+      delete linereader;
+      linereader = nullptr;
+    }
+    return linereader;
+  }
 
-	public:
-		Impl(InputHandler_SextetStream * _this, const std::string& filename)
-		{
-			LOG->Info("Number of button states supported by current InputHandler_SextetStream: %u",
-				(unsigned)BUTTON_COUNT);
-			continueInputThread = false;
-			timeout_ms = DEFAULT_TIMEOUT_MS;
+ public:
+  Impl(InputHandler_SextetStream* _this, const std::string& filename) {
+    LOG->Info(
+        "Number of button states supported by current "
+        "InputHandler_SextetStream: %u",
+        (unsigned)BUTTON_COUNT);
+    continueInputThread = false;
+    timeout_ms = DEFAULT_TIMEOUT_MS;
 
-			this->filename = filename;
-			handler = _this;
-			clearStateBuffer();
-			createThread();
-		}
+    this->filename = filename;
+    handler = _this;
+    clearStateBuffer();
+    createThread();
+  }
 
-		~Impl()
-		{
-			if(inputThread.IsCreated()) {
-				continueInputThread = false;
-				inputThread.Wait();
-			}
-		}
+  ~Impl() {
+    if (inputThread.IsCreated()) {
+      continueInputThread = false;
+      inputThread.Wait();
+    }
+  }
 
-		void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut)
-		{
-			vDevicesOut.push_back(InputDeviceInfo(FIRST_DEVICE, "SextetStream"));
-		}
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut) {
+    vDevicesOut.push_back(InputDeviceInfo(FIRST_DEVICE, "SextetStream"));
+  }
 
-		static int StartInputThread(void * p)
-		{
-			((Impl*) p)->RunInputThread();
-			return 0;
-		}
+  static int StartInputThread(void* p) {
+    ((Impl*)p)->RunInputThread();
+    return 0;
+  }
 
-		inline void GetNewState(uint8_t * buffer, std::string& line)
-		{
-			size_t lineLen = line.length();
-			size_t i, cursor;
-			cursor = 0;
-			memset(buffer, 0, STATE_BUFFER_SIZE);
+  inline void GetNewState(uint8_t* buffer, std::string& line) {
+    size_t lineLen = line.length();
+    size_t i, cursor;
+    cursor = 0;
+    memset(buffer, 0, STATE_BUFFER_SIZE);
 
-			// Copy from line to buffer until either it is full or we've run out
-			// of characters. Characters outside the sextet code range
-			// (0x30..0x6F) are skipped; the remaining characters have their two
-			// high bits cleared.
-			for(i = 0; i < lineLen; ++i) {
-				char b = line[i];
-				if((b >= 0x30) && (b <= 0x6F)) {
-					buffer[cursor] = b & 0x3F;
-					++cursor;
-					if(cursor >= STATE_BUFFER_SIZE) {
-						break;
-					}
-				}
-			}
-		}
+    // Copy from line to buffer until either it is full or we've run out
+    // of characters. Characters outside the sextet code range
+    // (0x30..0x6F) are skipped; the remaining characters have their two
+    // high bits cleared.
+    for (i = 0; i < lineLen; ++i) {
+      char b = line[i];
+      if ((b >= 0x30) && (b <= 0x6F)) {
+        buffer[cursor] = b & 0x3F;
+        ++cursor;
+        if (cursor >= STATE_BUFFER_SIZE) {
+          break;
+        }
+      }
+    }
+  }
 
-		inline DeviceButton ButtonAtIndex(size_t index)
-		{
-			if(index < COUNT_JOY_BUTTON) {
-				return enum_add2(FIRST_JOY_BUTTON, index);
-			}
-			else if(index < COUNT_JOY_BUTTON + COUNT_KEY) {
-				return enum_add2(FIRST_KEY, index - COUNT_JOY_BUTTON);
-			}
-			else {
-				return DeviceButton_Invalid;
-			}
-		}
+  inline DeviceButton ButtonAtIndex(size_t index) {
+    if (index < COUNT_JOY_BUTTON) {
+      return enum_add2(FIRST_JOY_BUTTON, index);
+    } else if (index < COUNT_JOY_BUTTON + COUNT_KEY) {
+      return enum_add2(FIRST_KEY, index - COUNT_JOY_BUTTON);
+    } else {
+      return DeviceButton_Invalid;
+    }
+  }
 
-		inline void ReactToChanges(const uint8_t * newStateBuffer)
-		{
-			InputDevice id = InputDevice(FIRST_DEVICE);
-			uint8_t changes[STATE_BUFFER_SIZE];
-			RageTimer now;
+  inline void ReactToChanges(const uint8_t* newStateBuffer) {
+    InputDevice id = InputDevice(FIRST_DEVICE);
+    uint8_t changes[STATE_BUFFER_SIZE];
+    RageTimer now;
 
-			// XOR to find differences
-			for(size_t i = 0; i < STATE_BUFFER_SIZE; ++i) {
-				changes[i] = stateBuffer[i] ^ newStateBuffer[i];
-			}
+    // XOR to find differences
+    for (size_t i = 0; i < STATE_BUFFER_SIZE; ++i) {
+      changes[i] = stateBuffer[i] ^ newStateBuffer[i];
+    }
 
-			// Report on changes
-			for(size_t m = 0; m < STATE_BUFFER_SIZE; ++m) {
-				for(size_t n = 0; n < 6; ++n) {
-					size_t bi = (m * 6) + n;
-					if(bi < BUTTON_COUNT) {
-						if(changes[m] & (1 << n)) {
-							bool value = newStateBuffer[m] & (1 << n);
-							LOG->Trace("SS button index %zu %s", bi, value ? "pressed" : "released");
-							DeviceInput di = DeviceInput(id, ButtonAtIndex(bi), value, now);
-							ButtonPressed(di);
-						}
-					}
-				}
-			}
+    // Report on changes
+    for (size_t m = 0; m < STATE_BUFFER_SIZE; ++m) {
+      for (size_t n = 0; n < 6; ++n) {
+        size_t bi = (m * 6) + n;
+        if (bi < BUTTON_COUNT) {
+          if (changes[m] & (1 << n)) {
+            bool value = newStateBuffer[m] & (1 << n);
+            LOG->Trace(
+                "SS button index %zu %s", bi, value ? "pressed" : "released");
+            DeviceInput di = DeviceInput(id, ButtonAtIndex(bi), value, now);
+            ButtonPressed(di);
+          }
+        }
+      }
+    }
 
-			// Update current state
-			memcpy(stateBuffer, newStateBuffer, STATE_BUFFER_SIZE);
-		}
+    // Update current state
+    memcpy(stateBuffer, newStateBuffer, STATE_BUFFER_SIZE);
+  }
 
-		void RunInputThread()
-		{
-			std::string line;
-			LineReader * linereader;
+  void RunInputThread() {
+    std::string line;
+    LineReader* linereader;
 
-			LOG->Trace("Input thread started; getting line reader");
-			linereader = getLineReader();
+    LOG->Trace("Input thread started; getting line reader");
+    linereader = getLineReader();
 
-			if(linereader == nullptr) {
-				LOG->Warn("Could not open line reader for SextetStream input");
-			}
-			else {
-				LOG->Trace("Got line reader");
-				while(continueInputThread) {
-					LOG->Trace("Reading line");
-					if(linereader->ReadLine(line)) {
-						LOG->Trace("Got line: '%s'", line.c_str());
-						if(line.length() > 0) {
-							uint8_t newStateBuffer[STATE_BUFFER_SIZE];
-							GetNewState(newStateBuffer, line);
-							ReactToChanges(newStateBuffer);
-						}
-					}
-					else {
-						// Error or EOF condition.
-						LOG->Trace("Reached end of SextetStream input");
-						continueInputThread = false;
-					}
-				}
-				LOG->Info("SextetStream input stopped");
-				delete linereader;
-			}
-		}
+    if (linereader == nullptr) {
+      LOG->Warn("Could not open line reader for SextetStream input");
+    } else {
+      LOG->Trace("Got line reader");
+      while (continueInputThread) {
+        LOG->Trace("Reading line");
+        if (linereader->ReadLine(line)) {
+          LOG->Trace("Got line: '%s'", line.c_str());
+          if (line.length() > 0) {
+            uint8_t newStateBuffer[STATE_BUFFER_SIZE];
+            GetNewState(newStateBuffer, line);
+            ReactToChanges(newStateBuffer);
+          }
+        } else {
+          // Error or EOF condition.
+          LOG->Trace("Reached end of SextetStream input");
+          continueInputThread = false;
+        }
+      }
+      LOG->Info("SextetStream input stopped");
+      delete linereader;
+    }
+  }
 };
 
-void InputHandler_SextetStream::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut)
-{
-	if(_impl != nullptr) {
-		_impl->GetDevicesAndDescriptions(vDevicesOut);
-	}
+void InputHandler_SextetStream::GetDevicesAndDescriptions(
+    std::vector<InputDeviceInfo>& vDevicesOut) {
+  if (_impl != nullptr) {
+    _impl->GetDevicesAndDescriptions(vDevicesOut);
+  }
 }
 
-InputHandler_SextetStream::InputHandler_SextetStream()
-{
-	_impl = nullptr;
-}
+InputHandler_SextetStream::InputHandler_SextetStream() { _impl = nullptr; }
 
-InputHandler_SextetStream::~InputHandler_SextetStream()
-{
-	if(_impl != nullptr) {
-		delete _impl;
-	}
+InputHandler_SextetStream::~InputHandler_SextetStream() {
+  if (_impl != nullptr) {
+    delete _impl;
+  }
 }
 
 // SextetStreamFromFile
 
-REGISTER_INPUT_HANDLER_CLASS (SextetStreamFromFile);
+REGISTER_INPUT_HANDLER_CLASS(SextetStreamFromFile);
 
 #if defined(_WIN32)
-	#define DEFAULT_INPUT_FILENAME "\\\\.\\pipe\\StepMania-Input-SextetStream"
+#define DEFAULT_INPUT_FILENAME "\\\\.\\pipe\\StepMania-Input-SextetStream"
 #else
-	#define DEFAULT_INPUT_FILENAME "Data/StepMania-Input-SextetStream.in"
+#define DEFAULT_INPUT_FILENAME "Data/StepMania-Input-SextetStream.in"
 #endif
-static Preference<std::string> g_sSextetStreamInputFilename("SextetStreamInputFilename", DEFAULT_INPUT_FILENAME);
+static Preference<std::string> g_sSextetStreamInputFilename(
+    "SextetStreamInputFilename", DEFAULT_INPUT_FILENAME);
 
-InputHandler_SextetStreamFromFile::InputHandler_SextetStreamFromFile()
-{
-	_impl = new Impl(this, g_sSextetStreamInputFilename);
+InputHandler_SextetStreamFromFile::InputHandler_SextetStreamFromFile() {
+  _impl = new Impl(this, g_sSextetStreamInputFilename);
 }
 
 /*
@@ -353,5 +325,3 @@ InputHandler_SextetStreamFromFile::InputHandler_SextetStreamFromFile()
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
-

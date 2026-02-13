@@ -5,16 +5,15 @@
 
 #include "LoadingWindow.h"
 /** @brief Loading window for macOS. */
-class LoadingWindow_MacOSX : public LoadingWindow
-{
-public:
-	LoadingWindow_MacOSX();
-	~LoadingWindow_MacOSX();
-	void SetText( std::string str );
-	void SetSplash( const RageSurface *pSplash );
-	void SetProgress( const int progress );
-	void SetTotalWork( const int totalWork );
-	void SetIndeterminate( bool indeterminate );
+class LoadingWindow_MacOSX : public LoadingWindow {
+ public:
+  LoadingWindow_MacOSX();
+  ~LoadingWindow_MacOSX();
+  void SetText(std::string str);
+  void SetSplash(const RageSurface* pSplash);
+  void SetProgress(const int progress);
+  void SetTotalWork(const int totalWork);
+  void SetIndeterminate(bool indeterminate);
 };
 #define USE_LOADING_WINDOW_MACOSX
 

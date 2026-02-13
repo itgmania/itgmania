@@ -9,10 +9,10 @@
 #define ALSA_PCM_NEW_SW_PARAMS_API
 #include <alsa/asoundlib.h>
 
-static void *Handle = nullptr;
+static void* Handle = nullptr;
 
-#include "RageUtil.h"
 #include "ALSA9Dynamic.h"
+#include "RageUtil.h"
 
 /* foo_f dfoo = nullptr */
 #define FUNC(ret, name, proto) name##_f d##name = nullptr
@@ -20,53 +20,56 @@ static void *Handle = nullptr;
 #undef FUNC
 
 static const std::string lib = "libasound.so.2";
-std::string LoadALSA()
-{
-	/* If /proc/asound/ doesn't exist, chances are we're on an OSS system.  We shouldn't
-	 * touch ALSA at all, since many OSS systems have old, broken versions of ALSA lying
-	 * around; we're likely to crash if we go near it.  Do this first, before loading
-	 * the ALSA library, since making any ALSA calls may load ALSA core modules.
-	 *
-	 * It's vaguely possible that a module autoloader would load the entire ALSA module set
-	 * on use, and this would prevent that from happening.  I don't know if anyone actually
-	 * does that, though: they're often configured to load snd (the core module) if ALSA
-	 * devices are accessed, but hardware drivers are typically loaded on boot. */
-	struct stat st;
-	if (stat("/proc/asound/", &st) == -1 || !(st.st_mode & S_IFDIR))
-		return "/proc/asound/ does not exist";
+std::string LoadALSA() {
+  /* If /proc/asound/ doesn't exist, chances are we're on an OSS system.  We
+   * shouldn't touch ALSA at all, since many OSS systems have old, broken
+   * versions of ALSA lying around; we're likely to crash if we go near it.  Do
+   * this first, before loading the ALSA library, since making any ALSA calls
+   * may load ALSA core modules.
+   *
+   * It's vaguely possible that a module autoloader would load the entire ALSA
+   * module set on use, and this would prevent that from happening.  I don't
+   * know if anyone actually does that, though: they're often configured to load
+   * snd (the core module) if ALSA devices are accessed, but hardware drivers
+   * are typically loaded on boot. */
+  struct stat st;
+  if (stat("/proc/asound/", &st) == -1 || !(st.st_mode & S_IFDIR)) {
+    return "/proc/asound/ does not exist";
+  }
 
-	ASSERT( Handle == nullptr );
+  ASSERT(Handle == nullptr);
 
-	Handle = dlopen( lib.c_str(), RTLD_NOW );
-	if( Handle == nullptr )
-		return ssprintf("dlopen(%s): %s", lib.c_str(), dlerror());
+  Handle = dlopen(lib.c_str(), RTLD_NOW);
+  if (Handle == nullptr) {
+    return ssprintf("dlopen(%s): %s", lib.c_str(), dlerror());
+  }
 
-	std::string error;
-	/* Eww.  The "new" HW and SW API functions are really prefixed by __,
-	 * eg. __snd_pcm_hw_params_set_rate_near. */
-#define FUNC(ret, name, proto) \
-	d##name = (name##_f) dlsym(Handle, "__" #name); \
-	if( !d##name ) { \
-		d##name = (name##_f) dlsym(Handle, #name); \
-		if( !d##name ) { \
-			error="Couldn't load symbol " #name; \
-			goto error; \
-		} \
-	}
+  std::string error;
+  /* Eww.  The "new" HW and SW API functions are really prefixed by __,
+   * eg. __snd_pcm_hw_params_set_rate_near. */
+#define FUNC(ret, name, proto)                   \
+  d##name = (name##_f)dlsym(Handle, "__" #name); \
+  if (!d##name) {                                \
+    d##name = (name##_f)dlsym(Handle, #name);    \
+    if (!d##name) {                              \
+      error = "Couldn't load symbol " #name;     \
+      goto error;                                \
+    }                                            \
+  }
 #include "ALSA9Functions.h"
 #undef FUNC
 
-	return "";
+  return "";
 error:
-	UnloadALSA();
-	return error;
+  UnloadALSA();
+  return error;
 }
 
-void UnloadALSA()
-{
-	if( Handle )
-		dlclose( Handle );
-	Handle = nullptr;
+void UnloadALSA() {
+  if (Handle) {
+    dlclose(Handle);
+  }
+  Handle = nullptr;
 #define FUNC(ret, name, proto) d##name = nullptr;
 #include "ALSA9Functions.h"
 #undef FUNC
@@ -75,7 +78,7 @@ void UnloadALSA()
 /*
  * (c) 2003-2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -85,7 +88,7 @@ void UnloadALSA()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

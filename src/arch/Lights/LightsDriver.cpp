@@ -5,7 +5,7 @@
 #include "arch/RageDriver.h"
 #include "global.h"
 
-//We explicitly load these drivers as they should always be available.
+// We explicitly load these drivers as they should always be available.
 #include <string>
 #include <vector>
 
@@ -14,42 +14,39 @@
 
 DriverList LightsDriver::m_pDriverList;
 
-void LightsDriver::Create( const std::string &sDrivers, std::vector<LightsDriver *> &Add )
-{
-	LOG->Trace( "Initializing lights drivers: %s", sDrivers.c_str() );
+void LightsDriver::Create(
+    const std::string& sDrivers, std::vector<LightsDriver*>& Add) {
+  LOG->Trace("Initializing lights drivers: %s", sDrivers.c_str());
 
-	std::vector<std::string> asDriversToTry;
-	split( sDrivers, ",", asDriversToTry, true );
+  std::vector<std::string> asDriversToTry;
+  split(sDrivers, ",", asDriversToTry, true);
 
-	for (std::string const &Driver : asDriversToTry)
-	{
-		RageDriver *pRet = m_pDriverList.Create( Driver );
-		if( pRet == nullptr )
-		{
-			LOG->Trace( "Unknown lights driver: %s", Driver.c_str() );
-			continue;
-		}
+  for (const std::string& Driver : asDriversToTry) {
+    RageDriver* pRet = m_pDriverList.Create(Driver);
+    if (pRet == nullptr) {
+      LOG->Trace("Unknown lights driver: %s", Driver.c_str());
+      continue;
+    }
 
-		LightsDriver *pDriver = dynamic_cast<LightsDriver *>( pRet );
-		ASSERT( pDriver != nullptr );
+    LightsDriver* pDriver = dynamic_cast<LightsDriver*>(pRet);
+    ASSERT(pDriver != nullptr);
 
-		LOG->Info( "Lights driver: %s", Driver.c_str() );
-		Add.push_back( pDriver );
-	}
+    LOG->Info("Lights driver: %s", Driver.c_str());
+    Add.push_back(pDriver);
+  }
 
-	//ensure these are always available to use for debugging
-	//or if InputHandlers that want lighting state.
-	Add.push_back(new LightsDriver_SystemMessage);
-	Add.push_back(new LightsDriver_Export);
+  // ensure these are always available to use for debugging
+  // or if InputHandlers that want lighting state.
+  Add.push_back(new LightsDriver_SystemMessage);
+  Add.push_back(new LightsDriver_Export);
 }
 
-void LightsDriver::Reset()
-{
-	LightsState state;
-	ZERO( state.m_bCabinetLights );
-	ZERO( state.m_bGameButtonLights );
-	ZERO( state.m_bCoinCounter );
-	Set( &state );
+void LightsDriver::Reset() {
+  LightsState state;
+  ZERO(state.m_bCabinetLights);
+  ZERO(state.m_bGameButtonLights);
+  ZERO(state.m_bCoinCounter);
+  Set(&state);
 }
 
 /*

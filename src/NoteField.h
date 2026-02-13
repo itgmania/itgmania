@@ -22,125 +22,134 @@
 struct Attack;
 class NoteData;
 /** @brief An Actor that renders NoteData. */
-class NoteField : public ActorFrame
-{
-public:
-	NoteField();
-	~NoteField();
-	virtual void Update( float fDeltaTime );
-	virtual void DrawPrimitives();
-	void CalcPixelsBeforeAndAfterTargets();
-	void DrawBoardPrimitive();
+class NoteField : public ActorFrame {
+ public:
+  NoteField();
+  ~NoteField();
+  virtual void Update(float fDeltaTime);
+  virtual void DrawPrimitives();
+  void CalcPixelsBeforeAndAfterTargets();
+  void DrawBoardPrimitive();
 
-	virtual void Init( const PlayerState* pPlayerState, float fYReverseOffsetPixels, bool use_states_zoom= true );
-	virtual void Load(
-		const NoteData* pNoteData,
-		int iDrawDistanceAfterTargetsPixels,
-		int iDrawDistanceBeforeTargetsPixels );
-	virtual void Unload();
+  virtual void Init(
+      const PlayerState* pPlayerState, float fYReverseOffsetPixels,
+      bool use_states_zoom = true);
+  virtual void Load(
+      const NoteData* pNoteData, int iDrawDistanceAfterTargetsPixels,
+      int iDrawDistanceBeforeTargetsPixels);
+  virtual void Unload();
 
-	void ensure_note_displays_have_skin();
-	void InitColumnRenderers();
+  void ensure_note_displays_have_skin();
+  void InitColumnRenderers();
 
-	virtual void HandleMessage( const Message &msg );
+  virtual void HandleMessage(const Message& msg);
 
-	// This is done automatically by Init(), but can be re-called explicitly if the
-	// note skin changes.
-	void CacheAllUsedNoteSkins();
-	void FadeToFail();
+  // This is done automatically by Init(), but can be re-called explicitly if
+  // the note skin changes.
+  void CacheAllUsedNoteSkins();
+  void FadeToFail();
 
-	void Step(int col, TapNoteScore score, bool from_lua= false);
-	void SetPressed(int col, bool from_lua= false);
-	void DidTapNote(int col, TapNoteScore score, bool bright, bool from_lua= false);
-	void DidHoldNote(int col, HoldNoteScore score, bool bright, bool from_lua= false);
+  void Step(int col, TapNoteScore score, bool from_lua = false);
+  void SetPressed(int col, bool from_lua = false);
+  void DidTapNote(
+      int col, TapNoteScore score, bool bright, bool from_lua = false);
+  void DidHoldNote(
+      int col, HoldNoteScore score, bool bright, bool from_lua = false);
 
-	virtual void PushSelf( lua_State *L );
+  virtual void PushSelf(lua_State* L);
 
-	// Allows the theme to modify the parameters to Step, SetPressed,
-	// DidTapNote, and DidHoldNote before they pass on to the ghost arrows or
-	// receptors. -Kyz
-	LuaReference m_StepCallback;
-	LuaReference m_SetPressedCallback;
-	LuaReference m_DidTapNoteCallback;
-	LuaReference m_DidHoldNoteCallback;
+  // Allows the theme to modify the parameters to Step, SetPressed,
+  // DidTapNote, and DidHoldNote before they pass on to the ghost arrows or
+  // receptors. -Kyz
+  LuaReference m_StepCallback;
+  LuaReference m_SetPressedCallback;
+  LuaReference m_DidTapNoteCallback;
+  LuaReference m_DidHoldNoteCallback;
 
-	const PlayerState *GetPlayerState() const { return m_pPlayerState; }
+  const PlayerState* GetPlayerState() const { return m_pPlayerState; }
 
-	int	m_iBeginMarker, m_iEndMarker;	// only used with MODE_EDIT
+  int m_iBeginMarker, m_iEndMarker;  // only used with MODE_EDIT
 
-	// m_ColumnRenderers belongs in the protected section, but it's here in
-	// public so that the Lua API can access it. -Kyz
-	std::vector<NoteColumnRenderer> m_ColumnRenderers;
+  // m_ColumnRenderers belongs in the protected section, but it's here in
+  // public so that the Lua API can access it. -Kyz
+  std::vector<NoteColumnRenderer> m_ColumnRenderers;
 
-	void SetBeatBars(bool active);
-	bool GetBeatBars();
-	void SetBeatBarsAlpha(float measure, float fourth, float eighth, float sixteenth);
+  void SetBeatBars(bool active);
+  bool GetBeatBars();
+  void SetBeatBarsAlpha(
+      float measure, float fourth, float eighth, float sixteenth);
 
-protected:
-	void CacheNoteSkin( const std::string &sNoteSkin );
-	void UncacheNoteSkin( const std::string &sNoteSkin );
+ protected:
+  void CacheNoteSkin(const std::string& sNoteSkin);
+  void UncacheNoteSkin(const std::string& sNoteSkin);
 
-	bool IsOnScreen( float fBeat, int iCol, int iDrawDistanceAfterTargetsPixels, int iDrawDistanceBeforeTargetsPixels ) const;
+  bool IsOnScreen(
+      float fBeat, int iCol, int iDrawDistanceAfterTargetsPixels,
+      int iDrawDistanceBeforeTargetsPixels) const;
 
-	void DrawBoard( int iDrawDistanceAfterTargetsPixels, int iDrawDistanceBeforeTargetsPixels );
+  void DrawBoard(
+      int iDrawDistanceAfterTargetsPixels,
+      int iDrawDistanceBeforeTargetsPixels);
 
-	enum BeatBarType { measure, beat, half_beat, quarter_beat };
-	void DrawBeatBar( const float fBeat, BeatBarType type, int iMeasureIndex );
-	void DrawMarkerBar( int fBeat );
-	void DrawAreaHighlight( int iStartBeat, int iEndBeat );
-	void set_text_measure_number_for_draw(
-		const float beat, const float side_sign, float x_offset,
-		const float horiz_align, const RageColor& color, const RageColor& glow);
-	void draw_timing_segment_text(const std::string& text,
-		const float beat, const float side_sign, float x_offset,
-		const float horiz_align, const RageColor& color, const RageColor& glow);
-	void DrawAttackText(const float beat, const Attack &attack, const RageColor& glow);
-	void DrawBGChangeText(const float beat, const std::string new_bg_name, const RageColor& glow);
-	float GetWidth() const;
+  enum BeatBarType { measure, beat, half_beat, quarter_beat };
+  void DrawBeatBar(const float fBeat, BeatBarType type, int iMeasureIndex);
+  void DrawMarkerBar(int fBeat);
+  void DrawAreaHighlight(int iStartBeat, int iEndBeat);
+  void set_text_measure_number_for_draw(
+      const float beat, const float side_sign, float x_offset,
+      const float horiz_align, const RageColor& color, const RageColor& glow);
+  void draw_timing_segment_text(
+      const std::string& text, const float beat, const float side_sign,
+      float x_offset, const float horiz_align, const RageColor& color,
+      const RageColor& glow);
+  void DrawAttackText(
+      const float beat, const Attack& attack, const RageColor& glow);
+  void DrawBGChangeText(
+      const float beat, const std::string new_bg_name, const RageColor& glow);
+  float GetWidth() const;
 
-	const NoteData *m_pNoteData;
+  const NoteData* m_pNoteData;
 
-	const PlayerState*	m_pPlayerState;
-	int			m_iDrawDistanceAfterTargetsPixels;	// this should be a negative number
-	int			m_iDrawDistanceBeforeTargetsPixels;	// this should be a positive number
-	float		m_fYReverseOffsetPixels;
+  const PlayerState* m_pPlayerState;
+  int m_iDrawDistanceAfterTargetsPixels;   // this should be a negative number
+  int m_iDrawDistanceBeforeTargetsPixels;  // this should be a positive number
+  float m_fYReverseOffsetPixels;
 
-	// This exists so that the board can be drawn underneath combo/judge. -Kyz
-	bool m_drawing_board_primitive;
+  // This exists so that the board can be drawn underneath combo/judge. -Kyz
+  bool m_drawing_board_primitive;
 
-	// color arrows
-	struct NoteDisplayCols
-	{
-		NoteDisplay		*display;
-		ReceptorArrowRow	m_ReceptorArrowRow;
-		GhostArrowRow		m_GhostArrowRow;
-		NoteDisplayCols( int iNumCols ) { display = new NoteDisplay[iNumCols]; }
-		~NoteDisplayCols() { delete [] display; }
-	};
+  // color arrows
+  struct NoteDisplayCols {
+    NoteDisplay* display;
+    ReceptorArrowRow m_ReceptorArrowRow;
+    GhostArrowRow m_GhostArrowRow;
+    NoteDisplayCols(int iNumCols) { display = new NoteDisplay[iNumCols]; }
+    ~NoteDisplayCols() { delete[] display; }
+  };
 
-	NoteFieldRenderArgs m_FieldRenderArgs;
+  NoteFieldRenderArgs m_FieldRenderArgs;
 
-	/* All loaded note displays, mapped by their name. */
-	std::map<std::string, NoteDisplayCols *> m_NoteDisplays;
-	NoteDisplayCols		*m_pCurDisplay;
-	NoteDisplayCols		*m_pDisplays[NUM_PlayerNumber];
+  /* All loaded note displays, mapped by their name. */
+  std::map<std::string, NoteDisplayCols*> m_NoteDisplays;
+  NoteDisplayCols* m_pCurDisplay;
+  NoteDisplayCols* m_pDisplays[NUM_PlayerNumber];
 
-	// decorations, mostly used in MODE_EDIT
-	AutoActor	m_sprBoard;
-	float		m_fBoardOffsetPixels;
-	float		m_fCurrentBeatLastUpdate;	// -1 on first update
-	float		m_fYPosCurrentBeatLastUpdate;	// -1 on first update
+  // decorations, mostly used in MODE_EDIT
+  AutoActor m_sprBoard;
+  float m_fBoardOffsetPixels;
+  float m_fCurrentBeatLastUpdate;      // -1 on first update
+  float m_fYPosCurrentBeatLastUpdate;  // -1 on first update
 
-	Sprite		m_sprBeatBars;	// 4 frames: Measure, 4th, 8th, 16th
-	BitmapText	m_textMeasureNumber;
-	Quad		m_rectMarkerBar;
-	Quad		m_rectAreaHighlight;
+  Sprite m_sprBeatBars;  // 4 frames: Measure, 4th, 8th, 16th
+  BitmapText m_textMeasureNumber;
+  Quad m_rectMarkerBar;
+  Quad m_rectAreaHighlight;
 
-	bool m_bShowBeatBars;
-	float m_fBarMeasureAlpha;
-	float m_fBar4thAlpha;
-	float m_fBar8thAlpha;
-	float m_fBar16thAlpha;
+  bool m_bShowBeatBars;
+  float m_fBarMeasureAlpha;
+  float m_fBar4thAlpha;
+  float m_fBar8thAlpha;
+  float m_fBar16thAlpha;
 };
 
 #endif

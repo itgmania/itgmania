@@ -11,113 +11,109 @@
 #include "global.h"
 
 // this will not work on 95 and NT because of EnumDisplayDevices
-std::string GetPrimaryVideoName()
-{
-	typedef BOOL (WINAPI* pfnEnumDisplayDevices)(PVOID,DWORD,PDISPLAY_DEVICE,DWORD);
-	pfnEnumDisplayDevices EnumDisplayDevices;
-	HINSTANCE hInstUser32;
+std::string GetPrimaryVideoName() {
+  typedef BOOL(WINAPI * pfnEnumDisplayDevices)(
+      PVOID, DWORD, PDISPLAY_DEVICE, DWORD);
+  pfnEnumDisplayDevices EnumDisplayDevices;
+  HINSTANCE hInstUser32;
 
-	hInstUser32 = LoadLibrary( "User32.DLL" );
-	if( !hInstUser32 )
-		return std::string();
+  hInstUser32 = LoadLibrary("User32.DLL");
+  if (!hInstUser32) {
+    return std::string();
+  }
 
-	// VC6 don't have a stub to static link with, so link dynamically.
-	EnumDisplayDevices = (pfnEnumDisplayDevices)GetProcAddress(hInstUser32,"EnumDisplayDevicesA");
-	if( EnumDisplayDevices == nullptr )
-	{
-		FreeLibrary(hInstUser32);
-		return std::string();
-	}
+  // VC6 don't have a stub to static link with, so link dynamically.
+  EnumDisplayDevices =
+      (pfnEnumDisplayDevices)GetProcAddress(hInstUser32, "EnumDisplayDevicesA");
+  if (EnumDisplayDevices == nullptr) {
+    FreeLibrary(hInstUser32);
+    return std::string();
+  }
 
-	std::string sPrimaryDeviceName;
-	for( int i=0; true; ++i )
-	{
-		DISPLAY_DEVICE dd;
-		ZERO( dd );
-		dd.cb = sizeof(dd);
-		if( !EnumDisplayDevices(nullptr, i, &dd, 0) )
-			break;
-		if( dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE )
-		{
-			sPrimaryDeviceName = (char*)dd.DeviceString;
-			break;
-		}
-	}
+  std::string sPrimaryDeviceName;
+  for (int i = 0; true; ++i) {
+    DISPLAY_DEVICE dd;
+    ZERO(dd);
+    dd.cb = sizeof(dd);
+    if (!EnumDisplayDevices(nullptr, i, &dd, 0)) {
+      break;
+    }
+    if (dd.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) {
+      sPrimaryDeviceName = (char*)dd.DeviceString;
+      break;
+    }
+  }
 
-	FreeLibrary( hInstUser32 );
-	TrimRight( sPrimaryDeviceName );
-	return sPrimaryDeviceName;
+  FreeLibrary(hInstUser32);
+  TrimRight(sPrimaryDeviceName);
+  return sPrimaryDeviceName;
 }
 
-std::string GetPrimaryVideoDriverName()
-{
-	std::string sPrimaryDeviceName = GetPrimaryVideoName();
-	if( sPrimaryDeviceName != "" )
-		return sPrimaryDeviceName;
+std::string GetPrimaryVideoDriverName() {
+  std::string sPrimaryDeviceName = GetPrimaryVideoName();
+  if (sPrimaryDeviceName != "") {
+    return sPrimaryDeviceName;
+  }
 
-	LOG->Warn("GetPrimaryVideoName failed; renderer selection may be wrong");
+  LOG->Warn("GetPrimaryVideoName failed; renderer selection may be wrong");
 
-	VideoDriverInfo info;
-	if( !GetVideoDriverInfo(0, info) )
-		return "(ERROR DETECTING VIDEO DRIVER)";
+  VideoDriverInfo info;
+  if (!GetVideoDriverInfo(0, info)) {
+    return "(ERROR DETECTING VIDEO DRIVER)";
+  }
 
-	return info.sDescription;
+  return info.sDescription;
 }
 
-/* Get info for the given card number.  Return false if that card doesn't exist. */
-bool GetVideoDriverInfo( int iCardno, VideoDriverInfo &info )
-{
-	static bool bInitialized=false;
-	static std::vector<std::string> lst;
-	if( !bInitialized )
-	{
-		bInitialized = true;
+/* Get info for the given card number.  Return false if that card doesn't exist.
+ */
+bool GetVideoDriverInfo(int iCardno, VideoDriverInfo& info) {
+  static bool bInitialized = false;
+  static std::vector<std::string> lst;
+  if (!bInitialized) {
+    bInitialized = true;
 
-		const std::string sTopKey =
-			"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E968-E325-11CE-BFC1-08002BE10318}";
+    const std::string sTopKey =
+        "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\{"
+        "4D36E968-E325-11CE-BFC1-08002BE10318}";
 
-		RegistryAccess::GetRegSubKeys( sTopKey, lst, ".*", false );
+    RegistryAccess::GetRegSubKeys(sTopKey, lst, ".*", false);
 
-		for( int i=lst.size()-1; i >= 0; --i )
-		{
-			/* Remove all keys that aren't four characters long ("Properties"). */
-			if( lst[i].size() != 4 )
-			{
-				lst.erase( lst.begin()+i );
-				continue;
-			}
+    for (int i = lst.size() - 1; i >= 0; --i) {
+      /* Remove all keys that aren't four characters long ("Properties"). */
+      if (lst[i].size() != 4) {
+        lst.erase(lst.begin() + i);
+        continue;
+      }
 
-			lst[i] = sTopKey + "\\" + lst[i];
-		}
+      lst[i] = sTopKey + "\\" + lst[i];
+    }
 
-		if( lst.size() == 0 )
-		{
-			LOG->Warn("GetVideoDriverInfo error: no cards found!");
-			return false;
-		}
-	}
+    if (lst.size() == 0) {
+      LOG->Warn("GetVideoDriverInfo error: no cards found!");
+      return false;
+    }
+  }
 
-	while( iCardno < (int)lst.size() )
-	{
-		const std::string sKey = lst[iCardno];
+  while (iCardno < (int)lst.size()) {
+    const std::string sKey = lst[iCardno];
 
-		if( !RegistryAccess::GetRegValue( sKey, "DriverDesc", info.sDescription ) )
-		{
-			/* Remove this one from the list and ignore it, */
-			lst.erase( lst.begin()+iCardno );
-			continue;
-		}
-		TrimRight( info.sDescription );
+    if (!RegistryAccess::GetRegValue(sKey, "DriverDesc", info.sDescription)) {
+      /* Remove this one from the list and ignore it, */
+      lst.erase(lst.begin() + iCardno);
+      continue;
+    }
+    TrimRight(info.sDescription);
 
-		RegistryAccess::GetRegValue( sKey, "DriverDate", info.sDate );
-		RegistryAccess::GetRegValue( sKey, "MatchingDeviceId", info.sDeviceID );
-		RegistryAccess::GetRegValue( sKey, "ProviderName", info.sProvider );
-		RegistryAccess::GetRegValue( sKey, "DriverVersion", info.sVersion );
+    RegistryAccess::GetRegValue(sKey, "DriverDate", info.sDate);
+    RegistryAccess::GetRegValue(sKey, "MatchingDeviceId", info.sDeviceID);
+    RegistryAccess::GetRegValue(sKey, "ProviderName", info.sProvider);
+    RegistryAccess::GetRegValue(sKey, "DriverVersion", info.sVersion);
 
-		return true;
-	}
+    return true;
+  }
 
-	return false;
+  return false;
 }
 
 /*

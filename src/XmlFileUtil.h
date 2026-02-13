@@ -7,28 +7,32 @@ class RageFileBasic;
 class XNode;
 struct lua_State;
 
-/** 
- * @brief A little graphic to the left of the song's text banner in the MusicWheel.
+/**
+ * @brief A little graphic to the left of the song's text banner in the
+ * MusicWheel.
  *
  * This is designed to help work with XML files. */
-namespace XmlFileUtil
-{
-	bool LoadFromFileShowErrors( XNode &xml, const std::string &sFile );
-	bool LoadFromFileShowErrors( XNode &xml, RageFileBasic &f );
+namespace XmlFileUtil {
+bool LoadFromFileShowErrors(XNode& xml, const std::string& sFile);
+bool LoadFromFileShowErrors(XNode& xml, RageFileBasic& f);
 
-	// Load/Save XML
-	void Load( XNode *pNode, const std::string &sXml, std::string &sErrorOut );
-	bool GetXML( const XNode *pNode, RageFileBasic &f, bool bWriteTabs = true );
-	std::string GetXML( const XNode *pNode );
-	bool SaveToFile( const XNode *pNode, const std::string &sFile, const std::string &sStylesheet = "", bool bWriteTabs = true );
-	bool SaveToFile( const XNode *pNode, RageFileBasic &f, const std::string &sStylesheet = "", bool bWriteTabs = true );
+// Load/Save XML
+void Load(XNode* pNode, const std::string& sXml, std::string& sErrorOut);
+bool GetXML(const XNode* pNode, RageFileBasic& f, bool bWriteTabs = true);
+std::string GetXML(const XNode* pNode);
+bool SaveToFile(
+    const XNode* pNode, const std::string& sFile,
+    const std::string& sStylesheet = "", bool bWriteTabs = true);
+bool SaveToFile(
+    const XNode* pNode, RageFileBasic& f, const std::string& sStylesheet = "",
+    bool bWriteTabs = true);
 
-	void AnnotateXNodeTree( XNode *pNode, const std::string &sFile );
-	void CompileXNodeTree( XNode *pNode, const std::string &sFile );
-	XNode *XNodeFromTable( lua_State *L );
+void AnnotateXNodeTree(XNode* pNode, const std::string& sFile);
+void CompileXNodeTree(XNode* pNode, const std::string& sFile);
+XNode* XNodeFromTable(lua_State* L);
 
-	void MergeIniUnder( XNode *pFrom, XNode *pTo );
-}
+void MergeIniUnder(XNode* pFrom, XNode* pTo);
+}  // namespace XmlFileUtil
 
 #endif
 
@@ -37,7 +41,7 @@ namespace XmlFileUtil
  * @author Chris Danford (c) 2001-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -47,7 +51,7 @@ namespace XmlFileUtil
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

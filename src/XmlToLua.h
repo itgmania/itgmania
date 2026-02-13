@@ -2,5 +2,5 @@
 #define XmlToLua_H
 
 #include <string>
-void convert_xmls_in_dir(std::string const& dirname);
+void convert_xmls_in_dir(const std::string& dirname);
 #endif

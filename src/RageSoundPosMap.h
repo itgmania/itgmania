@@ -6,28 +6,30 @@
 #include <cstdint>
 
 struct pos_map_impl;
-class pos_map_queue
-{
-public:
-	pos_map_queue();
-	~pos_map_queue();
-	pos_map_queue( const pos_map_queue &cpy );
-	pos_map_queue &operator=( const pos_map_queue &rhs );
+class pos_map_queue {
+ public:
+  pos_map_queue();
+  ~pos_map_queue();
+  pos_map_queue(const pos_map_queue& cpy);
+  pos_map_queue& operator=(const pos_map_queue& rhs);
 
-	/* Insert a mapping from iSourceFrame to iDestFrame, containing iFrames.
-	 * The double type is used to prevent precision loss leading to sync drift the longer the game runs. -sukibaby */
-	void Insert( int64_t iSourceFrame, int64_t iFrames, int64_t iDestFrame, double fSourceToDestRatio = 1.0 );
+  /* Insert a mapping from iSourceFrame to iDestFrame, containing iFrames.
+   * The double type is used to prevent precision loss leading to sync drift the
+   * longer the game runs. -sukibaby */
+  void Insert(
+      int64_t iSourceFrame, int64_t iFrames, int64_t iDestFrame,
+      double fSourceToDestRatio = 1.0);
 
-	/* Return the iDestFrame for the given iSourceFrame. */
-	int64_t Search( int64_t iSourceFrame ) const;
+  /* Return the iDestFrame for the given iSourceFrame. */
+  int64_t Search(int64_t iSourceFrame) const;
 
-	/* Erase all mappings. */
-	void Clear();
+  /* Erase all mappings. */
+  void Clear();
 
-	bool IsEmpty() const;
+  bool IsEmpty() const;
 
-private:
-	pos_map_impl *m_pImpl;
+ private:
+  pos_map_impl* m_pImpl;
 };
 
 #endif

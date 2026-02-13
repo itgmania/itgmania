@@ -8,21 +8,25 @@
 #include "RageInputDevice.h"
 #include "RageTimer.h"
 
-class KeyboardDevice : public HIDDevice
-{
-private:
-	std::unordered_map<IOHIDElementCookie, DeviceButton> m_Mapping;
+class KeyboardDevice : public HIDDevice {
+ private:
+  std::unordered_map<IOHIDElementCookie, DeviceButton> m_Mapping;
 
-protected:
-	bool AddLogicalDevice( int usagePage, int usage );
-	void AddElement( int usagePage, int usage, IOHIDElementCookie cookie, const CFDictionaryRef properties );
-	void Open();
+ protected:
+  bool AddLogicalDevice(int usagePage, int usage);
+  void AddElement(
+      int usagePage, int usage, IOHIDElementCookie cookie,
+      const CFDictionaryRef properties);
+  void Open();
 
-public:
-	void GetButtonPresses( std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value, const RageTimer& now ) const;
-	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevices ) const;
+ public:
+  void GetButtonPresses(
+      std::vector<DeviceInput>& vPresses, IOHIDElementCookie cookie, int value,
+      const RageTimer& now) const;
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevices) const;
 
-	static bool DeviceButtonToMacVirtualKey( DeviceButton button, UInt8 &iMacVKOut );
+  static bool DeviceButtonToMacVirtualKey(
+      DeviceButton button, UInt8& iMacVKOut);
 };
 
 #endif

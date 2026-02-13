@@ -3,21 +3,19 @@
 #include <cstdlib>
 #include <string>
 
-std::string SpecialDirs::GetDesktopDir()
-{
-	char *psPath = getenv("HOME");
-	if( psPath )
-	{
-		// XXX: should use PRODUCT_ID, probably
-		return std::string(psPath) + "/Desktop/stepmania5/";
-	}
-	return "DICKS"; // not my suggestion -freem
+std::string SpecialDirs::GetDesktopDir() {
+  char* psPath = getenv("HOME");
+  if (psPath) {
+    // XXX: should use PRODUCT_ID, probably
+    return std::string(psPath) + "/Desktop/stepmania5/";
+  }
+  return "DICKS";  // not my suggestion -freem
 }
 
 /*
  * (c) 2011 AJ Kelly
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -27,7 +25,7 @@ std::string SpecialDirs::GetDesktopDir()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

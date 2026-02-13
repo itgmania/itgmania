@@ -1,10 +1,10 @@
-#include "global.h"
 #include "InputHandler_Win32_Para.h"
 
+#include "RageInputDevice.h"
 #include "RageLog.h"
 #include "RageUtil.h"
-#include "RageInputDevice.h"
 #include "archutils/Win32/USB.h"
+#include "global.h"
 
 // TODO: Abstract this windows-specific stuff into USBDevice.
 extern "C" {
@@ -15,36 +15,33 @@ extern "C" {
 
 #include <vector>
 
+REGISTER_INPUT_HANDLER_CLASS2(Para, Win32_Para);
 
-REGISTER_INPUT_HANDLER_CLASS2( Para, Win32_Para );
+static void InitHack(HANDLE h) {
+  UCHAR hack[] = {0, 1};
 
-static void InitHack( HANDLE h )
-{
-	UCHAR hack[] = {0, 1};
-
-	if( HidD_SetFeature(h, (PVOID) hack, 2) == TRUE )
-		LOG->Info( "Para controller powered on successfully" );
-	else
-		LOG->Warn( "Para controller power-on failed" );
+  if (HidD_SetFeature(h, (PVOID)hack, 2) == TRUE) {
+    LOG->Info("Para controller powered on successfully");
+  } else {
+    LOG->Warn("Para controller power-on failed");
+  }
 }
 
-InputHandler_Win32_Para::InputHandler_Win32_Para()
-{
-	const int para_usb_vid = 0x0507;
-	const int para_usb_pid = 0x0011;
+InputHandler_Win32_Para::InputHandler_Win32_Para() {
+  const int para_usb_vid = 0x0507;
+  const int para_usb_pid = 0x0011;
 
-	USBDevice *dev = new USBDevice;
+  USBDevice* dev = new USBDevice;
 
-	if( dev->Open(para_usb_vid, para_usb_pid, sizeof(long), 0, InitHack) )
-	{
-		LOG->Info("Para controller initialized");
-	}
-	RageUtil::SafeDelete( dev );
+  if (dev->Open(para_usb_vid, para_usb_pid, sizeof(long), 0, InitHack)) {
+    LOG->Info("Para controller initialized");
+  }
+  RageUtil::SafeDelete(dev);
 }
 
-void InputHandler_Win32_Para::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut )
-{
-	// The device appears as a HID joystick
+void InputHandler_Win32_Para::GetDevicesAndDescriptions(
+    std::vector<InputDeviceInfo>& vDevicesOut) {
+  // The device appears as a HID joystick
 }
 
 /*

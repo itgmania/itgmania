@@ -7,23 +7,24 @@
 class PlayerState;
 class PlayerStageStats;
 
-class ScoreDisplay : public ActorFrame
-{
-public:
-	virtual void Init( const PlayerState* pPlayerState, const PlayerStageStats* pPlayerStageStats );
+class ScoreDisplay : public ActorFrame {
+ public:
+  virtual void Init(
+      const PlayerState* pPlayerState,
+      const PlayerStageStats* pPlayerStageStats);
 
-	virtual void SetScore( int ) {}
-	virtual void OnLoadSong() {};
-	/* Notification of a tap note judgment. This *is* called for the head of
-	 * hold notes. */
-	virtual void OnJudgment( TapNoteScore ) {};
-	/* Notification of a hold judgment. tscore is the score received for the
-	 * initial tap note. */
-	virtual void OnJudgment( HoldNoteScore, TapNoteScore ) {};
+  virtual void SetScore(int) {}
+  virtual void OnLoadSong() {};
+  /* Notification of a tap note judgment. This *is* called for the head of
+   * hold notes. */
+  virtual void OnJudgment(TapNoteScore){};
+  /* Notification of a hold judgment. tscore is the score received for the
+   * initial tap note. */
+  virtual void OnJudgment(HoldNoteScore, TapNoteScore){};
 
-protected:
-	const PlayerState* m_pPlayerState;	// needed to look up stats
-	const PlayerStageStats* m_pPlayerStageStats;	// needed to look up stats
+ protected:
+  const PlayerState* m_pPlayerState;            // needed to look up stats
+  const PlayerStageStats* m_pPlayerStageStats;  // needed to look up stats
 };
 
 #endif
@@ -31,7 +32,7 @@ protected:
 /*
  * (c) 2001-2003 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -41,7 +42,7 @@ protected:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

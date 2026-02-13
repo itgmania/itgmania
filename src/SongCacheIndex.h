@@ -6,33 +6,34 @@
 #include "IniFile.h"
 #include "RageThreads.h"
 
-class SongCacheIndex
-{
-	IniFile CacheIndex;
-	mutable RageMutex Mutex;
-	static std::string MangleName( const std::string &Name );
+class SongCacheIndex {
+  IniFile CacheIndex;
+  mutable RageMutex Mutex;
+  static std::string MangleName(const std::string& Name);
 
-public:
-	SongCacheIndex();
-	~SongCacheIndex();
-	void ReadFromDisk();
-	static std::string GetCacheFilePath( const std::string &sGroup, const std::string &sPath );
+ public:
+  SongCacheIndex();
+  ~SongCacheIndex();
+  void ReadFromDisk();
+  static std::string GetCacheFilePath(
+      const std::string& sGroup, const std::string& sPath);
 
-	void ReadCacheIndex();
-	void SaveCacheIndex();
-	void AddCacheIndex( const std::string &path, unsigned hash );
-	unsigned GetCacheHash( const std::string &path ) const;
-	bool delay_save_cache;
+  void ReadCacheIndex();
+  void SaveCacheIndex();
+  void AddCacheIndex(const std::string& path, unsigned hash);
+  unsigned GetCacheHash(const std::string& path) const;
+  bool delay_save_cache;
 };
 
-extern SongCacheIndex *SONGINDEX;	// global and accessible from anywhere in our program
+extern SongCacheIndex*
+    SONGINDEX;  // global and accessible from anywhere in our program
 
 #endif
 
 /*
  * (c) 2002-2003 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -42,7 +43,7 @@ extern SongCacheIndex *SONGINDEX;	// global and accessible from anywhere in our 
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

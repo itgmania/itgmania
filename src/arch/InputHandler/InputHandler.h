@@ -24,59 +24,66 @@
 #include "arch/RageDriver.h"
 
 /** @brief A class designed to handle special input devices. */
-class InputHandler: public RageDriver
-{
-public:
-	static void Create( const std::string &sDrivers, std::vector<InputHandler *> &apAdd );
-	static DriverList m_pDriverList;
+class InputHandler : public RageDriver {
+ public:
+  static void Create(
+      const std::string& sDrivers, std::vector<InputHandler*>& apAdd);
+  static DriverList m_pDriverList;
 
-	InputHandler(): m_LastUpdate(), m_iInputsSinceUpdate(0) {}
-	virtual ~InputHandler() { }
-	virtual void Update() { }
-	virtual bool DevicesChanged() { return false; }
-	virtual void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut ) = 0;
+  InputHandler() : m_LastUpdate(), m_iInputsSinceUpdate(0) {}
+  virtual ~InputHandler() {}
+  virtual void Update() {}
+  virtual bool DevicesChanged() { return false; }
+  virtual void GetDevicesAndDescriptions(
+      std::vector<InputDeviceInfo>& vDevicesOut) = 0;
 
-	// Override to return a pretty string that's specific to the controller type.
-	virtual std::string GetDeviceSpecificInputString( const DeviceInput &di );
-	virtual std::string GetLocalizedInputString( const DeviceInput &di );
-	virtual wchar_t DeviceButtonToChar( DeviceButton button, bool bUseCurrentKeyModifiers );
+  // Override to return a pretty string that's specific to the controller type.
+  virtual std::string GetDeviceSpecificInputString(const DeviceInput& di);
+  virtual std::string GetLocalizedInputString(const DeviceInput& di);
+  virtual wchar_t DeviceButtonToChar(
+      DeviceButton button, bool bUseCurrentKeyModifiers);
 
-	// Override to find out whether the controller is currently plugged in.
-	// Not all InputHandlers will support this.  Not applicable to all InputHandlers.
-	virtual InputDeviceState GetInputDeviceState( InputDevice /* id */ ) { return InputDeviceState_Connected; }
+  // Override to find out whether the controller is currently plugged in.
+  // Not all InputHandlers will support this.  Not applicable to all
+  // InputHandlers.
+  virtual InputDeviceState GetInputDeviceState(InputDevice /* id */) {
+    return InputDeviceState_Connected;
+  }
 
-	/* In Windows, some devices need to be recreated if we recreate our main window.
-	 * Override this if you need to do that. */
-	virtual void WindowReset() { }
+  /* In Windows, some devices need to be recreated if we recreate our main
+   * window. Override this if you need to do that. */
+  virtual void WindowReset() {}
 
-protected:
-	/* Convenience function: Call this to queue a received event.
-	 * This may be called in a thread.
-	 *
-	 * Important detail: If the timestamp, di.ts, is zero, then it is assumed that
-	 * this is not a threaded event handler.  In that case, input is being polled,
-	 * and the actual time the button was pressed may be any time since the last
-	 * poll.  In this case, ButtonPressed will pretend the button was pressed at
-	 * the midpoint since the last update, which will smooth out the error.
-	 *
-	 * Note that timestamps are set to the current time by default, so for this
-	 * to happen, you need to explicitly call di.ts.SetZero().
-	 *
-	 * If the timestamp is set, it'll be left alone. */
-	void ButtonPressed( DeviceInput di );
+ protected:
+  /* Convenience function: Call this to queue a received event.
+   * This may be called in a thread.
+   *
+   * Important detail: If the timestamp, di.ts, is zero, then it is assumed that
+   * this is not a threaded event handler.  In that case, input is being polled,
+   * and the actual time the button was pressed may be any time since the last
+   * poll.  In this case, ButtonPressed will pretend the button was pressed at
+   * the midpoint since the last update, which will smooth out the error.
+   *
+   * Note that timestamps are set to the current time by default, so for this
+   * to happen, you need to explicitly call di.ts.SetZero().
+   *
+   * If the timestamp is set, it'll be left alone. */
+  void ButtonPressed(DeviceInput di);
 
-	/* Call this at the end of polling input. */
-	void UpdateTimer();
+  /* Call this at the end of polling input. */
+  void UpdateTimer();
 
-private:
-	RageTimer m_LastUpdate;
-	int m_iInputsSinceUpdate;
+ private:
+  RageTimer m_LastUpdate;
+  int m_iInputsSinceUpdate;
 };
 
-#define REGISTER_INPUT_HANDLER_CLASS2( name, x ) \
-	static RegisterRageDriver register_##name( &InputHandler::m_pDriverList, #name, CreateClass<InputHandler_##x, RageDriver> )
-#define REGISTER_INPUT_HANDLER_CLASS( name ) REGISTER_INPUT_HANDLER_CLASS2( name, name )
-
+#define REGISTER_INPUT_HANDLER_CLASS2(name, x) \
+  static RegisterRageDriver register_##name(   \
+      &InputHandler::m_pDriverList, #name,     \
+      CreateClass<InputHandler_##x, RageDriver>)
+#define REGISTER_INPUT_HANDLER_CLASS(name) \
+  REGISTER_INPUT_HANDLER_CLASS2(name, name)
 
 #endif
 

@@ -9,23 +9,22 @@
 #include "RageThreads.h"
 
 class USBDevice;
-class InputHandler_Win32_Pump: public InputHandler
-{
-public:
-	void Update();
-	InputHandler_Win32_Pump();
-	~InputHandler_Win32_Pump();
-	std::string GetDeviceSpecificInputString( const DeviceInput &di );
-	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut );
+class InputHandler_Win32_Pump : public InputHandler {
+ public:
+  void Update();
+  InputHandler_Win32_Pump();
+  ~InputHandler_Win32_Pump();
+  std::string GetDeviceSpecificInputString(const DeviceInput& di);
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
-private:
-	USBDevice *m_pDevice;
-	RageThread InputThread;
-	bool m_bShutdown;
+ private:
+  USBDevice* m_pDevice;
+  RageThread InputThread;
+  bool m_bShutdown;
 
-	static int InputThread_Start( void *p );
-	void InputThreadMain();
-	void HandleInput( int devno, int event );
+  static int InputThread_Start(void* p);
+  void InputThreadMain();
+  void HandleInput(int devno, int event);
 };
 
 #endif
@@ -54,4 +53,3 @@ private:
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

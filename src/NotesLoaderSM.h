@@ -21,211 +21,221 @@ class TimingData;
 const float FAST_BPM_WARP = 9999999.f;
 
 /** @brief The maximum file size for edits. */
-const int MAX_EDIT_STEPS_SIZE_BYTES		= 60*1024;	// 60KB
+const int MAX_EDIT_STEPS_SIZE_BYTES = 60 * 1024;  // 60KB
 
 /** @brief Reads a Song from an .SM file. */
-struct SMLoader
-{
-	SMLoader() : fileExt(".sm"), songTitle() {}
+struct SMLoader {
+  SMLoader() : fileExt(".sm"), songTitle() {}
 
-	SMLoader(std::string ext) : fileExt(ext), songTitle() {}
+  SMLoader(std::string ext) : fileExt(ext), songTitle() {}
 
-	virtual ~SMLoader() {}
+  virtual ~SMLoader() {}
 
-	/**
-	 * @brief Attempt to load a song from a specified path.
-	 * @param sPath a const reference to the path on the hard drive to check.
-	 * @param out a reference to the Song that will retrieve the song information.
-	 * @return its success or failure.
-	 */
-	virtual bool LoadFromDir( const std::string &sPath, Song &out, bool load_autosave= false );
-	/**
-	 * @brief Perform some cleanup on the loaded song.
-	 * @param song a reference to the song that may need cleaning up.
-	 * @param bFromCache a flag to determine if this song is loaded from a cache file.
-	 */
-	virtual void TidyUpData( Song &song, bool bFromCache );
+  /**
+   * @brief Attempt to load a song from a specified path.
+   * @param sPath a const reference to the path on the hard drive to check.
+   * @param out a reference to the Song that will retrieve the song information.
+   * @return its success or failure.
+   */
+  virtual bool LoadFromDir(
+      const std::string& sPath, Song& out, bool load_autosave = false);
+  /**
+   * @brief Perform some cleanup on the loaded song.
+   * @param song a reference to the song that may need cleaning up.
+   * @param bFromCache a flag to determine if this song is loaded from a cache
+   * file.
+   */
+  virtual void TidyUpData(Song& song, bool bFromCache);
 
-	/**
-	 * @brief Retrieve the relevant notedata from the simfile.
-	 * @param path the path where the simfile lives.
-	 * @param out the Steps we are loading the data into. */
-	virtual bool LoadNoteDataFromSimfile(const std::string &path, Steps &out );
+  /**
+   * @brief Retrieve the relevant notedata from the simfile.
+   * @param path the path where the simfile lives.
+   * @param out the Steps we are loading the data into. */
+  virtual bool LoadNoteDataFromSimfile(const std::string& path, Steps& out);
 
-	/**
-	 * @brief Attempt to load the specified sm file.
-	 * @param sPath a const reference to the path on the hard drive to check.
-	 * @param out a reference to the Song that will retrieve the song information.
-	 * @param bFromCache a check to see if we are getting certain information from the cache file.
-	 * @return its success or failure.
-	 */
-	virtual bool LoadFromSimfile( const std::string &sPath, Song &out, bool bFromCache = false );
-	/**
-	 * @brief Retrieve the list of .sm files.
-	 * @param sPath a const reference to the path on the hard drive to check.
-	 * @param out a vector of files found in the path.
-	 */
-	virtual void GetApplicableFiles( const std::string &sPath, std::vector<std::string> &out, bool load_autosave= false );
-	virtual bool LoadEditFromFile( std::string sEditFilePath, ProfileSlot slot, bool bAddStepsToSong, Song *givenSong=nullptr );
-	virtual bool LoadEditFromBuffer( const std::string &sBuffer, const std::string &sEditFilePath, ProfileSlot slot, Song *givenSong=nullptr );
-	virtual bool LoadEditFromMsd( const MsdFile &msd, const std::string &sEditFilePath, ProfileSlot slot, bool bAddStepsToSong, Song *givenSong=nullptr );
-	virtual bool LoadFromBGChangesVector(BackgroundChange &change, std::vector<std::string> aBGChangeValues);
+  /**
+   * @brief Attempt to load the specified sm file.
+   * @param sPath a const reference to the path on the hard drive to check.
+   * @param out a reference to the Song that will retrieve the song information.
+   * @param bFromCache a check to see if we are getting certain information from
+   * the cache file.
+   * @return its success or failure.
+   */
+  virtual bool LoadFromSimfile(
+      const std::string& sPath, Song& out, bool bFromCache = false);
+  /**
+   * @brief Retrieve the list of .sm files.
+   * @param sPath a const reference to the path on the hard drive to check.
+   * @param out a vector of files found in the path.
+   */
+  virtual void GetApplicableFiles(
+      const std::string& sPath, std::vector<std::string>& out,
+      bool load_autosave = false);
+  virtual bool LoadEditFromFile(
+      std::string sEditFilePath, ProfileSlot slot, bool bAddStepsToSong,
+      Song* givenSong = nullptr);
+  virtual bool LoadEditFromBuffer(
+      const std::string& sBuffer, const std::string& sEditFilePath,
+      ProfileSlot slot, Song* givenSong = nullptr);
+  virtual bool LoadEditFromMsd(
+      const MsdFile& msd, const std::string& sEditFilePath, ProfileSlot slot,
+      bool bAddStepsToSong, Song* givenSong = nullptr);
+  virtual bool LoadFromBGChangesVector(
+      BackgroundChange& change, std::vector<std::string> aBGChangeValues);
 
-	/**
-	 * @brief Parse BPM Changes data from a string.
-	 * @param out the vector to put the data in.
-	 * @param line the string in question.
-	 * @param rowsPerBeat the number of rows per beat for this purpose. */
-	void ParseBPMs(std::vector<std::pair<float, float>> &out,
-	               const std::string line,
-	               const int rowsPerBeat = -1);
-	/**
-	 * @brief Process the BPM Segments from the string.
-	 * @param out the TimingData being modified.
-	 * @param vBPMChanges the vector of BPM Changes data. */
-	void ProcessBPMs(TimingData & out,
-	                 const std::vector<std::pair<float, float>> &vBPMChanges);
-	/**
-	 * @brief Parse Stops data from a string.
-	 * @param out the vector to put the data in.
-	 * @param line the string in question.
-	 * @param rowsPerBeat the number of rows per beat for this purpose. */
-	void ParseStops(std::vector<std::pair<float, float>> &out,
-	                const std::string line,
-	                const int rowsPerBeat = -1);
-	/**
-	 * @brief Process the Stop Segments from the data.
-	 * @param out the TimingData being modified.
-	 * @param vStops the vector of Stops data. */
-	void ProcessStops(TimingData & out,
-	                  const std::vector<std::pair<float, float>> &vStops);
-	/**
-	 * @brief Process BPM and stop segments from the data.
-	 * @param out the TimingData being modified.
-	 * @param vBPMs the vector of BPM changes.
-	 * @param vStops the vector of stops. */
-	void ProcessBPMsAndStops(TimingData &out,
-			std::vector< std::pair<float, float>> &vBPMs,
-			std::vector< std::pair<float, float>> &vStops);
-	/**
-	 * @brief Process the Delay Segments from the string.
-	 * @param out the TimingData being modified.
-	 * @param line the string in question.
-	 * @param rowsPerBeat the number of rows per beat for this purpose. */
-	void ProcessDelays(TimingData & out,
-			  const std::string line,
-			  const int rowsPerBeat = -1);
-	/**
-	 * @brief Process the Time Signature Segments from the string.
-	 * @param out the TimingData being modified.
-	 * @param line the string in question.
-	 * @param rowsPerBeat the number of rows per beat for this purpose. */
-	void ProcessTimeSignatures(TimingData & out,
-			   const std::string line,
-			   const int rowsPerBeat = -1);
-	/**
-	 * @brief Process the Tickcount Segments from the string.
-	 * @param out the TimingData being modified.
-	 * @param line the string in question.
-	 * @param rowsPerBeat the number of rows per beat for this purpose. */
-	void ProcessTickcounts(TimingData & out,
-				   const std::string line,
-				   const int rowsPerBeat = -1);
+  /**
+   * @brief Parse BPM Changes data from a string.
+   * @param out the vector to put the data in.
+   * @param line the string in question.
+   * @param rowsPerBeat the number of rows per beat for this purpose. */
+  void ParseBPMs(
+      std::vector<std::pair<float, float>>& out, const std::string line,
+      const int rowsPerBeat = -1);
+  /**
+   * @brief Process the BPM Segments from the string.
+   * @param out the TimingData being modified.
+   * @param vBPMChanges the vector of BPM Changes data. */
+  void ProcessBPMs(
+      TimingData& out, const std::vector<std::pair<float, float>>& vBPMChanges);
+  /**
+   * @brief Parse Stops data from a string.
+   * @param out the vector to put the data in.
+   * @param line the string in question.
+   * @param rowsPerBeat the number of rows per beat for this purpose. */
+  void ParseStops(
+      std::vector<std::pair<float, float>>& out, const std::string line,
+      const int rowsPerBeat = -1);
+  /**
+   * @brief Process the Stop Segments from the data.
+   * @param out the TimingData being modified.
+   * @param vStops the vector of Stops data. */
+  void ProcessStops(
+      TimingData& out, const std::vector<std::pair<float, float>>& vStops);
+  /**
+   * @brief Process BPM and stop segments from the data.
+   * @param out the TimingData being modified.
+   * @param vBPMs the vector of BPM changes.
+   * @param vStops the vector of stops. */
+  void ProcessBPMsAndStops(
+      TimingData& out, std::vector<std::pair<float, float>>& vBPMs,
+      std::vector<std::pair<float, float>>& vStops);
+  /**
+   * @brief Process the Delay Segments from the string.
+   * @param out the TimingData being modified.
+   * @param line the string in question.
+   * @param rowsPerBeat the number of rows per beat for this purpose. */
+  void ProcessDelays(
+      TimingData& out, const std::string line, const int rowsPerBeat = -1);
+  /**
+   * @brief Process the Time Signature Segments from the string.
+   * @param out the TimingData being modified.
+   * @param line the string in question.
+   * @param rowsPerBeat the number of rows per beat for this purpose. */
+  void ProcessTimeSignatures(
+      TimingData& out, const std::string line, const int rowsPerBeat = -1);
+  /**
+   * @brief Process the Tickcount Segments from the string.
+   * @param out the TimingData being modified.
+   * @param line the string in question.
+   * @param rowsPerBeat the number of rows per beat for this purpose. */
+  void ProcessTickcounts(
+      TimingData& out, const std::string line, const int rowsPerBeat = -1);
 
-	/**
-	 * @brief Process the Speed Segments from the string.
-	 * @param out the TimingData being modified.
-	 * @param line the string in question.
-	 * @param rowsPerBeat the number of rows per beat for this purpose. */
-	virtual void ProcessSpeeds(TimingData & out,
-				   const std::string line,
-				   const int rowsPerBeat = -1);
+  /**
+   * @brief Process the Speed Segments from the string.
+   * @param out the TimingData being modified.
+   * @param line the string in question.
+   * @param rowsPerBeat the number of rows per beat for this purpose. */
+  virtual void ProcessSpeeds(
+      TimingData& out, const std::string line, const int rowsPerBeat = -1);
 
-	virtual void ProcessCombos(TimingData & /* out */,
-				   const std::string line,
-				   const int /* rowsPerBeat */ = -1) {}
+  virtual void ProcessCombos(
+      TimingData& /* out */, const std::string line,
+      const int /* rowsPerBeat */ = -1) {}
 
-	/**
-	 * @brief Process the Fake Segments from the string.
-	 * @param out the TimingData being modified.
-	 * @param line the string in question.
-	 * @param rowsPerBeat the number of rows per beat for this purpose. */
-	virtual void ProcessFakes(TimingData & out,
-				  const std::string line,
-				  const int rowsPerBeat = -1);
+  /**
+   * @brief Process the Fake Segments from the string.
+   * @param out the TimingData being modified.
+   * @param line the string in question.
+   * @param rowsPerBeat the number of rows per beat for this purpose. */
+  virtual void ProcessFakes(
+      TimingData& out, const std::string line, const int rowsPerBeat = -1);
 
-	virtual void ProcessBGChanges( Song &out, const std::string &sValueName,
-			      const std::string &sPath, const std::string &sParam );
+  virtual void ProcessBGChanges(
+      Song& out, const std::string& sValueName, const std::string& sPath,
+      const std::string& sParam);
 
-	virtual void ParseBGChangesString(const std::string& _sChanges, std::vector<std::vector<std::string> > &vvsAddTo, const std::string &sSongDir);
+  virtual void ParseBGChangesString(
+      const std::string& _sChanges,
+      std::vector<std::vector<std::string>>& vvsAddTo,
+      const std::string& sSongDir);
 
-	/**
-	 * @brief Put the attacks in the attacks string.
-	 * @param attacks the attack string.
-	 * @param params the params from the simfile. */
-	virtual void ProcessAttackString(std::vector<std::string> &attacks, MsdFile::value_t params);
+  /**
+   * @brief Put the attacks in the attacks string.
+   * @param attacks the attack string.
+   * @param params the params from the simfile. */
+  virtual void ProcessAttackString(
+      std::vector<std::string>& attacks, MsdFile::value_t params);
 
-	/**
-	 * @brief Put the attacks in the attacks array.
-	 * @param attacks the attacks array.
-	 * @param params the params from the simfile. */
-	void ProcessAttacks( AttackArray &attacks, MsdFile::value_t params );
-	void ProcessInstrumentTracks( Song &out, const std::string &sParam );
+  /**
+   * @brief Put the attacks in the attacks array.
+   * @param attacks the attacks array.
+   * @param params the params from the simfile. */
+  void ProcessAttacks(AttackArray& attacks, MsdFile::value_t params);
+  void ProcessInstrumentTracks(Song& out, const std::string& sParam);
 
-	/**
-	 * @brief Convert a row value to the proper beat value.
-	 *
-	 * This is primarily used for assistance with converting SMA files.
-	 * @param line The line that contains the value.
-	 * @param rowsPerBeat the number of rows per beat according to the original file.
-	 * @return the converted beat value. */
-	float RowToBeat(std::string line, const int rowsPerBeat);
+  /**
+   * @brief Convert a row value to the proper beat value.
+   *
+   * This is primarily used for assistance with converting SMA files.
+   * @param line The line that contains the value.
+   * @param rowsPerBeat the number of rows per beat according to the original
+   * file.
+   * @return the converted beat value. */
+  float RowToBeat(std::string line, const int rowsPerBeat);
 
-protected:
-	/**
-	 * @brief Process the different tokens we have available to get NoteData.
-	 * @param stepsType The current StepsType.
-	 * @param description The description of the chart.
-	 * @param difficulty The difficulty (in words) of the chart.
-	 * @param meter the difficulty (in numbers) of the chart.
-	 * @param radarValues the calculated radar values.
-	 * @param noteData the note data itself.
-	 * @param out the Steps getting the data. */
-	virtual void LoadFromTokens(std::string sStepsType,
-				    std::string sDescription,
-				    std::string sDifficulty,
-				    std::string sMeter,
-				    std::string sRadarValues,
-				    std::string sNoteData,
-				    Steps &out);
+ protected:
+  /**
+   * @brief Process the different tokens we have available to get NoteData.
+   * @param stepsType The current StepsType.
+   * @param description The description of the chart.
+   * @param difficulty The difficulty (in words) of the chart.
+   * @param meter the difficulty (in numbers) of the chart.
+   * @param radarValues the calculated radar values.
+   * @param noteData the note data itself.
+   * @param out the Steps getting the data. */
+  virtual void LoadFromTokens(
+      std::string sStepsType, std::string sDescription, std::string sDifficulty,
+      std::string sMeter, std::string sRadarValues, std::string sNoteData,
+      Steps& out);
 
-	/**
-	 * @brief Retrieve the file extension associated with this loader.
-	 * @return the file extension. */
-	std::string GetFileExtension() const { return fileExt; }
+  /**
+   * @brief Retrieve the file extension associated with this loader.
+   * @return the file extension. */
+  std::string GetFileExtension() const { return fileExt; }
 
-	std::vector<std::string> GetSongDirFiles(const std::string &sSongDir);
+  std::vector<std::string> GetSongDirFiles(const std::string& sSongDir);
 
-public:
-	// SetSongTitle and GetSongTitle changed to public to allow the functions
-	// used by the parser helper to access them. -Kyz
-	/**
-	 * @brief Set the song title.
-	 * @param t the song title. */
-	virtual void SetSongTitle(const std::string & title);
+ public:
+  // SetSongTitle and GetSongTitle changed to public to allow the functions
+  // used by the parser helper to access them. -Kyz
+  /**
+   * @brief Set the song title.
+   * @param t the song title. */
+  virtual void SetSongTitle(const std::string& title);
 
-	/**
-	 * @brief Get the song title.
-	 * @return the song title. */
-	virtual std::string GetSongTitle() const;
+  /**
+   * @brief Get the song title.
+   * @return the song title. */
+  virtual std::string GetSongTitle() const;
 
-private:
-	/** @brief The file extension in use. */
-	const std::string fileExt;
-	/** @brief The song title that is being processed. */
-	std::string songTitle;
+ private:
+  /** @brief The file extension in use. */
+  const std::string fileExt;
+  /** @brief The song title that is being processed. */
+  std::string songTitle;
 
-	std::vector<std::string> m_SongDirFiles;
+  std::vector<std::string> m_SongDirFiles;
 };
 
 #endif

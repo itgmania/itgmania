@@ -8,37 +8,32 @@
 
 REGISTER_LIGHTS_DRIVER_CLASS(Export);
 
-RageMutex LightsDriver_Export::m_Lock( "LightsDriver_Export");
+RageMutex LightsDriver_Export::m_Lock("LightsDriver_Export");
 LightsState LightsDriver_Export::m_State;
 
-LightsDriver_Export::LightsDriver_Export()
-{
-	memset( &m_State, 0, sizeof(m_State) );
+LightsDriver_Export::LightsDriver_Export() {
+  memset(&m_State, 0, sizeof(m_State));
 }
 
-LightsDriver_Export::~LightsDriver_Export()
-{
+LightsDriver_Export::~LightsDriver_Export() {}
+
+void LightsDriver_Export::Set(const LightsState* ls) {
+  m_Lock.Lock();
+  m_State = *ls;
+  m_Lock.Unlock();
 }
 
-void LightsDriver_Export::Set( const LightsState *ls )
-{
-	m_Lock.Lock();
-	m_State = *ls;
-	m_Lock.Unlock();
-}
-
-LightsState LightsDriver_Export::GetState()
-{
-	m_Lock.Lock();
-	LightsState ret( m_State );
-	m_Lock.Unlock();
-	return ret;
+LightsState LightsDriver_Export::GetState() {
+  m_Lock.Lock();
+  LightsState ret(m_State);
+  m_Lock.Unlock();
+  return ret;
 }
 
 /*
  * (c) 2006 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -48,7 +43,7 @@ LightsState LightsDriver_Export::GetState()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -10,27 +10,27 @@
 #include "LoadingWindow.h"
 #include "archutils/Win32/AppInstance.h"
 
-class LoadingWindow_Win32: public LoadingWindow
-{
-public:
-	LoadingWindow_Win32();
-	~LoadingWindow_Win32();
+class LoadingWindow_Win32 : public LoadingWindow {
+ public:
+  LoadingWindow_Win32();
+  ~LoadingWindow_Win32();
 
-	void Paint();
-	void SetText( std::string sText );
-	void SetIcon( const RageSurface *pIcon );
-	void SetSplash( const RageSurface *pSplash );
-	void SetProgress( const int progress );
-	void SetTotalWork( const int totalWork );
-	void SetIndeterminate( bool indeterminate );
+  void Paint();
+  void SetText(std::string sText);
+  void SetIcon(const RageSurface* pIcon);
+  void SetSplash(const RageSurface* pSplash);
+  void SetProgress(const int progress);
+  void SetTotalWork(const int totalWork);
+  void SetIndeterminate(bool indeterminate);
 
-private:
-	AppInstance handle;
-	HWND hwnd;
-	std::string text[3];
-	HICON m_hIcon;
+ private:
+  AppInstance handle;
+  HWND hwnd;
+  std::string text[3];
+  HICON m_hIcon;
 
-	static INT_PTR CALLBACK WndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
+  static INT_PTR CALLBACK
+  WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 };
 #define USE_LOADING_WINDOW_WIN32
 
@@ -39,7 +39,7 @@ private:
 /*
  * (c) 2002-2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -49,7 +49,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
@@ -60,4 +60,3 @@ private:
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

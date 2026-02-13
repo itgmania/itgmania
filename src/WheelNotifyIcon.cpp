@@ -15,85 +15,93 @@
  * in Lua (in stock StepMania 4), so I'm not sure if we even need this... -aj
  */
 
-static ThemeMetric<bool>	SHOW_TRAINING	("WheelNotifyIcon","ShowTraining");
-static ThemeMetric<bool>	BLINK_BEST_ICON	("WheelNotifyIcon","BlinkPlayersBest");
-static ThemeMetric<int>		NUM_ICONS_TO_SHOW ("WheelNotifyIcon","NumIconsToShow");
+static ThemeMetric<bool> SHOW_TRAINING("WheelNotifyIcon", "ShowTraining");
+static ThemeMetric<bool> BLINK_BEST_ICON("WheelNotifyIcon", "BlinkPlayersBest");
+static ThemeMetric<int> NUM_ICONS_TO_SHOW("WheelNotifyIcon", "NumIconsToShow");
 
-WheelNotifyIcon::WheelNotifyIcon()
-{
-	// Load( THEME->GetPathG("MusicWheelItem","WheelNotifyIcon") );
-	Load( THEME->GetPathG("WheelNotifyIcon","icons 4x2") );
-	StopAnimating();
+WheelNotifyIcon::WheelNotifyIcon() {
+  // Load( THEME->GetPathG("MusicWheelItem","WheelNotifyIcon") );
+  Load(THEME->GetPathG("WheelNotifyIcon", "icons 4x2"));
+  StopAnimating();
 }
 
-void WheelNotifyIcon::SetFlags( Flags flags )
-{
-	m_vIconsToShow.clear();
+void WheelNotifyIcon::SetFlags(Flags flags) {
+  m_vIconsToShow.clear();
 
-	// push onto vector in highest to lowest priority
+  // push onto vector in highest to lowest priority
 
-	switch( flags.iPlayersBestNumber )
-	{
-	case 1:	m_vIconsToShow.push_back( best1 );	break;
-	case 2:	m_vIconsToShow.push_back( best2 );	break;
-	case 3:	m_vIconsToShow.push_back( best3 );	break;
-	}
+  switch (flags.iPlayersBestNumber) {
+    case 1:
+      m_vIconsToShow.push_back(best1);
+      break;
+    case 2:
+      m_vIconsToShow.push_back(best2);
+      break;
+    case 3:
+      m_vIconsToShow.push_back(best3);
+      break;
+  }
 
-	if( flags.bEdits )
-		m_vIconsToShow.push_back( edits );
+  if (flags.bEdits) {
+    m_vIconsToShow.push_back(edits);
+  }
 
-	switch( flags.iStagesForSong )
-	{
-	case 1:	break;
-	case 2:	m_vIconsToShow.push_back( long_ver );	break;
-	case 3:	m_vIconsToShow.push_back( marathon );	break;
-	default:	FAIL_M( ssprintf("flags.iStagesForSong = %d", flags.iStagesForSong) );
-	}
+  switch (flags.iStagesForSong) {
+    case 1:
+      break;
+    case 2:
+      m_vIconsToShow.push_back(long_ver);
+      break;
+    case 3:
+      m_vIconsToShow.push_back(marathon);
+      break;
+    default:
+      FAIL_M(ssprintf("flags.iStagesForSong = %d", flags.iStagesForSong));
+  }
 
-	if( flags.bHasBeginnerOr1Meter && (bool)SHOW_TRAINING )
-		m_vIconsToShow.push_back( training );
+  if (flags.bHasBeginnerOr1Meter && (bool)SHOW_TRAINING) {
+    m_vIconsToShow.push_back(training);
+  }
 
+  // If BLINK_BEST_ICON, make player's best icon blink if it's the only icon.
+  if (m_vIconsToShow.size() == 1 && BLINK_BEST_ICON) {
+    if (m_vIconsToShow[0] >= best1 && m_vIconsToShow[0] <= best3) {
+      m_vIconsToShow.push_back(empty);
+    }
+  }
 
-	// If BLINK_BEST_ICON, make player's best icon blink if it's the only icon.
-	if( m_vIconsToShow.size() == 1 && BLINK_BEST_ICON )
-	{
-		if( m_vIconsToShow[0] >= best1  &&  m_vIconsToShow[0] <= best3 )
-			m_vIconsToShow.push_back( empty );
-	}
+  const unsigned int newSize = std::min<unsigned int>(
+      m_vIconsToShow.size(), static_cast<unsigned int>(NUM_ICONS_TO_SHOW));
+  m_vIconsToShow.resize(newSize);
 
-	const unsigned int newSize = std::min<unsigned int>(m_vIconsToShow.size(), static_cast<unsigned int>(NUM_ICONS_TO_SHOW));
-	m_vIconsToShow.resize(newSize);
+  // Broadcast Set message so items can react. (futures) -aj
+  // Message msg("Set");
+  // this->HandleMessage( msg );
 
-	// Broadcast Set message so items can react. (futures) -aj
-	//Message msg("Set");
-	//this->HandleMessage( msg );
-
-	/* Make sure the right icon is selected, since we might be drawn before
-	 * we get another update. */
-	Update(0);
+  /* Make sure the right icon is selected, since we might be drawn before
+   * we get another update. */
+  Update(0);
 }
 
-bool WheelNotifyIcon::EarlyAbortDraw() const
-{
-	if( m_vIconsToShow.empty() )
-		return true;
-	return Sprite::EarlyAbortDraw();
+bool WheelNotifyIcon::EarlyAbortDraw() const {
+  if (m_vIconsToShow.empty()) {
+    return true;
+  }
+  return Sprite::EarlyAbortDraw();
 }
 
-void WheelNotifyIcon::Update( float fDeltaTime )
-{
-	if( m_vIconsToShow.size() > 0 )
-	{
-		/* We should probably end up parsing the vector and then dynamically
-		 * insert flag icons based on "priority". Easy to do, hopefully
-			- Midiman */
-        static uint_fast32_t updateCounter = 0;
-        updateCounter++;
-        const int index = updateCounter % m_vIconsToShow.size();
-        Sprite::SetState(m_vIconsToShow[index]);
-	}
+void WheelNotifyIcon::Update(float fDeltaTime) {
+  if (m_vIconsToShow.size() > 0) {
+    /* We should probably end up parsing the vector and then dynamically
+     * insert flag icons based on "priority". Easy to do, hopefully
+            - Midiman */
+    static uint_fast32_t updateCounter = 0;
+    updateCounter++;
+    const int index = updateCounter % m_vIconsToShow.size();
+    Sprite::SetState(m_vIconsToShow[index]);
+  }
 
-	Sprite::Update( fDeltaTime );
+  Sprite::Update(fDeltaTime);
 }
 
 /*

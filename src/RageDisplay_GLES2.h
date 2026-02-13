@@ -7,87 +7,81 @@
 #include "RageDisplay.h"
 #include "RageTypes.h"
 
-class RageDisplay_GLES2: public RageDisplay
-{
-public:
-	RageDisplay_GLES2();
-	virtual ~RageDisplay_GLES2();
-	virtual std::string Init( const VideoModeParams &p, bool bAllowUnacceleratedRenderer );
+class RageDisplay_GLES2 : public RageDisplay {
+ public:
+  RageDisplay_GLES2();
+  virtual ~RageDisplay_GLES2();
+  virtual std::string Init(
+      const VideoModeParams& p, bool bAllowUnacceleratedRenderer);
 
-	virtual std::string GetApiDescription() const;
-	virtual void GetDisplaySpecs(DisplaySpecs &out) const;
-	const RagePixelFormatDesc *GetPixelFormatDesc(RagePixelFormat pf) const;
+  virtual std::string GetApiDescription() const;
+  virtual void GetDisplaySpecs(DisplaySpecs& out) const;
+  const RagePixelFormatDesc* GetPixelFormatDesc(RagePixelFormat pf) const;
 
-	bool BeginFrame();
-	void EndFrame();
-	ActualVideoModeParams GetActualVideoModeParams() const;
-	void SetBlendMode( BlendMode mode );
-	bool SupportsTextureFormat( RagePixelFormat pixfmt, bool realtime=false );
-	bool SupportsPerVertexMatrixScale();
-	uintptr_t CreateTexture(
-		RagePixelFormat pixfmt,
-		RageSurface* img,
-		bool bGenerateMipMaps );
-	void UpdateTexture(
-		uintptr_t iTexHandle,
-		RageSurface* img,
-		int xoffset, int yoffset, int width, int height );
-	void DeleteTexture( uintptr_t iTexHandle );
-	void ClearAllTextures();
-	int GetNumTextureUnits();
-	void SetTexture( TextureUnit tu, uintptr_t iTexture );
-	void SetTextureMode( TextureUnit tu, TextureMode tm );
-	void SetTextureWrapping( TextureUnit tu, bool b );
-	int GetMaxTextureSize() const;
-	void SetTextureFiltering( TextureUnit tu, bool b );
-	bool IsZWriteEnabled() const;
-	bool IsZTestEnabled() const;
-	void SetZWrite( bool b );
-	void SetZBias( float f );
-	void SetZTestMode( ZTestMode mode );
-	void ClearZBuffer();
-	void SetCullMode( CullMode mode );
-	void SetAlphaTest( bool b );
-	void SetMaterial(
-		const RageColor &emissive,
-		const RageColor &ambient,
-		const RageColor &diffuse,
-		const RageColor &specular,
-		float shininess
-		);
-	void SetLighting( bool b );
-	void SetLightOff( int index );
-	void SetLightDirectional(
-		int index,
-		const RageColor &ambient,
-		const RageColor &diffuse,
-		const RageColor &specular,
-		const RageVector3 &dir );
+  bool BeginFrame();
+  void EndFrame();
+  ActualVideoModeParams GetActualVideoModeParams() const;
+  void SetBlendMode(BlendMode mode);
+  bool SupportsTextureFormat(RagePixelFormat pixfmt, bool realtime = false);
+  bool SupportsPerVertexMatrixScale();
+  uintptr_t CreateTexture(
+      RagePixelFormat pixfmt, RageSurface* img, bool bGenerateMipMaps);
+  void UpdateTexture(
+      uintptr_t iTexHandle, RageSurface* img, int xoffset, int yoffset,
+      int width, int height);
+  void DeleteTexture(uintptr_t iTexHandle);
+  void ClearAllTextures();
+  int GetNumTextureUnits();
+  void SetTexture(TextureUnit tu, uintptr_t iTexture);
+  void SetTextureMode(TextureUnit tu, TextureMode tm);
+  void SetTextureWrapping(TextureUnit tu, bool b);
+  int GetMaxTextureSize() const;
+  void SetTextureFiltering(TextureUnit tu, bool b);
+  bool IsZWriteEnabled() const;
+  bool IsZTestEnabled() const;
+  void SetZWrite(bool b);
+  void SetZBias(float f);
+  void SetZTestMode(ZTestMode mode);
+  void ClearZBuffer();
+  void SetCullMode(CullMode mode);
+  void SetAlphaTest(bool b);
+  void SetMaterial(
+      const RageColor& emissive, const RageColor& ambient,
+      const RageColor& diffuse, const RageColor& specular, float shininess);
+  void SetLighting(bool b);
+  void SetLightOff(int index);
+  void SetLightDirectional(
+      int index, const RageColor& ambient, const RageColor& diffuse,
+      const RageColor& specular, const RageVector3& dir);
 
-	void SetSphereEnvironmentMapping( TextureUnit tu, bool b );
-	void SetCelShaded( int stage );
+  void SetSphereEnvironmentMapping(TextureUnit tu, bool b);
+  void SetCelShaded(int stage);
 
-	void SetLineWidth(float fWidth);
-	void SetPolygonMode(PolygonMode pm);
+  void SetLineWidth(float fWidth);
+  void SetPolygonMode(PolygonMode pm);
 
-	RageCompiledGeometry* CreateCompiledGeometry();
-	void DeleteCompiledGeometry( RageCompiledGeometry* p );
+  RageCompiledGeometry* CreateCompiledGeometry();
+  void DeleteCompiledGeometry(RageCompiledGeometry* p);
 
-protected:
-	void DrawQuadsInternal( const RageSpriteVertex v[], int iNumVerts );
-	void DrawQuadStripInternal( const RageSpriteVertex v[], int iNumVerts );
-	void DrawFanInternal( const RageSpriteVertex v[], int iNumVerts );
-	void DrawStripInternal( const RageSpriteVertex v[], int iNumVerts );
-	void DrawTrianglesInternal( const RageSpriteVertex v[], int iNumVerts );
-	void DrawCompiledGeometryInternal( const RageCompiledGeometry *p, int iMeshIndex );
-	void DrawLineStripInternal( const RageSpriteVertex v[], int iNumVerts, float LineWidth );
-	void DrawSymmetricQuadStripInternal( const RageSpriteVertex v[], int iNumVerts );
+ protected:
+  void DrawQuadsInternal(const RageSpriteVertex v[], int iNumVerts);
+  void DrawQuadStripInternal(const RageSpriteVertex v[], int iNumVerts);
+  void DrawFanInternal(const RageSpriteVertex v[], int iNumVerts);
+  void DrawStripInternal(const RageSpriteVertex v[], int iNumVerts);
+  void DrawTrianglesInternal(const RageSpriteVertex v[], int iNumVerts);
+  void DrawCompiledGeometryInternal(
+      const RageCompiledGeometry* p, int iMeshIndex);
+  void DrawLineStripInternal(
+      const RageSpriteVertex v[], int iNumVerts, float LineWidth);
+  void DrawSymmetricQuadStripInternal(
+      const RageSpriteVertex v[], int iNumVerts);
 
-	std::string TryVideoMode( const VideoModeParams &p, bool &bNewDeviceOut );
-	RageSurface* CreateScreenshot();
-	RageMatrix GetOrthoMatrix( float l, float r, float b, float t, float zn, float zf );
-	bool SupportsSurfaceFormat( RagePixelFormat pixfmt );
-	bool SupportsRenderToTexture() const { return true; }
+  std::string TryVideoMode(const VideoModeParams& p, bool& bNewDeviceOut);
+  RageSurface* CreateScreenshot();
+  RageMatrix GetOrthoMatrix(
+      float l, float r, float b, float t, float zn, float zf);
+  bool SupportsSurfaceFormat(RagePixelFormat pixfmt);
+  bool SupportsRenderToTexture() const { return true; }
 };
 
 #endif
@@ -115,4 +109,3 @@ protected:
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

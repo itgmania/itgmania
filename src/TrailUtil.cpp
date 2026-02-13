@@ -14,126 +14,115 @@
 #include "XmlFile.h"
 #include "global.h"
 
-int TrailUtil::GetNumSongs( const Trail *pTrail )
-{
-	return pTrail->m_vEntries.size();
+int TrailUtil::GetNumSongs(const Trail* pTrail) {
+  return pTrail->m_vEntries.size();
 }
 
-float TrailUtil::GetTotalSeconds( const Trail *pTrail )
-{
-	auto const &entries = pTrail->m_vEntries;
-	return std::accumulate(entries.begin(), entries.end(), 0.f, [](float total, TrailEntry const &e) { return total + e.pSong->m_fMusicLengthSeconds; });
+float TrailUtil::GetTotalSeconds(const Trail* pTrail) {
+  const auto& entries = pTrail->m_vEntries;
+  return std::accumulate(
+      entries.begin(), entries.end(), 0.f,
+      [](float total, const TrailEntry& e) {
+        return total + e.pSong->m_fMusicLengthSeconds;
+      });
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-void TrailID::FromTrail( const Trail *p )
-{
-	if( p == nullptr )
-	{
-		st = StepsType_Invalid;
-		cd = Difficulty_Invalid;
-	}
-	else
-	{
-		st = p->m_StepsType;
-		cd = p->m_CourseDifficulty;
-	}
+void TrailID::FromTrail(const Trail* p) {
+  if (p == nullptr) {
+    st = StepsType_Invalid;
+    cd = Difficulty_Invalid;
+  } else {
+    st = p->m_StepsType;
+    cd = p->m_CourseDifficulty;
+  }
 }
 
-Trail *TrailID::ToTrail( const Course *p, bool bAllowNull ) const
-{
-	ASSERT( p != nullptr );
+Trail* TrailID::ToTrail(const Course* p, bool bAllowNull) const {
+  ASSERT(p != nullptr);
 
-	Trail *pRet = nullptr;
-	if( st != StepsType_Invalid && cd != Difficulty_Invalid )
-		pRet = p->GetTrail( st, cd );
+  Trail* pRet = nullptr;
+  if (st != StepsType_Invalid && cd != Difficulty_Invalid) {
+    pRet = p->GetTrail(st, cd);
+  }
 
-	if( !bAllowNull && pRet == nullptr )
-		RageException::Throw( "%i, %i, \"%s\"", st, cd, p->GetDisplayFullTitle().c_str() );	
+  if (!bAllowNull && pRet == nullptr) {
+    RageException::Throw(
+        "%i, %i, \"%s\"", st, cd, p->GetDisplayFullTitle().c_str());
+  }
 
-	return pRet;
+  return pRet;
 }
 
-XNode* TrailID::CreateNode() const
-{
-	XNode* pNode = new XNode( "Trail" );
+XNode* TrailID::CreateNode() const {
+  XNode* pNode = new XNode("Trail");
 
-	pNode->AppendAttr( "StepsType", GAMEMAN->GetStepsTypeInfo(st).szName );
-	pNode->AppendAttr( "CourseDifficulty", DifficultyToString(cd) );
+  pNode->AppendAttr("StepsType", GAMEMAN->GetStepsTypeInfo(st).szName);
+  pNode->AppendAttr("CourseDifficulty", DifficultyToString(cd));
 
-	return pNode;
+  return pNode;
 }
 
-void TrailID::LoadFromNode( const XNode* pNode ) 
-{
-	ASSERT( pNode->GetName() == "Trail" );
+void TrailID::LoadFromNode(const XNode* pNode) {
+  ASSERT(pNode->GetName() == "Trail");
 
-	std::string sTemp;
+  std::string sTemp;
 
-	pNode->GetAttrValue( "StepsType", sTemp );
-	st = GAMEMAN->StringToStepsType( sTemp );
+  pNode->GetAttrValue("StepsType", sTemp);
+  st = GAMEMAN->StringToStepsType(sTemp);
 
-	pNode->GetAttrValue( "CourseDifficulty", sTemp );
-	cd = StringToDifficulty( sTemp );
+  pNode->GetAttrValue("CourseDifficulty", sTemp);
+  cd = StringToDifficulty(sTemp);
 }
 
-std::string TrailID::ToString() const
-{
-	std::string s = GAMEMAN->GetStepsTypeInfo(st).szName;
-	s += " " + DifficultyToString( cd );
-	return s;
+std::string TrailID::ToString() const {
+  std::string s = GAMEMAN->GetStepsTypeInfo(st).szName;
+  s += " " + DifficultyToString(cd);
+  return s;
 }
 
-bool TrailID::IsValid() const
-{
-	return st != StepsType_Invalid && cd != Difficulty_Invalid;
+bool TrailID::IsValid() const {
+  return st != StepsType_Invalid && cd != Difficulty_Invalid;
 }
 
-bool TrailID::operator<( const TrailID &rhs ) const
-{
-#define COMP(a) if(a<rhs.a) return true; if(a>rhs.a) return false;
-	COMP(st);
-	COMP(cd);
+bool TrailID::operator<(const TrailID& rhs) const {
+#define COMP(a)               \
+  if (a < rhs.a) return true; \
+  if (a > rhs.a) return false;
+  COMP(st);
+  COMP(cd);
 #undef COMP
-	return false;
+  return false;
 }
-
 
 // lua start
 #include "LuaBinding.h"
 
-namespace
-{
-	int GetNumSongs( lua_State *L )
-	{
-		Trail *pTrail = Luna<Trail>::check( L, 1, true );
-		int iNum = TrailUtil::GetNumSongs( pTrail );
-		LuaHelpers::Push( L, iNum );
-		return 1;
-	}
-	int GetTotalSeconds( lua_State *L )
-	{
-		Trail *pTrail = Luna<Trail>::check( L, 1, true );
-		float fSecs = TrailUtil::GetTotalSeconds( pTrail );
-		LuaHelpers::Push( L, fSecs );
-		return 1;
-	}
-
-	const luaL_Reg TrailUtilTable[] =
-	{
-		LIST_METHOD( GetNumSongs ),
-		LIST_METHOD( GetTotalSeconds ),
-		{ nullptr, nullptr }
-	};
+namespace {
+int GetNumSongs(lua_State* L) {
+  Trail* pTrail = Luna<Trail>::check(L, 1, true);
+  int iNum = TrailUtil::GetNumSongs(pTrail);
+  LuaHelpers::Push(L, iNum);
+  return 1;
+}
+int GetTotalSeconds(lua_State* L) {
+  Trail* pTrail = Luna<Trail>::check(L, 1, true);
+  float fSecs = TrailUtil::GetTotalSeconds(pTrail);
+  LuaHelpers::Push(L, fSecs);
+  return 1;
 }
 
-LUA_REGISTER_NAMESPACE( TrailUtil )
+const luaL_Reg TrailUtilTable[] = {
+    LIST_METHOD(GetNumSongs), LIST_METHOD(GetTotalSeconds), {nullptr, nullptr}};
+}  // namespace
+
+LUA_REGISTER_NAMESPACE(TrailUtil)
 
 /*
  * (c) 2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -143,7 +132,7 @@ LUA_REGISTER_NAMESPACE( TrailUtil )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

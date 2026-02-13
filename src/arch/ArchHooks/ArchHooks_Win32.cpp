@@ -24,204 +24,214 @@
 static HANDLE g_hInstanceMutex;
 static bool g_bIsMultipleInstance = false;
 
-void InvalidParameterHandler( const wchar_t *szExpression, const wchar_t *szFunction, const wchar_t *szFile,
-					  unsigned int iLine, uintptr_t pReserved )
-{
-	FAIL_M( "Invalid parameter" ); //TODO: Make this more informative
+void InvalidParameterHandler(
+    const wchar_t* szExpression, const wchar_t* szFunction,
+    const wchar_t* szFile, unsigned int iLine, uintptr_t pReserved) {
+  FAIL_M("Invalid parameter");  // TODO: Make this more informative
 }
 
-ArchHooks_Win32::ArchHooks_Win32()
-{
-	HOOKS = this;
+ArchHooks_Win32::ArchHooks_Win32() {
+  HOOKS = this;
 
-	/* Disable critical errors, and handle them internally.  We never want the
-	 * "drive not ready", etc. dialogs to pop up. */
-	SetErrorMode( SetErrorMode(0) | SEM_FAILCRITICALERRORS );
+  /* Disable critical errors, and handle them internally.  We never want the
+   * "drive not ready", etc. dialogs to pop up. */
+  SetErrorMode(SetErrorMode(0) | SEM_FAILCRITICALERRORS);
 
-	CrashHandler::CrashHandlerHandleArgs( g_argc, g_argv );
-	SetUnhandledExceptionFilter( CrashHandler::ExceptionHandler );
+  CrashHandler::CrashHandlerHandleArgs(g_argc, g_argv);
+  SetUnhandledExceptionFilter(CrashHandler::ExceptionHandler);
 
-	_set_invalid_parameter_handler( InvalidParameterHandler );
+  _set_invalid_parameter_handler(InvalidParameterHandler);
 
-	/* Windows boosts priority on keyboard input, among other things.  Disable that for
-	 * the main thread. */
-	SetThreadPriorityBoost( GetCurrentThread(), TRUE );
+  /* Windows boosts priority on keyboard input, among other things.  Disable
+   * that for the main thread. */
+  SetThreadPriorityBoost(GetCurrentThread(), TRUE);
 
-	g_hInstanceMutex = CreateMutex( nullptr, TRUE, PRODUCT_ID );
+  g_hInstanceMutex = CreateMutex(nullptr, TRUE, PRODUCT_ID);
 
-	g_bIsMultipleInstance = false;
-	if( GetLastError() == ERROR_ALREADY_EXISTS )
-		g_bIsMultipleInstance = true;
+  g_bIsMultipleInstance = false;
+  if (GetLastError() == ERROR_ALREADY_EXISTS) {
+    g_bIsMultipleInstance = true;
+  }
 }
 
-ArchHooks_Win32::~ArchHooks_Win32()
-{
-	CloseHandle( g_hInstanceMutex );
+ArchHooks_Win32::~ArchHooks_Win32() { CloseHandle(g_hInstanceMutex); }
+
+void ArchHooks_Win32::DumpDebugInfo() {
+  /* This is a good time to do the debug search: before we actually
+   * start OpenGL (in case something goes wrong). */
+  SearchForDebugInfo();
 }
 
-void ArchHooks_Win32::DumpDebugInfo()
-{
-	/* This is a good time to do the debug search: before we actually
-	 * start OpenGL (in case something goes wrong). */
-	SearchForDebugInfo();
-}
-
-struct CallbackData
-{
-	HWND hParent;
-	HWND hResult;
+struct CallbackData {
+  HWND hParent;
+  HWND hResult;
 };
 
 // Like GW_ENABLEDPOPUP:
-static BOOL CALLBACK GetEnabledPopup( HWND hWnd, LPARAM lParam )
-{
-	CallbackData *pData = (CallbackData *) lParam;
-	if( GetParent(hWnd) != pData->hParent )
-		return TRUE;
-	if( (GetWindowLong(hWnd, GWL_STYLE) & WS_POPUP) != WS_POPUP )
-		return TRUE;
-	if( !IsWindowEnabled(hWnd) )
-		return TRUE;
+static BOOL CALLBACK GetEnabledPopup(HWND hWnd, LPARAM lParam) {
+  CallbackData* pData = (CallbackData*)lParam;
+  if (GetParent(hWnd) != pData->hParent) {
+    return TRUE;
+  }
+  if ((GetWindowLong(hWnd, GWL_STYLE) & WS_POPUP) != WS_POPUP) {
+    return TRUE;
+  }
+  if (!IsWindowEnabled(hWnd)) {
+    return TRUE;
+  }
 
-	pData->hResult = hWnd;
-	return FALSE;
+  pData->hResult = hWnd;
+  return FALSE;
 }
 
-bool ArchHooks_Win32::CheckForMultipleInstances(int argc, char* argv[])
-{
-	if( !g_bIsMultipleInstance )
-		return false;
+bool ArchHooks_Win32::CheckForMultipleInstances(int argc, char* argv[]) {
+  if (!g_bIsMultipleInstance) {
+    return false;
+  }
 
-	/* Search for the existing window.  Prefer to use the class name, which is less likely to
-	 * have a false match, and will match the gameplay window.  If that fails, try the window
-	 * name, which should match the loading window. */
-	HWND hWnd = FindWindow( PRODUCT_ID, nullptr );
-	if( hWnd == nullptr )
-		hWnd = FindWindow( nullptr, PRODUCT_ID );
+  /* Search for the existing window.  Prefer to use the class name, which is
+   * less likely to have a false match, and will match the gameplay window.  If
+   * that fails, try the window name, which should match the loading window. */
+  HWND hWnd = FindWindow(PRODUCT_ID, nullptr);
+  if (hWnd == nullptr) {
+    hWnd = FindWindow(nullptr, PRODUCT_ID);
+  }
 
-	if( hWnd != nullptr )
-	{
-		/* If the application has a model dialog box open, we want to be sure to give focus to it,
-		 * not the main window. */
-		CallbackData data;
-		data.hParent = hWnd;
-		data.hResult = nullptr;
-		EnumWindows( GetEnabledPopup, (LPARAM) &data );
+  if (hWnd != nullptr) {
+    /* If the application has a model dialog box open, we want to be sure to
+     * give focus to it, not the main window. */
+    CallbackData data;
+    data.hParent = hWnd;
+    data.hResult = nullptr;
+    EnumWindows(GetEnabledPopup, (LPARAM)&data);
 
-		if( data.hResult != nullptr )
-			SetForegroundWindow( data.hResult );
-		else
-			SetForegroundWindow( hWnd );
+    if (data.hResult != nullptr) {
+      SetForegroundWindow(data.hResult);
+    } else {
+      SetForegroundWindow(hWnd);
+    }
 
-		// Send the command line to the existing window.
-		std::vector<std::string> vsArgs;
-		for( int i=0; i<argc; i++ )
-			vsArgs.push_back( argv[i] );
-		std::string sAllArgs = join("|", vsArgs);
-		COPYDATASTRUCT cds;
-		cds.dwData = 0;
-		cds.cbData = sAllArgs.size();
-		cds.lpData = (void*)sAllArgs.data();
-		SendMessage(
-			(HWND)hWnd, // HWND hWnd = handle of destination window
-			WM_COPYDATA,
-			(WPARAM)nullptr, // HANDLE OF SENDING WINDOW
-			(LPARAM)&cds ); // 2nd msg parameter = pointer to COPYDATASTRUCT
-	}
+    // Send the command line to the existing window.
+    std::vector<std::string> vsArgs;
+    for (int i = 0; i < argc; i++) {
+      vsArgs.push_back(argv[i]);
+    }
+    std::string sAllArgs = join("|", vsArgs);
+    COPYDATASTRUCT cds;
+    cds.dwData = 0;
+    cds.cbData = sAllArgs.size();
+    cds.lpData = (void*)sAllArgs.data();
+    SendMessage(
+        (HWND)hWnd,  // HWND hWnd = handle of destination window
+        WM_COPYDATA,
+        (WPARAM) nullptr,  // HANDLE OF SENDING WINDOW
+        (LPARAM)&cds);     // 2nd msg parameter = pointer to COPYDATASTRUCT
+  }
 
-	return true;
+  return true;
 }
 
-void ArchHooks_Win32::RestartProgram()
-{
-	Win32RestartProgram();
+void ArchHooks_Win32::RestartProgram() { Win32RestartProgram(); }
+
+void ArchHooks_Win32::SetTime(tm newtime) {
+  SYSTEMTIME st;
+  ZERO(st);
+  st.wYear = (WORD)newtime.tm_year + 1900;
+  st.wMonth = (WORD)newtime.tm_mon + 1;
+  st.wDay = (WORD)newtime.tm_mday;
+  st.wHour = (WORD)newtime.tm_hour;
+  st.wMinute = (WORD)newtime.tm_min;
+  st.wSecond = (WORD)newtime.tm_sec;
+  st.wMilliseconds = 0;
+  SetLocalTime(&st);
 }
 
-void ArchHooks_Win32::SetTime( tm newtime )
-{
-	SYSTEMTIME st;
-	ZERO( st );
-	st.wYear = (WORD)newtime.tm_year+1900;
-	st.wMonth = (WORD)newtime.tm_mon+1;
-	st.wDay = (WORD)newtime.tm_mday;
-	st.wHour = (WORD)newtime.tm_hour;
-	st.wMinute = (WORD)newtime.tm_min;
-	st.wSecond = (WORD)newtime.tm_sec;
-	st.wMilliseconds = 0;
-	SetLocalTime( &st );
+void ArchHooks_Win32::BoostPriority() {
+  // We just want a slight boost, so we don't skip needlessly if something
+  // happens in the background. We don't really want to be high-priority—above
+  // normal should be enough.
+  //
+  // Be sure to boost the app, not the thread, to make sure the
+  // sound thread stays higher priority than the main thread.
+  //
+  // Also note that high priority won't prevent the game from being interrupted
+  // by Windows notifications - that needs to be handled within ArchUtils.
+  SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 }
 
-void ArchHooks_Win32::BoostPriority()
-{
-	// We just want a slight boost, so we don't skip needlessly if something happens
-	// in the background. We don't really want to be high-priority—above normal should be enough.
-	//
-	// Be sure to boost the app, not the thread, to make sure the
-	// sound thread stays higher priority than the main thread.
-	//
-	// Also note that high priority won't prevent the game from being interrupted by Windows
-	// notifications - that needs to be handled within ArchUtils.
-	SetPriorityClass( GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS );
+void ArchHooks_Win32::UnBoostPriority() {
+  SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
 }
 
-void ArchHooks_Win32::UnBoostPriority()
-{
-	SetPriorityClass( GetCurrentProcess(), NORMAL_PRIORITY_CLASS );
+void ArchHooks_Win32::SetupConcurrentRenderingThread() {
+  SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 }
 
-void ArchHooks_Win32::SetupConcurrentRenderingThread()
-{
-	SetThreadPriority( GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL );
+float ArchHooks_Win32::GetDisplayAspectRatio() {
+  DEVMODE dm;
+  ZERO(dm);
+  dm.dmSize = sizeof(dm);
+  BOOL bResult = EnumDisplaySettings(nullptr, ENUM_REGISTRY_SETTINGS, &dm);
+  ASSERT(bResult != 0);
+  return dm.dmPelsWidth / (float)dm.dmPelsHeight;
 }
 
-float ArchHooks_Win32::GetDisplayAspectRatio()
-{
-	DEVMODE dm;
-	ZERO( dm );
-	dm.dmSize = sizeof(dm);
-	BOOL bResult = EnumDisplaySettings( nullptr, ENUM_REGISTRY_SETTINGS, &dm );
-	ASSERT( bResult != 0 );
-	return dm.dmPelsWidth / (float)dm.dmPelsHeight;
-}
+std::string ArchHooks_Win32::GetClipboard() {
+  HGLOBAL hgl;
+  LPTSTR lpstr;
+  std::string ret;
 
-std::string ArchHooks_Win32::GetClipboard()
-{
-	HGLOBAL hgl;
-	LPTSTR lpstr;
-	std::string ret;
+  // First make sure that the clipboard actually contains a string
+  // (or something stringifiable)
+  if (unlikely(!IsClipboardFormatAvailable(CF_TEXT))) {
+    return "";
+  }
 
-	// First make sure that the clipboard actually contains a string
-	// (or something stringifiable)
-	if(unlikely( !IsClipboardFormatAvailable( CF_TEXT ) )) return "";
+  // Yes. All this mess just to gain access to the string stored by the
+  // clipboard. I'm having flashbacks to Berkeley sockets.
+  if (unlikely(!OpenClipboard(nullptr))) {
+    LOG->Warn(
+        werr_ssprintf(
+            GetLastError(), "InputHandler_DirectInput: OpenClipboard() failed")
+            .c_str());
+    return "";
+  }
 
-	// Yes. All this mess just to gain access to the string stored by the clipboard.
-	// I'm having flashbacks to Berkeley sockets.
-	if(unlikely( !OpenClipboard( nullptr ) ))
-		{ LOG->Warn(werr_ssprintf( GetLastError(), "InputHandler_DirectInput: OpenClipboard() failed" ).c_str()); return ""; }
+  hgl = GetClipboardData(CF_TEXT);
+  if (unlikely(hgl == nullptr)) {
+    LOG->Warn(werr_ssprintf(
+                  GetLastError(),
+                  "InputHandler_DirectInput: GetClipboardData() failed")
+                  .c_str());
+    CloseClipboard();
+    return "";
+  }
 
-	hgl = GetClipboardData( CF_TEXT );
-	if(unlikely( hgl == nullptr ))
-		{ LOG->Warn(werr_ssprintf( GetLastError(), "InputHandler_DirectInput: GetClipboardData() failed" ).c_str()); CloseClipboard(); return ""; }
+  lpstr = (LPTSTR)GlobalLock(hgl);
+  if (unlikely(lpstr == nullptr)) {
+    LOG->Warn(
+        werr_ssprintf(
+            GetLastError(), "InputHandler_DirectInput: GlobalLock() failed")
+            .c_str());
+    CloseClipboard();
+    return "";
+  }
 
-	lpstr = (LPTSTR) GlobalLock( hgl );
-	if(unlikely( lpstr == nullptr ))
-		{ LOG->Warn(werr_ssprintf( GetLastError(), "InputHandler_DirectInput: GlobalLock() failed" ).c_str()); CloseClipboard(); return ""; }
-
-	// And finally, we have a char (or wchar_t) array of the clipboard contents,
-	// pointed to by sToPaste.
-	// (Hopefully.)
+  // And finally, we have a char (or wchar_t) array of the clipboard contents,
+  // pointed to by sToPaste.
+  // (Hopefully.)
 
 #ifdef UNICODE
-	ret = WStringToRString( wstring()+*lpstr );
+  ret = WStringToRString(wstring() + *lpstr);
 #else
-	ret = std::string( lpstr );
+  ret = std::string(lpstr);
 #endif
 
-	// And now we clean up.
-	GlobalUnlock( hgl );
-	CloseClipboard();
+  // And now we clean up.
+  GlobalUnlock(hgl);
+  CloseClipboard();
 
-	return ret;
+  return ret;
 }
 
 /*

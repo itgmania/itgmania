@@ -8,45 +8,44 @@
 #include "RageSoundReader.h"
 #include "RageUtil_AutoPtr.h"
 
-class RageSoundReader_Preload: public RageSoundReader
-{
-public:
-	RageSoundReader_Preload();
-	/* Return true if the sound has been preloaded, in which case source will
-	 * be deleted.  Otherwise, return false. */
-	bool Open( RageSoundReader *pSource );
-	int GetLength() const;
-	int GetLength_Fast() const;
-	int SetPosition( int iFrame );
-	int Read( float *pBuffer, int iLength );
-	int GetSampleRate() const { return m_iSampleRate; }
-	unsigned GetNumChannels() const { return m_iChannels; }
-	int GetNextSourceFrame() const;
-	float GetStreamToSourceRatio() const { return m_fRate; }
-	std::string GetError() const { return ""; }
+class RageSoundReader_Preload : public RageSoundReader {
+ public:
+  RageSoundReader_Preload();
+  /* Return true if the sound has been preloaded, in which case source will
+   * be deleted.  Otherwise, return false. */
+  bool Open(RageSoundReader* pSource);
+  int GetLength() const;
+  int GetLength_Fast() const;
+  int SetPosition(int iFrame);
+  int Read(float* pBuffer, int iLength);
+  int GetSampleRate() const { return m_iSampleRate; }
+  unsigned GetNumChannels() const { return m_iChannels; }
+  int GetNextSourceFrame() const;
+  float GetStreamToSourceRatio() const { return m_fRate; }
+  std::string GetError() const { return ""; }
 
-	/* Return the total number of copies of this sound.  (If 1 is returned,
-	 * this is the last copy.) */
-	int GetReferenceCount() const;
+  /* Return the total number of copies of this sound.  (If 1 is returned,
+   * this is the last copy.) */
+  int GetReferenceCount() const;
 
-	RageSoundReader_Preload *Copy() const;
-	~RageSoundReader_Preload() { }
+  RageSoundReader_Preload* Copy() const;
+  ~RageSoundReader_Preload() {}
 
-	/* Attempt to preload a sound.  pSound must be rewound. */
-	static bool PreloadSound( RageSoundReader *&pSound );
+  /* Attempt to preload a sound.  pSound must be rewound. */
+  static bool PreloadSound(RageSoundReader*& pSound);
 
-private:
-	AutoPtrCopyOnWrite<std::string> m_Buffer;
-	bool m_bBufferIs16Bit;
+ private:
+  AutoPtrCopyOnWrite<std::string> m_Buffer;
+  bool m_bBufferIs16Bit;
 
-	/* Bytes: */
-	int m_iPosition;
+  /* Bytes: */
+  int m_iPosition;
 
-	int GetTotalFrames() const;
+  int GetTotalFrames() const;
 
-	int m_iSampleRate;
-	unsigned m_iChannels;
-	float m_fRate;
+  int m_iSampleRate;
+  unsigned m_iChannels;
+  float m_fRate;
 };
 
 #endif
