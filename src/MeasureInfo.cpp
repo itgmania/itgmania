@@ -78,6 +78,11 @@ void MeasureInfo::CalculateMeasureInfo(const NoteData &in, TimingData * timing, 
 	{
 		if(curr_note.Row() != curr_row)
 		{
+			if (timing->IsFakeAtRow(curr_row) || timing->IsWarpAtRow(curr_row))
+			{
+				// Don't include fakes and warped-over notes in the count.
+				notes_this_row = 0;
+			}
 			// Before moving on to a new row, update the notes per measure for the current measure.
 			out.notesPerMeasure[iMeasureIndexOut] += notes_this_row;
 			// Update iMeasureIndex for the current row
