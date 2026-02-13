@@ -1685,6 +1685,7 @@
 		<Class base='ScreenWithMenuElements' name='ScreenAttract'/>
 		<Class base='ScreenWithMenuElements' name='ScreenEdit'>
 			<Function name='GetEditState'/>
+			<Function name='SeekSong'/>
 		</Class>
 		<Class base='ScreenWithMenuElements' name='ScreenEvaluation'>
 			<Function name='GetStageStats'/>
