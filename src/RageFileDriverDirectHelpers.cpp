@@ -13,8 +13,10 @@
 #include "global.h"
 
 #if defined(_WIN32)
-    #include <windows.h>
-    #include <io.h>
+// clang-format off
+#include <windows.h>
+#include <io.h>
+// clang-format on
 #else
     #if defined(HAVE_DIRENT_H)
         #include <dirent.h>

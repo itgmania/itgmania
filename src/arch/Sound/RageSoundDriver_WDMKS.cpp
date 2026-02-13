@@ -18,12 +18,14 @@
 #define DEFINE_WAVEFORMATEX_GUID(x) (USHORT)(x), 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71
 #endif
 
+// clang-format off
 #include <windows.h>
 #include <winioctl.h>
 #include <ks.h>
 #include <mmsystem.h>
 #include <ksmedia.h>
 #include <setupapi.h>
+// clang-format on
 
 typedef KSDDKAPI DWORD WINAPI KSCREATEPIN(HANDLE, PKSPIN_CONNECT, ACCESS_MASK, PHANDLE);
 
@@ -1023,7 +1025,6 @@ bool WinWdmStream::SubmitPacket( int iPacket, std::string &sError )
 }
 
 
-#include <windows.h>
 namespace
 {
 	void MapChannels( const int16_t *pIn, int16_t *pOut, int iInChannels, int iOutChannels, int iFrames, const int *pChannelMap )

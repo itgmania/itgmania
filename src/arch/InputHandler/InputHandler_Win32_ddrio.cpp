@@ -1,7 +1,9 @@
 #include "InputHandler_Win32_ddrio.h"
 
+// clang-format off
 #include <windows.h>
 #include <process.h>
+// clang-format on
 
 #include <cstdint>
 #include <string>

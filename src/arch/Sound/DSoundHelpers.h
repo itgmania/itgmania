@@ -5,8 +5,10 @@
 #include <string>
 
 #if defined(_WIN32)
+// clang-format off
 #include <windows.h>
 #include <wtypes.h>
+// clang-format on
 #endif
 
 struct IDirectSound;

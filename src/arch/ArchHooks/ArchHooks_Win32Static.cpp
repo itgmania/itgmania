@@ -11,9 +11,11 @@
 #include "archutils/Win32/SpecialDirs.h"
 #include "global.h"
 
+// clang-format off
 // for QueryPerformanceCounter
 #include <windows.h>
 #include <mmsystem.h>
+// clang-format on
 #if defined(_MSC_VER)
 #pragma comment(lib, "winmm.lib")
 #endif

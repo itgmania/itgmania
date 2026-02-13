@@ -1,7 +1,11 @@
 #include "global.h"
 #include "CommandLine.h"
+
+// clang-format off
 #include <windows.h>
 #include <shellapi.h>
+// clang-format on
+
 #include <vector>
 #include <string>
 

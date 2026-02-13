@@ -1,9 +1,11 @@
 #include "DirectXHelpers.h"
 
+// clang-format off
 #include <mmsystem.h>  // dsound.h needs this
 #include <d3d9.h>
 #include <dinput.h>
 #include <dsound.h>
+// clang-format on
 
 #include <cstdarg>
 #include <stdexcept>

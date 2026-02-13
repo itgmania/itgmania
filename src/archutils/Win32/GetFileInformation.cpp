@@ -6,10 +6,13 @@
 
 #include <cstdint>
 #include <sys/stat.h>
-#include <windows.h>
-#include <tlhelp32.h>
 #include <vector>
 #include <string>
+
+// clang-format off
+#include <windows.h>
+#include <tlhelp32.h>
+// clang-format on
 
 #pragma comment(lib, "version.lib")
 

@@ -1,8 +1,10 @@
 #ifndef DIRECTX_HELPERS_H
 #define DIRECTX_HELPERS_H
 
+// clang-format off
 #include <windows.h>
 #include <versionhelpers.h>
+// clang-format on
 
 #include <string>
 

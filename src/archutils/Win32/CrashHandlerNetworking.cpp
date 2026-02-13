@@ -11,8 +11,10 @@
 #include "global.h"
 
 #if defined(WINDOWS)
+// clang-format off
 #include <windows.h>
 #include <winsock2.h>
+// clang-format on
 #pragma comment(lib, "wsock32.lib")
 #pragma comment(lib, "ws2_32.lib")
 #endif

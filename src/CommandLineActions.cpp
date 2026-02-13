@@ -15,10 +15,12 @@
 #include "ver.h"
 
 // only used for Version()
+// clang-format off
 #if defined(_WIN32)
 #include <windows.h>
 #include <conio.h>
 #endif
+// clang-format on
 
 std::vector<CommandLineActions::CommandLineArgs> CommandLineActions::ToProcess;
 
