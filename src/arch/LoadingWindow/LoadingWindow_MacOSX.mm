@@ -1,191 +1,190 @@
+#import "LoadingWindow_MacOSX.h"
 #import <Cocoa/Cocoa.h>
 #import "ProductInfo.h"
-#import "LoadingWindow_MacOSX.h"
-#import "RageUtil.h"
 #import "RageFile.h"
+#import "RageUtil.h"
 #include "ThemeManager.h"
 
 #include <vector>
 
-
-@interface LoadingWindowHelper : NSObject
-{
-	@public
-	NSWindow *m_Window;
-	NSTextView *m_Text;
-	NSAutoreleasePool *m_Pool;
-	NSProgressIndicator *m_ProgressIndicator;
+@interface LoadingWindowHelper : NSObject {
+ @public
+  NSWindow* m_Window;
+  NSTextView* m_Text;
+  NSAutoreleasePool* m_Pool;
+  NSProgressIndicator* m_ProgressIndicator;
 }
-- (void) setupWindow:(NSImage *)image;
-- (void) setProgress:(NSNumber *)progress;
-- (void) setTotalWork:(NSNumber *)totalWork;
-- (void) setIndeterminate:(NSNumber *)indeterminate;
+- (void)setupWindow:(NSImage*)image;
+- (void)setProgress:(NSNumber*)progress;
+- (void)setTotalWork:(NSNumber*)totalWork;
+- (void)setIndeterminate:(NSNumber*)indeterminate;
 @end
 
 @implementation LoadingWindowHelper
-- (void) setupWindow:(NSImage *)image
-{
-	NSSize size = [image size];
-	NSRect viewRect, windowRect;
-	float height = 0.0f;
-	float padding = 5.0f;
+- (void)setupWindow:(NSImage*)image {
+  NSSize size = [image size];
+  NSRect viewRect, windowRect;
+  float height = 0.0f;
+  float padding = 5.0f;
 
-	NSRect progressIndicatorRect;
-	progressIndicatorRect = NSMakeRect(padding, padding, size.width-padding*2.0f, 0);
-	m_ProgressIndicator = [[NSProgressIndicator alloc] initWithFrame:progressIndicatorRect];
-	[m_ProgressIndicator sizeToFit];
-	[m_ProgressIndicator setIndeterminate:YES];
-	[m_ProgressIndicator setMinValue:0];
-	[m_ProgressIndicator setMaxValue:1];
-	[m_ProgressIndicator setDoubleValue:0];
-	progressIndicatorRect = [m_ProgressIndicator frame];
-	float progressHeight = progressIndicatorRect.size.height;
+  NSRect progressIndicatorRect;
+  progressIndicatorRect = NSMakeRect(padding, padding, size.width - padding * 2.0f, 0);
+  m_ProgressIndicator = [[NSProgressIndicator alloc] initWithFrame:progressIndicatorRect];
+  [m_ProgressIndicator sizeToFit];
+  [m_ProgressIndicator setIndeterminate:YES];
+  [m_ProgressIndicator setMinValue:0];
+  [m_ProgressIndicator setMaxValue:1];
+  [m_ProgressIndicator setDoubleValue:0];
+  progressIndicatorRect = [m_ProgressIndicator frame];
+  float progressHeight = progressIndicatorRect.size.height;
 
-	NSFont *font = [NSFont systemFontOfSize:0.0f];
-	NSRect textRect;
-	// Just give it a size until it is created.
-	textRect = NSMakeRect( 0, progressHeight + padding, size.width, size.height );
-	m_Text = [[NSTextView alloc] initWithFrame:textRect];
-	[m_Text setFont:font];
-	height = [[m_Text layoutManager] defaultLineHeightForFont:font]*3 + 4;
-	textRect = NSMakeRect( 0, progressHeight + padding, size.width, height );
+  NSFont* font = [NSFont systemFontOfSize:0.0f];
+  NSRect textRect;
+  // Just give it a size until it is created.
+  textRect = NSMakeRect(0, progressHeight + padding, size.width, size.height);
+  m_Text = [[NSTextView alloc] initWithFrame:textRect];
+  [m_Text setFont:font];
+  height = [[m_Text layoutManager] defaultLineHeightForFont:font] * 3 + 4;
+  textRect = NSMakeRect(0, progressHeight + padding, size.width, height);
 
-	[m_Text setFrame:textRect];
-	[m_Text setEditable:NO];
-	[m_Text setSelectable:NO];
-	[m_Text setDrawsBackground:NO];
-	[m_Text setBackgroundColor:[NSColor lightGrayColor]];
-	[m_Text setAlignment:NSTextAlignmentCenter];
-	[m_Text setHorizontallyResizable:NO];
-	[m_Text setVerticallyResizable:NO];
-	[m_Text setString:@"Initializing Hardware..."];
+  [m_Text setFrame:textRect];
+  [m_Text setEditable:NO];
+  [m_Text setSelectable:NO];
+  [m_Text setDrawsBackground:NO];
+  [m_Text setBackgroundColor:[NSColor lightGrayColor]];
+  [m_Text setAlignment:NSTextAlignmentCenter];
+  [m_Text setHorizontallyResizable:NO];
+  [m_Text setVerticallyResizable:NO];
+  [m_Text setString:@"Initializing Hardware..."];
 
-	viewRect = NSMakeRect( 0, height + progressHeight + padding, size.width, size.height );
-	NSImageView *iView = [[NSImageView alloc] initWithFrame:viewRect];
-	[iView setImage:image];
-	[iView setImageFrameStyle:NSImageFrameNone];
+  viewRect = NSMakeRect(0, height + progressHeight + padding, size.width, size.height);
+  NSImageView* iView = [[NSImageView alloc] initWithFrame:viewRect];
+  [iView setImage:image];
+  [iView setImageFrameStyle:NSImageFrameNone];
 
-	windowRect = NSMakeRect( 0, 0, size.width, size.height + height + progressHeight + padding);
-	m_Window = [[NSWindow alloc] initWithContentRect:windowRect
-							styleMask:NSWindowStyleMaskTitled
-							backing:NSBackingStoreBuffered
-							defer:YES];
+  windowRect = NSMakeRect(0, 0, size.width, size.height + height + progressHeight + padding);
+  m_Window = [[NSWindow alloc] initWithContentRect:windowRect
+                                         styleMask:NSWindowStyleMaskTitled
+                                           backing:NSBackingStoreBuffered
+                                             defer:YES];
 
-	NSView *view = [m_Window contentView];
+  NSView* view = [m_Window contentView];
 
-	// Set some properties.
-	[m_Window setReleasedWhenClosed:YES];
-	[m_Window setExcludedFromWindowsMenu:YES];
-	[m_Window setTitle:@PRODUCT_FAMILY];
-	[m_Window center];
+  // Set some properties.
+  [m_Window setReleasedWhenClosed:YES];
+  [m_Window setExcludedFromWindowsMenu:YES];
+  [m_Window setTitle:@PRODUCT_FAMILY];
+  [m_Window center];
 
-	// Set subviews.
-	[view addSubview:m_Text];
-	[m_Text release];
+  // Set subviews.
+  [view addSubview:m_Text];
+  [m_Text release];
 
-	[view addSubview:iView];
-	[iView release];
+  [view addSubview:iView];
+  [iView release];
 
-	[view addSubview:m_ProgressIndicator];
+  [view addSubview:m_ProgressIndicator];
 
-	// Display the window.
-	[m_Window makeKeyAndOrderFront:nil];
+  // Display the window.
+  [m_Window makeKeyAndOrderFront:nil];
 }
 
-- (void) setProgress:(NSNumber *)progress
-{
-	[m_ProgressIndicator setDoubleValue:[progress doubleValue]];
+- (void)setProgress:(NSNumber*)progress {
+  [m_ProgressIndicator setDoubleValue:[progress doubleValue]];
 }
 
-- (void) setTotalWork:(NSNumber *)totalWork
-{
-	[m_ProgressIndicator setMaxValue:[totalWork doubleValue]];
+- (void)setTotalWork:(NSNumber*)totalWork {
+  [m_ProgressIndicator setMaxValue:[totalWork doubleValue]];
 }
 
-- (void) setIndeterminate:(NSNumber *)indeterminate
-{
-	[m_ProgressIndicator setIndeterminate:([indeterminate doubleValue] > 0 ? YES : NO)];
+- (void)setIndeterminate:(NSNumber*)indeterminate {
+  [m_ProgressIndicator setIndeterminate:([indeterminate doubleValue] > 0 ? YES : NO)];
 }
 
 @end
 
-static LoadingWindowHelper *g_Helper = nil;
+static LoadingWindowHelper* g_Helper = nil;
 
 LoadingWindow_MacOSX::LoadingWindow_MacOSX() {}
 
-LoadingWindow_MacOSX::~LoadingWindow_MacOSX()
-{
-	if( !g_Helper )
-		return;
-	NSAutoreleasePool *pool = g_Helper->m_Pool;
-	[g_Helper->m_Window performSelectorOnMainThread:@selector(close) withObject:nil waitUntilDone:YES];
-	[g_Helper release];
-	g_Helper = nil;
-	[pool release];
+LoadingWindow_MacOSX::~LoadingWindow_MacOSX() {
+  if (!g_Helper) {
+    return;
+  }
+  NSAutoreleasePool* pool = g_Helper->m_Pool;
+  [g_Helper->m_Window performSelectorOnMainThread:@selector(close)
+                                       withObject:nil
+                                    waitUntilDone:YES];
+  [g_Helper release];
+  g_Helper = nil;
+  [pool release];
 }
 
-void LoadingWindow_MacOSX::SetText( std::string str )
-{
-	if( !g_Helper )
-		return;
-	NSString *s = [[NSString alloc] initWithUTF8String:(str.c_str())];
-	[g_Helper->m_Text performSelectorOnMainThread:@selector(setString:) withObject:(s ? s : @"") waitUntilDone:NO];
-	[s release];
+void LoadingWindow_MacOSX::SetText(std::string str) {
+  if (!g_Helper) {
+    return;
+  }
+  NSString* s = [[NSString alloc] initWithUTF8String:(str.c_str())];
+  [g_Helper->m_Text performSelectorOnMainThread:@selector(setString:)
+                                     withObject:(s ? s : @"")waitUntilDone:NO];
+  [s release];
 }
 
-void LoadingWindow_MacOSX::SetSplash( const RageSurface *pSplash )
-{
-	RageFile f;
-	std::string data;
-	std::vector<std::string> vs;
+void LoadingWindow_MacOSX::SetSplash(const RageSurface* pSplash) {
+  RageFile f;
+  std::string data;
+  std::vector<std::string> vs;
 
-	// Try to load a custom splash from the current theme, first.
-	GetDirListing( THEME->GetPathG( "Common", "splash"), vs, false, true );
+  // Try to load a custom splash from the current theme, first.
+  GetDirListing(THEME->GetPathG("Common", "splash"), vs, false, true);
 
-	//	if no Common splash file was found in the theme...
-	if( vs.empty() || !f.Open(vs[0]) )
-	{
-		// then try the stock splash.png from ./Data/
-		GetDirListing( "Data/splash*.png", vs, false, true );
-	}
+  //	if no Common splash file was found in the theme...
+  if (vs.empty() || !f.Open(vs[0])) {
+    // then try the stock splash.png from ./Data/
+    GetDirListing("Data/splash*.png", vs, false, true);
+  }
 
-	if( vs.empty() || !f.Open(vs[0]) )
-		return;
-	f.Read( data );
-	if( data.empty() )
-		return;
+  if (vs.empty() || !f.Open(vs[0])) {
+    return;
+  }
+  f.Read(data);
+  if (data.empty()) {
+    return;
+  }
 
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	NSImage *image = nil;
-	NSData *d = [[NSData alloc] initWithBytes:data.data() length:data.length()];
-	image = [[NSImage alloc] initWithData:d];
-	[d release];
-	if( !image )
-	{
-		[pool release];
-		return;
-	}
+  NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+  NSImage* image = nil;
+  NSData* d = [[NSData alloc] initWithBytes:data.data() length:data.length()];
+  image = [[NSImage alloc] initWithData:d];
+  [d release];
+  if (!image) {
+    [pool release];
+    return;
+  }
 
-	g_Helper = [[LoadingWindowHelper alloc] init];
-	g_Helper->m_Pool = pool;
-	[g_Helper performSelectorOnMainThread:@selector(setupWindow:) withObject:image waitUntilDone:NO];
-	[image release];
+  g_Helper = [[LoadingWindowHelper alloc] init];
+  g_Helper->m_Pool = pool;
+  [g_Helper performSelectorOnMainThread:@selector(setupWindow:) withObject:image waitUntilDone:NO];
+  [image release];
 }
 
-void LoadingWindow_MacOSX::SetProgress( const int progress )
-{
-	[g_Helper performSelectorOnMainThread:@selector(setProgress:) withObject:[NSNumber numberWithDouble:(double)progress] waitUntilDone:NO];
+void LoadingWindow_MacOSX::SetProgress(const int progress) {
+  [g_Helper performSelectorOnMainThread:@selector(setProgress:)
+                             withObject:[NSNumber numberWithDouble:(double)progress]
+                          waitUntilDone:NO];
 }
 
-void LoadingWindow_MacOSX::SetTotalWork( const int totalWork )
-{
-	[g_Helper performSelectorOnMainThread:@selector(setTotalWork:) withObject:[NSNumber numberWithDouble:(double)totalWork] waitUntilDone:NO];
+void LoadingWindow_MacOSX::SetTotalWork(const int totalWork) {
+  [g_Helper performSelectorOnMainThread:@selector(setTotalWork:)
+                             withObject:[NSNumber numberWithDouble:(double)totalWork]
+                          waitUntilDone:NO];
 }
 
-void LoadingWindow_MacOSX::SetIndeterminate( bool indeterminate )
-{
-	double tmp = indeterminate ? 1 : 0;
-	[g_Helper performSelectorOnMainThread:@selector(setIndeterminate:) withObject:[NSNumber numberWithDouble:tmp] waitUntilDone:NO];
+void LoadingWindow_MacOSX::SetIndeterminate(bool indeterminate) {
+  double tmp = indeterminate ? 1 : 0;
+  [g_Helper performSelectorOnMainThread:@selector(setIndeterminate:)
+                             withObject:[NSNumber numberWithDouble:tmp]
+                          waitUntilDone:NO];
 }
 
 /*
