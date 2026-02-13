@@ -9,35 +9,36 @@ class RageSoundReader;
 class PlayerState;
 class NoteData;
 /** @brief Control a sound property through user input. */
-class SoundEffectControl
-{
-public:
-	SoundEffectControl();
-	void Load( const std::string &sType, PlayerState *pPlayerState, const NoteData *pNoteData );
+class SoundEffectControl {
+ public:
+  SoundEffectControl();
+  void Load(
+      const std::string& sType, PlayerState* pPlayerState,
+      const NoteData* pNoteData);
 
-	void SetSoundReader( RageSoundReader *pPlayer );
-	void ReleaseSound() { SetSoundReader(nullptr); }
+  void SetSoundReader(RageSoundReader* pPlayer);
+  void ReleaseSound() { SetSoundReader(nullptr); }
 
-	void Update( float fDeltaTime );
+  void Update(float fDeltaTime);
 
-private:
-	void HoldsBeingHeld( int iRow, int &iHoldsHeld, int &iHoldsLetGo ) const;
+ private:
+  void HoldsBeingHeld(int iRow, int& iHoldsHeld, int& iHoldsLetGo) const;
 
-	ThemeMetric<std::string>	SOUND_PROPERTY;
-	ThemeMetric<bool>	LOCK_TO_HOLD;
-	ThemeMetric<float>	PROPERTY_MIN;
-	ThemeMetric<float>	PROPERTY_CENTER;
-	ThemeMetric<float>	PROPERTY_MAX;
+  ThemeMetric<std::string> SOUND_PROPERTY;
+  ThemeMetric<bool> LOCK_TO_HOLD;
+  ThemeMetric<float> PROPERTY_MIN;
+  ThemeMetric<float> PROPERTY_CENTER;
+  ThemeMetric<float> PROPERTY_MAX;
 
-	PlayerState *m_pPlayerState;
+  PlayerState* m_pPlayerState;
 
-	bool m_bLocked;
+  bool m_bLocked;
 
-	float m_fSample;
-	float m_fLastLevel;
+  float m_fSample;
+  float m_fLastLevel;
 
-	const NoteData *m_pNoteData;
-	RageSoundReader *m_pSoundReader;
+  const NoteData* m_pNoteData;
+  RageSoundReader* m_pSoundReader;
 };
 
 #endif
@@ -47,7 +48,7 @@ private:
  * @author Glenn Maynard (c) 2006-2007
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -57,7 +58,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

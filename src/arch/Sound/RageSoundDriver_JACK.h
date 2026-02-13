@@ -10,32 +10,31 @@
 
 #define USE_RAGE_SOUND_JACK
 
-class RageSoundDriver_JACK: public RageSoundDriver
-{
-public:
-	RageSoundDriver_JACK();
-	~RageSoundDriver_JACK();
+class RageSoundDriver_JACK : public RageSoundDriver {
+ public:
+  RageSoundDriver_JACK();
+  ~RageSoundDriver_JACK();
 
-	std::string Init();
+  std::string Init();
 
-	int GetSampleRate() const;
-	int64_t GetPosition() const;
+  int GetSampleRate() const;
+  int64_t GetPosition() const;
 
-private:
-	jack_client_t *client;
-	jack_port_t *port_l;
-	jack_port_t *port_r;
+ private:
+  jack_client_t* client;
+  jack_port_t* port_l;
+  jack_port_t* port_r;
 
-	int sample_rate;
+  int sample_rate;
 
-	// Helper for Init()
-	std::string ConnectPorts();
+  // Helper for Init()
+  std::string ConnectPorts();
 
-	// JACK callbacks and trampolines
-	int ProcessCallback(jack_nframes_t nframes);
-	static int ProcessTrampoline(jack_nframes_t nframes, void *arg);
-	int SampleRateCallback(jack_nframes_t nframes);
-	static int SampleRateTrampoline(jack_nframes_t nframes, void *arg);
+  // JACK callbacks and trampolines
+  int ProcessCallback(jack_nframes_t nframes);
+  static int ProcessTrampoline(jack_nframes_t nframes, void* arg);
+  int SampleRateCallback(jack_nframes_t nframes);
+  static int SampleRateTrampoline(jack_nframes_t nframes, void* arg);
 };
 
 #endif

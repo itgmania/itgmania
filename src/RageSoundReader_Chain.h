@@ -10,70 +10,72 @@
 
 #include "RageSoundReader.h"
 
-class RageSoundReader_Chain: public RageSoundReader
-{
-public:
-	RageSoundReader_Chain();
-	~RageSoundReader_Chain();
-	RageSoundReader_Chain *Copy() const;
+class RageSoundReader_Chain : public RageSoundReader {
+ public:
+  RageSoundReader_Chain();
+  ~RageSoundReader_Chain();
+  RageSoundReader_Chain* Copy() const;
 
-	/* Set the preferred sample rate.  This will only be used if the source sounds
-	 * use different sample rates. */
-	void SetPreferredSampleRate( int iSampleRate ) { m_iPreferredSampleRate = iSampleRate; }
+  /* Set the preferred sample rate.  This will only be used if the source sounds
+   * use different sample rates. */
+  void SetPreferredSampleRate(int iSampleRate) {
+    m_iPreferredSampleRate = iSampleRate;
+  }
 
-	int LoadSound( std::string sPath );
-	int LoadSound( RageSoundReader *pSound );
+  int LoadSound(std::string sPath);
+  int LoadSound(RageSoundReader* pSound);
 
-	/* Add the given sound to play after fOffsetSecs seconds.  Takes ownership
-	 * of pSound. */
-	void AddSound( int iIndex, float fOffsetSecs, float fPan );
+  /* Add the given sound to play after fOffsetSecs seconds.  Takes ownership
+   * of pSound. */
+  void AddSound(int iIndex, float fOffsetSecs, float fPan);
 
-	/* Finish adding sounds. */
-	void Finish();
+  /* Finish adding sounds. */
+  void Finish();
 
-	/* Return the number of added sounds. */
-	int GetNumSounds() const { return m_aSounds.size(); }
+  /* Return the number of added sounds. */
+  int GetNumSounds() const { return m_aSounds.size(); }
 
-	int GetLength() const;
-	int GetLength_Fast() const;
-	int SetPosition( int iFrame );
-	int Read( float *pBuf, int iFrames );
-	int GetSampleRate() const;
-	unsigned GetNumChannels() const { return m_iChannels; }
-	bool SetProperty( const std::string &sProperty, float fValue );
-	int GetNextSourceFrame() const;
-	float GetStreamToSourceRatio() const;
-	std::string GetError() const { return ""; }
+  int GetLength() const;
+  int GetLength_Fast() const;
+  int SetPosition(int iFrame);
+  int Read(float* pBuf, int iFrames);
+  int GetSampleRate() const;
+  unsigned GetNumChannels() const { return m_iChannels; }
+  bool SetProperty(const std::string& sProperty, float fValue);
+  int GetNextSourceFrame() const;
+  float GetStreamToSourceRatio() const;
+  std::string GetError() const { return ""; }
 
-private:
-	int GetSampleRateInternal() const;
+ private:
+  int GetSampleRateInternal() const;
 
-	int m_iPreferredSampleRate;
-	int m_iActualSampleRate;
-	unsigned m_iChannels;
+  int m_iPreferredSampleRate;
+  int m_iActualSampleRate;
+  unsigned m_iChannels;
 
-	std::map<std::string, RageSoundReader*> m_apNamedSounds;
-	std::vector<RageSoundReader*> m_apLoadedSounds;
+  std::map<std::string, RageSoundReader*> m_apNamedSounds;
+  std::vector<RageSoundReader*> m_apLoadedSounds;
 
-	struct Sound
-	{
-		int iIndex; // into m_apLoadedSounds
-		int iOffsetMS;
-		float fPan;
-		RageSoundReader *pSound; // nullptr if not activated
+  struct Sound {
+    int iIndex;  // into m_apLoadedSounds
+    int iOffsetMS;
+    float fPan;
+    RageSoundReader* pSound;  // nullptr if not activated
 
-		int GetOffsetFrame( int iSampleRate ) const { return int( int64_t(iOffsetMS) * iSampleRate / 1000 ); }
-		bool operator<( const Sound &rhs ) const { return iOffsetMS < rhs.iOffsetMS; }
-	};
-	std::vector<Sound> m_aSounds;
+    int GetOffsetFrame(int iSampleRate) const {
+      return int(int64_t(iOffsetMS) * iSampleRate / 1000);
+    }
+    bool operator<(const Sound& rhs) const { return iOffsetMS < rhs.iOffsetMS; }
+  };
+  std::vector<Sound> m_aSounds;
 
-	/* Read state: */
-	int m_iCurrentFrame;
-	unsigned m_iNextSound;
-	std::vector<Sound*> m_apActiveSounds;
+  /* Read state: */
+  int m_iCurrentFrame;
+  unsigned m_iNextSound;
+  std::vector<Sound*> m_apActiveSounds;
 
-	void ActivateSound( Sound *s );
-	void ReleaseSound( Sound *s );
+  void ActivateSound(Sound* s);
+  void ReleaseSound(Sound* s);
 };
 
 #endif

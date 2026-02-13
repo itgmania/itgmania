@@ -9,46 +9,46 @@
 #include "StageStats.h"
 
 /** @brief Managed non-persisted statistics. */
-class StatsManager
-{
-public:
-    StatsManager();
-    ~StatsManager();
+class StatsManager {
+ public:
+  StatsManager();
+  ~StatsManager();
 
-    void Reset();
+  void Reset();
 
-    /**
-     * @brief The current Stage stats.
-     *
-     * This is not necessarily passed stage stats if this is an Extra Stage. */
-    StageStats		m_CurStageStats;
-    std::vector<StageStats>	m_vPlayedStageStats;
+  /**
+   * @brief The current Stage stats.
+   *
+   * This is not necessarily passed stage stats if this is an Extra Stage. */
+  StageStats m_CurStageStats;
+  std::vector<StageStats> m_vPlayedStageStats;
 
-    // Only the latest 3 normal songs + passed extra stages.
-    void GetFinalEvalStageStats( StageStats& statsOut ) const;
+  // Only the latest 3 normal songs + passed extra stages.
+  void GetFinalEvalStageStats(StageStats& statsOut) const;
 
-    // All stages played.  Returns a ref to the private member so that
-    // the object will remain alive while Lua is operating on it.
-    void CalcAccumPlayedStageStats();
-    StageStats& GetAccumPlayedStageStats() { return m_AccumPlayedStageStats; }
+  // All stages played.  Returns a ref to the private member so that
+  // the object will remain alive while Lua is operating on it.
+  void CalcAccumPlayedStageStats();
+  StageStats& GetAccumPlayedStageStats() { return m_AccumPlayedStageStats; }
 
-    static void CommitStatsToProfiles( const StageStats *pSS );
+  static void CommitStatsToProfiles(const StageStats* pSS);
 
-    void UnjoinPlayer( PlayerNumber pn );
-    void GetStepsInUse( std::set<Steps*> &apInUseOut ) const;
+  void UnjoinPlayer(PlayerNumber pn);
+  void GetStepsInUse(std::set<Steps*>& apInUseOut) const;
 
-    // Lua
-    void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-protected:
-    static void SaveUploadFile( const StageStats *pSS );
-    static void SavePadmissScore( const StageStats *pSS, PlayerNumber pn );
+ protected:
+  static void SaveUploadFile(const StageStats* pSS);
+  static void SavePadmissScore(const StageStats* pSS, PlayerNumber pn);
 
-private:
-    StageStats m_AccumPlayedStageStats;
+ private:
+  StageStats m_AccumPlayedStageStats;
 };
 
-extern StatsManager*	STATSMAN;	// global and accessible from anywhere in our program
+extern StatsManager*
+    STATSMAN;  // global and accessible from anywhere in our program
 
 #endif
 

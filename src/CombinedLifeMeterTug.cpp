@@ -16,150 +16,194 @@
 #include "ThemeMetric.h"
 #include "global.h"
 
-ThemeMetric<float> METER_WIDTH		("CombinedLifeMeterTug","MeterWidth");
+ThemeMetric<float> METER_WIDTH("CombinedLifeMeterTug", "MeterWidth");
 
-static void TugMeterPercentChangeInit( size_t /*ScoreEvent*/ i, std::string &sNameOut, float &defaultValueOut )
-{
-	sNameOut = "TugMeterPercentChange" + ScoreEventToString( (ScoreEvent)i );
-	switch( i )
-	{
-	default:
-		FAIL_M(ssprintf("Invalid ScoreEvent: %i", static_cast<int>(i)));
-	case SE_W1:			defaultValueOut = +0.010f;	break;
-	case SE_W2:			defaultValueOut = +0.008f;	break;
-	case SE_W3:			defaultValueOut = +0.004f;	break;
-	case SE_W4:			defaultValueOut = +0.000f;	break;
-	case SE_W5:			defaultValueOut = -0.010f;	break;
-	case SE_Miss:		defaultValueOut = -0.020f;	break;
-	case SE_HitMine:	defaultValueOut = -0.040f;	break;
-	case SE_CheckpointHit:	defaultValueOut = +0.002f;	break;
-	case SE_CheckpointMiss:	defaultValueOut = -0.002f;	break;
-	case SE_Held:		defaultValueOut = +0.008f;	break;
-	case SE_LetGo:		defaultValueOut = -0.020f;	break;
-	case SE_Missed:		defaultValueOut = +0.000f;	break;
-	}
+static void TugMeterPercentChangeInit(
+    size_t /*ScoreEvent*/ i, std::string& sNameOut, float& defaultValueOut) {
+  sNameOut = "TugMeterPercentChange" + ScoreEventToString((ScoreEvent)i);
+  switch (i) {
+    default:
+      FAIL_M(ssprintf("Invalid ScoreEvent: %i", static_cast<int>(i)));
+    case SE_W1:
+      defaultValueOut = +0.010f;
+      break;
+    case SE_W2:
+      defaultValueOut = +0.008f;
+      break;
+    case SE_W3:
+      defaultValueOut = +0.004f;
+      break;
+    case SE_W4:
+      defaultValueOut = +0.000f;
+      break;
+    case SE_W5:
+      defaultValueOut = -0.010f;
+      break;
+    case SE_Miss:
+      defaultValueOut = -0.020f;
+      break;
+    case SE_HitMine:
+      defaultValueOut = -0.040f;
+      break;
+    case SE_CheckpointHit:
+      defaultValueOut = +0.002f;
+      break;
+    case SE_CheckpointMiss:
+      defaultValueOut = -0.002f;
+      break;
+    case SE_Held:
+      defaultValueOut = +0.008f;
+      break;
+    case SE_LetGo:
+      defaultValueOut = -0.020f;
+      break;
+    case SE_Missed:
+      defaultValueOut = +0.000f;
+      break;
+  }
 }
 
-static Preference1D<float> g_fTugMeterPercentChange( TugMeterPercentChangeInit, NUM_ScoreEvent );
+static Preference1D<float> g_fTugMeterPercentChange(
+    TugMeterPercentChangeInit, NUM_ScoreEvent);
 
-CombinedLifeMeterTug::CombinedLifeMeterTug()
-{
-	FOREACH_PlayerNumber( p )
-	{
-		std::string sStreamPath = THEME->GetPathG("CombinedLifeMeterTug",ssprintf("stream p%d",p+1));
-		std::string sTipPath = THEME->GetPathG("CombinedLifeMeterTug",ssprintf("tip p%d",p+1));
-		m_Stream[p].Load( sStreamPath, METER_WIDTH, sTipPath );
-		this->AddChild( &m_Stream[p] );
-	}
-	m_Stream[PLAYER_2].SetZoomX( -1 );
+CombinedLifeMeterTug::CombinedLifeMeterTug() {
+  FOREACH_PlayerNumber(p) {
+    std::string sStreamPath =
+        THEME->GetPathG("CombinedLifeMeterTug", ssprintf("stream p%d", p + 1));
+    std::string sTipPath =
+        THEME->GetPathG("CombinedLifeMeterTug", ssprintf("tip p%d", p + 1));
+    m_Stream[p].Load(sStreamPath, METER_WIDTH, sTipPath);
+    this->AddChild(&m_Stream[p]);
+  }
+  m_Stream[PLAYER_2].SetZoomX(-1);
 
-	m_sprSeparator.Load( THEME->GetPathG("CombinedLifeMeterTug","separator") );
-	m_sprSeparator->SetName( "Separator" );
-	LOAD_ALL_COMMANDS( m_sprSeparator );
-	this->AddChild( m_sprSeparator );
+  m_sprSeparator.Load(THEME->GetPathG("CombinedLifeMeterTug", "separator"));
+  m_sprSeparator->SetName("Separator");
+  LOAD_ALL_COMMANDS(m_sprSeparator);
+  this->AddChild(m_sprSeparator);
 
-	m_sprFrame.Load( THEME->GetPathG("CombinedLifeMeterTug","frame") );
-	m_sprFrame->SetName( "Frame" );
-	LOAD_ALL_COMMANDS( m_sprFrame );
-	this->AddChild( m_sprFrame );
+  m_sprFrame.Load(THEME->GetPathG("CombinedLifeMeterTug", "frame"));
+  m_sprFrame->SetName("Frame");
+  LOAD_ALL_COMMANDS(m_sprFrame);
+  this->AddChild(m_sprFrame);
 }
 
-void CombinedLifeMeterTug::Update( float fDelta )
-{
-	float fPercentToShow = GAMESTATE->m_fTugLifePercentP1;
-	rage_clamp( fPercentToShow, 0.f, 1.f );
+void CombinedLifeMeterTug::Update(float fDelta) {
+  float fPercentToShow = GAMESTATE->m_fTugLifePercentP1;
+  rage_clamp(fPercentToShow, 0.f, 1.f);
 
-	m_Stream[PLAYER_1].SetPercent( fPercentToShow );
-	m_Stream[PLAYER_2].SetPercent( 1-fPercentToShow );
+  m_Stream[PLAYER_1].SetPercent(fPercentToShow);
+  m_Stream[PLAYER_2].SetPercent(1 - fPercentToShow);
 
-	float fSeparatorX = SCALE( fPercentToShow, 0.f, 1.f, -METER_WIDTH/2.f, +METER_WIDTH/2.f );
+  float fSeparatorX =
+      SCALE(fPercentToShow, 0.f, 1.f, -METER_WIDTH / 2.f, +METER_WIDTH / 2.f);
 
-	m_sprSeparator->SetX( fSeparatorX );
+  m_sprSeparator->SetX(fSeparatorX);
 
-	ActorFrame::Update( fDelta );
+  ActorFrame::Update(fDelta);
 }
 
-void CombinedLifeMeterTug::ChangeLife( PlayerNumber pn, TapNoteScore score )
-{
-	float fPercentToMove = 0;
-	switch( score )
-	{
-	case TNS_W1:		fPercentToMove = g_fTugMeterPercentChange[SE_W1];		break;
-	case TNS_W2:		fPercentToMove = g_fTugMeterPercentChange[SE_W2];		break;
-	case TNS_W3:		fPercentToMove = g_fTugMeterPercentChange[SE_W3];		break;
-	case TNS_W4:		fPercentToMove = g_fTugMeterPercentChange[SE_W4];		break;
-	case TNS_W5:		fPercentToMove = g_fTugMeterPercentChange[SE_W5];		break;
-	case TNS_Miss:		fPercentToMove = g_fTugMeterPercentChange[SE_Miss];	break;
-	case TNS_HitMine:	fPercentToMove = g_fTugMeterPercentChange[SE_HitMine]; break;
-	case TNS_CheckpointHit:	fPercentToMove = g_fTugMeterPercentChange[SE_CheckpointHit];	break;
-	case TNS_CheckpointMiss:fPercentToMove = g_fTugMeterPercentChange[SE_CheckpointMiss]; break;
-	default:
-		FAIL_M(ssprintf("Invalid TapNotScore: %i", score));
-	}
+void CombinedLifeMeterTug::ChangeLife(PlayerNumber pn, TapNoteScore score) {
+  float fPercentToMove = 0;
+  switch (score) {
+    case TNS_W1:
+      fPercentToMove = g_fTugMeterPercentChange[SE_W1];
+      break;
+    case TNS_W2:
+      fPercentToMove = g_fTugMeterPercentChange[SE_W2];
+      break;
+    case TNS_W3:
+      fPercentToMove = g_fTugMeterPercentChange[SE_W3];
+      break;
+    case TNS_W4:
+      fPercentToMove = g_fTugMeterPercentChange[SE_W4];
+      break;
+    case TNS_W5:
+      fPercentToMove = g_fTugMeterPercentChange[SE_W5];
+      break;
+    case TNS_Miss:
+      fPercentToMove = g_fTugMeterPercentChange[SE_Miss];
+      break;
+    case TNS_HitMine:
+      fPercentToMove = g_fTugMeterPercentChange[SE_HitMine];
+      break;
+    case TNS_CheckpointHit:
+      fPercentToMove = g_fTugMeterPercentChange[SE_CheckpointHit];
+      break;
+    case TNS_CheckpointMiss:
+      fPercentToMove = g_fTugMeterPercentChange[SE_CheckpointMiss];
+      break;
+    default:
+      FAIL_M(ssprintf("Invalid TapNotScore: %i", score));
+  }
 
-	ChangeLife( pn, fPercentToMove );
+  ChangeLife(pn, fPercentToMove);
 }
 
-void CombinedLifeMeterTug::HandleTapScoreNone( PlayerNumber pn )
-{
+void CombinedLifeMeterTug::HandleTapScoreNone(PlayerNumber pn) {}
 
+void CombinedLifeMeterTug::ChangeLife(
+    PlayerNumber pn, HoldNoteScore score, TapNoteScore tscore) {
+  float fPercentToMove = 0;
+  switch (score) {
+    case HNS_Held:
+      fPercentToMove = g_fTugMeterPercentChange[SE_Held];
+      break;
+    case HNS_LetGo:
+      fPercentToMove = g_fTugMeterPercentChange[SE_LetGo];
+      break;
+    case HNS_Missed:
+      fPercentToMove = g_fTugMeterPercentChange[SE_Missed];
+      break;
+    default:
+      FAIL_M(ssprintf("Invalid HoldNoteScore: %i", score));
+  }
+
+  ChangeLife(pn, fPercentToMove);
 }
 
-void CombinedLifeMeterTug::ChangeLife( PlayerNumber pn, HoldNoteScore score, TapNoteScore tscore )
-{
-	float fPercentToMove = 0;
-	switch( score )
-	{
-	case HNS_Held:			fPercentToMove = g_fTugMeterPercentChange[SE_Held];	break;
-	case HNS_LetGo:			fPercentToMove = g_fTugMeterPercentChange[SE_LetGo];	break;
-	case HNS_Missed:			fPercentToMove = g_fTugMeterPercentChange[SE_Missed];	break;
-	default:
-		FAIL_M(ssprintf("Invalid HoldNoteScore: %i", score));
-	}
+void CombinedLifeMeterTug::ChangeLife(PlayerNumber pn, float fPercentToMove) {
+  if (PREFSMAN->m_bMercifulDrain && fPercentToMove < 0) {
+    float fLifePercentage = 0;
+    switch (pn) {
+      case PLAYER_1:
+        fLifePercentage = GAMESTATE->m_fTugLifePercentP1;
+        break;
+      case PLAYER_2:
+        fLifePercentage = 1 - GAMESTATE->m_fTugLifePercentP1;
+        break;
+      default:
+        FAIL_M(ssprintf("Invalid player number: %i", pn));
+    }
 
-	ChangeLife( pn, fPercentToMove );
+    /* Clamp the life meter only for calculating the multiplier. */
+    fLifePercentage = std::clamp(fLifePercentage, 0.0f, 1.0f);
+    fPercentToMove *= SCALE(fLifePercentage, 0.f, 1.f, 0.2f, 1.f);
+  }
+
+  switch (pn) {
+    case PLAYER_1:
+      GAMESTATE->m_fTugLifePercentP1 += fPercentToMove;
+      break;
+    case PLAYER_2:
+      GAMESTATE->m_fTugLifePercentP1 -= fPercentToMove;
+      break;
+    default:
+      FAIL_M(ssprintf("Invalid player number: %i", pn));
+  }
 }
 
-void CombinedLifeMeterTug::ChangeLife( PlayerNumber pn, float fPercentToMove )
-{
-	if( PREFSMAN->m_bMercifulDrain  &&  fPercentToMove < 0 )
-	{
-		float fLifePercentage = 0;
-		switch( pn )
-		{
-		case PLAYER_1:	fLifePercentage = GAMESTATE->m_fTugLifePercentP1;		break;
-		case PLAYER_2:	fLifePercentage = 1 - GAMESTATE->m_fTugLifePercentP1;	break;
-		default:
-			FAIL_M(ssprintf("Invalid player number: %i", pn));
-		}
-
-		/* Clamp the life meter only for calculating the multiplier. */
-		fLifePercentage = std::clamp( fLifePercentage, 0.0f, 1.0f );
-		fPercentToMove *= SCALE( fLifePercentage, 0.f, 1.f, 0.2f, 1.f);
-	}
-
-	switch( pn )
-	{
-	case PLAYER_1:	GAMESTATE->m_fTugLifePercentP1 += fPercentToMove;	break;
-	case PLAYER_2:	GAMESTATE->m_fTugLifePercentP1 -= fPercentToMove;	break;
-	default:
-		FAIL_M(ssprintf("Invalid player number: %i", pn));
-	}
-}
-
-void CombinedLifeMeterTug::SetLife(PlayerNumber pn, float value)
-{
-	switch(pn)
-	{
-		case PLAYER_1:
-			GAMESTATE->m_fTugLifePercentP1= value;
-			break;
-		case PLAYER_2:
-			GAMESTATE->m_fTugLifePercentP1= 1-value;
-			break;
-		default:
-			FAIL_M(ssprintf("Invalid player number: %i", pn));
-	}
+void CombinedLifeMeterTug::SetLife(PlayerNumber pn, float value) {
+  switch (pn) {
+    case PLAYER_1:
+      GAMESTATE->m_fTugLifePercentP1 = value;
+      break;
+    case PLAYER_2:
+      GAMESTATE->m_fTugLifePercentP1 = 1 - value;
+      break;
+    default:
+      FAIL_M(ssprintf("Invalid player number: %i", pn));
+  }
 }
 
 /*

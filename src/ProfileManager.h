@@ -19,130 +19,167 @@ struct HighScore;
 struct lua_State;
 
 /** @brief Interface to machine and memory card profiles. */
-class ProfileManager
-{
-public:
-	ProfileManager();
-	~ProfileManager();
+class ProfileManager {
+ public:
+  ProfileManager();
+  ~ProfileManager();
 
-	void Init();
+  void Init();
 
-	bool FixedProfiles() const;	// If true, profiles shouldn't be added/deleted
+  bool FixedProfiles() const;  // If true, profiles shouldn't be added/deleted
 
-	// local profiles
-	void UnloadAllLocalProfiles();
-	void RefreshLocalProfilesFromDisk();
-	void LoadLocalProfilesByPriority();
-	void LoadLocalProfilesByRecent();
-	void LoadLocalProfilesByName();
+  // local profiles
+  void UnloadAllLocalProfiles();
+  void RefreshLocalProfilesFromDisk();
+  void LoadLocalProfilesByPriority();
+  void LoadLocalProfilesByRecent();
+  void LoadLocalProfilesByName();
 
-	const Profile *GetLocalProfile( const std::string &sProfileID ) const;
-	Profile *GetLocalProfile( const std::string &sProfileID ) { return (Profile*) ((const ProfileManager *) this)->GetLocalProfile(sProfileID); }
-	Profile *GetLocalProfileFromIndex( int iIndex );
-	std::string GetLocalProfileIDFromIndex( int iIndex );
+  const Profile* GetLocalProfile(const std::string& sProfileID) const;
+  Profile* GetLocalProfile(const std::string& sProfileID) {
+    return (Profile*)((const ProfileManager*)this)->GetLocalProfile(sProfileID);
+  }
+  Profile* GetLocalProfileFromIndex(int iIndex);
+  std::string GetLocalProfileIDFromIndex(int iIndex);
 
-	bool CreateLocalProfile( std::string sName, std::string &sProfileIDOut );
-	void AddLocalProfileByID( Profile *pProfile, std::string sProfileID ); // transfers ownership of pProfile
-	bool RenameLocalProfile( std::string sProfileID, std::string sNewName );
-	bool DeleteLocalProfile( std::string sProfileID );
-	void GetLocalProfileIDs( std::vector<std::string> &vsProfileIDsOut ) const;
-	void GetLocalProfileDisplayNames( std::vector<std::string> &vsProfileDisplayNamesOut ) const;
-	int GetLocalProfileIndexFromID( std::string sProfileID ) const;
-	int GetNumLocalProfiles() const;
+  bool CreateLocalProfile(std::string sName, std::string& sProfileIDOut);
+  void AddLocalProfileByID(
+      Profile* pProfile,
+      std::string sProfileID);  // transfers ownership of pProfile
+  bool RenameLocalProfile(std::string sProfileID, std::string sNewName);
+  bool DeleteLocalProfile(std::string sProfileID);
+  void GetLocalProfileIDs(std::vector<std::string>& vsProfileIDsOut) const;
+  void GetLocalProfileDisplayNames(
+      std::vector<std::string>& vsProfileDisplayNamesOut) const;
+  int GetLocalProfileIndexFromID(std::string sProfileID) const;
+  int GetNumLocalProfiles() const;
 
-	std::string GetStatsPrefix() { return m_stats_prefix; }
-	void SetStatsPrefix(std::string const& prefix);
+  std::string GetStatsPrefix() { return m_stats_prefix; }
+  void SetStatsPrefix(const std::string& prefix);
 
-	bool LoadFirstAvailableProfile( PlayerNumber pn, bool bLoadEdits = true );	// memory card or local profile
-	bool LoadLocalProfileFromMachine( PlayerNumber pn );
-	bool LoadProfileFromMemoryCard( PlayerNumber pn, bool bLoadEdits = true );
-	bool FastLoadProfileNameFromMemoryCard( std::string sRootDir, std::string &sName ) const;
-	bool SaveProfile( PlayerNumber pn ) const;
-	bool SaveLocalProfile( std::string sProfileID );
-	void UnloadProfile( PlayerNumber pn );
+  bool LoadFirstAvailableProfile(
+      PlayerNumber pn, bool bLoadEdits = true);  // memory card or local profile
+  bool LoadLocalProfileFromMachine(PlayerNumber pn);
+  bool LoadProfileFromMemoryCard(PlayerNumber pn, bool bLoadEdits = true);
+  bool FastLoadProfileNameFromMemoryCard(
+      std::string sRootDir, std::string& sName) const;
+  bool SaveProfile(PlayerNumber pn) const;
+  bool SaveLocalProfile(std::string sProfileID);
+  void UnloadProfile(PlayerNumber pn);
 
-	void MergeLocalProfiles(std::string const& from_id, std::string const& to_id);
-	void MergeLocalProfileIntoMachine(std::string const& from_id, bool skip_totals);
-	void ChangeProfileType(int index, ProfileType new_type);
-	void MoveProfilePriority(int index, bool up);
-	void MoveProfileTopBottom(int index, bool top);
-	void MoveProfileSorted(int index, bool bAscending);
+  void MergeLocalProfiles(const std::string& from_id, const std::string& to_id);
+  void MergeLocalProfileIntoMachine(
+      const std::string& from_id, bool skip_totals);
+  void ChangeProfileType(int index, ProfileType new_type);
+  void MoveProfilePriority(int index, bool up);
+  void MoveProfileTopBottom(int index, bool top);
+  void MoveProfileSorted(int index, bool bAscending);
 
-	// General data
-	void IncrementToastiesCount( PlayerNumber pn );
-	void AddStepTotals( PlayerNumber pn, int iNumTapsAndHolds, int iNumJumps, int iNumHolds, int iNumRolls, int iNumMines, int iNumHands, int iNumLifts, float fCaloriesBurned );
+  // General data
+  void IncrementToastiesCount(PlayerNumber pn);
+  void AddStepTotals(
+      PlayerNumber pn, int iNumTapsAndHolds, int iNumJumps, int iNumHolds,
+      int iNumRolls, int iNumMines, int iNumHands, int iNumLifts,
+      float fCaloriesBurned);
 
-	// High scores
-	void LoadMachineProfile();	// including edits
-	void LoadMachineProfileEdits();
-	void SaveMachineProfile() const;
+  // High scores
+  void LoadMachineProfile();  // including edits
+  void LoadMachineProfileEdits();
+  void SaveMachineProfile() const;
 
-	bool IsPersistentProfile( PlayerNumber pn ) const { return !m_sProfileDir[pn].empty(); }
-	bool IsPersistentProfile( ProfileSlot slot ) const;
+  bool IsPersistentProfile(PlayerNumber pn) const {
+    return !m_sProfileDir[pn].empty();
+  }
+  bool IsPersistentProfile(ProfileSlot slot) const;
 
-	// return a profile even if !IsUsingProfile
-	const Profile* GetProfile( PlayerNumber pn ) const;
-	Profile* GetProfile( PlayerNumber pn ) { return (Profile*) ((const ProfileManager *) this)->GetProfile(pn); }
-	const Profile* GetProfile( ProfileSlot slot ) const;
-	Profile* GetProfile( ProfileSlot slot ) { return (Profile*) ((const ProfileManager *) this)->GetProfile(slot); }
+  // return a profile even if !IsUsingProfile
+  const Profile* GetProfile(PlayerNumber pn) const;
+  Profile* GetProfile(PlayerNumber pn) {
+    return (Profile*)((const ProfileManager*)this)->GetProfile(pn);
+  }
+  const Profile* GetProfile(ProfileSlot slot) const;
+  Profile* GetProfile(ProfileSlot slot) {
+    return (Profile*)((const ProfileManager*)this)->GetProfile(slot);
+  }
 
-	const std::string& GetProfileDir( ProfileSlot slot ) const;
-	std::string GetProfileDirImportedFrom( ProfileSlot slot ) const;
+  const std::string& GetProfileDir(ProfileSlot slot) const;
+  std::string GetProfileDirImportedFrom(ProfileSlot slot) const;
 
-	Profile* GetMachineProfile() { return m_pMachineProfile; }
+  Profile* GetMachineProfile() { return m_pMachineProfile; }
 
-	std::string GetPlayerName( PlayerNumber pn ) const;
-	bool ProfileWasLoadedFromMemoryCard( PlayerNumber pn ) const;
-	bool ProfileFromMemoryCardIsNew( PlayerNumber pn ) const;
-	bool LastLoadWasTamperedOrCorrupt( PlayerNumber pn ) const;
-	bool LastLoadWasFromLastGood( PlayerNumber pn ) const;
+  std::string GetPlayerName(PlayerNumber pn) const;
+  bool ProfileWasLoadedFromMemoryCard(PlayerNumber pn) const;
+  bool ProfileFromMemoryCardIsNew(PlayerNumber pn) const;
+  bool LastLoadWasTamperedOrCorrupt(PlayerNumber pn) const;
+  bool LastLoadWasFromLastGood(PlayerNumber pn) const;
 
-	// Song stats
-	int GetSongNumTimesPlayed( const Song* pSong, ProfileSlot card ) const;
-	bool IsSongNew( const Song* pSong ) const { return GetSongNumTimesPlayed(pSong,ProfileSlot_Machine)==0; }
-	void AddStepsScore( const Song* pSong, const Steps* pSteps , PlayerNumber pn, const HighScore &hs, int &iPersonalIndexOut, int &iMachineIndexOut );
-	void IncrementStepsPlayCount( const Song* pSong, const Steps* pSteps, PlayerNumber pn );
+  // Song stats
+  int GetSongNumTimesPlayed(const Song* pSong, ProfileSlot card) const;
+  bool IsSongNew(const Song* pSong) const {
+    return GetSongNumTimesPlayed(pSong, ProfileSlot_Machine) == 0;
+  }
+  void AddStepsScore(
+      const Song* pSong, const Steps* pSteps, PlayerNumber pn,
+      const HighScore& hs, int& iPersonalIndexOut, int& iMachineIndexOut);
+  void IncrementStepsPlayCount(
+      const Song* pSong, const Steps* pSteps, PlayerNumber pn);
 
-	// Course stats
-	void AddCourseScore( const Course* pCourse, const Trail* pTrail, PlayerNumber pn, const HighScore &hs, int &iPersonalIndexOut, int &iMachineIndexOut );
-	void IncrementCoursePlayCount( const Course* pCourse, const Trail* pTrail, PlayerNumber pn );
+  // Course stats
+  void AddCourseScore(
+      const Course* pCourse, const Trail* pTrail, PlayerNumber pn,
+      const HighScore& hs, int& iPersonalIndexOut, int& iMachineIndexOut);
+  void IncrementCoursePlayCount(
+      const Course* pCourse, const Trail* pTrail, PlayerNumber pn);
 
-	// Category stats
-	void AddCategoryScore( StepsType st, RankingCategory rc, PlayerNumber pn, const HighScore &hs, int &iPersonalIndexOut, int &iMachineIndexOut );
-	void IncrementCategoryPlayCount( StepsType st, RankingCategory rc, PlayerNumber pn );
+  // Category stats
+  void AddCategoryScore(
+      StepsType st, RankingCategory rc, PlayerNumber pn, const HighScore& hs,
+      int& iPersonalIndexOut, int& iMachineIndexOut);
+  void IncrementCategoryPlayCount(
+      StepsType st, RankingCategory rc, PlayerNumber pn);
 
-	static void GetMemoryCardProfileDirectoriesToTry( std::vector<std::string> &asDirsToTry );
+  static void GetMemoryCardProfileDirectoriesToTry(
+      std::vector<std::string>& asDirsToTry);
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-	static Preference<bool> m_bProfileStepEdits;
-	static Preference<bool> m_bProfileCourseEdits;
-	static Preference1D<std::string> m_sDefaultLocalProfileID;
+  static Preference<bool> m_bProfileStepEdits;
+  static Preference<bool> m_bProfileCourseEdits;
+  static Preference1D<std::string> m_sDefaultLocalProfileID;
 
-private:
-	ProfileLoadResult LoadProfile( PlayerNumber pn, std::string sProfileDir, bool bIsMemCard );
+ private:
+  ProfileLoadResult LoadProfile(
+      PlayerNumber pn, std::string sProfileDir, bool bIsMemCard);
 
-	// Directory that contains the profile.  Either on local machine or
-	// on a memory card.
-	std::string m_sProfileDir[NUM_PLAYERS];
+  // Directory that contains the profile.  Either on local machine or
+  // on a memory card.
+  std::string m_sProfileDir[NUM_PLAYERS];
 
-	// MemoryCardProfileImportSubdirs name, if the profile was imported.
-	std::string m_sProfileDirImportedFrom[NUM_PLAYERS];
+  // MemoryCardProfileImportSubdirs name, if the profile was imported.
+  std::string m_sProfileDirImportedFrom[NUM_PLAYERS];
 
-	std::string m_stats_prefix;
+  std::string m_stats_prefix;
 
-	bool m_bWasLoadedFromMemoryCard[NUM_PLAYERS];
-	bool m_bLastLoadWasTamperedOrCorrupt[NUM_PLAYERS];	// true if Stats.xml was present, but failed to load (probably because of a signature failure)
-	bool m_bLastLoadWasFromLastGood[NUM_PLAYERS];		// if true, then m_bLastLoadWasTamperedOrCorrupt is also true
-	mutable bool m_bNeedToBackUpLastLoad[NUM_PLAYERS];	// if true, back up profile on next save
-	bool m_bNewProfile[NUM_PLAYERS];
+  bool m_bWasLoadedFromMemoryCard[NUM_PLAYERS];
+  bool m_bLastLoadWasTamperedOrCorrupt
+      [NUM_PLAYERS];  // true if Stats.xml was present, but failed to load
+                      // (probably because of a signature failure)
+  bool m_bLastLoadWasFromLastGood
+      [NUM_PLAYERS];  // if true, then
+                      // m_bLastLoadWasTamperedOrCorrupt
+                      // is also true
+  mutable bool m_bNeedToBackUpLastLoad[NUM_PLAYERS];  // if true, back up
+                                                      // profile on next save
+  bool m_bNewProfile[NUM_PLAYERS];
 
-	Profile	*m_pMemoryCardProfile[NUM_PLAYERS];	// holds Profile for the currently inserted card
-	Profile *m_pMachineProfile;
+  Profile* m_pMemoryCardProfile[NUM_PLAYERS];  // holds Profile for the
+                                               // currently inserted card
+  Profile* m_pMachineProfile;
 };
 
-extern ProfileManager*	PROFILEMAN;	// global and accessible from anywhere in our program
+extern ProfileManager*
+    PROFILEMAN;  // global and accessible from anywhere in our program
 
 #endif
 

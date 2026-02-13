@@ -14,68 +14,67 @@
 #include "global.h"
 
 class MovieTexture_Null : public RageMovieTexture {
-public:
-	MovieTexture_Null(RageTextureID ID);
-	virtual ~MovieTexture_Null();
-	void Invalidate() { texHandle = 0; }
-	uintptr_t GetTexHandle() const { return texHandle; }
-	void Update(float /* delta */) { }
-	void Reload() { }
-	void SetPosition(float /* seconds */) { }
-	void SetPlaybackRate(float) { }
-	void SetLooping(bool looping=true) { loop = looping; }
+ public:
+  MovieTexture_Null(RageTextureID ID);
+  virtual ~MovieTexture_Null();
+  void Invalidate() { texHandle = 0; }
+  uintptr_t GetTexHandle() const { return texHandle; }
+  void Update(float /* delta */) {}
+  void Reload() {}
+  void SetPosition(float /* seconds */) {}
+  void SetPlaybackRate(float) {}
+  void SetLooping(bool looping = true) { loop = looping; }
 
-private:
-	bool playing;
-	bool loop;
-	uintptr_t texHandle;
+ private:
+  bool playing;
+  bool loop;
+  uintptr_t texHandle;
 };
 
-MovieTexture_Null::MovieTexture_Null(RageTextureID ID) : RageMovieTexture(ID)
-{
-	LOG->Trace("MovieTexture_Null::MovieTexture_Null(ID)");
-	texHandle = 0;
+MovieTexture_Null::MovieTexture_Null(RageTextureID ID) : RageMovieTexture(ID) {
+  LOG->Trace("MovieTexture_Null::MovieTexture_Null(ID)");
+  texHandle = 0;
 
-	RageTextureID actualID = GetID();
+  RageTextureID actualID = GetID();
 
-	actualID.iAlphaBits = 0;
-	int size = 64;
-	m_iSourceWidth = size;
-	m_iSourceHeight = size;
-	m_iImageWidth = size;
-	m_iImageHeight = size;
-	m_iTextureWidth = power_of_two(size);
-	m_iTextureHeight = m_iTextureWidth;
-	m_iFramesWide = 1;
-	m_iFramesHigh = 1;
+  actualID.iAlphaBits = 0;
+  int size = 64;
+  m_iSourceWidth = size;
+  m_iSourceHeight = size;
+  m_iImageWidth = size;
+  m_iImageHeight = size;
+  m_iTextureWidth = power_of_two(size);
+  m_iTextureHeight = m_iTextureWidth;
+  m_iFramesWide = 1;
+  m_iFramesHigh = 1;
 
-	CreateFrameRects();
+  CreateFrameRects();
 
-	RagePixelFormat pixfmt = RagePixelFormat_RGBA4;
-	if( !DISPLAY->SupportsTextureFormat(pixfmt) )
-		pixfmt = RagePixelFormat_RGBA8;
-	ASSERT( DISPLAY->SupportsTextureFormat(pixfmt) );
+  RagePixelFormat pixfmt = RagePixelFormat_RGBA4;
+  if (!DISPLAY->SupportsTextureFormat(pixfmt)) {
+    pixfmt = RagePixelFormat_RGBA8;
+  }
+  ASSERT(DISPLAY->SupportsTextureFormat(pixfmt));
 
-	const RageDisplay::RagePixelFormatDesc *pfd = DISPLAY->GetPixelFormatDesc( pixfmt );
-	RageSurface *img = CreateSurface( size, size, pfd->bpp,
-		pfd->masks[0], pfd->masks[1], pfd->masks[2], pfd->masks[3] );
-	memset( img->pixels, 0, static_cast<size_t>(img->pitch) * img->h );
+  const RageDisplay::RagePixelFormatDesc* pfd =
+      DISPLAY->GetPixelFormatDesc(pixfmt);
+  RageSurface* img = CreateSurface(
+      size, size, pfd->bpp, pfd->masks[0], pfd->masks[1], pfd->masks[2],
+      pfd->masks[3]);
+  memset(img->pixels, 0, static_cast<size_t>(img->pitch) * img->h);
 
-	texHandle = DISPLAY->CreateTexture( pixfmt, img, false );
+  texHandle = DISPLAY->CreateTexture(pixfmt, img, false);
 
-	delete img;
+  delete img;
 }
 
-MovieTexture_Null::~MovieTexture_Null()
-{
-	DISPLAY->DeleteTexture( texHandle );
-}
+MovieTexture_Null::~MovieTexture_Null() { DISPLAY->DeleteTexture(texHandle); }
 
-REGISTER_MOVIE_TEXTURE_CLASS( Null );
+REGISTER_MOVIE_TEXTURE_CLASS(Null);
 
-RageMovieTexture *RageMovieTextureDriver_Null::Create( RageTextureID ID, std::string &sError )
-{
-	return new MovieTexture_Null( ID );
+RageMovieTexture* RageMovieTextureDriver_Null::Create(
+    RageTextureID ID, std::string& sError) {
+  return new MovieTexture_Null(ID);
 }
 
 /*

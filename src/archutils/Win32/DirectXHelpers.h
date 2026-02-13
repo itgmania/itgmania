@@ -8,7 +8,7 @@
 
 #include <string>
 
-std::string hr_ssprintf( int hr, const char *fmt, ... );
+std::string hr_ssprintf(int hr, const char* fmt, ...);
 
 std::string GetErrorString(HRESULT hr);
 

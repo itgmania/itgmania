@@ -13,79 +13,81 @@ static Preference<std::string> g_sLightsComPort("LightsComPort", "COM54");
 
 HANDLE serialPort;
 
-LightsDriver_Win32Serial::LightsDriver_Win32Serial()
-{
-	// Ensure a non-match the first time
-	lastOutput[0] = 0;
+LightsDriver_Win32Serial::LightsDriver_Win32Serial() {
+  // Ensure a non-match the first time
+  lastOutput[0] = 0;
 
-	std::string sComPort = g_sLightsComPort.Get();
+  std::string sComPort = g_sLightsComPort.Get();
 
-	serialPort = CreateFile(std::string("\\\\.\\").append(sComPort).c_str(),
-		GENERIC_WRITE,
-		0,
-		NULL,
-		OPEN_EXISTING,
-		0,
-		NULL);
+  serialPort = CreateFile(
+      std::string("\\\\.\\").append(sComPort).c_str(), GENERIC_WRITE, 0, NULL,
+      OPEN_EXISTING, 0, NULL);
 
-	if (serialPort == INVALID_HANDLE_VALUE) {
-		MessageBox(nullptr, "Could not find a device on the configured COM port.", "ERROR", MB_OK);
-		return;
-	}
+  if (serialPort == INVALID_HANDLE_VALUE) {
+    MessageBox(
+        nullptr, "Could not find a device on the configured COM port.", "ERROR",
+        MB_OK);
+    return;
+  }
 
-	DCB dcb_serial_params = { 0 };
-	dcb_serial_params.DCBlength = sizeof(dcb_serial_params);
+  DCB dcb_serial_params = {0};
+  dcb_serial_params.DCBlength = sizeof(dcb_serial_params);
 
-	if (GetCommState(serialPort, &dcb_serial_params) == 0) {
-		MessageBox(nullptr, "Could not connect to a device on the configured COM port.", "ERROR", MB_OK);
-		return;
-	}
+  if (GetCommState(serialPort, &dcb_serial_params) == 0) {
+    MessageBox(
+        nullptr, "Could not connect to a device on the configured COM port.",
+        "ERROR", MB_OK);
+    return;
+  }
 
-	dcb_serial_params.BaudRate = CBR_115200;  // Setting BaudRate = 115200
-	dcb_serial_params.ByteSize = 8;         // Setting ByteSize = 8
-	dcb_serial_params.StopBits = ONESTOPBIT;// Setting StopBits = 1
-	dcb_serial_params.Parity = NOPARITY;  // Setting Parity = None
+  dcb_serial_params.BaudRate = CBR_115200;  // Setting BaudRate = 115200
+  dcb_serial_params.ByteSize = 8;           // Setting ByteSize = 8
+  dcb_serial_params.StopBits = ONESTOPBIT;  // Setting StopBits = 1
+  dcb_serial_params.Parity = NOPARITY;      // Setting Parity = None
 
-	if (SetCommState(serialPort, &dcb_serial_params) == 0) {
-		MessageBox(nullptr, "Could not setup the device parameters on the configured COM port.", "ERROR", MB_OK);
-		return;
-	}
+  if (SetCommState(serialPort, &dcb_serial_params) == 0) {
+    MessageBox(
+        nullptr,
+        "Could not setup the device parameters on the configured COM port.",
+        "ERROR", MB_OK);
+    return;
+  }
 
-	COMMTIMEOUTS timeouts = { 0 };
-	timeouts.ReadIntervalTimeout = 50; // in milliseconds
-	timeouts.ReadTotalTimeoutConstant = 50; // in milliseconds
-	timeouts.ReadTotalTimeoutMultiplier = 10; // in milliseconds
-	timeouts.WriteTotalTimeoutConstant = 50; // in milliseconds
-	timeouts.WriteTotalTimeoutMultiplier = 10; // in milliseconds
+  COMMTIMEOUTS timeouts = {0};
+  timeouts.ReadIntervalTimeout = 50;          // in milliseconds
+  timeouts.ReadTotalTimeoutConstant = 50;     // in milliseconds
+  timeouts.ReadTotalTimeoutMultiplier = 10;   // in milliseconds
+  timeouts.WriteTotalTimeoutConstant = 50;    // in milliseconds
+  timeouts.WriteTotalTimeoutMultiplier = 10;  // in milliseconds
 
-	if (SetCommTimeouts(serialPort, &timeouts) == 0) {
-		MessageBox(nullptr, "Could not set the device timeouts on the configured COM port.", "ERROR", MB_OK);
-		return;
-	}
+  if (SetCommTimeouts(serialPort, &timeouts) == 0) {
+    MessageBox(
+        nullptr,
+        "Could not set the device timeouts on the configured COM port.",
+        "ERROR", MB_OK);
+    return;
+  }
 }
 
-LightsDriver_Win32Serial::~LightsDriver_Win32Serial()
-{
-	CloseHandle(serialPort);
+LightsDriver_Win32Serial::~LightsDriver_Win32Serial() {
+  CloseHandle(serialPort);
 }
 
-void LightsDriver_Win32Serial::Set(const LightsState* ls)
-{
-	if (serialPort != INVALID_HANDLE_VALUE) {
-		uint8_t buffer[FULL_SEXTET_COUNT];
+void LightsDriver_Win32Serial::Set(const LightsState* ls) {
+  if (serialPort != INVALID_HANDLE_VALUE) {
+    uint8_t buffer[FULL_SEXTET_COUNT];
 
-		packLine(buffer, ls);
+    packLine(buffer, ls);
 
-		// Only write if the message has changed since the last write.
-		if (memcmp(buffer, lastOutput, FULL_SEXTET_COUNT) != 0)
-		{
-			DWORD bytesWritten = 0;
-			WriteFile(serialPort, buffer, FULL_SEXTET_COUNT, &bytesWritten, NULL);
+    // Only write if the message has changed since the last write.
+    if (memcmp(buffer, lastOutput, FULL_SEXTET_COUNT) != 0) {
+      DWORD bytesWritten = 0;
+      WriteFile(serialPort, buffer, FULL_SEXTET_COUNT, &bytesWritten, NULL);
 
-			// Remember last message
-			memcpy(lastOutput, buffer, FULL_SEXTET_COUNT);
-		}
-	}
+      // Remember last message
+      memcpy(lastOutput, buffer, FULL_SEXTET_COUNT);
+    }
+  }
 }
 
 /*

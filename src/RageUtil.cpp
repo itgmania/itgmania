@@ -39,541 +39,539 @@
 #include "StdString.h"
 #include "global.h"
 
-const std::string CUSTOM_SONG_PATH= "/@mem/";
+const std::string CUSTOM_SONG_PATH = "/@mem/";
 
 bool HexToBinary(const std::string&, std::string&);
-void utf8_sanitize(std::string &);
-void UnicodeUpperLower(wchar_t *, size_t, const unsigned char *);
+void utf8_sanitize(std::string&);
+void UnicodeUpperLower(wchar_t*, size_t, const unsigned char*);
 
-void fapproach( float& val, float other_val, float to_move )
-{
-	ASSERT_M( to_move >= 0, ssprintf("to_move: %f < 0", to_move) );
-	if( val == other_val )
-		return;
-	float fDelta = other_val - val;
-	float fSign = fDelta / std::abs( fDelta );
-	float fToMove = fSign*to_move;
-	if( std::abs(fToMove) > std::abs(fDelta) )
-		fToMove = fDelta;	// snap
-	val += fToMove;
+void fapproach(float& val, float other_val, float to_move) {
+  ASSERT_M(to_move >= 0, ssprintf("to_move: %f < 0", to_move));
+  if (val == other_val) {
+    return;
+  }
+  float fDelta = other_val - val;
+  float fSign = fDelta / std::abs(fDelta);
+  float fToMove = fSign * to_move;
+  if (std::abs(fToMove) > std::abs(fDelta)) {
+    fToMove = fDelta;  // snap
+  }
+  val += fToMove;
 }
 
 /* Return a positive x mod y. */
-float fmodfp(float x, float y)
-{
-	x = std::fmod(x, y);	/* x is [-y,y] */
-	x += y;					/* x is [0,y*2] */
-	x = std::fmod(x, y);	/* x is [0,y] */
-	return x;
+float fmodfp(float x, float y) {
+  x = std::fmod(x, y); /* x is [-y,y] */
+  x += y;              /* x is [0,y*2] */
+  x = std::fmod(x, y); /* x is [0,y] */
+  return x;
 }
 
 /* https://graphics.stanford.edu/%7Eseander/bithacks.html#RoundUpPowerOf2 */
-int power_of_two( int v )
-{
-	v--;
-	v |= v >> 1;
-	v |= v >> 2;
-	v |= v >> 4;
-	v |= v >> 8;
-	v |= v >> 16;
-	v++;
+int power_of_two(int v) {
+  v--;
+  v |= v >> 1;
+  v |= v >> 2;
+  v |= v >> 4;
+  v |= v >> 8;
+  v |= v >> 16;
+  v++;
 
-	/* Always be sure to return a value of at least 1. In the event of any edge
-	 * cases, such as a zero or negative input, the returned value will be `1`. */
-	v += (v == 0);
-	return v;
+  /* Always be sure to return a value of at least 1. In the event of any edge
+   * cases, such as a zero or negative input, the returned value will be `1`. */
+  v += (v == 0);
+  return v;
 }
 
-bool IsAnInt( const std::string &s )
-{
-	if( !s.size() )
-		return false;
+bool IsAnInt(const std::string& s) {
+  if (!s.size()) {
+    return false;
+  }
 
-	for( size_t i=0; i < s.size(); ++i )
-		if( s[i] < '0' || s[i] > '9' )
-			return false;
+  for (size_t i = 0; i < s.size(); ++i) {
+    if (s[i] < '0' || s[i] > '9') {
+      return false;
+    }
+  }
 
-	return true;
+  return true;
 }
 
-bool IsHexVal( const std::string &s )
-{
-	if( !s.size() )
-		return false;
+bool IsHexVal(const std::string& s) {
+  if (!s.size()) {
+    return false;
+  }
 
-	for( size_t i=0; i < s.size(); ++i )
-		if( !(s[i] >= '0' && s[i] <= '9') &&
-			!(toupper(s[i]) >= 'A' && toupper(s[i]) <= 'F'))
-			return false;
+  for (size_t i = 0; i < s.size(); ++i) {
+    if (!(s[i] >= '0' && s[i] <= '9') &&
+        !(toupper(s[i]) >= 'A' && toupper(s[i]) <= 'F')) {
+      return false;
+    }
+  }
 
-	return true;
+  return true;
 }
 
-std::string BinaryToHex( const void *pData_, size_t iNumBytes )
-{
-	const unsigned char *pData = (const unsigned char *) pData_;
-	std::string s;
-	for( size_t i=0; i<iNumBytes; i++ )
-	{
-		unsigned val = pData[i];
-		s += ssprintf( "%02x", val );
-	}
-	return s;
+std::string BinaryToHex(const void* pData_, size_t iNumBytes) {
+  const unsigned char* pData = (const unsigned char*)pData_;
+  std::string s;
+  for (size_t i = 0; i < iNumBytes; i++) {
+    unsigned val = pData[i];
+    s += ssprintf("%02x", val);
+  }
+  return s;
 }
 
-std::string BinaryToHex( const std::string &sString )
-{
-	return BinaryToHex( sString.data(), sString.size() );
+std::string BinaryToHex(const std::string& sString) {
+  return BinaryToHex(sString.data(), sString.size());
 }
 
-bool HexToBinary( const std::string &s, unsigned char *stringOut )
-{
-	if( !IsHexVal(s) )
-		return false;
+bool HexToBinary(const std::string& s, unsigned char* stringOut) {
+  if (!IsHexVal(s)) {
+    return false;
+  }
 
-	for( int i=0; true; i++ )
-	{
-		if( (int)s.size() <= i*2 )
-			break;
-		std::string sByte = s.substr( i*2, 2 );
+  for (int i = 0; true; i++) {
+    if ((int)s.size() <= i * 2) {
+      break;
+    }
+    std::string sByte = s.substr(i * 2, 2);
 
-		uint8_t val = 0;
-		if( sscanf( sByte.c_str(), "%hhx", &val ) != 1 )
-			return false;
-		stringOut[i] = val;
-	}
-	return true;
+    uint8_t val = 0;
+    if (sscanf(sByte.c_str(), "%hhx", &val) != 1) {
+      return false;
+    }
+    stringOut[i] = val;
+  }
+  return true;
 }
 
-bool HexToBinary( const std::string &s, std::string &sOut )
-{
-	sOut.resize(s.size() / 2);
-	return HexToBinary(s, (unsigned char *) sOut.data());
+bool HexToBinary(const std::string& s, std::string& sOut) {
+  sOut.resize(s.size() / 2);
+  return HexToBinary(s, (unsigned char*)sOut.data());
 }
 
-float HHMMSSToSeconds( const std::string &sHHMMSS )
-{
-	std::vector<std::string> arrayBits;
-	split( sHHMMSS, ":", arrayBits, false );
+float HHMMSSToSeconds(const std::string& sHHMMSS) {
+  std::vector<std::string> arrayBits;
+  split(sHHMMSS, ":", arrayBits, false);
 
-	while( arrayBits.size() < 3 )
-		arrayBits.insert(arrayBits.begin(), "0" );	// pad missing bits
+  while (arrayBits.size() < 3) {
+    arrayBits.insert(arrayBits.begin(), "0");  // pad missing bits
+  }
 
-	float fSeconds = 0;
-	fSeconds += StringToInt( arrayBits[0] ) * 60 * 60;
-	fSeconds += StringToInt( arrayBits[1] ) * 60;
-	fSeconds += StringToFloat( arrayBits[2] );
+  float fSeconds = 0;
+  fSeconds += StringToInt(arrayBits[0]) * 60 * 60;
+  fSeconds += StringToInt(arrayBits[1]) * 60;
+  fSeconds += StringToFloat(arrayBits[2]);
 
-	return fSeconds;
+  return fSeconds;
 }
 
-std::string SecondsToHHMMSS(float fSecs)
-{
-	const int iMinsDisplay = static_cast<int>(fSecs / 60);
-	const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60)); 
-	std::string sReturn = ssprintf("%02d:%02d:%02d", iMinsDisplay / 60, iMinsDisplay % 60, iSecsDisplay);
-	return sReturn;
+std::string SecondsToHHMMSS(float fSecs) {
+  const int iMinsDisplay = static_cast<int>(fSecs / 60);
+  const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60));
+  std::string sReturn = ssprintf(
+      "%02d:%02d:%02d", iMinsDisplay / 60, iMinsDisplay % 60, iSecsDisplay);
+  return sReturn;
 }
 
-std::string SecondsToMMSSMsMs(float fSecs)
-{
-	const int iMinsDisplay = static_cast<int>(fSecs / 60);
-	const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60)); 
-	const int iLeftoverDisplay = static_cast<int>((fSecs - iMinsDisplay * 60 - iSecsDisplay) * 100);
-	std::string sReturn = ssprintf("%02d:%02d.%02d", iMinsDisplay, iSecsDisplay, std::min(99, iLeftoverDisplay));
-	return sReturn;
+std::string SecondsToMMSSMsMs(float fSecs) {
+  const int iMinsDisplay = static_cast<int>(fSecs / 60);
+  const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60));
+  const int iLeftoverDisplay =
+      static_cast<int>((fSecs - iMinsDisplay * 60 - iSecsDisplay) * 100);
+  std::string sReturn = ssprintf(
+      "%02d:%02d.%02d", iMinsDisplay, iSecsDisplay,
+      std::min(99, iLeftoverDisplay));
+  return sReturn;
 }
 
-std::string SecondsToMSSMsMs( float fSecs )
-{
-	const int iMinsDisplay = static_cast<int>(fSecs/60);
-	const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60)); 
-	const int iLeftoverDisplay = static_cast<int>((fSecs - iMinsDisplay*60 - iSecsDisplay) * 100 );
-	std::string sReturn = ssprintf( "%01d:%02d.%02d", iMinsDisplay, iSecsDisplay, std::min(99,iLeftoverDisplay) );
-	return sReturn;
+std::string SecondsToMSSMsMs(float fSecs) {
+  const int iMinsDisplay = static_cast<int>(fSecs / 60);
+  const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60));
+  const int iLeftoverDisplay =
+      static_cast<int>((fSecs - iMinsDisplay * 60 - iSecsDisplay) * 100);
+  std::string sReturn = ssprintf(
+      "%01d:%02d.%02d", iMinsDisplay, iSecsDisplay,
+      std::min(99, iLeftoverDisplay));
+  return sReturn;
 }
 
-std::string MicrosecondsToMMSSMsMs(uint64_t usecs)
-{
-    const uint64_t totalSeconds = usecs / 1000000;
-    const uint64_t iMinsDisplay = totalSeconds / 60;
-    const uint64_t iSecsDisplay = totalSeconds % 60;
-    const uint64_t iLeftoverDisplay = (usecs % 1000000) / 10000; // Adjusted for two decimal places
-    std::string sReturn = ssprintf("%02" PRIu64 ":%02" PRIu64 ".%02" PRIu64, iMinsDisplay, iSecsDisplay, std::min<uint64_t>(99, iLeftoverDisplay));
-    return sReturn;
+std::string MicrosecondsToMMSSMsMs(uint64_t usecs) {
+  const uint64_t totalSeconds = usecs / 1000000;
+  const uint64_t iMinsDisplay = totalSeconds / 60;
+  const uint64_t iSecsDisplay = totalSeconds % 60;
+  const uint64_t iLeftoverDisplay =
+      (usecs % 1000000) / 10000;  // Adjusted for two decimal places
+  std::string sReturn = ssprintf(
+      "%02" PRIu64 ":%02" PRIu64 ".%02" PRIu64, iMinsDisplay, iSecsDisplay,
+      std::min<uint64_t>(99, iLeftoverDisplay));
+  return sReturn;
 }
 
-std::string SecondsToMMSSMsMsMs( float fSecs )
-{
-	const int iMinsDisplay = static_cast<int>(fSecs/60);
-	const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60)); 
-	const int iLeftoverDisplay = static_cast<int>((fSecs - iMinsDisplay*60 - iSecsDisplay) * 1000 );
-	std::string sReturn = ssprintf( "%02d:%02d.%03d", iMinsDisplay, iSecsDisplay, std::min(999,iLeftoverDisplay) );
-	return sReturn;
+std::string SecondsToMMSSMsMsMs(float fSecs) {
+  const int iMinsDisplay = static_cast<int>(fSecs / 60);
+  const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60));
+  const int iLeftoverDisplay =
+      static_cast<int>((fSecs - iMinsDisplay * 60 - iSecsDisplay) * 1000);
+  std::string sReturn = ssprintf(
+      "%02d:%02d.%03d", iMinsDisplay, iSecsDisplay,
+      std::min(999, iLeftoverDisplay));
+  return sReturn;
 }
 
-std::string MicrosecondsToMMSSMsMsMs(uint64_t usecs)
-{
-    const uint64_t totalSeconds = usecs / 1000000;
-    const uint64_t iMinsDisplay = totalSeconds / 60;
-    const uint64_t iSecsDisplay = totalSeconds % 60;
-    const uint64_t iLeftoverDisplay = (usecs % 1000000) / 1000;
-    std::string sReturn = ssprintf("%02" PRIu64 ":%02" PRIu64 ".%03" PRIu64, iMinsDisplay, iSecsDisplay, std::min<uint64_t>(999, iLeftoverDisplay));
-    return sReturn;
+std::string MicrosecondsToMMSSMsMsMs(uint64_t usecs) {
+  const uint64_t totalSeconds = usecs / 1000000;
+  const uint64_t iMinsDisplay = totalSeconds / 60;
+  const uint64_t iSecsDisplay = totalSeconds % 60;
+  const uint64_t iLeftoverDisplay = (usecs % 1000000) / 1000;
+  std::string sReturn = ssprintf(
+      "%02" PRIu64 ":%02" PRIu64 ".%03" PRIu64, iMinsDisplay, iSecsDisplay,
+      std::min<uint64_t>(999, iLeftoverDisplay));
+  return sReturn;
 }
 
-std::string SecondsToMSS( float fSecs )
-{
-	const int iMinsDisplay = static_cast<int>(fSecs/60);
-	const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60));
-	std::string sReturn = ssprintf( "%01d:%02d", iMinsDisplay, iSecsDisplay);
-	return sReturn;
+std::string SecondsToMSS(float fSecs) {
+  const int iMinsDisplay = static_cast<int>(fSecs / 60);
+  const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60));
+  std::string sReturn = ssprintf("%01d:%02d", iMinsDisplay, iSecsDisplay);
+  return sReturn;
 }
 
-std::string SecondsToMMSS( float fSecs )
-{
-	const int iMinsDisplay = static_cast<int>(fSecs/60);
-	const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60));
-	std::string sReturn = ssprintf( "%02d:%02d", iMinsDisplay, iSecsDisplay);
-	return sReturn;
+std::string SecondsToMMSS(float fSecs) {
+  const int iMinsDisplay = static_cast<int>(fSecs / 60);
+  const int iSecsDisplay = static_cast<int>(fmod(fSecs, 60));
+  std::string sReturn = ssprintf("%02d:%02d", iMinsDisplay, iSecsDisplay);
+  return sReturn;
 }
 
-std::string PrettyPercent( float fNumerator, float fDenominator)
-{
-	return ssprintf("%0.2f%%",fNumerator/fDenominator*100);
+std::string PrettyPercent(float fNumerator, float fDenominator) {
+  return ssprintf("%0.2f%%", fNumerator / fDenominator * 100);
 }
 
-std::string Commify( int iNum )
-{
-	std::string sNum = ssprintf("%d",iNum);
-	return Commify( sNum );
+std::string Commify(int iNum) {
+  std::string sNum = ssprintf("%d", iNum);
+  return Commify(sNum);
 }
 
-std::string Commify(const std::string& num, const std::string& sep, const std::string& dot)
-{
-	size_t num_start= 0;
-	size_t num_end= num.size();
-	size_t dot_pos= num.find(dot);
-	size_t dash_pos= num.find('-');
-	if(dot_pos != std::string::npos)
-	{
-		num_end= dot_pos;
-	}
-	if(dash_pos != std::string::npos)
-	{
-		num_start= dash_pos + 1;
-	}
-	size_t num_size= num_end - num_start;
-	size_t commies= (num_size / 3) - (!(num_size % 3));
-	if(commies < 1)
-	{
-		return num;
-	}
-	size_t commified_len= num.size() + (commies * sep.size());
-	std::string ret;
-	ret.resize(commified_len);
-	size_t dest= 0;
-	size_t next_comma= (num_size % 3) + (3 * (!(num_size % 3))) + num_start;
-	for(size_t c= 0; c < num.size(); ++c)
-	{
-		if(c == next_comma && c < num_end)
-		{
-			for(size_t s= 0; s < sep.size(); ++s)
-			{
-				ret[dest]= sep[s];
-				++dest;
-			}
-			next_comma+= 3;
-		}
-		ret[dest]= num[c];
-		++dest;
-	}
-	return ret;
+std::string Commify(
+    const std::string& num, const std::string& sep, const std::string& dot) {
+  size_t num_start = 0;
+  size_t num_end = num.size();
+  size_t dot_pos = num.find(dot);
+  size_t dash_pos = num.find('-');
+  if (dot_pos != std::string::npos) {
+    num_end = dot_pos;
+  }
+  if (dash_pos != std::string::npos) {
+    num_start = dash_pos + 1;
+  }
+  size_t num_size = num_end - num_start;
+  size_t commies = (num_size / 3) - (!(num_size % 3));
+  if (commies < 1) {
+    return num;
+  }
+  size_t commified_len = num.size() + (commies * sep.size());
+  std::string ret;
+  ret.resize(commified_len);
+  size_t dest = 0;
+  size_t next_comma = (num_size % 3) + (3 * (!(num_size % 3))) + num_start;
+  for (size_t c = 0; c < num.size(); ++c) {
+    if (c == next_comma && c < num_end) {
+      for (size_t s = 0; s < sep.size(); ++s) {
+        ret[dest] = sep[s];
+        ++dest;
+      }
+      next_comma += 3;
+    }
+    ret[dest] = num[c];
+    ++dest;
+  }
+  return ret;
 }
 
-static LocalizedString NUM_PREFIX	( "RageUtil", "NumPrefix" );
-static LocalizedString NUM_ST		( "RageUtil", "NumSt" );
-static LocalizedString NUM_ND		( "RageUtil", "NumNd" );
-static LocalizedString NUM_RD		( "RageUtil", "NumRd" );
-static LocalizedString NUM_TH		( "RageUtil", "NumTh" );
-std::string FormatNumberAndSuffix( int i )
-{
-	std::string sSuffix;
-	switch( i%10 )
-	{
-	case 1:		sSuffix = NUM_ST; break;
-	case 2:		sSuffix = NUM_ND; break;
-	case 3:		sSuffix = NUM_RD; break;
-	default:	sSuffix = NUM_TH; break;
-	}
+static LocalizedString NUM_PREFIX("RageUtil", "NumPrefix");
+static LocalizedString NUM_ST("RageUtil", "NumSt");
+static LocalizedString NUM_ND("RageUtil", "NumNd");
+static LocalizedString NUM_RD("RageUtil", "NumRd");
+static LocalizedString NUM_TH("RageUtil", "NumTh");
+std::string FormatNumberAndSuffix(int i) {
+  std::string sSuffix;
+  switch (i % 10) {
+    case 1:
+      sSuffix = NUM_ST;
+      break;
+    case 2:
+      sSuffix = NUM_ND;
+      break;
+    case 3:
+      sSuffix = NUM_RD;
+      break;
+    default:
+      sSuffix = NUM_TH;
+      break;
+  }
 
-	// "11th", "113th", etc.
-	if( ((i%100) / 10) == 1 )
-		sSuffix = NUM_TH;
+  // "11th", "113th", etc.
+  if (((i % 100) / 10) == 1) {
+    sSuffix = NUM_TH;
+  }
 
-	return NUM_PREFIX.GetValue() + ssprintf("%i", i) + sSuffix;
+  return NUM_PREFIX.GetValue() + ssprintf("%i", i) + sSuffix;
 }
 
-std::string NormalizeDecimal(float num)
-{
-	float mult = 1000.0f;
-	float rounded = std::round(num * mult) / mult;
-	std::ostringstream os;
-	os << std::fixed << std::setprecision(3) << rounded;
-	return os.str();
+std::string NormalizeDecimal(float num) {
+  float mult = 1000.0f;
+  float rounded = std::round(num * mult) / mult;
+  std::ostringstream os;
+  os << std::fixed << std::setprecision(3) << rounded;
+  return os.str();
 }
 
-struct tm GetLocalTime()
-{
-	const time_t t = time(nullptr);
-	struct tm tm;
-	localtime_r( &t, &tm );
-	return tm;
+struct tm GetLocalTime() {
+  const time_t t = time(nullptr);
+  struct tm tm;
+  localtime_r(&t, &tm);
+  return tm;
 }
 
-std::string ssprintf( const char *fmt, ...)
-{
-	va_list	va;
-	va_start(va, fmt);
-	std::string sRet = vssprintf(fmt, va);
-	va_end(va);
-	return sRet;
+std::string ssprintf(const char* fmt, ...) {
+  va_list va;
+  va_start(va, fmt);
+  std::string sRet = vssprintf(fmt, va);
+  va_end(va);
+  return sRet;
 }
 
-std::string vssprintf( const char *szFormat, va_list argList )
-{
-	va_list tmp;
-	va_copy( tmp, argList );
-	int iNeeded = std::vsnprintf( nullptr, 0, szFormat, tmp );
-	va_end(tmp);
+std::string vssprintf(const char* szFormat, va_list argList) {
+  va_list tmp;
+  va_copy(tmp, argList);
+  int iNeeded = std::vsnprintf(nullptr, 0, szFormat, tmp);
+  va_end(tmp);
 
-	std::string sRet;
-	sRet.resize(iNeeded);
-	std::vsnprintf( &sRet.front(), iNeeded+1, szFormat, argList );
-	return sRet;
+  std::string sRet;
+  sRet.resize(iNeeded);
+  std::vsnprintf(&sRet.front(), iNeeded + 1, szFormat, argList);
+  return sRet;
 }
 
-std::string join( const std::string &sDeliminator, const std::vector<std::string> &sSource)
-{
-	if( sSource.empty() )
-		return std::string();
+std::string join(
+    const std::string& sDeliminator, const std::vector<std::string>& sSource) {
+  if (sSource.empty()) {
+    return std::string();
+  }
 
-	std::string sTmp;
-	size_t final_size= 0;
-	size_t delim_size= sDeliminator.size();
-	for(size_t n= 0; n < sSource.size()-1; ++n)
-	{
-		final_size+= sSource[n].size() + delim_size;
-	}
-	final_size+= sSource.back().size();
-	sTmp.reserve(final_size);
+  std::string sTmp;
+  size_t final_size = 0;
+  size_t delim_size = sDeliminator.size();
+  for (size_t n = 0; n < sSource.size() - 1; ++n) {
+    final_size += sSource[n].size() + delim_size;
+  }
+  final_size += sSource.back().size();
+  sTmp.reserve(final_size);
 
-	for( unsigned iNum = 0; iNum < sSource.size()-1; iNum++ )
-	{
-		sTmp += sSource[iNum];
-		sTmp += sDeliminator;
-	}
-	sTmp += sSource.back();
-	return sTmp;
+  for (unsigned iNum = 0; iNum < sSource.size() - 1; iNum++) {
+    sTmp += sSource[iNum];
+    sTmp += sDeliminator;
+  }
+  sTmp += sSource.back();
+  return sTmp;
 }
 
-std::string join( const std::string &sDelimitor, std::vector<std::string>::const_iterator begin, std::vector<std::string>::const_iterator end )
-{
-	if( begin == end )
-		return std::string();
+std::string join(
+    const std::string& sDelimitor,
+    std::vector<std::string>::const_iterator begin,
+    std::vector<std::string>::const_iterator end) {
+  if (begin == end) {
+    return std::string();
+  }
 
-	std::string sRet;
-	size_t final_size= 0;
-	size_t delim_size= sDelimitor.size();
-	for(std::vector<std::string>::const_iterator curr= begin; curr != end; ++curr)
-	{
-		final_size+= curr->size();
-		if(curr != end)
-		{
-			final_size+= delim_size;
-		}
-	}
-	sRet.reserve(final_size);
+  std::string sRet;
+  size_t final_size = 0;
+  size_t delim_size = sDelimitor.size();
+  for (std::vector<std::string>::const_iterator curr = begin; curr != end;
+       ++curr) {
+    final_size += curr->size();
+    if (curr != end) {
+      final_size += delim_size;
+    }
+  }
+  sRet.reserve(final_size);
 
-	while( begin != end )
-	{
-		sRet += *begin;
-		++begin;
-		if( begin != end )
-			sRet += sDelimitor;
-	}
+  while (begin != end) {
+    sRet += *begin;
+    ++begin;
+    if (begin != end) {
+      sRet += sDelimitor;
+    }
+  }
 
-	return sRet;
+  return sRet;
 }
 
-std::string serialize(const std::vector<float> & sSource, const std::string &sDelimitor, int precision)
-{
-	std::vector<std::string> values;
-	values.reserve(sSource.size());
-	std::string precisionStr = ssprintf("%%.%df", precision);
-	for(float s : sSource)
-	{
-		values.push_back(ssprintf(precisionStr.c_str(), s));
-	}
-	return join(sDelimitor, values);
+std::string serialize(
+    const std::vector<float>& sSource, const std::string& sDelimitor,
+    int precision) {
+  std::vector<std::string> values;
+  values.reserve(sSource.size());
+  std::string precisionStr = ssprintf("%%.%df", precision);
+  for (float s : sSource) {
+    values.push_back(ssprintf(precisionStr.c_str(), s));
+  }
+  return join(sDelimitor, values);
 }
 
-std::string serialize(const std::vector<int> & sSource, const std::string &sDelimitor)
-{
-	std::vector<std::string> values;
-	values.reserve(sSource.size());
-	for(int s : sSource)
-	{
-		values.push_back(ssprintf("%d", s));
-	}
-	return join(sDelimitor, values);
+std::string serialize(
+    const std::vector<int>& sSource, const std::string& sDelimitor) {
+  std::vector<std::string> values;
+  values.reserve(sSource.size());
+  for (int s : sSource) {
+    values.push_back(ssprintf("%d", s));
+  }
+  return join(sDelimitor, values);
 }
 
-
-std::string SmEscape( const std::string &sUnescaped, const std::vector<char> charsToEscape )
-{
-	return SmEscape(sUnescaped.c_str(), sUnescaped.size(), charsToEscape);
+std::string SmEscape(
+    const std::string& sUnescaped, const std::vector<char> charsToEscape) {
+  return SmEscape(sUnescaped.c_str(), sUnescaped.size(), charsToEscape);
 }
 
-std::string SmEscape ( const char *cUnescaped, int len, const std::vector<char> charsToEscape )
-{
-	std::string answer = "";
-	for( int i = 0; i < len; ++i )
-	{
-		if( cUnescaped[i] == '/' && i + 1 < len && cUnescaped[i + 1] == '/' )
-		{
-			answer += "\\/\\/";
-			++i; // increment here so we skip both //s
-			continue;
-		}
-		for(char escapeChar: charsToEscape)
-		{
-			if(cUnescaped[i] == escapeChar)
-			{
-				answer += "\\";
-				break;
-			}
-		}
-		
-		answer += cUnescaped[i];
-	}
-	return answer;
+std::string SmEscape(
+    const char* cUnescaped, int len, const std::vector<char> charsToEscape) {
+  std::string answer = "";
+  for (int i = 0; i < len; ++i) {
+    if (cUnescaped[i] == '/' && i + 1 < len && cUnescaped[i + 1] == '/') {
+      answer += "\\/\\/";
+      ++i;  // increment here so we skip both //s
+      continue;
+    }
+    for (char escapeChar : charsToEscape) {
+      if (cUnescaped[i] == escapeChar) {
+        answer += "\\";
+        break;
+      }
+    }
+
+    answer += cUnescaped[i];
+  }
+  return answer;
 }
 
-std::vector<std::string> SmEscape(const std::vector<std::string> &vUnescaped, const std::vector<char> charsToEscape)
-{
-	std::vector<std::string> escaped;
-	for(std::string unescaped: vUnescaped)
-	{
-		escaped.push_back(SmEscape(unescaped, charsToEscape));
-	}
-	return escaped;
+std::vector<std::string> SmEscape(
+    const std::vector<std::string>& vUnescaped,
+    const std::vector<char> charsToEscape) {
+  std::vector<std::string> escaped;
+  for (std::string unescaped : vUnescaped) {
+    escaped.push_back(SmEscape(unescaped, charsToEscape));
+  }
+  return escaped;
 }
 
-std::string SmUnescape( const std::string &sEscaped )
-{
-	std::string unescaped = sEscaped;
-	Replace(unescaped, "\\\\", "||escaped-backslash||");
-	Replace(unescaped, "\\", "");
-	Replace(unescaped, "||escaped-backslash||", "\\");
-	return unescaped;
+std::string SmUnescape(const std::string& sEscaped) {
+  std::string unescaped = sEscaped;
+  Replace(unescaped, "\\\\", "||escaped-backslash||");
+  Replace(unescaped, "\\", "");
+  Replace(unescaped, "||escaped-backslash||", "\\");
+  return unescaped;
 }
 
-std::string DwiEscape( const std::string &sUnescaped )
-{
-	return DwiEscape( sUnescaped.c_str(), sUnescaped.size() );
+std::string DwiEscape(const std::string& sUnescaped) {
+  return DwiEscape(sUnescaped.c_str(), sUnescaped.size());
 }
 
-std::string DwiEscape( const char *cUnescaped, int len )
-{
-	std::string answer = "";
-	for( int i = 0; i < len; ++i )
-	{
-		switch( cUnescaped[i] )
-		{
-		// TODO: Which of these characters actually affect DWI?
-		case '\\':
-		case ':':
-		case ';': answer += '|'; break;
-		case '[': answer += '('; break;
-		case ']': answer += ')'; break;
-		default: answer += cUnescaped[i];
-		}
-	}
-	return answer;
+std::string DwiEscape(const char* cUnescaped, int len) {
+  std::string answer = "";
+  for (int i = 0; i < len; ++i) {
+    switch (cUnescaped[i]) {
+      // TODO: Which of these characters actually affect DWI?
+      case '\\':
+      case ':':
+      case ';':
+        answer += '|';
+        break;
+      case '[':
+        answer += '(';
+        break;
+      case ']':
+        answer += ')';
+        break;
+      default:
+        answer += cUnescaped[i];
+    }
+  }
+  return answer;
 }
 
 template <class S>
-static int DelimitorLength( const S &Delimitor )
-{
-	return Delimitor.size();
+static int DelimitorLength(const S& Delimitor) {
+  return Delimitor.size();
 }
 
-static int DelimitorLength( char Delimitor )
-{
-	return 1;
-}
+static int DelimitorLength(char Delimitor) { return 1; }
 
-static int DelimitorLength( wchar_t Delimitor )
-{
-	return 1;
-}
+static int DelimitorLength(wchar_t Delimitor) { return 1; }
 
 template <class S, class C>
-void do_split( const S &Source, const C Delimitor, std::vector<S> &AddIt, const bool bIgnoreEmpty )
-{
-	/* Short-circuit if the source is empty; we want to return an empty vector if
-	 * the string is empty, even if bIgnoreEmpty is true. */
-	if( Source.empty() )
-		return;
+void do_split(
+    const S& Source, const C Delimitor, std::vector<S>& AddIt,
+    const bool bIgnoreEmpty) {
+  /* Short-circuit if the source is empty; we want to return an empty vector if
+   * the string is empty, even if bIgnoreEmpty is true. */
+  if (Source.empty()) {
+    return;
+  }
 
-	size_t startpos = 0;
+  size_t startpos = 0;
 
-	do {
-		size_t pos;
-		pos = Source.find( Delimitor, startpos );
-		if( pos == Source.npos )
-			pos = Source.size();
+  do {
+    size_t pos;
+    pos = Source.find(Delimitor, startpos);
+    if (pos == Source.npos) {
+      pos = Source.size();
+    }
 
-		if( pos > startpos || !bIgnoreEmpty )
-		{
-			/* Optimization: if we're copying the whole string, avoid substr; this
-			 * allows this copy to be refcounted, which is much faster. */
-			if( startpos == 0 && pos-startpos == Source.size() )
-				AddIt.push_back(Source);
-			else
-			{
-				const S AddRString = Source.substr(startpos, pos-startpos);
-				AddIt.push_back(AddRString);
-			}
-		}
+    if (pos > startpos || !bIgnoreEmpty) {
+      /* Optimization: if we're copying the whole string, avoid substr; this
+       * allows this copy to be refcounted, which is much faster. */
+      if (startpos == 0 && pos - startpos == Source.size()) {
+        AddIt.push_back(Source);
+      } else {
+        const S AddRString = Source.substr(startpos, pos - startpos);
+        AddIt.push_back(AddRString);
+      }
+    }
 
-		startpos = pos+DelimitorLength(Delimitor);
-	} while ( startpos <= Source.size() );
+    startpos = pos + DelimitorLength(Delimitor);
+  } while (startpos <= Source.size());
 }
 
-void split( const std::string &sSource, const std::string &sDelimitor, std::vector<std::string> &asAddIt, const bool bIgnoreEmpty )
-{
-	if( sDelimitor.size() == 1 )
-		do_split( sSource, sDelimitor[0], asAddIt, bIgnoreEmpty );
-	else
-		do_split( sSource, sDelimitor, asAddIt, bIgnoreEmpty );
+void split(
+    const std::string& sSource, const std::string& sDelimitor,
+    std::vector<std::string>& asAddIt, const bool bIgnoreEmpty) {
+  if (sDelimitor.size() == 1) {
+    do_split(sSource, sDelimitor[0], asAddIt, bIgnoreEmpty);
+  } else {
+    do_split(sSource, sDelimitor, asAddIt, bIgnoreEmpty);
+  }
 }
 
-void split( const std::wstring &sSource, const std::wstring &sDelimitor, std::vector<std::wstring> &asAddIt, const bool bIgnoreEmpty )
-{
-	if( sDelimitor.size() == 1 )
-		do_split( sSource, sDelimitor[0], asAddIt, bIgnoreEmpty );
-	else
-		do_split( sSource, sDelimitor, asAddIt, bIgnoreEmpty );
+void split(
+    const std::wstring& sSource, const std::wstring& sDelimitor,
+    std::vector<std::wstring>& asAddIt, const bool bIgnoreEmpty) {
+  if (sDelimitor.size() == 1) {
+    do_split(sSource, sDelimitor[0], asAddIt, bIgnoreEmpty);
+  } else {
+    do_split(sSource, sDelimitor, asAddIt, bIgnoreEmpty);
+  }
 }
 
-std::vector<std::string> split( const std::string& sSource, const char delimiter, const bool bIgnoreEmpty )
-{
-	std::vector<std::string> result;
-	std::string sDelimiter(1, delimiter); // Create an std::string from the char delimiter
-	split(sSource, sDelimiter, result, bIgnoreEmpty);
-	return result;
+std::vector<std::string> split(
+    const std::string& sSource, const char delimiter, const bool bIgnoreEmpty) {
+  std::vector<std::string> result;
+  std::string sDelimiter(
+      1, delimiter);  // Create an std::string from the char delimiter
+  split(sSource, sDelimiter, result, bIgnoreEmpty);
+  return result;
 }
 
 /* Use:
@@ -582,64 +580,70 @@ std::string str="a,b,c";
 int start = 0, size = -1;
 for(;;)
 {
-	do_split( str, ",", start, size );
-	if( start == str.size() )
-		break;
-	str[start] = 'Q';
+        do_split( str, ",", start, size );
+        if( start == str.size() )
+                break;
+        str[start] = 'Q';
 }
 
 */
 
 template <class S>
-void do_split( const S &Source, const S &Delimitor, int &begin, int &size, int len, const bool bIgnoreEmpty )
-{
-	if( size != -1 )
-	{
-		// Start points to the beginning of the last delimiter. Move it up.
-		begin += size+Delimitor.size();
-		begin = std::min( begin, len );
-	}
+void do_split(
+    const S& Source, const S& Delimitor, int& begin, int& size, int len,
+    const bool bIgnoreEmpty) {
+  if (size != -1) {
+    // Start points to the beginning of the last delimiter. Move it up.
+    begin += size + Delimitor.size();
+    begin = std::min(begin, len);
+  }
 
-	size = 0;
+  size = 0;
 
-	if( bIgnoreEmpty )
-	{
-		// Skip delims.
-		while( begin + Delimitor.size() < Source.size() &&
-			!Source.compare( begin, Delimitor.size(), Delimitor ) )
-			++begin;
-	}
+  if (bIgnoreEmpty) {
+    // Skip delims.
+    while (begin + Delimitor.size() < Source.size() &&
+           !Source.compare(begin, Delimitor.size(), Delimitor)) {
+      ++begin;
+    }
+  }
 
-	/* Where's the string function to find within a substring?
-	 * C++ strings apparently are missing that ... */
-	size_t pos;
-	if( Delimitor.size() == 1 )
-		pos = Source.find( Delimitor[0], begin );
-	else
-		pos = Source.find( Delimitor, begin );
-	if( pos == Source.npos || (int) pos > len )
-		pos = len;
-	size = pos - begin;
+  /* Where's the string function to find within a substring?
+   * C++ strings apparently are missing that ... */
+  size_t pos;
+  if (Delimitor.size() == 1) {
+    pos = Source.find(Delimitor[0], begin);
+  } else {
+    pos = Source.find(Delimitor, begin);
+  }
+  if (pos == Source.npos || (int)pos > len) {
+    pos = len;
+  }
+  size = pos - begin;
 }
 
-void split( const std::string &Source, const std::string &Delimitor, int &begin, int &size, int len, const bool bIgnoreEmpty )
-{
-	do_split( Source, Delimitor, begin, size, len, bIgnoreEmpty );
+void split(
+    const std::string& Source, const std::string& Delimitor, int& begin,
+    int& size, int len, const bool bIgnoreEmpty) {
+  do_split(Source, Delimitor, begin, size, len, bIgnoreEmpty);
 }
 
-void split( const std::wstring &Source, const std::wstring &Delimitor, int &begin, int &size, int len, const bool bIgnoreEmpty )
-{
-	do_split( Source, Delimitor, begin, size, len, bIgnoreEmpty );
+void split(
+    const std::wstring& Source, const std::wstring& Delimitor, int& begin,
+    int& size, int len, const bool bIgnoreEmpty) {
+  do_split(Source, Delimitor, begin, size, len, bIgnoreEmpty);
 }
 
-void split( const std::string &Source, const std::string &Delimitor, int &begin, int &size, const bool bIgnoreEmpty )
-{
-	do_split( Source, Delimitor, begin, size, Source.size(), bIgnoreEmpty );
+void split(
+    const std::string& Source, const std::string& Delimitor, int& begin,
+    int& size, const bool bIgnoreEmpty) {
+  do_split(Source, Delimitor, begin, size, Source.size(), bIgnoreEmpty);
 }
 
-void split( const std::wstring &Source, const std::wstring &Delimitor, int &begin, int &size, const bool bIgnoreEmpty )
-{
-	do_split( Source, Delimitor, begin, size, Source.size(), bIgnoreEmpty );
+void split(
+    const std::wstring& Source, const std::wstring& Delimitor, int& begin,
+    int& size, const bool bIgnoreEmpty) {
+  do_split(Source, Delimitor, begin, size, Source.size(), bIgnoreEmpty);
 }
 
 /*
@@ -647,160 +651,143 @@ void split( const std::wstring &Source, const std::wstring &Delimitor, int &begi
  * c:\foo\bar.txt    -> "c:\foo\", "bar", ".txt"
  * \\foo\fum         -> "\\foo\", "fum", ""
  */
-void splitpath( const std::string &sPath, std::string &sDir, std::string &sFilename, std::string &sExt )
-{
-	sDir = sFilename = sExt = "";
+void splitpath(
+    const std::string& sPath, std::string& sDir, std::string& sFilename,
+    std::string& sExt) {
+  sDir = sFilename = sExt = "";
 
-	std::vector<std::string> asMatches;
+  std::vector<std::string> asMatches;
 
-	/*
-	 * One level of escapes for the regex, one for C. Ew.
-	 * This is really:
-	 * ^(.*[\\/])?(.*)$
-	 */
-	static Regex sep("^(.*[\\\\/])?(.*)$");
-	bool bCheck = sep.Compare( sPath, asMatches );
-	ASSERT( bCheck );
+  /*
+   * One level of escapes for the regex, one for C. Ew.
+   * This is really:
+   * ^(.*[\\/])?(.*)$
+   */
+  static Regex sep("^(.*[\\\\/])?(.*)$");
+  bool bCheck = sep.Compare(sPath, asMatches);
+  ASSERT(bCheck);
 
-	sDir = asMatches[0];
-	const std::string sBase = asMatches[1];
+  sDir = asMatches[0];
+  const std::string sBase = asMatches[1];
 
-	/* ^(.*)(\.[^\.]+)$ */
-	static Regex SplitExt("^(.*)(\\.[^\\.]+)$");
-	if( SplitExt.Compare(sBase, asMatches) )
-	{
-		sFilename = asMatches[0];
-		sExt = asMatches[1];
-	}
-	else
-	{
-		sFilename = sBase;
-	}
+  /* ^(.*)(\.[^\.]+)$ */
+  static Regex SplitExt("^(.*)(\\.[^\\.]+)$");
+  if (SplitExt.Compare(sBase, asMatches)) {
+    sFilename = asMatches[0];
+    sExt = asMatches[1];
+  } else {
+    sFilename = sBase;
+  }
 }
 
-std::string custom_songify_path(std::string const& path)
-{
-	std::vector<std::string> parts;
-	split(path, "/", parts, false);
-	if(parts.size() < 2)
-	{
-		return CUSTOM_SONG_PATH + path;
-	}
-	return CUSTOM_SONG_PATH + parts[parts.size()-2] + "/" + parts[parts.size()-1];
+std::string custom_songify_path(const std::string& path) {
+  std::vector<std::string> parts;
+  split(path, "/", parts, false);
+  if (parts.size() < 2) {
+    return CUSTOM_SONG_PATH + path;
+  }
+  return CUSTOM_SONG_PATH + parts[parts.size() - 2] + "/" +
+         parts[parts.size() - 1];
 }
 
 /* "foo.bar", "baz" -> "foo.baz"
  * "foo", "baz" -> "foo.baz"
  * "foo.bar", "" -> "foo" */
-std::string SetExtension( const std::string &sPath, const std::string &sExt )
-{
-	std::string sDir, sFileName, sOldExt;
-	splitpath( sPath, sDir, sFileName, sOldExt );
-	return sDir + sFileName + (sExt.size()? ".":"") + sExt;
+std::string SetExtension(const std::string& sPath, const std::string& sExt) {
+  std::string sDir, sFileName, sOldExt;
+  splitpath(sPath, sDir, sFileName, sOldExt);
+  return sDir + sFileName + (sExt.size() ? "." : "") + sExt;
 }
 
-std::string GetExtension( const std::string &sPath )
-{
-	size_t pos = sPath.rfind( '.' );
-	if( pos == sPath.npos )
-		return std::string();
+std::string GetExtension(const std::string& sPath) {
+  size_t pos = sPath.rfind('.');
+  if (pos == sPath.npos) {
+    return std::string();
+  }
 
-	size_t slash = sPath.find( '/', pos );
-	if( slash != sPath.npos )
-		return std::string(); /* rare: path/dir.ext/fn */
+  size_t slash = sPath.find('/', pos);
+  if (slash != sPath.npos) {
+    return std::string(); /* rare: path/dir.ext/fn */
+  }
 
-	return sPath.substr( pos+1, sPath.size()-pos+1 );
+  return sPath.substr(pos + 1, sPath.size() - pos + 1);
 }
 
-std::string GetFileNameWithoutExtension( const std::string &sPath )
-{
-	std::string sThrowAway, sFName;
-	splitpath( sPath, sThrowAway, sFName, sThrowAway );
-	return sFName;
+std::string GetFileNameWithoutExtension(const std::string& sPath) {
+  std::string sThrowAway, sFName;
+  splitpath(sPath, sThrowAway, sFName, sThrowAway);
+  return sFName;
 }
 
-void MakeValidFilename( std::string &sName )
-{
-	std::wstring wsName = RStringToWstring( sName );
-	std::wstring wsInvalid = L"/\\:*?\"<>|";
-	for( unsigned i = 0; i < wsName.size(); ++i )
-	{
-		wchar_t w = wsName[i];
-		if( w >= 32 &&
-			w < 126 &&
-			wsInvalid.find_first_of(w) == wsInvalid.npos )
-			continue;
+void MakeValidFilename(std::string& sName) {
+  std::wstring wsName = RStringToWstring(sName);
+  std::wstring wsInvalid = L"/\\:*?\"<>|";
+  for (unsigned i = 0; i < wsName.size(); ++i) {
+    wchar_t w = wsName[i];
+    if (w >= 32 && w < 126 && wsInvalid.find_first_of(w) == wsInvalid.npos) {
+      continue;
+    }
 
-		if( w == L'"' )
-		{
-			wsName[i] = L'\'';
-			continue;
-		}
+    if (w == L'"') {
+      wsName[i] = L'\'';
+      continue;
+    }
 
-		/* We could replace with closest matches in ASCII: convert the character
-		 * to UTF-8 NFD (decomposed) (maybe NFKD?), and see if the first
-		 * character is ASCII. This is useless for non-Western languages,
-		 * since we'll replace the whole filename. */
-		wsName[i] = '_';
-	}
+    /* We could replace with closest matches in ASCII: convert the character
+     * to UTF-8 NFD (decomposed) (maybe NFKD?), and see if the first
+     * character is ASCII. This is useless for non-Western languages,
+     * since we'll replace the whole filename. */
+    wsName[i] = '_';
+  }
 
-	sName = WStringToRString( wsName );
+  sName = WStringToRString(wsName);
 }
 
-bool FindFirstFilenameContaining(const std::vector<std::string>& filenames,
-	std::string& out, const std::vector<std::string>& starts_with,
-	const std::vector<std::string>& contains, const std::vector<std::string>& ends_with)
-{
-	for(size_t i= 0; i < filenames.size(); ++i)
-	{
-		std::string lower= GetFileNameWithoutExtension(filenames[i]);
-		MakeLower(lower);
-		for(size_t s= 0; s < starts_with.size(); ++s)
-		{
-			if(!lower.compare(0, starts_with[s].size(), starts_with[s]))
-			{
-				out= filenames[i];
-				return true;
-			}
-		}
-		size_t lower_size= lower.size();
-		for(size_t s= 0; s < ends_with.size(); ++s)
-		{
-			if(lower_size >= ends_with[s].size())
-			{
-				size_t end_pos= lower_size - ends_with[s].size();
-				if(!lower.compare(end_pos, std::string::npos, ends_with[s]))
-				{
-					out= filenames[i];
-					return true;
-				}
-			}
-		}
-		for(size_t s= 0; s < contains.size(); ++s)
-		{
-			if(lower.find(contains[s]) != std::string::npos)
-			{
-				out= filenames[i];
-				return true;
-			}
-		}
-	}
-	return false;
+bool FindFirstFilenameContaining(
+    const std::vector<std::string>& filenames, std::string& out,
+    const std::vector<std::string>& starts_with,
+    const std::vector<std::string>& contains,
+    const std::vector<std::string>& ends_with) {
+  for (size_t i = 0; i < filenames.size(); ++i) {
+    std::string lower = GetFileNameWithoutExtension(filenames[i]);
+    MakeLower(lower);
+    for (size_t s = 0; s < starts_with.size(); ++s) {
+      if (!lower.compare(0, starts_with[s].size(), starts_with[s])) {
+        out = filenames[i];
+        return true;
+      }
+    }
+    size_t lower_size = lower.size();
+    for (size_t s = 0; s < ends_with.size(); ++s) {
+      if (lower_size >= ends_with[s].size()) {
+        size_t end_pos = lower_size - ends_with[s].size();
+        if (!lower.compare(end_pos, std::string::npos, ends_with[s])) {
+          out = filenames[i];
+          return true;
+        }
+      }
+    }
+    for (size_t s = 0; s < contains.size(); ++s) {
+      if (lower.find(contains[s]) != std::string::npos) {
+        out = filenames[i];
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 int g_argc = 0;
-char **g_argv = nullptr;
+char** g_argv = nullptr;
 
-void SetCommandlineArguments( int argc, char **argv )
-{
-	g_argc = argc;
-	g_argv = argv;
+void SetCommandlineArguments(int argc, char** argv) {
+  g_argc = argc;
+  g_argv = argv;
 }
 
-void GetCommandLineArguments( int &argc, char **&argv )
-{
-	argc = g_argc;
-	argv = g_argv;
+void GetCommandLineArguments(int& argc, char**& argv) {
+  argc = g_argc;
+  argv = g_argv;
 }
 
 /* Search for the commandline argument given; eg. "test" searches for the
@@ -808,46 +795,44 @@ void GetCommandLineArguments( int &argc, char **&argv )
  * short arguments (-x) are not supported.  (These are not intended for
  * common, general use, so having short options isn't currently needed.)
  * If argument is non-nullptr, accept an argument. */
-bool GetCommandlineArgument( const std::string &option, std::string *argument, int iIndex )
-{
-	const std::string optstr = "--" + option;
+bool GetCommandlineArgument(
+    const std::string& option, std::string* argument, int iIndex) {
+  const std::string optstr = "--" + option;
 
-	for( int arg = 1; arg < g_argc; ++arg )
-	{
-		const std::string CurArgument = g_argv[arg];
+  for (int arg = 1; arg < g_argc; ++arg) {
+    const std::string CurArgument = g_argv[arg];
 
-		const size_t i = CurArgument.find( "=" );
-		std::string CurOption = CurArgument.substr(0,i);
-		if( CompareNoCase(CurOption, optstr) )
-			continue; // no match
+    const size_t i = CurArgument.find("=");
+    std::string CurOption = CurArgument.substr(0, i);
+    if (CompareNoCase(CurOption, optstr)) {
+      continue;  // no match
+    }
 
-		// Found it.
-		if( iIndex )
-		{
-			--iIndex;
-			continue;
-		}
+    // Found it.
+    if (iIndex) {
+      --iIndex;
+      continue;
+    }
 
-		if( argument )
-		{
-			if( i != std::string::npos )
-				*argument = CurArgument.substr( i+1 );
-			else
-				*argument = "";
-		}
+    if (argument) {
+      if (i != std::string::npos) {
+        *argument = CurArgument.substr(i + 1);
+      } else {
+        *argument = "";
+      }
+    }
 
-		return true;
-	}
+    return true;
+  }
 
-	return false;
+  return false;
 }
 
-std::string GetCwd()
-{
-	char buf[PATH_MAX];
-	bool ret = DoGetCwd(buf, PATH_MAX) != nullptr;
-	ASSERT(ret);
-	return buf;
+std::string GetCwd() {
+  char buf[PATH_MAX];
+  bool ret = DoGetCwd(buf, PATH_MAX) != nullptr;
+  ASSERT(ret);
+  return buf;
 }
 
 /*
@@ -856,917 +841,898 @@ std::string GetCwd()
  *   http://www.theorem.com/java/CRC32.java,
  *   http://www.faqs.org/rfcs/rfc1952.html
  */
-void CRC32( unsigned int &iCRC, const void *pVoidBuffer, size_t iSize )
-{
-	static unsigned tab[256];
-	static std::atomic<bool> initted = false;
-	if( !initted.load(std::memory_order_acquire) )
-	{
-		const unsigned POLY = 0xEDB88320;
+void CRC32(unsigned int& iCRC, const void* pVoidBuffer, size_t iSize) {
+  static unsigned tab[256];
+  static std::atomic<bool> initted = false;
+  if (!initted.load(std::memory_order_acquire)) {
+    const unsigned POLY = 0xEDB88320;
 
-		for( int i = 0; i < 256; ++i )
-		{
-			tab[i] = i;
-			for( int j = 0; j < 8; ++j )
-			{
-				if( tab[i] & 1 )
-					tab[i] = (tab[i] >> 1) ^ POLY;
-				else
-					tab[i] >>= 1;
-			}
-		}
-		initted.store(true, std::memory_order_release);
-	}
+    for (int i = 0; i < 256; ++i) {
+      tab[i] = i;
+      for (int j = 0; j < 8; ++j) {
+        if (tab[i] & 1) {
+          tab[i] = (tab[i] >> 1) ^ POLY;
+        } else {
+          tab[i] >>= 1;
+        }
+      }
+    }
+    initted.store(true, std::memory_order_release);
+  }
 
-	iCRC ^= 0xFFFFFFFF;
+  iCRC ^= 0xFFFFFFFF;
 
-	const char *pBuffer = (const char *) pVoidBuffer;
-	for( unsigned i = 0; i < iSize; ++i )
-		iCRC = (iCRC >> 8) ^ tab[(iCRC ^ pBuffer[i]) & 0xFF];
+  const char* pBuffer = (const char*)pVoidBuffer;
+  for (unsigned i = 0; i < iSize; ++i) {
+    iCRC = (iCRC >> 8) ^ tab[(iCRC ^ pBuffer[i]) & 0xFF];
+  }
 
-	iCRC ^= 0xFFFFFFFF;
+  iCRC ^= 0xFFFFFFFF;
 }
 
-unsigned int GetHashForString( const std::string &s )
-{
-	unsigned crc = 0;
-	CRC32( crc, s.data(), s.size() );
-	return crc;
+unsigned int GetHashForString(const std::string& s) {
+  unsigned crc = 0;
+  CRC32(crc, s.data(), s.size());
+  return crc;
 }
 
 /* Return true if "dir" is empty or does not exist. */
-bool DirectoryIsEmpty( const std::string &sDir )
-{
-	if( sDir.empty() )
-		return true;
-	if( !DoesFileExist(sDir) )
-		return true;
+bool DirectoryIsEmpty(const std::string& sDir) {
+  if (sDir.empty()) {
+    return true;
+  }
+  if (!DoesFileExist(sDir)) {
+    return true;
+  }
 
-	std::vector<std::string> asFileNames;
-	GetDirListing( sDir, asFileNames );
-	return asFileNames.empty();
+  std::vector<std::string> asFileNames;
+  GetDirListing(sDir, asFileNames);
+  return asFileNames.empty();
 }
 
-bool CompareRStringsAsc( const std::string &sStr1, const std::string &sStr2 )
-{
-	return CompareNoCase(sStr1, sStr2) < 0;
+bool CompareRStringsAsc(const std::string& sStr1, const std::string& sStr2) {
+  return CompareNoCase(sStr1, sStr2) < 0;
 }
 
-bool CompareRStringsDesc( const std::string &sStr1, const std::string &sStr2 )
-{
-	return CompareNoCase(sStr1, sStr2) > 0;
+bool CompareRStringsDesc(const std::string& sStr1, const std::string& sStr2) {
+  return CompareNoCase(sStr1, sStr2) > 0;
 }
 
-void SortRStringArray( std::vector<std::string> &arrayRStrings, const bool bSortAscending )
-{
-	sort( arrayRStrings.begin(), arrayRStrings.end(),
-			bSortAscending?CompareRStringsAsc:CompareRStringsDesc );
+void SortRStringArray(
+    std::vector<std::string>& arrayRStrings, const bool bSortAscending) {
+  sort(
+      arrayRStrings.begin(), arrayRStrings.end(),
+      bSortAscending ? CompareRStringsAsc : CompareRStringsDesc);
 }
 
-float calc_mean(const float* pStart, const float* pEnd)
-{
-	/* The Kahan summation algorithm is used here to prevent
-	 * situations where the low order bits may be lost.
-	 * https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
+float calc_mean(const float* pStart, const float* pEnd) {
+  /* The Kahan summation algorithm is used here to prevent
+   * situations where the low order bits may be lost.
+   * https://en.wikipedia.org/wiki/Kahan_summation_algorithm */
 
-	if (pStart == pEnd)
-		return 0.0f;
-	
-	float sum = 0.0f;
-	float c = 0.0f;
-	for (const float* p = pStart; p != pEnd; ++p)
-	{
-		float y = *p - c;
-		float t = sum + y;
-		c = (t - sum) - y;
-		sum = t;
-	}
-	return sum / (pEnd - pStart);
+  if (pStart == pEnd) {
+    return 0.0f;
+  }
+
+  float sum = 0.0f;
+  float c = 0.0f;
+  for (const float* p = pStart; p != pEnd; ++p) {
+    float y = *p - c;
+    float t = sum + y;
+    c = (t - sum) - y;
+    sum = t;
+  }
+  return sum / (pEnd - pStart);
 }
 
-float calc_stddev( const float *pStart, const float *pEnd, bool bSample )
-{
-	/* Calculate the mean. */
-	float fMean = calc_mean( pStart, pEnd );
+float calc_stddev(const float* pStart, const float* pEnd, bool bSample) {
+  /* Calculate the mean. */
+  float fMean = calc_mean(pStart, pEnd);
 
-	/* Calculate stddev. */
-	float fDev = 0.0f;
-	for( const float *i=pStart; i != pEnd; ++i )
-		fDev += (*i - fMean) * (*i - fMean);
-	fDev /= std::distance( pStart, pEnd ) - (bSample ? 1 : 0);
-	fDev = std::sqrt( fDev );
+  /* Calculate stddev. */
+  float fDev = 0.0f;
+  for (const float* i = pStart; i != pEnd; ++i) {
+    fDev += (*i - fMean) * (*i - fMean);
+  }
+  fDev /= std::distance(pStart, pEnd) - (bSample ? 1 : 0);
+  fDev = std::sqrt(fDev);
 
-	return fDev;
+  return fDev;
 }
 
-bool CalcLeastSquares( const std::vector<std::pair<float, float>> &vCoordinates,
-                       float &fSlope, float &fIntercept, float &fError )
-{
-	if( vCoordinates.empty() )
-		return false;
-	float fSumXX = 0.0f, fSumXY = 0.0f, fSumX = 0.0f, fSumY = 0.0f;
-	for( unsigned i = 0; i < vCoordinates.size(); ++i )
-	{
-		fSumXX += vCoordinates[i].first * vCoordinates[i].first;
-		fSumXY += vCoordinates[i].first * vCoordinates[i].second;
-		fSumX += vCoordinates[i].first;
-		fSumY += vCoordinates[i].second;
-	}
-	const float fDenominator = vCoordinates.size() * fSumXX - fSumX * fSumX;
-	fSlope = (vCoordinates.size() * fSumXY - fSumX * fSumY) / fDenominator;
-	fIntercept = (fSumXX * fSumY - fSumX * fSumXY) / fDenominator;
+bool CalcLeastSquares(
+    const std::vector<std::pair<float, float>>& vCoordinates, float& fSlope,
+    float& fIntercept, float& fError) {
+  if (vCoordinates.empty()) {
+    return false;
+  }
+  float fSumXX = 0.0f, fSumXY = 0.0f, fSumX = 0.0f, fSumY = 0.0f;
+  for (unsigned i = 0; i < vCoordinates.size(); ++i) {
+    fSumXX += vCoordinates[i].first * vCoordinates[i].first;
+    fSumXY += vCoordinates[i].first * vCoordinates[i].second;
+    fSumX += vCoordinates[i].first;
+    fSumY += vCoordinates[i].second;
+  }
+  const float fDenominator = vCoordinates.size() * fSumXX - fSumX * fSumX;
+  fSlope = (vCoordinates.size() * fSumXY - fSumX * fSumY) / fDenominator;
+  fIntercept = (fSumXX * fSumY - fSumX * fSumXY) / fDenominator;
 
-	fError = 0.0f;
-	for( unsigned i = 0; i < vCoordinates.size(); ++i )
-	{
-		const float fOneError = fIntercept + fSlope * vCoordinates[i].first - vCoordinates[i].second;
-		fError += fOneError * fOneError;
-	}
-	fError /= vCoordinates.size();
-	fError = std::sqrt( fError );
-	return true;
+  fError = 0.0f;
+  for (unsigned i = 0; i < vCoordinates.size(); ++i) {
+    const float fOneError =
+        fIntercept + fSlope * vCoordinates[i].first - vCoordinates[i].second;
+    fError += fOneError * fOneError;
+  }
+  fError /= vCoordinates.size();
+  fError = std::sqrt(fError);
+  return true;
 }
 
-void FilterHighErrorPoints( std::vector<std::pair<float, float>> &vCoordinates,
-                            float fSlope, float fIntercept, float fCutoff )
-{
-	unsigned int iOut = 0;
-	for( unsigned int iIn = 0; iIn < vCoordinates.size(); ++iIn )
-	{
-		const float fError = fIntercept + fSlope * vCoordinates[iIn].first - vCoordinates[iIn].second;
-		if( std::abs(fError) < fCutoff )
-		{
-			vCoordinates[iOut] = vCoordinates[iIn];
-			++iOut;
-		}
-	}
-	vCoordinates.resize( iOut );
+void FilterHighErrorPoints(
+    std::vector<std::pair<float, float>>& vCoordinates, float fSlope,
+    float fIntercept, float fCutoff) {
+  unsigned int iOut = 0;
+  for (unsigned int iIn = 0; iIn < vCoordinates.size(); ++iIn) {
+    const float fError = fIntercept + fSlope * vCoordinates[iIn].first -
+                         vCoordinates[iIn].second;
+    if (std::abs(fError) < fCutoff) {
+      vCoordinates[iOut] = vCoordinates[iIn];
+      ++iOut;
+    }
+  }
+  vCoordinates.resize(iOut);
 }
 
-void TrimLeft( std::string &sStr, const char *s )
-{
-	int n = 0;
-	while( n < int(sStr.size()) && strchr(s, sStr[n]) )
-		n++;
+void TrimLeft(std::string& sStr, const char* s) {
+  int n = 0;
+  while (n < int(sStr.size()) && strchr(s, sStr[n])) {
+    n++;
+  }
 
-	sStr.erase( sStr.begin(), sStr.begin()+n );
+  sStr.erase(sStr.begin(), sStr.begin() + n);
 }
 
-void TrimRight( std::string &sStr, const char *s )
-{
-	int n = sStr.size();
-	while( n > 0 && strchr(s, sStr[n-1]) )
-		n--;
+void TrimRight(std::string& sStr, const char* s) {
+  int n = sStr.size();
+  while (n > 0 && strchr(s, sStr[n - 1])) {
+    n--;
+  }
 
-	/* Delete from n to the end. If n == sStr.size(), nothing is deleted;
-	 * if n == 0, the whole string is erased. */
-	sStr.erase( sStr.begin()+n, sStr.end() );
+  /* Delete from n to the end. If n == sStr.size(), nothing is deleted;
+   * if n == 0, the whole string is erased. */
+  sStr.erase(sStr.begin() + n, sStr.end());
 }
 
-void Trim( std::string &sStr, const char *s )
-{
-	std::string::size_type b = 0, e = sStr.size();
-	while( b < e && strchr(s, sStr[b]) )
-		++b;
-	while( b < e && strchr(s, sStr[e-1]) )
-		--e;
-	sStr.assign( sStr.substr(b, e-b) );
+void Trim(std::string& sStr, const char* s) {
+  std::string::size_type b = 0, e = sStr.size();
+  while (b < e && strchr(s, sStr[b])) {
+    ++b;
+  }
+  while (b < e && strchr(s, sStr[e - 1])) {
+    --e;
+  }
+  sStr.assign(sStr.substr(b, e - b));
 }
 
-void StripCrnl( std::string &s )
-{
-	while( s.size() && (s[s.size()-1] == '\r' || s[s.size()-1] == '\n') )
-		s.erase( s.size()-1 );
+void StripCrnl(std::string& s) {
+  while (s.size() && (s[s.size() - 1] == '\r' || s[s.size() - 1] == '\n')) {
+    s.erase(s.size() - 1);
+  }
 }
 
-bool BeginsWith( const std::string &sTestThis, const std::string &sBeginning )
-{
-	ASSERT( !sBeginning.empty() );
-	return sTestThis.compare( 0, sBeginning.length(), sBeginning ) == 0;
+bool BeginsWith(const std::string& sTestThis, const std::string& sBeginning) {
+  ASSERT(!sBeginning.empty());
+  return sTestThis.compare(0, sBeginning.length(), sBeginning) == 0;
 }
 
-bool EndsWith( const std::string &sTestThis, const std::string &sEnding )
-{
-	ASSERT( !sEnding.empty() );
-	if( sTestThis.size() < sEnding.size() )
-		return false;
-	return sTestThis.compare( sTestThis.length()-sEnding.length(), sEnding.length(), sEnding ) == 0;
+bool EndsWith(const std::string& sTestThis, const std::string& sEnding) {
+  ASSERT(!sEnding.empty());
+  if (sTestThis.size() < sEnding.size()) {
+    return false;
+  }
+  return sTestThis.compare(
+             sTestThis.length() - sEnding.length(), sEnding.length(),
+             sEnding) == 0;
 }
 
-std::string URLEncode( const std::string &sStr )
-{
-	std::string sOutput;
-	for( unsigned k = 0; k < sStr.size(); k++ )
-	{
-		char t = sStr[k];
-		if( t >= '!' && t <= 'z' )
-			sOutput += t;
-		else
-			sOutput += "%" + ssprintf( "%02X", t );
-	}
-	return sOutput;
+std::string URLEncode(const std::string& sStr) {
+  std::string sOutput;
+  for (unsigned k = 0; k < sStr.size(); k++) {
+    char t = sStr[k];
+    if (t >= '!' && t <= 'z') {
+      sOutput += t;
+    } else {
+      sOutput += "%" + ssprintf("%02X", t);
+    }
+  }
+  return sOutput;
 }
 
 // remove various version control-related files
-static bool CVSOrSVN( const std::string& s )
-{
-	return EqualsNoCase(Right(s, 3), "CVS") ||
-			Right(s, 4) == ".svn" ||
-			EqualsNoCase(Right(s, 3), ".hg");
+static bool CVSOrSVN(const std::string& s) {
+  return EqualsNoCase(Right(s, 3), "CVS") || Right(s, 4) == ".svn" ||
+         EqualsNoCase(Right(s, 3), ".hg");
 }
 
-void StripCvsAndSvn( std::vector<std::string> &vs )
-{
-	RemoveIf( vs, CVSOrSVN );
+void StripCvsAndSvn(std::vector<std::string>& vs) { RemoveIf(vs, CVSOrSVN); }
+
+static bool MacResourceFork(const std::string& s) {
+  return EqualsNoCase(Left(s, 2), "._");
 }
 
-static bool MacResourceFork( const std::string& s )
-{
-	return EqualsNoCase(Left(s, 2), "._");
-}
-
-void StripMacResourceForks( std::vector<std::string> &vs )
-{
-	RemoveIf( vs, MacResourceFork );
+void StripMacResourceForks(std::vector<std::string>& vs) {
+  RemoveIf(vs, MacResourceFork);
 }
 
 // path is a .redir pathname. Read it and return the real one.
-std::string DerefRedir( const std::string &_path )
-{
-	std::string sPath = _path;
+std::string DerefRedir(const std::string& _path) {
+  std::string sPath = _path;
 
-	for( int i=0; i<100; i++ )
-	{
-		if( GetExtension(sPath) != "redir" )
-			return sPath;
+  for (int i = 0; i < 100; i++) {
+    if (GetExtension(sPath) != "redir") {
+      return sPath;
+    }
 
-		std::string sNewFileName;
-		GetFileContents( sPath, sNewFileName, true );
+    std::string sNewFileName;
+    GetFileContents(sPath, sNewFileName, true);
 
-		// Empty is invalid.
-		if( sNewFileName == "" )
-			return std::string();
+    // Empty is invalid.
+    if (sNewFileName == "") {
+      return std::string();
+    }
 
-		std::string sPath2 = Dirname(sPath) + sNewFileName;
+    std::string sPath2 = Dirname(sPath) + sNewFileName;
 
-		CollapsePath( sPath2 );
+    CollapsePath(sPath2);
 
-		sPath2 += "*";
+    sPath2 += "*";
 
-		std::vector<std::string> matches;
-		GetDirListing( sPath2, matches, false, true );
+    std::vector<std::string> matches;
+    GetDirListing(sPath2, matches, false, true);
 
-		if( matches.empty() )
-			RageException::Throw( "The redirect \"%s\" references a file \"%s\" which doesn't exist.", sPath.c_str(), sPath2.c_str() );
-		else if( matches.size() > 1 )
-			RageException::Throw( "The redirect \"%s\" references a file \"%s\" with multiple matches.", sPath.c_str(), sPath2.c_str() );
+    if (matches.empty()) {
+      RageException::Throw(
+          "The redirect \"%s\" references a file \"%s\" which doesn't exist.",
+          sPath.c_str(), sPath2.c_str());
+    } else if (matches.size() > 1) {
+      RageException::Throw(
+          "The redirect \"%s\" references a file \"%s\" with multiple matches.",
+          sPath.c_str(), sPath2.c_str());
+    }
 
-		sPath = matches[0];
-	}
+    sPath = matches[0];
+  }
 
-	RageException::Throw( "Circular redirect \"%s\".", sPath.c_str() );
+  RageException::Throw("Circular redirect \"%s\".", sPath.c_str());
 }
 
-bool GetFileContents( const std::string &sPath, std::string &sOut, bool bOneLine )
-{
-	// Don't warn if the file doesn't exist, but do warn if it exists and fails to open.
-	if( !IsAFile(sPath) )
-		return false;
+bool GetFileContents(
+    const std::string& sPath, std::string& sOut, bool bOneLine) {
+  // Don't warn if the file doesn't exist, but do warn if it exists and fails to
+  // open.
+  if (!IsAFile(sPath)) {
+    return false;
+  }
 
-	RageFile file;
-	if( !file.Open(sPath) )
-	{
-		LOG->Warn( "GetFileContents(%s): %s", sPath.c_str(), file.GetError().c_str() );
-		return false;
-	}
+  RageFile file;
+  if (!file.Open(sPath)) {
+    LOG->Warn(
+        "GetFileContents(%s): %s", sPath.c_str(), file.GetError().c_str());
+    return false;
+  }
 
-	// todo: figure out how to make this UTF-8 safe. -aj
-	std::string sData;
-	int iGot;
-	if( bOneLine )
-		iGot = file.GetLine( sData );
-	else
-		iGot = file.Read( sData, file.GetFileSize() );
+  // todo: figure out how to make this UTF-8 safe. -aj
+  std::string sData;
+  int iGot;
+  if (bOneLine) {
+    iGot = file.GetLine(sData);
+  } else {
+    iGot = file.Read(sData, file.GetFileSize());
+  }
 
-	if( iGot == -1 )
-	{
-		LOG->Warn( "GetFileContents(%s): %s", sPath.c_str(), file.GetError().c_str() );
-		return false;
-	}
+  if (iGot == -1) {
+    LOG->Warn(
+        "GetFileContents(%s): %s", sPath.c_str(), file.GetError().c_str());
+    return false;
+  }
 
-	if( bOneLine )
-		StripCrnl( sData );
+  if (bOneLine) {
+    StripCrnl(sData);
+  }
 
-	sOut = sData;
-	return true;
+  sOut = sData;
+  return true;
 }
 
-bool GetFileContents( const std::string &sFile, std::vector<std::string> &asOut )
-{
-	RageFile file;
-	if( !file.Open(sFile) )
-	{
-		LOG->Warn( "GetFileContents(%s): %s", sFile.c_str(), file.GetError().c_str() );
-		return false;
-	}
+bool GetFileContents(
+    const std::string& sFile, std::vector<std::string>& asOut) {
+  RageFile file;
+  if (!file.Open(sFile)) {
+    LOG->Warn(
+        "GetFileContents(%s): %s", sFile.c_str(), file.GetError().c_str());
+    return false;
+  }
 
-	std::string sLine;
-	while( file.GetLine(sLine) )
-		asOut.push_back( sLine );
-	return true;
+  std::string sLine;
+  while (file.GetLine(sLine)) {
+    asOut.push_back(sLine);
+  }
+  return true;
 }
 
 /* Given a UTF-8 byte, return the length of the codepoint (if a start code)
  * or 0 if it's a continuation byte. */
-int utf8_get_char_len( char p )
-{
-	if( !(p & 0x80) ) return 1; /* 0xxxxxxx - 1 */
-	if( !(p & 0x40) ) return 1; /* 10xxxxxx - continuation */
-	if( !(p & 0x20) ) return 2; /* 110xxxxx */
-	if( !(p & 0x10) ) return 3; /* 1110xxxx */
-	if( !(p & 0x08) ) return 4; /* 11110xxx */
-	if( !(p & 0x04) ) return 5; /* 111110xx */
-	if( !(p & 0x02) ) return 6; /* 1111110x */
-	return 1; /* 1111111x */
+int utf8_get_char_len(char p) {
+  if (!(p & 0x80)) {
+    return 1; /* 0xxxxxxx - 1 */
+  }
+  if (!(p & 0x40)) {
+    return 1; /* 10xxxxxx - continuation */
+  }
+  if (!(p & 0x20)) {
+    return 2; /* 110xxxxx */
+  }
+  if (!(p & 0x10)) {
+    return 3; /* 1110xxxx */
+  }
+  if (!(p & 0x08)) {
+    return 4; /* 11110xxx */
+  }
+  if (!(p & 0x04)) {
+    return 5; /* 111110xx */
+  }
+  if (!(p & 0x02)) {
+    return 6; /* 1111110x */
+  }
+  return 1; /* 1111111x */
 }
 
-static inline bool is_utf8_continuation_byte( char c )
-{
-	return (c & 0xC0) == 0x80;
+static inline bool is_utf8_continuation_byte(char c) {
+  return (c & 0xC0) == 0x80;
 }
 
 /* Decode one codepoint at start; advance start and place the result in ch.
  * If the encoded string is invalid, false is returned. */
-bool utf8_to_wchar_ec( const std::string &s, unsigned &start, wchar_t &ch )
-{
-	if( start >= s.size() )
-		return false;
+bool utf8_to_wchar_ec(const std::string& s, unsigned& start, wchar_t& ch) {
+  if (start >= s.size()) {
+    return false;
+  }
 
-	if( is_utf8_continuation_byte( s[start] ) || /* misplaced continuation byte */
-		(s[start] & 0xFE) == 0xFE ) /* 0xFE, 0xFF */
-	{
-		start += 1;
-		return false;
-	}
+  if (is_utf8_continuation_byte(s[start]) || /* misplaced continuation byte */
+      (s[start] & 0xFE) == 0xFE)             /* 0xFE, 0xFF */
+  {
+    start += 1;
+    return false;
+  }
 
-	int len = utf8_get_char_len( s[start] );
+  int len = utf8_get_char_len(s[start]);
 
-	const int first_byte_mask[] = { -1, 0x7F, 0x1F, 0x0F, 0x07, 0x03, 0x01 };
+  const int first_byte_mask[] = {-1, 0x7F, 0x1F, 0x0F, 0x07, 0x03, 0x01};
 
-	ch = wchar_t(s[start] & first_byte_mask[len]);
+  ch = wchar_t(s[start] & first_byte_mask[len]);
 
-	for( int i = 1; i < len; ++i )
-	{
-		if( start+i >= s.size() )
-		{
-			/* We expected a continuation byte, but didn't get one. Return error, and point
-			 * start at the unexpected byte; it's probably a new sequence. */
-			start += i;
-			return false;
-		}
+  for (int i = 1; i < len; ++i) {
+    if (start + i >= s.size()) {
+      /* We expected a continuation byte, but didn't get one. Return error, and
+       * point start at the unexpected byte; it's probably a new sequence. */
+      start += i;
+      return false;
+    }
 
-		char byte = s[start+i];
-		if( !is_utf8_continuation_byte(byte) )
-		{
-			/* We expected a continuation byte, but didn't get one. Return error, and point
-			 * start at the unexpected byte; it's probably a new sequence. */
-			start += i;
-			return false;
-		}
-		ch = (ch << 6) | (byte & 0x3F);
-	}
+    char byte = s[start + i];
+    if (!is_utf8_continuation_byte(byte)) {
+      /* We expected a continuation byte, but didn't get one. Return error, and
+       * point start at the unexpected byte; it's probably a new sequence. */
+      start += i;
+      return false;
+    }
+    ch = (ch << 6) | (byte & 0x3F);
+  }
 
-	bool bValid = true;
-	{
-		unsigned c1 = (unsigned) s[start] & 0xFF;
-		unsigned c2 = (unsigned) s[start+1] & 0xFF;
-		int c = (c1 << 8) + c2;
-		if( (c & 0xFE00) == 0xC000 ||
-		    (c & 0xFFE0) == 0xE080 ||
-		    (c & 0xFFF0) == 0xF080 ||
-		    (c & 0xFFF8) == 0xF880 ||
-		    (c & 0xFFFC) == 0xFC80 )
-	    {
-		    bValid = false;
-	    }
-	}
+  bool bValid = true;
+  {
+    unsigned c1 = (unsigned)s[start] & 0xFF;
+    unsigned c2 = (unsigned)s[start + 1] & 0xFF;
+    int c = (c1 << 8) + c2;
+    if ((c & 0xFE00) == 0xC000 || (c & 0xFFE0) == 0xE080 ||
+        (c & 0xFFF0) == 0xF080 || (c & 0xFFF8) == 0xF880 ||
+        (c & 0xFFFC) == 0xFC80) {
+      bValid = false;
+    }
+  }
 
-	if( ch == 0xFFFE || ch == 0xFFFF )
-		bValid = false;
+  if (ch == 0xFFFE || ch == 0xFFFF) {
+    bValid = false;
+  }
 
-	start += len;
-	return bValid;
+  start += len;
+  return bValid;
 }
 
-/* Like utf8_to_wchar_ec, but only does enough error checking to prevent crashing. */
-bool utf8_to_wchar( const char *s, size_t iLength, unsigned &start, wchar_t &ch )
-{
-	if( start >= iLength )
-		return false;
+/* Like utf8_to_wchar_ec, but only does enough error checking to prevent
+ * crashing. */
+bool utf8_to_wchar(
+    const char* s, size_t iLength, unsigned& start, wchar_t& ch) {
+  if (start >= iLength) {
+    return false;
+  }
 
-	int len = utf8_get_char_len( s[start] );
+  int len = utf8_get_char_len(s[start]);
 
-	if( start+len > iLength )
-	{
-		// We don't have room for enough continuation bytes. Return error.
-		start += len;
-		ch = L'?';
-		return false;
-	}
+  if (start + len > iLength) {
+    // We don't have room for enough continuation bytes. Return error.
+    start += len;
+    ch = L'?';
+    return false;
+  }
 
-	switch( len )
-	{
-	case 1:
-		ch = (s[start+0] & 0x7F);
-		break;
-	case 2:
-		ch = ( (s[start+0] & 0x1F) << 6 ) |
-		       (s[start+1] & 0x3F);
-		break;
-	case 3:
-		ch = ( (s[start+0] & 0x0F) << 12 ) |
-		     ( (s[start+1] & 0x3F) << 6 ) |
-		       (s[start+2] & 0x3F);
-		break;
-	case 4:
-		ch = ( (s[start+0] & 0x07) << 18 ) |
-		     ( (s[start+1] & 0x3F) << 12 ) |
-		     ( (s[start+2] & 0x3F) << 6 ) |
-		     (s[start+3] & 0x3F);
-		break;
-	case 5:
-		ch = ( (s[start+0] & 0x03) << 24 ) |
-		     ( (s[start+1] & 0x3F) << 18 ) |
-		     ( (s[start+2] & 0x3F) << 12 ) |
-		     ( (s[start+3] & 0x3F) << 6 ) |
-		     (s[start+4] & 0x3F);
-		break;
+  switch (len) {
+    case 1:
+      ch = (s[start + 0] & 0x7F);
+      break;
+    case 2:
+      ch = ((s[start + 0] & 0x1F) << 6) | (s[start + 1] & 0x3F);
+      break;
+    case 3:
+      ch = ((s[start + 0] & 0x0F) << 12) | ((s[start + 1] & 0x3F) << 6) |
+           (s[start + 2] & 0x3F);
+      break;
+    case 4:
+      ch = ((s[start + 0] & 0x07) << 18) | ((s[start + 1] & 0x3F) << 12) |
+           ((s[start + 2] & 0x3F) << 6) | (s[start + 3] & 0x3F);
+      break;
+    case 5:
+      ch = ((s[start + 0] & 0x03) << 24) | ((s[start + 1] & 0x3F) << 18) |
+           ((s[start + 2] & 0x3F) << 12) | ((s[start + 3] & 0x3F) << 6) |
+           (s[start + 4] & 0x3F);
+      break;
 
-	case 6:
-		ch = ( (s[start+0] & 0x01) << 30 ) |
-		     ( (s[start+1] & 0x3F) << 24 ) |
-		     ( (s[start+2] & 0x3F) << 18 ) |
-		     ( (s[start+3] & 0x3F) << 12) |
-		     ( (s[start+4] & 0x3F) << 6 ) |
-		     (s[start+5] & 0x3F);
-		break;
+    case 6:
+      ch = ((s[start + 0] & 0x01) << 30) | ((s[start + 1] & 0x3F) << 24) |
+           ((s[start + 2] & 0x3F) << 18) | ((s[start + 3] & 0x3F) << 12) |
+           ((s[start + 4] & 0x3F) << 6) | (s[start + 5] & 0x3F);
+      break;
+  }
 
-	}
-
-	start += len;
-	return true;
+  start += len;
+  return true;
 }
-
 
 // UTF-8 encode ch and append to out.
-void wchar_to_utf8( wchar_t ch, std::string &out )
-{
-	if( ch < 0x80 ) { out.append( 1, (char) ch ); return; }
+void wchar_to_utf8(wchar_t ch, std::string& out) {
+  if (ch < 0x80) {
+    out.append(1, (char)ch);
+    return;
+  }
 
-	int cbytes = 0;
-	if( ch < 0x800 ) cbytes = 1;
-	else if( ch < 0x10000 )    cbytes = 2;
-	else if( ch < 0x200000 )   cbytes = 3;
-	else if( ch < 0x4000000 )  cbytes = 4;
-	else cbytes = 5;
+  int cbytes = 0;
+  if (ch < 0x800) {
+    cbytes = 1;
+  } else if (ch < 0x10000) {
+    cbytes = 2;
+  } else if (ch < 0x200000) {
+    cbytes = 3;
+  } else if (ch < 0x4000000) {
+    cbytes = 4;
+  } else {
+    cbytes = 5;
+  }
 
-	{
-		int shift = cbytes*6;
-		const int init_masks[] = { 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
-		out.append( 1, (char) (init_masks[cbytes-1] | (ch>>shift)) );
-	}
+  {
+    int shift = cbytes * 6;
+    const int init_masks[] = {0xC0, 0xE0, 0xF0, 0xF8, 0xFC};
+    out.append(1, (char)(init_masks[cbytes - 1] | (ch >> shift)));
+  }
 
-	for( int i = 0; i < cbytes; ++i )
-	{
-		int shift = (cbytes-i-1)*6;
-		out.append( 1, (char) (0x80 | ((ch>>shift)&0x3F)) );
-	}
+  for (int i = 0; i < cbytes; ++i) {
+    int shift = (cbytes - i - 1) * 6;
+    out.append(1, (char)(0x80 | ((ch >> shift) & 0x3F)));
+  }
 }
 
-wchar_t utf8_get_char( const std::string &s )
-{
-	unsigned start = 0;
-	wchar_t ret;
-	if( !utf8_to_wchar_ec( s, start, ret ) )
-		return INVALID_CHAR;
-	return ret;
+wchar_t utf8_get_char(const std::string& s) {
+  unsigned start = 0;
+  wchar_t ret;
+  if (!utf8_to_wchar_ec(s, start, ret)) {
+    return INVALID_CHAR;
+  }
+  return ret;
 }
 
 // Replace invalid sequences in s.
-void utf8_sanitize( std::string &s )
-{
-	std::string ret;
-	for( unsigned start = 0; start < s.size(); )
-	{
-		wchar_t ch;
-		if( !utf8_to_wchar_ec( s, start, ch ) )
-			ch = INVALID_CHAR;
+void utf8_sanitize(std::string& s) {
+  std::string ret;
+  for (unsigned start = 0; start < s.size();) {
+    wchar_t ch;
+    if (!utf8_to_wchar_ec(s, start, ch)) {
+      ch = INVALID_CHAR;
+    }
 
-		wchar_to_utf8( ch, ret );
-	}
+    wchar_to_utf8(ch, ret);
+  }
 
-	s = ret;
+  s = ret;
 }
 
-bool utf8_is_valid( const std::string &s )
-{
-	for( unsigned start = 0; start < s.size(); )
-	{
-		wchar_t ch;
-		if( !utf8_to_wchar_ec( s, start, ch ) )
-			return false;
-	}
-	return true;
+bool utf8_is_valid(const std::string& s) {
+  for (unsigned start = 0; start < s.size();) {
+    wchar_t ch;
+    if (!utf8_to_wchar_ec(s, start, ch)) {
+      return false;
+    }
+  }
+  return true;
 }
 
-/* Windows tends to drop garbage BOM characters at the start of UTF-8 text files.
- * Remove them. */
-void utf8_remove_bom( std::string &sLine )
-{
-	if( !sLine.compare(0, 3, "\xef\xbb\xbf") )
-		sLine.erase(0, 3);
+/* Windows tends to drop garbage BOM characters at the start of UTF-8 text
+ * files. Remove them. */
+void utf8_remove_bom(std::string& sLine) {
+  if (!sLine.compare(0, 3, "\xef\xbb\xbf")) {
+    sLine.erase(0, 3);
+  }
 }
 
-static int UnicodeDoUpper( char *p, size_t iLen, const unsigned char pMapping[256] )
-{
-	// Note: this has problems with certain accented characters. -aj
-	wchar_t wc = L'\0';
-	unsigned iStart = 0;
-	if( !utf8_to_wchar(p, iLen, iStart, wc) )
-		return 1;
+static int UnicodeDoUpper(
+    char* p, size_t iLen, const unsigned char pMapping[256]) {
+  // Note: this has problems with certain accented characters. -aj
+  wchar_t wc = L'\0';
+  unsigned iStart = 0;
+  if (!utf8_to_wchar(p, iLen, iStart, wc)) {
+    return 1;
+  }
 
-	wchar_t iUpper = wc;
-	if( wc < 256 )
-		iUpper = pMapping[wc];
-	if( iUpper != wc )
-	{
-		std::string sOut;
-		wchar_to_utf8( iUpper, sOut );
-		if( sOut.size() == iStart )
-			memcpy( p, sOut.data(), sOut.size() );
-		else
-			WARN( ssprintf("UnicodeDoUpper: invalid character at \"%s\"", std::string(p,iLen).c_str()) );
-	}
+  wchar_t iUpper = wc;
+  if (wc < 256) {
+    iUpper = pMapping[wc];
+  }
+  if (iUpper != wc) {
+    std::string sOut;
+    wchar_to_utf8(iUpper, sOut);
+    if (sOut.size() == iStart) {
+      memcpy(p, sOut.data(), sOut.size());
+    } else {
+      WARN(ssprintf(
+          "UnicodeDoUpper: invalid character at \"%s\"",
+          std::string(p, iLen).c_str()));
+    }
+  }
 
-	return iStart;
+  return iStart;
 }
 
-/* Fast in-place MakeUpper and MakeLower. This only replaces characters with characters of the same UTF-8
- * length, so we never have to move the whole string. This is optimized for strings that have no
- * non-ASCII characters. */
-void MakeUpper( char *p, size_t iLen )
-{
-	char *pStart = p;
-	char *pEnd = p + iLen;
-	while( p < pEnd )
-	{
-		// Fast path:
-		if( likely( !(*p & 0x80) ) )
-		{
-			if( unlikely(*p >= 'a' && *p <= 'z') )
-				*p += 'A' - 'a';
-			++p;
-			continue;
-		}
+/* Fast in-place MakeUpper and MakeLower. This only replaces characters with
+ * characters of the same UTF-8 length, so we never have to move the whole
+ * string. This is optimized for strings that have no non-ASCII characters. */
+void MakeUpper(char* p, size_t iLen) {
+  char* pStart = p;
+  char* pEnd = p + iLen;
+  while (p < pEnd) {
+    // Fast path:
+    if (likely(!(*p & 0x80))) {
+      if (unlikely(*p >= 'a' && *p <= 'z')) {
+        *p += 'A' - 'a';
+      }
+      ++p;
+      continue;
+    }
 
-		int iRemaining = iLen - (p-pStart);
-		p += UnicodeDoUpper( p, iRemaining, g_UpperCase );
-	}
+    int iRemaining = iLen - (p - pStart);
+    p += UnicodeDoUpper(p, iRemaining, g_UpperCase);
+  }
 }
 
-void MakeLower( char *p, size_t iLen )
-{
-	char *pStart = p;
-	char *pEnd = p + iLen;
-	while( p < pEnd )
-	{
-		// Fast path:
-		if( likely( !(*p & 0x80) ) )
-		{
-			if( unlikely(*p >= 'A' && *p <= 'Z') )
-				*p -= 'A' - 'a';
-			++p;
-			continue;
-		}
+void MakeLower(char* p, size_t iLen) {
+  char* pStart = p;
+  char* pEnd = p + iLen;
+  while (p < pEnd) {
+    // Fast path:
+    if (likely(!(*p & 0x80))) {
+      if (unlikely(*p >= 'A' && *p <= 'Z')) {
+        *p -= 'A' - 'a';
+      }
+      ++p;
+      continue;
+    }
 
-		int iRemaining = iLen - (p-pStart);
-		p += UnicodeDoUpper( p, iRemaining, g_LowerCase );
-	}
+    int iRemaining = iLen - (p - pStart);
+    p += UnicodeDoUpper(p, iRemaining, g_LowerCase);
+  }
 }
 
-void UnicodeUpperLower( wchar_t *p, size_t iLen, const unsigned char pMapping[256] )
-{
-	wchar_t *pEnd = p + iLen;
-	while( p != pEnd )
-	{
-		// wchar_t can be signed or unsigned depending on the platform and the compiler.
-		// We use WCHAR_MIN to determine a valid condition that won't emit a type-limits warning.
-		#if WCHAR_MIN != 0
-		if( *p >= 0 && *p < 256 ) {
-		#else
-		if( *p < 256 ) {
-		#endif
-			*p = pMapping[*p];
-		}
-		++p;
-	}
+void UnicodeUpperLower(
+    wchar_t* p, size_t iLen, const unsigned char pMapping[256]) {
+  wchar_t* pEnd = p + iLen;
+  while (p != pEnd) {
+// wchar_t can be signed or unsigned depending on the platform and the compiler.
+// We use WCHAR_MIN to determine a valid condition that won't emit a type-limits
+// warning.
+#if WCHAR_MIN != 0
+    if (*p >= 0 && *p < 256) {
+#else
+    if (*p < 256) {
+#endif
+      *p = pMapping[*p];
+    }
+    ++p;
+  }
 }
 
-void MakeUpper( wchar_t *p, size_t iLen )
-{
-	UnicodeUpperLower( p, iLen, g_UpperCase );
+void MakeUpper(wchar_t* p, size_t iLen) {
+  UnicodeUpperLower(p, iLen, g_UpperCase);
 }
 
-void MakeLower( wchar_t *p, size_t iLen )
-{
-	UnicodeUpperLower( p, iLen, g_LowerCase );
+void MakeLower(wchar_t* p, size_t iLen) {
+  UnicodeUpperLower(p, iLen, g_LowerCase);
 }
 
-float StringToFloat( const std::string &sString )
-{
-	float fOut = std::strtof(sString.c_str(), nullptr);
-	if (!std::isfinite(fOut))
-	{
-		fOut = 0.0f;
-	}
-	return fOut;
+float StringToFloat(const std::string& sString) {
+  float fOut = std::strtof(sString.c_str(), nullptr);
+  if (!std::isfinite(fOut)) {
+    fOut = 0.0f;
+  }
+  return fOut;
 }
 
-bool StringToFloat( const std::string &sString, float &fOut )
-{
-	char *endPtr = nullptr;
+bool StringToFloat(const std::string& sString, float& fOut) {
+  char* endPtr = nullptr;
 
-	fOut = std::strtof(sString.c_str(), &endPtr);
-	return sString.size() && *endPtr == '\0' && std::isfinite(fOut);
+  fOut = std::strtof(sString.c_str(), &endPtr);
+  return sString.size() && *endPtr == '\0' && std::isfinite(fOut);
 }
 
-std::string FloatToString( const float &num )
-{
-	std::stringstream ss;
-	ss << num;
-	return ss.str();
+std::string FloatToString(const float& num) {
+  std::stringstream ss;
+  ss << num;
+  return ss.str();
 }
 
-int StringToInt( const std::string& str, size_t* pos, int base, int exceptVal )
-{
-  try
-  {
+int StringToInt(const std::string& str, size_t* pos, int base, int exceptVal) {
+  try {
     return std::stoi(str, pos, base);
-  }
-  catch (const std::invalid_argument & e) {
-    LOG->Warn( "stoi(%s): %s", str.c_str(), e.what() );
-  }
-  catch (const std::out_of_range & e) {
-    LOG->Warn( "stoi(%s): %s", str.c_str(), e.what() );
+  } catch (const std::invalid_argument& e) {
+    LOG->Warn("stoi(%s): %s", str.c_str(), e.what());
+  } catch (const std::out_of_range& e) {
+    LOG->Warn("stoi(%s): %s", str.c_str(), e.what());
   }
   return exceptVal;
 }
 
-long StringToLong( const std::string& str, size_t* pos, int base, long exceptVal )
-{
-  try
-  {
+long StringToLong(
+    const std::string& str, size_t* pos, int base, long exceptVal) {
+  try {
     return std::stol(str, pos, base);
-  }
-  catch (const std::invalid_argument & e) {
-    LOG->Warn( "stol(%s): %s", str.c_str(), e.what() );
-  }
-  catch (const std::out_of_range & e) {
-    LOG->Warn( "stol(%s): %s", str.c_str(), e.what() );
+  } catch (const std::invalid_argument& e) {
+    LOG->Warn("stol(%s): %s", str.c_str(), e.what());
+  } catch (const std::out_of_range& e) {
+    LOG->Warn("stol(%s): %s", str.c_str(), e.what());
   }
   return exceptVal;
 }
 
-long long StringToLLong( const std::string& str, size_t* pos, int base, long long exceptVal )
-{
-  try
-  {
+long long StringToLLong(
+    const std::string& str, size_t* pos, int base, long long exceptVal) {
+  try {
     return std::stoll(str, pos, base);
-  }
-  catch (const std::invalid_argument & e) {
-    LOG->Warn( "stoll(%s): %s", str.c_str(), e.what() );
-  }
-  catch (const std::out_of_range & e) {
-    LOG->Warn( "stoll(%s): %s", str.c_str(), e.what() );
+  } catch (const std::invalid_argument& e) {
+    LOG->Warn("stoll(%s): %s", str.c_str(), e.what());
+  } catch (const std::out_of_range& e) {
+    LOG->Warn("stoll(%s): %s", str.c_str(), e.what());
   }
   return exceptVal;
 }
 
 const wchar_t INVALID_CHAR = 0xFFFD; /* U+FFFD REPLACEMENT CHARACTER */
 
-std::wstring RStringToWstring( const std::string &s )
-{
-	std::wstring ret;
-	ret.reserve( s.size() );
-	for( unsigned start = 0; start < s.size(); )
-	{
-		char c = s[start];
-		if( !(c&0x80) )
-		{
-			// ASCII fast path
-			ret += c;
-			++start;
-			continue;
-		}
+std::wstring RStringToWstring(const std::string& s) {
+  std::wstring ret;
+  ret.reserve(s.size());
+  for (unsigned start = 0; start < s.size();) {
+    char c = s[start];
+    if (!(c & 0x80)) {
+      // ASCII fast path
+      ret += c;
+      ++start;
+      continue;
+    }
 
-		wchar_t ch = L'\0';
-		if( !utf8_to_wchar( s.data(), s.size(), start, ch ) )
-			ch = INVALID_CHAR;
-		ret += ch;
-	}
+    wchar_t ch = L'\0';
+    if (!utf8_to_wchar(s.data(), s.size(), start, ch)) {
+      ch = INVALID_CHAR;
+    }
+    ret += ch;
+  }
 
-	return ret;
+  return ret;
 }
 
-std::string WStringToRString( const std::wstring &sStr )
-{
-	std::string sRet;
+std::string WStringToRString(const std::wstring& sStr) {
+  std::string sRet;
 
-	for( unsigned i = 0; i < sStr.size(); ++i )
-		wchar_to_utf8( sStr[i], sRet );
+  for (unsigned i = 0; i < sStr.size(); ++i) {
+    wchar_to_utf8(sStr[i], sRet);
+  }
 
-	return sRet;
+  return sRet;
 }
 
-std::string WcharToUTF8( wchar_t c )
-{
-	std::string ret;
-	wchar_to_utf8( c, ret );
-	return ret;
+std::string WcharToUTF8(wchar_t c) {
+  std::string ret;
+  wchar_to_utf8(c, ret);
+  return ret;
 }
 
 // &a; -> a
-void ReplaceEntityText( std::string &sText, const std::map<std::string, std::string> &m )
-{
-	std::string sRet;
+void ReplaceEntityText(
+    std::string& sText, const std::map<std::string, std::string>& m) {
+  std::string sRet;
 
-	size_t iOffset = 0;
-	while( iOffset != sText.size() )
-	{
-		size_t iStart = sText.find( '&', iOffset );
-		if( iStart == sText.npos )
-		{
-			// Optimization: if we didn't replace anything at all, do nothing.
-			if( iOffset == 0 )
-				return;
+  size_t iOffset = 0;
+  while (iOffset != sText.size()) {
+    size_t iStart = sText.find('&', iOffset);
+    if (iStart == sText.npos) {
+      // Optimization: if we didn't replace anything at all, do nothing.
+      if (iOffset == 0) {
+        return;
+      }
 
-			// Append the rest of the string.
-			sRet.append( sText, iOffset, sRet.npos );
-			break;
-		}
+      // Append the rest of the string.
+      sRet.append(sText, iOffset, sRet.npos);
+      break;
+    }
 
-		// Append the text between iOffset and iStart.
-		sRet.append( sText, iOffset, iStart-iOffset );
-		iOffset += iStart-iOffset;
+    // Append the text between iOffset and iStart.
+    sRet.append(sText, iOffset, iStart - iOffset);
+    iOffset += iStart - iOffset;
 
-		// Optimization: stop early on "&", so "&&&&&&&&&&&" isn't n^2.
-		size_t iEnd = sText.find_first_of( "&;", iStart+1 );
-		if( iEnd == sText.npos || sText[iEnd] == '&' )
-		{
-			// & with no matching ;, or two & in a row. Append the & and continue.
-			sRet.append( sText, iStart, 1 );
-			++iOffset;
-			continue;
-		}
+    // Optimization: stop early on "&", so "&&&&&&&&&&&" isn't n^2.
+    size_t iEnd = sText.find_first_of("&;", iStart + 1);
+    if (iEnd == sText.npos || sText[iEnd] == '&') {
+      // & with no matching ;, or two & in a row. Append the & and continue.
+      sRet.append(sText, iStart, 1);
+      ++iOffset;
+      continue;
+    }
 
-		std::string sElement = sText.substr( iStart+1, iEnd-iStart-1 );
-		MakeLower(sElement);
+    std::string sElement = sText.substr(iStart + 1, iEnd - iStart - 1);
+    MakeLower(sElement);
 
-		std::map<std::string, std::string>::const_iterator it = m.find( sElement );
-		if( it == m.end() )
-		{
-			sRet.append( sText, iStart, iEnd-iStart+1 );
-			iOffset = iEnd + 1;
-			continue;
-		}
+    std::map<std::string, std::string>::const_iterator it = m.find(sElement);
+    if (it == m.end()) {
+      sRet.append(sText, iStart, iEnd - iStart + 1);
+      iOffset = iEnd + 1;
+      continue;
+    }
 
-		const std::string &sTo = it->second;
-		sRet.append( sTo );
-		iOffset = iEnd + 1;
-	}
+    const std::string& sTo = it->second;
+    sRet.append(sTo);
+    iOffset = iEnd + 1;
+  }
 
-	sText = sRet;
+  sText = sRet;
 }
 
 // abcd -> &a; &b; &c; &d;
-void ReplaceEntityText( std::string &sText, const std::map<char, std::string> &m )
-{
-	std::string sFind;
+void ReplaceEntityText(
+    std::string& sText, const std::map<char, std::string>& m) {
+  std::string sFind;
 
-	for (const std::pair<const char, std::string> &c : m)
-		sFind.append( 1, c.first );
+  for (const std::pair<const char, std::string>& c : m) {
+    sFind.append(1, c.first);
+  }
 
-	std::string sRet;
+  std::string sRet;
 
-	size_t iOffset = 0;
-	while( iOffset != sText.size() )
-	{
-		size_t iStart = sText.find_first_of( sFind, iOffset );
-		if( iStart == sText.npos )
-		{
-			// Optimization: if we didn't replace anything at all, do nothing.
-			if( iOffset == 0 )
-				return;
+  size_t iOffset = 0;
+  while (iOffset != sText.size()) {
+    size_t iStart = sText.find_first_of(sFind, iOffset);
+    if (iStart == sText.npos) {
+      // Optimization: if we didn't replace anything at all, do nothing.
+      if (iOffset == 0) {
+        return;
+      }
 
-			// Append the rest of the string.
-			sRet.append( sText, iOffset, sRet.npos );
-			break;
-		}
+      // Append the rest of the string.
+      sRet.append(sText, iOffset, sRet.npos);
+      break;
+    }
 
-		// Append the text between iOffset and iStart.
-		sRet.append( sText, iOffset, iStart-iOffset );
-		iOffset += iStart-iOffset;
+    // Append the text between iOffset and iStart.
+    sRet.append(sText, iOffset, iStart - iOffset);
+    iOffset += iStart - iOffset;
 
-		char sElement = sText[iStart];
+    char sElement = sText[iStart];
 
-		std::map<char, std::string>::const_iterator it = m.find( sElement );
-		ASSERT( it != m.end() );
+    std::map<char, std::string>::const_iterator it = m.find(sElement);
+    ASSERT(it != m.end());
 
-		const std::string &sTo = it->second;
-		sRet.append( 1, '&' );
-		sRet.append( sTo );
-		sRet.append( 1, ';' );
-		++iOffset;
-	}
+    const std::string& sTo = it->second;
+    sRet.append(1, '&');
+    sRet.append(sTo);
+    sRet.append(1, ';');
+    ++iOffset;
+  }
 
-	sText = sRet;
+  sText = sRet;
 }
 
-// Replace &#nnnn; (decimal) and &xnnnn; (hex) with corresponding UTF-8 characters.
-void Replace_Unicode_Markers( std::string &sText )
-{
-	unsigned iStart = 0;
-	while( iStart < sText.size() )
-	{
-		// Look for &#digits;
-		bool bHex = false;
-		size_t iPos = sText.find( "&#", iStart );
-		if( iPos == sText.npos )
-		{
-			bHex = true;
-			iPos = sText.find( "&x", iStart );
-		}
+// Replace &#nnnn; (decimal) and &xnnnn; (hex) with corresponding UTF-8
+// characters.
+void Replace_Unicode_Markers(std::string& sText) {
+  unsigned iStart = 0;
+  while (iStart < sText.size()) {
+    // Look for &#digits;
+    bool bHex = false;
+    size_t iPos = sText.find("&#", iStart);
+    if (iPos == sText.npos) {
+      bHex = true;
+      iPos = sText.find("&x", iStart);
+    }
 
-		if( iPos == sText.npos )
-			break;
-		iStart = iPos+1;
+    if (iPos == sText.npos) {
+      break;
+    }
+    iStart = iPos + 1;
 
-		unsigned p = iPos;
-		p += 2;
+    unsigned p = iPos;
+    p += 2;
 
-		// Found &# or &x. Is it followed by digits and a semicolon?
-		if( p >= sText.size() )
-			continue;
+    // Found &# or &x. Is it followed by digits and a semicolon?
+    if (p >= sText.size()) {
+      continue;
+    }
 
-		int iNumDigits = 0;
-		while( p < sText.size() && bHex? isxdigit(sText[p]):isdigit(sText[p]) )
-		{
-			p++;
-			iNumDigits++;
-		}
+    int iNumDigits = 0;
+    while (p < sText.size() && bHex ? isxdigit(sText[p]) : isdigit(sText[p])) {
+      p++;
+      iNumDigits++;
+    }
 
-		if( !iNumDigits )
-			continue; // must have at least one digit
-		if( p >= sText.size() || sText[p] != ';' )
-			continue;
-		p++;
+    if (!iNumDigits) {
+      continue;  // must have at least one digit
+    }
+    if (p >= sText.size() || sText[p] != ';') {
+      continue;
+    }
+    p++;
 
-		unsigned int iNum;
-		sscanf( sText.c_str()+iPos, bHex ? "&x%x;" : "&#%u;", &iNum );
-		if( iNum > 0xFFFF )
-			iNum = INVALID_CHAR;
+    unsigned int iNum;
+    sscanf(sText.c_str() + iPos, bHex ? "&x%x;" : "&#%u;", &iNum);
+    if (iNum > 0xFFFF) {
+      iNum = INVALID_CHAR;
+    }
 
-		sText.replace( iPos, p-iPos, WcharToUTF8(wchar_t(iNum)) );
-	}
+    sText.replace(iPos, p - iPos, WcharToUTF8(wchar_t(iNum)));
+  }
 }
 
 // Form a string to identify a wchar_t with ASCII.
-std::string WcharDisplayText( wchar_t c )
-{
-	std::string sChr;
-	sChr = ssprintf( "U+%4.4x", c );
-	if( c < 128 )
-		sChr += ssprintf( " ('%c')", char(c) );
-	return sChr;
+std::string WcharDisplayText(wchar_t c) {
+  std::string sChr;
+  sChr = ssprintf("U+%4.4x", c);
+  if (c < 128) {
+    sChr += ssprintf(" ('%c')", char(c));
+  }
+  return sChr;
 }
 
 /* Return the last named component of dir:
  * a/b/c -> c
  * a/b/c/ -> c
  */
-std::string Basename( const std::string &sDir )
-{
-	size_t iEnd = sDir.find_last_not_of( "/\\" );
-	if( iEnd == sDir.npos )
-		return std::string();
+std::string Basename(const std::string& sDir) {
+  size_t iEnd = sDir.find_last_not_of("/\\");
+  if (iEnd == sDir.npos) {
+    return std::string();
+  }
 
-	size_t iStart = sDir.find_last_of( "/\\", iEnd );
-	if( iStart == sDir.npos )
-		iStart = 0;
-	else
-		++iStart;
+  size_t iStart = sDir.find_last_of("/\\", iEnd);
+  if (iStart == sDir.npos) {
+    iStart = 0;
+  } else {
+    ++iStart;
+  }
 
-	return sDir.substr( iStart, iEnd-iStart+1 );
+  return sDir.substr(iStart, iEnd - iStart + 1);
 }
 
 /* Return all but the last named component of dir:
@@ -1777,88 +1743,102 @@ std::string Basename( const std::string &sDir )
  * /foo -> /
  * / -> /
  */
-std::string Dirname( const std::string &dir )
-{
-	// Special case: "/" -> "/".
-	if( dir.size() == 1 && dir[0] == '/' )
-		return "/";
+std::string Dirname(const std::string& dir) {
+  // Special case: "/" -> "/".
+  if (dir.size() == 1 && dir[0] == '/') {
+    return "/";
+  }
 
-	int pos = dir.size()-1;
-	// Skip trailing slashes.
-	while( pos >= 0 && dir[pos] == '/' )
-		--pos;
+  int pos = dir.size() - 1;
+  // Skip trailing slashes.
+  while (pos >= 0 && dir[pos] == '/') {
+    --pos;
+  }
 
-	// Skip the last component.
-	while( pos >= 0 && dir[pos] != '/' )
-		--pos;
+  // Skip the last component.
+  while (pos >= 0 && dir[pos] != '/') {
+    --pos;
+  }
 
-	if( pos < 0 )
-		return "./";
+  if (pos < 0) {
+    return "./";
+  }
 
-	return dir.substr(0, pos+1);
+  return dir.substr(0, pos + 1);
 }
 
-std::string Capitalize( const std::string &s )
-{
-	if( s.empty() )
-		return std::string();
+std::string Capitalize(const std::string& s) {
+  if (s.empty()) {
+    return std::string();
+  }
 
-	char *buf = const_cast<char *>(s.c_str());
+  char* buf = const_cast<char*>(s.c_str());
 
-	UnicodeDoUpper( buf, s.size(), g_UpperCase );
+  UnicodeDoUpper(buf, s.size(), g_UpperCase);
 
-	return buf;
+  return buf;
 }
 
-unsigned char g_UpperCase[256] =
-{
-	0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,
-	0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1A,0x1B,0x1C,0x1D,0x1E,0x1F,
-	0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,0x29,0x2A,0x2B,0x2C,0x2D,0x2E,0x2F,
-	0x30,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x3A,0x3B,0x3C,0x3D,0x3E,0x3F,
-	0x40,0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4A,0x4B,0x4C,0x4D,0x4E,0x4F,
-	0x50,0x51,0x52,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5A,0x5B,0x5C,0x5D,0x5E,0x5F,
-	0x60,0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4A,0x4B,0x4C,0x4D,0x4E,0x4F,
-	0x50,0x51,0x52,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5A,0x7B,0x7C,0x7D,0x7E,0x7F,
-	0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,
-	0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0x9C,0x9D,0x9E,0x9F,
-	0xA0,0xA1,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,
-	0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF,
-	0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,
-	0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF,
-	0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,
-	0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xF7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xFF,
+unsigned char g_UpperCase[256] = {
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+    0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+    0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23,
+    0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F,
+    0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B,
+    0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
+    0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F, 0x50, 0x51, 0x52, 0x53,
+    0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F,
+    0x60, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B,
+    0x4C, 0x4D, 0x4E, 0x4F, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+    0x58, 0x59, 0x5A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F, 0x80, 0x81, 0x82, 0x83,
+    0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F,
+    0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B,
+    0x9C, 0x9D, 0x9E, 0x9F, 0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7,
+    0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF, 0xB0, 0xB1, 0xB2, 0xB3,
+    0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF,
+    0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB,
+    0xCC, 0xCD, 0xCE, 0xCF, 0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7,
+    0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF, 0xC0, 0xC1, 0xC2, 0xC3,
+    0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
+    0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xF7, 0xD8, 0xD9, 0xDA, 0xDB,
+    0xDC, 0xDD, 0xDE, 0xFF,
 };
 
-unsigned char g_LowerCase[256] =
-{
-	0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F,
-	0x10,0x11,0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,0x1A,0x1B,0x1C,0x1D,0x1E,0x1F,
-	0x20,0x21,0x22,0x23,0x24,0x25,0x26,0x27,0x28,0x29,0x2A,0x2B,0x2C,0x2D,0x2E,0x2F,
-	0x30,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x3A,0x3B,0x3C,0x3D,0x3E,0x3F,
-	0x40,0x61,0x62,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6A,0x6B,0x6C,0x6D,0x6E,0x6F,
-	0x70,0x71,0x72,0x73,0x74,0x75,0x76,0x77,0x78,0x79,0x7A,0x5B,0x5C,0x5D,0x5E,0x5F,
-	0x60,0x61,0x62,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6A,0x6B,0x6C,0x6D,0x6E,0x6F,
-	0x70,0x71,0x72,0x73,0x74,0x75,0x76,0x77,0x78,0x79,0x7A,0x7B,0x7C,0x7D,0x7E,0x7F,
-	0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8A,0x8B,0x8C,0x8D,0x8E,0x8F,
-	0x90,0x91,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9A,0x9B,0x9C,0x9D,0x9E,0x9F,
-	0xA0,0xA1,0xA2,0xA3,0xA4,0xA5,0xA6,0xA7,0xA8,0xA9,0xAA,0xAB,0xAC,0xAD,0xAE,0xAF,
-	0xB0,0xB1,0xB2,0xB3,0xB4,0xB5,0xB6,0xB7,0xB8,0xB9,0xBA,0xBB,0xBC,0xBD,0xBE,0xBF,
-	0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,
-	0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xD7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xDF,
-	0xC0,0xC1,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD,0xCE,0xCF,
-	0xD0,0xD1,0xD2,0xD3,0xD4,0xD5,0xD6,0xF7,0xD8,0xD9,0xDA,0xDB,0xDC,0xDD,0xDE,0xFF,
+unsigned char g_LowerCase[256] = {
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+    0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+    0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23,
+    0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F,
+    0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B,
+    0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67,
+    0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F, 0x70, 0x71, 0x72, 0x73,
+    0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F,
+    0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B,
+    0x6C, 0x6D, 0x6E, 0x6F, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77,
+    0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F, 0x80, 0x81, 0x82, 0x83,
+    0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F,
+    0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B,
+    0x9C, 0x9D, 0x9E, 0x9F, 0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7,
+    0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF, 0xB0, 0xB1, 0xB2, 0xB3,
+    0xB4, 0xB5, 0xB6, 0xB7, 0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF,
+    0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB,
+    0xCC, 0xCD, 0xCE, 0xCF, 0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xD7,
+    0xD8, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF, 0xC0, 0xC1, 0xC2, 0xC3,
+    0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
+    0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0xD5, 0xD6, 0xF7, 0xD8, 0xD9, 0xDA, 0xDB,
+    0xDC, 0xDD, 0xDE, 0xFF,
 };
 
-void FixSlashesInPlace( std::string &sPath )
-{
-	for( unsigned i = 0; i < sPath.size(); ++i )
-		if( sPath[i] == '\\' )
-			sPath[i] = '/';
+void FixSlashesInPlace(std::string& sPath) {
+  for (unsigned i = 0; i < sPath.size(); ++i) {
+    if (sPath[i] == '\\') {
+      sPath[i] = '/';
+    }
+  }
 }
 
-/* Keep trailing slashes, since that can be used to illustrate that a path always
- * represents a directory.
+/* Keep trailing slashes, since that can be used to illustrate that a path
+ * always represents a directory.
  *
  * foo/bar -> foo/bar
  * foo/bar/ -> foo/bar/
@@ -1872,538 +1852,497 @@ void FixSlashesInPlace( std::string &sPath )
  * ./// -> ./
  */
 
-void CollapsePath( std::string &sPath, bool bRemoveLeadingDot )
-{
-	std::string sOut;
-	sOut.reserve( sPath.size() );
+void CollapsePath(std::string& sPath, bool bRemoveLeadingDot) {
+  std::string sOut;
+  sOut.reserve(sPath.size());
 
-	size_t iPos = 0;
-	size_t iNext;
-	for( ; iPos < sPath.size(); iPos = iNext )
-	{
-		// Find the next slash.
-		iNext = sPath.find( '/', iPos );
-		if( iNext == std::string::npos )
-			iNext = sPath.size();
-		else
-			++iNext;
+  size_t iPos = 0;
+  size_t iNext;
+  for (; iPos < sPath.size(); iPos = iNext) {
+    // Find the next slash.
+    iNext = sPath.find('/', iPos);
+    if (iNext == std::string::npos) {
+      iNext = sPath.size();
+    } else {
+      ++iNext;
+    }
 
-		/* Strip extra slashes, but don't remove slashes from the beginning of the string. */
-		if( iNext - iPos == 1 && sPath[iPos] == '/' )
-		{
-			if( !sOut.empty() )
-				continue;
-		}
+    /* Strip extra slashes, but don't remove slashes from the beginning of the
+     * string. */
+    if (iNext - iPos == 1 && sPath[iPos] == '/') {
+      if (!sOut.empty()) {
+        continue;
+      }
+    }
 
-		// If this is a dot, skip it.
-		if( iNext - iPos == 2 && sPath[iPos] == '.' && sPath[iPos+1] == '/' )
-		{
-			if( bRemoveLeadingDot || !sOut.empty() )
-				continue;
-		}
+    // If this is a dot, skip it.
+    if (iNext - iPos == 2 && sPath[iPos] == '.' && sPath[iPos + 1] == '/') {
+      if (bRemoveLeadingDot || !sOut.empty()) {
+        continue;
+      }
+    }
 
-		// If this is two dots,
-		if( iNext - iPos == 3 && sPath[iPos] == '.' && sPath[iPos+1] == '.' && sPath[iPos+2] == '/' )
-		{
-			/* If this is the first path element (nothing to delete),
-			 * or all we have is a slash, leave it. */
-			if( sOut.empty() || (sOut.size() == 1 && sOut[0] == '/') )
-			{
-				sOut.append( sPath, iPos, iNext-iPos );
-				continue;
-			}
+    // If this is two dots,
+    if (iNext - iPos == 3 && sPath[iPos] == '.' && sPath[iPos + 1] == '.' &&
+        sPath[iPos + 2] == '/') {
+      /* If this is the first path element (nothing to delete),
+       * or all we have is a slash, leave it. */
+      if (sOut.empty() || (sOut.size() == 1 && sOut[0] == '/')) {
+        sOut.append(sPath, iPos, iNext - iPos);
+        continue;
+      }
 
-			// Search backwards for the previous path element.
-			size_t iPrev = sOut.rfind( '/', sOut.size()-2 );
-			if( iPrev == std::string::npos )
-				iPrev = 0;
-			else
-				++iPrev;
+      // Search backwards for the previous path element.
+      size_t iPrev = sOut.rfind('/', sOut.size() - 2);
+      if (iPrev == std::string::npos) {
+        iPrev = 0;
+      } else {
+        ++iPrev;
+      }
 
-			// If the previous element is also .., leave it.
-			bool bLastIsTwoDots = (sOut.size() - iPrev == 3 && sOut[iPrev] == '.' && sOut[iPrev+1] == '.' );
-			if( bLastIsTwoDots )
-			{
-				sOut.append( sPath, iPos, iNext-iPos );
-				continue;
-			}
+      // If the previous element is also .., leave it.
+      bool bLastIsTwoDots =
+          (sOut.size() - iPrev == 3 && sOut[iPrev] == '.' &&
+           sOut[iPrev + 1] == '.');
+      if (bLastIsTwoDots) {
+        sOut.append(sPath, iPos, iNext - iPos);
+        continue;
+      }
 
-			sOut.erase( iPrev );
-			continue;
-		}
+      sOut.erase(iPrev);
+      continue;
+    }
 
-		sOut.append( sPath, iPos, iNext-iPos );
-	}
+    sOut.append(sPath, iPos, iNext - iPos);
+  }
 
-	sOut.swap( sPath );
+  sOut.swap(sPath);
 }
 
-namespace StringConversion
-{
-	template<> bool FromString<int>( const std::string &sValue, int &out )
-	{
-		if( sscanf( sValue.c_str(), "%d", &out ) == 1 )
-			return true;
+namespace StringConversion {
+template <>
+bool FromString<int>(const std::string& sValue, int& out) {
+  if (sscanf(sValue.c_str(), "%d", &out) == 1) {
+    return true;
+  }
 
-		out = 0;
-		return false;
-	}
-
-	template<> bool FromString<unsigned>( const std::string &sValue, unsigned  &out )
-	{
-		if( sscanf( sValue.c_str(), "%u", &out ) == 1 )
-			return true;
-
-		out = 0;
-		return false;
-	}
-
-	template<> bool FromString<float>( const std::string &sValue, float &out )
-	{
-		const char *endptr = sValue.data() + sValue.size();
-		out = strtof( sValue.c_str(), (char **) &endptr );
-		if( endptr != sValue.data() && std::isfinite( out ) )
-			return true;
-		out = 0;
-		return false;
-	}
-
-	template<> bool FromString<bool>( const std::string &sValue, bool &out )
-	{
-		if( sValue.size() == 0 )
-			return false;
-
-		out = StringToInt(sValue) != 0;
-		return true;
-	}
-
-	template<> std::string ToString<int>( const int &value )
-	{
-		return ssprintf( "%i", value );
-	}
-
-	template<> std::string ToString<unsigned>( const unsigned &value )
-	{
-		return ssprintf( "%u", value );
-	}
-
-	template<> std::string ToString<float>( const float &value )
-	{
-		return ssprintf( "%f", value );
-	}
-
-	template<> std::string ToString<bool>( const bool &value )
-	{
-		return ssprintf( "%i", value );
-	}
+  out = 0;
+  return false;
 }
 
-bool FileCopy( const std::string &sSrcFile, const std::string &sDstFile )
-{
-	if( !CompareNoCase(sSrcFile, sDstFile) )
-	{
-		LOG->Warn( "Tried to copy \"%s\" over itself", sSrcFile.c_str() );
-		return false;
-	}
+template <>
+bool FromString<unsigned>(const std::string& sValue, unsigned& out) {
+  if (sscanf(sValue.c_str(), "%u", &out) == 1) {
+    return true;
+  }
 
-	RageFile in;
-	if( !in.Open(sSrcFile, RageFile::READ) )
-		return false;
-
-	RageFile out;
-	if( !out.Open(sDstFile, RageFile::WRITE) )
-		return false;
-
-	std::string sError;
-	if( !FileCopy(in, out, sError) )
-	{
-		LOG->Warn( "FileCopy(%s,%s): %s",
-				sSrcFile.c_str(), sDstFile.c_str(), sError.c_str() );
-		return false;
-	}
-
-	return true;
+  out = 0;
+  return false;
 }
 
-bool FileCopy( RageFileBasic &in, RageFileBasic &out, std::string &sError, bool *bReadError )
-{
-	for(;;)
-	{
-		std::string data;
-		if( in.Read(data, 1024*32) == -1 )
-		{
-			sError = ssprintf( "read error: %s", in.GetError().c_str() );
-			if( bReadError != nullptr )
-			{
-				*bReadError = true;
-			}
-			return false;
-		}
-		if( data.empty() )
-		{
-			break;
-		}
-		int i = out.Write(data);
-		if( i == -1 )
-		{
-			sError = ssprintf( "write error: %s", out.GetError().c_str() );
-			if( bReadError != nullptr )
-			{
-				*bReadError = false;
-			}
-			return false;
-		}
-	}
-
-	if( out.Flush() == -1 )
-	{
-		sError = ssprintf( "write error: %s", out.GetError().c_str() );
-		if( bReadError != nullptr )
-		{
-			*bReadError = false;
-		}
-		return false;
-	}
-
-	return true;
+template <>
+bool FromString<float>(const std::string& sValue, float& out) {
+  const char* endptr = sValue.data() + sValue.size();
+  out = strtof(sValue.c_str(), (char**)&endptr);
+  if (endptr != sValue.data() && std::isfinite(out)) {
+    return true;
+  }
+  out = 0;
+  return false;
 }
 
-LuaFunction( SecondsToMSSMsMs, SecondsToMSSMsMs( FArg(1) ) )
-LuaFunction( SecondsToHHMMSS, SecondsToHHMMSS( FArg(1) ) )
-LuaFunction( SecondsToMMSSMsMs, SecondsToMMSSMsMs( FArg(1) ) )
-LuaFunction( SecondsToMMSSMsMsMs, SecondsToMMSSMsMsMs( FArg(1) ) )
-LuaFunction( SecondsToMSS, SecondsToMSS( FArg(1) ) )
-LuaFunction( SecondsToMMSS, SecondsToMMSS( FArg(1) ) )
-LuaFunction( FormatNumberAndSuffix, FormatNumberAndSuffix( IArg(1) ) )
-LuaFunction( Basename, Basename( SArg(1) ) )
-LuaFunction( Lowercase, MakeLower( SArg(1) ) )
-LuaFunction( Uppercase, MakeUpper( SArg(1) ) )
-LuaFunction( mbstrlen, (int)RStringToWstring(SArg(1)).length() )
-LuaFunction( URLEncode, URLEncode( SArg(1) ) );
-LuaFunction( PrettyPercent, PrettyPercent( FArg(1), FArg(2) ) );
-//LuaFunction( IsHexVal, IsHexVal( SArg(1) ) );
-LuaFunction( lerp, lerp(FArg(1), FArg(2), FArg(3)) );
+template <>
+bool FromString<bool>(const std::string& sValue, bool& out) {
+  if (sValue.size() == 0) {
+    return false;
+  }
+
+  out = StringToInt(sValue) != 0;
+  return true;
+}
+
+template <>
+std::string ToString<int>(const int& value) {
+  return ssprintf("%i", value);
+}
+
+template <>
+std::string ToString<unsigned>(const unsigned& value) {
+  return ssprintf("%u", value);
+}
+
+template <>
+std::string ToString<float>(const float& value) {
+  return ssprintf("%f", value);
+}
+
+template <>
+std::string ToString<bool>(const bool& value) {
+  return ssprintf("%i", value);
+}
+}  // namespace StringConversion
+
+bool FileCopy(const std::string& sSrcFile, const std::string& sDstFile) {
+  if (!CompareNoCase(sSrcFile, sDstFile)) {
+    LOG->Warn("Tried to copy \"%s\" over itself", sSrcFile.c_str());
+    return false;
+  }
+
+  RageFile in;
+  if (!in.Open(sSrcFile, RageFile::READ)) {
+    return false;
+  }
+
+  RageFile out;
+  if (!out.Open(sDstFile, RageFile::WRITE)) {
+    return false;
+  }
+
+  std::string sError;
+  if (!FileCopy(in, out, sError)) {
+    LOG->Warn(
+        "FileCopy(%s,%s): %s", sSrcFile.c_str(), sDstFile.c_str(),
+        sError.c_str());
+    return false;
+  }
+
+  return true;
+}
+
+bool FileCopy(
+    RageFileBasic& in, RageFileBasic& out, std::string& sError,
+    bool* bReadError) {
+  for (;;) {
+    std::string data;
+    if (in.Read(data, 1024 * 32) == -1) {
+      sError = ssprintf("read error: %s", in.GetError().c_str());
+      if (bReadError != nullptr) {
+        *bReadError = true;
+      }
+      return false;
+    }
+    if (data.empty()) {
+      break;
+    }
+    int i = out.Write(data);
+    if (i == -1) {
+      sError = ssprintf("write error: %s", out.GetError().c_str());
+      if (bReadError != nullptr) {
+        *bReadError = false;
+      }
+      return false;
+    }
+  }
+
+  if (out.Flush() == -1) {
+    sError = ssprintf("write error: %s", out.GetError().c_str());
+    if (bReadError != nullptr) {
+      *bReadError = false;
+    }
+    return false;
+  }
+
+  return true;
+}
+
+LuaFunction(SecondsToMSSMsMs, SecondsToMSSMsMs(FArg(1)))
+    LuaFunction(SecondsToHHMMSS, SecondsToHHMMSS(FArg(1)))
+        LuaFunction(SecondsToMMSSMsMs, SecondsToMMSSMsMs(FArg(1))) LuaFunction(
+            SecondsToMMSSMsMsMs, SecondsToMMSSMsMsMs(FArg(1)))
+            LuaFunction(SecondsToMSS, SecondsToMSS(FArg(1)))
+                LuaFunction(SecondsToMMSS, SecondsToMMSS(FArg(1))) LuaFunction(
+                    FormatNumberAndSuffix, FormatNumberAndSuffix(IArg(1)))
+                    LuaFunction(Basename, Basename(SArg(1)))
+                        LuaFunction(Lowercase, MakeLower(SArg(1)))
+                            LuaFunction(Uppercase, MakeUpper(SArg(1)))
+                                LuaFunction(
+                                    mbstrlen,
+                                    (int)RStringToWstring(SArg(1)).length())
+                                    LuaFunction(URLEncode, URLEncode(SArg(1)));
+LuaFunction(PrettyPercent, PrettyPercent(FArg(1), FArg(2)));
+// LuaFunction( IsHexVal, IsHexVal( SArg(1) ) );
+LuaFunction(lerp, lerp(FArg(1), FArg(2), FArg(3)));
 
 int LuaFunc_BinaryToHex(lua_State* L);
-int LuaFunc_BinaryToHex(lua_State* L)
-{
-	size_t l;
-	const char *s = luaL_checklstring(L, 1, &l);
+int LuaFunc_BinaryToHex(lua_State* L) {
+  size_t l;
+  const char* s = luaL_checklstring(L, 1, &l);
 
-	std::string hex = BinaryToHex(s, l);
+  std::string hex = BinaryToHex(s, l);
 
-	LuaHelpers::Push(L, hex);
-	return 1;
+  LuaHelpers::Push(L, hex);
+  return 1;
 }
 LUAFUNC_REGISTER_COMMON(BinaryToHex);
 
 int LuaFunc_commify(lua_State* L);
-int LuaFunc_commify(lua_State* L)
-{
-	std::string num= SArg(1);
-	std::string sep= ",";
-	std::string dot= ".";
-	if(!lua_isnoneornil(L, 2))
-	{
-		sep= lua_tostring(L, 2);
-	}
-	if(!lua_isnoneornil(L, 3))
-	{
-		dot= lua_tostring(L, 3);
-	}
-	std::string ret= Commify(num, sep, dot);
-	LuaHelpers::Push(L, ret);
-	return 1;
+int LuaFunc_commify(lua_State* L) {
+  std::string num = SArg(1);
+  std::string sep = ",";
+  std::string dot = ".";
+  if (!lua_isnoneornil(L, 2)) {
+    sep = lua_tostring(L, 2);
+  }
+  if (!lua_isnoneornil(L, 3)) {
+    dot = lua_tostring(L, 3);
+  }
+  std::string ret = Commify(num, sep, dot);
+  LuaHelpers::Push(L, ret);
+  return 1;
 }
 LUAFUNC_REGISTER_COMMON(commify);
 
 int LuaFunc_JsonEncode(lua_State* L);
-int LuaFunc_JsonEncode(lua_State* L)
-{
-	int argc = lua_gettop(L);
-	bool minified = false;
+int LuaFunc_JsonEncode(lua_State* L) {
+  int argc = lua_gettop(L);
+  bool minified = false;
 
-	if (argc < 1 || argc > 2)
-	{
-		luaL_error(L, "JsonEncode must be called with one or two arguments");
-	}
+  if (argc < 1 || argc > 2) {
+    luaL_error(L, "JsonEncode must be called with one or two arguments");
+  }
 
-	if (argc == 2)
-	{
-		minified = lua_toboolean(L, 2);
-	}
+  if (argc == 2) {
+    minified = lua_toboolean(L, 2);
+  }
 
-	std::function<Json::Value(int)> convert = [&L, &convert](int index) -> Json::Value
-	{
-		switch (lua_type(L, index))
-		{
-			case LUA_TNIL:
-				return Json::Value(Json::nullValue);
-			case LUA_TBOOLEAN:
-				return Json::Value(static_cast<bool>(lua_toboolean(L, index)));
-			case LUA_TNUMBER: {
-				double val = lua_tonumber(L, index);
+  std::function<Json::Value(int)> convert =
+      [&L, &convert](int index) -> Json::Value {
+    switch (lua_type(L, index)) {
+      case LUA_TNIL:
+        return Json::Value(Json::nullValue);
+      case LUA_TBOOLEAN:
+        return Json::Value(static_cast<bool>(lua_toboolean(L, index)));
+      case LUA_TNUMBER: {
+        double val = lua_tonumber(L, index);
 
-				if (val == static_cast<Json::UInt>(val))
-				{
-					return Json::Value(static_cast<Json::UInt>(val));
-				}
-				else if (val == static_cast<Json::Int>(val))
-				{
-					return Json::Value(static_cast<Json::Int>(val));
-				}
-				return Json::Value(val);
-			}
-			case LUA_TSTRING: {
-				size_t len;
-				const char *s = lua_tolstring(L, index, &len);
+        if (val == static_cast<Json::UInt>(val)) {
+          return Json::Value(static_cast<Json::UInt>(val));
+        } else if (val == static_cast<Json::Int>(val)) {
+          return Json::Value(static_cast<Json::Int>(val));
+        }
+        return Json::Value(val);
+      }
+      case LUA_TSTRING: {
+        size_t len;
+        const char* s = lua_tolstring(L, index, &len);
 
-				return Json::Value(std::string(s, len));
-			}
-			case LUA_TTABLE: {
-				// if the index is relative to the top of the stack,
-				// then calculate the absolute index, so we have a
-				// stable reference
-				if (index < 0)
-				{
-					index = lua_gettop(L) + index + 1;
-				}
+        return Json::Value(std::string(s, len));
+      }
+      case LUA_TTABLE: {
+        // if the index is relative to the top of the stack,
+        // then calculate the absolute index, so we have a
+        // stable reference
+        if (index < 0) {
+          index = lua_gettop(L) + index + 1;
+        }
 
-				size_t len = lua_objlen(L, index);
+        size_t len = lua_objlen(L, index);
 
-				if (len > 0)
-				{
-					// array
-					Json::Value array(Json::arrayValue);
-					array.resize(len);
+        if (len > 0) {
+          // array
+          Json::Value array(Json::arrayValue);
+          array.resize(len);
 
-					for (unsigned int i = 0; i < len; i++)
-					{
-						lua_rawgeti(L, index, i + 1);
-						array[i] = convert(-1);
-						lua_pop(L, 1);
-					}
+          for (unsigned int i = 0; i < len; i++) {
+            lua_rawgeti(L, index, i + 1);
+            array[i] = convert(-1);
+            lua_pop(L, 1);
+          }
 
-					return array;
-				}
-				else
-				{
-					// object
-					Json::Value obj(Json::objectValue);
+          return array;
+        } else {
+          // object
+          Json::Value obj(Json::objectValue);
 
-					lua_pushnil(L);
-					while (lua_next(L, index) != 0)
-					{
-						if (!lua_isstring(L, -2))
-						{
-							luaL_error(L, "object keys must be strings");
-						}
+          lua_pushnil(L);
+          while (lua_next(L, index) != 0) {
+            if (!lua_isstring(L, -2)) {
+              luaL_error(L, "object keys must be strings");
+            }
 
-						size_t keylen;
-						const char *key = lua_tolstring(L, -2, &keylen);
-						obj[std::string(key, keylen)] = convert(-1);
-						lua_pop(L, 1);
-					}
+            size_t keylen;
+            const char* key = lua_tolstring(L, -2, &keylen);
+            obj[std::string(key, keylen)] = convert(-1);
+            lua_pop(L, 1);
+          }
 
-					if (obj.size() < 1)
-					{
-						return Json::Value(Json::arrayValue);
-					}
-					return obj;
-				}
-			}
-		}
+          if (obj.size() < 1) {
+            return Json::Value(Json::arrayValue);
+          }
+          return obj;
+        }
+      }
+    }
 
-		int tp = lua_type(L, index);
-		luaL_error(L, "%s is not JSON serializable", lua_typename(L, tp));
-		return Json::Value(Json::nullValue);	/* not reached */
-	};
+    int tp = lua_type(L, index);
+    luaL_error(L, "%s is not JSON serializable", lua_typename(L, tp));
+    return Json::Value(Json::nullValue); /* not reached */
+  };
 
-	Json::Value root = convert(1);
+  Json::Value root = convert(1);
 
-	std::string data;
-	if(!minified)
-	{
-		Json::StyledWriter writer;
-		data = writer.write(root);
-	}
-	else
-	{
-		Json::FastWriter writer;
-		data = writer.write(root);
-	}
+  std::string data;
+  if (!minified) {
+    Json::StyledWriter writer;
+    data = writer.write(root);
+  } else {
+    Json::FastWriter writer;
+    data = writer.write(root);
+  }
 
-	lua_pushlstring(L, data.c_str(), data.length());
-	return 1;
+  lua_pushlstring(L, data.c_str(), data.length());
+  return 1;
 }
 LUAFUNC_REGISTER_COMMON(JsonEncode);
 
 int LuaFunc_JsonDecode(lua_State* L);
-int LuaFunc_JsonDecode(lua_State* L)
-{
-	int argc = lua_gettop(L);
+int LuaFunc_JsonDecode(lua_State* L) {
+  int argc = lua_gettop(L);
 
-	if (argc < 1)
-	{
-		luaL_error(L, "JsonDecode requires an argument");
-	}
+  if (argc < 1) {
+    luaL_error(L, "JsonDecode requires an argument");
+  }
 
-	size_t datalen;
-	const char *data = lua_tolstring(L, 1, &datalen);
+  size_t datalen;
+  const char* data = lua_tolstring(L, 1, &datalen);
 
-	Json::Reader reader;
-	Json::Value root;
+  Json::Reader reader;
+  Json::Value root;
 
-	bool ok = reader.parse(std::string(data, datalen), root, true);
-	if (!ok)
-	{
-		std::string error = reader.getFormattedErrorMessages();
-		luaL_error(L, "failed to parse JSON: %s", error.c_str());
-	}
+  bool ok = reader.parse(std::string(data, datalen), root, true);
+  if (!ok) {
+    std::string error = reader.getFormattedErrorMessages();
+    luaL_error(L, "failed to parse JSON: %s", error.c_str());
+  }
 
-	std::function<void(const Json::Value&)> convert = [&L, &convert](const Json::Value& val)
-	{
-		if (val.isNull())
-		{
-			lua_pushnil(L);
-		}
-		else if (val.isInt() || val.isUInt() || val.isDouble())
-		{
-			lua_pushnumber(L, val.asDouble());
-		}
-		else if (val.isString())
-		{
-			std::string s = val.asString();
-			lua_pushlstring(L, s.c_str(), s.length());
-		}
-		else if (val.isBool())
-		{
-			lua_pushboolean(L, val.asBool());
-		}
-		else if (val.isArray())
-		{
-			lua_createtable(L, val.size(), 0);
-			for (unsigned int i = 0; i < val.size(); i++)
-			{
-				convert(val[i]);
-				lua_rawseti(L, -2, i + 1);
-			}
-		}
-		else if (val.isObject())
-		{
-			lua_createtable(L, 0, val.size());
-			for (const std::string& member : val.getMemberNames())
-			{
-				lua_pushlstring(L, member.c_str(), member.length());
-				convert(val[member]);
-				lua_rawset(L, -3);
-			}
-		}
-		else
-		{
-			luaL_error(L, "failed to parse JSON: invalid type");
-		}
-	};
+  std::function<void(const Json::Value&)> convert =
+      [&L, &convert](const Json::Value& val) {
+        if (val.isNull()) {
+          lua_pushnil(L);
+        } else if (val.isInt() || val.isUInt() || val.isDouble()) {
+          lua_pushnumber(L, val.asDouble());
+        } else if (val.isString()) {
+          std::string s = val.asString();
+          lua_pushlstring(L, s.c_str(), s.length());
+        } else if (val.isBool()) {
+          lua_pushboolean(L, val.asBool());
+        } else if (val.isArray()) {
+          lua_createtable(L, val.size(), 0);
+          for (unsigned int i = 0; i < val.size(); i++) {
+            convert(val[i]);
+            lua_rawseti(L, -2, i + 1);
+          }
+        } else if (val.isObject()) {
+          lua_createtable(L, 0, val.size());
+          for (const std::string& member : val.getMemberNames()) {
+            lua_pushlstring(L, member.c_str(), member.length());
+            convert(val[member]);
+            lua_rawset(L, -3);
+          }
+        } else {
+          luaL_error(L, "failed to parse JSON: invalid type");
+        }
+      };
 
-	convert(root);
-	return 1;
+  convert(root);
+  return 1;
 }
 LUAFUNC_REGISTER_COMMON(JsonDecode);
 
-void luafunc_approach_internal(lua_State* L, int valind, int goalind, int speedind, const float mult, int process_index);
-void luafunc_approach_internal(lua_State* L, int valind, int goalind, int speedind, const float mult, int process_index)
-{
-#define TONUMBER_NICE(dest, num_name, index) \
-	if(!lua_isnumber(L, index)) \
-	{ \
-		luaL_error(L, "approach: " #num_name " for approach %d is not a number.", process_index); \
-	} \
-	dest= lua_tonumber(L, index);
-	float val= 0;
-	float goal= 0;
-	float speed= 0;
-	TONUMBER_NICE(val, current, valind);
-	TONUMBER_NICE(goal, goal, goalind);
-	TONUMBER_NICE(speed, speed, speedind);
+void luafunc_approach_internal(
+    lua_State* L, int valind, int goalind, int speedind, const float mult,
+    int process_index);
+void luafunc_approach_internal(
+    lua_State* L, int valind, int goalind, int speedind, const float mult,
+    int process_index) {
+#define TONUMBER_NICE(dest, num_name, index)                           \
+  if (!lua_isnumber(L, index)) {                                       \
+    luaL_error(                                                        \
+        L, "approach: " #num_name " for approach %d is not a number.", \
+        process_index);                                                \
+  }                                                                    \
+  dest = lua_tonumber(L, index);
+  float val = 0;
+  float goal = 0;
+  float speed = 0;
+  TONUMBER_NICE(val, current, valind);
+  TONUMBER_NICE(goal, goal, goalind);
+  TONUMBER_NICE(speed, speed, speedind);
 #undef TONUMBER_NICE
-	if(speed < 0)
-	{
-		luaL_error(L, "approach: speed %d is negative.", process_index);
-	}
-	fapproach(val, goal, speed*mult);
-	lua_pushnumber(L, val);
+  if (speed < 0) {
+    luaL_error(L, "approach: speed %d is negative.", process_index);
+  }
+  fapproach(val, goal, speed * mult);
+  lua_pushnumber(L, val);
 }
 
 int LuaFunc_approach(lua_State* L);
-int LuaFunc_approach(lua_State* L)
-{
-	// Args:  current, goal, speed
-	// Returns:  new_current
-	luafunc_approach_internal(L, 1, 2, 3, 1.0f, 1);
-	return 1;
+int LuaFunc_approach(lua_State* L) {
+  // Args:  current, goal, speed
+  // Returns:  new_current
+  luafunc_approach_internal(L, 1, 2, 3, 1.0f, 1);
+  return 1;
 }
 LUAFUNC_REGISTER_COMMON(approach);
 
 int LuaFunc_multiapproach(lua_State* L);
-int LuaFunc_multiapproach(lua_State* L)
-{
-	// Args:  {currents}, {goals}, {speeds}, speed_multiplier
-	// speed_multiplier is optional, and is intended to be the delta time for
-	// the frame, so that this can be used every frame and have the current
-	// approach the goal at a framerate independent speed.
-	// Returns:  {currents}
-	// Modifies the values in {currents} in place.
-	if(lua_gettop(L) < 3)
-	{
-		luaL_error(L, "multiapproach:  A table of current values, a table of goal values, and a table of speeds must be passed.");
-	}
-	size_t currents_len= lua_objlen(L, 1);
-	size_t goals_len= lua_objlen(L, 2);
-	size_t speeds_len= lua_objlen(L, 3);
-	float mult= 1.0f;
-	if(lua_isnumber(L, 4))
-	{
-		mult= lua_tonumber(L, 4);
-	}
-	if(currents_len != goals_len || currents_len != speeds_len)
-	{
-		luaL_error(L, "multiapproach:  There must be the same number of current values, goal values, and speeds.");
-	}
-	if(!lua_istable(L, 1) || !lua_istable(L, 2) || !lua_istable(L, 3))
-	{
-		luaL_error(L, "multiapproach:  current, goal, and speed must all be tables.");
-	}
-	for(size_t i= 1; i <= currents_len; ++i)
-	{
-		lua_rawgeti(L, 1, i);
-		lua_rawgeti(L, 2, i);
-		lua_rawgeti(L, 3, i);
-		luafunc_approach_internal(L, -3, -2, -1, mult, i);
-		lua_rawseti(L, 1, i);
-		lua_pop(L, 3);
-	}
-	lua_pushvalue(L, 1);
-	return 1;
+int LuaFunc_multiapproach(lua_State* L) {
+  // Args:  {currents}, {goals}, {speeds}, speed_multiplier
+  // speed_multiplier is optional, and is intended to be the delta time for
+  // the frame, so that this can be used every frame and have the current
+  // approach the goal at a framerate independent speed.
+  // Returns:  {currents}
+  // Modifies the values in {currents} in place.
+  if (lua_gettop(L) < 3) {
+    luaL_error(
+        L,
+        "multiapproach:  A table of current values, a table of goal values, "
+        "and a table of speeds must be passed.");
+  }
+  size_t currents_len = lua_objlen(L, 1);
+  size_t goals_len = lua_objlen(L, 2);
+  size_t speeds_len = lua_objlen(L, 3);
+  float mult = 1.0f;
+  if (lua_isnumber(L, 4)) {
+    mult = lua_tonumber(L, 4);
+  }
+  if (currents_len != goals_len || currents_len != speeds_len) {
+    luaL_error(
+        L,
+        "multiapproach:  There must be the same number of current values, goal "
+        "values, and speeds.");
+  }
+  if (!lua_istable(L, 1) || !lua_istable(L, 2) || !lua_istable(L, 3)) {
+    luaL_error(
+        L, "multiapproach:  current, goal, and speed must all be tables.");
+  }
+  for (size_t i = 1; i <= currents_len; ++i) {
+    lua_rawgeti(L, 1, i);
+    lua_rawgeti(L, 2, i);
+    lua_rawgeti(L, 3, i);
+    luafunc_approach_internal(L, -3, -2, -1, mult, i);
+    lua_rawseti(L, 1, i);
+    lua_pop(L, 3);
+  }
+  lua_pushvalue(L, 1);
+  return 1;
 }
 LUAFUNC_REGISTER_COMMON(multiapproach);
 
 int LuaFunc_get_music_file_length(lua_State* L);
-int LuaFunc_get_music_file_length(lua_State* L)
-{
-	// Args:  file_path
-	// Returns:  The length of the music in seconds.
-	std::string path= SArg(1);
-	std::string error;
-	RageSoundReader* sample= RageSoundReader_FileReader::OpenFile(path, error);
-	if(sample == nullptr)
-	{
-		luaL_error(L, "The music file '%s' does not exist.", path.c_str());
-	}
-	lua_pushnumber(L, sample->GetLength() / 1000.0f);
-	return 1;
+int LuaFunc_get_music_file_length(lua_State* L) {
+  // Args:  file_path
+  // Returns:  The length of the music in seconds.
+  std::string path = SArg(1);
+  std::string error;
+  RageSoundReader* sample = RageSoundReader_FileReader::OpenFile(path, error);
+  if (sample == nullptr) {
+    luaL_error(L, "The music file '%s' does not exist.", path.c_str());
+  }
+  lua_pushnumber(L, sample->GetLength() / 1000.0f);
+  return 1;
 }
 LUAFUNC_REGISTER_COMMON(get_music_file_length);
-
 
 /* stubs for deprecated network functions */
 LuaFunction(CloseConnection, false);

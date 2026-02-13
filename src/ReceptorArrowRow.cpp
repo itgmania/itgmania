@@ -14,114 +14,104 @@
 #include "Style.h"
 #include "global.h"
 
-ReceptorArrowRow::ReceptorArrowRow()
-{
-	m_pPlayerState = nullptr;
-	m_fYReverseOffsetPixels = 0;
-	m_fFadeToFailPercent = 0;
-	m_renderers= nullptr;
+ReceptorArrowRow::ReceptorArrowRow() {
+  m_pPlayerState = nullptr;
+  m_fYReverseOffsetPixels = 0;
+  m_fFadeToFailPercent = 0;
+  m_renderers = nullptr;
 }
 
-void ReceptorArrowRow::Load( const PlayerState* pPlayerState, float fYReverseOffset )
-{
-	m_pPlayerState = pPlayerState;
-	m_fYReverseOffsetPixels = fYReverseOffset;
+void ReceptorArrowRow::Load(
+    const PlayerState* pPlayerState, float fYReverseOffset) {
+  m_pPlayerState = pPlayerState;
+  m_fYReverseOffsetPixels = fYReverseOffset;
 
-	const Style* pStyle = GAMESTATE->GetCurrentStyle(pPlayerState->m_PlayerNumber);
+  const Style* pStyle =
+      GAMESTATE->GetCurrentStyle(pPlayerState->m_PlayerNumber);
 
-	for( int c=0; c<pStyle->m_iColsPerPlayer; c++ )
-	{
-		m_ReceptorArrow.push_back( new ReceptorArrow );
-		m_ReceptorArrow[c]->SetName( "ReceptorArrow" );
-		m_ReceptorArrow[c]->Load( m_pPlayerState, c );
-		this->AddChild( m_ReceptorArrow[c] );
-	}
+  for (int c = 0; c < pStyle->m_iColsPerPlayer; c++) {
+    m_ReceptorArrow.push_back(new ReceptorArrow);
+    m_ReceptorArrow[c]->SetName("ReceptorArrow");
+    m_ReceptorArrow[c]->Load(m_pPlayerState, c);
+    this->AddChild(m_ReceptorArrow[c]);
+  }
 }
 
-void ReceptorArrowRow::SetColumnRenderers(std::vector<NoteColumnRenderer>& renderers)
-{
-	ASSERT_M(renderers.size() == m_ReceptorArrow.size(), "Notefield has different number of columns than receptor row.");
-	for(size_t c= 0; c < m_ReceptorArrow.size(); ++c)
-	{
-		m_ReceptorArrow[c]->SetFakeParent(&(renderers[c]));
-	}
-	m_renderers= &renderers;
+void ReceptorArrowRow::SetColumnRenderers(
+    std::vector<NoteColumnRenderer>& renderers) {
+  ASSERT_M(
+      renderers.size() == m_ReceptorArrow.size(),
+      "Notefield has different number of columns than receptor row.");
+  for (size_t c = 0; c < m_ReceptorArrow.size(); ++c) {
+    m_ReceptorArrow[c]->SetFakeParent(&(renderers[c]));
+  }
+  m_renderers = &renderers;
 }
 
-ReceptorArrowRow::~ReceptorArrowRow()
-{
-	for( unsigned i = 0; i < m_ReceptorArrow.size(); ++i )
-		delete m_ReceptorArrow[i];
+ReceptorArrowRow::~ReceptorArrowRow() {
+  for (unsigned i = 0; i < m_ReceptorArrow.size(); ++i) {
+    delete m_ReceptorArrow[i];
+  }
 }
 
-void ReceptorArrowRow::Update( float fDeltaTime )
-{
-	ActorFrame::Update( fDeltaTime );
-	// If we're on gameplay, then the notefield will take care of updating
-	// ArrowEffects.  But if we're on ScreenNameEntry, there is no notefield,
-	// Checking whether m_renderers is null is a proxy for checking whether
-	// there is a notefield. -Kyz
-	if(m_renderers == nullptr)
-	{
-		ArrowEffects::Update();
-	}
+void ReceptorArrowRow::Update(float fDeltaTime) {
+  ActorFrame::Update(fDeltaTime);
+  // If we're on gameplay, then the notefield will take care of updating
+  // ArrowEffects.  But if we're on ScreenNameEntry, there is no notefield,
+  // Checking whether m_renderers is null is a proxy for checking whether
+  // there is a notefield. -Kyz
+  if (m_renderers == nullptr) {
+    ArrowEffects::Update();
+  }
 
-	for( unsigned c=0; c<m_ReceptorArrow.size(); c++ )
-	{
-		// m_fDark==1 or m_fFadeToFailPercent==1 should make fBaseAlpha==0
-		float fBaseAlpha = (1 - m_pPlayerState->m_PlayerOptions.GetCurrent().m_fDark
-			- m_pPlayerState->m_PlayerOptions.GetCurrent().m_fDarks[c]
-		);
-		if( m_fFadeToFailPercent != -1 )
-		{
-			fBaseAlpha *= (1 - m_fFadeToFailPercent);
-		}
-		rage_clamp( fBaseAlpha, 0.0f, 1.0f );
-		m_ReceptorArrow[c]->SetBaseAlpha( fBaseAlpha );
+  for (unsigned c = 0; c < m_ReceptorArrow.size(); c++) {
+    // m_fDark==1 or m_fFadeToFailPercent==1 should make fBaseAlpha==0
+    float fBaseAlpha =
+        (1 - m_pPlayerState->m_PlayerOptions.GetCurrent().m_fDark -
+         m_pPlayerState->m_PlayerOptions.GetCurrent().m_fDarks[c]);
+    if (m_fFadeToFailPercent != -1) {
+      fBaseAlpha *= (1 - m_fFadeToFailPercent);
+    }
+    rage_clamp(fBaseAlpha, 0.0f, 1.0f);
+    m_ReceptorArrow[c]->SetBaseAlpha(fBaseAlpha);
 
-		if(m_renderers != nullptr)
-		{
-			// set arrow XYZ
-			(*m_renderers)[c].UpdateReceptorGhostStuff(m_ReceptorArrow[c]);
-		}
-		else
-		{
-			// ScreenNameEntry uses ReceptorArrowRow but doesn't have or need
-			// column renderers.  Just do the lazy thing and offset x. -Kyz
-			const Style* style= GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber);
-			m_ReceptorArrow[c]->SetX(style->m_ColumnInfo[m_pPlayerState->m_PlayerNumber][c].fXOffset);
-		}
-	}
+    if (m_renderers != nullptr) {
+      // set arrow XYZ
+      (*m_renderers)[c].UpdateReceptorGhostStuff(m_ReceptorArrow[c]);
+    } else {
+      // ScreenNameEntry uses ReceptorArrowRow but doesn't have or need
+      // column renderers.  Just do the lazy thing and offset x. -Kyz
+      const Style* style =
+          GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber);
+      m_ReceptorArrow[c]->SetX(
+          style->m_ColumnInfo[m_pPlayerState->m_PlayerNumber][c].fXOffset);
+    }
+  }
 }
 
-void ReceptorArrowRow::DrawPrimitives()
-{
-	const Style* pStyle = GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber);
-	for( unsigned i=0; i<m_ReceptorArrow.size(); i++ )
-	{
-		const int c = pStyle->m_iColumnDrawOrder[i];
-		m_ReceptorArrow[c]->Draw();
-	}
+void ReceptorArrowRow::DrawPrimitives() {
+  const Style* pStyle =
+      GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber);
+  for (unsigned i = 0; i < m_ReceptorArrow.size(); i++) {
+    const int c = pStyle->m_iColumnDrawOrder[i];
+    m_ReceptorArrow[c]->Draw();
+  }
 }
 
-void ReceptorArrowRow::Step( int iCol, TapNoteScore score )
-{
-	ASSERT( iCol >= 0  &&  iCol < (int) m_ReceptorArrow.size() );
-	m_ReceptorArrow[iCol]->Step( score );
+void ReceptorArrowRow::Step(int iCol, TapNoteScore score) {
+  ASSERT(iCol >= 0 && iCol < (int)m_ReceptorArrow.size());
+  m_ReceptorArrow[iCol]->Step(score);
 }
 
-void ReceptorArrowRow::SetPressed( int iCol )
-{
-	ASSERT( iCol >= 0  &&  iCol < (int) m_ReceptorArrow.size() );
-	m_ReceptorArrow[iCol]->SetPressed();
+void ReceptorArrowRow::SetPressed(int iCol) {
+  ASSERT(iCol >= 0 && iCol < (int)m_ReceptorArrow.size());
+  m_ReceptorArrow[iCol]->SetPressed();
 }
 
-void ReceptorArrowRow::SetNoteUpcoming( int iCol, bool b )
-{
-	ASSERT( iCol >= 0  &&  iCol < (int) m_ReceptorArrow.size() );
-	m_ReceptorArrow[iCol]->SetNoteUpcoming(b);
+void ReceptorArrowRow::SetNoteUpcoming(int iCol, bool b) {
+  ASSERT(iCol >= 0 && iCol < (int)m_ReceptorArrow.size());
+  m_ReceptorArrow[iCol]->SetNoteUpcoming(b);
 }
-
 
 /*
  * (c) 2001-2003 Chris Danford

@@ -12,38 +12,45 @@
 /**
  * @brief Handle transforming a list of items
  *
- * Cache item transforms based on fPositionOffsetFromCenter and iItemIndex for speed. */
-class LuaExpressionTransform
-{
-public:
-	LuaExpressionTransform();
-	~LuaExpressionTransform();
+ * Cache item transforms based on fPositionOffsetFromCenter and iItemIndex for
+ * speed. */
+class LuaExpressionTransform {
+ public:
+  LuaExpressionTransform();
+  ~LuaExpressionTransform();
 
-	void SetFromReference( const LuaReference &ref );
-	void SetNumSubdivisions( int iNumSubdivisions ) { ASSERT( iNumSubdivisions > 0 ); m_iNumSubdivisions = iNumSubdivisions; }
+  void SetFromReference(const LuaReference& ref);
+  void SetNumSubdivisions(int iNumSubdivisions) {
+    ASSERT(iNumSubdivisions > 0);
+    m_iNumSubdivisions = iNumSubdivisions;
+  }
 
-	void TransformItemCached( Actor &a, float fPositionOffsetFromCenter, int iItemIndex, int iNumItems );
-	void TransformItemDirect( Actor &a, float fPositionOffsetFromCenter, int iItemIndex, int iNumItems ) const;
-	const Actor::TweenState &GetTransformCached( float fPositionOffsetFromCenter, int iItemIndex, int iNumItems ) const;
-	void ClearCache() { m_mapPositionToTweenStateCache.clear(); }
+  void TransformItemCached(
+      Actor& a, float fPositionOffsetFromCenter, int iItemIndex, int iNumItems);
+  void TransformItemDirect(
+      Actor& a, float fPositionOffsetFromCenter, int iItemIndex,
+      int iNumItems) const;
+  const Actor::TweenState& GetTransformCached(
+      float fPositionOffsetFromCenter, int iItemIndex, int iNumItems) const;
+  void ClearCache() { m_mapPositionToTweenStateCache.clear(); }
 
-protected:
+ protected:
+  LuaReference
+      m_exprTransformFunction;  // params: self,offset,itemIndex,numItems
+  int m_iNumSubdivisions;       // 1 == one evaluation per position
+  struct PositionOffsetAndItemIndex {
+    float fPositionOffsetFromCenter;
+    int iItemIndex;
 
-	LuaReference m_exprTransformFunction;	// params: self,offset,itemIndex,numItems
-	int m_iNumSubdivisions;	// 1 == one evaluation per position
-	struct PositionOffsetAndItemIndex
-	{
-		float fPositionOffsetFromCenter;
-		int iItemIndex;
-
-		bool operator<( const PositionOffsetAndItemIndex &other ) const
-		{
-			if( fPositionOffsetFromCenter != other.fPositionOffsetFromCenter )
-				return fPositionOffsetFromCenter < other.fPositionOffsetFromCenter;
-			return iItemIndex < other.iItemIndex;
-		}
-	};
-	mutable std::map<PositionOffsetAndItemIndex,Actor::TweenState> m_mapPositionToTweenStateCache;
+    bool operator<(const PositionOffsetAndItemIndex& other) const {
+      if (fPositionOffsetFromCenter != other.fPositionOffsetFromCenter) {
+        return fPositionOffsetFromCenter < other.fPositionOffsetFromCenter;
+      }
+      return iItemIndex < other.iItemIndex;
+    }
+  };
+  mutable std::map<PositionOffsetAndItemIndex, Actor::TweenState>
+      m_mapPositionToTweenStateCache;
 };
 
 #endif
@@ -51,7 +58,7 @@ protected:
 /*
  * (c) 2003-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -61,7 +68,7 @@ protected:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

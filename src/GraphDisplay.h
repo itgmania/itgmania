@@ -12,34 +12,34 @@ class StageStats;
 class PlayerStageStats;
 class GraphLine;
 class GraphBody;
-/** @brief A graph of the player's life over the course of Gameplay, used on Evaluation. */
-class GraphDisplay: public ActorFrame
-{
-public:
-	GraphDisplay();
-	~GraphDisplay();
-	virtual GraphDisplay *Copy() const;
+/** @brief A graph of the player's life over the course of Gameplay, used on
+ * Evaluation. */
+class GraphDisplay : public ActorFrame {
+ public:
+  GraphDisplay();
+  ~GraphDisplay();
+  virtual GraphDisplay* Copy() const;
 
-	void Load( std::string sMetricsGroup );
-	void Set( const StageStats &ss, const PlayerStageStats &s );
+  void Load(std::string sMetricsGroup);
+  void Set(const StageStats& ss, const PlayerStageStats& s);
 
-	// Lua
-	virtual void PushSelf( lua_State *L );
+  // Lua
+  virtual void PushSelf(lua_State* L);
 
-private:
-	void UpdateVerts();
+ private:
+  void UpdateVerts();
 
-	std::vector<float> m_Values;
+  std::vector<float> m_Values;
 
-	RectF m_quadVertices;
+  RectF m_quadVertices;
 
-	std::vector<Actor*> m_vpSongBoundaries;
-	AutoActor m_sprBarely;
-	AutoActor m_sprBacking;
-	AutoActor m_sprSongBoundary;
+  std::vector<Actor*> m_vpSongBoundaries;
+  AutoActor m_sprBarely;
+  AutoActor m_sprBacking;
+  AutoActor m_sprSongBoundary;
 
-	GraphLine *m_pGraphLine;
-	GraphBody *m_pGraphBody;
+  GraphLine* m_pGraphLine;
+  GraphBody* m_pGraphBody;
 };
 
 #endif

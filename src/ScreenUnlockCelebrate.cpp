@@ -7,30 +7,31 @@
 #include "UnlockManager.h"
 #include "global.h"
 
-REGISTER_SCREEN_CLASS( ScreenUnlockCelebrate );
+REGISTER_SCREEN_CLASS(ScreenUnlockCelebrate);
 
 static int g_iUnlockEntryIndexToCelebrate = 0;
 
-LuaFunction( GetUnlockEntryIndexToCelebrate, g_iUnlockEntryIndexToCelebrate );
+LuaFunction(GetUnlockEntryIndexToCelebrate, g_iUnlockEntryIndexToCelebrate);
 
-void ScreenUnlockCelebrate::Init()
-{
-	// We shouldn't be called if there aren't any unlocks to celebrate
-	ASSERT( UNLOCKMAN->AnyUnlocksToCelebrate() );
+void ScreenUnlockCelebrate::Init() {
+  // We shouldn't be called if there aren't any unlocks to celebrate
+  ASSERT(UNLOCKMAN->AnyUnlocksToCelebrate());
 
-	g_iUnlockEntryIndexToCelebrate = UNLOCKMAN->GetUnlockEntryIndexToCelebrate();
-	UNLOCKMAN->UnlockEntryIndex( g_iUnlockEntryIndexToCelebrate );
-	Song* pSong = UNLOCKMAN->m_UnlockEntries[ g_iUnlockEntryIndexToCelebrate ].m_Song.ToSong();
-	if( pSong )
-		GAMESTATE->m_pCurSong.Set( pSong );
+  g_iUnlockEntryIndexToCelebrate = UNLOCKMAN->GetUnlockEntryIndexToCelebrate();
+  UNLOCKMAN->UnlockEntryIndex(g_iUnlockEntryIndexToCelebrate);
+  Song* pSong = UNLOCKMAN->m_UnlockEntries[g_iUnlockEntryIndexToCelebrate]
+                    .m_Song.ToSong();
+  if (pSong) {
+    GAMESTATE->m_pCurSong.Set(pSong);
+  }
 
-	ScreenUnlockBrowse::Init();
+  ScreenUnlockBrowse::Init();
 }
 
 /*
  * (c) 2006 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -40,7 +41,7 @@ void ScreenUnlockCelebrate::Init()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -15,130 +15,120 @@
 #include "RageUtil.h"
 #include "Song.h"
 
-Foreground::~Foreground()
-{
-	Unload();
+Foreground::~Foreground() { Unload(); }
+
+void Foreground::Unload() {
+  for (unsigned i = 0; i < m_BGAnimations.size(); ++i) {
+    delete m_BGAnimations[i].m_bga;
+  }
+  m_BGAnimations.clear();
+  m_SubActors.clear();
+  m_fLastMusicSeconds = -9999;
+  m_pSong = nullptr;
 }
 
-void Foreground::Unload()
-{
-	for( unsigned i=0; i < m_BGAnimations.size(); ++i )
-		delete m_BGAnimations[i].m_bga;
-	m_BGAnimations.clear();
-	m_SubActors.clear();
-	m_fLastMusicSeconds = -9999;
-	m_pSong = nullptr;
+void Foreground::LoadFromSong(const Song* pSong) {
+  // Song graphics can get very big; never keep them in memory.
+  RageTextureID::TexPolicy OldPolicy = TEXTUREMAN->GetDefaultTexturePolicy();
+  TEXTUREMAN->SetDefaultTexturePolicy(RageTextureID::TEX_VOLATILE);
+
+  m_pSong = pSong;
+  for (const BackgroundChange& change : pSong->GetForegroundChanges()) {
+    std::string sBGName = change.m_def.m_sFile1,
+                sLuaFile = pSong->GetSongDir() + sBGName + "/default.lua",
+                sXmlFile = pSong->GetSongDir() + sBGName + "/default.xml";
+
+    LoadedBGA bga;
+    if (DoesFileExist(sLuaFile)) {
+      bga.m_bga = ActorUtil::MakeActor(sLuaFile, this);
+    } else if (PREFSMAN->m_bQuirksMode && DoesFileExist(sXmlFile)) {
+      bga.m_bga = ActorUtil::MakeActor(sXmlFile, this);
+    } else {
+      bga.m_bga = ActorUtil::MakeActor(pSong->GetSongDir() + sBGName, this);
+    }
+    if (bga.m_bga == nullptr) {
+      continue;
+    }
+    bga.m_bga->SetName(sBGName);
+    // ActorUtil::MakeActor calls LoadFromNode to load the actor, and
+    // LoadFromNode takes care of running the InitCommand, so do not run the
+    // InitCommand here. -Kyz
+    bga.m_fStartBeat = change.m_fStartBeat;
+    bga.m_bFinished = false;
+
+    bga.m_bga->SetVisible(false);
+
+    this->AddChild(bga.m_bga);
+    m_BGAnimations.push_back(bga);
+  }
+
+  TEXTUREMAN->SetDefaultTexturePolicy(OldPolicy);
+
+  this->SortByDrawOrder();
 }
 
-void Foreground::LoadFromSong( const Song *pSong )
-{
-	// Song graphics can get very big; never keep them in memory.
-	RageTextureID::TexPolicy OldPolicy = TEXTUREMAN->GetDefaultTexturePolicy();
-	TEXTUREMAN->SetDefaultTexturePolicy( RageTextureID::TEX_VOLATILE );
+void Foreground::Update(float fDeltaTime) {
+  // Calls to Update() should *not* be scaled by music rate unless
+  // RateModsAffectFGChanges is enabled. Undo it.
+  const float fRate = PREFSMAN->m_bRateModsAffectTweens
+                          ? 1.0f
+                          : GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
 
-	m_pSong = pSong;
-	for (BackgroundChange const &change : pSong->GetForegroundChanges())
-	{
-		std::string sBGName = change.m_def.m_sFile1,
-			sLuaFile = pSong->GetSongDir() + sBGName + "/default.lua",
-			sXmlFile = pSong->GetSongDir() + sBGName + "/default.xml";
+  for (unsigned i = 0; i < m_BGAnimations.size(); ++i) {
+    LoadedBGA& bga = m_BGAnimations[i];
 
-		LoadedBGA bga;
-		if ( DoesFileExist( sLuaFile ) )
-		{
-			bga.m_bga = ActorUtil::MakeActor( sLuaFile, this );
-		}
-		else if ( PREFSMAN->m_bQuirksMode && DoesFileExist( sXmlFile ) )
-		{
-			bga.m_bga = ActorUtil::MakeActor( sXmlFile, this );
-		}
-		else
-		{
-			bga.m_bga = ActorUtil::MakeActor( pSong->GetSongDir() + sBGName, this );
-		}
-		if( bga.m_bga == nullptr )
-			continue;
-		bga.m_bga->SetName( sBGName );
-		// ActorUtil::MakeActor calls LoadFromNode to load the actor, and
-		// LoadFromNode takes care of running the InitCommand, so do not run the
-		// InitCommand here. -Kyz
-		bga.m_fStartBeat = change.m_fStartBeat;
-		bga.m_bFinished = false;
+    if (GAMESTATE->m_Position.m_fSongBeat < bga.m_fStartBeat) {
+      // The animation hasn't started yet.
+      continue;
+    }
 
-		bga.m_bga->SetVisible( false );
+    if (bga.m_bFinished) {
+      continue;
+    }
 
-		this->AddChild( bga.m_bga );
-		m_BGAnimations.push_back( bga );
-	}
+    /* Update the actor even if we're about to hide it, so queued commands
+     * are always run. */
+    float lDeltaTime;
+    if (!bga.m_bga->GetVisible()) {
+      bga.m_bga->SetVisible(true);
+      bga.m_bga->PlayCommand("On");
 
-	TEXTUREMAN->SetDefaultTexturePolicy( OldPolicy );
+      const float fStartSecond =
+          m_pSong->m_SongTiming.GetElapsedTimeFromBeat(bga.m_fStartBeat);
+      const float fStopSecond = fStartSecond + bga.m_bga->GetTweenTimeLeft();
+      bga.m_fStopBeat =
+          m_pSong->m_SongTiming.GetBeatFromElapsedTime(fStopSecond);
 
-	this->SortByDrawOrder();
+      lDeltaTime = GAMESTATE->m_Position.m_fMusicSeconds - fStartSecond;
+    } else {
+      lDeltaTime = GAMESTATE->m_Position.m_fMusicSeconds - m_fLastMusicSeconds;
+    }
+
+    // This shouldn't go down, but be safe:
+    lDeltaTime = std::max(lDeltaTime, 0.0f);
+
+    bga.m_bga->Update(lDeltaTime / fRate);
+
+    if (GAMESTATE->m_Position.m_fSongBeat > bga.m_fStopBeat) {
+      // Finished.
+      bga.m_bga->SetVisible(false);
+      bga.m_bFinished = true;
+      continue;
+    }
+  }
+
+  m_fLastMusicSeconds = GAMESTATE->m_Position.m_fMusicSeconds;
 }
 
-void Foreground::Update( float fDeltaTime )
-{
-	// Calls to Update() should *not* be scaled by music rate unless RateModsAffectFGChanges is enabled. Undo it.
-	const float fRate = PREFSMAN->m_bRateModsAffectTweens ? 1.0f : GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
-
-	for( unsigned i=0; i < m_BGAnimations.size(); ++i )
-	{
-		LoadedBGA &bga = m_BGAnimations[i];
-
-		if( GAMESTATE->m_Position.m_fSongBeat < bga.m_fStartBeat )
-		{
-			// The animation hasn't started yet.
-			continue;
-		}
-
-		if( bga.m_bFinished )
-			continue;
-
-		/* Update the actor even if we're about to hide it, so queued commands
-		 * are always run. */
-		float lDeltaTime;
-		if( !bga.m_bga->GetVisible() )
-		{
-			bga.m_bga->SetVisible( true );
-			bga.m_bga->PlayCommand( "On" );
-
-			const float fStartSecond = m_pSong->m_SongTiming.GetElapsedTimeFromBeat( bga.m_fStartBeat );
-			const float fStopSecond = fStartSecond + bga.m_bga->GetTweenTimeLeft();
-			bga.m_fStopBeat = m_pSong->m_SongTiming.GetBeatFromElapsedTime( fStopSecond );
-
-			lDeltaTime = GAMESTATE->m_Position.m_fMusicSeconds - fStartSecond;
-		}
-		else
-		{
-			lDeltaTime = GAMESTATE->m_Position.m_fMusicSeconds - m_fLastMusicSeconds;
-		}
-
-		// This shouldn't go down, but be safe:
-		lDeltaTime = std::max( lDeltaTime, 0.0f );
-
-		bga.m_bga->Update( lDeltaTime / fRate );
-
-		if( GAMESTATE->m_Position.m_fSongBeat > bga.m_fStopBeat )
-		{
-			// Finished.
-			bga.m_bga->SetVisible( false );
-			bga.m_bFinished = true;
-			continue;
-		}
-	}
-
-	m_fLastMusicSeconds = GAMESTATE->m_Position.m_fMusicSeconds;
-}
-
-void Foreground::HandleMessage( const Message &msg )
-{
-	// We want foregrounds to behave as if their On command happens at the
-	// starting beat, not when the Foreground object receives an On command.
-	// So don't propagate that; we'll call it ourselves.
-	if (msg.GetName() == "On")
-		Actor::HandleMessage(msg);
-	else
-		ActorFrame::HandleMessage(msg);
+void Foreground::HandleMessage(const Message& msg) {
+  // We want foregrounds to behave as if their On command happens at the
+  // starting beat, not when the Foreground object receives an On command.
+  // So don't propagate that; we'll call it ourselves.
+  if (msg.GetName() == "On") {
+    Actor::HandleMessage(msg);
+  } else {
+    ActorFrame::HandleMessage(msg);
+  }
 }
 
 /*

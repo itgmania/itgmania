@@ -16,147 +16,166 @@
 #include "ThemeMetric.h"
 #include "global.h"
 
-ThemeMetric<std::string>		CommonMetrics::OPERATOR_MENU_SCREEN		("Common","OperatorMenuScreen");
-ThemeMetric<std::string>		CommonMetrics::FIRST_ATTRACT_SCREEN		("Common","FirstAttractScreen");
-ThemeMetric<std::string>		CommonMetrics::DEFAULT_MODIFIERS		("Common","DefaultModifiers" );
-LocalizedString				CommonMetrics::WINDOW_TITLE				("Common","WindowTitle");
-ThemeMetric<int>			CommonMetrics::MAX_COURSE_ENTRIES_BEFORE_VARIOUS("Common","MaxCourseEntriesBeforeShowVarious");
-ThemeMetric<float>			CommonMetrics::TICK_EARLY_SECONDS		("ScreenGameplay","TickEarlySeconds");
-ThemeMetric<std::string>		CommonMetrics::DEFAULT_NOTESKIN_NAME	("Common","DefaultNoteSkinName");
-ThemeMetricDifficultiesToShow	CommonMetrics::DIFFICULTIES_TO_SHOW		("Common","DifficultiesToShow");
-ThemeMetricCourseDifficultiesToShow	CommonMetrics::COURSE_DIFFICULTIES_TO_SHOW	("Common","CourseDifficultiesToShow");
-ThemeMetricStepsTypesToShow	CommonMetrics::STEPS_TYPES_TO_SHOW		("Common","StepsTypesToHide");
-ThemeMetric<bool>			CommonMetrics::AUTO_SET_STYLE			("Common","AutoSetStyle");
-ThemeMetric<int>			CommonMetrics::PERCENT_SCORE_DECIMAL_PLACES	("Common","PercentScoreDecimalPlaces");
-ThemeMetric<std::string>		CommonMetrics::IMAGES_TO_CACHE	("Common","ImageCache");
+ThemeMetric<std::string> CommonMetrics::OPERATOR_MENU_SCREEN(
+    "Common", "OperatorMenuScreen");
+ThemeMetric<std::string> CommonMetrics::FIRST_ATTRACT_SCREEN(
+    "Common", "FirstAttractScreen");
+ThemeMetric<std::string> CommonMetrics::DEFAULT_MODIFIERS(
+    "Common", "DefaultModifiers");
+LocalizedString CommonMetrics::WINDOW_TITLE("Common", "WindowTitle");
+ThemeMetric<int> CommonMetrics::MAX_COURSE_ENTRIES_BEFORE_VARIOUS(
+    "Common", "MaxCourseEntriesBeforeShowVarious");
+ThemeMetric<float> CommonMetrics::TICK_EARLY_SECONDS(
+    "ScreenGameplay", "TickEarlySeconds");
+ThemeMetric<std::string> CommonMetrics::DEFAULT_NOTESKIN_NAME(
+    "Common", "DefaultNoteSkinName");
+ThemeMetricDifficultiesToShow CommonMetrics::DIFFICULTIES_TO_SHOW(
+    "Common", "DifficultiesToShow");
+ThemeMetricCourseDifficultiesToShow CommonMetrics::COURSE_DIFFICULTIES_TO_SHOW(
+    "Common", "CourseDifficultiesToShow");
+ThemeMetricStepsTypesToShow CommonMetrics::STEPS_TYPES_TO_SHOW(
+    "Common", "StepsTypesToHide");
+ThemeMetric<bool> CommonMetrics::AUTO_SET_STYLE("Common", "AutoSetStyle");
+ThemeMetric<int> CommonMetrics::PERCENT_SCORE_DECIMAL_PLACES(
+    "Common", "PercentScoreDecimalPlaces");
+ThemeMetric<std::string> CommonMetrics::IMAGES_TO_CACHE("Common", "ImageCache");
 
-ThemeMetricDifficultiesToShow::ThemeMetricDifficultiesToShow( const std::string& sGroup, const std::string& sName ) :
-	ThemeMetric<std::string>(sGroup,sName)
-{
-	// re-read because ThemeMetric::ThemeMetric calls ThemeMetric::Read, not the derived one
-	if( IsLoaded() )
-		Read();
+ThemeMetricDifficultiesToShow::ThemeMetricDifficultiesToShow(
+    const std::string& sGroup, const std::string& sName)
+    : ThemeMetric<std::string>(sGroup, sName) {
+  // re-read because ThemeMetric::ThemeMetric calls ThemeMetric::Read, not the
+  // derived one
+  if (IsLoaded()) {
+    Read();
+  }
 }
-void ThemeMetricDifficultiesToShow::Read()
-{
-	ASSERT( Right(GetName(), 6) == "ToShow" );
+void ThemeMetricDifficultiesToShow::Read() {
+  ASSERT(Right(GetName(), 6) == "ToShow");
 
-	ThemeMetric<std::string>::Read();
+  ThemeMetric<std::string>::Read();
 
-	m_v.clear();
+  m_v.clear();
 
-	std::vector<std::string> v;
-	split( ThemeMetric<std::string>::GetValue(), ",", v );
-	if(v.empty())
-	{
-		LuaHelpers::ReportScriptError("DifficultiesToShow must have at least one entry.");
-		return;
-	}
+  std::vector<std::string> v;
+  split(ThemeMetric<std::string>::GetValue(), ",", v);
+  if (v.empty()) {
+    LuaHelpers::ReportScriptError(
+        "DifficultiesToShow must have at least one entry.");
+    return;
+  }
 
-	for (std::string const &i : v)
-	{
-		Difficulty d = StringToDifficulty( i );
-		if( d == Difficulty_Invalid )
-		{
-			LuaHelpers::ReportScriptErrorFmt("Unknown difficulty \"%s\" in CourseDifficultiesToShow.", i.c_str());
-		}
-		else
-		{
-			m_v.push_back( d );
-		}
-	}
+  for (const std::string& i : v) {
+    Difficulty d = StringToDifficulty(i);
+    if (d == Difficulty_Invalid) {
+      LuaHelpers::ReportScriptErrorFmt(
+          "Unknown difficulty \"%s\" in CourseDifficultiesToShow.", i.c_str());
+    } else {
+      m_v.push_back(d);
+    }
+  }
 }
-const std::vector<Difficulty>& ThemeMetricDifficultiesToShow::GetValue() const { return m_v; }
-
-
-ThemeMetricCourseDifficultiesToShow::ThemeMetricCourseDifficultiesToShow( const std::string& sGroup, const std::string& sName ) :
-	ThemeMetric<std::string>(sGroup,sName)
-{
-	// re-read because ThemeMetric::ThemeMetric calls ThemeMetric::Read, not the derived one
-	if( IsLoaded() )
-		Read();
-}
-void ThemeMetricCourseDifficultiesToShow::Read()
-{
-	ASSERT( Right(GetName(), 6) == "ToShow" );
-
-	ThemeMetric<std::string>::Read();
-
-	m_v.clear();
-
-	std::vector<std::string> v;
-	split( ThemeMetric<std::string>::GetValue(), ",", v );
-	if(v.empty())
-	{
-		LuaHelpers::ReportScriptError("CourseDifficultiesToShow must have at least one entry.");
-		return;
-	}
-
-	for (std::string const &i : v)
-	{
-		CourseDifficulty d = StringToDifficulty( i );
-		if( d == Difficulty_Invalid )
-		{
-			LuaHelpers::ReportScriptErrorFmt("Unknown CourseDifficulty \"%s\" in CourseDifficultiesToShow.", i.c_str());
-		}
-		else
-		{
-			m_v.push_back( d );
-		}
-	}
-}
-const std::vector<CourseDifficulty>& ThemeMetricCourseDifficultiesToShow::GetValue() const { return m_v; }
-
-static void RemoveStepsTypes( std::vector<StepsType>& inout, std::string sStepsTypesToRemove )
-{
-	std::vector<std::string> v;
-	split( sStepsTypesToRemove, ",", v );
-	if( v.size() == 0 ) return; // Nothing to do!
-
-	// subtract StepsTypes
-	for (std::string const &i : v)
-	{
-		StepsType st = GAMEMAN->StringToStepsType(i);
-		if( st == StepsType_Invalid )
-		{
-			LuaHelpers::ReportScriptErrorFmt( "Invalid StepsType value '%s' in '%s'", i.c_str(), sStepsTypesToRemove.c_str() );
-			continue;
-		}
-
-		const std::vector<StepsType>::iterator iter = find( inout.begin(), inout.end(), st );
-		if( iter != inout.end() )
-			inout.erase( iter );
-	}
-}
-ThemeMetricStepsTypesToShow::ThemeMetricStepsTypesToShow( const std::string& sGroup, const std::string& sName ) :
-	ThemeMetric<std::string>(sGroup,sName)
-{
-	// re-read because ThemeMetric::ThemeMetric calls ThemeMetric::Read, not the derived one
-	if( IsLoaded() )
-		Read();
-}
-void ThemeMetricStepsTypesToShow::Read()
-{
-	ASSERT( Right(GetName(), 6) == "ToHide" );
-
-	ThemeMetric<std::string>::Read();
-
-	m_v.clear();
-	GAMEMAN->GetStepsTypesForGame( GAMESTATE->m_pCurGame, m_v );
-
-	RemoveStepsTypes( m_v, ThemeMetric<std::string>::GetValue() );
-}
-const std::vector<StepsType>& ThemeMetricStepsTypesToShow::GetValue() const { return m_v; }
-
-
-std::string CommonMetrics::LocalizeOptionItem( const std::string &s, bool bOptional )
-{
-	if( bOptional && !THEME->HasString("OptionNames",s) )
-		return s;
-	return THEME->GetString( "OptionNames", s );
+const std::vector<Difficulty>& ThemeMetricDifficultiesToShow::GetValue() const {
+  return m_v;
 }
 
-LuaFunction( LocalizeOptionItem, CommonMetrics::LocalizeOptionItem(SArg(1),true) );
+ThemeMetricCourseDifficultiesToShow::ThemeMetricCourseDifficultiesToShow(
+    const std::string& sGroup, const std::string& sName)
+    : ThemeMetric<std::string>(sGroup, sName) {
+  // re-read because ThemeMetric::ThemeMetric calls ThemeMetric::Read, not the
+  // derived one
+  if (IsLoaded()) {
+    Read();
+  }
+}
+void ThemeMetricCourseDifficultiesToShow::Read() {
+  ASSERT(Right(GetName(), 6) == "ToShow");
+
+  ThemeMetric<std::string>::Read();
+
+  m_v.clear();
+
+  std::vector<std::string> v;
+  split(ThemeMetric<std::string>::GetValue(), ",", v);
+  if (v.empty()) {
+    LuaHelpers::ReportScriptError(
+        "CourseDifficultiesToShow must have at least one entry.");
+    return;
+  }
+
+  for (const std::string& i : v) {
+    CourseDifficulty d = StringToDifficulty(i);
+    if (d == Difficulty_Invalid) {
+      LuaHelpers::ReportScriptErrorFmt(
+          "Unknown CourseDifficulty \"%s\" in CourseDifficultiesToShow.",
+          i.c_str());
+    } else {
+      m_v.push_back(d);
+    }
+  }
+}
+const std::vector<CourseDifficulty>&
+ThemeMetricCourseDifficultiesToShow::GetValue() const {
+  return m_v;
+}
+
+static void RemoveStepsTypes(
+    std::vector<StepsType>& inout, std::string sStepsTypesToRemove) {
+  std::vector<std::string> v;
+  split(sStepsTypesToRemove, ",", v);
+  if (v.size() == 0) {
+    return;  // Nothing to do!
+  }
+
+  // subtract StepsTypes
+  for (const std::string& i : v) {
+    StepsType st = GAMEMAN->StringToStepsType(i);
+    if (st == StepsType_Invalid) {
+      LuaHelpers::ReportScriptErrorFmt(
+          "Invalid StepsType value '%s' in '%s'", i.c_str(),
+          sStepsTypesToRemove.c_str());
+      continue;
+    }
+
+    const std::vector<StepsType>::iterator iter =
+        find(inout.begin(), inout.end(), st);
+    if (iter != inout.end()) {
+      inout.erase(iter);
+    }
+  }
+}
+ThemeMetricStepsTypesToShow::ThemeMetricStepsTypesToShow(
+    const std::string& sGroup, const std::string& sName)
+    : ThemeMetric<std::string>(sGroup, sName) {
+  // re-read because ThemeMetric::ThemeMetric calls ThemeMetric::Read, not the
+  // derived one
+  if (IsLoaded()) {
+    Read();
+  }
+}
+void ThemeMetricStepsTypesToShow::Read() {
+  ASSERT(Right(GetName(), 6) == "ToHide");
+
+  ThemeMetric<std::string>::Read();
+
+  m_v.clear();
+  GAMEMAN->GetStepsTypesForGame(GAMESTATE->m_pCurGame, m_v);
+
+  RemoveStepsTypes(m_v, ThemeMetric<std::string>::GetValue());
+}
+const std::vector<StepsType>& ThemeMetricStepsTypesToShow::GetValue() const {
+  return m_v;
+}
+
+std::string CommonMetrics::LocalizeOptionItem(
+    const std::string& s, bool bOptional) {
+  if (bOptional && !THEME->HasString("OptionNames", s)) {
+    return s;
+  }
+  return THEME->GetString("OptionNames", s);
+}
+
+LuaFunction(
+    LocalizeOptionItem, CommonMetrics::LocalizeOptionItem(SArg(1), true));
 
 /*
  * (c) 2001-2004 Chris Danford

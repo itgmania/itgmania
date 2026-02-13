@@ -1,18 +1,18 @@
 /* LightsDriver_Win32Parallel - Control lights with Kit 74:
- *	http://www.google.com/search?hl=en&lr=&ie=UTF-8&oe=UTF-8&q=kit+74+relay */
+ *	http://www.google.com/search?hl=en&lr=&ie=UTF-8&oe=UTF-8&q=kit+74+relay
+ * */
 
 #ifndef LightsDriver_Win32Parallel_H
 #define LightsDriver_Win32Parallel_H
 
 #include "arch/Lights/LightsDriver.h"
 
-class LightsDriver_Win32Parallel : public LightsDriver
-{
-public:
-	LightsDriver_Win32Parallel();
-	virtual ~LightsDriver_Win32Parallel();
+class LightsDriver_Win32Parallel : public LightsDriver {
+ public:
+  LightsDriver_Win32Parallel();
+  virtual ~LightsDriver_Win32Parallel();
 
-	virtual void Set( const LightsState *ls );
+  virtual void Set(const LightsState* ls);
 };
 
 #endif
@@ -20,7 +20,7 @@ public:
 /*
  * (c) 2003-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -30,7 +30,7 @@ public:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

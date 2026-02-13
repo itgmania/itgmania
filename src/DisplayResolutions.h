@@ -3,27 +3,32 @@
 
 #include <set>
 /** @brief The dimensions of the program. */
-class DisplayResolution
-{
-public:
-	/** @brief The width of the program. */
-	int iWidth;
-	/** @brief The height of the program. */
-	int iHeight;
-	/** @brief Is this display stretched/used for widescreen? */
-	bool bStretched;
+class DisplayResolution {
+ public:
+  /** @brief The width of the program. */
+  int iWidth;
+  /** @brief The height of the program. */
+  int iHeight;
+  /** @brief Is this display stretched/used for widescreen? */
+  bool bStretched;
 
-	/**
-	 * @brief Determine if one DisplayResolution is less than the other.
-	 * @param other the other DisplayResolution to check.
-	 * @return true if this DisplayResolution is less than the other, or false otherwise. */
-	bool operator<(const DisplayResolution& other) const {
-		if (iWidth != other.iWidth) return iWidth < other.iWidth;
-		if (iHeight != other.iHeight) return iHeight < other.iHeight;
-		if (bStretched != other.bStretched) return bStretched < other.bStretched;
-		return false;
-	}
-
+  /**
+   * @brief Determine if one DisplayResolution is less than the other.
+   * @param other the other DisplayResolution to check.
+   * @return true if this DisplayResolution is less than the other, or false
+   * otherwise. */
+  bool operator<(const DisplayResolution& other) const {
+    if (iWidth != other.iWidth) {
+      return iWidth < other.iWidth;
+    }
+    if (iHeight != other.iHeight) {
+      return iHeight < other.iHeight;
+    }
+    if (bStretched != other.bStretched) {
+      return bStretched < other.bStretched;
+    }
+    return false;
+  }
 };
 /** @brief The collection of DisplayResolutions available within the program. */
 typedef std::set<DisplayResolution> DisplayResolutions;
@@ -35,7 +40,7 @@ typedef std::set<DisplayResolution> DisplayResolutions;
  * @author Chris Danford (c) 2001-2005
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -45,7 +50,7 @@ typedef std::set<DisplayResolution> DisplayResolutions;
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

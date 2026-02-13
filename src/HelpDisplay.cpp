@@ -11,124 +11,122 @@
 #include "ThemeManager.h"
 #include "global.h"
 
-REGISTER_ACTOR_CLASS( HelpDisplay );
+REGISTER_ACTOR_CLASS(HelpDisplay);
 
-HelpDisplay::HelpDisplay()
-{
-	m_iCurTipIndex = 0;
-	m_fSecsUntilSwitch = 0;
-	m_fSecsBetweenSwitches = 1;
+HelpDisplay::HelpDisplay() {
+  m_iCurTipIndex = 0;
+  m_fSecsUntilSwitch = 0;
+  m_fSecsBetweenSwitches = 1;
 }
 
-void HelpDisplay::Load( const std::string &sType )
-{
-	RunCommands( THEME->GetMetricA(sType,"TipOnCommand") );
-	m_fSecsUntilSwitch = THEME->GetMetricF(sType,"TipShowTime");
-	m_fSecsBetweenSwitches = THEME->GetMetricF(sType,"TipSwitchTime");
+void HelpDisplay::Load(const std::string& sType) {
+  RunCommands(THEME->GetMetricA(sType, "TipOnCommand"));
+  m_fSecsUntilSwitch = THEME->GetMetricF(sType, "TipShowTime");
+  m_fSecsBetweenSwitches = THEME->GetMetricF(sType, "TipSwitchTime");
 }
 
-void HelpDisplay::SetTips( const std::vector<std::string> &arrayTips, const std::vector<std::string> &arrayTipsAlt )
-{
-	ASSERT( arrayTips.size() == arrayTipsAlt.size() );
+void HelpDisplay::SetTips(
+    const std::vector<std::string>& arrayTips,
+    const std::vector<std::string>& arrayTipsAlt) {
+  ASSERT(arrayTips.size() == arrayTipsAlt.size());
 
-	if( arrayTips == m_arrayTips && arrayTipsAlt == m_arrayTipsAlt )
-		return;
+  if (arrayTips == m_arrayTips && arrayTipsAlt == m_arrayTipsAlt) {
+    return;
+  }
 
-	SetText( "" );
+  SetText("");
 
-	m_arrayTips = arrayTips;
-	m_arrayTipsAlt = arrayTipsAlt;
+  m_arrayTips = arrayTips;
+  m_arrayTipsAlt = arrayTipsAlt;
 
-	m_iCurTipIndex = 0;
-	m_fSecsUntilSwitch = 0;
-	Update( 0 );
+  m_iCurTipIndex = 0;
+  m_fSecsUntilSwitch = 0;
+  Update(0);
 }
 
+void HelpDisplay::Update(float fDeltaTime) {
+  float fHibernate = m_fHibernateSecondsLeft;
 
-void HelpDisplay::Update( float fDeltaTime )
-{
-	float fHibernate = m_fHibernateSecondsLeft;
+  BitmapText::Update(fDeltaTime);
 
-	BitmapText::Update( fDeltaTime );
+  if (m_arrayTips.empty()) {
+    return;
+  }
 
-	if( m_arrayTips.empty() )
-		return;
+  m_fSecsUntilSwitch -= std::max(fDeltaTime - fHibernate, 0.0f);
+  if (m_fSecsUntilSwitch > 0) {
+    return;
+  }
 
-	m_fSecsUntilSwitch -= std::max( fDeltaTime - fHibernate, 0.0f );
-	if( m_fSecsUntilSwitch > 0 )
-		return;
-
-	// time to switch states
-	m_fSecsUntilSwitch = m_fSecsBetweenSwitches;
-	SetText( m_arrayTips[m_iCurTipIndex], m_arrayTipsAlt[m_iCurTipIndex] );
-	m_iCurTipIndex++;
-	m_iCurTipIndex = m_iCurTipIndex % m_arrayTips.size();
+  // time to switch states
+  m_fSecsUntilSwitch = m_fSecsBetweenSwitches;
+  SetText(m_arrayTips[m_iCurTipIndex], m_arrayTipsAlt[m_iCurTipIndex]);
+  m_iCurTipIndex++;
+  m_iCurTipIndex = m_iCurTipIndex % m_arrayTips.size();
 }
 
-
-#include "LuaBinding.h"
 #include "FontCharAliases.h"
+#include "LuaBinding.h"
 
 /** @brief Allow Lua to have access to the HelpDisplay. */
-class LunaHelpDisplay: public Luna<HelpDisplay>
-{
-public:
-	static int settips( T* p, lua_State *L )
-	{
-		luaL_checktype( L, 1, LUA_TTABLE );
-		lua_pushvalue( L, 1 );
-		std::vector<std::string> arrayTips;
-		LuaHelpers::ReadArrayFromTable( arrayTips, L );
-		lua_pop( L, 1 );
-		for( unsigned i = 0; i < arrayTips.size(); ++i )
-			FontCharAliases::ReplaceMarkers( arrayTips[i] );
-		if( lua_gettop(L) > 1 && !lua_isnil( L, 2 ) )
-		{
-			std::vector<std::string> arrayTipsAlt;
-			luaL_checktype( L, 2, LUA_TTABLE );
-			lua_pushvalue( L, 2 );
-			LuaHelpers::ReadArrayFromTable( arrayTipsAlt, L );
-			lua_pop( L, 1 );
-			for( unsigned i = 0; i < arrayTipsAlt.size(); ++i )
-				FontCharAliases::ReplaceMarkers( arrayTipsAlt[i] );
+class LunaHelpDisplay : public Luna<HelpDisplay> {
+ public:
+  static int settips(T* p, lua_State* L) {
+    luaL_checktype(L, 1, LUA_TTABLE);
+    lua_pushvalue(L, 1);
+    std::vector<std::string> arrayTips;
+    LuaHelpers::ReadArrayFromTable(arrayTips, L);
+    lua_pop(L, 1);
+    for (unsigned i = 0; i < arrayTips.size(); ++i) {
+      FontCharAliases::ReplaceMarkers(arrayTips[i]);
+    }
+    if (lua_gettop(L) > 1 && !lua_isnil(L, 2)) {
+      std::vector<std::string> arrayTipsAlt;
+      luaL_checktype(L, 2, LUA_TTABLE);
+      lua_pushvalue(L, 2);
+      LuaHelpers::ReadArrayFromTable(arrayTipsAlt, L);
+      lua_pop(L, 1);
+      for (unsigned i = 0; i < arrayTipsAlt.size(); ++i) {
+        FontCharAliases::ReplaceMarkers(arrayTipsAlt[i]);
+      }
 
-			p->SetTips( arrayTips, arrayTipsAlt );
-		}
-		else
-			p->SetTips( arrayTips );
+      p->SetTips(arrayTips, arrayTipsAlt);
+    } else {
+      p->SetTips(arrayTips);
+    }
 
-		COMMON_RETURN_SELF;
-	}
-	static int SetTipsColonSeparated( T* p, lua_State *L )
-	{
-		std::vector<std::string> vs;
-		split( SArg(1), "::", vs );
-		p->SetTips( vs );
-		COMMON_RETURN_SELF;
-	}
+    COMMON_RETURN_SELF;
+  }
+  static int SetTipsColonSeparated(T* p, lua_State* L) {
+    std::vector<std::string> vs;
+    split(SArg(1), "::", vs);
+    p->SetTips(vs);
+    COMMON_RETURN_SELF;
+  }
 
-	static int gettips( T* p, lua_State *L )
-	{
-		std::vector<std::string> arrayTips, arrayTipsAlt;
-		p->GetTips( arrayTips, arrayTipsAlt );
+  static int gettips(T* p, lua_State* L) {
+    std::vector<std::string> arrayTips, arrayTipsAlt;
+    p->GetTips(arrayTips, arrayTipsAlt);
 
-		LuaHelpers::CreateTableFromArray( arrayTips, L );
-		LuaHelpers::CreateTableFromArray( arrayTipsAlt, L );
+    LuaHelpers::CreateTableFromArray(arrayTips, L);
+    LuaHelpers::CreateTableFromArray(arrayTipsAlt, L);
 
-		return 2;
-	}
-	static int SetSecsBetweenSwitches( T* p, lua_State *L ) { p->SetSecsBetweenSwitches( FArg(1) ); COMMON_RETURN_SELF; }
+    return 2;
+  }
+  static int SetSecsBetweenSwitches(T* p, lua_State* L) {
+    p->SetSecsBetweenSwitches(FArg(1));
+    COMMON_RETURN_SELF;
+  }
 
-	LunaHelpDisplay()
-	{
-		ADD_METHOD( settips );
-		ADD_METHOD( SetTipsColonSeparated );
-		ADD_METHOD( gettips );
-		ADD_METHOD( SetSecsBetweenSwitches );
-	}
+  LunaHelpDisplay() {
+    ADD_METHOD(settips);
+    ADD_METHOD(SetTipsColonSeparated);
+    ADD_METHOD(gettips);
+    ADD_METHOD(SetSecsBetweenSwitches);
+  }
 };
 
-LUA_REGISTER_DERIVED_CLASS( HelpDisplay, BitmapText )
+LUA_REGISTER_DERIVED_CLASS(HelpDisplay, BitmapText)
 
 /*
  * (c) 2001-2003 Chris Danford, Glenn Maynard

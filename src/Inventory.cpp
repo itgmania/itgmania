@@ -22,207 +22,197 @@
 
 void ReloadItems();
 
-#define NUM_ITEM_TYPES			THEME->GetMetricF("Inventory","NumItemTypes")
-#define ITEM_DURATION_SECONDS	THEME->GetMetricF("Inventory","ItemDurationSeconds")
-#define ITEM_COMBO( i )			THEME->GetMetricI("Inventory",ssprintf("Item%dCombo",i+1))
-#define ITEM_EFFECT( i )		THEME->GetMetric ("Inventory",ssprintf("Item%dEffect",i+1))
-#define ITEM_LEVEL( i )			THEME->GetMetricI("Inventory",ssprintf("Item%dLevel",i+1))
-ThemeMetric<float> ITEM_USE_RATE_SECONDS("Inventory","ItemUseRateSeconds");
+#define NUM_ITEM_TYPES THEME->GetMetricF("Inventory", "NumItemTypes")
+#define ITEM_DURATION_SECONDS \
+  THEME->GetMetricF("Inventory", "ItemDurationSeconds")
+#define ITEM_COMBO(i) \
+  THEME->GetMetricI("Inventory", ssprintf("Item%dCombo", i + 1))
+#define ITEM_EFFECT(i) \
+  THEME->GetMetric("Inventory", ssprintf("Item%dEffect", i + 1))
+#define ITEM_LEVEL(i) \
+  THEME->GetMetricI("Inventory", ssprintf("Item%dLevel", i + 1))
+ThemeMetric<float> ITEM_USE_RATE_SECONDS("Inventory", "ItemUseRateSeconds");
 
-#define ITEM_USE_PROBABILITY (1.f/ITEM_USE_RATE_SECONDS)
+#define ITEM_USE_PROBABILITY (1.f / ITEM_USE_RATE_SECONDS)
 
-struct Item
-{
-	AttackLevel level;
-	unsigned int iCombo;
-	std::string sModifier;
+struct Item {
+  AttackLevel level;
+  unsigned int iCombo;
+  std::string sModifier;
 };
-static std::vector<Item>	g_Items;
+static std::vector<Item> g_Items;
 
-void ReloadItems()
-{
-	g_Items.clear();
-	for( int i=0; i<NUM_ITEM_TYPES; i++ )
-	{
-		Item item;
-		item.level = (AttackLevel)(ITEM_LEVEL(i)-1);
-		item.iCombo = ITEM_COMBO(i);
-		item.sModifier = ITEM_EFFECT(i);
-		g_Items.push_back( item );
-	}
+void ReloadItems() {
+  g_Items.clear();
+  for (int i = 0; i < NUM_ITEM_TYPES; i++) {
+    Item item;
+    item.level = (AttackLevel)(ITEM_LEVEL(i) - 1);
+    item.iCombo = ITEM_COMBO(i);
+    item.sModifier = ITEM_EFFECT(i);
+    g_Items.push_back(item);
+  }
 }
 
-
-Inventory::Inventory()
-{
-	PlayMode mode = GAMESTATE->m_PlayMode;
-	switch( mode )
-	{
-	case PLAY_MODE_BATTLE:
-		break;
-	default:
-		FAIL_M(ssprintf("Inventory not valid for PlayMode %i", mode));
-	}
+Inventory::Inventory() {
+  PlayMode mode = GAMESTATE->m_PlayMode;
+  switch (mode) {
+    case PLAY_MODE_BATTLE:
+      break;
+    default:
+      FAIL_M(ssprintf("Inventory not valid for PlayMode %i", mode));
+  }
 }
 
-Inventory::~Inventory()
-{
-	for( unsigned i=0; i<m_vpSoundUseItem.size(); i++ )
-		delete m_vpSoundUseItem[i];
-	m_vpSoundUseItem.clear();
+Inventory::~Inventory() {
+  for (unsigned i = 0; i < m_vpSoundUseItem.size(); i++) {
+    delete m_vpSoundUseItem[i];
+  }
+  m_vpSoundUseItem.clear();
 }
 
-void Inventory::Load( PlayerState* pPlayerState )
-{
-	ReloadItems();
+void Inventory::Load(PlayerState* pPlayerState) {
+  ReloadItems();
 
-	m_pPlayerState = pPlayerState;
-	m_iLastSeenCombo = 0;
+  m_pPlayerState = pPlayerState;
+  m_iLastSeenCombo = 0;
 
-	// don't load battle sounds if they're not going to be used
-	switch( GAMESTATE->m_PlayMode )
-	{
-		case PLAY_MODE_BATTLE:
-		{
-			m_soundAcquireItem.Load( THEME->GetPathS("Inventory","aquire item") );
-			for( unsigned i=0; i<g_Items.size(); i++ )
-			{
-				RageSound* pSound = new RageSound;
-				pSound->Load( THEME->GetPathS("Inventory",ssprintf("use item %u",i+1)) );
-				m_vpSoundUseItem.push_back( pSound );
-			}
-			m_soundItemEnding.Load( THEME->GetPathS("Inventory","item ending") );
-			break;
-		}
-		default: break;
-	}
+  // don't load battle sounds if they're not going to be used
+  switch (GAMESTATE->m_PlayMode) {
+    case PLAY_MODE_BATTLE: {
+      m_soundAcquireItem.Load(THEME->GetPathS("Inventory", "aquire item"));
+      for (unsigned i = 0; i < g_Items.size(); i++) {
+        RageSound* pSound = new RageSound;
+        pSound->Load(
+            THEME->GetPathS("Inventory", ssprintf("use item %u", i + 1)));
+        m_vpSoundUseItem.push_back(pSound);
+      }
+      m_soundItemEnding.Load(THEME->GetPathS("Inventory", "item ending"));
+      break;
+    }
+    default:
+      break;
+  }
 }
 
-void Inventory::Update( float fDelta )
-{
-	if( m_pPlayerState->m_bAttackEndedThisUpdate )
-		m_soundItemEnding.Play(false);
+void Inventory::Update(float fDelta) {
+  if (m_pPlayerState->m_bAttackEndedThisUpdate) {
+    m_soundItemEnding.Play(false);
+  }
 
-	// TODO: remove use of PlayerNumber
-	PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
+  // TODO: remove use of PlayerNumber
+  PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
 
-	// check to see if they deserve a new item
-	if( STATSMAN->m_CurStageStats.m_player[pn].m_iCurCombo != m_iLastSeenCombo )
-	{
-		unsigned int iOldCombo = m_iLastSeenCombo;
-		m_iLastSeenCombo = STATSMAN->m_CurStageStats.m_player[pn].m_iCurCombo;
-		unsigned int iNewCombo = m_iLastSeenCombo;
+  // check to see if they deserve a new item
+  if (STATSMAN->m_CurStageStats.m_player[pn].m_iCurCombo != m_iLastSeenCombo) {
+    unsigned int iOldCombo = m_iLastSeenCombo;
+    m_iLastSeenCombo = STATSMAN->m_CurStageStats.m_player[pn].m_iCurCombo;
+    unsigned int iNewCombo = m_iLastSeenCombo;
 
-#define CROSSED(i) (iOldCombo<i)&&(iNewCombo>=i)
-#define BROKE_ABOVE(i) (iNewCombo<iOldCombo)&&(iOldCombo>=i)
+#define CROSSED(i) (iOldCombo < i) && (iNewCombo >= i)
+#define BROKE_ABOVE(i) (iNewCombo < iOldCombo) && (iOldCombo >= i)
 
-		for( unsigned i=0; i<g_Items.size(); i++ )
-		{
-			bool bEarnedThisItem = false;
-			if( PREFSMAN->m_bBreakComboToGetItem )
-				bEarnedThisItem = BROKE_ABOVE(g_Items[i].iCombo);
-			else
-				bEarnedThisItem = CROSSED(g_Items[i].iCombo);
+    for (unsigned i = 0; i < g_Items.size(); i++) {
+      bool bEarnedThisItem = false;
+      if (PREFSMAN->m_bBreakComboToGetItem) {
+        bEarnedThisItem = BROKE_ABOVE(g_Items[i].iCombo);
+      } else {
+        bEarnedThisItem = CROSSED(g_Items[i].iCombo);
+      }
 
-			if( bEarnedThisItem )
-			{
-				AwardItem( i );
-				break;
-			}
-		}
-	}
+      if (bEarnedThisItem) {
+        AwardItem(i);
+        break;
+      }
+    }
+  }
 
-	Song &song = *GAMESTATE->m_pCurSong;
-	// use items if this player is CPU-controlled
-	if( m_pPlayerState->m_PlayerController != PC_HUMAN &&
-		GAMESTATE->m_Position.m_fSongBeat < song.GetLastBeat() )
-	{
-		// every 1 seconds, try to use an item
-		int iDelta = static_cast<int>(fDelta);
-		int iLastSecond = RageTimer::GetTimeSinceStartSeconds() - iDelta;
-		int iThisSecond = RageTimer::GetTimeSinceStartSeconds();
-		if( iLastSecond != iThisSecond )
-		{
-			for( int s=0; s<NUM_INVENTORY_SLOTS; s++ )
-				if( !m_pPlayerState->m_Inventory[s].IsBlank() )
-					if( randomf(0,1) < ITEM_USE_PROBABILITY )
-						UseItem( s );
-		}
-	}
+  Song& song = *GAMESTATE->m_pCurSong;
+  // use items if this player is CPU-controlled
+  if (m_pPlayerState->m_PlayerController != PC_HUMAN &&
+      GAMESTATE->m_Position.m_fSongBeat < song.GetLastBeat()) {
+    // every 1 seconds, try to use an item
+    int iDelta = static_cast<int>(fDelta);
+    int iLastSecond = RageTimer::GetTimeSinceStartSeconds() - iDelta;
+    int iThisSecond = RageTimer::GetTimeSinceStartSeconds();
+    if (iLastSecond != iThisSecond) {
+      for (int s = 0; s < NUM_INVENTORY_SLOTS; s++) {
+        if (!m_pPlayerState->m_Inventory[s].IsBlank()) {
+          if (randomf(0, 1) < ITEM_USE_PROBABILITY) {
+            UseItem(s);
+          }
+        }
+      }
+    }
+  }
 }
 
-void Inventory::AwardItem( int iItemIndex )
-{
-	/* CPU players and replay data are vanity only. They should not effect
-	 * gameplay by acquiring/launching attacks. */
-	if( m_pPlayerState->m_PlayerController == PC_CPU )
-		return;
-	/*
-	if( m_pPlayerState->m_PlayerController == PC_CPU ||
-		m_pPlayerState->m_PlayerController == PC_REPLAY)
-	{
-		return;
-	}
-	*/
+void Inventory::AwardItem(int iItemIndex) {
+  /* CPU players and replay data are vanity only. They should not effect
+   * gameplay by acquiring/launching attacks. */
+  if (m_pPlayerState->m_PlayerController == PC_CPU) {
+    return;
+  }
+  /*
+  if( m_pPlayerState->m_PlayerController == PC_CPU ||
+          m_pPlayerState->m_PlayerController == PC_REPLAY)
+  {
+          return;
+  }
+  */
 
-	// search for the first open slot
-	int iOpenSlot = -1;
+  // search for the first open slot
+  int iOpenSlot = -1;
 
-	Attack* pInventory = m_pPlayerState->m_Inventory; //[NUM_INVENTORY_SLOTS]
+  Attack* pInventory = m_pPlayerState->m_Inventory;  //[NUM_INVENTORY_SLOTS]
 
-	if( pInventory[NUM_INVENTORY_SLOTS/2].IsBlank() )
-	{
-		iOpenSlot = NUM_INVENTORY_SLOTS/2;
-	}
-	else
-	{
-		for( int s=0; s<NUM_INVENTORY_SLOTS; s++ )
-		{
-			if( pInventory[s].IsBlank() )
-			{
-				iOpenSlot = s;
-				break;
-			}
-		}
-	}
+  if (pInventory[NUM_INVENTORY_SLOTS / 2].IsBlank()) {
+    iOpenSlot = NUM_INVENTORY_SLOTS / 2;
+  } else {
+    for (int s = 0; s < NUM_INVENTORY_SLOTS; s++) {
+      if (pInventory[s].IsBlank()) {
+        iOpenSlot = s;
+        break;
+      }
+    }
+  }
 
-	if( iOpenSlot != -1 )
-	{
-		Attack a;
-		a.sModifiers = g_Items[iItemIndex].sModifier;
-		a.fSecsRemaining = ITEM_DURATION_SECONDS;
-		a.level = g_Items[iItemIndex].level;
-		pInventory[iOpenSlot] = a;
-		m_soundAcquireItem.Play(false);
-	}
-	// else not enough room to insert item
+  if (iOpenSlot != -1) {
+    Attack a;
+    a.sModifiers = g_Items[iItemIndex].sModifier;
+    a.fSecsRemaining = ITEM_DURATION_SECONDS;
+    a.level = g_Items[iItemIndex].level;
+    pInventory[iOpenSlot] = a;
+    m_soundAcquireItem.Play(false);
+  }
+  // else not enough room to insert item
 }
 
-void Inventory::UseItem( int iSlot )
-{
-	Attack* pInventory = m_pPlayerState->m_Inventory; //[NUM_INVENTORY_SLOTS]
+void Inventory::UseItem(int iSlot) {
+  Attack* pInventory = m_pPlayerState->m_Inventory;  //[NUM_INVENTORY_SLOTS]
 
-	if( pInventory[iSlot].IsBlank() )
-		return;
+  if (pInventory[iSlot].IsBlank()) {
+    return;
+  }
 
-	PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
-	Attack a = pInventory[iSlot];
+  PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
+  Attack a = pInventory[iSlot];
 
-	// remove the item
-	pInventory[iSlot].MakeBlank();
-	m_vpSoundUseItem[a.level]->Play(false);
+  // remove the item
+  pInventory[iSlot].MakeBlank();
+  m_vpSoundUseItem[a.level]->Play(false);
 
-	PlayerNumber pnToAttack = OPPOSITE_PLAYER[pn];
-	PlayerState *pPlayerStateToAttack = GAMESTATE->m_pPlayerState[pnToAttack];
-	pPlayerStateToAttack->LaunchAttack( a );
+  PlayerNumber pnToAttack = OPPOSITE_PLAYER[pn];
+  PlayerState* pPlayerStateToAttack = GAMESTATE->m_pPlayerState[pnToAttack];
+  pPlayerStateToAttack->LaunchAttack(a);
 
-	float fPercentHealthToDrain = (a.level+1) / 10.f;
-	ASSERT( fPercentHealthToDrain > 0 );
-	GAMESTATE->m_fOpponentHealthPercent -= fPercentHealthToDrain;
-	rage_clamp( GAMESTATE->m_fOpponentHealthPercent, 0.f, 1.f );
+  float fPercentHealthToDrain = (a.level + 1) / 10.f;
+  ASSERT(fPercentHealthToDrain > 0);
+  GAMESTATE->m_fOpponentHealthPercent -= fPercentHealthToDrain;
+  rage_clamp(GAMESTATE->m_fOpponentHealthPercent, 0.f, 1.f);
 
-	// play announcer sound
-	SCREENMAN->SendMessageToTopScreen( ssprintf("SM_BattleDamageLevel%d",a.level+1) );
+  // play announcer sound
+  SCREENMAN->SendMessageToTopScreen(
+      ssprintf("SM_BattleDamageLevel%d", a.level + 1));
 }
 
 /*

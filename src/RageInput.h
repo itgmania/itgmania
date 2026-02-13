@@ -12,33 +12,33 @@
 struct lua_State;
 class InputHandler;
 
-class RageInput
-{
-public:
-	RageInput();
-	~RageInput();
+class RageInput {
+ public:
+  RageInput();
+  ~RageInput();
 
-	void LoadDrivers();
-	void Update();
-	bool DevicesChanged();
-	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vOut ) const;
-	void WindowReset();
-	void AddHandler( InputHandler *pHandler );
-	InputHandler *GetHandlerForDevice( const InputDevice id );
-	std::string GetDeviceSpecificInputString( const DeviceInput &di );
-	std::string GetLocalizedInputString( const DeviceInput &di );
-	wchar_t DeviceInputToChar( DeviceInput di, bool bUseCurrentKeyModifiers );
-	InputDeviceState GetInputDeviceState( InputDevice id );
-	std::string GetDisplayDevicesString() const;
+  void LoadDrivers();
+  void Update();
+  bool DevicesChanged();
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vOut) const;
+  void WindowReset();
+  void AddHandler(InputHandler* pHandler);
+  InputHandler* GetHandlerForDevice(const InputDevice id);
+  std::string GetDeviceSpecificInputString(const DeviceInput& di);
+  std::string GetLocalizedInputString(const DeviceInput& di);
+  wchar_t DeviceInputToChar(DeviceInput di, bool bUseCurrentKeyModifiers);
+  InputDeviceState GetInputDeviceState(InputDevice id);
+  std::string GetDisplayDevicesString() const;
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 };
 
 extern Preference<std::string> g_sInputDrivers;
 extern Preference<std::string> g_sInputDeviceOrder;
 
-extern RageInput*			INPUTMAN;	// global and accessible from anywhere in our program
+extern RageInput*
+    INPUTMAN;  // global and accessible from anywhere in our program
 
 #endif
 

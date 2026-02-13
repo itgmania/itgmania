@@ -1,8 +1,8 @@
 /*
  * Area for testing.  Throw whatever you're working on in here.  If you
- * don't want stuff in here to be wiped out by the next guy who works on something,
- * make a separate screen and add a hook into ScreenTest; this one's just a
- * scratchpad.
+ * don't want stuff in here to be wiped out by the next guy who works on
+ * something, make a separate screen and add a hook into ScreenTest; this one's
+ * just a scratchpad.
  *
  * AJ says: This is a great template for a Screen. You should probably use it
  * if creating an entirely new screen.
@@ -14,32 +14,24 @@
 #include "Screen.h"
 #include "ScreenMessage.h"
 
-REGISTER_SCREEN_CLASS( ScreenSandbox );
+REGISTER_SCREEN_CLASS(ScreenSandbox);
 
-void ScreenSandbox::HandleScreenMessage( const ScreenMessage SM )
-{
-	Screen::HandleScreenMessage( SM );
+void ScreenSandbox::HandleScreenMessage(const ScreenMessage SM) {
+  Screen::HandleScreenMessage(SM);
 }
 
-bool ScreenSandbox::Input( const InputEventPlus &input )
-{
-	return Screen::Input( input );
+bool ScreenSandbox::Input(const InputEventPlus& input) {
+  return Screen::Input(input);
 }
 
-void ScreenSandbox::Update( float fDeltaTime )
-{
-	Screen::Update(fDeltaTime);
-}
+void ScreenSandbox::Update(float fDeltaTime) { Screen::Update(fDeltaTime); }
 
-void ScreenSandbox::DrawPrimitives()
-{
-	Screen::DrawPrimitives();
-}
+void ScreenSandbox::DrawPrimitives() { Screen::DrawPrimitives(); }
 
 /*
  * (c) 2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -49,7 +41,7 @@ void ScreenSandbox::DrawPrimitives()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

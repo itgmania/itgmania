@@ -34,295 +34,327 @@ const int MAX_STEPS_DESCRIPTION_LENGTH = 255;
 const int CURRENT_GROOVE_STATS_HASH_VERSION = 3;
 
 /** @brief The different ways of displaying the BPM. */
-enum DisplayBPM
-{
-	DISPLAY_BPM_ACTUAL, /**< Display the song's actual BPM. */
-	DISPLAY_BPM_SPECIFIED, /**< Display a specified value or values. */
-	DISPLAY_BPM_RANDOM, /**< Display a random selection of BPMs. */
-	NUM_DisplayBPM,
-	DisplayBPM_Invalid
+enum DisplayBPM {
+  DISPLAY_BPM_ACTUAL,    /**< Display the song's actual BPM. */
+  DISPLAY_BPM_SPECIFIED, /**< Display a specified value or values. */
+  DISPLAY_BPM_RANDOM,    /**< Display a random selection of BPMs. */
+  NUM_DisplayBPM,
+  DisplayBPM_Invalid
 };
-const std::string& DisplayBPMToString( DisplayBPM dbpm );
-LuaDeclareType( DisplayBPM );
+const std::string& DisplayBPMToString(DisplayBPM dbpm);
+LuaDeclareType(DisplayBPM);
 
 /**
  * @brief Holds note information for a Song.
  *
  * A Song may have one or more Notes. */
-class Steps
-{
-public:
-	/** @brief Set up the Steps with initial values. */
-	Steps( Song* song );
-	/** @brief Destroy the Steps that are no longer needed. */
-	~Steps();
+class Steps {
+ public:
+  /** @brief Set up the Steps with initial values. */
+  Steps(Song* song);
+  /** @brief Destroy the Steps that are no longer needed. */
+  ~Steps();
 
-	// initializers
-	void AutogenFrom( const Steps *parent, StepsType ntTo );
-	void CopyFrom( Steps* pSource, StepsType ntTo, float fMusicLengthSeconds );
-	void CreateBlank( StepsType ntTo );
+  // initializers
+  void AutogenFrom(const Steps* parent, StepsType ntTo);
+  void CopyFrom(Steps* pSource, StepsType ntTo, float fMusicLengthSeconds);
+  void CreateBlank(StepsType ntTo);
 
-	void Compress() const;
-	void Decompress() const;
-	void Decompress();
-	/**
-	 * @brief Determine if these steps were created by the autogenerator.
-	 * @return true if they were, false otherwise.
-	 */
-	bool IsAutogen() const				{ return parent != nullptr; }
+  void Compress() const;
+  void Decompress() const;
+  void Decompress();
+  /**
+   * @brief Determine if these steps were created by the autogenerator.
+   * @return true if they were, false otherwise.
+   */
+  bool IsAutogen() const { return parent != nullptr; }
 
-	/**
-	 * @brief Determine if this set of Steps is an edit.
-	 *
-	 * Edits have a special value of difficulty to make it easy to determine.
-	 * @return true if this is an edit, false otherwise.
-	 */
-	bool IsAnEdit() const				{ return m_Difficulty == Difficulty_Edit; }
-	/**
-	 * @brief Determine if this set of Steps is a player edit.
-	 *
-	 * Player edits also have to be loaded from a player's profile slot, not the machine.
-	 * @return true if this is a player edit, false otherwise. */
-	bool IsAPlayerEdit() const			{ return IsAnEdit() && GetLoadedFromProfileSlot() < ProfileSlot_Machine; }
-	/**
-	 * @brief Determine if these steps were loaded from a player's profile.
-	 * @return true if they were from a player profile, false otherwise.
-	 */
-	bool WasLoadedFromProfile() const		{ return m_LoadedFromProfile != ProfileSlot_Invalid; }
-	ProfileSlot GetLoadedFromProfileSlot() const	{ return m_LoadedFromProfile; }
-	/**
-	 * @brief Retrieve the description used for this edit.
-	 * @return the description used for this edit.
-	 */
-	std::string GetDescription() const			{ return Real()->m_sDescription; }
-	/**
-	 * @brief Retrieve the ChartStyle used for this chart.
-	 * @return the description used for this chart.
-	 */
-	std::string GetChartStyle() const			{ return Real()->m_sChartStyle; }
-	/**
-	 * @brief Retrieve the difficulty used for this edit.
-	 * @return the difficulty used for this edit.
-	 */
-	Difficulty GetDifficulty() const		{ return Real()->m_Difficulty; }
-	/**
-	 * @brief Retrieve the meter used for this edit.
-	 * @return the meter used for this edit.
-	 */
-	int GetMeter() const				{ return Real()->m_iMeter; }
-	const RadarValues& GetRadarValues( PlayerNumber pn ) const { return Real()->m_CachedRadarValues[pn]; }
-	/**
-	 * @brief Retrieve the author credit used for this edit.
-	 * @return the author credit used for this edit.
-	 */
-	std::string GetCredit() const			{ return Real()->m_sCredit; }
+  /**
+   * @brief Determine if this set of Steps is an edit.
+   *
+   * Edits have a special value of difficulty to make it easy to determine.
+   * @return true if this is an edit, false otherwise.
+   */
+  bool IsAnEdit() const { return m_Difficulty == Difficulty_Edit; }
+  /**
+   * @brief Determine if this set of Steps is a player edit.
+   *
+   * Player edits also have to be loaded from a player's profile slot, not the
+   * machine.
+   * @return true if this is a player edit, false otherwise. */
+  bool IsAPlayerEdit() const {
+    return IsAnEdit() && GetLoadedFromProfileSlot() < ProfileSlot_Machine;
+  }
+  /**
+   * @brief Determine if these steps were loaded from a player's profile.
+   * @return true if they were from a player profile, false otherwise.
+   */
+  bool WasLoadedFromProfile() const {
+    return m_LoadedFromProfile != ProfileSlot_Invalid;
+  }
+  ProfileSlot GetLoadedFromProfileSlot() const { return m_LoadedFromProfile; }
+  /**
+   * @brief Retrieve the description used for this edit.
+   * @return the description used for this edit.
+   */
+  std::string GetDescription() const { return Real()->m_sDescription; }
+  /**
+   * @brief Retrieve the ChartStyle used for this chart.
+   * @return the description used for this chart.
+   */
+  std::string GetChartStyle() const { return Real()->m_sChartStyle; }
+  /**
+   * @brief Retrieve the difficulty used for this edit.
+   * @return the difficulty used for this edit.
+   */
+  Difficulty GetDifficulty() const { return Real()->m_Difficulty; }
+  /**
+   * @brief Retrieve the meter used for this edit.
+   * @return the meter used for this edit.
+   */
+  int GetMeter() const { return Real()->m_iMeter; }
+  const RadarValues& GetRadarValues(PlayerNumber pn) const {
+    return Real()->m_CachedRadarValues[pn];
+  }
+  /**
+   * @brief Retrieve the author credit used for this edit.
+   * @return the author credit used for this edit.
+   */
+  std::string GetCredit() const { return Real()->m_sCredit; }
 
-	/** @brief The list of attacks. */
-	AttackArray m_Attacks;
-	/** @brief The stringified list of attacks. */
-	std::vector<std::string> m_sAttackString;
+  /** @brief The list of attacks. */
+  AttackArray m_Attacks;
+  /** @brief The stringified list of attacks. */
+  std::vector<std::string> m_sAttackString;
 
-	std::string GetChartName() const			{ return parent ? Real()->GetChartName() : this->chartName; }
-	void SetChartName(const std::string name)		{ this->chartName = name; }
-	void SetFilename( std::string fn )			{ m_sFilename = fn; }
-	std::string GetFilename() const			{ return m_sFilename; }
-	void SetSavedToDisk( bool b )			{ DeAutogen(); m_bSavedToDisk = b; }
-	bool GetSavedToDisk() const			{ return Real()->m_bSavedToDisk; }
-	void SetDifficulty( Difficulty dc )		{ SetDifficultyAndDescription( dc, GetDescription() ); }
-	void SetDescription( std::string sDescription ) 	{ SetDifficultyAndDescription( this->GetDifficulty(), sDescription ); }
-	void SetDifficultyAndDescription( Difficulty dc, std::string sDescription );
-	void SetCredit( std::string sCredit );
-	void SetChartStyle( std::string sChartStyle );
-	static bool MakeValidEditDescription( std::string &sPreferredDescription );	// return true if was modified
+  std::string GetChartName() const {
+    return parent ? Real()->GetChartName() : this->chartName;
+  }
+  void SetChartName(const std::string name) { this->chartName = name; }
+  void SetFilename(std::string fn) { m_sFilename = fn; }
+  std::string GetFilename() const { return m_sFilename; }
+  void SetSavedToDisk(bool b) {
+    DeAutogen();
+    m_bSavedToDisk = b;
+  }
+  bool GetSavedToDisk() const { return Real()->m_bSavedToDisk; }
+  void SetDifficulty(Difficulty dc) {
+    SetDifficultyAndDescription(dc, GetDescription());
+  }
+  void SetDescription(std::string sDescription) {
+    SetDifficultyAndDescription(this->GetDifficulty(), sDescription);
+  }
+  void SetDifficultyAndDescription(Difficulty dc, std::string sDescription);
+  void SetCredit(std::string sCredit);
+  void SetChartStyle(std::string sChartStyle);
+  static bool MakeValidEditDescription(
+      std::string& sPreferredDescription);  // return true if was modified
 
-	/* This is a reimplementation of the lua version of the script to generate chart keys, except this time
-	using the notedata stored in game memory immediately after reading it than parsing it using lua. - Mina */
-	std::string GenerateChartKey(NoteData &nd, TimingData *td);
-	std::string GenerateChartKey();
-	std::string ChartKey;
-	std::string GetChartKey();
-	void SetChartKey(const std::string &k) { ChartKey = k; }
+  /* This is a reimplementation of the lua version of the script to generate
+  chart keys, except this time using the notedata stored in game memory
+  immediately after reading it than parsing it using lua. - Mina */
+  std::string GenerateChartKey(NoteData& nd, TimingData* td);
+  std::string GenerateChartKey();
+  std::string ChartKey;
+  std::string GetChartKey();
+  void SetChartKey(const std::string& k) { ChartKey = k; }
 
-	/** @brief Produces a chart that's reduced to it's smallest unique representable form. */
-	std::string MinimizedChartString();
+  /** @brief Produces a chart that's reduced to it's smallest unique
+   * representable form. */
+  std::string MinimizedChartString();
 
-	/** @brief Generates a hash used for GrooveStats integration. */
-	void CalculateGrooveStatsHash();
-	const std::string GetGrooveStatsHash() const;
-	int GetGrooveStatsHashVersion() const;
-	
-	void ChangeFilenamesForCustomSong();
+  /** @brief Generates a hash used for GrooveStats integration. */
+  void CalculateGrooveStatsHash();
+  const std::string GetGrooveStatsHash() const;
+  int GetGrooveStatsHashVersion() const;
 
-	void SetLoadedFromProfile( ProfileSlot slot )	{ m_LoadedFromProfile = slot; }
-	void SetMeter( int meter );
-	void SetCachedRadarValues( const RadarValues v[NUM_PLAYERS] );
-	void SetCachedTechCounts(const TechCounts ts[NUM_PLAYERS]);
-	void SetCachedNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure);
-	void SetCachedNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure);
-	void SetPeakNps(std::vector<float>& peakNps);
-	void SetCachedGrooveStatsHash(const std::string& key);
-	void SetCachedGrooveStatsHashVersion(int version);
-	float PredictMeter() const;
+  void ChangeFilenamesForCustomSong();
 
-	unsigned GetHash() const;
-	void GetNoteData( NoteData& noteDataOut ) const;
-	NoteData GetNoteData() const;
-	void SetNoteData( const NoteData& noteDataNew );
-	void SetSMNoteData( const std::string &notes_comp );
-	void GetSMNoteData( std::string &notes_comp_out ) const;
+  void SetLoadedFromProfile(ProfileSlot slot) { m_LoadedFromProfile = slot; }
+  void SetMeter(int meter);
+  void SetCachedRadarValues(const RadarValues v[NUM_PLAYERS]);
+  void SetCachedTechCounts(const TechCounts ts[NUM_PLAYERS]);
+  void SetCachedNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure);
+  void SetCachedNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure);
+  void SetPeakNps(std::vector<float>& peakNps);
+  void SetCachedGrooveStatsHash(const std::string& key);
+  void SetCachedGrooveStatsHashVersion(int version);
+  float PredictMeter() const;
 
-	/**
-	 * @brief Retrieve the NoteData from the original source.
-	 * @return true if successful, false for failure. */
-	bool GetNoteDataFromSimfile();
+  unsigned GetHash() const;
+  void GetNoteData(NoteData& noteDataOut) const;
+  NoteData GetNoteData() const;
+  void SetNoteData(const NoteData& noteDataNew);
+  void SetSMNoteData(const std::string& notes_comp);
+  void GetSMNoteData(std::string& notes_comp_out) const;
 
-	/**
-	 * @brief Determine if we are missing any note data.
-	 *
-	 * This takes advantage of the fact that we usually compress our data.
-	 * @return true if our notedata is empty, false otherwise. */
-	bool IsNoteDataEmpty() const;
+  /**
+   * @brief Retrieve the NoteData from the original source.
+   * @return true if successful, false for failure. */
+  bool GetNoteDataFromSimfile();
 
-	void TidyUpData();
+  /**
+   * @brief Determine if we are missing any note data.
+   *
+   * This takes advantage of the fact that we usually compress our data.
+   * @return true if our notedata is empty, false otherwise. */
+  bool IsNoteDataEmpty() const;
 
-	/** @brief Convenience function to calculate Radar Values, Tech Stats, Measure Stats, and GrooveStats key.*/
-	void CalculateStepStats(float fMusicLengthSeconds);
+  void TidyUpData();
 
-	void CalculateRadarValues (float fMusicLengthSeconds );
+  /** @brief Convenience function to calculate Radar Values, Tech Stats, Measure
+   * Stats, and GrooveStats key.*/
+  void CalculateStepStats(float fMusicLengthSeconds);
 
-	void CalculateTechCounts();
-	const TechCounts &GetTechCounts(PlayerNumber pn) const { return Real()->m_CachedTechCounts[pn]; }
+  void CalculateRadarValues(float fMusicLengthSeconds);
 
-	void CalculateMeasureInfo();
-	
-	const std::vector<std::vector<float>> & GetAllNpsPerMeasures() const { return Real()->m_CachedNpsPerMeasure; }
-	const std::vector<float> &GetNpsPerMeasure(PlayerNumber pn) const;
-	const std::vector<std::vector<int>> & GetAllNotesPerMeasures() const { return Real()->m_CachedNotesPerMeasure; };
-	const std::vector<int> &GetNotesPerMeasure(PlayerNumber pn) const;
-	
-	float GetPeakNps(PlayerNumber pn) const;
-	const std::vector<float> & GetAllPeakNps() const { return Real()->m_PeakNps; }
-	/**
-	 * @brief The TimingData used by the Steps.
-	 *
-	 * This is required to allow Split Timing. */
-	TimingData m_Timing;
+  void CalculateTechCounts();
+  const TechCounts& GetTechCounts(PlayerNumber pn) const {
+    return Real()->m_CachedTechCounts[pn];
+  }
 
-	/**
-	 * @brief Retrieves the appropriate timing data for the Steps.  Falls
-	 * back on the Song if needed. */
-	const TimingData *GetTimingData() const;
-	TimingData *GetTimingData() { return const_cast<TimingData*>( static_cast<const Steps*>( this )->GetTimingData() ); };
+  void CalculateMeasureInfo();
 
-	/**
-	 * @brief Determine if the Steps have any major timing changes during gameplay.
-	 * @return true if it does, or false otherwise. */
-	bool HasSignificantTimingChanges() const;
+  const std::vector<std::vector<float>>& GetAllNpsPerMeasures() const {
+    return Real()->m_CachedNpsPerMeasure;
+  }
+  const std::vector<float>& GetNpsPerMeasure(PlayerNumber pn) const;
+  const std::vector<std::vector<int>>& GetAllNotesPerMeasures() const {
+    return Real()->m_CachedNotesPerMeasure;
+  };
+  const std::vector<int>& GetNotesPerMeasure(PlayerNumber pn) const;
 
-	/**
-	 * @brief Determine if the Steps have any attacks.
-	 * @return true if it does, or false otherwise. */
-	bool HasAttacks() const;
+  float GetPeakNps(PlayerNumber pn) const;
+  const std::vector<float>& GetAllPeakNps() const { return Real()->m_PeakNps; }
+  /**
+   * @brief The TimingData used by the Steps.
+   *
+   * This is required to allow Split Timing. */
+  TimingData m_Timing;
 
-	const std::string GetMusicPath() const; // Returns the path for loading.
-	const std::string& GetMusicFile() const; // Returns the filename for the simfile.
-	void SetMusicFile(const std::string& file);
+  /**
+   * @brief Retrieves the appropriate timing data for the Steps.  Falls
+   * back on the Song if needed. */
+  const TimingData* GetTimingData() const;
+  TimingData* GetTimingData() {
+    return const_cast<TimingData*>(
+        static_cast<const Steps*>(this)->GetTimingData());
+  };
 
-	// Lua
-	void PushSelf( lua_State *L );
+  /**
+   * @brief Determine if the Steps have any major timing changes during
+   * gameplay.
+   * @return true if it does, or false otherwise. */
+  bool HasSignificantTimingChanges() const;
 
-	StepsType			m_StepsType;
-	/** @brief The string form of the StepsType, for dealing with unrecognized styles. */
-	std::string m_StepsTypeStr;
-	/** @brief The Song these Steps are associated with */
-	Song				*m_pSong;
+  /**
+   * @brief Determine if the Steps have any attacks.
+   * @return true if it does, or false otherwise. */
+  bool HasAttacks() const;
 
-	void SetDisplayBPM(const DisplayBPM type)	{ this->displayBPMType = type; }
-	DisplayBPM GetDisplayBPM() const			{ return this->displayBPMType; }
-	void SetMinBPM(const float f)				{ this->specifiedBPMMin = f; }
-	float GetMinBPM() const					{ return this->specifiedBPMMin; }
-	void SetMaxBPM(const float f)				{ this->specifiedBPMMax = f; }
-	float GetMaxBPM() const					{ return this->specifiedBPMMax; }
-	void GetDisplayBpms( DisplayBpms &addTo) const;
+  const std::string GetMusicPath() const;  // Returns the path for loading.
+  const std::string& GetMusicFile()
+      const;  // Returns the filename for the simfile.
+  void SetMusicFile(const std::string& file);
 
-	std::string GetAttackString() const
-	{
-		return join(":", this->m_sAttackString);
-	}
+  // Lua
+  void PushSelf(lua_State* L);
 
-    std::vector<ColumnCue> GetColumnCues(float minDuration);
+  StepsType m_StepsType;
+  /** @brief The string form of the StepsType, for dealing with unrecognized
+   * styles. */
+  std::string m_StepsTypeStr;
+  /** @brief The Song these Steps are associated with */
+  Song* m_pSong;
 
-private:
-	inline const Steps *Real() const		{ return parent ? parent : this; }
-	void DeAutogen( bool bCopyNoteData = true ); /* If this Steps is autogenerated, make it a real Steps. */
+  void SetDisplayBPM(const DisplayBPM type) { this->displayBPMType = type; }
+  DisplayBPM GetDisplayBPM() const { return this->displayBPMType; }
+  void SetMinBPM(const float f) { this->specifiedBPMMin = f; }
+  float GetMinBPM() const { return this->specifiedBPMMin; }
+  void SetMaxBPM(const float f) { this->specifiedBPMMax = f; }
+  float GetMaxBPM() const { return this->specifiedBPMMax; }
+  void GetDisplayBpms(DisplayBpms& addTo) const;
 
-	/**
-	 * @brief Identify this Steps' parent.
-	 *
-	 * If this Steps is autogenerated, this will point to the autogen
-	 * source.  If this is true, m_sNoteDataCompressed will always be empty. */
-	const Steps			*parent;
+  std::string GetAttackString() const {
+    return join(":", this->m_sAttackString);
+  }
 
-	/* We can have one or both of these; if we have both, they're always identical.
-	 * Call Compress() to force us to only have m_sNoteDataCompressed; otherwise, creation of
-	 * these is transparent. */
-	mutable HiddenPtr<NoteData>	m_pNoteData;
-	mutable bool			m_bNoteDataIsFilled;
-	mutable std::string			m_sNoteDataCompressed;
+  std::vector<ColumnCue> GetColumnCues(float minDuration);
 
-	/** @brief The name of the file where these steps are stored. */
-	std::string				m_sFilename;
-	/** @brief true if these Steps were loaded from or saved to disk. */
-	bool				m_bSavedToDisk;
-	/** @brief allows the steps to specify their own music file. */
-	std::string m_MusicFile;
-	/** @brief What profile was used? This is ProfileSlot_Invalid if not from a profile. */
-	ProfileSlot			m_LoadedFromProfile;
+ private:
+  inline const Steps* Real() const { return parent ? parent : this; }
+  void DeAutogen(bool bCopyNoteData = true); /* If this Steps is autogenerated,
+                                                make it a real Steps. */
 
-	/* These values are pulled from the autogen source first, if there is one. */
-	/** @brief The hash of the steps. This is used only for Edit Steps. */
-	mutable unsigned		m_iHash;
-	/** @brief The name of the edit, or some other useful description.
-	 This used to also contain the step author's name. */
-	std::string				m_sDescription;
-	/** @brief The style of the chart. (e.g. "Pad", "Keyboard") */
-	std::string				m_sChartStyle;
-	/** @brief The difficulty that these steps are assigned to. */
-	Difficulty			m_Difficulty;
-	/** @brief The numeric difficulty of the Steps, ranging from MIN_METER to MAX_METER. */
-	int				m_iMeter;
-	/** @brief The radar values used for each player. */
-	RadarValues			m_CachedRadarValues[NUM_PLAYERS];
-	bool                m_bAreCachedRadarValuesJustLoaded;
+  /**
+   * @brief Identify this Steps' parent.
+   *
+   * If this Steps is autogenerated, this will point to the autogen
+   * source.  If this is true, m_sNoteDataCompressed will always be empty. */
+  const Steps* parent;
 
-	/** @brief The tech stats used for each player */
-	mutable TechCounts m_CachedTechCounts[NUM_PLAYERS];
-	bool m_bAreCachedTechCountsValuesJustLoaded;
-	
-	std::vector<std::vector<float>> m_CachedNpsPerMeasure;
-	bool m_AreCachedNpsPerMeasureJustLoaded;
-	
-	std::vector<std::vector<int>> m_CachedNotesPerMeasure;
-	bool m_AreCachedNotesPerMeasureJustLoaded;
-	
-	std::vector<float> m_PeakNps;
+  /* We can have one or both of these; if we have both, they're always
+   * identical. Call Compress() to force us to only have m_sNoteDataCompressed;
+   * otherwise, creation of these is transparent. */
+  mutable HiddenPtr<NoteData> m_pNoteData;
+  mutable bool m_bNoteDataIsFilled;
+  mutable std::string m_sNoteDataCompressed;
 
-	bool m_bIsCachedGrooveStatsHashJustLoaded;
-	std::string m_sGrooveStatsHash;
-	int m_iGrooveStatsHashVersion;
-	
-	/** @brief The name of the person who created the Steps. */
-	std::string				m_sCredit;
-	/** @brief The name of the chart. */
-	std::string chartName;
-	/** @brief How is the BPM displayed for this chart? */
-	DisplayBPM displayBPMType;
-	/** @brief What is the minimum specified BPM? */
-	float	specifiedBPMMin;
-	/**
-	 * @brief What is the maximum specified BPM?
-	 * If this is a range, then min should not be equal to max. */
-	float	specifiedBPMMax;
+  /** @brief The name of the file where these steps are stored. */
+  std::string m_sFilename;
+  /** @brief true if these Steps were loaded from or saved to disk. */
+  bool m_bSavedToDisk;
+  /** @brief allows the steps to specify their own music file. */
+  std::string m_MusicFile;
+  /** @brief What profile was used? This is ProfileSlot_Invalid if not from a
+   * profile. */
+  ProfileSlot m_LoadedFromProfile;
+
+  /* These values are pulled from the autogen source first, if there is one. */
+  /** @brief The hash of the steps. This is used only for Edit Steps. */
+  mutable unsigned m_iHash;
+  /** @brief The name of the edit, or some other useful description.
+   This used to also contain the step author's name. */
+  std::string m_sDescription;
+  /** @brief The style of the chart. (e.g. "Pad", "Keyboard") */
+  std::string m_sChartStyle;
+  /** @brief The difficulty that these steps are assigned to. */
+  Difficulty m_Difficulty;
+  /** @brief The numeric difficulty of the Steps, ranging from MIN_METER to
+   * MAX_METER. */
+  int m_iMeter;
+  /** @brief The radar values used for each player. */
+  RadarValues m_CachedRadarValues[NUM_PLAYERS];
+  bool m_bAreCachedRadarValuesJustLoaded;
+
+  /** @brief The tech stats used for each player */
+  mutable TechCounts m_CachedTechCounts[NUM_PLAYERS];
+  bool m_bAreCachedTechCountsValuesJustLoaded;
+
+  std::vector<std::vector<float>> m_CachedNpsPerMeasure;
+  bool m_AreCachedNpsPerMeasureJustLoaded;
+
+  std::vector<std::vector<int>> m_CachedNotesPerMeasure;
+  bool m_AreCachedNotesPerMeasureJustLoaded;
+
+  std::vector<float> m_PeakNps;
+
+  bool m_bIsCachedGrooveStatsHashJustLoaded;
+  std::string m_sGrooveStatsHash;
+  int m_iGrooveStatsHashVersion;
+
+  /** @brief The name of the person who created the Steps. */
+  std::string m_sCredit;
+  /** @brief The name of the chart. */
+  std::string chartName;
+  /** @brief How is the BPM displayed for this chart? */
+  DisplayBPM displayBPMType;
+  /** @brief What is the minimum specified BPM? */
+  float specifiedBPMMin;
+  /**
+   * @brief What is the maximum specified BPM?
+   * If this is a range, then min should not be equal to max. */
+  float specifiedBPMMax;
 };
 
 #endif

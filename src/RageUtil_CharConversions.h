@@ -5,10 +5,11 @@
 
 #include <string>
 
-/* Convert a string to UTF-8 from the first possible encoding in the given comma-
- * separated list of encodings.  The only valid strings are "japanese" and "korean". 
- * Return true if the conversion was successful (or a no-op).  Return false and
- * leave the string unchanged if the conversion was unsuccessful. */
-bool ConvertString( std::string &str, const std::string &encodings );
+/* Convert a string to UTF-8 from the first possible encoding in the given
+ * comma- separated list of encodings.  The only valid strings are "japanese"
+ * and "korean". Return true if the conversion was successful (or a no-op).
+ * Return false and leave the string unchanged if the conversion was
+ * unsuccessful. */
+bool ConvertString(std::string& str, const std::string& encodings);
 
 #endif

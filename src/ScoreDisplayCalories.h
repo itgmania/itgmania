@@ -9,27 +9,26 @@
 #include "RollingNumbers.h"
 
 /** @brief Shows calorie score during gameplay and some menus. */
-class ScoreDisplayCalories : public RollingNumbers
-{
-public:
-	ScoreDisplayCalories();
-	~ScoreDisplayCalories();
+class ScoreDisplayCalories : public RollingNumbers {
+ public:
+  ScoreDisplayCalories();
+  ~ScoreDisplayCalories();
 
-	virtual void Update( float fDelta );
+  virtual void Update(float fDelta);
 
-	void LoadFromNode( const XNode* pNode );
-	virtual ScoreDisplayCalories *Copy() const;
+  void LoadFromNode(const XNode* pNode);
+  virtual ScoreDisplayCalories* Copy() const;
 
-	virtual void HandleMessage( const Message &msg );
+  virtual void HandleMessage(const Message& msg);
 
-	void UpdateNumber();
+  void UpdateNumber();
 
-	// Lua
-	virtual void PushSelf( lua_State *L );
+  // Lua
+  virtual void PushSelf(lua_State* L);
 
-private:
-	PlayerNumber m_PlayerNumber;
-	std::string m_sMessageOnStep;
+ private:
+  PlayerNumber m_PlayerNumber;
+  std::string m_sMessageOnStep;
 };
 
 #endif
@@ -37,7 +36,7 @@ private:
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -47,7 +46,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

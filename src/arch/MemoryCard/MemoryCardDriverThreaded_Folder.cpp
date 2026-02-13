@@ -15,95 +15,87 @@
 
 static int g_currentSerial = 0;
 
-MemoryCardDriverThreaded_Folder::MemoryCardDriverThreaded_Folder()
-{
-	m_LastDevices = 0;
+MemoryCardDriverThreaded_Folder::MemoryCardDriverThreaded_Folder() {
+  m_LastDevices = 0;
 }
 
-MemoryCardDriverThreaded_Folder::~MemoryCardDriverThreaded_Folder()
-{
+MemoryCardDriverThreaded_Folder::~MemoryCardDriverThreaded_Folder() {}
+
+bool MemoryCardDriverThreaded_Folder::FolderExists(std::string path) {
+  if (path.empty()) {
+    return false;
+  }
+
+  const char* pathname = path.c_str();
+  struct stat info;
+
+  int statRC = stat(pathname, &info);
+  if (statRC != 0) {
+    if (errno == ENOENT) {
+      return false;
+    }  // something along the path does not exist
+    if (errno == ENOTDIR) {
+      return false;
+    }  // something in path prefix is not a dir
+    return false;
+  }
+
+  if (info.st_mode & S_IFDIR) {
+    return true;
+  }
+
+  return false;
 }
 
-bool MemoryCardDriverThreaded_Folder::FolderExists(std::string path)
-{
-	if (path.empty()) {
-		return false;
-	}
+bool MemoryCardDriverThreaded_Folder::TestWrite(UsbStorageDevice* pDevice) {
+  // TODO
 
-	const char *pathname = path.c_str();
-	struct stat info;
-
-	int statRC = stat( pathname, &info );
-	if( statRC != 0 )
-	{
-		if (errno == ENOENT)  { return false; } // something along the path does not exist
-		if (errno == ENOTDIR) { return false; } // something in path prefix is not a dir
-		return false;
-	}
-
-	if( info.st_mode & S_IFDIR ) {
-		return true;
-	}
-
-	return false;
+  return true;
 }
 
-bool MemoryCardDriverThreaded_Folder::TestWrite( UsbStorageDevice* pDevice )
-{
-	//TODO
+int MemoryCardDriverThreaded_Folder::GetActivePlayerMask() {
+  int ret = 0;
 
-	return true;
+  FOREACH_PlayerNumber(p) {
+    const std::string folder = MEMCARDMAN->m_sMemoryCardOsMountPoint[p];
+
+    if (FolderExists(folder)) {
+      ret |= 1 << p;
+    }
+  }
+
+  return ret;
 }
 
-int MemoryCardDriverThreaded_Folder::GetActivePlayerMask()
-{
-	int ret = 0;
-
-	FOREACH_PlayerNumber( p )
-	{
-		const std::string folder = MEMCARDMAN->m_sMemoryCardOsMountPoint[p];
-
-		if(FolderExists(folder)) {
-			ret |= 1 << p;
-		}
-	}
-
-	return ret;
+bool MemoryCardDriverThreaded_Folder::USBStorageDevicesChanged() {
+  return GetActivePlayerMask() != m_LastDevices;
 }
 
-bool MemoryCardDriverThreaded_Folder::USBStorageDevicesChanged()
-{
-	return GetActivePlayerMask() != m_LastDevices;
+void MemoryCardDriverThreaded_Folder::GetUSBStorageDevices(
+    std::vector<UsbStorageDevice>& vDevicesOut) {
+  LOG->Trace("GetUSBStorageDevices");
+
+  vDevicesOut.clear();
+  m_LastDevices = GetActivePlayerMask();
+
+  FOREACH_PlayerNumber(p) {
+    if ((m_LastDevices & (1 << p)) > 0) {
+      UsbStorageDevice usbd;
+      usbd.sSerial = StringConversion::ToString(g_currentSerial++);
+      usbd.sSysPath = MEMCARDMAN->m_sMemoryCardOsMountPoint[p];
+      usbd.sOsMountDir = MEMCARDMAN->m_sMemoryCardOsMountPoint[p];
+
+      vDevicesOut.push_back(usbd);
+    }
+  }
 }
 
-void MemoryCardDriverThreaded_Folder::GetUSBStorageDevices( std::vector<UsbStorageDevice>& vDevicesOut )
-{
-	LOG->Trace( "GetUSBStorageDevices" );
-
-	vDevicesOut.clear();
-	m_LastDevices = GetActivePlayerMask();
-
-	FOREACH_PlayerNumber( p )
-	{
-		if((m_LastDevices & (1 << p)) > 0){
-			UsbStorageDevice usbd;
-			usbd.sSerial = StringConversion::ToString(g_currentSerial++);
-			usbd.sSysPath = MEMCARDMAN->m_sMemoryCardOsMountPoint[p];
-			usbd.sOsMountDir = MEMCARDMAN->m_sMemoryCardOsMountPoint[p];
-
-			vDevicesOut.push_back( usbd );
-		}
-	}
+bool MemoryCardDriverThreaded_Folder::Mount(UsbStorageDevice* pDevice) {
+  return true;
 }
 
-bool MemoryCardDriverThreaded_Folder::Mount( UsbStorageDevice* pDevice )
-{
-	return true;
-}
-
-void MemoryCardDriverThreaded_Folder::Unmount( UsbStorageDevice* pDevice )
-{
-	return;
+void MemoryCardDriverThreaded_Folder::Unmount(UsbStorageDevice* pDevice) {
+  return;
 }
 
 /*

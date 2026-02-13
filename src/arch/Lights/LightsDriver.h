@@ -9,31 +9,35 @@
 
 struct LightsState;
 /** @brief Controls the lights. */
-class LightsDriver: public RageDriver
-{
-public:
-	static void Create( const std::string &sDriver, std::vector<LightsDriver *> &apAdd );
-	static DriverList m_pDriverList;
+class LightsDriver : public RageDriver {
+ public:
+  static void Create(
+      const std::string& sDriver, std::vector<LightsDriver*>& apAdd);
+  static DriverList m_pDriverList;
 
-	LightsDriver() {};
-	virtual ~LightsDriver() {};
+  LightsDriver() {};
+  virtual ~LightsDriver() {};
 
-	virtual void Set( const LightsState *ls ) = 0;
+  virtual void Set(const LightsState* ls) = 0;
 
-	// Reset all lights to off
-	void Reset();
+  // Reset all lights to off
+  void Reset();
 };
 
-#define REGISTER_LIGHTS_DRIVER_CLASS2( name, x ) \
-	static RegisterRageDriver register_##x( &LightsDriver::m_pDriverList, #name, CreateClass<LightsDriver_##x, RageDriver> )
-#define REGISTER_LIGHTS_DRIVER_CLASS( name ) REGISTER_LIGHTS_DRIVER_CLASS2( name, name )
+#define REGISTER_LIGHTS_DRIVER_CLASS2(name, x) \
+  static RegisterRageDriver register_##x(      \
+      &LightsDriver::m_pDriverList, #name,     \
+      CreateClass<LightsDriver_##x, RageDriver>)
+#define REGISTER_LIGHTS_DRIVER_CLASS(name) \
+  REGISTER_LIGHTS_DRIVER_CLASS2(name, name)
 
-//allows you to make a new class name, but register as an older alias name.
-//ex: REGISTER_LIGHTS_DRIVER_ALIAS(LinuxMinimaid, MinimaidHID) will allow older preference files to still use the older implementation.
-#define REGISTER_LIGHTS_DRIVER_ALIAS( alias_name, actual_class ) \
-	static RegisterRageDriver \
-	register_##alias_name( &LightsDriver::m_pDriverList, #alias_name, \
-		CreateClass<LightsDriver_##actual_class, RageDriver> )
+// allows you to make a new class name, but register as an older alias name.
+// ex: REGISTER_LIGHTS_DRIVER_ALIAS(LinuxMinimaid, MinimaidHID) will allow older
+// preference files to still use the older implementation.
+#define REGISTER_LIGHTS_DRIVER_ALIAS(alias_name, actual_class) \
+  static RegisterRageDriver register_##alias_name(             \
+      &LightsDriver::m_pDriverList, #alias_name,               \
+      CreateClass<LightsDriver_##actual_class, RageDriver>)
 
 #endif
 

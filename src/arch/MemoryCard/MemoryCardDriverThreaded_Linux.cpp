@@ -26,380 +26,370 @@
 #include <dirent.h>
 #endif
 
-bool MemoryCardDriverThreaded_Linux::TestWrite( UsbStorageDevice* pDevice )
-{
-	if( access(pDevice->sOsMountDir.c_str(), W_OK) == -1 )
-	{
-		pDevice->SetError( "TestFailed" );
-		return false;
-	}
+bool MemoryCardDriverThreaded_Linux::TestWrite(UsbStorageDevice* pDevice) {
+  if (access(pDevice->sOsMountDir.c_str(), W_OK) == -1) {
+    pDevice->SetError("TestFailed");
+    return false;
+  }
 
-	return true;
+  return true;
 }
 
-static bool ExecuteCommand( const std::string &sCommand )
-{
-	LOG->Trace( "executing '%s'", sCommand.c_str() );
-	int ret = system(sCommand.c_str());
-	LOG->Trace( "done executing '%s'", sCommand.c_str() );
-	if( ret != 0 )
-	{
-		std::string sError = ssprintf("failed to execute '%s' with error %d", sCommand.c_str(), ret);
-		if( ret == -1 )
-			sError += ssprintf(": %s", sCommand.c_str());
-		LOG->Warn( "%s", sError.c_str() );
-	}
-	return ret == 0;
+static bool ExecuteCommand(const std::string& sCommand) {
+  LOG->Trace("executing '%s'", sCommand.c_str());
+  int ret = system(sCommand.c_str());
+  LOG->Trace("done executing '%s'", sCommand.c_str());
+  if (ret != 0) {
+    std::string sError =
+        ssprintf("failed to execute '%s' with error %d", sCommand.c_str(), ret);
+    if (ret == -1) {
+      sError += ssprintf(": %s", sCommand.c_str());
+    }
+    LOG->Warn("%s", sError.c_str());
+  }
+  return ret == 0;
 }
 
-static bool ReadFile( const std::string &sPath, std::string &sBuf )
-{
-	sBuf.clear();
+static bool ReadFile(const std::string& sPath, std::string& sBuf) {
+  sBuf.clear();
 
-	int fd = open( sPath.c_str(), O_RDONLY );
-	if( fd == -1 )
-	{
-		// "No such file or directory" is understandable
-		if (errno != ENOENT)
-			LOG->Warn( "Error opening \"%s\": %s", sPath.c_str(), strerror(errno) );
-		return false;
-	}
+  int fd = open(sPath.c_str(), O_RDONLY);
+  if (fd == -1) {
+    // "No such file or directory" is understandable
+    if (errno != ENOENT) {
+      LOG->Warn("Error opening \"%s\": %s", sPath.c_str(), strerror(errno));
+    }
+    return false;
+  }
 
-	while(1)
-	{
-		char buf[1024];
-		int iGot = read( fd, buf, sizeof(buf) );
-		if( iGot == -1 )
-		{
-			close(fd);
-			LOG->Warn( "Error reading \"%s\": %s", sPath.c_str(), strerror(errno) );
-			return false;
-		}
+  while (1) {
+    char buf[1024];
+    int iGot = read(fd, buf, sizeof(buf));
+    if (iGot == -1) {
+      close(fd);
+      LOG->Warn("Error reading \"%s\": %s", sPath.c_str(), strerror(errno));
+      return false;
+    }
 
-		sBuf.append( buf, iGot );
-		if( iGot < (int) sizeof(buf) )
-			break;
-	}
+    sBuf.append(buf, iGot);
+    if (iGot < (int)sizeof(buf)) {
+      break;
+    }
+  }
 
-	close(fd);
-	return true;
+  close(fd);
+  return true;
 }
 
-static void GetFileList( const std::string &sPath, std::vector<std::string> &out )
-{
-	out.clear();
+static void GetFileList(
+    const std::string& sPath, std::vector<std::string>& out) {
+  out.clear();
 
-	DIR *dp = opendir( sPath.c_str() );
-	if( dp == nullptr )
-		return; // false; // XXX warn
+  DIR* dp = opendir(sPath.c_str());
+  if (dp == nullptr) {
+    return;  // false; // XXX warn
+  }
 
-	while( const struct dirent *ent = readdir(dp) )
-		out.push_back( ent->d_name );
+  while (const struct dirent* ent = readdir(dp)) {
+    out.push_back(ent->d_name);
+  }
 
-	closedir( dp );
+  closedir(dp);
 }
 
-bool MemoryCardDriverThreaded_Linux::USBStorageDevicesChanged()
-{
-	std::string sThisDevices;
+bool MemoryCardDriverThreaded_Linux::USBStorageDevicesChanged() {
+  std::string sThisDevices;
 
-	/* If a device is removed and reinserted, the inode of the /sys/block entry
-	 * will change. */
-	std::string sDevicePath = "/sys/block/";
+  /* If a device is removed and reinserted, the inode of the /sys/block entry
+   * will change. */
+  std::string sDevicePath = "/sys/block/";
 
-	std::vector<std::string> asDevices;
-	GetFileList( sDevicePath, asDevices );
+  std::vector<std::string> asDevices;
+  GetFileList(sDevicePath, asDevices);
 
-	for( unsigned i = 0; i < asDevices.size(); ++i )
-	{
-		struct stat buf;
-		if( stat( (sDevicePath + asDevices[i]).c_str(), &buf ) == -1 )
-			continue; // XXX warn
+  for (unsigned i = 0; i < asDevices.size(); ++i) {
+    struct stat buf;
+    if (stat((sDevicePath + asDevices[i]).c_str(), &buf) == -1) {
+      continue;  // XXX warn
+    }
 
-		sThisDevices += ssprintf( "%i,", (int) buf.st_ino );
-	}
+    sThisDevices += ssprintf("%i,", (int)buf.st_ino);
+  }
 
-	bool bChanged = sThisDevices != m_sLastDevices;
-	m_sLastDevices = sThisDevices;
-	if( bChanged )
-		LOG->Trace( "Change in USB storage devices detected." );
-	return bChanged;
+  bool bChanged = sThisDevices != m_sLastDevices;
+  m_sLastDevices = sThisDevices;
+  if (bChanged) {
+    LOG->Trace("Change in USB storage devices detected.");
+  }
+  return bChanged;
 }
 
-void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices( std::vector<UsbStorageDevice>& vDevicesOut )
-{
-	LOG->Trace( "GetUSBStorageDevices" );
+void MemoryCardDriverThreaded_Linux::GetUSBStorageDevices(
+    std::vector<UsbStorageDevice>& vDevicesOut) {
+  LOG->Trace("GetUSBStorageDevices");
 
-	vDevicesOut.clear();
+  vDevicesOut.clear();
 
-	{
-		std::vector<std::string> asDevices;
-		std::string sBlockDevicePath = "/sys/block/";
-		GetFileList( sBlockDevicePath, asDevices );
+  {
+    std::vector<std::string> asDevices;
+    std::string sBlockDevicePath = "/sys/block/";
+    GetFileList(sBlockDevicePath, asDevices);
 
-		for( unsigned i = 0; i < asDevices.size(); ++i )
-		{
-			const std::string &sDevice = asDevices[i];
-			if( sDevice == "." || sDevice == ".." )
-				continue;
+    for (unsigned i = 0; i < asDevices.size(); ++i) {
+      const std::string& sDevice = asDevices[i];
+      if (sDevice == "." || sDevice == "..") {
+        continue;
+      }
 
-			UsbStorageDevice usbd;
+      UsbStorageDevice usbd;
 
-			std::string sPath = sBlockDevicePath + sDevice + "/";
-			usbd.sSysPath = sPath;
+      std::string sPath = sBlockDevicePath + sDevice + "/";
+      usbd.sSysPath = sPath;
 
-			/* Ignore non-removable devices. */
-			std::string sBuf;
-			if( !ReadFile( sPath + "removable", sBuf ) )
-				continue; // already warned
-			if( atoi(sBuf.c_str()) != 1 )
-				continue;
+      /* Ignore non-removable devices. */
+      std::string sBuf;
+      if (!ReadFile(sPath + "removable", sBuf)) {
+        continue;  // already warned
+      }
+      if (atoi(sBuf.c_str()) != 1) {
+        continue;
+      }
 
-			/*
-			 * The kernel isn't exposing all of /sys atomically, so we end up missing
-			 * the partition due to it not being shown yet.  It won't show up until the
-			 * kernel has scanned the partition table, which can take a variable amount
-			 * of time, sometimes over a second.  Watch for the "queue" sysfs directory,
-			 * which is created after this, to tell when partition directories are created.
-			 */
-			RageTimer WaitUntil;
-			WaitUntil += 5;
-			std::string sQueueFilePath = usbd.sSysPath + "queue";
-			while(1)
-			{
-				if( WaitUntil.Ago() >= 0 )
-				{
-					LOG->Warn( "Timed out waiting for %s", sQueueFilePath.c_str() );
-					break;
-				}
+      /*
+       * The kernel isn't exposing all of /sys atomically, so we end up missing
+       * the partition due to it not being shown yet.  It won't show up until
+       * the kernel has scanned the partition table, which can take a variable
+       * amount of time, sometimes over a second.  Watch for the "queue" sysfs
+       * directory, which is created after this, to tell when partition
+       * directories are created.
+       */
+      RageTimer WaitUntil;
+      WaitUntil += 5;
+      std::string sQueueFilePath = usbd.sSysPath + "queue";
+      while (1) {
+        if (WaitUntil.Ago() >= 0) {
+          LOG->Warn("Timed out waiting for %s", sQueueFilePath.c_str());
+          break;
+        }
 
-				if( access(usbd.sSysPath.c_str(), F_OK) == -1 )
-				{
-					LOG->Warn( "Block directory %s went away while we were waiting for %s",
-							usbd.sSysPath.c_str(), sQueueFilePath.c_str() );
-					break;
-				}
+        if (access(usbd.sSysPath.c_str(), F_OK) == -1) {
+          LOG->Warn(
+              "Block directory %s went away while we were waiting for %s",
+              usbd.sSysPath.c_str(), sQueueFilePath.c_str());
+          break;
+        }
 
-				if( access(sQueueFilePath.c_str(), F_OK) != -1 )
-					break;
+        if (access(sQueueFilePath.c_str(), F_OK) != -1) {
+          break;
+        }
 
-				usleep(10000);
-			}
+        usleep(10000);
+      }
 
-			/* Wait for udev to finish handling device node creation */
-			ExecuteCommand( "udevadm settle" );
+      /* Wait for udev to finish handling device node creation */
+      ExecuteCommand("udevadm settle");
 
-			/* If the first partition device exists, eg. /sys/block/uba/uba1, use it. */
-			if( access((usbd.sSysPath + sDevice + "1").c_str(), F_OK) != -1 )
-			{
-				LOG->Trace("OK");
-				usbd.sDevice = "/dev/" + sDevice + "1";
-			}
-			else
-			{
-				LOG->Trace("error %s", strerror(errno));
-				usbd.sDevice = "/dev/" + sDevice;
-			}
+      /* If the first partition device exists, eg. /sys/block/uba/uba1, use it.
+       */
+      if (access((usbd.sSysPath + sDevice + "1").c_str(), F_OK) != -1) {
+        LOG->Trace("OK");
+        usbd.sDevice = "/dev/" + sDevice + "1";
+      } else {
+        LOG->Trace("error %s", strerror(errno));
+        usbd.sDevice = "/dev/" + sDevice;
+      }
 
-			/*
-			 * sPath/device should be a symlink to the actual device.  For USB
-			 * devices, it looks like this:
-			 *
-			 * device -> ../../devices/pci0000:00/0000:00:02.1/usb2/2-1/2-1:1.0
-			 *
-			 * "2-1" is "bus-port".
-			 */
-			char szLink[256];
-			ssize_t iRet = readlink( (sPath + "device").c_str(), szLink, sizeof(szLink) );
-			if( iRet == -1 )
-			{
-				LOG->Warn( "readlink(\"%s\"): %s", (sPath + "device").c_str(), strerror(errno) );
-			}
-			else
-			{
-				/*
-				 * The full path looks like
-				 *
-				 *   ../../devices/pci0000:00/0000:00:02.1/usb2/2-2/2-2.1/2-2.1:1.0
-				 *
-				 * In newer kernels, it looks like:
-				 *
-				 * ../../../3-2.1:1.0
-				 *
-				 * Each path element refers to a new hop in the chain.
-				 *  "usb2" = second USB host
-				 *  2-            second USB host,
-				 *   -2           port 1 on the host,
-				 *     .1         port 1 on an attached hub
-				 *       .2       ... port 2 on the next hub ...
-				 *
-				 * We want the bus number and the port of the last hop.  The level is
-				 * the number of hops.
-				 */
-				szLink[iRet] = 0;
-				std::vector<std::string> asBits;
-				split( szLink, "/", asBits );
+      /*
+       * sPath/device should be a symlink to the actual device.  For USB
+       * devices, it looks like this:
+       *
+       * device -> ../../devices/pci0000:00/0000:00:02.1/usb2/2-1/2-1:1.0
+       *
+       * "2-1" is "bus-port".
+       */
+      char szLink[256];
+      ssize_t iRet =
+          readlink((sPath + "device").c_str(), szLink, sizeof(szLink));
+      if (iRet == -1) {
+        LOG->Warn(
+            "readlink(\"%s\"): %s", (sPath + "device").c_str(),
+            strerror(errno));
+      } else {
+        /*
+         * The full path looks like
+         *
+         *   ../../devices/pci0000:00/0000:00:02.1/usb2/2-2/2-2.1/2-2.1:1.0
+         *
+         * In newer kernels, it looks like:
+         *
+         * ../../../3-2.1:1.0
+         *
+         * Each path element refers to a new hop in the chain.
+         *  "usb2" = second USB host
+         *  2-            second USB host,
+         *   -2           port 1 on the host,
+         *     .1         port 1 on an attached hub
+         *       .2       ... port 2 on the next hub ...
+         *
+         * We want the bus number and the port of the last hop.  The level is
+         * the number of hops.
+         */
+        szLink[iRet] = 0;
+        std::vector<std::string> asBits;
+        split(szLink, "/", asBits);
 
-				std::string sHostPort = asBits[asBits.size()-1];
-				if( !sHostPort.empty() )
-				{
-					/* Strip off the endpoint information after the colon. */
-					size_t pos = sHostPort.find(':');
-					if( pos != std::string::npos )
-						sHostPort.erase( pos );
+        std::string sHostPort = asBits[asBits.size() - 1];
+        if (!sHostPort.empty()) {
+          /* Strip off the endpoint information after the colon. */
+          size_t pos = sHostPort.find(':');
+          if (pos != std::string::npos) {
+            sHostPort.erase(pos);
+          }
 
-					/* sHostPort is eg. 2-2.1. */
-					Replace(sHostPort, "-", ".");
-					asBits.clear();
-					split( sHostPort, ".", asBits );
-					if( asBits.size() > 1 )
-					{
-						usbd.iBus = atoi( asBits[0].c_str() );
-						usbd.iPort = atoi( asBits[asBits.size()-1].c_str() );
-						usbd.iLevel = asBits.size() - 1;
-					}
-				}
-			}
+          /* sHostPort is eg. 2-2.1. */
+          Replace(sHostPort, "-", ".");
+          asBits.clear();
+          split(sHostPort, ".", asBits);
+          if (asBits.size() > 1) {
+            usbd.iBus = atoi(asBits[0].c_str());
+            usbd.iPort = atoi(asBits[asBits.size() - 1].c_str());
+            usbd.iLevel = asBits.size() - 1;
+          }
+        }
+      }
 
-			if( ReadFile( sPath + "device/../idVendor", sBuf ) )
-				sscanf( sBuf.c_str(), "%x", &usbd.idVendor );
+      if (ReadFile(sPath + "device/../idVendor", sBuf)) {
+        sscanf(sBuf.c_str(), "%x", &usbd.idVendor);
+      }
 
-			if( ReadFile( sPath + "device/../idProduct", sBuf ) )
-				sscanf( sBuf.c_str(), "%x", &usbd.idProduct );
+      if (ReadFile(sPath + "device/../idProduct", sBuf)) {
+        sscanf(sBuf.c_str(), "%x", &usbd.idProduct);
+      }
 
-			if( ReadFile( sPath + "device/../serial", sBuf ) )
-			{
-				usbd.sSerial = sBuf;
-				TrimRight( usbd.sSerial );
-			}
-			if( ReadFile( sPath + "device/../product", sBuf ) )
-			{
-				usbd.sProduct = sBuf;
-				TrimRight( usbd.sProduct );
-			}
-			if( ReadFile( sPath + "device/../manufacturer", sBuf ) )
-			{
-				usbd.sVendor = sBuf;
-				TrimRight( usbd.sVendor );
-			}
+      if (ReadFile(sPath + "device/../serial", sBuf)) {
+        usbd.sSerial = sBuf;
+        TrimRight(usbd.sSerial);
+      }
+      if (ReadFile(sPath + "device/../product", sBuf)) {
+        usbd.sProduct = sBuf;
+        TrimRight(usbd.sProduct);
+      }
+      if (ReadFile(sPath + "device/../manufacturer", sBuf)) {
+        usbd.sVendor = sBuf;
+        TrimRight(usbd.sVendor);
+      }
 
-			vDevicesOut.push_back( usbd );
-		}
-	}
+      vDevicesOut.push_back(usbd);
+    }
+  }
 
-	{
-		// Find where each device is mounted. Output looks like:
+  {
+    // Find where each device is mounted. Output looks like:
 
-		// /dev/sda1               /mnt/flash1             auto    noauto,owner 0 0
-		// /dev/sdb1               /mnt/flash2             auto    noauto,owner 0 0
-		// /dev/sdc1               /mnt/flash3             auto    noauto,owner 0 0
+    // /dev/sda1               /mnt/flash1             auto    noauto,owner 0 0
+    // /dev/sdb1               /mnt/flash2             auto    noauto,owner 0 0
+    // /dev/sdc1               /mnt/flash3             auto    noauto,owner 0 0
 
-		std::ifstream f("/etc/fstab");
-		if (f.fail())
-		{
-			LOG->Warn( "can't open '/etc/fstab': %s", strerror(errno) );
-			return;
-		}
+    std::ifstream f("/etc/fstab");
+    if (f.fail()) {
+      LOG->Warn("can't open '/etc/fstab': %s", strerror(errno));
+      return;
+    }
 
-		std::string line;
-		while( !f.eof() )
-		{
-			std::getline(f, line);
-			if (f.eof())
-			{
-				continue;
-			}
-			else if (f.fail())
-			{
-				LOG->Warn( "error reading '/etc/fstab': %s", strerror(errno) );
-				return;
-			}
+    std::string line;
+    while (!f.eof()) {
+      std::getline(f, line);
+      if (f.eof()) {
+        continue;
+      } else if (f.fail()) {
+        LOG->Warn("error reading '/etc/fstab': %s", strerror(errno));
+        return;
+      }
 
-			char szScsiDevice[1024];
-			char szMountPoint[1024];
-			int iRet = sscanf( line.c_str(), "%s %s", szScsiDevice, szMountPoint );
-			if( iRet != 2 || szScsiDevice[0] == '#')
-				continue;	// don't process this line
+      char szScsiDevice[1024];
+      char szMountPoint[1024];
+      int iRet = sscanf(line.c_str(), "%s %s", szScsiDevice, szMountPoint);
+      if (iRet != 2 || szScsiDevice[0] == '#') {
+        continue;  // don't process this line
+      }
 
-			/* Get the real kernel device name, which should match
-			 * the name from /sys/block, by following symlinks in
-			 * /dev.  This allows us to specify persistent names in
-			 * /etc/fstab using things like /dev/device/by-path. */
-			char szUnderlyingDevice[PATH_MAX];
-			if( realpath(szScsiDevice, szUnderlyingDevice) == nullptr )
-			{
-				// "No such file or directory" is understandable
-				if (errno != ENOENT)
-					LOG->Warn( "realpath(\"%s\"): %s", szScsiDevice, strerror(errno) );
-				continue;
-			}
+      /* Get the real kernel device name, which should match
+       * the name from /sys/block, by following symlinks in
+       * /dev.  This allows us to specify persistent names in
+       * /etc/fstab using things like /dev/device/by-path. */
+      char szUnderlyingDevice[PATH_MAX];
+      if (realpath(szScsiDevice, szUnderlyingDevice) == nullptr) {
+        // "No such file or directory" is understandable
+        if (errno != ENOENT) {
+          LOG->Warn("realpath(\"%s\"): %s", szScsiDevice, strerror(errno));
+        }
+        continue;
+      }
 
-			std::string sMountPoint = szMountPoint;
-			TrimLeft( sMountPoint );
-			TrimRight( sMountPoint );
+      std::string sMountPoint = szMountPoint;
+      TrimLeft(sMountPoint);
+      TrimRight(sMountPoint);
 
-			// search for the mountpoint corresponding to the device
-			for( unsigned i=0; i<vDevicesOut.size(); i++ )
-			{
-				UsbStorageDevice& usbd = vDevicesOut[i];
-				if( usbd.sDevice == szUnderlyingDevice )	// found our match
-				{
-					// Use the device entry from fstab so the mount command works
-					usbd.sDevice = szScsiDevice;
-					usbd.sOsMountDir = sMountPoint;
-					break;	// stop looking for a match
-				}
-			}
-		}
-	}
+      // search for the mountpoint corresponding to the device
+      for (unsigned i = 0; i < vDevicesOut.size(); i++) {
+        UsbStorageDevice& usbd = vDevicesOut[i];
+        if (usbd.sDevice == szUnderlyingDevice)  // found our match
+        {
+          // Use the device entry from fstab so the mount command works
+          usbd.sDevice = szScsiDevice;
+          usbd.sOsMountDir = sMountPoint;
+          break;  // stop looking for a match
+        }
+      }
+    }
+  }
 
-	for( unsigned i=0; i<vDevicesOut.size(); i++ )
-	{
-		UsbStorageDevice& usbd = vDevicesOut[i];
-		LOG->Trace( "    sDevice: %s, iBus: %d, iLevel: %d, iPort: %d, id: %04X:%04X, Vendor: '%s', Product: '%s', sSerial: \"%s\", sOsMountDir: %s",
-				usbd.sDevice.c_str(), usbd.iBus, usbd.iLevel, usbd.iPort, usbd.idVendor, usbd.idProduct, usbd.sVendor.c_str(),
-				usbd.sProduct.c_str(), usbd.sSerial.c_str(), usbd.sOsMountDir.c_str() );
-	}
+  for (unsigned i = 0; i < vDevicesOut.size(); i++) {
+    UsbStorageDevice& usbd = vDevicesOut[i];
+    LOG->Trace(
+        "    sDevice: %s, iBus: %d, iLevel: %d, iPort: %d, id: %04X:%04X, "
+        "Vendor: '%s', Product: '%s', sSerial: \"%s\", sOsMountDir: %s",
+        usbd.sDevice.c_str(), usbd.iBus, usbd.iLevel, usbd.iPort, usbd.idVendor,
+        usbd.idProduct, usbd.sVendor.c_str(), usbd.sProduct.c_str(),
+        usbd.sSerial.c_str(), usbd.sOsMountDir.c_str());
+  }
 
-	/* Remove any devices that we couldn't find a mountpoint for. */
-	for( unsigned i=0; i<vDevicesOut.size(); i++ )
-	{
-		UsbStorageDevice& usbd = vDevicesOut[i];
-		if( usbd.sOsMountDir.empty() )
-		{
-			LOG->Trace( "Ignoring %s (couldn't find in /etc/fstab)", usbd.sDevice.c_str() );
+  /* Remove any devices that we couldn't find a mountpoint for. */
+  for (unsigned i = 0; i < vDevicesOut.size(); i++) {
+    UsbStorageDevice& usbd = vDevicesOut[i];
+    if (usbd.sOsMountDir.empty()) {
+      LOG->Trace(
+          "Ignoring %s (couldn't find in /etc/fstab)", usbd.sDevice.c_str());
 
-			vDevicesOut.erase( vDevicesOut.begin()+i );
-			--i;
-		}
-	}
+      vDevicesOut.erase(vDevicesOut.begin() + i);
+      --i;
+    }
+  }
 
-	LOG->Trace( "Done with GetUSBStorageDevices" );
+  LOG->Trace("Done with GetUSBStorageDevices");
 }
 
+bool MemoryCardDriverThreaded_Linux::Mount(UsbStorageDevice* pDevice) {
+  ASSERT(!pDevice->sDevice.empty());
 
-bool MemoryCardDriverThreaded_Linux::Mount( UsbStorageDevice* pDevice )
-{
-	ASSERT( !pDevice->sDevice.empty() );
+  std::string sCommand = "mount " + pDevice->sDevice;
+  bool bMountedSuccessfully = ExecuteCommand(sCommand);
 
-        std::string sCommand = "mount " + pDevice->sDevice;
-        bool bMountedSuccessfully = ExecuteCommand( sCommand );
-
-	return bMountedSuccessfully;
+  return bMountedSuccessfully;
 }
 
-void MemoryCardDriverThreaded_Linux::Unmount( UsbStorageDevice* pDevice )
-{
-	if( pDevice->sDevice.empty() )
-		return;
+void MemoryCardDriverThreaded_Linux::Unmount(UsbStorageDevice* pDevice) {
+  if (pDevice->sDevice.empty()) {
+    return;
+  }
 
-	/* Use umount -l, so we unmount the device even if it's in use.  Open
-	 * files remain usable, and the device (eg. /dev/sda) won't be reused
-	 * by new devices until those are closed.  Without this, if something
-	 * causes the device to not unmount here, we'll never unmount it; that
-	 * causes a device name leak, eventually running us out of mountpoints. */
-	std::string sCommand = "sync; umount -l \"" + pDevice->sDevice + "\"";
-	ExecuteCommand( sCommand );
+  /* Use umount -l, so we unmount the device even if it's in use.  Open
+   * files remain usable, and the device (eg. /dev/sda) won't be reused
+   * by new devices until those are closed.  Without this, if something
+   * causes the device to not unmount here, we'll never unmount it; that
+   * causes a device name leak, eventually running us out of mountpoints. */
+  std::string sCommand = "sync; umount -l \"" + pDevice->sDevice + "\"";
+  ExecuteCommand(sCommand);
 }
 
 /*

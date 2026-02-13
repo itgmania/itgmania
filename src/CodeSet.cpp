@@ -9,55 +9,54 @@
 #include "RageUtil.h"
 #include "ThemeManager.h"
 
-#define CODE_NAMES		THEME->GetMetric (sType,"CodeNames")
-#define CODE( s )		THEME->GetMetric (sType,ssprintf("Code%s",s.c_str()))
-void InputQueueCodeSet::Load( const std::string &sType )
-{
-	//
-	// Load codes
-	//
-	split( CODE_NAMES, ",", m_asCodeNames, true );
+#define CODE_NAMES THEME->GetMetric(sType, "CodeNames")
+#define CODE(s) THEME->GetMetric(sType, ssprintf("Code%s", s.c_str()))
+void InputQueueCodeSet::Load(const std::string& sType) {
+  //
+  // Load codes
+  //
+  split(CODE_NAMES, ",", m_asCodeNames, true);
 
-	for( unsigned c=0; c<m_asCodeNames.size(); c++ )
-	{
-		std::vector<std::string> asBits;
-		split( m_asCodeNames[c], "=", asBits, true );
-		std::string sCodeName = asBits[0];
-		if( asBits.size() > 1 )
-			m_asCodeNames[c] = asBits[1];
+  for (unsigned c = 0; c < m_asCodeNames.size(); c++) {
+    std::vector<std::string> asBits;
+    split(m_asCodeNames[c], "=", asBits, true);
+    std::string sCodeName = asBits[0];
+    if (asBits.size() > 1) {
+      m_asCodeNames[c] = asBits[1];
+    }
 
-		InputQueueCode code;
+    InputQueueCode code;
 
-		// Invalid codes are empty and we still want to make sure m_asCodeNames
-		// and m_aCodes are the same size to prevent off by ones.
-		code.Load(CODE(sCodeName));
+    // Invalid codes are empty and we still want to make sure m_asCodeNames
+    // and m_aCodes are the same size to prevent off by ones.
+    code.Load(CODE(sCodeName));
 
-		m_aCodes.push_back( code );
-	}
+    m_aCodes.push_back(code);
+  }
 }
 
-std::string InputQueueCodeSet::Input( const InputEventPlus &input ) const
-{
-	for( unsigned i = 0; i < m_aCodes.size(); ++i )
-	{
-		if( !m_aCodes[i].EnteredCode(input.GameI.controller) )
-			continue;
+std::string InputQueueCodeSet::Input(const InputEventPlus& input) const {
+  for (unsigned i = 0; i < m_aCodes.size(); ++i) {
+    if (!m_aCodes[i].EnteredCode(input.GameI.controller)) {
+      continue;
+    }
 
-		return m_asCodeNames[i];
-	}
-	return "";
+    return m_asCodeNames[i];
+  }
+  return "";
 }
 
-bool InputQueueCodeSet::InputMessage( const InputEventPlus &input, Message &msg ) const
-{
-	std::string sCodeName = Input( input );
-	if( sCodeName.empty() )
-		return false;
+bool InputQueueCodeSet::InputMessage(
+    const InputEventPlus& input, Message& msg) const {
+  std::string sCodeName = Input(input);
+  if (sCodeName.empty()) {
+    return false;
+  }
 
-	msg.SetName("Code");
-	msg.SetParam( "PlayerNumber", input.pn );
-	msg.SetParam( "Name", sCodeName );
-	return true;
+  msg.SetName("Code");
+  msg.SetParam("PlayerNumber", input.pn);
+  msg.SetParam("Name", sCodeName);
+  return true;
 }
 
 /*

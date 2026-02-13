@@ -21,173 +21,159 @@
 #include "Style.h"
 #include "global.h"
 
-enum ReviewWorkoutRow
-{
-	ReviewWorkoutRow_Play,
-	ReviewWorkoutRow_Edit,
-	ReviewWorkoutRow_Shuffle,
-	ReviewWorkoutRow_Save,
-	NUM_ReviewWorkoutRow
+enum ReviewWorkoutRow {
+  ReviewWorkoutRow_Play,
+  ReviewWorkoutRow_Edit,
+  ReviewWorkoutRow_Shuffle,
+  ReviewWorkoutRow_Save,
+  NUM_ReviewWorkoutRow
 };
 
-static const MenuRowDef g_MenuRows[] =
-{
-	MenuRowDef( -1,	"Play",		true, EditMode_Practice, true, false, 0, nullptr ),
-	MenuRowDef( -1,	"Edit Workout",	true, EditMode_Practice, true, false, 0, nullptr ),
-	MenuRowDef( -1,	"Shuffle",	true, EditMode_Practice, true, false, 0, nullptr ),
-	MenuRowDef( -1,	"Save",		true, EditMode_Practice, true, false, 0, nullptr ),
+static const MenuRowDef g_MenuRows[] = {
+    MenuRowDef(-1, "Play", true, EditMode_Practice, true, false, 0, nullptr),
+    MenuRowDef(
+        -1, "Edit Workout", true, EditMode_Practice, true, false, 0, nullptr),
+    MenuRowDef(-1, "Shuffle", true, EditMode_Practice, true, false, 0, nullptr),
+    MenuRowDef(-1, "Save", true, EditMode_Practice, true, false, 0, nullptr),
 };
 
-REGISTER_SCREEN_CLASS( ScreenOptionsCourseOverview );
+REGISTER_SCREEN_CLASS(ScreenOptionsCourseOverview);
 
-AutoScreenMessage( SM_BackFromEnterName )
+AutoScreenMessage(SM_BackFromEnterName)
 
-void ScreenOptionsCourseOverview::Init()
-{
-	if( PREFSMAN->m_iArcadeOptionsNavigation )
-		SetNavigation( NAV_THREE_KEY_MENU );
+    void ScreenOptionsCourseOverview::Init() {
+  if (PREFSMAN->m_iArcadeOptionsNavigation) {
+    SetNavigation(NAV_THREE_KEY_MENU);
+  }
 
-	ScreenOptions::Init();
+  ScreenOptions::Init();
 
-	m_soundSave.Load( THEME->GetPathS(m_sName,"Save") );
-	PLAY_SCREEN.Load(m_sName,"PlayScreen");
-	EDIT_SCREEN.Load(m_sName,"EditScreen");
+  m_soundSave.Load(THEME->GetPathS(m_sName, "Save"));
+  PLAY_SCREEN.Load(m_sName, "PlayScreen");
+  EDIT_SCREEN.Load(m_sName, "EditScreen");
 }
 
-void ScreenOptionsCourseOverview::BeginScreen()
-{
-	std::vector<OptionRowHandler*> vHands;
-	FOREACH_ENUM( ReviewWorkoutRow, rowIndex )
-	{
-		const MenuRowDef &mr = g_MenuRows[rowIndex];
-		OptionRowHandler *pHand = OptionRowHandlerUtil::MakeSimple( mr );
-		vHands.push_back( pHand );
-	}
+void ScreenOptionsCourseOverview::BeginScreen() {
+  std::vector<OptionRowHandler*> vHands;
+  FOREACH_ENUM(ReviewWorkoutRow, rowIndex) {
+    const MenuRowDef& mr = g_MenuRows[rowIndex];
+    OptionRowHandler* pHand = OptionRowHandlerUtil::MakeSimple(mr);
+    vHands.push_back(pHand);
+  }
 
-	ScreenOptions::InitMenu( vHands );
+  ScreenOptions::InitMenu(vHands);
 
-	ScreenOptions::BeginScreen();
+  ScreenOptions::BeginScreen();
 
-	// clear the current song in case it's set when we back out from gameplay
-	GAMESTATE->m_pCurSong.Set(nullptr);
+  // clear the current song in case it's set when we back out from gameplay
+  GAMESTATE->m_pCurSong.Set(nullptr);
 }
 
-ScreenOptionsCourseOverview::~ScreenOptionsCourseOverview()
-{
+ScreenOptionsCourseOverview::~ScreenOptionsCourseOverview() {}
 
+void ScreenOptionsCourseOverview::ImportOptions(
+    int iRow, const std::vector<PlayerNumber>& vpns) {
+  // OptionRow &row = *m_pRows[iRow];
 }
 
-void ScreenOptionsCourseOverview::ImportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
-{
-	//OptionRow &row = *m_pRows[iRow];
+void ScreenOptionsCourseOverview::ExportOptions(
+    int iRow, const std::vector<PlayerNumber>& vpns) {
+  OptionRow& row = *m_pRows[iRow];
+  int iIndex = row.GetOneSharedSelection(true);
+  std::string sValue;
+  if (iIndex >= 0) {
+    sValue = row.GetRowDef().m_vsChoices[iIndex];
+  }
 }
 
-void ScreenOptionsCourseOverview::ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
-{
-	OptionRow &row = *m_pRows[iRow];
-	int iIndex = row.GetOneSharedSelection( true );
-	std::string sValue;
-	if( iIndex >= 0 )
-		sValue = row.GetRowDef().m_vsChoices[ iIndex ];
+static LocalizedString ERROR_SAVING_WORKOUT(
+    "ScreenOptionsCourseOverview", "Error saving workout.");
+static LocalizedString WORKOUT_SAVED(
+    "ScreenOptionsCourseOverview", "Workout saved successfully.");
+void ScreenOptionsCourseOverview::HandleScreenMessage(const ScreenMessage SM) {
+  if (SM == SM_GoToNextScreen) {
+    int iRow = m_iCurrentRow[GAMESTATE->m_MasterPlayerNumber];
+    switch (iRow) {
+      case ReviewWorkoutRow_Play:
+        EditCourseUtil::PrepareForPlay();
+        SCREENMAN->SetNewScreen(PLAY_SCREEN);
+        return;  // handled
+      case ReviewWorkoutRow_Edit:
+        SCREENMAN->SetNewScreen(EDIT_SCREEN);
+        return;  // handled
+    }
+  } else if (SM == SM_BackFromEnterName) {
+    if (!ScreenTextEntry::s_bCancelledLast) {
+      ASSERT(
+          ScreenTextEntry::s_sLastAnswer !=
+          "");  // validate should have assured this
+
+      if (EditCourseUtil::RenameAndSave(
+              GAMESTATE->m_pCurCourse, ScreenTextEntry::s_sLastAnswer)) {
+        m_soundSave.Play(true);
+        SCREENMAN->SystemMessage(WORKOUT_SAVED);
+      }
+    }
+  }
+
+  ScreenOptions::HandleScreenMessage(SM);
 }
 
-static LocalizedString ERROR_SAVING_WORKOUT	( "ScreenOptionsCourseOverview", "Error saving workout." );
-static LocalizedString WORKOUT_SAVED		( "ScreenOptionsCourseOverview", "Workout saved successfully." );
-void ScreenOptionsCourseOverview::HandleScreenMessage( const ScreenMessage SM )
-{
-	if( SM == SM_GoToNextScreen )
-	{
-		int iRow = m_iCurrentRow[GAMESTATE->m_MasterPlayerNumber];
-		switch( iRow )
-		{
-		case ReviewWorkoutRow_Play:
-			EditCourseUtil::PrepareForPlay();
-			SCREENMAN->SetNewScreen( PLAY_SCREEN );
-			return;	// handled
-		case ReviewWorkoutRow_Edit:
-			SCREENMAN->SetNewScreen( EDIT_SCREEN );
-			return;	// handled
-		}
-	}
-	else if( SM == SM_BackFromEnterName )
-	{
-		if( !ScreenTextEntry::s_bCancelledLast )
-		{
-			ASSERT( ScreenTextEntry::s_sLastAnswer != "" );	// validate should have assured this
-
-			if( EditCourseUtil::RenameAndSave( GAMESTATE->m_pCurCourse, ScreenTextEntry::s_sLastAnswer ) )
-			{
-				m_soundSave.Play(true);
-				SCREENMAN->SystemMessage( WORKOUT_SAVED );
-			}
-		}
-	}
-
-	ScreenOptions::HandleScreenMessage( SM );
+void ScreenOptionsCourseOverview::AfterChangeValueInRow(
+    int iRow, PlayerNumber pn) {
+  ScreenOptions::AfterChangeValueInRow(iRow, pn);
 }
 
-void ScreenOptionsCourseOverview::AfterChangeValueInRow( int iRow, PlayerNumber pn )
-{
-	ScreenOptions::AfterChangeValueInRow( iRow, pn );
+static LocalizedString ENTER_WORKOUT_NAME(
+    "ScreenOptionsCourseOverview", "Enter a name for the workout.");
+void ScreenOptionsCourseOverview::ProcessMenuStart(
+    const InputEventPlus& input) {
+  if (IsTransitioning()) {
+    return;
+  }
+
+  int iRow = m_iCurrentRow[GAMESTATE->m_MasterPlayerNumber];
+  switch (iRow) {
+    case ReviewWorkoutRow_Play:
+    case ReviewWorkoutRow_Edit:
+      SCREENMAN->PlayStartSound();
+      this->BeginFadingOut();
+      return;  // handled
+    case ReviewWorkoutRow_Shuffle: {
+      Course* pCourse = GAMESTATE->m_pCurCourse;
+      std::shuffle(
+          pCourse->m_vEntries.begin(), pCourse->m_vEntries.end(),
+          g_RandomNumberGenerator);
+      Trail* pTrail =
+          pCourse->GetTrailForceRegenCache(GAMESTATE->m_pCurStyle->m_StepsType);
+      GAMESTATE->m_pCurTrail[PLAYER_1].Set(pTrail);
+      SCREENMAN->PlayStartSound();
+      MESSAGEMAN->Broadcast("CurrentCourseChanged");
+    }
+      return;  // handled
+    case ReviewWorkoutRow_Save: {
+      bool bPromptForName = EditCourseUtil::s_bNewCourseNeedsName;
+      if (bPromptForName) {
+        ScreenTextEntry::TextEntry(
+            SM_BackFromEnterName, ENTER_WORKOUT_NAME,
+            GAMESTATE->m_pCurCourse->GetDisplayFullTitle(),
+            EditCourseUtil::MAX_NAME_LENGTH,
+            EditCourseUtil::ValidateEditCourseName);
+      } else {
+        if (EditCourseUtil::Save(GAMESTATE->m_pCurCourse)) {
+          m_soundSave.Play(true);
+          SCREENMAN->SystemMessage(WORKOUT_SAVED);
+        } else {
+          SCREENMAN->PlayInvalidSound();
+          SCREENMAN->SystemMessage(ERROR_SAVING_WORKOUT);
+        }
+      }
+    }
+      return;  // handled
+  }
+
+  ScreenOptions::ProcessMenuStart(input);
 }
-
-
-static LocalizedString ENTER_WORKOUT_NAME	( "ScreenOptionsCourseOverview", "Enter a name for the workout." );
-void ScreenOptionsCourseOverview::ProcessMenuStart( const InputEventPlus &input )
-{
-	if( IsTransitioning() )
-		return;
-
-	int iRow = m_iCurrentRow[GAMESTATE->m_MasterPlayerNumber];
-	switch( iRow )
-	{
-	case ReviewWorkoutRow_Play:
-	case ReviewWorkoutRow_Edit:
-		SCREENMAN->PlayStartSound();
-		this->BeginFadingOut();
-		return;	// handled
-	case ReviewWorkoutRow_Shuffle:
-		{
-			Course *pCourse = GAMESTATE->m_pCurCourse;
-			std::shuffle( pCourse->m_vEntries.begin(), pCourse->m_vEntries.end(), g_RandomNumberGenerator );
-			Trail *pTrail = pCourse->GetTrailForceRegenCache( GAMESTATE->m_pCurStyle->m_StepsType );
-			GAMESTATE->m_pCurTrail[PLAYER_1].Set( pTrail );
-			SCREENMAN->PlayStartSound();
-			MESSAGEMAN->Broadcast("CurrentCourseChanged");
-		}
-		return;	// handled
-	case ReviewWorkoutRow_Save:
-		{
-			bool bPromptForName = EditCourseUtil::s_bNewCourseNeedsName;
-			if( bPromptForName )
-			{
-				ScreenTextEntry::TextEntry(
-					SM_BackFromEnterName,
-					ENTER_WORKOUT_NAME,
-					GAMESTATE->m_pCurCourse->GetDisplayFullTitle(),
-					EditCourseUtil::MAX_NAME_LENGTH,
-					EditCourseUtil::ValidateEditCourseName );
-			}
-			else
-			{
-				if( EditCourseUtil::Save( GAMESTATE->m_pCurCourse ) )
-				{
-					m_soundSave.Play(true);
-					SCREENMAN->SystemMessage( WORKOUT_SAVED );
-				}
-				else
-				{
-					SCREENMAN->PlayInvalidSound();
-					SCREENMAN->SystemMessage( ERROR_SAVING_WORKOUT );
-				}
-			}
-		}
-		return;	// handled
-	}
-
-	ScreenOptions::ProcessMenuStart( input );
-}
-
 
 /*
  * (c) 2003-2004 Chris Danford

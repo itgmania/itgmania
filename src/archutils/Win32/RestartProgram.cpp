@@ -1,38 +1,39 @@
-#include "global.h"
 #include "RestartProgram.h"
+
 #include <windows.h>
 
-void Win32RestartProgram()
-{
-	TCHAR szFullAppPath[MAX_PATH];
-	GetModuleFileName(nullptr, szFullAppPath, MAX_PATH);
+#include "global.h"
 
-	// Relaunch
-	PROCESS_INFORMATION pi;
-	STARTUPINFO si;
-	ZeroMemory( &si, sizeof(si) );
-	CreateProcess(
-		nullptr,		// pointer to name of executable module
-		szFullAppPath,	// pointer to command line string
-		nullptr,		// process security attributes
-		nullptr,		// thread security attributes
-		false,		// handle inheritance flag
-		0,		// creation flags
-		nullptr,		// pointer to new environment block
-		nullptr,		// pointer to current directory name
-		&si,		// pointer to STARTUPINFO
-		&pi		// pointer to PROCESS_INFORMATION
-	);
+void Win32RestartProgram() {
+  TCHAR szFullAppPath[MAX_PATH];
+  GetModuleFileName(nullptr, szFullAppPath, MAX_PATH);
 
-	ExitProcess( 0 );
+  // Relaunch
+  PROCESS_INFORMATION pi;
+  STARTUPINFO si;
+  ZeroMemory(&si, sizeof(si));
+  CreateProcess(
+      nullptr,        // pointer to name of executable module
+      szFullAppPath,  // pointer to command line string
+      nullptr,        // process security attributes
+      nullptr,        // thread security attributes
+      false,          // handle inheritance flag
+      0,              // creation flags
+      nullptr,        // pointer to new environment block
+      nullptr,        // pointer to current directory name
+      &si,            // pointer to STARTUPINFO
+      &pi             // pointer to PROCESS_INFORMATION
+  );
 
-	/* not reached */
+  ExitProcess(0);
+
+  /* not reached */
 }
 
 /*
  * (c) 2002-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -42,7 +43,7 @@ void Win32RestartProgram()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

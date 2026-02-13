@@ -1,4 +1,5 @@
-/* RageSoundManager - A global singleton to interface RageSound and RageSoundDriver. */
+/* RageSoundManager - A global singleton to interface RageSound and
+ * RageSoundDriver. */
 
 #ifndef RAGE_SOUND_MANAGER_H
 #define RAGE_SOUND_MANAGER_H
@@ -15,48 +16,50 @@ class RageSoundReader;
 class RageSoundReader_Preload;
 class RageTimer;
 
-class RageSoundManager
-{
-public:
-	RageSoundManager();
-	~RageSoundManager();
+class RageSoundManager {
+ public:
+  RageSoundManager();
+  ~RageSoundManager();
 
-	/* This may be called when shutting down, in order to stop all sounds.  This
-	 * should be called before shutting down threads that may have running sounds,
-	 * in order to prevent DirectSound delays and glitches.  Further attempts to
-	 * start sounds will do nothing, and threads may be shut down. */
-	void Shutdown();
+  /* This may be called when shutting down, in order to stop all sounds.  This
+   * should be called before shutting down threads that may have running sounds,
+   * in order to prevent DirectSound delays and glitches.  Further attempts to
+   * start sounds will do nothing, and threads may be shut down. */
+  void Shutdown();
 
-	void Init();
+  void Init();
 
-	void SetMixVolume();
-	float GetVolumeOfNonCriticalSounds() const { return m_fVolumeOfNonCriticalSounds; }
-	void SetVolumeOfNonCriticalSounds( float fVolumeOfNonCriticalSounds );
+  void SetMixVolume();
+  float GetVolumeOfNonCriticalSounds() const {
+    return m_fVolumeOfNonCriticalSounds;
+  }
+  void SetVolumeOfNonCriticalSounds(float fVolumeOfNonCriticalSounds);
 
-	void Update();
-	void StartMixing( RageSoundBase *snd );	/* used by RageSound */
-	void StopMixing( RageSoundBase *snd );	/* used by RageSound */
-	bool Pause( RageSoundBase *snd, bool bPause );	/* used by RageSound */
-	int64_t GetPosition( RageTimer *pTimer ) const;	/* used by RageSound */
-	float GetPlayLatency() const;
-	int GetDriverSampleRate() const;
+  void Update();
+  void StartMixing(RageSoundBase* snd);         /* used by RageSound */
+  void StopMixing(RageSoundBase* snd);          /* used by RageSound */
+  bool Pause(RageSoundBase* snd, bool bPause);  /* used by RageSound */
+  int64_t GetPosition(RageTimer* pTimer) const; /* used by RageSound */
+  float GetPlayLatency() const;
+  int GetDriverSampleRate() const;
 
-	RageSoundReader *GetLoadedSound( const std::string &sPath );
-	void AddLoadedSound( const std::string &sPath, RageSoundReader_Preload *pSound );
+  RageSoundReader* GetLoadedSound(const std::string& sPath);
+  void AddLoadedSound(
+      const std::string& sPath, RageSoundReader_Preload* pSound);
 
-private:
-	std::map<std::string, RageSoundReader_Preload *> m_mapPreloadedSounds;
+ private:
+  std::map<std::string, RageSoundReader_Preload*> m_mapPreloadedSounds;
 
-	RageSoundDriver *m_pDriver;
+  RageSoundDriver* m_pDriver;
 
-	/* Prefs: */
-	float m_fVolumeOfNonCriticalSounds;
-	// Swallow up warnings. If they must be used, define them.
-	RageSoundManager& operator=(const RageSoundManager& rhs);
-	RageSoundManager(const RageSoundManager& rhs);
+  /* Prefs: */
+  float m_fVolumeOfNonCriticalSounds;
+  // Swallow up warnings. If they must be used, define them.
+  RageSoundManager& operator=(const RageSoundManager& rhs);
+  RageSoundManager(const RageSoundManager& rhs);
 };
 
-extern RageSoundManager *SOUNDMAN;
+extern RageSoundManager* SOUNDMAN;
 
 #endif
 

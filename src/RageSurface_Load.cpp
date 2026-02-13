@@ -15,113 +15,113 @@
 #include "StdString.h"
 #include "global.h"
 
-static RageSurface *TryOpenFile( std::string sPath, bool bHeaderOnly, std::string &error, std::string format, bool &bKeepTrying )
-{
-	RageSurface *ret = nullptr;
-	RageSurfaceUtils::OpenResult result;
-	if( !CompareNoCase(format, "png") )
-		result = RageSurface_Load_PNG( sPath, ret, bHeaderOnly, error );
-	else if( !CompareNoCase(format, "gif") )
-		result = RageSurface_Load_GIF( sPath, ret, bHeaderOnly, error );
-	else if( !CompareNoCase(format, "jpg") || !CompareNoCase(format, "jpeg") )
-		result = RageSurface_Load_JPEG( sPath, ret, bHeaderOnly, error );
-	else if( !CompareNoCase(format, "bmp") )
-		result = RageSurface_Load_BMP( sPath, ret, bHeaderOnly, error );
-	else
-	{
-		error = "Unsupported format";
-		bKeepTrying = true;
-		return nullptr;
-	}
+static RageSurface* TryOpenFile(
+    std::string sPath, bool bHeaderOnly, std::string& error, std::string format,
+    bool& bKeepTrying) {
+  RageSurface* ret = nullptr;
+  RageSurfaceUtils::OpenResult result;
+  if (!CompareNoCase(format, "png")) {
+    result = RageSurface_Load_PNG(sPath, ret, bHeaderOnly, error);
+  } else if (!CompareNoCase(format, "gif")) {
+    result = RageSurface_Load_GIF(sPath, ret, bHeaderOnly, error);
+  } else if (!CompareNoCase(format, "jpg") || !CompareNoCase(format, "jpeg")) {
+    result = RageSurface_Load_JPEG(sPath, ret, bHeaderOnly, error);
+  } else if (!CompareNoCase(format, "bmp")) {
+    result = RageSurface_Load_BMP(sPath, ret, bHeaderOnly, error);
+  } else {
+    error = "Unsupported format";
+    bKeepTrying = true;
+    return nullptr;
+  }
 
-	if( result == RageSurfaceUtils::OPEN_OK )
-	{
-		ASSERT( ret != nullptr );
-		return ret;
-	}
+  if (result == RageSurfaceUtils::OPEN_OK) {
+    ASSERT(ret != nullptr);
+    return ret;
+  }
 
-	LOG->Trace( "Format %s failed: %s", format.c_str(), error.c_str() );
+  LOG->Trace("Format %s failed: %s", format.c_str(), error.c_str());
 
-	/*
-	 * The file failed to open, or failed to read.  This indicates a problem that will
-	 * affect all readers, so don't waste time trying more readers. (OPEN_IO_ERROR)
-	 *
-	 * Errors fall in two categories:
-	 * OPEN_UNKNOWN_FILE_FORMAT: Data was successfully read from the file, but it's the
-	 * wrong file format.  The error message always looks like "unknown file format" or
-	 * "Not Vorbis data"; ignore it so we always give a consistent error message, and
-	 * continue trying other file formats.
-	 *
-	 * OPEN_FATAL_ERROR: Either the file was opened successfully and appears to be the
-	 * correct format, but a fatal format-specific error was encountered that will probably
-	 * not be fixed by using a different reader (for example, an Ogg file that doesn't
-	 * actually contain any audio streams); or the file failed to open or read ("I/O
-	 * error", "permission denied"), in which case all other readers will probably fail,
-	 * too.  The returned error is used, and no other formats will be tried.
-	 */
-	bKeepTrying = (result != RageSurfaceUtils::OPEN_FATAL_ERROR);
-	switch( result )
-	{
-		case RageSurfaceUtils::OPEN_UNKNOWN_FILE_FORMAT:
-			bKeepTrying = true;
-			error = "Unknown file format";
-			break;
+  /*
+   * The file failed to open, or failed to read.  This indicates a problem that
+   * will affect all readers, so don't waste time trying more readers.
+   * (OPEN_IO_ERROR)
+   *
+   * Errors fall in two categories:
+   * OPEN_UNKNOWN_FILE_FORMAT: Data was successfully read from the file, but
+   * it's the wrong file format.  The error message always looks like "unknown
+   * file format" or "Not Vorbis data"; ignore it so we always give a consistent
+   * error message, and continue trying other file formats.
+   *
+   * OPEN_FATAL_ERROR: Either the file was opened successfully and appears to be
+   * the correct format, but a fatal format-specific error was encountered that
+   * will probably not be fixed by using a different reader (for example, an Ogg
+   * file that doesn't actually contain any audio streams); or the file failed
+   * to open or read ("I/O error", "permission denied"), in which case all other
+   * readers will probably fail, too.  The returned error is used, and no other
+   * formats will be tried.
+   */
+  bKeepTrying = (result != RageSurfaceUtils::OPEN_FATAL_ERROR);
+  switch (result) {
+    case RageSurfaceUtils::OPEN_UNKNOWN_FILE_FORMAT:
+      bKeepTrying = true;
+      error = "Unknown file format";
+      break;
 
-		case RageSurfaceUtils::OPEN_FATAL_ERROR:
-			/* The file matched, but failed to load.  We know it's this type of data;
-			 * don't bother trying the other file types. */
-			bKeepTrying = false;
-			break;
-		default: break;
-	}
+    case RageSurfaceUtils::OPEN_FATAL_ERROR:
+      /* The file matched, but failed to load.  We know it's this type of data;
+       * don't bother trying the other file types. */
+      bKeepTrying = false;
+      break;
+    default:
+      break;
+  }
 
-	return nullptr;
+  return nullptr;
 }
 
-RageSurface *RageSurfaceUtils::LoadFile( const std::string &sPath, std::string &error, bool bHeaderOnly )
-{
-	{
-		RageFile TestOpen;
-		if( !TestOpen.Open( sPath ) )
-		{
-			error = TestOpen.GetError();
-			return nullptr;
-		}
-	}
+RageSurface* RageSurfaceUtils::LoadFile(
+    const std::string& sPath, std::string& error, bool bHeaderOnly) {
+  {
+    RageFile TestOpen;
+    if (!TestOpen.Open(sPath)) {
+      error = TestOpen.GetError();
+      return nullptr;
+    }
+  }
 
-	std::set<std::string> FileTypes;
-	std::vector<std::string> const& exts= ActorUtil::GetTypeExtensionList(FT_Bitmap);
-	for(std::vector<std::string>::const_iterator curr= exts.begin();
-			curr != exts.end(); ++curr)
-	{
-		FileTypes.insert(*curr);
-	}
+  std::set<std::string> FileTypes;
+  const std::vector<std::string>& exts =
+      ActorUtil::GetTypeExtensionList(FT_Bitmap);
+  for (std::vector<std::string>::const_iterator curr = exts.begin();
+       curr != exts.end(); ++curr) {
+    FileTypes.insert(*curr);
+  }
 
-	std::string format = GetExtension(sPath);
-	MakeLower(format);
+  std::string format = GetExtension(sPath);
+  MakeLower(format);
 
-	bool bKeepTrying = true;
+  bool bKeepTrying = true;
 
-	/* If the extension matches a format, try that first. */
-	if( FileTypes.find(format) != FileTypes.end() )
-	{
-	    RageSurface *ret = TryOpenFile( sPath, bHeaderOnly, error, format, bKeepTrying );
-		if( ret )
-			return ret;
-		FileTypes.erase( format );
-	}
+  /* If the extension matches a format, try that first. */
+  if (FileTypes.find(format) != FileTypes.end()) {
+    RageSurface* ret =
+        TryOpenFile(sPath, bHeaderOnly, error, format, bKeepTrying);
+    if (ret) {
+      return ret;
+    }
+    FileTypes.erase(format);
+  }
 
-	for( std::set<std::string>::iterator it = FileTypes.begin(); bKeepTrying && it != FileTypes.end(); ++it )
-	{
-		RageSurface *ret = TryOpenFile( sPath, bHeaderOnly, error, *it, bKeepTrying );
-		if( ret )
-		{
-			LOG->UserLog( "Graphic file", sPath, "is really %s", it->c_str() );
-			return ret;
-		}
-	}
+  for (std::set<std::string>::iterator it = FileTypes.begin();
+       bKeepTrying && it != FileTypes.end(); ++it) {
+    RageSurface* ret = TryOpenFile(sPath, bHeaderOnly, error, *it, bKeepTrying);
+    if (ret) {
+      LOG->UserLog("Graphic file", sPath, "is really %s", it->c_str());
+      return ret;
+    }
+  }
 
-	return nullptr;
+  return nullptr;
 }
 
 /*

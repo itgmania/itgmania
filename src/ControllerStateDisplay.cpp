@@ -15,113 +15,105 @@
 #include "ThemeManager.h"
 #include "global.h"
 
-static const char *ControllerStateButtonNames[] = {
-	"UpLeft",
-	"UpRight",
-	"Center",
-	"DownLeft",
-	"DownRight",
+static const char* ControllerStateButtonNames[] = {
+    "UpLeft", "UpRight", "Center", "DownLeft", "DownRight",
 };
-XToString( ControllerStateButton );
+XToString(ControllerStateButton);
 
 // TODO: Generalize for all game types
 static const GameButton ControllerStateButtonToGameButton[] = {
-	PUMP_BUTTON_UPLEFT,
-	PUMP_BUTTON_UPRIGHT,
-	PUMP_BUTTON_CENTER,
-	PUMP_BUTTON_DOWNLEFT,
-	PUMP_BUTTON_DOWNRIGHT,
+    PUMP_BUTTON_UPLEFT,   PUMP_BUTTON_UPRIGHT,   PUMP_BUTTON_CENTER,
+    PUMP_BUTTON_DOWNLEFT, PUMP_BUTTON_DOWNRIGHT,
 };
 
-REGISTER_ACTOR_CLASS( ControllerStateDisplay );
+REGISTER_ACTOR_CLASS(ControllerStateDisplay);
 
-ControllerStateDisplay::ControllerStateDisplay()
-{
-	m_bIsLoaded = false;
-	m_mp = MultiPlayer_Invalid;
-	m_idsLast = InputDeviceState_Invalid;
+ControllerStateDisplay::ControllerStateDisplay() {
+  m_bIsLoaded = false;
+  m_mp = MultiPlayer_Invalid;
+  m_idsLast = InputDeviceState_Invalid;
 }
 
-void ControllerStateDisplay::LoadMultiPlayer( std::string sType, MultiPlayer mp )
-{
-	LoadInternal( sType, mp, GameController_1 );
+void ControllerStateDisplay::LoadMultiPlayer(
+    std::string sType, MultiPlayer mp) {
+  LoadInternal(sType, mp, GameController_1);
 }
 
-void ControllerStateDisplay::LoadGameController( std::string sType, GameController gc )
-{
-	LoadInternal( sType, MultiPlayer_Invalid, gc );
+void ControllerStateDisplay::LoadGameController(
+    std::string sType, GameController gc) {
+  LoadInternal(sType, MultiPlayer_Invalid, gc);
 }
 
-void ControllerStateDisplay::LoadInternal( std::string sType, MultiPlayer mp, GameController gc )
-{
-	ASSERT( !m_bIsLoaded );
-	m_bIsLoaded = true;
-	m_mp = mp;
+void ControllerStateDisplay::LoadInternal(
+    std::string sType, MultiPlayer mp, GameController gc) {
+  ASSERT(!m_bIsLoaded);
+  m_bIsLoaded = true;
+  m_mp = mp;
 
-	LuaThreadVariable varElement( "MultiPlayer", LuaReference::Create(m_mp) );
-	m_sprFrame.Load( THEME->GetPathG(sType, "frame") );
-	this->AddChild( m_sprFrame );
+  LuaThreadVariable varElement("MultiPlayer", LuaReference::Create(m_mp));
+  m_sprFrame.Load(THEME->GetPathG(sType, "frame"));
+  this->AddChild(m_sprFrame);
 
-	FOREACH_ENUM( ControllerStateButton, b )
-	{
-		Button &button = m_Buttons[ b ];
+  FOREACH_ENUM(ControllerStateButton, b) {
+    Button& button = m_Buttons[b];
 
-		std::string sPath = THEME->GetPathG( sType, ControllerStateButtonToString(b) );
-		button.spr.Load( sPath );
-		this->AddChild( m_Buttons[b].spr );
-		
-		button.gi = GameInput( gc, ControllerStateButtonToGameButton[b] );
-	}
+    std::string sPath =
+        THEME->GetPathG(sType, ControllerStateButtonToString(b));
+    button.spr.Load(sPath);
+    this->AddChild(m_Buttons[b].spr);
+
+    button.gi = GameInput(gc, ControllerStateButtonToGameButton[b]);
+  }
 }
 
-void ControllerStateDisplay::Update( float fDelta )
-{
-	ActorFrame::Update( fDelta );
+void ControllerStateDisplay::Update(float fDelta) {
+  ActorFrame::Update(fDelta);
 
-	if( m_mp != MultiPlayer_Invalid )
-	{
-		InputDevice id = InputMapper::MultiPlayerToInputDevice( m_mp );
-		InputDeviceState ids = INPUTMAN->GetInputDeviceState(id);
-		if( ids != m_idsLast )
-		{
-			PlayCommand( InputDeviceStateToString(ids) );
-		}
-		m_idsLast = ids;
-	}
+  if (m_mp != MultiPlayer_Invalid) {
+    InputDevice id = InputMapper::MultiPlayerToInputDevice(m_mp);
+    InputDeviceState ids = INPUTMAN->GetInputDeviceState(id);
+    if (ids != m_idsLast) {
+      PlayCommand(InputDeviceStateToString(ids));
+    }
+    m_idsLast = ids;
+  }
 
-	FOREACH_ENUM( ControllerStateButton, b )
-	{
-		Button &button = m_Buttons[ b ];
-		if( !button.spr.IsLoaded() )
-			continue;
+  FOREACH_ENUM(ControllerStateButton, b) {
+    Button& button = m_Buttons[b];
+    if (!button.spr.IsLoaded()) {
+      continue;
+    }
 
-		bool bVisible = INPUTMAPPER->IsBeingPressed( button.gi, m_mp );
+    bool bVisible = INPUTMAPPER->IsBeingPressed(button.gi, m_mp);
 
-		button.spr->SetVisible( bVisible );
-	}
+    button.spr->SetVisible(bVisible);
+  }
 }
 
+/** @brief Allow Lua to have access to the ControllerStateDisplay. */
+class LunaControllerStateDisplay : public Luna<ControllerStateDisplay> {
+ public:
+  static int LoadGameController(T* p, lua_State* L) {
+    p->LoadGameController(SArg(1), Enum::Check<GameController>(L, 2));
+    COMMON_RETURN_SELF;
+  }
+  static int LoadMultiPlayer(T* p, lua_State* L) {
+    p->LoadMultiPlayer(SArg(1), Enum::Check<MultiPlayer>(L, 2));
+    COMMON_RETURN_SELF;
+  }
 
-/** @brief Allow Lua to have access to the ControllerStateDisplay. */ 
-class LunaControllerStateDisplay: public Luna<ControllerStateDisplay>
-{
-public:
-	static int LoadGameController( T* p, lua_State *L )	{ p->LoadGameController( SArg(1), Enum::Check<GameController>(L, 2) ); COMMON_RETURN_SELF; }
-	static int LoadMultiPlayer( T* p, lua_State *L )	{ p->LoadMultiPlayer( SArg(1), Enum::Check<MultiPlayer>(L, 2) ); COMMON_RETURN_SELF; }
-
-	LunaControllerStateDisplay() 
-	{
-		ADD_METHOD( LoadGameController );
-		ADD_METHOD( LoadMultiPlayer );
-	}
+  LunaControllerStateDisplay() {
+    ADD_METHOD(LoadGameController);
+    ADD_METHOD(LoadMultiPlayer);
+  }
 };
 
-LUA_REGISTER_DERIVED_CLASS( ControllerStateDisplay, ActorFrame )
+LUA_REGISTER_DERIVED_CLASS(ControllerStateDisplay, ActorFrame)
 
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -131,7 +123,7 @@ LUA_REGISTER_DERIVED_CLASS( ControllerStateDisplay, ActorFrame )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

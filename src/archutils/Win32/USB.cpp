@@ -1,8 +1,9 @@
-#include "global.h"
 #include "USB.h"
+
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "archutils/Win32/ErrorStrings.h"
+#include "global.h"
 
 #pragma comment(lib, "setupapi.lib")
 #pragma comment(lib, "hid.lib")
@@ -16,210 +17,209 @@ extern "C" {
 #include <string>
 #include <vector>
 
-static std::string GetUSBDevicePath( int iNum )
-{
-	GUID guid;
-	HidD_GetHidGuid( &guid );
+static std::string GetUSBDevicePath(int iNum) {
+  GUID guid;
+  HidD_GetHidGuid(&guid);
 
-	HDEVINFO DeviceInfo = SetupDiGetClassDevs( &guid, nullptr, nullptr, (DIGCF_PRESENT | DIGCF_DEVICEINTERFACE) );
+  HDEVINFO DeviceInfo = SetupDiGetClassDevs(
+      &guid, nullptr, nullptr, (DIGCF_PRESENT | DIGCF_DEVICEINTERFACE));
 
-	SP_DEVICE_INTERFACE_DATA DeviceInterface;
-	DeviceInterface.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
+  SP_DEVICE_INTERFACE_DATA DeviceInterface;
+  DeviceInterface.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 
-	if( !SetupDiEnumDeviceInterfaces (DeviceInfo,
-		nullptr, &guid, iNum, &DeviceInterface) )
-	{
-		SetupDiDestroyDeviceInfoList( DeviceInfo );
-		return std::string();
-	}
+  if (!SetupDiEnumDeviceInterfaces(
+          DeviceInfo, nullptr, &guid, iNum, &DeviceInterface)) {
+    SetupDiDestroyDeviceInfoList(DeviceInfo);
+    return std::string();
+  }
 
-	unsigned long iSize;
-	SetupDiGetDeviceInterfaceDetail( DeviceInfo, &DeviceInterface, nullptr, 0, &iSize, 0 );
+  unsigned long iSize;
+  SetupDiGetDeviceInterfaceDetail(
+      DeviceInfo, &DeviceInterface, nullptr, 0, &iSize, 0);
 
-	PSP_INTERFACE_DEVICE_DETAIL_DATA DeviceDetail = (PSP_INTERFACE_DEVICE_DETAIL_DATA) malloc( iSize );
-	DeviceDetail->cbSize = sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA);
+  PSP_INTERFACE_DEVICE_DETAIL_DATA DeviceDetail =
+      (PSP_INTERFACE_DEVICE_DETAIL_DATA)malloc(iSize);
+  DeviceDetail->cbSize = sizeof(SP_INTERFACE_DEVICE_DETAIL_DATA);
 
-	std::string sRet;
-	if( SetupDiGetDeviceInterfaceDetail(DeviceInfo, &DeviceInterface,
-		DeviceDetail, iSize, &iSize, nullptr) )
-		sRet = DeviceDetail->DevicePath;
-	free( DeviceDetail );
+  std::string sRet;
+  if (SetupDiGetDeviceInterfaceDetail(
+          DeviceInfo, &DeviceInterface, DeviceDetail, iSize, &iSize, nullptr)) {
+    sRet = DeviceDetail->DevicePath;
+  }
+  free(DeviceDetail);
 
-	SetupDiDestroyDeviceInfoList( DeviceInfo );
-	return sRet;
+  SetupDiDestroyDeviceInfoList(DeviceInfo);
+  return sRet;
 }
 
-bool USBDevice::Open( int iVID, int iPID, int iBlockSize, int iNum, void (*pfnInit)(HANDLE) )
-{
-	DWORD iIndex = 0;
+bool USBDevice::Open(
+    int iVID, int iPID, int iBlockSize, int iNum, void (*pfnInit)(HANDLE)) {
+  DWORD iIndex = 0;
 
-	std::string path;
-	while( (path = GetUSBDevicePath(iIndex++)) != "" )
-	{
-		HANDLE h = CreateFile( path.c_str(), GENERIC_READ,
-			FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr );
+  std::string path;
+  while ((path = GetUSBDevicePath(iIndex++)) != "") {
+    HANDLE h = CreateFile(
+        path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+        OPEN_EXISTING, 0, nullptr);
 
-		if( h == INVALID_HANDLE_VALUE )
-			continue;
+    if (h == INVALID_HANDLE_VALUE) {
+      continue;
+    }
 
-		HIDD_ATTRIBUTES attr;
-		if( !HidD_GetAttributes(h, &attr) )
-		{
-			CloseHandle( h );
-			continue;
-		}
+    HIDD_ATTRIBUTES attr;
+    if (!HidD_GetAttributes(h, &attr)) {
+      CloseHandle(h);
+      continue;
+    }
 
-		if( (iVID != -1 && attr.VendorID != iVID) ||
-			(iPID != -1 && attr.ProductID != iPID) )
-		{
-			CloseHandle( h );
-			continue; /* This isn't it. */
-		}
+    if ((iVID != -1 && attr.VendorID != iVID) ||
+        (iPID != -1 && attr.ProductID != iPID)) {
+      CloseHandle(h);
+      continue; /* This isn't it. */
+    }
 
-		/* The VID and PID match. */
-		if( iNum-- > 0 )
-		{
-			CloseHandle( h );
-			continue;
-		}
+    /* The VID and PID match. */
+    if (iNum-- > 0) {
+      CloseHandle(h);
+      continue;
+    }
 
-		if( pfnInit )
-			pfnInit( h );
-		CloseHandle(h);
+    if (pfnInit) {
+      pfnInit(h);
+    }
+    CloseHandle(h);
 
-		m_IO.Open( path, iBlockSize );
-		return true;
-	}
+    m_IO.Open(path, iBlockSize);
+    return true;
+  }
 
-	return false;
+  return false;
 }
 
-bool USBDevice::IsOpen() const
-{
-	return m_IO.IsOpen();
+bool USBDevice::IsOpen() const { return m_IO.IsOpen(); }
+
+int USBDevice::GetPadEvent() {
+  if (!IsOpen()) {
+    return -1;
+  }
+
+  long iBuf;
+  if (m_IO.read(&iBuf) <= 0) {
+    return -1;
+  }
+
+  return iBuf;
 }
 
-
-int USBDevice::GetPadEvent()
-{
-	if( !IsOpen() )
-		return -1;
-
-	long iBuf;
-	if( m_IO.read(&iBuf) <= 0 )
-		return -1;
-
-	return iBuf;
+WindowsFileIO::WindowsFileIO() {
+  ZeroMemory(&m_Overlapped, sizeof(m_Overlapped));
+  m_Handle = INVALID_HANDLE_VALUE;
+  m_pBuffer = nullptr;
 }
 
-WindowsFileIO::WindowsFileIO()
-{
-	ZeroMemory( &m_Overlapped, sizeof(m_Overlapped) );
-	m_Handle = INVALID_HANDLE_VALUE;
-	m_pBuffer = nullptr;
+WindowsFileIO::~WindowsFileIO() {
+  if (m_Handle != INVALID_HANDLE_VALUE) {
+    CloseHandle(m_Handle);
+  }
+  delete[] m_pBuffer;
 }
 
-WindowsFileIO::~WindowsFileIO()
-{
-	if( m_Handle != INVALID_HANDLE_VALUE )
-		CloseHandle( m_Handle );
-	delete[] m_pBuffer;
+bool WindowsFileIO::Open(std::string path, int iBlockSize) {
+  LOG->Trace("WindowsFileIO::open(%s)", path.c_str());
+  m_iBlockSize = iBlockSize;
+
+  if (m_pBuffer) {
+    delete[] m_pBuffer;
+  }
+  m_pBuffer = new char[m_iBlockSize];
+
+  if (m_Handle != INVALID_HANDLE_VALUE) {
+    CloseHandle(m_Handle);
+  }
+
+  m_Handle = CreateFile(
+      path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+      OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
+
+  if (m_Handle == INVALID_HANDLE_VALUE) {
+    return false;
+  }
+
+  queue_read();
+
+  return true;
 }
 
-bool WindowsFileIO::Open( std::string path, int iBlockSize )
-{
-	LOG->Trace( "WindowsFileIO::open(%s)", path.c_str() );
-	m_iBlockSize = iBlockSize;
-
-	if( m_pBuffer )
-		delete[] m_pBuffer;
-	m_pBuffer = new char[m_iBlockSize];
-
-	if( m_Handle != INVALID_HANDLE_VALUE )
-		CloseHandle( m_Handle );
-
-	m_Handle = CreateFile( path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
-		nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr );
-
-	if( m_Handle == INVALID_HANDLE_VALUE )
-		return false;
-
-	queue_read();
-
-	return true;
+void WindowsFileIO::queue_read() {
+  /* Request feedback from the device. */
+  unsigned long iRead;
+  ReadFile(m_Handle, m_pBuffer, m_iBlockSize, &iRead, &m_Overlapped);
 }
 
-void WindowsFileIO::queue_read()
-{
-	/* Request feedback from the device. */
-	unsigned long iRead;
-	ReadFile( m_Handle, m_pBuffer, m_iBlockSize, &iRead, &m_Overlapped );
+int WindowsFileIO::finish_read(void* p) {
+  LOG->Trace("this %p, %p", this, p);
+  /* We do; get the result.  It'll go into the original m_pBuffer
+   * we supplied on the original call; that's why m_pBuffer is a
+   * member instead of a local. */
+  unsigned long iCnt;
+  int iRet = GetOverlappedResult(m_Handle, &m_Overlapped, &iCnt, FALSE);
+
+  if (iRet == 0 && (GetLastError() == ERROR_IO_PENDING ||
+                    GetLastError() == ERROR_IO_INCOMPLETE)) {
+    return -1;
+  }
+
+  queue_read();
+
+  if (iRet == 0) {
+    LOG->Warn(
+        werr_ssprintf(GetLastError(), "Error reading USB device").c_str());
+    return -1;
+  }
+
+  memcpy(p, m_pBuffer, iCnt);
+  return iCnt;
 }
 
-int WindowsFileIO::finish_read( void *p )
-{
-	LOG->Trace( "this %p, %p", this, p );
-	/* We do; get the result.  It'll go into the original m_pBuffer
-	 * we supplied on the original call; that's why m_pBuffer is a
-	 * member instead of a local. */
-	unsigned long iCnt;
-	int iRet = GetOverlappedResult( m_Handle, &m_Overlapped, &iCnt, FALSE );
+int WindowsFileIO::read(void* p) {
+  LOG->Trace("WindowsFileIO::read()");
 
-	if( iRet == 0 && (GetLastError() == ERROR_IO_PENDING || GetLastError() == ERROR_IO_INCOMPLETE) )
-		return -1;
+  /* See if we have a response for our request (which we may
+   * have made on a previous call): */
+  if (WaitForSingleObjectEx(m_Handle, 0, TRUE) == WAIT_TIMEOUT) {
+    return -1;
+  }
 
-	queue_read();
-
-	if( iRet == 0 )
-	{
-		LOG->Warn( werr_ssprintf(GetLastError(), "Error reading USB device").c_str() );
-		return -1;
-	}
-
-	memcpy( p, m_pBuffer, iCnt );
-	return iCnt;
+  return finish_read(p);
 }
 
-int WindowsFileIO::read( void *p )
-{
-	LOG->Trace( "WindowsFileIO::read()" );
+int WindowsFileIO::read_several(
+    const std::vector<WindowsFileIO*>& sources, void* p, int& actual,
+    float timeout) {
+  HANDLE* Handles = new HANDLE[sources.size()];
+  for (unsigned i = 0; i < sources.size(); ++i) {
+    Handles[i] = sources[i]->m_Handle;
+  }
 
-	/* See if we have a response for our request (which we may
-	 * have made on a previous call): */
-	if( WaitForSingleObjectEx(m_Handle, 0, TRUE) == WAIT_TIMEOUT )
-		return -1;
+  int ret = WaitForMultipleObjectsEx(
+      sources.size(), Handles, false, int(timeout * 1000), true);
+  delete[] Handles;
 
-	return finish_read(p);
+  if (ret == -1) {
+    LOG->Trace(werr_ssprintf(GetLastError(), "WaitForMultipleObjectsEx failed")
+                   .c_str());
+    return -1;
+  }
+
+  if (ret >= int(WAIT_OBJECT_0) && ret < int(WAIT_OBJECT_0 + sources.size())) {
+    actual = ret - WAIT_OBJECT_0;
+    return sources[actual]->finish_read(p);
+  }
+
+  return 0;
 }
 
-int WindowsFileIO::read_several(const std::vector<WindowsFileIO *> &sources, void *p, int &actual, float timeout)
-{
-	HANDLE *Handles = new HANDLE[sources.size()];
-	for( unsigned i = 0; i < sources.size(); ++i )
-		Handles[i] = sources[i]->m_Handle;
-
-	int ret = WaitForMultipleObjectsEx( sources.size(), Handles, false, int(timeout * 1000), true);
-	delete[] Handles;
-
-	if( ret == -1 )
-	{
-		LOG->Trace( werr_ssprintf(GetLastError(), "WaitForMultipleObjectsEx failed").c_str() );
-		return -1;
-	}
-
-	if( ret >= int(WAIT_OBJECT_0) && ret < int(WAIT_OBJECT_0+sources.size()) )
-	{
-		actual = ret - WAIT_OBJECT_0;
-		return sources[actual]->finish_read(p);
-	}
-
-	return 0;
-}
-
-bool WindowsFileIO::IsOpen() const
-{
-	return m_Handle != INVALID_HANDLE_VALUE;
-}
+bool WindowsFileIO::IsOpen() const { return m_Handle != INVALID_HANDLE_VALUE; }
 
 /*
  * (c) 2002-2005 Glenn Maynard

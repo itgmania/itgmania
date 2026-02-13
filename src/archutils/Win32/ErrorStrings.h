@@ -3,11 +3,11 @@
 
 #include <string>
 
-std::string werr_ssprintf( int err, const char *fmt, ... );
-std::string ConvertWstringToCodepage( std::wstring s, int iCodePage );
-std::string ConvertUTF8ToACP( const std::string &s );
-std::wstring ConvertCodepageToWString( std::string s, int iCodePage );
-std::string ConvertACPToUTF8( const std::string &s );
+std::string werr_ssprintf(int err, const char* fmt, ...);
+std::string ConvertWstringToCodepage(std::wstring s, int iCodePage);
+std::string ConvertUTF8ToACP(const std::string& s);
+std::wstring ConvertCodepageToWString(std::string s, int iCodePage);
+std::string ConvertACPToUTF8(const std::string& s);
 
 #endif
 

@@ -8,92 +8,81 @@
 #include "RageUtil/RandomNumbers.h"
 #include "arch/InputHandler/InputHandler.h"
 
-InputHandler_MonkeyKeyboard::InputHandler_MonkeyKeyboard()
-{
-	m_dbLast = DeviceButton_Invalid;
+InputHandler_MonkeyKeyboard::InputHandler_MonkeyKeyboard() {
+  m_dbLast = DeviceButton_Invalid;
 }
 
-InputHandler_MonkeyKeyboard::~InputHandler_MonkeyKeyboard()
-{
+InputHandler_MonkeyKeyboard::~InputHandler_MonkeyKeyboard() {}
+
+void InputHandler_MonkeyKeyboard::GetDevicesAndDescriptions(
+    std::vector<InputDeviceInfo>& vDevicesOut) {
+  vDevicesOut.push_back(InputDeviceInfo(DEVICE_KEYBOARD, "MonkeyKeyboard"));
 }
 
-void InputHandler_MonkeyKeyboard::GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut )
-{
-	vDevicesOut.push_back( InputDeviceInfo(DEVICE_KEYBOARD, "MonkeyKeyboard") );
-}
-
-static const DeviceButton g_keys[] =
-{
-	// Some of the default keys for the dance game type
-	KEY_LEFT,		// DANCE_BUTTON_LEFT,
-	KEY_RIGHT,		// DANCE_BUTTON_RIGHT,
-	KEY_UP,			// DANCE_BUTTON_UP,
-	KEY_DOWN,		// DANCE_BUTTON_DOWN,
-	KEY_ENTER,		// DANCE_BUTTON_START,
-	KEY_ENTER,		// DANCE_BUTTON_START,
-	KEY_ENTER,		// DANCE_BUTTON_START,
-	KEY_DEL,		// DANCE_BUTTON_MENULEFT
-	KEY_PGDN,		// DANCE_BUTTON_MENURIGHT
-	KEY_HOME,		// DANCE_BUTTON_MENUUP
-	KEY_END,		// DANCE_BUTTON_MENUDOWN
-	KEY_F1,			// DANCE_BUTTON_COIN
-	KEY_F1,			// DANCE_BUTTON_COIN
-	KEY_KP_C4,		// DANCE_BUTTON_LEFT,
-	KEY_KP_C6,		// DANCE_BUTTON_RIGHT,
-	KEY_KP_C8,		// DANCE_BUTTON_UP,
-	KEY_KP_C2,		// DANCE_BUTTON_DOWN,
-	KEY_KP_C7,		// DANCE_BUTTON_UPLEFT,
-	KEY_KP_C9,		// DANCE_BUTTON_UPRIGHT,
-	KEY_KP_ENTER,		// DANCE_BUTTON_START,
-	KEY_KP_ENTER,		// DANCE_BUTTON_START,
-	KEY_KP_ENTER,		// DANCE_BUTTON_START,
-	KEY_KP_SLASH,		// DANCE_BUTTON_MENULEFT
-	KEY_KP_ASTERISK,	// DANCE_BUTTON_MENURIGHT
-	KEY_KP_HYPHEN,		// DANCE_BUTTON_MENUUP
-	KEY_KP_PLUS,		// DANCE_BUTTON_MENUDOWN
+static const DeviceButton g_keys[] = {
+    // Some of the default keys for the dance game type
+    KEY_LEFT,         // DANCE_BUTTON_LEFT,
+    KEY_RIGHT,        // DANCE_BUTTON_RIGHT,
+    KEY_UP,           // DANCE_BUTTON_UP,
+    KEY_DOWN,         // DANCE_BUTTON_DOWN,
+    KEY_ENTER,        // DANCE_BUTTON_START,
+    KEY_ENTER,        // DANCE_BUTTON_START,
+    KEY_ENTER,        // DANCE_BUTTON_START,
+    KEY_DEL,          // DANCE_BUTTON_MENULEFT
+    KEY_PGDN,         // DANCE_BUTTON_MENURIGHT
+    KEY_HOME,         // DANCE_BUTTON_MENUUP
+    KEY_END,          // DANCE_BUTTON_MENUDOWN
+    KEY_F1,           // DANCE_BUTTON_COIN
+    KEY_F1,           // DANCE_BUTTON_COIN
+    KEY_KP_C4,        // DANCE_BUTTON_LEFT,
+    KEY_KP_C6,        // DANCE_BUTTON_RIGHT,
+    KEY_KP_C8,        // DANCE_BUTTON_UP,
+    KEY_KP_C2,        // DANCE_BUTTON_DOWN,
+    KEY_KP_C7,        // DANCE_BUTTON_UPLEFT,
+    KEY_KP_C9,        // DANCE_BUTTON_UPRIGHT,
+    KEY_KP_ENTER,     // DANCE_BUTTON_START,
+    KEY_KP_ENTER,     // DANCE_BUTTON_START,
+    KEY_KP_ENTER,     // DANCE_BUTTON_START,
+    KEY_KP_SLASH,     // DANCE_BUTTON_MENULEFT
+    KEY_KP_ASTERISK,  // DANCE_BUTTON_MENURIGHT
+    KEY_KP_HYPHEN,    // DANCE_BUTTON_MENUUP
+    KEY_KP_PLUS,      // DANCE_BUTTON_MENUDOWN
 };
 
-static DeviceButton GetRandomKeyboardKey()
-{
-	int index = RandomInt( ARRAYLEN(g_keys) );
-	return g_keys[index];
+static DeviceButton GetRandomKeyboardKey() {
+  int index = RandomInt(ARRAYLEN(g_keys));
+  return g_keys[index];
 }
 
+void InputHandler_MonkeyKeyboard::Update() {
+  if (!PREFSMAN->m_bMonkeyInput) {
+    if (m_dbLast != DeviceButton_Invalid) {
+      // End the previous key
+      DeviceInput di = DeviceInput(DEVICE_KEYBOARD, m_dbLast, 0);
+      ButtonPressed(di);
+      m_dbLast = DeviceButton_Invalid;
+    }
+    InputHandler::UpdateTimer();
+    return;
+  }
 
-void InputHandler_MonkeyKeyboard::Update()
-{
-	if( !PREFSMAN->m_bMonkeyInput )
-	{
-		if( m_dbLast != DeviceButton_Invalid )
-		{
-			// End the previous key
-			DeviceInput di = DeviceInput( DEVICE_KEYBOARD, m_dbLast, 0 );
-			ButtonPressed( di );
-			m_dbLast = DeviceButton_Invalid;
-		}
-		InputHandler::UpdateTimer();
-		return;
-	}
+  float fSecsAgo = m_timerPressButton.Ago();
 
-	float fSecsAgo = m_timerPressButton.Ago();
+  if (fSecsAgo > 0.5) {
+    if (m_dbLast != DeviceButton_Invalid) {
+      // End the previous key
+      DeviceInput di = DeviceInput(DEVICE_KEYBOARD, m_dbLast, 0);
+      ButtonPressed(di);
+    }
 
-	if( fSecsAgo > 0.5 )
-	{
-		if( m_dbLast != DeviceButton_Invalid )
-		{
-			// End the previous key
-			DeviceInput di = DeviceInput( DEVICE_KEYBOARD, m_dbLast, 0 );
-			ButtonPressed( di );
-		}
+    // Choose a new key and send it.
+    m_dbLast = GetRandomKeyboardKey();
+    DeviceInput di = DeviceInput(DEVICE_KEYBOARD, m_dbLast, 1);
+    ButtonPressed(di);
+    m_timerPressButton.Touch();
+  }
 
-		// Choose a new key and send it.
-		m_dbLast = GetRandomKeyboardKey();
-		DeviceInput di = DeviceInput( DEVICE_KEYBOARD, m_dbLast, 1 );
-		ButtonPressed( di );
-		m_timerPressButton.Touch();
-	}
-
-	InputHandler::UpdateTimer();
+  InputHandler::UpdateTimer();
 }
 
 /*
@@ -120,4 +109,3 @@ void InputHandler_MonkeyKeyboard::Update()
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

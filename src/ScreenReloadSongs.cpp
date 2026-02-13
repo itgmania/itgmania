@@ -14,90 +14,79 @@
 #include "global.h"
 
 static const int DrawFrameRate = 20;
-class ScreenReloadSongsLoadingWindow: public LoadingWindow
-{
-	RageTimer m_LastDraw;
-	BitmapText &m_BitmapText;
+class ScreenReloadSongsLoadingWindow : public LoadingWindow {
+  RageTimer m_LastDraw;
+  BitmapText& m_BitmapText;
 
-public:
-	ScreenReloadSongsLoadingWindow( BitmapText &bt ):
-		m_BitmapText(bt)
-	{
-	}
+ public:
+  ScreenReloadSongsLoadingWindow(BitmapText& bt) : m_BitmapText(bt) {}
 
-	void SetText( std::string str )
-	{
-		m_BitmapText.SetText( str );
-		Paint();
-	}
+  void SetText(std::string str) {
+    m_BitmapText.SetText(str);
+    Paint();
+  }
 
-	void Paint()
-	{
-		/* We load songs much faster than we draw frames. Cap the draw rate,
-		 * so we don't slow down the reload. */
-		if( m_LastDraw.Ago() < 1.0f/DrawFrameRate )
-			return;
-		m_LastDraw.GetDeltaTime();
+  void Paint() {
+    /* We load songs much faster than we draw frames. Cap the draw rate,
+     * so we don't slow down the reload. */
+    if (m_LastDraw.Ago() < 1.0f / DrawFrameRate) {
+      return;
+    }
+    m_LastDraw.GetDeltaTime();
 
-		SCREENMAN->Draw();
-	}
+    SCREENMAN->Draw();
+  }
 };
 
 /* This could be cleaned up: show progress, for example.  Let's not use
  * this for the initial load, since we don't want to start up the display
  * until we finish loading songs; that way, people can continue to use their
  * computer while songs load. */
-REGISTER_SCREEN_CLASS( ScreenReloadSongs );
+REGISTER_SCREEN_CLASS(ScreenReloadSongs);
 
 ScreenReloadSongs::ScreenReloadSongs() {}
 
-void ScreenReloadSongs::Init()
-{
-	Screen::Init();
+void ScreenReloadSongs::Init() {
+  Screen::Init();
 
-	m_iUpdates = 0;
+  m_iUpdates = 0;
 
-	m_Loading.SetName( "LoadingText" );
-	m_Loading.LoadFromFont( THEME->GetPathF(m_sName, "LoadingText") );
-	m_Loading.SetXY( SCREEN_CENTER_X, SCREEN_CENTER_Y );
-	this->AddChild( &m_Loading );
+  m_Loading.SetName("LoadingText");
+  m_Loading.LoadFromFont(THEME->GetPathF(m_sName, "LoadingText"));
+  m_Loading.SetXY(SCREEN_CENTER_X, SCREEN_CENTER_Y);
+  this->AddChild(&m_Loading);
 
-	m_pLoadingWindow = new ScreenReloadSongsLoadingWindow( m_Loading );
- }
-
-ScreenReloadSongs::~ScreenReloadSongs()
-{
-	delete m_pLoadingWindow;
+  m_pLoadingWindow = new ScreenReloadSongsLoadingWindow(m_Loading);
 }
 
-void ScreenReloadSongs::Update( float fDeltaTime )
-{
-	Screen::Update( fDeltaTime );
+ScreenReloadSongs::~ScreenReloadSongs() { delete m_pLoadingWindow; }
 
-	/* Start the reload on the second update. On the first (0), SCREENMAN->Draw won't draw. */
-	++m_iUpdates;
-	if( m_iUpdates != 2 )
-		return;
+void ScreenReloadSongs::Update(float fDeltaTime) {
+  Screen::Update(fDeltaTime);
 
-	ASSERT( !IsFirstUpdate() );
+  /* Start the reload on the second update. On the first (0), SCREENMAN->Draw
+   * won't draw. */
+  ++m_iUpdates;
+  if (m_iUpdates != 2) {
+    return;
+  }
 
-	bool onlyLoadAdditions = THEME->GetMetricB(m_sName, "OnlyLoadAdditions");
-	if (onlyLoadAdditions)
-	{
-		SONGMAN->LoadAdditions( m_pLoadingWindow );
-	}
-	else
-	{
-		SONGMAN->Reload( false, m_pLoadingWindow );
-	}
+  ASSERT(!IsFirstUpdate());
 
-	SCREENMAN->PostMessageToTopScreen( SM_GoToNextScreen, 0 );
+  bool onlyLoadAdditions = THEME->GetMetricB(m_sName, "OnlyLoadAdditions");
+  if (onlyLoadAdditions) {
+    SONGMAN->LoadAdditions(m_pLoadingWindow);
+  } else {
+    SONGMAN->Reload(false, m_pLoadingWindow);
+  }
+
+  SCREENMAN->PostMessageToTopScreen(SM_GoToNextScreen, 0);
 }
 
 /*
  * (c) 2003-2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -107,7 +96,7 @@ void ScreenReloadSongs::Update( float fDeltaTime )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

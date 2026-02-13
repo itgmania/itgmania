@@ -24,19 +24,18 @@
 
 std::vector<CommandLineActions::CommandLineArgs> CommandLineActions::ToProcess;
 
-static void LuaInformation()
-{
-	XNode *pNode = LuaHelpers::GetLuaInformation();
-	pNode->AppendAttr("xmlns", "http://www.stepmania.com");
-	pNode->AppendAttr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-	pNode->AppendAttr("xsi:schemaLocation", "http://www.stepmania.com Lua.xsd");
+static void LuaInformation() {
+  XNode* pNode = LuaHelpers::GetLuaInformation();
+  pNode->AppendAttr("xmlns", "http://www.stepmania.com");
+  pNode->AppendAttr("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+  pNode->AppendAttr("xsi:schemaLocation", "http://www.stepmania.com Lua.xsd");
 
-	pNode->AppendChild("Version", std::string(PRODUCT_FAMILY) + product_version);
-	pNode->AppendChild("Date", DateTime::GetNowDate().GetString());
+  pNode->AppendChild("Version", std::string(PRODUCT_FAMILY) + product_version);
+  pNode->AppendChild("Date", DateTime::GetNowDate().GetString());
 
-	XmlFileUtil::SaveToFile(pNode, "Lua.xml", "Lua.xsl");
+  XmlFileUtil::SaveToFile(pNode, "Lua.xml", "Lua.xsl");
 
-	delete pNode;
+  delete pNode;
 }
 
 /**
@@ -45,42 +44,45 @@ static void LuaInformation()
  * HACK: This function is primarily needed for Windows users.
  * macOS and Linux print out version information on the command line
  * regardless of any preferences (tested by shakesoda on Mac). -aj */
-static void Version()
-{
-	#if defined(_WIN32)
-		std::string sProductID = ssprintf("%s", (std::string(PRODUCT_FAMILY) + product_version).c_str() );
-		std::string sVersion = ssprintf("build %s\nCompile Date: %s @ %s", ::sm_version_git_hash, version_date, version_time);
+static void Version() {
+#if defined(_WIN32)
+  std::string sProductID =
+      ssprintf("%s", (std::string(PRODUCT_FAMILY) + product_version).c_str());
+  std::string sVersion = ssprintf(
+      "build %s\nCompile Date: %s @ %s", ::sm_version_git_hash, version_date,
+      version_time);
 
-		AllocConsole();
-		freopen("CONOUT$","wb", stdout);
-		freopen("CONOUT$","wb", stderr);
+  AllocConsole();
+  freopen("CONOUT$", "wb", stdout);
+  freopen("CONOUT$", "wb", stderr);
 
-		fprintf(stdout, "Version Information:\n%s %s\n", sProductID.c_str(), sVersion.c_str());
-		fprintf(stdout, "Press any key to exit.");
-		_getch();
-	#endif // WIN32
+  fprintf(
+      stdout, "Version Information:\n%s %s\n", sProductID.c_str(),
+      sVersion.c_str());
+  fprintf(stdout, "Press any key to exit.");
+  _getch();
+#endif  // WIN32
 }
 
-void CommandLineActions::Handle(LoadingWindow* pLW)
-{
-	CommandLineArgs args;
-	for(int i=0; i<g_argc; ++i)
-		args.argv.push_back(g_argv[i]);
-	ToProcess.push_back(args);
+void CommandLineActions::Handle(LoadingWindow* pLW) {
+  CommandLineArgs args;
+  for (int i = 0; i < g_argc; ++i) {
+    args.argv.push_back(g_argv[i]);
+  }
+  ToProcess.push_back(args);
 
-	bool bExitAfter = false;
-	if( GetCommandlineArgument("ExportLuaInformation") )
-	{
-		LuaInformation();
-		bExitAfter = true;
-	}
-	if( GetCommandlineArgument("version") )
-	{
-		Version();
-		bExitAfter = true;
-	}
-	if( bExitAfter )
-		exit(0);
+  bool bExitAfter = false;
+  if (GetCommandlineArgument("ExportLuaInformation")) {
+    LuaInformation();
+    bExitAfter = true;
+  }
+  if (GetCommandlineArgument("version")) {
+    Version();
+    bExitAfter = true;
+  }
+  if (bExitAfter) {
+    exit(0);
+  }
 }
 
 /*
@@ -107,4 +109,3 @@ void CommandLineActions::Handle(LoadingWindow* pLW)
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

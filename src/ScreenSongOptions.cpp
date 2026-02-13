@@ -11,33 +11,30 @@
 #include "ScreenOptionsMaster.h"
 #include "ThemeManager.h"
 
-REGISTER_SCREEN_CLASS( ScreenSongOptions );
+REGISTER_SCREEN_CLASS(ScreenSongOptions);
 
-void ScreenSongOptions::Init()
-{
-	ScreenOptionsMaster::Init();
+void ScreenSongOptions::Init() {
+  ScreenOptionsMaster::Init();
 
-	/* Hack: If we're coming in from "press start for more options", we need a different
-	 * fade in. */
-	if( PREFSMAN->m_ShowSongOptions == Maybe_ASK )
-	{
-		m_In.Load( THEME->GetPathB("ScreenSongOptions","option in") );
-		m_In.StartTransitioning();
-	}
+  /* Hack: If we're coming in from "press start for more options", we need a
+   * different fade in. */
+  if (PREFSMAN->m_ShowSongOptions == Maybe_ASK) {
+    m_In.Load(THEME->GetPathB("ScreenSongOptions", "option in"));
+    m_In.StartTransitioning();
+  }
 }
 
-void ScreenSongOptions::ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns )
-{
-	PlayerNumber pn = GAMESTATE->GetMasterPlayerNumber();
-	PlayerState *pPS = GAMESTATE->m_pPlayerState[pn];
-	const FailType ft = pPS->m_PlayerOptions.GetPreferred().m_FailType;
+void ScreenSongOptions::ExportOptions(
+    int iRow, const std::vector<PlayerNumber>& vpns) {
+  PlayerNumber pn = GAMESTATE->GetMasterPlayerNumber();
+  PlayerState* pPS = GAMESTATE->m_pPlayerState[pn];
+  const FailType ft = pPS->m_PlayerOptions.GetPreferred().m_FailType;
 
-	ScreenOptionsMaster::ExportOptions( iRow, vpns );
+  ScreenOptionsMaster::ExportOptions(iRow, vpns);
 
-	if( ft != pPS->m_PlayerOptions.GetPreferred().m_FailType )
-	{
-		GAMESTATE->m_bFailTypeWasExplicitlySet = true;
-	}
+  if (ft != pPS->m_PlayerOptions.GetPreferred().m_FailType) {
+    GAMESTATE->m_bFailTypeWasExplicitlySet = true;
+  }
 }
 
 /*

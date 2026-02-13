@@ -16,26 +16,26 @@
 
 std::string GetErrorString(HRESULT hr);
 
-std::string hr_ssprintf( int hr, const char *fmt, ... )
-{
-	va_list	va;
-	va_start(va, fmt);
-	std::string s = vssprintf( fmt, va );
-	va_end(va);
+std::string hr_ssprintf(int hr, const char* fmt, ...) {
+  va_list va;
+  va_start(va, fmt);
+  std::string s = vssprintf(fmt, va);
+  va_end(va);
 
-	std::string szError = GetErrorString(hr);
-	return s + ssprintf(" (%s)", szError.c_str());
+  std::string szError = GetErrorString(hr);
+  return s + ssprintf(" (%s)", szError.c_str());
 }
 
-#define DXERRMSG(hrcode, dummy) case hrcode: return #hrcode;
+#define DXERRMSG(hrcode, dummy) \
+  case hrcode:                  \
+    return #hrcode;
 
-std::string GetErrorString(HRESULT hr)
-{
-	switch (hr)
-	{
+std::string GetErrorString(HRESULT hr) {
+  switch (hr) {
 #include "DirectXErrorList.h"
-	default: return ssprintf("unknown HRESULT 0x%8.8X", hr);
-	}
+    default:
+      return ssprintf("unknown HRESULT 0x%8.8X", hr);
+  }
 }
 
 /*

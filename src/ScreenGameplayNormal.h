@@ -1,19 +1,17 @@
-/* ScreenGameplay - The music plays, the notes scroll, and the Player is pressing buttons. */
+/* ScreenGameplay - The music plays, the notes scroll, and the Player is
+ * pressing buttons. */
 
 #ifndef ScreenGameplayNormal_H
 #define ScreenGameplayNormal_H
 
-#include "ScreenGameplay.h"
-
 #include <vector>
 
+#include "ScreenGameplay.h"
 
-class ScreenGameplayNormal : public ScreenGameplay
-{
-public:
-	virtual void FillPlayerInfo( std::vector<PlayerInfo> &vPlayerInfoOut );
+class ScreenGameplayNormal : public ScreenGameplay {
+ public:
+  virtual void FillPlayerInfo(std::vector<PlayerInfo>& vPlayerInfoOut);
 };
-
 
 #endif
 

@@ -1,4 +1,5 @@
-/* RandomSample - Holds multiple sounds samples and can play a random sound easily. */
+/* RandomSample - Holds multiple sounds samples and can play a random sound
+ * easily. */
 
 #ifndef RANDOM_SAMPLE_H
 #define RANDOM_SAMPLE_H
@@ -8,27 +9,25 @@
 
 class RageSound;
 
-class RandomSample
-{
-public:
-	RandomSample();
-	virtual ~RandomSample();
+class RandomSample {
+ public:
+  RandomSample();
+  virtual ~RandomSample();
 
-	bool Load( std::string sFilePath, int iMaxToLoad = 1000 /*load all*/ );
-	void UnloadAll();
-	void PlayRandom();
-	void PlayCopyOfRandom();
-	void Stop();
+  bool Load(std::string sFilePath, int iMaxToLoad = 1000 /*load all*/);
+  void UnloadAll();
+  void PlayRandom();
+  void PlayCopyOfRandom();
+  void Stop();
 
-private:
-	bool LoadSoundDir( std::string sDir, int iMaxToLoad  );
-	bool LoadSound( std::string sSoundFilePath );
-	int GetNextToPlay();
+ private:
+  bool LoadSoundDir(std::string sDir, int iMaxToLoad);
+  bool LoadSound(std::string sSoundFilePath);
+  int GetNextToPlay();
 
-	std::vector<RageSound*> m_pSamples;
-	int m_iIndexLastPlayed;
+  std::vector<RageSound*> m_pSamples;
+  int m_iIndexLastPlayed;
 };
-
 
 #endif
 

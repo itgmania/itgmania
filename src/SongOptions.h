@@ -8,69 +8,75 @@
 
 #include "EnumHelper.h"
 
-enum AutosyncType
-{
-	AutosyncType_Off,
-	AutosyncType_Song,
-	AutosyncType_Machine,
-	AutosyncType_Tempo,
-	NUM_AutosyncType,
-	AutosyncType_Invalid
+enum AutosyncType {
+  AutosyncType_Off,
+  AutosyncType_Song,
+  AutosyncType_Machine,
+  AutosyncType_Tempo,
+  NUM_AutosyncType,
+  AutosyncType_Invalid
 };
-const std::string& AutosyncTypeToString( AutosyncType cat );
-const std::string& AutosyncTypeToLocalizedString( AutosyncType cat );
-LuaDeclareType( AutosyncType );
+const std::string& AutosyncTypeToString(AutosyncType cat);
+const std::string& AutosyncTypeToLocalizedString(AutosyncType cat);
+LuaDeclareType(AutosyncType);
 
-enum SoundEffectType
-{
-	SoundEffectType_Off,
-	SoundEffectType_Speed,
-	SoundEffectType_Pitch,
-	NUM_SoundEffectType,
-	SoundEffectType_Invalid
+enum SoundEffectType {
+  SoundEffectType_Off,
+  SoundEffectType_Speed,
+  SoundEffectType_Pitch,
+  NUM_SoundEffectType,
+  SoundEffectType_Invalid
 };
-const std::string& SoundEffectTypeToString( SoundEffectType cat );
-const std::string& SoundEffectTypeToLocalizedString( SoundEffectType cat );
-LuaDeclareType( SoundEffectType );
+const std::string& SoundEffectTypeToString(SoundEffectType cat);
+const std::string& SoundEffectTypeToLocalizedString(SoundEffectType cat);
+LuaDeclareType(SoundEffectType);
 
-class SongOptions
-{
-public:
-	bool m_bAssistClap;
-	bool m_bAssistMetronome;
-	float m_fMusicRate,	m_SpeedfMusicRate;
-	float m_fHaste, m_SpeedfHaste;
-	AutosyncType m_AutosyncType;
-	SoundEffectType m_SoundEffectType;
-	bool m_bStaticBackground;
-	bool m_bRandomBGOnly;
-	bool m_bSaveScore;
-	bool m_bSaveReplay;
+class SongOptions {
+ public:
+  bool m_bAssistClap;
+  bool m_bAssistMetronome;
+  float m_fMusicRate, m_SpeedfMusicRate;
+  float m_fHaste, m_SpeedfHaste;
+  AutosyncType m_AutosyncType;
+  SoundEffectType m_SoundEffectType;
+  bool m_bStaticBackground;
+  bool m_bRandomBGOnly;
+  bool m_bSaveScore;
+  bool m_bSaveReplay;
 
-	/**
-	 * @brief Set up the SongOptions with reasonable defaults.
-	 */
-	SongOptions(): m_bAssistClap(false),
-		m_bAssistMetronome(false), m_fMusicRate(1.0f),
-		m_SpeedfMusicRate(1.0f), m_fHaste(0.0f),
-		m_SpeedfHaste(1.0f), m_AutosyncType(AutosyncType_Off),
-		m_SoundEffectType(SoundEffectType_Off),
-		m_bStaticBackground(false), m_bRandomBGOnly(false),
-		m_bSaveScore(true), m_bSaveReplay(false) {};
-	void Init() { *this = {}; }
-	void Approach( const SongOptions& other, float fDeltaSeconds );
-	void GetMods( std::vector<std::string> &AddTo ) const;
-	void GetLocalizedMods( std::vector<std::string> &AddTo ) const;
-	std::string GetString() const;
-	std::string GetLocalizedString() const;
-	void FromString( const std::string &sOptions );
-	bool FromOneModString( const std::string &sOneMod, std::string &sErrorDetailOut );	// On error, return false and optionally set sErrorDetailOut
+  /**
+   * @brief Set up the SongOptions with reasonable defaults.
+   */
+  SongOptions()
+      : m_bAssistClap(false),
+        m_bAssistMetronome(false),
+        m_fMusicRate(1.0f),
+        m_SpeedfMusicRate(1.0f),
+        m_fHaste(0.0f),
+        m_SpeedfHaste(1.0f),
+        m_AutosyncType(AutosyncType_Off),
+        m_SoundEffectType(SoundEffectType_Off),
+        m_bStaticBackground(false),
+        m_bRandomBGOnly(false),
+        m_bSaveScore(true),
+        m_bSaveReplay(false) {};
+  void Init() { *this = {}; }
+  void Approach(const SongOptions& other, float fDeltaSeconds);
+  void GetMods(std::vector<std::string>& AddTo) const;
+  void GetLocalizedMods(std::vector<std::string>& AddTo) const;
+  std::string GetString() const;
+  std::string GetLocalizedString() const;
+  void FromString(const std::string& sOptions);
+  bool FromOneModString(
+      const std::string& sOneMod,
+      std::string& sErrorDetailOut);  // On error, return false and optionally
+                                      // set sErrorDetailOut
 
-	bool operator==( const SongOptions &other ) const;
-	bool operator!=( const SongOptions &other ) const { return !operator==(other); }
+  bool operator==(const SongOptions& other) const;
+  bool operator!=(const SongOptions& other) const { return !operator==(other); }
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 };
 
 #endif

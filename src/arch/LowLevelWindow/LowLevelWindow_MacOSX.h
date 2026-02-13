@@ -9,40 +9,41 @@
 #include "LowLevelWindow.h"
 #include "RageDisplay.h"
 
-typedef const struct __CFDictionary *CFDictionaryRef;
+typedef const struct __CFDictionary* CFDictionaryRef;
 typedef uint32_t CGDirectDisplayID;
 
-class LowLevelWindow_MacOSX : public LowLevelWindow
-{
-	VideoModeParams m_CurrentParams;
-	id m_WindowDelegate;
-	id m_Context;
-	id m_BGContext;
-	CFDictionaryRef m_CurrentDisplayMode;
-	CGDirectDisplayID m_DisplayID;
+class LowLevelWindow_MacOSX : public LowLevelWindow {
+  VideoModeParams m_CurrentParams;
+  id m_WindowDelegate;
+  id m_Context;
+  id m_BGContext;
+  CFDictionaryRef m_CurrentDisplayMode;
+  CGDirectDisplayID m_DisplayID;
 
-public:
-	LowLevelWindow_MacOSX();
-	~LowLevelWindow_MacOSX();
-	void *GetProcAddress( std::string s );
-	std::string TryVideoMode( const VideoModeParams& p, bool& newDeviceOut );
-	void GetDisplaySpecs( DisplaySpecs &specs ) const;
+ public:
+  LowLevelWindow_MacOSX();
+  ~LowLevelWindow_MacOSX();
+  void* GetProcAddress(std::string s);
+  std::string TryVideoMode(const VideoModeParams& p, bool& newDeviceOut);
+  void GetDisplaySpecs(DisplaySpecs& specs) const;
 
-	void SwapBuffers();
-	void Update();
+  void SwapBuffers();
+  void Update();
 
-	const ActualVideoModeParams GetActualVideoModeParams() const { return m_CurrentParams; }
+  const ActualVideoModeParams GetActualVideoModeParams() const {
+    return m_CurrentParams;
+  }
 
-	bool SupportsRenderToTexture() const { return true; }
-	RenderTarget *CreateRenderTarget();
+  bool SupportsRenderToTexture() const { return true; }
+  RenderTarget* CreateRenderTarget();
 
-	bool SupportsThreadedRendering() { return m_BGContext; }
-	void BeginConcurrentRendering();
+  bool SupportsThreadedRendering() { return m_BGContext; }
+  void BeginConcurrentRendering();
 
-private:
-	void ShutDownFullScreen();
-	int ChangeDisplayMode( const VideoModeParams& p );
-	void SetActualParamsFromMode( CFDictionaryRef mode );
+ private:
+  void ShutDownFullScreen();
+  int ChangeDisplayMode(const VideoModeParams& p);
+  void SetActualParamsFromMode(CFDictionaryRef mode);
 };
 
 #ifdef ARCH_LOW_LEVEL_WINDOW

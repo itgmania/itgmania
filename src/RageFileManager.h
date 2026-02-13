@@ -6,94 +6,101 @@
 #include <vector>
 
 /** @brief Constants for working with the RageFileManager. */
-namespace RageFileManagerUtil
-{
-	extern std::string sDirOfExecutable;
+namespace RageFileManagerUtil {
+extern std::string sDirOfExecutable;
 }
 
 class RageFileDriver;
 class RageFileBasic;
 struct lua_State;
 
-bool ilt( const std::string &a, const std::string &b );
-bool ieq( const std::string &a, const std::string &b );
+bool ilt(const std::string& a, const std::string& b);
+bool ieq(const std::string& a, const std::string& b);
 
 /** @brief File utilities and high-level manager for RageFile objects. */
-class RageFileManager
-{
-public:
-	RageFileManager( const std::string &argv0 );
-	~RageFileManager();
-	void MountInitialFilesystems();
-	void MountUserFilesystems();
+class RageFileManager {
+ public:
+  RageFileManager(const std::string& argv0);
+  ~RageFileManager();
+  void MountInitialFilesystems();
+  void MountUserFilesystems();
 
-	void GetDirListing( const std::string &sPath, std::vector<std::string> &AddTo, bool bOnlyDirs, bool bReturnPathToo );
-	void GetDirListingWithMultipleExtensions(const std::string &sPath,
-		std::vector<std::string> const& ExtensionList, std::vector<std::string> &AddTo,
-		bool bOnlyDirs= false, bool bReturnPathToo= false);
-	bool Move( const std::string &fromPath, const std::string &toPath );
-	bool Copy( const std::string &fromPath, const std::string &toPath );
-	bool Remove( const std::string &sPath );
-	bool DeleteRecursive( const std::string &sPath );
-	void CreateDir( const std::string &sDir );
+  void GetDirListing(
+      const std::string& sPath, std::vector<std::string>& AddTo, bool bOnlyDirs,
+      bool bReturnPathToo);
+  void GetDirListingWithMultipleExtensions(
+      const std::string& sPath, const std::vector<std::string>& ExtensionList,
+      std::vector<std::string>& AddTo, bool bOnlyDirs = false,
+      bool bReturnPathToo = false);
+  bool Move(const std::string& fromPath, const std::string& toPath);
+  bool Copy(const std::string& fromPath, const std::string& toPath);
+  bool Remove(const std::string& sPath);
+  bool DeleteRecursive(const std::string& sPath);
+  void CreateDir(const std::string& sDir);
 
-	enum FileType { TYPE_FILE, TYPE_DIR, TYPE_NONE };
-	FileType GetFileType( const std::string &sPath );
+  enum FileType { TYPE_FILE, TYPE_DIR, TYPE_NONE };
+  FileType GetFileType(const std::string& sPath);
 
-	bool IsAFile( const std::string &sPath );
-	bool IsADirectory( const std::string &sPath );
-	bool DoesFileExist( const std::string &sPath );
+  bool IsAFile(const std::string& sPath);
+  bool IsADirectory(const std::string& sPath);
+  bool DoesFileExist(const std::string& sPath);
 
-	int GetFileSizeInBytes( const std::string &sPath );
-	int GetFileHash( const std::string &sPath );
+  int GetFileSizeInBytes(const std::string& sPath);
+  int GetFileHash(const std::string& sPath);
 
-	/**
-	 * @brief Get the absolte path from the VPS.
-	 * @param path the VPS path.
-	 * @return the absolute path. */
-	std::string ResolvePath(const std::string &path);
+  /**
+   * @brief Get the absolte path from the VPS.
+   * @param path the VPS path.
+   * @return the absolute path. */
+  std::string ResolvePath(const std::string& path);
 
-	bool Mount( const std::string &sType, const std::string &sRealPath, const std::string &sMountPoint );
-	void Unmount( const std::string &sType, const std::string &sRoot, const std::string &sMountPoint );
+  bool Mount(
+      const std::string& sType, const std::string& sRealPath,
+      const std::string& sMountPoint);
+  void Unmount(
+      const std::string& sType, const std::string& sRoot,
+      const std::string& sMountPoint);
 
-	/* Change the root of a filesystem.  Only a couple drivers support this; it's
-	 * used to change memory card mountpoints without having to actually unmount
-	 * the driver. */
-	void Remount( std::string sMountpoint, std::string sPath );
-	bool IsMounted( std::string MountPoint );
-	struct DriverLocation
-	{
-		std::string Type, Root, MountPoint;
-	};
-	void GetLoadedDrivers( std::vector<DriverLocation> &asMounts );
+  /* Change the root of a filesystem.  Only a couple drivers support this; it's
+   * used to change memory card mountpoints without having to actually unmount
+   * the driver. */
+  void Remount(std::string sMountpoint, std::string sPath);
+  bool IsMounted(std::string MountPoint);
+  struct DriverLocation {
+    std::string Type, Root, MountPoint;
+  };
+  void GetLoadedDrivers(std::vector<DriverLocation>& asMounts);
 
-	void FlushDirCache( const std::string &sPath = std::string() );
+  void FlushDirCache(const std::string& sPath = std::string());
 
-	/* Used only by RageFile: */
-	RageFileBasic *Open( const std::string &sPath, int iMode, int &iError );
-	void CacheFile( const RageFileBasic *fb, const std::string &sPath );
+  /* Used only by RageFile: */
+  RageFileBasic* Open(const std::string& sPath, int iMode, int& iError);
+  void CacheFile(const RageFileBasic* fb, const std::string& sPath);
 
-	/* Retrieve or release a reference to the low-level driver for a mountpoint. */
-	RageFileDriver *GetFileDriver( std::string sMountpoint );
-	void ReleaseFileDriver( RageFileDriver *pDriver );
+  /* Retrieve or release a reference to the low-level driver for a mountpoint.
+   */
+  RageFileDriver* GetFileDriver(std::string sMountpoint);
+  void ReleaseFileDriver(RageFileDriver* pDriver);
 
-	bool Unzip(const std::string &zipPath, std::string targetPath, int strip);
+  bool Unzip(const std::string& zipPath, std::string targetPath, int strip);
 
-	// path protection
-	void ProtectPath(const std::string& path);
-	bool IsPathProtected(const std::string& path);
+  // path protection
+  void ProtectPath(const std::string& path);
+  bool IsPathProtected(const std::string& path);
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-private:
-	RageFileBasic *OpenForReading( const std::string &sPath, int iMode, int &iError );
-	RageFileBasic *OpenForWriting( const std::string &sPath, int iMode, int &iError );
+ private:
+  RageFileBasic* OpenForReading(
+      const std::string& sPath, int iMode, int& iError);
+  RageFileBasic* OpenForWriting(
+      const std::string& sPath, int iMode, int& iError);
 
-	std::unordered_set<std::string> m_protectedPaths;
+  std::unordered_set<std::string> m_protectedPaths;
 };
 
-extern RageFileManager *FILEMAN;
+extern RageFileManager* FILEMAN;
 
 #endif
 

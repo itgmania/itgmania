@@ -14,50 +14,49 @@
 #include "ScreenWithMenuElements.h"
 
 /** @brief Enter a name for a new high score using a gimmicky interface. */
-class ScreenNameEntry : public ScreenWithMenuElements
-{
-public:
-	ScreenNameEntry();
-	virtual void Init();
-	virtual void Update( float fDeltaTime );
-	virtual bool Input( const InputEventPlus &input );
-	virtual void HandleScreenMessage( const ScreenMessage SM );
+class ScreenNameEntry : public ScreenWithMenuElements {
+ public:
+  ScreenNameEntry();
+  virtual void Init();
+  virtual void Update(float fDeltaTime);
+  virtual bool Input(const InputEventPlus& input);
+  virtual void HandleScreenMessage(const ScreenMessage SM);
 
-	virtual bool MenuStart( const InputEventPlus &input );
-private:
-	class ScrollingText : public Actor
-	{
-	public:
-		ScrollingText() : m_bDone(true) { }
-		inline void SetDone() { m_bDone = true; }
-		void Init( const std::string &sName, const std::vector<float> &xs );
-		virtual bool EarlyAbortDraw() const { return m_bDone; }
-		virtual void DrawPrimitives();
-		char GetClosestChar( float fFakeBeat ) const;
+  virtual bool MenuStart(const InputEventPlus& input);
 
-	private:
-		float GetClosestCharYOffset( float fFakeBeat ) const;
+ private:
+  class ScrollingText : public Actor {
+   public:
+    ScrollingText() : m_bDone(true) {}
+    inline void SetDone() { m_bDone = true; }
+    void Init(const std::string& sName, const std::vector<float>& xs);
+    virtual bool EarlyAbortDraw() const { return m_bDone; }
+    virtual void DrawPrimitives();
+    char GetClosestChar(float fFakeBeat) const;
 
-		std::vector<float>	m_Xs;
-		bool		m_bDone;
-		BitmapText	m_Stamp;
-		static std::string	g_sNameChars;
-	};
+   private:
+    float GetClosestCharYOffset(float fFakeBeat) const;
 
-	enum { ABS_MAX_RANKING_NAME_LENGTH = 10 };
-	bool AnyStillEntering() const;
+    std::vector<float> m_Xs;
+    bool m_bDone;
+    BitmapText m_Stamp;
+    static std::string g_sNameChars;
+  };
 
-	ReceptorArrowRow	m_ReceptorArrowRow[NUM_PLAYERS];
-	BitmapText		m_textSelectedChars[NUM_PLAYERS][ABS_MAX_RANKING_NAME_LENGTH];
-	BitmapText		m_textCategory[NUM_PLAYERS];
-	RageSound		m_soundStep;
+  enum { ABS_MAX_RANKING_NAME_LENGTH = 10 };
+  bool AnyStillEntering() const;
 
-	float			m_fFakeBeat;
-	std::string			m_sSelectedName[NUM_PLAYERS];
-	bool			m_bStillEnteringName[NUM_PLAYERS];
+  ReceptorArrowRow m_ReceptorArrowRow[NUM_PLAYERS];
+  BitmapText m_textSelectedChars[NUM_PLAYERS][ABS_MAX_RANKING_NAME_LENGTH];
+  BitmapText m_textCategory[NUM_PLAYERS];
+  RageSound m_soundStep;
 
-	ScrollingText		m_Text[NUM_PLAYERS];
-	std::vector<int>		m_ColToStringIndex[NUM_PLAYERS];
+  float m_fFakeBeat;
+  std::string m_sSelectedName[NUM_PLAYERS];
+  bool m_bStillEnteringName[NUM_PLAYERS];
+
+  ScrollingText m_Text[NUM_PLAYERS];
+  std::vector<int> m_ColToStringIndex[NUM_PLAYERS];
 };
 
 #endif

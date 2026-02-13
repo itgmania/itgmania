@@ -12,18 +12,20 @@
 #include "MemoryCard/MemoryCardDriverThreaded_Windows.h"
 
 inline const std::vector<std::string>& GetDefaultInputDriverList() {
-	static const std::vector<std::string> inputDriverList = { "DirectInput", "Pump", "Para" };
-	return inputDriverList;
+  static const std::vector<std::string> inputDriverList = {
+      "DirectInput", "Pump", "Para"};
+  return inputDriverList;
 }
 
 inline const std::vector<std::string>& GetDefaultMovieDriverList() {
-	static const std::vector<std::string> movieDriverList = { "FFMpeg", "Null" };
-	return movieDriverList;
+  static const std::vector<std::string> movieDriverList = {"FFMpeg", "Null"};
+  return movieDriverList;
 }
 
 inline const std::vector<std::string>& GetDefaultSoundDriverList() {
-	static const std::vector<std::string> soundDriverList = { "DirectSound-sw", "WaveOut", "WDMKS", "Null" };
-	return soundDriverList;
+  static const std::vector<std::string> soundDriverList = {
+      "DirectSound-sw", "WaveOut", "WDMKS", "Null"};
+  return soundDriverList;
 }
 
 #elif defined(MACOSX)
@@ -33,18 +35,18 @@ inline const std::vector<std::string>& GetDefaultSoundDriverList() {
 #include "MemoryCard/MemoryCardDriverThreaded_MacOSX.h"
 
 inline const std::vector<std::string>& GetDefaultInputDriverList() {
-	static const std::vector<std::string> inputDriverList = { "HID", "NSEvent" };
-	return inputDriverList;
+  static const std::vector<std::string> inputDriverList = {"HID", "NSEvent"};
+  return inputDriverList;
 }
 
 inline const std::vector<std::string>& GetDefaultMovieDriverList() {
-	static const std::vector<std::string> movieDriverList = { "FFMpeg", "Null" };
-	return movieDriverList;
+  static const std::vector<std::string> movieDriverList = {"FFMpeg", "Null"};
+  return movieDriverList;
 }
 
 inline const std::vector<std::string>& GetDefaultSoundDriverList() {
-	static const std::vector<std::string> soundDriverList = { "AudioUnit", "Null" };
-	return soundDriverList;
+  static const std::vector<std::string> soundDriverList = {"AudioUnit", "Null"};
+  return soundDriverList;
 }
 
 #elif defined(UNIX)
@@ -61,18 +63,19 @@ inline const std::vector<std::string>& GetDefaultSoundDriverList() {
 
 #if defined(LINUX)
 inline const std::vector<std::string>& GetDefaultInputDriverList() {
-	static const std::vector<std::string> inputDriverList = { "X11", "LinuxEvent", "LinuxJoystick" };
-	return inputDriverList;
+  static const std::vector<std::string> inputDriverList = {
+      "X11", "LinuxEvent", "LinuxJoystick"};
+  return inputDriverList;
 }
 #else
 inline const std::vector<std::string>& GetDefaultInputDriverList() {
-	static const std::vector<std::string> inputDriverList = { "X11" };
-	return inputDriverList;
+  static const std::vector<std::string> inputDriverList = {"X11"};
+  return inputDriverList;
 }
 #endif
 inline const std::vector<std::string>& GetDefaultMovieDriverList() {
-	static const std::vector<std::string> movieDriverList = { "FFMpeg", "Null" };
-	return movieDriverList;
+  static const std::vector<std::string> movieDriverList = {"FFMpeg", "Null"};
+  return movieDriverList;
 }
 // PulseAudio is the preferred Unix driver since it allows the gives non
 // exclusive access to the audio device, unlike ALSA.
@@ -83,8 +86,9 @@ inline const std::vector<std::string>& GetDefaultMovieDriverList() {
 // as PulseAudio will successfully Init() but not actually work if the
 // PulseAudio daemon has been suspended by/for jackd.
 inline const std::vector<std::string>& GetDefaultSoundDriverList() {
-	static const std::vector<std::string> soundDriverList = { "Pulse", "ALSA-sw", "OSS", "JACK", "Null" };
-	return soundDriverList;
+  static const std::vector<std::string> soundDriverList = {
+      "Pulse", "ALSA-sw", "OSS", "JACK", "Null"};
+  return soundDriverList;
 }
 #else
 #error Which arch?
@@ -92,15 +96,15 @@ inline const std::vector<std::string>& GetDefaultSoundDriverList() {
 
 /* All use these. */
 #include "LoadingWindow/LoadingWindow_Null.h"
-#include "MemoryCard/MemoryCardDriver_Null.h"
 #include "MemoryCard/MemoryCardDriverThreaded_Folder.h"
+#include "MemoryCard/MemoryCardDriver_Null.h"
 
-#endif // ARCH_DEFAULT_H
+#endif  // ARCH_DEFAULT_H
 
 /*
  * (c) 2002-2006 Glenn Maynard, Ben Anderson, Steve Checkoway
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -110,7 +114,7 @@ inline const std::vector<std::string>& GetDefaultSoundDriverList() {
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

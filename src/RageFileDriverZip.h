@@ -8,58 +8,57 @@
 #include "RageThreads.h"
 
 /** @brief A read-only file driver for ZIPs. */
-class RageFileDriverZip: public RageFileDriver
-{
-public:
-	RageFileDriverZip();
-	RageFileDriverZip( const std::string &sPath );
-	bool Load( const std::string &sPath );
-	bool Load( RageFileBasic *pFile );
+class RageFileDriverZip : public RageFileDriver {
+ public:
+  RageFileDriverZip();
+  RageFileDriverZip(const std::string& sPath);
+  bool Load(const std::string& sPath);
+  bool Load(RageFileBasic* pFile);
 
-	virtual ~RageFileDriverZip();
+  virtual ~RageFileDriverZip();
 
-	RageFileBasic *Open( const std::string &sPath, int iMode, int &iErr );
-	void FlushDirCache( const std::string &sPath );
+  RageFileBasic* Open(const std::string& sPath, int iMode, int& iErr);
+  void FlushDirCache(const std::string& sPath);
 
-	void DeleteFileWhenFinished() { m_bFileOwned = true; }
+  void DeleteFileWhenFinished() { m_bFileOwned = true; }
 
-	/* Lower-level access: */
-	enum ZipCompressionMethod { STORED = 0, DEFLATED = 8 };
-	struct FileInfo
-	{
-		std::string m_sName;
-		int m_iOffset;
-		int m_iDataOffset;
+  /* Lower-level access: */
+  enum ZipCompressionMethod { STORED = 0, DEFLATED = 8 };
+  struct FileInfo {
+    std::string m_sName;
+    int m_iOffset;
+    int m_iDataOffset;
 
-		ZipCompressionMethod m_iCompressionMethod;
-		int m_iCRC32;
-		int m_iCompressedSize, m_iUncompressedSize;
+    ZipCompressionMethod m_iCompressionMethod;
+    int m_iCRC32;
+    int m_iCompressedSize, m_iUncompressedSize;
 
-		/* If 0, unknown. */
-		int m_iFilePermissions;
-	};
-	const FileInfo *GetFileInfo( const std::string &sPath ) const;
+    /* If 0, unknown. */
+    int m_iFilePermissions;
+  };
+  const FileInfo* GetFileInfo(const std::string& sPath) const;
 
-	std::string GetGlobalComment() const { return m_sComment; }
+  std::string GetGlobalComment() const { return m_sComment; }
 
-private:
-	bool m_bFileOwned;
+ private:
+  bool m_bFileOwned;
 
-	RageFileBasic *m_pZip;
-	std::vector<FileInfo *> m_pFiles;
+  RageFileBasic* m_pZip;
+  std::vector<FileInfo*> m_pFiles;
 
-	std::string m_sPath;
-	std::string m_sComment;
+  std::string m_sPath;
+  std::string m_sComment;
 
-	/* Open() must be threadsafe.  Mutex access to "zip", since we seek
-	 * around in it when reading files. */
-	RageMutex m_Mutex;
+  /* Open() must be threadsafe.  Mutex access to "zip", since we seek
+   * around in it when reading files. */
+  RageMutex m_Mutex;
 
-	bool ParseZipfile();
-	bool ReadEndCentralRecord( int &total_entries_central_dir, int &offset_start_central_directory );
-	int ProcessCdirFileHdr( FileInfo &info );
-	bool SeekToEndCentralRecord();
-	bool ReadLocalFileHeader( FileInfo &info );
+  bool ParseZipfile();
+  bool ReadEndCentralRecord(
+      int& total_entries_central_dir, int& offset_start_central_directory);
+  int ProcessCdirFileHdr(FileInfo& info);
+  bool SeekToEndCentralRecord();
+  bool ReadLocalFileHeader(FileInfo& info);
 };
 
 #endif

@@ -9,29 +9,28 @@
 #include "RageSoundDriver.h"
 #include "RageThreads.h"
 
-class RageSoundDriver_ALSA9_Software: public RageSoundDriver
-{
-public:
-	RageSoundDriver_ALSA9_Software();
-	~RageSoundDriver_ALSA9_Software();
-	std::string Init();
+class RageSoundDriver_ALSA9_Software : public RageSoundDriver {
+ public:
+  RageSoundDriver_ALSA9_Software();
+  ~RageSoundDriver_ALSA9_Software();
+  std::string Init();
 
-	/* virtuals: */
-	int64_t GetPosition() const;
-	float GetPlayLatency() const;
-	int GetSampleRate() const { return m_iSampleRate; }
+  /* virtuals: */
+  int64_t GetPosition() const;
+  float GetPlayLatency() const;
+  int GetSampleRate() const { return m_iSampleRate; }
 
-	void SetupDecodingThread();
+  void SetupDecodingThread();
 
-private:
-	static int MixerThread_start( void *p );
-	void MixerThread();
-	bool GetData();
+ private:
+  static int MixerThread_start(void* p);
+  void MixerThread();
+  bool GetData();
 
-	bool m_bShutdown;
-	int m_iSampleRate;
-	Alsa9Buf *m_pPCM;
-	RageThread m_MixingThread;
+  bool m_bShutdown;
+  int m_iSampleRate;
+  Alsa9Buf* m_pPCM;
+  RageThread m_MixingThread;
 };
 
 #endif

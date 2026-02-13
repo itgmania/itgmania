@@ -6,13 +6,12 @@
 #include "PlayerNumber.h"
 #include "ScreenOptionsMaster.h"
 
-class ScreenSongOptions : public ScreenOptionsMaster
-{
-public:
-	virtual void Init();
+class ScreenSongOptions : public ScreenOptionsMaster {
+ public:
+  virtual void Init();
 
-private:
-	virtual void ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns );
+ private:
+  virtual void ExportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
 };
 
 #endif

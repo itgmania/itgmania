@@ -14,63 +14,68 @@
 #include "NotesLoaderSSC.h"
 #include "StdString.h"
 
-void NotesLoader::GetMainAndSubTitlesFromFullTitle( const std::string &sFullTitle, std::string &sMainTitleOut, std::string &sSubTitleOut )
-{
-	static const std::string_view sLeftSeps[] = { "\t", " -", " ~", " (", " [" };
-	size_t fullTitleSize = sFullTitle.size();
+void NotesLoader::GetMainAndSubTitlesFromFullTitle(
+    const std::string& sFullTitle, std::string& sMainTitleOut,
+    std::string& sSubTitleOut) {
+  static const std::string_view sLeftSeps[] = {"\t", " -", " ~", " (", " ["};
+  size_t fullTitleSize = sFullTitle.size();
 
-	for (const auto& sep : sLeftSeps)
-	{
-		size_t iBeginIndex = sFullTitle.find(sep);
-		if (iBeginIndex != std::string::npos)
-		{
-			sMainTitleOut = Left(sFullTitle, static_cast<int>(iBeginIndex));
-			sSubTitleOut = sFullTitle.substr(iBeginIndex + sep.size(), fullTitleSize - iBeginIndex - sep.size());
-			return;
-		}
-	}
-	sMainTitleOut = sFullTitle;
-	sSubTitleOut = "";
+  for (const auto& sep : sLeftSeps) {
+    size_t iBeginIndex = sFullTitle.find(sep);
+    if (iBeginIndex != std::string::npos) {
+      sMainTitleOut = Left(sFullTitle, static_cast<int>(iBeginIndex));
+      sSubTitleOut = sFullTitle.substr(
+          iBeginIndex + sep.size(), fullTitleSize - iBeginIndex - sep.size());
+      return;
+    }
+  }
+  sMainTitleOut = sFullTitle;
+  sSubTitleOut = "";
 }
 
-bool NotesLoader::LoadFromDir( const std::string &sPath, Song &out, std::set<std::string> &BlacklistedImages, bool load_autosave )
-{
-	std::vector<std::string> list;
+bool NotesLoader::LoadFromDir(
+    const std::string& sPath, Song& out,
+    std::set<std::string>& BlacklistedImages, bool load_autosave) {
+  std::vector<std::string> list;
 
-	BlacklistedImages.clear();
-	SSCLoader loaderSSC;
-	loaderSSC.GetApplicableFiles( sPath, list, load_autosave );
-	if( !list.empty() )
-	{
-		if( !loaderSSC.LoadFromDir( sPath, out, load_autosave ) )
-		{ return false; }
-		return true;
-	}
-	SMALoader loaderSMA;
-	loaderSMA.GetApplicableFiles( sPath, list );
-	if (!list.empty() )
-		return loaderSMA.LoadFromDir( sPath, out );
-	SMLoader loaderSM;
-	loaderSM.GetApplicableFiles( sPath, list );
-	if (!list.empty() )
-		return loaderSM.LoadFromDir( sPath, out );
-	DWILoader::GetApplicableFiles( sPath, list );
-	if( !list.empty() )
-		return DWILoader::LoadFromDir( sPath, out, BlacklistedImages );
-	BMSLoader::GetApplicableFiles( sPath, list );
-	if( !list.empty() )
-		return BMSLoader::LoadFromDir( sPath, out );
-	/*
-	PMSLoader::GetApplicableFiles( sPath, list );
-	if( !list.empty() )
-		return PMSLoader::LoadFromDir( sPath, out );
-	*/
-	KSFLoader::GetApplicableFiles( sPath, list );
-	if( !list.empty() )
-		return KSFLoader::LoadFromDir( sPath, out );
-	return false;
+  BlacklistedImages.clear();
+  SSCLoader loaderSSC;
+  loaderSSC.GetApplicableFiles(sPath, list, load_autosave);
+  if (!list.empty()) {
+    if (!loaderSSC.LoadFromDir(sPath, out, load_autosave)) {
+      return false;
+    }
+    return true;
+  }
+  SMALoader loaderSMA;
+  loaderSMA.GetApplicableFiles(sPath, list);
+  if (!list.empty()) {
+    return loaderSMA.LoadFromDir(sPath, out);
+  }
+  SMLoader loaderSM;
+  loaderSM.GetApplicableFiles(sPath, list);
+  if (!list.empty()) {
+    return loaderSM.LoadFromDir(sPath, out);
+  }
+  DWILoader::GetApplicableFiles(sPath, list);
+  if (!list.empty()) {
+    return DWILoader::LoadFromDir(sPath, out, BlacklistedImages);
+  }
+  BMSLoader::GetApplicableFiles(sPath, list);
+  if (!list.empty()) {
+    return BMSLoader::LoadFromDir(sPath, out);
+  }
+  /*
+  PMSLoader::GetApplicableFiles( sPath, list );
+  if( !list.empty() )
+          return PMSLoader::LoadFromDir( sPath, out );
+  */
+  KSFLoader::GetApplicableFiles(sPath, list);
+  if (!list.empty()) {
+    return KSFLoader::LoadFromDir(sPath, out);
+  }
+  return false;
 }
-
 
 /*
  * (c) 2001-2004,2007 Chris Danford, Glenn Maynard, Steve Checkoway

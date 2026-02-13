@@ -7,71 +7,60 @@
 #include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
 
-REGISTER_SCREEN_CLASS( ScreenProfileLoad );
+REGISTER_SCREEN_CLASS(ScreenProfileLoad);
 
-void ScreenProfileLoad::Init()
-{
-	LOAD_EDITS.Load( m_sName, "LoadEdits" );
+void ScreenProfileLoad::Init() {
+  LOAD_EDITS.Load(m_sName, "LoadEdits");
 
-	ScreenWithMenuElements::Init();
+  ScreenWithMenuElements::Init();
 }
 
-void ScreenProfileLoad::BeginScreen()
-{
-	m_bHaveProfileToLoad = GAMESTATE->HaveProfileToLoad();
-	ScreenWithMenuElements::BeginScreen();
+void ScreenProfileLoad::BeginScreen() {
+  m_bHaveProfileToLoad = GAMESTATE->HaveProfileToLoad();
+  ScreenWithMenuElements::BeginScreen();
 }
 
-bool ScreenProfileLoad::Input( const InputEventPlus &input )
-{
-	return false;
-}
+bool ScreenProfileLoad::Input(const InputEventPlus& input) { return false; }
 
-void ScreenProfileLoad::Continue()
-{
-	if( m_bHaveProfileToLoad )
-	{
-		GAMESTATE->LoadProfiles( LOAD_EDITS );
-		SCREENMAN->ZeroNextUpdate();
-	}
+void ScreenProfileLoad::Continue() {
+  if (m_bHaveProfileToLoad) {
+    GAMESTATE->LoadProfiles(LOAD_EDITS);
+    SCREENMAN->ZeroNextUpdate();
+  }
 
-	StartTransitioningScreen( SM_GoToNextScreen );
+  StartTransitioningScreen(SM_GoToNextScreen);
 }
 
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the ScreenProfileLoad. */ 
-class LunaScreenProfileLoad: public Luna<ScreenProfileLoad>
-{
-public:
-	static int Continue( T* p, lua_State *L )
-	{
-		LUA->YieldLua();
-		p->Continue();
-		LUA->UnyieldLua();
-		COMMON_RETURN_SELF;
-	}
-	static int HaveProfileToLoad( T* p, lua_State *L )
-	{
-		LuaHelpers::Push( L, p->m_bHaveProfileToLoad );
-		return 1;
-	}
-	
-	LunaScreenProfileLoad()
-	{
-  		ADD_METHOD( Continue );
-  		ADD_METHOD( HaveProfileToLoad );
-	}
+/** @brief Allow Lua to have access to the ScreenProfileLoad. */
+class LunaScreenProfileLoad : public Luna<ScreenProfileLoad> {
+ public:
+  static int Continue(T* p, lua_State* L) {
+    LUA->YieldLua();
+    p->Continue();
+    LUA->UnyieldLua();
+    COMMON_RETURN_SELF;
+  }
+  static int HaveProfileToLoad(T* p, lua_State* L) {
+    LuaHelpers::Push(L, p->m_bHaveProfileToLoad);
+    return 1;
+  }
+
+  LunaScreenProfileLoad() {
+    ADD_METHOD(Continue);
+    ADD_METHOD(HaveProfileToLoad);
+  }
 };
 
-LUA_REGISTER_DERIVED_CLASS( ScreenProfileLoad, ScreenWithMenuElements )
+LUA_REGISTER_DERIVED_CLASS(ScreenProfileLoad, ScreenWithMenuElements)
 // lua end
 
 /*
  * (c) 2007 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -81,7 +70,7 @@ LUA_REGISTER_DERIVED_CLASS( ScreenProfileLoad, ScreenWithMenuElements )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

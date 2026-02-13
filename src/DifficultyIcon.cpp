@@ -17,140 +17,133 @@
 
 REGISTER_ACTOR_CLASS(DifficultyIcon);
 
-DifficultyIcon::DifficultyIcon()
-{
-	m_bBlank = false;
-	m_PlayerNumber = PLAYER_1;
+DifficultyIcon::DifficultyIcon() {
+  m_bBlank = false;
+  m_PlayerNumber = PLAYER_1;
 }
 
-bool DifficultyIcon::Load( std::string sPath )
-{
-	Sprite::Load( sPath );
-	int iStates = GetNumStates();
-	bool bWarn = iStates != NUM_Difficulty  &&  iStates != NUM_Difficulty*2;
-	if( sPath.find("_blank") != std::string::npos )
-		bWarn = false;
-	if( bWarn )
-	{
-		std::string sError = ssprintf(
-			"The difficulty icon graphic '%s' must have %d or %d frames.  It has %d states.", 
-			sPath.c_str(), 
-			NUM_Difficulty,
-			NUM_Difficulty*2,
-			iStates );
-		LuaHelpers::ReportScriptError(sError);
-	}
-	StopAnimating();
-	return true;
+bool DifficultyIcon::Load(std::string sPath) {
+  Sprite::Load(sPath);
+  int iStates = GetNumStates();
+  bool bWarn = iStates != NUM_Difficulty && iStates != NUM_Difficulty * 2;
+  if (sPath.find("_blank") != std::string::npos) {
+    bWarn = false;
+  }
+  if (bWarn) {
+    std::string sError = ssprintf(
+        "The difficulty icon graphic '%s' must have %d or %d frames.  It has "
+        "%d states.",
+        sPath.c_str(), NUM_Difficulty, NUM_Difficulty * 2, iStates);
+    LuaHelpers::ReportScriptError(sError);
+  }
+  StopAnimating();
+  return true;
 }
 
-void DifficultyIcon::LoadFromNode( const XNode* pNode )
-{
-	std::string sFile;
-	if( !ActorUtil::GetAttrPath(pNode, "File", sFile) )
-	{
-		LuaHelpers::ReportScriptErrorFmt("%s: DifficultyIcon: missing the \"File\" attribute.", ActorUtil::GetWhere(pNode).c_str());
-	}
+void DifficultyIcon::LoadFromNode(const XNode* pNode) {
+  std::string sFile;
+  if (!ActorUtil::GetAttrPath(pNode, "File", sFile)) {
+    LuaHelpers::ReportScriptErrorFmt(
+        "%s: DifficultyIcon: missing the \"File\" attribute.",
+        ActorUtil::GetWhere(pNode).c_str());
+  }
 
-	Load( sFile );
+  Load(sFile);
 
-	// skip Sprite::LoadFromNode
-	Actor::LoadFromNode( pNode );
+  // skip Sprite::LoadFromNode
+  Actor::LoadFromNode(pNode);
 }
 
-void DifficultyIcon::SetPlayer( PlayerNumber pn )
-{
-	m_PlayerNumber = pn;
+void DifficultyIcon::SetPlayer(PlayerNumber pn) { m_PlayerNumber = pn; }
+
+void DifficultyIcon::SetFromSteps(PlayerNumber pn, const Steps* pSteps) {
+  SetPlayer(pn);
+  if (pSteps == nullptr) {
+    Unset();
+  } else {
+    SetFromDifficulty(pSteps->GetDifficulty());
+  }
 }
 
-void DifficultyIcon::SetFromSteps( PlayerNumber pn, const Steps* pSteps )
-{
-	SetPlayer( pn );
-	if( pSteps == nullptr )
-		Unset();
-	else
-		SetFromDifficulty( pSteps->GetDifficulty() );
+void DifficultyIcon::SetFromTrail(PlayerNumber pn, const Trail* pTrail) {
+  SetPlayer(pn);
+  if (pTrail == nullptr) {
+    Unset();
+  } else {
+    SetFromDifficulty(pTrail->m_CourseDifficulty);
+  }
 }
 
-void DifficultyIcon::SetFromTrail( PlayerNumber pn, const Trail* pTrail )
-{
-	SetPlayer( pn );
-	if( pTrail == nullptr )
-		Unset();
-	else
-		SetFromDifficulty( pTrail->m_CourseDifficulty );
-}
+void DifficultyIcon::Unset() { m_bBlank = true; }
 
-void DifficultyIcon::Unset()
-{
-	m_bBlank = true;
-}
-
-void DifficultyIcon::SetFromDifficulty( Difficulty dc )
-{
-	m_bBlank = false;
-	switch( GetNumStates() )
-	{
-	case NUM_Difficulty:		SetState( dc );				break;
-	case NUM_Difficulty*2:		SetState( dc*2+m_PlayerNumber );	break;
-	default:			m_bBlank = true;			break;
-	}	
+void DifficultyIcon::SetFromDifficulty(Difficulty dc) {
+  m_bBlank = false;
+  switch (GetNumStates()) {
+    case NUM_Difficulty:
+      SetState(dc);
+      break;
+    case NUM_Difficulty * 2:
+      SetState(dc * 2 + m_PlayerNumber);
+      break;
+    default:
+      m_bBlank = true;
+      break;
+  }
 }
 
 // lua start
 #include "LuaBinding.h"
 
-/** @brief Allow Lua to have access to the DifficultyIcon. */ 
-class LunaDifficultyIcon: public Luna<DifficultyIcon>
-{
-public:
-	static int SetFromSteps( T* p, lua_State *L )
-	{ 
-		if( lua_isnil(L,1) )
-		{
-			p->Unset();
-		}
-		else
-		{
-			Steps *pS = Luna<Steps>::check(L,1);
-			p->SetFromSteps( PLAYER_1, pS );
-		}
-		COMMON_RETURN_SELF;
-	}
-	static int SetFromTrail( T* p, lua_State *L )
-	{ 
-		if( lua_isnil(L,1) )
-		{
-			p->Unset();
-		}
-		else
-		{
-			Trail *pT = Luna<Trail>::check(L,1);
-			p->SetFromTrail( PLAYER_1, pT );
-		}
-		COMMON_RETURN_SELF;
-	}
-	static int Unset( T* p, lua_State *L )				{ p->Unset(); COMMON_RETURN_SELF; }
-	static int SetPlayer( T* p, lua_State *L )			{ p->SetPlayer( Enum::Check<PlayerNumber>(L, 1) ); COMMON_RETURN_SELF; }
-	static int SetFromDifficulty( T* p, lua_State *L )		{ p->SetFromDifficulty( Enum::Check<Difficulty>(L, 1) ); COMMON_RETURN_SELF; }
+/** @brief Allow Lua to have access to the DifficultyIcon. */
+class LunaDifficultyIcon : public Luna<DifficultyIcon> {
+ public:
+  static int SetFromSteps(T* p, lua_State* L) {
+    if (lua_isnil(L, 1)) {
+      p->Unset();
+    } else {
+      Steps* pS = Luna<Steps>::check(L, 1);
+      p->SetFromSteps(PLAYER_1, pS);
+    }
+    COMMON_RETURN_SELF;
+  }
+  static int SetFromTrail(T* p, lua_State* L) {
+    if (lua_isnil(L, 1)) {
+      p->Unset();
+    } else {
+      Trail* pT = Luna<Trail>::check(L, 1);
+      p->SetFromTrail(PLAYER_1, pT);
+    }
+    COMMON_RETURN_SELF;
+  }
+  static int Unset(T* p, lua_State* L) {
+    p->Unset();
+    COMMON_RETURN_SELF;
+  }
+  static int SetPlayer(T* p, lua_State* L) {
+    p->SetPlayer(Enum::Check<PlayerNumber>(L, 1));
+    COMMON_RETURN_SELF;
+  }
+  static int SetFromDifficulty(T* p, lua_State* L) {
+    p->SetFromDifficulty(Enum::Check<Difficulty>(L, 1));
+    COMMON_RETURN_SELF;
+  }
 
-	LunaDifficultyIcon()
-	{
-		ADD_METHOD( Unset );
-		ADD_METHOD( SetPlayer );
-		ADD_METHOD( SetFromSteps );
-		ADD_METHOD( SetFromTrail );
-		ADD_METHOD( SetFromDifficulty );
-	}
+  LunaDifficultyIcon() {
+    ADD_METHOD(Unset);
+    ADD_METHOD(SetPlayer);
+    ADD_METHOD(SetFromSteps);
+    ADD_METHOD(SetFromTrail);
+    ADD_METHOD(SetFromDifficulty);
+  }
 };
 
-LUA_REGISTER_DERIVED_CLASS( DifficultyIcon, Sprite )
+LUA_REGISTER_DERIVED_CLASS(DifficultyIcon, Sprite)
 // lua end
 
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -160,7 +153,7 @@ LUA_REGISTER_DERIVED_CLASS( DifficultyIcon, Sprite )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

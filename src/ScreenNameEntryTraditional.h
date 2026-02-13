@@ -9,32 +9,31 @@
 #include "ScreenWithMenuElements.h"
 #include "ThemeMetric.h"
 /** @brief Enter a name for a new high score. */
-class ScreenNameEntryTraditional: public ScreenWithMenuElements
-{
-public:
-	virtual void Init();
-	virtual void BeginScreen();
+class ScreenNameEntryTraditional : public ScreenWithMenuElements {
+ public:
+  virtual void Init();
+  virtual void BeginScreen();
 
-	virtual void HandleScreenMessage( const ScreenMessage SM );
-	virtual bool Input( const InputEventPlus &input );
+  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual bool Input(const InputEventPlus& input);
 
-	bool EnterKey( PlayerNumber pn, wchar_t sLetter );
-	bool Backspace( PlayerNumber pn );
+  bool EnterKey(PlayerNumber pn, wchar_t sLetter);
+  bool Backspace(PlayerNumber pn);
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-	bool AnyStillEntering() const;
-	bool AnyEntering() const;
-	bool Finish( PlayerNumber pn );
-	void UpdateSelectionText( PlayerNumber pn );
-	void SelectChar( PlayerNumber pn, const std::string &sKey );
-	/** @brief How long can the name be for ranking purposes? */
-	ThemeMetric<int>	MAX_RANKING_NAME_LENGTH;
+  bool AnyStillEntering() const;
+  bool AnyEntering() const;
+  bool Finish(PlayerNumber pn);
+  void UpdateSelectionText(PlayerNumber pn);
+  void SelectChar(PlayerNumber pn, const std::string& sKey);
+  /** @brief How long can the name be for ranking purposes? */
+  ThemeMetric<int> MAX_RANKING_NAME_LENGTH;
 
-	std::wstring			m_sSelection[NUM_PLAYERS];
-	bool			m_bEnteringName[NUM_PLAYERS];
-	bool			m_bFinalized[NUM_PLAYERS];
+  std::wstring m_sSelection[NUM_PLAYERS];
+  bool m_bEnteringName[NUM_PLAYERS];
+  bool m_bFinalized[NUM_PLAYERS];
 };
 
 #endif
@@ -44,7 +43,7 @@ public:
  * @author Glenn Maynard, Chris Danford (c) 2001-2007
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -54,7 +53,7 @@ public:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

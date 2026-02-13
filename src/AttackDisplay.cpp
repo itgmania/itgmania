@@ -16,113 +16,116 @@
 #include "ThemeManager.h"
 #include "global.h"
 
-std::string GetAttackPieceName( const std::string &sAttack )
-{
-	std::string ret = ssprintf( "attack %s", sAttack.c_str() );
+std::string GetAttackPieceName(const std::string& sAttack) {
+  std::string ret = ssprintf("attack %s", sAttack.c_str());
 
-	/* 1.5x -> 1_5x.  If we pass a period to THEME->GetPathTo, it'll think
-	 * we're looking for a specific file and not search. */
-	Replace(ret, ".", "_");
+  /* 1.5x -> 1_5x.  If we pass a period to THEME->GetPathTo, it'll think
+   * we're looking for a specific file and not search. */
+  Replace(ret, ".", "_");
 
-	return ret;
+  return ret;
 }
 
-AttackDisplay::AttackDisplay()
-{
-	if( GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
-		GAMESTATE->m_PlayMode != PLAY_MODE_RAVE )
-		return;
+AttackDisplay::AttackDisplay() {
+  if (GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
+      GAMESTATE->m_PlayMode != PLAY_MODE_RAVE) {
+    return;
+  }
 
-	m_sprAttack.SetDiffuseAlpha( 0 );	// invisible
-	this->AddChild( &m_sprAttack );
+  m_sprAttack.SetDiffuseAlpha(0);  // invisible
+  this->AddChild(&m_sprAttack);
 }
 
-void AttackDisplay::Init( const PlayerState* pPlayerState )
-{
-	m_pPlayerState = pPlayerState;
+void AttackDisplay::Init(const PlayerState* pPlayerState) {
+  m_pPlayerState = pPlayerState;
 
-	// TODO: Remove use of PlayerNumber.
-	PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
-	m_sprAttack.SetName( ssprintf("TextP%d",pn+1) );
+  // TODO: Remove use of PlayerNumber.
+  PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
+  m_sprAttack.SetName(ssprintf("TextP%d", pn + 1));
 
-	if( GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
-		GAMESTATE->m_PlayMode != PLAY_MODE_RAVE )
-		return;
+  if (GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
+      GAMESTATE->m_PlayMode != PLAY_MODE_RAVE) {
+    return;
+  }
 
-	std::set<std::string> attacks;
-	for( int al=0; al<NUM_ATTACK_LEVELS; al++ )
-	{
-		const Character *ch = GAMESTATE->m_pCurCharacters[pn];
-		ASSERT( ch != nullptr );
-		const std::string* asAttacks = ch->m_sAttacks[al];
-		for( int att = 0; att < NUM_ATTACKS_PER_LEVEL; ++att )
-			attacks.insert( asAttacks[att] );
-	}
+  std::set<std::string> attacks;
+  for (int al = 0; al < NUM_ATTACK_LEVELS; al++) {
+    const Character* ch = GAMESTATE->m_pCurCharacters[pn];
+    ASSERT(ch != nullptr);
+    const std::string* asAttacks = ch->m_sAttacks[al];
+    for (int att = 0; att < NUM_ATTACKS_PER_LEVEL; ++att) {
+      attacks.insert(asAttacks[att]);
+    }
+  }
 
-	for( std::set<std::string>::const_iterator it = attacks.begin(); it != attacks.end(); ++it )
-	{
-		const std::string path = THEME->GetPathG( "AttackDisplay", GetAttackPieceName( *it ), true );
-		if( path == "" )
-		{
-			LOG->Trace( "Couldn't find \"%s\"", GetAttackPieceName( *it ).c_str() );
-			continue;
-		}
+  for (std::set<std::string>::const_iterator it = attacks.begin();
+       it != attacks.end(); ++it) {
+    const std::string path =
+        THEME->GetPathG("AttackDisplay", GetAttackPieceName(*it), true);
+    if (path == "") {
+      LOG->Trace("Couldn't find \"%s\"", GetAttackPieceName(*it).c_str());
+      continue;
+    }
 
-		m_TexturePreload.Load( path );
-	}
+    m_TexturePreload.Load(path);
+  }
 }
 
+void AttackDisplay::Update(float fDelta) {
+  ActorFrame::Update(fDelta);
 
-void AttackDisplay::Update( float fDelta )
-{
-	ActorFrame::Update( fDelta );
+  if (GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
+      GAMESTATE->m_PlayMode != PLAY_MODE_RAVE) {
+    return;
+  }
 
-	if( GAMESTATE->m_PlayMode != PLAY_MODE_BATTLE &&
-		GAMESTATE->m_PlayMode != PLAY_MODE_RAVE )
-		return;
+  if (!m_pPlayerState->m_bAttackBeganThisUpdate) {
+    return;
+  }
+  // don't handle this again
 
-	if( !m_pPlayerState->m_bAttackBeganThisUpdate )
-		return;
-	// don't handle this again
+  for (unsigned s = 0; s < m_pPlayerState->m_ActiveAttacks.size(); s++) {
+    const Attack& attack = m_pPlayerState->m_ActiveAttacks[s];
 
-	for( unsigned s=0; s<m_pPlayerState->m_ActiveAttacks.size(); s++ )
-	{
-		const Attack& attack = m_pPlayerState->m_ActiveAttacks[s];
+    if (attack.fStartSecond >= 0) {
+      continue; /* hasn't started yet */
+    }
 
-		if( attack.fStartSecond >= 0 )
-			continue; /* hasn't started yet */
+    if (attack.fSecsRemaining <= 0) {
+      continue; /* ended already */
+    }
 
-		if( attack.fSecsRemaining <= 0 )
-			continue; /* ended already */
+    if (attack.IsBlank()) {
+      continue;
+    }
 
-		if( attack.IsBlank() )
-			continue;
-
-		SetAttack( attack.sModifiers );
-		break;
-	}
+    SetAttack(attack.sModifiers);
+    break;
+  }
 }
 
-void AttackDisplay::SetAttack( const std::string &sText )
-{
-	const std::string path = THEME->GetPathG( "AttackDisplay", GetAttackPieceName(sText), true );
-	if( path == "" )
-		return;
+void AttackDisplay::SetAttack(const std::string& sText) {
+  const std::string path =
+      THEME->GetPathG("AttackDisplay", GetAttackPieceName(sText), true);
+  if (path == "") {
+    return;
+  }
 
-	m_sprAttack.SetDiffuseAlpha( 1 );
-	m_sprAttack.Load( path );
+  m_sprAttack.SetDiffuseAlpha(1);
+  m_sprAttack.Load(path);
 
-	// TODO: Remove use of PlayerNumber.
-	PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
+  // TODO: Remove use of PlayerNumber.
+  PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
 
-	const std::string sName = ssprintf( "%sP%i", sText.c_str(), pn+1 );
-	m_sprAttack.RunCommands( THEME->GetMetricA("AttackDisplay", sName + "OnCommand") );
+  const std::string sName = ssprintf("%sP%i", sText.c_str(), pn + 1);
+  m_sprAttack.RunCommands(
+      THEME->GetMetricA("AttackDisplay", sName + "OnCommand"));
 }
 
 /*
  * (c) 2003 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -132,7 +135,7 @@ void AttackDisplay::SetAttack( const std::string &sText )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

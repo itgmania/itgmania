@@ -11,83 +11,87 @@
 class Song;
 class PlayerState;
 /** @brief An action made against a Player to make things more difficult. */
-struct Attack
-{
-	AttackLevel	level;
-	/**
-	 * @brief the starting point of this attack.
-	 *
-	 * If this is -1, then the attack starts now. */
-	float fStartSecond;
-	/** @brief How long does this attack last? */
-	float fSecsRemaining;
-	/** @brief The modifiers used for this attack. */
-	std::string sModifiers;
-	bool bOn; // set and used by GAMESTATE
-	bool bGlobal; // true for song-wide course mods
-	bool bShowInAttackList;
+struct Attack {
+  AttackLevel level;
+  /**
+   * @brief the starting point of this attack.
+   *
+   * If this is -1, then the attack starts now. */
+  float fStartSecond;
+  /** @brief How long does this attack last? */
+  float fSecsRemaining;
+  /** @brief The modifiers used for this attack. */
+  std::string sModifiers;
+  bool bOn;      // set and used by GAMESTATE
+  bool bGlobal;  // true for song-wide course mods
+  bool bShowInAttackList;
 
-	void MakeBlank()
-	{
-		level = ATTACK_LEVEL_1;
-		fStartSecond = ATTACK_STARTS_NOW;
-		fSecsRemaining = 0;
-		sModifiers = std::string();
-		bOn = false;
-		bGlobal = false;
-		bShowInAttackList = true;
-	}
-	Attack(): level(ATTACK_LEVEL_1), fStartSecond(ATTACK_STARTS_NOW),
-		fSecsRemaining(0), sModifiers(std::string()),
-		bOn(false), bGlobal(false), bShowInAttackList(true)
-		{} // MakeBlank() is effectively called here.
-	Attack(
-		AttackLevel	level_,
-		float fStartSecond_,
-		float fSecsRemaining_,
-		std::string sModifiers_,
-		bool bOn_,
-		bool bGlobal_,
-		bool bShowInAttackList_ = true ):
-		level(level_), fStartSecond(fStartSecond_),
-		fSecsRemaining(fSecsRemaining_), sModifiers(sModifiers_),
-		bOn(bOn_), bGlobal(bGlobal_),
-		bShowInAttackList(bShowInAttackList_) {}
+  void MakeBlank() {
+    level = ATTACK_LEVEL_1;
+    fStartSecond = ATTACK_STARTS_NOW;
+    fSecsRemaining = 0;
+    sModifiers = std::string();
+    bOn = false;
+    bGlobal = false;
+    bShowInAttackList = true;
+  }
+  Attack()
+      : level(ATTACK_LEVEL_1),
+        fStartSecond(ATTACK_STARTS_NOW),
+        fSecsRemaining(0),
+        sModifiers(std::string()),
+        bOn(false),
+        bGlobal(false),
+        bShowInAttackList(true) {}  // MakeBlank() is effectively called here.
+  Attack(
+      AttackLevel level_, float fStartSecond_, float fSecsRemaining_,
+      std::string sModifiers_, bool bOn_, bool bGlobal_,
+      bool bShowInAttackList_ = true)
+      : level(level_),
+        fStartSecond(fStartSecond_),
+        fSecsRemaining(fSecsRemaining_),
+        sModifiers(sModifiers_),
+        bOn(bOn_),
+        bGlobal(bGlobal_),
+        bShowInAttackList(bShowInAttackList_) {}
 
-	void GetAttackBeats( const Song *pSong, float &fStartBeat, float &fEndBeat ) const;
-	void GetRealtimeAttackBeats( const Song *pSong, const PlayerState* pPlayerState, float &fStartBeat, float &fEndBeat ) const;
-	/**
-	 * @brief Determine if this attack has no modifiers, and is thus blank or empty.
-	 * @return true if it is blank/empty, or false otherwise. */
-	bool IsBlank() const { return sModifiers.empty(); }
-	/**
-	 * @brief Determine if two Attacks are equal to each other.
-	 * @param rhs the other Attack in question.
-	 * @return true if the two Attacks are equal, or false otherwise. */
-	bool operator== ( const Attack &rhs ) const;
-	bool ContainsTransformOrTurn() const;
-	static Attack FromGlobalCourseModifier( const std::string &sModifiers );
-	std::string GetTextDescription() const;
+  void GetAttackBeats(
+      const Song* pSong, float& fStartBeat, float& fEndBeat) const;
+  void GetRealtimeAttackBeats(
+      const Song* pSong, const PlayerState* pPlayerState, float& fStartBeat,
+      float& fEndBeat) const;
+  /**
+   * @brief Determine if this attack has no modifiers, and is thus blank or
+   * empty.
+   * @return true if it is blank/empty, or false otherwise. */
+  bool IsBlank() const { return sModifiers.empty(); }
+  /**
+   * @brief Determine if two Attacks are equal to each other.
+   * @param rhs the other Attack in question.
+   * @return true if the two Attacks are equal, or false otherwise. */
+  bool operator==(const Attack& rhs) const;
+  bool ContainsTransformOrTurn() const;
+  static Attack FromGlobalCourseModifier(const std::string& sModifiers);
+  std::string GetTextDescription() const;
 
-	int GetNumAttacks() const;
+  int GetNumAttacks() const;
 };
 
-struct AttackArray : public std::vector<Attack>
-{
-	/**
-	 * @brief Determine if the list of attacks contains a transform or turn mod.
-	 * @return true if it does, or false otherwise. */
-	bool ContainsTransformOrTurn() const;
+struct AttackArray : public std::vector<Attack> {
+  /**
+   * @brief Determine if the list of attacks contains a transform or turn mod.
+   * @return true if it does, or false otherwise. */
+  bool ContainsTransformOrTurn() const;
 
-	/**
-	 * @brief Return a string representation used for simfiles.
-	 * @return the string representation. */
-	std::vector<std::string> ToVectorString() const;
+  /**
+   * @brief Return a string representation used for simfiles.
+   * @return the string representation. */
+  std::vector<std::string> ToVectorString() const;
 
-	/**
-	 * @brief Adjust the starting time of all attacks.
-	 * @param delta the amount to change. */
-	void UpdateStartTimes(float delta);
+  /**
+   * @brief Adjust the starting time of all attacks.
+   * @param delta the amount to change. */
+  void UpdateStartTimes(float delta);
 };
 
 #endif

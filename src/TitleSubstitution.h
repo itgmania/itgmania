@@ -5,48 +5,47 @@
 #include <vector>
 
 /** @brief The different fields to potentially translate. */
-struct TitleFields
-{
-	void SaveToStrings(
-		std::string &sTitle, std::string &sSubtitle, std::string &sArtist,
-		std::string &sTitleTranslit, std::string &sSubtitleTranslit, std::string &sArtistTranslit ) const
-	{
-		sTitle = Title;
-		sSubtitle = Subtitle;
-		sArtist = Artist;
-		sTitleTranslit = TitleTranslit;
-		sSubtitleTranslit = SubtitleTranslit;
-		sArtistTranslit = ArtistTranslit;
-	}
+struct TitleFields {
+  void SaveToStrings(
+      std::string& sTitle, std::string& sSubtitle, std::string& sArtist,
+      std::string& sTitleTranslit, std::string& sSubtitleTranslit,
+      std::string& sArtistTranslit) const {
+    sTitle = Title;
+    sSubtitle = Subtitle;
+    sArtist = Artist;
+    sTitleTranslit = TitleTranslit;
+    sSubtitleTranslit = SubtitleTranslit;
+    sArtistTranslit = ArtistTranslit;
+  }
 
-	void LoadFromStrings(
-		std::string sTitle, std::string sSubtitle, std::string sArtist,
-		std::string sTitleTranslit, std::string sSubtitleTranslit, std::string sArtistTranslit )
-	{
-		Title = sTitle;
-		Subtitle = sSubtitle;
-		Artist = sArtist;
-		TitleTranslit = sTitleTranslit;
-		SubtitleTranslit = sSubtitleTranslit;
-		ArtistTranslit = sArtistTranslit;
-	}
-	std::string Title, Subtitle, Artist;
-	std::string TitleTranslit, SubtitleTranslit, ArtistTranslit;
+  void LoadFromStrings(
+      std::string sTitle, std::string sSubtitle, std::string sArtist,
+      std::string sTitleTranslit, std::string sSubtitleTranslit,
+      std::string sArtistTranslit) {
+    Title = sTitle;
+    Subtitle = sSubtitle;
+    Artist = sArtist;
+    TitleTranslit = sTitleTranslit;
+    SubtitleTranslit = sSubtitleTranslit;
+    ArtistTranslit = sArtistTranslit;
+  }
+  std::string Title, Subtitle, Artist;
+  std::string TitleTranslit, SubtitleTranslit, ArtistTranslit;
 };
 struct TitleTrans;
 /** @brief Automatic translation for Song titles. */
-class TitleSubst
-{
-	std::vector<TitleTrans *> ttab;
+class TitleSubst {
+  std::vector<TitleTrans*> ttab;
 
-	void AddTrans(const TitleTrans &tr);
-public:
-	TitleSubst(const std::string &section);
-	~TitleSubst();
+  void AddTrans(const TitleTrans& tr);
 
-	void Load(const std::string &filename, const std::string &section);
+ public:
+  TitleSubst(const std::string& section);
+  ~TitleSubst();
 
-	void Subst( TitleFields &tf );
+  void Load(const std::string& filename, const std::string& section);
+
+  void Subst(TitleFields& tf);
 };
 
 #endif

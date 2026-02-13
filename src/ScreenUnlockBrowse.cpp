@@ -12,76 +12,70 @@
 #include "UnlockManager.h"
 #include "global.h"
 
-REGISTER_SCREEN_CLASS( ScreenUnlockBrowse );
+REGISTER_SCREEN_CLASS(ScreenUnlockBrowse);
 
-void ScreenUnlockBrowse::Init()
-{
-	int index = 0;
-	// fill m_aGameCommands before calling Init()
-	for (UnlockEntry const &ue : UNLOCKMAN->m_UnlockEntries)
-	{
-		GameCommand gc;
-		UnlockEntryStatus st = ue.GetUnlockEntryStatus();
-		switch( st )
-		{
-		default:
-			FAIL_M(ssprintf("Invalid UnlockEntryStatus: %i", st));
-		case UnlockEntryStatus_RequirementsMet:
-		case UnlockEntryStatus_Unlocked:
-			gc.m_bInvalid = false;
-			break;
-		case UnlockEntryStatus_RequrementsNotMet:
-			break;
-		}
-		gc.m_iIndex = index++;
-		// gc.m_sUnlockEntryID = ue->m_sEntryID;
-		gc.m_sName = ssprintf("%d",gc.m_iIndex);
-		
-		m_aGameCommands.push_back( gc );
-	}
+void ScreenUnlockBrowse::Init() {
+  int index = 0;
+  // fill m_aGameCommands before calling Init()
+  for (const UnlockEntry& ue : UNLOCKMAN->m_UnlockEntries) {
+    GameCommand gc;
+    UnlockEntryStatus st = ue.GetUnlockEntryStatus();
+    switch (st) {
+      default:
+        FAIL_M(ssprintf("Invalid UnlockEntryStatus: %i", st));
+      case UnlockEntryStatus_RequirementsMet:
+      case UnlockEntryStatus_Unlocked:
+        gc.m_bInvalid = false;
+        break;
+      case UnlockEntryStatus_RequrementsNotMet:
+        break;
+    }
+    gc.m_iIndex = index++;
+    // gc.m_sUnlockEntryID = ue->m_sEntryID;
+    gc.m_sName = ssprintf("%d", gc.m_iIndex);
 
-	ScreenSelectMaster::Init();
+    m_aGameCommands.push_back(gc);
+  }
 
-	m_banner.SetName( "Banner" );
-	LOAD_ALL_COMMANDS_AND_SET_XY( m_banner );
-	this->AddChild( &m_banner );
+  ScreenSelectMaster::Init();
 
-	this->SubscribeToMessage( Message_MenuSelectionChanged );
+  m_banner.SetName("Banner");
+  LOAD_ALL_COMMANDS_AND_SET_XY(m_banner);
+  this->AddChild(&m_banner);
+
+  this->SubscribeToMessage(Message_MenuSelectionChanged);
 }
 
-void ScreenUnlockBrowse::BeginScreen()
-{
-	ScreenSelectMaster::BeginScreen();
+void ScreenUnlockBrowse::BeginScreen() {
+  ScreenSelectMaster::BeginScreen();
 
-	HandleMessage( Message(MessageIDToString(Message_MenuSelectionChanged)) );
+  HandleMessage(Message(MessageIDToString(Message_MenuSelectionChanged)));
 }
 
-bool ScreenUnlockBrowse::MenuStart( const InputEventPlus &input )
-{
-	m_soundStart.Play(true);
-	this->PostScreenMessage( SM_BeginFadingOut, 0 );
-	return true;
+bool ScreenUnlockBrowse::MenuStart(const InputEventPlus& input) {
+  m_soundStart.Play(true);
+  this->PostScreenMessage(SM_BeginFadingOut, 0);
+  return true;
 }
 
-void ScreenUnlockBrowse::HandleMessage( const Message &msg )
-{
-	if( msg == Message_MenuSelectionChanged )
-	{
-		int iSelection = this->GetSelectionIndex(PLAYER_1);
-		const UnlockEntry &ue = UNLOCKMAN->m_UnlockEntries[ iSelection ];
-		if( ue.IsLocked() )
-			m_banner.LoadFallback();
-		else
-			m_banner.LoadBannerFromUnlockEntry( &ue );
-	}
+void ScreenUnlockBrowse::HandleMessage(const Message& msg) {
+  if (msg == Message_MenuSelectionChanged) {
+    int iSelection = this->GetSelectionIndex(PLAYER_1);
+    const UnlockEntry& ue = UNLOCKMAN->m_UnlockEntries[iSelection];
+    if (ue.IsLocked()) {
+      m_banner.LoadFallback();
+    } else {
+      m_banner.LoadBannerFromUnlockEntry(&ue);
+    }
+  }
 
-	ScreenSelectMaster::HandleMessage( msg );
+  ScreenSelectMaster::HandleMessage(msg);
 }
 
 /*
  * (c) 2006 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -91,7 +85,7 @@ void ScreenUnlockBrowse::HandleMessage( const Message &msg )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

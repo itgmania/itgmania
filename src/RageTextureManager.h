@@ -7,99 +7,102 @@
 #include "RageTexture.h"
 #include "RageTextureID.h"
 
-struct RageTextureManagerPrefs
-{
-	int m_iTextureColorDepth;
-	int m_iMovieColorDepth;
-	bool m_bDelayedDelete;
-	int m_iMaxTextureResolution;
-	bool m_bHighResolutionTextures;
-	bool m_bMipMaps;
-	
-	RageTextureManagerPrefs(): m_iTextureColorDepth(16),
-		m_iMovieColorDepth(16), m_bDelayedDelete(false),
-		m_iMaxTextureResolution(1024),
-		m_bHighResolutionTextures(true), m_bMipMaps(false) {}
-	RageTextureManagerPrefs( 
-		int iTextureColorDepth,
-		int iMovieColorDepth,
-		bool bDelayedDelete,
-		int iMaxTextureResolution,
-		bool bHighResolutionTextures,
-		bool bMipMaps ):
-		m_iTextureColorDepth(iTextureColorDepth),
-		m_iMovieColorDepth(iMovieColorDepth),
-		m_bDelayedDelete(bDelayedDelete),
-		m_iMaxTextureResolution(iMaxTextureResolution),
-		m_bHighResolutionTextures(bHighResolutionTextures),
-		m_bMipMaps(bMipMaps) {}
+struct RageTextureManagerPrefs {
+  int m_iTextureColorDepth;
+  int m_iMovieColorDepth;
+  bool m_bDelayedDelete;
+  int m_iMaxTextureResolution;
+  bool m_bHighResolutionTextures;
+  bool m_bMipMaps;
 
-	bool operator!=( const RageTextureManagerPrefs& rhs ) const
-	{
-		return 
-			m_iTextureColorDepth != rhs.m_iTextureColorDepth ||
-			m_iMovieColorDepth != rhs.m_iMovieColorDepth ||
-			m_bDelayedDelete != rhs.m_bDelayedDelete ||
-			m_iMaxTextureResolution != rhs.m_iMaxTextureResolution ||
-			m_bHighResolutionTextures != rhs.m_bHighResolutionTextures ||
-			m_bMipMaps != rhs.m_bMipMaps;
-	}
+  RageTextureManagerPrefs()
+      : m_iTextureColorDepth(16),
+        m_iMovieColorDepth(16),
+        m_bDelayedDelete(false),
+        m_iMaxTextureResolution(1024),
+        m_bHighResolutionTextures(true),
+        m_bMipMaps(false) {}
+  RageTextureManagerPrefs(
+      int iTextureColorDepth, int iMovieColorDepth, bool bDelayedDelete,
+      int iMaxTextureResolution, bool bHighResolutionTextures, bool bMipMaps)
+      : m_iTextureColorDepth(iTextureColorDepth),
+        m_iMovieColorDepth(iMovieColorDepth),
+        m_bDelayedDelete(bDelayedDelete),
+        m_iMaxTextureResolution(iMaxTextureResolution),
+        m_bHighResolutionTextures(bHighResolutionTextures),
+        m_bMipMaps(bMipMaps) {}
+
+  bool operator!=(const RageTextureManagerPrefs& rhs) const {
+    return m_iTextureColorDepth != rhs.m_iTextureColorDepth ||
+           m_iMovieColorDepth != rhs.m_iMovieColorDepth ||
+           m_bDelayedDelete != rhs.m_bDelayedDelete ||
+           m_iMaxTextureResolution != rhs.m_iMaxTextureResolution ||
+           m_bHighResolutionTextures != rhs.m_bHighResolutionTextures ||
+           m_bMipMaps != rhs.m_bMipMaps;
+  }
 };
 
-class RageTextureManager
-{
-public:
-	RageTextureManager();
-	~RageTextureManager();
-	void Update( float fDeltaTime );
+class RageTextureManager {
+ public:
+  RageTextureManager();
+  ~RageTextureManager();
+  void Update(float fDeltaTime);
 
-	RageTexture* LoadTexture( RageTextureID ID );
-	RageTexture* CopyTexture( RageTexture *pCopy ); // returns a ref to the same texture, not a deep copy
-	bool IsTextureRegistered( RageTextureID ID ) const;
-	void RegisterTexture( RageTextureID ID, RageTexture *p );
-	void VolatileTexture( RageTextureID ID );
-	void UnloadTexture( RageTexture *t );
-	void ReloadAll();
+  RageTexture* LoadTexture(RageTextureID ID);
+  RageTexture* CopyTexture(RageTexture* pCopy);  // returns a ref to the same
+                                                 // texture, not a deep copy
+  bool IsTextureRegistered(RageTextureID ID) const;
+  void RegisterTexture(RageTextureID ID, RageTexture* p);
+  void VolatileTexture(RageTextureID ID);
+  void UnloadTexture(RageTexture* t);
+  void ReloadAll();
 
-	void RegisterTextureForUpdating(RageTextureID id, RageTexture* tex);
+  void RegisterTextureForUpdating(RageTextureID id, RageTexture* tex);
 
-	bool SetPrefs( RageTextureManagerPrefs prefs );
-	RageTextureManagerPrefs GetPrefs() { return m_Prefs; };
+  bool SetPrefs(RageTextureManagerPrefs prefs);
+  RageTextureManagerPrefs GetPrefs() { return m_Prefs; };
 
-	RageTextureID::TexPolicy GetDefaultTexturePolicy() const { return m_TexturePolicy; }
-	void SetDefaultTexturePolicy( RageTextureID::TexPolicy p ) { m_TexturePolicy = p; }
+  RageTextureID::TexPolicy GetDefaultTexturePolicy() const {
+    return m_TexturePolicy;
+  }
+  void SetDefaultTexturePolicy(RageTextureID::TexPolicy p) {
+    m_TexturePolicy = p;
+  }
 
-	// call this between Screens
-	void DeleteCachedTextures()	{ GarbageCollect( screen_changed ); }
+  // call this between Screens
+  void DeleteCachedTextures() { GarbageCollect(screen_changed); }
 
-	// call this on switch theme
-	void DoDelayedDelete()	{ GarbageCollect( delayed_delete ); }
+  // call this on switch theme
+  void DoDelayedDelete() { GarbageCollect(delayed_delete); }
 
-	void InvalidateTextures();
+  void InvalidateTextures();
 
-	void AdjustTextureID( RageTextureID &ID ) const;
-	void DiagnosticOutput() const;
+  void AdjustTextureID(RageTextureID& ID) const;
+  void DiagnosticOutput() const;
 
-	void DisableOddDimensionWarning() { m_iNoWarnAboutOddDimensions++; }
-	void EnableOddDimensionWarning() { m_iNoWarnAboutOddDimensions--; }
-	bool GetOddDimensionWarning() const { return m_iNoWarnAboutOddDimensions == 0; }
+  void DisableOddDimensionWarning() { m_iNoWarnAboutOddDimensions++; }
+  void EnableOddDimensionWarning() { m_iNoWarnAboutOddDimensions--; }
+  bool GetOddDimensionWarning() const {
+    return m_iNoWarnAboutOddDimensions == 0;
+  }
 
-	RageTextureID GetDefaultTextureID();
-	RageTextureID GetScreenTextureID();
-	RageSurface* GetScreenSurface();
+  RageTextureID GetDefaultTextureID();
+  RageTextureID GetScreenTextureID();
+  RageSurface* GetScreenSurface();
 
-private:
-	void DeleteTexture( RageTexture *t );
-	enum GCType { screen_changed, delayed_delete };
-	void GarbageCollect( GCType type );
-	RageTexture* LoadTextureInternal( RageTextureID ID );
+ private:
+  void DeleteTexture(RageTexture* t);
+  enum GCType { screen_changed, delayed_delete };
+  void GarbageCollect(GCType type);
+  RageTexture* LoadTextureInternal(RageTextureID ID);
 
-	RageTextureManagerPrefs m_Prefs;
-	int m_iNoWarnAboutOddDimensions;
-	RageTextureID::TexPolicy m_TexturePolicy;
+  RageTextureManagerPrefs m_Prefs;
+  int m_iNoWarnAboutOddDimensions;
+  RageTextureID::TexPolicy m_TexturePolicy;
 };
 
-extern RageTextureManager*	TEXTUREMAN;	// global and accessible from anywhere in our program
+extern RageTextureManager*
+    TEXTUREMAN;  // global and accessible from anywhere in our program
 
 #endif
 

@@ -12,39 +12,37 @@ class Course;
 class XNode;
 
 /** @brief Utility functions for dealing with the Trail. */
-namespace TrailUtil
-{
-	/**
-	 * @brief Retrieve the number of 
-	 * <a class="el" href="class_song.html">Songs</a> in the Trail.
-	 * @param pTrail the Trail itself.
-	 * @return the number of <a class="el" href="class_song.html">Songs</a>. */
-	int GetNumSongs( const Trail *pTrail );
-	/**
-	 * @brief Retrieve how long the Trail will last in seconds.
-	 * @param pTrail the Trail itself.
-	 * @return the total run time of the Trail. */
-	float GetTotalSeconds( const Trail *pTrail );
-};
+namespace TrailUtil {
+/**
+ * @brief Retrieve the number of
+ * <a class="el" href="class_song.html">Songs</a> in the Trail.
+ * @param pTrail the Trail itself.
+ * @return the number of <a class="el" href="class_song.html">Songs</a>. */
+int GetNumSongs(const Trail* pTrail);
+/**
+ * @brief Retrieve how long the Trail will last in seconds.
+ * @param pTrail the Trail itself.
+ * @return the total run time of the Trail. */
+float GetTotalSeconds(const Trail* pTrail);
+};  // namespace TrailUtil
 
-class TrailID
-{
-	StepsType st;
-	CourseDifficulty cd;
+class TrailID {
+  StepsType st;
+  CourseDifficulty cd;
 
-public:
-	TrailID(): st(StepsType_Invalid), cd(Difficulty_Invalid) {}
-	void Unset() { FromTrail(nullptr); }
-	void FromTrail( const Trail *p );
-	Trail *ToTrail( const Course *p, bool bAllowNull ) const;
-	bool operator<( const TrailID &rhs ) const;
-	bool MatchesStepsType( StepsType s ) const { return st == s; }
+ public:
+  TrailID() : st(StepsType_Invalid), cd(Difficulty_Invalid) {}
+  void Unset() { FromTrail(nullptr); }
+  void FromTrail(const Trail* p);
+  Trail* ToTrail(const Course* p, bool bAllowNull) const;
+  bool operator<(const TrailID& rhs) const;
+  bool MatchesStepsType(StepsType s) const { return st == s; }
 
-	XNode* CreateNode() const;
-	void LoadFromNode( const XNode* pNode );
-	std::string ToString() const;
-	bool IsValid() const;
-	static void Invalidate( Song* pStaleSong );
+  XNode* CreateNode() const;
+  void LoadFromNode(const XNode* pNode);
+  std::string ToString() const;
+  bool IsValid() const;
+  static void Invalidate(Song* pStaleSong);
 };
 
 #endif
@@ -52,7 +50,7 @@ public:
 /*
  * (c) 2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -62,7 +60,7 @@ public:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

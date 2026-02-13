@@ -8,25 +8,26 @@
 
 /**
  * @brief Display a updating count of life time remaining.
- * 
+ *
  * This is mainly used for Survival mode. */
-class ScoreDisplayLifeTime : public ScoreDisplay
-{
-public:
-	ScoreDisplayLifeTime();
+class ScoreDisplayLifeTime : public ScoreDisplay {
+ public:
+  ScoreDisplayLifeTime();
 
-	virtual void Init( const PlayerState* pPlayerState, const PlayerStageStats* pPlayerStageStats );
+  virtual void Init(
+      const PlayerState* pPlayerState,
+      const PlayerStageStats* pPlayerStageStats);
 
-	virtual void Update( float fDelta );
+  virtual void Update(float fDelta);
 
-	virtual void OnLoadSong();
-	virtual void OnJudgment( TapNoteScore score );
-	virtual void OnJudgment( HoldNoteScore score, TapNoteScore tscore );
+  virtual void OnLoadSong();
+  virtual void OnJudgment(TapNoteScore score);
+  virtual void OnJudgment(HoldNoteScore score, TapNoteScore tscore);
 
-protected:
-	AutoActor	m_sprFrame;
-	BitmapText	m_textTimeRemaining;
-	BitmapText	m_textDeltaSeconds;
+ protected:
+  AutoActor m_sprFrame;
+  BitmapText m_textTimeRemaining;
+  BitmapText m_textDeltaSeconds;
 };
 
 #endif
@@ -34,7 +35,7 @@ protected:
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -44,7 +45,7 @@ protected:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

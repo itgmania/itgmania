@@ -10,81 +10,74 @@
 /** @brief Unknown radar values are given a default value. */
 #define TECHCOUNTS_VAL_UNKNOWN -1
 
-enum TechCountsCategory
-{
-	TechCountsCategory_Crossovers = 0,
-	TechCountsCategory_HalfCrossovers,
-	TechCountsCategory_FullCrossovers,
-	TechCountsCategory_Footswitches,
-	TechCountsCategory_UpFootswitches,
-	TechCountsCategory_DownFootswitches,
-	TechCountsCategory_Sideswitches,
-	TechCountsCategory_Jacks,
-	TechCountsCategory_Brackets,
-	TechCountsCategory_Doublesteps,
-	NUM_TechCountsCategory,
-	TechCountsCategory_Invalid
+enum TechCountsCategory {
+  TechCountsCategory_Crossovers = 0,
+  TechCountsCategory_HalfCrossovers,
+  TechCountsCategory_FullCrossovers,
+  TechCountsCategory_Footswitches,
+  TechCountsCategory_UpFootswitches,
+  TechCountsCategory_DownFootswitches,
+  TechCountsCategory_Sideswitches,
+  TechCountsCategory_Jacks,
+  TechCountsCategory_Brackets,
+  TechCountsCategory_Doublesteps,
+  NUM_TechCountsCategory,
+  TechCountsCategory_Invalid
 };
 
-const std::string& TechCountsCategoryToString( TechCountsCategory cat );
+const std::string& TechCountsCategoryToString(TechCountsCategory cat);
 /**
  * @brief Turn the radar category into a proper localized string.
  * @param cat the radar category.
  * @return the localized string version of the radar category.
  */
-const std::string& TechCountsCategoryToLocalizedString( TechCountsCategory cat );
-LuaDeclareType( TechCountsCategory );
+const std::string& TechCountsCategoryToLocalizedString(TechCountsCategory cat);
+LuaDeclareType(TechCountsCategory);
 
 struct lua_State;
 
 /** @brief Technical statistics */
-struct TechCounts
-{
-private:
-	float m_Values[NUM_TechCountsCategory];
-public:
+struct TechCounts {
+ private:
+  float m_Values[NUM_TechCountsCategory];
 
-	float operator[](TechCountsCategory cat) const { return m_Values[cat]; }
-	float& operator[](TechCountsCategory cat) { return m_Values[cat]; }
-	float operator[](int cat) const { return m_Values[cat]; }
-	float& operator[](int cat) { return m_Values[cat]; }
-	TechCounts();
-	void MakeUnknown();
-	void Zero();
+ public:
+  float operator[](TechCountsCategory cat) const { return m_Values[cat]; }
+  float& operator[](TechCountsCategory cat) { return m_Values[cat]; }
+  float operator[](int cat) const { return m_Values[cat]; }
+  float& operator[](int cat) { return m_Values[cat]; }
+  TechCounts();
+  void MakeUnknown();
+  void Zero();
 
-	TechCounts& operator+=( const TechCounts& other )
-	{
-		FOREACH_ENUM( TechCountsCategory, tc )
-		{
-			(*this)[tc] += other[tc];
-		}
-		return *this;
-	}
+  TechCounts& operator+=(const TechCounts& other) {
+    FOREACH_ENUM(TechCountsCategory, tc) { (*this)[tc] += other[tc]; }
+    return *this;
+  }
 
-	bool operator==( const TechCounts& other ) const
-	{
-		FOREACH_ENUM( TechCountsCategory, tc )
-		{
-			if((*this)[tc] != other[tc])
-			{
-				return false;
-			}
-		}
-		return true;
-	}
+  bool operator==(const TechCounts& other) const {
+    FOREACH_ENUM(TechCountsCategory, tc) {
+      if ((*this)[tc] != other[tc]) {
+        return false;
+      }
+    }
+    return true;
+  }
 
-	bool operator!=( const TechCounts& other ) const
-	{
-		return !operator==( other );
-	}
+  bool operator!=(const TechCounts& other) const { return !operator==(other); }
 
-	std::string ToString( int iMaxValues = -1 ) const; // default = all
-	void FromString( std::string sValues );
+  std::string ToString(int iMaxValues = -1) const;  // default = all
+  void FromString(std::string sValues);
 
-	void PushSelf( lua_State *L );
-	static void CalculateTechCountsFromRows(const std::vector<StepParity::Row> &rows, const StepParity::StageLayout * layout, TechCounts &out);
-private:
-	static bool isFootswitch(int c, const StepParity::Row & currentRow, const StepParity::Row & previousRow, float elapsedTime);
+  void PushSelf(lua_State* L);
+  static void CalculateTechCountsFromRows(
+      const std::vector<StepParity::Row>& rows,
+      const StepParity::StageLayout* layout, TechCounts& out);
+
+ private:
+  static bool isFootswitch(
+      int c, const StepParity::Row& currentRow,
+      const StepParity::Row& previousRow, float elapsedTime);
 };
 
 #endif

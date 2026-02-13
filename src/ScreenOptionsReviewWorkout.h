@@ -11,26 +11,25 @@
 #include "ScreenOptions.h"
 #include "ThemeMetric.h"
 
-class ScreenOptionsCourseOverview : public ScreenOptions
-{
-public:
-	virtual ~ScreenOptionsCourseOverview();
+class ScreenOptionsCourseOverview : public ScreenOptions {
+ public:
+  virtual ~ScreenOptionsCourseOverview();
 
-	virtual void Init();
-	virtual void BeginScreen();
+  virtual void Init();
+  virtual void BeginScreen();
 
-protected:
-private:
-	virtual void ImportOptions( int row, const std::vector<PlayerNumber> &vpns );
-	virtual void ExportOptions( int row, const std::vector<PlayerNumber> &vpns );
+ protected:
+ private:
+  virtual void ImportOptions(int row, const std::vector<PlayerNumber>& vpns);
+  virtual void ExportOptions(int row, const std::vector<PlayerNumber>& vpns);
 
-	virtual void HandleScreenMessage( const ScreenMessage SM );
-	virtual void AfterChangeValueInRow( int iRow, PlayerNumber pn );
-	virtual void ProcessMenuStart( const InputEventPlus &input );
+  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void AfterChangeValueInRow(int iRow, PlayerNumber pn);
+  virtual void ProcessMenuStart(const InputEventPlus& input);
 
-	RageSound	m_soundSave;
-	ThemeMetric<std::string> PLAY_SCREEN;
-	ThemeMetric<std::string> EDIT_SCREEN;
+  RageSound m_soundSave;
+  ThemeMetric<std::string> PLAY_SCREEN;
+  ThemeMetric<std::string> EDIT_SCREEN;
 };
 
 #endif

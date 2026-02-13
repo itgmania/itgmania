@@ -10,10 +10,10 @@
 #include <utility>
 
 /* In RageUtil: */
-void MakeUpper( char *p, size_t iLen );
-void MakeLower( char *p, size_t iLen );
-void MakeUpper( wchar_t *p, size_t iLen );
-void MakeLower( wchar_t *p, size_t iLen );
+void MakeUpper(char* p, size_t iLen);
+void MakeLower(char* p, size_t iLen);
+void MakeUpper(wchar_t* p, size_t iLen);
+void MakeLower(wchar_t* p, size_t iLen);
 
 // FIXME: separate these into functions that either modify the argument, or
 // return a new string leaving the original unmodified.
@@ -83,7 +83,8 @@ inline std::string Right(const std::string& s, int n) {
   }
   return s.substr(static_cast<int>(s.size()) - n);
 }
-inline void Replace(std::string& s, const std::string& a, const std::string& b) {
+inline void Replace(
+    std::string& s, const std::string& a, const std::string& b) {
   size_t idx = 0;
   size_t a_len = a.length();
   size_t b_len = b.length();
@@ -101,4 +102,4 @@ inline void Replace(std::string& s, char a, char b) {
   }
 }
 
-#endif	// #ifndef STDSTRING_H
+#endif  // #ifndef STDSTRING_H

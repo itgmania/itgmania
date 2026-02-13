@@ -8,42 +8,42 @@
 #include "ThemeMetric.h"
 
 /** @brief Animates from one number to another by scrolling its digits. */
-class RollingNumbers : public BitmapText
-{
-public:
-	RollingNumbers();
+class RollingNumbers : public BitmapText {
+ public:
+  RollingNumbers();
 
-	void Load( const std::string &sMetricsGroup );
-	virtual RollingNumbers *Copy() const;
+  void Load(const std::string& sMetricsGroup);
+  virtual RollingNumbers* Copy() const;
 
-	void DrawPart(RageColor const* diffuse, RageColor const& stroke,
-		float crop_left, float crop_right);
-	virtual void DrawPrimitives() noexcept;
-	virtual void Update( float fDeltaTime );
+  void DrawPart(
+      const RageColor* diffuse, const RageColor& stroke, float crop_left,
+      float crop_right);
+  virtual void DrawPrimitives() noexcept;
+  virtual void Update(float fDeltaTime);
 
-	/** 
-	 * @brief Set the new target number to be reached.
-	 * @param fTargetNumber the new target number. */
-	void SetTargetNumber( float fTargetNumber );
+  /**
+   * @brief Set the new target number to be reached.
+   * @param fTargetNumber the new target number. */
+  void SetTargetNumber(float fTargetNumber);
 
-	void UpdateText();
+  void UpdateText();
 
-	// Commands
-	virtual void PushSelf( lua_State *L );
+  // Commands
+  virtual void PushSelf(lua_State* L);
 
-private:
-	ThemeMetric<std::string> TEXT_FORMAT;
-	ThemeMetric<float> APPROACH_SECONDS;
-	ThemeMetric<bool> COMMIFY;
-	ThemeMetric<RageColor> LEADING_ZERO_MULTIPLY_COLOR;
+ private:
+  ThemeMetric<std::string> TEXT_FORMAT;
+  ThemeMetric<float> APPROACH_SECONDS;
+  ThemeMetric<bool> COMMIFY;
+  ThemeMetric<RageColor> LEADING_ZERO_MULTIPLY_COLOR;
 
-	/** @brief The currently showing number. */
-	float	m_fCurrentNumber;
-	/** @brief The number we are trying to approach. */
-	float	m_fTargetNumber;
-	/** @brief The speed we are trying to reach the target number. */
-	float	m_fScoreVelocity;
-	bool m_metrics_loaded;
+  /** @brief The currently showing number. */
+  float m_fCurrentNumber;
+  /** @brief The number we are trying to approach. */
+  float m_fTargetNumber;
+  /** @brief The speed we are trying to reach the target number. */
+  float m_fScoreVelocity;
+  bool m_metrics_loaded;
 };
 
 #endif
@@ -53,7 +53,7 @@ private:
  * @author Chris Danford (c) 2001-2004
  * @section LICENSE
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -63,7 +63,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

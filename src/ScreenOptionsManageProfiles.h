@@ -11,25 +11,24 @@
 
 class Course;
 
-class ScreenOptionsManageProfiles : public ScreenOptions
-{
-public:
-	void Init();
-	virtual void BeginScreen();
+class ScreenOptionsManageProfiles : public ScreenOptions {
+ public:
+  void Init();
+  virtual void BeginScreen();
 
-	virtual void HandleScreenMessage( const ScreenMessage SM );
+  virtual void HandleScreenMessage(const ScreenMessage SM);
 
-protected:
-	virtual void ImportOptions( int iRow, const std::vector<PlayerNumber> &vpns );
-	virtual void ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns );
+ protected:
+  virtual void ImportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
+  virtual void ExportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
 
-	virtual void AfterChangeRow( PlayerNumber pn );
-	virtual void ProcessMenuStart( const InputEventPlus &input );
+  virtual void AfterChangeRow(PlayerNumber pn);
+  virtual void ProcessMenuStart(const InputEventPlus& input);
 
-	int GetLocalProfileIndexWithFocus() const;
-	std::string GetLocalProfileIDWithFocus() const;
+  int GetLocalProfileIndexWithFocus() const;
+  std::string GetLocalProfileIDWithFocus() const;
 
-	std::vector<std::string> m_vsLocalProfileID;
+  std::vector<std::string> m_vsLocalProfileID;
 };
 
 #endif

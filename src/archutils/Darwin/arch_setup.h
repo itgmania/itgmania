@@ -2,8 +2,8 @@
 #define ARCH_SETUP_DARWIN_H
 
 #define HAVE_CXA_DEMANGLE
-/* This must be defined to 1 because autoconf's AC_CHECK_DECLS macro decides to define
- * this in all cases. If only they could be consistent... */
+/* This must be defined to 1 because autoconf's AC_CHECK_DECLS macro decides to
+ * define this in all cases. If only they could be consistent... */
 #define HAVE_DECL_SIGUSR1 1
 
 #define __STDC_FORMAT_MACROS
@@ -14,10 +14,10 @@
 #define NO_GL_FLUSH
 
 #ifndef MACOSX
-# define MACOSX
+#define MACOSX
 #endif
 #ifndef __MACOSX__
-# define __MACOSX__
+#define __MACOSX__
 #endif
 
 #define OSX_KEYBOARD_USE_NSEVENT 1

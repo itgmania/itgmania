@@ -19,179 +19,186 @@
 #include <fcntl.h>
 #endif
 
+#include <errno.h>
 #include <linux/input.h>
 
-#include <errno.h>
+std::string getDevice(std::string inputDir, std::string type) {
+  std::string result = "";
+  DIR* dir = opendir(inputDir.c_str());
+  if (dir == nullptr) {
+    LOG->Warn(
+        "LinuxInputManager: Couldn't open %s: %s.", inputDir.c_str(),
+        strerror(errno));
+    return "";
+  }
 
-std::string getDevice(std::string inputDir, std::string type)
-{
-	std::string result = "";
-	DIR* dir = opendir( inputDir.c_str() );
-	if(dir == nullptr)
-		{ LOG->Warn("LinuxInputManager: Couldn't open %s: %s.", inputDir.c_str(), strerror(errno) ); return ""; }
+  struct dirent* d;
+  while ((d = readdir(dir)) != nullptr) {
+    if (strncmp(type.c_str(), d->d_name, type.size()) == 0) {
+      result = std::string("/dev/input/") + d->d_name;
+      break;
+    }
+  }
 
-	struct dirent* d;
-	while( ( d = readdir(dir) ) != nullptr)
-		if( strncmp( type.c_str(), d->d_name, type.size() ) == 0)
-		{
-			result = std::string("/dev/input/") + d->d_name;
-			break;
-		}
-
-	closedir(dir);
-	return result;
+  closedir(dir);
+  return result;
 }
 
-static bool cmpDevices(std::string a, std::string b)
-{
-	return a < b;
+static bool cmpDevices(std::string a, std::string b) { return a < b; }
+
+LinuxInputManager::LinuxInputManager() {
+  m_bEventEnabled =
+      g_sInputDrivers.Get().find("LinuxEvent") != std::string::npos;
+  m_bJoystickEnabled =
+      g_sInputDrivers.Get().find("LinuxJoystick") != std::string::npos;
+  // HACK: If empty, assume both are enabled
+  if (g_sInputDrivers.Get() == "") {
+    m_bEventEnabled = true;
+    m_bJoystickEnabled = true;
+  }
+
+  m_EventDriver = nullptr;
+  m_JoystickDriver = nullptr;
+
+  // XXX: Can I use RageFile for this?
+  DIR* sysClassInput = opendir("/sys/class/input");
+  if (sysClassInput == nullptr) {
+    // XXX: Probably should throw a Dialog. But Linux doesn't have a
+    // DialogDriver yet so eh.
+    LOG->Warn(
+        "Couldn't open /sys/class/input: %s. Joysticks will not work!",
+        strerror(errno));
+    return;
+  }
+
+  struct dirent* d;
+  while ((d = readdir(sysClassInput)) != nullptr) {
+    if (strncmp("input", d->d_name, 5) != 0) {
+      continue;
+    }
+
+    std::string dName = std::string("/sys/class/input/") + d->d_name;
+
+    bool bEventPresent = getDevice(dName, "event") != "";
+    if (m_bEventEnabled && bEventPresent) {
+      m_vsPendingEventDevices.push_back(dName);
+      continue;
+    }
+
+    bool bJoystickPresent = getDevice(dName, "js") != "";
+    if (m_bJoystickEnabled && bJoystickPresent) {
+      m_vsPendingJoystickDevices.push_back(dName);
+      continue;
+    }
+
+    if (!bEventPresent && !bJoystickPresent) {
+      LOG->Info(
+          "LinuxInputManager: %s seems to have no eventNN or jsNN.",
+          dName.c_str());
+    }
+  }
+
+  // use Presort to sort the devices by unique location (like USB port/hub
+  // number.)
+  PresortPhysical(m_vsPendingEventDevices, "event");
+  PresortPhysical(m_vsPendingJoystickDevices, "js");
+
+  closedir(sysClassInput);
 }
 
-LinuxInputManager::LinuxInputManager()
-{
-	m_bEventEnabled = g_sInputDrivers.Get().find("LinuxEvent") != std::string::npos;
-	m_bJoystickEnabled = g_sInputDrivers.Get().find("LinuxJoystick") != std::string::npos;
-	// HACK: If empty, assume both are enabled
-	if( g_sInputDrivers.Get() == "" )
-		{ m_bEventEnabled = true; m_bJoystickEnabled = true; }
+LinuxInputManager::~LinuxInputManager() {}
 
-	m_EventDriver = nullptr;
-	m_JoystickDriver = nullptr;
-
-	// XXX: Can I use RageFile for this?
-	DIR* sysClassInput = opendir("/sys/class/input");
-	if( sysClassInput == nullptr)
-	{
-		// XXX: Probably should throw a Dialog. But Linux doesn't have a DialogDriver yet so eh.
-		LOG->Warn("Couldn't open /sys/class/input: %s. Joysticks will not work!", strerror(errno) );
-		return;
-	}
-
-	struct dirent* d;
-	while( ( d = readdir(sysClassInput) ) != nullptr)
-	{
-		if( strncmp( "input", d->d_name, 5) != 0) continue;
-
-		std::string dName = std::string("/sys/class/input/") + d->d_name;
-
-		bool bEventPresent = getDevice(dName, "event") != "";
-		if( m_bEventEnabled && bEventPresent )
-			{ m_vsPendingEventDevices.push_back(dName); continue; }
-
-		bool bJoystickPresent = getDevice(dName, "js") != "";
-		if( m_bJoystickEnabled && bJoystickPresent )
-			{ m_vsPendingJoystickDevices.push_back(dName); continue; }
-
-		if( !bEventPresent && !bJoystickPresent )
-			LOG->Info("LinuxInputManager: %s seems to have no eventNN or jsNN.", dName.c_str() );
-	}
-
-	// use Presort to sort the devices by unique location (like USB port/hub number.)
-	PresortPhysical(m_vsPendingEventDevices, "event");
-	PresortPhysical(m_vsPendingJoystickDevices, "js");
-
-	closedir(sysClassInput);
+static bool presort_cmpDevices(LinuxInputSort a, LinuxInputSort b) {
+  return a.UniqueString < b.UniqueString;
 }
 
-LinuxInputManager::~LinuxInputManager()
-{
+void LinuxInputManager::PresortPhysical(
+    std::vector<std::string>& sortingArray, std::string sortBy) {
+  m_vPreSort.clear();
+
+  for (std::string& dev : sortingArray) {
+    LinuxInputSort entry;
+
+    entry.DeviceName = dev;
+    entry.UniqueString = "";
+
+    int m_iFD = open(getDevice(dev, sortBy.c_str()).c_str(), O_RDWR);
+
+    if (m_iFD >= 0) {
+      char szLocation[1024];
+
+      // EVIOCGPHYS can return values like "usb-0000:0d:00.3-4"
+      // telling us where the device is located physically on the computer.
+      if (ioctl(m_iFD, EVIOCGPHYS(sizeof(szLocation)), szLocation) != -1) {
+        entry.UniqueString += szLocation;
+      }
+
+      close(m_iFD);
+    }
+
+    // in the event we didn't get a unique location from ioctl
+    // default to the name so that sorting by number still works as intended.
+    entry.UniqueString += entry.DeviceName;
+
+    m_vPreSort.push_back(entry);
+  }
+
+  std::sort(m_vPreSort.begin(), m_vPreSort.end(), presort_cmpDevices);
+
+  sortingArray.clear();
+
+  for (LinuxInputSort& dev : m_vPreSort) {
+    // LOG->Info("%s -> %s", dev.DeviceName.c_str(), dev.UniqueString.c_str());
+    sortingArray.push_back(dev.DeviceName);
+  }
 }
 
-static bool presort_cmpDevices(LinuxInputSort a, LinuxInputSort b)
-{
-	return a.UniqueString < b.UniqueString;
+void LinuxInputManager::InitDriver(InputHandler_Linux_Event* driver) {
+  m_EventDriver = driver;
+
+  for (std::string& dev : m_vsPendingEventDevices) {
+    std::string devFile = getDevice(dev, "event");
+    ASSERT(devFile != "");
+
+    if (!driver->TryDevice(devFile) && m_bJoystickEnabled &&
+        getDevice(dev, "js") != "") {
+      m_vsPendingJoystickDevices.push_back(dev);
+    }
+  }
+  if (m_JoystickDriver != nullptr) {
+    InitDriver(m_JoystickDriver);
+  }
+
+  m_vsPendingEventDevices.clear();
 }
 
-void LinuxInputManager::PresortPhysical(std::vector<std::string>& sortingArray, std::string sortBy)
-{
-	m_vPreSort.clear();
+void LinuxInputManager::InitDriver(InputHandler_Linux_Joystick* driver) {
+  m_JoystickDriver = driver;
+  // Discard all the joystick devices if they were assigned manually via
+  // 	InputDeviceOrder
+  if (g_sInputDeviceOrder.Get() != "") {
+    m_vsPendingJoystickDevices.clear();
+  }
 
-	for (std::string &dev : sortingArray)
-	{
-		LinuxInputSort entry;
+  for (std::string& dev : m_vsPendingJoystickDevices) {
+    std::string devFile = getDevice(dev, "js");
+    ASSERT(devFile != "");
 
-		entry.DeviceName = dev;
-		entry.UniqueString = "";
+    driver->TryDevice(devFile);
+  }
 
-		int m_iFD = open(getDevice(dev, sortBy.c_str()).c_str(), O_RDWR);
+  // If any, add the manually specified devices via InputDeviceOrder
+  std::vector<std::string> fixedDevices;
+  split(g_sInputDeviceOrder, ",", fixedDevices, true);
 
-		if(m_iFD >= 0)
-		{
-			char szLocation[1024];
-
-			// EVIOCGPHYS can return values like "usb-0000:0d:00.3-4"
-			// telling us where the device is located physically on the computer.
-			if(ioctl(m_iFD, EVIOCGPHYS(sizeof(szLocation)), szLocation) != -1)
-			{
-				entry.UniqueString += szLocation;
-			}
-
-			close(m_iFD);
-		}
-
-		// in the event we didn't get a unique location from ioctl
-		// default to the name so that sorting by number still works as intended.
-		entry.UniqueString += entry.DeviceName;
-
-		m_vPreSort.push_back(entry);
-	}
-
-	std::sort(m_vPreSort.begin(), m_vPreSort.end(), presort_cmpDevices);
-
-	sortingArray.clear();
-
-	for (LinuxInputSort &dev : m_vPreSort)
-	{
-		// LOG->Info("%s -> %s", dev.DeviceName.c_str(), dev.UniqueString.c_str());
-		sortingArray.push_back(dev.DeviceName);
-	}
+  for (std::string dev : fixedDevices) {
+    std::string devFile = dev;
+    driver->TryDevice(devFile);
+  }
 }
 
-void LinuxInputManager::InitDriver(InputHandler_Linux_Event* driver)
-{
-	m_EventDriver = driver;
-
-	for (std::string &dev : m_vsPendingEventDevices)
-	{
-		std::string devFile = getDevice(dev, "event");
-		ASSERT( devFile != "" );
-
-		if( ! driver->TryDevice(devFile) && m_bJoystickEnabled && getDevice(dev, "js") != "" )
-			m_vsPendingJoystickDevices.push_back(dev);
-	}
-	if( m_JoystickDriver != nullptr ) InitDriver(m_JoystickDriver);
-
-	m_vsPendingEventDevices.clear();
-}
-
-void LinuxInputManager::InitDriver(InputHandler_Linux_Joystick* driver)
-{
-	m_JoystickDriver = driver;
-	// Discard all the joystick devices if they were assigned manually via
-	// 	InputDeviceOrder
-	if( g_sInputDeviceOrder.Get() != "" ) {
-		m_vsPendingJoystickDevices.clear();
-	}
-
-	for (std::string &dev : m_vsPendingJoystickDevices)
-	{
-		std::string devFile = getDevice(dev, "js");
-		ASSERT( devFile != "" );
-
-		driver->TryDevice(devFile);
-	}
-
-	// If any, add the manually specified devices via InputDeviceOrder
-	std::vector<std::string> fixedDevices;
-	split( g_sInputDeviceOrder, ",", fixedDevices, true );
-
-	for (std::string dev : fixedDevices) {
-		std::string devFile = dev;
-		driver->TryDevice(devFile);
-	}
-}
-
-LinuxInputManager* LINUXINPUT = nullptr; // global and accessible anywhere in our program
+LinuxInputManager* LINUXINPUT =
+    nullptr;  // global and accessible anywhere in our program
 
 /*
  * (c) 2013 Ben "root" Anderson

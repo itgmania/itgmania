@@ -14,141 +14,145 @@
 #include "RageUtil_AutoPtr.h"
 #include "StdString.h"
 
-RageSoundReader_FileReader *RageSoundReader_FileReader::TryOpenFile( RageFileBasic *pFile, std::string &error, std::string format, bool &bKeepTrying )
-{
-	RageSoundReader_FileReader *Sample = nullptr;
+RageSoundReader_FileReader* RageSoundReader_FileReader::TryOpenFile(
+    RageFileBasic* pFile, std::string& error, std::string format,
+    bool& bKeepTrying) {
+  RageSoundReader_FileReader* Sample = nullptr;
 
-	if( !CompareNoCase(format, "wav") )
-		Sample = new RageSoundReader_WAV;
+  if (!CompareNoCase(format, "wav")) {
+    Sample = new RageSoundReader_WAV;
+  }
 
-	if( !CompareNoCase(format, "mp3") )
-		Sample = new RageSoundReader_MP3;
+  if (!CompareNoCase(format, "mp3")) {
+    Sample = new RageSoundReader_MP3;
+  }
 
-	if( !CompareNoCase(format, "oga") || !CompareNoCase(format, "ogg") )
-		Sample = new RageSoundReader_Vorbisfile;
+  if (!CompareNoCase(format, "oga") || !CompareNoCase(format, "ogg")) {
+    Sample = new RageSoundReader_Vorbisfile;
+  }
 
-	if( !Sample )
-		return nullptr;
+  if (!Sample) {
+    return nullptr;
+  }
 
-	OpenResult ret = Sample->Open( pFile );
-	pFile = nullptr; // Sample owns it now
-	if( ret == OPEN_OK )
-		return Sample;
+  OpenResult ret = Sample->Open(pFile);
+  pFile = nullptr;  // Sample owns it now
+  if (ret == OPEN_OK) {
+    return Sample;
+  }
 
-	std::string err = Sample->GetError();
-	delete Sample;
+  std::string err = Sample->GetError();
+  delete Sample;
 
-	LOG->Trace( "Format %s failed: %s", format.c_str(), err.c_str() );
+  LOG->Trace("Format %s failed: %s", format.c_str(), err.c_str());
 
-	/*
-	 * The file failed to open, or failed to read.  This indicates a problem that will
-	 * affect all readers, so don't waste time trying more readers. (OPEN_IO_ERROR)
-	 *
-	 * Errors fall in two categories:
-	 * OPEN_UNKNOWN_FILE_FORMAT: Data was successfully read from the file, but it's the
-	 * wrong file format.  The error message always looks like "unknown file format" or
-	 * "Not Vorbis data"; ignore it so we always give a consistent error message, and
-	 * continue trying other file formats.
-	 *
-	 * OPEN_FATAL_ERROR: Either the file was opened successfully and appears to be the
-	 * correct format, but a fatal format-specific error was encountered that will probably
-	 * not be fixed by using a different reader (for example, an Ogg file that doesn't
-	 * actually contain any audio streams); or the file failed to open or read ("I/O
-	 * error", "permission denied"), in which case all other readers will probably fail,
-	 * too.  The returned error is used, and no other formats will be tried.
-	 */
-	bKeepTrying = (ret != OPEN_FATAL_ERROR);
-	switch( ret )
-	{
-		case OPEN_UNKNOWN_FILE_FORMAT:
-			bKeepTrying = true;
-			error = "Unknown file format";
-			break;
+  /*
+   * The file failed to open, or failed to read.  This indicates a problem that
+   * will affect all readers, so don't waste time trying more readers.
+   * (OPEN_IO_ERROR)
+   *
+   * Errors fall in two categories:
+   * OPEN_UNKNOWN_FILE_FORMAT: Data was successfully read from the file, but
+   * it's the wrong file format.  The error message always looks like "unknown
+   * file format" or "Not Vorbis data"; ignore it so we always give a consistent
+   * error message, and continue trying other file formats.
+   *
+   * OPEN_FATAL_ERROR: Either the file was opened successfully and appears to be
+   * the correct format, but a fatal format-specific error was encountered that
+   * will probably not be fixed by using a different reader (for example, an Ogg
+   * file that doesn't actually contain any audio streams); or the file failed
+   * to open or read ("I/O error", "permission denied"), in which case all other
+   * readers will probably fail, too.  The returned error is used, and no other
+   * formats will be tried.
+   */
+  bKeepTrying = (ret != OPEN_FATAL_ERROR);
+  switch (ret) {
+    case OPEN_UNKNOWN_FILE_FORMAT:
+      bKeepTrying = true;
+      error = "Unknown file format";
+      break;
 
-		case OPEN_FATAL_ERROR:
-			/* The file matched, but failed to load.  We know it's this type of data;
-			 * don't bother trying the other file types. */
-			bKeepTrying = false;
-			error = err;
-			break;
-		default: break;
-	}
+    case OPEN_FATAL_ERROR:
+      /* The file matched, but failed to load.  We know it's this type of data;
+       * don't bother trying the other file types. */
+      bKeepTrying = false;
+      error = err;
+      break;
+    default:
+      break;
+  }
 
-	return nullptr;
+  return nullptr;
 }
 
 #include "RageFileDriverMemory.h"
 
-RageSoundReader_FileReader *RageSoundReader_FileReader::OpenFile( std::string filename, std::string &error, bool *pPrebuffer )
-{
-	HiddenPtr<RageFileBasic> pFile;
-	{
-		RageFile *pFileOpen = new RageFile;
-		if( !pFileOpen->Open(filename) )
-		{
-			error = pFileOpen->GetError();
-			delete pFileOpen;
-			return nullptr;
-		}
-		pFile = pFileOpen;
-	}
+RageSoundReader_FileReader* RageSoundReader_FileReader::OpenFile(
+    std::string filename, std::string& error, bool* pPrebuffer) {
+  HiddenPtr<RageFileBasic> pFile;
+  {
+    RageFile* pFileOpen = new RageFile;
+    if (!pFileOpen->Open(filename)) {
+      error = pFileOpen->GetError();
+      delete pFileOpen;
+      return nullptr;
+    }
+    pFile = pFileOpen;
+  }
 
-	if( pPrebuffer )
-	{
-		if( pFile->GetFileSize() < 1024*50 )
-		{
-			RageFileObjMem *pMem = new RageFileObjMem;
-			bool bRet = FileCopy( *pFile, *pMem, error, nullptr );
-			if( !bRet )
-			{
-				delete pMem;
-				return nullptr;
-			}
+  if (pPrebuffer) {
+    if (pFile->GetFileSize() < 1024 * 50) {
+      RageFileObjMem* pMem = new RageFileObjMem;
+      bool bRet = FileCopy(*pFile, *pMem, error, nullptr);
+      if (!bRet) {
+        delete pMem;
+        return nullptr;
+      }
 
-			pFile = pMem;
-			pFile->Seek( 0 );
-			*pPrebuffer = true;
-		}
-		else
-		{
-			*pPrebuffer = false;
-		}
-	}
-	std::set<std::string> FileTypes;
-	std::vector<std::string> const& sound_exts= ActorUtil::GetTypeExtensionList(FT_Sound);
-	for(std::vector<std::string>::const_iterator curr= sound_exts.begin();
-			curr != sound_exts.end(); ++curr)
-	{
-		FileTypes.insert(*curr);
-	}
+      pFile = pMem;
+      pFile->Seek(0);
+      *pPrebuffer = true;
+    } else {
+      *pPrebuffer = false;
+    }
+  }
+  std::set<std::string> FileTypes;
+  const std::vector<std::string>& sound_exts =
+      ActorUtil::GetTypeExtensionList(FT_Sound);
+  for (std::vector<std::string>::const_iterator curr = sound_exts.begin();
+       curr != sound_exts.end(); ++curr) {
+    FileTypes.insert(*curr);
+  }
 
-	std::string format = GetExtension( filename );
-	MakeLower(format);
+  std::string format = GetExtension(filename);
+  MakeLower(format);
 
-	error = "";
+  error = "";
 
-	bool bKeepTrying = true;
+  bool bKeepTrying = true;
 
-	/* If the extension matches a format, try that first. */
-	if( FileTypes.find(format) != FileTypes.end() )
-	{
-		RageSoundReader_FileReader *NewSample = TryOpenFile( pFile->Copy(), error, format, bKeepTrying );
-		if( NewSample )
-			return NewSample;
-		FileTypes.erase( format );
-	}
+  /* If the extension matches a format, try that first. */
+  if (FileTypes.find(format) != FileTypes.end()) {
+    RageSoundReader_FileReader* NewSample =
+        TryOpenFile(pFile->Copy(), error, format, bKeepTrying);
+    if (NewSample) {
+      return NewSample;
+    }
+    FileTypes.erase(format);
+  }
 
-	for( std::set<std::string>::iterator it = FileTypes.begin(); bKeepTrying && it != FileTypes.end(); ++it )
-	{
-		RageSoundReader_FileReader *NewSample = TryOpenFile( pFile->Copy(), error, *it, bKeepTrying );
-		if( NewSample )
-		{
-			LOG->UserLog( "Sound file", pFile->GetDisplayPath(), "is really %s.", it->c_str() );
-			return NewSample;
-		}
-	}
+  for (std::set<std::string>::iterator it = FileTypes.begin();
+       bKeepTrying && it != FileTypes.end(); ++it) {
+    RageSoundReader_FileReader* NewSample =
+        TryOpenFile(pFile->Copy(), error, *it, bKeepTrying);
+    if (NewSample) {
+      LOG->UserLog(
+          "Sound file", pFile->GetDisplayPath(), "is really %s.", it->c_str());
+      return NewSample;
+    }
+  }
 
-	return nullptr;
+  return nullptr;
 }
 
 /*

@@ -12,57 +12,52 @@
 #include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
 
-enum PromptType
-{
-	PROMPT_OK,
-	PROMPT_YES_NO,
-	PROMPT_YES_NO_CANCEL
-};
+enum PromptType { PROMPT_OK, PROMPT_YES_NO, PROMPT_YES_NO_CANCEL };
 
-enum PromptAnswer
-{
-	ANSWER_YES,
-	ANSWER_NO,
-	ANSWER_CANCEL,
-	NUM_PromptAnswer
-};
+enum PromptAnswer { ANSWER_YES, ANSWER_NO, ANSWER_CANCEL, NUM_PromptAnswer };
 
-class ScreenPrompt : public ScreenWithMenuElements
-{
-public:
-	static void SetPromptSettings( const std::string &sText, PromptType type = PROMPT_OK, PromptAnswer defaultAnswer = ANSWER_NO, void(*OnYes)(void*) = nullptr, void(*OnNo)(void*) = nullptr, void* pCallbackData = nullptr );
-	static void Prompt( ScreenMessage smSendOnPop, const std::string &sText, PromptType type = PROMPT_OK, PromptAnswer defaultAnswer = ANSWER_NO, void(*OnYes)(void*) = nullptr, void(*OnNo)(void*) = nullptr, void* pCallbackData = nullptr );
+class ScreenPrompt : public ScreenWithMenuElements {
+ public:
+  static void SetPromptSettings(
+      const std::string& sText, PromptType type = PROMPT_OK,
+      PromptAnswer defaultAnswer = ANSWER_NO, void (*OnYes)(void*) = nullptr,
+      void (*OnNo)(void*) = nullptr, void* pCallbackData = nullptr);
+  static void Prompt(
+      ScreenMessage smSendOnPop, const std::string& sText,
+      PromptType type = PROMPT_OK, PromptAnswer defaultAnswer = ANSWER_NO,
+      void (*OnYes)(void*) = nullptr, void (*OnNo)(void*) = nullptr,
+      void* pCallbackData = nullptr);
 
-	virtual void Init();
-	virtual void BeginScreen();
-	virtual bool Input( const InputEventPlus &input );
+  virtual void Init();
+  virtual void BeginScreen();
+  virtual bool Input(const InputEventPlus& input);
 
-	static PromptAnswer s_LastAnswer;
-	static bool s_bCancelledLast;
+  static PromptAnswer s_LastAnswer;
+  static bool s_bCancelledLast;
 
-	// Lua
-	//virtual void PushSelf( lua_State *L );
+  // Lua
+  // virtual void PushSelf( lua_State *L );
 
-protected:
-	bool CanGoLeft() { return m_Answer > 0; }
-	bool CanGoRight();
-	void Change( int dir );
-	bool MenuLeft( const InputEventPlus &input );
-	bool MenuRight( const InputEventPlus &input );
-	bool MenuBack( const InputEventPlus &input );
-	bool MenuStart( const InputEventPlus &input );
+ protected:
+  bool CanGoLeft() { return m_Answer > 0; }
+  bool CanGoRight();
+  void Change(int dir);
+  bool MenuLeft(const InputEventPlus& input);
+  bool MenuRight(const InputEventPlus& input);
+  bool MenuBack(const InputEventPlus& input);
+  bool MenuStart(const InputEventPlus& input);
 
-	virtual void End( bool bCancelled );
-	void PositionCursor();
+  virtual void End(bool bCancelled);
+  void PositionCursor();
 
-	virtual void TweenOffScreen();
+  virtual void TweenOffScreen();
 
-	BitmapText		m_textQuestion;
-	AutoActor		m_sprCursor;
-	BitmapText		m_textAnswer[NUM_PromptAnswer];
-	PromptAnswer	m_Answer;
+  BitmapText m_textQuestion;
+  AutoActor m_sprCursor;
+  BitmapText m_textAnswer[NUM_PromptAnswer];
+  PromptAnswer m_Answer;
 
-	RageSound		m_sndChange;
+  RageSound m_sndChange;
 };
 
 #endif
@@ -70,7 +65,7 @@ protected:
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -80,7 +75,7 @@ protected:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

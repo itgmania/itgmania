@@ -8,20 +8,20 @@
  * lights driver, but it sent to serial instead of a FIFO or pipe.
  */
 
+#include <cstdint>
+
 #include "LightsDriver.h"
 #include "SextetUtils.h"
 
-#include <cstdint>
+class LightsDriver_Win32Serial : public LightsDriver {
+ protected:
+  uint8_t lastOutput[FULL_SEXTET_COUNT];
 
-class LightsDriver_Win32Serial : public LightsDriver
-{
-protected:
-	uint8_t lastOutput[FULL_SEXTET_COUNT];
-public:
-	LightsDriver_Win32Serial();
-	virtual ~LightsDriver_Win32Serial();
+ public:
+  LightsDriver_Win32Serial();
+  virtual ~LightsDriver_Win32Serial();
 
-	virtual void Set(const LightsState* ls);
+  virtual void Set(const LightsState* ls);
 };
 
 #endif

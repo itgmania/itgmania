@@ -1,4 +1,5 @@
-/* RageTextureID - An identifier for a texture and associated loading parameters. */
+/* RageTextureID - An identifier for a texture and associated loading
+ * parameters. */
 
 #ifndef RAGE_TEXTURE_ID_H
 #define RAGE_TEXTURE_ID_H
@@ -9,93 +10,104 @@
  * same file with two different dither settings is considered two
  * different textures, for example.)  See RageTexture.cpp for explanations
  * of these. */
-struct RageTextureID
-{
-	std::string filename;
+struct RageTextureID {
+  std::string filename;
 
-	// Maximum size of the texture, per dimension.
-	int iMaxSize;
+  // Maximum size of the texture, per dimension.
+  int iMaxSize;
 
-	// Generate mipmaps for this texture
-	bool bMipMaps;
+  // Generate mipmaps for this texture
+  bool bMipMaps;
 
-	/* Maximum number of bits for alpha.  In 16-bit modes, lowering
-	 * this gives more bits for color values. (0, 1 or 4) */
-	int iAlphaBits;
+  /* Maximum number of bits for alpha.  In 16-bit modes, lowering
+   * this gives more bits for color values. (0, 1 or 4) */
+  int iAlphaBits;
 
-	/* If this is greater than -1, then the image will be loaded as a luma/alpha
-	 * map, eg. I4A4.  At most 8 bits per pixel will be used  This only actually happens
-	 * when paletted textures are supported.
-	 *
-	 * If the sum of alpha and grayscale bits is <= 4, and the system supports 4-bit
-	 * palettes, then the image will be loaded with 4bpp.
-	 *
-	 * This may be set to 0, resulting in an alpha map with all pixels white. */
-	int iGrayscaleBits;
+  /* If this is greater than -1, then the image will be loaded as a luma/alpha
+   * map, eg. I4A4.  At most 8 bits per pixel will be used  This only actually
+   * happens when paletted textures are supported.
+   *
+   * If the sum of alpha and grayscale bits is <= 4, and the system supports
+   * 4-bit palettes, then the image will be loaded with 4bpp.
+   *
+   * This may be set to 0, resulting in an alpha map with all pixels white. */
+  int iGrayscaleBits;
 
-	/* Preferred color depth of the image. (This is overridden for
-	 * paletted images and transparencies.)  -1 for default. */
-	int iColorDepth;
+  /* Preferred color depth of the image. (This is overridden for
+   * paletted images and transparencies.)  -1 for default. */
+  int iColorDepth;
 
-	// If true and color precision is being lost, dither. (slow)
-	bool bDither;
+  // If true and color precision is being lost, dither. (slow)
+  bool bDither;
 
-	// If true, resize the image to fill the internal texture. (slow) 
-	bool bStretch;
+  // If true, resize the image to fill the internal texture. (slow)
+  bool bStretch;
 
-	/* If true, enable HOT PINK color keying. (deprecated but needed for
-	 * banners) */
-	bool bHotPinkColorKey; // #FF00FF
+  /* If true, enable HOT PINK color keying. (deprecated but needed for
+   * banners) */
+  bool bHotPinkColorKey;  // #FF00FF
 
-	// These hints will be used in addition to any in the filename.
-	std::string AdditionalTextureHints;
+  // These hints will be used in addition to any in the filename.
+  std::string AdditionalTextureHints;
 
-	/* Used by RageTextureManager. Order is important; see RageTextureManager.cpp.
-	 * Note that this property is not considered for ordering/equality. Loading
-	 * a texture with a different loading policy will reuse the same texture with
-	 * a different policy. */
-	enum TexPolicy { TEX_VOLATILE, TEX_DEFAULT } Policy;
+  /* Used by RageTextureManager. Order is important; see RageTextureManager.cpp.
+   * Note that this property is not considered for ordering/equality. Loading
+   * a texture with a different loading policy will reuse the same texture with
+   * a different policy. */
+  enum TexPolicy { TEX_VOLATILE, TEX_DEFAULT } Policy;
 
-	void Init();
+  void Init();
 
-	RageTextureID(): filename(std::string()), iMaxSize(0), bMipMaps(false),
-		iAlphaBits(0), iGrayscaleBits(0), iColorDepth(0),
-		bDither(false), bStretch(false), bHotPinkColorKey(false),
-		AdditionalTextureHints(std::string()), Policy(TEX_DEFAULT)  { Init(); }
-	RageTextureID( const std::string &fn ): filename(std::string()), iMaxSize(0),
-		bMipMaps(false), iAlphaBits(0), iGrayscaleBits(0),
-		iColorDepth(0), bDither(false), bStretch(false),
-		bHotPinkColorKey(false), AdditionalTextureHints(std::string()),
-		Policy(TEX_DEFAULT) { Init(); SetFilename(fn); }
-	void SetFilename( const std::string &fn );
+  RageTextureID()
+      : filename(std::string()),
+        iMaxSize(0),
+        bMipMaps(false),
+        iAlphaBits(0),
+        iGrayscaleBits(0),
+        iColorDepth(0),
+        bDither(false),
+        bStretch(false),
+        bHotPinkColorKey(false),
+        AdditionalTextureHints(std::string()),
+        Policy(TEX_DEFAULT) {
+    Init();
+  }
+  RageTextureID(const std::string& fn)
+      : filename(std::string()),
+        iMaxSize(0),
+        bMipMaps(false),
+        iAlphaBits(0),
+        iGrayscaleBits(0),
+        iColorDepth(0),
+        bDither(false),
+        bStretch(false),
+        bHotPinkColorKey(false),
+        AdditionalTextureHints(std::string()),
+        Policy(TEX_DEFAULT) {
+    Init();
+    SetFilename(fn);
+  }
+  void SetFilename(const std::string& fn);
 };
 
-inline bool operator==(RageTextureID const &lhs, RageTextureID const &rhs)
-{
-#define EQUAL(a) (lhs.a==rhs.a)
-  return
-		EQUAL(filename) &&
-		EQUAL(iMaxSize) &&
-		EQUAL(bMipMaps) &&
-		EQUAL(iAlphaBits) &&
-		EQUAL(iGrayscaleBits) &&
-		EQUAL(iColorDepth) &&
-		EQUAL(bDither) &&
-		EQUAL(bStretch) &&
-		EQUAL(bHotPinkColorKey) &&
-		EQUAL(AdditionalTextureHints);
-		// EQUAL(Policy); // don't do this
+inline bool operator==(const RageTextureID& lhs, const RageTextureID& rhs) {
+#define EQUAL(a) (lhs.a == rhs.a)
+  return EQUAL(filename) && EQUAL(iMaxSize) && EQUAL(bMipMaps) &&
+         EQUAL(iAlphaBits) && EQUAL(iGrayscaleBits) && EQUAL(iColorDepth) &&
+         EQUAL(bDither) && EQUAL(bStretch) && EQUAL(bHotPinkColorKey) &&
+         EQUAL(AdditionalTextureHints);
+  // EQUAL(Policy); // don't do this
 #undef EQUAL
 }
 
-inline bool operator!=(RageTextureID const &lhs, RageTextureID const &rhs)
-{
+inline bool operator!=(const RageTextureID& lhs, const RageTextureID& rhs) {
   return !operator==(lhs, rhs);
 }
 
-inline bool operator<(RageTextureID const &lhs, RageTextureID const &rhs)
-{
-#define COMP(a) if(lhs.a<rhs.a) return true; if(lhs.a>rhs.a) return false;
+inline bool operator<(const RageTextureID& lhs, const RageTextureID& rhs) {
+#define COMP(a)                   \
+  if (lhs.a < rhs.a) return true; \
+  if (lhs.a > rhs.a) return false;
   COMP(filename);
   COMP(iMaxSize);
   COMP(bMipMaps);
@@ -111,16 +123,13 @@ inline bool operator<(RageTextureID const &lhs, RageTextureID const &rhs)
   return false;
 }
 
-inline bool operator>(RageTextureID const &lhs, RageTextureID const &rhs)
-{
+inline bool operator>(const RageTextureID& lhs, const RageTextureID& rhs) {
   return operator<(rhs, lhs);
 }
-inline bool operator<=(RageTextureID const &lhs, RageTextureID const &rhs)
-{
+inline bool operator<=(const RageTextureID& lhs, const RageTextureID& rhs) {
   return !operator<(rhs, lhs);
 }
-inline bool operator>=(RageTextureID const &lhs, RageTextureID const &rhs)
-{
+inline bool operator>=(const RageTextureID& lhs, const RageTextureID& rhs) {
   return !operator<(lhs, rhs);
 }
 

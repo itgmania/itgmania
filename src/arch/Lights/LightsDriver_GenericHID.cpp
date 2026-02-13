@@ -12,260 +12,328 @@
 
 REGISTER_LIGHTS_DRIVER_CLASS(GenericHID);
 
-// Register GenericHID under alias name: LinuxPacDrive for backward compatibility
+// Register GenericHID under alias name: LinuxPacDrive for backward
+// compatibility
 REGISTER_LIGHTS_DRIVER_ALIAS(LinuxPacDrive, GenericHID);
 
-
 // HID Class-Specific Requests values. See section 7.2 of the HID specifications
-#define HID_GET_REPORT				0x01
-#define HID_GET_IDLE				0x02
-#define HID_GET_PROTOCOL			0x03
-#define HID_SET_REPORT				0x09
-#define HID_SET_IDLE				0x0A
-#define HID_SET_PROTOCOL			0x0B
-#define HID_REPORT_TYPE_INPUT		0x01
-#define HID_REPORT_TYPE_OUTPUT		0x02
-#define HID_REPORT_TYPE_FEATURE		0x03
+#define HID_GET_REPORT 0x01
+#define HID_GET_IDLE 0x02
+#define HID_GET_PROTOCOL 0x03
+#define HID_SET_REPORT 0x09
+#define HID_SET_IDLE 0x0A
+#define HID_SET_PROTOCOL 0x0B
+#define HID_REPORT_TYPE_INPUT 0x01
+#define HID_REPORT_TYPE_OUTPUT 0x02
+#define HID_REPORT_TYPE_FEATURE 0x03
 
-#define HID_IFACE_IN	256
-#define HID_IFACE_OUT	512
+#define HID_IFACE_IN 256
+#define HID_IFACE_OUT 512
 
 // PacDrives have PIDs 1500 - 1507, but we'll handle that later.
 const unsigned GENERICHID_TIMEOUT = 10000;
 
-static Preference<std::string> g_sGenericHIDLightsOrdering("PacDriveLightOrdering", "openitg");
+static Preference<std::string> g_sGenericHIDLightsOrdering(
+    "PacDriveLightOrdering", "openitg");
 static Preference<int> g_sGenericHIDLightsVID("GenericHIDLightsVID", 0xD209);
 static Preference<int> g_sGenericHIDLightsPID("GenericHIDLightsPID", 0x1500);
 
-LightsDriver_GenericHID::LightsDriver_GenericHID()
-{
-	LOG->Warn("LinuxPacDrive is now GenericHID.\n"
-		"Better implementation of the PacDrive driver is now available.\n"
-		"Try it out. Set LightsDriver=PacDrive in Preferences.ini.");
+LightsDriver_GenericHID::LightsDriver_GenericHID() {
+  LOG->Warn(
+      "LinuxPacDrive is now GenericHID.\n"
+      "Better implementation of the PacDrive driver is now available.\n"
+      "Try it out. Set LightsDriver=PacDrive in Preferences.ini.");
 
-	DeviceHandle = NULL;
-	iLightsOrder = 0;
+  DeviceHandle = NULL;
+  iLightsOrder = 0;
 
-	OpenDevice();
+  OpenDevice();
 
-	// clear all lights
-	WriteDevice( 0 );
+  // clear all lights
+  WriteDevice(0);
 
-	std::string lightOrder = g_sGenericHIDLightsOrdering.Get();
-	if (CompareNoCase(lightOrder, "lumenar") == 0 || CompareNoCase(lightOrder, "openitg") == 0) {
-		iLightsOrder = 1;
-	}
+  std::string lightOrder = g_sGenericHIDLightsOrdering.Get();
+  if (CompareNoCase(lightOrder, "lumenar") == 0 ||
+      CompareNoCase(lightOrder, "openitg") == 0) {
+    iLightsOrder = 1;
+  }
 }
 
-LightsDriver_GenericHID::~LightsDriver_GenericHID()
-{
-	// clear all lights and close the connection
-	WriteDevice( 0 );
-	CloseDevice();
+LightsDriver_GenericHID::~LightsDriver_GenericHID() {
+  // clear all lights and close the connection
+  WriteDevice(0);
+  CloseDevice();
 }
 
-void LightsDriver_GenericHID::Set( const LightsState *ls )
-{
-	if ( !DeviceHandle ) return;
+void LightsDriver_GenericHID::Set(const LightsState* ls) {
+  if (!DeviceHandle) {
+    return;
+  }
 
-	uint16_t outb = 0;
+  uint16_t outb = 0;
 
-	switch (iLightsOrder) {
-	case 1:
-		//Sets the cabinet light values to follow LumenAR/OpenITG wiring standards
+  switch (iLightsOrder) {
+    case 1:
+      // Sets the cabinet light values to follow LumenAR/OpenITG wiring
+      // standards
 
-		/*
-		 * OpenITG GenericHID Order:
-		 * Taken from LightsDriver_PacDrive::SetLightsMappings() in openitg.
-		 *
-		 * 0: Marquee UL
-		 * 1: Marquee UR
-		 * 2: Marquee DL
-		 * 3: Marquee DR
-		 *
-		 * 4: P1 Button
-		 * 5: P2 Button
-		 *
-		 * 6: Bass Left
-		 * 7: Bass Right
-		 *
-		 * 8,9,10,11: P1 L R U D
-		 * 12,13,14,15: P2 L R U D
-		 */
+      /*
+       * OpenITG GenericHID Order:
+       * Taken from LightsDriver_PacDrive::SetLightsMappings() in openitg.
+       *
+       * 0: Marquee UL
+       * 1: Marquee UR
+       * 2: Marquee DL
+       * 3: Marquee DR
+       *
+       * 4: P1 Button
+       * 5: P2 Button
+       *
+       * 6: Bass Left
+       * 7: Bass Right
+       *
+       * 8,9,10,11: P1 L R U D
+       * 12,13,14,15: P2 L R U D
+       */
 
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) outb |= BIT(0);
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) outb |= BIT(1);
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) outb |= BIT(2);
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) outb |= BIT(3);
+      if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) {
+        outb |= BIT(0);
+      }
+      if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) {
+        outb |= BIT(1);
+      }
+      if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) {
+        outb |= BIT(2);
+      }
+      if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) {
+        outb |= BIT(3);
+      }
 
-		if (ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) outb |= BIT(4);
-		if (ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) outb |= BIT(5);
+      if (ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) {
+        outb |= BIT(4);
+      }
+      if (ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) {
+        outb |= BIT(5);
+      }
 
-		//Most PacDrive/Cabinet setups only have *one* bass light, so mux them together here.
-		if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) outb |= BIT(6);
-		if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) outb |= BIT(7);
+      // Most PacDrive/Cabinet setups only have *one* bass light, so mux them
+      // together here.
+      if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] ||
+          ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) {
+        outb |= BIT(6);
+      }
+      if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] ||
+          ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) {
+        outb |= BIT(7);
+      }
 
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) outb |= BIT(8);
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) outb |= BIT(9);
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) outb |= BIT(10);
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) outb |= BIT(11);
+      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) {
+        outb |= BIT(8);
+      }
+      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) {
+        outb |= BIT(9);
+      }
+      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) {
+        outb |= BIT(10);
+      }
+      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) {
+        outb |= BIT(11);
+      }
 
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) outb |= BIT(12);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) outb |= BIT(13);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) outb |= BIT(14);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) outb |= BIT(15);
+      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) {
+        outb |= BIT(12);
+      }
+      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) {
+        outb |= BIT(13);
+      }
+      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) {
+        outb |= BIT(14);
+      }
+      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) {
+        outb |= BIT(15);
+      }
 
-		break;
+      break;
 
-	case 0:
-	default:
-		//If all else fails, falls back to original order
-		//reference page 7
-		//http://www.peeweepower.com/stepmania/sm509pacdriveinfo.pdf
+    case 0:
+    default:
+      // If all else fails, falls back to original order
+      // reference page 7
+      // http://www.peeweepower.com/stepmania/sm509pacdriveinfo.pdf
 
-		//these are lights 1->8
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) outb |= BIT(8);
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) outb |= BIT(9);
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) outb |= BIT(10);
-		if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) outb |= BIT(11);
+      // these are lights 1->8
+      if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_LEFT]) {
+        outb |= BIT(8);
+      }
+      if (ls->m_bCabinetLights[LIGHT_MARQUEE_UP_RIGHT]) {
+        outb |= BIT(9);
+      }
+      if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_LEFT]) {
+        outb |= BIT(10);
+      }
+      if (ls->m_bCabinetLights[LIGHT_MARQUEE_LR_RIGHT]) {
+        outb |= BIT(11);
+      }
 
-		if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] || ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) outb |= BIT(12);
+      if (ls->m_bCabinetLights[LIGHT_BASS_LEFT] ||
+          ls->m_bCabinetLights[LIGHT_BASS_RIGHT]) {
+        outb |= BIT(12);
+      }
 
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) outb |= BIT(13);
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) outb |= BIT(14);
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) outb |= BIT(15);
-		//these are lights 8->16, note the byte swap to match PacDrive endianness.
-		if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) outb |= BIT(0);
-		if (ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) outb |= BIT(1);
+      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_LEFT]) {
+        outb |= BIT(13);
+      }
+      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_RIGHT]) {
+        outb |= BIT(14);
+      }
+      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_UP]) {
+        outb |= BIT(15);
+      }
+      // these are lights 8->16, note the byte swap to match PacDrive
+      // endianness.
+      if (ls->m_bGameButtonLights[GameController_1][DANCE_BUTTON_DOWN]) {
+        outb |= BIT(0);
+      }
+      if (ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_START]) {
+        outb |= BIT(1);
+      }
 
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) outb |= BIT(2);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) outb |= BIT(3);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) outb |= BIT(4);
-		if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) outb |= BIT(5);
-		if (ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) outb |= BIT(6);
-		//Bit index 7 is unused, this is LED16.
+      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_LEFT]) {
+        outb |= BIT(2);
+      }
+      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]) {
+        outb |= BIT(3);
+      }
+      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_UP]) {
+        outb |= BIT(4);
+      }
+      if (ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_DOWN]) {
+        outb |= BIT(5);
+      }
+      if (ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_START]) {
+        outb |= BIT(6);
+      }
+      // Bit index 7 is unused, this is LED16.
 
-		break;
-	}
+      break;
+  }
 
-	WriteDevice(outb);
+  WriteDevice(outb);
 }
 
-void LightsDriver_GenericHID::OpenDevice()
-{
-	libusb_device **devs;
-	libusb_device *dev = NULL;
-	ssize_t result;
-	int i = 0;
+void LightsDriver_GenericHID::OpenDevice() {
+  libusb_device** devs;
+  libusb_device* dev = NULL;
+  ssize_t result;
+  int i = 0;
 
-	CloseDevice(); // Ensure any previously opened device is closed first to prevent conflicts
+  CloseDevice();  // Ensure any previously opened device is closed first to
+                  // prevent conflicts
 
-	libusb_context* context = USBContext::getInstance().getContext();
-	if (!context)
-	{
-		LOG->Warn("libusb: Failed to initialize context");
-		return;
-	}
+  libusb_context* context = USBContext::getInstance().getContext();
+  if (!context) {
+    LOG->Warn("libusb: Failed to initialize context");
+    return;
+  }
 
-	libusb_set_option(context, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_INFO);
+  libusb_set_option(context, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_INFO);
 
-	result = libusb_get_device_list(context, &devs);
-	if (result < 0)
-	{
-		LOG->Warn("libusb_get_device_list failed: %s", libusb_error_name(result));
-		return;
-	}
+  result = libusb_get_device_list(context, &devs);
+  if (result < 0) {
+    LOG->Warn("libusb_get_device_list failed: %s", libusb_error_name(result));
+    return;
+  }
 
-	while ((dev = devs[i++]) != NULL)
-	{
-		libusb_device_descriptor desc;
-		// Note since libusb-1.0.16, LIBUSBX_API_VERSION >= 0x01000102, this function always succeeds:
-		libusb_get_device_descriptor(dev, &desc);
+  while ((dev = devs[i++]) != NULL) {
+    libusb_device_descriptor desc;
+    // Note since libusb-1.0.16, LIBUSBX_API_VERSION >= 0x01000102, this
+    // function always succeeds:
+    libusb_get_device_descriptor(dev, &desc);
 
-		if (g_sGenericHIDLightsVID.Get() == desc.idVendor &&
-			g_sGenericHIDLightsPID.Get() <= desc.idProduct &&
-			g_sGenericHIDLightsPID.Get() + 8 > desc.idProduct)
-		{
-			LOG->Info("GenericHID device was found vid: 0x%04x pid: 0x%04x", desc.idVendor, desc.idProduct);
-			break;
-		}
-	}
+    if (g_sGenericHIDLightsVID.Get() == desc.idVendor &&
+        g_sGenericHIDLightsPID.Get() <= desc.idProduct &&
+        g_sGenericHIDLightsPID.Get() + 8 > desc.idProduct) {
+      LOG->Info(
+          "GenericHID device was found vid: 0x%04x pid: 0x%04x", desc.idVendor,
+          desc.idProduct);
+      break;
+    }
+  }
 
-	if (!dev)
-	{
-		LOG->Warn("GenericHID device was not found");
-		libusb_free_device_list(devs, 1);
-		return;
-	}
+  if (!dev) {
+    LOG->Warn("GenericHID device was not found");
+    libusb_free_device_list(devs, 1);
+    return;
+  }
 
-	result = libusb_open(dev, &DeviceHandle);
-	if (result < 0)
-	{
-		LOG->Warn("libusb_open failed: %s", libusb_error_name(result));
-		DeviceHandle = NULL;
-		libusb_free_device_list(devs, 1);
-		return;
-	}
+  result = libusb_open(dev, &DeviceHandle);
+  if (result < 0) {
+    LOG->Warn("libusb_open failed: %s", libusb_error_name(result));
+    DeviceHandle = NULL;
+    libusb_free_device_list(devs, 1);
+    return;
+  }
 
-	libusb_free_device_list(devs, 1);
+  libusb_free_device_list(devs, 1);
 
-	if (libusb_kernel_driver_active(DeviceHandle, 0) == 1)
-	{
-		LOG->Warn("Kernel Driver Active");
-		if (libusb_detach_kernel_driver(DeviceHandle, 0) == 0)
-			LOG->Warn("Kernel Driver Detached!");
-	}
+  if (libusb_kernel_driver_active(DeviceHandle, 0) == 1) {
+    LOG->Warn("Kernel Driver Active");
+    if (libusb_detach_kernel_driver(DeviceHandle, 0) == 0) {
+      LOG->Warn("Kernel Driver Detached!");
+    }
+  }
 
-	result = libusb_claim_interface(DeviceHandle, 0);
-	if (result < 0)
-	{
-		LOG->Warn("libusb_claim_interface: cannot claim interface: %s", libusb_error_name(result));
-		libusb_close(DeviceHandle);
-		return;
-	}
+  result = libusb_claim_interface(DeviceHandle, 0);
+  if (result < 0) {
+    LOG->Warn(
+        "libusb_claim_interface: cannot claim interface: %s",
+        libusb_error_name(result));
+    libusb_close(DeviceHandle);
+    return;
+  }
 
-	LOG->Info("Device claimed");
+  LOG->Info("Device claimed");
 }
 
-void LightsDriver_GenericHID::CloseDevice()
-{
-	if (!DeviceHandle)
-		return;
+void LightsDriver_GenericHID::CloseDevice() {
+  if (!DeviceHandle) {
+    return;
+  }
 
-	ssize_t result;
+  ssize_t result;
 
-	result = libusb_release_interface(DeviceHandle, 0);
-	if (result != 0)
-	{
-		LOG->Warn("libusb_release_interface: %s", libusb_error_name(result));
-	}
+  result = libusb_release_interface(DeviceHandle, 0);
+  if (result != 0) {
+    LOG->Warn("libusb_release_interface: %s", libusb_error_name(result));
+  }
 
-	libusb_close(DeviceHandle);
-	DeviceHandle = NULL;
+  libusb_close(DeviceHandle);
+  DeviceHandle = NULL;
 }
 
-void LightsDriver_GenericHID::WriteDevice(uint16_t out)
-{
-	if (!DeviceHandle) return;
+void LightsDriver_GenericHID::WriteDevice(uint16_t out) {
+  if (!DeviceHandle) {
+    return;
+  }
 
-	// output is within the first 16 bits - accept a
-	// 16-bit arg and cast it, for simplicity's sake.
-	uint32_t data = (out << 16);
-	int expected = sizeof(data);
+  // output is within the first 16 bits - accept a
+  // 16-bit arg and cast it, for simplicity's sake.
+  uint32_t data = (out << 16);
+  int expected = sizeof(data);
 
-	ssize_t result = libusb_control_transfer(DeviceHandle,
-											 LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE,
-											 HID_SET_REPORT,
-											 HID_IFACE_OUT,
-											 0,
-											 (unsigned char*)&data,
-											 expected,
-											 GENERICHID_TIMEOUT);
+  ssize_t result = libusb_control_transfer(
+      DeviceHandle,
+      LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_CLASS |
+          LIBUSB_RECIPIENT_INTERFACE,
+      HID_SET_REPORT, HID_IFACE_OUT, 0, (unsigned char*)&data, expected,
+      GENERICHID_TIMEOUT);
 
-	if(result != expected) {
-		LOG->Warn("GenericHID writing failed: %li (%s)\n", result, libusb_error_name(result));
-		CloseDevice();
-	}
+  if (result != expected) {
+    LOG->Warn(
+        "GenericHID writing failed: %li (%s)\n", result,
+        libusb_error_name(result));
+    CloseDevice();
+  }
 }
 
 /*

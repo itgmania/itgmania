@@ -10,28 +10,27 @@
 typedef struct OggVorbis_File OggVorbis_File;
 class RageFileBasic;
 
-class RageSoundReader_Vorbisfile: public RageSoundReader_FileReader
-{
-public:
-	OpenResult Open( RageFileBasic *pFile );
+class RageSoundReader_Vorbisfile : public RageSoundReader_FileReader {
+ public:
+  OpenResult Open(RageFileBasic* pFile);
 
-	int GetLength() const;
-	int SetPosition( int iFrame );
-	int Read( float *pBuf, int iFrames );
-	int GetSampleRate() const;
-	unsigned GetNumChannels() const { return channels; }
-	int GetNextSourceFrame() const;
-	RageSoundReader_Vorbisfile();
-	~RageSoundReader_Vorbisfile();
-	RageSoundReader_Vorbisfile *Copy() const;
+  int GetLength() const;
+  int SetPosition(int iFrame);
+  int Read(float* pBuf, int iFrames);
+  int GetSampleRate() const;
+  unsigned GetNumChannels() const { return channels; }
+  int GetNextSourceFrame() const;
+  RageSoundReader_Vorbisfile();
+  ~RageSoundReader_Vorbisfile();
+  RageSoundReader_Vorbisfile* Copy() const;
 
-private:
-	OggVorbis_File *vf;
-	bool eof;
-	bool FillBuf();
-	std::string filename;
-	int read_offset;
-	unsigned channels;
+ private:
+  OggVorbis_File* vf;
+  bool eof;
+  bool FillBuf();
+  std::string filename;
+  int read_offset;
+  unsigned channels;
 };
 
 #endif
@@ -60,4 +59,3 @@ private:
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

@@ -8,41 +8,42 @@
 #include "LowLevelWindow.h"
 #include "RageDisplay.h"  // VideoModeParams
 
-class LowLevelWindow_X11 : public LowLevelWindow
-{
-public:
-	LowLevelWindow_X11();
-	~LowLevelWindow_X11();
+class LowLevelWindow_X11 : public LowLevelWindow {
+ public:
+  LowLevelWindow_X11();
+  ~LowLevelWindow_X11();
 
-	void *GetProcAddress(std::string s);
-	std::string TryVideoMode(const VideoModeParams &p, bool &bNewDeviceOut);
-	void LogDebugInformation() const;
-	bool IsSoftwareRenderer( std::string &sError );
-	void SwapBuffers();
+  void* GetProcAddress(std::string s);
+  std::string TryVideoMode(const VideoModeParams& p, bool& bNewDeviceOut);
+  void LogDebugInformation() const;
+  bool IsSoftwareRenderer(std::string& sError);
+  void SwapBuffers();
 
-	const ActualVideoModeParams GetActualVideoModeParams() const { return CurrentParams; }
+  const ActualVideoModeParams GetActualVideoModeParams() const {
+    return CurrentParams;
+  }
 
-	void GetDisplaySpecs(DisplaySpecs &out) const;
+  void GetDisplaySpecs(DisplaySpecs& out) const;
 
-	bool SupportsRenderToTexture() const;
-	RenderTarget *CreateRenderTarget();
+  bool SupportsRenderToTexture() const;
+  RenderTarget* CreateRenderTarget();
 
-	bool SupportsFullscreenBorderlessWindow() const;
+  bool SupportsFullscreenBorderlessWindow() const;
 
-	bool SupportsThreadedRendering();
-	void BeginConcurrentRenderingMainThread();
-	void EndConcurrentRenderingMainThread();
-	void BeginConcurrentRendering();
-	void EndConcurrentRendering();
+  bool SupportsThreadedRendering();
+  void BeginConcurrentRenderingMainThread();
+  void EndConcurrentRenderingMainThread();
+  void BeginConcurrentRendering();
+  void EndConcurrentRendering();
 
-private:
-	void RestoreOutputConfig();
+ private:
+  void RestoreOutputConfig();
 
-	bool m_bWasWindowed;
-	ActualVideoModeParams CurrentParams;
+  bool m_bWasWindowed;
+  ActualVideoModeParams CurrentParams;
 
-	float m_lastScreensaverInterrupt = 0.0f;
-	float m_screensaverInterruptInterval = 60.0f;
+  float m_lastScreensaverInterrupt = 0.0f;
+  float m_screensaverInterruptInterval = 60.0f;
 };
 
 #ifdef ARCH_LOW_LEVEL_WINDOW

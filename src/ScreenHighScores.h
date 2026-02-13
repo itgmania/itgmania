@@ -19,72 +19,84 @@
 
 typedef std::pair<Difficulty, StepsType> DifficultyAndStepsType;
 
-enum HighScoresType
-{
-	HighScoresType_AllSteps,	// Top 1 HighScore for N Steps in each Song
-	HighScoresType_NonstopCourses,	// Top 1 HighScore for N Trails in each Course
-	HighScoresType_OniCourses,
-	HighScoresType_SurvivalCourses,
-	HighScoresType_AllCourses,
-	NUM_HighScoresType,
-	HighScoresType_Invalid
+enum HighScoresType {
+  HighScoresType_AllSteps,        // Top 1 HighScore for N Steps in each Song
+  HighScoresType_NonstopCourses,  // Top 1 HighScore for N Trails in each Course
+  HighScoresType_OniCourses,
+  HighScoresType_SurvivalCourses,
+  HighScoresType_AllCourses,
+  NUM_HighScoresType,
+  HighScoresType_Invalid
 };
-LuaDeclareType( HighScoresType );
+LuaDeclareType(HighScoresType);
 
+class ScoreScroller : public DynamicActorScroller {
+ public:
+  ScoreScroller();
+  void LoadSongs(int iNumRecentScores);
+  void LoadCourses(CourseType ct, int iNumRecentScores);
+  void Load(std::string sClassName);
+  void SetDisplay(
+      const std::vector<DifficultyAndStepsType>& DifficultiesToShow);
+  bool Scroll(int iDir);
+  void ScrollTop();
 
-class ScoreScroller: public DynamicActorScroller
-{
-public:
-	ScoreScroller();
-	void LoadSongs( int iNumRecentScores );
-	void LoadCourses( CourseType ct, int iNumRecentScores );
-	void Load( std::string sClassName );
-	void SetDisplay( const std::vector<DifficultyAndStepsType> &DifficultiesToShow );
-	bool Scroll( int iDir );
-	void ScrollTop();
+ protected:
+  virtual void ConfigureActor(Actor* pActor, int iItem);
+  std::vector<DifficultyAndStepsType> m_DifficultiesToShow;
 
-protected:
-	virtual void ConfigureActor( Actor *pActor, int iItem );
-	std::vector<DifficultyAndStepsType> m_DifficultiesToShow;
+  struct ScoreRowItemData  // for all_steps and all_courses
+  {
+    ScoreRowItemData() {
+      m_pSong = nullptr;
+      m_pCourse = nullptr;
+    }
 
-	struct ScoreRowItemData // for all_steps and all_courses
-	{
-		ScoreRowItemData() { m_pSong = nullptr; m_pCourse = nullptr; }
+    Song* m_pSong;
+    Course* m_pCourse;
+  };
+  std::vector<ScoreRowItemData> m_vScoreRowItemData;
 
-		Song *m_pSong;
-		Course *m_pCourse;
-	};
-	std::vector<ScoreRowItemData> m_vScoreRowItemData;
-
-	ThemeMetric<int>	SCROLLER_ITEMS_TO_DRAW;
-	ThemeMetric<float>	SCROLLER_SECONDS_PER_ITEM;
+  ThemeMetric<int> SCROLLER_ITEMS_TO_DRAW;
+  ThemeMetric<float> SCROLLER_SECONDS_PER_ITEM;
 };
 
-class ScreenHighScores: public ScreenAttract
-{
-public:
-	virtual void Init();
-	virtual void BeginScreen();
+class ScreenHighScores : public ScreenAttract {
+ public:
+  virtual void Init();
+  virtual void BeginScreen();
 
-	void HandleScreenMessage( const ScreenMessage SM );
-	virtual bool Input( const InputEventPlus &input );
-	virtual bool MenuStart( const InputEventPlus &input );
-	virtual bool MenuBack( const InputEventPlus &input );
-	virtual bool MenuLeft( const InputEventPlus &input )	{ DoScroll(-1); return true; }
-	virtual bool MenuRight( const InputEventPlus &input )	{ DoScroll(+1); return true; }
-	virtual bool MenuUp( const InputEventPlus &input )	{ DoScroll(-1); return true; }
-	virtual bool MenuDown( const InputEventPlus &input )	{ DoScroll(+1); return true; }
+  void HandleScreenMessage(const ScreenMessage SM);
+  virtual bool Input(const InputEventPlus& input);
+  virtual bool MenuStart(const InputEventPlus& input);
+  virtual bool MenuBack(const InputEventPlus& input);
+  virtual bool MenuLeft(const InputEventPlus& input) {
+    DoScroll(-1);
+    return true;
+  }
+  virtual bool MenuRight(const InputEventPlus& input) {
+    DoScroll(+1);
+    return true;
+  }
+  virtual bool MenuUp(const InputEventPlus& input) {
+    DoScroll(-1);
+    return true;
+  }
+  virtual bool MenuDown(const InputEventPlus& input) {
+    DoScroll(+1);
+    return true;
+  }
 
-private:
-	void DoScroll( int iDir );
+ private:
+  void DoScroll(int iDir);
 
-	ThemeMetric<bool>	MANUAL_SCROLLING;
-	ThemeMetric<HighScoresType>	HIGH_SCORES_TYPE;
-	ThemeMetric<int>		NUM_COLUMNS;
-	ThemeMetric1D<Difficulty>	COLUMN_DIFFICULTY;
-	ThemeMetric1D<StepsType>	COLUMN_STEPS_TYPE;
-	ThemeMetric<int>		MAX_ITEMS_TO_SHOW;
-	ScoreScroller m_Scroller;
+  ThemeMetric<bool> MANUAL_SCROLLING;
+  ThemeMetric<HighScoresType> HIGH_SCORES_TYPE;
+  ThemeMetric<int> NUM_COLUMNS;
+  ThemeMetric1D<Difficulty> COLUMN_DIFFICULTY;
+  ThemeMetric1D<StepsType> COLUMN_STEPS_TYPE;
+  ThemeMetric<int> MAX_ITEMS_TO_SHOW;
+  ScoreScroller m_Scroller;
 };
 
 #endif

@@ -5,15 +5,15 @@
 
 #include "arch/Lights/LightsDriver.h"
 
-class LightsDriver_Linux_PIUIO : public LightsDriver
-{
-public:
-	LightsDriver_Linux_PIUIO();
-	virtual ~LightsDriver_Linux_PIUIO();
+class LightsDriver_Linux_PIUIO : public LightsDriver {
+ public:
+  LightsDriver_Linux_PIUIO();
+  virtual ~LightsDriver_Linux_PIUIO();
 
-	virtual void Set( const LightsState *ls );
-private:
-	int fd;
+  virtual void Set(const LightsState* ls);
+
+ private:
+  int fd;
 };
 
 #endif
@@ -21,7 +21,7 @@ private:
 /*
  * (c) 2012 Devin J. Pohly
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -31,7 +31,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

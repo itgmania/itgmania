@@ -8,34 +8,35 @@
 
 class LoadingWindow;
 /** @brief Maintains a cache of reduced-quality images. */
-class ImageCache
-{
-public:
-	ImageCache();
-	~ImageCache();
-	void ReadFromDisk();
-	void WriteToDisk();
+class ImageCache {
+ public:
+  ImageCache();
+  ~ImageCache();
+  void ReadFromDisk();
+  void WriteToDisk();
 
-	RageTextureID LoadCachedImage( std::string sImageDir, std::string sImagePath );
-	void CacheImage( std::string sImageDir, std::string sImagePath );
-	void LoadImage( std::string sImageDir, std::string sImagePath );
+  RageTextureID LoadCachedImage(std::string sImageDir, std::string sImagePath);
+  void CacheImage(std::string sImageDir, std::string sImagePath);
+  void LoadImage(std::string sImageDir, std::string sImagePath);
 
-	void Demand( std::string sImageDir );
-	void Undemand( std::string sImageDir );
+  void Demand(std::string sImageDir);
+  void Undemand(std::string sImageDir);
 
-	void OutputStats() const;
+  void OutputStats() const;
 
-	bool delay_save_cache;
+  bool delay_save_cache;
 
-private:
-	static std::string GetImageCachePath( std::string sImageDir, std::string sImagePath );
-	void UnloadAllImages();
-	void CacheImageInternal( std::string sImageDir, std::string sImagePath );
+ private:
+  static std::string GetImageCachePath(
+      std::string sImageDir, std::string sImagePath);
+  void UnloadAllImages();
+  void CacheImageInternal(std::string sImageDir, std::string sImagePath);
 
-	IniFile ImageData;
+  IniFile ImageData;
 };
 
-extern ImageCache *IMAGECACHE; // global and accessible from anywhere in our program
+extern ImageCache*
+    IMAGECACHE;  // global and accessible from anywhere in our program
 
 #endif
 

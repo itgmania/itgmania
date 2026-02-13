@@ -15,76 +15,76 @@ struct lua_State;
  * @brief Contains statistics for one stage of play.
  *
  * This is either one song, or a whole course. */
-class StageStats
-{
-public:
-	StageStats();
-	void Init();
+class StageStats {
+ public:
+  StageStats();
+  void Init();
 
-	/**
-	 * @brief Ensure that the Player is valid.
-	 * @param pn the PlayerNumber to check. */
-	void AssertValid( PlayerNumber pn ) const;
+  /**
+   * @brief Ensure that the Player is valid.
+   * @param pn the PlayerNumber to check. */
+  void AssertValid(PlayerNumber pn) const;
 
-	/**
-	 * @brief Ensure that the Player is valid.
-	 * @param mp the Multiplayer to check. */
-	void AssertValid( MultiPlayer mp ) const;
+  /**
+   * @brief Ensure that the Player is valid.
+   * @param mp the Multiplayer to check. */
+  void AssertValid(MultiPlayer mp) const;
 
-	void AddStats( const StageStats& other );		// accumulate
+  void AddStats(const StageStats& other);  // accumulate
 
-	bool OnePassed() const;
-	bool AllFailed() const;
+  bool OnePassed() const;
+  bool AllFailed() const;
 
-	int		GetAverageMeter( PlayerNumber pn ) const;
+  int GetAverageMeter(PlayerNumber pn) const;
 
-	Stage		m_Stage;
-	int		m_iStageIndex;
-	PlayMode	m_playMode;
-	std::vector<Song*>	m_vpPlayedSongs;
-	std::vector<Song*>	m_vpPossibleSongs;
+  Stage m_Stage;
+  int m_iStageIndex;
+  PlayMode m_playMode;
+  std::vector<Song*> m_vpPlayedSongs;
+  std::vector<Song*> m_vpPossibleSongs;
 
-	/** @brief Was an extra stage earned this goaround? */
-	EarnedExtraStage m_EarnedExtraStage;
-	/** @brief Was the gameplay exited by the Player giving up? */
-	bool	m_bGaveUp;
-	/** @brief Did the PLayer use Autoplay at any point during gameplay? */
-	bool	m_bUsedAutoplay;
+  /** @brief Was an extra stage earned this goaround? */
+  EarnedExtraStage m_EarnedExtraStage;
+  /** @brief Was the gameplay exited by the Player giving up? */
+  bool m_bGaveUp;
+  /** @brief Did the PLayer use Autoplay at any point during gameplay? */
+  bool m_bUsedAutoplay;
 
-	// TODO: These are updated in ScreenGameplay::Update based on fDelta.
-	// They should be made more accurate.
-	/**
-	 * @brief How many seconds were there before gameplay ended?
-	 *
-	 * This is updated by Gameplay, and not scaled by the music rate. */
-	float	m_fGameplaySeconds;
-	/**
-	 * @brief How many seconds are we in a song?
-	 *
-	 * This is equivalent to m_fGameplaySeconds unless the song has steps past the end. */
-	float	m_fStepsSeconds;
-	/** @brief How fast was the music going compared to normal? */
-	float	m_fMusicRate;
+  // TODO: These are updated in ScreenGameplay::Update based on fDelta.
+  // They should be made more accurate.
+  /**
+   * @brief How many seconds were there before gameplay ended?
+   *
+   * This is updated by Gameplay, and not scaled by the music rate. */
+  float m_fGameplaySeconds;
+  /**
+   * @brief How many seconds are we in a song?
+   *
+   * This is equivalent to m_fGameplaySeconds unless the song has steps past the
+   * end. */
+  float m_fStepsSeconds;
+  /** @brief How fast was the music going compared to normal? */
+  float m_fMusicRate;
 
-	// Total number of seconds between first beat and last beat for every song.
-	float GetTotalPossibleStepsSeconds() const;
+  // Total number of seconds between first beat and last beat for every song.
+  float GetTotalPossibleStepsSeconds() const;
 
-	PlayerStageStats m_player[NUM_PLAYERS];
-	PlayerStageStats m_multiPlayer[NUM_MultiPlayer];
+  PlayerStageStats m_player[NUM_PLAYERS];
+  PlayerStageStats m_multiPlayer[NUM_MultiPlayer];
 
-	void FinalizeScores( bool bSummary );
-	/**
-	 * @brief Determine if the PlayerNumber has a high score.
-	 * @param pn the PlayerNumber in question.
-	 * @return true if the PlayerNumber has a high score, false otherwise. */
-	bool PlayerHasHighScore( PlayerNumber pn ) const;
-	unsigned int GetMinimumMissCombo() const;
+  void FinalizeScores(bool bSummary);
+  /**
+   * @brief Determine if the PlayerNumber has a high score.
+   * @param pn the PlayerNumber in question.
+   * @return true if the PlayerNumber has a high score, false otherwise. */
+  bool PlayerHasHighScore(PlayerNumber pn) const;
+  unsigned int GetMinimumMissCombo() const;
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-private:
-	// TODO: Implement the copy and assignment operators on our own.
+ private:
+  // TODO: Implement the copy and assignment operators on our own.
 };
 
 #endif
