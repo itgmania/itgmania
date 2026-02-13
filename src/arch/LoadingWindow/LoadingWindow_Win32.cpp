@@ -1,7 +1,9 @@
 #include "LoadingWindow_Win32.h"
 
+// clang-format off
 #include <windows.h>
 #include <commctrl.h>
+// clang-format on
 
 #include <cmath>
 #include <string>

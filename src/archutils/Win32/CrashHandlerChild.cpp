@@ -1,6 +1,8 @@
+// clang-format off
 #include <windows.h>
 #include <commctrl.h>
 #include <io.h>
+// clang-format on
 
 #include <cerrno>
 #include <cstddef>

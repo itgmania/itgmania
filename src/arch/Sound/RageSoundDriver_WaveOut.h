@@ -1,8 +1,10 @@
 #ifndef RAGE_SOUND_WAVEOUT_H
 #define RAGE_SOUND_WAVEOUT_H
 
+// clang-format off
 #include <windows.h>
 #include <mmsystem.h>
+// clang-format on
 
 #include <cstdint>
 #include <string>

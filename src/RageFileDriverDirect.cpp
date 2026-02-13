@@ -20,8 +20,10 @@
 #endif
 
 #if defined(_WIN32)
+// clang-format off
 #include <windows.h>
 #include <io.h>
+// clang-format on
 
 #include "archutils/Win32/ErrorStrings.h"
 #else

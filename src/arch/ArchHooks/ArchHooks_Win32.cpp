@@ -1,7 +1,9 @@
 #include "ArchHooks_Win32.h"
 
+// clang-format off
 #include <windows.h>
 #include <versionhelpers.h>
+// clang-format on
 
 #include <cstdint>
 #include <string>

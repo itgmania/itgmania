@@ -1,7 +1,9 @@
 #include "InputHandler_Win32_MIDI.h"
 
+// clang-format off
 #include <windows.h>
 #include <mmsystem.h>
+// clang-format on
 
 #include <string>
 #include <vector>
