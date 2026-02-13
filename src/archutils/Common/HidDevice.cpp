@@ -8,6 +8,16 @@
 #include "RageLog.h"
 #include "hidapi.h"
 
+std::vector<int> make_pids(int base_pid, int size) {
+  std::vector<int> vec(size);
+
+  for (int i = 0; i < size; i++) {
+    vec[i] = base_pid + i;
+  }
+
+  return vec;
+}
+
 HidDevice::HidDevice(
     int vid, const std::vector<int> pids, int interfaceNum,
     bool autoReconnection, bool nonBlockingRead)

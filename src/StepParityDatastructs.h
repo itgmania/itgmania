@@ -1,6 +1,7 @@
 #ifndef STEP_PARITY_DATASTRUCTS_H
 #define STEP_PARITY_DATASTRUCTS_H
 
+#include <array>
 #include <cstdint>
 #include <string>
 #include <unordered_map>
@@ -28,12 +29,12 @@ const int16_t FOOT_MASK_LEFT =
 const int16_t FOOT_MASK_RIGHT =
     FOOT_MASKS[Foot::RIGHT_HEEL] | FOOT_MASKS[Foot::RIGHT_TOE];
 
-const std::vector<StepParity::Foot> FEET = {
+const std::array<StepParity::Foot, 4> FEET = {
     LEFT_HEEL, LEFT_TOE, RIGHT_HEEL, RIGHT_TOE};
 // A map for getting the other part of the foot, when you don't actually care
 // what part it is.
 // OTHER_PART_OF_FOOT[LEFT_HEEL] == LEFT_TOE
-const std::vector<StepParity::Foot> OTHER_PART_OF_FOOT = {
+const std::array<StepParity::Foot, 5> OTHER_PART_OF_FOOT = {
     NONE, LEFT_TOE, LEFT_HEEL, RIGHT_TOE, RIGHT_HEEL};
 
 const std::string FEET_LABELS[] = {"N", "L", "l", "R", "r", "5??", "6??"};

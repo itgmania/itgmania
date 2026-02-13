@@ -121,7 +121,7 @@ target_compile_options("${SM_EXE_NAME}" PRIVATE
   $<$<CXX_COMPILER_ID:AppleClang>:
     -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Wno-undefined-var-template -Wno-deprecated-declarations -Wno-unused-command-line-argument>
   $<$<CXX_COMPILER_ID:MSVC>:
-    /W4 /wd4100 /wd4189 /wd4244 /wd4267 /wd4702>
+    /W4 /wd4100 /wd4189 /wd4201 /wd4244 /wd4267 /wd4702>
 )
 
 set(SM_COMPILE_FLAGS "")

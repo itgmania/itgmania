@@ -199,35 +199,29 @@ void StageLayout::preGeneratePermutations() {
 }
 
 std::vector<FootPlacement> StageLayout::PermuteFootPlacements(
-    unsigned int mask, FootPlacement columns, unsigned long column) {
-  // MV: This is re-defined here because I was running into
-  // issues with StepParity::FEET being empty within this context?
-  // I don't understand C++ header initialization stuff
-  std::vector<StepParity::Foot> FEET = {
-      LEFT_HEEL, LEFT_TOE, RIGHT_HEEL, RIGHT_TOE};
-
+    unsigned int mask, FootPlacement test_columns, unsigned long column) {
   // If column >= columns.size(), we've reached the end of the row.
-  // Perform some final validation before returning the contents of columns
-  if (column >= columns.size()) {
+  // Perform some final validation before returning the contents of test_columns
+  if (column >= test_columns.size()) {
     int leftHeelIndex = StepParity::INVALID_COLUMN;
     int leftToeIndex = StepParity::INVALID_COLUMN;
     int rightHeelIndex = StepParity::INVALID_COLUMN;
     int rightToeIndex = StepParity::INVALID_COLUMN;
 
-    for (unsigned long i = 0; i < columns.size(); i++) {
-      if (columns[i] == NONE) {
+    for (unsigned long i = 0; i < test_columns.size(); i++) {
+      if (test_columns[i] == NONE) {
         continue;
       }
-      if (columns[i] == LEFT_HEEL) {
+      if (test_columns[i] == LEFT_HEEL) {
         leftHeelIndex = i;
       }
-      if (columns[i] == LEFT_TOE) {
+      if (test_columns[i] == LEFT_TOE) {
         leftToeIndex = i;
       }
-      if (columns[i] == RIGHT_HEEL) {
+      if (test_columns[i] == RIGHT_HEEL) {
         rightHeelIndex = i;
       }
-      if (columns[i] == RIGHT_TOE) {
+      if (test_columns[i] == RIGHT_TOE) {
         rightToeIndex = i;
       }
     }
@@ -254,7 +248,7 @@ std::vector<FootPlacement> StageLayout::PermuteFootPlacements(
         return std::vector<FootPlacement>();
       }
     }
-    return {columns};
+    return {test_columns};
   }
   // If this column has a valid tap/hold head, or is actively holding a note,
   // iterate through values of StepParity::Foot. For each foot part, check that
@@ -272,11 +266,12 @@ std::vector<FootPlacement> StageLayout::PermuteFootPlacements(
 
   if (active) {
     for (StepParity::Foot foot : FEET) {
-      if (std::find(columns.begin(), columns.end(), foot) != columns.end()) {
+      if (std::find(test_columns.begin(), test_columns.end(), foot) !=
+          test_columns.end()) {
         continue;
       }
 
-      FootPlacement newColumns = columns;
+      FootPlacement newColumns = test_columns;
 
       newColumns[column] = foot;
       std::vector<FootPlacement> p =
@@ -288,7 +283,7 @@ std::vector<FootPlacement> StageLayout::PermuteFootPlacements(
   // If the current column doesn't have any taps or holds,
   // then we don't need to generate any permutations for it.
   // Return the contents of calling PermuteFootPlacements() for the next column.
-  return PermuteFootPlacements(mask, columns, column + 1);
+  return PermuteFootPlacements(mask, test_columns, column + 1);
 }
 
 StagePoint StageLayout::averagePoint(int leftIndex, int rightIndex) const {
