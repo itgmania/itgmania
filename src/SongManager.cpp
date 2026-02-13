@@ -428,7 +428,7 @@ void SongManager::LoadSongDir(
   StripMacResourceForks(arrayGroupDirs);
 
   std::map<std::string, std::vector<std::string>> mapGroupSongDirs;
-  int groupIndex, songCount, songIndex;
+  int groupIndex, songCount;
 
   groupIndex = 0;
   songCount = 0;
