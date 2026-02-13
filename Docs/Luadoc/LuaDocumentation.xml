@@ -5326,6 +5326,9 @@ Details of the <code>event</code> table:
 	<Function name='GetEditState' return='EditState' arguments=''>
 		Returns the current <Link class='ENUM' function='EditState' />.
 	</Function>
+	<Function name='SeekSong' return='void' arguments='float second' since='ITGmania 1.2.0'>
+		Moves the song cursor to the input <code>second</code> seconds.
+	</Function>
 </Class>
 <Class name='ScreenEvaluation' grouping='Screen'>
 	<Function name='GetStageStats' return='StageStats' arguments=''>
