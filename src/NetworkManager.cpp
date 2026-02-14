@@ -119,16 +119,6 @@ NetworkManager::~NetworkManager() {
   ix::uninitNetSystem();
 }
 
-void NetworkManager::Update(float fDelta) {
-  for (std::shared_ptr<WebSocketHandle> handle : webSocketHandles) {
-    std::lock_guard mtxLock(handle->readMutex);
-    while (!handle->readQueue.empty()) {
-      handle->onMessage(&handle->readQueue.front());
-      handle->readQueue.pop();
-    }
-  }
-}
-
 bool NetworkManager::IsUrlAllowed(const std::string& url) {
   if (!this->httpEnabled.Get()) {
     return false;
@@ -261,19 +251,7 @@ WebSocketHandlePtr NetworkManager::WebSocket(const WebSocketArgs& args) {
 
   handle->webSocket.setUrl(args.url);
   handle->webSocket.setTLSOptions(this->tlsOptions);
-  // handle->webSocket.setOnMessageCallback(args.onMessage);
-  handle->webSocket.setOnMessageCallback(
-      [args, handle](const ix::WebSocketMessagePtr& response) {
-        CopiedWebSocketMessage messageCopy(response);
-
-        if (messageCopy.type == ix::WebSocketMessageType::Message) {
-          std::lock_guard<std::mutex> lock(handle->readMutex);
-          handle->readQueue.push(messageCopy);
-        } else {
-          // Dispatch now
-          args.onMessage(&messageCopy);
-        }
-      });
+  handle->webSocket.setOnMessageCallback(args.onMessage);
 
   ix::WebSocketHttpHeaders headers;
   headers["User-Agent"] = this->GetUserAgent();
@@ -297,7 +275,6 @@ WebSocketHandlePtr NetworkManager::WebSocket(const WebSocketArgs& args) {
   }
 
   handle->webSocket.start();
-  handle->sendThread = std::thread(&WebSocketHandle::SendThread, handle);
 
   webSocketHandles.push_back(handle);
 
@@ -346,36 +323,7 @@ int HttpRequestFuture::Cancel(lua_State* L) {
   return 0;
 }
 
-WebSocketHandle::~WebSocketHandle() {
-  {  // Neatly clonse the send thread
-    {
-      std::lock_guard<std::mutex> lock(sendQueueMutex);
-      stopFlag = true;
-    }
-    sendQueueCV.notify_all();
-    if (sendThread.joinable()) {
-      sendThread.join();
-    }
-  }
-  webSocket.stop();
-}
-
-void WebSocketHandle::SendThread() {
-  while (true) {
-    std::unique_lock<std::mutex> lock(sendQueueMutex);
-    sendQueueCV.wait(lock, [&] { return !sendQueue.empty() || stopFlag; });
-
-    if (stopFlag && sendQueue.empty()) {
-      break;
-    }
-
-    std::string message = std::move(sendQueue.front());
-    sendQueue.pop();
-    lock.unlock();
-
-    webSocket.send(message);
-  }
-}
+WebSocketHandle::~WebSocketHandle() { webSocket.stop(); }
 
 int WebSocketHandle::Collect(lua_State* L) {
   void* udata = luaL_checkudata(L, 1, "WebSocketHandle");
@@ -736,7 +684,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
     }
     lua_pop(L, 1);
 
-    args.onMessage = [onMessageRef](const CopiedWebSocketMessage* msg) {
+    args.onMessage = [onMessageRef](const ix::WebSocketMessagePtr& msg) {
       Lua* L = LUA->Get();
 
       if (onMessageRef != LUA_NOREF) {
@@ -975,7 +923,7 @@ class LunaNetworkManager : public Luna<NetworkManager> {
   }
 
   static void handleMessage(
-      Lua* L, const CopiedWebSocketMessage* msg, int onMessageRef) {
+      Lua* L, const ix::WebSocketMessagePtr& msg, int onMessageRef) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, onMessageRef);
 
     lua_newtable(L);

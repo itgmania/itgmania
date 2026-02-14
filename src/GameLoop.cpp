@@ -10,7 +10,6 @@
 #include "LightsManager.h"
 #include "LuaManager.h"
 #include "MemoryCardManager.h"
-#include "NetworkManager.h"
 #include "PeriodicCaller.h"
 #include "Preference.h"
 #include "PrefsManager.h"
@@ -280,7 +279,6 @@ void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK) {
   GAMESTATE->Update(fDeltaTime);
   SCREENMAN->Update(fDeltaTime);
   MEMCARDMAN->Update();
-  NETWORK->Update(fDeltaTime);
 
   /* Important: Process input AFTER updating game logic, or input will be
    * acting on song beat from last frame */
