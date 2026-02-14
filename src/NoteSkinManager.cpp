@@ -466,7 +466,7 @@ std::string NoteSkinManager::GetPath(
 
 bool NoteSkinManager::PushActorTemplate(
     Lua* L, const std::string& sButton, const std::string& sElement,
-    bool bSpriteOnly, std::string sColor) {
+    bool bSpriteOnly, const std::string& sColor) {
   std::map<std::string, NoteSkinData>::const_iterator iter =
       g_mapNameToData.find(m_sCurrentNoteSkin);
   if (iter == g_mapNameToData.end()) {
@@ -496,7 +496,7 @@ bool NoteSkinManager::PushActorTemplate(
 
 Actor* NoteSkinManager::LoadActor(
     const std::string& sButton, const std::string& sElement, Actor* pParent,
-    bool bSpriteOnly, std::string sColor) {
+    bool bSpriteOnly, const std::string& sColor) {
   Lua* L = LUA->Get();
 
   if (!PushActorTemplate(L, sButton, sElement, bSpriteOnly, sColor)) {
