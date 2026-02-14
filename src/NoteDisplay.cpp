@@ -202,29 +202,33 @@ struct NoteResource {
   Actor* m_pActor;  // todo: AutoActor me? -aj
 };
 
-static std::map<NoteSkinAndPath, NoteResource*> g_NoteResource;
+static std::map<std::string, std::map<NoteSkinAndPath, NoteResource*>>
+    g_NoteResource;
 
 static NoteResource* MakeNoteResource(
     const std::string& sButton, const std::string& sElement, PlayerNumber pn,
-    GameController gc, bool bSpriteOnly) {
+    GameController gc, bool bSpriteOnly, std::string sColor) {
+  if (PREFSMAN->m_FastNoteRendering) {
+    sColor = "4th";
+  }
   std::string sElementAndType =
       ssprintf("%s, %s", sButton.c_str(), sElement.c_str());
   NoteSkinAndPath nsap(NOTESKIN->GetCurrentNoteSkin(), sElementAndType, pn, gc);
 
   std::map<NoteSkinAndPath, NoteResource*>::iterator it =
-      g_NoteResource.find(nsap);
-  if (it == g_NoteResource.end()) {
+      g_NoteResource[sColor].find(nsap);
+  if (it == g_NoteResource[sColor].end()) {
     NoteResource* pRes = new NoteResource(nsap);
 
     NOTESKIN->SetPlayerNumber(pn);
     NOTESKIN->SetGameController(gc);
 
     pRes->m_pActor =
-        NOTESKIN->LoadActor(sButton, sElement, nullptr, bSpriteOnly);
+        NOTESKIN->LoadActor(sButton, sElement, nullptr, bSpriteOnly, sColor);
     ASSERT(pRes->m_pActor != nullptr);
 
-    g_NoteResource[nsap] = pRes;
-    it = g_NoteResource.find(nsap);
+    g_NoteResource[sColor][nsap] = pRes;
+    it = g_NoteResource[sColor].find(nsap);
   }
 
   NoteResource* pRet = it->second;
@@ -242,45 +246,59 @@ static void DeleteNoteResource(NoteResource* pRes) {
     return;
   }
 
-  g_NoteResource.erase(pRes->m_nsap);
+  for (auto& it : g_NoteResource) {
+    it.second.erase(pRes->m_nsap);
+  }
   delete pRes;
 }
 
 /* NoteColorActor */
 
-NoteColorActor::NoteColorActor() { m_p = nullptr; }
+NoteColorActor::NoteColorActor() { m_p.clear(); }
 
 NoteColorActor::~NoteColorActor() {
-  if (m_p) {
-    DeleteNoteResource(m_p);
+  for (auto& it : m_p) {
+    if (it.second) {
+      DeleteNoteResource(it.second);
+    }
   }
+  m_p.clear();
 }
 
 void NoteColorActor::Load(
     const std::string& sButton, const std::string& sElement, PlayerNumber pn,
-    GameController gc) {
-  m_p = MakeNoteResource(sButton, sElement, pn, gc, false);
+    GameController gc, const std::string& sColor) {
+  m_p[sColor] = MakeNoteResource(sButton, sElement, pn, gc, false, sColor);
 }
 
-Actor* NoteColorActor::Get() { return m_p->m_pActor; }
+Actor* NoteColorActor::Get(const std::string& sColor) {
+  return m_p[sColor]->m_pActor;
+}
 
 /* NoteColorSprite */
 
-NoteColorSprite::NoteColorSprite() { m_p = nullptr; }
+NoteColorSprite::NoteColorSprite() { m_p.clear(); }
 
 NoteColorSprite::~NoteColorSprite() {
-  if (m_p) {
-    DeleteNoteResource(m_p);
+  if (!m_p.empty()) {
+    for (auto& it : m_p) {
+      if (it.second) {
+        DeleteNoteResource(it.second);
+      }
+    }
+    m_p.clear();
   }
 }
 
 void NoteColorSprite::Load(
     const std::string& sButton, const std::string& sElement, PlayerNumber pn,
-    GameController gc) {
-  m_p = MakeNoteResource(sButton, sElement, pn, gc, true);
+    GameController gc, const std::string& sColor) {
+  m_p[sColor] = MakeNoteResource(sButton, sElement, pn, gc, true, sColor);
 }
 
-Sprite* NoteColorSprite::Get() { return dynamic_cast<Sprite*>(m_p->m_pActor); }
+Sprite* NoteColorSprite::Get(const std::string& sColor) {
+  return dynamic_cast<Sprite*>(m_p[sColor]->m_pActor);
+}
 
 static const char* HoldTypeNames[] = {
     "Hold",
@@ -417,33 +435,36 @@ void NoteDisplay::Load(
           ->ColToButtonName(iColNum);
 
   cache->Load(sButton);
+  std::vector<std::string> Colors = {"4th",  "8th",  "12th", "16th", "24th",
+                                     "32nd", "48th", "64th", "192nd"};
+  for (const std::string& color : Colors) {
+    // "normal" note types
+    m_TapNote.Load(sButton, "Tap Note", pn, GameI[0].controller, color);
+    // m_TapAdd.Load(		sButton, "Tap Addition", pn, GameI.controller );
+    m_TapMine.Load(sButton, "Tap Mine", pn, GameI[0].controller, color);
+    m_TapLift.Load(sButton, "Tap Lift", pn, GameI[0].controller, color);
+    m_TapFake.Load(sButton, "Tap Fake", pn, GameI[0].controller, color);
 
-  // "normal" note types
-  m_TapNote.Load(sButton, "Tap Note", pn, GameI[0].controller);
-  // m_TapAdd.Load(		sButton, "Tap Addition", pn, GameI.controller );
-  m_TapMine.Load(sButton, "Tap Mine", pn, GameI[0].controller);
-  m_TapLift.Load(sButton, "Tap Lift", pn, GameI[0].controller);
-  m_TapFake.Load(sButton, "Tap Fake", pn, GameI[0].controller);
-
-  // hold types
-  FOREACH_HoldType(ht) {
-    FOREACH_ActiveType(at) {
-      m_HoldHead[ht][at].Load(
-          sButton, HoldTypeToString(ht) + " Head " + ActiveTypeToString(at), pn,
-          GameI[0].controller);
-      m_HoldTopCap[ht][at].Load(
-          sButton, HoldTypeToString(ht) + " Topcap " + ActiveTypeToString(at),
-          pn, GameI[0].controller);
-      m_HoldBody[ht][at].Load(
-          sButton, HoldTypeToString(ht) + " Body " + ActiveTypeToString(at), pn,
-          GameI[0].controller);
-      m_HoldBottomCap[ht][at].Load(
-          sButton,
-          HoldTypeToString(ht) + " Bottomcap " + ActiveTypeToString(at), pn,
-          GameI[0].controller);
-      m_HoldTail[ht][at].Load(
-          sButton, HoldTypeToString(ht) + " Tail " + ActiveTypeToString(at), pn,
-          GameI[0].controller);
+    // hold types
+    FOREACH_HoldType(ht) {
+      FOREACH_ActiveType(at) {
+        m_HoldHead[ht][at].Load(
+            sButton, HoldTypeToString(ht) + " Head " + ActiveTypeToString(at),
+            pn, GameI[0].controller, color);
+        m_HoldTopCap[ht][at].Load(
+            sButton, HoldTypeToString(ht) + " Topcap " + ActiveTypeToString(at),
+            pn, GameI[0].controller, color);
+        m_HoldBody[ht][at].Load(
+            sButton, HoldTypeToString(ht) + " Body " + ActiveTypeToString(at),
+            pn, GameI[0].controller, color);
+        m_HoldBottomCap[ht][at].Load(
+            sButton,
+            HoldTypeToString(ht) + " Bottomcap " + ActiveTypeToString(at), pn,
+            GameI[0].controller, color);
+        m_HoldTail[ht][at].Load(
+            sButton, HoldTypeToString(ht) + " Tail " + ActiveTypeToString(at),
+            pn, GameI[0].controller, color);
+      }
     }
   }
 }
@@ -647,9 +668,11 @@ void NoteDisplay::Update(float fDeltaTime) {
   /* This function is static: it's called once per game loop, not once per
    * NoteDisplay.  Update each cached item exactly once. */
   std::map<NoteSkinAndPath, NoteResource*>::iterator it;
-  for (it = g_NoteResource.begin(); it != g_NoteResource.end(); ++it) {
-    NoteResource* pRes = it->second;
-    pRes->m_pActor->Update(fDeltaTime);
+  for (auto& color_map : g_NoteResource) {
+    for (it = color_map.second.begin(); it != color_map.second.end(); ++it) {
+      NoteResource* pRes = it->second;
+      pRes->m_pActor->Update(fDeltaTime);
+    }
   }
 }
 
@@ -685,7 +708,8 @@ void NoteDisplay::SetActiveFrame(
 
 Actor* NoteDisplay::GetTapActor(
     NoteColorActor& nca, NotePart part, float fNoteBeat) {
-  Actor* pActorOut = nca.Get();
+  const std::string& sColor = NoteTypeToString(BeatToNoteType(fNoteBeat));
+  Actor* pActorOut = nca.Get(sColor);
 
   SetActiveFrame(
       fNoteBeat, *pActorOut, cache->m_fAnimationLength[part],
@@ -704,8 +728,9 @@ Actor* NoteDisplay::GetHoldActor(
 Sprite* NoteDisplay::GetHoldSprite(
     NoteColorSprite ncs[NUM_HoldType][NUM_ActiveType], NotePart part,
     float fNoteBeat, bool bIsRoll, bool bIsBeingHeld) {
+  const std::string& sColor = NoteTypeToString(BeatToNoteType(fNoteBeat));
   Sprite* pSpriteOut =
-      ncs[bIsRoll ? roll : hold][bIsBeingHeld ? active : inactive].Get();
+      ncs[bIsRoll ? roll : hold][bIsBeingHeld ? active : inactive].Get(sColor);
 
   SetActiveFrame(
       fNoteBeat, *pSpriteOut, cache->m_fAnimationLength[part],
@@ -1635,9 +1660,9 @@ void NoteColumnRenderer::DrawPrimitives() {
   // lists to the displays to draw.
   // The vector in the NUM_PlayerNumber slot should stay empty, not worth
   // optimizing it out. -Kyz
-  std::vector<std::vector<NoteData::TrackMap::const_iterator> > holds(
+  std::vector<std::vector<NoteData::TrackMap::const_iterator>> holds(
       PLAYER_INVALID + 1);
-  std::vector<std::vector<NoteData::TrackMap::const_iterator> > taps(
+  std::vector<std::vector<NoteData::TrackMap::const_iterator>> taps(
       PLAYER_INVALID + 1);
   NoteData::TrackMap::const_iterator begin, end;
   m_field_render_args->note_data->GetTapNoteRangeInclusive(

@@ -38,6 +38,8 @@ class NoteSkinManager {
   void SetCurrentNoteSkin(const std::string& sNoteSkin) {
     m_sCurrentNoteSkin = sNoteSkin;
   }
+  void SetLastSeenColor(std::string sColor) { sLastColor = std::move(sColor); }
+  const std::string& GetLastSeenColor() const { return sLastColor; }
   const std::string& GetCurrentNoteSkin() { return m_sCurrentNoteSkin; }
   void SetPlayerNumber(PlayerNumber pn) { m_PlayerNumber = pn; }
   void SetGameController(GameController gc) { m_GameController = gc; }
@@ -45,10 +47,11 @@ class NoteSkinManager {
       const std::string& sButtonName, const std::string& sElement);
   bool PushActorTemplate(
       Lua* L, const std::string& sButton, const std::string& sElement,
-      bool bSpriteOnly);
+      bool bSpriteOnly, std::string sColor);
   Actor* LoadActor(
       const std::string& sButton, const std::string& sElement,
-      Actor* pParent = nullptr, bool bSpriteOnly = false);
+      Actor* pParent = nullptr, bool bSpriteOnly = false,
+      std::string sColor = "4th");
 
   std::string GetMetric(
       const std::string& sButtonName, const std::string& sValue);
@@ -75,6 +78,7 @@ class NoteSkinManager {
       const std::string& sNoteSkinName, NoteSkinData& data_out);
   std::string m_sCurrentNoteSkin;
   const Game* m_pCurGame;
+  std::string sLastColor;
 
   // xxx: is this the best way to implement this? -freem
   PlayerNumber m_PlayerNumber;
