@@ -55,11 +55,11 @@ struct NoteColorActor {
   ~NoteColorActor();
   void Load(
       const std::string& sButton, const std::string& sElement, PlayerNumber,
-      GameController);
-  Actor* Get();
+      GameController, const std::string& sColor);
+  Actor* Get(const std::string& Color);
 
  private:
-  NoteResource* m_p;
+  std::map<std::string, NoteResource*> m_p;
 };
 
 struct NoteColorSprite {
@@ -67,11 +67,11 @@ struct NoteColorSprite {
   ~NoteColorSprite();
   void Load(
       const std::string& sButton, const std::string& sElement, PlayerNumber,
-      GameController);
-  Sprite* Get();
+      GameController, const std::string& sColor);
+  Sprite* Get(const std::string& Color);
 
  private:
-  NoteResource* m_p;
+  std::map<std::string, NoteResource*> m_p;
 };
 /** @brief What types of holds are there? */
 enum HoldType {

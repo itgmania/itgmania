@@ -466,7 +466,7 @@ std::string NoteSkinManager::GetPath(
 
 bool NoteSkinManager::PushActorTemplate(
     Lua* L, const std::string& sButton, const std::string& sElement,
-    bool bSpriteOnly) {
+    bool bSpriteOnly, std::string sColor) {
   std::map<std::string, NoteSkinData>::const_iterator iter =
       g_mapNameToData.find(m_sCurrentNoteSkin);
   if (iter == g_mapNameToData.end()) {
@@ -482,7 +482,7 @@ bool NoteSkinManager::PushActorTemplate(
   LuaThreadVariable varElement("Element", sElement);
   LuaThreadVariable varSpriteOnly(
       "SpriteOnly", LuaReference::Create(bSpriteOnly));
-
+  LuaThreadVariable varColor("Color", sColor);
   if (data.m_Loader.IsNil()) {
     LuaHelpers::ReportScriptError("No loader for noteskin!", "NOTESKIN_ERROR");
     return false;
@@ -496,10 +496,10 @@ bool NoteSkinManager::PushActorTemplate(
 
 Actor* NoteSkinManager::LoadActor(
     const std::string& sButton, const std::string& sElement, Actor* pParent,
-    bool bSpriteOnly) {
+    bool bSpriteOnly, std::string sColor) {
   Lua* L = LUA->Get();
 
-  if (!PushActorTemplate(L, sButton, sElement, bSpriteOnly)) {
+  if (!PushActorTemplate(L, sButton, sElement, bSpriteOnly, sColor)) {
     LUA->Release(L);
     // ActorUtil will warn about the error
     return Sprite::NewBlankSprite();
@@ -569,7 +569,7 @@ class LunaNoteSkinManager : public Luna<NoteSkinManager> {
   static int LoadActor(T* p, lua_State* L) {
     std::string sButton = SArg(1);
     std::string sElement = SArg(2);
-    if (!p->PushActorTemplate(L, sButton, sElement, false)) {
+    if (!p->PushActorTemplate(L, sButton, sElement, false, "4th")) {
       lua_pushnil(L);
     }
 
