@@ -1331,6 +1331,17 @@ RageSoundDriver_WDMKS::RageSoundDriver_WDMKS() {
   m_bShutdown = false;
   m_iLastCursorPos = 0;
   m_hSignal = CreateEvent(nullptr, FALSE, FALSE, nullptr); /* abort event */
+
+  LOG->Warn(
+      "RageSoundDriver_WDMKS is no longer supported in Windows and will be "
+      "removed in a future "
+      "version of ITGmania. There is no support for WDMKS and the game may "
+      "crash "
+      "when using WDMKS."
+      "Please remove the SoundDrivers setting in Save/Preferences.ini, or "
+      "switch "
+      "to DirectSound-sw "
+      "or WaveOut instead.");
 }
 
 std::string RageSoundDriver_WDMKS::Init() {
