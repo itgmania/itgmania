@@ -1,20 +1,19 @@
-char *GetPreferredLanguage()
-{
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	NSUserDefaults *def = [NSUserDefaults standardUserDefaults];
-	NSArray *languages = def[@"AppleLanguages"];
-	const char *lang = [[languages objectAtIndex:0] UTF8String];
-	char *ret = (char *)malloc( strlen(lang) + 1 );
-	
-	strcpy( ret, lang );
-	[pool release];
-	return ret;
+char* GetPreferredLanguage() {
+  NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+  NSUserDefaults* def = [NSUserDefaults standardUserDefaults];
+  NSArray* languages = def[@"AppleLanguages"];
+  const char* lang = [[languages objectAtIndex:0] UTF8String];
+  char* ret = (char*)malloc(strlen(lang) + 1);
+
+  strcpy(ret, lang);
+  [pool release];
+  return ret;
 }
 
 /*
  * (c) 2005 Steve Checkoway
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -24,7 +23,7 @@ char *GetPreferredLanguage()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
