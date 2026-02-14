@@ -36,7 +36,7 @@ jobs:
 
           files=()
           while IFS= read -r -d '' file; do
-            if [[ "$file" =~ ^src/.*\.(h|hpp|cpp|mm)$ ]]; then
+            if [[ "$file" =~ ^src/.*\.(h|hpp|cpp|m|mm)$ ]]; then
               files+=("$file")
             fi
           done < <(git diff -z --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA")
