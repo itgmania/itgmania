@@ -69,7 +69,7 @@ jobs:
           output=$(xargs -0 -r clang-format-21 --dry-run --Werror --style=file:.clang-format < changed_files.txt 2>&1)
           status=$?
           printf '%s\n' "$output" | reviewdog \
-            -f=clang \
+            -efm='%f:%l:%c: %trror: %m,%f:%l:%c: %tarning: %m' \
             -name="clang-format" \
             -reporter=github-pr-check \
             -filter-mode=diff_context \
