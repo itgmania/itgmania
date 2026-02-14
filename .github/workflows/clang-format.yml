@@ -6,6 +6,10 @@ concurrency:
 jobs:
   clang-format-checking:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v5
         with:
@@ -46,9 +50,31 @@ jobs:
           echo "count=${#files[@]}" >> "$GITHUB_OUTPUT"
 
       - name: Check formatting
-        if: steps.changed-files.outputs.count != '0'
+        if: steps.changed-files.outputs.count != '0' && github.event_name != 'pull_request'
         run: |
           xargs -0 -r clang-format-21 --dry-run --Werror --style=file:.clang-format < changed_files.txt
+
+      - name: Setup reviewdog
+        if: steps.changed-files.outputs.count != '0' && github.event_name == 'pull_request'
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+
+      - name: Check formatting with inline PR feedback
+        if: steps.changed-files.outputs.count != '0' && github.event_name == 'pull_request'
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          output=$(xargs -0 -r clang-format-21 --dry-run --Werror --style=file:.clang-format < changed_files.txt 2>&1)
+          status=$?
+          printf '%s\n' "$output" | reviewdog \
+            -f=clang \
+            -name="clang-format" \
+            -reporter=github-pr-check \
+            -filter-mode=diff_context \
+            -fail-level=error
+          exit $status
 
       - name: No matching changed files
         if: steps.changed-files.outputs.count == '0'
