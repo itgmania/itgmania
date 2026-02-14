@@ -38,7 +38,7 @@ class NoteSkinManager {
   void SetCurrentNoteSkin(const std::string& sNoteSkin) {
     m_sCurrentNoteSkin = sNoteSkin;
   }
-  void SetLastSeenColor(std::string sColor) { sLastColor = std::move(sColor); }
+  void SetLastSeenColor(const std::string& sColor) { sLastColor = sColor; }
   const std::string& GetLastSeenColor() const { return sLastColor; }
   const std::string& GetCurrentNoteSkin() { return m_sCurrentNoteSkin; }
   void SetPlayerNumber(PlayerNumber pn) { m_PlayerNumber = pn; }
@@ -47,11 +47,11 @@ class NoteSkinManager {
       const std::string& sButtonName, const std::string& sElement);
   bool PushActorTemplate(
       Lua* L, const std::string& sButton, const std::string& sElement,
-      bool bSpriteOnly, std::string sColor);
+      bool bSpriteOnly, const std::string& sColor);
   Actor* LoadActor(
       const std::string& sButton, const std::string& sElement,
       Actor* pParent = nullptr, bool bSpriteOnly = false,
-      std::string sColor = "4th");
+      const std::string &sColor = "4th");
 
   std::string GetMetric(
       const std::string& sButtonName, const std::string& sValue);
