@@ -273,6 +273,21 @@ bool ReadFromParent(int fd, void* p, int size) {
   return true;
 }
 
+static bool ReadStringFromParent(int fd, std::string& outString) {
+  int iSize;
+  if (!ReadFromParent(fd, &iSize, sizeof(iSize)) || iSize < 0) {
+    return false;
+  }
+
+  std::string tmp(static_cast<size_t>(iSize), '\0');
+  if (!ReadFromParent(fd, tmp.data(), iSize)) {
+    return false;
+  }
+
+  outString = std::move(tmp);
+  return true;
+}
+
 // General symbol lookup; uses VDDebugInfo for detailed information within the
 // process, and DbgHelp for simpler information about loaded DLLs.
 namespace SymbolLookup {
@@ -527,35 +542,14 @@ bool ReadCrashDataFromParent(int iFD, CompleteCrashData& Data) {
   }
 
   // 2. Read info.
-  int iSize;
-  if (!ReadFromParent(iFD, &iSize, sizeof(iSize))) {
+  if (!ReadStringFromParent(iFD, Data.m_sInfo)) {
     return false;
   }
-
-  char* buffer = new char[static_cast<size_t>(iSize) + 1];
-  std::fill(buffer, buffer + iSize + 1, '\0');
-  bool wasReadSuccessful = ReadFromParent(iFD, buffer, iSize);
-  std::string tmp = buffer;
-  delete[] buffer;
-  if (!wasReadSuccessful) {
-    return false;
-  }
-  Data.m_sInfo = tmp;
 
   // 3. Read AdditionalLog.
-  if (!ReadFromParent(iFD, &iSize, sizeof(iSize))) {
+  if (!ReadStringFromParent(iFD, Data.m_sAdditionalLog)) {
     return false;
   }
-
-  buffer = new char[iSize + 1];
-  std::fill(buffer, buffer + iSize + 1, '\0');
-  wasReadSuccessful = ReadFromParent(iFD, buffer, iSize);
-  tmp = buffer;
-  delete[] buffer;
-  if (!wasReadSuccessful) {
-    return false;
-  }
-  Data.m_sAdditionalLog = tmp;
 
   // 4. Read RecentLogs.
   int iCnt = 0;
@@ -563,48 +557,24 @@ bool ReadCrashDataFromParent(int iFD, CompleteCrashData& Data) {
     return false;
   }
   for (int i = 0; i < iCnt; ++i) {
-    if (!ReadFromParent(iFD, &iSize, sizeof(iSize))) {
+    std::string recentLog;
+    if (!ReadStringFromParent(iFD, recentLog)) {
       return false;
     }
-    buffer = new char[iSize + 1];
-    std::fill(buffer, buffer + iSize + 1, '\0');
-    wasReadSuccessful = ReadFromParent(iFD, buffer, iSize);
-    tmp = buffer;
-    delete[] buffer;
-    if (!wasReadSuccessful) {
-      return false;
-    }
-    Data.m_asRecent.push_back(tmp);
+    Data.m_asRecent.push_back(recentLog);
   }
 
   // 5. Read CHECKPOINTs.
-  if (!ReadFromParent(iFD, &iSize, sizeof(iSize))) {
+  std::string checkpoints;
+  if (!ReadStringFromParent(iFD, checkpoints)) {
     return false;
   }
-
-  buffer = new char[iSize + 1];
-  std::fill(buffer, buffer + iSize + 1, '\0');
-  wasReadSuccessful = ReadFromParent(iFD, buffer, iSize);
-  tmp = buffer;
-  delete[] buffer;
-  if (!wasReadSuccessful) {
-    return false;
-  }
-  split(tmp, "$$", Data.m_asCheckpoints);
+  split(checkpoints, "$$", Data.m_asCheckpoints);
 
   // 6. Read the crashed thread's name.
-  if (!ReadFromParent(iFD, &iSize, sizeof(iSize))) {
+  if (!ReadStringFromParent(iFD, Data.m_sCrashedThread)) {
     return false;
   }
-  buffer = new char[iSize + 1];
-  std::fill(buffer, buffer + iSize + 1, '\0');
-  wasReadSuccessful = ReadFromParent(iFD, buffer, iSize);
-  tmp = buffer;
-  delete[] buffer;
-  if (!wasReadSuccessful) {
-    return false;
-  }
-  Data.m_sCrashedThread = tmp;
 
   return true;
 }
