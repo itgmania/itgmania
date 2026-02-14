@@ -1,6 +1,7 @@
 #include "RageThreads.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cerrno>
 #include <cinttypes>
 #include <cstdint>
@@ -26,7 +27,9 @@
 /* Assume TLS doesn't work until told otherwise.  It's ArchHooks's job to set
  * this. */
 bool RageThread::s_bSystemSupportsTLS = false;
-bool RageThread::s_bIsShowingDialog = false;
+
+// Set in Dialog.cpp via SetIsShowingDialog, but read in RageThread.cpp.
+std::atomic<bool> RageThread::s_bIsShowingDialog(false);
 
 #define MAX_THREADS 128
 // static std::vector<RageMutex*> *g_MutexList = nullptr; /* watch out for
@@ -39,7 +42,7 @@ struct ThreadSlot {
    * crash conditions. */
   char m_szThreadFormattedOutput[1024];
 
-  bool m_bUsed;
+  std::atomic<bool> m_bUsed;
   uint64_t m_iID;
 
   ThreadImpl* m_pImpl;
@@ -60,7 +63,7 @@ struct ThreadSlot {
   const char* GetFormattedCheckpoint(int lineno);
 
   ThreadSlot()
-      : m_bUsed(false),
+      : m_bUsed{false},
         m_iID(GetInvalidThreadId()),
         m_pImpl(nullptr),
         m_iCurCheckpoint(0),
@@ -71,7 +74,7 @@ struct ThreadSlot {
     m_pImpl = nullptr;
 
     /* Reset used last; otherwise, a thread creation might pick up the slot. */
-    m_bUsed = false;
+    m_bUsed.store(false, std::memory_order_release);
   }
 
   void Release() {
@@ -149,11 +152,11 @@ static RageMutex& GetUnknownThreadSlotLock() {
 static int FindEmptyThreadSlot() {
   LockMut(GetThreadSlotsLock());
   for (int entry = 0; entry < MAX_THREADS; ++entry) {
-    if (g_ThreadSlots[entry].m_bUsed) {
+    if (g_ThreadSlots[entry].m_bUsed.load(std::memory_order_acquire)) {
       continue;
     }
 
-    g_ThreadSlots[entry].m_bUsed = true;
+    g_ThreadSlots[entry].m_bUsed.store(true, std::memory_order_release);
     return entry;
   }
 
@@ -191,7 +194,7 @@ static ThreadSlot* GetThreadSlotFromID(uint64_t iID) {
   InitThreads();
 
   for (int entry = 0; entry < MAX_THREADS; ++entry) {
-    if (!g_ThreadSlots[entry].m_bUsed) {
+    if (!g_ThreadSlots[entry].m_bUsed.load(std::memory_order_acquire)) {
       continue;
     }
     if (g_ThreadSlots[entry].m_iID == iID) {
@@ -295,7 +298,7 @@ bool RageThread::EnumThreadIDs(int n, uint64_t& iID) {
   LockMut(GetThreadSlotsLock());
   const ThreadSlot* slot = &g_ThreadSlots[n];
 
-  if (slot->m_bUsed) {
+  if (slot->m_bUsed.load(std::memory_order_acquire)) {
     iID = slot->m_iID;
   } else {
     iID = GetInvalidThreadId();
@@ -332,7 +335,7 @@ void RageThread::Resume() {
 void RageThread::HaltAllThreads(bool Kill) {
   const uint64_t ThisThreadID = GetThisThreadId();
   for (int entry = 0; entry < MAX_THREADS; ++entry) {
-    if (!g_ThreadSlots[entry].m_bUsed) {
+    if (!g_ThreadSlots[entry].m_bUsed.load(std::memory_order_acquire)) {
       continue;
     }
     if (ThisThreadID == g_ThreadSlots[entry].m_iID ||
@@ -346,7 +349,7 @@ void RageThread::HaltAllThreads(bool Kill) {
 void RageThread::ResumeAllThreads() {
   const uint64_t ThisThreadID = GetThisThreadId();
   for (int entry = 0; entry < MAX_THREADS; ++entry) {
-    if (!g_ThreadSlots[entry].m_bUsed) {
+    if (!g_ThreadSlots[entry].m_bUsed.load(std::memory_order_acquire)) {
       continue;
     }
     if (ThisThreadID == g_ThreadSlots[entry].m_iID ||
@@ -414,7 +417,7 @@ void Checkpoints::SetCheckpoint(
 /* This is called under crash conditions.  Be careful. */
 static const char* GetCheckpointLog(int slotno, int lineno) {
   ThreadSlot& slot = g_ThreadSlots[slotno];
-  if (!slot.m_bUsed) {
+  if (!slot.m_bUsed.load(std::memory_order_acquire)) {
     return nullptr;
   }
 
