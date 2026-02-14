@@ -51,7 +51,7 @@ class NoteSkinManager {
   Actor* LoadActor(
       const std::string& sButton, const std::string& sElement,
       Actor* pParent = nullptr, bool bSpriteOnly = false,
-      const std::string &sColor = "4th");
+      const std::string& sColor = "4th");
 
   std::string GetMetric(
       const std::string& sButtonName, const std::string& sValue);
