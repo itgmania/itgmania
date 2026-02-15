@@ -8,8 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      checks: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@v5
         with:
@@ -49,31 +47,45 @@ jobs:
           printf '%s\0' "${files[@]}" > changed_files.txt
           echo "count=${#files[@]}" >> "$GITHUB_OUTPUT"
 
-      - name: Check formatting
-        if: steps.changed-files.outputs.count != '0' && github.event_name != 'pull_request'
-        run: |
-          xargs -0 -r clang-format-21 --dry-run --Werror --style=file:.clang-format < changed_files.txt
-
-      - name: Setup reviewdog
-        if: steps.changed-files.outputs.count != '0' && github.event_name == 'pull_request'
-        uses: reviewdog/action-setup@v1
-        with:
-          reviewdog_version: latest
-
-      - name: Check formatting with inline PR feedback
-        if: steps.changed-files.outputs.count != '0' && github.event_name == 'pull_request'
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check formatting and annotate
+        if: steps.changed-files.outputs.count != '0'
         run: |
           set +e
-          output=$(xargs -0 -r clang-format-21 --dry-run --Werror --style=file:.clang-format < changed_files.txt 2>&1)
+
+          output_file="clang_format_output.txt"
+          mapfile -d '' -t files < changed_files.txt
+          clang-format-21 --dry-run --Werror --style=file:.clang-format "${files[@]}" > "$output_file" 2>&1
           status=$?
-          printf '%s\n' "$output" | reviewdog \
-            -efm='%f:%l:%c: %trror: %m,%f:%l:%c: %tarning: %m' \
-            -name="clang-format" \
-            -reporter=github-pr-check \
-            -filter-mode=diff_context \
-            -fail-level=error
+
+          if [[ -s "$output_file" ]]; then
+            echo "clang-format diagnostics preview:"
+            sed -n '1,20p' "$output_file"
+            awk '
+              function esc(s) {
+                gsub(/%/, "%25", s)
+                gsub(/\r/, "%0D", s)
+                gsub(/\n/, "%0A", s)
+                return s
+              }
+              function isdiag(s) {
+                return (s ~ /^[^:]+:[0-9]+:[0-9]+:[[:space:]](error|warning):[[:space:]].*$/)
+              }
+              {
+                lines[NR] = $0
+              }
+              END {
+                for (i = 1; i <= NR; i++) {
+                  if (match(lines[i], /^([^:]+):([0-9]+):([0-9]+):[[:space:]](error|warning):[[:space:]](.*)$/, m)) {
+                    msg = m[5]
+                    if ((i + 1) <= NR && !isdiag(lines[i + 1])) msg = msg "\n" lines[i + 1]
+                    if ((i + 2) <= NR && !isdiag(lines[i + 1]) && !isdiag(lines[i + 2])) msg = msg "\n" lines[i + 2]
+                    printf("::%s file=%s,line=%s,col=%s::%s\n", m[4], m[1], m[2], m[3], esc(msg))
+                  }
+                }
+              }
+            ' "$output_file"
+          fi
+
           exit $status
 
       - name: No matching changed files
