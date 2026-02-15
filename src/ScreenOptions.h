@@ -75,6 +75,8 @@ class ScreenOptions : public ScreenWithMenuElements {
   void PositionRows(bool bTween);
   void TweenCursor(PlayerNumber pn);
   void StoreFocus(PlayerNumber pn);
+  void SetOptionRowVisible(int iRow, bool bVisible, bool bRedraw = true);
+  void RedrawOptions();
 
   void BeginFadingOut();
   virtual bool FocusedItemEndsScreen(PlayerNumber pn) const;
