@@ -639,6 +639,15 @@ void ScreenOptions::PositionRows(bool bTween) {
   first_end = std::min(first_end, (int)Rows.size());
   second_end = std::min(second_end, (int)Rows.size());
 
+  // Count disabled rows and expand viewport to compensate
+  int disabled_count = 0;
+  for (int i = 0; i < (int)Rows.size(); i++) {
+    if (Rows[i]->GetRowDef().m_vEnabledForPlayers.empty()) {
+      disabled_count++;
+    }
+  }
+  second_end = std::min(second_end + disabled_count, (int)Rows.size());
+
   /* If less than total (and Rows.size()) are displayed, fill in the empty
    * space intelligently. */
   for (;;) {
@@ -665,6 +674,13 @@ void ScreenOptions::PositionRows(bool bTween) {
   for (int i = 0; i < (int)Rows.size(); i++)  // foreach row
   {
     OptionRow& row = *Rows[i];
+
+    // Skip disabled rows entirely (no positioning, no visibility)
+    bool bRowEnabled = !row.GetRowDef().m_vEnabledForPlayers.empty();
+    if (!bRowEnabled) {
+      row.SetVisible(false);
+      continue;
+    }
 
     float fPos = (float)pos;
 
@@ -1336,6 +1352,67 @@ void ScreenOptions::MenuUpDown(const InputEventPlus& input, int iDir) {
     }
   }
 }
+void ScreenOptions::RedrawOptions() {
+  // Save current row indices before redraw
+  int saved_row[NUM_PLAYERS];
+  FOREACH_PlayerNumber(pn) saved_row[pn] = m_iCurrentRow[pn];
+
+  // RestartOptions();
+
+  // Restore current row indices if they're still valid
+  FOREACH_PlayerNumber(pn) {
+    if (saved_row[pn] >= 0 && saved_row[pn] < GetNumRows()) {
+      const OptionRow& row = *GetRow(saved_row[pn]);
+      if (row.GetRowDef().IsEnabledForPlayer(pn)) {
+        m_iCurrentRow[pn] = saved_row[pn];
+      }
+    }
+  }
+
+  // Update positioning and cursors for restored indices
+  PositionRows(true);
+  FOREACH_HumanPlayer(pn) { PositionCursor(pn); }
+  FOREACH_PlayerNumber(pn) { AfterChangeRow(pn); }
+
+  Message msg("OptionsRedrawn");
+  MESSAGEMAN->Broadcast(msg);
+}
+
+void ScreenOptions::SetOptionRowVisible(
+    int row_index, bool visible, bool bRedraw) {
+  if (row_index < 0 || row_index >= (int)m_pRows.size()) {
+    LuaHelpers::ReportScriptErrorFmt(
+        "SetOptionRowVisible: Row index %d is out of bounds", row_index);
+    return;
+  }
+
+  OptionRow* pOptRow = m_pRows[row_index];
+  if (pOptRow == nullptr) {
+    LuaHelpers::ReportScriptErrorFmt(
+        "SetOptionRowVisible: Row index %d is invalid", row_index);
+    return;
+  }
+
+  pOptRow->SetVisible(visible);
+
+  OptionRowDefinition& def = pOptRow->GetRowDef();
+  if (visible) {
+    if (def.m_vEnabledForPlayers.empty()) {
+      FOREACH_PlayerNumber(pn) def.m_vEnabledForPlayers.insert(pn);
+    }
+  } else {
+    def.m_vEnabledForPlayers.clear();
+  }
+
+  if (bRedraw) {
+    RedrawOptions();
+  }
+
+  Message msg("OptionRowVisibilityChanged");
+  msg.SetParam("RowIndex", row_index);
+  msg.SetParam("Visible", visible);
+  MESSAGEMAN->Broadcast(msg);
+}
 
 // lua start
 #include "LuaBinding.h"
@@ -1369,6 +1446,19 @@ class LunaScreenOptions : public Luna<ScreenOptions> {
     }
     return 1;
   }
+  static int SetOptionRowVisible(T* p, lua_State* L) {
+    int row_index = IArg(1);
+    bool visible = BArg(2);
+    bool redraw = lua_isnone(L, 3) ? true : BArg(3);
+
+    p->SetOptionRowVisible(row_index, visible, redraw);
+    COMMON_RETURN_SELF;
+  }
+  static int RedrawOptions(T* p, lua_State* L) {
+    p->RedrawOptions();
+    COMMON_RETURN_SELF;
+  }
+
   DEFINE_METHOD(GetNumRows, GetNumRows());
 
   static int SetOptionRowIndex(T* p, lua_State* L) {
@@ -1387,6 +1477,8 @@ class LunaScreenOptions : public Luna<ScreenOptions> {
     ADD_METHOD(GetCurrentRowIndex);
     ADD_METHOD(GetOptionRow);
     ADD_METHOD(GetNumRows);
+    ADD_METHOD(SetOptionRowVisible);
+    ADD_METHOD(RedrawOptions);
     ADD_METHOD(SetOptionRowIndex);
   }
 };
