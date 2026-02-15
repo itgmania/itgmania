@@ -20,8 +20,17 @@ class NoteSkinManager {
   ~NoteSkinManager();
 
   void RefreshNoteSkinData(const Game* game);
-  void GetNoteSkinNames(const Game* game, std::vector<std::string>& AddTo);
   void GetNoteSkinNames(
+      const Game* game, std::vector<std::string>& AddTo,
+      bool bIncludeVariants = true);
+  void GetNoteSkinNames(
+      std::vector<std::string>& AddTo,
+      bool bIncludeVariants =
+          true);  // looks up current const Game* in GAMESTATE
+  void GetVariantNamesForNoteSkin(
+      const std::string& sNoteSkin, std::vector<std::string>& AddTo);
+  void GetVariantNamesForNoteSkin(
+      const Game* game, const std::string& sNoteSkin,
       std::vector<std::string>&
           AddTo);  // looks up current const Game* in GAMESTATE
   bool NoteSkinNameInList(
@@ -29,6 +38,9 @@ class NoteSkinManager {
   bool DoesNoteSkinExist(
       const std::string&
           sNoteSkin);  // looks up current const Game* in GAMESTATE
+  bool HasVariants(const std::string& sNoteSkin);  // looks up current const
+                                                   // Game* in GAMESTATE
+  bool IsVariantNoteSkin(const std::string& sNoteSkin);
   bool DoNoteSkinsExistForGame(const Game* pGame);
   std::string
   GetDefaultNoteSkinName();  // looks up current const Game* in GAMESTATE
@@ -70,7 +82,8 @@ class NoteSkinManager {
   std::string GetPathFromDirAndFile(
       const std::string& sDir, const std::string& sFileName);
   void GetAllNoteSkinNamesForGame(
-      const Game* pGame, std::vector<std::string>& AddTo);
+      const Game* pGame, std::vector<std::string>& AddTo,
+      bool bIncludeVariants = true);
 
   bool LoadNoteSkinData(
       const std::string& sNoteSkinName, NoteSkinData& data_out);
