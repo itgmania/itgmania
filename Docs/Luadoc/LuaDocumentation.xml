@@ -3863,9 +3863,18 @@ NETWORK:WebSocket{
 	<Function name='DoesNoteSkinExist' return='bool' arguments='string strName'>
 		Returns <code>true</code> if the <code>strName</code> noteskin exists in the current gametype.
 	</Function>
-	<Function name='GetNoteSkinNames' return='{string}' arguments=''>
-		Returns a table of noteskin names for the current gametype.
+	<Function name='GetNoteSkinNames' return='{string}' arguments='bool bIncludeVariants'>
+		Returns a table of noteskin names for the current gametype. If <code>bIncludeVariants</code> is true or omitted, the list will include both base noteskin names and their variants.
 	</Function>
+	<Function name='HasVariants' return='bool' arguments='string strName'>
+		Returns <code>true</code> if the noteskin <code>strName</code> has any variants.
+	</Function>
+	<Function name='GetVariantNamesForNoteSkin' return='{string}' arguments='string strName'>
+		Returns a table of variant names for the noteskin <code>strName</code>. If the noteskin has no variants, returns an empty table.
+	</Function>
+	<Function name='IsNoteSkinVariant' return='bool' arguments='string strName'>
+		Returns <code>true</code> if the noteskin <code>strName</code> is a variant of another noteskin.
+	</Function>	
 </Class>
 <Class name='NCSplineHandler'>
 	<Description>

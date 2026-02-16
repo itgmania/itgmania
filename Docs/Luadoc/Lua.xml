@@ -1180,6 +1180,9 @@
 			<Function name='GetPathForNoteSkin'/>
 			<Function name='LoadActor'/>
 			<Function name='LoadActorForNoteSkin'/>
+			<Function name='HasVariants'/>
+			<Function name='IsNoteSkinVariant'/>
+			<Function name='GetVariantNamesForNoteSkin'/>
 		</Class>
 		<Class base='ActorFrame' name='OptionRow'>
 			<Function name='FirstItemGoesDown'/>
