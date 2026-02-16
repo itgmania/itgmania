@@ -336,7 +336,7 @@ bool NoteSkinManager::HasVariants(const std::string& sNoteSkin) {
   return it != g_mapParentNameToVariantNames.end() && !it->second.empty();
 }
 
-bool NoteSkinManager::IsVariantNoteSkin(const std::string& sNoteSkin) {
+bool NoteSkinManager::IsNoteSkinVariant(const std::string& sNoteSkin) {
   std::map<std::string, NoteSkinData>::const_iterator it =
       g_mapNameToData.find(sNoteSkin);
   return it != g_mapNameToData.end() && it->second.bIsVariant;
@@ -750,8 +750,8 @@ class LunaNoteSkinManager : public Luna<NoteSkinManager> {
     return 1;
   }
 
-  static int IsVariantNoteSkin(T* p, lua_State* L) {
-    lua_pushboolean(L, p->IsVariantNoteSkin(SArg(1)));
+  static int IsNoteSkinVariant(T* p, lua_State* L) {
+    lua_pushboolean(L, p->IsNoteSkinVariant(SArg(1)));
     return 1;
   }
 
@@ -773,7 +773,7 @@ class LunaNoteSkinManager : public Luna<NoteSkinManager> {
     ADD_METHOD(GetNoteSkinNames);
     ADD_METHOD(DoesNoteSkinExist);  // for the current game
     ADD_METHOD(HasVariants);
-    ADD_METHOD(IsVariantNoteSkin);
+    ADD_METHOD(IsNoteSkinVariant);
     ADD_METHOD(GetVariantNamesForNoteSkin);
   }
 };
