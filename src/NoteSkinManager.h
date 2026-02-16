@@ -40,7 +40,7 @@ class NoteSkinManager {
           sNoteSkin);  // looks up current const Game* in GAMESTATE
   bool HasVariants(const std::string& sNoteSkin);  // looks up current const
                                                    // Game* in GAMESTATE
-  bool IsVariantNoteSkin(const std::string& sNoteSkin);
+  bool IsNoteSkinVariant(const std::string& sNoteSkin);
   bool DoNoteSkinsExistForGame(const Game* pGame);
   std::string
   GetDefaultNoteSkinName();  // looks up current const Game* in GAMESTATE
