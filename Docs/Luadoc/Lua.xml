@@ -1745,6 +1745,8 @@
 			<Function name='GetNumRows'/>
 			<Function name='GetOptionRow'/>
 			<Function name='SetOptionRowIndex'/>
+			<Function name='SetOptionRowVisible'/>
+			<Function name='RedrawOptions'/>
 		</Class>
 		<Class base='ScreenOptions' name='ScreenPlayerOptions'>
 			<Function name='GetGoToOptions'/>
