@@ -5500,6 +5500,13 @@ Details of the <code>event</code> table:
 	<Function name='SetOptionRowIndex' return='' arguments='PlayerNumber pn, int iRow' since='ITGmania 1.2.0'>
 		Sets OptionRow <code>iRow</code> as the active row for player <code>pn</code>.  The first row has index <code>0</code>.
 	</Function>
+	<Function name='SetOptionRowVisible' return='' arguments='int iRow, bool bVisible, bool bRedraw' since='ITGmania 1.2.0'>
+			Sets OptionRow <code>iRow</code> to be visible or invisible according to <code>bVisible</code>.  The first row has index <code>0</code>.	<br />
+			Setting an option row to invisible disables it for both players and pops it out of the options list. Use <code>bRedraw</code> to leverage whether the rows are repositioned immediately.
+	</Function>
+	<Function name='RedrawOptions' return='' arguments='' since='ITGmania 1.2.0'>
+			Redraws the options list which updates each row's position and visibility, maintains current indexes and will exclude disabled rows.
+	</Function>
 </Class>
 <Class name='ScreenPlayerOptions' grouping='Screen'>
 	<Function name='GetGoToOptions' return='bool' arguments=''>
