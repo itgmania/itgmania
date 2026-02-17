@@ -416,8 +416,10 @@ void OptionRow::AfterImportOptions(PlayerNumber pn) {
     m_textItems[pn]->SetVisible(GAMESTATE->IsHumanPlayer(pn));
   }
 
-  // Hide underlines for disabled players.
-  if (!GAMESTATE->IsHumanPlayer(pn)) {
+  // Hide underlines for disabled players or disabled options.
+  if (!GAMESTATE->IsHumanPlayer(pn) ||
+      m_pHand->m_Def.m_vEnabledForPlayers.find(pn) ==
+          m_pHand->m_Def.m_vEnabledForPlayers.end()) {
     for (unsigned c = 0; c < m_Underline[pn].size(); c++) {
       m_Underline[pn][c]->SetVisible(false);
     }

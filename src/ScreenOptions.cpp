@@ -675,12 +675,7 @@ void ScreenOptions::PositionRows(bool bTween) {
   {
     OptionRow& row = *Rows[i];
 
-    // Skip disabled rows entirely (no positioning, no visibility)
     bool bRowEnabled = !row.GetRowDef().m_vEnabledForPlayers.empty();
-    if (!bRowEnabled) {
-      row.SetVisible(false);
-      continue;
-    }
 
     float fPos = (float)pos;
 
@@ -698,6 +693,12 @@ void ScreenOptions::PositionRows(bool bTween) {
 
     bool bHidden = i < first_start || (i >= first_end && i < second_start) ||
                    i >= second_end;
+    if (!bRowEnabled) {
+      bHidden = true;
+      row.SetVisible(false);
+    } else {
+      row.SetVisible(true);
+    }
     for (int j = 0; j < NUM_DIFFUSE_COLORS; j++) {
       tsDestination.diffuse[j].a = bHidden ? 0.0f : 1.0f;
     }
