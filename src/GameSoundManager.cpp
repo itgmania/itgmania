@@ -106,7 +106,7 @@ struct MusicToPlay {
   float fStartSecond, fLengthSeconds, fFadeInLengthSeconds,
       fFadeOutLengthSeconds;
   bool bAlignBeat, bApplyMusicRate;
-	float fVolume;
+  float fVolume;
   MusicToPlay() { HasTiming = false; }
 };
 std::vector<MusicToPlay> g_MusicsToPlay;
@@ -292,8 +292,9 @@ static void StartMusic(MusicToPlay& ToPlay) {
     if (ToPlay.bForceLoop) {
       p.StopMode = RageSoundParams::M_LOOP;
     }
-		if( ToPlay.fVolume >= 0.0f )
-			p.m_Volume = ToPlay.fVolume;
+	  if (ToPlay.fVolume >= 0.0f) {
+	    p.m_Volume = ToPlay.fVolume;
+    }
     NewMusic->m_Music->SetParams(p);
     NewMusic->m_Music->StartPlaying();
   }
@@ -766,7 +767,7 @@ void GameSoundManager::PlayMusic(
   ToPlay.fFadeOutLengthSeconds = params.fFadeOutLengthSeconds;
   ToPlay.bAlignBeat = params.bAlignBeat;
   ToPlay.bApplyMusicRate = params.bApplyMusicRate;
-	ToPlay.fVolume = params.fVolume;
+  ToPlay.fVolume = params.fVolume;
 
   /* Add the MusicToPlay to the g_MusicsToPlay queue. */
   g_Mutex->Lock();
