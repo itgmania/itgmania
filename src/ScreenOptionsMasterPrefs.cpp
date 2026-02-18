@@ -946,9 +946,9 @@ static void InitializeConfOptions()
 	ADD( ConfOption( "AttractSoundFrequency",	MovePref<AttractSoundFrequency>, "Never","Always","2 Times","3 Times","4 Times","5 Times" ) );
 	ADD( ConfOption( "SoundVolume",			SoundVolume,		"Silent","|10%","|20%","|30%","|40%","|50%","|60%","|70%","|80%","|90%","|100%" ) );
 	g_ConfOptions.back().m_iEffects = OPT_APPLY_SOUND;
-        ADD( ConfOption( "SoundVolumeAttract",		SoundVolumeAttract,	"Silent","|10%","|20%","|30%","|40%","|50%","|60%","|70%","|80%","|90%","|100%" ) );
-        ADD( ConfOption( "SampleMusicVolume",		SampleMusicVolume,	"Silent","|10%","|20%","|30%","|40%","|50%","|60%","|70%","|80%","|90%","|100%" ) );
-        ADD( ConfOption( "PreferredSampleRate", PreferredSampleRate, "Default", "44100 Hz", "48000 Hz" ) );
+	ADD( ConfOption( "SoundVolumeAttract",		SoundVolumeAttract,	"Silent","|10%","|20%","|30%","|40%","|50%","|60%","|70%","|80%","|90%","|100%" ) );
+	ADD( ConfOption( "SampleMusicVolume",		SampleMusicVolume,	"Silent","|10%","|20%","|30%","|40%","|50%","|60%","|70%","|80%","|90%","|100%" ) );
+	ADD( ConfOption( "PreferredSampleRate", PreferredSampleRate, "Default", "44100 Hz", "48000 Hz" ) );
 	g_ConfOptions.back().m_sPrefName = "SoundPreferredSampleRate";
 	ADD( ConfOption( "VisualDelaySeconds",		VisualDelaySeconds,	"|-5","|-4","|-3","|-2","|-1","|0","|+1","|+2","|+3","|+4","|+5" ) );
 	{
