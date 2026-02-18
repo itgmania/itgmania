@@ -270,6 +270,7 @@ PrefsManager::PrefsManager() :
 	m_bResetCoinsAtStartup		( "ResetCoinsAtStartup", false ),
 
 	m_fPadStickSeconds		( "PadStickSeconds",			0 ),
+        m_fSampleMusicVolume            ( "SampleMusicVolume",                  1.0f ),
 	m_EditRecordModeLeadIn		("EditRecordModeLeadIn",		1.0f ),
 	m_EditClearPromptThreshold	("EditClearPromptThreshold",		50),
 	m_bForceMipMaps			( "ForceMipMaps",			false ),

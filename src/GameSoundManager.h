@@ -29,6 +29,7 @@ public:
 			fFadeOutLengthSeconds = 0;
 			bAlignBeat = true;
 			bApplyMusicRate = false;
+                        fVolume = -1.0f;
 		}
 
 		RString sFile;
@@ -40,6 +41,7 @@ public:
 		float fFadeOutLengthSeconds;
 		bool bAlignBeat;
 		bool bApplyMusicRate;
+                float fVolume;
 	};
 	void PlayMusic( PlayMusicParams params, PlayMusicParams FallbackMusicParams = PlayMusicParams() );
 	void PlayMusic( 

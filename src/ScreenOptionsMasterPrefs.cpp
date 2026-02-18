@@ -695,6 +695,12 @@ static void SoundVolumeAttract( int &sel, bool ToSel, const ConfOption *pConfOpt
 	MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
 }
 
+static void SampleMusicVolume( int &sel, bool ToSel, const ConfOption *pConfOption )
+{
+        const float mapping[] = { 0.0f,0.1f,0.2f,0.3f,0.4f,0.5f,0.6f,0.7f,0.8f,0.9f,1.0f };
+        MoveMap( sel, pConfOption, ToSel, mapping, ARRAYLEN(mapping) );
+}
+
 static void PreferredSampleRate( int &sel, bool ToSel, const ConfOption *pConfOption )
 {
 	const int mapping[] = { 0, 44100, 48000 };
