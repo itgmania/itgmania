@@ -100,11 +100,11 @@ struct MusicToPlay
 	bool bForceLoop;
 	float fStartSecond, fLengthSeconds, fFadeInLengthSeconds, fFadeOutLengthSeconds;
 	bool bAlignBeat, bApplyMusicRate;
-        float fVolume;
+	float fVolume;
 	MusicToPlay()
 	{
 		HasTiming = false;
-                fVolume = -1.0f;
+		fVolume = -1.0f;
 	}
 };
 std::vector<MusicToPlay> g_MusicsToPlay;
