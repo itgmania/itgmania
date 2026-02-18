@@ -292,8 +292,8 @@ static void StartMusic(MusicToPlay& ToPlay) {
     if (ToPlay.bForceLoop) {
       p.StopMode = RageSoundParams::M_LOOP;
     }
-	  if (ToPlay.fVolume >= 0.0f) {
-	    p.m_Volume = ToPlay.fVolume;
+    if (ToPlay.fVolume >= 0.0f) {
+      p.m_Volume = ToPlay.fVolume;
     }
     NewMusic->m_Music->SetParams(p);
     NewMusic->m_Music->StartPlaying();
