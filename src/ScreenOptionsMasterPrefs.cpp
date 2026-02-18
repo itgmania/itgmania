@@ -1029,9 +1029,9 @@ static void InitializeConfOptions() {
   ADD(ConfOption(
       "SoundVolumeAttract", SoundVolumeAttract, "Silent", "|10%", "|20%",
       "|30%", "|40%", "|50%", "|60%", "|70%", "|80%", "|90%", "|100%"));
-	ADD(ConfOption(
-      "SampleMusicVolume", SampleMusicVolume, "Silent","|10%","|20%",
-      "|30%","|40%","|50%","|60%","|70%","|80%","|90%","|100%"));
+  ADD(ConfOption(
+      "SampleMusicVolume", SampleMusicVolume, "Silent", "|10%", "|20%",
+      "|30%", "|40%", "|50%", "|60%", "|70%", "|80%", "|90%", "|100%"));
   ADD(ConfOption(
       "PreferredSampleRate", PreferredSampleRate, "Default", "44100 Hz",
       "48000 Hz"));
