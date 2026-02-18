@@ -1,47 +1,41 @@
-#include "global.h"
 #include "RageSoundDriver_Null.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "PrefsManager.h"
 
 #include <cstdint>
 
-REGISTER_SOUND_DRIVER_CLASS( Null );
+#include "PrefsManager.h"
+#include "RageSoundConstants.h"
+#include "RageTimer.h"
+#include "arch/Sound/RageSoundDriver.h"
+
+REGISTER_SOUND_DRIVER_CLASS(Null);
 
 const int channels = 2;
 
-void RageSoundDriver_Null::Update()
-{
-	/* "Play" frames. */
-	while( m_iLastCursorPos < GetPosition()+1024*4 )
-	{
-		int16_t buf[256*channels];
-		this->Mix( buf, 256, m_iLastCursorPos, GetPosition() );
-		m_iLastCursorPos += 256;
-	}
+void RageSoundDriver_Null::Update() {
+  /* "Play" frames. */
+  while (m_iLastCursorPos < GetPosition() + 1024 * 4) {
+    int16_t buf[256 * channels];
+    this->Mix(buf, 256, m_iLastCursorPos, GetPosition());
+    m_iLastCursorPos += 256;
+  }
 
-	RageSoundDriver::Update();
+  RageSoundDriver::Update();
 }
 
-int64_t RageSoundDriver_Null::GetPosition() const
-{
-	return (RageTimer::GetTimeSinceStartMicroseconds() * m_iSampleRate) / 1000000;
+int64_t RageSoundDriver_Null::GetPosition() const {
+  return (RageTimer::GetTimeSinceStartMicroseconds() * m_iSampleRate) / 1000000;
 }
 
-RageSoundDriver_Null::RageSoundDriver_Null()
-{
-	m_iSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
-	{
-    	m_iSampleRate = kFallbackSampleRate;
-	}
-	m_iLastCursorPos = GetPosition();
-	StartDecodeThread();
+RageSoundDriver_Null::RageSoundDriver_Null() {
+  m_iSampleRate = PREFSMAN->m_iSoundPreferredSampleRate;
+  {
+    m_iSampleRate = FALLBACK_SAMPLE_RATE;
+  }
+  m_iLastCursorPos = GetPosition();
+  StartDecodeThread();
 }
 
-int RageSoundDriver_Null::GetSampleRate() const
-{
-	return m_iSampleRate;
-}
+int RageSoundDriver_Null::GetSampleRate() const { return m_iSampleRate; }
 
 /*
  * (c) 2002-2004 Glenn Maynard, Aaron VonderHaar

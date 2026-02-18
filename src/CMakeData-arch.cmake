@@ -181,7 +181,10 @@ list(APPEND SMDATA_ARCH_LIGHTS_SRC "arch/Lights/LightsDriver.cpp"
             "arch/Lights/LightsDriver_SextetStream.cpp"
             "arch/Lights/LightsDriver_SystemMessage.cpp"
             "arch/Lights/LightsDriver_stac.cpp"
+            "arch/Lights/LightsDriver_stac2.cpp"
             "arch/Lights/LightsDriver_snek.cpp"
+            "arch/Lights/LightsDriver_fusion.cpp"
+            "arch/Lights/LightsDriver_MinimaidHID.cpp"
             "arch/Lights/LightsDriver_PacDrive.cpp"
             "arch/Lights/LightsDriver_HidBlueDot.cpp")
 list(APPEND SMDATA_ARCH_LIGHTS_HPP "arch/Lights/LightsDriver.h"
@@ -190,7 +193,10 @@ list(APPEND SMDATA_ARCH_LIGHTS_HPP "arch/Lights/LightsDriver.h"
             "arch/Lights/LightsDriver_SystemMessage.h"
             "arch/Lights/SextetUtils.h"
             "arch/Lights/LightsDriver_stac.h"
+            "arch/Lights/LightsDriver_stac2.h"
             "arch/Lights/LightsDriver_snek.h"
+            "arch/Lights/LightsDriver_fusion.h"
+            "arch/Lights/LightsDriver_MinimaidHID.cpp"
             "arch/Lights/LightsDriver_PacDrive.h"
             "arch/Lights/LightsDriver_HidBlueDot.h")
 
@@ -199,16 +205,12 @@ if(NOT APPLE)
   if(WIN32)
     list(APPEND SMDATA_ARCH_LIGHTS_SRC
                 "arch/Lights/LightsDriver_Win32Serial.cpp"
-                "arch/Lights/LightsDriver_Win32Parallel.cpp")
+                "arch/Lights/LightsDriver_Win32Parallel.cpp"
+                "arch/Lights/LightsDriver_Win32Minimaid.cpp")
     list(APPEND SMDATA_ARCH_LIGHTS_HPP
                 "arch/Lights/LightsDriver_Win32Parallel.h"
-                "arch/Lights/LightsDriver_Win32Serial.h")
-    if(WITH_MINIMAID)
-      list(APPEND SMDATA_ARCH_LIGHTS_SRC
-                  "arch/Lights/LightsDriver_Win32Minimaid.cpp")
-      list(APPEND SMDATA_ARCH_LIGHTS_HPP
-                  "arch/Lights/LightsDriver_Win32Minimaid.h")
-    endif()
+                "arch/Lights/LightsDriver_Win32Serial.h"
+                "arch/Lights/LightsDriver_Win32Minimaid.h")
   else() # Unix/Linux TODO: Linux HAVE_PARALLEL_PORT
     if(LINUX)
       list(APPEND SMDATA_LINK_LIB "udev")
@@ -228,12 +230,6 @@ if(NOT APPLE)
                   "arch/Lights/LightsDriver_Linux_ITGIO.h"
                   "arch/Lights/LightsDriver_GenericHID.h"
                   "arch/Lights/LightsDriver_LinuxWeedTech.h")
-      if(WITH_MINIMAID)
-        list(APPEND SMDATA_ARCH_LIGHTS_SRC
-                    "arch/Lights/LightsDriver_LinuxMinimaid.cpp")
-        list(APPEND SMDATA_ARCH_LIGHTS_HPP
-                    "arch/Lights/LightsDriver_LinuxMinimaid.h")
-      endif()
 
       if(WITH_PARALLEL_PORT)
         list(APPEND SMDATA_ARCH_LIGHTS_SRC
@@ -251,8 +247,10 @@ source_group("Arch Specific\\\\Lights"
              ${SMDATA_ARCH_LIGHTS_HPP})
 
 list(APPEND SMDATA_ARCH_INPUT_SRC "arch/InputHandler/InputHandler.cpp"
+            "arch/InputHandler/InputHandler_PumpHID.cpp"
             "arch/InputHandler/InputHandler_MonkeyKeyboard.cpp")
 list(APPEND SMDATA_ARCH_INPUT_HPP "arch/InputHandler/InputHandler.h"
+            "arch/InputHandler/InputHandler_PumpHID.h"
             "arch/InputHandler/InputHandler_MonkeyKeyboard.h")
 
 if(WIN32)
@@ -280,9 +278,11 @@ if(WIN32)
   endif()
 elseif(APPLE)
   list(APPEND SMDATA_ARCH_INPUT_SRC
-              "arch/InputHandler/InputHandler_MacOSX_HID.mm")
+              "arch/InputHandler/InputHandler_MacOSX_HID.mm"
+              "arch/InputHandler/InputHandler_NSEvent.mm")
   list(APPEND SMDATA_ARCH_INPUT_HPP
-              "arch/InputHandler/InputHandler_MacOSX_HID.h")
+              "arch/InputHandler/InputHandler_MacOSX_HID.h"
+              "arch/InputHandler/InputHandler_NSEvent.hpp")
 else() # Unix/Linux
   if(LINUX)
     list(APPEND SMDATA_ARCH_INPUT_SRC

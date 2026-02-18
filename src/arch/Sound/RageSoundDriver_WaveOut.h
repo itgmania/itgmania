@@ -1,47 +1,50 @@
 #ifndef RAGE_SOUND_WAVEOUT_H
 #define RAGE_SOUND_WAVEOUT_H
 
+// clang-format off
+#include <windows.h>
+#include <mmsystem.h>
+// clang-format on
+
+#include <cstdint>
+#include <string>
+
 #include "RageSoundDriver.h"
 #include "RageThreads.h"
 
-#include <cstdint>
+class RageSoundDriver_WaveOut : public RageSoundDriver {
+ public:
+  // The size of wo_buffers_ is the -maximum- number of blocks we can have.
+  // We have to pre-allocate this size here. With the default target latency
+  // of 118 ms, 13 buffers is sufficient for both 44100 and 48000 Hz sample
+  // rates, but at least 20 buffers are needed if higher sample rates (such
+  // as 96000 Hz) are used, or the game will crash during initialization.
+  static const int kMaximumNumBlocks = 32;
 
-#include <windows.h>
-#include <mmsystem.h>
+  RageSoundDriver_WaveOut();
+  ~RageSoundDriver_WaveOut();
+  std::string Init();
+  int64_t GetPosition() const;
+  float GetPlayLatency() const;
+  int GetSampleRate() const { return wo_samplerate_; }
 
-class RageSoundDriver_WaveOut: public RageSoundDriver
-{
-public:
-	// The size of wo_buffers_ is the -maximum- number of blocks we can have.
-	// We have to pre-allocate this size here. With the default target latency
-	// of 118 ms, 13 buffers is sufficient for both 44100 and 48000 Hz sample
-	// rates, but at least 20 buffers are needed if higher sample rates (such
-	// as 96000 Hz) are used, or the game will crash during initialization.
-	static const int kMaximumNumBlocks = 32;
+ private:
+  static int MixerThread_start(void* p);
+  void MixerThread();
+  RageThread MixingThread;
+  bool GetData();
+  void SetupDecodingThread();
 
-	RageSoundDriver_WaveOut();
-	~RageSoundDriver_WaveOut();
-	RString Init();
-	int64_t GetPosition() const;
-	float GetPlayLatency() const;
-	int GetSampleRate() const { return wo_samplerate_; }
-private:
-	static int MixerThread_start( void *p );
-	void MixerThread();
-	RageThread MixingThread;
-	bool GetData();
-	void SetupDecodingThread();
-
-	HWAVEOUT waveout_handle_;
-	HANDLE soundevent_handle_;
-	WAVEHDR wo_buffers_[kMaximumNumBlocks];
-	int wo_samplerate_;
-	bool wo_shutdown_;
-	int wo_last_cursor_position_;
-	bool wo_init_success_;
-	int wo_frames_per_block_;
-	int wo_num_blocks_;
-	int wo_blocksize_;
+  HWAVEOUT waveout_handle_;
+  HANDLE soundevent_handle_;
+  WAVEHDR wo_buffers_[kMaximumNumBlocks];
+  int wo_samplerate_;
+  bool wo_shutdown_;
+  int wo_last_cursor_position_;
+  bool wo_init_success_;
+  int wo_frames_per_block_;
+  int wo_num_blocks_;
+  int wo_blocksize_;
 };
 
 #endif

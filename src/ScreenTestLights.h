@@ -1,29 +1,29 @@
 #ifndef SCREEN_TEST_LIGHTS_H
 #define SCREEN_TEST_LIGHTS_H
 
-#include "ScreenWithMenuElements.h"
 #include "BitmapText.h"
+#include "InputQueue.h"
+#include "RageTimer.h"
+#include "ScreenWithMenuElements.h"
 
+class ScreenTestLights : public ScreenWithMenuElements {
+ public:
+  virtual void Init();
+  virtual void BeginScreen();
+  virtual void EndScreen();
 
-class ScreenTestLights : public ScreenWithMenuElements
-{
-public:
-	virtual void Init();
-	virtual void BeginScreen();
-	virtual void EndScreen();
+  virtual void Update(float fDelta);
+  virtual bool Input(const InputEventPlus& input);
 
-	virtual void Update( float fDelta );
-	virtual bool Input( const InputEventPlus &input );
+  virtual bool MenuLeft(const InputEventPlus& input);
+  virtual bool MenuRight(const InputEventPlus& input);
+  virtual bool MenuStart(const InputEventPlus& input);
+  virtual bool MenuBack(const InputEventPlus& input);
 
-	virtual bool MenuLeft( const InputEventPlus &input );
-	virtual bool MenuRight( const InputEventPlus &input );
-	virtual bool MenuStart( const InputEventPlus &input );
-	virtual bool MenuBack( const InputEventPlus &input );
+ private:
+  BitmapText m_textInputs;
 
-private:
-	BitmapText	m_textInputs;
-
-	RageTimer m_timerBackToAutoCycle;
+  RageTimer m_timerBackToAutoCycle;
 };
 
 #endif
@@ -31,7 +31,7 @@ private:
 /*
  * (c) 2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -41,7 +41,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

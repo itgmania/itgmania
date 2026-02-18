@@ -3,7 +3,7 @@ ITGmania
 
 ITGmania is a fork of [StepMania 5.1](https://github.com/stepmania/stepmania/tree/5_1-new), an advanced cross-platform rhythm game for home and arcade use.
 
-[![Continuous integration](https://github.com/itgmania/itgmania/actions/workflows/ci.yml/badge.svg?branch=beta)](https://github.com/itgmania/itgmania/actions/workflows/ci.yml) [![Nightly release](https://github.com/itgmania/itgmania/actions/workflows/nightly.yml/badge.svg?branch=beta&event=push)](https://github.com/itgmania/itgmania/actions/workflows/nightly.yml?query=branch%3Abeta+event%3Apush)
+[![Continuous integration](https://github.com/itgmania/itgmania/actions/workflows/ci.yml/badge.svg?branch=beta)](https://github.com/itgmania/itgmania/actions/workflows/ci.yml) [![Nightly release](https://github.com/itgmania/itgmania/actions/workflows/release.yml/badge.svg?branch=beta&event=push)](https://github.com/itgmania/itgmania/actions/workflows/release.yml?query=branch%3Abeta+event%3Apush)
 
 ## Changes to StepMania 5.1
 
@@ -34,29 +34,36 @@ You can choose between using the installer or using the portable build. Using th
 **macOS users need to have macOS 11 (Big Sur) or higher to run ITGmania.**
 * Move ITGmania.app to the Applications folder, and then run the following command in Terminal:
 
-   * `xattr -dr com.apple.quarantine /Applications/ITGmania`
+   * `xattr -c /Applications/ITGmania.app`
 
-* You should then add ITGmania to the "Input Monitoring" section of System Preferences (under Security & Privacy)
-
+* All game data will be located in the user's _Application Support_ folder (`~/Library/Application Support/ITGmania`).
+* If you are upgrading from ITGmania 1.1.0 or older, please note all user data will now be located within the _Application Support_ folder.
+* macOS users no longer need to add the game to "Input Monitoring" - the keyboard works as-is.
+* Please note for macOS users the Edit Mode zoom in/out commands have been changed to Option+Up/Down, to prevent an overlap with a Mission Control shortcut (Ctrl+Up)
+ 
 ### Linux
 
 **Linux users should receive all they need from the package manager of their choice.**
 
-* **Debian-based**:
+* **Debian-based** (Ubuntu, Mint, MX Linux, Pop!_OS, etc):
 
   * `sudo apt install libgdk-pixbuf-2.0-0 libgl1 libglvnd0 libgtk-3-0 libusb-0.1-4 libxinerama1 libxtst6`
 
-* **Fedora-based**:
+* **Fedora-based** (Bazzite, Nobara, AlmaLinux, etc):
 
-  * `sudo yum install gdk-pixbuf2 gtk3 libusb-compat-0.1 libXinerama libXtst`
+  * `sudo dnf install gdk-pixbuf2 gtk3 libusb-compat-0.1 libXinerama libXtst`
 
-*  **Arch Linux**:
+*  **Arch-based** (CachyOS, EndeavourOS, Manjaro, Garuda, etc):
 
    * `sudo pacman -S mesa gtk3 libusb-compat libxinerama libxtst llvm-libs`
 
-* **OpenSUSE**:
+* **Gentoo Linux**:
 
-   * OpenSUSE comes with everything you need pre-installed.
+   * `sudo emerge --ask dev-build/cmake media-libs/alsa-lib media-libs/glew media-libs/libglvnd dev-libs/libusb dev-lang/nasm media-libs/libpulse x11-libs/gtk+ media-sound/alsa-utils`  
+
+* **OpenSUSE Linux**:
+
+   * All editions of OpenSUSE already have everything you need pre-installed.
 
 
 ### Build From Source

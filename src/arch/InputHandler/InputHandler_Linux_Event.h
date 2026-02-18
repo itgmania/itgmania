@@ -3,36 +3,36 @@
 #ifndef INPUT_HANDLER_LINUX_EVENT_H
 #define INPUT_HANDLER_LINUX_EVENT_H
 
-#include "InputHandler.h"
-#include "RageThreads.h"
-
+#include <string>
 #include <vector>
 
+#include "InputHandler.h"
+#include "RageInputDevice.h"
+#include "RageThreads.h"
 
-class InputHandler_Linux_Event: public InputHandler
-{
-public:
-	InputHandler_Linux_Event();
-	~InputHandler_Linux_Event();
-	bool TryDevice(RString devfile);
-	bool DevicesChanged() { return m_bDevicesChanged; }
-	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut );
+class InputHandler_Linux_Event : public InputHandler {
+ public:
+  InputHandler_Linux_Event();
+  ~InputHandler_Linux_Event();
+  bool TryDevice(std::string devfile);
+  bool DevicesChanged() { return m_bDevicesChanged; }
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
-private:
-	void StartThread();
-	void StopThread();
-	static int InputThread_Start( void *p );
-	void InputThread();
+ private:
+  void StartThread();
+  void StopThread();
+  static int InputThread_Start(void* p);
+  void InputThread();
 
-	RageThread m_InputThread;
-	// Currently only m_bDevicesChanged is guarded by this mutex
-	RageMutex m_InputMutex;
-	InputDevice m_NextDevice;
-	bool m_bShutdown, m_bDevicesChanged;
-	// Used to monitor for new devices
-	int m_udev_fd;
-	struct udev* m_udev;
-	struct udev_monitor* m_udev_monitor;
+  RageThread m_InputThread;
+  // Currently only m_bDevicesChanged is guarded by this mutex
+  RageMutex m_InputMutex;
+  InputDevice m_NextDevice;
+  bool m_bShutdown, m_bDevicesChanged;
+  // Used to monitor for new devices
+  int m_udev_fd;
+  struct udev* m_udev;
+  struct udev_monitor* m_udev_monitor;
 };
 #define USE_INPUT_HANDLER_LINUX_JOYSTICK
 

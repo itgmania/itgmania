@@ -1,36 +1,34 @@
 #ifndef SCREEN_TEST_SOUND_H
 #define SCREEN_TEST_SOUND_H
 
-#include "Screen.h"
-#include "BitmapText.h"
-#include "RageSound.h"
-
 #include <vector>
 
+#include "BitmapText.h"
+#include "RageSound.h"
+#include "Screen.h"
 
 /** @brief The number of sounds allowed for testing. */
 const int nsounds = 5;
 
-class ScreenTestSound : public Screen
-{
-public:
-	virtual void Init();
-	~ScreenTestSound();
+class ScreenTestSound : public Screen {
+ public:
+  virtual void Init();
+  ~ScreenTestSound();
 
-	virtual bool Input( const InputEventPlus &input );
+  virtual bool Input(const InputEventPlus& input);
 
-	void Update(float f);
-	void UpdateText(int n);
+  void Update(float f);
+  void UpdateText(int n);
 
-	struct Sound {
-		RageSound s;
-		BitmapText txt;
-	};
-	Sound s[nsounds];
-	std::vector<RageSound*> m_sSoundCopies[nsounds];
-	BitmapText HEEEEEEEEELP;
+  struct Sound {
+    RageSound s;
+    BitmapText txt;
+  };
+  Sound s[nsounds];
+  std::vector<RageSound*> m_sSoundCopies[nsounds];
+  BitmapText HEEEEEEEEELP;
 
-	int selected;
+  int selected;
 };
 
 #endif

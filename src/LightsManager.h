@@ -1,114 +1,161 @@
 #ifndef LightsManager_H
 #define LightsManager_H
 
-#include "PlayerNumber.h"
-#include "GameInput.h"
-#include "EnumHelper.h"
-#include "Preference.h"
-#include "RageTimer.h"
-
+#include <queue>
+#include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "GameInput.h"
+#include "Preference.h"
+#include "RageThreads.h"
+#include "RageTimer.h"
 
-extern Preference<float>	g_fLightsFalloffSeconds;
-extern Preference<float>	g_fLightsAheadSeconds;
+extern Preference<float> g_fLightsFalloffSeconds;
+extern Preference<float> g_fLightsAheadSeconds;
 
-enum CabinetLight
-{
-	LIGHT_MARQUEE_UP_LEFT,
-	LIGHT_MARQUEE_UP_RIGHT,
-	LIGHT_MARQUEE_LR_LEFT,
-	LIGHT_MARQUEE_LR_RIGHT,
-	LIGHT_BASS_LEFT,
-	LIGHT_BASS_RIGHT,
-	NUM_CabinetLight,
-	CabinetLight_Invalid
+enum CabinetLight {
+  LIGHT_MARQUEE_UP_LEFT,
+  LIGHT_MARQUEE_UP_RIGHT,
+  LIGHT_MARQUEE_LR_LEFT,
+  LIGHT_MARQUEE_LR_RIGHT,
+  LIGHT_BASS_LEFT,
+  LIGHT_BASS_RIGHT,
+  NUM_CabinetLight,
+  CabinetLight_Invalid
 };
 /** @brief Loop through each CabinetLight on the machine. */
-#define FOREACH_CabinetLight( i ) FOREACH_ENUM( CabinetLight, i )
-const RString& CabinetLightToString( CabinetLight cl );
-CabinetLight StringToCabinetLight( const RString& s);
+#define FOREACH_CabinetLight(i) FOREACH_ENUM(CabinetLight, i)
+const std::string& CabinetLightToString(CabinetLight cl);
+CabinetLight StringToCabinetLight(const std::string& s);
 
-enum LightsMode
-{
-	LIGHTSMODE_ATTRACT,
-	LIGHTSMODE_JOINING,
-	LIGHTSMODE_MENU_START_ONLY,
-	LIGHTSMODE_MENU_START_AND_DIRECTIONS,
-	LIGHTSMODE_DEMONSTRATION,
-	LIGHTSMODE_GAMEPLAY,
-	LIGHTSMODE_STAGE,
-	LIGHTSMODE_ALL_CLEARED,
-	LIGHTSMODE_TEST_AUTO_CYCLE,
-	LIGHTSMODE_TEST_MANUAL_CYCLE,
-	NUM_LightsMode,
-	LightsMode_Invalid
+enum LightsMode {
+  LIGHTSMODE_ATTRACT,
+  LIGHTSMODE_JOINING,
+  LIGHTSMODE_MENU_START_ONLY,
+  LIGHTSMODE_MENU_START_AND_DIRECTIONS,
+  LIGHTSMODE_DEMONSTRATION,
+  LIGHTSMODE_GAMEPLAY,
+  LIGHTSMODE_STAGE,
+  LIGHTSMODE_ALL_CLEARED,
+  LIGHTSMODE_TEST_AUTO_CYCLE,
+  LIGHTSMODE_TEST_MANUAL_CYCLE,
+  NUM_LightsMode,
+  LightsMode_Invalid
 };
-const RString& LightsModeToString( LightsMode lm );
-LuaDeclareType( LightsMode );
+const std::string& LightsModeToString(LightsMode lm);
+LuaDeclareType(LightsMode);
 
-struct LightsState
-{
-	bool m_bCabinetLights[NUM_CabinetLight];
-	bool m_bGameButtonLights[NUM_GameController][NUM_GameButton];
+struct LightsState {
+  bool m_bCabinetLights[NUM_CabinetLight];
+  bool m_bGameButtonLights[NUM_GameController][NUM_GameButton];
 
-	// This isn't actually a light, but it's typically implemented in the same way.
-	bool m_bCoinCounter;
+  // This isn't actually a light, but it's typically implemented in the same
+  // way.
+  bool m_bCoinCounter;
+
+  // equality operator
+  bool operator==(const LightsState& rhs) const {
+    // compare cabinet lights
+    for (int i = 0; i < NUM_CabinetLight; ++i) {
+      if (m_bCabinetLights[i] != rhs.m_bCabinetLights[i]) {
+        return false;
+      }
+    }
+
+    // compare game button lights
+    for (int c = 0; c < NUM_GameController; ++c) {
+      for (int b = 0; b < NUM_GameButton; ++b) {
+        if (m_bGameButtonLights[c][b] != rhs.m_bGameButtonLights[c][b]) {
+          return false;
+        }
+      }
+    }
+
+    // compare coin counter
+    if (m_bCoinCounter != rhs.m_bCoinCounter) {
+      return false;
+    }
+
+    // all fields match
+    return true;
+  }
+
+  // inequality operator
+  bool operator!=(const LightsState& rhs) const { return !(*this == rhs); }
 };
 
 class LightsDriver;
 /** @brief Control lights. */
-class LightsManager
-{
-public:
-	LightsManager();
-	~LightsManager();
+class LightsManager {
+ public:
+  LightsManager();
+  ~LightsManager();
 
-	void Update( float fDeltaTime );
-	bool IsEnabled() const;
+  void Update(float fDeltaTime);
+  bool IsEnabled() const;
 
-	void BlinkCabinetLight( CabinetLight cl );
-	void BlinkGameButton( GameInput gi );
-	void BlinkActorLight( CabinetLight cl );
-	void TurnOffAllLights();
-	void PulseCoinCounter() { ++m_iQueuedCoinCounterPulses; }
-	float GetActorLightLatencySeconds() const;
+  void BlinkCabinetLight(CabinetLight cl);
+  void BlinkGameButton(GameInput gi);
+  void BlinkActorLight(CabinetLight cl);
+  void TurnOffAllLights();
+  void PulseCoinCounter() { ++m_iQueuedCoinCounterPulses; }
+  float GetActorLightLatencySeconds() const;
 
-	void SetLightsMode( LightsMode lm );
-	LightsMode GetLightsMode();
+  void SetLightsMode(LightsMode lm);
+  LightsMode GetLightsMode();
 
-	void PrevTestCabinetLight()		{ ChangeTestCabinetLight(-1); }
-	void NextTestCabinetLight()		{ ChangeTestCabinetLight(+1); }
-	void PrevTestGameButtonLight()	{ ChangeTestGameButtonLight(-1); }
-	void NextTestGameButtonLight()	{ ChangeTestGameButtonLight(+1); }
+  void PrevTestCabinetLight() { ChangeTestCabinetLight(-1); }
+  void NextTestCabinetLight() { ChangeTestCabinetLight(+1); }
+  void PrevTestGameButtonLight() { ChangeTestGameButtonLight(-1); }
+  void NextTestGameButtonLight() { ChangeTestGameButtonLight(+1); }
 
-	CabinetLight	GetFirstLitCabinetLight();
-	GameInput	GetFirstLitGameButtonLight();
+  CabinetLight GetFirstLitCabinetLight();
+  GameInput GetFirstLitGameButtonLight();
 
-private:
-	void ChangeTestCabinetLight( int iDir );
-	void ChangeTestGameButtonLight( int iDir );
+ private:
+  void ChangeTestCabinetLight(int iDir);
+  void ChangeTestGameButtonLight(int iDir);
 
-	float m_fSecsLeftInCabinetLightBlink[NUM_CabinetLight];
-	float m_fSecsLeftInGameButtonBlink[NUM_GameController][NUM_GameButton];
-	float m_fActorLights[NUM_CabinetLight];	// current "power" of each actor light
-	float m_fSecsLeftInActorLightBlink[NUM_CabinetLight];	// duration to "power" an actor light
+  float m_fSecsLeftInCabinetLightBlink[NUM_CabinetLight];
+  float m_fSecsLeftInGameButtonBlink[NUM_GameController][NUM_GameButton];
+  float
+      m_fActorLights[NUM_CabinetLight];  // current "power" of each actor light
+  float m_fSecsLeftInActorLightBlink[NUM_CabinetLight];  // duration to "power"
+                                                         // an actor light
 
-	std::vector<LightsDriver*> m_vpDrivers;
-	LightsMode m_LightsMode;
-	LightsState m_LightsState;
+  std::vector<LightsDriver*> m_vpDrivers;
+  LightsMode m_LightsMode;
 
-	int m_iQueuedCoinCounterPulses;
-	RageTimer m_CoinCounterTimer;
+  LightsState m_LightsState;
+  LightsState m_PrevLightsState;
 
-	int GetTestAutoCycleCurrentIndex() { return (int)m_fTestAutoCycleCurrentIndex; }
+  int m_iQueuedCoinCounterPulses;
+  RageTimer m_CoinCounterTimer;
 
-	float			m_fTestAutoCycleCurrentIndex;
-	CabinetLight	m_clTestManualCycleCurrent;
-	int				m_iControllerTestManualCycleCurrent;
+  bool m_LightsThreadShutdown;
+  RageThread m_LightsThread;
+  RageEvent* m_LightsMutex;
+  std::queue<LightsState> m_LightsQueue;
+
+  int LightsManThreadMain();
+
+  static int LightsManThread_Start(void* p) {
+    ((LightsManager*)p)->LightsManThreadMain();
+    return 0;
+  }
+
+  int GetTestAutoCycleCurrentIndex() {
+    return (int)m_fTestAutoCycleCurrentIndex;
+  }
+
+  float m_fTestAutoCycleCurrentIndex;
+  CabinetLight m_clTestManualCycleCurrent;
+  int m_iControllerTestManualCycleCurrent;
 };
 
-extern LightsManager*	LIGHTSMAN;	// global and accessible from anywhere in our program
+extern LightsManager*
+    LIGHTSMAN;  // global and accessible from anywhere in our program
 
 #endif
 

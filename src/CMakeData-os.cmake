@@ -4,6 +4,7 @@ list(APPEND SMDATA_OS_HPP "archutils/Common/HidDevice.h")
 if(APPLE)
   list(APPEND SMDATA_OS_DARWIN_SRC
               "archutils/Darwin/Crash.mm"
+              "archutils/Darwin/CocoaEventDispatcher.mm"
               "archutils/Darwin/DarwinThreadHelpers.cpp"
               "archutils/Darwin/HIDDevice.cpp"
               "archutils/Darwin/JoystickDevice.cpp"
@@ -14,6 +15,7 @@ if(APPLE)
               "archutils/Darwin/SpecialDirs.mm")
   list(APPEND SMDATA_OS_DARWIN_HPP
               "archutils/Darwin/arch_setup.h"
+              "archutils/Darwin/CocoaEventDispatcher.h"
               "archutils/Darwin/Crash.h"
               "archutils/Darwin/DarwinThreadHelpers.h"
               "archutils/Darwin/HIDDevice.h"

@@ -1,28 +1,27 @@
-/* ScreenSystemLayer - credits and statistics drawn on top of everything else. */
+/* ScreenSystemLayer - credits and statistics drawn on top of everything else.
+ */
 
 #ifndef ScreenSystemLayer_H
 #define ScreenSystemLayer_H
 
-#include "Screen.h"
 #include "AutoActor.h"
+#include "Screen.h"
 
-class ScreenSystemLayer : public Screen
-{
-public:
-	virtual void Init();
+class ScreenSystemLayer : public Screen {
+ public:
+  virtual void Init();
 
-private:
-	AutoActor m_sprOverlay;
-	AutoActor m_errLayer;
+ private:
+  AutoActor m_sprOverlay;
+  AutoActor m_errLayer;
 };
-
 
 #endif
 
 /*
  * (c) 2001-2005 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -32,7 +31,7 @@ private:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

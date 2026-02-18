@@ -1,40 +1,47 @@
 #ifndef HELP_DISPLAY_H
 #define HELP_DISPLAY_H
 
-#include "BitmapText.h"
-
+#include <string>
 #include <vector>
 
+#include "BitmapText.h"
 
 struct lua_State;
 /** @brief A BitmapText that cycles through messages. */
-class HelpDisplay : public BitmapText
-{
-public:
-	HelpDisplay();
-	void Load( const RString &sType );
+class HelpDisplay : public BitmapText {
+ public:
+  HelpDisplay();
+  void Load(const std::string& sType);
 
-	virtual HelpDisplay *Copy() const;
+  virtual HelpDisplay* Copy() const;
 
-	void SetTips( const std::vector<RString> &arrayTips ) { SetTips( arrayTips, arrayTips ); }
-	void SetTips( const std::vector<RString> &arrayTips, const std::vector<RString> &arrayTipsAlt );
-	void GetTips( std::vector<RString> &arrayTipsOut, std::vector<RString> &arrayTipsAltOut ) const {
-		arrayTipsOut = m_arrayTips;
-		arrayTipsAltOut = m_arrayTipsAlt;
-	}
-	void SetSecsBetweenSwitches( float fSeconds ) { m_fSecsBetweenSwitches = m_fSecsUntilSwitch = fSeconds; }
+  void SetTips(const std::vector<std::string>& arrayTips) {
+    SetTips(arrayTips, arrayTips);
+  }
+  void SetTips(
+      const std::vector<std::string>& arrayTips,
+      const std::vector<std::string>& arrayTipsAlt);
+  void GetTips(
+      std::vector<std::string>& arrayTipsOut,
+      std::vector<std::string>& arrayTipsAltOut) const {
+    arrayTipsOut = m_arrayTips;
+    arrayTipsAltOut = m_arrayTipsAlt;
+  }
+  void SetSecsBetweenSwitches(float fSeconds) {
+    m_fSecsBetweenSwitches = m_fSecsUntilSwitch = fSeconds;
+  }
 
-	virtual void Update( float fDeltaTime );
+  virtual void Update(float fDeltaTime);
 
-	// Lua
-	virtual void PushSelf( lua_State *L );
+  // Lua
+  virtual void PushSelf(lua_State* L);
 
-protected:
-	std::vector<RString> m_arrayTips, m_arrayTipsAlt;
-	int m_iCurTipIndex;
+ protected:
+  std::vector<std::string> m_arrayTips, m_arrayTipsAlt;
+  int m_iCurTipIndex;
 
-	float m_fSecsBetweenSwitches;
-	float m_fSecsUntilSwitch;
+  float m_fSecsBetweenSwitches;
+  float m_fSecsUntilSwitch;
 };
 
 #endif

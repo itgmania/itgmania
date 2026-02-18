@@ -3,51 +3,49 @@
 #ifndef RAGE_FILE_DRIVER_MEMORY_H
 #define RAGE_FILE_DRIVER_MEMORY_H
 
-#include "RageFileDriver.h"
-#include "RageFileBasic.h"
-#include "RageThreads.h"
-
 #include <cstddef>
+#include <string>
 #include <vector>
 
+#include "RageFileBasic.h"
+#include "RageFileDriver.h"
+#include "RageThreads.h"
 
 struct RageFileObjMemFile;
-class RageFileObjMem: public RageFileObj
-{
-public:
-	RageFileObjMem( RageFileObjMemFile *pFile = nullptr );
-	RageFileObjMem( const RageFileObjMem &cpy );
-	~RageFileObjMem();
+class RageFileObjMem : public RageFileObj {
+ public:
+  RageFileObjMem(RageFileObjMemFile* pFile = nullptr);
+  RageFileObjMem(const RageFileObjMem& cpy);
+  ~RageFileObjMem();
 
-	int ReadInternal( void *buffer, size_t bytes );
-	int WriteInternal( const void *buffer, size_t bytes );
-	int SeekInternal( int offset );
-	int GetFileSize() const;
-	RageFileObjMem *Copy() const;
+  int ReadInternal(void* buffer, size_t bytes);
+  int WriteInternal(const void* buffer, size_t bytes);
+  int SeekInternal(int offset);
+  int GetFileSize() const;
+  RageFileObjMem* Copy() const;
 
-	/* Retrieve the contents of this file. */
-	const RString &GetString() const;
-	void PutString( const RString &sBuf );
+  /* Retrieve the contents of this file. */
+  const std::string& GetString() const;
+  void PutString(const std::string& sBuf);
 
-private:
-	RageFileObjMemFile *m_pFile;
-	int m_iFilePos;
+ private:
+  RageFileObjMemFile* m_pFile;
+  int m_iFilePos;
 };
 
-class RageFileDriverMem: public RageFileDriver
-{
-public:
-	RageFileDriverMem();
-	~RageFileDriverMem();
+class RageFileDriverMem : public RageFileDriver {
+ public:
+  RageFileDriverMem();
+  ~RageFileDriverMem();
 
-	RageFileBasic *Open( const RString &sPath, int mode, int &err );
-	void FlushDirCache( const RString & /* sPath */ ) { }
+  RageFileBasic* Open(const std::string& sPath, int mode, int& err);
+  void FlushDirCache(const std::string& /* sPath */) {}
 
-	bool Remove( const RString &sPath );
+  bool Remove(const std::string& sPath);
 
-private:
-	RageMutex m_Mutex;
-	std::vector<RageFileObjMemFile *> m_Files;
+ private:
+  RageMutex m_Mutex;
+  std::vector<RageFileObjMemFile*> m_Files;
 };
 
 #endif

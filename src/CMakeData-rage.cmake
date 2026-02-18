@@ -5,6 +5,9 @@ list(APPEND SMDATA_RAGE_UTILS_SRC
             "RageUtil_BackgroundLoader.cpp"
             "RageUtil_CharConversions.cpp"
             "RageUtil_FileDB.cpp"
+            "RageUtil/LanguageInfo.cpp"
+            "RageUtil/RandomNumbers.cpp"
+            "RageUtil/Regex.cpp"
             "RageUtil_WorkerThread.cpp")
 
 list(APPEND SMDATA_RAGE_UTILS_HPP
@@ -14,7 +17,12 @@ list(APPEND SMDATA_RAGE_UTILS_HPP
             "RageUtil_BackgroundLoader.h"
             "RageUtil_CharConversions.h"
             "RageUtil_CircularBuffer.h"
+            "RageUtil/ConvertValue.h"
+            "RageUtil/Endian.h"
             "RageUtil_FileDB.h"
+            "RageUtil/LanguageInfo.h"
+            "RageUtil/RandomNumbers.h"
+            "RageUtil/Regex.h"
             "RageUtil_WorkerThread.h")
 
 source_group("Rage\\\\Utils"
@@ -176,6 +184,7 @@ list(APPEND SMDATA_RAGE_SOUND_SRC
 
 list(APPEND SMDATA_RAGE_SOUND_HPP
             "RageSound.h"
+            "RageSoundConstants.h"
             "RageSoundManager.h"
             "RageSoundMixBuffer.h"
             "RageSoundPosMap.h"

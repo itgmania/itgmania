@@ -1,16 +1,15 @@
 #ifndef SCREEN_GAMEPLAY_ROUTINE_H
 #define SCREEN_GAMEPLAY_ROUTINE_H
 
-#include "ScreenGameplay.h"
-
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "ScreenGameplay.h"
 
-class ScreenGameplayShared : public ScreenGameplay
-{
-protected:
-	virtual void FillPlayerInfo( std::vector<PlayerInfo> &vPlayerInfoOut );
-	virtual PlayerInfo &GetPlayerInfoForInput( const InputEventPlus& iep );
+class ScreenGameplayShared : public ScreenGameplay {
+ protected:
+  virtual void FillPlayerInfo(std::vector<PlayerInfo>& vPlayerInfoOut);
+  virtual PlayerInfo& GetPlayerInfoForInput(const InputEventPlus& iep);
 };
 
 #endif

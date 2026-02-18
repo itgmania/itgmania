@@ -3,7 +3,7 @@
 Most users will find everything they need in this README. There are differences in the build process for ITGmania as compared to Stepmania, so it is recommended to stick with these ITGmania instructions. For anything not covered in this guide, you can usually refer to the original Stepmania documents [here](https://github.com/stepmania/stepmania/wiki/Compiling-StepMania), as long as you replace references to Stepmania with ITGmania.
 
 ## Continuous Integration
-Pushes and pull requests to the `beta` branch of the repository are built with a [GitHub Actions workflow](https://github.com/itgmania/itgmania/actions/workflows/nightly.yml), in which "nightly releases" are compiled for a matrix of operating systems and architectures.
+Pushes to the `beta` branch of the repository are built with a [GitHub Actions workflow](https://github.com/itgmania/itgmania/actions/workflows/release.yml), in which "nightly releases" are compiled for a matrix of operating systems and architectures. Full releases are built on pushses to the `release` branch.
 
 By default, GitHub stores build artifacts for 90 days. People who are signed into GitHub and have read access to a repository can download workflow artifacts. They can be downloaded from the Artifacts section of the Summary page on an execution of the workflow.
 
@@ -126,7 +126,14 @@ Confirm the installation. Once everything is installed, you can open **StepMania
 
 #### macOS
 
-Using Xcode, simply build in Xcode and it will place the .app file in the correct directory.
+For macOS, you can either install the full Xcode package or the Xcode Command Line Tools by itself. If you install Xcode from the App Store, it will install everything needed.
+
+When compiling for macOS, the build command differs depending on whether you are compiling for Intel (`x86_64`) or Apple Silicon (`arm64`). From the `itgmania` directory (not `src`), run:
+
+- Apple Silicon: `cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"`
+- Intel: `cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"`
+
+Afterwards, run `cmake --build build --parallel "$(sysctl -n hw.logicalcpu)"`. After this step is done, the newly built ITGmania.app will be in your `itgmania` directory.
 
 #### Linux
 

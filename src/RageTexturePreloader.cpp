@@ -5,53 +5,51 @@
  * of that object.
  */
 
-#include "global.h"
 #include "RageTexturePreloader.h"
+
 #include "RageTextureManager.h"
+#include "global.h"
 
-RageTexturePreloader &RageTexturePreloader::operator=( const RageTexturePreloader &rhs )
-{
-	if( &rhs == this )
-		return *this;
+RageTexturePreloader& RageTexturePreloader::operator=(
+    const RageTexturePreloader& rhs) {
+  if (&rhs == this) {
+    return *this;
+  }
 
-	UnloadAll();
+  UnloadAll();
 
-	for( unsigned i = 0; i < rhs.m_apTextures.size(); ++i )
-	{
-		RageTexture *pTexture = TEXTUREMAN->CopyTexture( rhs.m_apTextures[i] );
-		m_apTextures.push_back( pTexture );
-	}
+  for (unsigned i = 0; i < rhs.m_apTextures.size(); ++i) {
+    RageTexture* pTexture = TEXTUREMAN->CopyTexture(rhs.m_apTextures[i]);
+    m_apTextures.push_back(pTexture);
+  }
 
-	return *this;
+  return *this;
 }
 
-void RageTexturePreloader::Load( const RageTextureID &ID )
-{
-	ASSERT( TEXTUREMAN != nullptr );
+void RageTexturePreloader::Load(const RageTextureID& ID) {
+  ASSERT(TEXTUREMAN != nullptr);
 
-	RageTexture *pTexture = TEXTUREMAN->LoadTexture( ID );
-	m_apTextures.push_back( pTexture );
+  RageTexture* pTexture = TEXTUREMAN->LoadTexture(ID);
+  m_apTextures.push_back(pTexture);
 }
 
-void RageTexturePreloader::UnloadAll()
-{
-	if( TEXTUREMAN == nullptr )
-		return;
+void RageTexturePreloader::UnloadAll() {
+  if (TEXTUREMAN == nullptr) {
+    return;
+  }
 
-	for( unsigned i = 0; i < m_apTextures.size(); ++i )
-		TEXTUREMAN->UnloadTexture( m_apTextures[i] );
-	m_apTextures.clear();
+  for (unsigned i = 0; i < m_apTextures.size(); ++i) {
+    TEXTUREMAN->UnloadTexture(m_apTextures[i]);
+  }
+  m_apTextures.clear();
 }
 
-RageTexturePreloader::~RageTexturePreloader()
-{
-	UnloadAll();
-}
+RageTexturePreloader::~RageTexturePreloader() { UnloadAll(); }
 
 /*
  * (c) 2005 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -61,7 +59,7 @@ RageTexturePreloader::~RageTexturePreloader()
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

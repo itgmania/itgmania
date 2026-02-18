@@ -1,28 +1,26 @@
 #ifndef ScreenUnlockStatus_H
 #define ScreenUnlockStatus_H
 
-#include "ScreenAttract.h"
-#include "Sprite.h"
-#include "BitmapText.h"
-
 #include <vector>
 
+#include "BitmapText.h"
+#include "ScreenAttract.h"
+#include "Sprite.h"
 
 class Course;
 
-class ScreenUnlockStatus : public ScreenAttract
-{
-public:
-	virtual void Init();
-	~ScreenUnlockStatus();
+class ScreenUnlockStatus : public ScreenAttract {
+ public:
+  virtual void Init();
+  ~ScreenUnlockStatus();
 
-protected:
-	BitmapText PointsUntilNextUnlock;
-	std::vector<Sprite*> Unlocks;
-	std::vector<BitmapText*> item; // scrolling text
-	std::vector<Sprite*> ItemIcons;  // icons for scrolling text
+ protected:
+  BitmapText PointsUntilNextUnlock;
+  std::vector<Sprite*> Unlocks;
+  std::vector<BitmapText*> item;   // scrolling text
+  std::vector<Sprite*> ItemIcons;  // icons for scrolling text
 
-	std::vector<int> LastUnlocks;  // used for "last few" method
+  std::vector<int> LastUnlocks;  // used for "last few" method
 };
 
 #endif

@@ -1,68 +1,62 @@
 #ifndef LIGHTSDRIVER_LINUXPACDRIVE_H
 #define LIGHTSDRIVER_LINUXPACDRIVE_H
 
-#include "LightsDriver.h"
-
-#include <cstdint>
 #include <libusb.h>
 
-#define BIT(i) (1<<(i))
+#include <cstdint>
 
-class USBContext
-{
-public:
-	static USBContext& getInstance()
-	{
-		static USBContext instance;
-		return instance;
-	}
+#include "LightsDriver.h"
 
-	libusb_context* getContext() { return context; }
+#define BIT(i) (1 << (i))
 
-private:
-	USBContext()
-	{
-		int result = libusb_init_context(&context, NULL, 0);
-		if (result < 0)
-		{
-			// initialization error
-			context = nullptr;
-		}
-	}
+class USBContext {
+ public:
+  static USBContext& getInstance() {
+    static USBContext instance;
+    return instance;
+  }
 
-	~USBContext()
-	{
-		if (context)
-		{
-			libusb_exit(context);
-		}
-	}
+  libusb_context* getContext() { return context; }
 
-	libusb_context* context;
+ private:
+  USBContext() {
+    int result = libusb_init_context(&context, NULL, 0);
+    if (result < 0) {
+      // initialization error
+      context = nullptr;
+    }
+  }
 
-	// prevent copying
-	USBContext(const USBContext&) = delete;
-	USBContext& operator=(const USBContext&) = delete;
+  ~USBContext() {
+    if (context) {
+      libusb_exit(context);
+    }
+  }
+
+  libusb_context* context;
+
+  // prevent copying
+  USBContext(const USBContext&) = delete;
+  USBContext& operator=(const USBContext&) = delete;
 };
 
-class LightsDriver_GenericHID: public LightsDriver
-{
-public:
-	LightsDriver_GenericHID();
-	~LightsDriver_GenericHID();
+class LightsDriver_GenericHID : public LightsDriver {
+ public:
+  LightsDriver_GenericHID();
+  ~LightsDriver_GenericHID();
 
-	void Set( const LightsState *ls );
-private:
+  void Set(const LightsState* ls);
 
-	void OpenDevice();
-	void WriteDevice(uint16_t out);
-	void CloseDevice();
+ private:
+  void OpenDevice();
+  void WriteDevice(uint16_t out);
+  void CloseDevice();
 
-	libusb_device_handle *DeviceHandle;
-	int iLightsOrder;
+  libusb_device_handle* DeviceHandle;
+  int iLightsOrder;
 };
 
-#endif // LIGHTSDRIVER_LINUXPACDRIVE_H
+#endif  // LIGHTSDRIVER_LINUXPACDRIVE_H
 
 /*
  * Copyright (c) 2008 BoXoRRoXoRs

@@ -1,28 +1,25 @@
 #ifndef INPUT_HANDLER_WIN32_MIDI
 #define INPUT_HANDLER_WIN32_MIDI
 
+#include <vector>
+
 #include "InputHandler.h"
 #include "RageInputDevice.h"
 
-#include <vector>
+class InputHandler_Win32_MIDI : public InputHandler {
+ public:
+  InputHandler_Win32_MIDI();
+  ~InputHandler_Win32_MIDI();
 
+  void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
-class InputHandler_Win32_MIDI: public InputHandler
-{
-public:
-	InputHandler_Win32_MIDI();
-	~InputHandler_Win32_MIDI();
+  void SetDev(DeviceInput key) { ButtonPressed(key); }
 
-	void GetDevicesAndDescriptions( std::vector<InputDeviceInfo>& vDevicesOut );
-
-	void SetDev( DeviceInput key ) { ButtonPressed( key ); }
-
-private:
-	bool m_bFoundDevice;
+ private:
+  bool m_bFoundDevice;
 };
 
 #endif
-
 
 /*
  * (c) 2002-2005 Charles Lohr, Glenn Maynard
@@ -48,4 +45,3 @@ private:
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

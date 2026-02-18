@@ -1,24 +1,27 @@
 #ifndef SCORE_DISPLAY_NORMAL_H
 #define SCORE_DISPLAY_NORMAL_H
 
-#include "ScoreDisplay.h"
-#include "RollingNumbers.h"
+#include <string>
+
 #include "AutoActor.h"
+#include "RollingNumbers.h"
+#include "ScoreDisplay.h"
 
 /** @brief Shows point score during gameplay and some menus. */
-class ScoreDisplayNormal : public ScoreDisplay
-{
-public:
-	ScoreDisplayNormal();
+class ScoreDisplayNormal : public ScoreDisplay {
+ public:
+  ScoreDisplayNormal();
 
-	virtual void Init( const PlayerState* pPlayerState, const PlayerStageStats* pPlayerStageStats );
+  virtual void Init(
+      const PlayerState* pPlayerState,
+      const PlayerStageStats* pPlayerStageStats);
 
-	virtual void SetScore( int iNewScore );
-	virtual void SetText( RString s ) { m_text.SetText(s); }
+  virtual void SetScore(int iNewScore);
+  virtual void SetText(std::string s) { m_text.SetText(s); }
 
-protected:
-	AutoActor	m_sprFrame;
-	RollingNumbers	m_text;
+ protected:
+  AutoActor m_sprFrame;
+  RollingNumbers m_text;
 };
 
 #endif
@@ -26,7 +29,7 @@ protected:
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -36,7 +39,7 @@ protected:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

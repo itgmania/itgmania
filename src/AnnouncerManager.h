@@ -1,52 +1,52 @@
 #ifndef ANNOUNCER_MANAGER_H
 #define ANNOUNCER_MANAGER_H
 
-#include "RageTypes.h"
-
+#include <string>
 #include <vector>
 
+#include "LuaManager.h"
 
 /** @brief The commentators who say seemlingly random things during gameplay. */
-class AnnouncerManager
-{
-public:
-	AnnouncerManager();
-	~AnnouncerManager();
+class AnnouncerManager {
+ public:
+  AnnouncerManager();
+  ~AnnouncerManager();
 
-	/**
-	 * @brief Retrieve the announcer names.
-	 * @param AddTo the list of announcer names. */
-	void GetAnnouncerNames( std::vector<RString>& AddTo );
-	/**
-	 * @brief Determine if the specified announcer exists.
-	 * @param sAnnouncerName the announcer we're checking for.
-	 * @return true if it exists, false otherwise. */
-	bool DoesAnnouncerExist( RString sAnnouncerName );
-	/**
-	 * @brief Switch to a new specified announcer.
-	 * @param sNewAnnouncerName the new announcer the Player will be listening to. */
-	void SwitchAnnouncer( RString sNewAnnouncerName );
-	/**
-	 * @brief Retrieve the current announcer's name.
-	 * @return the current announcer's name. */
-	RString GetCurAnnouncerName() const { return m_sCurAnnouncerName; };
-	void NextAnnouncer();
+  /**
+   * @brief Retrieve the announcer names.
+   * @param AddTo the list of announcer names. */
+  void GetAnnouncerNames(std::vector<std::string>& AddTo);
+  /**
+   * @brief Determine if the specified announcer exists.
+   * @param sAnnouncerName the announcer we're checking for.
+   * @return true if it exists, false otherwise. */
+  bool DoesAnnouncerExist(std::string sAnnouncerName);
+  /**
+   * @brief Switch to a new specified announcer.
+   * @param sNewAnnouncerName the new announcer the Player will be listening to.
+   */
+  void SwitchAnnouncer(std::string sNewAnnouncerName);
+  /**
+   * @brief Retrieve the current announcer's name.
+   * @return the current announcer's name. */
+  std::string GetCurAnnouncerName() const { return m_sCurAnnouncerName; };
+  void NextAnnouncer();
 
-	RString GetPathTo( RString sFolderName );
-	bool HasSoundsFor( RString sFolderName );
+  std::string GetPathTo(std::string sFolderName);
+  bool HasSoundsFor(std::string sFolderName);
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-protected:
-	static RString GetAnnouncerDirFromName( RString sAnnouncerName );
-	RString GetPathTo( RString AnnouncerPath, RString sFolderName );
-	/** @brief the current announcer's name. */
-	RString m_sCurAnnouncerName;
+ protected:
+  static std::string GetAnnouncerDirFromName(std::string sAnnouncerName);
+  std::string GetPathTo(std::string AnnouncerPath, std::string sFolderName);
+  /** @brief the current announcer's name. */
+  std::string m_sCurAnnouncerName;
 };
 
-
-extern AnnouncerManager*	ANNOUNCER;	// global and accessible from anywhere in our program
+extern AnnouncerManager*
+    ANNOUNCER;  // global and accessible from anywhere in our program
 
 #endif
 

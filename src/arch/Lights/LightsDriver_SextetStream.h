@@ -19,29 +19,29 @@
 #ifdef _WIN32
 #include "Windows.h"
 #endif
+#include <string>
 
-class LightsDriver_SextetStream : public LightsDriver
-{
-public:
-	LightsDriver_SextetStream();
-	virtual ~LightsDriver_SextetStream();
-	virtual void Set(const LightsState* ls);
-protected:
-	void* _impl;
+class LightsDriver_SextetStream : public LightsDriver {
+ public:
+  LightsDriver_SextetStream();
+  virtual ~LightsDriver_SextetStream();
+  virtual void Set(const LightsState* ls);
+
+ protected:
+  void* _impl;
 };
 
-class LightsDriver_SextetStreamToFile : public LightsDriver_SextetStream
-{
-public:
-	LightsDriver_SextetStreamToFile();
-	LightsDriver_SextetStreamToFile(const RString& filename);
+class LightsDriver_SextetStreamToFile : public LightsDriver_SextetStream {
+ public:
+  LightsDriver_SextetStreamToFile();
+  LightsDriver_SextetStreamToFile(const std::string& filename);
 
-	// The file object passed here should already be open, and will be
-	// flushed, closed, and deleted in the destructor.
+  // The file object passed here should already be open, and will be
+  // flushed, closed, and deleted in the destructor.
 #ifdef _WIN32
-	LightsDriver_SextetStreamToFile(HANDLE file);
+  LightsDriver_SextetStreamToFile(HANDLE file);
 #else
-	LightsDriver_SextetStreamToFile(RageFile* file);
+  LightsDriver_SextetStreamToFile(RageFile* file);
 #endif
 };
 

@@ -1,62 +1,75 @@
-#include "global.h"
 #include "LoadingWindow.h"
-#include "PrefsManager.h"
-#include "RageLog.h"
-#include "arch/arch_default.h"
 
+#include <string>
 #include <vector>
 
+#include "PrefsManager.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "arch/LoadingWindow/LoadingWindow_Null.h"
+#include "arch/arch_default.h"
+#include "global.h"
 
-LoadingWindow *LoadingWindow::Create()
-{
-	if( !PREFSMAN->m_bShowLoadingWindow )
-		return new LoadingWindow_Null;
+LoadingWindow* LoadingWindow::Create() {
+  if (!PREFSMAN->m_bShowLoadingWindow) {
+    return new LoadingWindow_Null;
+  }
 #if defined(UNIX) && !defined(HAVE_GTK)
-	return new LoadingWindow_Null;
+  return new LoadingWindow_Null;
 #endif
-	// Don't load nullptr by default.
-	const RString drivers = "win32,macosx,gtk";
-	std::vector<RString> DriversToTry;
-	split( drivers, ",", DriversToTry, true );
+  // Don't load nullptr by default.
+  const std::string drivers = "win32,macosx,gtk";
+  std::vector<std::string> DriversToTry;
+  split(drivers, ",", DriversToTry, true);
 
-	ASSERT( DriversToTry.size() != 0 );
+  ASSERT(DriversToTry.size() != 0);
 
-	RString Driver;
-	LoadingWindow *ret = nullptr;
+  std::string Driver;
+  LoadingWindow* ret = nullptr;
 
-	for( unsigned i = 0; ret == nullptr && i < DriversToTry.size(); ++i )
-	{
-		Driver = DriversToTry[i];
+  for (unsigned i = 0; ret == nullptr && i < DriversToTry.size(); ++i) {
+    Driver = DriversToTry[i];
 
 #ifdef USE_LOADING_WINDOW_MACOSX
-		if( !DriversToTry[i].CompareNoCase("MacOSX") )	ret = new LoadingWindow_MacOSX;
+    if (!CompareNoCase(DriversToTry[i], "MacOSX")) {
+      ret = new LoadingWindow_MacOSX;
+    }
 #endif
 #ifdef USE_LOADING_WINDOW_GTK
-		if( !DriversToTry[i].CompareNoCase("Gtk") )	ret = new LoadingWindow_Gtk;
+    if (!CompareNoCase(DriversToTry[i], "Gtk")) {
+      ret = new LoadingWindow_Gtk;
+    }
 #endif
 #ifdef USE_LOADING_WINDOW_WIN32
-		if( !DriversToTry[i].CompareNoCase("Win32") )	ret = new LoadingWindow_Win32;
+    if (!CompareNoCase(DriversToTry[i], "Win32")) {
+      ret = new LoadingWindow_Win32;
+    }
 #endif
-		if( !DriversToTry[i].CompareNoCase("Null") )	ret = new LoadingWindow_Null;
+    if (!CompareNoCase(DriversToTry[i], "Null")) {
+      ret = new LoadingWindow_Null;
+    }
 
-		if( ret == nullptr )
-			continue;
+    if (ret == nullptr) {
+      continue;
+    }
 
-		RString sError = ret->Init();
-		if( sError != "" )
-		{
-			LOG->Info( "Couldn't load driver %s: %s", DriversToTry[i].c_str(), sError.c_str() );
-			RageUtil::SafeDelete( ret );
-		}
-	}
+    std::string sError = ret->Init();
+    if (sError != "") {
+      LOG->Info(
+          "Couldn't load driver %s: %s", DriversToTry[i].c_str(),
+          sError.c_str());
+      RageUtil::SafeDelete(ret);
+    }
+  }
 
-	if( ret ) {
-		LOG->Info( "Loading window: %s", Driver.c_str() );
+  if (ret) {
+    LOG->Info("Loading window: %s", Driver.c_str());
 
-		ret->SetIndeterminate(true);
-	}
+    ret->SetIndeterminate(true);
+  }
 
-	return ret;
+  return ret;
 }
 
 /*

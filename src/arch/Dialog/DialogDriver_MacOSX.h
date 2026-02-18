@@ -1,26 +1,28 @@
 #ifndef DIALOG_BOX_DRIVER_MACOSX_H
 #define DIALOG_BOX_DRIVER_MACOSX_H
 
-#include "DialogDriver.h"
+#include <string>
 
-class DialogDriver_MacOSX: public DialogDriver
-{
-public:
-	void Error( RString sError, RString sID );
-	void OK( RString sMessage, RString sID );
-	Dialog::Result OKCancel( RString sMessage, RString sID );
-	Dialog::Result AbortRetryIgnore( RString sMessage, RString sID );
-	Dialog::Result AbortRetry( RString sMessage, RString sID );
-	Dialog::Result YesNo( RString sMessage, RString sID );
+#include "DialogDriver.h"
+#include "arch/Dialog/Dialog.h"
+
+class DialogDriver_MacOSX : public DialogDriver {
+ public:
+  void Error(std::string sError, std::string sID);
+  void OK(std::string sMessage, std::string sID);
+  Dialog::Result OKCancel(std::string sMessage, std::string sID);
+  Dialog::Result AbortRetryIgnore(std::string sMessage, std::string sID);
+  Dialog::Result AbortRetry(std::string sMessage, std::string sID);
+  Dialog::Result YesNo(std::string sMessage, std::string sID);
 };
 #define USE_DIALOG_DRIVER_COCOA
-    
+
 #endif
 
 /*
  * (c) 2003-2004 Steve Checkoway
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -30,7 +32,7 @@ public:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

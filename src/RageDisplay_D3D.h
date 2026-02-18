@@ -3,90 +3,84 @@
 #ifndef RAGE_DISPLAY_D3D_H
 #define RAGE_DISPLAY_D3D_H
 
-#include "RageDisplay.h"
-
 #include <cstdint>
+#include <string>
 
-class RageDisplay_D3D: public RageDisplay
-{
-public:
-	RageDisplay_D3D();
-	virtual ~RageDisplay_D3D();
-	virtual RString Init( const VideoModeParams &p, bool bAllowUnacceleratedRenderer );
+#include "RageDisplay.h"
+#include "RageTypes.h"
 
-	virtual RString GetApiDescription() const { return "D3D"; }
-	virtual void GetDisplaySpecs( DisplaySpecs &out ) const;
-	void ResolutionChanged();
-	const RagePixelFormatDesc *GetPixelFormatDesc(RagePixelFormat pf) const;
+class RageDisplay_D3D : public RageDisplay {
+ public:
+  RageDisplay_D3D();
+  virtual ~RageDisplay_D3D();
+  virtual std::string Init(
+      const VideoModeParams& p, bool bAllowUnacceleratedRenderer);
 
-	bool BeginFrame();
-	void EndFrame();
-	ActualVideoModeParams GetActualVideoModeParams() const;
-	void SetBlendMode( BlendMode mode );
-	bool SupportsTextureFormat( RagePixelFormat pixfmt, bool realtime=false );
-	bool SupportsThreadedRendering();
-	bool SupportsPerVertexMatrixScale() { return false; }
-	uintptr_t CreateTexture(
-		RagePixelFormat pixfmt,
-		RageSurface* img,
-		bool bGenerateMipMaps );
-	void UpdateTexture(
-		uintptr_t iTexHandle,
-		RageSurface* img,
-		int xoffset, int yoffset, int width, int height
-		);
-	void DeleteTexture( uintptr_t iTexHandle );
-	void ClearAllTextures();
-	int GetNumTextureUnits();
-	void SetTexture( TextureUnit tu, uintptr_t iTexture );
-	void SetTextureMode( TextureUnit tu, TextureMode tm );
-	void SetTextureWrapping( TextureUnit tu, bool b );
-	int GetMaxTextureSize() const;
-	void SetTextureFiltering( TextureUnit tu, bool b );
-	bool IsZWriteEnabled() const;
-	bool IsZTestEnabled() const;
-	void SetZWrite( bool b );
-	void SetZBias( float f );
-	void SetZTestMode( ZTestMode mode );
-	void ClearZBuffer();
-	void SetCullMode( CullMode mode );
-	void SetAlphaTest( bool b );
-	void SetMaterial(
-		const RageColor &emissive,
-		const RageColor &ambient,
-		const RageColor &diffuse,
-		const RageColor &specular,
-		float shininess
-		);
-	void SetLighting( bool b );
-	void SetLightOff( int index );
-	void SetLightDirectional(
-		int index,
-		const RageColor &ambient,
-		const RageColor &diffuse,
-		const RageColor &specular,
-		const RageVector3 &dir );
+  virtual std::string GetApiDescription() const { return "D3D"; }
+  virtual void GetDisplaySpecs(DisplaySpecs& out) const;
+  void ResolutionChanged();
+  const RagePixelFormatDesc* GetPixelFormatDesc(RagePixelFormat pf) const;
 
-	void SetSphereEnvironmentMapping( TextureUnit tu, bool b );
-	void SetCelShaded( int stage );
+  bool BeginFrame();
+  void EndFrame();
+  ActualVideoModeParams GetActualVideoModeParams() const;
+  void SetBlendMode(BlendMode mode);
+  bool SupportsTextureFormat(RagePixelFormat pixfmt, bool realtime = false);
+  bool SupportsThreadedRendering();
+  bool SupportsPerVertexMatrixScale() { return false; }
+  uintptr_t CreateTexture(
+      RagePixelFormat pixfmt, RageSurface* img, bool bGenerateMipMaps);
+  void UpdateTexture(
+      uintptr_t iTexHandle, RageSurface* img, int xoffset, int yoffset,
+      int width, int height);
+  void DeleteTexture(uintptr_t iTexHandle);
+  void ClearAllTextures();
+  int GetNumTextureUnits();
+  void SetTexture(TextureUnit tu, uintptr_t iTexture);
+  void SetTextureMode(TextureUnit tu, TextureMode tm);
+  void SetTextureWrapping(TextureUnit tu, bool b);
+  int GetMaxTextureSize() const;
+  void SetTextureFiltering(TextureUnit tu, bool b);
+  bool IsZWriteEnabled() const;
+  bool IsZTestEnabled() const;
+  void SetZWrite(bool b);
+  void SetZBias(float f);
+  void SetZTestMode(ZTestMode mode);
+  void ClearZBuffer();
+  void SetCullMode(CullMode mode);
+  void SetAlphaTest(bool b);
+  void SetMaterial(
+      const RageColor& emissive, const RageColor& ambient,
+      const RageColor& diffuse, const RageColor& specular, float shininess);
+  void SetLighting(bool b);
+  void SetLightOff(int index);
+  void SetLightDirectional(
+      int index, const RageColor& ambient, const RageColor& diffuse,
+      const RageColor& specular, const RageVector3& dir);
 
-	RageCompiledGeometry* CreateCompiledGeometry();
-	void DeleteCompiledGeometry( RageCompiledGeometry* p );
+  void SetSphereEnvironmentMapping(TextureUnit tu, bool b);
+  void SetCelShaded(int stage);
 
-protected:
-	void DrawQuadsInternal( const RageSpriteVertex v[], int iNumVerts );
-	void DrawQuadStripInternal( const RageSpriteVertex v[], int iNumVerts );
-	void DrawFanInternal( const RageSpriteVertex v[], int iNumVerts );
-	void DrawStripInternal( const RageSpriteVertex v[], int iNumVerts );
-	void DrawTrianglesInternal( const RageSpriteVertex v[], int iNumVerts );
-	void DrawSymmetricQuadStripInternal( const RageSpriteVertex v[], int iNumVerts );
-	void DrawCompiledGeometryInternal( const RageCompiledGeometry *p, int iMeshIndex );
+  RageCompiledGeometry* CreateCompiledGeometry();
+  void DeleteCompiledGeometry(RageCompiledGeometry* p);
 
-	RString TryVideoMode( const VideoModeParams &p, bool &bNewDeviceOut );
-	RageSurface* CreateScreenshot();
-	RageMatrix GetOrthoMatrix( float l, float r, float b, float t, float zn, float zf );
+ protected:
+  void DrawQuadsInternal(const RageSpriteVertex v[], int iNumVerts);
+  void DrawQuadStripInternal(const RageSpriteVertex v[], int iNumVerts);
+  void DrawFanInternal(const RageSpriteVertex v[], int iNumVerts);
+  void DrawStripInternal(const RageSpriteVertex v[], int iNumVerts);
+  void DrawTrianglesInternal(const RageSpriteVertex v[], int iNumVerts);
+  void DrawSymmetricQuadStripInternal(
+      const RageSpriteVertex v[], int iNumVerts);
+  void DrawCompiledGeometryInternal(
+      const RageCompiledGeometry* p, int iMeshIndex);
 
-	void SendCurrentMatrices();
+  std::string TryVideoMode(const VideoModeParams& p, bool& bNewDeviceOut);
+  RageSurface* CreateScreenshot();
+  RageMatrix GetOrthoMatrix(
+      float l, float r, float b, float t, float zn, float zf);
+
+  void SendCurrentMatrices();
 };
 
 #endif

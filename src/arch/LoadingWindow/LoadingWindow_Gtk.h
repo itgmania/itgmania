@@ -3,20 +3,21 @@
 #ifndef LOADING_WINDOW_GTK
 #define LOADING_WINDOW_GTK
 
+#include <string>
+
 #include "LoadingWindow.h"
 
-class LoadingWindow_Gtk: public LoadingWindow
-{
-public:
-	LoadingWindow_Gtk();
-	RString Init();
-	~LoadingWindow_Gtk();
-	void SetText( RString str );
-	void SetIcon( const RageSurface *pIcon );
-	void SetSplash( const RageSurface *pSplash );
-	void SetProgress( const int progress );
-	void SetTotalWork( const int totalWork );
-	void SetIndeterminate( bool indeterminate );
+class LoadingWindow_Gtk : public LoadingWindow {
+ public:
+  LoadingWindow_Gtk();
+  std::string Init();
+  ~LoadingWindow_Gtk();
+  void SetText(std::string str);
+  void SetIcon(const RageSurface* pIcon);
+  void SetSplash(const RageSurface* pSplash);
+  void SetProgress(const int progress);
+  void SetTotalWork(const int totalWork);
+  void SetIndeterminate(bool indeterminate);
 };
 #define USE_LOADING_WINDOW_GTK
 
@@ -25,7 +26,7 @@ public:
 /*
  * (c) 2003-2004 Glenn Maynard, Sean Burke
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -35,7 +36,7 @@ public:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

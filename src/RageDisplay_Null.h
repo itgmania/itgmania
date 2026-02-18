@@ -4,85 +4,97 @@
 #define RAGE_DISPLAY_NULL_H
 
 #include <cstdint>
+#include <string>
 
-class RageDisplay_Null: public RageDisplay
-{
-public:
-	RageDisplay_Null();
-	virtual RString Init( const VideoModeParams &p, bool bAllowUnacceleratedRenderer );
+#include "RageDisplay.h"
+#include "RageTypes.h"
 
-	virtual RString GetApiDescription() const { return "Null"; }
-	virtual void GetDisplaySpecs(DisplaySpecs &out) const;
-	const RagePixelFormatDesc *GetPixelFormatDesc(RagePixelFormat pf) const;
+class RageDisplay_Null : public RageDisplay {
+ public:
+  RageDisplay_Null();
+  virtual std::string Init(
+      const VideoModeParams& p, bool bAllowUnacceleratedRenderer);
 
-	bool BeginFrame() { return true; }
-	void EndFrame();
-	ActualVideoModeParams GetActualVideoModeParams() const { return m_Params; }
-	void SetBlendMode( BlendMode ) { }
-	bool SupportsTextureFormat( RagePixelFormat, bool /* realtime */ =false ) { return true; }
-	bool SupportsPerVertexMatrixScale() { return false; }
-	uintptr_t CreateTexture(
-		RagePixelFormat,
-		RageSurface* /* img */,
-		bool /* bGenerateMipMaps */ ) { return 1; }
-	void UpdateTexture(
-		uintptr_t /* iTexHandle */,
-		RageSurface* /* img */,
-		int /* xoffset */, int /* yoffset */, int /* width */, int /* height */
-		) { }
-	void DeleteTexture( uintptr_t /* iTexHandle */ ) { }
-	void ClearAllTextures() { }
-	int GetNumTextureUnits() { return 1; }
-	void SetTexture( TextureUnit, uintptr_t /* iTexture */ ) { }
-	void SetTextureMode( TextureUnit, TextureMode ) { }
-	void SetTextureWrapping( TextureUnit, bool ) { }
-	int GetMaxTextureSize() const { return 2048; }
-	void SetTextureFiltering( TextureUnit, bool ) { }
-	bool IsZWriteEnabled() const { return false; }
-	bool IsZTestEnabled() const { return false; }
-	void SetZWrite( bool ) { }
-	void SetZBias( float ) { }
-	void SetZTestMode( ZTestMode ) { }
-	void ClearZBuffer() { }
-	void SetCullMode( CullMode ) { }
-	void SetAlphaTest( bool ) { }
-	void SetMaterial(
-		const RageColor & /* unreferenced: emissive */,
-		const RageColor & /* unreferenced: ambient */,
-		const RageColor & /* unreferenced: diffuse */,
-		const RageColor & /* unreferenced: specular */,
-		float /* unreferenced: shininess */
-		) { }
-	void SetLighting( bool ) { }
-	void SetLightOff( int /* index */ ) { }
-	void SetLightDirectional(
-		int /* index */,
-		const RageColor & /* unreferenced: ambient */,
-		const RageColor & /* unreferenced: diffuse */,
-		const RageColor & /* unreferenced: specular */,
-		const RageVector3 & /* unreferenced: dir */ ) { }
+  virtual std::string GetApiDescription() const { return "Null"; }
+  virtual void GetDisplaySpecs(DisplaySpecs& out) const;
+  const RagePixelFormatDesc* GetPixelFormatDesc(RagePixelFormat pf) const;
 
-	void SetSphereEnvironmentMapping( TextureUnit /* tu */, bool /* b */ ) { }
-	void SetCelShaded( int /* stage */ ) { }
+  bool BeginFrame() { return true; }
+  void EndFrame();
+  ActualVideoModeParams GetActualVideoModeParams() const { return m_Params; }
+  void SetBlendMode(BlendMode) {}
+  bool SupportsTextureFormat(RagePixelFormat, bool /* realtime */ = false) {
+    return true;
+  }
+  bool SupportsPerVertexMatrixScale() { return false; }
+  uintptr_t CreateTexture(
+      RagePixelFormat, RageSurface* /* img */, bool /* bGenerateMipMaps */) {
+    return 1;
+  }
+  void UpdateTexture(
+      uintptr_t /* iTexHandle */, RageSurface* /* img */, int /* xoffset */,
+      int /* yoffset */, int /* width */, int /* height */
+  ) {}
+  void DeleteTexture(uintptr_t /* iTexHandle */) {}
+  void ClearAllTextures() {}
+  int GetNumTextureUnits() { return 1; }
+  void SetTexture(TextureUnit, uintptr_t /* iTexture */) {}
+  void SetTextureMode(TextureUnit, TextureMode) {}
+  void SetTextureWrapping(TextureUnit, bool) {}
+  int GetMaxTextureSize() const { return 2048; }
+  void SetTextureFiltering(TextureUnit, bool) {}
+  bool IsZWriteEnabled() const { return false; }
+  bool IsZTestEnabled() const { return false; }
+  void SetZWrite(bool) {}
+  void SetZBias(float) {}
+  void SetZTestMode(ZTestMode) {}
+  void ClearZBuffer() {}
+  void SetCullMode(CullMode) {}
+  void SetAlphaTest(bool) {}
+  void SetMaterial(
+      const RageColor& /* unreferenced: emissive */,
+      const RageColor& /* unreferenced: ambient */,
+      const RageColor& /* unreferenced: diffuse */,
+      const RageColor& /* unreferenced: specular */,
+      float /* unreferenced: shininess */
+  ) {}
+  void SetLighting(bool) {}
+  void SetLightOff(int /* index */) {}
+  void SetLightDirectional(
+      int /* index */, const RageColor& /* unreferenced: ambient */,
+      const RageColor& /* unreferenced: diffuse */,
+      const RageColor& /* unreferenced: specular */,
+      const RageVector3& /* unreferenced: dir */) {}
 
-	RageCompiledGeometry* CreateCompiledGeometry();
-	void DeleteCompiledGeometry( RageCompiledGeometry* );
+  void SetSphereEnvironmentMapping(TextureUnit /* tu */, bool /* b */) {}
+  void SetCelShaded(int /* stage */) {}
 
-protected:
-	void DrawQuadsInternal( const RageSpriteVertex v[], int /* iNumVerts */ ) { }
-	void DrawQuadStripInternal( const RageSpriteVertex v[], int /* iNumVerts */ ) { }
-	void DrawFanInternal( const RageSpriteVertex v[], int /* iNumVerts */ ) { }
-	void DrawStripInternal( const RageSpriteVertex v[], int /* iNumVerts */ ) { }
-	void DrawTrianglesInternal( const RageSpriteVertex v[], int /* iNumVerts */ ) { }
-	void DrawCompiledGeometryInternal( const RageCompiledGeometry *p, int /* iMeshIndex */ ) { }
-	void DrawLineStripInternal( const RageSpriteVertex v[], int /* iNumVerts */, float /* LineWidth */ ) { }
-	void DrawSymmetricQuadStripInternal( const RageSpriteVertex v[], int /* iNumVerts */ ) { }
+  RageCompiledGeometry* CreateCompiledGeometry();
+  void DeleteCompiledGeometry(RageCompiledGeometry*);
 
-	VideoModeParams m_Params;
-	RString TryVideoMode( const VideoModeParams &p, bool & /* bNewDeviceOut */ ) { m_Params = p; return RString(); }
-	RageSurface* CreateScreenshot();
-	RageMatrix GetOrthoMatrix( float l, float r, float b, float t, float zn, float zf );
-	bool SupportsSurfaceFormat( RagePixelFormat ) { return true; }
+ protected:
+  void DrawQuadsInternal(const RageSpriteVertex v[], int /* iNumVerts */) {}
+  void DrawQuadStripInternal(const RageSpriteVertex v[], int /* iNumVerts */) {}
+  void DrawFanInternal(const RageSpriteVertex v[], int /* iNumVerts */) {}
+  void DrawStripInternal(const RageSpriteVertex v[], int /* iNumVerts */) {}
+  void DrawTrianglesInternal(const RageSpriteVertex v[], int /* iNumVerts */) {}
+  void DrawCompiledGeometryInternal(
+      const RageCompiledGeometry* p, int /* iMeshIndex */) {}
+  void DrawLineStripInternal(
+      const RageSpriteVertex v[], int /* iNumVerts */, float /* LineWidth */) {}
+  void DrawSymmetricQuadStripInternal(
+      const RageSpriteVertex v[], int /* iNumVerts */) {}
+
+  VideoModeParams m_Params;
+  std::string TryVideoMode(
+      const VideoModeParams& p, bool& /* bNewDeviceOut */) {
+    m_Params = p;
+    return std::string();
+  }
+  RageSurface* CreateScreenshot();
+  RageMatrix GetOrthoMatrix(
+      float l, float r, float b, float t, float zn, float zf);
+  bool SupportsSurfaceFormat(RagePixelFormat) { return true; }
 };
 
 #endif
@@ -110,4 +122,3 @@ protected:
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-
