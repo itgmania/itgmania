@@ -281,8 +281,8 @@ class PrefsManager {
   // after pressed.
   Preference<float> m_fPadStickSeconds;
 
-	// Music preview volume in song selection menu (0.0 - 1.0)
-	Preference<float>	m_fSampleMusicVolume;
+  // Music preview volume in song selection menu (0.0 - 1.0)
+  Preference<float> m_fSampleMusicVolume;
 
   // Lead in time before recording starts in edit mode.
   Preference<float> m_EditRecordModeLeadIn;
