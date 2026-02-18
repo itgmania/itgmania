@@ -28,7 +28,7 @@ class GameSoundManager {
       fFadeOutLengthSeconds = 0;
       bAlignBeat = true;
       bApplyMusicRate = false;
-			fVolume = -1.0f;
+      fVolume = -1.0f;
     }
 
     std::string sFile;
@@ -40,7 +40,7 @@ class GameSoundManager {
     float fFadeOutLengthSeconds;
     bool bAlignBeat;
     bool bApplyMusicRate;
-		float fVolume;
+    float fVolume;
   };
   void PlayMusic(
       PlayMusicParams params,
