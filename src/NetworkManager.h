@@ -98,32 +98,13 @@ class HttpRequestFuture {
 
 typedef std::shared_ptr<HttpRequestFuture> HttpRequestFuturePtr;
 
-// struct CopiedWebSocketMessage {
-//   ix::WebSocketMessageType type;
-//   const std::string str;
-//   size_t wireSize;
-//   ix::WebSocketErrorInfo errorInfo;
-//   ix::WebSocketOpenInfo openInfo;
-//   ix::WebSocketCloseInfo closeInfo;
-//   bool binary;
-
-//   CopiedWebSocketMessage(const ix::WebSocketMessagePtr& wsmp)
-//       : type(wsmp->type),
-//         str(wsmp->str),
-//         wireSize(wsmp->wireSize),
-//         errorInfo(wsmp->errorInfo),
-//         openInfo(wsmp->openInfo),
-//         closeInfo(wsmp->closeInfo),
-//         binary(wsmp->binary) {}
-// };
-
 struct WebSocketArgs {
   std::string url;
   std::unordered_map<std::string, std::string> headers;
   int handshakeTimeout = -1;
   int pingInterval = -1;
   bool automaticReconnect = true;
-  std::function<void(const ix::WebSocketMessagePtr& response)> onMessage;
+  std::function<void(const ix::WebSocketMessage& response)> onMessage;
   std::function<void()> onClose;
 };
 
@@ -150,6 +131,8 @@ class NetworkManager {
   bool IsUrlAllowed(const std::string& url);
   HttpRequestFuturePtr HttpRequest(const HttpRequestArgs& args);
   WebSocketHandlePtr WebSocket(const WebSocketArgs& args);
+  void Update();
+  void EnqueueMainThreadTask(std::function<void()> task);
   std::string UrlEncode(const std::string& value);
   std::string EncodeQueryParameters(
       const std::unordered_map<std::string, std::string>& query);
@@ -158,6 +141,10 @@ class NetworkManager {
   void PushSelf(lua_State* L);
 
  private:
+  void RunHttpWorker();
+  void RunWebSocketWorker();
+  void StopWorkers();
+
   std::string GetUserAgent();
   void ClearDownloads();
 
@@ -168,7 +155,23 @@ class NetworkManager {
   static Preference<bool> httpEnabled;
   static Preference<std::string> httpAllowHosts;
 
+  std::atomic<bool> shutdownWorkers{false};
+
+  std::thread httpWorker;
+  std::mutex httpWorkerMutex;
+  std::condition_variable httpWorkerCv;
+  std::queue<std::function<void()>> httpWorkerQueue;
+
+  std::thread webSocketWorker;
+  std::mutex webSocketWorkerMutex;
+  std::condition_variable webSocketWorkerCv;
+  std::queue<std::function<void()>> webSocketWorkerQueue;
+
+  std::mutex webSocketHandlesMutex;
   std::vector<std::shared_ptr<WebSocketHandle>> webSocketHandles;
+
+  std::mutex mainThreadTaskMutex;
+  std::queue<std::function<void()>> mainThreadTaskQueue;
 };
 
 extern NetworkManager* NETWORK;
