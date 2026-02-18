@@ -381,7 +381,7 @@ void ScreenSelectMusic::CheckBackgroundRequests( bool bForce )
 		PlayParams.fFadeOutLengthSeconds = SAMPLE_MUSIC_FADE_OUT_SECONDS;
 		PlayParams.bAlignBeat = ALIGN_MUSIC_BEATS;
 		PlayParams.bApplyMusicRate = true;
-                PlayParams.fVolume = PREFSMAN->m_fSampleMusicVolume.Get();
+		PlayParams.fVolume = PREFSMAN->m_fSampleMusicVolume.Get();
 
 		GameSoundManager::PlayMusicParams FallbackMusic;
 		FallbackMusic.sFile = m_sLoopMusicPath;
@@ -2180,3 +2180,4 @@ LUA_REGISTER_DERIVED_CLASS( ScreenSelectMusic, ScreenWithMenuElements )
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+
