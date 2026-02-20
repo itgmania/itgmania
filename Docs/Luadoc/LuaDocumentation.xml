@@ -5975,6 +5975,17 @@ local args = {
 		(New since ITGmania 0.6.0) If the optional argument <code>bIsAbsolute</code> is set, instead treats
 		sListName as an absolute path instead of loading it from the Theme's <code>Other</code> directory.
 	</Function>
+	<Function name='SetPreferredSongsFromTable' return='void' arguments='table' since='ITGmania 1.2.0'>
+		An alternate version of SetPreferredSongs that takes a key value table of songs where the key is the
+		section name and the value is a table of songs that belong in that section. This allows themes to
+		set preferred songs without needing to read from a file.
+<pre><code>
+{
+	"Section Name 1" = { song1, song2, song3 },
+	"Section Name 2" = { song4, song5, song6 }
+}
+</code></pre>
+	</Function>
 	<Function name='SongToPreferredSortSectionName' return='string' arguments='Song s'>
 		Returns the preferred sort section name for the specified Song.
 	</Function>

@@ -1946,6 +1946,66 @@ void SongManager::UpdateShuffled() {
 }
 
 void SongManager::SetPreferredSongs(
+    std::map<std::string, std::vector<Song*>> mapSectionToSongs) {
+  ASSERT(UNLOCKMAN != nullptr);
+  m_vPreferredSongSort.clear();
+  m_mapPreferredSectionToSongs.clear();
+
+  PreferredSortSection section;
+  for (const std::pair<const std::string, std::vector<Song*>>& pair :
+       mapSectionToSongs) {
+    if (pair.second.empty()) {
+      continue;
+    }
+    section = PreferredSortSection();
+    section.sName = pair.first;
+    for (Song* song : pair.second) {
+      if (song == nullptr) {
+        continue;
+      }
+      if (UNLOCKMAN->SongIsLocked(song) & LOCKED_SELECTABLE) {
+        continue;
+      }
+
+      section.vpSongs.push_back(song);
+    }
+    m_vPreferredSongSort.push_back(section);
+    m_mapPreferredSectionToSongs[section.sName] = section.vpSongs;
+  }
+
+  if (MOVE_UNLOCKS_TO_BOTTOM_OF_PREFERRED_SORT.GetValue()) {
+    // move all unlock songs to a group at the bottom
+    PreferredSortSection PFSection;
+    PFSection.sName = "Unlocks";
+    for (const UnlockEntry& ue : UNLOCKMAN->m_UnlockEntries) {
+      if (ue.m_Type == UnlockRewardType_Song) {
+        Song* pSong = ue.m_Song.ToSong();
+        if (pSong) {
+          PFSection.vpSongs.push_back(pSong);
+        }
+      }
+    }
+
+    m_vPreferredSongSort.push_back(PFSection);
+    m_mapPreferredSectionToSongs[PFSection.sName] = PFSection.vpSongs;
+  }
+
+  // prune empty groups
+  for (int i = m_vPreferredSongSort.size() - 1; i >= 0; i--) {
+    if (m_vPreferredSongSort[i].vpSongs.empty()) {
+      m_mapPreferredSectionToSongs.erase(m_vPreferredSongSort[i].sName);
+      m_vPreferredSongSort.erase(m_vPreferredSongSort.begin() + i);
+    }
+  }
+
+  for (const PreferredSortSection& i : m_vPreferredSongSort) {
+    for (const Song* j : i.vpSongs) {
+      ASSERT(j != nullptr);
+    }
+  }
+}
+
+void SongManager::SetPreferredSongs(
     std::string sPreferredSongs, bool bIsAbsolute) {
   ASSERT(UNLOCKMAN != nullptr);
 
@@ -2413,6 +2473,40 @@ class LunaSongManager : public Luna<SongManager> {
 
     COMMON_RETURN_SELF;
   }
+
+  static int SetPreferredSongsFromTable(T* p, lua_State* L) {
+    if (!lua_istable(L, 1)) {
+      return luaL_error(
+          L, "Expected a table for SetPreferredSongsFromTable. Got %s.",
+          luaL_typename(L, 1));
+    }
+
+    std::map<std::string, std::vector<Song*>> mapSectionToSongs;
+    lua_pushnil(L);  // first key
+    while (lua_next(L, 1) != 0) {
+      std::string sectionName = SArg(-2);
+      std::vector<Song*> songs;
+
+      if (lua_istable(L, -1)) {
+        lua_pushnil(L);  // first key in the inner table
+        while (lua_next(L, -2) != 0) {
+          // value is at index -1
+          Song* pSong = Luna<Song>::check(L, -1);
+          if (pSong) {
+            songs.push_back(pSong);
+          }
+          lua_pop(L, 1);  // remove value, keep key for next iteration
+        }
+      }
+
+      mapSectionToSongs[sectionName] = songs;
+      lua_pop(L, 1);  // remove value, keep key for next iteration
+    }
+
+    p->SetPreferredSongs(mapSectionToSongs);
+    COMMON_RETURN_SELF;
+  }
+
   static int SetPreferredCourses(T* p, lua_State* L) {
     std::string sPreferredCourses = SArg(1);
     if (lua_gettop(L) >= 2 && !lua_isnil(L, 2)) {
@@ -2677,6 +2771,7 @@ class LunaSongManager : public Luna<SongManager> {
     ADD_METHOD(GetCoursesInGroup);
     ADD_METHOD(ShortenGroupName);
     ADD_METHOD(SetPreferredSongs);
+    ADD_METHOD(SetPreferredSongsFromTable);
     ADD_METHOD(SetPreferredCourses);
     ADD_METHOD(GetPreferredSortSongs);
     ADD_METHOD(GetPreferredSortCourses);

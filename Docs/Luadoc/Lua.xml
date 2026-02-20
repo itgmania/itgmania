@@ -994,6 +994,7 @@
 			<Function name='SetNumMultiplayerNoteFields'/>
 			<Function name='SetPreferredDifficulty'/>
 			<Function name='SetPreferredSong'/>
+			<Function name='SetPreferredSongsFromTable'/>
 			<Function name='SetPreferredSongGroup'/>
 			<Function name='SetSongOptions'/>
 			<Function name='SetStepsForEditMode'/>
