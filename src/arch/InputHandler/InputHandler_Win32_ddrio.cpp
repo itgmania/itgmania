@@ -295,7 +295,7 @@ void InputHandler_Win32_ddrio::InputThreadMain() {
 
     newLS = LightsDriver_Export::GetState();
 
-    if (IsLightChange(prevLS, newLS)) {
+    if (prevLS != newLS) {
       PushLightState(newLS);
     }
 
@@ -318,26 +318,6 @@ void InputHandler_Win32_ddrio::PushInputState(uint32_t newInput) {
 
     ButtonPressed(di);
   }
-}
-
-bool InputHandler_Win32_ddrio::IsLightChange(
-    LightsState prevLS, LightsState newLS) {
-  FOREACH_CabinetLight(light) {
-    if (prevLS.m_bCabinetLights[light] != newLS.m_bCabinetLights[light]) {
-      return true;
-    }
-  }
-
-  for (int gc = 0; gc < NUM_GameController; gc++) {
-    FOREACH_ENUM(GameButton, gb) {
-      if (prevLS.m_bGameButtonLights[gc][gb] !=
-          newLS.m_bGameButtonLights[gc][gb]) {
-        return true;
-      }
-    }
-  }
-
-  return false;
 }
 
 void InputHandler_Win32_ddrio::PushLightState(LightsState newLS) {
