@@ -22,6 +22,8 @@ void LightsDriver_gpb::Set(const LightsState* ls) {
   // btns are:
   // p1: red, left, right, green
   // p2: red, left, right, green
+  // p1 up, down
+  // p2 up, down
 
   outputBuffer[GPB_LIGHTINDEX_BTN01] =
       ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_SELECT];
