@@ -83,7 +83,7 @@ class LightsDriver_gpb : public LightsDriver {
 #endif
 
 /*
- * (c) 2025 din
+ * (c) 2026 din
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
