@@ -81,8 +81,6 @@ class InputHandler_Win32_ddrio : public InputHandler {
   void InputThreadMain();
 
   void PushInputState(uint32_t newInput);
-
-  bool IsLightChange(LightsState prevLS, LightsState newLS);
   void PushLightState(LightsState newLS);
 };
 

@@ -257,7 +257,6 @@ class InputHandler_PumpHID : public InputHandler {
   static int InputThread_Start(void* p);
   void InputThreadMain();
 
-  bool IsLightChange(LightsState prevLS, LightsState newLS);
   void CreateLightingMessage(LightsState newLS);
 };
 
