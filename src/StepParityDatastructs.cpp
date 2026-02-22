@@ -9,9 +9,21 @@
 #include <intrin.h>
 #endif
 
+#include "EnumHelper.h"
+#include "LocalizedString.h"
+#include "LuaBinding.h"
 #include "NoteTypes.h"
 
 using namespace StepParity;
+
+static const char* FootNames[] = {
+    "None", "LeftHeel", "LeftToe", "RightHeel", "RightToe"};
+
+XToString(Foot);
+XToLocalizedString(Foot);
+LuaFunction(
+    FootToLocalizedString, FootToLocalizedString(Enum::Check<Foot>(L, 1)));
+LuaXType(Foot);
 
 bool State::operator==(const State& other) const {
   return combined_mask == other.combined_mask &&
@@ -191,7 +203,7 @@ void StageLayout::preGeneratePermutations() {
     if (bits > 4) {
       continue;
     }
-    FootPlacement blankColumns(columnCount, NONE);
+    FootPlacement blankColumns(columnCount, Foot_None);
 
     std::vector<FootPlacement> placements =
         PermuteFootPlacements(i, blankColumns, 0);
@@ -212,19 +224,19 @@ std::vector<FootPlacement> StageLayout::PermuteFootPlacements(
     int rightToeIndex = StepParity::INVALID_COLUMN;
 
     for (unsigned long i = 0; i < test_columns.size(); i++) {
-      if (test_columns[i] == NONE) {
+      if (test_columns[i] == Foot_None) {
         continue;
       }
-      if (test_columns[i] == LEFT_HEEL) {
+      if (test_columns[i] == Foot_LeftHeel) {
         leftHeelIndex = i;
       }
-      if (test_columns[i] == LEFT_TOE) {
+      if (test_columns[i] == Foot_LeftToe) {
         leftToeIndex = i;
       }
-      if (test_columns[i] == RIGHT_HEEL) {
+      if (test_columns[i] == Foot_RightHeel) {
         rightHeelIndex = i;
       }
-      if (test_columns[i] == RIGHT_TOE) {
+      if (test_columns[i] == Foot_RightToe) {
         rightToeIndex = i;
       }
     }

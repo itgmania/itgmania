@@ -69,22 +69,26 @@ source_group("Data Structures\\\\Courses and Trails"
              ${SM_DATA_COURSE_HPP})
 
 list(APPEND SM_DATA_NOTEDATA_SRC
+            "NoteAnnotation.cpp"
             "NoteData.cpp"
             "NoteDataUtil.cpp"
             "NoteDataWithScoring.cpp"
             "ColumnCues.cpp"
             "TechCounts.cpp"
+            "TechCountsCategory.cpp"
             "MeasureInfo.cpp"
             "StepParityGenerator.cpp"
             "StepParityDatastructs.cpp"
             "StepParityCost.cpp")
 
 list(APPEND SM_DATA_NOTEDATA_HPP
+            "NoteAnnotation.h"
             "NoteData.h"
             "NoteDataUtil.h"
             "NoteDataWithScoring.h"
             "ColumnCues.h"
             "TechCounts.h"
+            "TechCountsCategory.h"
             "MeasureInfo.h"
             "StepParityGenerator.h"
             "StepParityDatastructs.h"

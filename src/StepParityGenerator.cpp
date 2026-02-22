@@ -137,12 +137,12 @@ State* StepParityGenerator::initResultState(
   }
 
   for (unsigned long i = 0; i < columns.size(); i++) {
-    resultState->combinedColumns[i] = NONE;
+    resultState->combinedColumns[i] = Foot_None;
   }
 
   // I tried to condense this, but kept getting the logic messed up
   for (unsigned long i = 0; i < columns.size(); i++) {
-    if (columns[i] == NONE) {
+    if (columns[i] == Foot_None) {
       continue;
     }
     resultState->whatNoteTheFootIsHitting[columns[i]] = i;
@@ -158,7 +158,7 @@ State* StepParityGenerator::initResultState(
   }
 
   for (unsigned long i = 0; i < columns.size(); i++) {
-    if (columns[i] == NONE) {
+    if (columns[i] == Foot_None) {
       continue;
     }
 
@@ -207,32 +207,32 @@ void StepParityGenerator::mergeInitialAndResultPosition(
   for (int i = 0; i < columnCount; i++) {
     // copy in data from columns over the top which overrides it, as long as
     // it's not nothing
-    if (columns[i] != NONE) {
+    if (columns[i] != Foot_None) {
       resultState->combinedColumns[i] = columns[i];
       continue;
     }
 
     // copy in data from initialState, if it wasn't moved
-    if (initialState->combinedColumns[i] == LEFT_HEEL ||
-        initialState->combinedColumns[i] == RIGHT_HEEL) {
+    if (initialState->combinedColumns[i] == Foot_LeftHeel ||
+        initialState->combinedColumns[i] == Foot_RightHeel) {
       if (!resultState->didTheFootMove[initialState->combinedColumns[i]]) {
         resultState->combinedColumns[i] = initialState->combinedColumns[i];
       }
-    } else if (initialState->combinedColumns[i] == LEFT_TOE) {
-      if (!resultState->didTheFootMove[LEFT_TOE] &&
-          !resultState->didTheFootMove[LEFT_HEEL]) {
+    } else if (initialState->combinedColumns[i] == Foot_LeftToe) {
+      if (!resultState->didTheFootMove[Foot_LeftToe] &&
+          !resultState->didTheFootMove[Foot_LeftHeel]) {
         resultState->combinedColumns[i] = initialState->combinedColumns[i];
       }
-    } else if (initialState->combinedColumns[i] == RIGHT_TOE) {
-      if (!resultState->didTheFootMove[RIGHT_TOE] &&
-          !resultState->didTheFootMove[RIGHT_HEEL]) {
+    } else if (initialState->combinedColumns[i] == Foot_RightToe) {
+      if (!resultState->didTheFootMove[Foot_RightToe] &&
+          !resultState->didTheFootMove[Foot_RightHeel]) {
         resultState->combinedColumns[i] = initialState->combinedColumns[i];
       }
     }
   }
 
   for (int i = 0; i < columnCount; i++) {
-    if (resultState->combinedColumns[i] != NONE) {
+    if (resultState->combinedColumns[i] != Foot_None) {
       resultState->whereTheFeetAre[resultState->combinedColumns[i]] = i;
     }
     resultState->combined_mask |=

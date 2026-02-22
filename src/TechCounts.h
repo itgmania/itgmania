@@ -5,34 +5,11 @@
 #include <vector>
 
 #include "EnumHelper.h"
+#include "NoteAnnotation.h"
 #include "StepParityDatastructs.h"
-
+#include "TechCountsCategory.h"
 /** @brief Unknown radar values are given a default value. */
 #define TECHCOUNTS_VAL_UNKNOWN -1
-
-enum TechCountsCategory {
-  TechCountsCategory_Crossovers = 0,
-  TechCountsCategory_HalfCrossovers,
-  TechCountsCategory_FullCrossovers,
-  TechCountsCategory_Footswitches,
-  TechCountsCategory_UpFootswitches,
-  TechCountsCategory_DownFootswitches,
-  TechCountsCategory_Sideswitches,
-  TechCountsCategory_Jacks,
-  TechCountsCategory_Brackets,
-  TechCountsCategory_Doublesteps,
-  NUM_TechCountsCategory,
-  TechCountsCategory_Invalid
-};
-
-const std::string& TechCountsCategoryToString(TechCountsCategory cat);
-/**
- * @brief Turn the radar category into a proper localized string.
- * @param cat the radar category.
- * @return the localized string version of the radar category.
- */
-const std::string& TechCountsCategoryToLocalizedString(TechCountsCategory cat);
-LuaDeclareType(TechCountsCategory);
 
 struct lua_State;
 
@@ -72,7 +49,8 @@ struct TechCounts {
   void PushSelf(lua_State* L);
   static void CalculateTechCountsFromRows(
       const std::vector<StepParity::Row>& rows,
-      const StepParity::StageLayout* layout, TechCounts& out);
+      const StepParity::StageLayout* layout, TechCounts& out,
+      std::vector<NoteAnnotation>& annotations_out);
 
  private:
   static bool isFootswitch(

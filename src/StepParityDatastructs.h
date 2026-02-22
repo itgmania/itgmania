@@ -16,7 +16,15 @@ const int INVALID_COLUMN = -1;
 const float CLM_SECOND_INVALID = -1;
 const int MAX_COLUMNS = 16;
 
-enum Foot { NONE = 0, LEFT_HEEL, LEFT_TOE, RIGHT_HEEL, RIGHT_TOE, NUM_Foot };
+enum Foot {
+  Foot_None = 0,
+  Foot_LeftHeel,
+  Foot_LeftToe,
+  Foot_RightHeel,
+  Foot_RightToe,
+  NUM_Foot,
+  Foot_Invalid
+};
 
 /// @brief A vector of Foot values, which represents the player's
 /// foot placement on the dance stage.
@@ -25,22 +33,17 @@ typedef std::vector<Foot> FootPlacement;
 const std::vector<uint16_t> FOOT_MASKS = {0, 1, 2, 4, 8};
 
 const int16_t FOOT_MASK_LEFT =
-    FOOT_MASKS[Foot::LEFT_HEEL] | FOOT_MASKS[Foot::LEFT_TOE];
+    FOOT_MASKS[Foot::Foot_LeftHeel] | FOOT_MASKS[Foot::Foot_LeftToe];
 const int16_t FOOT_MASK_RIGHT =
-    FOOT_MASKS[Foot::RIGHT_HEEL] | FOOT_MASKS[Foot::RIGHT_TOE];
+    FOOT_MASKS[Foot::Foot_RightHeel] | FOOT_MASKS[Foot::Foot_RightToe];
 
 const std::array<StepParity::Foot, 4> FEET = {
-    LEFT_HEEL, LEFT_TOE, RIGHT_HEEL, RIGHT_TOE};
+    Foot_LeftHeel, Foot_LeftToe, Foot_RightHeel, Foot_RightToe};
 // A map for getting the other part of the foot, when you don't actually care
 // what part it is.
 // OTHER_PART_OF_FOOT[LEFT_HEEL] == LEFT_TOE
 const std::array<StepParity::Foot, 5> OTHER_PART_OF_FOOT = {
-    NONE, LEFT_TOE, LEFT_HEEL, RIGHT_TOE, RIGHT_HEEL};
-
-const std::string FEET_LABELS[] = {"N", "L", "l", "R", "r", "5??", "6??"};
-const std::string TapNoteTypeShortNames[] = {
-    "Empty", "Tap", "Mine", "Attack", "AutoKeySound", "Fake", "", ""};
-const std::string TapNoteSubTypeShortNames[] = {"Hold", "Roll", "", ""};
+    Foot_None, Foot_LeftToe, Foot_LeftHeel, Foot_RightToe, Foot_RightHeel};
 
 enum Cost {
   COST_DOUBLESTEP = 0,
@@ -156,8 +159,8 @@ struct IntermediateNoteData {
   bool fake = false;    // Is this note fake (besides being TapNoteType_Fake)?
   float second = 0;     // time into the song on which the note occurs
 
-  Foot parity =
-      NONE;  // Which foot (and which part of the foot) will most likely be used
+  Foot parity = Foot_None;  // Which foot (and which part of the foot) will most
+                            // likely be used
 };
 
 /// @brief A slightly complicated structure to encapsulate all of the data for a
@@ -200,7 +203,7 @@ struct Row {
     holds = std::vector<IntermediateNoteData>(columnCount);
     mines = std::vector<float>(columnCount, 0);
     fakeMines = std::vector<float>(columnCount, 0);
-    columns = std::vector<StepParity::Foot>(columnCount, StepParity::NONE);
+    columns = std::vector<StepParity::Foot>(columnCount, StepParity::Foot_None);
     whereTheFeetAre = std::vector<int>(StepParity::NUM_Foot, INVALID_COLUMN);
   }
 

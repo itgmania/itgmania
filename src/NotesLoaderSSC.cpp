@@ -12,6 +12,7 @@
 #include "GameConstantsAndTypes.h"
 #include "GameManager.h"
 #include "MsdFile.h"  // No JSON here.
+#include "NoteAnnotation.h"
 #include "NoteTypes.h"
 #include "NotesLoaderSM.h"  // For programming shortcuts.
 #include "PlayerNumber.h"
@@ -358,6 +359,31 @@ void SetTechCounts(StepsTagInfo& info) {
   info.ssc_format = true;
 }
 
+void SetNoteAnnotations(StepsTagInfo& info) {
+  if (info.from_cache || info.for_load_edit) {
+    std::vector<std::string> valuesPerPlayer;
+    split((*info.params)[1], "|", valuesPerPlayer, true);
+
+    if (valuesPerPlayer.size() > NUM_PlayerNumber) {
+      LOG->Warn(
+          "#NOTEANNOTATIONS has more sections (%zu) than possible number of "
+          "players (%d)!",
+          valuesPerPlayer.size(), NUM_PlayerNumber);
+    }
+
+    std::vector<NoteAnnotationCache> annotationsPerPlayer;
+
+    for (std::size_t pn = 0;
+         pn < valuesPerPlayer.size() && pn < NUM_PlayerNumber; pn++) {
+      NoteAnnotationCache annotationCache;
+      annotationCache.compressed = valuesPerPlayer[pn];
+      annotationsPerPlayer.push_back(annotationCache);
+    }
+    info.steps->SetNoteAnnotations(annotationsPerPlayer);
+  }
+  info.ssc_format = true;
+}
+
 void SetNpsPerMeasure(StepsTagInfo& info) {
   if (info.from_cache || info.for_load_edit) {
     std::vector<std::string> valuesPerPlayer;
@@ -674,6 +700,7 @@ struct ssc_parser_helper_t {
     steps_tag_handlers["NPSPERMEASURE"] = &SetNpsPerMeasure;
     steps_tag_handlers["NOTESPERMEASURE"] = &SetNotesPerMeasure;
     steps_tag_handlers["PEAKNPS"] = &SetPeakNps;
+    steps_tag_handlers["NOTEANNOTATIONS"] = &SetNoteAnnotations;
     steps_tag_handlers["GROOVESTATSHASH"] = &SetGrooveStatsHash;
     steps_tag_handlers["GROOVESTATSHASHVERSION"] = &SetGrooveStatsHashVersion;
 

@@ -3874,7 +3874,7 @@ NETWORK:WebSocket{
 	</Function>
 	<Function name='IsNoteSkinVariant' return='bool' arguments='string strName' since='ITGmania 1.2.0'>
 		Returns <code>true</code> if the noteskin <code>strName</code> is a variant of another noteskin.
-	</Function>	
+	</Function>
 </Class>
 <Class name='NCSplineHandler'>
 	<Description>
@@ -6314,6 +6314,24 @@ local spr = Def.Sprite{
 	</Function>
 	<Function name='GetMeter' return='int' arguments=''>
 		Returns the numerical difficulty of the Steps.
+	</Function>
+	<Function name='GetNoteAnnotations' return='table' arguments='PlayerNumber pn'>
+		Returns a table with additional information about the notes in this stepchart.
+		Each entry includes data about predicted foot placement for each note, as well as predicted tech notations for the given beat.
+		`footPlacement` is a table that maps column index to the predicted <Link class='ENUM' function='Foot'/> (NOTE that the column indexes are 1-based)
+		`tech` is an array of <Link class='ENUM' function='TechCountsCategory'/> predicted for the given beat. These are in no particular order, but each enum should only show up once.
+		<code>
+		[
+			{
+				"beat": 4.20,
+				"footPlacement": {
+					2: "Foot_LeftHeel",
+					3: "Foot_LeftToe"
+				},
+				"tech": ["TechCountsCategory_Brackets"]
+			}
+		]
+		</code>
 	</Function>
 	<Function name='HasAttacks' return='bool' arguments=''>
 		Returns <code>true</code> if the Steps has any attacks.
