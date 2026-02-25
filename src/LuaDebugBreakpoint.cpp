@@ -114,6 +114,14 @@ bool Breakpoint::IsHit(lua_State* L, lua_Debug& debug) {
       if (debug.source == nullptr) {
         debug.source = "";
         return false;
+      } else {
+        // Ignore leading "@/".
+        if (debug.source[0] == '@') {
+          debug.source++;
+        }
+        if (debug.source[0] == '/') {
+          debug.source++;
+        }
       }
     }
     if (m_fileName != debug.source) {
