@@ -5,6 +5,7 @@
 #include "LuaDebugHelpers.h"
 #include "LuaDebuggeeState.h"
 #include "LuaManager.h"
+#include "StdString.h"
 
 namespace LuaDebug {
 namespace {
@@ -124,7 +125,7 @@ bool Breakpoint::IsHit(lua_State* L, lua_Debug& debug) {
         }
       }
     }
-    if (m_fileName != debug.source) {
+    if (!EqualsNoCase(m_fileName, debug.source)) {
       return false;
     }
   }
