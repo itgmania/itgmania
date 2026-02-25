@@ -81,24 +81,51 @@ bool Breakpoint::IsHit(lua_State* L, lua_Debug& debug) {
   if ((m_eventMask & (1 << debug.event)) == 0) {
     return false;
   }
+
   if (m_thread != nullptr && m_thread != L) {
     return false;
   }
-  if (!m_functionName.empty() &&
-      (debug.name == nullptr || m_functionName != debug.name)) {
-    return false;
+
+  if (m_lineNumber >= 0) {
+    if (debug.currentline == INT_MIN) {
+      lua_getinfo(L, "l", &debug);
+    }
+    if (m_lineNumber != debug.currentline) {
+      return false;
+    }
   }
-  if (!m_fileName.empty() &&
-      (debug.source == nullptr || m_fileName != debug.source)) {
-    return false;
+
+  if (!m_functionName.empty()) {
+    if (debug.name == nullptr) {
+      lua_getinfo(L, "n", &debug);
+      if (debug.name == nullptr) {
+        debug.name = "";
+        return false;
+      }
+    }
+    if (m_functionName != debug.name) {
+      return false;
+    }
   }
-  if (m_lineNumber >= 0 && m_lineNumber != debug.currentline) {
-    return false;
+
+  if (!m_fileName.empty()) {
+    if (debug.source == nullptr) {
+      lua_getinfo(L, "S", &debug);
+      if (debug.source == nullptr) {
+        debug.source = "";
+        return false;
+      }
+    }
+    if (m_fileName != debug.source) {
+      return false;
+    }
   }
+
   lua_Debug tmp;
   if (m_maxStackDepth >= 0 && lua_getstack(L, m_maxStackDepth, &tmp)) {
     return false;
   }
+
   return true;
 }
 

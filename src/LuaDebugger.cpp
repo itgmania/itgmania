@@ -1,7 +1,10 @@
 #include "LuaDebugger.h"
 
+#include <atomic>
+#include <mutex>
 #include <queue>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -14,6 +17,23 @@
 #include "global.h"
 
 namespace LuaDebug {
+
+class Spinlock {
+ public:
+  bool try_lock() { return !m_locked.test_and_set(std::memory_order_acquire); }
+
+  void lock() {
+    while (!try_lock()) {
+      std::this_thread::yield();
+    }
+  }
+
+  void unlock() { m_locked.clear(std::memory_order_release); }
+
+ private:
+  std::atomic_flag m_locked = ATOMIC_FLAG_INIT;
+};
+
 class Debugger::Impl {
  public:
   Impl() : m_luaDebugMutex("LuaDebug"), m_debuggeeState(DebuggeeState::Root{}) {
@@ -63,6 +83,7 @@ class Debugger::Impl {
 
   void DeactivateState(lua_State* lua) {
     LockMutex lock(m_luaDebugMutex);
+    std::lock_guard lock2(m_breakpointsLock);
 
     lua_sethook(lua, nullptr, 0, 0);
 
@@ -151,6 +172,12 @@ class Debugger::Impl {
   // Locks access to the shared data. Signaled when m_toLuaThread or
   // m_toServerThread is available for reading.
   RageEvent m_luaDebugMutex;
+
+  // Access to m_breakpoints is synchronized by locking
+  //  1. m_luaDebugMutex AND m_breakpointsLock on the server thread
+  //  2. m_luaDebugMutex OR m_breakpointsLock on the Lua thread.
+  // When locking both, m_luaDebugMutex is locked first to prevent deadlocks.
+  Spinlock m_breakpointsLock;
 
   // Kept across client sessions
   std::vector<LuaThread> m_threads;
@@ -802,12 +829,16 @@ class Debugger::Impl {
 
   void AddBreakpoint(Breakpoint breakpoint) {
     LockMutex lock(m_luaDebugMutex);
+    std::lock_guard lock2(m_breakpointsLock);
+
     m_breakpoints.push_back(breakpoint);
     UpdateHook();
   }
 
   void DeleteBreakpointsInSource(std::string source) {
     LockMutex lock(m_luaDebugMutex);
+    std::lock_guard lock2(m_breakpointsLock);
+
     bool anyDeleted = false;
     for (int i = m_breakpoints.size() - 1; i >= 0; i--) {
       if (m_breakpoints[i].GetFileName() == source) {
@@ -822,6 +853,8 @@ class Debugger::Impl {
 
   void DeleteAllFunctionBreakpoints() {
     LockMutex lock(m_luaDebugMutex);
+    std::lock_guard lock2(m_breakpointsLock);
+
     bool anyDeleted = false;
     for (int i = m_breakpoints.size() - 1; i >= 0; i--) {
       if (!m_breakpoints[i].GetFunctionName().empty()) {
@@ -836,22 +869,49 @@ class Debugger::Impl {
 
   void DeleteAllBreakpoints() {
     LockMutex lock(m_luaDebugMutex);
+    std::lock_guard lock2(m_breakpointsLock);
+
     m_breakpoints.clear();
     UpdateHook();
   }
 
   void LuaHook(lua_State* L, lua_Debug* ar) {
+    // These are set to arbitrary values before calling lua_getinfo. Clear them
+    // so that Breakpoint::IsHit can set them as needed.
+    ar->source = nullptr;
+    ar->currentline = INT_MIN;
+    ar->name = nullptr;
+
+    // Locking the m_luaDebugMutex mutex is slow, so try with only
+    // m_breakpointsLock first. Only try to lock it once to avoid excessive
+    // spinning if the server thread holds it for a long time.
+    bool isAnyHit = false;
+    if (m_breakpointsLock.try_lock()) {
+      for (Breakpoint& bp : m_breakpoints) {
+        if (bp.IsHit(L, *ar)) {
+          isAnyHit = true;
+          break;
+        }
+      }
+      m_breakpointsLock.unlock();
+      if (!isAnyHit) {
+        return;
+      }
+    }
+
     LockMutex lock(m_luaDebugMutex);
 
-    lua_getinfo(L, "lnS", ar);
-    bool anyHit = false;
+    // Check again after acquiring m_luaDebugMutex. The breakpoints could have
+    // changed between releasing m_breakpointsLock and acquiring
+    // m_luaDebugMutex, or if we failed to acquire m_breakpointsLock at all.
+    isAnyHit = false;
     for (Breakpoint& bp : m_breakpoints) {
       if (bp.IsHit(L, *ar)) {
-        anyHit = true;
+        isAnyHit = true;
         break;
       }
     }
-    if (!anyHit) {
+    if (!isAnyHit) {
       return;
     }
 

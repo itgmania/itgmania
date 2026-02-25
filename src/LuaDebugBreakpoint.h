@@ -23,6 +23,9 @@ class Breakpoint {
   static Breakpoint Line(
       BreakpointId id, const std::string& fileName, int lineNumber);
 
+  /* Checks if the breakpoint is hit, ignoring condition and hit count
+   * condition. Fills in debug.source, debug.currentline, and debug.name as
+   * needed. */
   bool IsHit(lua_State* L, lua_Debug& debug);
   bool EvaluateConditions(
       DebuggeeState& stackFrame, std::string& evaluationError);
@@ -32,6 +35,8 @@ class Breakpoint {
   BreakpointId GetId() const { return m_id; }
   int GetEventMask() const { return m_eventMask; }
   const std::string& GetFileName() const { return m_fileName; }
+  int GetLineNumber() const { return m_lineNumber; }
+  int GetMaxStackDepth() const { return m_maxStackDepth; }
   const std::string& GetFunctionName() const { return m_functionName; }
   const lua_State* GetThread() const { return m_thread; }
   const std::string& GetReason() const { return m_reason; }
