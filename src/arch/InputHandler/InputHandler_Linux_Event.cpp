@@ -7,6 +7,7 @@
 
 #include <cerrno>
 #include <cstdint>
+#include <ctime>
 #include <vector>
 
 #if defined(HAVE_UNISTD_H)
@@ -93,6 +94,12 @@ bool EventDevice::Open( RString sFile, InputDevice dev )
 		// HACK: Let the caller handle errno.
 		return false;
 	}
+
+	// Use CLOCK_MONOTONIC for event timestamps so they are in the same domain
+	// as RageTimer, allowing accurate input timing without scheduler jitter.
+	int clockid = CLOCK_MONOTONIC;
+	if( ioctl(m_iFD, EVIOCSCLOCKID, &clockid) == -1 )
+		LOG->Warn( "ioctl(EVIOCSCLOCKID): %s; input timestamps may be less accurate", strerror(errno) );
 
 	static bool bLogged = false;
 	if( !bLogged )
@@ -391,7 +398,6 @@ void InputHandler_Linux_Event::InputThread()
 		struct timeval zero = {0,100000};
 		if( select(iMaxFD+1, &fdset, nullptr, nullptr, &zero) <= 0 )
 			continue;
-		RageTimer now;
 
 		if( FD_ISSET(m_udev_fd, &fdset) )
 		{
@@ -448,6 +454,11 @@ void InputHandler_Linux_Event::InputThread()
 				continue;
 			}
 
+			// Use the kernel's hardware interrupt timestamp rather than the
+			// current time, so scheduler wakeup latency doesn't affect input timing.
+			// EVIOCSCLOCKID was set to CLOCK_MONOTONIC on open, matching RageTimer.
+			RageTimer eventTime( event.time.tv_sec, event.time.tv_usec );
+
 			switch (event.type) {
 			case EV_KEY: {
 				int iNum;
@@ -465,7 +476,7 @@ void InputHandler_Linux_Event::InputThread()
 					iNum = event.code;
 				}
 				wrap( iNum, 32 );	// max number of joystick buttons.  Make this a constant?
-				ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, enum_add2(JOY_BUTTON_1, iNum), event.value != 0, now) );
+				ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, enum_add2(JOY_BUTTON_1, iNum), event.value != 0, eventTime) );
 				break;
 			}
 
@@ -477,13 +488,13 @@ void InputHandler_Linux_Event::InputThread()
 				float l = SCALE( int(event.value), (float) g_apEventDevices[i]->aiAbsMin[event.code], (float) g_apEventDevices[i]->aiAbsMax[event.code], -1.0f, 1.0f );
 				if (GamePreferences::m_AxisFix)
 				{
-				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, neg, (l < -0.5)||((l > 0.0001)&&(l < 0.5)), now) ); //Up if between 0.0001 and 0.5 or if less than -0.5
-				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, pos, (l > 0.5)||((l > 0.0001)&&(l < 0.5)) , now) ); //Down if between 0.0001 and 0.5 or if more than 0.5
+				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, neg, (l < -0.5)||((l > 0.0001)&&(l < 0.5)), eventTime) ); //Up if between 0.0001 and 0.5 or if less than -0.5
+				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, pos, (l > 0.5)||((l > 0.0001)&&(l < 0.5)) , eventTime) ); //Down if between 0.0001 and 0.5 or if more than 0.5
 				}
 				else
 				{
-				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, neg, std::max(-l, 0.0f), now) );
-				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, pos, std::max(+l, 0.0f), now) );
+				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, neg, std::max(-l, 0.0f), eventTime) );
+				  ButtonPressed( DeviceInput(g_apEventDevices[i]->m_Dev, pos, std::max(+l, 0.0f), eventTime) );
 				}
 				break;
 			}
