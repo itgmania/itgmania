@@ -19,6 +19,7 @@ public:
 
 	int GetSampleRate() const;
 	int64_t GetPosition() const;
+	float GetPlayLatency() const;
 
 private:
 	jack_client_t *client;

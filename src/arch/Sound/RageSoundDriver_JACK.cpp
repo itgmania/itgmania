@@ -188,7 +188,30 @@ RString RageSoundDriver_JACK::ConnectPorts()
 
 int64_t RageSoundDriver_JACK::GetPosition() const
 {
-	return jack_frame_time(client);
+	/* jack_frame_time() estimates the current JACK timeline position.
+	 * This represents frames that have been *written* to the output, not
+	 * yet played by the hardware.  We subtract the playback latency so
+	 * the returned position reflects what is actually being heard now.
+	 *
+	 * jack_port_get_latency_range() returns the latency from our output
+	 * port to the physical hardware, as reported by the JACK server
+	 * (PipeWire fills this in from its quantum + hardware DMA latency).
+	 * If latency hasn't been reported yet (range.max == 0), fall back to
+	 * one buffer period as a conservative default. */
+	jack_latency_range_t range;
+	jack_port_get_latency_range( port_l, JackPlaybackLatency, &range );
+	jack_nframes_t output_latency = (range.max > 0) ? range.max : jack_get_buffer_size(client);
+
+	int64_t current = static_cast<int64_t>( jack_frame_time(client) );
+	return current - static_cast<int64_t>( output_latency );
+}
+
+float RageSoundDriver_JACK::GetPlayLatency() const
+{
+	jack_latency_range_t range;
+	jack_port_get_latency_range( port_l, JackPlaybackLatency, &range );
+	jack_nframes_t output_latency = (range.max > 0) ? range.max : jack_get_buffer_size(client);
+	return static_cast<float>( output_latency ) / static_cast<float>( sample_rate );
 }
 
 int RageSoundDriver_JACK::GetSampleRate() const
