@@ -30,7 +30,7 @@ class LightsDriver_Linux_Leds : public LightsDriver {
 
   void SetCabinetLights(const char* stringArray[], const LightsState* ls);
   void SetCabinetLights(const int intArray[], const LightsState* ls);
-  void SetCoinCounter(int index, const LightsState *ls);
+  void SetCoinCounter(int index, const LightsState* ls);
 
   void SetGameControllerLights(
       GameController gc, const char* stringArray[], const LightsState* ls);
