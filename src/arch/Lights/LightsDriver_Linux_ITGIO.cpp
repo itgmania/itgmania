@@ -12,10 +12,9 @@
 
 REGISTER_LIGHTS_DRIVER_CLASS2(ITGIO, Linux_ITGIO);
 
-// NOTE: light index 14 is not mapped,
-// this is the coin drop "light" to increment the coin counter.
-
 namespace {
+const int coin_counter_index = 14;
+
 const int cabinet_lights[NUM_CabinetLight] = {
     8,   // LIGHT_MARQUEE_UP_LEFT
     10,  // LIGHT_MARQUEE_UP_RIGHT
@@ -100,6 +99,8 @@ void LightsDriver_Linux_ITGIO::Set(const LightsState* ls) {
 
   SetGameControllerLights(GameController_1, player1_lights, ls);
   SetGameControllerLights(GameController_2, player2_lights, ls);
+
+  SetCoinCounter(coin_counter_index, ls);
 
   previousLS = *ls;
 }

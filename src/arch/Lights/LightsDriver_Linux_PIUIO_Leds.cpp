@@ -16,6 +16,8 @@ REGISTER_LIGHTS_DRIVER_CLASS2(PIUIO_Leds, Linux_PIUIO_Leds);
 // It is currently unmapped.
 
 namespace {
+const int coin_counter_index = 28;
+
 const int cabinet_lights[NUM_CabinetLight] = {
     23,  // LIGHT_MARQUEE_UP_LEFT
     26,  // LIGHT_MARQUEE_UP_RIGHT
@@ -177,6 +179,8 @@ void LightsDriver_Linux_PIUIO_Leds::Set(const LightsState* ls) {
     SetGameControllerLights(GameController_1, player1_pump_lights, ls);
     SetGameControllerLights(GameController_2, player2_pump_lights, ls);
   }
+
+  SetCoinCounter(coin_counter_index, ls);
 
   previousLS = *ls;
 }

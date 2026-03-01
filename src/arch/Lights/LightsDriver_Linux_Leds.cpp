@@ -100,6 +100,19 @@ void LightsDriver_Linux_Leds::SetCabinetLights(
   }
 }
 
+void LightsDriver_Linux_Leds::SetCoinCounter(int index, const LightsState* ls) {
+  const char* baseFileLocation = GetGameControllerLightFile();
+
+  if (baseFileLocation != nullptr && index >= 0) {
+    char fileName[LINUX_LED_MAX_DIRECTORY_LENGTH];
+
+    if (previousLS.m_bCoinCounter != ls->m_bCoinCounter) {
+      sprintf(fileName, baseFileLocation, index);
+      SetLight(fileName, previousLS.m_bCoinCounter, ls->m_bCoinCounter);
+    }
+  }
+}
+
 void LightsDriver_Linux_Leds::SetGameControllerLights(
     GameController gc, const char* stringArray[], const LightsState* ls) {
   // iterate over all gamebuttons, including the menu/start/etc buttons.
