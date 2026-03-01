@@ -105,6 +105,8 @@ void LightsDriver_fusion::Set(const LightsState* ls) {
                                                                          : 0x00;
   }
 
+  outputBuffer[FUSION_COIN_PULSE] = ls->m_bCoinCounter ? 0xFF : 0x00;
+
   // tying bass to led for debugging is fun!
   outputBuffer[FUSION_LED] = outputBuffer[FUSION_NEON];
 
