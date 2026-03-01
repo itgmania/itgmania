@@ -16,7 +16,9 @@
 #include "archutils/Unix/GetSysInfo.h"
 #include "global.h"
 
+// clang-format off
 REGISTER_SOUND_DRIVER_CLASS2(ALSA-sw, ALSA9_Software);
+// clang-format on
 
 static const int channels = 2;
 static const int samples_per_frame = channels;
