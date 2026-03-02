@@ -218,9 +218,12 @@ static HighScore FillInHighScore(
 
 static HighScore FillInRoutineHighScore(
     const PlayerStageStats& pss, const PlayerState& ps, std::string sPlayerGuid,
-    std::string sRankingToFillInMarker, std::vector<PlayerStageStats>& ppss) {
+    std::vector<std::string> sRankingToFillInMarker,
+    std::vector<PlayerStageStats>& ppss) {
   HighScore hs;
-  hs.SetName(sRankingToFillInMarker);
+  std::string sName = "";
+  FOREACH_HumanPlayer(pn) { sName += sRankingToFillInMarker[pn] + "&"; }
+  hs.SetName(sName);
   hs.SetGrade(pss.GetGrade());
   hs.SetScore(pss.m_iScore);
   hs.SetPercentDP(pss.GetPercentDancePoints());
@@ -255,14 +258,28 @@ static HighScore FillInRoutineHighScore(
   hs.SetDisqualified(pss.IsDisqualified());
   hs.SetRoutine(true);
   FOREACH_HumanPlayer(pn) {
-    hs.SetPlayerName(pn, RANKING_TO_FILL_IN_MARKER[pn]);
+    LOG->Trace(
+        "Name: %s, Grade: %s, Score: %i, PercentDP: %f, MaxCombo: %i, "
+        "AliveSeconds: %f, StageAward: %i, PeakComboAward: %i",
+        sRankingToFillInMarker[pn].c_str(),
+        GradeToString(ppss[pn].GetGrade()).c_str(), ppss[pn].m_iScore,
+        ppss[pn].GetPercentDancePoints(), ppss[pn].GetMaxCombo().m_cnt,
+        ppss[pn].m_fAliveSeconds, ppss[pn].m_StageAward,
+        ppss[pn].m_PeakComboAward);
+
+    hs.SetPlayerName(pn, sRankingToFillInMarker[pn]);
     hs.SetPlayerGrade(pn, ppss[pn].GetGrade());
     hs.SetPlayerScore(pn, ppss[pn].m_iScore);
     hs.SetPlayerPercentDP(pn, ppss[pn].GetPercentDancePoints());
     hs.SetPlayerMaxCombo(pn, ppss[pn].GetMaxCombo().m_cnt);
     hs.SetPlayerGuid(pn, sPlayerGuid);
-    FOREACH_ENUM(TapNoteScore, tns)
-    hs.SetPlayerTapNoteScore(pn, tns, ppss[pn].m_iTapNoteScores[tns]);
+    std::string tnsStr = "";
+    FOREACH_ENUM(TapNoteScore, tns) {
+      hs.SetPlayerTapNoteScore(pn, tns, ppss[pn].m_iTapNoteScores[tns]);
+      tnsStr += TapNoteScoreToString(tns) + ": " +
+                ssprintf("%i", ppss[pn].m_iTapNoteScores[tns]) + ", ";
+    }
+    LOG->Trace("TapNoteScores: %s", tnsStr.c_str());
     FOREACH_ENUM(HoldNoteScore, hns)
     hs.SetPlayerHoldNoteScore(pn, hns, ppss[pn].m_iHoldNoteScores[hns]);
   }
@@ -297,13 +314,38 @@ void StageStats::FinalizeScores(bool bSummary) {
 
   // whether or not to save scores when the stage was failed depends on if this
   // is a course or not... it's handled below in the switch.
-  FOREACH_HumanPlayer(p) {
+  StyleType st = GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
+                     ->m_StyleType;
+  // If the stepstype is routine, combine the names of each player
+  if (st == StyleType_TwoPlayersSharedSides) {
+    LOG->Trace("saving stats and  ROUTINEEEE high scores");
+    PlayerNumber p = GAMESTATE->GetMasterPlayerNumber();
+
     std::string sPlayerGuid = PROFILEMAN->IsPersistentProfile(p)
                                   ? PROFILEMAN->GetProfile(p)->m_sGuid
                                   : std::string("");
-    m_player[p].m_HighScore = FillInHighScore(
-        m_player[p], *GAMESTATE->m_pPlayerState[p],
-        RANKING_TO_FILL_IN_MARKER[p], sPlayerGuid);
+    std::string sName = "";
+    std::vector<PlayerStageStats> ppss;
+    FOREACH_HumanPlayer(pn) { ppss.push_back(m_player[pn]); }
+    // Loop through ppss and add routine stats together
+    for (int i = 0; i < ppss.size(); i++) {
+      // m_RoutinePlayer.AddStats(ppss[i]);
+      // LOG->Trace("Routine Player Score: %i", m_RoutinePlayer.m_iScore);
+      // LOG->Trace("Routine Player Percent: %f",
+      // m_RoutinePlayer.GetPercentDancePoints());
+    }
+    m_player[p].m_HighScore = FillInRoutineHighScore(
+        m_RoutinePlayer, *GAMESTATE->m_pPlayerState[p], sPlayerGuid,
+        RANKING_TO_FILL_IN_MARKER, ppss);
+  } else {
+    FOREACH_HumanPlayer(p) {
+      std::string sPlayerGuid = PROFILEMAN->IsPersistentProfile(p)
+                                    ? PROFILEMAN->GetProfile(p)->m_sGuid
+                                    : std::string("");
+      m_player[p].m_HighScore = FillInHighScore(
+          m_player[p], *GAMESTATE->m_pPlayerState[p],
+          RANKING_TO_FILL_IN_MARKER[p], sPlayerGuid);
+    }
   }
   FOREACH_EnabledMultiPlayer(mp) {
     std::string sPlayerGuid = "00000000-0000-0000-0000-000000000000";  // FIXME
@@ -499,6 +541,11 @@ class LunaStageStats : public Luna<StageStats> {
     return 1;
   }
 
+  static int GetRoutineStageStats(T* p, lua_State* L) {
+    p->m_RoutinePlayer.PushSelf(L);
+    return 1;
+  }
+
   LunaStageStats() {
     ADD_METHOD(GetPlayerStageStats);
     ADD_METHOD(GetMultiPlayerStageStats);
@@ -513,6 +560,7 @@ class LunaStageStats : public Luna<StageStats> {
     ADD_METHOD(GetStepsSeconds);
     ADD_METHOD(PlayerHasHighScore);
     ADD_METHOD(GetEarnedExtraStage);
+    ADD_METHOD(GetRoutineStageStats);
   }
 };
 
