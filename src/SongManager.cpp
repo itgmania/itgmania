@@ -1945,7 +1945,7 @@ void SongManager::UpdateShuffled() {
       g_RandomNumberGenerator);
 }
 
-void SongManager::SetPreferredSongs(
+void SongManager::SetPreferredSongsFromTable(
     std::map<std::string, std::vector<Song*>> mapSectionToSongs) {
   ASSERT(UNLOCKMAN != nullptr);
   m_vPreferredSongSort.clear();
@@ -2503,7 +2503,7 @@ class LunaSongManager : public Luna<SongManager> {
       lua_pop(L, 1);  // remove value, keep key for next iteration
     }
 
-    p->SetPreferredSongs(mapSectionToSongs);
+    p->SetPreferredSongsFromTable(mapSectionToSongs);
     COMMON_RETURN_SELF;
   }
 

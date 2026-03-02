@@ -225,7 +225,7 @@ class SongManager {
   void UpdateShuffled();  // re-shuffle songs and courses
   std::map<int, std::vector<Song*>> UpdateMeterSort(std::vector<Song*> songs);
   void SetPreferredSongs(std::string sPreferredSongs, bool bIsAbsolute = false);
-  void SetPreferredSongs(
+  void SetPreferredSongsFromTable(
       std::map<std::string, std::vector<Song*>> mapSectionToSongs);
   void SetPreferredCourses(
       std::string sPreferredCourses, bool bIsAbsolute = false);
