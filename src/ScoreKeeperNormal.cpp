@@ -97,7 +97,13 @@ void ScoreKeeperNormal::Load(
     NoteData ndPre;
     pStyle->GetTransformedNoteDataForStyle(
         m_pPlayerState->m_PlayerNumber, ndTemp, ndPre);
+        
+    if (ndPre.IsComposite()) {
+      std::vector<NoteData> vParts;
 
+      NoteDataUtil::SplitCompositeNoteData(ndPre, vParts);
+      ndPre = vParts[m_pPlayerState->m_PlayerNumber];
+    }
     /* Compute RadarValues before applying any user-selected mods. Apply
      * Course mods and count them in the "pre" RadarValues because they're
      * forced and not chosen by the user. */

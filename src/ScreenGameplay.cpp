@@ -1660,6 +1660,15 @@ bool ScreenGameplay::AllAreFailing() {
   return true;
 }
 
+bool ScreenGameplay::OneFailed() {
+  FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi) {
+    if (pi->m_pLifeMeter && pi->m_pLifeMeter->IsFailing()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void ScreenGameplay::GetMusicEndTiming(
     float& fSecondsToStartFadingOutMusic,
     float& fSecondsToStartTransitioningOut) {
@@ -1789,6 +1798,34 @@ void ScreenGameplay::Update(float fDeltaTime) {
 
   switch (m_DancingState) {
     case STATE_DANCING: {
+      // If we're in TwoPlayerSharedSides, if one player fails, both fail.
+      if (GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
+              ->m_StyleType == StyleType_TwoPlayersSharedSides) {
+        if (OneFailed()) {
+          FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi) {
+            PlayerNumber pn = pi->GetStepsAndTrailIndex();
+
+            FailType ft = GAMESTATE->GetPlayerFailType(pi->GetPlayerState());
+            LifeType lt =
+                pi->GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType;
+            if (ft == FailType_Off || ft == FailType_EndOfSong) {
+              continue;
+            }
+            // check for individual fail
+            if (pi->m_pLifeMeter == nullptr || pi->m_pLifeMeter->IsFailing()) {
+              continue; /* isn't failing */
+            }
+            if (pi->GetPlayerStageStats()->m_bFailed) {
+              continue; /* failed and is already dead */
+            }
+            pi->GetPlayerStageStats()->m_bFailed = true;  // fail
+          }
+        }
+        STATSMAN->m_CurStageStats.m_RoutinePlayer.AddRoutineStats(
+            m_vPlayerInfo[PLAYER_1].GetPlayerStageStats(),
+            m_vPlayerInfo[PLAYER_2].GetPlayerStageStats());
+      }
+
       /* Set STATSMAN->m_CurStageStats.bFailed for failed players.  In,
        * FAIL_IMMEDIATE, send SM_BeginFailed if all players failed, and kill
        * dead Oni players. */
@@ -2567,6 +2604,30 @@ bool ScreenGameplay::Input(const InputEventPlus& input) {
       }
       return true;
     }
+  } 
+	//If we are in routine mode, two players share sides so a step could correspond to either P1 or P2, we don't really know
+	//Let's just send it to both players and let them decide what to do with it.
+	else if (GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())->m_StyleType == StyleType_TwoPlayersSharedSides) {
+		if( GAMESTATE->IsHumanPlayer( input.pn ) ) {
+			if( GamePreferences::m_AutoPlay == PC_HUMAN && GAMESTATE->m_pPlayerState[input.pn]->m_PlayerOptions.GetCurrent().m_fPlayerAutoPlay == 0 )
+			{
+				ASSERT( input.GameI.IsValid() );
+
+				GameButtonType gbt = GAMESTATE->m_pCurGame->GetPerButtonInfo(input.GameI.button)->m_gbt;
+				switch( gbt )
+				{
+				case GameButtonType_Menu:
+					return false;
+				case GameButtonType_Step:
+					if( iCol != -1 ) {
+						m_vPlayerInfo[PLAYER_1].m_pPlayer->Step( iCol, -1, input.DeviceI.ts, false, bRelease );
+						m_vPlayerInfo[PLAYER_2].m_pPlayer->Step( iCol, -1, input.DeviceI.ts, false, bRelease );
+					}
+					return true;
+				}
+			}
+
+		}
   } else {
     // handle a step or battle item activate
     if (GAMESTATE->IsHumanPlayer(input.pn)) {

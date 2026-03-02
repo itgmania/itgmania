@@ -45,6 +45,7 @@ StageStats::StageStats() {
   m_fMusicRate = 1;
   FOREACH_PlayerNumber(pn) { m_player[pn].Init(pn); }
   FOREACH_MultiPlayer(pn) { m_multiPlayer[pn].Init(pn); }
+  m_RoutinePlayer.Init(GAMESTATE->GetMasterPlayerNumber());
 }
 
 void StageStats::Init() { *this = StageStats(); }
@@ -92,6 +93,35 @@ void StageStats::AssertValid(MultiPlayer pn) const {
           "difficulty %i", m_player[pn].m_vpPossibleSteps[0]->GetDifficulty()));
   ASSERT((int)m_vpPlayedSongs.size() == m_player[pn].m_iStepsPlayed);
   ASSERT(m_vpPossibleSongs.size() == m_player[pn].m_vpPossibleSteps.size());
+}
+
+void StageStats::AssertValid(PlayerNumber pn, bool bRoutine) const {
+  ASSERT(m_vpPlayedSongs.size() != 0);
+  ASSERT(m_vpPossibleSongs.size() != 0);
+  if (m_vpPlayedSongs[0]) {
+    CHECKPOINT_M(m_vpPlayedSongs[0]->GetTranslitFullTitle());
+  }
+  ASSERT(m_RoutinePlayer.m_iStepsPlayed > 0);
+  ASSERT(m_RoutinePlayer.m_vpPossibleSteps.size() != 0);
+  ASSERT(m_RoutinePlayer.m_vpPossibleSteps[0] != nullptr);
+  ASSERT_M(m_playMode < NUM_PlayMode, ssprintf("playmode %i", m_playMode));
+  ASSERT_M(
+      m_RoutinePlayer.m_vpPossibleSteps[0]->GetDifficulty() < NUM_Difficulty,
+      ssprintf(
+          "Invalid Difficulty %i",
+          m_RoutinePlayer.m_vpPossibleSteps[0]->GetDifficulty()));
+  ASSERT_M(
+      (int)m_vpPlayedSongs.size() == m_RoutinePlayer.m_iStepsPlayed,
+      ssprintf(
+          "%i Songs Played != %i Steps Played for player %i",
+          (int)m_vpPlayedSongs.size(), (int)m_RoutinePlayer.m_iStepsPlayed,
+          pn));
+  ASSERT_M(
+      m_vpPossibleSongs.size() == m_RoutinePlayer.m_vpPossibleSteps.size(),
+      ssprintf(
+          "%i Possible Songs != %i Possible Steps for player %i",
+          (int)m_vpPossibleSongs.size(),
+          (int)m_RoutinePlayer.m_vpPossibleSteps.size(), pn));
 }
 
 int StageStats::GetAverageMeter(PlayerNumber pn) const {
@@ -182,6 +212,60 @@ static HighScore FillInHighScore(
   hs.SetRadarValues(pss.m_radarActual);
   hs.SetLifeRemainingSeconds(pss.m_fLifeRemainingSeconds);
   hs.SetDisqualified(pss.IsDisqualified());
+
+  return hs;
+}
+
+static HighScore FillInRoutineHighScore(
+    const PlayerStageStats& pss, const PlayerState& ps, std::string sPlayerGuid,
+    std::string sRankingToFillInMarker, std::vector<PlayerStageStats>& ppss) {
+  HighScore hs;
+  hs.SetName(sRankingToFillInMarker);
+  hs.SetGrade(pss.GetGrade());
+  hs.SetScore(pss.m_iScore);
+  hs.SetPercentDP(pss.GetPercentDancePoints());
+  hs.SetAliveSeconds(pss.m_fAliveSeconds);
+  hs.SetMaxCombo(pss.GetMaxCombo().m_cnt);
+  hs.SetStageAward(pss.m_StageAward);
+  hs.SetPeakComboAward(pss.m_PeakComboAward);
+
+  std::vector<std::string> asModifiers;
+  {
+    std::string sPlayerOptions = ps.m_PlayerOptions.GetStage().GetString();
+    if (!sPlayerOptions.empty()) {
+      asModifiers.push_back(sPlayerOptions);
+    }
+    std::string sSongOptions = GAMESTATE->m_SongOptions.GetStage().GetString();
+    if (!sSongOptions.empty()) {
+      asModifiers.push_back(sSongOptions);
+    }
+  }
+  hs.SetModifiers(join(", ", asModifiers));
+
+  hs.SetDateTime(DateTime::GetNowDateTime());
+  hs.SetPlayerGuid(sPlayerGuid);
+  hs.SetMachineGuid(PROFILEMAN->GetMachineProfile()->m_sGuid);
+  hs.SetProductID(PREFSMAN->m_iProductID);
+  FOREACH_ENUM(TapNoteScore, tns)
+  hs.SetTapNoteScore(tns, pss.m_iTapNoteScores[tns]);
+  FOREACH_ENUM(HoldNoteScore, hns)
+  hs.SetHoldNoteScore(hns, pss.m_iHoldNoteScores[hns]);
+  hs.SetRadarValues(pss.m_radarActual);
+  hs.SetLifeRemainingSeconds(pss.m_fLifeRemainingSeconds);
+  hs.SetDisqualified(pss.IsDisqualified());
+  hs.SetRoutine(true);
+  FOREACH_HumanPlayer(pn) {
+    hs.SetPlayerName(pn, RANKING_TO_FILL_IN_MARKER[pn]);
+    hs.SetPlayerGrade(pn, ppss[pn].GetGrade());
+    hs.SetPlayerScore(pn, ppss[pn].m_iScore);
+    hs.SetPlayerPercentDP(pn, ppss[pn].GetPercentDancePoints());
+    hs.SetPlayerMaxCombo(pn, ppss[pn].GetMaxCombo().m_cnt);
+    hs.SetPlayerGuid(pn, sPlayerGuid);
+    FOREACH_ENUM(TapNoteScore, tns)
+    hs.SetPlayerTapNoteScore(pn, tns, ppss[pn].m_iTapNoteScores[tns]);
+    FOREACH_ENUM(HoldNoteScore, hns)
+    hs.SetPlayerHoldNoteScore(pn, hns, ppss[pn].m_iHoldNoteScores[hns]);
+  }
 
   return hs;
 }

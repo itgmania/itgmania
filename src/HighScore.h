@@ -64,6 +64,7 @@ struct HighScore {
    * disqualification.
    * @return true if the score would be disqualified, false otherwise. */
   bool GetDisqualified() const;
+  bool IsRoutine() const;
 
   /**
    * @brief Set the name of the Player that earned the score.
@@ -86,6 +87,29 @@ struct HighScore {
   void SetRadarValues(const RadarValues& rv);
   void SetLifeRemainingSeconds(float f);
   void SetDisqualified(bool b);
+  void SetRoutine(bool b);
+
+  // Getters for player attributes
+  std::string GetPlayerName(const PlayerNumber& pn) const;
+  std::string GetPlayerGrade(const PlayerNumber& pn) const;
+  unsigned int GetPlayerScore(const PlayerNumber& pn) const;
+  float GetPlayerPercentDP(const PlayerNumber& pn) const;
+  unsigned int GetPlayerMaxCombo(const PlayerNumber& pn) const;
+  std::string GetPlayerGuid(const PlayerNumber& pn) const;
+  int GetPlayerTapNoteScore(const PlayerNumber& pn, TapNoteScore tns) const;
+  int GetPlayerHoldNoteScore(const PlayerNumber& pn, HoldNoteScore hns) const;
+
+  // Setters for player attributes
+  void SetPlayerName(const PlayerNumber& pn, const std::string& name);
+  void SetPlayerGrade(const PlayerNumber& pn, const Grade g);
+  void SetPlayerScore(const PlayerNumber& pn, unsigned int iScore);
+  void SetPlayerPercentDP(const PlayerNumber& pn, float f);
+  void SetPlayerMaxCombo(const PlayerNumber& pn, unsigned int i);
+  void SetPlayerGuid(const PlayerNumber& pn, const std::string& guid);
+  void SetPlayerTapNoteScore(
+      const PlayerNumber& pn, const TapNoteScore tapNoteScore, int i);
+  void SetPlayerHoldNoteScore(
+      const PlayerNumber& pn, const HoldNoteScore holdNoteScore, int i);
 
   std::string* GetNameMutable();
   const std::string* GetNameMutable() const {

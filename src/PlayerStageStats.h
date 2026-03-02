@@ -28,7 +28,9 @@ class PlayerStageStats {
    * @brief Add stats from one PlayerStageStats to another.
    * @param other the other stats to add to this one. */
   void AddStats(const PlayerStageStats& other);  // accumulate
-
+  void AddRoutineStats(
+      const PlayerStageStats* player,
+      const PlayerStageStats* other);  // accumulate
   Grade GetGrade() const;
   static float MakePercentScore(int iActual, int iPossible);
   static std::string FormatPercentScore(float fPercentScore);

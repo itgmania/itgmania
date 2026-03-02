@@ -23,7 +23,7 @@ void ScreenGameplayShared::FillPlayerInfo(
   vPlayerInfoOut[master].Load(
       master, MultiPlayer_Invalid, true, Difficulty_Invalid);
   vPlayerInfoOut[other].Load(
-      other, MultiPlayer_Invalid, false, Difficulty_Invalid);
+      other, MultiPlayer_Invalid, true, Difficulty_Invalid);
 }
 
 PlayerInfo& ScreenGameplayShared::GetPlayerInfoForInput(

@@ -356,6 +356,16 @@ void NoteField::InitColumnRenderers() {
   m_ColumnRenderers.resize(
       GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber)
           ->m_iColsPerPlayer);
+  // Check if we're currently in twoplayersharedsides mode if so, we need to
+  // hide the receptor row of player 2
+  if (GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber)->m_StyleType ==
+      StyleType_TwoPlayersSharedSides) {
+    // Check if the player state player number is player 2
+    if (m_pPlayerState->m_PlayerNumber == PLAYER_2) {
+      m_pCurDisplay->m_ReceptorArrowRow.SetDrawOrder(0);
+      m_pCurDisplay->m_ReceptorArrowRow.SetVisible(false);
+    }
+  }
   for (size_t ncr = 0; ncr < m_ColumnRenderers.size(); ++ncr) {
     FOREACH_EnabledPlayer(pn) {
       m_ColumnRenderers[ncr].m_displays[pn] = &(m_pDisplays[pn]->display[ncr]);
