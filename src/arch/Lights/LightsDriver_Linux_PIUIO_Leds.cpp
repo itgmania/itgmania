@@ -18,7 +18,7 @@ REGISTER_LIGHTS_DRIVER_CLASS2(PIUIO_Leds, Linux_PIUIO_Leds);
 namespace {
 const int coin_counter_index = 28;
 
-const int cabinet_lights[NUM_CabinetLight] = {
+const int cabinet_lights[] = {
     23,  // LIGHT_MARQUEE_UP_LEFT
     26,  // LIGHT_MARQUEE_UP_RIGHT
     25,  // LIGHT_MARQUEE_LR_LEFT
@@ -27,7 +27,7 @@ const int cabinet_lights[NUM_CabinetLight] = {
     10,  // LIGHT_BASS_RIGHT
 };
 
-const int player1_dance_lights[NUM_GameButton] = {
+const int player1_dance_lights[] = {
     -1,  // GAME_BUTTON_MENULEFT
     -1,  // GAME_BUTTON_MENURIGHT
     -1,  // GAME_BUTTON_MENUUP
@@ -61,7 +61,7 @@ const int player1_dance_lights[NUM_GameButton] = {
     -1,  // GAME_BUTTON_CUSTOM_19
 };
 
-const int player2_dance_lights[NUM_GameButton] = {
+const int player2_dance_lights[] = {
     -1,  // GAME_BUTTON_MENULEFT
     -1,  // GAME_BUTTON_MENURIGHT
     -1,  // GAME_BUTTON_MENUUP
@@ -95,7 +95,7 @@ const int player2_dance_lights[NUM_GameButton] = {
     -1,  // GAME_BUTTON_CUSTOM_19
 };
 
-const int player1_pump_lights[NUM_GameButton] = {
+const int player1_pump_lights[] = {
     -1,  // GAME_BUTTON_MENULEFT
     -1,  // GAME_BUTTON_MENURIGHT
     -1,  // GAME_BUTTON_MENUUP
@@ -129,7 +129,7 @@ const int player1_pump_lights[NUM_GameButton] = {
     -1,  // GAME_BUTTON_CUSTOM_19
 };
 
-const int player2_pump_lights[NUM_GameButton] = {
+const int player2_pump_lights[] = {
     -1,  // GAME_BUTTON_MENULEFT
     -1,  // GAME_BUTTON_MENURIGHT
     -1,  // GAME_BUTTON_MENUUP
@@ -162,6 +162,27 @@ const int player2_pump_lights[NUM_GameButton] = {
     -1,  // GAME_BUTTON_CUSTOM_18
     -1,  // GAME_BUTTON_CUSTOM_19
 };
+
+static_assert(
+    ARRAYLEN(cabinet_lights) == NUM_CabinetLight,
+    "LightsDriver_Linux_PIUIO_Leds ARRAYLEN(cabinet_lights) != "
+    "NUM_CabinetLight");
+static_assert(
+    ARRAYLEN(player1_dance_lights) == NUM_GameButton,
+    "LightsDriver_Linux_PIUIO_Leds ARRAYLEN(player1_dance_lights) != "
+    "NUM_GameButton");
+static_assert(
+    ARRAYLEN(player2_dance_lights) == NUM_GameButton,
+    "LightsDriver_Linux_PIUIO_Leds ARRAYLEN(player2_dance_lights) != "
+    "NUM_GameButton");
+static_assert(
+    ARRAYLEN(player1_pump_lights) == NUM_GameButton,
+    "LightsDriver_Linux_PIUIO_Leds ARRAYLEN(player1_pump_lights) != "
+    "NUM_GameButton");
+static_assert(
+    ARRAYLEN(player2_pump_lights) == NUM_GameButton,
+    "LightsDriver_Linux_PIUIO_Leds ARRAYLEN(player2_pump_lights) != "
+    "NUM_GameButton");
 
 }  // namespace
 

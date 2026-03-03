@@ -15,7 +15,7 @@ REGISTER_LIGHTS_DRIVER_CLASS2(ITGIO, Linux_ITGIO);
 namespace {
 const int coin_counter_index = 14;
 
-const int cabinet_lights[NUM_CabinetLight] = {
+const int cabinet_lights[] = {
     8,   // LIGHT_MARQUEE_UP_LEFT
     10,  // LIGHT_MARQUEE_UP_RIGHT
     9,   // LIGHT_MARQUEE_LR_LEFT
@@ -24,7 +24,7 @@ const int cabinet_lights[NUM_CabinetLight] = {
     15,  // LIGHT_BASS_RIGHT
 };
 
-const int player1_lights[NUM_GameButton] = {
+const int player1_lights[] = {
     -1,  // GAME_BUTTON_MENULEFT
     -1,  // GAME_BUTTON_MENURIGHT
     -1,  // GAME_BUTTON_MENUUP
@@ -58,7 +58,7 @@ const int player1_lights[NUM_GameButton] = {
     -1,  // GAME_BUTTON_CUSTOM_19
 };
 
-const int player2_lights[NUM_GameButton] = {
+const int player2_lights[] = {
     -1,  // GAME_BUTTON_MENULEFT
     -1,  // GAME_BUTTON_MENURIGHT
     -1,  // GAME_BUTTON_MENUUP
@@ -91,6 +91,16 @@ const int player2_lights[NUM_GameButton] = {
     -1,  // GAME_BUTTON_CUSTOM_18
     -1,  // GAME_BUTTON_CUSTOM_19
 };
+
+static_assert(
+    ARRAYLEN(cabinet_lights) == NUM_CabinetLight,
+    "LightsDriver_Linux_ITGIO ARRAYLEN(cabinet_lights) != NUM_CabinetLight");
+static_assert(
+    ARRAYLEN(player1_lights) == NUM_GameButton,
+    "LightsDriver_Linux_ITGIO ARRAYLEN(player1_lights) != NUM_GameButton");
+static_assert(
+    ARRAYLEN(player2_lights) == NUM_GameButton,
+    "LightsDriver_Linux_ITGIO ARRAYLEN(player2_lights) != NUM_GameButton");
 
 }  // namespace
 
