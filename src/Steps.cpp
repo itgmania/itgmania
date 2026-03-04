@@ -933,15 +933,14 @@ std::string Steps::GenerateChartKey(NoteData& nd, TimingData* td) {
   return o;
 }
 
-std::vector<ColumnCue> Steps::GetColumnCues(float minDuration) {
-  // TODO: Should we worry about getting the right steps per player?
-  // It seems like this is only necessary when dealing with Couples charts
-
+std::vector<ColumnCue> Steps::GetColumnCues(
+    PlayerNumber pn, float minDuration) {
   std::vector<ColumnCue> cues;
   NoteData noteData;
   this->GetNoteData(noteData);
   TimingData* timing = this->GetTimingData();
-  ColumnCue::CalculateColumnCues(noteData, timing, cues, minDuration);
+  ColumnCue::CalculateColumnCues(
+      noteData, timing, cues, pn, minDuration, m_StepsType);
   return cues;
 }
 
@@ -1163,7 +1162,11 @@ class LunaSteps : public Luna<Steps> {
     if (lua_isnumber(L, 1)) {
       minDuration = lua_tonumber(L, 1);
     }
-    std::vector<ColumnCue> cues = p->GetColumnCues(minDuration);
+    PlayerNumber pn = PLAYER_1;
+    if (!lua_isnoneornil(L, 2)) {
+      pn = Enum::Check<PlayerNumber>(L, 2);
+    }
+    std::vector<ColumnCue> cues = p->GetColumnCues(pn, minDuration);
     lua_createtable(L, cues.size(), 0);
 
     for (unsigned i = 0; i < cues.size(); i++) {
