@@ -22,11 +22,11 @@ class CombinedLifeMeterShared : public CombinedLifeMeter {
   void SetLife(PlayerNumber pn, float value) override;
   void HandleTapScoreNone(PlayerNumber pn) override;
 
-  bool IsInDanger() const;
-  bool IsHot() const;
-  bool IsFailing() const;
+  bool IsInDanger() const override;
+  bool IsHot() const override;
+  bool IsFailing() const override;
   float GetLife() const;
-  LifeMeter* GetInnerLifeMeter() const;
+  LifeMeter* GetInnerLifeMeter() const override;
 
  private:
   LifeMeter* m_pLifeMeter;

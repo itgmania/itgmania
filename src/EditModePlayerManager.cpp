@@ -19,14 +19,6 @@
 
 void EditModePlayerManager::AddPlayers(const NoteData& note_data) {
   FOREACH_EnabledPlayer(pn) {
-    // In case of a routine chart, both players are actually seen as
-    // enabled. This isn't desired, since the playerState and inputs in
-    // routine charts eventually collapse down only to P1.
-    // if ((GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
-    //          ->m_StyleType == StyleType_TwoPlayersSharedSides) &&
-    //     pn != PLAYER_1) {
-    //   continue;
-    // }
     players_[pn] = std::make_shared<PlayerPlus>();
 
     PlayerPlus& player = *players_[pn];
@@ -79,13 +71,6 @@ void EditModePlayerManager::ReloadNoteData(const NoteData& note_data) {
 }
 
 void EditModePlayerManager::SetVisible(bool visible) {
-  // If this is a routine chart, only set visibility of PLAYER_1.
-  //   if (GAMESTATE->GetCurrentStyle(PLAYER_1)->m_StyleType ==
-  //       StyleType::StyleType_TwoPlayersSharedSides) {
-  //     (*players_[PLAYER_1])->SetVisible(visible);
-  //     return;
-  //   }
-
   for (auto& player : players_) {
     (*player.second)->SetVisible(visible);
   }
@@ -95,11 +80,6 @@ bool EditModePlayerManager::HandleGameplayInput(
     const InputEventPlus& input, const GameButtonType& gbt) {
   PlayerNumber pn = input.pn;
 
-  // Redirect Player2's inputs to P1's notefield in case of Routine charts.
-  //   if (GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
-  //           ->m_StyleType == StyleType_TwoPlayersSharedSides) {
-  //     pn = PLAYER_1;
-  //   }
   if (gbt == GameButtonType_Step && GAMESTATE->IsPlayerEnabled(pn)) {
     if (GAMESTATE->m_pPlayerState[pn]->m_PlayerController == PC_AUTOPLAY) {
       return false;

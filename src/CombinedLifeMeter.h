@@ -5,6 +5,8 @@
 #include "GameConstantsAndTypes.h"
 #include "PlayerNumber.h"
 
+class LifeMeter;
+
 /** @brief Multiple Players sharing one LifeMeter. */
 class CombinedLifeMeter : public ActorFrame {
  public:
@@ -29,6 +31,11 @@ class CombinedLifeMeter : public ActorFrame {
   virtual void ChangeLife(PlayerNumber pn, float delta) = 0;
   virtual void SetLife(PlayerNumber pn, float value) = 0;
   virtual void HandleTapScoreNone(PlayerNumber pn) = 0;
+
+  virtual bool IsInDanger() const { return false; }
+  virtual bool IsHot() const { return false; }
+  virtual bool IsFailing() const { return false; }
+  virtual LifeMeter* GetInnerLifeMeter() const { return nullptr; }
 };
 
 #endif

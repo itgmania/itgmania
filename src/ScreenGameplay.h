@@ -269,6 +269,7 @@ class ScreenGameplay : public ScreenWithMenuElements {
   void SaveReplay();
   // bool LoadReplay();
   bool AllAreFailing();
+  bool OneFailed();
 
   virtual void InitSongQueues();
 
