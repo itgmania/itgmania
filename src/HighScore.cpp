@@ -205,8 +205,7 @@ XNode* HighScoreImpl::CreateNode() const {
     for (size_t i = 0; i < playerNames.size(); ++i) {
       XNode* pPlayerNode =
           pRoutineNode->AppendChild(PlayerNumberToString((PlayerNumber)i));
-      pPlayerNode->AppendChild("Name", playerNames[i]);
-      pPlayerNode->AppendChild("Grade", playerGrades[i]);
+      pPlayerNode->AppendChild("Grade", GradeToString(playerGrades[i]));
       pPlayerNode->AppendChild("Score", playerScores[i]);
       pPlayerNode->AppendChild("PercentDP", playerPercentDPs[i]);
       pPlayerNode->AppendChild("MaxCombo", playerMaxCombos[i]);
@@ -309,8 +308,6 @@ void HighScoreImpl::LoadFromNode(const XNode* pNode) {
                 HoldNoteScoreToString(hns), playerHoldNoteScores[pn][hns]);
           }
         }
-
-        LOG->Trace("Loaded player-specific data for player %d", pn);
       }
     }
   } else {
@@ -747,6 +744,11 @@ class LunaHighScore : public Luna<HighScore> {
     rv.PushSelf(L);
     return 1;
   }
+  static int GetPlayerGuid(T* p, lua_State* L) {
+    PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
+    lua_pushstring(L, p->GetPlayerGuid(pn).c_str());
+    return 1;
+  }
   DEFINE_METHOD(GetGrade, GetGrade())
   DEFINE_METHOD(GetStageAward, GetStageAward())
   DEFINE_METHOD(GetPeakComboAward, GetPeakComboAward())
@@ -762,6 +764,7 @@ class LunaHighScore : public Luna<HighScore> {
     ADD_METHOD(GetTapNoteScore);
     ADD_METHOD(GetHoldNoteScore);
     ADD_METHOD(GetRadarValues);
+    ADD_METHOD(GetPlayerGuid);
     ADD_METHOD(GetGrade);
     ADD_METHOD(GetMaxCombo);
     ADD_METHOD(GetStageAward);

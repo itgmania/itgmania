@@ -413,6 +413,31 @@ const Profile* ProfileManager::GetProfile(PlayerNumber pn) const {
   }
 }
 
+const Profile* ProfileManager::GetProfileByGuid(const std::string& guid) const {
+  if (guid.empty()) {
+    return nullptr;
+  }
+
+  if (m_pMachineProfile != nullptr && m_pMachineProfile->m_sGuid == guid) {
+    return m_pMachineProfile;
+  }
+
+  FOREACH_PlayerNumber(pn) {
+    const Profile* profile = GetProfile(pn);
+    if (profile != nullptr && profile->m_sGuid == guid) {
+      return profile;
+    }
+  }
+
+  for (const DirAndProfile& dap : g_vLocalProfile) {
+    if (dap.profile.m_sGuid == guid) {
+      return &dap.profile;
+    }
+  }
+
+  return nullptr;
+}
+
 std::string ProfileManager::GetPlayerName(PlayerNumber pn) const {
   const Profile* prof = GetProfile(pn);
   return prof ? prof->GetDisplayNameOrHighScoreName() : std::string();
@@ -1345,6 +1370,15 @@ class LunaProfileManager : public Luna<ProfileManager> {
     lua_pushstring(L, p->GetPlayerName(pn).c_str());
     return 1;
   }
+  static int GetProfileFromGuid(T* p, lua_State* L) {
+    Profile* profile = p->GetProfileByGuid(SArg(1));
+    if (profile == nullptr) {
+      lua_pushnil(L);
+      return 1;
+    }
+    profile->PushSelf(L);
+    return 1;
+  }
 
   static int LocalProfileIDToDir(T*, lua_State* L) {
     std::string dir = USER_PROFILES_DIR + SArg(1) + "/";
@@ -1400,6 +1434,7 @@ class LunaProfileManager : public Luna<ProfileManager> {
     ADD_METHOD(ProfileWasLoadedFromMemoryCard);
     ADD_METHOD(LastLoadWasTamperedOrCorrupt);
     ADD_METHOD(GetPlayerName);
+    ADD_METHOD(GetProfileFromGuid);
     //
     ADD_METHOD(SaveProfile);
     ADD_METHOD(SaveLocalProfile);

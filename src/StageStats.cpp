@@ -218,21 +218,10 @@ static HighScore FillInHighScore(
 
 static HighScore FillInRoutineHighScore(
     const PlayerStageStats& pss, const PlayerState& ps,
-    std::vector<std::string> sRankingToFillInMarker,
-    std::vector<PlayerStageStats>& ppss) {
+    std::string sRankingToFillInMarker, std::vector<PlayerStageStats>& ppss,
+    std::vector<std::string>& sPlayerGuids) {
   HighScore hs;
-  std::string sName;
-  FOREACH_HumanPlayer(pn) {
-    std::string sProfileName = PROFILEMAN->GetPlayerName(pn);
-    if (sProfileName.empty()) {
-      sProfileName = sRankingToFillInMarker[pn];
-    }
-    if (!sName.empty()) {
-      sName += "&";
-    }
-    sName += sProfileName;
-  }
-  hs.SetName(sName);
+  hs.SetName(sRankingToFillInMarker);
   hs.SetGrade(pss.GetGrade());
   hs.SetScore(pss.m_iScore);
   hs.SetPercentDP(pss.GetPercentDancePoints());
@@ -255,11 +244,8 @@ static HighScore FillInRoutineHighScore(
   hs.SetModifiers(join(", ", asModifiers));
 
   hs.SetDateTime(DateTime::GetNowDateTime());
-  const PlayerNumber master = GAMESTATE->GetMasterPlayerNumber();
-  std::string sMasterGuid = PROFILEMAN->IsPersistentProfile(master)
-                                ? PROFILEMAN->GetProfile(master)->m_sGuid
-                                : std::string("");
-  hs.SetPlayerGuid(sMasterGuid);
+  hs.SetPlayerGuid(sPlayerGuids[0]);  // just pick the first player's guid to
+                                      // represent the routine
   hs.SetMachineGuid(PROFILEMAN->GetMachineProfile()->m_sGuid);
   hs.SetProductID(PREFSMAN->m_iProductID);
   FOREACH_ENUM(TapNoteScore, tns)
@@ -271,35 +257,17 @@ static HighScore FillInRoutineHighScore(
   hs.SetDisqualified(pss.IsDisqualified());
   hs.SetRoutine(true);
   FOREACH_HumanPlayer(pn) {
-    std::string sProfileName = PROFILEMAN->GetPlayerName(pn);
-    if (sProfileName.empty()) {
-      sProfileName = sRankingToFillInMarker[pn];
-    }
-    std::string sProfileGuid = PROFILEMAN->IsPersistentProfile(pn)
-                                   ? PROFILEMAN->GetProfile(pn)->m_sGuid
-                                   : std::string("");
-
-    LOG->Trace(
-        "Name: %s, Grade: %s, Score: %i, PercentDP: %f, MaxCombo: %i, "
-        "AliveSeconds: %f, StageAward: %i, PeakComboAward: %i",
-        sProfileName.c_str(), GradeToString(ppss[pn].GetGrade()).c_str(),
-        ppss[pn].m_iScore, ppss[pn].GetPercentDancePoints(),
-        ppss[pn].GetMaxCombo().m_cnt, ppss[pn].m_fAliveSeconds,
-        ppss[pn].m_StageAward, ppss[pn].m_PeakComboAward);
-
-    hs.SetPlayerName(pn, sProfileName);
     hs.SetPlayerGrade(pn, ppss[pn].GetGrade());
     hs.SetPlayerScore(pn, ppss[pn].m_iScore);
     hs.SetPlayerPercentDP(pn, ppss[pn].GetPercentDancePoints());
     hs.SetPlayerMaxCombo(pn, ppss[pn].GetMaxCombo().m_cnt);
-    hs.SetPlayerGuid(pn, sProfileGuid);
+    hs.SetPlayerGuid(pn, sPlayerGuids[pn]);
     std::string tnsStr = "";
     FOREACH_ENUM(TapNoteScore, tns) {
       hs.SetPlayerTapNoteScore(pn, tns, ppss[pn].m_iTapNoteScores[tns]);
       tnsStr += TapNoteScoreToString(tns) + ": " +
                 ssprintf("%i", ppss[pn].m_iTapNoteScores[tns]) + ", ";
     }
-    LOG->Trace("TapNoteScores: %s", tnsStr.c_str());
     FOREACH_ENUM(HoldNoteScore, hns)
     hs.SetPlayerHoldNoteScore(pn, hns, ppss[pn].m_iHoldNoteScores[hns]);
   }
@@ -337,16 +305,20 @@ void StageStats::FinalizeScores(bool bSummary) {
   StyleType styleType =
       GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
           ->m_StyleType;
-  // If the stepstype is routine, combine the names of each player
+  // If the stepstype is routine, fill high scores with each player
   if (styleType == StyleType_TwoPlayersSharedSides) {
-    LOG->Trace("saving stats and  ROUTINEEEE high scores");
     PlayerNumber p = GAMESTATE->GetMasterPlayerNumber();
-
     std::vector<PlayerStageStats> ppss(NUM_PLAYERS);
-    FOREACH_HumanPlayer(pn) { ppss[pn] = m_player[pn]; }
+    std::vector<std::string> sPlayerGuids(NUM_PLAYERS);
+    FOREACH_HumanPlayer(pn) {
+      ppss[pn] = m_player[pn];
+      sPlayerGuids[pn] = PROFILEMAN->IsPersistentProfile(pn)
+                             ? PROFILEMAN->GetProfile(pn)->m_sGuid
+                             : std::string("");
+    }
     m_player[p].m_HighScore = FillInRoutineHighScore(
         m_RoutinePlayer, *GAMESTATE->m_pPlayerState[p],
-        RANKING_TO_FILL_IN_MARKER, ppss);
+        RANKING_TO_FILL_IN_MARKER[p], ppss, sPlayerGuids);
   } else {
     FOREACH_HumanPlayer(p) {
       std::string sPlayerGuid = PROFILEMAN->IsPersistentProfile(p)
