@@ -7,6 +7,7 @@
 #include "DateTime.h"
 #include "GameConstantsAndTypes.h"
 #include "Grade.h"
+#include "PlayerNumber.h"
 #include "RageUtil_AutoPtr.h"
 #include "global.h"
 

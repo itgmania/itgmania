@@ -133,6 +133,8 @@ class PlayerInfo {
   ScoreKeeper* m_pPrimaryScoreKeeper;
   /** @brief The secondary ScoreKeeper. Only used in PLAY_MODE_RAVE. */
   ScoreKeeper* m_pSecondaryScoreKeeper;
+  /** @brief Whether this PlayerInfo owns m_pSecondaryScoreKeeper. */
+  bool m_bOwnsSecondaryScoreKeeper;
   /** @brief The current PlayerOptions that are activated. */
   BitmapText* m_ptextPlayerOptions;
   /** @brief The current attack modifiers that are in play for the moment. */
@@ -356,6 +358,8 @@ class ScreenGameplay : public ScreenWithMenuElements {
 
   std::vector<PlayerInfo>
       m_vPlayerInfo;  // filled by SGameplay derivatives in FillPlayerInfo
+  /** @brief Shared routine scorekeeper instance for shared-sides play. */
+  ScoreKeeper* m_pRoutineSharedScoreKeeper;
   virtual void FillPlayerInfo(std::vector<PlayerInfo>& vPlayerInfoOut) = 0;
   virtual PlayerInfo& GetPlayerInfoForInput(const InputEventPlus& iep) {
     return m_vPlayerInfo[iep.pn];
