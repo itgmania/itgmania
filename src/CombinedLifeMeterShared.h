@@ -26,6 +26,7 @@ class CombinedLifeMeterShared : public CombinedLifeMeter {
   bool IsHot() const;
   bool IsFailing() const;
   float GetLife() const;
+  LifeMeter* GetInnerLifeMeter() const;
 
  private:
   LifeMeter* m_pLifeMeter;

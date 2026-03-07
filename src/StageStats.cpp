@@ -217,12 +217,21 @@ static HighScore FillInHighScore(
 }
 
 static HighScore FillInRoutineHighScore(
-    const PlayerStageStats& pss, const PlayerState& ps, std::string sPlayerGuid,
+    const PlayerStageStats& pss, const PlayerState& ps,
     std::vector<std::string> sRankingToFillInMarker,
     std::vector<PlayerStageStats>& ppss) {
   HighScore hs;
-  std::string sName = "";
-  FOREACH_HumanPlayer(pn) { sName += sRankingToFillInMarker[pn] + "&"; }
+  std::string sName;
+  FOREACH_HumanPlayer(pn) {
+    std::string sProfileName = PROFILEMAN->GetPlayerName(pn);
+    if (sProfileName.empty()) {
+      sProfileName = sRankingToFillInMarker[pn];
+    }
+    if (!sName.empty()) {
+      sName += "&";
+    }
+    sName += sProfileName;
+  }
   hs.SetName(sName);
   hs.SetGrade(pss.GetGrade());
   hs.SetScore(pss.m_iScore);
@@ -246,7 +255,11 @@ static HighScore FillInRoutineHighScore(
   hs.SetModifiers(join(", ", asModifiers));
 
   hs.SetDateTime(DateTime::GetNowDateTime());
-  hs.SetPlayerGuid(sPlayerGuid);
+  const PlayerNumber master = GAMESTATE->GetMasterPlayerNumber();
+  std::string sMasterGuid = PROFILEMAN->IsPersistentProfile(master)
+                                ? PROFILEMAN->GetProfile(master)->m_sGuid
+                                : std::string("");
+  hs.SetPlayerGuid(sMasterGuid);
   hs.SetMachineGuid(PROFILEMAN->GetMachineProfile()->m_sGuid);
   hs.SetProductID(PREFSMAN->m_iProductID);
   FOREACH_ENUM(TapNoteScore, tns)
@@ -258,21 +271,28 @@ static HighScore FillInRoutineHighScore(
   hs.SetDisqualified(pss.IsDisqualified());
   hs.SetRoutine(true);
   FOREACH_HumanPlayer(pn) {
+    std::string sProfileName = PROFILEMAN->GetPlayerName(pn);
+    if (sProfileName.empty()) {
+      sProfileName = sRankingToFillInMarker[pn];
+    }
+    std::string sProfileGuid = PROFILEMAN->IsPersistentProfile(pn)
+                                   ? PROFILEMAN->GetProfile(pn)->m_sGuid
+                                   : std::string("");
+
     LOG->Trace(
         "Name: %s, Grade: %s, Score: %i, PercentDP: %f, MaxCombo: %i, "
         "AliveSeconds: %f, StageAward: %i, PeakComboAward: %i",
-        sRankingToFillInMarker[pn].c_str(),
-        GradeToString(ppss[pn].GetGrade()).c_str(), ppss[pn].m_iScore,
-        ppss[pn].GetPercentDancePoints(), ppss[pn].GetMaxCombo().m_cnt,
-        ppss[pn].m_fAliveSeconds, ppss[pn].m_StageAward,
-        ppss[pn].m_PeakComboAward);
+        sProfileName.c_str(), GradeToString(ppss[pn].GetGrade()).c_str(),
+        ppss[pn].m_iScore, ppss[pn].GetPercentDancePoints(),
+        ppss[pn].GetMaxCombo().m_cnt, ppss[pn].m_fAliveSeconds,
+        ppss[pn].m_StageAward, ppss[pn].m_PeakComboAward);
 
-    hs.SetPlayerName(pn, sRankingToFillInMarker[pn]);
+    hs.SetPlayerName(pn, sProfileName);
     hs.SetPlayerGrade(pn, ppss[pn].GetGrade());
     hs.SetPlayerScore(pn, ppss[pn].m_iScore);
     hs.SetPlayerPercentDP(pn, ppss[pn].GetPercentDancePoints());
     hs.SetPlayerMaxCombo(pn, ppss[pn].GetMaxCombo().m_cnt);
-    hs.SetPlayerGuid(pn, sPlayerGuid);
+    hs.SetPlayerGuid(pn, sProfileGuid);
     std::string tnsStr = "";
     FOREACH_ENUM(TapNoteScore, tns) {
       hs.SetPlayerTapNoteScore(pn, tns, ppss[pn].m_iTapNoteScores[tns]);
@@ -314,20 +334,18 @@ void StageStats::FinalizeScores(bool bSummary) {
 
   // whether or not to save scores when the stage was failed depends on if this
   // is a course or not... it's handled below in the switch.
-  StyleType st = GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
-                     ->m_StyleType;
+  StyleType styleType =
+      GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
+          ->m_StyleType;
   // If the stepstype is routine, combine the names of each player
-  if (st == StyleType_TwoPlayersSharedSides) {
+  if (styleType == StyleType_TwoPlayersSharedSides) {
     LOG->Trace("saving stats and  ROUTINEEEE high scores");
     PlayerNumber p = GAMESTATE->GetMasterPlayerNumber();
 
-    std::string sPlayerGuid = PROFILEMAN->IsPersistentProfile(p)
-                                  ? PROFILEMAN->GetProfile(p)->m_sGuid
-                                  : std::string("");
-    std::vector<PlayerStageStats> ppss;
-    FOREACH_HumanPlayer(pn) { ppss.push_back(m_player[pn]); }
+    std::vector<PlayerStageStats> ppss(NUM_PLAYERS);
+    FOREACH_HumanPlayer(pn) { ppss[pn] = m_player[pn]; }
     m_player[p].m_HighScore = FillInRoutineHighScore(
-        m_RoutinePlayer, *GAMESTATE->m_pPlayerState[p], sPlayerGuid,
+        m_RoutinePlayer, *GAMESTATE->m_pPlayerState[p],
         RANKING_TO_FILL_IN_MARKER, ppss);
   } else {
     FOREACH_HumanPlayer(p) {
@@ -348,7 +366,7 @@ void StageStats::FinalizeScores(bool bSummary) {
 
   FOREACH_HumanPlayer(p) {
     const HighScore& hs = m_player[p].m_HighScore;
-    StepsType st = GAMESTATE->GetCurrentStyle(p)->m_StepsType;
+    StepsType stepsType = GAMESTATE->GetCurrentStyle(p)->m_StepsType;
 
     const Song* pSong = GAMESTATE->m_pCurSong;
     const Steps* pSteps = GAMESTATE->m_pCurSteps[p];
@@ -373,12 +391,13 @@ void StageStats::FinalizeScores(bool bSummary) {
       m_player[p].m_rc = AverageMeterToRankingCategory(iAverageMeter);
 
       PROFILEMAN->AddCategoryScore(
-          st, m_player[p].m_rc, p, hs, m_player[p].m_iPersonalHighScoreIndex,
+          stepsType, m_player[p].m_rc, p, hs,
+          m_player[p].m_iPersonalHighScoreIndex,
           m_player[p].m_iMachineHighScoreIndex);
 
       // TRICKY: Increment play count here, and not on ScreenGameplay like the
       // others.
-      PROFILEMAN->IncrementCategoryPlayCount(st, m_player[p].m_rc, p);
+      PROFILEMAN->IncrementCategoryPlayCount(stepsType, m_player[p].m_rc, p);
     } else if (GAMESTATE->IsCourseMode()) {
       // Save this stage to recent scores
       Course* pCourse = GAMESTATE->m_pCurCourse;
@@ -407,11 +426,11 @@ void StageStats::FinalizeScores(bool bSummary) {
 
     HighScore& hs = m_player[p].m_HighScore;
     Profile* pProfile = PROFILEMAN->GetMachineProfile();
-    StepsType st = GAMESTATE->GetCurrentStyle(p)->m_StepsType;
+    StepsType stepsType = GAMESTATE->GetCurrentStyle(p)->m_StepsType;
 
     const HighScoreList* pHSL = nullptr;
     if (bSummary) {
-      pHSL = &pProfile->GetCategoryHighScoreList(st, m_player[p].m_rc);
+      pHSL = &pProfile->GetCategoryHighScoreList(stepsType, m_player[p].m_rc);
     } else if (GAMESTATE->IsCourseMode()) {
       Course* pCourse = GAMESTATE->m_pCurCourse;
       ASSERT(pCourse != nullptr);

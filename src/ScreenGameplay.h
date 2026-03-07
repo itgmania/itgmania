@@ -187,6 +187,9 @@ class ScreenGameplay : public ScreenWithMenuElements {
   virtual void PushSelf(lua_State* L);
   Song* GetNextCourseSong() const;
   LifeMeter* GetLifeMeter(PlayerNumber pn);
+  CombinedLifeMeter* GetCombinedLifeMeter() const {
+    return m_pCombinedLifeMeter;
+  }
   PlayerInfo* GetPlayerInfo(PlayerNumber pn);
   PlayerInfo* GetDummyPlayerInfo(int iDummyIndex);
   void Pause(bool bPause) { PauseGame(bPause); }
