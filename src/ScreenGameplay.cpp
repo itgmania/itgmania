@@ -15,6 +15,7 @@
 #include "Attack.h"
 #include "Background.h"
 #include "BitmapText.h"
+#include "CombinedLifeMeterShared.h"
 #include "CombinedLifeMeterTug.h"
 #include "CommonMetrics.h"
 #include "Course.h"
@@ -670,12 +671,28 @@ void ScreenGameplay::Init() {
 
   // Add combined life meter
   switch (GAMESTATE->m_PlayMode) {
+    case PLAY_MODE_REGULAR:
+    case PLAY_MODE_ONI:
+    case PLAY_MODE_NONSTOP:
+    case PLAY_MODE_ENDLESS:
+      if (bSharedSidesStyle) {
+        const PlayerNumber master = GAMESTATE->GetMasterPlayerNumber();
+        PlayerInfo& masterInfo = m_vPlayerInfo[master];
+        m_pCombinedLifeMeter = new CombinedLifeMeterShared(
+            masterInfo.GetPlayerState(), masterInfo.GetPlayerStageStats(),
+            masterInfo.GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType);
+        m_pCombinedLifeMeter->SetName("CombinedLife");
+        LOAD_ALL_COMMANDS_AND_SET_XY(*m_pCombinedLifeMeter);
+        this->AddChild(m_pCombinedLifeMeter);
+      }
+      break;
     case PLAY_MODE_BATTLE:
     case PLAY_MODE_RAVE:
       m_pCombinedLifeMeter = new CombinedLifeMeterTug;
       m_pCombinedLifeMeter->SetName("CombinedLife");
       LOAD_ALL_COMMANDS_AND_SET_XY(*m_pCombinedLifeMeter);
       this->AddChild(m_pCombinedLifeMeter);
+      break;
     default:
       break;
   }
@@ -687,20 +704,8 @@ void ScreenGameplay::Init() {
     case PLAY_MODE_NONSTOP:
     case PLAY_MODE_ENDLESS:
       if (bSharedSidesStyle) {
-        const PlayerNumber master = GAMESTATE->GetMasterPlayerNumber();
-        PlayerInfo& masterInfo = m_vPlayerInfo[master];
-
-        LifeMeter* pSharedLifeMeter = LifeMeter::MakeLifeMeter(
-            masterInfo.GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType);
-        pSharedLifeMeter->Load(
-            masterInfo.GetPlayerState(), masterInfo.GetPlayerStageStats());
-        pSharedLifeMeter->SetName(
-            ssprintf("Life%s", masterInfo.GetName().c_str()));
-        LOAD_ALL_COMMANDS_AND_SET_XY(pSharedLifeMeter);
-        this->AddChild(pSharedLifeMeter);
-
         FOREACH_PlayerNumberInfo(m_vPlayerInfo, pi) {
-          pi->m_pLifeMeter = pSharedLifeMeter;
+          pi->m_pLifeMeter = nullptr;
         }
       } else {
         FOREACH_PlayerNumberInfo(m_vPlayerInfo, pi) {
@@ -1742,21 +1747,21 @@ void ScreenGameplay::BeginScreen() {
 }
 
 bool ScreenGameplay::AllAreFailing() {
+  const Style* pStyle =
+      GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber());
+  if (pStyle != nullptr &&
+      pStyle->m_StyleType == StyleType_TwoPlayersSharedSides) {
+    const CombinedLifeMeterShared* pCoop =
+        dynamic_cast<const CombinedLifeMeterShared*>(m_pCombinedLifeMeter);
+    return pCoop ? pCoop->IsFailing() : false;
+  }
+
   FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi) {
     if (pi->m_pLifeMeter && !pi->m_pLifeMeter->IsFailing()) {
       return false;
     }
   }
   return true;
-}
-
-bool ScreenGameplay::OneFailed() {
-  FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi) {
-    if (pi->m_pLifeMeter && pi->m_pLifeMeter->IsFailing()) {
-      return true;
-    }
-  }
-  return false;
 }
 
 void ScreenGameplay::GetMusicEndTiming(
@@ -1847,16 +1852,34 @@ void ScreenGameplay::Update(float fDeltaTime) {
 
   // update GameState HealthState
   FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi) {
+    const Style* pStyle =
+        GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber());
+    const bool bSharedSides =
+        pStyle != nullptr &&
+        pStyle->m_StyleType == StyleType_TwoPlayersSharedSides;
+    const CombinedLifeMeterShared* pCoop =
+        bSharedSides
+            ? dynamic_cast<const CombinedLifeMeterShared*>(m_pCombinedLifeMeter)
+            : nullptr;
+    const bool bFailing =
+        pCoop ? pCoop->IsFailing()
+              : (pi->m_pLifeMeter && pi->m_pLifeMeter->IsFailing());
+    const bool bHot = pCoop ? pCoop->IsHot()
+                            : (pi->m_pLifeMeter && pi->m_pLifeMeter->IsHot());
+    const bool bDanger =
+        pCoop ? pCoop->IsInDanger()
+              : (pi->m_pLifeMeter && pi->m_pLifeMeter->IsInDanger());
+
     HealthState& hs = pi->GetPlayerState()->m_HealthState;
     HealthState OldHealthState = hs;
     if (GAMESTATE->GetPlayerFailType(pi->GetPlayerState()) != FailType_Off &&
-        pi->m_pLifeMeter && pi->m_pLifeMeter->IsFailing()) {
+        bFailing) {
       hs = HealthState_Dead;
-    } else if (pi->m_pLifeMeter && pi->m_pLifeMeter->IsHot()) {
+    } else if (bHot) {
       hs = HealthState_Hot;
     } else if (
         GAMESTATE->GetPlayerFailType(pi->GetPlayerState()) != FailType_Off &&
-        pi->m_pLifeMeter && pi->m_pLifeMeter->IsInDanger()) {
+        bDanger) {
       hs = HealthState_Danger;
     } else {
       hs = HealthState_Alive;
@@ -1891,7 +1914,7 @@ void ScreenGameplay::Update(float fDeltaTime) {
       // If we're in TwoPlayerSharedSides, if one player fails, both fail.
       if (GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
               ->m_StyleType == StyleType_TwoPlayersSharedSides) {
-        if (OneFailed()) {
+        if (AllAreFailing()) {
           FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi) {
             PlayerNumber pn = pi->GetStepsAndTrailIndex();
 
@@ -1900,10 +1923,6 @@ void ScreenGameplay::Update(float fDeltaTime) {
                 pi->GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType;
             if (ft == FailType_Off || ft == FailType_EndOfSong) {
               continue;
-            }
-            // check for individual fail
-            if (pi->m_pLifeMeter == nullptr || pi->m_pLifeMeter->IsFailing()) {
-              continue; /* isn't failing */
             }
             if (pi->GetPlayerStageStats()->m_bFailed) {
               continue; /* failed and is already dead */
