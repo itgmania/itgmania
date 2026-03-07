@@ -133,8 +133,6 @@ class PlayerInfo {
   ScoreKeeper* m_pPrimaryScoreKeeper;
   /** @brief The secondary ScoreKeeper. Only used in PLAY_MODE_RAVE. */
   ScoreKeeper* m_pSecondaryScoreKeeper;
-  /** @brief Whether this PlayerInfo owns m_pSecondaryScoreKeeper. */
-  bool m_bOwnsSecondaryScoreKeeper;
   /** @brief The current PlayerOptions that are activated. */
   BitmapText* m_ptextPlayerOptions;
   /** @brief The current attack modifiers that are in play for the moment. */

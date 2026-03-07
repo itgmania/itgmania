@@ -324,16 +324,8 @@ void StageStats::FinalizeScores(bool bSummary) {
     std::string sPlayerGuid = PROFILEMAN->IsPersistentProfile(p)
                                   ? PROFILEMAN->GetProfile(p)->m_sGuid
                                   : std::string("");
-    std::string sName = "";
     std::vector<PlayerStageStats> ppss;
     FOREACH_HumanPlayer(pn) { ppss.push_back(m_player[pn]); }
-    // Loop through ppss and add routine stats together
-    for (int i = 0; i < ppss.size(); i++) {
-      // m_RoutinePlayer.AddStats(ppss[i]);
-      // LOG->Trace("Routine Player Score: %i", m_RoutinePlayer.m_iScore);
-      // LOG->Trace("Routine Player Percent: %f",
-      // m_RoutinePlayer.GetPercentDancePoints());
-    }
     m_player[p].m_HighScore = FillInRoutineHighScore(
         m_RoutinePlayer, *GAMESTATE->m_pPlayerState[p], sPlayerGuid,
         RANKING_TO_FILL_IN_MARKER, ppss);

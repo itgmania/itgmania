@@ -154,7 +154,6 @@ PlayerInfo::PlayerInfo()
       m_pSecondaryScoreDisplay(nullptr),
       m_pPrimaryScoreKeeper(nullptr),
       m_pSecondaryScoreKeeper(nullptr),
-      m_bOwnsSecondaryScoreKeeper(true),
       m_ptextPlayerOptions(nullptr),
       m_pActiveAttackList(nullptr),
       m_NoteData(),
@@ -222,8 +221,6 @@ void PlayerInfo::Load(
     m_pSecondaryScoreDisplay->Init(pPlayerState, pPlayerStageStats);
   }
 
-  m_bOwnsSecondaryScoreKeeper = true;
-
   std::string sPrimaryScoreKeeperClass = SCORE_KEEPER_CLASS;
   const Style* pStyle = GAMESTATE->GetCurrentStyle(pn);
   if (pStyle != nullptr &&
@@ -276,11 +273,7 @@ PlayerInfo::~PlayerInfo() {
   RageUtil::SafeDelete(m_pPrimaryScoreDisplay);
   RageUtil::SafeDelete(m_pSecondaryScoreDisplay);
   RageUtil::SafeDelete(m_pPrimaryScoreKeeper);
-  if (m_bOwnsSecondaryScoreKeeper) {
-    RageUtil::SafeDelete(m_pSecondaryScoreKeeper);
-  } else {
-    m_pSecondaryScoreKeeper = nullptr;
-  }
+  RageUtil::SafeDelete(m_pSecondaryScoreKeeper);
   RageUtil::SafeDelete(m_ptextPlayerOptions);
   RageUtil::SafeDelete(m_pActiveAttackList);
   RageUtil::SafeDelete(m_pPlayer);
@@ -464,12 +457,10 @@ void ScreenGameplay::Init() {
         &STATSMAN->m_CurStageStats.m_RoutinePlayer);
 
     FOREACH_EnabledPlayerNumberInfo(m_vPlayerInfo, pi) {
-      if (pi->m_pSecondaryScoreKeeper != nullptr &&
-          pi->m_bOwnsSecondaryScoreKeeper) {
+      if (pi->m_pSecondaryScoreKeeper != nullptr) {
         RageUtil::SafeDelete(pi->m_pSecondaryScoreKeeper);
       }
       pi->m_pSecondaryScoreKeeper = m_pRoutineSharedScoreKeeper;
-      pi->m_bOwnsSecondaryScoreKeeper = false;
     }
   }
 
@@ -695,28 +686,47 @@ void ScreenGameplay::Init() {
     case PLAY_MODE_ONI:
     case PLAY_MODE_NONSTOP:
     case PLAY_MODE_ENDLESS:
-      FOREACH_PlayerNumberInfo(m_vPlayerInfo, pi) {
-        if (!GAMESTATE->IsPlayerEnabled(pi->m_pn) &&
-            !SHOW_LIFE_METER_FOR_DISABLED_PLAYERS) {
-          continue;  // skip
+      if (bSharedSidesStyle) {
+        const PlayerNumber master = GAMESTATE->GetMasterPlayerNumber();
+        PlayerInfo& masterInfo = m_vPlayerInfo[master];
+
+        LifeMeter* pSharedLifeMeter = LifeMeter::MakeLifeMeter(
+            masterInfo.GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType);
+        pSharedLifeMeter->Load(
+            masterInfo.GetPlayerState(), masterInfo.GetPlayerStageStats());
+        pSharedLifeMeter->SetName(
+            ssprintf("Life%s", masterInfo.GetName().c_str()));
+        LOAD_ALL_COMMANDS_AND_SET_XY(pSharedLifeMeter);
+        this->AddChild(pSharedLifeMeter);
+
+        FOREACH_PlayerNumberInfo(m_vPlayerInfo, pi) {
+          pi->m_pLifeMeter = pSharedLifeMeter;
         }
+      } else {
+        FOREACH_PlayerNumberInfo(m_vPlayerInfo, pi) {
+          if (!GAMESTATE->IsPlayerEnabled(pi->m_pn) &&
+              !SHOW_LIFE_METER_FOR_DISABLED_PLAYERS) {
+            continue;  // skip
+          }
 
-        pi->m_pLifeMeter = LifeMeter::MakeLifeMeter(
-            pi->GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType);
-        pi->m_pLifeMeter->Load(pi->GetPlayerState(), pi->GetPlayerStageStats());
-        pi->m_pLifeMeter->SetName(ssprintf("Life%s", pi->GetName().c_str()));
-        LOAD_ALL_COMMANDS_AND_SET_XY(pi->m_pLifeMeter);
-        this->AddChild(pi->m_pLifeMeter);
+          pi->m_pLifeMeter = LifeMeter::MakeLifeMeter(
+              pi->GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType);
+          pi->m_pLifeMeter->Load(
+              pi->GetPlayerState(), pi->GetPlayerStageStats());
+          pi->m_pLifeMeter->SetName(ssprintf("Life%s", pi->GetName().c_str()));
+          LOAD_ALL_COMMANDS_AND_SET_XY(pi->m_pLifeMeter);
+          this->AddChild(pi->m_pLifeMeter);
 
-        // HACK: When SHOW_LIFE_METER_FOR_DISABLED_PLAYERS is enabled,
-        // we don't want to have any life in the disabled player's life
-        // meter. I think this only happens with LifeMeterBars, but I'm
-        // not 100% sure of that. -freem
-        if (!GAMESTATE->IsPlayerEnabled(pi->m_pn) &&
-            SHOW_LIFE_METER_FOR_DISABLED_PLAYERS) {
-          if (pi->GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType ==
-              LifeType_Bar) {
-            static_cast<LifeMeterBar*>(pi->m_pLifeMeter)->ChangeLife(-1.0f);
+          // HACK: When SHOW_LIFE_METER_FOR_DISABLED_PLAYERS is enabled,
+          // we don't want to have any life in the disabled player's life
+          // meter. I think this only happens with LifeMeterBars, but I'm
+          // not 100% sure of that. -freem
+          if (!GAMESTATE->IsPlayerEnabled(pi->m_pn) &&
+              SHOW_LIFE_METER_FOR_DISABLED_PLAYERS) {
+            if (pi->GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType ==
+                LifeType_Bar) {
+              static_cast<LifeMeterBar*>(pi->m_pLifeMeter)->ChangeLife(-1.0f);
+            }
           }
         }
       }
@@ -1074,6 +1084,21 @@ ScreenGameplay::~ScreenGameplay() {
 
   LOG->Trace("ScreenGameplay::~ScreenGameplay()");
 
+  const Style* pMasterStyle =
+      GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber());
+  const bool bSharedSidesStyle =
+      pMasterStyle != nullptr &&
+      pMasterStyle->m_StyleType == StyleType_TwoPlayersSharedSides;
+  if (bSharedSidesStyle) {
+    const PlayerNumber master = GAMESTATE->GetMasterPlayerNumber();
+    FOREACH_PlayerNumberInfo(m_vPlayerInfo, pi) {
+      if (pi->m_pn != master) {
+        pi->m_pLifeMeter = nullptr;
+        pi->m_pSecondaryScoreKeeper = nullptr;
+      }
+    }
+  }
+
   RageUtil::SafeDelete(m_pSongBackground);
   RageUtil::SafeDelete(m_pSongForeground);
 
@@ -1082,7 +1107,7 @@ ScreenGameplay::~ScreenGameplay() {
   }
 
   RageUtil::SafeDelete(m_pCombinedLifeMeter);
-  RageUtil::SafeDelete(m_pRoutineSharedScoreKeeper);
+  m_pRoutineSharedScoreKeeper = nullptr;
   if (m_pSoundMusic) {
     m_pSoundMusic->StopPlaying();
   }
@@ -1886,9 +1911,6 @@ void ScreenGameplay::Update(float fDeltaTime) {
             pi->GetPlayerStageStats()->m_bFailed = true;  // fail
           }
         }
-        // STATSMAN->m_CurStageStats.m_RoutinePlayer.AddRoutineStats(
-        //     m_vPlayerInfo[PLAYER_1].GetPlayerStageStats(),
-        //     m_vPlayerInfo[PLAYER_2].GetPlayerStageStats());
       }
 
       /* Set STATSMAN->m_CurStageStats.bFailed for failed players.  In,
