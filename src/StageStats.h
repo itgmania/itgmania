@@ -31,9 +31,9 @@ class StageStats {
   void AssertValid(MultiPlayer mp) const;
 
   /**
-	 * @brief Ensure that the Player is valid.
-	 * @param pn the PlayerNumber to check. */
-	void AssertValid( PlayerNumber pn, bool bRoutine) const;
+   * @brief Ensure that the Player is valid.
+   * @param pn the PlayerNumber to check. */
+  void AssertValid(PlayerNumber pn, bool bRoutine) const;
 
   void AddStats(const StageStats& other);  // accumulate
 

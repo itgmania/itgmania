@@ -17,7 +17,8 @@ class CombinedLifeMeterShared : public CombinedLifeMeter {
 
   void OnLoadSong() override;
   void ChangeLife(PlayerNumber pn, TapNoteScore tns) override;
-  void ChangeLife(PlayerNumber pn, HoldNoteScore hns, TapNoteScore tns) override;
+  void ChangeLife(
+      PlayerNumber pn, HoldNoteScore hns, TapNoteScore tns) override;
   void ChangeLife(PlayerNumber pn, float delta) override;
   void SetLife(PlayerNumber pn, float value) override;
   void HandleTapScoreNone(PlayerNumber pn) override;

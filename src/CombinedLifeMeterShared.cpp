@@ -26,7 +26,8 @@ void CombinedLifeMeterShared::OnLoadSong() {
   }
 }
 
-void CombinedLifeMeterShared::ChangeLife(PlayerNumber /*pn*/, TapNoteScore tns) {
+void CombinedLifeMeterShared::ChangeLife(
+    PlayerNumber /*pn*/, TapNoteScore tns) {
   if (m_pLifeMeter) {
     m_pLifeMeter->ChangeLife(tns);
   }

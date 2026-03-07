@@ -97,7 +97,7 @@ void ScoreKeeperNormal::Load(
     NoteData ndPre;
     pStyle->GetTransformedNoteDataForStyle(
         m_pPlayerState->m_PlayerNumber, ndTemp, ndPre);
-        
+
     if (ndPre.IsComposite()) {
       std::vector<NoteData> vParts;
 

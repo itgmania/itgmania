@@ -101,9 +101,9 @@ class ProfileManager {
   Profile* GetProfile(ProfileSlot slot) {
     return (Profile*)((const ProfileManager*)this)->GetProfile(slot);
   }
-    const Profile* GetProfileByGuid(const std::string& guid) const;
-    Profile* GetProfileByGuid(const std::string& guid) {
-        return (Profile*)((const ProfileManager*)this)->GetProfileByGuid(guid);
+  const Profile* GetProfileByGuid(const std::string& guid) const;
+  Profile* GetProfileByGuid(const std::string& guid) {
+    return (Profile*)((const ProfileManager*)this)->GetProfileByGuid(guid);
   }
 
   const std::string& GetProfileDir(ProfileSlot slot) const;
