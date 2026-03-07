@@ -405,7 +405,6 @@ void NoteSkinManager::GetAllNoteSkinNamesForGame(
 void NoteSkinManager::FilterNoteSkinsByStyle(
     const Style* pStyle, std::vector<std::string>& AddTo) {
   if (pStyle == nullptr) {
-    LOG->Trace("Style is null");
     return;
   }
   // If the styletype is TwoPlayersSharedSides then filter noteskins where the
@@ -417,11 +416,9 @@ void NoteSkinManager::FilterNoteSkinsByStyle(
       MakeLower(sNoteSkinName);
       std::map<std::string, NoteSkinData>::const_iterator it =
           g_mapNameToData.find(sNoteSkinName);
-      // LOG->Trace( "FilterNoteSkinsByStyle: %s", sNoteSkinName.c_str() );
       ASSERT_M(
           it != g_mapNameToData.end(),
           sNoteSkinName);  // this NoteSkin doesn't exist!
-      // LOG->Trace(" We survived the assert.");
       const NoteSkinData& data = it->second;
 
       std::string sIsRoutine;
@@ -429,18 +426,14 @@ void NoteSkinManager::FilterNoteSkinsByStyle(
         // If the metric doesn't exist, then it's not a TwoPlayersSharedSides
         // noteskin.
         iter = AddTo.erase(iter);
-        //	LOG->Trace("IsRoutine doesn't exist.");
         continue;
       }
 
       if (sIsRoutine.empty() || sIsRoutine != "true") {
-        //	LOG->Trace("IsRoutine isn't true.");
         // If the metric exists but isn't "true", then it's not a
         // TwoPlayersSharedSides noteskin.
         iter = AddTo.erase(iter);
         continue;
-      } else {
-        //	LOG->Trace("IsRoutine is true.");
       }
       ++iter;
     }
