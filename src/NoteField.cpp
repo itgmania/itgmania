@@ -176,13 +176,6 @@ void NoteField::UncacheNoteSkin(const std::string& sNoteSkin_) {
 }
 
 void NoteField::CacheAllUsedNoteSkins() {
-  // If we're in Routine mode, apply our per-player noteskins.
-  if (GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber)->m_StyleType ==
-      StyleType_TwoPlayersSharedSides) {
-    FOREACH_EnabledPlayer(pn)
-        GAMESTATE->ApplyStageModifiers(pn, ROUTINE_NOTESKIN.GetValue(pn));
-  }
-
   /* Cache all note skins that we might need for the whole song, course or
    * battle play, so we don't have to load them later (such as between course
    * songs). */
