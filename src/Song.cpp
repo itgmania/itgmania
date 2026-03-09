@@ -312,16 +312,29 @@ bool Song::LoadFromSongDir(
                        GetCacheFilePath().c_str());
     */
     SSCLoader loaderSSC;
-    bool bLoadedFromSSC =
+    bool bLoadedFromCache =
         loaderSSC.LoadFromSimfile(cache_file_path, *this, true);
-    if (!bLoadedFromSSC) {
+    if (!bLoadedFromCache) {
       // load from .sm
       SMLoader loaderSM;
-      loaderSM.LoadFromSimfile(cache_file_path, *this, true);
-      loaderSM.TidyUpData(*this, true);
+      if (loaderSM.LoadFromSimfile(cache_file_path, *this, true)) {
+        loaderSM.TidyUpData(*this, true);
+        bLoadedFromCache = true;
+      }
     }
-    if (m_sMainTitle == "" ||
-        (m_sMusicFile == "" && m_vsKeysoundFile.empty())) {
+
+    // If cache loading failed entirely (e.g. stale dir cache says cache file
+    // exists after it was removed), fall back to parsing source files.
+    if (!bLoadedFromCache) {
+      LOG->Warn(
+          "Couldn't load cache for '%s'; falling back to source simfiles.",
+          m_sSongDir.c_str());
+      Reset();
+      use_cache = false;
+    }
+
+    if (use_cache && (m_sMainTitle == "" ||
+                      (m_sMusicFile == "" && m_vsKeysoundFile.empty()))) {
       LOG->Warn(
           "Main title or music file for '%s' came up blank, forced to fall "
           "back on TidyUpData to fix title and paths.  Do not use # or ; in a "
@@ -331,7 +344,9 @@ bool Song::LoadFromSongDir(
       // to hit the song folder to find the files that weren't found. -Kyz
       TidyUpData(false, false);
     }
-  } else {
+  }
+
+  if (!use_cache) {
     std::set<std::string> blacklistedImages;
 
     // There was no entry in the cache for this song, or it was out of date.
@@ -450,6 +465,8 @@ bool Song::ReloadFromSongDir(std::string sDir) {
   // Remove the cache file to force the song to reload from its dir instead
   // of loading from the cache. -Kyz
   FILEMAN->Remove(GetCacheFilePath());
+  // Also invalidate the cache entry so the next load sees the previous removal.
+  FILEMAN->FlushDirCache(Dirname(GetCacheFilePath()));
 
   RemoveAutoGenNotes();
   std::vector<Steps*> vOldSteps = m_vpSteps;

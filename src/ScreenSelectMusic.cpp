@@ -496,8 +496,11 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
       // Reload the currently selected song. -Kyz
       Song* to_reload = m_MusicWheel.GetSelectedSong();
       if (to_reload) {
-        to_reload->ReloadFromSongDir();
-        AfterMusicChange();
+        if (to_reload->ReloadFromSongDir()) {
+          // Refresh wheel item on success so that users can see the updates
+          // immediately without needing to move the wheel.
+          m_MusicWheel.ReloadSongList();
+        }
         return true;
       }
     } else if (bHoldingCtrl && (c >= 'A') && (c <= 'Z')) {

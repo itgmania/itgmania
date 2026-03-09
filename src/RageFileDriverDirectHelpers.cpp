@@ -203,7 +203,21 @@ void DirectFilenameDB::CacheFile(const std::string& sPath) {
 
   struct stat st;
   if (DoStat((root + sPath).c_str(), &st) == -1) {
-    WARN(ssprintf("File '%s' is gone! (%s)", sPath.c_str(), strerror(errno)));
+    if (errno != ENOENT) {
+      // Warn in this case since this is unexpected (maybe due to some actual
+      // filesystem issues like perms/long paths/etc).
+      // ENOENT is expected in some cases (like when we remove the file
+      // intentionally on Ctrl+Shift+R reloads/using the tempfile + rename
+      // flow, etc) so we don't want to log that as a warning.
+      WARN(ssprintf(
+          "Couldn't stat '%s' while caching file metadata: %s", sPath.c_str(),
+          strerror(errno)));
+    }
+    // Remove any old cached records and return early so we con't insert
+    // any bad metadata for a file that doesn't exist.
+    pFileSet->files.erase(f);
+    m_Mutex.Unlock();  // Locked by GetFileSet()
+    return;
   } else {
     f.dir = S_ISDIR(st.st_mode);
     f.size = static_cast<int>(st.st_size);
