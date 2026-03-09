@@ -13,7 +13,7 @@
 REGISTER_LIGHTS_DRIVER_CLASS2(PIUIOBTN_Leds, Linux_PIUIOBTN_Leds);
 
 namespace {
-const int player1_lights[NUM_GameButton] = {
+const int player1_lights[] = {
     6,   // GAME_BUTTON_MENULEFT
     5,   // GAME_BUTTON_MENURIGHT
     -1,  // GAME_BUTTON_MENUUP
@@ -47,7 +47,7 @@ const int player1_lights[NUM_GameButton] = {
     -1,  // GAME_BUTTON_CUSTOM_19
 };
 
-const int player2_lights[NUM_GameButton] = {
+const int player2_lights[] = {
     2,   // GAME_BUTTON_MENULEFT
     1,   // GAME_BUTTON_MENURIGHT
     -1,  // GAME_BUTTON_MENUUP
@@ -80,6 +80,16 @@ const int player2_lights[NUM_GameButton] = {
     -1,  // GAME_BUTTON_CUSTOM_18
     -1,  // GAME_BUTTON_CUSTOM_19
 };
+
+static_assert(
+    ARRAYLEN(player1_lights) == NUM_GameButton,
+    "LightsDriver_Linux_PIUIOBTN_Leds ARRAYLEN(player1_lights) != "
+    "NUM_GameButton");
+static_assert(
+    ARRAYLEN(player2_lights) == NUM_GameButton,
+    "LightsDriver_Linux_PIUIOBTN_Leds ARRAYLEN(player2_lights) != "
+    "NUM_GameButton");
+
 }  // namespace
 
 void LightsDriver_Linux_PIUIOBTN_Leds::Set(const LightsState* ls) {

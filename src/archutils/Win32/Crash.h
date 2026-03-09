@@ -12,8 +12,9 @@ namespace CrashHandler {
 extern long __stdcall ExceptionHandler(
     struct _EXCEPTION_POINTERS* ExceptionInfo);
 
+// buf is filled with return addresses which we capture.
 void do_backtrace(
-    const void** buf, size_t size, HANDLE hProcess, HANDLE hThread,
+    void** buf, size_t size, HANDLE hProcess, HANDLE hThread,
     const CONTEXT* pContext);
 void SymLookup(const void* ptr, char* buf);
 void ForceCrash(const char* reason);

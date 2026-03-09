@@ -30,13 +30,13 @@ configuration examples for specific clients below.
 1. Install the [nvim-dap](https://github.com/mfussenegger/nvim-dap) plugin.
 2. Add the following to your Neovim configuration:
 ```lua
-dap.adapters.itgmania_lua = {
+require('dap').adapters.itgmania_lua = {
     type = 'server',
     host = '127.0.0.1',
     port = 8173,
 }
 
-dap.configurations.lua = {
+require('dap').configurations.lua = {
     {
         type = 'itgmania_lua',
         request = 'attach',

@@ -277,7 +277,10 @@ std::vector<std::string> UnresolvePath(const std::string& absolutePath) {
     }
 
     std::string path = Right(absPath, absPath.size() - root.size());
-    std::string luaPath = "@" + mount.MountPoint + path;
+    std::string luaPath = mount.MountPoint + path;
+    if (Left(luaPath, 1) == "/") {
+      luaPath = luaPath.substr(1);
+    }
     result.push_back(luaPath);
   }
 

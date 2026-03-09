@@ -317,11 +317,7 @@ static DWORD WINAPI MainExceptionHandler(LPVOID lpParameter) {
     case EXCEPTION_FLT_OVERFLOW:
     case EXCEPTION_FLT_UNDERFLOW:
     case EXCEPTION_FLT_INEXACT_RESULT:
-#if _WIN64
       pExc->ContextRecord->FltSave.ControlWord |= 0x3F;
-#else
-      pExc->ContextRecord->FloatSave.ControlWord |= 0x3F;
-#endif
       return static_cast<DWORD>(EXCEPTION_CONTINUE_EXECUTION);
   }
 
@@ -335,8 +331,8 @@ static DWORD WINAPI MainExceptionHandler(LPVOID lpParameter) {
         nullptr,
         InHere == 1 ? "The error reporting interface has crashed.\n"
                     : "The error reporting interface has crashed. However, "
-                      "crashinfo.txt was"
-                      "written successfully to the program directory.\n",
+                      "crashinfo.txt was written successfully to the program "
+                      "directory.\n",
         "Fatal Error", MB_OK);
 #ifdef DEBUG
     DebugBreak();
@@ -353,8 +349,8 @@ static DWORD WINAPI MainExceptionHandler(LPVOID lpParameter) {
     GetReason(pExc->ExceptionRecord, &g_CrashInfo);
   }
   CrashHandler::do_backtrace(
-      g_CrashInfo.m_BacktracePointers, BACKTRACE_MAX_SIZE, GetCurrentProcess(),
-      GetCurrentThread(), pExc->ContextRecord);
+      (void**)g_CrashInfo.m_BacktracePointers, BACKTRACE_MAX_SIZE,
+      GetCurrentProcess(), GetCurrentThread(), pExc->ContextRecord);
 
   RunChild();
 
@@ -392,231 +388,106 @@ static DWORD WINAPI MainExceptionHandler(LPVOID lpParameter) {
 
 long __stdcall CrashHandler::ExceptionHandler(EXCEPTION_POINTERS* pExc) {
   /* If the stack overflowed, we have a very limited amount of stack space.
-   * Allocate a new stack, and run the exception handler in it, to increase
-   * the chances of success. */
-  HANDLE hExceptionHandler = CreateThread(
-      nullptr, 1024 * 32, MainExceptionHandler, reinterpret_cast<LPVOID>(pExc),
-      0, nullptr);
-  if (hExceptionHandler == NULL) {
-    TerminateProcess(GetCurrentProcess(), 0);
-    return EXCEPTION_EXECUTE_HANDLER;
+   * In this case, we will allocate a new 32KB stack, and run the exception
+   * handler in it, to increase the chances of success. */
+  if (pExc->ExceptionRecord->ExceptionCode == EXCEPTION_STACK_OVERFLOW) {
+    HANDLE hExceptionHandler = CreateThread(
+        nullptr, 1024 * 32, MainExceptionHandler,
+        reinterpret_cast<LPVOID>(pExc), 0, nullptr);
+    if (hExceptionHandler == NULL) {
+      TerminateProcess(GetCurrentProcess(), 0);
+      return EXCEPTION_EXECUTE_HANDLER;
+    }
+    WaitForSingleObject(hExceptionHandler, INFINITE);
+
+    DWORD ret;
+    GetExitCodeThread(hExceptionHandler, &ret);
+    CloseHandle(hExceptionHandler);
+
+    return static_cast<long>(ret);
   }
-  WaitForSingleObject(hExceptionHandler, INFINITE);
 
-  DWORD ret;
-  GetExitCodeThread(hExceptionHandler, &ret);
-  CloseHandle(hExceptionHandler);
-
-  return static_cast<long>(ret);
+  // Common case.
+  return static_cast<long>(MainExceptionHandler(pExc));
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-static bool IsValidCall(char* buf, int len) {
-  // Permissible CALL sequences that we care about:
-  //
-  //	E8 xx xx xx xx			CALL near relative
-  //	FF (group 2)			CALL near absolute indirect
-  //
-  // Minimum sequence is 2 bytes (call eax).
-  // Maximum sequence is 7 bytes (call dword ptr [eax+disp32]).
-
-  if (len >= 5 && buf[-5] == '\xe8') {
-    return true;
-  }
-
-  // FF 14 xx					CALL [reg32+reg32*scale]
-
-  if (len >= 3 && buf[-3] == '\xff' && buf[-2] == '\x14') {
-    return true;
-  }
-
-  // FF 15 xx xx xx xx		CALL disp32
-
-  if (len >= 6 && buf[-6] == '\xff' && buf[-5] == '\x15') {
-    return true;
-  }
-
-  // FF 00-3F(!14/15)			CALL [reg32]
-
-  if (len >= 2 && buf[-2] == '\xff' && (unsigned char)buf[-1] < '\x40') {
-    return true;
-  }
-
-  // FF D0-D7					CALL reg32
-
-  if (len >= 2 && buf[-2] == '\xff' && (buf[-1] & 0xF8) == '\xd0') {
-    return true;
-  }
-
-  // FF 50-57 xx				CALL [reg32+reg32*scale+disp8]
-
-  if (len >= 3 && buf[-3] == '\xff' && (buf[-2] & 0xF8) == '\x50') {
-    return true;
-  }
-
-  // FF 90-97 xx xx xx xx xx	CALL [reg32+reg32*scale+disp32]
-
-  if (len >= 7 && buf[-7] == '\xff' && (buf[-6] & 0xF8) == '\x90') {
-    return true;
-  }
-
-  return false;
-}
-
-static bool IsExecutableProtection(DWORD dwProtect) {
-  MEMORY_BASIC_INFORMATION meminfo;
-
-  // Windows NT/2000 allows Execute permissions, but Win9x seems to rip it
-  // off. So we query the permissions on our own code block, and use it to
-  // determine if READONLY/READWRITE should be considered 'executable.'
-  // XXX: Special logic for Win98? Really? This should be cut.
-
-  VirtualQuery((LPCVOID)IsExecutableProtection, &meminfo, sizeof meminfo);
-
-  switch ((unsigned char)dwProtect) {
-    case PAGE_READONLY:   // *sigh* Win9x...
-    case PAGE_READWRITE:  // *sigh*
-      return meminfo.Protect == PAGE_READONLY ||
-             meminfo.Protect == PAGE_READWRITE;
-
-    case PAGE_EXECUTE:
-    case PAGE_EXECUTE_READ:
-    case PAGE_EXECUTE_READWRITE:
-    case PAGE_EXECUTE_WRITECOPY:
-      return true;
-  }
-  return false;
-}
-
-static bool PointsToValidCall(ULONG_PTR ptr) {
-  char buf[7];
-  int len = 7;
-
-  memset(buf, 0, sizeof(buf));
-
-  while (len > 0 && !ReadProcessMemory(
-                        GetCurrentProcess(), (void*)(ptr - len), buf + 7 - len,
-                        len, nullptr)) {
-    --len;
-  }
-
-  return IsValidCall(buf + 7, len);
-}
-
+// Walks the stack and fills buf with up to 'size' return addresses.
+// buf must be a writable array of void* of at least 'size' elements.
+// If fewer than 'size' frames are found, the next element is set to nullptr.
+// Only works on x86_64.
 void CrashHandler::do_backtrace(
-    const void** buf, size_t size, HANDLE hProcess, HANDLE hThread,
+    void** buf, size_t size, HANDLE hProcess, HANDLE hThread,
     const CONTEXT* pContext) {
-  const void** pLast = buf + size - 1;
-  bool bFirst = true;
-
-  /* The EIP of the position that crashed is normally on the stack, since the
-   * exception handler was called on the same stack. However, once in a while,
-   * due to stack corruption, we might not be able to get any frames from the
-   * stack. Pull it out of pContext->Eip, which is always valid, and then
-   * discard the first stack frame if it's the same. */
-#if _WIN64
-  if (buf + 1 != pLast && pContext->Rip != 0) {
-    *buf = (void*)pContext->Rip;
-#else
-  if (buf + 1 != pLast && pContext->Eip != 0) {
-    *buf = (void*)pContext->Eip;
-#endif
-    ++buf;
+  if (!buf || !pContext || size == 0) {
+    return;
   }
 
-  // Retrieve stack pointers.
-  const char* pStackBase;
-  {
-    LDT_ENTRY sel;
-    if (!GetThreadSelectorEntry(hThread, pContext->SegFs, &sel)) {
-      *buf = nullptr;
-      return;
-    }
+  size_t count = 0;
 
-    const NT_TIB* tib = reinterpret_cast<NT_TIB*>(
-        ((static_cast<DWORD_PTR>(sel.HighWord.Bits.BaseHi) << 24) +
-         (static_cast<DWORD_PTR>(sel.HighWord.Bits.BaseMid) << 16) +
-         sel.BaseLow));
-    const NT_TIB* pTib = tib->Self;
-    pStackBase = (char*)pTib->StackBase;
+#if defined(_M_X64) || defined(__x86_64__)
+  uintptr_t ip = static_cast<uintptr_t>(pContext->Rip);
+  uintptr_t frame = static_cast<uintptr_t>(pContext->Rbp);
+#else
+  uintptr_t ip = 0, frame = 0;
+#endif
+
+  if (ip) {
+    buf[count++] = reinterpret_cast<void*>(ip);
   }
 
-  // Walk up the stack.
-#if _WIN64
-  const char* lpAddr = (const char*)pContext->Rsp;
-
-  const void* data = (void*)pContext->Rip;
-#else
-  const char* lpAddr = (const char*)pContext->Esp;
-
-  const void* data = (void*)pContext->Eip;
-#endif
-  do {
-    if (buf == pLast) {
+  while (count < size - 1 && frame != 0) {
+    MEMORY_BASIC_INFORMATION mbi;
+    if (VirtualQuery(reinterpret_cast<LPCVOID>(frame), &mbi, sizeof(mbi)) ==
+        0) {
       break;
     }
 
-    bool fValid = true;
-
-    /* The first entry is usually EIP.  We already logged it; skip it, so we
-     * don't always show the first frame twice. */
-#if _WIN64
-    if (bFirst && data == (void*)pContext->Rip)
-#else
-    if (bFirst && data == (void*)pContext->Eip)
-#endif
-      fValid = false;
-    bFirst = false;
-
-    {
-      MEMORY_BASIC_INFORMATION meminfo;
-
-      VirtualQuery((void*)data, &meminfo, sizeof meminfo);
-
-      if (!IsExecutableProtection(meminfo.Protect) ||
-          meminfo.State != MEM_COMMIT) {
-        fValid = false;
-      }
-
-#if _WIN64
-      if (data != (void*)pContext->Rip &&
-          !PointsToValidCall(reinterpret_cast<ULONG_PTR>(data)))
-#else
-      if (data != (void*)pContext->Eip &&
-          !PointsToValidCall(reinterpret_cast<ULONG_PTR>(data)))
-#endif
-        fValid = false;
-    }
-
-    if (fValid) {
-      *buf = data;
-      ++buf;
-    }
-
-    if (lpAddr >= pStackBase) {
+    DWORD protect = mbi.Protect & 0xff;
+    if (!(protect == PAGE_READWRITE || protect == PAGE_READONLY ||
+          protect == PAGE_EXECUTE_READ || protect == PAGE_EXECUTE_READWRITE)) {
       break;
     }
 
-    lpAddr += 4;
-  } while (ReadProcessMemory(hProcess, lpAddr - 4, &data, 4, nullptr));
+    size_t min_size = 2 * sizeof(uintptr_t);
+    uintptr_t frame_end = frame + min_size;
+    uintptr_t mbi_end =
+        reinterpret_cast<uintptr_t>(mbi.BaseAddress) + mbi.RegionSize;
+    if (frame < reinterpret_cast<uintptr_t>(mbi.BaseAddress) ||
+        frame_end > mbi_end) {
+      break;
+    }
 
-  *buf = nullptr;
+    // Read next frame pointer and return address
+    const uintptr_t* frame_ptr = reinterpret_cast<const uintptr_t*>(frame);
+    uintptr_t next_frame = frame_ptr[0];
+    uintptr_t ret_addr = frame_ptr[1];
+
+    if (next_frame <= frame || next_frame - frame > 1024 * 1024 ||
+        ret_addr == 0) {
+      break;
+    }
+
+    buf[count++] = reinterpret_cast<void*>(ret_addr);
+    frame = next_frame;
+  }
+
+  if (count < size) {
+    buf[count] = nullptr;
+  }
 }
 
-// Trigger the crash handler. This works even in the debugger.
+// Dereferencing NULL pointer on purpose.
+// This works even in the debugger.
+#pragma warning(push)
+#pragma warning(disable : 6011)
 [[noreturn]]
 static void debug_crash() {
-//	__try {
-#if defined(__MSC_VER)
-  __asm xor ebx, ebx __asm mov eax, dword ptr[ebx]
-//		__asm mov dword ptr [ebx],eax
-//		__asm lock add dword ptr cs:[00000000h], 12345678h
-#endif
-  //	} __except(
-  // CrashHandler::ExceptionHandler((EXCEPTION_POINTERS*)_exception_info()) ) {
-  //	}
+  volatile int* p = nullptr;
+  *p = 0;
 }
+#pragma warning(pop)
 
 /* Get a stack trace of the current thread and the specified thread.
  * If iID == GetInvalidThreadId(), then output a stack trace for every thread.
@@ -655,8 +526,8 @@ void CrashHandler::ForceDeadlock(std::string reason, uint64_t iID) {
       } else {
         static const void* BacktracePointers[BACKTRACE_MAX_SIZE];
         do_backtrace(
-            g_CrashInfo.m_AlternateThreadBacktrace[iCnt], BACKTRACE_MAX_SIZE,
-            GetCurrentProcess(), hThread, &context);
+            (void**)g_CrashInfo.m_AlternateThreadBacktrace[iCnt],
+            BACKTRACE_MAX_SIZE, GetCurrentProcess(), hThread, &context);
 
         const char* pName = RageThread::GetThreadNameByID(iID);
         strncpy(
@@ -680,7 +551,7 @@ void CrashHandler::ForceDeadlock(std::string reason, uint64_t iID) {
     } else {
       static const void* BacktracePointers[BACKTRACE_MAX_SIZE];
       do_backtrace(
-          g_CrashInfo.m_AlternateThreadBacktrace[0], BACKTRACE_MAX_SIZE,
+          (void**)g_CrashInfo.m_AlternateThreadBacktrace[0], BACKTRACE_MAX_SIZE,
           GetCurrentProcess(), hThread, &context);
 
       const char* pName = RageThread::GetThreadNameByID(iID);

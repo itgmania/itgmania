@@ -82,11 +82,12 @@ void RageFile::Close() {
   if (m_File == nullptr) {
     return;
   }
-  delete m_File;
-  if (m_Mode & WRITE) {
-    FILEMAN->CacheFile(m_File, m_Path);
-  }
+  RageFileBasic* pFile = m_File;
   m_File = nullptr;
+  if (m_Mode & WRITE) {
+    FILEMAN->CacheFile(pFile, m_Path);
+  }
+  delete pFile;
 }
 
 void RageFile::AssertOpen() const {
