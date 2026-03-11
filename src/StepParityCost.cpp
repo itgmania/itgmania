@@ -102,7 +102,8 @@ float StepParityCost::calcMineCost(
   float cost = 0;
 
   for (int i = 0; i < columnCount; i++) {
-    if (resultState->combinedColumns[i] != Foot_None && (row.mines[i] != 0 || row.fakeMines[i] != 0)) {
+    if (resultState->combinedColumns[i] != Foot_None &&
+        (row.mines[i] != 0 || row.fakeMines[i] != 0)) {
       cost += MINE;
       break;
     }

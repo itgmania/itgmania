@@ -179,8 +179,7 @@ class Steps {
   void SetTechCounts(const TechCounts ts[NUM_PLAYERS]);
   void SetNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure);
   void SetNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure);
-  void SetNoteAnnotations(
-      std::vector<NoteAnnotationCache>& noteAnnotations);
+  void SetNoteAnnotations(std::vector<NoteAnnotationCache>& noteAnnotations);
   void SetPeakNps(std::vector<float>& peakNps);
   void SetGrooveStatsHash(const std::string& key);
   void SetGrooveStatsHashVersion(int version);

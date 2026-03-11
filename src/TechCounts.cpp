@@ -55,23 +55,50 @@ void TechCounts::FromString(std::string sTechCounts) {
     return;
   }
 
-  FOREACH_ENUM(RadarCategory, rc) { (*this)[rc] = StringToFloat(saValues[rc]); }
+  FOREACH_ENUM(TechCountsCategory, rc) {
+    (*this)[rc] = StringToFloat(saValues[rc]);
+  }
 }
 
 void TechCounts::CalculateTechCountsFromRows(
     const std::vector<StepParity::Row>& rows,
     const StepParity::StageLayout* layout, TechCounts& out,
     std::vector<NoteAnnotation>& annotations_out) {
-  for (unsigned long i = 1; i < rows.size(); i++) {
+  for (unsigned long i = 0; i < rows.size(); i++) {
     NoteAnnotation annotation;
     const StepParity::Row& currentRow = rows[i];
-    const StepParity::Row& previousRow = rows[i - 1];
-
-    float elapsedTime = currentRow.second - previousRow.second;
-
     annotation.beat = currentRow.beat;
     annotation.whereTheFeetAre.assign(
         currentRow.whereTheFeetAre.begin(), currentRow.whereTheFeetAre.end());
+
+    // Check for brackets
+    if (currentRow.noteCount >= 2) {
+      if (currentRow.whereTheFeetAre[StepParity::Foot_LeftHeel] !=
+              StepParity::INVALID_COLUMN &&
+          currentRow.whereTheFeetAre[StepParity::Foot_LeftToe] !=
+              StepParity::INVALID_COLUMN) {
+        out[TechCountsCategory_Brackets] += 1;
+        annotation.tech.push_back(TechCountsCategory_Brackets);
+      }
+
+      if (currentRow.whereTheFeetAre[StepParity::Foot_RightHeel] !=
+              StepParity::INVALID_COLUMN &&
+          currentRow.whereTheFeetAre[StepParity::Foot_RightToe] !=
+              StepParity::INVALID_COLUMN) {
+        out[TechCountsCategory_Brackets] += 1;
+        annotation.tech.push_back(TechCountsCategory_Brackets);
+      }
+    }
+
+    // If this is the first row, none of the other tech counts are applicable
+    if (i == 0) {
+      annotations_out.push_back(annotation);
+      continue;
+    }
+
+    const StepParity::Row& previousRow = rows[i - 1];
+
+    float elapsedTime = currentRow.second - previousRow.second;
 
     // Jacks are same arrow same foot
     // Doublestep is same foot on successive arrows
@@ -101,25 +128,6 @@ void TechCounts::CalculateTechCountsFromRows(
             annotation.tech.push_back(TechCountsCategory_Doublesteps);
           }
         }
-      }
-    }
-
-    // Check for brackets
-    if (currentRow.noteCount >= 2) {
-      if (currentRow.whereTheFeetAre[StepParity::Foot_LeftHeel] !=
-              StepParity::INVALID_COLUMN &&
-          currentRow.whereTheFeetAre[StepParity::Foot_LeftToe] !=
-              StepParity::INVALID_COLUMN) {
-        out[TechCountsCategory_Brackets] += 1;
-        annotation.tech.push_back(TechCountsCategory_Brackets);
-      }
-
-      if (currentRow.whereTheFeetAre[StepParity::Foot_RightHeel] !=
-              StepParity::INVALID_COLUMN &&
-          currentRow.whereTheFeetAre[StepParity::Foot_RightToe] !=
-              StepParity::INVALID_COLUMN) {
-        out[TechCountsCategory_Brackets] += 1;
-        annotation.tech.push_back(TechCountsCategory_Brackets);
       }
     }
 

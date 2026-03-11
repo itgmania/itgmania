@@ -402,7 +402,7 @@ void Steps::CalculateTechCounts(const NoteData& tempNoteData) {
   TechCounts::CalculateTechCountsFromRows(
       gen.rows, &*layout, m_TechCounts[0], tempNoteAnnotations);
   std::fill_n(m_TechCounts + 1, NUM_PLAYERS - 1, m_TechCounts[0]);
-  
+
   NoteAnnotationCache cachedAnnotations;
   cachedAnnotations.decompressed = tempNoteAnnotations;
   cachedAnnotations.Compress();
@@ -712,8 +712,7 @@ void Steps::SetTechCounts(const TechCounts ts[NUM_PLAYERS]) {
 void Steps::SetNoteAnnotations(
     std::vector<NoteAnnotationCache>& noteAnnotations) {
   DeAutogen();
-  m_NoteAnnotations.assign(
-      noteAnnotations.begin(), noteAnnotations.end());
+  m_NoteAnnotations.assign(noteAnnotations.begin(), noteAnnotations.end());
 }
 
 void Steps::SetNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure) {
