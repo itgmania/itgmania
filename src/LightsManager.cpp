@@ -471,7 +471,8 @@ void LightsManager::Update(float fDeltaTime) {
       FOREACH_ENUM(GameController, gc) {
         FOREACH_GameButton_Custom(gb) {
           bool bOn = INPUTMAPPER->IsBeingPressed(GameInput(gc, gb));
-          m_LightsState.m_bGameButtonLights[gc][gb] = bOn;
+          // or them in the event the game wants to turn them on too.
+          m_LightsState.m_bGameButtonLights[gc][gb] |= bOn;
         }
       }
 
@@ -481,7 +482,8 @@ void LightsManager::Update(float fDeltaTime) {
       FOREACH_ENUM(GameController, gc) {
         FOREACH_GameButton_Menu(gb) {
           bool bOn = INPUTMAPPER->IsBeingPressed(GameInput(gc, gb));
-          m_LightsState.m_bGameButtonLights[gc][gb] = bOn;
+          // or them in the event the game wants to turn them on too.
+          m_LightsState.m_bGameButtonLights[gc][gb] |= bOn;
         }
       }
 
