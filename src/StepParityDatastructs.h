@@ -150,11 +150,11 @@ struct IntermediateNoteData {
   int row = 0;     // row on which the note occurs
   float beat = 0;  // beat on which the note occurs
   float hold_length =
-      0;  // If type is TapNoteType_HoldTail, length of hold, in beats
+      0;  // If type is TapNoteType_HoldHead, length of hold, in beats
 
-  bool warped = false;   // Is this note warped?
-  bool fake = false;     // Is this note fake (besides being TapNoteType_Fake)?
-  float second = false;  // time into the song on which the note occurs
+  bool warped = false;  // Is this note warped?
+  bool fake = false;    // Is this note fake (besides being TapNoteType_Fake)?
+  float second = 0;     // time into the song on which the note occurs
 
   Foot parity =
       NONE;  // Which foot (and which part of the foot) will most likely be used
