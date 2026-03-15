@@ -208,37 +208,37 @@ static void WriteTimingTags(
     RageFile& f, const TimingData& timing, bool bIsSong = false) {
   f.PutLine(ssprintf(
       "#BPMS:%s;",
-      join(",\r\n", timing.ToVectorString(SEGMENT_BPM, 3)).c_str()));
+      join(",\r\n", timing.ToVectorString(SEGMENT_BPM, 6)).c_str()));
   f.PutLine(ssprintf(
       "#STOPS:%s;",
-      join(",\r\n", timing.ToVectorString(SEGMENT_STOP, 3)).c_str()));
+      join(",\r\n", timing.ToVectorString(SEGMENT_STOP, 6)).c_str()));
   f.PutLine(ssprintf(
       "#DELAYS:%s;",
-      join(",\r\n", timing.ToVectorString(SEGMENT_DELAY, 3)).c_str()));
+      join(",\r\n", timing.ToVectorString(SEGMENT_DELAY, 6)).c_str()));
   f.PutLine(ssprintf(
       "#WARPS:%s;",
-      join(",\r\n", timing.ToVectorString(SEGMENT_WARP, 3)).c_str()));
+      join(",\r\n", timing.ToVectorString(SEGMENT_WARP, 6)).c_str()));
   f.PutLine(ssprintf(
       "#TIMESIGNATURES:%s;",
-      join(",\r\n", timing.ToVectorString(SEGMENT_TIME_SIG, 3)).c_str()));
+      join(",\r\n", timing.ToVectorString(SEGMENT_TIME_SIG, 6)).c_str()));
   f.PutLine(ssprintf(
       "#TICKCOUNTS:%s;",
-      join(",\r\n", timing.ToVectorString(SEGMENT_TICKCOUNT, 3)).c_str()));
+      join(",\r\n", timing.ToVectorString(SEGMENT_TICKCOUNT, 6)).c_str()));
   f.PutLine(ssprintf(
       "#COMBOS:%s;",
-      join(",\r\n", timing.ToVectorString(SEGMENT_COMBO, 3)).c_str()));
+      join(",\r\n", timing.ToVectorString(SEGMENT_COMBO, 6)).c_str()));
   f.PutLine(ssprintf(
       "#SPEEDS:%s;",
-      join(",\r\n", timing.ToVectorString(SEGMENT_SPEED, 3)).c_str()));
+      join(",\r\n", timing.ToVectorString(SEGMENT_SPEED, 6)).c_str()));
   f.PutLine(ssprintf(
       "#SCROLLS:%s;",
-      join(",\r\n", timing.ToVectorString(SEGMENT_SCROLL, 3)).c_str()));
+      join(",\r\n", timing.ToVectorString(SEGMENT_SCROLL, 6)).c_str()));
   f.PutLine(ssprintf(
       "#FAKES:%s;",
-      join(",\r\n", timing.ToVectorString(SEGMENT_FAKE, 3)).c_str()));
+      join(",\r\n", timing.ToVectorString(SEGMENT_FAKE, 6)).c_str()));
   f.PutLine(ssprintf(
       "#LABELS:%s;",
-      join(",\r\n", timing.ToVectorString(SEGMENT_LABEL, 3)).c_str()));
+      join(",\r\n", timing.ToVectorString(SEGMENT_LABEL, 6)).c_str()));
 }
 
 /**
