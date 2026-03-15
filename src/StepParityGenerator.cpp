@@ -314,7 +314,7 @@ void StepParityGenerator::CreateIntermediateNoteData(
     note.beat = NoteRowToBeat(curr_note.Row());
     note.second = timing->GetElapsedTimeFromBeat(note.beat);
 
-    note.fake = note.type == TapNoteType_Fake || timing->IsFakeAtBeat(note.row);
+    note.fake = note.type == TapNoteType_Fake || timing->IsFakeAtRow(note.row);
     note.warped = timing->IsWarpAtRow(note.row);
 
     if (note.type == TapNoteType_HoldHead) {

@@ -96,13 +96,14 @@ float StepParityCost::getActionCost(
 // 0100 <- no cost
 float StepParityCost::calcMineCost(
     State* resultState, Row& row, int columnCount) {
-  if (row.mine_mask == 0) {
+  if (row.mine_mask == 0 && row.fake_mine_mask == 0) {
     return 0.0f;
   }
   float cost = 0;
 
   for (int i = 0; i < columnCount; i++) {
-    if (resultState->combinedColumns[i] != NONE && row.mines[i] != 0) {
+    if (resultState->combinedColumns[i] != NONE &&
+        (row.mines[i] != 0 || row.fakeMines[i] != 0)) {
       cost += MINE;
       break;
     }
