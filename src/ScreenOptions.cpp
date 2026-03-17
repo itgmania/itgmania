@@ -591,9 +591,10 @@ void ScreenOptions::PositionRows(bool bTween) {
   // both.
   int P1Choice = GAMESTATE->IsHumanPlayer(PLAYER_1) ? m_iCurrentRow[PLAYER_1]
                                                     : m_iCurrentRow[PLAYER_2];
+  int P1VisibleChoice = 0;
   int P2Choice = GAMESTATE->IsHumanPlayer(PLAYER_2) ? m_iCurrentRow[PLAYER_2]
                                                     : m_iCurrentRow[PLAYER_1];
-
+  int P2VisibleChoice = 0;
   std::vector<OptionRow*> Rows(m_pRows);
   OptionRow* pSeparateExitRow = nullptr;
 
@@ -612,21 +613,57 @@ void ScreenOptions::PositionRows(bool bTween) {
     Rows.pop_back();
   }
 
+  std::vector<int> visibleRows;
+  for (int i = 0; i < (int)Rows.size(); i++) {
+    if (!Rows[i]->GetRowDef().m_vEnabledForPlayers.empty()) {
+      visibleRows.push_back(i);
+    }
+  }
+
+  bool bFoundP1 = false;
+  bool bFoundP2 = false;
+  for (int vi = 0; vi < (int)visibleRows.size(); vi++) {
+    if (visibleRows[vi] == P1Choice) {
+      P1VisibleChoice = vi;
+      bFoundP1 = true;
+    }
+    if (visibleRows[vi] == P2Choice) {
+      P2VisibleChoice = vi;
+      bFoundP2 = true;
+    }
+  }
+  if (!bFoundP1) {
+    if (P1Choice <= visibleRows.front()) {
+      P1VisibleChoice = 0;
+    } else {
+      P1VisibleChoice = (int)visibleRows.size() - 1;
+    }
+  }
+  if (!bFoundP2) {
+    if (P2Choice <= visibleRows.front()) {
+      P2VisibleChoice = 0;
+    } else {
+      P2VisibleChoice = (int)visibleRows.size() - 1;
+    }
+  }
+
+  const int visibleCount = (int)visibleRows.size();
+
   const bool BothPlayersActivated =
       GAMESTATE->IsHumanPlayer(PLAYER_1) && GAMESTATE->IsHumanPlayer(PLAYER_2);
   if (m_InputMode == INPUTMODE_SHARE_CURSOR || !BothPlayersActivated) {
     // Simply center the cursor.
-    first_start = std::max(P1Choice - halfsize, 0);
+    first_start = std::max(P1VisibleChoice - halfsize, 0);
     first_end = first_start + total;
     second_start = second_end = first_end;
   } else {
     // First half:
-    const int earliest = std::min(P1Choice, P2Choice);
+    const int earliest = std::min(P1VisibleChoice, P2VisibleChoice);
     first_start = std::max(earliest - halfsize / 2, 0);
     first_end = first_start + halfsize;
 
     // Second half:
-    const int latest = std::max(P1Choice, P2Choice);
+    const int latest = std::max(P1VisibleChoice, P2VisibleChoice);
 
     second_start = std::max(latest - halfsize / 2, 0);
 
@@ -636,23 +673,14 @@ void ScreenOptions::PositionRows(bool bTween) {
     second_end = second_start + halfsize;
   }
 
-  first_end = std::min(first_end, (int)Rows.size());
-  second_end = std::min(second_end, (int)Rows.size());
-
-  // Count disabled rows and expand viewport to compensate
-  int disabled_count = 0;
-  for (int i = 0; i < (int)Rows.size(); i++) {
-    if (Rows[i]->GetRowDef().m_vEnabledForPlayers.empty()) {
-      disabled_count++;
-    }
-  }
-  second_end = std::min(second_end + disabled_count, (int)Rows.size());
+  first_end = std::min(first_end, visibleCount);
+  second_end = std::min(second_end, visibleCount);
 
   /* If less than total (and Rows.size()) are displayed, fill in the empty
    * space intelligently. */
   for (;;) {
     const int sum = (first_end - first_start) + (second_end - second_start);
-    if (sum >= (int)Rows.size() || sum >= total) {
+    if (sum >= visibleCount || sum >= total) {
       break;  // nothing more to display, or no room
     }
     /* First priority: expand the top of the second half until it meets
@@ -663,7 +691,7 @@ void ScreenOptions::PositionRows(bool bTween) {
     // Otherwise, expand either end.
     else if (first_start > 0) {
       first_start--;
-    } else if (second_end < (int)Rows.size()) {
+    } else if (second_end < visibleCount) {
       second_end++;
     } else {
       FAIL_M("Do we have room to grow or don't we?");
@@ -671,19 +699,27 @@ void ScreenOptions::PositionRows(bool bTween) {
   }
 
   int pos = 0;
+  int visibleIndex = 0;
   for (int i = 0; i < (int)Rows.size(); i++)  // foreach row
   {
     OptionRow& row = *Rows[i];
 
     bool bRowEnabled = !row.GetRowDef().m_vEnabledForPlayers.empty();
+    int thisVisibleIndex = -1;
+    if (bRowEnabled) {
+      thisVisibleIndex = visibleIndex;
+      visibleIndex++;
+    }
 
     float fPos = (float)pos;
 
-    if (i < first_start) {
+    if (bRowEnabled && thisVisibleIndex < first_start) {
       fPos = -0.5f;
-    } else if (i >= first_end && i < second_start) {
+    } else if (
+        bRowEnabled && thisVisibleIndex >= first_end &&
+        thisVisibleIndex < second_start) {
       fPos = ((int)NUM_ROWS_SHOWN) / 2 - 0.5f;
-    } else if (i >= second_end) {
+    } else if (bRowEnabled && thisVisibleIndex >= second_end) {
       fPos = ((int)NUM_ROWS_SHOWN) - 0.5f;
     }
 
@@ -691,8 +727,13 @@ void ScreenOptions::PositionRows(bool bTween) {
         m_exprRowPositionTransformFunction.GetTransformCached(
             fPos, i, std::min((int)Rows.size(), (int)NUM_ROWS_SHOWN));
 
-    bool bHidden = i < first_start || (i >= first_end && i < second_start) ||
-                   i >= second_end;
+    bool bHidden = !bRowEnabled;
+    if (bRowEnabled) {
+      bHidden =
+          thisVisibleIndex < first_start ||
+          (thisVisibleIndex >= first_end && thisVisibleIndex < second_start) ||
+          thisVisibleIndex >= second_end;
+    }
     if (!bRowEnabled) {
       bHidden = true;
       row.SetVisible(false);
