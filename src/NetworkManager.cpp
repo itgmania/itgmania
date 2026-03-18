@@ -126,8 +126,7 @@ void NetworkManager::CloseAllWebSockets() {
   // Drop queued websocket starts so no new connections come up after cleanup.
   {
     std::lock_guard<std::mutex> lock(this->webSocketWorkerMutex);
-    std::queue<std::function<void()>> empty;
-    std::swap(this->webSocketWorkerQueue, empty);
+    this->webSocketWorkerQueue = {};
   }
 
   // Stop all active websocket connections without aggressively clearing.
