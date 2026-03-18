@@ -131,6 +131,7 @@ class NetworkManager {
   bool IsUrlAllowed(const std::string& url);
   HttpRequestFuturePtr HttpRequest(const HttpRequestArgs& args);
   WebSocketHandlePtr WebSocket(const WebSocketArgs& args);
+  void CloseAllWebSockets();
   void Update();
   void EnqueueMainThreadTask(std::function<void()> task);
   std::string UrlEncode(const std::string& value);
