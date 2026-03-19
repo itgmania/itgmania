@@ -396,6 +396,8 @@ void HighScore::SetDisqualified(bool b) { m_Impl->bDisqualified = b; }
 
 void HighScore::SetRoutine(bool b) { m_Impl->bIsRoutine = b; }
 
+bool HighScore::IsRoutine() const { return m_Impl->bIsRoutine; }
+
 // Getters
 std::string HighScore::GetPlayerName(const PlayerNumber& playerNum) const {
   return m_Impl->playerNames.at(playerNum);

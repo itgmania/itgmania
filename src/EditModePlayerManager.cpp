@@ -9,8 +9,10 @@
 #include "GameplayAssist.h"
 #include "InputEventPlus.h"
 #include "InputFilter.h"
+#include "ModsGroup.h"
 #include "Player.h"
 #include "PlayerNumber.h"
+#include "PlayerOptions.h"
 #include "PlayerState.h"
 #include "RageUtil.h"
 #include "ScreenDimensions.h"
@@ -36,8 +38,18 @@ void EditModePlayerManager::AddPlayers(const NoteData& note_data) {
              ->m_StyleType == StyleType_TwoPlayersSharedSides) &&
         pn != PLAYER_1) {
       // Ensure P2 has the same PlayerOptions (speed, mini, modifiers, etc)
+      // but ensure each player has their own noteskin.
+      const std::string preferred_noteskin =
+          GAMESTATE->m_pPlayerState[pn]
+              ->m_PlayerOptions.GetPreferred()
+              .m_sNoteSkin;
       player->GetPlayerState()->m_PlayerOptions =
           GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions;
+      if (!preferred_noteskin.empty()) {
+        PO_GROUP_ASSIGN(
+            player->GetPlayerState()->m_PlayerOptions, ModsLevel_Preferred,
+            m_sNoteSkin, preferred_noteskin);
+      }
     }
     player->CacheAllUsedNoteSkins();
     GAMESTATE->m_pPlayerState[pn]->m_PlayerController = PC_HUMAN;

@@ -1088,7 +1088,10 @@ void ProfileManager::AddStepsScore(
 
   // In event mode, set the score's name immediately to the Profile's last
   // used name.  If no profile last used name exists, use "EVNT".
-  if (GAMESTATE->IsEventMode()) {
+  // Exception: routine/couples scores are entered by the master player on
+  // behalf of the team after the song, so keep the per-player marker here
+  // and let GameState::StoreRankingName replace it with the typed name.
+  if (GAMESTATE->IsEventMode() && !hs.IsRoutine()) {
     Profile* pProfile = GetProfile(pn);
     if (pProfile && !pProfile->m_sLastUsedHighScoreName.empty()) {
       hs.SetName(pProfile->m_sLastUsedHighScoreName);

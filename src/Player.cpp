@@ -2251,15 +2251,16 @@ void Player::Step(
       iRowOfOverlappingNoteOrRow = GetClosestNote(
           col, iSongRow, iStepSearchRows, iStepSearchRows, false);
     }
-    TapNote* pTN = nullptr;
-    NoteData::iterator iter =
-        m_NoteData.FindTapNote(col, iRowOfOverlappingNoteOrRow);
-    DEBUG_ASSERT(iter != m_NoteData.end(col));
-    pTN = &iter->second;
-
-    if (pTN->pn != PLAYER_INVALID &&
-        pTN->pn != m_pPlayerState->m_PlayerNumber) {
-      return;
+    if (iRowOfOverlappingNoteOrRow != -1) {
+      NoteData::iterator iter =
+          m_NoteData.FindTapNote(col, iRowOfOverlappingNoteOrRow);
+      if (iter != m_NoteData.end(col)) {
+        const TapNote& tn = iter->second;
+        if (tn.pn != PLAYER_INVALID &&
+            tn.pn != m_pPlayerState->m_PlayerNumber) {
+          return;
+        }
+      }
     }
   }
 
