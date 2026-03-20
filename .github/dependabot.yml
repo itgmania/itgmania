@@ -17,7 +17,7 @@ updates:
       interval: "weekly"
   # Enable version updates for gitsubmodules
   - package-ecosystem: "gitsubmodule"
-    directory: "/"
+    directory: "/extern"
     # Raise pull requests for version updates
     # against the `beta` branch
     target-branch: "beta"
