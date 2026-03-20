@@ -48,7 +48,7 @@ jobs:
             release-nightly: cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_CLUB_FANTASTIC=Off
             release-full: cmake -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_CLUB_FANTASTIC=Off
             package: cmake --build build --target package
-            path: build/ITGmania-*-NIGHTLY-git-*-macOS-Intel-no-songs.dmg
+            path: build/ITGmania-*.dmg
           - os: windows-2022
             name: Windows
             configure: cmake -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
