@@ -225,12 +225,15 @@ elseif(APPLE)
     "${SM_ROOT_DIR}/Data"
     "${SM_ROOT_DIR}/NoteSkins"
     "${SM_ROOT_DIR}/Scripts"
-    "${SM_ROOT_DIR}/Songs"
     "${SM_ROOT_DIR}/Themes"
   )
 
-  target_sources("${SM_EXE_NAME}" PUBLIC ${APPLE_BUNDLE_RESOURCES})
-  set_source_files_properties(${APPLE_BUNDLE_RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+  # Xcode understands bundle resource directories directly. Other generators
+  # (for example Unix Makefiles) end up emitting non-recursive copy commands.
+  if(CMAKE_GENERATOR STREQUAL "Xcode")
+    target_sources("${SM_EXE_NAME}" PUBLIC ${APPLE_BUNDLE_RESOURCES})
+    set_source_files_properties(${APPLE_BUNDLE_RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+  endif()
 
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _XOPEN_SOURCE)
 
@@ -244,13 +247,34 @@ elseif(APPLE)
     set(SM_APP_RELEASE_NAME "${SM_NAME_RELEASE}")
   endif()
 
-  # Add the ability to copy the resource file.
-  add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
-                     COMMAND ${CMAKE_COMMAND} -E make_directory
-                             "$<TARGET_FILE_DIR:ITGmania>/../Resources"
-                     COMMAND ${CMAKE_COMMAND} -E copy
-                             "${SM_XCODE_DIR}/logo.icns"
-                             "$<TARGET_FILE_DIR:ITGmania>/../Resources/")
+    # Always copy bundle resources recursively so the .app contains defaults
+    # regardless of generator (Xcode, Unix Makefiles, Ninja, etc.).
+    add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
+           COMMAND ${CMAKE_COMMAND} -E make_directory
+             "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources")
+
+    foreach(RESOURCE_DIR IN LISTS APPLE_BUNDLE_RESOURCES)
+      get_filename_component(RESOURCE_NAME "${RESOURCE_DIR}" NAME)
+      add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
+                 COMMAND ${CMAKE_COMMAND} -E remove_directory
+               "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources/${RESOURCE_NAME}"
+             COMMAND ${CMAKE_COMMAND} -E copy_directory
+               "${RESOURCE_DIR}"
+               "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources/${RESOURCE_NAME}")
+    endforeach()
+
+    # Always wipe and recreate an empty Songs folder so stale songs from a prior
+    # WITH_CLUB_FANTASTIC build don't persist in the bundle.
+    add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E remove_directory
+                               "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources/Songs"
+                       COMMAND ${CMAKE_COMMAND} -E make_directory
+                               "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources/Songs")
+
+    add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
+           COMMAND ${CMAKE_COMMAND} -E copy
+             "${SM_XCODE_DIR}/logo.icns"
+             "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources/")
 else() # Linux
   set_target_properties("${SM_EXE_NAME}"
                         PROPERTIES RUNTIME_OUTPUT_DIRECTORY
@@ -546,8 +570,25 @@ if(WITH_CLUB_FANTASTIC)
   FetchContent_MakeAvailable(ClubFantastic)
   FetchContent_GetProperties(ClubFantastic SOURCE_DIR CLUB_FANTASTIC_DIR)
 
-  install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 1"
-          DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
-  install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 2"
-          DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+  if(APPLE)
+    # Bundle songs inside the .app so the DMG is self-contained
+    install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 1"
+            DESTINATION "${SM_EXE_NAME}.app/Contents/Resources/Songs")
+    install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 2"
+            DESTINATION "${SM_EXE_NAME}.app/Contents/Resources/Songs")
+
+    # Also copy into the live bundle produced by builds
+    add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory
+                               "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 1"
+                               "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources/Songs/Club Fantastic Season 1"
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory
+                               "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 2"
+                               "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources/Songs/Club Fantastic Season 2")
+  else()
+    install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 1"
+            DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+    install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 2"
+            DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+  endif()
 endif()
