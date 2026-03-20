@@ -16,77 +16,84 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15, macos-15-intel, windows-2022]
+        club_fantastic: [Off, On]
         include:
           - os: ubuntu-24.04
             name: Ubuntu (x86_64)
             install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
-            configure: cmake -S . -B build -DWITH_FFMPEG_JOBS="$(nproc)"
-            release-nightly: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
-            release-full: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off -DWITH_CLUB_FANTASTIC=Off
-            package: cmake --build build --target package
+            flags: -DWITH_FFMPEG_JOBS="$(nproc)"
             path: build/ITGmania-*.tar.gz
           - os: ubuntu-24.04-arm
             name: Ubuntu (ARM)
             install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
-            configure: cmake -S . -B build -DWITH_FFMPEG_JOBS="$(nproc)"
-            release-nightly: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
-            release-full: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off -DWITH_CLUB_FANTASTIC=Off
-            package: cmake --build build --target package
+            flags: -DWITH_FFMPEG_JOBS="$(nproc)"
             path: build/ITGmania-*.tar.gz
           - os: macos-15
             name: macOS (M1)
             install: brew install nasm
-            configure: cmake -S . -B build -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
-            release-nightly: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_CLUB_FANTASTIC=Off
-            release-full: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_CLUB_FANTASTIC=Off
-            package: cmake --build build --target package
+            flags: -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
             path: build/ITGmania-*.dmg
           - os: macos-15-intel
             name: macOS (Intel)
             install: brew install nasm
-            configure: cmake -S . -B build -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
-            release-nightly: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_CLUB_FANTASTIC=Off
-            release-full: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_CLUB_FANTASTIC=Off
-            package: cmake --build build --target package
+            flags: -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
             path: build/ITGmania-*.dmg
           - os: windows-2022
             name: Windows
-            configure: cmake -S . -B build -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
-            release-nightly: cmake -S . -B build -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On -DWITH_CLUB_FANTASTIC=Off
-            release-full: cmake -S . -B build -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off -DWITH_CLUB_FANTASTIC=Off
-            package: cmake --build build --config Release --target package
+            flags: -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
             path: build/ITGmania-*.exe
-    name: ${{ matrix.name }}
+
+    name: "${{ matrix.name }} - ClubFantastic: ${{ matrix.club_fantastic }}"
+
     steps:
       - uses: actions/checkout@v6
         with:
           submodules: recursive
+
       - name: Install dependencies
         if: matrix.os != 'windows-2022'
         run: ${{ matrix.install }}
+
       - name: Add msbuild to PATH
         if: matrix.os == 'windows-2022'
         uses: microsoft/setup-msbuild@v3
         with:
           msbuild-architecture: x64
+
       - name: Create nightly release
         if: github.ref_name == 'beta'
-        run: ${{ matrix.release-nightly }}
+        run: >
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release 
+          -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On 
+          -DWITH_CLUB_FANTASTIC=${{ matrix.club_fantastic }}
+          ${{ matrix.flags }}
+
       - name: Create full release
         if: github.ref_name == 'release'
-        run: ${{ matrix.release-full }}
+        run: >
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release 
+          -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off 
+          -DWITH_CLUB_FANTASTIC=${{ matrix.club_fantastic }}
+          ${{ matrix.flags }}
+
       - name: Create package
-        id: package
         run: |
-          ${{ matrix.package }}
+          if [ "${{ matrix.os }}" = "windows-2022" ]; then
+            cmake --build build --config Release --target package
+          else
+            cmake --build build --target package
+          fi
+        shell: bash
+
       - name: Upload artifacts
         id: upload
         uses: actions/upload-artifact@v7
         with:
-          name: ITGmania-${{ github.sha }}-${{ matrix.name }}
+          name: ITGmania-${{ github.sha }}-${{ matrix.os }}-ClubFantastic-${{ matrix.club_fantastic }}
           path: ${{ matrix.path }}
           archive: false
+
       - uses: actions/attest@v4
         with:
-          subject-name: ITGmania-${{ github.sha }}-${{ matrix.name }}
+          subject-name: ITGmania-${{ github.sha }}-${{ matrix.os }}-ClubFantastic-${{ matrix.club_fantastic }}
           subject-digest: sha256:${{ steps.upload.outputs.artifact-digest }}
