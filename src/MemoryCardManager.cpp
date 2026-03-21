@@ -11,6 +11,7 @@
 #include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "Preference.h"
+#include "ProfileManager.h"
 #include "RageFileDriver.h"
 #include "RageFileDriverTimeout.h"
 #include "RageFileManager.h"
@@ -320,8 +321,36 @@ void MemoryCardManager::Update() {
   }
 
   UpdateAssignments();
+  RefreshStoredProfileNames();
 
   MESSAGEMAN->Broadcast(Message_StorageDevicesChanged);
+}
+
+void MemoryCardManager::RefreshStoredProfileNames() {
+  FOREACH_PlayerNumber(pn) {
+    UsbStorageDevice& device = m_Device[pn];
+    if (device.m_State != UsbStorageDevice::STATE_READY) {
+      continue;
+    }
+
+    if (device.bIsNameAvailable || !device.sName.empty()) {
+      continue;
+    }
+
+    const bool wasMounted = m_bMounted[pn];
+    if (!wasMounted && !MountCard(pn, 5)) {
+      continue;
+    }
+
+    std::string name;
+    device.bIsNameAvailable = PROFILEMAN->FastLoadProfileNameFromMemoryCard(
+        MEM_CARD_MOUNT_POINT[pn], name);
+    device.sName = name;
+
+    if (!wasMounted) {
+      UnmountCard(pn);
+    }
+  }
 }
 
 // Assign cards from m_vStorageDevices to m_Device.
@@ -601,19 +630,34 @@ bool MemoryCardManager::MountCard(PlayerNumber pn, int iTimeout) {
     return false;
   }
 
-  m_bMounted[pn] = true;
-
   RageFileDriver* pDriver =
       FILEMAN->GetFileDriver(MEM_CARD_MOUNT_POINT_INTERNAL[pn]);
   if (pDriver == nullptr) {
     LOG->Warn(
         "FILEMAN->GetFileDriver(%s) failed",
         MEM_CARD_MOUNT_POINT_INTERNAL[pn].c_str());
-    return true;
+    g_pWorker->Unmount(&m_Device[pn]);
+    if (bStartingMemoryCardAccess) {
+      this->UnPauseMountingThread();
+    }
+    return false;
   }
 
   // We don't want to unmount the timeout FS. Instead, just move the target.
-  pDriver->Remount(m_Device[pn].sOsMountDir);
+  if (!pDriver->Remount(m_Device[pn].sOsMountDir)) {
+    LOG->Warn(
+        "MemoryCardManager::MountCard: Remount(%s,%s) failed",
+        MEM_CARD_MOUNT_POINT_INTERNAL[pn].c_str(),
+        m_Device[pn].sOsMountDir.c_str());
+    FILEMAN->ReleaseFileDriver(pDriver);
+    g_pWorker->Unmount(&m_Device[pn]);
+    if (bStartingMemoryCardAccess) {
+      this->UnPauseMountingThread();
+    }
+    return false;
+  }
+
+  m_bMounted[pn] = true;
 
   // Flush mountpoints pointing to what we've mounted.
   FILEMAN->FlushDirCache(MEM_CARD_MOUNT_POINT[pn]);

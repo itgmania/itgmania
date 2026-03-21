@@ -60,6 +60,7 @@ class MemoryCardManager {
   void PushSelf(lua_State* L);
 
  protected:
+  void RefreshStoredProfileNames();
   void UpdateAssignments();
   void CheckStateChanges();
 

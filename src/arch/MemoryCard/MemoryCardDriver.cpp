@@ -8,11 +8,7 @@
 #include "MemoryCardDriverThreaded_Folder.h"
 #include "MemoryCardDriver_Null.h"
 #include "Preference.h"
-#include "ProfileManager.h"
-#include "RageFileManager.h"
 #include "RageLog.h"
-
-static const std::string TEMP_MOUNT_POINT = "/@mctemptimeout/";
 
 enum MemoryCardDriverType {
   MemoryCardDriverType_Usb,
@@ -120,15 +116,10 @@ bool MemoryCardDriver::DoOneUpdate(
       }
 
       if (TestWrite(&d)) {
-        /* We've successfully mounted and tested the device.  Read the
-         * profile name (by mounting a temporary, private mountpoint),
-         * and then unmount it until Mount() is called. */
+        /* We've successfully mounted and tested the device.  Leave profile
+         * loading to the main thread's normal mount path instead of touching
+         * global filesystem state from the worker thread. */
         d.m_State = UsbStorageDevice::STATE_READY;
-
-        FILEMAN->Mount("dirro", d.sOsMountDir, TEMP_MOUNT_POINT);
-        d.bIsNameAvailable = PROFILEMAN->FastLoadProfileNameFromMemoryCard(
-            TEMP_MOUNT_POINT, d.sName);
-        FILEMAN->Unmount("dirro", d.sOsMountDir, TEMP_MOUNT_POINT);
       }
 
       this->Unmount(&d);
