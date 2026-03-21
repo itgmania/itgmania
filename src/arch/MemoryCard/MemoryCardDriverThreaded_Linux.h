@@ -1,5 +1,5 @@
 #ifndef MemoryCardDriverThreaded_Linux_H
-#define MemoryCardDriverThreaded_Linux_H 1
+#define MemoryCardDriverThreaded_Linux_H
 
 #include <string>
 #include <vector>

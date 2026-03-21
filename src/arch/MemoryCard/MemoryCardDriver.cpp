@@ -11,11 +11,13 @@
 #include "ProfileManager.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
+// Provides platform-specific ARCH_MEMORY_CARD_DRIVER selection.
+#include "arch/arch_default.h"
 
 static const std::string TEMP_MOUNT_POINT = "/@mctemptimeout/";
 
 enum MemoryCardDriverType {
-  MemoryCardDriverType_Usb,
+  MemoryCardDriverType_USB,
   MemoryCardDriverType_Directory,
   NUM_MemoryCardDriverType,
   MemoryCardDriverType_Invalid
@@ -27,7 +29,7 @@ StringToX(MemoryCardDriverType);
 LuaXType(MemoryCardDriverType);
 
 Preference<MemoryCardDriverType> g_MemoryCardDriver(
-    "MemoryCardDriver", MemoryCardDriverType_Usb, nullptr,
+    "MemoryCardDriver", MemoryCardDriverType_USB, nullptr,
     PreferenceType::Immutable);
 
 bool UsbStorageDevice::operator==(const UsbStorageDevice& other) const {
@@ -152,9 +154,13 @@ MemoryCardDriver* MemoryCardDriver::Create() {
     case MemoryCardDriverType_Directory:
       ret = new MemoryCardDriverThreaded_Folder;
       break;
-    case MemoryCardDriverType_Usb:
+    case MemoryCardDriverType_USB:
 #ifdef ARCH_MEMORY_CARD_DRIVER
       ret = new ARCH_MEMORY_CARD_DRIVER;
+#else
+      LOG->Warn(
+          "MemoryCardDriverType_USB was selected, "
+          "but no driver was compiled in.");
 #endif
       break;
     default:
@@ -162,6 +168,7 @@ MemoryCardDriver* MemoryCardDriver::Create() {
   }
 
   if (!ret) {
+    LOG->Info("MemoryCardDriver_Null is loaded.");
     ret = new MemoryCardDriver_Null;
   }
 
