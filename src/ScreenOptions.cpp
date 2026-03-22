@@ -620,6 +620,18 @@ void ScreenOptions::PositionRows(bool bTween) {
     }
   }
 
+  const bool bTreatAllRowsVisible = visibleRows.empty();
+  if (bTreatAllRowsVisible) {
+    // If no rows have enabled players, treat all rows as
+    // visible for layout. The EditMode help screen relies on this behavior
+    // to render a view-only menu.
+    // TODO: Provide a better way to specify view-only menus, and remove this
+    // fallback.
+    for (int i = 0; i < (int)Rows.size(); i++) {
+      visibleRows.push_back(i);
+    }
+  }
+
   bool bFoundP1 = false;
   bool bFoundP2 = false;
   for (int vi = 0; vi < (int)visibleRows.size(); vi++) {
@@ -632,18 +644,21 @@ void ScreenOptions::PositionRows(bool bTween) {
       bFoundP2 = true;
     }
   }
-  if (!bFoundP1) {
-    if (P1Choice <= visibleRows.front()) {
-      P1VisibleChoice = 0;
-    } else {
-      P1VisibleChoice = (int)visibleRows.size() - 1;
+
+  if (!visibleRows.empty()) {
+    if (!bFoundP1) {
+      if (P1Choice <= visibleRows.front()) {
+        P1VisibleChoice = 0;
+      } else {
+        P1VisibleChoice = (int)visibleRows.size() - 1;
+      }
     }
-  }
-  if (!bFoundP2) {
-    if (P2Choice <= visibleRows.front()) {
-      P2VisibleChoice = 0;
-    } else {
-      P2VisibleChoice = (int)visibleRows.size() - 1;
+    if (!bFoundP2) {
+      if (P2Choice <= visibleRows.front()) {
+        P2VisibleChoice = 0;
+      } else {
+        P2VisibleChoice = (int)visibleRows.size() - 1;
+      }
     }
   }
 
@@ -704,7 +719,8 @@ void ScreenOptions::PositionRows(bool bTween) {
   {
     OptionRow& row = *Rows[i];
 
-    bool bRowEnabled = !row.GetRowDef().m_vEnabledForPlayers.empty();
+    bool bRowEnabled =
+        bTreatAllRowsVisible || !row.GetRowDef().m_vEnabledForPlayers.empty();
     int thisVisibleIndex = -1;
     if (bRowEnabled) {
       thisVisibleIndex = visibleIndex;
