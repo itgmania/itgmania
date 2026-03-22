@@ -4,6 +4,8 @@
 #include <map>
 #include <vector>
 
+#include "stdafx.h"
+
 struct FontPageDescription {
   CString name;
   std::vector<wchar_t> chars;

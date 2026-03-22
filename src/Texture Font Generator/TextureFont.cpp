@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "Utils.h"
-#include "stdafx.h"
 
 TextureFont::TextureFont() {
   m_iCharDescent = 0;

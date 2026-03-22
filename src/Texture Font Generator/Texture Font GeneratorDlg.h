@@ -1,11 +1,10 @@
 #pragma once
 
-#include <afxcmn.h>
-#include <afxwin.h>
-
 #include <vector>
 
 #include "TextureFont.h"
+#include "resource.h"
+#include "stdafx.h"
 
 class CTextureFontGeneratorDlg : public CDialog {
   DECLARE_DYNAMIC(CTextureFontGeneratorDlg);

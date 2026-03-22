@@ -9,7 +9,6 @@
 #include "Texture Font Generator.h"
 #include "TextureFont.h"
 #include "Utils.h"
-#include "stdafx.h"
 
 static TextureFont* g_pTextureFont = NULL;
 

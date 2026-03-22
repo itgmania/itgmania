@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <cstddef>
 
-#include "stdafx.h"
-
 Surface::Surface(const Surface& cpy) {
   iWidth = cpy.iWidth;
   iHeight = cpy.iHeight;

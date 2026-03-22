@@ -1,7 +1,10 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <cstdio>
+
 #include "config.hpp"
+#include "stdafx.h"
 
 struct Surface {
   Surface() { pRGBA = NULL; }
