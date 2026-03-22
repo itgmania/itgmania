@@ -7,6 +7,14 @@
 
 #pragma warning(pop)
 
+// The libtomcrypt headers define a macro named byte(x,n) which collides
+// with C++'s std::byte/byte helpers in <cstddef> on some libstdc++/gcc
+// versions. Undefine the macro here so subsequent system headers (like
+// <cstddef>) compile correctly.
+#ifdef byte
+#undef byte
+#endif
+
 #include <cstdint>
 #include <string>
 #include <vector>
