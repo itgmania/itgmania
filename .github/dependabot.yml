@@ -12,7 +12,7 @@ updates:
     # Raise pull requests for version updates
     # against the `beta` branch
     target-branch: "beta"
-    # Check the for updates once a week
+    # Check for updates once a week
     schedule:
       interval: "weekly"
   # Enable version updates for gitsubmodules
@@ -21,6 +21,6 @@ updates:
     # Raise pull requests for version updates
     # against the `beta` branch
     target-branch: "beta"
-    # Check the for updates once a month
+    # Check for updates once a month
     schedule:
       interval: "monthly"
