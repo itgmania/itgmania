@@ -95,6 +95,7 @@ class ScreenSelectMusic : public ScreenWithMenuElements {
   ThemeMetric<float> SAMPLE_MUSIC_DELAY_INIT;
   ThemeMetric<float> SAMPLE_MUSIC_DELAY;
   ThemeMetric<bool> SAMPLE_MUSIC_LOOPS;
+  ThemeMetric<bool> SAMPLE_MUSIC_STARTS_IMMEDIATELY;
   ThemeMetric<SampleMusicPreviewMode> SAMPLE_MUSIC_PREVIEW_MODE;
   ThemeMetric<float> SAMPLE_MUSIC_FALLBACK_FADE_IN_SECONDS;
   ThemeMetric<float> SAMPLE_MUSIC_FADE_OUT_SECONDS;
@@ -174,6 +175,8 @@ class ScreenSelectMusic : public ScreenWithMenuElements {
   bool m_bAllowOptionsMenu, m_bAllowOptionsMenuRepeat;
   bool m_bSelectIsDown[NUM_PLAYERS];
   bool m_bAcceptSelectRelease[NUM_PLAYERS];
+
+  bool m_bPreviewDisabled;
 
   RageSound m_soundStart;
   RageSound m_soundDifficultyEasier;

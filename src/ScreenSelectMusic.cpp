@@ -112,6 +112,7 @@ void ScreenSelectMusic::Init() {
   SAMPLE_MUSIC_DELAY_INIT.Load(m_sName, "SampleMusicDelayInit");
   SAMPLE_MUSIC_DELAY.Load(m_sName, "SampleMusicDelay");
   SAMPLE_MUSIC_LOOPS.Load(m_sName, "SampleMusicLoops");
+  SAMPLE_MUSIC_STARTS_IMMEDIATELY.Load(m_sName, "SampleMusicStartsImmediately");
   SAMPLE_MUSIC_PREVIEW_MODE.Load(m_sName, "SampleMusicPreviewMode");
   SAMPLE_MUSIC_FALLBACK_FADE_IN_SECONDS.Load(
       m_sName, "SampleMusicFallbackFadeInSeconds");
@@ -139,6 +140,8 @@ void ScreenSelectMusic::Init() {
   CHANGE_STEPS_WITH_GAME_BUTTONS.Load(m_sName, "ChangeStepsWithGameButtons");
   CHANGE_GROUPS_WITH_GAME_BUTTONS.Load(m_sName, "ChangeGroupsWithGameButtons");
   CONFIRM_EXIT.Load(m_sName, "ConfirmExit");
+
+  m_bPreviewDisabled = !SAMPLE_MUSIC_STARTS_IMMEDIATELY;
 
   m_GameButtonPreviousSong = INPUTMAPPER->GetInputScheme()->ButtonNameToIndex(
       THEME->GetMetric(m_sName, "PreviousSongButton"));
@@ -408,6 +411,12 @@ void ScreenSelectMusic::CheckBackgroundRequests(bool bForce) {
   // Nothing else is going.  Start the music, if we haven't yet.
   if (g_bSampleMusicWaiting) {
     if (g_ScreenStartedLoadingAt.Ago() < SAMPLE_MUSIC_DELAY_INIT) {
+      return;
+    }
+
+    if (m_bPreviewDisabled) {
+      m_bPreviewDisabled = false;
+      g_bSampleMusicWaiting = false;
       return;
     }
 
