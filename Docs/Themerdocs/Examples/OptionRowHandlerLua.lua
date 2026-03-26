@@ -58,6 +58,10 @@ function FooMods()
 			-- Leave out PLAYER_1 just for example.
 			return {PLAYER_2}
 		end,
+		-- Optional boolean.  If true, rows that are not enabled for any player
+		-- will be hidden.  If false, they will be shown but faded out. "Enabled
+		-- rows" are controlled by EnabledForPlayers above
+		HideOnDisable= false,
 
 		-- Optional function. If non-nil, this function must return the string representation
 		-- of a member of the ReloadChanged enum. This function is called in response to a message

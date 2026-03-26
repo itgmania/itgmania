@@ -63,7 +63,7 @@ struct OptionRowDefinition {
                                                 // change focus to this row
   int m_iDefault;
   bool m_bExportOnChange;
-  bool m_bHideDisabledRows;
+  bool m_bHideOnDisable;
   /**
    * @brief Are theme items allowed here?
    *
@@ -102,7 +102,7 @@ struct OptionRowDefinition {
         m_vEnabledForPlayers(),
         m_iDefault(-1),
         m_bExportOnChange(false),
-        m_bHideDisabledRows(false),
+        m_bHideOnDisable(false),
         m_bAllowThemeItems(true),
         m_bAllowThemeTitle(true),
         m_bAllowExplanation(true),
@@ -120,7 +120,7 @@ struct OptionRowDefinition {
     FOREACH_PlayerNumber(pn) m_vEnabledForPlayers.insert(pn);
     m_iDefault = -1;
     m_bExportOnChange = false;
-    m_bHideDisabledRows = false;
+    m_bHideOnDisable = false;
     m_bAllowThemeItems = true;
     m_bAllowThemeTitle = true;
     m_bAllowExplanation = true;
@@ -147,7 +147,7 @@ struct OptionRowDefinition {
         m_vEnabledForPlayers(),
         m_iDefault(-1),
         m_bExportOnChange(false),
-        m_bHideDisabledRows(false),
+        m_bHideOnDisable(false),
         m_bAllowThemeItems(true),
         m_bAllowThemeTitle(true),
         m_bAllowExplanation(true),

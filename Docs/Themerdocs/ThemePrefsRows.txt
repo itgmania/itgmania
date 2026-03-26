@@ -78,6 +78,9 @@ ExportOnChange (bool): currently disabled in the source, but available to
 EnabledForPlayers (function): has 'self' as an argument, returns a table of
 	PlayerNumbers who are allowed to select stuff. Not important yet.
 
+HideOnDisable (bool): controls whether if we should hide the row if it is
+    not enabled for any player. 
+
 ReloadRowMessages (table): contains an indexed array of strings. Whenever 
 	any of the messages in this table are broadcast, the Load function
 	(which loads the list of possible options and sets the selected

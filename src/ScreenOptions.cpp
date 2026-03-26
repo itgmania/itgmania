@@ -617,11 +617,12 @@ void ScreenOptions::PositionRows(bool bTween) {
 
   for (int i = 0; i < (int)Rows.size(); i++) {
     const OptionRowDefinition& def = Rows[i]->GetRowDef();
-    // We only hide rows if HideDisabledRows is true, and the row is not enabled
-    // for any player. If HideDisabledRows is false, we show all rows, even if
+    // We only hide rows if HideOnDisable is true, and the row is not enabled
+    // for any player. If HideOnDisable is false, we show all rows, even if
     // they are not enabled for any player. Disabled rows show up faded out if
     // they are not enabled
-    if (!def.m_vEnabledForPlayers.empty() || !def.m_bHideDisabledRows) {
+    if (!def.m_vEnabledForPlayers.empty() ||
+        !Rows[i]->GetRowDef().m_bHideOnDisable) {
       visibleRows.push_back(i);
     }
   }
@@ -727,7 +728,7 @@ void ScreenOptions::PositionRows(bool bTween) {
     const OptionRowDefinition& def = row.GetRowDef();
 
     const bool bRowEnabled = !def.m_vEnabledForPlayers.empty();
-    const bool bHideDisabled = def.m_bHideDisabledRows;
+    const bool bHideDisabled = def.m_bHideOnDisable;
     const bool bRowVisible =
         bRowEnabled || !bHideDisabled || bTreatAllRowsVisible;
     int thisVisibleIndex = -1;
@@ -1464,12 +1465,12 @@ void ScreenOptions::SetOptionRowVisible(
 
   OptionRowDefinition& def = pOptRow->GetRowDef();
   if (visible) {
-    def.m_bHideDisabledRows = false;
+    def.m_bHideOnDisable = false;
     if (def.m_vEnabledForPlayers.empty()) {
       FOREACH_PlayerNumber(pn) def.m_vEnabledForPlayers.insert(pn);
     }
   } else {
-    def.m_bHideDisabledRows = true;
+    def.m_bHideOnDisable = true;
     def.m_vEnabledForPlayers.clear();
   }
 
