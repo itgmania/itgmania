@@ -221,6 +221,8 @@ class OptionRowHandlerList : public OptionRowHandler {
           }
         } else if (sName == "exportonchange") {
           m_Def.m_bExportOnChange = true;
+        } else if (sName == "hidedisabledrows") {
+          m_Def.m_bHideDisabledRows = true;
         } else if (sName == "broadcastonexport") {
           for (unsigned j = 1; j < cmd.m_vsArgs.size(); j++) {
             m_vsBroadcastOnExport.push_back(cmd.m_vsArgs[j]);
@@ -1077,6 +1079,10 @@ class OptionRowHandlerLua : public OptionRowHandler {
 
     lua_getfield(L, -1, "ExportOnChange");
     m_Def.m_bExportOnChange = lua_toboolean(L, -1) > 0;
+    lua_pop(L, 1);
+
+    lua_getfield(L, -1, "HideDisabledRows");
+    m_Def.m_bHideDisabledRows = lua_toboolean(L, -1) > 0;
     lua_pop(L, 1);
 
     // TODO:  Change these to use the proper enum strings like everything

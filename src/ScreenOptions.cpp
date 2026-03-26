@@ -614,8 +614,14 @@ void ScreenOptions::PositionRows(bool bTween) {
   }
 
   std::vector<int> visibleRows;
+
   for (int i = 0; i < (int)Rows.size(); i++) {
-    if (!Rows[i]->GetRowDef().m_vEnabledForPlayers.empty()) {
+    const OptionRowDefinition& def = Rows[i]->GetRowDef();
+    // We only hide rows if HideDisabledRows is true, and the row is not enabled
+    // for any player. If HideDisabledRows is false, we show all rows, even if
+    // they are not enabled for any player. Disabled rows show up faded out if
+    // they are not enabled
+    if (!def.m_vEnabledForPlayers.empty() || !def.m_bHideDisabledRows) {
       visibleRows.push_back(i);
     }
   }
@@ -718,24 +724,27 @@ void ScreenOptions::PositionRows(bool bTween) {
   for (int i = 0; i < (int)Rows.size(); i++)  // foreach row
   {
     OptionRow& row = *Rows[i];
+    const OptionRowDefinition& def = row.GetRowDef();
 
-    bool bRowEnabled =
-        bTreatAllRowsVisible || !row.GetRowDef().m_vEnabledForPlayers.empty();
+    const bool bRowEnabled = !def.m_vEnabledForPlayers.empty();
+    const bool bHideDisabled = def.m_bHideDisabledRows;
+    const bool bRowVisible =
+        bRowEnabled || !bHideDisabled || bTreatAllRowsVisible;
     int thisVisibleIndex = -1;
-    if (bRowEnabled) {
+    if (bRowVisible) {
       thisVisibleIndex = visibleIndex;
       visibleIndex++;
     }
 
     float fPos = (float)pos;
 
-    if (bRowEnabled && thisVisibleIndex < first_start) {
+    if (bRowVisible && thisVisibleIndex < first_start) {
       fPos = -0.5f;
     } else if (
-        bRowEnabled && thisVisibleIndex >= first_end &&
+        bRowVisible && thisVisibleIndex >= first_end &&
         thisVisibleIndex < second_start) {
       fPos = ((int)NUM_ROWS_SHOWN) / 2 - 0.5f;
-    } else if (bRowEnabled && thisVisibleIndex >= second_end) {
+    } else if (bRowVisible && thisVisibleIndex >= second_end) {
       fPos = ((int)NUM_ROWS_SHOWN) - 0.5f;
     }
 
@@ -743,14 +752,14 @@ void ScreenOptions::PositionRows(bool bTween) {
         m_exprRowPositionTransformFunction.GetTransformCached(
             fPos, i, std::min((int)Rows.size(), (int)NUM_ROWS_SHOWN));
 
-    bool bHidden = !bRowEnabled;
-    if (bRowEnabled) {
+    bool bHidden = !bRowVisible;
+    if (bRowVisible) {
       bHidden =
           thisVisibleIndex < first_start ||
           (thisVisibleIndex >= first_end && thisVisibleIndex < second_start) ||
           thisVisibleIndex >= second_end;
     }
-    if (!bRowEnabled) {
+    if (!bRowEnabled && bHideDisabled) {
       bHidden = true;
       row.SetVisible(false);
     } else {
@@ -1455,10 +1464,12 @@ void ScreenOptions::SetOptionRowVisible(
 
   OptionRowDefinition& def = pOptRow->GetRowDef();
   if (visible) {
+    def.m_bHideDisabledRows = false;
     if (def.m_vEnabledForPlayers.empty()) {
       FOREACH_PlayerNumber(pn) def.m_vEnabledForPlayers.insert(pn);
     }
   } else {
+    def.m_bHideDisabledRows = true;
     def.m_vEnabledForPlayers.clear();
   }
 
