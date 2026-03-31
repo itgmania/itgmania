@@ -29,7 +29,7 @@
 #include "RageLog.h"
 #include "RageMath.h"
 #include "RageSoundReader_FileReader.h"
-#include "global.h"
+#include "RageUtil/Regex.h"
 
 const std::string CUSTOM_SONG_PATH = "/@mem/";
 

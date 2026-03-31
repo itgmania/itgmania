@@ -13,6 +13,7 @@
 #include "Course.h"
 #include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
+#include "Group.h"
 #include "LuaManager.h"
 #include "PlayerOptions.h"
 #include "RageTexturePreloader.h"

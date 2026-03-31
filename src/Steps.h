@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Attack.h"
+#include "ColumnCues.h"
 #include "Difficulty.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"

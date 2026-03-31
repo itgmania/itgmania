@@ -14,6 +14,7 @@
 #include "Difficulty.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
+#include "Group.h"
 #include "ImageCache.h"
 #include "MsdFile.h"
 #include "PlayerOptions.h"

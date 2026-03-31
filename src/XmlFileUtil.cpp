@@ -17,6 +17,7 @@
 #include "RageFileDriverMemory.h"
 #include "RageUtil.h"
 #include "StdString.h"
+#include "XmlFile.h"
 
 bool XmlFileUtil::LoadFromFileShowErrors(XNode& xml, RageFileBasic& f) {
   std::string sError;

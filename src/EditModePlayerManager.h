@@ -5,6 +5,8 @@
 #include <unordered_map>
 
 #include "GameConstantsAndTypes.h"
+#include "GameplayAssist.h"
+#include "InputEventPlus.h"
 #include "Player.h"
 #include "PlayerNumber.h"
 

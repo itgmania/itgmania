@@ -9,6 +9,7 @@
 #include "Course.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
+#include "Group.h"
 #include "ImageCache.h"
 #include "LuaManager.h"
 #include "PrefsManager.h"

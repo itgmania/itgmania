@@ -32,10 +32,10 @@
 #include "NoteDataUtil.h"
 #include "NoteDataWithScoring.h"
 #include "Player.h"
-#include "PlayerAI.h"  // for NUM_SKILL_LEVELS
+#include "PlayerAI.h"
 #include "PlayerState.h"
 #include "PrefsManager.h"
-#include "Profile.h"  // for replay data stuff
+#include "Profile.h"
 #include "ProfileManager.h"
 #include "RageDisplay.h"
 #include "RageFileManager.h"
@@ -44,6 +44,7 @@
 #include "RageSoundReader.h"
 #include "RageTextureManager.h"
 #include "RageTimer.h"
+#include "RageUtil/Regex.h"
 #include "ScoreDisplayLifeTime.h"
 #include "ScoreDisplayNormal.h"
 #include "ScoreDisplayOni.h"

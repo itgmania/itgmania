@@ -12,6 +12,7 @@
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "Grade.h"
+#include "Group.h"
 #include "HighScore.h"
 #include "LuaReference.h"
 #include "PlayerNumber.h"

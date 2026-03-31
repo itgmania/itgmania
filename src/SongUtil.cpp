@@ -17,6 +17,7 @@
 #include "GameManager.h"
 #include "GameState.h"
 #include "Grade.h"
+#include "Group.h"
 #include "LocalizedString.h"
 #include "LuaBinding.h"
 #include "LuaManager.h"

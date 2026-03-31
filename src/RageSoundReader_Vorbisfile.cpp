@@ -1,8 +1,14 @@
 #include "RageSoundReader_Vorbisfile.h"
 
+#include <cerrno>
+#include <cstdarg>
+#include <cstddef>
+#include <cstring>
+
 #include "RageException.h"
 #include "RageFileBasic.h"
 #include "RageLog.h"
+#include "RageUtil.h"
 
 #if defined(INTEGER_VORBIS)
 #include <tremor/ivorbisfile.h>
@@ -12,11 +18,6 @@
 #else
 #include <vorbis/vorbisfile.h>
 #endif
-
-#include <cerrno>
-#include <cstdarg>
-#include <cstddef>
-#include <cstring>
 
 static size_t OggRageFile_read_func(
     void* ptr, size_t size, size_t nmemb, void* datasource) {
