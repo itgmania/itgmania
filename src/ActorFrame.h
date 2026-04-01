@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "Actor.h"
+#include "LuaManager.h"
 #include "LuaReference.h"
-#include "MessageManager.h"
 #include "RageTypes.h"
 
 /** @brief A container for other Actors. */

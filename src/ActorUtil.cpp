@@ -5,6 +5,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "Actor.h"
@@ -13,6 +14,9 @@
 #include "GameState.h"
 #include "IniFile.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
+#include "MessageManager.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageException.h"
 #include "RageFileManager.h"

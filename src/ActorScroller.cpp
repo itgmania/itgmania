@@ -13,6 +13,8 @@
 #include "LuaManager.h"
 #include "RageTypes.h"
 #include "RageUtil.h"
+#include "RageUtil_AutoPtr.h"
+#include "Tween.h"
 #include "XmlFile.h"
 
 /* Tricky: We need ActorFrames created in Lua to auto delete their children.

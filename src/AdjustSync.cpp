@@ -45,6 +45,8 @@
 #include "LocalizedString.h"
 #include "LuaManager.h"
 #include "MessageManager.h"
+#include "ModsGroup.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageUtil.h"
 #include "ScreenManager.h"

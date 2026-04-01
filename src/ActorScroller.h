@@ -5,6 +5,7 @@
 
 #include "ActorFrame.h"
 #include "LuaExpressionTransform.h"
+#include "LuaManager.h"
 #include "LuaReference.h"
 #include "Quad.h"
 

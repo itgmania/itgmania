@@ -11,9 +11,9 @@
 #include "Actor.h"
 #include "CubicSpline.h"
 #include "EnumHelper.h"
+#include "LuaManager.h"
 #include "RageTextureID.h"
 #include "RageTypes.h"
-#include "Tween.h"
 #include "global.h"
 
 enum DrawMode {

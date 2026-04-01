@@ -4,7 +4,9 @@
 #include <string>
 
 #include "Actor.h"
+#include "LuaManager.h"
 #include "RageSound.h"
+
 /** @brief RageSound Actor interface. */
 class ActorSound : public Actor {
  public:

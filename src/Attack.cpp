@@ -11,6 +11,8 @@
 #include "PlayerState.h"
 #include "RageUtil.h"
 #include "Song.h"
+#include "SongPosition.h"
+#include "TimingData.h"
 #include "global.h"
 
 void Attack::GetAttackBeats(

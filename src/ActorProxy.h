@@ -2,6 +2,7 @@
 #define ACTOR_PROXY_H
 
 #include "Actor.h"
+#include "LuaManager.h"
 
 struct lua_State;
 /** @brief Renders another actor. */

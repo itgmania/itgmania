@@ -11,12 +11,16 @@
 #include "Course.h"
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
 #include "Song.h"
+#include "SongPosition.h"
 #include "Steps.h"
 #include "Style.h"
+#include "TimingData.h"
+#include "Trail.h"
 #include "global.h"
 
 REGISTER_ACTOR_CLASS(BPMDisplay);
