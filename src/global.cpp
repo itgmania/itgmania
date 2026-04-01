@@ -1,6 +1,5 @@
 #include "global.h"
 
-#include <cstdlib>
 #include <string>
 
 #include "config.hpp"

@@ -5,10 +5,13 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "DateTime.h"
 #include "GameState.h"
 #include "IniFile.h"
+#include "MessageManager.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageFile.h"
 #include "RageLog.h"

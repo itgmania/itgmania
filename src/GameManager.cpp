@@ -18,7 +18,6 @@
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "StdString.h"
-#include "StepMania.h"
 #include "Style.h"
 #include "ThemeManager.h"
 #include "global.h"

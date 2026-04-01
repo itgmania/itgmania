@@ -1395,7 +1395,6 @@ void HandleInputEvents(float fDeltaTime) {
   }
 }
 
-#include "LuaManager.h"
 int LuaFunc_SaveScreenshot(lua_State* L);
 int LuaFunc_SaveScreenshot(lua_State* L) {
   // If pn is provided, save to that player's profile.

@@ -5,6 +5,8 @@
 #include <map>
 
 #include "DateTime.h"
+#include "LuaManager.h"
+
 class XNode;
 
 /** @brief Track when coins were put into the machine. */

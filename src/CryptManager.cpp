@@ -21,7 +21,6 @@
 
 #include "CryptHelpers.h"
 #include "CryptManager.h"
-#include "LuaBinding.h"
 #include "LuaManager.h"
 #include "LuaReference.h"
 #include "RageFile.h"

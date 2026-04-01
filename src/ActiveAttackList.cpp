@@ -5,8 +5,6 @@
 
 #include "Attack.h"
 #include "BitmapText.h"
-#include "GameState.h"
-#include "Inventory.h"
 #include "PlayerOptions.h"
 #include "PlayerState.h"
 #include "RageUtil.h"
