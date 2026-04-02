@@ -2,7 +2,6 @@
 
 #include <vector>
 
-#include "GameState.h"
 #include "NoteData.h"
 #include "NoteTypes.h"
 

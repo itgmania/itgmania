@@ -2,9 +2,11 @@
 
 #include <cstdio>
 #include <ctime>
+#include <memory>
 #include <string>
 
 #include "EnumHelper.h"
+#include "LocalizedString.h"
 #include "LuaManager.h"
 #include "RageUtil.h"
 #include "StdString.h"

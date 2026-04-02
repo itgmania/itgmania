@@ -5,8 +5,8 @@
 
 #include <string>
 
-#include "Actor.h"
 #include "Difficulty.h"
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "RageTextureID.h"
 #include "Sprite.h"

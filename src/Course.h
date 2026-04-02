@@ -1,6 +1,7 @@
 #ifndef COURSE_H
 #define COURSE_H
 
+#include <iterator>
 #include <map>
 #include <set>
 #include <string>
@@ -11,6 +12,7 @@
 #include "Difficulty.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "RadarValues.h"
 #include "RageTypes.h"
 #include "RageUtil/RandomNumbers.h"

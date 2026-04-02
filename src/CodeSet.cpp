@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "GameInput.h"
 #include "InputEventPlus.h"
 #include "InputQueue.h"
 #include "MessageManager.h"

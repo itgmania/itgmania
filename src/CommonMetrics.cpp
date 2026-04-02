@@ -10,6 +10,7 @@
 #include "GameState.h"
 #include "LocalizedString.h"
 #include "LuaManager.h"
+#include "MessageManager.h"
 #include "RageUtil.h"
 #include "StdString.h"
 #include "ThemeManager.h"

@@ -2,11 +2,16 @@
 
 #include <string>
 
+#include "Actor.h"
 #include "Character.h"
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
+#include "MessageManager.h"
 #include "Model.h"
+#include "ModsGroup.h"
 #include "PlayerNumber.h"
+#include "PlayerStageStats.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageDisplay.h"
 #include "RageMath.h"
@@ -14,6 +19,9 @@
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
 #include "Song.h"
+#include "SongOptions.h"
+#include "SongPosition.h"
+#include "StageStats.h"
 #include "StatsManager.h"
 #include "ThemeManager.h"
 #include "ThemeMetric.h"

@@ -6,14 +6,12 @@
 #include "ActorUtil.h"
 #include "Difficulty.h"
 #include "EnumHelper.h"
-#include "GameState.h"
 #include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "RageUtil.h"
 #include "Sprite.h"
 #include "Steps.h"
 #include "Trail.h"
-#include "XmlFile.h"
 
 REGISTER_ACTOR_CLASS(DifficultyIcon);
 

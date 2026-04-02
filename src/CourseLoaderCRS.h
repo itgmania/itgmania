@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "Attack.h"
 #include "Course.h"
 #include "GameConstantsAndTypes.h"
 #include "MsdFile.h"
