@@ -1,5 +1,6 @@
 #include "EditModePlayerManager.h"
 
+#include <string>
 #include <utility>
 
 #include "ActorFrame.h"
@@ -10,11 +11,11 @@
 #include "InputFilter.h"
 #include "ModsGroup.h"
 #include "PlayerOptions.h"
+#include "PlayerState.h"
 #include "Preference.h"
 #include "RageInputDevice.h"
 #include "RageUtil.h"
 #include "ScreenDimensions.h"
-#include "StdString.h"
 #include "Style.h"
 #include "ThemeManager.h"
 

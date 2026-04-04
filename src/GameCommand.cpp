@@ -4,9 +4,7 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <cstdlib>
 #include <map>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -47,7 +45,6 @@
 #include "Trail.h"
 #include "Tween.h"
 #include "UnlockManager.h"
-#include "arch/ArchHooks/ArchHooks.h"
 #include "global.h"
 
 static LocalizedString COULD_NOT_LAUNCH_BROWSER(

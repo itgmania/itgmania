@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "Font.h"
 #include "RageUtil.h"

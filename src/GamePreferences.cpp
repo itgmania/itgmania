@@ -1,5 +1,7 @@
 #include "GamePreferences.h"
 
+#include <string>
+
 #include "GameConstantsAndTypes.h"
 #include "Preference.h"
 

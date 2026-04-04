@@ -5,7 +5,6 @@
 
 #include "Actor.h"
 #include "ActorFrame.h"
-#include "MessageManager.h"
 
 class Song;
 /** @brief Foreground in front of notes while playing. */

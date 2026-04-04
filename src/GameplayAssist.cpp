@@ -1,15 +1,22 @@
 #include "GameplayAssist.h"
 
 #include <algorithm>
+#include <string>
 
 #include "CommonMetrics.h"
 #include "GameState.h"
+#include "MessageManager.h"
+#include "ModsGroup.h"
 #include "NoteData.h"
 #include "NoteTypes.h"
 #include "RageSoundManager.h"
+#include "RageTimer.h"
+#include "SongOptions.h"
 #include "SongPosition.h"
 #include "Steps.h"
 #include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "TimingData.h"
 
 void GameplayAssist::Init() {
   m_soundAssistClap.Load(THEME->GetPathS("GameplayAssist", "clap"), true);

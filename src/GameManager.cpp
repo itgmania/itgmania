@@ -15,11 +15,11 @@
 #include "NoteSkinManager.h"
 #include "RageException.h"
 #include "RageInputDevice.h"
-#include "RageLog.h"
 #include "RageUtil.h"
 #include "StdString.h"
 #include "Style.h"
 #include "ThemeManager.h"
+#include "Tween.h"
 #include "global.h"
 
 GameManager* GAMEMAN =

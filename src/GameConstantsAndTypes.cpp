@@ -5,11 +5,14 @@
 #include <cfloat>
 #include <cmath>
 #include <map>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "EnumHelper.h"
 #include "GameManager.h"
+#include "LocalizedString.h"
 #include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "RageUtil.h"

@@ -11,6 +11,7 @@
 #include "GameConstantsAndTypes.h"
 #include "ImageCache.h"
 #include "LuaManager.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageTexture.h"
 #include "RageTextureID.h"

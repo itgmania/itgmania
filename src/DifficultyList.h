@@ -8,7 +8,7 @@
 #include "ActorFrame.h"
 #include "AutoActor.h"
 #include "Difficulty.h"
-#include "MessageManager.h"
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "StepsDisplay.h"
 #include "ThemeMetric.h"

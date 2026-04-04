@@ -11,6 +11,7 @@ struct lua_State;
 #include <vector>
 
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 
 /** @brief The collective information about a Steps' Type. */
 struct StepsTypeInfo {

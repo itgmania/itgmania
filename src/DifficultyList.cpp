@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <string>
 #include <vector>
 
 #include "ActorFrame.h"
@@ -14,12 +15,12 @@
 #include "LuaManager.h"
 #include "MessageManager.h"
 #include "PlayerNumber.h"
+#include "RageTypes.h"
 #include "RageUtil.h"
 #include "Song.h"
 #include "SongUtil.h"
 #include "Steps.h"
 #include "StepsDisplay.h"
-#include "StepsUtil.h"
 #include "Style.h"
 #include "XmlFile.h"
 #include "global.h"

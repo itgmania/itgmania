@@ -1,10 +1,12 @@
 #include "GameInput.h"
 
 #include <cstdio>
+#include <memory>
 #include <string>
 
 #include "EnumHelper.h"
 #include "InputMapper.h"
+#include "LuaManager.h"
 #include "ThemeManager.h"
 
 static const char* GameControllerNames[] = {
