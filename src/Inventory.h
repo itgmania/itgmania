@@ -1,6 +1,7 @@
 #ifndef Inventory_H
 #define Inventory_H
 
+#include <string>
 #include <vector>
 
 #include "Actor.h"

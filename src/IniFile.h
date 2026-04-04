@@ -6,7 +6,6 @@
 #include <string>
 
 #include "XmlFile.h"
-#include "global.h"
 
 class RageFileBasic;
 /** @brief The functions to read and write .INI files. */

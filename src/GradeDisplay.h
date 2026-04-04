@@ -7,6 +7,7 @@
 #include "ActorFrame.h"
 #include "AutoActor.h"
 #include "Grade.h"
+#include "LuaManager.h"
 
 struct lua_State;
 /** @brief Grade shown on ScreenEvaluation. */

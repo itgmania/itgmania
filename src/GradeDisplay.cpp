@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <string>
 
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "AutoActor.h"

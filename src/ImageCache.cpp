@@ -1,12 +1,14 @@
 #include "ImageCache.h"
 
+#include <stdlib.h>
+
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <map>
 #include <string>
-#include <vector>
+#include <utility>
 
 #include "CommonMetrics.h"
 #include "Preference.h"
@@ -23,7 +25,6 @@
 #include "RageTexture.h"
 #include "RageTextureID.h"
 #include "RageTextureManager.h"
-#include "RageThreads.h"
 #include "RageUtil.h"
 #include "SongCacheIndex.h"
 #include "SpecialFiles.h"

@@ -5,6 +5,7 @@
 #include <string>
 
 #include "EnumHelper.h"
+#include "LuaManager.h"
 #include "RageLog.h"
 #include "StdString.h"
 #include "ThemeManager.h"

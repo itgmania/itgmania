@@ -7,6 +7,7 @@
 #include "BitmapText.h"
 #include "GameConstantsAndTypes.h"
 #include "LifeMeter.h"
+#include "LuaManager.h"
 #include "LuaReference.h"
 #include "PercentageDisplay.h"
 #include "RageSound.h"

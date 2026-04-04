@@ -3,6 +3,7 @@
 
 #include "ActorFrame.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "PlayerOptions.h"
 
 class PlayerState;

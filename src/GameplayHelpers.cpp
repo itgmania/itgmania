@@ -6,6 +6,7 @@
 #include "EnumHelper.h"
 #include "GameState.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
 #include "PlayerNumber.h"
 #include "Style.h"
 #include "ThemeManager.h"

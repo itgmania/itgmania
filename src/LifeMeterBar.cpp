@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <string>
 
+#include "Actor.h"
 #include "ActorUtil.h"
 #include "Course.h"
 #include "Difficulty.h"
@@ -12,10 +13,12 @@
 #include "LifeMeter.h"
 #include "LuaReference.h"
 #include "MessageManager.h"
+#include "ModsGroup.h"
 #include "PlayerNumber.h"
 #include "PlayerOptions.h"
 #include "PlayerStageStats.h"
 #include "PlayerState.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageUtil.h"
 #include "Steps.h"

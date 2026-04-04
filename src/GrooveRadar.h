@@ -6,7 +6,9 @@
 #include "ActorFrame.h"
 #include "AutoActor.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "PlayerNumber.h"
+#include "RageTypes.h"
 #include "Sprite.h"
 
 class Steps;

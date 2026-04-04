@@ -9,6 +9,7 @@
 #include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "LuaManager.h"
+#include "PlayerStageStats.h"
 #include "RageDisplay.h"
 #include "RageMath.h"
 #include "RageTexture.h"

@@ -1,5 +1,6 @@
 #include "LocalizedString.h"
 
+#include <set>
 #include <string>
 
 #include "RageUtil.h"

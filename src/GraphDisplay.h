@@ -4,8 +4,10 @@
 #include <string>
 #include <vector>
 
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "AutoActor.h"
+#include "LuaManager.h"
 #include "RageTypes.h"
 
 class StageStats;

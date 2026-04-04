@@ -1,18 +1,17 @@
 #include "Group.h"
 
-#include <cstddef>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "IniFile.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "Song.h"
 #include "SongManager.h"
-#include "SongUtil.h"
 
 /** @brief The file that contains the group information.
  * We name this Pack.ini over Group.ini to avoid conflict

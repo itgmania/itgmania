@@ -3,12 +3,14 @@
 #include <algorithm>
 #include <cstddef>
 #include <string>
+#include <vector>
 
 #include "Actor.h"
 #include "Course.h"
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
 #include "LifeMeter.h"
+#include "LuaReference.h"
 #include "MessageManager.h"
 #include "PlayerStageStats.h"
 #include "PlayerState.h"
@@ -17,6 +19,7 @@
 #include "RageTypes.h"
 #include "RageUtil.h"
 #include "Song.h"
+#include "StageStats.h"
 #include "StatsManager.h"
 #include "Steps.h"
 #include "StreamDisplay.h"
