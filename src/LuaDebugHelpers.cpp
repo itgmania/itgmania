@@ -1,5 +1,7 @@
 #include "LuaDebugHelpers.h"
 
+#include <stddef.h>
+
 #include <memory>
 #include <string>
 #include <string_view>
@@ -8,6 +10,7 @@
 #include "LuaDebuggeeState.h"
 #include "LuaManager.h"
 #include "RageFile.h"
+#include "RageFileBasic.h"
 #include "RageFileManager.h"
 #include "StdString.h"
 #include "global.h"

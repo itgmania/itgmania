@@ -1,5 +1,8 @@
 #include "LuaDebugDap.h"
 
+#include <cstdlib>
+#include <string_view>
+
 namespace LuaDebug {
 bool LuaDebug::Header::TryParse(const char* buffer, size_t length) {
   m_headerLength = 0;

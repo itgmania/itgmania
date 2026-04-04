@@ -10,6 +10,7 @@
 #include "ActorFrame.h"
 #include "AutoActor.h"
 #include "BitmapText.h"
+#include "LuaManager.h"
 #include "LuaReference.h"
 #include "RageSound.h"
 #include "ThemeMetric.h"

@@ -7,10 +7,12 @@
 #include <vector>
 
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "LuaReference.h"
 #include "MusicWheelItem.h"
 #include "RageSound.h"
 #include "RageTypes.h"
+#include "Song.h"
 #include "ThemeMetric.h"
 #include "WheelBase.h"
 #include "WheelItemBase.h"

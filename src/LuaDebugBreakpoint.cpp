@@ -1,5 +1,8 @@
 #include "LuaDebugBreakpoint.h"
 
+#include <limits.h>
+#include <stddef.h>
+
 #include <string>
 
 #include "LuaDebugHelpers.h"

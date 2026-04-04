@@ -1,13 +1,15 @@
 #include "MessageManager.h"
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "EnumHelper.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
 #include "RageLog.h"
-#include "RageThreads.h"
 #include "global.h"
 
 MessageManager* MESSAGEMAN =

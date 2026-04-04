@@ -1,7 +1,7 @@
 #ifndef MSDFILE_H
 #define MSDFILE_H
 
-#include <memory>
+#include <string>
 #include <vector>
 
 #include "global.h"

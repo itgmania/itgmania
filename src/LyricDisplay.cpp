@@ -1,13 +1,19 @@
 #include "LyricDisplay.h"
 
 #include <algorithm>
+#include <string>
+#include <vector>
 
 #include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "GameState.h"
 #include "LuaManager.h"
 #include "LuaReference.h"
+#include "MessageManager.h"
+#include "ModsGroup.h"
 #include "Song.h"
+#include "SongOptions.h"
+#include "SongPosition.h"
 #include "ThemeManager.h"
 #include "ThemeMetric.h"
 

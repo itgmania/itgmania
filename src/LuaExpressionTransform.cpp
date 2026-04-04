@@ -2,10 +2,12 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "Actor.h"
 #include "LuaManager.h"
 #include "RageUtil.h"
+#include "Tween.h"
 #include "global.h"
 
 LuaExpressionTransform::LuaExpressionTransform() { m_iNumSubdivisions = 1; }

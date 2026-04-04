@@ -1,6 +1,9 @@
 #include "LuaDebuggeeState.h"
 
+#include <stddef.h>
+
 #include <string>
+#include <utility>
 
 #include "LuaManager.h"
 #include "global.h"

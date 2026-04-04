@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "RageLog.h"
 #include "RageModelGeometry.h"

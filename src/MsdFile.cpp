@@ -14,7 +14,6 @@
 
 #include "MsdFile.h"
 
-#include <algorithm>
 #include <string>
 
 #include "RageFile.h"

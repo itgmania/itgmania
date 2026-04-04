@@ -2,13 +2,16 @@
 
 #include <string>
 
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "GameState.h"
 #include "LuaManager.h"
+#include "MessageManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "Song.h"
+#include "SongPosition.h"
 #include "XmlFile.h"
 #include "global.h"
 

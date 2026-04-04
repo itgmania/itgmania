@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "Actor.h"
+#include "LuaManager.h"
 #include "ModelTypes.h"
 
 class RageModelGeometry;

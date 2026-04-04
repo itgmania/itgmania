@@ -1,5 +1,9 @@
 #include "LuaDebugger.h"
 
+#include <json/json.h>
+#include <limits.h>
+#include <string.h>
+
 #include <atomic>
 #include <mutex>
 #include <queue>

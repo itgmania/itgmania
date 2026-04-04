@@ -3,6 +3,7 @@
 
 #include <memory>
 
+#include "LuaDebugBreakpoint.h"
 #include "LuaDebugDap.h"
 
 struct lua_State;

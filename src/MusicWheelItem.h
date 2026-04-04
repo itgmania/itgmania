@@ -7,7 +7,6 @@
 #include "BitmapText.h"
 #include "GameCommand.h"
 #include "Group.h"
-#include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "RageTypes.h"
 #include "RageUtil_AutoPtr.h"
