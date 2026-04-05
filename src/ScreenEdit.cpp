@@ -3,10 +3,8 @@
 #include <stdio.h>
 
 #include <algorithm>
-#include <cfloat>
 #include <cmath>
 #include <cstddef>
-#include <cstdio>
 #include <map>
 #include <memory>
 #include <string>
@@ -51,7 +49,6 @@
 #include "RageInput.h"
 #include "RageInputDevice.h"
 #include "RageLog.h"
-#include "RageSoundManager.h"
 #include "RageSoundReader.h"
 #include "RageSoundReader_FileReader.h"
 #include "RageTimer.h"

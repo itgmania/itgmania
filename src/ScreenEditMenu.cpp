@@ -10,6 +10,7 @@
 #include "GameSoundManager.h"
 #include "GameState.h"
 #include "LocalizedString.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "RageFile.h"
 #include "RageFileManager.h"
@@ -26,6 +27,7 @@
 #include "SongUtil.h"
 #include "Steps.h"
 #include "ThemeManager.h"
+#include "ThemeMetric.h"
 #include "global.h"
 
 static const std::string TEMP_FILE_NAME = "--temp--";

@@ -8,6 +8,7 @@
 #include "GameState.h"
 #include "InputEventPlus.h"
 #include "InputFilter.h"
+#include "MessageManager.h"
 #include "Preference.h"
 #include "PrefsManager.h"
 #include "RageLog.h"

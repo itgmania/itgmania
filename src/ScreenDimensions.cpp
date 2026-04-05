@@ -1,8 +1,10 @@
 #include "ScreenDimensions.h"
 
 #include <cmath>
+#include <string>
 
 #include "LuaManager.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "ThemeMetric.h"
 #include "global.h"

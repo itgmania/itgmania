@@ -7,6 +7,7 @@
 #include "GameConstantsAndTypes.h"
 #include "GameManager.h"
 #include "GameState.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
@@ -15,9 +16,9 @@
 #include "ScreenGameplay.h"
 #include "ScreenJukebox.h"
 #include "ScreenMessage.h"
-#include "SongManager.h"
 #include "Style.h"
 #include "ThemeManager.h"
+#include "Transition.h"
 #include "global.h"
 
 #define SECONDS_TO_SHOW THEME->GetMetricF(m_sName, "SecondsToShow")

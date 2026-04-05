@@ -1,7 +1,6 @@
 #ifndef SCREEN_EDIT_H
 #define SCREEN_EDIT_H
 
-#include <map>
 #include <string>
 #include <vector>
 
@@ -14,6 +13,7 @@
 #include "GameConstantsAndTypes.h"
 #include "GameInput.h"
 #include "GameplayAssist.h"
+#include "InputEventPlus.h"
 #include "LuaManager.h"
 #include "ModsGroup.h"
 #include "NoteData.h"
@@ -23,6 +23,7 @@
 #include "PlayerOptions.h"
 #include "PlayerState.h"
 #include "RadarValues.h"
+#include "RageInputDevice.h"
 #include "RageSound.h"
 #include "RageTimer.h"
 #include "Screen.h"

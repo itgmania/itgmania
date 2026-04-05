@@ -1,5 +1,6 @@
 #include "ScreenBookkeeping.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 

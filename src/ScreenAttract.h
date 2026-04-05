@@ -6,7 +6,8 @@
 
 #include <string>
 
-#include "InputQueue.h"
+#include "InputEventPlus.h"
+#include "LuaManager.h"
 #include "Screen.h"
 #include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"

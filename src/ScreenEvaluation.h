@@ -8,7 +8,7 @@
 #include "BitmapText.h"
 #include "GameConstantsAndTypes.h"
 #include "GradeDisplay.h"
-#include "InputQueue.h"
+#include "LuaManager.h"
 #include "PercentageDisplay.h"
 #include "PlayerNumber.h"
 #include "RageSound.h"

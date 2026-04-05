@@ -1,5 +1,7 @@
 #include "ScreenExit.h"
 
+#include <string>
+
 #include "Screen.h"
 #include "arch/ArchHooks/ArchHooks.h"
 
