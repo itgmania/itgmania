@@ -17,6 +17,7 @@
 #include "RageUtil.h"
 #include "Song.h"
 #include "Steps.h"
+#include "TimingData.h"
 #include "TimingSegments.h"
 #include "global.h"
 

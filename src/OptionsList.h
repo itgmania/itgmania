@@ -12,7 +12,7 @@
 #include "BitmapText.h"
 #include "CodeSet.h"
 #include "GameInput.h"
-#include "InputQueue.h"
+#include "InputEventPlus.h"
 #include "OptionRowHandler.h"
 #include "PlayerNumber.h"
 #include "ThemeMetric.h"

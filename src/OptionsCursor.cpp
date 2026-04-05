@@ -2,7 +2,9 @@
 
 #include <cmath>
 #include <string>
+#include <vector>
 
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "RageTypes.h"

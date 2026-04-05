@@ -1,9 +1,12 @@
 #include "NoteSkinManager.h"
 
+#include <strings.h>
+
 #include <cstddef>
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "Actor.h"
@@ -13,9 +16,9 @@
 #include "GameState.h"
 #include "IniFile.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
-#include "PrefsManager.h"
-#include "RageDisplay.h"
 #include "RageException.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
@@ -23,7 +26,6 @@
 #include "SpecialFiles.h"
 #include "Sprite.h"
 #include "StdString.h"
-#include "Style.h"
 #include "ThemeManager.h"
 #include "XmlFile.h"
 #include "XmlFileUtil.h"

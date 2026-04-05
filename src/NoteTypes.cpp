@@ -1,7 +1,10 @@
 #include "NoteTypes.h"
 
+#include <memory>
+
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
+#include "LocalizedString.h"
 #include "LuaManager.h"
 #include "RageUtil.h"
 #include "XmlFile.h"

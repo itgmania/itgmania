@@ -8,7 +8,6 @@
 
 #include <atomic>
 #include <condition_variable>
-#include <cstddef>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -19,12 +18,9 @@
 #include <vector>
 
 #include "EnumHelper.h"
+#include "LuaManager.h"
 #include "Preference.h"
-#include "ixwebsocket/IXWebSocketCloseInfo.h"
-#include "ixwebsocket/IXWebSocketErrorInfo.h"
 #include "ixwebsocket/IXWebSocketMessage.h"
-#include "ixwebsocket/IXWebSocketMessageType.h"
-#include "ixwebsocket/IXWebSocketOpenInfo.h"
 
 struct lua_State;
 

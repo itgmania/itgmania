@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <memory>
 #include <mutex>
+#include <new>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -19,6 +20,7 @@
 
 #include "EnumHelper.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
 #include "Preference.h"
 #include "ProductInfo.h"
 #include "RageFile.h"
@@ -29,9 +31,14 @@
 #include "SpecialFiles.h"
 #include "StdString.h"
 #include "ixwebsocket/IXHttp.h"
+#include "ixwebsocket/IXSocketTLSOptions.h"
+#include "ixwebsocket/IXWebSocketCloseInfo.h"
+#include "ixwebsocket/IXWebSocketErrorInfo.h"
 #include "ixwebsocket/IXWebSocketHttpHeaders.h"
 #include "ixwebsocket/IXWebSocketMessage.h"
 #include "ixwebsocket/IXWebSocketMessageType.h"
+#include "ixwebsocket/IXWebSocketOpenInfo.h"
+#include "ixwebsocket/IXWebSocketSendInfo.h"
 #include "ver.h"
 
 NetworkManager* NETWORK =

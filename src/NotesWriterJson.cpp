@@ -1,6 +1,8 @@
 #include "NotesWriterJson.h"
 
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "BackgroundUtil.h"
@@ -12,6 +14,7 @@
 #include "NoteTypes.h"
 #include "PlayerNumber.h"
 #include "RadarValues.h"
+#include "RageTypes.h"
 #include "RageUtil.h"
 #include "Song.h"
 #include "Steps.h"

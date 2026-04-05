@@ -4,9 +4,9 @@
 #include <cstring>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "Attack.h"
 #include "BackgroundUtil.h"
 #include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
@@ -25,6 +25,7 @@
 #include "StdString.h"
 #include "Steps.h"
 #include "TechCounts.h"
+#include "TimingData.h"
 #include "TimingSegments.h"
 
 // Everything from this line to the creation of parser_helper exists to

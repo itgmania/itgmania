@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "CommonMetrics.h"
 #include "Course.h"
 #include "EnumHelper.h"
+#include "GameCommand.h"
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
 #include "MessageManager.h"
@@ -26,6 +28,7 @@
 #include "StdString.h"
 #include "Style.h"
 #include "ThemeManager.h"
+#include "Trail.h"
 #include "global.h"
 
 const std::string NEXT_ROW_NAME = "NextRow";

@@ -1,8 +1,9 @@
 #include "NoteDataUtil.h"
 
+#include <stdlib.h>
+
 #include <algorithm>
 #include <cmath>
-#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -19,6 +20,7 @@
 #include "NoteTypes.h"
 #include "PlayerNumber.h"
 #include "PlayerOptions.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RadarValues.h"
 #include "RageLog.h"

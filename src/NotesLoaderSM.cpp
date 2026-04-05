@@ -1,7 +1,6 @@
 #include "NotesLoaderSM.h"
 
 #include <algorithm>
-#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -17,6 +16,7 @@
 #include "GameManager.h"
 #include "MsdFile.h"
 #include "NoteTypes.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
@@ -27,6 +27,7 @@
 #include "SongManager.h"
 #include "StdString.h"
 #include "Steps.h"
+#include "TimingData.h"
 #include "TimingSegments.h"
 #include "global.h"
 

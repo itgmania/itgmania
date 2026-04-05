@@ -8,6 +8,7 @@
 #include "GameInput.h"
 #include "LuaManager.h"
 #include "PlayerNumber.h"
+#include "Tween.h"
 #include "global.h"
 
 struct Game;
