@@ -6,6 +6,7 @@
 
 #include <cstdint>
 
+#include "LuaManager.h"
 #include "RageDisplay.h"  // for RenderTargetParam
 #include "RageTexture.h"
 #include "RageTextureID.h"

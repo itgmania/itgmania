@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "RageThreads.h"
+#include "global.h"
 
 class RageFileDriverCached;
 

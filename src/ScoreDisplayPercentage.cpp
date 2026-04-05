@@ -1,7 +1,7 @@
 #include "ScoreDisplayPercentage.h"
 
-#include "PlayerStageStats.h"
-#include "PlayerState.h"
+#include <string>
+
 #include "ScoreDisplay.h"
 #include "ThemeManager.h"
 

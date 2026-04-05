@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "LuaManager.h"
 #include "RageTextureID.h"
 #include "RageTypes.h"
 

@@ -3,12 +3,15 @@
 #include <string>
 #include <vector>
 
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "GameConstantsAndTypes.h"
 #include "GameInput.h"
 #include "GameState.h"
+#include "ModsGroup.h"
 #include "NoteSkinManager.h"
 #include "PlayerNumber.h"
+#include "PlayerOptions.h"
 #include "PlayerState.h"
 #include "RageUtil.h"
 #include "Style.h"

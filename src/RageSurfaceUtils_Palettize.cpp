@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
+#include <utility>
 
 #include "RageSurface.h"
 #include "RageSurfaceUtils.h"

@@ -7,6 +7,7 @@
 
 #include "RageTexturePreloader.h"
 
+#include "RageTextureID.h"
 #include "RageTextureManager.h"
 #include "global.h"
 

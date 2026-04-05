@@ -1,13 +1,16 @@
 #include "ReceptorArrowRow.h"
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
 #include "ActorFrame.h"
 #include "ArrowEffects.h"
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
+#include "ModsGroup.h"
 #include "NoteDisplay.h"
+#include "PlayerOptions.h"
 #include "PlayerState.h"
 #include "RageUtil.h"
 #include "ReceptorArrow.h"

@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <atomic>
-#include <cerrno>
 #include <cinttypes>
 #include <cstdint>
 #include <cstdio>

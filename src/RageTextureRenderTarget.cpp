@@ -1,5 +1,8 @@
 #include "RageTextureRenderTarget.h"
 
+#include <string>
+
+#include "LuaManager.h"
 #include "RageDisplay.h"
 #include "RageTexture.h"
 #include "RageTextureID.h"

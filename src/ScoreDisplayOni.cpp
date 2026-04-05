@@ -1,5 +1,7 @@
 #include "ScoreDisplayOni.h"
 
+#include <string>
+
 #include "ActorUtil.h"
 #include "GameState.h"
 #include "PlayerNumber.h"
@@ -8,6 +10,7 @@
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "ScoreDisplay.h"
+#include "StageStats.h"
 #include "StatsManager.h"
 #include "ThemeManager.h"
 

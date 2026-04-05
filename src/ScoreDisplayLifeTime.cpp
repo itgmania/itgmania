@@ -2,11 +2,11 @@
 
 #include <string>
 
+#include "Actor.h"
 #include "ActorUtil.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "PlayerStageStats.h"
-#include "PlayerState.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "ScoreDisplay.h"

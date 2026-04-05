@@ -3,9 +3,9 @@
 #ifndef SCORE_KEEPER_NORMAL_H
 #define SCORE_KEEPER_NORMAL_H
 
+#include <string>
 #include <vector>
 
-#include "Attack.h"
 #include "GameConstantsAndTypes.h"
 #include "LuaReference.h"
 #include "ScoreKeeper.h"

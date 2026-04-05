@@ -4,6 +4,7 @@
 #include <string>
 
 #include "BitmapText.h"
+#include "LuaManager.h"
 #include "RageTypes.h"
 #include "ThemeMetric.h"
 

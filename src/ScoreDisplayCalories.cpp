@@ -5,9 +5,11 @@
 #include "LuaManager.h"
 #include "MessageManager.h"
 #include "PlayerNumber.h"
+#include "PlayerStageStats.h"
 #include "RollingNumbers.h"
 #include "StageStats.h"
 #include "StatsManager.h"
+#include "Tween.h"
 #include "XmlFile.h"
 #include "global.h"
 
