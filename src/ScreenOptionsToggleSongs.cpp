@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "OptionRow.h"
 #include "OptionRowHandler.h"
 #include "PlayerNumber.h"
 #include "PrefsManager.h"

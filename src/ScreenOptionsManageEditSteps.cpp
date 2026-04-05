@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -10,10 +11,11 @@
 #include "GameManager.h"
 #include "GameState.h"
 #include "LocalizedString.h"
+#include "MessageManager.h"
 #include "NotesWriterSM.h"
+#include "OptionRow.h"
 #include "OptionRowHandler.h"
 #include "PlayerNumber.h"
-#include "Profile.h"
 #include "ProfileManager.h"
 #include "RageFileManager.h"
 #include "RageLog.h"

@@ -5,7 +5,6 @@
 
 #include "Banner.h"
 #include "GameConstantsAndTypes.h"
-#include "InputQueue.h"
 #include "ModIcon.h"
 #include "PlayerNumber.h"
 #include "RageSound.h"

@@ -1,5 +1,6 @@
 #include "ScreenRanking.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <vector>
@@ -10,6 +11,7 @@
 #include "GameManager.h"
 #include "GameState.h"
 #include "HighScore.h"
+#include "LuaManager.h"
 #include "Profile.h"
 #include "ProfileManager.h"
 #include "RageUtil.h"

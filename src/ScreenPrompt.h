@@ -7,7 +7,6 @@
 
 #include "AutoActor.h"
 #include "BitmapText.h"
-#include "InputQueue.h"
 #include "RageSound.h"
 #include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"

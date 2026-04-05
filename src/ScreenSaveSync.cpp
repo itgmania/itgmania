@@ -6,6 +6,7 @@
 #include "AdjustSync.h"
 #include "GameState.h"
 #include "LocalizedString.h"
+#include "MessageManager.h"
 #include "RageUtil.h"
 #include "ScreenMessage.h"
 #include "ScreenPrompt.h"

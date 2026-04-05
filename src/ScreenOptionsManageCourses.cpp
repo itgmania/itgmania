@@ -26,9 +26,9 @@
 #include "ScreenManager.h"
 #include "ScreenPrompt.h"
 #include "SongManager.h"
-#include "StdString.h"
 #include "ThemeManager.h"
 #include "Trail.h"
+#include "global.h"
 
 REGISTER_SCREEN_CLASS(ScreenOptionsManageCourses);
 

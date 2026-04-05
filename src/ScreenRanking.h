@@ -1,7 +1,7 @@
 #ifndef ScreenRanking_H
 #define ScreenRanking_H
 
-#include <algorithm>
+#include <iterator>
 #include <string>
 #include <utility>
 #include <vector>
@@ -17,9 +17,7 @@
 #include "RageTypes.h"
 #include "ScreenAttract.h"
 #include "ScreenMessage.h"
-#include "StdString.h"
 #include "ThemeMetric.h"
-#include "global.h"
 
 class Course;
 class Trail;

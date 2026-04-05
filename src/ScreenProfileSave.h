@@ -1,7 +1,7 @@
 #ifndef SCREEN_PROFILE_SAVE_H
 #define SCREEN_PROFILE_SAVE_H
 
-#include "InputQueue.h"
+#include "LuaManager.h"
 #include "ScreenWithMenuElements.h"
 
 class ScreenProfileSave : public ScreenWithMenuElements {

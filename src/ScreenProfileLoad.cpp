@@ -1,5 +1,7 @@
 #include "ScreenProfileLoad.h"
 
+#include <string>
+
 #include "GameState.h"
 #include "LuaManager.h"
 #include "Screen.h"

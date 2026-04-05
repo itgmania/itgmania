@@ -5,7 +5,9 @@
 
 #include "GameCommand.h"
 #include "InputEventPlus.h"
+#include "Preference.h"
 #include "PrefsManager.h"
+#include "RageSound.h"
 #include "RageUtil.h"
 #include "RageUtil/LanguageInfo.h"
 #include "Screen.h"

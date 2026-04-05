@@ -1,5 +1,6 @@
 #include "ScreenOptionsMasterPrefs.h"
 
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -10,7 +11,6 @@
 #include "Game.h"
 #include "GameConstantsAndTypes.h"
 #include "GameManager.h"
-#include "GameState.h"
 #include "LocalizedString.h"
 #include "NoteSkinManager.h"
 #include "PlayerOptions.h"
@@ -23,7 +23,6 @@
 #include "SongOptions.h"
 #include "SpecialFiles.h"
 #include "StdString.h"
-#include "StepMania.h"
 #include "ThemeManager.h"
 #include "global.h"
 

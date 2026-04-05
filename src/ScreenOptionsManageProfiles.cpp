@@ -1,6 +1,7 @@
 #include "ScreenOptionsManageProfiles.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -9,6 +10,8 @@
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
 #include "LocalizedString.h"
+#include "MessageManager.h"
+#include "OptionRow.h"
 #include "OptionRowHandler.h"
 #include "PlayerNumber.h"
 #include "Preference.h"
