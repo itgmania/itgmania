@@ -16,6 +16,7 @@
 #include "MenuTimer.h"
 #include "MessageManager.h"
 #include "PlayerNumber.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
@@ -23,6 +24,7 @@
 #include "ScreenManager.h"
 #include "ScreenMessage.h"
 #include "ThemeManager.h"
+#include "Tween.h"
 #include "global.h"
 
 #define TIMER_STEALTH THEME->GetMetricB(m_sName, "TimerStealth")

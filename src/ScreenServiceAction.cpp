@@ -6,11 +6,11 @@
 
 #include "Bookkeeper.h"
 #include "GameConstantsAndTypes.h"
-#include "GameState.h"
 #include "LocalizedString.h"
 #include "MemoryCardManager.h"
 #include "NotesLoaderSSC.h"
 #include "PlayerNumber.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "Profile.h"
 #include "ProfileManager.h"

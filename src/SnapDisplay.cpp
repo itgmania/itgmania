@@ -1,5 +1,7 @@
 #include "SnapDisplay.h"
 
+#include <string>
+
 #include "GameState.h"
 #include "NoteTypes.h"
 #include "RageUtil.h"

@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "Actor.h"
 #include "AdjustSync.h"
 #include "GameConstantsAndTypes.h"
 #include "GamePreferences.h"
@@ -11,6 +12,8 @@
 #include "InputFilter.h"
 #include "LocalizedString.h"
 #include "MessageManager.h"
+#include "ModsGroup.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageInputDevice.h"
 #include "RageUtil.h"
@@ -18,7 +21,10 @@
 #include "ScreenManager.h"
 #include "Song.h"
 #include "SongOptions.h"
+#include "SongPosition.h"
+#include "Steps.h"
 #include "ThemeManager.h"
+#include "TimingData.h"
 #include "TimingSegments.h"
 #include "global.h"
 

@@ -1,10 +1,13 @@
 #include "SongManager.h"
 
+#include <algorithm>
+#include <atomic>
+#include <chrono>
 #include <cstddef>
+#include <iterator>
 #include <memory>
 #include <thread>
 #include <tuple>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -36,12 +39,14 @@
 #include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
+#include "RageUtil/RandomNumbers.h"
 #include "Song.h"
 #include "SongCacheIndex.h"
 #include "SongUtil.h"
 #include "SpecialFiles.h"
 #include "Sprite.h"
 #include "StatsManager.h"
+#include "StdString.h"
 #include "Steps.h"
 #include "StepsUtil.h"
 #include "Style.h"

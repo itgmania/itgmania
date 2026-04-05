@@ -6,10 +6,8 @@
 #include "InputEventPlus.h"
 #include "InputFilter.h"
 #include "RageInputDevice.h"
-#include "RageSoundManager.h"
 #include "RageUtil.h"
 #include "Screen.h"
-#include "ScreenManager.h"
 #include "ThemeManager.h"
 
 REGISTER_SCREEN_CLASS(ScreenTestSound);

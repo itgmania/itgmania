@@ -7,9 +7,11 @@
 #include <vector>
 
 #include "Attack.h"
+#include "BackgroundUtil.h"
 #include "Difficulty.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "RageTypes.h"
 #include "RageUtil.h"
 #include "RageUtil_AutoPtr.h"

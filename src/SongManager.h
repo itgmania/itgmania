@@ -1,7 +1,6 @@
 #ifndef SONGMANAGER_H
 #define SONGMANAGER_H
 
-#include <algorithm>
 #include <cstddef>
 #include <map>
 #include <set>
@@ -11,19 +10,15 @@
 #include <vector>
 
 #include "Course.h"
-#include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
 #include "Group.h"
 #include "LuaManager.h"
-#include "PlayerOptions.h"
 #include "RageTexturePreloader.h"
 #include "RageTypes.h"
 #include "RageUtil.h"
 #include "Song.h"
-#include "SongOptions.h"
-#include "StdString.h"
+#include "Steps.h"
 #include "ThemeMetric.h"
-#include "global.h"
 
 class LoadingWindow;
 class Song;

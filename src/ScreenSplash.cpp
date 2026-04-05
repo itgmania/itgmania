@@ -1,5 +1,7 @@
 #include "ScreenSplash.h"
 
+#include <string>
+
 #include "Screen.h"
 #include "ScreenManager.h"
 #include "ScreenMessage.h"

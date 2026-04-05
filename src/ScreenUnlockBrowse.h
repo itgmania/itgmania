@@ -2,8 +2,6 @@
 #define ScreenUnlockBrowse_H
 
 #include "FadingBanner.h"
-#include "InputQueue.h"
-#include "MessageManager.h"
 #include "ScreenSelectMaster.h"
 
 class ScreenUnlockBrowse : public ScreenSelectMaster {

@@ -6,6 +6,7 @@
 
 #include "Actor.h"
 #include "AutoActor.h"
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "Screen.h"
 #include "ScreenMessage.h"

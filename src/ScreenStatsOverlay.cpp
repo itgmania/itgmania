@@ -3,6 +3,7 @@
 #include <string>
 
 #include "ActorUtil.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageDisplay.h"
 #include "RageLog.h"

@@ -1,9 +1,15 @@
 #include "ScreenUnlockCelebrate.h"
 
+#include <string>
+#include <vector>
+
+#include "Banner.h"
 #include "GameState.h"
 #include "LuaManager.h"
+#include "MessageManager.h"
 #include "Screen.h"
 #include "ScreenUnlockBrowse.h"
+#include "SongUtil.h"
 #include "UnlockManager.h"
 #include "global.h"
 
