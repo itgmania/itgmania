@@ -1,5 +1,6 @@
 #include "TimingSegments.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 

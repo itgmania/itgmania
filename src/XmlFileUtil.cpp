@@ -2,11 +2,8 @@
 
 #include <ctype.h>
 
-#include <algorithm>
-#include <cctype>
 #include <cstddef>
 #include <map>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -16,8 +13,8 @@
 #include "RageFileBasic.h"
 #include "RageFileDriverMemory.h"
 #include "RageUtil.h"
-#include "StdString.h"
 #include "XmlFile.h"
+#include "global.h"
 
 bool XmlFileUtil::LoadFromFileShowErrors(XNode& xml, RageFileBasic& f) {
   std::string sError;

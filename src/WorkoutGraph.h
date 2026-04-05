@@ -5,8 +5,8 @@
 
 #include <vector>
 
-#include "Actor.h"
 #include "ActorFrame.h"
+#include "LuaManager.h"
 #include "Sprite.h"
 
 class Trail;

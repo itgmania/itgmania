@@ -9,6 +9,8 @@
 
 #include "GameConstantsAndTypes.h"
 #include "GameInput.h"
+#include "LuaManager.h"
+#include "NoteData.h"
 #include "NoteTypes.h"
 #include "PlayerNumber.h"
 

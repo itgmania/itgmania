@@ -1,5 +1,6 @@
 #include "WheelItemBase.h"
 
+#include <memory>
 #include <string>
 
 #include "Actor.h"

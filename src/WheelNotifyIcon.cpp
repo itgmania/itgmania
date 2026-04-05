@@ -7,7 +7,6 @@
 #include "Sprite.h"
 #include "ThemeManager.h"
 #include "ThemeMetric.h"
-#include "WheelNotifyIcon.h"
 #include "global.h"
 
 /* todo: replace this entire thing with a set of AutoActors and a Scroller.

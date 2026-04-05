@@ -8,7 +8,6 @@
 #include "MessageManager.h"
 #include "Song.h"
 #include "ThemeManager.h"
-#include "XmlFile.h"
 #include "global.h"
 
 REGISTER_ACTOR_CLASS(TextBanner);

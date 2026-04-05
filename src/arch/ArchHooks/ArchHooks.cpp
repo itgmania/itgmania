@@ -3,10 +3,9 @@
 #include <string>
 
 #include "LuaManager.h"
-#include "LuaReference.h"
 #include "RageLog.h"
-#include "RageThreads.h"
 #include "arch/arch_default.h"
+#include "global.h"
 
 bool ArchHooks::g_bQuitting = false;
 bool ArchHooks::g_bToggleWindowed = false;

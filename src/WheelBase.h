@@ -2,13 +2,16 @@
 #define WHEELBASE_H
 
 #include <climits>
+#include <cmath>
 #include <string>
 #include <vector>
 
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "AutoActor.h"
 #include "EnumHelper.h"
 #include "LuaExpressionTransform.h"
+#include "LuaManager.h"
 #include "RageSound.h"
 #include "RageTimer.h"
 #include "RageTypes.h"

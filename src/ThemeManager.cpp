@@ -5,8 +5,10 @@
 #include <deque>
 #include <iterator>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "Actor.h"
@@ -18,14 +20,13 @@
 #include "LocalizedString.h"
 #include "LuaManager.h"
 #include "PlayerNumber.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "Profile.h"
 #include "ProfileManager.h"
 #include "RageException.h"
-#include "RageFile.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
-#include "RageTimer.h"
 #include "RageTypes.h"
 #include "RageUtil.h"
 #include "RageUtil/Regex.h"
@@ -33,8 +34,8 @@
 #include "ScreenManager.h"
 #include "SpecialFiles.h"
 #include "StdString.h"
-#include "SubscriptionManager.h"
 #include "ThemeMetric.h"
+#include "Tween.h"
 #include "XmlFile.h"
 #include "XmlFileUtil.h"
 #include "arch/ArchHooks/ArchHooks.h"

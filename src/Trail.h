@@ -7,6 +7,7 @@
 #include "Attack.h"
 #include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "RadarValues.h"
 
 class Song;

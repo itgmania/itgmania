@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "EnumHelper.h"
+#include "LuaManager.h"
 #include "LuaReference.h"
 #include "RageTypes.h"
 

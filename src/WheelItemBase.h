@@ -3,9 +3,10 @@
 
 #include <string>
 
+#include "Actor.h"
 #include "ActorFrame.h"
-#include "AutoActor.h"
 #include "EnumHelper.h"
+#include "LuaManager.h"
 #include "RageTypes.h"
 #include "global.h"
 

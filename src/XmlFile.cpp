@@ -9,11 +9,11 @@
 
 #include <stdlib.h>
 
+#include <algorithm>
 #include <utility>
 
 #include "LuaManager.h"
 #include "RageUtil.h"
-#include "StdString.h"
 
 const std::string XNode::TEXT_ATTRIBUTE = "__TEXT__";
 

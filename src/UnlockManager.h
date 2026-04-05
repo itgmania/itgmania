@@ -12,6 +12,7 @@
 #include "Difficulty.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "RageUtil.h"
 #include "SongUtil.h"
 

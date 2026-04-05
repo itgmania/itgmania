@@ -2,9 +2,11 @@
 #define TRAIL_UTIL_H
 
 #include <string>
+#include <vector>
 
 #include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 
 class Song;
 class Trail;
