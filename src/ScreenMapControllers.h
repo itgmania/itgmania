@@ -14,8 +14,6 @@
 #include "BitmapText.h"
 #include "GameInput.h"
 #include "InputMapper.h"
-#include "InputQueue.h"
-#include "MessageManager.h"
 #include "RageInputDevice.h"
 #include "RageSound.h"
 #include "RageTimer.h"

@@ -1,11 +1,14 @@
 #include "ScreenMiniMenu.h"
 
+#include <set>
 #include <string>
 #include <vector>
 
 #include "GameState.h"
+#include "OptionRow.h"
 #include "OptionRowHandler.h"
 #include "PlayerNumber.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "Screen.h"
 #include "ScreenManager.h"

@@ -2,7 +2,6 @@
 #define ScreenInstallOverlay_H
 
 #include "BitmapText.h"
-#include "InputEventPlus.h"
 #include "Screen.h"
 
 /** @brief Package installation processing and messaging. */

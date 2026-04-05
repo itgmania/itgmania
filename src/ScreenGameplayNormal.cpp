@@ -1,5 +1,6 @@
 #include "ScreenGameplayNormal.h"
 
+#include <string>
 #include <vector>
 
 #include "Difficulty.h"

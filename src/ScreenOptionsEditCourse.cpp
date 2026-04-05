@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <iterator>
-#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -26,11 +25,11 @@
 #include "Song.h"
 #include "SongManager.h"
 #include "SongUtil.h"
-#include "StdString.h"
 #include "Steps.h"
 #include "StepsUtil.h"
 #include "Style.h"
 #include "Trail.h"
+#include "global.h"
 
 static void GetStepsForSong(Song* pSong, std::vector<Steps*>& vpStepsOut) {
   SongUtil::GetSteps(

@@ -1,14 +1,13 @@
 #ifndef ScreenOptionsCourseOverview_H
 #define ScreenOptionsCourseOverview_H
 
-#include <vector>
+#include <string>
 
 #include "PlayerNumber.h"
 #include "RageSound.h"
 #include "ScreenMessage.h"
 #include "ScreenOptions.h"
 #include "ThemeMetric.h"
-#include "global.h"
 
 class ScreenOptionsCourseOverview : public ScreenOptions {
  public:

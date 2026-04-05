@@ -1,7 +1,10 @@
 #include "ScreenOptions.h"
 
+#include <stdlib.h>
+
 #include <algorithm>
 #include <cmath>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -15,21 +18,25 @@
 #include "InputEventPlus.h"
 #include "InputFilter.h"
 #include "InputMapper.h"
-#include "LuaBinding.h"
 #include "LuaManager.h"
 #include "MessageManager.h"
 #include "OptionRowHandler.h"
 #include "OptionsCursor.h"
 #include "PlayerNumber.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageInputDevice.h"
 #include "RageLog.h"
 #include "RageThreads.h"
+#include "RageTypes.h"
 #include "RageUtil.h"
-#include "ScreenManager.h"
+#include "RageUtil_AutoPtr.h"
+#include "Screen.h"
 #include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
 #include "ThemeManager.h"
+#include "Transition.h"
+#include "Tween.h"
 #include "global.h"
 
 /*

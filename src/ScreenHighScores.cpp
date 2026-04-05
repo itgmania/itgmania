@@ -2,9 +2,11 @@
 
 #include <climits>
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "Actor.h"
 #include "ActorUtil.h"
 #include "CourseUtil.h"
 #include "Difficulty.h"
@@ -22,8 +24,10 @@
 #include "Song.h"
 #include "SongManager.h"
 #include "SongUtil.h"
+#include "Steps.h"
 #include "ThemeManager.h"
 #include "Trail.h"
+#include "Tween.h"
 #include "UnlockManager.h"
 #include "global.h"
 
