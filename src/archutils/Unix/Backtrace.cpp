@@ -5,7 +5,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 

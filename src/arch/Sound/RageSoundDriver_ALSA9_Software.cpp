@@ -1,20 +1,19 @@
 #include "RageSoundDriver_ALSA9_Software.h"
 
 #include <sys/resource.h>
-#include <sys/time.h>
 
 #include <cstdint>
 #include <string>
 
 #include "ALSA9Dynamic.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageLog.h"
-#include "RageSound.h"
-#include "RageSoundManager.h"
-#include "RageTimer.h"
 #include "RageUtil.h"
+#include "arch/RageDriver.h"
+#include "arch/Sound/ALSA9Helpers.h"
+#include "arch/Sound/RageSoundDriver.h"
 #include "archutils/Unix/GetSysInfo.h"
-#include "global.h"
 
 REGISTER_SOUND_DRIVER_CLASS2("ALSA-sw", ALSA9_Software);
 

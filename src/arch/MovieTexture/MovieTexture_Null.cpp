@@ -1,6 +1,5 @@
 #include "MovieTexture_Null.h"
 
-#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -11,6 +10,7 @@
 #include "RageTextureID.h"
 #include "RageUtil.h"
 #include "arch/MovieTexture/MovieTexture.h"
+#include "arch/RageDriver.h"
 #include "global.h"
 
 class MovieTexture_Null : public RageMovieTexture {

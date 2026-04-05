@@ -3,12 +3,12 @@
 #include <sys/stat.h>
 
 #include <cerrno>
-#include <cstdlib>
 #include <string>
 #include <vector>
 
 #include "MemoryCardManager.h"
 #include "PlayerNumber.h"
+#include "Preference.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "arch/MemoryCard/MemoryCardDriver.h"

@@ -4,10 +4,10 @@
 #include <fcntl.h>
 #include <sys/fcntl.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <cerrno>
-#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -20,6 +20,7 @@
 #include "RageUtil.h"
 #include "StdString.h"
 #include "arch/MemoryCard/MemoryCardDriver.h"
+#include "config.hpp"
 #include "global.h"
 
 bool MemoryCardDriverThreaded_Linux::TestWrite(UsbStorageDevice* pDevice) {

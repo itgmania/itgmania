@@ -3,14 +3,17 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
+#include <string>
+#include <utility>
 
 #include "RageLog.h"
 #include "RageSound.h"
 #include "RageSoundDriver.h"
 #include "RageSoundMixBuffer.h"
 #include "RageSoundReader.h"
-#include "RageThreads.h"
+#include "RageTimer.h"
 #include "RageUtil.h"
+#include "RageUtil_CircularBuffer.h"
 #include "config.hpp"
 #include "global.h"
 

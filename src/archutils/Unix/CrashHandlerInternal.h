@@ -3,8 +3,6 @@
 
 #include <signal.h>
 
-#include "Backtrace.h"
-
 #define BACKTRACE_MAX_SIZE 128
 
 struct CrashData {

@@ -1,5 +1,6 @@
 #include "MovieTexture_Generic.h"
 
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <memory>

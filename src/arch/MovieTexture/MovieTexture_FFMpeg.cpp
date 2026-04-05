@@ -1,6 +1,5 @@
 #include "MovieTexture_FFMpeg.h"
 
-#include <cerrno>
 #include <chrono>
 #include <cstdarg>
 #include <cstddef>
@@ -22,6 +21,7 @@
 #include "RageUtil/Endian.h"
 #include "arch/MovieTexture/MovieTexture.h"
 #include "arch/MovieTexture/MovieTexture_Generic.h"
+#include "arch/RageDriver.h"
 #include "global.h"
 
 static void FixLilEndian() {

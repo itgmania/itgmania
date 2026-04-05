@@ -2,19 +2,21 @@
 
 #include <pthread.h>
 #include <sys/time.h>
+#include <sys/types.h>
 
 #include <cerrno>
-#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <string>
 
 #include "RageLog.h"
 #include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
 #include "Threads_Pthreads.h"
+#include "config.hpp"
 #include "global.h"
 
 #if defined(MACOSX)

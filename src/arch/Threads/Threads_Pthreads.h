@@ -1,8 +1,11 @@
 #ifndef THREADS_PTHREADS_H
 #define THREADS_PTHREADS_H
 
+#include <pthread.h>
+
 #include <cstdint>
 
+#include "RageThreads.h"
 #include "Threads.h"
 
 class ThreadImpl_Pthreads : public ThreadImpl {

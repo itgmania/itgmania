@@ -5,7 +5,6 @@
 #include <string>
 
 #include "ALSA9Helpers.h"
-#include "RageSound.h"
 #include "RageSoundDriver.h"
 #include "RageThreads.h"
 

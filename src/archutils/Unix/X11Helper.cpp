@@ -1,9 +1,10 @@
 #include "X11Helper.h"
 
+#include <X11/Xmd.h>
+#include <X11/Xutil.h>
 #include <X11/extensions/dpms.h>
+#include <string.h>
 
-#include <algorithm>
-#include <cstdint>
 #include <string>
 
 #include "Preference.h"

@@ -5,8 +5,6 @@
 #include <string>
 
 #include "RageUtil.h"
-#include "StdString.h"
-#include "config.hpp"
 
 #if defined(MACOSX)
 #include "archutils/Darwin/Crash.h"

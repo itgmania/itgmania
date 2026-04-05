@@ -1,8 +1,5 @@
 #include "CrashHandlerInternal.h"
 
-#include <sys/signal.h>
-
-#include <csignal>
 #include <cstring>
 
 const char* itoa(unsigned n) {

@@ -3,9 +3,9 @@
 
 #include <cstddef>
 #include <string>
+#include <vector>
 
 #include "hidapi.h"
-#include "vector"
 
 enum HidResults {
   OperationFailed = -1,

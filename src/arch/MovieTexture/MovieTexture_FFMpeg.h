@@ -3,19 +3,29 @@
 #ifndef RAGE_MOVIE_TEXTURE_FFMPEG_H
 #define RAGE_MOVIE_TEXTURE_FFMPEG_H
 
+#include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <mutex>
+#include <string>
+#include <vector>
 
 #include "MovieTexture_Generic.h"
+#include "RageTextureID.h"
+#include "arch/MovieTexture/MovieTexture.h"
 
 struct RageSurface;
 
 namespace avcodec {
 extern "C" {
 #include <libavcodec/avcodec.h>
+#include <libavcodec/packet.h>
 #include <libavformat/avformat.h>
+#include <libavformat/avio.h>
+#include <libavutil/frame.h>
 #include <libavutil/pixdesc.h>
+#include <libavutil/pixfmt.h>
 #include <libswscale/swscale.h>
 }
 };  // namespace avcodec

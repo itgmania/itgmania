@@ -4,9 +4,7 @@
 #include <vector>
 
 #include "LocalizedString.h"
-#include "MovieTexture_Null.h"
 #include "Preference.h"
-#include "PrefsManager.h"
 #include "RageException.h"
 #include "RageFile.h"
 #include "RageLog.h"

@@ -1,16 +1,12 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <sys/select.h>
-#include <sys/signal.h>
-#include <sys/wait.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include <cerrno>
-#include <csignal>
 #include <cstdio>
-#include <cstdlib>
 #include <cstring>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -20,7 +16,6 @@
 #include "CrashHandlerInternal.h"
 #include "ProductInfo.h"
 #include "RageUtil.h"
-#include "StdString.h"
 #include "arch/ArchHooks/ArchHooks.h"
 #include "ver.h"
 
