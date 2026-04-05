@@ -27,7 +27,6 @@
 
 #include "InputHandler.h"
 #include "LightsManager.h"
-#include "RageInputDevice.h"
 #include "RageThreads.h"
 #include "archutils/Common/HidDevice.h"
 

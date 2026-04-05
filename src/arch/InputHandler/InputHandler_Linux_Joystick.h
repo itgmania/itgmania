@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "InputHandler.h"
-#include "RageInputDevice.h"
 #include "RageThreads.h"
 
 class InputHandler_Linux_Joystick : public InputHandler {

@@ -15,8 +15,13 @@
 
 #include "GamePreferences.h"  //needed for Axis Fix
 #include "LinuxInputManager.h"
+#include "Preference.h"
 #include "RageLog.h"
+#include "RageTimer.h"
 #include "RageUtil.h"
+#include "arch/InputHandler/InputHandler.h"
+#include "arch/RageDriver.h"
+#include "config.hpp"
 #include "global.h"
 
 REGISTER_INPUT_HANDLER_CLASS2(LinuxEvent, Linux_Event);

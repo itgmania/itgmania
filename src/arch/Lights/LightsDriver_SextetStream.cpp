@@ -11,6 +11,7 @@
 #include "RageUtil.h"
 #include "SextetUtils.h"
 #include "arch/Lights/LightsDriver.h"
+#include "arch/RageDriver.h"
 
 // Private members/methods are kept out of the header using an opaque pointer
 // `_impl`. Google "pimpl idiom" for an explanation of what's going on and why

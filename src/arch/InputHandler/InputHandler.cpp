@@ -10,6 +10,7 @@
 #include "RageInputDevice.h"
 #include "RageLog.h"
 #include "RageUtil.h"
+#include "StdString.h"
 #include "arch/RageDriver.h"
 #include "arch/arch_default.h"
 #include "global.h"

@@ -5,6 +5,7 @@
 #include "GameInput.h"
 #include "LightsManager.h"
 #include "arch/Lights/LightsDriver.h"
+#include "arch/RageDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(snek);
 

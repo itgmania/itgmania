@@ -1,15 +1,30 @@
 #include "LowLevelWindow_X11.h"
 
+#include <X11/X.h>
+#include <X11/Xutil.h>
+#include <X11/extensions/randr.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <algorithm>
+#include <map>
+#include <memory>
+
 #include "DisplaySpec.h"
+#include "GL/glew.h"
 #include "LocalizedString.h"
+#include "Preference.h"
 #include "PrefsManager.h"  // XXX
 #include "RageDisplay.h"   // VideoModeParams
 #include "RageDisplay_OGL_Helpers.h"
 #include "RageException.h"
 #include "RageLog.h"
 #include "RageTimer.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 #include "archutils/Unix/X11Helper.h"
 #include "global.h"
+
 using namespace RageDisplay_Legacy_Helpers;
 using namespace X11Helper;
 

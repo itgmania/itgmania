@@ -1,16 +1,18 @@
 #include "InputHandler_X11.h"
 
+#include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 
+#include <string>
 #include <vector>
 
 #include "InputFilter.h"
-#include "RageDisplay.h"
-#include "RageLog.h"
+#include "RageTimer.h"
 #include "RageUtil.h"
+#include "arch/InputHandler/InputHandler.h"
+#include "arch/RageDriver.h"
 #include "archutils/Unix/X11Helper.h"
-#include "global.h"
 
 using namespace X11Helper;
 

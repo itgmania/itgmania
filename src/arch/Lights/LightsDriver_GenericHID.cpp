@@ -1,14 +1,18 @@
 #include "LightsDriver_GenericHID.h"
 
 #include <libusb.h>
+#include <sys/types.h>
 
 #include <cstdint>
 #include <string>
 
+#include "GameInput.h"
 #include "LightsDriver.h"
+#include "LightsManager.h"
 #include "Preference.h"
 #include "RageLog.h"
-#include "global.h"
+#include "StdString.h"
+#include "arch/RageDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(GenericHID);
 

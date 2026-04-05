@@ -3,8 +3,6 @@
 #ifndef INPUT_HANDLER_X11_H
 #define INPUT_HANDLER_X11_H
 
-#include <vector>
-
 #include "InputHandler.h"
 #include "RageInputDevice.h"
 

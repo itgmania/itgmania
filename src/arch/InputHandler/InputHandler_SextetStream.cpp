@@ -1,7 +1,6 @@
 #include "InputHandler_SextetStream.h"
 
 #include <cerrno>
-#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -12,8 +11,10 @@
 #include "RageInputDevice.h"
 #include "RageLog.h"
 #include "RageThreads.h"
+#include "RageTimer.h"
 #include "RageUtil.h"
 #include "arch/InputHandler/InputHandler.h"
+#include "arch/RageDriver.h"
 
 // In so many words, ceil(n/6).
 #define NUMBER_OF_SEXTETS_FOR_BIT_COUNT(n) (((n) + 5) / 6)

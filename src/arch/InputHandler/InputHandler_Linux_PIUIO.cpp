@@ -7,6 +7,7 @@
 
 #include <cerrno>
 #include <cstring>
+#include <string>
 #include <vector>
 
 #include "RageInputDevice.h"
@@ -14,6 +15,8 @@
 #include "RageTimer.h"
 #include "RageUtil.h"
 #include "arch/InputHandler/InputHandler.h"
+#include "arch/RageDriver.h"
+#include "config.hpp"
 
 REGISTER_INPUT_HANDLER_CLASS2(PIUIO, Linux_PIUIO);
 

@@ -4,7 +4,6 @@
 #define INPUT_HANDLER_LINUX_EVENT_H
 
 #include <string>
-#include <vector>
 
 #include "InputHandler.h"
 #include "RageInputDevice.h"

@@ -4,6 +4,7 @@
 #include "LightsManager.h"
 #include "PlayerNumber.h"
 #include "arch/Lights/LightsDriver.h"
+#include "arch/RageDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(HidBlueDot);
 

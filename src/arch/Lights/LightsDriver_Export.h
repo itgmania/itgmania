@@ -5,6 +5,7 @@
 #define LIGHTS_DRIVER_EXPORT_H
 
 #include "LightsDriver.h"
+#include "LightsManager.h"
 #include "RageThreads.h"
 
 class LightsDriver_Export : public LightsDriver {

@@ -1,7 +1,6 @@
 #ifndef LightsDriver_Linux_PIUIO_Leds_H
 #define LightsDriver_Linux_PIUIO_Leds_H
 
-#include "LightsManager.h"
 #include "arch/Lights/LightsDriver_Linux_Leds.h"
 
 class LightsDriver_Linux_PIUIO_Leds : public LightsDriver_Linux_Leds {

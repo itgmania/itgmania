@@ -2,6 +2,7 @@
 #define LIGHTSDRIVER_LINUXPACDRIVE_H
 
 #include <libusb.h>
+#include <stddef.h>
 
 #include <cstdint>
 

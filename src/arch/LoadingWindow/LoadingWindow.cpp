@@ -3,11 +3,11 @@
 #include <string>
 #include <vector>
 
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "StdString.h"
-#include "arch/LoadingWindow/LoadingWindow_Null.h"
 #include "arch/arch_default.h"
 #include "global.h"
 

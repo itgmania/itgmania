@@ -8,15 +8,17 @@
 
 #include <algorithm>
 #include <cerrno>
-#include <set>
 #include <string>
 #include <vector>
 
 #include "LinuxInputManager.h"
 #include "RageInputDevice.h"  // NUM_JOYSTICKS
 #include "RageLog.h"
+#include "RageTimer.h"
 #include "RageUtil.h"
-#include "global.h"
+#include "arch/InputHandler/InputHandler.h"
+#include "arch/RageDriver.h"
+#include "config.hpp"
 
 REGISTER_INPUT_HANDLER_CLASS2(LinuxJoystick, Linux_Joystick);
 

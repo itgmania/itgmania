@@ -11,8 +11,12 @@
 
 #include "InputHandler_Linux_Event.h"
 #include "InputHandler_Linux_Joystick.h"
+#include "Preference.h"
 #include "RageInput.h"  // g_sInputDrivers g_sInputDeviceOrder
 #include "RageLog.h"
+#include "RageUtil.h"
+#include "config.hpp"
+#include "global.h"
 
 // Our DeviceButton KEY_* conflicts with linux/input.h KEY_*
 // clang-format off
