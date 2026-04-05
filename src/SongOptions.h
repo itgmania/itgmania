@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "EnumHelper.h"
+#include "LuaManager.h"
 
 enum AutosyncType {
   AutosyncType_Off,

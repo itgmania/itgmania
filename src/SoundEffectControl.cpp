@@ -1,6 +1,8 @@
 #include "SoundEffectControl.h"
 
+#include <map>
 #include <string>
+#include <utility>
 
 #include "GameConstantsAndTypes.h"
 #include "GameInput.h"
@@ -11,6 +13,8 @@
 #include "PlayerState.h"
 #include "RageSoundReader.h"
 #include "RageUtil.h"
+#include "SampleHistory.h"
+#include "SongPosition.h"
 
 SoundEffectControl::SoundEffectControl() {
   m_bLocked = false;

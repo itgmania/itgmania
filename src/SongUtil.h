@@ -8,6 +8,7 @@
 
 #include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 
 class Song;

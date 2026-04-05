@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Actor.h"
+#include "LuaManager.h"
 #include "RageTextureID.h"
 #include "RageTypes.h"
 

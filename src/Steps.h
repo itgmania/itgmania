@@ -1,6 +1,7 @@
 #ifndef STEPS_H
 #define STEPS_H
 
+#include <string>
 #include <vector>
 
 #include "Attack.h"
@@ -15,7 +16,6 @@
 #include "RageUtil_AutoPtr.h"
 #include "TechCounts.h"
 #include "TimingData.h"
-#include "global.h"
 
 class Profile;
 class NoteData;

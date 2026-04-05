@@ -1,19 +1,16 @@
 #include "Sprite.h"
 
 #include <algorithm>
-#include <cassert>
-#include <cfloat>
 #include <cmath>
-#include <cstddef>
 #include <cstring>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "Actor.h"
 #include "ActorUtil.h"
 #include "EnumHelper.h"
 #include "ImageCache.h"
-#include "LuaBinding.h"
 #include "LuaManager.h"
 #include "RageDisplay.h"
 #include "RageTexture.h"

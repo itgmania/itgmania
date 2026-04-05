@@ -12,6 +12,7 @@
 #include "PlayerNumber.h"
 #include "Profile.h"
 #include "ProfileManager.h"
+#include "RadarValues.h"
 #include "RageUtil.h"
 #include "Song.h"
 #include "SongManager.h"

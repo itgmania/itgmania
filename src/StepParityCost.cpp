@@ -1,6 +1,7 @@
 #include "StepParityCost.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <vector>
 

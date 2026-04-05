@@ -2,14 +2,9 @@
 
 #include <stdlib.h>
 
-#include <algorithm>
 #include <cmath>
-#include <cstdlib>
 #include <ctime>
-#include <memory>
-#include <regex>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "ActorUtil.h"
@@ -62,7 +57,6 @@
 #include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
-#include "RageUtil/Regex.h"
 #include "Screen.h"
 #include "ScreenManager.h"
 #include "SongCacheIndex.h"
@@ -485,9 +479,8 @@ bool CheckVideoDefaultSettings() {
 
     // Update last seen video card
     PREFSMAN->m_sLastSeenVideoDriver.Set(GetVideoDriverName());
-  } else if (
-      CompareNoCase(
-          PREFSMAN->m_sVideoRenderers.Get(), defaults.sVideoRenderers)) {
+  } else if (CompareNoCase(
+                 PREFSMAN->m_sVideoRenderers.Get(), defaults.sVideoRenderers)) {
     LOG->Warn(
         "Video renderer list has been changed from '%s' to '%s'",
         defaults.sVideoRenderers.c_str(),

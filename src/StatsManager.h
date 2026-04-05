@@ -4,6 +4,7 @@
 #include <set>
 #include <vector>
 
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "PlayerStageStats.h"
 #include "StageStats.h"

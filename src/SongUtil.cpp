@@ -1,9 +1,12 @@
 #include "SongUtil.h"
 
+#include <stdlib.h>
+
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <cstring>
+#include <iterator>
 #include <map>
 #include <set>
 #include <string>
@@ -11,6 +14,7 @@
 #include <vector>
 
 #include "CommonMetrics.h"
+#include "DateTime.h"
 #include "Difficulty.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
@@ -19,12 +23,14 @@
 #include "Grade.h"
 #include "Group.h"
 #include "LocalizedString.h"
-#include "LuaBinding.h"
 #include "LuaManager.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "Profile.h"
 #include "ProfileManager.h"
+#include "RadarValues.h"
 #include "RageLog.h"
 #include "RageThreads.h"
 #include "RageUtil.h"

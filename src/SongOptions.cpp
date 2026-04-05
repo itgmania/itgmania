@@ -1,11 +1,14 @@
 #include "SongOptions.h"
 
 #include <cmath>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "CommonMetrics.h"
 #include "EnumHelper.h"
+#include "LocalizedString.h"
+#include "LuaManager.h"
 #include "RageUtil.h"
 #include "RageUtil/Regex.h"
 #include "StdString.h"

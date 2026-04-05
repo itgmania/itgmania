@@ -8,6 +8,7 @@
 #include "BitmapText.h"
 #include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "ThemeMetric.h"
 

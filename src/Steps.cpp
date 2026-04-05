@@ -15,7 +15,6 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <map>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -41,11 +40,9 @@
 #include "RageUtil.h"
 #include "RageUtil/Regex.h"
 #include "Song.h"
-#include "SongManager.h"
 #include "StdString.h"
 #include "StepParityDatastructs.h"
 #include "StepParityGenerator.h"
-#include "StepsUtil.h"
 #include "TechCounts.h"
 #include "TimingData.h"
 #include "TimingSegments.h"
