@@ -5,6 +5,7 @@
 
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "ThemeMetric.h"
 
 /** @brief Unknown radar values are given a default value. */

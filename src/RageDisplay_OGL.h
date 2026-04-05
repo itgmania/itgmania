@@ -10,7 +10,9 @@
 #include <cstdint>
 #include <string>
 
+#include "GL/glew.h"
 #include "RageDisplay.h"
+#include "RageDisplay_OGL_Helpers.h"
 #include "RageTextureRenderTarget.h"
 #include "RageTypes.h"
 #include "global.h"

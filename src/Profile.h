@@ -14,6 +14,7 @@
 #include "Grade.h"
 #include "Group.h"
 #include "HighScore.h"
+#include "LuaManager.h"
 #include "LuaReference.h"
 #include "PlayerNumber.h"
 #include "RageUtil.h"
@@ -21,7 +22,6 @@
 #include "StepsUtil.h"
 #include "StyleUtil.h"
 #include "TrailUtil.h"
-#include "global.h"
 
 class Style;
 class XNode;

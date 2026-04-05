@@ -4,11 +4,13 @@
 #include <cstddef>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "Character.h"
 #include "CharacterManager.h"
 #include "Course.h"
+#include "DateTime.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
@@ -27,10 +29,9 @@
 #include "SongManager.h"
 #include "StdString.h"
 #include "Steps.h"
-#include "StepsUtil.h"
 #include "ThemeManager.h"
 #include "ThemeMetric.h"
-#include "XmlFile.h"
+#include "Trail.h"
 #include "global.h"
 
 ProfileManager* PROFILEMAN =

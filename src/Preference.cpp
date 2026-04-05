@@ -1,8 +1,8 @@
 #include "Preference.h"
 
+#include <set>
 #include <string>
 
-#include "LuaManager.h"
 #include "MessageManager.h"
 #include "RageLog.h"
 #include "StdString.h"

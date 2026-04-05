@@ -9,6 +9,7 @@
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
 #include "LuaManager.h"
+#include "MessageManager.h"
 #include "ModsGroup.h"
 #include "PlayerNumber.h"
 #include "RageLog.h"

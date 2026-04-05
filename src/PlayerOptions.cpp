@@ -2,9 +2,9 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cfloat>
 #include <cmath>
 #include <cstdio>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -14,7 +14,10 @@
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
+#include "LocalizedString.h"
 #include "LuaManager.h"
+#include "MessageManager.h"
+#include "ModsGroup.h"
 #include "NoteSkinManager.h"
 #include "PlayerNumber.h"
 #include "PrefsManager.h"
@@ -24,6 +27,7 @@
 #include "RageUtil/RandomNumbers.h"
 #include "RageUtil/Regex.h"
 #include "Song.h"
+#include "SongOptions.h"
 #include "StdString.h"
 #include "Steps.h"
 #include "Style.h"

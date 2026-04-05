@@ -1,11 +1,14 @@
 #include "PlayerAI.h"
 
+#include <bitset>
 #include <string>
 
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
 #include "IniFile.h"
 #include "LuaManager.h"
+#include "ModsGroup.h"
+#include "PlayerOptions.h"
 #include "PlayerState.h"
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"

@@ -1,12 +1,15 @@
 #include "PrefsManager.h"
 
 #include <map>
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "IniFile.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
 #include "Preference.h"
 #include "ProductInfo.h"
 #include "RageDisplay.h"

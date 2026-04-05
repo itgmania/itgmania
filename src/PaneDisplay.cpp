@@ -1,7 +1,10 @@
 #include "PaneDisplay.h"
 
+#include <memory>
 #include <string>
+#include <vector>
 
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "Course.h"
@@ -10,6 +13,8 @@
 #include "GameState.h"
 #include "HighScore.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "PlayerStageStats.h"
 #include "Profile.h"
@@ -20,6 +25,8 @@
 #include "Song.h"
 #include "Steps.h"
 #include "ThemeManager.h"
+#include "Trail.h"
+#include "Tween.h"
 #include "XmlFile.h"
 
 #define SHIFT_X(pc) \

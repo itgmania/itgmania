@@ -8,6 +8,7 @@
 #include <map>
 #include <numeric>
 #include <string>
+#include <utility>
 
 #include "CommonMetrics.h"
 #include "Course.h"
@@ -20,6 +21,7 @@
 #include "LuaManager.h"
 #include "MessageManager.h"
 #include "PlayerNumber.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"

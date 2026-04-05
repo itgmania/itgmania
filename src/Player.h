@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -16,10 +17,10 @@
 #include "NoteTypes.h"
 #include "PlayerState.h"
 #include "RageSound.h"
+#include "RageTimer.h"
 #include "ScreenMessage.h"
 #include "ThemeMetric.h"
 #include "TimingData.h"
-#include "global.h"
 
 class ScoreDisplay;
 class LifeMeter;

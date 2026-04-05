@@ -4,11 +4,13 @@
 #include <string>
 #include <vector>
 
-#include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
+#include "HighScore.h"
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "Preference.h"
 #include "Profile.h"
+#include "TrailUtil.h"
 
 class Song;
 class Steps;

@@ -3,7 +3,6 @@
 #ifndef RAGEBITMAPTEXTURE_H
 #define RAGEBITMAPTEXTURE_H
 
-#include <cstddef>
 #include <cstdint>
 
 #include "RageTexture.h"

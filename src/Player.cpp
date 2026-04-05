@@ -8,7 +8,6 @@
 #include <climits>
 #include <cmath>
 #include <cstddef>
-#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -22,10 +21,8 @@
 #include "CombinedLifeMeter.h"
 #include "Course.h"
 #include "Game.h"
-#include "GameCommand.h"
 #include "GameConstantsAndTypes.h"
 #include "GameInput.h"
-#include "GameManager.h"
 #include "GameSoundManager.h"
 #include "GameState.h"
 #include "HoldJudgment.h"
@@ -51,23 +48,18 @@
 #include "RageDisplay.h"
 #include "RageLog.h"
 #include "RageSound.h"
-#include "RageSoundManager.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
 #include "ScoreDisplay.h"
 #include "ScoreKeeper.h"
-#include "ScoreKeeperNormal.h"
 #include "ScreenDimensions.h"
 #include "ScreenManager.h"
-#include "ScreenMessage.h"
 #include "Song.h"
-#include "SongManager.h"
 #include "SongOptions.h"
 #include "SongPosition.h"
 #include "StageStats.h"
 #include "StatsManager.h"
-#include "StdString.h"
 #include "Steps.h"
 #include "Style.h"
 #include "ThemeManager.h"
@@ -2718,9 +2710,8 @@ void Player::Step(
           HideNote(col, iRowOfOverlappingNoteOrRow);
         }
       }
-    } else if (
-        NoteDataWithScoring::IsRowCompletelyJudged(
-            m_NoteData, iRowOfOverlappingNoteOrRow)) {
+    } else if (NoteDataWithScoring::IsRowCompletelyJudged(
+                   m_NoteData, iRowOfOverlappingNoteOrRow)) {
       FlashGhostRow(iRowOfOverlappingNoteOrRow);
     }
   }

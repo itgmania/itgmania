@@ -1,7 +1,5 @@
 #include "NoteSkinManager.h"
 
-#include <strings.h>
-
 #include <cstddef>
 #include <map>
 #include <memory>

@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,7 @@
 #include "EnumHelper.h"
 #include "LocalizedString.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
 #include "ModelTypes.h"
 #include "Preference.h"
 #include "RageFile.h"

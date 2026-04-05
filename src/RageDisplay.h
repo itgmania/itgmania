@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "LuaManager.h"
 #include "ModelTypes.h"
 #include "RageTypes.h"
 

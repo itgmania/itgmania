@@ -3,9 +3,9 @@
 
 #include <string>
 
-#include "Actor.h"
 #include "ActorFrame.h"
 #include "BitmapText.h"
+#include "LuaManager.h"
 #include "LuaReference.h"
 #include "PlayerStageStats.h"
 

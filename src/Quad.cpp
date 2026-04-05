@@ -1,5 +1,7 @@
 #include "Quad.h"
 
+#include <string>
+
 #include "Actor.h"
 #include "ActorUtil.h"
 #include "RageTextureManager.h"

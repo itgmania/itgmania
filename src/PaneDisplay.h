@@ -1,16 +1,17 @@
 #ifndef PANE_DISPLAY_H
 #define PANE_DISPLAY_H
 
-#include "ActorFrame.h"
-#include "ActorUtil.h"
-#include "AutoActor.h"
-#include "BitmapText.h"
-#include "PlayerNumber.h"
-#include "ThemeMetric.h"
-class XNode;
 #include <string>
 
+#include "ActorFrame.h"
+#include "AutoActor.h"
+#include "BitmapText.h"
 #include "LocalizedString.h"
+#include "LuaManager.h"
+#include "PlayerNumber.h"
+#include "ThemeMetric.h"
+
+class XNode;
 
 /**
  * @brief The various categories used to display data on Steps.

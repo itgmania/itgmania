@@ -1,9 +1,12 @@
 #include "Profile.h"
 
+#include <time.h>
+
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <set>
@@ -29,11 +32,13 @@
 #include "HighScore.h"
 #include "IniFile.h"
 #include "LuaManager.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "Preference.h"
 #include "PrefsManager.h"
 #include "ProfileManager.h"
 #include "RageFile.h"
+#include "RageFileBasic.h"
 #include "RageFileDriverDeflate.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
@@ -50,8 +55,8 @@
 #include "StyleUtil.h"
 #include "ThemeManager.h"
 #include "ThemeMetric.h"
+#include "Trail.h"
 #include "TrailUtil.h"
-#include "UnlockManager.h"
 #include "XmlFile.h"
 #include "XmlFileUtil.h"
 #include "global.h"

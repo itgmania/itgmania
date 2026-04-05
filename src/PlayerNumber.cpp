@@ -1,6 +1,9 @@
 #include "PlayerNumber.h"
 
+#include <memory>
+
 #include "EnumHelper.h"
+#include "LocalizedString.h"
 #include "LuaManager.h"
 
 static const char* PlayerNumberNames[] = {
