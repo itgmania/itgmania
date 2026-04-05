@@ -1,6 +1,6 @@
 #include "RageSoundReader_Vorbisfile.h"
 
-#include <cerrno>
+#include <algorithm>
 #include <cstdarg>
 #include <cstddef>
 #include <cstring>
@@ -8,7 +8,13 @@
 #include "RageException.h"
 #include "RageFileBasic.h"
 #include "RageLog.h"
+#include "RageSoundReader.h"
+#include "RageThreads.h"
 #include "RageUtil.h"
+#include "RageUtil_AutoPtr.h"
+#include "global.h"
+#include "ogg/config_types.h"
+#include "vorbis/codec.h"
 
 #if defined(INTEGER_VORBIS)
 #include <tremor/ivorbisfile.h>

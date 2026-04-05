@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cerrno>
-#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -14,9 +13,9 @@
 
 #include "LuaManager.h"
 #include "RageFile.h"
+#include "RageFileBasic.h"
 #include "RageFileDriver.h"
 #include "RageLog.h"
-#include "RageThreads.h"
 #include "RageUtil.h"
 #include "RageUtil_FileDB.h"
 #include "StdString.h"

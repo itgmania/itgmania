@@ -9,6 +9,7 @@
 #include "RageSoundReader.h"
 #include "RageSoundReader_Filter.h"
 #include "RageTimer.h"
+#include "RageUtil_AutoPtr.h"
 #include "global.h"
 
 /* Implement threaded read-ahead buffering.

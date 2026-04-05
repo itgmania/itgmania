@@ -4,6 +4,7 @@
 #define RAGE_FILE_DRIVER_SLICE_H
 
 #include <cstddef>
+#include <string>
 
 #include "RageFileBasic.h"
 

@@ -7,9 +7,11 @@
 #include "RageMath.h"
 
 #include <algorithm>
+#include <array>
 #include <cfloat>
 #include <cmath>
 #include <cstring>
+#include <string>
 #include <vector>
 
 #include "LuaManager.h"

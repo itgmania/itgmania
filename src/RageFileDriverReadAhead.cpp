@@ -46,13 +46,17 @@
 #include <fcntl.h>
 
 #include <algorithm>
-#include <cerrno>
 #include <cstddef>
 #include <cstring>
 
 #include "RageFileBasic.h"
 #include "RageFileManager_ReadAhead.h"
-#include "RageUtil.h"
+#include "config.hpp"
+
+#if defined(HAVE_FCNTL_H)
+#include <fcntl.h>
+#endif
+
 #if defined(WIN32)
 #include <io.h>
 #endif

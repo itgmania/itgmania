@@ -11,7 +11,6 @@
 #include "RageFile.h"
 #include "RageFileBasic.h"
 #include "RageFileDriverSlice.h"
-#include "RageLog.h"
 #include "RageUtil.h"
 #include "RageUtil/Endian.h"
 #include "global.h"

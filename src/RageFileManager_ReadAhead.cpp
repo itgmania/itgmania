@@ -1,11 +1,5 @@
 #include "RageFileManager_ReadAhead.h"
 
-#include <fcntl.h>
-#include <sys/types.h>
-
-#include <cerrno>
-#include <cstddef>
-
 #include "RageFileBasic.h"
 #if defined(WIN32)
 #include <io.h>

@@ -5,10 +5,10 @@
 #include <cstring>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "RageLog.h"
-#include "RageSound.h"
 #include "RageSoundConstants.h"
 #include "RageSoundMixBuffer.h"
 #include "RageSoundReader.h"

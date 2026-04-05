@@ -1,5 +1,7 @@
 #include "RageDisplay_OGL_Helpers.h"
 
+#include <GL/glew.h>
+
 #include <map>
 #include <string>
 

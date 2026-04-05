@@ -7,9 +7,11 @@
 #include <vector>
 
 #include "RageThreads.h"
+#include "RageTimer.h"
 #include "RageUtil.h"
 #include "RageUtil_FileDB.h"
 #include "StdString.h"
+#include "config.hpp"
 #include "global.h"
 
 #if defined(_WIN32)

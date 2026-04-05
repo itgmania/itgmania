@@ -9,6 +9,7 @@
 #include "RageSoundReader.h"
 #include "RageSoundReader_Filter.h"
 #include "RageUtil.h"
+#include "RageUtil_AutoPtr.h"
 #include "global.h"
 
 static const int WINDOW_SIZE_MS = 30;

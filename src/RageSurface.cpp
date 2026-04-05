@@ -1,8 +1,9 @@
 #include "RageSurface.h"
 
+#include <stdlib.h>
+
 #include <climits>
 #include <cmath>
-#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <memory>

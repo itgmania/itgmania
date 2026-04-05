@@ -8,12 +8,13 @@
 #include <cstring>
 #include <map>
 #include <string>
+#include <utility>
 
 #include "RageFileBasic.h"
 #include "RageLog.h"
 #include "RageSoundReader.h"
 #include "RageSoundReader_FileReader.h"
-#include "RageUtil.h"
+#include "RageUtil_AutoPtr.h"
 #include "global.h"
 #include "mad.h"
 

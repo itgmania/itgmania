@@ -14,7 +14,6 @@
 
 #include "LuaManager.h"
 #include "RageFileBasic.h"
-#include "RageFileDriver.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"

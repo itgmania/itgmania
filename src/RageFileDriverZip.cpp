@@ -10,6 +10,7 @@
 #include <string>
 
 #include "RageFile.h"
+#include "RageFileBasic.h"
 #include "RageFileDriver.h"
 #include "RageFileDriverDeflate.h"
 #include "RageFileDriverSlice.h"

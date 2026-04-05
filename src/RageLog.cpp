@@ -8,10 +8,10 @@
 #include <deque>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "RageFile.h"
-#include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
 #include "global.h"

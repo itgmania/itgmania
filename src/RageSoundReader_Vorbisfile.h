@@ -6,6 +6,7 @@
 #include <string>
 
 #include "RageSoundReader_FileReader.h"
+#include "vorbis/vorbisfile.h"
 
 typedef struct OggVorbis_File OggVorbis_File;
 class RageFileBasic;

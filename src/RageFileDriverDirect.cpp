@@ -1,6 +1,6 @@
 #include "RageFileDriverDirect.h"
 
-#include <fcntl.h>
+#include <sys/stat.h>
 
 #include <cerrno>
 #include <cstddef>
@@ -13,9 +13,14 @@
 #include "RageFileDriver.h"
 #include "RageFileDriverDirectHelpers.h"
 #include "RageFileManager.h"
-#include "RageLog.h"
 #include "RageUtil.h"
 #include "RageUtil_FileDB.h"
+#include "config.hpp"
+#include "global.h"
+
+#if defined(HAVE_FCNTL_H)
+#include <fcntl.h>
+#endif
 
 #if defined(_WIN32)
 // clang-format off

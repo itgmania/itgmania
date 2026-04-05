@@ -7,6 +7,8 @@
  */
 #include "RageSoundReader_Resample_Good.h"
 
+#include <string.h>
+
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -20,6 +22,7 @@
 #include "RageSoundReader_Filter.h"
 #include "RageThreads.h"
 #include "RageUtil.h"
+#include "RageUtil_AutoPtr.h"
 #include "global.h"
 
 constexpr int FILTER_LENGTH = 8;  // This must be a power of 2.
