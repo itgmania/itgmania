@@ -5,7 +5,6 @@
 #include <string>
 #include <type_traits>
 
-#include "LocalizedString.h"
 #include "LuaManager.h"
 #include "LuaReference.h"
 #include "RageUtil.h"

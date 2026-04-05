@@ -4,7 +4,7 @@
 
 #include "GameInput.h"
 #include "LightsManager.h"
-#include "global.h"
+#include "arch/RageDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(gpb);
 

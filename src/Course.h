@@ -1,7 +1,6 @@
 #ifndef COURSE_H
 #define COURSE_H
 
-#include <iterator>
 #include <map>
 #include <set>
 #include <string>

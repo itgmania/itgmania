@@ -1,7 +1,6 @@
 #include "ActorMultiVertex.h"
 
 #include <algorithm>
-#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <memory>

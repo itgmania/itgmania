@@ -1,6 +1,7 @@
 #include "TrailUtil.h"
 
 #include <numeric>
+#include <vector>
 
 #include "Course.h"
 #include "GameManager.h"

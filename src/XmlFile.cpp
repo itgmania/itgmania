@@ -14,6 +14,7 @@
 
 #include "LuaManager.h"
 #include "RageUtil.h"
+#include "global.h"
 
 const std::string XNode::TEXT_ATTRIBUTE = "__TEXT__";
 

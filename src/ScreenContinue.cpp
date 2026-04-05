@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 #include "EnumHelper.h"
 #include "GameInput.h"

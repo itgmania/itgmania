@@ -1,7 +1,6 @@
 #ifndef ScreenRanking_H
 #define ScreenRanking_H
 
-#include <iterator>
 #include <string>
 #include <utility>
 #include <vector>
