@@ -278,7 +278,8 @@ bool WheelBase::Select()  // return true if this selection can end the screen
     case WheelItemDataType_Generic:
       m_LastSelection = m_CurWheelItemData[m_iSelection];
       return true;
-    case WheelItemDataType_Section: {
+    case WheelItemDataType_Section:
+    case WheelItemDataType_ParentSection: {
       std::string sThisItemSectionName =
           m_CurWheelItemData[m_iSelection]->m_sText;
       // Keep track of the open section so that we can restore it
@@ -466,7 +467,8 @@ void WheelBase::RebuildWheelItems(int iDist) {
     WheelItemBase* pDisplay = items[i];
 
     pDisplay->SetExpanded(
-        pData->m_Type == WheelItemDataType_Section &&
+        (pData->m_Type == WheelItemDataType_Section ||
+         pData->m_Type == WheelItemDataType_ParentSection) &&
         pData->m_sText == m_sExpandedSectionName);
   }
 

@@ -140,6 +140,7 @@ LuaDeclareType(PlayMode);
 enum SortOrder {
   // song sorts
   SORT_PREFERRED,      /**< Sort by the user's preferred settings. */
+  SORT_SERIES,         /**< Sort by the series the Songs are in. */
   SORT_GROUP,          /**< Sort by the groups the Songs are in. */
   SORT_TITLE,          /**< Sort by the Song's title. */
   SORT_BPM,            /**< Sort by the Song's BPM. */

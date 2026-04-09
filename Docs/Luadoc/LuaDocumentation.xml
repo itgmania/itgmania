@@ -3114,6 +3114,9 @@ end
 	<Function name='GetExpandedSectionName' return='string' arguments=''>
 		Returns the name of the currently expanded section.
 	</Function>
+	<Function name='GetExpandedParentSectionName' return='string' arguments=''>
+		Returns the name of the parent of the currently expanded section.
+	</Function>
 	<Function name='GetGameSeed' return='int' arguments=''>
 		Return the random seed for the game.
 	</Function>
@@ -5961,6 +5964,9 @@ local args = {
 	<Function name='GetSongGroupBannerPath' return='string' arguments='string sGroup'>
 		Returns the path to the specified song group's banner.
 	</Function>
+	<Function name='GetSeriesBannerPath' return='string' arguments='string sSeries'>
+		Returns the path to the specified series' banner.
+	</Function>
 	<Function name='GetSongGroupColor' return='color' arguments='string sGroupName'>
 		Returns the song group color of <code>sGroupName</code>.
 	</Function>
@@ -5978,6 +5984,9 @@ local args = {
 	</Function>
 	<Function name='ShortenGroupName' return='string' arguments='string sGroupName'>
 		Returns the shortened group name (based on entries in Translations.xml).
+	</Function>
+	<Function name='ShortenSeriesName' return='string' arguments='string sSeriesName'>
+		Returns the shortened series name (based on entries in Translations.xml).
 	</Function>
 	<Function name='SetPreferredCourses' return='void' arguments='string sListName, bool bIsAbsolute'>
 		By default, loads preferred courses from <code>{theme}/Other/SongManager sListName.txt</code>.

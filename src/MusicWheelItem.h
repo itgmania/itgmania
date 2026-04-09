@@ -24,6 +24,8 @@ struct MusicWheelItemData;
 
 enum MusicWheelItemType {
   MusicWheelItemType_Song,
+  MusicWheelItemType_ParentExpanded,
+  MusicWheelItemType_ParentCollapsed,
   MusicWheelItemType_SectionExpanded,
   MusicWheelItemType_SectionCollapsed,
   MusicWheelItemType_Roulette,
@@ -73,11 +75,13 @@ struct MusicWheelItemData : public WheelItemBaseData {
         m_pGroup(nullptr),
         m_Flags(),
         m_iSectionCount(0),
+        m_sParentSection(""),
         m_sLabel(""),
         m_pAction() {}
   MusicWheelItemData(
       WheelItemDataType type, Song* pSong, std::string sSectionName,
-      Course* pCourse, Group* pGroup, RageColor color, int iSectionCount);
+      Course* pCourse, Group* pGroup, RageColor color, int iSectionCount,
+      std::string sParentSection = "");
 
   Course* m_pCourse;
   Song* m_pSong;
@@ -86,6 +90,7 @@ struct MusicWheelItemData : public WheelItemBaseData {
 
   // for TYPE_SECTION
   int m_iSectionCount;
+  std::string m_sParentSection;
 
   // for TYPE_SORT
   std::string m_sLabel;

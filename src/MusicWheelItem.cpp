@@ -31,20 +31,32 @@
 #include "global.h"
 
 static const char* MusicWheelItemTypeNames[] = {
-    "Song", "SectionExpanded", "SectionCollapsed", "Roulette", "Course", "Sort",
-    "Mode", "Random",          "Portal",           "Custom",
+    "Song",
+    "ParentExpanded",
+    "ParentCollapsed",
+    "SectionExpanded",
+    "SectionCollapsed",
+    "Roulette",
+    "Course",
+    "Sort",
+    "Mode",
+    "Random",
+    "Portal",
+    "Custom",
 };
 XToString(MusicWheelItemType);
 
 MusicWheelItemData::MusicWheelItemData(
     WheelItemDataType type, Song* pSong, std::string sSectionName,
-    Course* pCourse, Group* pGroup, RageColor color, int iSectionCount)
+    Course* pCourse, Group* pGroup, RageColor color, int iSectionCount,
+    std::string sParentSection)
     : WheelItemBaseData(type, sSectionName, color),
       m_pCourse(pCourse),
       m_pSong(pSong),
       m_pGroup(pGroup),
       m_Flags(WheelNotifyIcon::Flags()),
       m_iSectionCount(iSectionCount),
+      m_sParentSection(sParentSection),
       m_sLabel(""),
       m_pAction() {}
 
@@ -199,6 +211,8 @@ void MusicWheelItem::LoadFromWheelItemData(
   // Fill these in below
   std::string sDisplayName, sTranslitName;
   MusicWheelItemType type = MusicWheelItemType_Invalid;
+  const bool isChildSection = pWID->m_Type == WheelItemDataType_Section &&
+                              !pWID->m_sParentSection.empty();
 
   switch (pWID->m_Type) {
     DEFAULT_FAIL(pWID->m_Type);
@@ -215,23 +229,26 @@ void MusicWheelItem::LoadFromWheelItemData(
       m_WheelNotifyIcon.SetVisible(true);
       RefreshGrades();
       break;
+    case WheelItemDataType_ParentSection: {
+      sDisplayName = SONGMAN->ShortenSeriesName(
+          pWID->m_sLabel.empty() ? pWID->m_sText : pWID->m_sLabel);
+      sTranslitName = sDisplayName;
+      if (GAMESTATE->sExpandedParentSectionName == pWID->m_sText) {
+        type = MusicWheelItemType_ParentExpanded;
+      } else {
+        type = MusicWheelItemType_ParentCollapsed;
+      }
+      m_pTextSectionCount->SetText(ssprintf("%d", pWID->m_iSectionCount));
+      m_pTextSectionCount->SetVisible(true);
+    } break;
     case WheelItemDataType_Section: {
       if (pWID->m_pGroup == nullptr) {
         sDisplayName = SONGMAN->ShortenGroupName(pWID->m_sText);
       } else {
-        if (pWID->m_pGroup->GetSeries().empty()) {
-          sDisplayName =
-              SONGMAN->ShortenGroupName(pWID->m_pGroup->GetDisplayTitle());
-          sTranslitName =
-              SONGMAN->ShortenGroupName(pWID->m_pGroup->GetTranslitTitle());
-        } else {
-          // This will eventually do something different when we eventually
-          // implement nested folders for now, use the same behavior.
-          sDisplayName =
-              SONGMAN->ShortenGroupName(pWID->m_pGroup->GetDisplayTitle());
-          sTranslitName =
-              SONGMAN->ShortenGroupName(pWID->m_pGroup->GetTranslitTitle());
-        }
+        sDisplayName =
+            SONGMAN->ShortenGroupName(pWID->m_pGroup->GetDisplayTitle());
+        sTranslitName =
+            SONGMAN->ShortenGroupName(pWID->m_pGroup->GetTranslitTitle());
       }
       if (GAMESTATE->sExpandedSectionName == pWID->m_sText) {
         type = MusicWheelItemType_SectionExpanded;
@@ -285,6 +302,23 @@ void MusicWheelItem::LoadFromWheelItemData(
     bt->SetText(sDisplayName, sTranslitName);
     bt->SetDiffuse(pWID->m_color);
     bt->SetVisible(true);
+    if (isChildSection) {
+      bt->SetX(THEME->GetMetricF("MusicWheelItem", "ChildSectionX"));
+      bt->SetY(THEME->GetMetricF("MusicWheelItem", "ChildSectionY"));
+    } else {
+      ActorUtil::SetXY(*bt, "MusicWheelItem");
+    }
+  }
+
+  if (m_pTextSectionCount) {
+    if (isChildSection) {
+      m_pTextSectionCount->SetX(
+          THEME->GetMetricF("MusicWheelItem", "ChildSectionCountX"));
+      m_pTextSectionCount->SetY(
+          THEME->GetMetricF("MusicWheelItem", "ChildSectionCountY"));
+    } else {
+      ActorUtil::SetXY(*m_pTextSectionCount, "MusicWheelItem");
+    }
   }
 
   FOREACH_ENUM(MusicWheelItemType, i) {
@@ -306,6 +340,9 @@ void MusicWheelItem::LoadFromWheelItemData(
     msg.SetParam("Type", MusicWheelItemTypeToString(type));
     msg.SetParam("Color", pWID->m_color);
     msg.SetParam("Label", pWID->m_sLabel);
+    msg.SetParam("ParentSection", pWID->m_sParentSection);
+    msg.SetParam(
+        "IsParentSection", pWID->m_Type == WheelItemDataType_ParentSection);
 
     this->HandleMessage(msg);
   }
@@ -417,6 +454,13 @@ void MusicWheelItem::HandleMessage(const Message& msg) {
           type = MusicWheelItemType_SectionCollapsed;
         }
         break;
+      case WheelItemDataType_ParentSection:
+        if (GAMESTATE->sExpandedParentSectionName == pWID->m_sText) {
+          type = MusicWheelItemType_ParentExpanded;
+        } else {
+          type = MusicWheelItemType_ParentCollapsed;
+        }
+        break;
       case WheelItemDataType_Course:
         type = MusicWheelItemType_Course;
         break;
@@ -448,6 +492,9 @@ void MusicWheelItem::HandleMessage(const Message& msg) {
     setMsg.SetParam("Type", MusicWheelItemTypeToString(type));
     setMsg.SetParam("Color", pWID->m_color);
     setMsg.SetParam("Label", pWID->m_sLabel);
+    setMsg.SetParam("ParentSection", pWID->m_sParentSection);
+    setMsg.SetParam(
+        "IsParentSection", pWID->m_Type == WheelItemDataType_ParentSection);
     this->HandleMessage(setMsg);
 
     RefreshGrades();

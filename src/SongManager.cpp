@@ -817,6 +817,31 @@ std::string SongManager::GetSongGroupBannerPath(std::string sSongGroup) const {
 
   return std::string();
 }
+
+std::string SongManager::GetSeriesBannerPath(std::string sSeriesName) const {
+  for (std::map<std::string, std::unordered_set<Group*>>::const_iterator it =
+           m_mapSeriesToGroups.begin();
+       it != m_mapSeriesToGroups.end(); ++it) {
+    if (it->first != sSeriesName) {
+      continue;
+    }
+
+    // use the first pack's banner as the series banner for now.
+    Group* firstGroup = nullptr;
+    for (std::unordered_set<Group*>::const_iterator git = it->second.begin();
+         git != it->second.end(); ++git) {
+      if (firstGroup == nullptr ||
+          (*git)->GetGroupName() < firstGroup->GetGroupName()) {
+        firstGroup = *git;
+      }
+    }
+    if (firstGroup != nullptr) {
+      return GetSongGroupBannerPath(firstGroup->GetGroupName());
+    }
+  }
+
+  return std::string();
+}
 /*
 std::string SongManager::GetSongGroupBackgroundPath( std::string sSongGroup )
 const
@@ -1190,6 +1215,15 @@ std::string SongManager::ShortenGroupName(std::string sLongGroupName) {
 
   TitleFields title;
   title.Title = sLongGroupName;
+  tsub.Subst(title);
+  return title.Title;
+}
+
+std::string SongManager::ShortenSeriesName(std::string sLongSeriesName) {
+  static TitleSubst tsub("Series");
+
+  TitleFields title;
+  title.Title = sLongSeriesName;
   tsub.Subst(title);
   return title.Title;
 }
@@ -2697,6 +2731,7 @@ class LunaSongManager : public Luna<SongManager> {
   }
 
   DEFINE_METHOD(ShortenGroupName, ShortenGroupName(SArg(1)))
+  DEFINE_METHOD(ShortenSeriesName, ShortenSeriesName(SArg(1)))
 
   static int GetCourseGroupNames(T* p, lua_State* L) {
     std::vector<std::string> v;
@@ -2706,6 +2741,7 @@ class LunaSongManager : public Luna<SongManager> {
   }
 
   DEFINE_METHOD(GetSongGroupBannerPath, GetSongGroupBannerPath(SArg(1)));
+  DEFINE_METHOD(GetSeriesBannerPath, GetSeriesBannerPath(SArg(1)));
   DEFINE_METHOD(GetCourseGroupBannerPath, GetCourseGroupBannerPath(SArg(1)));
   DEFINE_METHOD(DoesSongGroupExist, DoesSongGroupExist(SArg(1)));
   DEFINE_METHOD(DoesCourseGroupExist, DoesCourseGroupExist(SArg(1)));
@@ -2770,12 +2806,14 @@ class LunaSongManager : public Luna<SongManager> {
     ADD_METHOD(GetSongsInGroup);
     ADD_METHOD(GetCoursesInGroup);
     ADD_METHOD(ShortenGroupName);
+    ADD_METHOD(ShortenSeriesName);
     ADD_METHOD(SetPreferredSongs);
     ADD_METHOD(SetPreferredSongsFromTable);
     ADD_METHOD(SetPreferredCourses);
     ADD_METHOD(GetPreferredSortSongs);
     ADD_METHOD(GetPreferredSortCourses);
     ADD_METHOD(GetSongGroupBannerPath);
+    ADD_METHOD(GetSeriesBannerPath);
     ADD_METHOD(GetCourseGroupBannerPath);
     ADD_METHOD(DoesSongGroupExist);
     ADD_METHOD(DoesCourseGroupExist);

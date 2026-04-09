@@ -101,6 +101,7 @@ class SongManager {
   bool IsGroupNeverCached(const std::string& group) const;
 
   std::string GetSongGroupBannerPath(std::string sSongGroup) const;
+  std::string GetSeriesBannerPath(std::string sSeriesName) const;
   // std::string GetSongGroupBackgroundPath( std::string sSongGroup ) const;
   void GetSongGroupNames(std::vector<std::string>& AddTo) const;
   bool DoesSongGroupExist(std::string sSongGroup) const;
@@ -119,6 +120,7 @@ class SongManager {
   void ResetGroupColors();
 
   static std::string ShortenGroupName(std::string sLongGroupName);
+  static std::string ShortenSeriesName(std::string sLongSeriesName);
 
   // Lookup
   /**

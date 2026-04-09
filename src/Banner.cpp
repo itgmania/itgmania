@@ -237,6 +237,7 @@ void Banner::LoadFromSortOrder(SortOrder so) {
     case SortOrder_Invalid:
       LoadFallback();
       break;
+    case SORT_SERIES:
     case SORT_GROUP:
       break;
     // This is necessary to prevent multiple banners from matching for

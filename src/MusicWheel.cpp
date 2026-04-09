@@ -121,6 +121,7 @@ void MusicWheel::Load(std::string sType) {
   USE_SECTIONS_WITH_PREFERRED_GROUP.Load(
       sType, "UseSectionsWithPreferredGroup");
   HIDE_INACTIVE_SECTIONS.Load(sType, "OnlyShowActiveSection");
+  HIDE_INACTIVE_PARENT_SECTIONS.Load(sType, "OnlyShowActiveParentSection");
   HIDE_ACTIVE_SECTION_TITLE.Load(sType, "HideActiveSectionTitle");
   REMIND_WHEEL_POSITIONS.Load(sType, "RemindWheelPositions");
   std::vector<std::string> vsModeChoiceNames;
@@ -290,7 +291,7 @@ void MusicWheel::ReloadSongList() {
   // rebuild the info associated with this sort order
   readyWheelItemsData(GAMESTATE->m_SortOrder);
   // re-open the section to refresh song counts, etc.
-  SetOpenSection(m_sExpandedSectionName);
+  SetOpenSections(m_sExpandedParentSectionName, m_sExpandedSectionName);
   // navigate to the song nearest to what was previously selected
   m_iSelection = songIdxToPreserve;
   RebuildWheelItems();
@@ -367,8 +368,12 @@ bool MusicWheel::SelectSong(const Song* p) {
   } else {
     for (i = 0; i < from.size(); i++) {
       if (from[i]->m_pSong == p) {
-        // make its group the currently expanded group
-        SetOpenSection(from[i]->m_sText);
+        if (!from[i]->m_sParentSection.empty()) {
+          SetOpenSections(from[i]->m_sParentSection, from[i]->m_sText);
+        } else {
+          // make its group the currently expanded group
+          SetOpenSection(from[i]->m_sText);
+        }
         break;
       }
     }
@@ -396,7 +401,11 @@ bool MusicWheel::SelectCourse(const Course* p) {
   for (i = 0; i < from.size(); i++) {
     if (from[i]->m_pCourse == p) {
       // make its group the currently expanded group
-      SetOpenSection(from[i]->m_sText);
+      if (!from[i]->m_sParentSection.empty()) {
+        SetOpenSections(from[i]->m_sParentSection, from[i]->m_sText);
+      } else {
+        SetOpenSection(from[i]->m_sText);
+      }
       break;
     }
   }
@@ -455,6 +464,7 @@ void MusicWheel::GetSongList(std::vector<Song*>& arraySongs, SortOrder so) {
     case SORT_POPULARITY:
       apAllSongs = SONGMAN->GetPopularSongs();
       break;
+    case SORT_SERIES:
     case SORT_GROUP:
       // if we're not using sections with a preferred song group, and there
       // is a group to load, only load those songs. -aj
@@ -582,6 +592,7 @@ void MusicWheel::BuildWheelItemDatas(
     case SORT_METER:
     case SORT_PREFERRED:
     case SORT_ROULETTE:
+    case SORT_SERIES:
     case SORT_GROUP:
     case SORT_TITLE:
     case SORT_BPM:
@@ -634,6 +645,7 @@ void MusicWheel::BuildWheelItemDatas(
           bUseSections = false;
           break;
         }
+        case SORT_SERIES:
         case SORT_GROUP:
           SongUtil::SortSongPointerArrayByGroupAndTitle(arraySongs);
           if (USE_SECTIONS_WITH_PREFERRED_GROUP) {
@@ -778,6 +790,9 @@ void MusicWheel::BuildWheelItemDatas(
         /* We're using sections, so use the section name as the top-level sort.
          */
         switch (so) {
+          case SORT_SERIES:
+            SongUtil::SortSongPointerArrayByParentSectionName(arraySongs);
+            break;
           case SORT_GROUP:
             SongUtil::SortSongPointerArrayByGroup(arraySongs);
             break;
@@ -890,6 +905,81 @@ void MusicWheel::BuildWheelItemDatas(
             arrayWheelItemDatas.push_back(new MusicWheelItemData(
                 WheelItemDataType_Song, pSong, sLastSection, nullptr, pGroup,
                 SONGMAN->GetSongColor(pSong), 0));
+          }
+          break;
+
+        case SORT_SERIES:
+          // this is currently the only sort that creates
+          // WheelItemDataType_ParentSection items.
+          if (bUseSections) {
+            std::string lastSeries;
+            std::string lastGroup;
+            bool haveLast = false;
+            for (unsigned i = 0; i < arraySongs.size(); ++i) {
+              Song* pSong = arraySongs[i];
+              Group* pGroup = SONGMAN->GetGroup(pSong);
+              if (pGroup == nullptr) {
+                LOG->Warn("Song %s has no group!", pSong->GetSongDir().c_str());
+                continue;
+              }
+              const std::string& seriesName = pGroup->GetSeries();
+              const std::string groupName = pGroup->GetGroupName();
+
+              // New ParentSection for each new series.
+              if (!seriesName.empty() &&
+                  (!haveLast || seriesName != lastSeries)) {
+                int seriesSongCount = 0;
+                for (unsigned j = i; j < arraySongs.size(); ++j) {
+                  Group* pG = SONGMAN->GetGroup(arraySongs[j]);
+                  if (pG != nullptr && pG->GetSeries() == seriesName) {
+                    ++seriesSongCount;
+                  } else {
+                    break;
+                  }
+                }
+                RageColor seriesColor =
+                    SECTION_COLORS.GetValue(iSectionColorIndex);
+                iSectionColorIndex =
+                    (iSectionColorIndex + 1) % NUM_SECTION_COLORS;
+                MusicWheelItemData* pSeriesItem = new MusicWheelItemData(
+                    WheelItemDataType_ParentSection, nullptr, seriesName,
+                    nullptr, nullptr, seriesColor, seriesSongCount);
+                pSeriesItem->m_sLabel = seriesName;
+                arrayWheelItemDatas.push_back(pSeriesItem);
+              }
+
+              if (!haveLast || groupName != lastGroup) {
+                int groupSongCount = 0;
+                for (unsigned j = i; j < arraySongs.size(); ++j) {
+                  Group* pG = SONGMAN->GetGroup(arraySongs[j]);
+                  if (pG == pGroup) {
+                    ++groupSongCount;
+                  } else {
+                    break;
+                  }
+                }
+                arrayWheelItemDatas.push_back(new MusicWheelItemData(
+                    WheelItemDataType_Section, nullptr, groupName, nullptr,
+                    pGroup, SONGMAN->GetSongGroupColor(groupName),
+                    groupSongCount, seriesName));
+              }
+
+              arrayWheelItemDatas.push_back(new MusicWheelItemData(
+                  WheelItemDataType_Song, pSong, groupName, nullptr, pGroup,
+                  SONGMAN->GetSongColor(pSong), 0, seriesName));
+
+              lastSeries = seriesName;
+              lastGroup = groupName;
+              haveLast = true;
+            }
+          } else {
+            for (unsigned i = 0; i < arraySongs.size(); i++) {
+              Song* pSong = arraySongs[i];
+              Group* pGroup = SONGMAN->GetGroup(pSong);
+              arrayWheelItemDatas.push_back(new MusicWheelItemData(
+                  WheelItemDataType_Song, pSong, sLastSection, nullptr, pGroup,
+                  SONGMAN->GetSongColor(pSong), 0));
+            }
           }
           break;
 
@@ -1226,7 +1316,8 @@ void MusicWheel::FilterWheelItemDatas(
       continue;
     }
 
-    if (WID.m_Type == WheelItemDataType_Section &&
+    if ((WID.m_Type == WheelItemDataType_Section ||
+         WID.m_Type == WheelItemDataType_ParentSection) &&
         STATE_ROULETTE_SPINNING == m_WheelState) {
       aiRemove[i] = true;
     }
@@ -1309,17 +1400,27 @@ void MusicWheel::FilterWheelItemDatas(
 
   // Update the song count in each section header.
   unsigned filteredSize = aFilteredData.size();
-  for (unsigned i = 0; i < filteredSize;) {
+  MusicWheelItemData* pCurSection = nullptr;
+  MusicWheelItemData* pCurParent = nullptr;
+  for (unsigned i = 0; i < filteredSize; ++i) {
     MusicWheelItemData& WID = *aFilteredData[i];
-    ++i;
-    if (WID.m_Type != WheelItemDataType_Section) {
-      continue;
-    }
-
-    // Count songs in this section
-    WID.m_iSectionCount = 0;
-    for (; i < filteredSize && aFilteredData[i]->m_sText == WID.m_sText; ++i) {
-      ++WID.m_iSectionCount;
+    if (WID.m_Type == WheelItemDataType_ParentSection) {
+      pCurParent = &WID;
+      pCurParent->m_iSectionCount = 0;
+      pCurSection = nullptr;
+    } else if (WID.m_Type == WheelItemDataType_Section) {
+      pCurSection = &WID;
+      pCurSection->m_iSectionCount = 0;
+      if (WID.m_sParentSection.empty()) {
+        pCurParent = nullptr;
+      }
+    } else if (WID.m_Type == WheelItemDataType_Song) {
+      if (pCurSection != nullptr) {
+        ++pCurSection->m_iSectionCount;
+      }
+      if (pCurParent != nullptr && !WID.m_sParentSection.empty()) {
+        ++pCurParent->m_iSectionCount;
+      }
     }
   }
 
@@ -1328,7 +1429,8 @@ void MusicWheel::FilterWheelItemDatas(
   // since this is a rare case.
   for (unsigned i = 0; i < filteredSize; ++i) {
     MusicWheelItemData& WID = *aFilteredData[i];
-    if (WID.m_Type != WheelItemDataType_Section) {
+    if (WID.m_Type != WheelItemDataType_Section &&
+        WID.m_Type != WheelItemDataType_ParentSection) {
       continue;
     }
     if (WID.m_iSectionCount > 0) {
@@ -1566,6 +1668,45 @@ bool MusicWheel::Select()  // return true if this selection ends the screen
       break;
   }
 
+  const MusicWheelItemData* pSelection = GetCurWheelItemData(m_iSelection);
+  if (pSelection->m_Type == WheelItemDataType_Section ||
+      pSelection->m_Type == WheelItemDataType_ParentSection) {
+    GAMESTATE->sLastOpenSection = pSelection->m_sText;
+    if (pSelection->m_Type == WheelItemDataType_ParentSection) {
+      if (m_sExpandedParentSectionName == pSelection->m_sText &&
+          m_sExpandedSectionName.empty()) {
+        SetOpenSections("", "");
+        m_soundCollapse.Play(true);
+      } else {
+        SetOpenSections(pSelection->m_sText, "");
+        m_soundExpand.Play(true);
+      }
+      return false;
+    }
+
+    if (!pSelection->m_sParentSection.empty()) {
+      if (m_sExpandedParentSectionName == pSelection->m_sParentSection &&
+          m_sExpandedSectionName == pSelection->m_sText) {
+        SetOpenSections(pSelection->m_sParentSection, "");
+        m_soundCollapse.Play(true);
+      } else {
+        SetOpenSections(pSelection->m_sParentSection, pSelection->m_sText);
+        m_soundExpand.Play(true);
+      }
+      return false;
+    }
+
+    if (m_sExpandedParentSectionName.empty() &&
+        m_sExpandedSectionName == pSelection->m_sText) {
+      SetOpenSections("", "");
+      m_soundCollapse.Play(true);
+    } else {
+      SetOpenSections("", pSelection->m_sText);
+      m_soundExpand.Play(true);
+    }
+    return false;
+  }
+
   if (!WheelBase::Select()) {
     return false;
   }
@@ -1606,7 +1747,7 @@ void MusicWheel::StartRoulette() {
   }
 
   m_WheelItemDatasStatus[GAMESTATE->m_SortOrder] = INVALID;  // force rebuild
-  SetOpenSection(m_sExpandedSectionName);
+  SetOpenSections(m_sExpandedParentSectionName, m_sExpandedSectionName);
   readyWheelItemsData(GAMESTATE->m_SortOrder);
 }
 
@@ -1634,9 +1775,49 @@ void MusicWheel::StartRandom() {
 }
 
 void MusicWheel::SetOpenSection(std::string group) {
-  // LOG->Trace( "SetOpenSection %s", group.c_str() );
-  m_sExpandedSectionName = group;
-  GAMESTATE->sExpandedSectionName = group;
+  SetOpenSections("", group);
+}
+
+bool MusicWheel::CloseOpenSectionOneLevel() {
+  // In a section within a parent: collapse back to the parent.
+  if (!m_sExpandedParentSectionName.empty() &&
+      !m_sExpandedSectionName.empty()) {
+    const std::string parentSectionName = m_sExpandedParentSectionName;
+    const std::string childSectionName = m_sExpandedSectionName;
+    SetOpenSections(parentSectionName, "");
+    SelectSection(childSectionName);
+    RebuildWheelItems();
+    return true;
+  }
+
+  // Only a parent section is open: collapse it.
+  if (!m_sExpandedParentSectionName.empty()) {
+    const std::string parentSectionName = m_sExpandedParentSectionName;
+    SetOpenSections("", "");
+    SelectSection(parentSectionName);
+    RebuildWheelItems();
+    return true;
+  }
+
+  if (!m_sExpandedSectionName.empty()) {
+    const std::string sectionName = m_sExpandedSectionName;
+    SetOpenSections("", "");
+    SelectSection(sectionName);
+    RebuildWheelItems();
+    return true;
+  }
+
+  return false;
+}
+
+void MusicWheel::SetOpenSections(
+    const std::string& parentSection, const std::string& section) {
+  m_sExpandedParentSectionName = parentSection;
+  m_sExpandedSectionName = section;
+  GAMESTATE->sExpandedSectionName = m_sExpandedSectionName.empty()
+                                        ? m_sExpandedParentSectionName
+                                        : m_sExpandedSectionName;
+  GAMESTATE->sExpandedParentSectionName = m_sExpandedParentSectionName;
 
   // wheel positions = num song groups
   if (REMIND_WHEEL_POSITIONS && HIDE_INACTIVE_SECTIONS) {
@@ -1659,47 +1840,116 @@ void MusicWheel::SetOpenSection(std::string group) {
   std::vector<MusicWheelItemData*>& from =
       getWheelItemsData(GAMESTATE->m_SortOrder);
   m_CurWheelItemData.reserve(from.size());
-  for (unsigned i = 0; i < from.size(); ++i) {
-    MusicWheelItemData& d = *from[i];
 
-    // Hide songs/courses which are not in the active section
-    if ((d.m_Type == WheelItemDataType_Song ||
-         d.m_Type == WheelItemDataType_Course) &&
-        !d.m_sText.empty() && d.m_sText != group) {
-      continue;
-    }
+  // A parent section is open but no child section has been drilled into
+  // yet: show only parent sections and the child sections of the open
+  // parent (no songs).
+  const bool parentSectionOnlyView =
+      (GAMESTATE->m_SortOrder == SORT_SERIES &&
+       !m_sExpandedParentSectionName.empty() && m_sExpandedSectionName.empty());
 
-    // In certain situations (e.g. simulating Pump it Up or IIDX),
-    // themes may want to hide inactive section headings as well.
-    if (HIDE_INACTIVE_SECTIONS && d.m_Type == WheelItemDataType_Section &&
-        group != "") {
-      // Based on the HideActiveSectionTitle metric, we either
-      // hide all section titles, or only those which are not
-      // currently open.
-      if (HIDE_ACTIVE_SECTION_TITLE || d.m_sText != group) {
+  if (parentSectionOnlyView) {
+    for (unsigned i = 0; i < from.size(); ++i) {
+      MusicWheelItemData& d = *from[i];
+      if (d.m_Type != WheelItemDataType_Section &&
+          d.m_Type != WheelItemDataType_ParentSection) {
         continue;
       }
-    }
 
-    // If AUTO_SET_STYLE, hide courses that prefer a style that isn't available.
-    if (d.m_Type == WheelItemDataType_Course && CommonMetrics::AUTO_SET_STYLE) {
-      const Style* pStyle = d.m_pCourse->GetCourseStyle(
-          GAMESTATE->m_pCurGame, GAMESTATE->GetNumSidesJoined());
-      if (pStyle) {
-        if (find(vpPossibleStyles.begin(), vpPossibleStyles.end(), pStyle) ==
-            vpPossibleStyles.end()) {
+      // Child sections are only visible while their parent is open.
+      if (!d.m_sParentSection.empty() &&
+          d.m_sParentSection != m_sExpandedParentSectionName) {
+        continue;
+      }
+
+      // Show only the active parent and its child sections.
+      if (HIDE_INACTIVE_PARENT_SECTIONS) {
+        bool isActiveParent = d.m_Type == WheelItemDataType_ParentSection &&
+                              d.m_sParentSection.empty() &&
+                              d.m_sText == m_sExpandedParentSectionName;
+        bool isChildOfActive =
+            !d.m_sParentSection.empty() &&
+            d.m_sParentSection == m_sExpandedParentSectionName;
+        if (!isActiveParent && !isChildOfActive) {
+          continue;
+        }
+        if (HIDE_ACTIVE_SECTION_TITLE && isActiveParent) {
           continue;
         }
       }
-    }
 
-    // Only show tutorial songs in arcade
-    if (GAMESTATE->m_PlayMode != PLAY_MODE_REGULAR && d.m_pSong &&
-        d.m_pSong->IsTutorial()) {
-      continue;
+      m_CurWheelItemData.push_back(&d);
     }
+  } else {
+    for (unsigned i = 0; i < from.size(); ++i) {
+      MusicWheelItemData& d = *from[i];
 
-    m_CurWheelItemData.push_back(&d);
+      if ((d.m_Type == WheelItemDataType_Section ||
+           d.m_Type == WheelItemDataType_ParentSection) &&
+          !d.m_sParentSection.empty() &&
+          d.m_sParentSection != m_sExpandedParentSectionName) {
+        continue;
+      }
+
+      if ((d.m_Type == WheelItemDataType_Song ||
+           d.m_Type == WheelItemDataType_Course) &&
+          !d.m_sText.empty()) {
+        if (m_sExpandedSectionName.empty() ||
+            d.m_sText != m_sExpandedSectionName) {
+          continue;
+        }
+      }
+
+      // In certain situations (e.g. simulating Pump it Up or IIDX),
+      // themes may want to hide inactive section headings as well.
+      // We extend this to both parent and child sections.
+      if (HIDE_INACTIVE_SECTIONS &&
+          (d.m_Type == WheelItemDataType_Section ||
+           d.m_Type == WheelItemDataType_ParentSection) &&
+          !m_sExpandedSectionName.empty()) {
+        bool isOpenParentSection =
+            d.m_Type == WheelItemDataType_ParentSection &&
+            d.m_sParentSection.empty() &&
+            d.m_sText == m_sExpandedParentSectionName;
+        bool isOpenChildSection =
+            !d.m_sParentSection.empty() &&
+            d.m_sParentSection == m_sExpandedParentSectionName &&
+            d.m_sText == m_sExpandedSectionName;
+        bool isOpenTopSection = d.m_Type == WheelItemDataType_Section &&
+                                d.m_sParentSection.empty() &&
+                                m_sExpandedParentSectionName.empty() &&
+                                d.m_sText == m_sExpandedSectionName;
+        if (!isOpenParentSection && !isOpenChildSection && !isOpenTopSection) {
+          continue;
+        }
+        if (HIDE_ACTIVE_SECTION_TITLE &&
+            (isOpenChildSection || isOpenTopSection)) {
+          continue;
+        }
+      }
+
+      // If AUTO_SET_STYLE, hide courses that prefer a style that isn't
+      // available.
+      if (d.m_Type == WheelItemDataType_Course &&
+          CommonMetrics::AUTO_SET_STYLE) {
+        const Style* pStyle = d.m_pCourse->GetCourseStyle(
+            GAMESTATE->m_pCurGame, GAMESTATE->GetNumSidesJoined());
+        if (pStyle) {
+          if (find(vpPossibleStyles.begin(), vpPossibleStyles.end(), pStyle) ==
+              vpPossibleStyles.end()) {
+            continue;
+          }
+        }
+      }
+
+      // Only show tutorial songs in arcade
+      if (GAMESTATE->m_PlayMode != PLAY_MODE_REGULAR && d.m_pSong &&
+          d.m_pSong->IsTutorial()) {
+        continue;
+      }
+
+      m_CurWheelItemData.push_back(&d);
+    }
   }
 
   // restore the past group song index
@@ -1735,9 +1985,16 @@ void MusicWheel::GetCurrentSections(std::vector<std::string>& sections) {
   std::vector<MusicWheelItemData*>& wiWheelItems =
       getWheelItemsData(GAMESTATE->m_SortOrder);
   for (unsigned i = 0; i < wiWheelItems.size(); i++) {
-    if (wiWheelItems[i]->m_Type == WheelItemDataType_Section &&
+    if ((wiWheelItems[i]->m_Type == WheelItemDataType_Section ||
+         wiWheelItems[i]->m_Type == WheelItemDataType_ParentSection) &&
+        wiWheelItems[i]->m_sParentSection.empty() &&
         !wiWheelItems[i]->m_sText.empty()) {
-      sections.push_back(wiWheelItems[i]->m_sText);
+      if (wiWheelItems[i]->m_Type == WheelItemDataType_ParentSection &&
+          !wiWheelItems[i]->m_sLabel.empty()) {
+        sections.push_back(wiWheelItems[i]->m_sLabel);
+      } else {
+        sections.push_back(wiWheelItems[i]->m_sText);
+      }
     }
   }
 }
@@ -1762,7 +2019,8 @@ std::string MusicWheel::JumpToNextGroup() {
   } else {
     unsigned int iLastSelection = m_iSelection;
     for (unsigned int i = m_iSelection; i < m_CurWheelItemData.size(); ++i) {
-      if (m_CurWheelItemData[i]->m_Type == WheelItemDataType_Section &&
+      if ((m_CurWheelItemData[i]->m_Type == WheelItemDataType_Section ||
+           m_CurWheelItemData[i]->m_Type == WheelItemDataType_ParentSection) &&
           i != (unsigned int)m_iSelection) {
         m_iSelection = i;
         return m_CurWheelItemData[i]->m_sText;
@@ -1771,7 +2029,8 @@ std::string MusicWheel::JumpToNextGroup() {
     // it should not get down here, but it might happen... only search up to
     // the previous selection.
     for (unsigned int i = 0; i < iLastSelection; ++i) {
-      if (m_CurWheelItemData[i]->m_Type == WheelItemDataType_Section &&
+      if ((m_CurWheelItemData[i]->m_Type == WheelItemDataType_Section ||
+           m_CurWheelItemData[i]->m_Type == WheelItemDataType_ParentSection) &&
           i != (unsigned int)m_iSelection) {
         m_iSelection = i;
         return m_CurWheelItemData[i]->m_sText;
@@ -1798,7 +2057,8 @@ std::string MusicWheel::JumpToPrevGroup() {
     }
   } else {
     for (unsigned int i = m_iSelection; i > 0; --i) {
-      if (m_CurWheelItemData[i]->m_Type == WheelItemDataType_Section &&
+      if ((m_CurWheelItemData[i]->m_Type == WheelItemDataType_Section ||
+           m_CurWheelItemData[i]->m_Type == WheelItemDataType_ParentSection) &&
           i != (unsigned int)m_iSelection) {
         m_iSelection = i;
         return m_CurWheelItemData[i]->m_sText;
@@ -1807,7 +2067,8 @@ std::string MusicWheel::JumpToPrevGroup() {
     // in case it wasn't found above:
     for (unsigned int i = m_CurWheelItemData.size() - 1; i > 0; --i) {
       LOG->Trace("JumpToPrevGroup iteration 2 | i = %u", i);
-      if (m_CurWheelItemData[i]->m_Type == WheelItemDataType_Section) {
+      if (m_CurWheelItemData[i]->m_Type == WheelItemDataType_Section ||
+          m_CurWheelItemData[i]->m_Type == WheelItemDataType_ParentSection) {
         m_iSelection = i;
         LOG->Trace(
             "finding it in #2 | i = %u | text = %s", i,
@@ -1834,7 +2095,7 @@ void MusicWheel::PlayerJoined() {
   // it seems weird that courses wouldn't also be affected by a player
   // joining, and not doing it in autogen causes other weird problems. -Kyz
   FOREACH_ENUM(SortOrder, so) { m_WheelItemDatasStatus[so] = INVALID; }
-  SetOpenSection(m_sExpandedSectionName);
+  SetOpenSections(m_sExpandedParentSectionName, m_sExpandedSectionName);
 }
 
 bool MusicWheel::IsRouletting() const {

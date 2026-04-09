@@ -913,6 +913,7 @@
 			<Function name='GetEditSourceSteps'/>
 			<Function name='GetEnabledPlayers'/>
 			<Function name='GetExpandedSectionName'/>
+			<Function name='GetExpandedParentSectionName'/>
 			<Function name='GetGameSeed'/>
 			<Function name='GetGameplayLeadIn'/>
 			<Function name='GetHardestStepsDifficulty'/>
@@ -1890,12 +1891,16 @@
 			<Function name='GetSongGroupBannerPath'/>
 			<Function name='GetSongGroupColor'/>
 			<Function name='GetSongGroupNames'/>
+			<Function name='GetSeriesBannerPath'/>
+
 			<Function name='GetGroup'/>
 			<Function name='GetSongRank'/>
 			<Function name='GetSongsInGroup'/>
 			<Function name='SetPreferredCourses'/>
 			<Function name='SetPreferredSongs'/>
 			<Function name='ShortenGroupName'/>
+			<Function name='ShortenSeriesName'/>
+
 			<Function name='SongToPreferredSortSectionName'/>
 			<Function name='GetPreferredSortSongsBySectionName'/>
 			<Function name='WasLoadedFromAdditionalCourses'/>
@@ -2812,30 +2817,31 @@
 		</Enum>
 		<Enum name='SortOrder'>
 			<EnumValue name='&apos;SortOrder_Preferred&apos;' value='0'/>
-			<EnumValue name='&apos;SortOrder_Group&apos;' value='1'/>
-			<EnumValue name='&apos;SortOrder_Title&apos;' value='2'/>
-			<EnumValue name='&apos;SortOrder_BPM&apos;' value='3'/>
-			<EnumValue name='&apos;SortOrder_Popularity&apos;' value='4'/>
-			<EnumValue name='&apos;SortOrder_TopGrades&apos;' value='5'/>
-			<EnumValue name='&apos;SortOrder_Artist&apos;' value='6'/>
-			<EnumValue name='&apos;SortOrder_Genre&apos;' value='7'/>
-			<EnumValue name='&apos;SortOrder_BeginnerMeter&apos;' value='8'/>
-			<EnumValue name='&apos;SortOrder_EasyMeter&apos;' value='9'/>
-			<EnumValue name='&apos;SortOrder_MediumMeter&apos;' value='10'/>
-			<EnumValue name='&apos;SortOrder_HardMeter&apos;' value='11'/>
-			<EnumValue name='&apos;SortOrder_ChallengeMeter&apos;' value='12'/>
-			<EnumValue name='&apos;SortOrder_DoubleEasyMeter&apos;' value='13'/>
-			<EnumValue name='&apos;SortOrder_DoubleMediumMeter&apos;' value='14'/>
-			<EnumValue name='&apos;SortOrder_DoubleHardMeter&apos;' value='15'/>
-			<EnumValue name='&apos;SortOrder_DoubleChallengeMeter&apos;' value='16'/>
-			<EnumValue name='&apos;SortOrder_ModeMenu&apos;' value='17'/>
-			<EnumValue name='&apos;SortOrder_AllCourses&apos;' value='18'/>
-			<EnumValue name='&apos;SortOrder_Nonstop&apos;' value='19'/>
-			<EnumValue name='&apos;SortOrder_Oni&apos;' value='20'/>
-			<EnumValue name='&apos;SortOrder_Endless&apos;' value='21'/>
-			<EnumValue name='&apos;SortOrder_Length&apos;' value='22'/>
-			<EnumValue name='&apos;SortOrder_Roulette&apos;' value='23'/>
-			<EnumValue name='&apos;SortOrder_Recent&apos;' value='24'/>
+			<EnumValue name='&apos;SortOrder_Series&apos;' value='1'/>
+			<EnumValue name='&apos;SortOrder_Group&apos;' value='2'/>
+			<EnumValue name='&apos;SortOrder_Title&apos;' value='3'/>
+			<EnumValue name='&apos;SortOrder_BPM&apos;' value='4'/>
+			<EnumValue name='&apos;SortOrder_Popularity&apos;' value='5'/>
+			<EnumValue name='&apos;SortOrder_TopGrades&apos;' value='6'/>
+			<EnumValue name='&apos;SortOrder_Artist&apos;' value='7'/>
+			<EnumValue name='&apos;SortOrder_Genre&apos;' value='8'/>
+			<EnumValue name='&apos;SortOrder_BeginnerMeter&apos;' value='9'/>
+			<EnumValue name='&apos;SortOrder_EasyMeter&apos;' value='10'/>
+			<EnumValue name='&apos;SortOrder_MediumMeter&apos;' value='11'/>
+			<EnumValue name='&apos;SortOrder_HardMeter&apos;' value='12'/>
+			<EnumValue name='&apos;SortOrder_ChallengeMeter&apos;' value='13'/>
+			<EnumValue name='&apos;SortOrder_DoubleEasyMeter&apos;' value='14'/>
+			<EnumValue name='&apos;SortOrder_DoubleMediumMeter&apos;' value='15'/>
+			<EnumValue name='&apos;SortOrder_DoubleHardMeter&apos;' value='16'/>
+			<EnumValue name='&apos;SortOrder_DoubleChallengeMeter&apos;' value='17'/>
+			<EnumValue name='&apos;SortOrder_ModeMenu&apos;' value='18'/>
+			<EnumValue name='&apos;SortOrder_AllCourses&apos;' value='19'/>
+			<EnumValue name='&apos;SortOrder_Nonstop&apos;' value='20'/>
+			<EnumValue name='&apos;SortOrder_Oni&apos;' value='21'/>
+			<EnumValue name='&apos;SortOrder_Endless&apos;' value='22'/>
+			<EnumValue name='&apos;SortOrder_Length&apos;' value='23'/>
+			<EnumValue name='&apos;SortOrder_Roulette&apos;' value='24'/>
+			<EnumValue name='&apos;SortOrder_Recent&apos;' value='25'/>
 		</Enum>
 		<Enum name='SoundEffectType'>
 			<EnumValue name='&apos;SoundEffectType_Off&apos;' value='0'/>
@@ -3033,14 +3039,15 @@
 		</Enum>
 		<Enum name='WheelItemDataType'>
 			<EnumValue name='&apos;WheelItemDataType_Generic&apos;' value='0'/>
-			<EnumValue name='&apos;WheelItemDataType_Section&apos;' value='1'/>
-			<EnumValue name='&apos;WheelItemDataType_Song&apos;' value='2'/>
-			<EnumValue name='&apos;WheelItemDataType_Roulette&apos;' value='3'/>
-			<EnumValue name='&apos;WheelItemDataType_Random&apos;' value='4'/>
-			<EnumValue name='&apos;WheelItemDataType_Portal&apos;' value='5'/>
-			<EnumValue name='&apos;WheelItemDataType_Course&apos;' value='6'/>
-			<EnumValue name='&apos;WheelItemDataType_Sort&apos;' value='7'/>
-			<EnumValue name='&apos;WheelItemDataType_Custom&apos;' value='8'/>
+			<EnumValue name='&apos;WheelItemDataType_ParentSection&apos;' value='1'/>
+			<EnumValue name='&apos;WheelItemDataType_Section&apos;' value='2'/>
+			<EnumValue name='&apos;WheelItemDataType_Song&apos;' value='3'/>
+			<EnumValue name='&apos;WheelItemDataType_Roulette&apos;' value='4'/>
+			<EnumValue name='&apos;WheelItemDataType_Random&apos;' value='5'/>
+			<EnumValue name='&apos;WheelItemDataType_Portal&apos;' value='6'/>
+			<EnumValue name='&apos;WheelItemDataType_Course&apos;' value='7'/>
+			<EnumValue name='&apos;WheelItemDataType_Sort&apos;' value='8'/>
+			<EnumValue name='&apos;WheelItemDataType_Custom&apos;' value='9'/>
 		</Enum>
 		<Enum name='WheelState'>
 			<EnumValue name='&apos;WheelState_Selecting&apos;' value='0'/>

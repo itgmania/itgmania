@@ -768,6 +768,7 @@ std::string SongUtil::GetSectionNameFromSongAndSort(
   switch (so) {
     case SORT_PREFERRED:
       return SONGMAN->SongToPreferredSortSectionName(pSong);
+    case SORT_SERIES:
     case SORT_GROUP:
       if (SONGMAN->GetGroup(pSong) == nullptr) {
         LOG->Warn(
@@ -933,6 +934,36 @@ void SongUtil::SortSongPointerArrayBySectionName(
       val = "1" + MakeSortString(val);
     }
 
+    g_mapSongSortVal[vpSongsInOut[i]] = val;
+  }
+
+  stable_sort(
+      vpSongsInOut.begin(), vpSongsInOut.end(),
+      CompareSongPointersBySortValueAscending);
+  g_mapSongSortVal.clear();
+}
+
+void SongUtil::SortSongPointerArrayByParentSectionName(
+    std::vector<Song*>& vpSongsInOut) {
+  // Sort songs by (series, group). Songs whose group has no series sort
+  // alongside series
+  for (unsigned i = 0; i < vpSongsInOut.size(); ++i) {
+    std::string val;
+    Group* pGroup = SONGMAN->GetGroup(vpSongsInOut[i]);
+    if (pGroup == nullptr) {
+      LOG->Warn(
+          "SongUtil::SortSongPointerArrayByParentSectionName: %s has no group",
+          vpSongsInOut[i]->GetSongDir().c_str());
+      val = "2";
+    } else {
+      const std::string& seriesName = pGroup->GetSeries();
+      const std::string groupKey = MakeSortString(pGroup->GetSortTitle());
+      if (seriesName.empty()) {
+        val = "1" + groupKey;
+      } else {
+        val = "1" + MakeSortString(seriesName) + '\x01' + groupKey;
+      }
+    }
     g_mapSongSortVal[vpSongsInOut[i]] = val;
   }
 
