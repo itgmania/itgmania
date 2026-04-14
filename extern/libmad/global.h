@@ -47,12 +47,4 @@
 #  define USE_ASYNC
 # endif
 
-# if !defined(HAVE_ASSERT_H)
-#  if defined(NDEBUG)
-#   define assert(x)	/* nothing */
-#  else
-#   define assert(x)	do { if (!(x)) abort(); } while (0)
-#  endif
-# endif
-
 # endif

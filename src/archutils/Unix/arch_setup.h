@@ -5,10 +5,6 @@
 #define __C99FEATURES__
 #endif
 
-#ifdef HAVE_ALLOCA_H
-#include <alloca.h>
-#endif
-
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif

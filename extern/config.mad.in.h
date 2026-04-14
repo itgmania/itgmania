@@ -6,9 +6,6 @@
 /* Define to enable experimental code. */
 /* #undef EXPERIMENTAL */
 
-/* Define to 1 if you have the <assert.h> header file. */
-#cmakedefine HAVE_ASSERT_H 1
-
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #cmakedefine HAVE_DLFCN_H 1
 

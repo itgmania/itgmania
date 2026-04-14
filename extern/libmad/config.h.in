@@ -6,9 +6,6 @@
 /* Define to enable experimental code. */
 #undef EXPERIMENTAL
 
-/* Define to 1 if you have the <assert.h> header file. */
-#undef HAVE_ASSERT_H
-
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 

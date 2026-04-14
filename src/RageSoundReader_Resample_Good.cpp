@@ -98,19 +98,6 @@ void GenerateSincLowPassFilter(float* pFIR, int iWinSize, float fCutoff) {
     const float fVal = sincf((TWOPI * fCutoff * fN1)) * (2.0f * fCutoff);
     pFIR[n] = fVal;
   }
-#if 0
-		float *pFIRp = pFIR+iWinSize/2;
-		for(int i=-iWinSize/2;i<=iWinSize/2;i++)
-		{
-			float ff = sinc(2*M_PI*fCutoff * (i + 0.0))*(2*fCutoff);
-
-			printf( "%i: %f\n", i, ff );
-
-			pFIRp[i]=ff;
-		}
-		for( int i=0; i < iWinSize; i++ )
-			printf( "sinc: %i: %f\n", i, pFIR[i] );
-#endif
 }
 
 void NormalizeVector(float* pBuf, int iSize) {
