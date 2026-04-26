@@ -4,7 +4,7 @@
 
 namespace CrashHandler {
 std::string GetLogsDirectory();
-void InformUserOfCrash(const std::string& sPath);
+void InformUserOfCrash(const std::string& sCrashInfoPath);
 bool IsDebuggerPresent();
 void DebugBreak();
 }  // namespace CrashHandler

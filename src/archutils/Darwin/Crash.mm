@@ -14,14 +14,15 @@
 #endif
 #include <sys/sysctl.h>
 
+#import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 
 std::string CrashHandler::GetLogsDirectory() {
   NSFileManager* fileManager = [NSFileManager defaultManager];
-  
+
   NSString* bundleParent = [[[NSBundle mainBundle] bundlePath] stringByDeletingLastPathComponent];
   NSString* portablePath = [bundleParent stringByAppendingPathComponent:@"Portable.ini"];
-  
+
   BOOL isPortable = [fileManager fileExistsAtPath:portablePath];
   if (isPortable) {
     return std::string([bundleParent UTF8String]) + "/Logs";
@@ -43,7 +44,7 @@ std::string CrashHandler::GetLogsDirectory() {
 // XXX Can we use LocalizedString here instead?
 #define LSTRING(b, x) CFBundleCopyLocalizedString((b), CFSTR(x), nullptr, CFSTR("Localizable"))
 
-void CrashHandler::InformUserOfCrash(const std::string& sPath) {
+void CrashHandler::InformUserOfCrash(const std::string& sCrashInfoPath) {
   CFBundleRef bundle = CFBundleGetMainBundle();
   CFStringRef sAlternate = LSTRING(bundle, "Quit " PRODUCT_FAMILY);
   /* XXX Translate these and remove the redefine of LSTRING. Another way to do this
@@ -59,7 +60,7 @@ void CrashHandler::InformUserOfCrash(const std::string& sPath) {
                              "Debugging information has been output to\n\n%s\n\n"
                              "Please file a bug report at\n\n%s");
   CFStringRef sBody = CFStringCreateWithFormat(
-      kCFAllocatorDefault, nullptr, sFormat, sPath.c_str(), REPORT_BUG_URL);
+      kCFAllocatorDefault, nullptr, sFormat, sCrashInfoPath.c_str(), REPORT_BUG_URL);
   CFOptionFlags response = kCFUserNotificationCancelResponse;
   CFTimeInterval timeout = 0.0;  // Should we ever time out?
 
@@ -68,11 +69,20 @@ void CrashHandler::InformUserOfCrash(const std::string& sPath) {
       sDefault, sAlternate, sOther, &response);
 
   switch (response) {
-    case kCFUserNotificationDefaultResponse:
-      // Fall through.
-    case kCFUserNotificationOtherResponse:
-      // Open the file with the default application (probably TextEdit). [unimplemented]
+    case kCFUserNotificationDefaultResponse: {
+      NSURL* bugURL = [NSURL URLWithString:@REPORT_BUG_URL];
+      [[NSWorkspace sharedWorkspace] openURL:bugURL];
       break;
+    }
+    case kCFUserNotificationOtherResponse: {
+      NSString* nsPath = [NSString stringWithUTF8String:sCrashInfoPath.c_str()];
+      NSURL* fileURL = [NSURL fileURLWithPath:nsPath];
+      BOOL opened = [[NSWorkspace sharedWorkspace] openURL:fileURL];
+      if (!opened) {
+        [[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs:@[ fileURL ]];
+      }
+      break;
+    }
   }
   CFRelease(sBody);
   CFRelease(sFormat);
