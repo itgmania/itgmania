@@ -317,6 +317,9 @@ void ScreenSelectMusic::BeginScreen() {
 
   OPTIONS_MENU_AVAILABLE.Load(m_sName, "OptionsMenuAvailable");
   PlayCommand("Mods");
+  if (GAMESTATE->IsPremiumFreeActive()) {
+    GAMESTATE->StartPremiumFreeTimer();
+  }
   m_MusicWheel.BeginScreen();
 
   m_SelectionState = SelectionState_SelectingSong;
