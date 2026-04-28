@@ -80,6 +80,7 @@ void GameCommand::Init() {
   m_bClearCredits = false;
   m_bStopMusic = false;
   m_bApplyDefaultOptions = false;
+  m_bActivatePremiumFree = false;
   m_bFadeMusic = false;
   m_fMusicFadeOutVolume = -1.0f;
   m_fMusicFadeOutSeconds = -1.0f;
@@ -434,6 +435,10 @@ void GameCommand::LoadOne(const Command& cmd) {
 
   else if (sName == "applydefaultoptions") {
     m_bApplyDefaultOptions = true;
+  }
+
+  else if (sName == "premiumfree") {
+    m_bActivatePremiumFree = true;
   }
 
   // sm-ssc additions begin:
@@ -873,6 +878,10 @@ void GameCommand::ApplySelf(const std::vector<PlayerNumber>& vpns) const {
     GAMESTATE->GetDefaultSongOptions(so);
     GAMESTATE->m_SongOptions.Assign(ModsLevel_Stage, so);
   }
+
+  if (m_bActivatePremiumFree) {
+    GAMESTATE->ActivatePremiumFree();
+  }
   // HACK: Set life type to BATTERY just once here so it happens once and
   // we don't override the user's changes if they back out.
   FOREACH_PlayerNumber(pn) {
@@ -896,7 +905,7 @@ bool GameCommand::IsZero() const {
       m_CourseDifficulty != Difficulty_Invalid || !m_sSongGroup.empty() ||
       m_SortOrder != SortOrder_Invalid || m_iWeightPounds != -1 ||
       m_iGoalCalories != -1 || m_GoalType != GoalType_Invalid ||
-      !m_sProfileID.empty()) {
+      !m_sProfileID.empty() || m_bActivatePremiumFree) {
     return false;
   }
 
