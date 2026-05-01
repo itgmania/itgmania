@@ -89,7 +89,9 @@ std::string InputHandler_SMX::GetDeviceSpecificInputString(const DeviceInput& di
 
   const char* buttonString = (padRemovedButton >= 0 && padRemovedButton < SMX_PANEL_COUNT) ? buttonStrings[padRemovedButton] : "unknown";
 
-  return ssprintf("SMX P%d %s", pad, buttonString);
+  char buffer[32];
+  snprintf(buffer, sizeof(buffer), "SMX P%d %s", pad, buttonString);
+  return {buffer};
 }
 
 void InputHandler_SMX::ProcessInputEvent(const int pad, const uint16_t state) {
