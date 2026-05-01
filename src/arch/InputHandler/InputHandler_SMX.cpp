@@ -69,6 +69,12 @@ void InputHandler_SMX::GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& v
   // Start the SMX SDK if needed when a pad is detected.
   // It's ok to call this repeatedly.
   SMX_Start(OnSMXStateChange, this);
+
+  // Set the SMX thread polling values.
+  // The Main Thread should probably be 50ms or faster, as some issues arise with a longer sleep.
+  // The USB Thread should be set somewhere between 500us and 1000us (1ms) so we achieve full 1000hz speed.
+  // TODO: This could maybe be something to expose to the options depending on users CPU power
+  SMX_SetPollingRate(50, 900);
 }
 
 std::string InputHandler_SMX::GetDeviceSpecificInputString(const DeviceInput& di) {
