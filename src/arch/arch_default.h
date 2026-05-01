@@ -13,7 +13,7 @@
 
 inline const std::vector<std::string>& GetDefaultInputDriverList() {
   static const std::vector<std::string> inputDriverList = {
-      "DirectInput", "Pump", "Para"};
+      "DirectInput", "Pump", "Para", "SMX"};
   return inputDriverList;
 }
 
@@ -35,7 +35,7 @@ inline const std::vector<std::string>& GetDefaultSoundDriverList() {
 #include "MemoryCard/MemoryCardDriverThreaded_MacOSX.h"
 
 inline const std::vector<std::string>& GetDefaultInputDriverList() {
-  static const std::vector<std::string> inputDriverList = {"HID", "NSEvent"};
+  static const std::vector<std::string> inputDriverList = {"HID", "NSEvent", "SMX"};
   return inputDriverList;
 }
 
@@ -64,7 +64,7 @@ inline const std::vector<std::string>& GetDefaultSoundDriverList() {
 #if defined(LINUX)
 inline const std::vector<std::string>& GetDefaultInputDriverList() {
   static const std::vector<std::string> inputDriverList = {
-      "X11", "LinuxEvent", "LinuxJoystick"};
+      "X11", "LinuxEvent", "LinuxJoystick", "SMX"};
   return inputDriverList;
 }
 #else

@@ -14,6 +14,6 @@ include(CMakeProject-tommath.cmake)
 include(CMakeProject-png.cmake)
 include(CMakeProject-ixwebsocket.cmake)
 include(CMakeProject-miniz.cmake)
-
+include(CMakeProject-smx-sdk-lite.cmake)
 # External projects
 include(CMakeProject-libusb.cmake)

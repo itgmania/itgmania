@@ -219,7 +219,7 @@ static const char* InputDeviceNames[] = {
     "Joy8",  "Joy9",  "Joy10", "Joy11", "Joy12", "Joy13", "Joy14",   "Joy15",
     "Joy16", "Joy17", "Joy18", "Joy19", "Joy20", "Joy21", "Joy22",   "Joy23",
     "Joy24", "Joy25", "Joy26", "Joy27", "Joy28", "Joy29", "Joy30",   "Joy31",
-    "Joy32", "Pump1", "Pump2", "Midi",  "Mouse", "PIUIO", "PumpHID",
+    "Joy32", "Pump1", "Pump2", "Midi",  "Mouse", "PIUIO", "PumpHID", "SMX",
 };
 XToString(InputDevice);
 StringToX(InputDevice);

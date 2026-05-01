@@ -212,6 +212,13 @@ EnumDevicesCallback(const DIDEVICEINSTANCE* pdidInstance, void* pContext) {
       return DIENUM_CONTINUE;
   }
 
+  // Check if we're dealing with an SMX platform. Use the SMX InputHandler instead of DirectInput.
+  bool is_smx_platform = strstr(pdidInstance->tszProductName, "StepManiaX") != nullptr;
+  if (is_smx_platform) {
+    LOG->Info("DInput: Ignoring SMX Stage HID device in favor of the SMX driver.");
+    return DIENUM_CONTINUE;
+  }
+
   device.JoystickInst = *pdidInstance;
 
   switch (device.type) {
