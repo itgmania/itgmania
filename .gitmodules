@@ -50,3 +50,6 @@
 	path = extern/hidapi
 	url = https://github.com/libusb/hidapi.git
 	shallow = true
+[submodule "extern/libsmx-mp"]
+	path = extern/libsmx-mp
+	url = git@github.com:fchorney/stepmaniax-sdk-mp.git
