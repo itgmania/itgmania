@@ -18,6 +18,15 @@
 
 std::string CrashHandler::GetLogsDirectory() {
   NSFileManager* fileManager = [NSFileManager defaultManager];
+
+  NSString* bundleParent = [[[NSBundle mainBundle] bundlePath] stringByDeletingLastPathComponent];
+  NSString* portablePath = [bundleParent stringByAppendingPathComponent:@"Portable.ini"];
+
+  BOOL isPortable = [fileManager fileExistsAtPath:portablePath];
+  if (isPortable) {
+    return std::string([bundleParent UTF8String]) + "/Logs";
+  }
+
   NSURL* url = [fileManager URLForDirectory:NSLibraryDirectory
                                    inDomain:NSUserDomainMask
                           appropriateForURL:nil
