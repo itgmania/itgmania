@@ -533,6 +533,7 @@ void EditMenu::OnRowValueChanged(EditMenuRow row) {
             m_iSelection[ROW_STEPS] = i;
             break;
           }
+          i++;
         }
         rage_clamp(m_iSelection[ROW_STEPS], 0, m_vpSteps.size() - 1);
       }
