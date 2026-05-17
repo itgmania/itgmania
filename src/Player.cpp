@@ -199,6 +199,8 @@ static Preference<TapNoteScore> g_MinTNSToScoreNotes(
     "MinTNSToScoreNotes", TNS_None,
     ValidateMinTNSToScoreNotes);  // Default to great and above.
 
+ThemeMetric<bool> TICK_HOLDS("Player", "TickHolds");
+
 /** @brief How much life is in a hold note when you start on it? */
 ThemeMetric<float> INITIAL_HOLD_LIFE("Player", "InitialHoldLife");
 /**
@@ -695,7 +697,7 @@ void Player::Load() {
   m_bLoaded = true;
 
   // Figured this is probably a little expensive so let's cache it
-  m_bTickHolds = GAMESTATE->GetCurrentGame()->m_bTickHolds;
+  m_bTickHolds = TICK_HOLDS;
 
   m_LastTapNoteScore = TNS_None;
   // The editor can start playing in the middle of the song.
