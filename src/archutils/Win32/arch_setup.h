@@ -20,10 +20,6 @@ struct tm* my_gmtime_r(const time_t* timep, struct tm* result);
 void my_usleep(unsigned long usec);
 #define usleep my_usleep
 
-/* We implement the crash handler interface (though that interface isn't
- * completely uniform across platforms yet). */
-#define CRASH_HANDLER
-
 #endif
 
 /*

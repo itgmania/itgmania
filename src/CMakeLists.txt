@@ -185,7 +185,6 @@ if(WIN32)
       COMMENT "Generating file to allow for easier stack traces.")
   endif()
 elseif(APPLE)
-  # TODO should we set CRASH_HANDLER and other things like LINUX does below? Why is that logic specfic to LINUX?
   # Use generic Unix backtrace for all Apple architectures
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_GENERIC_UNIX)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_TEXT="generic unix backtrace")
@@ -319,7 +318,6 @@ else() # Linux
                                    "${SM_ROOT_DIR}")
 
   if(${WITH_CRASH_HANDLER})
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE CRASH_HANDLER)
     if(LINUX)
       # used only in the ArchHooks_Unix.cpp file
       if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86" OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
