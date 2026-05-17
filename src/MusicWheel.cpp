@@ -263,7 +263,7 @@ void MusicWheel::BeginScreen() {
       bool bStepsIsPossible =
           find(
               vpPossibleSteps.begin(), vpPossibleSteps.end(),
-              GAMESTATE->m_pCurSteps[p]) == vpPossibleSteps.end();
+              GAMESTATE->m_pCurSteps[p]) != vpPossibleSteps.end();
       if (!bStepsIsPossible) {
         GAMESTATE->m_pCurSteps[p].Set(nullptr);
       }
