@@ -30,10 +30,6 @@
 #define unlikely(x) (x)
 #endif
 
-#ifdef ASSERT
-#undef ASSERT
-#endif
-
 #include "RageThreads.h"
 
 /**
@@ -69,9 +65,7 @@ void sm_crash(const char* reason = "Internal error");
     }                           \
   } while (0)
 
-#if !defined(CO_EXIST_WITH_MFC)
 #define ASSERT(COND) ASSERT_M((COND), "Assertion '" #COND "' failed")
-#endif
 
 /** @brief Use this to catch switching on invalid values */
 #define DEFAULT_FAIL(i) \
@@ -84,9 +78,7 @@ void ShowWarningOrTrace(
     const char* file, int line, const char* message,
     bool bWarning);  // don't pull in LOG here
 #define WARN(MESSAGE) (ShowWarningOrTrace(__FILE__, __LINE__, MESSAGE, true))
-#if !defined(CO_EXIST_WITH_MFC)
 #define TRACE(MESSAGE) (ShowWarningOrTrace(__FILE__, __LINE__, MESSAGE, false))
-#endif
 
 #ifdef DEBUG
 // No reason to kill the program. A lot of these don't produce a crash in NDEBUG
