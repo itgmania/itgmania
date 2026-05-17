@@ -7,11 +7,6 @@
 #pragma once
 #endif
 
-/** @brief This macro is for INT8_MIN, etc. */
-#define __STDC_LIMIT_MACROS
-/** @brief This macro is for INT64_C, etc. */
-#define __STDC_CONSTANT_MACROS
-
 /* Platform-specific fixes. */
 #if defined(_WIN32)
 #include "archutils/Win32/arch_setup.h"
