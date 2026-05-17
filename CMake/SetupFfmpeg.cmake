@@ -1,10 +1,3 @@
-if(CMAKE_GENERATOR MATCHES "Ninja")
-  message(
-    FATAL_ERROR
-      "You cannot use the Ninja generator when building the bundled ffmpeg library."
-    )
-endif()
-
 set(SM_FFMPEG_SRC_DIR "${SM_EXTERN_DIR}/ffmpeg")
 set(SM_FFMPEG_CONFIGURE_EXE "${SM_FFMPEG_SRC_DIR}/configure")
 
@@ -53,7 +46,7 @@ if(NOT WITH_EXTERNAL_WARNINGS)
   list(APPEND FFMPEG_CONFIGURE "--extra-cflags=-w")
 endif()
 
-if(CMAKE_GENERATOR STREQUAL "Xcode")
+if(CMAKE_GENERATOR STREQUAL "Xcode" OR CMAKE_GENERATOR MATCHES "Ninja")
   list(APPEND SM_FFMPEG_MAKE "make")
 else()
   list(APPEND SM_FFMPEG_MAKE $(MAKE))
@@ -70,7 +63,12 @@ externalproject_add("ffmpeg"
                     BUILD_COMMAND "${SM_FFMPEG_MAKE}"
                     UPDATE_COMMAND ""
                     INSTALL_COMMAND ""
-                    TEST_COMMAND "")
+                    TEST_COMMAND ""
+                    BYPRODUCTS
+                      "<BINARY_DIR>/dest/lib/libavformat.a"
+                      "<BINARY_DIR>/dest/lib/libavcodec.a"
+                      "<BINARY_DIR>/dest/lib/libswscale.a"
+                      "<BINARY_DIR>/dest/lib/libavutil.a")
 
 externalproject_get_property("ffmpeg" BINARY_DIR)
 set(SM_FFMPEG_LIB ${BINARY_DIR}/dest/lib)
