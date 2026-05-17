@@ -145,6 +145,9 @@ void InputHandler_Linux_Joystick::InputThread() {
     if (select(max_fd + 1, &fdset, nullptr, nullptr, &zero) <= 0) {
       continue;
     }
+    // js_event.time is jiffies_to_msecs(jiffies): a 32-bit counter on the
+    // kernel's jiffies clock, whose epoch differs from RageTimer's
+    // CLOCK_MONOTONIC and can't be anchored from userspace. Use poll time.
     RageTimer now;
 
     for (size_t i = 0; i < m_files.size(); ++i) {

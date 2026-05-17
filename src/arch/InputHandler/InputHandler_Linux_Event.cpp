@@ -99,6 +99,12 @@ bool EventDevice::Open(std::string sFile, InputDevice dev) {
     return false;
   }
 
+  unsigned int clk = CLOCK_MONOTONIC;
+  if (ioctl(m_iFD, EVIOCSCLOCKID, &clk) == -1) {
+    LOG->Warn(
+        "ioctl(EVIOCSCLOCKID, CLOCK_MONOTONIC) failed: %s", strerror(errno));
+  }
+
   static bool bLogged = false;
   if (!bLogged) {
     bLogged = true;
@@ -414,7 +420,6 @@ void InputHandler_Linux_Event::InputThread() {
     if (select(iMaxFD + 1, &fdset, nullptr, nullptr, &zero) <= 0) {
       continue;
     }
-    RageTimer now;
 
     if (FD_ISSET(m_udev_fd, &fdset)) {
       struct udev_device* device = udev_monitor_receive_device(m_udev_monitor);
@@ -471,6 +476,8 @@ void InputHandler_Linux_Event::InputThread() {
         continue;
       }
 
+      RageTimer eventTime(event.time.tv_sec, event.time.tv_usec);
+
       switch (event.type) {
         case EV_KEY: {
           int iNum;
@@ -500,7 +507,7 @@ void InputHandler_Linux_Event::InputThread() {
               32);  // max number of joystick buttons.  Make this a constant?
           ButtonPressed(DeviceInput(
               g_apEventDevices[i]->m_Dev, enum_add2(JOY_BUTTON_1, iNum),
-              event.value != 0, now));
+              event.value != 0, eventTime));
           break;
         }
 
@@ -514,19 +521,21 @@ void InputHandler_Linux_Event::InputThread() {
               (float)g_apEventDevices[i]->aiAbsMin[event.code],
               (float)g_apEventDevices[i]->aiAbsMax[event.code], -1.0f, 1.0f);
           if (GamePreferences::m_AxisFix) {
+            // Up if between 0.0001 and 0.5 or if less than -0.5
             ButtonPressed(DeviceInput(
                 g_apEventDevices[i]->m_Dev, neg,
-                (l < -0.5) || ((l > 0.0001) && (l < 0.5)),
-                now));  // Up if between 0.0001 and 0.5 or if less than -0.5
+                (l < -0.5) || ((l > 0.0001) && (l < 0.5)), eventTime));
+            // Down if between 0.0001 and 0.5 or if more than 0.5
             ButtonPressed(DeviceInput(
                 g_apEventDevices[i]->m_Dev, pos,
-                (l > 0.5) || ((l > 0.0001) && (l < 0.5)),
-                now));  // Down if between 0.0001 and 0.5 or if more than 0.5
+                (l > 0.5) || ((l > 0.0001) && (l < 0.5)), eventTime));
           } else {
             ButtonPressed(DeviceInput(
-                g_apEventDevices[i]->m_Dev, neg, std::max(-l, 0.0f), now));
+                g_apEventDevices[i]->m_Dev, neg, std::max(-l, 0.0f),
+                eventTime));
             ButtonPressed(DeviceInput(
-                g_apEventDevices[i]->m_Dev, pos, std::max(+l, 0.0f), now));
+                g_apEventDevices[i]->m_Dev, pos, std::max(+l, 0.0f),
+                eventTime));
           }
           break;
         }
