@@ -18,7 +18,7 @@
 
 std::string CrashHandler::GetLogsDirectory() {
   NSFileManager* fileManager = [NSFileManager defaultManager];
-  NSURL* url = [fileManager URLForDirectory:NSLibraryDirectory
+  NSURL* url = [fileManager URLForDirectory:NSApplicationSupportDirectory
                                    inDomain:NSUserDomainMask
                           appropriateForURL:nil
                                      create:NO
@@ -27,8 +27,7 @@ std::string CrashHandler::GetLogsDirectory() {
     return "/tmp";
   }
 
-  std::string path = std::string([url fileSystemRepresentation]) + "/Logs/" PRODUCT_ID;
-  return std::string(path.c_str());
+  return std::string([url fileSystemRepresentation]) + "/" + PRODUCT_ID + "/Logs";
 }
 
 // XXX Can we use LocalizedString here instead?
