@@ -84,6 +84,20 @@ void LightsDriver_snek::Set(const LightsState* ls) {
       SNEK_INDEX_DANCE_P2_RIGHT,
       ls->m_bGameButtonLights[GameController_2][DANCE_BUTTON_RIGHT]);
 
+  // more lights for custom applications
+  SetBuffer(
+      SNEK_LIGHTINDEX_CN14_FL1,
+      ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_MENULEFT]);
+  SetBuffer(
+      SNEK_LIGHTINDEX_CN14_FL2,
+      ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_MENULEFT]);
+  SetBuffer(
+      SNEK_LIGHTINDEX_CN14_FL3,
+      ls->m_bGameButtonLights[GameController_1][GAME_BUTTON_SELECT]);
+  SetBuffer(
+      SNEK_LIGHTINDEX_CN14_FL4,
+      ls->m_bGameButtonLights[GameController_2][GAME_BUTTON_SELECT]);
+
   // only push on changes.
   if (stateChanged) {
     // TODO: Check for error/reconnect.
