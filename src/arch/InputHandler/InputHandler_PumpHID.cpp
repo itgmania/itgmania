@@ -1,34 +1,29 @@
-// do NOT let clang reposition these includes, because it will mess up the
-// compile
-
-// clang-format off
-#include "EnumHelper.h"
-#include "GameInput.h"
-#include "InputMapper.h"
-#include "LightsManager.h"
-#include "RageInputDevice.h"
-#include "StdString.h"
-#include "arch/InputHandler/InputHandler.h"
-#include "archutils/Common/HidDevice.h"
 #include "InputHandler_PumpHID.h"
-#include "PrefsManager.h"
-#include "RageLog.h"
-#include "RageUtil.h"
-#include "arch/Lights/LightsDriver_Export.h"
-#include "GameState.h"
-#include "Game.h"
 
 #include <cerrno>
 #include <cstdint>
-#include <string>
 #include <cstring>
+#include <string>
 #include <vector>
+
+#include "EnumHelper.h"
+#include "Game.h"
+#include "GameInput.h"
+#include "GameState.h"
+#include "InputMapper.h"
+#include "LightsManager.h"
+#include "PrefsManager.h"
+#include "RageInputDevice.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "StdString.h"
+#include "arch/InputHandler/InputHandler.h"
+#include "arch/Lights/LightsDriver_Export.h"
+#include "archutils/Common/HidDevice.h"
 
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif
-
-// clang-format on
 
 // all of the known device pid's that use this communication protocol.
 const std::vector<int> InputHandler_PumpHID::devPIDS = {
