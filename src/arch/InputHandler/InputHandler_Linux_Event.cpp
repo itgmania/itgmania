@@ -1,5 +1,12 @@
 #include "InputHandler_Linux_Event.h"
 
+#include <fcntl.h>
+#include <libudev.h>
+#include <linux/input.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include <algorithm>
 #include <cerrno>
 #include <cstdint>
@@ -11,19 +18,6 @@
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "global.h"
-
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
-
-#include <libudev.h>
-#include <linux/input.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 REGISTER_INPUT_HANDLER_CLASS2(LinuxEvent, Linux_Event);
 

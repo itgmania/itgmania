@@ -13,7 +13,7 @@
 #include "config.hpp"
 #include "global.h"
 
-#ifdef HAVE_UNISTD_H
+#if !defined(_WIN32)
 #include <unistd.h>
 #endif
 

@@ -8,11 +8,9 @@
 
 #include <CoreServices/CoreServices.h>
 #include <os/log.h>
-#include <sys/types.h>
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
 #include <sys/sysctl.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #import <Foundation/Foundation.h>
 

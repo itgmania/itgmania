@@ -18,9 +18,7 @@
 #include <io.h>
 // clang-format on
 #else
-#if defined(HAVE_DIRENT_H)
 #include <dirent.h>
-#endif
 #endif
 
 std::string DoPathReplace(const std::string& sPath) {

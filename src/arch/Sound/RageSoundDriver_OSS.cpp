@@ -1,5 +1,12 @@
 #include "RageSoundDriver_OSS.h"
 
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <sys/select.h>
+#include <sys/soundcard.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include <cerrno>
 #include <cstdint>
 #include <cstring>
@@ -9,17 +16,6 @@
 #include "RageSound.h"
 #include "RageSoundManager.h"
 #include "global.h"
-
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
-#include <sys/ioctl.h>
-#include <sys/select.h>
-#include <sys/soundcard.h>
-#include <sys/stat.h>
 
 REGISTER_SOUND_DRIVER_CLASS(OSS);
 

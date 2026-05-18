@@ -1,5 +1,11 @@
+#include "LightsDriver_LinuxWeedTech.h"
+
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <sys/fcntl.h>
+#include <termios.h>
+#include <unistd.h>
 
 #include <cstddef>
 #include <cstring>
@@ -7,20 +13,8 @@
 #include "EnumHelper.h"
 #include "GameInput.h"
 #include "LightsManager.h"
-#include "arch/Lights/LightsDriver.h"
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
-
-#include <errno.h>
-#include <termios.h>
-
-#include "LightsDriver_LinuxWeedTech.h"
 #include "RageLog.h"
+#include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(LinuxWeedTech);
 

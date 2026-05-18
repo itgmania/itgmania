@@ -1,5 +1,8 @@
 #include "LinuxInputManager.h"
 
+#include <dirent.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -11,16 +14,10 @@
 #include "RageInput.h"  // g_sInputDrivers g_sInputDeviceOrder
 #include "RageLog.h"
 
-#if defined(HAVE_DIRENT_H)
-#include <dirent.h>
-#endif
-
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
-
-#include <errno.h>
+// Our DeviceButton KEY_* conflicts with linux/input.h KEY_*
+// clang-format off
 #include <linux/input.h>
+// clang-format on
 
 std::string getDevice(std::string inputDir, std::string type) {
   std::string result = "";

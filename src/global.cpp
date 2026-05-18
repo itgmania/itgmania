@@ -5,7 +5,7 @@
 
 #include "config.hpp"
 
-#if defined(HAVE_UNISTD_H)
+#if !defined(_WIN32)
 #include <unistd.h>
 #endif
 

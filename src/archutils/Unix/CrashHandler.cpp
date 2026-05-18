@@ -1,6 +1,10 @@
+#include "CrashHandler.h"
+
+#include <fcntl.h>
 #include <limits.h>
 #include <signal.h>
 #include <sys/signal.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -13,14 +17,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
-
-#include <sys/wait.h>
 
 #include "Backtrace.h"
-#include "CrashHandler.h"
 #include "CrashHandlerInternal.h"
 #include "RageLog.h"
 #include "RageThreads.h"

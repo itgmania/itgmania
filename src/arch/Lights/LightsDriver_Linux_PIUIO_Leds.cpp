@@ -1,14 +1,11 @@
+#include "LightsDriver_Linux_PIUIO_Leds.h"
+
+#include <fcntl.h>
 #include <stdio.h>
 
 #include "GameInput.h"
 #include "LightsManager.h"
 #include "arch/Lights/LightsDriver.h"
-
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
-
-#include "LightsDriver_Linux_PIUIO_Leds.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS2(PIUIO_Leds, Linux_PIUIO_Leds);
 

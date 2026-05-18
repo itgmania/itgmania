@@ -12,15 +12,13 @@
 #include "archutils/Common/PthreadHelpers.h"
 #endif
 
+#include <sys/mman.h>
+#include <unistd.h>
+
 #include <cerrno>
 #include <cstring>
 #include <memory>
 #include <vector>
-
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#include <sys/mman.h>
 
 #if defined(MACOSX)
 extern "C" int sigaltstack(const stack_t* __restrict, stack_t* __restrict);

@@ -43,18 +43,16 @@
 
 #include "RageFileDriverReadAhead.h"
 
+#include <fcntl.h>
+
 #include <algorithm>
+#include <cerrno>
+#include <cstddef>
 #include <cstring>
 
 #include "RageFileBasic.h"
 #include "RageFileManager_ReadAhead.h"
 #include "RageUtil.h"
-
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
-#include <cerrno>
-#include <cstddef>
 #if defined(WIN32)
 #include <io.h>
 #endif

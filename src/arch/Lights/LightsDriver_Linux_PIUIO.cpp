@@ -1,27 +1,21 @@
+#include "LightsDriver_Linux_PIUIO.h"
+
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <sys/fcntl.h>
+#include <unistd.h>
 
 #include <cstring>
 #include <string>
 
+#include "Game.h"
 #include "GameInput.h"
+#include "GameState.h"
 #include "LightsManager.h"
+#include "RageLog.h"
 #include "StdString.h"
 #include "arch/Lights/LightsDriver.h"
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
-
-#include <errno.h>
-
-#include "Game.h"
-#include "GameState.h"
-#include "LightsDriver_Linux_PIUIO.h"
-#include "RageLog.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS2(PIUIO, Linux_PIUIO);
 

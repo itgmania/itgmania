@@ -1,5 +1,7 @@
 #include "MemoryCardDriverThreaded_Linux.h"
 
+#include <dirent.h>
+#include <fcntl.h>
 #include <sys/fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -19,12 +21,6 @@
 #include "StdString.h"
 #include "arch/MemoryCard/MemoryCardDriver.h"
 #include "global.h"
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
-#if defined(HAVE_DIRENT_H)
-#include <dirent.h>
-#endif
 
 bool MemoryCardDriverThreaded_Linux::TestWrite(UsbStorageDevice* pDevice) {
   if (access(pDevice->sOsMountDir.c_str(), W_OK) == -1) {
