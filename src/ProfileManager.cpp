@@ -1,6 +1,7 @@
 #include "ProfileManager.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cstddef>
 #include <map>
 #include <string>
@@ -67,6 +68,33 @@ static Preference<std::string> g_sMemoryCardProfileImportSubdirs(
 static std::string LocalProfileIDToDir(const std::string& sProfileID) {
   return USER_PROFILES_DIR + sProfileID + "/";
 }
+
+// Sanitize a display name so it is safe to embed in a directory name.
+static const size_t MAX_DISPLAY_NAME_IN_DIR = 32;
+static std::string SanitizeForDirName(const std::string& name) {
+  std::string result;
+
+  result.reserve(name.size());
+  for (unsigned char c : name) {
+    // Allow only alphanumeric characters, underscore, and dash.
+    if (std::isalnum(c) || c == '_' || c == '-') {
+      result += static_cast<char>(c);
+    } else {
+      result += '_';
+    }
+  }
+  // Cap length.
+  if (result.size() > MAX_DISPLAY_NAME_IN_DIR) {
+    result.resize(MAX_DISPLAY_NAME_IN_DIR);
+  }
+  // If the result is all underscores (e.g. the name was only spaces/periods),
+  // treat it as empty so the caller falls back to the number-only format.
+  if (result.find_first_not_of('_') == std::string::npos) {
+    return "";
+  }
+  return result;
+}
+
 static std::string LocalProfileDirToID(const std::string& sDir) {
   return Basename(sDir);
 }
@@ -663,7 +691,12 @@ bool ProfileManager::CreateLocalProfile(
   ASSERT_M(
       profile_number >= 0 && profile_number <= MAX_ID,
       "Too many profiles, cannot assign ID to new profile.");
-  std::string profile_id = ssprintf("%0" ID_DIGITS_STR "d", profile_number);
+  std::string sanitized_name = SanitizeForDirName(sName);
+  std::string profile_id =
+      sanitized_name.empty() ? ssprintf("%0" ID_DIGITS_STR "d", profile_number)
+                             : ssprintf(
+                                   "%0" ID_DIGITS_STR "d_%s", profile_number,
+                                   sanitized_name.c_str());
 
   // make sure this id doesn't already exist
   ASSERT_M(
