@@ -504,42 +504,10 @@ int64_t RageSoundDriver::ClampHardwareFrame(int64_t iHardwareFrame) const {
 
 int64_t RageSoundDriver::GetHardwareFrame(
     RageTimer* pTimestamp = nullptr) const {
-  if (pTimestamp == nullptr) {
-    return ClampHardwareFrame(GetPosition());
+  int64_t iPositionFrames = GetPosition();
+  if (pTimestamp != nullptr) {
+    pTimestamp->Touch();
   }
-
-  /*
-   * We may have unpredictable scheduling delays between updating the timestamp
-   * and reading the sound position.  If we're preempted while doing this and
-   * it may have caused the timestamp to not match the returned time, retry.
-   *
-   * As a failsafe, only allow a few attempts.  If this has to try more than
-   * a few times, then probably we have thread contention that's causing more
-   * severe performance problems, anyway.
-   */
-  int iTries = 3;
-  int64_t iPositionFrames;
-  uint64_t iStartTime;
-  const uint64_t iThreshold = 2000ULL;
-
-  do {
-    iStartTime = RageTimer::GetTimeSinceStartMicroseconds();
-    iPositionFrames = GetPosition();
-    uint64_t elapsedTime =
-        RageTimer::GetTimeSinceStartMicroseconds() - iStartTime;
-    if (elapsedTime <= iThreshold) {
-      break;
-    }
-  } while (--iTries);
-
-  if (iTries == 0) {
-    static bool bLogged = false;
-    if (!bLogged) {
-      bLogged = true;
-      LOG->Warn("RageSoundDriver::GetHardwareFrame: too many tries");
-    }
-  }
-
   return ClampHardwareFrame(iPositionFrames);
 }
 
