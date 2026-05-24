@@ -152,15 +152,6 @@ class Song {
   const std::string& GetSongFilePath() const;
   std::string GetCacheFilePath() const;
 
-  void AddAutoGenNotes();
-  /**
-   * @brief Automatically generate steps from one type to another.
-   * @param ntTo the StepsType we're making.
-   * @param ntFrom the StepsType we're generating from.
-   */
-  void AutoGen(StepsType ntTo, StepsType ntFrom);
-  void RemoveAutoGenNotes();
-
   // Directory this song data came from:
   const std::string& GetSongDir() const { return m_sSongDir; }
 
@@ -460,7 +451,7 @@ class Song {
    * We are responsible for deleting the memory pointed to by pSteps!
    * @param pSteps the new steps. */
   void AddSteps(Steps* pSteps);
-  void DeleteSteps(const Steps* pSteps, bool bReAutoGen = true);
+  void DeleteSteps(const Steps* pSteps);
 
   void FreeAllLoadedFromProfile(
       ProfileSlot slot = ProfileSlot_Invalid,

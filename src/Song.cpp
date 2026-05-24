@@ -448,9 +448,6 @@ bool Song::LoadFromSongDir(
     }
   }
 
-  // Add AutoGen pointers. (These aren't cached.)
-  AddAutoGenNotes();
-
   if (!m_bHasMusic) {
     LOG->UserLog("Song", sDir, "has no music; ignored.");
     return false;  // don't load this song
@@ -468,14 +465,12 @@ bool Song::ReloadFromSongDir(std::string sDir) {
   // Also invalidate the cache entry so the next load sees the previous removal.
   FILEMAN->FlushDirCache(Dirname(GetCacheFilePath()));
 
-  RemoveAutoGenNotes();
   std::vector<Steps*> vOldSteps = m_vpSteps;
 
   Song copy;
   if (!copy.LoadFromSongDir(sDir)) {
     return false;
   }
-  copy.RemoveAutoGenNotes();
   *this = copy;
 
   if (SONGMAN->GetGroup(this) != nullptr) {
@@ -552,7 +547,6 @@ bool Song::ReloadFromSongDir(std::string sDir) {
     AddSteps(NewSteps);
   }
 
-  AddAutoGenNotes();
   // Reload any images associated with the song. -Kyz
   std::vector<std::string> to_reload;
   to_reload.reserve(7);
@@ -1170,11 +1164,10 @@ void Song::ReCalculateStepStatsAndLastSecond(bool fromCache, bool duringCache) {
 
     // calculate lastSecond
 
-    /* 1. If it's autogen, then first/last beat will come from the parent.
-     * 2. Don't calculate with edits unless the song only contains an edit
+    /* Don't calculate with edits unless the song only contains an edit
      * chart, like those in Mungyodance 3. Otherwise, edits installed on
      * the machine could extend the length of the song. */
-    if (!pSteps->IsAutogen() && !(pSteps->IsAnEdit() && m_vpSteps.size() > 1)) {
+    if (!(pSteps->IsAnEdit() && m_vpSteps.size() > 1)) {
       // Don't set first/last beat based on lights.  They often start very
       // early and end very late.
       if (pSteps->m_StepsType == StepsType_lights_cabinet) {
@@ -1273,10 +1266,6 @@ bool Song::SaveToSMFile() {
 
   std::vector<Steps*> vpStepsToSave;
   for (Steps* pSteps : m_vpSteps) {
-    if (pSteps->IsAutogen()) {
-      continue;  // don't write autogen notes
-    }
-
     // Only save steps that weren't loaded from a profile.
     if (pSteps->WasLoadedFromProfile()) {
       continue;
@@ -1309,10 +1298,6 @@ bool Song::SaveToSSCFile(std::string sPath, bool bSavingCache, bool autosave) {
 
   std::vector<Steps*> vpStepsToSave;
   for (Steps* pSteps : m_vpSteps) {
-    if (pSteps->IsAutogen()) {
-      continue;  // don't write autogen notes
-    }
-
     // Only save steps that weren't loaded from a profile.
     if (pSteps->WasLoadedFromProfile()) {
       continue;
@@ -1401,97 +1386,11 @@ void Song::RemoveAutosave() {
     // file.  -Kyz
     std::string extension = GetExtension(m_sSongFileName);
     for (size_t i = 0; i < m_vpSteps.size(); ++i) {
-      if (!m_vpSteps[i]->IsAutogen()) {
-        m_vpSteps[i]->SetFilename(
-            SetExtension(m_vpSteps[i]->GetFilename(), extension));
-      }
+      m_vpSteps[i]->SetFilename(
+          SetExtension(m_vpSteps[i]->GetFilename(), extension));
     }
     FILEMAN->Remove(autosave_path);
     m_loaded_from_autosave = false;
-  }
-}
-
-void Song::AddAutoGenNotes() {
-  bool HasNotes[NUM_StepsType];
-  memset(HasNotes, 0, sizeof(HasNotes));
-  for (unsigned i = 0; i < m_vpSteps.size(); i++)  // foreach Steps
-  {
-    if (m_vpSteps[i]->IsAutogen()) {
-      continue;
-    }
-
-    StepsType st = m_vpSteps[i]->m_StepsType;
-    HasNotes[st] = true;
-  }
-
-  FOREACH_ENUM(StepsType, stMissing) {
-    if (HasNotes[stMissing]) {
-      continue;
-    }
-
-    // If m_bAutogenSteps is disabled, only autogen lights.
-    if (!PREFSMAN->m_bAutogenSteps && stMissing != StepsType_lights_cabinet) {
-      continue;
-    }
-    if (!GAMEMAN->GetStepsTypeInfo(stMissing).bAllowAutogen) {
-      continue;
-    }
-
-    // missing Steps of this type
-    int iNumTracksOfMissing = GAMEMAN->GetStepsTypeInfo(stMissing).iNumTracks;
-
-    // look for closest match
-    StepsType stBestMatch = StepsType_Invalid;
-    int iBestTrackDifference = INT_MAX;
-
-    FOREACH_ENUM(StepsType, st) {
-      if (!HasNotes[st]) {
-        continue;
-      }
-
-      // has (non-autogen) Steps of this type
-      const int iNumTracks = GAMEMAN->GetStepsTypeInfo(st).iNumTracks;
-      const int iTrackDifference = std::abs(iNumTracks - iNumTracksOfMissing);
-      if (iTrackDifference < iBestTrackDifference) {
-        stBestMatch = st;
-        iBestTrackDifference = iTrackDifference;
-      }
-    }
-
-    if (stBestMatch != StepsType_Invalid) {
-      AutoGen(stMissing, stBestMatch);
-    }
-  }
-}
-
-void Song::AutoGen(StepsType ntTo, StepsType ntFrom) {
-  // int iNumTracksOfTo = GAMEMAN->StepsTypeToNumTracks(ntTo);
-
-  for (unsigned int j = 0; j < m_vpSteps.size(); j++) {
-    const Steps* pOriginalNotes = m_vpSteps[j];
-    if (pOriginalNotes->m_StepsType == ntFrom) {
-      Steps* pNewNotes = new Steps(this);
-      pNewNotes->AutogenFrom(pOriginalNotes, ntTo);
-      this->AddSteps(pNewNotes);
-    }
-  }
-}
-
-void Song::RemoveAutoGenNotes() {
-  FOREACH_ENUM(StepsType, st) {
-    for (int j = m_vpStepsByType[st].size() - 1; j >= 0; j--) {
-      if (m_vpStepsByType[st][j]->IsAutogen()) {
-        // delete m_vpSteps[j]; // delete below
-        m_vpStepsByType[st].erase(m_vpStepsByType[st].begin() + j);
-      }
-    }
-  }
-
-  for (int j = m_vpSteps.size() - 1; j >= 0; j--) {
-    if (m_vpSteps[j]->IsAutogen()) {
-      delete m_vpSteps[j];
-      m_vpSteps.erase(m_vpSteps.begin() + j);
-    }
   }
 }
 
@@ -1863,16 +1762,7 @@ void Song::AddSteps(Steps* pSteps) {
   }
 }
 
-void Song::DeleteSteps(const Steps* pSteps, bool bReAutoGen) {
-  ASSERT(!pSteps->IsAutogen());
-
-  // Avoid any stale Note::parent pointers by removing all AutoGen'd Steps,
-  // then adding them again.
-
-  if (bReAutoGen) {
-    RemoveAutoGenNotes();
-  }
-
+void Song::DeleteSteps(const Steps* pSteps) {
   std::vector<Steps*>& vpSteps = m_vpStepsByType[pSteps->m_StepsType];
   for (int j = vpSteps.size() - 1; j >= 0; j--) {
     if (vpSteps[j] == pSteps) {
@@ -1888,10 +1778,6 @@ void Song::DeleteSteps(const Steps* pSteps, bool bReAutoGen) {
       m_vpSteps.erase(m_vpSteps.begin() + j);
       break;
     }
-  }
-
-  if (bReAutoGen) {
-    AddAutoGenNotes();
   }
 }
 

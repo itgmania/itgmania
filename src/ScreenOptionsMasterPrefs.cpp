@@ -787,9 +787,7 @@ static void InitializeConfOptions() {
   ADD(ConfOption("ShowLyrics", MovePref<bool>, "Hide", "Show"));
 
   // Misc options
-  ADD(ConfOption("AutogenSteps", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("OnlyPreferredDifficulties", MovePref<bool>, "Off", "On"));
-  g_ConfOptions.back().m_iEffects = OPT_APPLY_SONG;
 
   ADD(ConfOption("AutogenGroupCourses", MovePref<bool>, "Off", "On"));
   ADD(ConfOption("FastLoad", MovePref<bool>, "Off", "On"));
@@ -1078,9 +1076,8 @@ void ConfOption::MakeOptionsList(std::vector<std::string>& out) const {
 }
 
 static const char* OptEffectNames[] = {
-    "SavePreferences",  "ApplyGraphics", "ApplyTheme",
-    "ChangeGame",       "ApplySound",    "ApplySong",
-    "ApplyAspectRatio", "ApplyProfiles", "ReloadSongs"};
+    "SavePreferences", "ApplyGraphics",    "ApplyTheme",    "ChangeGame",
+    "ApplySound",      "ApplyAspectRatio", "ApplyProfiles", "ReloadSongs"};
 XToString(OptEffect);
 StringToX(OptEffect);
 LuaXType(OptEffect);

@@ -102,7 +102,6 @@ LuaXType(DisplayBPM);
 Steps::Steps(Song* song)
     : m_StepsType(StepsType_Invalid),
       m_pSong(song),
-      parent(nullptr),
       m_pNoteData(new NoteData),
       m_bNoteDataIsFilled(false),
       m_sNoteDataCompressed(""),
@@ -143,9 +142,6 @@ void Steps::GetDisplayBpms(DisplayBpms& AddTo) const {
 bool Steps::HasAttacks() const { return !this->m_Attacks.empty(); }
 
 unsigned Steps::GetHash() const {
-  if (parent) {
-    return parent->GetHash();
-  }
   if (m_iHash) {
     return m_iHash;
   }
@@ -222,8 +218,6 @@ void Steps::SetNoteData(const NoteData& noteDataNew) {
   ASSERT(
       noteDataNew.GetNumTracks() ==
       GAMEMAN->GetStepsTypeInfo(m_StepsType).iNumTracks);
-
-  DeAutogen(false);
 
   *m_pNoteData = noteDataNew;
   m_bNoteDataIsFilled = true;
@@ -341,12 +335,6 @@ void Steps::CalculateStepStats(float fMusicLengthSeconds) {
 }
 
 void Steps::CalculateRadarValues(float fMusicLengthSeconds) {
-  // If we're autogen, don't calculate values.  GetRadarValues will take from
-  // our parent.
-  if (parent != nullptr) {
-    return;
-  }
-
   if (m_bAreCachedRadarValuesJustLoaded) {
     m_bAreCachedRadarValuesJustLoaded = false;
     return;
@@ -399,10 +387,6 @@ void Steps::CalculateRadarValues(float fMusicLengthSeconds) {
 }
 
 void Steps::CalculateTechCounts() {
-  if (parent != nullptr) {
-    return;
-  }
-
   if (m_bAreCachedTechCountsValuesJustLoaded) {
     m_bAreCachedTechCountsValuesJustLoaded = false;
     return;
@@ -430,10 +414,6 @@ void Steps::CalculateTechCounts() {
 }
 
 void Steps::CalculateMeasureInfo() {
-  if (parent != nullptr) {
-    return;
-  }
-
   if (m_AreCachedNpsPerMeasureJustLoaded) {
     m_AreCachedNpsPerMeasureJustLoaded = false;
     return;
@@ -494,47 +474,9 @@ void Steps::ChangeFilenamesForCustomSong() {
 
 void Steps::Decompress() const { const_cast<Steps*>(this)->Decompress(); }
 
-bool stepstype_is_kickbox(StepsType st) {
-  return st == StepsType_kickbox_human || st == StepsType_kickbox_quadarm ||
-         st == StepsType_kickbox_insect || st == StepsType_kickbox_arachnid;
-}
-
 void Steps::Decompress() {
   if (m_bNoteDataIsFilled) {
     return;  // already decompressed
-  }
-
-  if (parent) {
-    // get autogen m_pNoteData
-    NoteData notedata;
-    parent->GetNoteData(notedata);
-
-    m_bNoteDataIsFilled = true;
-
-    int iNewTracks = GAMEMAN->GetStepsTypeInfo(m_StepsType).iNumTracks;
-
-    if (this->m_StepsType == StepsType_lights_cabinet) {
-      NoteDataUtil::LoadTransformedLights(notedata, *m_pNoteData, iNewTracks);
-    } else {
-      // Special case so that kickbox can have autogen steps that are playable.
-      // Hopefully I'll replace this with a good generalized autogen system
-      // later.  -Kyz
-      if (stepstype_is_kickbox(this->m_StepsType)) {
-        // Number of notes seems like a useful "random" input so that charts
-        // from different sources come out different, but autogen always
-        // makes the same thing from one source. -Kyz
-        NoteDataUtil::AutogenKickbox(
-            notedata, *m_pNoteData, *GetTimingData(), this->m_StepsType,
-            static_cast<int>(
-                GetRadarValues(PLAYER_1)[RadarCategory_TapsAndHolds]));
-      } else {
-        NoteDataUtil::LoadTransformedSlidingWindow(
-            notedata, *m_pNoteData, iNewTracks);
-
-        NoteDataUtil::RemoveStretch(*m_pNoteData, m_StepsType);
-      }
-    }
-    return;
   }
 
   if (!m_sFilename.empty() && m_sNoteDataCompressed.empty()) {
@@ -605,50 +547,6 @@ void Steps::Compress() const {
   m_bNoteDataIsFilled = false;
 }
 
-/* Copy our parent's data. This is done when we're being changed from autogen
- * to normal. (needed?) */
-void Steps::DeAutogen(bool bCopyNoteData) {
-  if (!parent) {
-    return;  // OK
-  }
-
-  if (bCopyNoteData) {
-    Decompress();  // fills in m_pNoteData with sliding window transform
-  }
-
-  m_sDescription = Real()->m_sDescription;
-  m_sChartStyle = Real()->m_sChartStyle;
-  m_Difficulty = Real()->m_Difficulty;
-  m_iMeter = Real()->m_iMeter;
-  std::copy(
-      Real()->m_CachedRadarValues, Real()->m_CachedRadarValues + NUM_PLAYERS,
-      m_CachedRadarValues);
-  std::copy(
-      Real()->m_CachedTechCounts, Real()->m_CachedTechCounts + NUM_PLAYERS,
-      m_CachedTechCounts);
-
-  m_CachedNpsPerMeasure.assign(
-      Real()->m_CachedNpsPerMeasure.begin(),
-      Real()->m_CachedNpsPerMeasure.end());
-  m_CachedNotesPerMeasure.assign(
-      Real()->m_CachedNotesPerMeasure.begin(),
-      Real()->m_CachedNotesPerMeasure.end());
-
-  m_sCredit = Real()->m_sCredit;
-  parent = nullptr;
-
-  if (bCopyNoteData) {
-    Compress();
-  }
-}
-
-void Steps::AutogenFrom(const Steps* parent_, StepsType ntTo) {
-  parent = parent_;
-  m_StepsType = ntTo;
-  m_StepsTypeStr = GAMEMAN->GetStepsTypeInfo(ntTo).szName;
-  m_Timing = parent->m_Timing;
-}
-
 void Steps::CopyFrom(
     Steps* pSource, StepsType ntTo,
     float fMusicLengthSeconds)  // pSource does not have to be of the same
@@ -659,7 +557,6 @@ void Steps::CopyFrom(
   NoteData noteData;
   pSource->GetNoteData(noteData);
   noteData.SetNumTracks(GAMEMAN->GetStepsTypeInfo(ntTo).iNumTracks);
-  parent = nullptr;
   m_Timing = pSource->m_Timing;
   this->m_pSong = pSource->m_pSong;
   this->m_Attacks = pSource->m_Attacks;
@@ -681,7 +578,6 @@ void Steps::CreateBlank(StepsType ntTo) {
 
 void Steps::SetDifficultyAndDescription(
     Difficulty dc, std::string sDescription) {
-  DeAutogen();
   m_Difficulty = dc;
   m_sDescription = sDescription;
   if (GetDifficulty() == Difficulty_Edit) {
@@ -689,13 +585,9 @@ void Steps::SetDifficultyAndDescription(
   }
 }
 
-void Steps::SetCredit(std::string sCredit) {
-  DeAutogen();
-  m_sCredit = sCredit;
-}
+void Steps::SetCredit(std::string sCredit) { m_sCredit = sCredit; }
 
 void Steps::SetChartStyle(std::string sChartStyle) {
-  DeAutogen();
   m_sChartStyle = sChartStyle;
 }
 
@@ -708,10 +600,7 @@ bool Steps::MakeValidEditDescription(std::string& sPreferredDescription) {
   return false;
 }
 
-void Steps::SetMeter(int meter) {
-  DeAutogen();
-  m_iMeter = meter;
-}
+void Steps::SetMeter(int meter) { m_iMeter = meter; }
 
 const TimingData* Steps::GetTimingData() const {
   return m_Timing.empty() ? &m_pSong->m_SongTiming : &m_Timing;
@@ -747,27 +636,23 @@ const std::string& Steps::GetMusicFile() const { return m_MusicFile; }
 void Steps::SetMusicFile(const std::string& file) { m_MusicFile = file; }
 
 void Steps::SetCachedRadarValues(const RadarValues v[NUM_PLAYERS]) {
-  DeAutogen();
   std::copy(v, v + NUM_PLAYERS, m_CachedRadarValues);
   m_bAreCachedRadarValuesJustLoaded = true;
 }
 
 void Steps::SetCachedTechCounts(const TechCounts ts[NUM_PLAYERS]) {
-  DeAutogen();
   std::copy(ts, ts + NUM_PLAYERS, m_CachedTechCounts);
   m_bAreCachedTechCountsValuesJustLoaded = true;
 }
 
 void Steps::SetCachedNpsPerMeasure(
     std::vector<std::vector<float>>& npsPerMeasure) {
-  DeAutogen();
   m_CachedNpsPerMeasure.assign(npsPerMeasure.begin(), npsPerMeasure.end());
   m_AreCachedNpsPerMeasureJustLoaded = true;
 }
 
 void Steps::SetCachedNotesPerMeasure(
     std::vector<std::vector<int>>& notesPerMeasure) {
-  DeAutogen();
   m_CachedNotesPerMeasure.assign(
       notesPerMeasure.begin(), notesPerMeasure.end());
   m_AreCachedNotesPerMeasureJustLoaded = true;
@@ -1004,12 +889,12 @@ const std::vector<float>& Steps::GetNpsPerMeasure(PlayerNumber pn) const {
   // will be the case for like 99.9% of charts).
 
   static const std::vector<float> EMPTY_VECTOR;
-  if (Real()->m_CachedNpsPerMeasure.size() == 0) {
+  if (this->m_CachedNpsPerMeasure.size() == 0) {
     return EMPTY_VECTOR;
-  } else if (Real()->m_CachedNpsPerMeasure.size() <= pn) {
-    return Real()->m_CachedNpsPerMeasure[PLAYER_1];
+  } else if (this->m_CachedNpsPerMeasure.size() <= pn) {
+    return this->m_CachedNpsPerMeasure[PLAYER_1];
   } else {
-    return Real()->m_CachedNpsPerMeasure[pn];
+    return this->m_CachedNpsPerMeasure[pn];
   }
 }
 
@@ -1019,22 +904,22 @@ const std::vector<int>& Steps::GetNotesPerMeasure(PlayerNumber pn) const {
   // dance-routine). Otherwise, it will only have one copy of the values (which
   // will be the case for like 99.9% of charts).
   static const std::vector<int> EMPTY_VECTOR;
-  if (Real()->m_CachedNotesPerMeasure.size() == 0) {
+  if (this->m_CachedNotesPerMeasure.size() == 0) {
     return EMPTY_VECTOR;
-  } else if (Real()->m_CachedNotesPerMeasure.size() <= pn) {
-    return Real()->m_CachedNotesPerMeasure[PLAYER_1];
+  } else if (this->m_CachedNotesPerMeasure.size() <= pn) {
+    return this->m_CachedNotesPerMeasure[PLAYER_1];
   } else {
-    return Real()->m_CachedNotesPerMeasure[pn];
+    return this->m_CachedNotesPerMeasure[pn];
   }
 }
 
 float Steps::GetPeakNps(PlayerNumber pn) const {
-  if (Real()->m_PeakNps.size() == 0) {
+  if (this->m_PeakNps.size() == 0) {
     return 0;
-  } else if (Real()->m_PeakNps.size() <= pn) {
-    return Real()->m_PeakNps[PLAYER_1];
+  } else if (this->m_PeakNps.size() <= pn) {
+    return this->m_PeakNps[PLAYER_1];
   } else {
-    return Real()->m_PeakNps[pn];
+    return this->m_PeakNps[pn];
   }
 }
 

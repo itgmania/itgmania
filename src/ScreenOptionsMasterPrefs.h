@@ -13,11 +13,10 @@ enum OptEffect {
   OPT_APPLY_THEME = (1 << 2),
   OPT_CHANGE_GAME = (1 << 3),
   OPT_APPLY_SOUND = (1 << 4),
-  OPT_APPLY_SONG = (1 << 5),
-  OPT_APPLY_ASPECT_RATIO = (1 << 6),
-  OPT_APPLY_PROFILES = (1 << 7),
-  OPT_RELOAD_SONGS = (1 << 8),
-  NUM_OptEffect = 9,
+  OPT_APPLY_ASPECT_RATIO = (1 << 5),
+  OPT_APPLY_PROFILES = (1 << 6),
+  OPT_RELOAD_SONGS = (1 << 7),
+  NUM_OptEffect = 8,
   OptEffect_Invalid = MAX_OPTIONS + 1
 };
 const std::string& OptEffectToString(OptEffect e);

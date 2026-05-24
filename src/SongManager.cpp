@@ -1487,14 +1487,6 @@ void SongManager::RegenerateNonFixedCourses() {
   }
 }
 
-void SongManager::SetPreferences() {
-  for (unsigned int i = 0; i < m_pSongs.size(); i++) {
-    // PREFSMAN->m_bAutogenSteps may have changed.
-    m_pSongs[i]->RemoveAutoGenNotes();
-    m_pSongs[i]->AddAutoGenNotes();
-  }
-}
-
 void SongManager::SaveEnabledSongsToPref() {
   std::vector<std::string> vsDisabledSongs;
 

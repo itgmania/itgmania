@@ -110,10 +110,6 @@ void ScreenJukebox::SetSong() {
       continue;  // skip
     }
 
-    if (!PREFSMAN->m_bAutogenSteps && pSteps->IsAutogen()) {
-      continue;  // skip
-    }
-
     // Found something we can use!
     GAMESTATE->m_pCurSong.Set(pSong);
     // We just changed the song. Reset the original sync data.

@@ -57,7 +57,6 @@ class SongManager {
   void Invalidate(const Song* pStaleSong);
 
   void RegenerateNonFixedCourses();
-  void SetPreferences();
   void SaveEnabledSongsToPref();
   void LoadEnabledSongsFromPref();
 

@@ -418,7 +418,7 @@ void SongUtil::DeleteDuplicateSteps(Song* pSong, std::vector<Steps*>& vSteps) {
           s1->GetDescription().c_str(), s1->GetCredit().c_str(),
           s1->GetMeter());
 
-      pSong->DeleteSteps(s2, false);
+      pSong->DeleteSteps(s2);
 
       vSteps.erase(vSteps.begin() + j);
       --j;
