@@ -6,9 +6,7 @@
 #include <string_view>
 #include <vector>
 
-#include "NotesLoaderBMS.h"
 #include "NotesLoaderDWI.h"
-#include "NotesLoaderKSF.h"
 #include "NotesLoaderSM.h"
 #include "NotesLoaderSMA.h"
 #include "NotesLoaderSSC.h"
@@ -60,19 +58,6 @@ bool NotesLoader::LoadFromDir(
   DWILoader::GetApplicableFiles(sPath, list);
   if (!list.empty()) {
     return DWILoader::LoadFromDir(sPath, out, BlacklistedImages);
-  }
-  BMSLoader::GetApplicableFiles(sPath, list);
-  if (!list.empty()) {
-    return BMSLoader::LoadFromDir(sPath, out);
-  }
-  /*
-  PMSLoader::GetApplicableFiles( sPath, list );
-  if( !list.empty() )
-          return PMSLoader::LoadFromDir( sPath, out );
-  */
-  KSFLoader::GetApplicableFiles(sPath, list);
-  if (!list.empty()) {
-    return KSFLoader::LoadFromDir(sPath, out);
   }
   return false;
 }

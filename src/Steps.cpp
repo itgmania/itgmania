@@ -31,9 +31,7 @@
 #include "NoteData.h"
 #include "NoteDataUtil.h"
 #include "NoteTypes.h"
-#include "NotesLoaderBMS.h"
 #include "NotesLoaderDWI.h"
-#include "NotesLoaderKSF.h"
 #include "NotesLoaderSM.h"
 #include "NotesLoaderSMA.h"
 #include "NotesLoaderSSC.h"
@@ -199,12 +197,6 @@ bool Steps::GetNoteDataFromSimfile() {
     return loader.LoadNoteDataFromSimfile(stepFile, *this);
   } else if (extension == "dwi") {
     return DWILoader::LoadNoteDataFromSimfile(stepFile, *this);
-  } else if (extension == "ksf") {
-    return KSFLoader::LoadNoteDataFromSimfile(stepFile, *this);
-  } else if (
-      extension == "bms" || extension == "bml" || extension == "bme" ||
-      extension == "pms") {
-    return BMSLoader::LoadNoteDataFromSimfile(stepFile, *this);
   } else if (extension == "edit") {
     // Try SSC, then fallback to SM.
     SSCLoader ldSSC;
