@@ -314,14 +314,6 @@ bool Song::LoadFromSongDir(
     SSCLoader loaderSSC;
     bool bLoadedFromCache =
         loaderSSC.LoadFromSimfile(cache_file_path, *this, true);
-    if (!bLoadedFromCache) {
-      // load from .sm
-      SMLoader loaderSM;
-      if (loaderSM.LoadFromSimfile(cache_file_path, *this, true)) {
-        loaderSM.TidyUpData(*this, true);
-        bLoadedFromCache = true;
-      }
-    }
 
     // If cache loading failed entirely (e.g. stale dir cache says cache file
     // exists after it was removed), fall back to parsing source files.
