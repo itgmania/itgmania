@@ -1429,8 +1429,7 @@ void Song::AddAutoGenNotes() {
       continue;
     }
 
-    // If m_bAutogenSteps is disabled, only autogen lights.
-    if (!PREFSMAN->m_bAutogenSteps && stMissing != StepsType_lights_cabinet) {
+    if (!PREFSMAN->m_bAutogenSteps) {
       continue;
     }
     if (!GAMEMAN->GetStepsTypeInfo(stMissing).bAllowAutogen) {

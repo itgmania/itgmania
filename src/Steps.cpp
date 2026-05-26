@@ -513,26 +513,22 @@ void Steps::Decompress() {
 
     int iNewTracks = GAMEMAN->GetStepsTypeInfo(m_StepsType).iNumTracks;
 
-    if (this->m_StepsType == StepsType_lights_cabinet) {
-      NoteDataUtil::LoadTransformedLights(notedata, *m_pNoteData, iNewTracks);
+    // Special case so that kickbox can have autogen steps that are playable.
+    // Hopefully I'll replace this with a good generalized autogen system
+    // later.  -Kyz
+    if (stepstype_is_kickbox(this->m_StepsType)) {
+      // Number of notes seems like a useful "random" input so that charts
+      // from different sources come out different, but autogen always
+      // makes the same thing from one source. -Kyz
+      NoteDataUtil::AutogenKickbox(
+          notedata, *m_pNoteData, *GetTimingData(), this->m_StepsType,
+          static_cast<int>(
+              GetRadarValues(PLAYER_1)[RadarCategory_TapsAndHolds]));
     } else {
-      // Special case so that kickbox can have autogen steps that are playable.
-      // Hopefully I'll replace this with a good generalized autogen system
-      // later.  -Kyz
-      if (stepstype_is_kickbox(this->m_StepsType)) {
-        // Number of notes seems like a useful "random" input so that charts
-        // from different sources come out different, but autogen always
-        // makes the same thing from one source. -Kyz
-        NoteDataUtil::AutogenKickbox(
-            notedata, *m_pNoteData, *GetTimingData(), this->m_StepsType,
-            static_cast<int>(
-                GetRadarValues(PLAYER_1)[RadarCategory_TapsAndHolds]));
-      } else {
-        NoteDataUtil::LoadTransformedSlidingWindow(
-            notedata, *m_pNoteData, iNewTracks);
+      NoteDataUtil::LoadTransformedSlidingWindow(
+          notedata, *m_pNoteData, iNewTracks);
 
-        NoteDataUtil::RemoveStretch(*m_pNoteData, m_StepsType);
-      }
+      NoteDataUtil::RemoveStretch(*m_pNoteData, m_StepsType);
     }
     return;
   }
