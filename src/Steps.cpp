@@ -473,14 +473,10 @@ void Steps::Decompress() {
 
     int iNewTracks = GAMEMAN->GetStepsTypeInfo(m_StepsType).iNumTracks;
 
-    if (this->m_StepsType == StepsType_lights_cabinet) {
-      NoteDataUtil::LoadTransformedLights(notedata, *m_pNoteData, iNewTracks);
-    } else {
-      NoteDataUtil::LoadTransformedSlidingWindow(
-          notedata, *m_pNoteData, iNewTracks);
+    NoteDataUtil::LoadTransformedSlidingWindow(
+        notedata, *m_pNoteData, iNewTracks);
 
-      NoteDataUtil::RemoveStretch(*m_pNoteData, m_StepsType);
-    }
+    NoteDataUtil::RemoveStretch(*m_pNoteData, m_StepsType);
     return;
   }
 
