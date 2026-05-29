@@ -989,6 +989,7 @@ void Profile::swap(Profile& other) {
   SWAP_GENERAL(m_bNewProfile);
   SWAP_STR_MEMBER(m_UnlockedEntryIDs);
   SWAP_STR_MEMBER(m_sLastPlayedMachineGuid);
+  SWAP_GENERAL(m_CreationTime);
   SWAP_GENERAL(m_LastPlayedDate);
   SWAP_ARRAY(m_iNumSongsPlayedByPlayMode, NUM_PlayMode);
   SWAP_STR_MEMBER(m_iNumSongsPlayedByStyle);
@@ -1338,6 +1339,8 @@ ProfileLoadResult Profile::LoadStatsFromDir(
 void Profile::LoadTypeFromDir(std::string dir) {
   m_Type = ProfileType_Normal;
   m_ListPriority = 0;
+  m_CreationTime.Init();
+  m_LastPlayedDate.Init();
   std::string fn = dir + TYPE_INI;
   if (FILEMAN->DoesFileExist(fn)) {
     IniFile ini;
@@ -1352,9 +1355,18 @@ void Profile::LoadTypeFromDir(std::string dir) {
           }
         }
         data->GetAttrValue("Priority", m_ListPriority);
+        std::string creation_date_str;
+        if (data->GetAttrValue("CreationTime", creation_date_str)) {
+          m_CreationTime.FromString(creation_date_str);
+        }
         std::string date_str;
         if (data->GetAttrValue("LastPlayedDate", date_str)) {
           m_LastPlayedDate.FromString(date_str);
+        }
+        // Backward compatibility for profiles created before CreationTime
+        // existed in Type.ini.
+        if (m_CreationTime == DateTime()) {
+          m_CreationTime = m_LastPlayedDate;
         }
       }
     }
@@ -1527,8 +1539,12 @@ bool Profile::SaveStatsXmlToDir(std::string sDir, bool bSignData) const {
 
 void Profile::SaveTypeToDir(std::string dir) const {
   IniFile ini;
+  if (m_CreationTime == DateTime()) {
+    m_CreationTime = DateTime::GetNowDateTime();
+  }
   ini.SetValue("ListPosition", "Type", ProfileTypeToString(m_Type));
   ini.SetValue("ListPosition", "Priority", m_ListPriority);
+  ini.SetValue("ListPosition", "CreationTime", m_CreationTime.GetString());
   ini.SetValue(
       "ListPosition", "LastPlayedDate", DateTime::GetNowDateTime().GetString());
   ini.WriteFile(dir + TYPE_INI);

@@ -135,6 +135,7 @@ class Profile {
         m_bNewProfile(false),
         m_UnlockedEntryIDs(),
         m_sLastPlayedMachineGuid(""),
+        m_CreationTime(),
         m_LastPlayedDate(),
         m_iNumSongsPlayedByStyle(),
         m_iNumTotalSongsPlayed(0),
@@ -146,6 +147,7 @@ class Profile {
     m_lastSong.Unset();
     m_lastCourse.Unset();
 
+    m_CreationTime.Init();
     m_LastPlayedDate.Init();
 
     FOREACH_ENUM(PlayMode, i)
@@ -273,6 +275,7 @@ class Profile {
    * const everywhere else. It was decided to keep const on the whole
    * save chain and keep this mutable. -Chris */
   mutable std::string m_sLastPlayedMachineGuid;
+    mutable DateTime m_CreationTime;
   mutable DateTime m_LastPlayedDate;
   /* These stats count twice in the machine profile if two players are playing;
    * that's the only approach that makes sense for ByDifficulty and ByMeter. */

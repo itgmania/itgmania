@@ -462,6 +462,9 @@ void ProfileManager::RefreshLocalProfilesFromDisk() {
     case ProfileSortOrder_Recent:
       LoadLocalProfilesByRecent();
       break;
+    case ProfileSortOrder_CreationTime:
+      LoadLocalProfilesByCreationTime();
+      break;
     default:
       LoadLocalProfilesByPriority();
       break;
@@ -642,6 +645,62 @@ void ProfileManager::LoadLocalProfilesByRecent() {
   }
 }
 
+// This function is used within RefreshLocalProfilesFromDisk() to sort the
+// profiles by creation time.
+void ProfileManager::LoadLocalProfilesByCreationTime() {
+  std::vector<std::string> profile_ids;
+  GetDirListing(USER_PROFILES_DIR "*", profile_ids, true, true);
+
+  std::vector<DirAndProfile> guestProfiles;
+  std::vector<DirAndProfile> normalProfiles;
+  std::vector<DirAndProfile> testProfiles;
+
+  for (const std::string& id : profile_ids) {
+    DirAndProfile derp;
+    derp.sDir = id "/";
+    derp.profile.LoadTypeFromDir(derp.sDir);
+    switch (derp.profile.m_Type) {
+      case ProfileType_Guest:
+        guestProfiles.push_back(derp);
+        break;
+      case ProfileType_Normal:
+        normalProfiles.push_back(derp);
+        break;
+      case ProfileType_Test:
+        testProfiles.push_back(derp);
+        break;
+      default:
+        break;
+    }
+  }
+
+  if (PREFSMAN->m_bProfileSortOrderAscending) {
+    auto creationAscending = [](const DirAndProfile& a,
+                                const DirAndProfile& b) {
+      return a.profile.m_CreationTime > b.profile.m_CreationTime;
+    };
+    std::sort(guestProfiles.begin(), guestProfiles.end(), creationAscending);
+    std::sort(normalProfiles.begin(), normalProfiles.end(), creationAscending);
+    std::sort(testProfiles.begin(), testProfiles.end(), creationAscending);
+  } else {
+    auto creationDescending = [](const DirAndProfile& a,
+                                 const DirAndProfile& b) {
+      return a.profile.m_CreationTime < b.profile.m_CreationTime;
+    };
+    std::sort(guestProfiles.begin(), guestProfiles.end(), creationDescending);
+    std::sort(normalProfiles.begin(), normalProfiles.end(), creationDescending);
+    std::sort(testProfiles.begin(), testProfiles.end(), creationDescending);
+  }
+
+  add_category_to_global_list(guestProfiles);
+  add_category_to_global_list(normalProfiles);
+  add_category_to_global_list(testProfiles);
+
+  for (DirAndProfile& curr : g_vLocalProfile) {
+    curr.profile.LoadAllFromDir(curr.sDir, PREFSMAN->m_bSignProfileData);
+  }
+}
+
 const Profile* ProfileManager::GetLocalProfile(
     const std::string& sProfileID) const {
   std::string sDir = LocalProfileIDToDir(sProfileID);
@@ -709,6 +768,7 @@ bool ProfileManager::CreateLocalProfile(
   Profile* pProfile = new Profile;
   pProfile->m_sDisplayName = sName;
   pProfile->m_sCharacterID = CHARMAN->GetRandomCharacter()->m_sCharacterID;
+  pProfile->m_CreationTime = DateTime::GetNowDateTime();
 
   // Save it to disk.
   std::string sProfileDir = LocalProfileIDToDir(profile_id);

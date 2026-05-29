@@ -34,6 +34,7 @@ class ProfileManager {
   void LoadLocalProfilesByPriority();
   void LoadLocalProfilesByRecent();
   void LoadLocalProfilesByName();
+  void LoadLocalProfilesByCreationTime();
 
   const Profile* GetLocalProfile(const std::string& sProfileID) const;
   Profile* GetLocalProfile(const std::string& sProfileID) {
