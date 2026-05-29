@@ -649,7 +649,7 @@ void ProfileManager::LoadLocalProfilesByRecent() {
 // profiles by creation time.
 void ProfileManager::LoadLocalProfilesByCreationTime() {
   std::vector<std::string> profile_ids;
-  GetDirListing(USER_PROFILES_DIR "*", profile_ids, true, true);
+  GetDirListing(USER_PROFILES_DIR + "*", profile_ids, true, true);
 
   std::vector<DirAndProfile> guestProfiles;
   std::vector<DirAndProfile> normalProfiles;
@@ -657,7 +657,7 @@ void ProfileManager::LoadLocalProfilesByCreationTime() {
 
   for (const std::string& id : profile_ids) {
     DirAndProfile derp;
-    derp.sDir = id "/";
+    derp.sDir = id + "/";
     derp.profile.LoadTypeFromDir(derp.sDir);
     switch (derp.profile.m_Type) {
       case ProfileType_Guest:
@@ -718,44 +718,47 @@ bool ProfileManager::CreateLocalProfile(
     std::string sName, std::string& sProfileIDOut) {
   ASSERT(!sName.empty());
 
-  // Find a directory directory name that's a number greater than all
-  // existing numbers.  This preserves the "order by create date".
-  // Profile IDs are actually the directory names, so they can be any string,
-  // and we have to handle the case where the user renames one.
-  // Since the user can rename them, they might have any number, wrapping our
-  // counter or setting it to a ridiculous value.  That case must also be
-  // handled. -Kyz
-  int max_profile_number = -1;
-  int first_free_number = 0;
   std::vector<std::string> profile_ids;
   GetLocalProfileIDs(profile_ids);
+
+  std::string base = SanitizeForDirName(sName);
+  if (base.empty()) {
+    base = "Profile";
+  }
+
+  std::string profile_id = base;
+  bool base_exists = false;
   for (std::vector<std::string>::const_iterator id = profile_ids.begin();
        id != profile_ids.end(); ++id) {
-    int tmp = 0;
-    if ((*id) >> tmp) {
-      // The profile ids are already in order, so we don't have to handle the
-      // case where 5 is encountered before 3.
-      if (tmp == first_free_number) {
-        ++first_free_number;
-      }
-      max_profile_number = std::max(tmp, max_profile_number);
+    if (CompareNoCase(*id, base) == 0) {
+      base_exists = true;
+      break;
     }
   }
 
-  int profile_number = max_profile_number + 1;
-  // Prevent profiles from going over the 8 digit limit.
-  if (profile_number > MAX_ID || profile_number < 0) {
-    profile_number = first_free_number;
+  // If a profile with the same name already exists..
+  // attempt to append an incrementing number until we find a name that doesn't exist.
+  if (base_exists) {
+    int suffix = 1;
+    while (true) {
+      std::string candidate = ssprintf("%s_%d", base.c_str(), suffix);
+      bool candidate_exists = false;
+      for (std::vector<std::string>::const_iterator id = profile_ids.begin();
+           id != profile_ids.end(); ++id) {
+        if (CompareNoCase(*id, candidate) == 0) {
+          candidate_exists = true;
+          break;
+        }
+      }
+
+      if (!candidate_exists) {
+        profile_id = candidate;
+        break;
+      }
+
+      ++suffix;
+    }
   }
-  ASSERT_M(
-      profile_number >= 0 && profile_number <= MAX_ID,
-      "Too many profiles, cannot assign ID to new profile.");
-  std::string sanitized_name = SanitizeForDirName(sName);
-  std::string profile_id =
-      sanitized_name.empty() ? ssprintf("%0" ID_DIGITS_STR "d", profile_number)
-                             : ssprintf(
-                                   "%0" ID_DIGITS_STR "d_%s", profile_number,
-                                   sanitized_name.c_str());
 
   // make sure this id doesn't already exist
   ASSERT_M(

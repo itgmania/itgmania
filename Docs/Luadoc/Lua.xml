@@ -2741,6 +2741,7 @@
 			<EnumValue name='&apos;ProfileSortOrder_Priority&apos;' value='0'/>
 			<EnumValue name='&apos;ProfileSortOrder_Recent&apos;' value='1'/>
 			<EnumValue name='&apos;ProfileSortOrder_Alphabetical&apos;' value='2'/>
+			<EnumValue name='&apos;ProfileSortOrder_CreationTime&apos;' value='3'/>
 		</Enum>
 		<Enum name='ProfileType'>
 			<EnumValue name='&apos;ProfileType_Guest&apos;' value='0'/>
