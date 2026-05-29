@@ -114,11 +114,6 @@ Steps::Steps(Song* song)
       m_sChartStyle(""),
       m_Difficulty(Difficulty_Invalid),
       m_iMeter(0),
-      m_bAreCachedRadarValuesJustLoaded(false),
-      m_bAreCachedTechCountsValuesJustLoaded(false),
-      m_AreCachedNpsPerMeasureJustLoaded(false),
-      m_AreCachedNotesPerMeasureJustLoaded(false),
-      m_bIsCachedGrooveStatsHashJustLoaded(false),
       m_sGrooveStatsHash(""),
       m_iGrooveStatsHashVersion(0),
       m_sCredit(""),
@@ -347,11 +342,6 @@ void Steps::CalculateRadarValues(float fMusicLengthSeconds) {
     return;
   }
 
-  if (m_bAreCachedRadarValuesJustLoaded) {
-    m_bAreCachedRadarValuesJustLoaded = false;
-    return;
-  }
-
   // Do write radar values, and leave it up to the reading app whether they want
   // to trust the cached values without recalculating them.
   /*
@@ -363,7 +353,7 @@ void Steps::CalculateRadarValues(float fMusicLengthSeconds) {
   NoteData tempNoteData;
   this->GetNoteData(tempNoteData);
 
-  FOREACH_PlayerNumber(pn) m_CachedRadarValues[pn].Zero();
+  FOREACH_PlayerNumber(pn) m_RadarValues[pn].Zero();
 
   TimingData* timing = this->GetTimingData();
   if (tempNoteData.IsComposite()) {
@@ -373,7 +363,7 @@ void Steps::CalculateRadarValues(float fMusicLengthSeconds) {
     for (size_t pn = 0; pn < std::min(vParts.size(), size_t(NUM_PLAYERS));
          ++pn) {
       NoteDataUtil::CalculateRadarValues(
-          vParts[pn], fMusicLengthSeconds, timing, m_CachedRadarValues[pn]);
+          vParts[pn], fMusicLengthSeconds, timing, m_RadarValues[pn]);
     }
   } else if (
       GAMEMAN->GetStepsTypeInfo(this->m_StepsType).m_StepsTypeCategory ==
@@ -383,18 +373,16 @@ void Steps::CalculateRadarValues(float fMusicLengthSeconds) {
     const int tracks = tempNoteData.GetNumTracks() / 2;
     p1.SetNumTracks(tracks);
     NoteDataUtil::CalculateRadarValues(
-        p1, fMusicLengthSeconds, timing, m_CachedRadarValues[PLAYER_1]);
+        p1, fMusicLengthSeconds, timing, m_RadarValues[PLAYER_1]);
     // at this point, p2 is tempNoteData.
     NoteDataUtil::ShiftTracks(tempNoteData, tracks);
     tempNoteData.SetNumTracks(tracks);
     NoteDataUtil::CalculateRadarValues(
-        tempNoteData, fMusicLengthSeconds, timing,
-        m_CachedRadarValues[PLAYER_2]);
+        tempNoteData, fMusicLengthSeconds, timing, m_RadarValues[PLAYER_2]);
   } else {
     NoteDataUtil::CalculateRadarValues(
-        tempNoteData, fMusicLengthSeconds, timing, m_CachedRadarValues[0]);
-    std::fill_n(
-        m_CachedRadarValues + 1, NUM_PLAYERS - 1, m_CachedRadarValues[0]);
+        tempNoteData, fMusicLengthSeconds, timing, m_RadarValues[0]);
+    std::fill_n(m_RadarValues + 1, NUM_PLAYERS - 1, m_RadarValues[0]);
   }
 }
 
@@ -403,15 +391,10 @@ void Steps::CalculateTechCounts() {
     return;
   }
 
-  if (m_bAreCachedTechCountsValuesJustLoaded) {
-    m_bAreCachedTechCountsValuesJustLoaded = false;
-    return;
-  }
-
   NoteData tempNoteData;
   this->GetNoteData(tempNoteData);
 
-  FOREACH_PlayerNumber(pn) m_CachedTechCounts[pn].Zero();
+  FOREACH_PlayerNumber(pn) m_TechCounts[pn].Zero();
 
   const std::optional<StepParity::StageLayout> layout =
       getLayout(this->m_StepsType);
@@ -424,18 +407,12 @@ void Steps::CalculateTechCounts() {
   StepParity::StepParityGenerator gen =
       StepParity::StepParityGenerator(&*layout, timing);
   gen.analyzeNoteData(tempNoteData);
-  TechCounts::CalculateTechCountsFromRows(
-      gen.rows, &*layout, m_CachedTechCounts[0]);
-  std::fill_n(m_CachedTechCounts + 1, NUM_PLAYERS - 1, m_CachedTechCounts[0]);
+  TechCounts::CalculateTechCountsFromRows(gen.rows, &*layout, m_TechCounts[0]);
+  std::fill_n(m_TechCounts + 1, NUM_PLAYERS - 1, m_TechCounts[0]);
 }
 
 void Steps::CalculateMeasureInfo() {
   if (parent != nullptr) {
-    return;
-  }
-
-  if (m_AreCachedNpsPerMeasureJustLoaded) {
-    m_AreCachedNpsPerMeasureJustLoaded = false;
     return;
   }
 
@@ -474,13 +451,13 @@ void Steps::CalculateMeasureInfo() {
         tempNoteData, timing, measureInfoPerPlayer[0]);
   }
 
-  m_CachedNotesPerMeasure.clear();
-  m_CachedNpsPerMeasure.clear();
+  m_NotesPerMeasure.clear();
+  m_NpsPerMeasure.clear();
   m_PeakNps.clear();
 
   for (MeasureInfo& mi : measureInfoPerPlayer) {
-    m_CachedNotesPerMeasure.push_back(mi.notesPerMeasure);
-    m_CachedNpsPerMeasure.push_back(mi.npsPerMeasure);
+    m_NotesPerMeasure.push_back(mi.notesPerMeasure);
+    m_NpsPerMeasure.push_back(mi.npsPerMeasure);
     m_PeakNps.push_back(mi.peakNps);
   }
 }
@@ -621,18 +598,15 @@ void Steps::DeAutogen(bool bCopyNoteData) {
   m_Difficulty = Real()->m_Difficulty;
   m_iMeter = Real()->m_iMeter;
   std::copy(
-      Real()->m_CachedRadarValues, Real()->m_CachedRadarValues + NUM_PLAYERS,
-      m_CachedRadarValues);
+      Real()->m_RadarValues, Real()->m_RadarValues + NUM_PLAYERS,
+      m_RadarValues);
   std::copy(
-      Real()->m_CachedTechCounts, Real()->m_CachedTechCounts + NUM_PLAYERS,
-      m_CachedTechCounts);
+      Real()->m_TechCounts, Real()->m_TechCounts + NUM_PLAYERS, m_TechCounts);
 
-  m_CachedNpsPerMeasure.assign(
-      Real()->m_CachedNpsPerMeasure.begin(),
-      Real()->m_CachedNpsPerMeasure.end());
-  m_CachedNotesPerMeasure.assign(
-      Real()->m_CachedNotesPerMeasure.begin(),
-      Real()->m_CachedNotesPerMeasure.end());
+  m_NpsPerMeasure.assign(
+      Real()->m_NpsPerMeasure.begin(), Real()->m_NpsPerMeasure.end());
+  m_NotesPerMeasure.assign(
+      Real()->m_NotesPerMeasure.begin(), Real()->m_NotesPerMeasure.end());
 
   m_sCredit = Real()->m_sCredit;
   parent = nullptr;
@@ -746,31 +720,24 @@ const std::string& Steps::GetMusicFile() const { return m_MusicFile; }
 
 void Steps::SetMusicFile(const std::string& file) { m_MusicFile = file; }
 
-void Steps::SetCachedRadarValues(const RadarValues v[NUM_PLAYERS]) {
+void Steps::SetRadarValues(const RadarValues v[NUM_PLAYERS]) {
   DeAutogen();
-  std::copy(v, v + NUM_PLAYERS, m_CachedRadarValues);
-  m_bAreCachedRadarValuesJustLoaded = true;
+  std::copy(v, v + NUM_PLAYERS, m_RadarValues);
 }
 
-void Steps::SetCachedTechCounts(const TechCounts ts[NUM_PLAYERS]) {
+void Steps::SetTechCounts(const TechCounts ts[NUM_PLAYERS]) {
   DeAutogen();
-  std::copy(ts, ts + NUM_PLAYERS, m_CachedTechCounts);
-  m_bAreCachedTechCountsValuesJustLoaded = true;
+  std::copy(ts, ts + NUM_PLAYERS, m_TechCounts);
 }
 
-void Steps::SetCachedNpsPerMeasure(
-    std::vector<std::vector<float>>& npsPerMeasure) {
+void Steps::SetNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure) {
   DeAutogen();
-  m_CachedNpsPerMeasure.assign(npsPerMeasure.begin(), npsPerMeasure.end());
-  m_AreCachedNpsPerMeasureJustLoaded = true;
+  m_NpsPerMeasure.assign(npsPerMeasure.begin(), npsPerMeasure.end());
 }
 
-void Steps::SetCachedNotesPerMeasure(
-    std::vector<std::vector<int>>& notesPerMeasure) {
+void Steps::SetNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure) {
   DeAutogen();
-  m_CachedNotesPerMeasure.assign(
-      notesPerMeasure.begin(), notesPerMeasure.end());
-  m_AreCachedNotesPerMeasureJustLoaded = true;
+  m_NotesPerMeasure.assign(notesPerMeasure.begin(), notesPerMeasure.end());
 }
 
 void Steps::SetPeakNps(std::vector<float>& peakNps) {
@@ -786,17 +753,6 @@ int Steps::GetGrooveStatsHashVersion() const {
 }
 
 void Steps::CalculateGrooveStatsHash() {
-  // When the game first boots up, it will load the GrooveStatsHash from the
-  // cache.
-  // This should keep the initial boot snappy, especially since hashes should
-  // almost never change.
-  // If this function is then called again (say in ScreenEval), we can
-  // recalculate the hash and use that for submission.
-  if (m_iGrooveStatsHashVersion == CURRENT_GROOVE_STATS_HASH_VERSION &&
-      m_bIsCachedGrooveStatsHashJustLoaded == true) {
-    m_bIsCachedGrooveStatsHashJustLoaded = false;
-    return;
-  }
   this->Decompress();
 
   std::string smNoteData = this->MinimizedChartString();
@@ -909,12 +865,11 @@ std::string Steps::MinimizedChartString() {
   return minimizedNoteData;
 }
 
-void Steps::SetCachedGrooveStatsHash(const std::string& key) {
+void Steps::SetGrooveStatsHash(const std::string& key) {
   m_sGrooveStatsHash = key;
-  m_bIsCachedGrooveStatsHashJustLoaded = true;
 }
 
-void Steps::SetCachedGrooveStatsHashVersion(int version) {
+void Steps::SetGrooveStatsHashVersion(int version) {
   m_iGrooveStatsHashVersion = version;
 }
 
@@ -1004,12 +959,12 @@ const std::vector<float>& Steps::GetNpsPerMeasure(PlayerNumber pn) const {
   // will be the case for like 99.9% of charts).
 
   static const std::vector<float> EMPTY_VECTOR;
-  if (Real()->m_CachedNpsPerMeasure.size() == 0) {
+  if (Real()->m_NpsPerMeasure.size() == 0) {
     return EMPTY_VECTOR;
-  } else if (Real()->m_CachedNpsPerMeasure.size() <= pn) {
-    return Real()->m_CachedNpsPerMeasure[PLAYER_1];
+  } else if (Real()->m_NpsPerMeasure.size() <= pn) {
+    return Real()->m_NpsPerMeasure[PLAYER_1];
   } else {
-    return Real()->m_CachedNpsPerMeasure[pn];
+    return Real()->m_NpsPerMeasure[pn];
   }
 }
 
@@ -1019,12 +974,12 @@ const std::vector<int>& Steps::GetNotesPerMeasure(PlayerNumber pn) const {
   // dance-routine). Otherwise, it will only have one copy of the values (which
   // will be the case for like 99.9% of charts).
   static const std::vector<int> EMPTY_VECTOR;
-  if (Real()->m_CachedNotesPerMeasure.size() == 0) {
+  if (Real()->m_NotesPerMeasure.size() == 0) {
     return EMPTY_VECTOR;
-  } else if (Real()->m_CachedNotesPerMeasure.size() <= pn) {
-    return Real()->m_CachedNotesPerMeasure[PLAYER_1];
+  } else if (Real()->m_NotesPerMeasure.size() <= pn) {
+    return Real()->m_NotesPerMeasure[PLAYER_1];
   } else {
-    return Real()->m_CachedNotesPerMeasure[pn];
+    return Real()->m_NotesPerMeasure[pn];
   }
 }
 
@@ -1084,14 +1039,7 @@ class LunaSteps : public Luna<Steps> {
   }
 
   static int CalculateTechCounts(T* p, lua_State* L) {
-    p->CalculateTechCounts();
-    PlayerNumber pn = PLAYER_1;
-    if (!lua_isnil(L, 1)) {
-      pn = Enum::Check<PlayerNumber>(L, 1);
-    }
-    TechCounts& ts = const_cast<TechCounts&>(p->GetTechCounts(pn));
-    ts.PushSelf(L);
-    return 1;
+    return GetTechCounts(p, L);
   }
 
   static int GetNpsPerMeasure(T* p, lua_State* L) {
@@ -1243,6 +1191,7 @@ class LunaSteps : public Luna<Steps> {
     ADD_METHOD(HasAttacks);
     ADD_METHOD(GetRadarValues);
     ADD_METHOD(GetTechCounts);
+    // TODO: remove CalculateTechCounts
     ADD_METHOD(CalculateTechCounts);
     ADD_METHOD(GetTimingData);
     ADD_METHOD(GetChartName);

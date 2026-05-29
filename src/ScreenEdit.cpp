@@ -3940,7 +3940,7 @@ void ScreenEdit::TransitionEditState(EditState em) {
         Steps* pSteps = GAMESTATE->m_pCurSteps[main_player_];
         ASSERT(pSteps != nullptr);
         pSteps->SetNoteData(m_NoteDataEdit);
-        m_pSong->ReCalculateStepStatsAndLastSecond();
+        m_pSong->ReCalculateStepStatsAndLastSecond(false);
 
         // TODO: Background videos don't support seeking, when they do, make
         // sure to load the appropriate part of the video.
