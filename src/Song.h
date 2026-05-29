@@ -104,9 +104,8 @@ class Song {
 
   /**
    * @brief Call this after loading a song to clean up invalid data.
-   * @param fromCache was this data loaded from the cache file?
-   * @param duringCache was this data loaded during the cache process? */
-  void TidyUpData(bool fromCache = false, bool duringCache = false);
+   * @param fromCache was this data loaded from the cache file? */
+  void TidyUpData(bool fromCache = false);
 
   /**
    * @brief Get the new step stats, and determine the last second at the same
@@ -352,8 +351,7 @@ class Song {
       const std::vector<BackgroundChange>& changes) const;
 
   void TidyUpData(
-      bool fromCache, bool duringCache,
-      const std::set<std::string>& blacklistedImages);
+      bool fromCache, const std::set<std::string>& blacklistedImages);
 
  public:
   const std::vector<BackgroundChange>& GetBackgroundChanges(

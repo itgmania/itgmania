@@ -342,7 +342,7 @@ bool Song::LoadFromSongDir(
           m_sSongDir.c_str());
       // Tell TidyUpData that it's not loaded from the cache because it needs
       // to hit the song folder to find the files that weren't found. -Kyz
-      TidyUpData(false, false);
+      TidyUpData(false);
     }
   }
 
@@ -380,7 +380,7 @@ bool Song::LoadFromSongDir(
     // loading time. -Kyz
     LoadEditsFromSongDir(sDir);
 
-    TidyUpData(false, true, blacklistedImages);
+    TidyUpData(false, blacklistedImages);
     // Don't save a cache file if the autosave is being loaded, because the
     // cache file would contain the autosave filename. -Kyz
     // Songs loaded from removable profile are never cached, on the
@@ -642,14 +642,13 @@ void FixupPath(std::string& path, const std::string& sSongPath) {
   Trim(path);
 }
 
-void Song::TidyUpData(bool from_cache, bool duringCache) {
-  Song::TidyUpData(from_cache, duringCache, std::set<std::string>());
+void Song::TidyUpData(bool from_cache) {
+  Song::TidyUpData(from_cache, std::set<std::string>());
 }
 
 // Songs in BlacklistImages will never be autodetected as song images.
 void Song::TidyUpData(
-    bool from_cache, bool /* duringCache */,
-    const std::set<std::string>& blacklistedImages) {
+    bool from_cache, const std::set<std::string>& blacklistedImages) {
   // We need to do this before calling any of HasMusic, HasHasCDTitle, etc.
   ASSERT_M(Left(m_sSongDir, 3) != "../", m_sSongDir);  // meaningless
   FixupPath(m_sSongDir, "");

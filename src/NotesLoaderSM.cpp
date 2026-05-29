@@ -1324,7 +1324,7 @@ void SMLoader::TidyUpData(Song& song, bool bFromCache) {
     }
   }
   if (bFromCache) {
-    song.TidyUpData(bFromCache, true);
+    song.TidyUpData(bFromCache);
   }
 }
 
