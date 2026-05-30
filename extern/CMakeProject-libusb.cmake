@@ -14,6 +14,7 @@ ExternalProject_Add(
 
   SOURCE_DIR "${LIBUSB_SOURCE_DIR}"
   INSTALL_COMMAND ""
+  BUILD_BYPRODUCTS "<BINARY_DIR>/libusb-1.0.a"
 )
 
 ExternalProject_Get_Property(libusb SOURCE_DIR BINARY_DIR)

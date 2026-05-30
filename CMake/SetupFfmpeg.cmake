@@ -65,7 +65,7 @@ externalproject_add("ffmpeg"
                     UPDATE_COMMAND ""
                     INSTALL_COMMAND ""
                     TEST_COMMAND ""
-                    BYPRODUCTS
+                    BUILD_BYPRODUCTS
                       "<BINARY_DIR>/dest/lib/libavformat.a"
                       "<BINARY_DIR>/dest/lib/libavcodec.a"
                       "<BINARY_DIR>/dest/lib/libswscale.a"
