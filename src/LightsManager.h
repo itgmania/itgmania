@@ -47,12 +47,12 @@ const std::string& LightsModeToString(LightsMode lm);
 LuaDeclareType(LightsMode);
 
 struct LightsState {
-  bool m_bCabinetLights[NUM_CabinetLight];
-  bool m_bGameButtonLights[NUM_GameController][NUM_GameButton];
+  bool m_bCabinetLights[NUM_CabinetLight] = {};
+  bool m_bGameButtonLights[NUM_GameController][NUM_GameButton] = {};
 
   // This isn't actually a light, but it's typically implemented in the same
   // way.
-  bool m_bCoinCounter;
+  bool m_bCoinCounter = false;
 
   // equality operator
   bool operator==(const LightsState& rhs) const {

@@ -113,10 +113,10 @@ class ThreadedMemoryCardWorker : public RageWorkerThread {
    * returns. */
   UsbStorageDevice m_RequestDevice;
 
-  bool m_bResult;
+  bool m_bResult = false;
 
   RageMutex UsbStorageDevicesMutex;
-  bool m_bUsbStorageDevicesChanged;
+  bool m_bUsbStorageDevicesChanged = false;
   std::vector<UsbStorageDevice> m_aUsbStorageDevices;
 
   std::vector<UsbStorageDevice> m_aMountedDevices;

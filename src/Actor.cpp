@@ -255,6 +255,9 @@ Actor::Actor(const Actor& cpy) : MessageSubscriber(cpy) {
   CPY(m_CullMode);
 
   CPY(m_mapNameToCommands);
+
+  CPY(m_tween_uses_effect_delta);
+  CPY(rate_scaling_enabled_);
 #undef CPY
 }
 
@@ -326,6 +329,9 @@ Actor& Actor::operator=(Actor other) {
   SWAP(m_CullMode);
 
   SWAP(m_mapNameToCommands);
+
+  SWAP(m_tween_uses_effect_delta);
+  SWAP(rate_scaling_enabled_);
 #undef SWAP
   return *this;
 }
