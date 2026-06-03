@@ -17,6 +17,8 @@
 #include "TimingData.h"
 #include "global.h"
 
+extern ThemeMetric<bool> TICK_HOLDS;
+
 namespace {
 
 // ThemeMetric<TapNoteScoreJudgeType> LAST_OR_MINIMUM_TNS
@@ -304,7 +306,7 @@ void NoteDataWithScoring::GetActualRadarValues(
   // limit to the max combo. -Kyz
   int first_hittable_row = -1;
   int last_hittable_row = -1;
-  bool tick_holds = GAMESTATE->GetCurrentGame()->m_bTickHolds;
+  bool tick_holds = TICK_HOLDS;
 
   while (!curr_note.IsAtEnd()) {
     if (curr_note.Row() != state.curr_row) {

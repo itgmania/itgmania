@@ -93,30 +93,6 @@ if(WIN32)
   endif()
 endif()
 
-check_compile_features("${SM_CMAKE_DIR}/TestCode"
-                       "${SM_CMAKE_DIR}/TestCode/test_external.c"
-                       "Checking for external name shortening requirements"
-                       "not needed"
-                       "needed"
-                       SM_BUILT_LONG_NAME
-                       TRUE)
-
-if(NOT SM_BUILT_LONG_NAME)
-  set(NEED_SHORT_EXTERNAL_NAMES 1)
-endif()
-
-check_compile_features("${SM_CMAKE_DIR}/TestCode"
-                       "${SM_CMAKE_DIR}/TestCode/test_broken.c"
-                       "Checking if incomplete types are broken."
-                       "not broken"
-                       "broken"
-                       SM_BUILT_INCOMPLETE_TYPE
-                       FALSE)
-
-if(SM_BUILT_INCOMPLETE_TYPE)
-  set(INCOMPLETE_TYPES_BROKEN 1)
-endif()
-
 # Dependencies go here.
 include(ExternalProject)
 

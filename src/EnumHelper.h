@@ -77,20 +77,20 @@ constexpr auto to_integral(E e) {
 
 const std::string& EnumToString(
     int iVal, int iMax, const char** szNameArray,
-    std::unique_ptr<std::string>* pNameCache);  // XToString helper
+    std::string* pNameCache);  // XToString helper
 
-#define XToString(X)                                               \
-  const std::string& X##ToString(X x);                             \
-  static_assert(NUM_##X == ARRAYLEN(X##Names));                    \
-  const std::string& X##ToString(X x) {                            \
-    static std::unique_ptr<std::string> as_##X##Name[NUM_##X + 2]; \
-    return EnumToString(x, NUM_##X, X##Names, as_##X##Name);       \
-  }                                                                \
-  namespace StringConversion {                                     \
-  template <>                                                      \
-  std::string ToString<X>(const X& value) {                        \
-    return X##ToString(value);                                     \
-  }                                                                \
+#define XToString(X)                                         \
+  const std::string& X##ToString(X x);                       \
+  static_assert(NUM_##X == ARRAYLEN(X##Names));              \
+  const std::string& X##ToString(X x) {                      \
+    static std::string as_##X##Name[NUM_##X + 2];            \
+    return EnumToString(x, NUM_##X, X##Names, as_##X##Name); \
+  }                                                          \
+  namespace StringConversion {                               \
+  template <>                                                \
+  std::string ToString<X>(const X& value) {                  \
+    return X##ToString(value);                               \
+  }                                                          \
   }
 
 #define XToLocalizedString(X)                                     \

@@ -263,7 +263,7 @@ void MusicWheel::BeginScreen() {
       bool bStepsIsPossible =
           find(
               vpPossibleSteps.begin(), vpPossibleSteps.end(),
-              GAMESTATE->m_pCurSteps[p]) == vpPossibleSteps.end();
+              GAMESTATE->m_pCurSteps[p]) != vpPossibleSteps.end();
       if (!bStepsIsPossible) {
         GAMESTATE->m_pCurSteps[p].Set(nullptr);
       }
@@ -1524,7 +1524,7 @@ bool MusicWheel::NextSort()  // return true if change successful
   {
     Lua* L = LUA->Get();
     SORT_ORDERS.PushSelf(L);
-    FOREACH_LUATABLEI(L, -1, i) {
+    FOREACH_LUATABLE(L, -1) {
       SortOrder so = Enum::Check<SortOrder>(L, -1, true);
       aSortOrders.push_back(so);
     }

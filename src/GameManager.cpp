@@ -525,7 +525,6 @@ static const Game g_Game_Dance = {
     "dance",                // m_szName
     g_apGame_Dance_Styles,  // m_apStyles
     false,                  // m_bCountNotesSeparately
-    false,                  // m_bTickHolds
     false,                  // m_PlayersHaveSeparateStyles
     {                       // m_InputScheme
      "dance",               // m_szName
@@ -899,7 +898,6 @@ static const Game g_Game_Pump = {
     "pump",                // m_szName
     g_apGame_Pump_Styles,  // m_apStyles
     false,                 // m_bCountNotesSeparately
-    true,                  // m_bTickHolds
     false,                 // m_PlayersHaveSeparateStyles
     {                      // m_InputScheme
      "pump",               // m_szName
@@ -1080,7 +1078,6 @@ static const Game g_Game_KB7 = {
     "kb7",                // m_szName
     g_apGame_KB7_Styles,  // m_apStyles
     true,                 // m_bCountNotesSeparately
-    false,                // m_bTickHolds
     false,                // m_PlayersHaveSeparateStyles
     {                     // m_InputScheme
      "kb7",               // m_szName
@@ -1370,7 +1367,6 @@ static const Game g_Game_Ez2 = {
     "ez2",                // m_szName
     g_apGame_Ez2_Styles,  // m_apStyles
     true,                 // m_bCountNotesSeparately
-    false,                // m_bTickHolds
     false,                // m_PlayersHaveSeparateStyles
     {                     // m_InputScheme
      "ez2",               // m_szName
@@ -1499,7 +1495,6 @@ static const Game g_Game_Para = {
     "para",                // m_szName
     g_apGame_Para_Styles,  // m_apStyles
     false,                 // m_bCountNotesSeparately
-    false,                 // m_bTickHolds
     false,                 // m_PlayersHaveSeparateStyles
     {                      // m_InputScheme
      "para",               // m_szName
@@ -1592,7 +1587,6 @@ static const Game g_Game_DS3DDX = {
     "ds3ddx",                // m_szName
     g_apGame_DS3DDX_Styles,  // m_apStyles
     false,                   // m_bCountNotesSeparately
-    false,                   // m_bTickHolds
     false,                   // m_PlayersHaveSeparateStyles
     {                        // m_InputScheme
      "ds3ddx",               // m_szName
@@ -1943,7 +1937,6 @@ static const Game g_Game_Beat = {
     "beat",                // m_szName
     g_apGame_Beat_Styles,  // m_apStyles
     true,                  // m_bCountNotesSeparately
-    false,                 // m_bTickHolds
     false,                 // m_PlayersHaveSeparateStyles
     {                      // m_InputScheme
      "beat",               // m_szName
@@ -2121,7 +2114,6 @@ static const Game g_Game_Maniax = {
     "maniax",                // m_szName
     g_apGame_Maniax_Styles,  // m_apStyles
     false,                   // m_bCountNotesSeparately
-    false,                   // m_bTickHolds
     false,                   // m_PlayersHaveSeparateStyles
     {                        // m_InputScheme
      "maniax",               // m_szName
@@ -2600,7 +2592,6 @@ static const Game g_Game_Techno = {
     "techno",                // m_szName
     g_apGame_Techno_Styles,  // m_apStyles
     false,                   // m_bCountNotesSeparately
-    false,                   // m_bTickHolds
     false,                   // m_PlayersHaveSeparateStyles
     {                        // m_InputScheme
      "techno",               // m_szName
@@ -2749,7 +2740,6 @@ static const Game g_Game_Popn = {
     "popn",                // m_szName
     g_apGame_Popn_Styles,  // m_apStyles
     true,                  // m_bCountNotesSeparately
-    false,                 // m_bTickHolds
     false,                 // m_PlayersHaveSeparateStyles
     {                      // m_InputScheme
      "popn",               // m_szName
@@ -2851,7 +2841,6 @@ static const Game g_Game_Lights = {
     "lights",                // m_szName
     g_apGame_Lights_Styles,  // m_apStyles
     false,                   // m_bCountNotesSeparately
-    false,                   // m_bTickHolds
     false,                   // m_PlayersHaveSeparateStyles
     {                        // m_InputScheme
      "lights",               // m_szName
@@ -3237,7 +3226,6 @@ static const Game g_Game_Kickbox = {
     "kickbox",                // m_szName
     g_apGame_Kickbox_Styles,  // m_apStyles
     true,                     // m_bCountNotesSeparately
-    false,                    // m_bTickHolds
     true,                     // m_PlayersHaveSeparateStyles
     {                         // m_InputScheme
      "kickbox",               // m_szName

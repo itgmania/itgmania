@@ -15,8 +15,8 @@ class LightsDriver : public RageDriver {
       const std::string& sDriver, std::vector<LightsDriver*>& apAdd);
   static DriverList m_pDriverList;
 
-  LightsDriver() {};
-  virtual ~LightsDriver() {};
+  LightsDriver() {}
+  virtual ~LightsDriver() {}
 
   virtual void Set(const LightsState* ls) = 0;
 

@@ -162,7 +162,7 @@ class LockMutex {
   LockMutex& operator=(const LockMutex& rhs);
 };
 
-#define LockMut(m) LockMutex SM_UNIQUE_NAME(LocalLock)(m, __FILE__, __LINE__)
+#define LockMut(m) LockMutex LocalLock(m, __FILE__, __LINE__)
 
 class EventImpl;
 class RageEvent : public RageMutex {

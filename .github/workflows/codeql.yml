@@ -1,12 +1,22 @@
 name: "CodeQL Advanced"
 
 on:
-  push:
-    branches: [release, beta]
-  pull_request:
-    branches: [beta]
-    paths-ignore:
-    - '**.md'
+    push:
+        branches: [release, beta]
+        paths:
+            - "**.h"
+            - "**.hpp"
+            - "**.c"
+            - "**.cpp"
+            - "**.mm"
+    pull_request:
+        branches: [beta]
+        paths:
+            - "**.h"
+            - "**.hpp"
+            - "**.c"
+            - "**.cpp"
+            - "**.mm"
   schedule:
     - cron: '43 2 * * 5'
 

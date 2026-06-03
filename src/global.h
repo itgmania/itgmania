@@ -7,11 +7,6 @@
 #pragma once
 #endif
 
-/** @brief This macro is for INT8_MIN, etc. */
-#define __STDC_LIMIT_MACROS
-/** @brief This macro is for INT64_C, etc. */
-#define __STDC_CONSTANT_MACROS
-
 /* Platform-specific fixes. */
 #if defined(_WIN32)
 #include "archutils/Win32/arch_setup.h"
@@ -28,10 +23,6 @@
 #else
 #define likely(x) (x)
 #define unlikely(x) (x)
-#endif
-
-#ifdef ASSERT
-#undef ASSERT
 #endif
 
 #include "RageThreads.h"
@@ -69,9 +60,7 @@ void sm_crash(const char* reason = "Internal error");
     }                           \
   } while (0)
 
-#if !defined(CO_EXIST_WITH_MFC)
 #define ASSERT(COND) ASSERT_M((COND), "Assertion '" #COND "' failed")
-#endif
 
 /** @brief Use this to catch switching on invalid values */
 #define DEFAULT_FAIL(i) \
@@ -84,9 +73,7 @@ void ShowWarningOrTrace(
     const char* file, int line, const char* message,
     bool bWarning);  // don't pull in LOG here
 #define WARN(MESSAGE) (ShowWarningOrTrace(__FILE__, __LINE__, MESSAGE, true))
-#if !defined(CO_EXIST_WITH_MFC)
 #define TRACE(MESSAGE) (ShowWarningOrTrace(__FILE__, __LINE__, MESSAGE, false))
-#endif
 
 #ifdef DEBUG
 // No reason to kill the program. A lot of these don't produce a crash in NDEBUG
@@ -101,12 +88,6 @@ void ShowWarningOrTrace(
 /** @brief A dummy define to keep things going smoothly. */
 #define DEBUG_ASSERT_M(x, y)
 #endif
-
-/* Use SM_UNIQUE_NAME to get the line number concatenated to x. This is useful
- * for generating unique identifiers in other macros.  */
-#define SM_UNIQUE_NAME3(x, line) x##line
-#define SM_UNIQUE_NAME2(x, line) SM_UNIQUE_NAME3(x, line)
-#define SM_UNIQUE_NAME(x) SM_UNIQUE_NAME2(x, __LINE__)
 
 /* Don't include our own headers here, since they tend to change often. */
 

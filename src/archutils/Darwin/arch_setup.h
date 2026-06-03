@@ -7,7 +7,6 @@
 #define HAVE_DECL_SIGUSR1 1
 
 #define __STDC_FORMAT_MACROS
-#define CRASH_HANDLER
 
 #define GL_GET_ERROR_IS_SLOW
 // CGFlushDrawable() performs a glFlush() and the docs say not to call glFlush()

@@ -198,6 +198,12 @@ class LuaThreadVariable {
   LuaThreadVariable& operator=(const LuaThreadVariable& rhs);
 };
 
+/* Use SM_UNIQUE_NAME to get the line number concatenated to x. This is useful
+ * for generating unique identifiers in other macros.  */
+#define SM_UNIQUE_NAME3(x, line) x##line
+#define SM_UNIQUE_NAME2(x, line) SM_UNIQUE_NAME3(x, line)
+#define SM_UNIQUE_NAME(x) SM_UNIQUE_NAME2(x, __LINE__)
+
 /**
  * @brief Iterate over all elements in the table.
  *
@@ -207,6 +213,7 @@ class LuaThreadVariable {
  * Once the loop exits normally, the top of the stack will be where it was
  * before. If you break out of the loop early, you need to handle that
  * explicitly. */
+
 #define FOREACH_LUATABLE(L, index)                                       \
   for (const int SM_UNIQUE_NAME(tab) = LuaHelpers::AbsIndex(L, index),   \
                  SM_UNIQUE_NAME(top) = (lua_pushnil(L), lua_gettop(L));  \

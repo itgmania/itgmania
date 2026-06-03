@@ -38,8 +38,6 @@ class AutoreleasePool {
   ~AutoreleasePool() { [m_Pool release]; }
 };
 
-#define POOL AutoreleasePool SM_UNIQUE_NAME(pool)
-
 // Window delegate class
 @interface SMWindowDelegate : NSObject {
  @public
@@ -197,7 +195,7 @@ RenderTarget_MacOSX::RenderTarget_MacOSX(id shareContext) {
 }
 
 RenderTarget_MacOSX::~RenderTarget_MacOSX() {
-  POOL;
+  AutoreleasePool pool;
   [m_PBufferContext release];
   if (m_iTexHandle) {
     glDeleteTextures(1, &m_iTexHandle);
@@ -206,7 +204,7 @@ RenderTarget_MacOSX::~RenderTarget_MacOSX() {
 
 void RenderTarget_MacOSX::Create(
     const RenderTargetParam& param, int& iTextureWidthOut, int& iTextureHeightOut) {
-  POOL;
+  AutoreleasePool pool;
   m_iWidth = param.iWidth;
   m_iHeight = param.iHeight;
 
@@ -282,7 +280,7 @@ void RenderTarget_MacOSX::FinishRenderingTo() {
 
 LowLevelWindow_MacOSX::LowLevelWindow_MacOSX()
     : m_Context(nil), m_BGContext(nil), m_CurrentDisplayMode(nil), m_DisplayID(0) {
-  POOL;
+  AutoreleasePool pool;
   m_WindowDelegate = [[SMWindowDelegate alloc] init];
   [m_WindowDelegate performSelectorOnMainThread:@selector(setupWindow)
                                      withObject:nil
@@ -297,7 +295,7 @@ LowLevelWindow_MacOSX::LowLevelWindow_MacOSX()
 }
 
 LowLevelWindow_MacOSX::~LowLevelWindow_MacOSX() {
-  POOL;
+  AutoreleasePool pool;
   ShutDownFullScreen();
 
   [m_Context clearDrawable];
@@ -339,7 +337,7 @@ std::string LowLevelWindow_MacOSX::TryVideoMode(const VideoModeParams& p, bool& 
     return std::string();
   }
 
-  POOL;
+  AutoreleasePool pool;
   newDeviceOut = false;
 
   ASSERT(p.bpp == 16 || p.bpp == 32);
