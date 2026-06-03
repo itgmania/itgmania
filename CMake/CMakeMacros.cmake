@@ -66,3 +66,20 @@ macro(check_compile_features
     endif()
   endif()
 endmacro()
+
+# To be passed to ExternalProject_Add to ensure sub-CMake projects use the right
+# compiler. Must specify `LIST_SEPARATOR "|"`.
+function(sm_get_forwarded_toolchain_args out_var)
+  set(toolchain_args
+      "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}"
+      "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+      "-DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}"
+      "-DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}")
+  foreach(lang C CXX)
+    if(CMAKE_${lang}_COMPILER_LAUNCHER)
+      string(REPLACE ";" "|" launcher "${CMAKE_${lang}_COMPILER_LAUNCHER}")
+      list(APPEND toolchain_args "-DCMAKE_${lang}_COMPILER_LAUNCHER=${launcher}")
+    endif()
+  endforeach()
+  set(${out_var} "${toolchain_args}" PARENT_SCOPE)
+endfunction()

@@ -15,16 +15,22 @@ if(APPLE)
   )
 endif()
 
+sm_get_forwarded_toolchain_args(JPEG_FORWARD_ARGS)
+
 include(ExternalProject)
 ExternalProject_Add(
   libjpeg_turbo_project
 
   SOURCE_DIR ${SM_EXTERN_DIR}/libjpeg-turbo
   INSTALL_DIR ${INSTALL_DIR}
+  LIST_SEPARATOR "|"
   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
              -DCMAKE_INSTALL_LIBDIR=${LIB_DIR}
              -DENABLE_SHARED=OFF
              -DENABLE_STATIC=ON
+             -DWITH_TOOLS=OFF
+             -DWITH_TESTS=OFF
+             ${JPEG_FORWARD_ARGS}
              ${ARCH_FLAGS}
   BUILD_IN_SOURCE OFF
   CONFIGURE_HANDLED_BY_BUILD ON
