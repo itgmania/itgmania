@@ -187,34 +187,6 @@ static bool ExportPackage(
     return false;
   }
 
-  // XXX: totally doesn't work. -aj
-  /*
-  RageFileObjZip zip( &f );
-  zip.Start();
-  zip.SetGlobalComment( sComment );
-
-  std::vector<std::string> vs;
-  GetDirListingRecursive( sDirToExport, "*", vs );
-  SMPackageUtil::StripIgnoredSmzipFiles( vs );
-  LOG->Trace("Adding files...");
-  for (std::string &s : vs)
-  {
-          if( !zip.AddFile( s ) )
-          {
-                  sErrorOut = ssprintf( "Couldn't add file: %s", s.c_str() );
-                  return false;
-          }
-  }
-
-  LOG->Trace("Writing zip...");
-  if( zip.Finish() == -1 )
-  {
-          sErrorOut = ssprintf( "Couldn't write to file %s", fn.c_str(),
-  f.GetError().c_str() ); return false;
-  }
-
-  return true;
-  */
   return false;
 }
 

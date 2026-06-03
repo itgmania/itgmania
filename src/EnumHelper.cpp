@@ -1,8 +1,6 @@
 #include "EnumHelper.h"
 
-#include <memory>
 #include <string>
-#include <utility>
 
 #include "LuaManager.h"
 #include "RageUtil.h"
@@ -83,16 +81,16 @@ int CheckEnum(
 
 // szNameArray is of size iMax; pNameCache is of size iMax+2.
 const std::string& EnumToString(
-    int iVal, int iMax, const char** szNameArray,
-    std::unique_ptr<std::string>* pNameCache) {
-  if (unlikely(pNameCache[0].get() == nullptr)) {
+    int iVal, int iMax, const char** szNameArray, std::string* pNameCache) {
+  // An empty first entry means cache isn't populated yet.
+  if (unlikely(pNameCache[0].empty())) {
     for (int i = 0; i < iMax; ++i) {
-      std::unique_ptr<std::string> ap(new std::string(szNameArray[i]));
-      pNameCache[i] = std::move(ap);
+      pNameCache[i] = szNameArray[i];
     }
 
-    std::unique_ptr<std::string> ap(new std::string);
-    pNameCache[iMax + 1] = std::move(ap);
+    ASSERT_M(
+        !pNameCache[0].empty(),
+        ssprintf("First enum name is empty! Enum hint: %s", szNameArray[0]));
   }
 
   // iMax+1 is "Invalid".  iMax+0 is the NUM_ size value, which can not be
@@ -114,7 +112,7 @@ const std::string& EnumToString(
         "Value %i is past the invalid value %i! Enum hint: %s", iVal, iMax,
         szNameArray[0]));
   }
-  return *pNameCache[iVal];
+  return pNameCache[iVal];
 }
 
 namespace {

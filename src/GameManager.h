@@ -52,7 +52,7 @@ class GameManager {
   int GetIndexFromGame(const Game* pGame);
   const Game* GetGameFromIndex(int index);
 
-  const StepsTypeInfo& GetStepsTypeInfo(StepsType st);
+  static const StepsTypeInfo& GetStepsTypeInfo(StepsType st);
   StepsType StringToStepsType(std::string sStepsType);
   const Game* StringToGame(std::string sGame);
   const Style* GameAndStringToStyle(const Game* pGame, std::string sStyle);

@@ -468,7 +468,8 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
       mouse_evt = true;
     }
   }
-  if (mouse_evt) {
+  if (mouse_evt && !(m_SelectionState == SelectionState_Finalized &&
+                     input.MenuI == GAME_BUTTON_START)) {
     return ScreenWithMenuElements::Input(input);
   }
   //	LOG->Trace( "ScreenSelectMusic::Input()" );

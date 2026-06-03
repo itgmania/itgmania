@@ -110,7 +110,8 @@ int FileSet::GetFileHash(const std::string& sPath) const {
   if (i == files.end()) {
     return -1;
   }
-  return i->hash + i->size;
+  // signed int overflow is undefined behavior.
+  return int(unsigned(i->hash) + unsigned(i->size));
 }
 
 /*

@@ -23,6 +23,25 @@ list(APPEND FFMPEG_CONFIGURE
             "--enable-zlib"
             "--prefix=/")
 
+set(FFMPEG_CC "${CMAKE_C_COMPILER}")
+set(FFMPEG_CXX "${CMAKE_CXX_COMPILER}")
+if(CMAKE_C_COMPILER_LAUNCHER)
+  string(REPLACE ";" " " FFMPEG_C_LAUNCHER "${CMAKE_C_COMPILER_LAUNCHER}")
+  set(FFMPEG_CC "${FFMPEG_C_LAUNCHER} ${FFMPEG_CC}")
+endif()
+if(CMAKE_CXX_COMPILER_LAUNCHER)
+  string(REPLACE ";" " " FFMPEG_CXX_LAUNCHER "${CMAKE_CXX_COMPILER_LAUNCHER}")
+  set(FFMPEG_CXX "${FFMPEG_CXX_LAUNCHER} ${FFMPEG_CXX}")
+endif()
+list(APPEND FFMPEG_CONFIGURE "--cc=${FFMPEG_CC}" "--cxx=${FFMPEG_CXX}")
+
+if(CMAKE_C_FLAGS)
+  list(APPEND FFMPEG_CONFIGURE "--extra-cflags=${CMAKE_C_FLAGS}")
+endif()
+if(CMAKE_CXX_FLAGS)
+  list(APPEND FFMPEG_CONFIGURE "--extra-cxxflags=${CMAKE_CXX_FLAGS}")
+endif()
+
 if(CMAKE_POSITION_INDEPENDENT_CODE)
   list(APPEND FFMPEG_CONFIGURE "--enable-pic")
 endif()
@@ -65,7 +84,7 @@ externalproject_add("ffmpeg"
                     UPDATE_COMMAND ""
                     INSTALL_COMMAND ""
                     TEST_COMMAND ""
-                    BYPRODUCTS
+                    BUILD_BYPRODUCTS
                       "<BINARY_DIR>/dest/lib/libavformat.a"
                       "<BINARY_DIR>/dest/lib/libavcodec.a"
                       "<BINARY_DIR>/dest/lib/libswscale.a"

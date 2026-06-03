@@ -72,4 +72,9 @@ endif(MSVC)
 target_include_directories("mad" PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/libmad")
 target_include_directories("mad" PUBLIC "libmad")
 
+include(CheckTypeSize)
+check_type_size(int SIZEOF_INT)
+check_type_size(long SIZEOF_LONG)
+check_type_size("long long" SIZEOF_LONG_LONG)
+
 configure_file("config.mad.in.h" "libmad/config.h")

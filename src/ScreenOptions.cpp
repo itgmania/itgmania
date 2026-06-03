@@ -1218,15 +1218,9 @@ void ScreenOptions::ChangeValueInRowRelative(
       continue;
     }
 
-    if (m_OptionsNavigation == NAV_TOGGLE_THREE_KEY ||
-        m_OptionsNavigation == NAV_TOGGLE_FIVE_KEY) {
-      ;  // do nothing
-    } else {
-      if (row.GetRowDef().m_selectType == SELECT_MULTIPLE)
-        ;  // do nothing. User must press Start to toggle the selection.
-      else {
-        row.SetOneSelection(p, iNewChoiceWithFocus);
-      }
+    if (row.GetRowDef().m_selectType == SELECT_ONE &&
+        m_OptionsNavigation != NAV_TOGGLE_THREE_KEY) {
+      row.SetOneSelection(p, iNewChoiceWithFocus);
     }
   }
 
@@ -1285,26 +1279,27 @@ bool ScreenOptions::MoveRowRelative(PlayerNumber pn, int iDir, bool bRepeat) {
 void ScreenOptions::AfterChangeRow(PlayerNumber pn) {
   const int iRow = m_iCurrentRow[pn];
   if (iRow != -1) {
-    // In FIVE_KEY, keep the selection in the row near the focus.
     OptionRow& row = *m_pRows[iRow];
-    switch (m_OptionsNavigation) {
-      case NAV_TOGGLE_FIVE_KEY: {
-        if (row.GetRowDef().m_layoutType != LAYOUT_SHOW_ONE_IN_ROW) {
-          int iSelectionDist = -1;
-          for (unsigned i = 0; i < row.GetTextItemsSize(); ++i) {
-            int iWidth, iX, iY;
-            GetWidthXY(pn, m_iCurrentRow[pn], i, iWidth, iX, iY);
-            const int iDist = std::abs(iX - m_iFocusX[pn]);
-            if (iSelectionDist == -1 || iDist < iSelectionDist) {
-              iSelectionDist = iDist;
-              row.SetChoiceInRowWithFocus(pn, i);
-            }
+    if (m_OptionsNavigation == NAV_TOGGLE_FIVE_KEY) {
+      if (row.GetRowDef().m_selectType == SELECT_ONE) {
+        // For SELECT_ONE, keep focus on selected choice.
+        int iSelection = row.GetOneSelection(pn, true);
+        if (iSelection != -1) {
+          row.SetChoiceInRowWithFocus(pn, iSelection);
+        }
+      } else if (row.GetRowDef().m_layoutType != LAYOUT_SHOW_ONE_IN_ROW) {
+        // Else keep the selection in the row near the focus.
+        int iSelectionDist = -1;
+        for (unsigned i = 0; i < row.GetTextItemsSize(); ++i) {
+          int iWidth, iX, iY;
+          GetWidthXY(pn, m_iCurrentRow[pn], i, iWidth, iX, iY);
+          const int iDist = std::abs(iX - m_iFocusX[pn]);
+          if (iSelectionDist == -1 || iDist < iSelectionDist) {
+            iSelectionDist = iDist;
+            row.SetChoiceInRowWithFocus(pn, i);
           }
         }
-        break;
       }
-      default:
-        break;
     }
 
     if (row.GetFirstItemGoesDown()) {
