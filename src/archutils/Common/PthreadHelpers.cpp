@@ -158,21 +158,13 @@ static uint64_t GetCurrentThreadIdInternal() {
 }
 
 uint64_t GetCurrentThreadId() {
-#if defined(HAVE_TLS)
-  /* This is called each time we lock a mutex, and gettid() is a little slow, so
-   * cache the result if we support TLS. */
-  if (RageThread::GetSupportsTLS()) {
-    static thread_local uint64_t cached_tid = 0;
-    static thread_local bool cached = false;
-    if (!cached) {
-      cached_tid = GetCurrentThreadIdInternal();
-      cached = true;
-    }
-    return cached_tid;
+  static thread_local uint64_t cached_tid = 0;
+  static thread_local bool cached = false;
+  if (!cached) {
+    cached_tid = GetCurrentThreadIdInternal();
+    cached = true;
   }
-#endif
-
-  return GetCurrentThreadIdInternal();
+  return cached_tid;
 }
 
 int SuspendThread(uint64_t ThreadID) {

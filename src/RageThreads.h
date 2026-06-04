@@ -36,12 +36,6 @@ class RageThread {
   int Wait();
   bool IsCreated() const { return m_pSlot != nullptr; }
 
-  /* A system can define HAVE_TLS, indicating that it can compile thread_local
-   * code, but an individual environment may not actually have functional TLS.
-   * If this returns false, thread_local variables are considered undefined. */
-  static bool GetSupportsTLS() { return s_bSystemSupportsTLS; }
-  static void SetSupportsTLS(bool b) { s_bSystemSupportsTLS = b; }
-
   static bool GetIsShowingDialog() { return s_bIsShowingDialog.load(); }
   static void SetIsShowingDialog(bool b) { s_bIsShowingDialog.store(b); }
   static uint64_t GetInvalidThreadID();
@@ -50,7 +44,6 @@ class RageThread {
   ThreadSlot* m_pSlot;
   std::string m_sName;
 
-  static bool s_bSystemSupportsTLS;
   static std::atomic<bool> s_bIsShowingDialog;
 
   // Swallow up warnings. If they must be used, define them.
