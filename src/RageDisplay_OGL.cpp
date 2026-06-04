@@ -996,6 +996,33 @@ ActualVideoModeParams RageDisplay_Legacy::GetActualVideoModeParams() const {
 }
 
 static void SetupVertices(const RageSpriteVertex v[], int iNumVerts) {
+  static const bool bInterleaveColor =
+      !!GLEW_ARB_vertex_array_bgra || !!GLEW_EXT_vertex_array_bgra;
+  if (bInterleaveColor) {
+    const GLsizei stride = sizeof(RageSpriteVertex);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glVertexPointer(3, GL_FLOAT, stride, &v[0].p);
+
+    glEnableClientState(GL_COLOR_ARRAY);
+    glColorPointer(GL_BGRA, GL_UNSIGNED_BYTE, stride, &v[0].c);
+
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glTexCoordPointer(2, GL_FLOAT, stride, &v[0].t);
+
+    if (GLEW_ARB_multitexture) {
+      glClientActiveTextureARB(GL_TEXTURE1_ARB);
+      glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+      glTexCoordPointer(2, GL_FLOAT, stride, &v[0].t);
+      glClientActiveTextureARB(GL_TEXTURE0_ARB);
+    }
+
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glNormalPointer(GL_FLOAT, stride, &v[0].n);
+    return;
+  }
+
+  // Convert from BGRA -> RGBA for drivers without GL_BGRA vertex arrays.
   static float *Vertex, *Texture, *Normal;
   static GLubyte* Color;
   static int Size = 0;
