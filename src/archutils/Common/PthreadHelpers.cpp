@@ -2,20 +2,16 @@
  */
 #include "PthreadHelpers.h"
 
-#include "RageUtil.h"
-#include "archutils/Unix/Backtrace.h"  // HACK: This should be platform-agnosticized
-#include "global.h"
-
-#if defined(UNIX)
-#include "archutils/Unix/RunningUnderValgrind.h"
-#endif
-
 #include <pthread.h>
 #include <semaphore.h>
 
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
+
+#include "RageUtil.h"
+#include "archutils/Unix/Backtrace.h"  // HACK: This should be platform-agnosticized
+#include "global.h"
 
 #if defined(LINUX)
 #if defined(HAVE_UNISTD_H)
@@ -32,51 +28,6 @@
 #define _LINUX_PTRACE_H  // hack to prevent broken linux/ptrace.h from
                          // conflicting with sys/ptrace.h
 #include <sys/user.h>
-
-/* In Linux, we might be using PID-based or TID-based threads.  With PID-based
- * threads, getpid() returns a unique value for each thread; each thread is a
- * separate process.  Newer kernels using NPTL return the same PID for all
- * threads; these systems support a gettid() call to get a unique TID for each
- * thread. */
-
-static bool g_bUsingNPTL = false;
-
-#define gettid() syscall(SYS_gettid)
-
-#ifndef _CS_GNU_LIBPTHREAD_VERSION
-#define _CS_GNU_LIBPTHREAD_VERSION 3
-#endif
-
-std::string ThreadsVersion() {
-  char buf[1024] = "(error)";
-  int ret = confstr(_CS_GNU_LIBPTHREAD_VERSION, buf, sizeof(buf));
-  if (ret == -1) {
-    return "(unknown)";
-  }
-
-  return buf;
-}
-
-/* Crash-conditions-safe: */
-bool UsingNPTL() {
-  char buf[1024] = "";
-  int ret = confstr(_CS_GNU_LIBPTHREAD_VERSION, buf, sizeof(buf));
-  if (ret == -1) {
-    return false;
-  }
-
-  return !strncmp(buf, "NPTL", 4);
-}
-/* Crash-conditions-safe: */
-void InitializePidThreadHelpers() {
-  static bool bInitialized = false;
-  if (bInitialized) {
-    return;
-  }
-  bInitialized = true;
-
-  g_bUsingNPTL = UsingNPTL();
-}
 
 /* waitpid(); ThreadID can be a PID or (in NPTL) a TID; doesn't care if the ID
  * is a clone() or not. */
@@ -125,44 +76,10 @@ static int PtraceDetach(int ThreadID) {
   return ptrace(PTRACE_DETACH, ThreadID, nullptr, nullptr);
 }
 
-/* Get this thread's ID (this may be a TID or a PID). */
-static uint64_t GetCurrentThreadIdInternal() {
-  /* If we're under Valgrind, neither the PID nor the TID is associated with the
-   * thread.  Return the pthread ID.  This can't be used to kill threads, etc.,
-   * but that only happens under error conditions anyway.  If we don't return a
-   * usable, unique ID, then mutexes won't work. */
-  if (RunningUnderValgrind()) {
-    return (int)pthread_self();
-  }
-
-  InitializePidThreadHelpers();  // for g_bUsingNPTL
-
-  /* Don't keep calling gettid() if it's not supported; it'll make valgrind spam
-   * us. */
-  static bool GetTidUnsupported = 0;
-  if (!GetTidUnsupported) {
-    pid_t ret = gettid();
-
-    /* If this fails with ENOSYS, we're on a kernel before gettid, or we're
-     * under valgrind.  If we don't have NPTL, then just use getpid().  If
-     * we're on NPTL and don't have gettid(), something's wrong. */
-    if (ret != -1) {
-      return ret;
-    }
-
-    ASSERT(!g_bUsingNPTL);
-    GetTidUnsupported = true;
-  }
-
-  return getpid();
-}
-
 uint64_t GetCurrentThreadId() {
   static thread_local uint64_t cached_tid = 0;
-  static thread_local bool cached = false;
-  if (!cached) {
-    cached_tid = GetCurrentThreadIdInternal();
-    cached = true;
+  if (!cached_tid) {
+    cached_tid = gettid();
   }
   return cached_tid;
 }
@@ -183,16 +100,8 @@ int ResumeThread(uint64_t ThreadID) {
 }
 
 /* Get a BacktraceContext for a thread.  ThreadID must not be the current
- * thread.
- *
- * tid() is a PID (from getpid) or a TID (from gettid).  Note that this may have
- * kernel compatibility problems, because NPTL is new and its interactions with
- * ptrace() aren't well-defined. If we're on a non-NPTL system, tid is a regular
- * PID.
- *
- * This call leaves the given thread suspended, so the returned context doesn't
- * become invalid. ResumeThread() can be used to resume a thread after this
- * call. */
+ * thread. This call leaves the given thread suspended; use ResumeThread() to
+ * resume it after. */
 bool GetThreadBacktraceContext(uint64_t ThreadID, BacktraceContext* ctx) {
   /* Can't GetThreadBacktraceContext the current thread. */
   ASSERT(ThreadID != GetCurrentThreadId());
@@ -251,8 +160,6 @@ bool GetThreadBacktraceContext(uint64_t ThreadID, BacktraceContext* ctx) {
 #elif defined(UNIX)
 #include <pthread.h>
 #include <signal.h>
-
-std::string ThreadsVersion() { return "(unknown)"; }
 
 uint64_t GetCurrentThreadId() { return uint64_t(pthread_self()); }
 

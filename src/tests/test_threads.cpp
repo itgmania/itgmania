@@ -286,8 +286,6 @@ int main(int argc, char* argv[]) {
 
   InitializeBacktrace();
 
-  printf("'%s'\n", ThreadsVersion().c_str());
-
   go();
 
   test_deinit();

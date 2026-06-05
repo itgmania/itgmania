@@ -2,15 +2,9 @@
 #define PID_THREAD_HELPERS_H
 
 #include <cstdint>
-#include <string>
-
-std::string ThreadsVersion();
 
 /* Get the current thread's ThreadID. */
 uint64_t GetCurrentThreadId();
-
-/* Return true if NPTL libraries are in use, false if linuxthreads. */
-bool UsingNPTL();
 
 int SuspendThread(uint64_t ThreadID);
 int ResumeThread(uint64_t ThreadID);

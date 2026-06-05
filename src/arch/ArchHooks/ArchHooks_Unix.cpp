@@ -9,7 +9,6 @@
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
-#include "archutils/Common/PthreadHelpers.h"
 #include "archutils/Unix/AssertionHandler.h"
 #include "archutils/Unix/EmergencyShutdown.h"
 #include "archutils/Unix/GetSysInfo.h"
@@ -201,7 +200,6 @@ void ArchHooks_Unix::DumpDebugInfo() {
 #endif
 
   LOG->Info("Runtime library: %s", LibcVersion().c_str());
-  LOG->Info("Threads library: %s", ThreadsVersion().c_str());
   LOG->Info("libavcodec: %#x (%u)", avcodec_version(), avcodec_version());
 }
 
