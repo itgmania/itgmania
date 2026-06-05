@@ -17,8 +17,6 @@ on:
             - "**.c"
             - "**.cpp"
             - "**.mm"
-  schedule:
-    - cron: '43 2 * * 5'
 
 jobs:
   analyze:
