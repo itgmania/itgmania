@@ -20,28 +20,14 @@ jobs:
         include:
           - os: ubuntu-24.04
             name: Ubuntu (x86_64)
-            install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
-            flags: -DWITH_FFMPEG_JOBS="$(nproc)"
-            path: build/ITGmania-*.tar.gz
           - os: ubuntu-24.04-arm
             name: Ubuntu (ARM)
-            install: sudo apt-get update && sudo apt-get install -y libasound2-dev libgl-dev libglu1-mesa-dev libgtk-3-dev libjack-dev libmad0-dev libpulse-dev libudev-dev libxinerama-dev libx11-dev libxrandr-dev libxtst-dev nasm
-            flags: -DWITH_FFMPEG_JOBS="$(nproc)"
-            path: build/ITGmania-*.tar.gz
           - os: macos-15
             name: macOS (M1)
-            install: brew install nasm
-            flags: -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
-            path: build/ITGmania-*.dmg
           - os: macos-15-intel
             name: macOS (Intel)
-            install: brew install nasm
-            flags: -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"
-            path: build/ITGmania-*.dmg
           - os: windows-2022
             name: Windows
-            flags: -DWITH_FFMPEG_JOBS="$env:NUMBER_OF_PROCESSORS"
-            path: build/ITGmania-*.exe
 
     name: "${{ matrix.name }} - ClubFantastic: ${{ matrix.club_fantastic }}"
 
@@ -51,14 +37,10 @@ jobs:
           submodules: recursive
 
       - name: Install dependencies
-        if: matrix.os != 'windows-2022'
-        run: ${{ matrix.install }}
-
-      - name: Add msbuild to PATH
-        if: matrix.os == 'windows-2022'
-        uses: microsoft/setup-msbuild@v3
+        uses: ./.github/actions/setup-env
         with:
-          msbuild-architecture: x64
+          os: ${{ matrix.os }}
+          ccache: 'false'
 
       - name: Create nightly release
         if: github.ref_name == 'beta'
@@ -66,7 +48,7 @@ jobs:
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release 
           -DWITH_FULL_RELEASE=Off -DWITH_NIGHTLY_RELEASE=On 
           -DWITH_CLUB_FANTASTIC=${{ matrix.club_fantastic }}
-          ${{ matrix.flags }}
+          ${{ env.CMAKE_FLAGS }}
 
       - name: Create full release
         if: github.ref_name == 'release'
@@ -74,7 +56,7 @@ jobs:
           cmake -S . -B build -DCMAKE_BUILD_TYPE=Release 
           -DWITH_FULL_RELEASE=On -DWITH_NIGHTLY_RELEASE=Off 
           -DWITH_CLUB_FANTASTIC=${{ matrix.club_fantastic }}
-          ${{ matrix.flags }}
+          ${{ env.CMAKE_FLAGS }}
 
       - name: Create package
         run: |
@@ -90,7 +72,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ITGmania-${{ github.sha }}-${{ matrix.os }}-ClubFantastic-${{ matrix.club_fantastic }}
-          path: ${{ matrix.path }}
+          path: ${{ env.ARTIFACT_PATH }}
           archive: false
 
       - uses: actions/attest@v4
