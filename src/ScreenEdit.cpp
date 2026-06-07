@@ -1869,6 +1869,7 @@ void ScreenEdit::Init() {
   m_textInfo.LoadFromFont(THEME->GetPathF("ScreenEdit", "Info"));
   LOAD_ALL_COMMANDS_AND_SET_XY_AND_ON_COMMAND(m_textInfo);
   this->AddChild(&m_textInfo);
+  m_bTextInfoNeedsUpdate = false;
 
   m_textPlayRecordHelp.SetName("PlayRecordHelp");
   m_textPlayRecordHelp.LoadFromFont(
