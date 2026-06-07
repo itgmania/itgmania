@@ -441,8 +441,7 @@ void GameState::JoinPlayer(PlayerNumber pn) {
     // -aj
     if (cur_style->m_StyleType == StyleType_OnePlayerTwoSides ||
         cur_style->m_StepsType == StepsType_dance_solo ||
-        cur_style->m_StepsType == StepsType_dance_threepanel ||
-        cur_style->m_StepsType == StepsType_popn_nine) {
+        cur_style->m_StepsType == StepsType_dance_threepanel) {
       pStyle = GAMEMAN->GetFirstCompatibleStyle(
           m_pCurGame, 1, cur_style->m_StepsType);
     } else {
