@@ -24,7 +24,10 @@ uint64_t GetCurrentThreadId() { return mach_thread_self(); }
 bool GetThreadBacktraceContext(uint64_t iID, BacktraceContext* ctx) {
   /* Can't GetThreadBacktraceContext the current thread. */
   ASSERT(iID != GetCurrentThreadId());
-  SuspendThread(iID);
+  bool suspendSuccess = SuspendThread(iID);
+  if (!suspendSuccess) {
+    return false;
+  }
 
   thread_act_t thread = thread_act_t(iID);
 
@@ -34,6 +37,7 @@ bool GetThreadBacktraceContext(uint64_t iID, BacktraceContext* ctx) {
 
   if (thread_get_state(
           thread, i386_THREAD_STATE, thread_state_t(&state), &count)) {
+    ResumeThread(iID);
     return false;
   }
   ctx->ip = (void*)state.__eip;
@@ -46,6 +50,7 @@ bool GetThreadBacktraceContext(uint64_t iID, BacktraceContext* ctx) {
 
   if (thread_get_state(
           thread, x86_THREAD_STATE64, thread_state_t(&state), &count)) {
+    ResumeThread(iID);
     return false;
   }
 
@@ -58,6 +63,7 @@ bool GetThreadBacktraceContext(uint64_t iID, BacktraceContext* ctx) {
   mach_msg_type_number_t count = ARM_THREAD_STATE64_COUNT;
   if (thread_get_state(
           thread, ARM_THREAD_STATE64, thread_state_t(&state), &count)) {
+    ResumeThread(iID);
     return false;
   }
 
@@ -66,6 +72,7 @@ bool GetThreadBacktraceContext(uint64_t iID, BacktraceContext* ctx) {
   ctx->sp = (void*)arm_thread_state64_get_sp(state);
   return true;
 #else
+  ResumeThread(iID);
   return false;
 #endif
 }
