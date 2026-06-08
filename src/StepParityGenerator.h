@@ -2,6 +2,7 @@
 #define STEP_PARITY_GENERATOR_H
 
 #include <cstdint>
+#include <deque>
 #include <unordered_map>
 #include <vector>
 
@@ -24,6 +25,14 @@ class StepParityGenerator {
   StepParity::StepParityNode* endNode = nullptr;
   StepParity::State* tmpState = nullptr;
 
+  std::deque<StepParity::State> statePool;
+  std::deque<StepParity::StepParityNode> nodePool;
+
+  StepParity::State* allocState() {
+    statePool.emplace_back();
+    return &statePool.back();
+  }
+
  public:
   std::unordered_map<std::uint64_t, StepParity::State*> stateCache;
   std::vector<StepParity::StepParityNode*> nodes;
@@ -33,25 +42,6 @@ class StepParityGenerator {
 
   StepParityGenerator(const StageLayout* l, TimingData* t) : layout(l) {
     timing = t;
-  }
-
-  ~StepParityGenerator() {
-    for (auto s : stateCache) {
-      delete s.second;
-    }
-    for (auto n : nodes) {
-      delete n;
-    }
-    if (beginningState != nullptr) {
-      delete beginningState;
-    }
-
-    if (endingState != nullptr) {
-      delete endingState;
-    }
-    if (tmpState != nullptr) {
-      delete tmpState;
-    }
   }
   /// @brief Analyzes the given NoteData to generate a vector of
   /// StepParity::Rows, with each step annotated with a foot placement.
