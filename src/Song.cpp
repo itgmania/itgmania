@@ -354,8 +354,7 @@ bool Song::LoadFromSongDir(
 
     if (!NotesLoader::LoadFromDir(
             sDir, *this, blacklistedImages, load_autosave)) {
-      LOG->UserLog(
-          "Song", sDir, "has no SSC, SM, SMA, DWI, BMS, or KSF files.");
+      LOG->UserLog("Song", sDir, "has no SSC, SM, SMA, or DWI files.");
 
       std::vector<std::string> audios;
       FILEMAN->GetDirListingWithMultipleExtensions(
@@ -1239,26 +1238,6 @@ void Song::Save(bool autosave) {
   // saved in the .sm format.  So saving the .sm is disabled.
   if (!AnyChartUsesSplitTiming()) {
     SaveToSMFile();
-  }
-  // SaveToDWIFile();
-
-  /* We've safely written our files and created backups. Rename non-SM and
-   * non-DWI files to avoid confusion. */
-  std::vector<std::string> arrayOldFileNames;
-  GetDirListing(m_sSongDir + "*.bms", arrayOldFileNames);
-  GetDirListing(m_sSongDir + "*.pms", arrayOldFileNames);
-  GetDirListing(m_sSongDir + "*.ksf", arrayOldFileNames);
-
-  for (unsigned i = 0; i < arrayOldFileNames.size(); i++) {
-    const std::string sOldPath = m_sSongDir + arrayOldFileNames[i];
-    const std::string sNewPath = sOldPath + ".old";
-
-    if (!FileCopy(sOldPath, sNewPath)) {
-      LOG->UserLog("Song file", sOldPath, "couldn't be backed up.");
-      // Don't remove.
-    } else {
-      FILEMAN->Remove(sOldPath);
-    }
   }
 }
 

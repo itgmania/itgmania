@@ -9,7 +9,6 @@
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
-#include "archutils/Common/PthreadHelpers.h"
 #include "archutils/Unix/AssertionHandler.h"
 #include "archutils/Unix/EmergencyShutdown.h"
 #include "archutils/Unix/GetSysInfo.h"
@@ -82,35 +81,6 @@ static bool EmergencyShutdown(int signal, siginfo_t* si, const ucontext_t* uc) {
    * core. */
   return false;
 }
-
-#if defined(HAVE_TLS)
-static thread_local int g_iTestTLS = 0;
-
-static int TestTLSThread(void* p) {
-  g_iTestTLS = 2;
-  return 0;
-}
-
-static void TestTLS() {
-#if defined(LINUX)
-  /* TLS won't work on older threads libraries, and may crash. */
-  if (!UsingNPTL()) {
-    return;
-  }
-#endif
-  /* TLS won't work on older Linux kernels.  Do a simple check. */
-  g_iTestTLS = 1;
-
-  RageThread TestThread;
-  TestThread.SetName("TestTLS");
-  TestThread.Create(TestTLSThread, nullptr);
-  TestThread.Wait();
-
-  if (g_iTestTLS == 1) {
-    RageThread::SetSupportsTLS(true);
-  }
-}
-#endif
 
 #if 1
 /* If librt is available, use CLOCK_MONOTONIC to implement
@@ -201,10 +171,6 @@ void ArchHooks_Unix::Init() {
   SignalHandler::OnClose(EmergencyShutdown);
 
   InstallExceptionHandler();
-
-#if defined(HAVE_TLS) && !defined(BSD)
-  TestTLS();
-#endif
 }
 
 #ifndef _CS_GNU_LIBC_VERSION
@@ -234,7 +200,6 @@ void ArchHooks_Unix::DumpDebugInfo() {
 #endif
 
   LOG->Info("Runtime library: %s", LibcVersion().c_str());
-  LOG->Info("Threads library: %s", ThreadsVersion().c_str());
   LOG->Info("libavcodec: %#x (%u)", avcodec_version(), avcodec_version());
 }
 

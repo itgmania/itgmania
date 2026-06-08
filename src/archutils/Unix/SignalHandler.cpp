@@ -151,9 +151,8 @@ void SignalHandler::OnClose(handler h) {
 
 #if defined(LINUX)
     /* Linuxthreads (pre-NPTL) sigaltstack is broken. */
-    if (!UsingNPTL()) {
-      bUseAltSigStack = false;
-    }
+    // TODO: check if this is still necessary
+    bUseAltSigStack = false;
 #endif
 
     /* Allocate a separate signal stack.  This makes the crash handler work

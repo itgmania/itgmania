@@ -864,10 +864,6 @@ int sm_main(int argc, char* argv[]) {
    * that to appear delayed. */
   HOOKS->DumpDebugInfo();
 
-#if defined(HAVE_TLS)
-  LOG->Info("TLS is %savailable", RageThread::GetSupportsTLS() ? "" : "not ");
-#endif
-
   std::string luaDebugServerAddress;
   if (GetCommandlineArgument("lua-debugger", &luaDebugServerAddress)) {
     LUADEBUG = new LuaDebugManager();

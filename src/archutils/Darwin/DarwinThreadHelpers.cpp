@@ -53,6 +53,18 @@ bool GetThreadBacktraceContext(uint64_t iID, BacktraceContext* ctx) {
   ctx->bp = (void*)state.__rbp;
   ctx->sp = (void*)state.__rsp;
   return true;
+#elif defined(__aarch64__)
+  arm_thread_state64_t state;
+  mach_msg_type_number_t count = ARM_THREAD_STATE64_COUNT;
+  if (thread_get_state(
+          thread, ARM_THREAD_STATE64, thread_state_t(&state), &count)) {
+    return false;
+  }
+
+  ctx->ip = (void*)arm_thread_state64_get_pc(state);
+  ctx->bp = (void*)arm_thread_state64_get_fp(state);
+  ctx->sp = (void*)arm_thread_state64_get_sp(state);
+  return true;
 #else
   return false;
 #endif

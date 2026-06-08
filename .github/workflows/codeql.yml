@@ -1,14 +1,22 @@
 name: "CodeQL Advanced"
 
 on:
-  push:
-    branches: [release, beta]
-  pull_request:
-    branches: [beta]
-    paths-ignore:
-    - '**.md'
-  schedule:
-    - cron: '43 2 * * 5'
+    push:
+        branches: [release, beta]
+        paths:
+            - "**.h"
+            - "**.hpp"
+            - "**.c"
+            - "**.cpp"
+            - "**.mm"
+    pull_request:
+        branches: [beta]
+        paths:
+            - "**.h"
+            - "**.hpp"
+            - "**.c"
+            - "**.cpp"
+            - "**.mm"
 
 jobs:
   analyze:
@@ -34,26 +42,16 @@ jobs:
         config-file: ./.github/codeql/codeql-config.yml
 
     - name: Install dependencies
-      run: sudo apt-get update && sudo apt-get install -y
-        libasound2-dev
-        libgl-dev
-        libglu1-mesa-dev
-        libgtk-3-dev
-        libjack-dev
-        libmad0-dev
-        libpulse-dev
-        libudev-dev
-        libxinerama-dev
-        libx11-dev
-        libxrandr-dev
-        libxtst-dev
-        nasm
+      uses: ./.github/actions/setup-env
+      with:
+        os: ubuntu-24.04
+        ccache: 'false'
 
     - name: Configure
-      run: cmake -B build -DWITH_FFMPEG_JOBS="$(nproc)"
+      run: cmake -B build ${{ env.CMAKE_FLAGS }}
     
     - name: Build
-      run: cmake --build build --parallel "$(nproc)"
+      run: cmake --build build ${{ env.CMAKE_BUILD_FLAGS }}
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4

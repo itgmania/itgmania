@@ -37,12 +37,14 @@ if(WIN32)
               "arch/Sound/DSoundHelpers.cpp"
               "arch/Sound/RageSoundDriver_DSound_Software.cpp"
               "arch/Sound/RageSoundDriver_WaveOut.cpp"
-              "arch/Sound/RageSoundDriver_WDMKS.cpp")
+              "arch/Sound/RageSoundDriver_WDMKS.cpp"
+              "arch/Sound/RageSoundDriver_WASAPI.cpp")
   list(APPEND SMDATA_ARCH_SOUND_HPP
               "arch/Sound/DSoundHelpers.h"
               "arch/Sound/RageSoundDriver_DSound_Software.h"
               "arch/Sound/RageSoundDriver_WaveOut.h"
-              "arch/Sound/RageSoundDriver_WDMKS.h")
+              "arch/Sound/RageSoundDriver_WDMKS.h"
+              "arch/Sound/RageSoundDriver_WASAPI.h")
 elseif(APPLE)
   list(APPEND SMDATA_ARCH_SOUND_SRC "arch/Sound/RageSoundDriver_AU.mm")
   list(APPEND SMDATA_ARCH_SOUND_HPP "arch/Sound/RageSoundDriver_AU.h")

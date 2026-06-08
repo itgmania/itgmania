@@ -11,9 +11,7 @@ REGISTER_LIGHTS_DRIVER_CLASS(Export);
 RageMutex LightsDriver_Export::m_Lock("LightsDriver_Export");
 LightsState LightsDriver_Export::m_State;
 
-LightsDriver_Export::LightsDriver_Export() {
-  memset(&m_State, 0, sizeof(m_State));
-}
+LightsDriver_Export::LightsDriver_Export() { m_State = {}; }
 
 LightsDriver_Export::~LightsDriver_Export() {}
 

@@ -38,7 +38,7 @@ LuaFunction(
 LuaXType(RadarCategory);
 
 std::string StepsTypeToString(StepsType st) {
-  std::string s = GAMEMAN->GetStepsTypeInfo(st).szName;  // "dance-single"
+  std::string s = GameManager::GetStepsTypeInfo(st).szName;  // "dance-single"
   /* foo-bar -> Foo_Bar */
   Replace(s, '-', '_');
 
