@@ -377,7 +377,8 @@ void NoteDataUtil::InsertHoldTails(NoteData& inout) {
   }
 }
 
-void NoteDataUtil::GetSMNoteDataString(const NoteData& in, std::string& sRet) {
+void NoteDataUtil::GetSMNoteDataString(
+    const NoteData& in, std::string& sRet, bool bIncludeMeasureComments) {
   // Get note data
   std::vector<NoteData> parts;
   float fLastBeat = -1.0f;
@@ -402,7 +403,9 @@ void NoteDataUtil::GetSMNoteDataString(const NoteData& in, std::string& sRet) {
       if (m) {
         sRet.append(1, ',');
       }
-      sRet += ssprintf("  // measure %d\n", m);
+      if (bIncludeMeasureComments) {
+        sRet += ssprintf("  // measure %d\n", m);
+      }
 
       NoteType nt = GetSmallestNoteTypeForMeasure(nd, m);
       int iRowSpacing;

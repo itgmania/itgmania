@@ -16,7 +16,6 @@
 #include <algorithm>
 #include <cstddef>
 #include <optional>
-#include <regex>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -146,7 +145,8 @@ unsigned Steps::GetHash() const {
     if (!m_bNoteDataIsFilled) {
       return 0;  // No data, no hash.
     }
-    NoteDataUtil::GetSMNoteDataString(*m_pNoteData, m_sNoteDataCompressed);
+    NoteDataUtil::GetSMNoteDataString(
+        *m_pNoteData, m_sNoteDataCompressed, /*bIncludeMeasureComments=*/true);
   }
   m_iHash = GetHashForString(m_sNoteDataCompressed);
   return m_iHash;
@@ -253,7 +253,8 @@ void Steps::GetSMNoteData(std::string& notes_comp_out) const {
       return;
     }
 
-    NoteDataUtil::GetSMNoteDataString(*m_pNoteData, m_sNoteDataCompressed);
+    NoteDataUtil::GetSMNoteDataString(
+        *m_pNoteData, m_sNoteDataCompressed, /*bIncludeMeasureComments=*/true);
   }
 
   notes_comp_out = m_sNoteDataCompressed;
@@ -549,7 +550,8 @@ void Steps::Compress() const {
     if (!m_bNoteDataIsFilled) {
       return; /* no data is no data */
     }
-    NoteDataUtil::GetSMNoteDataString(*m_pNoteData, m_sNoteDataCompressed);
+    NoteDataUtil::GetSMNoteDataString(
+        *m_pNoteData, m_sNoteDataCompressed, /*bIncludeMeasureComments=*/true);
   }
 
   m_pNoteData->Init();
@@ -772,23 +774,19 @@ std::string Steps::MinimizedChartString() {
   std::string smNoteData = "";
   NoteData noteData;
   this->GetNoteData(noteData);
-  NoteDataUtil::GetSMNoteDataString(noteData, smNoteData);
+  NoteDataUtil::GetSMNoteDataString(
+      noteData, smNoteData, /*bIncludeMeasureComments=*/false);
 
   if (smNoteData == "") {
     return "";
   }
-
-  // Strip any comments from smNoteData
-  std::regex commentRegex("//[^\n]*");
-  std::string deCommentedNoteData =
-      std::regex_replace(smNoteData, commentRegex, "");
 
   std::string minimizedNoteData = "";
 
   std::vector<std::string> measures;
   Regex anyNote("[^0]");
 
-  split(deCommentedNoteData, ",", measures, true);
+  split(smNoteData, ",", measures, true);
   for (unsigned m = 0; m < measures.size(); m++) {
     Trim(measures[m]);
     bool allZeroes = true;
