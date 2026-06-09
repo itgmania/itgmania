@@ -163,10 +163,10 @@ class Steps {
 
   /** @brief Produces a chart that's reduced to it's smallest unique
    * representable form. */
-  std::string MinimizedChartString();
+  std::string MinimizedChartString(const NoteData& noteData);
 
   /** @brief Generates a hash used for GrooveStats integration. */
-  void CalculateGrooveStatsHash();
+  void CalculateGrooveStatsHash(const NoteData& noteData);
   const std::string GetGrooveStatsHash() const;
   int GetGrooveStatsHashVersion() const;
 
@@ -208,14 +208,15 @@ class Steps {
    * Stats, and GrooveStats key.*/
   void CalculateStepStats(float fMusicLengthSeconds);
 
-  void CalculateRadarValues(float fMusicLengthSeconds);
+  void CalculateRadarValues(
+      float fMusicLengthSeconds, const NoteData& noteData);
 
-  void CalculateTechCounts();
+  void CalculateTechCounts(const NoteData& noteData);
   const TechCounts& GetTechCounts(PlayerNumber pn) const {
     return Real()->m_TechCounts[pn];
   }
 
-  void CalculateMeasureInfo();
+  void CalculateMeasureInfo(const NoteData& noteData);
 
   const std::vector<std::vector<float>>& GetAllNpsPerMeasures() const {
     return Real()->m_NpsPerMeasure;

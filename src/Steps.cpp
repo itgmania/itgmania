@@ -322,13 +322,16 @@ void Steps::TidyUpData() {
 }
 
 void Steps::CalculateStepStats(float fMusicLengthSeconds) {
-  this->CalculateRadarValues(fMusicLengthSeconds);
-  this->CalculateTechCounts();
-  this->CalculateMeasureInfo();
-  this->CalculateGrooveStatsHash();
+  NoteData tempNoteData;
+  this->GetNoteData(tempNoteData);
+  this->CalculateRadarValues(fMusicLengthSeconds, tempNoteData);
+  this->CalculateTechCounts(tempNoteData);
+  this->CalculateMeasureInfo(tempNoteData);
+  this->CalculateGrooveStatsHash(tempNoteData);
 }
 
-void Steps::CalculateRadarValues(float fMusicLengthSeconds) {
+void Steps::CalculateRadarValues(
+    float fMusicLengthSeconds, const NoteData& tempNoteData) {
   // If we're autogen, don't calculate values.  GetRadarValues will take from
   // our parent.
   if (parent != nullptr) {
@@ -342,9 +345,6 @@ void Steps::CalculateRadarValues(float fMusicLengthSeconds) {
   if( IsAnEdit() )
           return;
   */
-
-  NoteData tempNoteData;
-  this->GetNoteData(tempNoteData);
 
   FOREACH_PlayerNumber(pn) m_RadarValues[pn].Zero();
 
@@ -367,11 +367,11 @@ void Steps::CalculateRadarValues(float fMusicLengthSeconds) {
     p1.SetNumTracks(tracks);
     NoteDataUtil::CalculateRadarValues(
         p1, fMusicLengthSeconds, timing, m_RadarValues[PLAYER_1]);
-    // at this point, p2 is tempNoteData.
-    NoteDataUtil::ShiftTracks(tempNoteData, tracks);
-    tempNoteData.SetNumTracks(tracks);
+    NoteData p2 = tempNoteData;
+    NoteDataUtil::ShiftTracks(p2, tracks);
+    p2.SetNumTracks(tracks);
     NoteDataUtil::CalculateRadarValues(
-        tempNoteData, fMusicLengthSeconds, timing, m_RadarValues[PLAYER_2]);
+        p2, fMusicLengthSeconds, timing, m_RadarValues[PLAYER_2]);
   } else {
     NoteDataUtil::CalculateRadarValues(
         tempNoteData, fMusicLengthSeconds, timing, m_RadarValues[0]);
@@ -379,13 +379,10 @@ void Steps::CalculateRadarValues(float fMusicLengthSeconds) {
   }
 }
 
-void Steps::CalculateTechCounts() {
+void Steps::CalculateTechCounts(const NoteData& tempNoteData) {
   if (parent != nullptr) {
     return;
   }
-
-  NoteData tempNoteData;
-  this->GetNoteData(tempNoteData);
 
   FOREACH_PlayerNumber(pn) m_TechCounts[pn].Zero();
 
@@ -404,13 +401,10 @@ void Steps::CalculateTechCounts() {
   std::fill_n(m_TechCounts + 1, NUM_PLAYERS - 1, m_TechCounts[0]);
 }
 
-void Steps::CalculateMeasureInfo() {
+void Steps::CalculateMeasureInfo(const NoteData& tempNoteData) {
   if (parent != nullptr) {
     return;
   }
-
-  NoteData tempNoteData;
-  this->GetNoteData(tempNoteData);
 
   std::vector<MeasureInfo> measureInfoPerPlayer;
 
@@ -434,10 +428,11 @@ void Steps::CalculateMeasureInfo() {
     p1.SetNumTracks(tracks);
     MeasureInfo::CalculateMeasureInfo(
         tempNoteData, timing, measureInfoPerPlayer[PLAYER_1]);
-    NoteDataUtil::ShiftTracks(tempNoteData, tracks);
-    tempNoteData.SetNumTracks(tracks);
+    NoteData p2 = tempNoteData;
+    NoteDataUtil::ShiftTracks(p2, tracks);
+    p2.SetNumTracks(tracks);
     MeasureInfo::CalculateMeasureInfo(
-        tempNoteData, timing, measureInfoPerPlayer[PLAYER_2]);
+        p2, timing, measureInfoPerPlayer[PLAYER_2]);
   } else {
     measureInfoPerPlayer.resize(1);
     MeasureInfo::CalculateMeasureInfo(
@@ -728,10 +723,8 @@ int Steps::GetGrooveStatsHashVersion() const {
   return m_iGrooveStatsHashVersion;
 }
 
-void Steps::CalculateGrooveStatsHash() {
-  this->Decompress();
-
-  std::string smNoteData = this->MinimizedChartString();
+void Steps::CalculateGrooveStatsHash(const NoteData& noteData) {
+  std::string smNoteData = this->MinimizedChartString(noteData);
 
   TimingData* timingData = this->GetTimingData();
   std::vector<TimingSegment*> segments =
@@ -755,7 +748,7 @@ void Steps::CalculateGrooveStatsHash() {
   m_iGrooveStatsHashVersion = CURRENT_GROOVE_STATS_HASH_VERSION;
 }
 
-std::string Steps::MinimizedChartString() {
+std::string Steps::MinimizedChartString(const NoteData& noteData) {
   // We can potentially minimize the chart to get the most compressed
   // form of the actual chart data.
   // NOTE(teejusb): This can be more compressed than the data actually
@@ -772,8 +765,6 @@ std::string Steps::MinimizedChartString() {
   // NoteDataUtil::GetSMNoteDataString() to ensure that we have a consistent,
   // valid stepchart representation.
   std::string smNoteData = "";
-  NoteData noteData;
-  this->GetNoteData(noteData);
   NoteDataUtil::GetSMNoteDataString(
       noteData, smNoteData, /*bIncludeMeasureComments=*/false);
 
