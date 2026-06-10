@@ -95,7 +95,6 @@ else()
                 "archutils/Unix/AssertionHandler.cpp"
                 "archutils/Unix/EmergencyShutdown.cpp"
                 "archutils/Unix/GetSysInfo.cpp"
-                "archutils/Unix/RunningUnderValgrind.cpp"
                 "archutils/Unix/SignalHandler.cpp"
                 "archutils/Unix/SpecialDirs.cpp"
                 "archutils/Unix/StackCheck.cpp")
@@ -104,7 +103,6 @@ else()
                 "archutils/Unix/AssertionHandler.h"
                 "archutils/Unix/EmergencyShutdown.h"
                 "archutils/Unix/GetSysInfo.h"
-                "archutils/Unix/RunningUnderValgrind.h"
                 "archutils/Unix/SignalHandler.h"
                 "archutils/Unix/SpecialDirs.h")
     if(X11_FOUND)
