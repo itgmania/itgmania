@@ -462,6 +462,11 @@ local CodeDetectorCodes = {
 		default = "",
 		dance = "Left,Right,Left,Right,Left,Right",
 	},
+	-- operator menu from title screen
+	OperatorMenu = {
+		default = "",
+		dance = "",
+	},
 };
 
 function GetCodeForGame(codeName)
