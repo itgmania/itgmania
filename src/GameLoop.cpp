@@ -28,9 +28,12 @@
 #include "global.h"
 
 static RageTimer g_GameplayTimer;
+static RageTimer g_LastInputTimer;
 
 static Preference<bool> g_bNeverBoostAppPriority(
     "NeverBoostAppPriority", false);
+
+static Preference<int> g_iQuitAfterIdleSeconds("QuitAfterIdleSeconds", 0);
 
 /* experimental: force a specific update rate. This prevents big  animation
  * jumps on frame skips. 0 to disable. */
@@ -43,6 +46,8 @@ static float g_fUpdateRate = 1;
 void GameLoop::SetUpdateRate(float fUpdateRate) { g_fUpdateRate = fUpdateRate; }
 
 float GameLoop::GetUpdateRate() { return g_fUpdateRate; }
+
+void GameLoop::ResetInputIdleTimer() { g_LastInputTimer.Touch(); }
 
 static void CheckGameLoopTimerSkips(float fDeltaTime) {
   static int iLastFPS = 0;
@@ -306,6 +311,11 @@ void GameLoop::RunGameLoop() {
     }
 
     CheckFocus();
+
+    float quit_idle_seconds = g_iQuitAfterIdleSeconds.Get();
+    if (quit_idle_seconds > 0 && g_LastInputTimer.Ago() > quit_idle_seconds) {
+      ArchHooks::SetUserQuit();
+    }
 
     UpdateAllButDraw(false);
 
