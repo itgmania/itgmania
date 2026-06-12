@@ -111,7 +111,7 @@ void InputHandler_NSEvent::InitKeyCodeMap() {
   m_NSKeyCodeMap[kVK_F15] = KEY_F15;
   m_NSKeyCodeMap[kVK_F16] = KEY_F16;
 
-  m_NSKeyCodeMap[kVK_ANSI_Quote] = KEY_QUOTE;
+  m_NSKeyCodeMap[kVK_ANSI_Quote] = KEY_SQUOTE;
   m_NSKeyCodeMap[kVK_ANSI_Backslash] = KEY_BACKSLASH;
   m_NSKeyCodeMap[kVK_CapsLock] = KEY_CAPSLOCK;
   m_NSKeyCodeMap[kVK_ANSI_Comma] = KEY_COMMA;
