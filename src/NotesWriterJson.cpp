@@ -115,7 +115,6 @@ static void Serialize(const Steps& o, Json::Value& root) {
   NoteData nd;
   o.GetNoteData(nd);
   Serialize(nd, root["NoteData"]);
-  root["Hash"] = o.GetHash();
   root["Description"] = o.GetDescription();
   root["Difficulty"] = DifficultyToString(o.GetDifficulty());
   root["Meter"] = o.GetMeter();

@@ -118,12 +118,12 @@ void GetSteps(
     StepsType st = StepsType_Invalid, Difficulty dc = Difficulty_Invalid,
     int iMeterLow = -1, int iMeterHigh = -1,
     const std::string& sDescription = "", const std::string& sCredit = "",
-    bool bIncludeAutoGen = true, unsigned uHash = 0, int iMaxToGet = -1);
+    bool bIncludeAutoGen = true, int iMaxToGet = -1);
 Steps* GetOneSteps(
     const Song* pSong, StepsType st = StepsType_Invalid,
     Difficulty dc = Difficulty_Invalid, int iMeterLow = -1, int iMeterHigh = -1,
     const std::string& sDescription = "", const std::string& sCredit = "",
-    unsigned uHash = 0, bool bIncludeAutoGen = true);
+    bool bIncludeAutoGen = true);
 Steps* GetStepsByDifficulty(
     const Song* pSong, StepsType st, Difficulty dc,
     bool bIncludeAutoGen = true);

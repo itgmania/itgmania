@@ -177,7 +177,7 @@ void SongUtil::GetSteps(
     const Song* pSong, std::vector<Steps*>& arrayAddTo, StepsType st,
     Difficulty dc, int iMeterLow, int iMeterHigh,
     const std::string& sDescription, const std::string& sCredit,
-    bool bIncludeAutoGen, unsigned uHash, int iMaxToGet) {
+    bool bIncludeAutoGen, int iMaxToGet) {
   if (!iMaxToGet) {
     return;
   }
@@ -204,9 +204,6 @@ void SongUtil::GetSteps(
     if (sCredit.size() && sCredit != pSteps->GetCredit()) {
       continue;
     }
-    if (uHash != 0 && uHash != pSteps->GetHash()) {
-      continue;
-    }
     if (!bIncludeAutoGen && pSteps->IsAutogen()) {
       continue;
     }
@@ -225,11 +222,11 @@ void SongUtil::GetSteps(
 Steps* SongUtil::GetOneSteps(
     const Song* pSong, StepsType st, Difficulty dc, int iMeterLow,
     int iMeterHigh, const std::string& sDescription, const std::string& sCredit,
-    unsigned uHash, bool bIncludeAutoGen) {
+    bool bIncludeAutoGen) {
   std::vector<Steps*> vpSteps;
   GetSteps(
       pSong, vpSteps, st, dc, iMeterLow, iMeterHigh, sDescription, sCredit,
-      bIncludeAutoGen, uHash, 1);  // get max 1
+      bIncludeAutoGen, 1);  // get max 1
   if (vpSteps.empty()) {
     return nullptr;
   } else {

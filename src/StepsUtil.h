@@ -191,7 +191,6 @@ class StepsID {
   StepsType st;
   Difficulty dc;
   std::string sDescription;
-  unsigned uHash;
 
  public:
   /**
@@ -199,32 +198,13 @@ class StepsID {
    *
    * This used to call Unset(), which set the variables to
    * the same thing. */
-  StepsID()
-      : st(StepsType_Invalid),
-        dc(Difficulty_Invalid),
-        sDescription(""),
-        uHash(0) {}
+  StepsID() : st(StepsType_Invalid), dc(Difficulty_Invalid), sDescription("") {}
   void Unset() { FromSteps(nullptr); }
   void FromSteps(const Steps* p);
   Steps* ToSteps(const Song* p, bool bAllowNull) const;
-  // FIXME: (interferes with unlimited charts per song)
-  // When performing comparisons, the hash value 0 is considered equal to
-  // all other values.  This is because the hash value for a Steps is
-  // discarded immediately after loading and figuring out a way to preserve
-  // and cache it turned into a mess that still didn't work.
-  // When scores are looked up by the theme, the theme passes in a Steps
-  // which is transformed into a StepsID, which is then used to index into a
-  // map.  So when the theme goes to look up the scores for a Steps, the
-  // Steps has a hash value of 0, unless it has been played.  But when the
-  // scores are saved, the Steps has a correct hash value.  So before a
-  // Steps is played, the scores could not be correctly accessed.  This was
-  // only visible on Edit charts because scores on all other difficulties
-  // are saved without a hash value.
-  // Making operator< and operator== treat 0 as equal to all other hash
-  // values allows the theme to fetch the scores even though the Steps has
-  // a cleared hash value, but is not a good long term solution because the
-  // description field isn't always going to be unique.
-  // -Kyz
+  // Edits share the Edit difficulty slot, so they are distinguished by their
+  // description. This assumes edits for a song have unique descriptions; edits
+  // that share a description are treated as the same chart.
   bool operator<(const StepsID& rhs) const;
   bool operator==(const StepsID& rhs) const;
   bool MatchesStepsType(StepsType s) const { return st == s; }
