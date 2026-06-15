@@ -6,10 +6,13 @@
 #include <cstdint>
 #include <map>
 #include <string>
+#include <vector>
 
+#include "CommonMetrics.h"
 #include "Preference.h"
 #include "PrefsManager.h"
 #include "RageDisplay.h"
+#include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageSurface.h"
 #include "RageSurfaceUtils.h"
@@ -35,6 +38,20 @@ static Preference<bool> g_bPalettedImageCache("PalettedImageCache", false);
 // const std::string IMAGE_CACHE_INDEX = SpecialFiles::CACHE_DIR +
 // "images.cache";
 #define IMAGE_CACHE_INDEX (SpecialFiles::CACHE_DIR + "images.cache")
+
+/* Maximum resolution a cached banner image is scaled down to. Must be powers
+ * of two. */
+static const int MAX_BANNER_CACHE_WIDTH = 256;
+static const int MAX_BANNER_CACHE_HEIGHT = 128;
+
+static int nearest_power_of_two(int v) {
+  const int up = power_of_two(v);
+  const int down = up / 2;
+  return (std::abs(v - up) > std::abs(v - down)) ? down : up;
+}
+
+/* Bump this to invalidate the on-disk image cache. */
+static const int IMAGE_CACHE_VERSION = 1;
 
 /* Call CacheImage to cache a image by path.  If the image is already
  * cached, it'll be recreated.  This is efficient if the image hasn't changed,
@@ -194,9 +211,39 @@ ImageCache::ImageCache() : delay_save_cache(false) { ReadFromDisk(); }
 
 ImageCache::~ImageCache() { UnloadAllImages(); }
 
+/* Remove all (non-directory) files in dir, which must end in '/'. */
+static void EmptyDir(std::string dir) {
+  ASSERT(dir[dir.size() - 1] == '/');
+
+  std::vector<std::string> asFileNames;
+  GetDirListing(dir, asFileNames);
+  for (unsigned i = 0; i < asFileNames.size(); ++i) {
+    if (!IsADirectory(dir + asFileNames[i])) {
+      FILEMAN->Remove(dir + asFileNames[i]);
+    }
+  }
+}
+
 void ImageCache::ReadFromDisk() {
   LockMut(g_ImageCacheMutex);
   ImageData.ReadFile(IMAGE_CACHE_INDEX);  // don't care if this fails
+
+  int iCacheVersion = -1;
+  ImageData.GetValue("Cache", "CacheVersion", iCacheVersion);
+  if (iCacheVersion == IMAGE_CACHE_VERSION) {
+    return;
+  }
+
+  LOG->Trace("Image cache is out of date. Deleting all cached images.");
+  std::vector<std::string> ImageDir;
+  split(CommonMetrics::IMAGES_TO_CACHE, ",", ImageDir);
+  for (unsigned i = 0; i < ImageDir.size(); ++i) {
+    EmptyDir(SpecialFiles::CACHE_DIR + ImageDir[i] + "/");
+  }
+
+  ImageData.Clear();
+  ImageData.SetValue("Cache", "CacheVersion", IMAGE_CACHE_VERSION);
+  ImageData.WriteFile(IMAGE_CACHE_INDEX);
 }
 
 struct ImageTexture : public RageTexture {
@@ -346,13 +393,6 @@ RageTextureID ImageCache::LoadCachedImage(
   return ID;
 }
 
-static inline int closest(int num, int n1, int n2) {
-  if (std::abs(num - n1) > std::abs(num - n2)) {
-    return n2;
-  }
-  return n1;
-}
-
 /* Create or update the image cache file as necessary.  If in preload mode,
  * load the cache file, too.  (This is done at startup.) */
 void ImageCache::CacheImage(std::string sImageDir, std::string sImagePath) {
@@ -411,21 +451,16 @@ void ImageCache::CacheImageInternal(
 
   const int iSourceWidth = pImage->w, iSourceHeight = pImage->h;
 
-  int iWidth = pImage->w / 2, iHeight = pImage->h / 2;
-  //	int iWidth = pImage->w, iHeight = pImage->h;
+  /* Halve each dimension, round to the nearest power of two */
+  int iWidth = nearest_power_of_two(iSourceWidth / 2);
+  int iHeight = nearest_power_of_two(iSourceHeight / 2);
 
-  /* Round to the nearest power of two.  This simplifies the actual texture
-   * load. */
-  iWidth = closest(iWidth, power_of_two(iWidth), power_of_two(iWidth) / 2);
-  iHeight = closest(iHeight, power_of_two(iHeight), power_of_two(iHeight) / 2);
-
-  /* Don't resize the image to less than 32 pixels in either dimension or the
-   * next power of two of the source (whichever is smaller); it's already very
-   * low res. */
-  iWidth = std::max(iWidth, std::min(32, power_of_two(iSourceWidth)));
-  iHeight = std::max(iHeight, std::min(32, power_of_two(iSourceHeight)));
-
-  // RageSurfaceUtils::ApplyHotPinkColorKey( pImage );
+  if (sImageDir == "Banner") {
+    int iWidth = std::min(
+        nearest_power_of_two(iSourceWidth / 2), MAX_BANNER_CACHE_WIDTH);
+    int iHeight = std::min(
+        nearest_power_of_two(iSourceHeight / 2), MAX_BANNER_CACHE_HEIGHT);
+  }
 
   RageSurfaceUtils::Zoom(pImage, iWidth, iHeight);
 
