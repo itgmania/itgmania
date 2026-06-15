@@ -456,10 +456,8 @@ void ImageCache::CacheImageInternal(
   int iHeight = nearest_power_of_two(iSourceHeight / 2);
 
   if (sImageDir == "Banner") {
-    int iWidth = std::min(
-        nearest_power_of_two(iSourceWidth / 2), MAX_BANNER_CACHE_WIDTH);
-    int iHeight = std::min(
-        nearest_power_of_two(iSourceHeight / 2), MAX_BANNER_CACHE_HEIGHT);
+    iWidth = std::min(iWidth, MAX_BANNER_CACHE_WIDTH);
+    iHeight = std::min(iHeight, MAX_BANNER_CACHE_HEIGHT);
   }
 
   RageSurfaceUtils::Zoom(pImage, iWidth, iHeight);
