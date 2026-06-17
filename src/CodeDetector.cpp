@@ -57,7 +57,8 @@ const char* CodeNames[] = {
     "BackInEventMode",
     "CloseCurrentFolder",
     "PrevOptionsList",
-    "NextOptionsList"};
+    "NextOptionsList",
+    "OperatorMenu"};
 XToString(Code);
 
 static InputQueueCode g_CodeItems[NUM_Code];

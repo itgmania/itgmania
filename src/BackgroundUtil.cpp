@@ -356,10 +356,19 @@ void GetGlobalRandomMoviePaths(
   vsDirsToTry.push_back(RANDOMMOVIES_DIR);
 
   for (const std::string& sDir : vsDirsToTry) {
-    GetDirListing(sDir + "*.ogv", vsPathsOut, false, true);
-    GetDirListing(sDir + "*.avi", vsPathsOut, false, true);
-    GetDirListing(sDir + "*.mpg", vsPathsOut, false, true);
-    GetDirListing(sDir + "*.mpeg", vsPathsOut, false, true);
+    vsPathsOut.clear();
+    GetDirListing(sDir + "*", vsPathsOut, false, true);
+
+    size_t writeIndex = 0;
+    for (size_t bytesRead = 0; bytesRead < vsPathsOut.size(); ++bytesRead) {
+      if (ActorUtil::GetFileType(vsPathsOut[bytesRead]) == FT_Movie) {
+        if (writeIndex != bytesRead) {
+          vsPathsOut[writeIndex] = vsPathsOut[bytesRead];
+        }
+        ++writeIndex;
+      }
+    }
+    vsPathsOut.resize(writeIndex);
 
     if (!ssFileNameWhitelist.empty()) {
       std::vector<std::string> vsMatches;

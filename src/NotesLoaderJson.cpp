@@ -140,7 +140,7 @@ static void Deserialize(Steps& o, const Json::Value& root) {
 
   RadarValues rv[NUM_PLAYERS];
   FOREACH_PlayerNumber(pn) { Deserialize(rv[pn], root["RadarValues"]); }
-  o.SetCachedRadarValues(rv);
+  o.SetRadarValues(rv);
 }
 
 static void Deserialize(Song& out, const Json::Value& root) {

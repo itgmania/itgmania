@@ -1111,54 +1111,34 @@ void Player::Update(float fDeltaTime) {
 
   // Track held misses
   //
-  // In order to track held misses we have to check whether a note was
-  // held any time during the judgment window before it is judged a miss.
-  // Note: at this point we don't actually know yet whether a note will
-  // be a miss or a hit, so we have to track for all notes whether they
-  // were held at some point before getting judged.
+  // A miss is "held" if the player was physically holding the button at the
+  // note's exact timing point.
   {
-    float largestWindow = 0.0f;
-    const auto& disabledWindows =
-        m_pPlayerState->m_PlayerOptions.GetCurrent().m_twDisabledWindows;
-    if (!disabledWindows[TW_W1]) {
-      largestWindow = std::max(largestWindow, GetWindowSeconds(TW_W1));
-    }
-    if (!disabledWindows[TW_W2]) {
-      largestWindow = std::max(largestWindow, GetWindowSeconds(TW_W2));
-    }
-    if (!disabledWindows[TW_W3]) {
-      largestWindow = std::max(largestWindow, GetWindowSeconds(TW_W3));
-    }
-    if (!disabledWindows[TW_W4]) {
-      largestWindow = std::max(largestWindow, GetWindowSeconds(TW_W4));
-    }
-    if (!disabledWindows[TW_W5]) {
-      largestWindow = std::max(largestWindow, GetWindowSeconds(TW_W5));
-    }
-
-    // We have to check the unjudged notes that are within the
-    // timing window. Let's find the cutoff point! (lastCheckRow)
+    const float musicPosition = m_pPlayerState->m_Position.m_fMusicSeconds;
     const float rate = GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate;
-    const SongPosition songPosition = m_pPlayerState->m_Position;
-    const float musicPosition = songPosition.m_fMusicSeconds +
-                                (songPosition.m_LastBeatUpdate.Ago() * rate);
-    // We have to add 1 here, because GetBeatFromElapsedTime() can round down.
-    const int lastCheckRow = BeatToNoteRow(
-        m_Timing->GetBeatFromElapsedTime(
-            musicPosition + (largestWindow * rate)) +
-        1);
 
-    // The button being held only counts for the first unjudged
-    // note on a track (== column/arrow direction), so we have to
-    // keep track for which tracks we have already seen an unjudged
-    // note.
-    std::vector<bool> seenTracks(m_NoteData.GetNumTracks(), false);
+    // We have to add 1 here, because GetBeatFromElapsedTime() can round down.
+    const int lastCheckRow =
+        BeatToNoteRow(m_Timing->GetBeatFromElapsedTime(musicPosition) + 1);
 
     for (auto iter = *m_pIterNeedsTapJudging;
          !iter.IsAtEnd() && iter.Row() <= lastCheckRow; ++iter) {
       TapNote& tn = *iter;
       const int row = iter.Row();
       const int track = iter.Track();
+
+      const float notePosition =
+          m_Timing->GetElapsedTimeFromBeat(NoteRowToBeat(row));
+
+      // Check if we're looking at notes in the future we don't care about.
+      if (notePosition > musicPosition) {
+        break;
+      }
+
+      // Already determined this is held, don't un-mark it.
+      if (tn.result.bHeld) {
+        continue;
+      }
 
       // Skip over warp and fake segments
       if (!m_Timing->IsJudgableAtRow(row)) {
@@ -1170,31 +1150,24 @@ void Player::Update(float fDeltaTime) {
         continue;
       }
 
-      const float notePosition =
-          m_Timing->GetElapsedTimeFromBeat(NoteRowToBeat(row));
-      const float offset = std::abs((notePosition - musicPosition) / rate);
-
-      // Skip if we are outside of the largest timing window
-      if (offset > largestWindow) {
+      // Skip notes already judged (e.g. hit notes in a jump).
+      if (!NeedsTapJudging(tn)) {
         continue;
       }
 
-      // Skip the note if there is an earlier note on the same track that still
-      // awaits judgement
-      if (seenTracks[track]) {
-        continue;
+      PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
+      std::vector<GameInput> inputs;
+      GAMESTATE->GetCurrentStyle(pn)->StyleInputToGameInput(track, pn, inputs);
+
+      // Button must have been held continuously since at least the note time
+      // (max time of all inputs mapped to this column).
+      const float secsSinceNote = (musicPosition - notePosition) / rate;
+      float maxSecsHeld = 0.0f;
+      for (const GameInput& gi : inputs) {
+        maxSecsHeld = std::max(
+            maxSecsHeld, INPUTMAPPER->GetSecsHeld(gi, m_pPlayerState->m_mp));
       }
-
-      seenTracks[track] = true;
-
-      if (!tn.result.bHeld) {
-        PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
-        std::vector<GameInput> input;
-        GAMESTATE->GetCurrentStyle(pn)->StyleInputToGameInput(track, pn, input);
-
-        tn.result.bHeld =
-            INPUTMAPPER->IsBeingPressed(input, m_pPlayerState->m_mp);
-      }
+      tn.result.bHeld = maxSecsHeld >= secsSinceNote;
     }
   }
 
@@ -2705,6 +2678,7 @@ void Player::Step(
             (score != TNS_Miss && !badTns)) {
           pTN->result.tns = score;
           pTN->result.fTapNoteOffset = -fNoteOffset;
+          pTN->result.bHeld = false;
         }
       }
     }

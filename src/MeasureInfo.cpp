@@ -8,6 +8,13 @@
 #include "NoteTypes.h"
 #include "RageUtil.h"
 
+// TODO: Handle non-4/4 time signatures. For now we assume every measure is 4
+// beats long, which matches what the Simply Love stream/density display
+// expects. Charts with other time signatures will have their notes/NPS
+// bucketed into 4-beat "measures" rather than their true measures.
+static const int BEATS_PER_MEASURE = 4;
+static const int ROWS_PER_MEASURE = ROWS_PER_BEAT * BEATS_PER_MEASURE;
+
 std::string MeasureInfo::ToString() const {
   std::vector<std::string> asMeasureInfo;
   for (unsigned i = 0; i < npsPerMeasure.size(); i++) {
@@ -44,13 +51,7 @@ void MeasureInfo::FromString(const std::string& sValues) {
 void MeasureInfo::CalculateMeasureInfo(
     const NoteData& in, TimingData* timing, MeasureInfo& out) {
   int lastRow = in.GetLastRow();
-  int lastRowMeasureIndex = 0;
-  int lastRowBeatIndex = 0;
-  int lastRowRemainder = 0;
-  timing->NoteRowToMeasureAndBeat(
-      lastRow, lastRowMeasureIndex, lastRowBeatIndex, lastRowRemainder);
-
-  int totalMeasureCount = lastRowMeasureIndex + 1;
+  int totalMeasureCount = lastRow / ROWS_PER_MEASURE + 1;
 
   out.notesPerMeasure.clear();
   out.npsPerMeasure.clear();
@@ -62,8 +63,6 @@ void MeasureInfo::CalculateMeasureInfo(
       in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
 
   int iMeasureIndexOut = 0;
-  int iBeatIndexOut = 0;
-  int iRowsRemainder = 0;
 
   float peak_nps = 0;
   int curr_row = -1;
@@ -78,9 +77,8 @@ void MeasureInfo::CalculateMeasureInfo(
       // Before moving on to a new row, update the notes per measure for the
       // current measure.
       out.notesPerMeasure[iMeasureIndexOut] += notes_this_row;
-      // Update iMeasureIndex for the current row
-      timing->NoteRowToMeasureAndBeat(
-          curr_note.Row(), iMeasureIndexOut, iBeatIndexOut, iRowsRemainder);
+      // Update iMeasureIndex for the current row.
+      iMeasureIndexOut = curr_note.Row() / ROWS_PER_MEASURE;
       curr_row = curr_note.Row();
       notes_this_row = 0;
     }
@@ -105,8 +103,9 @@ void MeasureInfo::CalculateMeasureInfo(
       continue;
     }
 
-    float measureDuration = timing->GetElapsedTimeFromBeat(4 * (m + 1)) -
-                            timing->GetElapsedTimeFromBeat(4 * m);
+    float measureDuration =
+        timing->GetElapsedTimeFromBeat(BEATS_PER_MEASURE * (m + 1)) -
+        timing->GetElapsedTimeFromBeat(BEATS_PER_MEASURE * m);
 
     // FIXME: We subtract the time at the current measure from the time at the
     // next measure to determine the duration of this measure in seconds, and

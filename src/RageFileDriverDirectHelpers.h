@@ -3,11 +3,9 @@
 #ifndef RAGE_FILE_DRIVER_DIRECT_HELPERS_H
 #define RAGE_FILE_DRIVER_DIRECT_HELPERS_H
 
-#include <string>
-
-#if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
-#endif
+
+#include <string>
 
 #define DoStat stat
 #define DoMkdir mkdir

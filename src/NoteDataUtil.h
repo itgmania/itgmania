@@ -32,7 +32,8 @@ NoteType GetSmallestNoteTypeInRange(
     const NoteData& nd, int iStartIndex, int iEndIndex);
 void LoadFromSMNoteDataString(
     NoteData& out, const std::string& sSMNoteData, bool bComposite);
-void GetSMNoteDataString(const NoteData& in, std::string& notes_out);
+void GetSMNoteDataString(
+    const NoteData& in, std::string& notes_out, bool bIncludeMeasureComments);
 void SplitCompositeNoteData(const NoteData& in, std::vector<NoteData>& out);
 void CombineCompositeNoteData(NoteData& out, const std::vector<NoteData>& in);
 /**

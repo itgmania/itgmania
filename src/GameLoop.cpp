@@ -28,9 +28,12 @@
 #include "global.h"
 
 static RageTimer g_GameplayTimer;
+static RageTimer g_LastInputTimer;
 
 static Preference<bool> g_bNeverBoostAppPriority(
     "NeverBoostAppPriority", false);
+
+static Preference<int> g_iQuitAfterIdleSeconds("QuitAfterIdleSeconds", 0);
 
 /* experimental: force a specific update rate. This prevents big  animation
  * jumps on frame skips. 0 to disable. */
@@ -43,6 +46,8 @@ static float g_fUpdateRate = 1;
 void GameLoop::SetUpdateRate(float fUpdateRate) { g_fUpdateRate = fUpdateRate; }
 
 float GameLoop::GetUpdateRate() { return g_fUpdateRate; }
+
+void GameLoop::ResetInputIdleTimer() { g_LastInputTimer.Touch(); }
 
 static void CheckGameLoopTimerSkips(float fDeltaTime) {
   static int iLastFPS = 0;
@@ -231,27 +236,7 @@ void DoChangeGame() {
 }
 }  // namespace
 
-void GameLoop::UpdateAllButDraw(bool bRunningFromVBLANK) {
-  // Flag to indicate whether an update has been processed during the VBLANK
-  // period.
-  static bool m_bUpdatedDuringVBLANK = false;
-
-  // If we're running from VBLANK, and we've already updated during the VBLANK
-  // period, don't update again. This is to prevent multiple updates during the
-  // same VBLANK period.
-  if (!bRunningFromVBLANK && m_bUpdatedDuringVBLANK) {
-    m_bUpdatedDuringVBLANK = false;
-    return;
-  }
-
-  // If we're running from VBLANK, indicate we've updated during the VBLANK
-  // period. Otherwise, make sure the flag is cleared.
-  if (bRunningFromVBLANK) {
-    m_bUpdatedDuringVBLANK = true;
-  } else {
-    m_bUpdatedDuringVBLANK = false;
-  }
-
+void GameLoop::UpdateAllButDraw() {
   // If the constant update delta is set, use that value. Otherwise, use the
   // delta time from the gameplay timer.
   float fDeltaTime = (g_fConstantUpdateDeltaSeconds > 0)
@@ -307,7 +292,12 @@ void GameLoop::RunGameLoop() {
 
     CheckFocus();
 
-    UpdateAllButDraw(false);
+    float quit_idle_seconds = g_iQuitAfterIdleSeconds.Get();
+    if (quit_idle_seconds > 0 && g_LastInputTimer.Ago() > quit_idle_seconds) {
+      ArchHooks::SetUserQuit();
+    }
+
+    UpdateAllButDraw();
 
     CallEveryNFrames(500, CheckInputDevices);
 

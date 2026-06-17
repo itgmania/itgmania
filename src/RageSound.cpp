@@ -21,6 +21,7 @@
 
 #include "RageSound.h"
 
+#include <cmath>
 #include <cstdint>
 #include <string>
 
@@ -64,7 +65,6 @@ RageSound::RageSound()
       m_pSource(nullptr),
       m_sFilePath(""),
       m_Param(),
-      m_iStreamFrame(0),
       m_iStoppedSourceFrame(0),
       m_bPlaying(false),
       m_bDeleteWhenFinished(false),
@@ -89,7 +89,6 @@ RageSound& RageSound::operator=(const RageSound& cpy) {
   ASSERT(!cpy.m_bDeleteWhenFinished);
 
   m_Param = cpy.m_Param;
-  m_iStreamFrame = cpy.m_iStreamFrame;
   m_iStoppedSourceFrame = cpy.m_iStoppedSourceFrame;
   m_bPlaying = false;
   m_bDeleteWhenFinished = false;
@@ -240,7 +239,7 @@ bool RageSound::Load(
 void RageSound::LoadSoundReader(RageSoundReader* pSound) {
   Unload();
 
-  m_iStreamFrame = m_iStoppedSourceFrame = 0;
+  m_iStoppedSourceFrame = 0;
 
   const int iNeededRate = SOUNDMAN->GetDriverSampleRate();
   bool bSupportRateChange = false;
@@ -253,10 +252,36 @@ void RageSound::LoadSoundReader(RageSoundReader* pSound) {
   m_pSource = pSound;
 }
 
+namespace {
+void AppendMixPosition(
+    RageSoundMixPosition* pPositions, int iMaxPositions, int& iPositionCount,
+    int64_t iSourceFrame, int iGotFrames, float fRate) {
+  if (iPositionCount > 0) {
+    RageSoundMixPosition& previous = pPositions[iPositionCount - 1];
+    const int64_t iExpectedSourceFrame =
+        previous.m_iSourceFrame +
+        static_cast<int64_t>(std::llround(
+            previous.m_iFrames *
+            static_cast<double>(previous.m_fSourceToStreamRatio)));
+    if (previous.m_fSourceToStreamRatio == fRate &&
+        iExpectedSourceFrame == iSourceFrame) {
+      previous.m_iFrames += iGotFrames;
+      return;
+    }
+  }
+
+  ASSERT_M(iPositionCount < iMaxPositions, ssprintf("%d", iMaxPositions));
+  RageSoundMixPosition& position = pPositions[iPositionCount++];
+  position.m_iSourceFrame = iSourceFrame;
+  position.m_iFrames = iGotFrames;
+  position.m_fSourceToStreamRatio = fRate;
+}
+}  // namespace
+
 /*
- * Retrieve audio data, for mixing.  At the time of this call, the frameno at
- * which the sound will be played doesn't have to be known.  Once committed, and
- * the frameno is known, call CommitPCMData.
+ * Retrieve audio data, for mixing. The driver owns the audible-position
+ * history, so we only need to return the source spans that describe the block
+ * we decoded.
  *
  * RageSound::GetDataToPlay and RageSound::FillBuf are the main threaded API.
  * These need to execute without blocking other threads from calling eg.
@@ -268,16 +293,15 @@ void RageSound::LoadSoundReader(RageSoundReader* pSound) {
  * the requested number of frames will always be returned.
  */
 int RageSound::GetDataToPlay(
-    float* pBuffer, int iFrames, int64_t& iStreamFrame, int& iFramesStored) {
-  /* We only update m_iStreamFrame; only take a shared lock, so we don't block
-   * the main thread. */
-  //	LockMut(m_Mutex);
-
+    float* pBuffer, int iFrames, RageSoundMixPosition* pPositions,
+    int iMaxPositions, int& iPositionCount, int& iFramesStored) {
   ASSERT_M(m_bPlaying, ssprintf("%p", static_cast<void*>(this)));
   ASSERT(m_pSource != nullptr);
+  ASSERT(pPositions != nullptr);
+  ASSERT(iMaxPositions > 0);
 
   iFramesStored = 0;
-  iStreamFrame = m_iStreamFrame;
+  iPositionCount = 0;
 
   while (iFrames > 0) {
     float fRate = 1.0f;
@@ -305,14 +329,9 @@ int RageSound::GetDataToPlay(
       }
     }
 
-    // Scoped global audio mutex lock while updating the position maps.
-    {
-      LockMut(m_Mutex);
-      m_StreamToSourceMap.Insert(
-          m_iStreamFrame, iGotFrames, iSourceFrame, fRate);
-      m_iStreamFrame += iGotFrames;
-    }
-
+    AppendMixPosition(
+        pPositions, iMaxPositions, iPositionCount, iSourceFrame, iGotFrames,
+        fRate);
     iFramesStored += iGotFrames;
     iFrames -= iGotFrames;
   }
@@ -321,14 +340,6 @@ int RageSound::GetDataToPlay(
   }
 
   return iFramesStored;
-}
-
-/* Indicate that a block of audio data has been written to the device. */
-void RageSound::CommitPlayingPosition(
-    int64_t iHardwareFrame, int64_t iStreamFrame, int iGotFrames) {
-  m_Mutex.Lock();
-  m_HardwareToStreamMap.Insert(iHardwareFrame, iGotFrames, iStreamFrame);
-  m_Mutex.Unlock();
 }
 
 /* Start playing from the current position. */
@@ -378,14 +389,10 @@ void RageSound::StopPlaying() {
 }
 
 /* This is called by sound drivers when we're done playing. */
-void RageSound::SoundIsFinishedPlaying() {
+void RageSound::SoundIsFinishedPlaying(int iSourceFrame) {
   if (!m_bPlaying) {
     return;
   }
-
-  // Get current hardware position to update stopped source frame when sound
-  // finishes playing.
-  int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition(nullptr);
 
   // Make the decision to delete while inside the lock.
   // Do the actual deletion after releasing the mutex.
@@ -394,25 +401,17 @@ void RageSound::SoundIsFinishedPlaying() {
     // Global sound mutex
     LockMut(m_Mutex);
 
-    // Update the stopped source frame using the current hardware frame,
-    // but only if the hardware-to-stream and stream-to-source maps are not
-    // empty. This branch handles normal cleanup when the sound is not scheduled
-    // for deletion. If the maps are empty, we leave m_iStoppedSourceFrame
-    // untouched.
+    // Preserve the last known source frame when the driver was able to resolve
+    // one; otherwise keep the previous stopped position.
     if (m_bDeleteWhenFinished) {
       m_bDeleteWhenFinished = false;
       bDeleteThis = true;
     } else {
-      if (!m_HardwareToStreamMap.IsEmpty() && !m_StreamToSourceMap.IsEmpty()) {
-        // Update stopped position only if maps are available; otherwise,
-        // preserve existing value.
-        m_iStoppedSourceFrame = static_cast<int>(
-            GetSourceFrameFromHardwareFrame(iCurrentHardwareFrame));
+      if (iSourceFrame >= 0) {
+        m_iStoppedSourceFrame = iSourceFrame;
       }
 
       m_bPlaying = false;
-      m_HardwareToStreamMap.Clear();
-      m_StreamToSourceMap.Clear();
     }
   }
 
@@ -486,15 +485,6 @@ float RageSound::GetLengthSeconds() {
   return iLength / 1000.f;  // ms -> secs
 }
 
-int RageSound::GetSourceFrameFromHardwareFrame(int64_t iHardwareFrame) const {
-  if (m_HardwareToStreamMap.IsEmpty() || m_StreamToSourceMap.IsEmpty()) {
-    return 0;
-  }
-
-  int64_t iStreamFrame = m_HardwareToStreamMap.Search(iHardwareFrame);
-  return static_cast<int>(m_StreamToSourceMap.Search(iStreamFrame));
-}
-
 /* If non-nullptr, approximate is set to true if the returned time is
  * approximated because of underrun, the sound not having started (after Play())
  * or finished (after EOF) yet.
@@ -505,9 +495,6 @@ int RageSound::GetSourceFrameFromHardwareFrame(int64_t iHardwareFrame) const {
  * grabbing it, when releasing SOUNDMAN.
  */
 float RageSound::GetPositionSeconds(RageTimer* pTimestamp) const {
-  // Get our current hardware position.
-  int64_t iCurrentHardwareFrame = SOUNDMAN->GetPosition(pTimestamp);
-
   // cast the sample rate to be used for the remainder of the function.
   float fSampleRate = static_cast<float>(m_pSource->GetSampleRate());
 
@@ -516,15 +503,11 @@ float RageSound::GetPositionSeconds(RageTimer* pTimestamp) const {
     return static_cast<float>(m_iStoppedSourceFrame) / fSampleRate;
   }
 
-  // If we don't have position information, CommitPlayingPosition hasn't been
-  // called yet
-  LockMut(m_Mutex);
-
-  if (m_HardwareToStreamMap.IsEmpty() || m_StreamToSourceMap.IsEmpty()) {
+  int iSourceFrame = 0;
+  if (!SOUNDMAN->GetPlayingPosition(this, iSourceFrame, pTimestamp)) {
     return static_cast<float>(m_iStoppedSourceFrame) / fSampleRate;
   }
 
-  int iSourceFrame = GetSourceFrameFromHardwareFrame(iCurrentHardwareFrame);
   return static_cast<float>(iSourceFrame) / fSampleRate;
 }
 

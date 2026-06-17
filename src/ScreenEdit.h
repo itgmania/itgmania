@@ -209,6 +209,7 @@ struct MapEditToDI {
  * but maps GameButton instead of DeviceInput. */
 struct MapEditButtonToMenuButton {
   GameButton button[NUM_EditButton][NUM_EDIT_TO_MENU_SLOTS];
+  MapEditButtonToMenuButton() { Clear(); }
   void Clear() {
     FOREACH_EditButton(e) for (int slot = 0; slot < NUM_EDIT_TO_MENU_SLOTS;
                                ++slot) button[e][slot] = GameButton_Invalid;

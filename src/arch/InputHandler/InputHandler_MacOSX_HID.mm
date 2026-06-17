@@ -9,17 +9,24 @@
 #include "archutils/Darwin/PumpDevice.h"
 #include "global.h"
 
+#include <mach/mach_time.h>
 #include <vector>
 
 #include <Carbon/Carbon.h>
 #include <IOKit/IOMessage.h>
+
+static double GetTimebaseFactor() {
+  mach_timebase_info_data_t timeBase;
+  mach_timebase_info(&timeBase);
+  return timeBase.numer / (1000.0 * timeBase.denom);
+}
+static const double g_fTimebaseFactor = GetTimebaseFactor();
 
 REGISTER_INPUT_HANDLER_CLASS2(HID, MacOSX_HID);
 
 void InputHandler_MacOSX_HID::QueueCallback(void* target, int result, void* refcon, void* sender) {
   // The result seems useless as you can't actually return anything...
 
-  RageTimer now;
   InputHandler_MacOSX_HID* This = (InputHandler_MacOSX_HID*)target;
   IOHIDQueueInterface** queue = (IOHIDQueueInterface**)sender;
   IOHIDEventStruct event;
@@ -32,8 +39,10 @@ void InputHandler_MacOSX_HID::QueueCallback(void* target, int result, void* refc
       free(event.longValue);
       continue;
     }
-    // LOG->Trace( "Got event with cookie %p, value %d", event.elementCookie, int(event.value) );
-    dev->GetButtonPresses(vPresses, event.elementCookie, event.value, now);
+    uint64_t absoluteTimeVal = ((uint64_t)event.timestamp.hi << 32) | event.timestamp.lo;
+    uint64_t usecs = uint64_t(absoluteTimeVal * g_fTimebaseFactor);
+    RageTimer eventTime(usecs / 1000000ULL, usecs % 1000000ULL);
+    dev->GetButtonPresses(vPresses, event.elementCookie, event.value, eventTime);
   }
   for (DeviceInput& i : vPresses) {
     INPUTFILTER->ButtonPressed(i);

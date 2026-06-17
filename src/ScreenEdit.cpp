@@ -846,6 +846,10 @@ EditButton ScreenEdit::DeviceToEdit(const DeviceInput& DeviceI) const {
 /* Given a DeviceInput that was just depressed, return an active edit function.
  */
 EditButton ScreenEdit::MenuButtonToEditButton(GameButton MenuI) const {
+  if (MenuI == GameButton_Invalid) {
+    return EditButton_Invalid;
+  }
+
   const MapEditButtonToMenuButton* pCurrentMap = GetCurrentMenuButtonMap();
 
   FOREACH_EditButton(e) {
@@ -1865,6 +1869,7 @@ void ScreenEdit::Init() {
   m_textInfo.LoadFromFont(THEME->GetPathF("ScreenEdit", "Info"));
   LOAD_ALL_COMMANDS_AND_SET_XY_AND_ON_COMMAND(m_textInfo);
   this->AddChild(&m_textInfo);
+  m_bTextInfoNeedsUpdate = false;
 
   m_textPlayRecordHelp.SetName("PlayRecordHelp");
   m_textPlayRecordHelp.LoadFromFont(
@@ -3940,7 +3945,7 @@ void ScreenEdit::TransitionEditState(EditState em) {
         Steps* pSteps = GAMESTATE->m_pCurSteps[main_player_];
         ASSERT(pSteps != nullptr);
         pSteps->SetNoteData(m_NoteDataEdit);
-        m_pSong->ReCalculateStepStatsAndLastSecond();
+        m_pSong->ReCalculateStepStatsAndLastSecond(false);
 
         // TODO: Background videos don't support seeking, when they do, make
         // sure to load the appropriate part of the video.

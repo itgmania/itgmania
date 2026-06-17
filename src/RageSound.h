@@ -6,22 +6,26 @@
 #include <cstdint>
 #include <string>
 
-#include "RageSoundPosMap.h"
 #include "RageThreads.h"
 #include "RageTimer.h"
 
 class RageSoundReader;
 struct lua_State;
 
+struct RageSoundMixPosition {
+  int64_t m_iSourceFrame;
+  int m_iFrames;
+  float m_fSourceToStreamRatio;
+};
+
 /* Driver interface for sounds: this is what drivers see. */
 class RageSoundBase {
  public:
   virtual ~RageSoundBase() {}
-  virtual void SoundIsFinishedPlaying() = 0;
+  virtual void SoundIsFinishedPlaying(int iSourceFrame) = 0;
   virtual int GetDataToPlay(
-      float* buffer, int size, int64_t& iStreamFrame, int& got_bytes) = 0;
-  virtual void CommitPlayingPosition(
-      int64_t iFrameno, int64_t iPosition, int iBytesRead) = 0;
+      float* buffer, int size, RageSoundMixPosition* pPositions,
+      int iMaxPositions, int& iPositionCount, int& gotFrames) = 0;
   virtual RageTimer GetStartTime() const { return RageZeroTimer; }
   virtual std::string GetLoadedFilePath() const = 0;
 };
@@ -153,26 +157,16 @@ class RageSound : public RageSoundBase {
 
   RageSoundReader* m_pSource;
 
-  // We keep track of sound blocks we've sent out recently through
-  // GetDataToPlay.
-  pos_map_queue m_HardwareToStreamMap;
-  pos_map_queue m_StreamToSourceMap;
-
   std::string m_sFilePath;
 
   void ApplyParams();
   RageSoundParams m_Param;
 
-  /* Current position of the output sound, in frames. If < 0, nothing will play
-   * until it becomes positive. */
-  int64_t m_iStreamFrame;
-
   /* Hack: When we stop a playing sound, we can't ask the driver the position
-   * (we're not playing); and we can't seek back to the current playing position
-   * when we stop (too slow), but we want to be able to report the position we
-   * were at when we stopped without jumping to the last position we buffered.
-   * Keep track of the position after a seek or stop, so we can return a sane
-   * position when stopped, and when playing but pos_map hasn't yet been filled.
+   * after the sound has been detached from it, and we can't seek back to the
+   * current playing position when we stop. Keep track of the position after a
+   * seek or after the driver reports a stop, so we can return a sane position
+   * when stopped and before the first audible frames have reached hardware.
    */
   int m_iStoppedSourceFrame;
   bool m_bPlaying;
@@ -180,24 +174,22 @@ class RageSound : public RageSoundBase {
 
   std::string m_sError;
 
-  int GetSourceFrameFromHardwareFrame(int64_t iHardwareFrame) const;
-
   bool SetPositionFrames(int frames = -1);
   RageSoundParams::StopMode_t GetStopMode() const;  // resolves M_AUTO
 
-  void SoundIsFinishedPlaying();  // called by sound drivers
+  void SoundIsFinishedPlaying(int iSourceFrame);  // called by sound drivers
 
  public:
   // These functions are called only by sound drivers.
 
-  /* Returns the number of bytes actually put into pBuffer. If 0 is returned,
+  /* Returns the number of frames actually put into pBuffer. If 0 is returned,
    * it signals the stream to stop; once it's flushed, SoundStopped will be
-   * called. Until then, SOUNDMAN->GetPosition can still be called; the sound
-   * is still playing. */
+   * called. pPositions receives one entry per contiguous source-frame span in
+   * the returned audio. Until then, SOUNDMAN position queries can still be
+   * called; the sound is still playing. */
   int GetDataToPlay(
-      float* pBuffer, int iSize, int64_t& iStreamFrame, int& iBytesRead);
-  void CommitPlayingPosition(
-      int64_t iHardwareFrame, int64_t iStreamFrame, int iGotFrames);
+      float* pBuffer, int iSize, RageSoundMixPosition* pPositions,
+      int iMaxPositions, int& iPositionCount, int& iFramesRead);
 };
 
 #endif

@@ -1,14 +1,11 @@
+#include "LightsDriver_Linux_ITGIO.h"
+
+#include <fcntl.h>
 #include <stdio.h>
 
 #include "GameInput.h"
 #include "LightsManager.h"
 #include "arch/Lights/LightsDriver.h"
-
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
-
-#include "LightsDriver_Linux_ITGIO.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS2(ITGIO, Linux_ITGIO);
 

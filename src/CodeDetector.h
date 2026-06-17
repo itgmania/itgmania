@@ -51,6 +51,7 @@ enum Code {
   CODE_CLOSE_CURRENT_FOLDER,
   CODE_NEXT_OPLIST,
   CODE_PREV_OPLIST,
+  CODE_OPERATOR_MENU,
   NUM_Code  // leave this at the end
 };
 

@@ -14,17 +14,13 @@
 #include "global.h"
 
 #if defined(LINUX)
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
-#endif
 #include <sys/ptrace.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #define _LINUX_PTRACE_H  // hack to prevent broken linux/ptrace.h from
                          // conflicting with sys/ptrace.h
 #include <sys/user.h>

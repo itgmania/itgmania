@@ -17,10 +17,6 @@
 #include "Threads_Pthreads.h"
 #include "global.h"
 
-#if defined(UNIX)
-#include "archutils/Unix/RunningUnderValgrind.h"
-#endif
-
 #if defined(MACOSX)
 #include "archutils/Darwin/DarwinThreadHelpers.h"
 #else
@@ -143,61 +139,44 @@ MutexImpl_Pthreads::~MutexImpl_Pthreads() {
   ASSERT_M(ret == 0, ssprintf("Error deleting mutex: %s", strerror(errno)));
 }
 
-#if defined(HAVE_PTHREAD_MUTEX_TIMEDLOCK) || \
-    defined(HAVE_PTHREAD_COND_TIMEDWAIT)
-static bool UseTimedlock() {
-#if defined(LINUX)
-  // Valgrind crashes and burns on pthread_mutex_timedlock.
-  if (RunningUnderValgrind()) {
-    return false;
-  }
-#endif
-
-  return true;
-}
-#endif
-
 bool MutexImpl_Pthreads::Lock() {
 #if defined(HAVE_PTHREAD_MUTEX_TIMEDLOCK)
-  if (UseTimedlock()) {
-    int len = 10;  // seconds
-    int tries = 2;
+  int len = 10;  // seconds
+  int tries = 2;
 
-    while (tries--) {
-      /* Wait for ten seconds. If it takes longer than that, we're
-       * probably deadlocked. */
-      timeval tv;
-      gettimeofday(&tv, nullptr);
+  while (tries--) {
+    /* Wait for ten seconds. If it takes longer than that, we're
+     * probably deadlocked. */
+    timeval tv;
+    gettimeofday(&tv, nullptr);
 
-      timespec ts;
-      ts.tv_sec = tv.tv_sec + len;
-      ts.tv_nsec = tv.tv_usec * 1000;
-      int ret = pthread_mutex_timedlock(&mutex, &ts);
-      switch (ret) {
-        case 0:
-          return true;
+    timespec ts;
+    ts.tv_sec = tv.tv_sec + len;
+    ts.tv_nsec = tv.tv_usec * 1000;
+    int ret = pthread_mutex_timedlock(&mutex, &ts);
+    switch (ret) {
+      case 0:
+        return true;
 
-        case EINTR:
-          /* Ignore it. */
-          ++tries;
-          continue;
+      case EINTR:
+        /* Ignore it. */
+        ++tries;
+        continue;
 
-        case ETIMEDOUT:
-          /* Timed out. Probably deadlocked. Try again one more time,
-           * with a smaller timeout, just in case we're debugging
-           * and happened to stop while waiting on the mutex. */
-          len = 1;
-          break;
+      case ETIMEDOUT:
+        /* Timed out. Probably deadlocked. Try again one more time,
+         * with a smaller timeout, just in case we're debugging
+         * and happened to stop while waiting on the mutex. */
+        len = 1;
+        break;
 
-        default:
-          FAIL_M(ssprintf("pthread_mutex_timedlock: %s", strerror(errno)));
-      }
+      default:
+        FAIL_M(ssprintf("pthread_mutex_timedlock: %s", strerror(errno)));
     }
-
-    return false;
   }
-#endif
 
+  return false;
+#else
   int ret;
   do {
     ret = pthread_mutex_lock(&mutex);
@@ -206,6 +185,7 @@ bool MutexImpl_Pthreads::Lock() {
   ASSERT_M(ret == 0, ssprintf("pthread_mutex_lock: %s", strerror(errno)));
 
   return true;
+#endif
 }
 
 bool MutexImpl_Pthreads::TryLock() {
@@ -370,54 +350,6 @@ EventImpl* MakeEvent(MutexImpl* pMutex) {
   return new EventImpl_Pthreads(pPthreadsMutex);
 }
 
-#if 0
-SemaImpl_Pthreads::SemaImpl_Pthreads( int iInitialValue )
-{
-	sem_init( &sem, 0, iInitialValue );
-}
-
-SemaImpl_Pthreads::~SemaImpl_Pthreads()
-{
-	sem_destroy( &sem );
-}
-
-int SemaImpl_Pthreads::GetValue() const
-{
-	int ret;
-	sem_getvalue( const_cast<sem_t *>(&sem), &ret );
-	return ret;
-}
-
-void SemaImpl_Pthreads::Post()
-{
-	sem_post( &sem );
-}
-
-bool SemaImpl_Pthreads::Wait()
-{
-	int ret;
-	do
-	{
-		ret = sem_wait( &sem );
-	}
-	while( ret == -1 && errno == EINTR );
-
-	ASSERT_M( ret == 0, ssprintf("Wait: sem_wait: %s", strerror(errno)) );
-
-	return true;
-}
-
-bool SemaImpl_Pthreads::TryWait()
-{
-	int ret = sem_trywait( &sem );
-	if( ret == -1 && errno == EAGAIN )
-		return false;
-
-	ASSERT_M( ret == 0, ssprintf("TryWait: sem_trywait failed: %s", strerror(errno)) );
-
-	return true;
-}
-#else
 // Use conditions, to work around macOS "forgetting" to implement semaphores.
 SemaImpl_Pthreads::SemaImpl_Pthreads(int iInitialValue) {
   int ret = pthread_cond_init(&m_Cond, nullptr);
@@ -448,52 +380,49 @@ void SemaImpl_Pthreads::Post() {
 
 bool SemaImpl_Pthreads::Wait() {
 #if defined(HAVE_PTHREAD_COND_TIMEDWAIT)
-  if (UseTimedlock()) {
-    timeval tv;
-    gettimeofday(&tv, nullptr);
+  timeval tv;
+  gettimeofday(&tv, nullptr);
 
-    /* Wait for ten seconds.  If it takes longer than that, we're probably
-     * deadlocked. */
-    timespec ts;
-    ts.tv_sec = tv.tv_sec + 10;
-    ts.tv_nsec = tv.tv_usec * 1000;
+  /* Wait for ten seconds.  If it takes longer than that, we're probably
+   * deadlocked. */
+  timespec ts;
+  ts.tv_sec = tv.tv_sec + 10;
+  ts.tv_nsec = tv.tv_usec * 1000;
 
-    pthread_mutex_lock(&m_Mutex);
+  pthread_mutex_lock(&m_Mutex);
 
-    int tries = 2;
-    while (!m_iValue && tries) {
-      int ret = pthread_cond_timedwait(&m_Cond, &m_Mutex, &ts);
+  int tries = 2;
+  while (!m_iValue && tries) {
+    int ret = pthread_cond_timedwait(&m_Cond, &m_Mutex, &ts);
 
-      switch (ret) {
-        case 0:
-        case EINTR:
-          break;
+    switch (ret) {
+      case 0:
+      case EINTR:
+        break;
 
-        case ETIMEDOUT:
-          /* Timed out. Probably deadlocked. Try again one more time,
-           * with a smaller timeout, just in case we're debugging and
-           * happened to stop while waiting on the mutex. */
-          ++ts.tv_sec;
-          tries--;
-          break;
+      case ETIMEDOUT:
+        /* Timed out. Probably deadlocked. Try again one more time,
+         * with a smaller timeout, just in case we're debugging and
+         * happened to stop while waiting on the mutex. */
+        ++ts.tv_sec;
+        tries--;
+        break;
 
-        default:
-          FAIL_M(ssprintf("pthread_mutex_timedlock: %s", strerror(errno)));
-      }
-    }
-
-    if (!m_iValue) {
-      /* Timed out. */
-      pthread_mutex_unlock(&m_Mutex);
-      return false;
-    } else {
-      --m_iValue;
-      pthread_mutex_unlock(&m_Mutex);
-      return true;
+      default:
+        FAIL_M(ssprintf("pthread_cond_timedwait: %s", strerror(errno)));
     }
   }
-#endif
 
+  if (!m_iValue) {
+    /* Timed out. */
+    pthread_mutex_unlock(&m_Mutex);
+    return false;
+  } else {
+    --m_iValue;
+    pthread_mutex_unlock(&m_Mutex);
+    return true;
+  }
+#else
   pthread_mutex_lock(&m_Mutex);
   while (!m_iValue) {
     pthread_cond_wait(&m_Cond, &m_Mutex);
@@ -503,6 +432,7 @@ bool SemaImpl_Pthreads::Wait() {
   pthread_mutex_unlock(&m_Mutex);
 
   return true;
+#endif
 }
 
 bool SemaImpl_Pthreads::TryWait() {
@@ -517,8 +447,6 @@ bool SemaImpl_Pthreads::TryWait() {
 
   return true;
 }
-
-#endif
 
 SemaImpl* MakeSemaphore(int iInitialValue) {
   return new SemaImpl_Pthreads(iInitialValue);

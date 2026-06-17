@@ -280,6 +280,7 @@ void InputHandler_X11::Update() {
           PointerMotionMask | FocusChangeMask,
       &event)) {
     const bool bKeyPress = event.type == KeyPress;
+    const bool isKey = bKeyPress || event.type == KeyRelease;
     const bool bMousePress = event.type == ButtonPress;
     const bool isMouse = bMousePress || event.type == ButtonRelease;
 
@@ -305,10 +306,15 @@ void InputHandler_X11::Update() {
       INPUTFILTER->Reset();
     }
 
-    // Get the first defined keysym for this event's key
-    lastDB = XSymToDeviceButton(
-        isMouse ? XK_Pointer_Button_Dflt + event.xbutton.button
-                : XLookupKeysym(&event.xkey, 0));
+    if (isKey) {
+      // Get the first defined keysym for this event's key
+      lastDB = XSymToDeviceButton(XLookupKeysym(&event.xkey, 0));
+    } else if (isMouse) {
+      lastDB =
+          XSymToDeviceButton(XK_Pointer_Button_Dflt + event.xbutton.button);
+    } else {
+      lastDB = DeviceButton_Invalid;
+    }
 
     if (lastDB == DeviceButton_Invalid) {
       continue;
@@ -324,13 +330,11 @@ void InputHandler_X11::Update() {
   }
 
   // Handle any last releases.
-  if (lastEvent.type != 0) {
-    if (lastEvent.type == (KeyPress | KeyRelease)) {
-      RegisterKeyEvent(event.xkey.time, false, lastDB);
-    }
-    if (lastEvent.type == (ButtonPress | ButtonRelease)) {
-      ButtonPressed(DeviceInput(DEVICE_MOUSE, lastDB, 0));
-    }
+  if (lastEvent.type == KeyRelease) {
+    RegisterKeyEvent(event.xkey.time, false, lastDB);
+  }
+  if (lastEvent.type == ButtonRelease) {
+    ButtonPressed(DeviceInput(DEVICE_MOUSE, lastDB, 0));
   }
 
   InputHandler::UpdateTimer();

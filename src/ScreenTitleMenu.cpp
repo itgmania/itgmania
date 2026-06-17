@@ -4,6 +4,7 @@
 
 #include "AnnouncerManager.h"
 #include "CodeDetector.h"
+#include "CommonMetrics.h"
 #include "GameLoop.h"
 #include "GamePreferences.h"
 #include "GameSoundManager.h"
@@ -56,6 +57,10 @@ bool ScreenTitleMenu::Input(const InputEventPlus& input) {
   bool bHandled = false;
   if (input.type == IET_FIRST_PRESS) {
     // detect codes
+    if (CodeDetector::EnteredCode(input.GameI.controller, CODE_OPERATOR_MENU)) {
+      SCREENMAN->SetNewScreen(CommonMetrics::OPERATOR_MENU_SCREEN);
+      return true;
+    }
     // Theme changing pad codes are marked as deprecated in _fallback's
     // metrics.ini, remove them after SM5? -Kyz
     if (CodeDetector::EnteredCode(input.GameI.controller, CODE_NEXT_THEME) ||

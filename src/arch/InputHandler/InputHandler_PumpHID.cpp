@@ -1,5 +1,7 @@
 #include "InputHandler_PumpHID.h"
 
+#include <fcntl.h>
+
 #include <cerrno>
 #include <cstdint>
 #include <cstring>
@@ -20,10 +22,6 @@
 #include "arch/InputHandler/InputHandler.h"
 #include "arch/Lights/LightsDriver_Export.h"
 #include "archutils/Common/HidDevice.h"
-
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
 
 // all of the known device pid's that use this communication protocol.
 const std::vector<int> InputHandler_PumpHID::devPIDS = {

@@ -65,7 +65,7 @@
  * @brief The internal version of the cache for StepMania.
  *
  * Increment this value to invalidate the current cache. */
-const int FILE_CACHE_VERSION = 230;
+const int FILE_CACHE_VERSION = 231;
 
 /** @brief How long does a song sample last by default? */
 const float DEFAULT_MUSIC_SAMPLE_LENGTH = 12.f;
@@ -314,14 +314,6 @@ bool Song::LoadFromSongDir(
     SSCLoader loaderSSC;
     bool bLoadedFromCache =
         loaderSSC.LoadFromSimfile(cache_file_path, *this, true);
-    if (!bLoadedFromCache) {
-      // load from .sm
-      SMLoader loaderSM;
-      if (loaderSM.LoadFromSimfile(cache_file_path, *this, true)) {
-        loaderSM.TidyUpData(*this, true);
-        bLoadedFromCache = true;
-      }
-    }
 
     // If cache loading failed entirely (e.g. stale dir cache says cache file
     // exists after it was removed), fall back to parsing source files.
@@ -342,7 +334,7 @@ bool Song::LoadFromSongDir(
           m_sSongDir.c_str());
       // Tell TidyUpData that it's not loaded from the cache because it needs
       // to hit the song folder to find the files that weren't found. -Kyz
-      TidyUpData(false, false);
+      TidyUpData(false);
     }
   }
 
@@ -379,7 +371,7 @@ bool Song::LoadFromSongDir(
     // loading time. -Kyz
     LoadEditsFromSongDir(sDir);
 
-    TidyUpData(false, true, blacklistedImages);
+    TidyUpData(false, blacklistedImages);
     // Don't save a cache file if the autosave is being loaded, because the
     // cache file would contain the autosave filename. -Kyz
     // Songs loaded from removable profile are never cached, on the
@@ -641,14 +633,13 @@ void FixupPath(std::string& path, const std::string& sSongPath) {
   Trim(path);
 }
 
-void Song::TidyUpData(bool from_cache, bool duringCache) {
-  Song::TidyUpData(from_cache, duringCache, std::set<std::string>());
+void Song::TidyUpData(bool from_cache) {
+  Song::TidyUpData(from_cache, std::set<std::string>());
 }
 
 // Songs in BlacklistImages will never be autodetected as song images.
 void Song::TidyUpData(
-    bool from_cache, bool /* duringCache */,
-    const std::set<std::string>& blacklistedImages) {
+    bool from_cache, const std::set<std::string>& blacklistedImages) {
   // We need to do this before calling any of HasMusic, HasHasCDTitle, etc.
   ASSERT_M(Left(m_sSongDir, 3) != "../", m_sSongDir);  // meaningless
   FixupPath(m_sSongDir, "");
@@ -1123,8 +1114,11 @@ void Song::TidyUpData(
   }
 
   /* Generate these before we autogen notes, so the new notes can inherit
-   * their source's values. */
-  ReCalculateStepStatsAndLastSecond(from_cache, true);
+   * their source's values. On cache loads the stats and first/last second
+   * already came from the cache file -- nothing to recalculate. */
+  if (!from_cache) {
+    ReCalculateStepStatsAndLastSecond(true);
+  }
   // If the music length is suspiciously shorter than the last second, adjust
   // the length.  This prevents the ogg patch from setting a false length. -Kyz
   if (m_fMusicLengthSeconds < lastSecond - 10.0f) {
@@ -1145,16 +1139,7 @@ void Song::TranslateTitles() {
       m_sSubTitleTranslit, m_sArtistTranslit);
 }
 
-void Song::ReCalculateStepStatsAndLastSecond(bool fromCache, bool duringCache) {
-  if (fromCache && this->GetFirstSecond() >= 0 && this->GetLastSecond() > 0) {
-    // this is loaded from cache, then we just have to calculate the radar
-    // values.
-    for (unsigned i = 0; i < m_vpSteps.size(); i++) {
-      m_vpSteps[i]->CalculateStepStats(m_fMusicLengthSeconds);
-    }
-    return;
-  }
-
+void Song::ReCalculateStepStatsAndLastSecond(bool wipeNoteData) {
   float localFirst = FLT_MAX;  // inf
   // Make sure we're at least as long as the specified amount below.
   float localLast = this->specifiedLastSecond;
@@ -1193,7 +1178,7 @@ void Song::ReCalculateStepStatsAndLastSecond(bool fromCache, bool duringCache) {
     }
 
     // Wipe NoteData
-    if (duringCache) {
+    if (wipeNoteData) {
       NoteData dummy;
       dummy.SetNumTracks(tempNoteData.GetNumTracks());
       pSteps->SetNoteData(dummy);
@@ -1221,7 +1206,7 @@ bool Song::HasStepsTypeAndDifficulty(StepsType st, Difficulty dc) const {
 void Song::Save(bool autosave) {
   LOG->Trace("Song::SaveToSongFile()");
 
-  ReCalculateStepStatsAndLastSecond();
+  ReCalculateStepStatsAndLastSecond(false);
   TranslateTitles();
 
   // Save the new files. These calls make backups on their own.

@@ -97,6 +97,14 @@ bool RageSoundManager::Pause(RageSoundBase* pSound, bool bPause) {
   }
 }
 
+bool RageSoundManager::GetPlayingPosition(
+    const RageSoundBase* pSound, int& iSourceFrame, RageTimer* pTimer) {
+  if (m_pDriver == nullptr) {
+    return false;
+  }
+  return m_pDriver->GetPlayingPosition(pSound, iSourceFrame, pTimer);
+}
+
 int64_t RageSoundManager::GetPosition(RageTimer* pTimer) const {
   if (m_pDriver == nullptr) {
     return 0;

@@ -1,14 +1,12 @@
+#include <assert.h>
+
 #include <cstring>
 #include <exception>
+#include <string>
 
 #include "RageThreads.h"
 #include "RageUtil.h"
 #include "global.h"
-#if defined(HAVE_UNISTD_H)
-#endif
-#include <assert.h>
-
-#include <string>
 
 /* We can define this symbol to catch failed assert() calls.  This is only used
  * for library code that uses assert(); internally we always use ASSERT, which

@@ -1,5 +1,8 @@
 #include "ArchHooks_Unix.h"
 
+#include <sys/wait.h>
+#include <unistd.h>
+
 #include <csignal>
 #include <cstdint>
 #include <cstdlib>
@@ -10,16 +13,10 @@
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "archutils/Unix/AssertionHandler.h"
+#include "archutils/Unix/CrashHandler.h"
 #include "archutils/Unix/EmergencyShutdown.h"
 #include "archutils/Unix/GetSysInfo.h"
 #include "archutils/Unix/SignalHandler.h"
-
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#include <sys/wait.h>
-
-#include "archutils/Unix/CrashHandler.h"
 #if defined(LINUX)
 #include <limits.h>
 #endif

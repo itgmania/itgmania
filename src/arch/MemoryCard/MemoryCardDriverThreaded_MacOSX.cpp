@@ -5,6 +5,11 @@
 #include <IOKit/storage/IOMedia.h>
 #include <IOKit/usb/IOUSBLib.h>
 #include <IOKit/usb/USBSpec.h>
+#include <paths.h>
+#include <sys/mount.h>
+#include <sys/param.h>
+#include <sys/ucred.h>
+#include <unistd.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -17,15 +22,6 @@
 #include "RageUtil.h"
 #include "arch/MemoryCard/MemoryCardDriver.h"
 #include "global.h"
-#if defined(HAVE_SYS_PARAM_H)
-#include <sys/param.h>
-#endif
-#include <paths.h>
-#include <sys/mount.h>
-#include <sys/ucred.h>
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
 
 class MemoryCardDriverThreaded_MacOSX::Helper {
  public:

@@ -1,22 +1,18 @@
+#include "LightsDriver_Linux_Leds.h"
+
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 
 #include <cstring>
 
 #include "EnumHelper.h"
-#include "GameInput.h"
-#include "LightsManager.h"
-#include "StdString.h"
-
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
-
-#include <errno.h>
-
 #include "Game.h"
+#include "GameInput.h"
 #include "GameState.h"
-#include "LightsDriver_Linux_Leds.h"
+#include "LightsManager.h"
 #include "RageLog.h"
+#include "StdString.h"
 
 bool LightsDriver_Linux_Leds::WriteLight(const char* filename, bool state) {
   // if we are setting a light that doesn't exist, let the caller know the

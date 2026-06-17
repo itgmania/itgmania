@@ -4,6 +4,9 @@
 #include <io.h>
 // clang-format on
 
+#include <fcntl.h>
+#include <shellapi.h>
+
 #include <cerrno>
 #include <cstddef>
 #include <cstdint>
@@ -29,10 +32,6 @@
 #include "dbghelp.h"
 #include "global.h"
 #include "ver.h"
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
-#include <shellapi.h>
 
 #pragma comment(lib, "dbghelp.lib")
 

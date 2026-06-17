@@ -5,13 +5,14 @@
 /** @brief Main rendering and update loop. */
 namespace GameLoop {
 void RunGameLoop();
-void UpdateAllButDraw(bool bRunningFromVBLANK);
+void UpdateAllButDraw();
 void SetUpdateRate(float fUpdateRate);
 float GetUpdateRate();
 void ChangeTheme(const std::string& sNewTheme);
 void ChangeGame(const std::string& new_game, const std::string& new_theme = "");
 void StartConcurrentRendering();
 void FinishConcurrentRendering();
+void ResetInputIdleTimer();
 
 };  // namespace GameLoop
 

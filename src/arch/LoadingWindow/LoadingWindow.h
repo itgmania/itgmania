@@ -9,6 +9,7 @@ class LoadingWindow {
  public:
   static LoadingWindow* Create();
 
+  LoadingWindow();
   virtual std::string Init() { return std::string(); }
   virtual ~LoadingWindow() {}
 

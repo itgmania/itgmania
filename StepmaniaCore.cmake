@@ -55,14 +55,6 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Select static MSVC runtime instead of DLL
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-# Checks the standard include directories for c-style headers. We may use C++ in
-# this project, but the check works better with plain C headers.
-include(CheckIncludeFiles)
-check_include_files(dirent.h HAVE_DIRENT_H)
-check_include_files(fcntl.h HAVE_FCNTL_H)
-check_include_files(unistd.h HAVE_UNISTD_H)
-check_include_files(sys/param.h HAVE_SYS_PARAM_H)
-check_include_files(sys/types.h HAVE_SYS_TYPES_H)
 
 include(CheckFunctionExists)
 include(CheckSymbolExists)

@@ -1,5 +1,11 @@
 #include "InputHandler_Linux_Joystick.h"
 
+#include <fcntl.h>
+#include <linux/joystick.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include <algorithm>
 #include <cerrno>
 #include <set>
@@ -11,17 +17,6 @@
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "global.h"
-
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#if defined(HAVE_FCNTL_H)
-#include <fcntl.h>
-#endif
-
-#include <linux/joystick.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 REGISTER_INPUT_HANDLER_CLASS2(LinuxJoystick, Linux_Joystick);
 
@@ -145,6 +140,9 @@ void InputHandler_Linux_Joystick::InputThread() {
     if (select(max_fd + 1, &fdset, nullptr, nullptr, &zero) <= 0) {
       continue;
     }
+    // js_event.time is jiffies_to_msecs(jiffies): a 32-bit counter on the
+    // kernel's jiffies clock, whose epoch differs from RageTimer's
+    // CLOCK_MONOTONIC and can't be anchored from userspace. Use poll time.
     RageTimer now;
 
     for (size_t i = 0; i < m_files.size(); ++i) {

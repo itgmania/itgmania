@@ -2,6 +2,7 @@
 #define RAGE_SOUND_DRIVER
 
 #include <cstdint>
+#include <deque>
 #include <string>
 #include <vector>
 
@@ -49,8 +50,11 @@ class RageSoundDriver : public RageDriver {
    * playing the sound, either). */
   bool PauseMixing(RageSoundBase* pSound, bool bStop);
 
-  /* Get the current hardware frame position, in the same time base as passed to
-   * RageSound::CommitPlayingPosition. */
+  /* Return the current source frame that is audible for the given sound. */
+  bool GetPlayingPosition(
+      const RageSoundBase* pSound, int& iSourceFrame,
+      RageTimer* pTimer = nullptr);
+
   int64_t GetHardwareFrame(RageTimer* pTimer) const;
   virtual int64_t GetPosition() const = 0;
 
@@ -106,6 +110,18 @@ class RageSoundDriver : public RageDriver {
       int64_t iCurrentFrame);
 
  private:
+  struct MixingPositionInfo {
+    int64_t m_iSourceFrame;
+    int m_iFrames;
+    float m_fSourceToStreamRatio;
+    int m_iFramesConsumed;
+    MixingPositionInfo()
+        : m_iSourceFrame(0),
+          m_iFrames(0),
+          m_fSourceToStreamRatio(1.0f),
+          m_iFramesConsumed(0) {}
+  };
+
   /* This mutex is used for serializing with the decoder thread.  Locking this
    * mutex can take a while. */
   RageMutex m_Mutex;
@@ -163,9 +179,17 @@ class RageSoundDriver : public RageDriver {
     float m_Buffer[samples_per_block];
     float* m_BufferNext;   // beginning of the unread data
     int m_FramesInBuffer;  // total number of frames at m_BufferNext
-    int64_t m_iPosition;   // stream frame of m_BufferNext
+    // A span is one contiguous decoded segment with a known source-frame
+    // range. The mixer uses these spans to map hardware playback time back to
+    // the original sound position, even when one buffer contains several cuts.
+    MixingPositionInfo m_PositionSpans[samples_per_block];
+    int m_iPositionSpanCount;
+    int m_iCurrentPositionSpan;
     sound_block()
-        : m_BufferNext(m_Buffer), m_FramesInBuffer(0), m_iPosition(0) {}
+        : m_BufferNext(m_Buffer),
+          m_FramesInBuffer(0),
+          m_iPositionSpanCount(0),
+          m_iCurrentPositionSpan(0) {}
   };
 
   struct Sound {
@@ -179,13 +203,15 @@ class RageSoundDriver : public RageDriver {
 
     bool m_bPaused;
 
-    struct QueuedPosMap {
+    struct PlaybackPositionInfo {
       int iFrames;
-      int64_t iStreamFrame;
       int64_t iHardwareFrame;
+      int64_t iSourceFrame;
+      float m_fSourceToStreamRatio;
     };
 
-    CircBuf<QueuedPosMap> m_PosMapQueue;
+    CircBuf<PlaybackPositionInfo> m_MixedPositionQueue;
+    std::deque<PlaybackPositionInfo> m_PlaybackHistory;
 
     enum {
       AVAILABLE,
@@ -217,6 +243,10 @@ class RageSoundDriver : public RageDriver {
       int iFrames, int64_t iFrameNumber, int64_t iCurrentFrame);
   RageThread m_DecodeThread;
 
+  void PlaybackQueueDrain(Sound& s);
+  void PlaybackHistoryCleanup(Sound& s, int64_t iCurrentHardwareFrame);
+  bool GetSourceFrameForHardwareFrame(
+      const Sound& s, int64_t iHardwareFrame, int& iSourceFrame) const;
   int GetDataForSound(Sound& s);
 };
 

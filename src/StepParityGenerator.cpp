@@ -49,7 +49,7 @@ bool StepParityGenerator::analyzeGraph() {
 void StepParityGenerator::buildStateGraph() {
   // The first node of the graph is beginningState, which represents the time
   // before the first note (and so it's roIndex is considered -1)
-  beginningState = new State();
+  beginningState = allocState();
   startNode = addNode(beginningState, rows[0].second - 1, -1);
 
   std::vector<StepParityNode*> previousNodes;
@@ -103,7 +103,7 @@ void StepParityGenerator::buildStateGraph() {
 
   // at this point, previousStates holds all of the states for the very last
   // row, which just get connected to the endState
-  endingState = new State();
+  endingState = allocState();
   endNode = addNode(endingState, rows[rows.size() - 1].second + 1, rows.size());
   endNode->totalCost = FLT_MAX;
 
@@ -118,7 +118,7 @@ void StepParityGenerator::buildStateGraph() {
 State* StepParityGenerator::initResultState(
     State* initialState, Row& row, const FootPlacement& columns) {
   if (tmpState == nullptr) {
-    tmpState = new State();
+    tmpState = allocState();
   }
 
   State* resultState = tmpState;
@@ -485,7 +485,8 @@ std::uint64_t StepParityGenerator::getStateCacheKey(State* state) {
 
 StepParityNode* StepParityGenerator::addNode(
     State* state, float second, int rowIndex) {
-  StepParityNode* newNode = new StepParityNode(state, second, rowIndex);
+  nodePool.emplace_back(state, second, rowIndex);
+  StepParityNode* newNode = &nodePool.back();
   newNode->id = int(nodes.size());
   nodes.push_back(newNode);
   return newNode;
