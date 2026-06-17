@@ -281,21 +281,18 @@ static void LoadFromSMNoteDataStringWithPlayer(
   // Make sure we don't have any hold notes that didn't find a tail.
   for (int t = 0; t < out.GetNumTracks(); t++) {
     NoteData::iterator begin = out.begin(t);
-    NoteData::iterator lEnd = out.end(t);
-    while (begin != lEnd) {
-      NoteData::iterator next = Increment(begin);
+    while (begin != out.end(t)) {
       const TapNote& tn = begin->second;
       if (tn.type == TapNoteType_HoldHead && tn.iDuration == MAX_NOTE_ROW) {
-        int iRow = begin->first;
         LOG->UserLog(
             "", "",
             "While loading .sm/.ssc note data, there was an unmatched 2 at "
             "beat %f",
-            NoteRowToBeat(iRow));
-        out.RemoveTapNote(t, begin);
+            NoteRowToBeat(begin->first));
+        begin = out.RemoveTapNote(t, begin);
+      } else {
+        ++begin;
       }
-
-      begin = next;
     }
   }
   out.RevalidateATIs(std::vector<int>(), false);
@@ -356,11 +353,12 @@ void NoteDataUtil::LoadFromSMNoteDataString(
 
 void NoteDataUtil::InsertHoldTails(NoteData& inout) {
   for (int t = 0; t < inout.GetNumTracks(); t++) {
-    NoteData::iterator begin = inout.begin(t), end = inout.end(t);
-
-    for (; begin != end; ++begin) {
-      int iRow = begin->first;
-      const TapNote& tn = begin->second;
+    /* Collect the tails to insert in a first pass. We can't insert while
+     * iterating, since inserting into the track invalidates our iterators. */
+    std::vector<std::pair<int, TapNote>> tails;
+    for (NoteData::iterator it = inout.begin(t); it != inout.end(t); ++it) {
+      int iRow = it->first;
+      const TapNote& tn = it->second;
       if (tn.type != TapNoteType_HoldHead) {
         continue;
       }
@@ -368,11 +366,15 @@ void NoteDataUtil::InsertHoldTails(NoteData& inout) {
       TapNote tail = tn;
       tail.type = TapNoteType_HoldTail;
 
-      /* If iDuration is 0, we'd end up overwriting the head with the tail
-       * (and invalidating our iterator). Empty hold notes aren't valid. */
+      /* If iDuration is 0, we'd end up overwriting the head with the tail.
+       * Empty hold notes aren't valid. */
       ASSERT(tn.iDuration != 0);
 
-      inout.SetTapNote(t, iRow + tn.iDuration, tail);
+      tails.push_back({iRow + tn.iDuration, tail});
+    }
+
+    for (const std::pair<int, TapNote>& tail : tails) {
+      inout.SetTapNote(t, tail.first, tail.second);
     }
   }
 }
@@ -1201,7 +1203,7 @@ void NoteDataUtil::RemoveAllButPlayer(NoteData& inout, PlayerNumber pn) {
 
     while (i != inout.end(track)) {
       if (i->second.pn != pn && i->second.pn != PLAYER_INVALID) {
-        inout.RemoveTapNote(track, i++);
+        i = inout.RemoveTapNote(track, i);
       } else {
         ++i;
       }
@@ -2944,7 +2946,7 @@ void NoteDataUtil::RemoveAllTapsOfType(
   for (int t = 0; t < ndInOut.GetNumTracks(); t++) {
     for (NoteData::iterator iter = ndInOut.begin(t); iter != ndInOut.end(t);) {
       if (iter->second.type == typeToRemove) {
-        ndInOut.RemoveTapNote(t, iter++);
+        iter = ndInOut.RemoveTapNote(t, iter);
       } else {
         ++iter;
       }
@@ -2959,7 +2961,7 @@ void NoteDataUtil::RemoveAllTapsExceptForType(
   for (int t = 0; t < ndInOut.GetNumTracks(); t++) {
     for (NoteData::iterator iter = ndInOut.begin(t); iter != ndInOut.end(t);) {
       if (iter->second.type != typeToKeep) {
-        ndInOut.RemoveTapNote(t, iter++);
+        iter = ndInOut.RemoveTapNote(t, iter);
       } else {
         ++iter;
       }

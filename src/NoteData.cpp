@@ -35,7 +35,7 @@ void NoteData::SetNumTracks(int iNewNumTracks) {
 
 bool NoteData::IsComposite() const {
   for (int track = 0; track < GetNumTracks(); ++track) {
-    for (const std::pair<const int, TapNote>& tn : m_TapNotes[track]) {
+    for (const RowTapNote& tn : m_TapNotes[track]) {
       if (tn.second.pn != PLAYER_INVALID) {
         return true;
       }
@@ -320,14 +320,7 @@ void NoteData::AddHoldNote(int iTrack, int iStartRow, int iEndRow, TapNote tn) {
   tn.iDuration = iEndRow - iStartRow;
 
   // Remove everything in the range.
-  while (lBegin != lEnd) {
-    iterator next = lBegin;
-    ++next;
-
-    RemoveTapNote(iTrack, lBegin);
-
-    lBegin = next;
-  }
+  m_TapNotes[iTrack].erase(lBegin, lEnd);
 
   /* Additionally, if there's a tap note lying at the end of our range,
    * remove it too. */
@@ -935,17 +928,20 @@ void NoteData::SetTapNote(int track, int row, const TapNote& t) {
     return;
   }
 
-  // There's no point in inserting empty notes into the map.
-  // Any blank space in the map is defined to be empty.
-  // If we're trying to insert an empty at a spot where another note
-  // already exists, then we're really deleting from the map.
+  TrackMap& trackMap = m_TapNotes[track];
+  auto it = lower_bound(track, row);
+  bool found = (it != trackMap.end() && it->first == row);
+
   if (t == TAP_EMPTY) {
-    TrackMap& trackMap = m_TapNotes[track];
-    // remove the element at this position (if any).
-    // This will return either 0 or 1.
-    trackMap.erase(row);
+    if (found) {
+      trackMap.erase(it);
+    }
   } else {
-    m_TapNotes[track][row] = t;
+    if (found) {
+      it->second = t;
+    } else {
+      trackMap.insert(it, {row, t});
+    }
   }
 }
 
@@ -975,8 +971,7 @@ bool NoteData::GetNextTapNoteRowForTrack(
   // upper_bound "finds the first element whose key greater than k".  They don't
   // have the same effect, but lower_bound(row+1) should equal upper_bound(row).
   // -glenn
-  TrackMap::const_iterator iter = mapTrack.lower_bound(
-      rowInOut + 1);  // "find the first note for which row+1 < key == false"
+  TrackMap::const_iterator iter = lower_bound(track, rowInOut + 1);
   if (iter == mapTrack.end()) {
     return false;
   }
@@ -1000,7 +995,7 @@ bool NoteData::GetPrevTapNoteRowForTrack(int track, int& rowInOut) const {
   const TrackMap& mapTrack = m_TapNotes[track];
 
   // Find the first note >= rowInOut.
-  TrackMap::const_iterator iter = mapTrack.lower_bound(rowInOut);
+  TrackMap::const_iterator iter = lower_bound(track, rowInOut);
 
   // If we're at the beginning, we can't move back any more.
   if (iter == mapTrack.begin()) {
@@ -1030,7 +1025,7 @@ void NoteData::GetTapNoteRange(
   } else if (iStartRow >= MAX_NOTE_ROW) {
     lBegin = mapTrack.end();  // optimization
   } else {
-    lBegin = mapTrack.lower_bound(iStartRow);
+    lBegin = lower_bound(iTrack, iStartRow);
   }
 
   if (iEndRow <= 0) {
@@ -1038,7 +1033,7 @@ void NoteData::GetTapNoteRange(
   } else if (iEndRow >= MAX_NOTE_ROW) {
     lEnd = mapTrack.end();  // optimization
   } else {
-    lEnd = mapTrack.lower_bound(iEndRow);
+    lEnd = lower_bound(iTrack, iEndRow);
   }
 }
 
@@ -1441,6 +1436,51 @@ NoteData::_all_tracks_iterator<ND, iter, TN> NoteData::_all_tracks_iterator<ND, 
 	return ret;
 }
 #endif
+
+NoteData::iterator NoteData::lower_bound(int iTrack, int iRow) {
+  return std::lower_bound(
+      m_TapNotes[iTrack].begin(), m_TapNotes[iTrack].end(), iRow,
+      [](const RowTapNote& a, int b) { return a.first < b; });
+}
+
+NoteData::const_iterator NoteData::lower_bound(int iTrack, int iRow) const {
+  return std::lower_bound(
+      m_TapNotes[iTrack].begin(), m_TapNotes[iTrack].end(), iRow,
+      [](const RowTapNote& a, int b) { return a.first < b; });
+}
+
+NoteData::iterator NoteData::upper_bound(int iTrack, int iRow) {
+  return std::upper_bound(
+      m_TapNotes[iTrack].begin(), m_TapNotes[iTrack].end(), iRow,
+      [](int a, const RowTapNote& b) { return a < b.first; });
+}
+
+NoteData::const_iterator NoteData::upper_bound(int iTrack, int iRow) const {
+  return std::upper_bound(
+      m_TapNotes[iTrack].begin(), m_TapNotes[iTrack].end(), iRow,
+      [](int a, const RowTapNote& b) { return a < b.first; });
+}
+
+NoteData::iterator NoteData::FindTapNote(unsigned iTrack, int iRow) {
+  auto it = lower_bound(iTrack, iRow);
+  if (it != m_TapNotes[iTrack].end() && it->first == iRow) {
+    return it;
+  }
+  return m_TapNotes[iTrack].end();
+}
+
+NoteData::const_iterator NoteData::FindTapNote(
+    unsigned iTrack, int iRow) const {
+  auto it = lower_bound(iTrack, iRow);
+  if (it != m_TapNotes[iTrack].end() && it->first == iRow) {
+    return it;
+  }
+  return m_TapNotes[iTrack].end();
+}
+
+NoteData::iterator NoteData::RemoveTapNote(unsigned iTrack, iterator it) {
+  return m_TapNotes[iTrack].erase(it);
+}
 
 // Explicit instantiation.
 template class NoteData::_all_tracks_iterator<
