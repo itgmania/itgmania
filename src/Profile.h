@@ -275,7 +275,7 @@ class Profile {
    * const everywhere else. It was decided to keep const on the whole
    * save chain and keep this mutable. -Chris */
   mutable std::string m_sLastPlayedMachineGuid;
-    mutable DateTime m_CreationTime;
+  mutable DateTime m_CreationTime;
   mutable DateTime m_LastPlayedDate;
   /* These stats count twice in the machine profile if two players are playing;
    * that's the only approach that makes sense for ByDifficulty and ByMeter. */

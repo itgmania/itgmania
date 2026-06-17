@@ -440,8 +440,8 @@ void ScreenOptionsManageProfiles::ProcessMenuStart(const InputEventPlus&) {
     }
     ScreenTextEntry::TextEntry(
         SM_BackFromEnterNameForNew, ENTER_PROFILE_NAME, sPotentialName,
-        PROFILE_MAX_DISPLAY_NAME_LENGTH, ValidateLocalProfileName,
-        nullptr, nullptr, false, ValidateAppendProfileName);
+        PROFILE_MAX_DISPLAY_NAME_LENGTH, ValidateLocalProfileName, nullptr,
+        nullptr, false, ValidateAppendProfileName);
   } else if (row.GetRowType() == OptionRow::RowType_Exit) {
     SCREENMAN->PlayStartSound();
     this->BeginFadingOut();

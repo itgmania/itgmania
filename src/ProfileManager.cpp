@@ -737,7 +737,8 @@ bool ProfileManager::CreateLocalProfile(
   }
 
   // If a profile with the same name already exists..
-  // attempt to append an incrementing number until we find a name that doesn't exist.
+  // attempt to append an incrementing number until we find a name that doesn't
+  // exist.
   if (base_exists) {
     int suffix = 1;
     while (true) {
