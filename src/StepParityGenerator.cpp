@@ -415,10 +415,12 @@ void StepParityGenerator::AddRow(RowCounter& counter) {
 
 Row StepParityGenerator::CreateRow(RowCounter& counter) {
   Row row = Row(columnCount_);
-  row.notes.assign(counter.notes.begin(), counter.notes.end());
-  row.mines.assign(counter.nextMines.begin(), counter.nextMines.end());
-  row.fakeMines.assign(
-      counter.nextFakeMines.begin(), counter.nextFakeMines.end());
+  std::copy(counter.notes.begin(), counter.notes.end(), row.notes.begin());
+  std::copy(
+      counter.nextMines.begin(), counter.nextMines.end(), row.mines.begin());
+  std::copy(
+      counter.nextFakeMines.begin(), counter.nextFakeMines.end(),
+      row.fakeMines.begin());
   row.second = counter.lastColumnSecond;
   row.beat = counter.lastColumnBeat;
 

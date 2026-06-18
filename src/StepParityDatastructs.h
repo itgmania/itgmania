@@ -1,7 +1,9 @@
 #ifndef STEP_PARITY_DATASTRUCTS_H
 #define STEP_PARITY_DATASTRUCTS_H
 
+#include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <string>
 #include <unordered_map>
@@ -14,7 +16,8 @@ namespace StepParity {
 
 const int INVALID_COLUMN = -1;
 const float CLM_SECOND_INVALID = -1;
-const int MAX_COLUMNS = 16;
+// Currently we only support 4 and 8 panel.
+const int MAX_COLUMNS = 8;
 
 enum Foot {
   Foot_None = 0,
@@ -80,43 +83,125 @@ struct StagePoint {
 // StageLayout represents the relative position of each panel on the dance
 // stage, and provides some basic math function
 struct StageLayout {
+  static const int MAX_TABLE = MAX_COLUMNS * MAX_COLUMNS;
+
   StepsType type;
   int columnCount;
-  std::vector<StagePoint> columns;
+  std::array<StagePoint, MAX_COLUMNS> columns = {};
   std::vector<int> upArrows;
   std::vector<int> downArrows;
   std::vector<int> sideArrows;
 
-  std::vector<StagePoint> avgPoints;
-  std::vector<float> distances;
-  std::vector<float> facingXPenalties;
-  std::vector<float> facingYPenalties;
+  // Lookup tables indexed by (leftColumn * columnCount + rightColumn).
+  std::array<StagePoint, MAX_TABLE> avgPoints = {};
+  std::array<float, MAX_TABLE> distances = {};
+  std::array<float, MAX_TABLE> facingXPenalties = {};
+  std::array<float, MAX_TABLE> facingYPenalties = {};
   std::unordered_map<int, std::vector<FootPlacement>> permuteCache;
 
   StageLayout(
       StepsType t, const std::vector<StagePoint>& c, const std::vector<int>& u,
       const std::vector<int>& d, const std::vector<int>& s)
-      : type(t), columns(c), upArrows(u), downArrows(d), sideArrows(s) {
-    this->columnCount = static_cast<int>(this->columns.size());
+      : type(t), upArrows(u), downArrows(d), sideArrows(s) {
+    this->columnCount = static_cast<int>(c.size());
+    for (int i = 0; i < this->columnCount; i++) {
+      this->columns[i] = c[i];
+    }
     this->preCalculateStuff();
     this->preGeneratePermutations();
   }
 
-  bool bracketCheck(int column1, int column2) const;
-  bool isSideArrow(int column) const;
-  bool isUpArrow(int column) const;
-  bool isDownArrow(int column) const;
-  float getDistanceSq(int c1, int c2) const;
-  float getDistanceSq(StagePoint p1, StagePoint p2) const;
-  float getDistance(int leftIndex, int rightIndex) const;
-  float getXFacingPenalty(int leftIndex, int rightIndex) const;
-  float getYFacingPenalty(int leftIndex, int rightIndex) const;
-  float getXDifference(int leftIndex, int rightIndex) const;
-  float getYDifference(int leftIndex, int rightIndex) const;
-  StagePoint averagePoint(int leftIndex, int rightIndex) const;
-  float getPlayerAngle(int c1, int c2) const;
-  float getPlayerAngle(
-      StepParity::StagePoint left, StepParity::StagePoint right) const;
+  // These are small geometry accessors called from the per-(node *
+  // permutation * row) cost loop, so they're defined inline here to let the
+  // cost calculator inline them (LTO is off, so a separate TU wouldn't).
+  bool bracketCheck(int column1, int column2) const {
+    float dist = getDistance(column1, column2);
+    return (dist * dist) <= 2;
+  }
+  bool isSideArrow(int column) const {
+    return std::find(sideArrows.begin(), sideArrows.end(), column) !=
+           sideArrows.end();
+  }
+  bool isUpArrow(int column) const {
+    return std::find(upArrows.begin(), upArrows.end(), column) !=
+           upArrows.end();
+  }
+  bool isDownArrow(int column) const {
+    return std::find(downArrows.begin(), downArrows.end(), column) !=
+           downArrows.end();
+  }
+  float getDistanceSq(int c1, int c2) const {
+    return getDistanceSq(columns[c1], columns[c2]);
+  }
+  float getDistanceSq(StagePoint p1, StagePoint p2) const {
+    return (p1.y - p2.y) * (p1.y - p2.y) + (p1.x - p2.x) * (p1.x - p2.x);
+  }
+  float getDistance(int leftIndex, int rightIndex) const {
+    if (leftIndex == INVALID_COLUMN || rightIndex == INVALID_COLUMN) {
+      return 0;
+    }
+    return distances[leftIndex * columnCount + rightIndex];
+  }
+  float getXFacingPenalty(int leftIndex, int rightIndex) const {
+    if (leftIndex == INVALID_COLUMN || rightIndex == INVALID_COLUMN) {
+      return 0;
+    }
+    return facingXPenalties[leftIndex * columnCount + rightIndex];
+  }
+  float getYFacingPenalty(int leftIndex, int rightIndex) const {
+    if (leftIndex == INVALID_COLUMN || rightIndex == INVALID_COLUMN) {
+      return 0;
+    }
+    return facingYPenalties[leftIndex * columnCount + rightIndex];
+  }
+  float getXDifference(int leftIndex, int rightIndex) const {
+    if (leftIndex == rightIndex) {
+      return 0;
+    }
+    float dx = columns[rightIndex].x - columns[leftIndex].x;
+    float dy = columns[rightIndex].y - columns[leftIndex].y;
+    float distance = std::sqrt(dx * dx + dy * dy);
+    dx /= distance;
+    bool negative = dx <= 0;
+    dx = std::pow(dx, 4);
+    return negative ? -dx : dx;
+  }
+  float getYDifference(int leftIndex, int rightIndex) const {
+    if (leftIndex == rightIndex) {
+      return 0;
+    }
+    float dx = columns[rightIndex].x - columns[leftIndex].x;
+    float dy = columns[rightIndex].y - columns[leftIndex].y;
+    float distance = std::sqrt(dx * dx + dy * dy);
+    dy /= distance;
+    bool negative = dy <= 0;
+    dy = std::pow(dy, 4);
+    return negative ? -dy : dy;
+  }
+  StagePoint averagePoint(int leftIndex, int rightIndex) const {
+    if (leftIndex == INVALID_COLUMN && rightIndex == INVALID_COLUMN) {
+      return {0, 0};
+    }
+    if (leftIndex == INVALID_COLUMN) {
+      return columns[rightIndex];
+    }
+    if (rightIndex == INVALID_COLUMN) {
+      return columns[leftIndex];
+    }
+    return avgPoints[leftIndex * columnCount + rightIndex];
+  }
+  float getPlayerAngle(int c1, int c2) const {
+    return getPlayerAngle(columns[c1], columns[c2]);
+  }
+  float getPlayerAngle(StagePoint left, StagePoint right) const {
+    float x1 = right.x - left.x;
+    float y1 = right.y - left.y;
+    float x2 = 1;
+    float y2 = 0;
+    float dot = x1 * x2 + y1 * y2;
+    float det = x1 * y2 - y1 * x2;
+    return atan2f(det, dot);
+  }
 
   void preCalculateStuff();
   void preGeneratePermutations();
@@ -141,7 +226,10 @@ struct State {
   bool didTheFootMove[NUM_Foot] = {};
   bool isTheFootHolding[NUM_Foot] = {};
 
-  bool operator==(const State& other) const;
+  bool operator==(const State& other) const {
+    return combined_mask == other.combined_mask &&
+           moved_mask == other.moved_mask && holding_mask == other.holding_mask;
+  }
 };
 
 /// @brief A convenience struct used to encapsulate data from NoteData in an
@@ -169,18 +257,18 @@ struct IntermediateNoteData {
 /// empty.
 struct Row {
   // notes for the given row
-  std::vector<IntermediateNoteData> notes;
+  std::array<IntermediateNoteData, MAX_COLUMNS> notes = {};
   // Any active hold notes, including ones that started before this row
-  std::vector<IntermediateNoteData> holds;
+  std::array<IntermediateNoteData, MAX_COLUMNS> holds = {};
 
   // If a mine occurred either on this row, or on a row on its own immediately
   // preceding this one, the time of when that mine occurred, indexed by column.
-  std::vector<float> mines;
+  std::array<float, MAX_COLUMNS> mines = {};
   // The same thing, but for fake mines
-  std::vector<float> fakeMines;
+  std::array<float, MAX_COLUMNS> fakeMines = {};
 
-  FootPlacement columns;
-  std::vector<int> whereTheFeetAre;
+  std::array<Foot, MAX_COLUMNS> columns = {};
+  std::array<int, NUM_Foot> whereTheFeetAre;
 
   // bit masks for quick comparisons
   uint16_t note_mask = 0;
@@ -197,12 +285,7 @@ struct Row {
 
   Row(int _columnCount) {
     columnCount = _columnCount;
-    notes = std::vector<IntermediateNoteData>(columnCount);
-    holds = std::vector<IntermediateNoteData>(columnCount);
-    mines = std::vector<float>(columnCount, 0);
-    fakeMines = std::vector<float>(columnCount, 0);
-    columns = std::vector<StepParity::Foot>(columnCount, StepParity::Foot_None);
-    whereTheFeetAre = std::vector<int>(StepParity::NUM_Foot, INVALID_COLUMN);
+    whereTheFeetAre.fill(INVALID_COLUMN);
   }
 
   void setFootPlacement(const StepParity::State* state);
