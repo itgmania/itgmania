@@ -77,17 +77,7 @@ class TimingData {
     return *this;
   }
 
-  // GetBeatArgs, GetBeatStarts, m_beat_start_lookup, m_time_start_lookup,
-  // PrepareLookup, and ReleaseLookup form a system for speeding up finding
-  // the current beat and bps from the time, or finding the time from the
-  // current beat.
-  // The lookup tables contain indices for the beat and time finding
-  // functions to start at so they don't have to walk through all the timing
-  // segments.
-  // PrepareLookup should be called before gameplay starts, so that the lookup
-  // tables are populated.  ReleaseLookup should be called after gameplay
-  // finishes so that memory isn't wasted.
-  // -Kyz
+  // Lookup tables for faster beat <-> time queries.
   struct GetBeatArgs {
     float elapsed_time;
     float beat;
@@ -114,6 +104,8 @@ class TimingData {
     float last_time;
     float warp_destination;
     bool is_warping;
+    // Row of the most recently entered warp.
+    int warp_begin_row;
     GetBeatStarts()
         : bpm(0),
           warp(0),
@@ -122,26 +114,20 @@ class TimingData {
           last_row(0),
           last_time(0),
           warp_destination(0),
-          is_warping(false) {}
+          is_warping(false),
+          warp_begin_row(-1) {}
   };
-  // map can't be used for the lookup table because its find or *_bound
-  // functions would return the wrong entry.
-  // In a std::map<int, int> with three entries, [-1]= 3, [6]= 1, [8]= 2,
-  // lower_bound(0) and upper_bound(0) both returned the entry at [6]= 1.
-  // So the lookup table is a vector of entries and FindEntryInLookup does a
-  // binary search.
-  // -Kyz
   struct lookup_item_t {
     float first;
     GetBeatStarts second;
     lookup_item_t(float f, GetBeatStarts& s) : first(f), second(s) {}
   };
   typedef std::vector<lookup_item_t> beat_start_lookup_t;
-  beat_start_lookup_t m_beat_start_lookup;
-  beat_start_lookup_t m_time_start_lookup;
+  mutable beat_start_lookup_t m_beat_start_lookup;
+  mutable beat_start_lookup_t m_time_start_lookup;
 
-  void PrepareLookup();
-  void ReleaseLookup();
+  void EnsureLookups() const;
+  void InvalidateLookups();
   void DumpOneTable(const beat_start_lookup_t& lookup, const std::string& name);
   void DumpLookupTables();
 
@@ -463,10 +449,8 @@ class TimingData {
       int iNoteRow, int& iMeasureIndexOut, int& iBeatIndexOut,
       int& iRowsRemainder) const;
 
-  void GetBeatInternal(
-      GetBeatStarts& start, GetBeatArgs& args, unsigned int max_segment) const;
-  float GetElapsedTimeInternal(
-      GetBeatStarts& start, float beat, unsigned int max_segment) const;
+  void GetBeatInternal(GetBeatStarts& start, GetBeatArgs& args) const;
+  float GetElapsedTimeInternal(GetBeatStarts& start, float beat) const;
   void GetBeatAndBPSFromElapsedTime(GetBeatArgs& args) const;
   float GetBeatFromElapsedTime(float elapsed_time)
       const  // shortcut for places that care only about the beat

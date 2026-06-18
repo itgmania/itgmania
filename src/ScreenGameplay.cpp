@@ -1548,11 +1548,6 @@ void ScreenGameplay::StartPlayingSong(
   ASSERT(
       GAMESTATE->m_Position.m_fMusicSeconds >
       -4000); /* make sure the "fake timer" code doesn't trigger */
-  FOREACH_EnabledPlayer(pn) {
-    if (GAMESTATE->m_pCurSteps[pn]) {
-      GAMESTATE->m_pCurSteps[pn]->GetTimingData()->PrepareLookup();
-    }
-  }
 }
 
 void ScreenGameplay::set_paused_internal(bool p) {
@@ -2644,11 +2639,6 @@ void ScreenGameplay::SaveStats() {
 }
 
 void ScreenGameplay::SongFinished() {
-  FOREACH_EnabledPlayer(pn) {
-    if (GAMESTATE->m_pCurSteps[pn]) {
-      GAMESTATE->m_pCurSteps[pn]->GetTimingData()->ReleaseLookup();
-    }
-  }
   AdjustSync::HandleSongEnd();
   SaveStats();  // Let subclasses save the stats.
   /* Extremely important: if we don't remove attacks before moving on to the
