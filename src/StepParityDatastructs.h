@@ -146,8 +146,6 @@ struct State {
 struct IntermediateNoteData {
   TapNoteType type = TapNoteType_Empty;  // type of the note
   TapNoteSubType subtype = TapNoteSubType_Invalid;
-  int col = 0;     // column/track number
-  int row = 0;     // row on which the note occurs
   float beat = 0;  // beat on which the note occurs
   float hold_length =
       0;  // If type is TapNoteType_HoldHead, length of hold, in beats

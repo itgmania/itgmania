@@ -95,10 +95,6 @@ class StepParityGenerator {
   /// step chart.
   std::vector<int> computeCheapestPath();
 
-  /// @brief Converts NoteData into an intermediate form that's a little more
-  /// convenient to work with when creating rows.
-  void CreateIntermediateNoteData(
-      const NoteData& in, std::vector<IntermediateNoteData>& out);
   void CreateRows(const NoteData& in);
   void AddRow(RowCounter& counter);
   Row CreateRow(RowCounter& counter);

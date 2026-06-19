@@ -295,49 +295,31 @@ std::vector<int> StepParityGenerator::computeCheapestPath() {
   std::reverse(path.begin(), path.end());
   return path;
 }
-void StepParityGenerator::CreateIntermediateNoteData(
-    const NoteData& in, std::vector<IntermediateNoteData>& out) {
+void StepParityGenerator::CreateRows(const NoteData& in) {
   int columnCount = in.GetNumTracks();
+
+  RowCounter counter = RowCounter(columnCount);
 
   NoteData::all_tracks_const_iterator curr_note =
       in.GetTapNoteRangeAllTracks(0, MAX_NOTE_ROW);
 
-  std::vector<IntermediateNoteData> notes;
-
   for (; !curr_note.IsAtEnd(); ++curr_note) {
+    int col = curr_note.Track();
+    int smRow = curr_note.Row();
+
     IntermediateNoteData note;
     note.type = curr_note->type;
     note.subtype = curr_note->subType;
-    note.col = curr_note.Track();
-
-    note.row = curr_note.Row();
-    note.beat = NoteRowToBeat(curr_note.Row());
+    note.beat = NoteRowToBeat(smRow);
     note.second = timing->GetElapsedTimeFromBeat(note.beat);
-
-    note.fake = note.type == TapNoteType_Fake || timing->IsFakeAtRow(note.row);
-    note.warped = timing->IsWarpAtRow(note.row);
-
+    note.fake = note.type == TapNoteType_Fake || timing->IsFakeAtRow(smRow);
+    note.warped = timing->IsWarpAtRow(smRow);
     if (note.type == TapNoteType_HoldHead) {
       note.hold_length = NoteRowToBeat(curr_note->iDuration);
     } else {
       note.hold_length = -1;
     }
 
-    notes.push_back(note);
-  }
-  out.assign(notes.begin(), notes.end());
-}
-
-void StepParityGenerator::CreateRows(const NoteData& in) {
-  int columnCount = in.GetNumTracks();
-
-  RowCounter counter = RowCounter(columnCount);
-
-  std::vector<IntermediateNoteData> noteData;
-
-  CreateIntermediateNoteData(in, noteData);
-
-  for (IntermediateNoteData note : noteData) {
     if (note.type == TapNoteType_Empty ||
         note.type == TapNoteType_AutoKeysound) {
       continue;
@@ -372,15 +354,15 @@ void StepParityGenerator::CreateRows(const NoteData& in) {
        */
       if (note.second == counter.lastColumnSecond && rows.size() > 0) {
         if (note.fake) {
-          counter.nextFakeMines[note.col] = note.second;
+          counter.nextFakeMines[col] = note.second;
         } else {
-          counter.nextMines[note.col] = note.second;
+          counter.nextMines[col] = note.second;
         }
       } else {
         if (note.fake) {
-          counter.fakeMines[note.col] = note.second;
+          counter.fakeMines[col] = note.second;
         } else {
-          counter.mines[note.col] = note.second;
+          counter.mines[col] = note.second;
         }
       }
       continue;
@@ -416,9 +398,9 @@ void StepParityGenerator::CreateRows(const NoteData& in) {
       }
     }
 
-    counter.notes[note.col] = note;
+    counter.notes[col] = note;
     if (note.type == TapNoteType_HoldHead) {
-      counter.activeHolds[note.col] = note;
+      counter.activeHolds[col] = note;
     }
   }
 
