@@ -75,7 +75,9 @@ static int PtraceDetach(int ThreadID) {
 uint64_t GetCurrentThreadId() {
   static thread_local uint64_t cached_tid = 0;
   if (!cached_tid) {
-    cached_tid = gettid();
+    // TODO: Replace syscall(SYS_gettid) with gettid() once Ubuntu 18 is no
+    // longer supported.
+    cached_tid = syscall(SYS_gettid);
   }
   return cached_tid;
 }
