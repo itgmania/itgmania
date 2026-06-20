@@ -72,8 +72,10 @@ void StepParityGenerator::buildStateGraph() {
       float elapsedTime = row.second - initialNode->second;
       for (auto it = permutations->begin(); it != permutations->end(); it++) {
         State* resultState = initResultState(initialNode->state, row, *it);
+        Row* previousRow = i > 0 ? &rows[i - 1] : nullptr;
         float cost = costCalculator.getActionCost(
-            initialNode->state, resultState, rows, *it, i, elapsedTime);
+            initialNode->state, resultState, row, previousRow, *it,
+            elapsedTime);
 
         std::uint64_t key = getStateCacheKey(resultState);
 
