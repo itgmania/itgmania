@@ -12,7 +12,7 @@ class Group {
   Group();
   Group(
       const std::string& sDir, const std::string& sGroupDirName,
-      bool bFromProfile = false);
+      ProfileSlot prof_slot = ProfileSlot_Invalid);
   ~Group() = default;
   // Lua
   void PushSelf(lua_State* L);

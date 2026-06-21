@@ -96,7 +96,7 @@ std::string SONG_GROUP_COLOR_NAME(size_t i) {
 std::string COURSE_GROUP_COLOR_NAME(size_t i) {
   return ssprintf("CourseGroupColor%i", (int)i + 1);
 }
-std::string profile_song_group_color_name(size_t i) {
+std::string PROFILE_SONG_GROUP_COLOR_NAME(size_t i) {
   return ssprintf("ProfileSongGroupColor%i", (int)i + 1);
 }
 
@@ -134,11 +134,11 @@ SongManager::SongManager() {
   NUM_COURSE_GROUP_COLORS.Load("SongManager", "NumCourseGroupColors");
   COURSE_GROUP_COLOR.Load(
       "SongManager", COURSE_GROUP_COLOR_NAME, NUM_COURSE_GROUP_COLORS);
-  num_profile_song_group_colors.Load(
+  NUM_PROFILE_SONG_GROUP_COLORS.Load(
       "SongManager", "NumProfileSongGroupColors");
-  profile_song_group_colors.Load(
-      "SongManager", profile_song_group_color_name,
-      num_profile_song_group_colors);
+  PROFILE_SONG_GROUP_COLORS.Load(
+      "SongManager", PROFILE_SONG_GROUP_COLOR_NAME,
+      NUM_PROFILE_SONG_GROUP_COLORS);
 }
 
 SongManager::~SongManager() {
@@ -860,11 +860,9 @@ RageColor SongManager::GetSongGroupColor(const std::string& sSongGroup) const {
   FOREACH_EnabledPlayer(pn) {
     Profile* prof = PROFILEMAN->GetProfile(pn);
     if (prof != nullptr) {
-      if (prof->m_group != nullptr) {
-        if (prof->m_group->GetGroupName() == sSongGroup) {
-          return profile_song_group_colors.GetValue(
-              pn % num_profile_song_group_colors);
-        }
+      if (prof->IsCustomSongGroup(sSongGroup)) {
+        return PROFILE_SONG_GROUP_COLORS.GetValue(
+            pn % NUM_PROFILE_SONG_GROUP_COLORS);
       }
     }
   }
@@ -1047,10 +1045,8 @@ const std::vector<Song*>& SongManager::GetSongs(
   FOREACH_EnabledPlayer(pn) {
     Profile* prof = PROFILEMAN->GetProfile(pn);
     if (prof != nullptr) {
-      if (prof->m_group != nullptr) {
-        if (prof->m_group->GetGroupName() == sGroupName) {
-          return prof->m_songs;
-        }
+      if (prof->IsCustomSongGroup(sGroupName)) {
+        return prof->songsGroups[sGroupName];
       }
     }
   }
@@ -1111,9 +1107,11 @@ Group* SongManager::GetGroupFromName(const std::string& sGroupName) const {
   FOREACH_EnabledPlayer(pn) {
     Profile* prof = PROFILEMAN->GetProfile(pn);
     if (prof != nullptr) {
-      if (prof->m_group != nullptr) {
-        if (prof->m_group->GetGroupName() == sGroupName) {
-          return prof->m_group;
+      for (int i = 0; i < prof->m_groups.size(); i++) {
+        Group* grp = prof->m_groups[i];
+
+        if (grp->GetGroupName() == sGroupName) {
+          return grp;
         }
       }
     }
