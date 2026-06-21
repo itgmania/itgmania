@@ -69,22 +69,6 @@ if(APPLE)
                  ${SMDATA_ALL_FILES_SRC}
                  ${SMDATA_ALL_FILES_HPP})
 else()
-  if(MSVC)
-    foreach(sm_src_file ${SMDATA_ALL_FILES_SRC})
-      get_filename_component(sm_src_raw "${sm_src_file}" NAME_WE)
-      if(${sm_src_raw} MATCHES "global")
-        set_source_files_properties("${sm_src_raw}.cpp"
-                                    PROPERTIES
-                                    COMPILE_FLAGS
-                                    "/Ycglobal.h")
-      elseif(NOT (${sm_src_raw} MATCHES "verstub"))
-        set_source_files_properties("${sm_src_raw}.cpp"
-                                    PROPERTIES
-                                    COMPILE_FLAGS
-                                    "/Yuglobal.h")
-      endif()
-    endforeach()
-  endif()
   add_executable("${SM_EXE_NAME}" ${SMDATA_ALL_FILES_SRC}
                  ${SMDATA_ALL_FILES_HPP})
 endif()
@@ -137,7 +121,7 @@ target_compile_options("${SM_EXE_NAME}" PRIVATE
   $<$<CXX_COMPILER_ID:AppleClang>:
     -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-unknown-pragmas -Wno-undefined-var-template -Wno-deprecated-declarations -Wno-unused-command-line-argument>
   $<$<CXX_COMPILER_ID:MSVC>:
-    /W4 /wd4100 /wd4189 /wd4244 /wd4267 /wd4702>
+    /W4 /wd4100 /wd4189 /wd4201 /wd4244 /wd4267 /wd4702>
 )
 
 set(SM_COMPILE_FLAGS "")
@@ -174,6 +158,9 @@ if(WIN32)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WINDOWS) # TODO: Remove this potential duplicate.
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _CRT_SECURE_NO_WARNINGS)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _WINSOCK_DEPRECATED_NO_WARNINGS)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE NOMINMAX)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE WIN32_LEAN_AND_MEAN)
+  target_compile_definitions("${SM_EXE_NAME}" PRIVATE VC_EXTRALEAN)
 
   set_target_properties("${SM_EXE_NAME}"
                         PROPERTIES RUNTIME_OUTPUT_DIRECTORY
@@ -198,7 +185,6 @@ if(WIN32)
       COMMENT "Generating file to allow for easier stack traces.")
   endif()
 elseif(APPLE)
-  # TODO should we set CRASH_HANDLER and other things like LINUX does below? Why is that logic specfic to LINUX?
   # Use generic Unix backtrace for all Apple architectures
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_GENERIC_UNIX)
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE BACKTRACE_METHOD_TEXT="generic unix backtrace")
@@ -238,32 +224,89 @@ elseif(APPLE)
     "${SM_ROOT_DIR}/Data"
     "${SM_ROOT_DIR}/NoteSkins"
     "${SM_ROOT_DIR}/Scripts"
-    "${SM_ROOT_DIR}/Songs"
     "${SM_ROOT_DIR}/Themes"
   )
 
-  target_sources("${SM_EXE_NAME}" PUBLIC ${APPLE_BUNDLE_RESOURCES})
-  set_source_files_properties(${APPLE_BUNDLE_RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
-
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE _XOPEN_SOURCE)
 
-  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(SM_APP_RELEASE_NAME "${SM_NAME_DEBUG}")
-  elseif(CMAKE_BUILD_TYPE STREQUAL "MinSizeRel")
-    set(SM_APP_RELEASE_NAME "${SM_NAME_MINSIZEREL}")
-  elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    set(SM_APP_RELEASE_NAME "${SM_NAME_RELWITHDEBINFO}")
-  else()
-    set(SM_APP_RELEASE_NAME "${SM_NAME_RELEASE}")
-  endif()
+  if(NOT WITH_MACOS_PORTABLE_APP)
+    set(_SM_BUNDLE_RESOURCES_DIR "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources")
 
-  # Add the ability to copy the resource file.
-  add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
-                     COMMAND ${CMAKE_COMMAND} -E make_directory
-                             "$<TARGET_FILE_DIR:ITGmania>/../Resources"
-                     COMMAND ${CMAKE_COMMAND} -E copy
-                             "${SM_XCODE_DIR}/logo.icns"
-                             "$<TARGET_FILE_DIR:ITGmania>/../Resources/")
+    # Xcode understands bundle resource directories directly. Other generators
+    # (for example Unix Makefiles) end up emitting non-recursive copy commands.
+    if(CMAKE_GENERATOR STREQUAL "Xcode")
+      target_sources("${SM_EXE_NAME}" PUBLIC ${APPLE_BUNDLE_RESOURCES})
+      set_source_files_properties(${APPLE_BUNDLE_RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    else()
+      # Enumerate resource files at configure time for ninja dependency tracking.
+      # CONFIGURE_DEPENDS causes cmake to re-run when files are added or removed,
+      # keeping the dependency list current so new files are picked up automatically.
+      set(_SM_ALL_RESOURCE_FILES "")
+      foreach(RESOURCE_DIR IN LISTS APPLE_BUNDLE_RESOURCES)
+        file(GLOB_RECURSE _dir_files CONFIGURE_DEPENDS "${RESOURCE_DIR}/*")
+        list(APPEND _SM_ALL_RESOURCE_FILES ${_dir_files})
+      endforeach()
+
+      set(_SM_COPY_CMDS
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${_SM_BUNDLE_RESOURCES_DIR}")
+      foreach(RESOURCE_DIR IN LISTS APPLE_BUNDLE_RESOURCES)
+        get_filename_component(RESOURCE_NAME "${RESOURCE_DIR}" NAME)
+        list(APPEND _SM_COPY_CMDS
+          COMMAND ${CMAKE_COMMAND} -E remove_directory
+            "${_SM_BUNDLE_RESOURCES_DIR}/${RESOURCE_NAME}"
+          COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${RESOURCE_DIR}"
+            "${_SM_BUNDLE_RESOURCES_DIR}/${RESOURCE_NAME}")
+      endforeach()
+
+      # This target ensures we only copy files when they're out of date compared
+      # to the stamp file.
+      set(_SM_RESOURCES_STAMP "${CMAKE_CURRENT_BINARY_DIR}/resources-synced.stamp")
+      add_custom_command(
+        OUTPUT "${_SM_RESOURCES_STAMP}"
+        ${_SM_COPY_CMDS}
+        COMMAND ${CMAKE_COMMAND} -E touch "${_SM_RESOURCES_STAMP}"
+        DEPENDS ${_SM_ALL_RESOURCE_FILES}
+        COMMENT "Syncing changed resources to bundle"
+      )
+      add_custom_target(sync-resources ALL DEPENDS "${_SM_RESOURCES_STAMP}")
+      add_dependencies("${SM_EXE_NAME}" sync-resources)
+    endif()
+
+    # Always wipe and recreate an empty Songs folder so stale songs from a prior
+    # WITH_CLUB_FANTASTIC build don't persist in the bundle.
+    add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E make_directory "${_SM_BUNDLE_RESOURCES_DIR}"
+      COMMAND ${CMAKE_COMMAND} -E remove_directory "${_SM_BUNDLE_RESOURCES_DIR}/Songs"
+      COMMAND ${CMAKE_COMMAND} -E make_directory "${_SM_BUNDLE_RESOURCES_DIR}/Songs"
+      COMMAND ${CMAKE_COMMAND} -E copy "${SM_XCODE_DIR}/logo.icns" "${_SM_BUNDLE_RESOURCES_DIR}/")
+  else()
+    message(STATUS "WITH_MACOS_PORTABLE_APP is ON: creating empty .app Resources directories and bundling only the icon")
+
+    add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
+           COMMAND ${CMAKE_COMMAND} -E make_directory
+             "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources")
+
+    foreach(RESOURCE_DIR IN LISTS APPLE_BUNDLE_RESOURCES)
+      get_filename_component(RESOURCE_NAME "${RESOURCE_DIR}" NAME)
+      add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
+                 COMMAND ${CMAKE_COMMAND} -E remove_directory
+               "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources/${RESOURCE_NAME}"
+             COMMAND ${CMAKE_COMMAND} -E make_directory
+               "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources/${RESOURCE_NAME}")
+    endforeach()
+
+    add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E remove_directory
+                               "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources/Songs"
+                       COMMAND ${CMAKE_COMMAND} -E make_directory
+                               "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources/Songs")
+
+    add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
+           COMMAND ${CMAKE_COMMAND} -E copy
+             "${SM_XCODE_DIR}/logo.icns"
+             "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources/")
+  endif()
 else() # Linux
   set_target_properties("${SM_EXE_NAME}"
                         PROPERTIES RUNTIME_OUTPUT_DIRECTORY
@@ -278,7 +321,6 @@ else() # Linux
                                    "${SM_ROOT_DIR}")
 
   if(${WITH_CRASH_HANDLER})
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE CRASH_HANDLER)
     if(LINUX)
       # used only in the ArchHooks_Unix.cpp file
       if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86" OR CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
@@ -350,9 +392,9 @@ list(APPEND SMDATA_LINK_LIB "mad"
                             "glew"
                             "tomcrypt"
                             "tommath"
-                            "libjpeg-turbo"
+                            "stb_image"
+                            "stb_image_write"
                             "zlib"
-                            "png"
                             "jsoncpp"
                             "vorbisfile"
                             "vorbis"
@@ -520,6 +562,9 @@ if(WIN32)
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
   install(FILES "${SM_PROGRAM_DIR}/ITGmania.vdi"
           DESTINATION "${SM_FULL_INSTALLATION_PATH}")
+elseif(APPLE)
+  # On macOS, just install the .app bundle - resources are already inside it
+  install(TARGETS "${SM_EXE_NAME}" BUNDLE DESTINATION ".")
 else()
   install(TARGETS "${SM_EXE_NAME}" DESTINATION "${SM_INSTALL_DESTINATION}")
   if(LINUX)
@@ -528,30 +573,22 @@ else()
     install(PROGRAMS "${SM_ROOT_DIR}/Installer/setup.sh" DESTINATION ".")
   endif()
 endif()
-install(DIRECTORY "${SM_ROOT_DIR}/Announcers"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/BGAnimations"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Themes"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Characters"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Scripts"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Courses"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/BackgroundEffects"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Data"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/BackgroundTransitions"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/Docs"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(DIRECTORY "${SM_ROOT_DIR}/NoteSkins"
-        DESTINATION "${SM_INSTALL_DESTINATION}")
-install(FILES "${SM_ROOT_DIR}/Songs/instructions.txt"
-        DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+
+if(NOT APPLE)
+  install(DIRECTORY "${SM_ROOT_DIR}/Announcers" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/BGAnimations" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Themes" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Characters" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Scripts" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Courses" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/BackgroundEffects" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Data" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/BackgroundTransitions" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/Docs" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(DIRECTORY "${SM_ROOT_DIR}/NoteSkins" DESTINATION "${SM_INSTALL_DESTINATION}")
+  install(FILES "${SM_ROOT_DIR}/Songs/instructions.txt"
+          DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+endif()
 
 if(WITH_CLUB_FANTASTIC)
   # Fetch ClubFantastic packs
@@ -564,8 +601,25 @@ if(WITH_CLUB_FANTASTIC)
   FetchContent_MakeAvailable(ClubFantastic)
   FetchContent_GetProperties(ClubFantastic SOURCE_DIR CLUB_FANTASTIC_DIR)
 
-  install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 1"
-          DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
-  install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 2"
-          DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+  if(APPLE)
+    # Bundle songs inside the .app so the DMG is self-contained
+    install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 1"
+            DESTINATION "${SM_EXE_NAME}.app/Contents/Resources/Songs")
+    install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 2"
+            DESTINATION "${SM_EXE_NAME}.app/Contents/Resources/Songs")
+
+    # Also copy into the live bundle produced by builds
+    add_custom_command(TARGET "${SM_EXE_NAME}" POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory
+                               "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 1"
+                               "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources/Songs/Club Fantastic Season 1"
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory
+                               "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 2"
+                               "$<TARGET_FILE_DIR:${SM_EXE_NAME}>/../Resources/Songs/Club Fantastic Season 2")
+  else()
+    install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 1"
+            DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+    install(DIRECTORY "${CLUB_FANTASTIC_DIR}/Club Fantastic Season 2"
+            DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
+  endif()
 endif()

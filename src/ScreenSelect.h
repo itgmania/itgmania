@@ -1,48 +1,53 @@
 #ifndef SCREEN_SELECT_H
 #define SCREEN_SELECT_H
 
-#include "ScreenWithMenuElements.h"
-#include "GameCommand.h"
-#include "ThemeMetric.h"
-
+#include <string>
 #include <vector>
 
+#include "GameCommand.h"
+#include "InputQueue.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "RageTimer.h"
+#include "ScreenMessage.h"
+#include "ScreenWithMenuElements.h"
+#include "ThemeMetric.h"
 
 /** @brief Base class for Style, Difficulty, and Mode selection screens. */
-class ScreenSelect : public ScreenWithMenuElements
-{
-public:
-	virtual void Init();
-	virtual void BeginScreen();
-	virtual ~ScreenSelect();
+class ScreenSelect : public ScreenWithMenuElements {
+ public:
+  virtual void Init();
+  virtual void BeginScreen();
+  virtual ~ScreenSelect();
 
-	virtual void Update( float fDelta );
-	virtual bool Input( const InputEventPlus &input );
-	virtual void HandleScreenMessage( const ScreenMessage SM );
-	virtual void HandleMessage( const Message &msg );
+  virtual void Update(float fDelta);
+  virtual bool Input(const InputEventPlus& input);
+  virtual void HandleScreenMessage(const ScreenMessage SM);
+  virtual void HandleMessage(const Message& msg);
 
-	virtual bool MenuBack( const InputEventPlus &input );
+  virtual bool MenuBack(const InputEventPlus& input);
 
-protected:
-	virtual int GetSelectionIndex( PlayerNumber pn ) = 0;
-	virtual void UpdateSelectableChoices() = 0; // derived screens must handle this
+ protected:
+  virtual int GetSelectionIndex(PlayerNumber pn) = 0;
+  virtual void
+  UpdateSelectableChoices() = 0;  // derived screens must handle this
 
-	/**
-	 * @brief The game commands available.
-	 *
-	 * Derived classes should look here for the choices. */
-	std::vector<GameCommand>	m_aGameCommands;
+  /**
+   * @brief The game commands available.
+   *
+   * Derived classes should look here for the choices. */
+  std::vector<GameCommand> m_aGameCommands;
 
-	std::vector<RString>		m_asSubscribedMessages;
+  std::vector<std::string> m_asSubscribedMessages;
 
-	/** @brief Count up to the time between idle comment announcer sounds. */
-	RageTimer		m_timerIdleComment;
-	/** @brief Count up to go to the timeout screen. */
-	RageTimer		m_timerIdleTimeout;
+  /** @brief Count up to the time between idle comment announcer sounds. */
+  RageTimer m_timerIdleComment;
+  /** @brief Count up to go to the timeout screen. */
+  RageTimer m_timerIdleTimeout;
 
-	ThemeMetric<float> IDLE_COMMENT_SECONDS;
-	ThemeMetric<float> IDLE_TIMEOUT_SECONDS;
-	ThemeMetric<bool> ALLOW_DISABLED_PLAYER_INPUT;
+  ThemeMetric<float> IDLE_COMMENT_SECONDS;
+  ThemeMetric<float> IDLE_TIMEOUT_SECONDS;
+  ThemeMetric<bool> ALLOW_DISABLED_PLAYER_INPUT;
 };
 
 #endif

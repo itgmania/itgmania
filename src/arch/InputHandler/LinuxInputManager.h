@@ -1,9 +1,9 @@
 #ifndef LINUX_INPUT_MANAGER
 #define LINUX_INPUT_MANAGER 1
 
+#include <string>
 #include <vector>
 
-#include "global.h"
 class InputHandler_Linux_Joystick;
 class InputHandler_Linux_Event;
 
@@ -11,35 +11,36 @@ class InputHandler_Linux_Event;
 // IH_Linux_Event and IH_Linux_Joystick as appropriate.
 
 // Helper struct for keeping track of inputs.
-struct LinuxInputSort
-{
-    RString DeviceName;
-    RString UniqueString;
+struct LinuxInputSort {
+  std::string DeviceName;
+  std::string UniqueString;
 };
 
-class LinuxInputManager
-{
-public:
-	LinuxInputManager();
-	void InitDriver(InputHandler_Linux_Joystick* drv);
-	void InitDriver(InputHandler_Linux_Event* drv);
-	~LinuxInputManager();
-private:
-	std::vector<LinuxInputSort> m_vPreSort;
-	void PresortPhysical(std::vector<RString>& sortingArray, RString sortBy);
+class LinuxInputManager {
+ public:
+  LinuxInputManager();
+  void InitDriver(InputHandler_Linux_Joystick* drv);
+  void InitDriver(InputHandler_Linux_Event* drv);
+  ~LinuxInputManager();
 
-	bool m_bEventEnabled;
-	InputHandler_Linux_Event* m_EventDriver;
-	std::vector<RString> m_vsPendingEventDevices;
+ private:
+  std::vector<LinuxInputSort> m_vPreSort;
+  void PresortPhysical(
+      std::vector<std::string>& sortingArray, std::string sortBy);
 
-	bool m_bJoystickEnabled;
-	InputHandler_Linux_Joystick* m_JoystickDriver;
-	std::vector<RString> m_vsPendingJoystickDevices;
+  bool m_bEventEnabled;
+  InputHandler_Linux_Event* m_EventDriver;
+  std::vector<std::string> m_vsPendingEventDevices;
+
+  bool m_bJoystickEnabled;
+  InputHandler_Linux_Joystick* m_JoystickDriver;
+  std::vector<std::string> m_vsPendingJoystickDevices;
 };
 
-extern LinuxInputManager* LINUXINPUT; // global and accessible from anywhere in our program
+extern LinuxInputManager*
+    LINUXINPUT;  // global and accessible from anywhere in our program
 
-#endif // LINUX_INPUT_MANAGER
+#endif  // LINUX_INPUT_MANAGER
 
 /*
  * (c) 2013 Ben "root" Anderson

@@ -3,29 +3,29 @@
 #ifndef RAGE_FILE_DRIVER_TIMEOUT_H
 #define RAGE_FILE_DRIVER_TIMEOUT_H
 
+#include <string>
+
 #include "RageFileDriver.h"
 
 class ThreadedFileWorker;
 
-class RageFileDriverTimeout: public RageFileDriver
-{
-public:
-	RageFileDriverTimeout( const RString &path );
-	virtual ~RageFileDriverTimeout();
+class RageFileDriverTimeout : public RageFileDriver {
+ public:
+  RageFileDriverTimeout(const std::string& path);
+  virtual ~RageFileDriverTimeout();
 
-	RageFileBasic *Open( const RString &path, int mode, int &err );
-	void FlushDirCache( const RString &sPath );
-	bool Move( const RString &sOldPath, const RString &sNewPath );
-	bool Remove( const RString &sPath );
+  RageFileBasic* Open(const std::string& path, int mode, int& err);
+  void FlushDirCache(const std::string& sPath);
+  bool Move(const std::string& sOldPath, const std::string& sNewPath);
+  bool Remove(const std::string& sPath);
 
-	static void SetTimeout( float fSeconds );
-	static void ResetTimeout() { SetTimeout( -1 ); }
+  static void SetTimeout(float fSeconds);
+  static void ResetTimeout() { SetTimeout(-1); }
 
-private:
-	RageFileDriver *m_pChild;
-	ThreadedFileWorker *m_pWorker;
+ private:
+  RageFileDriver* m_pChild;
+  ThreadedFileWorker* m_pWorker;
 };
-
 
 #endif
 

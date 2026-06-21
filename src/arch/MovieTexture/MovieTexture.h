@@ -1,49 +1,52 @@
 #ifndef MOVIE_TEXTURE_H
 #define MOVIE_TEXTURE_H
 
+#include <string>
+
 #include "RageTexture.h"
+#include "RageTextureID.h"
 #include "arch/RageDriver.h"
-#include <map>
 
-void ForceToAscii( RString &str );
+void ForceToAscii(std::string& str);
 
-class RageMovieTexture : public RageTexture
-{
-public:
-	static RageMovieTexture *Create( RageTextureID ID );
+class RageMovieTexture : public RageTexture {
+ public:
+  static RageMovieTexture* Create(RageTextureID ID);
 
-	RageMovieTexture( RageTextureID ID ): RageTexture(ID) { }
-	virtual ~RageMovieTexture() { }
-	virtual void Update( float /* fDeltaTime */ ) { }
+  RageMovieTexture(RageTextureID ID) : RageTexture(ID) {}
+  virtual ~RageMovieTexture() {}
+  virtual void Update(float /* fDeltaTime */) {}
 
-	virtual void Reload() = 0;
+  virtual void Reload() = 0;
 
-	virtual void SetPosition( float fSeconds ) = 0;
-	virtual void SetPlaybackRate( float fRate ) = 0;
-	virtual void SetLooping( bool = true ) { }
+  virtual void SetPosition(float fSeconds) = 0;
+  virtual void SetPlaybackRate(float fRate) = 0;
+  virtual void SetLooping(bool = true) {}
 
-	bool IsAMovie() const { return true; }
+  bool IsAMovie() const { return true; }
 
-	static bool GetFourCC( RString fn, RString &handler, RString &type );
+  static bool GetFourCC(
+      std::string fn, std::string& handler, std::string& type);
 };
 
-class RageMovieTextureDriver: public RageDriver
-{
-public:
-	virtual ~RageMovieTextureDriver() { }
-	virtual RageMovieTexture *Create( RageTextureID ID, RString &sError ) = 0;
-	static DriverList m_pDriverList;
+class RageMovieTextureDriver : public RageDriver {
+ public:
+  virtual ~RageMovieTextureDriver() {}
+  virtual RageMovieTexture* Create(RageTextureID ID, std::string& sError) = 0;
+  static DriverList m_pDriverList;
 };
 
-#define REGISTER_MOVIE_TEXTURE_CLASS( name ) \
-	static RegisterRageDriver register_##name( &RageMovieTextureDriver::m_pDriverList, #name, CreateClass<RageMovieTextureDriver_##name, RageDriver> )
+#define REGISTER_MOVIE_TEXTURE_CLASS(name)           \
+  static RegisterRageDriver register_##name(         \
+      &RageMovieTextureDriver::m_pDriverList, #name, \
+      CreateClass<RageMovieTextureDriver_##name, RageDriver>)
 
 #endif
 
 /*
  * (c) 2003-2004 Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -53,7 +56,7 @@ public:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

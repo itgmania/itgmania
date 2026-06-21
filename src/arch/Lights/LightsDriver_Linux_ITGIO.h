@@ -1,20 +1,19 @@
 #ifndef LightsDriver_Linux_ITGIO_H
 #define LightsDriver_Linux_ITGIO_H
 
+#include "LightsManager.h"
 #include "arch/Lights/LightsDriver_Linux_Leds.h"
 
-class LightsDriver_Linux_ITGIO : public LightsDriver_Linux_Leds
-{
-public:
-	LightsDriver_Linux_ITGIO() {}
-	virtual ~LightsDriver_Linux_ITGIO() {}
+class LightsDriver_Linux_ITGIO : public LightsDriver_Linux_Leds {
+ public:
+  LightsDriver_Linux_ITGIO() {}
+  virtual ~LightsDriver_Linux_ITGIO() {}
 
-	virtual void Set(const LightsState *ls);
+  virtual void Set(const LightsState* ls);
 
-	virtual const char *GetGameControllerLightFile()
-	{
-		return "/sys/class/leds/itgio::output%d/brightness";
-	}
+  virtual const char* GetGameControllerLightFile() {
+    return "/sys/class/leds/itgio::output%d/brightness";
+  }
 };
 
 #endif
@@ -42,6 +41,6 @@ public:
  * OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
- * 
+ *
  * i love lamp
  */

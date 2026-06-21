@@ -1,32 +1,30 @@
 #ifndef MemoryCardDriverThreaded_Folder_H
 #define MemoryCardDriverThreaded_Folder_H 1
 
-#include "MemoryCardDriver.h"
-
+#include <string>
 #include <vector>
 
+#include "MemoryCardDriver.h"
 
-class MemoryCardDriverThreaded_Folder : public MemoryCardDriver
-{
-public:
-    MemoryCardDriverThreaded_Folder();
-    virtual ~MemoryCardDriverThreaded_Folder();
+class MemoryCardDriverThreaded_Folder : public MemoryCardDriver {
+ public:
+  MemoryCardDriverThreaded_Folder();
+  virtual ~MemoryCardDriverThreaded_Folder();
 
-	virtual bool Mount( UsbStorageDevice* pDevice );
-	virtual void Unmount( UsbStorageDevice* pDevice );
+  virtual bool Mount(UsbStorageDevice* pDevice);
+  virtual void Unmount(UsbStorageDevice* pDevice);
 
-protected:
-	void GetUSBStorageDevices( std::vector<UsbStorageDevice>& vDevicesOut );
-	bool USBStorageDevicesChanged();
-	bool TestWrite( UsbStorageDevice* pDevice );
-	bool FolderExists(RString path);
+ protected:
+  void GetUSBStorageDevices(std::vector<UsbStorageDevice>& vDevicesOut);
+  bool USBStorageDevicesChanged();
+  bool TestWrite(UsbStorageDevice* pDevice);
+  bool FolderExists(std::string path);
 
-	int GetActivePlayerMask();
-	int m_LastDevices;
+  int GetActivePlayerMask();
+  int m_LastDevices;
 };
 
 #endif
-
 
 /*
  * (c) 2018-2019 Electromuis

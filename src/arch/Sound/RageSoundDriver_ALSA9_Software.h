@@ -1,36 +1,36 @@
 #ifndef RAGE_SOUND_ALSA9_SOFTWARE_H
 #define RAGE_SOUND_ALSA9_SOFTWARE_H
 
-#include "RageSound.h"
-#include "RageThreads.h"
-#include "RageSoundDriver.h"
-#include "ALSA9Helpers.h"
-
 #include <cstdint>
+#include <string>
 
-class RageSoundDriver_ALSA9_Software: public RageSoundDriver
-{
-public:
-	RageSoundDriver_ALSA9_Software();
-	~RageSoundDriver_ALSA9_Software();
-	RString Init();
+#include "ALSA9Helpers.h"
+#include "RageSound.h"
+#include "RageSoundDriver.h"
+#include "RageThreads.h"
 
-	/* virtuals: */
-	int64_t GetPosition() const;
-	float GetPlayLatency() const;
-	int GetSampleRate() const { return m_iSampleRate; }
+class RageSoundDriver_ALSA9_Software : public RageSoundDriver {
+ public:
+  RageSoundDriver_ALSA9_Software();
+  ~RageSoundDriver_ALSA9_Software();
+  std::string Init();
 
-	void SetupDecodingThread();
+  /* virtuals: */
+  int64_t GetPosition() const;
+  float GetPlayLatency() const;
+  int GetSampleRate() const { return m_iSampleRate; }
 
-private:
-	static int MixerThread_start( void *p );
-	void MixerThread();
-	bool GetData();
+  void SetupDecodingThread();
 
-	bool m_bShutdown;
-	int m_iSampleRate;
-	Alsa9Buf *m_pPCM;
-	RageThread m_MixingThread;
+ private:
+  static int MixerThread_start(void* p);
+  void MixerThread();
+  bool GetData();
+
+  bool m_bShutdown;
+  int m_iSampleRate;
+  Alsa9Buf* m_pPCM;
+  RageThread m_MixingThread;
 };
 
 #endif

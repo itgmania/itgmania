@@ -1,77 +1,82 @@
-#include "global.h"
 #include "ScoreDisplayBattle.h"
-#include "RageUtil.h"
-#include "RageLog.h"
-#include "RageLog.h"
-#include "GameState.h"
-#include "ThemeManager.h"
-#include "PlayerState.h"
-#include "ActorUtil.h"
 
+#include <string>
 #include <vector>
 
-#define ITEM_X( i )				THEME->GetMetricF("ScoreDisplayBattle",ssprintf("Item%dX",i+1))
-#define ITEM_Y( i )				THEME->GetMetricF("ScoreDisplayBattle",ssprintf("Item%dY",i+1))
+#include "Actor.h"
+#include "ActorUtil.h"
+#include "Attack.h"
+#include "GameConstantsAndTypes.h"
+#include "GameState.h"
+#include "PlayerState.h"
+#include "RageLog.h"
+#include "RageUtil.h"
+#include "ScoreDisplay.h"
+#include "ThemeManager.h"
 
-ScoreDisplayBattle::ScoreDisplayBattle()
-{
-	LOG->Trace( "ScoreDisplayBattle::ScoreDisplayBattle()" );
+#define ITEM_X(i) \
+  THEME->GetMetricF("ScoreDisplayBattle", ssprintf("Item%dX", i + 1))
+#define ITEM_Y(i) \
+  THEME->GetMetricF("ScoreDisplayBattle", ssprintf("Item%dY", i + 1))
 
-	m_sprFrame.Load( THEME->GetPathG("ScoreDisplayBattle","frame") );
-	this->AddChild( &m_sprFrame );
+ScoreDisplayBattle::ScoreDisplayBattle() {
+  LOG->Trace("ScoreDisplayBattle::ScoreDisplayBattle()");
 
-	for( int i=0; i<NUM_INVENTORY_SLOTS; i++ )
-	{
-		m_ItemIcon[i].SetXY( ITEM_X(i), ITEM_Y(i) );
-		m_ItemIcon[i].StopAnimating();
-		this->AddChild( &m_ItemIcon[i] );
-	}
+  m_sprFrame.Load(THEME->GetPathG("ScoreDisplayBattle", "frame"));
+  this->AddChild(&m_sprFrame);
 
-	std::vector<RString> asIconPaths;
-	GetDirListing( THEME->GetCurThemeDir()+"Graphic/ScoreDisplayBattle icon*", asIconPaths );
-	for( unsigned j=0; j<asIconPaths.size(); j++ )
-		m_TexturePreload.Load( asIconPaths[j] );
+  for (int i = 0; i < NUM_INVENTORY_SLOTS; i++) {
+    m_ItemIcon[i].SetXY(ITEM_X(i), ITEM_Y(i));
+    m_ItemIcon[i].StopAnimating();
+    this->AddChild(&m_ItemIcon[i]);
+  }
+
+  std::vector<std::string> asIconPaths;
+  GetDirListing(
+      THEME->GetCurThemeDir() + "Graphic/ScoreDisplayBattle icon*",
+      asIconPaths);
+  for (unsigned j = 0; j < asIconPaths.size(); j++) {
+    m_TexturePreload.Load(asIconPaths[j]);
+  }
 }
 
-void ScoreDisplayBattle::Init( const PlayerState* pPlayerState, const PlayerStageStats* pPlayerStageStats )
-{
-	ScoreDisplay::Init( pPlayerState, pPlayerStageStats );
+void ScoreDisplayBattle::Init(
+    const PlayerState* pPlayerState,
+    const PlayerStageStats* pPlayerStageStats) {
+  ScoreDisplay::Init(pPlayerState, pPlayerStageStats);
 }
 
-void ScoreDisplayBattle::Update( float fDelta )
-{
-	ScoreDisplay::Update( fDelta );
+void ScoreDisplayBattle::Update(float fDelta) {
+  ScoreDisplay::Update(fDelta);
 
-	for( int s=0; s<NUM_INVENTORY_SLOTS; s++ )
-	{
-		const Attack& attack = m_pPlayerState->m_Inventory[s];
-		RString sNewModifier = attack.sModifiers;
+  for (int s = 0; s < NUM_INVENTORY_SLOTS; s++) {
+    const Attack& attack = m_pPlayerState->m_Inventory[s];
+    std::string sNewModifier = attack.sModifiers;
 
-		if( sNewModifier != m_iLastSeenInventory[s] )
-		{
-			m_iLastSeenInventory[s] = sNewModifier;
+    if (sNewModifier != m_iLastSeenInventory[s]) {
+      m_iLastSeenInventory[s] = sNewModifier;
 
-			if( sNewModifier == "" )
-			{
-				m_ItemIcon[s].RunCommands( ActorUtil::ParseActorCommands( "linear,0.25;zoom,0" ) );
-			}
-			else
-			{
-				// TODO:  Cache all of the icon graphics so we don't load them dynamically from disk.
-				m_ItemIcon[s].Load( THEME->GetPathG("ScoreDisplayBattle","icon "+sNewModifier) );
-				m_ItemIcon[s].StopTweening();
-				apActorCommands acmds = ActorUtil::ParseActorCommands(
-					"diffuse,1,1,1,1;zoom,1;"
-					"sleep,0.1;linear,0;diffusealpha,0;"
-					"sleep,0.1;linear,0;diffusealpha,1;"
-					"sleep,0.1;linear,0;diffusealpha,0;"
-					"sleep,0.1;linear,0;diffusealpha,1;"
-					"sleep,0.1;linear,0;diffusealpha,0;"
-					"sleep,0.1;linear,0;diffusealpha,1;" );
-				m_ItemIcon[s].RunCommands( acmds );
-			}
-		}
-	}
+      if (sNewModifier == "") {
+        m_ItemIcon[s].RunCommands(
+            ActorUtil::ParseActorCommands("linear,0.25;zoom,0"));
+      } else {
+        // TODO:  Cache all of the icon graphics so we don't load them
+        // dynamically from disk.
+        m_ItemIcon[s].Load(
+            THEME->GetPathG("ScoreDisplayBattle", "icon " + sNewModifier));
+        m_ItemIcon[s].StopTweening();
+        apActorCommands acmds = ActorUtil::ParseActorCommands(
+            "diffuse,1,1,1,1;zoom,1;"
+            "sleep,0.1;linear,0;diffusealpha,0;"
+            "sleep,0.1;linear,0;diffusealpha,1;"
+            "sleep,0.1;linear,0;diffusealpha,0;"
+            "sleep,0.1;linear,0;diffusealpha,1;"
+            "sleep,0.1;linear,0;diffusealpha,0;"
+            "sleep,0.1;linear,0;diffusealpha,1;");
+        m_ItemIcon[s].RunCommands(acmds);
+      }
+    }
+  }
 }
 
 /*

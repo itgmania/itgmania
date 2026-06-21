@@ -21,6 +21,12 @@ option(WITH_NIGHTLY_RELEASE "Build as a nightly release." OFF)
 # Turn this on to include Club Fantastic songs
 option(WITH_CLUB_FANTASTIC "Include Club Fantastic songs." OFF)
 
+# Turn this on for portable macOS builds that keep game resources outside the
+# .app bundle.
+option(WITH_MACOS_PORTABLE_APP
+       "Build a macOS .app without bundling Contents/Resources game data."
+       OFF)
+
 # Turn this on to compile tomcrypt with no assembly data. This is a portable
 # mode.
 option(WITH_PORTABLE_TOMCRYPT
@@ -37,11 +43,7 @@ option(
 option(WITH_LOGGING_TIMING_DATA
        "Build with logging all Add and Erase Segment calls." OFF)
 
-if(NOT MSVC)
-  # Change this number to utilize a different number of jobs for building
-  # FFMPEG.
-  option(WITH_FFMPEG_JOBS "Build FFMPEG with this many jobs." 2)
-else()
+if(MSVC)
   # Turn this option on to enable using the Texture Font Generator.
   option(
     WITH_TEXTURE_GENERATOR

@@ -1,35 +1,35 @@
-/* RageTextureRenderTarget - RageTexture interface for creating render targets. */
+/* RageTextureRenderTarget - RageTexture interface for creating render targets.
+ */
 
 #ifndef RAGE_TEXTURE_RENDER_TARGET_H
 #define RAGE_TEXTURE_RENDER_TARGET_H
 
-#include "RageTexture.h"
-#include "RageTextureID.h"
-#include "RageDisplay.h" // for RenderTargetParam
-
 #include <cstdint>
 
-class RageTextureRenderTarget: public RageTexture
-{
-public:
-	RageTextureRenderTarget( RageTextureID name, const RenderTargetParam &param );
-	virtual ~RageTextureRenderTarget();
-	virtual void Invalidate() { m_iTexHandle = 0; /* don't Destroy() */ }
-	virtual void Reload();
-	virtual uintptr_t GetTexHandle() const { return m_iTexHandle; }
+#include "RageDisplay.h"  // for RenderTargetParam
+#include "RageTexture.h"
+#include "RageTextureID.h"
 
-	void BeginRenderingTo( bool bPreserveTexture = true );
-	void FinishRenderingTo();
+class RageTextureRenderTarget : public RageTexture {
+ public:
+  RageTextureRenderTarget(RageTextureID name, const RenderTargetParam& param);
+  virtual ~RageTextureRenderTarget();
+  virtual void Invalidate() { m_iTexHandle = 0; /* don't Destroy() */ }
+  virtual void Reload();
+  virtual uintptr_t GetTexHandle() const { return m_iTexHandle; }
 
-	virtual void PushSelf( lua_State *L );
+  void BeginRenderingTo(bool bPreserveTexture = true);
+  void FinishRenderingTo();
 
-private:
-	const RenderTargetParam m_Param;
+  virtual void PushSelf(lua_State* L);
 
-	void Create();
-	void Destroy();
-	uintptr_t m_iTexHandle;
-	uintptr_t m_iPreviousRenderTarget;
+ private:
+  const RenderTargetParam m_Param;
+
+  void Create();
+  void Destroy();
+  uintptr_t m_iTexHandle;
+  uintptr_t m_iPreviousRenderTarget;
 };
 
 #endif

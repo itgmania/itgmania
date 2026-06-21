@@ -1,16 +1,15 @@
 #ifndef GAME_PREFERENCES_H
 #define GAME_PREFERENCES_H
 
-#include "Preference.h"
 #include "GameConstantsAndTypes.h"
+#include "Preference.h"
 
 /** @brief Quick access to other variables. */
-namespace GamePreferences
-{
-	extern Preference<CoinMode> m_CoinMode;
-	extern Preference<PlayerController> m_AutoPlay;
-	extern Preference<bool> m_AxisFix;
-};
+namespace GamePreferences {
+extern Preference<CoinMode> m_CoinMode;
+extern Preference<PlayerController> m_AutoPlay;
+extern Preference<bool> m_AxisFix;
+};  // namespace GamePreferences
 
 #endif
 

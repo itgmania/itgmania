@@ -1,23 +1,24 @@
 #ifndef SCORE_DISPLAY_ONI_H
 #define SCORE_DISPLAY_ONI_H
 
-#include "ScoreDisplay.h"
 #include "BitmapText.h"
+#include "ScoreDisplay.h"
 #include "Sprite.h"
 
 /** @brief Shows time into course. */
-class ScoreDisplayOni : public ScoreDisplay
-{
-public:
-	ScoreDisplayOni();
+class ScoreDisplayOni : public ScoreDisplay {
+ public:
+  ScoreDisplayOni();
 
-	virtual void Init( const PlayerState* pPlayerState, const PlayerStageStats* pPlayerStageStats );
+  virtual void Init(
+      const PlayerState* pPlayerState,
+      const PlayerStageStats* pPlayerStageStats);
 
-	virtual void Update( float fDelta );
+  virtual void Update(float fDelta);
 
-protected:
-	Sprite		m_sprFrame;
-	BitmapText	m_text;
+ protected:
+  Sprite m_sprFrame;
+  BitmapText m_text;
 };
 
 #endif
@@ -25,7 +26,7 @@ protected:
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -35,7 +36,7 @@ protected:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

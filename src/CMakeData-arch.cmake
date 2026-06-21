@@ -37,12 +37,14 @@ if(WIN32)
               "arch/Sound/DSoundHelpers.cpp"
               "arch/Sound/RageSoundDriver_DSound_Software.cpp"
               "arch/Sound/RageSoundDriver_WaveOut.cpp"
-              "arch/Sound/RageSoundDriver_WDMKS.cpp")
+              "arch/Sound/RageSoundDriver_WDMKS.cpp"
+              "arch/Sound/RageSoundDriver_WASAPI.cpp")
   list(APPEND SMDATA_ARCH_SOUND_HPP
               "arch/Sound/DSoundHelpers.h"
               "arch/Sound/RageSoundDriver_DSound_Software.h"
               "arch/Sound/RageSoundDriver_WaveOut.h"
-              "arch/Sound/RageSoundDriver_WDMKS.h")
+              "arch/Sound/RageSoundDriver_WDMKS.h"
+              "arch/Sound/RageSoundDriver_WASAPI.h")
 elseif(APPLE)
   list(APPEND SMDATA_ARCH_SOUND_SRC "arch/Sound/RageSoundDriver_AU.mm")
   list(APPEND SMDATA_ARCH_SOUND_HPP "arch/Sound/RageSoundDriver_AU.h")
@@ -186,6 +188,7 @@ list(APPEND SMDATA_ARCH_LIGHTS_SRC "arch/Lights/LightsDriver.cpp"
             "arch/Lights/LightsDriver_fusion.cpp"
             "arch/Lights/LightsDriver_MinimaidHID.cpp"
             "arch/Lights/LightsDriver_PacDrive.cpp"
+            "arch/Lights/LightsDriver_gpb.cpp"
             "arch/Lights/LightsDriver_HidBlueDot.cpp")
 list(APPEND SMDATA_ARCH_LIGHTS_HPP "arch/Lights/LightsDriver.h"
             "arch/Lights/LightsDriver_Export.h"
@@ -198,6 +201,7 @@ list(APPEND SMDATA_ARCH_LIGHTS_HPP "arch/Lights/LightsDriver.h"
             "arch/Lights/LightsDriver_fusion.h"
             "arch/Lights/LightsDriver_MinimaidHID.cpp"
             "arch/Lights/LightsDriver_PacDrive.h"
+            "arch/Lights/LightsDriver_gpb.h"
             "arch/Lights/LightsDriver_HidBlueDot.h")
 
 # TODO: Confirm if Apple can use the export.
@@ -247,8 +251,10 @@ source_group("Arch Specific\\\\Lights"
              ${SMDATA_ARCH_LIGHTS_HPP})
 
 list(APPEND SMDATA_ARCH_INPUT_SRC "arch/InputHandler/InputHandler.cpp"
+            "arch/InputHandler/InputHandler_PumpHID.cpp"
             "arch/InputHandler/InputHandler_MonkeyKeyboard.cpp")
 list(APPEND SMDATA_ARCH_INPUT_HPP "arch/InputHandler/InputHandler.h"
+            "arch/InputHandler/InputHandler_PumpHID.h"
             "arch/InputHandler/InputHandler_MonkeyKeyboard.h")
 
 if(WIN32)

@@ -1,0 +1,93 @@
+name: Clang Format Checker
+on: [push, pull_request]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  clang-format-checking:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Install clang-format 21
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 21
+          sudo apt-get install -y clang-format-21
+      - name: Collect changed source files
+        id: changed-files
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.sha }}"
+          else
+            BASE_SHA="${{ github.event.before }}"
+            HEAD_SHA="${{ github.sha }}"
+            if [[ "$BASE_SHA" == "0000000000000000000000000000000000000000" ]]; then
+              BASE_SHA="$(git rev-list --max-parents=0 "$HEAD_SHA" | tail -n 1)"
+            fi
+          fi
+
+          files=()
+          while IFS= read -r -d '' file; do
+            if [[ "$file" =~ ^src/.*\.(h|hpp|cpp|m|mm)$ ]]; then
+              files+=("$file")
+            fi
+          done < <(git diff -z --name-only --diff-filter=ACMR "$BASE_SHA" "$HEAD_SHA")
+
+          if (( ${#files[@]} == 0 )); then
+            echo "count=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          printf '%s\0' "${files[@]}" > changed_files.txt
+          echo "count=${#files[@]}" >> "$GITHUB_OUTPUT"
+
+      - name: Check formatting and annotate
+        if: steps.changed-files.outputs.count != '0'
+        run: |
+          set +e
+
+          output_file="clang_format_output.txt"
+          mapfile -d '' -t files < changed_files.txt
+          clang-format-21 --dry-run --Werror --style=file:.clang-format "${files[@]}" > "$output_file" 2>&1
+          status=$?
+
+          if [[ -s "$output_file" ]]; then
+            echo "clang-format diagnostics preview:"
+            sed -n '1,20p' "$output_file"
+            awk '
+              function esc(s) {
+                gsub(/%/, "%25", s)
+                gsub(/\r/, "%0D", s)
+                gsub(/\n/, "%0A", s)
+                return s
+              }
+              function isdiag(s) {
+                return (s ~ /^[^:]+:[0-9]+:[0-9]+:[[:space:]](error|warning):[[:space:]].*$/)
+              }
+              {
+                lines[NR] = $0
+              }
+              END {
+                for (i = 1; i <= NR; i++) {
+                  if (match(lines[i], /^([^:]+):([0-9]+):([0-9]+):[[:space:]](error|warning):[[:space:]](.*)$/, m)) {
+                    msg = m[5]
+                    if ((i + 1) <= NR && !isdiag(lines[i + 1])) msg = msg "\n" lines[i + 1]
+                    if ((i + 2) <= NR && !isdiag(lines[i + 1]) && !isdiag(lines[i + 2])) msg = msg "\n" lines[i + 2]
+                    printf("::%s file=%s,line=%s,col=%s::%s\n", m[4], m[1], m[2], m[3], esc(msg))
+                  }
+                }
+              }
+            ' "$output_file"
+          fi
+
+          exit $status
+
+      - name: No matching changed files
+        if: steps.changed-files.outputs.count == '0'
+        run: echo "No changed C/C++/Obj-C++ files in src/. Skipping clang-format."

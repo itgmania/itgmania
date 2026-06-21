@@ -1,29 +1,30 @@
 #ifndef ARCH_HOOKS_MACOSX_H
 #define ARCH_HOOKS_MACOSX_H
 
+#include <string>
+
 #include "ArchHooks.h"
 
-class ArchHooks_MacOSX : public ArchHooks
-{
-public:
-	void Init();
-	RString GetArchName() const;
-	void DumpDebugInfo();
-	RString GetPreferredLanguage();
-	float GetDisplayAspectRatio();
+class ArchHooks_MacOSX : public ArchHooks {
+ public:
+  void Init();
+  std::string GetArchName() const;
+  void DumpDebugInfo();
+  std::string GetPreferredLanguage();
+  float GetDisplayAspectRatio();
 };
 
 #ifdef ARCH_HOOKS
 #error "More than one ArchHooks selected!"
 #endif
 #define ARCH_HOOKS ArchHooks_MacOSX
-    
+
 #endif /* ARCH_HOOKS_MACOSX_H */
 
 /*
  * (c) 2003-2005 Steve Checkoway
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -33,7 +34,7 @@ public:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

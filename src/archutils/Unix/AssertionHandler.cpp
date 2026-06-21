@@ -1,78 +1,57 @@
-#include "global.h"
-#include "RageUtil.h"
-#include "RageException.h"
-#include "archutils/Unix/EmergencyShutdown.h"
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
 #include <assert.h>
+
+#include <cstring>
+#include <exception>
+#include <string>
+
+#include "RageThreads.h"
+#include "RageUtil.h"
+#include "global.h"
 
 /* We can define this symbol to catch failed assert() calls.  This is only used
  * for library code that uses assert(); internally we always use ASSERT, which
  * does this for all platforms, not just glibc. */
 
-extern "C" void __assert_fail( const char *assertion, const char *file, unsigned int line, const char *function ) throw()
-{
-	const RString error = ssprintf( "Assertion failure: %s: %s", function, assertion );
+extern "C" void __assert_fail(
+    const char* assertion, const char* file, unsigned int line,
+    const char* function) throw() {
+  const std::string error =
+      ssprintf("Assertion failure: %s: %s", function, assertion);
 
-#if defined(CRASH_HANDLER)
-	Checkpoints::SetCheckpoint( file, line, error );
-	sm_crash( assertion );
-#else
-	/* It'd be nice to just throw an exception here, but throwing an exception
-	 * through C code sometimes explodes. */
-
-	DoEmergencyShutdown();
-
-	_exit(0);
-#endif
+  Checkpoints::SetCheckpoint(file, line, error);
+  sm_crash(assertion);
 }
 
+extern "C" void __assert_perror_fail(
+    int errnum, const char* file, unsigned int line,
+    const char* function) throw() {
+  const std::string error =
+      ssprintf("Assertion failure: %s: %s", function, strerror(errnum));
 
-extern "C" void __assert_perror_fail( int errnum, const char *file, unsigned int line, const char *function ) throw()
-{
-	const RString error = ssprintf( "Assertion failure: %s: %s", function, strerror(errnum) );
-
-#if defined(CRASH_HANDLER)
-	Checkpoints::SetCheckpoint( file, line, error );
-	sm_crash( strerror(errnum) );
-#else
-
-	DoEmergencyShutdown();
-
-	_exit(0);
-#endif
+  Checkpoints::SetCheckpoint(file, line, error);
+  sm_crash(strerror(errnum));
 }
 
-/* Catch unhandled C++ exceptions.  Note that this works in g++ even with -fno-exceptions, in
- * which case it'll be called if any exceptions are thrown at all. */
-void UnexpectedExceptionHandler()
-{
-	std::exception_ptr exptr = std::current_exception();
-	try
-	{
-		std::rethrow_exception(exptr);
-	}
-	catch (std::exception &ex)
-	{
-#if defined(CRASH_HANDLER)
-		const RString error = ssprintf("Unhandled exception: %s", ex.what());
-		sm_crash( error );
-#endif
-	}
-	// TODO: Don't throw anything not subclassing std::exception
-	catch(...)
-	{
-#if defined(CRASH_HANDLER)
-		const RString error = ssprintf("Unknown exception.");
-		sm_crash( error );
-#endif
-	}
+/* Catch unhandled C++ exceptions.  Note that this works in g++ even with
+ * -fno-exceptions, in which case it'll be called if any exceptions are thrown
+ * at all. */
+void UnexpectedExceptionHandler() {
+  std::exception_ptr exptr = std::current_exception();
+  try {
+    std::rethrow_exception(exptr);
+  } catch (std::exception& ex) {
+    const std::string error = ssprintf("Unhandled exception: %s", ex.what());
+    sm_crash(error);
+  }
+  // TODO: Don't throw anything not subclassing std::exception
+  catch (...) {
+    const std::string error = ssprintf("Unknown exception.");
+    sm_crash(error);
+  }
 }
 
-void InstallExceptionHandler()
-{
-	std::set_terminate( UnexpectedExceptionHandler );
+void InstallExceptionHandler() {
+  std::set_terminate(UnexpectedExceptionHandler);
 }
 
 /*

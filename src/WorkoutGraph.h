@@ -3,37 +3,36 @@
 #ifndef WorkoutGraph_H
 #define WorkoutGraph_H
 
+#include <vector>
+
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "Sprite.h"
 
-#include <vector>
-
-
 class Trail;
 
-class WorkoutGraph : public ActorFrame
-{
-public:
-	WorkoutGraph();
-	~WorkoutGraph();
-	virtual WorkoutGraph *Copy() const;
+class WorkoutGraph : public ActorFrame {
+ public:
+  WorkoutGraph();
+  ~WorkoutGraph();
+  virtual WorkoutGraph* Copy() const;
 
-	void Load();
-	void LoadFromNode( const XNode* pNode );
-	void SetFromCurrentWorkout();
-	void SetFromGameStateAndHighlightSong( int iSongIndex );
+  void Load();
+  void LoadFromNode(const XNode* pNode);
+  void SetFromCurrentWorkout();
+  void SetFromGameStateAndHighlightSong(int iSongIndex);
 
-	// Lua
-	void PushSelf( lua_State *L );
+  // Lua
+  void PushSelf(lua_State* L);
 
-protected:
-	void SetInternal( int iNumSongsToShowForCurrentStage );
-	void HighlightSong( int iSongIndex );
+ protected:
+  void SetInternal(int iNumSongsToShowForCurrentStage);
+  void HighlightSong(int iSongIndex);
 
-	Sprite m_sprEmpty;
-	std::vector<Sprite*>	m_vpBars;
+  Sprite m_sprEmpty;
+  std::vector<Sprite*> m_vpBars;
 
-	int m_iSongsChoppedOffAtBeginning;
+  int m_iSongsChoppedOffAtBeginning;
 };
 
 #endif

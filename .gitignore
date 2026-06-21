@@ -13,6 +13,7 @@ CPackSourceConfig.cmake
 # The following are generated from CMake, and thus should be stopped.
 ITGmania.project
 ITGmania.workspace
+build/
 Build/
 !Build/INSTALL.md
 !Build/README.md

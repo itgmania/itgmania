@@ -1,28 +1,29 @@
 #ifndef SCORE_DISPLAY_RAVE_H
 #define SCORE_DISPLAY_RAVE_H
 
-#include "ScoreDisplay.h"
-#include "GameConstantsAndTypes.h"
-#include "Sprite.h"
-#include "BitmapText.h"
 #include "AutoActor.h"
+#include "BitmapText.h"
+#include "GameConstantsAndTypes.h"
+#include "ScoreDisplay.h"
+#include "Sprite.h"
 
 /** @brief ScoreDisplay implementation for PLAY_MODE_RAVE. */
-class ScoreDisplayRave : public ScoreDisplay
-{
-public:
-	ScoreDisplayRave();
-	virtual void Init( const PlayerState* pPlayerState, const PlayerStageStats* pPlayerStageStats );
+class ScoreDisplayRave : public ScoreDisplay {
+ public:
+  ScoreDisplayRave();
+  virtual void Init(
+      const PlayerState* pPlayerState,
+      const PlayerStageStats* pPlayerStageStats);
 
-	virtual void Update( float fDelta );
+  virtual void Update(float fDelta);
 
-protected:
-	AutoActor m_sprFrameBase;
-	Sprite m_sprMeter[NUM_ATTACK_LEVELS];
-	AutoActor m_sprFrameOverlay;
-	BitmapText	m_textLevel;
+ protected:
+  AutoActor m_sprFrameBase;
+  Sprite m_sprMeter[NUM_ATTACK_LEVELS];
+  AutoActor m_sprFrameOverlay;
+  BitmapText m_textLevel;
 
-	AttackLevel	m_lastLevelSeen;
+  AttackLevel m_lastLevelSeen;
 };
 
 #endif
@@ -30,7 +31,7 @@ protected:
 /*
  * (c) 2003 Chris Danford
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -40,7 +41,7 @@ protected:
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

@@ -55,40 +55,6 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Select static MSVC runtime instead of DLL
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-# Checks the standard include directories for c-style headers. We may use C++ in
-# this project, but the check works better with plain C headers.
-include(CheckIncludeFiles)
-check_include_files(alloca.h HAVE_ALLOCA_H)
-check_include_files(assert.h HAVE_ASSERT_H)
-check_include_files(dlfcn.h HAVE_DLFCN_H)
-check_include_files(dirent.h HAVE_DIRENT_H)
-check_include_files(errno.h HAVE_ERRNO_H)
-check_include_files(fcntl.h HAVE_FCNTL_H)
-check_include_files(float.h HAVE_FLOAT_H)
-check_include_files(inttypes.h HAVE_INTTYPES_H)
-check_include_files(limits.h HAVE_LIMITS_H)
-check_include_files(math.h HAVE_MATH_H)
-check_include_files(memory.h HAVE_MEMORY_H)
-check_include_files(stdarg.h HAVE_STDARG_H)
-check_include_files(stddef.h HAVE_STDDEF_H)
-check_include_files(stdint.h HAVE_STDINT_H)
-check_include_files(stdlib.h HAVE_STDLIB_H)
-check_include_files(strings.h HAVE_STRINGS_H)
-check_include_files(string.h HAVE_STRING_H)
-check_include_files(unistd.h HAVE_UNISTD_H)
-check_include_files(sys/param.h HAVE_SYS_PARAM_H)
-check_include_files(sys/stat.h HAVE_SYS_STAT_H)
-check_include_files(sys/types.h HAVE_SYS_TYPES_H)
-check_include_files(sys/utsname.h HAVE_SYS_UTSNAME_H)
-check_include_files(sys/wait.h HAVE_SYS_WAIT_H)
-
-check_include_files(endian.h HAVE_ENDIAN_H)
-check_include_files(sys/endian.h HAVE_SYS_ENDIAN_H)
-check_include_files(machine/endian.h HAVE_MACHINE_ENDIAN_H)
-
-if(HAVE_STDLIB_H AND HAVE_STDARG_H AND HAVE_STRING_H AND HAVE_FLOAT_H)
-  set(STDC_HEADERS 1)
-endif()
 
 include(CheckFunctionExists)
 include(CheckSymbolExists)
@@ -109,17 +75,7 @@ check_cxx_symbol_exists(strcasecmp cstring HAVE_STRCASECMP)
 check_function_exists(waitpid HAVE_WAITPID)
 
 # Mostly universal symbols.
-check_cxx_symbol_exists(strtof cstdlib HAVE_STRTOF)
-check_symbol_exists(M_PI math.h HAVE_M_PI)
 check_symbol_exists(posix_fadvise fcntl.h HAVE_POSIX_FADVISE)
-
-# Checks to make it easier to work with 32-bit/64-bit builds if required.
-include(CheckTypeSize)
-check_type_size(pid_t SIZEOF_PID_T)
-check_type_size(int SIZEOF_INT)
-check_type_size(long SIZEOF_LONG)
-check_type_size("long long" SIZEOF_LONG_LONG)
-
 
 if(WIN32)
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -127,30 +83,6 @@ if(WIN32)
   else()
     set(SM_WIN32_ARCH "x86")
   endif()
-endif()
-
-check_compile_features("${SM_CMAKE_DIR}/TestCode"
-                       "${SM_CMAKE_DIR}/TestCode/test_external.c"
-                       "Checking for external name shortening requirements"
-                       "not needed"
-                       "needed"
-                       SM_BUILT_LONG_NAME
-                       TRUE)
-
-if(NOT SM_BUILT_LONG_NAME)
-  set(NEED_SHORT_EXTERNAL_NAMES 1)
-endif()
-
-check_compile_features("${SM_CMAKE_DIR}/TestCode"
-                       "${SM_CMAKE_DIR}/TestCode/test_broken.c"
-                       "Checking if incomplete types are broken."
-                       "not broken"
-                       "broken"
-                       SM_BUILT_INCOMPLETE_TYPE
-                       FALSE)
-
-if(SM_BUILT_INCOMPLETE_TYPE)
-  set(INCOMPLETE_TYPES_BROKEN 1)
 endif()
 
 # Dependencies go here.
@@ -345,9 +277,9 @@ elseif(LINUX OR BSD)
   find_package(udev REQUIRED)
 endif(WIN32) # LINUX OR BSD, APPLE
 
-configure_file("${SM_SRC_DIR}/config.in.hpp"
+configure_file("${SM_SRC_DIR}/config.hpp.in"
                "${SM_GENERATED_SRC_DIR}/config.hpp")
-configure_file("${SM_SRC_DIR}/verstub.in.cpp"
+configure_file("${SM_SRC_DIR}/verstub.cpp.in"
                "${SM_GENERATED_SRC_DIR}/verstub.cpp")
 
 # Define installer based items for cpack.

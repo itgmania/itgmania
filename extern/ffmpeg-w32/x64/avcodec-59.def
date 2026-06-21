@@ -17,61 +17,10 @@ EXPORTS
     av_bsf_list_parse_str
     av_bsf_receive_packet
     av_bsf_send_packet
-    avcodec_align_dimensions
-    avcodec_align_dimensions2
-    avcodec_alloc_context3
-    avcodec_chroma_pos_to_enum
-    avcodec_close
-    avcodec_configuration
-    avcodec_dct_alloc
-    avcodec_dct_get_class
-    avcodec_dct_init
-    avcodec_decode_subtitle2
-    avcodec_default_execute
-    avcodec_default_execute2
-    avcodec_default_get_buffer2
-    avcodec_default_get_encode_buffer
-    avcodec_default_get_format
-    avcodec_descriptor_get
-    avcodec_descriptor_get_by_name
-    avcodec_descriptor_next
-    avcodec_encode_subtitle
-    avcodec_enum_to_chroma_pos
     av_codec_ffversion
-    avcodec_fill_audio_frame
-    avcodec_find_best_pix_fmt_of_list
-    avcodec_find_decoder
-    avcodec_find_decoder_by_name
-    avcodec_find_encoder
-    avcodec_find_encoder_by_name
-    avcodec_flush_buffers
-    avcodec_free_context
-    avcodec_get_class
-    avcodec_get_frame_class
-    avcodec_get_hw_config
-    avcodec_get_hw_frames_parameters
-    avcodec_get_name
-    avcodec_get_subtitle_rect_class
-    avcodec_get_type
     av_codec_is_decoder
     av_codec_is_encoder
-    avcodec_is_open
     av_codec_iterate
-    avcodec_license
-    avcodec_open2
-    avcodec_parameters_alloc
-    avcodec_parameters_copy
-    avcodec_parameters_free
-    avcodec_parameters_from_context
-    avcodec_parameters_to_context
-    avcodec_pix_fmt_to_codec_tag
-    avcodec_profile_name
-    avcodec_receive_frame
-    avcodec_receive_packet
-    avcodec_send_frame
-    avcodec_send_packet
-    avcodec_string
-    avcodec_version
     av_cpb_properties_alloc
     av_d3d11va_alloc_context
     av_dct_calc
@@ -131,6 +80,68 @@ EXPORTS
     av_parser_init
     av_parser_iterate
     av_parser_parse2
+    av_qsv_alloc_context
+    av_rdft_calc
+    av_rdft_end
+    av_rdft_init
+    av_shrink_packet
+    av_vorbis_parse_frame
+    av_vorbis_parse_frame_flags
+    av_vorbis_parse_free
+    av_vorbis_parse_init
+    av_vorbis_parse_reset
+    av_xiphlacing
+    avcodec_align_dimensions
+    avcodec_align_dimensions2
+    avcodec_alloc_context3
+    avcodec_chroma_pos_to_enum
+    avcodec_close
+    avcodec_configuration
+    avcodec_dct_alloc
+    avcodec_dct_get_class
+    avcodec_dct_init
+    avcodec_decode_subtitle2
+    avcodec_default_execute
+    avcodec_default_execute2
+    avcodec_default_get_buffer2
+    avcodec_default_get_encode_buffer
+    avcodec_default_get_format
+    avcodec_descriptor_get
+    avcodec_descriptor_get_by_name
+    avcodec_descriptor_next
+    avcodec_encode_subtitle
+    avcodec_enum_to_chroma_pos
+    avcodec_fill_audio_frame
+    avcodec_find_best_pix_fmt_of_list
+    avcodec_find_decoder
+    avcodec_find_decoder_by_name
+    avcodec_find_encoder
+    avcodec_find_encoder_by_name
+    avcodec_flush_buffers
+    avcodec_free_context
+    avcodec_get_class
+    avcodec_get_frame_class
+    avcodec_get_hw_config
+    avcodec_get_hw_frames_parameters
+    avcodec_get_name
+    avcodec_get_subtitle_rect_class
+    avcodec_get_type
+    avcodec_is_open
+    avcodec_license
+    avcodec_open2
+    avcodec_parameters_alloc
+    avcodec_parameters_copy
+    avcodec_parameters_free
+    avcodec_parameters_from_context
+    avcodec_parameters_to_context
+    avcodec_pix_fmt_to_codec_tag
+    avcodec_profile_name
+    avcodec_receive_frame
+    avcodec_receive_packet
+    avcodec_send_frame
+    avcodec_send_packet
+    avcodec_string
+    avcodec_version
     avpriv_ac3_parse_header
     avpriv_adts_header_parse
     avpriv_codec_get_cap_skip_frame_fill_param
@@ -152,15 +163,4 @@ EXPORTS
     avpriv_pix_fmt_find
     avpriv_split_xiph_headers
     avpriv_tak_parse_streaminfo
-    av_qsv_alloc_context
-    av_rdft_calc
-    av_rdft_end
-    av_rdft_init
-    av_shrink_packet
     avsubtitle_free
-    av_vorbis_parse_frame
-    av_vorbis_parse_frame_flags
-    av_vorbis_parse_free
-    av_vorbis_parse_init
-    av_vorbis_parse_reset
-    av_xiphlacing

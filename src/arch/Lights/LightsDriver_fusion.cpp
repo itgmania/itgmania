@@ -1,9 +1,15 @@
 #include "LightsDriver_fusion.h"
 
+#include <cstring>
+#include <string>
+
 #include "Game.h"
+#include "GameInput.h"
 #include "GameState.h"
-#include "RageLog.h"
-#include "global.h"
+#include "InputMapper.h"
+#include "LightsManager.h"
+#include "StdString.h"
+#include "arch/Lights/LightsDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(fusion);
 
@@ -37,7 +43,7 @@ void LightsDriver_fusion::Set(const LightsState* ls) {
 
   // check to see which game we are running as it can change during gameplay.
   const InputScheme* pInput = &GAMESTATE->GetCurrentGame()->m_InputScheme;
-  RString sInputName = pInput->m_szName;
+  std::string sInputName = pInput->m_szName;
 
   if (EqualsNoCase(sInputName, "dance")) {
     outputBuffer[FUSION_P1_UL] =
@@ -98,6 +104,8 @@ void LightsDriver_fusion::Set(const LightsState* ls) {
         ls->m_bGameButtonLights[GameController_2][PUMP_BUTTON_DOWNRIGHT] ? 0xFF
                                                                          : 0x00;
   }
+
+  outputBuffer[FUSION_COIN_PULSE] = ls->m_bCoinCounter ? 0xFF : 0x00;
 
   // tying bass to led for debugging is fun!
   outputBuffer[FUSION_LED] = outputBuffer[FUSION_NEON];

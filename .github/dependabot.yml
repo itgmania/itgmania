@@ -12,6 +12,15 @@ updates:
     # Raise pull requests for version updates
     # against the `beta` branch
     target-branch: "beta"
-    # Check the for updates once a week
+    # Check for updates once a week
     schedule:
       interval: "weekly"
+  # Enable version updates for gitsubmodules
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    # Raise pull requests for version updates
+    # against the `beta` branch
+    target-branch: "beta"
+    # Check for updates once a month
+    schedule:
+      interval: "monthly"

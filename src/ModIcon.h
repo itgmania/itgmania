@@ -1,32 +1,30 @@
 #ifndef ModIcon_H
 #define ModIcon_H
 
+#include <string>
+#include <vector>
+
 #include "ActorFrame.h"
 #include "AutoActor.h"
 #include "BitmapText.h"
-#include "PlayerNumber.h"
 #include "ThemeMetric.h"
 
-#include <vector>
-
-
 /** @brief Shows PlayerOptions and SongOptions in icon form. */
-class ModIcon : public ActorFrame
-{
-public:
-	ModIcon();
-	ModIcon( const ModIcon &cpy );
-	void Load( RString sMetricsGroup );
-	void Set( const RString &sText );
+class ModIcon : public ActorFrame {
+ public:
+  ModIcon();
+  ModIcon(const ModIcon& cpy);
+  void Load(std::string sMetricsGroup);
+  void Set(const std::string& sText);
 
-protected:
-	BitmapText	m_text;
-	AutoActor	m_sprFilled;
-	AutoActor	m_sprEmpty;
+ protected:
+  BitmapText m_text;
+  AutoActor m_sprFilled;
+  AutoActor m_sprEmpty;
 
-	ThemeMetric<int> CROP_TEXT_TO_WIDTH;
-	ThemeMetric<RString> STOP_WORDS;
-	std::vector<RString> m_vStopWords;
+  ThemeMetric<int> CROP_TEXT_TO_WIDTH;
+  ThemeMetric<std::string> STOP_WORDS;
+  std::vector<std::string> m_vStopWords;
 };
 
 #endif

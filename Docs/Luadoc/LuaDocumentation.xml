@@ -3863,8 +3863,17 @@ NETWORK:WebSocket{
 	<Function name='DoesNoteSkinExist' return='bool' arguments='string strName'>
 		Returns <code>true</code> if the <code>strName</code> noteskin exists in the current gametype.
 	</Function>
-	<Function name='GetNoteSkinNames' return='{string}' arguments=''>
-		Returns a table of noteskin names for the current gametype.
+<Function name='GetNoteSkinNames' return='{string}' arguments='bool bIncludeVariants'>
+		Returns a table of noteskin names for the current gametype. (New since ITGmania 1.2.0) If the optional argument <code>bIncludeVariants</code> is true or omitted, the table will include both base noteskin names and their variants.
+	</Function>
+	<Function name='HasVariants' return='bool' arguments='string strName' since='ITGmania 1.2.0'>
+		Returns <code>true</code> if the noteskin <code>strName</code> has any variants.
+	</Function>
+	<Function name='GetVariantNamesForNoteSkin' return='{string}' arguments='string strName' since='ITGmania 1.2.0'>
+		Returns a table of variant names for the noteskin <code>strName</code>. If the noteskin has no variants, returns an empty table.
+	</Function>
+	<Function name='IsNoteSkinVariant' return='bool' arguments='string strName' since='ITGmania 1.2.0'>
+		Returns <code>true</code> if the noteskin <code>strName</code> is a variant of another noteskin.
 	</Function>
 </Class>
 <Class name='NCSplineHandler'>
@@ -5326,6 +5335,9 @@ Details of the <code>event</code> table:
 	<Function name='GetEditState' return='EditState' arguments=''>
 		Returns the current <Link class='ENUM' function='EditState' />.
 	</Function>
+	<Function name='SeekSong' return='void' arguments='float second' since='ITGmania 1.2.0'>
+		Moves the song cursor to the input <code>second</code> seconds.
+	</Function>
 </Class>
 <Class name='ScreenEvaluation' grouping='Screen'>
 	<Function name='GetStageStats' return='StageStats' arguments=''>
@@ -5487,6 +5499,13 @@ Details of the <code>event</code> table:
 	</Function>
 	<Function name='SetOptionRowIndex' return='' arguments='PlayerNumber pn, int iRow' since='ITGmania 1.2.0'>
 		Sets OptionRow <code>iRow</code> as the active row for player <code>pn</code>.  The first row has index <code>0</code>.
+	</Function>
+	<Function name='SetOptionRowVisible' return='' arguments='int iRow, bool bVisible, bool bRedraw' since='ITGmania 1.2.0'>
+			Sets OptionRow <code>iRow</code> to be visible or invisible according to <code>bVisible</code>.  The first row has index <code>0</code>.	<br />
+			Setting an option row to invisible disables it for both players and pops it out of the options list. Use <code>bRedraw</code> to leverage whether the rows are repositioned immediately.
+	</Function>
+	<Function name='RedrawOptions' return='' arguments='' since='ITGmania 1.2.0'>
+			Redraws the options list which updates each row's position and visibility, maintains current indexes and will exclude disabled rows.
 	</Function>
 </Class>
 <Class name='ScreenPlayerOptions' grouping='Screen'>
@@ -5963,6 +5982,17 @@ local args = {
 		(New since ITGmania 0.6.0) If the optional argument <code>bIsAbsolute</code> is set, instead treats
 		sListName as an absolute path instead of loading it from the Theme's <code>Other</code> directory.
 	</Function>
+	<Function name='SetPreferredSongsFromTable' return='void' arguments='table' since='ITGmania 1.2.0'>
+		An alternate version of SetPreferredSongs that takes a key value table of songs where the key is the
+		section name and the value is a table of songs that belong in that section. This allows themes to
+		set preferred songs without needing to read from a file.
+<pre><code>
+{
+	"Section Name 1" = { song1, song2, song3 },
+	"Section Name 2" = { song4, song5, song6 }
+}
+</code></pre>
+	</Function>
 	<Function name='SongToPreferredSortSectionName' return='string' arguments='Song s'>
 		Returns the preferred sort section name for the specified Song.
 	</Function>
@@ -6284,6 +6314,24 @@ local spr = Def.Sprite{
 	</Function>
 	<Function name='GetMeter' return='int' arguments=''>
 		Returns the numerical difficulty of the Steps.
+	</Function>
+	<Function name='GetNoteAnnotations' return='table' arguments='PlayerNumber pn'>
+		Returns a table with additional information about the notes in this stepchart.
+		Each entry includes data about predicted foot placement for each note, as well as predicted tech notations for the given beat.
+		`footPlacement` is a table that maps column index to the predicted <Link class='ENUM' function='Foot'/> (NOTE that the column indexes are 1-based)
+		`tech` is an array of <Link class='ENUM' function='TechCountsCategory'/> predicted for the given beat. These are in no particular order, but each enum should only show up once.
+		<code>
+		[
+			{
+				"beat": 4.20,
+				"footPlacement": {
+					2: "Foot_LeftHeel",
+					3: "Foot_LeftToe"
+				},
+				"tech": ["TechCountsCategory_Brackets"]
+			}
+		]
+		</code>
 	</Function>
 	<Function name='HasAttacks' return='bool' arguments=''>
 		Returns <code>true</code> if the Steps has any attacks.

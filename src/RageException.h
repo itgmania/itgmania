@@ -1,19 +1,20 @@
 #ifndef RAGE_EXCEPTION_H
 #define RAGE_EXCEPTION_H
 
+#include <string>
+
 #include "config.hpp"
 
 /**
  * @brief Namespace for throwing fatal errors.
  *
  * The original documentation stated this was a class for some reason. */
-namespace RageException
-{
-	[[noreturn]]
-	void Throw( const char *fmt, ... ) PRINTF(1,2);
+namespace RageException {
+[[noreturn]]
+void Throw(const char* fmt, ...) PRINTF(1, 2);
 
-	void SetCleanupHandler( void (*pHandler)(const RString &sError) );
-}
+void SetCleanupHandler(void (*pHandler)(const std::string& sError));
+}  // namespace RageException
 
 #endif
 
@@ -41,4 +42,3 @@ namespace RageException
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

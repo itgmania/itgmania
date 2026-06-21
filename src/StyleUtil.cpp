@@ -1,74 +1,66 @@
-#include "global.h"
 #include "StyleUtil.h"
-#include "GameManager.h"
-#include "XmlFile.h"
+
 #include "Game.h"
+#include "GameManager.h"
 #include "Style.h"
+#include "XmlFile.h"
+#include "global.h"
 
-
-void StyleID::FromStyle( const Style *p )
-{
-	if( p )
-	{
-		sGame = GAMEMAN->GetGameForStyle(p)->m_szName;
-		sStyle = p->m_szName;
-	}
-	else
-	{
-		sGame = "";
-		sStyle = "";
-	}
+void StyleID::FromStyle(const Style* p) {
+  if (p) {
+    sGame = GAMEMAN->GetGameForStyle(p)->m_szName;
+    sStyle = p->m_szName;
+  } else {
+    sGame = "";
+    sStyle = "";
+  }
 }
 
-const Style *StyleID::ToStyle() const
-{
-	const Game* pGame = GAMEMAN->StringToGame( sGame );
-	if( pGame == nullptr )
-		return nullptr;
+const Style* StyleID::ToStyle() const {
+  const Game* pGame = GAMEMAN->StringToGame(sGame);
+  if (pGame == nullptr) {
+    return nullptr;
+  }
 
-	return GAMEMAN->GameAndStringToStyle( pGame, sStyle );
+  return GAMEMAN->GameAndStringToStyle(pGame, sStyle);
 }
 
-XNode* StyleID::CreateNode() const
-{
-	XNode* pNode = new XNode( "Style" );
+XNode* StyleID::CreateNode() const {
+  XNode* pNode = new XNode("Style");
 
-	pNode->AppendAttr( "Game", sGame );
-	pNode->AppendAttr( "Style", sStyle );
+  pNode->AppendAttr("Game", sGame);
+  pNode->AppendAttr("Style", sStyle);
 
-	return pNode;
+  return pNode;
 }
 
-void StyleID::LoadFromNode( const XNode* pNode ) 
-{
-	Unset();
-	ASSERT( pNode->GetName() == "Style" );
+void StyleID::LoadFromNode(const XNode* pNode) {
+  Unset();
+  ASSERT(pNode->GetName() == "Style");
 
-	sGame = "";
-	pNode->GetAttrValue("Game", sGame);
+  sGame = "";
+  pNode->GetAttrValue("Game", sGame);
 
-	sStyle = "";
-	pNode->GetAttrValue("Style", sStyle);
+  sStyle = "";
+  pNode->GetAttrValue("Style", sStyle);
 }
 
-bool StyleID::IsValid() const
-{
-	return !sGame.empty() && !sStyle.empty();
-}
+bool StyleID::IsValid() const { return !sGame.empty() && !sStyle.empty(); }
 
-bool StyleID::operator<( const StyleID &rhs ) const
-{
-#define COMP(a) if(a<rhs.a) return true; if(a>rhs.a) return false;
-	COMP(sGame);
-	COMP(sStyle);
+bool StyleID::operator<(const StyleID& rhs) const {
+#define COMP(a)               \
+  if (a < rhs.a) return true; \
+  if (a > rhs.a) return false;
+  COMP(sGame);
+  COMP(sStyle);
 #undef COMP
-	return false;
+  return false;
 }
 
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -78,7 +70,7 @@ bool StyleID::operator<( const StyleID &rhs ) const
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF

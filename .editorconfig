@@ -2,14 +2,23 @@
 root = true
 
 [*]
+end_of_line = lf
 indent_style = tab
 indent_size = 4
 charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
+[*.{c,cpp,cpp.in,h,hpp,hpp.in,m,mm}]
+indent_size = 2
+indent_style = space
+
 [*.cmake]
 indent_size = 2
+indent_style = space
+
+[*.rc]
+indent_size = 4
 indent_style = space
 
 [*.txt]

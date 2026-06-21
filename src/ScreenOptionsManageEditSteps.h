@@ -1,34 +1,36 @@
 #ifndef ScreenOptionsManageEditSteps_H
 #define ScreenOptionsManageEditSteps_H
 
-#include "ScreenOptions.h"
-#include "GameConstantsAndTypes.h"
-
+#include <string>
 #include <vector>
 
+#include "InputEventPlus.h"
+#include "PlayerNumber.h"
+#include "ScreenMessage.h"
+#include "ScreenOptions.h"
+#include "ThemeMetric.h"
 
 class Steps;
 
-class ScreenOptionsManageEditSteps : public ScreenOptions
-{
-public:
-	void Init();
-	virtual void BeginScreen();
+class ScreenOptionsManageEditSteps : public ScreenOptions {
+ public:
+  void Init();
+  virtual void BeginScreen();
 
-	virtual void HandleScreenMessage( const ScreenMessage SM );
+  virtual void HandleScreenMessage(const ScreenMessage SM);
 
-protected:
-	virtual void ImportOptions( int iRow, const std::vector<PlayerNumber> &vpns );
-	virtual void ExportOptions( int iRow, const std::vector<PlayerNumber> &vpns );
+ protected:
+  virtual void ImportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
+  virtual void ExportOptions(int iRow, const std::vector<PlayerNumber>& vpns);
 
-	virtual void AfterChangeRow( PlayerNumber pn );
-	virtual void ProcessMenuStart( const InputEventPlus &input );
+  virtual void AfterChangeRow(PlayerNumber pn);
+  virtual void ProcessMenuStart(const InputEventPlus& input);
 
-	Steps *GetStepsWithFocus() const;
+  Steps* GetStepsWithFocus() const;
 
-	std::vector<Steps*> m_vpSteps;
+  std::vector<Steps*> m_vpSteps;
 
-	ThemeMetric<RString> CREATE_NEW_SCREEN;
+  ThemeMetric<std::string> CREATE_NEW_SCREEN;
 };
 
 #endif

@@ -1,43 +1,43 @@
 #ifndef RAGE_SOUND_DRIVER_AU_H
 #define RAGE_SOUND_DRIVER_AU_H
 
+#include <AudioUnit/AudioUnit.h>
+#include <CoreFoundation/CoreFoundation.h>
+
+#include <cstdint>
+#include <string>
+
 #include "RageSoundDriver.h"
 #include "RageThreads.h"
 
-#include <cstdint>
+class RageSoundDriver_AU : public RageSoundDriver {
+ public:
+  RageSoundDriver_AU();
+  std::string Init();
+  ~RageSoundDriver_AU();
+  float GetPlayLatency() const;
+  int GetSampleRate() const { return m_iSampleRate; }
+  int64_t GetPosition() const;
 
-#include <AudioUnit/AudioUnit.h>
+ protected:
+  void SetupDecodingThread();
 
-class RageSoundDriver_AU: public RageSoundDriver
-{
-public:
-	RageSoundDriver_AU();
-	RString Init();
-	~RageSoundDriver_AU();
-	float GetPlayLatency() const;
-	int GetSampleRate() const { return m_iSampleRate; }
-	int64_t GetPosition() const;
+ private:
+  static OSStatus Render(
+      void* inRefCon, AudioUnitRenderActionFlags* ioActionFlags,
+      const AudioTimeStamp* inTimeStamp, UInt32 inBusNumber,
+      UInt32 inNumberFrames, AudioBufferList* ioData);
+  static void NameHALThread(
+      CFRunLoopObserverRef, CFRunLoopActivity activity, void* inRefCon);
 
-protected:
-	void SetupDecodingThread();
-
-private:
-	static OSStatus Render( void *inRefCon,
-				AudioUnitRenderActionFlags *ioActionFlags,
-				const AudioTimeStamp *inTimeStamp,
-				UInt32 inBusNumber,
-				UInt32 inNumberFrames,
-				AudioBufferList *ioData );
-	static void NameHALThread( CFRunLoopObserverRef, CFRunLoopActivity activity, void *inRefCon );
-
-	double m_TimeScale;
-	AudioUnit m_OutputUnit;
-	int m_iSampleRate;
-	bool m_bDone;
-	bool m_bStarted;
-	RageThreadRegister *m_pIOThread;
-	RageThreadRegister *m_pNotificationThread;
-	RageSemaphore m_Semaphore;
+  double m_TimeScale;
+  AudioUnit m_OutputUnit;
+  int m_iSampleRate;
+  bool m_bDone;
+  bool m_bStarted;
+  RageThreadRegister* m_pIOThread;
+  RageThreadRegister* m_pNotificationThread;
+  RageSemaphore m_Semaphore;
 };
 
 #endif
@@ -65,4 +65,3 @@ private:
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

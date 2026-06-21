@@ -7,7 +7,8 @@
 #define PRODUCT_FAMILY_BARE ITGmania
 
 /**
- * @brief A unique name for each application that you might want installed side-by-side with other applications.
+ * @brief A unique name for each application that you might want installed
+ * side-by-side with other applications.
  *
  * As an example, use "StepMania4" here, not "StepMania".
  * It would cause a conflict with older versions such as StepMania 3.X.
@@ -18,10 +19,12 @@
 #define PRODUCT_STRINGIFY(x) #x
 #define PRODUCT_XSTRINGIFY(x) PRODUCT_STRINGIFY(x)
 
-#define PRODUCT_FAMILY	PRODUCT_XSTRINGIFY(PRODUCT_FAMILY_BARE)
-#define PRODUCT_ID	PRODUCT_XSTRINGIFY(PRODUCT_ID_BARE)
+#define PRODUCT_FAMILY PRODUCT_XSTRINGIFY(PRODUCT_FAMILY_BARE)
+#define PRODUCT_ID PRODUCT_XSTRINGIFY(PRODUCT_ID_BARE)
 
-#define VIDEO_TROUBLESHOOTING_URL "http://old.stepmania.com/stepmaniawiki.php?title=Video_Driver_Troubleshooting"
+#define VIDEO_TROUBLESHOOTING_URL \
+  "http://old.stepmania.com/"     \
+  "stepmaniawiki.php?title=Video_Driver_Troubleshooting"
 /** @brief The URL to report bugs on the program. */
 #define REPORT_BUG_URL "https://github.com/itgmania/itgmania/issues"
 #define SM_DOWNLOAD_URL "https://www.itgmania.com/"
@@ -56,4 +59,3 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-

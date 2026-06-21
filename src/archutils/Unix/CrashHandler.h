@@ -1,19 +1,19 @@
 #ifndef CRASH_HANDLER_H
 #define CRASH_HANDLER_H
 
+#include <sys/signal.h>
+
 #include <csignal>
 #include <cstdint>
+#include <string>
 
-#include <ucontext.h>
-
-namespace CrashHandler
-{
-	void CrashHandlerHandleArgs( int argc, char* argv[] );
-	void InitializeCrashHandler();
-	void CrashSignalHandler( int signal, siginfo_t *si, const ucontext_t *uc );
-	void ForceCrash( const char *reason );
-	void ForceDeadlock( RString reason, uint64_t CrashHandle );
-}
+namespace CrashHandler {
+void CrashHandlerHandleArgs(int argc, char* argv[]);
+void InitializeCrashHandler();
+void CrashSignalHandler(int signal, siginfo_t* si, const ucontext_t* uc);
+void ForceCrash(const char* reason);
+void ForceDeadlock(std::string reason, uint64_t CrashHandle);
+}  // namespace CrashHandler
 
 #endif
 

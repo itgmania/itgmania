@@ -1,36 +1,36 @@
 #ifndef RAGE_SOUND_GENERIC_TEST
 #define RAGE_SOUND_GENERIC_TEST
 
-#include "DSoundHelpers.h"
-#include "RageThreads.h"
-#include "RageSoundDriver.h"
-
 #include <cstdint>
+#include <string>
 
-class RageSoundDriver_DSound_Software: public RageSoundDriver
-{
-public:
-	RageSoundDriver_DSound_Software();
-	virtual ~RageSoundDriver_DSound_Software();
-	RString Init();
+#include "DSoundHelpers.h"
+#include "RageSoundDriver.h"
+#include "RageThreads.h"
 
-	int64_t GetPosition() const;
-	float GetPlayLatency() const;
-	int GetSampleRate() const;
+class RageSoundDriver_DSound_Software : public RageSoundDriver {
+ public:
+  RageSoundDriver_DSound_Software();
+  virtual ~RageSoundDriver_DSound_Software();
+  std::string Init();
 
-protected:
-	void SetupDecodingThread();
+  int64_t GetPosition() const;
+  float GetPlayLatency() const;
+  int GetSampleRate() const;
 
-private:
-	DSound ds;
-	DSoundBuf *m_pPCM;
-	int m_iSampleRate;
+ protected:
+  void SetupDecodingThread();
 
-	bool m_bShutdownMixerThread;
+ private:
+  DSound ds;
+  DSoundBuf* m_pPCM;
+  int m_iSampleRate;
 
-	static int MixerThread_start(void *p);
-	void MixerThread();
-	RageThread m_MixingThread;
+  bool m_bShutdownMixerThread;
+
+  static int MixerThread_start(void* p);
+  void MixerThread();
+  RageThread m_MixingThread;
 };
 
 #endif

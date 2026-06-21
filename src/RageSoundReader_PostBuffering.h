@@ -3,19 +3,23 @@
 #ifndef RAGE_SOUND_READER_POST_BUFFERING_H
 #define RAGE_SOUND_READER_POST_BUFFERING_H
 
+#include <string>
+
+#include "RageSoundReader.h"
 #include "RageSoundReader_Filter.h"
 
-class RageSoundReader_PostBuffering: public RageSoundReader_Filter
-{
-public:
-	RageSoundReader_PostBuffering( RageSoundReader *pSource );
-	RageSoundReader_PostBuffering *Copy() const { return new RageSoundReader_PostBuffering(*this); }
-	static void SetMasterVolume( float fVolume );
-	virtual int Read( float *pBuf, int iFrames );
-	virtual bool SetProperty( const RString &sProperty, float fValue );
+class RageSoundReader_PostBuffering : public RageSoundReader_Filter {
+ public:
+  RageSoundReader_PostBuffering(RageSoundReader* pSource);
+  RageSoundReader_PostBuffering* Copy() const {
+    return new RageSoundReader_PostBuffering(*this);
+  }
+  static void SetMasterVolume(float fVolume);
+  virtual int Read(float* pBuf, int iFrames);
+  virtual bool SetProperty(const std::string& sProperty, float fValue);
 
-private:
-	float m_fVolume;
+ private:
+  float m_fVolume;
 };
 
 #endif

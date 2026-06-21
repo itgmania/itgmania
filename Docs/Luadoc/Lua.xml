@@ -994,6 +994,7 @@
 			<Function name='SetNumMultiplayerNoteFields'/>
 			<Function name='SetPreferredDifficulty'/>
 			<Function name='SetPreferredSong'/>
+			<Function name='SetPreferredSongsFromTable'/>
 			<Function name='SetPreferredSongGroup'/>
 			<Function name='SetSongOptions'/>
 			<Function name='SetStepsForEditMode'/>
@@ -1180,6 +1181,9 @@
 			<Function name='GetPathForNoteSkin'/>
 			<Function name='LoadActor'/>
 			<Function name='LoadActorForNoteSkin'/>
+			<Function name='HasVariants'/>
+			<Function name='IsNoteSkinVariant'/>
+			<Function name='GetVariantNamesForNoteSkin'/>
 		</Class>
 		<Class base='ActorFrame' name='OptionRow'>
 			<Function name='FirstItemGoesDown'/>
@@ -1685,6 +1689,7 @@
 		<Class base='ScreenWithMenuElements' name='ScreenAttract'/>
 		<Class base='ScreenWithMenuElements' name='ScreenEdit'>
 			<Function name='GetEditState'/>
+			<Function name='SeekSong'/>
 		</Class>
 		<Class base='ScreenWithMenuElements' name='ScreenEvaluation'>
 			<Function name='GetStageStats'/>
@@ -1741,6 +1746,8 @@
 			<Function name='GetNumRows'/>
 			<Function name='GetOptionRow'/>
 			<Function name='SetOptionRowIndex'/>
+			<Function name='SetOptionRowVisible'/>
+			<Function name='RedrawOptions'/>
 		</Class>
 		<Class base='ScreenOptions' name='ScreenPlayerOptions'>
 			<Function name='GetGoToOptions'/>
@@ -2414,6 +2421,13 @@
 			<EnumValue name='&apos;FileType_Lua&apos;' value='7'/>
 			<EnumValue name='&apos;FileType_Ini&apos;' value='8'/>
 		</Enum>
+		<Enum name='Foot'>
+			<EnumValue name='&apos;Foot_None&apos;' value='0'/>
+			<EnumValue name='&apos;Foot_LeftHeel&apos;' value='1'/>
+			<EnumValue name='&apos;Foot_LeftToe&apos;' value='2'/>
+			<EnumValue name='&apos;Foot_RightHeel&apos;' value='3'/>
+			<EnumValue name='&apos;Foot_RightToe&apos;' value='4'/>
+		</Enum>
 		<Enum name='GameController'>
 			<EnumValue name='&apos;GameController_1&apos;' value='0'/>
 			<EnumValue name='&apos;GameController_2&apos;' value='1'/>
@@ -2942,6 +2956,18 @@
 			<EnumValue name='&apos;TapNoteType_Attack&apos;' value='6'/>
 			<EnumValue name='&apos;TapNoteType_AutoKeySound&apos;' value='7'/>
 			<EnumValue name='&apos;TapNoteType_Fake&apos;' value='8'/>
+		</Enum>
+		<Enum name='TechCountsCategory'>
+			<EnumValue name='&apos;TechCountsCategory_Crossovers&apos;' value='0'/>
+			<EnumValue name='&apos;TechCountsCategory_HalfCrossovers&apos;' value='1'/>
+			<EnumValue name='&apos;TechCountsCategory_FullCrossovers&apos;' value='2'/>
+			<EnumValue name='&apos;TechCountsCategory_Footswitches&apos;' value='3'/>
+			<EnumValue name='&apos;TechCountsCategory_UpFootswitches&apos;' value='4'/>
+			<EnumValue name='&apos;TechCountsCategory_DownFootswitches&apos;' value='5'/>
+			<EnumValue name='&apos;TechCountsCategory_Sideswitches&apos;' value='6'/>
+			<EnumValue name='&apos;TechCountsCategory_Jacks&apos;' value='7'/>
+			<EnumValue name='&apos;TechCountsCategory_Brackets&apos;' value='8'/>
+			<EnumValue name='&apos;TechCountsCategory_Doublesteps&apos;' value='9'/>
 		</Enum>
 		<Enum name='TextGlowMode'>
 			<EnumValue name='&apos;TextGlowMode_Inner&apos;' value='0'/>
