@@ -4,9 +4,13 @@ local Noteskin = {}
 Noteskin.bBlanks = {
 	--["element"] = true|false;
 	["Hold Tail Active"] = true;
-	["Hold Tail Active"] = true;
+	["Hold Tail Inactive"] = true;
+	["Roll Tail Active"] = true;
 	["Roll Tail Inactive"] = true;
-	["Roll Tail Inactive"] = true;
+	["Hold Topcap Active"] = true;
+	["Hold Topcap Inactive"] = true;
+	["Roll Topcap Active"] = true;
+	["Roll Topcap Inactive"] = true;
 }
 Noteskin.PartsToRotate = {
 	--["elemenu"] = true|false;
@@ -17,8 +21,8 @@ Noteskin.ElementRedirs = {
 	--["element"] = "redirected_element";
 	["Hold Head Active"] = "Tap Note";
 	["Hold Head Inactive"] = "Tap Note";
-	["Roll Head Active"] = "Roll Head Active";
-	["Roll Head Inactive"] = "Roll Head Active";
+	["Roll Head Active"] = "Tap Note";
+	["Roll Head Inactive"] = "Tap Note";
 	["Tap Fake"] = "Tap Note";
 	["Tap Lift"] = "Tap Note";
 	--
@@ -27,14 +31,7 @@ Noteskin.ElementRedirs = {
 	["Hold Bottomcap Inactive"] = "Hold Bottomcap Active";
 	["Hold Tail Inactive"] = "Hold Tail Active";
 	--
-	["Roll Topcap Active"] = "Hold Topcap Active";
-	["Roll Body Active"] = "Hold Body Active";
-	["Roll Bottomcap Active"] = "Hold Bottomcap Active";
 	["Roll Tail Active"] = "Hold Tail Active";
-	--
-	["Roll Topcap Inactive"] = "Hold Topcap Active";
-	["Roll Body Inactive"] = "Hold Body Active";
-	["Roll Bottomcap Inactive"] = "Hold Bottomcap Active";
 	["Roll Tail Inactive"] = "Hold Tail Active";
 }
 -- explicit, n/w
