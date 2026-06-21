@@ -5,6 +5,7 @@
 
 #include <vector>
 
+#include "Compiler.h"
 #include "config.hpp"
 
 constexpr float PI = 3.1415926536f;

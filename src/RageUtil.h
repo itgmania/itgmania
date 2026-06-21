@@ -15,6 +15,7 @@
 #include <utility>
 #include <vector>
 
+#include "Compiler.h"
 #include "config.hpp"
 #include "global.h"
 
