@@ -56,26 +56,6 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 
-include(CheckFunctionExists)
-include(CheckSymbolExists)
-include(CheckCXXSymbolExists)
-
-# Mostly Windows functions.
-check_function_exists(_mkdir HAVE__MKDIR)
-check_cxx_symbol_exists(_snprintf cstdio HAVE__SNPRINTF)
-check_cxx_symbol_exists(stricmp cstring HAVE_STRICMP)
-check_cxx_symbol_exists(_stricmp cstring HAVE__STRICMP)
-
-# Mostly non-Windows functions.
-check_function_exists(fcntl HAVE_FCNTL)
-check_function_exists(fork HAVE_FORK)
-check_function_exists(mkdir HAVE_MKDIR)
-check_cxx_symbol_exists(snprintf cstdio HAVE_SNPRINTF)
-check_cxx_symbol_exists(strcasecmp cstring HAVE_STRCASECMP)
-check_function_exists(waitpid HAVE_WAITPID)
-
-# Mostly universal symbols.
-check_symbol_exists(posix_fadvise fcntl.h HAVE_POSIX_FADVISE)
 
 if(WIN32)
   if(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -96,10 +76,6 @@ find_package(Threads)
 if(${Threads_FOUND})
   set(HAS_PTHREAD TRUE)
   list(APPEND CMAKE_REQUIRED_LIBRARIES pthread)
-  check_symbol_exists(pthread_mutex_timedlock pthread.h
-                      HAVE_PTHREAD_MUTEX_TIMEDLOCK)
-  check_symbol_exists(pthread_cond_timedwait pthread.h
-                      HAVE_PTHREAD_COND_TIMEDWAIT)
 else()
   set(HAS_PTHREAD FALSE)
 endif()

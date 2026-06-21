@@ -140,7 +140,16 @@ MutexImpl_Pthreads::~MutexImpl_Pthreads() {
 }
 
 bool MutexImpl_Pthreads::Lock() {
-#if defined(HAVE_PTHREAD_MUTEX_TIMEDLOCK)
+#if defined(MACOSX)
+  int ret;
+  do {
+    ret = pthread_mutex_lock(&mutex);
+  } while (ret == -1 && ret == EINTR);
+
+  ASSERT_M(ret == 0, ssprintf("pthread_mutex_lock: %s", strerror(errno)));
+
+  return true;
+#else
   int len = 10;  // seconds
   int tries = 2;
 
@@ -176,15 +185,6 @@ bool MutexImpl_Pthreads::Lock() {
   }
 
   return false;
-#else
-  int ret;
-  do {
-    ret = pthread_mutex_lock(&mutex);
-  } while (ret == -1 && ret == EINTR);
-
-  ASSERT_M(ret == 0, ssprintf("pthread_mutex_lock: %s", strerror(errno)));
-
-  return true;
 #endif
 }
 
@@ -295,7 +295,6 @@ EventImpl_Pthreads::EventImpl_Pthreads(MutexImpl_Pthreads* pParent) {
 
 EventImpl_Pthreads::~EventImpl_Pthreads() { pthread_cond_destroy(&m_Cond); }
 
-#if defined(HAVE_PTHREAD_COND_TIMEDWAIT)
 bool EventImpl_Pthreads::Wait(RageTimer* pTimeout) {
   if (pTimeout == nullptr) {
     pthread_cond_wait(&m_Cond, &m_pParent->mutex);
@@ -331,14 +330,6 @@ bool EventImpl_Pthreads::Wait(RageTimer* pTimeout) {
 }
 
 bool EventImpl_Pthreads::WaitTimeoutSupported() const { return true; }
-#else
-bool EventImpl_Pthreads::Wait(RageTimer* pTimeout) {
-  pthread_cond_wait(&m_Cond, &m_pParent->mutex);
-  return true;
-}
-
-bool EventImpl_Pthreads::WaitTimeoutSupported() const { return false; }
-#endif
 
 void EventImpl_Pthreads::Signal() { pthread_cond_signal(&m_Cond); }
 
@@ -379,7 +370,6 @@ void SemaImpl_Pthreads::Post() {
 }
 
 bool SemaImpl_Pthreads::Wait() {
-#if defined(HAVE_PTHREAD_COND_TIMEDWAIT)
   timeval tv;
   gettimeofday(&tv, nullptr);
 
@@ -422,17 +412,6 @@ bool SemaImpl_Pthreads::Wait() {
     pthread_mutex_unlock(&m_Mutex);
     return true;
   }
-#else
-  pthread_mutex_lock(&m_Mutex);
-  while (!m_iValue) {
-    pthread_cond_wait(&m_Cond, &m_Mutex);
-  }
-
-  --m_iValue;
-  pthread_mutex_unlock(&m_Mutex);
-
-  return true;
-#endif
 }
 
 bool SemaImpl_Pthreads::TryWait() {
