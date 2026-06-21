@@ -206,7 +206,6 @@ public:
 	SortOrder m_SortOrder;
 	std::vector<Song*> m_songs;
 	std::vector<Group*> m_groups;
-	std::unordered_map<std::string, std::vector<Song*>> songsGroups;
 	Difficulty m_LastDifficulty;
 	CourseDifficulty m_LastCourseDifficulty;
 	StepsType m_LastStepsType;

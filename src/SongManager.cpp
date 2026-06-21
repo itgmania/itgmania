@@ -885,7 +885,16 @@ const std::vector<Song*> &SongManager::GetSongs( const RString &sGroupName ) con
 		{
 			if(prof->IsCustomSongGroup(sGroupName))
 			{
-				return prof->songsGroups[sGroupName];
+				std::vector<Song*> vGroupSongs;
+				vGroupSongs.clear();
+
+				for ( Song* song : prof->m_songs )
+				{
+					if ( song != nullptr && song->m_sGroupName == sGroupName )
+						vGroupSongs.push_back( song );
+				}
+
+				return vGroupSongs;
 			}
 		}
 	}
