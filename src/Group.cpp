@@ -132,8 +132,8 @@ Group::Group(
         }
 
         if (prof_slot != ProfileSlot_Invalid &&
-            (key == "DisplayTitle" || key == "SortTitle" || key == "TranslitTitle")
-        ) {
+            (key == "DisplayTitle" || key == "SortTitle" ||
+             key == "TranslitTitle")) {
           value = GetInternalGroupName(prof_slot, value);
         }
       }

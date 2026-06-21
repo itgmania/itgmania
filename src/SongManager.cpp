@@ -1107,7 +1107,7 @@ Group* SongManager::GetGroupFromName(const std::string& sGroupName) const {
   FOREACH_EnabledPlayer(pn) {
     Profile* prof = PROFILEMAN->GetProfile(pn);
     if (prof != nullptr) {
-      for (int i = 0; i < prof->m_groups.size(); i++) {
+      for (size_t i = 0; i < prof->m_groups.size(); i++) {
         Group* grp = prof->m_groups[i];
 
         if (grp->GetGroupName() == sGroupName) {
