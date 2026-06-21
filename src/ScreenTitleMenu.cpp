@@ -19,6 +19,7 @@
 #include "ScreenManager.h"
 #include "ScreenSelectMaster.h"
 #include "ThemeManager.h"
+#include "ThemeMetric.h"
 #include "Transition.h"
 
 #define COIN_MODE_CHANGE_SCREEN \

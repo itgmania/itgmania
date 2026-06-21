@@ -1,12 +1,10 @@
 #include "LightsDriver_Linux_PIUIOBTN_Leds.h"
 
-#include <fcntl.h>
-#include <stdio.h>
-
 #include "GameInput.h"
 #include "LightsManager.h"
 #include "RageUtil.h"
 #include "arch/Lights/LightsDriver.h"
+#include "arch/RageDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS2(PIUIOBTN_Leds, Linux_PIUIOBTN_Leds);
 

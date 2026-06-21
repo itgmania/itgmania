@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <string>
 
 #include "RageUtil.h"
 #include "Sprite.h"

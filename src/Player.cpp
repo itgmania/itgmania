@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <bitset>
-#include <climits>
 #include <cmath>
 #include <cstddef>
 #include <set>
@@ -2710,8 +2709,9 @@ void Player::Step(
           HideNote(col, iRowOfOverlappingNoteOrRow);
         }
       }
-    } else if (NoteDataWithScoring::IsRowCompletelyJudged(
-                   m_NoteData, iRowOfOverlappingNoteOrRow)) {
+    } else if (
+        NoteDataWithScoring::IsRowCompletelyJudged(
+            m_NoteData, iRowOfOverlappingNoteOrRow)) {
       FlashGhostRow(iRowOfOverlappingNoteOrRow);
     }
   }

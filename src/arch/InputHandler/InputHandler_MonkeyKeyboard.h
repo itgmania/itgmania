@@ -1,6 +1,8 @@
 #ifndef INPUT_HANDLER_MONKEY_SCRIPT
 #define INPUT_HANDLER_MONKEY_SCRIPT
 
+#include <vector>
+
 #include "InputHandler.h"
 #include "RageInputDevice.h"
 #include "RageTimer.h"

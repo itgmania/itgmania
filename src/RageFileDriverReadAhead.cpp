@@ -43,15 +43,12 @@
 
 #include "RageFileDriverReadAhead.h"
 
-#include <fcntl.h>
-
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
 
 #include "RageFileBasic.h"
 #include "RageFileManager_ReadAhead.h"
-#include "config.hpp"
 
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>

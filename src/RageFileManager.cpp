@@ -16,6 +16,7 @@
 #include "RageFileBasic.h"
 #include "RageFileDriver.h"
 #include "RageLog.h"
+#include "RageThreads.h"
 #include "RageUtil.h"
 #include "RageUtil_FileDB.h"
 #include "StdString.h"

@@ -6,9 +6,9 @@
 #endif
 
 #include <fcntl.h>
-#include <unistd.h>
 
 #if defined(__linux__)
+#include <unistd.h>
 
 void RageFileManagerReadAhead::Init() {}
 void RageFileManagerReadAhead::Shutdown() {}

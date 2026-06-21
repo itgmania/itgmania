@@ -9,7 +9,7 @@
 
 #include "RageFileBasic.h"
 #include "RageFileDriver.h"
-#include "global.h"
+#include "RageThreads.h"
 
 struct RageFileObjMemFile;
 class RageFileObjMem : public RageFileObj {

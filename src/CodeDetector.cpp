@@ -1,6 +1,5 @@
 #include "CodeDetector.h"
 
-#include <memory>
 #include <string>
 
 #include "EnumHelper.h"

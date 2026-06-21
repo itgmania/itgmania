@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <cinttypes>
 #include <cmath>
-#include <cstdint>
 #include <cstring>
+#include <deque>
 #include <string>
 #include <utility>
 
@@ -11,12 +11,11 @@
 #include "RageSoundDriver.h"
 #include "RageSoundMixBuffer.h"
 #include "RageSoundReader.h"
+#include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
 #include "RageUtil_CircularBuffer.h"
-#include "config.hpp"
 #include "global.h"
-
 #if !defined(_WIN32)
 #include <unistd.h>
 #endif

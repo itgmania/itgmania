@@ -1,7 +1,6 @@
 #ifndef PREFSMANAGER_H
 #define PREFSMANAGER_H
 
-#include <cstring>
 #include <map>
 #include <string>
 

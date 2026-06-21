@@ -24,6 +24,7 @@
 #include "RageSoundReader.h"
 #include "RageSoundReader_PostBuffering.h"
 #include "RageSoundReader_Preload.h"
+#include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
 #include "StdString.h"

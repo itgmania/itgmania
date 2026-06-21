@@ -12,7 +12,6 @@
 #include "PlayerNumber.h"
 #include "PlayerState.h"
 #include "RageLog.h"
-#include "RageTextureID.h"
 #include "RageUtil.h"
 #include "StdString.h"
 #include "ThemeManager.h"

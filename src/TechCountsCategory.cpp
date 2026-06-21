@@ -1,5 +1,7 @@
 #include "TechCountsCategory.h"
 
+#include <memory>
+
 #include "EnumHelper.h"
 #include "LocalizedString.h"
 #include "LuaBinding.h"

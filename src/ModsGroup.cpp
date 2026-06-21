@@ -1,7 +1,5 @@
 #include "ModsGroup.h"
 
-#include <memory>
-
 #include "EnumHelper.h"
 #include "LuaManager.h"
 

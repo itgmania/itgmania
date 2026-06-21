@@ -4,11 +4,11 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "CommonMetrics.h"
 #include "Preference.h"
@@ -25,10 +25,12 @@
 #include "RageTexture.h"
 #include "RageTextureID.h"
 #include "RageTextureManager.h"
+#include "RageThreads.h"
 #include "RageUtil.h"
 #include "SongCacheIndex.h"
 #include "SpecialFiles.h"
 #include "Sprite.h"
+#include "ThemeMetric.h"
 #include "XmlFile.h"
 #include "global.h"
 

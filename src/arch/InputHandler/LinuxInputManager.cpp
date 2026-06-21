@@ -3,6 +3,8 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <string.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -15,7 +17,6 @@
 #include "RageInput.h"  // g_sInputDrivers g_sInputDeviceOrder
 #include "RageLog.h"
 #include "RageUtil.h"
-#include "config.hpp"
 #include "global.h"
 
 // Our DeviceButton KEY_* conflicts with linux/input.h KEY_*

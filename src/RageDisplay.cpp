@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -29,7 +28,6 @@
 #include "RageUtil.h"
 #include "StdString.h"
 #include "arch/ArchHooks/ArchHooks.h"
-#include "config.hpp"
 #include "global.h"
 
 #if !defined(_WIN32)

@@ -12,8 +12,8 @@
 #include "archutils/Win32/arch_setup.h"
 #elif defined(PBBUILD) || defined(MACOSX)
 #include "archutils/Darwin/arch_setup.h"
-#elif defined(UNIX)
-#include "archutils/Unix/arch_setup.h"
+// #elif defined(UNIX)
+// #include "archutils/Unix/arch_setup.h"
 #endif
 
 /* Branch optimizations: */

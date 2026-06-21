@@ -10,6 +10,7 @@
 
 #include "AnnouncerManager.h"
 #include "EnumHelper.h"
+#include "Game.h"
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
 #include "LightsManager.h"
@@ -28,6 +29,7 @@
 #include "RageLog.h"
 #include "RageSound.h"
 #include "RageSoundManager.h"
+#include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"

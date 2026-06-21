@@ -1,6 +1,7 @@
 #include "RageFileDriverDirect.h"
 
 #include <fcntl.h>
+#include <sys/stat.h>
 
 #include <cerrno>
 #include <cstddef>
@@ -16,7 +17,6 @@
 #include "RageUtil.h"
 #include "RageUtil_FileDB.h"
 #include "global.h"
-
 #if defined(_WIN32)
 // clang-format off
 #include <windows.h>

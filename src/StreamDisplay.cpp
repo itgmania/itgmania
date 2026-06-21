@@ -1,7 +1,6 @@
 #include "StreamDisplay.h"
 
 #include <cmath>
-#include <memory>
 #include <string>
 
 #include "ActorFrame.h"

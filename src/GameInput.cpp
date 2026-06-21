@@ -1,7 +1,6 @@
 #include "GameInput.h"
 
 #include <cstdio>
-#include <memory>
 #include <string>
 
 #include "EnumHelper.h"

@@ -6,8 +6,8 @@
 #include <cstdint>
 #include <string>
 
+#include "RageThreads.h"
 #include "RageTimer.h"
-#include "global.h"
 
 class RageSoundReader;
 struct lua_State;

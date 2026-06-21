@@ -10,8 +10,8 @@
 #include "EnumHelper.h"
 #include "LuaManager.h"
 #include "RageInputDevice.h"
+#include "RageThreads.h"
 #include "RageTimer.h"
-#include "global.h"
 
 enum InputEventType {
   // The device was just pressed.

@@ -2,21 +2,20 @@
  */
 #include "PthreadHelpers.h"
 
-#include <pthread.h>
-#include <semaphore.h>
+#include <stdio.h>
 
 #include <cerrno>
-#include <cstdlib>
 #include <cstring>
+#include <string>
 
+#include "RageThreads.h"
 #include "RageUtil.h"
 #include "archutils/Unix/Backtrace.h"  // HACK: This should be platform-agnosticized
 #include "global.h"
 
 #if defined(LINUX)
-#include <fcntl.h>
+
 #include <sys/ptrace.h>
-#include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>

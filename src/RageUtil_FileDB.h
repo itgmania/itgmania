@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "RageFileManager.h"
+#include "RageThreads.h"
 #include "RageTimer.h"
 #include "StdString.h"
-#include "global.h"
 
 struct FileSet;
 struct File {

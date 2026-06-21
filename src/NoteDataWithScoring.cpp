@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "EnumHelper.h"
-#include "Game.h"
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
 #include "NoteData.h"

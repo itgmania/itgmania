@@ -1,6 +1,5 @@
 #include "ControllerStateDisplay.h"
 
-#include <memory>
 #include <string>
 
 #include "Actor.h"

@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "RageTexture.h"
+#include "RageTextureID.h"
 
 class RageTexture;
 struct RageTextureID;

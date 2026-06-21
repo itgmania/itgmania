@@ -1,8 +1,5 @@
 #include "LightsDriver_Linux_PIUIO_Leds.h"
 
-#include <fcntl.h>
-#include <stdio.h>
-
 #include "GameInput.h"
 #include "LightsManager.h"
 #include "RageUtil.h"

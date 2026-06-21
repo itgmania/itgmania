@@ -1,5 +1,7 @@
 #include "BackgroundUtil.h"
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <set>
 #include <string>

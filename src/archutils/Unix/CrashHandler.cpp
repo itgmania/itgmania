@@ -17,7 +17,6 @@
 #include "CrashHandlerInternal.h"
 #include "RageLog.h"
 #include "RageThreads.h"
-#include "config.hpp"
 
 extern uint64_t GetInvalidThreadId();
 extern const char* g_pCrashHandlerArgv0;

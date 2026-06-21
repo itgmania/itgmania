@@ -1,26 +1,25 @@
 #include "InputHandler_PumpHID.h"
 
-#include <fcntl.h>
-
-#include <cerrno>
 #include <cstdint>
 #include <cstring>
 #include <string>
 #include <vector>
 
-#include "EnumHelper.h"
 #include "Game.h"
 #include "GameInput.h"
 #include "GameState.h"
 #include "InputMapper.h"
 #include "LightsManager.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageInputDevice.h"
 #include "RageLog.h"
+#include "RageTimer.h"
 #include "RageUtil.h"
 #include "StdString.h"
 #include "arch/InputHandler/InputHandler.h"
 #include "arch/Lights/LightsDriver_Export.h"
+#include "arch/RageDriver.h"
 #include "archutils/Common/HidDevice.h"
 
 // all of the known device pid's that use this communication protocol.
