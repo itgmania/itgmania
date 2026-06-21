@@ -37,7 +37,7 @@ find_library(XRANDR_LIBRARIES
              DOC "The XRANDR library")
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(XRANDR
+find_package_handle_standard_args(Xrandr
                                   DEFAULT_MSG
                                   XRANDR_LIBRARIES
                                   XRANDR_INCLUDE_DIRS)
