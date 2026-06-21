@@ -65,7 +65,7 @@ static Preference<bool> g_bHideIncompleteCourses( "HideIncompleteCourses", false
 
 RString SONG_GROUP_COLOR_NAME( size_t i )   { return ssprintf( "SongGroupColor%i", (int) i+1 ); }
 RString COURSE_GROUP_COLOR_NAME( size_t i ) { return ssprintf( "CourseGroupColor%i", (int) i+1 ); }
-RString PROFILE_SONG_GROUP_COLOR_NAME(size_t i) { return ssprintf("ProfileSongGroupColor%i", (int)i+1); }
+RString profile_song_group_color_name(size_t i) { return ssprintf("ProfileSongGroupColor%i", (int)i+1); }
 
 static const float next_loading_window_update= 0.02f;
 
@@ -84,8 +84,8 @@ SongManager::SongManager()
 	SONG_GROUP_COLOR	.Load( "SongManager", SONG_GROUP_COLOR_NAME, NUM_SONG_GROUP_COLORS );
 	NUM_COURSE_GROUP_COLORS	.Load( "SongManager", "NumCourseGroupColors" );
 	COURSE_GROUP_COLOR	.Load( "SongManager", COURSE_GROUP_COLOR_NAME, NUM_COURSE_GROUP_COLORS );
-	NUM_PROFILE_SONG_GROUP_COLORS.Load("SongManager", "NumProfileSongGroupColors");
-	PROFILE_SONG_GROUP_COLORS.Load("SongManager", PROFILE_SONG_GROUP_COLOR_NAME, NUM_PROFILE_SONG_GROUP_COLORS);
+	num_profile_song_group_colors.Load("SongManager", "NumProfileSongGroupColors");
+	profile_song_group_colors.Load("SongManager", profile_song_group_color_name, num_profile_song_group_colors);
 }
 
 SongManager::~SongManager()
@@ -706,12 +706,15 @@ RageColor SongManager::GetSongGroupColor( const RString &sSongGroup ) const
 	}
 	FOREACH_EnabledPlayer(pn)
 	{
-		Profile* prof = PROFILEMAN->GetProfile(pn);
+		Profile* prof= PROFILEMAN->GetProfile(pn);
 		if(prof != nullptr)
 		{
-			if(prof->IsCustomSongGroup(sSongGroup))
+			if(prof->m_group != nullptr)
 			{
-				return PROFILE_SONG_GROUP_COLORS.GetValue(pn % NUM_PROFILE_SONG_GROUP_COLORS);
+				if(prof->m_group->GetGroupName() == sSongGroup)
+				{
+					return profile_song_group_colors.GetValue(pn % num_profile_song_group_colors);
+				}
 			}
 		}
 	}
@@ -883,18 +886,12 @@ const std::vector<Song*> &SongManager::GetSongs( const RString &sGroupName ) con
 		Profile* prof= PROFILEMAN->GetProfile(pn);
 		if(prof != nullptr)
 		{
-			if(prof->IsCustomSongGroup(sGroupName))
+			if(prof->m_group != nullptr)
 			{
-				std::vector<Song*> vGroupSongs;
-				vGroupSongs.clear();
-
-				for ( Song* song : prof->m_songs )
+				if(prof->m_group->GetGroupName() == sGroupName)
 				{
-					if ( song != nullptr && song->m_sGroupName == sGroupName )
-						vGroupSongs.push_back( song );
+					return prof->m_songs;
 				}
-
-				return vGroupSongs;
 			}
 		}
 	}
@@ -958,13 +955,13 @@ Group* SongManager::GetGroupFromName( const RString& sGroupName ) const
 		Profile* prof= PROFILEMAN->GetProfile(pn);
 		if(prof != nullptr)
 		{
-			for (int i = 0; i < prof->m_groups.size(); i++) {
-				Group* grp = prof->m_groups[i];
-
-				if (grp->GetGroupName() == sGroupName) {
-					return grp;
+			if(prof->m_group != nullptr)
+			{
+				if(prof->m_group->GetGroupName() == sGroupName)
+				{
+					return prof->m_group;
 				}
-            }
+			}
 		}
 	}
 	return nullptr;

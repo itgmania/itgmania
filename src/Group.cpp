@@ -9,8 +9,6 @@
 #include "SongUtil.h"
 #include "TitleSubstitution.h"
 #include "Group.h"
-#include "Profile.h"
-#include "ProfileManager.h"
 
 #include <cstddef>
 #include <tuple>
@@ -38,35 +36,24 @@ Group::Group() {
     m_sBannerPath = "";
 }
 
-static RString GetInternalGroupName(ProfileSlot prof_slot, RString group_name) {
-	if (prof_slot == ProfileSlot_Invalid) return group_name;
-
-	Profile* prof = PROFILEMAN->GetProfile(prof_slot);
-	// root Songs folder
-	if (group_name == "") return prof->GetCustomSongsGroupNamePrefix();
-
-	return prof->GetCustomSongsGroupNamePrefix() + " - " + group_name;
-}
-
-Group::Group(const RString& sDir, const RString& sGroupDirName, ProfileSlot prof_slot) {
-	/* groupDirName empty for root songs on profile */
-    if (sDir.empty() || (sGroupDirName.empty() && prof_slot == ProfileSlot_Invalid)) {
+Group::Group(const RString& sDir, const RString& sGroupDirName, bool bFromProfile) {
+    if (sDir.empty() || sGroupDirName.empty()) {
         LOG->Warn("Group::Group: Empty directory or group name provided.");
         return;
     }
 
     RString sPackIniPath;
-	// songs from profile
-    if (prof_slot != ProfileSlot_Invalid) {
+    if (bFromProfile) {
         sPackIniPath = sDir + "/" + INI_FILE;
         m_sPath = sDir;
-        m_sGroupName = GetInternalGroupName(prof_slot, sGroupDirName);
+        m_sGroupName = sDir.substr(1, sDir.find('/', 1) - 1);
+        m_sDisplayTitle = sGroupDirName;
     } else {
         sPackIniPath = sDir + sGroupDirName + "/" + INI_FILE;
         m_sPath = sDir + sGroupDirName;
         m_sGroupName = Basename(sGroupDirName);
+        m_sDisplayTitle = m_sGroupName;
     }
-	m_sDisplayTitle = m_sGroupName;
     m_sSortTitle = m_sGroupName;
     m_sTranslitTitle = m_sGroupName;
     m_sSeries = "";
@@ -103,10 +90,10 @@ Group::Group(const RString& sDir, const RString& sGroupDirName, ProfileSlot prof
             m_iVersion = StringToInt(sVersion);
 
             // Define a vector of key-value pairs to cleanly iterate
-            std::vector<std::pair<RString, RString>> vPackfields = {
-                {"DisplayTitle", GetInternalGroupName(prof_slot, m_sDisplayTitle)},
+            std::vector<std::pair<RString, RString&>> vPackfields = {
+                {"DisplayTitle", m_sDisplayTitle},
                 {"SortTitle", m_sSortTitle},
-                {"TranslitTitle", GetInternalGroupName(prof_slot, m_sTranslitTitle)},
+                {"TranslitTitle", m_sTranslitTitle},
                 {"Series", m_sSeries},
                 {"Banner", m_sBannerPath}
             };
@@ -156,6 +143,8 @@ const std::vector<Song *> &Group::GetSongs() const
 {
     return SONGMAN->GetSongs(m_sGroupName);
 }
+
+
 
 #include "LuaBinding.h"
 

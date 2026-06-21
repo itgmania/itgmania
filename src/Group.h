@@ -19,7 +19,7 @@ class Group
 {
 public:
 	Group();
-    Group( const RString& sDir, const RString& sGroupDirName, ProfileSlot prof_slot = ProfileSlot_Invalid);
+    Group( const RString& sDir, const RString& sGroupDirName, bool bFromProfile = false);
     ~Group() = default;
     // Lua
 	void PushSelf( lua_State *L );
