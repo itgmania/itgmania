@@ -263,6 +263,8 @@ Function un.RemoveFromPath
   Push $5
   Push $6
 
+  SetRegView 64
+
   StrCmp $ADD_TO_PATH_ALL_USERS "1" unReadAllKey
     ReadRegStr $1 ${NT_current_env} "PATH"
     Goto unDoTrim
@@ -562,6 +564,7 @@ FunctionEnd
 Section "-Core installation"
   ;Use the entire tree produced by the INSTALL target.  Keep the
   ;list of directories here in sync with the RMDir commands below.
+  SetRegView 64
   SetOutPath "$INSTDIR"
   @CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS@
   @CPACK_NSIS_FULL_INSTALL@
@@ -674,6 +677,7 @@ FunctionEnd
 ;--------------------------------
 ; uninstaller initialization
 Function un.onInit
+  SetRegView 64
   SetShellVarContext all
 
 FunctionEnd
@@ -687,6 +691,7 @@ FunctionEnd
 
 Section -FinishComponents
   ;Removes unselected components and writes component status to registry
+  SetRegView 64
   !insertmacro SectionList "FinishSection"
 
 !ifdef CPACK_NSIS_ADD_REMOVE
@@ -718,6 +723,7 @@ FunctionEnd
 ;Uninstaller Section
 
 Section "Uninstall"
+  SetRegView 64
   ReadRegStr $START_MENU SHCTX \
    "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "StartMenu"
   ;MessageBox MB_OK "Start menu is in: $START_MENU"
@@ -810,6 +816,7 @@ SectionEnd
 ; first visible page and sets up $INSTDIR properly...
 
 Function .onInit
+  SetRegView 64
   SetShellVarContext all
   StrCpy $SV_ALLUSERS "AllUsers"
 
