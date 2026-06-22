@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cctype>
 #include <cstddef>
+#include <cstdint>
+#include <limits>
 #include <map>
 #include <string>
 #include <vector>
@@ -70,7 +72,7 @@ static std::string LocalProfileIDToDir(const std::string& sProfileID) {
 }
 
 // Sanitize a display name so it is safe to embed in a directory name.
-static const size_t MAX_DISPLAY_NAME_IN_DIR = 32;
+constexpr size_t MAX_DISPLAY_NAME_IN_DIR = 32;
 static std::string SanitizeForDirName(const std::string& name) {
   std::string result;
 
@@ -740,7 +742,7 @@ bool ProfileManager::CreateLocalProfile(
   // attempt to append an incrementing number until we find a name that doesn't
   // exist.
   if (base_exists) {
-    int suffix = 1;
+    int16_t suffix = 1;
     while (true) {
       std::string candidate = ssprintf("%s_%d", base.c_str(), suffix);
       bool candidate_exists = false;
@@ -757,6 +759,11 @@ bool ProfileManager::CreateLocalProfile(
         break;
       }
 
+      // Bail before overflow
+      if (suffix < 0 || suffix == std::numeric_limits<int16_t>::max()) {
+        sProfileIDOut = "";
+        return false;
+      }
       ++suffix;
     }
   }

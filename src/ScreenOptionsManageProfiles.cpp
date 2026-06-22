@@ -105,19 +105,16 @@ static bool ValidateLocalProfileName(
 static const std::string kProfileNameBlockedChars = "'\"";
 static bool ValidateAppendProfileName(
     const std::string& /*sAnswerBeforeChar*/, std::string& sAppend) {
-  std::string sFiltered;
-  sFiltered.reserve(sAppend.size());
-  for (unsigned char c : sAppend) {
-    if (c < 0x20 || c > 0x7E) {
-      continue;  // non-printable or non-ASCII
-    }
-    if (kProfileNameBlockedChars.find(static_cast<char>(c)) !=
-        std::string::npos) {
-      continue;  // explicitly blocked
-    }
-    sFiltered += static_cast<char>(c);
-  }
-  sAppend = sFiltered;
+  sAppend.erase(
+      std::remove_if(
+          sAppend.begin(), sAppend.end(),
+          [](unsigned char c) {
+            // Drop non-printables, non ascii, & explicitly blocked chars
+            return c < 0x20 || c > 0x7E ||
+                   kProfileNameBlockedChars.find(static_cast<char>(c)) !=
+                       std::string::npos;
+          }),
+      sAppend.end());
   // Return true even if we stripped everything; an empty append is fine
   // (ValidateAppend returning false would abort the whole input).
   return true;
