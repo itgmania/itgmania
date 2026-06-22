@@ -263,7 +263,12 @@ Function un.RemoveFromPath
   Push $5
   Push $6
 
-  IntFmt $6 "%c" 26 # DOS EOF
+  StrCmp $ADD_TO_PATH_ALL_USERS "1" unReadAllKey
+    ReadRegStr $1 ${NT_current_env} "PATH"
+    Goto unDoTrim
+  unReadAllKey:
+    ReadRegStr $1 ${NT_all_env} "PATH"
+
   unDoTrim:
     StrCmp $1 "" unRemoveFromPath_done
       Push $1
@@ -543,9 +548,6 @@ FunctionEnd
   ReserveFile "NSIS.InstallOptions.ini"
   !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
 
-  ; for UserInfo::GetName and UserInfo::GetAccountType
-  ReserveFile /plugin 'UserInfo.dll'
-
 ;--------------------------------
 ; Installation types
 @CPACK_NSIS_INSTALLATION_TYPES@
@@ -670,28 +672,9 @@ Function InstallOptionsPage
 FunctionEnd
 
 ;--------------------------------
-; determine admin versus local install
+; uninstaller initialization
 Function un.onInit
-
-  ClearErrors
-  UserInfo::GetName
-  IfErrors noLM
-  Pop $0
-  UserInfo::GetAccountType
-  Pop $1
-  StrCmp $1 "Admin" 0 +3
-    SetShellVarContext all
-    ;MessageBox MB_OK 'User "$0" is in the Admin group'
-    Goto done
-  StrCmp $1 "Power" 0 +3
-    SetShellVarContext all
-    ;MessageBox MB_OK 'User "$0" is in the Power Users group'
-    Goto done
-
-  noLM:
-    ;Get installation folder from registry if available
-
-  done:
+  SetShellVarContext all
 
 FunctionEnd
 
@@ -822,15 +805,14 @@ SectionEnd
 
 ;--------------------------------
 ; determine admin versus local install
-; Is install for "AllUsers" or "JustMe"?
-; Default to "JustMe" - set to "AllUsers" if admin or on Win9x
 ; This function is used for the very first "custom page" of the installer.
 ; This custom page does not show up visibly, but it executes prior to the
 ; first visible page and sets up $INSTDIR properly...
-; Choose different default installation folder based on SV_ALLUSERS...
-; "Program Files" for AllUsers, "My Documents" for JustMe...
 
 Function .onInit
+  SetShellVarContext all
+  StrCpy $SV_ALLUSERS "AllUsers"
+
   StrCmp "@CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL@" "ON" 0 inst
 
   ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "UninstallString"
@@ -859,46 +841,6 @@ uninst_failed:
 inst:
   ; Reads components status for registry
   !insertmacro SectionList "InitSection"
-
-  ; check to see if /D has been used to change
-  ; the install directory by comparing it to the
-  ; install directory that is expected to be the
-  ; default
-  StrCpy $IS_DEFAULT_INSTALLDIR 0
-  StrCmp "$INSTDIR" "@CPACK_NSIS_INSTALL_ROOT@\@CPACK_PACKAGE_INSTALL_DIRECTORY@" 0 +2
-    StrCpy $IS_DEFAULT_INSTALLDIR 1
-
-  StrCpy $SV_ALLUSERS "JustMe"
-  ; if default install dir then change the default
-  ; if it is installed for JustMe
-  StrCmp "$IS_DEFAULT_INSTALLDIR" "1" 0 +2
-    StrCpy $INSTDIR "$DOCUMENTS\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
-
-  ClearErrors
-  UserInfo::GetName
-  IfErrors noLM
-  Pop $0
-  UserInfo::GetAccountType
-  Pop $1
-  StrCmp $1 "Admin" 0 +4
-    SetShellVarContext all
-    ;MessageBox MB_OK 'User "$0" is in the Admin group'
-    StrCpy $SV_ALLUSERS "AllUsers"
-    Goto done
-  StrCmp $1 "Power" 0 +4
-    SetShellVarContext all
-    ;MessageBox MB_OK 'User "$0" is in the Power Users group'
-    StrCpy $SV_ALLUSERS "AllUsers"
-    Goto done
-
-  noLM:
-    StrCpy $SV_ALLUSERS "AllUsers"
-    ;Get installation folder from registry if available
-
-  done:
-  StrCmp $SV_ALLUSERS "AllUsers" 0 +3
-    StrCmp "$IS_DEFAULT_INSTALLDIR" "1" 0 +2
-      StrCpy $INSTDIR "@CPACK_NSIS_INSTALL_ROOT@\@CPACK_PACKAGE_INSTALL_DIRECTORY@"
 
   StrCmp "@CPACK_NSIS_MODIFY_PATH@" "ON" 0 noOptionsPage
     !insertmacro MUI_INSTALLOPTIONS_EXTRACT "NSIS.InstallOptions.ini"
