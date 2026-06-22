@@ -1045,6 +1045,7 @@
 			<Function name='GetPeakComboAward'/>
 			<Function name='GetPercentDP'/>
 			<Function name='GetRadarValues'/>
+			<Function name='GetPlayerGuid'/>
 			<Function name='GetScore'/>
 			<Function name='GetStageAward'/>
 			<Function name='GetSurvivalSeconds'/>
@@ -1566,6 +1567,7 @@
 			<Function name='GetMachineProfile'/>
 			<Function name='GetNumLocalProfiles'/>
 			<Function name='GetPlayerName'/>
+			<Function name='GetProfileFromGuid'/>
 			<Function name='GetProfile'/>
 			<Function name='GetProfileDir'/>
 			<Function name='GetSongNumTimesPlayed'/>
@@ -1969,12 +1971,14 @@
 			<Function name='GetMultiPlayerStageStats'/>
 			<Function name='GetPlayedSongs'/>
 			<Function name='GetPlayerStageStats'/>
+			<Function name='GetRoutineStageStats'/>
 			<Function name='GetPossibleSongs'/>
 			<Function name='GetStage'/>
 			<Function name='GetStageIndex'/>
 			<Function name='GetStepsSeconds'/>
 			<Function name='OnePassed'/>
 			<Function name='PlayerHasHighScore'/>
+			<Function name='GetRoutineStageStats'/>
 		</Class>
 		<Class name='StatsManager'>
 			<Function name='GetAccumPlayedStageStats'/>

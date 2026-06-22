@@ -584,10 +584,10 @@ save yourself some time, copy this for undocumented things:
 		[02 Utilities.lua] Round a number.
 	</Function>
 	<Function name='RoutineSkinP1' theme='_fallback' return='string' arguments=''>
-		[03 Gameplay.lua] Returns the routine noteskin for player .
+		[03 Gameplay.lua] Returns the current noteskin for player 1 in routine mode.
 	</Function>
 	<Function name='RoutineSkinP2' theme='_fallback' return='string' arguments=''>
-		[03 Gameplay.lua] Returns the routine noteskin for player 2.
+		[03 Gameplay.lua] Returns the current noteskin for player 2 in routine mode.
 	</Function>
 	<Function name='Saturation' theme='_fallback' return='color' arguments='color c, float percent'>
 		[02 Colors.lua] Modifies the saturation of the specified color
@@ -3495,6 +3495,9 @@ end
 	<Function name='GetRadarValues' return='RadarValues' arguments=''>
 		Returns the RadarValues for this HighScore.
 	</Function>
+	<Function name='GetPlayerGuid' return='string' arguments=''>
+		Returns the GUID of the profile associated with the high score, or an empty string if there is no profile associated with the high score.
+	</Function>
 	<Function name='GetScore' return='int' arguments=''>
 		Returns the score associated with the high score.
 	</Function>
@@ -4905,6 +4908,9 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Function name='GetProfile' return='Profile' arguments='PlayerNumber pn'>
 		Returns the profile for player <code>pn</code>.
 	</Function>
+	<Function name='GetProfileFromGuid' return='Profile' arguments='string sGuid'>
+		Returns the profile with the specified GUID.
+	</Function>
 	<Function name='GetProfileDir' return='string' arguments='ProfileSlot slot'>
 		Returns the profile directory for the provided <Link class='ENUM' function='ProfileSlot'>ProfileSlot</Link>, formatted like <code>/Save/LocalProfiles/00000001/</code>.<br />
 		Returns an empty string if the provided <Link class='ENUM' function='ProfileSlot'>ProfileSlot</Link> does not have a <Link class='Profile' /> loaded.
@@ -6234,6 +6240,9 @@ local spr = Def.Sprite{
 	<Function name='GetPlayedSongs' return='{Song}' arguments='' />
 	<Function name='GetPlayerStageStats' return='PlayerStageStats' arguments='PlayerNumber pn'>
 		Returns the PlayerStageStats of player <code>pn</code>.
+	</Function>
+	<Function name='GetRoutineStageStats' return='PlayerStageStats' arguments=''>
+		Returns the "shared" PlayerStageStats for routine mode.
 	</Function>
 	<Function name='GetPossibleSongs' return='{Song}' arguments='' />
 	<Function name='GetStage' return='Stage' arguments=''>

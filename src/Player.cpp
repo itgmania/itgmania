@@ -1314,6 +1314,8 @@ void Player::UpdateHoldNotes(
      * in different ways depending on the SubType. */
     ASSERT(tn.subType == subType);
 
+    // Routine charts assign each note to a specific player; skip notes
+    // that don't belong to this Player
     if (tn.pn != PLAYER_INVALID && tn.pn != m_pPlayerState->m_PlayerNumber) {
       continue;
     }
@@ -1333,6 +1335,8 @@ void Player::UpdateHoldNotes(
 
   for (const TrackRowTapNote& trtn : vTN) {
     TapNote& tn = *trtn.pTN;
+    // Routine charts assign each note to a specific player; skip notes
+    // that don't belong to this Player
     if (tn.pn != PLAYER_INVALID && tn.pn != m_pPlayerState->m_PlayerNumber) {
       continue;
     }
@@ -1376,6 +1380,8 @@ void Player::UpdateHoldNotes(
   for (const TrackRowTapNote& trtn : vTN) {
     TapNote& tn = *trtn.pTN;
     TapNoteScore tns = tn.result.tns;
+    // Routine charts assign each note to a specific player; skip notes
+    // that don't belong to this Player
     if (tn.pn != PLAYER_INVALID && tn.pn != m_pPlayerState->m_PlayerNumber) {
       continue;
     }
@@ -1463,6 +1469,8 @@ void Player::UpdateHoldNotes(
     for (const TrackRowTapNote& trtn : vTN) {
       TapNote& tn = *trtn.pTN;
       int iEndRow = iStartRow + tn.iDuration;
+      // Routine charts assign each note to a specific player; skip notes
+      // that don't belong to this Player
       if (tn.pn != PLAYER_INVALID && tn.pn != m_pPlayerState->m_PlayerNumber) {
         continue;
       }
@@ -1662,6 +1670,8 @@ void Player::UpdateHoldNotes(
 
   for (const TrackRowTapNote& trtn : vTN) {
     TapNote& tn = *trtn.pTN;
+    // Routine charts assign each note to a specific player; skip notes
+    // that don't belong to this Player
     if (tn.pn != PLAYER_INVALID && tn.pn != m_pPlayerState->m_PlayerNumber) {
       continue;
     }
@@ -1696,6 +1706,8 @@ void Player::UpdateHoldNotes(
   if (hns != HNS_None) {
     // LOG->Trace("tap note scoring time.");
     TapNote& tn = *vTN[0].pTN;
+    // Routine charts assign each note to a specific player; skip notes
+    // that don't belong to this Player
     if (tn.pn != PLAYER_INVALID && tn.pn != m_pPlayerState->m_PlayerNumber) {
       return;
     }

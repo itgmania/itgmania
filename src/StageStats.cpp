@@ -111,17 +111,18 @@ void StageStats::AssertValid(PlayerNumber pn, bool bRoutine) const {
           "Invalid Difficulty %i",
           m_RoutinePlayer.m_vpPossibleSteps[0]->GetDifficulty()));
   ASSERT_M(
-      (int)m_vpPlayedSongs.size() == m_RoutinePlayer.m_iStepsPlayed,
+      static_cast<int>(m_vpPlayedSongs.size()) ==
+          m_RoutinePlayer.m_iStepsPlayed,
       ssprintf(
           "%i Songs Played != %i Steps Played for player %i",
-          (int)m_vpPlayedSongs.size(), (int)m_RoutinePlayer.m_iStepsPlayed,
-          pn));
+          static_cast<int>(m_vpPlayedSongs.size()),
+          static_cast<int>(m_RoutinePlayer.m_iStepsPlayed), pn));
   ASSERT_M(
       m_vpPossibleSongs.size() == m_RoutinePlayer.m_vpPossibleSteps.size(),
       ssprintf(
           "%i Possible Songs != %i Possible Steps for player %i",
-          (int)m_vpPossibleSongs.size(),
-          (int)m_RoutinePlayer.m_vpPossibleSteps.size(), pn));
+          static_cast<int>(m_vpPossibleSongs.size()),
+          static_cast<int>(m_RoutinePlayer.m_vpPossibleSteps.size()), pn));
 }
 
 int StageStats::GetAverageMeter(PlayerNumber pn) const {
