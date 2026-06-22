@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <cstring>
 
+#include "Platform.h"
 #include "RageLog.h"
 #include "RageSound.h"
 #include "RageSoundDriver.h"
@@ -11,7 +12,6 @@
 #include "RageSoundReader.h"
 #include "RageThreads.h"
 #include "RageUtil.h"
-#include "config.hpp"
 #include "global.h"
 
 #if !defined(_WIN32)

@@ -6,7 +6,6 @@ list(APPEND SMDATA_GLOBAL_FILES_SRC
             "${SM_GENERATED_SRC_DIR}/verstub.cpp")
 
 list(APPEND SMDATA_GLOBAL_FILES_HPP
-            "${SM_GENERATED_SRC_DIR}/config.hpp"
             "GameLoop.h"
             "global.h"
             "PeriodicCaller.h"

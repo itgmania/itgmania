@@ -6,7 +6,7 @@
 #include <string>
 
 #include "Compiler.h"
-#include "config.hpp"
+#include "Platform.h"
 
 class RageLog {
  public:

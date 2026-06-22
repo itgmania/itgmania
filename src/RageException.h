@@ -4,7 +4,7 @@
 #include <string>
 
 #include "Compiler.h"
-#include "config.hpp"
+#include "Platform.h"
 
 /**
  * @brief Namespace for throwing fatal errors.

@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <string>
 
-#include "config.hpp"
+#include "Platform.h"
 
 #if !defined(_WIN32)
 #include <unistd.h>

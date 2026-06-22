@@ -1,8 +1,5 @@
-#ifndef CONFIG_HPP_
-#define CONFIG_HPP_
-
-/* Auto-generated config.h file powered by cmake. */
-
+#ifndef PLATFORM_H
+#define PLATFORM_H
 
 /* Ensure we have a function that acts like a size limited sprintf. */
 #if defined(_WIN32)

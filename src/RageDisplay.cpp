@@ -13,6 +13,7 @@
 #include "LocalizedString.h"
 #include "LuaManager.h"
 #include "ModelTypes.h"
+#include "Platform.h"
 #include "Preference.h"
 #include "RageFile.h"
 #include "RageLog.h"
@@ -27,7 +28,6 @@
 #include "RageUtil.h"
 #include "StdString.h"
 #include "arch/ArchHooks/ArchHooks.h"
-#include "config.hpp"
 #include "global.h"
 
 #if !defined(_WIN32)

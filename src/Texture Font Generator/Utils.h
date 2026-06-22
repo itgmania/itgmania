@@ -3,7 +3,7 @@
 
 #include <cstdio>
 
-#include "config.hpp"
+#include "Platform.h"
 #include "stdafx.h"
 
 struct Surface {
