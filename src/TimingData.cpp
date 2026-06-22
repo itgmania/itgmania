@@ -459,11 +459,6 @@ TimingSegment* TimingData::GetSegmentAtRow(
 
 static void EraseSegment(
     std::vector<TimingSegment*>& vSegs, int index, TimingSegment* cur) {
-#ifdef WITH_LOGGING_TIMING_DATA
-  LOG->Trace("EraseSegment(%d, %p)", index, cur);
-  cur->DebugPrint();
-#endif
-
   vSegs.erase(vSegs.begin() + index);
   RageUtil::SafeDelete(cur);
 }
@@ -471,11 +466,6 @@ static void EraseSegment(
 // NOTE: the pointer we're passed is a reference to a temporary,
 // so we must deep-copy it (with ::Copy) for new allocations.
 void TimingData::AddSegment(const TimingSegment* seg) {
-#ifdef WITH_LOGGING_TIMING_DATA
-  LOG->Trace(
-      "AddSegment( %s )", TimingSegmentTypeToString(seg->GetType()).c_str());
-  seg->DebugPrint();
-#endif
   InvalidateLookups();
 
   TimingSegmentType tst = seg->GetType();
@@ -573,9 +563,6 @@ void TimingData::AddSegment(const TimingSegment* seg) {
 
   // the segment at or before this row is equal to the new one; ignore it
   if (bOnSameRow && (*cur) == (*seg)) {
-#ifdef WITH_LOGGING_TIMING_DATA
-    LOG->Trace("equals previous segment, ignoring");
-#endif
     return;
   }
 

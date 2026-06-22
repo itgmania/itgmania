@@ -39,10 +39,6 @@ option(
   "Build without the ROLC assembly instructions for tomcrypt."
   OFF)
 
-# Turn this option on to log every segment added or removed.
-option(WITH_LOGGING_TIMING_DATA
-       "Build with logging all Add and Erase Segment calls." OFF)
-
 if(MSVC)
   # Turn this option on to enable using the Texture Font Generator.
   option(
