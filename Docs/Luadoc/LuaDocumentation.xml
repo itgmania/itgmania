@@ -5047,9 +5047,10 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 		Opens a file at <code>sPath</code> (relative to the StepMania root directory).<br />
 		<code>iAccessType</code> can be set to read (<code>1</code>), write (<code>2</code>), stream (<code>4</code>) or flush to disk on close (<code>8</code>).<br />
 		These can also be combined with addition. For example, to set up read and write, set <code>iAccessType</code> to <code>3</code> (1+2).
+		Returns <code>false</code> if the file could not be opened; otherwise returns <code>true</code>.
 	</Function>
 	<Function name='PutLine' return='int' arguments='string s'>
-		Puts a new line in the file.
+		Appends line <code>s</code>, terminated with <code>"\r\n"</code>, to the end of the file.
 	</Function>
 	<Function name='Read' return='string' arguments=''>
 		Returns a string containing the entire contents of the file.
@@ -5057,8 +5058,8 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Function name='ReadBytes' return='string' arguments='int length'>
 		Returns <code>length</code> bytes from the RageFile's current position.
 	</Function>
-	<Function name='Seek' return='int' arguments=''>
-		Seeks to a position in the file and returns the new position.
+	<Function name='Seek' return='int' arguments='int pos'>
+		Seeks to position <code>pos</code> in the file and returns the new position.
 	</Function>
 	<Function name='Tell' return='int' arguments=''>
 		Returns the current position in the file.
