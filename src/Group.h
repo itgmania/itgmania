@@ -86,9 +86,7 @@ class Group {
    *
    * @return const std::string
    */
-  const std::string GetSeriesBannerPath() const {
-    return m_sSeriesBannerPath;
-  };
+  const std::string GetSeriesBannerPath() const { return m_sSeriesBannerPath; };
 
   /**
    * @brief Get the songs in the group.
