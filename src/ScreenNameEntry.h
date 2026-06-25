@@ -6,7 +6,6 @@
 
 #include "Actor.h"
 #include "BitmapText.h"
-#include "InputQueue.h"
 #include "PlayerNumber.h"
 #include "RageSound.h"
 #include "ReceptorArrowRow.h"

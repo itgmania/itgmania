@@ -9,6 +9,7 @@
 #include <string>
 
 #include "RageFileBasic.h"
+#include "zlib.h"
 
 typedef struct z_stream_s z_stream;
 

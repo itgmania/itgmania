@@ -8,6 +8,7 @@
 #include "GameConstantsAndTypes.h"
 #include "Grade.h"
 #include "HighScore.h"
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "RadarValues.h"
 

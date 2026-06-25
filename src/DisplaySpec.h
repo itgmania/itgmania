@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 
+#include "LuaManager.h"
 #include "RageTypes.h"
 #include "global.h"
 

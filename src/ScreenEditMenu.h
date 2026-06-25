@@ -3,7 +3,6 @@
 
 #include "BitmapText.h"
 #include "EditMenu.h"
-#include "InputQueue.h"
 #include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
 

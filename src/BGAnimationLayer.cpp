@@ -4,11 +4,12 @@
 #include <cmath>
 #include <string>
 
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "AutoActor.h"
 #include "GameState.h"
-#include "LuaManager.h"
+#include "MessageManager.h"
 #include "RageMath.h"
 #include "RageTextureID.h"
 #include "RageTimer.h"
@@ -21,7 +22,6 @@
 #include "StdString.h"
 #include "ThemeManager.h"
 #include "XmlFile.h"
-#include "arch/ArchHooks/ArchHooks.h"
 #include "global.h"
 
 const float PARTICLE_SPEED = 300;

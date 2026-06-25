@@ -7,13 +7,13 @@
 
 #include "Actor.h"
 #include "ActorUtil.h"
-#include "LuaBinding.h"
 #include "LuaManager.h"
 #include "MessageManager.h"
 #include "RageDisplay.h"
 #include "RageTypes.h"
 #include "RageUtil.h"
 #include "ScreenDimensions.h"
+#include "Tween.h"
 #include "XmlFile.h"
 #include "global.h"
 

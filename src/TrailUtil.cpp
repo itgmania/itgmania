@@ -1,13 +1,10 @@
 #include "TrailUtil.h"
 
 #include <numeric>
-#include <string>
+#include <vector>
 
 #include "Course.h"
-#include "Difficulty.h"
-#include "GameConstantsAndTypes.h"
 #include "GameManager.h"
-#include "LuaManager.h"
 #include "RageException.h"
 #include "Song.h"
 #include "Trail.h"

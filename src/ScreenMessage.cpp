@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 const ScreenMessage SM_Invalid = "";
 AutoScreenMessage(SM_None);

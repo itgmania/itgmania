@@ -2,7 +2,6 @@
 #define SCREEN_TEST_LIGHTS_H
 
 #include "BitmapText.h"
-#include "InputQueue.h"
 #include "RageTimer.h"
 #include "ScreenWithMenuElements.h"
 

@@ -1,6 +1,7 @@
 #include "ModsGroup.h"
 
 #include "EnumHelper.h"
+#include "LuaManager.h"
 
 static const char* ModsLevelNames[] = {
     "Preferred",

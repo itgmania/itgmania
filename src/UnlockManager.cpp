@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cfloat>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -15,7 +16,11 @@
 #include "GameManager.h"
 #include "GameState.h"
 #include "Grade.h"
+#include "LocalizedString.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
+#include "MessageManager.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "Profile.h"
 #include "ProfileManager.h"

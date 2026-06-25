@@ -1,6 +1,6 @@
 #include "Font.h"
 
-#include <stdint.h>
+#include <wchar.h>
 
 #include <algorithm>
 #include <cctype>
@@ -9,11 +9,11 @@
 #include <cstdio>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "FontCharAliases.h"
 #include "FontCharmaps.h"
-#include "FontManager.h"
 #include "IniFile.h"
 #include "LuaManager.h"
 #include "RageException.h"

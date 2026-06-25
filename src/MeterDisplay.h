@@ -7,6 +7,7 @@
 
 #include "ActorFrame.h"
 #include "AutoActor.h"
+#include "LuaManager.h"
 
 class MeterDisplay : public ActorFrame {
  public:

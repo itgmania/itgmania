@@ -5,8 +5,6 @@
 #include <vector>
 
 #include "BitmapText.h"
-#include "InputEventPlus.h"
-#include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "ScreenMessage.h"
 #include "ScreenOptions.h"

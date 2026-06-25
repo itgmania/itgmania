@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "GameConstantsAndTypes.h"
-#include "InputEventPlus.h"
 #include "PlayerNumber.h"
 #include "RageSound.h"
 #include "ScreenMessage.h"

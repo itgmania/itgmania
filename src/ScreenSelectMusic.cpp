@@ -1,10 +1,13 @@
 #include "ScreenSelectMusic.h"
 
+#include <stdlib.h>
+
 #include <algorithm>
 #include <cmath>
 #include <string>
 #include <vector>
 
+#include "Actor.h"
 #include "ActorUtil.h"
 #include "Banner.h"
 #include "CodeDetector.h"
@@ -13,11 +16,13 @@
 #include "Difficulty.h"
 #include "EnumHelper.h"
 #include "Game.h"
+#include "GameCommand.h"
 #include "GameConstantsAndTypes.h"
 #include "GameInput.h"
 #include "GameManager.h"
 #include "GameSoundManager.h"
 #include "GameState.h"
+#include "HighScore.h"
 #include "ImageCache.h"
 #include "InputEventPlus.h"
 #include "InputFilter.h"
@@ -27,10 +32,12 @@
 #include "MenuTimer.h"
 #include "MessageManager.h"
 #include "ModsGroup.h"
+#include "MusicWheelItem.h"
 #include "OptionsList.h"
 #include "PlayerNumber.h"
 #include "PlayerOptions.h"
 #include "PlayerState.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "Profile.h"
 #include "ProfileManager.h"
@@ -39,9 +46,11 @@
 #include "RageInputDevice.h"
 #include "RageLog.h"
 #include "RageSound.h"
+#include "RageTextureID.h"
 #include "RageTextureManager.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
+#include "RageUtil_AutoPtr.h"
 #include "Screen.h"
 #include "ScreenManager.h"
 #include "ScreenMessage.h"
@@ -51,9 +60,10 @@
 #include "SongManager.h"
 #include "SongUtil.h"
 #include "Sprite.h"
+#include "StageStats.h"
 #include "StatsManager.h"
+#include "StdString.h"
 #include "Steps.h"
-#include "StepsUtil.h"
 #include "Style.h"
 #include "ThemeManager.h"
 #include "ThemeMetric.h"

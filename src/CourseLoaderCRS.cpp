@@ -1,9 +1,9 @@
 #include "CourseLoaderCRS.h"
 
 #include <algorithm>
-#include <cfloat>
 #include <cstdio>
 #include <cstring>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -16,15 +16,18 @@
 #include "GameConstantsAndTypes.h"
 #include "ImageCache.h"
 #include "MsdFile.h"
-#include "PlayerOptions.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RadarValues.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
+#include "Song.h"
 #include "SongCacheIndex.h"
 #include "SongManager.h"
+#include "SongUtil.h"
 #include "StdString.h"
+#include "StepsUtil.h"
 #include "TitleSubstitution.h"
 
 /** @brief Edit courses can only be so big before they are rejected. */

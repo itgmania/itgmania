@@ -3,11 +3,12 @@
 
 #include <string>
 
-#include "InputQueue.h"
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
 #include "ThemeMetric.h"
+
 /** @brief Enter a name for a new high score. */
 class ScreenNameEntryTraditional : public ScreenWithMenuElements {
  public:

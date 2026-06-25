@@ -14,6 +14,7 @@
 #include "NoteData.h"
 #include "NoteTypes.h"
 #include "NotesLoader.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageLog.h"
 #include "RageThreads.h"
@@ -22,6 +23,7 @@
 #include "Song.h"
 #include "StdString.h"
 #include "Steps.h"
+#include "TimingData.h"
 #include "TimingSegments.h"
 #include "global.h"
 

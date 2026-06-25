@@ -1,4 +1,5 @@
 #include <dlfcn.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 
 #include <string>

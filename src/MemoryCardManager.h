@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "GameConstantsAndTypes.h"  // for MemoryCardState
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "Preference.h"
 #include "RageSound.h"

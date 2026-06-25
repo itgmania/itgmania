@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -10,11 +11,15 @@
 
 #include "CourseUtil.h"
 #include "CryptManager.h"
+#include "DateTime.h"
+#include "Difficulty.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
 #include "Grade.h"
+#include "HighScore.h"
 #include "LuaManager.h"
+#include "MessageManager.h"
 #include "ModsGroup.h"
 #include "NotesWriterSM.h"
 #include "Player.h"
@@ -25,14 +30,17 @@
 #include "PrefsManager.h"
 #include "Profile.h"
 #include "ProfileManager.h"
+#include "RadarValues.h"
 #include "RageFileDriverMemory.h"
 #include "RageLog.h"
 #include "Song.h"
 #include "SongUtil.h"
 #include "StdString.h"
 #include "Steps.h"
+#include "StepsUtil.h"
 #include "StyleUtil.h"
 #include "TrailUtil.h"
+#include "Tween.h"
 #include "XmlFile.h"
 #include "XmlFileUtil.h"
 #include "global.h"

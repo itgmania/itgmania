@@ -8,6 +8,7 @@
 #include "ActorFrame.h"
 #include "Banner.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "RageTextureID.h"
 
 class FadingBanner : public ActorFrame {

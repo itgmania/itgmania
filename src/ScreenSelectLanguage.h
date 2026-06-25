@@ -3,7 +3,6 @@
 
 #include <string>
 
-#include "InputQueue.h"
 #include "ScreenSelectMaster.h"
 
 class ScreenSelectLanguage : public ScreenSelectMaster {

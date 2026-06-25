@@ -3,6 +3,8 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <string.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -11,8 +13,11 @@
 
 #include "InputHandler_Linux_Event.h"
 #include "InputHandler_Linux_Joystick.h"
+#include "Preference.h"
 #include "RageInput.h"  // g_sInputDrivers g_sInputDeviceOrder
 #include "RageLog.h"
+#include "RageUtil.h"
+#include "global.h"
 
 // Our DeviceButton KEY_* conflicts with linux/input.h KEY_*
 // clang-format off

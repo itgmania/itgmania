@@ -11,7 +11,7 @@
 #include "ActorUtil.h"
 #include "BGAnimationLayer.h"
 #include "IniFile.h"
-#include "LuaManager.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageUtil.h"
 #include "StdString.h"

@@ -11,6 +11,7 @@
 #include "Difficulty.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "RadarValues.h"
 #include "RageTypes.h"
 #include "RageUtil/RandomNumbers.h"

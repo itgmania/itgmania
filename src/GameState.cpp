@@ -2,10 +2,8 @@
 
 #include <algorithm>
 #include <climits>
-#include <cmath>
 #include <cstddef>
 #include <cstdlib>
-#include <ctime>
 #include <set>
 #include <string>
 #include <vector>
@@ -19,6 +17,7 @@
 #include "Command.h"
 #include "CommonMetrics.h"
 #include "Course.h"
+#include "CourseUtil.h"
 #include "CryptManager.h"
 #include "Difficulty.h"
 #include "EnumHelper.h"
@@ -58,6 +57,7 @@
 #include "SongManager.h"
 #include "SongOptions.h"
 #include "SongUtil.h"
+#include "StageStats.h"
 #include "StatsManager.h"
 #include "StdString.h"
 #include "StepMania.h"
@@ -67,7 +67,6 @@
 #include "ThemeManager.h"
 #include "ThemeMetric.h"
 #include "Trail.h"
-#include "UnlockManager.h"
 #include "global.h"
 
 GameState* GAMESTATE =

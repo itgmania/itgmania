@@ -11,6 +11,7 @@
 #include "DualScrollBar.h"
 #include "InputEventPlus.h"
 #include "LuaExpressionTransform.h"
+#include "LuaManager.h"
 #include "OptionRow.h"
 #include "OptionsCursor.h"
 #include "PlayerNumber.h"

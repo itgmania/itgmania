@@ -1,21 +1,23 @@
 #ifndef ACTOR_H
 #define ACTOR_H
 
-#include "EnumHelper.h"
-#include "LuaReference.h"
-#include "PlayerNumber.h"
-#include "RageTypes.h"
-#include "RageUtil_AutoPtr.h"
-class XNode;
-struct lua_State;
-class LuaClass;
 #include <cstddef>
 #include <map>
 #include <string>
 #include <vector>
 
+#include "EnumHelper.h"
+#include "LuaManager.h"
+#include "LuaReference.h"
 #include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "RageTypes.h"
+#include "RageUtil_AutoPtr.h"
 #include "Tween.h"
+
+class XNode;
+struct lua_State;
+class LuaClass;
 
 typedef AutoPtrCopyOnWrite<LuaReference> apActorCommands;
 

@@ -5,10 +5,13 @@
 
 #include <cstdio>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "EnumHelper.h"
+#include "LocalizedString.h"
+#include "LuaManager.h"
 #include "RageUtil.h"
 
 static const char* InputDeviceStateNames[] = {

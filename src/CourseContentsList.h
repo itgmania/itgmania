@@ -5,6 +5,7 @@
 
 #include "Actor.h"
 #include "ActorScroller.h"
+#include "LuaManager.h"
 
 class CourseEntryDisplay;
 /** @brief Holds course name and banner. */

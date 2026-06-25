@@ -1,8 +1,6 @@
 #ifndef SCREEN_SONG_OPTIONS_H
 #define SCREEN_SONG_OPTIONS_H
 
-#include <vector>
-
 #include "PlayerNumber.h"
 #include "ScreenOptionsMaster.h"
 

@@ -1,9 +1,11 @@
 #include "RageInput.h"
 
 #include <map>
+#include <utility>
 
 #include "LocalizedString.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
 #include "Preference.h"
 #include "RageInputDevice.h"
 #include "RageLog.h"

@@ -1,6 +1,7 @@
 #include "WorkoutGraph.h"
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
 #include "Actor.h"
@@ -9,6 +10,7 @@
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
 #include "LuaManager.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "RageTypes.h"
 #include "RageUtil.h"

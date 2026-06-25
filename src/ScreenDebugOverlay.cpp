@@ -1,24 +1,25 @@
 #include "ScreenDebugOverlay.h"
 
+#include <stdlib.h>
+
 #include <algorithm>
-#include <cstdlib>
 #include <map>
 #include <string>
 #include <vector>
 
 #include "Actor.h"
 #include "ActorUtil.h"
-#include "BitmapText.h"
 #include "CodeDetector.h"
+#include "Course.h"
 #include "DateTime.h"
 #include "EnumHelper.h"
-#include "GameCommand.h"
 #include "GameConstantsAndTypes.h"
 #include "GameLoop.h"
 #include "GamePreferences.h"
 #include "GameSoundManager.h"
 #include "GameState.h"
 #include "Grade.h"
+#include "HighScore.h"
 #include "InputEventPlus.h"
 #include "InputFilter.h"
 #include "InputMapper.h"
@@ -27,6 +28,7 @@
 #include "ModsGroup.h"
 #include "NoteSkinManager.h"
 #include "PlayerNumber.h"
+#include "PlayerOptions.h"
 #include "PlayerState.h"
 #include "Preference.h"
 #include "PrefsManager.h"
@@ -43,7 +45,6 @@
 #include "RageTypes.h"
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
-#include "Screen.h"
 #include "ScreenDimensions.h"
 #include "ScreenGameplay.h"
 #include "ScreenManager.h"
@@ -51,8 +52,10 @@
 #include "SongManager.h"
 #include "SongOptions.h"
 #include "StepMania.h"
+#include "Steps.h"
 #include "ThemeManager.h"
 #include "ThemeMetric.h"
+#include "Trail.h"
 #include "XmlToLua.h"
 #include "global.h"
 

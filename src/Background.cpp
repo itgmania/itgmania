@@ -1,7 +1,6 @@
 #include "Background.h"
 
 #include <algorithm>
-#include <cfloat>
 #include <deque>
 #include <map>
 #include <string>
@@ -11,7 +10,6 @@
 #include "Actor.h"
 #include "ActorFrame.h"
 #include "ActorUtil.h"
-#include "AutoActor.h"
 #include "BackgroundUtil.h"
 #include "BeginnerHelper.h"
 #include "DancingCharacters.h"
@@ -20,8 +18,10 @@
 #include "GameState.h"
 #include "LuaManager.h"
 #include "MessageManager.h"
+#include "ModsGroup.h"
 #include "NoteTypes.h"
 #include "PlayerNumber.h"
+#include "PlayerOptions.h"
 #include "PlayerState.h"
 #include "Preference.h"
 #include "PrefsManager.h"
@@ -34,10 +34,14 @@
 #include "RageUtil/RandomNumbers.h"
 #include "ScreenDimensions.h"
 #include "Song.h"
+#include "SongOptions.h"
+#include "SongPosition.h"
+#include "StageStats.h"
 #include "StatsManager.h"
 #include "Steps.h"
 #include "ThemeManager.h"
 #include "ThemeMetric.h"
+#include "TimingData.h"
 #include "TimingSegments.h"
 #include "XmlFile.h"
 #include "XmlFileUtil.h"

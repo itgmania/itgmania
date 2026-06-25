@@ -45,7 +45,6 @@
 #include "RageFileDriverTimeout.h"
 
 #include <cerrno>
-#include <cstddef>
 #include <cstring>
 #include <string>
 #include <vector>

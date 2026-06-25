@@ -7,10 +7,9 @@
 
 #include "XmlFile.h"
 
+#include <stdlib.h>
+
 #include <algorithm>
-#include <cstdlib>
-#include <map>
-#include <string>
 #include <utility>
 
 #include "LuaManager.h"

@@ -8,8 +8,10 @@ http://en.wikipedia.org/wiki/INI_file
 
 #include <cstddef>
 #include <string>
+#include <utility>
 
 #include "RageFile.h"
+#include "RageFileBasic.h"
 #include "RageLog.h"
 #include "RageThreads.h"
 #include "RageUtil.h"

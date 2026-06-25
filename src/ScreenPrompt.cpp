@@ -2,10 +2,10 @@
 
 #include <string>
 
+#include "Actor.h"
 #include "ActorUtil.h"
 #include "BitmapText.h"
 #include "EnumHelper.h"
-#include "GameSoundManager.h"
 #include "InputEventPlus.h"
 #include "InputFilter.h"
 #include "RageInputDevice.h"
@@ -15,6 +15,7 @@
 #include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
 #include "ThemeManager.h"
+#include "Transition.h"
 #include "global.h"
 
 PromptAnswer ScreenPrompt::s_LastAnswer = ANSWER_YES;

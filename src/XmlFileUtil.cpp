@@ -1,13 +1,16 @@
 #include "XmlFileUtil.h"
 
-#include <cctype>
+#include <ctype.h>
+
 #include <cstddef>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "LuaManager.h"
 #include "RageFile.h"
+#include "RageFileBasic.h"
 #include "RageFileDriverMemory.h"
 #include "RageUtil.h"
 #include "XmlFile.h"

@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 
 class TimingData;

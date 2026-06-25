@@ -1,15 +1,19 @@
 #include "ScreenSongOptions.h"
 
-#include <vector>
+#include <string>
 
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
+#include "ModsGroup.h"
 #include "PlayerNumber.h"
+#include "PlayerOptions.h"
 #include "PlayerState.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "Screen.h"
 #include "ScreenOptionsMaster.h"
 #include "ThemeManager.h"
+#include "Transition.h"
 
 REGISTER_SCREEN_CLASS(ScreenSongOptions);
 

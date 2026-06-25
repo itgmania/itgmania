@@ -7,6 +7,7 @@
 #include <cstring>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "Actor.h"
@@ -17,13 +18,14 @@
 #include "GameInput.h"
 #include "GameState.h"
 #include "GhostArrowRow.h"
-#include "LuaBinding.h"
 #include "LuaManager.h"
 #include "MessageManager.h"
+#include "ModsGroup.h"
 #include "NoteData.h"
 #include "NoteSkinManager.h"
 #include "NoteTypes.h"
 #include "PlayerNumber.h"
+#include "PlayerOptions.h"
 #include "PlayerState.h"
 #include "Preference.h"
 #include "PrefsManager.h"
@@ -33,9 +35,9 @@
 #include "RageTypes.h"
 #include "RageUtil.h"
 #include "ReceptorArrowRow.h"
+#include "SongPosition.h"
 #include "Sprite.h"
 #include "Style.h"
-#include "Tween.h"
 #include "global.h"
 
 static Preference<bool> g_bRenderEarlierNotesOnTop(

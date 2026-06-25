@@ -3,6 +3,7 @@
 #include <cmath>
 #include <string>
 
+#include "Actor.h"
 #include "ActorUtil.h"
 #include "BitmapText.h"
 #include "FontCharAliases.h"
@@ -22,6 +23,7 @@
 #include "ScreenPrompt.h"
 #include "ScreenWithMenuElements.h"
 #include "ThemeManager.h"
+#include "Tween.h"
 #include "arch/ArchHooks/ArchHooks.h"  // HOOKS->GetClipboard()
 
 static const char* g_szKeys[NUM_KeyboardRow][KEYS_PER_ROW] = {

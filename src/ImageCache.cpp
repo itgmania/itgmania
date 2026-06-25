@@ -1,11 +1,13 @@
 #include "ImageCache.h"
 
+#include <stdlib.h>
+
 #include <algorithm>
 #include <cmath>
-#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "CommonMetrics.h"
@@ -28,6 +30,7 @@
 #include "SongCacheIndex.h"
 #include "SpecialFiles.h"
 #include "Sprite.h"
+#include "ThemeMetric.h"
 #include "XmlFile.h"
 #include "global.h"
 

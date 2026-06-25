@@ -1,6 +1,7 @@
 #include "Tween.h"
 
 #include <cmath>
+#include <string>
 
 #include "EnumHelper.h"
 #include "LuaManager.h"

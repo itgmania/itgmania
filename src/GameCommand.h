@@ -10,6 +10,7 @@
 #include "Command.h"
 #include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "LuaReference.h"
 #include "PlayerNumber.h"
 

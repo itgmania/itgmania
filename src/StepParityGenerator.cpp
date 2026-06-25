@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "GameState.h"
 #include "NoteData.h"
 #include "NoteTypes.h"
 #include "RageLog.h"

@@ -1,9 +1,8 @@
 #ifndef ScoreDisplayAliveTime_H
 #define ScoreDisplayAliveTime_H
 
-#include "Actor.h"
 #include "BitmapText.h"
-#include "MessageManager.h"
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 
 /**

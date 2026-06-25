@@ -1,29 +1,40 @@
 #include "LowLevelWindow_X11.h"
 
+#define GLX_GLXEXT_PROTOTYPES
+
+#include <GL/glxew.h>
+#include <X11/X.h>
+#include <X11/Xatom.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/extensions/Xrandr.h>
+#include <X11/extensions/randr.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+
 #include "DisplaySpec.h"
+#include "GL/glew.h"
 #include "LocalizedString.h"
+#include "Preference.h"
 #include "PrefsManager.h"  // XXX
 #include "RageDisplay.h"   // VideoModeParams
 #include "RageDisplay_OGL_Helpers.h"
 #include "RageException.h"
 #include "RageLog.h"
 #include "RageTimer.h"
+#include "RageTypes.h"
+#include "RageUtil.h"
 #include "archutils/Unix/X11Helper.h"
 #include "global.h"
-using namespace RageDisplay_Legacy_Helpers;
-using namespace X11Helper;
 
-#include <GL/glxew.h>
-
-#include <cmath>
-#include <cstdint>
-#include <set>
-#include <string>
-#define GLX_GLXEXT_PROTOTYPES
-#include <GL/glx.h>  // All sorts of stuff...
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-#include <X11/extensions/Xrandr.h>
 #if defined(HAVE_XINERAMA)
 #include <X11/extensions/Xinerama.h>
 #endif
@@ -31,6 +42,9 @@ using namespace X11Helper;
 #if defined(HAVE_LIBXTST)
 #include <X11/extensions/XTest.h>
 #endif
+
+using namespace RageDisplay_Legacy_Helpers;
+using namespace X11Helper;
 
 // Display ID for treating the entire X screen as the display
 const std::string ID_XSCREEN = "XSCREEN_RANDR";

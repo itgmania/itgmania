@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "RageFile.h"
+#include "RageFileBasic.h"
 #include "RageLog.h"
 #include "RageThreads.h"
 #include "RageUtil.h"

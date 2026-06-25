@@ -1,10 +1,3 @@
-#include "EnumHelper.h"
-#include "GameConstantsAndTypes.h"
-#include "GameInput.h"
-#include "LuaManager.h"
-#include "PlayerNumber.h"
-#include "global.h"
-
 /*
  * Styles define a set of columns for each player, and information about those
  * columns, like what Instruments are used play those columns and what track
@@ -18,16 +11,23 @@
  * because two players place from the same set of 4 tracks.
  */
 
+#include "Style.h"
+
 #include <algorithm>
 #include <cfloat>
 #include <string>
 #include <vector>
 
-#include "GameState.h"
+#include "EnumHelper.h"
+#include "GameConstantsAndTypes.h"
+#include "GameInput.h"
 #include "InputMapper.h"
+#include "LuaManager.h"
+#include "LuaReference.h"
 #include "NoteData.h"
+#include "PlayerNumber.h"
 #include "RageUtil.h"
-#include "Style.h"
+#include "global.h"
 
 bool Style::GetUsesCenteredArrows() const {
   switch (m_StyleType) {

@@ -1,12 +1,12 @@
+
 #include "Backtrace.h"
 
 #include <fcntl.h>
+#include <string.h>
 #include <unistd.h>
 
-#include <cerrno>
 #include <cstddef>
-#include <cstdlib>
-#include <cstring>
+#include <cstdint>
 
 #if defined(BACKTRACE_METHOD_X86_LINUX)
 #include "archutils/Common/PthreadHelpers.h"

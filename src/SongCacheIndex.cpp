@@ -12,6 +12,7 @@
 #include "Song.h"
 #include "SpecialFiles.h"
 #include "StdString.h"
+#include "ThemeMetric.h"
 #include "global.h"
 
 /*

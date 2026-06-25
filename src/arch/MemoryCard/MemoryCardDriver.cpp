@@ -1,10 +1,12 @@
 #include "MemoryCardDriver.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "EnumHelper.h"
+#include "LuaManager.h"
 #include "MemoryCardDriverThreaded_Folder.h"
 #include "MemoryCardDriver_Null.h"
 #include "Preference.h"

@@ -3,8 +3,7 @@
 
 #include <string>
 
-#include "Actor.h"
-#include "MessageManager.h"
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "RollingNumbers.h"
 

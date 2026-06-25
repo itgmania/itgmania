@@ -2,21 +2,25 @@
 
 #include <fcntl.h>
 #include <linux/joystick.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/select.h>
 #include <sys/stat.h>
-#include <sys/types.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include <algorithm>
 #include <cerrno>
-#include <set>
 #include <string>
 #include <vector>
 
 #include "LinuxInputManager.h"
 #include "RageInputDevice.h"  // NUM_JOYSTICKS
 #include "RageLog.h"
+#include "RageTimer.h"
 #include "RageUtil.h"
-#include "global.h"
+#include "arch/InputHandler/InputHandler.h"
+#include "arch/RageDriver.h"
 
 REGISTER_INPUT_HANDLER_CLASS2(LinuxJoystick, Linux_Joystick);
 

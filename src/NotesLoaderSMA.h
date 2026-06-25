@@ -3,7 +3,6 @@
 
 #include <string>
 
-#include "BackgroundUtil.h"
 #include "NotesLoaderSM.h"
 
 class MsdFile;

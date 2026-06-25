@@ -4,8 +4,6 @@
 #ifndef ScreenGameplayNormal_H
 #define ScreenGameplayNormal_H
 
-#include <vector>
-
 #include "ScreenGameplay.h"
 
 class ScreenGameplayNormal : public ScreenGameplay {

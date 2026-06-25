@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "GameState.h"
+#include "OptionRow.h"
 #include "OptionRowHandler.h"
 #include "PlayerNumber.h"
 #include "RageFile.h"

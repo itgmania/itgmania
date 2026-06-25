@@ -21,6 +21,7 @@
 #include "RageLog.h"
 #include "RageSound.h"
 #include "RageSoundConstants.h"
+#include "RageSoundReader.h"
 #include "RageSoundReader_PostBuffering.h"
 #include "RageSoundReader_Preload.h"
 #include "RageThreads.h"

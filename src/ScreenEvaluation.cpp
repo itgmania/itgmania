@@ -2,11 +2,12 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstddef>
 #include <cstdlib>
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "Actor.h"
 #include "ActorUtil.h"
 #include "AnnouncerManager.h"
 #include "CodeDetector.h"
@@ -22,14 +23,21 @@
 #include "HighScore.h"
 #include "InputEventPlus.h"
 #include "InputFilter.h"
+#include "LocalizedString.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
 #include "MemoryCardManager.h"
+#include "MessageManager.h"
 #include "ModsGroup.h"
 #include "PlayerNumber.h"
+#include "PlayerOptions.h"
+#include "PlayerStageStats.h"
 #include "PlayerState.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "Profile.h"
 #include "ProfileManager.h"
+#include "RadarValues.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
@@ -40,11 +48,13 @@
 #include "ScreenWithMenuElements.h"
 #include "Song.h"
 #include "SongManager.h"
+#include "SongOptions.h"
 #include "StatsManager.h"
 #include "StepMania.h"
 #include "Steps.h"
 #include "ThemeManager.h"
 #include "ThemeMetric.h"
+#include "Trail.h"
 #include "global.h"
 
 // metrics that are common to all ScreenEvaluation classes

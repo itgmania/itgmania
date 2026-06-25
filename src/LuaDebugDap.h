@@ -1,6 +1,8 @@
 #ifndef LUA_DEBUG_DAP
 #define LUA_DEBUG_DAP
 
+#include <stddef.h>
+
 #include <cstdint>
 #include <string>
 #include <vector>

@@ -1,5 +1,7 @@
 #include "SongPosition.h"
 
+#include <string>
+
 #include "LightsManager.h"
 #include "Preference.h"
 #include "RageTimer.h"

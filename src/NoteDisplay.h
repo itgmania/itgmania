@@ -1,6 +1,7 @@
 #ifndef NOTE_DISPLAY_H
 #define NOTE_DISPLAY_H
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -8,10 +9,11 @@
 #include "CubicSpline.h"
 #include "EnumHelper.h"
 #include "GameInput.h"
+#include "LuaManager.h"
 #include "NoteData.h"
+#include "NoteTypes.h"
 #include "PlayerNumber.h"
 #include "RageTypes.h"
-#include "Tween.h"
 
 class Sprite;
 class Model;

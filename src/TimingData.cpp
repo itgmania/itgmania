@@ -10,10 +10,13 @@
 
 #include "GameState.h"
 #include "LuaManager.h"
+#include "ModsGroup.h"
 #include "NoteTypes.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
+#include "SongOptions.h"
 #include "TimingSegments.h"
 #include "global.h"
 

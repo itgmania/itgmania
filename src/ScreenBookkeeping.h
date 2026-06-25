@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "BitmapText.h"
-#include "InputQueue.h"
 #include "ScreenWithMenuElements.h"
 
 const int NUM_BOOKKEEPING_COLS = 4;

@@ -1,8 +1,9 @@
 #ifndef ARCH_HOOKS_UNIX_H
 #define ARCH_HOOKS_UNIX_H
 
+#include <sys/types.h>
+
 #include <cstdint>
-#include <ctime>
 #include <string>
 
 #include "ArchHooks.h"

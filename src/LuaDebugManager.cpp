@@ -1,16 +1,20 @@
 #include "LuaDebugManager.h"
 
-#include <RageTimer.h>
+#include <ixwebsocket/IXConnectionState.h>
 #include <ixwebsocket/IXNetSystem.h>
+#include <ixwebsocket/IXProgressCallback.h>
 #include <ixwebsocket/IXSocket.h>
 #include <ixwebsocket/IXSocketServer.h>
 #include <ixwebsocket/IXUrlParser.h>
 #include <json/json.h>
+#include <sys/types.h>
 
 #include <atomic>
 #include <climits>
+#include <cstring>
 #include <memory>
 #include <string_view>
+#include <utility>
 
 #include "LuaDebugDap.h"
 #include "LuaDebugger.h"

@@ -1,15 +1,18 @@
 #include "GameCommand.h"
 
+#include <stdlib.h>
+
 #include <algorithm>
 #include <cstddef>
-#include <cstdlib>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "AnnouncerManager.h"
 #include "Bookkeeper.h"
 #include "Command.h"
+#include "Course.h"
 #include "Difficulty.h"
 #include "Game.h"
 #include "GameConstantsAndTypes.h"
@@ -18,6 +21,7 @@
 #include "GameState.h"
 #include "LocalizedString.h"
 #include "LuaManager.h"
+#include "MessageManager.h"
 #include "ModsGroup.h"
 #include "PlayerNumber.h"
 #include "PlayerOptions.h"
@@ -32,13 +36,15 @@
 #include "ScreenManager.h"
 #include "Song.h"
 #include "SongManager.h"
+#include "SongOptions.h"
 #include "SongUtil.h"
 #include "StdString.h"
 #include "StepMania.h"
 #include "Style.h"
 #include "ThemeManager.h"
+#include "Trail.h"
+#include "Tween.h"
 #include "UnlockManager.h"
-#include "arch/ArchHooks/ArchHooks.h"
 #include "global.h"
 
 static LocalizedString COULD_NOT_LAUNCH_BROWSER(

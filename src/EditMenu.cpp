@@ -1,6 +1,7 @@
 #include "EditMenu.h"
 
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "GameState.h"
 #include "ImageCache.h"
 #include "LocalizedString.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "RageLog.h"
 #include "RageUtil.h"

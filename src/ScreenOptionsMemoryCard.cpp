@@ -9,8 +9,10 @@
 #include "LocalizedString.h"
 #include "MemoryCardManager.h"
 #include "MessageManager.h"
+#include "OptionRow.h"
 #include "OptionRowHandler.h"
 #include "PlayerNumber.h"
+#include "Preference.h"
 #include "RageUtil.h"
 #include "Screen.h"
 #include "ScreenManager.h"
@@ -18,6 +20,7 @@
 #include "ScreenOptions.h"
 #include "ScreenPrompt.h"
 #include "ThemeManager.h"
+#include "Transition.h"
 #include "arch/MemoryCard/MemoryCardDriver.h"
 
 REGISTER_SCREEN_CLASS(ScreenOptionsMemoryCard);

@@ -10,6 +10,7 @@
 #include <string>
 
 #include "EnumHelper.h"
+#include "LuaManager.h"
 
 enum BlendMode {
   BLEND_NORMAL,

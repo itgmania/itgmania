@@ -11,6 +11,8 @@
 #include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
 #include "Grade.h"
+#include "LuaManager.h"
+#include "LuaReference.h"
 #include "MessageManager.h"
 #include "ModsGroup.h"
 #include "PlayerNumber.h"
@@ -19,6 +21,7 @@
 #include "RageTimer.h"
 #include "SongOptions.h"
 #include "SongPosition.h"
+#include "TimingData.h"
 
 class Character;
 class Course;

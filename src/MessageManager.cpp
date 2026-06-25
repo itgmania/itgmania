@@ -3,9 +3,11 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "EnumHelper.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
 #include "RageLog.h"
 #include "RageThreads.h"
 #include "global.h"

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 #include "EnumHelper.h"
 #include "GameInput.h"
@@ -13,7 +14,6 @@
 #include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "Screen.h"
-#include "ScreenManager.h"
 #include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
 

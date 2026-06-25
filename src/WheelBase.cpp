@@ -1,5 +1,7 @@
 #include "WheelBase.h"
 
+#include <stdlib.h>
+
 #include <algorithm>
 #include <climits>
 #include <cmath>
@@ -11,6 +13,7 @@
 #include "EnumHelper.h"
 #include "GameState.h"
 #include "LuaManager.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageLog.h"
 #include "RageTypes.h"

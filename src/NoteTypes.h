@@ -8,6 +8,7 @@
 
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "RageLog.h"
 

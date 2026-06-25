@@ -1,9 +1,9 @@
 #include "ActorMultiVertex.h"
 
 #include <algorithm>
-#include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <numeric>
 #include <string>
 #include <vector>
@@ -12,7 +12,7 @@
 #include "ActorUtil.h"
 #include "CubicSpline.h"
 #include "EnumHelper.h"
-#include "LuaBinding.h"
+#include "LocalizedString.h"
 #include "LuaManager.h"
 #include "RageDisplay.h"
 #include "RageTexture.h"
@@ -20,7 +20,6 @@
 #include "RageTextureManager.h"
 #include "RageTypes.h"
 #include "RageUtil.h"
-#include "Tween.h"
 #include "XmlFile.h"
 #include "global.h"
 

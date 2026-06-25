@@ -5,6 +5,7 @@
 #include <string>
 
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "Preference.h"
 
 class IniFile;

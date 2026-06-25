@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "EnumHelper.h"
+#include "LuaManager.h"
 #include "RageInputDevice.h"
+#include "RageThreads.h"
 #include "RageTimer.h"
 
 enum InputEventType {

@@ -2,8 +2,8 @@
 
 #include <string>
 
+#include "Actor.h"
 #include "ActorUtil.h"
-#include "GameState.h"
 #include "LuaReference.h"
 #include "MessageManager.h"
 #include "PlayerStageStats.h"

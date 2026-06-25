@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "InputEventPlus.h"
 #include "InputQueue.h"
 
 struct Message;

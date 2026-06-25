@@ -1,7 +1,7 @@
 #ifndef SCREEN_PROFILE_LOAD_H
 #define SCREEN_PROFILE_LOAD_H
 
-#include "InputQueue.h"
+#include "LuaManager.h"
 #include "ScreenWithMenuElements.h"
 #include "ThemeMetric.h"
 

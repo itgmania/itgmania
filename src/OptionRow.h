@@ -8,10 +8,11 @@
 #include <string>
 #include <vector>
 
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "AutoActor.h"
 #include "BitmapText.h"
-#include "MessageManager.h"
+#include "LuaManager.h"
 #include "ModIcon.h"
 #include "OptionsCursor.h"
 #include "PlayerNumber.h"

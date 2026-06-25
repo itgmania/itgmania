@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Attack.h"
+#include "LuaManager.h"
 
 struct lua_State;
 class Group {

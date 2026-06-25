@@ -2,7 +2,6 @@
 #define MemoryCardDriverThreaded_Linux_H
 
 #include <string>
-#include <vector>
 
 #include "MemoryCardDriver.h"
 

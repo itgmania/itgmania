@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "Actor.h"
-#include "AutoActor.h"
 #include "BitmapText.h"
+#include "LuaManager.h"
 #include "ThemeMetric.h"
 
 class Song;

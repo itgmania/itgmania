@@ -1,6 +1,7 @@
 #include "TitleSubstitution.h"
 
 #include <string>
+#include <utility>
 
 #include "FontCharAliases.h"
 #include "LuaManager.h"

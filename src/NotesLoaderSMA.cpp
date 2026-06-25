@@ -5,17 +5,16 @@
 #include <utility>
 #include <vector>
 
-#include "Attack.h"
 #include "BackgroundUtil.h"
 #include "MsdFile.h"
 #include "NoteTypes.h"
-#include "NotesLoaderSM.h"  // may need this.
+#include "NotesLoaderSM.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "Song.h"
-#include "SongManager.h"
 #include "StdString.h"
 #include "Steps.h"
+#include "TimingData.h"
 #include "TimingSegments.h"
 
 void SMALoader::ProcessMultipliers(

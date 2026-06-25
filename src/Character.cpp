@@ -6,7 +6,6 @@
 #include "ActorUtil.h"
 #include "GameConstantsAndTypes.h"
 #include "IniFile.h"
-#include "RageTextureID.h"
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
 #include "StdString.h"

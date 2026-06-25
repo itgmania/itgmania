@@ -17,6 +17,7 @@
 #include "RageSoundReader_Filter.h"
 #include "RageSoundReader_Resample_Good.h"
 #include "RageSoundReader_SpeedChange.h"
+#include "RageUtil_AutoPtr.h"
 
 static Preference<bool> g_bRateModPreservesPitch("RateModPreservesPitch", true);
 

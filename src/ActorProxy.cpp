@@ -1,5 +1,7 @@
 #include "ActorProxy.h"
 
+#include <string>
+
 #include "Actor.h"
 #include "ActorUtil.h"
 

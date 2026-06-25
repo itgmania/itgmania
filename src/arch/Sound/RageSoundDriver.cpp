@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "RageLog.h"
-#include "RageSoundManager.h"
 #include "RageUtil.h"
 #include "arch/RageDriver.h"
 #include "arch/arch_default.h"

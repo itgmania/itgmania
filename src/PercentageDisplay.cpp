@@ -8,6 +8,7 @@
 #include "Course.h"
 #include "GameState.h"
 #include "LuaManager.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "PlayerStageStats.h"
 #include "PlayerState.h"
@@ -15,6 +16,7 @@
 #include "RageUtil.h"
 #include "StdString.h"
 #include "ThemeManager.h"
+#include "Tween.h"
 #include "XmlFile.h"
 #include "global.h"
 

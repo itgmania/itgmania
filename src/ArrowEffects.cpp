@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "GameConstantsAndTypes.h"
-#include "GameManager.h"
 #include "GameState.h"
 #include "LuaManager.h"
-#include "NoteDisplay.h"
+#include "MessageManager.h"
+#include "ModsGroup.h"
 #include "NoteTypes.h"
 #include "PlayerNumber.h"
 #include "PlayerOptions.h"
@@ -19,12 +19,14 @@
 #include "RageMath.h"
 #include "RageTimer.h"
 #include "RageUtil.h"
+#include "SampleHistory.h"
 #include "ScreenDimensions.h"
-#include "Song.h"
+#include "SongOptions.h"
 #include "SongPosition.h"
 #include "Steps.h"
 #include "Style.h"
 #include "ThemeMetric.h"
+#include "TimingData.h"
 #include "global.h"
 
 static const char dimension_names[4] = "XYZ";

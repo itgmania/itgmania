@@ -2,9 +2,11 @@
 
 #include <cstdint>
 
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageSoundConstants.h"
 #include "RageTimer.h"
+#include "arch/RageDriver.h"
 #include "arch/Sound/RageSoundDriver.h"
 
 REGISTER_SOUND_DRIVER_CLASS(Null);

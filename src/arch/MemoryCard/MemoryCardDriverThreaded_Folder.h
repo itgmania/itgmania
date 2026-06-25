@@ -2,7 +2,6 @@
 #define MemoryCardDriverThreaded_Folder_H 1
 
 #include <string>
-#include <vector>
 
 #include "MemoryCardDriver.h"
 

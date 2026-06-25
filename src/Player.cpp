@@ -1,7 +1,10 @@
 #include "Player.h"
 
+#include <limits.h>
+#include <stdlib.h>
+
 #include <algorithm>
-#include <climits>
+#include <bitset>
 #include <cmath>
 #include <cstddef>
 #include <set>
@@ -15,18 +18,19 @@
 #include "Attack.h"
 #include "AttackDisplay.h"
 #include "CombinedLifeMeter.h"
+#include "Course.h"
 #include "Game.h"
-#include "GameCommand.h"
 #include "GameConstantsAndTypes.h"
 #include "GameInput.h"
-#include "GameManager.h"
 #include "GameSoundManager.h"
 #include "GameState.h"
 #include "HoldJudgment.h"
 #include "InputMapper.h"
 #include "LifeMeter.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
 #include "MessageManager.h"
+#include "ModsGroup.h"
 #include "NoteDataUtil.h"
 #include "NoteDataWithScoring.h"
 #include "NoteField.h"
@@ -34,6 +38,7 @@
 #include "PlayerAI.h"
 #include "PlayerNumber.h"
 #include "PlayerOptions.h"
+#include "PlayerStageStats.h"
 #include "PlayerState.h"
 #include "Preference.h"
 #include "PrefsManager.h"
@@ -42,16 +47,15 @@
 #include "RageDisplay.h"
 #include "RageLog.h"
 #include "RageSound.h"
-#include "RageSoundManager.h"
+#include "RageTimer.h"
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
 #include "ScoreDisplay.h"
-#include "ScoreKeeperNormal.h"
+#include "ScoreKeeper.h"
 #include "ScreenDimensions.h"
 #include "ScreenManager.h"
-#include "ScreenMessage.h"
 #include "Song.h"
-#include "SongManager.h"
+#include "SongOptions.h"
 #include "SongPosition.h"
 #include "StageStats.h"
 #include "StatsManager.h"
@@ -62,6 +66,7 @@
 #include "TimingData.h"
 #include "TimingSegments.h"
 #include "Trail.h"
+#include "Tween.h"
 #include "global.h"
 
 std::string ATTACK_DISPLAY_X_NAME(size_t p, size_t both_sides);
@@ -2704,8 +2709,9 @@ void Player::Step(
           HideNote(col, iRowOfOverlappingNoteOrRow);
         }
       }
-    } else if (NoteDataWithScoring::IsRowCompletelyJudged(
-                   m_NoteData, iRowOfOverlappingNoteOrRow)) {
+    } else if (
+        NoteDataWithScoring::IsRowCompletelyJudged(
+            m_NoteData, iRowOfOverlappingNoteOrRow)) {
       FlashGhostRow(iRowOfOverlappingNoteOrRow);
     }
   }

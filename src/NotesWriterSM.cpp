@@ -1,7 +1,5 @@
 #include "NotesWriterSM.h"
 
-#include <cerrno>
-#include <cstring>
 #include <map>
 #include <string>
 #include <utility>
@@ -17,6 +15,7 @@
 #include "ProfileManager.h"
 #include "RadarValues.h"
 #include "RageFile.h"
+#include "RageFileBasic.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"

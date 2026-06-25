@@ -1,10 +1,17 @@
 #include "GrooveRadar.h"
 
+#include <algorithm>
+#include <cmath>
+#include <string>
+#include <vector>
+
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "EnumHelper.h"
 #include "LuaManager.h"
 #include "PlayerNumber.h"
+#include "RadarValues.h"
 #include "RageDisplay.h"
 #include "RageMath.h"
 #include "RageTypes.h"
@@ -12,12 +19,6 @@
 #include "Steps.h"
 #include "ThemeManager.h"
 #include "ThemeMetric.h"
-// I feel weird about this coupling, but it has to be done. -aj
-#include <algorithm>
-#include <cmath>
-#include <vector>
-
-#include "GameState.h"
 
 REGISTER_ACTOR_CLASS(GrooveRadar);
 

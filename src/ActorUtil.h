@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "Actor.h"
-#include "LuaManager.h"
 #include "RageUtil.h"
+#include "Tween.h"
 #include "global.h"
 
 class XNode;

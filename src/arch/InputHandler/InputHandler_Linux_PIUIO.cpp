@@ -1,12 +1,12 @@
 #include "InputHandler_Linux_PIUIO.h"
 
 #include <fcntl.h>
-#include <sys/fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 #include <cerrno>
 #include <cstring>
+#include <string>
 #include <vector>
 
 #include "RageInputDevice.h"
@@ -14,6 +14,7 @@
 #include "RageTimer.h"
 #include "RageUtil.h"
 #include "arch/InputHandler/InputHandler.h"
+#include "arch/RageDriver.h"
 
 REGISTER_INPUT_HANDLER_CLASS2(PIUIO, Linux_PIUIO);
 

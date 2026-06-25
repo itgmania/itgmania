@@ -1,6 +1,5 @@
 #include "RageUtil_CharConversions.h"
 
-#include <string>
 #include <vector>
 
 #include "RageException.h"

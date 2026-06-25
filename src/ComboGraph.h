@@ -6,6 +6,7 @@
 
 #include "Actor.h"
 #include "ActorFrame.h"
+#include "LuaManager.h"
 #include "ThemeMetric.h"
 
 class StageStats;

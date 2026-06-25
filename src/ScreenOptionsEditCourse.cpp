@@ -1,24 +1,26 @@
 #include "ScreenOptionsEditCourse.h"
 
+#include <stdio.h>
+
 #include <algorithm>
-#include <cstdio>
+#include <iterator>
+#include <set>
 #include <string>
 #include <vector>
 
+#include "Course.h"
 #include "CourseUtil.h"
 #include "Difficulty.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
-#include "InputEventPlus.h"
 #include "LocalizedString.h"
+#include "MessageManager.h"
+#include "OptionRow.h"
 #include "OptionRowHandler.h"
-#include "PlayerNumber.h"
 #include "RageUtil.h"
 #include "Screen.h"
-#include "ScreenMessage.h"
 #include "ScreenMiniMenu.h"
-#include "ScreenOptions.h"
 #include "ScreenPrompt.h"
 #include "Song.h"
 #include "SongManager.h"
@@ -26,6 +28,7 @@
 #include "Steps.h"
 #include "StepsUtil.h"
 #include "Style.h"
+#include "Trail.h"
 #include "global.h"
 
 static void GetStepsForSong(Song* pSong, std::vector<Steps*>& vpStepsOut) {

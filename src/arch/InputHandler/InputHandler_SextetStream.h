@@ -1,10 +1,7 @@
 #ifndef INPUT_HANDLER_SEXTETSTREAM
 #define INPUT_HANDLER_SEXTETSTREAM
 
-#include <vector>
-
 #include "InputHandler.h"
-#include "RageInputDevice.h"
 
 class InputHandler_SextetStream : public InputHandler {
  public:

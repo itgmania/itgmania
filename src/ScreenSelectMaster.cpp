@@ -6,8 +6,10 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "Actor.h"
 #include "ActorScroller.h"
 #include "ActorUtil.h"
 #include "AnnouncerManager.h"
@@ -25,12 +27,12 @@
 #include "RageTypes.h"
 #include "RageUtil.h"
 #include "Screen.h"
-#include "ScreenManager.h"
 #include "ScreenMessage.h"
 #include "ScreenSelect.h"
 #include "ScreenWithMenuElements.h"
 #include "StdString.h"
 #include "ThemeManager.h"
+#include "Tween.h"
 #include "global.h"
 
 static const char* MenuDirNames[] = {

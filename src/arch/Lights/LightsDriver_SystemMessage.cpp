@@ -5,10 +5,12 @@
 #include "EnumHelper.h"
 #include "GameInput.h"
 #include "LightsManager.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageUtil.h"
 #include "ScreenManager.h"
 #include "arch/Lights/LightsDriver.h"
+#include "arch/RageDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(SystemMessage);
 

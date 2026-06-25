@@ -1,14 +1,17 @@
 #include "ScoreDisplayAliveTime.h"
 
+#include <string>
+
 #include "ActorUtil.h"
 #include "BitmapText.h"
 #include "GameState.h"
 #include "LuaManager.h"
-#include "MessageManager.h"
 #include "PlayerNumber.h"
+#include "PlayerStageStats.h"
 #include "RageUtil.h"
 #include "StageStats.h"
 #include "StatsManager.h"
+#include "Tween.h"
 #include "XmlFile.h"
 #include "global.h"
 

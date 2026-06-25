@@ -1,7 +1,6 @@
 #include "ActorFrameTexture.h"
 
 #include <cinttypes>
-#include <cstdint>
 
 #include "ActorFrame.h"
 #include "ActorUtil.h"
@@ -11,6 +10,7 @@
 #include "RageTextureID.h"
 #include "RageTextureManager.h"
 #include "RageTextureRenderTarget.h"
+#include "RageTypes.h"
 #include "RageUtil.h"
 #include "global.h"
 

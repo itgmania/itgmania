@@ -1,7 +1,9 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "Actor.h"
@@ -10,9 +12,12 @@
 #include "AutoActor.h"
 #include "GameConstantsAndTypes.h"
 #include "HoldJudgment.h"
+#include "LuaManager.h"
 #include "NoteData.h"
-#include "NoteDataWithScoring.h"
+#include "NoteTypes.h"
+#include "PlayerState.h"
 #include "RageSound.h"
+#include "RageTimer.h"
 #include "ScreenMessage.h"
 #include "ThemeMetric.h"
 #include "TimingData.h"

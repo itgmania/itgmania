@@ -8,6 +8,7 @@
 #include "Character.h"
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "PlayerState.h"
 #include "RageLog.h"

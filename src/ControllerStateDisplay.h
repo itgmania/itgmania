@@ -8,6 +8,7 @@
 #include "ActorFrame.h"
 #include "AutoActor.h"
 #include "GameInput.h"
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "RageInputDevice.h"
 

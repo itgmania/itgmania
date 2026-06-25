@@ -4,18 +4,19 @@
 #include <string>
 #include <vector>
 
+#include "Course.h"
 #include "CourseUtil.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
-#include "GameManager.h"
 #include "GameState.h"
+#include "InputEventPlus.h"
 #include "LocalizedString.h"
 #include "MessageManager.h"
+#include "OptionRow.h"
 #include "OptionRowHandler.h"
 #include "PlayerNumber.h"
+#include "Preference.h"
 #include "PrefsManager.h"
-#include "Profile.h"
-#include "ProfileManager.h"
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
 #include "Screen.h"
@@ -25,9 +26,9 @@
 #include "ScreenOptions.h"
 #include "ScreenPrompt.h"
 #include "ScreenTextEntry.h"
-#include "SongManager.h"
 #include "Style.h"
 #include "ThemeManager.h"
+#include "Trail.h"
 #include "global.h"
 
 enum CourseOverviewRow {

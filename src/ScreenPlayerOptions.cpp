@@ -1,19 +1,26 @@
 #include "ScreenPlayerOptions.h"
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
+#include "Actor.h"
+#include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "AnnouncerManager.h"
 #include "CodeDetector.h"
+#include "GameInput.h"
 #include "GameSoundManager.h"
 #include "GameState.h"
 #include "InputEventPlus.h"
 #include "InputFilter.h"
 #include "MessageManager.h"
 #include "ModsGroup.h"
+#include "OptionRow.h"
 #include "PlayerNumber.h"
+#include "PlayerOptions.h"
 #include "PlayerState.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageUtil.h"
 #include "Screen.h"
@@ -22,6 +29,7 @@
 #include "ScreenOptions.h"
 #include "ScreenOptionsMaster.h"
 #include "ThemeManager.h"
+#include "Transition.h"
 #include "global.h"
 
 REGISTER_SCREEN_CLASS(ScreenPlayerOptions);

@@ -1,7 +1,7 @@
 #ifndef CRASH_HANDLER_H
 #define CRASH_HANDLER_H
 
-#include <sys/signal.h>
+#include <ucontext.h>
 
 #include <csignal>
 #include <cstdint>

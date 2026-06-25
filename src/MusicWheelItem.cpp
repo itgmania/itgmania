@@ -2,13 +2,13 @@
 
 #include <string>
 
+#include "Actor.h"
 #include "ActorUtil.h"
 #include "BitmapText.h"
 #include "Course.h"
 #include "Difficulty.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
-#include "GameManager.h"
 #include "GameState.h"
 #include "Group.h"
 #include "HighScore.h"
@@ -18,7 +18,6 @@
 #include "ProfileManager.h"
 #include "RageTypes.h"
 #include "RageUtil.h"
-#include "ScreenManager.h"
 #include "Song.h"
 #include "SongManager.h"
 #include "SongUtil.h"
@@ -26,6 +25,7 @@
 #include "Style.h"
 #include "ThemeManager.h"
 #include "ThemeMetric.h"
+#include "Trail.h"
 #include "WheelItemBase.h"
 #include "WheelNotifyIcon.h"
 #include "global.h"

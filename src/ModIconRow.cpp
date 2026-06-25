@@ -12,6 +12,7 @@
 #include "LuaManager.h"
 #include "MessageManager.h"
 #include "ModIcon.h"
+#include "ModsGroup.h"
 #include "PlayerNumber.h"
 #include "PlayerOptions.h"
 #include "PlayerState.h"

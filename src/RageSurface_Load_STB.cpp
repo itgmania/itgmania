@@ -1,8 +1,8 @@
 #include "RageSurface_Load_STB.h"
 
-#include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <memory>
 #include <string>
 
 #include "RageFile.h"

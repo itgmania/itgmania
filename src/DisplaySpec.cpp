@@ -1,6 +1,7 @@
 #include "DisplaySpec.h"
 
 #include <iterator>
+#include <new>
 #include <vector>
 
 #include "LuaBinding.h"

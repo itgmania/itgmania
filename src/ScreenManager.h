@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "RageSound.h"
 #include "ScreenMessage.h"

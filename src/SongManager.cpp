@@ -4,14 +4,10 @@
 #include <atomic>
 #include <chrono>
 #include <cstddef>
-#include <map>
+#include <iterator>
 #include <memory>
-#include <set>
-#include <string>
 #include <thread>
 #include <tuple>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -22,16 +18,14 @@
 #include "CourseUtil.h"
 #include "Difficulty.h"
 #include "EnumHelper.h"
-#include "GameConstantsAndTypes.h"
-#include "GameManager.h"
 #include "GameState.h"
 #include "Group.h"
 #include "ImageCache.h"
 #include "LocalizedString.h"
 #include "LuaManager.h"
 #include "MemoryCardManager.h"
+#include "MessageManager.h"
 #include "MsdFile.h"
-#include "NotesLoaderDWI.h"
 #include "NotesLoaderSM.h"
 #include "NotesLoaderSSC.h"
 #include "PlayerNumber.h"
@@ -42,10 +36,8 @@
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageTextureID.h"
-#include "RageTexturePreloader.h"
 #include "RageThreads.h"
 #include "RageTimer.h"
-#include "RageTypes.h"
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
 #include "Song.h"
@@ -59,9 +51,9 @@
 #include "StepsUtil.h"
 #include "Style.h"
 #include "ThemeManager.h"
-#include "ThemeMetric.h"
 #include "TitleSubstitution.h"
-#include "TrailUtil.h"
+#include "Trail.h"
+#include "Tween.h"
 #include "UnlockManager.h"
 #include "arch/LoadingWindow/LoadingWindow.h"
 #include "global.h"

@@ -22,6 +22,7 @@
 #include "ScreenWithMenuElements.h"
 #include "StdString.h"
 #include "ThemeManager.h"
+#include "Tween.h"
 #include "global.h"
 
 #define CHOICE_NAMES THEME->GetMetric(m_sName, "ChoiceNames")

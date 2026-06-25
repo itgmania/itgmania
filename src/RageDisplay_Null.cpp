@@ -2,13 +2,10 @@
 
 #include <cstring>
 #include <string>
-#include <vector>
 
 #include "DisplaySpec.h"
-#include "ModelTypes.h"
 #include "RageDisplay.h"
 #include "RageLog.h"
-#include "RageMath.h"
 #include "RageSurface.h"
 #include "RageTypes.h"
 #include "global.h"

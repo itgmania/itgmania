@@ -1,9 +1,7 @@
 #include "LuaManager.h"
 
 #include <algorithm>
-#include <cassert>
 #include <cmath>
-#include <csetjmp>
 #include <cstdarg>
 #include <cstddef>
 #include <cstdint>
@@ -11,6 +9,7 @@
 #include <map>
 #include <sstream>  // conversion for lua functions.
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "Command.h"

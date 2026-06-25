@@ -2,12 +2,14 @@
 
 #include <algorithm>
 #include <string>
+#include <vector>
 
 #include "Actor.h"
 #include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "BitmapText.h"
 #include "LuaManager.h"
+#include "PlayerStageStats.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "StageStats.h"

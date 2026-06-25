@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "CourseUtil.h"  // for CourseID
+#include "CourseUtil.h"
 #include "DateTime.h"
 #include "Difficulty.h"
 #include "EnumHelper.h"
@@ -14,14 +14,16 @@
 #include "Grade.h"
 #include "Group.h"
 #include "HighScore.h"
+#include "LuaManager.h"
 #include "LuaReference.h"
 #include "PlayerNumber.h"
 #include "RageUtil.h"
-#include "SongUtil.h"   // for SongID
-#include "StepsUtil.h"  // for StepsID
-#include "StyleUtil.h"  // for StyleID
-#include "TrailUtil.h"  // for TrailID
+#include "SongUtil.h"
+#include "StepsUtil.h"
+#include "StyleUtil.h"
+#include "TrailUtil.h"
 
+class Style;
 class XNode;
 struct lua_State;
 class Character;
@@ -59,8 +61,6 @@ extern const std::string LASTGOOD_SUBDIR;
 
 /** @brief The max number of characters that can be used in a profile. */
 const unsigned int PROFILE_MAX_DISPLAY_NAME_LENGTH = 32;
-
-class Style;
 
 class Song;
 class Steps;

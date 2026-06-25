@@ -6,6 +6,7 @@
 
 #include "Difficulty.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 
 class Steps;
 class Song;

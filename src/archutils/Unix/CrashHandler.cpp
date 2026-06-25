@@ -1,9 +1,6 @@
 #include "CrashHandler.h"
 
-#include <fcntl.h>
-#include <limits.h>
-#include <signal.h>
-#include <sys/signal.h>
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -11,12 +8,10 @@
 #include <cerrno>
 #include <csignal>
 #include <cstdarg>
-#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <string>
 
 #include "Backtrace.h"
 #include "CrashHandlerInternal.h"

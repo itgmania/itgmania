@@ -2,16 +2,17 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <string>
 #include <vector>
 
 #include "EnumHelper.h"
-#include "Game.h"
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
 #include "NoteData.h"
 #include "NoteTypes.h"
 #include "PlayerNumber.h"
 #include "PlayerStageStats.h"
+#include "RadarValues.h"
 #include "RageUtil.h"
 #include "ThemeMetric.h"
 #include "TimingData.h"

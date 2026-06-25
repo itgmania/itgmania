@@ -1,7 +1,6 @@
 #ifndef LightsDriver_Linux_PIUIOBTN_Leds_H
 #define LightsDriver_Linux_PIUIOBTN_Leds_H
 
-#include "LightsManager.h"
 #include "arch/Lights/LightsDriver_Linux_Leds.h"
 
 class LightsDriver_Linux_PIUIOBTN_Leds : public LightsDriver_Linux_Leds {

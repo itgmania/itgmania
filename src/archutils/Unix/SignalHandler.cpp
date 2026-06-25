@@ -1,12 +1,9 @@
 #include "SignalHandler.h"
 
 #include <signal.h>
-#include <sys/cdefs.h>
-#include <sys/signal.h>
-
-#include <csignal>
 
 #include "RageLog.h"
+#include "config.hpp"
 
 #if defined(HAVE_LIBPTHREAD)
 #include "archutils/Common/PthreadHelpers.h"

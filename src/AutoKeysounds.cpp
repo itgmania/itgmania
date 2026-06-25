@@ -23,14 +23,17 @@
 #include <algorithm>
 #include <climits>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "EnumHelper.h"
 #include "GameState.h"
+#include "MessageManager.h"
 #include "NoteData.h"
 #include "NoteTypes.h"
 #include "PlayerNumber.h"
 #include "RageSoundManager.h"
+#include "RageSoundReader.h"
 #include "RageSoundReader_Chain.h"
 #include "RageSoundReader_Extend.h"
 #include "RageSoundReader_FileReader.h"
@@ -41,6 +44,8 @@
 #include "RageSoundReader_ThreadedBuffer.h"
 #include "RageUtil.h"
 #include "Song.h"
+#include "Steps.h"
+#include "TimingData.h"
 #include "global.h"
 
 void AutoKeysounds::Load(PlayerNumber pn, const NoteData& ndAutoKeysoundsOnly) {

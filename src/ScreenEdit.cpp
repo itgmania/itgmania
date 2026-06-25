@@ -1,19 +1,21 @@
 #include "ScreenEdit.h"
 
+#include <stdio.h>
+
 #include <algorithm>
-#include <cfloat>
 #include <cmath>
 #include <cstddef>
-#include <cstdio>
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "Actor.h"
 #include "ActorUtil.h"
 #include "AdjustSync.h"
 #include "ArrowEffects.h"
 #include "Attack.h"
+#include "AutoActor.h"
 #include "BackgroundUtil.h"
 #include "CommonMetrics.h"
 #include "Course.h"
@@ -30,6 +32,7 @@
 #include "InputFilter.h"
 #include "InputMapper.h"
 #include "LocalizedString.h"
+#include "LuaManager.h"
 #include "MessageManager.h"
 #include "ModsGroup.h"
 #include "NoteData.h"
@@ -41,10 +44,10 @@
 #include "PlayerNumber.h"
 #include "Preference.h"
 #include "PrefsManager.h"
+#include "RadarValues.h"
 #include "RageInput.h"
 #include "RageInputDevice.h"
 #include "RageLog.h"
-#include "RageSoundManager.h"
 #include "RageSoundReader.h"
 #include "RageSoundReader_FileReader.h"
 #include "RageTimer.h"
@@ -60,8 +63,10 @@
 #include "ScreenSaveSync.h"
 #include "ScreenTextEntry.h"
 #include "ScreenWithMenuElements.h"
+#include "SnapDisplay.h"
 #include "Song.h"
 #include "SongManager.h"
+#include "SongOptions.h"
 #include "SongPosition.h"
 #include "SongUtil.h"
 #include "SpecialFiles.h"
@@ -73,6 +78,7 @@
 #include "ThemeMetric.h"
 #include "TimingData.h"
 #include "TimingSegments.h"
+#include "Transition.h"
 #include "XmlFile.h"
 #include "global.h"
 

@@ -10,6 +10,7 @@
 #include "InputFilter.h"
 #include "InputMapper.h"
 #include "PlayerNumber.h"
+#include "RageInputDevice.h"
 #include "RageLog.h"
 #include "RageTimer.h"
 #include "RageUtil.h"

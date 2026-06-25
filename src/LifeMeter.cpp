@@ -1,5 +1,7 @@
 #include "LifeMeter.h"
 
+#include <string>
+
 #include "ActorFrame.h"
 #include "LifeMeterBar.h"
 #include "LifeMeterBattery.h"

@@ -3,21 +3,22 @@
 #include <algorithm>
 #include <string>
 
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "Difficulty.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "GameState.h"
-#include "LuaBinding.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
 #include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "PlayerState.h"
 #include "RageUtil.h"
-#include "SongManager.h"
 #include "Steps.h"
 #include "ThemeManager.h"
+#include "Trail.h"
 #include "global.h"
 
 REGISTER_ACTOR_CLASS(StepsDisplay);

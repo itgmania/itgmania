@@ -1,16 +1,22 @@
 #include "DynamicActorScroller.h"
 
+#include <stdlib.h>
+
 #include <climits>
 #include <cmath>
 #include <cstddef>
 #include <string>
+#include <vector>
 
 #include "Actor.h"
 #include "ActorScroller.h"
 #include "ActorUtil.h"
 #include "LuaBinding.h"
 #include "LuaManager.h"
+#include "Quad.h"
 #include "RageUtil.h"
+#include "RageUtil_AutoPtr.h"
+#include "Tween.h"
 #include "XmlFile.h"
 #include "global.h"
 

@@ -10,6 +10,7 @@
 #include "PlayerNumber.h"
 #include "RageUtil.h"
 #include "ThemeManager.h"
+#include "Tween.h"
 #include "XmlFile.h"
 
 REGISTER_ACTOR_CLASS(MemoryCardDisplay);

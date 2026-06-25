@@ -1,11 +1,15 @@
 #include "RageDisplay_OGL.h"
 
+#include <GL/glew.h>
+
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>

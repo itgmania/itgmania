@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "EnumHelper.h"
+#include "LuaManager.h"
 #include "NoteTypes.h"
 #include "RageUtil.h"
 #include "TimingSegments.h"

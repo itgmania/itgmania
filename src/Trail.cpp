@@ -9,7 +9,6 @@
 #include "Attack.h"
 #include "CommonMetrics.h"
 #include "GameConstantsAndTypes.h"
-#include "GameState.h"
 #include "LuaManager.h"
 #include "NoteData.h"
 #include "NoteDataUtil.h"
@@ -17,6 +16,8 @@
 #include "PlayerOptions.h"
 #include "Song.h"
 #include "Steps.h"
+#include "ThemeMetric.h"
+#include "TimingData.h"
 #include "global.h"
 
 void TrailEntry::GetAttackArray(AttackArray& out) const {
@@ -46,7 +47,6 @@ bool TrailEntry::ContainsTransformOrTurn() const {
 }
 
 // TrailEntry lua start
-#include "LuaBinding.h"
 
 /** @brief Allow Lua to have access to the TrailEntry. */
 class LunaTrailEntry : public Luna<TrailEntry> {

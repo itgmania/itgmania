@@ -8,7 +8,7 @@
 #include "ActorFrame.h"
 #include "CodeSet.h"
 #include "EnumHelper.h"
-#include "InputQueue.h"
+#include "InputEventPlus.h"
 #include "LightsManager.h"
 #include "LuaReference.h"
 #include "ScreenMessage.h"

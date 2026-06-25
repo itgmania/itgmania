@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "EnumHelper.h"
@@ -11,7 +12,6 @@
 #include "PlayerNumber.h"
 #include "RageTypes.h"
 #include "RageUtil.h"
-#include "XmlFile.h"
 #include "global.h"
 
 REGISTER_ACTOR_CLASS(HoldJudgment);

@@ -1,9 +1,13 @@
 #include "LifeMeterBattery.h"
 
+#include <stdlib.h>
+
 #include <algorithm>
 #include <cmath>
 #include <string>
+#include <vector>
 
+#include "Actor.h"
 #include "ActorUtil.h"
 #include "Course.h"
 #include "GameConstantsAndTypes.h"
@@ -11,11 +15,14 @@
 #include "LifeMeter.h"
 #include "LuaManager.h"
 #include "MessageManager.h"
+#include "ModsGroup.h"
 #include "PlayerNumber.h"
+#include "PlayerOptions.h"
 #include "PlayerStageStats.h"
 #include "PlayerState.h"
 #include "RageUtil.h"
 #include "ThemeManager.h"
+#include "Tween.h"
 
 LifeMeterBattery::LifeMeterBattery() {
   m_iLivesLeft = 4;

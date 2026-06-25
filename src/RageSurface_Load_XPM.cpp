@@ -2,12 +2,13 @@
  * and loading splashes. */
 #include "RageSurface_Load_XPM.h"
 
-#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <map>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "RageSurface.h"

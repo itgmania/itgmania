@@ -15,6 +15,7 @@
 #include "ScreenMessage.h"
 #include "ThemeManager.h"
 #include "ThemeMetric.h"
+#include "Tween.h"
 #include "global.h"
 
 std::string WARNING_COMMAND_NAME(size_t i) {

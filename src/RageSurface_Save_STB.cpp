@@ -1,6 +1,7 @@
 #include "RageSurface_Save_STB.h"
 
-#include <cstdint>
+#include <stddef.h>
+
 #include <string>
 
 #include "RageFile.h"

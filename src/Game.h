@@ -4,6 +4,7 @@
 #include "GameConstantsAndTypes.h"
 #include "GameInput.h"
 #include "InputMapper.h"
+#include "LuaManager.h"
 
 struct lua_State;
 class Style;

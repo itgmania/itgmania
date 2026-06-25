@@ -20,9 +20,11 @@
 #include "GameState.h"
 #include "LocalizedString.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
 #include "MessageManager.h"
 #include "NoteSkinManager.h"
 #include "PlayerNumber.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageLog.h"
 #include "RageThreads.h"
@@ -37,6 +39,9 @@
 #include "StepsUtil.h"
 #include "Style.h"
 #include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "Trail.h"
+#include "Tween.h"
 #include "global.h"
 
 #define ENTRY(s) THEME->GetMetric("ScreenOptionsMaster", s)

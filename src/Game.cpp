@@ -1,5 +1,7 @@
 #include "Game.h"
 
+#include <string>
+
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "GameInput.h"

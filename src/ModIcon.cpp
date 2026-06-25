@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "RageUtil.h"

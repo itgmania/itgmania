@@ -10,6 +10,7 @@
 #include "Grade.h"
 #include "LuaManager.h"
 #include "PlayerNumber.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RadarValues.h"
 #include "RageUtil.h"

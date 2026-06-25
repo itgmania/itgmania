@@ -6,6 +6,7 @@
 
 #include "RageThreads.h"
 #include "RageUtil.h"
+#include "config.hpp"
 #include "global.h"
 
 /* We can define this symbol to catch failed assert() calls.  This is only used

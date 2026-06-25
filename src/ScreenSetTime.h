@@ -4,7 +4,6 @@
 #include <ctime>
 
 #include "BitmapText.h"
-#include "InputQueue.h"
 #include "RageSound.h"
 #include "ScreenWithMenuElements.h"
 

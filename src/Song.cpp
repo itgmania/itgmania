@@ -1,5 +1,7 @@
 #include "Song.h"
 
+#include <stdlib.h>
+
 #include <algorithm>
 #include <cctype>
 #include <cfloat>
@@ -25,9 +27,7 @@
 #include "Group.h"
 #include "ImageCache.h"
 #include "LuaManager.h"
-#include "LyricsLoader.h"
 #include "NoteData.h"
-#include "NoteDataUtil.h"
 #include "NotesLoader.h"
 #include "NotesLoaderSM.h"
 #include "NotesLoaderSSC.h"
@@ -37,7 +37,6 @@
 #include "NotesWriterSSC.h"
 #include "Preference.h"
 #include "PrefsManager.h"
-#include "ProfileManager.h"
 #include "RageFile.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
@@ -45,6 +44,7 @@
 #include "RageSoundReader_FileReader.h"
 #include "RageSurface.h"
 #include "RageSurface_Load.h"
+#include "RageTexture.h"
 #include "RageTextureID.h"
 #include "RageTextureManager.h"
 #include "RageThreads.h"
@@ -53,11 +53,11 @@
 #include "SongCacheIndex.h"
 #include "SongManager.h"
 #include "SongUtil.h"
-#include "Sprite.h"
 #include "StdString.h"
 #include "Steps.h"
 #include "StepsUtil.h"
 #include "Style.h"
+#include "ThemeMetric.h"
 #include "TitleSubstitution.h"
 #include "UnlockManager.h"
 #include "global.h"

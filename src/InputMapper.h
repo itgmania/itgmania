@@ -7,6 +7,7 @@
 #include "GameInput.h"
 #include "PlayerNumber.h"
 #include "RageInputDevice.h"
+#include "RageUtil.h"
 
 struct Game;
 

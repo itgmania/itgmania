@@ -1,5 +1,6 @@
 #include "ScreenSelectCharacter.h"
 
+#include <string>
 #include <vector>
 
 #include "AnnouncerManager.h"
@@ -10,7 +11,9 @@
 #include "GameSoundManager.h"
 #include "GameState.h"
 #include "InputEventPlus.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageLog.h"
 #include "RageTypes.h"

@@ -1,5 +1,8 @@
 #include "ScoreDisplayRave.h"
 
+#include <string>
+
+#include "Actor.h"
 #include "ActorUtil.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"

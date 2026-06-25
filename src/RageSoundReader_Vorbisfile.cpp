@@ -1,14 +1,19 @@
 #include "RageSoundReader_Vorbisfile.h"
 
+#include <algorithm>
+#include <cstdarg>
+#include <cstddef>
+#include <cstring>
+
 #include "RageException.h"
 #include "RageFileBasic.h"
 #include "RageLog.h"
 #include "RageSoundReader.h"
-#include "RageSoundReader_FileReader.h"
 #include "RageThreads.h"
 #include "RageUtil.h"
+#include "RageUtil_AutoPtr.h"
 #include "global.h"
-#include "ogg/os_types.h"
+#include "ogg/config_types.h"
 #include "vorbis/codec.h"
 
 #if defined(INTEGER_VORBIS)
@@ -19,11 +24,6 @@
 #else
 #include <vorbis/vorbisfile.h>
 #endif
-
-#include <cerrno>
-#include <cstdarg>
-#include <cstddef>
-#include <cstring>
 
 static size_t OggRageFile_read_func(
     void* ptr, size_t size, size_t nmemb, void* datasource) {

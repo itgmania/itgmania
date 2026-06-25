@@ -1,6 +1,8 @@
 #include "CourseWriterCRS.h"
 
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "Attack.h"
@@ -10,10 +12,13 @@
 #include "GameConstantsAndTypes.h"
 #include "RadarValues.h"
 #include "RageFile.h"
+#include "RageFileBasic.h"
 #include "RageFileDriverMemory.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "Song.h"
+#include "SongUtil.h"
+#include "StepsUtil.h"
 #include "global.h"
 
 /** @brief Load the difficulty names from CourseLoaderCRS. */

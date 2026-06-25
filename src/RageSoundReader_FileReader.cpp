@@ -6,6 +6,7 @@
 
 #include "ActorUtil.h"
 #include "RageFile.h"
+#include "RageFileBasic.h"
 #include "RageLog.h"
 #include "RageSoundReader_MP3.h"
 #include "RageSoundReader_Vorbisfile.h"

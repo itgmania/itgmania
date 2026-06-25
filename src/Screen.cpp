@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ActorFrame.h"
@@ -18,10 +19,12 @@
 #include "RageInputDevice.h"
 #include "RageLog.h"
 #include "RageThreads.h"
+#include "RageTimer.h"
 #include "RageUtil.h"
 #include "ScreenManager.h"
 #include "ScreenMessage.h"
 #include "ThemeManager.h"
+#include "Tween.h"
 #include "global.h"
 
 #define NEXT_SCREEN THEME->GetMetric(m_sName, "NextScreen")

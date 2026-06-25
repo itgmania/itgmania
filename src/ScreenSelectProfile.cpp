@@ -1,5 +1,7 @@
 #include "ScreenSelectProfile.h"
 
+#include <string>
+
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
 #include "GameInput.h"
@@ -10,6 +12,7 @@
 #include "MemoryCardManager.h"
 #include "MessageManager.h"
 #include "PlayerNumber.h"
+#include "Preference.h"
 #include "ProfileManager.h"
 #include "Screen.h"
 #include "ScreenManager.h"

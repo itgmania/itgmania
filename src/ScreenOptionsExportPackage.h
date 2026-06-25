@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-#include "InputEventPlus.h"
 #include "PlayerNumber.h"
 #include "ScreenOptions.h"
 

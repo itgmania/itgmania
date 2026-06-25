@@ -1,10 +1,8 @@
 #include "CharacterManager.h"
 
-#include <string>
 #include <vector>
 
 #include "Character.h"
-#include "GameState.h"
 #include "LuaManager.h"
 #include "RageException.h"
 #include "RageUtil.h"

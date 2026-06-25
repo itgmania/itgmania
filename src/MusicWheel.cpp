@@ -5,6 +5,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "Command.h"
@@ -25,6 +26,7 @@
 #include "PlayerNumber.h"
 #include "Preference.h"
 #include "PrefsManager.h"
+#include "Profile.h"
 #include "ProfileManager.h"
 #include "RageLog.h"
 #include "RageTimer.h"
@@ -40,6 +42,7 @@
 #include "Steps.h"
 #include "Style.h"
 #include "ThemeManager.h"
+#include "Tween.h"
 #include "UnlockManager.h"
 #include "WheelBase.h"
 #include "WheelItemBase.h"

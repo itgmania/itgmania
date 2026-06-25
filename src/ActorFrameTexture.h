@@ -4,6 +4,8 @@
 #include <string>
 
 #include "ActorFrame.h"
+#include "LuaManager.h"
+
 class RageTextureRenderTarget;
 
 class ActorFrameTexture : public ActorFrame {

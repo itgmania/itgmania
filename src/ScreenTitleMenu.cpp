@@ -5,6 +5,7 @@
 #include "AnnouncerManager.h"
 #include "CodeDetector.h"
 #include "CommonMetrics.h"
+#include "GameInput.h"
 #include "GameLoop.h"
 #include "GamePreferences.h"
 #include "GameSoundManager.h"
@@ -13,10 +14,13 @@
 #include "InputFilter.h"
 #include "LocalizedString.h"
 #include "MessageManager.h"
+#include "Preference.h"
 #include "Screen.h"
 #include "ScreenManager.h"
 #include "ScreenSelectMaster.h"
 #include "ThemeManager.h"
+#include "ThemeMetric.h"
+#include "Transition.h"
 
 #define COIN_MODE_CHANGE_SCREEN \
   THEME->GetMetric(m_sName, "CoinModeChangeScreen")

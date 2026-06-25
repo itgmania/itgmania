@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "Actor.h"
@@ -15,6 +16,7 @@
 #include "LuaBinding.h"
 #include "LuaManager.h"
 #include "RageDisplay.h"
+#include "RageTexture.h"
 #include "RageThreads.h"
 #include "RageTimer.h"
 #include "RageTypes.h"
@@ -22,7 +24,6 @@
 #include "RageUtil/RandomNumbers.h"
 #include "StdString.h"
 #include "ThemeManager.h"
-#include "Tween.h"
 #include "XmlFile.h"
 #include "global.h"
 

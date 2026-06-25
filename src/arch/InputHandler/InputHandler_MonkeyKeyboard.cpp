@@ -1,7 +1,9 @@
 #include "InputHandler_MonkeyKeyboard.h"
 
+#include <string>
 #include <vector>
 
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageInputDevice.h"
 #include "RageUtil.h"

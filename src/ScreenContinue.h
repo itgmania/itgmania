@@ -4,8 +4,6 @@
 #ifndef ScreenContinue_H
 #define ScreenContinue_H
 
-#include "InputQueue.h"
-#include "MessageManager.h"
 #include "ScreenMessage.h"
 #include "ScreenWithMenuElements.h"
 #include "ThemeMetric.h"

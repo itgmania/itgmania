@@ -4,6 +4,7 @@
 #include <string>
 
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "LuaReference.h"
 #include "RageTexturePreloader.h"
 #include "StdString.h"

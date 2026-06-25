@@ -1,7 +1,5 @@
 #include "MessageWindow.h"
 
-#include <string>
-
 #include "AppInstance.h"
 #include "RageException.h"
 #include "RageUtil.h"

@@ -7,7 +7,7 @@
 #include "RageSoundReader_Filter.h"
 #include "RageSoundUtil.h"
 #include "RageThreads.h"
-#include "global.h"
+#include "RageUtil_AutoPtr.h"
 
 /*
  * This filter is normally inserted after extended buffering, implementing

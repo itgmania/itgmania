@@ -13,6 +13,7 @@
 #include "NoteTypes.h"
 #include "PlayerNumber.h"
 #include "RadarValues.h"
+#include "RageTypes.h"
 #include "RageUtil.h"
 #include "Song.h"
 #include "StdString.h"

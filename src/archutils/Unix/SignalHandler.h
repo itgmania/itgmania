@@ -2,8 +2,8 @@
 #define SIGNAL_HANDLER_H
 
 #include <signal.h>
+#include <ucontext.h>
 
-#include <csignal>
 #include <vector>
 
 class SaveSignals {

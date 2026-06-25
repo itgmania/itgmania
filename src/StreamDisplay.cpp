@@ -1,6 +1,5 @@
 #include "StreamDisplay.h"
 
-#include <cfloat>
 #include <cmath>
 #include <string>
 

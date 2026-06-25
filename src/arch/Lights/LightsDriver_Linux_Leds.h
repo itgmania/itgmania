@@ -3,11 +3,15 @@
 #ifndef LightsDriver_Linux_Leds_H
 #define LightsDriver_Linux_Leds_H
 
+#include <limits.h>
+
 #include <cstdint>
 #include <string>
 
 #include "GameInput.h"
+#include "InputMapper.h"
 #include "LightsDriver.h"
+#include "LightsManager.h"
 
 class LightsDriver_Linux_Leds : public LightsDriver {
  private:

@@ -10,7 +10,8 @@
 
 #include "ScreenSandbox.h"
 
-#include "InputQueue.h"
+#include <string>
+
 #include "Screen.h"
 #include "ScreenMessage.h"
 

@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -17,7 +18,9 @@
 #include "GameConstantsAndTypes.h"
 #include "GameManager.h"
 #include "GameState.h"
+#include "LocalizedString.h"
 #include "LuaManager.h"
+#include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "Preference.h"
 #include "PrefsManager.h"
@@ -36,7 +39,6 @@
 #include "Style.h"
 #include "ThemeManager.h"
 #include "Trail.h"
-#include "UnlockManager.h"
 #include "global.h"
 
 static Preference<int> MAX_SONGS_IN_EDIT_COURSE("MaxSongsInEditCourse", -1);

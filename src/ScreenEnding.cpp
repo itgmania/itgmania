@@ -1,21 +1,26 @@
 #include "ScreenEnding.h"
 
 #include <cmath>
+#include <string>
+#include <vector>
 
 #include "ActorUtil.h"
 #include "AnnouncerManager.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
+#include "GameInput.h"
 #include "GameManager.h"
 #include "GameSoundManager.h"
 #include "GameState.h"
 #include "InputEventPlus.h"
 #include "MemoryCardManager.h"
+#include "MessageManager.h"
 #include "ModsGroup.h"
 #include "PlayerNumber.h"
+#include "PlayerStageStats.h"
 #include "PlayerState.h"
+#include "Preference.h"
 #include "PrefsManager.h"
-#include "Profile.h"
 #include "ProfileManager.h"
 #include "RageUtil.h"
 #include "RageUtil/RandomNumbers.h"
@@ -25,7 +30,9 @@
 #include "ScreenMessage.h"
 #include "Song.h"
 #include "SongManager.h"
+#include "StageStats.h"
 #include "StatsManager.h"
+#include "Steps.h"
 #include "ThemeManager.h"
 
 REGISTER_SCREEN_CLASS(ScreenEnding);

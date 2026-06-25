@@ -1,5 +1,8 @@
 #include "LoadingWindow_Gtk.h"
 
+#include <gdk-pixbuf/gdk-pixbuf.h>
+#include <glib-object.h>
+#include <glib.h>
 #include <gtk/gtk.h>
 
 #include <cstdint>
@@ -7,9 +10,8 @@
 
 #include "RageSurface.h"
 #include "RageSurfaceUtils.h"
-#include "RageSurface_Load.h"
 #include "RageUtil.h"
-#include "global.h"
+#include "pango/pango-layout.h"
 
 static GtkWidget* label;
 static GtkWidget* window;

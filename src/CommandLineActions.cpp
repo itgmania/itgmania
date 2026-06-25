@@ -6,7 +6,6 @@
 
 #include "DateTime.h"
 #include "LuaManager.h"
-#include "Preference.h"
 #include "ProductInfo.h"
 #include "RageUtil.h"
 #include "XmlFile.h"

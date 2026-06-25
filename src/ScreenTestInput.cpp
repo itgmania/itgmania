@@ -11,6 +11,7 @@
 #include "InputMapper.h"
 #include "LocalizedString.h"
 #include "MessageManager.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageInput.h"
 #include "RageInputDevice.h"

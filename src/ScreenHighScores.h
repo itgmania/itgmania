@@ -5,17 +5,15 @@
 #include <utility>
 #include <vector>
 
-#include "Actor.h"
-#include "Attack.h"
 #include "Course.h"
 #include "Difficulty.h"
 #include "DynamicActorScroller.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
-#include "InputQueue.h"
 #include "ScreenAttract.h"
 #include "ScreenMessage.h"
 #include "ThemeMetric.h"
+#include "Trail.h"
 
 typedef std::pair<Difficulty, StepsType> DifficultyAndStepsType;
 

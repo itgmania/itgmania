@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "Actor.h"
 #include "PlayerNumber.h"
 #include "RageUtil.h"
 #include "ThemeManager.h"

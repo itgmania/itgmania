@@ -1,8 +1,10 @@
 #ifndef RAGE_TEXTURE_PRELOADER_H
 #define RAGE_TEXTURE_PRELOADER_H
 
-#include <utility>
 #include <vector>
+
+#include "RageTexture.h"
+#include "RageTextureID.h"
 
 class RageTexture;
 struct RageTextureID;

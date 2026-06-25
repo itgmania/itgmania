@@ -10,6 +10,7 @@
 #include <climits>
 #include <cstddef>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -18,6 +19,7 @@
 #include "PlayerNumber.h"
 #include "RageUtil.h"
 #include "RageUtil_AutoPtr.h"
+#include "TimingData.h"
 #include "XmlFile.h"
 #include "global.h"
 

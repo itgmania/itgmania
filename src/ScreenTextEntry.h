@@ -6,7 +6,7 @@
 #include "AutoActor.h"
 #include "BitmapText.h"
 #include "EnumHelper.h"
-#include "InputEventPlus.h"
+#include "LuaManager.h"
 #include "LuaReference.h"
 #include "RageSound.h"
 #include "RageTimer.h"

@@ -4,7 +4,6 @@
 #include <string>
 
 #include "MovieTexture.h"
-#include "RageTextureID.h"
 
 class RageMovieTextureDriver_Null : public RageMovieTextureDriver {
  public:

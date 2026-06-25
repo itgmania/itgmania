@@ -1,5 +1,19 @@
 #include "InputHandler_DirectInput.h"
 
+// clang-format off
+//Must come before <OleAuto.h>
+#include <windows.h>
+// clang-format on
+#include <OleAuto.h>
+#include <WbemIdl.h>
+#include <XInput.h>
+
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <string>
+#include <vector>
+
 #include "GamePreferences.h"  //needed for Axis Fix
 #include "InputFilter.h"
 #include "InputHandler_DirectInputHelper.h"
@@ -20,16 +34,6 @@
 #else
 #pragma comment(lib, "xinput.lib")
 #endif
-
-#include <OleAuto.h>
-#include <WbemIdl.h>
-#include <XInput.h>
-
-#include <algorithm>
-#include <cmath>
-#include <limits>
-#include <string>
-#include <vector>
 
 // this may not be defined if we are using an older Windows SDK. (for instance,
 // toolsetversion v140_xp does not define it) the number was taken from the

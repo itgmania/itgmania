@@ -1,8 +1,15 @@
 #ifndef PLAYER_OPTIONS_H
 #define PLAYER_OPTIONS_H
 
+#include <cstring>
+
 #include "EnumHelper.h"
+#include "LuaBinding.h"
+#include "LuaManager.h"
+#include "OptionsBinding.h"
+#include "Preference.h"
 #include "RageUtil.h"
+
 class Course;
 class Song;
 class Steps;

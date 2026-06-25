@@ -2,12 +2,12 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "RageFile.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
-#include "RageThreads.h"
 #include "RageUtil.h"
 #include "global.h"
 

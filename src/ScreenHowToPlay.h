@@ -1,6 +1,7 @@
 #ifndef SCREEN_HOW_TO_PLAY_H
 #define SCREEN_HOW_TO_PLAY_H
 
+#include "LuaManager.h"
 #include "NoteData.h"
 #include "Player.h"
 #include "ScreenAttract.h"

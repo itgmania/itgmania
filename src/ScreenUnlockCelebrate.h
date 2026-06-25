@@ -1,7 +1,6 @@
 #ifndef ScreenUnlockCelebrate_H
 #define ScreenUnlockCelebrate_H
 
-#include "InputQueue.h"
 #include "ScreenUnlockBrowse.h"
 
 class ScreenUnlockCelebrate : public ScreenUnlockBrowse {

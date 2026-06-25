@@ -8,6 +8,7 @@
 #include "Preference.h"
 #include "StdString.h"
 #include "arch/Lights/LightsDriver.h"
+#include "arch/RageDriver.h"
 #include "archutils/Common/HidDevice.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS(PacDrive);

@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "Actor.h"
 #include "ActorFrame.h"
 #include "ActorUtil.h"
 #include "EnumHelper.h"
@@ -9,6 +10,7 @@
 #include "InputMapper.h"
 #include "LuaBinding.h"
 #include "LuaManager.h"
+#include "LuaReference.h"
 #include "PlayerNumber.h"
 #include "RageInput.h"
 #include "RageInputDevice.h"

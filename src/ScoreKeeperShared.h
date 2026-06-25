@@ -1,9 +1,6 @@
 #ifndef SCORE_KEEPER_SHARED_H
 #define SCORE_KEEPER_SHARED_H
 
-#include <vector>
-
-#include "Attack.h"
 #include "ScoreKeeper.h"
 #include "ScoreKeeperNormal.h"
 

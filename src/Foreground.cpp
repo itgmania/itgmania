@@ -9,11 +9,16 @@
 #include "BackgroundUtil.h"
 #include "GameState.h"
 #include "MessageManager.h"
+#include "ModsGroup.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageTextureID.h"
 #include "RageTextureManager.h"
 #include "RageUtil.h"
 #include "Song.h"
+#include "SongOptions.h"
+#include "SongPosition.h"
+#include "TimingData.h"
 
 Foreground::~Foreground() { Unload(); }
 

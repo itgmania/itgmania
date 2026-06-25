@@ -1,6 +1,5 @@
 #include "CryptHelpers.h"
 
-#include <cstring>
 #include <string>
 
 #include "global.h"

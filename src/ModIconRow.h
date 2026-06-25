@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "ActorFrame.h"
-#include "MessageManager.h"
+#include "LuaManager.h"
 #include "ModIcon.h"
 #include "PlayerNumber.h"
 #include "ThemeMetric.h"

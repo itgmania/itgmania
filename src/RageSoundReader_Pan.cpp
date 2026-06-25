@@ -6,6 +6,7 @@
 #include "RageSoundReader.h"
 #include "RageSoundReader_Filter.h"
 #include "RageSoundUtil.h"
+#include "RageUtil_AutoPtr.h"
 
 RageSoundReader_Pan::RageSoundReader_Pan(RageSoundReader* pSource)
     : RageSoundReader_Filter(pSource) {

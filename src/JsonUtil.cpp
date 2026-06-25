@@ -5,7 +5,6 @@
 
 #include "RageFile.h"
 #include "RageLog.h"
-#include "RageUtil.h"
 #include "arch/Dialog/Dialog.h"
 #include "json/json.h"
 

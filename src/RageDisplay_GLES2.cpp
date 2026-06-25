@@ -11,10 +11,8 @@
 
 #include "DisplaySpec.h"
 #include "EnumHelper.h"
-#include "ModelTypes.h"
 #include "RageDisplay.h"
 #include "RageLog.h"
-#include "RageMath.h"
 #include "RageSurface.h"
 #include "RageTextureManager.h"
 #include "RageTypes.h"

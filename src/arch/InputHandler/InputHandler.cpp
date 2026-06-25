@@ -1,5 +1,8 @@
 #include "InputHandler.h"
 
+#include <string>
+#include <vector>
+
 #include "InputFilter.h"
 #include "InputHandler_MonkeyKeyboard.h"
 #include "LocalizedString.h"
@@ -7,13 +10,11 @@
 #include "RageInputDevice.h"
 #include "RageLog.h"
 #include "RageUtil.h"
+#include "StdString.h"
 #include "arch/RageDriver.h"
 #include "arch/arch_default.h"
 #include "global.h"
 // #include "InputHandler_NSEvent.hpp"
-
-#include <string>
-#include <vector>
 
 void InputHandler::UpdateTimer() {
   m_LastUpdate.Touch();

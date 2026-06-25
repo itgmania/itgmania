@@ -1,11 +1,14 @@
 #include "TechCounts.h"
 
 #include <algorithm>
+#include <array>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
+#include "LocalizedString.h"
 #include "LuaBinding.h"
 #include "LuaManager.h"
 #include "RageUtil.h"

@@ -6,6 +6,7 @@
 #include <string>
 
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "RageTextureID.h"
 #include "Sprite.h"
 class Song;

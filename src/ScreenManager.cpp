@@ -65,8 +65,10 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "Actor.h"
 #include "ActorUtil.h"
 #include "EnumHelper.h"
 #include "GameSoundManager.h"
@@ -86,6 +88,7 @@
 #include "ScreenMessage.h"
 #include "SongManager.h"
 #include "ThemeManager.h"
+#include "Tween.h"
 #include "global.h"
 
 ScreenManager* SCREENMAN =

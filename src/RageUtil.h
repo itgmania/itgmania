@@ -3,16 +3,17 @@
 #ifndef RAGE_UTIL_H
 #define RAGE_UTIL_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <cmath>
 #include <cstdarg>
-#include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <ctime>
+#include <iterator>
 #include <map>
 #include <sstream>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "Compiler.h"

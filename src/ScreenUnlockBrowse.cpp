@@ -1,10 +1,13 @@
 #include "ScreenUnlockBrowse.h"
 
+#include <string>
+#include <vector>
+
 #include "ActorUtil.h"
 #include "GameCommand.h"
-#include "InputQueue.h"
 #include "MessageManager.h"
 #include "PlayerNumber.h"
+#include "RageSound.h"
 #include "RageUtil.h"
 #include "Screen.h"
 #include "ScreenMessage.h"

@@ -13,6 +13,7 @@
 #include "PlayerNumber.h"
 #include "RageUtil.h"
 #include "Steps.h"
+#include "StepsUtil.h"
 #include "Trail.h"
 #include "XmlFile.h"
 

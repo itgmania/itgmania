@@ -1,7 +1,7 @@
 #include "Model.h"
 
 #include <algorithm>
-#include <cstddef>
+#include <array>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -10,20 +10,20 @@
 
 #include "Actor.h"
 #include "ActorUtil.h"
-#include "LuaBinding.h"
 #include "LuaManager.h"
 #include "ModelManager.h"
 #include "ModelTypes.h"
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "RageDisplay.h"
 #include "RageException.h"
 #include "RageFile.h"
 #include "RageMath.h"
+#include "RageModelGeometry.h"
 #include "RageTexture.h"
 #include "RageTypes.h"
 #include "RageUtil.h"
 #include "StdString.h"
-#include "XmlFile.h"
 #include "global.h"
 
 REGISTER_ACTOR_CLASS(Model);

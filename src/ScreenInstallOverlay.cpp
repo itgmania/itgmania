@@ -1,26 +1,28 @@
 #include "ScreenInstallOverlay.h"
 
 #include <algorithm>
-
-#include "GameConstantsAndTypes.h"
-#include "PlayerNumber.h"
-#include "RageFileManager.h"
-#include "RageUtil.h"
-#include "Screen.h"
-#include "ScreenManager.h"
-#include "StdString.h"
-#include "ThemeManager.h"
-#include "global.h"
-class Song;
 #include <string>
 #include <vector>
 
 #include "ActorUtil.h"
 #include "CommandLineActions.h"
+#include "GameConstantsAndTypes.h"
 #include "GameManager.h"
 #include "GameState.h"
+#include "MessageManager.h"
+#include "PlayerNumber.h"
+#include "RageFileManager.h"
+#include "RageUtil.h"
+#include "Screen.h"
+#include "ScreenManager.h"
+#include "Song.h"
 #include "SongManager.h"
+#include "StdString.h"
 #include "StepMania.h"
+#include "ThemeManager.h"
+#include "global.h"
+
+class Song;
 
 struct PlayAfterLaunchInfo {
   std::string sSongDir;

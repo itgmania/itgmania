@@ -6,7 +6,9 @@
 #include <vector>
 
 #include "GameInput.h"
+#include "InputEventPlus.h"
 #include "InputFilter.h"
+#include "RageTimer.h"
 
 class InputEventPlus;
 class RageTimer;

@@ -1,11 +1,10 @@
 #include "LightsDriver_Linux_ITGIO.h"
 
-#include <fcntl.h>
-#include <stdio.h>
-
 #include "GameInput.h"
 #include "LightsManager.h"
+#include "RageUtil.h"
 #include "arch/Lights/LightsDriver.h"
+#include "arch/RageDriver.h"
 
 REGISTER_LIGHTS_DRIVER_CLASS2(ITGIO, Linux_ITGIO);
 

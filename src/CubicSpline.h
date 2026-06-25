@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "LuaManager.h"
 #include "RageTypes.h"
 
 struct lua_State;

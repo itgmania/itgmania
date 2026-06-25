@@ -7,6 +7,7 @@
 
 #include "Attack.h"
 #include "GameConstantsAndTypes.h"
+#include "LuaManager.h"
 #include "ModsGroup.h"
 #include "PlayerNumber.h"
 #include "PlayerOptions.h"

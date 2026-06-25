@@ -1,7 +1,6 @@
 #ifndef LUA_MANAGER_H
 #define LUA_MANAGER_H
 
-#include "global.h"
 struct lua_State;
 typedef lua_State Lua;
 typedef void (*RegisterWithLuaFn)(lua_State*);

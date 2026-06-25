@@ -1,9 +1,6 @@
 #ifndef ScreenOptionsEditProfile_H
 #define ScreenOptionsEditProfile_H
 
-#include <vector>
-
-#include "InputEventPlus.h"
 #include "PlayerNumber.h"
 #include "Profile.h"
 #include "ScreenMessage.h"

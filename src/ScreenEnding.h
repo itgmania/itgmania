@@ -1,7 +1,6 @@
 #ifndef SCREEN_ENDING_H
 #define SCREEN_ENDING_H
 
-#include "InputQueue.h"
 #include "PlayerNumber.h"
 #include "ScreenAttract.h"
 #include "Sprite.h"

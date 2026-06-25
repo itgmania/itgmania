@@ -1,8 +1,10 @@
 #ifndef SONGPOSITION_H
 #define SONGPOSITION_H
 
+#include "LuaManager.h"
 #include "RageTimer.h"
 #include "TimingData.h"
+
 struct lua_State;
 
 class SongPosition {

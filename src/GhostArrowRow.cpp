@@ -4,8 +4,6 @@
 #include <string>
 #include <vector>
 
-#include "ArrowEffects.h"
-#include "Game.h"
 #include "GameConstantsAndTypes.h"
 #include "GameInput.h"
 #include "GameState.h"

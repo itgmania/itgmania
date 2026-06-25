@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "Actor.h"
+#include "LuaManager.h"
 #include "RageTypes.h"
 
 class RageTexture;

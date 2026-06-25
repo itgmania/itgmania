@@ -1,23 +1,27 @@
 #include "RageSoundDriver_PulseAudio.h"
 
+#include <pulse/channelmap.h>
+#include <pulse/def.h>
 #include <pulse/error.h>
-#include <sys/resource.h>
-#include <sys/time.h>
+#include <pulse/proplist.h>
+#include <pulse/timeval.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <vector>
 
+#include "Preference.h"
 #include "PrefsManager.h"
 #include "ProductInfo.h"
 #include "RageException.h"
 #include "RageLog.h"
-#include "RageSound.h"
-#include "RageSoundManager.h"
-#include "RageTimer.h"
+#include "RageSoundConstants.h"
 #include "RageUtil.h"
-#include "global.h"
+#include "arch/RageDriver.h"
+#include "arch/Sound/RageSoundDriver.h"
 #include "ver.h"
 
 /* Register the RageSoundDriver_Pulseaudio class as sound driver "Pulse" */

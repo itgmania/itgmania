@@ -14,7 +14,6 @@
 #include "RageTexture.h"
 #include "RageTextureID.h"
 #include "RageTextureManager.h"
-#include "RageTypes.h"
 #include "RageUtil.h"
 #include "StdString.h"
 #include "XmlFile.h"

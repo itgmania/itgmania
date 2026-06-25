@@ -6,9 +6,10 @@
 
 #include <string>
 
-#include "Actor.h"
 #include "ActorFrame.h"
 #include "BitmapText.h"
+#include "LuaManager.h"
+
 class Song;
 
 class TextBanner : public ActorFrame {

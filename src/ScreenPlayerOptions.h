@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "AutoActor.h"
-#include "InputEventPlus.h"
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 #include "ScreenMessage.h"
 #include "ScreenOptionsMaster.h"

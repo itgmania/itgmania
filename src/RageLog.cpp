@@ -1,13 +1,15 @@
 #include "RageLog.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
-#include <ctime>
 #include <deque>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "RageFile.h"

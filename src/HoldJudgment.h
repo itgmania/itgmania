@@ -6,7 +6,7 @@
 #include "ActorFrame.h"
 #include "AutoActor.h"
 #include "GameConstantsAndTypes.h"
-#include "MessageManager.h"
+#include "LuaManager.h"
 #include "PlayerNumber.h"
 
 class HoldJudgment : public ActorFrame {

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "BitmapText.h"
+#include "LuaManager.h"
 
 struct lua_State;
 /** @brief A BitmapText that cycles through messages. */

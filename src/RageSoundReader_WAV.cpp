@@ -23,6 +23,7 @@
 #include "RageSoundReader_FileReader.h"
 #include "RageUtil.h"
 #include "RageUtil/Endian.h"
+#include "RageUtil_AutoPtr.h"
 #include "global.h"
 
 namespace {
