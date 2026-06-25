@@ -4,8 +4,8 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "CommonMetrics.h"
@@ -75,7 +75,7 @@ static const int IMAGE_CACHE_VERSION = 1;
 
 ImageCache* IMAGECACHE;  // global and accessible from anywhere in our program
 
-static std::map<std::string, RageSurface*> g_ImagePathToImage;
+static std::unordered_map<std::string, RageSurface*> g_ImagePathToImage;
 static int g_iDemandRefcount = 0;
 
 /* Synchronizes access to g_ImagePathToImage and ImageCache::ImageData. */
