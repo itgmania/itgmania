@@ -47,7 +47,8 @@ static const int MAX_BANNER_CACHE_HEIGHT = 128;
 static int nearest_power_of_two(int v) {
   const int up = power_of_two(v);
   const int down = up / 2;
-  return (std::abs(v - up) > std::abs(v - down)) ? down : up;
+  const int nearest = (std::abs(v - up) > std::abs(v - down)) ? down : up;
+  return std::max(1, nearest);
 }
 
 /* Bump this to invalidate the on-disk image cache. */
