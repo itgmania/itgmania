@@ -377,6 +377,10 @@ else() # Linux
     target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_GTK)
   endif()
 
+  if(HAS_SDL)
+    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_SDL)
+  endif()
+
   target_compile_definitions("${SM_EXE_NAME}" PRIVATE UNIX)
   if("${CMAKE_SYSTEM}" MATCHES "Linux")
     target_compile_definitions("${SM_EXE_NAME}" PRIVATE LINUX)
@@ -471,6 +475,10 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
     list(APPEND SMDATA_LINK_LIB "${GTK3_LIBRARIES}")
   endif()
 
+  if(HAS_SDL)
+    list(APPEND SMDATA_LINK_LIB ${SDL2_LIBRARIES})
+  endif()
+
   list(APPEND SMDATA_LINK_LIB "${CMAKE_THREAD_LIBS_INIT}")
 
   if(HAS_ALSA)
@@ -524,6 +532,10 @@ else()
 
     if(X11_FOUND)
       list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
+    endif()
+
+    if(HAS_SDL)
+      list(APPEND SM_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS})
     endif()
 
     list(APPEND SM_INCLUDE_DIRS "${LIBUSB_INCLUDE_DIR}")

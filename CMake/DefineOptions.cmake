@@ -62,5 +62,6 @@ if(LINUX)
   option(WITH_XRANDR "Build with Xrandr support" ON)
   option(WITH_LIBXTST "Build with libXtst support" ON)
   option(WITH_X11 "Build with X11 support" ON)
+  option(WITH_SDL_WINDOW "Build with SDL windowing support (X11, Wayland, KMS)" OFF)
 endif()
 
