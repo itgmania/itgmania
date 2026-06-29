@@ -3498,7 +3498,7 @@ end
 	<Function name='GetRadarValues' return='RadarValues' arguments=''>
 		Returns the RadarValues for this HighScore.
 	</Function>
-	<Function name='GetPlayerGuid' return='string' arguments=''>
+	<Function name='GetPlayerGuid' return='string' arguments='' since='ITGmania 1.3.0'>
 		Returns the GUID of the profile associated with the high score, or an empty string if there is no profile associated with the high score.
 	</Function>
 	<Function name='GetScore' return='int' arguments=''>
@@ -4911,7 +4911,7 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Function name='GetProfile' return='Profile' arguments='PlayerNumber pn'>
 		Returns the profile for player <code>pn</code>.
 	</Function>
-	<Function name='GetProfileFromGuid' return='Profile' arguments='string sGuid'>
+	<Function name='GetProfileFromGuid' return='Profile' arguments='string sGuid' since='ITGmania 1.3.0'>
 		Returns the profile with the specified GUID.
 	</Function>
 	<Function name='GetProfileDir' return='string' arguments='ProfileSlot slot'>
@@ -5998,7 +5998,7 @@ local args = {
 		(New since ITGmania 0.6.0) If the optional argument <code>bIsAbsolute</code> is set, instead treats
 		sListName as an absolute path instead of loading it from the Theme's <code>Other</code> directory.
 	</Function>
-	<Function name='SetPreferredSongsFromTable' return='void' arguments='table' since='ITGmania 1.2.0'>
+	<Function name='SetPreferredSongsFromTable' return='void' arguments='table' since='ITGmania 1.3.0'>
 		An alternate version of SetPreferredSongs that takes a key value table of songs where the key is the
 		section name and the value is a table of songs that belong in that section. This allows themes to
 		set preferred songs without needing to read from a file.
@@ -6251,7 +6251,7 @@ local spr = Def.Sprite{
 	<Function name='GetPlayerStageStats' return='PlayerStageStats' arguments='PlayerNumber pn'>
 		Returns the PlayerStageStats of player <code>pn</code>.
 	</Function>
-	<Function name='GetRoutineStageStats' return='PlayerStageStats' arguments=''>
+	<Function name='GetRoutineStageStats' return='PlayerStageStats' arguments='' since='ITGmania 1.3.0'>
 		Returns the "shared" PlayerStageStats for routine mode.
 	</Function>
 	<Function name='GetPossibleSongs' return='{Song}' arguments='' />

@@ -1983,7 +1983,6 @@
 			<Function name='GetStepsSeconds'/>
 			<Function name='OnePassed'/>
 			<Function name='PlayerHasHighScore'/>
-			<Function name='GetRoutineStageStats'/>
 		</Class>
 		<Class name='StatsManager'>
 			<Function name='GetAccumPlayedStageStats'/>
