@@ -117,7 +117,7 @@ void FileWriteCallback(void* context, void* data, int size) {
   }
 
   state->failed = true;
-  std::snprintf(state->error, 1024, "%s", std::strerror(errno));
+  snprintf(state->error, 1024, "%s", std::strerror(errno));
 }
 }  // namespace
 
@@ -125,7 +125,7 @@ bool SavePNG(FILE* f, char szErrorbuf[1024], const Surface* pSurf) {
   szErrorbuf[0] = 0;
 
   if (f == NULL) {
-    std::snprintf(szErrorbuf, 1024, "%s", "file is not open");
+    snprintf(szErrorbuf, 1024, "%s", "file is not open");
     return false;
   }
 
@@ -148,13 +148,12 @@ bool SavePNG(FILE* f, char szErrorbuf[1024], const Surface* pSurf) {
   }
 
   if (wrote == 0) {
-    std::snprintf(
-        szErrorbuf, 1024, "%s", "stb_image_write failed to write PNG");
+    snprintf(szErrorbuf, 1024, "%s", "stb_image_write failed to write PNG");
     return false;
   }
 
   if (std::fflush(f) != 0) {
-    std::snprintf(szErrorbuf, 1024, "%s", std::strerror(errno));
+    snprintf(szErrorbuf, 1024, "%s", std::strerror(errno));
     return false;
   }
 
