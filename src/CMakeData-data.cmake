@@ -102,7 +102,6 @@ source_group("Data Structures\\\\Note Data"
 list(APPEND SM_DATA_NOTELOAD_SRC
             "NotesLoader.cpp"
             "NotesLoaderDWI.cpp"
-            "NotesLoaderJson.cpp"
             "NotesLoaderSM.cpp"
             "NotesLoaderSMA.cpp"
             "NotesLoaderSSC.cpp")
@@ -110,7 +109,6 @@ list(APPEND SM_DATA_NOTELOAD_SRC
 list(APPEND SM_DATA_NOTELOAD_HPP
             "NotesLoader.h"
             "NotesLoaderDWI.h"
-            "NotesLoaderJson.h"
             "NotesLoaderSM.h"
             "NotesLoaderSMA.h"
             "NotesLoaderSSC.h")
