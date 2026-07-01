@@ -31,11 +31,8 @@ class InputQueue {
 };
 
 struct InputQueueCode {
- public:
   bool Load(std::string sButtonsNames);
   bool EnteredCode(GameController controller) const;
-
-  InputQueueCode() : m_aPresses() {}
 
  private:
   struct ButtonPress {
@@ -54,9 +51,14 @@ struct InputQueueCode {
     bool m_InputTypes[NUM_InputEventType];
     bool m_bAllowIntermediatePresses;
   };
-  std::vector<ButtonPress> m_aPresses;
 
-  float m_fMaxSecondsBack;
+  std::vector<std::vector<ButtonPress>> m_aPatterns;
+
+  bool CheckPattern(
+      const std::vector<ButtonPress>& presses, GameController controller) const;
+
+  static bool ParseCodeString(
+      const std::string& sAlt, std::vector<ButtonPress>& presses);
 };
 
 extern InputQueue*

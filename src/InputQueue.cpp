@@ -71,23 +71,23 @@ void InputQueue::ClearQueue(GameController c) { m_aQueue[c].clear(); }
 
 static const float g_fSimultaneousThreshold = 0.05f;
 
-bool InputQueueCode::EnteredCode(GameController controller) const {
-  if (controller == GameController_Invalid) {
-    return false;
-  }
-  if (m_aPresses.size() == 0) {
+bool InputQueueCode::CheckPattern(
+    const std::vector<ButtonPress>& presses, GameController controller) const {
+  if (presses.size() == 0) {
     return false;
   }
 
-  RageTimer OldestTimeAllowed;
-  if (m_fMaxSecondsBack == -1) {
-    OldestTimeAllowed.SetZero();
+  float fMaxSecondsBack;
+  if (presses.size() == 1) {
+    fMaxSecondsBack = 0.55f;
   } else {
-    OldestTimeAllowed += -m_fMaxSecondsBack;
+    fMaxSecondsBack = (presses.size() - 1) * 0.6f;
   }
+  RageTimer OldestTimeAllowed;
+  OldestTimeAllowed += -fMaxSecondsBack;
 
   // iterate newest to oldest
-  int iSequenceIndex = m_aPresses.size() - 1;  // count down
+  int iSequenceIndex = presses.size() - 1;  // count down
   const std::vector<InputEventPlus>& aQueue = INPUTQUEUE->GetQueue(controller);
   int iQueueIndex = aQueue.size() - 1;
   while (iQueueIndex >= 0) {
@@ -100,7 +100,7 @@ bool InputQueueCode::EnteredCode(GameController controller) const {
 
     /* If the last press is an input type we're not interested in, skip it
      * and look again. */
-    const ButtonPress& Press = m_aPresses[iSequenceIndex];
+    const ButtonPress& Press = presses[iSequenceIndex];
     if (!Press.m_InputTypes[aQueue[iQueueIndex].type]) {
       --iQueueIndex;
       continue;
@@ -178,9 +178,6 @@ bool InputQueueCode::EnteredCode(GameController controller) const {
     }
 
     if (iSequenceIndex == 0) {
-      // we matched the whole pattern.  Empty the queue so we don't match on it
-      // again.
-      INPUTQUEUE->ClearQueue(controller);
       return true;
     }
 
@@ -192,36 +189,50 @@ bool InputQueueCode::EnteredCode(GameController controller) const {
   return false;
 }
 
-bool InputQueueCode::Load(std::string sButtonsNames) {
-  m_aPresses.clear();
+bool InputQueueCode::EnteredCode(GameController controller) const {
+  if (controller == GameController_Invalid) {
+    return false;
+  }
 
+  if (m_aPatterns.empty()) {
+    return false;
+  }
+
+  for (size_t i = 0; i < m_aPatterns.size(); ++i) {
+    if (CheckPattern(m_aPatterns[i], controller)) {
+      INPUTQUEUE->ClearQueue(controller);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool InputQueueCode::ParseCodeString(
+    const std::string& sAlt, std::vector<ButtonPress>& presses) {
   std::vector<std::string> asPresses;
-  split(sButtonsNames, ",", asPresses, false);
+  split(sAlt, ",", asPresses, false);
   for (std::string& sPress : asPresses) {
     std::vector<std::string> asButtonNames;
-
     split(sPress, "-", asButtonNames, false);
 
     if (asButtonNames.size() < 1) {
-      if (sButtonsNames != "") {
-        LOG->Trace("Ignoring empty code \"%s\".", sButtonsNames.c_str());
+      if (sAlt != "") {
+        LOG->Trace("Ignoring empty code \"%s\".", sAlt.c_str());
       }
       return false;
     }
 
-    m_aPresses.push_back(ButtonPress());
-    for (std::string sButtonName :
-         asButtonNames)  // for each button in this code
-    {
+    presses.push_back(ButtonPress());
+    for (std::string sButtonName : asButtonNames) {
       bool bHold = false;
       bool bNotHold = false;
       for (;;) {
         if (Left(sButtonName, 1) == "+") {
-          m_aPresses.back().m_InputTypes[IET_REPEAT] = true;
+          presses.back().m_InputTypes[IET_REPEAT] = true;
           sButtonName.erase(0, 1);
         } else if (Left(sButtonName, 1) == "~") {
-          m_aPresses.back().m_InputTypes[IET_FIRST_PRESS] = false;
-          m_aPresses.back().m_InputTypes[IET_RELEASE] = true;
+          presses.back().m_InputTypes[IET_FIRST_PRESS] = false;
+          presses.back().m_InputTypes[IET_RELEASE] = true;
           sButtonName.erase(0, 1);
         } else if (Left(sButtonName, 1) == "@") {
           sButtonName.erase(0, 1);
@@ -234,34 +245,48 @@ bool InputQueueCode::Load(std::string sButtonsNames) {
         }
       }
 
-      // Search for the corresponding GameButton
       const GameButton gb =
           INPUTMAPPER->GetInputScheme()->ButtonNameToIndex(sButtonName);
       if (gb == GameButton_Invalid) {
         LOG->Trace(
             "The code \"%s\" contains an unrecognized button \"%s\".",
-            sButtonsNames.c_str(), sButtonName.c_str());
-        m_aPresses.clear();
+            sAlt.c_str(), sButtonName.c_str());
+        presses.clear();
         return false;
       }
 
       if (bHold) {
-        m_aPresses.back().m_aButtonsToHold.push_back(gb);
+        presses.back().m_aButtonsToHold.push_back(gb);
       } else if (bNotHold) {
-        m_aPresses.back().m_aButtonsToNotHold.push_back(gb);
+        presses.back().m_aButtonsToNotHold.push_back(gb);
       } else {
-        m_aPresses.back().m_aButtonsToPress.push_back(gb);
+        presses.back().m_aButtonsToPress.push_back(gb);
       }
     }
   }
+  return true;
+}
 
-  if (m_aPresses.size() == 1) {
-    m_fMaxSecondsBack = 0.55f;
-  } else {
-    m_fMaxSecondsBack = (m_aPresses.size() - 1) * 0.6f;
+bool InputQueueCode::Load(std::string sButtonsNames) {
+  m_aPatterns.clear();
+
+  std::vector<std::string> asAlternatives;
+  split(sButtonsNames, "|", asAlternatives, true);
+  if (asAlternatives.empty()) {
+    return true;
   }
 
-  // if we make it here, we found all the buttons in the code
+  for (const auto& sAlt : asAlternatives) {
+    std::vector<ButtonPress> presses;
+    if (ParseCodeString(sAlt, presses) && !presses.empty()) {
+      m_aPatterns.push_back(std::move(presses));
+    }
+  }
+
+  if (m_aPatterns.empty()) {
+    return false;
+  }
+
   return true;
 }
 
