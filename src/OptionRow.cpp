@@ -320,7 +320,17 @@ void OptionRow::InitText(RowType type) {
 
   // load m_textItems
   switch (m_pHand->m_Def.m_layoutType) {
-    case LAYOUT_SHOW_ONE_IN_ROW:
+    case LAYOUT_SHOW_ONE_IN_ROW: {
+      if (IsShowOneValueWithGoDown()) {
+        // Show a persistent ▼.
+        BitmapText* pArrow = new BitmapText(m_pParentType->m_textItem);
+        m_textItems.push_back(pArrow);
+        pArrow->PlayCommand("On");
+        pArrow->SetText(GetThemedItemText(0));
+        pArrow->SetX(
+            m_pParentType->ITEMS_START_X + pArrow->GetZoomedWidth() / 2);
+      }
+
       // init text
       FOREACH_PlayerNumber(p) {
         BitmapText* pText = new BitmapText(m_pParentType->m_textItem);
@@ -352,6 +362,7 @@ void OptionRow::InitText(RowType type) {
         }
       }
       break;
+    }
 
     case LAYOUT_SHOW_ALL_IN_ROW: {
       float fX = m_pParentType->ITEMS_START_X;
@@ -413,7 +424,8 @@ void OptionRow::AfterImportOptions(PlayerNumber pn) {
    * will be joined when we're displayed. Hide items for inactive players. */
   if (m_pHand->m_Def.m_layoutType == LAYOUT_SHOW_ONE_IN_ROW &&
       !m_pHand->m_Def.m_bOneChoiceForAllPlayers) {
-    m_textItems[pn]->SetVisible(GAMESTATE->IsHumanPlayer(pn));
+    unsigned item_no = pn + (IsShowOneValueWithGoDown() ? 1 : 0);
+    m_textItems[item_no]->SetVisible(GAMESTATE->IsHumanPlayer(pn));
   }
 
   // Hide underlines for disabled players or disabled options.
@@ -471,6 +483,11 @@ void OptionRow::PositionUnderlines(PlayerNumber pn) {
             ? GetChoiceInRowWithFocus(pn)
             : i;
 
+    if (IsShowOneValueWithGoDown() && iChoiceWithFocus == 0) {
+      int iSelected = GetOneSelection(pn, true);
+      iChoiceWithFocus = (iSelected >= 1) ? iSelected : 1;
+    }
+
     float fAlpha = 1.0f;
     if (m_pHand->m_Def.m_layoutType == LAYOUT_SHOW_ONE_IN_ROW) {
       bool bRowEnabled = m_pHand->m_Def.m_vEnabledForPlayers.find(pn) !=
@@ -522,26 +539,34 @@ void OptionRow::PositionIcons(PlayerNumber pn) {
 
 // This is called when the focus changes, to update "long row" text.
 void OptionRow::UpdateText(PlayerNumber p) {
-  switch (m_pHand->m_Def.m_layoutType) {
-    case LAYOUT_SHOW_ONE_IN_ROW: {
-      unsigned pn = m_pHand->m_Def.m_bOneChoiceForAllPlayers ? 0 : p;
-      int iChoiceWithFocus = m_iChoiceInRowWithFocus[pn];
-      if (iChoiceWithFocus == -1) {
-        break;
-      }
-
-      std::string sText = GetThemedItemText(iChoiceWithFocus);
-
-      // If player_no is 2 and there is no player 1:
-      int index = std::min(
-          static_cast<int>(pn), static_cast<int>(m_textItems.size()) - 1);
-
-      // TODO: Always have one textItem for each player
-
-      m_textItems[index]->SetText(sText);
+  if (m_pHand->m_Def.m_layoutType == LAYOUT_SHOW_ONE_IN_ROW) {
+    unsigned pn = m_pHand->m_Def.m_bOneChoiceForAllPlayers ? 0 : p;
+    int iChoiceWithFocus = m_iChoiceInRowWithFocus[pn];
+    if (iChoiceWithFocus == -1) {
+      return;
     }
-    default:
-      break;
+
+    bool bValueArrow = IsShowOneValueWithGoDown();
+    int iDisplayChoice = iChoiceWithFocus;
+
+    if (bValueArrow) {
+      // Always display the ▼.
+      m_textItems[0]->SetText(GetThemedItemText(0));
+
+      if (iChoiceWithFocus == 0) {
+        // Focus is on the ▼; show the actively-selected value instead.
+        int iSelected = GetOneSelection(p, true);
+        iDisplayChoice = (iSelected >= 1) ? iSelected : 1;
+      }
+    }
+
+    std::string sText = GetThemedItemText(iDisplayChoice);
+
+    int index = std::min(
+        static_cast<int>(pn) + (bValueArrow ? 1 : 0),
+        static_cast<int>(m_textItems.size()) - 1);
+
+    m_textItems[index]->SetText(sText);
   }
 }
 
@@ -621,13 +646,28 @@ void OptionRow::UpdateEnabledDisabled() {
       }
 
       break;
-    case LAYOUT_SHOW_ONE_IN_ROW:
+    case LAYOUT_SHOW_ONE_IN_ROW: {
+      bool bValueArrow = IsShowOneValueWithGoDown();
+
+      if (bValueArrow) {
+        // Color the ▼ with the row-level color.
+        BitmapText& arrow = *m_textItems[0];
+        if (arrow.DestTweenState().diffuse[0] != color) {
+          arrow.StopTweening();
+          arrow.BeginTweening(m_pParentType->TWEEN_SECONDS);
+          arrow.SetDiffuse(color);
+        }
+      }
+
       FOREACH_HumanPlayer(pn) {
         bRowEnabled = m_pHand->m_Def.m_vEnabledForPlayers.find(pn) !=
                       m_pHand->m_Def.m_vEnabledForPlayers.end();
 
         if (!m_pHand->m_Def.m_bOneChoiceForAllPlayers) {
-          if (m_bRowHasFocus[pn]) {
+          bool bValueFocused =
+              m_bRowHasFocus[pn] &&
+              (!bValueArrow || GetChoiceInRowWithFocus(pn) >= 1);
+          if (bValueFocused) {
             color = m_pParentType->COLOR_SELECTED;
           } else if (bRowEnabled) {
             color = m_pParentType->COLOR_NOT_SELECTED;
@@ -637,6 +677,9 @@ void OptionRow::UpdateEnabledDisabled() {
         }
 
         unsigned item_no = m_pHand->m_Def.m_bOneChoiceForAllPlayers ? 0 : pn;
+        if (bValueArrow) {
+          item_no += 1;
+        }
 
         // If player_no is 2 and there is no player 1:
         item_no = std::min<unsigned int>(item_no, m_textItems.size() - 1);
@@ -650,6 +693,7 @@ void OptionRow::UpdateEnabledDisabled() {
         }
       }
       break;
+    }
     default:
       FAIL_M(ssprintf(
           "Invalid option row layout: %i", m_pHand->m_Def.m_layoutType));
@@ -674,10 +718,17 @@ const BitmapText& OptionRow::GetTextItemForRow(
   int index = -1;
   switch (m_pHand->m_Def.m_layoutType) {
     case LAYOUT_SHOW_ONE_IN_ROW:
-      index = bOneChoice ? 0 : pn;
-      // If only P2 is enabled, his selections will be in index 0.
-      if (m_textItems.size() == 1) {
-        index = 0;
+      if (IsShowOneValueWithGoDown()) {
+        if (iChoiceOnRow == 0) {
+          index = 0;
+        } else {
+          index = bOneChoice ? 1 : pn + 1;
+        }
+      } else {
+        index = bOneChoice ? 0 : pn;
+        if (m_textItems.size() == 1) {
+          index = 0;
+        }
       }
       break;
     case LAYOUT_SHOW_ALL_IN_ROW:
@@ -821,6 +872,12 @@ bool OptionRow::NotifyHandlerOfSelection(PlayerNumber pn, int choice) {
     UpdateEnabledDisabled();
   }
   return changed;
+}
+
+bool OptionRow::IsShowOneValueWithGoDown() const {
+  return m_bFirstItemGoesDown &&
+         m_pHand->m_Def.m_layoutType == LAYOUT_SHOW_ONE_IN_ROW &&
+         m_pHand->m_Def.m_selectType == SELECT_ONE;
 }
 
 bool OptionRow::GoToFirstOnStart() { return m_pHand->GoToFirstOnStart(); }

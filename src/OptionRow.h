@@ -118,6 +118,7 @@ class OptionRow : public ActorFrame {
   // that same TweenState.
   unsigned GetTextItemsSize() const { return m_textItems.size(); }
   bool GetFirstItemGoesDown() const { return m_bFirstItemGoesDown; }
+  bool IsShowOneValueWithGoDown() const;
   bool GoToFirstOnStart();
 
   std::string GetThemedItemText(int iChoice) const;

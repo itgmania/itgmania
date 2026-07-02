@@ -1006,9 +1006,8 @@ void ScreenOptions::ProcessMenuStart(const InputEventPlus& input) {
 
     if (row.GetFirstItemGoesDown() && row.GoToFirstOnStart()) {
       // move to the first choice in the row
-      ChangeValueInRowRelative(
-          m_iCurrentRow[pn], pn, -row.GetChoiceInRowWithFocus(pn),
-          input.type != IET_FIRST_PRESS);
+      ChangeValueInRowAbsolute(
+          m_iCurrentRow[pn], pn, 0, input.type != IET_FIRST_PRESS);
     }
   } else  // data.selectType != SELECT_MULTIPLE
   {
@@ -1036,9 +1035,8 @@ void ScreenOptions::ProcessMenuStart(const InputEventPlus& input) {
         }
 
         if (row.GetFirstItemGoesDown()) {
-          ChangeValueInRowRelative(
-              m_iCurrentRow[pn], pn, -row.GetChoiceInRowWithFocus(pn),
-              input.type != IET_FIRST_PRESS);  // move to the first choice
+          ChangeValueInRowAbsolute(
+              m_iCurrentRow[pn], pn, 0, input.type != IET_FIRST_PRESS);
         } else {
           ChangeValueInRowRelative(
               m_iCurrentRow[pn], pn, 0, input.type != IET_FIRST_PRESS);
@@ -1124,15 +1122,76 @@ void ScreenOptions::ChangeValueInRowAbsolute(
   const int iNumChoices = row.GetRowDef().m_vsChoices.size();
   ASSERT(iNumChoices >= 0 && iChoiceIndex < iNumChoices);
 
+  if (bRepeat && !ALLOW_REPEATING_CHANGE_VALUE_INPUT) {
+    return;
+  }
+
   int iCurrentChoiceWithFocus = row.GetChoiceInRowWithFocus(pn);
-  int iDelta = iChoiceIndex - iCurrentChoiceWithFocus;
+  bool bOneChanged = (iCurrentChoiceWithFocus != iChoiceIndex);
 
   Message msg("ChangeValue");
   msg.SetParam("PlayerNumber", pn);
   msg.SetParam("RowIndex", iRow);
   MESSAGEMAN->Broadcast(msg);
 
-  ChangeValueInRowRelative(iRow, pn, iDelta, bRepeat);
+  row.SetChoiceInRowWithFocus(pn, iChoiceIndex);
+  StoreFocus(pn);
+
+  if (row.GetRowDef().m_bOneChoiceForAllPlayers) {
+    /* If this row is bOneChoiceForAllPlayers, then lock the cursors together
+     * for this row. Don't do this in toggle modes, since the current selection
+     * and the current focus are detached. */
+    bool bForceFocusedChoiceTogether = false;
+    if (m_OptionsNavigation != NAV_TOGGLE_THREE_KEY &&
+        m_OptionsNavigation != NAV_TOGGLE_FIVE_KEY &&
+        row.GetRowDef().m_bOneChoiceForAllPlayers) {
+      bForceFocusedChoiceTogether = true;
+    }
+
+    // Also lock focus if the screen is explicitly set to share cursors.
+    if (m_InputMode == INPUTMODE_SHARE_CURSOR) {
+      bForceFocusedChoiceTogether = true;
+    }
+
+    if (bForceFocusedChoiceTogether) {
+      // lock focus together
+      FOREACH_HumanPlayer(p) {
+        row.SetChoiceInRowWithFocus(p, iChoiceIndex);
+        StoreFocus(p);
+      }
+    }
+  }
+
+  FOREACH_PlayerNumber(p) {
+    if (!row.GetRowDef().m_bOneChoiceForAllPlayers && p != pn) {
+      continue;
+    }
+
+    // Don't auto-select the ▼ on value-arrow rows.
+    if (iChoiceIndex == 0 && row.IsShowOneValueWithGoDown()) {
+      continue;
+    }
+
+    // Value-arrow rows auto-select on Left/Right even in toggle mode.
+    bool bAutoSelect = m_OptionsNavigation != NAV_TOGGLE_THREE_KEY ||
+                       row.IsShowOneValueWithGoDown();
+
+    if (row.GetRowDef().m_selectType == SELECT_ONE && bAutoSelect) {
+      row.SetOneSelection(p, iChoiceIndex);
+    }
+  }
+
+  if (bOneChanged) {
+    m_SoundChangeCol.Play(true);
+  }
+
+  if (row.GetRowDef().m_bExportOnChange) {
+    std::vector<PlayerNumber> vpns;
+    FOREACH_HumanPlayer(p) vpns.push_back(p);
+    ExportOptions(iRow, vpns);
+  }
+
+  this->AfterChangeValueInRow(iRow, pn);
 }
 
 void ScreenOptions::ChangeValueInRowRelative(
@@ -1167,74 +1226,37 @@ void ScreenOptions::ChangeValueInRowRelative(
     return;
   }
 
-  if (bRepeat && !ALLOW_REPEATING_CHANGE_VALUE_INPUT) {
-    return;
-  }
-
-  bool bOneChanged = false;
-
   int iCurrentChoiceWithFocus = row.GetChoiceInRowWithFocus(pn);
-  int iNewChoiceWithFocus = iCurrentChoiceWithFocus + iDelta;
-  if (!bRepeat && WRAP_VALUE_IN_ROW.GetValue()) {
-    wrap(iNewChoiceWithFocus, iNumChoices);
+
+  // Value-arrow rows confine Left/Right to value choices [1, N-1]; the ▼
+  // (choice 0) is reached only via the Start key.
+  bool bConfineToValues = row.IsShowOneValueWithGoDown();
+
+  int iNewChoiceWithFocus;
+  if (bConfineToValues && iCurrentChoiceWithFocus == 0) {
+    // Leaving the ▼; hover the current value without changing it.
+    int iSelected = row.GetOneSelection(pn, true);
+    iNewChoiceWithFocus = (iSelected >= 1) ? iSelected : 1;
   } else {
-    rage_clamp(iNewChoiceWithFocus, 0, iNumChoices - 1);
-  }
-
-  if (iCurrentChoiceWithFocus != iNewChoiceWithFocus) {
-    bOneChanged = true;
-  }
-
-  row.SetChoiceInRowWithFocus(pn, iNewChoiceWithFocus);
-  StoreFocus(pn);
-
-  if (row.GetRowDef().m_bOneChoiceForAllPlayers) {
-    /* If this row is bOneChoiceForAllPlayers, then lock the cursors together
-     * for this row. Don't do this in toggle modes, since the current selection
-     * and the current focus are detached. */
-    bool bForceFocusedChoiceTogether = false;
-    if (m_OptionsNavigation != NAV_TOGGLE_THREE_KEY &&
-        m_OptionsNavigation != NAV_TOGGLE_FIVE_KEY &&
-        row.GetRowDef().m_bOneChoiceForAllPlayers) {
-      bForceFocusedChoiceTogether = true;
-    }
-
-    // Also lock focus if the screen is explicitly set to share cursors.
-    if (m_InputMode == INPUTMODE_SHARE_CURSOR) {
-      bForceFocusedChoiceTogether = true;
-    }
-
-    if (bForceFocusedChoiceTogether) {
-      // lock focus together
-      FOREACH_HumanPlayer(p) {
-        row.SetChoiceInRowWithFocus(p, iNewChoiceWithFocus);
-        StoreFocus(p);
+    int lo = bConfineToValues ? 1 : 0;
+    int hi = iNumChoices - 1;
+    iNewChoiceWithFocus = iCurrentChoiceWithFocus + iDelta;
+    if (!bRepeat && WRAP_VALUE_IN_ROW.GetValue()) {
+      if (bConfineToValues) {
+        if (iNewChoiceWithFocus < lo) {
+          iNewChoiceWithFocus = hi;
+        } else if (iNewChoiceWithFocus > hi) {
+          iNewChoiceWithFocus = lo;
+        }
+      } else {
+        wrap(iNewChoiceWithFocus, iNumChoices);
       }
+    } else {
+      rage_clamp(iNewChoiceWithFocus, lo, hi);
     }
   }
 
-  FOREACH_PlayerNumber(p) {
-    if (!row.GetRowDef().m_bOneChoiceForAllPlayers && p != pn) {
-      continue;
-    }
-
-    if (row.GetRowDef().m_selectType == SELECT_ONE &&
-        m_OptionsNavigation != NAV_TOGGLE_THREE_KEY) {
-      row.SetOneSelection(p, iNewChoiceWithFocus);
-    }
-  }
-
-  if (bOneChanged) {
-    m_SoundChangeCol.Play(true);
-  }
-
-  if (row.GetRowDef().m_bExportOnChange) {
-    std::vector<PlayerNumber> vpns;
-    FOREACH_HumanPlayer(p) vpns.push_back(p);
-    ExportOptions(iRow, vpns);
-  }
-
-  this->AfterChangeValueInRow(iRow, pn);
+  ChangeValueInRowAbsolute(iRow, pn, iNewChoiceWithFocus, bRepeat);
 }
 
 void ScreenOptions::AfterChangeValueInRow(int iRow, PlayerNumber pn) {
