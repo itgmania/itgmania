@@ -368,8 +368,6 @@ bool Screen::PassInputToLua(const InputEventPlus& input) {
   lua_setfield(L, -2, "GameButton");
   Enum::Push(L, input.pn);
   lua_setfield(L, -2, "PlayerNumber");
-  Enum::Push(L, input.mp);
-  lua_setfield(L, -2, "MultiPlayer");
   for (std::map<callback_key_t, LuaReference>::iterator callback =
            m_InputCallbacks.begin();
        callback != m_InputCallbacks.end() && !handled; ++callback) {

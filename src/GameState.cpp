@@ -179,11 +179,6 @@ GameState::GameState()
     m_pPlayerState[p] = new PlayerState;
     m_pPlayerState[p]->SetPlayerNumber(p);
   }
-  FOREACH_MultiPlayer(p) {
-    m_pMultiPlayerState[p] = new PlayerState;
-    m_pMultiPlayerState[p]->SetPlayerNumber(PLAYER_1);
-    m_pMultiPlayerState[p]->m_mp = p;
-  }
 
   m_Environment = new LuaTable;
 
@@ -211,7 +206,6 @@ GameState::~GameState() {
   LUA->UnsetGlobal("GAMESTATE");
 
   FOREACH_PlayerNumber(p) RageUtil::SafeDelete(m_pPlayerState[p]);
-  FOREACH_MultiPlayer(p) RageUtil::SafeDelete(m_pMultiPlayerState[p]);
 
   RageUtil::SafeDelete(m_Environment);
   RageUtil::SafeDelete(g_pImpl);
@@ -300,10 +294,7 @@ void GameState::Reset() {
 
   m_timeGameStarted.SetZero();
   SetCurrentStyle(nullptr, PLAYER_INVALID);
-  FOREACH_MultiPlayer(p) m_MultiPlayerStatus[p] = MultiPlayerStatus_NotJoined;
   FOREACH_PlayerNumber(pn) MEMCARDMAN->UnlockCard(pn);
-  m_bMultiplayer = false;
-  m_iNumMultiplayerNoteFields = 1;
   *m_Environment = LuaTable();
   m_sPreferredSongGroup.Set(GROUP_ALL);
   m_sPreferredCourseGroup.Set(GROUP_ALL);
@@ -331,8 +322,6 @@ void GameState::Reset() {
   m_pPreferredSong = nullptr;
   m_pCurCourse.Set(nullptr);
   m_pPreferredCourse = nullptr;
-
-  FOREACH_MultiPlayer(p) m_pMultiPlayerState[p]->Reset();
 
   m_SongOptions.Init();
 
@@ -496,8 +485,6 @@ void GameState::UnjoinPlayer(PlayerNumber pn) {
   }
 }
 
-/* xxx: handle multiplayer join? -aj */
-
 namespace {
 bool JoinInputInternal(PlayerNumber pn) {
   if (!GAMESTATE->PlayersCanJoin()) {
@@ -638,8 +625,6 @@ void GameState::SavePlayerProfile(PlayerNumber pn) {
   }
 
   // AutoplayCPU should not save scores. -aj
-  // xxx: this MAY cause issues with Multiplayer. However, without a working
-  // Multiplayer build, we'll never know. -aj
   if (m_pPlayerState[pn]->m_PlayerController != PC_HUMAN) {
     return;
   }
@@ -1403,17 +1388,9 @@ Stage GameState::GetCurrentStage() const {
 
 int GameState::GetCourseSongIndex() const {
   // iSongsPlayed includes the current song, so it's 1-based; subtract one.
-  if (GAMESTATE->m_bMultiplayer) {
-    FOREACH_EnabledMultiPlayer(mp) return STATSMAN->m_CurStageStats
-            .m_multiPlayer[mp]
-            .m_iSongsPlayed -
-        1;
-    FAIL_M("At least one MultiPlayer must be joined.");
-  } else {
-    return STATSMAN->m_CurStageStats.m_player[this->GetMasterPlayerNumber()]
-               .m_iSongsPlayed -
-           1;
-  }
+  return STATSMAN->m_CurStageStats.m_player[this->GetMasterPlayerNumber()]
+             .m_iSongsPlayed -
+         1;
 }
 
 /* Hack: when we're loading a new course song, we want to display the new song
@@ -1608,14 +1585,7 @@ bool GameState::IsPlayerEnabled(PlayerNumber pn) const {
   }
 }
 
-bool GameState::IsMultiPlayerEnabled(MultiPlayer mp) const {
-  return m_MultiPlayerStatus[mp] == MultiPlayerStatus_Joined;
-}
-
 bool GameState::IsPlayerEnabled(const PlayerState* pPlayerState) const {
-  if (pPlayerState->m_mp != MultiPlayer_Invalid) {
-    return IsMultiPlayerEnabled(pPlayerState->m_mp);
-  }
   if (pPlayerState->m_PlayerNumber != PLAYER_INVALID) {
     return IsPlayerEnabled(pPlayerState->m_PlayerNumber);
   }
@@ -2657,15 +2627,6 @@ PlayerNumber GetNextPotentialCpuPlayer(PlayerNumber pn) {
   return PLAYER_INVALID;
 }
 
-MultiPlayer GetNextEnabledMultiPlayer(MultiPlayer mp) {
-  for (enum_add(mp, 1); mp < NUM_MultiPlayer; enum_add(mp, 1)) {
-    if (GAMESTATE->IsMultiPlayerEnabled(mp)) {
-      return mp;
-    }
-  }
-  return MultiPlayer_Invalid;
-}
-
 // lua start
 #include "Game.h"
 #include "LuaBinding.h"
@@ -2680,27 +2641,11 @@ class LunaGameState : public Luna<GameState> {
       GetPlayerDisplayName,
       GetPlayerDisplayName(Enum::Check<PlayerNumber>(L, 1)))
   DEFINE_METHOD(GetMasterPlayerNumber, GetMasterPlayerNumber())
-  DEFINE_METHOD(GetMultiplayer, m_bMultiplayer)
-  static int SetMultiplayer(T* p, lua_State* L) {
-    p->m_bMultiplayer = BArg(1);
-    COMMON_RETURN_SELF;
-  }
   DEFINE_METHOD(InStepEditor, m_bInStepEditor);
-  DEFINE_METHOD(GetNumMultiplayerNoteFields, m_iNumMultiplayerNoteFields)
   DEFINE_METHOD(ShowW1, ShowW1())
-
-  static int SetNumMultiplayerNoteFields(T* p, lua_State* L) {
-    p->m_iNumMultiplayerNoteFields = IArg(1);
-    COMMON_RETURN_SELF;
-  }
   static int GetPlayerState(T* p, lua_State* L) {
     PlayerNumber pn = Enum::Check<PlayerNumber>(L, 1);
     p->m_pPlayerState[pn]->PushSelf(L);
-    return 1;
-  }
-  static int GetMultiPlayerState(T* p, lua_State* L) {
-    MultiPlayer mp = Enum::Check<MultiPlayer>(L, 1);
-    p->m_pMultiPlayerState[mp]->PushSelf(L);
     return 1;
   }
   static int ApplyGameCommand(T* p, lua_State* L) {
@@ -3356,14 +3301,9 @@ class LunaGameState : public Luna<GameState> {
     ADD_METHOD(IsHumanPlayer);
     ADD_METHOD(GetPlayerDisplayName);
     ADD_METHOD(GetMasterPlayerNumber);
-    ADD_METHOD(GetMultiplayer);
-    ADD_METHOD(SetMultiplayer);
     ADD_METHOD(InStepEditor);
-    ADD_METHOD(GetNumMultiplayerNoteFields);
-    ADD_METHOD(SetNumMultiplayerNoteFields);
     ADD_METHOD(ShowW1);
     ADD_METHOD(GetPlayerState);
-    ADD_METHOD(GetMultiPlayerState);
     ADD_METHOD(ApplyGameCommand);
     ADD_METHOD(CanSafelyEnterGameplay);
     ADD_METHOD(GetCurrentSong);

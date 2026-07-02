@@ -27,11 +27,6 @@ class StageStats {
 
   /**
    * @brief Ensure that the Player is valid.
-   * @param mp the Multiplayer to check. */
-  void AssertValid(MultiPlayer mp) const;
-
-  /**
-   * @brief Ensure that the Player is valid.
    * @param pn the PlayerNumber to check. */
   void AssertValid(PlayerNumber pn, bool bRoutine) const;
 
@@ -75,7 +70,6 @@ class StageStats {
   float GetTotalPossibleStepsSeconds() const;
 
   PlayerStageStats m_player[NUM_PLAYERS];
-  PlayerStageStats m_multiPlayer[NUM_MultiPlayer];
   PlayerStageStats m_RoutinePlayer;
 
   void FinalizeScores(bool bSummary);

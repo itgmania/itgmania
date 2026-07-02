@@ -403,14 +403,6 @@ static const char* EarnedExtraStageNames[] = {
 XToString(EarnedExtraStage);
 LuaXType(EarnedExtraStage);
 
-static const char* MultiPlayerStatusNames[] = {
-    "Joined",
-    "NotJoined",
-    "Unplugged",
-    "MissingMultitap",
-};
-XToString(MultiPlayerStatus);
-
 static const char* CourseTypeNames[] = {
     "Nonstop",
     "Oni",

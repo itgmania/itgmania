@@ -44,7 +44,6 @@ StageStats::StageStats() {
   m_fStepsSeconds = 0;
   m_fMusicRate = 1;
   FOREACH_PlayerNumber(pn) { m_player[pn].Init(pn); }
-  FOREACH_MultiPlayer(pn) { m_multiPlayer[pn].Init(pn); }
   m_RoutinePlayer.Init(GAMESTATE->GetMasterPlayerNumber());
 }
 
@@ -76,23 +75,6 @@ void StageStats::AssertValid(PlayerNumber pn) const {
           "%i Possible Songs != %i Possible Steps for player %i",
           (int)m_vpPossibleSongs.size(),
           (int)m_player[pn].m_vpPossibleSteps.size(), pn));
-}
-
-void StageStats::AssertValid(MultiPlayer pn) const {
-  ASSERT(m_vpPlayedSongs.size() != 0);
-  ASSERT(m_vpPossibleSongs.size() != 0);
-  if (m_vpPlayedSongs[0]) {
-    CHECKPOINT_M(m_vpPlayedSongs[0]->GetTranslitFullTitle());
-  }
-  ASSERT(m_multiPlayer[pn].m_vpPossibleSteps.size() != 0);
-  ASSERT(m_multiPlayer[pn].m_vpPossibleSteps[0] != nullptr);
-  ASSERT_M(m_playMode < NUM_PlayMode, ssprintf("playmode %i", m_playMode));
-  ASSERT_M(
-      m_player[pn].m_vpPossibleSteps[0]->GetDifficulty() < NUM_Difficulty,
-      ssprintf(
-          "difficulty %i", m_player[pn].m_vpPossibleSteps[0]->GetDifficulty()));
-  ASSERT((int)m_vpPlayedSongs.size() == m_player[pn].m_iStepsPlayed);
-  ASSERT(m_vpPossibleSongs.size() == m_player[pn].m_vpPossibleSteps.size());
 }
 
 void StageStats::AssertValid(PlayerNumber pn, bool bRoutine) const {
@@ -330,12 +312,6 @@ void StageStats::FinalizeScores(bool bSummary) {
           RANKING_TO_FILL_IN_MARKER[p], sPlayerGuid);
     }
   }
-  FOREACH_EnabledMultiPlayer(mp) {
-    std::string sPlayerGuid = "00000000-0000-0000-0000-000000000000";  // FIXME
-    m_multiPlayer[mp].m_HighScore = FillInHighScore(
-        m_multiPlayer[mp], *GAMESTATE->m_pMultiPlayerState[mp], "",
-        sPlayerGuid);
-  }
 
   FOREACH_HumanPlayer(p) {
     const HighScore& hs = m_player[p].m_HighScore;
@@ -477,10 +453,6 @@ class LunaStageStats : public Luna<StageStats> {
     p->m_player[Enum::Check<PlayerNumber>(L, 1)].PushSelf(L);
     return 1;
   }
-  static int GetMultiPlayerStageStats(T* p, lua_State* L) {
-    p->m_multiPlayer[Enum::Check<MultiPlayer>(L, 1)].PushSelf(L);
-    return 1;
-  }
   static int GetPlayedSongs(T* p, lua_State* L) {
     lua_newtable(L);
     for (int i = 0; i < (int)p->m_vpPlayedSongs.size(); ++i) {
@@ -532,7 +504,6 @@ class LunaStageStats : public Luna<StageStats> {
 
   LunaStageStats() {
     ADD_METHOD(GetPlayerStageStats);
-    ADD_METHOD(GetMultiPlayerStageStats);
     ADD_METHOD(GetPlayedSongs);
     ADD_METHOD(GetPossibleSongs);
     ADD_METHOD(GetGameplaySeconds);
