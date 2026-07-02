@@ -130,8 +130,8 @@
 		<Function name='MonthOfYear'/>
 		<Function name='MonthToLocalizedString'/>
 		<Function name='MonthToString'/>
-		<Function name='MultiPlayerToLocalizedString'/>
-		<Function name='MultiPlayerToString'/>
+		<Function name='MultiPlayerToLocalizedString' removed='ITGmania 1.4.0'/>
+		<Function name='MultiPlayerToString' removed='ITGmania 1.4.0'/>
 		<Function name='OldStyleStringToDifficulty'/>
 		<Function name='OptionRowProTiming'/>
 		<Function name='OptionRowScreenFilter'/>
@@ -843,7 +843,7 @@
 			<Function name='GetCourseDifficulty'/>
 			<Function name='GetDifficulty'/>
 			<Function name='GetIndex'/>
-			<Function name='GetMultiPlayer'/>
+			<Function name='GetMultiPlayer' removed='ITGmania 1.4.0'/>
 			<Function name='GetName'/>
 			<Function name='GetPlayMode'/>
 			<Function name='GetPreferredModifiers'/>
@@ -922,9 +922,9 @@
 			<Function name='GetLastGameplayDuration'/>
 			<Function name='GetLoadingCourseSongIndex'/>
 			<Function name='GetMasterPlayerNumber'/>
-			<Function name='GetMultiPlayerState'/>
-			<Function name='GetMultiplayer'/>
-			<Function name='GetNumMultiplayerNoteFields'/>
+			<Function name='GetMultiPlayerState' removed='ITGmania 1.4.0'/>
+			<Function name='GetMultiplayer' removed='ITGmania 1.4.0'/>
+			<Function name='GetNumMultiplayerNoteFields' removed='ITGmania 1.4.0'/>
 			<Function name='GetNumPlayersEnabled'/>
 			<Function name='GetNumSidesJoined'/>
 			<Function name='GetNumStagesForCurrentSongAndStepsOrCourse'/>
@@ -992,8 +992,8 @@
 			<Function name='SetCurrentTrail'/>
 			<Function name='SetFailTypeExplicitlySet'/>
 			<Function name='SetJukeboxUsesModifiers'/>
-			<Function name='SetMultiplayer'/>
-			<Function name='SetNumMultiplayerNoteFields'/>
+			<Function name='SetMultiplayer' removed='ITGmania 1.4.0'/>
+			<Function name='SetNumMultiplayerNoteFields' removed='ITGmania 1.4.0'/>
 			<Function name='SetPreferredDifficulty'/>
 			<Function name='SetPreferredSong'/>
 			<Function name='SetPreferredSongsFromTable'/>
@@ -1060,7 +1060,7 @@
 			<Function name='GetRankOfName'/>
 		</Class>
 		<Class base='ActorFrame' name='HoldJudgment'>
-			<Function name='LoadFromMultiPlayer'/>
+			<Function name='LoadFromMultiPlayer' removed='ITGmania 1.4.0'/>
 		</Class>
 		<Class name='HoldNoteResult'>
 			<Function name='GetActive'/>
@@ -1473,7 +1473,7 @@
 			<Function name='ApplyPreferredOptionsToOtherLevels'/>
 			<Function name='GetCurrentPlayerOptions'/>
 			<Function name='GetHealthState'/>
-			<Function name='GetMultiPlayerNumber'/>
+			<Function name='GetMultiPlayerNumber' removed='ITGmania 1.4.0'/>
 			<Function name='GetPlayerController'/>
 			<Function name='GetPlayerNumber'/>
 			<Function name='GetPlayerOptions'/>
@@ -1977,7 +1977,7 @@
 			<Function name='GaveUp'/>
 			<Function name='GetEarnedExtraStage'/>
 			<Function name='GetGameplaySeconds'/>
-			<Function name='GetMultiPlayerStageStats'/>
+			<Function name='GetMultiPlayerStageStats' removed='ITGmania 1.4.0'/>
 			<Function name='GetPlayedSongs'/>
 			<Function name='GetPlayerStageStats'/>
 			<Function name='GetRoutineStageStats'/>
@@ -2617,7 +2617,7 @@
 			<EnumValue name='&apos;Month_November&apos;' value='10'/>
 			<EnumValue name='&apos;Month_December&apos;' value='11'/>
 		</Enum>
-		<Enum name='MultiPlayer'>
+		<Enum name='MultiPlayer' removed='ITGmania 1.4.0'>
 			<EnumValue name='&apos;MultiPlayer_P1&apos;' value='0'/>
 			<EnumValue name='&apos;MultiPlayer_P2&apos;' value='1'/>
 			<EnumValue name='&apos;MultiPlayer_P3&apos;' value='2'/>

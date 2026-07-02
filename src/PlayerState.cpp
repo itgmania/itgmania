@@ -20,7 +20,6 @@
 
 PlayerState::PlayerState() {
   m_PlayerNumber = PLAYER_INVALID;
-  m_mp = MultiPlayer_Invalid;
   Reset();
 }
 
@@ -235,7 +234,6 @@ class LunaPlayerState : public Luna<PlayerState> {
     p->m_Position.PushSelf(L);
     return 1;
   }
-  DEFINE_METHOD(GetMultiPlayerNumber, m_mp);
   DEFINE_METHOD(GetPlayerController, m_PlayerController);
   static int SetPlayerOptions(T* p, lua_State* L) {
     ModsLevel m = Enum::Check<ModsLevel>(L, 1);
@@ -272,7 +270,6 @@ class LunaPlayerState : public Luna<PlayerState> {
   LunaPlayerState() {
     ADD_METHOD(ApplyPreferredOptionsToOtherLevels);
     ADD_METHOD(GetPlayerNumber);
-    ADD_METHOD(GetMultiPlayerNumber);
     ADD_METHOD(GetPlayerController);
     ADD_METHOD(SetPlayerOptions);
     ADD_METHOD(GetPlayerOptions);

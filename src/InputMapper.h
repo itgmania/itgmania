@@ -227,15 +227,14 @@ class InputMapper {
       std::vector<GameInput>& GameIout) const;
   PlayerNumber ControllerToPlayerNumber(GameController controller) const;
 
-  float GetSecsHeld(
-      const GameInput& GameI, MultiPlayer mp = MultiPlayer_Invalid) const;
+  float GetSecsHeld(const GameInput& GameI) const;
 
   bool IsBeingPressed(
-      const GameInput& GameI, MultiPlayer mp = MultiPlayer_Invalid,
+      const GameInput& GameI,
       const DeviceInputList* pButtonState = nullptr) const;
   bool IsBeingPressed(GameButton MenuI, PlayerNumber pn) const;
   bool IsBeingPressed(
-      const std::vector<GameInput>& GameI, MultiPlayer mp = MultiPlayer_Invalid,
+      const std::vector<GameInput>& GameI,
       const DeviceInputList* pButtonState = nullptr) const;
 
   void ResetKeyRepeat(const GameInput& GameI);
@@ -246,9 +245,6 @@ class InputMapper {
 
   float GetLevel(const GameInput& GameI) const;
   float GetLevel(GameButton MenuI, PlayerNumber pn) const;
-
-  static InputDevice MultiPlayerToInputDevice(MultiPlayer mp);
-  static MultiPlayer InputDeviceToMultiPlayer(InputDevice id);
 
   void Unmap(InputDevice device);
   void ApplyMapping(

@@ -943,8 +943,7 @@ void InputMapper::MenuToGame(
 }
 
 bool InputMapper::IsBeingPressed(
-    const GameInput& GameI, MultiPlayer mp,
-    const DeviceInputList* pButtonState) const {
+    const GameInput& GameI, const DeviceInputList* pButtonState) const {
   if (GameI.button == GameButton_Invalid) {
     return false;
   }
@@ -952,9 +951,6 @@ bool InputMapper::IsBeingPressed(
     DeviceInput DeviceI;
 
     if (GameToDevice(GameI, i, DeviceI)) {
-      if (mp != MultiPlayer_Invalid) {
-        DeviceI.device = MultiPlayerToInputDevice(mp);
-      }
       if (INPUTFILTER->IsBeingPressed(DeviceI, pButtonState)) {
         return true;
       }
@@ -980,11 +976,11 @@ bool InputMapper::IsBeingPressed(GameButton MenuI, PlayerNumber pn) const {
 }
 
 bool InputMapper::IsBeingPressed(
-    const std::vector<GameInput>& GameI, MultiPlayer mp,
+    const std::vector<GameInput>& GameI,
     const DeviceInputList* pButtonState) const {
   bool pressed = false;
   for (size_t i = 0; i < GameI.size(); ++i) {
-    pressed |= IsBeingPressed(GameI[i], mp, pButtonState);
+    pressed |= IsBeingPressed(GameI[i], pButtonState);
   }
   return pressed;
 }
@@ -1013,7 +1009,7 @@ void InputMapper::RepeatStopKey(GameButton MenuI, PlayerNumber pn) {
   }
 }
 
-float InputMapper::GetSecsHeld(const GameInput& GameI, MultiPlayer mp) const {
+float InputMapper::GetSecsHeld(const GameInput& GameI) const {
   if (GameI.button == GameButton_Invalid) {
     return 0.f;
   }
@@ -1022,9 +1018,6 @@ float InputMapper::GetSecsHeld(const GameInput& GameI, MultiPlayer mp) const {
   for (int i = 0; i < NUM_GAME_TO_DEVICE_SLOTS; i++) {
     DeviceInput DeviceI;
     if (GameToDevice(GameI, i, DeviceI)) {
-      if (mp != MultiPlayer_Invalid) {
-        DeviceI.device = MultiPlayerToInputDevice(mp);
-      }
       fMaxSecsHeld = std::max(fMaxSecsHeld, INPUTFILTER->GetSecsHeld(DeviceI));
     }
   }
@@ -1083,20 +1076,6 @@ float InputMapper::GetLevel(GameButton MenuI, PlayerNumber pn) const {
   }
 
   return fLevel;
-}
-
-InputDevice InputMapper::MultiPlayerToInputDevice(MultiPlayer mp) {
-  if (mp == MultiPlayer_Invalid) {
-    return InputDevice_Invalid;
-  }
-  return enum_add2(DEVICE_JOY1, mp);
-}
-
-MultiPlayer InputMapper::InputDeviceToMultiPlayer(InputDevice id) {
-  if (id == InputDevice_Invalid) {
-    return MultiPlayer_Invalid;
-  }
-  return enum_add2(MultiPlayer_P1, id - DEVICE_JOY1);
 }
 
 GameButton InputScheme::ButtonNameToIndex(

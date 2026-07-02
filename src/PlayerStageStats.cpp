@@ -52,9 +52,7 @@ Grade GetGradeFromPercent(float fPercent);
 
 void PlayerStageStats::InternalInit() {
   m_pStyle = nullptr;
-  m_for_multiplayer = false;
   m_player_number = PLAYER_1;
-  m_multiplayer_number = MultiPlayer_P1;
 
   m_bPlayerCanAchieveFullCombo = true;
   m_bJoined = false;
@@ -96,15 +94,7 @@ void PlayerStageStats::InternalInit() {
   m_HighScore = HighScore();
 }
 
-void PlayerStageStats::Init(PlayerNumber pn) {
-  m_for_multiplayer = false;
-  m_player_number = pn;
-}
-
-void PlayerStageStats::Init(MultiPlayer pn) {
-  m_for_multiplayer = true;
-  m_multiplayer_number = pn;
-}
+void PlayerStageStats::Init(PlayerNumber pn) { m_player_number = pn; }
 
 void PlayerStageStats::AddStats(const PlayerStageStats& other) {
   m_pStyle = other.m_pStyle;

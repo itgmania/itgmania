@@ -169,6 +169,7 @@
 					 minOccurs="0" maxOccurs="unbounded" />
 				</xs:sequence>
 				<xs:attribute name="name" type="Identifier" use="required" />
+				<xs:attribute name="removed" type="xs:string" use="optional" />
 			</xs:complexType>
 		</xs:element>
 	</xs:sequence>

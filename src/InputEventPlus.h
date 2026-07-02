@@ -14,14 +14,12 @@ class InputEventPlus {
         type(IET_FIRST_PRESS),
         MenuI(GameButton_Invalid),
         pn(PLAYER_INVALID),
-        mp(MultiPlayer_Invalid),
         InputList() {}
   DeviceInput DeviceI;
   GameInput GameI;
   InputEventType type;
   GameButton MenuI;
   PlayerNumber pn;
-  MultiPlayer mp;
   DeviceInputList InputList;
 };
 

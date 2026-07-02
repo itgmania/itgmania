@@ -6,8 +6,6 @@
 #include "ActorFrame.h"
 #include "AutoActor.h"
 #include "GameConstantsAndTypes.h"
-#include "MessageManager.h"
-#include "PlayerNumber.h"
 
 class HoldJudgment : public ActorFrame {
  public:
@@ -17,8 +15,6 @@ class HoldJudgment : public ActorFrame {
   void LoadFromNode(const XNode* pNode);
 
   void SetHoldJudgment(HoldNoteScore hns);
-  void LoadFromMultiPlayer(MultiPlayer mp);
-  virtual void HandleMessage(const Message& msg);
 
   // Lua
   virtual void PushSelf(lua_State* L);
@@ -26,7 +22,6 @@ class HoldJudgment : public ActorFrame {
  protected:
   void ResetAnimation();
   AutoActor m_sprJudgment;
-  MultiPlayer m_mpToTrack;
 };
 
 #endif

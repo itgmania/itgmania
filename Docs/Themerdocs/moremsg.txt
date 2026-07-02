@@ -95,7 +95,6 @@ Player
 
 TransformMessage(
 	Player
-	MultiPlayer
 	iEnabledPlayerIndex
 	iNumEnabledPlayers
 	bPlayerUsingBothSides
@@ -111,11 +110,10 @@ ComboChangedMessage(
 	PlayerStageStats
 )
 
-StepMessage( PlayerNumber, MultiPlayer )
+StepMessage( PlayerNumber )
 
 JudgmentMessage(
 	Player
-	MultiPlayer
 	TapNoteScore
 	Early
 	TapNoteOffset
@@ -132,7 +130,7 @@ ComboMessage(
 ===========================================
 ScoreKeeper*
 
-ScoreChangedMessage( PlayerNumber, MultiPlayer )
+ScoreChangedMessage( PlayerNumber )
 ===========================================
 ScreenContinue
 

@@ -22,7 +22,6 @@ class PlayerStageStats {
   PlayerStageStats() { InternalInit(); }
   void InternalInit();
   void Init(PlayerNumber pn);
-  void Init(MultiPlayer pn);
 
   /**
    * @brief Add stats from one PlayerStageStats to another.
@@ -39,9 +38,7 @@ class PlayerStageStats {
   int GetLessonScoreNeeded() const;
   void ResetScoreForLesson();
 
-  bool m_for_multiplayer;
   PlayerNumber m_player_number;
-  MultiPlayer m_multiplayer_number;
   const Style* m_pStyle;
 
   bool m_bJoined;
