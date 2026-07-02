@@ -2875,7 +2875,7 @@ Def.BitmapText{
 	<Function name='GetIndex' return='int' arguments=''>
 		Returns the index of this item.
 	</Function>
-	<Function name='GetMultiPlayer' return='MultiPlayer' arguments=''>
+	<Function name='GetMultiPlayer' return='MultiPlayer' arguments='' removed='ITGmania 1.4.0'>
 		Returns any MultiPlayer that may have been set.
 	</Function>
 	<Function name='GetName' return='string' arguments=''>
@@ -3142,13 +3142,13 @@ end
 	<Function name='GetMasterPlayerNumber' return='PlayerNumber' arguments=''>
 		Returns the master player number.
 	</Function>
-	<Function name='GetMultiplayer' return='bool' arguments=''>
+	<Function name='GetMultiplayer' return='bool' arguments='' removed='ITGmania 1.4.0'>
 		Returns <code>true</code> if the game is Multiplayer.
 	</Function>
-	<Function name='GetMultiPlayerState' return='PlayerState' arguments='MultiPlayer mp'>
+	<Function name='GetMultiPlayerState' return='PlayerState' arguments='MultiPlayer mp' removed='ITGmania 1.4.0'>
 		Returns the PlayerState for the specified MultiPlayer.
 	</Function>
-	<Function name='GetNumMultiplayerNoteFields' return='int' arguments=''>
+	<Function name='GetNumMultiplayerNoteFields' return='int' arguments='' removed='ITGmania 1.4.0'>
 		Returns the number of active multiplayer NoteFields.
 	</Function>
 	<Function name='GetNumPlayersEnabled' return='int' arguments=''>
@@ -3362,10 +3362,10 @@ end
 	<Function name='SetJukeboxUsesModifiers' return='void' arguments='bool bUseMods'>
 		Sets if the Jukebox should use modifiers.
 	</Function>
-	<Function name='SetMultiplayer' return='void' arguments='bool b'>
+	<Function name='SetMultiplayer' return='void' arguments='bool b' removed='ITGmania 1.4.0'>
 
 	</Function>
-	<Function name='SetNumMultiplayerNoteFields' return='void' arguments='int iFields'>
+	<Function name='SetNumMultiplayerNoteFields' return='void' arguments='int iFields' removed='ITGmania 1.4.0'>
 		Sets the number of multiplayer notefields to <code>iFields</code>
 	</Function>
 	<Function name='SetPreferredDifficulty' return='void' arguments='PlayerNumber pn, Difficulty dc'>
@@ -3535,7 +3535,7 @@ end
 	</Function>
 </Class>
 <Class name='HoldJudgment' grouping='Actor'>
-	<Function name='LoadFromMultiPlayer' return='void' arguments='MultiPlayer mp'>
+	<Function name='LoadFromMultiPlayer' return='void' arguments='MultiPlayer mp' removed='ITGmania 1.4.0'>
 		Loads the HoldJudgment for the specified MultiPlayer.
 	</Function>
 </Class>
@@ -4635,7 +4635,7 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Function name='GetHealthState' return='HealthState' arguments=''>
 		Returns the HealthState for this PlayerState.
 	</Function>
-	<Function name='GetMultiPlayerNumber' return='MultiPlayer' arguments=''>
+	<Function name='GetMultiPlayerNumber' return='MultiPlayer' arguments='' removed='ITGmania 1.4.0'>
 		Returns the multiplayer number for this PlayerState.
 	</Function>
 	<Function name='GetPlayerController' return='PlayerController' arguments=''>
@@ -5313,10 +5313,7 @@ Details of the <code>event</code> table:
 
 		-- True if the device is a mouse.
 		is_mouse = bool
-	},
-
-	-- Unknown purpose. SMOnline?
-	MultiPlayer = string
+	}
 }
 </code></pre>
 	</Function>
@@ -6256,7 +6253,7 @@ local spr = Def.Sprite{
 	<Function name='GetGameplaySeconds' return='float' arguments=''>
 		Returns the number of seconds played.
 	</Function>
-	<Function name='GetMultiPlayerStageStats' return='PlayerStageStats' arguments='MultiPlayer mp'>
+	<Function name='GetMultiPlayerStageStats' return='PlayerStageStats' arguments='MultiPlayer mp' removed='ITGmania 1.4.0'>
 		Returns the PlayerStageStats of multiplayer <code>mp</code>.
 	</Function>
 	<Function name='GetPlayedSongs' return='{Song}' arguments='' />

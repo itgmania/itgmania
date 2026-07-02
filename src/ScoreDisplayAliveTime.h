@@ -30,7 +30,6 @@ class ScoreDisplayAliveTime : public BitmapText {
 
  private:
   PlayerNumber m_PlayerNumber;
-  MultiPlayer m_MultiPlayer;
 };
 
 #endif

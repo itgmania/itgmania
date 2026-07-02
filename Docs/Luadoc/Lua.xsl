@@ -558,9 +558,22 @@
 			<td class="returnTypeCell" />
 			<td>
 			<xsl:attribute name="class">
-				descriptionCell
+				<xsl:choose>
+					<xsl:when test="@removed">removedFunction</xsl:when>
+					<xsl:otherwise>descriptionCell</xsl:otherwise>
+				</xsl:choose>
 			</xsl:attribute>
-				<span class="descriptionName"><xsl:value-of select="@name" /></span>
+				<span>
+					<xsl:attribute name="class">
+						<xsl:text>descriptionName</xsl:text>
+						<xsl:if test="@removed"> removedName</xsl:if>
+					</xsl:attribute>
+					<xsl:value-of select="@name" />
+				</span>
+				<xsl:if test="@removed">
+					<br />
+					<em>Removed in <xsl:value-of select="@removed" />.</em>
+				</xsl:if>
 			</td>
 		</xsl:otherwise>
 	</xsl:choose>
@@ -649,11 +662,21 @@
 
 <xsl:template match="sm:Enum">
 	<xsl:variable name="name" select="@name" />
+	<xsl:variable name="removedEnum" select="@removed" />
 	<div id="ENUM_{@name}">
 		<a class="trigger" onclick="Toggle('{@name}')">
 		<img src="closed.gif" id="img_{@name}" alt="" />
 		<xsl:text> Enum </xsl:text>
-		<span class="descriptionName"><xsl:value-of select="@name" /></span></a>
+		<span>
+			<xsl:attribute name="class">
+				<xsl:text>descriptionName</xsl:text>
+				<xsl:if test="$removedEnum"> removedName</xsl:if>
+			</xsl:attribute>
+			<xsl:value-of select="@name" />
+		</span></a>
+		<xsl:if test="$removedEnum">
+			<em> (Removed in <xsl:value-of select="$removedEnum" />)</em>
+		</xsl:if>
 		<div style="display: none" id="list_{@name}">
 		<xsl:apply-templates select="$docs/sm:Enums/sm:Enum[@name=$name]/sm:Description">
 			<xsl:with-param name="curclass" select="$name" />
