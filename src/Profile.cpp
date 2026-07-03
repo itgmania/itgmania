@@ -2683,7 +2683,10 @@ std::string Profile::MakeFileNameNoExtension(
 }
 
 std::string Profile::GetCustomSongsGroupNamePrefix() const {
-  return GetDisplayNameOrHighScoreName() + "'s Songs";
+  std::string groupName = THEME->GetString("Profile", "ProfileCustomSongs");
+
+  return groupName.replace(
+      groupName.find("%s"), sizeof("%s") - 1, GetDisplayNameOrHighScoreName());
 }
 
 bool Profile::IsCustomSongGroup(std::string sSongGroup) const {
@@ -3059,13 +3062,6 @@ class LunaProfile : public Luna<Profile> {
     return 1;
   }
 
-  DEFINE_METHOD(GetCustomSongsGroupNamePrefix, GetCustomSongsGroupNamePrefix());
-  static int IsCustomSongGroup(T* p, lua_State* L) {
-    lua_pushboolean(L, p->IsCustomSongGroup(SArg(1)));
-
-    return 1;
-  }
-
   LunaProfile() {
     ADD_METHOD(AddScreenshot);
     ADD_METHOD(GetType);
@@ -3136,7 +3132,6 @@ class LunaProfile : public Luna<Profile> {
     ADD_METHOD(GetLastPlayedCourse);
     ADD_METHOD(GetGUID);
     ADD_METHOD(get_songs);
-    ADD_METHOD(GetCustomSongsGroupNamePrefix);
   }
 };
 
