@@ -58,7 +58,6 @@ class GameSoundManager {
   void PlayOnceFromAnnouncer(std::string sFolderName);
 
   void HandleSongTimer(bool on = true);
-  float GetFrameTimingAdjustment(float fDeltaTime);
 
   static float GetPlayerBalance(PlayerNumber pn);
 

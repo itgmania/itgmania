@@ -187,6 +187,9 @@ class ScreenGameplay : public ScreenWithMenuElements {
   virtual void PushSelf(lua_State* L);
   Song* GetNextCourseSong() const;
   LifeMeter* GetLifeMeter(PlayerNumber pn);
+  CombinedLifeMeter* GetCombinedLifeMeter() const {
+    return m_pCombinedLifeMeter;
+  }
   PlayerInfo* GetPlayerInfo(PlayerNumber pn);
   PlayerInfo* GetDummyPlayerInfo(int iDummyIndex);
   void Pause(bool bPause) { PauseGame(bPause); }
@@ -266,6 +269,7 @@ class ScreenGameplay : public ScreenWithMenuElements {
   void SaveReplay();
   // bool LoadReplay();
   bool AllAreFailing();
+  bool OneFailed();
 
   virtual void InitSongQueues();
 
@@ -355,6 +359,8 @@ class ScreenGameplay : public ScreenWithMenuElements {
 
   std::vector<PlayerInfo>
       m_vPlayerInfo;  // filled by SGameplay derivatives in FillPlayerInfo
+  /** @brief Shared routine scorekeeper instance for shared-sides play. */
+  ScoreKeeper* m_pRoutineSharedScoreKeeper;
   virtual void FillPlayerInfo(std::vector<PlayerInfo>& vPlayerInfoOut) = 0;
   virtual PlayerInfo& GetPlayerInfoForInput(const InputEventPlus& iep) {
     return m_vPlayerInfo[iep.pn];

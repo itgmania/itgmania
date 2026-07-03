@@ -236,6 +236,7 @@ class GameState {
   bool m_AdjustTokensBySongCostForFinalStageCheck;
 
   std::string sExpandedSectionName;
+  std::string sExpandedParentSectionName;
 
   std::string sLastOpenSection;
 

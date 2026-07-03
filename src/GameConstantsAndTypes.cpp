@@ -162,7 +162,7 @@ static const char* SortOrderNames[] = {
     "Endless",         "Length",
     "Roulette",        "Recent",
     "RecentP1",        "RecentP2",
-};
+    "Series"};
 XToString(SortOrder);
 StringToX(SortOrder);
 LuaXType(SortOrder);

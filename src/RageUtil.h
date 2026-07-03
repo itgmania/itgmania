@@ -15,7 +15,8 @@
 #include <utility>
 #include <vector>
 
-#include "config.hpp"
+#include "Compiler.h"
+#include "Platform.h"
 #include "global.h"
 
 class RageFileDriver;

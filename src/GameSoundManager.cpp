@@ -490,43 +490,6 @@ GameSoundManager::~GameSoundManager() {
   RageUtil::SafeDelete(g_Mutex);
 }
 
-float GameSoundManager::GetFrameTimingAdjustment(float fDeltaTime) {
-  /*
-   * We get one update per frame, and we're updated early, almost immediately
-   * after vsync, near the beginning of the game loop.  However, it's very
-   * likely that we'll lose the scheduler while waiting for vsync, and some
-   * other thread will be working.  Especially with a low-resolution scheduler
-   * (Linux 2.4, Win9x), we may not get the scheduler back immediately after the
-   * vsync; there may be up to a ~10ms delay.  This can cause jitter in the
-   * rendered arrows.
-   *
-   * Compensate.  If vsync is enabled, and we're maintaining the refresh rate
-   * consistently, we should have a very precise game loop interval.  If we have
-   * that, but we're off by a small amount (less than the interval), adjust the
-   * time to line it up.  As long as we adjust both the sound time and the
-   * timestamp, this won't adversely affect input timing. If we're off by more
-   * than that, we probably had a frame skip, in which case we have bigger skip
-   * problems, so don't adjust.
-   */
-  static int iLastFPS = 0;
-  int iThisFPS = DISPLAY->GetFPS();
-
-  if (iThisFPS != DISPLAY->GetActualVideoModeParams().rate ||
-      iThisFPS != iLastFPS) {
-    iLastFPS = iThisFPS;
-    return 0;
-  }
-
-  const float fExpectedDelay = 1.0f / iThisFPS;
-  const float fExtraDelay = fDeltaTime - fExpectedDelay;
-  if (std::abs(fExtraDelay) >= fExpectedDelay / 2) {
-    return 0;
-  }
-
-  /* Subtract the extra delay. */
-  return std::min(-fExtraDelay, 0.0f);
-}
-
 void GameSoundManager::Update(float fDeltaTime) {
   {
     g_Mutex->Lock();

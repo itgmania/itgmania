@@ -22,7 +22,7 @@
  * being developed.
  */
 const std::string INI_FILE = "Pack.ini";
-const int INI_VERSION = 1;
+const int INI_VERSION = 2;
 
 Group::Group() {
   m_sDisplayTitle = "";
@@ -35,6 +35,7 @@ Group::Group() {
   m_bHasPackIni = false;
   m_iYearReleased = 0;
   m_sBannerPath = "";
+  m_sSeriesBannerPath = "";
 }
 
 static std::string GetInternalGroupName(
@@ -90,6 +91,7 @@ Group::Group(
   m_bHasPackIni = false;
   m_iYearReleased = 0;
   m_sBannerPath = "";
+  m_sSeriesBannerPath = "";
   m_iVersion = INI_VERSION;
 
   if (FILEMAN->DoesFileExist(sPackIniPath)) {
@@ -117,7 +119,8 @@ Group::Group(
           {"SortTitle", m_sSortTitle},
           {"TranslitTitle", m_sTranslitTitle},
           {"Series", m_sSeries},
-          {"Banner", m_sBannerPath}};
+          {"Banner", m_sBannerPath},
+          {"SeriesBanner", m_sSeriesBannerPath}};
 
       for (auto& [key, value] : vPackfields) {
         ini.GetValue("Group", key, value);

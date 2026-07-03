@@ -10,8 +10,8 @@
 #include "global.h"
 
 static const char* WheelItemDataTypeNames[] = {
-    "Generic", "Section", "Song", "Roulette", "Random",
-    "Portal",  "Course",  "Sort", "Custom",
+    "Generic", "Section", "ParentSection", "Song", "Roulette",
+    "Random",  "Portal",  "Course",        "Sort", "Custom",
 };
 XToString(WheelItemDataType);
 StringToX(WheelItemDataType);

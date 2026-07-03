@@ -60,12 +60,6 @@ static ThemeMetric<float> BAR_8TH_ALPHA("NoteField", "Bar8thAlpha");
 static ThemeMetric<float> BAR_16TH_ALPHA("NoteField", "Bar16thAlpha");
 static ThemeMetric<float> FADE_FAIL_TIME("NoteField", "FadeFailTime");
 
-static std::string RoutineNoteSkinName(size_t i) {
-  return ssprintf("RoutineNoteSkinP%i", int(i + 1));
-}
-static ThemeMetric1D<std::string> ROUTINE_NOTESKIN(
-    "NoteField", RoutineNoteSkinName, NUM_PLAYERS);
-
 NoteField::NoteField() {
   m_pNoteData = nullptr;
   m_pCurDisplay = nullptr;
@@ -176,13 +170,6 @@ void NoteField::UncacheNoteSkin(const std::string& sNoteSkin_) {
 }
 
 void NoteField::CacheAllUsedNoteSkins() {
-  // If we're in Routine mode, apply our per-player noteskins.
-  if (GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber)->m_StyleType ==
-      StyleType_TwoPlayersSharedSides) {
-    FOREACH_EnabledPlayer(pn)
-        GAMESTATE->ApplyStageModifiers(pn, ROUTINE_NOTESKIN.GetValue(pn));
-  }
-
   /* Cache all note skins that we might need for the whole song, course or
    * battle play, so we don't have to load them later (such as between course
    * songs). */
@@ -356,6 +343,16 @@ void NoteField::InitColumnRenderers() {
   m_ColumnRenderers.resize(
       GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber)
           ->m_iColsPerPlayer);
+  // Check if we're currently in twoplayersharedsides mode if so, we need to
+  // hide the receptor row of player 2
+  if (GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber)->m_StyleType ==
+      StyleType_TwoPlayersSharedSides) {
+    // Check if the player state player number is player 2
+    if (m_pPlayerState->m_PlayerNumber == PLAYER_2) {
+      m_pCurDisplay->m_ReceptorArrowRow.SetDrawOrder(0);
+      m_pCurDisplay->m_ReceptorArrowRow.SetVisible(false);
+    }
+  }
   for (size_t ncr = 0; ncr < m_ColumnRenderers.size(); ++ncr) {
     FOREACH_EnabledPlayer(pn) {
       m_ColumnRenderers[ncr].m_displays[pn] = &(m_pDisplays[pn]->display[ncr]);
@@ -890,8 +887,19 @@ void NoteField::DrawPrimitives() {
 
   FOREACH_TimingSegmentType(tst) segs[tst] = &(pTiming->GetTimingSegments(tst));
 
+  // In TwoPlayersSharedSides (routine/couples), Restrict beat bar drawing to
+  // the master player so only one copy is rendered otherwise one renders over
+  // the other player
+  const Style* shared_style =
+      GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber);
+  const bool suppress_shared_overlays =
+      shared_style != nullptr &&
+      shared_style->m_StyleType == StyleType_TwoPlayersSharedSides &&
+      m_pPlayerState->m_PlayerNumber != GAMESTATE->GetMasterPlayerNumber();
+
   // Draw beat bars
-  if ((GAMESTATE->IsEditing() || m_bShowBeatBars) && pTiming != nullptr) {
+  if ((GAMESTATE->IsEditing() || m_bShowBeatBars) && pTiming != nullptr &&
+      !suppress_shared_overlays) {
     const std::vector<TimingSegment*>& tSigs = *segs[SEGMENT_TIME_SIG];
     int iMeasureIndex = 0;
     for (size_t i = 0; i < tSigs.size(); i++) {

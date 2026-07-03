@@ -584,10 +584,10 @@ save yourself some time, copy this for undocumented things:
 		[02 Utilities.lua] Round a number.
 	</Function>
 	<Function name='RoutineSkinP1' theme='_fallback' return='string' arguments=''>
-		[03 Gameplay.lua] Returns the routine noteskin for player .
+		[03 Gameplay.lua] Returns the current noteskin for player 1 in routine mode.
 	</Function>
 	<Function name='RoutineSkinP2' theme='_fallback' return='string' arguments=''>
-		[03 Gameplay.lua] Returns the routine noteskin for player 2.
+		[03 Gameplay.lua] Returns the current noteskin for player 2 in routine mode.
 	</Function>
 	<Function name='Saturation' theme='_fallback' return='color' arguments='color c, float percent'>
 		[02 Colors.lua] Modifies the saturation of the specified color
@@ -3114,6 +3114,9 @@ end
 	<Function name='GetExpandedSectionName' return='string' arguments=''>
 		Returns the name of the currently expanded section.
 	</Function>
+	<Function name='GetExpandedParentSectionName' return='string' arguments=''>
+		Returns the name of the parent of the currently expanded section.
+	</Function>
 	<Function name='GetGameSeed' return='int' arguments=''>
 		Return the random seed for the game.
 	</Function>
@@ -3494,6 +3497,9 @@ end
 	</Function>
 	<Function name='GetRadarValues' return='RadarValues' arguments=''>
 		Returns the RadarValues for this HighScore.
+	</Function>
+	<Function name='GetPlayerGuid' return='string' arguments='' since='ITGmania 1.3.0'>
+		Returns the GUID of the profile associated with the high score, or an empty string if there is no profile associated with the high score.
 	</Function>
 	<Function name='GetScore' return='int' arguments=''>
 		Returns the score associated with the high score.
@@ -4905,6 +4911,9 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Function name='GetProfile' return='Profile' arguments='PlayerNumber pn'>
 		Returns the profile for player <code>pn</code>.
 	</Function>
+	<Function name='GetProfileFromGuid' return='Profile' arguments='string sGuid' since='ITGmania 1.3.0'>
+		Returns the profile with the specified GUID.
+	</Function>
 	<Function name='GetProfileDir' return='string' arguments='ProfileSlot slot'>
 		Returns the profile directory for the provided <Link class='ENUM' function='ProfileSlot'>ProfileSlot</Link>, formatted like <code>/Save/LocalProfiles/00000001/</code>.<br />
 		Returns an empty string if the provided <Link class='ENUM' function='ProfileSlot'>ProfileSlot</Link> does not have a <Link class='Profile' /> loaded.
@@ -5047,9 +5056,10 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 		Opens a file at <code>sPath</code> (relative to the StepMania root directory).<br />
 		<code>iAccessType</code> can be set to read (<code>1</code>), write (<code>2</code>), stream (<code>4</code>) or flush to disk on close (<code>8</code>).<br />
 		These can also be combined with addition. For example, to set up read and write, set <code>iAccessType</code> to <code>3</code> (1+2).
+		Returns <code>false</code> if the file could not be opened; otherwise returns <code>true</code>.
 	</Function>
 	<Function name='PutLine' return='int' arguments='string s'>
-		Puts a new line in the file.
+		Appends line <code>s</code>, terminated with <code>"\r\n"</code>, to the end of the file.
 	</Function>
 	<Function name='Read' return='string' arguments=''>
 		Returns a string containing the entire contents of the file.
@@ -5057,8 +5067,8 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Function name='ReadBytes' return='string' arguments='int length'>
 		Returns <code>length</code> bytes from the RageFile's current position.
 	</Function>
-	<Function name='Seek' return='int' arguments=''>
-		Seeks to a position in the file and returns the new position.
+	<Function name='Seek' return='int' arguments='int pos'>
+		Seeks to position <code>pos</code> in the file and returns the new position.
 	</Function>
 	<Function name='Tell' return='int' arguments=''>
 		Returns the current position in the file.
@@ -5954,6 +5964,9 @@ local args = {
 	<Function name='GetSongGroupBannerPath' return='string' arguments='string sGroup'>
 		Returns the path to the specified song group's banner.
 	</Function>
+	<Function name='GetSeriesBannerPath' return='string' arguments='string sSeries'>
+		Returns the path to the specified series' banner.
+	</Function>
 	<Function name='GetSongGroupColor' return='color' arguments='string sGroupName'>
 		Returns the song group color of <code>sGroupName</code>.
 	</Function>
@@ -5972,6 +5985,9 @@ local args = {
 	<Function name='ShortenGroupName' return='string' arguments='string sGroupName'>
 		Returns the shortened group name (based on entries in Translations.xml).
 	</Function>
+	<Function name='ShortenSeriesName' return='string' arguments='string sSeriesName'>
+		Returns the shortened series name (based on entries in Translations.xml).
+	</Function>
 	<Function name='SetPreferredCourses' return='void' arguments='string sListName, bool bIsAbsolute'>
 		By default, loads preferred courses from <code>{theme}/Other/SongManager sListName.txt</code>.
 		(New since ITGmania 0.6.0) If the optional argument <code>bIsAbsolute</code> is set, instead treats
@@ -5982,7 +5998,7 @@ local args = {
 		(New since ITGmania 0.6.0) If the optional argument <code>bIsAbsolute</code> is set, instead treats
 		sListName as an absolute path instead of loading it from the Theme's <code>Other</code> directory.
 	</Function>
-	<Function name='SetPreferredSongsFromTable' return='void' arguments='table' since='ITGmania 1.2.0'>
+	<Function name='SetPreferredSongsFromTable' return='void' arguments='table' since='ITGmania 1.3.0'>
 		An alternate version of SetPreferredSongs that takes a key value table of songs where the key is the
 		section name and the value is a table of songs that belong in that section. This allows themes to
 		set preferred songs without needing to read from a file.
@@ -6234,6 +6250,9 @@ local spr = Def.Sprite{
 	<Function name='GetPlayedSongs' return='{Song}' arguments='' />
 	<Function name='GetPlayerStageStats' return='PlayerStageStats' arguments='PlayerNumber pn'>
 		Returns the PlayerStageStats of player <code>pn</code>.
+	</Function>
+	<Function name='GetRoutineStageStats' return='PlayerStageStats' arguments='' since='ITGmania 1.3.0'>
+		Returns the "shared" PlayerStageStats for routine mode.
 	</Function>
 	<Function name='GetPossibleSongs' return='{Song}' arguments='' />
 	<Function name='GetStage' return='Stage' arguments=''>

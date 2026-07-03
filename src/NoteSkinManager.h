@@ -8,6 +8,7 @@
 #include "GameInput.h"
 #include "LuaManager.h"
 #include "PlayerNumber.h"
+#include "Style.h"
 #include "global.h"
 
 struct Game;
@@ -84,6 +85,8 @@ class NoteSkinManager {
   void GetAllNoteSkinNamesForGame(
       const Game* pGame, std::vector<std::string>& AddTo,
       bool bIncludeVariants = true);
+  void FilterNoteSkinsByStyle(
+      const Style* pStyle, std::vector<std::string>& AddTo);
 
   bool LoadNoteSkinData(
       const std::string& sNoteSkinName, NoteSkinData& data_out);

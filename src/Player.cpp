@@ -738,6 +738,13 @@ void Player::Load() {
 
   m_Timing = GAMESTATE->m_pCurSteps[pn]->GetTimingData();
 
+  if (m_NoteData.IsComposite()) {
+    std::vector<NoteData> vParts;
+
+    NoteDataUtil::SplitCompositeNoteData(m_NoteData, vParts);
+    m_NoteData = vParts[pn];
+  }
+
   /* Apply transforms. */
   NoteDataUtil::TransformNoteData(
       m_NoteData, *m_Timing, m_pPlayerState->m_PlayerOptions.GetStage(),
@@ -1307,6 +1314,12 @@ void Player::UpdateHoldNotes(
      * in different ways depending on the SubType. */
     ASSERT(tn.subType == subType);
 
+    // Routine charts assign each note to a specific player; skip notes
+    // that don't belong to this Player
+    if (tn.pn != PLAYER_INVALID && tn.pn != m_pPlayerState->m_PlayerNumber) {
+      continue;
+    }
+
     if (iEndRow > iMaxEndRow) {
       iMaxEndRow = iEndRow;
       iFirstTrackWithMaxEndRow = iTrack;
@@ -1322,7 +1335,11 @@ void Player::UpdateHoldNotes(
 
   for (const TrackRowTapNote& trtn : vTN) {
     TapNote& tn = *trtn.pTN;
-
+    // Routine charts assign each note to a specific player; skip notes
+    // that don't belong to this Player
+    if (tn.pn != PLAYER_INVALID && tn.pn != m_pPlayerState->m_PlayerNumber) {
+      continue;
+    }
     // set hold flags so NoteField can do intelligent drawing
     tn.HoldResult.bHeld = false;
     tn.HoldResult.bActive = false;
@@ -1363,6 +1380,11 @@ void Player::UpdateHoldNotes(
   for (const TrackRowTapNote& trtn : vTN) {
     TapNote& tn = *trtn.pTN;
     TapNoteScore tns = tn.result.tns;
+    // Routine charts assign each note to a specific player; skip notes
+    // that don't belong to this Player
+    if (tn.pn != PLAYER_INVALID && tn.pn != m_pPlayerState->m_PlayerNumber) {
+      continue;
+    }
     // LOG->Trace( ssprintf("[C++] tap note score:
     // %s",StringConversion::ToString(tns).c_str()) );
 
@@ -1447,7 +1469,11 @@ void Player::UpdateHoldNotes(
     for (const TrackRowTapNote& trtn : vTN) {
       TapNote& tn = *trtn.pTN;
       int iEndRow = iStartRow + tn.iDuration;
-
+      // Routine charts assign each note to a specific player; skip notes
+      // that don't belong to this Player
+      if (tn.pn != PLAYER_INVALID && tn.pn != m_pPlayerState->m_PlayerNumber) {
+        continue;
+      }
       // LOG->Trace(ssprintf("trying for min between iSongRow (%i) and iEndRow
       // (%i) (duration %i)",iSongRow,iEndRow,tn.iDuration));
       tn.HoldResult.iLastHeldRow = std::min(iSongRow, iEndRow);
@@ -1460,7 +1486,10 @@ void Player::UpdateHoldNotes(
       case TapNoteSubType_Hold:
         for (const TrackRowTapNote& trtn : vTN) {
           TapNote& tn = *trtn.pTN;
-
+          if (tn.pn != PLAYER_INVALID &&
+              tn.pn != m_pPlayerState->m_PlayerNumber) {
+            continue;
+          }
           // set hold flag so NoteField can do intelligent drawing
           tn.HoldResult.bHeld = bIsHoldingButton && bInitiatedNote;
           tn.HoldResult.bActive = bInitiatedNote;
@@ -1496,6 +1525,10 @@ void Player::UpdateHoldNotes(
       case TapNoteSubType_Roll:
         for (const TrackRowTapNote& trtn : vTN) {
           TapNote& tn = *trtn.pTN;
+          if (tn.pn != PLAYER_INVALID &&
+              tn.pn != m_pPlayerState->m_PlayerNumber) {
+            continue;
+          }
           tn.HoldResult.bHeld = true;
           tn.HoldResult.bActive = bInitiatedNote;
         }
@@ -1570,6 +1603,10 @@ void Player::UpdateHoldNotes(
       int iCheckpointsHit = 0;
       int iCheckpointsMissed = 0;
       for (const TrackRowTapNote& v : vTN) {
+        if (v.pTN->pn != PLAYER_INVALID &&
+            v.pTN->pn != m_pPlayerState->m_PlayerNumber) {
+          continue;
+        }
         iCheckpointsHit += v.pTN->HoldResult.iCheckpointsHit;
         iCheckpointsMissed += v.pTN->HoldResult.iCheckpointsMissed;
       }
@@ -1608,6 +1645,10 @@ void Player::UpdateHoldNotes(
                            (unsigned int)BRIGHT_GHOST_COMBO_THRESHOLD;
         if (m_pNoteField) {
           for (const TrackRowTapNote& trtn : vTN) {
+            if (trtn.pTN->pn != PLAYER_INVALID &&
+                trtn.pTN->pn != m_pPlayerState->m_PlayerNumber) {
+              continue;
+            }
             int iTrack = trtn.iTrack;
             m_pNoteField->DidHoldNote(
                 iTrack, HNS_Held, bBright);  // bright ghost flash
@@ -1629,6 +1670,11 @@ void Player::UpdateHoldNotes(
 
   for (const TrackRowTapNote& trtn : vTN) {
     TapNote& tn = *trtn.pTN;
+    // Routine charts assign each note to a specific player; skip notes
+    // that don't belong to this Player
+    if (tn.pn != PLAYER_INVALID && tn.pn != m_pPlayerState->m_PlayerNumber) {
+      continue;
+    }
     tn.HoldResult.fLife = fLife;
     tn.HoldResult.hns = hns;
     // Stop the playing keysound for the hold note.
@@ -1660,6 +1706,11 @@ void Player::UpdateHoldNotes(
   if (hns != HNS_None) {
     // LOG->Trace("tap note scoring time.");
     TapNote& tn = *vTN[0].pTN;
+    // Routine charts assign each note to a specific player; skip notes
+    // that don't belong to this Player
+    if (tn.pn != PLAYER_INVALID && tn.pn != m_pPlayerState->m_PlayerNumber) {
+      return;
+    }
     SetHoldJudgment(tn, iFirstTrackWithMaxEndRow);
     HandleHoldScore(tn);
     // LOG->Trace("hold result =
@@ -2193,6 +2244,37 @@ void Player::Step(
   }
 
   const int iSongRow = row == -1 ? BeatToNoteRow(fSongBeat) : row;
+  // If we're playinng on TwoPlayerSharedSides, we need to check player number
+  // to determine which side of the screen we're on.
+  if (GAMESTATE->GetCurrentStyle(m_pPlayerState->m_PlayerNumber)->m_StyleType ==
+      StyleType_TwoPlayersSharedSides) {
+    const int iStepSearchRows =
+        std::max(
+            BeatToNoteRow(m_Timing->GetBeatFromElapsedTime(
+                m_pPlayerState->m_Position.m_fMusicSeconds +
+                StepSearchDistance)) -
+                iSongRow,
+            iSongRow - BeatToNoteRow(m_Timing->GetBeatFromElapsedTime(
+                           m_pPlayerState->m_Position.m_fMusicSeconds -
+                           StepSearchDistance))) +
+        ROWS_PER_BEAT;
+    int iRowOfOverlappingNoteOrRow = row;
+    if (row == -1) {
+      iRowOfOverlappingNoteOrRow = GetClosestNote(
+          col, iSongRow, iStepSearchRows, iStepSearchRows, false);
+    }
+    if (iRowOfOverlappingNoteOrRow != -1) {
+      NoteData::iterator iter =
+          m_NoteData.FindTapNote(col, iRowOfOverlappingNoteOrRow);
+      if (iter != m_NoteData.end(col)) {
+        const TapNote& tn = iter->second;
+        if (tn.pn != PLAYER_INVALID &&
+            tn.pn != m_pPlayerState->m_PlayerNumber) {
+          return;
+        }
+      }
+    }
+  }
 
   if (col != -1 && !bRelease) {
     // Update roll life

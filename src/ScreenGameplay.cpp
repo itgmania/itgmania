@@ -15,6 +15,7 @@
 #include "Attack.h"
 #include "Background.h"
 #include "BitmapText.h"
+#include "CombinedLifeMeterShared.h"
 #include "CombinedLifeMeterTug.h"
 #include "CommonMetrics.h"
 #include "Course.h"
@@ -221,8 +222,16 @@ void PlayerInfo::Load(
     m_pSecondaryScoreDisplay->Init(pPlayerState, pPlayerStageStats);
   }
 
+  std::string sPrimaryScoreKeeperClass = SCORE_KEEPER_CLASS;
+  const Style* pStyle = GAMESTATE->GetCurrentStyle(pn);
+  if (pStyle != nullptr &&
+      pStyle->m_StyleType == StyleType_TwoPlayersSharedSides) {
+    // Shared-sides keeps per-player scoring on normal scorekeepers.
+    sPrimaryScoreKeeperClass = "ScoreKeeperNormal";
+  }
+
   m_pPrimaryScoreKeeper = ScoreKeeper::MakeScoreKeeper(
-      SCORE_KEEPER_CLASS, pPlayerState, pPlayerStageStats);
+      sPrimaryScoreKeeperClass, pPlayerState, pPlayerStageStats);
 
   switch (GAMESTATE->m_PlayMode) {
     case PLAY_MODE_RAVE:
@@ -379,6 +388,7 @@ std::vector<PlayerInfo>::iterator GetNextVisiblePlayerInfo(
 ScreenGameplay::ScreenGameplay() {
   m_pSongBackground = nullptr;
   m_pSongForeground = nullptr;
+  m_pRoutineSharedScoreKeeper = nullptr;
   m_delaying_ready_announce = false;
   GAMESTATE->m_AdjustTokensBySongCostForFinalStageCheck = false;
 }
@@ -434,6 +444,26 @@ void ScreenGameplay::Init() {
   ScreenWithMenuElements::Init();
 
   this->FillPlayerInfo(m_vPlayerInfo);
+
+  const Style* pMasterStyle =
+      GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber());
+  const bool bSharedSidesStyle =
+      pMasterStyle != nullptr &&
+      pMasterStyle->m_StyleType == StyleType_TwoPlayersSharedSides;
+  if (bSharedSidesStyle) {
+    const PlayerNumber master = GAMESTATE->GetMasterPlayerNumber();
+    PlayerInfo& masterInfo = m_vPlayerInfo[master];
+    m_pRoutineSharedScoreKeeper = ScoreKeeper::MakeScoreKeeper(
+        "ScoreKeeperShared", masterInfo.GetPlayerState(),
+        &STATSMAN->m_CurStageStats.m_RoutinePlayer);
+
+    FOREACH_EnabledPlayerNumberInfo(m_vPlayerInfo, pi) {
+      if (pi->m_pSecondaryScoreKeeper != nullptr) {
+        RageUtil::SafeDelete(pi->m_pSecondaryScoreKeeper);
+      }
+      pi->m_pSecondaryScoreKeeper = m_pRoutineSharedScoreKeeper;
+    }
+  }
 
   {
     ASSERT_M(
@@ -518,6 +548,9 @@ void ScreenGameplay::Init() {
   FOREACH_PlayerNumber(pn) {
     STATSMAN->m_CurStageStats.m_player[pn].m_pStyle =
         GAMESTATE->GetCurrentStyle(pn);
+  }
+  if (bSharedSidesStyle) {
+    STATSMAN->m_CurStageStats.m_RoutinePlayer.m_pStyle = pMasterStyle;
   }
   FOREACH_MultiPlayer(pn) {
     STATSMAN->m_CurStageStats.m_multiPlayer[pn].m_pStyle =
@@ -638,12 +671,28 @@ void ScreenGameplay::Init() {
 
   // Add combined life meter
   switch (GAMESTATE->m_PlayMode) {
+    case PLAY_MODE_REGULAR:
+    case PLAY_MODE_ONI:
+    case PLAY_MODE_NONSTOP:
+    case PLAY_MODE_ENDLESS:
+      if (bSharedSidesStyle) {
+        const PlayerNumber master = GAMESTATE->GetMasterPlayerNumber();
+        PlayerInfo& masterInfo = m_vPlayerInfo[master];
+        m_pCombinedLifeMeter = new CombinedLifeMeterShared(
+            masterInfo.GetPlayerState(), masterInfo.GetPlayerStageStats(),
+            masterInfo.GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType);
+        m_pCombinedLifeMeter->SetName("CombinedLife");
+        LOAD_ALL_COMMANDS_AND_SET_XY(*m_pCombinedLifeMeter);
+        this->AddChild(m_pCombinedLifeMeter);
+      }
+      break;
     case PLAY_MODE_BATTLE:
     case PLAY_MODE_RAVE:
       m_pCombinedLifeMeter = new CombinedLifeMeterTug;
       m_pCombinedLifeMeter->SetName("CombinedLife");
       LOAD_ALL_COMMANDS_AND_SET_XY(*m_pCombinedLifeMeter);
       this->AddChild(m_pCombinedLifeMeter);
+      break;
     default:
       break;
   }
@@ -654,28 +703,35 @@ void ScreenGameplay::Init() {
     case PLAY_MODE_ONI:
     case PLAY_MODE_NONSTOP:
     case PLAY_MODE_ENDLESS:
-      FOREACH_PlayerNumberInfo(m_vPlayerInfo, pi) {
-        if (!GAMESTATE->IsPlayerEnabled(pi->m_pn) &&
-            !SHOW_LIFE_METER_FOR_DISABLED_PLAYERS) {
-          continue;  // skip
+      if (bSharedSidesStyle) {
+        FOREACH_PlayerNumberInfo(m_vPlayerInfo, pi) {
+          pi->m_pLifeMeter = nullptr;
         }
+      } else {
+        FOREACH_PlayerNumberInfo(m_vPlayerInfo, pi) {
+          if (!GAMESTATE->IsPlayerEnabled(pi->m_pn) &&
+              !SHOW_LIFE_METER_FOR_DISABLED_PLAYERS) {
+            continue;  // skip
+          }
 
-        pi->m_pLifeMeter = LifeMeter::MakeLifeMeter(
-            pi->GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType);
-        pi->m_pLifeMeter->Load(pi->GetPlayerState(), pi->GetPlayerStageStats());
-        pi->m_pLifeMeter->SetName(ssprintf("Life%s", pi->GetName().c_str()));
-        LOAD_ALL_COMMANDS_AND_SET_XY(pi->m_pLifeMeter);
-        this->AddChild(pi->m_pLifeMeter);
+          pi->m_pLifeMeter = LifeMeter::MakeLifeMeter(
+              pi->GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType);
+          pi->m_pLifeMeter->Load(
+              pi->GetPlayerState(), pi->GetPlayerStageStats());
+          pi->m_pLifeMeter->SetName(ssprintf("Life%s", pi->GetName().c_str()));
+          LOAD_ALL_COMMANDS_AND_SET_XY(pi->m_pLifeMeter);
+          this->AddChild(pi->m_pLifeMeter);
 
-        // HACK: When SHOW_LIFE_METER_FOR_DISABLED_PLAYERS is enabled,
-        // we don't want to have any life in the disabled player's life
-        // meter. I think this only happens with LifeMeterBars, but I'm
-        // not 100% sure of that. -freem
-        if (!GAMESTATE->IsPlayerEnabled(pi->m_pn) &&
-            SHOW_LIFE_METER_FOR_DISABLED_PLAYERS) {
-          if (pi->GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType ==
-              LifeType_Bar) {
-            static_cast<LifeMeterBar*>(pi->m_pLifeMeter)->ChangeLife(-1.0f);
+          // HACK: When SHOW_LIFE_METER_FOR_DISABLED_PLAYERS is enabled,
+          // we don't want to have any life in the disabled player's life
+          // meter. I think this only happens with LifeMeterBars, but I'm
+          // not 100% sure of that. -freem
+          if (!GAMESTATE->IsPlayerEnabled(pi->m_pn) &&
+              SHOW_LIFE_METER_FOR_DISABLED_PLAYERS) {
+            if (pi->GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType ==
+                LifeType_Bar) {
+              static_cast<LifeMeterBar*>(pi->m_pLifeMeter)->ChangeLife(-1.0f);
+            }
           }
         }
       }
@@ -868,7 +924,14 @@ void ScreenGameplay::Init() {
       pi.GetPlayerStageStats()->m_vpPossibleSteps = pi.m_vpStepsQueue;
     }
   }
+  if (bSharedSidesStyle) {
+    const PlayerNumber master = GAMESTATE->GetMasterPlayerNumber();
+    STATSMAN->m_CurStageStats.m_RoutinePlayer.m_vpPossibleSteps =
+        m_vPlayerInfo[master].m_vpStepsQueue;
+    STATSMAN->m_CurStageStats.m_RoutinePlayer.m_bJoined = true;
+  }
 
+  bool bLoadedRoutineSharedKeeper = false;
   FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi) {
     ASSERT(!pi->m_vpStepsQueue.empty());
     if (pi->GetPlayerStageStats()) {
@@ -879,6 +942,12 @@ void ScreenGameplay::Init() {
           m_apSongsQueue, pi->m_vpStepsQueue, pi->m_asModifiersQueue);
     }
     if (pi->m_pSecondaryScoreKeeper) {
+      if (pi->m_pSecondaryScoreKeeper == m_pRoutineSharedScoreKeeper) {
+        if (bLoadedRoutineSharedKeeper) {
+          continue;
+        }
+        bLoadedRoutineSharedKeeper = true;
+      }
       pi->m_pSecondaryScoreKeeper->Load(
           m_apSongsQueue, pi->m_vpStepsQueue, pi->m_asModifiersQueue);
     }
@@ -1020,6 +1089,21 @@ ScreenGameplay::~ScreenGameplay() {
 
   LOG->Trace("ScreenGameplay::~ScreenGameplay()");
 
+  const Style* pMasterStyle =
+      GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber());
+  const bool bSharedSidesStyle =
+      pMasterStyle != nullptr &&
+      pMasterStyle->m_StyleType == StyleType_TwoPlayersSharedSides;
+  if (bSharedSidesStyle) {
+    const PlayerNumber master = GAMESTATE->GetMasterPlayerNumber();
+    FOREACH_PlayerNumberInfo(m_vPlayerInfo, pi) {
+      if (pi->m_pn != master) {
+        pi->m_pLifeMeter = nullptr;
+        pi->m_pSecondaryScoreKeeper = nullptr;
+      }
+    }
+  }
+
   RageUtil::SafeDelete(m_pSongBackground);
   RageUtil::SafeDelete(m_pSongForeground);
 
@@ -1028,6 +1112,7 @@ ScreenGameplay::~ScreenGameplay() {
   }
 
   RageUtil::SafeDelete(m_pCombinedLifeMeter);
+  m_pRoutineSharedScoreKeeper = nullptr;
   if (m_pSoundMusic) {
     m_pSoundMusic->StopPlaying();
   }
@@ -1204,6 +1289,7 @@ void ScreenGameplay::LoadNextSong() {
   SetupSong(iPlaySongIndex);
 
   Song* pSong = GAMESTATE->m_pCurSong;
+  bool bSentRoutineSharedOnNextSong = false;
   FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi) {
     Steps* pSteps = GAMESTATE->m_pCurSteps[pi->GetStepsAndTrailIndex()];
     ++pi->GetPlayerStageStats()->m_iStepsPlayed;
@@ -1257,9 +1343,18 @@ void ScreenGameplay::LoadNextSong() {
           &pi->m_pPlayer->GetNoteData());
     }
     if (pi->m_pSecondaryScoreKeeper) {
-      pi->m_pSecondaryScoreKeeper->OnNextSong(
-          GAMESTATE->GetCourseSongIndex(), pSteps,
-          &pi->m_pPlayer->GetNoteData());
+      const bool bIsRoutineSharedKeeper =
+          pi->m_pSecondaryScoreKeeper == m_pRoutineSharedScoreKeeper;
+      const bool bShouldCallSecondary =
+          !bIsRoutineSharedKeeper || !bSentRoutineSharedOnNextSong;
+      if (bShouldCallSecondary) {
+        if (bIsRoutineSharedKeeper) {
+          bSentRoutineSharedOnNextSong = true;
+        }
+        pi->m_pSecondaryScoreKeeper->OnNextSong(
+            GAMESTATE->GetCourseSongIndex(), pSteps,
+            &pi->m_pPlayer->GetNoteData());
+      }
     }
 
     // Don't mess with the PlayerController of the Dummy player
@@ -1652,12 +1747,35 @@ void ScreenGameplay::BeginScreen() {
 }
 
 bool ScreenGameplay::AllAreFailing() {
+  const Style* pStyle =
+      GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber());
+  if (pStyle != nullptr &&
+      pStyle->m_StyleType == StyleType_TwoPlayersSharedSides) {
+    return m_pCombinedLifeMeter != nullptr && m_pCombinedLifeMeter->IsFailing();
+  }
+
   FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi) {
     if (pi->m_pLifeMeter && !pi->m_pLifeMeter->IsFailing()) {
       return false;
     }
   }
   return true;
+}
+
+bool ScreenGameplay::OneFailed() {
+  const Style* pStyle =
+      GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber());
+  if (pStyle != nullptr &&
+      pStyle->m_StyleType == StyleType_TwoPlayersSharedSides) {
+    return m_pCombinedLifeMeter != nullptr && m_pCombinedLifeMeter->IsFailing();
+  }
+
+  FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi) {
+    if (pi->m_pLifeMeter && pi->m_pLifeMeter->IsFailing()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void ScreenGameplay::GetMusicEndTiming(
@@ -1745,19 +1863,33 @@ void ScreenGameplay::Update(float fDeltaTime) {
   // m_Music.GetPositionSeconds() );
 
   m_AutoKeysounds.Update(fDeltaTime);
+  const Style* pStyle =
+      GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber());
+  const bool bSharedSides =
+      pStyle != nullptr &&
+      pStyle->m_StyleType == StyleType_TwoPlayersSharedSides;
 
   // update GameState HealthState
   FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi) {
+    bool bFailing = pi->m_pLifeMeter && pi->m_pLifeMeter->IsFailing();
+    bool bHot = pi->m_pLifeMeter && pi->m_pLifeMeter->IsHot();
+    bool bDanger = pi->m_pLifeMeter && pi->m_pLifeMeter->IsInDanger();
+    if (bSharedSides && m_pCombinedLifeMeter != nullptr) {
+      bFailing = m_pCombinedLifeMeter->IsFailing();
+      bHot = m_pCombinedLifeMeter->IsHot();
+      bDanger = m_pCombinedLifeMeter->IsInDanger();
+    }
+
     HealthState& hs = pi->GetPlayerState()->m_HealthState;
     HealthState OldHealthState = hs;
     if (GAMESTATE->GetPlayerFailType(pi->GetPlayerState()) != FailType_Off &&
-        pi->m_pLifeMeter && pi->m_pLifeMeter->IsFailing()) {
+        bFailing) {
       hs = HealthState_Dead;
-    } else if (pi->m_pLifeMeter && pi->m_pLifeMeter->IsHot()) {
+    } else if (bHot) {
       hs = HealthState_Hot;
     } else if (
         GAMESTATE->GetPlayerFailType(pi->GetPlayerState()) != FailType_Off &&
-        pi->m_pLifeMeter && pi->m_pLifeMeter->IsInDanger()) {
+        bDanger) {
       hs = HealthState_Danger;
     } else {
       hs = HealthState_Alive;
@@ -1789,6 +1921,26 @@ void ScreenGameplay::Update(float fDeltaTime) {
 
   switch (m_DancingState) {
     case STATE_DANCING: {
+      // If we're in TwoPlayerSharedSides, if one player fails, both fail.
+      if (bSharedSides) {
+        if (OneFailed()) {
+          FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi) {
+            PlayerNumber pn = pi->GetStepsAndTrailIndex();
+
+            FailType ft = GAMESTATE->GetPlayerFailType(pi->GetPlayerState());
+            LifeType lt =
+                pi->GetPlayerState()->m_PlayerOptions.GetStage().m_LifeType;
+            if (ft == FailType_Off || ft == FailType_EndOfSong) {
+              continue;
+            }
+            if (pi->GetPlayerStageStats()->m_bFailed) {
+              continue; /* failed and is already dead */
+            }
+            pi->GetPlayerStageStats()->m_bFailed = true;  // fail
+          }
+        }
+      }
+
       /* Set STATSMAN->m_CurStageStats.bFailed for failed players.  In,
        * FAIL_IMMEDIATE, send SM_BeginFailed if all players failed, and kill
        * dead Oni players. */
@@ -1802,17 +1954,25 @@ void ScreenGameplay::Update(float fDeltaTime) {
           continue;
         }
 
-        // check for individual fail
-        if (pi->m_pLifeMeter == nullptr || !pi->m_pLifeMeter->IsFailing()) {
-          continue; /* isn't failing */
+        if (bSharedSides) {
+          if (m_pCombinedLifeMeter != nullptr &&
+              !m_pCombinedLifeMeter->IsFailing()) {
+            continue; /* isn't failing */
+          }
+        } else {
+          // check for individual fail
+          if (pi->m_pLifeMeter == nullptr || !pi->m_pLifeMeter->IsFailing()) {
+            continue; /* isn't failing */
+          }
         }
+
         if (pi->GetPlayerStageStats()->m_bFailed) {
           continue; /* failed and is already dead */
         }
 
         LOG->Trace("Player %d failed", (int)pn);
         pi->GetPlayerStageStats()->m_bFailed = true;  // fail
-
+        pi->m_pLifeMeter->SetLife(0);
         {
           Message msg("PlayerFailed");
           msg.SetParam("PlayerNumber", pi->m_pn);
@@ -1842,9 +2002,16 @@ void ScreenGameplay::Update(float fDeltaTime) {
         FailType ft = GAMESTATE->GetPlayerFailType(pi->GetPlayerState());
         switch (ft) {
           case FailType_Immediate:
-            if (pi->m_pLifeMeter == nullptr ||
-                (pi->m_pLifeMeter && !pi->m_pLifeMeter->IsFailing())) {
-              bAllFailed = false;
+            if (bSharedSides) {
+              if (m_pCombinedLifeMeter != nullptr &&
+                  !m_pCombinedLifeMeter->IsFailing()) {
+                bAllFailed = false;
+              }
+            } else {
+              if (pi->m_pLifeMeter == nullptr ||
+                  (pi->m_pLifeMeter && !pi->m_pLifeMeter->IsFailing())) {
+                bAllFailed = false;
+              }
             }
             break;
           case FailType_ImmediateContinue:
@@ -2567,6 +2734,36 @@ bool ScreenGameplay::Input(const InputEventPlus& input) {
       }
       return true;
     }
+  }
+  // If we are in routine mode, two players share sides so a step could
+  // correspond to either P1 or P2, we don't really know Let's just send it to
+  // both players and let them decide what to do with it.
+  else if (
+      GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
+          ->m_StyleType == StyleType_TwoPlayersSharedSides) {
+    if (GAMESTATE->IsHumanPlayer(input.pn)) {
+      if (GamePreferences::m_AutoPlay == PC_HUMAN &&
+          GAMESTATE->m_pPlayerState[input.pn]
+                  ->m_PlayerOptions.GetCurrent()
+                  .m_fPlayerAutoPlay == 0) {
+        ASSERT(input.GameI.IsValid());
+
+        GameButtonType gbt =
+            GAMESTATE->m_pCurGame->GetPerButtonInfo(input.GameI.button)->m_gbt;
+        switch (gbt) {
+          case GameButtonType_Menu:
+            return false;
+          case GameButtonType_Step:
+            if (iCol != -1) {
+              m_vPlayerInfo[PLAYER_1].m_pPlayer->Step(
+                  iCol, -1, input.DeviceI.ts, false, bRelease);
+              m_vPlayerInfo[PLAYER_2].m_pPlayer->Step(
+                  iCol, -1, input.DeviceI.ts, false, bRelease);
+            }
+            return true;
+        }
+      }
+    }
   } else {
     // handle a step or battle item activate
     if (GAMESTATE->IsHumanPlayer(input.pn)) {
@@ -3208,6 +3405,9 @@ class LunaScreenGameplay : public Luna<ScreenGameplay> {
       return 0;
     }
     LifeMeter* pLM = pi->m_pLifeMeter;
+    if (pLM == nullptr && p->GetCombinedLifeMeter() != nullptr) {
+      pLM = p->GetCombinedLifeMeter()->GetInnerLifeMeter();
+    }
     if (pLM == nullptr) {
       return 0;
     }

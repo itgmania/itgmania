@@ -3,7 +3,6 @@
 
 #include <cstdio>
 
-#include "config.hpp"
 #include "stdafx.h"
 
 struct Surface {

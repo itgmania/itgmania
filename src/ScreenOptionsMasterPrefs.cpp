@@ -960,7 +960,7 @@ static void InitializeConfOptions() {
   g_ConfOptions.back().m_iEffects = OPT_APPLY_PROFILES;
   ADD(ConfOption(
       "ProfileSortOrder", MovePref<ProfileSortOrder>, "Priority", "Recent",
-      "Alphabetical"));
+      "Alphabetical", "CreationTime"));
   g_ConfOptions.back().m_sPrefName = "ProfileSortOrder";
   g_ConfOptions.back().m_iEffects = OPT_APPLY_PROFILES;
 

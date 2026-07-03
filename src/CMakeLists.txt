@@ -494,7 +494,7 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
     list(APPEND SMDATA_LINK_LIB ${X11_LIBRARIES})
   endif()
 
-  if(LIBXTST_FOUND)
+  if(Xtst_FOUND)
     list(APPEND SMDATA_LINK_LIB ${LIBXTST_LIBRARY})
   endif()
 

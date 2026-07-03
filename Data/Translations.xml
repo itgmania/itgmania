@@ -62,4 +62,8 @@ Delete the files in the "Cache" directory after making changes.
 		<!-- Add your translations here. -->
 		<Translation TitleFrom="((In The Groove)|(In the Groove))(.*)" TitleTo="ITG\${4}" />
 	</Groups>
+<Series>
+   <!-- Add your translations here. -->
+   <Translation TitleFrom="((In The Groove)|(In the Groove))(.*)" TitleTo="ITG\${4}" />
+</Series>
 </Translations>

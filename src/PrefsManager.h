@@ -106,6 +106,7 @@ enum ProfileSortOrder {
                                   // profile's Type.ini
   ProfileSortOrder_Recent,        // Sorts profiles by most recently used.
   ProfileSortOrder_Alphabetical,  // Sorts profiles alphabetically.
+  ProfileSortOrder_CreationTime,  // Sorts profiles by creation time.
   NUM_ProfileSortOrder,
   ProfileSortOrder_Invalid
 };

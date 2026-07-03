@@ -8,6 +8,7 @@
 
 #include "Actor.h"
 #include "ActorUtil.h"
+#include "CommonMetrics.h"
 #include "Game.h"
 #include "GameInput.h"
 #include "GameState.h"
@@ -303,6 +304,8 @@ void NoteSkinManager::GetNoteSkinNames(
 void NoteSkinManager::GetNoteSkinNames(
     const Game* pGame, std::vector<std::string>& AddTo, bool bIncludeVariants) {
   GetAllNoteSkinNamesForGame(pGame, AddTo, bIncludeVariants);
+  FilterNoteSkinsByStyle(
+      GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber()), AddTo);
 }
 
 void NoteSkinManager::GetVariantNamesForNoteSkin(
@@ -396,6 +399,68 @@ void NoteSkinManager::GetAllNoteSkinNamesForGame(
     GetDirListing(sBaseSkinFolder + "*", AddTo, true);
     StripCvsAndSvn(AddTo);
     StripMacResourceForks(AddTo);
+  }
+}
+
+void NoteSkinManager::FilterNoteSkinsByStyle(
+    const Style* pStyle, std::vector<std::string>& AddTo) {
+  if (pStyle == nullptr) {
+    return;
+  }
+  // If the styletype is TwoPlayersSharedSides then filter noteskins where the
+  // metric "TwoPlayersSharedSides" is not "true"
+  if (pStyle->m_StyleType == StyleType_TwoPlayersSharedSides) {
+    for (std::vector<std::string>::iterator iter = AddTo.begin();
+         iter != AddTo.end();) {
+      std::string sNoteSkinName = *iter;
+      MakeLower(sNoteSkinName);
+      std::map<std::string, NoteSkinData>::const_iterator it =
+          g_mapNameToData.find(sNoteSkinName);
+      ASSERT_M(
+          it != g_mapNameToData.end(),
+          sNoteSkinName);  // this NoteSkin doesn't exist!
+      const NoteSkinData& data = it->second;
+
+      std::string sIsRoutine;
+      if (!data.metrics.GetValue("Global", "IsRoutineNoteSkin", sIsRoutine)) {
+        // If the metric doesn't exist, then it's not a TwoPlayersSharedSides
+        // noteskin.
+        iter = AddTo.erase(iter);
+        continue;
+      }
+
+      if (sIsRoutine.empty() || sIsRoutine != "true") {
+        // If the metric exists but isn't "true", then it's not a
+        // TwoPlayersSharedSides noteskin.
+        iter = AddTo.erase(iter);
+        continue;
+      }
+      ++iter;
+    }
+  } else if (!CommonMetrics::AUTO_SET_STYLE) {
+    // First make sure we're in game
+    for (std::vector<std::string>::iterator iter = AddTo.begin();
+         iter != AddTo.end();) {
+      std::string sNoteSkinName = *iter;
+      MakeLower(sNoteSkinName);
+      std::map<std::string, NoteSkinData>::const_iterator it =
+          g_mapNameToData.find(sNoteSkinName);
+      ASSERT_M(
+          it != g_mapNameToData.end(),
+          sNoteSkinName);  // this NoteSkin doesn't exist!
+      const NoteSkinData& data = it->second;
+
+      std::string bIsRoutine;
+      if (data.metrics.GetValue("Global", "IsRoutineNoteSkin", bIsRoutine)) {
+        if (bIsRoutine == "true") {
+          // If the metric exists but isn't "true", then it's not a
+          // TwoPlayersSharedSides noteskin.
+          iter = AddTo.erase(iter);
+          continue;
+        }
+      }
+      ++iter;
+    }
   }
 }
 

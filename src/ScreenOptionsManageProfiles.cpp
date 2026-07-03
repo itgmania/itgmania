@@ -1,6 +1,7 @@
 #include "ScreenOptionsManageProfiles.h"
 
 #include <algorithm>
+#include <cctype>
 #include <string>
 #include <vector>
 
@@ -97,6 +98,25 @@ static bool ValidateLocalProfileName(
     return false;
   }
 
+  return true;
+}
+
+// Strip disallowed characters before they are appended to the profile name.
+static const std::string kProfileNameBlockedChars = "'\"";
+static bool ValidateAppendProfileName(
+    const std::string& /*sAnswerBeforeChar*/, std::string& sAppend) {
+  sAppend.erase(
+      std::remove_if(
+          sAppend.begin(), sAppend.end(),
+          [](unsigned char c) {
+            // Drop non-printables, non ascii, & explicitly blocked chars
+            return c < 0x20 || c > 0x7E ||
+                   kProfileNameBlockedChars.find(static_cast<char>(c)) !=
+                       std::string::npos;
+          }),
+      sAppend.end());
+  // Return true even if we stripped everything; an empty append is fine
+  // (ValidateAppend returning false would abort the whole input).
   return true;
 }
 
@@ -314,7 +334,8 @@ void ScreenOptionsManageProfiles::HandleScreenMessage(const ScreenMessage SM) {
         case ProfileAction_Rename: {
           ScreenTextEntry::TextEntry(
               SM_BackFromRename, ENTER_PROFILE_NAME, pProfile->m_sDisplayName,
-              PROFILE_MAX_DISPLAY_NAME_LENGTH, ValidateLocalProfileName);
+              PROFILE_MAX_DISPLAY_NAME_LENGTH, ValidateLocalProfileName,
+              nullptr, nullptr, false, ValidateAppendProfileName);
         } break;
         case ProfileAction_Delete: {
           std::string sTitle = pProfile->m_sDisplayName;
@@ -416,7 +437,8 @@ void ScreenOptionsManageProfiles::ProcessMenuStart(const InputEventPlus&) {
     }
     ScreenTextEntry::TextEntry(
         SM_BackFromEnterNameForNew, ENTER_PROFILE_NAME, sPotentialName,
-        PROFILE_MAX_DISPLAY_NAME_LENGTH, ValidateLocalProfileName);
+        PROFILE_MAX_DISPLAY_NAME_LENGTH, ValidateLocalProfileName, nullptr,
+        nullptr, false, ValidateAppendProfileName);
   } else if (row.GetRowType() == OptionRow::RowType_Exit) {
     SCREENMAN->PlayStartSound();
     this->BeginFadingOut();

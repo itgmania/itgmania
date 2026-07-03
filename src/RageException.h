@@ -3,7 +3,8 @@
 
 #include <string>
 
-#include "config.hpp"
+#include "Compiler.h"
+#include "Platform.h"
 
 /**
  * @brief Namespace for throwing fatal errors.

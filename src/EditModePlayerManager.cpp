@@ -9,8 +9,10 @@
 #include "GameplayAssist.h"
 #include "InputEventPlus.h"
 #include "InputFilter.h"
+#include "ModsGroup.h"
 #include "Player.h"
 #include "PlayerNumber.h"
+#include "PlayerOptions.h"
 #include "PlayerState.h"
 #include "RageUtil.h"
 #include "ScreenDimensions.h"
@@ -19,14 +21,6 @@
 
 void EditModePlayerManager::AddPlayers(const NoteData& note_data) {
   FOREACH_EnabledPlayer(pn) {
-    // In case of a routine chart, both players are actually seen as
-    // enabled. This isn't desired, since the playerState and inputs in
-    // routine charts eventually collapse down only to P1.
-    if ((GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
-             ->m_StyleType == StyleType_TwoPlayersSharedSides) &&
-        pn != PLAYER_1) {
-      continue;
-    }
     players_[pn] = std::make_shared<PlayerPlus>();
 
     PlayerPlus& player = *players_[pn];
@@ -40,6 +34,23 @@ void EditModePlayerManager::AddPlayers(const NoteData& note_data) {
     // the Player's actor frame to be unnamed.
     player->SetAlias("Player" + PlayerNumberToString(pn));
 
+    if ((GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
+             ->m_StyleType == StyleType_TwoPlayersSharedSides) &&
+        pn != PLAYER_1) {
+      // Ensure P2 has the same PlayerOptions (speed, mini, modifiers, etc)
+      // but ensure each player has their own noteskin.
+      const std::string preferred_noteskin =
+          GAMESTATE->m_pPlayerState[pn]
+              ->m_PlayerOptions.GetPreferred()
+              .m_sNoteSkin;
+      player->GetPlayerState()->m_PlayerOptions =
+          GAMESTATE->m_pPlayerState[PLAYER_1]->m_PlayerOptions;
+      if (!preferred_noteskin.empty()) {
+        PO_GROUP_ASSIGN(
+            player->GetPlayerState()->m_PlayerOptions, ModsLevel_Preferred,
+            m_sNoteSkin, preferred_noteskin);
+      }
+    }
     player->CacheAllUsedNoteSkins();
     GAMESTATE->m_pPlayerState[pn]->m_PlayerController = PC_HUMAN;
     player->SetY(SCREEN_CENTER_Y);
@@ -72,13 +83,6 @@ void EditModePlayerManager::ReloadNoteData(const NoteData& note_data) {
 }
 
 void EditModePlayerManager::SetVisible(bool visible) {
-  // If this is a routine chart, only set visibility of PLAYER_1.
-  if (GAMESTATE->GetCurrentStyle(PLAYER_1)->m_StyleType ==
-      StyleType::StyleType_TwoPlayersSharedSides) {
-    (*players_[PLAYER_1])->SetVisible(visible);
-    return;
-  }
-
   for (auto& player : players_) {
     (*player.second)->SetVisible(visible);
   }
@@ -88,11 +92,6 @@ bool EditModePlayerManager::HandleGameplayInput(
     const InputEventPlus& input, const GameButtonType& gbt) {
   PlayerNumber pn = input.pn;
 
-  // Redirect Player2's inputs to P1's notefield in case of Routine charts.
-  if (GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
-          ->m_StyleType == StyleType_TwoPlayersSharedSides) {
-    pn = PLAYER_1;
-  }
   if (gbt == GameButtonType_Step && GAMESTATE->IsPlayerEnabled(pn)) {
     if (GAMESTATE->m_pPlayerState[pn]->m_PlayerController == PC_AUTOPLAY) {
       return false;
@@ -100,8 +99,20 @@ bool EditModePlayerManager::HandleGameplayInput(
     const int iCol =
         GAMESTATE->GetCurrentStyle(pn)->GameInputToColumn(input.GameI);
     if (iCol != -1) {
-      (*players_[pn])
-          ->Step(iCol, -1, input.DeviceI.ts, false, input.type == IET_RELEASE);
+      // Pass inputs for both players to Player 1 in routine style.
+      if (GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber())
+              ->m_StyleType == StyleType_TwoPlayersSharedSides) {
+        (*players_[PLAYER_1])
+            ->Step(
+                iCol, -1, input.DeviceI.ts, false, input.type == IET_RELEASE);
+        (*players_[PLAYER_2])
+            ->Step(
+                iCol, -1, input.DeviceI.ts, false, input.type == IET_RELEASE);
+      } else {
+        (*players_[pn])
+            ->Step(
+                iCol, -1, input.DeviceI.ts, false, input.type == IET_RELEASE);
+      }
     }
     return true;
   }

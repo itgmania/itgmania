@@ -101,6 +101,7 @@ class SongManager {
   bool IsGroupNeverCached(const std::string& group) const;
 
   std::string GetSongGroupBannerPath(std::string sSongGroup) const;
+  std::string GetSeriesBannerPath(std::string sSeriesName) const;
   // std::string GetSongGroupBackgroundPath( std::string sSongGroup ) const;
   void GetSongGroupNames(std::vector<std::string>& AddTo) const;
   bool DoesSongGroupExist(std::string sSongGroup) const;
@@ -119,6 +120,7 @@ class SongManager {
   void ResetGroupColors();
 
   static std::string ShortenGroupName(std::string sLongGroupName);
+  static std::string ShortenSeriesName(std::string sLongSeriesName);
 
   // Lookup
   /**
@@ -162,8 +164,13 @@ class SongManager {
   std::unordered_map<std::string, Group*> GetGroupGroupMap() const {
     return m_mapNameToGroup;
   };
-  std::map<std::string, std::unordered_set<Group*>> GetSeriesGroupMap() const {
-    return m_mapSeriesToGroups;
+  struct Series {
+    std::string sName;
+    std::unordered_set<Group*> groups;
+    std::string sBannerPath;
+  };
+  std::map<std::string, Series> GetSeriesGroupMap() const {
+    return m_mapNameToSeries;
   };
   Group* GetGroupFromName(const std::string& sGroupName) const;
   Group* GetGroup(const Song* pSong) const;
@@ -291,7 +298,8 @@ class SongManager {
   std::unordered_map<std::string, Group*>
       m_mapNameToGroup;  // maps a group's name on disk (folder) to a Group
                          // object
-  std::map<std::string, std::unordered_set<Group*>> m_mapSeriesToGroups;
+  // maps a series name to Series object
+  std::map<std::string, Series> m_mapNameToSeries;
 
   struct Comp {
     bool operator()(const std::string& s, const std::string& t) const {

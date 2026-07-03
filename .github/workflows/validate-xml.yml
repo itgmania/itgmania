@@ -15,7 +15,7 @@ jobs:
     name: Validate Lua.xml, LuaDocumentation.xml
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y libxml2-utils
       - name: Validate Lua.xml

@@ -2,11 +2,14 @@
 
 #include <vector>
 
+#include "GameConstantsAndTypes.h"
 #include "GameState.h"
 #include "NoteData.h"
+#include "NoteDataUtil.h"
 #include "NoteTypes.h"
 
-void ColumnCue::CalculateColumnCues(
+namespace {
+void CalculateColumnCuesOnePlayer(
     const NoteData& in, TimingData* timing, std::vector<ColumnCue>& out,
     float minDuration) {
   NoteData::all_tracks_const_iterator curr_note =
@@ -14,7 +17,7 @@ void ColumnCue::CalculateColumnCues(
   int curr_row = -1;
 
   std::vector<ColumnCue> allColumnCues;
-  ColumnCue currentCue = ColumnCue();
+  ColumnCue currentCue;
 
   while (!curr_note.IsAtEnd()) {
     if (curr_note.Row() != curr_row) {
@@ -31,8 +34,7 @@ void ColumnCue::CalculateColumnCues(
         curr_note->type == TapNoteType_HoldHead ||
         curr_note->type == TapNoteType_Mine ||
         curr_note->type == TapNoteType_Lift) {
-      currentCue.columns.push_back(
-          ColumnCueColumn(curr_note.Track() + 1, curr_note->type));
+      currentCue.columns.emplace_back(curr_note.Track() + 1, curr_note->type);
     }
 
     ++curr_note;
@@ -44,16 +46,25 @@ void ColumnCue::CalculateColumnCues(
   }
 
   float previousCueTime = 0;
-  std::vector<ColumnCue> columnCues;
+  out.clear();
   for (ColumnCue columnCue : allColumnCues) {
     float duration = columnCue.startTime - previousCueTime;
     if (duration > minDuration || previousCueTime == 0) {
-      columnCues.push_back(
-          ColumnCue(previousCueTime, duration, columnCue.columns));
+      out.emplace_back(previousCueTime, duration, columnCue.columns);
     }
     previousCueTime = columnCue.startTime;
   }
+}
+}  // namespace
 
-  out.clear();
-  out.assign(columnCues.begin(), columnCues.end());
+void ColumnCue::CalculateColumnCues(
+    const NoteData& in, TimingData* timing, std::vector<ColumnCue>& out,
+    PlayerNumber pn, float minDuration, StepsType stepsType) {
+  std::vector<NoteData> splitNoteData;
+  if (NoteDataUtil::SplitCompositeOrStackedNoteData(
+          in, splitNoteData, stepsType)) {
+    CalculateColumnCuesOnePlayer(splitNoteData[pn], timing, out, minDuration);
+  } else {
+    CalculateColumnCuesOnePlayer(in, timing, out, minDuration);
+  }
 }

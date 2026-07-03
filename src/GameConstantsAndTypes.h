@@ -183,6 +183,7 @@ enum SortOrder {
   SORT_RECENT,
   SORT_RECENT_P1, /**< Sort by the most recent play for P1. */
   SORT_RECENT_P2, /**< Sort by the most recent play for P2. */
+  SORT_SERIES,    /**< Sort by the series the Songs are in. */
   NUM_SortOrder,
   SortOrder_Invalid
 };
