@@ -1,113 +1,127 @@
-# Instructions
+Most users will find everything they need in these instructions.
 
-Most users will find everything they need in this README. There are differences in the build process for ITGmania as compared to Stepmania, so it is recommended to stick with these ITGmania instructions. For anything not covered in this guide, you can usually refer to the original Stepmania documents [here](https://github.com/stepmania/stepmania/wiki/Compiling-StepMania), as long as you replace references to Stepmania with ITGmania.
+There are differences in the build process for ITGmania as compared to Stepmania, so it is recommended to stick with these instructions.
 
-## Continuous Integration
-Pushes to the `beta` branch of the repository are built with a [GitHub Actions workflow](https://github.com/itgmania/itgmania/actions/workflows/release.yml), in which "nightly releases" are compiled for a matrix of operating systems and architectures. Full releases are built on pushses to the `release` branch.
+For anything not covered in this guide, you can usually refer to the original Stepmania documents [here](https://github.com/stepmania/stepmania/wiki/Compiling-StepMania), as long as you replace references to Stepmania with ITGmania.
 
-By default, GitHub stores build artifacts for 90 days. People who are signed into GitHub and have read access to a repository can download workflow artifacts. They can be downloaded from the Artifacts section of the Summary page on an execution of the workflow.
+# Prerequisites
 
-## Local Development
+## Compiler
 
-#### Warning
+The default compiler for each OS is as follows:
 
-Using CMake is considered stable, but not every single combination is known to work.
-Using the defaults as suggested should cause minimal problems.
+ - Windows: Visual Studio 2022/2026
+   - VS 2022 is required to build with Windows 7 compatibility 
+   - Installation of all components is handled via the Visual Studio Installer
+ - macOS: Xcode
+   - A minimal command-line only version of Xcode can be installed by running `xcode-select --install`.
+   - The full GUI version of Xcode can also be used, but you have to manually specify the Xcode generator.
+ - *nix: GNU GCC
+   - Clang also works well. 
+   
+## Git
 
-### Init Submodules
+git is needed to clone the repository as well as prepare the submodules.
 
-Make sure you initialize the submodules after cloning the repository. This is required.
+For *nix users, usually you would just install the `git` package with your package manager.
+
+macOS users can use Homebrew to install git, or use [GitHub Desktop](https://desktop.github.com/download/).
+
+Windows users can use [Git for Windows](https://git-scm.com/install/windows), or use [GitHub Desktop](https://desktop.github.com/download/).
+   
+## CMake
+
+The common way of installing CMake is to use your OS's package manager, or for a GUI version, to go to [CMake's download page](http://www.cmake.org/download/). 
+
+The minimum required version of CMake is currently **CMake 3.20**.
+
+### Windows
+
+A GUI CMake installer is available from the CMake download page linked above.
+
+For those that prefer package manager systems, [Chocolatey](https://chocolatey.org/) has a CMake package. Run `choco install cmake` to get the latest stable version.
+
+### macOS
+
+Both [Homebrew](http://brew.sh/) and [MacPorts](https://www.macports.org/) offer CMake as part of their offerings. Run `brew install cmake` or `port install cmake` respectively to get the latest stable version.
+
+### Linux
+
+The package is usually just called `cmake` via your distribution's package manager.
+
+Note that the Linux build depends on certain libraries on your system which would also be provided by your distribution. You can find those listed [here](https://github.com/itgmania/itgmania/discussions/403).
+
+## ccache
+
+ccache is optional, but supported. If you are rebuilding the game frequently, this can save a lot of time. You'll need to pass the `-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache` flags to CMake.
+
+# Local Development
+
+## Warning
+
+Using CMake is considered stable, but not every single combination is tested frequently.
+Using the default options as suggested should cause minimal (if any) problems.
+
+## Preparing Submodules
+
+Make sure you initialize the submodules after cloning the repository. This is required. If you use GitHub Desktop, this should be done automatically upon cloning the ITGmania repository.
 
 ```sh
-git clone --depth=1 https://github.com/itgmania/itgmania.git
+git clone https://github.com/itgmania/itgmania.git
 cd itgmania
 git submodule update --init --recursive
 ```
 
-After that, you can follow the cmake instructions below to create the build.
+After that, you can follow the CMake instructions below to create the build.
 
-### Install CMake
+## CMake Usage
 
-At first, you have to install CMake.
+There are two ways of working with CMake: the command line and the GUI.
 
-#### All OSes
-
-The common way of installing CMake is to go to [CMake's download page](http://www.cmake.org/download/). At this time of writing, the latest version is 3.23.2. The minimum version supported at this time is 3.20.
-
-If this approach is used, consider using the binary distributions. Most should also provide a friendly GUI interface.
-
-#### Windows
-
-For those that prefer package manager systems, [Chocolatey](https://chocolatey.org/) has a CMake package. Run `choco install cmake` to get the latest stable version.
-
-#### macOS Specific
-
-For those that prefer package manager systems, both [Homebrew](http://brew.sh/) and [MacPorts](https://www.macports.org/) offer CMake as part of their offerings. Run `brew install cmake` or `port install cmake` respectively to get the latest stable version.
-
-#### Linux
-
-There are many package managers available for Linux. Look at your manual for more details. Either that, or utilize the All OS specific approach.
-
-### CMake Usage
-
-There are two ways of working with cmake: the command line and the GUI.
-
-#### CMake Command Line
+### CMake Command Line
 
 If you are unfamiliar with cmake, first run `cmake --help`. This will present a list of options and generators.
 The generators are used for setting up your project.
 
 The following steps will assume you operate from the ITGmania project's Build directory.
 
-For the first setup, you will want to run this command:
+For the first setup, enter the `itgmania` directory, and run the following command:
 
-`cmake -G {YourGeneratorHere} .. && cmake ..`
+`cmake -S . -B build`
 
-Replace {YourGeneratorHere} with one of the generator choices from `cmake --help`.
+You can apply other build flags at this time.
 
-If you are building on Windows and expecting your final executable to be able to run on Windows XP, append an additional parameter `-T "v140_xp"` (or `-T "v120_xp"`, depending on which version of Visual Studio you have installed) to your command line.
+### CMake GUI
 
-If any cmake project file changes, you can just run `cmake .. && cmake ..` to get up to date.
-If this by itself doesn't work, you may have to clean the cmake cache.
-Use `rm -rf CMakeCache.txt CMakeScripts/ CMakeFiles/ cmake_install.txt` to do that, and then run the generator command again as specified above.
+Press the "Browse Source..." button and choose the itgmania directory you just cloned using `git`.
 
-The reason for running cmake at least twice is to make sure that all of the variables get set up appropriately.
+Inside the itgmania directory, create a directory called `build`. Press the "Browse Build..." button and choose that `build` directory you just created. 
 
-Environment variables can be modified at this stage. If you want to pass `-ggdb` or any other flag that is not set up by default,
-utilize `CXXFLAGS` or any appropriate variable.
+Upon setting the source and build directories, you should press the `Configure` button.
 
-#### CMake GUI
+If no errors show up, you can then press the `Generate` button.
 
-For those that use the GUI to work with cmake, you need to specify where the source code is and where the binaries will be built.
-The first one, counter-intuitively, is actually the parent directory of this one: the main ITGmania directory.
-The second one for building can be this directory.
+If the cmake project file changes, you can just re-generate the build to get up to date.
 
-Upon setting the source and build directories, you should `Configure` the build.
-If no errors show up, you can hit `Generate` until none of the rows on the GUI are red.
-
-If the cmake project file changes, you can just generate the build to get up to date.
-If this by itself doesn't work, you may have to clean the cmake cache.
+If this by itself doesn't work, you may have to clean the CMake cache.
 Go to File -> Delete Cache, and then run the `Configure` and `Generate` steps again.
 
-### Release vs Debug
+## Release vs Debug
 
-If you are generating makefiles with cmake, you will also need to specify your build type.
-Most users will want to use `RELEASE` while some developers may want to use `DEBUG`.
+Without any special options provided in the CMake configuration stage, you will generate a Release build.
 
 When generating your cmake files for the first time (or after any cache delete),
-pass in `-DCMAKE_BUILD_TYPE=Debug` for a debug build. We have `RelWithDbgInfo` and `MinSizeRel` builds available as well.
+pass in `-DCMAKE_BUILD_TYPE=Debug` for a debug build.
 
-It is advised to clean your cmake cache if you switch build types.
+We have `RelWithDbgInfo` and `MinSizeRel` builds available as well.
 
-Note that if you use an IDE like Visual Studio or Xcode, you do not need to worry about setting the build type.
-You can edit the build type directly in the IDE.
+It is advised to clean your CMake cache if you switch build types.
 
-### Compiling ITGmania
+Note that if you use an IDE like Visual Studio or Xcode, you do not need to worry about setting the build type - you can edit the build type directly in the IDE.
 
-To use ITGmania on your computer, it is first assumed that **CMake** is run (see README.md for more information).
-Then, follow the guide based on your operating system.
+# Compiling ITGmania
 
-#### Windows
+## Windows
 
 Everything needed for building on Windows is available via the Visual Studio Installer:
 - The "Desktop development with C++" workload (which includes MSVC, C++ ATL, C++ MFC, C++ modules, C++/CLI support),
@@ -124,41 +138,31 @@ Confirm the installation. Once everything is installed, you can open **StepMania
 
 ![image](https://github.com/user-attachments/assets/f9235e14-bfc8-4f8f-8b30-9706dfb3bcc6)
 
-#### macOS
+## macOS
 
-For macOS, you can either install the full Xcode package or the Xcode Command Line Tools by itself. If you install Xcode from the App Store, it will install everything needed.
-
-When compiling for macOS, the build command differs depending on whether you are compiling for Intel (`x86_64`) or Apple Silicon (`arm64`). From the `itgmania` directory (not `src`), run:
-
-- Apple Silicon: `cmake -B build -DCMAKE_OSX_ARCHITECTURES=arm64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"`
-- Intel: `cmake -B build -DCMAKE_OSX_ARCHITECTURES=x86_64 -DWITH_FFMPEG_JOBS="$(sysctl -n hw.logicalcpu)"`
+Your architecture will be automatically detected, but to specify which platform you are building for, you can append the `CMAKE_OSX_ARCHITECTURES` flag with either `arm64` or `x86_64` as options.
 
 Afterwards, run `cmake --build build --parallel "$(sysctl -n hw.logicalcpu)"`. After this step is done, the newly built ITGmania.app will be in your `itgmania` directory.
 
-#### Linux
+## Linux
 
-From the `itgmania` directory (not `src`), run `cmake -B build` followed by `sudo make install`. The `itgmania` executable will be in the same directory you are in, so you can type `./itgmania` to run the game.
+From the `itgmania` directory (not `src`), run `cmake --build build --parallel $(nproc)`. The `itgmania` executable will be in the same directory you are in, so you can type `./itgmania` to run the game.
 
-### Installing ITGmania
+# Installing ITGmania
 
 Installing in this context refers to placing the folders and generated binary in a standard location based on your operating system.
 This guide assumes default install locations.
 If you want to change the initial location, pass in `-DCMAKE_INSTALL_PREFIX=/new/path/here` when configuring your local setup.
 
-#### Windows
+## Windows
 
-The default installation directory is `C:\Games\ITGmania`.
+With the instructions as described, an installer won't be generated. The generated exe will be in the `Program` folder within your cloned `itgmania` directory. You need to invoke CPack and have [NSIS](https://nsis.sourceforge.io/Download) installed to create an installer.
 
-#### macOS
+## macOS
 
 The `ITGmania.app` package can be copied to `/Applications` and it will work as expected.
 
-#### Linux
+## Linux
 
 After installing, run `sudo make install`. The files will be placed in the location specified:
 by default, that is now `/usr/local/itgmania`.
-
-### Last Words
-
-With that, you should be good to go.
-If there are still questions, view the resources on the parent directory's README.md file.
