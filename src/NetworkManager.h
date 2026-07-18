@@ -104,6 +104,7 @@ struct WebSocketArgs {
   int handshakeTimeout = -1;
   int pingInterval = -1;
   bool automaticReconnect = true;
+  bool enableDeflate = true;
   std::function<void(const ix::WebSocketMessage& response)> onMessage;
   std::function<void()> onClose;
 };

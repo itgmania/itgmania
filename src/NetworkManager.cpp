@@ -385,6 +385,13 @@ WebSocketHandlePtr NetworkManager::WebSocket(const WebSocketArgs& args) {
 
   handle->webSocket.setUrl(args.url);
   handle->webSocket.setTLSOptions(this->tlsOptions);
+
+  if (args.enableDeflate) {
+    handle->webSocket.enablePerMessageDeflate();
+  } else {
+    handle->webSocket.disablePerMessageDeflate();
+  }
+
   handle->webSocket.setOnMessageCallback(
       [onMessage = args.onMessage](const ix::WebSocketMessagePtr& msg) {
         if (onMessage) {
@@ -828,6 +835,17 @@ class LunaNetworkManager : public Luna<NetworkManager> {
         args.automaticReconnect = lua_toboolean(L, -1);
       } else {
         luaL_error(L, "automaticReconnect must be a boolean");
+      }
+    }
+    lua_pop(L, 1);
+
+    args.enableDeflate = true;
+    lua_getfield(L, 1, "enableDeflate");
+    if (!lua_isnil(L, -1)) {
+      if (lua_isboolean(L, -1)) {
+        args.enableDeflate = lua_toboolean(L, -1);
+      } else {
+        luaL_error(L, "enableDeflate must be a boolean");
       }
     }
     lua_pop(L, 1);
