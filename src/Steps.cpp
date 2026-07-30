@@ -134,7 +134,6 @@ Steps::Steps(Song* song)
       m_sFilename(""),
       m_bSavedToDisk(false),
       m_LoadedFromProfile(ProfileSlot_Invalid),
-      m_iHash(0),
       m_sDescription(""),
       m_sChartStyle(""),
       m_Difficulty(Difficulty_Invalid),
@@ -161,24 +160,6 @@ void Steps::GetDisplayBpms(DisplayBpms& AddTo) const {
 }
 
 bool Steps::HasAttacks() const { return !this->m_Attacks.empty(); }
-
-unsigned Steps::GetHash() const {
-  if (parent) {
-    return parent->GetHash();
-  }
-  if (m_iHash) {
-    return m_iHash;
-  }
-  if (m_sNoteDataCompressed.empty()) {
-    if (!m_bNoteDataIsFilled) {
-      return 0;  // No data, no hash.
-    }
-    NoteDataUtil::GetSMNoteDataString(
-        *m_pNoteData, m_sNoteDataCompressed, /*bIncludeMeasureComments=*/true);
-  }
-  m_iHash = GetHashForString(m_sNoteDataCompressed);
-  return m_iHash;
-}
 
 bool Steps::IsNoteDataEmpty() const {
   return this->m_sNoteDataCompressed.empty();
@@ -244,7 +225,6 @@ void Steps::SetNoteData(const NoteData& noteDataNew) {
   m_bNoteDataIsFilled = true;
 
   m_sNoteDataCompressed = std::string();
-  m_iHash = 0;
 }
 
 void Steps::GetNoteData(NoteData& noteDataOut) const {
@@ -269,7 +249,6 @@ void Steps::SetSMNoteData(const std::string& notes_comp_) {
   m_bNoteDataIsFilled = false;
 
   m_sNoteDataCompressed = notes_comp_;
-  m_iHash = 0;
 }
 
 /* XXX: this function should pull data from m_sFilename, like Decompress() */
@@ -1095,10 +1074,6 @@ class LunaSteps : public Luna<Steps> {
     p->GetTimingData()->PushSelf(L);
     return 1;
   }
-  static int GetHash(T* p, lua_State* L) {
-    lua_pushnumber(L, p->GetHash());
-    return 1;
-  }
   // untested
   /*
   static int GetSMNoteData( T* p, lua_State *L )
@@ -1250,7 +1225,6 @@ class LunaSteps : public Luna<Steps> {
     ADD_METHOD(GetDescription);
     ADD_METHOD(GetDifficulty);
     ADD_METHOD(GetFilename);
-    ADD_METHOD(GetHash);
     ADD_METHOD(GetMeter);
     ADD_METHOD(HasSignificantTimingChanges);
     ADD_METHOD(HasAttacks);

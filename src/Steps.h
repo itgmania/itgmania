@@ -185,7 +185,6 @@ class Steps {
   void SetGrooveStatsHashVersion(int version);
   float PredictMeter() const;
 
-  unsigned GetHash() const;
   void GetNoteData(NoteData& noteDataOut) const;
   NoteData GetNoteData() const;
   void SetNoteData(const NoteData& noteDataNew);
@@ -319,8 +318,6 @@ class Steps {
   ProfileSlot m_LoadedFromProfile;
 
   /* These values are pulled from the autogen source first, if there is one. */
-  /** @brief The hash of the steps. This is used only for Edit Steps. */
-  mutable unsigned m_iHash;
   /** @brief The name of the edit, or some other useful description.
    This used to also contain the step author's name. */
   std::string m_sDescription;

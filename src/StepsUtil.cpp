@@ -293,17 +293,10 @@ void StepsID::FromSteps(const Steps* p) {
     st = StepsType_Invalid;
     dc = Difficulty_Invalid;
     sDescription = "";
-    uHash = 0;
   } else {
     st = p->m_StepsType;
     dc = p->GetDifficulty();
-    if (dc == Difficulty_Edit) {
-      sDescription = p->GetDescription();
-      uHash = p->GetHash();
-    } else {
-      sDescription = "";
-      uHash = 0;
-    }
+    sDescription = (dc == Difficulty_Edit) ? p->GetDescription() : "";
   }
 }
 
@@ -327,10 +320,9 @@ Steps* StepsID::ToSteps(const Song* p, bool bAllowNull) const {
 
   Steps* pRet = nullptr;
   if (dc == Difficulty_Edit) {
-    pRet =
-        SongUtil::GetOneSteps(p, st, dc, -1, -1, sDescription, "", uHash, true);
+    pRet = SongUtil::GetOneSteps(p, st, dc, -1, -1, sDescription, "", true);
   } else {
-    pRet = SongUtil::GetOneSteps(p, st, dc, -1, -1, "", "", 0, true);
+    pRet = SongUtil::GetOneSteps(p, st, dc, -1, -1, "", "", true);
   }
 
   if (!bAllowNull && pRet == nullptr) {
@@ -347,7 +339,6 @@ XNode* StepsID::CreateNode() const {
   pNode->AppendAttr("Difficulty", DifficultyToString(dc));
   if (dc == Difficulty_Edit) {
     pNode->AppendAttr("Description", sDescription);
-    pNode->AppendAttr("Hash", uHash);
   }
 
   return pNode;
@@ -366,10 +357,8 @@ void StepsID::LoadFromNode(const XNode* pNode) {
 
   if (dc == Difficulty_Edit) {
     pNode->GetAttrValue("Description", sDescription);
-    pNode->GetAttrValue("Hash", uHash);
   } else {
     sDescription = "";
-    uHash = 0;
   }
 }
 
@@ -378,7 +367,6 @@ std::string StepsID::ToString() const {
   s += " " + DifficultyToString(dc);
   if (dc == Difficulty_Edit) {
     s += " " + sDescription;
-    s += ssprintf(" %u", uHash);
   }
   return s;
 }
@@ -394,10 +382,6 @@ bool StepsID::operator<(const StepsID& rhs) const {
   COMP(st);
   COMP(dc);
   COMP(sDescription);
-  // See explanation in class declaration. -Kyz
-  if (uHash != 0 && rhs.uHash != 0) {
-    COMP(uHash);
-  }
 #undef COMP
   return false;
 }
@@ -408,10 +392,6 @@ bool StepsID::operator==(const StepsID& rhs) const {
   COMP(st);
   COMP(dc);
   COMP(sDescription);
-  // See explanation in class declaration. -Kyz
-  if (uHash != 0 && rhs.uHash != 0) {
-    COMP(uHash);
-  }
 #undef COMP
   return true;
 }

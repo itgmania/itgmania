@@ -336,9 +336,7 @@ void StatsManager::SavePadmissScore(const StageStats* pSS, PlayerNumber pn) {
 
   Steps* steps = playerStats->m_vpPossibleSteps[0];  // XXX Courses and such
   Song* song = steps->m_pSong;
-  steps->Decompress();  // Hashing won't work unless the steps are decompressed
   XNode* stepdata = xml->AppendChild("Steps");
-  stepdata->AppendChild("Hash", steps->GetHash());
   stepdata->AppendChild("Meter", steps->GetMeter());
   stepdata->AppendChild("StepArtist", steps->GetCredit());
   stepdata->AppendChild("StepsType", steps->m_StepsTypeStr);

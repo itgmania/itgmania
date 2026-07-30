@@ -133,7 +133,6 @@ static void Deserialize(Steps& o, const Json::Value& root) {
   NoteData nd;
   Deserialize(o.m_StepsType, nd, root["NoteData"]);
   o.SetNoteData(nd);
-  // o.SetHash( root["Hash"].asInt() );
   o.SetDescription(root["Description"].asString());
   o.SetDifficulty(StringToDifficulty(root["Difficulty"].asString()));
   o.SetMeter(root["Meter"].asInt());

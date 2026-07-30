@@ -1950,7 +1950,7 @@ bool Song::IsEditAlreadyLoaded(Steps* pSteps) const {
     Steps* pOther = m_vpSteps[i];
     if (pOther->GetDifficulty() == Difficulty_Edit &&
         pOther->m_StepsType == pSteps->m_StepsType &&
-        pOther->GetHash() == pSteps->GetHash()) {
+        pOther->GetDescription() == pSteps->GetDescription()) {
       return true;
     }
   }

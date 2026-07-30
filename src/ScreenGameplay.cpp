@@ -3332,9 +3332,6 @@ void ScreenGameplay::SaveReplay() {
       StepsID stepsID;
       stepsID.FromSteps(GAMESTATE->m_pCurSteps[pn]);
       XNode* pStepsInfoNode = stepsID.CreateNode();
-      // hashing = argh
-      // pStepsInfoNode->AppendChild("StepsHash",
-      // stepsID.ToSteps(GAMESTATE->m_pCurSong,false)->GetHash());
       p->AppendChild(pStepsInfoNode);
 
       // player information node (rival data sup)
