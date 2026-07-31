@@ -922,9 +922,14 @@ void MusicWheel::BuildWheelItemDatas(
                 LOG->Warn("Song %s has no group!", pSong->GetSongDir().c_str());
                 continue;
               }
-              const std::string& seriesName = pGroup->GetSeries();
               const std::string groupName = pGroup->GetGroupName();
-
+              int numGroupsInSeries = SONGMAN->GetGroupsInSeries(pGroup->GetSeries()).size();
+              std::string seriesName;
+              if (numGroupsInSeries > 1) {
+                seriesName = pGroup->GetSeries();
+              } else {
+                seriesName = "";
+              }
               // New ParentSection for each new series.
               if (!seriesName.empty() &&
                   (!haveLast || seriesName != lastSeries)) {
