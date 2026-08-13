@@ -18,7 +18,7 @@ LightsDriver_brokeio::LightsDriver_brokeio()
 
 LightsDriver_brokeio::~LightsDriver_brokeio() {}
 
-void LightsDriver_brokeio::Set(const LightsState *ls) {
+void LightsDriver_brokeio::Set(const LightsState* ls) {
   if (!dev.FoundOnce()) {
     return;
   }
@@ -42,7 +42,7 @@ void LightsDriver_brokeio::Set(const LightsState *ls) {
   outputBuffer[BROKEIO_COIN_PULSE] = ls->m_bCoinCounter ? 0xFF : 0x00;
 
   // check to see which game we are running as it can change during gameplay.
-  const InputScheme *pInput = &GAMESTATE->GetCurrentGame()->m_InputScheme;
+  const InputScheme* pInput = &GAMESTATE->GetCurrentGame()->m_InputScheme;
   std::string sInputName = pInput->m_szName;
 
   if (EqualsNoCase(sInputName, "dance")) {
@@ -107,7 +107,7 @@ void LightsDriver_brokeio::Set(const LightsState *ls) {
 
   // only write to BrokeIO when lights change.
   if (memcmp(outputBuffer, prevOutputBuffer, sizeof(outputBuffer)) != 0) {
-    dev.Write((unsigned char *)&outputBuffer, BROKEIO_HID_LIGHTS_REPORT_SIZE);
+    dev.Write((unsigned char*)&outputBuffer, BROKEIO_HID_LIGHTS_REPORT_SIZE);
     memcpy(prevOutputBuffer, outputBuffer, sizeof(prevOutputBuffer));
   }
 }

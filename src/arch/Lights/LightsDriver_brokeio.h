@@ -64,20 +64,21 @@ enum BrokeIOReportIndex {
   BROKEIO_REPORT_MAX
 };
 
-static_assert(BROKEIO_REPORT_MAX == BROKEIO_HID_LIGHTS_REPORT_SIZE,
-              "Incorrect BrokeIOReportIndex");
+static_assert(
+    BROKEIO_REPORT_MAX == BROKEIO_HID_LIGHTS_REPORT_SIZE,
+    "Incorrect BrokeIOReportIndex");
 
 class LightsDriver_brokeio : public LightsDriver {
-private:
+ private:
   HidDevice dev;
   uint8_t outputBuffer[BROKEIO_REPORT_MAX];
   uint8_t prevOutputBuffer[BROKEIO_REPORT_MAX];
 
-public:
+ public:
   LightsDriver_brokeio();
   virtual ~LightsDriver_brokeio();
 
-  virtual void Set(const LightsState *ls);
+  virtual void Set(const LightsState* ls);
 };
 
 #endif
