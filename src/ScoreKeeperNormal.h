@@ -36,6 +36,7 @@ class ScoreKeeperNormal : public ScoreKeeper {
   int m_next_toasty_at;
   bool m_bIsLastSongInCourse;
   bool m_bIsBeginner;
+  bool m_bMercifulBeginnerInEffect;
 
   int m_iNumNotesHitThisRow;  // Used by Custom Scoring only
 
@@ -101,10 +102,14 @@ class ScoreKeeperNormal : public ScoreKeeper {
   int HoldNoteScoreToDancePoints(HoldNoteScore hns) const;
   int TapNoteScoreToGradePoints(TapNoteScore tns) const;
   int HoldNoteScoreToGradePoints(HoldNoteScore hns) const;
-  static int TapNoteScoreToDancePoints(TapNoteScore tns, bool bBeginner);
-  static int HoldNoteScoreToDancePoints(HoldNoteScore hns, bool bBeginner);
-  static int TapNoteScoreToGradePoints(TapNoteScore tns, bool bBeginner);
-  static int HoldNoteScoreToGradePoints(HoldNoteScore hns, bool bBeginner);
+  static int TapNoteScoreToDancePoints(
+      TapNoteScore tns, bool bBeginner, bool bMercifulBeginnerActive);
+  static int HoldNoteScoreToDancePoints(
+      HoldNoteScore hns, bool bBeginner, bool bMercifulBeginnerActive);
+  static int TapNoteScoreToGradePoints(
+      TapNoteScore tns, bool bBeginner, bool bMercifulBeginnerActive);
+  static int HoldNoteScoreToGradePoints(
+      HoldNoteScore hns, bool bBeginner, bool bMercifulBeginnerActive);
 
  private:
   /**

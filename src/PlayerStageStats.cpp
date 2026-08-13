@@ -58,6 +58,7 @@ void PlayerStageStats::InternalInit() {
 
   m_bPlayerCanAchieveFullCombo = true;
   m_bJoined = false;
+  m_bMercifulBeginnerInEffect = false;
   m_vpPossibleSteps.clear();
   m_iStepsPlayed = 0;
   m_fAliveSeconds = 0;
@@ -212,16 +213,16 @@ Grade PlayerStageStats::GetGrade() const {
   }
 
   FOREACH_ENUM(TapNoteScore, tns) {
-    int iTapScoreValue =
-        ScoreKeeperNormal::TapNoteScoreToGradePoints(tns, bIsBeginner);
+    int iTapScoreValue = ScoreKeeperNormal::TapNoteScoreToGradePoints(
+        tns, bIsBeginner, m_bMercifulBeginnerInEffect);
     fActual += m_iTapNoteScores[tns] * iTapScoreValue;
     // LOG->Trace( "GetGrade actual: %i * %i", m_iTapNoteScores[tns],
     // iTapScoreValue );
   }
 
   FOREACH_ENUM(HoldNoteScore, hns) {
-    int iHoldScoreValue =
-        ScoreKeeperNormal::HoldNoteScoreToGradePoints(hns, bIsBeginner);
+    int iHoldScoreValue = ScoreKeeperNormal::HoldNoteScoreToGradePoints(
+        hns, bIsBeginner, m_bMercifulBeginnerInEffect);
     fActual += m_iHoldNoteScores[hns] * iHoldScoreValue;
     // LOG->Trace( "GetGrade actual: %i * %i", m_iHoldNoteScores[hns],
     // iHoldScoreValue );
