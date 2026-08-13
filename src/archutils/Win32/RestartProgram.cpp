@@ -2,28 +2,40 @@
 
 #include <windows.h>
 
+#include <string>
+
 #include "global.h"
 
 void Win32RestartProgram() {
   TCHAR szFullAppPath[MAX_PATH];
-  GetModuleFileName(nullptr, szFullAppPath, MAX_PATH);
+  const size_t pathLength = GetModuleFileName(nullptr, szFullAppPath, MAX_PATH);
+
+  std::basic_string<TCHAR> cmdLine;
+  cmdLine.reserve(pathLength + 3);
+  cmdLine += TEXT('"');
+  cmdLine += szFullAppPath;
+  cmdLine += TEXT('"');
 
   // Relaunch
-  PROCESS_INFORMATION pi;
-  STARTUPINFO si;
-  ZeroMemory(&si, sizeof(si));
-  CreateProcess(
-      nullptr,        // pointer to name of executable module
-      szFullAppPath,  // pointer to command line string
-      nullptr,        // process security attributes
-      nullptr,        // thread security attributes
-      false,          // handle inheritance flag
-      0,              // creation flags
-      nullptr,        // pointer to new environment block
-      nullptr,        // pointer to current directory name
-      &si,            // pointer to STARTUPINFO
-      &pi             // pointer to PROCESS_INFORMATION
-  );
+  PROCESS_INFORMATION pi = {};
+  STARTUPINFO si = {};
+  si.cb = sizeof(si);
+  if (!CreateProcess(
+          nullptr,         // module name
+          cmdLine.data(),  // full command line string
+          nullptr,         // process security attrs
+          nullptr,         // thread security attrs
+          FALSE,           // handle inheritance flag
+          0,               // creation flags
+          nullptr,         // environment
+          nullptr,         // current directory
+          &si,             // startup info
+          &pi)) {          // process info
+    return;
+  }
+
+  CloseHandle(pi.hThread);
+  CloseHandle(pi.hProcess);
 
   ExitProcess(0);
 
