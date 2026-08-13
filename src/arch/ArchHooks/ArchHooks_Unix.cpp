@@ -156,6 +156,14 @@ std::string ArchHooks::GetPreferredLanguage() {
 }
 
 void ArchHooks_Unix::Init() {
+#if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__) || \
+    defined(__SANITIZE_UNDEFINED__) || defined(__SANITIZE_MEMORY__)
+  return;
+#endif
+  if (getenv("ITGMANIA_DISABLE_SIGNAL_HANDLER")) {
+    return;
+  }
+
   /* First, handle non-fatal termination signals. */
   SignalHandler::OnClose(DoCleanShutdown);
 

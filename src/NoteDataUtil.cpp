@@ -14,6 +14,7 @@
 #include "Attack.h"
 #include "EnumHelper.h"
 #include "GameConstantsAndTypes.h"
+#include "GameManager.h"
 #include "GameState.h"
 #include "NoteData.h"
 #include "NoteTypes.h"
@@ -484,6 +485,28 @@ void NoteDataUtil::GetSMNoteDataString(
         sRet.append(1, '\n');
       }
     }
+  }
+}
+
+bool NoteDataUtil::SplitCompositeOrStackedNoteData(
+    const NoteData& in, std::vector<NoteData>& out, StepsType stepsType) {
+  if (in.IsComposite()) {
+    SplitCompositeNoteData(in, out);
+    return true;
+  } else if (
+      GAMEMAN->GetStepsTypeInfo(stepsType).m_StepsTypeCategory ==
+      StepsTypeCategory::StepsTypeCategory_Couple) {
+    // XXX: Assumption that couple will always have an even number of notes.
+    const int tracks = in.GetNumTracks() / 2;
+    out.resize(2);
+    out[PLAYER_1] = in;
+    out[PLAYER_1].SetNumTracks(tracks);
+    out[PLAYER_2] = in;
+    NoteDataUtil::ShiftTracks(out[PLAYER_2], tracks);
+    out[PLAYER_2].SetNumTracks(tracks);
+    return true;
+  } else {
+    return false;
   }
 }
 

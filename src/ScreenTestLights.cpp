@@ -55,13 +55,19 @@ void ScreenTestLights::Update(float fDeltaTime) {
   GameInput gi = LIGHTSMAN->GetFirstLitGameButtonLight();
 
   std::string s;
+  std::string lightMode;
+  std::string cabinetLightId;
+  std::string gameButtonLightId;
+  std::string side;
 
   switch (LIGHTSMAN->GetLightsMode()) {
     case LIGHTSMODE_TEST_AUTO_CYCLE:
       s += AUTO_CYCLE.GetValue() + "\n";
+      lightMode += AUTO_CYCLE.GetValue();
       break;
     case LIGHTSMODE_TEST_MANUAL_CYCLE:
       s += MANUAL_CYCLE.GetValue() + "\n";
+      lightMode += MANUAL_CYCLE.GetValue();
       break;
     default:
       break;
@@ -69,14 +75,17 @@ void ScreenTestLights::Update(float fDeltaTime) {
 
   if (cl == CabinetLight_Invalid) {
     s += CABINET_LIGHT.GetValue() + ": -----\n";
+    cabinetLightId += "None";
   } else {
     s += ssprintf(
         "%s: %d %s\n", CABINET_LIGHT.GetValue().c_str(), cl,
         CabinetLightToString(cl).c_str());
+    cabinetLightId += CabinetLightToString(cl).c_str();
   }
 
   if (!gi.IsValid()) {
     s += CONTROLLER_LIGHT.GetValue() + ": -----\n";
+    gameButtonLightId += "None";
   } else {
     std::string sGameButton =
         GameButtonToLocalizedString(INPUTMAPPER->GetInputScheme(), gi.button);
@@ -84,8 +93,17 @@ void ScreenTestLights::Update(float fDeltaTime) {
     s += ssprintf(
         "%s: %s %d %s\n", CONTROLLER_LIGHT.GetValue().c_str(),
         PlayerNumberToString(pn).c_str(), gi.button, sGameButton.c_str());
+    gameButtonLightId += sGameButton.c_str();
+    side += PlayerNumberToString(pn).c_str();
   }
 
+  Message msg("TestLightEvent");
+  msg.SetParam("LightMode", lightMode);
+  msg.SetParam("CabinetLightId", cabinetLightId);
+  msg.SetParam("Side", side);
+  msg.SetParam("GameButtonLightId", gameButtonLightId);
+
+  MESSAGEMAN->Broadcast(msg);
   m_textInputs.SetText(s);
 }
 

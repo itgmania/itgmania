@@ -43,8 +43,6 @@ class RageLog {
   bool m_bUserLogToDisk;
   bool m_bFlush;
   bool m_bShowLogOutput;
-  struct LogWriter;
-  LogWriter* m_pLogWriter;
   void Write(int, const std::string& str);
   void UpdateMappedLog();
   void AddToInfo(const std::string& buf);
