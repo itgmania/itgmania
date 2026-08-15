@@ -2473,14 +2473,6 @@ Def.BitmapText{
 		Sets the values of the ComboGraph using the specified StageStats and PlayerStageStats.
 	</Function>
 </Class>
-<Class name='ControllerStateDisplay' grouping='Actor'>
-	<Function name='LoadGameController' return='void' arguments='string sType, GameController gc'>
-		Loads the ControllerStateDisplay from the specified GameController.
-	</Function>
-	<Function name='LoadMultiPlayer' return='void' arguments='string sType, MultiPlayer mp'>
-		Loads the ControllerStateDisplay from the specified MultiPlayer.
-	</Function>
-</Class>
 <Class name='Course'>
 	<Function name='AllSongsAreFixed' return='bool' arguments=''>
 		Returns <code>true</code> if all of the songs in the course have been defined (as opposed to random songs).
