@@ -69,7 +69,7 @@ list(APPEND SMDATA_RAGE_GRAPHICS_SRC
             "RageSurface_Load_JPEG.cpp"
             "RageSurface_Load_PNG.cpp"
             "RageSurface_Load_STB.cpp"
-            "RageSurface_Load_XPM.cpp"
+
             "RageSurface_Save_BMP.cpp"
             "RageSurface_Save_JPEG.cpp"
             "RageSurface_Save_PNG.cpp"
@@ -98,7 +98,6 @@ list(APPEND SMDATA_RAGE_GRAPHICS_HPP
             "RageSurface_Load_JPEG.h"
             "RageSurface_Load_PNG.h"
             "RageSurface_Load_STB.h"
-            "RageSurface_Load_XPM.h"
             "RageSurface_Save_BMP.h"
             "RageSurface_Save_JPEG.h"
             "RageSurface_Save_PNG.h"
@@ -136,12 +135,10 @@ list(APPEND SMDATA_RAGE_FILE_SRC
             "RageFileDriverDirect.cpp"
             "RageFileDriverDirectHelpers.cpp"
             "RageFileDriverMemory.cpp"
-            "RageFileDriverReadAhead.cpp"
             "RageFileDriverSlice.cpp"
             "RageFileDriverTimeout.cpp"
             "RageFileDriverZip.cpp"
-            "RageFileManager.cpp"
-            "RageFileManager_ReadAhead.cpp")
+            "RageFileManager.cpp")
 
 list(APPEND SMDATA_RAGE_FILE_HPP
             "RageFile.h"
@@ -151,12 +148,10 @@ list(APPEND SMDATA_RAGE_FILE_HPP
             "RageFileDriverDirect.h"
             "RageFileDriverDirectHelpers.h"
             "RageFileDriverMemory.h"
-            "RageFileDriverReadAhead.h"
             "RageFileDriverSlice.h"
             "RageFileDriverTimeout.h"
             "RageFileDriverZip.h"
-            "RageFileManager.h"
-            "RageFileManager_ReadAhead.h")
+            "RageFileManager.h")
 
 source_group("Rage\\\\File"
              FILES
@@ -169,7 +164,6 @@ list(APPEND SMDATA_RAGE_SOUND_SRC
             "RageSoundMixBuffer.cpp"
             "RageSoundReader.cpp"
             "RageSoundReader_Chain.cpp"
-            "RageSoundReader_ChannelSplit.cpp"
             "RageSoundReader_Extend.cpp"
             "RageSoundReader_FileReader.cpp"
             "RageSoundReader_MP3.cpp"
@@ -192,7 +186,6 @@ list(APPEND SMDATA_RAGE_SOUND_HPP
             "RageSoundMixBuffer.h"
             "RageSoundReader.h"
             "RageSoundReader_Chain.h"
-            "RageSoundReader_ChannelSplit.h"
             "RageSoundReader_Extend.h"
             "RageSoundReader_FileReader.h"
             "RageSoundReader_Filter.h"

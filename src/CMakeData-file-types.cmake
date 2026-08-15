@@ -1,12 +1,10 @@
 list(APPEND SMDATA_FILE_TYPES_SRC
-            "CsvFile.cpp"
             "IniFile.cpp"
             "MsdFile.cpp"
             "XmlFile.cpp"
             "XmlToLua.cpp"
             "XmlFileUtil.cpp")
 list(APPEND SMDATA_FILE_TYPES_HPP
-            "CsvFile.h"
             "IniFile.h"
             "MsdFile.h"
             "XmlFile.h"

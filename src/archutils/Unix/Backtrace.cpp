@@ -96,8 +96,8 @@ static int get_readable_ranges(
 
       char line[1024];
       strcpy(line, file);
-      memmove(file, p, file_used);
       file_used -= p - file;
+      memmove(file, p, file_used);
 
       /* Search for the hyphen. */
       char* hyphen = strchr(line, '-');
