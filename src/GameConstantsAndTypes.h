@@ -215,7 +215,7 @@ LuaDeclareType(SortOrder);
  */
 inline bool IsSongSort(SortOrder so) {
   return (so >= SORT_PREFERRED && so <= SORT_DOUBLE_CHALLENGE_METER) ||
-         so == SORT_LENGTH;
+         so == SORT_LENGTH || so == SORT_SERIES;
 }
 
 /** @brief The list of tap note scores available during play. */
