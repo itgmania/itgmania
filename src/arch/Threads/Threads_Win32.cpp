@@ -274,6 +274,13 @@ bool EventImpl_Win32::Wait(RageTimer* pTimeout) {
           &m_ThreadConditionVariable, &m_pParent->mutex, iMilliseconds) != 0;
 
   if (!bSuccess) {
+    ASSERT_M(
+        GetLastError() == ERROR_TIMEOUT,
+        ssprintf(
+            "%s", werr_ssprintf(
+                      GetLastError(),
+                      "Waited as instructed, but received a timeout signal!")
+                      .c_str()));
   }
 
   return bSuccess;
