@@ -3,10 +3,13 @@
 // DO NOT USE stdio.h!  printf() calls malloc()!
 // #include <stdio.h>
 
+#include <strsafe.h>
 #include <windows.h>
 
+#include <cstdarg>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <string>
 
 #include "CrashHandlerInternal.h"
@@ -22,6 +25,22 @@
 
 #define malloc not_allowed_here
 #define new not_allowed_here
+
+static void BufferedFormatString(
+    char* buf, size_t bufsiz, const char* fmt, ...) {
+  if (!buf || bufsiz == 0) {
+    return;
+  }
+
+  va_list args;
+  va_start(args, fmt);
+  HRESULT hr = StringCchVPrintfA(buf, bufsiz, fmt, args);
+  va_end(args);
+
+  if (FAILED(hr)) {
+    buf[0] = '\0';
+  }
+}
 
 static void SpliceProgramPath(char* buf, int bufsiz, const char* fn) {
   char tbuf[MAX_PATH];
@@ -94,9 +113,9 @@ static void GetReason(const EXCEPTION_RECORD* pRecord, CrashInfo* crash) {
   const char* reason = LookupException(pRecord->ExceptionCode);
 
   if (reason == nullptr) {
-    wsprintf(
-        crash->m_CrashReason, "unknown exception 0x%08lx",
-        pRecord->ExceptionCode);
+    BufferedFormatString(
+        crash->m_CrashReason, sizeof(crash->m_CrashReason),
+        "unknown exception 0x%08lx", pRecord->ExceptionCode);
   } else {
     strcpy(crash->m_CrashReason, reason);
   }
@@ -519,8 +538,10 @@ void CrashHandler::ForceDeadlock(std::string reason, uint64_t iID) {
       CONTEXT context;
       context.ContextFlags = CONTEXT_FULL;
       if (!GetThreadContext(hThread, &context)) {
-        wsprintf(
-            g_CrashInfo.m_CrashReason + strlen(g_CrashInfo.m_CrashReason),
+        size_t used = strlen(g_CrashInfo.m_CrashReason);
+        BufferedFormatString(
+            g_CrashInfo.m_CrashReason + used,
+            sizeof(g_CrashInfo.m_CrashReason) - used,
             "; GetThreadContext(%Ix) failed",
             reinterpret_cast<uintptr_t>(hThread));
       } else {
