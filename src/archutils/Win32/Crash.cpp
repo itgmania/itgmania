@@ -27,8 +27,8 @@ static void SpliceProgramPath(char* buf, int bufsiz, const char* fn) {
   char tbuf[MAX_PATH];
   char* pszFile;
 
-  GetModuleFileName(nullptr, tbuf, sizeof tbuf);
-  GetFullPathName(tbuf, bufsiz, buf, &pszFile);
+  GetModuleFileNameA(nullptr, tbuf, sizeof tbuf);
+  GetFullPathNameA(tbuf, bufsiz, buf, &pszFile);
   strcpy(pszFile, fn);
 }
 
@@ -122,7 +122,7 @@ bool StartChild(HANDLE& hProcess, HANDLE& hToStdin, HANDLE& hFromStdout) {
   char cwd[MAX_PATH];
   SpliceProgramPath(cwd, MAX_PATH, "");
 
-  STARTUPINFO si;
+  STARTUPINFOA si;
   ZeroMemory(&si, sizeof(si));
   si.dwFlags |= STARTF_USESTDHANDLES;
 
@@ -139,12 +139,12 @@ bool StartChild(HANDLE& hProcess, HANDLE& hToStdin, HANDLE& hFromStdout) {
   }
 
   char szBuf[MAX_PATH] = "";
-  GetModuleFileName(nullptr, szBuf, MAX_PATH);
+  GetModuleFileNameA(nullptr, szBuf, MAX_PATH);
   strcat(szBuf, " ");
   strcat(szBuf, CHILD_MAGIC_PARAMETER);
 
   PROCESS_INFORMATION pi;
-  int iRet = CreateProcess(
+  int iRet = CreateProcessA(
       nullptr,  // pointer to name of executable module
       szBuf,    // pointer to command line string
       nullptr,  // process security attributes
@@ -153,7 +153,7 @@ bool StartChild(HANDLE& hProcess, HANDLE& hToStdin, HANDLE& hFromStdout) {
       0,        // creation flags
       nullptr,  // pointer to new environment block
       cwd,      // pointer to current directory name
-      &si,      // pointer to STARTUPINFO
+      &si,      // pointer to STARTUPINFOA
       &pi       // pointer to PROCESS_INFORMATION
   );
 
@@ -179,12 +179,12 @@ static const char* CrashGetModuleBaseName(HMODULE hmod, char* pszBaseName) {
   // XXX: It looks like nothing in here COULD throw an exception. Need to verify
   // that.
   //	__try {
-  if (!GetModuleFileName(hmod, szPath1, sizeof(szPath1))) {
+  if (!GetModuleFileNameA(hmod, szPath1, sizeof(szPath1))) {
     return nullptr;
   }
 
   char* pszFile;
-  DWORD dw = GetFullPathName(szPath1, sizeof(szPath2), szPath2, &pszFile);
+  DWORD dw = GetFullPathNameA(szPath1, sizeof(szPath2), szPath2, &pszFile);
 
   if (!dw || dw > sizeof(szPath2)) {
     return nullptr;
@@ -327,7 +327,7 @@ static DWORD WINAPI MainExceptionHandler(LPVOID lpParameter) {
      * crashed. If InHere is greater than 1, then we crashed after writing
      * the crash dump; say so. */
     SetUnhandledExceptionFilter(nullptr);
-    MessageBox(
+    MessageBoxA(
         nullptr,
         InHere == 1 ? "The error reporting interface has crashed.\n"
                     : "The error reporting interface has crashed. However, "
