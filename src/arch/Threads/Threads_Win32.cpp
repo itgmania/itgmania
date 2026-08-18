@@ -1,6 +1,6 @@
 #include "Threads_Win32.h"
 
-#include <algorithm>
+#include <cmath>
 #include <cstdint>
 #include <memory>
 #include <mutex>
@@ -296,9 +296,8 @@ bool EventImpl_Win32::Wait(RageTimer* pTimeout) {
 
   unsigned iMilliseconds = INFINITE;
   if (pTimeout != nullptr) {
-    float fSecondsInFuture = -pTimeout->Ago();
-    iMilliseconds = static_cast<unsigned>(
-        std::max(0, static_cast<int>(fSecondsInFuture * 1000)));
+    const int iMsecInFuture = std::ceil(-pTimeout->Ago() * 1000.f);
+    iMsecInFuture > 0 ? iMilliseconds = iMsecInFuture : iMilliseconds = 0;
   }
 
   // Unlock the mutex and wait for a signal.
