@@ -237,6 +237,7 @@ list(APPEND SM_DATA_REST_SRC
             "ScreenDimensions.cpp"
             "SoundEffectControl.cpp"
             "StageStats.cpp"
+            "TempoDetector.cpp"
             "TimingData.cpp"
             "TimingSegments.cpp"
             "TitleSubstitution.cpp")
@@ -291,6 +292,7 @@ list(APPEND SM_DATA_REST_HPP
             "SubscriptionManager.h"
             "StageStats.h"
             "ThemeMetric.h"
+            "TempoDetector.h"
             "TimingData.h"
             "TimingSegments.h"
             "TitleSubstitution.h")

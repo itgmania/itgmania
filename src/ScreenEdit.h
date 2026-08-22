@@ -31,6 +31,7 @@
 #include "Song.h"
 #include "SongPosition.h"
 #include "Steps.h"
+#include "TempoDetector.h"
 #include "ThemeMetric.h"
 #include "TimingData.h"
 #include "TimingSegments.h"
@@ -307,6 +308,11 @@ class ScreenEdit : public ScreenWithMenuElements {
   /** @brief Display the TimingData menu for editing song and step timing. */
   void DisplayTimingMenu();
 
+  /** @brief Display the menu for detecting and applying BPM/offset. */
+  void DisplayAdjustSyncMenu();
+  /** @brief Start detecting the BPM/offset of the current chart's music. */
+  void StartTempoDetection();
+
   enum TimingChangeMenuPurpose {
     menu_is_for_copying,
     menu_is_for_shifting,
@@ -353,6 +359,11 @@ class ScreenEdit : public ScreenWithMenuElements {
 
   /** @brief The type of segment users will jump back and forth between. */
   TimingSegmentType currentCycleSegment;
+
+  /** @brief Runs while the music is being analyzed for its BPM and offset. */
+  TempoDetector* m_pTempoDetector;
+  std::vector<TempoResult> m_TempoResults;
+  std::string m_sTempoProgress;
 
   void UpdateTextInfo();
   BitmapText m_textInfo;  // status information that changes
@@ -457,6 +468,7 @@ class ScreenEdit : public ScreenWithMenuElements {
     options,            /**< Modify the PlayerOptions and SongOptions. */
     edit_song_info,     /**< Edit some general information about the song. */
     edit_timing_data,   /**< Edit the chart's timing data. */
+    adjust_sync,        /**< Detect and apply the music's BPM and offset. */
     view_steps_data,    /**< View step statistics. */
     play_preview_music, /**< Play the song's preview music. */
     exit,
@@ -695,6 +707,18 @@ class ScreenEdit : public ScreenWithMenuElements {
   };
   void HandleTimingDataChangeChoice(
       TimingDataChangeChoice choice, const std::vector<int>& answers);
+
+  /**
+   * @brief The rows of the Adjust Sync menu.
+   *
+   * Each detected result adds an "apply" row followed by two read-only rows,
+   * so apply rows use adjust_sync_apply plus the index of the result. */
+  enum AdjustSyncChoice {
+    adjust_sync_find_bpm,
+    adjust_sync_readonly,
+    adjust_sync_apply
+  };
+  void HandleAdjustSyncMenuChoice(int iRowCode);
 
   enum BGChangeChoice {
     layer,
