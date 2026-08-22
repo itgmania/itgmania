@@ -752,6 +752,10 @@ void ScreenEdit::InitEditMappings() {
 
   m_EditMappingsDeviceInput.button[EDIT_BUTTON_TOGGLE_WAVEFORM][0] =
       DeviceInput(DEVICE_KEYBOARD, KEY_Cg);
+  m_EditMappingsDeviceInput.hold[EDIT_BUTTON_TOGGLE_WAVEFORM][0] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL);
+  m_EditMappingsDeviceInput.hold[EDIT_BUTTON_TOGGLE_WAVEFORM][1] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL);
 
   // Switch players, if it makes sense to do so.
   m_EditMappingsDeviceInput.button[EDIT_BUTTON_SWITCH_PLAYERS][0] =
@@ -7203,11 +7207,10 @@ static const EditHelpLine g_EditHelpLines[] = {
     EditHelpLine("Switch Timing", EDIT_BUTTON_SWITCH_TIMINGS),
     EditHelpLine("Switch player (Routine only)", EDIT_BUTTON_SWITCH_PLAYERS),
     EditHelpLine("Undo/Redo", EDIT_BUTTON_UNDO, EDIT_BUTTON_REDO),
-    EditHelpLine("Cut selection to clipboard", EDIT_BUTTON_CUT),
-    EditHelpLine("Copy selection to clipboard", EDIT_BUTTON_COPY),
+    EditHelpLine(
+        "Cut/Copy selection to clipboard", EDIT_BUTTON_CUT, EDIT_BUTTON_COPY),
     EditHelpLine("Paste from clipboard", EDIT_BUTTON_PASTE),
-    EditHelpLine("Toggle waveform display (Ctrl+G)",
-           EDIT_BUTTON_TOGGLE_WAVEFORM),
+    EditHelpLine("Toggle waveform display", EDIT_BUTTON_TOGGLE_WAVEFORM),
 };
 
 static bool IsMapped(EditButton eb, const MapEditToDI& editmap) {
