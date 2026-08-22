@@ -646,8 +646,14 @@ void MemoryCardManager::UnmountCard(PlayerNumber pn) {
     return;
   }
 
+  // Give unmounting a fresh timeout instead of inheriting time spent accessing
+  // the card.
+  this->RefreshCardAccessTimeout();
+
   // Leave our own filesystem drivers mounted.  Unmount the kernel mount.
-  g_pWorker->Unmount(&m_Device[pn]);
+  if (!g_pWorker->Unmount(&m_Device[pn])) {
+    LOG->Warn("MemoryCardManager::UnmountCard: unmount failed");
+  }
 
   // Flush mountpoints pointing to what we've unmounted.
   FILEMAN->FlushDirCache(MEM_CARD_MOUNT_POINT[pn]);
@@ -691,8 +697,15 @@ void MemoryCardManager::PauseMountingThread(int iTimeout) {
   g_pWorker->SetMountThreadState(ThreadedMemoryCardWorker::paused);
 
   // Start the timeout period.
-  g_pWorker->SetTimeout((float)iTimeout);
-  RageFileDriverTimeout::SetTimeout((float)iTimeout);
+  this->RefreshCardAccessTimeout((float)iTimeout);
+}
+
+// The timeout prevents a bad memory card from indefinitely stalling the game.
+// Possibly each successful file system operation could adjust the
+// timeout by some amount, but that requires a more thoughtful implementation.
+void MemoryCardManager::RefreshCardAccessTimeout(float fTimeout) {
+  g_pWorker->SetTimeout(fTimeout);
+  RageFileDriverTimeout::SetTimeout(fTimeout);
 }
 
 void MemoryCardManager::UnPauseMountingThread() {

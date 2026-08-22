@@ -29,6 +29,7 @@
 #include "HighScore.h"
 #include "IniFile.h"
 #include "LuaManager.h"
+#include "MemoryCardManager.h"
 #include "PlayerNumber.h"
 #include "Preference.h"
 #include "PrefsManager.h"
@@ -1206,7 +1207,7 @@ void Profile::LoadSongsFromDir(
     return;
   }
   std::string songs_folder = dir + "Songs";
-  if (FILEMAN->DoesFileExist(songs_folder) && isMemoryCard) {
+  if (isMemoryCard && FILEMAN->DoesFileExist(songs_folder)) {
     LOG->Trace("Found songs folder in profile.");
     std::vector<std::string> song_folders;
     RageTimer song_load_start_time;
@@ -1227,6 +1228,9 @@ void Profile::LoadSongsFromDir(
          m_songs.size() < PREFSMAN->m_custom_songs_max_count;
          ++song_index) {
       std::string& song_dir_name = song_folders[song_index];
+      // Each song gets a fresh memory card timeout. song_load_start_time limits
+      // the total custom song loading time.
+      MEMCARDMAN->RefreshCardAccessTimeout();
       Song* new_song = new Song;
       if (!new_song->LoadFromSongDir(song_dir_name, false, prof_slot)) {
         // The song failed to load.
@@ -1249,6 +1253,9 @@ void Profile::LoadSongsFromDir(
       delete m_group;
       m_group = nullptr;
     }
+    // Don't make subsequent profile work inherit the time
+    // used by the last song.
+    MEMCARDMAN->RefreshCardAccessTimeout();
   } else {
     LOG->Trace("No songs folder in profile.");
   }

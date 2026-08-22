@@ -31,6 +31,7 @@ class MemoryCardManager {
   bool MountCard(PlayerNumber pn, const UsbStorageDevice& d, int iTimeout = 10);
   void UnmountCard(PlayerNumber pn);
 
+  void RefreshCardAccessTimeout(float fTimeout = 10.0f);
   bool IsMounted(PlayerNumber pn) const { return m_bMounted[pn]; }
 
   // When paused, no changes in memory card state will be noticed until
