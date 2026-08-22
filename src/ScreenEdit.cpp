@@ -135,6 +135,7 @@ AutoScreenMessage(SM_DoRevertFromDisk);
 AutoScreenMessage(SM_ConfirmClearArea);
 AutoScreenMessage(SM_BackFromTimingDataInformation);
 AutoScreenMessage(SM_BackFromTimingDataChangeInformation);
+AutoScreenMessage(SM_BackFromAdjustSyncMenu);
 AutoScreenMessage(SM_BackFromDifficultyMeterChange);
 AutoScreenMessage(SM_BackFromBeat0Change);
 AutoScreenMessage(SM_BackFromBPMChange);
@@ -1076,6 +1077,20 @@ static MenuDef g_IndividualAttack(
 static MenuDef g_KeysoundTrack(
     "ScreenMiniMenuKeysoundTrack");  // fill this in dynamically
 
+static MenuDef g_AdjustSyncMenu(
+    "ScreenMiniMenuAdjustSyncMenu"
+    // fill this in dynamically
+);
+
+static LocalizedString DETECTING_BPM(
+    "ScreenEdit", "Analyzing music, this may take a moment...");
+static LocalizedString DETECT_BPM_FAILED(
+    "ScreenEdit", "Could not analyze the music: %s");
+static LocalizedString DETECT_BPM_NO_RESULTS(
+    "ScreenEdit", "No BPM could be detected for this music.");
+static LocalizedString APPLIED_SYNC(
+    "ScreenEdit", "Applied %.3f BPM with an offset of %+.3f.");
+
 static MenuDef g_MainMenu(
     "ScreenMiniMenuMainMenu",
     MenuRowDef(
@@ -1113,6 +1128,9 @@ static MenuDef g_MainMenu(
     MenuRowDef(
         ScreenEdit::edit_timing_data, "Edit Timing Data", true, EditMode_Full,
         true, true, 0, nullptr),
+    MenuRowDef(
+        ScreenEdit::adjust_sync, "Adjust Sync", true, EditMode_Full, true, true,
+        0, nullptr),
     MenuRowDef(
         ScreenEdit::view_steps_data, "View steps data", true, EditMode_Full,
         true, true, 0, nullptr),
@@ -1765,6 +1783,7 @@ TimingData ScreenEdit::clipboardFullTiming;
 
 void ScreenEdit::Init() {
   m_pSoundMusic = nullptr;
+  m_pTempoDetector = nullptr;
 
   GAMESTATE->m_bIsUsingStepTiming = false;
   GAMESTATE->m_bInStepEditor = true;
@@ -2015,6 +2034,9 @@ ScreenEdit::~ScreenEdit() {
   LOG->Trace("ScreenEdit::~ScreenEdit()");
   m_pSoundMusic->StopPlaying();
 
+  // Blocks until the analysis thread notices it should stop.
+  RageUtil::SafeDelete(m_pTempoDetector);
+
   // Go back to Step Timing on leave.
   GAMESTATE->m_bIsUsingStepTiming = true;
   // DEFINITELY reset the InStepEditor variable.
@@ -2077,6 +2099,23 @@ void ScreenEdit::EditMiniMenu(
 
 void ScreenEdit::Update(float fDeltaTime) {
   m_PlayerStateEdit.Update(fDeltaTime);
+
+  if (m_pTempoDetector != nullptr) {
+    if (m_pTempoDetector->IsFinished()) {
+      m_TempoResults = m_pTempoDetector->GetResults();
+      RageUtil::SafeDelete(m_pTempoDetector);
+      if (m_TempoResults.empty()) {
+        SCREENMAN->SystemMessage(DETECT_BPM_NO_RESULTS);
+      }
+      DisplayAdjustSyncMenu();
+    } else {
+      std::string sProgress = m_pTempoDetector->GetProgress();
+      if (sProgress != m_sTempoProgress) {
+        m_sTempoProgress = sProgress;
+        SCREENMAN->SystemMessage(sProgress);
+      }
+    }
+  }
 
   const float fRate = PREFSMAN->m_bRateModsAffectTweens
                           ? GAMESTATE->m_SongOptions.GetCurrent().m_fMusicRate
@@ -4339,6 +4378,10 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage SM) {
     HandleTimingDataChangeChoice(
         (TimingDataChangeChoice)ScreenMiniMenu::s_iLastRowCode,
         ScreenMiniMenu::s_viLastAnswers);
+  } else if (SM == SM_BackFromAdjustSyncMenu) {
+    if (!ScreenMiniMenu::s_bCancelled) {
+      HandleAdjustSyncMenuChoice(ScreenMiniMenu::s_iLastRowCode);
+    }
   } else if (SM == SM_BackFromDifficultyMeterChange) {
     int i = StringToInt(ScreenTextEntry::s_sLastAnswer);
     GAMESTATE->m_pCurSteps[PLAYER_1]->SetMeter(i);
@@ -5331,6 +5374,98 @@ void ScreenEdit::DisplayTimingChangeMenu() {
       &g_TimingDataChangeInformation, SM_BackFromTimingDataChangeInformation);
 }
 
+static LocalizedString FIND_BPM("ScreenEdit", "Find BPM");
+static LocalizedString APPLY_SYNC("ScreenEdit", "Apply Sync #%d");
+static LocalizedString SYNC_OFFSET("ScreenEdit", "Offset");
+static LocalizedString SYNC_BPM("ScreenEdit", "BPM");
+static LocalizedString SYNC_NO_RESULTS("ScreenEdit", "Apply Sync");
+
+void ScreenEdit::DisplayAdjustSyncMenu() {
+  g_AdjustSyncMenu.rows.clear();
+
+  g_AdjustSyncMenu.rows.push_back(MenuRowDef(
+      adjust_sync_find_bpm, FIND_BPM, m_pTempoDetector == nullptr,
+      EditMode_Full, false, false, 0, nullptr));
+
+  if (m_TempoResults.empty()) {
+    // Nothing has been detected yet, so there is nothing to apply.
+    g_AdjustSyncMenu.rows.push_back(MenuRowDef(
+        adjust_sync_readonly, SYNC_NO_RESULTS, false, EditMode_Full, false,
+        false, 0, nullptr));
+    g_AdjustSyncMenu.rows.push_back(MenuRowDef(
+        adjust_sync_readonly, SYNC_OFFSET, false, EditMode_Full, false, false,
+        0, "---"));
+    g_AdjustSyncMenu.rows.push_back(MenuRowDef(
+        adjust_sync_readonly, SYNC_BPM, false, EditMode_Full, false, false, 0,
+        "---"));
+  } else {
+    for (size_t i = 0; i < m_TempoResults.size(); ++i) {
+      const TempoResult& result = m_TempoResults[i];
+
+      MenuRowDef apply(
+          adjust_sync_apply + (int)i,
+          ssprintf(APPLY_SYNC.GetValue().c_str(), (int)i + 1), true,
+          EditMode_Full, false, false, 0, nullptr);
+      apply.SetOneUnthemedChoice(ssprintf("%.0f%%", result.fitness * 100));
+      g_AdjustSyncMenu.rows.push_back(apply);
+
+      MenuRowDef offset(
+          adjust_sync_readonly, SYNC_OFFSET, false, EditMode_Full, false, false,
+          0, nullptr);
+      offset.SetOneUnthemedChoice(ssprintf("%+.3f", result.offset));
+      g_AdjustSyncMenu.rows.push_back(offset);
+
+      MenuRowDef bpm(
+          adjust_sync_readonly, SYNC_BPM, false, EditMode_Full, false, false, 0,
+          nullptr);
+      bpm.SetOneUnthemedChoice(ssprintf("%.3f", result.bpm));
+      g_AdjustSyncMenu.rows.push_back(bpm);
+    }
+  }
+
+  EditMiniMenu(&g_AdjustSyncMenu, SM_BackFromAdjustSyncMenu);
+}
+
+void ScreenEdit::StartTempoDetection() {
+  if (m_pTempoDetector != nullptr) {
+    return;
+  }
+
+  std::string sError;
+  m_pTempoDetector = TempoDetector::Create(m_pSteps->GetMusicPath(), sError);
+  if (m_pTempoDetector == nullptr) {
+    SCREENMAN->SystemMessage(
+        ssprintf(DETECT_BPM_FAILED.GetValue().c_str(), sError.c_str()));
+    SCREENMAN->PlayInvalidSound();
+    return;
+  }
+
+  m_TempoResults.clear();
+  m_sTempoProgress.clear();
+  SCREENMAN->SystemMessage(DETECTING_BPM);
+}
+
+void ScreenEdit::HandleAdjustSyncMenuChoice(int iRowCode) {
+  if (iRowCode == adjust_sync_find_bpm) {
+    StartTempoDetection();
+    return;
+  }
+
+  const int iResult = iRowCode - adjust_sync_apply;
+  if (iResult < 0 || iResult >= (int)m_TempoResults.size()) {
+    return;
+  }
+
+  const TempoResult& result = m_TempoResults[iResult];
+  TimingData& timing = GetAppropriateTimingForUpdate();
+  timing.m_fBeat0OffsetInSeconds = (float)result.offset;
+  timing.AddSegment(BPMSegment(0, (float)result.bpm));
+
+  SetDirty(true);
+  SCREENMAN->SystemMessage(
+      ssprintf(APPLIED_SYNC.GetValue().c_str(), result.bpm, result.offset));
+}
+
 // End helper functions
 
 static LocalizedString REVERT_LAST_SAVE(
@@ -5580,6 +5715,9 @@ void ScreenEdit::HandleMainMenuChoice(
     } break;
     case edit_timing_data: {
       DisplayTimingMenu();
+    } break;
+    case adjust_sync: {
+      DisplayAdjustSyncMenu();
     } break;
 
     case play_preview_music:
