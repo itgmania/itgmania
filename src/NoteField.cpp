@@ -30,7 +30,9 @@
 #include "NoteTypes.h"
 #include "PlayerNumber.h"
 #include "PlayerState.h"
+#include "RageDisplay.h"
 #include "RageLog.h"
+#include "RageSoundReader_FileReader.h"
 #include "RageTimer.h"
 #include "RageTypes.h"
 #include "RageUtil.h"
@@ -69,6 +71,9 @@ NoteField::NoteField() {
   m_fBar4thAlpha = BAR_4TH_ALPHA;
   m_fBar8thAlpha = BAR_8TH_ALPHA;
   m_fBar16thAlpha = BAR_16TH_ALPHA;
+  m_bShowWaveform = false;
+  m_bWaveformIsStereo = false;
+  m_iWaveformSampleRate = 0;
 
   m_textMeasureNumber.LoadFromFont(
       THEME->GetPathF("NoteField", "MeasureNumber"));
@@ -122,6 +127,63 @@ void NoteField::Unload() {
 void NoteField::SetBeatBars(bool active) { m_bShowBeatBars = active; }
 
 bool NoteField::GetBeatBars() { return m_bShowBeatBars; }
+
+void NoteField::UnloadWaveform() {
+  m_WaveformSamplesL.clear();
+  m_WaveformSamplesR.clear();
+  m_bWaveformIsStereo = false;
+  m_iWaveformSampleRate = 0;
+}
+
+void NoteField::LoadWaveform(const std::string& sMusicPath) {
+  UnloadWaveform();
+  if (sMusicPath.empty()) {
+    return;
+  }
+
+  std::string sError;
+  RageSoundReader_FileReader* pReader =
+      RageSoundReader_FileReader::OpenFile(sMusicPath, sError, nullptr);
+  if (pReader == nullptr) {
+    LOG->Warn(
+        "NoteField: couldn't load waveform for \"%s\": %s", sMusicPath.c_str(),
+        sError.c_str());
+    return;
+  }
+
+  const int iSampleRate = pReader->GetSampleRate();
+  const unsigned iChannels = pReader->GetNumChannels();
+  if (iSampleRate <= 0 || iChannels == 0) {
+    delete pReader;
+    return;
+  }
+  m_bWaveformIsStereo = iChannels >= 2;
+
+  m_iWaveformSampleRate = iSampleRate;
+  const size_t iExpectedFrames = static_cast<size_t>(std::max(
+      0, (int)((static_cast<int64_t>(pReader->GetLength()) * iSampleRate) /
+               1000)));
+  m_WaveformSamplesL.reserve(iExpectedFrames);
+  m_WaveformSamplesR.reserve(iExpectedFrames);
+
+  const int iBufferFrames = 4096;
+  std::vector<float> buf(static_cast<size_t>(iBufferFrames) * iChannels);
+
+  while (true) {
+    int iGot = pReader->Read(&buf[0], iBufferFrames);
+    if (iGot <= 0) {
+      break;
+    }
+    for (int i = 0; i < iGot; ++i) {
+      const float fSampleL = buf[i * iChannels + 0];
+      const float fSampleR = iChannels >= 2 ? buf[i * iChannels + 1] : fSampleL;
+      m_WaveformSamplesL.push_back(fSampleL);
+      m_WaveformSamplesR.push_back(fSampleR);
+    }
+  }
+
+  delete pReader;
+}
 
 void NoteField::SetBeatBarsAlpha(
     float measure, float fourth, float eighth, float sixteenth) {
@@ -591,6 +653,142 @@ void NoteField::DrawAreaHighlight(int iStartBeat, int iEndBeat) {
 
 // todo: add DrawWarpAreaBG? -aj
 
+static ThemeMetric<RageColor> WAVEFORM_COLOR("NoteField", "WaveformColor");
+static ThemeMetric<float> WAVEFORM_WIDTH_PERCENT(
+    "NoteField", "WaveformWidthPercent");
+static ThemeMetric<float> WAVEFORM_GAIN("NoteField", "WaveformGain");
+static ThemeMetric<float> WAVEFORM_POINTS_PER_PIXEL(
+    "NoteField", "WaveformPointsPerPixel");
+void NoteField::DrawWaveform() {
+  if (m_WaveformSamplesL.empty() || m_iWaveformSampleRate <= 0) {
+    return;
+  }
+
+  const TimingData& timing = m_pPlayerState->GetDisplayedTiming();
+
+  // Use the *NoOffset timing calls here: notes/beat bars are positioned
+  // purely from beat rows, with no adjustment for the user's Global Offset
+  // preference (an audio/video sync calibration value). Using the
+  // Global-Offset-aware calls would shift the whole waveform relative to
+  // the notes by that preference's value.
+  const float fFirstBeat = NoteRowToBeat(m_FieldRenderArgs.first_row);
+  const float fLastBeat = NoteRowToBeat(m_FieldRenderArgs.last_row);
+  const float fFirstTime = timing.GetElapsedTimeFromBeatNoOffset(fFirstBeat);
+  const float fLastTime = timing.GetElapsedTimeFromBeatNoOffset(fLastBeat);
+
+  int iFirstSample =
+      (int)std::floor(std::min(fFirstTime, fLastTime) * m_iWaveformSampleRate) -
+      1;
+  int iLastSample =
+      (int)std::ceil(std::max(fFirstTime, fLastTime) * m_iWaveformSampleRate) +
+      1;
+  iFirstSample = std::max(iFirstSample, 0);
+  iLastSample = std::min(iLastSample, (int)m_WaveformSamplesL.size() - 1);
+  if (iFirstSample + 1 > iLastSample) {
+    return;
+  }
+
+  const float fHalfWidth = GetWidth() * 0.5f * WAVEFORM_WIDTH_PERCENT;
+  const RageColor baseColor = WAVEFORM_COLOR;
+  const int iVisibleSamples = iLastSample - iFirstSample + 1;
+  const int iVisiblePixels = std::max(
+      128, (int)(m_FieldRenderArgs.draw_pixels_before_targets -
+                 m_FieldRenderArgs.draw_pixels_after_targets));
+  // Adapt detail to zoom: keep multiple waveform points per screen pixel
+  // before decimating so the shape remains granular like AV.
+  const float fPointsPerPixel =
+      std::max(1.0f, (float)WAVEFORM_POINTS_PER_PIXEL);
+  const int iTargetPoints =
+      std::max(1, (int)(iVisiblePixels * fPointsPerPixel));
+  const int iStep = iVisibleSamples > iTargetPoints
+                        ? (iVisibleSamples + iTargetPoints - 1) / iTargetPoints
+                        : 1;
+
+  std::vector<RageSpriteVertex> vStripL;
+  std::vector<RageSpriteVertex> vStripR;
+  vStripL.reserve((iVisibleSamples / iStep + 2) * 2);
+  vStripR.reserve((iVisibleSamples / iStep + 2) * 2);
+
+  auto accumulate_window = [&](int begin, int end, bool left_channel,
+                               float& min_out, float& max_out) {
+    min_out = +1.f;
+    max_out = -1.f;
+    for (int k = begin; k < end; ++k) {
+      const std::vector<float>& samples =
+          left_channel ? m_WaveformSamplesL : m_WaveformSamplesR;
+      min_out = std::min(min_out, samples[k]);
+      max_out = std::max(max_out, samples[k]);
+    }
+    if (max_out < min_out) {
+      min_out = max_out = 0.f;
+    }
+  };
+
+  auto build_channel_strip = [&](bool left_channel,
+                                 std::vector<RageSpriteVertex>& strip,
+                                 RageColor color) {
+    for (int i = iFirstSample; i <= iLastSample; i += iStep) {
+      const int end = std::min(i + iStep, iLastSample + 1);
+      float fMin = 0.f;
+      float fMax = 0.f;
+      accumulate_window(i, end, left_channel, fMin, fMax);
+
+      fMin *= WAVEFORM_GAIN;
+      fMax *= WAVEFORM_GAIN;
+      rage_clamp(fMin, -1.f, 1.f);
+      rage_clamp(fMax, -1.f, 1.f);
+
+      const float fTime = ((i + end) * 0.5f) / m_iWaveformSampleRate;
+      const float fBeat = timing.GetBeatFromElapsedTimeNoOffset(fTime);
+      const float fYOffset = ArrowEffects::GetYOffset(m_pPlayerState, 0, fBeat);
+      const float fY = ArrowEffects::GetYPos(
+          m_pPlayerState, 0, fYOffset, m_fYReverseOffsetPixels);
+
+      // Signed waveform: left edge from minima, right edge from maxima.
+      float xL = fHalfWidth * fMin;
+      float xR = fHalfWidth * fMax;
+      if (xL > xR) {
+        std::swap(xL, xR);
+      }
+
+      RageSpriteVertex vLeft, vRight;
+      vLeft.p = RageVector3(xL, fY, 0);
+      vRight.p = RageVector3(xR, fY, 0);
+      vLeft.c = color;
+      vRight.c = color;
+      vLeft.t = RageVector2(0, 0);
+      vRight.t = RageVector2(0, 0);
+      strip.push_back(vLeft);
+      strip.push_back(vRight);
+    }
+  };
+
+  RageColor channelColorL = baseColor;
+  RageColor channelColorR = baseColor;
+  // Overlapping both channels creates richer fine detail than mono merge.
+  channelColorL.a *= m_bWaveformIsStereo ? 0.65f : 1.0f;
+  channelColorR.a *= m_bWaveformIsStereo ? 0.65f : 1.0f;
+
+  build_channel_strip(true, vStripL, channelColorL);
+  if (m_bWaveformIsStereo) {
+    build_channel_strip(false, vStripR, channelColorR);
+  }
+
+  if (vStripL.size() < 4 && vStripR.size() < 4) {
+    return;
+  }
+
+  this->SetGlobalRenderStates();
+  DISPLAY->ClearAllTextures();
+  this->SetTextureRenderStates();
+  if (vStripL.size() >= 4) {
+    DISPLAY->DrawQuadStrip(&vStripL[0], vStripL.size());
+  }
+  if (vStripR.size() >= 4) {
+    DISPLAY->DrawQuadStrip(&vStripR[0], vStripR.size());
+  }
+}
+
 static ThemeMetric<RageColor> BPM_COLOR("NoteField", "BPMColor");
 static ThemeMetric<RageColor> STOP_COLOR("NoteField", "StopColor");
 static ThemeMetric<RageColor> DELAY_COLOR("NoteField", "DelayColor");
@@ -896,6 +1094,11 @@ void NoteField::DrawPrimitives() {
       shared_style != nullptr &&
       shared_style->m_StyleType == StyleType_TwoPlayersSharedSides &&
       m_pPlayerState->m_PlayerNumber != GAMESTATE->GetMasterPlayerNumber();
+
+  // Draw the song waveform behind the beat bars.
+  if (m_bShowWaveform && pTiming != nullptr && !suppress_shared_overlays) {
+    DrawWaveform();
+  }
 
   // Draw beat bars
   if ((GAMESTATE->IsEditing() || m_bShowBeatBars) && pTiming != nullptr &&
