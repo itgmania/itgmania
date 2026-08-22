@@ -86,6 +86,8 @@ static Preference<bool> g_bEditorShowBGChangesPlay(
 constexpr static float record_hold_default = 0.3f;
 float record_hold_seconds = record_hold_default;
 constexpr static float time_between_autosave = 300.0f;  // 5 minutes. -Kyz
+static float GetMouseScreenX();
+static float GetMouseScreenY();
 
 #define PLAYER_X (SCREEN_CENTER_X)
 #define PLAYER_Y (SCREEN_CENTER_Y)
@@ -1780,9 +1782,124 @@ REGISTER_SCREEN_CLASS(ScreenEdit);
 // ScreenEdit instances, which lets Cut/Copy/Paste work between charts.
 NoteData ScreenEdit::m_Clipboard;
 TimingData ScreenEdit::clipboardFullTiming;
+bool ScreenEdit::s_bClipboardHasTiming = false;
+
+// The cursor is reported in window pixels, so scale it the same way the Lua
+// bindings do.
+static float GetMouseScreenX() {
+  return SCALE(
+      INPUTFILTER->GetCursorX(), 0.0f,
+      (float)(PREFSMAN->m_iDisplayHeight * PREFSMAN->m_fDisplayAspectRatio),
+      SCREEN_LEFT, SCREEN_RIGHT);
+}
+
+static float GetMouseScreenY() {
+  return SCALE(
+      INPUTFILTER->GetCursorY(), 0.0f, (float)PREFSMAN->m_iDisplayHeight,
+      SCREEN_TOP, SCREEN_BOTTOM);
+}
+
+float ScreenEdit::MouseYToBeat(float fScreenY) {
+  const float fZoom = m_NoteFieldEdit.GetZoomY();
+
+  if (std::abs(fZoom) < 0.0001f) {
+    return GetBeat();
+  }
+
+  /*
+   * The editor NoteField is drawn using m_fTrailingBeat rather than the
+   * instantaneous editor cursor beat.  This is what gives scrolling its
+   * smooth/trailing appearance.
+   *
+   * Mouse hit testing therefore has to temporarily use the same song
+   * position that DrawPrimitives() uses, otherwise the beat under the
+   * mouse will not match the arrows currently visible on screen.
+   */
+  const float fDisplayedBeat = m_fTrailingBeat;
+
+  PlayerState* pPlayerState =
+      const_cast<PlayerState*>(m_NoteFieldEdit.GetPlayerState());
+
+  /*
+   * Save the real positions.
+   *
+   * DrawPrimitives() normally restores these after drawing the NoteField,
+   * so by the time a mouse event happens they no longer represent what
+   * was actually used to render the arrows.
+   */
+  const float fPlayerSongBeat = pPlayerState->m_Position.m_fSongBeat;
+  const float fPlayerSongBeatNoOffset =
+      pPlayerState->m_Position.m_fSongBeatNoOffset;
+  const float fPlayerSongBeatVisible =
+      pPlayerState->m_Position.m_fSongBeatVisible;
+
+  const float fGameSongBeat = GAMESTATE->m_Position.m_fSongBeat;
+  const float fGameSongBeatNoOffset = GAMESTATE->m_Position.m_fSongBeatNoOffset;
+  const float fGameSongBeatVisible = GAMESTATE->m_Position.m_fSongBeatVisible;
+
+  /*
+   * Reproduce the exact position state used by DrawPrimitives().
+   */
+  pPlayerState->m_Position.m_fSongBeat = fDisplayedBeat;
+  pPlayerState->m_Position.m_fSongBeatNoOffset = fDisplayedBeat;
+  pPlayerState->m_Position.m_fSongBeatVisible = fDisplayedBeat;
+
+  GAMESTATE->m_Position.m_fSongBeat = fDisplayedBeat;
+  GAMESTATE->m_Position.m_fSongBeatNoOffset = fDisplayedBeat;
+  GAMESTATE->m_Position.m_fSongBeatVisible = fDisplayedBeat;
+
+  ArrowEffects::SetCurrentOptions(
+      &m_PlayerStateEdit.m_PlayerOptions.GetCurrent());
+
+  const float fReverseOffsetPixels = PLAYER_HEIGHT * 2;
+
+  /*
+   * Convert from ScreenEdit coordinates into NoteField-local coordinates.
+   */
+  const float fLocalY = (fScreenY - m_NoteFieldEdit.GetY()) / fZoom;
+
+  /*
+   * Determine where the displayed beat and the next beat are actually
+   * being drawn.
+   */
+  const float fY0 = ArrowEffects::GetYPos(
+      pPlayerState, 0,
+      ArrowEffects::GetYOffset(pPlayerState, 0, fDisplayedBeat),
+      fReverseOffsetPixels);
+
+  const float fY1 = ArrowEffects::GetYPos(
+      pPlayerState, 0,
+      ArrowEffects::GetYOffset(pPlayerState, 0, fDisplayedBeat + 1.0f),
+      fReverseOffsetPixels);
+
+  /*
+   * Restore the real song positions immediately.
+   */
+  pPlayerState->m_Position.m_fSongBeat = fPlayerSongBeat;
+  pPlayerState->m_Position.m_fSongBeatNoOffset = fPlayerSongBeatNoOffset;
+  pPlayerState->m_Position.m_fSongBeatVisible = fPlayerSongBeatVisible;
+
+  GAMESTATE->m_Position.m_fSongBeat = fGameSongBeat;
+  GAMESTATE->m_Position.m_fSongBeatNoOffset = fGameSongBeatNoOffset;
+  GAMESTATE->m_Position.m_fSongBeatVisible = fGameSongBeatVisible;
+
+  const float fPixelsPerBeat = fY1 - fY0;
+
+  if (std::abs(fPixelsPerBeat) < 0.0001f) {
+    return fDisplayedBeat;
+  }
+
+  /*
+   * Translate the mouse's Y position into the beat currently underneath it.
+   */
+  return fDisplayedBeat + ((fLocalY - fY0) / fPixelsPerBeat);
+}
 
 void ScreenEdit::Init() {
   m_pSoundMusic = nullptr;
+  m_bMouseDragging = false;
+  m_fMouseDragStartX = m_fMouseDragStartY = 0;
+  m_fMouseDragCurrentX = m_fMouseDragCurrentY = 0;
   m_pTempoDetector = nullptr;
 
   GAMESTATE->m_bIsUsingStepTiming = false;
@@ -2099,6 +2216,11 @@ void ScreenEdit::EditMiniMenu(
 
 void ScreenEdit::Update(float fDeltaTime) {
   m_PlayerStateEdit.Update(fDeltaTime);
+
+  if (m_bMouseDragging) {
+    m_fMouseDragCurrentX = GetMouseScreenX();
+    m_fMouseDragCurrentY = GetMouseScreenY();
+  }
 
   if (m_pTempoDetector != nullptr) {
     if (m_pTempoDetector->IsFinished()) {
@@ -2631,6 +2753,118 @@ void ScreenEdit::DrawPrimitives() {
   GAMESTATE->m_Position.m_fSongBeat = fGameSongBeat;  // restore real song beat
   GAMESTATE->m_Position.m_fSongBeatNoOffset = fGameSongBeatNoOffset;
   GAMESTATE->m_Position.m_fSongBeatVisible = fGameSongBeatVisible;
+
+  if (m_bMouseDragging) {
+    m_rectMouseSelection.StretchTo(RectF(
+        std::min(m_fMouseDragStartX, m_fMouseDragCurrentX),
+        std::min(m_fMouseDragStartY, m_fMouseDragCurrentY),
+        std::max(m_fMouseDragStartX, m_fMouseDragCurrentX),
+        std::max(m_fMouseDragStartY, m_fMouseDragCurrentY)));
+    m_rectMouseSelection.SetDiffuse(RageColor(0.6f, 0.8f, 1.0f, 0.25f));
+    m_rectMouseSelection.Draw();
+  }
+}
+
+static bool IsShiftHeld() {
+  return INPUTFILTER->IsBeingPressed(
+             DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT)) ||
+         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT));
+}
+
+void ScreenEdit::FinishMouseDragSelection() {
+  /*
+   * Treat a tiny movement as a click rather than a drag.
+   */
+  if (std::abs(m_fMouseDragCurrentY - m_fMouseDragStartY) < 4.0f) {
+    m_NoteFieldEdit.m_iBeginMarker = -1;
+    m_NoteFieldEdit.m_iEndMarker = -1;
+    return;
+  }
+
+  /*
+   * Convert the top and bottom of the physical selection rectangle into
+   * the beats actually visible underneath those screen positions.
+   *
+   * MouseYToBeat() uses m_fTrailingBeat, so this follows scrolling and
+   * corresponds to the arrows the user currently sees.
+   */
+  float fStartBeat =
+      MouseYToBeat(std::min(m_fMouseDragStartY, m_fMouseDragCurrentY));
+
+  float fEndBeat =
+      MouseYToBeat(std::max(m_fMouseDragStartY, m_fMouseDragCurrentY));
+
+  /*
+   * Reverse scroll or other display conditions can cause the visual
+   * direction and beat direction to disagree, so normalize them.
+   */
+  if (fStartBeat > fEndBeat) {
+    std::swap(fStartBeat, fEndBeat);
+  }
+
+  int iStartRow = std::max(0, BeatToNoteRow(fStartBeat));
+
+  int iEndRow = std::max(0, BeatToNoteRow(fEndBeat));
+
+  if (IsShiftHeld()) {
+    /*
+     * Shift + drag:
+     *
+     * Snap the bounds to the player's currently selected editor quant.
+     *
+     * For example, if the editor is currently on 16ths, both ends of the
+     * selected area will land on 16th-note boundaries.
+     */
+    const float fSnap = NoteTypeToBeat(m_SnapDisplay.GetNoteType());
+
+    iStartRow = std::max(0, BeatToNoteRow(Quantize(fStartBeat, fSnap)));
+
+    iEndRow = std::max(0, BeatToNoteRow(Quantize(fEndBeat, fSnap)));
+  } else {
+    /*
+     * Normal drag:
+     *
+     * The raw rectangle may start/end between arrows.  Tighten the
+     * selection so its bounds become the first and last actual arrows
+     * covered by the rectangle.
+     */
+    int iFirstNote = iStartRow - 1;
+    int iLastNote = iEndRow + 1;
+
+    const bool bHasFirst =
+        m_NoteDataEdit.GetNextTapNoteRowForAllTracks(iFirstNote) &&
+        iFirstNote <= iEndRow;
+
+    const bool bHasLast =
+        m_NoteDataEdit.GetPrevTapNoteRowForAllTracks(iLastNote) &&
+        iLastNote >= iStartRow;
+
+    if (bHasFirst && bHasLast && iFirstNote <= iLastNote) {
+      iStartRow = iFirstNote;
+      iEndRow = iLastNote;
+    } else {
+      /*
+       * There were no valid arrows inside the dragged rectangle.
+       */
+      m_NoteFieldEdit.m_iBeginMarker = -1;
+      m_NoteFieldEdit.m_iEndMarker = -1;
+      return;
+    }
+  }
+
+  /*
+   * ScreenEdit expects an actual region with separate begin/end markers.
+   */
+  if (iStartRow >= iEndRow) {
+    m_NoteFieldEdit.m_iBeginMarker = -1;
+    m_NoteFieldEdit.m_iEndMarker = -1;
+    return;
+  }
+
+  m_NoteFieldEdit.m_iBeginMarker = iStartRow;
+  m_NoteFieldEdit.m_iEndMarker = iEndRow;
+
+  m_soundMarker.Play(true);
 }
 
 bool ScreenEdit::Input(const InputEventPlus& input) {
@@ -2644,6 +2878,21 @@ bool ScreenEdit::Input(const InputEventPlus& input) {
 
   if (m_In.IsTransitioning() || m_Out.IsTransitioning()) {
     return false;
+  }
+
+  if (m_EditState == STATE_EDITING &&
+      input.DeviceI == DeviceInput(DEVICE_MOUSE, MOUSE_LEFT)) {
+    if (input.type == IET_FIRST_PRESS) {
+      m_bMouseDragging = true;
+      m_fMouseDragStartX = m_fMouseDragCurrentX = GetMouseScreenX();
+      m_fMouseDragStartY = m_fMouseDragCurrentY = GetMouseScreenY();
+      return true;
+    }
+    if (input.type == IET_RELEASE && m_bMouseDragging) {
+      m_bMouseDragging = false;
+      FinishMouseDragSelection();
+      return true;
+    }
   }
 
   EditButton EditB = DeviceToEdit(input.DeviceI);
@@ -3777,15 +4026,15 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
       return true;
 
     case EDIT_BUTTON_CUT:
-      CutSelectionToClipboard();
+      CutSelectionToClipboard(IsShiftHeld());
       return true;
 
     case EDIT_BUTTON_COPY:
-      CopySelectionToClipboard();
+      CopySelectionToClipboard(IsShiftHeld());
       return true;
 
     case EDIT_BUTTON_PASTE:
-      PasteClipboardAtCurrentBeat();
+      PasteClipboardAtCurrentBeat(IsShiftHeld());
       return true;
 
     case EDIT_BUTTON_TOGGLE_WAVEFORM:
@@ -7128,36 +7377,84 @@ static LocalizedString CLIPBOARD_EMPTY(
 static LocalizedString PASTE_FROM_CLIPBOARD(
     "ScreenEdit", "Paste - Clipboard pasted at current beat.");
 
-void ScreenEdit::CutSelectionToClipboard() {
+static LocalizedString CUT_WITH_TIMING(
+    "ScreenEdit", "Cut - Selection and timing cut to clipboard.");
+static LocalizedString COPY_WITH_TIMING(
+    "ScreenEdit", "Copy - Selection and timing copied to clipboard.");
+static LocalizedString PASTE_WITH_TIMING(
+    "ScreenEdit", "Paste - Clipboard and timing pasted at current beat.");
+
+// Moves the timing segments covering the current selection in or out of the
+// timing clipboard.
+void ScreenEdit::CutSelectionToClipboard(bool bIncludeTiming) {
   if (m_NoteFieldEdit.m_iBeginMarker == -1 ||
       m_NoteFieldEdit.m_iEndMarker == -1) {
     SCREENMAN->SystemMessage(NOTHING_SELECTED);
     SCREENMAN->PlayInvalidSound();
     return;
   }
+
+  const int iBegin = m_NoteFieldEdit.m_iBeginMarker;
+  const int iEnd = m_NoteFieldEdit.m_iEndMarker;
+
+  if (bIncludeTiming) {
+    clipboardFullTiming.Clear();
+    GetAppropriateTiming().CopyRange(
+        iBegin, iEnd, TimingSegmentType_Invalid, 0, clipboardFullTiming);
+  }
+  s_bClipboardHasTiming = bIncludeTiming;
+
   HandleAlterMenuChoice(cut);
-  SCREENMAN->SystemMessage(CUT_TO_CLIPBOARD);
+
+  if (bIncludeTiming) {
+    GetAppropriateTimingForUpdate().ClearRange(
+        iBegin, iEnd, TimingSegmentType_Invalid);
+    SetDirty(true);
+  }
+
+  SCREENMAN->SystemMessage(bIncludeTiming ? CUT_WITH_TIMING : CUT_TO_CLIPBOARD);
 }
 
-void ScreenEdit::CopySelectionToClipboard() {
+void ScreenEdit::CopySelectionToClipboard(bool bIncludeTiming) {
   if (m_NoteFieldEdit.m_iBeginMarker == -1 ||
       m_NoteFieldEdit.m_iEndMarker == -1) {
     SCREENMAN->SystemMessage(NOTHING_SELECTED);
     SCREENMAN->PlayInvalidSound();
     return;
   }
+
+  if (bIncludeTiming) {
+    clipboardFullTiming.Clear();
+    GetAppropriateTiming().CopyRange(
+        m_NoteFieldEdit.m_iBeginMarker, m_NoteFieldEdit.m_iEndMarker,
+        TimingSegmentType_Invalid, 0, clipboardFullTiming);
+  }
+  s_bClipboardHasTiming = bIncludeTiming;
+
   HandleAlterMenuChoice(copy);
-  SCREENMAN->SystemMessage(COPY_TO_CLIPBOARD);
+  SCREENMAN->SystemMessage(
+      bIncludeTiming ? COPY_WITH_TIMING : COPY_TO_CLIPBOARD);
 }
 
-void ScreenEdit::PasteClipboardAtCurrentBeat() {
+void ScreenEdit::PasteClipboardAtCurrentBeat(bool bIncludeTiming) {
   if (m_Clipboard.IsEmpty()) {
     SCREENMAN->SystemMessage(CLIPBOARD_EMPTY);
     SCREENMAN->PlayInvalidSound();
     return;
   }
+
   HandleAreaMenuChoice(paste_at_current_beat);
-  SCREENMAN->SystemMessage(PASTE_FROM_CLIPBOARD);
+
+  const bool bPastedTiming = bIncludeTiming && s_bClipboardHasTiming;
+  if (bPastedTiming) {
+    clipboardFullTiming.CopyRange(
+        0, MAX_NOTE_ROW, TimingSegmentType_Invalid, GetRow(),
+        GetAppropriateTimingForUpdate());
+    SetDirty(true);
+  }
+
+  SCREENMAN->SystemMessage(
+      bPastedTiming ? PASTE_WITH_TIMING : PASTE_FROM_CLIPBOARD);
 }
 
 static LocalizedString WAVEFORM_SHOWN("ScreenEdit", "Waveform - Shown.");
