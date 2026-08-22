@@ -140,6 +140,7 @@ LuaDeclareType(PlayMode);
 enum SortOrder {
   // song sorts
   SORT_PREFERRED,      /**< Sort by the user's preferred settings. */
+  SORT_SERIES,         /**< Sort by the series the Songs are in. */
   SORT_GROUP,          /**< Sort by the groups the Songs are in. */
   SORT_TITLE,          /**< Sort by the Song's title. */
   SORT_BPM,            /**< Sort by the Song's BPM. */
@@ -151,6 +152,9 @@ enum SortOrder {
                         */
   SORT_TOP_GRADES_P2,  /**< Sort by the highest grades earned on a Song for P2.
                         */
+  SORT_RECENT,
+  SORT_RECENT_P1,      /**< Sort by the most recent play for P1. */
+  SORT_RECENT_P2,      /**< Sort by the most recent play for P2. */
   SORT_ARTIST,         /**< Sort by the name of the artist of the Song. */
   SORT_GENRE,          /**< Sort by the Song's genre. */
   SORT_METER,          /**< Sort by the difficulty of all meters */
@@ -180,10 +184,6 @@ enum SortOrder {
   SORT_ROULETTE,  // Note: don't call more than once per line as successive
                   // calls can clear the vector used. TODO: fix this underlying
                   // bug.
-  SORT_RECENT,
-  SORT_RECENT_P1, /**< Sort by the most recent play for P1. */
-  SORT_RECENT_P2, /**< Sort by the most recent play for P2. */
-  SORT_SERIES,    /**< Sort by the series the Songs are in. */
   NUM_SortOrder,
   SortOrder_Invalid
 };
@@ -215,7 +215,7 @@ LuaDeclareType(SortOrder);
  */
 inline bool IsSongSort(SortOrder so) {
   return (so >= SORT_PREFERRED && so <= SORT_DOUBLE_CHALLENGE_METER) ||
-         so == SORT_LENGTH || so == SORT_SERIES;
+         so == SORT_LENGTH;
 }
 
 /** @brief The list of tap note scores available during play. */
