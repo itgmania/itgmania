@@ -7204,7 +7204,8 @@ static const EditHelpLine g_EditHelpLines[] = {
     EditHelpLine("Cut selection to clipboard", EDIT_BUTTON_CUT),
     EditHelpLine("Copy selection to clipboard", EDIT_BUTTON_COPY),
     EditHelpLine("Paste from clipboard", EDIT_BUTTON_PASTE),
-    EditHelpLine("Toggle waveform display", EDIT_BUTTON_TOGGLE_WAVEFORM),
+    EditHelpLine("Toggle waveform display (Ctrl+G)",
+           EDIT_BUTTON_TOGGLE_WAVEFORM),
 };
 
 static bool IsMapped(EditButton eb, const MapEditToDI& editmap) {
