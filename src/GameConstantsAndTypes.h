@@ -139,19 +139,19 @@ LuaDeclareType(PlayMode);
  */
 enum SortOrder {
   // song sorts
-  SORT_PREFERRED,      /**< Sort by the user's preferred settings. */
-  SORT_SERIES,         /**< Sort by the series the Songs are in. */
-  SORT_GROUP,          /**< Sort by the groups the Songs are in. */
-  SORT_TITLE,          /**< Sort by the Song's title. */
-  SORT_BPM,            /**< Sort by the Song's BPM. */
-  SORT_POPULARITY,     /**< Sort by how popular the Song is. */
-  SORT_POPULARITY_P1,  /**< Sort by how popular the Song is for P1. */
-  SORT_POPULARITY_P2,  /**< Sort by how popular the Song is for P2. */
-  SORT_TOP_GRADES,     /**< Sort by the highest grades earned on a Song. */
-  SORT_TOP_GRADES_P1,  /**< Sort by the highest grades earned on a Song for P1.
-                        */
-  SORT_TOP_GRADES_P2,  /**< Sort by the highest grades earned on a Song for P2.
-                        */
+  SORT_PREFERRED,     /**< Sort by the user's preferred settings. */
+  SORT_SERIES,        /**< Sort by the series the Songs are in. */
+  SORT_GROUP,         /**< Sort by the groups the Songs are in. */
+  SORT_TITLE,         /**< Sort by the Song's title. */
+  SORT_BPM,           /**< Sort by the Song's BPM. */
+  SORT_POPULARITY,    /**< Sort by how popular the Song is. */
+  SORT_POPULARITY_P1, /**< Sort by how popular the Song is for P1. */
+  SORT_POPULARITY_P2, /**< Sort by how popular the Song is for P2. */
+  SORT_TOP_GRADES,    /**< Sort by the highest grades earned on a Song. */
+  SORT_TOP_GRADES_P1, /**< Sort by the highest grades earned on a Song for P1.
+                       */
+  SORT_TOP_GRADES_P2, /**< Sort by the highest grades earned on a Song for P2.
+                       */
   SORT_RECENT,
   SORT_RECENT_P1,      /**< Sort by the most recent play for P1. */
   SORT_RECENT_P2,      /**< Sort by the most recent play for P2. */

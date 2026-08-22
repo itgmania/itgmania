@@ -146,11 +146,13 @@ XToLocalizedString(Premium);
 LuaXType(Premium);
 
 static const char* SortOrderNames[] = {
-    "Preferred",       "Group",
-    "Title",           "BPM",
-    "Popularity",      "PopularityP1",
-    "PopularityP2",    "TopGrades",
-    "TopP1Grades",     "TopP2Grades",
+    "Preferred",       "Series",
+    "Group",           "Title",           
+    "BPM",             "Popularity",      
+    "PopularityP1",    "PopularityP2",    
+    "TopGrades",       "TopP1Grades",     
+    "TopP2Grades",     "Recent",
+    "RecentP1",        "RecentP2",
     "Artist",          "Genre",
     "Meter",           "BeginnerMeter",
     "EasyMeter",       "MediumMeter",
@@ -160,9 +162,7 @@ static const char* SortOrderNames[] = {
     "ModeMenu",        "AllCourses",
     "Nonstop",         "Oni",
     "Endless",         "Length",
-    "Roulette",        "Recent",
-    "RecentP1",        "RecentP2",
-    "Series"};
+    "Roulette"};
 XToString(SortOrder);
 StringToX(SortOrder);
 LuaXType(SortOrder);
