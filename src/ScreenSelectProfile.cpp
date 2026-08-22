@@ -224,10 +224,12 @@ bool ScreenSelectProfile::Finish() {
     if (m_iSelectedProfiles[p] == 0) {
       MEMCARDMAN->WaitForCheckingToComplete();
 
-      MEMCARDMAN->MountCard(p);
-      bool bSuccess =
-          PROFILEMAN->LoadProfileFromMemoryCard(p, true);  // load full profile
-      MEMCARDMAN->UnmountCard(p);
+      bool bSuccess = false;
+      if (MEMCARDMAN->MountCard(p)) {
+        bSuccess = PROFILEMAN->LoadProfileFromMemoryCard(
+            p, true);  // load full profile
+        MEMCARDMAN->UnmountCard(p);
+      }
 
       // Lock the card on successful load, so we won't allow it to be changed.
       if (bSuccess) {

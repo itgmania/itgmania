@@ -284,12 +284,14 @@ void ProfileManager::GetMemoryCardProfileDirectoriesToTry(
 
 bool ProfileManager::LoadProfileFromMemoryCard(
     PlayerNumber pn, bool bLoadEdits) {
-  UnloadProfile(pn);
-
-  // mount slot
-  if (MEMCARDMAN->GetCardState(pn) != MemoryCardState_Ready) {
+  // The card must be ready and mounted to determine if a profile already
+  // exists on the card.
+  if (MEMCARDMAN->GetCardState(pn) != MemoryCardState_Ready ||
+      !MEMCARDMAN->IsMounted(pn)) {
     return false;
   }
+
+  UnloadProfile(pn);
 
   std::vector<std::string> asDirsToTry;
   GetMemoryCardProfileDirectoriesToTry(asDirsToTry);

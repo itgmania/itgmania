@@ -645,8 +645,11 @@ void GameState::SavePlayerProfile(PlayerNumber pn) {
   }
 
   bool bWasMemoryCard = PROFILEMAN->ProfileWasLoadedFromMemoryCard(pn);
-  if (bWasMemoryCard) {
-    MEMCARDMAN->MountCard(pn);
+  if (bWasMemoryCard && !MEMCARDMAN->MountCard(pn)) {
+    LOG->Warn(
+        "Couldn't mount P%d memory card, profile '%s' won't be saved", pn + 1,
+        PROFILEMAN->GetPlayerName(pn).c_str());
+    return;
   }
   PROFILEMAN->SaveProfile(pn);
   if (bWasMemoryCard) {
