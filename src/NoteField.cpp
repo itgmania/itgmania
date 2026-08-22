@@ -744,12 +744,10 @@ void NoteField::DrawWaveform() {
       const float fY = ArrowEffects::GetYPos(
           m_pPlayerState, 0, fYOffset, m_fYReverseOffsetPixels);
 
-      // Signed waveform: left edge from minima, right edge from maxima.
-      float xL = fHalfWidth * fMin;
-      float xR = fHalfWidth * fMax;
-      if (xL > xR) {
-        std::swap(xL, xR);
-      }
+      const float fMagnitude =
+          fHalfWidth * std::max(std::abs(fMin), std::abs(fMax));
+      const float xL = -fMagnitude;
+      const float xR = fMagnitude;
 
       RageSpriteVertex vLeft, vRight;
       vLeft.p = RageVector3(xL, fY, 0);
