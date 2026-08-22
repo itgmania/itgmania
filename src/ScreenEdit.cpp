@@ -280,6 +280,10 @@ void ScreenEdit::InitEditMappings() {
   name_to_edit_button["SAVE"] = EDIT_BUTTON_SAVE;
 
   name_to_edit_button["UNDO"] = EDIT_BUTTON_UNDO;
+  name_to_edit_button["REDO"] = EDIT_BUTTON_REDO;
+  name_to_edit_button["COPY"] = EDIT_BUTTON_COPY;
+  name_to_edit_button["CUT"] = EDIT_BUTTON_CUT;
+  name_to_edit_button["PASTE"] = EDIT_BUTTON_PASTE;
 
   name_to_edit_button["ADD_COURSE_MODS"] = EDIT_BUTTON_ADD_COURSE_MODS;
 
@@ -708,8 +712,20 @@ void ScreenEdit::InitEditMappings() {
       DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL);
 #endif
 
+  m_EditMappingsDeviceInput.button[EDIT_BUTTON_UNDO][0] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_Cz);
   m_EditMappingsDeviceInput.button[EDIT_BUTTON_UNDO][1] =
       DeviceInput(DEVICE_KEYBOARD, KEY_Cu);
+
+  m_EditMappingsDeviceInput.button[EDIT_BUTTON_REDO][0] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_Cy);
+
+  m_EditMappingsDeviceInput.button[EDIT_BUTTON_CUT][0] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_Cx);
+  m_EditMappingsDeviceInput.button[EDIT_BUTTON_COPY][0] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_Cc);
+  m_EditMappingsDeviceInput.button[EDIT_BUTTON_PASTE][0] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_Cv);
 
   // Switch players, if it makes sense to do so.
   m_EditMappingsDeviceInput.button[EDIT_BUTTON_SWITCH_PLAYERS][0] =
@@ -1708,6 +1724,11 @@ static ThemeMetric<bool> LOOP_ON_CHART_END("ScreenEdit", "LoopOnChartEnd");
 
 REGISTER_SCREEN_CLASS(ScreenEdit);
 
+// Static so the clipboard (notes + full timing) persists across
+// ScreenEdit instances, which lets Cut/Copy/Paste work between charts.
+NoteData ScreenEdit::m_Clipboard;
+TimingData ScreenEdit::clipboardFullTiming;
+
 void ScreenEdit::Init() {
   m_pSoundMusic = nullptr;
 
@@ -1867,12 +1888,14 @@ void ScreenEdit::Init() {
 
   m_Clipboard.SetNumTracks(m_NoteDataEdit.GetNumTracks());
 
-  clipboardFullTiming =
-      GAMESTATE->m_pCurSong->m_SongTiming;  // always have a backup.
+  // clipboardFullTiming is static and only initialized with a backup the
+  // first time any ScreenEdit is created, so it persists useful data.
+  if (clipboard_full_timing == nullptr) {
+    clipboardFullTiming = GAMESTATE->m_pCurSong->m_SongTiming;
+  }
   clipboard_full_timing = &clipboardFullTiming;
 
-  m_bHasUndo = false;
-  m_Undo.SetNumTracks(m_NoteDataEdit.GetNumTracks());
+  ClearUndo();
 
   SetDirty(m_NoteDataEdit.IsEmpty());  // require saving if empty.
   if (GAMESTATE->m_pCurSong->WasLoadedFromAutosave()) {
@@ -2650,7 +2673,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
       if (m_NoteDataEdit.IsHoldNoteAtRow(iCol, iSongIndex, &iHeadRow)) {
         m_soundRemoveNote.Play(true);
         SetDirty(true);
-        SaveUndo();
+        SaveUndo("Remove Hold");
         m_NoteDataEdit.SetTapNote(iCol, iHeadRow, TAP_EMPTY);
         // Don't CheckNumberOfNotesAndUndo.  We don't want to revert any change
         // that removes notes.
@@ -2659,7 +2682,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
           TapNoteType_Empty) {
         m_soundRemoveNote.Play(true);
         SetDirty(true);
-        SaveUndo();
+        SaveUndo("Remove Note");
         m_NoteDataEdit.SetTapNote(iCol, iSongIndex, TAP_EMPTY);
         // Don't CheckNumberOfNotesAndUndo.  We don't want to revert any change
         // that removes notes.
@@ -2669,7 +2692,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
       } else {
         m_soundAddNote.Play(true);
         SetDirty(true);
-        SaveUndo();
+        SaveUndo("Place Note");
         TapNote tn = m_selectedTap;
         tn.pn = m_InputPlayerNumber;
         m_NoteDataEdit.SetTapNote(iCol, iSongIndex, tn);
@@ -2895,7 +2918,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
       g_AreaMenu.rows[paste_at_current_beat].bEnabled = !m_Clipboard.IsEmpty();
       g_AreaMenu.rows[paste_at_begin_marker].bEnabled =
           !m_Clipboard.IsEmpty() != 0 && m_NoteFieldEdit.m_iBeginMarker != -1;
-      g_AreaMenu.rows[undo].bEnabled = m_bHasUndo;
+      g_AreaMenu.rows[undo].bEnabled = !m_UndoStack.empty();
       EditMiniMenu(&g_AreaMenu, SM_BackFromAreaMenu);
     }
       return true;
@@ -3645,6 +3668,22 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
       Undo();
       return true;
 
+    case EDIT_BUTTON_REDO:
+      Redo();
+      return true;
+
+    case EDIT_BUTTON_CUT:
+      CutSelectionToClipboard();
+      return true;
+
+    case EDIT_BUTTON_COPY:
+      CopySelectionToClipboard();
+      return true;
+
+    case EDIT_BUTTON_PASTE:
+      PasteClipboardAtCurrentBeat();
+      return true;
+
     case EDIT_BUTTON_SWITCH_PLAYERS:
       if (m_InputPlayerNumber == PLAYER_INVALID) {
         return false;
@@ -3894,7 +3933,7 @@ void ScreenEdit::TransitionEditState(EditState em) {
         if (!GAMESTATE->m_bIsUsingStepTiming) {
           GAMESTATE->m_pCurSteps[PLAYER_1]->m_Timing = backupStepTiming;
         }
-        SaveUndo();
+        SaveUndo("Record");
 
         // delete old TapNotes in the range
         m_NoteDataEdit.ClearRange(m_iStartPlayingAt, m_iStopPlayingAt);
@@ -4505,7 +4544,7 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage SM) {
         sMods, g_fLastInsertAttackDurationSeconds, -1);
     tn.pn = m_InputPlayerNumber;
     SetDirty(true);
-    SaveUndo();
+    SaveUndo("Add Attack");
     m_NoteDataEdit.SetTapNote(g_iLastInsertTapAttackTrack, row, tn);
     CheckNumberOfNotesAndUndo();
   } else if (
@@ -4766,14 +4805,14 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage SM) {
     }
   } else if (SM == SM_DoRevertToLastSave) {
     if (ScreenPrompt::s_LastAnswer == ANSWER_YES) {
-      SaveUndo();
+      SaveUndo("Revert to Last Save");
       CopyFromLastSave();
       m_pSteps->GetNoteData(m_NoteDataEdit);
       SetDirty(false);
     }
   } else if (SM == SM_DoRevertFromDisk) {
     if (ScreenPrompt::s_LastAnswer == ANSWER_YES) {
-      SaveUndo();
+      SaveUndo("Revert From Disk");
       RevertFromDisk();
       m_pSteps->GetNoteData(m_NoteDataEdit);
       SetDirty(false);
@@ -4785,7 +4824,7 @@ void ScreenEdit::HandleScreenMessage(const ScreenMessage SM) {
     }
   } else if (SM == SM_DoEraseStepTiming) {
     if (ScreenPrompt::s_LastAnswer == ANSWER_YES) {
-      SaveUndo();
+      SaveUndo("Erase Step Timing");
       m_pSteps->m_Timing.Clear();
       SetDirty(true);
     }
@@ -5602,7 +5641,7 @@ void ScreenEdit::HandleAlterMenuChoice(
   }
 
   if (bSaveUndo) {
-    SaveUndo();
+    SaveUndo(g_AlterMenu.rows[c].sName);
   }
 
   switch (c) {
@@ -6077,7 +6116,7 @@ void ScreenEdit::HandleAreaMenuChoice(
   }
 
   if (bSaveUndo) {
-    SaveUndo();
+    SaveUndo(g_AreaMenu.rows[c].sName);
   }
 
   switch (c) {
@@ -6803,26 +6842,114 @@ void ScreenEdit::RevertFromDisk() {
   SONGMAN->Invalidate(GAMESTATE->m_pCurSong);
 }
 
-void ScreenEdit::SaveUndo() {
-  m_bHasUndo = true;
-  m_Undo.CopyAll(m_NoteDataEdit);
+void ScreenEdit::SaveUndo(const std::string& sDescription) {
+  UndoState state;
+  state.m_NoteData.CopyAll(m_NoteDataEdit);
+  state.m_sDescription = sDescription;
+  m_UndoStack.push_back(state);
+  if (m_UndoStack.size() > MAX_UNDO_STATES) {
+    m_UndoStack.erase(m_UndoStack.begin());
+  }
+  // A new action invalidates any history that was previously undone.
+  m_RedoStack.clear();
 }
 
-static LocalizedString UNDO("ScreenEdit", "Undo");
+static LocalizedString UNDO("ScreenEdit", "Undo - %s");
 static LocalizedString CANT_UNDO("ScreenEdit", "Can't undo - no undo data.");
 void ScreenEdit::Undo() {
-  if (m_bHasUndo) {
-    std::swap(m_Undo, m_NoteDataEdit);
-    SCREENMAN->SystemMessage(UNDO);
+  if (!m_UndoStack.empty()) {
+    UndoState redoState;
+    redoState.m_NoteData.CopyAll(m_NoteDataEdit);
+    redoState.m_sDescription = m_UndoStack.back().m_sDescription;
+
+    const std::string sDescription = m_UndoStack.back().m_sDescription;
+    m_NoteDataEdit.CopyAll(m_UndoStack.back().m_NoteData);
+    m_UndoStack.pop_back();
+
+    m_RedoStack.push_back(redoState);
+    if (m_RedoStack.size() > MAX_UNDO_STATES) {
+      m_RedoStack.erase(m_RedoStack.begin());
+    }
+
+    SCREENMAN->SystemMessage(
+        ssprintf(UNDO.GetValue().c_str(), sDescription.c_str()));
   } else {
     SCREENMAN->SystemMessage(CANT_UNDO);
     SCREENMAN->PlayInvalidSound();
   }
 }
 
+static LocalizedString REDO("ScreenEdit", "Redo - %s");
+static LocalizedString CANT_REDO("ScreenEdit", "Can't redo - no redo data.");
+void ScreenEdit::Redo() {
+  if (!m_RedoStack.empty()) {
+    UndoState undoState;
+    undoState.m_NoteData.CopyAll(m_NoteDataEdit);
+    undoState.m_sDescription = m_RedoStack.back().m_sDescription;
+
+    const std::string sDescription = m_RedoStack.back().m_sDescription;
+    m_NoteDataEdit.CopyAll(m_RedoStack.back().m_NoteData);
+    m_RedoStack.pop_back();
+
+    m_UndoStack.push_back(undoState);
+    if (m_UndoStack.size() > MAX_UNDO_STATES) {
+      m_UndoStack.erase(m_UndoStack.begin());
+    }
+
+    SCREENMAN->SystemMessage(
+        ssprintf(REDO.GetValue().c_str(), sDescription.c_str()));
+  } else {
+    SCREENMAN->SystemMessage(CANT_REDO);
+    SCREENMAN->PlayInvalidSound();
+  }
+}
+
 void ScreenEdit::ClearUndo() {
-  m_bHasUndo = false;
-  m_Undo.ClearAll();
+  m_UndoStack.clear();
+  m_RedoStack.clear();
+}
+
+static LocalizedString NOTHING_SELECTED(
+    "ScreenEdit", "Nothing selected - use Select an area first.");
+static LocalizedString CUT_TO_CLIPBOARD(
+    "ScreenEdit", "Cut - Selection moved to clipboard.");
+static LocalizedString COPY_TO_CLIPBOARD(
+    "ScreenEdit", "Copy - Selection copied to clipboard.");
+static LocalizedString CLIPBOARD_EMPTY(
+    "ScreenEdit", "Clipboard is empty - nothing to paste.");
+static LocalizedString PASTE_FROM_CLIPBOARD(
+    "ScreenEdit", "Paste - Clipboard pasted at current beat.");
+
+void ScreenEdit::CutSelectionToClipboard() {
+  if (m_NoteFieldEdit.m_iBeginMarker == -1 ||
+      m_NoteFieldEdit.m_iEndMarker == -1) {
+    SCREENMAN->SystemMessage(NOTHING_SELECTED);
+    SCREENMAN->PlayInvalidSound();
+    return;
+  }
+  HandleAlterMenuChoice(cut);
+  SCREENMAN->SystemMessage(CUT_TO_CLIPBOARD);
+}
+
+void ScreenEdit::CopySelectionToClipboard() {
+  if (m_NoteFieldEdit.m_iBeginMarker == -1 ||
+      m_NoteFieldEdit.m_iEndMarker == -1) {
+    SCREENMAN->SystemMessage(NOTHING_SELECTED);
+    SCREENMAN->PlayInvalidSound();
+    return;
+  }
+  HandleAlterMenuChoice(copy);
+  SCREENMAN->SystemMessage(COPY_TO_CLIPBOARD);
+}
+
+void ScreenEdit::PasteClipboardAtCurrentBeat() {
+  if (m_Clipboard.IsEmpty()) {
+    SCREENMAN->SystemMessage(CLIPBOARD_EMPTY);
+    SCREENMAN->PlayInvalidSound();
+    return;
+  }
+  HandleAreaMenuChoice(paste_at_current_beat);
+  SCREENMAN->SystemMessage(PASTE_FROM_CLIPBOARD);
 }
 
 static LocalizedString CREATES_MORE_THAN_NOTES(
@@ -6856,11 +6983,16 @@ void ScreenEdit::CheckNumberOfNotesAndUndo() {
      * Delete Beat to pull back the notes that are already past the end.
      */
     float fNewLastBeat = m_NoteDataEdit.GetLastBeat();
-    bool bLastBeatIncreased = fNewLastBeat > m_Undo.GetLastBeat();
+    float fPreviousLastBeat =
+        m_UndoStack.empty() ? 0.f : m_UndoStack.back().m_NoteData.GetLastBeat();
+    bool bLastBeatIncreased = fNewLastBeat > fPreviousLastBeat;
     bool bPassedTheEnd = fNewLastBeat > GetMaximumBeatForNewNote();
     if (bLastBeatIncreased && bPassedTheEnd) {
       Undo();
-      m_bHasUndo = false;
+      // The reverted state is invalid; don't let it be reached via Redo.
+      if (!m_RedoStack.empty()) {
+        m_RedoStack.pop_back();
+      }
       std::string sError = CREATES_NOTES_PAST_END.GetValue() + "\n\n" +
                            CHANGE_REVERTED.GetValue();
       ScreenPrompt::Prompt(SM_None, sError);
