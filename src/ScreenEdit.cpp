@@ -472,13 +472,13 @@ void ScreenEdit::InitEditMappings() {
       m_EditMappingsDeviceInput.button[EDIT_BUTTON_SNAP_PREV][0] =
           DeviceInput(DEVICE_KEYBOARD, KEY_RIGHT);
 
-      // v = course playback menu
+      // k = course playback menu
       // m_EditMappingsDeviceInput.button[EDIT_BUTTON_OPEN_COURSE_ATTACK_MENU][0]
       // = DeviceInput(DEVICE_KEYBOARD, KEY_Cv);
       m_EditMappingsDeviceInput.button[EDIT_BUTTON_ADD_COURSE_MODS][0] =
           DeviceInput(DEVICE_KEYBOARD, KEY_Co);
       m_EditMappingsDeviceInput.button[EDIT_BUTTON_OPEN_COURSE_MENU][0] =
-          DeviceInput(DEVICE_KEYBOARD, KEY_Cv);
+          DeviceInput(DEVICE_KEYBOARD, KEY_Ck);
 
       // F1 = Show help popup
       m_EditMappingsDeviceInput.button[EDIT_BUTTON_OPEN_INPUT_HELP][0] =
@@ -716,16 +716,38 @@ void ScreenEdit::InitEditMappings() {
       DeviceInput(DEVICE_KEYBOARD, KEY_Cz);
   m_EditMappingsDeviceInput.button[EDIT_BUTTON_UNDO][1] =
       DeviceInput(DEVICE_KEYBOARD, KEY_Cu);
+  m_EditMappingsDeviceInput.hold[EDIT_BUTTON_UNDO][0] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL);
+  m_EditMappingsDeviceInput.hold[EDIT_BUTTON_UNDO][1] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL);
 
   m_EditMappingsDeviceInput.button[EDIT_BUTTON_REDO][0] =
       DeviceInput(DEVICE_KEYBOARD, KEY_Cy);
+  m_EditMappingsDeviceInput.hold[EDIT_BUTTON_REDO][0] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL);
+  m_EditMappingsDeviceInput.hold[EDIT_BUTTON_REDO][1] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL);
 
   m_EditMappingsDeviceInput.button[EDIT_BUTTON_CUT][0] =
       DeviceInput(DEVICE_KEYBOARD, KEY_Cx);
+  m_EditMappingsDeviceInput.hold[EDIT_BUTTON_CUT][0] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL);
+  m_EditMappingsDeviceInput.hold[EDIT_BUTTON_CUT][1] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL);
+
   m_EditMappingsDeviceInput.button[EDIT_BUTTON_COPY][0] =
       DeviceInput(DEVICE_KEYBOARD, KEY_Cc);
+  m_EditMappingsDeviceInput.hold[EDIT_BUTTON_COPY][0] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL);
+  m_EditMappingsDeviceInput.hold[EDIT_BUTTON_COPY][1] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL);
+
   m_EditMappingsDeviceInput.button[EDIT_BUTTON_PASTE][0] =
       DeviceInput(DEVICE_KEYBOARD, KEY_Cv);
+  m_EditMappingsDeviceInput.hold[EDIT_BUTTON_PASTE][0] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL);
+  m_EditMappingsDeviceInput.hold[EDIT_BUTTON_PASTE][1] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL);
 
   // Switch players, if it makes sense to do so.
   m_EditMappingsDeviceInput.button[EDIT_BUTTON_SWITCH_PLAYERS][0] =
@@ -777,6 +799,10 @@ void ScreenEdit::InitEditMappings() {
       GAME_BUTTON_BACK;
   m_RecordPausedMappingsDeviceInput.button[EDIT_BUTTON_UNDO][0] =
       DeviceInput(DEVICE_KEYBOARD, KEY_Cu);
+  m_RecordPausedMappingsDeviceInput.hold[EDIT_BUTTON_UNDO][0] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL);
+  m_RecordPausedMappingsDeviceInput.hold[EDIT_BUTTON_UNDO][1] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL);
 
   IniFile mapping_ini;
   // Only use the mappings file if it exists.  It's meant to be optional, and
@@ -7127,6 +7153,10 @@ static const EditHelpLine g_EditHelpLines[] = {
     EditHelpLine("Add to/remove from right half", EDIT_BUTTON_RIGHT_SIDE),
     EditHelpLine("Switch Timing", EDIT_BUTTON_SWITCH_TIMINGS),
     EditHelpLine("Switch player (Routine only)", EDIT_BUTTON_SWITCH_PLAYERS),
+    EditHelpLine("Undo/Redo", EDIT_BUTTON_UNDO, EDIT_BUTTON_REDO),
+    EditHelpLine("Cut selection to clipboard", EDIT_BUTTON_CUT),
+    EditHelpLine("Copy selection to clipboard", EDIT_BUTTON_COPY),
+    EditHelpLine("Paste from clipboard", EDIT_BUTTON_PASTE),
 };
 
 static bool IsMapped(EditButton eb, const MapEditToDI& editmap) {
