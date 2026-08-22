@@ -284,6 +284,7 @@ void ScreenEdit::InitEditMappings() {
   name_to_edit_button["COPY"] = EDIT_BUTTON_COPY;
   name_to_edit_button["CUT"] = EDIT_BUTTON_CUT;
   name_to_edit_button["PASTE"] = EDIT_BUTTON_PASTE;
+  name_to_edit_button["TOGGLE_WAVEFORM"] = EDIT_BUTTON_TOGGLE_WAVEFORM;
 
   name_to_edit_button["ADD_COURSE_MODS"] = EDIT_BUTTON_ADD_COURSE_MODS;
 
@@ -748,6 +749,9 @@ void ScreenEdit::InitEditMappings() {
       DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL);
   m_EditMappingsDeviceInput.hold[EDIT_BUTTON_PASTE][1] =
       DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL);
+
+  m_EditMappingsDeviceInput.button[EDIT_BUTTON_TOGGLE_WAVEFORM][0] =
+      DeviceInput(DEVICE_KEYBOARD, KEY_Cg);
 
   // Switch players, if it makes sense to do so.
   m_EditMappingsDeviceInput.button[EDIT_BUTTON_SWITCH_PLAYERS][0] =
@@ -1899,6 +1903,8 @@ void ScreenEdit::Init() {
   m_NoteFieldEdit.SetZoom(SCREEN_HEIGHT / 480 * 0.5);
   m_NoteFieldEdit.Init(&m_PlayerStateEdit, PLAYER_HEIGHT * 2, false);
   m_NoteFieldEdit.Load(&m_NoteDataEdit, -240, 850);
+  m_NoteFieldEdit.LoadWaveform(m_pSong->GetMusicPath());
+  m_NoteFieldEdit.SetShowWaveform(true);
   this->AddChild(&m_NoteFieldEdit);
 
   m_NoteDataRecord.SetNumTracks(m_NoteDataEdit.GetNumTracks());
@@ -2601,6 +2607,35 @@ bool ScreenEdit::Input(const InputEventPlus& input) {
   EditButton EditB = DeviceToEdit(input.DeviceI);
   if (EditB == EditButton_Invalid) {
     EditB = MenuButtonToEditButton(input.MenuI);
+  }
+
+  // Allow mouse wheel chart navigation in edit mode by mapping to existing
+  // scroll actions.
+  if (EditB == EditButton_Invalid && m_EditState == STATE_EDITING) {
+    const bool bCtrlHeld =
+        INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LCTRL)) ||
+        INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RCTRL));
+    const bool bShiftHeld =
+        INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT)) ||
+        INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT));
+
+    if (input.DeviceI == DeviceInput(DEVICE_MOUSE, MOUSE_WHEELUP)) {
+      if (bCtrlHeld && bShiftHeld) {
+        EditB = EDIT_BUTTON_SCROLL_UP_PAGE;
+      } else if (bCtrlHeld) {
+        EditB = EDIT_BUTTON_SCROLL_UP_TS;
+      } else {
+        EditB = EDIT_BUTTON_SCROLL_UP_LINE;
+      }
+    } else if (input.DeviceI == DeviceInput(DEVICE_MOUSE, MOUSE_WHEELDOWN)) {
+      if (bCtrlHeld && bShiftHeld) {
+        EditB = EDIT_BUTTON_SCROLL_DOWN_PAGE;
+      } else if (bCtrlHeld) {
+        EditB = EDIT_BUTTON_SCROLL_DOWN_TS;
+      } else {
+        EditB = EDIT_BUTTON_SCROLL_DOWN_LINE;
+      }
+    }
   }
 
   if (EditB == EDIT_BUTTON_REMOVE_NOTE) {
@@ -3708,6 +3743,10 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
 
     case EDIT_BUTTON_PASTE:
       PasteClipboardAtCurrentBeat();
+      return true;
+
+    case EDIT_BUTTON_TOGGLE_WAVEFORM:
+      ToggleWaveform();
       return true;
 
     case EDIT_BUTTON_SWITCH_PLAYERS:
@@ -6978,6 +7017,14 @@ void ScreenEdit::PasteClipboardAtCurrentBeat() {
   SCREENMAN->SystemMessage(PASTE_FROM_CLIPBOARD);
 }
 
+static LocalizedString WAVEFORM_SHOWN("ScreenEdit", "Waveform - Shown.");
+static LocalizedString WAVEFORM_HIDDEN("ScreenEdit", "Waveform - Hidden.");
+void ScreenEdit::ToggleWaveform() {
+  const bool bShow = !m_NoteFieldEdit.GetShowWaveform();
+  m_NoteFieldEdit.SetShowWaveform(bShow);
+  SCREENMAN->SystemMessage(bShow ? WAVEFORM_SHOWN : WAVEFORM_HIDDEN);
+}
+
 static LocalizedString CREATES_MORE_THAN_NOTES(
     "ScreenEdit", "This change creates more than %d notes in a measure.");
 static LocalizedString CREATES_NOTES_PAST_END(
@@ -7157,6 +7204,7 @@ static const EditHelpLine g_EditHelpLines[] = {
     EditHelpLine("Cut selection to clipboard", EDIT_BUTTON_CUT),
     EditHelpLine("Copy selection to clipboard", EDIT_BUTTON_COPY),
     EditHelpLine("Paste from clipboard", EDIT_BUTTON_PASTE),
+    EditHelpLine("Toggle waveform display", EDIT_BUTTON_TOGGLE_WAVEFORM),
 };
 
 static bool IsMapped(EditButton eb, const MapEditToDI& editmap) {
