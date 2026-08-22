@@ -169,7 +169,11 @@ enum EditButton {
 
   EDIT_BUTTON_SAVE, /**< Save the present changes into the chart. */
 
-  EDIT_BUTTON_UNDO, /**< Undo a recent change. */
+  EDIT_BUTTON_UNDO,  /**< Undo a recent change. */
+  EDIT_BUTTON_REDO,  /**< Redo a change that was undone. */
+  EDIT_BUTTON_COPY,  /**< Copy the current selection to the clipboard. */
+  EDIT_BUTTON_CUT,   /**< Cut the current selection to the clipboard. */
+  EDIT_BUTTON_PASTE, /**< Paste the clipboard at the current beat. */
 
   EDIT_BUTTON_ADD_COURSE_MODS,
 
@@ -259,11 +263,21 @@ class ScreenEdit : public ScreenWithMenuElements {
   void PlayPreviewMusic();
 
   // Call this before modifying m_NoteDataEdit.
-  void SaveUndo();
+  void SaveUndo(const std::string& sDescription = "Edit");
   /** @brief Revert the last change made to m_NoteDataEdit. */
   void Undo();
-  /** @brief Remove the previously stored NoteData to prevent undoing. */
+  /** @brief Reapply the last change that was undone. */
+  void Redo();
+  /** @brief Remove the previously stored NoteData to prevent undoing/redoing.
+   */
   void ClearUndo();
+  /** @brief Cut/copy the current area selection to the clipboard, or report
+   * failure via a system message if there is no selection. */
+  void CutSelectionToClipboard();
+  void CopySelectionToClipboard();
+  /** @brief Paste the clipboard at the current beat, reporting the result via
+   * a system message. */
+  void PasteClipboardAtCurrentBeat();
   /**
    * @brief This is to be called after modifying m_NoteDataEdit.
    *
@@ -324,8 +338,10 @@ class ScreenEdit : public ScreenWithMenuElements {
   /**
    * @brief Allow for copying and pasting a song's (or steps's) full Timing
    * Data.
+   *
+   * Static so this persists across ScreenEdit instances (see m_Clipboard).
    */
-  TimingData clipboardFullTiming;
+  static TimingData clipboardFullTiming;
 
   /** @brief The current TapNote that would be inserted. */
   TapNote m_selectedTap;
@@ -348,16 +364,23 @@ class ScreenEdit : public ScreenWithMenuElements {
    * If shift wasn't pressed, this will be -1. */
   int m_iShiftAnchor;
 
-  /** @brief The NoteData that has been cut or copied. */
-  NoteData m_Clipboard;
-  bool m_bHasUndo;
   /**
-   * @brief The NoteData as it once just one action prior.
+   * @brief The NoteData that has been cut or copied.
    *
-   * TODO: Convert this into a stack or vector of NoteData to allow multiple
-   * undos. -aj
-   * TODO: Look into a redo option. -aj */
-  NoteData m_Undo;
+   * This is static so that the clipboard persists when switching between
+   * charts/difficulties, which destroys and recreates ScreenEdit. */
+  static NoteData m_Clipboard;
+
+  /** @brief One saved state in the undo/redo history. */
+  struct UndoState {
+    NoteData m_NoteData;
+    std::string m_sDescription;
+  };
+  static const size_t MAX_UNDO_STATES = 50;
+  /** @brief States that can be restored via Undo(), most recent last. */
+  std::vector<UndoState> m_UndoStack;
+  /** @brief States that can be restored via Redo(), most recent last. */
+  std::vector<UndoState> m_RedoStack;
 
   /** @brief Has the NoteData been changed such that a user should be prompted
    * to save? */
