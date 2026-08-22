@@ -175,6 +175,8 @@ enum EditButton {
   EDIT_BUTTON_CUT,   /**< Cut the current selection to the clipboard. */
   EDIT_BUTTON_PASTE, /**< Paste the clipboard at the current beat. */
 
+  EDIT_BUTTON_TOGGLE_WAVEFORM, /**< Show/hide the song waveform. */
+
   EDIT_BUTTON_ADD_COURSE_MODS,
 
   EDIT_BUTTON_SWITCH_PLAYERS, /**< Allow entering notes for a different Player.
@@ -278,6 +280,9 @@ class ScreenEdit : public ScreenWithMenuElements {
   /** @brief Paste the clipboard at the current beat, reporting the result via
    * a system message. */
   void PasteClipboardAtCurrentBeat();
+  /** @brief Show/hide the song waveform, reporting the new state via a
+   * system message. */
+  void ToggleWaveform();
   /**
    * @brief This is to be called after modifying m_NoteDataEdit.
    *

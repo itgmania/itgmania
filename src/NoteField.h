@@ -79,6 +79,15 @@ class NoteField : public ActorFrame {
   void SetBeatBarsAlpha(
       float measure, float fourth, float eighth, float sixteenth);
 
+  /** @brief Decode the song's audio into a peak buffer for waveform display.
+   * Safe to call with an empty path, which just clears any loaded data. */
+  void LoadWaveform(const std::string& sMusicPath);
+  void UnloadWaveform();
+  /** @brief Only show the waveform while actively editing steps, not while
+   * playtesting/recording. */
+  void SetShowWaveform(bool active) { m_bShowWaveform = active; }
+  bool GetShowWaveform() const { return m_bShowWaveform; }
+
  protected:
   void CacheNoteSkin(const std::string& sNoteSkin);
   void UncacheNoteSkin(const std::string& sNoteSkin);
@@ -95,6 +104,7 @@ class NoteField : public ActorFrame {
   void DrawBeatBar(const float fBeat, BeatBarType type, int iMeasureIndex);
   void DrawMarkerBar(int fBeat);
   void DrawAreaHighlight(int iStartBeat, int iEndBeat);
+  void DrawWaveform();
   void set_text_measure_number_for_draw(
       const float beat, const float side_sign, float x_offset,
       const float horiz_align, const RageColor& color, const RageColor& glow);
@@ -150,6 +160,13 @@ class NoteField : public ActorFrame {
   float m_fBar4thAlpha;
   float m_fBar8thAlpha;
   float m_fBar16thAlpha;
+
+  // Song waveform, shown behind the beat bars while actively editing steps.
+  bool m_bShowWaveform;
+  bool m_bWaveformIsStereo;
+  int m_iWaveformSampleRate;
+  std::vector<float> m_WaveformSamplesL;
+  std::vector<float> m_WaveformSamplesR;
 };
 
 #endif
