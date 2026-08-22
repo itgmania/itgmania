@@ -1903,7 +1903,7 @@ void ScreenEdit::Init() {
   m_NoteFieldEdit.SetZoom(SCREEN_HEIGHT / 480 * 0.5);
   m_NoteFieldEdit.Init(&m_PlayerStateEdit, PLAYER_HEIGHT * 2, false);
   m_NoteFieldEdit.Load(&m_NoteDataEdit, -240, 850);
-  m_NoteFieldEdit.LoadWaveform(m_pSong->GetMusicPath());
+  m_NoteFieldEdit.LoadWaveform(m_pSteps->GetMusicPath());
   m_NoteFieldEdit.SetShowWaveform(true);
   this->AddChild(&m_NoteFieldEdit);
 
@@ -3057,6 +3057,7 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
       GAMESTATE->m_pCurSteps[PLAYER_1].Set(pSteps);
       m_pSteps = pSteps;
       pSteps->GetNoteData(m_NoteDataEdit);
+      m_NoteFieldEdit.LoadWaveform(pSteps->GetMusicPath());
 
       std::string s = ssprintf(
           (SWITCHED_TO.GetValue() + " %s %s '%s' (%d of %d)").c_str(),
@@ -6901,6 +6902,7 @@ void ScreenEdit::RevertFromDisk() {
   }
   GAMESTATE->m_pCurSteps[PLAYER_1].Set(pNewSteps);
   m_pSteps = pNewSteps;
+  m_NoteFieldEdit.LoadWaveform(m_pSteps->GetMusicPath());
 
   CopyToLastSave();
   SetDirty(false);
