@@ -275,12 +275,13 @@ class ScreenEdit : public ScreenWithMenuElements {
    */
   void ClearUndo();
   /** @brief Cut/copy the current area selection to the clipboard, or report
-   * failure via a system message if there is no selection. */
-  void CutSelectionToClipboard();
-  void CopySelectionToClipboard();
+   * failure via a system message if there is no selection. When bIncludeTiming
+   * is set, the timing segments in the selection travel with the notes. */
+  void CutSelectionToClipboard(bool bIncludeTiming);
+  void CopySelectionToClipboard(bool bIncludeTiming);
   /** @brief Paste the clipboard at the current beat, reporting the result via
    * a system message. */
-  void PasteClipboardAtCurrentBeat();
+  void PasteClipboardAtCurrentBeat(bool bIncludeTiming);
   /** @brief Show/hide the song waveform, reporting the new state via a
    * system message. */
   void ToggleWaveform();
@@ -307,6 +308,11 @@ class ScreenEdit : public ScreenWithMenuElements {
 
   /** @brief Display the TimingData menu for editing song and step timing. */
   void DisplayTimingMenu();
+
+  /** @brief Convert a screen y coordinate to the beat drawn at that point. */
+  float MouseYToBeat(float fScreenY);
+  /** @brief Turn the area the mouse was dragged over into an area selection. */
+  void FinishMouseDragSelection();
 
   /** @brief Display the menu for detecting and applying BPM/offset. */
   void DisplayAdjustSyncMenu();
@@ -386,6 +392,16 @@ class ScreenEdit : public ScreenWithMenuElements {
    * This is static so that the clipboard persists when switching between
    * charts/difficulties, which destroys and recreates ScreenEdit. */
   static NoteData m_Clipboard;
+
+  /** @brief Whether the last cut/copy also captured the timing segments in
+   * the selection, so that pasting can restore them. */
+  static bool s_bClipboardHasTiming;
+
+  /** @brief The marquee used to select an area with the mouse. */
+  bool m_bMouseDragging;
+  float m_fMouseDragStartX, m_fMouseDragStartY;
+  float m_fMouseDragCurrentX, m_fMouseDragCurrentY;
+  Quad m_rectMouseSelection;
 
   /** @brief One saved state in the undo/redo history. */
   struct UndoState {
