@@ -83,10 +83,9 @@ struct PadSensorState {
     return intensity[static_cast<int>(panel)][static_cast<int>(sensor)];
   }
 
-  void Set(PadPanel panel, PadSensor sensor, float intensity) {
-    intensity = std::clamp(intensity, 0.0f, 1.0f);
-    this->intensity[static_cast<int>(panel)][static_cast<int>(sensor)] =
-        intensity;
+  void Set(PadPanel panel, PadSensor sensor, float value) {
+    value = std::clamp(value, 0.0f, 1.0f);
+    this->intensity[static_cast<int>(panel)][static_cast<int>(sensor)] = value;
   }
 
   void Clear() { std::memset(intensity, 0, sizeof(intensity)); }
