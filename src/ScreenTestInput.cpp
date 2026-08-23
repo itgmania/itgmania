@@ -126,6 +126,16 @@ bool ScreenTestInput::Input(const InputEventPlus& input) {
   return Screen::Input(input) || bHandled;  // default handler
 }
 
+void ScreenTestInput::BeginScreen() {
+  INPUTMAN->StartSensorTest();
+  ScreenWithMenuElements::BeginScreen();
+}
+
+void ScreenTestInput::EndScreen() {
+  INPUTMAN->StopSensorTest();
+  ScreenWithMenuElements::EndScreen();
+}
+
 bool ScreenTestInput::MenuStart(const InputEventPlus& input) {
   return MenuBack(input);
 }
