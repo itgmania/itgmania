@@ -30,6 +30,9 @@ class RageInput {
   InputDeviceState GetInputDeviceState(InputDevice id);
   std::string GetDisplayDevicesString() const;
 
+  void StartSensorTest();
+  void StopSensorTest();
+
   // Lua
   void PushSelf(lua_State* L);
 };

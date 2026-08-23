@@ -54,6 +54,11 @@ class InputHandler : public RageDriver {
    * window. Override this if you need to do that. */
   virtual void WindowReset() {}
 
+  // Certain devices/input handlers have extra overhead to acquire the sensor
+  // state so we need to tell the InputHandler when we want this data.
+  virtual void StartSensorDebugging() {}
+  virtual void StopSensorDebugging() {}
+
  protected:
   /* Convenience function: Call this to queue a received event.
    * This may be called in a thread.

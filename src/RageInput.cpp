@@ -202,6 +202,17 @@ std::string RageInput::GetDisplayDevicesString() const {
   return join("\n", vs);
 }
 
+void RageInput::StartSensorTest() {
+  for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
+    m_InputHandlers[i].m_pDevice->StartSensorDebugging();
+  }
+}
+void RageInput::StopSensorTest() {
+  for (unsigned i = 0; i < m_InputHandlers.size(); ++i) {
+    m_InputHandlers[i].m_pDevice->StopSensorDebugging();
+  }
+}
+
 // lua start
 #include "LuaBinding.h"
 
@@ -219,7 +230,21 @@ class LunaRageInput : public Luna<RageInput> {
     return 1;
   }
 
-  LunaRageInput() { ADD_METHOD(GetDescriptions); }
+  static int StartSensorTest(T* p, lua_State* L) {
+    p->StartSensorTest();
+    COMMON_RETURN_SELF;
+  }
+
+  static int StopSensorTest(T* p, lua_State* L) {
+    p->StopSensorTest();
+    COMMON_RETURN_SELF;
+  }
+
+  LunaRageInput() {
+    ADD_METHOD(GetDescriptions);
+    ADD_METHOD(StartSensorTest);
+    ADD_METHOD(StopSensorTest);
+  }
 };
 
 LUA_REGISTER_CLASS(RageInput)

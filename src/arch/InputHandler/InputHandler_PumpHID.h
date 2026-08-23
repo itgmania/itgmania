@@ -27,6 +27,7 @@
 
 #include "InputHandler.h"
 #include "LightsManager.h"
+#include "PlayerNumber.h"
 #include "RageInputDevice.h"
 #include "RageThreads.h"
 #include "archutils/Common/HidDevice.h"
@@ -47,6 +48,8 @@
 #define PUMPHID_PID_V2 0x1040
 
 #define PUMPHID_INTERFACE_NUM 0
+
+#define PUMP_HID_NUMOFSENSORS 4
 
 #pragma pack(push, 1)
 
@@ -94,15 +97,8 @@ typedef union {
 
 typedef union {
   struct {
-    pumphid_player_byte_t p1_sensor0;
-    pumphid_player_byte_t p1_sensor1;
-    pumphid_player_byte_t p1_sensor2;
-    pumphid_player_byte_t p1_sensor3;
-
-    pumphid_player_byte_t p2_sensor0;
-    pumphid_player_byte_t p2_sensor1;
-    pumphid_player_byte_t p2_sensor2;
-    pumphid_player_byte_t p2_sensor3;
+    pumphid_player_byte_t p1_sensor[PUMP_HID_NUMOFSENSORS];
+    pumphid_player_byte_t p2_sensor[PUMP_HID_NUMOFSENSORS];
 
     pumphid_cabinet_byte_t cab0;
     pumphid_cabinet_byte_t cab1;
@@ -249,6 +245,9 @@ class InputHandler_PumpHID : public InputHandler {
 
   bool m_bShutdown;
   RageThread InputThread;
+
+  void BroadcastFullSensorStateHelper(
+      PlayerNumber pn, uint8_t sensor_index, pumphid_player_byte_t state);
 
   uint32_t PumpHIDToLocalState(pumphid_output_state_t from_dev);
 
