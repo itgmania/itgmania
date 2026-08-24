@@ -2588,19 +2588,33 @@ XNode* Profile::SaveCoinDataCreateNode() const {
 }
 
 void Profile::MoveBackupToDir(std::string sFromDir, std::string sToDir) {
-  if (FILEMAN->IsAFile(sFromDir + STATS_XML) &&
-      FILEMAN->IsAFile(sFromDir + STATS_XML + SIGNATURE_APPEND)) {
-    FILEMAN->Move(sFromDir + STATS_XML, sToDir + STATS_XML);
-    FILEMAN->Move(
-        sFromDir + STATS_XML + SIGNATURE_APPEND,
-        sToDir + STATS_XML + SIGNATURE_APPEND);
-  } else if (
-      FILEMAN->IsAFile(sFromDir + STATS_XML_GZ) &&
-      FILEMAN->IsAFile(sFromDir + STATS_XML_GZ + SIGNATURE_APPEND)) {
-    FILEMAN->Move(sFromDir + STATS_XML_GZ, sToDir + STATS_XML);
-    FILEMAN->Move(
-        sFromDir + STATS_XML_GZ + SIGNATURE_APPEND,
-        sToDir + STATS_XML + SIGNATURE_APPEND);
+  std::string stats_file;
+  std::string old_stats_file;
+  if (FILEMAN->IsAFile(sFromDir + STATS_XML)) {
+    stats_file = STATS_XML;
+    old_stats_file = STATS_XML_GZ;
+  } else if (FILEMAN->IsAFile(sFromDir + STATS_XML_GZ)) {
+    stats_file = STATS_XML_GZ;
+    old_stats_file = STATS_XML;
+  }
+
+  if (!stats_file.empty()) {
+    bool backup_complete =
+        FILEMAN->Move(sFromDir + stats_file, sToDir + stats_file);
+    const std::string signature_file = stats_file + SIGNATURE_APPEND;
+    if (FILEMAN->IsAFile(sFromDir + signature_file)) {
+      const bool signature_moved =
+          FILEMAN->Move(sFromDir + signature_file, sToDir + signature_file);
+      backup_complete = backup_complete && signature_moved;
+    }
+
+    // We should not leave an outdated file in LastGood for an alternate format
+    // after the new backup succeeds.
+    // Otherwise the wrong backup file might be loaded if LastGood gets used.
+    if (backup_complete) {
+      FILEMAN->Remove(sToDir + old_stats_file);
+      FILEMAN->Remove(sToDir + old_stats_file + SIGNATURE_APPEND);
+    }
   }
 
   if (FILEMAN->IsAFile(sFromDir + EDITABLE_INI)) {
