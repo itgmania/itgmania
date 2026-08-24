@@ -50,9 +50,7 @@ class PlayerInfo {
   PlayerInfo();
   ~PlayerInfo();
 
-  void Load(
-      PlayerNumber pn, MultiPlayer mp, bool bShowNoteField,
-      int iAddToDifficulty);
+  void Load(PlayerNumber pn, bool bShowNoteField, int iAddToDifficulty);
   void LoadDummyP1(int iDummyIndex, int iAddToDifficulty);
 
   /** @brief The player has lost all of their lives: show the special game over.
@@ -62,8 +60,8 @@ class PlayerInfo {
    * @brief Retrieve the player's state and stage stats index.
    * @return the player's state and stage stats index.
    */
-  MultiPlayer GetPlayerStateAndStageStatsIndex() {
-    return m_pn == PLAYER_INVALID ? m_mp : (MultiPlayer)m_pn;
+  PlayerNumber GetPlayerStateAndStageStatsIndex() {
+    return m_pn == PLAYER_INVALID ? PLAYER_1 : m_pn;
   }
   PlayerState* GetPlayerState();
   PlayerStageStats* GetPlayerStageStats();
@@ -75,21 +73,13 @@ class PlayerInfo {
    * @return its success or failure. */
   bool IsEnabled();
   /**
-   * @brief Determine if we're in MultiPlayer.
-   * @return true if it is MultiPlayer, false otherwise. */
-  bool IsMultiPlayer() const { return m_mp != MultiPlayer_Invalid; }
-  /**
    * @brief Retrieve the name of the Player based on the mode.
    * @return the name of the Player. */
   std::string GetName() const {
     if (m_bIsDummy) {
       return ssprintf("Dummy%d", m_iDummyIndex);
     }
-    if (IsMultiPlayer()) {
-      return MultiPlayerToString(m_mp);
-    } else {
-      return PlayerNumberToString(m_pn);
-    }
+    return PlayerNumberToString(m_pn);
   }
 
   // Lua
@@ -97,8 +87,6 @@ class PlayerInfo {
 
   /** @brief The present Player's number. */
   PlayerNumber m_pn;
-  /** @brief The present Player's multiplayer number. */
-  MultiPlayer m_mp;
   bool m_bIsDummy;
   int m_iDummyIndex;
   int m_iAddToDifficulty;  // if > 0, use the Nth harder Steps
@@ -211,9 +199,6 @@ class ScreenGameplay : public ScreenWithMenuElements {
                                      // life amount.
 
  protected:
-  virtual void UpdateStageStats(
-      MultiPlayer /* mp */){};  // overridden for multiplayer
-
   virtual bool UseSongBackgroundAndForeground() const { return true; }
 
   ThemeMetric<std::string> PLAYER_TYPE;

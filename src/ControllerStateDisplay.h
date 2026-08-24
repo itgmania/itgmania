@@ -58,7 +58,6 @@ enum ControllerKB7Button
 class ControllerStateDisplay : public ActorFrame {
  public:
   ControllerStateDisplay();
-  void LoadMultiPlayer(std::string sType, MultiPlayer mp);
   void LoadGameController(std::string sType, GameController gc);
   virtual void Update(float fDelta);
   bool IsLoaded() const { return m_bIsLoaded; }
@@ -69,9 +68,6 @@ class ControllerStateDisplay : public ActorFrame {
   virtual void PushSelf(lua_State* L);
 
  protected:
-  void LoadInternal(std::string sType, MultiPlayer mp, GameController gc);
-  MultiPlayer m_mp;
-
   bool m_bIsLoaded;
   AutoActor m_sprFrame;
   struct Button {

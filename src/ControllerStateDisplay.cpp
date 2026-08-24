@@ -30,27 +30,14 @@ REGISTER_ACTOR_CLASS(ControllerStateDisplay);
 
 ControllerStateDisplay::ControllerStateDisplay() {
   m_bIsLoaded = false;
-  m_mp = MultiPlayer_Invalid;
   m_idsLast = InputDeviceState_Invalid;
-}
-
-void ControllerStateDisplay::LoadMultiPlayer(
-    std::string sType, MultiPlayer mp) {
-  LoadInternal(sType, mp, GameController_1);
 }
 
 void ControllerStateDisplay::LoadGameController(
     std::string sType, GameController gc) {
-  LoadInternal(sType, MultiPlayer_Invalid, gc);
-}
-
-void ControllerStateDisplay::LoadInternal(
-    std::string sType, MultiPlayer mp, GameController gc) {
   ASSERT(!m_bIsLoaded);
   m_bIsLoaded = true;
-  m_mp = mp;
 
-  LuaThreadVariable varElement("MultiPlayer", LuaReference::Create(m_mp));
   m_sprFrame.Load(THEME->GetPathG(sType, "frame"));
   this->AddChild(m_sprFrame);
 
@@ -69,22 +56,13 @@ void ControllerStateDisplay::LoadInternal(
 void ControllerStateDisplay::Update(float fDelta) {
   ActorFrame::Update(fDelta);
 
-  if (m_mp != MultiPlayer_Invalid) {
-    InputDevice id = InputMapper::MultiPlayerToInputDevice(m_mp);
-    InputDeviceState ids = INPUTMAN->GetInputDeviceState(id);
-    if (ids != m_idsLast) {
-      PlayCommand(InputDeviceStateToString(ids));
-    }
-    m_idsLast = ids;
-  }
-
   FOREACH_ENUM(ControllerStateButton, b) {
     Button& button = m_Buttons[b];
     if (!button.spr.IsLoaded()) {
       continue;
     }
 
-    bool bVisible = INPUTMAPPER->IsBeingPressed(button.gi, m_mp);
+    bool bVisible = INPUTMAPPER->IsBeingPressed(button.gi);
 
     button.spr->SetVisible(bVisible);
   }
@@ -97,15 +75,8 @@ class LunaControllerStateDisplay : public Luna<ControllerStateDisplay> {
     p->LoadGameController(SArg(1), Enum::Check<GameController>(L, 2));
     COMMON_RETURN_SELF;
   }
-  static int LoadMultiPlayer(T* p, lua_State* L) {
-    p->LoadMultiPlayer(SArg(1), Enum::Check<MultiPlayer>(L, 2));
-    COMMON_RETURN_SELF;
-  }
 
-  LunaControllerStateDisplay() {
-    ADD_METHOD(LoadGameController);
-    ADD_METHOD(LoadMultiPlayer);
-  }
+  LunaControllerStateDisplay() { ADD_METHOD(LoadGameController); }
 };
 
 LUA_REGISTER_DERIVED_CLASS(ControllerStateDisplay, ActorFrame)

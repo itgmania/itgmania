@@ -1311,51 +1311,7 @@ void HandleInputEvents(float fDeltaTime) {
     input.type = ieArray[i].type;
     swap(input.InputList, ieArray[i].m_ButtonState);
 
-    // hack for testing (MultiPlayer) with only one joystick
-    /*
-    if( input.DeviceI.IsJoystick() )
-    {
-            if( INPUTFILTER->IsBeingPressed(
-    DeviceInput(DEVICE_KEYBOARD,KEY_LSHIFT) ) ) input.DeviceI.device =
-    (InputDevice)(input.DeviceI.device + 1); if( INPUTFILTER->IsBeingPressed(
-    DeviceInput(DEVICE_KEYBOARD,KEY_LCTRL) ) ) input.DeviceI.device =
-    (InputDevice)(input.DeviceI.device + 2); if( INPUTFILTER->IsBeingPressed(
-    DeviceInput(DEVICE_KEYBOARD,KEY_LALT) ) ) input.DeviceI.device =
-    (InputDevice)(input.DeviceI.device + 4); if( INPUTFILTER->IsBeingPressed(
-    DeviceInput(DEVICE_KEYBOARD,KEY_RALT) ) ) input.DeviceI.device =
-    (InputDevice)(input.DeviceI.device + 8); if( INPUTFILTER->IsBeingPressed(
-    DeviceInput(DEVICE_KEYBOARD,KEY_RCTRL) ) ) input.DeviceI.device =
-    (InputDevice)(input.DeviceI.device + 16);
-    }
-    */
-
     INPUTMAPPER->DeviceToGame(input.DeviceI, input.GameI);
-
-    input.mp = MultiPlayer_Invalid;
-
-    {
-      // Translate input to the appropriate MultiPlayer. Assume that all
-      // joystick devices are mapped the same as the master player.
-      if (input.DeviceI.IsJoystick()) {
-        DeviceInput diTemp = input.DeviceI;
-        diTemp.device = DEVICE_JOY1;
-        GameInput gi;
-
-        // LOG->Trace( "device %d, %d", diTemp.device, diTemp.button );
-        if (INPUTMAPPER->DeviceToGame(diTemp, gi)) {
-          if (GAMESTATE->m_bMultiplayer) {
-            input.GameI = gi;
-            // LOG->Trace( "game %d %d", input.GameI.controller,
-            // input.GameI.button );
-          }
-
-          input.mp =
-              InputMapper::InputDeviceToMultiPlayer(input.DeviceI.device);
-          // LOG->Trace( "multiplayer %d", input.mp );
-          ASSERT(input.mp >= 0 && input.mp < NUM_MultiPlayer);
-        }
-      }
-    }
 
     if (input.GameI.IsValid()) {
       input.MenuI = INPUTMAPPER->GameButtonToMenuButton(input.GameI.button);

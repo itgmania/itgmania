@@ -105,8 +105,7 @@ class GameState {
   /** @brief Determine which side is joined.
    *
    * The left side is player 1, and the right side is player 2. */
-  bool m_bSideIsJoined[NUM_PLAYERS];  // left side, right side
-  MultiPlayerStatus m_MultiPlayerStatus[NUM_MultiPlayer];
+  bool m_bSideIsJoined[NUM_PLAYERS];       // left side, right side
   BroadcastOnChange<PlayMode> m_PlayMode;  // many screens display different
                                            // info depending on this value
   /**
@@ -116,8 +115,6 @@ class GameState {
    * to get one credit, only to have to put in another four coins to get
    * the three credits needed to begin the game. */
   BroadcastOnChange<int> m_iCoins;
-  bool m_bMultiplayer;
-  int m_iNumMultiplayerNoteFields;
   bool DifficultiesLocked() const;
   bool ChangePreferredDifficultyAndStepsType(
       PlayerNumber pn, Difficulty dc, StepsType st);
@@ -157,7 +154,6 @@ class GameState {
 
   void GetPlayerInfo(PlayerNumber pn, bool& bIsEnabledOut, bool& bIsHumanOut);
   bool IsPlayerEnabled(PlayerNumber pn) const;
-  bool IsMultiPlayerEnabled(MultiPlayer mp) const;
   bool IsPlayerEnabled(const PlayerState* pPlayerState) const;
   int GetNumPlayersEnabled() const;
 
@@ -407,7 +403,6 @@ class GameState {
   // PlayerState
   /** @brief Allow access to each player's PlayerState. */
   PlayerState* m_pPlayerState[NUM_PLAYERS];
-  PlayerState* m_pMultiPlayerState[NUM_MultiPlayer];
 
   // Preferences
   static Preference<bool> m_bAutoJoin;
@@ -480,7 +475,6 @@ PlayerNumber GetNextHumanPlayer(PlayerNumber pn);
 PlayerNumber GetNextEnabledPlayer(PlayerNumber pn);
 PlayerNumber GetNextCpuPlayer(PlayerNumber pn);
 PlayerNumber GetNextPotentialCpuPlayer(PlayerNumber pn);
-MultiPlayer GetNextEnabledMultiPlayer(MultiPlayer mp);
 
 /** @brief A foreach loop to act on each human Player. */
 #define FOREACH_HumanPlayer(pn)                                  \
@@ -498,11 +492,6 @@ MultiPlayer GetNextEnabledMultiPlayer(MultiPlayer mp);
 #define FOREACH_PotentialCpuPlayer(pn)                                  \
   for (PlayerNumber pn = GetNextPotentialCpuPlayer((PlayerNumber) - 1); \
        pn != PLAYER_INVALID; pn = GetNextPotentialCpuPlayer(pn))
-/** @brief A foreach loop to act on each Player in MultiPlayer. */
-#define FOREACH_EnabledMultiPlayer(mp)                                \
-  for (MultiPlayer mp = GetNextEnabledMultiPlayer((MultiPlayer) - 1); \
-       mp != MultiPlayer_Invalid; mp = GetNextEnabledMultiPlayer(mp))
-
 extern GameState*
     GAMESTATE;  // global and accessible from anywhere in our program
 

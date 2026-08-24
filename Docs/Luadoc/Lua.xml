@@ -706,10 +706,6 @@
 			<Function name='Load'/>
 			<Function name='Set'/>
 		</Class>
-		<Class base='ActorFrame' name='ControllerStateDisplay'>
-			<Function name='LoadGameController'/>
-			<Function name='LoadMultiPlayer'/>
-		</Class>
 		<Class name='Course'>
 			<Function name='AllSongsAreFixed'/>
 			<Function name='GetAllTrails'/>

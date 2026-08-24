@@ -396,20 +396,11 @@ void Player::Init(
 
     int iEnabledPlayerIndex = -1;
     int iNumEnabledPlayers = 0;
-    if (GAMESTATE->m_bMultiplayer) {
-      FOREACH_EnabledMultiPlayer(p) {
-        if (p == pPlayerState->m_mp) {
-          iEnabledPlayerIndex = iNumEnabledPlayers;
-        }
-        iNumEnabledPlayers++;
+    FOREACH_EnabledPlayer(p) {
+      if (p == pPlayerState->m_PlayerNumber) {
+        iEnabledPlayerIndex = iNumEnabledPlayers;
       }
-    } else {
-      FOREACH_EnabledPlayer(p) {
-        if (p == pPlayerState->m_PlayerNumber) {
-          iEnabledPlayerIndex = iNumEnabledPlayers;
-        }
-        iNumEnabledPlayers++;
-      }
+      iNumEnabledPlayers++;
     }
 
     if (iNumEnabledPlayers ==
@@ -423,7 +414,6 @@ void Player::Init(
       for (int j = 0; j < NUM_CENTERED; j++) {
         Message msg("Transform");
         msg.SetParam("Player", pPlayerState->m_PlayerNumber);
-        msg.SetParam("MultiPlayer", pPlayerState->m_mp);
         msg.SetParam("iEnabledPlayerIndex", iEnabledPlayerIndex);
         msg.SetParam("iNumEnabledPlayers", iNumEnabledPlayers);
         msg.SetParam("bPlayerUsingBothSides", bPlayerUsingBothSides);
@@ -557,8 +547,6 @@ void Player::Init(
   if (HasVisibleParts()) {
     LuaThreadVariable var(
         "Player", LuaReference::Create(m_pPlayerState->m_PlayerNumber));
-    LuaThreadVariable var2(
-        "MultiPlayer", LuaReference::Create(m_pPlayerState->m_mp));
 
     m_sprCombo.Load(THEME->GetPathG(sType, "combo"));
     m_sprCombo->SetName("Combo");
@@ -919,22 +907,6 @@ void Player::Update(float fDeltaTime) {
 
   ActorFrame::Update(fDeltaTime);
 
-  if (m_pPlayerState->m_mp != MultiPlayer_Invalid) {
-    /* In multiplayer, it takes too long to run player updates for every player
-     * each frame; with 32 players and three difficulties, we have 96 Players to
-     * update.  Stagger these updates, by only updating a few players each
-     * update; since we don't have screen elements tightly tied to user actions
-     * in this mode, this doesn't degrade gameplay.  Run 4 players per update,
-     * which means 12 Players in 3-difficulty mode.
-     */
-    static int iCycle = 0;
-    iCycle = (iCycle + 1) % 8;
-
-    if ((m_pPlayerState->m_mp % 8) != iCycle) {
-      return;
-    }
-  }
-
   const float fSongBeat = m_pPlayerState->m_Position.m_fSongBeat;
   const int iSongRow = BeatToNoteRow(fSongBeat);
 
@@ -1171,8 +1143,7 @@ void Player::Update(float fDeltaTime) {
       const float secsSinceNote = (musicPosition - notePosition) / rate;
       float maxSecsHeld = 0.0f;
       for (const GameInput& gi : inputs) {
-        maxSecsHeld = std::max(
-            maxSecsHeld, INPUTMAPPER->GetSecsHeld(gi, m_pPlayerState->m_mp));
+        maxSecsHeld = std::max(maxSecsHeld, INPUTMAPPER->GetSecsHeld(gi));
       }
       tn.result.bHeld = maxSecsHeld >= secsSinceNote;
     }
@@ -1454,8 +1425,7 @@ void Player::UpdateHoldNotes(
         GAMESTATE->GetCurrentStyle(GetPlayerState()->m_PlayerNumber)
             ->StyleInputToGameInput(iTrack, pn, GameI);
 
-        bIsHoldingButton &=
-            INPUTMAPPER->IsBeingPressed(GameI, m_pPlayerState->m_mp);
+        bIsHoldingButton &= INPUTMAPPER->IsBeingPressed(GameI);
       }
     }
   }
@@ -2831,7 +2801,6 @@ void Player::Step(
     }
     Message msg("Step");
     msg.SetParam("PlayerNumber", m_pPlayerState->m_PlayerNumber);
-    msg.SetParam("MultiPlayer", m_pPlayerState->m_mp);
     msg.SetParam("Column", col);
     MESSAGEMAN->Broadcast(msg);
     // Backwards compatibility
@@ -3105,8 +3074,7 @@ void Player::CrossedRows(int iLastRowCrossed, const RageTimer& now) {
               ->StyleInputToGameInput(iTrack, pn, GameI);
           if (PREFSMAN->m_fPadStickSeconds > 0.f) {
             for (size_t i = 0; i < GameI.size(); ++i) {
-              float fSecsHeld =
-                  INPUTMAPPER->GetSecsHeld(GameI[i], m_pPlayerState->m_mp);
+              float fSecsHeld = INPUTMAPPER->GetSecsHeld(GameI[i]);
               if (fSecsHeld >= PREFSMAN->m_fPadStickSeconds) {
                 Step(
                     iTrack, -1, now - PREFSMAN->m_fPadStickSeconds, true,
@@ -3114,7 +3082,7 @@ void Player::CrossedRows(int iLastRowCrossed, const RageTimer& now) {
               }
             }
           } else {
-            if (INPUTMAPPER->IsBeingPressed(GameI, m_pPlayerState->m_mp)) {
+            if (INPUTMAPPER->IsBeingPressed(GameI)) {
               Step(iTrack, -1, now, true, false);
             }
           }
@@ -3130,13 +3098,12 @@ void Player::CrossedRows(int iLastRowCrossed, const RageTimer& now) {
             ->StyleInputToGameInput(iTrack, pn, GameI);
         if (PREFSMAN->m_fPadStickSeconds > 0.0f) {
           for (size_t i = 0; i < GameI.size(); ++i) {
-            float fSecsHeld =
-                INPUTMAPPER->GetSecsHeld(GameI[i], m_pPlayerState->m_mp);
+            float fSecsHeld = INPUTMAPPER->GetSecsHeld(GameI[i]);
             if (fSecsHeld >= PREFSMAN->m_fPadStickSeconds) {
               Step(iTrack, -1, now - PREFSMAN->m_fPadStickSeconds, true, false);
             }
           }
-        } else if (INPUTMAPPER->IsBeingPressed(GameI, m_pPlayerState->m_mp)) {
+        } else if (INPUTMAPPER->IsBeingPressed(GameI)) {
           Step(iTrack, iRow, now, true, false);
         }
         break;
@@ -3511,7 +3478,6 @@ void Player::SetJudgment(
   if (m_bSendJudgmentAndComboMessages) {
     Message msg("Judgment");
     msg.SetParam("Player", m_pPlayerState->m_PlayerNumber);
-    msg.SetParam("MultiPlayer", m_pPlayerState->m_mp);
     msg.SetParam("FirstTrack", iTrack);
     msg.SetParam("TapNoteScore", tns);
     msg.SetParam("Early", fTapNoteOffset < 0.0f);
@@ -3561,7 +3527,6 @@ void Player::SetHoldJudgment(TapNote& tn, int iTrack) {
   if (m_bSendJudgmentAndComboMessages) {
     Message msg("Judgment");
     msg.SetParam("Player", m_pPlayerState->m_PlayerNumber);
-    msg.SetParam("MultiPlayer", m_pPlayerState->m_mp);
     msg.SetParam("FirstTrack", iTrack);
     msg.SetParam("NumTracks", (int)m_vpHoldJudgment.size());
     msg.SetParam("TapNoteScore", tn.result.tns);

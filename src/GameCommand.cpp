@@ -52,7 +52,6 @@ void GameCommand::Init() {
   m_sText = "";
   m_bInvalid = true;
   m_iIndex = -1;
-  m_MultiPlayer = MultiPlayer_Invalid;
   m_pStyle = nullptr;
   m_pm = PlayMode_Invalid;
   m_dc = Difficulty_Invalid;
@@ -924,10 +923,6 @@ class LunaGameCommand : public Luna<GameCommand> {
     lua_pushnumber(L, p->m_iIndex);
     return 1;
   }
-  static int GetMultiPlayer(T* p, lua_State* L) {
-    lua_pushnumber(L, p->m_MultiPlayer);
-    return 1;
-  }
   static int GetStyle(T* p, lua_State* L) {
     if (p->m_pStyle == nullptr) {
       lua_pushnil(L);
@@ -1015,7 +1010,6 @@ class LunaGameCommand : public Luna<GameCommand> {
     ADD_METHOD(GetName);
     ADD_METHOD(GetText);
     ADD_METHOD(GetIndex);
-    ADD_METHOD(GetMultiPlayer);
     ADD_METHOD(GetStyle);
     ADD_METHOD(GetDifficulty);
     ADD_METHOD(GetCourseDifficulty);

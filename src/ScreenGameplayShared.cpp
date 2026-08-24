@@ -21,9 +21,9 @@ void ScreenGameplayShared::FillPlayerInfo(
    */
   vPlayerInfoOut.resize(2);
   vPlayerInfoOut[master].Load(
-      master, MultiPlayer_Invalid, /*bShowNoteField=*/true, Difficulty_Invalid);
+      master, /*bShowNoteField=*/true, Difficulty_Invalid);
   vPlayerInfoOut[other].Load(
-      other, MultiPlayer_Invalid, /*bShowNoteField=*/true, Difficulty_Invalid);
+      other, /*bShowNoteField=*/true, Difficulty_Invalid);
 }
 
 PlayerInfo& ScreenGameplayShared::GetPlayerInfoForInput(

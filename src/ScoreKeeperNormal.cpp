@@ -151,7 +151,6 @@ void ScoreKeeperNormal::Load(
 
   Message msg("ScoreChanged");
   msg.SetParam("PlayerNumber", m_pPlayerState->m_PlayerNumber);
-  msg.SetParam("MultiPlayer", m_pPlayerState->m_mp);
   MESSAGEMAN->Broadcast(msg);
 
   memset(m_ComboBonusFactor, 0, sizeof(m_ComboBonusFactor));
@@ -433,7 +432,6 @@ void ScoreKeeperNormal::HandleTapScore(const TapNote& tn) {
 
     Message msg("ScoreChanged");
     msg.SetParam("PlayerNumber", m_pPlayerState->m_PlayerNumber);
-    msg.SetParam("MultiPlayer", m_pPlayerState->m_mp);
     MESSAGEMAN->Broadcast(msg);
   }
 
@@ -627,7 +625,6 @@ void ScoreKeeperNormal::HandleTapRowScore(const NoteData& nd, int iRow) {
                      .result.fTapNoteOffset;
   Message msg("ScoreChanged");
   msg.SetParam("PlayerNumber", m_pPlayerState->m_PlayerNumber);
-  msg.SetParam("MultiPlayer", m_pPlayerState->m_mp);
   msg.SetParam("ToastyCombo", m_cur_toasty_combo);
   MESSAGEMAN->Broadcast(msg);
 }
@@ -651,7 +648,6 @@ void ScoreKeeperNormal::HandleHoldScore(const TapNote& tn) {
   PlayerNumber pn = m_pPlayerState->m_PlayerNumber;
   Message msg("ScoreChanged");
   msg.SetParam("PlayerNumber", m_pPlayerState->m_PlayerNumber);
-  msg.SetParam("MultiPlayer", m_pPlayerState->m_mp);
   MESSAGEMAN->Broadcast(msg);
 }
 

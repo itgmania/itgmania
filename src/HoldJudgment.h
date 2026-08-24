@@ -17,7 +17,6 @@ class HoldJudgment : public ActorFrame {
   void LoadFromNode(const XNode* pNode);
 
   void SetHoldJudgment(HoldNoteScore hns);
-  void LoadFromMultiPlayer(MultiPlayer mp);
   virtual void HandleMessage(const Message& msg);
 
   // Lua
@@ -26,7 +25,6 @@ class HoldJudgment : public ActorFrame {
  protected:
   void ResetAnimation();
   AutoActor m_sprJudgment;
-  MultiPlayer m_mpToTrack;
 };
 
 #endif

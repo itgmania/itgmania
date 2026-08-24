@@ -16,7 +16,7 @@
 
 REGISTER_ACTOR_CLASS(HoldJudgment);
 
-HoldJudgment::HoldJudgment() { m_mpToTrack = MultiPlayer_Invalid; }
+HoldJudgment::HoldJudgment() {}
 
 void HoldJudgment::Load(const std::string& sPath) {
   m_sprJudgment.Load(sPath);
@@ -77,20 +77,11 @@ void HoldJudgment::SetHoldJudgment(HoldNoteScore hns) {
   }
 }
 
-void HoldJudgment::LoadFromMultiPlayer(MultiPlayer mp) {
-  ASSERT(m_mpToTrack == MultiPlayer_Invalid);  // assert only load once
-  m_mpToTrack = mp;
-  this->SubscribeToMessage("Judgment");
-}
-
 void HoldJudgment::HandleMessage(const Message& msg) {
-  if (m_mpToTrack != MultiPlayer_Invalid && msg.GetName() == "Judgment") {
-    MultiPlayer mp;
-    if (msg.GetParam("MultiPlayer", mp) && mp == m_mpToTrack) {
-      HoldNoteScore hns;
-      if (msg.GetParam("HoldNoteScore", hns)) {
-        SetHoldJudgment(hns);
-      }
+  if (msg.GetName() == "Judgment") {
+    HoldNoteScore hns;
+    if (msg.GetParam("HoldNoteScore", hns)) {
+      SetHoldJudgment(hns);
     }
   }
 
@@ -103,12 +94,7 @@ void HoldJudgment::HandleMessage(const Message& msg) {
 /** @brief Allow Lua to have access to the HoldJudgment. */
 class LunaHoldJudgment : public Luna<HoldJudgment> {
  public:
-  static int LoadFromMultiPlayer(T* p, lua_State* L) {
-    p->LoadFromMultiPlayer(Enum::Check<MultiPlayer>(L, 1));
-    COMMON_RETURN_SELF;
-  }
-
-  LunaHoldJudgment() { ADD_METHOD(LoadFromMultiPlayer); }
+  LunaHoldJudgment() {}
 };
 
 LUA_REGISTER_DERIVED_CLASS(HoldJudgment, ActorFrame)

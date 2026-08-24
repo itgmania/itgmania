@@ -659,17 +659,6 @@ enum ProfileLoadResult {
   ProfileLoadResult_FailedTampered
 };
 
-/** @brief The different statuses for multiplayer. */
-enum MultiPlayerStatus {
-  MultiPlayerStatus_Joined,
-  MultiPlayerStatus_NotJoined,
-  MultiPlayerStatus_Unplugged,
-  MultiPlayerStatus_MissingMultitap,
-  NUM_MultiPlayerStatus,
-  MultiPlayerStatus_Invalid
-};
-const std::string& MultiPlayerStatusToString(MultiPlayerStatus i);
-
 /** @brief The different course types. */
 enum CourseType {
   COURSE_TYPE_NONSTOP,  /**< The life meter type is set to BAR. */
