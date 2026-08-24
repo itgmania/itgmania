@@ -35,9 +35,9 @@ XToString(PadPanel);
 StringToX(PadPanel);
 
 static const char* PadSensorNames[] = {
-    "Top",        "Right",       "Bottom",     "Left",        "Center",
-    "TopCenter",  "TopLeft",     "TopRight",   "RightCenter", "BottomCenter",
-    "BottomLeft", "BottomRight", "LeftCenter",
+    "Top",          "Right",      "Bottom",      "Left",
+    "TopCenter",    "TopLeft",    "TopRight",    "RightCenter",
+    "BottomCenter", "BottomLeft", "BottomRight", "LeftCenter",
 };
 XToString(PadSensor);
 StringToX(PadSensor);
@@ -481,9 +481,26 @@ void InputFilter::UpdateCursorLocation(float _fX, float _fY) {
 void InputFilter::UpdateMouseWheel(float _fZ) { m_MouseCoords.fZ = _fZ; }
 
 bool InputFilter::setFullSensorState(
-    PlayerNumber pn, PadPanel panel, PadSensor sensor, float intensity) {
+    PlayerNumber pn, PadPanel panel, PadSensor sensor, unsigned int intensity) {
   if (pn < NUM_PlayerNumber && panel < NUM_PadPanel && sensor < NUM_PadSensor) {
     m_Sensors[pn].Set(panel, sensor, intensity);
+    return true;
+  }
+  return false;
+}
+
+bool InputFilter::setFullSensorStateBinary(
+    PlayerNumber pn, PadPanel panel, PadSensor sensor, bool isPressed) {
+  if (pn < NUM_PlayerNumber && panel < NUM_PadPanel && sensor < NUM_PadSensor) {
+    m_Sensors[pn].SetBinary(panel, sensor, isPressed);
+    return true;
+  }
+  return false;
+}
+
+bool InputFilter::setFullSensorStateMax(PlayerNumber pn, unsigned int max) {
+  if (pn < NUM_PlayerNumber) {
+    m_Sensors[pn].SetMax(max);
     return true;
   }
   return false;
@@ -531,7 +548,7 @@ class LunaInputFilter : public Luna<InputFilter> {
         for (size_t sensor = 0; sensor < NUM_PadSensor; ++sensor) {
           lua_pushnumber(
               L, p->getFullSensorState((PlayerNumber)player)
-                     ->intensity[panel][sensor]);
+                     ->GetIntensity((PadPanel)panel, (PadSensor)sensor));
 
           lua_setfield(L, -2, PadSensorNames[sensor]);
         }

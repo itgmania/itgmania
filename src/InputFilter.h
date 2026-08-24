@@ -70,7 +70,6 @@ enum PadSensor {
   PadSensor_Right,
   PadSensor_Bottom,
   PadSensor_Left,
-  PadSensor_Center,
   PadSensor_TopCenter,
   PadSensor_TopLeft,
   PadSensor_TopRight,
@@ -85,18 +84,54 @@ enum PadSensor {
 };
 
 struct PadSensorState {
-  float intensity[NUM_PadPanel][NUM_PadSensor] = {};
+ private:
+  unsigned int currentValue[NUM_PadPanel][NUM_PadSensor] = {};
+  unsigned int threshold[NUM_PadPanel][NUM_PadSensor] = {};
+  unsigned int min = 0;
+  unsigned int max = 100;
 
-  const float& Get(PadPanel panel, PadSensor sensor) const {
-    return intensity[static_cast<int>(panel)][static_cast<int>(sensor)];
+ public:
+  float GetIntensity(PadPanel panel, PadSensor sensor) const {
+    return static_cast<float>(
+               currentValue[static_cast<int>(panel)][static_cast<int>(sensor)] -
+               min) /
+           static_cast<float>(max - min);
   }
 
-  void Set(PadPanel panel, PadSensor sensor, float value) {
-    value = std::clamp(value, 0.0f, 1.0f);
-    this->intensity[static_cast<int>(panel)][static_cast<int>(sensor)] = value;
+  void Set(PadPanel panel, PadSensor sensor, unsigned int value) {
+    value = std::clamp(value, min, max);
+    this->currentValue[static_cast<int>(panel)][static_cast<int>(sensor)] =
+        value;
   }
 
-  void Clear() { std::memset(intensity, 0, sizeof(intensity)); }
+  void SetBinary(PadPanel panel, PadSensor sensor, bool isPressed) {
+    Set(panel, sensor, isPressed ? max : min);
+  }
+
+  void SetMin(unsigned int value) { min = std::min(value, max); }
+  void SetMax(unsigned int value) { max = std::max(value, min); }
+
+  void SetMinMax(unsigned int newMin, unsigned int newMax) {
+    min = std::min(newMin, newMax);
+    max = std::max(newMin, newMax);
+  }
+
+  unsigned int GetMax() { return max; }
+  unsigned int GetMin() { return min; }
+
+  void SetThreshold(size_t panel, size_t sensor, unsigned int value) {
+    threshold[panel][sensor] = std::clamp(value, min, max);
+  }
+
+  unsigned int GetThreshold(size_t panel, size_t sensor) const {
+    return threshold[panel][sensor];
+  }
+
+  bool isAboveThreshold(size_t panel, size_t sensor) const {
+    return currentValue[panel][sensor] >= threshold[panel][sensor];
+  }
+
+  void Clear() { std::memset(currentValue, 0, sizeof(currentValue)); }
 };
 
 class RageMutex;
@@ -148,8 +183,14 @@ class InputFilter {
     return nullptr;
   }
 
+  bool setFullSensorStateMax(PlayerNumber pn, unsigned int max);
+
   bool setFullSensorState(
-      PlayerNumber pn, PadPanel panel, PadSensor sensor, float intensity);
+      PlayerNumber pn, PadPanel panel, PadSensor sensor,
+      unsigned int intensity);
+
+  bool setFullSensorStateBinary(
+      PlayerNumber pn, PadPanel panel, PadSensor sensor, bool isPressed);
 
   // Lua
   void PushSelf(lua_State* L);
