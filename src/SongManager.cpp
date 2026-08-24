@@ -858,8 +858,10 @@ std::string SongManager::GetSeriesBannerPath(std::string sSeriesName) const {
   return std::string();
 }
 
-std::unordered_set<Group*> SongManager::GetGroupsInSeries(const std::string& sSeriesName) const {
-  std::map<std::string, Series>::const_iterator it = m_mapNameToSeries.find(sSeriesName);
+std::unordered_set<Group*> SongManager::GetGroupsInSeries(
+    const std::string& sSeriesName) const {
+  std::map<std::string, Series>::const_iterator it =
+      m_mapNameToSeries.find(sSeriesName);
   if (it == m_mapNameToSeries.end()) {
     return std::unordered_set<Group*>();
   }

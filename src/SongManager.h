@@ -172,7 +172,8 @@ class SongManager {
   std::map<std::string, Series> GetSeriesGroupMap() const {
     return m_mapNameToSeries;
   };
-  std::unordered_set<Group*> GetGroupsInSeries(const std::string& sSeriesName) const;
+  std::unordered_set<Group*> GetGroupsInSeries(
+      const std::string& sSeriesName) const;
   Group* GetGroupFromName(const std::string& sGroupName) const;
   Group* GetGroup(const Song* pSong) const;
   std::vector<std::string> GetPreferredSortSectionNames() const;

@@ -923,7 +923,8 @@ void MusicWheel::BuildWheelItemDatas(
                 continue;
               }
               const std::string groupName = pGroup->GetGroupName();
-              int numGroupsInSeries = SONGMAN->GetGroupsInSeries(pGroup->GetSeries()).size();
+              int numGroupsInSeries =
+                  SONGMAN->GetGroupsInSeries(pGroup->GetSeries()).size();
               std::string seriesName;
               if (numGroupsInSeries > 1) {
                 seriesName = pGroup->GetSeries();
