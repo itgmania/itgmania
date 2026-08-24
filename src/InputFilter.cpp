@@ -33,6 +33,7 @@ static const char* PadPanelNames[] = {"UpLeft",   "Up",     "UpRight",
                                       "DownLeft", "Down",   "DownRight"};
 XToString(PadPanel);
 StringToX(PadPanel);
+LuaXType(PadPanel);
 
 static const char* PadSensorNames[] = {
     "Top",          "Right",      "Bottom",      "Left",
@@ -41,6 +42,7 @@ static const char* PadSensorNames[] = {
 };
 XToString(PadSensor);
 StringToX(PadSensor);
+LuaXType(PadSensor);
 
 struct ButtonState {
   ButtonState();
