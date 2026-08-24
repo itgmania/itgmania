@@ -1075,6 +1075,7 @@
 			<Function name='GetMouseWheel'/>
 			<Function name='GetMouseX'/>
 			<Function name='GetMouseY'/>
+			<Function name='GetFullSensorState'/>
 		</Class>
 		<Class base='BitmapText' name='InputList'>
 		</Class>
@@ -1633,6 +1634,8 @@
 		</Class>
 		<Class name='RageInput'>
 			<Function name='GetDescriptions'/>
+			<Function name='StartSensorTest'/>
+			<Function name='StopSensorTest'/>
 		</Class>
 		<Class name='RageQuadratic'>
 			<Function name='evaluate'/>
