@@ -71,6 +71,14 @@ enum PadSensor {
   PadSensor_Bottom,
   PadSensor_Left,
   PadSensor_Center,
+  PadSensor_TopCenter,
+  PadSensor_TopLeft,
+  PadSensor_TopRight,
+  PadSensor_RightCenter,
+  PadSensor_BottomCenter,
+  PadSensor_BottomLeft,
+  PadSensor_BottomRight,
+  PadSensor_LeftCenter,
 
   NUM_PadSensor,
   PadSensor_Invalid
