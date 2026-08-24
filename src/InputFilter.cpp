@@ -35,7 +35,9 @@ XToString(PadPanel);
 StringToX(PadPanel);
 
 static const char* PadSensorNames[] = {
-    "Top", "Right", "Bottom", "Left", "Center",
+    "Top",        "Right",       "Bottom",     "Left",        "Center",
+    "TopCenter",  "TopLeft",     "TopRight",   "RightCenter", "BottomCenter",
+    "BottomLeft", "BottomRight", "LeftCenter",
 };
 XToString(PadSensor);
 StringToX(PadSensor);
