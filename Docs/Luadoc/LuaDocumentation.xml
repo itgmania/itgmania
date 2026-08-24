@@ -3549,6 +3549,9 @@ end
 	<Function name='GetMouseY' return='float' arguments=''>
 		Returns the Y position of the mouse.
 	</Function>
+	<Function name='GetFullSensorState' return='table' arguments=''>
+		Returns a table of <code>NUM_PLAYERS</code> with <code>NUM_PadPanel</code> panels, each with a float of the <code>NUM_PadSensor</code> the individual sensors and their per sensor, sub button, state. Be sure that <code>INPUTMAN:StartSensorTest()</code> and <code>INPUTMAN:StopSensorTest()</code> are correctly turned on/off otherwise the data in this table may be stale.
+	</Function>
 </Class>
 <Class name='InputList' grouping='Actor'>
 	<Description>
@@ -5110,6 +5113,12 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	</Description>
 	<Function name='GetDescriptions' return='{string}' arguments=''>
 		Returns an array of connected input device descriptions.
+	</Function>
+	<Function name='StartSensorTest' return='' arguments=''>
+		Begins additional polling for information about the individual sensors if available. To be called before the data is to be shown to the user. Data can be requested via <code>INPUTFILTER:GetFullSensorState()</code>
+	</Function>
+	<Function name='StopSensorTest' return='' arguments=''>
+		Stops additional polling for information about the individual sensors. To be called when the information is no longer to be sent to the user.
 	</Function>
 </Class>
 <Class name='RageQuadratic'>
