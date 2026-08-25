@@ -36,7 +36,6 @@ StringToX(PadPanel);
 LuaXType(PadPanel);
 
 static const char* PadSensorNames[] = {
-    "Top",          "Right",      "Bottom",      "Left",
     "TopCenter",    "TopLeft",    "TopRight",    "RightCenter",
     "BottomCenter", "BottomLeft", "BottomRight", "LeftCenter",
 };
