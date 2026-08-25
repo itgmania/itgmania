@@ -153,11 +153,12 @@ enum SortOrder {
   SORT_TOP_GRADES_P2, /**< Sort by the highest grades earned on a Song for P2.
                        */
   SORT_RECENT,
-  SORT_RECENT_P1,      /**< Sort by the most recent play for P1. */
-  SORT_RECENT_P2,      /**< Sort by the most recent play for P2. */
-  SORT_ARTIST,         /**< Sort by the name of the artist of the Song. */
-  SORT_GENRE,          /**< Sort by the Song's genre. */
-  SORT_METER,          /**< Sort by the difficulty of all meters */
+  SORT_RECENT_P1, /**< Sort by the most recent play for P1. */
+  SORT_RECENT_P2, /**< Sort by the most recent play for P2. */
+  SORT_ARTIST,    /**< Sort by the name of the artist of the Song. */
+  SORT_GENRE,     /**< Sort by the Song's genre. */
+  SORT_LENGTH,    /**< Sort the songs/courses by how long they would last. */
+  SORT_METER,     /**< Sort by the difficulty of all meters */
   SORT_BEGINNER_METER, /**< Sort by the difficulty of the single beginner meter.
                         */
   SORT_EASY_METER,     /**< Sort by the difficulty of the single easy meter. */
@@ -180,7 +181,6 @@ enum SortOrder {
   SORT_NONSTOP_COURSES, /**< View only the nonstop courses. */
   SORT_ONI_COURSES,     /**< View only the oni/survival courses. */
   SORT_ENDLESS_COURSES, /**< View only the endless courses. */
-  SORT_LENGTH,    /**< Sort the songs/courses by how long they would last. */
   SORT_ROULETTE,  // Note: don't call more than once per line as successive
                   // calls can clear the vector used. TODO: fix this underlying
                   // bug.
@@ -214,8 +214,7 @@ LuaDeclareType(SortOrder);
  * This function is mainly used for saving sort order to the profile. -aj
  */
 inline bool IsSongSort(SortOrder so) {
-  return (so >= SORT_PREFERRED && so <= SORT_DOUBLE_CHALLENGE_METER) ||
-         so == SORT_LENGTH;
+  return so >= SORT_PREFERRED && so <= SORT_DOUBLE_CHALLENGE_METER;
 }
 
 /** @brief The list of tap note scores available during play. */
