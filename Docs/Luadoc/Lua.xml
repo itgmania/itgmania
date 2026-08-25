@@ -2708,18 +2708,14 @@
 			<EnumValue name='&apos;PadPanel_DownRight&apos;' value='8'/>
 		</Enum>
 		<Enum name='PadSensor'>
-			<EnumValue name='&apos;PadSensor_Top&apos;' value='0'/>
-			<EnumValue name='&apos;PadSensor_Right&apos;' value='1'/>
-			<EnumValue name='&apos;PadSensor_Bottom&apos;' value='2'/>
-			<EnumValue name='&apos;PadSensor_Left&apos;' value='3'/>
-			<EnumValue name='&apos;PadSensor_TopCenter&apos;' value='4'/>
-			<EnumValue name='&apos;PadSensor_TopLeft&apos;' value='5'/>
-			<EnumValue name='&apos;PadSensor_TopRight&apos;' value='6'/>
-			<EnumValue name='&apos;PadSensor_RightCenter&apos;' value='7'/>
-			<EnumValue name='&apos;PadSensor_BottomCenter&apos;' value='8'/>
-			<EnumValue name='&apos;PadSensor_BottomLeft&apos;' value='9'/>
-			<EnumValue name='&apos;PadSensor_BottomRight&apos;' value='10'/>
-			<EnumValue name='&apos;PadSensor_LeftCenter&apos;' value='11'/>
+			<EnumValue name='&apos;PadSensor_TopCenter&apos;' value='0'/>
+			<EnumValue name='&apos;PadSensor_TopLeft&apos;' value='1'/>
+			<EnumValue name='&apos;PadSensor_TopRight&apos;' value='2'/>
+			<EnumValue name='&apos;PadSensor_RightCenter&apos;' value='3'/>
+			<EnumValue name='&apos;PadSensor_BottomCenter&apos;' value='4'/>
+			<EnumValue name='&apos;PadSensor_BottomLeft&apos;' value='5'/>
+			<EnumValue name='&apos;PadSensor_BottomRight&apos;' value='6'/>
+			<EnumValue name='&apos;PadSensor_LeftCenter&apos;' value='7'/>
 		</Enum>
 		<Enum name='PaneCategory'>
 			<EnumValue name='&apos;PaneCategory_NumSteps&apos;' value='0'/>

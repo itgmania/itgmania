@@ -80,20 +80,20 @@ int InputHandler_PumpHID::InputThread_Start(void* p) {
 
 void InputHandler_PumpHID::BroadcastFullSensorStateHelper(
     PlayerNumber pn, uint8_t sensor_index, pumphid_player_byte_t state) {
-  PadSensor currSensor = PadSensor_Top;
+  PadSensor currSensor = PadSensor_TopCenter;
 
   switch (sensor_index) {
     case 0:
-      currSensor = PadSensor_Right;
+      currSensor = PadSensor_RightCenter;
       break;
     case 1:
-      currSensor = PadSensor_Left;
+      currSensor = PadSensor_LeftCenter;
       break;
     case 2:
-      currSensor = PadSensor_Bottom;
+      currSensor = PadSensor_BottomCenter;
       break;
     case 3:
-      currSensor = PadSensor_Top;
+      currSensor = PadSensor_TopCenter;
       break;
     default:
       LOG->Warn("Invalid sensor position %d", sensor_index);

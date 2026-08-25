@@ -66,11 +66,7 @@ enum PadPanel {
 };
 
 enum PadSensor {
-  PadSensor_Top = 0,
-  PadSensor_Right,
-  PadSensor_Bottom,
-  PadSensor_Left,
-  PadSensor_TopCenter,
+  PadSensor_TopCenter = 0,
   PadSensor_TopLeft,
   PadSensor_TopRight,
   PadSensor_RightCenter,
