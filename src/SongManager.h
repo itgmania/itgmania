@@ -328,8 +328,8 @@ class SongManager {
   ThemeMetric1D<RageColor> SONG_GROUP_COLOR;
   ThemeMetric<int> NUM_COURSE_GROUP_COLORS;
   ThemeMetric1D<RageColor> COURSE_GROUP_COLOR;
-  ThemeMetric<int> num_profile_song_group_colors;
-  ThemeMetric1D<RageColor> profile_song_group_colors;
+  ThemeMetric<int> NUM_PROFILE_SONG_GROUP_COLORS;
+  ThemeMetric1D<RageColor> PROFILE_SONG_GROUP_COLORS;
 };
 
 extern SongManager*

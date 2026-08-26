@@ -113,9 +113,8 @@ void Profile::ClearSongs() {
     delete curr_song;
   }
   m_songs.clear();
-  if (m_group != nullptr) {
-    RageUtil::SafeDelete(m_group);
-  }
+  m_groups.clear();
+  songsGroups.clear();
 }
 
 int Profile::HighScoresForASong::GetNumTimesPlayed() const {
@@ -1202,55 +1201,106 @@ ProfileLoadResult Profile::LoadAllFromDir(
 
 void Profile::LoadSongsFromDir(
     const std::string& dir, ProfileSlot prof_slot, bool isMemoryCard) {
-  if (!PREFSMAN->m_custom_songs_enable) {
+  // Custom songs not enabled or not loading from MemoryCard
+  if (!PREFSMAN->m_custom_songs_enable || !isMemoryCard) {
     return;
   }
+
   std::string songs_folder = dir + "Songs";
-  if (FILEMAN->DoesFileExist(songs_folder) && isMemoryCard) {
-    LOG->Trace("Found songs folder in profile.");
-    std::vector<std::string> song_folders;
-    RageTimer song_load_start_time;
-    song_load_start_time.Touch();
-    FILEMAN->GetDirListing(songs_folder + "/*", song_folders, true, true);
 
-    StripCvsAndSvn(song_folders);
-    StripMacResourceForks(song_folders);
-
-    Group* group =
-        new Group(songs_folder, GetDisplayNameOrHighScoreName(), true);
-    m_group = group;
-
-    LOG->Trace("Found %i songs in profile.", int(song_folders.size()));
-    // Only songs that are successfully loaded count towards the limit. -Kyz
-    for (size_t song_index = 0;
-         song_index < song_folders.size() &&
-         m_songs.size() < PREFSMAN->m_custom_songs_max_count;
-         ++song_index) {
-      std::string& song_dir_name = song_folders[song_index];
-      Song* new_song = new Song;
-      if (!new_song->LoadFromSongDir(song_dir_name, false, prof_slot)) {
-        // The song failed to load.
-        LOG->Trace("Song %s failed to load.", song_dir_name.c_str());
-        delete new_song;
-      } else {
-        new_song->SetEnabled(true);
-        m_songs.push_back(new_song);
-      }
-      if (song_load_start_time.Ago() > PREFSMAN->m_custom_songs_load_timeout) {
-        break;
-      }
-    }
-    float load_time = song_load_start_time.Ago();
-    LOG->Trace(
-        "Successfully loaded %zu songs in %.6f from profile.", m_songs.size(),
-        load_time);
-
-    if (m_songs.empty()) {
-      delete m_group;
-      m_group = nullptr;
-    }
-  } else {
+  if (!FILEMAN->DoesFileExist(songs_folder)) {
     LOG->Trace("No songs folder in profile.");
+    return;
+  }
+
+  LOG->Trace("Found songs folder in profile.");
+  RageTimer song_load_start_time;
+  song_load_start_time.Touch();
+
+  // first level -> can be packs or single songs
+  std::vector<std::string> first_level_folders;
+  FILEMAN->GetDirListing(songs_folder + "/*", first_level_folders, true, true);
+
+  // Songs empty
+  if (first_level_folders.empty()) {
+    LOG->Trace("No custom songs in profile.");
+    return;
+  }
+
+  StripCvsAndSvn(first_level_folders);
+  StripMacResourceForks(first_level_folders);
+
+  m_groups.clear();
+  m_groups.emplace_back(new Group(songs_folder, "", prof_slot));
+
+  std::vector<std::string> all_songs_dirs;
+
+  for (const std::string& folder_first_level : first_level_folders) {
+    std::vector<std::string> second_level_folders;
+
+    FILEMAN->GetDirListing(
+        folder_first_level + "/*", second_level_folders, true, true);
+
+    // no second level -> is a song folder
+    if (second_level_folders.empty()) {
+      all_songs_dirs.push_back(folder_first_level);
+    }
+    // is a pack
+    else {
+      // create group -> need to check at the end if has songs
+      m_groups.emplace_back(new Group(
+          folder_first_level, Basename(folder_first_level), prof_slot));
+
+      all_songs_dirs.insert(
+          all_songs_dirs.end(), second_level_folders.begin(),
+          second_level_folders.end());
+    }
+  }
+
+  LOG->Trace("Found %i songs in profile.", int(all_songs_dirs.size()));
+
+  // Only songs that are successfully loaded count towards the limit. -Kyz
+  for (std::string& song_dir : all_songs_dirs) {
+    if (m_songs.size() >= PREFSMAN->m_custom_songs_max_count) {
+      break;
+    }
+    if (song_load_start_time.Ago() > PREFSMAN->m_custom_songs_load_timeout) {
+      break;
+    }
+
+    auto song = std::make_unique<Song>();
+    if (!song->LoadFromSongDir(song_dir, false, prof_slot)) {
+      LOG->Trace("Song %s failed to load.", song_dir.c_str());
+      continue;
+    }
+
+    song->SetEnabled(true);
+    m_songs.push_back(song.get());
+
+    // link songs with groupName to find them easily
+    songsGroups[song->m_sGroupName].push_back(song.release());
+  }
+
+  float load_time = song_load_start_time.Ago();
+  LOG->Trace(
+      "Successfully loaded %zu songs in %.6f from profile.", m_songs.size(),
+      load_time);
+
+  // no songs
+  if (m_songs.empty()) {
+    m_groups.clear();
+    LOG->Trace("No valid songs were loaded.");
+    return;
+  }
+
+  // Remove groups that contain no songs
+  for (int i = int(m_groups.size()) - 1; i >= 0; --i) {
+    Group* group = m_groups[i];
+
+    if (songsGroups.find(group->GetGroupName()) == songsGroups.end()) {
+      delete group;
+      m_groups.erase(m_groups.begin() + i);
+    }
   }
 }
 
@@ -2634,6 +2684,19 @@ std::string Profile::MakeFileNameNoExtension(
   return sFileNameBeginning + ssprintf("%05d", iIndex);
 }
 
+std::string Profile::GetCustomSongsGroupNamePrefix() const {
+  std::string groupName = THEME->GetString("Profile", "ProfileCustomSongs");
+
+  return groupName.replace(
+      groupName.find("%s"), sizeof("%s") - 1, GetDisplayNameOrHighScoreName());
+}
+
+bool Profile::IsCustomSongGroup(std::string sSongGroup) const {
+  std::string prefix = GetCustomSongsGroupNamePrefix();
+
+  return sSongGroup.compare(0, prefix.length(), prefix) == 0;
+}
+
 // lua start
 #include "LuaBinding.h"
 
@@ -2653,6 +2716,7 @@ class LunaProfile : public Luna<Profile> {
   DEFINE_METHOD(GetType, m_Type);
   DEFINE_METHOD(GetPriority, m_ListPriority);
 
+  DEFINE_METHOD(GetDisplayNameOrHighScoreName, GetDisplayNameOrHighScoreName());
   static int GetDisplayName(T* p, lua_State* L) {
     lua_pushstring(L, p->m_sDisplayName.c_str());
     return 1;
@@ -2999,10 +3063,12 @@ class LunaProfile : public Luna<Profile> {
     }
     return 1;
   }
+
   LunaProfile() {
     ADD_METHOD(AddScreenshot);
     ADD_METHOD(GetType);
     ADD_METHOD(GetPriority);
+    ADD_METHOD(GetDisplayNameOrHighScoreName);
     ADD_METHOD(GetDisplayName);
     ADD_METHOD(SetDisplayName);
     ADD_METHOD(GetLastUsedHighScoreName);

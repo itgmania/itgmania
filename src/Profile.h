@@ -4,6 +4,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "CourseUtil.h"  // for CourseID
@@ -107,7 +108,7 @@ class Profile {
         m_sDefaultModifiers(),
         m_SortOrder(SortOrder_Invalid),
         m_songs{},
-        m_group(nullptr),
+        m_groups{},
         m_LastDifficulty(Difficulty_Invalid),
         m_LastCourseDifficulty(Difficulty_Invalid),
         m_LastStepsType(StepsType_Invalid),
@@ -240,7 +241,8 @@ class Profile {
   std::map<std::string, std::string> m_sDefaultModifiers;
   SortOrder m_SortOrder;
   std::vector<Song*> m_songs;
-  Group* m_group;
+  std::vector<Group*> m_groups;
+  std::unordered_map<std::string, std::vector<Song*>> songsGroups;
   Difficulty m_LastDifficulty;
   CourseDifficulty m_LastCourseDifficulty;
   StepsType m_LastStepsType;
@@ -480,6 +482,8 @@ class Profile {
   static std::string MakeFileNameNoExtension(
       std::string sFileNameBeginning, int iIndex);
 
+  std::string GetCustomSongsGroupNamePrefix() const;
+  bool IsCustomSongGroup(std::string sSongGroup) const;
   // Lua
   void PushSelf(lua_State* L);
 
