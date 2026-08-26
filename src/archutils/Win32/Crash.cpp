@@ -251,7 +251,7 @@ void RunChild() {
   WriteToChild(hToStdin, &g_CrashInfo, sizeof(g_CrashInfo));
 
   // 2. Write info.
-  const TCHAR* p = RageLog::GetInfo();
+  const char* p = RageLog::GetInfo();
   int iSize = static_cast<int>(strlen(p));
   WriteToChild(hToStdin, &iSize, sizeof(iSize));
   WriteToChild(hToStdin, p, iSize);
@@ -264,7 +264,7 @@ void RunChild() {
 
   // 4. Write RecentLogs.
   int cnt = 0;
-  const TCHAR* ps[1024];
+  const char* ps[1024];
   while (cnt < 1024 && (ps[cnt] = RageLog::GetRecentLog(cnt)) != nullptr) {
     ++cnt;
   }
@@ -277,7 +277,7 @@ void RunChild() {
   }
 
   // 5. Write CHECKPOINTs.
-  static TCHAR buf[1024 * 32];
+  static char buf[1024 * 32];
   Checkpoints::GetLogs(buf, sizeof(buf), "$$");
   iSize = static_cast<int>(strlen(buf)) + 1;
   WriteToChild(hToStdin, &iSize, sizeof(iSize));
@@ -301,7 +301,7 @@ void RunChild() {
       break;
     }
 
-    TCHAR szName[MAX_PATH];
+    char szName[MAX_PATH];
     if (!CrashGetModuleBaseName(hMod, szName)) {
       strcpy(szName, "???");
     }
