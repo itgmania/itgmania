@@ -56,7 +56,7 @@
 #define SNEK_CONFIG_NUM_SENSORS 4
 
 struct SnekBitMapping {
-  uint bitPosition;
+  uint32_t bitPosition;
   PlayerNumber pn;
   PadPanel panel;
 };
