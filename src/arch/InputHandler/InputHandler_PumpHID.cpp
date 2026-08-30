@@ -40,7 +40,8 @@ InputHandler_PumpHID::InputHandler_PumpHID() {
 
   // ensure auto reconnect and blocking reads (since the device wants write/read
   // cycles properly.)
-  dev = new HidDevice(PUMPHID_VID, devPIDS, PUMPHID_INTERFACE_NUM, true, false);
+  dev = std::make_unique<HidDevice>(
+      PUMPHID_VID, devPIDS, PUMPHID_INTERFACE_NUM, true, false);
 
   if (IsConnected() && PREFSMAN->m_bThreadedInput) {
     InputThread.SetName("PumpHID thread");

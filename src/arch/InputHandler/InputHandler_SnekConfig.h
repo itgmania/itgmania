@@ -75,9 +75,9 @@ class InputHandler_SnekConfig : public InputHandler {
   void StopSensorDebugging();
 
  private:
-  HidDevice* dev;
+  std::unique_ptr<HidDevice> dev;
 
-  bool m_bShutdown;
+  std::atomic<bool> m_bShutdown;
   RageThread* DebugThread = nullptr;
 
   uint32_t sensorState[SNEK_CONFIG_NUM_SENSORS] = {};

@@ -43,7 +43,7 @@ InputHandler_SnekConfig::InputHandler_SnekConfig() {
 
   // ensure auto reconnect and blocking reads (we need to ask it a question then
   // get an answer)
-  dev = new HidDevice(
+  dev = std::make_unique<HidDevice>(
       SNEK_CONFIG_VID, SNEK_CONFIG_PID, SNEK_CONFIG_INTERFACE_NUM, true, false);
 
   if (IsConnected()) {
@@ -145,7 +145,11 @@ void InputHandler_SnekConfig::InputThreadMain() {
 
   while (!m_bShutdown) {
     // extio sensor cmds are 1,2,3,4, so add one to zero index.
-    SendCommand(SNEK_CONFIG_OPCODE_SET_EXTIO_SENSOR, (sensorNumber + 1), res);
+    if (!SendCommand(
+            SNEK_CONFIG_OPCODE_SET_EXTIO_SENSOR, (sensorNumber + 1), res)) {
+      // bad response, try again
+      continue;
+    }
 
     uint32_t newState = 0;
     std::memcpy(&newState, &res[2], sizeof(newState));
