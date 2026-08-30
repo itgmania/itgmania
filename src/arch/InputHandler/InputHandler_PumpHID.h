@@ -237,7 +237,7 @@ class InputHandler_PumpHID : public InputHandler {
   bool IsConnected() { return dev != nullptr && dev->IsConnected(); }
 
  private:
-  HidDevice* dev;
+  std::unique_ptr<HidDevice> dev;
   static const std::vector<int> devPIDS;
 
   pumphid_output_state_t msg_from_device;
