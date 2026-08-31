@@ -64,6 +64,8 @@ class PlayerStageStats {
    * this is only set if both players were failing at the same time. */
   bool m_bFailed;
 
+  bool m_bMercifulBeginnerInEffect;
+
   int m_iPossibleDancePoints;
   int m_iCurPossibleDancePoints;
   int m_iActualDancePoints;
