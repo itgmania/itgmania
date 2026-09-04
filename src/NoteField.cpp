@@ -61,6 +61,13 @@ static ThemeMetric<float> BAR_4TH_ALPHA("NoteField", "Bar4thAlpha");
 static ThemeMetric<float> BAR_8TH_ALPHA("NoteField", "Bar8thAlpha");
 static ThemeMetric<float> BAR_16TH_ALPHA("NoteField", "Bar16thAlpha");
 static ThemeMetric<float> FADE_FAIL_TIME("NoteField", "FadeFailTime");
+static ThemeMetric<RageColor> WAVEFORM_COLOR("NoteField", "WaveformColor");
+static ThemeMetric<bool> SHOW_WAVEFORM("NoteField", "ShowWaveform");
+static ThemeMetric<float> WAVEFORM_WIDTH_PERCENT(
+    "NoteField", "WaveformWidthPercent");
+static ThemeMetric<float> WAVEFORM_GAIN("NoteField", "WaveformGain");
+static ThemeMetric<float> WAVEFORM_POINTS_PER_PIXEL(
+    "NoteField", "WaveformPointsPerPixel");
 
 NoteField::NoteField() {
   m_pNoteData = nullptr;
@@ -71,7 +78,7 @@ NoteField::NoteField() {
   m_fBar4thAlpha = BAR_4TH_ALPHA;
   m_fBar8thAlpha = BAR_8TH_ALPHA;
   m_fBar16thAlpha = BAR_16TH_ALPHA;
-  m_bShowWaveform = false;
+  m_bShowWaveform = SHOW_WAVEFORM;
   m_bWaveformIsStereo = false;
   m_iWaveformSampleRate = 0;
 
@@ -653,12 +660,6 @@ void NoteField::DrawAreaHighlight(int iStartBeat, int iEndBeat) {
 
 // todo: add DrawWarpAreaBG? -aj
 
-static ThemeMetric<RageColor> WAVEFORM_COLOR("NoteField", "WaveformColor");
-static ThemeMetric<float> WAVEFORM_WIDTH_PERCENT(
-    "NoteField", "WaveformWidthPercent");
-static ThemeMetric<float> WAVEFORM_GAIN("NoteField", "WaveformGain");
-static ThemeMetric<float> WAVEFORM_POINTS_PER_PIXEL(
-    "NoteField", "WaveformPointsPerPixel");
 void NoteField::DrawWaveform() {
   if (m_WaveformSamplesL.empty() || m_iWaveformSampleRate <= 0) {
     return;
