@@ -1908,7 +1908,6 @@ void ScreenEdit::Init() {
   m_NoteFieldEdit.Init(&m_PlayerStateEdit, PLAYER_HEIGHT * 2, false);
   m_NoteFieldEdit.Load(&m_NoteDataEdit, -240, 850);
   m_NoteFieldEdit.LoadWaveform(m_pSteps->GetMusicPath());
-  m_NoteFieldEdit.SetShowWaveform(true);
   this->AddChild(&m_NoteFieldEdit);
 
   m_NoteDataRecord.SetNumTracks(m_NoteDataEdit.GetNumTracks());
