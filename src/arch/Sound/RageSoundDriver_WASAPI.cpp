@@ -16,6 +16,91 @@
 
 REGISTER_SOUND_DRIVER_CLASS2("WASAPI", WASAPI);
 
+namespace {
+REFERENCE_TIME FramesToHnsDuration(UINT32 iFrames, int iSampleRate) {
+  if (iFrames == 0 || iSampleRate <= 0) {
+    return 0;
+  }
+
+  return (REFERENCE_TIME)iFrames * 10000000ULL / iSampleRate;
+}
+
+HRESULT InitializeSharedLowLatencyStream(
+    IAudioClient* pAudioClient, WAVEFORMATEX* pwfx, UINT32 iRequestedFrames) {
+#ifdef __IAudioClient3_INTERFACE_DEFINED
+  IAudioClient3* pAudioClient3 = nullptr;
+  HRESULT hr = pAudioClient->QueryInterface(IID_PPV_ARGS(&pAudioClient3));
+  if (FAILED(hr) || pAudioClient3 == nullptr) {
+    LOG->Info("WASAPI: IAudioClient3 not available; skipping shared low-latency pathway");
+    return S_FALSE;
+  }
+
+  UINT32 iDefaultPeriodFrames = 0;
+  UINT32 iFundamentalPeriodFrames = 0;
+  UINT32 iMinPeriodFrames = 0;
+  UINT32 iMaxPeriodFrames = 0;
+  hr = pAudioClient3->GetSharedModeEnginePeriod(
+      pwfx, &iDefaultPeriodFrames, &iFundamentalPeriodFrames,
+      &iMinPeriodFrames, &iMaxPeriodFrames);
+
+  if (FAILED(hr)) {
+    LOG->Warn(
+        "WASAPI: GetSharedModeEnginePeriod failed; skipping shared "
+        "low-latency pathway");
+    pAudioClient3->Release();
+    return S_FALSE;
+  }
+
+  UINT32 iPeriodFrames =
+      iRequestedFrames > 0 ? iRequestedFrames : iMinPeriodFrames;
+  if (iPeriodFrames < iMinPeriodFrames) {
+    iPeriodFrames = iMinPeriodFrames;
+  }
+  if (iPeriodFrames > iMaxPeriodFrames) {
+    iPeriodFrames = iMaxPeriodFrames;
+  }
+
+  if (iFundamentalPeriodFrames > 0) {
+    UINT32 iRemainder = iPeriodFrames % iFundamentalPeriodFrames;
+    if (iRemainder != 0) {
+      iPeriodFrames += iFundamentalPeriodFrames - iRemainder;
+      if (iPeriodFrames > iMaxPeriodFrames) {
+        iPeriodFrames = iMaxPeriodFrames;
+      }
+    }
+  }
+
+  hr = pAudioClient3->InitializeSharedAudioStream(
+      AUDCLNT_STREAMFLAGS_EVENTCALLBACK, iPeriodFrames, pwfx, nullptr);
+
+  pAudioClient3->Release();
+
+  if (FAILED(hr)) {
+    LOG->Warn(
+        hr_ssprintf(hr,
+                    "WASAPI: InitializeSharedAudioStream failed; falling back "
+                    "to shared Initialize")
+            .c_str());
+    return hr;
+  }
+
+  LOG->Info(
+      "WASAPI: Shared low-latency mode enabled (period=%u frames, min=%u, default=%u, max=%u, fundamental=%u)",
+      iPeriodFrames, iMinPeriodFrames, iDefaultPeriodFrames, iMaxPeriodFrames,
+      iFundamentalPeriodFrames);
+  return S_OK;
+#else
+  LOG->Info(
+      "WASAPI: IAudioClient3 headers unavailable in this SDK; skipping shared "
+      "low-latency pathway");
+  (void)pAudioClient;
+  (void)pwfx;
+  (void)iRequestedFrames;
+  return S_FALSE;
+#endif
+}
+}  // namespace
+
 RageSoundDriver_WASAPI::RageSoundDriver_WASAPI()
     : m_iSampleRate(0),
       m_iBufferSizeFrames(0),
@@ -64,62 +149,6 @@ void RageSoundDriver_WASAPI::FreeWASAPI() {
     CoUninitialize();
     m_bOwnsComInit = false;
   }
-}
-
-bool RageSoundDriver_WASAPI::TryInitializeSharedLowLatencyStream(
-    WAVEFORMATEX* pwfx) {
-  IAudioClient3* pAudioClient3 = nullptr;
-  HRESULT hr = m_pAudioClient->QueryInterface(IID_PPV_ARGS(&pAudioClient3));
-  if (FAILED(hr) || pAudioClient3 == nullptr) {
-    return false;
-  }
-
-  UINT32 defaultPeriodInFrames = 0;
-  UINT32 fundamentalPeriodInFrames = 0;
-  UINT32 minPeriodInFrames = 0;
-  UINT32 maxPeriodInFrames = 0;
-  hr = pAudioClient3->GetSharedModeEnginePeriod(
-      pwfx, &defaultPeriodInFrames, &fundamentalPeriodInFrames,
-      &minPeriodInFrames, &maxPeriodInFrames);
-  if (FAILED(hr)) {
-    pAudioClient3->Release();
-    return false;
-  }
-
-  UINT32 periodInFrames = defaultPeriodInFrames;
-  if (PREFSMAN->m_iSoundWriteAhead > 0) {
-    periodInFrames = PREFSMAN->m_iSoundWriteAhead;
-    if (periodInFrames < minPeriodInFrames) {
-      periodInFrames = minPeriodInFrames;
-    }
-    if (periodInFrames > maxPeriodInFrames) {
-      periodInFrames = maxPeriodInFrames;
-    }
-  } else {
-    periodInFrames = minPeriodInFrames;
-  }
-
-  if (fundamentalPeriodInFrames > 0) {
-    UINT32 periodRemainder = periodInFrames % fundamentalPeriodInFrames;
-    if (periodRemainder != 0) {
-      periodInFrames += fundamentalPeriodInFrames - periodRemainder;
-      if (periodInFrames > maxPeriodInFrames) {
-        periodInFrames = maxPeriodInFrames;
-      }
-    }
-  }
-
-  hr = pAudioClient3->InitializeSharedAudioStream(
-      AUDCLNT_STREAMFLAGS_EVENTCALLBACK, periodInFrames, pwfx, nullptr);
-  if (SUCCEEDED(hr)) {
-    LOG->Info(
-        "WASAPI: Shared low-latency mode enabled (period=%u frames, min=%u, default=%u, max=%u, fundamental=%u)",
-        periodInFrames, minPeriodInFrames, defaultPeriodInFrames,
-        maxPeriodInFrames, fundamentalPeriodInFrames);
-  }
-
-  pAudioClient3->Release();
-  return SUCCEEDED(hr);
 }
 
 bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
@@ -176,8 +205,6 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
     return false;
   }
 
-  // cast pwfx to a modifiable WAVEFORMATEXTENSIBLE
-  // to grab properties
   WAVEFORMATEXTENSIBLE* pEx = (WAVEFORMATEXTENSIBLE*)pwfx;
 
   if (pEx->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT) {
@@ -193,15 +220,12 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
     return false;
   }
 
+  REFERENCE_TIME hnsRequestedDuration =
+      FramesToHnsDuration(PREFSMAN->m_iSoundWriteAhead, m_iSampleRate);
 
-  if (!TryInitializeSharedLowLatencyStream(pwfx)) {
-    REFERENCE_TIME hnsRequestedDuration = 0;
-    if (PREFSMAN->m_iSoundWriteAhead) {
-      // WriteAhead is in frames. Convert to 100-nanosecond units.
-      hnsRequestedDuration = (REFERENCE_TIME)PREFSMAN->m_iSoundWriteAhead *
-                             10000000ULL / m_iSampleRate;
-    }
-
+  HRESULT hrLowLatency = InitializeSharedLowLatencyStream(
+      m_pAudioClient, pwfx, PREFSMAN->m_iSoundWriteAhead);
+  if (hrLowLatency != S_OK) {
     hr = m_pAudioClient->Initialize(
         AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
         hnsRequestedDuration, 0, pwfx, nullptr);
@@ -256,9 +280,6 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
     FreeWASAPI();
     return false;
   }
-
-  float latency = GetPlayLatency();  // just to log it
-  LOG->Info("WASAPI: Reported latency %f", latency);
 
   LOG->Info(
       "WASAPI: Shared mode, %d channels, %d Hz, %s, buffer size %d frames",
