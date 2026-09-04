@@ -23,7 +23,7 @@ HRESULT InitializeSharedLowLatencyStream(
   IAudioClient3* pAudioClient3 = nullptr;
   HRESULT hr = pAudioClient->QueryInterface(IID_PPV_ARGS(&pAudioClient3));
   if (FAILED(hr) || pAudioClient3 == nullptr) {
-    LOG->Info("WASAPI: IAudioClient3 not available; skipping shared low-latency pathway");
+    LOG->Info("WASAPI: Shared LowLatency - IAudioClient3 not available");
     return S_FALSE;
   }
 
@@ -36,9 +36,7 @@ HRESULT InitializeSharedLowLatencyStream(
       &iMinPeriodFrames, &iMaxPeriodFrames);
 
   if (FAILED(hr)) {
-    LOG->Warn(
-        "WASAPI: Shared LowLatency GetSharedModeEnginePeriod failed; "
-        "falling back to shared Initialize");
+    LOG->Warn("WASAPI: Shared LowLatency - GetSharedModeEnginePeriod failed");
     pAudioClient3->Release();
     return S_FALSE;
   }
@@ -74,15 +72,11 @@ HRESULT InitializeSharedLowLatencyStream(
   pAudioClient3->Release();
 
   if (FAILED(hr)) {
-    LOG->Warn("WASAPI: Shared LowLatency InitializeSharedAudioStream failed; "
-              "falling back to shared Initialize");
+    LOG->Warn("WASAPI: Shared LowLatency InitializeSharedAudioStream failed");
     return hr;
   }
 
-  LOG->Info(
-      "WASAPI: Shared LowLatency mode initialized successfully",
-      iPeriodFrames, iMinPeriodFrames, iDefaultPeriodFrames, iMaxPeriodFrames,
-      iFundamentalPeriodFrames);
+  LOG->Info("WASAPI: Shared LowLatency mode initialized successfully");
   return S_OK;
 #else
   LOG->Info(
@@ -280,8 +274,11 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
   }
 
   LOG->Info(
-      "WASAPI: Shared mode, %d channels, %d Hz, %s, buffer size %d frames",
-      iChannels, m_iSampleRate, m_bFloat ? "Float" : "Int16",
+      "WASAPI: %s mode, %d channels, %d Hz, %s, buffer size %d frames",
+      hrLowLatency == S_OK ? "Shared LowLatency" : "Shared",
+      iChannels,
+      m_iSampleRate,
+      m_bFloat ? "Float" : "Int16",
       m_iBufferSizeFrames);
 
   return true;
