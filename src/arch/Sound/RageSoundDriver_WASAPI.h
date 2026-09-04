@@ -13,6 +13,8 @@
 struct IAudioClient;
 struct IAudioRenderClient;
 struct IAudioClock;
+struct tWAVEFORMATEX;
+typedef struct tWAVEFORMATEX WAVEFORMATEX;
 
 class RageSoundDriver_WASAPI : public RageSoundDriver {
  public:
@@ -46,6 +48,7 @@ class RageSoundDriver_WASAPI : public RageSoundDriver {
   void MixerThread();
   RageThread m_MixingThread;
 
+  bool TryInitializeSharedLowLatencyStream(WAVEFORMATEX* pwfx);
   bool InitWASAPI(std::string& sError);
   void FreeWASAPI();
 };
