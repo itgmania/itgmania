@@ -120,7 +120,39 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
     return false;
   }
 
+  
+  hr = m_pAudioClient->IsFormatSupported(
+      AUDCLNT_SHAREMODE_EXCLUSIVE, pwfx, nullptr);
+  
+  // cast pwfx to a modifiable WAVEFORMATEXTENSIBLE
+  // to change it to 16-bit PCM in-place
   WAVEFORMATEXTENSIBLE* pEx = (WAVEFORMATEXTENSIBLE*)pwfx;
+
+  if (FAILED(hr)) {
+    
+    
+    pEx->SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+    pEx->Format.wBitsPerSample = 16;
+    pEx->Samples.wValidBitsPerSample = 16;
+    pEx->Format.nBlockAlign =
+        pEx->Format.nChannels * pEx->Format.wBitsPerSample / 8;
+    pEx->Format.nAvgBytesPerSec =
+        pEx->Format.nSamplesPerSec * pEx->Format.nBlockAlign;
+
+    hr = m_pAudioClient->IsFormatSupported(
+        AUDCLNT_SHAREMODE_EXCLUSIVE, pwfx, nullptr);
+    if (SUCCEEDED(hr)) {
+      LOG->Info("WASAPI: Fell back to int16 format");
+    } else {
+      sError = hr_ssprintf(
+          hr, "Exclusive mode does not support float or 16-bit PCM at this "
+              "device rate/channel layout");
+      CoTaskMemFree(pwfx);
+      FreeWASAPI();
+      return false;
+    }
+  }
+
   if (pEx->SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT) {
     m_bFloat = true;
   } else if (
@@ -141,9 +173,22 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
                            10000000ULL / m_iSampleRate;
   }
 
+  if (hnsRequestedDuration == 0) {
+    REFERENCE_TIME hnsDefaultPeriod = 0;
+    REFERENCE_TIME hnsMinimumPeriod = 0;
+    hr = m_pAudioClient->GetDevicePeriod(&hnsDefaultPeriod, &hnsMinimumPeriod);
+    if (FAILED(hr)) {
+      sError = hr_ssprintf(hr, "GetDevicePeriod failed");
+      CoTaskMemFree(pwfx);
+      FreeWASAPI();
+      return false;
+    }
+    hnsRequestedDuration = hnsMinimumPeriod ? hnsMinimumPeriod : hnsDefaultPeriod;
+  }
+
   hr = m_pAudioClient->Initialize(
-      AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
-      hnsRequestedDuration, 0, pwfx, nullptr);
+      AUDCLNT_SHAREMODE_EXCLUSIVE, AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
+      hnsRequestedDuration, hnsRequestedDuration, pwfx, nullptr);
 
   CoTaskMemFree(pwfx);
 
@@ -195,11 +240,14 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
     return false;
   }
 
+  float latency = GetPlayLatency();  // just to log it
+  LOG->Info("WASAPI: Reported latency %f", latency);
+
   LOG->Info(
-      "WASAPI: Shared mode, %d channels, %d Hz, %s, buffer size %d frames",
+      "WASAPI: Exclusive mode, %d channels, %d Hz, %s, buffer size %d frames",
       iChannels, m_iSampleRate, m_bFloat ? "Float" : "Int16",
       m_iBufferSizeFrames);
-
+  
   return true;
 }
 
@@ -211,7 +259,8 @@ std::string RageSoundDriver_WASAPI::Init() {
 
   // Set decode buffer size.
   // We want it to be at least as big as the WASAPI buffer.
-  SetDecodeBufferSize(m_iBufferSizeFrames * 3 / 2);
+  //  SetDecodeBufferSize(m_iBufferSizeFrames * 3 / 2);
+  SetDecodeBufferSize(512);
   StartDecodeThread();
 
   m_MixingThread.SetName("WASAPI Mixer Thread");
@@ -235,13 +284,36 @@ void RageSoundDriver_WASAPI::MixerThread() {
     }
   }
 
+  int64_t iHardwareFrame = 0;  // Total frames played/mixed so far
+
+  {
+    BYTE* pData = nullptr;
+    HRESULT hr = m_pRenderClient->GetBuffer(m_iBufferSizeFrames, &pData);
+    if (FAILED(hr)) {
+      LOG->Warn(hr_ssprintf(hr, "GetBuffer (initial fill) failed").c_str());
+      return;
+    }
+
+    if (m_bFloat) {
+      this->Mix((float*)pData, m_iBufferSizeFrames, iHardwareFrame, 0);
+    } else {
+      this->Mix((int16_t*)pData, m_iBufferSizeFrames, iHardwareFrame, 0);
+    }
+
+    hr = m_pRenderClient->ReleaseBuffer(m_iBufferSizeFrames, 0);
+    if (FAILED(hr)) {
+      LOG->Warn(hr_ssprintf(hr, "ReleaseBuffer (initial fill) failed").c_str());
+      return;
+    }
+
+    iHardwareFrame += m_iBufferSizeFrames;
+  }
+
   HRESULT hr = m_pAudioClient->Start();
   if (FAILED(hr)) {
     LOG->Warn(hr_ssprintf(hr, "Failed to start IAudioClient").c_str());
     return;
   }
-
-  int64_t iHardwareFrame = 0;  // Total frames played/mixed so far
 
   while (!m_bShutdownMixerThread) {
     DWORD waitResult =
@@ -257,17 +329,7 @@ void RageSoundDriver_WASAPI::MixerThread() {
       break;
     }
 
-    UINT32 padding = 0;
-    hr = m_pAudioClient->GetCurrentPadding(&padding);
-    if (FAILED(hr)) {
-      LOG->Warn(hr_ssprintf(hr, "GetCurrentPadding failed").c_str());
-      continue;
-    }
-
-    UINT32 framesAvailable = m_iBufferSizeFrames - padding;
-    if (framesAvailable == 0) {
-      continue;
-    }
+    UINT32 framesAvailable = m_iBufferSizeFrames;
 
     BYTE* pData = nullptr;
     hr = m_pRenderClient->GetBuffer(framesAvailable, &pData);
