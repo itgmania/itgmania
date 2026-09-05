@@ -70,6 +70,10 @@ void RageSoundDriver_WASAPI::FreeWASAPI() {
 bool RageSoundDriver_WASAPI::TrySubDriver(
     std::unique_ptr<WasapiSubDriver> pCandidateSubDriver,
     const WasapiInitParams& params, HRESULT& hrInitialize) {
+
+  LOG->Info("WASAPI: Attempting to initialize `%s` mode",
+            pCandidateSubDriver->GetModeName());
+
   HRESULT hrSub = pCandidateSubDriver->InitializeStream(params);
   if (SUCCEEDED(hrSub)) {
     m_pSubDriver = std::move(pCandidateSubDriver);
