@@ -322,6 +322,8 @@ std::string RageSoundDriver_WASAPI::Init() {
 
   // Set decode buffer size.
   // We want it to be at least as big as the WASAPI buffer.
+  // Having a minimum decodeBufferSize does not impact latency,
+  // and helps with xrun with very small hardware buffers
   UINT32 decodeBufferSizeFrames = m_iBufferSizeFrames * 3 / 2;
   if (decodeBufferSizeFrames < 768) {
     decodeBufferSizeFrames = 768;
