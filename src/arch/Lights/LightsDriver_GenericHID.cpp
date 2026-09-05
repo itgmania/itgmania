@@ -321,12 +321,16 @@ void LightsDriver_GenericHID::WriteDevice(uint16_t out) {
   uint32_t data = (out << 16);
   int expected = sizeof(data);
 
+  // This looks a bit precarious, but, these enums were designed and intended to
+  // be OR'd against each other.
+  constexpr uint8_t desired_request_type =
+      static_cast<uint8_t>(LIBUSB_ENDPOINT_OUT) |
+      static_cast<uint8_t>(LIBUSB_REQUEST_TYPE_CLASS) |
+      static_cast<uint8_t>(LIBUSB_RECIPIENT_INTERFACE);
+
   ssize_t result = libusb_control_transfer(
-      DeviceHandle,
-      LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_CLASS |
-          LIBUSB_RECIPIENT_INTERFACE,
-      HID_SET_REPORT, HID_IFACE_OUT, 0, (unsigned char*)&data, expected,
-      GENERICHID_TIMEOUT);
+      DeviceHandle, desired_request_type, HID_SET_REPORT, HID_IFACE_OUT, 0,
+      (unsigned char*)&data, expected, GENERICHID_TIMEOUT);
 
   if (result != expected) {
     LOG->Warn(
