@@ -1,4 +1,5 @@
 #include "RageSoundDriver_WASAPI.h"
+#include "RageSoundDriver_WASAPI_SubDriver.h"
 
 // clang-format off
 #include <windows.h>
@@ -10,11 +11,29 @@
 #include "PrefsManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
+#include "StdString.h"
 #include "archutils/Win32/DirectXHelpers.h"
 #include "archutils/Win32/ErrorStrings.h"
 #include "global.h"
 
 REGISTER_SOUND_DRIVER_CLASS2("WASAPI", WASAPI);
+
+namespace {
+const std::string* MatchCanonicalName(
+    const std::string& sSource,
+    const std::vector<std::string>& asCanonicalNames) {
+  std::string sTrimmed = sSource;
+  Trim(sTrimmed);
+
+  for (const std::string& sCanonicalName : asCanonicalNames) {
+    if (EqualsNoCase(sTrimmed, sCanonicalName)) {
+      return &sCanonicalName;
+    }
+  }
+
+  return nullptr;
+}
+}  // namespace
 
 RageSoundDriver_WASAPI::RageSoundDriver_WASAPI()
     : m_iSampleRate(0),
@@ -66,6 +85,86 @@ void RageSoundDriver_WASAPI::FreeWASAPI() {
   }
 }
 
+bool RageSoundDriver_WASAPI::TrySubDriver(
+    const std::string& sSubDriverName, const WasapiInitParams& params,
+    HRESULT& hrInitialize) {
+  std::unique_ptr<WasapiSubDriver> pCandidateSubDriver =
+      CreateWasapiSubDriverByName(sSubDriverName);
+  if (!pCandidateSubDriver) {
+    LOG->Warn("WASAPI: Unknown subdriver '%s'; skipping", sSubDriverName.c_str());
+    return false;
+  }
+
+  LOG->Info("WASAPI: Attempting to initialize `%s` mode",
+            pCandidateSubDriver->GetModeName());
+
+  HRESULT hrSub = pCandidateSubDriver->InitializeStream(params);
+  if (SUCCEEDED(hrSub)) {
+    m_pSubDriver = std::move(pCandidateSubDriver);
+    hrInitialize = hrSub;
+    return true;
+  }
+
+  if (hrSub == S_FALSE) {
+    LOG->Info("WASAPI: %s mode unavailable; trying fallback mode",
+              pCandidateSubDriver->GetModeName());
+  } else {
+    LOG->Warn(hr_ssprintf(hrSub,
+                          "WASAPI: %s mode unsuccessful; trying fallback mode",
+                          pCandidateSubDriver->GetModeName())
+                  .c_str());
+  }
+
+  return false;
+}
+
+bool RageSoundDriver_WASAPI::HasSubDriverName(
+    const std::vector<std::string>& asSubDriverNames,
+    const std::string& sSubDriverName) const {
+  for (const std::string& sExistingName : asSubDriverNames) {
+    if (sExistingName == sSubDriverName) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void RageSoundDriver_WASAPI::BuildSubDriverTryOrder(
+    std::vector<std::string>& asSubDriverNames) const {
+  asSubDriverNames.clear();
+
+  std::vector<std::string> asDefaultOrder;
+  split(GetWasapiSubDriverValidNames(), ",", asDefaultOrder, true);
+
+  std::vector<std::string> asPreferredNames;
+  split(PREFSMAN->m_sWASAPISubDriverOrder.Get(), ",", asPreferredNames, true);
+
+  for (const std::string& sPreferredName : asPreferredNames) {
+    const std::string* psCanonicalName =
+        MatchCanonicalName(sPreferredName, asDefaultOrder);
+    if (psCanonicalName == nullptr) {
+      LOG->Warn(
+          "WASAPI: Invalid WASAPISubDriverOrder entry '%s'; ignoring",
+          sPreferredName.c_str());
+      continue;
+    }
+
+    if (!HasSubDriverName(asSubDriverNames, *psCanonicalName)) {
+      asSubDriverNames.push_back(*psCanonicalName);
+    }
+  }
+
+  for (const std::string& sDefaultName : asDefaultOrder) {
+    if (!HasSubDriverName(asSubDriverNames, sDefaultName)) {
+      asSubDriverNames.push_back(sDefaultName);
+    }
+  }
+
+  LOG->Info("WASAPI: Resolved WASAPISubDriverOrder: %s",
+            join(",", asSubDriverNames).c_str());
+}
+
 bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
   HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
   if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) {
@@ -110,8 +209,31 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
     return false;
   }
 
-  m_iSampleRate = pwfx->nSamplesPerSec;
-  int iChannels = pwfx->nChannels;
+  WasapiInitParams params = {
+      m_pAudioClient,
+      pwfx,
+      (int)pwfx->nSamplesPerSec,
+      PREFSMAN->m_iSoundWriteAhead,
+  };
+  m_pSubDriver.reset();
+
+  std::vector<std::string> asSubDriverNames;
+  BuildSubDriverTryOrder(asSubDriverNames);
+
+  bool bInitialized = false;
+  for (const std::string& sSubDriverName : asSubDriverNames) {
+    if (TrySubDriver(sSubDriverName, params, hr)) {
+      bInitialized = true;
+      break;
+    }
+  }
+
+  if (!bInitialized) {
+    sError = "Failed to initialize WASAPI stream mode";
+    CoTaskMemFree(pwfx);
+    FreeWASAPI();
+    return false;
+  }
 
   if (pwfx->wFormatTag != WAVE_FORMAT_EXTENSIBLE) {
     sError = ssprintf("Unsupported format tag: %d", pwfx->wFormatTag);
@@ -134,24 +256,10 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
     return false;
   }
 
-  REFERENCE_TIME hnsRequestedDuration = 0;
-  if (PREFSMAN->m_iSoundWriteAhead) {
-    // WriteAhead is in frames. Convert to 100-nanosecond units.
-    hnsRequestedDuration = (REFERENCE_TIME)PREFSMAN->m_iSoundWriteAhead *
-                           10000000ULL / m_iSampleRate;
-  }
-
-  hr = m_pAudioClient->Initialize(
-      AUDCLNT_SHAREMODE_SHARED, AUDCLNT_STREAMFLAGS_EVENTCALLBACK,
-      hnsRequestedDuration, 0, pwfx, nullptr);
+  m_iSampleRate = pwfx->nSamplesPerSec;
+  int iChannels = pwfx->nChannels;
 
   CoTaskMemFree(pwfx);
-
-  if (FAILED(hr)) {
-    sError = hr_ssprintf(hr, "Initialize(IAudioClient) failed");
-    FreeWASAPI();
-    return false;
-  }
 
   m_hAudioEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
   if (m_hAudioEvent == NULL) {
@@ -195,8 +303,11 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
     return false;
   }
 
+  float reportedPlayLatency = GetPlayLatency();
+  LOG->Info("WASAPI: Reported audio play latency: %f", reportedPlayLatency);
   LOG->Info(
-      "WASAPI: Shared mode, %d channels, %d Hz, %s, buffer size %d frames",
+      "WASAPI: %s mode, %d channels, %d Hz, %s, buffer size %d frames",
+      m_pSubDriver ? m_pSubDriver->GetModeName() : "Unknown",
       iChannels, m_iSampleRate, m_bFloat ? "Float" : "Int16",
       m_iBufferSizeFrames);
 
@@ -211,7 +322,14 @@ std::string RageSoundDriver_WASAPI::Init() {
 
   // Set decode buffer size.
   // We want it to be at least as big as the WASAPI buffer.
-  SetDecodeBufferSize(m_iBufferSizeFrames * 3 / 2);
+  // Having a minimum decodeBufferSize does not impact latency,
+  // and helps with xrun with very small hardware buffers
+  UINT32 decodeBufferSizeFrames = m_iBufferSizeFrames * 3 / 2;
+  if (decodeBufferSizeFrames < 768) {
+    decodeBufferSizeFrames = 768;
+  }
+
+  SetDecodeBufferSize(decodeBufferSizeFrames);
   StartDecodeThread();
 
   m_MixingThread.SetName("WASAPI Mixer Thread");
@@ -225,6 +343,32 @@ int RageSoundDriver_WASAPI::MixerThread_start(void* p) {
   return 0;
 }
 
+bool RageSoundDriver_WASAPI::WriteFrames(
+    UINT32 iFrames, int64_t iHardwareFrame, int64_t iCurrentFrame,
+    const char* sPhase) {
+  HRESULT hr = S_OK;
+  BYTE* pData = nullptr;
+  hr = m_pRenderClient->GetBuffer(iFrames, &pData);
+  if (FAILED(hr)) {
+    LOG->Warn(hr_ssprintf(hr, "GetBuffer (%s) failed", sPhase).c_str());
+    return false;
+  }
+
+  if (m_bFloat) {
+    this->Mix((float*)pData, iFrames, iHardwareFrame, iCurrentFrame);
+  } else {
+    this->Mix((int16_t*)pData, iFrames, iHardwareFrame, iCurrentFrame);
+  }
+
+  hr = m_pRenderClient->ReleaseBuffer(iFrames, 0);
+  if (FAILED(hr)) {
+    LOG->Warn(hr_ssprintf(hr, "ReleaseBuffer (%s) failed", sPhase).c_str());
+    return false;
+  }
+
+  return true;
+}
+
 void RageSoundDriver_WASAPI::MixerThread() {
   if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL)) {
     if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL)) {
@@ -235,13 +379,21 @@ void RageSoundDriver_WASAPI::MixerThread() {
     }
   }
 
-  HRESULT hr = m_pAudioClient->Start();
+  HRESULT hr = S_OK;
+  int64_t iHardwareFrame = 0;  // Total frames played/mixed so far
+
+  if (m_pSubDriver && m_pSubDriver->RequiresInitialFill()) {
+    if (!WriteFrames(m_iBufferSizeFrames, iHardwareFrame, 0, "initial fill")) {
+      return;
+    }
+    iHardwareFrame += m_iBufferSizeFrames;
+  }
+
+  hr = m_pAudioClient->Start();
   if (FAILED(hr)) {
     LOG->Warn(hr_ssprintf(hr, "Failed to start IAudioClient").c_str());
     return;
   }
-
-  int64_t iHardwareFrame = 0;  // Total frames played/mixed so far
 
   while (!m_bShutdownMixerThread) {
     DWORD waitResult =
@@ -257,39 +409,26 @@ void RageSoundDriver_WASAPI::MixerThread() {
       break;
     }
 
-    UINT32 padding = 0;
-    hr = m_pAudioClient->GetCurrentPadding(&padding);
-    if (FAILED(hr)) {
-      LOG->Warn(hr_ssprintf(hr, "GetCurrentPadding failed").c_str());
-      continue;
+    UINT32 framesAvailable = m_iBufferSizeFrames;
+    if (!m_pSubDriver || m_pSubDriver->UsesPaddingFrames()) {
+      UINT32 padding = 0;
+      hr = m_pAudioClient->GetCurrentPadding(&padding);
+      if (FAILED(hr)) {
+        LOG->Warn(hr_ssprintf(hr, "GetCurrentPadding failed").c_str());
+        continue;
+      }
+
+      framesAvailable = m_iBufferSizeFrames - padding;
     }
 
-    UINT32 framesAvailable = m_iBufferSizeFrames - padding;
     if (framesAvailable == 0) {
       continue;
     }
 
-    BYTE* pData = nullptr;
-    hr = m_pRenderClient->GetBuffer(framesAvailable, &pData);
-    if (FAILED(hr)) {
-      LOG->Warn(hr_ssprintf(hr, "GetBuffer failed").c_str());
+    int64_t iCurrentFrame = GetPosition();
+    if (!WriteFrames(framesAvailable, iHardwareFrame, iCurrentFrame, "streaming")) {
       continue;
     }
-
-    int64_t iCurrentFrame = GetPosition();
-
-    if (m_bFloat) {
-      this->Mix((float*)pData, framesAvailable, iHardwareFrame, iCurrentFrame);
-    } else {
-      this->Mix(
-          (int16_t*)pData, framesAvailable, iHardwareFrame, iCurrentFrame);
-    }
-
-    hr = m_pRenderClient->ReleaseBuffer(framesAvailable, 0);
-    if (FAILED(hr)) {
-      LOG->Warn(hr_ssprintf(hr, "ReleaseBuffer failed").c_str());
-    }
-
     iHardwareFrame += framesAvailable;
   }
 
@@ -309,7 +448,8 @@ float RageSoundDriver_WASAPI::GetPlayLatency() const {
   if (FAILED(m_pAudioClient->GetStreamLatency(&latency))) {
     return 0.0f;
   }
-  return (float)latency / 10000000.0f;
+  float result = latency / 10000000.0f;
+  return result;
 }
 
 int RageSoundDriver_WASAPI::GetSampleRate() const { return m_iSampleRate; }

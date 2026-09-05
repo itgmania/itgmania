@@ -311,6 +311,8 @@ PrefsManager::PrefsManager()
       m_iSoundWriteAhead("SoundWriteAhead", 0),
       m_iSoundDevice("SoundDevice", ""),
       m_iSoundPreferredSampleRate("SoundPreferredSampleRate", 0),
+      m_sWASAPISubDriverOrder(
+          "WASAPISubDriverOrder", "SharedLL,Shared,Exclusive"),
       m_sLightsStepsDifficulty("LightsStepsDifficulty", "hard,medium"),
       m_bLightsSimplifyBass("LightsSimplifyBass", false),
       m_bLightsBassParallel("LightsBassParallel", false),
