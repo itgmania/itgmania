@@ -6,6 +6,7 @@
 // clang-format on
 
 #include <atomic>
+#include <memory>
 
 #include "RageSoundDriver.h"
 #include "RageThreads.h"
@@ -13,6 +14,7 @@
 struct IAudioClient;
 struct IAudioRenderClient;
 struct IAudioClock;
+class WasapiSubDriver;
 
 class RageSoundDriver_WASAPI : public RageSoundDriver {
  public:
@@ -41,8 +43,11 @@ class RageSoundDriver_WASAPI : public RageSoundDriver {
 
   std::atomic<bool> m_bShutdownMixerThread;
   bool m_bOwnsComInit;
+  std::unique_ptr<WasapiSubDriver> m_pSubDriver;
 
   static int MixerThread_start(void* p);
+  bool WriteFrames(UINT32 iFrames, int64_t iHardwareFrame, int64_t iCurrentFrame,
+                   const char* sPhase);
   void MixerThread();
   RageThread m_MixingThread;
 
