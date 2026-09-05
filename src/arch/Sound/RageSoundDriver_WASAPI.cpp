@@ -67,6 +67,23 @@ void RageSoundDriver_WASAPI::FreeWASAPI() {
   }
 }
 
+bool RageSoundDriver_WASAPI::TrySubDriver(
+    std::unique_ptr<WasapiSubDriver> pCandidateSubDriver,
+    const WasapiInitParams& params, HRESULT& hrInitialize) {
+  HRESULT hrSub = pCandidateSubDriver->InitializeStream(params);
+  if (SUCCEEDED(hrSub)) {
+    m_pSubDriver = std::move(pCandidateSubDriver);
+    hrInitialize = hrSub;
+    return true;
+  }
+
+  LOG->Warn(hr_ssprintf(
+                hrSub, "WASAPI: %s mode unsuccessful; trying fallback mode",
+                pCandidateSubDriver->GetModeName())
+                .c_str());
+  return false;
+}
+
 bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
   HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
   if (FAILED(hr) && hr != RPC_E_CHANGED_MODE) {
@@ -119,30 +136,9 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
   };
   m_pSubDriver.reset();
 
-  auto TrySubDriver =
-      [&](std::unique_ptr<WasapiSubDriver> pCandidateSubDriver) -> bool {
-    HRESULT hrSub = pCandidateSubDriver->InitializeStream(params);
-    if (SUCCEEDED(hrSub)) {
-      m_pSubDriver = std::move(pCandidateSubDriver);
-      hr = hrSub;
-      return true;
-    }
-
-    if (hrSub == S_FALSE) {
-      LOG->Info("WASAPI: %s mode unavailable; trying fallback mode",
-                pCandidateSubDriver->GetModeName());
-    } else {
-      LOG->Warn(hr_ssprintf(hrSub,
-                            "WASAPI: %s mode init failed; trying fallback "
-                            "mode")
-                    .c_str());
-    }
-    return false;
-  };
-
-  if (!TrySubDriver(CreateWasapiExclusiveSubDriver()) &&
-      !TrySubDriver(CreateWasapiSharedLLSubDriver()) &&
-      !TrySubDriver(CreateWasapiSharedSubDriver())) {
+  if (!TrySubDriver(CreateWasapiSharedLLSubDriver(), params, hr) &&
+      !TrySubDriver(CreateWasapiSharedSubDriver(), params, hr) &&
+      !TrySubDriver(CreateWasapiExclusiveSubDriver(), params, hr)) {
     sError = "Failed to initialize WASAPI stream mode";
     CoTaskMemFree(pwfx);
     FreeWASAPI();
@@ -174,12 +170,6 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
   int iChannels = pwfx->nChannels;
 
   CoTaskMemFree(pwfx);
-
-  if (FAILED(hr)) {
-    sError = hr_ssprintf(hr, "Initialize(IAudioClient) failed");
-    FreeWASAPI();
-    return false;
-  }
 
   m_hAudioEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
   if (m_hAudioEvent == NULL) {
@@ -243,8 +233,8 @@ std::string RageSoundDriver_WASAPI::Init() {
   // Set decode buffer size.
   // We want it to be at least as big as the WASAPI buffer.
   UINT32 decodeBufferSizeFrames = m_iBufferSizeFrames * 3 / 2;
-  if (decodeBufferSizeFrames < 512) {
-    decodeBufferSizeFrames = 512;
+  if (decodeBufferSizeFrames < 768) {
+    decodeBufferSizeFrames = 768;
   }
 
   SetDecodeBufferSize(decodeBufferSizeFrames);

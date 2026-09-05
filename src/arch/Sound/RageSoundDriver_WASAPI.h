@@ -15,6 +15,7 @@ struct IAudioClient;
 struct IAudioRenderClient;
 struct IAudioClock;
 class WasapiSubDriver;
+struct WasapiInitParams;
 
 class RageSoundDriver_WASAPI : public RageSoundDriver {
  public:
@@ -46,6 +47,9 @@ class RageSoundDriver_WASAPI : public RageSoundDriver {
   std::unique_ptr<WasapiSubDriver> m_pSubDriver;
 
   static int MixerThread_start(void* p);
+  bool TrySubDriver(std::unique_ptr<WasapiSubDriver> pCandidateSubDriver,
+                    const WasapiInitParams& params,
+                    HRESULT& hrInitialize);
   bool WriteFrames(UINT32 iFrames, int64_t iHardwareFrame, int64_t iCurrentFrame,
                    const char* sPhase);
   void MixerThread();
