@@ -24,6 +24,7 @@
 #include "InputMapper.h"
 #include "LocalizedString.h"
 #include "LuaManager.h"
+#include "MemoryCardManager.h"
 #include "MenuTimer.h"
 #include "MessageManager.h"
 #include "ModsGroup.h"
@@ -66,6 +67,8 @@ XToString(SelectionState);
 
 /** @brief The maximum number of digits for the ScoreDisplay. */
 const int NUM_SCORE_DIGITS = 9;
+/** @brief Period to block leaving ScreenSelectMusic while late joining. */
+const float CARD_LATE_JOIN_BLOCK_SECONDS = 5.0f;
 
 #define SHOW_OPTIONS_MESSAGE_SECONDS \
   THEME->GetMetricF(m_sName, "ShowOptionsMessageSeconds")
@@ -184,6 +187,7 @@ void ScreenSelectMusic::Init() {
 
   this->SubscribeToMessage(Message_PlayerJoined);
   this->SubscribeToMessage(Message_PlayerProfileSet);
+  this->SubscribeToMessage(Message_StorageDevicesChanged);
 
   // Cache these values
   // Marking for change -- Midiman (why? -aj)
@@ -562,12 +566,22 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
   }
 
   // Handle late joining
-  // If the other player is allowed to join on the extra stage, then the
-  // summary screen will crash on invalid stage stats. -Kyz
-  if (m_SelectionState != SelectionState_Finalized &&
-      input.MenuI == GAME_BUTTON_START && input.type == IET_FIRST_PRESS &&
-      !GAMESTATE->IsAnExtraStage() && GAMESTATE->JoinInput(input.pn)) {
-    return true;  // don't handle this press again below
+  if (input.MenuI == GAME_BUTTON_START && input.type == IET_FIRST_PRESS &&
+      m_SelectionState != SelectionState_Finalized) {
+    // If the other player is allowed to join on the extra stage, then the
+    // summary screen will crash on invalid stage stats. -Kyz
+    if (!GAMESTATE->IsAnExtraStage() && GAMESTATE->JoinInput(input.pn)) {
+      return true;
+    }
+
+    // Give eligible memory cards time to finish if they are still checking.
+    // Also load any late ready cards that got past the
+    // Message_StorageDevicesChanged handler load.
+    if (GAMESTATE->IsHumanPlayer(input.pn) &&
+        GetNextSelectionState() == SelectionState_Finalized &&
+        (LoadReadyMemoryCards() || ShouldWaitForMemoryCard())) {
+      return true;
+    }
   }
 
   if (!GAMESTATE->IsHumanPlayer(input.pn)) {
@@ -1107,6 +1121,22 @@ void ScreenSelectMusic::ChangeSteps(PlayerNumber pn, int dir) {
 
 void ScreenSelectMusic::HandleMessage(const Message& msg) {
   if (m_bRunning && msg == Message_PlayerJoined) {
+    PlayerNumber pn;
+    bool b = msg.GetParam("Player", pn);
+    ASSERT(b);
+
+    if (GAMESTATE->CanAcceptProfile(pn)) {
+      MEMCARDMAN->UnlockCard(pn);
+    }
+
+    // A checking card will be loaded asynchronously when it becomes ready.
+    // Continue loading local profiles immediately when there is no card.
+    bool bProfileLoaded = false;
+    if (MEMCARDMAN->GetCardState(pn) != MemoryCardState_Checking &&
+        GAMESTATE->HaveProfileToLoad(pn)) {
+      bProfileLoaded = LoadPlayerProfile(pn);
+    }
+
     PlayerNumber master_pn = GAMESTATE->GetMasterPlayerNumber();
     // The current steps may no longer be playable. If one player has double
     // steps selected, they are no longer playable now that P2 has joined.
@@ -1125,14 +1155,7 @@ void ScreenSelectMusic::HandleMessage(const Message& msg) {
     AfterMusicChange();
 
     int iSel = 0;
-    PlayerNumber pn;
-    bool b = msg.GetParam("Player", pn);
-    ASSERT(b);
-
-    // load player profiles
-    if (GAMESTATE->HaveProfileToLoad()) {
-      GAMESTATE->LoadProfiles(
-          true);  // I guess you could always load edits here...
+    if (bProfileLoaded) {
       SCREENMAN
           ->ZeroNextUpdate();  // be kind, don't skip frames if you can avoid it
     }
@@ -1152,9 +1175,52 @@ void ScreenSelectMusic::HandleMessage(const Message& msg) {
 
       GAMESTATE->m_pCurSteps[pn].Set(pSteps);
     }
+  } else if (
+      m_bRunning && msg == Message_StorageDevicesChanged &&
+      m_SelectionState != SelectionState_Finalized && !IsTransitioning() &&
+      SCREENMAN->GetTopScreen() == this) {
+    LoadReadyMemoryCards();
   }
 
   ScreenWithMenuElements::HandleMessage(msg);
+}
+
+bool ScreenSelectMusic::LoadPlayerProfile(PlayerNumber pn) {
+  if (!GAMESTATE->LoadProfileOverGuest(pn, true)) {
+    return false;
+  }
+
+  Message msg(MessageIDToString(Message_PlayerProfileSet));
+  msg.SetParam("Player", pn);
+  MESSAGEMAN->Broadcast(msg);
+  return true;
+}
+
+bool ScreenSelectMusic::LoadReadyMemoryCards() {
+  bool bProfileLoaded = false;
+  FOREACH_HumanPlayer(pn) {
+    if (MEMCARDMAN->GetCardState(pn) == MemoryCardState_Ready) {
+      bProfileLoaded |= LoadPlayerProfile(pn);
+    }
+  }
+
+  if (bProfileLoaded) {
+    m_MusicWheel.ReloadSongList();
+    SCREENMAN->ZeroNextUpdate();
+  }
+
+  return bProfileLoaded;
+}
+
+bool ScreenSelectMusic::ShouldWaitForMemoryCard() const {
+  FOREACH_HumanPlayer(pn) {
+    if (GAMESTATE->CanAcceptProfile(pn) &&
+        MEMCARDMAN->GetCardState(pn) == MemoryCardState_Checking &&
+        MEMCARDMAN->GetCardStateAge(pn) < CARD_LATE_JOIN_BLOCK_SECONDS) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void ScreenSelectMusic::HandleScreenMessage(const ScreenMessage SM) {
