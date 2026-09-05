@@ -11,11 +11,29 @@
 #include "PrefsManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
+#include "StdString.h"
 #include "archutils/Win32/DirectXHelpers.h"
 #include "archutils/Win32/ErrorStrings.h"
 #include "global.h"
 
 REGISTER_SOUND_DRIVER_CLASS2("WASAPI", WASAPI);
+
+namespace {
+const std::string* MatchCanonicalName(
+    const std::string& sSource,
+    const std::vector<std::string>& asCanonicalNames) {
+  std::string sTrimmed = sSource;
+  Trim(sTrimmed);
+
+  for (const std::string& sCanonicalName : asCanonicalNames) {
+    if (EqualsNoCase(sTrimmed, sCanonicalName)) {
+      return &sCanonicalName;
+    }
+  }
+
+  return nullptr;
+}
+}  // namespace
 
 RageSoundDriver_WASAPI::RageSoundDriver_WASAPI()
     : m_iSampleRate(0),
@@ -68,8 +86,14 @@ void RageSoundDriver_WASAPI::FreeWASAPI() {
 }
 
 bool RageSoundDriver_WASAPI::TrySubDriver(
-    std::unique_ptr<WasapiSubDriver> pCandidateSubDriver,
-    const WasapiInitParams& params, HRESULT& hrInitialize) {
+    const std::string& sSubDriverName, const WasapiInitParams& params,
+    HRESULT& hrInitialize) {
+  std::unique_ptr<WasapiSubDriver> pCandidateSubDriver =
+      CreateWasapiSubDriverByName(sSubDriverName);
+  if (!pCandidateSubDriver) {
+    LOG->Warn("WASAPI: Unknown subdriver '%s'; skipping", sSubDriverName.c_str());
+    return false;
+  }
 
   LOG->Info("WASAPI: Attempting to initialize `%s` mode",
             pCandidateSubDriver->GetModeName());
@@ -81,11 +105,64 @@ bool RageSoundDriver_WASAPI::TrySubDriver(
     return true;
   }
 
-  LOG->Warn(hr_ssprintf(
-                hrSub, "WASAPI: %s mode unsuccessful; trying fallback mode",
-                pCandidateSubDriver->GetModeName())
-                .c_str());
+  if (hrSub == S_FALSE) {
+    LOG->Info("WASAPI: %s mode unavailable; trying fallback mode",
+              pCandidateSubDriver->GetModeName());
+  } else {
+    LOG->Warn(hr_ssprintf(hrSub,
+                          "WASAPI: %s mode unsuccessful; trying fallback mode",
+                          pCandidateSubDriver->GetModeName())
+                  .c_str());
+  }
+
   return false;
+}
+
+bool RageSoundDriver_WASAPI::HasSubDriverName(
+    const std::vector<std::string>& asSubDriverNames,
+    const std::string& sSubDriverName) const {
+  for (const std::string& sExistingName : asSubDriverNames) {
+    if (sExistingName == sSubDriverName) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void RageSoundDriver_WASAPI::BuildSubDriverTryOrder(
+    std::vector<std::string>& asSubDriverNames) const {
+  asSubDriverNames.clear();
+
+  std::vector<std::string> asDefaultOrder;
+  split(GetWasapiSubDriverValidNames(), ",", asDefaultOrder, true);
+
+  std::vector<std::string> asPreferredNames;
+  split(PREFSMAN->m_sWASAPISubDriverOrder.Get(), ",", asPreferredNames, true);
+
+  for (const std::string& sPreferredName : asPreferredNames) {
+    const std::string* psCanonicalName =
+        MatchCanonicalName(sPreferredName, asDefaultOrder);
+    if (psCanonicalName == nullptr) {
+      LOG->Warn(
+          "WASAPI: Invalid WASAPISubDriverOrder entry '%s'; ignoring",
+          sPreferredName.c_str());
+      continue;
+    }
+
+    if (!HasSubDriverName(asSubDriverNames, *psCanonicalName)) {
+      asSubDriverNames.push_back(*psCanonicalName);
+    }
+  }
+
+  for (const std::string& sDefaultName : asDefaultOrder) {
+    if (!HasSubDriverName(asSubDriverNames, sDefaultName)) {
+      asSubDriverNames.push_back(sDefaultName);
+    }
+  }
+
+  LOG->Info("WASAPI: Resolved WASAPISubDriverOrder: %s",
+            join(",", asSubDriverNames).c_str());
 }
 
 bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
@@ -140,9 +217,18 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
   };
   m_pSubDriver.reset();
 
-  if (!TrySubDriver(CreateWasapiSharedLLSubDriver(), params, hr) &&
-      !TrySubDriver(CreateWasapiSharedSubDriver(), params, hr) &&
-      !TrySubDriver(CreateWasapiExclusiveSubDriver(), params, hr)) {
+  std::vector<std::string> asSubDriverNames;
+  BuildSubDriverTryOrder(asSubDriverNames);
+
+  bool bInitialized = false;
+  for (const std::string& sSubDriverName : asSubDriverNames) {
+    if (TrySubDriver(sSubDriverName, params, hr)) {
+      bInitialized = true;
+      break;
+    }
+  }
+
+  if (!bInitialized) {
     sError = "Failed to initialize WASAPI stream mode";
     CoTaskMemFree(pwfx);
     FreeWASAPI();

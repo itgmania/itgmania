@@ -4,6 +4,8 @@
 #include <ksmedia.h>
 // clang-format on
 
+#include "RageLog.h"
+
 namespace {
 REFERENCE_TIME FramesToHnsDuration(UINT32 iFrames, int iSampleRate) {
   if (iFrames == 0 || iSampleRate <= 0) {
@@ -59,6 +61,9 @@ class WasapiExclusiveSubDriver : public WasapiSubDriver {
       }
       hnsRequestedDuration =
           hnsMinimumPeriod ? hnsMinimumPeriod : hnsDefaultPeriod;
+      LOG->Info(
+          "WASAPI: Exclusive hnsDuration: (Requested:%lld), (Min:%lld), (Default:%lld)",
+          hnsRequestedDuration, hnsMinimumPeriod, hnsDefaultPeriod);
     }
 
     hr = params.pAudioClient->Initialize(

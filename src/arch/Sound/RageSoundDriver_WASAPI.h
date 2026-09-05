@@ -7,6 +7,7 @@
 
 #include <atomic>
 #include <memory>
+#include <vector>
 
 #include "RageSoundDriver.h"
 #include "RageThreads.h"
@@ -47,9 +48,12 @@ class RageSoundDriver_WASAPI : public RageSoundDriver {
   std::unique_ptr<WasapiSubDriver> m_pSubDriver;
 
   static int MixerThread_start(void* p);
-  bool TrySubDriver(std::unique_ptr<WasapiSubDriver> pCandidateSubDriver,
+  bool TrySubDriver(const std::string& sSubDriverName,
                     const WasapiInitParams& params,
                     HRESULT& hrInitialize);
+  bool HasSubDriverName(const std::vector<std::string>& asSubDriverNames,
+                        const std::string& sSubDriverName) const;
+  void BuildSubDriverTryOrder(std::vector<std::string>& asSubDriverNames) const;
   bool WriteFrames(UINT32 iFrames, int64_t iHardwareFrame, int64_t iCurrentFrame,
                    const char* sPhase);
   void MixerThread();

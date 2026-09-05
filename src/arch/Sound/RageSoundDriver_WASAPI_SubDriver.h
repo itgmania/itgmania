@@ -29,5 +29,8 @@ class WasapiSubDriver {
 std::unique_ptr<WasapiSubDriver> CreateWasapiSharedSubDriver();
 std::unique_ptr<WasapiSubDriver> CreateWasapiSharedLLSubDriver();
 std::unique_ptr<WasapiSubDriver> CreateWasapiExclusiveSubDriver();
+std::unique_ptr<WasapiSubDriver> CreateWasapiSubDriverByName(
+    const std::string& sName);
+const char* GetWasapiSubDriverValidNames();
 
 #endif
