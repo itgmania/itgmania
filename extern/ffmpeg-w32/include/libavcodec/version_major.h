@@ -25,7 +25,7 @@
  * Libavcodec version macros.
  */
 
-#define LIBAVCODEC_VERSION_MAJOR  59
+#define LIBAVCODEC_VERSION_MAJOR  62
 
 /**
  * FF_API_* defines may be placed below to indicate public API that will be
@@ -37,18 +37,23 @@
  * at once through the bump. This improves the git bisect-ability of the change.
  */
 
-#define FF_API_OPENH264_SLICE_MODE (LIBAVCODEC_VERSION_MAJOR < 60)
-#define FF_API_OPENH264_CABAC      (LIBAVCODEC_VERSION_MAJOR < 60)
-#define FF_API_UNUSED_CODEC_CAPS   (LIBAVCODEC_VERSION_MAJOR < 60)
-#define FF_API_THREAD_SAFE_CALLBACKS (LIBAVCODEC_VERSION_MAJOR < 60)
-#define FF_API_DEBUG_MV          (LIBAVCODEC_VERSION_MAJOR < 60)
-#define FF_API_GET_FRAME_CLASS     (LIBAVCODEC_VERSION_MAJOR < 60)
-#define FF_API_AUTO_THREADS        (LIBAVCODEC_VERSION_MAJOR < 60)
-#define FF_API_INIT_PACKET         (LIBAVCODEC_VERSION_MAJOR < 60)
-#define FF_API_AVCTX_TIMEBASE    (LIBAVCODEC_VERSION_MAJOR < 60)
-#define FF_API_FLAG_TRUNCATED      (LIBAVCODEC_VERSION_MAJOR < 60)
-#define FF_API_SUB_TEXT_FORMAT     (LIBAVCODEC_VERSION_MAJOR < 60)
-#define FF_API_IDCT_NONE           (LIBAVCODEC_VERSION_MAJOR < 60)
-#define FF_API_SVTAV1_OPTS         (LIBAVCODEC_VERSION_MAJOR < 60)
+#define FF_API_INIT_PACKET         (LIBAVCODEC_VERSION_MAJOR < 63)
+
+#define FF_API_V408_CODECID        (LIBAVCODEC_VERSION_MAJOR < 63)
+#define FF_API_CODEC_PROPS         (LIBAVCODEC_VERSION_MAJOR < 63)
+#define FF_API_EXR_GAMMA           (LIBAVCODEC_VERSION_MAJOR < 63)
+#define FF_API_INTRA_DC_PRECISION  (LIBAVCODEC_VERSION_MAJOR < 63)
+
+#define FF_API_NVDEC_OLD_PIX_FMTS  (LIBAVCODEC_VERSION_MAJOR < 63)
+
+#define FF_API_PARSER_PRIVATE      (LIBAVCODEC_VERSION_MAJOR < 63)
+#define FF_API_PARSER_CODECID      (LIBAVCODEC_VERSION_MAJOR < 63)
+
+// reminder to remove the OMX encoder on next major bump
+#define FF_CODEC_OMX               (LIBAVCODEC_VERSION_MAJOR < 63)
+// reminder to remove Sonic Lossy/Lossless encoders on next major bump
+#define FF_CODEC_SONIC_ENC         (LIBAVCODEC_VERSION_MAJOR < 63)
+// reminder to remove Sonic decoder on next-next major bump
+#define FF_CODEC_SONIC_DEC         (LIBAVCODEC_VERSION_MAJOR < 63)
 
 #endif /* AVCODEC_VERSION_MAJOR_H */

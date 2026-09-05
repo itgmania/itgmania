@@ -72,10 +72,16 @@ jobs:
           --disable-debug \
           --disable-devices \
           --disable-doc \
+          --disable-encoders \
+          --disable-faan \
           --disable-filters \
+          --disable-hwaccels \
+          --disable-iamf \
+          --disable-lsp \
           --disable-lzma \
+          --disable-muxers \
           --disable-network \
-          --disable-postproc \
+          --disable-pixelutils \
           --disable-programs \
           --disable-static \
           --disable-swresample \
