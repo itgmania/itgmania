@@ -1118,6 +1118,14 @@ void ScreenSelectMusic::HandleMessage(const Message& msg) {
     FOREACH_ENUM(PlayerNumber, p)
     GAMESTATE->m_pCurSteps[p].SetWithoutBroadcast(nullptr);
 
+    // load player profiles
+    if (GAMESTATE->HaveProfileToLoad()) {
+      GAMESTATE->LoadProfiles(
+          true);  // I guess you could always load edits here...
+      SCREENMAN
+          ->ZeroNextUpdate();  // be kind, don't skip frames if you can avoid it
+    }
+
     /* If a course is selected, it may no longer be playable.
      * Let MusicWheel know about the late join. */
     m_MusicWheel.PlayerJoined();
@@ -1128,14 +1136,6 @@ void ScreenSelectMusic::HandleMessage(const Message& msg) {
     PlayerNumber pn;
     bool b = msg.GetParam("Player", pn);
     ASSERT(b);
-
-    // load player profiles
-    if (GAMESTATE->HaveProfileToLoad()) {
-      GAMESTATE->LoadProfiles(
-          true);  // I guess you could always load edits here...
-      SCREENMAN
-          ->ZeroNextUpdate();  // be kind, don't skip frames if you can avoid it
-    }
 
     m_iSelection[pn] = iSel;
     if (GAMESTATE->IsCourseMode()) {
