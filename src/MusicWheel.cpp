@@ -915,6 +915,7 @@ void MusicWheel::BuildWheelItemDatas(
             std::string lastSeries;
             std::string lastGroup;
             bool haveLast = false;
+            bool seriesHasMultipleGroups = false;
             for (unsigned i = 0; i < arraySongs.size(); ++i) {
               Song* pSong = arraySongs[i];
               Group* pGroup = SONGMAN->GetGroup(pSong);
@@ -935,23 +936,28 @@ void MusicWheel::BuildWheelItemDatas(
               if (!seriesName.empty() &&
                   (!haveLast || seriesName != lastSeries)) {
                 int seriesSongCount = 0;
+                std::set<Group*> seriesGroups;
                 for (unsigned j = i; j < arraySongs.size(); ++j) {
                   Group* pG = SONGMAN->GetGroup(arraySongs[j]);
                   if (pG != nullptr && pG->GetSeries() == seriesName) {
                     ++seriesSongCount;
+                    seriesGroups.insert(pG);
                   } else {
                     break;
                   }
                 }
-                RageColor seriesColor =
-                    SECTION_COLORS.GetValue(iSectionColorIndex);
-                iSectionColorIndex =
-                    (iSectionColorIndex + 1) % NUM_SECTION_COLORS;
-                MusicWheelItemData* pSeriesItem = new MusicWheelItemData(
-                    WheelItemDataType_ParentSection, nullptr, seriesName,
-                    nullptr, nullptr, seriesColor, seriesSongCount);
-                pSeriesItem->m_sLabel = seriesName;
-                arrayWheelItemDatas.push_back(pSeriesItem);
+                seriesHasMultipleGroups = seriesGroups.size() > 1;
+                if (seriesHasMultipleGroups) {
+                  RageColor seriesColor =
+                      SECTION_COLORS.GetValue(iSectionColorIndex);
+                  iSectionColorIndex =
+                      (iSectionColorIndex + 1) % NUM_SECTION_COLORS;
+                  MusicWheelItemData* pSeriesItem = new MusicWheelItemData(
+                      WheelItemDataType_ParentSection, nullptr, seriesName,
+                      nullptr, nullptr, seriesColor, seriesSongCount);
+                  pSeriesItem->m_sLabel = seriesName;
+                  arrayWheelItemDatas.push_back(pSeriesItem);
+                }
               }
 
               if (!haveLast || groupName != lastGroup) {
@@ -967,7 +973,9 @@ void MusicWheel::BuildWheelItemDatas(
                 arrayWheelItemDatas.push_back(new MusicWheelItemData(
                     WheelItemDataType_Section, nullptr, groupName, nullptr,
                     pGroup, SONGMAN->GetSongGroupColor(groupName),
-                    groupSongCount, seriesName));
+                    groupSongCount,
+                    seriesHasMultipleGroups && !seriesName.empty() ? seriesName
+                                                                   : ""));
               }
 
               arrayWheelItemDatas.push_back(new MusicWheelItemData(
