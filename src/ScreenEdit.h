@@ -468,6 +468,18 @@ class ScreenEdit : public ScreenWithMenuElements {
 
   ThemeMetric<EditMode> EDIT_MODE;
 
+  // Scroll acceleration tracking for mouse wheel
+  RageTimer m_LastWheelScrollTime;
+  int m_iConsecutiveWheelScrolls;
+  float m_fScrollAccelerationMultiplier;
+  static const float SCROLL_ACCELERATION_RESET_TIME;  // Time in seconds to
+                                                      // reset scroll counter
+  static const float MAX_SCROLL_ACCELERATION_MULTIPLIER;
+
+  // Scroll-speed presets stepped through by EDIT_BUTTON_SCROLL_SPEED_UP/DOWN
+  // (CTRL+Up/Down) and CTRL+wheel; parsed from the ScrollSpeedPresets metric.
+  std::vector<float> m_vScrollSpeedPresets;
+
  public:
   /** @brief What are the choices that one can make on the main menu? */
   enum MainMenuChoice {
