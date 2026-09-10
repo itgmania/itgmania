@@ -1,6 +1,6 @@
 #include "TempoDetector.h"
 
-#include <aubio/aubio.h>
+#include <aubio.h>
 
 #include <algorithm>
 #include <atomic>

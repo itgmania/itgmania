@@ -46,3 +46,6 @@
 	path = extern/stb
 	url = https://github.com/nothings/stb
 	shallow = true
+[submodule "extern/aubio"]
+	path = extern/aubio
+	url = https://github.com/aubio/aubio.git

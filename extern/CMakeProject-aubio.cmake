@@ -1,4 +1,4 @@
-set(AUBIO_DIR "aubio/aubio")
+set(AUBIO_DIR "aubio/src")
 
 set(AUBIO_SRC "${AUBIO_DIR}/fvec.c"
               "${AUBIO_DIR}/cvec.c"
@@ -22,7 +22,6 @@ set(AUBIO_SRC "${AUBIO_DIR}/fvec.c"
 
 set(AUBIO_HPP "${AUBIO_DIR}/aubio.h"
               "${AUBIO_DIR}/aubio_priv.h"
-              "${AUBIO_DIR}/config.h"
               "${AUBIO_DIR}/types.h")
 
 source_group("" FILES ${AUBIO_SRC} ${AUBIO_HPP})
@@ -33,7 +32,14 @@ set_property(TARGET "aubio" PROPERTY FOLDER "External Libraries")
 
 disable_project_warnings("aubio")
 
-target_compile_definitions("aubio" PRIVATE HAVE_CONFIG_H)
+target_compile_definitions("aubio" PRIVATE HAVE_STDLIB_H
+                                           HAVE_STDIO_H
+                                           HAVE_MATH_H
+                                           HAVE_STRING_H
+                                           HAVE_ERRNO_H
+                                           HAVE_LIMITS_H
+                                           HAVE_STDARG_H
+                                           HAVE_C99_VARARGS_MACROS)
 
 if(MSVC)
   target_compile_definitions("aubio" PRIVATE _CRT_SECURE_NO_WARNINGS)
@@ -43,7 +49,4 @@ if(NOT WIN32)
   target_link_libraries("aubio" m)
 endif()
 
-# "aubio" resolves <aubio/aubio.h> for consumers; the inner directory resolves
-# aubio's own quoted includes, such as "spectral/fft.h".
-target_include_directories("aubio" PUBLIC "aubio")
-target_include_directories("aubio" PRIVATE "${AUBIO_DIR}")
+target_include_directories("aubio" PUBLIC "${AUBIO_DIR}")
