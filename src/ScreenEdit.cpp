@@ -1776,6 +1776,24 @@ static ThemeMetric<std::string> EDIT_MODIFIERS("ScreenEdit", "EditModifiers");
 
 static ThemeMetric<bool> LOOP_ON_CHART_END("ScreenEdit", "LoopOnChartEnd");
 
+// Determines how fast the scroll wheel scrolls through the chart
+static ThemeMetric<float> SCROLL_WHEEL_ACCELERATION_RATE(
+    "ScreenEdit", "ScrollWheelAccelerationRate");
+
+// Discrete speed steps used by EDIT_BUTTON_SCROLL_SPEED_UP/DOWN,
+// In practice, this affects how much we can zoom the spacing of the chart
+static ThemeMetric<std::string> SCROLL_SPEED_PRESETS_STR(
+    "ScreenEdit", "ScrollSpeedPresets");
+
+static ThemeMetric<bool> INVERT_SCROLL_BUTTONS(
+    "ScreenEdit", "InvertScrollSpeedButtons");
+
+// How fast the notefield's displayed scroll speed catches up to
+// it's new value. Lower values will make it take longer to reach the new value
+// Higher values will make it reach the new value faster.
+static ThemeMetric<float> SCROLL_SPEED_APPROACH_RATE(
+    "ScreenEdit", "ScrollSpeedApproachRate");
+
 REGISTER_SCREEN_CLASS(ScreenEdit);
 
 // Static so the clipboard (notes + full timing) persists across
@@ -1783,6 +1801,10 @@ REGISTER_SCREEN_CLASS(ScreenEdit);
 NoteData ScreenEdit::m_Clipboard;
 TimingData ScreenEdit::clipboardFullTiming;
 bool ScreenEdit::s_bClipboardHasTiming = false;
+
+// Time in seconds to reset the scroll acceleration counter
+const float ScreenEdit::SCROLL_ACCELERATION_RESET_TIME = 0.5f;
+const float ScreenEdit::MAX_SCROLL_ACCELERATION_MULTIPLIER = 8.0f;
 
 // The cursor is reported in window pixels, so scale it the same way the Lua
 // bindings do.
@@ -1901,6 +1923,22 @@ void ScreenEdit::Init() {
   m_fMouseDragStartX = m_fMouseDragStartY = 0;
   m_fMouseDragCurrentX = m_fMouseDragCurrentY = 0;
   m_pTempoDetector = nullptr;
+
+  // Initialize scroll acceleration tracking
+  m_iConsecutiveWheelScrolls = 0;
+  m_fScrollAccelerationMultiplier = 1.0f;
+
+  // Parse the configurable scroll-speed presets; fall back to a sane default
+  // if the metric is empty or malformed.
+  m_vScrollSpeedPresets.clear();
+  std::vector<std::string> asPresets;
+  split(SCROLL_SPEED_PRESETS_STR.GetValue(), ",", asPresets, true);
+  for (const std::string& sPreset : asPresets) {
+    m_vScrollSpeedPresets.push_back(StringToFloat(sPreset));
+  }
+  if (m_vScrollSpeedPresets.empty()) {
+    m_vScrollSpeedPresets = {1.0f, 1.5f, 2.0f, 3.0f, 4.0f, 6.0f, 8.0f};
+  }
 
   GAMESTATE->m_bIsUsingStepTiming = false;
   GAMESTATE->m_bInStepEditor = true;
@@ -2037,6 +2075,12 @@ void ScreenEdit::Init() {
   m_PlayerStateEdit.m_PlayerOptions.FromString(ModsLevel_Stage, EDIT_MODIFIERS);
 
   this->originalPlayerOptions.FromString(ModsLevel_Stage, EDIT_MODIFIERS);
+
+  // Make CTRL+Up/Down and CTRL+wheel scroll-speed changes catch up configurable
+  // instead of using gameplay's slow multi-second approach.
+  PO_GROUP_ASSIGN(
+      m_PlayerStateEdit.m_PlayerOptions, ModsLevel_Stage, m_SpeedfScrollSpeed,
+      SCROLL_SPEED_APPROACH_RATE.GetValue());
 
   m_pSteps->GetNoteData(m_NoteDataEdit);
   m_NoteFieldEdit.SetXY(EDIT_X, EDIT_Y);
@@ -2370,17 +2414,25 @@ void ScreenEdit::Update(float fDeltaTime) {
     ScreenWithMenuElements::Update(fDeltaTime);
   }
 
-  // Update trailing beat
+  // Update trailing beat. Only speed up the catch-up once acceleration is
+  // more than halfway to its max, so ordinary scrolling keeps its normal
+  // ease instead of visibly crawling only after a heavy accelerated burst.
+  const float fCatchUpMultiplier =
+      m_fScrollAccelerationMultiplier > (MAX_SCROLL_ACCELERATION_MULTIPLIER / 2)
+          ? m_fScrollAccelerationMultiplier
+          : 1.0f;
   float fDelta = GetBeat() - m_fTrailingBeat;
   if (std::abs(fDelta) < 10) {
     fapproach(
         m_fTrailingBeat, GetBeat(),
-        fDeltaTime * 40 /
+        fCatchUpMultiplier * fDeltaTime * 40 /
             m_NoteFieldEdit.GetPlayerState()
                 ->m_PlayerOptions.GetCurrent()
                 .m_fScrollSpeed);
   } else {
-    fapproach(m_fTrailingBeat, GetBeat(), std::abs(fDelta) * fDeltaTime * 5);
+    fapproach(
+        m_fTrailingBeat, GetBeat(),
+        fCatchUpMultiplier * std::abs(fDelta) * fDeltaTime * 5);
   }
 
   PlayTicks();
@@ -2909,23 +2961,69 @@ bool ScreenEdit::Input(const InputEventPlus& input) {
     const bool bShiftHeld =
         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_LSHIFT)) ||
         INPUTFILTER->IsBeingPressed(DeviceInput(DEVICE_KEYBOARD, KEY_RSHIFT));
+    const bool bWheelUp =
+        input.DeviceI == DeviceInput(DEVICE_MOUSE, MOUSE_WHEELUP);
+    const bool bWheelDown =
+        input.DeviceI == DeviceInput(DEVICE_MOUSE, MOUSE_WHEELDOWN);
 
-    if (input.DeviceI == DeviceInput(DEVICE_MOUSE, MOUSE_WHEELUP)) {
-      if (bCtrlHeld && bShiftHeld) {
-        EditB = EDIT_BUTTON_SCROLL_UP_PAGE;
-      } else if (bCtrlHeld) {
-        EditB = EDIT_BUTTON_SCROLL_UP_TS;
-      } else {
-        EditB = EDIT_BUTTON_SCROLL_UP_LINE;
+    if ((bWheelUp || bWheelDown) && input.type != IET_RELEASE) {
+      // Track consecutive wheel scrolls so rapid wheeling ramps up faster
+      // than the key-repeat rate of holding a key down.
+      if (m_LastWheelScrollTime.Ago() > SCROLL_ACCELERATION_RESET_TIME) {
+        m_iConsecutiveWheelScrolls = 0;
+        m_fScrollAccelerationMultiplier = 1.0f;
       }
-    } else if (input.DeviceI == DeviceInput(DEVICE_MOUSE, MOUSE_WHEELDOWN)) {
-      if (bCtrlHeld && bShiftHeld) {
-        EditB = EDIT_BUTTON_SCROLL_DOWN_PAGE;
-      } else if (bCtrlHeld) {
-        EditB = EDIT_BUTTON_SCROLL_DOWN_TS;
-      } else {
-        EditB = EDIT_BUTTON_SCROLL_DOWN_LINE;
+      m_iConsecutiveWheelScrolls++;
+      const float fAccelerationRate = SCROLL_WHEEL_ACCELERATION_RATE.GetValue();
+      m_fScrollAccelerationMultiplier =
+          1.0f + (static_cast<float>(m_iConsecutiveWheelScrolls - 1) *
+                  fAccelerationRate);
+      // Cap so a long scroll burst can't fling the cursor across the chart.
+      m_fScrollAccelerationMultiplier = std::min(
+          m_fScrollAccelerationMultiplier, MAX_SCROLL_ACCELERATION_MULTIPLIER);
+      m_LastWheelScrollTime.Touch();
+
+      if (bCtrlHeld) {
+        // CTRL+wheel mirrors CTRL+Up/Down (scroll-speed presets), but jumps
+        // multiple presets per tick as the wheel accelerates, since it's much
+        // slower to get through the presets via key-repeat alone.
+        PlayerState* pPlayerState =
+            const_cast<PlayerState*>(m_NoteFieldEdit.GetPlayerState());
+        float fScrollSpeed =
+            pPlayerState->m_PlayerOptions.GetSong().m_fScrollSpeed;
+
+        int iSpeed = 0;
+        for (size_t i = 0; i < m_vScrollSpeedPresets.size(); ++i) {
+          if (m_vScrollSpeedPresets[i] == fScrollSpeed) {
+            iSpeed = static_cast<int>(i);
+            break;
+          }
+        }
+
+        const int iBaseDirection = bWheelUp ? +1 : -1;
+        const int iDirection =
+            INVERT_SCROLL_BUTTONS ? -iBaseDirection : iBaseDirection;
+        const int iSteps = std::max(
+            1, static_cast<int>(std::lround(m_fScrollAccelerationMultiplier)));
+        iSpeed = std::clamp(
+            iSpeed + iDirection * iSteps, 0,
+            (int)m_vScrollSpeedPresets.size() - 1);
+
+        if (m_vScrollSpeedPresets[iSpeed] != fScrollSpeed) {
+          m_soundMarker.Play(true);
+          fScrollSpeed = m_vScrollSpeedPresets[iSpeed];
+        }
+
+        PO_GROUP_ASSIGN(
+            pPlayerState->m_PlayerOptions, ModsLevel_Song, m_fScrollSpeed,
+            fScrollSpeed);
+        return true;
       }
+
+      EditB = bWheelUp ? (bShiftHeld ? EDIT_BUTTON_SCROLL_UP_PAGE
+                                     : EDIT_BUTTON_SCROLL_UP_LINE)
+                       : (bShiftHeld ? EDIT_BUTTON_SCROLL_DOWN_PAGE
+                                     : EDIT_BUTTON_SCROLL_DOWN_LINE);
     }
   }
 
@@ -2973,8 +3071,6 @@ static LocalizedString ALTER_MENU_NO_SELECTION(
 static LocalizedString SWITCHED_TO("ScreenEdit", "Switched to");
 static LocalizedString NO_BACKGROUNDS_AVAILABLE(
     "ScreenEdit", "No backgrounds available");
-static ThemeMetric<bool> INVERT_SCROLL_BUTTONS(
-    "ScreenEdit", "InvertScrollSpeedButtons");
 
 bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
   if (input.type == IET_RELEASE) {
@@ -3108,11 +3204,10 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
       float fScrollSpeed =
           pPlayerState->m_PlayerOptions.GetSong().m_fScrollSpeed;
 
-      const float fSpeeds[] = {1.0f, 1.5f, 2.0f, 3.0f, 4.0f, 6.0f, 8.0f};
       int iSpeed = 0;
-      for (unsigned i = 0; i < ARRAYLEN(fSpeeds); ++i) {
-        if (fSpeeds[i] == fScrollSpeed) {
-          iSpeed = i;
+      for (size_t i = 0; i < m_vScrollSpeedPresets.size(); ++i) {
+        if (m_vScrollSpeedPresets[i] == fScrollSpeed) {
+          iSpeed = static_cast<int>(i);
           break;
         }
       }
@@ -3126,11 +3221,11 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
           INVERT_SCROLL_BUTTONS ? --iSpeed : ++iSpeed;
           break;
       }
-      iSpeed = std::clamp(iSpeed, 0, (int)ARRAYLEN(fSpeeds) - 1);
+      iSpeed = std::clamp(iSpeed, 0, (int)m_vScrollSpeedPresets.size() - 1);
 
-      if (fSpeeds[iSpeed] != fScrollSpeed) {
+      if (m_vScrollSpeedPresets[iSpeed] != fScrollSpeed) {
         m_soundMarker.Play(true);
-        fScrollSpeed = fSpeeds[iSpeed];
+        fScrollSpeed = m_vScrollSpeedPresets[iSpeed];
       }
 
       PO_GROUP_ASSIGN(
@@ -3175,6 +3270,13 @@ bool ScreenEdit::InputEdit(const InputEventPlus& input, EditButton EditB) {
             fBeatsToMove *= -1;
           }
           break;
+      }
+
+      // Apply scroll acceleration multiplier for LINE scrolls (mouse wheel)
+      if ((EditB == EDIT_BUTTON_SCROLL_UP_LINE ||
+           EditB == EDIT_BUTTON_SCROLL_DOWN_LINE) &&
+          m_fScrollAccelerationMultiplier > 1.0f) {
+        fBeatsToMove *= m_fScrollAccelerationMultiplier;
       }
 
       if (m_PlayerStateEdit.m_PlayerOptions.GetSong()
