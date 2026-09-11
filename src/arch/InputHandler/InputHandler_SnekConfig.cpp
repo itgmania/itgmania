@@ -41,11 +41,6 @@ InputHandler_SnekConfig::InputHandler_SnekConfig() {
   // do not start the thread when initialized.
   m_bShutdown = true;
 
-  // ensure auto reconnect and blocking reads (we need to ask it a question then
-  // get an answer)
-  dev = std::make_unique<HidDevice>(
-      SNEK_CONFIG_VID, SNEK_CONFIG_PID, SNEK_CONFIG_INTERFACE_NUM, true, false);
-
   if (IsConnected()) {
     std::array<uint8_t, SNEK_CONFIG_PACKETSIZE> res;
 
@@ -210,12 +205,12 @@ bool InputHandler_SnekConfig::SendCommand(
   cmd[(SNEK_CONFIG_PACKETSIZE - 1)] = crc;
 
   // Send command
-  if (dev->Write(cmd.data(), cmd.size()) != HidResults::Success) {
+  if (dev.Write(cmd.data(), cmd.size()) != HidResults::Success) {
     LOG->Warn("snek could not send");
     return false;
   }
 
-  int rtnSize = dev->Read(response.data(), response.size());
+  int rtnSize = dev.Read(response.data(), response.size());
 
   // Read response, always a full payload size.
   if (rtnSize != SNEK_CONFIG_PACKETSIZE) {

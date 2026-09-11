@@ -24,10 +24,6 @@
 #include "arch/Lights/LightsDriver_Export.h"
 #include "archutils/Common/HidDevice.h"
 
-// all of the known device pid's that use this communication protocol.
-const std::vector<int> InputHandler_PumpHID::devPIDS = {
-    PUMPHID_PID_V1, PUMPHID_PID_V2};
-
 REGISTER_INPUT_HANDLER_CLASS(PumpHID);
 
 InputHandler_PumpHID::InputHandler_PumpHID() {
@@ -37,11 +33,6 @@ InputHandler_PumpHID::InputHandler_PumpHID() {
   memset(msg_from_device.raw_buff, PUMPHID_DEF_INPUT, sizeof(msg_from_device));
 
   m_bShutdown = false;
-
-  // ensure auto reconnect and blocking reads (since the device wants write/read
-  // cycles properly.)
-  dev = std::make_unique<HidDevice>(
-      PUMPHID_VID, devPIDS, PUMPHID_INTERFACE_NUM, true, false);
 
   if (IsConnected() && PREFSMAN->m_bThreadedInput) {
     InputThread.SetName("PumpHID thread");
@@ -59,7 +50,7 @@ InputHandler_PumpHID::~InputHandler_PumpHID() {
 
     // turn off all of the lights manually.
     memset(msg_to_device.raw_buff, PUMPHID_DEF_LIGHTS, sizeof(msg_to_device));
-    dev->Write(msg_to_device.raw_buff, PUMPHID_PAYLOADSIZE_TODEV);
+    dev.Write(msg_to_device.raw_buff, PUMPHID_PAYLOADSIZE_TODEV);
   }
 }
 
@@ -157,7 +148,7 @@ void InputHandler_PumpHID::InputThreadMain() {
 
     // push lighting state
     HidResults writeRtn =
-        dev->Write(msg_to_device.raw_buff, PUMPHID_PAYLOADSIZE_TODEV);
+        dev.Write(msg_to_device.raw_buff, PUMPHID_PAYLOADSIZE_TODEV);
 
     if (writeRtn != HidResults::Success) {
       LOG->Warn("PumpHID write fail %d", writeRtn);
@@ -166,7 +157,7 @@ void InputHandler_PumpHID::InputThreadMain() {
 
     // pull input state
     int readRtn =
-        dev->Read(msg_from_device.raw_buff, PUMPHID_PAYLOADSIZE_FROMDEV);
+        dev.Read(msg_from_device.raw_buff, PUMPHID_PAYLOADSIZE_FROMDEV);
 
     if (readRtn != PUMPHID_PAYLOADSIZE_FROMDEV) {
       LOG->Warn("PumpHID read fail %d", readRtn);

@@ -69,13 +69,16 @@ class InputHandler_SnekConfig : public InputHandler {
   std::string GetDeviceSpecificInputString(const DeviceInput& di);
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
-  bool IsConnected() { return dev != nullptr && dev->IsConnected(); }
+  bool IsConnected() { return dev.IsConnected(); }
 
   void StartSensorDebugging();
   void StopSensorDebugging();
 
  private:
-  std::unique_ptr<HidDevice> dev;
+  // ensure auto reconnect and blocking reads (we need to ask it a question then
+  // get an answer)
+  HidDevice dev = HidDevice(
+      SNEK_CONFIG_VID, SNEK_CONFIG_PID, SNEK_CONFIG_INTERFACE_NUM, true, false);
 
   std::atomic<bool> m_bShutdown;
   RageThread* DebugThread = nullptr;
