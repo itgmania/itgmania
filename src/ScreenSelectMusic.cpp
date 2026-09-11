@@ -937,6 +937,8 @@ bool ScreenSelectMusic::Input(const InputEventPlus& input) {
 }
 
 bool ScreenSelectMusic::DetectCodes(const InputEventPlus& input) {
+  // We have a fallback close folder command that's a prefix of the prev/next
+  // steps command, so make sure to handle close folder command first.
   if (CodeDetector::EnteredCloseFolder(input.GameI.controller)) {
     if (GAMESTATE->IsAnExtraStageAndSelectionLocked() ||
         m_MusicWheel.WheelIsLocked() || m_MusicWheel.IsRouletting()) {
@@ -945,7 +947,8 @@ bool ScreenSelectMusic::DetectCodes(const InputEventPlus& input) {
       m_MusicWheel.CloseOpenSectionOneLevel();
       AfterMusicChange();
     }
-  } else if (CodeDetector::EnteredPrevSteps(input.GameI.controller) &&
+  } else if (
+      CodeDetector::EnteredPrevSteps(input.GameI.controller) &&
       !CHANGE_STEPS_WITH_GAME_BUTTONS) {
     if (GAMESTATE->IsAnExtraStageAndSelectionLocked()) {
       m_soundLocked.Play(true);
