@@ -234,11 +234,17 @@ class InputHandler_PumpHID : public InputHandler {
   std::string GetDeviceSpecificInputString(const DeviceInput& di);
   void GetDevicesAndDescriptions(std::vector<InputDeviceInfo>& vDevicesOut);
 
-  bool IsConnected() { return dev != nullptr && dev->IsConnected(); }
+  bool IsConnected() { return dev.IsConnected(); }
 
  private:
-  std::unique_ptr<HidDevice> dev;
-  static const std::vector<int> devPIDS;
+  // all of the known device pid's that use this communication protocol.
+  inline static const std::vector<int> devPIDS = {
+      PUMPHID_PID_V1, PUMPHID_PID_V2};
+
+  // ensure auto reconnect and blocking reads (since the device wants write/read
+  // cycles properly.)
+  HidDevice dev =
+      HidDevice(PUMPHID_VID, devPIDS, PUMPHID_INTERFACE_NUM, true, false);
 
   pumphid_output_state_t msg_from_device;
   pumphid_input_state_t msg_to_device;
