@@ -64,6 +64,7 @@ class GameCommand {
         m_bClearCredits(false),
         m_bStopMusic(false),
         m_bApplyDefaultOptions(false),
+        m_bActivatePremiumFree(false),
         m_bFadeMusic(false),
         m_fMusicFadeOutVolume(-1),
         m_fMusicFadeOutSeconds(-1),
@@ -137,6 +138,7 @@ class GameCommand {
   bool m_bClearCredits;
   bool m_bStopMusic;
   bool m_bApplyDefaultOptions;
+  bool m_bActivatePremiumFree;
   // sm-ssc also adds:
   bool m_bFadeMusic;
   float m_fMusicFadeOutVolume;

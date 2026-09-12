@@ -345,6 +345,17 @@ bool MusicWheel::SelectSection(const std::string& SectionName) {
   return false;
 }
 
+bool MusicWheel::HasSongs() {
+  std::vector<MusicWheelItemData*>& wheelItems =
+      getWheelItemsData(GAMESTATE->m_SortOrder);
+  for (MusicWheelItemData* item : wheelItems) {
+    if (item->m_Type == WheelItemDataType_Song) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool MusicWheel::SelectSong(const Song* p) {
   if (p == nullptr) {
     return false;
@@ -1384,6 +1395,11 @@ void MusicWheel::FilterWheelItemDatas(
         aiRemove[i] = true;
         continue;
       }
+
+      if (!GAMESTATE->IsSongAllowedByPremiumFree(pSong)) {
+        aiRemove[i] = true;
+        continue;
+      }
     }
 
     if (WID.m_Type == WheelItemDataType_Course) {
@@ -2251,6 +2267,10 @@ class LunaMusicWheel : public Luna<MusicWheel> {
     lua_pushboolean(L, p->WheelIsLocked());
     return 1;
   }
+  static int HasSongs(T* p, lua_State* L) {
+    lua_pushboolean(L, p->HasSongs());
+    return 1;
+  }
   static int SelectSong(T* p, lua_State* L) {
     if (lua_isnil(L, 1)) {
       lua_pushboolean(L, false);
@@ -2284,6 +2304,7 @@ class LunaMusicWheel : public Luna<MusicWheel> {
     ADD_METHOD(GetSelectedSection);
     ADD_METHOD(IsRouletting);
     ADD_METHOD(IsLocked);
+    ADD_METHOD(HasSongs);
     ADD_METHOD(SelectSong);
     ADD_METHOD(SelectCourse);
     ADD_METHOD(Move);
