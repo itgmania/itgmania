@@ -3184,6 +3184,12 @@ end
 	<Function name='GetPremium' return='Premium' arguments=''>
 		Returns the current Premium.
 	</Function>
+	<Function name='GetPremiumFreeSecondsLeft' return='float' arguments='' since='ITGmania 1.4.0'>
+		Returns the number of seconds left in the current premium free session, or <code>0</code> if
+		<Link function='IsPremiumFreeActive'>premium free</Link> is not active.  The countdown only starts when
+		ScreenSelectMusic begins, so until then the full duration set by the <code>PremiumFreeMinutes</code>
+		preference is returned.
+	</Function>
 	<Function name='GetSmallestNumStagesLeftForAnyHumanPlayer' return='int' arguments=''>
 		<!-- Kind of does what it says on the tin. -->
 		Returns the smallest number of stages left for any human player.
@@ -3295,6 +3301,16 @@ end
 	</Function>
 	<Function name='IsPlayerEnabled' return='bool' arguments='PlayerNumber pn'>
 		Returns <code>true</code> if player <code>pn</code> is enabled.
+	</Function>
+	<Function name='IsPremiumFreeActive' return='bool' arguments='' since='ITGmania 1.4.0'>
+		Returns <code>true</code> if premium free is active.  While it is active, players are not charged stage
+		tokens, <Link function='GetSmallestNumStagesLeftForAnyHumanPlayer' /> reports an unlimited number of
+		stages and no extra stage can be earned.  Premium free is turned on by the <code>premiumfree</code>
+		GameCommand and is cleared by <Link function='Reset' />.
+	</Function>
+	<Function name='IsPremiumFreeExpired' return='bool' arguments='' since='ITGmania 1.4.0'>
+		Returns <code>true</code> if premium free is active and its timer has run out.  Returns <code>false</code>
+		while premium free is inactive or while its timer has not started yet.
 	</Function>
 	<Function name='IsSideJoined' return='bool' arguments='PlayerNumber pn'>
 		Returns <code>true</code> if player <code>pn</code> has joined the game.
@@ -3683,6 +3699,9 @@ end
 	</Function>
 	<Function name='GetSelectedSection' return='string' arguments=''>
 		Returns the name of the currently selected section.
+	</Function>
+	<Function name='HasSongs' return='bool' arguments='' since='ITGmania 1.4.0'>
+		Returns <code>true</code> if the wheel currently holds at least one song.
 	</Function>
 	<Function name='IsRouletting' return='bool' arguments=''>
 		Returns <code>true</code> if the MusicWheel is currently handling Roulette selection.
