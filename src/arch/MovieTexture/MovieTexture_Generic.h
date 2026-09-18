@@ -90,23 +90,28 @@ class MovieTexture_Generic : public RageMovieTexture {
  public:
   MovieTexture_Generic(
       RageTextureID ID, std::unique_ptr<MovieDecoder> pDecoder);
-  virtual ~MovieTexture_Generic();
+  ~MovieTexture_Generic() override;
   std::string Init();
 
   /* only called by RageTextureManager::InvalidateTextures */
-  void Invalidate();
+  void Invalidate() override;
 
-  virtual void Reload();
+  void Reload() override;
 
-  virtual void SetPosition(float seconds);
+  void SetPosition(float seconds) override;
 
   // UpdateMovie tells the MovieTexture to update the displayed frame based
   // on fSeconds passed in. (e.g., 5.9 input means show the frame that should
   // be displayed 5.9 seconds into the movie).
-  virtual void UpdateMovie(float seconds);
-  virtual void SetPlaybackRate(float rate) { rate_ = rate; }
-  void SetLooping(bool looping = true) { loop_ = looping; }
-  uintptr_t GetTexHandle() const;
+  void UpdateMovie(float seconds) override;
+  void SetPlaybackRate(float rate) override { rate_ = rate; }
+  void SetLooping(bool looping = true) override {
+    loop_ = looping;
+    if (decoder_) {
+      decoder_->SetLooping(looping);
+    }
+  }
+  uintptr_t GetTexHandle() const override;
 
   static EffectMode GetEffectMode(MovieDecoderPixelFormatYCbCr fmt);
 
@@ -115,11 +120,17 @@ class MovieTexture_Generic : public RageMovieTexture {
 
   std::unique_ptr<std::thread> decoding_thread_;
 
+  /* Current playback rate multiplier (1.0 = normal speed). */
   float rate_;
+  /* True if the video is set to loop seamlessly upon reaching EOF. */
   bool loop_;
+  /* True if non-looping playback reached the end of the movie. */
   bool finished_ = false;
+  /* True once the first frame has been uploaded to the texture, ensuring
+   * banners and song wheel previews display immediately without delay. */
+  bool first_frame_displayed_ = false;
 
-  // If true, halts all decoding and display.
+  // If true, halts all decoding and display due to a fatal decode error.
   bool failure_ = false;
 
   uintptr_t texture_handle_;
@@ -130,7 +141,8 @@ class MovieTexture_Generic : public RageMovieTexture {
   RageSurface* surface_;
   RageTextureLock* texture_lock_;
 
-  /* The time the movie is actually at: */
+  /* The engine playback clock (in seconds) tracking elapsed movie display time.
+   */
   float clock_;
 
   void UpdateFrame();

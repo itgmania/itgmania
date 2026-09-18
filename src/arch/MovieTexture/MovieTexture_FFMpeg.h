@@ -3,9 +3,14 @@
 #ifndef RAGE_MOVIE_TEXTURE_FFMPEG_H
 #define RAGE_MOVIE_TEXTURE_FFMPEG_H
 
+#include <atomic>
+#include <condition_variable>
 #include <cstdint>
+#include <deque>
 #include <limits>
+#include <memory>
 #include <mutex>
+#include <vector>
 
 #include "MovieTexture_Generic.h"
 
@@ -20,37 +25,22 @@ extern "C" {
 }
 };  // namespace avcodec
 
-constexpr size_t kFFMpegBufferSize = 4096;
-constexpr int kSwsFlags = SWS_BICUBIC;  // XXX: Reasonable default?
+// Size of buffer for custom FFmpeg AVIO context (128 KB minimizes I/O
+// overhead).
+constexpr size_t kFFMpegBufferSize = 131072;
+constexpr int kSwsFlags = SWS_BILINEAR;
 
-struct FrameHolder {
-  avcodec::AVFrame* frame = avcodec::av_frame_alloc();
-  bool displayed = false;
-  std::size_t packet_num =
-      std::numeric_limits<std::size_t>::max();  // Used as a sanity check during
-                                                // display.
-  std::mutex lock;  // Protects the frame as it's being initialized.
-  ~FrameHolder() {
-    if (frame != nullptr) {
-      avcodec::av_frame_free(&frame);
-    }
-  }
-};
-
-struct PacketHolder {
-  avcodec::AVPacket* packet = avcodec::av_packet_alloc();
-  float frame_timestamp = 0;
-  float frame_delay = 0;
-  bool decoded = false;
-  std::mutex lock;  // Protects the packet as it's being initialized.
-
-  PacketHolder() = default;
-
-  ~PacketHolder() {
-    if (packet != nullptr) {
-      avcodec::av_packet_free(&packet);
-    }
-  }
+// Holds a decoded, color-converted, and scaled video frame ready for OpenGL
+// presentation. Frames are pre-allocated and recycled via frame_pool_ to avoid
+// heap allocations in steady state.
+struct ConvertedFrame {
+  std::vector<uint8_t> data;
+  float pts = 0.0f;
+  float duration = 0.0f;
+  int width = 0;
+  int height = 0;
+  int pitch = 0;
+  bool is_last_frame = false;
 };
 
 class MovieTexture_FFMpeg : public MovieTexture_Generic {
@@ -64,7 +54,7 @@ class MovieTexture_FFMpeg : public MovieTexture_Generic {
 
 class RageMovieTextureDriver_FFMpeg : public RageMovieTextureDriver {
  public:
-  virtual RageMovieTexture* Create(RageTextureID ID, std::string& sError);
+  RageMovieTexture* Create(RageTextureID ID, std::string& sError) override;
   static RageSurface* AVCodecCreateCompatibleSurface(
       int iTextureWidth, int iTextureHeight, bool bPreferHighColor,
       int& iAVTexfmt, MovieDecoderPixelFormatYCbCr& fmtout);
@@ -73,120 +63,84 @@ class RageMovieTextureDriver_FFMpeg : public RageMovieTextureDriver {
 class MovieDecoder_FFMpeg : public MovieDecoder {
  public:
   MovieDecoder_FFMpeg();
-  ~MovieDecoder_FFMpeg();
+  ~MovieDecoder_FFMpeg() override;
 
-  std::string Open(std::string file);
-  void Close();
+  std::string Open(std::string file) override;
+  void Close() override;
 
-  // Rewind sends the reset signal to DecodeMovie. See DecodeMovie
-  // and HandleReset for more information.
-  void Rewind();
+  void Rewind() override;
+  void Rollover() override;
 
-  // Like rewind, but handles the case that a looping video reached the end,
-  // and the next frame to display is the first one of the movie.
-  void Rollover();
+  int GetFrame(RageSurface* surface_out) override;
 
-  // This draws a frame from the buffer onto the provided RageSurface.
-  // Returns 1 if the last frame of the movie, -1 if there's an issue
-  // with the frame and we should skip.
-  int GetFrame(RageSurface* surface_out);
+  int DecodeFrame() override { return 0; }
 
-  // Handles the next packet in decoding.
-  int HandleNextPacket();
+  int DecodeMovie() override;
+  bool IsCurrentFrameReady() override;
 
-  // Decode a single frame.
-  // Return -2 on cancel
-  //        -1 on error
-  //         0 on success
-  //         1 on success and end_of_file_ set
-  int DecodeFrame();
-
-  // Decode the entire movie.
-  // Works via a sliding window between packet_buffer_ and frame_buffer_.
-  // The frame_buffer_, when full, will not reuse a FrameHolder until the
-  // frame at frame_buffer_position_ has been displayed.
-  //
-  // Returns 0 on success, -1 on fatal error, -2 on cancel. Looping movies
-  // never exit until destruction.
-  int DecodeMovie();
-  bool IsCurrentFrameReady();
-
-  int GetWidth() const { return av_stream_codec_->width; }
-  int GetHeight() const { return av_stream_codec_->height; }
+  int GetWidth() const override {
+    return av_stream_codec_ ? av_stream_codec_->width : 0;
+  }
+  int GetHeight() const override {
+    return av_stream_codec_ ? av_stream_codec_->height : 0;
+  }
 
   RageSurface* CreateCompatibleSurface(
       int iTextureWidth, int iTextureHeight, bool bPreferHighColor,
-      MovieDecoderPixelFormatYCbCr& fmtout);
+      MovieDecoderPixelFormatYCbCr& fmtout) override;
 
-  float GetTimestamp() const;
+  float GetTimestamp() const override;
 
-  // Cancel decoding.
-  void Cancel() { cancel_ = true; };
-
-  // Called by the MovieTexture to tell the decoder if the movie loops.
-  void SetLooping(bool loop) { looping_ = loop; }
-
-  // Are we displaying the last frame?
-  bool LastFrame() { return display_frame_num_ == (total_frames_ - 1); }
-
-  // The signal if the final frame of the movie was just displayed.
-  bool EndOfMovie() { return end_of_movie_; }
+  void Cancel() override;
+  void SetLooping(bool loop) override { looping_ = loop; }
+  bool EndOfMovie() override;
 
  private:
   void Init();
   std::string OpenCodec();
 
-  // Read a packet and send it to our frame data buffer.
-  // Returns -2 on cancel, -1 on error, 0 on EOF, 1 on OK.
-  int SendPacketToBuffer();
-
-  // Send the packet at packet_buffer_position_ to the frame buffer
-  // at the next open position.
-  // Returns -2 on cancel, -1 on error, 0 if the packet is finished.
-  int DecodePacketToFrame();
+  int ReadAndDecodeNextFrame(
+      avcodec::AVPacket* packet, avcodec::AVFrame* raw_frame);
+  float CalculatePTS(avcodec::AVFrame* frame);
+  float CalculateDuration(avcodec::AVFrame* frame);
+  void ConvertFrame(avcodec::AVFrame* raw_frame, ConvertedFrame& out_frame);
+  void SeekToStart();
   void HandleReset();
 
-  avcodec::AVStream* av_stream_;
-  avcodec::AVPixelFormat av_pixel_format_; /* pixel format of output surface */
-  avcodec::SwsContext* av_sws_context_;
-  avcodec::AVCodecContext* av_stream_codec_;
-  avcodec::AVFormatContext* av_format_context_;
-  std::size_t total_frames_;  // Total number of frames in the movie.
+  avcodec::AVStream* av_stream_ = nullptr;
+  avcodec::AVPixelFormat av_pixel_format_ = avcodec::AV_PIX_FMT_NONE;
+  avcodec::SwsContext* av_sws_context_ = nullptr;
+  avcodec::AVCodecContext* av_stream_codec_ = nullptr;
+  avcodec::AVFormatContext* av_format_context_ = nullptr;
 
-  unsigned char* av_buffer_;
-  avcodec::AVIOContext* av_io_context_;
+  unsigned char* av_buffer_ = nullptr;
+  avcodec::AVIOContext* av_io_context_ = nullptr;
 
-  // The movie's buffers. This uses a sliding window from FrameBuffer to
-  // PacketBuffer. AVPackets are small enough that keeping the whole movie's
-  // packets in memory is trivial, but AVFrames can quickly overwhelm RAM.
-  // Therefore, the FrameBuffer represents a sliding window along the
-  // PacketBuffer.
-  std::vector<std::unique_ptr<PacketHolder>> packet_buffer_;
-  std::vector<std::unique_ptr<FrameHolder>> frame_buffer_;
-  std::size_t frame_buffer_position_ = 0;
-  std::size_t packet_buffer_position_ = 0;
-  float timestamp_offset_ = 0.0;
+  int target_width_ = 0;
+  int target_height_ = 0;
+  int target_pitch_ = 0;
 
-  // Offset for the frame_buffer_ when a looping movie goes back to
-  // the zeroeth frame. next_offset_ is written when the zeroeth frame
-  // is decoded, and when the last frame is displayed, it is applied to
-  // offset_.
-  std::size_t offset_ = 0;
-  std::size_t next_offset_ = 0;
+  static constexpr size_t kMaxQueueFrames = 4;
+  static constexpr size_t kMaxPoolFrames = 6;
+  mutable std::mutex queue_mutex_;
+  std::condition_variable can_produce_cv_;
+  std::condition_variable can_consume_cv_;
 
-  // display_frame_num_ will often be the start of the sliding window,
-  // or the oldest Frame that is currently decoded.
-  std::size_t display_frame_num_ = 0;
+  // Complete, ready frames to display.
+  std::deque<std::unique_ptr<ConvertedFrame>> ready_queue_;
+  // Frames that are ready to be overwritten. Kept in this pool to avoid
+  // constant memory reallocation.
+  std::vector<std::unique_ptr<ConvertedFrame>> frame_pool_;
 
-  // 0 = no EOF
-  // 1 = EOF while decoding
-  int end_of_file_;
+  float timestamp_offset_ = 0.0f;
+  float last_pts_ = 0.0f;
+  float last_duration_ = 0.0f;
+  bool first_pts_seen_ = false;
 
-  // The various flags used to signal the decoding thread to do something.
-  bool cancel_ = false;
-  bool looping_ = false;
-  bool reset_ = false;
-  bool end_of_movie_ = false;
+  std::atomic<bool> cancel_{false};
+  std::atomic<bool> looping_{false};
+  std::atomic<bool> reset_{false};
+  std::atomic<bool> end_of_movie_{false};
 };
 
 static struct AVPixelFormat_t {
