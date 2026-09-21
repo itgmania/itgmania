@@ -18,6 +18,31 @@ using namespace RageDisplay_Legacy_Helpers;
 #include <set>
 #include <string>
 
+namespace {
+int GetSDLDisplayIndex(const std::string& displayId) {
+  const int displayCount = SDL_GetNumVideoDisplays();
+  for (int displayIndex = 0; displayIndex < displayCount; ++displayIndex) {
+    if (displayId == "SDL-Display-" + std::to_string(displayIndex)) {
+      return displayIndex;
+    }
+  }
+
+  return 0;
+}
+
+void GetSDLWindowPosition(const std::string& displayId, int& x, int& y) {
+  const int displayIndex = GetSDLDisplayIndex(displayId);
+  SDL_Rect displayBounds;
+  if (SDL_GetDisplayBounds(displayIndex, &displayBounds) == 0) {
+    x = displayBounds.x;
+    y = displayBounds.y;
+  } else {
+    x = SDL_WINDOWPOS_UNDEFINED_DISPLAY(displayIndex);
+    y = SDL_WINDOWPOS_UNDEFINED_DISPLAY(displayIndex);
+  }
+}
+}  // namespace
+
 LowLevelWindow_SDL::LowLevelWindow_SDL()
     : m_window(nullptr), m_glContext(nullptr), m_bWasWindowed(true) {
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -103,9 +128,12 @@ std::string LowLevelWindow_SDL::TryVideoMode(
       }
     }
 
+    int windowX = 0;
+    int windowY = 0;
+    GetSDLWindowPosition(p.sDisplayId, windowX, windowY);
+
     m_window = SDL_CreateWindow(
-        p.sWindowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED, p.width, p.height, flags);
+        p.sWindowTitle.c_str(), windowX, windowY, p.width, p.height, flags);
 
     if (!m_window) {
       return ssprintf("Failed to create SDL window: %s", SDL_GetError());
@@ -162,6 +190,11 @@ std::string LowLevelWindow_SDL::TryVideoMode(
     m_bWasWindowed = p.windowed;
   } else {
     bNewDeviceOut = false;
+
+    int windowX = 0;
+    int windowY = 0;
+    GetSDLWindowPosition(p.sDisplayId, windowX, windowY);
+    SDL_SetWindowPosition(m_window, windowX, windowY);
 
     if (!p.windowed && m_bWasWindowed) {
       SDL_SetWindowBordered(m_window, SDL_FALSE);
