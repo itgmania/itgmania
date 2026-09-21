@@ -230,6 +230,9 @@ std::string LowLevelWindow_SDL::TryVideoMode(
 }
 
 void LowLevelWindow_SDL::Update() {
+  // SDL requires events to be pumped from the video thread:
+  // https://wiki.libsdl.org/SDL2/SDL_PumpEvents
+  // so it's here.
   SDL_PumpEvents();
   SDL_ShowCursor(PREFSMAN->m_bShowMouseCursor ? SDL_ENABLE : SDL_DISABLE);
 }
