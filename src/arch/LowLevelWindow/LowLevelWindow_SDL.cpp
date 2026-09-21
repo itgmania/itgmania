@@ -2,7 +2,7 @@
 
 #include "DisplaySpec.h"
 #include "PrefsManager.h"
-#include "RageDisplay.h"  // VideoModeParams
+#include "RageDisplay.h"
 #include "RageDisplay_OGL_Helpers.h"
 #include "RageException.h"
 #include "RageLog.h"
