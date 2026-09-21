@@ -96,7 +96,11 @@ std::string LowLevelWindow_SDL::TryVideoMode(
 
     Uint32 flags = SDL_WINDOW_OPENGL;
     if (!p.windowed) {
-      flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+      if (p.bWindowIsFullscreenBorderless) {
+        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+      } else {
+        flags |= SDL_WINDOW_FULLSCREEN;
+      }
     }
 
     m_window = SDL_CreateWindow(
