@@ -720,9 +720,7 @@ void SetupExtensions() {
       StringToFloat((const char*)gluGetString(GLU_VERSION));
   g_gluVersion = std::lrint(fGLUVersion * 10);
 
-#ifndef HAVE_X11  // LLW_X11 needs to init GLEW early for GLX exts
   glewInit();
-#endif
 
   g_iMaxTextureUnits = 1;
   if (GLEW_ARB_multitexture) {
