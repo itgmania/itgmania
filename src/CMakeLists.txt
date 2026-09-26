@@ -362,9 +362,6 @@ else() # Linux
   if(${HAS_XRANDR})
     target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_XRANDR)
   endif()
-  if(${HAS_LIBXTST})
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_LIBXTST)
-  endif()
   if(${HAS_XINERAMA})
     target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_XINERAMA)
   endif()
@@ -494,9 +491,7 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
     list(APPEND SMDATA_LINK_LIB ${X11_LIBRARIES})
   endif()
 
-  if(Xtst_FOUND)
-    list(APPEND SMDATA_LINK_LIB ${LIBXTST_LIBRARY})
-  endif()
+  list(APPEND SMDATA_LINK_LIB ${DBUS_LIBRARIES})
 
   list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARY})
 
@@ -525,6 +520,8 @@ else()
     if(X11_FOUND)
       list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
     endif()
+
+    list(APPEND SM_INCLUDE_DIRS "${DBUS_INCLUDE_DIRS}")
 
     list(APPEND SM_INCLUDE_DIRS "${LIBUSB_INCLUDE_DIR}")
   endif()

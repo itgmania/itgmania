@@ -3,10 +3,13 @@
 #ifndef LOW_LEVEL_WINDOW_X11_H
 #define LOW_LEVEL_WINDOW_X11_H
 
+#include <cstdint>
 #include <string>
 
 #include "LowLevelWindow.h"
 #include "RageDisplay.h"  // VideoModeParams
+
+struct DBusConnection;
 
 class LowLevelWindow_X11 : public LowLevelWindow {
  public:
@@ -38,12 +41,14 @@ class LowLevelWindow_X11 : public LowLevelWindow {
 
  private:
   void RestoreOutputConfig();
+  void InhibitScreensaver();
+  void UninhibitScreensaver();
 
   bool m_bWasWindowed;
   ActualVideoModeParams CurrentParams;
 
-  float m_lastScreensaverInterrupt = 0.0f;
-  float m_screensaverInterruptInterval = 60.0f;
+  DBusConnection* m_dbus = nullptr;
+  uint32_t m_screensaverCookie = 0;
 };
 
 #ifdef ARCH_LOW_LEVEL_WINDOW
