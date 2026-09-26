@@ -80,14 +80,12 @@ inline const std::vector<std::string>& GetDefaultMovieDriverList() {
 // PulseAudio is the preferred Unix driver since it allows the gives non
 // exclusive access to the audio device, unlike ALSA.
 // Use ALSA next because it is the lowest latency.
-// Then try OSS before daemon drivers so we're going direct instead of
-// unwittingly starting a daemon.
 // JACK gives us an explicit option to NOT start a daemon, so try it last,
 // as PulseAudio will successfully Init() but not actually work if the
 // PulseAudio daemon has been suspended by/for jackd.
 inline const std::vector<std::string>& GetDefaultSoundDriverList() {
   static const std::vector<std::string> soundDriverList = {
-      "Pulse", "ALSA-sw", "OSS", "JACK", "Null"};
+      "Pulse", "ALSA-sw", "JACK", "Null"};
   return soundDriverList;
 }
 #else
