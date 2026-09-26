@@ -188,12 +188,6 @@ elseif(LINUX OR BSD)
     set(HAS_XRANDR TRUE)
   endif()
 
-  set(HAS_LIBXTST FALSE)
-  if(WITH_LIBXTST)
-    find_package(Xtst REQUIRED)
-    set(HAS_LIBXTST TRUE)
-  endif()
-
   set(HAS_XINERAMA FALSE)
   if(WITH_XINERAMA)
     find_package(Xinerama REQUIRED)
@@ -251,6 +245,7 @@ elseif(LINUX OR BSD)
   endif()
 
   find_package(udev REQUIRED)
+  find_package(DBUS REQUIRED)
 endif(WIN32) # LINUX OR BSD, APPLE
 
 configure_file("${SM_SRC_DIR}/verstub.cpp.in"
