@@ -82,6 +82,7 @@
 		<Function name='GetTimingDifficulty'/>
 		<Function name='GetTitleSafeH'/>
 		<Function name='GetTitleSafeV'/>
+		<Function name='GetUnixTime'/>
 		<Function name='GetUnlockEntryIndexToCelebrate'/>
 		<Function name='GetUserPref'/>
 		<Function name='GetUserPrefB'/>
