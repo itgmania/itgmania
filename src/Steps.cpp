@@ -190,8 +190,8 @@ bool Steps::GetNoteDataFromSimfile() {
   std::string extension = GetExtension(stepFile);
   MakeLower(extension);  // must do this because the code is expecting lowercase
 
-  if (extension.empty() || extension == "ssc" ||
-      extension == "ats")  // remember cache files.
+  if (extension.empty() || extension == "ssc" || extension == "ext" ||
+      extension == "ats")  // remember cache files and SSC extensions
   {
     SSCLoader loader;
     if (!loader.LoadNoteDataFromSimfile(stepFile, *this)) {

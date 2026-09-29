@@ -600,6 +600,13 @@ void Song::LoadEditsFromSongDir(std::string dir) {
     }
   }
   // Note: If vs.empty() then this loop is skipped entirely (vs.size() == 0)
+
+  vs.clear();
+  GetDirListing(dir + "*.ssc.ext", vs, false, false);
+  for (const std::string& file : vs) {
+    SSCLoader loader;
+    loader.LoadAdditionalChartsFromSimfile(dir + file, *this);
+  }
 }
 
 bool Song::HasAutosaveFile() {
