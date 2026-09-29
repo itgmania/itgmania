@@ -1015,10 +1015,22 @@ bool SSCLoader::LoadNoteDataFromSimfile(
   return false;
 }
 
+// Virtual function header needs to remain compatible with NotesLoaderSM, so we
+// need helpers here to handle additional parameters...
 bool SSCLoader::LoadFromSimfile(
     const std::string& sPath, Song& out, bool bFromCache) {
-  // LOG->Trace( "Song::LoadFromSSCFile(%s)", sPath.c_str() );
+  return LoadFromSimfileInternal(sPath, out, bFromCache, false);
+}
 
+// Used when loading .edit / .ssc.ext
+bool SSCLoader::LoadAdditionalChartsFromSimfile(
+    const std::string& sPath, Song& out) {
+  return LoadFromSimfileInternal(sPath, out, false, true);
+}
+
+bool SSCLoader::LoadFromSimfileInternal(
+    const std::string& sPath, Song& out, bool bFromCache,
+    bool bAdditionalCharts) {
   MsdFile msd;
   if (!msd.ReadFile(sPath, true)) {
     LOG->UserLog(
@@ -1026,8 +1038,11 @@ bool SSCLoader::LoadFromSimfile(
     return false;
   }
 
-  out.m_SongTiming.m_sFile = sPath;  // songs still have their fallback timing.
-  out.m_sSongFileName = sPath;
+  // songs still have their fallback timing.
+  if (!bAdditionalCharts) {
+    out.m_SongTiming.m_sFile = sPath;
+    out.m_sSongFileName = sPath;
+  }
 
   int state = GETTING_SONG_INFO;
   const unsigned values = msd.GetNumValues();
@@ -1047,9 +1062,12 @@ bool SSCLoader::LoadFromSimfile(
         reused_song_info.params = &sParams;
         song_handler_map_t::iterator handler =
             parser_helper.song_tag_handlers.find(sValueName);
-        if (handler != parser_helper.song_tag_handlers.end()) {
+        if (handler != parser_helper.song_tag_handlers.end() &&
+            (!bAdditionalCharts || sValueName == "VERSION")) {
           handler->second(reused_song_info);
-        } else if (Left(sValueName, strlen("BGCHANGES")) == "BGCHANGES") {
+        } else if (
+            !bAdditionalCharts &&
+            Left(sValueName, strlen("BGCHANGES")) == "BGCHANGES") {
           SetBGChanges(reused_song_info);
         }
         // This tag will get us to the next section.
