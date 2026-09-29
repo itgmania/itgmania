@@ -44,6 +44,9 @@ class GameState {
   PlayerNumber masterPlayerNumber;
   /** @brief The TimingData that is used for processing certain functions. */
   TimingData* processedTiming;
+  /** @brief Whether the player has score data on their profile from playing
+   * a song this game. */
+  bool m_bPlayerHasCommittedGameplay[NUM_PLAYERS];
 
  public:
   /** @brief Set up the GameState with initial values. */
@@ -62,9 +65,12 @@ class GameState {
   void UnjoinPlayer(PlayerNumber pn);
   bool JoinInput(PlayerNumber pn);
   bool JoinPlayers();
+  bool CanAcceptProfile(PlayerNumber pn) const;
+  bool LoadProfileOverGuest(PlayerNumber pn, bool bLoadEdits = true);
   void LoadProfiles(bool bLoadEdits = true);
   void SavePlayerProfiles();
   void SavePlayerProfile(PlayerNumber pn);
+  bool HaveProfileToLoad(PlayerNumber pn) const;
   bool HaveProfileToLoad();
   bool HaveProfileToSave();
   void SaveLocalData();

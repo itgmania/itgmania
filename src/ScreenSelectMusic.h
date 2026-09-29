@@ -84,6 +84,9 @@ class ScreenSelectMusic : public ScreenWithMenuElements {
 
   void CheckBackgroundRequests(bool bForce);
   bool DetectCodes(const InputEventPlus& input);
+  bool LoadPlayerProfile(PlayerNumber pn);
+  bool LoadReadyMemoryCards();
+  bool ShouldWaitForMemoryCard() const;
 
   std::vector<Steps*> m_vpSteps;
   std::vector<Trail*> m_vpTrails;

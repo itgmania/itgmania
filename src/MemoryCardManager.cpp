@@ -499,6 +499,7 @@ void MemoryCardManager::CheckStateChanges() {
       }
 
       m_State[p] = state;
+      m_StateChangedAt[p].Touch();
       m_sError[p] = sError;
     }
   }
