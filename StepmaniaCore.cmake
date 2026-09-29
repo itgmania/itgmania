@@ -176,7 +176,7 @@ elseif(LINUX OR BSD)
     set(HAS_GTK3 FALSE)
   endif()
 
-  if(WITH_SDL_WINDOW)
+  if(WITH_SDL2)
     find_package(SDL2)
     set(HAS_SDL ${SDL2_FOUND})
     if(NOT SDL2_FOUND)
