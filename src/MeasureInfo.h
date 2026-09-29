@@ -28,4 +28,6 @@ struct MeasureInfo {
       const NoteData& in, TimingData* timing, MeasureInfo& out);
 };
 
+const float MERCIFUL_BEGINNER_MAX_PEAK_NPS = 2.5f;
+
 #endif

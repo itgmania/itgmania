@@ -11,6 +11,7 @@
 #include "GameState.h"
 #include "LifeMeter.h"
 #include "LuaReference.h"
+#include "MeasureInfo.h"
 #include "MessageManager.h"
 #include "PlayerNumber.h"
 #include "PlayerOptions.h"
@@ -104,12 +105,31 @@ void LifeMeterBar::Load(
       FAIL_M(ssprintf("Invalid DrainType: %i", dtype));
   }
 
-  // Change life difficulty to really easy if merciful beginner on
-  m_bMercifulBeginnerInEffect =
-      GAMESTATE->m_PlayMode == PLAY_MODE_REGULAR &&
-      GAMESTATE->IsPlayerEnabled(pPlayerState) &&
-      GAMESTATE->m_pCurSteps[pn]->GetDifficulty() == Difficulty_Beginner &&
-      PREFSMAN->m_bMercifulBeginner;
+  const Steps* pSteps = GAMESTATE->m_pCurSteps[pn];
+  bool bIsBeginner = pSteps && pSteps->GetDifficulty() == Difficulty_Beginner;
+
+  float fPeakNps = 0.0f;
+  if (bIsBeginner) {
+    // This is a beginner chart, now figure out if the NPS value matches what we
+    // think a beginner chart is. If it's low enough, automatically enable
+    // Merciful lifebar behavior for that player. It's common for WIP charts to
+    // be in the Beginner slot, so we don't want to unintentionally apply
+    // Merciful lifebar to those charts. We also don't want people to manipulate
+    // the lifebar by moving the chart to the Beginner slot, so this also
+    // provides basic protection in that regard.
+    NoteData nd;
+    pSteps->GetNoteData(nd);
+    MeasureInfo measureInfo;
+    MeasureInfo::CalculateMeasureInfo(
+        nd, const_cast<TimingData*>(pSteps->GetTimingData()), measureInfo);
+    fPeakNps = measureInfo.peakNps;
+  }
+
+  m_bMercifulBeginnerInEffect = GAMESTATE->m_PlayMode == PLAY_MODE_REGULAR &&
+                                GAMESTATE->IsPlayerEnabled(pPlayerState) &&
+                                bIsBeginner &&
+                                (PREFSMAN->m_bMercifulBeginner ||
+                                 fPeakNps <= MERCIFUL_BEGINNER_MAX_PEAK_NPS);
 
   AfterLifeChanged();
 }
