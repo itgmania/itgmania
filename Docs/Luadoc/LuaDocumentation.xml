@@ -4667,6 +4667,12 @@ prev_note_name, succeeded = options:NoteSkin("cel")
 	<Function name='GetPreference' return='various' arguments='string sPreference'>
 		Return the value of the preference <code>sPreference</code>.
 	</Function>
+	<Function name='GetPreferenceNames' return='{string}' arguments='' since='ITGmania 1.4.0'>
+		Returns the names of all user-facing preferences in alphabetical order. In other words, any settings exposed via Preferences.ini.
+	</Function>
+	<Function name='GetPreferenceType' return='string' arguments='string sPreference' since='ITGmania 1.4.0'>
+		Returns <code>"Integer"</code>, <code>"Float"</code>, or <code>"Other"</code> (which would be treated as a string).
+	</Function>
 	<Function name='PreferenceExists' return='bool' arguments='string sPreference'>
 		Return true if preference <code>sPreference</code> exists.
 	</Function>
