@@ -167,6 +167,28 @@ static void MoveNop(int& iSel, bool bToSel, const ConfOption* pConfOption) {
   }
 }
 
+static constexpr int PREMIUM_FREE_MIN_MINUTES = 5;
+static constexpr int PREMIUM_FREE_MAX_MINUTES = 60;
+static constexpr int NUM_PREMIUM_FREE_MINUTE_VALUES =
+    PREMIUM_FREE_MAX_MINUTES - PREMIUM_FREE_MIN_MINUTES + 1;
+
+static void PremiumFreeMinuteChoices(std::vector<std::string>& out) {
+  for (int minutes = PREMIUM_FREE_MIN_MINUTES;
+       minutes <= PREMIUM_FREE_MAX_MINUTES; ++minutes) {
+    out.push_back(ToString(minutes));
+  }
+}
+
+static void PremiumFreeMinutes(
+    int& sel, bool toSel, const ConfOption* pConfOption) {
+  int mapping[NUM_PREMIUM_FREE_MINUTE_VALUES];
+  for (int i = 0; i < NUM_PREMIUM_FREE_MINUTE_VALUES; ++i) {
+    mapping[i] = PREMIUM_FREE_MIN_MINUTES + i;
+  }
+
+  MoveMap(sel, pConfOption, toSel, mapping, ARRAYLEN(mapping));
+}
+
 // TODO: Write GenerateValueList() function that can use ints and floats. -aj
 
 static void GameChoices(std::vector<std::string>& out) {
@@ -936,6 +958,9 @@ static void InitializeConfOptions() {
   ADD(ConfOption(
       "Premium", MovePref<Premium>, "Off", "Double for 1 Credit",
       "2 Players for 1 Credit"));
+  ADD(ConfOption(
+      "PremiumFreeMinutes", PremiumFreeMinutes, PremiumFreeMinuteChoices));
+  g_ConfOptions.back().m_sPrefName = "PremiumFreeMinutes";
   ADD(ConfOption(
       "JointPremium", JointPremium, "Off", "2 Players for 1 Credit"));
   g_ConfOptions.back().m_sPrefName = "Premium";
