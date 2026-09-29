@@ -140,12 +140,21 @@ elseif(APPLE)
   list(APPEND SMDATA_ARCH_LOWLEVEL_HPP
               "arch/LowLevelWindow/LowLevelWindow_MacOSX.h")
 else(UNIX)
+
+  if(HAS_SDL)
+    list(APPEND SMDATA_ARCH_LOWLEVEL_SRC
+                "arch/LowLevelWindow/LowLevelWindow_SDL.cpp")
+    list(APPEND SMDATA_ARCH_LOWLEVEL_HPP
+                "arch/LowLevelWindow/LowLevelWindow_SDL.h")
+  endif()
+
   if(X11_FOUND)
     list(APPEND SMDATA_ARCH_LOWLEVEL_SRC
                 "arch/LowLevelWindow/LowLevelWindow_X11.cpp")
     list(APPEND SMDATA_ARCH_LOWLEVEL_HPP
                 "arch/LowLevelWindow/LowLevelWindow_X11.h")
   endif()
+  
 endif(WIN32)
 
 source_group("Arch Specific\\\\Low Level Window"
@@ -292,6 +301,12 @@ elseif(APPLE)
               "arch/InputHandler/InputHandler_MacOSX_HID.h"
               "arch/InputHandler/InputHandler_NSEvent.hpp")
 else() # Unix/Linux
+  if(HAS_SDL)
+    list(APPEND SMDATA_ARCH_INPUT_SRC
+                "arch/InputHandler/InputHandler_SDL.cpp")
+    list(APPEND SMDATA_ARCH_INPUT_HPP
+                "arch/InputHandler/InputHandler_SDL.h")
+  endif()
   if(LINUX)
     list(APPEND SMDATA_ARCH_INPUT_SRC
                 "arch/InputHandler/LinuxInputManager.cpp"
