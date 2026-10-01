@@ -1064,8 +1064,7 @@ bool SMLoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
   return false;
 }
 
-bool SMLoader::LoadFromSimfile(
-    const std::string& sPath, Song& out, bool bFromCache) {
+bool SMLoader::LoadFromSimfile(const std::string& sPath, Song& out) {
   // LOG->Trace( "Song::LoadFromSMFile(%s)", sPath.c_str() );
 
   MsdFile msd;
@@ -1124,7 +1123,7 @@ bool SMLoader::LoadFromSimfile(
   ProcessBPMsAndStops(
       out.m_SongTiming, reused_song_info.BPMChanges, reused_song_info.Stops);
 
-  TidyUpData(out, bFromCache);
+  out.FixupBackgroundChanges();
   return true;
 }
 
@@ -1264,67 +1263,6 @@ void SMLoader::GetApplicableFiles(
     GetDirListing(sPath + std::string("*.ats"), out);
   } else {
     GetDirListing(sPath + std::string("*" + this->GetFileExtension()), out);
-  }
-}
-
-void SMLoader::TidyUpData(Song& song, bool bFromCache) {
-  /*
-   * Hack: if the song has any changes at all (so it won't use a random BGA)
-   * and doesn't end with "-nosongbg-", add a song background BGC.  Remove
-   * "-nosongbg-" if it exists.
-   *
-   * This way, songs that were created earlier, when we added the song BG
-   * at the end by default, will still behave as expected; all new songs will
-   * have to add an explicit song BG tag if they want it.  This is really a
-   * formatting hack only; nothing outside of SMLoader ever sees "-nosongbg-".
-   */
-  std::vector<BackgroundChange>& bg =
-      song.GetBackgroundChanges(BACKGROUND_LAYER_1);
-  if (!bg.empty()) {
-    /* BGChanges have been sorted. On the odd chance that a BGChange exists
-     * with a very high beat, search the whole list. */
-    bool bHasNoSongBgTag = false;
-
-    for (unsigned i = 0; !bHasNoSongBgTag && i < bg.size(); ++i) {
-      if (!CompareNoCase(bg[i].m_def.m_sFile1, NO_SONG_BG_FILE)) {
-        bg.erase(bg.begin() + i);
-        bHasNoSongBgTag = true;
-      }
-    }
-
-    // If there's no -nosongbg- tag, add the song BG.
-    if (!bHasNoSongBgTag) {
-      do {
-        /* If we're loading cache, -nosongbg- should always be in there. We
-         * must not call IsAFile(song.GetBackgroundPath()) when loading cache.
-         */
-        if (bFromCache) {
-          break;
-        }
-
-        float lastBeat = song.GetLastBeat();
-        /* If BGChanges already exist after the last beat, don't add the
-         * background in the middle. */
-        if (!bg.empty() && bg.back().m_fStartBeat - 0.0001f >= lastBeat) {
-          break;
-        }
-
-        // If the last BGA is already the song BGA, don't add a duplicate.
-        if (!bg.empty() &&
-            !CompareNoCase(bg.back().m_def.m_sFile1, song.m_sBackgroundFile)) {
-          break;
-        }
-
-        if (!IsAFile(song.GetBackgroundPath())) {
-          break;
-        }
-
-        bg.push_back(BackgroundChange(lastBeat, song.m_sBackgroundFile));
-      } while (0);
-    }
-  }
-  if (bFromCache) {
-    song.TidyUpData(bFromCache);
   }
 }
 

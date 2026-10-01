@@ -104,14 +104,16 @@ list(APPEND SM_DATA_NOTELOAD_SRC
             "NotesLoaderDWI.cpp"
             "NotesLoaderSM.cpp"
             "NotesLoaderSMA.cpp"
-            "NotesLoaderSSC.cpp")
+            "NotesLoaderSSC.cpp"
+            "SongCacheBinary.cpp")
 
 list(APPEND SM_DATA_NOTELOAD_HPP
             "NotesLoader.h"
             "NotesLoaderDWI.h"
             "NotesLoaderSM.h"
             "NotesLoaderSMA.h"
-            "NotesLoaderSSC.h")
+            "NotesLoaderSSC.h"
+            "SongCacheBinary.h")
 
 source_group("Data Structures\\\\Notes Loaders"
              FILES

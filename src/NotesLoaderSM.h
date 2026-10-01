@@ -39,13 +39,6 @@ struct SMLoader {
    */
   virtual bool LoadFromDir(
       const std::string& sPath, Song& out, bool load_autosave = false);
-  /**
-   * @brief Perform some cleanup on the loaded song.
-   * @param song a reference to the song that may need cleaning up.
-   * @param bFromCache a flag to determine if this song is loaded from a cache
-   * file.
-   */
-  virtual void TidyUpData(Song& song, bool bFromCache);
 
   /**
    * @brief Retrieve the relevant notedata from the simfile.
@@ -57,12 +50,9 @@ struct SMLoader {
    * @brief Attempt to load the specified sm file.
    * @param sPath a const reference to the path on the hard drive to check.
    * @param out a reference to the Song that will retrieve the song information.
-   * @param bFromCache a check to see if we are getting certain information from
-   * the cache file.
    * @return its success or failure.
    */
-  virtual bool LoadFromSimfile(
-      const std::string& sPath, Song& out, bool bFromCache = false);
+  virtual bool LoadFromSimfile(const std::string& sPath, Song& out);
   /**
    * @brief Retrieve the list of .sm files.
    * @param sPath a const reference to the path on the hard drive to check.

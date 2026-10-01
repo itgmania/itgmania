@@ -13,11 +13,10 @@ namespace NotesWriterSSC {
  * @param sPath the path to write the file.
  * @param out the Song to be written out.
  * @param vpStepsToSave the Steps to save.
- * @param bSavingCache a flag to see if we're saving certain cache data.
  * @return its success or failure. */
 bool Write(
     std::string sPath, const Song& out,
-    const std::vector<Steps*>& vpStepsToSave, bool bSavingCache);
+    const std::vector<Steps*>& vpStepsToSave);
 /**
  * @brief Get some contents about the edit file first.
  * @param pSong the Song in question.

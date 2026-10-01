@@ -46,12 +46,9 @@ struct SSCLoader : public SMLoader {
    * @brief Attempt to load the specified ssc file.
    * @param sPath a const reference to the path on the hard drive to check.
    * @param out a reference to the Song that will retrieve the song information.
-   * @param bFromCache a check to see if we are getting certain information from
-   * the cache file.
    * @return its success or failure.
    */
-  virtual bool LoadFromSimfile(
-      const std::string& sPath, Song& out, bool bFromCache = false);
+  virtual bool LoadFromSimfile(const std::string& sPath, Song& out);
 
   /**
    * @brief Attempt to load an edit from the hard drive.
@@ -80,11 +77,10 @@ struct SSCLoader : public SMLoader {
 
   /**
    * @brief Retrieve the specific NoteData from the file.
-   * @param cachePath the path to the cache file.
+   * @param path the path to the simfile.
    * @param out the Steps to receive just the particular notedata.
    * @return true if successful, false otherwise. */
-  virtual bool LoadNoteDataFromSimfile(
-      const std::string& cachePath, Steps& out);
+  virtual bool LoadNoteDataFromSimfile(const std::string& path, Steps& out);
 
   void ProcessBPMs(TimingData&, const std::string);
   void ProcessStops(TimingData&, const std::string);
