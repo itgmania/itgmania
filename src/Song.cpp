@@ -448,7 +448,7 @@ bool Song::LoadFromSongDir(
 
   // Load the cached Images, if it's not loaded already.
   if (PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_PRELOAD) {
-    for (std::string Image : ImageDir) {
+    for (const std::string& Image : ImageDir) {
       IMAGECACHE->LoadImage(Image, GetCacheFile(Image));
     }
   }
@@ -724,7 +724,7 @@ void Song::TidyUpData(
     m_bHasBanner = HasBanner();
     m_bHasBackground = HasBackground();
 
-    for (std::string Image : ImageDir) {
+    for (const std::string& Image : ImageDir) {
       IMAGECACHE->LoadImage(Image, GetCacheFile(Image));
     }
 
@@ -1617,68 +1617,25 @@ std::vector<std::string> Song::GetFGChanges1ToVectorString() const {
 
 // We want to return a filename, We use this function for that.
 std::string Song::GetCacheFile(std::string sType) {
-  // We put the Predefined images into a map.
-  std::map<std::string, std::string> PreDefs;
-  PreDefs["Banner"] = GetBannerPath();
-  PreDefs["Background"] = GetBackgroundPath();
-  PreDefs["CDTitle"] = GetCDTitlePath();
-  PreDefs["Jacket"] = GetJacketPath();
-  PreDefs["CDImage"] = GetCDImagePath();
-  PreDefs["Disc"] = GetDiscPath();
-
-  // Check if Predefined images exist, And return function if they do.
-  if (PreDefs[sType.c_str()].c_str()) {
-    return PreDefs[sType.c_str()];
+  if (sType == "Banner") {
+    return GetBannerPath();
+  }
+  if (sType == "Background") {
+    return GetBackgroundPath();
+  }
+  if (sType == "CDTitle") {
+    return GetCDTitlePath();
+  }
+  if (sType == "Jacket") {
+    return GetJacketPath();
+  }
+  if (sType == "CDImage") {
+    return GetCDImagePath();
+  }
+  if (sType == "Disc") {
+    return GetDiscPath();
   }
 
-  // Get all image files and put them into a vector.
-  std::vector<std::string> song_dir_listing;
-  FILEMAN->GetDirListing(m_sSongDir + "*", song_dir_listing, false, false);
-  std::vector<std::string> image_list;
-  std::vector<std::string> fill_exts =
-      ActorUtil::GetTypeExtensionList(FT_Bitmap);
-  for (std::string Image : song_dir_listing) {
-    std::string FileExt = GetExtension(Image);
-    transform(FileExt.begin(), FileExt.end(), FileExt.begin(), ::tolower);
-    for (std::string FindExt : fill_exts) {
-      if (FileExt == FindExt) {
-        image_list.push_back(Image);
-      }
-    }
-  }
-
-  // Create a map that contains all the filenames to search for.
-  std::map<std::string, std::map<int, std::string>> PreSets;
-  PreSets["Banner"][1] = "bn";
-  PreSets["Banner"][2] = "banner";
-  PreSets["Background"][1] = "bg";
-  PreSets["Background"][2] = "background";
-  PreSets["CDTitle"][1] = "cdtitle";
-  PreSets["Jacket"][1] = "jk_";
-  PreSets["Jacket"][2] = "jacket";
-  PreSets["Jacket"][3] = "albumart";
-  PreSets["CDImage"][1] = "-cd";
-  PreSets["Disc"][1] = " disc";
-  PreSets["Disc"][2] = " title";
-
-  for (std::string Image : image_list) {
-    // We want to make it lower case.
-    transform(Image.begin(), Image.end(), Image.begin(), ::tolower);
-    for (std::pair<const int, std::string> PreSet : PreSets[sType.c_str()]) {
-      // Search for image using PreSets.
-      size_t Found = Image.find(PreSet.second.c_str());
-      if (Found != std::string::npos) {
-        return GetSongAssetPath(Image, m_sSongDir);
-      }
-    }
-    // Search for the image directly if it doesnt exist in PreSets,
-    // Or incase we define our own stuff.
-    size_t Found = Image.find(sType.c_str());
-    if (Found != std::string::npos) {
-      return GetSongAssetPath(Image, m_sSongDir);
-    }
-  }
-  // Return empty if nothing found.
   return "";
 }
 
@@ -1700,13 +1657,14 @@ std::string Song::GetSongAssetPath(
   }
 
   std::string sRelPath = sSongPath + sPath;
-  if (DoesFileExist(sRelPath)) {
-    return sRelPath;
-  }
 
   /* If there's no path in the file, the file is in the same directory as the
    * song. (This is the preferred configuration.) */
   if (sPath.find('/') == std::string::npos) {
+    return sRelPath;
+  }
+
+  if (DoesFileExist(sRelPath)) {
     return sRelPath;
   }
 
