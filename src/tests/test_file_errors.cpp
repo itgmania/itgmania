@@ -374,6 +374,47 @@ void MsdTest() {
           test.GetError().c_str());
     }
   } while (false);
+
+  auto flatten = [](const MsdFile& m) {
+    std::string out;
+    for (unsigned i = 0; i < m.GetNumValues(); ++i) {
+      if (i != 0) {
+        out += ";";
+      }
+      for (unsigned p = 0; p < m.GetNumParams(i); ++p) {
+        if (p != 0) {
+          out += "|";
+        }
+        out += m.GetValue(i)[p];
+      }
+    }
+    return out;
+  };
+#define MSD_CHECK(name, input, unescape, expect)                          \
+  do {                                                                    \
+    MsdFile m;                                                            \
+    m.ReadFromString(input, unescape);                                    \
+    std::string got = flatten(m);                                         \
+    if (got != expect) {                                                  \
+      Fail(                                                               \
+          "MSD %s: expected \"%s\", got \"%s\"", name, expect,            \
+          got.c_str());                                                   \
+    }                                                                     \
+  } while (false)
+
+  MSD_CHECK("basic", "#FOO;", false, "FOO");
+  MSD_CHECK("three params", "#FOO:BAR:BAZ;", false, "FOO|BAR|BAZ");
+  MSD_CHECK("empty param", "#FOO:;", false, "FOO|");
+  MSD_CHECK("newline in param", "#ATTACKS:\n;", false, "ATTACKS|\n");
+  MSD_CHECK("comment", "// c\n#FOO;", false, "FOO");
+  MSD_CHECK("escaped colon keep", "#FOO\\:BAR;", false, "FOO\\:BAR");
+  MSD_CHECK("escaped colon unesc", "#FOO\\:BAR;", true, "FOO:BAR");
+  MSD_CHECK("escaped hash keep", "#FOO\\#BAR;", false, "FOO\\#BAR");
+  MSD_CHECK("missing semicolon", "#A\n#B;", false, "A;B");
+  MSD_CHECK("hash not first", "#A:#B;", false, "A|#B");
+  MSD_CHECK("unterminated eof", "#FOO", false, "FOO");
+  MSD_CHECK("empty input", "", false, "");
+#undef MSD_CHECK
 }
 
 #include "CryptManager.h"
