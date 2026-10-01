@@ -25,11 +25,9 @@ class MsdFile {
      * @param i the index.
      * @return the proper parameter.
      */
-    std::string operator[](unsigned i) const {
-      if (i >= params.size()) {
-        return std::string();
-      }
-      return params[i];
+    const std::string& operator[](unsigned i) const {
+      static const std::string empty;
+      return i < params.size() ? params[i] : empty;
     }
   };
 
@@ -100,10 +98,9 @@ class MsdFile {
   void ReadBuf(const char* buf, int len, bool bUnescape);
   /**
    * @brief Add a new parameter.
-   * @param buf the new parameter.
-   * @param len the length of the new parameter.
+   * @param s the new parameter.
    */
-  void AddParam(const char* buf, int len);
+  void AddParam(const std::string& s);
   /**
    * @brief Add a new value.
    */
