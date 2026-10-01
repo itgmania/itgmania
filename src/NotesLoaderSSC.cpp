@@ -1,6 +1,8 @@
 #include "NotesLoaderSSC.h"
 
+#include <cmath>
 #include <cstddef>
+#include <cstdlib>
 #include <cstring>
 #include <map>
 #include <string>
@@ -384,6 +386,23 @@ void SetNoteAnnotations(StepsTagInfo& info) {
   info.ssc_format = true;
 }
 
+template <typename T, typename Convert>
+static std::vector<T> ParseMeasureValues(
+    const std::string& sValue, Convert convert) {
+  std::vector<T> values;
+  for (std::size_t start = 0; start < sValue.size();) {
+    std::size_t end = sValue.find(',', start);
+    if (end == std::string::npos) {
+      end = sValue.size();
+    }
+    if (end > start) {
+      values.push_back(convert(sValue.c_str() + start));
+    }
+    start = end + 1;
+  }
+  return values;
+}
+
 void SetNpsPerMeasure(StepsTagInfo& info) {
   if (info.from_cache || info.for_load_edit) {
     std::vector<std::string> valuesPerPlayer;
@@ -399,14 +418,12 @@ void SetNpsPerMeasure(StepsTagInfo& info) {
     std::vector<std::vector<float>> npsPerMeasures;
     for (std::size_t pn = 0;
          pn < valuesPerPlayer.size() && pn < NUM_PlayerNumber; pn++) {
-      std::vector<std::string> values;
-      split(valuesPerPlayer[pn], ",", values, true);
-      std::vector<float> npsPerMeasure;
-      npsPerMeasure.resize(values.size());
-      for (std::size_t i = 0; i < values.size(); i++) {
-        npsPerMeasure[i] = StringToFloat(values[i]);
-      }
-      npsPerMeasures.push_back(npsPerMeasure);
+      npsPerMeasures.push_back(
+          ParseMeasureValues<float>(
+              valuesPerPlayer[pn], [](const char* pValue) {
+                const float fValue = std::strtof(pValue, nullptr);
+                return std::isfinite(fValue) ? fValue : 0.0f;
+              }));
     }
     info.steps->SetNpsPerMeasure(npsPerMeasures);
   } else {
@@ -430,14 +447,10 @@ void SetNotesPerMeasure(StepsTagInfo& info) {
     std::vector<std::vector<int>> notesPerMeasures;
     for (std::size_t pn = 0;
          pn < valuesPerPlayer.size() && pn < NUM_PlayerNumber; pn++) {
-      std::vector<std::string> values;
-      split(valuesPerPlayer[pn], ",", values, true);
-      std::vector<int> notesPerMeasure;
-      notesPerMeasure.resize(values.size());
-      for (std::size_t i = 0; i < values.size(); i++) {
-        notesPerMeasure[i] = StringToInt(values[i]);
-      }
-      notesPerMeasures.push_back(notesPerMeasure);
+      notesPerMeasures.push_back(
+          ParseMeasureValues<int>(valuesPerPlayer[pn], [](const char* pValue) {
+            return static_cast<int>(std::strtol(pValue, nullptr, 10));
+          }));
     }
     info.steps->SetNotesPerMeasure(notesPerMeasures);
   } else {
