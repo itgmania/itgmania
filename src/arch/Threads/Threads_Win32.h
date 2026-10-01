@@ -38,7 +38,11 @@ class MutexImpl_Win32 : public MutexImpl {
   void Unlock();
 
  private:
-  HANDLE mutex;
+  static constexpr DWORD kSpinCount =
+      4000;  // Windows heap manager default. According to MSDN, the default is
+             // "about 4000". Thanks for the clear answer, Microsoft.
+             // https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setcriticalsectionspincount
+  CRITICAL_SECTION mutex;
 };
 
 class EventImpl_Win32 : public EventImpl {
@@ -53,11 +57,7 @@ class EventImpl_Win32 : public EventImpl {
 
  private:
   MutexImpl_Win32* m_pParent;
-
-  int m_iNumWaiting;
-  CRITICAL_SECTION m_iNumWaitingLock;
-  HANDLE m_WakeupSema;
-  HANDLE m_WaitersDone;
+  CONDITION_VARIABLE m_ThreadConditionVariable;
 };
 
 class SemaImpl_Win32 : public SemaImpl {
