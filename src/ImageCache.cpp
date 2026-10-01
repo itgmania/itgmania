@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "CommonMetrics.h"
@@ -75,7 +76,8 @@ static const int IMAGE_CACHE_VERSION = 1;
 
 ImageCache* IMAGECACHE;  // global and accessible from anywhere in our program
 
-static std::map<std::string, RageSurface*> g_ImagePathToImage;
+using ImageCacheKey = std::pair<std::string, std::string>;
+static std::map<ImageCacheKey, RageSurface*> g_ImagePathToImage;
 static int g_iDemandRefcount = 0;
 
 /* Synchronizes access to g_ImagePathToImage and ImageCache::ImageData. */
@@ -102,8 +104,9 @@ void ImageCache::Demand(std::string sImageDir) {
   LockMut(g_ImageCacheMutex);
   FOREACH_CONST_Child(&ImageData, p) {
     std::string sImagePath = p->GetName();
+    const ImageCacheKey key = std::make_pair(sImageDir, sImagePath);
 
-    if (g_ImagePathToImage.find(sImagePath) != g_ImagePathToImage.end()) {
+    if (g_ImagePathToImage.find(key) != g_ImagePathToImage.end()) {
       continue; /* already loaded */
     }
 
@@ -113,7 +116,7 @@ void ImageCache::Demand(std::string sImageDir) {
       continue; /* doesn't exist */
     }
 
-    g_ImagePathToImage[sImagePath] = pImage;
+    g_ImagePathToImage[key] = pImage;
   }
 }
 
@@ -146,11 +149,12 @@ void ImageCache::LoadImage(std::string sImageDir, std::string sImagePath) {
 
   /* Load it. */
   const std::string sCachePath = GetImageCachePath(sImageDir, sImagePath);
+  const ImageCacheKey key = std::make_pair(sImageDir, sImagePath);
 
   for (int tries = 0; tries < 2; ++tries) {
     {
       LockMut(g_ImageCacheMutex);
-      if (g_ImagePathToImage.find(sImagePath) != g_ImagePathToImage.end()) {
+      if (g_ImagePathToImage.find(key) != g_ImagePathToImage.end()) {
         return; /* already loaded */
       }
     }
@@ -178,11 +182,11 @@ void ImageCache::LoadImage(std::string sImageDir, std::string sImagePath) {
 
     {
       LockMut(g_ImageCacheMutex);
-      if (g_ImagePathToImage.find(sImagePath) != g_ImagePathToImage.end()) {
+      if (g_ImagePathToImage.find(key) != g_ImagePathToImage.end()) {
         /* already loaded */
         delete pImage;
       } else {
-        g_ImagePathToImage[sImagePath] = pImage;
+        g_ImagePathToImage[key] = pImage;
       }
     }
   }
@@ -352,9 +356,10 @@ RageTextureID ImageCache::LoadCachedImage(
   if (sImageDir == "Banner") {
     ID = Sprite::SongBannerTexture(ID);
   }
+  const ImageCacheKey key = std::make_pair(sImageDir, sImagePath);
 
   /* It's not in a texture.  Do we have it loaded? */
-  if (g_ImagePathToImage.find(sImagePath) == g_ImagePathToImage.end()) {
+  if (g_ImagePathToImage.find(key) == g_ImagePathToImage.end()) {
     /* Oops, the image is missing.  Warn and continue. */
     if (PREFSMAN->m_ImageCache != IMGCACHE_OFF) {
       LOG->Warn("Image cache for '%s' wasn't loaded", sImagePath.c_str());
@@ -365,7 +370,7 @@ RageTextureID ImageCache::LoadCachedImage(
   /* This is a reference to a pointer.  ImageTexture's ctor may change it
    * when converting; this way, the conversion will end up in the map so we
    * only have to convert once. */
-  RageSurface*& pImage = g_ImagePathToImage[sImagePath];
+  RageSurface*& pImage = g_ImagePathToImage[key];
   ASSERT(pImage != nullptr);
 
   int iSourceWidth = 0, iSourceHeight = 0;
@@ -497,21 +502,22 @@ void ImageCache::CacheImageInternal(
   }
 
   const std::string sCachePath = GetImageCachePath(sImageDir, sImagePath);
+  const ImageCacheKey key = std::make_pair(sImageDir, sImagePath);
   RageSurfaceUtils::SaveSurface(pImage, sCachePath);
 
   {
     LockMut(g_ImageCacheMutex);
 
     /* If an old image is loaded, free it. */
-    if (g_ImagePathToImage.find(sImagePath) != g_ImagePathToImage.end()) {
-      RageSurface* oldimg = g_ImagePathToImage[sImagePath];
+    if (g_ImagePathToImage.find(key) != g_ImagePathToImage.end()) {
+      RageSurface* oldimg = g_ImagePathToImage[key];
       delete oldimg;
-      g_ImagePathToImage.erase(sImagePath);
+      g_ImagePathToImage.erase(key);
     }
 
     if (PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_PRELOAD) {
       /* Keep it; we're just going to load it anyway. */
-      g_ImagePathToImage[sImagePath] = pImage;
+      g_ImagePathToImage[key] = pImage;
     } else {
       delete pImage;
     }
