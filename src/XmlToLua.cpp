@@ -675,7 +675,6 @@ void convert_xml_file(const std::string& fname, const std::string& dirname) {
 int LuaFunc_convert_xml_bgs(lua_State* L);
 int LuaFunc_convert_xml_bgs(lua_State* L) {
   std::string dir = SArg(1);
-  std::vector<std::string> xml_list;
   convert_xmls_in_dir(dir + "/");
   return 0;
 }

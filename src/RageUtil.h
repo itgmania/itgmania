@@ -136,10 +136,6 @@ template <typename Container, typename Predicate>
 inline void RemoveIf(Container& c, Predicate p) {
   c.erase(remove_if(c.begin(), c.end(), p), c.end());
 }
-template <typename Container, typename Value>
-inline void RemoveIfEqual(Container& c, const Value& v) {
-  c.erase(remove(c.begin(), c.end(), v), c.end());
-}
 
 /* Safely add an integer to an enum.
  *
@@ -162,13 +158,6 @@ static inline void enum_add(T& val, int iAmt) {
 template <typename T>
 static inline T enum_add2(T val, int iAmt) {
   return static_cast<T>(val + iAmt);
-}
-
-template <typename T>
-static inline T enum_cycle(T val, int iMax, int iAmt = 1) {
-  int iVal = val + iAmt;
-  iVal %= iMax;
-  return static_cast<T>(iVal);
 }
 
 /* return f rounded to the nearest multiple of fRoundInterval */

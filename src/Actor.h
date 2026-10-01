@@ -314,7 +314,6 @@ class Actor : public MessageSubscriber {
    * @brief Retrieve the Actor's name.
    * @return the Actor's name. */
   const std::string& GetName() const { return m_sName; }
-  const std::string& GetAlias() { return alias_; }
 
   // IsAlias checks first if the Actor's alias isn't empty, and if it isn't,
   // does a simple compare against the provided name.
@@ -403,7 +402,6 @@ class Actor : public MessageSubscriber {
   void SetBaseRotationX(float rot) { m_baseRotation.x = rot; }
   void SetBaseRotationY(float rot) { m_baseRotation.y = rot; }
   void SetBaseRotationZ(float rot) { m_baseRotation.z = rot; }
-  void SetBaseRotation(const RageVector3& rot) { m_baseRotation = rot; }
   virtual void SetBaseAlpha(float fAlpha) { m_fBaseAlpha = fAlpha; }
   void SetInternalDiffuse(const RageColor& c) { m_internalDiffuse = c; }
   void SetInternalGlow(const RageColor& c) { m_internalGlow = c; }
@@ -470,14 +468,7 @@ class Actor : public MessageSubscriber {
   void AddRotationR(float rot);
 
   void SetSkewX(float fAmount) { DestTweenState().fSkewX = fAmount; }
-  float GetSkewX(float /* fAmount */) const { return DestTweenState().fSkewX; }
   void SetSkewY(float fAmount) { DestTweenState().fSkewY = fAmount; }
-  float GetSkewY(float /* fAmount */) const { return DestTweenState().fSkewY; }
-
-  float GetCropLeft() const { return DestTweenState().crop.left; }
-  float GetCropTop() const { return DestTweenState().crop.top; }
-  float GetCropRight() const { return DestTweenState().crop.right; }
-  float GetCropBottom() const { return DestTweenState().crop.bottom; }
   void SetCropLeft(float percent) { DestTweenState().crop.left = percent; }
   void SetCropTop(float percent) { DestTweenState().crop.top = percent; }
   void SetCropRight(float percent) { DestTweenState().crop.right = percent; }
@@ -656,7 +647,6 @@ class Actor : public MessageSubscriber {
   virtual void EnableAnimation(bool b) {
     m_bIsAnimating = b;
   }  // Sprite needs to overload this
-  void StartAnimating() { this->EnableAnimation(true); }
   void StopAnimating() { this->EnableAnimation(false); }
 
   // render states

@@ -51,8 +51,6 @@ class NoteSkinManager {
   void SetCurrentNoteSkin(const std::string& sNoteSkin) {
     m_sCurrentNoteSkin = sNoteSkin;
   }
-  void SetLastSeenColor(const std::string& sColor) { sLastColor = sColor; }
-  const std::string& GetLastSeenColor() const { return sLastColor; }
   const std::string& GetCurrentNoteSkin() { return m_sCurrentNoteSkin; }
   void SetPlayerNumber(PlayerNumber pn) { m_PlayerNumber = pn; }
   void SetGameController(GameController gc) { m_GameController = gc; }
@@ -94,7 +92,6 @@ class NoteSkinManager {
       const std::string& sNoteSkinName, NoteSkinData& data_out);
   std::string m_sCurrentNoteSkin;
   const Game* m_pCurGame;
-  std::string sLastColor;
 
   // xxx: is this the best way to implement this? -freem
   PlayerNumber m_PlayerNumber;

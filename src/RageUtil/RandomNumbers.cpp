@@ -15,9 +15,6 @@ RandomGen g_RandomNumberGenerator;
 namespace {
 MersenneTwister g_LuaPRNG;
 
-/* To map from [0..2^31-1] to [0..1), we divide by 2^31. */
-const double DIVISOR = std::pow(double(2), double(31));
-
 static int Seed(lua_State* L) {
   g_LuaPRNG = MersenneTwister(IArg(1));
   return 0;

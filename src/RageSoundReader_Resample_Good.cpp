@@ -108,25 +108,6 @@ void NormalizeVector(float* pBuf, int iSize) {
 int GCD(int i1, int i2) { return std::gcd(i1, i2); }
 }  // namespace
 
-#if 0
-void RunFIRFilter( float *pIn, float *pOut, int iInputValues, float *pFIR, int iWinSize )
-{
-	for( int i = 0; i < iInputValues; ++i )
-	{
-		float fSum = 0;
-		const float *pInData = &pIn[i];
-		for( int j = 0; j < iWinSize; ++j )
-		{
-			float in = pInData[j];
-			fSum += in*pFIR[j];
-			printf( "%i: in %f * %f, += %f\n", j, pInData[j], pFIR[j], in*pFIR[j] );
-		}
-
-		pOut[i] = fSum;
-	}
-}
-#endif
-
 template <typename T>
 class AlignedBuffer {
  public:

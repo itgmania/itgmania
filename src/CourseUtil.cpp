@@ -136,33 +136,6 @@ void CourseUtil::SortCoursePointerArrayByTotalDifficulty(
       CompareCoursePointersByTotalDifficulty);
 }
 
-// this code isn't ready yet!!
-#if 0
-std::string GetSectionNameFromCourseAndSort( const Course *pCourse, SortOrder so )
-{
-	if( pCourse == nullptr )
-		return std::string();
-	// more code here
-}
-
-void SortCoursePointerArrayBySectionName( std::vector<Course*> &vpCoursesInOut, SortOrder so )
-{
-	std::string sOther = SORT_OTHER.GetValue();
-	for(unsigned i = 0; i < vpCoursesInOut.size(); ++i)
-	{
-		std::string val = GetSectionNameFromCourseAndSort( vpCoursesInOut[i], so );
-
-		/* Make sure 0-9 comes first and OTHER comes last. */
-		if( val == "0-9" )			val = "0";
-		else if( val == sOther )    val = "2";
-		else						val = "1" + MakeSortString(val);
-
-		//g_mapSongSortVal[vpSongsInOut[i]] = val;
-	}
-}
-#endif
-// ok real code begins again
-
 static bool CompareCoursePointersByType(
     const Course* pCourse1, const Course* pCourse2) {
   return pCourse1->GetPlayMode() < pCourse2->GetPlayMode();

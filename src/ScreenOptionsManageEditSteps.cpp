@@ -158,7 +158,6 @@ void ScreenOptionsManageEditSteps::HandleScreenMessage(const ScreenMessage SM) {
       Steps* pSteps = GAMESTATE->m_pCurSteps[PLAYER_1];
       Song* pSong = pSteps->m_pSong;
 
-      std::string sOldDescription = pSteps->GetDescription();
       pSteps->SetDescription(ScreenTextEntry::s_sLastAnswer);
 
       std::string sError;

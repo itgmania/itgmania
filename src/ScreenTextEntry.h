@@ -63,12 +63,6 @@ class ScreenTextEntry : public ScreenWithMenuElements {
           const std::string& sAnswerBeforeChar, std::string& sAppend) = nullptr,
       std::string (*FormatAnswerForDisplay)(const std::string& sAnswer) =
           nullptr);
-  static void Password(
-      ScreenMessage smSendOnPop, const std::string& sQuestion,
-      void (*OnOK)(const std::string& sPassword) = nullptr,
-      void (*OnCancel)() = nullptr) {
-    TextEntry(smSendOnPop, sQuestion, "", 255, nullptr, OnOK, OnCancel, true);
-  }
 
   struct TextEntrySettings {
     TextEntrySettings()

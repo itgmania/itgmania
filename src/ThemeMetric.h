@@ -88,11 +88,6 @@ class ThemeMetric : public IThemeMetric {
     m_sName = sName;
     Read();
   }
-
-  void ChangeGroup(const std::string& sGroup) {
-    m_sGroup = sGroup;
-    Read();
-  }
   /**
    * @brief Actually read the metric and get its data. */
   void Read() {

@@ -467,75 +467,6 @@ void Checkpoints::GetLogs(char* pBuf, int iSize, const char* delim) {
  * owns.
  */
 
-#if 0
-static const int MAX_MUTEXES = 256;
-
-/* g_MutexesBefore[n] is a list of mutex IDs which must be locked before n (if at all).
- * The array g_MutexesBefore[n] is locked for writing by locking mutex n, so lock that
- * mutex *before* calling MarkLockedMutex(). */
-bool g_MutexesBefore[MAX_MUTEXES][MAX_MUTEXES];
-
-void RageMutex::MarkLockedMutex()
-{
-	/* This only makes locking take about 25% longer, and we generally don't lock in
-	 * inner loops, so this is enabled by default for now. */
-//	if( !g_bEnableMutexOrderChecking )
-//		return;
-
-	const int ID = this->m_UniqueID;
-	ASSERT( ID < MAX_MUTEXES );
-
-	/* This is a queue of all mutexes that must be locked before ID, if at all. */
-	std::vector<const RageMutex *> before;
-
-	/* Iterate over all locked mutexes that are locked by this thread. */
-	for( unsigned i = 0; i < g_MutexList->size(); ++i )
-	{
-		const RageMutex *mutex = (*g_MutexList)[i];
-
-		if( mutex->m_UniqueID == this->m_UniqueID )
-			continue;
-
-		if( !mutex->IsLockedByThisThread() )
-			continue;
-
-		/* mutex must be locked before this.  If we've previously marked the opposite,
-		 * then we have an inconsistent lock order. */
-		if( g_MutexesBefore[mutex->m_UniqueID][this->m_UniqueID] )
-		{
-			LOG->Warn( "Mutex lock inconsistency: mutex \"%s\" must be locked before \"%s\"",
-				this->GetName().c_str(), mutex->GetName().c_str() );
-
-			break;
-		}
-
-		/* Optimization: don't add it to the queue if it's already been done. */
-		if( !g_MutexesBefore[this->m_UniqueID][mutex->m_UniqueID] )
-			before.push_back( mutex );
-	}
-
-	while( before.size() )
-	{
-		const RageMutex *mutex = before.back();
-		before.pop_back();
-
-		g_MutexesBefore[this->m_UniqueID][mutex->m_UniqueID] = 1;
-
-		/* All IDs which must be locked before mutex must also be locked before
-		 * this.  That is, if A < mutex, because mutex < this, mark A < this. */
-		for( i = 0; i < g_MutexList->size(); ++i )
-		{
-			const RageMutex *mutex2 = (*g_MutexList)[i];
-			if( g_MutexesBefore[mutex->m_UniqueID][mutex2->m_UniqueID] )
-				before.push_back( mutex2 );
-		}
-	}
-}
-
-/* XXX: How can g_FreeMutexIDs and g_MutexList be threadsafed? */
-static std::set<int> *g_FreeMutexIDs = nullptr;
-#endif
-
 RageMutex::RageMutex(const std::string& name)
     : m_pMutex(MakeMutex(this)),
       m_sName(name),
@@ -635,10 +566,6 @@ void RageMutex::Lock() {
   }
 
   m_LockedBy = iThisThreadId;
-
-  /* This has internal thread safety issues itself (eg. one thread may delete
-   * a mutex while another locks one); disable for now. */
-  //	MarkLockedMutex();
 }
 
 bool RageMutex::TryLock() {
