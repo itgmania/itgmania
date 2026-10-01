@@ -43,15 +43,13 @@ struct StepsTagInfo {
   const std::string& path;
   bool has_own_timing;
   bool ssc_format;
-  bool from_cache;
   bool for_load_edit;
-  StepsTagInfo(SSCLoader* l, Song* s, const std::string& p, bool fc)
+  StepsTagInfo(SSCLoader* l, Song* s, const std::string& p)
       : loader(l),
         song(s),
         path(p),
         has_own_timing(false),
         ssc_format(false),
-        from_cache(fc),
         for_load_edit(false) {}
 };
 struct SongTagInfo {
@@ -59,9 +57,8 @@ struct SongTagInfo {
   Song* song;
   const MsdFile::value_t* params;
   const std::string& path;
-  bool from_cache;
-  SongTagInfo(SSCLoader* l, Song* s, const std::string& p, bool fc)
-      : loader(l), song(s), path(p), from_cache(fc) {}
+  SongTagInfo(SSCLoader* l, Song* s, const std::string& p)
+      : loader(l), song(s), path(p) {}
 };
 // LoadNoteDataFromSimfile uses LoadNoteDataTagIDs because its parts operate
 // on state variables internal to the function.
@@ -139,11 +136,6 @@ void SetPreview(SongTagInfo& info) {
 }
 void SetInstrumentTrack(SongTagInfo& info) {
   info.loader->ProcessInstrumentTracks(*info.song, (*info.params)[1]);
-}
-void SetMusicLength(SongTagInfo& info) {
-  if (info.from_cache) {
-    info.song->m_fMusicLengthSeconds = StringToFloat((*info.params)[1]);
-  }
 }
 void SetLastSecondHint(SongTagInfo& info) {
   info.song->SetSpecifiedLastSecond(StringToFloat((*info.params)[1]));
@@ -259,31 +251,6 @@ void SetSongScrolls(SongTagInfo& info) {
 void SetSongFakes(SongTagInfo& info) {
   info.loader->ProcessFakes(info.song->m_SongTiming, (*info.params)[1]);
 }
-void SetFirstSecond(SongTagInfo& info) {
-  if (info.from_cache) {
-    info.song->SetFirstSecondNoOffset(StringToFloat((*info.params)[1]));
-  }
-}
-void SetLastSecond(SongTagInfo& info) {
-  if (info.from_cache) {
-    info.song->SetLastSecondNoOffset(StringToFloat((*info.params)[1]));
-  }
-}
-void SetSongFilename(SongTagInfo& info) {
-  if (info.from_cache) {
-    info.song->m_sSongFileName = (*info.params)[1];
-  }
-}
-void SetHasMusic(SongTagInfo& info) {
-  if (info.from_cache) {
-    info.song->m_bHasMusic = StringToInt((*info.params)[1]) != 0;
-  }
-}
-void SetHasBanner(SongTagInfo& info) {
-  if (info.from_cache) {
-    info.song->m_bHasBanner = StringToInt((*info.params)[1]) != 0;
-  }
-}
 
 // Functions for steps tags go below this line. -Kyz
 /****************************************************************/
@@ -323,7 +290,7 @@ void SetMeter(StepsTagInfo& info) {
   info.ssc_format = true;
 }
 void SetRadarValues(StepsTagInfo& info) {
-  if (info.from_cache || info.for_load_edit) {
+  if (info.for_load_edit) {
     std::vector<std::string> values;
     split((*info.params)[1], ",", values, true);
     // Instead of trying to use the version to figure out how many
@@ -344,7 +311,7 @@ void SetRadarValues(StepsTagInfo& info) {
 }
 
 void SetTechCounts(StepsTagInfo& info) {
-  if (info.from_cache || info.for_load_edit) {
+  if (info.for_load_edit) {
     std::vector<std::string> values;
     split((*info.params)[1], ",", values, true);
     std::size_t cats_per_player = values.size() / NUM_PlayerNumber;
@@ -362,7 +329,7 @@ void SetTechCounts(StepsTagInfo& info) {
 }
 
 void SetNoteAnnotations(StepsTagInfo& info) {
-  if (info.from_cache || info.for_load_edit) {
+  if (info.for_load_edit) {
     std::vector<std::string> valuesPerPlayer;
     split((*info.params)[1], "|", valuesPerPlayer, true);
 
@@ -404,7 +371,7 @@ static std::vector<T> ParseMeasureValues(
 }
 
 void SetNpsPerMeasure(StepsTagInfo& info) {
-  if (info.from_cache || info.for_load_edit) {
+  if (info.for_load_edit) {
     std::vector<std::string> valuesPerPlayer;
     split((*info.params)[1], "|", valuesPerPlayer, true);
 
@@ -433,7 +400,7 @@ void SetNpsPerMeasure(StepsTagInfo& info) {
 }
 
 void SetNotesPerMeasure(StepsTagInfo& info) {
-  if (info.from_cache || info.for_load_edit) {
+  if (info.for_load_edit) {
     std::vector<std::string> valuesPerPlayer;
     split((*info.params)[1], "|", valuesPerPlayer, true);
 
@@ -460,7 +427,7 @@ void SetNotesPerMeasure(StepsTagInfo& info) {
 }
 
 void SetPeakNps(StepsTagInfo& info) {
-  if (info.from_cache || info.for_load_edit) {
+  if (info.for_load_edit) {
     std::vector<std::string> valuesPerPlayer;
     split((*info.params)[1], "|", valuesPerPlayer, true);
 
@@ -484,7 +451,7 @@ void SetPeakNps(StepsTagInfo& info) {
 }
 
 void SetGrooveStatsHash(StepsTagInfo& info) {
-  if (info.from_cache || info.for_load_edit) {
+  if (info.for_load_edit) {
     std::string value = (*info.params)[1];
     info.steps->SetGrooveStatsHash(value);
   }
@@ -492,7 +459,7 @@ void SetGrooveStatsHash(StepsTagInfo& info) {
 }
 
 void SetGrooveStatsHashVersion(StepsTagInfo& info) {
-  if (info.from_cache || info.for_load_edit) {
+  if (info.for_load_edit) {
     std::string value = (*info.params)[1];
     int hashVersion = StringToInt(value);
     info.steps->SetGrooveStatsHashVersion(hashVersion);
@@ -645,7 +612,6 @@ struct ssc_parser_helper_t {
     song_tag_handlers["MUSIC"] = &SetMusic;
     song_tag_handlers["PREVIEW"] = &SetPreview;
     song_tag_handlers["INSTRUMENTTRACK"] = &SetInstrumentTrack;
-    song_tag_handlers["MUSICLENGTH"] = &SetMusicLength;
     song_tag_handlers["LASTSECONDHINT"] = &SetLastSecondHint;
     song_tag_handlers["SAMPLESTART"] = &SetSampleStart;
     song_tag_handlers["SAMPLELENGTH"] = &SetSampleLength;
@@ -673,13 +639,6 @@ struct ssc_parser_helper_t {
     song_tag_handlers["SPEEDS"] = &SetSongSpeeds;
     song_tag_handlers["SCROLLS"] = &SetSongScrolls;
     song_tag_handlers["FAKES"] = &SetSongFakes;
-    /* The following are cache tags. Never fill their values
-     * directly: only from the cached version. */
-    song_tag_handlers["FIRSTSECOND"] = &SetFirstSecond;
-    song_tag_handlers["LASTSECOND"] = &SetLastSecond;
-    song_tag_handlers["SONGFILENAME"] = &SetSongFilename;
-    song_tag_handlers["HASMUSIC"] = &SetHasMusic;
-    song_tag_handlers["HASBANNER"] = &SetHasBanner;
     /* Tags that no longer exist, listed for posterity.  May their names
      * never be forgotten for their service to Stepmania. -Kyz
      * LASTBEATHINT: // unable to parse due to tag position. Ignore.
@@ -926,14 +885,13 @@ void SSCLoader::ProcessScrolls(TimingData& out, const std::string sParam) {
   }
 }
 
-bool SSCLoader::LoadNoteDataFromSimfile(
-    const std::string& cachePath, Steps& out) {
-  LOG->Trace("Loading notes from %s", cachePath.c_str());
+bool SSCLoader::LoadNoteDataFromSimfile(const std::string& path, Steps& out) {
+  LOG->Trace("Loading notes from %s", path.c_str());
 
   MsdFile msd;
-  if (!msd.ReadFile(cachePath, true)) {
+  if (!msd.ReadFile(path, true)) {
     LOG->UserLog(
-        "Unable to load any notes from", cachePath, "for this reason: %s",
+        "Unable to load any notes from", path, "for this reason: %s",
         msd.GetError().c_str());
     return false;
   }
@@ -985,7 +943,7 @@ bool SSCLoader::LoadNoteDataFromSimfile(
             // tag. -Kyz
             if (out.GetDifficulty() != StringToDifficulty(matcher) &&
                 !(out.GetDifficulty() == Difficulty_Edit &&
-                  MakeLower(GetExtension(cachePath)) == "edit")) {
+                  MakeLower(GetExtension(path)) == "edit")) {
               tryingSteps = false;
             }
             break;
@@ -1028,8 +986,7 @@ bool SSCLoader::LoadNoteDataFromSimfile(
   return false;
 }
 
-bool SSCLoader::LoadFromSimfile(
-    const std::string& sPath, Song& out, bool bFromCache) {
+bool SSCLoader::LoadFromSimfile(const std::string& sPath, Song& out) {
   // LOG->Trace( "Song::LoadFromSSCFile(%s)", sPath.c_str() );
 
   MsdFile msd;
@@ -1047,8 +1004,8 @@ bool SSCLoader::LoadFromSimfile(
   Steps* pNewNotes = nullptr;
   TimingData stepsTiming;
 
-  SongTagInfo reused_song_info(&*this, &out, sPath, bFromCache);
-  StepsTagInfo reused_steps_info(&*this, &out, sPath, bFromCache);
+  SongTagInfo reused_song_info(&*this, &out, sPath);
+  StepsTagInfo reused_steps_info(&*this, &out, sPath);
 
   for (unsigned i = 0; i < values; i++) {
     const MsdFile::value_t& sParams = msd.GetValue(i);
@@ -1094,14 +1051,6 @@ bool SSCLoader::LoadFromSimfile(
           pNewNotes->TidyUpData();
           pNewNotes->SetFilename(sPath);
           out.AddSteps(pNewNotes);
-        } else if (sValueName == "STEPFILENAME") {
-          state = GETTING_SONG_INFO;
-          if (reused_steps_info.has_own_timing) {
-            pNewNotes->m_Timing = stepsTiming;
-          }
-          reused_steps_info.has_own_timing = false;
-          pNewNotes->SetFilename(sParams[1]);
-          out.AddSteps(pNewNotes);
         } else {
           // Silently ignore unrecognized tags, as was done before. -Kyz
         }
@@ -1110,7 +1059,7 @@ bool SSCLoader::LoadFromSimfile(
     }
   }
   out.m_fVersion = STEPFILE_VERSION_NUMBER;
-  TidyUpData(out, bFromCache);
+  out.FixupBackgroundChanges();
   return true;
 }
 
@@ -1146,7 +1095,7 @@ bool SSCLoader::LoadEditFromMsd(
   Steps* pNewNotes = nullptr;
   TimingData stepsTiming;
 
-  StepsTagInfo reused_steps_info(&*this, pSong, sEditFilePath, false);
+  StepsTagInfo reused_steps_info(&*this, pSong, sEditFilePath);
   reused_steps_info.for_load_edit = true;
   reused_steps_info.timing = &stepsTiming;
 
