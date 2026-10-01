@@ -99,12 +99,8 @@ class RageMutex {
   MutexImpl* m_pMutex;
   std::string m_sName;
 
-  int m_UniqueID;
-
   uint64_t m_LockedBy;
   int m_LockCnt;
-
-  void MarkLockedMutex();
 
  private:
   // Swallow up warnings. If they must be used, define them.

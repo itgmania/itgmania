@@ -42,14 +42,6 @@ class RageTexture {
   int GetSourceFrameHeight() const {
     return GetSourceHeight() / GetFramesHigh();
   }
-  int GetTextureFrameWidth() const {
-    return GetTextureWidth() / GetFramesWide();
-  }
-  int GetTextureFrameHeight() const {
-    return GetTextureHeight() / GetFramesHigh();
-  }
-  int GetImageFrameWidth() const { return GetImageWidth() / GetFramesWide(); }
-  int GetImageFrameHeight() const { return GetImageHeight() / GetFramesHigh(); }
 
   // Use these to convert between the different coordinate systems:
   float GetSourceToImageCoordsRatioX() const {

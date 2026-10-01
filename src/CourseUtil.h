@@ -72,9 +72,6 @@ void GetAllEditCourses(std::vector<Course*>& vpCoursesOut);
 bool Save(Course* pCourse);
 bool RenameAndSave(Course* pCourse, std::string sName);
 
-bool ValidateEditCourseNametName(
-    const std::string& sAnswer, std::string& sErrorOut);
-
 extern int MAX_NAME_LENGTH;
 extern int MAX_PER_PROFILE;
 extern int MIN_WORKOUT_MINUTES;

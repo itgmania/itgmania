@@ -21,9 +21,6 @@ const int MIN_METER = 1;
  */
 const int MAX_METER = 35;
 
-/** @brief The maximum number of credits for coin mode. */
-const int MAX_NUM_CREDITS = 20;
-
 /**
  * @brief The various radar categories available.
  *
@@ -187,8 +184,6 @@ enum SortOrder {
   NUM_SortOrder,
   SortOrder_Invalid
 };
-/** @brief Only allow certain sort modes to be selectable. */
-const SortOrder MAX_SELECTABLE_SORT = (SortOrder)(SORT_ROULETTE - 1);
 /**
  * @brief Turn the sort order into a proper string.
  * @param so the sort order.
@@ -427,7 +422,6 @@ enum AttackLevel {
   NUM_ATTACK_LEVELS
 };
 const int NUM_ATTACKS_PER_LEVEL = 3;
-const int ITEM_NONE = -1;
 
 // Coin stuff
 /** @brief The different coin modes to determine how one can play. */

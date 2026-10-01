@@ -18,14 +18,9 @@ class ActorFrameTexture : public ActorFrame {
    *
    * This can be used with RageTextureManager (and users, eg. Sprite)
    * to load the texture.  If no name is supplied, a unique one will
-   * be generated.  In that case, the only way to access the texture
-   * is via GetTextureName.
+   * be generated.
    * @param sName the new name. */
   void SetTextureName(const std::string& sName) { m_sTextureName = sName; }
-  /**
-   * @brief Retrieve the texture name.
-   * @return the texture name. */
-  std::string GetTextureName() const { return m_sTextureName; }
   RageTextureRenderTarget* GetTexture() { return m_pRenderTarget; }
 
   void EnableDepthBuffer(bool b) { m_bDepthBuffer = b; }

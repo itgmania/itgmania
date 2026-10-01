@@ -35,11 +35,6 @@ typedef std::vector<Foot> FootPlacement;
 
 const std::vector<uint16_t> FOOT_MASKS = {0, 1, 2, 4, 8};
 
-const int16_t FOOT_MASK_LEFT =
-    FOOT_MASKS[Foot::Foot_LeftHeel] | FOOT_MASKS[Foot::Foot_LeftToe];
-const int16_t FOOT_MASK_RIGHT =
-    FOOT_MASKS[Foot::Foot_RightHeel] | FOOT_MASKS[Foot::Foot_RightToe];
-
 const std::array<StepParity::Foot, 4> FEET = {
     Foot_LeftHeel, Foot_LeftToe, Foot_RightHeel, Foot_RightToe};
 // A map for getting the other part of the foot, when you don't actually care
@@ -69,11 +64,6 @@ enum Cost {
   COST_TOTAL,
   NUM_Cost
 };
-const std::string COST_LABELS[] = {
-    "DOUBLESTEP",        "BRACKETJACK", "JACK",       "JUMP", "SLOW_BRACKET",
-    "TWISTED_FOOT",      "BRACKETTAP",  "HOLDSWITCH", "MINE", "FOOTSWITCH",
-    "MISSED_FOOTSWITCH", "FACING",      "DISTANCE",   "SPIN", "SIDESWITCH",
-    "CROWDED_BRACKET",   "OTHER",       "TOTAL"};
 
 struct StagePoint {
   float x;
@@ -117,18 +107,6 @@ struct StageLayout {
   bool bracketCheck(int column1, int column2) const {
     float dist = getDistance(column1, column2);
     return (dist * dist) <= 2;
-  }
-  bool isSideArrow(int column) const {
-    return std::find(sideArrows.begin(), sideArrows.end(), column) !=
-           sideArrows.end();
-  }
-  bool isUpArrow(int column) const {
-    return std::find(upArrows.begin(), upArrows.end(), column) !=
-           upArrows.end();
-  }
-  bool isDownArrow(int column) const {
-    return std::find(downArrows.begin(), downArrows.end(), column) !=
-           downArrows.end();
   }
   float getDistanceSq(int c1, int c2) const {
     return getDistanceSq(columns[c1], columns[c2]);

@@ -21,7 +21,6 @@ class StyleID {
   XNode* CreateNode() const;
   void LoadFromNode(const XNode* pNode);
   bool IsValid() const;
-  static void FlushCache(Song* pStaleSong);
 };
 
 #endif

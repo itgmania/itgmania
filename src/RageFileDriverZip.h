@@ -38,8 +38,6 @@ class RageFileDriverZip : public RageFileDriver {
   };
   const FileInfo* GetFileInfo(const std::string& sPath) const;
 
-  std::string GetGlobalComment() const { return m_sComment; }
-
  private:
   bool m_bFileOwned;
 

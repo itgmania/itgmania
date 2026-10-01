@@ -252,7 +252,6 @@ class RageDisplay {
   virtual bool BeginFrame();
   virtual void EndFrame();
   virtual ActualVideoModeParams GetActualVideoModeParams() const = 0;
-  bool IsWindowed() const { return this->GetActualVideoModeParams().windowed; }
 
   virtual void SetBlendMode(BlendMode mode) = 0;
 

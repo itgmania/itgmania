@@ -2460,7 +2460,6 @@ void Player::Step(
 
     const float fSecondsFromExact = std::abs(fNoteOffset);
 
-    TapNote tnDummy = TAP_ORIGINAL_TAP;
     TapNote* pTN = nullptr;
     NoteData::iterator iter =
         m_NoteData.FindTapNote(col, iRowOfOverlappingNoteOrRow);

@@ -70,8 +70,6 @@ class ScreenSelectMusic : public ScreenWithMenuElements {
   virtual void PushSelf(lua_State* L);
 
  protected:
-  virtual bool GenericTweenOn() const { return true; }
-  virtual bool GenericTweenOff() const { return true; }
   void UpdateSelectButton(PlayerNumber pn, bool bBeingPressed);
 
   void ChangeSteps(PlayerNumber pn, int dir);
@@ -124,11 +122,6 @@ class ScreenSelectMusic : public ScreenWithMenuElements {
 
   bool CanChangeSong() const {
     return m_SelectionState == SelectionState_SelectingSong;
-  }
-  bool CanChangeSteps() const {
-    return TWO_PART_SELECTION
-               ? m_SelectionState == SelectionState_SelectingSteps
-               : m_SelectionState == SelectionState_SelectingSong;
   }
   SelectionState GetNextSelectionState() const {
     switch (m_SelectionState) {

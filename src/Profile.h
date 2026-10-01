@@ -54,7 +54,6 @@ extern const std::string PUBLIC_KEY_FILE;
 extern const std::string SCREENSHOTS_SUBDIR;
 extern const std::string EDIT_STEPS_SUBDIR;
 extern const std::string EDIT_COURSES_SUBDIR;
-extern const std::string LASTGOOD_SUBDIR;
 // extern const std::string RIVAL_SUBDIR;
 
 /** @brief The max number of characters that can be used in a profile. */
@@ -362,10 +361,8 @@ class Profile {
   int GetCategoryNumTimesPlayed(StepsType st) const;
   void IncrementCategoryPlayCount(StepsType st, RankingCategory rc);
 
-  // Screenshot Data
   std::vector<Screenshot> m_vScreenshots;
   void AddScreenshot(const Screenshot& screenshot);
-  int GetNextScreenshotIndex() { return m_vScreenshots.size(); }
 
   /**
    * @brief The basics for Calorie Data.

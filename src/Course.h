@@ -22,8 +22,6 @@ struct lua_State;
 class Style;
 struct Game;
 
-const int MAX_EDIT_COURSE_TITLE_LENGTH = 16;
-
 inline PlayMode CourseTypeToPlayMode(CourseType ct) {
   switch (ct) {
     case COURSE_TYPE_NONSTOP:

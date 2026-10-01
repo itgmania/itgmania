@@ -16,9 +16,6 @@
 void PrepareToLoadScreen(const std::string& sScreenName);
 void FinishedLoadingScreen();
 
-AutoScreenMessage(SM_GoToOK);
-AutoScreenMessage(SM_GoToCancel);
-
 bool ScreenMiniMenu::s_bCancelled = false;
 int ScreenMiniMenu::s_iLastRowCode = -1;
 std::vector<int> ScreenMiniMenu::s_viLastAnswers;

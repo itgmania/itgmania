@@ -82,9 +82,6 @@ class RageTextureManager {
 
   void DisableOddDimensionWarning() { m_iNoWarnAboutOddDimensions++; }
   void EnableOddDimensionWarning() { m_iNoWarnAboutOddDimensions--; }
-  bool GetOddDimensionWarning() const {
-    return m_iNoWarnAboutOddDimensions == 0;
-  }
 
   RageTextureID GetDefaultTextureID();
   RageTextureID GetScreenTextureID();

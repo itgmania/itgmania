@@ -68,7 +68,6 @@ class ScreenEvaluation : public ScreenWithMenuElements {
  protected:
   void HandleMenuStart();
 
-  bool m_bSummary;
   StageStats* m_pStageStats;
   StageStats m_FinalEvalStageStats;
 

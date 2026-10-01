@@ -294,11 +294,6 @@ static void WriteGlobalTags(RageFile& f, const Song& out) {
     case Song::SHOW_ALWAYS:
       f.Write("YES");
       break;
-#if 0
-		case Song::SHOW_NONSTOP:
-			f.Write( "NONSTOP" );
-			break;
-#endif
     case Song::SHOW_NEVER:
       f.Write("NO");
       break;

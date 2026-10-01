@@ -88,8 +88,6 @@ class MusicWheel : public WheelBase {
   SortOrder m_SortOrder;
   RageSound m_soundChangeSort;
 
-  bool WheelItemIsVisible(int n);
-
   ThemeMetric<float> ROULETTE_SWITCH_SECONDS;
   ThemeMetric<int> ROULETTE_SLOW_DOWN_SWITCHES;
   ThemeMetric<int> NUM_SECTION_COLORS;

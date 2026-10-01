@@ -72,11 +72,6 @@ LuaXType(NoteColumnSplineMode);
 
 static bool IsVectorZero(const RageVector2& v) { return v.x == 0 && v.y == 0; }
 
-// Don't require that NoteSkins have more than 8 colors.  Using 9 colors to
-// display 192nd notes would double the number of texture memory needed for many
-// NoteSkin graphics versus just having 8 colors.
-static const NoteType MAX_DISPLAY_NOTE_TYPE = (NoteType)7;
-
 // cache
 struct NoteMetricCache_t {
   bool m_bDrawHoldHeadForTapsOnSameRow;
@@ -103,7 +98,7 @@ struct NoteMetricCache_t {
   bool m_bHoldActiveIsAddLayer;
 
   void Load(const std::string& sButton);
-}* NoteMetricCache;
+};
 
 void NoteMetricCache_t::Load(const std::string& sButton) {
   m_bDrawHoldHeadForTapsOnSameRow =

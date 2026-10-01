@@ -140,19 +140,6 @@ class SongManager {
    * @return all of the popular songs. */
   const std::vector<Song*>& GetPopularSongs() const { return m_pPopularSongs; }
 
-  /**
-   * @brief Retrieve all of the songs in a group that have at least one
-   * valid step for the current gametype.
-   * @param sGroupName the name of the group.
-   * @return the songs within the group that have at least one valid Step. */
-  const std::vector<Song*>& GetSongsOfCurrentGame(
-      const std::string& sGroupName) const;
-  /**
-   * @brief Retrieve all of the songs in the game that have at least one
-   * valid step for the current gametype.
-   * @return the songs within the game that have at least one valid Step. */
-  const std::vector<Song*>& GetAllSongsOfCurrentGame() const;
-
   std::map<int, std::vector<Song*>> GetMeterToSongsMap() const {
     return m_mapSongsByDifficulty;
   }
@@ -161,16 +148,10 @@ class SongManager {
     return m_mapPreferredSectionToSongs;
   };
   std::string SongToPreferredSortSectionName(const Song* pSong) const;
-  std::unordered_map<std::string, Group*> GetGroupGroupMap() const {
-    return m_mapNameToGroup;
-  };
   struct Series {
     std::string sName;
     std::unordered_set<Group*> groups;
     std::string sBannerPath;
-  };
-  std::map<std::string, Series> GetSeriesGroupMap() const {
-    return m_mapNameToSeries;
   };
   std::unordered_set<Group*> GetGroupsInSeries(
       const std::string& sSeriesName) const;

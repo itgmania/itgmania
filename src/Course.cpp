@@ -548,10 +548,6 @@ bool Course::GetTrailUnsorted(
   const std::vector<CourseEntry>& entries =
       m_bShuffle ? tmp_entries : m_vEntries;
 
-  // This can take some time, so don't fill it out unless we need it.
-  std::vector<Song*> vSongsByMostPlayed;
-  std::vector<Song*> AllSongsShuffled;
-
   trail.m_StepsType = st;
   trail.m_CourseType = GetCourseType();
   trail.m_CourseDifficulty = cd;

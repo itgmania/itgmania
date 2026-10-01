@@ -112,9 +112,6 @@ class ActorFrame : public Actor {
     m_fVanishY = fY;
   }
 
-  void SetCustomLighting(bool bCustomLighting) {
-    m_bOverrideLighting = bCustomLighting;
-  }
   void SetAmbientLightColor(RageColor c) { m_ambientColor = c; }
   void SetDiffuseLightColor(RageColor c) { m_diffuseColor = c; }
   void SetSpecularLightColor(RageColor c) { m_specularColor = c; }

@@ -160,7 +160,6 @@ class Steps {
   std::string GenerateChartKey();
   std::string ChartKey;
   std::string GetChartKey();
-  void SetChartKey(const std::string& k) { ChartKey = k; }
 
   /** @brief Produces a chart that's reduced to it's smallest unique
    * representable form. */

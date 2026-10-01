@@ -156,67 +156,6 @@ bool CodeDetector::EnteredNextOpList(GameController controller) {
   : (s == 8.0f) ? s = 4.0f        \
                 : s = 8.0f;
 
-// from Pumpmania
-void CodeDetector::ChangeScrollSpeed(
-    GameController controller, bool bIncrement) {
-  // this doesn't compile, hence the #if 0 below.
-  // also I bet this code actually belongs in PlayerOptions.cpp
-  // on further inspection. -aj
-  // p.s. it's m_fScrollSpeed you'll want to mess with.
-#if 0
-	// opt = PlayerOptions
-	// setup
-	PlayerNumber pn = INPUTMAPPER->ControllerToPlayerNumber( controller );
-	PlayerOptions po = GAMESTATE->m_pPlayerState[pn]->m_PlayerOptions.GetPreferred();
-
-	/* what this code seems to be doing is:
-	 * 1) getting the Speed line from the theme
-	 * 2) throwing it into a vector
-	 * 3) getting the current scroll speed (fallback on 1x)
-	 * 4) loop through the entries until you find the current mod
-	 * 5) check if it's increment/decrement, act accordingly
-	 * 6) set mod and return.
-	 * 7) "Current SpeedMod not found in Theme, revert to default"
-	 * although I'd rather have it move to the next possible value at
-	 * that point. If it's invalid, then revert to the default.
-	 */
-
-	OptionRowData row;
-	OptionRowHandler hand;
-
-	std::string sTitleOut;
-	ScreenOptionsMaster::SetList( row, hand, "Speed", sTitleOut );
-
-	std::vector<ModeChoice>& entries = hand.ListEntries;
-
-	std::string sScrollSpeed = po.GetScrollSpeedAsString();
-	if (sScrollSpeed.empty())
-		sScrollSpeed = "1x";
-
-	for ( std::vector<ModeChoice>::iterator it = entries.begin(); it != entries.end(); ++it )
-	{
-		ModeChoice& modeChoice = *it;
-		if ( modeChoice.m_sModifiers == sScrollSpeed ) {
-			if (bIncrement) {
-				if ( &modeChoice == &entries.back() )
-					po.FromString( entries.front().m_sModifiers );
-				else
-					po.FromString( (++it)->m_sModifiers );
-			} else { // Decrement
-				if ( &modeChoice == &entries.front() )
-					po.FromString( entries.back().m_sModifiers );
-				else
-					po.FromString( (--it)->m_sModifiers );
-			}
-			return;
-		}
-	}
-	// Current SpeedMod not found in Theme, revert to default:
-	ModeChoice& defaultChoice = hand.Default;
-	po.FromString(defaultChoice.m_sModifiers);
-#endif
-}
-
 bool CodeDetector::DetectAndAdjustMusicOptions(GameController controller) {
   PlayerNumber pn = INPUTMAPPER->ControllerToPlayerNumber(controller);
 

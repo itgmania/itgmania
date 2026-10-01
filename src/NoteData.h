@@ -104,7 +104,6 @@ class NoteData {
     inline int Track() const { return m_iTrack; }
     inline int Row() const { return m_vCurrentIters[m_iTrack]->first; }
     inline bool IsAtEnd() const { return m_iTrack == -1; }
-    inline iter GetIter(int iTrack) const { return m_vCurrentIters[iTrack]; }
     inline TN& operator*() {
       DEBUG_ASSERT(!IsAtEnd());
       return m_vCurrentIters[m_iTrack]->second;
@@ -273,7 +272,6 @@ class NoteData {
   // Call this after using any transform that changes the NoteData.
   void RevalidateATIs(
       const std::vector<int>& added_or_removed_tracks, bool added);
-  void TransferATIs(NoteData& to);
 
   /* Return an iterator range include iStartRow to iEndRow.  Extend the range to
    * include hold notes overlapping the boundary. */
@@ -380,9 +378,6 @@ class NoteData {
   // This row needs at least iMinSimultaneousPresses either tapped or held.
   bool RowNeedsAtLeastSimultaneousPresses(
       int iMinSimultaneousPresses, int row) const;
-  bool RowNeedsHands(int row) const {
-    return RowNeedsAtLeastSimultaneousPresses(3, row);
-  }
 
   // Count rows that need iMinSimultaneousPresses either tapped or held.
   int GetNumRowsWithSimultaneousPresses(

@@ -20,8 +20,6 @@ class BGAnimationLayer : public ActorFrame {
 
   void UpdateInternal(float fDeltaTime);
 
-  float GetMaxTweenTimeLeft() const;
-
  protected:
   std::vector<RageVector3> m_vParticleVelocity;
 

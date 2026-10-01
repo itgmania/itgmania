@@ -2239,8 +2239,6 @@ void ScreenEdit::PlayPreviewMusic() {
 void ScreenEdit::MakeFilteredMenuDef(const MenuDef* pDef, MenuDef& menu) {
   menu = *pDef;
   menu.rows.clear();
-
-  std::vector<MenuRowDef> aRows;
   for (const MenuRowDef& r : pDef->rows) {
     // Don't add rows that aren't applicable to this edit mode.
     if (EDIT_MODE >= r.emShowIn) {
@@ -2467,8 +2465,6 @@ static LocalizedString SELECTION_BEAT("ScreenEdit", "Selection beat");
 static LocalizedString DIFFICULTY("ScreenEdit", "Difficulty");
 static LocalizedString ROUTINE_PLAYER("ScreenEdit", "Routine Player");
 static LocalizedString CHART_NAME("ScreenEdit", "Chart Name");
-static LocalizedString DESCRIPTION("ScreenEdit", "Description");
-static LocalizedString CHART_STYLE("ScreenEdit", "Chart Style");
 static LocalizedString STEP_AUTHOR("ScreenEdit", "Step Author");
 static LocalizedString MAIN_TITLE("ScreenEdit", "Main title");
 static LocalizedString SUBTITLE("ScreenEdit", "Subtitle");
@@ -2507,10 +2503,6 @@ static ThemeMetric<std::string> ROUTINE_PLAYER_FORMAT(
     "ScreenEdit", "RoutinePlayerFormat");
 static ThemeMetric<std::string> CHART_NAME_FORMAT(
     "ScreenEdit", "ChartNameFormat");
-static ThemeMetric<std::string> DESCRIPTION_FORMAT(
-    "ScreenEdit", "DescriptionFormat");
-static ThemeMetric<std::string> CHART_STYLE_FORMAT(
-    "ScreenEdit", "ChartStyleFormat");
 static ThemeMetric<std::string> STEP_AUTHOR_FORMAT(
     "ScreenEdit", "StepAuthorFormat");
 static ThemeMetric<std::string> MAIN_TITLE_FORMAT(
@@ -2628,16 +2620,12 @@ void ScreenEdit::UpdateTextInfo() {
           ROUTINE_PLAYER_FORMAT.GetValue().c_str(),
           ROUTINE_PLAYER.GetValue().c_str(), m_InputPlayerNumber + 1);
     }
-    // sText += ssprintf( DESCRIPTION_FORMAT.GetValue(),
-    // DESCRIPTION.GetValue().c_str(), m_pSteps->GetDescription().c_str() );
     sText += ssprintf(
         CHART_NAME_FORMAT.GetValue().c_str(), CHART_NAME.GetValue().c_str(),
         m_pSteps->GetChartName().c_str());
     sText += ssprintf(
         STEP_AUTHOR_FORMAT.GetValue().c_str(), STEP_AUTHOR.GetValue().c_str(),
         m_pSteps->GetCredit().c_str());
-    // sText += ssprintf( CHART_STYLE_FORMAT.GetValue(),
-    // CHART_STYLE.GetValue().c_str(), m_pSteps->GetChartStyle().c_str() );
     sText += ssprintf(
         MAIN_TITLE_FORMAT.GetValue().c_str(), MAIN_TITLE.GetValue().c_str(),
         m_pSong->m_sMainTitle.c_str());
@@ -7567,8 +7555,6 @@ void ScreenEdit::ToggleWaveform() {
   SCREENMAN->SystemMessage(bShow ? WAVEFORM_SHOWN : WAVEFORM_HIDDEN);
 }
 
-static LocalizedString CREATES_MORE_THAN_NOTES(
-    "ScreenEdit", "This change creates more than %d notes in a measure.");
 static LocalizedString CREATES_NOTES_PAST_END(
     "ScreenEdit",
     "This change creates notes past the end of the music and is not allowed.");
