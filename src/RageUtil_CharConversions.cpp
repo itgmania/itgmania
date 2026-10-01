@@ -44,67 +44,6 @@ static bool AttemptJapaneseConversion(std::string& sText) {
   return CodePageConvert(sText, 932);
 }
 
-#elif defined(HAVE_ICONV)
-#include <errno.h>
-#include <iconv.h>
-
-#include <cstddef>
-
-static bool ConvertFromCharset(std::string& sText, const char* szCharset) {
-  iconv_t converter = iconv_open("UTF-8", szCharset);
-  if (converter == (iconv_t)-1) {
-    LOG->MapLog(
-        ssprintf("conv %s", szCharset), "iconv_open(%s): %s", szCharset,
-        strerror(errno));
-    return false;
-  }
-
-  /* Copy the string into a char* for iconv */
-  ICONV_CONST char* szTextIn = const_cast<ICONV_CONST char*>(sText.data());
-  size_t iInLeft = sText.size();
-
-  /* Create a new string with enough room for the new conversion */
-  std::string sBuf;
-  sBuf.resize(sText.size() * 5);
-
-  char* sTextOut = const_cast<char*>(sBuf.data());
-  size_t iOutLeft = sBuf.size();
-  size_t size = iconv(converter, &szTextIn, &iInLeft, &sTextOut, &iOutLeft);
-
-  iconv_close(converter);
-
-  if (size == (size_t)(-1)) {
-    LOG->Trace("%s\n", strerror(errno));
-    return false; /* Returned an error */
-  }
-
-  if (iInLeft != 0) {
-    LOG->Warn(
-        "iconv(UTF-8,%s) for \"%s\": whole buffer not converted (%i left)",
-        szCharset, sText.c_str(), int(iInLeft));
-    return false;
-  }
-
-  if (sBuf.size() == iOutLeft) {
-    return false; /* Conversion failed */
-  }
-
-  sBuf.resize(sBuf.size() - iOutLeft);
-
-  sText = sBuf;
-  return true;
-}
-
-static bool AttemptEnglishConversion(std::string& sText) {
-  return ConvertFromCharset(sText, "CP1252");
-}
-static bool AttemptKoreanConversion(std::string& sText) {
-  return ConvertFromCharset(sText, "CP949");
-}
-static bool AttemptJapaneseConversion(std::string& sText) {
-  return ConvertFromCharset(sText, "CP932");
-}
-
 #elif defined(MACOSX)
 #include <CoreFoundation/CoreFoundation.h>
 
