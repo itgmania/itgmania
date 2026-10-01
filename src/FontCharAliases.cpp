@@ -7,31 +7,6 @@
 #include "RageUtil.h"
 #include "StdString.h"
 
-namespace {
-char sstolower(char ch) noexcept {
-  return (ch >= 'A' && ch <= 'Z') ? char(ch + 'a' - 'A') : ch;
-}
-
-int ssicmp(const char* a1, const char* a2) {
-  char f;
-  char l;
-
-  do {
-    f = sstolower(*(a1++));
-    l = sstolower(*(a2++));
-  } while ((f) && (f == l));
-
-  return (int)(f - l);
-}
-
-struct StdStringLessNoCase {
-  inline bool operator()(
-      const std::string& left, const std::string& right) const {
-    return ssicmp(left.c_str(), right.c_str()) < 0;
-  }
-};
-}  // namespace
-
 // Map from "&foo;" to a UTF-8 string.
 typedef std::map<std::string, wchar_t, StdStringLessNoCase> aliasmap;
 static aliasmap CharAliases;
