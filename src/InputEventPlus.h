@@ -25,11 +25,6 @@ class InputEventPlus {
   DeviceInputList InputList;
 };
 
-struct AlternateMapping {
-  GameInput inpMain;
-  GameInput inpAlt;
-};
-
 #endif
 
 /**

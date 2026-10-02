@@ -21,20 +21,10 @@ enum SSCLoadingStates {
   NUM_SSCLoadingStates /**< The number of states used. */
 };
 
-/** @brief The version where fakes started to be used as a radar category. */
-const float VERSION_RADAR_FAKE = 0.53f;
-/** @brief The version where WarpSegments started to be utilized. */
-const float VERSION_WARP_SEGMENT = 0.56f;
 /** @brief The version that formally introduced Split Timing. */
 const float VERSION_SPLIT_TIMING = 0.7f;
-/** @brief The version that moved the step's Offset higher up. */
-const float VERSION_OFFSET_BEFORE_ATTACK = 0.72f;
 /** @brief The version that introduced the Chart Name tag. */
 const float VERSION_CHART_NAME_TAG = 0.74f;
-/** @brief The version that introduced the cache switch tag. */
-const float VERSION_CACHE_SWITCH_TAG = 0.77f;
-/** @brief The version where note count was added as a radar category. */
-const float VERSION_RADAR_NOTECOUNT = 0.83f;
 
 /**
  * @brief The SSCLoader handles all of the parsing needed for .ssc files.

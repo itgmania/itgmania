@@ -27,7 +27,6 @@ class WorkoutGraph : public ActorFrame {
 
  protected:
   void SetInternal(int iNumSongsToShowForCurrentStage);
-  void HighlightSong(int iSongIndex);
 
   Sprite m_sprEmpty;
   std::vector<Sprite*> m_vpBars;

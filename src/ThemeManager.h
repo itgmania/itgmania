@@ -172,7 +172,6 @@ class ThemeManager {
       PathInfo& out, const std::string& sThemeName, ElementCategory category,
       const std::string& sMetricsGroup, const std::string& sFile);
   static std::string GetThemeDirFromName(const std::string& sThemeName);
-  std::string GetElementDir(const std::string& sThemeName);
   static std::string GetMetricsIniPath(const std::string& sThemeName);
   static void GetLanguagesForTheme(
       const std::string& sThemeName, std::vector<std::string>& asLanguagesOut);

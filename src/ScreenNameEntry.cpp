@@ -188,15 +188,6 @@ ScreenNameEntry::ScreenNameEntry() {
 }
 
 void ScreenNameEntry::Init() {
-#if 0
-	// DEBUGGING STUFF
-	GAMESTATE->m_pCurGame.Set( GAMEMAN->GetDefaultGame() );
-	GAMESTATE->m_pCurStyle.Set( GAMEMAN->GetHowToPlayStyleForGame(GAMESTATE->m_pCurGame) );
-	GAMESTATE->m_PlayMode.Set( PLAY_MODE_REGULAR );
-	GAMESTATE->m_bSideIsJoined[PLAYER_1] = true;
-	GAMESTATE->m_MasterPlayerNumber = PLAYER_1;
-#endif
-
   ScreenWithMenuElements::Init();
 
   // update cache

@@ -80,10 +80,6 @@
   THEME->GetMetricA(         \
       "ScreenSelectCharacter", ssprintf("IconsP%dOffCommand", p + 1))
 
-#define LEVEL_CURSOR_X(p, l) \
-  (ICONS_START_X(p) + ICONS_SPACING_X * ((NUM_ATTACKS_PER_LEVEL - 1) / 2.f))
-#define LEVEL_CURSOR_Y(p, l) (ICONS_START_Y(p) + ICONS_SPACING_Y * l)
-
 const PlayerNumber CPU_PLAYER[NUM_PLAYERS] = {PLAYER_2, PLAYER_1};
 
 REGISTER_SCREEN_CLASS(ScreenSelectCharacter);

@@ -350,7 +350,6 @@ class LunaFadingBanner : public Luna<FadingBanner> {
     ADD_METHOD(LoadFallback);
     ADD_METHOD(LoadFromSortOrder);
     ADD_METHOD(GetLatestIndex);
-    // ADD_METHOD( GetBanner );
   }
 };
 

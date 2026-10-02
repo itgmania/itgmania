@@ -36,7 +36,6 @@
 
 // Statistics stuff
 RageTimer g_LastCheckTimer;
-int g_iNumVerts;
 int g_iFPS, g_iVPF, g_iCFPS;
 
 int RageDisplay::GetFPS() const { return g_iFPS; }
@@ -400,7 +399,6 @@ class MatrixStack {
 
   // Obtain the current matrix at the top of the stack
   const RageMatrix* GetTop() const { return &stack.back(); }
-  void SetTop(const RageMatrix& m) { stack.back() = m; }
 };
 
 static RageMatrix g_CenteringMatrix;

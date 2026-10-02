@@ -51,7 +51,6 @@ class LifeMeterBattery : public LifeMeter {
   int m_iLivesLeft;          // dead when 0
   int m_iTrailingLivesLeft;  // lags m_iLivesLeft
 
-  ThemeMetric<float> BATTERY_BLINK_TIME;
   ThemeMetric<TapNoteScore> MIN_SCORE_TO_KEEP_LIFE;
   ThemeMetric<int> DANGER_THRESHOLD;
   ThemeMetric<int> MAX_LIVES;

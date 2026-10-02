@@ -26,9 +26,6 @@
 
 const float PARTICLE_SPEED = 300;
 
-const float SPIRAL_MAX_ZOOM = 2;
-const float SPIRAL_MIN_ZOOM = 0.3f;
-
 #define MAX_TILES_WIDE int(SCREEN_WIDTH / 32 + 2)
 #define MAX_TILES_HIGH int(SCREEN_HEIGHT / 32 + 2)
 #define MAX_SPRITES (MAX_TILES_WIDE * MAX_TILES_HIGH)
@@ -57,10 +54,6 @@ inline bool IsOffScreenTop(Actor* pActor) {
 }
 inline bool IsOffScreenBottom(Actor* pActor) {
   return pActor->GetY() > GetOffScreenBottom(pActor);
-}
-inline bool IsOffScreen(Actor* pActor) {
-  return IsOffScreenLeft(pActor) || IsOffScreenRight(pActor) ||
-         IsOffScreenTop(pActor) || IsOffScreenBottom(pActor);
 }
 
 // guard rail is the area that keeps particles from going off screen

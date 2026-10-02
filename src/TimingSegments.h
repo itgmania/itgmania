@@ -268,7 +268,6 @@ struct TickcountSegment : public TimingSegment {
       : TimingSegment(other.GetRow()), m_iTicksPerBeat(other.GetTicks()) {}
 
   int GetTicks() const { return m_iTicksPerBeat; }
-  void SetTicks(int iTicks) { m_iTicksPerBeat = iTicks; }
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const {
@@ -326,7 +325,6 @@ struct ComboSegment : public TimingSegment {
   int GetMissCombo() const { return m_iMissCombo; }
 
   void SetCombo(int iCombo) { m_iCombo = iCombo; }
-  void SetMissCombo(int iCombo) { m_iMissCombo = iCombo; }
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const;
@@ -384,7 +382,6 @@ struct LabelSegment : public TimingSegment {
       : TimingSegment(other.GetRow()), m_sLabel(other.GetLabel()) {}
 
   const std::string& GetLabel() const { return m_sLabel; }
-  void SetLabel(const std::string& sLabel) { m_sLabel.assign(sLabel); }
 
   std::string ToString(int dec) const;
   // Use the default definition for GetValues because the value for a
@@ -494,10 +491,8 @@ struct TimeSignatureSegment : public TimingSegment {
         m_iDenominator(other.GetDen()) {}
 
   int GetNum() const { return m_iNumerator; }
-  void SetNum(int num) { m_iNumerator = num; }
 
   int GetDen() const { return m_iDenominator; }
-  void SetDen(int den) { m_iDenominator = den; }
 
   void Set(int num, int den) {
     m_iNumerator = num;
@@ -592,7 +587,6 @@ struct SpeedSegment : public TimingSegment {
   void SetDelay(float fDelay) { m_fDelay = fDelay; }
 
   BaseUnit GetUnit() const { return m_Unit; }
-  void SetUnit(BaseUnit unit) { m_Unit = unit; }
 
   void Scale(int start, int length, int newLength);
 

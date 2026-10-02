@@ -124,10 +124,6 @@ class Player : public ActorFrame {
     m_pActorWithComboPosition = pActor;
   }
 
-  void SetSendJudgmentAndComboMessages(bool b) {
-    m_bSendJudgmentAndComboMessages = b;
-  }
-
   // OITG bug:  Actor::SetZoom only sets X and Y.  When mini is applied to
   // the notefield with SetZoom, it does not affect the range of bumpy.
   // m_oitg_zoom_mode provides compatibility with that bug.  Only used in
