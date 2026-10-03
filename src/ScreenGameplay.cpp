@@ -986,7 +986,18 @@ bool ScreenGameplay::MenuRestart(const InputEventPlus& input) {
     return false;
   }
 
-  SCREENMAN->GetTopScreen()->SetPrevScreenName("ScreenGameplay");
+  float sHeld = INPUTFILTER->GetSecsHeld(input.DeviceI);
+
+  if (sHeld < 1.0f && input.type != IET_RELEASE) {
+    return false;
+  }
+
+  if (sHeld >= 1.0f) {
+    SCREENMAN->GetTopScreen()->SetPrevScreenName("ScreenPlayerOptions");
+  } else {
+    SCREENMAN->GetTopScreen()->SetPrevScreenName("ScreenGameplay");
+  }
+
   BeginBackingOutFromGameplay();
   return true;
 }
@@ -2637,8 +2648,8 @@ bool ScreenGameplay::Input(const InputEventPlus& input) {
     return false;
   }
 
-  if (input.MenuI == GAME_BUTTON_RESTART && input.type == IET_FIRST_PRESS &&
-      GAMESTATE->IsEventMode() && !GAMESTATE->IsCourseMode()) {
+  if (input.MenuI == GAME_BUTTON_RESTART && GAMESTATE->IsEventMode() &&
+      !GAMESTATE->IsCourseMode()) {
     return MenuRestart(input);
   }
 
