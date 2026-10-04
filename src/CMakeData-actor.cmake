@@ -118,7 +118,6 @@ source_group("Actors\\\\Gameplay"
 list(APPEND SMDATA_ACTOR_MENU_SRC
             "BPMDisplay.cpp"
             "ComboGraph.cpp"
-            "ControllerStateDisplay.cpp"
             "CourseContentsList.cpp"
             "DifficultyList.cpp"
             "DualScrollBar.cpp"
@@ -148,7 +147,6 @@ list(APPEND SMDATA_ACTOR_MENU_SRC
 list(APPEND SMDATA_ACTOR_MENU_HPP
             "BPMDisplay.h"
             "ComboGraph.h"
-            "ControllerStateDisplay.h"
             "CourseContentsList.h"
             "DifficultyList.h"
             "DualScrollBar.h"
