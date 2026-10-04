@@ -303,6 +303,7 @@ PrefsManager::PrefsManager()
           "AdditionalFoldersReadOnly", "", nullptr, PreferenceType::Immutable),
       m_sAdditionalFoldersWritable(
           "AdditionalFoldersWritable", "", nullptr, PreferenceType::Immutable),
+      m_sDefaultSong("DefaultSong", ""),
       m_sDefaultTheme("DefaultTheme", "Simply Love"),
       m_sLastSeenVideoDriver("LastSeenVideoDriver", ""),
       m_sVideoRenderers(

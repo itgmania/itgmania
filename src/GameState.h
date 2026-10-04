@@ -77,6 +77,7 @@ class GameState {
    * @param pn the PlayerNumber to save the stats to. */
   void SaveCurrentSettingsToProfile(PlayerNumber pn);
   Song* GetDefaultSong() const;
+  bool SetDefaultSongToCurrent();
 
   bool CanSafelyEnterGameplay(std::string& reason);
   void SetCompatibleStylesForPlayers();

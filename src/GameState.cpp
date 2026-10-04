@@ -108,9 +108,28 @@ ThemeMetric<std::string> DEFAULT_SORT("GameState", "DefaultSort");
 SortOrder GetDefaultSort() { return StringToSortOrder(DEFAULT_SORT); }
 ThemeMetric<std::string> DEFAULT_SONG("GameState", "DefaultSong");
 Song* GameState::GetDefaultSong() const {
+  std::string defaultSong = PREFSMAN->m_sDefaultSong.Get();
+  if (defaultSong == "") {
+    defaultSong = DEFAULT_SONG;
+  }
   SongID sid;
-  sid.FromString(DEFAULT_SONG);
+  sid.FromString(defaultSong);
   return sid.ToSong();
+}
+
+bool GameState::SetDefaultSongToCurrent()
+{
+    Song* song = m_pCurSong.Get();
+    if (song) {
+        std::string prev = PREFSMAN->m_sDefaultSong.Get();
+        std::string next = song->GetSongDir();
+        if (prev != next) {
+            PREFSMAN->m_sDefaultSong.Set(next);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 static const ThemeMetric<bool> EDIT_ALLOWED_FOR_EXTRA(
