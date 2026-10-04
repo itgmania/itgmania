@@ -48,6 +48,12 @@ class AdjustSync {
   static int s_iAutosyncOffsetSample;
   static float s_fStandardDeviation;
 
+  // After collecting the OFFSET_SAMPLE_COUNT samples to adjust sync,
+  // throw away OFFSET_SAMPLE_OUTLIER_DISCARD_COUNT with the largest
+  // offsets prior to calculating mean and std_dev. This is to minimize
+  // the effects of having a bad step or two during the autosync.
+  static const int OFFSET_SAMPLE_OUTLIER_DISCARD_COUNT = 2;
+
   // Measured in seconds.  If the average error is too high, we
   // reject the recorded data for the Least Squares Regression.
   static const float ERROR_TOO_HIGH;
