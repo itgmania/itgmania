@@ -78,6 +78,20 @@
 				margin: 1px 2px 1px 2px;
 				border: 1px solid #777;
 			}
+			.removedFunction{
+				text-align: justify;
+				vertical-align: text-top;
+				background: #FFDDDD url(./bgline.png) repeat-x scroll 0 0;
+				padding: 1px;
+			}
+			fieldset div.removedFunction{
+				margin: 1px 2px 1px 2px;
+				border: 1px solid #777;
+			}
+			.removedName{
+				text-decoration: line-through;
+				opacity: 0.6;
+			}
 			.fallbackTheme{
 				text-align: justify;
 				vertical-align: text-top;
@@ -244,6 +258,7 @@
 		<fieldset>
 		<legend>Function Colors</legend>
 		<div class="sinceITGmania">New in ITGmania</div>
+		<div class="removedFunction">Removed in ITGmania</div>
 		<div class="descriptionCell">Available in StepMania 5</div>
 		<div class="fallbackTheme">Defined in the _fallback theme</div>
 		<div class="defaultTheme">Defined in the default theme</div>
@@ -319,17 +334,27 @@
 
 <xsl:template match="sm:Class">
 	<xsl:variable name="name" select="@name" />
+	<xsl:variable name="removedClass" select="$docs/sm:Classes/sm:Class[@name=$name]/@removed" />
 	<div>
 		<a id="{@name}" class="trigger" onclick="Toggle('{@name}')">
 			<img src="closed.gif" id="img_{@name}" alt="" />
 			<xsl:text> Class </xsl:text>
-			<span class="descriptionName"><xsl:value-of select="@name" /></span>
+			<span>
+				<xsl:attribute name="class">
+					<xsl:text>descriptionName</xsl:text>
+					<xsl:if test="$removedClass"> removedName</xsl:if>
+				</xsl:attribute>
+				<xsl:value-of select="@name" />
+			</span>
 		</a>
 		<xsl:if test="@base != ''">
 			<span class="code"><xsl:text> : </xsl:text></span>
 			<a class="classType" href="#{@base}" onclick="Open('{@base}')">
 				<xsl:value-of select="@base" />
 			</a>
+		</xsl:if>
+		<xsl:if test="$removedClass">
+			<em> (Removed in <xsl:value-of select="$removedClass" />)</em>
 		</xsl:if>
 		<div style="display: none" id="list_{@name}">
 		<xsl:apply-templates select="$docs/sm:Classes/sm:Class[@name=$name]/sm:Description">
@@ -490,13 +515,18 @@
 			<td>
 			<xsl:attribute name="class">
 				<xsl:choose>
+					<xsl:when test="$elmt/@removed">removedFunction</xsl:when>
 					<xsl:when test="contains($elmt/@since, 'ITGmania')">sinceITGmania</xsl:when>
 					<xsl:when test="$elmt/@theme='_fallback'">fallbackTheme</xsl:when>
 					<xsl:when test="$elmt/@theme='default'">defaultTheme</xsl:when>
 					<xsl:otherwise>descriptionCell</xsl:otherwise>
 				</xsl:choose>
 			</xsl:attribute>
-			<span class="descriptionName">
+			<span>
+				<xsl:attribute name="class">
+					<xsl:text>descriptionName</xsl:text>
+					<xsl:if test="$elmt/@removed"> removedName</xsl:if>
+				</xsl:attribute>
 				<xsl:value-of select="@name" />
 			</span>
 			<span class="descriptionArguments">
@@ -515,6 +545,11 @@
 				<xsl:if test="$elmt/@since">
 					<br />
 					<em>New in <xsl:value-of select="$elmt/@since" />.</em>
+				</xsl:if>
+
+				<xsl:if test="$elmt/@removed">
+					<br />
+					<em>Removed in <xsl:value-of select="$elmt/@removed" />.</em>
 				</xsl:if>
 			</div>
 			</td>

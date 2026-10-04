@@ -13,7 +13,6 @@ BGAnimation
 BitmapText
 BPMDisplay
 ComboGraph
-ControllerStateDisplay
 CourseContentsList
 DeviceList
 DifficultyIcon
