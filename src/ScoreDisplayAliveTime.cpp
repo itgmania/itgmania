@@ -16,7 +16,6 @@ REGISTER_ACTOR_CLASS(ScoreDisplayAliveTime);
 
 ScoreDisplayAliveTime::ScoreDisplayAliveTime() {
   m_PlayerNumber = PLAYER_INVALID;
-  m_MultiPlayer = MultiPlayer_Invalid;
 }
 
 ScoreDisplayAliveTime::~ScoreDisplayAliveTime() {}
@@ -28,9 +27,7 @@ void ScoreDisplayAliveTime::LoadFromNode(const XNode* pNode) {
     Lua* L = LUA->Get();
     bool b = pNode->PushAttrValue(L, "PlayerNumber");
     LuaHelpers::Pop(L, m_PlayerNumber);
-    bool b2 = pNode->PushAttrValue(L, "MultiPlayer");
-    LuaHelpers::Pop(L, m_MultiPlayer);
-    ASSERT(b || b2);
+    ASSERT(b);
     LUA->Release(L);
   }
 }
@@ -47,8 +44,7 @@ void ScoreDisplayAliveTime::HandleMessage(const Message& msg) {
 
 void ScoreDisplayAliveTime::UpdateNumber() {
   float fSecsIntoPlay = 0;
-  ASSERT(
-      m_PlayerNumber != PLAYER_INVALID || m_MultiPlayer != MultiPlayer_Invalid);
+  ASSERT(m_PlayerNumber != PLAYER_INVALID);
   if (m_PlayerNumber != PLAYER_INVALID &&
       GAMESTATE->IsPlayerEnabled(m_PlayerNumber)) {
     fSecsIntoPlay =
@@ -56,11 +52,6 @@ void ScoreDisplayAliveTime::UpdateNumber() {
             .m_player[m_PlayerNumber]
             .m_fAliveSeconds +
         STATSMAN->m_CurStageStats.m_player[m_PlayerNumber].m_fAliveSeconds;
-  }
-  if (m_MultiPlayer != MultiPlayer_Invalid &&
-      GAMESTATE->IsMultiPlayerEnabled(m_MultiPlayer)) {
-    fSecsIntoPlay = STATSMAN->GetAccumPlayedStageStats().m_fGameplaySeconds +
-                    STATSMAN->m_CurStageStats.m_fGameplaySeconds;
   }
 
   SetText(SecondsToMMSSMsMs(fSecsIntoPlay));

@@ -34,7 +34,6 @@ class GameCommand {
         m_bInvalid(true),
         m_sInvalidReason(""),
         m_iIndex(-1),
-        m_MultiPlayer(MultiPlayer_Invalid),
         m_pStyle(nullptr),
         m_pm(PlayMode_Invalid),
         m_dc(Difficulty_Invalid),
@@ -101,7 +100,6 @@ class GameCommand {
   bool m_bInvalid;
   std::string m_sInvalidReason;
   int m_iIndex;
-  MultiPlayer m_MultiPlayer;
   const Style* m_pStyle;
   PlayMode m_pm;
   Difficulty m_dc;
