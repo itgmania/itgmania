@@ -152,8 +152,7 @@ void SMALoader::ProcessSpeeds(
   }
 }
 
-bool SMALoader::LoadFromSimfile(
-    const std::string& sPath, Song& out, bool bFromCache) {
+bool SMALoader::LoadFromSimfile(const std::string& sPath, Song& out) {
   LOG->Trace("Song::LoadFromSMAFile(%s)", sPath.c_str());
 
   MsdFile msd;
@@ -449,7 +448,7 @@ bool SMALoader::LoadFromSimfile(
           sValueName.c_str());
     }
   }
-  TidyUpData(out, false);
+  out.FixupBackgroundChanges();
   return true;
 }
 

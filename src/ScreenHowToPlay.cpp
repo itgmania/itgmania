@@ -164,9 +164,9 @@ void ScreenHowToPlay::Init() {
     SSCLoader loaderSSC;
     SMLoader loaderSM;
     if (Right(sStepsPath, 4) == ".ssc") {
-      loaderSSC.LoadFromSimfile(sStepsPath, m_Song, false);
+      loaderSSC.LoadFromSimfile(sStepsPath, m_Song);
     } else {
-      loaderSM.LoadFromSimfile(sStepsPath, m_Song, false);
+      loaderSM.LoadFromSimfile(sStepsPath, m_Song);
     }
     m_Song.AddAutoGenNotes();
 

@@ -23,7 +23,6 @@
 #include "Song.h"
 #include "StdString.h"
 #include "Steps.h"
-#include "TechCounts.h"
 #include "TimingData.h"
 #include "TimingSegments.h"
 #include "global.h"
@@ -403,10 +402,8 @@ static void WriteGlobalTags(RageFile& f, const Song& out) {
  * @brief Retrieve the individual batches of NoteData.
  * @param song the Song in question.
  * @param in the Steps in question.
- * @param bSavingCache a flag to see if we're saving certain cache data.
  * @return the NoteData in std::string form. */
-static std::string GetSSCNoteData(
-    const Song& song, const Steps& in, bool bSavingCache) {
+static std::string GetSSCNoteData(const Song& song, const Steps& in) {
   std::vector<std::string> lines;
 
   lines.push_back("");
@@ -485,99 +482,22 @@ static std::string GetSSCNoteData(
     default:
       break;
   }
-  if (bSavingCache) {
-    lines.push_back(ssprintf("// step cache tags:"));
+  std::string sNoteData;
+  in.GetSMNoteData(sNoteData);
 
-    std::vector<std::string> asTechCounts;
-    FOREACH_PlayerNumber(pn) {
-      const TechCounts& ts = in.GetTechCounts(pn);
-      FOREACH_ENUM(TechCountsCategory, tc) {
-        asTechCounts.push_back(ssprintf("%.6f", ts[tc]));
-      }
-    }
-    lines.push_back(
-        ssprintf("#TECHCOUNTS:%s;", join(",", asTechCounts).c_str()));
+  lines.push_back(song.m_vsKeysoundFile.empty() ? "#NOTES:" : "#NOTES2:");
 
-    // NpsPerMeasure and NotesPerMeasure are stored differently from Radar
-    // Values and Tech Counts, because the number of measures is variable. For
-    // charts that have different steps per player, each set of values is
-    // separated with pipes "|". The vast majority of charts don't, so there's
-    // no reason to store duplicated data.
-    const std::vector<std::vector<float>>& allNpsPerMeasures =
-        in.GetAllNpsPerMeasures();
-    std::vector<std::string> npsPerMeasureStrings;
-    npsPerMeasureStrings.reserve(allNpsPerMeasures.size());
-    for (std::vector<float> npsPerMeasure : allNpsPerMeasures) {
-      npsPerMeasureStrings.push_back(serialize(npsPerMeasure, ",", 3));
-    }
-    lines.push_back(ssprintf(
-        "#NPSPERMEASURE:%s;", join("|", npsPerMeasureStrings).c_str()));
-
-    const std::vector<std::vector<int>>& allNotesPerMeasures =
-        in.GetAllNotesPerMeasures();
-    std::vector<std::string> notesPerMeasureStrings;
-    notesPerMeasureStrings.reserve(allNotesPerMeasures.size());
-    for (std::vector<int> notesPerMeasure : allNotesPerMeasures) {
-      notesPerMeasureStrings.push_back(serialize(notesPerMeasure, ","));
-    }
-
-    lines.push_back(ssprintf(
-        "#NOTESPERMEASURE:%s;", join("|", notesPerMeasureStrings).c_str()));
-
-    const std::vector<float>& peakNps = in.GetAllPeakNps();
-    lines.push_back("#PEAKNPS:" + serialize(peakNps, "|", 3) + ";");
-
-    const std::vector<NoteAnnotationCache> noteAnnotations =
-        in.GetNoteAnnotationCaches();
-
-    std::vector<std::string> serializedAnnotations;
-    for (NoteAnnotationCache ann : noteAnnotations) {
-      const std::string seralizedAnn = ann.GetCompressed();
-      serializedAnnotations.push_back(seralizedAnn);
-    }
-    lines.push_back(ssprintf(
-        "#NOTEANNOTATIONS:%s;", join("|", serializedAnnotations).c_str()));
-
-    std::string GrooveStatsHash = in.GetGrooveStatsHash();
-    lines.push_back(ssprintf("#GROOVESTATSHASH:%s;", GrooveStatsHash.c_str()));
-
-    int GrooveStatsHashVersion = in.GetGrooveStatsHashVersion();
-    lines.push_back(
-        ssprintf("#GROOVESTATSHASHVERSION:%d;", GrooveStatsHashVersion));
-
-    // NOTE(MV): #STEPFILENAME has to be at the end of the cache tags,
-
-    // MV: #STEPFILENAME has to be at the end of the cache tags,
-    // because it's used in SSCLoader::LoadFromSimfile to determine when
-    // to switch the state back to GETTING_SONG_INFO, which means any tags
-    // after it will be ignored.
-    lines.push_back(
-        ssprintf("#STEPFILENAME:%s;", SmEscape(in.GetFilename()).c_str()));
-    lines.push_back(ssprintf("// end step cache tags"));
-  } else {
-    std::string sNoteData;
-    in.GetSMNoteData(sNoteData);
-
-    lines.push_back(song.m_vsKeysoundFile.empty() ? "#NOTES:" : "#NOTES2:");
-
-    TrimLeft(sNoteData);
-    split(sNoteData, "\n", lines, true);
-    lines.push_back(";");
-  }
+  TrimLeft(sNoteData);
+  split(sNoteData, "\n", lines, true);
+  lines.push_back(";");
   return JoinLineList(lines);
 }
 
 bool NotesWriterSSC::Write(
     std::string sPath, const Song& out,
-    const std::vector<Steps*>& vpStepsToSave, bool bSavingCache) {
-  int flags = RageFile::WRITE;
-
-  /* If we're not saving cache, we're saving real data, so enable SLOW_FLUSH
-   * to prevent data loss. If we're saving cache, this will slow things down
-   * too much. */
-  if (!bSavingCache) {
-    flags |= RageFile::SLOW_FLUSH;
-  }
+    const std::vector<Steps*>& vpStepsToSave) {
+  // Enable SLOW_FLUSH to prevent data loss.
+  int flags = RageFile::WRITE | RageFile::SLOW_FLUSH;
 
   RageFile f;
   if (!f.Open(sPath, flags)) {
@@ -589,21 +509,9 @@ bool NotesWriterSSC::Write(
 
   WriteGlobalTags(f, out);
 
-  if (bSavingCache) {
-    f.PutLine(ssprintf("// cache tags:"));
-    f.PutLine(ssprintf("#FIRSTSECOND:%.6f;", out.GetFirstSecondNoOffset()));
-    f.PutLine(ssprintf("#LASTSECOND:%.6f;", out.GetLastSecondNoOffset()));
-    f.PutLine(
-        ssprintf("#SONGFILENAME:%s;", SmEscape(out.m_sSongFileName).c_str()));
-    f.PutLine(ssprintf("#HASMUSIC:%i;", out.m_bHasMusic));
-    f.PutLine(ssprintf("#HASBANNER:%i;", out.m_bHasBanner));
-    f.PutLine(ssprintf("#MUSICLENGTH:%.6f;", out.m_fMusicLengthSeconds));
-    f.PutLine(ssprintf("// end cache tags"));
-  }
-
   // Save specified Steps to this file
   for (const Steps* pSteps : vpStepsToSave) {
-    std::string sTag = GetSSCNoteData(out, *pSteps, bSavingCache);
+    std::string sTag = GetSSCNoteData(out, *pSteps);
     f.PutLine(sTag);
   }
   if (f.Flush() == -1) {
@@ -625,7 +533,7 @@ void NotesWriterSSC::GetEditFileContents(
     sDir = join("/", asParts.begin() + 1, asParts.end());
   }
   sOut += ssprintf("#SONG:%s;\r\n", sDir.c_str());
-  sOut += GetSSCNoteData(*pSong, *pSteps, false);
+  sOut += GetSSCNoteData(*pSong, *pSteps);
 }
 
 std::string NotesWriterSSC::GetEditFileName(

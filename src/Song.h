@@ -90,7 +90,10 @@ class Song {
    * @brief Load a song from the chosen directory.
    *
    * This assumes that there is no song present right now.
-   * @param sDir the song directory from which to load. */
+   * @param sDir the song directory from which to load.
+   *
+   * TODO: make this a static factory method.
+   */
   bool LoadFromSongDir(
       std::string sDir, bool load_autosave = false,
       ProfileSlot from_profile = ProfileSlot_Invalid);
@@ -108,6 +111,11 @@ class Song {
   void TidyUpData(bool fromCache = false);
 
   /**
+   * @brief Normalize background changes parsed from an SM/SSC simfile.
+   */
+  void FixupBackgroundChanges();
+
+  /**
    * @brief Get the new step stats, and determine the last second at the same
    * time. This is called by TidyUpData, after saving the Song.
    * @param wipeNoteData release each chart's decompressed NoteData after
@@ -121,10 +129,9 @@ class Song {
   /**
    * @brief Save to the new SSC file format.
    * @param sPath the path where we're saving the file.
-   * @param bSavingCache a flag to determine if we're saving cache data.
+   * @param autosave a flag to determine if we're saving an autosave file.
    */
-  bool SaveToSSCFile(
-      std::string sPath, bool bSavingCache, bool autosave = false);
+  bool SaveToSSCFile(std::string sPath, bool autosave = false);
   /** @brief Save to the SSC and SM files no matter what. */
   void Save(bool autosave = false);
   /**
@@ -355,6 +362,11 @@ class Song {
   void TidyUpData(
       bool fromCache, const std::set<std::string>& blacklistedImages);
 
+  /**
+   * @brief Derive the song directory, name, group, and source profile from a
+   * directory. sDir must end in a slash. */
+  void SetSongDirAndGroup(const std::string& sDir, ProfileSlot from_profile);
+
  public:
   const std::vector<BackgroundChange>& GetBackgroundChanges(
       BackgroundLayer bl) const;
@@ -438,6 +450,9 @@ class Song {
   bool HasStepsTypeAndDifficulty(StepsType st, Difficulty dc) const;
   // TODO: Allow for a non const version.
   const std::vector<Steps*>& GetAllSteps() const { return m_vpSteps; }
+  const std::vector<Steps*>& GetUnknownStyleSteps() const {
+    return m_UnknownStyleSteps;
+  }
   const std::vector<Steps*>& GetStepsByStepsType(StepsType st) const {
     return m_vpStepsByType[st];
   }
