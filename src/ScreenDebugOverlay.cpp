@@ -693,8 +693,6 @@ class DebugLineAutoplay : public IDebugLine {
     GamePreferences::m_AutoPlay.Set(pc);
     FOREACH_HumanPlayer(p) GAMESTATE->m_pPlayerState[p]->m_PlayerController =
         GamePreferences::m_AutoPlay;
-    FOREACH_MultiPlayer(p) GAMESTATE->m_pMultiPlayerState[p]
-        ->m_PlayerController = GamePreferences::m_AutoPlay;
 
     IDebugLine::DoAndLog(sMessageOut);
   }

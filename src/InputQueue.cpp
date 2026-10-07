@@ -146,15 +146,13 @@ bool InputQueueCode::CheckPattern(
       bool bAllHeldButtonsOK = true;
       for (unsigned i = 0; i < Press.m_aButtonsToHold.size(); i++) {
         GameInput gi(controller, Press.m_aButtonsToHold[i]);
-        if (!INPUTMAPPER->IsBeingPressed(
-                gi, MultiPlayer_Invalid, &pIEP->InputList)) {
+        if (!INPUTMAPPER->IsBeingPressed(gi, &pIEP->InputList)) {
           bAllHeldButtonsOK = false;
         }
       }
       for (unsigned i = 0; i < Press.m_aButtonsToNotHold.size(); i++) {
         GameInput gi(controller, Press.m_aButtonsToNotHold[i]);
-        if (INPUTMAPPER->IsBeingPressed(
-                gi, MultiPlayer_Invalid, &pIEP->InputList)) {
+        if (INPUTMAPPER->IsBeingPressed(gi, &pIEP->InputList)) {
           bAllHeldButtonsOK = false;
         }
       }

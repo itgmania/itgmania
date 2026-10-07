@@ -43,8 +43,7 @@ StatsManager* STATSMAN =
 void AddPlayerStatsToProfile(
     Profile* pProfile, const StageStats& ss, PlayerNumber pn);
 XNode* MakeRecentScoreNode(
-    const StageStats& ss, Trail* pTrail, const PlayerStageStats& pss,
-    MultiPlayer mp);
+    const StageStats& ss, Trail* pTrail, const PlayerStageStats& pss);
 Preference<bool> g_PadmissEnabled("MemoryCardPadmissEnabled", false);
 
 StatsManager::StatsManager() {
@@ -96,12 +95,6 @@ static StageStats AccumPlayedStageStats(const std::vector<StageStats>& vss) {
     for (int r = 0; r < RadarCategory_TapsAndHolds; r++) {
       ssreturn.m_player[p].m_radarPossible[r] /= uNumSongs;
       ssreturn.m_player[p].m_radarActual[r] /= uNumSongs;
-    }
-  }
-  FOREACH_EnabledMultiPlayer(p) {
-    for (int r = 0; r < RadarCategory_TapsAndHolds; r++) {
-      ssreturn.m_multiPlayer[p].m_radarPossible[r] /= uNumSongs;
-      ssreturn.m_multiPlayer[p].m_radarActual[r] /= uNumSongs;
     }
   }
   return ssreturn;
@@ -161,8 +154,7 @@ void AddPlayerStatsToProfile(
 }
 
 XNode* MakeRecentScoreNode(
-    const StageStats& ss, Trail* pTrail, const PlayerStageStats& pss,
-    MultiPlayer mp) {
+    const StageStats& ss, Trail* pTrail, const PlayerStageStats& pss) {
   XNode* pNode = nullptr;
   if (GAMESTATE->IsCourseMode()) {
     pNode = new XNode("HighScoreForACourseAndTrail");
@@ -188,7 +180,6 @@ XNode* MakeRecentScoreNode(
   }
 
   XNode* pHighScore = pss.m_HighScore.CreateNode();
-  pHighScore->AppendChild("Pad", mp);
   pHighScore->AppendChild("StageGuid", GAMESTATE->m_sStageGUID);
   pHighScore->AppendChild("Guid", CryptManager::GenerateRandomUUID());
 
@@ -224,27 +215,24 @@ void StatsManager::CommitStatsToProfiles(const StageStats* pSS) {
   pMachineProfile->m_iTotalGameplaySeconds += iGameplaySeconds;
   pMachineProfile->m_iNumTotalSongsPlayed += pSS->m_vpPlayedSongs.size();
 
-  if (!GAMESTATE->m_bMultiplayer)  // FIXME
-  {
-    FOREACH_HumanPlayer(pn) {
-      Profile* pPlayerProfile = PROFILEMAN->GetProfile(pn);
-      if (pPlayerProfile) {
-        pPlayerProfile->m_iTotalGameplaySeconds += iGameplaySeconds;
-        pPlayerProfile->m_iNumTotalSongsPlayed += pSS->m_vpPlayedSongs.size();
-      }
+  FOREACH_HumanPlayer(pn) {
+    Profile* pPlayerProfile = PROFILEMAN->GetProfile(pn);
+    if (pPlayerProfile) {
+      pPlayerProfile->m_iTotalGameplaySeconds += iGameplaySeconds;
+      pPlayerProfile->m_iNumTotalSongsPlayed += pSS->m_vpPlayedSongs.size();
+    }
 
-      LOG->Trace("Adding stats to machine profile...");
-      AddPlayerStatsToProfile(pMachineProfile, *pSS, pn);
+    LOG->Trace("Adding stats to machine profile...");
+    AddPlayerStatsToProfile(pMachineProfile, *pSS, pn);
 
-      if (pPlayerProfile) {
-        LOG->Trace("Adding stats to player profile...");
-        AddPlayerStatsToProfile(pPlayerProfile, *pSS, pn);
-      }
+    if (pPlayerProfile) {
+      LOG->Trace("Adding stats to player profile...");
+      AddPlayerStatsToProfile(pPlayerProfile, *pSS, pn);
+    }
 
-      // No marathons etc for now...
-      if (g_PadmissEnabled.Get() && pSS->m_playMode == PLAY_MODE_REGULAR) {
-        SavePadmissScore(pSS, pn);
-      }
+    // No marathons etc for now...
+    if (g_PadmissEnabled.Get() && pSS->m_playMode == PLAY_MODE_REGULAR) {
+      SavePadmissScore(pSS, pn);
     }
   }
 
@@ -270,24 +258,12 @@ void StatsManager::SaveUploadFile(const StageStats* pSS) {
     recent = xml->AppendChild(new XNode("RecentSongScores"));
   }
 
-  if (!GAMESTATE->m_bMultiplayer) {
-    FOREACH_HumanPlayer(p) {
-      if (pSS->m_player[p].m_HighScore.IsEmpty()) {
-        continue;
-      }
-      recent->AppendChild(MakeRecentScoreNode(
-          *pSS, GAMESTATE->m_pCurTrail[p], pSS->m_player[p],
-          MultiPlayer_Invalid));
+  FOREACH_HumanPlayer(p) {
+    if (pSS->m_player[p].m_HighScore.IsEmpty()) {
+      continue;
     }
-  } else {
-    FOREACH_EnabledMultiPlayer(mp) {
-      if (pSS->m_multiPlayer[mp].m_HighScore.IsEmpty()) {
-        continue;
-      }
-      recent->AppendChild(MakeRecentScoreNode(
-          *pSS, GAMESTATE->m_pCurTrail[GAMESTATE->GetMasterPlayerNumber()],
-          pSS->m_multiPlayer[mp], mp));
-    }
+    recent->AppendChild(
+        MakeRecentScoreNode(*pSS, GAMESTATE->m_pCurTrail[p], pSS->m_player[p]));
   }
 
   std::string sDate = DateTime::GetNowDate().GetString();
@@ -489,8 +465,6 @@ void StatsManager::UnjoinPlayer(PlayerNumber pn) {
     StageStats& ss = m_vPlayedStageStats[i];
     bool bIsActive = false;
     FOREACH_PlayerNumber(p) if (ss.m_player[p].m_bJoined) bIsActive = true;
-    FOREACH_MultiPlayer(mp) if (ss.m_multiPlayer[mp].m_bJoined) bIsActive =
-        true;
     if (bIsActive) {
       continue;
     }
@@ -504,12 +478,6 @@ void StatsManager::GetStepsInUse(std::set<Steps*>& apInUseOut) const {
   for (int i = 0; i < (int)m_vPlayedStageStats.size(); ++i) {
     FOREACH_PlayerNumber(pn) {
       const PlayerStageStats& pss = m_vPlayedStageStats[i].m_player[pn];
-      apInUseOut.insert(
-          pss.m_vpPossibleSteps.begin(), pss.m_vpPossibleSteps.end());
-    }
-
-    FOREACH_MultiPlayer(mp) {
-      const PlayerStageStats& pss = m_vPlayedStageStats[i].m_multiPlayer[mp];
       apInUseOut.insert(
           pss.m_vpPossibleSteps.begin(), pss.m_vpPossibleSteps.end());
     }
