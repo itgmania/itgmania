@@ -52,6 +52,7 @@ struct SSCLoader : public SMLoader {
    */
   virtual bool LoadFromSimfile(
       const std::string& sPath, Song& out, bool bFromCache = false);
+  bool LoadAdditionalChartsFromSimfile(const std::string& sPath, Song& out);
 
   /**
    * @brief Attempt to load an edit from the hard drive.
@@ -92,6 +93,11 @@ struct SSCLoader : public SMLoader {
   void ProcessLabels(TimingData&, const std::string);
   virtual void ProcessCombos(TimingData&, const std::string, const int = -1);
   void ProcessScrolls(TimingData&, const std::string);
+
+ private:
+  bool LoadFromSimfileInternal(
+      const std::string& sPath, Song& out, bool bFromCache,
+      bool bAdditionalCharts);
 };
 
 #endif
