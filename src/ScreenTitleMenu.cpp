@@ -41,7 +41,6 @@ void ScreenTitleMenu::Init() {
   SOUND->PlayOnceFromAnnouncer("title menu game name");
 }
 
-static LocalizedString THEME_("ScreenTitleMenu", "Theme");
 static LocalizedString ANNOUNCER_("ScreenTitleMenu", "Announcer");
 bool ScreenTitleMenu::Input(const InputEventPlus& input) {
 #if defined(DEBUG)

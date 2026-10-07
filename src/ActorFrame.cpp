@@ -673,8 +673,6 @@ class LunaActorFrame : public Luna<ActorFrame> {
     COMMON_RETURN_SELF;
   }
 
-  // static int CustomLighting( T* p, lua_State *L )			{
-  // p->SetCustomLighting(BArg(1)); COMMON_RETURN_SELF; }
   static int SetAmbientLightColor(T* p, lua_State* L) {
     RageColor c;
     c.FromStackCompat(L, 1);

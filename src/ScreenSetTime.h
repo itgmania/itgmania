@@ -44,7 +44,6 @@ class ScreenSetTime : public ScreenWithMenuElements {
   RageSound m_soundChangeSelection;
   BitmapText m_textTitle[NUM_SetTimeSelection];
   BitmapText m_textValue[NUM_SetTimeSelection];
-  BitmapText m_textDayOfWeek;
 };
 
 #endif

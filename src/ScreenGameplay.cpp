@@ -124,10 +124,6 @@ AutoScreenMessage(SM_StartLoadingNextSong);
 AutoScreenMessage(SM_DoPrevScreen);
 AutoScreenMessage(SM_DoNextScreen);
 
-// received while STATE_INTRO
-AutoScreenMessage(SM_StartHereWeGo);
-AutoScreenMessage(SM_StopHereWeGo);
-
 AutoScreenMessage(SM_BattleTrickLevel1);
 AutoScreenMessage(SM_BattleTrickLevel2);
 AutoScreenMessage(SM_BattleTrickLevel3);

@@ -50,8 +50,6 @@ class DancingCharacters : public ActorFrame {
   float m_fThisCameraStartBeat;
   float m_fThisCameraEndBeat;
 
-  std::array<bool, NUM_PLAYERS> m_bHas2DElements;
-
   std::array<AutoActor, NUM_PLAYERS> m_bgIdle;
   std::array<AutoActor, NUM_PLAYERS> m_bgMiss;
   std::array<AutoActor, NUM_PLAYERS> m_bgGood;

@@ -50,9 +50,6 @@ class WheelBase : public ActorFrame {
   int IsMoving() const;
   bool IsSettled() const;
 
-  void GetItemPosition(
-      float fPosOffsetsFromMiddle, float& fX_out, float& fY_out, float& fZ_out,
-      float& fRotationX_out);
   void SetItemPosition(Actor& item, int item_index, float offset_from_middle);
 
   virtual bool Select();  // return true if this selection can end the screen

@@ -55,7 +55,6 @@ Preference<bool> ProfileManager::m_bProfileCourseEdits(
 Preference1D<std::string> ProfileManager::m_sDefaultLocalProfileID(
     DefaultLocalProfileIDInit, NUM_PLAYERS);
 
-const std::string NEW_MEM_CARD_NAME = "";
 const std::string USER_PROFILES_DIR = "/Save/LocalProfiles/";
 const std::string MACHINE_PROFILE_DIR = "/Save/MachineProfile/";
 const std::string LAST_GOOD_SUBDIR = "LastGood/";

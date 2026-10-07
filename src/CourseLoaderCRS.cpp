@@ -706,9 +706,6 @@ bool CourseLoaderCRS::ParseCommaSeparatedList(
     const std::string& sParamValue, std::vector<std::string>& dest,
     const std::string& sParamName, const std::string& sPath) {
   std::vector<std::string> items;
-  //...and here is where the string unescaping gets handled
-  std::string unescapedParamValue = sParamValue;
-
   split_minding_escaped_delims(sParamValue, ",", items);
   if (items.size() == 0) {
     LOG->UserLog(

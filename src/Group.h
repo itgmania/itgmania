@@ -100,12 +100,6 @@ class Group {
    */
   int GetYearReleased() const { return m_iYearReleased; };
 
-  /**
-   * @brief The version of the Pack.ini info
-   *
-   */
-  int GetVersion() const { return m_iVersion; };
-
  private:
   /**
    * @brief This is the title of the group as its displayed to the user

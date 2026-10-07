@@ -9,7 +9,6 @@
 
 class Actor;
 class Screen;
-struct Menu;
 struct lua_State;
 class InputEventPlus;
 /** @brief Manager/container for Screens. */
@@ -79,12 +78,9 @@ class ScreenManager {
   void ZeroNextUpdate();
 
  private:
-  Screen* m_pInputFocus;  // nullptr = top of m_ScreenStack
-
   // Screen loads, removals, and concurrent prepares are delayed until the next
   // update.
   std::string m_sDelayedScreen;
-  std::string m_sDelayedConcurrentPrepare;
   ScreenMessage m_OnDonePreparingScreen;
   ScreenMessage m_PopTopScreen;
 

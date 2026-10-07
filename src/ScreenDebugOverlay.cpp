@@ -175,7 +175,6 @@ struct MapDebugToDI {
 static MapDebugToDI g_Mappings;
 
 static LocalizedString IN_GAMEPLAY("ScreenDebugOverlay", "%s in gameplay");
-static LocalizedString OR("ScreenDebugOverlay", "or");
 static std::string GetDebugButtonName(const IDebugLine* pLine) {
   std::string s = INPUTMAN->GetDeviceSpecificInputString(pLine->m_Button);
   IDebugLine::Type type = pLine->GetType();
@@ -602,18 +601,11 @@ static LocalizedString AUTOSYNC("ScreenDebugOverlay", "Autosync");
 static LocalizedString COIN_MODE("ScreenDebugOverlay", "CoinMode");
 static LocalizedString HALT("ScreenDebugOverlay", "Halt");
 static LocalizedString LIGHTS_DEBUG("ScreenDebugOverlay", "Lights Debug");
-static LocalizedString MONKEY_INPUT("ScreenDebugOverlay", "Monkey Input");
 static LocalizedString RENDERING_STATS("ScreenDebugOverlay", "Rendering Stats");
 static LocalizedString VSYNC("ScreenDebugOverlay", "Vsync");
 static LocalizedString MULTITEXTURE("ScreenDebugOverlay", "Multitexture");
-static LocalizedString SCREEN_TEST_MODE(
-    "ScreenDebugOverlay", "Screen Test Mode");
 static LocalizedString SCREEN_SHOW_MASKS("ScreenDebugOverlay", "Show Masks");
 static LocalizedString PROFILE("ScreenDebugOverlay", "Profile");
-static LocalizedString CLEAR_PROFILE_STATS(
-    "ScreenDebugOverlay", "Clear Profile Stats");
-static LocalizedString FILL_PROFILE_STATS(
-    "ScreenDebugOverlay", "Fill Profile Stats");
 static LocalizedString SEND_NOTES_ENDED(
     "ScreenDebugOverlay", "Send Notes Ended");
 static LocalizedString RESET_KEY_MAP(
@@ -646,7 +638,6 @@ static LocalizedString VISUAL_DELAY_DOWN(
 static LocalizedString VOLUME_UP("ScreenDebugOverlay", "Volume Up");
 static LocalizedString VOLUME_DOWN("ScreenDebugOverlay", "Volume Down");
 static LocalizedString UPTIME("ScreenDebugOverlay", "Uptime");
-static LocalizedString FORCE_CRASH("ScreenDebugOverlay", "Force Crash");
 static LocalizedString SLOW("ScreenDebugOverlay", "Slow");
 static LocalizedString CPU("ScreenDebugOverlay", "CPU");
 static LocalizedString SONG("ScreenDebugOverlay", "Song");
@@ -833,15 +824,6 @@ class DebugLineLightsDebug : public IDebugLine {
   }
 };
 
-class DebugLineMonkeyInput : public IDebugLine {
-  virtual std::string GetDisplayTitle() { return MONKEY_INPUT.GetValue(); }
-  virtual bool IsEnabled() { return PREFSMAN->m_bMonkeyInput.Get(); }
-  virtual void DoAndLog(std::string& sMessageOut) {
-    PREFSMAN->m_bMonkeyInput.Set(!PREFSMAN->m_bMonkeyInput);
-    IDebugLine::DoAndLog(sMessageOut);
-  }
-};
-
 class DebugLineStats : public IDebugLine {
   virtual std::string GetDisplayTitle() { return RENDERING_STATS.GetValue(); }
   virtual bool IsEnabled() { return PREFSMAN->m_bShowStats.Get(); }
@@ -914,112 +896,6 @@ class DebugLineProfileSlot : public IDebugLine {
       g_ProfileSlot = ProfileSlot_Player1;
     }
 
-    IDebugLine::DoAndLog(sMessageOut);
-  }
-};
-
-class DebugLineClearProfileStats : public IDebugLine {
-  virtual std::string GetDisplayTitle() {
-    return CLEAR_PROFILE_STATS.GetValue();
-  }
-  virtual std::string GetDisplayValue() { return std::string(); }
-  virtual bool IsEnabled() { return IsSelectProfilePersistent(); }
-  virtual std::string GetPageName() const { return "Profiles"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
-    Profile* pProfile = PROFILEMAN->GetProfile(g_ProfileSlot);
-    pProfile->ClearStats();
-    IDebugLine::DoAndLog(sMessageOut);
-  }
-};
-
-static HighScore MakeRandomHighScore(float fPercentDP) {
-  HighScore hs;
-  hs.SetName("FAKE");
-  Grade g = (Grade)SCALE(RandomInt(6), 0, 4, Grade_Tier01, Grade_Tier06);
-  if (g == Grade_Tier06) {
-    g = Grade_Failed;
-  }
-  hs.SetGrade(g);
-  hs.SetScore(RandomInt(100 * 1000));
-  hs.SetPercentDP(fPercentDP);
-  hs.SetAliveSeconds(randomf(30.0f, 100.0f));
-  PlayerOptions po;
-  po.ChooseRandomModifiers();
-  hs.SetModifiers(po.GetString());
-  hs.SetDateTime(DateTime::GetNowDateTime());
-  hs.SetPlayerGuid(Profile::MakeGuid());
-  hs.SetMachineGuid(Profile::MakeGuid());
-  hs.SetProductID(RandomInt(10));
-  FOREACH_ENUM(TapNoteScore, tns)
-  hs.SetTapNoteScore(tns, RandomInt(100));
-  FOREACH_ENUM(HoldNoteScore, hns)
-  hs.SetHoldNoteScore(hns, RandomInt(100));
-  RadarValues rv;
-  FOREACH_ENUM(RadarCategory, rc) { rv[rc] = randomf(0, 1); }
-  hs.SetRadarValues(rv);
-
-  return hs;
-}
-
-static void FillProfileStats(Profile* pProfile) {
-  pProfile->InitSongScores();
-  pProfile->InitCourseScores();
-
-  static int s_iCount = 0;
-  // Choose a percent for all scores. This is useful for testing unlocks
-  // where some elements are unlocked at a certain percent complete.
-  float fPercentDP = s_iCount ? randomf(0.6f, 1.0f) : 1.0f;
-  s_iCount = (s_iCount + 1) % 2;
-
-  int iCount = pProfile->IsMachine()
-                   ? PREFSMAN->m_iMaxHighScoresPerListForMachine.Get()
-                   : PREFSMAN->m_iMaxHighScoresPerListForPlayer.Get();
-
-  std::vector<Song*> vpAllSongs = SONGMAN->GetAllSongs();
-  for (const Song* pSong : vpAllSongs) {
-    std::vector<Steps*> vpAllSteps = pSong->GetAllSteps();
-    for (const Steps* pSteps : vpAllSteps) {
-      if (rand() % 5) {
-        pProfile->IncrementStepsPlayCount(pSong, pSteps);
-      }
-      for (int i = 0; i < iCount; i++) {
-        int iIndex = 0;
-        pProfile->AddStepsHighScore(
-            pSong, pSteps, MakeRandomHighScore(fPercentDP), iIndex);
-      }
-    }
-  }
-
-  std::vector<Course*> vpAllCourses;
-  SONGMAN->GetAllCourses(vpAllCourses, true);
-  for (const Course* pCourse : vpAllCourses) {
-    std::vector<Trail*> vpAllTrails;
-    pCourse->GetAllTrails(vpAllTrails);
-    for (const Trail* pTrail : vpAllTrails) {
-      if (rand() % 5) {
-        pProfile->IncrementCoursePlayCount(pCourse, pTrail);
-      }
-      for (int i = 0; i < iCount; i++) {
-        int iIndex = 0;
-        pProfile->AddCourseHighScore(
-            pCourse, pTrail, MakeRandomHighScore(fPercentDP), iIndex);
-      }
-    }
-  }
-
-  SCREENMAN->ZeroNextUpdate();
-}
-
-class DebugLineFillProfileStats : public IDebugLine {
-  virtual std::string GetDisplayTitle() {
-    return FILL_PROFILE_STATS.GetValue();
-  }
-  virtual std::string GetDisplayValue() { return std::string(); }
-  virtual bool IsEnabled() { return IsSelectProfilePersistent(); }
-  virtual std::string GetPageName() const { return "Profiles"; }
-  virtual void DoAndLog(std::string& sMessageOut) {
-    Profile* pProfile = PROFILEMAN->GetProfile(g_ProfileSlot);
-    FillProfileStats(pProfile);
     IDebugLine::DoAndLog(sMessageOut);
   }
 };
@@ -1345,13 +1221,6 @@ class DebugLineVisualDelayDown : public IDebugLine {
   }
 };
 
-class DebugLineForceCrash : public IDebugLine {
-  virtual std::string GetDisplayTitle() { return FORCE_CRASH.GetValue(); }
-  virtual std::string GetDisplayValue() { return std::string(); }
-  virtual bool IsEnabled() { return false; }
-  virtual void DoAndLog(std::string& sMessageOut) { FAIL_M("DebugLineCrash"); }
-};
-
 class DebugLineUptime : public IDebugLine {
   virtual std::string GetDisplayTitle() { return UPTIME.GetValue(); }
   virtual std::string GetDisplayValue() {
@@ -1403,17 +1272,14 @@ DECLARE_ONE(DebugLineCoinMode);
 DECLARE_ONE(DebugLineSlow);
 DECLARE_ONE(DebugLineHalt);
 DECLARE_ONE(DebugLineLightsDebug);
-// DECLARE_ONE( DebugLineMonkeyInput );
-DECLARE_ONE(FakeDebugLine1);  // monkey input
+DECLARE_ONE(FakeDebugLine1);
 DECLARE_ONE(DebugLineStats);
 DECLARE_ONE(DebugLineVsync);
 DECLARE_ONE(DebugLineAllowMultitexture);
 DECLARE_ONE(DebugLineShowMasks);
 DECLARE_ONE(DebugLineProfileSlot);
-// DECLARE_ONE( DebugLineClearProfileStats );
-DECLARE_ONE(FakeClearProfileStats);  // clear profile stats
-// DECLARE_ONE( DebugLineFillProfileStats );
-DECLARE_ONE(FakeFillProfileStats);  // fill profile stats
+DECLARE_ONE(FakeClearProfileStats);
+DECLARE_ONE(FakeFillProfileStats);
 DECLARE_ONE(DebugLineSendNotesEnded);
 DECLARE_ONE(DebugLineReloadCurrentScreen);
 DECLARE_ONE(DebugLineRestartCurrentScreen);
@@ -1435,7 +1301,6 @@ DECLARE_ONE(DebugLineVolumeDown);
 DECLARE_ONE(DebugLineVolumeUp);
 DECLARE_ONE(DebugLineVisualDelayDown);
 DECLARE_ONE(DebugLineVisualDelayUp);
-// DECLARE_ONE( DebugLineForceCrash );
 DECLARE_ONE(FakeDebugLine2);  // force crash
 DECLARE_ONE(DebugLineUptime);
 DECLARE_ONE(DebugLineResetKeyMapping);

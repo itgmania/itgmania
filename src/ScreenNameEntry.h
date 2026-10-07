@@ -40,7 +40,6 @@ class ScreenNameEntry : public ScreenWithMenuElements {
     std::vector<float> m_Xs;
     bool m_bDone;
     BitmapText m_Stamp;
-    static std::string g_sNameChars;
   };
 
   enum { ABS_MAX_RANKING_NAME_LENGTH = 10 };
