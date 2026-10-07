@@ -172,8 +172,11 @@ GameState::GameState()
 
   m_PlayMode.Set(
       PlayMode_Invalid);  // used by IsPlayerEnabled before the first screen
-  FOREACH_PlayerNumber(p) m_bSideIsJoined[p] =
-      false;  // used by GetNumSidesJoined before the first screen
+  FOREACH_PlayerNumber(p) {
+    // used by GetNumSidesJoined before the first screen
+    m_bSideIsJoined[p] = false;
+    m_bPlayerHasCommittedGameplay[p] = false;
+  }
 
   FOREACH_PlayerNumber(p) {
     m_pPlayerState[p] = new PlayerState;
@@ -281,6 +284,7 @@ void GameState::ResetPlayer(PlayerNumber pn) {
   m_pCurTrail[pn].Set(nullptr);
   m_pPlayerState[pn]->Reset();
   PROFILEMAN->UnloadProfile(pn);
+  m_bPlayerHasCommittedGameplay[pn] = false;
   ResetPlayerOptions(pn);
 }
 
@@ -594,6 +598,38 @@ void GameState::BeginGame() {
   FOREACH_PlayerNumber(pn) MEMCARDMAN->UnlockCard(pn);
 }
 
+bool GameState::CanAcceptProfile(PlayerNumber pn) const {
+  return IsHumanPlayer(pn) && !PROFILEMAN->IsPersistentProfile(pn) &&
+         !m_bPlayerHasCommittedGameplay[pn];
+}
+
+bool GameState::LoadProfileOverGuest(PlayerNumber pn, bool bLoadEdits) {
+  if (!CanAcceptProfile(pn)) {
+    return false;
+  }
+
+  MEMCARDMAN->MountCard(pn);
+  const bool bSuccess = PROFILEMAN->LoadFirstAvailableProfile(
+      pn, bLoadEdits);  // load full profile
+  MEMCARDMAN->UnmountCard(pn);
+
+  if (!bSuccess) {
+    return false;
+  }
+
+  // Lock the card on successful load, so we won't allow it to be changed.
+  MEMCARDMAN->LockCard(pn);
+
+  LoadCurrentSettingsFromProfile(pn);
+
+  Profile* pPlayerProfile = PROFILEMAN->GetProfile(pn);
+  if (pPlayerProfile) {
+    pPlayerProfile->m_iTotalSessions++;
+  }
+
+  return true;
+}
+
 void GameState::LoadProfiles(bool bLoadEdits) {
   // Unlock any cards that we might want to load.
   FOREACH_HumanPlayer(pn) if (!PROFILEMAN->IsPersistentProfile(pn))
@@ -601,31 +637,7 @@ void GameState::LoadProfiles(bool bLoadEdits) {
 
   MEMCARDMAN->WaitForCheckingToComplete();
 
-  FOREACH_HumanPlayer(pn) {
-    // If a profile is already loaded, this was already called.
-    if (PROFILEMAN->IsPersistentProfile(pn)) {
-      continue;
-    }
-
-    MEMCARDMAN->MountCard(pn);
-    bool bSuccess = PROFILEMAN->LoadFirstAvailableProfile(
-        pn, bLoadEdits);  // load full profile
-    MEMCARDMAN->UnmountCard(pn);
-
-    if (!bSuccess) {
-      continue;
-    }
-
-    // Lock the card on successful load, so we won't allow it to be changed.
-    MEMCARDMAN->LockCard(pn);
-
-    LoadCurrentSettingsFromProfile(pn);
-
-    Profile* pPlayerProfile = PROFILEMAN->GetProfile(pn);
-    if (pPlayerProfile) {
-      pPlayerProfile->m_iTotalSessions++;
-    }
-  }
+  FOREACH_HumanPlayer(pn) { LoadProfileOverGuest(pn, bLoadEdits); }
 }
 
 void GameState::SavePlayerProfiles() {
@@ -657,22 +669,17 @@ void GameState::SavePlayerProfile(PlayerNumber pn) {
   }
 }
 
-bool GameState::HaveProfileToLoad() {
-  FOREACH_HumanPlayer(pn) {
-    // We won't load this profile if it's already loaded.
-    if (PROFILEMAN->IsPersistentProfile(pn)) {
-      continue;
-    }
-
-    // If a memory card is inserted, we'l try to load it.
-    if (MEMCARDMAN->CardInserted(pn)) {
-      return true;
-    }
-    if (!PROFILEMAN->m_sDefaultLocalProfileID[pn].Get().empty()) {
-      return true;
-    }
+bool GameState::HaveProfileToLoad(PlayerNumber pn) const {
+  if (!CanAcceptProfile(pn)) {
+    return false;
   }
 
+  return MEMCARDMAN->CardInserted(pn) ||
+         !PROFILEMAN->m_sDefaultLocalProfileID[pn].Get().empty();
+}
+
+bool GameState::HaveProfileToLoad() {
+  FOREACH_HumanPlayer(pn) if (HaveProfileToLoad(pn)) return true;
   return false;
 }
 
@@ -791,6 +798,7 @@ void GameState::CommitStageStats() {
   }
 
   STATSMAN->CommitStatsToProfiles(&STATSMAN->m_CurStageStats);
+  FOREACH_HumanPlayer(p) m_bPlayerHasCommittedGameplay[p] = true;
 
   // Update TotalPlaySeconds.
   int iPlaySeconds = std::max(0, (int)m_timeGameStarted.GetDeltaTime());

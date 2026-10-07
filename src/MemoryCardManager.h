@@ -8,6 +8,7 @@
 #include "PlayerNumber.h"
 #include "Preference.h"
 #include "RageSound.h"
+#include "RageTimer.h"
 #include "arch/MemoryCard/MemoryCardDriver.h"
 
 extern const std::string MEM_CARD_MOUNT_POINT[NUM_PLAYERS];
@@ -20,6 +21,9 @@ class MemoryCardManager {
   void Update();
 
   MemoryCardState GetCardState(PlayerNumber pn) const { return m_State[pn]; }
+  float GetCardStateAge(PlayerNumber pn) const {
+    return m_StateChangedAt[pn].Ago();
+  }
   std::string GetCardError(PlayerNumber pn) const { return m_sError[pn]; }
 
   void WaitForCheckingToComplete();
@@ -76,6 +80,7 @@ class MemoryCardManager {
                                    // finalized, blank if none
 
   MemoryCardState m_State[NUM_PLAYERS];
+  RageTimer m_StateChangedAt[NUM_PLAYERS];
   std::string m_sError[NUM_PLAYERS];  // if MemoryCardState_Error
 
   RageSound m_soundReady;
