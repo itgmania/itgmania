@@ -52,6 +52,7 @@ class MusicWheel : public WheelBase {
 
   bool SelectSong(const Song* p);
   bool SelectCourse(const Course* p);
+  bool HasSongs();
   bool SelectSection(const std::string& SectionName);
   bool CloseOpenSectionOneLevel();
   void SetOpenSection(std::string group);

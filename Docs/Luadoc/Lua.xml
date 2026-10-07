@@ -937,6 +937,7 @@
 			<Function name='GetPreferredSong'/>
 			<Function name='GetPreferredSongGroup'/>
 			<Function name='GetPremium'/>
+			<Function name='GetPremiumFreeSecondsLeft'/>
 			<Function name='GetSmallestNumStagesLeftForAnyHumanPlayer'/>
 			<Function name='GetSongBPS'/>
 			<Function name='GetSongBeat'/>
@@ -970,6 +971,8 @@
 			<Function name='IsGoalComplete'/>
 			<Function name='IsHumanPlayer'/>
 			<Function name='IsPlayerEnabled'/>
+			<Function name='IsPremiumFreeActive'/>
+			<Function name='IsPremiumFreeExpired'/>
 			<Function name='IsSideJoined'/>
 			<Function name='IsWinner'/>
 			<Function name='JoinInput'/>
@@ -1129,6 +1132,7 @@
 			<Function name='ChangeSort'/>
 			<Function name='GetCurrentSections'/>
 			<Function name='GetSelectedSection'/>
+			<Function name='HasSongs'/>
 			<Function name='IsRouletting'/>
 			<Function name='Move'/>
 			<Function name='SelectCourse'/>
