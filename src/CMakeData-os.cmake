@@ -105,10 +105,8 @@ else()
                 "archutils/Unix/GetSysInfo.h"
                 "archutils/Unix/SignalHandler.h"
                 "archutils/Unix/SpecialDirs.h")
-    if(X11_FOUND)
-      list(APPEND SMDATA_OS_SRC "archutils/Unix/X11Helper.cpp")
-      list(APPEND SMDATA_OS_HPP "archutils/Unix/X11Helper.h")
-    endif()
+    list(APPEND SMDATA_OS_SRC "archutils/Unix/X11Helper.cpp")
+    list(APPEND SMDATA_OS_HPP "archutils/Unix/X11Helper.h")
     if(HAS_PTHREAD)
       list(APPEND SMDATA_OS_SRC "archutils/Common/PthreadHelpers.cpp")
       list(APPEND SMDATA_OS_HPP "archutils/Common/PthreadHelpers.h")

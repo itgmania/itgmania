@@ -47,19 +47,19 @@ You can choose between using the installer or using the portable build. Using th
 
 * **Debian-based** (Ubuntu, Mint, MX Linux, Pop!_OS, etc):
 
-  * `sudo apt install libgdk-pixbuf-2.0-0 libgl1 libglvnd0 libgtk-3-0 libusb-0.1-4 libxinerama1 libxtst6`
+  * `sudo apt install libgdk-pixbuf-2.0-0 libgl1 libglvnd0 libgtk-3-0 libusb-0.1-4 libxinerama1 libdbus-1-3`
 
 * **Fedora-based** (Bazzite, Nobara, AlmaLinux, etc):
 
-  * `sudo dnf install gdk-pixbuf2 gtk3 libusb-compat-0.1 libXinerama libXtst`
+  * `sudo dnf install gdk-pixbuf2 gtk3 libusb-compat-0.1 libXinerama dbus-libs`
 
 *  **Arch-based** (CachyOS, EndeavourOS, Manjaro, Garuda, etc):
 
-   * `sudo pacman -S mesa gtk3 libusb-compat libxinerama libxtst llvm-libs`
+   * `sudo pacman -S mesa gtk3 libusb-compat libxinerama dbus llvm-libs`
 
 * **Gentoo Linux**:
 
-   * `sudo emerge --ask dev-build/cmake media-libs/alsa-lib media-libs/glew media-libs/libglvnd dev-libs/libusb dev-lang/nasm media-libs/libpulse x11-libs/gtk+ media-sound/alsa-utils`  
+   * `sudo emerge --ask dev-build/cmake media-libs/alsa-lib media-libs/glew media-libs/libglvnd dev-libs/libusb dev-lang/nasm media-libs/libpulse x11-libs/gtk+ media-sound/alsa-utils sys-apps/dbus`  
 
 * **OpenSUSE Linux**:
 

@@ -165,34 +165,14 @@ elseif(MACOSX)
 elseif(LINUX OR BSD)
   if(WITH_GTK3)
     find_package("GTK3" 2.0)
-    if(${GTK3_FOUND})
-      set(HAS_GTK3 TRUE)
-    else()
-      set(HAS_GTK3 FALSE)
+    if(NOT ${GTK3_FOUND})
       message(
         "GTK3 was not found on your system. There will be no loading window.")
     endif()
-  else()
-    set(HAS_GTK3 FALSE)
   endif()
 
-  set(HAS_X11 FALSE)
-  if(WITH_X11)
-    find_package(X11 REQUIRED)
-    set(HAS_X11 TRUE)
-  endif()
-
-  set(HAS_XRANDR FALSE)
-  if(WITH_XRANDR)
-    find_package(Xrandr REQUIRED)
-    set(HAS_XRANDR TRUE)
-  endif()
-
-  set(HAS_LIBXTST FALSE)
-  if(WITH_LIBXTST)
-    find_package(Xtst REQUIRED)
-    set(HAS_LIBXTST TRUE)
-  endif()
+  find_package(X11 REQUIRED)
+  find_package(Xrandr REQUIRED)
 
   set(HAS_XINERAMA FALSE)
   if(WITH_XINERAMA)
@@ -218,13 +198,7 @@ elseif(LINUX OR BSD)
     set(HAS_JACK TRUE)
   endif()
 
-  set(HAS_OSS FALSE)
-  if(WITH_OSS)
-    find_package(OSS)
-    set(HAS_OSS TRUE)
-  endif()
-
-  if( NOT (HAS_OSS OR HAS_JACK OR HAS_ALSA OR HAS_PULSE) )
+  if( NOT (HAS_JACK OR HAS_ALSA OR HAS_PULSE) )
     message(
       FATAL_ERROR
         "No sound libraries found (or selected). You will require at least one."
@@ -251,6 +225,7 @@ elseif(LINUX OR BSD)
   endif()
 
   find_package(udev REQUIRED)
+  find_package(DBUS REQUIRED)
 endif(WIN32) # LINUX OR BSD, APPLE
 
 configure_file("${SM_SRC_DIR}/verstub.cpp.in"

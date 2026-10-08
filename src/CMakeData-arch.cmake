@@ -69,10 +69,6 @@ else() # Unix
     list(APPEND SMDATA_ARCH_SOUND_SRC "arch/Sound/RageSoundDriver_JACK.cpp")
     list(APPEND SMDATA_ARCH_SOUND_HPP "arch/Sound/RageSoundDriver_JACK.h")
   endif()
-  if(HAS_OSS)
-    list(APPEND SMDATA_ARCH_SOUND_SRC "arch/Sound/RageSoundDriver_OSS.cpp")
-    list(APPEND SMDATA_ARCH_SOUND_HPP "arch/Sound/RageSoundDriver_OSS.h")
-  endif()
 endif()
 
 source_group("Arch Specific\\\\Sound"
@@ -140,12 +136,10 @@ elseif(APPLE)
   list(APPEND SMDATA_ARCH_LOWLEVEL_HPP
               "arch/LowLevelWindow/LowLevelWindow_MacOSX.h")
 else(UNIX)
-  if(X11_FOUND)
-    list(APPEND SMDATA_ARCH_LOWLEVEL_SRC
-                "arch/LowLevelWindow/LowLevelWindow_X11.cpp")
-    list(APPEND SMDATA_ARCH_LOWLEVEL_HPP
-                "arch/LowLevelWindow/LowLevelWindow_X11.h")
-  endif()
+  list(APPEND SMDATA_ARCH_LOWLEVEL_SRC
+              "arch/LowLevelWindow/LowLevelWindow_X11.cpp")
+  list(APPEND SMDATA_ARCH_LOWLEVEL_HPP
+              "arch/LowLevelWindow/LowLevelWindow_X11.h")
 endif(WIN32)
 
 source_group("Arch Specific\\\\Low Level Window"
@@ -306,10 +300,8 @@ else() # Unix/Linux
                 "arch/InputHandler/InputHandler_Linux_PIUIO.h"
                 "arch/InputHandler/InputHandler_SextetStream.h")
   endif()
-  if(X11_FOUND)
-    list(APPEND SMDATA_ARCH_INPUT_SRC "arch/InputHandler/InputHandler_X11.cpp")
-    list(APPEND SMDATA_ARCH_INPUT_HPP "arch/InputHandler/InputHandler_X11.h")
-  endif()
+  list(APPEND SMDATA_ARCH_INPUT_SRC "arch/InputHandler/InputHandler_X11.cpp")
+  list(APPEND SMDATA_ARCH_INPUT_HPP "arch/InputHandler/InputHandler_X11.h")
 endif()
 
 source_group("Arch Specific\\\\Input Handler"

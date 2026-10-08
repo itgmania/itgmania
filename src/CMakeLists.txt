@@ -359,12 +359,6 @@ else() # Linux
       message("Unrecognized host processor type")
     endif()
   endif()
-  if(${HAS_XRANDR})
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_XRANDR)
-  endif()
-  if(${HAS_LIBXTST})
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_LIBXTST)
-  endif()
   if(${HAS_XINERAMA})
     target_compile_definitions("${SM_EXE_NAME}" PRIVATE HAVE_XINERAMA)
   endif()
@@ -481,22 +475,13 @@ else() # Unix / Linux TODO: Remember to find and locate the zip archive files.
     list(APPEND SMDATA_LINK_LIB ${JACK_LIBRARIES})
   endif()
 
-  if(HAS_OSS)
-    # No mention of OSS libraries.
-    target_compile_definitions("${SM_EXE_NAME}" PRIVATE "HAVE_OSS_VERSION=1")
-  endif()
-
   if(HAS_PULSE)
     list(APPEND SMDATA_LINK_LIB ${PULSEAUDIO_LIBRARY})
   endif()
 
-  if(X11_FOUND)
-    list(APPEND SMDATA_LINK_LIB ${X11_LIBRARIES})
-  endif()
+  list(APPEND SMDATA_LINK_LIB ${X11_LIBRARIES})
 
-  if(Xtst_FOUND)
-    list(APPEND SMDATA_LINK_LIB ${LIBXTST_LIBRARY})
-  endif()
+  list(APPEND SMDATA_LINK_LIB ${DBUS_LIBRARIES})
 
   list(APPEND SMDATA_LINK_LIB ${LIBUSB_LIBRARY})
 
@@ -522,9 +507,9 @@ else()
     add_dependencies("${SM_EXE_NAME}" "ffmpeg")
     list(APPEND SM_INCLUDE_DIRS "${SM_FFMPEG_INCLUDE}")
 
-    if(X11_FOUND)
-      list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
-    endif()
+    list(APPEND SM_INCLUDE_DIRS "${X11_INCLUDE_DIR}")
+
+    list(APPEND SM_INCLUDE_DIRS "${DBUS_INCLUDE_DIRS}")
 
     list(APPEND SM_INCLUDE_DIRS "${LIBUSB_INCLUDE_DIR}")
   endif()

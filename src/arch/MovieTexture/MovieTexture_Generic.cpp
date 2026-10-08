@@ -65,20 +65,25 @@ std::string MovieTexture_Generic::Init() {
   CreateFrameRects();
   decoder_->SetLooping(loop_);
 
-  decoding_thread_ = std::make_unique<std::thread>([this]() {
-    LOG->Trace(
-        "Beginning to decode video file \"%s\"", GetID().filename.c_str());
-    auto timer = RageTimer();
+  // Spawn background decoding worker thread so video I/O, demuxing, and color
+  // conversion run completely asynchronously without blocking the main engine
+  // render thread.
+  std::string filename = GetID().filename;
+  MovieDecoder* decoder_ptr = decoder_.get();
+  decoding_thread_ =
+      std::make_unique<std::thread>([this, decoder_ptr, filename]() {
+        LOG->Trace("Beginning to decode video file \"%s\"", filename.c_str());
+        auto timer = RageTimer();
 
-    int ret = decoder_->DecodeMovie();
-    if (ret == -1) {
-      failure_ = true;
-    }
+        int ret = decoder_ptr->DecodeMovie();
+        if (ret == -1) {
+          failure_ = true;
+        }
 
-    LOG->Trace(
-        "Done decoding video file \"%s\", took %f seconds",
-        GetID().filename.c_str(), timer.Ago());
-  });
+        LOG->Trace(
+            "Done decoding video file \"%s\", took %f seconds",
+            filename.c_str(), timer.Ago());
+      });
 
   LOG->Trace(
       "Resolution: %ix%i (%ix%i, %ix%i)", m_iSourceWidth, m_iSourceHeight,
@@ -90,11 +95,17 @@ std::string MovieTexture_Generic::Init() {
 }
 
 MovieTexture_Generic::~MovieTexture_Generic() {
+  // Signal cancellation to decoder to wake up any blocking waits in the
+  // decoding loop
   if (decoder_) {
     decoder_->Cancel();
-    decoding_thread_->join();
-    decoder_->Close();
   }
+  // Wait for worker thread to gracefully finish before freeing surfaces and
+  // context
+  if (decoding_thread_ && decoding_thread_->joinable()) {
+    decoding_thread_->join();
+  }
+  decoder_.reset();
 
   /* sprite_ may reference the texture; delete it before DestroyTexture. */
   sprite_.reset();
@@ -139,18 +150,18 @@ class RageMovieTexture_Generic_Intermediate : public RageTexture {
     texture_handle_ = 0;
     CreateTexture();
   }
-  virtual ~RageMovieTexture_Generic_Intermediate() {
+  ~RageMovieTexture_Generic_Intermediate() override {
     if (texture_handle_) {
       DISPLAY->DeleteTexture(texture_handle_);
       texture_handle_ = 0;
     }
   }
 
-  virtual void Invalidate() { texture_handle_ = 0; }
-  virtual void Reload() {}
-  virtual uintptr_t GetTexHandle() const { return texture_handle_; }
+  void Invalidate() override { texture_handle_ = 0; }
+  void Reload() override {}
+  uintptr_t GetTexHandle() const override { return texture_handle_; }
 
-  bool IsAMovie() const { return true; }
+  bool IsAMovie() const override { return true; }
 
  private:
   void CreateTexture() {
@@ -319,13 +330,31 @@ void MovieTexture_Generic::UpdateMovie(float seconds) {
   }
   clock_ += seconds * rate_;
 
-  // If the frame isn't ready, don't update. This does mean the video
-  // will "speed up" to catch up when decoding does outpace display.
-  //
-  // In practice, display should rarely, if ever, outpace decoding.
-  if (decoder_->IsCurrentFrameReady() && CheckFrameTime() <= 0) {
+  if (finished_) {
+    if (loop_) {
+      finished_ = false;
+      first_frame_displayed_ = false;
+      clock_ = 0.0f;
+      decoder_->Rewind();
+    } else {
+      return;
+    }
+  }
+
+  // If the video looped and the next frame timestamp has wrapped around, sync
+  // clock_ so the player does not wait for clock_ to reach the video duration
+  // again.
+  if (loop_ && decoder_->IsCurrentFrameReady() &&
+      decoder_->GetTimestamp() < clock_ - 0.5f) {
+    clock_ = decoder_->GetTimestamp();
+  }
+
+  // Display the first available frame immediately so static/preview textures
+  // render without a perceptible lag, then pace subsequent frames using
+  // CheckFrameTime().
+  if (decoder_->IsCurrentFrameReady() &&
+      (!first_frame_displayed_ || CheckFrameTime() <= 0)) {
     UpdateFrame();
-    return;
   }
 }
 
@@ -337,6 +366,34 @@ void MovieTexture_Generic::UpdateFrame() {
   /* Just in case we were invalidated: */
   CreateTexture();
 
+  // If the video looped and the next frame timestamp has wrapped around, sync
+  // clock_
+  if (loop_ && decoder_->IsCurrentFrameReady() &&
+      decoder_->GetTimestamp() < clock_ - 0.5f) {
+    clock_ = decoder_->GetTimestamp();
+  }
+
+  // If the engine clock has significantly outpaced decoding (e.g. gameplay
+  // hitch or heavy lag), drop stale frames without uploading to GPU to quickly
+  // restore audio/video synchronization.
+  while (decoder_->IsCurrentFrameReady() && first_frame_displayed_ &&
+         CheckFrameTime() < -0.1f) {
+    int drop_ret = decoder_->GetFrame(nullptr);
+    if (drop_ret == 1 || decoder_->EndOfMovie()) {
+      if (loop_) {
+        clock_ = 0.0f;
+        break;
+      } else {
+        finished_ = true;
+        return;
+      }
+    }
+  }
+
+  if (!decoder_->IsCurrentFrameReady()) {
+    return;
+  }
+
   if (texture_lock_ != nullptr) {
     uintptr_t iHandle = intermediate_texture_ != nullptr
                             ? intermediate_texture_->GetTexHandle()
@@ -344,29 +401,13 @@ void MovieTexture_Generic::UpdateFrame() {
     texture_lock_->Lock(iHandle, surface_);
   }
 
-  int frame_ret = -1;
-  // Our frame buffer should (almost) always be 50 ahead of our current frame to
-  // display, which is when IsCurrentFrameReady will evaluate to false. This
-  // loop will continue attempting to find a displayable frame until we hit that
-  // limit. If we really can't find a frame after that, then the currently
-  // displayed frame will appear stuck.
-  while (frame_ret < 0 && decoder_->IsCurrentFrameReady()) {
-    frame_ret = decoder_->GetFrame(surface_);
+  int frame_ret = decoder_->GetFrame(surface_);
 
-    // Are we looping?
-    if (decoder_->EndOfMovie() && loop_) {
-      LOG->Info("File \"%s\" looping", GetID().filename.c_str());
-      decoder_->Rollover();
-      clock_ = 0.0;
-    } else if (decoder_->EndOfMovie()) {
-      // At the end of the movie, and not looping.
+  if (frame_ret == 1 || decoder_->EndOfMovie()) {
+    if (loop_) {
+      clock_ = 0.0f;
+    } else {
       finished_ = true;
-    }
-
-    // If we failed to display the frame, it's getting skipped, advance the
-    // clock.
-    if (frame_ret < 0) {
-      clock_ += (decoder_->GetTimestamp() - clock_);
     }
   }
 
@@ -374,10 +415,12 @@ void MovieTexture_Generic::UpdateFrame() {
   // uploaded.
   if (frame_ret < 0) {
     if (texture_lock_ != nullptr) {
-      texture_lock_->Unlock(surface_, true);
+      texture_lock_->Unlock(surface_, false);
     }
     return;
   }
+
+  first_frame_displayed_ = true;
 
   if (texture_lock_ != nullptr) {
     texture_lock_->Unlock(surface_, true);
@@ -430,6 +473,7 @@ void MovieTexture_Generic::SetPosition(float seconds) {
 
   LOG->Trace("Seek to %f", seconds);
   clock_ = 0;
+  first_frame_displayed_ = false;
   decoder_->Rewind();
 }
 

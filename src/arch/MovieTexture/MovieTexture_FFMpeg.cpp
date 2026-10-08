@@ -60,6 +60,9 @@ static void FixLilEndian() {
 }
 
 static int FindCompatibleAVFormat(bool bHighColor) {
+  if (DISPLAY == nullptr) {
+    return -1;
+  }
   for (int i = 0; AVPixelFormats[i].bpp; ++i) {
     AVPixelFormat_t& fmt = AVPixelFormats[i];
     if (fmt.YUV != PixelFormatYCbCr_Invalid) {
@@ -128,370 +131,367 @@ RageSurface* RageMovieTextureDriver_FFMpeg::AVCodecCreateCompatibleSurface(
 
 MovieDecoder_FFMpeg::MovieDecoder_FFMpeg() {
   FixLilEndian();
-
-  av_format_context_ = nullptr;
-  av_stream_ = nullptr;
-  total_frames_ = 0;
-  end_of_file_ = 0;
-  // Hardcoded frame buffer size of 50. Roughly translates to 100mb of ram.
-  for (int i = 0; i < 50; i++) {
-    frame_buffer_.emplace_back(std::make_unique<FrameHolder>());
-  }
+  Init();
 }
 
 MovieDecoder_FFMpeg::~MovieDecoder_FFMpeg() {
-  if (av_sws_context_) {
-    avcodec::sws_freeContext(av_sws_context_);
-    av_sws_context_ = nullptr;
-  }
-  if (av_io_context_ != nullptr) {
-    RageFile* file = (RageFile*)av_io_context_->opaque;
-    file->Close();
-    delete file;
-    avcodec::av_free(av_io_context_);
-  }
-  if (av_buffer_ != nullptr) {
-    avcodec::av_free(av_buffer_);
-  }
-  if (av_stream_codec_ != nullptr) {
-    avcodec::avcodec_free_context(&av_stream_codec_);
-  }
-  packet_buffer_.clear();
-  frame_buffer_.clear();
+  Cancel();
+  Close();
 }
 
 void MovieDecoder_FFMpeg::Init() {
-  end_of_file_ = 0;
-  display_frame_num_ = 0;
+  av_format_context_ = nullptr;
+  av_stream_ = nullptr;
   av_sws_context_ = nullptr;
+  av_stream_codec_ = nullptr;
   av_io_context_ = nullptr;
   av_buffer_ = nullptr;
+  timestamp_offset_ = 0.0f;
+  last_pts_ = 0.0f;
+  last_duration_ = 0.0f;
+  first_pts_seen_ = false;
+  target_width_ = 0;
+  target_height_ = 0;
+  target_pitch_ = 0;
+  cancel_ = false;
+  looping_ = false;
+  reset_ = false;
+  end_of_movie_ = false;
+}
+
+void MovieDecoder_FFMpeg::Cancel() {
+  cancel_ = true;
+  can_produce_cv_.notify_all();
+  can_consume_cv_.notify_all();
+}
+
+void MovieDecoder_FFMpeg::Rewind() {
+  reset_ = true;
+  can_produce_cv_.notify_all();
+  can_consume_cv_.notify_all();
+}
+
+void MovieDecoder_FFMpeg::Rollover() {
+  // Looping is seamlessly handled inside DecodeMovie()
 }
 
 float MovieDecoder_FFMpeg::GetTimestamp() const {
-  // Always display the first frame.
-  if (display_frame_num_ == 0) {
-    return 0;
+  std::lock_guard<std::mutex> lock(queue_mutex_);
+  if (ready_queue_.empty()) {
+    return last_pts_;
   }
-
-  // In a logical situation, this means that display is outpacing decoding.
-  if (display_frame_num_ >= packet_buffer_.size()) {
-    return 0;
-  }
-
-  PacketHolder* packet = packet_buffer_[display_frame_num_].get();
-
-  // Sanity check.
-  if (packet == nullptr) {
-    return 0;
-  }
-
-  std::lock_guard<std::mutex> lock(packet->lock);
-  return packet->frame_timestamp - timestamp_offset_;
+  return ready_queue_.front()->pts;
 }
 
 bool MovieDecoder_FFMpeg::IsCurrentFrameReady() {
-  // We're displaying faster than decoding. Do not even try to display the
-  // frame.
-  if (display_frame_num_ >= packet_buffer_.size()) {
-    return false;
-  }
-
-  FrameHolder* frame =
-      frame_buffer_[(display_frame_num_ + offset_) % frame_buffer_.size()]
-          .get();
-  // To make sure the frame doesn't change from under us.
-  std::lock_guard<std::mutex> lock(frame->lock);
-
-  // In terms of how the sliding window works, displayed and ready are
-  // opposites. If the frame hasn't been displayed, it's ready. If it has
-  // been displayed, then it hasn't been overwritten and reset yet.
-  if (frame->displayed) {
-    LOG->Info(
-        "Frame %zu not decoded, total frames: %zu", display_frame_num_,
-        total_frames_);
-  }
-  return !frame->displayed;
+  std::lock_guard<std::mutex> lock(queue_mutex_);
+  return !ready_queue_.empty();
 }
 
-int MovieDecoder_FFMpeg::HandleNextPacket() {
-  // If the decoder hit the end of the file, then that means the packet
-  // buffer is complete.
-  if (!end_of_file_) {
-    // Add in a new FrameBuffer entry, and lock it immediately.
-    packet_buffer_.emplace_back(std::make_unique<PacketHolder>());
-    std::unique_lock<std::mutex> lock(packet_buffer_.back()->lock);
-    int status = SendPacketToBuffer();
-    if (status < 0) {
-      lock.unlock();
-      return status;
-    }
-
-    // If the decoded packet is the end of file.
-    if (end_of_file_) {
-      // Release the mutex.
-      lock.unlock();
-
-      packet_buffer_.pop_back();  // Don't display an EoF frame.
-      // If we had to approximate the number of frames, set the actual
-      // total number of frames. This is benign even if we did have an
-      // accurate frame count at the start.
-      total_frames_ = packet_buffer_.size();
-      if (total_frames_ < frame_buffer_.size()) {
-        LOG->Trace("Video shorter than frame buffer, shrinking the buffer.");
-        frame_buffer_.resize(total_frames_);
-      }
-      return 1;
-    }
-    lock.unlock();
-  }
-  return 0;
+bool MovieDecoder_FFMpeg::EndOfMovie() {
+  std::lock_guard<std::mutex> lock(queue_mutex_);
+  return end_of_movie_ && ready_queue_.empty();
 }
 
-int MovieDecoder_FFMpeg::DecodeFrame() {
-  int status = HandleNextPacket();
-  if (status != 0) {
-    return status;
+// Seek back to the beginning of the video stream and reset decoder buffers.
+void MovieDecoder_FFMpeg::SeekToStart() {
+  if (av_format_context_ && av_stream_) {
+    // Reset custom AVIO flags so subsequent av_read_frame calls don't
+    // immediately return AVERROR_EOF
+    if (av_format_context_->pb) {
+      av_format_context_->pb->eof_reached = 0;
+      av_format_context_->pb->error = 0;
+      avcodec::avio_flush(av_format_context_->pb);
+    }
+    int64_t start_pts =
+        (av_stream_->start_time != AV_NOPTS_VALUE) ? av_stream_->start_time : 0;
+    int ret = avcodec::av_seek_frame(
+        av_format_context_, av_stream_->index, start_pts,
+        AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_FRAME);
+    if (ret < 0) {
+      // Fallback: attempt seeking to absolute timestamp 0
+      avcodec::av_seek_frame(
+          av_format_context_, av_stream_->index, 0, AVSEEK_FLAG_BACKWARD);
+    }
+    if (av_stream_codec_) {
+      avcodec::avcodec_flush_buffers(av_stream_codec_);
+    }
   }
-
-  status = DecodePacketToFrame();
-  frame_buffer_position_ = (frame_buffer_position_ + 1) % frame_buffer_.size();
-  packet_buffer_position_ = (packet_buffer_position_ + 1) % total_frames_;
-  return status;
+  first_pts_seen_ = false;
+  timestamp_offset_ = 0.0f;
+  last_pts_ = 0.0f;
+  last_duration_ = 0.0f;
 }
 
 void MovieDecoder_FFMpeg::HandleReset() {
   reset_ = false;
+  SeekToStart();
+  std::lock_guard<std::mutex> lock(queue_mutex_);
+  while (!ready_queue_.empty()) {
+    if (frame_pool_.size() < kMaxPoolFrames) {
+      frame_pool_.push_back(std::move(ready_queue_.front()));
+    }
+    ready_queue_.pop_front();
+  }
+  end_of_movie_ = false;
+  can_produce_cv_.notify_all();
+}
 
-  for (std::unique_ptr<FrameHolder>& frame : frame_buffer_) {
-    frame->displayed = true;
+// Computes the presentation timestamp (PTS) in seconds.
+// Prefers best_effort_timestamp / pts over pkt_dts to handle out-of-order
+// B-frames accurately.
+float MovieDecoder_FFMpeg::CalculatePTS(avcodec::AVFrame* frame) {
+  int64_t pts = frame->best_effort_timestamp;
+  if (pts == AV_NOPTS_VALUE) {
+    pts = frame->pts;
   }
-  // If not end of file, reset the decoding.
-  if (!end_of_file_) {
-    avcodec::av_seek_frame(av_format_context_, -1, 0, 0);
-    OpenCodec();
-    packet_buffer_.clear();
+  if (pts == AV_NOPTS_VALUE) {
+    pts = frame->pkt_dts;
   }
-  offset_ = 0;
-  next_offset_ = 0;
-  display_frame_num_ = 0;
-  packet_buffer_position_ = 0;
-  frame_buffer_position_ = 0;
+
+  float seconds = 0.0f;
+  if (pts != AV_NOPTS_VALUE && av_stream_ && av_stream_->time_base.den > 0) {
+    seconds = static_cast<float>(pts * av_q2d(av_stream_->time_base));
+  } else {
+    seconds = last_pts_ + last_duration_;
+  }
+
+  if (!first_pts_seen_) {
+    first_pts_seen_ = true;
+    timestamp_offset_ = seconds;
+  }
+
+  seconds -= timestamp_offset_;
+  if (seconds < 0.0f) {
+    seconds = 0.0f;
+  }
+
+  // Guarantee strictly monotonic presentation timestamps. If legacy containers
+  // (e.g. AVI files with B-frames) report backward timestamp anomalies, advance
+  // smoothly using frame duration.
+  if (first_pts_seen_ && seconds < last_pts_) {
+    seconds = last_pts_ + last_duration_;
+  }
+
+  last_pts_ = seconds;
+  return seconds;
+}
+
+float MovieDecoder_FFMpeg::CalculateDuration(avcodec::AVFrame* frame) {
+  float duration = 0.0f;
+  if (frame->pkt_duration > 0 && av_stream_ && av_stream_->time_base.den > 0) {
+    duration =
+        static_cast<float>(frame->pkt_duration * av_q2d(av_stream_->time_base));
+  } else if (
+      av_stream_ && av_stream_->avg_frame_rate.num > 0 &&
+      av_stream_->avg_frame_rate.den > 0) {
+    duration = static_cast<float>(av_q2d(av_inv_q(av_stream_->avg_frame_rate)));
+  } else {
+    duration = 1.0f / 30.0f;
+  }
+  last_duration_ = duration;
+  return duration;
+}
+
+// Converts pixel format and scales the frame on the worker thread, completely
+// avoiding sws_scale execution on the main engine render thread.
+void MovieDecoder_FFMpeg::ConvertFrame(
+    avcodec::AVFrame* raw_frame, ConvertedFrame& out_frame) {
+  int dst_width = GetWidth();
+  int dst_height = GetHeight();
+
+  if (av_sws_context_ == nullptr && dst_width > 0 && dst_height > 0) {
+    av_sws_context_ = avcodec::sws_getCachedContext(
+        av_sws_context_, GetWidth(), GetHeight(), av_stream_codec_->pix_fmt,
+        dst_width, dst_height, av_pixel_format_, kSwsFlags, nullptr, nullptr,
+        nullptr);
+  }
+
+  size_t required_size = static_cast<size_t>(
+      target_pitch_ > 0 ? target_pitch_ * target_height_ : 0);
+  if (out_frame.data.size() < required_size) {
+    out_frame.data.resize(required_size);
+  }
+  out_frame.width = target_width_;
+  out_frame.height = target_height_;
+  out_frame.pitch = target_pitch_;
+
+  uint8_t* dst_data[4] = {out_frame.data.data(), nullptr, nullptr, nullptr};
+  int dst_linesize[4] = {target_pitch_, 0, 0, 0};
+
+  if (av_sws_context_ != nullptr && !out_frame.data.empty()) {
+    avcodec::sws_scale(
+        av_sws_context_, raw_frame->data, raw_frame->linesize, 0, GetHeight(),
+        dst_data, dst_linesize);
+  }
+}
+
+int MovieDecoder_FFMpeg::ReadAndDecodeNextFrame(
+    avcodec::AVPacket* packet, avcodec::AVFrame* raw_frame) {
+  while (!cancel_) {
+    if (reset_) {
+      return -3;
+    }
+
+    int ret = avcodec::avcodec_receive_frame(av_stream_codec_, raw_frame);
+    if (ret == 0) {
+      return 0;
+    }
+    if (ret == AVERROR_EOF) {
+      return AVERROR_EOF;
+    }
+    if (ret != AVERROR(EAGAIN)) {
+      LOG->Warn("avcodec_receive_frame error: %d", ret);
+      return ret;
+    }
+
+    bool packet_sent = false;
+    while (!packet_sent && !cancel_ && !reset_) {
+      avcodec::av_packet_unref(packet);
+      ret = avcodec::av_read_frame(av_format_context_, packet);
+      if (ret < 0) {
+        avcodec::avcodec_send_packet(av_stream_codec_, nullptr);
+        packet_sent = true;
+        break;
+      }
+
+      if (packet->stream_index == av_stream_->index) {
+        ret = avcodec::avcodec_send_packet(av_stream_codec_, packet);
+        avcodec::av_packet_unref(packet);
+        if (ret < 0 && ret != AVERROR(EAGAIN)) {
+          LOG->Warn("avcodec_send_packet error: %d", ret);
+        }
+        packet_sent = true;
+        break;
+      }
+    }
+
+    if (reset_) {
+      return -3;
+    }
+  }
+  return -2;
 }
 
 int MovieDecoder_FFMpeg::DecodeMovie() {
-  // Never exit when the movie is looping. Otherwise exit when the last frame
-  // is added to the FrameBuffer.
-  while (looping_ || (!looping_ && display_frame_num_ < total_frames_)) {
+  avcodec::AVPacket* packet = avcodec::av_packet_alloc();
+  avcodec::AVFrame* raw_frame = avcodec::av_frame_alloc();
+
+  while (!cancel_) {
     if (reset_) {
       HandleReset();
     }
 
-    int status = DecodeFrame();
+    std::unique_ptr<ConvertedFrame> frame_buf;
+    {
+      std::unique_lock<std::mutex> lock(queue_mutex_);
+      can_produce_cv_.wait(lock, [this]() {
+        return cancel_ || reset_ || ready_queue_.size() < kMaxQueueFrames;
+      });
 
-    // If cancelled (quitting a song, scrolling the banner), or fatal error,
-    // stop decoding.
-    if (status < 0) {
-      return status;
-    }
-
-    // This means when opening the file, less frames were detected than
-    // there actually are. Increment to keep up so we don't end the video
-    // early during display.
-    if (packet_buffer_position_ >= total_frames_ - 1 && !end_of_file_) {
-      total_frames_++;
-    }
-  }
-
-  return 0;
-}
-
-int MovieDecoder_FFMpeg::SendPacketToBuffer() {
-  if (cancel_) {
-    return -2;
-  }
-  if (end_of_file_ > 0) {
-    return 0;
-  }
-
-  while (true) {
-    int ret = avcodec::av_read_frame(
-        av_format_context_, packet_buffer_.back()->packet);
-    /* XXX: why is avformat returning AVERROR_NOMEM on EOF? */
-    if (ret < 0) {
-      end_of_file_ = 1;
-      return 0;
-    }
-
-    if (packet_buffer_.back()->packet->stream_index == av_stream_->index) {
-      return 1;
-    }
-    /* It's not for the video stream; ignore it. */
-    avcodec::av_packet_unref(packet_buffer_.back()->packet);
-  }
-}
-
-int MovieDecoder_FFMpeg::DecodePacketToFrame() {
-  if (cancel_) {
-    return -2;
-  }
-
-  frame_buffer_position_ %= frame_buffer_.size();
-  packet_buffer_position_ %= total_frames_;
-  FrameHolder* frame = frame_buffer_[frame_buffer_position_].get();
-  PacketHolder* packet = packet_buffer_[packet_buffer_position_].get();
-
-  // Packet buffer is bigger than the frame buffer, don't overwrite frames that
-  // haven't been displayed.
-  if (packet_buffer_.size() > frame_buffer_.size()) {
-    while (!frame->displayed) {
-      // Sleep so the CPU performance stays happy.
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
       if (cancel_) {
-        return -2;
+        break;
       }
       if (reset_) {
-        return 0;
-      }
-    }
-  }
-
-  std::lock_guard<std::mutex> frame_lock(frame->lock);
-  std::lock_guard<std::mutex> packet_lock(packet->lock);
-
-  // If the movie is looping naturally, next_offset_ is decided where
-  // packet_buffer_position_ zero is decoded.
-  if (packet->decoded && packet_buffer_position_ == 0) {
-    next_offset_ = frame_buffer_position_;
-  }
-
-  int packet_offset = 0;
-  while (packet_offset <= packet->packet->size) {
-    /* If we have no data on the first frame, just return EOF; passing an empty
-     * packet to avcodec_decode_video in this case is crashing it.  However,
-     * passing an empty packet is normal with B-frames, to flush.  This may be
-     * unnecessary in newer versions of avcodec, but I'm waiting until a new
-     * stable release to upgrade. */
-    if (packet->packet->size == 0 && packet_buffer_position_ == 0) {
-      return 0; /* eof */
-    }
-
-    /* Hack: we need to send size = 0 to flush frames at the end, but we have
-     * to give it a buffer to read from since it tries to read anyway. */
-    packet->packet->data =
-        packet->packet->size ? packet->packet->data : nullptr;
-    int len = packet->packet->size;
-    avcodec::avcodec_send_packet(av_stream_codec_, packet->packet);
-    int avcodec_return = avcodec::avcodec_receive_frame(
-        av_stream_codec_, frame_buffer_[frame_buffer_position_]->frame);
-    frame->displayed = false;
-    frame->packet_num = packet_buffer_position_;
-
-    if (len < 0) {
-      LOG->Warn(
-          "avcodec_decode_video2 fatal error, packet size negative: %i", len);
-      return -1;
-    }
-
-    packet_offset += len;
-
-    if (avcodec_return != 0) {
-      LOG->Trace(
-          "Frame %i saw nonzero avcodec_receive_frame status: %i, this is "
-          "likely not fatal.",
-          static_cast<int>(packet_buffer_.size() - 1), avcodec_return);
-
-      // Not a fatal decoding error, and the FFMpeg code is robust enough to
-      // handle displaying somewhat mangled frames.
-      if (packet_offset <= packet->packet->size) {
         continue;
       }
-    }
 
-    if (frame->frame->pkt_dts != AV_NOPTS_VALUE) {
-      packet->frame_timestamp =
-          (float)(frame->frame->pkt_dts * av_q2d(av_stream_->time_base));
-    } else {
-      /* If the timestamp is zero, this frame is to be played at the
-       * time of the last frame plus the length of the last frame. */
-      if (packet_buffer_position_ != 0) {
-        packet->frame_timestamp +=
-            packet_buffer_[packet_buffer_.size() - 2]->frame_delay;
-      } else {
-        packet->frame_timestamp = 0;
+      if (!frame_pool_.empty()) {
+        frame_buf = std::move(frame_pool_.back());
+        frame_pool_.pop_back();
       }
     }
-    // Some movies start at a non-zero point in time (audio before video?)
-    if (packet_buffer_position_ == 0 && packet->frame_timestamp != 0) {
-      timestamp_offset_ = packet->frame_timestamp;
+
+    if (!frame_buf) {
+      frame_buf = std::make_unique<ConvertedFrame>();
     }
 
-    // Length of this frame, only used as a fallback for getting the frame
-    // timestamp above.
-    packet->frame_delay = (float)av_q2d(av_stream_->time_base);
-    packet->frame_delay +=
-        frame_buffer_[frame_buffer_position_]->frame->repeat_pict *
-        (packet->frame_delay * 0.5f);
-    packet->decoded = true;
-    return 1;
+    int ret = ReadAndDecodeNextFrame(packet, raw_frame);
+    if (ret < 0) {
+      if (ret == -3) {
+        HandleReset();
+        continue;
+      }
+      if (ret == AVERROR_EOF) {
+        {
+          std::unique_lock<std::mutex> lock(queue_mutex_);
+          if (!ready_queue_.empty()) {
+            ready_queue_.back()->is_last_frame = true;
+          } else {
+            end_of_movie_ = true;
+          }
+        }
+        can_consume_cv_.notify_all();
+
+        if (looping_) {
+          SeekToStart();
+          continue;
+        } else {
+          std::unique_lock<std::mutex> lock(queue_mutex_);
+          end_of_movie_ = true;
+          break;
+        }
+      }
+      if (ret == -2 || cancel_) {
+        break;
+      }
+      LOG->Warn("DecodeMovie: decoding error: %d", ret);
+      break;
+    }
+
+    float frame_pts = CalculatePTS(raw_frame);
+    float frame_duration = CalculateDuration(raw_frame);
+
+    ConvertFrame(raw_frame, *frame_buf);
+    frame_buf->pts = frame_pts;
+    frame_buf->duration = frame_duration;
+    frame_buf->is_last_frame = false;
+
+    {
+      std::unique_lock<std::mutex> lock(queue_mutex_);
+      ready_queue_.push_back(std::move(frame_buf));
+    }
+    can_consume_cv_.notify_all();
   }
 
-  return 0; /* packet done */
+  avcodec::av_frame_free(&raw_frame);
+  avcodec::av_packet_free(&packet);
+  return cancel_ ? -2 : 0;
 }
 
 int MovieDecoder_FFMpeg::GetFrame(RageSurface* surface_out) {
-  avcodec::AVFrame pict;
-  pict.data[0] = (unsigned char*)surface_out->pixels;
-  pict.linesize[0] = surface_out->pitch;
-
-  /* XXX 1: Do this in one of the Open() methods instead?
-   * XXX 2: The problem of doing this in Open() is that m_AVTexfmt is not
-   * already initialized with its correct value.
-   */
-  if (av_sws_context_ == nullptr) {
-    av_sws_context_ = avcodec::sws_getCachedContext(
-        av_sws_context_, GetWidth(), GetHeight(), av_stream_codec_->pix_fmt,
-        GetWidth(), GetHeight(), av_pixel_format_, kSwsFlags, nullptr, nullptr,
-        nullptr);
-    if (av_sws_context_ == nullptr) {
-      LOG->Warn(
-          "Cannot initialize sws conversion context for (%d,%d) %d->%d",
-          GetWidth(), GetHeight(), av_stream_codec_->pix_fmt, av_pixel_format_);
+  std::unique_ptr<ConvertedFrame> frame;
+  {
+    std::lock_guard<std::mutex> lock(queue_mutex_);
+    if (ready_queue_.empty()) {
       return -1;
+    }
+    frame = std::move(ready_queue_.front());
+    ready_queue_.pop_front();
+  }
+  can_produce_cv_.notify_one();
+
+  if (surface_out && surface_out->pixels && !frame->data.empty()) {
+    const uint8_t* src = frame->data.data();
+    uint8_t* dst = static_cast<uint8_t*>(surface_out->pixels);
+    int bytes_per_row = std::min(frame->pitch, surface_out->pitch);
+    int rows = std::min(frame->height, surface_out->h);
+    for (int y = 0; y < rows; ++y) {
+      memcpy(
+          dst + y * surface_out->pitch, src + y * frame->pitch, bytes_per_row);
     }
   }
 
-  std::size_t display_frame_in_buffer =
-      (display_frame_num_ + offset_) % frame_buffer_.size();
-  std::lock_guard<std::mutex> lock(
-      frame_buffer_[display_frame_in_buffer]->lock);
-  int scale_status = 0;
+  bool was_last = frame->is_last_frame;
 
-  // Sanity check.
-  if (frame_buffer_[display_frame_in_buffer]->packet_num ==
-      display_frame_num_) {
-    scale_status = avcodec::sws_scale(
-        av_sws_context_, frame_buffer_[display_frame_in_buffer]->frame->data,
-        frame_buffer_[display_frame_in_buffer]->frame->linesize, 0, GetHeight(),
-        pict.data, pict.linesize);
-  } else {
-    LOG->Warn(
-        "Unexpected frame trying to display! display_frame_num_ = %zu, "
-        "packet_num = %zu",
-        display_frame_num_, frame_buffer_[display_frame_in_buffer]->packet_num);
+  {
+    std::lock_guard<std::mutex> lock(queue_mutex_);
+    if (frame_pool_.size() < kMaxPoolFrames) {
+      frame_pool_.push_back(std::move(frame));
+    }
   }
 
-  // Even if scale_status returns a failure, we mark displayed as true. The
-  // frame won't be displayed, but instead skipped over.
-  frame_buffer_[display_frame_in_buffer]->displayed = true;
-
-  if (LastFrame()) {
-    end_of_movie_ = true;
-    return scale_status;
-  }
-  end_of_movie_ = false;
-  display_frame_num_++;
-  return scale_status;
+  return was_last ? 1 : 0;
 }
 
 static std::string averr_ssprintf(int err, const char* fmt, ...) {
@@ -598,39 +598,11 @@ std::string MovieDecoder_FFMpeg::Open(std::string file) {
   LOG->Trace(
       "Codec pixel format: %s",
       avcodec::av_get_pix_fmt_name(av_stream_codec_->pix_fmt));
-  total_frames_ = av_stream_->nb_frames;
-
-  // Sometimes we might not get a correct frame count.
-  // In that case, approximate and fix it later.
-  if (total_frames_ <= 0) {
-    total_frames_ = av_format_context_->duration  // microseconds
-                    * (av_stream_->avg_frame_rate.num) /
-                    (av_stream_->avg_frame_rate.den) / (1000000);
-    LOG->Trace("Number of frames provided is inaccurate, estimating.");
-  }
-
-  // This implies the video file might be missing some information, but it
-  // might still be playable. Set total_frames_ to an arbitrary value and
-  // the code will expand or shrink it later. Empty packets are cheap to
-  // store, so it's fine if this value overshoots.
-  if (total_frames_ <= 0) {
-    LOG->Trace(
-        "Unable to estimate the total number of frames. Setting to 2000.");
-    total_frames_ = 2000;
-  }
-
-  if (total_frames_ < frame_buffer_.size()) {
-    LOG->Trace("Video shorter than frame buffer, shrinking the buffer.");
-    frame_buffer_.resize(total_frames_);
-  }
-  LOG->Trace("Number of frames detected: %zu", total_frames_);
 
   return std::string();
 }
 
 std::string MovieDecoder_FFMpeg::OpenCodec() {
-  Init();
-
   ASSERT(av_stream_ != nullptr);
   if (av_stream_codec_->codec) {
     avcodec::avcodec_close(av_stream_codec_);
@@ -658,35 +630,61 @@ std::string MovieDecoder_FFMpeg::OpenCodec() {
   return std::string();
 }
 
+// Safely cleans up all FFmpeg contexts and custom I/O allocations.
+// Note: avio_context_free() frees the internal AVIO buffer, avoiding
+// double-free issues. av_format_context_->pb is nulled before
+// avformat_close_input to prevent premature buffer deallocation.
 void MovieDecoder_FFMpeg::Close() {
-  if (av_stream_ && av_stream_codec_->codec) {
-    avcodec::avcodec_close(av_stream_codec_);
-    av_stream_ = nullptr;
+  if (av_sws_context_) {
+    avcodec::sws_freeContext(av_sws_context_);
+    av_sws_context_ = nullptr;
   }
-
+  if (av_stream_codec_) {
+    // avcodec_free_context automatically closes the codec context if open
+    avcodec::avcodec_free_context(&av_stream_codec_);
+    av_stream_codec_ = nullptr;
+  }
   if (av_format_context_) {
+    av_format_context_->pb = nullptr;
     avcodec::avformat_close_input(&av_format_context_);
     av_format_context_ = nullptr;
   }
-}
+  if (av_io_context_ != nullptr) {
+    RageFile* file = static_cast<RageFile*>(av_io_context_->opaque);
+    if (file != nullptr) {
+      file->Close();
+      delete file;
+    }
+    avcodec::avio_context_free(&av_io_context_);
+    av_io_context_ = nullptr;
+    av_buffer_ = nullptr;
+  }
+  if (av_buffer_ != nullptr) {
+    avcodec::av_freep(&av_buffer_);
+    av_buffer_ = nullptr;
+  }
+  av_stream_ = nullptr;
 
-void MovieDecoder_FFMpeg::Rewind() {
-  display_frame_num_ = 0;
-  reset_ = true;
-}
-
-void MovieDecoder_FFMpeg::Rollover() {
-  display_frame_num_ = 0;
-  offset_ = next_offset_;
-  next_offset_ = 0;
+  std::lock_guard<std::mutex> lock(queue_mutex_);
+  ready_queue_.clear();
+  frame_pool_.clear();
 }
 
 RageSurface* MovieDecoder_FFMpeg::CreateCompatibleSurface(
     int iTextureWidth, int iTextureHeight, bool bPreferHighColor,
     MovieDecoderPixelFormatYCbCr& fmtout) {
-  return RageMovieTextureDriver_FFMpeg::AVCodecCreateCompatibleSurface(
-      iTextureWidth, iTextureHeight, bPreferHighColor,
-      *ConvertValue<int>(&av_pixel_format_), fmtout);
+  RageSurface* pSurf =
+      RageMovieTextureDriver_FFMpeg::AVCodecCreateCompatibleSurface(
+          iTextureWidth, iTextureHeight, bPreferHighColor,
+          *ConvertValue<int>(&av_pixel_format_), fmtout);
+
+  if (pSurf != nullptr) {
+    target_width_ = pSurf->w;
+    target_height_ = pSurf->h;
+    target_pitch_ = pSurf->pitch;
+  }
+
+  return pSurf;
 }
 
 MovieTexture_FFMpeg::MovieTexture_FFMpeg(RageTextureID ID)

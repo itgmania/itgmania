@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
-#include <map>
 #include <string>
 #include <vector>
 
@@ -496,6 +495,39 @@ static void add_category_to_global_list(std::vector<DirAndProfile>& cat) {
   g_vLocalProfile.insert(g_vLocalProfile.end(), cat.begin(), cat.end());
 }
 
+template <typename CompareAscending>
+static void LoadLocalProfiles(CompareAscending compareAscending) {
+  const bool ascending = PREFSMAN->m_bProfileSortOrderAscending;
+
+  std::vector<std::string> profile_ids;
+  GetDirListing(USER_PROFILES_DIR + "*", profile_ids, true, true);
+
+  std::vector<DirAndProfile> categorized_profiles[NUM_ProfileType];
+  for (const std::string& id : profile_ids) {
+    DirAndProfile derp;
+    derp.sDir = id + "/";
+    derp.profile.LoadTypeFromDir(derp.sDir);
+    derp.profile.LoadEditableDataFromDir(derp.sDir);
+    categorized_profiles[derp.profile.m_Type].push_back(derp);
+  }
+
+  auto compare = [ascending, compareAscending](
+                     const DirAndProfile& a, const DirAndProfile& b) {
+    return ascending ? compareAscending(a, b) : compareAscending(b, a);
+  };
+  for (std::vector<DirAndProfile>& bucket : categorized_profiles) {
+    std::stable_sort(bucket.begin(), bucket.end(), compare);
+  }
+
+  add_category_to_global_list(categorized_profiles[ProfileType_Guest]);
+  add_category_to_global_list(categorized_profiles[ProfileType_Normal]);
+  add_category_to_global_list(categorized_profiles[ProfileType_Test]);
+
+  for (DirAndProfile& curr : g_vLocalProfile) {
+    curr.profile.LoadAllFromDir(curr.sDir, PREFSMAN->m_bSignProfileData);
+  }
+}
+
 void ProfileManager::RefreshLocalProfilesFromDisk() {
   UnloadAllLocalProfiles();
 
@@ -516,233 +548,32 @@ void ProfileManager::RefreshLocalProfilesFromDisk() {
 }
 
 void ProfileManager::LoadLocalProfilesByPriority() {
-  std::vector<std::string> profile_ids;
-  GetDirListing(USER_PROFILES_DIR + "*", profile_ids, true, true);
-  // Profiles have 3 types:
-  // 1.  Guest profiles:
-  //   Meant for use by guests, always at the top of the list.
-  // 2.  Normal profiles:
-  //   Meant for normal use, listed after guests.
-  // e.  Test profiles:
-  //   Meant for use when testing things, listed last.
-  // If the user renames a profile directory manually, that should not be a
-  // problem. -Kyz
-  std::map<ProfileType, std::vector<DirAndProfile>> categorized_profiles;
-  // The type data for a profile is in its own file so that loading isn't
-  // slowed down by copying temporary profiles around to make sure the list
-  // is sorted.  The profiles are loaded at the end. -Kyz
-  for (const std::string& id : profile_ids) {
-    DirAndProfile derp;
-    derp.sDir = id + "/";
-    derp.profile.LoadTypeFromDir(derp.sDir);
-    std::map<ProfileType, std::vector<DirAndProfile>>::iterator category =
-        categorized_profiles.find(derp.profile.m_Type);
-    if (category == categorized_profiles.end()) {
-      categorized_profiles[derp.profile.m_Type].push_back(derp);
-    } else {
-      bool inserted = false;
-      for (auto curr = g_vLocalProfile.begin(); curr != g_vLocalProfile.end();
-           ++curr) {
-        if (curr->profile.m_ListPriority > derp.profile.m_ListPriority) {
-          category->second.insert(curr, derp);
-          inserted = true;
-          break;
-        }
-      }
-      if (!inserted) {
-        category->second.push_back(derp);
-      }
-    }
-  }
-  add_category_to_global_list(categorized_profiles[ProfileType_Guest]);
-  add_category_to_global_list(categorized_profiles[ProfileType_Normal]);
-  add_category_to_global_list(categorized_profiles[ProfileType_Test]);
-  for (DirAndProfile& curr : g_vLocalProfile) {
-    curr.profile.LoadAllFromDir(curr.sDir, PREFSMAN->m_bSignProfileData);
-  }
+  LoadLocalProfiles([](const DirAndProfile& a, const DirAndProfile& b) {
+    return a.profile.m_ListPriority < b.profile.m_ListPriority;
+  });
 }
 
 void ProfileManager::LoadLocalProfilesByName() {
-  std::vector<std::string> profile_ids;
-  GetDirListing(USER_PROFILES_DIR + "*", profile_ids, true, true);
-
-  // Create separate vectors for each profile type
-  std::vector<DirAndProfile> guestProfiles;
-  std::vector<DirAndProfile> normalProfiles;
-  std::vector<DirAndProfile> testProfiles;
-
-  for (const std::string& id : profile_ids) {
-    DirAndProfile derp;
-    derp.sDir = id + "/";
-    derp.profile.LoadEditableDataFromDir(derp.sDir);
-    derp.profile.LoadTypeFromDir(derp.sDir);
-    // insert profile into the appropriate vector based on profile type
-    switch (derp.profile.m_Type) {
-      case ProfileType_Guest:
-        guestProfiles.push_back(derp);
-        break;
-      case ProfileType_Normal:
-        normalProfiles.push_back(derp);
-        break;
-      case ProfileType_Test:
-        testProfiles.push_back(derp);
-        break;
-      default:
-        break;
-    }
-  }
-
-  // Sort each vector by display name
-  if (PREFSMAN->m_bProfileSortOrderAscending) {
-    auto displayNameAscending = [](const DirAndProfile& a,
-                                   const DirAndProfile& b) {
-      return CompareNoCase(a.profile.m_sDisplayName, b.profile.m_sDisplayName) <
-             0;
-    };
-    std::sort(guestProfiles.begin(), guestProfiles.end(), displayNameAscending);
-    std::sort(
-        normalProfiles.begin(), normalProfiles.end(), displayNameAscending);
-    std::sort(testProfiles.begin(), testProfiles.end(), displayNameAscending);
-  } else {
-    auto displayNameDescending = [](const DirAndProfile& a,
-                                    const DirAndProfile& b) {
-      return CompareNoCase(a.profile.m_sDisplayName, b.profile.m_sDisplayName) >
-             0;
-    };
-    std::sort(
-        guestProfiles.begin(), guestProfiles.end(), displayNameDescending);
-    std::sort(
-        normalProfiles.begin(), normalProfiles.end(), displayNameDescending);
-    std::sort(testProfiles.begin(), testProfiles.end(), displayNameDescending);
-  }
-
-  add_category_to_global_list(guestProfiles);
-  add_category_to_global_list(normalProfiles);
-  add_category_to_global_list(testProfiles);
-
-  for (DirAndProfile& curr : g_vLocalProfile) {
-    curr.profile.LoadAllFromDir(curr.sDir, PREFSMAN->m_bSignProfileData);
-  }
+  LoadLocalProfiles([](const DirAndProfile& a, const DirAndProfile& b) {
+    return CompareNoCase(a.profile.m_sDisplayName, b.profile.m_sDisplayName) <
+           0;
+  });
 }
 
 // This function is used within RefreshLocalProfilesFromDisk() to sort the
 // profiles by date.
 void ProfileManager::LoadLocalProfilesByRecent() {
-  std::vector<std::string> profile_ids;
-  GetDirListing(USER_PROFILES_DIR + "*", profile_ids, true, true);
-
-  // Create separate vectors for each profile type
-  std::vector<DirAndProfile> guestProfiles;
-  std::vector<DirAndProfile> normalProfiles;
-  std::vector<DirAndProfile> testProfiles;
-
-  // The type data for a profile is in its own file so that loading isn't
-  // slowed down by copying temporary profiles around to make sure the list
-  // is sorted.	The profiles are loaded at the end. -Kyz
-  for (const std::string& id : profile_ids) {
-    DirAndProfile derp;
-    derp.sDir = id + "/";
-    derp.profile.LoadTypeFromDir(derp.sDir);
-    // insert profile into the appropriate vector based on profile type
-    switch (derp.profile.m_Type) {
-      case ProfileType_Guest:
-        guestProfiles.push_back(derp);
-        break;
-      case ProfileType_Normal:
-        normalProfiles.push_back(derp);
-        break;
-      case ProfileType_Test:
-        testProfiles.push_back(derp);
-        break;
-      default:
-        break;
-    }
-  }
-
-  // Sort each vector by date
-  if (PREFSMAN->m_bProfileSortOrderAscending) {
-    auto lastPlayedAscending = [](const DirAndProfile& a,
-                                  const DirAndProfile& b) {
-      return a.profile.m_LastPlayedDate > b.profile.m_LastPlayedDate;
-    };
-    std::sort(guestProfiles.begin(), guestProfiles.end(), lastPlayedAscending);
-    std::sort(
-        normalProfiles.begin(), normalProfiles.end(), lastPlayedAscending);
-    std::sort(testProfiles.begin(), testProfiles.end(), lastPlayedAscending);
-  } else {
-    auto lastPlayedDescending = [](const DirAndProfile& a,
-                                   const DirAndProfile& b) {
-      return a.profile.m_LastPlayedDate < b.profile.m_LastPlayedDate;
-    };
-    std::sort(guestProfiles.begin(), guestProfiles.end(), lastPlayedDescending);
-    std::sort(
-        normalProfiles.begin(), normalProfiles.end(), lastPlayedDescending);
-    std::sort(testProfiles.begin(), testProfiles.end(), lastPlayedDescending);
-  }
-
-  add_category_to_global_list(guestProfiles);
-  add_category_to_global_list(normalProfiles);
-  add_category_to_global_list(testProfiles);
-
-  for (DirAndProfile& curr : g_vLocalProfile) {
-    curr.profile.LoadAllFromDir(curr.sDir, PREFSMAN->m_bSignProfileData);
-  }
+  LoadLocalProfiles([](const DirAndProfile& a, const DirAndProfile& b) {
+    return a.profile.m_LastPlayedDate > b.profile.m_LastPlayedDate;
+  });
 }
 
 // This function is used within RefreshLocalProfilesFromDisk() to sort the
 // profiles by creation time.
 void ProfileManager::LoadLocalProfilesByCreationTime() {
-  std::vector<std::string> profile_ids;
-  GetDirListing(USER_PROFILES_DIR + "*", profile_ids, true, true);
-
-  std::vector<DirAndProfile> guestProfiles;
-  std::vector<DirAndProfile> normalProfiles;
-  std::vector<DirAndProfile> testProfiles;
-
-  for (const std::string& id : profile_ids) {
-    DirAndProfile derp;
-    derp.sDir = id + "/";
-    derp.profile.LoadTypeFromDir(derp.sDir);
-    switch (derp.profile.m_Type) {
-      case ProfileType_Guest:
-        guestProfiles.push_back(derp);
-        break;
-      case ProfileType_Normal:
-        normalProfiles.push_back(derp);
-        break;
-      case ProfileType_Test:
-        testProfiles.push_back(derp);
-        break;
-      default:
-        break;
-    }
-  }
-
-  if (PREFSMAN->m_bProfileSortOrderAscending) {
-    auto creationAscending = [](const DirAndProfile& a,
-                                const DirAndProfile& b) {
-      return a.profile.m_CreationTime > b.profile.m_CreationTime;
-    };
-    std::sort(guestProfiles.begin(), guestProfiles.end(), creationAscending);
-    std::sort(normalProfiles.begin(), normalProfiles.end(), creationAscending);
-    std::sort(testProfiles.begin(), testProfiles.end(), creationAscending);
-  } else {
-    auto creationDescending = [](const DirAndProfile& a,
-                                 const DirAndProfile& b) {
-      return a.profile.m_CreationTime < b.profile.m_CreationTime;
-    };
-    std::sort(guestProfiles.begin(), guestProfiles.end(), creationDescending);
-    std::sort(normalProfiles.begin(), normalProfiles.end(), creationDescending);
-    std::sort(testProfiles.begin(), testProfiles.end(), creationDescending);
-  }
-
-  add_category_to_global_list(guestProfiles);
-  add_category_to_global_list(normalProfiles);
-  add_category_to_global_list(testProfiles);
-
-  for (DirAndProfile& curr : g_vLocalProfile) {
-    curr.profile.LoadAllFromDir(curr.sDir, PREFSMAN->m_bSignProfileData);
-  }
+  LoadLocalProfiles([](const DirAndProfile& a, const DirAndProfile& b) {
+    return a.profile.m_CreationTime > b.profile.m_CreationTime;
+  });
 }
 
 const Profile* ProfileManager::GetLocalProfile(
