@@ -1,7 +1,6 @@
 #include "Sprite.h"
 
 #include <algorithm>
-#include <cassert>
 #include <cfloat>
 #include <cmath>
 #include <cstddef>

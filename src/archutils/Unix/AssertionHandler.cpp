@@ -1,36 +1,8 @@
-#include <assert.h>
-
-#include <cstring>
 #include <exception>
 #include <string>
 
-#include "RageThreads.h"
 #include "RageUtil.h"
 #include "global.h"
-
-/* We can define this symbol to catch failed assert() calls.  This is only used
- * for library code that uses assert(); internally we always use ASSERT, which
- * does this for all platforms, not just glibc. */
-
-extern "C" void __assert_fail(
-    const char* assertion, const char* file, unsigned int line,
-    const char* function) throw() {
-  const std::string error =
-      ssprintf("Assertion failure: %s: %s", function, assertion);
-
-  Checkpoints::SetCheckpoint(file, line, error);
-  sm_crash(assertion);
-}
-
-extern "C" void __assert_perror_fail(
-    int errnum, const char* file, unsigned int line,
-    const char* function) throw() {
-  const std::string error =
-      ssprintf("Assertion failure: %s: %s", function, strerror(errnum));
-
-  Checkpoints::SetCheckpoint(file, line, error);
-  sm_crash(strerror(errnum));
-}
 
 /* Catch unhandled C++ exceptions.  Note that this works in g++ even with
  * -fno-exceptions, in which case it'll be called if any exceptions are thrown

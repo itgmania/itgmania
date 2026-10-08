@@ -1,6 +1,5 @@
 #include "ActorMultiTexture.h"
 
-#include <cassert>
 #include <cstddef>
 
 #include "Actor.h"
