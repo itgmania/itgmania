@@ -29,6 +29,24 @@
 #include "TechCounts.h"
 #include "TimingSegments.h"
 
+namespace {
+inline bool TagEquals(const std::string& s, const char* tag) {
+  return ssicmp(s.c_str(), tag) == 0;
+}
+inline bool TagStartsWith(const std::string& s, const char* tag) {
+  const size_t n = strlen(tag);
+  if (s.size() < n) {
+    return false;
+  }
+  for (size_t i = 0; i < n; ++i) {
+    if (sstolower(s[i]) != sstolower(tag[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+}  // namespace
+
 // Everything from this line to the creation of parser_helper exists to
 // speed up parsing by allowing the use of std::map.  All these functions
 // are put into a map of function pointers which is used when loading.
@@ -613,9 +631,12 @@ void SetStepsDisplayBPM(StepsTagInfo& info) {
   }
 }
 
-typedef std::map<std::string, steps_tag_func_t> steps_handler_map_t;
-typedef std::map<std::string, song_tag_func_t> song_handler_map_t;
-typedef std::map<std::string, LoadNoteDataTagIDs> load_note_data_handler_map_t;
+typedef std::map<std::string, steps_tag_func_t, StdStringLessNoCase>
+    steps_handler_map_t;
+typedef std::map<std::string, song_tag_func_t, StdStringLessNoCase>
+    song_handler_map_t;
+typedef std::map<std::string, LoadNoteDataTagIDs, StdStringLessNoCase>
+    load_note_data_handler_map_t;
 
 struct ssc_parser_helper_t {
   steps_handler_map_t steps_tag_handlers;
@@ -944,14 +965,13 @@ bool SSCLoader::LoadNoteDataFromSimfile(
 
   for (unsigned i = 0; i < values; i++) {
     const MsdFile::value_t& params = msd.GetValue(i);
-    std::string valueName = params[0];
-    MakeUpper(valueName);
-    std::string matcher = params[1];  // mainly for debugging.
-    Trim(matcher);
+    const std::string& valueName = params[0];
 
     load_note_data_handler_map_t::iterator handler =
         parser_helper.load_note_data_handlers.find(valueName);
     if (handler != parser_helper.load_note_data_handlers.end()) {
+      std::string matcher = params[1];  // mainly for debugging.
+      Trim(matcher);
       if (tryingSteps) {
         switch (handler->second) {
           case LNDID_version:
@@ -1052,8 +1072,7 @@ bool SSCLoader::LoadFromSimfile(
 
   for (unsigned i = 0; i < values; i++) {
     const MsdFile::value_t& sParams = msd.GetValue(i);
-    std::string sValueName = sParams[0];
-    MakeUpper(sValueName);
+    const std::string& sValueName = sParams[0];
 
     switch (state) {
       case GETTING_SONG_INFO: {
@@ -1062,11 +1081,11 @@ bool SSCLoader::LoadFromSimfile(
             parser_helper.song_tag_handlers.find(sValueName);
         if (handler != parser_helper.song_tag_handlers.end()) {
           handler->second(reused_song_info);
-        } else if (Left(sValueName, strlen("BGCHANGES")) == "BGCHANGES") {
+        } else if (TagStartsWith(sValueName, "BGCHANGES")) {
           SetBGChanges(reused_song_info);
         }
         // This tag will get us to the next section.
-        else if (sValueName == "NOTEDATA") {
+        else if (TagEquals(sValueName, "NOTEDATA")) {
           state = GETTING_STEP_INFO;
           pNewNotes = out.CreateSteps();
           stepsTiming = TimingData(out.m_SongTiming.m_fBeat0OffsetInSeconds);
@@ -1084,7 +1103,8 @@ bool SSCLoader::LoadFromSimfile(
             parser_helper.steps_tag_handlers.find(sValueName);
         if (handler != parser_helper.steps_tag_handlers.end()) {
           handler->second(reused_steps_info);
-        } else if (sValueName == "NOTES" || sValueName == "NOTES2") {
+        } else if (
+            TagEquals(sValueName, "NOTES") || TagEquals(sValueName, "NOTES2")) {
           state = GETTING_SONG_INFO;
           if (reused_steps_info.has_own_timing) {
             pNewNotes->m_Timing = stepsTiming;
@@ -1094,7 +1114,7 @@ bool SSCLoader::LoadFromSimfile(
           pNewNotes->TidyUpData();
           pNewNotes->SetFilename(sPath);
           out.AddSteps(pNewNotes);
-        } else if (sValueName == "STEPFILENAME") {
+        } else if (TagEquals(sValueName, "STEPFILENAME")) {
           state = GETTING_SONG_INFO;
           if (reused_steps_info.has_own_timing) {
             pNewNotes->m_Timing = stepsTiming;
@@ -1153,8 +1173,7 @@ bool SSCLoader::LoadEditFromMsd(
   for (unsigned int i = 0; i < msd.GetNumValues(); ++i) {
     int iNumParams = msd.GetNumParams(i);
     const MsdFile::value_t& sParams = msd.GetValue(i);
-    std::string sValueName = sParams[0];
-    MakeUpper(sValueName);
+    const std::string& sValueName = sParams[0];
 
     if (pSong != nullptr) {
       reused_steps_info.params = &sParams;
@@ -1163,11 +1182,11 @@ bool SSCLoader::LoadEditFromMsd(
       if (pNewNotes != nullptr &&
           handler != parser_helper.steps_tag_handlers.end()) {
         handler->second(reused_steps_info);
-      } else if (sValueName == "NOTEDATA") {
+      } else if (TagEquals(sValueName, "NOTEDATA")) {
         pNewNotes = pSong->CreateSteps();
         reused_steps_info.steps = pNewNotes;
         reused_steps_info.ssc_format = true;
-      } else if (sValueName == "NOTES") {
+      } else if (TagEquals(sValueName, "NOTES")) {
         if (pSong == nullptr) {
           LOG->UserLog(
               "Edit file", sEditFilePath,
@@ -1232,7 +1251,7 @@ bool SSCLoader::LoadEditFromMsd(
             sValueName.c_str());
       }
     } else {
-      if (sValueName == "SONG") {
+      if (TagEquals(sValueName, "SONG")) {
         if (pSong) {
           /* LOG->UserLog("Edit file", sEditFilePath, "has more than one #SONG
              tag."); return false; */
