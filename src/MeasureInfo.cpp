@@ -8,11 +8,6 @@
 #include "NoteTypes.h"
 #include "RageUtil.h"
 
-// TODO: Handle non-4/4 time signatures. For now we assume every measure is 4
-// beats long, which matches what the Simply Love stream/density display
-// expects. Charts with other time signatures will have their notes/NPS
-// bucketed into 4-beat "measures" rather than their true measures.
-static const int BEATS_PER_MEASURE = 4;
 static const int ROWS_PER_MEASURE = ROWS_PER_BEAT * BEATS_PER_MEASURE;
 
 void MeasureInfo::CalculateMeasureInfo(

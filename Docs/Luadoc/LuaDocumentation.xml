@@ -3925,6 +3925,34 @@ NETWORK:WebSocket{
 		Sets whether the current song beat is subtracted from a note's beat when calculating the t value to use on the spline.
 	</Function>
 </Class>
+<Class name='DensityGraph' grouping='Actor'>
+	<Description>
+		A graph of a chart's notes-per-second (NPS) per measure, created with <code>Def.DensityGraph</code>.<br />
+		The graph is built from <Link class='Steps' function='GetNpsPerMeasure' /> and <Link class='Steps' function='GetPeakNps' />.<br />
+		The configuration methods below, except <Link function='SetScrollOffset' />, do not update the graph immediately. Call <Link function='Build' /> after configuring it.
+	</Description>
+	<Function name='SetSteps' return='void' arguments='Steps steps, PlayerNumber player'>
+		Sets the chart to draw and which player's values to use. Pass <code>nil</code> for <code>steps</code> to clear the graph.
+	</Function>
+	<Function name='SetSize' return='void' arguments='float width, float height'>
+		Sets the size of the visible graph area, in pixels.
+	</Function>
+	<Function name='SetGraphWidth' return='void' arguments='float width'>
+		Sets the full width of the graph. Defaults to the width passed to <Link function='SetSize' /> if unset. Set wider than the visible size to enable scrolling.
+	</Function>
+	<Function name='SetColors' return='void' arguments='RageColor bottom, RageColor top'>
+		Sets the gradient endpoints. Each measure is colored by interpolating from <code>bottom</code> to <code>top</code> based on its height.
+	</Function>
+	<Function name='SetDesaturation' return='void' arguments='float desaturation'>
+		Sets how desaturated the gradient colors are. <code>0</code> is full color, <code>1</code> is fully desaturated.
+	</Function>
+	<Function name='Build' return='void' arguments=''>
+		Builds the graph from the current configuration.
+	</Function>
+	<Function name='SetScrollOffset' return='void' arguments='float offset'>
+		Sets the left edge of the visible window, in graph pixels, for scrolling graphs.
+	</Function>
+</Class>
 <Class base='Actor' name='NoteColumnRenderer'>
 	<Description>
 		All functions in this class have camel case equivalents, use whichever naming style you prefer.<br />
@@ -6360,6 +6388,15 @@ local spr = Def.Sprite{
 			}
 		]
 		</code>
+	</Function>
+	<Function name='GetNotesPerMeasure' return='{int}' arguments='PlayerNumber pn'>
+		Returns a table with the number of notes in each measure of the chart for player <code>pn</code>.
+	</Function>
+	<Function name='GetNpsPerMeasure' return='{float}' arguments='PlayerNumber pn'>
+		Returns a table with the notes-per-second of each measure of the chart for player <code>pn</code>.
+	</Function>
+	<Function name='GetPeakNps' return='float' arguments='PlayerNumber pn'>
+		Returns the highest notes-per-second value of the chart for player <code>pn</code>.
 	</Function>
 	<Function name='HasAttacks' return='bool' arguments=''>
 		Returns <code>true</code> if the Steps has any attacks.

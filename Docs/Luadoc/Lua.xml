@@ -1152,6 +1152,15 @@
 			<Function name='UrlEncode'/>
 			<Function name='WebSocket'/>
 		</Class>
+		<Class base='ActorMultiVertex' name='DensityGraph'>
+			<Function name='SetSteps'/>
+			<Function name='SetSize'/>
+			<Function name='SetGraphWidth'/>
+			<Function name='SetColors'/>
+			<Function name='SetDesaturation'/>
+			<Function name='Build'/>
+			<Function name='SetScrollOffset'/>
+		</Class>
 		<Class base='Actor' name='NoteColumnRenderer'>
 			<Function name='get_pos_handler'/>
 			<Function name='get_rot_handler'/>
@@ -2011,6 +2020,9 @@
 			<Function name='GetFilename'/>
 			<Function name='GetHash'/>
 			<Function name='GetMeter'/>
+			<Function name='GetNotesPerMeasure'/>
+			<Function name='GetNpsPerMeasure'/>
+			<Function name='GetPeakNps'/>
 			<Function name='GetRadarValues'/>
 			<Function name='GetStepsType'/>
 			<Function name='GetTimingData'/>
