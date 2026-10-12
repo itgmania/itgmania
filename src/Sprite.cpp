@@ -88,8 +88,7 @@ Sprite::Sprite(const Sprite& cpy) : Actor(cpy) {
 }
 
 Sprite& Sprite::operator=(Sprite other) {
-  using std::swap;
-#define SWAP(a) swap(a, other.a)
+#define SWAP(a) std::swap(a, other.a)
   SWAP(m_States);
   SWAP(m_animation_length_seconds);
   SWAP(m_iCurState);
