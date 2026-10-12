@@ -111,14 +111,6 @@ void RandomSample::PlayRandom() {
   m_pSamples[iIndexToPlay]->Play(true);
 }
 
-void RandomSample::PlayCopyOfRandom() {
-  int iIndexToPlay = GetNextToPlay();
-  if (iIndexToPlay == -1) {
-    return;
-  }
-  m_pSamples[iIndexToPlay]->PlayCopy(true);
-}
-
 void RandomSample::Stop() {
   if (m_iIndexLastPlayed == -1) {  // nothing is currently playing
     return;

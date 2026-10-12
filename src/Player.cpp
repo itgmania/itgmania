@@ -2054,72 +2054,6 @@ int Player::GetClosestNote(
   }
 }
 
-int Player::GetClosestNonEmptyRowDirectional(
-    int iStartRow, int iEndRow, bool /* bAllowGraded */, bool bForward) const {
-  if (bForward) {
-    NoteData::all_tracks_iterator iter =
-        m_NoteData.GetTapNoteRangeAllTracks(iStartRow, iEndRow);
-
-    while (!iter.IsAtEnd()) {
-      if (NoteDataWithScoring::IsRowCompletelyJudged(m_NoteData, iter.Row())) {
-        ++iter;
-        continue;
-      }
-      if (!m_Timing->IsJudgableAtRow(iter.Row())) {
-        ++iter;
-        continue;
-      }
-      return iter.Row();
-    }
-  } else {
-    NoteData::all_tracks_reverse_iterator iter =
-        m_NoteData.GetTapNoteRangeAllTracksReverse(iStartRow, iEndRow);
-
-    while (!iter.IsAtEnd()) {
-      if (NoteDataWithScoring::IsRowCompletelyJudged(m_NoteData, iter.Row())) {
-        ++iter;
-        continue;
-      }
-      return iter.Row();
-    }
-  }
-
-  return -1;
-}
-
-// Find the closest note to fBeat.
-int Player::GetClosestNonEmptyRow(
-    int iNoteRow, int iMaxRowsAhead, int iMaxRowsBehind,
-    bool bAllowGraded) const {
-  // Start at iIndexStartLookingAt and search outward.
-  int iNextRow = GetClosestNonEmptyRowDirectional(
-      iNoteRow, iNoteRow + iMaxRowsAhead, bAllowGraded, true);
-  int iPrevRow = GetClosestNonEmptyRowDirectional(
-      iNoteRow - iMaxRowsBehind, iNoteRow, bAllowGraded, false);
-
-  if (iNextRow == -1 && iPrevRow == -1) {
-    return -1;
-  }
-  if (iNextRow == -1) {
-    return iPrevRow;
-  }
-  if (iPrevRow == -1) {
-    return iNextRow;
-  }
-
-  // Get the current time, previous time, and next time.
-  float fNoteTime = m_pPlayerState->m_Position.m_fMusicSeconds;
-  float fNextTime = m_Timing->GetElapsedTimeFromBeat(NoteRowToBeat(iNextRow));
-  float fPrevTime = m_Timing->GetElapsedTimeFromBeat(NoteRowToBeat(iPrevRow));
-
-  /* Figure out which row is closer. */
-  if (std::abs(fNoteTime - fNextTime) > std::abs(fNoteTime - fPrevTime)) {
-    return iPrevRow;
-  } else {
-    return iNextRow;
-  }
-}
-
 bool Player::IsOniDead() const {
   // If we're playing on oni and we've died, do nothing.
   return m_pPlayerState->m_PlayerOptions.GetStage().m_LifeType ==
@@ -2162,33 +2096,6 @@ void Player::DoTapScoreNone() {
         BeatToNoteRow(m_pPlayerState->m_Position.m_fSongBeat), -1, TAP_EMPTY,
         TNS_Miss, 0);
     // the ScoreKeeper will subtract points later.
-  }
-}
-
-void Player::ScoreAllActiveHoldsLetGo() {
-  if (PENALIZE_TAP_SCORE_NONE) {
-    const float fSongBeat = m_pPlayerState->m_Position.m_fSongBeat;
-    const int iSongRow = BeatToNoteRow(fSongBeat);
-
-    // Score all active holds to NotHeld
-    for (int iTrack = 0; iTrack < m_NoteData.GetNumTracks(); ++iTrack) {
-      // Since this is being called every frame, let's not check the whole array
-      // every time. Instead, only check 1 beat back.  Even 1 is overkill.
-      const int iStartCheckingAt = std::max(0, iSongRow - BeatToNoteRow(1));
-      NoteData::TrackMap::iterator begin, end;
-      m_NoteData.GetTapNoteRangeInclusive(
-          iTrack, iStartCheckingAt, iSongRow + 1, begin, end);
-      for (; begin != end; ++begin) {
-        TapNote& tn = begin->second;
-        if (tn.HoldResult.bActive) {
-          tn.HoldResult.hns = HNS_LetGo;
-          tn.HoldResult.fLife = 0;
-
-          SetHoldJudgment(tn, iTrack);
-          HandleHoldScore(tn);
-        }
-      }
-    }
   }
 }
 

@@ -175,8 +175,6 @@ class Profile {
   void SetCharacter(const std::string sCharacterID);
   std::string GetDisplayTotalCaloriesBurned()
       const;  // remove me and use Lua instead
-  std::string GetDisplayTotalCaloriesBurnedToday()
-      const;  // remove me and use Lua instead
   int GetCalculatedWeightPounds()
       const;           // returns a default value if m_iWeightPounds isn't set
   int GetAge() const;  // returns a default value if m_Age isn't set
@@ -469,7 +467,6 @@ class Profile {
   XNode* SaveCoinDataCreateNode() const;
 
   void SaveStatsWebPageToDir(std::string sDir) const;
-  void SaveMachinePublicKeyToDir(std::string sDir) const;
 
   static void MoveBackupToDir(std::string sFromDir, std::string sToDir);
   static std::string MakeUniqueFileNameNoExtension(

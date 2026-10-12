@@ -78,8 +78,6 @@ class RageFileObjGzip : public RageFileObjDeflate {
 RageFileObjInflate* GunzipFile(
     RageFileBasic* pFile, std::string& sError, uint32_t* iCRC32);
 
-/* Quick helpers: */
-void GzipString(const std::string& sIn, std::string& sOut);
 bool GunzipString(
     const std::string& sIn, std::string& sOut,
     std::string& sError);  // returns false on CRC, etc. error

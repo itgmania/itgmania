@@ -473,14 +473,6 @@ void ThemeManager::ReloadSubscribers() {
   }
 }
 
-void ThemeManager::ClearSubscribers() {
-  if (g_Subscribers.m_pSubscribers) {
-    for (IThemeMetric* metric : *g_Subscribers.m_pSubscribers) {
-      metric->Clear();
-    }
-  }
-}
-
 void ThemeManager::RunLuaScripts(const std::string& sMask, bool bUseThemeDir) {
   /* Run all script files with the given mask in Lua for all themes.  Start
    * from the deepest fallback theme and work outwards. */
@@ -1136,19 +1128,6 @@ void ThemeManager::EvaluateString(std::string& sText) {
   FontCharAliases::ReplaceMarkers(sText);
 }
 
-std::string ThemeManager::GetNextTheme() {
-  std::vector<std::string> as;
-  GetThemeNames(as);
-  unsigned i;
-  for (i = 0; i < as.size(); i++) {
-    if (CompareNoCase(as[i], m_sCurThemeName) == 0) {
-      break;
-    }
-  }
-  int iNewIndex = (i + 1) % as.size();
-  return as[iNewIndex];
-}
-
 std::string ThemeManager::GetNextSelectableTheme() {
   std::vector<std::string> as;
   GetSelectableThemeNames(as);
@@ -1202,13 +1181,6 @@ void ThemeManager::GetOptionalLanguageIniPaths(
       GetThemeDirFromName(sThemeName) + SpecialFiles::LANGUAGES_SUBDIR +
           sLanguage + " *.ini",
       vsPathsOut, false, true);
-}
-
-void ThemeManager::GetOptionNames(std::vector<std::string>& AddTo) {
-  const XNode* cur = g_pLoadedThemeData->iniStrings.GetChild("OptionNames");
-  if (cur) {
-    FOREACH_CONST_Attr(cur, p) AddTo.push_back(p->first);
-  }
 }
 
 static std::string PseudoLocalize(std::string s) {

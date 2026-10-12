@@ -110,15 +110,6 @@ bool RageSoundReader_ThreadedBuffer::DisableBuffering() {
   return bRet;
 }
 
-void RageSoundReader_ThreadedBuffer::WaitUntilFrames(int iWaitUntilFrames) {
-  m_Event.Lock();
-  ASSERT(m_bEnabled);
-  while (GetFilledFrames() < iWaitUntilFrames) {
-    m_Event.Wait();
-  }
-  m_Event.Unlock();
-}
-
 int RageSoundReader_ThreadedBuffer::SetPosition(int iFrame) {
   bool bWasEnabled = DisableBuffering();
 

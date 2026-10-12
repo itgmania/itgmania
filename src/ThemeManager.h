@@ -54,12 +54,9 @@ class ThemeManager {
   std::string GetCurThemeDir() const {
     return GetThemeDirFromName(m_sCurThemeName);
   };
-  std::string GetNextTheme();
   std::string GetNextSelectableTheme();
   void ReloadMetrics();
   void ReloadSubscribers();
-  void ClearSubscribers();
-  void GetOptionNames(std::vector<std::string>& AddTo);
 
   static void EvaluateString(std::string& sText);
 

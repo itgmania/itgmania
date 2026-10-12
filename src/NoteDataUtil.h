@@ -126,7 +126,6 @@ void RemoveStretch(
     NoteData& inout, StepsType st, int iStartIndex = 0,
     int iEndIndex = MAX_NOTE_ROW);
 void RemoveAllButOneTap(NoteData& inout, int row);
-void RemoveAllButPlayer(NoteData& inout, PlayerNumber pn);
 /** @brief The types of transformations available for the NoteData. */
 enum TrackMapping {
   left,  /**< The NoteData is arranged as if the player was facing to the left.
@@ -214,8 +213,6 @@ void TransformNoteData(
 void TransformNoteData(
     NoteData& nd, const TimingData& timing_data, const PlayerOptions& po,
     StepsType st, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
-void AddTapAttacks(NoteData& nd, Song* pSong);
-
 void Scale(NoteData& nd, float fScale);
 void ScaleRegion(
     NoteData& nd, float fScale, int iStartIndex = 0,
@@ -228,9 +225,6 @@ void RemoveAllTapsOfType(NoteData& ndInOut, TapNoteType typeToRemove);
 void RemoveAllTapsExceptForType(NoteData& ndInOut, TapNoteType typeToKeep);
 
 int GetMaxNonEmptyTrack(const NoteData& in);
-bool AnyTapsAndHoldsInTrackRange(
-    const NoteData& in, int iTrack, int iStart, int iEnd);
-
 bool GetNextEditorPosition(const NoteData& in, int& rowInOut);
 bool GetPrevEditorPosition(const NoteData& in, int& rowInOut);
 

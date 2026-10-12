@@ -40,14 +40,6 @@ struct DetectorData {
   std::vector<TempoResult> result;
 };
 
-#define MARK_PROGRESS(data, number)  \
-  {                                  \
-    if ((data)->terminate->load()) { \
-      return;                        \
-    }                                \
-    (data)->progress->store(number); \
-  }
-
 struct TempoSort {
   bool operator()(const TempoResult& a, const TempoResult& b) {
     return a.fitness > b.fitness;

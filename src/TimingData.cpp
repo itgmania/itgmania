@@ -77,47 +77,6 @@ bool TimingData::IsSafeFullTiming() {
 
 TimingData::~TimingData() { Clear(); }
 
-std::string SegInfoStr(
-    const std::vector<TimingSegment*>& segs, unsigned int index,
-    const std::string& name) {
-  if (index < segs.size()) {
-    return ssprintf("%s: %d at %d", name.c_str(), index, segs[index]->GetRow());
-  }
-  return ssprintf("%s: %d at end", name.c_str(), index);
-}
-
-void TimingData::DumpOneTable(
-    const beat_start_lookup_t& lookup, const std::string& name) {
-  const std::vector<TimingSegment*>& bpms = m_avpTimingSegments[SEGMENT_BPM];
-  const std::vector<TimingSegment*>& warps = m_avpTimingSegments[SEGMENT_WARP];
-  const std::vector<TimingSegment*>& stops = m_avpTimingSegments[SEGMENT_STOP];
-  const std::vector<TimingSegment*>& delays =
-      m_avpTimingSegments[SEGMENT_DELAY];
-  LOG->Trace("%s lookup table:", name.c_str());
-  for (size_t lit = 0; lit < lookup.size(); ++lit) {
-    const lookup_item_t& item = lookup[lit];
-    const GetBeatStarts& starts = item.second;
-    LOG->Trace("%zu: %f", lit, item.first);
-    std::string str = ssprintf(
-        "  %s, %s, %s, %s,\n"
-        "  last_row: %d, last_time: %.3f,\n"
-        "  warp_destination: %.3f, is_warping: %d",
-        SegInfoStr(bpms, starts.bpm, "bpm").c_str(),
-        SegInfoStr(warps, starts.warp, "warp").c_str(),
-        SegInfoStr(stops, starts.stop, "stop").c_str(),
-        SegInfoStr(delays, starts.delay, "delay").c_str(), starts.last_row,
-        starts.last_time, starts.warp_destination, starts.is_warping);
-    LOG->Trace("%s", str.c_str());
-  }
-}
-
-void TimingData::DumpLookupTables() {
-  LOG->Trace("Dumping timing data lookup tables for %s:", m_sFile.c_str());
-  DumpOneTable(m_beat_start_lookup, "m_beat_start_lookup");
-  DumpOneTable(m_time_start_lookup, "m_time_start_lookup");
-  LOG->Trace("Finished dumping lookup tables for %s:", m_sFile.c_str());
-}
-
 static const TimingData::GetBeatStarts& LookupResumeStart(
     const TimingData::beat_start_lookup_t& lookup, float key) {
   TimingData::beat_start_lookup_t::const_iterator it = std::lower_bound(
@@ -313,49 +272,6 @@ struct ts_less {
     return (*x) < (*y);
   }
 };
-
-// Multiply the BPM in the range [fStartBeat,fEndBeat) by fFactor.
-void TimingData::MultiplyBPMInBeatRange(
-    int iStartIndex, int iEndIndex, float fFactor) {
-  InvalidateLookups();
-  // Change all other BPM segments in this range.
-  std::vector<TimingSegment*>& bpms = m_avpTimingSegments[SEGMENT_BPM];
-  for (unsigned i = 0; i < bpms.size(); i++) {
-    BPMSegment* bs = ToBPM(bpms[i]);
-    const int iStartIndexThisSegment = bs->GetRow();
-    const bool bIsLastBPMSegment = i == bpms.size() - 1;
-    const int iStartIndexNextSegment =
-        bIsLastBPMSegment ? INT_MAX : bpms[i + 1]->GetRow();
-
-    if (iStartIndexThisSegment <= iStartIndex &&
-        iStartIndexNextSegment <= iStartIndex) {
-      continue;
-    }
-
-    /* If this BPM segment crosses the beginning of the range,
-     * split it into two. */
-    if (iStartIndexThisSegment < iStartIndex &&
-        iStartIndexNextSegment > iStartIndex) {
-      BPMSegment* b = new BPMSegment(iStartIndexNextSegment, bs->GetBPS());
-      bpms.insert(bpms.begin() + i + 1, b);
-
-      /* Don't apply the BPM change to the first half of the segment we
-       * just split, since it lies outside the range. */
-      continue;
-    }
-
-    // If this BPM segment crosses the end of the range, split it into two.
-    if (iStartIndexThisSegment < iEndIndex &&
-        iStartIndexNextSegment > iEndIndex) {
-      BPMSegment* b = new BPMSegment(iEndIndex, bs->GetBPS());
-      bpms.insert(bpms.begin() + i + 1, b);
-    } else if (iStartIndexNextSegment > iEndIndex) {
-      continue;
-    }
-
-    bs->SetBPM(bs->GetBPM() * fFactor);
-  }
-}
 
 bool TimingData::IsWarpAtRow(int iNoteRow) const {
   const std::vector<TimingSegment*>& warps = GetTimingSegments(SEGMENT_WARP);
@@ -1096,11 +1012,6 @@ void TimingData::TidyUpData(bool allowEmpty) {
   if (segs[SEGMENT_SCROLL].empty()) {
     AddSegment(ScrollSegment(0));
   }
-}
-
-void TimingData::SortSegments(TimingSegmentType tst) {
-  std::vector<TimingSegment*>& vSegments = m_avpTimingSegments[tst];
-  sort(vSegments.begin(), vSegments.end());
 }
 
 bool TimingData::HasSpeedChanges() const {

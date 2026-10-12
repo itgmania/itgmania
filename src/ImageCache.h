@@ -22,8 +22,6 @@ class ImageCache {
   void Demand(std::string sImageDir);
   void Undemand(std::string sImageDir);
 
-  void OutputStats() const;
-
   bool delay_save_cache;
 
  private:

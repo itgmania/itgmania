@@ -36,7 +36,6 @@ class RageFileDriverZip : public RageFileDriver {
     /* If 0, unknown. */
     int m_iFilePermissions;
   };
-  const FileInfo* GetFileInfo(const std::string& sPath) const;
 
  private:
   bool m_bFileOwned;

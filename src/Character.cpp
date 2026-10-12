@@ -116,20 +116,6 @@ std::string Character::GetWarmUpAnimationPath() const {
 std::string Character::GetDanceAnimationPath() const {
   return DerefRedir(GetRandomFileInDir(m_sCharDir + "Dance/"));
 }
-std::string Character::GetTakingABreakPath() const {
-  std::vector<std::string> as;
-  GetDirListing(m_sCharDir + "break.png", as, false, true);
-  GetDirListing(m_sCharDir + "break.jpg", as, false, true);
-  GetDirListing(m_sCharDir + "break.jpeg", as, false, true);
-  GetDirListing(m_sCharDir + "break.gif", as, false, true);
-  GetDirListing(m_sCharDir + "break.bmp", as, false, true);
-  if (as.empty()) {
-    return std::string();
-  } else {
-    return as[0];
-  }
-}
-
 std::string Character::GetSongSelectIconPath() const {
   std::vector<std::string> as;
   // first try and find an icon specific to the select music screen
@@ -182,50 +168,6 @@ std::string Character::GetStageIconPath() const {
   } else {
     return as[0];
   }
-}
-
-bool Character::Has2DElems() {
-  if (DoesFileExist(
-          m_sCharDir +
-          "2DFail/BGAnimation.ini")) {  // check 2D Idle BGAnim exists
-    return true;
-  }
-  if (DoesFileExist(
-          m_sCharDir +
-          "2DFever/BGAnimation.ini")) {  // check 2D Idle BGAnim exists
-    return true;
-  }
-  if (DoesFileExist(
-          m_sCharDir +
-          "2DGood/BGAnimation.ini")) {  // check 2D Idle BGAnim exists
-    return true;
-  }
-  if (DoesFileExist(
-          m_sCharDir +
-          "2DMiss/BGAnimation.ini")) {  // check 2D Idle BGAnim exists
-    return true;
-  }
-  if (DoesFileExist(
-          m_sCharDir +
-          "2DWin/BGAnimation.ini")) {  // check 2D Idle BGAnim exists
-    return true;
-  }
-  if (DoesFileExist(
-          m_sCharDir +
-          "2DWinFever/BGAnimation.ini")) {  // check 2D Idle BGAnim exists
-    return true;
-  }
-  if (DoesFileExist(
-          m_sCharDir +
-          "2DGreat/BGAnimation.ini")) {  // check 2D Idle BGAnim exists
-    return true;
-  }
-  if (DoesFileExist(
-          m_sCharDir +
-          "2DIdle/BGAnimation.ini")) {  // check 2D Idle BGAnim exists
-    return true;
-  }
-  return false;
 }
 
 void Character::DemandGraphics() {

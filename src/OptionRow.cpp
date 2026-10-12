@@ -805,10 +805,6 @@ int OptionRow::GetChoiceInRowWithFocus(PlayerNumber pn) const {
   return iChoice;
 }
 
-int OptionRow::GetChoiceInRowWithFocusShared() const {
-  return GetChoiceInRowWithFocus(PLAYER_1);
-}
-
 void OptionRow::SetChoiceInRowWithFocus(PlayerNumber pn, int iChoice) {
   if (m_pHand->m_Def.m_bOneChoiceForAllPlayers) {
     pn = PLAYER_1;
@@ -881,11 +877,6 @@ bool OptionRow::IsShowOneValueWithGoDown() const {
 }
 
 bool OptionRow::GoToFirstOnStart() { return m_pHand->GoToFirstOnStart(); }
-
-void OptionRow::SetExitText(std::string sExitText) {
-  BitmapText* bt = m_textItems.back();
-  bt->SetText(sExitText);
-}
 
 void OptionRow::Reload() {
   // TODO: Nothing uses this yet and it causes skips when changing options.

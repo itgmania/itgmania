@@ -49,10 +49,6 @@ enum { TRAIT_NO_TRANSPARENCY = 0x0001 }; /* 0alpha */
  * It only needs one bit of alpha. */
 enum { TRAIT_BOOL_TRANSPARENCY = 0x0002 }; /* 1alpha */
 
-void BlitTransform(
-    const RageSurface* src, RageSurface* dst,
-    const float fCoords[8] /* TL, BR, BL, TR */);
-
 void Blit(
     const RageSurface* src, RageSurface* dst, int width = -1, int height = -1);
 void CorrectBorderPixels(RageSurface* img, int width, int height);

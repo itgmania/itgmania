@@ -239,11 +239,6 @@ void CourseUtil::SortByMostRecentlyPlayedForMachine(
   course_sort_val.clear();
 }
 
-void CourseUtil::MakeDefaultEditCourseEntry(CourseEntry& out) {
-  out.songID.FromSong(GAMESTATE->GetDefaultSong());
-  out.stepsCriteria.m_difficulty = Difficulty_Medium;
-}
-
 //////////////////////////////////
 // Autogen
 //////////////////////////////////

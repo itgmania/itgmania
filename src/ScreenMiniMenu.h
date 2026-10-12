@@ -167,23 +167,6 @@ struct MenuRowDef {
 #undef PUSH
   }
 
-  MenuRowDef(
-      int r, std::string n, bool e, EditMode s, bool bTT, bool bTI, int d,
-      int low, int high)
-      : iRowCode(r),
-        sName(n),
-        bEnabled(e),
-        pfnEnabled(nullptr),
-        emShowIn(s),
-        iDefaultChoice(d),
-        choices(),
-        bThemeTitle(bTT),
-        bThemeItems(bTI) {
-    for (int i = low; i <= high; i++) {
-      choices.push_back(std::to_string(i));
-    }
-  }
-
   void SetOneUnthemedChoice(const std::string& sChoice) {
     choices.resize(1);
     choices[0] = "|" + sChoice;

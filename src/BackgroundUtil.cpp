@@ -413,14 +413,6 @@ void BackgroundUtil::GetGlobalRandomMovies(
   StripCvsAndSvn(vsPathsOut, vsNamesOut);
 }
 
-void BackgroundUtil::BakeAllBackgroundChanges(Song* pSong) {
-  Background bg;
-  bg.LoadFromSong(pSong);
-  std::vector<BackgroundChange>* vBGChanges[NUM_BackgroundLayer];
-  FOREACH_BackgroundLayer(i) vBGChanges[i] = &pSong->GetBackgroundChanges(i);
-  bg.GetLoadedBackgroundChanges(vBGChanges);
-}
-
 /*
  * (c) 2001-2004 Chris Danford, Ben Nordstrom
  * All rights reserved.

@@ -119,10 +119,6 @@ class ThemeMetric : public IThemeMetric {
    * @brief Retrieve the metric's name.
    * @return the metric's name. */
   const std::string& GetName() const { return m_sName; }
-  /**
-   * @brief Retrieve the metric's group.
-   * @return the metric's group. */
-  const std::string& GetGroup() const { return m_sGroup; }
 
   /**
    * @brief Retrieve the metric's value.
@@ -166,7 +162,7 @@ class ThemeMetric : public IThemeMetric {
 typedef std::string (*MetricName1D)(size_t N);
 
 template <class T>
-class ThemeMetric1D : public IThemeMetric {
+class ThemeMetric1D {
   typedef ThemeMetric<T> ThemeMetricT;
   std::vector<ThemeMetricT> m_metric;
 
@@ -181,11 +177,6 @@ class ThemeMetric1D : public IThemeMetric {
       m_metric[i].Load(sGroup, pfn(i));
     }
   }
-  void Read() {
-    for (unsigned i = 0; i < m_metric.size(); i++) {
-      m_metric[i].Read();
-    }
-  }
   void Clear() {
     for (unsigned i = 0; i < m_metric.size(); i++) {
       m_metric[i].Clear();
@@ -197,7 +188,7 @@ class ThemeMetric1D : public IThemeMetric {
 typedef std::string (*MetricName2D)(size_t N, size_t M);
 
 template <class T>
-class ThemeMetric2D : public IThemeMetric {
+class ThemeMetric2D {
   typedef ThemeMetric<T> ThemeMetricT;
   typedef std::vector<ThemeMetricT> ThemeMetricTVector;
   std::vector<ThemeMetricTVector> m_metric;
@@ -217,20 +208,6 @@ class ThemeMetric2D : public IThemeMetric {
       }
     }
   }
-  void Read() {
-    for (unsigned i = 0; i < m_metric.size(); i++) {
-      for (unsigned j = 0; j < m_metric[i].size(); j++) {
-        m_metric[i][j].Read();
-      }
-    }
-  }
-  void Clear() {
-    for (unsigned i = 0; i < m_metric.size(); i++) {
-      for (unsigned j = 0; j < m_metric[i].size(); j++) {
-        m_metric[i][j].Clear();
-      }
-    }
-  }
   const T& GetValue(size_t i, size_t j) const {
     return m_metric[i][j].GetValue();
   }
@@ -239,7 +216,7 @@ class ThemeMetric2D : public IThemeMetric {
 typedef std::string (*MetricNameMap)(std::string s);
 
 template <class T>
-class ThemeMetricMap : public IThemeMetric {
+class ThemeMetricMap {
   typedef ThemeMetric<T> ThemeMetricT;
   std::map<std::string, ThemeMetricT> m_metric;
 
@@ -256,22 +233,6 @@ class ThemeMetricMap : public IThemeMetric {
     m_metric.clear();
     for (const std::string& s : vsValueNames) {
       m_metric[s].Load(sGroup, pfn(s));
-    }
-  }
-  void Read() {
-    // HACK: GCC (3.4) takes this and pretty much nothing else.
-    // I don't know why.
-    for (typename std::map<std::string, ThemeMetric<T> >::iterator m =
-             m_metric.begin();
-         m != m_metric.end(); ++m) {
-      m->second.Read();
-    }
-  }
-  void Clear() {
-    for (typename std::map<std::string, ThemeMetric<T> >::iterator m =
-             m_metric.begin();
-         m != m_metric.end(); ++m) {
-      m->second.Clear();
     }
   }
   const T& GetValue(std::string s) const {

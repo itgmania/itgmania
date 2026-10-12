@@ -349,8 +349,6 @@ float HighScore::GetSurvivalSeconds() const {
 std::string HighScore::GetModifiers() const { return m_Impl->sModifiers; }
 DateTime HighScore::GetDateTime() const { return m_Impl->dateTime; }
 std::string HighScore::GetPlayerGuid() const { return m_Impl->sPlayerGuid; }
-std::string HighScore::GetMachineGuid() const { return m_Impl->sMachineGuid; }
-int HighScore::GetProductID() const { return m_Impl->iProductID; }
 int HighScore::GetTapNoteScore(TapNoteScore tns) const {
   return m_Impl->iTapNoteScores[tns];
 }
@@ -403,42 +401,8 @@ std::string HighScore::GetPlayerName(const PlayerNumber& playerNum) const {
   return m_Impl->playerNames.at(playerNum);
 }
 
-std::string HighScore::GetPlayerGrade(const PlayerNumber& playerNum) const {
-  return GradeToString(m_Impl->playerGrades.at(playerNum));
-}
-
-unsigned int HighScore::GetPlayerScore(const PlayerNumber& playerNum) const {
-  return m_Impl->playerScores.at(playerNum);
-}
-
-float HighScore::GetPlayerPercentDP(const PlayerNumber& playerNum) const {
-  return m_Impl->playerPercentDPs.at(playerNum);
-}
-
-unsigned int HighScore::GetPlayerMaxCombo(const PlayerNumber& playerNum) const {
-  return m_Impl->playerMaxCombos.at(playerNum);
-}
-
 std::string HighScore::GetPlayerGuid(const PlayerNumber& playerNum) const {
   return m_Impl->playerGuids.at(playerNum);
-}
-
-// Assuming TapNoteScores and HoldNoteScores are stored in a similar format to
-// HighScoreImpl
-int HighScore::GetPlayerTapNoteScore(
-    const PlayerNumber& playerNum, TapNoteScore tns) const {
-  return m_Impl->playerTapNoteScores.at(playerNum)[tns];
-}
-
-int HighScore::GetPlayerHoldNoteScore(
-    const PlayerNumber& playerNum, HoldNoteScore hns) const {
-  return m_Impl->playerHoldNoteScores.at(playerNum)[hns];
-}
-
-// Setters
-void HighScore::SetPlayerName(
-    const PlayerNumber& playerNum, const std::string& name) {
-  m_Impl->playerNames[playerNum] = name;
 }
 
 void HighScore::SetPlayerGrade(const PlayerNumber& playerNum, Grade grade) {

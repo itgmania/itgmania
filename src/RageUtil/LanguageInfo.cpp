@@ -151,12 +151,6 @@ static const LanguageInfo g_langs[] = {
     {"zu", "Zulu"},
 };
 
-void GetLanguageInfos(std::vector<const LanguageInfo*>& vAddTo) {
-  for (unsigned i = 0; i < ARRAYLEN(g_langs); ++i) {
-    vAddTo.push_back(&g_langs[i]);
-  }
-}
-
 const LanguageInfo* GetLanguageInfo(const std::string& sIsoCode) {
   for (unsigned i = 0; i < ARRAYLEN(g_langs); ++i) {
     if (EqualsNoCase(sIsoCode, g_langs[i].szIsoCode)) {

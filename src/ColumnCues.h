@@ -15,10 +15,6 @@
 struct ColumnCueColumn {
   int colNum;
   TapNoteType noteType;
-  ColumnCueColumn() {
-    colNum = 0;
-    noteType = TapNoteType_Invalid;
-  }
   ColumnCueColumn(int c, TapNoteType n) {
     colNum = c;
     noteType = n;

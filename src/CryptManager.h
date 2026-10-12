@@ -41,8 +41,6 @@ class CryptManager {
   static std::string GetSHA256ForString(std::string sData);  // in binary
   static std::string GetSHA256ForFile(std::string fn);       // in binary
 
-  static std::string GetPublicKeyFileName();
-
   // Lua
   void PushSelf(lua_State* L);
 };

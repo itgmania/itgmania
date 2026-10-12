@@ -94,7 +94,6 @@ class OptionRow : public ActorFrame {
   void SetOneSharedSelectionIfPresent(const std::string& sChoice);
 
   int GetChoiceInRowWithFocus(PlayerNumber pn) const;
-  int GetChoiceInRowWithFocusShared() const;
   void SetChoiceInRowWithFocus(PlayerNumber pn, int iChoice);
   void ResetFocusFromSelection(PlayerNumber pn);
 
@@ -122,8 +121,6 @@ class OptionRow : public ActorFrame {
   bool GoToFirstOnStart();
 
   std::string GetThemedItemText(int iChoice) const;
-
-  void SetExitText(std::string sExitText);
 
   void Reload();
 

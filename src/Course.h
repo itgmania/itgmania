@@ -47,8 +47,6 @@ enum SongSort {
   NUM_SongSort,
   SongSort_Invalid,
 };
-/** @brief Loop through the various Song Sorts. */
-#define FOREACH_SongSort(i) FOREACH_ENUM(SongSort, i)
 const std::string& SongSortToString(SongSort ss);
 const std::string& SongSortToLocalizedString(SongSort ss);
 
@@ -149,7 +147,6 @@ class Course {
   bool IsOni() const { return GetPlayMode() == PLAY_MODE_ONI; }
   bool IsEndless() const { return GetPlayMode() == PLAY_MODE_ENDLESS; }
   CourseType GetCourseType() const;
-  void SetCourseType(CourseType ct);
   PlayMode GetPlayMode() const;
 
   bool ShowInDemonstrationAndRanking() const;
@@ -169,13 +166,11 @@ class Course {
   // Call when a Song or its Steps are deleted/changed.
   void Invalidate(const Song* pStaleSong);
 
-  void GetAllCachedTrails(std::vector<Trail*>& out);
   std::string GetCacheFilePath() const;
 
   const CourseEntry* FindFixedSong(const Song* pSong) const;
 
   ProfileSlot GetLoadedFromProfileSlot() const { return m_LoadedFromProfile; }
-  void SetLoadedFromProfile(ProfileSlot slot) { m_LoadedFromProfile = slot; }
 
   bool Matches(std::string sGroup, std::string sCourse) const;
 

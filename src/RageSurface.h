@@ -31,7 +31,6 @@ struct RageSurfacePalette {
 
   /* Find the exact color; returns -1 if not found. */
   int32_t FindColor(const RageSurfaceColor& color) const;
-  int32_t FindClosestColor(const RageSurfaceColor& color) const;
 };
 
 struct RageSurfaceFormat {

@@ -48,7 +48,6 @@ struct TapNoteResult {
 
   // XML
   XNode* CreateNode() const;
-  void LoadFromNode(const XNode* pNode);
 
   // Lua
   void PushSelf(lua_State* L);
@@ -103,7 +102,6 @@ struct HoldNoteResult {
 
   // XML
   XNode* CreateNode() const;
-  void LoadFromNode(const XNode* pNode);
 
   // Lua
   void PushSelf(lua_State* L);
@@ -185,7 +183,6 @@ struct TapNote {
 
   // XML
   XNode* CreateNode() const;
-  void LoadFromNode(const XNode* pNode);
 
   // Lua
   void PushSelf(lua_State* L);
@@ -201,14 +198,6 @@ struct TapNote {
         iKeysoundIndex(-1),
         iDuration(0),
         HoldResult() {}
-  void Init() {
-    type = TapNoteType_Empty;
-    subType = TapNoteSubType_Invalid;
-    source = TapNoteSource_Original;
-    pn = PLAYER_INVALID, fAttackDurationSeconds = 0.f;
-    iKeysoundIndex = -1;
-    iDuration = 0;
-  }
   TapNote(
       TapNoteType type_, TapNoteSubType subType_, TapNoteSource source_,
       std::string sAttackModifiers_, float fAttackDurationSeconds_,
@@ -323,10 +312,8 @@ const std::string& NoteTypeToString(NoteType nt);
 const std::string& NoteTypeToLocalizedString(NoteType nt);
 LuaDeclareType(NoteType);
 float NoteTypeToBeat(NoteType nt);
-int NoteTypeToRow(NoteType nt);
 NoteType GetNoteType(int row);
 NoteType BeatToNoteType(float fBeat);
-bool IsNoteOfType(int row, NoteType t);
 
 /* This is more accurate: by computing the integer and fractional parts
  * separately, we can avoid storing very large numbers in a float and possibly
@@ -359,33 +346,6 @@ inline int BeatToNoteRowNotRounded(float fBeatNum) {
  * @param iRow the row to convert.
  * @return the beat. */
 inline float NoteRowToBeat(int iRow) { return iRow / (float)ROWS_PER_BEAT; }
-
-// These functions can be useful for function templates,
-// where both rows and beats can be specified.
-
-/**
- * @brief Convert the note row to note row (returns itself).
- * @param row the row to convert.
- */
-static inline int ToNoteRow(int row) { return row; }
-
-/**
- * @brief Convert the beat to note row.
- * @param beat the beat to convert.
- */
-static inline int ToNoteRow(float beat) { return BeatToNoteRow(beat); }
-
-/**
- * @brief Convert the note row to beat.
- * @param row the row to convert.
- */
-static inline float ToBeat(int row) { return NoteRowToBeat(row); }
-
-/**
- * @brief Convert the beat row to beat (return itself).
- * @param beat the beat to convert.
- */
-static inline float ToBeat(float beat) { return beat; }
 
 /**
  * @brief Scales the position.

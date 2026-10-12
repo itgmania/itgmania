@@ -238,27 +238,6 @@ static const char* HoldNoteScoreNames[] = {
 };
 XToString(HoldNoteScore);
 LuaXType(HoldNoteScore);
-HoldNoteScore StringToHoldNoteScore(const std::string& s) {
-  // for backward compatibility
-  if (s == "NG") {
-    return HNS_LetGo;
-  } else if (s == "OK") {
-    return HNS_Held;
-  }
-
-  // new style
-  else if (s == "None") {
-    return HNS_None;
-  } else if (s == "LetGo") {
-    return HNS_LetGo;
-  } else if (s == "Held") {
-    return HNS_Held;
-  } else if (s == "MissedHold") {
-    return HNS_Missed;
-  }
-
-  return HoldNoteScore_Invalid;
-}
 XToLocalizedString(HoldNoteScore);
 
 static const char* TimingWindowNames[] = {"W1",   "W2",        "W3",     "W4",

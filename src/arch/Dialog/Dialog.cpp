@@ -14,53 +14,6 @@
 
 static Preference<std::string> g_sIgnoredDialogs("IgnoredDialogs", "");
 
-DialogDriver* MakeDialogDriver() {
-  std::string sDrivers = "win32,cocoa,null";
-  std::vector<std::string> asDriversToTry;
-  split(sDrivers, ",", asDriversToTry, true);
-
-  ASSERT(asDriversToTry.size() != 0);
-
-  std::string sDriver;
-  DialogDriver* pRet = nullptr;
-
-  for (unsigned i = 0; pRet == nullptr && i < asDriversToTry.size(); ++i) {
-    sDriver = asDriversToTry[i];
-
-#ifdef USE_DIALOG_DRIVER_COCOA
-    if (!CompareNoCase(asDriversToTry[i], "Cocoa")) {
-      pRet = new DialogDriver_MacOSX;
-    }
-#endif
-#ifdef USE_DIALOG_DRIVER_WIN32
-    if (!CompareNoCase(asDriversToTry[i], "Win32")) {
-      pRet = new DialogDriver_Win32;
-    }
-#endif
-#ifdef USE_DIALOG_DRIVER_NULL
-    if (!CompareNoCase(asDriversToTry[i], "Null")) {
-      pRet = new DialogDriver_Null;
-    }
-#endif
-
-    if (pRet == nullptr) {
-      continue;
-    }
-
-    std::string sError = pRet->Init();
-    if (sError != "") {
-      if (LOG) {
-        LOG->Info(
-            "Couldn't load driver %s: %s", asDriversToTry[i].c_str(),
-            sError.c_str());
-      }
-      RageUtil::SafeDelete(pRet);
-    }
-  }
-
-  return pRet;
-}
-
 static DialogDriver* g_pImpl = nullptr;
 static DialogDriver_Null g_NullDriver;
 static bool g_bWindowed =

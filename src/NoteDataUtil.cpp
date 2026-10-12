@@ -1220,21 +1220,6 @@ void NoteDataUtil::RemoveAllButOneTap(NoteData& inout, int row) {
   inout.RevalidateATIs(std::vector<int>(), false);
 }
 
-void NoteDataUtil::RemoveAllButPlayer(NoteData& inout, PlayerNumber pn) {
-  for (int track = 0; track < inout.GetNumTracks(); ++track) {
-    NoteData::iterator i = inout.begin(track);
-
-    while (i != inout.end(track)) {
-      if (i->second.pn != pn && i->second.pn != PLAYER_INVALID) {
-        i = inout.RemoveTapNote(track, i);
-      } else {
-        ++i;
-      }
-    }
-  }
-  inout.RevalidateATIs(std::vector<int>(), false);
-}
-
 // TODO: Perform appropriate matrix calculations for everything instead.
 static void GetTrackMapping(
     StepsType st, NoteDataUtil::TrackMapping tt, int NumTracks,
@@ -2788,28 +2773,6 @@ void NoteDataUtil::TransformNoteData(
   nd.RevalidateATIs(std::vector<int>(), false);
 }
 
-void NoteDataUtil::AddTapAttacks(NoteData& nd, Song* pSong) {
-  // throw an attack in every 30 seconds
-
-  const char* szAttacks[3] = {
-      "2x",
-      "drunk",
-      "dizzy",
-  };
-
-  for (float sec = 15; sec < pSong->m_fMusicLengthSeconds; sec += 30) {
-    float fBeat = pSong->m_SongTiming.GetBeatFromElapsedTime(sec);
-    int iBeat = (int)fBeat;
-    int iTrack =
-        iBeat % nd.GetNumTracks();  // deterministically calculates track
-    TapNote tn(
-        TapNoteType_Attack, TapNoteSubType_Invalid, TapNoteSource_Original,
-        szAttacks[RandomInt(ARRAYLEN(szAttacks))], 15.0f, -1);
-    nd.SetTapNote(iTrack, BeatToNoteRow(fBeat), tn);
-  }
-  nd.RevalidateATIs(std::vector<int>(), false);
-}
-
 void NoteDataUtil::Scale(NoteData& nd, float fScale) {
   ASSERT(fScale > 0);
 
@@ -2934,30 +2897,6 @@ int NoteDataUtil::GetMaxNonEmptyTrack(const NoteData& in) {
     }
   }
   return -1;
-}
-
-bool NoteDataUtil::AnyTapsAndHoldsInTrackRange(
-    const NoteData& in, int iTrack, int iStart, int iEnd) {
-  if (iStart >= iEnd) {
-    return false;
-  }
-
-  // for each index we crossed since the last update:
-  FOREACH_NONEMPTY_ROW_IN_TRACK_RANGE(in, iTrack, r, iStart, iEnd) {
-    switch (in.GetTapNote(iTrack, r).type) {
-      case TapNoteType_Empty:
-      case TapNoteType_Mine:
-        continue;
-      default:
-        return true;
-    }
-  }
-
-  if (in.IsHoldNoteAtRow(iTrack, iEnd)) {
-    return true;
-  }
-
-  return false;
 }
 
 /* Find the next row that either starts a TapNote, or ends a previous one. */

@@ -15,7 +15,6 @@ class StyleID {
   StyleID() : sGame(""), sStyle("") {}
   void Unset() { FromStyle(nullptr); }
   void FromStyle(const Style* p);
-  const Style* ToStyle() const;
   bool operator<(const StyleID& rhs) const;
 
   XNode* CreateNode() const;

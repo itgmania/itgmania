@@ -115,9 +115,6 @@ class TimingData {
 
   void EnsureLookups() const;
   void InvalidateLookups();
-  void DumpOneTable(const beat_start_lookup_t& lookup, const std::string& name);
-  void DumpLookupTables();
-
   int GetSegmentIndexAtRow(TimingSegmentType tst, int row) const;
   int GetSegmentIndexAtBeat(TimingSegmentType tst, float beat) const {
     return GetSegmentIndexAtRow(tst, BeatToNoteRow(beat));
@@ -358,8 +355,6 @@ class TimingData {
     return !IsWarpAtRow(row) && !IsFakeAtRow(row);
   }
 
-  void MultiplyBPMInBeatRange(int iStartIndex, int iEndIndex, float fFactor);
-
   /**
    * @brief Get measure and beat at a note row.
    * @param iNoteRow the note row
@@ -455,8 +450,6 @@ class TimingData {
       bool bAdjustBPM = false);
   void InsertRows(int iStartRow, int iRowsToAdd);
   void DeleteRows(int iStartRow, int iRowsToDelete);
-
-  void SortSegments(TimingSegmentType tst);
 
   const std::vector<TimingSegment*>& GetTimingSegments(
       TimingSegmentType tst) const {

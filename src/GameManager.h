@@ -49,9 +49,6 @@ class GameManager {
   void GetEnabledGames(std::vector<const Game*>& aGamesOut);
   const Game* GetDefaultGame();
   bool IsGameEnabled(const Game* pGame);
-  int GetIndexFromGame(const Game* pGame);
-  const Game* GetGameFromIndex(int index);
-
   static const StepsTypeInfo& GetStepsTypeInfo(StepsType st);
   StepsType StringToStepsType(std::string sStepsType);
   const Game* StringToGame(std::string sGame);

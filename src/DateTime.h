@@ -6,8 +6,6 @@
 
 #include "EnumHelper.h"
 
-int StringToDayInYear(std::string sDayInYear);
-
 /** @brief The number of days we check for previously. */
 const int NUM_LAST_DAYS = 7;
 /** @brief The number of weeks we check for previously. */
@@ -27,7 +25,6 @@ enum Month {
   Month_Invalid   /**< There should be no month at this point. */
 };
 
-std::string DayInYearToString(int iDayInYearIndex);
 std::string LastDayToString(int iLastDayIndex);
 std::string LastDayToLocalizedString(int iLastDayIndex);
 std::string DayOfWeekToString(int iDayOfWeekIndex);

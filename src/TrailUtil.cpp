@@ -39,22 +39,6 @@ void TrailID::FromTrail(const Trail* p) {
   }
 }
 
-Trail* TrailID::ToTrail(const Course* p, bool bAllowNull) const {
-  ASSERT(p != nullptr);
-
-  Trail* pRet = nullptr;
-  if (st != StepsType_Invalid && cd != Difficulty_Invalid) {
-    pRet = p->GetTrail(st, cd);
-  }
-
-  if (!bAllowNull && pRet == nullptr) {
-    RageException::Throw(
-        "%i, %i, \"%s\"", st, cd, p->GetDisplayFullTitle().c_str());
-  }
-
-  return pRet;
-}
-
 XNode* TrailID::CreateNode() const {
   XNode* pNode = new XNode("Trail");
 

@@ -39,23 +39,13 @@ class NoteData {
   typedef std::deque<RowTapNote> TrackMap;
   typedef TrackMap::iterator iterator;
   typedef TrackMap::const_iterator const_iterator;
-  typedef TrackMap::reverse_iterator reverse_iterator;
-  typedef TrackMap::const_reverse_iterator const_reverse_iterator;
 
   NoteData() : m_TapNotes() {}
 
   iterator begin(int iTrack) { return m_TapNotes[iTrack].begin(); }
   const_iterator begin(int iTrack) const { return m_TapNotes[iTrack].begin(); }
-  reverse_iterator rbegin(int iTrack) { return m_TapNotes[iTrack].rbegin(); }
-  const_reverse_iterator rbegin(int iTrack) const {
-    return m_TapNotes[iTrack].rbegin();
-  }
   iterator end(int iTrack) { return m_TapNotes[iTrack].end(); }
   const_iterator end(int iTrack) const { return m_TapNotes[iTrack].end(); }
-  reverse_iterator rend(int iTrack) { return m_TapNotes[iTrack].rend(); }
-  const_reverse_iterator rend(int iTrack) const {
-    return m_TapNotes[iTrack].rend();
-  }
   iterator lower_bound(int iTrack, int iRow);
   const_iterator lower_bound(int iTrack, int iRow) const;
   iterator upper_bound(int iTrack, int iRow);
@@ -131,7 +121,6 @@ class NoteData {
       const NoteData, NoteData::const_iterator, const TapNote>
       all_tracks_const_iterator;
   typedef all_tracks_iterator all_tracks_reverse_iterator;
-  typedef all_tracks_const_iterator all_tracks_const_reverse_iterator;
   friend class _all_tracks_iterator<NoteData, NoteData::iterator, TapNote>;
   friend class _all_tracks_iterator<
       const NoteData, NoteData::const_iterator, const TapNote>;
@@ -189,25 +178,12 @@ class NoteData {
   void RemoveATIFromList(all_tracks_iterator* iter) const;
   void RemoveATIFromList(all_tracks_const_iterator* iter) const;
 
-  // Mina stuf (Used for chartkey hashing)
-  std::vector<int> NonEmptyRowVector;
-
  public:
   void Init();
-
-  // Mina stuf (Used for chartkey hashing)
-  void LogNonEmptyRows();
-  std::vector<int>& GetNonEmptyRowVector() { return NonEmptyRowVector; };
 
   int GetNumTracks() const { return m_TapNotes.size(); }
   void SetNumTracks(int iNewNumTracks);
   bool IsComposite() const;
-  bool operator==(const NoteData& nd) const {
-    return m_TapNotes == nd.m_TapNotes;
-  }
-  bool operator!=(const NoteData& nd) const {
-    return m_TapNotes != nd.m_TapNotes;
-  }
 
   /* Return the note at the given track and row.  Row may be out of
    * range; pretend the song goes on with TAP_EMPTYs indefinitely. */
@@ -263,11 +239,6 @@ class NoteData {
       int iStartRow, int iEndRow, bool bInclusive = false) {
     return all_tracks_iterator(*this, iStartRow, iEndRow, true, bInclusive);
   }
-  all_tracks_const_reverse_iterator GetTapNoteRangeAllTracksReverse(
-      int iStartRow, int iEndRow, bool bInclusive = false) const {
-    return all_tracks_const_iterator(
-        *this, iStartRow, iEndRow, true, bInclusive);
-  }
 
   // Call this after using any transform that changes the NoteData.
   void RevalidateATIs(
@@ -287,9 +258,6 @@ class NoteData {
   void GetTapNoteRangeExclusive(
       int iTrack, int iStartRow, int iEndRow, TrackMap::const_iterator& begin,
       TrackMap::const_iterator& end) const;
-  void GetTapNoteRangeExclusive(
-      int iTrack, int iStartRow, int iEndRow, TrackMap::iterator& begin,
-      TrackMap::iterator& end);
 
   /* Returns the row of the first TapNote on the track that has a row greater
    * than rowInOut. */
@@ -299,7 +267,6 @@ class NoteData {
   bool GetPrevTapNoteRowForTrack(int track, int& rowInOut) const;
   bool GetPrevTapNoteRowForAllTracks(int& rowInOut) const;
 
-  void MoveTapNoteTrack(int dest, int src);
   void SetTapNote(int track, int row, const TapNote& tn);
   /**
    * @brief Add a hold note, merging other overlapping holds and destroying
@@ -324,15 +291,10 @@ class NoteData {
   void GetTapNonEmptyTracks(int row, std::set<int>& addTo) const;
   bool GetTapFirstNonEmptyTrack(int row, int& iNonEmptyTrackOut)
       const;  // return false if no non-empty tracks at row
-  bool GetTapFirstEmptyTrack(int row, int& iEmptyTrackOut)
-      const;  // return false if no non-empty tracks at row
-  bool GetTapLastEmptyTrack(int row, int& iEmptyTrackOut)
-      const;  // return false if no empty tracks at row
   int GetNumTracksWithTap(int row) const;
   int GetNumTracksWithTapOrHoldHead(int row) const;
   int GetFirstTrackWithTap(int row) const;
   int GetFirstTrackWithTapOrHoldHead(int row) const;
-  int GetLastTrackWithTapOrHoldHead(int row) const;
 
   inline bool IsThereATapAtRow(int row) const {
     return GetFirstTrackWithTap(row) != -1;
@@ -357,10 +319,7 @@ class NoteData {
   int GetNumTapNotesNoTiming(
       int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW) const;
   int GetNumTapNotesInRow(int iRow) const;
-  int GetNumMinesInRow(int iRow) const;
   int GetNumMines(int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW) const;
-  int GetNumRowsWithTap(
-      int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW) const;
   int GetNumRowsWithTapOrHoldHead(
       int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW) const;
   /* Optimization: for the default of start to end, use the second (faster).
@@ -431,7 +390,6 @@ class NoteData {
 
   // XML
   XNode* CreateNode() const;
-  void LoadFromNode(const XNode* pNode);
 };
 
 /** @brief Allow a quick way to swap notedata. */

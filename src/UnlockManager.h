@@ -135,8 +135,6 @@ class UnlockManager {
   float PointsUntilNextUnlock(UnlockRequirement t) const;
   int SongIsLocked(const Song* pSong) const;
   bool StepsIsLocked(const Song* pSong, const Steps* pSteps) const;
-  bool StepsTypeIsLocked(
-      const Song* pSong, const Steps* pSteps, const StepsType* pSType) const;
   int CourseIsLocked(const Course* course) const;
   bool ModifierIsLocked(const std::string& sOneMod) const;
 
@@ -163,9 +161,6 @@ class UnlockManager {
    */
   void PreferUnlockEntryID(std::string sEntryID);
 
-  // Unlocks a song.
-  void UnlockSong(const Song* pSong);
-
   // Return the associated EntryID.
   std::string FindEntryID(const std::string& sName) const;
 
@@ -182,8 +177,6 @@ class UnlockManager {
 
   const UnlockEntry* FindSong(const Song* pSong) const;
   const UnlockEntry* FindSteps(const Song* pSong, const Steps* pSteps) const;
-  const UnlockEntry* FindStepsType(
-      const Song* pSong, const Steps* pSteps, const StepsType* pSType) const;
   const UnlockEntry* FindCourse(const Course* pCourse) const;
   const UnlockEntry* FindModifier(const std::string& sOneMod) const;
 

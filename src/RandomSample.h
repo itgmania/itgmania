@@ -17,7 +17,6 @@ class RandomSample {
   bool Load(std::string sFilePath, int iMaxToLoad = 1000 /*load all*/);
   void UnloadAll();
   void PlayRandom();
-  void PlayCopyOfRandom();
   void Stop();
 
  private:

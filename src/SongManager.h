@@ -102,10 +102,8 @@ class SongManager {
 
   std::string GetSongGroupBannerPath(std::string sSongGroup) const;
   std::string GetSeriesBannerPath(std::string sSeriesName) const;
-  // std::string GetSongGroupBackgroundPath( std::string sSongGroup ) const;
   void GetSongGroupNames(std::vector<std::string>& AddTo) const;
   bool DoesSongGroupExist(std::string sSongGroup) const;
-  bool HasPackIni(const std::string& sSongGroup) const;
   RageColor GetSongGroupColor(const std::string& sSongGroupName) const;
   RageColor GetSongColor(const Song* pSong) const;
 
@@ -157,12 +155,8 @@ class SongManager {
       const std::string& sSeriesName) const;
   Group* GetGroupFromName(const std::string& sGroupName) const;
   Group* GetGroup(const Song* pSong) const;
-  std::vector<std::string> GetPreferredSortSectionNames() const;
-  std::vector<Song*> GetPreferredSortSongsBySectionName(
-      const std::string& sSectionName) const;
   void GetPreferredSortSongsBySectionName(
       const std::string& sSectionName, std::vector<Song*>& AddTo) const;
-  std::vector<Song*> GetSongsByMeter(int iMeter) const;
   const std::vector<Course*>& GetPopularCourses(CourseType ct) const {
     return m_pPopularCourses[ct];
   }
@@ -275,8 +269,6 @@ class SongManager {
   std::vector<std::string>
       m_sSongGroupBannerPaths;  // each song group may have a banner associated
                                 // with it
-  // vector<std::string>		m_sSongGroupBackgroundPaths; // each
-  // song group may have a background associated with it (very rarely)
 
   std::unordered_map<std::string, Group*>
       m_mapNameToGroup;  // maps a group's name on disk (folder) to a Group

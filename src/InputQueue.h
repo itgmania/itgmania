@@ -18,9 +18,6 @@ class InputQueue {
   InputQueue();
 
   void RememberInput(const InputEventPlus& gi);
-  bool WasPressedRecently(
-      GameController c, const GameButton button,
-      const RageTimer& OldestTimeAllowed, InputEventPlus* pIEP = nullptr);
   const std::vector<InputEventPlus>& GetQueue(GameController c) const {
     return m_aQueue[c];
   }

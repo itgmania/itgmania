@@ -302,14 +302,6 @@ bool WheelBase::Select()  // return true if this selection can end the screen
   }
 }
 
-WheelItemBaseData* WheelBase::GetItem(unsigned int iIndex) {
-  if (!m_bEmpty && iIndex < m_CurWheelItemData.size()) {
-    return m_CurWheelItemData[iIndex];
-  }
-
-  return nullptr;
-}
-
 int WheelBase::IsMoving() const {
   return m_Moving && m_TimeBeforeMovingBegins == 0;
 }
@@ -479,28 +471,6 @@ void WheelBase::RebuildWheelItems(int iDist) {
     WheelItemBase* pDisplay = items[i];
     pDisplay->LoadFromWheelItemData(pData, iIndex, m_iSelection == iIndex, i);
   }
-}
-
-WheelItemBaseData* WheelBase::LastSelected() {
-  if (m_bEmpty) {
-    return nullptr;
-  } else {
-    return m_LastSelection;
-  }
-}
-
-int WheelBase::FirstVisibleIndex() {
-  // rewind to first index that will be displayed;
-  int iFirstVisibleIndex = m_iSelection;
-  if (m_iSelection >= int(m_CurWheelItemData.size())) {
-    m_iSelection = 0;
-  }
-
-  // find the first wheel item shown
-  iFirstVisibleIndex -= NUM_WHEEL_ITEMS / 2;
-
-  wrap(iFirstVisibleIndex, m_CurWheelItemData.size());
-  return iFirstVisibleIndex;
 }
 
 // lua start

@@ -153,14 +153,6 @@ void ActorMultiVertex::SetNumVertices(size_t n) {
   }
 }
 
-void ActorMultiVertex::AddVertex() {
-  for (size_t i = 0; i < AMV_Tweens.size(); ++i) {
-    AMV_Tweens[i].vertices.push_back(RageSpriteVertex());
-  }
-  AMV_current.vertices.push_back(RageSpriteVertex());
-  AMV_start.vertices.push_back(RageSpriteVertex());
-}
-
 void ActorMultiVertex::AddVertices(int Add) {
   int size = AMV_DestTweenState().vertices.size();
   size += Add;

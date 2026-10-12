@@ -205,13 +205,3 @@ void Row::setFootPlacement(const StepParity::State* state) {
     }
   }
 }
-
-bool Row::operator==(const Row& other) const {
-  return second == other.second && beat == other.beat &&
-         rowIndex == other.rowIndex && columnCount == other.columnCount &&
-         noteCount == other.noteCount && mines == other.mines &&
-         fakeMines == other.fakeMines && columns == other.columns &&
-         whereTheFeetAre == other.whereTheFeetAre;
-}
-
-bool Row::operator!=(const Row& other) const { return !operator==(other); }

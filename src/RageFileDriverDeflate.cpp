@@ -502,17 +502,6 @@ int RageFileObjGzip::Finish() {
 
 #include "RageFileDriverMemory.h"
 
-void GzipString(const std::string& sIn, std::string& sOut) {
-  /* Gzip it. */
-  RageFileObjMem mem;
-  RageFileObjGzip gzip(&mem);
-  gzip.Start();
-  gzip.Write(sIn);
-  gzip.Finish();
-
-  sOut = mem.GetString();
-}
-
 bool GunzipString(
     const std::string& sIn, std::string& sOut, std::string& sError) {
   RageFileObjMem* mem = new RageFileObjMem;

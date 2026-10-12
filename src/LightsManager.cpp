@@ -177,14 +177,6 @@ int LightsManager::LightsManThreadMain() {
 static const float g_fLightEffectRiseSeconds = 0.075f;
 static const float g_fLightEffectFalloffSeconds = 0.35f;
 static const float g_fCoinPulseTime = 0.100f;
-void LightsManager::BlinkActorLight(CabinetLight cl) {
-  m_fSecsLeftInActorLightBlink[cl] = g_fLightEffectRiseSeconds;
-}
-
-float LightsManager::GetActorLightLatencySeconds() const {
-  return g_fLightEffectRiseSeconds;
-}
-
 void LightsManager::Update(float fDeltaTime) {
   // Update actor effect lights.
   FOREACH_CabinetLight(cl) {

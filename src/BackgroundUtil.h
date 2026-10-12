@@ -104,7 +104,6 @@ void GetGlobalRandomMovies(
     bool bTryInsideOfSongGroupAndGenreFirst = true,
     bool bTryInsideOfSongGroupFirst = true);
 
-void BakeAllBackgroundChanges(Song* pSong);
 };  // namespace BackgroundUtil
 
 #endif

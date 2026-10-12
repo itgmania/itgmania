@@ -1663,21 +1663,6 @@ const Game* GameManager::GetDefaultGame() {
   return pDefault;
 }
 
-int GameManager::GetIndexFromGame(const Game* pGame) {
-  for (size_t g = 0; g < ARRAYLEN(g_Games); ++g) {
-    if (g_Games[g] == pGame) {
-      return g;
-    }
-  }
-  FAIL_M(ssprintf("Game not found: %s", pGame->m_szName));
-}
-
-const Game* GameManager::GetGameFromIndex(int index) {
-  ASSERT(index >= 0);
-  ASSERT(index < (int)ARRAYLEN(g_Games));
-  return g_Games[index];
-}
-
 bool GameManager::IsGameEnabled(const Game* pGame) {
   return NOTESKIN->DoNoteSkinsExistForGame(pGame);
 }

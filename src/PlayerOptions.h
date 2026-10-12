@@ -489,18 +489,8 @@ class PlayerOptions {
   void NextAppearance();
   void NextTurn();
   void NextTransform();
-  void NextPerspective();
   void NextScroll();
 
-  Accel GetFirstAccel();
-  Effect GetFirstEffect();
-  Appearance GetFirstAppearance();
-  Scroll GetFirstScroll();
-
-  void SetOneAccel(Accel a);
-  void SetOneEffect(Effect e);
-  void SetOneAppearance(Appearance a);
-  void SetOneScroll(Scroll s);
   void ToggleOneTurn(Turn t);
 
   // return true if any mods being used will make the song(s) easier

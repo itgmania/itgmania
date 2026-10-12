@@ -294,11 +294,6 @@ RageFileDriverZip::~RageFileDriverZip() {
   }
 }
 
-const RageFileDriverZip::FileInfo* RageFileDriverZip::GetFileInfo(
-    const std::string& sPath) const {
-  return (const FileInfo*)FDB->GetFilePriv(sPath);
-}
-
 RageFileBasic* RageFileDriverZip::Open(
     const std::string& sPath, int iMode, int& iErr) {
   if (iMode & RageFile::WRITE) {

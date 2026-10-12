@@ -54,11 +54,9 @@ struct TimingSegment {
   virtual TimingSegment* Copy() const = 0;
 
   virtual bool IsNotable() const = 0;
-  virtual void DebugPrint() const;
 
   // don't allow base TimingSegments to be instantiated directly
   TimingSegment(int iRow = ROW_INVALID) : m_iStartRow(iRow) {}
-  TimingSegment(float fBeat) : m_iStartRow(ToNoteRow(fBeat)) {}
 
   TimingSegment(const TimingSegment& other) : m_iStartRow(other.GetRow()) {}
 
@@ -85,7 +83,6 @@ struct TimingSegment {
   void SetRow(int iRow) { m_iStartRow = iRow; }
 
   float GetBeat() const { return NoteRowToBeat(m_iStartRow); }
-  void SetBeat(float fBeat) { SetRow(BeatToNoteRow(fBeat)); }
 
   virtual std::string ToString(int /* dec */) const {
     return std::to_string(GetBeat());
@@ -101,10 +98,6 @@ struct TimingSegment {
   // should only compare contents, and this compares position.
   virtual bool operator==(const TimingSegment& other) const {
     return GetRow() == other.GetRow();
-  }
-
-  virtual bool operator!=(const TimingSegment& other) const {
-    return !this->operator==(other);
   }
 
  private:
@@ -130,25 +123,20 @@ struct FakeSegment : public TimingSegment {
   TimingSegment* Copy() const { return new FakeSegment(*this); }
 
   bool IsNotable() const { return m_iLengthRows > 0; }
-  void DebugPrint() const;
 
   FakeSegment() : TimingSegment(), m_iLengthRows(-1) {}
 
-  FakeSegment(int iStartRow, int iLengthRows)
-      : TimingSegment(iStartRow), m_iLengthRows(iLengthRows) {}
-
   FakeSegment(int iStartRow, float fBeats)
-      : TimingSegment(iStartRow), m_iLengthRows(ToNoteRow(fBeats)) {}
+      : TimingSegment(iStartRow), m_iLengthRows(BeatToNoteRow(fBeats)) {}
 
   FakeSegment(const FakeSegment& other)
       : TimingSegment(other.GetRow()), m_iLengthRows(other.GetLengthRows()) {}
 
   int GetLengthRows() const { return m_iLengthRows; }
-  float GetLengthBeats() const { return ToBeat(m_iLengthRows); }
+  float GetLengthBeats() const { return NoteRowToBeat(m_iLengthRows); }
   float GetLength() const { return GetLengthBeats(); }  // compatibility
 
-  void SetLength(int iRows) { m_iLengthRows = ToNoteRow(iRows); }
-  void SetLength(float fBeats) { m_iLengthRows = ToNoteRow(fBeats); }
+  void SetLength(float fBeats) { m_iLengthRows = BeatToNoteRow(fBeats); }
 
   void Scale(int start, int length, int newLength);
 
@@ -190,25 +178,20 @@ struct WarpSegment : public TimingSegment {
   TimingSegment* Copy() const { return new WarpSegment(*this); }
 
   bool IsNotable() const { return m_iLengthRows > 0; }
-  void DebugPrint() const;
 
   WarpSegment() : TimingSegment(), m_iLengthRows(0) {}
 
   WarpSegment(const WarpSegment& other)
       : TimingSegment(other.GetRow()), m_iLengthRows(other.GetLengthRows()) {}
 
-  WarpSegment(int iStartRow, int iLengthRows)
-      : TimingSegment(iStartRow), m_iLengthRows(iLengthRows) {}
-
   WarpSegment(int iStartRow, float fBeats)
-      : TimingSegment(iStartRow), m_iLengthRows(ToNoteRow(fBeats)) {}
+      : TimingSegment(iStartRow), m_iLengthRows(BeatToNoteRow(fBeats)) {}
 
   int GetLengthRows() const { return m_iLengthRows; }
-  float GetLengthBeats() const { return ToBeat(m_iLengthRows); }
+  float GetLengthBeats() const { return NoteRowToBeat(m_iLengthRows); }
   float GetLength() const { return GetLengthBeats(); }  // compatibility
 
-  void SetLength(int iRows) { m_iLengthRows = ToNoteRow(iRows); }
-  void SetLength(float fBeats) { m_iLengthRows = ToNoteRow(fBeats); }
+  void SetLength(float fBeats) { m_iLengthRows = BeatToNoteRow(fBeats); }
 
   void Scale(int start, int length, int newLength);
   std::string ToString(int dec) const;
@@ -257,7 +240,6 @@ struct TickcountSegment : public TimingSegment {
   bool IsNotable() const {
     return true;
   }  // indefinite segments are always true
-  void DebugPrint() const;
 
   TimingSegment* Copy() const { return new TickcountSegment(*this); }
 
@@ -309,7 +291,6 @@ struct ComboSegment : public TimingSegment {
   bool IsNotable() const {
     return true;
   }  // indefinite segments are always true
-  void DebugPrint() const;
 
   TimingSegment* Copy() const { return new ComboSegment(*this); }
 
@@ -323,8 +304,6 @@ struct ComboSegment : public TimingSegment {
 
   int GetCombo() const { return m_iCombo; }
   int GetMissCombo() const { return m_iMissCombo; }
-
-  void SetCombo(int iCombo) { m_iCombo = iCombo; }
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const;
@@ -370,7 +349,6 @@ struct LabelSegment : public TimingSegment {
   bool IsNotable() const {
     return true;
   }  // indefinite segments are always true
-  void DebugPrint() const;
 
   TimingSegment* Copy() const { return new LabelSegment(*this); }
 
@@ -420,7 +398,6 @@ struct BPMSegment : public TimingSegment {
   bool IsNotable() const {
     return true;
   }  // indefinite segments are always true
-  void DebugPrint() const;
 
   TimingSegment* Copy() const { return new BPMSegment(*this); }
 
@@ -477,7 +454,6 @@ struct TimeSignatureSegment : public TimingSegment {
   bool IsNotable() const {
     return true;
   }  // indefinite segments are always true
-  void DebugPrint() const;
 
   TimingSegment* Copy() const { return new TimeSignatureSegment(*this); }
 
@@ -493,11 +469,6 @@ struct TimeSignatureSegment : public TimingSegment {
   int GetNum() const { return m_iNumerator; }
 
   int GetDen() const { return m_iDenominator; }
-
-  void Set(int num, int den) {
-    m_iNumerator = num;
-    m_iDenominator = den;
-  }
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const;
@@ -559,7 +530,6 @@ struct SpeedSegment : public TimingSegment {
   bool IsNotable() const {
     return true;
   }  // indefinite segments are always true
-  void DebugPrint() const;
 
   TimingSegment* Copy() const { return new SpeedSegment(*this); }
 
@@ -581,7 +551,6 @@ struct SpeedSegment : public TimingSegment {
         m_Unit(other.GetUnit()) {}
 
   float GetRatio() const { return m_fRatio; }
-  void SetRatio(float fRatio) { m_fRatio = fRatio; }
 
   float GetDelay() const { return m_fDelay; }
   void SetDelay(float fDelay) { m_fDelay = fDelay; }
@@ -644,7 +613,6 @@ struct ScrollSegment : public TimingSegment {
   bool IsNotable() const {
     return true;
   }  // indefinite segments are always true
-  void DebugPrint() const;
 
   TimingSegment* Copy() const { return new ScrollSegment(*this); }
 
@@ -655,7 +623,6 @@ struct ScrollSegment : public TimingSegment {
       : TimingSegment(other.GetRow()), m_fRatio(other.GetRatio()) {}
 
   float GetRatio() const { return m_fRatio; }
-  void SetRatio(float fRatio) { m_fRatio = fRatio; }
 
   std::string ToString(int dec) const;
   std::vector<float> GetValues() const {
@@ -687,7 +654,6 @@ struct StopSegment : public TimingSegment {
   SegmentEffectType GetEffectType() const { return SegmentEffectType_Row; }
 
   bool IsNotable() const { return m_fSeconds > 0; }
-  void DebugPrint() const;
 
   TimingSegment* Copy() const { return new StopSegment(*this); }
 
@@ -730,7 +696,6 @@ struct DelaySegment : public TimingSegment {
   SegmentEffectType GetEffectType() const { return SegmentEffectType_Row; }
 
   bool IsNotable() const { return m_fSeconds > 0; }
-  void DebugPrint() const;
 
   TimingSegment* Copy() const { return new DelaySegment(*this); }
 

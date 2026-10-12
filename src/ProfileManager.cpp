@@ -830,18 +830,6 @@ const std::string& ProfileManager::GetProfileDir(ProfileSlot slot) const {
   }
 }
 
-std::string ProfileManager::GetProfileDirImportedFrom(ProfileSlot slot) const {
-  switch (slot) {
-    case ProfileSlot_Player1:
-    case ProfileSlot_Player2:
-      return m_sProfileDirImportedFrom[slot];
-    case ProfileSlot_Machine:
-      return std::string();
-    default:
-      FAIL_M("Invalid profile slot chosen: unable to get the directory!");
-  }
-}
-
 const Profile* ProfileManager::GetProfile(ProfileSlot slot) const {
   switch (slot) {
     case ProfileSlot_Player1:

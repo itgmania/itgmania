@@ -43,28 +43,6 @@ const std::array<StepParity::Foot, 4> FEET = {
 const std::array<StepParity::Foot, 5> OTHER_PART_OF_FOOT = {
     Foot_None, Foot_LeftToe, Foot_LeftHeel, Foot_RightToe, Foot_RightHeel};
 
-enum Cost {
-  COST_DOUBLESTEP = 0,
-  COST_BRACKETJACK,
-  COST_JACK,
-  COST_JUMP,
-  COST_SLOW_BRACKET,
-  COST_TWISTED_FOOT,
-  COST_BRACKETTAP,
-  COST_HOLDSWITCH,
-  COST_MINE,
-  COST_FOOTSWITCH,
-  COST_MISSED_FOOTSWITCH,
-  COST_FACING,
-  COST_DISTANCE,
-  COST_SPIN,
-  COST_SIDESWITCH,
-  COST_CROWDED_BRACKET,
-  COST_OTHER,
-  COST_TOTAL,
-  NUM_Cost
-};
-
 struct StagePoint {
   float x;
   float y;
@@ -168,18 +146,6 @@ struct StageLayout {
     }
     return avgPoints[leftIndex * columnCount + rightIndex];
   }
-  float getPlayerAngle(int c1, int c2) const {
-    return getPlayerAngle(columns[c1], columns[c2]);
-  }
-  float getPlayerAngle(StagePoint left, StagePoint right) const {
-    float x1 = right.x - left.x;
-    float y1 = right.y - left.y;
-    float x2 = 1;
-    float y2 = 0;
-    float dot = x1 * x2 + y1 * y2;
-    float det = x1 * y2 - y1 * x2;
-    return atan2f(det, dot);
-  }
 
   void preCalculateStuff();
   void preGeneratePermutations();
@@ -203,11 +169,6 @@ struct State {
   int whatNoteTheFootIsHitting[NUM_Foot] = {};
   bool didTheFootMove[NUM_Foot] = {};
   bool isTheFootHolding[NUM_Foot] = {};
-
-  bool operator==(const State& other) const {
-    return combined_mask == other.combined_mask &&
-           moved_mask == other.moved_mask && holding_mask == other.holding_mask;
-  }
 };
 
 /// @brief A convenience struct used to encapsulate data from NoteData in an
@@ -259,7 +220,6 @@ struct Row {
   int rowIndex = 0;
   int columnCount = 0;
   int noteCount = 0;
-  Row() : Row(0) {};
 
   Row(int _columnCount) {
     columnCount = _columnCount;
@@ -267,9 +227,6 @@ struct Row {
   }
 
   void setFootPlacement(const StepParity::State* state);
-
-  bool operator==(const Row& other) const;
-  bool operator!=(const Row& other) const;
 };
 
 /// @brief A counter used while creating rows

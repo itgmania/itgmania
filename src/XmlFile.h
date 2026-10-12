@@ -133,8 +133,6 @@ class XNode {
     pChild->GetTextValue(out);
     return true;
   }
-  bool PushChildValue(lua_State* L, const std::string& sName) const;
-
   // modify DOM
   template <typename T>
   XNode* AppendChild(const std::string& sName, T value) {
@@ -160,8 +158,6 @@ class XNode {
     pVal->SetValue(value);
     return pVal;
   }
-  bool RemoveAttr(const std::string& sName);
-
   XNode();
   explicit XNode(const std::string& sName);
   XNode(const XNode& cpy);

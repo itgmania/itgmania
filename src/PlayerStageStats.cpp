@@ -451,23 +451,6 @@ void PlayerStageStats::SetLifeRecordAt(float fLife, float fStepsSecond) {
   }
 }
 
-float PlayerStageStats::GetLifeRecordAt(float fStepsSecond) const {
-  if (m_fLifeRecord.empty()) {
-    return 0;
-  }
-
-  // Find the first element whose key is greater than k.
-  std::map<float, float>::const_iterator it =
-      m_fLifeRecord.upper_bound(fStepsSecond);
-
-  // Find the last element whose key is less than or equal to k.
-  if (it != m_fLifeRecord.begin()) {
-    --it;
-  }
-
-  return it->second;
-}
-
 float PlayerStageStats::GetLifeRecordLerpAt(float fStepsSecond) const {
   if (m_fLifeRecord.empty()) {
     return 0;
@@ -661,14 +644,6 @@ bool PlayerStageStats::SingleDigitsOfScore(
 bool PlayerStageStats::OneOfScore(TapNoteScore tnsAllGreaterOrEqual) const {
   return FullComboOfScore(tnsAllGreaterOrEqual) &&
          m_iTapNoteScores[tnsAllGreaterOrEqual] == 1;
-}
-
-int PlayerStageStats::GetTotalTaps() const {
-  int iTotalTaps = 0;
-  for (int i = TNS_Miss; i < NUM_TapNoteScore; i++) {
-    iTotalTaps += m_iTapNoteScores[i];
-  }
-  return iTotalTaps;
 }
 
 float PlayerStageStats::GetPercentageOfTaps(TapNoteScore tns) const {
