@@ -569,18 +569,6 @@ const std::vector<std::string>& ActorUtil::GetTypeExtensionList(FileType ft) {
   return FileTypeToExtensionList[ft];
 }
 
-void ActorUtil::AddTypeExtensionsToList(
-    FileType ft, std::vector<std::string>& add_to) {
-  fttel_cont_t::iterator ext_list = FileTypeToExtensionList.find(ft);
-  if (ext_list != FileTypeToExtensionList.end()) {
-    add_to.reserve(add_to.size() + ext_list->second.size());
-    for (std::vector<std::string>::iterator curr = ext_list->second.begin();
-         curr != ext_list->second.end(); ++curr) {
-      add_to.push_back(*curr);
-    }
-  }
-}
-
 FileType ActorUtil::GetFileType(const std::string& sPath) {
   std::string sExt = GetExtension(sPath);
   MakeLower(sExt);

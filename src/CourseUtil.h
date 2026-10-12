@@ -42,8 +42,6 @@ void SortByMostRecentlyPlayedForMachine(std::vector<Course*>& vpCoursesInOut);
 
 void MoveRandomToEnd(std::vector<Course*>& vpCoursesInOut);
 
-void MakeDefaultEditCourseEntry(CourseEntry& out);
-
 void AutogenEndlessFromGroup(
     const std::string& sGroupName, Difficulty dc, Course& out);
 void AutogenNonstopFromGroup(

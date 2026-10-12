@@ -11,9 +11,7 @@
 
 /* In RageUtil: */
 void MakeUpper(char* p, size_t iLen);
-void MakeLower(char* p, size_t iLen);
 void MakeUpper(wchar_t* p, size_t iLen);
-void MakeLower(wchar_t* p, size_t iLen);
 
 // FIXME: separate these into functions that either modify the argument, or
 // return a new string leaving the original unmodified.

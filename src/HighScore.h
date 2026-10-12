@@ -54,8 +54,6 @@ struct HighScore {
   std::string GetModifiers() const;
   DateTime GetDateTime() const;
   std::string GetPlayerGuid() const;
-  std::string GetMachineGuid() const;
-  int GetProductID() const;
   int GetTapNoteScore(TapNoteScore tns) const;
   int GetHoldNoteScore(HoldNoteScore tns) const;
   const RadarValues& GetRadarValues() const;
@@ -92,16 +90,7 @@ struct HighScore {
 
   // Getters for player attributes
   std::string GetPlayerName(const PlayerNumber& pn) const;
-  std::string GetPlayerGrade(const PlayerNumber& pn) const;
-  unsigned int GetPlayerScore(const PlayerNumber& pn) const;
-  float GetPlayerPercentDP(const PlayerNumber& pn) const;
-  unsigned int GetPlayerMaxCombo(const PlayerNumber& pn) const;
   std::string GetPlayerGuid(const PlayerNumber& pn) const;
-  int GetPlayerTapNoteScore(const PlayerNumber& pn, TapNoteScore tns) const;
-  int GetPlayerHoldNoteScore(const PlayerNumber& pn, HoldNoteScore hns) const;
-
-  // Setters for player attributes
-  void SetPlayerName(const PlayerNumber& pn, const std::string& name);
   void SetPlayerGrade(const PlayerNumber& pn, const Grade g);
   void SetPlayerScore(const PlayerNumber& pn, unsigned int iScore);
   void SetPlayerPercentDP(const PlayerNumber& pn, float f);

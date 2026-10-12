@@ -412,7 +412,6 @@ void SongManager::AddGroup(
       }
     }
   }
-  // m_sSongGroupBackgroundPaths.push_back( sBackgroundPath );
 }
 
 static LocalizedString LOADING_SONGS("SongManager", "Loading songs...");
@@ -769,8 +768,6 @@ void SongManager::FreeSongs() {
   m_mapSongsByDifficulty.clear();
   m_mapPreferredSectionToSongs.clear();
 
-  // m_sSongGroupBackgroundPaths.clear();
-
   for (Song* song : m_pSongs) {
     RageUtil::SafeDelete(song);
   }
@@ -868,20 +865,6 @@ std::unordered_set<Group*> SongManager::GetGroupsInSeries(
   return it->second.groups;
 }
 
-/*
-std::string SongManager::GetSongGroupBackgroundPath( std::string sSongGroup )
-const
-{
-        for( unsigned i = 0; i < m_sSongGroupNames.size(); ++i )
-        {
-                if( sSongGroup == m_sSongGroupNames[i] )
-                        return m_sSongGroupBackgroundPaths[i];
-        }
-
-        return std::string();
-}
-*/
-
 void SongManager::GetSongGroupNames(std::vector<std::string>& AddTo) const {
   AddTo.insert(AddTo.end(), m_sSongGroupNames.begin(), m_sSongGroupNames.end());
 }
@@ -889,17 +872,6 @@ void SongManager::GetSongGroupNames(std::vector<std::string>& AddTo) const {
 bool SongManager::DoesSongGroupExist(std::string sSongGroup) const {
   return find(m_sSongGroupNames.begin(), m_sSongGroupNames.end(), sSongGroup) !=
          m_sSongGroupNames.end();
-}
-
-bool SongManager::HasPackIni(const std::string& sSongGroup) const {
-  Group* group = GetGroupFromName(sSongGroup);
-  if (group != nullptr) {
-    return group->HasPackIni();
-  }
-  LOG->Warn(
-      "Requested pack.ini for song group '%s' that doesn't exist",
-      sSongGroup.c_str());
-  return false;
 }
 
 RageColor SongManager::GetSongGroupColor(const std::string& sSongGroup) const {
@@ -1140,13 +1112,6 @@ void SongManager::GetPreferredSortSongsBySectionName(
   }
 }
 
-std::vector<Song*> SongManager::GetPreferredSortSongsBySectionName(
-    const std::string& sSectionName) const {
-  std::vector<Song*> AddTo;
-  GetPreferredSortSongsBySectionName(sSectionName, AddTo);
-  return AddTo;
-}
-
 Group* SongManager::GetGroup(const Song* pSong) const {
   if (pSong == nullptr) {
     return nullptr;
@@ -1172,16 +1137,6 @@ Group* SongManager::GetGroupFromName(const std::string& sGroupName) const {
   return nullptr;
 }
 
-std::vector<std::string> SongManager::GetPreferredSortSectionNames() const {
-  std::vector<std::string> sectionNames;
-  // Use m_mapPreferredSectionToSongs
-  for (const std::pair<const std::string, SongPointerVector>& iter :
-       m_mapPreferredSectionToSongs) {
-    sectionNames.push_back(iter.first);
-  }
-  return sectionNames;
-}
-
 void SongManager::GetPreferredSortCourses(
     CourseType ct, std::vector<Course*>& AddTo, bool bIncludeAutogen) const {
   if (m_vPreferredCourseSort.empty()) {
@@ -1196,16 +1151,6 @@ void SongManager::GetPreferredSortCourses(
       }
     }
   }
-}
-
-std::vector<Song*> SongManager::GetSongsByMeter(const int iMeter) const {
-  std::vector<Song*> AddTo;
-  auto iter = m_mapSongsByDifficulty.find(iMeter);
-  if (iter != m_mapSongsByDifficulty.end()) {
-    // Found the level, add the songs to AddTo
-    AddTo.insert(AddTo.end(), iter->second.begin(), iter->second.end());
-  }
-  return AddTo;
 }
 
 int SongManager::GetNumSongs() const { return m_pSongs.size(); }

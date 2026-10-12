@@ -104,7 +104,6 @@ class ActorMultiVertex : public Actor {
   void UnloadTexture();
   void SetNumVertices(size_t n);
 
-  void AddVertex();
   void AddVertices(int Add);
 
   void SetEffectMode(EffectMode em) { _EffectMode = em; }

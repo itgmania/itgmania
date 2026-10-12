@@ -53,8 +53,6 @@ class PlayerInfo {
   void Load(
       PlayerNumber pn, MultiPlayer mp, bool bShowNoteField,
       int iAddToDifficulty);
-  void LoadDummyP1(int iDummyIndex, int iAddToDifficulty);
-
   /** @brief The player has lost all of their lives: show the special game over.
    */
   void ShowOniGameOver();
@@ -265,8 +263,6 @@ class ScreenGameplay : public ScreenWithMenuElements {
   virtual void SaveStats();
   virtual void StageFinished(bool bBackedOut);
   void SaveReplay();
-  // bool LoadReplay();
-  bool AllAreFailing();
   bool OneFailed();
 
   virtual void InitSongQueues();

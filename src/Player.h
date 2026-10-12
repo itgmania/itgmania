@@ -101,7 +101,6 @@ class Player : public ActorFrame {
    * @return the TimingData in question. */
   TimingData GetPlayerTimingData() const { return *(this->m_Timing); }
 
-  void ScoreAllActiveHoldsLetGo();
   void DoTapScoreNone();
 
   void Step(int col, int row, const RageTimer& tm, bool bHeld, bool bRelease);
@@ -175,12 +174,6 @@ class Player : public ActorFrame {
   int GetClosestNote(
       int col, int iNoteRow, int iMaxRowsAhead, int iMaxRowsBehind,
       bool bAllowGraded) const;
-  int GetClosestNonEmptyRowDirectional(
-      int iStartRow, int iMaxRowsAhead, bool bAllowGraded, bool bForward) const;
-  int GetClosestNonEmptyRow(
-      int iNoteRow, int iMaxRowsAhead, int iMaxRowsBehind,
-      bool bAllowGraded) const;
-
   std::string ApplyRandomAttack();
 
   inline void HideNote(int col, int row) {

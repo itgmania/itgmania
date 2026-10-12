@@ -514,8 +514,6 @@ struct RageMatrix {
   operator float*() { return m[0].data(); }
   operator const float*() const { return m[0].data(); }
 
-  RageMatrix GetTranspose() const;
-
   std::array<std::array<float, 4>, 4> m{};
 };
 

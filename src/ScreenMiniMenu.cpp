@@ -13,16 +13,9 @@
 #include "ScreenOptions.h"
 #include "global.h"
 
-void PrepareToLoadScreen(const std::string& sScreenName);
-void FinishedLoadingScreen();
-
 bool ScreenMiniMenu::s_bCancelled = false;
 int ScreenMiniMenu::s_iLastRowCode = -1;
 std::vector<int> ScreenMiniMenu::s_viLastAnswers;
-
-// Hooks for profiling
-void PrepareToLoadScreen(const std::string& sScreenName) {}
-void FinishedLoadingScreen() {}
 
 // Settings:
 namespace {
@@ -34,8 +27,6 @@ ScreenMessage g_SendOnCancel;
 void ScreenMiniMenu::MiniMenu(
     const MenuDef* pDef, ScreenMessage SM_SendOnOK,
     ScreenMessage SM_SendOnCancel, float fX, float fY) {
-  PrepareToLoadScreen(pDef->sClassName);
-
   g_pMenuDef = pDef;
   g_SendOnOK = SM_SendOnOK;
   g_SendOnCancel = SM_SendOnCancel;
@@ -43,8 +34,6 @@ void ScreenMiniMenu::MiniMenu(
   SCREENMAN->AddNewScreenToTop(pDef->sClassName);
   Screen* pNewScreen = SCREENMAN->GetTopScreen();
   pNewScreen->SetXY(fX, fY);
-
-  FinishedLoadingScreen();
 }
 
 REGISTER_SCREEN_CLASS(ScreenMiniMenu);

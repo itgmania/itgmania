@@ -162,24 +162,6 @@ bool IniFile::WriteFile(RageFileBasic& f) const {
   return true;
 }
 
-bool IniFile::DeleteValue(
-    const std::string& keyname, const std::string& valuename) {
-  XNode* pNode = GetChild(keyname);
-  if (pNode == nullptr) {
-    LOG->Warn(
-        "Key '%s' not found when attempting to delete a value.",
-        keyname.c_str());
-    return false;
-  }
-  bool result = pNode->RemoveAttr(valuename);
-  if (!result) {
-    LOG->Warn(
-        "Value '%s' not found in key '%s'.", valuename.c_str(),
-        keyname.c_str());
-  }
-  return result;
-}
-
 bool IniFile::DeleteKey(const std::string& keyname) {
   XNode* pNode = GetChild(keyname);
   if (pNode == nullptr) {

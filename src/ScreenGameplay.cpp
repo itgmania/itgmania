@@ -249,20 +249,6 @@ void PlayerInfo::Load(
   }
 }
 
-void PlayerInfo::LoadDummyP1(int iDummyIndex, int iAddToDifficulty) {
-  m_pn = PLAYER_1;
-  m_bPlayerEnabled = IsEnabled();
-  m_bIsDummy = true;
-  m_iDummyIndex = iDummyIndex;
-  m_iAddToDifficulty = iAddToDifficulty;
-
-  // don't init any of the scoring objects
-  m_pPlayer = new Player(m_NoteData, true);
-
-  // PlayerOptions needs to be set now so that we load the correct NoteSkin.
-  m_PlayerStateDummy = *GAMESTATE->m_pPlayerState[PLAYER_1];
-}
-
 PlayerInfo::~PlayerInfo() {
   RageUtil::SafeDelete(m_pLifeMeter);
   RageUtil::SafeDelete(m_ptextCourseSongNumber);
@@ -1740,22 +1726,6 @@ void ScreenGameplay::BeginScreen() {
   SOUND->PlayOnceFromAnnouncer("gameplay intro");  // crowd cheer
 
   StartPlayingSong(MIN_SECONDS_TO_STEP, MIN_SECONDS_TO_MUSIC);
-}
-
-bool ScreenGameplay::AllAreFailing() {
-  const Style* pStyle =
-      GAMESTATE->GetCurrentStyle(GAMESTATE->GetMasterPlayerNumber());
-  if (pStyle != nullptr &&
-      pStyle->m_StyleType == StyleType_TwoPlayersSharedSides) {
-    return m_pCombinedLifeMeter != nullptr && m_pCombinedLifeMeter->IsFailing();
-  }
-
-  FOREACH_EnabledPlayerInfo(m_vPlayerInfo, pi) {
-    if (pi->m_pLifeMeter && !pi->m_pLifeMeter->IsFailing()) {
-      return false;
-    }
-  }
-  return true;
 }
 
 bool ScreenGameplay::OneFailed() {

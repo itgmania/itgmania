@@ -20,9 +20,7 @@ void RageVec3ClearBounds(RageVector3& mins, RageVector3& maxs);
 void RageVec3AddToBounds(
     const RageVector3& p, RageVector3& mins, RageVector3& maxs);
 
-void RageVec2Normalize(RageVector2* pOut, const RageVector2* pV);
 void RageVec3Normalize(RageVector3* pOut, const RageVector3* pV);
-void VectorFloatNormalize(std::vector<float>& v);
 void RageVec3Cross(
     RageVector3* ret, const RageVector3* a, const RageVector3* b);
 void RageVec3TransformCoord(
@@ -49,7 +47,6 @@ void RageMatrixRotationZ(RageMatrix* pOut, float fTheta);
 void RageMatrixRotationXYZ(RageMatrix* pOut, float rX, float rY, float rZ);
 void RageAARotate(RageVector3* inret, const RageVector3* axis, float angle);
 void RageQuatFromHPR(RageVector4* pOut, RageVector3 hpr);
-void RageQuatFromPRH(RageVector4* pOut, RageVector3 prh);
 void RageMatrixFromQuat(RageMatrix* pOut, const RageVector4 q);
 void RageQuatSlerp(
     RageVector4* pOut, const RageVector4& from, const RageVector4& to, float t);

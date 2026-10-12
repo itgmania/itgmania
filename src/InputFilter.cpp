@@ -225,13 +225,6 @@ void InputFilter::ButtonPressed(const DeviceInput& di) {
   CheckButtonChange(bs, di, now);
 }
 
-void InputFilter::SetButtonComment(
-    const DeviceInput& di, const std::string& sComment) {
-  LockMut(*queuemutex);
-  ButtonState& bs = GetButtonState(di);
-  bs.m_sComment = sComment;
-}
-
 /** @brief Release all buttons on the given device. */
 void InputFilter::ResetDevice(InputDevice device) {
   LockMut(*queuemutex);
@@ -481,27 +474,10 @@ void InputFilter::UpdateCursorLocation(float _fX, float _fY) {
 
 void InputFilter::UpdateMouseWheel(float _fZ) { m_MouseCoords.fZ = _fZ; }
 
-bool InputFilter::setFullSensorState(
-    PlayerNumber pn, PadPanel panel, PadSensor sensor, unsigned int intensity) {
-  if (pn < NUM_PlayerNumber && panel < NUM_PadPanel && sensor < NUM_PadSensor) {
-    m_Sensors[pn].Set(panel, sensor, intensity);
-    return true;
-  }
-  return false;
-}
-
 bool InputFilter::setFullSensorStateBinary(
     PlayerNumber pn, PadPanel panel, PadSensor sensor, bool isPressed) {
   if (pn < NUM_PlayerNumber && panel < NUM_PadPanel && sensor < NUM_PadSensor) {
     m_Sensors[pn].SetBinary(panel, sensor, isPressed);
-    return true;
-  }
-  return false;
-}
-
-bool InputFilter::setFullSensorStateMax(PlayerNumber pn, unsigned int max) {
-  if (pn < NUM_PlayerNumber) {
-    m_Sensors[pn].SetMax(max);
     return true;
   }
   return false;

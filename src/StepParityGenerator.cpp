@@ -456,11 +456,6 @@ Row StepParityGenerator::CreateRow(RowCounter& counter) {
   return row;
 }
 
-int StepParityGenerator::getPermuteCacheKey(const Row& row) {
-  int mask_key = row.note_mask | row.hold_mask;
-  return mask_key;
-}
-
 std::uint64_t StepParityGenerator::getStateCacheKey(State* state) {
   std::uint64_t value = 0;
   value = state->combined_mask |

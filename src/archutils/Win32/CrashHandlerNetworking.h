@@ -26,7 +26,6 @@ class NetworkPostData {
   // and return true.
   bool IsFinished();
 
-  std::string GetStatus() const;
   float GetProgress() const;
   std::string GetError() const;
   std::string GetResult() const { return m_sResult; }

@@ -271,12 +271,6 @@ const std::string& HoldNoteScoreToString(HoldNoteScore hns);
  * @return the localized string version of the hold note score.
  */
 const std::string& HoldNoteScoreToLocalizedString(HoldNoteScore hns);
-/**
- * @brief Turn the string into the proper hold note score.
- * @param str the string.
- * @return the hold note score based on the string.
- */
-HoldNoteScore StringToHoldNoteScore(const std::string& str);
 LuaDeclareType(HoldNoteScore);
 
 /** @brief The list of timing windows to deal with when playing. */

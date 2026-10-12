@@ -108,8 +108,6 @@ class ProfileManager {
   }
 
   const std::string& GetProfileDir(ProfileSlot slot) const;
-  std::string GetProfileDirImportedFrom(ProfileSlot slot) const;
-
   Profile* GetMachineProfile() { return m_pMachineProfile; }
 
   std::string GetPlayerName(PlayerNumber pn) const;

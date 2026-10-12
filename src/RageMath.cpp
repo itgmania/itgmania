@@ -32,25 +32,11 @@ void RageVec3AddToBounds(
   maxs.z = std::max(maxs.z, p.z);
 }
 
-void RageVec2Normalize(RageVector2* pOut, const RageVector2* pV) {
-  float scale = 1.0f / std::sqrt(pV->x * pV->x + pV->y * pV->y);
-  pOut->x = pV->x * scale;
-  pOut->y = pV->y * scale;
-}
-
 void RageVec3Normalize(RageVector3* pOut, const RageVector3* pV) {
   float scale = 1.0f / std::sqrt(pV->x * pV->x + pV->y * pV->y + pV->z * pV->z);
   pOut->x = pV->x * scale;
   pOut->y = pV->y * scale;
   pOut->z = pV->z * scale;
-}
-
-void VectorFloatNormalize(std::vector<float>& v) {
-  ASSERT_M(v.size() == 3, "Can't normalize a non-3D vector.");
-  float scale = 1.0f / std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-  v[0] *= scale;
-  v[1] *= scale;
-  v[2] *= scale;
 }
 
 void RageVec3Cross(
@@ -133,12 +119,6 @@ void RageMatrixIdentity(RageMatrix* pOut) {
                   0,0,1,0,
                   0,0,0,1 );
   */
-}
-
-RageMatrix RageMatrix::GetTranspose() const {
-  return RageMatrix(
-      m00, m10, m20, m30, m01, m11, m21, m31, m02, m12, m22, m32, m03, m13, m23,
-      m33);
 }
 
 void RageMatrixMultiply(
@@ -431,28 +411,6 @@ void RageQuatFromHPR(RageVector4* pOut, RageVector3 hpr) {
  * Screen orientatoin:  the "floor" is the XZ plane, and Y is height; in other
  * words, the screen is the XY plane and negative Z goes into it.
  */
-
-/* prh.xyz -> pitch, roll, heading */
-void RageQuatFromPRH(RageVector4* pOut, RageVector3 prh) {
-  prh *= PI;
-  prh /= 180.0f;
-  prh /= 2.0f;
-
-  /* Set cX to the cosine of the angle we want to rotate on the X axis,
-   * and so on.  Here, hpr.z (roll) rotates on the Z axis, hpr.x (heading)
-   * on Y, and hpr.y (pitch) on X. */
-  const float sX = std::sin(prh.y);
-  const float cX = std::cos(prh.y);
-  const float sY = std::sin(prh.x);
-  const float cY = std::cos(prh.x);
-  const float sZ = std::sin(prh.z);
-  const float cZ = std::cos(prh.z);
-
-  pOut->w = cX * cY * cZ + sX * sY * sZ;
-  pOut->x = sX * cY * cZ - cX * sY * sZ;
-  pOut->y = cX * sY * cZ + sX * cY * sZ;
-  pOut->z = cX * cY * sZ - sX * sY * cZ;
-}
 
 void RageMatrixFromQuat(RageMatrix* pOut, const RageVector4 q) {
   float xx = q.x * (q.x + q.x);

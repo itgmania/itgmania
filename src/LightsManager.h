@@ -97,11 +97,8 @@ class LightsManager {
 
   void BlinkCabinetLight(CabinetLight cl);
   void BlinkGameButton(GameInput gi);
-  void BlinkActorLight(CabinetLight cl);
   void TurnOffAllLights();
   void PulseCoinCounter() { ++m_iQueuedCoinCounterPulses; }
-  float GetActorLightLatencySeconds() const;
-
   void SetLightsMode(LightsMode lm);
   LightsMode GetLightsMode();
 

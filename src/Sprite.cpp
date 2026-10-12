@@ -895,21 +895,6 @@ void Sprite::SetCustomImageRect(RectF rectImageCoords) {
   SetCustomTextureRect(rectImageCoords);
 }
 
-void Sprite::SetCustomImageCoords(
-    float fImageCoords[8])  // order: top left, bottom left, bottom right, top
-                            // right
-{
-  // convert image coords to texture coords in place
-  for (int i = 0; i < 8; i += 2) {
-    fImageCoords[i + 0] *=
-        m_pTexture->GetImageWidth() / (float)m_pTexture->GetTextureWidth();
-    fImageCoords[i + 1] *=
-        m_pTexture->GetImageHeight() / (float)m_pTexture->GetTextureHeight();
-  }
-
-  SetCustomTextureCoords(fImageCoords);
-}
-
 void Sprite::SetCustomPosCoords(
     float
         fPosCoords[8])  // order: top left, bottom left, bottom right, top right

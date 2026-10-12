@@ -80,18 +80,6 @@ UnlockManager::~UnlockManager() {
   LUA->UnsetGlobal("UNLOCKMAN");
 }
 
-void UnlockManager::UnlockSong(const Song* song) {
-  const UnlockEntry* p = FindSong(song);
-  if (!p) {
-    return;  // does not exist
-  }
-  if (p->m_sEntryID.empty()) {
-    return;
-  }
-
-  UnlockEntryID(p->m_sEntryID);
-}
-
 std::string UnlockManager::FindEntryID(const std::string& sName) const {
   const UnlockEntry* pEntry = nullptr;
 
@@ -184,20 +172,6 @@ bool UnlockManager::StepsIsLocked(
   return p->IsLocked();
 }
 
-bool UnlockManager::StepsTypeIsLocked(
-    const Song* pSong, const Steps* pSteps, const StepsType* pSType) const {
-  if (!PREFSMAN->m_bUseUnlockSystem) {
-    return false;
-  }
-
-  const UnlockEntry* p = FindStepsType(pSong, pSteps, pSType);
-  if (p == nullptr) {
-    return false;
-  }
-
-  return p->IsLocked();
-}
-
 bool UnlockManager::ModifierIsLocked(const std::string& sOneMod) const {
   if (!PREFSMAN->m_bUseUnlockSystem) {
     return false;
@@ -225,18 +199,6 @@ const UnlockEntry* UnlockManager::FindSteps(
   ASSERT(pSong && pSteps);
   for (const UnlockEntry& e : m_UnlockEntries) {
     if (e.m_Song.ToSong() == pSong && e.m_dc == pSteps->GetDifficulty()) {
-      return &e;
-    }
-  }
-  return nullptr;
-}
-
-const UnlockEntry* UnlockManager::FindStepsType(
-    const Song* pSong, const Steps* pSteps, const StepsType* pSType) const {
-  ASSERT(pSong && pSteps && pSType);
-  for (const UnlockEntry& e : m_UnlockEntries) {
-    if (e.m_Song.ToSong() == pSong && e.m_dc == pSteps->GetDifficulty() &&
-        e.m_StepsType == pSteps->m_StepsType) {
       return &e;
     }
   }
@@ -1107,7 +1069,6 @@ class LunaUnlockManager : public Luna<UnlockManager> {
     ADD_METHOD(LockEntryID);
     ADD_METHOD(LockEntryIndex);
     ADD_METHOD(IsSongLocked);
-    // ADD_METHOD( UnlockSong );
     // ADD_METHOD( GetUnlocksByType );
   }
 };

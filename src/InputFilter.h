@@ -113,8 +113,6 @@ struct ButtonState;
 class InputFilter {
  public:
   void ButtonPressed(const DeviceInput& di);
-  void SetButtonComment(
-      const DeviceInput& di, const std::string& sComment = "");
   void ResetDevice(InputDevice dev);
 
   InputFilter();
@@ -156,12 +154,6 @@ class InputFilter {
     }
     return nullptr;
   }
-
-  bool setFullSensorStateMax(PlayerNumber pn, unsigned int max);
-
-  bool setFullSensorState(
-      PlayerNumber pn, PadPanel panel, PadSensor sensor,
-      unsigned int intensity);
 
   bool setFullSensorStateBinary(
       PlayerNumber pn, PadPanel panel, PadSensor sensor, bool isPressed);

@@ -188,17 +188,6 @@ void ImageCache::LoadImage(std::string sImageDir, std::string sImagePath) {
   }
 }
 
-void ImageCache::OutputStats() const {
-  LockMut(g_ImageCacheMutex);
-  int iTotalSize = 0;
-  for (const auto& it : g_ImagePathToImage) {
-    const RageSurface* pImage = it.second;
-    const int iSize = pImage->pitch * pImage->h;
-    iTotalSize += iSize;
-  }
-  LOG->Info("%i bytes of images loaded", iTotalSize);
-}
-
 void ImageCache::UnloadAllImages() {
   LockMut(g_ImageCacheMutex);
   for (auto& it : g_ImagePathToImage) {

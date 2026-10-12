@@ -436,32 +436,6 @@ void Alsa9Buf::Stop() {
   last_cursor_pos = 0;
 }
 
-std::string Alsa9Buf::GetHardwareID(std::string name) {
-  InitializeErrorHandler();
-
-  if (name.empty()) {
-    name = DeviceName();
-  }
-
-  snd_ctl_t* handle;
-  int err;
-  err = dsnd_ctl_open(&handle, name.c_str(), 0);
-  if (err < 0) {
-    LOG->Info(
-        "Couldn't open card \"%s\" to get ID: %s", name.c_str(),
-        dsnd_strerror(err));
-    return "???";
-  }
-
-  snd_ctl_card_info_t* info;
-  dsnd_ctl_card_info_alloca(&info);
-  err = dsnd_ctl_card_info(handle, info);
-  std::string ret = dsnd_ctl_card_info_get_id(info);
-  dsnd_ctl_close(handle);
-
-  return ret;
-}
-
 /*
  * (c) 2002-2004 Glenn Maynard, Aaron VonderHaar
  * All rights reserved.

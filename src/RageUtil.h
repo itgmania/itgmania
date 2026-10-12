@@ -19,8 +19,6 @@
 #include "Platform.h"
 #include "global.h"
 
-class RageFileDriver;
-
 class RageUtil {
  public:
   // Safely delete pointers.
@@ -40,12 +38,6 @@ class RageUtil {
 
 /** @brief Zero out the memory. */
 #define ZERO(x) memset(&(x), 0, sizeof(x))
-/** @brief Copy from a to b. */
-#define COPY(a, b)                  \
-  do {                              \
-    ASSERT(sizeof(a) == sizeof(b)); \
-    memcpy(&(a), &(b), sizeof(a));  \
-  } while (false)
 /** @brief Get the length of the array. */
 #define ARRAYLEN(a) (sizeof(a) / sizeof((a)[0]))
 
@@ -184,10 +176,6 @@ inline float QuantizeUp(float i, float iInterval) {
 }
 
 /* Return i rounded down to the nearest multiple of iInterval. */
-inline int QuantizeDown(int i, int iInterval) {
-  return int((i - iInterval + 1) / iInterval) * iInterval;
-}
-
 inline float QuantizeDown(float i, float iInterval) {
   return std::floor(i / iInterval) * iInterval;
 }
@@ -203,8 +191,6 @@ bool IsAnInt(const std::string& s);
 bool IsHexVal(const std::string& s);
 std::string BinaryToHex(const void* pData_, size_t iNumBytes);
 std::string BinaryToHex(const std::string& sString);
-bool HexToBinary(const std::string& s, unsigned char* stringOut);
-bool HexToBinary(const std::string& s, std::string* sOut);
 float HHMMSSToSeconds(const std::string& sHMS);
 std::string SecondsToHHMMSS(float fSecs);
 std::string SecondsToMSSMsMs(float fSecs);
@@ -215,9 +201,6 @@ std::string MicrosecondsToMMSSMsMsMs(uint64_t usecs);
 std::string SecondsToMSS(float fSecs);
 std::string SecondsToMMSS(float fSecs);
 std::string PrettyPercent(float fNumerator, float fDenominator);
-inline std::string PrettyPercent(int fNumerator, int fDenominator) {
-  return PrettyPercent(float(fNumerator), float(fDenominator));
-}
 std::string Commify(int iNum);
 std::string Commify(
     const std::string& num, const std::string& sep = ",",
@@ -263,9 +246,7 @@ wchar_t utf8_get_char(const std::string& s);
 bool utf8_is_valid(const std::string& s);
 void utf8_remove_bom(std::string& s);
 void MakeUpper(char* p, size_t iLen);
-void MakeLower(char* p, size_t iLen);
 void MakeUpper(wchar_t* p, size_t iLen);
-void MakeLower(wchar_t* p, size_t iLen);
 
 // TODO: Have the three functions below be moved to better locations.
 float StringToFloat(const std::string& sString);
@@ -281,11 +262,6 @@ inline bool operator>>(const std::string& lhs, T& rhs) {
 // performed
 int StringToInt(
     const std::string& str, size_t* pos = 0, int base = 10, int exceptVal = 0);
-long StringToLong(
-    const std::string& str, size_t* pos = 0, int base = 10, long exceptVal = 0);
-long long StringToLLong(
-    const std::string& str, size_t* pos = 0, int base = 10,
-    long long exceptVal = 0);
 
 std::string WStringToRString(const std::wstring& sString);
 std::string WcharToUTF8(wchar_t c);
@@ -307,18 +283,12 @@ std::vector<std::string> split(
 void split(
     const std::string& sSource, const std::string& sDelimitor, int& iBegin,
     int& iSize, const bool bIgnoreEmpty = true);
-void split(
-    const std::wstring& sSource, const std::wstring& sDelimitor, int& iBegin,
-    int& iSize, const bool bIgnoreEmpty = true);
 
 /* In-place split of partial string. */
 void split(
     const std::string& sSource, const std::string& sDelimitor, int& iBegin,
     int& iSize, int iLen,
     const bool bIgnoreEmpty); /* no default to avoid ambiguity */
-void split(
-    const std::wstring& sSource, const std::wstring& sDelimitor, int& iBegin,
-    int& iSize, int iLen, const bool bIgnoreEmpty);
 
 // Joins a std::vector<std::string> to create a std::string according the
 // Deliminator.
@@ -359,7 +329,6 @@ std::string DwiEscape(const char* cUnescaped, int len);
 std::string GetCwd();
 
 void SetCommandlineArguments(int argc, char** argv);
-void GetCommandLineArguments(int& argc, char**& argv);
 bool GetCommandlineArgument(
     const std::string& option, std::string* argument = nullptr, int iIndex = 0);
 extern int g_argc;
@@ -458,7 +427,6 @@ std::string Dirname(const std::string& dir);
 std::string Capitalize(const std::string& s);
 
 extern unsigned char g_UpperCase[256];
-extern unsigned char g_LowerCase[256];
 
 /* ASCII-only case insensitivity. */
 struct char_traits_char_nocase : public std::char_traits<char> {
@@ -510,16 +478,9 @@ void GetDirListing(
     bool bOnlyDirs = false, bool bReturnPathToo = false);
 void GetDirListingRecursive(
     const std::string& sDir, const std::string& sMatch,
-    std::vector<std::string>& AddTo); /* returns path too */
-void GetDirListingRecursive(
-    RageFileDriver* prfd, const std::string& sDir, const std::string& sMatch,
     std::vector<std::string>& AddTo);          /* returns path too */
 bool DeleteRecursive(const std::string& sDir); /* delete the dir and all
                                                   files/subdirs inside it */
-bool DeleteRecursive(
-    RageFileDriver* prfd,
-    const std::string&
-        sDir); /* delete the dir and all files/subdirs inside it */
 bool DoesFileExist(const std::string& sPath);
 bool IsAFile(const std::string& sPath);
 bool IsADirectory(const std::string& sPath);

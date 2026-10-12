@@ -153,14 +153,6 @@ class Steps {
   static bool MakeValidEditDescription(
       std::string& sPreferredDescription);  // return true if was modified
 
-  /* This is a reimplementation of the lua version of the script to generate
-  chart keys, except this time using the notedata stored in game memory
-  immediately after reading it than parsing it using lua. - Mina */
-  std::string GenerateChartKey(NoteData& nd, TimingData* td);
-  std::string GenerateChartKey();
-  std::string ChartKey;
-  std::string GetChartKey();
-
   /** @brief Produces a chart that's reduced to it's smallest unique
    * representable form. */
   std::string MinimizedChartString(const NoteData& noteData);
@@ -220,7 +212,6 @@ class Steps {
   void CalculateMeasureInfo(const NoteData& noteData);
   const std::vector<NoteAnnotation>& GetNoteAnnotations(PlayerNumber pn) const;
   const std::vector<NoteAnnotationCache>& GetNoteAnnotationCaches() const;
-  std::vector<std::vector<NoteAnnotation>> GetAllNoteAnnotations() const;
 
   const std::vector<std::vector<float>>& GetAllNpsPerMeasures() const {
     return Real()->m_NpsPerMeasure;

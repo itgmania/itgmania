@@ -54,12 +54,6 @@ InputMapper::~InputMapper() {
   g_tempDItoGI.clear();
 }
 
-void InputMapper::ClearAllMappings() {
-  m_mappings.Clear();
-
-  UpdateTempDItoGI();
-}
-
 static const AutoMappings g_DefaultKeyMappings = AutoMappings(
     "", "", "", AutoMappingEntry(0, KEY_LEFT, GAME_BUTTON_MENULEFT, false),
     AutoMappingEntry(0, KEY_RIGHT, GAME_BUTTON_MENURIGHT, false),
@@ -1033,21 +1027,6 @@ float InputMapper::GetSecsHeld(const GameInput& GameI, MultiPlayer mp) const {
       }
       fMaxSecsHeld = std::max(fMaxSecsHeld, INPUTFILTER->GetSecsHeld(DeviceI));
     }
-  }
-
-  return fMaxSecsHeld;
-}
-
-float InputMapper::GetSecsHeld(GameButton MenuI, PlayerNumber pn) const {
-  if (MenuI == GameButton_Invalid) {
-    return 0.f;
-  }
-  float fMaxSecsHeld = 0;
-
-  std::vector<GameInput> GameI;
-  MenuToGame(MenuI, pn, GameI);
-  for (size_t i = 0; i < GameI.size(); i++) {
-    fMaxSecsHeld = std::max(fMaxSecsHeld, GetSecsHeld(GameI[i]));
   }
 
   return fMaxSecsHeld;

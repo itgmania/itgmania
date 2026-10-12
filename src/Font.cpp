@@ -267,17 +267,6 @@ int Font::GetLineWidthInSourcePixels(const std::wstring& szLine) const {
   return iLineWidth;
 }
 
-int Font::GetLineHeightInSourcePixels(const std::wstring& szLine) const {
-  int iLineHeight = 0;
-
-  // The height of a line is the height of its tallest used font page.
-  for (unsigned i = 0; i < szLine.size(); i++) {
-    iLineHeight = std::max(iLineHeight, GetGlyph(szLine[i]).m_pPage->m_iHeight);
-  }
-
-  return iLineHeight;
-}
-
 // width is a pointer so that we can return the used width through it.
 size_t Font::GetGlyphsThatFit(const std::wstring& line, int* width) const {
   if (*width == 0) {

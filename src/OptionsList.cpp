@@ -376,8 +376,6 @@ void OptionsList::SwitchMenu(int iDir) {
   TweenOnCurrentRow(iDir > 0);
 }
 
-void OptionsList::MoveItem(const std::string& sRowName, int iMove) {}
-
 bool OptionsList::Input(const InputEventPlus& input) {
   Message msg("");
   if (m_Codes.InputMessage(input, msg)) {

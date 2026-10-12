@@ -168,7 +168,6 @@ class GameState {
   bool IsHumanPlayer(PlayerNumber pn) const;
   int GetNumHumanPlayers() const;
   PlayerNumber GetFirstHumanPlayer() const;
-  PlayerNumber GetFirstDisabledPlayer() const;
   bool IsCpuPlayer(PlayerNumber pn) const;
   bool AnyPlayersAreCpu() const;
 
@@ -249,7 +248,6 @@ class GameState {
   void FinishStage();
   int GetNumStagesLeft(PlayerNumber pn) const;
   int GetSmallestNumStagesLeftForAnyHumanPlayer() const;
-  bool IsFinalStageForAnyHumanPlayer() const;
   bool IsFinalStageForEveryHumanPlayer() const;
   bool IsAnExtraStage() const;
   bool IsAnExtraStageAndSelectionLocked() const;
@@ -327,7 +325,6 @@ class GameState {
 
   /** @brief Primarily called at the end of a song to stop all attacks. */
   void RemoveAllActiveAttacks();
-  PlayerNumber GetBestPlayer() const;
   StageResult GetStageResult(PlayerNumber pn) const;
 
   /** @brief Call this function when it's time to play a new stage. */

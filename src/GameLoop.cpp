@@ -429,15 +429,6 @@ int ConcurrentRenderer::StartRenderThread(void* p) {
   return 0;
 }
 
-void GameLoop::StartConcurrentRendering() {
-  if (g_pConcurrentRenderer == nullptr) {
-    g_pConcurrentRenderer = new ConcurrentRenderer;
-  }
-  g_pConcurrentRenderer->Start();
-}
-
-void GameLoop::FinishConcurrentRendering() { g_pConcurrentRenderer->Stop(); }
-
 /*
  * (c) 2001-2005 Chris Danford, Glenn Maynard
  * All rights reserved.

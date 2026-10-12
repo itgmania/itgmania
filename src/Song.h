@@ -349,9 +349,6 @@ class Song {
    * This must be sorted before gameplay. */
   AutoPtrCopyOnWrite<VBackgroundChange> m_ForegroundChanges;
 
-  std::vector<std::string> GetChangesToVectorString(
-      const std::vector<BackgroundChange>& changes) const;
-
   void TidyUpData(
       bool fromCache, const std::set<std::string>& blacklistedImages);
 
@@ -361,10 +358,6 @@ class Song {
   std::vector<BackgroundChange>& GetBackgroundChanges(BackgroundLayer bl);
   const std::vector<BackgroundChange>& GetForegroundChanges() const;
   std::vector<BackgroundChange>& GetForegroundChanges();
-
-  std::vector<std::string> GetBGChanges1ToVectorString() const;
-  std::vector<std::string> GetBGChanges2ToVectorString() const;
-  std::vector<std::string> GetFGChanges1ToVectorString() const;
 
   std::vector<std::string> GetInstrumentTracksToVectorString() const;
 
@@ -384,9 +377,6 @@ class Song {
   void AddLyricSegment(LyricSegment seg);
 
   void GetDisplayBpms(DisplayBpms& AddTo) const;
-  const BackgroundChange& GetBackgroundAtBeat(
-      BackgroundLayer iLayer, float fBeat) const;
-
   /* [splittiming]
           float GetBPMAtBeat( float fBeat ) const { return
      m_Timing.GetBPMAtBeat( fBeat ); } void SetBPMAtBeat( float fBeat, float
@@ -433,7 +423,6 @@ class Song {
   bool IsLong() const;
   bool IsMarathon() const;
 
-  bool SongCompleteForStyle(const Style* st) const;
   bool HasStepsType(StepsType st) const;
   bool HasStepsTypeAndDifficulty(StepsType st, Difficulty dc) const;
   // TODO: Allow for a non const version.

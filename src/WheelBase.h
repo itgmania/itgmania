@@ -63,8 +63,6 @@ class WheelBase : public ActorFrame {
 
   virtual unsigned int GetNumItems() const { return m_CurWheelItemData.size(); }
   bool IsEmpty() { return m_bEmpty; }
-  WheelItemBaseData* GetItem(unsigned int index);
-  WheelItemBaseData* LastSelected();
   WheelItemBase* GetWheelItem(int i) {
     if (i < 0 || i >= (int)m_WheelBaseItems.size()) {
       return nullptr;
@@ -89,8 +87,6 @@ class WheelBase : public ActorFrame {
   virtual void UpdateSwitch();
   virtual bool MoveSpecific(int n);
   void SetPositions();
-
-  int FirstVisibleIndex();
 
   ScrollBar m_ScrollBar;
   AutoActor m_sprHighlight;

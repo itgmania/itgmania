@@ -151,18 +151,6 @@ bool DateTime::FromString(const std::string sDateTime) {
   return true;
 }
 
-std::string DayInYearToString(int iDayInYear) {
-  return ssprintf("DayInYear%03d", iDayInYear);
-}
-
-int StringToDayInYear(std::string sDayInYear) {
-  int iDayInYear;
-  if (sscanf(sDayInYear.c_str(), "DayInYear%d", &iDayInYear) != 1) {
-    return -1;
-  }
-  return iDayInYear;
-}
-
 static const std::string LAST_DAYS_NAME[NUM_LAST_DAYS] = {
     "Today", "Yesterday", "Day2Ago", "Day3Ago", "Day4Ago", "Day5Ago", "Day6Ago",
 };

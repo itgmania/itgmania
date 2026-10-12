@@ -53,11 +53,8 @@ class RageTextureManager {
                                                  // texture, not a deep copy
   bool IsTextureRegistered(RageTextureID ID) const;
   void RegisterTexture(RageTextureID ID, RageTexture* p);
-  void VolatileTexture(RageTextureID ID);
   void UnloadTexture(RageTexture* t);
   void ReloadAll();
-
-  void RegisterTextureForUpdating(RageTextureID id, RageTexture* tex);
 
   bool SetPrefs(RageTextureManagerPrefs prefs);
   RageTextureManagerPrefs GetPrefs() { return m_Prefs; };
@@ -78,7 +75,6 @@ class RageTextureManager {
   void InvalidateTextures();
 
   void AdjustTextureID(RageTextureID& ID) const;
-  void DiagnosticOutput() const;
 
   void DisableOddDimensionWarning() { m_iNoWarnAboutOddDimensions++; }
   void EnableOddDimensionWarning() { m_iNoWarnAboutOddDimensions--; }

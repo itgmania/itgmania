@@ -199,12 +199,6 @@ bool NotesWriterJson::WriteSong(
   return JsonUtil::WriteFile(root, sFile, false);
 }
 
-bool NotesWriterJson::WriteSteps(const std::string& sFile, const Steps& out) {
-  Json::Value root;
-  Serialize(out, root);
-  return JsonUtil::WriteFile(root, sFile, false);
-}
-
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.

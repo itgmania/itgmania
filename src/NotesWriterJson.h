@@ -10,7 +10,6 @@ class Steps;
 
 namespace NotesWriterJson {
 bool WriteSong(const std::string& sFile, const Song& out, bool bWriteSteps);
-bool WriteSteps(const std::string& sFile, const Steps& out);
 };  // namespace NotesWriterJson
 
 #endif

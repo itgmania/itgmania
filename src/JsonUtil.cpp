@@ -72,17 +72,6 @@ bool JsonUtil::WriteFile(
   return true;
 }
 
-std::vector<std::string> JsonUtil::DeserializeArrayStrings(
-    const Json::Value& value) {
-  std::vector<std::string> values;
-  for (auto&& inner_value : value) {
-    if (inner_value.isConvertibleTo(Json::stringValue)) {
-      values.push_back(inner_value.asString());
-    }
-  }
-  return values;
-}
-
 /*
  * (c) 2001-2004 Chris Danford
  * All rights reserved.

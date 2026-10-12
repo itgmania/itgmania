@@ -367,12 +367,6 @@ LuaClass::~LuaClass() {
   LUA->Release(L);
 }
 
-void DefaultNilArgs(lua_State* L, int n) {
-  while (lua_gettop(L) < n) {
-    lua_pushnil(L);
-  }
-}
-
 float FArgGTEZero(lua_State* L, int index) {
   float s = FArg(index);
   if (s < 0) {

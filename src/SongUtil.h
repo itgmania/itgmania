@@ -127,11 +127,8 @@ Steps* GetOneSteps(
 Steps* GetStepsByDifficulty(
     const Song* pSong, StepsType st, Difficulty dc,
     bool bIncludeAutoGen = true);
-Steps* GetStepsByMeter(
-    const Song* pSong, StepsType st, int iMeterLow, int iMeterHigh);
 Steps* GetStepsByDescription(
     const Song* pSong, StepsType st, std::string sDescription);
-Steps* GetStepsByCredit(const Song* pSong, StepsType st, std::string sCredit);
 Steps* GetClosestNotes(
     const Song* pSong, StepsType st, Difficulty dc, bool bIgnoreLocked = false);
 
@@ -195,7 +192,6 @@ bool ValidateCurrentStepsChartName(
 bool ValidateCurrentSongPreview(const std::string& answer, std::string& error);
 bool ValidateCurrentStepsMusic(const std::string& answer, std::string& error);
 
-void GetAllSongGenres(std::vector<std::string>& vsOut);
 /**
  * @brief Filter the selection of songs to only match certain criteria.
  * @param sc the intended song criteria.

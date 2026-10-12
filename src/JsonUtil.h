@@ -21,8 +21,6 @@ bool LoadFromFileShowErrors(Json::Value& root, RageFileBasic& f);
 bool WriteFile(
     const Json::Value& root, const std::string& sFile, bool bMinified);
 
-std::vector<std::string> DeserializeArrayStrings(const Json::Value& array);
-
 template <class T>
 static void SerializeVectorObjects(
     const std::vector<T>& v, void fn(const T&, Json::Value&),

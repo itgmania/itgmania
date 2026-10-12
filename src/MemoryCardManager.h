@@ -41,8 +41,6 @@ class MemoryCardManager {
 
   bool GetCardLocked(PlayerNumber pn) const { return m_bCardLocked[pn]; }
 
-  bool PathIsMemCard(std::string sDir) const;
-
   bool IsNameAvailable(PlayerNumber pn) const;
   std::string GetName(PlayerNumber pn) const;
 

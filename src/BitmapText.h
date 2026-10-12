@@ -31,10 +31,6 @@ class BitmapText : public Actor {
     static void MakeWeightedAverage(
         BMT_TweenState& out, const BMT_TweenState& from,
         const BMT_TweenState& to, float between);
-    bool operator==(const BMT_TweenState& other) const;
-    bool operator!=(const BMT_TweenState& other) const {
-      return !operator==(other);
-    }
     void SetStrokeColor(const RageColor& c) { m_stroke_color = c; }
     const RageColor& GetStrokeColor() { return m_stroke_color; }
 
@@ -48,9 +44,6 @@ class BitmapText : public Actor {
     } else {
       return BMT_Tweens.back();
     }
-  }
-  const BMT_TweenState& BMT_DestTweenState() const {
-    return const_cast<BitmapText*>(this)->BMT_DestTweenState();
   }
 
   virtual void SetCurrentTweenStart() override;
@@ -100,11 +93,6 @@ class BitmapText : public Actor {
   const RageColor& GetCurrStrokeColor() { return BMT_current.GetStrokeColor(); }
 
   void SetTextGlowMode(TextGlowMode tgm) { m_TextGlowMode = tgm; }
-
-  void GetLines(std::vector<std::wstring>& wTextLines) const {
-    wTextLines = m_wTextLines;
-  }
-  const std::vector<std::wstring>& GetLines() const { return m_wTextLines; }
 
   std::string GetText() const { return m_sText; }
   // Return true if the string 's' will use an alternate string, if available.

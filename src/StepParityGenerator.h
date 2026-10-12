@@ -98,7 +98,6 @@ class StepParityGenerator {
   void CreateRows(const NoteData& in);
   void AddRow(RowCounter& counter);
   Row CreateRow(RowCounter& counter);
-  int getPermuteCacheKey(const Row& row);
   std::uint64_t getStateCacheKey(State* state);
   StepParityNode* addNode(State* state, float second, int rowIndex);
 };

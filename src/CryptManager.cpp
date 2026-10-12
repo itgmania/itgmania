@@ -469,8 +469,6 @@ std::string CryptManager::GetSHA256ForFile(std::string fn) {
   return std::string((const char*)digest, sizeof(digest));
 }
 
-std::string CryptManager::GetPublicKeyFileName() { return PUBLIC_KEY_PATH; }
-
 /* Generate a version 4 random UUID. */
 std::string CryptManager::GenerateRandomUUID() {
   uint32_t buf[4];

@@ -239,16 +239,6 @@ void Song::GetDisplayBpms(DisplayBpms& AddTo) const {
   }
 }
 
-const BackgroundChange& Song::GetBackgroundAtBeat(
-    BackgroundLayer iLayer, float fBeat) const {
-  for (unsigned i = 0; i < GetBackgroundChanges(iLayer).size() - 1; i++) {
-    if (GetBackgroundChanges(iLayer)[i + 1].m_fStartBeat > fBeat) {
-      return GetBackgroundChanges(iLayer)[i];
-    }
-  }
-  return GetBackgroundChanges(iLayer)[0];
-}
-
 std::string Song::GetCacheFilePath() const {
   return SongCacheIndex::GetCacheFilePath("Songs", m_sSongDir);
 }
@@ -1205,11 +1195,6 @@ void Song::ReCalculateStepStatsAndLastSecond(bool wipeNoteData) {
   this->lastSecond = localLast;
 }
 
-// Return whether the song is playable in the given style.
-bool Song::SongCompleteForStyle(const Style* st) const {
-  return HasStepsType(st->m_StepsType);
-}
-
 bool Song::HasStepsType(StepsType st) const {
   return SongUtil::GetOneSteps(this, st) != nullptr;
 }
@@ -1590,29 +1575,6 @@ const std::vector<BackgroundChange>& Song::GetForegroundChanges() const {
 }
 std::vector<BackgroundChange>& Song::GetForegroundChanges() {
   return *m_ForegroundChanges.Get();
-}
-
-std::vector<std::string> Song::GetChangesToVectorString(
-    const std::vector<BackgroundChange>& changes) const {
-  std::vector<std::string> ret;
-  for (const BackgroundChange& bgc : changes) {
-    ret.push_back(bgc.ToString());
-  }
-  return ret;
-}
-
-std::vector<std::string> Song::GetBGChanges1ToVectorString() const {
-  return this->GetChangesToVectorString(
-      this->GetBackgroundChanges(BACKGROUND_LAYER_1));
-}
-
-std::vector<std::string> Song::GetBGChanges2ToVectorString() const {
-  return this->GetChangesToVectorString(
-      this->GetBackgroundChanges(BACKGROUND_LAYER_2));
-}
-
-std::vector<std::string> Song::GetFGChanges1ToVectorString() const {
-  return this->GetChangesToVectorString(this->GetForegroundChanges());
 }
 
 // We want to return a filename, We use this function for that.

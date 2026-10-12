@@ -816,40 +816,6 @@ void RageFileManager::Unmount(
   }
 }
 
-void RageFileManager::Remount(std::string sMountpoint, std::string sPath) {
-  RageFileDriver* pDriver = GetFileDriver(sMountpoint);
-  if (pDriver == nullptr) {
-    if (LOG) {
-      LOG->Warn(
-          "Remount(%s,%s): mountpoint not found", sMountpoint.c_str(),
-          sPath.c_str());
-    }
-    return;
-  }
-
-  if (!pDriver->Remount(sPath)) {
-    LOG->Warn(
-        "Remount(%s,%s): remount failed (does the driver support remounting?)",
-        sMountpoint.c_str(), sPath.c_str());
-  } else {
-    pDriver->FlushDirCache("");
-  }
-
-  ReleaseFileDriver(pDriver);
-}
-
-bool RageFileManager::IsMounted(std::string MountPoint) {
-  LockMut(*g_Mutex);
-
-  for (unsigned i = 0; i < g_pDrivers.size(); ++i) {
-    if (!CompareNoCase(g_pDrivers[i]->m_sMountPoint, MountPoint)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 void RageFileManager::GetLoadedDrivers(std::vector<DriverLocation>& asMounts) {
   LockMut(*g_Mutex);
 
@@ -957,44 +923,6 @@ int RageFileManager::GetFileHash(const std::string& sPath_) {
   UnreferenceAllDrivers(apDriverList);
 
   return iRet;
-}
-
-std::string RageFileManager::ResolvePath(const std::string& path) {
-  std::string tmpPath = path;
-  NormalizePath(tmpPath);
-
-  std::string resolvedPath = tmpPath;
-
-  std::vector<LoadedDriver*> apDriverList;
-  ReferenceAllDrivers(apDriverList);
-
-  for (unsigned i = 0; i < apDriverList.size(); ++i) {
-    LoadedDriver* pDriver = apDriverList[i];
-    const std::string driverPath = pDriver->GetPath(tmpPath);
-
-    if (driverPath.empty() || pDriver->m_sRoot.empty()) {
-      continue;
-    }
-
-    if (pDriver->m_sType != "dir" && pDriver->m_sType != "dirro") {
-      continue;
-    }
-
-    int iMountPointLen = pDriver->m_sMountPoint.length();
-    if (tmpPath.substr(0, iMountPointLen) != pDriver->m_sMountPoint) {
-      continue;
-    }
-
-    resolvedPath =
-        pDriver->m_sRoot + "/" + std::string(tmpPath.substr(iMountPointLen));
-    break;
-  }
-
-  UnreferenceAllDrivers(apDriverList);
-
-  NormalizePath(resolvedPath);
-
-  return resolvedPath;
 }
 
 static bool SortBySecond(
@@ -1225,43 +1153,6 @@ void GetDirListingRecursive(
       AddTo.push_back(vsFiles[i]);
     }
   }
-}
-
-void GetDirListingRecursive(
-    RageFileDriver* prfd, const std::string& sDir, const std::string& sMatch,
-    std::vector<std::string>& AddTo) {
-  ASSERT(Right(sDir, 1) == "/");
-  std::vector<std::string> vsFiles;
-  prfd->GetDirListing(sDir + sMatch, vsFiles, false, true);
-  std::vector<std::string> vsDirs;
-  prfd->GetDirListing(sDir + "*", vsDirs, true, true);
-  for (int i = 0; i < (int)vsDirs.size(); i++) {
-    prfd->GetDirListing(vsDirs[i] + "/" + sMatch, vsFiles, false, true);
-    prfd->GetDirListing(vsDirs[i] + "/*", vsDirs, true, true);
-    vsDirs.erase(vsDirs.begin() + i);
-    i--;
-  }
-  for (int i = vsFiles.size() - 1; i >= 0; i--) {
-    if (prfd->GetFileType(vsFiles[i]) != RageFileManager::TYPE_DIR) {
-      AddTo.push_back(vsFiles[i]);
-    }
-  }
-}
-
-bool DeleteRecursive(RageFileDriver* prfd, const std::string& sDir) {
-  ASSERT(Right(sDir, 1) == "/");
-
-  std::vector<std::string> vsFiles;
-  prfd->GetDirListing(sDir + "*", vsFiles, false, true);
-  for (const std::string& s : vsFiles) {
-    if (IsADirectory(s)) {
-      DeleteRecursive(s + "/");
-    } else {
-      FILEMAN->Remove(s);
-    }
-  }
-
-  return FILEMAN->Remove(sDir);
 }
 
 bool DeleteRecursive(const std::string& sDir) {

@@ -121,15 +121,6 @@ Message::Message(const std::string& s, const LuaReference& params) {
 
 Message::~Message() { delete m_pParams; }
 
-void Message::PushParamTable(lua_State* L) { m_pParams->PushSelf(L); }
-
-void Message::SetParamTable(const LuaReference& params) {
-  Lua* L = LUA->Get();
-  params.PushSelf(L);
-  m_pParams->SetFromStack(L);
-  LUA->Release(L);
-}
-
 const LuaReference& Message::GetParamTable() const { return *m_pParams; }
 
 void Message::GetParamFromStack(lua_State* L, const std::string& sName) const {
@@ -223,8 +214,6 @@ bool MessageManager::IsSubscribedToMessage(
   SubscribersSet& subs = g_MessageToSubscribers[sMessage];
   return subs.find(pSubscriber) != subs.end();
 }
-
-void IMessageSubscriber::ClearMessages(const std::string sMessage) {}
 
 MessageSubscriber::MessageSubscriber(const MessageSubscriber& cpy)
     : IMessageSubscriber(cpy) {

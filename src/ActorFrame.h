@@ -29,7 +29,6 @@ class ActorFrame : public Actor {
    * @brief Remove the specified child from the ActorFrame.
    * @param pActor the Actor to remove. */
   virtual void RemoveChild(Actor* pActor);
-  void TransferChildren(ActorFrame* pTo);
   Actor* GetChild(const std::string& sName);
   std::vector<Actor*> GetChildren() { return m_SubActors; }
   int GetNumChildren() const { return m_SubActors.size(); }
@@ -41,11 +40,6 @@ class ActorFrame : public Actor {
    * @param pActor the actor to go to the tail.
    */
   void MoveToTail(Actor* pActor);
-  /**
-   * @brief Move a particular actor to the head.
-   * @param pActor the actor to go to the head.
-   */
-  void MoveToHead(Actor* pActor);
   void SortByDrawOrder();
   void SetDrawByZPosition(bool b);
 
