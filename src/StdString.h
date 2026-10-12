@@ -65,6 +65,25 @@ inline int CompareNoCase(const std::string& s1, const std::string& s2) {
   }
   return len - other_len;
 }
+
+inline char sstolower(char ch) noexcept {
+  return (ch >= 'A' && ch <= 'Z') ? static_cast<char>(ch + 'a' - 'A') : ch;
+}
+inline int ssicmp(const char* pA1, const char* pA2) {
+  char f;
+  char l;
+  do {
+    f = sstolower(*(pA1++));
+    l = sstolower(*(pA2++));
+  } while ((f) && (f == l));
+  return static_cast<int>(f - l);
+}
+struct StdStringLessNoCase {
+  bool operator()(const std::string& sLeft, const std::string& sRight) const {
+    return ssicmp(sLeft.c_str(), sRight.c_str()) < 0;
+  }
+};
+
 inline std::string Left(const std::string& s, int n) {
   if (n < 0) {
     n = 0;
