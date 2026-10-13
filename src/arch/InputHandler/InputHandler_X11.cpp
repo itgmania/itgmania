@@ -3,6 +3,7 @@
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 
+#include <cstdint>
 #include <vector>
 
 #include "InputFilter.h"
@@ -351,10 +352,16 @@ void InputHandler_X11::GetDevicesAndDescriptions(
 void InputHandler_X11::RegisterKeyEvent(
     unsigned long timestamp, bool keyDown, DeviceButton button) {
   // https://linux.die.net/man/3/xkeyevent
-  // Event timestamp is in milliseconds
+  // Event timestamp is in milliseconds, truncated to 32 bits in the X11 wire
+  // protocol.
+  RageTimer now;
+  uint64_t now_ms = now.m_secs * 1000 + now.m_us / 1000;
+  int32_t age_ms =
+      static_cast<uint32_t>(now_ms) - static_cast<uint32_t>(timestamp);
+  uint64_t timestamp_ms = now_ms - age_ms;
 
   // seconds, microseconds
-  RageTimer timer(timestamp / 1000, (timestamp % 1000) * 1000);
+  RageTimer timer(timestamp_ms / 1000, (timestamp_ms % 1000) * 1000);
 
   DeviceInput di(DEVICE_KEYBOARD, button, keyDown ? 1.0f : 0.0f, timer);
 
