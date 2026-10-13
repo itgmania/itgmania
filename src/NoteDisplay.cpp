@@ -1108,7 +1108,12 @@ void NoteDisplay::DrawHoldBodyInternal(
   part_args.top_beat = top_beat;
   part_args.bottom_beat = top_beat;
   part_args.wrapping = false;
+  // Negative scrolls can move the opposite end past this cap. Clip it just
+  // like the bottom cap below, so reverse holds don't leave a floating tail.
+  const float original_y_end_pos = part_args.y_end_pos;
+  part_args.y_end_pos = std::fmin(part_args.y_end_pos, y_tail);
   DrawHoldPart(sprite_top, field_args, column_args, part_args, glow, hpt_top);
+  part_args.y_end_pos = original_y_end_pos;
   // Draw the body
   part_args.y_top = y_head;
   part_args.y_bottom = y_tail;
