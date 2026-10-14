@@ -43,9 +43,6 @@ struct TechCounts {
 
   bool operator!=(const TechCounts& other) const { return !operator==(other); }
 
-  std::string ToString(int iMaxValues = -1) const;  // default = all
-  void FromString(std::string sValues);
-
   void PushSelf(lua_State* L);
   static void CalculateTechCountsFromRows(
       const std::vector<StepParity::Row>& rows,

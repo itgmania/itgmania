@@ -257,15 +257,7 @@ class RageDisplay {
 
   virtual bool SupportsTextureFormat(
       RagePixelFormat pixfmt, bool realtime = false) = 0;
-  virtual bool SupportsThreadedRendering() { return false; }
   virtual bool SupportsPerVertexMatrixScale() = 0;
-
-  // If threaded rendering is supported, these will be called from the
-  // rendering thread before and after rendering.
-  virtual void BeginConcurrentRenderingMainThread() {}
-  virtual void EndConcurrentRenderingMainThread() {}
-  virtual void BeginConcurrentRendering();
-  virtual void EndConcurrentRendering() {}
 
   /* return 0 if failed or internal texture resource handle
    * (unsigned in OpenGL, texture pointer in D3D) */
@@ -423,12 +415,8 @@ class RageDisplay {
   // World matrix stack functions.
   void PushMatrix();
   void PopMatrix();
-  void Translate(float x, float y, float z);
   void TranslateWorld(float x, float y, float z);
   void Scale(float x, float y, float z);
-  void RotateX(float deg);
-  void RotateY(float deg);
-  void RotateZ(float deg);
   void SkewX(float fAmount);
   void SkewY(float fAmount);
   void MultMatrix(const RageMatrix& f) { this->PostMultMatrix(f); } /* alias */

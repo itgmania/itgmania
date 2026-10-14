@@ -66,15 +66,6 @@ void LightsDriver_Linux_Leds::SetLight(
 }
 
 void LightsDriver_Linux_Leds::SetCabinetLights(
-    const char* stringArray[], const LightsState* ls) {
-  FOREACH_CabinetLight(light) {
-    SetLight(
-        stringArray[light], previousLS.m_bCabinetLights[light],
-        ls->m_bCabinetLights[light]);
-  }
-}
-
-void LightsDriver_Linux_Leds::SetCabinetLights(
     const int intArray[], const LightsState* ls) {
   const char* baseFileLocation = GetGameControllerLightFile();
 
@@ -106,16 +97,6 @@ void LightsDriver_Linux_Leds::SetCoinCounter(int index, const LightsState* ls) {
       sprintf(fileName, baseFileLocation, index);
       SetLight(fileName, previousLS.m_bCoinCounter, ls->m_bCoinCounter);
     }
-  }
-}
-
-void LightsDriver_Linux_Leds::SetGameControllerLights(
-    GameController gc, const char* stringArray[], const LightsState* ls) {
-  // iterate over all gamebuttons, including the menu/start/etc buttons.
-  FOREACH_ENUM(GameButton, gb) {
-    SetLight(
-        stringArray[gb], previousLS.m_bGameButtonLights[gc][gb],
-        ls->m_bGameButtonLights[gc][gb]);
   }
 }
 

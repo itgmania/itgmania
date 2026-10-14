@@ -848,10 +848,6 @@ void ScreenManager::SystemMessageNoAnimate(const std::string& sMessage) {
   MESSAGEMAN->Broadcast(msg);
 }
 
-void ScreenManager::HideSystemMessage() {
-  MESSAGEMAN->Broadcast("HideSystemMessage");
-}
-
 void ScreenManager::RefreshCreditsMessages() {
   MESSAGEMAN->Broadcast("RefreshCreditText");
 }

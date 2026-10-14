@@ -10,10 +10,8 @@
 /** @brief A read-only file driver for ZIPs. */
 class RageFileDriverZip : public RageFileDriver {
  public:
-  RageFileDriverZip();
   RageFileDriverZip(const std::string& sPath);
   bool Load(const std::string& sPath);
-  bool Load(RageFileBasic* pFile);
 
   virtual ~RageFileDriverZip();
 

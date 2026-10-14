@@ -167,13 +167,6 @@ Event CreateThreadStartedEvent(ThreadId threadId) {
   return event;
 }
 
-Event CreateThreadExitedEvent(ThreadId threadId) {
-  Event event = CreateDapEvent("thread");
-  event["body"]["reason"] = "exited";
-  event["body"]["threadId"] = threadId;
-  return event;
-}
-
 Event CreateTerminatedEvent() { return CreateDapEvent("terminated"); }
 
 }  // namespace LuaDebug

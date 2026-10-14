@@ -309,16 +309,6 @@ void Font::Unload() {
    * aren't still pointing to us. */
 }
 
-void Font::Reload() {
-  if (path.empty()) {
-    LuaHelpers::ReportScriptError(
-        "Cannot reload a font that has an empty path.");
-    return;
-  }
-  Unload();
-  Load(path, m_sChars);
-}
-
 void Font::AddPage(FontPage* m_pPage) {
   m_apPages.push_back(m_pPage);
 

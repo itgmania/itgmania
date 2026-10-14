@@ -481,16 +481,6 @@ DebuggeeState& DebuggeeState::GetVariable(const std::string& name) {
   return Impl::g_null;
 }
 
-DebuggeeState& DebuggeeState::GetVariable(int index) {
-  for (DebuggeeState* child : GetChildren()) {
-    if (child->GetType() == Type::IndexedVariable &&
-        child->GetIndex() == index) {
-      return *child;
-    }
-  }
-  return Impl::g_null;
-}
-
 const std::vector<DebuggeeState*>& DebuggeeState::GetChildren() {
   if (!m_childrenInitialized) {
     switch (GetType()) {

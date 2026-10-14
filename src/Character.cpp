@@ -19,8 +19,7 @@ Character::Character()
       m_sDisplayName(""),
       m_sCardPath(""),
       m_sIconPath(""),
-      m_bUsableInRave(false),
-      m_iPreloadRefcount(0) {}
+      m_bUsableInRave(false) {}
 
 bool Character::Load(std::string sCharDir) {
   // Save character directory
@@ -167,23 +166,6 @@ std::string Character::GetStageIconPath() const {
     }
   } else {
     return as[0];
-  }
-}
-
-void Character::DemandGraphics() {
-  ++m_iPreloadRefcount;
-  if (m_iPreloadRefcount == 1) {
-    std::string s = GetIconPath();
-    if (!s.empty()) {
-      m_Preload.Load(s);
-    }
-  }
-}
-
-void Character::UndemandGraphics() {
-  --m_iPreloadRefcount;
-  if (m_iPreloadRefcount == 0) {
-    m_Preload.UnloadAll();
   }
 }
 

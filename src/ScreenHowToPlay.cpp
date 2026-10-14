@@ -194,8 +194,7 @@ void ScreenHowToPlay::Init() {
 
       m_Player->Init(
           "Player", GAMESTATE->m_pPlayerState[PLAYER_1], nullptr,
-          m_pLifeMeterBar, nullptr, nullptr, nullptr, nullptr, nullptr,
-          nullptr);
+          m_pLifeMeterBar, nullptr, nullptr, nullptr, nullptr, nullptr);
       m_Player.Load(m_NoteData);
       m_Player->SetName("Player");
       this->AddChild(m_Player);

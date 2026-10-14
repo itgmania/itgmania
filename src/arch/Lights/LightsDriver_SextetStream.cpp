@@ -125,33 +125,6 @@ inline RageFile* openOutputStream(const std::string& filename) {
   return file;
 }
 
-#ifdef _WIN32
-LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(HANDLE file) {
-  _impl = new SextetImpl(file);
-}
-#else
-LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(
-    RageFile* file) {
-  _impl = new SextetImpl(file);
-}
-#endif  // _WIN32
-
-LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile(
-    const std::string& filename) {
-#ifdef WINDOWS
-  _impl = new SextetImpl(CreateFile(
-      filename.c_str(),  // pipe name
-      GENERIC_WRITE,
-      0,              // no sharing
-      NULL,           // default security attributes
-      OPEN_EXISTING,  // opens existing pipe
-      0,              // default attributes
-      NULL));
-#else
-  _impl = new SextetImpl(openOutputStream(filename));
-#endif
-}
-
 LightsDriver_SextetStreamToFile::LightsDriver_SextetStreamToFile() {
 #ifdef WINDOWS
   _impl = new SextetImpl(CreateFile(

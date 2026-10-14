@@ -385,32 +385,6 @@ void Alsa9Buf::Write(const int16_t* buffer, int frames) {
   }
 }
 
-/*
- * When the play buffer underruns, subsequent writes to the buffer
- * return -EPIPE.  When this happens, call Recover() to restart playback.
- */
-bool Alsa9Buf::Recover(int r) {
-  if (r == -EPIPE) {
-    LOG->Trace("RageSound_ALSA9::Recover (prepare)");
-    int err = dsnd_pcm_prepare(pcm);
-    ALSA_ASSERT("dsnd_pcm_prepare (Recover)");
-    return true;
-  }
-
-  if (r == -ESTRPIPE) {
-    LOG->Trace("RageSound_ALSA9::Recover (resume)");
-    int err;
-    while ((err = dsnd_pcm_resume(pcm)) == -EAGAIN) {
-      usleep(10000);  // 10ms
-    }
-
-    ALSA_ASSERT("dsnd_pcm_resume (Recover)");
-    return true;
-  }
-
-  return false;
-}
-
 int64_t Alsa9Buf::GetPosition() const {
   if (dsnd_pcm_state(pcm) == SND_PCM_STATE_PREPARED) {
     return last_cursor_pos;
@@ -424,16 +398,6 @@ int64_t Alsa9Buf::GetPosition() const {
   ALSA_ASSERT("dsnd_pcm_delay");
 
   return last_cursor_pos - delay;
-}
-
-void Alsa9Buf::Play() {
-  /* NOP.  It'll start playing when it gets some data. */
-}
-
-void Alsa9Buf::Stop() {
-  dsnd_pcm_drop(pcm);
-  dsnd_pcm_prepare(pcm);
-  last_cursor_pos = 0;
 }
 
 /*

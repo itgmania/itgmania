@@ -129,9 +129,6 @@ class PlayerState {
   // Used in Rave
   float m_fSuperMeter;  // between 0 and NUM_ATTACK_LEVELS
   float m_fSuperMeterGrowthScale;
-  // Used in Battle
-  void RemoveAllInventory();
-  Attack m_Inventory[NUM_INVENTORY_SLOTS];
 
   // Lua
   void PushSelf(lua_State* L);

@@ -26,10 +26,6 @@ class StepsDisplayList : public ActorFrame {
   void HandleMessage(const Message& msg);
 
   void SetFromGameState();
-  void TweenOnScreen();
-  void TweenOffScreen();
-  void Hide();
-  void Show();
 
   // Lua
   void PushSelf(lua_State* L);
@@ -38,7 +34,6 @@ class StepsDisplayList : public ActorFrame {
   void UpdatePositions();
   void PositionItems();
   int GetCurrentRowIndex(PlayerNumber pn) const;
-  void HideRows();
 
   ThemeMetric<float> ITEMS_SPACING_Y;
   ThemeMetric<int> NUM_SHOWN_ITEMS;

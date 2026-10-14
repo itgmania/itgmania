@@ -60,7 +60,6 @@ class DebuggeeState {
   DebuggeeState& GetUpvalues();
   DebuggeeState& GetLocals();
   DebuggeeState& GetVariable(const std::string& name);
-  DebuggeeState& GetVariable(int index);
   const std::vector<DebuggeeState*>& GetChildren();
   bool IsVariable() const;
   bool IsScope() const;

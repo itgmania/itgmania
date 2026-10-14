@@ -181,12 +181,6 @@ ScreenWithMenuElements::~ScreenWithMenuElements() {
   }
 }
 
-void ScreenWithMenuElements::SetHelpText(std::string s) {
-  Message msg("SetHelpText");
-  msg.SetParam("Text", s);
-  this->HandleMessage(msg);
-}
-
 std::string ScreenWithMenuElements::HandleLuaMusicFile(
     const std::string& path) {
   FileType ft = ActorUtil::GetFileType(path);

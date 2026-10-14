@@ -629,11 +629,6 @@ HighScoreList& Profile::GetStepsHighScoreList(
   return hsSteps.hsl;
 }
 
-int Profile::GetStepsNumTimesPlayed(
-    const Song* pSong, const Steps* pSteps) const {
-  return GetStepsHighScoreList(pSong, pSteps).GetNumTimesPlayed();
-}
-
 DateTime Profile::GetSongLastPlayedDateTime(const Song* pSong) const {
   SongID id;
   id.FromSong(pSong);

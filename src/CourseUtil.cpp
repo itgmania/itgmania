@@ -600,16 +600,6 @@ void CourseID::LoadFromNode(const XNode* pNode) {
   }
 }
 
-std::string CourseID::ToString() const {
-  if (!sPath.empty()) {
-    return sPath;
-  }
-  if (!sFullTitle.empty()) {
-    return sFullTitle;
-  }
-  return std::string();
-}
-
 bool CourseID::IsValid() const { return !sPath.empty() || !sFullTitle.empty(); }
 
 /*

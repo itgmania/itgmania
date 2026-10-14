@@ -27,7 +27,6 @@ class RageInput {
   std::string GetDeviceSpecificInputString(const DeviceInput& di);
   std::string GetLocalizedInputString(const DeviceInput& di);
   wchar_t DeviceInputToChar(DeviceInput di, bool bUseCurrentKeyModifiers);
-  InputDeviceState GetInputDeviceState(InputDevice id);
   std::string GetDisplayDevicesString() const;
 
   void StartSensorTest();

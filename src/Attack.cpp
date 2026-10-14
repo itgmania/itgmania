@@ -56,12 +56,6 @@ void Attack::GetRealtimeAttackBeats(
       ssprintf("EndBeat %f >= StartBeat %f", fEndBeat, fStartBeat));
 }
 
-bool Attack::operator==(const Attack& rhs) const {
-#define EQUAL(a) (a == rhs.a)
-  return EQUAL(level) && EQUAL(fStartSecond) && EQUAL(fSecsRemaining) &&
-         EQUAL(sModifiers) && EQUAL(bOn) && EQUAL(bGlobal);
-}
-
 bool Attack::ContainsTransformOrTurn() const {
   PlayerOptions po;
   po.FromString(sModifiers);

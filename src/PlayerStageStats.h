@@ -32,7 +32,6 @@ class PlayerStageStats {
   static float MakePercentScore(int iActual, int iPossible);
   static std::string FormatPercentScore(float fPercentScore);
   float GetPercentDancePoints() const;
-  float GetCurMaxPercentDancePoints() const;
 
   int GetLessonScoreActual() const;
   int GetLessonScoreNeeded() const;

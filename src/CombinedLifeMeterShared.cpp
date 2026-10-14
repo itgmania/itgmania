@@ -70,10 +70,6 @@ bool CombinedLifeMeterShared::IsFailing() const {
   return m_pLifeMeter ? m_pLifeMeter->IsFailing() : false;
 }
 
-float CombinedLifeMeterShared::GetLife() const {
-  return m_pLifeMeter ? m_pLifeMeter->GetLife() : 0.0f;
-}
-
 LifeMeter* CombinedLifeMeterShared::GetInnerLifeMeter() const {
   return m_pLifeMeter;
 }

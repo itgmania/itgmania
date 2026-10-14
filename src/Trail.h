@@ -46,8 +46,6 @@ struct TrailEntry {
   int iLowMeter;
   int iHighMeter;
   Difficulty dc;
-  bool operator==(const TrailEntry& rhs) const;
-  bool operator!=(const TrailEntry& rhs) const { return !(*this == rhs); }
   bool ContainsTransformOrTurn() const;
 
   // Lua

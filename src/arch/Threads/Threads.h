@@ -60,10 +60,8 @@ class EventImpl {
 class SemaImpl {
  public:
   virtual ~SemaImpl() {}
-  virtual int GetValue() const = 0;
   virtual void Post() = 0;
   virtual bool Wait() = 0;
-  virtual bool TryWait() = 0;
 };
 
 // These functions must be implemented by the thread implementation.

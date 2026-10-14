@@ -38,12 +38,6 @@ class LowLevelWindow {
   virtual RenderTarget* CreateRenderTarget() { return nullptr; }
 
   virtual bool SupportsFullscreenBorderlessWindow() const { return false; };
-
-  virtual bool SupportsThreadedRendering() { return false; }
-  virtual void BeginConcurrentRenderingMainThread() {}
-  virtual void EndConcurrentRenderingMainThread() {}
-  virtual void BeginConcurrentRendering() {}
-  virtual void EndConcurrentRendering() {}
 };
 
 #endif

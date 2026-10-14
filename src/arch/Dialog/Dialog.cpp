@@ -117,32 +117,6 @@ void Dialog::OK(std::string sMessage, std::string sID) {
   RageThread::SetIsShowingDialog(false);
 }
 
-Dialog::Result Dialog::OKCancel(std::string sMessage, std::string sID) {
-  Dialog::Init();
-
-  if (LOG) {
-    LOG->Trace("Dialog: \"%s\" [%s]", sMessage.c_str(), sID.c_str());
-  }
-
-  if (sID != "" && MessageIsIgnored(sID)) {
-    return g_NullDriver.OKCancel(sMessage, sID);
-  }
-
-  RageThread::SetIsShowingDialog(true);
-
-  // only show Dialog if windowed
-  Dialog::Result ret;
-  if (DialogsEnabled()) {
-    ret = g_pImpl->OKCancel(sMessage, sID);  // call derived version
-  } else {
-    ret = g_NullDriver.OKCancel(sMessage, sID);
-  }
-
-  RageThread::SetIsShowingDialog(false);
-
-  return ret;
-}
-
 Dialog::Result Dialog::AbortRetryIgnore(std::string sMessage, std::string sID) {
   Dialog::Init();
 
@@ -188,32 +162,6 @@ Dialog::Result Dialog::AbortRetry(std::string sMessage, std::string sID) {
     ret = g_pImpl->AbortRetry(sMessage, sID);  // call derived version
   } else {
     ret = g_NullDriver.AbortRetry(sMessage, sID);
-  }
-
-  RageThread::SetIsShowingDialog(false);
-
-  return ret;
-}
-
-Dialog::Result Dialog::YesNo(std::string sMessage, std::string sID) {
-  Dialog::Init();
-
-  if (LOG) {
-    LOG->Trace("Dialog: \"%s\" [%s]", sMessage.c_str(), sID.c_str());
-  }
-
-  if (sID != "" && MessageIsIgnored(sID)) {
-    return g_NullDriver.YesNo(sMessage, sID);
-  }
-
-  RageThread::SetIsShowingDialog(true);
-
-  // only show Dialog if windowed
-  Dialog::Result ret;
-  if (DialogsEnabled()) {
-    ret = g_pImpl->YesNo(sMessage, sID);  // call derived version
-  } else {
-    ret = g_NullDriver.YesNo(sMessage, sID);
   }
 
   RageThread::SetIsShowingDialog(false);

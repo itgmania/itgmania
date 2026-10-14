@@ -39,7 +39,6 @@ class TrailID {
 
   XNode* CreateNode() const;
   void LoadFromNode(const XNode* pNode);
-  std::string ToString() const;
   bool IsValid() const;
   static void Invalidate(Song* pStaleSong);
 };

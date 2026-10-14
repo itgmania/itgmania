@@ -2773,27 +2773,6 @@ void NoteDataUtil::TransformNoteData(
   nd.RevalidateATIs(std::vector<int>(), false);
 }
 
-void NoteDataUtil::Scale(NoteData& nd, float fScale) {
-  ASSERT(fScale > 0);
-
-  NoteData ndOut;
-  ndOut.SetNumTracks(nd.GetNumTracks());
-
-  for (int t = 0; t < nd.GetNumTracks(); t++) {
-    for (NoteData::const_iterator iter = nd.begin(t); iter != nd.end(t);
-         ++iter) {
-      TapNote tn = iter->second;
-      int iNewRow = std::lrint(fScale * iter->first);
-      int iNewDuration = std::lrint(fScale * (iter->first + tn.iDuration));
-      tn.iDuration = iNewDuration;
-      ndOut.SetTapNote(t, iNewRow, tn);
-    }
-  }
-
-  nd.swap(ndOut);
-  nd.RevalidateATIs(std::vector<int>(), false);
-}
-
 /* XXX: move this to an appropriate place, same place as NoteRowToBeat perhaps?
  */
 static inline int GetScaledRow(

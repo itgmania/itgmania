@@ -22,9 +22,6 @@ class LuaDebugManager {
    * @param startPaused if true, pauses Lua at first line of code executed */
   void Start(std::string address, bool startPaused = false);
 
-  /* Signals the debug server to stop. Blocks until the server stops. */
-  void Stop();
-
   /* Marks a Lua state as active for the debugger. The calling thread should
   be holding the global Lua mutex in LuaManager. */
   void ActivateState(lua_State* lua);

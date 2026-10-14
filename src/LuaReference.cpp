@@ -114,31 +114,6 @@ bool LuaReference::SetFromExpression(const std::string& sExpression) {
   return bSuccess;
 }
 
-std::string LuaReference::Serialize() const {
-  /* Call Serialize(t), where t is our referenced object. */
-  Lua* L = LUA->Get();
-  lua_getglobal(L, "Serialize");
-
-  ASSERT_M(!lua_isnil(L, -1), "Serialize() missing");
-  ASSERT_M(lua_isfunction(L, -1), "Serialize() not a function");
-
-  /* Arg 1 (t): */
-  this->PushSelf(L);
-
-  lua_call(L, 1, 1);
-
-  /* The return value is a string, which we store in m_sSerializedData. */
-  const char* pString = lua_tostring(L, -1);
-  ASSERT_M(pString != nullptr, "Serialize() didn't return a string");
-
-  std::string sRet = pString;
-  lua_pop(L, 1);
-
-  LUA->Release(L);
-
-  return sRet;
-}
-
 /** @brief Utilities for working with Lua. */
 namespace LuaHelpers {
 template <>

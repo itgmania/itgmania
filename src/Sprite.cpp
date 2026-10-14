@@ -87,29 +87,6 @@ Sprite::Sprite(const Sprite& cpy) : Actor(cpy) {
   }
 }
 
-Sprite& Sprite::operator=(Sprite other) {
-#define SWAP(a) std::swap(a, other.a)
-  SWAP(m_States);
-  SWAP(m_animation_length_seconds);
-  SWAP(m_iCurState);
-  SWAP(m_fSecsIntoState);
-  SWAP(m_bUsingCustomTexCoords);
-  SWAP(m_bUsingCustomPosCoords);
-  SWAP(m_bSkipNextUpdate);
-  SWAP(m_DecodeMovie);
-  SWAP(m_EffectMode);
-  memcpy(m_CustomTexCoords, other.m_CustomTexCoords, sizeof(m_CustomTexCoords));
-  memcpy(m_CustomPosCoords, other.m_CustomPosCoords, sizeof(m_CustomPosCoords));
-  SWAP(m_fRememberedClipWidth);
-  SWAP(m_fRememberedClipHeight);
-  SWAP(m_fTexCoordVelocityX);
-  SWAP(m_fTexCoordVelocityY);
-  SWAP(m_use_effect_clock_for_texcoords);
-  SWAP(m_pTexture);
-#undef SWAP
-  return *this;
-}
-
 void Sprite::InitState() {
   Actor::InitState();
   m_iCurState = 0;

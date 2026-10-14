@@ -21,7 +21,6 @@ class ScoreDisplay;
 class LifeMeter;
 class CombinedLifeMeter;
 class ScoreKeeper;
-class Inventory;
 class RageTimer;
 class NoteField;
 class PlayerStageStats;
@@ -88,8 +87,8 @@ class Player : public ActorFrame {
       const std::string& sType, PlayerState* pPlayerState,
       PlayerStageStats* pPlayerStageStats, LifeMeter* pLM,
       CombinedLifeMeter* pCombinedLM, ScoreDisplay* pScoreDisplay,
-      ScoreDisplay* pSecondaryScoreDisplay, Inventory* pInventory,
-      ScoreKeeper* pPrimaryScoreKeeper, ScoreKeeper* pSecondaryScoreKeeper);
+      ScoreDisplay* pSecondaryScoreDisplay, ScoreKeeper* pPrimaryScoreKeeper,
+      ScoreKeeper* pSecondaryScoreKeeper);
   void Load();
   void CrossedRows(int iLastRowCrossed, const RageTimer& now);
   bool IsOniDead() const;
@@ -214,7 +213,6 @@ class Player : public ActorFrame {
   ScoreDisplay* m_pSecondaryScoreDisplay;
   ScoreKeeper* m_pPrimaryScoreKeeper;
   ScoreKeeper* m_pSecondaryScoreKeeper;
-  Inventory* m_pInventory;
 
   int m_iFirstUncrossedRow;  // used by hold checkpoints logic
   NoteData::all_tracks_iterator* m_pIterNeedsTapJudging;

@@ -676,8 +676,6 @@ RageSemaphore::RageSemaphore(std::string sName, int iInitialValue)
 
 RageSemaphore::~RageSemaphore() { delete m_pSema; }
 
-int RageSemaphore::GetValue() const { return m_pSema->GetValue(); }
-
 void RageSemaphore::Post() { m_pSema->Post(); }
 
 void RageSemaphore::Wait(bool bFailOnTimeout) {
@@ -697,8 +695,6 @@ void RageSemaphore::Wait(bool bFailOnTimeout) {
                  ")");  // stupid trigraph warnings
   CrashHandler::ForceDeadlock(sReason, GetInvalidThreadId());
 }
-
-bool RageSemaphore::TryWait() { return m_pSema->TryWait(); }
 
 /*
  * Copyright (c) 2001-2004 Glenn Maynard

@@ -792,23 +792,6 @@ float TimingData::GetElapsedTimeFromBeatNoOffset(float fBeat) const {
          m_fBeat0GroupOffsetInSeconds;
 }
 
-float TimingData::GetDisplayedBeat(float fBeat) const {
-  float fOutBeat = 0;
-  unsigned i;
-  const std::vector<TimingSegment*>& scrolls =
-      m_avpTimingSegments[SEGMENT_SCROLL];
-  for (i = 0; i < scrolls.size() - 1; i++) {
-    if (scrolls[i + 1]->GetBeat() > fBeat) {
-      break;
-    }
-    fOutBeat += (scrolls[i + 1]->GetBeat() - scrolls[i]->GetBeat()) *
-                ToScroll(scrolls[i])->GetRatio();
-  }
-  fOutBeat +=
-      (fBeat - scrolls[i]->GetBeat()) * ToScroll(scrolls[i])->GetRatio();
-  return fOutBeat;
-}
-
 void TimingData::ScaleRegion(
     float fScale, int iStartIndex, int iEndIndex, bool bAdjustBPM) {
   ASSERT(fScale > 0);

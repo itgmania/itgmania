@@ -129,89 +129,6 @@ void StepsUtil::GetAllMatchingEndless(
   }
 }
 
-bool StepsUtil::HasMatching(const SongCriteria& soc, const StepsCriteria& stc) {
-  std::vector<std::string> groupNames = soc.m_vsGroupNames;
-  if (groupNames.size() == 0) {
-    groupNames.push_back(GROUP_ALL);
-  }
-  std::vector<Song*> songs;
-  for (unsigned i = 0; i < groupNames.size(); i++) {
-    const std::vector<Song*>& groupSongs = SONGMAN->GetSongs(groupNames[i]);
-    songs.insert(songs.end(), groupSongs.begin(), groupSongs.end());
-  }
-
-  return std::any_of(songs.begin(), songs.end(), [&](const Song* so) {
-    return soc.Matches(so) && HasMatching(so, stc);
-  });
-}
-
-bool StepsUtil::HasMatching(const Song* pSong, const StepsCriteria& stc) {
-  const std::vector<Steps*>& vSteps =
-      stc.m_st == StepsType_Invalid ? pSong->GetAllSteps()
-                                    : pSong->GetStepsByStepsType(stc.m_st);
-  return std::any_of(vSteps.begin(), vSteps.end(), [&](const Steps* st) {
-    return stc.Matches(pSong, st);
-  });
-}
-
-// Sorting stuff
-std::map<const Steps*, std::string> steps_sort_val;
-
-static bool CompareStepsPointersBySortValueAscending(
-    const Steps* pSteps1, const Steps* pSteps2) {
-  return steps_sort_val[pSteps1] < steps_sort_val[pSteps2];
-}
-
-static bool CompareStepsPointersBySortValueDescending(
-    const Steps* pSteps1, const Steps* pSteps2) {
-  return steps_sort_val[pSteps1] > steps_sort_val[pSteps2];
-}
-
-void StepsUtil::SortStepsPointerArrayByNumPlays(
-    std::vector<Steps*>& vStepsPointers, ProfileSlot slot, bool bDescending) {
-  if (!PROFILEMAN->IsPersistentProfile(slot)) {
-    return;  // nothing to do since we don't have data
-  }
-  Profile* pProfile = PROFILEMAN->GetProfile(slot);
-  SortStepsPointerArrayByNumPlays(vStepsPointers, pProfile, bDescending);
-}
-
-void StepsUtil::SortStepsPointerArrayByNumPlays(
-    std::vector<Steps*>& vStepsPointers, const Profile* pProfile,
-    bool bDecending) {
-  // ugly...
-  std::vector<Song*> vpSongs = SONGMAN->GetAllSongs();
-  std::vector<Steps*> vpAllSteps;
-  std::map<Steps*, Song*> mapStepsToSong;
-  {
-    for (unsigned i = 0; i < vpSongs.size(); i++) {
-      Song* pSong = vpSongs[i];
-      std::vector<Steps*> vpSteps = pSong->GetAllSteps();
-      for (unsigned j = 0; j < vpSteps.size(); j++) {
-        Steps* pSteps = vpSteps[j];
-        if (pSteps->IsAutogen()) {
-          continue;  // skip
-        }
-        vpAllSteps.push_back(pSteps);
-        mapStepsToSong[pSteps] = pSong;
-      }
-    }
-  }
-
-  ASSERT(pProfile != nullptr);
-  for (unsigned i = 0; i < vStepsPointers.size(); ++i) {
-    Steps* pSteps = vStepsPointers[i];
-    Song* pSong = mapStepsToSong[pSteps];
-    steps_sort_val[vStepsPointers[i]] =
-        ssprintf("%9i", pProfile->GetStepsNumTimesPlayed(pSong, pSteps));
-  }
-  stable_sort(
-      vStepsPointers.begin(), vStepsPointers.end(),
-      bDecending ? CompareStepsPointersBySortValueDescending
-                 : CompareStepsPointersBySortValueAscending);
-  steps_sort_val.clear();
-}
-
 bool StepsUtil::CompareNotesPointersByRadarValues(
     const Steps* pSteps1, const Steps* pSteps2) {
   float fScore1 = 0;
@@ -400,20 +317,6 @@ bool StepsID::operator<(const StepsID& rhs) const {
   }
 #undef COMP
   return false;
-}
-
-bool StepsID::operator==(const StepsID& rhs) const {
-#define COMP(a) \
-  if (a != rhs.a) return false;
-  COMP(st);
-  COMP(dc);
-  COMP(sDescription);
-  // See explanation in class declaration. -Kyz
-  if (uHash != 0 && rhs.uHash != 0) {
-    COMP(uHash);
-  }
-#undef COMP
-  return true;
 }
 
 /*

@@ -32,34 +32,6 @@ void TechCounts::Zero() {
   FOREACH_ENUM(TechCountsCategory, rc) { (*this)[rc] = 0; }
 }
 
-std::string TechCounts::ToString(int iMaxValues) const {
-  if (iMaxValues == -1) {
-    iMaxValues = NUM_TechCountsCategory;
-  }
-  iMaxValues = std::min(iMaxValues, (int)NUM_TechCountsCategory);
-
-  std::vector<std::string> asTechCounts;
-  for (int r = 0; r < iMaxValues; r++) {
-    asTechCounts.push_back(ssprintf("%.3f", (*this)[r]));
-  }
-
-  return join(",", asTechCounts);
-}
-
-void TechCounts::FromString(std::string sTechCounts) {
-  std::vector<std::string> saValues;
-  split(sTechCounts, ",", saValues, true);
-
-  if (saValues.size() != NUM_TechCountsCategory) {
-    MakeUnknown();
-    return;
-  }
-
-  FOREACH_ENUM(TechCountsCategory, rc) {
-    (*this)[rc] = StringToFloat(saValues[rc]);
-  }
-}
-
 void TechCounts::CalculateTechCountsFromRows(
     const std::vector<StepParity::Row>& rows,
     const StepParity::StageLayout* layout, TechCounts& out,

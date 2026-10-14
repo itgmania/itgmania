@@ -70,8 +70,6 @@ SongCacheIndex::SongCacheIndex() : Mutex("SongCacheIndex") { ReadCacheIndex(); }
 
 SongCacheIndex::~SongCacheIndex() {}
 
-void SongCacheIndex::ReadFromDisk() { ReadCacheIndex(); }
-
 static void EmptyDir(std::string dir) {
   ASSERT(dir[dir.size() - 1] == '/');
 

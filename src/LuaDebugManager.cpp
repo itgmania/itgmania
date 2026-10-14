@@ -271,13 +271,6 @@ void LuaDebugManager::Start(std::string address, bool startPaused) {
   m_server = LuaDebug::Server::Start(*m_debugger, address, startPaused);
 }
 
-void LuaDebugManager::Stop() {
-  if (m_server) {
-    m_server->stop();
-  }
-  ix::uninitNetSystem();
-}
-
 void LuaDebugManager::ActivateState(lua_State* lua) {
   m_debugger->ActivateState(lua);
 }

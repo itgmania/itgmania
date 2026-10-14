@@ -382,28 +382,6 @@ std::string join(
   return sRet;
 }
 
-std::string serialize(
-    const std::vector<float>& sSource, const std::string& sDelimitor,
-    int precision) {
-  std::vector<std::string> values;
-  values.reserve(sSource.size());
-  std::string precisionStr = ssprintf("%%.%df", precision);
-  for (float s : sSource) {
-    values.push_back(ssprintf(precisionStr.c_str(), s));
-  }
-  return join(sDelimitor, values);
-}
-
-std::string serialize(
-    const std::vector<int>& sSource, const std::string& sDelimitor) {
-  std::vector<std::string> values;
-  values.reserve(sSource.size());
-  for (int s : sSource) {
-    values.push_back(ssprintf("%d", s));
-  }
-  return join(sDelimitor, values);
-}
-
 std::string SmEscape(
     const std::string& sUnescaped, const std::vector<char> charsToEscape) {
   return SmEscape(sUnescaped.c_str(), sUnescaped.size(), charsToEscape);
@@ -446,33 +424,6 @@ std::string SmUnescape(const std::string& sEscaped) {
   Replace(unescaped, "\\", "");
   Replace(unescaped, "||escaped-backslash||", "\\");
   return unescaped;
-}
-
-std::string DwiEscape(const std::string& sUnescaped) {
-  return DwiEscape(sUnescaped.c_str(), sUnescaped.size());
-}
-
-std::string DwiEscape(const char* cUnescaped, int len) {
-  std::string answer = "";
-  for (int i = 0; i < len; ++i) {
-    switch (cUnescaped[i]) {
-      // TODO: Which of these characters actually affect DWI?
-      case '\\':
-      case ':':
-      case ';':
-        answer += '|';
-        break;
-      case '[':
-        answer += '(';
-        break;
-      case ']':
-        answer += ')';
-        break;
-      default:
-        answer += cUnescaped[i];
-    }
-  }
-  return answer;
 }
 
 template <class S>

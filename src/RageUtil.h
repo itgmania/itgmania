@@ -299,14 +299,6 @@ std::string join(
     std::vector<std::string>::const_iterator begin,
     std::vector<std::string>::const_iterator end);
 
-// Joins a vector of numbers to a serialized string of numbers separated by
-// Delimitor.
-std::string serialize(
-    const std::vector<float>& sSource, const std::string& sDelimitor,
-    int precision);
-std::string serialize(
-    const std::vector<int>& sSource, const std::string& sDelimitor);
-
 // These methods escapes a string for saving in a .sm or .crs file
 std::string SmEscape(
     const std::string& sUnescaped,
@@ -320,11 +312,6 @@ std::vector<std::string> SmEscape(
     const std::vector<char> charsToEscape = {'\\', ':', ';'});
 
 std::string SmUnescape(const std::string& sEscaped);
-
-// These methods "escape" a string for .dwi by turning = into -, ] into I, etc.
-// That is "lossy".
-std::string DwiEscape(const std::string& sUnescaped);
-std::string DwiEscape(const char* cUnescaped, int len);
 
 std::string GetCwd();
 
@@ -484,7 +471,6 @@ bool DeleteRecursive(const std::string& sDir); /* delete the dir and all
 bool DoesFileExist(const std::string& sPath);
 bool IsAFile(const std::string& sPath);
 bool IsADirectory(const std::string& sPath);
-int GetFileSizeInBytes(const std::string& sFilePath);
 
 // call FixSlashesInPlace on any path that came from the user
 void FixSlashesInPlace(std::string& sPath);

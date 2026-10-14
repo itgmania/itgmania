@@ -152,18 +152,6 @@ void Banner::LoadFromCourse(const Course* pCourse)  // nullptr means no course
   m_bScrolling = false;
 }
 
-void Banner::LoadCardFromCharacter(const Character* pCharacter) {
-  if (pCharacter == nullptr) {
-    LoadFallback();
-  } else if (pCharacter->GetCardPath() != "") {
-    Load(pCharacter->GetCardPath());
-  } else {
-    LoadFallback();
-  }
-
-  m_bScrolling = false;
-}
-
 void Banner::LoadIconFromCharacter(const Character* pCharacter) {
   if (pCharacter == nullptr) {
     LoadFallbackCharacterIcon();

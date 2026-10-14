@@ -34,7 +34,6 @@ class Banner : public Sprite {
   void LoadMode();
   void LoadFromSongGroup(std::string sSongGroup);
   void LoadFromCourse(const Course* pCourse);
-  void LoadCardFromCharacter(const Character* pCharacter);
   void LoadIconFromCharacter(const Character* pCharacter);
   void LoadBannerFromUnlockEntry(const UnlockEntry* pUE);
   void LoadBackgroundFromUnlockEntry(const UnlockEntry* pUE);

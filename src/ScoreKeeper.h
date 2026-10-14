@@ -7,7 +7,6 @@
 #include "GameConstantsAndTypes.h"
 
 class NoteData;
-class Inventory;
 class Song;
 class Steps;
 class PlayerState;

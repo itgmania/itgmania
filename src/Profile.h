@@ -308,7 +308,6 @@ class Profile {
   const HighScoreList& GetStepsHighScoreList(
       const Song* pSong, const Steps* pSteps) const;
   HighScoreList& GetStepsHighScoreList(const Song* pSong, const Steps* pSteps);
-  int GetStepsNumTimesPlayed(const Song* pSong, const Steps* pSteps) const;
   void IncrementStepsPlayCount(const Song* pSong, const Steps* pSteps);
   void GetGrades(const Song* pSong, StepsType st, int iCounts[NUM_Grade]) const;
   int GetSongNumTimesPlayed(const Song* pSong) const;

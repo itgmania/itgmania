@@ -46,7 +46,6 @@ class ScreenManager {
   // System messages
   void SystemMessage(const std::string& sMessage);
   void SystemMessageNoAnimate(const std::string& sMessage);
-  void HideSystemMessage();
 
   // Screen messages
   void PostMessageToTopScreen(ScreenMessage SM, float fDelay);

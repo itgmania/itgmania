@@ -1124,10 +1124,6 @@ bool IsADirectory(const std::string& sPath) {
   return FILEMAN->IsADirectory(sPath);
 }
 
-int GetFileSizeInBytes(const std::string& sPath) {
-  return FILEMAN->GetFileSizeInBytes(sPath);
-}
-
 void GetDirListing(
     const std::string& sPath, std::vector<std::string>& AddTo, bool bOnlyDirs,
     bool bReturnPathToo) {

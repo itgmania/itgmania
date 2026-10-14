@@ -121,14 +121,10 @@ source_group("Data Structures\\\\Notes Loaders"
              ${SM_DATA_NOTELOAD_HPP})
 
 list(APPEND SM_DATA_NOTEWRITE_SRC
-            "NotesWriterDWI.cpp"
-            "NotesWriterJson.cpp"
             "NotesWriterSM.cpp"
             "NotesWriterSSC.cpp")
 
 list(APPEND SM_DATA_NOTEWRITE_HPP
-            "NotesWriterDWI.h"
-            "NotesWriterJson.h"
             "NotesWriterSM.h"
             "NotesWriterSSC.h")
 
@@ -218,8 +214,6 @@ list(APPEND SM_DATA_REST_SRC
             "GamePreferences.cpp"
             "Grade.cpp"
             "HighScore.cpp"
-            "Inventory.cpp"
-            "JsonUtil.cpp"
             "LocalizedString.cpp"
             "LyricsLoader.cpp"
             "ModsGroup.cpp"
@@ -270,8 +264,6 @@ list(APPEND SM_DATA_REST_HPP
             "Grade.h"
             "HighScore.h"
             "InputEventPlus.h"
-            "Inventory.h"
-            "JsonUtil.h"
             "LocalizedString.h"
             "LyricsLoader.h"
             "ModsGroup.h"

@@ -16,8 +16,6 @@ class RageLog {
   void Trace(const char* fmt, ...) PRINTF(2, 3);
   void Warn(const char* fmt, ...) PRINTF(2, 3);
   void Info(const char* fmt, ...) PRINTF(2, 3);
-  // Time is purely for writing profiling time data to the time log. -Kyz
-  void Time(const char* fmt, ...) PRINTF(2, 3);
   void UserLog(
       const std::string& sType, const std::string& sElement, const char* fmt,
       ...) PRINTF(4, 5);

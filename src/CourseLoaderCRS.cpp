@@ -68,14 +68,6 @@ static CourseDifficulty CRSStringToDifficulty(const std::string& s) {
   return Difficulty_Invalid;
 }
 
-bool CourseLoaderCRS::LoadFromBuffer(
-    const std::string& sPath, const std::string& sBuffer, Course& out) {
-  MsdFile msd;
-  msd.ReadFromString(
-      sBuffer, false);  // don't unescape here, it gets handled later
-  return LoadFromMsd(sPath, msd, out, true);
-}
-
 bool CourseLoaderCRS::LoadFromMsd(
     const std::string& sPath, const MsdFile& msd, Course& out,
     bool bFromCache) {
@@ -316,20 +308,6 @@ bool CourseLoaderCRS::LoadEditFromFile(
 
   pCourse->m_sPath = sEditFilePath;
   LoadFromMsd(sEditFilePath, msd, *pCourse, true);
-
-  pCourse->m_LoadedFromProfile = slot;
-
-  SONGMAN->AddCourse(pCourse);
-  return true;
-}
-
-bool CourseLoaderCRS::LoadEditFromBuffer(
-    const std::string& sBuffer, const std::string& sPath, ProfileSlot slot) {
-  Course* pCourse = new Course;
-  if (!LoadFromBuffer(sPath, sBuffer, *pCourse)) {
-    delete pCourse;
-    return false;
-  }
 
   pCourse->m_LoadedFromProfile = slot;
 

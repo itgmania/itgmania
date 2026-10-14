@@ -407,8 +407,6 @@ enum StageResult {
 LuaDeclareType(StageResult);
 
 // Battle stuff
-/** @brief The number of inventory slots available for attacks. */
-const int NUM_INVENTORY_SLOTS = 3;
 enum AttackLevel {
   ATTACK_LEVEL_1,
   ATTACK_LEVEL_2,

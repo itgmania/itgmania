@@ -24,12 +24,6 @@ static struct FileDriverEntry_ZIP : public FileDriverEntry {
   }
 } const g_RegisterDriver;
 
-RageFileDriverZip::RageFileDriverZip()
-    : RageFileDriver(new NullFilenameDB), m_Mutex("RageFileDriverZip") {
-  m_bFileOwned = false;
-  m_pZip = nullptr;
-}
-
 RageFileDriverZip::RageFileDriverZip(const std::string& sPath)
     : RageFileDriver(new NullFilenameDB), m_Mutex("RageFileDriverZip") {
   m_bFileOwned = false;
@@ -52,16 +46,6 @@ bool RageFileDriverZip::Load(const std::string& sPath) {
     delete pFile;
     return false;
   }
-
-  m_pZip = pFile;
-
-  return ParseZipfile();
-}
-
-bool RageFileDriverZip::Load(RageFileBasic* pFile) {
-  ASSERT(m_pZip == nullptr); /* don't load twice */
-  m_sPath = ssprintf("%p", static_cast<void*>(pFile));
-  m_Mutex.SetName(ssprintf("RageFileDriverZip(%p)", static_cast<void*>(pFile)));
 
   m_pZip = pFile;
 

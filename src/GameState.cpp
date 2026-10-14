@@ -1197,7 +1197,6 @@ void GameState::ResetStageStatistics() {
   }
 
   RemoveAllActiveAttacks();
-  FOREACH_PlayerNumber(p) m_pPlayerState[p]->RemoveAllInventory();
   m_fOpponentHealthPercent = 1;
   m_fHasteRate = 0;
   m_fLastHasteUpdateMusicSeconds = 0;

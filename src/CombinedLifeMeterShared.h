@@ -26,7 +26,6 @@ class CombinedLifeMeterShared : public CombinedLifeMeter {
   bool IsInDanger() const override;
   bool IsHot() const override;
   bool IsFailing() const override;
-  float GetLife() const;
   LifeMeter* GetInnerLifeMeter() const override;
 
  private:
