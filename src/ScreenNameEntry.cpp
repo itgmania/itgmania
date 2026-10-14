@@ -67,10 +67,8 @@
 static float g_fCharsZoomSmall;
 static float g_fCharsZoomLarge;
 static float g_fCharsSpacingY;
-static float g_fReceptorArrowsY;
 static int g_iNumCharsToDrawBehind;
 static int g_iNumCharsToDrawTotal;
-static float g_fFakeBeatsPerSec;
 
 void ScreenNameEntry::ScrollingText::Init(
     const std::string& sName, const std::vector<float>& xs) {
@@ -194,10 +192,8 @@ void ScreenNameEntry::Init() {
   g_fCharsZoomSmall = CHARS_ZOOM_SMALL;
   g_fCharsZoomLarge = CHARS_ZOOM_LARGE;
   g_fCharsSpacingY = CHARS_SPACING_Y;
-  g_fReceptorArrowsY = GRAY_ARROWS_Y;
   g_iNumCharsToDrawBehind = NUM_CHARS_TO_DRAW_BEHIND;
   g_iNumCharsToDrawTotal = NUM_CHARS_TO_DRAW_TOTAL;
-  g_fFakeBeatsPerSec = FAKE_BEATS_PER_SEC;
 
   // reset Player and Song Options
   {

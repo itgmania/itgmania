@@ -44,7 +44,6 @@ class NetworkPostData {
   }
 
   mutable RageMutex m_Mutex;
-  std::string m_sStatus;
   float m_fProgress;
 
   // When the thread exists, it owns the rest of the data, regardless of

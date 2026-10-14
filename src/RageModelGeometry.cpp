@@ -302,7 +302,7 @@ void RageModelGeometry::LoadMilkshapeAscii(
   }
 
   // send the finalized vertices to the graphics card
-  m_pCompiledGeometry->Set(m_Meshes, bNeedsNormals);
+  m_pCompiledGeometry->Set(m_Meshes);
 }
 
 /*

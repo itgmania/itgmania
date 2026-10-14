@@ -719,8 +719,6 @@ void SongManager::LoadGroupSymLinks(
 
       FOREACH_BackgroundLayer(i) pNewSong->GetBackgroundChanges(i).clear();
 
-      pNewSong->m_bIsSymLink =
-          true;  // Very important so we don't double-parse later
       pNewSong->m_sGroupName = sGroupFolder;
       AddSongToList(pNewSong);
       index_entry.push_back(pNewSong);

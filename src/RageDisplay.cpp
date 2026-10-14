@@ -833,12 +833,9 @@ void RageDisplay::FrameLimitBeforeVsync() {
 
 void RageDisplay::FrameLimitAfterVsync() { g_LastFrameEndedAt.Touch(); }
 
-RageCompiledGeometry::~RageCompiledGeometry() { m_bNeedsNormals = false; }
+RageCompiledGeometry::~RageCompiledGeometry() {}
 
-void RageCompiledGeometry::Set(
-    const std::vector<msMesh>& vMeshes, bool bNeedsNormals) {
-  m_bNeedsNormals = bNeedsNormals;
-
+void RageCompiledGeometry::Set(const std::vector<msMesh>& vMeshes) {
   size_t totalVerts = 0;
   size_t totalTriangles = 0;
 

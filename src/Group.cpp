@@ -59,7 +59,6 @@ Group::Group(
   m_iYearReleased = 0;
   m_sBannerPath = "";
   m_sSeriesBannerPath = "";
-  m_iVersion = INI_VERSION;
 
   if (FILEMAN->DoesFileExist(sPackIniPath)) {
     IniFile ini;
@@ -78,7 +77,6 @@ Group::Group(
     // Otherwise log a warning and use default Pack.ini values
     if (!sVersion.empty()) {
       m_bHasPackIni = true;
-      m_iVersion = StringToInt(sVersion);
 
       // Define a vector of key-value pairs to cleanly iterate
       std::vector<std::pair<std::string, std::string&>> vPackfields = {

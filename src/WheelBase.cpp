@@ -38,7 +38,6 @@ WheelBase::~WheelBase() {
     RageUtil::SafeDelete(i);
   }
   m_WheelBaseItems.clear();
-  m_LastSelection = nullptr;
 }
 
 void WheelBase::Load(std::string sType) {
@@ -46,7 +45,6 @@ void WheelBase::Load(std::string sType) {
   ASSERT(this->GetNumChildren() == 0);  // only load once
 
   m_bEmpty = false;
-  m_LastSelection = nullptr;
   m_iSelection = 0;
   m_fTimeLeftInState = 0;
   m_fPositionOffsetFromSelection = 0;
@@ -276,7 +274,6 @@ bool WheelBase::Select()  // return true if this selection can end the screen
 
   switch (m_CurWheelItemData[m_iSelection]->m_Type) {
     case WheelItemDataType_Generic:
-      m_LastSelection = m_CurWheelItemData[m_iSelection];
       return true;
     case WheelItemDataType_Section:
     case WheelItemDataType_ParentSection: {
@@ -438,30 +435,9 @@ void WheelBase::RebuildWheelItems(int iDist) {
 
   // iIndex is now the index of the lowest WheelItem to draw
 
-  int iFirst = 0;
-  int iLast = NUM_WHEEL_ITEMS - 1;
-
   if (iDist != INT_MAX) {
     // Shift items and refresh only those that have changed.
     CircularShift(items, iDist);
-    if (iDist > 0) {
-      iFirst = NUM_WHEEL_ITEMS - iDist;
-    } else if (iDist < 0) {
-      iLast = -iDist - 1;
-    }
-  }
-
-  for (int i = iFirst; i <= iLast; i++) {
-    int iIndex = iFirstVisibleIndex + i;
-    wrap(iIndex, data.size());
-
-    const WheelItemBaseData* pData = data[iIndex];
-    WheelItemBase* pDisplay = items[i];
-
-    pDisplay->SetExpanded(
-        (pData->m_Type == WheelItemDataType_Section ||
-         pData->m_Type == WheelItemDataType_ParentSection) &&
-        pData->m_sText == m_sExpandedSectionName);
   }
 
   for (int i = 0; i < (int)items.size(); i++) {

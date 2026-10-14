@@ -73,7 +73,6 @@ void GameCommand::Init() {
   m_iGoalCalories = -1;
   m_GoalType = GoalType_Invalid;
   m_sProfileID = "";
-  m_bUrlExits = true;
 
   m_bInsertCredit = false;
   m_bClearCredits = false;

@@ -12,8 +12,6 @@ REGISTER_SCREEN_CLASS(ScreenExit);
 void ScreenExit::Init() {
   Screen::Init();
 
-  m_Exited = false;
-
   ArchHooks::SetUserQuit();
 }
 

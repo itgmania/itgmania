@@ -10,8 +10,6 @@ HINSTANCE hDLL = nullptr;
 
 typedef void(WINAPI PORTOUT)(short int Port, char Data);
 PORTOUT* PortOut = nullptr;
-typedef short int(WINAPI ISDRIVERINSTALLED)();
-ISDRIVERINSTALLED* IsDriverInstalled = nullptr;
 
 const int LIGHTS_PER_PARALLEL_PORT = 8;
 // xxx: don't hardcode the port addresses. -aj
@@ -47,8 +45,6 @@ LightsDriver_Win32Parallel::LightsDriver_Win32Parallel() {
 
   // Get the function pointers
   PortOut = (PORTOUT*)GetProcAddress(hDLL, "PortOut");
-  IsDriverInstalled =
-      (ISDRIVERINSTALLED*)GetProcAddress(hDLL, "IsDriverInstalled");
 }
 
 LightsDriver_Win32Parallel::~LightsDriver_Win32Parallel() { FreeLibrary(hDLL); }

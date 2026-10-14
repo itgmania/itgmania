@@ -18,8 +18,7 @@ Character::Character()
       m_sCharacterID(""),
       m_sDisplayName(""),
       m_sCardPath(""),
-      m_sIconPath(""),
-      m_bUsableInRave(false) {}
+      m_sIconPath("") {}
 
 bool Character::Load(std::string sCharDir) {
   // Save character directory

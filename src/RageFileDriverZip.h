@@ -30,9 +30,6 @@ class RageFileDriverZip : public RageFileDriver {
     ZipCompressionMethod m_iCompressionMethod;
     int m_iCRC32;
     int m_iCompressedSize, m_iUncompressedSize;
-
-    /* If 0, unknown. */
-    int m_iFilePermissions;
   };
 
  private:

@@ -724,7 +724,6 @@ void NetworkPostData::Start(
   m_sHost = sHost;
   m_iPort = iPort;
   m_sPath = sPath;
-  m_sStatus.clear();
   m_fProgress = 0;
 
   m_Thread.SetName("HTTP thread");

@@ -49,7 +49,7 @@ class PlayerInfo {
   PlayerInfo();
   ~PlayerInfo();
 
-  void Load(PlayerNumber pn, bool bShowNoteField, int iAddToDifficulty);
+  void Load(PlayerNumber pn, bool bShowNoteField);
 
   /** @brief The player has lost all of their lives: show the special game over.
    */
@@ -87,8 +87,7 @@ class PlayerInfo {
   PlayerNumber m_pn;
   bool m_bIsDummy;
   int m_iDummyIndex;
-  int m_iAddToDifficulty;  // if > 0, use the Nth harder Steps
-  bool m_bPlayerEnabled;   // IsEnabled cache for iterators
+  bool m_bPlayerEnabled;  // IsEnabled cache for iterators
   PlayerState m_PlayerStateDummy;
   PlayerStageStats m_PlayerStageStatsDummy;
   SoundEffectControl m_SoundEffectControl;

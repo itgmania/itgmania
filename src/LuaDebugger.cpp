@@ -190,9 +190,7 @@ class Debugger::Impl {
   // Client specific
   struct {
     int linesOffset = 0;
-    int columnsOffset = 0;
     bool supportsVariableType = false;
-    bool supportsInvalidatedEvent = false;
     SeqNo nextMessageSeq = 1;
   } m_client;
 
@@ -216,13 +214,7 @@ class Debugger::Impl {
     m_client.linesOffset =
         args["linesStartAt1"].isBool() && !args["linesStartAt1"].asBool() ? -1
                                                                           : 0;
-    m_client.columnsOffset =
-        args["columnsStartAt1"].isBool() && !args["columnsStartAt1"].asBool()
-            ? -1
-            : 0;
     m_client.supportsVariableType = args["supportsVariableType"].asBool();
-    m_client.supportsInvalidatedEvent =
-        args["supportsInvalidatedEvent"].asBool();
 
     Response result = CreateDapResponse(request);
     result["body"]["supportsConfigurationDoneRequest"] = true;
@@ -399,9 +391,7 @@ class Debugger::Impl {
     }
 
     m_client.linesOffset = 0;
-    m_client.columnsOffset = 0;
     m_client.supportsVariableType = false;
-    m_client.supportsInvalidatedEvent = false;
     m_client.nextMessageSeq = 1;
 
     SendResponse(CreateDapResponse(request));

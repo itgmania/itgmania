@@ -29,7 +29,6 @@ class LinuxInputManager {
       std::vector<std::string>& sortingArray, std::string sortBy);
 
   bool m_bEventEnabled;
-  InputHandler_Linux_Event* m_EventDriver;
   std::vector<std::string> m_vsPendingEventDevices;
 
   bool m_bJoystickEnabled;

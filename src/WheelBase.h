@@ -93,7 +93,6 @@ class WheelBase : public ActorFrame {
 
   std::vector<WheelItemBaseData*> m_CurWheelItemData;
   std::vector<WheelItemBase*> m_WheelBaseItems;
-  WheelItemBaseData* m_LastSelection;
 
   bool m_bEmpty;
   int m_iSelection;  // index into m_CurWheelItemBaseData

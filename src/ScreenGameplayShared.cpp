@@ -20,10 +20,8 @@ void ScreenGameplayShared::FillPlayerInfo(
    * player exists only so we have a place to split stats out into at the end.
    */
   vPlayerInfoOut.resize(2);
-  vPlayerInfoOut[master].Load(
-      master, /*bShowNoteField=*/true, Difficulty_Invalid);
-  vPlayerInfoOut[other].Load(
-      other, /*bShowNoteField=*/true, Difficulty_Invalid);
+  vPlayerInfoOut[master].Load(master, /*bShowNoteField=*/true);
+  vPlayerInfoOut[other].Load(other, /*bShowNoteField=*/true);
 }
 
 PlayerInfo& ScreenGameplayShared::GetPlayerInfoForInput(

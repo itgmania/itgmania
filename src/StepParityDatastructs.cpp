@@ -198,7 +198,6 @@ std::vector<FootPlacement> StageLayout::PermuteFootPlacements(
 void Row::setFootPlacement(const StepParity::State* state) {
   for (int c = 0; c < columnCount; c++) {
     if (notes[c].type != TapNoteType_Empty) {
-      notes[c].parity = state->combinedColumns[c];
       columns[c] = state->combinedColumns[c];
       whereTheFeetAre[state->combinedColumns[c]] = c;
       noteCount += 1;

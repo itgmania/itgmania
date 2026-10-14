@@ -50,8 +50,7 @@ std::map<RageTexture*, RageTextureID> m_texture_ids_by_pointer;
 };  // namespace
 
 RageTextureManager::RageTextureManager()
-    : m_iNoWarnAboutOddDimensions(0),
-      m_TexturePolicy(RageTextureID::TEX_DEFAULT) {}
+    : m_TexturePolicy(RageTextureID::TEX_DEFAULT) {}
 
 RageTextureManager::~RageTextureManager() {
   for (std::pair<const RageTextureID&, RageTexture*> i : m_mapPathToTexture) {

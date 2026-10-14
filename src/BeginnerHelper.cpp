@@ -63,7 +63,7 @@ static std::string GetAnimPath(Animation a) {
 BeginnerHelper::BeginnerHelper() {
   m_bShowBackground = true;
   m_bInitialized = false;
-  m_iLastRowChecked = m_iLastRowFlashed = 0;
+  m_iLastRowChecked = 0;
   FOREACH_PlayerNumber(pn) m_bPlayerEnabled[pn] = false;
   FOREACH_PlayerNumber(pn) m_pDancer[pn] = new Model;
   m_pDancePad = new Model;

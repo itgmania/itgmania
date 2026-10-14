@@ -52,8 +52,6 @@ struct Context {
   bool Loaded() const { return pRVAHeap != nullptr; }
   std::string sRawBlock;
 
-  int nBuildNumber;
-
   const unsigned char* pRVAHeap;
   uintptr_t nFirstRVA;
 
@@ -101,7 +99,6 @@ bool VDDebugInfoInitFromMemory(Context* pctx) {
   // Extract fields
 
   src += 64;
-  const int* pVer = reinterpret_cast<const int*>(src);
   const size_t* pRVASize = reinterpret_cast<const size_t*>(src + sizeof(int));
   const size_t* pFNamSize =
       reinterpret_cast<const size_t*>(src + sizeof(int) + sizeof(size_t));
@@ -109,7 +106,6 @@ bool VDDebugInfoInitFromMemory(Context* pctx) {
       reinterpret_cast<const int*>(src + sizeof(int) + 2 * sizeof(size_t));
   src += 2 * (sizeof(int) + sizeof(size_t));
 
-  pctx->nBuildNumber = *pVer;
   pctx->pRVAHeap =
       reinterpret_cast<const unsigned char*>(src + sizeof(uintptr_t));
   pctx->nFirstRVA = *reinterpret_cast<const uintptr_t*>(src);
@@ -624,8 +620,7 @@ void LoadLocalizedStrings() {
 
 class CrashDialog : public WindowsDialogBox {
  public:
-  CrashDialog(
-      const std::string& sCrashReport, const CompleteCrashData& CrashData);
+  CrashDialog();
   ~CrashDialog();
 
  protected:
@@ -636,13 +631,9 @@ class CrashDialog : public WindowsDialogBox {
 
   NetworkPostData* m_pPost;
   std::string m_sUpdateURL;
-  const std::string m_sCrashReport;
-  CompleteCrashData m_CrashData;
 };
 
-CrashDialog::CrashDialog(
-    const std::string& sCrashReport, const CompleteCrashData& CrashData)
-    : m_sCrashReport(sCrashReport), m_CrashData(CrashData) {
+CrashDialog::CrashDialog() {
   LoadLocalizedStrings();
   m_pPost = nullptr;
 }
@@ -832,7 +823,7 @@ void ChildProcess() {
   CloseHandle(SymbolLookup::g_hParent);
   SymbolLookup::g_hParent = nullptr;
 
-  CrashDialog cd(sCrashReport, Data);
+  CrashDialog cd;
 #if defined(AUTOMATED_CRASH_REPORTS)
   cd.Run(IDD_REPORT_CRASH);
 #else

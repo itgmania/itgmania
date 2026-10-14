@@ -6,9 +6,6 @@
 class ScreenExit : public Screen {
  public:
   void Init();
-
- private:
-  bool m_Exited;
 };
 
 #endif

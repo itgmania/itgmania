@@ -176,7 +176,6 @@ Course::Course()
       m_sDescription(""),
       m_sBannerPath(""),
       m_sBackgroundPath(""),
-      m_sCDTitlePath(""),
       m_sGroupName(""),
       m_bRepeat(false),
       m_fGoalSeconds(0),
@@ -249,7 +248,6 @@ void Course::Init() {
 
   m_sBannerPath = "";
   m_sBackgroundPath = "";
-  m_sCDTitlePath = "";
   m_sGroupName = "";
 
   m_bRepeat = false;

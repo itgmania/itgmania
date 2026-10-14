@@ -311,11 +311,9 @@ void StepParityGenerator::CreateRows(const NoteData& in) {
 
     IntermediateNoteData note;
     note.type = curr_note->type;
-    note.subtype = curr_note->subType;
     note.beat = NoteRowToBeat(smRow);
     note.second = timing->GetElapsedTimeFromBeat(note.beat);
     note.fake = note.type == TapNoteType_Fake || timing->IsFakeAtRow(smRow);
-    note.warped = timing->IsWarpAtRow(smRow);
     if (note.type == TapNoteType_HoldHead) {
       note.hold_length = NoteRowToBeat(curr_note->iDuration);
     } else {

@@ -161,8 +161,8 @@ int RageFileDriverZip::ProcessCdirFileHdr(FileInfo& info) {
     return -1;
   }
 
-  FileReading::read_8(*m_pZip, sError); /* skip version made by */
-  int iOSMadeBy = FileReading::read_8(*m_pZip, sError);
+  FileReading::read_8(*m_pZip, sError);     /* skip version made by */
+  FileReading::read_8(*m_pZip, sError);     /* skip OS made by */
   FileReading::read_16_le(*m_pZip, sError); /* skip version needed to extract */
   int iGeneralPurpose = FileReading::read_16_le(*m_pZip, sError);
   info.m_iCompressionMethod =
@@ -210,14 +210,6 @@ int RageFileDriverZip::ProcessCdirFileHdr(FileInfo& info) {
   /* Skip directories. */
   if (iExternalFileAttributes & (1 << 4)) {
     return 0;
-  }
-
-  info.m_iFilePermissions = 0;
-  enum { MADE_BY_UNIX = 3 };
-  switch (iOSMadeBy) {
-    case MADE_BY_UNIX:
-      info.m_iFilePermissions = (iExternalFileAttributes >> 16) & 0x1FF;
-      break;
   }
 
   if (info.m_iCompressionMethod != STORED &&

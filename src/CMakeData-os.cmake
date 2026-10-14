@@ -93,7 +93,6 @@ else()
   else() # Unix
     list(APPEND SMDATA_OS_SRC # TODO: X11 check, crash handler check
                 "archutils/Unix/AssertionHandler.cpp"
-                "archutils/Unix/EmergencyShutdown.cpp"
                 "archutils/Unix/GetSysInfo.cpp"
                 "archutils/Unix/SignalHandler.cpp"
                 "archutils/Unix/SpecialDirs.cpp"
@@ -101,7 +100,6 @@ else()
     list(APPEND SMDATA_OS_HPP
                 "archutils/Unix/arch_setup.h"
                 "archutils/Unix/AssertionHandler.h"
-                "archutils/Unix/EmergencyShutdown.h"
                 "archutils/Unix/GetSysInfo.h"
                 "archutils/Unix/SignalHandler.h"
                 "archutils/Unix/SpecialDirs.h")

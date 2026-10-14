@@ -178,8 +178,6 @@ class Song {
    * @brief the Profile this came from.
    * This is ProfileSlot_Invalid if it wasn't loaded from a profile. */
   ProfileSlot m_LoadedFromProfile;
-  /** @brief Is the song file itself a symlink to another file? */
-  bool m_bIsSymLink;
   bool m_bEnabled;
 
   /** @brief The title of the Song. */

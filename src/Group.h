@@ -128,9 +128,6 @@ class Group {
   /** @brief The year the group was released */
   int m_iYearReleased;
 
-  /** @brief The version of the Pack.ini info */
-  int m_iVersion;
-
   /** @brief The path to the group's series banner. */
   std::string m_sSeriesBannerPath;
 };

@@ -243,7 +243,6 @@ void OptionsList::Load(std::string sType, PlayerNumber pn) {
     }
 
     m_Rows[sLineName] = pHand;
-    m_asLoadedRows.push_back(sLineName);
 
     for (size_t i = 0; i < pHand->m_Def.m_vsChoices.size(); ++i) {
       std::string sScreen = pHand->GetScreen(i);
