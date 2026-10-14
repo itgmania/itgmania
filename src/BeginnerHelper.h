@@ -39,7 +39,6 @@ class BeginnerHelper : public ActorFrame {
       m_sStepCircle;  // More memory, but much easier to manage.
 
   int m_iLastRowChecked;
-  int m_iLastRowFlashed;
   bool m_bInitialized;
 
   ThemeMetric<bool> SHOW_DANCE_PAD;

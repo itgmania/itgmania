@@ -45,7 +45,6 @@ class WheelItemBase : public ActorFrame {
 
   void Load(std::string sType);
   void DrawGrayBar(Actor& bar);
-  void SetExpanded(bool bExpanded) { m_bExpanded = bExpanded; }
 
   virtual void LoadFromWheelItemData(
       const WheelItemBaseData* pWID, int iIndex, bool bHasFocus,
@@ -74,7 +73,6 @@ class WheelItemBase : public ActorFrame {
   void SetGrayBar(Actor* pBar) { m_pGrayBar = pBar; }
 
   const WheelItemBaseData* m_pData;
-  bool m_bExpanded;  // if TYPE_SECTION whether this section is expanded
 
   Actor* m_pGrayBar;
 };

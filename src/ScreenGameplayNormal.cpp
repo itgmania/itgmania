@@ -12,7 +12,7 @@ REGISTER_SCREEN_CLASS(ScreenGameplayNormal);
 void ScreenGameplayNormal::FillPlayerInfo(
     std::vector<PlayerInfo>& vPlayerInfoOut) {
   vPlayerInfoOut.resize(NUM_PLAYERS);
-  FOREACH_PlayerNumber(p) vPlayerInfoOut[p].Load(p, true, Difficulty_Invalid);
+  FOREACH_PlayerNumber(p) vPlayerInfoOut[p].Load(p, true);
 };
 
 // lua end

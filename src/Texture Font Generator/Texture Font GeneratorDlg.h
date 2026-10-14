@@ -19,7 +19,6 @@ class CTextureFontGeneratorDlg : public CDialog {
   virtual void DoDataExchange(CDataExchange* pDX);  // DDX/DDV support
 
   HICON m_hIcon;
-  CFont m_Font;
 
   BOOL CanExit();
 
@@ -70,7 +69,6 @@ class CTextureFontGeneratorDlg : public CDialog {
   CStatic m_CloseUp;
   CSpinButtonCtrl m_SpinTop;
   CSpinButtonCtrl m_SpinBaseline;
-  CStatic m_FontType;
   afx_msg void OnOptionsDoubleres();
   afx_msg void OnOptionsExportstroketemplates();
   afx_msg void OnOptionsNumbersonly();

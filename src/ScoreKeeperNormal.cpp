@@ -146,7 +146,6 @@ void ScoreKeeperNormal::Load(
   m_iMaxScoreSoFar = 0;
   m_iPointBonus = 0;
   m_iNumTapsAndHolds = 0;
-  m_iNumNotesHitThisRow = 0;
   m_bIsLastSongInCourse = false;
 
   Message msg("ScoreChanged");
@@ -555,8 +554,6 @@ void ScoreKeeperNormal::HandleTapRowScore(const NoteData& nd, int iRow) {
   if (iNumTapsInRow <= 0) {
     return;
   }
-
-  m_iNumNotesHitThisRow = iNumTapsInRow;
 
   TapNoteScore scoreOfLastTap =
       NoteDataWithScoring::LastTapNoteWithResult(nd, iRow).result.tns;

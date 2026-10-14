@@ -102,7 +102,6 @@ Song::Song() {
   m_DisplayBPMType = DISPLAY_BPM_ACTUAL;
   m_fSpecifiedBPMMin = 0;
   m_fSpecifiedBPMMax = 0;
-  m_bIsSymLink = false;
   m_bHasMusic = false;
   m_bHasBanner = false;
   m_bHasBackground = false;

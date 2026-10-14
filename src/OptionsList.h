@@ -94,7 +94,6 @@ class OptionsList : public ActorFrame {
   bool m_bStartIsDown;
   bool m_bAcceptStartRelease;
 
-  std::vector<std::string> m_asLoadedRows;
   std::map<std::string, OptionRowHandler*> m_Rows;
   std::map<std::string, std::vector<bool> > m_bSelections;
   std::set<std::string> m_setDirectRows;

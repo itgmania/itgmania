@@ -18,8 +18,6 @@ class ScreenJukebox : public ScreenGameplayNormal {
  protected:
   bool m_bDemonstration;
 
-  const CourseEntry* m_pCourseEntry;
-
   void SetSong();
   virtual void InitSongQueues();
 };

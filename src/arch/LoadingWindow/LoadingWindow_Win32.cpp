@@ -207,8 +207,6 @@ void LoadingWindow_Win32::SetTotalWork(const int totalWork) {
 }
 
 void LoadingWindow_Win32::SetIndeterminate(bool indeterminate) {
-  m_indeterminate = indeterminate;
-
   HWND hwndItem = ::GetDlgItem(hwnd, IDC_PROGRESS);
 
   if (indeterminate) {

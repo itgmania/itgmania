@@ -31,7 +31,7 @@ class RageCompiledGeometry {
  public:
   virtual ~RageCompiledGeometry();
 
-  void Set(const std::vector<msMesh>& vMeshes, bool bNeedsNormals);
+  void Set(const std::vector<msMesh>& vMeshes);
 
   virtual void Allocate(
       const std::vector<msMesh>& vMeshes) = 0;  // allocate space
@@ -63,7 +63,6 @@ class RageCompiledGeometry {
     bool m_bNeedsTextureMatrixScale;
   };
   std::vector<MeshInfo> m_vMeshInfo;
-  bool m_bNeedsNormals;
   bool m_bAnyNeedsTextureMatrixScale;
 };
 

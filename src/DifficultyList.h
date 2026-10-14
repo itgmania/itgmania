@@ -49,7 +49,6 @@ class StepsDisplayList : public ActorFrame {
   };
   std::vector<Line> m_Lines;
 
-  const Song* m_CurSong;
   bool m_bShown;
 
   struct Row {

@@ -76,8 +76,8 @@ class RageTextureManager {
 
   void AdjustTextureID(RageTextureID& ID) const;
 
-  void DisableOddDimensionWarning() { m_iNoWarnAboutOddDimensions++; }
-  void EnableOddDimensionWarning() { m_iNoWarnAboutOddDimensions--; }
+  void DisableOddDimensionWarning() {}
+  void EnableOddDimensionWarning() {}
 
   RageTextureID GetDefaultTextureID();
   RageTextureID GetScreenTextureID();
@@ -90,7 +90,6 @@ class RageTextureManager {
   RageTexture* LoadTextureInternal(RageTextureID ID);
 
   RageTextureManagerPrefs m_Prefs;
-  int m_iNoWarnAboutOddDimensions;
   RageTextureID::TexPolicy m_TexturePolicy;
 };
 

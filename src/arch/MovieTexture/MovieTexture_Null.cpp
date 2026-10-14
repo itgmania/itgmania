@@ -23,11 +23,8 @@ class MovieTexture_Null : public RageMovieTexture {
   void Reload() {}
   void SetPosition(float /* seconds */) {}
   void SetPlaybackRate(float) {}
-  void SetLooping(bool looping = true) { loop = looping; }
 
  private:
-  bool playing;
-  bool loop;
   uintptr_t texHandle;
 };
 

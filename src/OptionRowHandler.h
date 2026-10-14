@@ -82,7 +82,6 @@ struct OptionRowDefinition {
    *
    * This should be true for dynamic strings. */
   bool m_bAllowExplanation;
-  bool m_bShowChoicesListOnSelect;  // (currently unused)
 
   /**
    * @brief Is this option enabled for the Player?
@@ -105,8 +104,7 @@ struct OptionRowDefinition {
         m_bHideOnDisable(false),
         m_bAllowThemeItems(true),
         m_bAllowThemeTitle(true),
-        m_bAllowExplanation(true),
-        m_bShowChoicesListOnSelect(false) {
+        m_bAllowExplanation(true) {
     FOREACH_PlayerNumber(pn) m_vEnabledForPlayers.insert(pn);
   }
   void Init() {
@@ -124,7 +122,6 @@ struct OptionRowDefinition {
     m_bAllowThemeItems = true;
     m_bAllowThemeTitle = true;
     m_bAllowExplanation = true;
-    m_bShowChoicesListOnSelect = false;
   }
 
   OptionRowDefinition(
@@ -150,8 +147,7 @@ struct OptionRowDefinition {
         m_bHideOnDisable(false),
         m_bAllowThemeItems(true),
         m_bAllowThemeTitle(true),
-        m_bAllowExplanation(true),
-        m_bShowChoicesListOnSelect(false) {
+        m_bAllowExplanation(true) {
     FOREACH_PlayerNumber(pn) m_vEnabledForPlayers.insert(pn);
 
 #define PUSH(c) \

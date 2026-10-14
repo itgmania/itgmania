@@ -233,7 +233,6 @@ class RageSoundDriver : public RageDriver {
 
   int64_t ClampHardwareFrame(int64_t iHardwareFrame) const;
   mutable int64_t m_iMaxHardwareFrame;
-  mutable int64_t m_iVMaxHardwareFrame;
 
   bool m_bShutdownDecodeThread;
 

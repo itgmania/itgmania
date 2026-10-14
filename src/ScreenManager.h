@@ -80,7 +80,6 @@ class ScreenManager {
   // Screen loads, removals, and concurrent prepares are delayed until the next
   // update.
   std::string m_sDelayedScreen;
-  ScreenMessage m_OnDonePreparingScreen;
   ScreenMessage m_PopTopScreen;
 
   // Set this to true anywhere we create of delete objects.  These

@@ -165,7 +165,6 @@ void ScreenJukebox::SetSong() {
 
       if (!apOptions.empty()) {
         int iIndex = RandomInt(apOptions.size());
-        m_pCourseEntry = apOptions[iIndex];
         Course* lCourse = apPossibleCourses[iIndex];
 
         PlayMode pm = CourseTypeToPlayMode(lCourse->GetCourseType());
@@ -185,10 +184,7 @@ void ScreenJukebox::SetSong() {
   return;  // didn't find a song
 }
 
-ScreenJukebox::ScreenJukebox() {
-  m_bDemonstration = false;
-  m_pCourseEntry = nullptr;
-}
+ScreenJukebox::ScreenJukebox() { m_bDemonstration = false; }
 
 static LocalizedString NO_MATCHING_STEPS("ScreenJukebox", "NoMatchingSteps");
 void ScreenJukebox::Init() {

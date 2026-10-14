@@ -105,7 +105,7 @@ void Model::LoadPieces(
   if (m_pGeometry->HasAnyPerVertexBones()) {
     m_vTempMeshes = m_pGeometry->m_Meshes;
     m_pTempGeometry = DISPLAY->CreateCompiledGeometry();
-    m_pTempGeometry->Set(m_vTempMeshes, this->MaterialsNeedNormals());
+    m_pTempGeometry->Set(m_vTempMeshes);
   }
   RecalcAnimationLengthSeconds();
 }

@@ -131,7 +131,6 @@ PlayerInfo::PlayerInfo()
     : m_pn(PLAYER_INVALID),
       m_bIsDummy(false),
       m_iDummyIndex(0),
-      m_iAddToDifficulty(0),
       m_bPlayerEnabled(false),
       m_PlayerStateDummy(),
       m_PlayerStageStatsDummy(),
@@ -152,12 +151,10 @@ PlayerInfo::PlayerInfo()
       m_pStepsDisplay(nullptr),
       m_sprOniGameOver() {}
 
-void PlayerInfo::Load(
-    PlayerNumber pn, bool bShowNoteField, int iAddToDifficulty) {
+void PlayerInfo::Load(PlayerNumber pn, bool bShowNoteField) {
   m_pn = pn;
   m_bPlayerEnabled = IsEnabled();
   m_bIsDummy = false;
-  m_iAddToDifficulty = iAddToDifficulty;
   m_pLifeMeter = nullptr;
   m_ptextCourseSongNumber = nullptr;
   m_ptextStepsDescription = nullptr;

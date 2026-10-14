@@ -26,7 +26,7 @@ WheelItemBaseData::WheelItemBaseData(
 
 // begin WheelItemBase
 WheelItemBase::WheelItemBase(const WheelItemBase& cpy)
-    : ActorFrame(cpy), m_pData(cpy.m_pData), m_bExpanded(cpy.m_bExpanded) {
+    : ActorFrame(cpy), m_pData(cpy.m_pData) {
   // FIXME
   // if( cpy.m_pGrayBar == cpy.m_sprBar )
   //	m_pGrayBar = m_sprBar;
@@ -35,7 +35,6 @@ WheelItemBase::WheelItemBase(const WheelItemBase& cpy)
 WheelItemBase::WheelItemBase(std::string sType) {
   SetName(sType);
   m_pData = nullptr;
-  m_bExpanded = false;
   m_pGrayBar = nullptr;
   Load(sType);
 }

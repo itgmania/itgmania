@@ -11,8 +11,7 @@
 #include "arch/arch_default.h"
 #include "global.h"
 
-LoadingWindow::LoadingWindow()
-    : m_progress(0), m_totalWork(1), m_indeterminate(false) {}
+LoadingWindow::LoadingWindow() : m_progress(0), m_totalWork(1) {}
 
 LoadingWindow* LoadingWindow::Create() {
   if (!PREFSMAN->m_bShowLoadingWindow) {

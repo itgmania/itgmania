@@ -52,7 +52,6 @@ LinuxInputManager::LinuxInputManager() {
     m_bJoystickEnabled = true;
   }
 
-  m_EventDriver = nullptr;
   m_JoystickDriver = nullptr;
 
   // XXX: Can I use RageFile for this?
@@ -149,8 +148,6 @@ void LinuxInputManager::PresortPhysical(
 }
 
 void LinuxInputManager::InitDriver(InputHandler_Linux_Event* driver) {
-  m_EventDriver = driver;
-
   for (std::string& dev : m_vsPendingEventDevices) {
     std::string devFile = getDevice(dev, "event");
     ASSERT(devFile != "");

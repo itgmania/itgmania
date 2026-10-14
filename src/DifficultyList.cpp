@@ -60,7 +60,6 @@ void StepsDisplayList::LoadFromNode(const XNode* pNode) {
   MOVE_COMMAND.Load(m_sName, "MoveCommand");
 
   m_Lines.resize(MAX_METERS);
-  m_CurSong = nullptr;
 
   FOREACH_ENUM(PlayerNumber, pn) {
     const XNode* pChild = pNode->GetChild(ssprintf("CursorP%i", pn + 1));

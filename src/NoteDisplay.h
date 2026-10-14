@@ -109,8 +109,6 @@ struct NoteFieldRenderArgs {
   ReceptorArrowRow* receptor_row;
   GhostArrowRow* ghost_row;
   const NoteData* note_data;
-  float first_beat;
-  float last_beat;
   int first_row;
   int last_row;
   float draw_pixels_before_targets;

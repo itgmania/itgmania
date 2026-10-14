@@ -10,9 +10,7 @@
 
 class Alsa9Buf {
  private:
-  int channels, samplebits;
   unsigned samplerate;
-  int buffersize;
   int64_t last_cursor_pos;
 
   snd_pcm_uframes_t preferred_writeahead, preferred_chunksize;
@@ -31,8 +29,7 @@ class Alsa9Buf {
   static void InitializeErrorHandler();
   static void GetSoundCardDebugInfo();
   Alsa9Buf();
-  std::string Init(
-      int channels, int iWriteahead, int iChunkSize, int iSampleRate);
+  std::string Init(int iWriteahead, int iChunkSize, int iSampleRate);
   ~Alsa9Buf();
 
   int GetNumFramesToFill();

@@ -598,7 +598,6 @@ RageSoundDriver::RageSoundDriver()
     : m_Mutex("RageSoundDriver"), m_SoundListMutex("SoundListMutex") {
   m_bShutdownDecodeThread = false;
   m_iMaxHardwareFrame = 0;
-  m_iVMaxHardwareFrame = 0;
   SetDecodeBufferSize(4096);
   m_DecodeThread.SetName("Decode thread");
 }

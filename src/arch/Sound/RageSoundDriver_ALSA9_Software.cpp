@@ -106,7 +106,7 @@ std::string RageSoundDriver_ALSA9_Software::Init() {
 
   m_pPCM = new Alsa9Buf();
   sError = m_pPCM->Init(
-      channels, g_iMaxWriteahead, g_iMaxWriteahead / num_chunks,
+      g_iMaxWriteahead, g_iMaxWriteahead / num_chunks,
       PREFSMAN->m_iSoundPreferredSampleRate);
   if (sError != "") {
     return sError;

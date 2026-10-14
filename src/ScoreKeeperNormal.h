@@ -37,8 +37,6 @@ class ScoreKeeperNormal : public ScoreKeeper {
   bool m_bIsLastSongInCourse;
   bool m_bIsBeginner;
 
-  int m_iNumNotesHitThisRow;  // Used by Custom Scoring only
-
   ThemeMetric<bool> m_ComboIsPerRow;
   ThemeMetric<bool> m_MissComboIsPerRow;
   ThemeMetric<TapNoteScore> m_MinScoreToContinueCombo;

@@ -17,18 +17,16 @@ const int NUM_USER_GAME_TO_DEVICE_SLOTS = 2;
 extern const std::string DEVICE_INPUT_SEPARATOR;
 
 struct AutoMappingEntry {
-  AutoMappingEntry(int i, DeviceButton db, GameButton gb, bool b)
-      : m_iSlotIndex(i), m_deviceButton(db), m_gb(gb), m_bSecondController(b) {}
+  AutoMappingEntry(int, DeviceButton db, GameButton gb, bool b)
+      : m_deviceButton(db), m_gb(gb), m_bSecondController(b) {}
   AutoMappingEntry()
-      : m_iSlotIndex(-1),
-        m_deviceButton(DeviceButton_Invalid),
+      : m_deviceButton(DeviceButton_Invalid),
         m_gb(GameButton_Invalid),
         m_bSecondController(false) {}
   bool IsEmpty() const {
     return m_deviceButton == DeviceButton_Invalid && m_gb == GameButton_Invalid;
   }
 
-  int m_iSlotIndex;
   DeviceButton m_deviceButton;
   GameButton m_gb;  // GameButton_Invalid means unmap this button
   /* If this is true, this is an auxilliary mapping assigned to the second

@@ -170,7 +170,6 @@ struct garv_state {
   // num_holds_on_curr_row saves us the work of tracking where holds started
   // just to keep a jump of two holds from counting as a hand.
   int num_holds_on_curr_row;
-  int num_notes_hit_on_curr_row;
   // last_tns_on_row and last_time_on_row are used for deciding whether a jump
   // or hand was successfully hit.
   TapNoteScore last_tns_on_row;
@@ -199,7 +198,6 @@ struct garv_state {
         lifts_hit(0),
         num_notes_on_curr_row(0),
         num_holds_on_curr_row(0),
-        num_notes_hit_on_curr_row(0),
         last_tns_on_row(TapNoteScore_Invalid),
         last_time_on_row(-9999),
         worst_tns_on_row(TapNoteScore_Invalid),

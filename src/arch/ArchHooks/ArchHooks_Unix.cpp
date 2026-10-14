@@ -14,7 +14,6 @@
 #include "RageUtil.h"
 #include "archutils/Unix/AssertionHandler.h"
 #include "archutils/Unix/CrashHandler.h"
-#include "archutils/Unix/EmergencyShutdown.h"
 #include "archutils/Unix/GetSysInfo.h"
 #include "archutils/Unix/SignalHandler.h"
 #if defined(LINUX)
@@ -61,8 +60,6 @@ static bool EmergencyShutdown(int signal, siginfo_t* si, const ucontext_t* uc) {
   if (!IsFatalSignal(signal)) {
     return false;
   }
-
-  DoEmergencyShutdown();
 
   /* If we ran the crash handler, then die. */
   kill(getpid(), SIGKILL);

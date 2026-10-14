@@ -175,17 +175,12 @@ struct State {
 /// easier to work with format.
 struct IntermediateNoteData {
   TapNoteType type = TapNoteType_Empty;  // type of the note
-  TapNoteSubType subtype = TapNoteSubType_Invalid;
-  float beat = 0;  // beat on which the note occurs
+  float beat = 0;                        // beat on which the note occurs
   float hold_length =
       0;  // If type is TapNoteType_HoldHead, length of hold, in beats
 
-  bool warped = false;  // Is this note warped?
-  bool fake = false;    // Is this note fake (besides being TapNoteType_Fake)?
-  float second = 0;     // time into the song on which the note occurs
-
-  Foot parity = Foot_None;  // Which foot (and which part of the foot) will most
-                            // likely be used
+  bool fake = false;  // Is this note fake (besides being TapNoteType_Fake)?
+  float second = 0;   // time into the song on which the note occurs
 };
 
 /// @brief A slightly complicated structure to encapsulate all of the data for a

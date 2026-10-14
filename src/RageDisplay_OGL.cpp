@@ -62,9 +62,6 @@ static bool g_bColorIndexTableWorks = true;
 static float g_line_range[2];
 static float g_point_range[2];
 
-/* OpenGL version * 10: */
-static int g_glVersion;
-
 /* GLU version * 10: */
 static int g_gluVersion;
 
@@ -713,9 +710,6 @@ static void CheckReversePackedPixels() {
 }
 
 void SetupExtensions() {
-  const float fGLVersion = StringToFloat((const char*)glGetString(GL_VERSION));
-  g_glVersion = std::lrint(fGLVersion * 10);
-
   const float fGLUVersion =
       StringToFloat((const char*)gluGetString(GLU_VERSION));
   g_gluVersion = std::lrint(fGLUVersion * 10);
