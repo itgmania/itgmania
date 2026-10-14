@@ -270,28 +270,14 @@ void Song::SetSongDirAndGroup(
         sDirectoryParts[sDirectoryParts.size() - 3];  // second from last item
     ASSERT(m_sGroupName != "");
   } else {
-    LOG->Trace("Loading song from profile2.");
-    m_sGroupName = sDir.substr(1, sDir.find('/', 1) - 1);
-  }
-  m_LoadedFromProfile = from_profile;
-}
+    m_sGroupName =
+        PROFILEMAN->GetProfile(from_profile)->GetCustomSongsGroupNamePrefix();
 
-/* If PREFSMAN->m_bFastLoad is true, always load from cache if possible.
- * Don't read the contents of sDir if we can avoid it. That means we can't call
- * HasMusic(), HasBanner() or GetHashForDirectory().
- * If true, check the directory hash and reload the song from scratch if it's
- * changed.
- */
-bool Song::LoadFromSongDir(
-    std::string sDir, bool load_autosave, ProfileSlot from_profile) {
-  ASSERT_M(sDir != "", "Songs can't be loaded from an empty directory!");
-  ASSERT_M(
-      m_vpSteps.empty() && m_UnknownStyleSteps.empty(),
-      "LoadFromSongDir expects an empty Song; call Reset() first.");
-
-  // make sure there is a trailing slash at the end of sDir
-  if (Right(sDir, 1) != "/") {
-    sDir += "/";
+    bool isSubFolder = sDirectoryParts.size() > 6;
+    if (isSubFolder) {
+      std::string subFolderName = sDirectoryParts[sDirectoryParts.size() - 3];
+      m_sGroupName += (" - " + subFolderName);
+    }
   }
 
   SetSongDirAndGroup(sDir, from_profile);

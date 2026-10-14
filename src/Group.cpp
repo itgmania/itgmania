@@ -7,6 +7,8 @@
 
 #include "IniFile.h"
 #include "PrefsManager.h"
+#include "Profile.h"
+#include "ProfileManager.h"
 #include "RageFileManager.h"
 #include "RageLog.h"
 #include "RageUtil.h"
@@ -36,26 +38,43 @@ Group::Group() {
   m_sSeriesBannerPath = "";
 }
 
+static std::string GetInternalGroupName(
+    ProfileSlot prof_slot, std::string group_name) {
+  if (prof_slot == ProfileSlot_Invalid) {
+    return group_name;
+  }
+
+  Profile* prof = PROFILEMAN->GetProfile(prof_slot);
+  // root Songs folder
+  if (group_name == "") {
+    return prof->GetCustomSongsGroupNamePrefix();
+  }
+
+  return prof->GetCustomSongsGroupNamePrefix() + " - " + group_name;
+}
+
 Group::Group(
     const std::string& sDir, const std::string& sGroupDirName,
-    bool bFromProfile) {
-  if (sDir.empty() || sGroupDirName.empty()) {
+    ProfileSlot prof_slot) {
+  /* groupDirName empty for root songs on profile */
+  if (sDir.empty() ||
+      (sGroupDirName.empty() && prof_slot == ProfileSlot_Invalid)) {
     LOG->Warn("Group::Group: Empty directory or group name provided.");
     return;
   }
 
   std::string sPackIniPath;
-  if (bFromProfile) {
+  // songs from profile
+  if (prof_slot != ProfileSlot_Invalid) {
     sPackIniPath = sDir + "/" + INI_FILE;
     m_sPath = sDir;
-    m_sGroupName = sDir.substr(1, sDir.find('/', 1) - 1);
-    m_sDisplayTitle = sGroupDirName;
+    m_sGroupName = GetInternalGroupName(prof_slot, sGroupDirName);
   } else {
     sPackIniPath = sDir + sGroupDirName + "/" + INI_FILE;
     m_sPath = sDir + sGroupDirName;
     m_sGroupName = Basename(sGroupDirName);
-    m_sDisplayTitle = m_sGroupName;
   }
+  m_sDisplayTitle = m_sGroupName;
   m_sSortTitle = m_sGroupName;
   m_sTranslitTitle = m_sGroupName;
   m_sSeries = "";
@@ -113,6 +132,12 @@ Group::Group(
           } else if (key == "TranslitTitle") {
             value = m_sDisplayTitle;
           }
+        }
+
+        if (prof_slot != ProfileSlot_Invalid &&
+            (key == "DisplayTitle" || key == "SortTitle" ||
+             key == "TranslitTitle")) {
+          value = GetInternalGroupName(prof_slot, value);
         }
       }
 
