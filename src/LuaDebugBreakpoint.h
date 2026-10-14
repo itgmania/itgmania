@@ -35,8 +35,6 @@ class Breakpoint {
   BreakpointId GetId() const { return m_id; }
   int GetEventMask() const { return m_eventMask; }
   const std::string& GetFileName() const { return m_fileName; }
-  int GetLineNumber() const { return m_lineNumber; }
-  int GetMaxStackDepth() const { return m_maxStackDepth; }
   const std::string& GetFunctionName() const { return m_functionName; }
   const lua_State* GetThread() const { return m_thread; }
   const std::string& GetReason() const { return m_reason; }

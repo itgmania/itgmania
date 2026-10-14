@@ -102,10 +102,8 @@ class SongManager {
 
   std::string GetSongGroupBannerPath(std::string sSongGroup) const;
   std::string GetSeriesBannerPath(std::string sSeriesName) const;
-  // std::string GetSongGroupBackgroundPath( std::string sSongGroup ) const;
   void GetSongGroupNames(std::vector<std::string>& AddTo) const;
   bool DoesSongGroupExist(std::string sSongGroup) const;
-  bool HasPackIni(const std::string& sSongGroup) const;
   RageColor GetSongGroupColor(const std::string& sSongGroupName) const;
   RageColor GetSongColor(const Song* pSong) const;
 
@@ -140,19 +138,6 @@ class SongManager {
    * @return all of the popular songs. */
   const std::vector<Song*>& GetPopularSongs() const { return m_pPopularSongs; }
 
-  /**
-   * @brief Retrieve all of the songs in a group that have at least one
-   * valid step for the current gametype.
-   * @param sGroupName the name of the group.
-   * @return the songs within the group that have at least one valid Step. */
-  const std::vector<Song*>& GetSongsOfCurrentGame(
-      const std::string& sGroupName) const;
-  /**
-   * @brief Retrieve all of the songs in the game that have at least one
-   * valid step for the current gametype.
-   * @return the songs within the game that have at least one valid Step. */
-  const std::vector<Song*>& GetAllSongsOfCurrentGame() const;
-
   std::map<int, std::vector<Song*>> GetMeterToSongsMap() const {
     return m_mapSongsByDifficulty;
   }
@@ -161,27 +146,17 @@ class SongManager {
     return m_mapPreferredSectionToSongs;
   };
   std::string SongToPreferredSortSectionName(const Song* pSong) const;
-  std::unordered_map<std::string, Group*> GetGroupGroupMap() const {
-    return m_mapNameToGroup;
-  };
   struct Series {
     std::string sName;
     std::unordered_set<Group*> groups;
     std::string sBannerPath;
   };
-  std::map<std::string, Series> GetSeriesGroupMap() const {
-    return m_mapNameToSeries;
-  };
   std::unordered_set<Group*> GetGroupsInSeries(
       const std::string& sSeriesName) const;
   Group* GetGroupFromName(const std::string& sGroupName) const;
   Group* GetGroup(const Song* pSong) const;
-  std::vector<std::string> GetPreferredSortSectionNames() const;
-  std::vector<Song*> GetPreferredSortSongsBySectionName(
-      const std::string& sSectionName) const;
   void GetPreferredSortSongsBySectionName(
       const std::string& sSectionName, std::vector<Song*>& AddTo) const;
-  std::vector<Song*> GetSongsByMeter(int iMeter) const;
   const std::vector<Course*>& GetPopularCourses(CourseType ct) const {
     return m_pPopularCourses[ct];
   }
@@ -294,8 +269,6 @@ class SongManager {
   std::vector<std::string>
       m_sSongGroupBannerPaths;  // each song group may have a banner associated
                                 // with it
-  // vector<std::string>		m_sSongGroupBackgroundPaths; // each
-  // song group may have a background associated with it (very rarely)
 
   std::unordered_map<std::string, Group*>
       m_mapNameToGroup;  // maps a group's name on disk (folder) to a Group

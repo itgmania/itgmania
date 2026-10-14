@@ -157,7 +157,6 @@ class Font {
   const glyph& GetGlyph(wchar_t c) const;
 
   int GetLineWidthInSourcePixels(const std::wstring& szLine) const;
-  int GetLineHeightInSourcePixels(const std::wstring& szLine) const;
   size_t GetGlyphsThatFit(const std::wstring& line, int* width) const;
 
   bool FontCompleteForString(const std::wstring& str) const;

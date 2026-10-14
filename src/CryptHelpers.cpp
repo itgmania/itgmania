@@ -20,23 +20,6 @@ PRNGWrapper::~PRNGWrapper() {
   }
 }
 
-void PRNGWrapper::AddEntropy(const void* pData, int iSize) {
-  int iRet = prng_descriptor[m_iPRNG].add_entropy(
-      (const unsigned char*)pData, iSize, &m_PRNG);
-  ASSERT_M(iRet == CRYPT_OK, error_to_string(iRet));
-
-  iRet = prng_descriptor[m_iPRNG].ready(&m_PRNG);
-  ASSERT_M(iRet == CRYPT_OK, error_to_string(iRet));
-}
-
-void PRNGWrapper::AddRandomEntropy() {
-  unsigned char buf[256];
-  int iRet = rng_get_bytes(buf, sizeof(buf), nullptr);
-  ASSERT(iRet == sizeof(buf));
-
-  AddEntropy(buf, sizeof(buf));
-}
-
 RSAKeyWrapper::RSAKeyWrapper() { memset(&m_Key, 0, sizeof(m_Key)); }
 
 RSAKeyWrapper::~RSAKeyWrapper() { Unload(); }

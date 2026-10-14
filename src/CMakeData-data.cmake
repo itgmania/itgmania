@@ -104,14 +104,16 @@ list(APPEND SM_DATA_NOTELOAD_SRC
             "NotesLoaderDWI.cpp"
             "NotesLoaderSM.cpp"
             "NotesLoaderSMA.cpp"
-            "NotesLoaderSSC.cpp")
+            "NotesLoaderSSC.cpp"
+            "SongCacheBinary.cpp")
 
 list(APPEND SM_DATA_NOTELOAD_HPP
             "NotesLoader.h"
             "NotesLoaderDWI.h"
             "NotesLoaderSM.h"
             "NotesLoaderSMA.h"
-            "NotesLoaderSSC.h")
+            "NotesLoaderSSC.h"
+            "SongCacheBinary.h")
 
 source_group("Data Structures\\\\Notes Loaders"
              FILES
@@ -202,7 +204,6 @@ list(APPEND SM_DATA_REST_SRC
             "CubicSpline.cpp"
             "Command.cpp"
             "CommonMetrics.cpp"
-            "ControllerStateDisplay.cpp"
             "CryptHelpers.cpp"
             "DateTime.cpp"
             "Difficulty.cpp"
@@ -253,7 +254,6 @@ list(APPEND SM_DATA_REST_HPP
             "CodeSet.h"
             "Command.h"
             "CommonMetrics.h"
-            "ControllerStateDisplay.h"
             "CryptHelpers.h"
             "CubicSpline.h"
             "DateTime.h"

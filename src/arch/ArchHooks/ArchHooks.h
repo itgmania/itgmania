@@ -129,9 +129,6 @@ class ArchHooks {
   void RegisterWithLua();
 
  private:
-  /* This are helpers for GetSystemTimeInMicroseconds on systems with a timer
-   * that may loop or move backwards. */
-  static int64_t FixupTimeIfLooped(int64_t usecs);
   static int64_t FixupTimeIfBackwards(int64_t usecs);
 
   static bool g_bQuitting;

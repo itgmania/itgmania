@@ -18,8 +18,6 @@
 #include "Trail.h"
 #include "global.h"
 
-const int MAX_METERS_TO_SHOW = 50;
-
 REGISTER_ACTOR_CLASS(WorkoutGraph);
 
 WorkoutGraph::WorkoutGraph() { m_iSongsChoppedOffAtBeginning = 0; }

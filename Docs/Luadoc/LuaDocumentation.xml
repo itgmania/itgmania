@@ -2476,11 +2476,11 @@ Def.BitmapText{
 		Sets the values of the ComboGraph using the specified StageStats and PlayerStageStats.
 	</Function>
 </Class>
-<Class name='ControllerStateDisplay' grouping='Actor'>
-	<Function name='LoadGameController' return='void' arguments='string sType, GameController gc'>
+<Class name='ControllerStateDisplay' grouping='Actor' removed='ITGmania 1.4.0'>
+	<Function name='LoadGameController' return='void' arguments='string sType, GameController gc' removed='ITGmania 1.4.0'>
 		Loads the ControllerStateDisplay from the specified GameController.
 	</Function>
-	<Function name='LoadMultiPlayer' return='void' arguments='string sType, MultiPlayer mp'>
+	<Function name='LoadMultiPlayer' return='void' arguments='string sType, MultiPlayer mp' removed='ITGmania 1.4.0'>
 		Loads the ControllerStateDisplay from the specified MultiPlayer.
 	</Function>
 </Class>

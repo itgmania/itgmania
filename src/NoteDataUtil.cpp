@@ -1220,21 +1220,6 @@ void NoteDataUtil::RemoveAllButOneTap(NoteData& inout, int row) {
   inout.RevalidateATIs(std::vector<int>(), false);
 }
 
-void NoteDataUtil::RemoveAllButPlayer(NoteData& inout, PlayerNumber pn) {
-  for (int track = 0; track < inout.GetNumTracks(); ++track) {
-    NoteData::iterator i = inout.begin(track);
-
-    while (i != inout.end(track)) {
-      if (i->second.pn != pn && i->second.pn != PLAYER_INVALID) {
-        i = inout.RemoveTapNote(track, i);
-      } else {
-        ++i;
-      }
-    }
-  }
-  inout.RevalidateATIs(std::vector<int>(), false);
-}
-
 // TODO: Perform appropriate matrix calculations for everything instead.
 static void GetTrackMapping(
     StepsType st, NoteDataUtil::TrackMapping tt, int NumTracks,
@@ -2164,72 +2149,6 @@ void NoteDataUtil::InsertIntelligentTaps(
   }
   inout.RevalidateATIs(std::vector<int>(), false);
 }
-#if 0
-class TrackIterator
-{
-public:
-	TrackIterator();
-
-	/* If called, iterate only over [iStart,iEnd]. */
-	void SetRange( int iStart, int iEnd )
-	{
-	}
-
-	/* If called, pay attention to iTrack only. */
-	void SetTrack( iTrack );
-
-	/* Extend iStart and iEnd to include hold notes overlapping the boundaries.  Call SetRange()
-	 * and SetTrack() first. */
-	void HoldInclusive();
-
-	/* Reduce iStart and iEnd to exclude hold notes overlapping the boundaries.  Call SetRange()
-	 * and SetTrack() first. */
-	void HoldExclusive();
-
-	/* If called, keep the iterator around.  This results in much faster iteration.  If used,
-	 * ensure that the current row will always remain valid.  SetTrack() must be called first. */
-	void Fast();
-
-	/* Retrieve an iterator for the current row.  SetTrack() must be called first (but Fast()
-	 * does not). */
-	TapNote::iterator Get();
-
-	int GetRow() const { return m_iCurrentRow; }
-	bool Prev();
-	bool Next();
-
-private:
-	int m_iStart, m_iEnd;
-	int m_iTrack;
-
-	bool m_bFast;
-
-	int m_iCurrentRow;
-
-	NoteData::iterator m_Iterator;
-
-	/* m_bFast only: */
-	NoteData::iterator m_Begin, m_End;
-};
-
-bool TrackIterator::Next()
-{
-	if( m_bFast )
-	{
-		if( m_Iterator == XXX )
-			;
-
-	}
-
-}
-
-TrackIterator::TrackIterator()
-{
-	m_iStart = 0;
-	m_iEnd = MAX_NOTE_ROW;
-	m_iTrack = -1;
-}
-#endif
 
 void NoteDataUtil::AddMines(NoteData& inout, int iStartIndex, int iEndIndex) {
   // Change whole rows at a time to be tap notes.  Otherwise, it causes
@@ -2854,28 +2773,6 @@ void NoteDataUtil::TransformNoteData(
   nd.RevalidateATIs(std::vector<int>(), false);
 }
 
-void NoteDataUtil::AddTapAttacks(NoteData& nd, Song* pSong) {
-  // throw an attack in every 30 seconds
-
-  const char* szAttacks[3] = {
-      "2x",
-      "drunk",
-      "dizzy",
-  };
-
-  for (float sec = 15; sec < pSong->m_fMusicLengthSeconds; sec += 30) {
-    float fBeat = pSong->m_SongTiming.GetBeatFromElapsedTime(sec);
-    int iBeat = (int)fBeat;
-    int iTrack =
-        iBeat % nd.GetNumTracks();  // deterministically calculates track
-    TapNote tn(
-        TapNoteType_Attack, TapNoteSubType_Invalid, TapNoteSource_Original,
-        szAttacks[RandomInt(ARRAYLEN(szAttacks))], 15.0f, -1);
-    nd.SetTapNote(iTrack, BeatToNoteRow(fBeat), tn);
-  }
-  nd.RevalidateATIs(std::vector<int>(), false);
-}
-
 void NoteDataUtil::Scale(NoteData& nd, float fScale) {
   ASSERT(fScale > 0);
 
@@ -3000,30 +2897,6 @@ int NoteDataUtil::GetMaxNonEmptyTrack(const NoteData& in) {
     }
   }
   return -1;
-}
-
-bool NoteDataUtil::AnyTapsAndHoldsInTrackRange(
-    const NoteData& in, int iTrack, int iStart, int iEnd) {
-  if (iStart >= iEnd) {
-    return false;
-  }
-
-  // for each index we crossed since the last update:
-  FOREACH_NONEMPTY_ROW_IN_TRACK_RANGE(in, iTrack, r, iStart, iEnd) {
-    switch (in.GetTapNote(iTrack, r).type) {
-      case TapNoteType_Empty:
-      case TapNoteType_Mine:
-        continue;
-      default:
-        return true;
-    }
-  }
-
-  if (in.IsHoldNoteAtRow(iTrack, iEnd)) {
-    return true;
-  }
-
-  return false;
 }
 
 /* Find the next row that either starts a TapNote, or ends a previous one. */

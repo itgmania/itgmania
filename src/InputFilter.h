@@ -82,7 +82,6 @@ enum PadSensor {
 struct PadSensorState {
  private:
   unsigned int currentValue[NUM_PadPanel][NUM_PadSensor] = {};
-  unsigned int threshold[NUM_PadPanel][NUM_PadSensor] = {};
   unsigned int min = 0;
   unsigned int max = 100;
 
@@ -104,28 +103,7 @@ struct PadSensorState {
     Set(panel, sensor, isPressed ? max : min);
   }
 
-  void SetMin(unsigned int value) { min = std::min(value, max); }
   void SetMax(unsigned int value) { max = std::max(value, min); }
-
-  void SetMinMax(unsigned int newMin, unsigned int newMax) {
-    min = std::min(newMin, newMax);
-    max = std::max(newMin, newMax);
-  }
-
-  unsigned int GetMax() { return max; }
-  unsigned int GetMin() { return min; }
-
-  void SetThreshold(size_t panel, size_t sensor, unsigned int value) {
-    threshold[panel][sensor] = std::clamp(value, min, max);
-  }
-
-  unsigned int GetThreshold(size_t panel, size_t sensor) const {
-    return threshold[panel][sensor];
-  }
-
-  bool isAboveThreshold(size_t panel, size_t sensor) const {
-    return currentValue[panel][sensor] >= threshold[panel][sensor];
-  }
 
   void Clear() { std::memset(currentValue, 0, sizeof(currentValue)); }
 };
@@ -135,8 +113,6 @@ struct ButtonState;
 class InputFilter {
  public:
   void ButtonPressed(const DeviceInput& di);
-  void SetButtonComment(
-      const DeviceInput& di, const std::string& sComment = "");
   void ResetDevice(InputDevice dev);
 
   InputFilter();
@@ -178,12 +154,6 @@ class InputFilter {
     }
     return nullptr;
   }
-
-  bool setFullSensorStateMax(PlayerNumber pn, unsigned int max);
-
-  bool setFullSensorState(
-      PlayerNumber pn, PadPanel panel, PadSensor sensor,
-      unsigned int intensity);
 
   bool setFullSensorStateBinary(
       PlayerNumber pn, PadPanel panel, PadSensor sensor, bool isPressed);

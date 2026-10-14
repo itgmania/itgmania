@@ -98,16 +98,6 @@ XNode* XNode::GetChild(const std::string& sName) {
   return nullptr;
 }
 
-bool XNode::PushChildValue(lua_State* L, const std::string& sName) const {
-  const XNode* pChild = GetChild(sName);
-  if (pChild == nullptr) {
-    lua_pushnil(L);
-    return false;
-  }
-  pChild->GetAttr(XNode::TEXT_ATTRIBUTE)->PushValue(L);
-  return true;
-}
-
 const XNode* XNode::GetChild(const std::string& sName) const {
   std::multimap<std::string, XNode*>::const_iterator by_name =
       m_children_by_name.lower_bound(sName);
@@ -156,18 +146,6 @@ void XNode::RemoveChildFromByName(XNode* node) {
 void XNode::RenameChildInByName(XNode* node) {
   RemoveChildFromByName(node);
   m_children_by_name.insert(std::make_pair(node->m_sName, node));
-}
-
-// detach attribute
-bool XNode::RemoveAttr(const std::string& sName) {
-  XAttrs::iterator it = m_attrs.find(sName);
-  if (it == m_attrs.end()) {
-    return false;
-  }
-
-  delete it->second;
-  m_attrs.erase(it);
-  return true;
 }
 
 /* If bOverwrite is true and a node already exists with that name, the old value

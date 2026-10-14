@@ -18,7 +18,6 @@ class Character {
 
   bool Load(std::string sCharDir);  // return true if successful
 
-  std::string GetTakingABreakPath() const;
   std::string GetCardPath() const { return m_sCardPath; }
   std::string GetIconPath() const { return m_sIconPath; }
 
@@ -28,8 +27,6 @@ class Character {
   std::string GetDanceAnimationPath() const;
   std::string GetSongSelectIconPath() const;
   std::string GetStageIconPath() const;
-  bool Has2DElems();
-
   bool IsDefaultCharacter() const {
     return CompareNoCase(m_sCharacterID, "default") == 0;
   }

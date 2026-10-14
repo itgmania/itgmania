@@ -53,8 +53,6 @@ class IniFile : public XNode {
   }
 
   bool DeleteKey(const std::string& keyname);
-  bool DeleteValue(const std::string& keyname, const std::string& valuename);
-
   /**
    * @brief Rename a key.
    *

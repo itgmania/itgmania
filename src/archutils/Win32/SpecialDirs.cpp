@@ -21,18 +21,6 @@ std::string SpecialDirs::GetAppDataDir() {
   return GetSpecialFolderPath(CSIDL_APPDATA);
 }
 
-std::string SpecialDirs::GetLocalAppDataDir() {
-  return GetSpecialFolderPath(CSIDL_LOCAL_APPDATA);
-}
-
-std::string SpecialDirs::GetCommonAppDataDir() {
-  return GetSpecialFolderPath(CSIDL_COMMON_APPDATA);
-}
-
-std::string SpecialDirs::GetPicturesDir() {
-  return GetSpecialFolderPath(CSIDL_MYPICTURES);
-}
-
 std::string SpecialDirs::GetDesktopDir() {
   return GetSpecialFolderPath(CSIDL_DESKTOP);
 }

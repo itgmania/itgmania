@@ -165,13 +165,6 @@ void ActorFrame::RemoveChild(Actor* pActor) {
   }
 }
 
-void ActorFrame::TransferChildren(ActorFrame* pTo) {
-  std::for_each(m_SubActors.begin(), m_SubActors.end(), [&](Actor* a) {
-    pTo->AddChild(a);
-  });
-  RemoveAllChildren();
-}
-
 Actor* ActorFrame::GetChild(const std::string& sName) {
   for (Actor* a : m_SubActors) {
     if (a->GetName() == sName || a->IsAlias(sName)) {
@@ -192,17 +185,6 @@ void ActorFrame::MoveToTail(Actor* pActor) {
 
   m_SubActors.erase(iter);
   m_SubActors.push_back(pActor);
-}
-
-void ActorFrame::MoveToHead(Actor* pActor) {
-  std::vector<Actor*>::iterator iter =
-      find(m_SubActors.begin(), m_SubActors.end(), pActor);
-  if (iter == m_SubActors.end()) {  // didn't find
-    FAIL_M("Nonexistent actor");
-  }
-
-  m_SubActors.erase(iter);
-  m_SubActors.insert(m_SubActors.begin(), pActor);
 }
 
 void ActorFrame::BeginDraw() {
@@ -673,8 +655,6 @@ class LunaActorFrame : public Luna<ActorFrame> {
     COMMON_RETURN_SELF;
   }
 
-  // static int CustomLighting( T* p, lua_State *L )			{
-  // p->SetCustomLighting(BArg(1)); COMMON_RETURN_SELF; }
   static int SetAmbientLightColor(T* p, lua_State* L) {
     RageColor c;
     c.FromStackCompat(L, 1);

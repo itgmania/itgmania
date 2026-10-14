@@ -21,20 +21,10 @@ enum SSCLoadingStates {
   NUM_SSCLoadingStates /**< The number of states used. */
 };
 
-/** @brief The version where fakes started to be used as a radar category. */
-const float VERSION_RADAR_FAKE = 0.53f;
-/** @brief The version where WarpSegments started to be utilized. */
-const float VERSION_WARP_SEGMENT = 0.56f;
 /** @brief The version that formally introduced Split Timing. */
 const float VERSION_SPLIT_TIMING = 0.7f;
-/** @brief The version that moved the step's Offset higher up. */
-const float VERSION_OFFSET_BEFORE_ATTACK = 0.72f;
 /** @brief The version that introduced the Chart Name tag. */
 const float VERSION_CHART_NAME_TAG = 0.74f;
-/** @brief The version that introduced the cache switch tag. */
-const float VERSION_CACHE_SWITCH_TAG = 0.77f;
-/** @brief The version where note count was added as a radar category. */
-const float VERSION_RADAR_NOTECOUNT = 0.83f;
 
 /**
  * @brief The SSCLoader handles all of the parsing needed for .ssc files.
@@ -46,12 +36,9 @@ struct SSCLoader : public SMLoader {
    * @brief Attempt to load the specified ssc file.
    * @param sPath a const reference to the path on the hard drive to check.
    * @param out a reference to the Song that will retrieve the song information.
-   * @param bFromCache a check to see if we are getting certain information from
-   * the cache file.
    * @return its success or failure.
    */
-  virtual bool LoadFromSimfile(
-      const std::string& sPath, Song& out, bool bFromCache = false);
+  virtual bool LoadFromSimfile(const std::string& sPath, Song& out);
 
   /**
    * @brief Attempt to load an edit from the hard drive.
@@ -80,11 +67,10 @@ struct SSCLoader : public SMLoader {
 
   /**
    * @brief Retrieve the specific NoteData from the file.
-   * @param cachePath the path to the cache file.
+   * @param path the path to the simfile.
    * @param out the Steps to receive just the particular notedata.
    * @return true if successful, false otherwise. */
-  virtual bool LoadNoteDataFromSimfile(
-      const std::string& cachePath, Steps& out);
+  virtual bool LoadNoteDataFromSimfile(const std::string& path, Steps& out);
 
   void ProcessBPMs(TimingData&, const std::string);
   void ProcessStops(TimingData&, const std::string);

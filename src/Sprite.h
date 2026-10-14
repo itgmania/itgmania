@@ -74,7 +74,6 @@ class Sprite : public Actor {
   void SetCustomTextureRect(const RectF& new_texcoord_frect);
   void SetCustomTextureCoords(float fTexCoords[8]);
   void SetCustomImageRect(RectF rectImageCoords);  // in image pixel space
-  void SetCustomImageCoords(float fImageCoords[8]);
   void SetCustomPosCoords(float fPosCoords[8]);
   const RectF* GetCurrentTextureCoordRect() const;
   const RectF* GetTextureCoordRectForState(int iState) const;

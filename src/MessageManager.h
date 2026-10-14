@@ -103,10 +103,7 @@ struct Message {
   bool IsBroadcast() const { return m_bBroadcast; }
   void SetBroadcast(bool b) { m_bBroadcast = b; }
 
-  void PushParamTable(lua_State* L);
   const LuaReference& GetParamTable() const;
-  void SetParamTable(const LuaReference& params);
-
   void GetParamFromStack(lua_State* L, const std::string& sName) const;
   void SetParamFromStack(lua_State* L, const std::string& sName);
 
@@ -160,7 +157,6 @@ class IMessageSubscriber {
  public:
   virtual ~IMessageSubscriber() {}
   virtual void HandleMessage(const Message& msg) = 0;
-  void ClearMessages(const std::string sMessage = "");
 
  private:
   friend class MessageManager;

@@ -707,9 +707,9 @@
 			<Function name='Load'/>
 			<Function name='Set'/>
 		</Class>
-		<Class base='ActorFrame' name='ControllerStateDisplay'>
-			<Function name='LoadGameController'/>
-			<Function name='LoadMultiPlayer'/>
+		<Class base='ActorFrame' name='ControllerStateDisplay' removed='ITGmania 1.4.0'>
+			<Function name='LoadGameController' removed='ITGmania 1.4.0'/>
+			<Function name='LoadMultiPlayer' removed='ITGmania 1.4.0'/>
 		</Class>
 		<Class name='Course'>
 			<Function name='AllSongsAreFixed'/>

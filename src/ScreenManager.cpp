@@ -643,8 +643,6 @@ void ScreenManager::PrepareScreen(const std::string& sScreenName) {
           FONT->PruneFonts();
   }
   */
-
-  // TEXTUREMAN->DiagnosticOutput();
 }
 
 void ScreenManager::GroupScreen(const std::string& sScreenName) {

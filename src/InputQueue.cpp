@@ -40,33 +40,6 @@ void InputQueue::RememberInput(const InputEventPlus& iep) {
   m_aQueue[c].push_back(iep);
 }
 
-bool InputQueue::WasPressedRecently(
-    GameController c, const GameButton button,
-    const RageTimer& OldestTimeAllowed, InputEventPlus* pIEP) {
-  for (int queue_index = m_aQueue[c].size() - 1; queue_index >= 0;
-       queue_index--)  // iterate newest to oldest
-  {
-    const InputEventPlus& iep = m_aQueue[c][queue_index];
-    if (iep.DeviceI.ts <
-        OldestTimeAllowed) {  // buttons are too old.  Stop searching because
-                              // we're not going to find a match
-      return false;
-    }
-
-    if (iep.GameI.button != button) {
-      continue;
-    }
-
-    if (pIEP != nullptr) {
-      *pIEP = iep;
-    }
-
-    return true;
-  }
-
-  return false;  // didn't find the button
-}
-
 void InputQueue::ClearQueue(GameController c) { m_aQueue[c].clear(); }
 
 static const float g_fSimultaneousThreshold = 0.05f;

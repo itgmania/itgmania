@@ -109,7 +109,6 @@ class PlayerStageStats {
   void SetLifeRecordAt(float fLife, float fStepsSecond);
   void GetLifeRecord(
       float* fLifeOut, int iNumSamples, float fStepsEndSecond) const;
-  float GetLifeRecordAt(float fStepsSecond) const;
   float GetLifeRecordLerpAt(float fStepsSecond) const;
   float GetCurrentLife() const;
 
@@ -155,7 +154,6 @@ class PlayerStageStats {
   TapNoteScore GetBestFullComboTapNoteScore() const;
   bool SingleDigitsOfScore(TapNoteScore tnsAllGreaterOrEqual) const;
   bool OneOfScore(TapNoteScore tnsAllGreaterOrEqual) const;
-  int GetTotalTaps() const;
   float GetPercentageOfTaps(TapNoteScore tns) const;
   void UpdateComboList(float fSecond, bool rollover);
   Combo_t GetMaxCombo() const;

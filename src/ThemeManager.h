@@ -54,12 +54,9 @@ class ThemeManager {
   std::string GetCurThemeDir() const {
     return GetThemeDirFromName(m_sCurThemeName);
   };
-  std::string GetNextTheme();
   std::string GetNextSelectableTheme();
   void ReloadMetrics();
   void ReloadSubscribers();
-  void ClearSubscribers();
-  void GetOptionNames(std::vector<std::string>& AddTo);
 
   static void EvaluateString(std::string& sText);
 
@@ -172,7 +169,6 @@ class ThemeManager {
       PathInfo& out, const std::string& sThemeName, ElementCategory category,
       const std::string& sMetricsGroup, const std::string& sFile);
   static std::string GetThemeDirFromName(const std::string& sThemeName);
-  std::string GetElementDir(const std::string& sThemeName);
   static std::string GetMetricsIniPath(const std::string& sThemeName);
   static void GetLanguagesForTheme(
       const std::string& sThemeName, std::vector<std::string>& asLanguagesOut);

@@ -42,8 +42,6 @@ void SortByMostRecentlyPlayedForMachine(std::vector<Course*>& vpCoursesInOut);
 
 void MoveRandomToEnd(std::vector<Course*>& vpCoursesInOut);
 
-void MakeDefaultEditCourseEntry(CourseEntry& out);
-
 void AutogenEndlessFromGroup(
     const std::string& sGroupName, Difficulty dc, Course& out);
 void AutogenNonstopFromGroup(
@@ -71,9 +69,6 @@ bool ValidateEditCourseName(const std::string& sAnswer, std::string& sErrorOut);
 void GetAllEditCourses(std::vector<Course*>& vpCoursesOut);
 bool Save(Course* pCourse);
 bool RenameAndSave(Course* pCourse, std::string sName);
-
-bool ValidateEditCourseNametName(
-    const std::string& sAnswer, std::string& sErrorOut);
 
 extern int MAX_NAME_LENGTH;
 extern int MAX_PER_PROFILE;

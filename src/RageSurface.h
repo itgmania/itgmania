@@ -31,7 +31,6 @@ struct RageSurfacePalette {
 
   /* Find the exact color; returns -1 if not found. */
   int32_t FindColor(const RageSurfaceColor& color) const;
-  int32_t FindClosestColor(const RageSurfaceColor& color) const;
 };
 
 struct RageSurfaceFormat {
@@ -54,9 +53,6 @@ struct RageSurfaceFormat {
    * decodepixel() results.  If the image is paletted and the color isn't found,
    * val is undefined and false is returned. */
   bool MapRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint32_t& val) const;
-
-  /* MapRGBA, but also do a nearest-match on palette colors. */
-  uint32_t MapNearestRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) const;
 
   bool operator==(const RageSurfaceFormat& rhs) const;
 

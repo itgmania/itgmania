@@ -268,8 +268,7 @@ Actor& Actor::operator=(Actor other) {
   ASSERT(other.m_pTempState == nullptr);
   m_pTempState = nullptr;
 
-  using std::swap;
-#define SWAP(x) swap(x, other.x)
+#define SWAP(x) std::swap(x, other.x)
   SWAP(m_sName);
   SWAP(alias_);
   SWAP(m_pParent);

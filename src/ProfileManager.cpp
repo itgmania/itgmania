@@ -55,7 +55,6 @@ Preference<bool> ProfileManager::m_bProfileCourseEdits(
 Preference1D<std::string> ProfileManager::m_sDefaultLocalProfileID(
     DefaultLocalProfileIDInit, NUM_PLAYERS);
 
-const std::string NEW_MEM_CARD_NAME = "";
 const std::string USER_PROFILES_DIR = "/Save/LocalProfiles/";
 const std::string MACHINE_PROFILE_DIR = "/Save/MachineProfile/";
 const std::string LAST_GOOD_SUBDIR = "LastGood/";
@@ -826,18 +825,6 @@ const std::string& ProfileManager::GetProfileDir(ProfileSlot slot) const {
       return m_sProfileDir[slot];
     case ProfileSlot_Machine:
       return MACHINE_PROFILE_DIR;
-    default:
-      FAIL_M("Invalid profile slot chosen: unable to get the directory!");
-  }
-}
-
-std::string ProfileManager::GetProfileDirImportedFrom(ProfileSlot slot) const {
-  switch (slot) {
-    case ProfileSlot_Player1:
-    case ProfileSlot_Player2:
-      return m_sProfileDirImportedFrom[slot];
-    case ProfileSlot_Machine:
-      return std::string();
     default:
       FAIL_M("Invalid profile slot chosen: unable to get the directory!");
   }

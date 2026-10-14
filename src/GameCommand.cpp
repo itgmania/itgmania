@@ -85,9 +85,6 @@ void GameCommand::Init() {
   m_fMusicFadeOutSeconds = -1.0f;
 }
 
-class SongOptions;
-bool CompareSongOptions(const SongOptions& so1, const SongOptions& so2);
-
 bool GameCommand::DescribesCurrentModeForAllPlayers() const {
   FOREACH_HumanPlayer(pn) if (!DescribesCurrentMode(pn)) return false;
 

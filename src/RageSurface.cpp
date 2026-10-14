@@ -19,28 +19,6 @@ int32_t RageSurfacePalette::FindColor(const RageSurfaceColor& color) const {
   return -1;
 }
 
-/* XXX: untested */
-int32_t RageSurfacePalette::FindClosestColor(
-    const RageSurfaceColor& color) const {
-  int iBest = -1;
-  int iBestDist = INT_MAX;
-  for (int i = 0; i < ncolors; ++i) {
-    if (colors[i] == color) {
-      return i;
-    }
-
-    int iDist =
-        std::abs(colors[i].r - color.r) + std::abs(colors[i].g - color.g) +
-        std::abs(colors[i].b - color.b) + std::abs(colors[i].a - color.a);
-    if (iDist < iBestDist) {
-      iBestDist = iDist;
-      iBest = i;
-    }
-  }
-
-  return iBest;
-}
-
 RageSurfaceFormat::RageSurfaceFormat()
     : Mask(),
       Shift(),

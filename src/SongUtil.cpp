@@ -259,43 +259,10 @@ Steps* SongUtil::GetStepsByDifficulty(
   return nullptr;
 }
 
-Steps* SongUtil::GetStepsByMeter(
-    const Song* pSong, StepsType st, int iMeterLow, int iMeterHigh) {
-  const std::vector<Steps*>& vpSteps = (st == StepsType_Invalid)
-                                           ? pSong->GetAllSteps()
-                                           : pSong->GetStepsByStepsType(st);
-  for (unsigned i = 0; i < vpSteps.size(); i++)  // for each of the Song's Steps
-  {
-    Steps* pSteps = vpSteps[i];
-
-    if (iMeterLow > pSteps->GetMeter()) {
-      continue;
-    }
-    if (iMeterHigh < pSteps->GetMeter()) {
-      continue;
-    }
-
-    return pSteps;
-  }
-
-  return nullptr;
-}
-
 Steps* SongUtil::GetStepsByDescription(
     const Song* pSong, StepsType st, std::string sDescription) {
   std::vector<Steps*> vNotes;
   GetSteps(pSong, vNotes, st, Difficulty_Invalid, -1, -1, sDescription, "");
-  if (vNotes.size() == 0) {
-    return nullptr;
-  } else {
-    return vNotes[0];
-  }
-}
-
-Steps* SongUtil::GetStepsByCredit(
-    const Song* pSong, StepsType st, std::string sCredit) {
-  std::vector<Steps*> vNotes;
-  GetSteps(pSong, vNotes, st, Difficulty_Invalid, -1, -1, "", sCredit);
   if (vNotes.size() == 0) {
     return nullptr;
   } else {
@@ -1269,18 +1236,6 @@ bool SongUtil::ValidateCurrentStepsMusic(
     error = ssprintf(MUSIC_DOES_NOT_EXIST.GetValue().c_str(), answer.c_str());
   }
   return valid;
-}
-
-void SongUtil::GetAllSongGenres(std::vector<std::string>& vsOut) {
-  std::set<std::string> genres;
-  for (const Song* song : SONGMAN->GetAllSongs()) {
-    if (!song->m_sGenre.empty()) {
-      genres.insert(song->m_sGenre);
-    }
-  }
-  for (const std::string& genre : genres) {
-    vsOut.push_back(genre);
-  }
 }
 
 void SongUtil::FilterSongs(

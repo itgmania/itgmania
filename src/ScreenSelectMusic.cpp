@@ -1761,8 +1761,6 @@ void ScreenSelectMusic::AfterMusicChange() {
 
   m_Banner.SetMovingFast(!!m_MusicWheel.IsMoving());
 
-  std::vector<std::string> m_Artists, m_AltArtists;
-
   if (SAMPLE_MUSIC_PREVIEW_MODE != SampleMusicPreviewMode_LastSong) {
     m_sSampleMusicToPlay = "";
   }

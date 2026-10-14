@@ -51,8 +51,6 @@ class RageSoundReader_ThreadedBuffer : public RageSoundReader_Filter {
   int FillBlock();
   int GetFilledFrames() const;
   int GetEmptyFrames() const;
-  void WaitUntilFrames(int iWaitUntilFrames);
-
   int m_iSampleRate;
   int m_iChannels;
 

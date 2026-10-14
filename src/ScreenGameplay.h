@@ -53,8 +53,6 @@ class PlayerInfo {
   void Load(
       PlayerNumber pn, MultiPlayer mp, bool bShowNoteField,
       int iAddToDifficulty);
-  void LoadDummyP1(int iDummyIndex, int iAddToDifficulty);
-
   /** @brief The player has lost all of their lives: show the special game over.
    */
   void ShowOniGameOver();
@@ -217,7 +215,6 @@ class ScreenGameplay : public ScreenWithMenuElements {
   virtual bool UseSongBackgroundAndForeground() const { return true; }
 
   ThemeMetric<std::string> PLAYER_TYPE;
-  ThemeMetric<std::string> SCORE_DISPLAY_TYPE;
   ThemeMetric<apActorCommands> PLAYER_INIT_COMMAND;
   LocalizedString GIVE_UP_START_TEXT;
   LocalizedString GIVE_UP_BACK_TEXT;
@@ -262,13 +259,10 @@ class ScreenGameplay : public ScreenWithMenuElements {
 
   void PlayTicks();
   void UpdateSongPosition(float fDeltaTime);
-  void UpdateLyrics(float fDeltaTime);
   void SongFinished();
   virtual void SaveStats();
   virtual void StageFinished(bool bBackedOut);
   void SaveReplay();
-  // bool LoadReplay();
-  bool AllAreFailing();
   bool OneFailed();
 
   virtual void InitSongQueues();

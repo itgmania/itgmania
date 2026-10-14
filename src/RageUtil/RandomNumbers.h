@@ -25,12 +25,6 @@ inline float RandomFloat(float fLow, float fHigh) {
   return dist(g_RandomNumberGenerator);
 }
 
-/**
- * @brief Generate a random float between 0 inclusive and 1 exclusive.
- * @return the random float.
- */
-inline float RandomFloat() { return RandomFloat(0, 1); }
-
 // Returns an integer between nLow and nHigh inclusive
 inline int RandomInt(int nLow, int nHigh) {
   std::uniform_int_distribution<> dist(nLow, nHigh);

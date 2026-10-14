@@ -72,11 +72,6 @@ LuaXType(NoteColumnSplineMode);
 
 static bool IsVectorZero(const RageVector2& v) { return v.x == 0 && v.y == 0; }
 
-// Don't require that NoteSkins have more than 8 colors.  Using 9 colors to
-// display 192nd notes would double the number of texture memory needed for many
-// NoteSkin graphics versus just having 8 colors.
-static const NoteType MAX_DISPLAY_NOTE_TYPE = (NoteType)7;
-
 // cache
 struct NoteMetricCache_t {
   bool m_bDrawHoldHeadForTapsOnSameRow;
@@ -103,7 +98,7 @@ struct NoteMetricCache_t {
   bool m_bHoldActiveIsAddLayer;
 
   void Load(const std::string& sButton);
-}* NoteMetricCache;
+};
 
 void NoteMetricCache_t::Load(const std::string& sButton) {
   m_bDrawHoldHeadForTapsOnSameRow =
@@ -1108,7 +1103,12 @@ void NoteDisplay::DrawHoldBodyInternal(
   part_args.top_beat = top_beat;
   part_args.bottom_beat = top_beat;
   part_args.wrapping = false;
+  // Negative scrolls can move the opposite end past this cap. Clip it just
+  // like the bottom cap below, so reverse holds don't leave a floating tail.
+  const float original_y_end_pos = part_args.y_end_pos;
+  part_args.y_end_pos = std::fmin(part_args.y_end_pos, y_tail);
   DrawHoldPart(sprite_top, field_args, column_args, part_args, glow, hpt_top);
+  part_args.y_end_pos = original_y_end_pos;
   // Draw the body
   part_args.y_top = y_head;
   part_args.y_bottom = y_tail;

@@ -21,9 +21,6 @@ const int MIN_METER = 1;
  */
 const int MAX_METER = 35;
 
-/** @brief The maximum number of credits for coin mode. */
-const int MAX_NUM_CREDITS = 20;
-
 /**
  * @brief The various radar categories available.
  *
@@ -187,8 +184,6 @@ enum SortOrder {
   NUM_SortOrder,
   SortOrder_Invalid
 };
-/** @brief Only allow certain sort modes to be selectable. */
-const SortOrder MAX_SELECTABLE_SORT = (SortOrder)(SORT_ROULETTE - 1);
 /**
  * @brief Turn the sort order into a proper string.
  * @param so the sort order.
@@ -276,12 +271,6 @@ const std::string& HoldNoteScoreToString(HoldNoteScore hns);
  * @return the localized string version of the hold note score.
  */
 const std::string& HoldNoteScoreToLocalizedString(HoldNoteScore hns);
-/**
- * @brief Turn the string into the proper hold note score.
- * @param str the string.
- * @return the hold note score based on the string.
- */
-HoldNoteScore StringToHoldNoteScore(const std::string& str);
 LuaDeclareType(HoldNoteScore);
 
 /** @brief The list of timing windows to deal with when playing. */
@@ -427,7 +416,6 @@ enum AttackLevel {
   NUM_ATTACK_LEVELS
 };
 const int NUM_ATTACKS_PER_LEVEL = 3;
-const int ITEM_NONE = -1;
 
 // Coin stuff
 /** @brief The different coin modes to determine how one can play. */

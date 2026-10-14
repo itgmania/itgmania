@@ -16,15 +16,6 @@ void StyleID::FromStyle(const Style* p) {
   }
 }
 
-const Style* StyleID::ToStyle() const {
-  const Game* pGame = GAMEMAN->StringToGame(sGame);
-  if (pGame == nullptr) {
-    return nullptr;
-  }
-
-  return GAMEMAN->GameAndStringToStyle(pGame, sStyle);
-}
-
 XNode* StyleID::CreateNode() const {
   XNode* pNode = new XNode("Style");
 

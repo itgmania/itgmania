@@ -1303,10 +1303,6 @@ int GameState::GetSmallestNumStagesLeftForAnyHumanPlayer() const {
   return iSmallest;
 }
 
-bool GameState::IsFinalStageForAnyHumanPlayer() const {
-  return GetSmallestNumStagesLeftForAnyHumanPlayer() == 1;
-}
-
 bool GameState::IsFinalStageForEveryHumanPlayer() const {
   int song_cost = 1;
   if (m_pCurSong != nullptr) {
@@ -1684,11 +1680,6 @@ PlayerNumber GameState::GetFirstHumanPlayer() const {
   return PLAYER_INVALID;
 }
 
-PlayerNumber GameState::GetFirstDisabledPlayer() const {
-  FOREACH_PlayerNumber(pn) if (!IsPlayerEnabled(pn)) return pn;
-  return PLAYER_INVALID;
-}
-
 bool GameState::IsCpuPlayer(PlayerNumber pn) const {
   return IsPlayerEnabled(pn) && !IsHumanPlayer(pn);
 }
@@ -1771,11 +1762,6 @@ EarnedExtraStage GameState::CalculateEarnedExtraStage() const {
   }
 
   return EarnedExtraStage_No;
-}
-
-PlayerNumber GameState::GetBestPlayer() const {
-  FOREACH_PlayerNumber(pn) if (GetStageResult(pn) == RESULT_WIN) return pn;
-  return PLAYER_INVALID;  // draw
 }
 
 StageResult GameState::GetStageResult(PlayerNumber pn) const {
@@ -1922,11 +1908,6 @@ void GameState::RemoveAllActiveAttacks()  // called on end of song
 void GameState::AddStageToPlayer(PlayerNumber pn) {
   // Add one stage more to player (bonus) -cerbo
   ++m_iPlayerStageTokens[pn];
-}
-
-template <class T>
-void setmin(T& a, const T& b) {
-  a = std::min(a, b);
 }
 
 template <class T>

@@ -431,8 +431,6 @@ class Rect {
 
   T GetWidth() const { return right - left; };
   T GetHeight() const { return bottom - top; };
-  T GetCenterX() const { return (left + right) / 2; };
-  T GetCenterY() const { return (top + bottom) / 2; };
 
   bool operator==(const Rect& other) const {
     if (left != other.left) {
@@ -515,8 +513,6 @@ struct RageMatrix {
   // casting operators
   operator float*() { return m[0].data(); }
   operator const float*() const { return m[0].data(); }
-
-  RageMatrix GetTranspose() const;
 
   std::array<std::array<float, 4>, 4> m{};
 };

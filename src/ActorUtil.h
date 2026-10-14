@@ -57,8 +57,6 @@ const std::string& FileTypeToString(FileType ft);
 namespace ActorUtil {
 void InitFileTypeLists();
 const std::vector<std::string>& GetTypeExtensionList(FileType ft);
-void AddTypeExtensionsToList(FileType ft, std::vector<std::string>& add_to);
-
 // Every screen should register its class at program initialization.
 void Register(const std::string& sClassName, CreateActorFn pfn);
 

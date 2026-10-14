@@ -209,36 +209,6 @@ CourseType Course::GetCourseType() const {
   return COURSE_TYPE_NONSTOP;
 }
 
-void Course::SetCourseType(CourseType ct) {
-  if (GetCourseType() == ct) {
-    return;
-  }
-
-  m_bRepeat = false;
-  m_iLives = -1;
-  if (!m_vEntries.empty()) {
-    m_vEntries[0].fGainSeconds = 0;
-  }
-
-  switch (ct) {
-    default:
-      FAIL_M(ssprintf("Invalid course type: %i", ct));
-    case COURSE_TYPE_NONSTOP:
-      break;
-    case COURSE_TYPE_ONI:
-      m_iLives = 4;
-      break;
-    case COURSE_TYPE_ENDLESS:
-      m_bRepeat = true;
-      break;
-    case COURSE_TYPE_SURVIVAL:
-      if (!m_vEntries.empty()) {
-        m_vEntries[0].fGainSeconds = 120;
-      }
-      break;
-  }
-}
-
 PlayMode Course::GetPlayMode() const {
   CourseType ct = GetCourseType();
   switch (ct) {
@@ -547,10 +517,6 @@ bool Course::GetTrailUnsorted(
 
   const std::vector<CourseEntry>& entries =
       m_bShuffle ? tmp_entries : m_vEntries;
-
-  // This can take some time, so don't fill it out unless we need it.
-  std::vector<Song*> vSongsByMostPlayed;
-  std::vector<Song*> AllSongsShuffled;
 
   trail.m_StepsType = st;
   trail.m_CourseType = GetCourseType();
@@ -1267,16 +1233,6 @@ const CourseEntry* Course::FindFixedSong(const Song* pSong) const {
   }
 
   return nullptr;
-}
-
-void Course::GetAllCachedTrails(std::vector<Trail*>& out) {
-  TrailCache_t::iterator it;
-  for (it = m_TrailCache.begin(); it != m_TrailCache.end(); ++it) {
-    CacheData& cd = it->second;
-    if (!cd.null) {
-      out.push_back(&cd.trail);
-    }
-  }
 }
 
 bool Course::ShowInDemonstrationAndRanking() const {

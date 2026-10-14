@@ -42,7 +42,6 @@ class Model : public Actor {
   virtual void DrawPrimitives() override;
 
   void DrawCelShaded();
-  void SetCelShading(bool bShading) { m_bDrawCelShaded = bShading; }
 
   virtual int GetNumStates() const override;
   virtual void SetState(int iNewState) override;
@@ -93,7 +92,6 @@ class Model : public Actor {
   float m_fDefaultAnimationRate;
   float m_fCurAnimationRate;
   bool m_bLoop;
-  bool m_bDrawCelShaded;  // for Lua models
 };
 
 #endif

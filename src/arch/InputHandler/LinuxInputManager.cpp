@@ -41,8 +41,6 @@ std::string getDevice(std::string inputDir, std::string type) {
   return result;
 }
 
-static bool cmpDevices(std::string a, std::string b) { return a < b; }
-
 LinuxInputManager::LinuxInputManager() {
   m_bEventEnabled =
       g_sInputDrivers.Get().find("LinuxEvent") != std::string::npos;

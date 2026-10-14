@@ -55,7 +55,6 @@ extern const std::string PUBLIC_KEY_FILE;
 extern const std::string SCREENSHOTS_SUBDIR;
 extern const std::string EDIT_STEPS_SUBDIR;
 extern const std::string EDIT_COURSES_SUBDIR;
-extern const std::string LASTGOOD_SUBDIR;
 // extern const std::string RIVAL_SUBDIR;
 
 /** @brief The max number of characters that can be used in a profile. */
@@ -176,8 +175,6 @@ class Profile {
   Character* GetCharacter() const;
   void SetCharacter(const std::string sCharacterID);
   std::string GetDisplayTotalCaloriesBurned()
-      const;  // remove me and use Lua instead
-  std::string GetDisplayTotalCaloriesBurnedToday()
       const;  // remove me and use Lua instead
   int GetCalculatedWeightPounds()
       const;           // returns a default value if m_iWeightPounds isn't set
@@ -364,10 +361,8 @@ class Profile {
   int GetCategoryNumTimesPlayed(StepsType st) const;
   void IncrementCategoryPlayCount(StepsType st, RankingCategory rc);
 
-  // Screenshot Data
   std::vector<Screenshot> m_vScreenshots;
   void AddScreenshot(const Screenshot& screenshot);
-  int GetNextScreenshotIndex() { return m_vScreenshots.size(); }
 
   /**
    * @brief The basics for Calorie Data.
@@ -474,7 +469,6 @@ class Profile {
   XNode* SaveCoinDataCreateNode() const;
 
   void SaveStatsWebPageToDir(std::string sDir) const;
-  void SaveMachinePublicKeyToDir(std::string sDir) const;
 
   static void MoveBackupToDir(std::string sFromDir, std::string sToDir);
   static std::string MakeUniqueFileNameNoExtension(

@@ -676,13 +676,6 @@ void MemoryCardManager::UnmountCard(PlayerNumber pn) {
   }
 }
 
-bool MemoryCardManager::PathIsMemCard(std::string sDir) const {
-  FOREACH_PlayerNumber(p) if (!CompareNoCase(
-                                  Left(sDir, MEM_CARD_MOUNT_POINT[p].size()),
-                                  MEM_CARD_MOUNT_POINT[p])) return true;
-  return false;
-}
-
 bool MemoryCardManager::IsNameAvailable(PlayerNumber pn) const {
   return m_Device[pn].bIsNameAvailable;
 }

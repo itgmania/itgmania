@@ -168,7 +168,6 @@ class GameState {
   bool IsHumanPlayer(PlayerNumber pn) const;
   int GetNumHumanPlayers() const;
   PlayerNumber GetFirstHumanPlayer() const;
-  PlayerNumber GetFirstDisabledPlayer() const;
   bool IsCpuPlayer(PlayerNumber pn) const;
   bool AnyPlayersAreCpu() const;
 
@@ -241,7 +240,6 @@ class GameState {
   std::string sLastOpenSection;
 
   static int GetNumStagesMultiplierForSong(const Song* pSong);
-  static int GetNumStagesForSongAndStyleType(const Song* pSong, StyleType st);
   int GetNumStagesForCurrentSongAndStepsOrCourse() const;
 
   void BeginStage();
@@ -250,7 +248,6 @@ class GameState {
   void FinishStage();
   int GetNumStagesLeft(PlayerNumber pn) const;
   int GetSmallestNumStagesLeftForAnyHumanPlayer() const;
-  bool IsFinalStageForAnyHumanPlayer() const;
   bool IsFinalStageForEveryHumanPlayer() const;
   bool IsAnExtraStage() const;
   bool IsAnExtraStageAndSelectionLocked() const;
@@ -296,7 +293,6 @@ class GameState {
   void ResetMusicStatistics();  // Call this when it's time to play a new song.
                                 // Clears the values above.
   void SetPaused(bool p) { m_paused = p; }
-  bool GetPaused() { return m_paused; }
   void UpdateSongPosition(
       float fPositionSeconds, const TimingData& timing,
       const RageTimer& timestamp = RageZeroTimer);
@@ -329,7 +325,6 @@ class GameState {
 
   /** @brief Primarily called at the end of a song to stop all attacks. */
   void RemoveAllActiveAttacks();
-  PlayerNumber GetBestPlayer() const;
   StageResult GetStageResult(PlayerNumber pn) const;
 
   /** @brief Call this function when it's time to play a new stage. */
@@ -351,7 +346,6 @@ class GameState {
   void ApplyPreferredModifiers(PlayerNumber pn, std::string sModifiers);
   void ApplyStageModifiers(PlayerNumber pn, std::string sModifiers);
   void ClearStageModifiersIllegalForCourse();
-  void ResetOptions();
 
   bool CurrentOptionsDisqualifyPlayer(PlayerNumber pn);
   bool PlayerIsUsingModifier(PlayerNumber pn, const std::string& sModifier);

@@ -34,7 +34,6 @@ class TrailID {
   TrailID() : st(StepsType_Invalid), cd(Difficulty_Invalid) {}
   void Unset() { FromTrail(nullptr); }
   void FromTrail(const Trail* p);
-  Trail* ToTrail(const Course* p, bool bAllowNull) const;
   bool operator<(const TrailID& rhs) const;
   bool MatchesStepsType(StepsType s) const { return st == s; }
 

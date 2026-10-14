@@ -1,7 +1,6 @@
 #include "Sprite.h"
 
 #include <algorithm>
-#include <cassert>
 #include <cfloat>
 #include <cmath>
 #include <cstddef>
@@ -89,8 +88,7 @@ Sprite::Sprite(const Sprite& cpy) : Actor(cpy) {
 }
 
 Sprite& Sprite::operator=(Sprite other) {
-  using std::swap;
-#define SWAP(a) swap(a, other.a)
+#define SWAP(a) std::swap(a, other.a)
   SWAP(m_States);
   SWAP(m_animation_length_seconds);
   SWAP(m_iCurState);
@@ -894,21 +892,6 @@ void Sprite::SetCustomImageRect(RectF rectImageCoords) {
       m_pTexture->GetImageHeight() / (float)m_pTexture->GetTextureHeight();
 
   SetCustomTextureRect(rectImageCoords);
-}
-
-void Sprite::SetCustomImageCoords(
-    float fImageCoords[8])  // order: top left, bottom left, bottom right, top
-                            // right
-{
-  // convert image coords to texture coords in place
-  for (int i = 0; i < 8; i += 2) {
-    fImageCoords[i + 0] *=
-        m_pTexture->GetImageWidth() / (float)m_pTexture->GetTextureWidth();
-    fImageCoords[i + 1] *=
-        m_pTexture->GetImageHeight() / (float)m_pTexture->GetTextureHeight();
-  }
-
-  SetCustomTextureCoords(fImageCoords);
 }
 
 void Sprite::SetCustomPosCoords(

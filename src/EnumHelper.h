@@ -19,9 +19,6 @@ extern "C" {
 }
 #endif
 
-/** @brief A general foreach loop for enumerators, going up to a max value. */
-#define FOREACH_ENUM_N(e, max, var) \
-  for (e var = (e)0; var < max; enum_add<e>(var, +1))
 /** @brief A general foreach loop for enumerators. */
 #define FOREACH_ENUM(e, var) \
   for (e var = (e)0; var < NUM_##e; enum_add<e>(var, +1))

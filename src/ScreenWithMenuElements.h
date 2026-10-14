@@ -64,7 +64,6 @@ class ScreenWithMenuElements : public Screen {
   ThemeMetric<bool> CANCEL_TRANSITIONS_OUT;
   ThemeMetric<float> TIMER_SECONDS;
   ThemeMetric<std::string> TIMER_METRICS_GROUP;
-  ThemeMetric<bool> RESET_GAMESTATE;
 
  private:
   std::string m_sPathToMusic;

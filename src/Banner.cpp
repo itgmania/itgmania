@@ -200,10 +200,6 @@ void Banner::LoadFallback() {
   Load(THEME->GetPathG("Common", "fallback banner"));
 }
 
-void Banner::LoadFallbackBG() {
-  Load(THEME->GetPathG("Common", "fallback background"));
-}
-
 void Banner::LoadGroupFallback() {
   Load(THEME->GetPathG("Banner", "group fallback"));
 }

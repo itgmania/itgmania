@@ -110,11 +110,6 @@ void RageTextureManager::RegisterTexture(
   m_texture_ids_by_pointer[pTexture] = ID;
 }
 
-void RageTextureManager::RegisterTextureForUpdating(
-    RageTextureID id, RageTexture* tex) {
-  m_textures_to_update[id] = tex;
-}
-
 static const std::string g_sDefaultTextureName = "__blank__";
 RageTextureID RageTextureManager::GetDefaultTextureID() {
   return RageTextureID(g_sDefaultTextureName);
@@ -191,13 +186,6 @@ RageTexture* RageTextureManager::LoadTexture(RageTextureID ID) {
 RageTexture* RageTextureManager::CopyTexture(RageTexture* pCopy) {
   ++pCopy->m_iRefCount;
   return pCopy;
-}
-
-void RageTextureManager::VolatileTexture(RageTextureID ID) {
-  RageTexture* pTexture = LoadTextureInternal(ID);
-  pTexture->GetPolicy() =
-      std::min(pTexture->GetPolicy(), RageTextureID::TEX_VOLATILE);
-  UnloadTexture(pTexture);
 }
 
 void RageTextureManager::UnloadTexture(RageTexture* t) {
@@ -350,31 +338,6 @@ bool RageTextureManager::SetPrefs(RageTextureManagerPrefs prefs) {
       m_Prefs.m_iTextureColorDepth == 16 || m_Prefs.m_iTextureColorDepth == 32);
   ASSERT(m_Prefs.m_iMovieColorDepth == 16 || m_Prefs.m_iMovieColorDepth == 32);
   return bNeedReload;
-}
-
-void RageTextureManager::DiagnosticOutput() const {
-  unsigned iCount =
-      distance(m_mapPathToTexture.begin(), m_mapPathToTexture.end());
-  LOG->Trace("%u textures loaded:", iCount);
-
-  int iTotal = 0;
-  for (const auto& i : m_mapPathToTexture) {
-    const RageTextureID& ID = i.first;
-    const RageTexture* pTex = i.second;
-
-    std::string sDiags = DISPLAY->GetTextureDiagnostics(pTex->GetTexHandle());
-    std::string sStr = ssprintf(
-        "%3ix%3i (%2i)", pTex->GetTextureHeight(), pTex->GetTextureWidth(),
-        pTex->m_iRefCount);
-
-    if (sDiags != "") {
-      sStr += " " + sDiags;
-    }
-
-    LOG->Trace(" %-40s %s", sStr.c_str(), Basename(ID.filename).c_str());
-    iTotal += pTex->GetTextureHeight() * pTex->GetTextureWidth();
-  }
-  LOG->Trace("total %3i texels", iTotal);
 }
 
 /*

@@ -276,11 +276,6 @@ std::string Profile::GetDisplayTotalCaloriesBurned() const {
   return FormatCalories(m_fTotalCaloriesBurned);
 }
 
-std::string Profile::GetDisplayTotalCaloriesBurnedToday() const {
-  float fCals = GetCaloriesBurnedToday();
-  return FormatCalories(fCals);
-}
-
 float Profile::GetCaloriesBurnedToday() const {
   DateTime now = DateTime::GetNowDate();
   return GetCaloriesBurnedForDay(now);
@@ -1060,20 +1055,10 @@ void Profile::IncrementCategoryPlayCount(StepsType st, RankingCategory rc) {
 #define WARN_M(m)     \
   ShowWarningOrTrace( \
       __FILE__, __LINE__, std::string("Error parsing file: ") + (m), true)
-#define WARN_AND_RETURN_M(m) \
-  {                          \
-    WARN_M(m);               \
-    return;                  \
-  }
 #define WARN_AND_CONTINUE_M(m) \
   {                            \
     WARN_M(m);                 \
     continue;                  \
-  }
-#define WARN_AND_BREAK_M(m) \
-  {                         \
-    WARN_M(m);              \
-    break;                  \
   }
 #define LOAD_NODE(X)                           \
   {                                            \
@@ -2403,13 +2388,6 @@ void Profile::LoadCategoryScoresFromNode(const XNode* pCategoryScores) {
 
 void Profile::SaveStatsWebPageToDir(std::string) const {
   ASSERT(PROFILEMAN != nullptr);
-}
-
-void Profile::SaveMachinePublicKeyToDir(std::string sDir) const {
-  if (PREFSMAN->m_bSignProfileData &&
-      IsAFile(CRYPTMAN->GetPublicKeyFileName())) {
-    FileCopy(CRYPTMAN->GetPublicKeyFileName(), sDir + PUBLIC_KEY_FILE);
-  }
 }
 
 void Profile::AddScreenshot(const Screenshot& screenshot) {

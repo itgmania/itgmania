@@ -21,7 +21,6 @@ enum OptEffect {
   OptEffect_Invalid = MAX_OPTIONS + 1
 };
 const std::string& OptEffectToString(OptEffect e);
-OptEffect StringToOptEffect(const std::string& e);
 LuaDeclareType(OptEffect);
 
 struct ConfOption {

@@ -115,7 +115,6 @@ std::string BackgroundChange::ToString() const {
 const std::string BACKGROUND_EFFECTS_DIR = "BackgroundEffects/";
 const std::string BACKGROUND_TRANSITIONS_DIR = "BackgroundTransitions/";
 const std::string BG_ANIMS_DIR = "BGAnimations/";
-const std::string VISUALIZATIONS_DIR = "Visualizations/";
 const std::string RANDOMMOVIES_DIR = "RandomMovies/";
 const std::string SONG_MOVIES_DIR = "SongMovies/";
 
@@ -412,14 +411,6 @@ void BackgroundUtil::GetGlobalRandomMovies(
     vsNamesOut.push_back(sName);
   }
   StripCvsAndSvn(vsPathsOut, vsNamesOut);
-}
-
-void BackgroundUtil::BakeAllBackgroundChanges(Song* pSong) {
-  Background bg;
-  bg.LoadFromSong(pSong);
-  std::vector<BackgroundChange>* vBGChanges[NUM_BackgroundLayer];
-  FOREACH_BackgroundLayer(i) vBGChanges[i] = &pSong->GetBackgroundChanges(i);
-  bg.GetLoadedBackgroundChanges(vBGChanges);
 }
 
 /*

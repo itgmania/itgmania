@@ -1,7 +1,6 @@
 #include "ActorMultiVertex.h"
 
 #include <algorithm>
-#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <numeric>
@@ -152,14 +151,6 @@ void ActorMultiVertex::SetNumVertices(size_t n) {
     AMV_current.vertices.resize(n);
     AMV_start.vertices.resize(n);
   }
-}
-
-void ActorMultiVertex::AddVertex() {
-  for (size_t i = 0; i < AMV_Tweens.size(); ++i) {
-    AMV_Tweens[i].vertices.push_back(RageSpriteVertex());
-  }
-  AMV_current.vertices.push_back(RageSpriteVertex());
-  AMV_start.vertices.push_back(RageSpriteVertex());
 }
 
 void ActorMultiVertex::AddVertices(int Add) {

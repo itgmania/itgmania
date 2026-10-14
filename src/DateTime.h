@@ -6,17 +6,10 @@
 
 #include "EnumHelper.h"
 
-int StringToDayInYear(std::string sDayInYear);
-
 /** @brief The number of days we check for previously. */
 const int NUM_LAST_DAYS = 7;
 /** @brief The number of weeks we check for previously. */
 const int NUM_LAST_WEEKS = 52;
-/**
- * @brief The number of days that are in a year.
- *
- * This is set up to be a maximum for leap years. */
-const int DAYS_IN_YEAR = 366;
 /**
  * @brief The number of hours in a day. */
 const int HOURS_IN_DAY = 24;
@@ -32,7 +25,6 @@ enum Month {
   Month_Invalid   /**< There should be no month at this point. */
 };
 
-std::string DayInYearToString(int iDayInYearIndex);
 std::string LastDayToString(int iLastDayIndex);
 std::string LastDayToLocalizedString(int iLastDayIndex);
 std::string DayOfWeekToString(int iDayOfWeekIndex);

@@ -105,32 +105,6 @@ float NoteTypeToBeat(NoteType nt) {
   }
 }
 
-int NoteTypeToRow(NoteType nt) {
-  switch (nt) {
-    case NOTE_TYPE_4TH:
-      return 48;
-    case NOTE_TYPE_8TH:
-      return 24;
-    case NOTE_TYPE_12TH:
-      return 16;
-    case NOTE_TYPE_16TH:
-      return 12;
-    case NOTE_TYPE_24TH:
-      return 8;
-    case NOTE_TYPE_32ND:
-      return 6;
-    case NOTE_TYPE_48TH:
-      return 4;
-    case NOTE_TYPE_64TH:
-      return 3;
-    case NOTE_TYPE_192ND:
-    case NoteType_Invalid:
-      return 1;
-    default:
-      FAIL_M("Invalid note type found: cannot convert to row.");
-  }
-}
-
 /**
  * @brief The number of beats per measure.
  *
@@ -173,13 +147,6 @@ NoteType GetNoteType(int row) {
 NoteType BeatToNoteType(float fBeat) {
   return GetNoteType(BeatToNoteRow(fBeat));
 }
-/**
- * @brief Determine if the row has a particular type of quantized note.
- * @param row the row in the Steps.
- * @param t the quantized NoteType to check for.
- * @return true if the NoteType is t, false otherwise.
- */
-bool IsNoteOfType(int row, NoteType t) { return GetNoteType(row) == t; }
 
 XNode* TapNoteResult::CreateNode() const {
   XNode* p = new XNode("TapNoteResult");
@@ -190,17 +157,9 @@ XNode* TapNoteResult::CreateNode() const {
   return p;
 }
 
-void TapNoteResult::LoadFromNode(const XNode* pNode) {
-  FAIL_M("TapNoteResult::LoadFromNode() is not implemented");
-}
-
 XNode* HoldNoteResult::CreateNode() const {
   // XXX: Should this do anything?
   return new XNode("HoldNoteResult");
-}
-
-void HoldNoteResult::LoadFromNode(const XNode* pNode) {
-  FAIL_M("HoldNoteResult::LoadFromNode() is not implemented");
 }
 
 XNode* TapNote::CreateNode() const {
@@ -210,10 +169,6 @@ XNode* TapNote::CreateNode() const {
   p->AppendChild(HoldResult.CreateNode());
 
   return p;
-}
-
-void TapNote::LoadFromNode(const XNode* pNode) {
-  FAIL_M("TapNote::LoadFromNode() is not implemented");
 }
 
 float HoldNoteResult::GetLastHeldBeat() const {

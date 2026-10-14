@@ -746,11 +746,6 @@ bool NetworkPostData::IsFinished() {
   return true;
 }
 
-std::string NetworkPostData::GetStatus() const {
-  LockMut(m_Mutex);
-  return m_sStatus;
-}
-
 float NetworkPostData::GetProgress() const {
   LockMut(m_Mutex);
   return m_fProgress;

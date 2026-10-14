@@ -50,9 +50,6 @@ class WheelBase : public ActorFrame {
   int IsMoving() const;
   bool IsSettled() const;
 
-  void GetItemPosition(
-      float fPosOffsetsFromMiddle, float& fX_out, float& fY_out, float& fZ_out,
-      float& fRotationX_out);
   void SetItemPosition(Actor& item, int item_index, float offset_from_middle);
 
   virtual bool Select();  // return true if this selection can end the screen
@@ -66,8 +63,6 @@ class WheelBase : public ActorFrame {
 
   virtual unsigned int GetNumItems() const { return m_CurWheelItemData.size(); }
   bool IsEmpty() { return m_bEmpty; }
-  WheelItemBaseData* GetItem(unsigned int index);
-  WheelItemBaseData* LastSelected();
   WheelItemBase* GetWheelItem(int i) {
     if (i < 0 || i >= (int)m_WheelBaseItems.size()) {
       return nullptr;
@@ -92,8 +87,6 @@ class WheelBase : public ActorFrame {
   virtual void UpdateSwitch();
   virtual bool MoveSpecific(int n);
   void SetPositions();
-
-  int FirstVisibleIndex();
 
   ScrollBar m_ScrollBar;
   AutoActor m_sprHighlight;

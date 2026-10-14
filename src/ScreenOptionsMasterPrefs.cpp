@@ -1082,7 +1082,6 @@ static const char* OptEffectNames[] = {
     "ChangeGame",       "ApplySound",    "ApplySong",
     "ApplyAspectRatio", "ApplyProfiles", "ReloadSongs"};
 XToString(OptEffect);
-StringToX(OptEffect);
 LuaXType(OptEffect);
 
 /**

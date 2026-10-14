@@ -2822,8 +2822,6 @@ void RageDisplay_Legacy::SetSphereEnvironmentMapping(TextureUnit tu, bool b) {
   }
 }
 
-GLint iCelTexture1, iCelTexture2 = 0;
-
 void RageDisplay_Legacy::SetCelShaded(int stage) {
   if (!GLEW_ARB_fragment_program && !GL_ARB_shading_language_100) {
     return;  // not supported

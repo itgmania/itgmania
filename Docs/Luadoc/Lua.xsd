@@ -112,6 +112,7 @@
 				</xs:sequence>
 				<xs:attribute name="name" type="Identifier" use="required" />
 				<xs:attribute name="base" type="Identifier" use="optional" />
+				<xs:attribute name="removed" type="xs:string" use="optional" />
 			</xs:complexType>
 		</xs:element>
 	</xs:sequence>
@@ -148,6 +149,7 @@
 	<xs:attribute name="return" type="IdentifierOrTable" use="optional" />
 	<xs:attribute name="arguments" type="ArgumentList" use="optional" />
 	<xs:attribute name="since" type="xs:string" use="optional" />
+	<xs:attribute name="removed" type="xs:string" use="optional" />
 </xs:complexType>
 
 <xs:complexType name="Link" mixed="true">

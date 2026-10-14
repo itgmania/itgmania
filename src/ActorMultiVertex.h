@@ -104,8 +104,6 @@ class ActorMultiVertex : public Actor {
   void UnloadTexture();
   void SetNumVertices(size_t n);
 
-  void ResizeVertices(std::vector<RageSpriteVertex>& vertices, int size);
-  void AddVertex();
   void AddVertices(int Add);
 
   void SetEffectMode(EffectMode em) { _EffectMode = em; }
@@ -181,7 +179,6 @@ class ActorMultiVertex : public Actor {
  private:
   RageTexture* _Texture;
 
-  std::vector<RageSpriteVertex> _Vertices;
   std::vector<AMV_TweenState> AMV_Tweens;
   AMV_TweenState AMV_current;
   AMV_TweenState AMV_start;

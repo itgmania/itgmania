@@ -31,8 +31,6 @@ class Alsa9Buf {
  public:
   static void InitializeErrorHandler();
   static void GetSoundCardDebugInfo();
-  static std::string GetHardwareID(std::string name = "");
-
   Alsa9Buf();
   std::string Init(
       int channels, int iWriteahead, int iChunkSize, int iSampleRate);

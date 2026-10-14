@@ -14,19 +14,6 @@
 
 struct lua_State;
 
-/* convenience functions to handle static casting */
-template <class T>
-inline T ToDerived(const TimingSegment* t, TimingSegmentType tst) {
-  ASSERT_M(
-      t && tst == t->GetType(),
-      ssprintf(
-          "type mismatch (expected %s, got %s)",
-          TimingSegmentTypeToString(tst).c_str(),
-          TimingSegmentTypeToString(t->GetType()).c_str()));
-
-  return static_cast<T>(t);
-}
-
 #define TimingSegmentToXWithName(Seg, SegName, SegType)   \
   inline const Seg* To##SegName(const TimingSegment* t) { \
     ASSERT(t->GetType() == SegType);                      \
@@ -128,9 +115,6 @@ class TimingData {
 
   void EnsureLookups() const;
   void InvalidateLookups();
-  void DumpOneTable(const beat_start_lookup_t& lookup, const std::string& name);
-  void DumpLookupTables();
-
   int GetSegmentIndexAtRow(TimingSegmentType tst, int row) const;
   int GetSegmentIndexAtBeat(TimingSegmentType tst, float beat) const {
     return GetSegmentIndexAtRow(tst, BeatToNoteRow(beat));
@@ -241,9 +225,6 @@ class TimingData {
   void SetBPMAtRow(int iNoteRow, float fBPM) {
     AddSegment(BPMSegment(iNoteRow, fBPM));
   }
-  void SetBPMAtBeat(float fBeat, float fBPM) {
-    SetBPMAtRow(BeatToNoteRow(fBeat), fBPM);
-  }
 
   float GetStopAtRow(int iNoteRow) const {
     return GetStopSegmentAtRow(iNoteRow)->GetPause();
@@ -267,27 +248,12 @@ class TimingData {
   void SetDelayAtRow(int iNoteRow, float fSeconds) {
     AddSegment(DelaySegment(iNoteRow, fSeconds));
   }
-  void SetDelayAtBeat(float fBeat, float fSeconds) {
-    SetDelayAtRow(BeatToNoteRow(fBeat), fSeconds);
-  }
-
-  void SetTimeSignatureAtRow(int iNoteRow, int iNum, int iDen) {
-    AddSegment(TimeSignatureSegment(iNoteRow, iNum, iDen));
-  }
-
-  void SetTimeSignatureAtBeat(float fBeat, int iNum, int iDen) {
-    SetTimeSignatureAtRow(BeatToNoteRow(fBeat), iNum, iDen);
-  }
 
   float GetWarpAtRow(int iNoteRow) const {
     return GetWarpSegmentAtRow(iNoteRow)->GetLength();
   }
   float GetWarpAtBeat(float fBeat) const {
     return GetWarpAtRow(BeatToNoteRow(fBeat));
-  }
-  /* Note: fLength is in beats, not rows */
-  void SetWarpAtRow(int iRow, float fLength) {
-    AddSegment(WarpSegment(iRow, fLength));
   }
   void SetWarpAtBeat(float fBeat, float fLength) {
     AddSegment(WarpSegment(BeatToNoteRow(fBeat), fLength));
@@ -299,24 +265,12 @@ class TimingData {
   int GetTickcountAtBeat(float fBeat) const {
     return GetTickcountAtRow(BeatToNoteRow(fBeat));
   }
-  void SetTickcountAtRow(int iNoteRow, int iTicks) {
-    AddSegment(TickcountSegment(iNoteRow, iTicks));
-  }
-  void SetTickcountAtBeat(float fBeat, int iTicks) {
-    SetTickcountAtRow(BeatToNoteRow(fBeat), iTicks);
-  }
 
   int GetComboAtRow(int iNoteRow) const {
     return GetComboSegmentAtRow(iNoteRow)->GetCombo();
   }
-  int GetComboAtBeat(float fBeat) const {
-    return GetComboAtRow(BeatToNoteRow(fBeat));
-  }
   int GetMissComboAtRow(int iNoteRow) const {
     return GetComboSegmentAtRow(iNoteRow)->GetMissCombo();
-  }
-  int GetMissComboAtBeat(float fBeat) const {
-    return GetMissComboAtRow(BeatToNoteRow(fBeat));
   }
 
   const std::string& GetLabelAtRow(int iNoteRow) const {
@@ -325,44 +279,24 @@ class TimingData {
   const std::string& GetLabelAtBeat(float fBeat) const {
     return GetLabelAtRow(BeatToNoteRow(fBeat));
   }
-  void SetLabelAtRow(int iNoteRow, const std::string& sLabel) {
-    AddSegment(LabelSegment(iNoteRow, sLabel));
-  }
-  void SetLabelAtBeat(float fBeat, const std::string sLabel) {
-    SetLabelAtRow(BeatToNoteRow(fBeat), sLabel);
-  }
   bool DoesLabelExist(const std::string& sLabel) const;
 
   float GetSpeedPercentAtRow(int iNoteRow) const {
     return GetSpeedSegmentAtRow(iNoteRow)->GetRatio();
   }
-  float GetSpeedPercentAtBeat(float fBeat) const {
-    return GetSpeedPercentAtRow(BeatToNoteRow(fBeat));
-  }
 
   float GetSpeedWaitAtRow(int iNoteRow) const {
     return GetSpeedSegmentAtRow(iNoteRow)->GetDelay();
-  }
-  float GetSpeedWaitAtBeat(float fBeat) const {
-    return GetSpeedWaitAtRow(BeatToNoteRow(fBeat));
   }
 
   // XXX: is there any point to having specific unit types?
   SpeedSegment::BaseUnit GetSpeedModeAtRow(int iNoteRow) const {
     return GetSpeedSegmentAtRow(iNoteRow)->GetUnit();
   }
-  SpeedSegment::BaseUnit GetSpeedModeAtBeat(float fBeat) {
-    return GetSpeedModeAtRow(BeatToNoteRow(fBeat));
-  }
 
   void SetSpeedAtRow(
       int iNoteRow, float fPercent, float fWait, SpeedSegment::BaseUnit unit) {
     AddSegment(SpeedSegment(iNoteRow, fPercent, fWait, unit));
-  }
-
-  void SetSpeedAtBeat(
-      float fBeat, float fPercent, float fWait, SpeedSegment::BaseUnit unit) {
-    SetSpeedAtRow(BeatToNoteRow(fBeat), fPercent, fWait, unit);
   }
 
   void SetSpeedPercentAtRow(int iNoteRow, float fPercent) {
@@ -395,9 +329,6 @@ class TimingData {
   float GetScrollAtRow(int iNoteRow) const {
     return GetScrollSegmentAtRow(iNoteRow)->GetRatio();
   }
-  float GetScrollAtBeat(float fBeat) {
-    return GetScrollAtRow(BeatToNoteRow(fBeat));
-  }
 
   void SetScrollAtRow(int iNoteRow, float fPercent) {
     AddSegment(ScrollSegment(iNoteRow, fPercent));
@@ -414,13 +345,7 @@ class TimingData {
   }
 
   bool IsWarpAtRow(int iRow) const;
-  bool IsWarpAtBeat(float fBeat) const {
-    return IsWarpAtRow(BeatToNoteRow(fBeat));
-  }
   bool IsFakeAtRow(int iRow) const;
-  bool IsFakeAtBeat(float fBeat) const {
-    return IsFakeAtRow(BeatToNoteRow(fBeat));
-  }
 
   /**
    * @brief Determine if this notes on this row can be judged.
@@ -429,11 +354,6 @@ class TimingData {
   bool IsJudgableAtRow(int row) const {
     return !IsWarpAtRow(row) && !IsFakeAtRow(row);
   }
-  bool IsJudgableAtBeat(float beat) const {
-    return IsJudgableAtRow(BeatToNoteRow(beat));
-  }
-
-  void MultiplyBPMInBeatRange(int iStartIndex, int iEndIndex, float fFactor);
 
   /**
    * @brief Get measure and beat at a note row.
@@ -530,8 +450,6 @@ class TimingData {
       bool bAdjustBPM = false);
   void InsertRows(int iStartRow, int iRowsToAdd);
   void DeleteRows(int iStartRow, int iRowsToDelete);
-
-  void SortSegments(TimingSegmentType tst);
 
   const std::vector<TimingSegment*>& GetTimingSegments(
       TimingSegmentType tst) const {

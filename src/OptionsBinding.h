@@ -2,8 +2,7 @@
  * more easily have similar interfaces. */
 
 // No .cpp file because it's just some #defines, and not in a makefile because
-// it doesn't need to be. DefaultNilArgs would be in here, but then there would
-// need to be a .cpp file, and DefaultNilArgs is more widely useful.
+// it doesn't need to be.
 
 #ifndef OptionsBinding_H
 #define OptionsBinding_H

@@ -15,8 +15,7 @@ class TimingData;
 struct SMALoader : public SMLoader {
   SMALoader() : SMLoader(".sma") {}
 
-  virtual bool LoadFromSimfile(
-      const std::string& sPath, Song& out, bool bFromCache = false);
+  virtual bool LoadFromSimfile(const std::string& sPath, Song& out);
 
   void ProcessBeatsPerMeasure(TimingData& out, const std::string sParam);
   void ProcessMultipliers(
