@@ -24,9 +24,6 @@ class CharacterManager {
   Character* GetDefaultCharacter();
   Character* GetCharacterFromID(std::string sCharacterID);
 
-  void DemandGraphics();
-  void UndemandGraphics();
-
   // Lua
   void PushSelf(lua_State* L);
 

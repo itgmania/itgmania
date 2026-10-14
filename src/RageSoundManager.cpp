@@ -105,13 +105,6 @@ bool RageSoundManager::GetPlayingPosition(
   return m_pDriver->GetPlayingPosition(pSound, iSourceFrame, pTimer);
 }
 
-int64_t RageSoundManager::GetPosition(RageTimer* pTimer) const {
-  if (m_pDriver == nullptr) {
-    return 0;
-  }
-  return m_pDriver->GetHardwareFrame(pTimer);
-}
-
 void RageSoundManager::Update() {
   /* Scan m_mapPreloadedSounds for sounds that are no longer loaded, and delete
    * them. */

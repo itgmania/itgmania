@@ -41,9 +41,7 @@ void RageMatrixTranslate(
     RageMatrix* pOut, float fTransX, float fTransY, float fTransZ);
 void RageMatrixScale(
     RageMatrix* pOut, float fScaleX, float fScaleY, float fScaleZ);
-void RageMatrixRotationX(RageMatrix* pOut, float fTheta);
 void RageMatrixRotationY(RageMatrix* pOut, float fTheta);
-void RageMatrixRotationZ(RageMatrix* pOut, float fTheta);
 void RageMatrixRotationXYZ(RageMatrix* pOut, float rX, float rY, float rZ);
 void RageAARotate(RageVector3* inret, const RageVector3* axis, float angle);
 void RageQuatFromHPR(RageVector4* pOut, RageVector3 hpr);

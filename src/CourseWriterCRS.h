@@ -27,17 +27,6 @@ bool Write(const Course& course, RageFileBasic& f, bool bSavingCache);
  * @return its success or failure.
  */
 bool Write(const Course& course, const std::string& sPath, bool bSavingCache);
-/**
- * @brief Retrieve course information from a file for eventual writing.
- * @param pCourse the course file.
- * @param sOut the path to the file.
- */
-void GetEditFileContents(const Course* pCourse, std::string& sOut);
-/**
- * @brief Write the custom course to the machine's hard drive.
- * @param pCourse the course file.
- */
-void WriteEditFileToMachine(const Course* pCourse);
 
 bool WriteCourseEntry(const CourseEntry& entry, RageFileBasic& f);
 

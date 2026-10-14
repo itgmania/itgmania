@@ -20,7 +20,6 @@ class ArchHooks_Win32 : public ArchHooks {
 
   void BoostPriority();
   void UnBoostPriority();
-  void SetupConcurrentRenderingThread();
 
   virtual float GetDisplayAspectRatio();
   std::string GetClipboard();

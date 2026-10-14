@@ -21,7 +21,6 @@
 std::string unique_name();
 void convert_xmls_in_dir(const std::string& dirname);
 void convert_xml_file(const std::string& fname, const std::string& dirname);
-std::string maybe_conv_pos(std::string pos, std::string (*conv_func)(float p));
 std::string add_extension_to_relative_path_from_found_file(
     const std::string& relative_path, const std::string& found_file);
 
@@ -64,14 +63,6 @@ std::string convert_xpos(float x) {
 
 std::string convert_ypos(float y) {
   return "SCREEN_CENTER_Y + " + std::to_string(y - 240.0f);
-}
-
-std::string maybe_conv_pos(std::string pos, std::string (*conv_func)(float p)) {
-  float f;
-  if (pos >> f) {
-    return conv_func(f);
-  }
-  return pos;
 }
 
 size_t after_slash_or_zero(const std::string& s) {

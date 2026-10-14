@@ -729,13 +729,6 @@ int ScoreKeeperNormal::HoldNoteScoreToDancePoints(HoldNoteScore hns) const {
   return HoldNoteScoreToDancePoints(hns, m_bIsBeginner);
 }
 
-int ScoreKeeperNormal::TapNoteScoreToGradePoints(TapNoteScore tns) const {
-  return TapNoteScoreToGradePoints(tns, m_bIsBeginner);
-}
-int ScoreKeeperNormal::HoldNoteScoreToGradePoints(HoldNoteScore hns) const {
-  return HoldNoteScoreToGradePoints(hns, m_bIsBeginner);
-}
-
 int ScoreKeeperNormal::TapNoteScoreToDancePoints(
     TapNoteScore tns, bool bBeginner) {
   if (!GAMESTATE->ShowW1() && tns == TNS_W1) {

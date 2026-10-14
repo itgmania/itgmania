@@ -54,8 +54,6 @@ class LuaReference {
   /* Return the referenced type, or LUA_TNONE if not set. */
   int GetLuaType() const;
 
-  std::string Serialize() const;
-
   template <typename T>
   static LuaReference Create(const T& val) {
     Lua* L = LUA->Get();

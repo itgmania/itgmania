@@ -319,8 +319,6 @@ REGISTER_CLASS_TRAITS(HighScoreImpl, new HighScoreImpl(*pCopy))
 
 HighScore::HighScore() { m_Impl = new HighScoreImpl; }
 
-void HighScore::Unset() { m_Impl = new HighScoreImpl; }
-
 bool HighScore::IsEmpty() const {
   if (m_Impl->iTapNoteScores[TNS_W1] || m_Impl->iTapNoteScores[TNS_W2] ||
       m_Impl->iTapNoteScores[TNS_W3] || m_Impl->iTapNoteScores[TNS_W4] ||
@@ -348,7 +346,6 @@ float HighScore::GetSurvivalSeconds() const {
 }
 std::string HighScore::GetModifiers() const { return m_Impl->sModifiers; }
 DateTime HighScore::GetDateTime() const { return m_Impl->dateTime; }
-std::string HighScore::GetPlayerGuid() const { return m_Impl->sPlayerGuid; }
 int HighScore::GetTapNoteScore(TapNoteScore tns) const {
   return m_Impl->iTapNoteScores[tns];
 }
@@ -397,10 +394,6 @@ void HighScore::SetRoutine(bool b) { m_Impl->bIsRoutine = b; }
 bool HighScore::IsRoutine() const { return m_Impl->bIsRoutine; }
 
 // Getters
-std::string HighScore::GetPlayerName(const PlayerNumber& playerNum) const {
-  return m_Impl->playerNames.at(playerNum);
-}
-
 std::string HighScore::GetPlayerGuid(const PlayerNumber& playerNum) const {
   return m_Impl->playerGuids.at(playerNum);
 }
@@ -462,24 +455,12 @@ bool HighScore::operator<(const HighScore& other) const {
   return GetGrade() < other.GetGrade();
 }
 
-bool HighScore::operator>(const HighScore& other) const {
-  return other.operator<(*this);
-}
-
-bool HighScore::operator<=(const HighScore& other) const {
-  return !operator>(other);
-}
-
 bool HighScore::operator>=(const HighScore& other) const {
   return !operator<(other);
 }
 
 bool HighScore::operator==(const HighScore& other) const {
   return *m_Impl == *other.m_Impl;
-}
-
-bool HighScore::operator!=(const HighScore& other) const {
-  return !operator==(other);
 }
 
 XNode* HighScore::CreateNode() const { return m_Impl->CreateNode(); }

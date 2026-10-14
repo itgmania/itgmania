@@ -129,7 +129,6 @@ class LuaClass : public LuaTable {
   LuaClass() {}
   LuaClass(const LuaClass& cpy);
   virtual ~LuaClass();
-  LuaClass& operator=(const LuaClass& cpy);
 };
 
 /* Only a base class has to indicate that it's instanced (has a per-object

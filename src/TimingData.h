@@ -392,7 +392,6 @@ class TimingData {
     return args.beat;
   }
   float GetElapsedTimeFromBeatNoOffset(float fBeat) const;
-  float GetDisplayedBeat(float fBeat) const;
 
   bool HasBpmChanges() const {
     return GetTimingSegments(SEGMENT_BPM).size() > 1;

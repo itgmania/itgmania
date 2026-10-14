@@ -163,10 +163,6 @@ void ArchHooks_Win32::UnBoostPriority() {
   SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
 }
 
-void ArchHooks_Win32::SetupConcurrentRenderingThread() {
-  SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
-}
-
 float ArchHooks_Win32::GetDisplayAspectRatio() {
   DEVMODE dm;
   ZERO(dm);

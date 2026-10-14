@@ -633,8 +633,6 @@ bool RageDisplay_D3D::SupportsTextureFormat(
   return SUCCEEDED(hr);
 }
 
-bool RageDisplay_D3D::SupportsThreadedRendering() { return true; }
-
 RageSurface* RageDisplay_D3D::CreateScreenshot() {
   RageSurface* result = nullptr;
 

@@ -75,13 +75,6 @@ void LuaManager::SetGlobal(const std::string& sName, int val) {
   Release(L);
 }
 
-void LuaManager::SetGlobal(const std::string& sName, const std::string& val) {
-  Lua* L = Get();
-  LuaHelpers::Push(L, val);
-  lua_setglobal(L, sName.c_str());
-  Release(L);
-}
-
 void LuaManager::UnsetGlobal(const std::string& sName) {
   Lua* L = Get();
   lua_pushnil(L);

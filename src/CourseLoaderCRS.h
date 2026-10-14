@@ -34,30 +34,12 @@ bool LoadFromCRSFile(const std::string& sPath, Course& out);
 bool LoadFromMsd(
     const std::string& sPath, const MsdFile& msd, Course& out, bool bFromCache);
 /**
- * @brief Attempt to load the course file from the buffer.
- * @param sPath the path to the file.
- * @param sBuffer the path to the buffer.
- * @param out the course file.
- * @return its success or failure.
- */
-bool LoadFromBuffer(
-    const std::string& sPath, const std::string& sBuffer, Course& out);
-/**
  * @brief Attempt to load an edit course from the hard drive.
  * @param sEditFilePath a path on the hard drive to check.
  * @param slot the Profile of the user with the edit course.
  * @return its success or failure.
  */
 bool LoadEditFromFile(const std::string& sEditFilePath, ProfileSlot slot);
-/**
- * @brief Attempt to load an edit course from the buffer.
- * @param sBuffer the path to the buffer.
- * @param sPath the path to the file.
- * @param slot the individual's profile.
- * @return its success or failure.
- */
-bool LoadEditFromBuffer(
-    const std::string& sBuffer, const std::string& sPath, ProfileSlot slot);
 
 /**
  * @brief Parse the list of parameters from a `#MODS` tag.

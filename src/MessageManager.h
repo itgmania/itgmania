@@ -166,7 +166,6 @@ class MessageSubscriber : public IMessageSubscriber {
  public:
   MessageSubscriber() : m_vsSubscribedTo() {}
   MessageSubscriber(const MessageSubscriber& cpy);
-  MessageSubscriber& operator=(const MessageSubscriber& cpy);
 
   //
   // Messages
@@ -191,7 +190,6 @@ class MessageManager {
   void Subscribe(IMessageSubscriber* pSubscriber, MessageID m);
   void Unsubscribe(
       IMessageSubscriber* pSubscriber, const std::string& sMessage);
-  void Unsubscribe(IMessageSubscriber* pSubscriber, MessageID m);
   void Broadcast(Message& msg) const;
   void Broadcast(const std::string& sMessage) const;
   void Broadcast(MessageID m) const;

@@ -511,13 +511,6 @@ void XmlFileUtil::Load(
   LoadInternal(pNode, sXml, sErrorOut, 0);
 }
 
-bool XmlFileUtil::GetXML(
-    const XNode* pNode, RageFileBasic& f, bool bWriteTabs) {
-  int iTabBase = 0;
-  InitEntities();
-  return GetXMLInternal(pNode, f, bWriteTabs, iTabBase);
-}
-
 std::string XmlFileUtil::GetXML(const XNode* pNode) {
   RageFileObjMem f;
   int iTabBase = 0;

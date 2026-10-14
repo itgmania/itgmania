@@ -31,8 +31,6 @@
 #include "NotesLoader.h"
 #include "NotesLoaderSM.h"
 #include "NotesLoaderSSC.h"
-#include "NotesWriterDWI.h"
-#include "NotesWriterJson.h"
 #include "NotesWriterSM.h"
 #include "NotesWriterSSC.h"
 #include "Preference.h"
@@ -1385,11 +1383,6 @@ bool Song::SaveToSSCFile(std::string sPath, bool autosave) {
   return true;
 }
 
-bool Song::SaveToJsonFile(std::string sPath) {
-  LOG->Trace("Song::SaveToJsonFile('%s')", sPath.c_str());
-  return NotesWriterJson::WriteSong(sPath, *this, true);
-}
-
 bool Song::SaveToCacheFile() {
   if (SONGMAN->IsGroupNeverCached(m_sGroupName)) {
     return true;
@@ -1397,18 +1390,6 @@ bool Song::SaveToCacheFile() {
   SONGINDEX->AddCacheIndex(m_sSongDir, GetHashForDirectory(m_sSongDir));
   const std::string sPath = GetCacheFilePath();
   return SongCacheBinary::Write(*this, sPath);
-}
-
-bool Song::SaveToDWIFile() {
-  const std::string sPath = SetExtension(GetSongFilePath(), "dwi");
-  LOG->Trace("Song::SaveToDWIFile(%s)", sPath.c_str());
-
-  // If the file exists, make a backup.
-  if (IsAFile(sPath)) {
-    FileCopy(sPath, sPath + ".old");
-  }
-
-  return NotesWriterDWI::Write(sPath, *this);
 }
 
 void Song::RemoveAutosave() {

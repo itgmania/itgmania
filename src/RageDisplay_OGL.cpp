@@ -2084,27 +2084,6 @@ const RageDisplay::RagePixelFormatDesc* RageDisplay_Legacy::GetPixelFormatDesc(
   return &PIXEL_FORMAT_DESC[pf];
 }
 
-bool RageDisplay_Legacy::SupportsThreadedRendering() {
-  return g_pWind->SupportsThreadedRendering();
-}
-
-void RageDisplay_Legacy::BeginConcurrentRenderingMainThread() {
-  g_pWind->BeginConcurrentRenderingMainThread();
-}
-
-void RageDisplay_Legacy::EndConcurrentRenderingMainThread() {
-  g_pWind->EndConcurrentRenderingMainThread();
-}
-
-void RageDisplay_Legacy::BeginConcurrentRendering() {
-  g_pWind->BeginConcurrentRendering();
-  RageDisplay::BeginConcurrentRendering();
-}
-
-void RageDisplay_Legacy::EndConcurrentRendering() {
-  g_pWind->EndConcurrentRendering();
-}
-
 void RageDisplay_Legacy::DeleteTexture(uintptr_t iTexture) {
   if (iTexture == 0) {
     return;

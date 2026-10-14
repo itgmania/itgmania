@@ -26,14 +26,6 @@ RSAKeyWrapper::~RSAKeyWrapper() { Unload(); }
 
 void RSAKeyWrapper::Unload() { rsa_free(&m_Key); }
 
-void RSAKeyWrapper::Generate(PRNGWrapper& prng, int iKeyLenBits) {
-  Unload();
-
-  int iRet =
-      rsa_make_key(&prng.m_PRNG, prng.m_iPRNG, iKeyLenBits / 8, 65537, &m_Key);
-  ASSERT(iRet == CRYPT_OK);
-}
-
 bool RSAKeyWrapper::Load(const std::string& sKey, std::string& sError) {
   Unload();
 

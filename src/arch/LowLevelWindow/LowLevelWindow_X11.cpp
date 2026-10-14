@@ -33,8 +33,6 @@ using namespace X11Helper;
 const std::string ID_XSCREEN = "XSCREEN_RANDR";
 
 static GLXContext g_pContext = nullptr;
-static GLXContext g_pBackgroundContext = nullptr;
-static Window g_AltWindow = None;
 static bool g_bChangedScreenSize = false;
 static SizeID g_iOldSize = None;
 static Rotation g_OldRotation = RR_Rotate_0;
@@ -118,14 +116,8 @@ LowLevelWindow_X11::~LowLevelWindow_X11() {
     glXDestroyContext(Dpy, g_pContext);
     g_pContext = nullptr;
   }
-  if (g_pBackgroundContext) {
-    glXDestroyContext(Dpy, g_pBackgroundContext);
-    g_pBackgroundContext = nullptr;
-  }
   XDestroyWindow(Dpy, Win);
   Win = None;
-  XDestroyWindow(Dpy, g_AltWindow);
-  g_AltWindow = None;
   CloseXConnection();
 }
 
@@ -338,12 +330,6 @@ std::string LowLevelWindow_X11::TryVideoMode(
       return "Failed to create the window.";
     }
 
-    if (!MakeWindow(
-            g_AltWindow, xvi->screen, xvi->depth, xvi->visual, p.width,
-            p.height, !p.windowed)) {
-      FAIL_M("Failed to create the alt window.");  // Should this be fatal?
-    }
-
     char* szWindowTitle = const_cast<char*>(p.sWindowTitle.c_str());
     XChangeProperty(
         Dpy, Win, XA_WM_NAME, XA_STRING, 8, PropModeReplace,
@@ -352,11 +338,7 @@ std::string LowLevelWindow_X11::TryVideoMode(
     if (g_pContext) {
       glXDestroyContext(Dpy, g_pContext);
     }
-    if (g_pBackgroundContext) {
-      glXDestroyContext(Dpy, g_pBackgroundContext);
-    }
     g_pContext = glXCreateContext(Dpy, xvi, nullptr, True);
-    g_pBackgroundContext = glXCreateContext(Dpy, xvi, g_pContext, True);
 
     glXMakeCurrent(Dpy, Win, g_pContext);
 
@@ -910,10 +892,6 @@ void LowLevelWindow_X11::GetDisplaySpecs(DisplaySpecs& out) const {
   }
 }
 
-bool LowLevelWindow_X11::SupportsThreadedRendering() {
-  return g_pBackgroundContext != nullptr;
-}
-
 class RenderTarget_X11 : public RenderTarget {
  public:
   RenderTarget_X11(LowLevelWindow_X11* pWind);
@@ -1110,29 +1088,6 @@ bool LowLevelWindow_X11::SupportsFullscreenBorderlessWindow() const {
 
 RenderTarget* LowLevelWindow_X11::CreateRenderTarget() {
   return new RenderTarget_X11(this);
-}
-
-void LowLevelWindow_X11::BeginConcurrentRenderingMainThread() {
-  /* Move the main thread, which is going to be loading textures, etc.
-   * but not rendering, to an undisplayed window. This results in
-   * smoother rendering. */
-  bool b = glXMakeCurrent(Dpy, g_AltWindow, g_pContext);
-  ASSERT(b);
-}
-
-void LowLevelWindow_X11::EndConcurrentRenderingMainThread() {
-  bool b = glXMakeCurrent(Dpy, Win, g_pContext);
-  ASSERT(b);
-}
-
-void LowLevelWindow_X11::BeginConcurrentRendering() {
-  bool b = glXMakeCurrent(Dpy, Win, g_pBackgroundContext);
-  ASSERT(b);
-}
-
-void LowLevelWindow_X11::EndConcurrentRendering() {
-  bool b = glXMakeCurrent(Dpy, None, nullptr);
-  ASSERT(b);
 }
 
 /*

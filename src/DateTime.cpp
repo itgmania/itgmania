@@ -84,14 +84,6 @@ bool DateTime::operator>(const DateTime& other) const {
   return false;
 }
 
-bool DateTime::operator<=(const DateTime& other) const {
-  return !(*this > other);  // Reuse the > operator
-}
-
-bool DateTime::operator>=(const DateTime& other) const {
-  return !(*this < other);  // Reuse the < operator
-}
-
 DateTime DateTime::GetNowDateTime() {
   time_t now = time(nullptr);
   tm tNow;

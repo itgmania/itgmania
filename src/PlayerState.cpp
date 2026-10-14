@@ -47,10 +47,6 @@ void PlayerState::Reset() {
 
   m_fSuperMeter = 0;  // between 0 and NUM_ATTACK_LEVELS
   m_fSuperMeterGrowthScale = 1;
-
-  for (int i = 0; i < NUM_INVENTORY_SLOTS; i++) {
-    m_Inventory[i].MakeBlank();
-  }
 }
 
 void PlayerState::Update(float fDelta) {
@@ -153,13 +149,6 @@ void PlayerState::RemoveActiveAttacks(AttackLevel al) {
 void PlayerState::EndActiveAttacks() {
   for (Attack& a : m_ActiveAttacks) {
     a.fSecsRemaining = 0;
-  }
-}
-
-void PlayerState::RemoveAllInventory() {
-  for (int s = 0; s < NUM_INVENTORY_SLOTS; s++) {
-    m_Inventory[s].fSecsRemaining = 0;
-    m_Inventory[s].sModifiers = "";
   }
 }
 

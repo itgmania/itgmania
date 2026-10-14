@@ -77,10 +77,8 @@ class SemaImpl_Pthreads : public SemaImpl {
  public:
   SemaImpl_Pthreads(int iInitialValue);
   ~SemaImpl_Pthreads();
-  int GetValue() const { return m_iValue; }
   void Post();
   bool Wait();
-  bool TryWait();
 
  private:
   pthread_cond_t m_Cond;

@@ -26,7 +26,6 @@ class RageDisplay_D3D : public RageDisplay {
   ActualVideoModeParams GetActualVideoModeParams() const;
   void SetBlendMode(BlendMode mode);
   bool SupportsTextureFormat(RagePixelFormat pixfmt, bool realtime = false);
-  bool SupportsThreadedRendering();
   bool SupportsPerVertexMatrixScale() { return false; }
   uintptr_t CreateTexture(
       RagePixelFormat pixfmt, RageSurface* img, bool bGenerateMipMaps);

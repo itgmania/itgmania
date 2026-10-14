@@ -152,20 +152,6 @@ void GetAllMatching(
  */
 void GetAllMatchingEndless(
     Song* pSong, const StepsCriteria& stc, std::vector<SongAndSteps>& out);
-/**
- * @brief Is there a <a class="el" href="class_steps.html">Step</a>
- * that matches the criteria?
- * @param soc the SongCriteria to look for.
- * @param stc the StepsCriteria to look for.
- * @return true if we find a match, false otherwise. */
-bool HasMatching(const SongCriteria& soc, const StepsCriteria& stc);
-/**
- * @brief Is there a <a class="el" href="class_steps.html">Step</a>
- * that matches the criteria?
- * @param pSong the Song we're checking in.
- * @param stc the StepsCriteria to look for.
- * @return true if we find a match, false otherwise. */
-bool HasMatching(const Song* pSong, const StepsCriteria& stc);
 
 bool CompareNotesPointersByRadarValues(
     const Steps* pSteps1, const Steps* pSteps2);
@@ -176,11 +162,6 @@ void SortNotesArrayByDifficulty(std::vector<Steps*>& vpStepsInOut);
 bool CompareStepsPointersByTypeAndDifficulty(
     const Steps* pStep1, const Steps* pStep2);
 void SortStepsByTypeAndDifficulty(std::vector<Steps*>& vpStepsInOut);
-void SortStepsPointerArrayByNumPlays(
-    std::vector<Steps*>& vpStepsInOut, ProfileSlot slot, bool bDescending);
-void SortStepsPointerArrayByNumPlays(
-    std::vector<Steps*>& vpStepsInOut, const Profile* pProfile,
-    bool bDescending);
 bool CompareStepsPointersByDescription(
     const Steps* pStep1, const Steps* pStep2);
 void SortStepsByDescription(std::vector<Steps*>& vpStepsInOut);
@@ -226,7 +207,6 @@ class StepsID {
   // description field isn't always going to be unique.
   // -Kyz
   bool operator<(const StepsID& rhs) const;
-  bool operator==(const StepsID& rhs) const;
   bool MatchesStepsType(StepsType s) const { return st == s; }
 
   XNode* CreateNode() const;

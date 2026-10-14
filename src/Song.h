@@ -135,10 +135,6 @@ class Song {
   /** @brief Save to the SSC and SM files no matter what. */
   void Save(bool autosave = false);
   /**
-   * @brief Save the current Song to a JSON file.
-   * @return its success or failure. */
-  bool SaveToJsonFile(std::string sPath);
-  /**
    * @brief Save the current Song to a cache file using the preferred format.
    * @return its success or failure. */
   bool SaveToCacheFile();
@@ -146,10 +142,6 @@ class Song {
    * @brief Save the current Song to a SM file.
    * @return its success or failure. */
   bool SaveToSMFile();
-  /**
-   * @brief Save the current Song to a DWI file if possible.
-   * @return its success or failure. */
-  bool SaveToDWIFile();
 
   void RemoveAutosave();
   bool WasLoadedFromAutosave() const { return m_loaded_from_autosave; }

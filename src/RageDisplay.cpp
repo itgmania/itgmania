@@ -190,8 +190,6 @@ bool RageDisplay::BeginFrame() {
 
 void RageDisplay::EndFrame() { ProcessStatsOnFlip(); }
 
-void RageDisplay::BeginConcurrentRendering() { this->SetDefaultRenderStates(); }
-
 void RageDisplay::StatsAddVerts(int iNumVertsRendered) {
   g_iVertsRenderedSinceLastCheck += iNumVertsRendered;
 }
@@ -315,41 +313,12 @@ class MatrixStack {
     RageMatrixMultiply(&stack.back(), &stack.back(), &m);
   }
 
-  // Right multiply the current matrix with the computed rotation
-  // matrix, counterclockwise about the given axis with the given angle.
-  // (rotation is about the current world origin)
-  void RotateX(float degrees) {
-    RageMatrix m;
-    RageMatrixRotationX(&m, degrees);
-    MultMatrix(m);
-  }
-  void RotateY(float degrees) {
-    RageMatrix m;
-    RageMatrixRotationY(&m, degrees);
-    MultMatrix(m);
-  }
-  void RotateZ(float degrees) {
-    RageMatrix m;
-    RageMatrixRotationZ(&m, degrees);
-    MultMatrix(m);
-  }
-
   // Left multiply the current matrix with the computed rotation
   // matrix. All angles are counterclockwise. (rotation is about the
   // local origin of the object)
-  void RotateXLocal(float degrees) {
-    RageMatrix m;
-    RageMatrixRotationX(&m, degrees);
-    MultMatrixLocal(m);
-  }
   void RotateYLocal(float degrees) {
     RageMatrix m;
     RageMatrixRotationY(&m, degrees);
-    MultMatrixLocal(m);
-  }
-  void RotateZLocal(float degrees) {
-    RageMatrix m;
-    RageMatrixRotationZ(&m, degrees);
     MultMatrixLocal(m);
   }
 
@@ -453,10 +422,6 @@ void RageDisplay::PushMatrix() { g_WorldStack.Push(); }
 
 void RageDisplay::PopMatrix() { g_WorldStack.Pop(); }
 
-void RageDisplay::Translate(float x, float y, float z) {
-  g_WorldStack.TranslateLocal(x, y, z);
-}
-
 void RageDisplay::TranslateWorld(float x, float y, float z) {
   g_WorldStack.Translate(x, y, z);
 }
@@ -464,12 +429,6 @@ void RageDisplay::TranslateWorld(float x, float y, float z) {
 void RageDisplay::Scale(float x, float y, float z) {
   g_WorldStack.ScaleLocal(x, y, z);
 }
-
-void RageDisplay::RotateX(float deg) { g_WorldStack.RotateXLocal(deg); }
-
-void RageDisplay::RotateY(float deg) { g_WorldStack.RotateYLocal(deg); }
-
-void RageDisplay::RotateZ(float deg) { g_WorldStack.RotateZLocal(deg); }
 
 void RageDisplay::SkewX(float fAmount) { g_WorldStack.SkewX(fAmount); }
 

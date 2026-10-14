@@ -20,7 +20,6 @@ class Alsa9Buf {
 
   snd_pcm_t* pcm;
 
-  bool Recover(int r);
   bool SetHWParams();
   bool SetSWParams();
 
@@ -40,8 +39,6 @@ class Alsa9Buf {
   bool WaitUntilFramesCanBeFilled(int timeout_ms);
   void Write(const int16_t* buffer, int frames);
 
-  void Play();
-  void Stop();
   void SetVolume(float vol);
   int GetSampleRate() const { return samplerate; }
 

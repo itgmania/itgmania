@@ -54,8 +54,6 @@ struct RageSurfaceFormat {
    * val is undefined and false is returned. */
   bool MapRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint32_t& val) const;
 
-  bool operator==(const RageSurfaceFormat& rhs) const;
-
   /* Like operator==, but ignores the palette (which is really a part of the
    * surface, not the format). */
   bool Equivalent(const RageSurfaceFormat& rhs) const;
@@ -71,7 +69,6 @@ struct RageSurface {
   int32_t flags;
 
   RageSurface();
-  RageSurface(const RageSurface& cpy);
   ~RageSurface();
 };
 

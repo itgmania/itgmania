@@ -176,15 +176,6 @@ wchar_t RageInput::DeviceInputToChar(
   }
 }
 
-InputDeviceState RageInput::GetInputDeviceState(InputDevice id) {
-  InputHandler* pDriver = GetHandlerForDevice(id);
-  if (pDriver != nullptr) {
-    return pDriver->GetInputDeviceState(id);
-  } else {
-    return InputDeviceState_NoInputHandler;
-  }
-}
-
 std::string RageInput::GetDisplayDevicesString() const {
   std::vector<InputDeviceInfo> vDevices;
   GetDevicesAndDescriptions(vDevices);

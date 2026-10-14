@@ -33,7 +33,6 @@
 #include "GameplayHelpers.h"
 #include "InputFilter.h"
 #include "InputMapper.h"
-#include "Inventory.h"
 #include "LifeMeter.h"
 #include "LifeMeterBar.h"
 #include "LightsManager.h"
@@ -124,10 +123,6 @@ AutoScreenMessage(SM_StartLoadingNextSong);
 AutoScreenMessage(SM_DoPrevScreen);
 AutoScreenMessage(SM_DoNextScreen);
 
-AutoScreenMessage(SM_BattleTrickLevel1);
-AutoScreenMessage(SM_BattleTrickLevel2);
-AutoScreenMessage(SM_BattleTrickLevel3);
-
 static Preference<bool> g_bCenter1Player("Center1Player", false);
 static Preference<bool> g_bShowLyrics("ShowLyrics", true);
 static Preference<bool> g_bEasterEggs("EasterEggs", true);
@@ -154,7 +149,6 @@ PlayerInfo::PlayerInfo()
       m_pActiveAttackList(nullptr),
       m_NoteData(),
       m_pPlayer(nullptr),
-      m_pInventory(nullptr),
       m_pStepsDisplay(nullptr),
       m_sprOniGameOver() {}
 
@@ -235,7 +229,6 @@ void PlayerInfo::Load(
   m_ptextPlayerOptions = nullptr;
   m_pActiveAttackList = nullptr;
   m_pPlayer = new Player(m_NoteData, bShowNoteField);
-  m_pInventory = nullptr;
   m_pStepsDisplay = nullptr;
 }
 
@@ -250,7 +243,6 @@ PlayerInfo::~PlayerInfo() {
   RageUtil::SafeDelete(m_ptextPlayerOptions);
   RageUtil::SafeDelete(m_pActiveAttackList);
   RageUtil::SafeDelete(m_pPlayer);
-  RageUtil::SafeDelete(m_pInventory);
   RageUtil::SafeDelete(m_pStepsDisplay);
 }
 
@@ -763,17 +755,6 @@ void ScreenGameplay::Init() {
     }
     LOAD_ALL_COMMANDS_AND_SET_XY(pi->m_pStepsDisplay);
     this->AddChild(pi->m_pStepsDisplay);
-
-    /*
-                    switch( GAMESTATE->m_PlayMode )
-                    {
-                    case PLAY_MODE_BATTLE:
-                            pi->m_pInventory = new Inventory;
-                            pi->m_pInventory->Load( p );
-                            this->AddChild( pi->m_pInventory );
-                            break;
-                    }
-    */
   }
 
   m_textSongOptions.LoadFromFont(THEME->GetPathF(m_sName, "song options"));
@@ -836,18 +817,6 @@ void ScreenGameplay::Init() {
       m_textSurviveTime.SetDiffuse(RageColor(1, 1, 1, 0));
       this->AddChild(&m_textSurviveTime);
     }
-
-    switch (GAMESTATE->m_PlayMode) {
-      case PLAY_MODE_BATTLE:
-        m_soundBattleTrickLevel1.Load(
-            THEME->GetPathS(m_sName, "battle trick level1"), true);
-        m_soundBattleTrickLevel2.Load(
-            THEME->GetPathS(m_sName, "battle trick level2"), true);
-        m_soundBattleTrickLevel3.Load(
-            THEME->GetPathS(m_sName, "battle trick level3"), true);
-      default:
-        break;
-    }
   }
 
   if (m_pSongBackground) {
@@ -862,8 +831,8 @@ void ScreenGameplay::Init() {
     pi->m_pPlayer->Init(
         sType, pi->GetPlayerState(), pi->GetPlayerStageStats(),
         pi->m_pLifeMeter, m_pCombinedLifeMeter, pi->m_pPrimaryScoreDisplay,
-        pi->m_pSecondaryScoreDisplay, pi->m_pInventory,
-        pi->m_pPrimaryScoreKeeper, pi->m_pSecondaryScoreKeeper);
+        pi->m_pSecondaryScoreDisplay, pi->m_pPrimaryScoreKeeper,
+        pi->m_pSecondaryScoreKeeper);
   }
 
   // fill in m_apSongsQueue, m_vpStepsQueue, m_asModifiersQueue
@@ -3036,19 +3005,6 @@ void ScreenGameplay::HandleScreenMessage(const ScreenMessage SM) {
     PlayAnnouncer("gameplay combo stopped", 2);
   } else if (SM == SM_ComboContinuing) {
     PlayAnnouncer("gameplay combo overflow", 2);
-  } else if (SM >= SM_BattleTrickLevel1 && SM <= SM_BattleTrickLevel3) {
-    int iTrickLevel = SM.c_str() - SM_BattleTrickLevel1.c_str() + 1;
-    PlayAnnouncer(ssprintf("gameplay battle trick level%d", iTrickLevel), 3);
-    if (SM == SM_BattleTrickLevel1) {
-      m_soundBattleTrickLevel1.Play(false);
-    } else if (SM == SM_BattleTrickLevel2) {
-      m_soundBattleTrickLevel2.Play(false);
-    } else if (SM == SM_BattleTrickLevel3) {
-      m_soundBattleTrickLevel3.Play(false);
-    }
-  } else if (SM >= SM_BattleDamageLevel1 && SM <= SM_BattleDamageLevel3) {
-    int iDamageLevel = SM.c_str() - SM_BattleDamageLevel1.c_str() + 1;
-    PlayAnnouncer(ssprintf("gameplay battle damage level%d", iDamageLevel), 3);
   } else if (SM == SM_DoPrevScreen) {
     SongFinished();
     this->StageFinished(true);

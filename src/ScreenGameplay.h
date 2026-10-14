@@ -36,7 +36,6 @@ class Player;
 class LifeMeter;
 class ScoreDisplay;
 class StepsDisplay;
-class Inventory;
 class ScoreKeeper;
 class Background;
 class Foreground;
@@ -129,12 +128,6 @@ class PlayerInfo {
   NoteData m_NoteData;
   /** @brief The specific Player that is going to play. */
   Player* m_pPlayer;
-
-  /**
-   * @brief The inventory of attacks.
-   *
-   * This is mainly used in PLAY_MODE_BATTLE. */
-  Inventory* m_pInventory;
 
   StepsDisplay* m_pStepsDisplay;
 
@@ -322,10 +315,6 @@ class ScreenGameplay : public ScreenWithMenuElements {
   BitmapText m_textSurviveTime;
 
   AutoKeysounds m_AutoKeysounds;
-
-  RageSound m_soundBattleTrickLevel1;
-  RageSound m_soundBattleTrickLevel2;
-  RageSound m_soundBattleTrickLevel3;
 
   bool m_bZeroDeltaOnNextUpdate;
 

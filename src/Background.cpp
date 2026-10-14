@@ -108,10 +108,6 @@ class BackgroundImpl : public ActorFrame {
 
   DancingCharacters* GetDancingCharacters() { return m_pDancingCharacters; };
 
-  void GetLoadedBackgroundChanges(
-      std::vector<BackgroundChange>*
-          pBackgroundChangesOut[NUM_BackgroundLayer]);
-
  protected:
   bool m_bInitted;
   DancingCharacters* m_pDancingCharacters;
@@ -938,12 +934,6 @@ void BackgroundImpl::DrawPrimitives() {
   ActorFrame::DrawPrimitives();
 }
 
-void BackgroundImpl::GetLoadedBackgroundChanges(
-    std::vector<BackgroundChange>* pBackgroundChangesOut[NUM_BackgroundLayer]) {
-  FOREACH_BackgroundLayer(i) * pBackgroundChangesOut[i] =
-      m_Layer[i].m_aBGChanges;
-}
-
 bool BackgroundImpl::IsDangerAllVisible() {
   // The players are never in danger in FAIL_OFF.
   // Only consider enabled players. A disabled player's m_pCurSteps and
@@ -1067,10 +1057,6 @@ void Background::SetBrightness(float fBrightness) {
 }
 DancingCharacters* Background::GetDancingCharacters() {
   return m_pImpl->GetDancingCharacters();
-}
-void Background::GetLoadedBackgroundChanges(
-    std::vector<BackgroundChange>* pBackgroundChangesOut[NUM_BackgroundLayer]) {
-  m_pImpl->GetLoadedBackgroundChanges(pBackgroundChangesOut);
 }
 
 /*

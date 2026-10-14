@@ -54,14 +54,6 @@ static void RevertSyncChanges(void* pThrowAway) {
   AdjustSync::RevertSyncChanges();
 }
 
-void ScreenSaveSync::Init() {
-  ScreenPrompt::Init();
-
-  ScreenPrompt::SetPromptSettings(
-      GetPromptText(), PROMPT_YES_NO, ANSWER_YES, SaveSyncChanges,
-      RevertSyncChanges, nullptr);
-}
-
 void ScreenSaveSync::PromptSaveSync(ScreenMessage sm) {
   ScreenPrompt::Prompt(
       sm, GetPromptText(), PROMPT_YES_NO, ANSWER_YES, SaveSyncChanges,

@@ -99,8 +99,6 @@ class ScoreKeeperNormal : public ScoreKeeper {
 
   int TapNoteScoreToDancePoints(TapNoteScore tns) const;
   int HoldNoteScoreToDancePoints(HoldNoteScore hns) const;
-  int TapNoteScoreToGradePoints(TapNoteScore tns) const;
-  int HoldNoteScoreToGradePoints(HoldNoteScore hns) const;
   static int TapNoteScoreToDancePoints(TapNoteScore tns, bool bBeginner);
   static int HoldNoteScoreToDancePoints(HoldNoteScore hns, bool bBeginner);
   static int TapNoteScoreToGradePoints(TapNoteScore tns, bool bBeginner);

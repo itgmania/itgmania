@@ -27,12 +27,6 @@ void TrailEntry::GetAttackArray(AttackArray& out) const {
   out.insert(out.end(), Attacks.begin(), Attacks.end());
 }
 
-bool TrailEntry::operator==(const TrailEntry& rhs) const {
-#define EQUAL(a) (a == rhs.a)
-  return EQUAL(pSong) && EQUAL(pSteps) && EQUAL(Modifiers) && EQUAL(Attacks) &&
-         EQUAL(bSecret) && EQUAL(iLowMeter) && EQUAL(iHighMeter) && EQUAL(dc);
-}
-
 bool TrailEntry::ContainsTransformOrTurn() const {
   PlayerOptions po;
   po.FromString(Modifiers);

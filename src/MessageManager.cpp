@@ -176,10 +176,6 @@ void MessageManager::Unsubscribe(
   subs.erase(iter);
 }
 
-void MessageManager::Unsubscribe(IMessageSubscriber* pSubscriber, MessageID m) {
-  Unsubscribe(pSubscriber, MessageIDToString(m));
-}
-
 void MessageManager::Broadcast(Message& msg) const {
   if (m_Logging) {
     LOG->Trace("MESSAGEMAN:Broadcast: %s", msg.GetName().c_str());
@@ -220,20 +216,6 @@ MessageSubscriber::MessageSubscriber(const MessageSubscriber& cpy)
   for (const std::string& msg : cpy.m_vsSubscribedTo) {
     this->SubscribeToMessage(msg);
   }
-}
-
-MessageSubscriber& MessageSubscriber::operator=(const MessageSubscriber& cpy) {
-  if (&cpy == this) {
-    return *this;
-  }
-
-  UnsubscribeAll();
-
-  for (const std::string& msg : cpy.m_vsSubscribedTo) {
-    this->SubscribeToMessage(msg);
-  }
-
-  return *this;
 }
 
 void MessageSubscriber::SubscribeToMessage(const std::string& sMessageName) {

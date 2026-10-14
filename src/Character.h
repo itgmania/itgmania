@@ -5,7 +5,6 @@
 
 #include "GameConstantsAndTypes.h"
 #include "LuaReference.h"
-#include "RageTexturePreloader.h"
 #include "StdString.h"
 struct lua_State;
 typedef lua_State Lua;
@@ -30,9 +29,6 @@ class Character {
   bool IsDefaultCharacter() const {
     return CompareNoCase(m_sCharacterID, "default") == 0;
   }
-
-  void DemandGraphics();
-  void UndemandGraphics();
 
   // Lua
   void PushSelf(Lua* L);
@@ -60,8 +56,6 @@ class Character {
   bool m_bUsableInRave;
 
   std::string m_sAttacks[NUM_ATTACK_LEVELS][NUM_ATTACKS_PER_LEVEL];
-  RageTexturePreloader m_Preload;
-  int m_iPreloadRefcount;
 };
 
 #endif

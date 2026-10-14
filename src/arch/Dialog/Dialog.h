@@ -14,10 +14,8 @@ void SetWindowed(bool bWindowed);
 enum Result { ok, cancel, abort, retry, ignore, yes, no };
 void Error(std::string sError, std::string sID = "");
 void OK(std::string sMessage, std::string sID = "");
-Result OKCancel(std::string sMessage, std::string sID = "");
 Result AbortRetryIgnore(std::string sMessage, std::string sID = "");
 Result AbortRetry(std::string sMessage, std::string sID = "");
-Result YesNo(std::string sMessage, std::string sID = "");
 
 /* for DialogDrivers */
 void IgnoreMessage(std::string sID);

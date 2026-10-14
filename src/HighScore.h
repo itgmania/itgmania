@@ -53,7 +53,6 @@ struct HighScore {
    * @return the modifiers. */
   std::string GetModifiers() const;
   DateTime GetDateTime() const;
-  std::string GetPlayerGuid() const;
   int GetTapNoteScore(TapNoteScore tns) const;
   int GetHoldNoteScore(HoldNoteScore tns) const;
   const RadarValues& GetRadarValues() const;
@@ -89,7 +88,6 @@ struct HighScore {
   void SetRoutine(bool b);
 
   // Getters for player attributes
-  std::string GetPlayerName(const PlayerNumber& pn) const;
   std::string GetPlayerGuid(const PlayerNumber& pn) const;
   void SetPlayerGrade(const PlayerNumber& pn, const Grade g);
   void SetPlayerScore(const PlayerNumber& pn, unsigned int iScore);
@@ -107,14 +105,9 @@ struct HighScore {
         const_cast<HighScore*>(this)->GetNameMutable());
   }
 
-  void Unset();
-
   bool operator<(const HighScore& other) const;
-  bool operator>(const HighScore& other) const;
-  bool operator<=(const HighScore& other) const;
   bool operator>=(const HighScore& other) const;
   bool operator==(const HighScore& other) const;
-  bool operator!=(const HighScore& other) const;
 
   XNode* CreateNode() const;
   void LoadFromNode(const XNode* pNode);

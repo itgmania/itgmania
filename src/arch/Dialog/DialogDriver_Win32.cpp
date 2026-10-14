@@ -86,27 +86,6 @@ void DialogDriver_Win32::OK(std::string sMessage, std::string sID) {
   }
 }
 
-Dialog::Result DialogDriver_Win32::OKCancel(
-    std::string sMessage, std::string sID) {
-  g_bAllowHush = sID != "";
-  g_sMessage = sMessage;
-  AppInstance handle;
-
-  // DialogBox( handle.Get(), MAKEINTRESOURCE(IDD_OK), ::GetHwnd(), OKWndProc );
-  int result = ::MessageBox(
-      nullptr, sMessage.c_str(), GetWindowTitle().c_str(), MB_OKCANCEL);
-  if (g_bAllowHush && g_bHush) {
-    Dialog::IgnoreMessage(sID);
-  }
-
-  switch (result) {
-    case IDOK:
-      return Dialog::ok;
-    default:
-      return Dialog::cancel;
-  }
-}
-
 static std::string g_sErrorString;
 
 static INT_PTR CALLBACK
@@ -217,22 +196,6 @@ Dialog::Result DialogDriver_Win32::AbortRetry(
       return Dialog::abort;
     default:
       FAIL_M(ssprintf("Unexpected response to Retry/Cancel dialog: %i", iRet));
-  }
-}
-
-Dialog::Result DialogDriver_Win32::YesNo(
-    std::string sMessage, std::string sID) {
-  int iRet = 0;
-  iRet = ::MessageBox(
-      ::GetHwnd(), ConvertUTF8ToACP(sMessage).c_str(),
-      ConvertUTF8ToACP(::GetWindowTitle()).c_str(), MB_YESNO);
-  switch (iRet) {
-    case IDYES:
-      return Dialog::yes;
-    case IDNO:
-      return Dialog::no;
-    default:
-      FAIL_M(ssprintf("Unexpected response to Yes/No dialog: %i", iRet));
   }
 }
 

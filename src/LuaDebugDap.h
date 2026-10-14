@@ -54,7 +54,6 @@ Event CreateOutputEvent(
     const std::string& output, const std::string& sourceName,
     const std::string& source, int lineNumber);
 Event CreateThreadStartedEvent(ThreadId threadId);
-Event CreateThreadExitedEvent(ThreadId threadId);
 Event CreateTerminatedEvent();
 
 Response CreateDapResponse(const Request& request);

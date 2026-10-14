@@ -84,20 +84,6 @@ bool RageSurfaceFormat::MapRGBA(
   return true;
 }
 
-bool RageSurfaceFormat::operator==(const RageSurfaceFormat& rhs) const {
-  if (!Equivalent(rhs)) {
-    return false;
-  }
-
-  if (BytesPerPixel == 1) {
-    if (memcmp(palette.get(), rhs.palette.get(), sizeof(RageSurfaceFormat))) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 bool RageSurfaceFormat::Equivalent(const RageSurfaceFormat& rhs) const {
 #define COMP(a) \
   if (a != rhs.a) return false;
@@ -114,22 +100,6 @@ RageSurface::RageSurface() {
   format = &fmt;
   pixels = nullptr;
   pixels_owned = true;
-}
-
-RageSurface::RageSurface(const RageSurface& cpy) {
-  format = &fmt;
-
-  w = cpy.w;
-  h = cpy.h;
-  pitch = cpy.pitch;
-  flags = cpy.flags;
-  pixels_owned = true;
-  if (cpy.pixels) {
-    pixels = new uint8_t[static_cast<size_t>(pitch) * h];
-    memcpy(pixels, cpy.pixels, static_cast<size_t>(pitch) * h);
-  } else {
-    pixels = nullptr;
-  }
 }
 
 RageSurface::~RageSurface() {

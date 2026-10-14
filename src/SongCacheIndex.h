@@ -14,7 +14,6 @@ class SongCacheIndex {
  public:
   SongCacheIndex();
   ~SongCacheIndex();
-  void ReadFromDisk();
   static std::string GetCacheFilePath(
       const std::string& sGroup, const std::string& sPath);
 

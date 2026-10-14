@@ -46,7 +46,6 @@ class ScreenWithMenuElements : public Screen {
  protected:
   std::string HandleLuaMusicFile(const std::string& path);
   virtual void StartPlayingMusic();
-  void SetHelpText(std::string s);
 
   AutoActor m_sprUnderlay;
   MemoryCardDisplay* m_MemoryCardDisplay[NUM_PLAYERS];

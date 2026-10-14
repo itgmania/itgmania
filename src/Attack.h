@@ -65,11 +65,6 @@ struct Attack {
    * empty.
    * @return true if it is blank/empty, or false otherwise. */
   bool IsBlank() const { return sModifiers.empty(); }
-  /**
-   * @brief Determine if two Attacks are equal to each other.
-   * @param rhs the other Attack in question.
-   * @return true if the two Attacks are equal, or false otherwise. */
-  bool operator==(const Attack& rhs) const;
   bool ContainsTransformOrTurn() const;
   static Attack FromGlobalCourseModifier(const std::string& sModifiers);
   std::string GetTextDescription() const;

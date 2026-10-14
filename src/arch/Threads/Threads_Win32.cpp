@@ -373,15 +373,11 @@ EventImpl* MakeEvent(MutexImpl* pMutex) {
 
 SemaImpl_Win32::SemaImpl_Win32(int iInitialValue) {
   sem = CreateSemaphore(nullptr, iInitialValue, 999999999, nullptr);
-  m_iCounter = iInitialValue;
 }
 
 SemaImpl_Win32::~SemaImpl_Win32() { CloseHandle(sem); }
 
-void SemaImpl_Win32::Post() {
-  ++m_iCounter;
-  ReleaseSemaphore(sem, 1, nullptr);
-}
+void SemaImpl_Win32::Post() { ReleaseSemaphore(sem, 1, nullptr); }
 
 bool SemaImpl_Win32::Wait() {
   int len = 15000;
@@ -391,7 +387,6 @@ bool SemaImpl_Win32::Wait() {
     /* Wait for 15 seconds. If it takes longer than that, we're
      * probably deadlocked. */
     if (SimpleWaitForSingleObject(sem, len)) {
-      --m_iCounter;
       return true;
     }
 
@@ -402,15 +397,6 @@ bool SemaImpl_Win32::Wait() {
   }
 
   return false;
-}
-
-bool SemaImpl_Win32::TryWait() {
-  if (!SimpleWaitForSingleObject(sem, 0)) {
-    return false;
-  }
-
-  --m_iCounter;
-  return true;
 }
 
 SemaImpl* MakeSemaphore(int iInitialValue) {

@@ -77,36 +77,6 @@ void StageStats::AssertValid(PlayerNumber pn) const {
           (int)m_player[pn].m_vpPossibleSteps.size(), pn));
 }
 
-void StageStats::AssertValid(PlayerNumber pn, bool bRoutine) const {
-  ASSERT(m_vpPlayedSongs.size() != 0);
-  ASSERT(m_vpPossibleSongs.size() != 0);
-  if (m_vpPlayedSongs[0]) {
-    CHECKPOINT_M(m_vpPlayedSongs[0]->GetTranslitFullTitle());
-  }
-  ASSERT(m_RoutinePlayer.m_iStepsPlayed > 0);
-  ASSERT(m_RoutinePlayer.m_vpPossibleSteps.size() != 0);
-  ASSERT(m_RoutinePlayer.m_vpPossibleSteps[0] != nullptr);
-  ASSERT_M(m_playMode < NUM_PlayMode, ssprintf("playmode %i", m_playMode));
-  ASSERT_M(
-      m_RoutinePlayer.m_vpPossibleSteps[0]->GetDifficulty() < NUM_Difficulty,
-      ssprintf(
-          "Invalid Difficulty %i",
-          m_RoutinePlayer.m_vpPossibleSteps[0]->GetDifficulty()));
-  ASSERT_M(
-      static_cast<int>(m_vpPlayedSongs.size()) ==
-          m_RoutinePlayer.m_iStepsPlayed,
-      ssprintf(
-          "%i Songs Played != %i Steps Played for player %i",
-          static_cast<int>(m_vpPlayedSongs.size()),
-          static_cast<int>(m_RoutinePlayer.m_iStepsPlayed), pn));
-  ASSERT_M(
-      m_vpPossibleSongs.size() == m_RoutinePlayer.m_vpPossibleSteps.size(),
-      ssprintf(
-          "%i Possible Songs != %i Possible Steps for player %i",
-          static_cast<int>(m_vpPossibleSongs.size()),
-          static_cast<int>(m_RoutinePlayer.m_vpPossibleSteps.size()), pn));
-}
-
 int StageStats::GetAverageMeter(PlayerNumber pn) const {
   AssertValid(pn);
 

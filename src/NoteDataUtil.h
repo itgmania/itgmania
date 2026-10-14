@@ -213,7 +213,6 @@ void TransformNoteData(
 void TransformNoteData(
     NoteData& nd, const TimingData& timing_data, const PlayerOptions& po,
     StepsType st, int iStartIndex = 0, int iEndIndex = MAX_NOTE_ROW);
-void Scale(NoteData& nd, float fScale);
 void ScaleRegion(
     NoteData& nd, float fScale, int iStartIndex = 0,
     int iEndIndex = MAX_NOTE_ROW);

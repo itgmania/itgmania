@@ -34,9 +34,6 @@ class Background : public ActorFrame {
    * @return the dancing characters. */
   DancingCharacters* GetDancingCharacters();
 
-  void GetLoadedBackgroundChanges(
-      std::vector<BackgroundChange>** pBackgroundChangesOut);
-
  protected:
   BackgroundImpl* m_pImpl;
 };

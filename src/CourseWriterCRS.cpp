@@ -10,7 +10,6 @@
 #include "GameConstantsAndTypes.h"
 #include "RadarValues.h"
 #include "RageFile.h"
-#include "RageFileDriverMemory.h"
 #include "RageLog.h"
 #include "RageUtil.h"
 #include "Song.h"
@@ -38,13 +37,6 @@ bool CourseWriterCRS::Write(
   }
 
   return CourseWriterCRS::Write(course, f, bSavingCache);
-}
-
-void CourseWriterCRS::GetEditFileContents(
-    const Course* pCourse, std::string& sOut) {
-  RageFileObjMem mem;
-  CourseWriterCRS::Write(*pCourse, mem, true);
-  sOut = mem.GetString();
 }
 
 bool CourseWriterCRS::Write(

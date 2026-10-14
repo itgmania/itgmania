@@ -414,19 +414,6 @@ bool SemaImpl_Pthreads::Wait() {
   }
 }
 
-bool SemaImpl_Pthreads::TryWait() {
-  pthread_mutex_lock(&m_Mutex);
-  if (!m_iValue) {
-    pthread_mutex_unlock(&m_Mutex);
-    return false;
-  }
-
-  --m_iValue;
-  pthread_mutex_unlock(&m_Mutex);
-
-  return true;
-}
-
 SemaImpl* MakeSemaphore(int iInitialValue) {
   return new SemaImpl_Pthreads(iInitialValue);
 }

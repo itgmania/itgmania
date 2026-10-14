@@ -279,7 +279,7 @@ void RenderTarget_MacOSX::FinishRenderingTo() {
 }
 
 LowLevelWindow_MacOSX::LowLevelWindow_MacOSX()
-    : m_Context(nil), m_BGContext(nil), m_CurrentDisplayMode(nil), m_DisplayID(0) {
+    : m_Context(nil), m_CurrentDisplayMode(nil), m_DisplayID(0) {
   AutoreleasePool pool;
   m_WindowDelegate = [[SMWindowDelegate alloc] init];
   [m_WindowDelegate performSelectorOnMainThread:@selector(setupWindow)
@@ -300,8 +300,6 @@ LowLevelWindow_MacOSX::~LowLevelWindow_MacOSX() {
 
   [m_Context clearDrawable];
   [m_Context release];
-  [m_BGContext clearDrawable];
-  [m_BGContext release];
   [m_WindowDelegate performSelectorOnMainThread:@selector(closeWindow)
                                      withObject:nil
                                   waitUntilDone:YES];
@@ -357,15 +355,6 @@ std::string LowLevelWindow_MacOSX::TryVideoMode(const VideoModeParams& p, bool& 
       m_Context = newContext;
       newDeviceOut = !bShared;
       m_CurrentParams.bpp = p.bpp;
-      [m_BGContext release];
-      m_BGContext = nil;
-      m_BGContext = CreateOGLContext(
-          WINDOWED, p.bpp == 16 ? 16 : 24, p.bpp == 16 ? 1 : 8, 16, m_Context, bShared);
-
-      if (m_BGContext && !bShared) {
-        [m_BGContext release];
-        m_BGContext = nil;
-      }
     }
 
     [m_WindowDelegate performSelectorOnMainThread:@selector(setParams:)
@@ -410,14 +399,6 @@ std::string LowLevelWindow_MacOSX::TryVideoMode(const VideoModeParams& p, bool& 
     m_Context = newContext;
     newDeviceOut = !bShared;
     m_CurrentParams.bpp = p.bpp;
-    [m_BGContext release];
-    m_BGContext = CreateOGLContext(
-        FULL_SCREEN, p.bpp == 16 ? 16 : 24, p.bpp == 16 ? 1 : 8, 16, m_Context, bShared);
-
-    if (m_BGContext && !bShared) {
-      [m_BGContext release];
-      m_BGContext = nil;
-    }
   }
   dispatch_sync(dispatch_get_main_queue(), ^{
     [m_Context setFullScreen];
@@ -450,7 +431,6 @@ void LowLevelWindow_MacOSX::ShutDownFullScreen() {
 
   [NSOpenGLContext clearCurrentContext];
   [m_Context clearDrawable];
-  [m_BGContext clearDrawable];
 
   CGDisplayErr err = CGDisplaySwitchToMode(kCGDirectMainDisplay, m_CurrentDisplayMode);
 
@@ -641,15 +621,6 @@ void LowLevelWindow_MacOSX::Update() {
 
 RenderTarget* LowLevelWindow_MacOSX::CreateRenderTarget() {
   return new RenderTarget_MacOSX(m_Context);
-}
-
-void LowLevelWindow_MacOSX::BeginConcurrentRendering() {
-  if (m_CurrentParams.windowed) {
-    [m_BGContext setView:[((SMWindowDelegate*)m_WindowDelegate)->m_Window contentView]];
-  } else {
-    [m_BGContext setFullScreen];
-  }
-  [m_BGContext makeCurrentContext];
 }
 
 /*

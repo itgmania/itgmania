@@ -48,12 +48,6 @@ class RageDisplay_Legacy : public RageDisplay {
   void ResolutionChanged();
   const RagePixelFormatDesc* GetPixelFormatDesc(RagePixelFormat pf) const;
 
-  bool SupportsThreadedRendering();
-  void BeginConcurrentRenderingMainThread();
-  void EndConcurrentRenderingMainThread();
-  void BeginConcurrentRendering();
-  void EndConcurrentRendering();
-
   bool BeginFrame();
   void EndFrame();
   ActualVideoModeParams GetActualVideoModeParams() const;

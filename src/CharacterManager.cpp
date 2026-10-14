@@ -103,18 +103,6 @@ Character* CharacterManager::GetDefaultCharacter() {
   FAIL_M("There must be a default character available!");
 }
 
-void CharacterManager::DemandGraphics() {
-  for (Character* c : m_pCharacters) {
-    c->DemandGraphics();
-  }
-}
-
-void CharacterManager::UndemandGraphics() {
-  for (Character* c : m_pCharacters) {
-    c->UndemandGraphics();
-  }
-}
-
 Character* CharacterManager::GetCharacterFromID(std::string sCharacterID) {
   for (unsigned i = 0; i < m_pCharacters.size(); i++) {
     if (m_pCharacters[i]->m_sCharacterID == sCharacterID) {

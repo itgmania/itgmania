@@ -230,17 +230,6 @@ void RageMatrixScale(
   pOut->m33 = 1;
 }
 
-void RageMatrixRotationX(RageMatrix* pOut, float theta) {
-  theta *= PI / 180;
-
-  RageMatrixIdentity(pOut);
-  pOut->m[1][1] = std::cos(theta);
-  pOut->m[2][2] = pOut->m[1][1];
-
-  pOut->m[2][1] = std::sin(theta);
-  pOut->m[1][2] = -pOut->m[2][1];
-}
-
 void RageMatrixRotationY(RageMatrix* pOut, float theta) {
   theta *= PI / 180;
 
@@ -250,17 +239,6 @@ void RageMatrixRotationY(RageMatrix* pOut, float theta) {
 
   pOut->m[0][2] = std::sin(theta);
   pOut->m[2][0] = -pOut->m[0][2];
-}
-
-void RageMatrixRotationZ(RageMatrix* pOut, float theta) {
-  theta *= PI / 180;
-
-  RageMatrixIdentity(pOut);
-  pOut->m[0][0] = std::cos(theta);
-  pOut->m[1][1] = pOut->m[0][0];
-
-  pOut->m[0][1] = std::sin(theta);
-  pOut->m[1][0] = -pOut->m[0][1];
 }
 
 /* Return RageMatrixRotationX(rX) * RageMatrixRotationY(rY) *

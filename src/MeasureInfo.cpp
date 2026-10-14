@@ -15,39 +15,6 @@
 static const int BEATS_PER_MEASURE = 4;
 static const int ROWS_PER_MEASURE = ROWS_PER_BEAT * BEATS_PER_MEASURE;
 
-std::string MeasureInfo::ToString() const {
-  std::vector<std::string> asMeasureInfo;
-  for (unsigned i = 0; i < npsPerMeasure.size(); i++) {
-    asMeasureInfo.push_back(ssprintf("%.3f", npsPerMeasure[i]));
-  }
-
-  for (unsigned i = 0; i < notesPerMeasure.size(); i++) {
-    asMeasureInfo.push_back(ssprintf("%d", notesPerMeasure[i]));
-  }
-
-  return join(",", asMeasureInfo);
-}
-
-void MeasureInfo::FromString(const std::string& sValues) {
-  std::vector<std::string> asValues;
-  split(sValues, ",", asValues, true);
-  int half_size = static_cast<int>(asValues.size()) / 2;
-
-  float peak_nps = 0;
-  for (int i = 0; i < half_size; i++) {
-    float nps = StringToFloat(asValues[i]);
-    npsPerMeasure.push_back(nps);
-    if (nps > peak_nps) {
-      peak_nps = nps;
-    }
-  }
-  for (unsigned i = half_size; i < asValues.size(); i++) {
-    notesPerMeasure.push_back(StringToInt(asValues[i]));
-  }
-  measureCount = half_size;
-  peakNps = peak_nps;
-}
-
 void MeasureInfo::CalculateMeasureInfo(
     const NoteData& in, TimingData* timing, MeasureInfo& out) {
   int lastRow = in.GetLastRow();

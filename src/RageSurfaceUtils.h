@@ -19,12 +19,10 @@ void encodepixel(uint8_t* p, int bpp, uint32_t pixel);
 void GetRawRGBAV(uint32_t pixel, const RageSurfaceFormat& fmt, uint8_t* v);
 void GetRawRGBAV(const uint8_t* p, const RageSurfaceFormat& fmt, uint8_t* v);
 void GetRGBAV(uint32_t pixel, const RageSurface* src, uint8_t* v);
-void GetRGBAV(const uint8_t* p, const RageSurface* src, uint8_t* v);
 
 uint32_t SetRawRGBAV(const RageSurfaceFormat* fmt, const uint8_t* v);
 void SetRawRGBAV(uint8_t* p, const RageSurface* src, const uint8_t* v);
 uint32_t SetRGBAV(const RageSurfaceFormat* fmt, const uint8_t* v);
-void SetRGBAV(uint8_t* p, const RageSurface* src, const uint8_t* v);
 
 /* Get the number of bits representing each color channel in fmt. */
 void GetBitsPerChannel(const RageSurfaceFormat* fmt, uint32_t bits[4]);

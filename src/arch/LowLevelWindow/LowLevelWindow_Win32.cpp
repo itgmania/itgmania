@@ -19,7 +19,6 @@
 
 static PIXELFORMATDESCRIPTOR g_CurrentPixelFormat;
 static HGLRC g_HGLRC = nullptr;
-static HGLRC g_HGLRC_Background = nullptr;
 static HMODULE g_HGL_Module = nullptr;
 
 static void DestroyGraphicsWindowAndOpenGLContext() {
@@ -27,11 +26,6 @@ static void DestroyGraphicsWindowAndOpenGLContext() {
     wglMakeCurrent(nullptr, nullptr);
     wglDeleteContext(g_HGLRC);
     g_HGLRC = nullptr;
-  }
-
-  if (g_HGLRC_Background != nullptr) {
-    wglDeleteContext(g_HGLRC_Background);
-    g_HGLRC_Background = nullptr;
   }
 
   ZERO(g_CurrentPixelFormat);
@@ -58,7 +52,6 @@ void* LowLevelWindow_Win32::GetProcAddress(std::string s) {
 
 LowLevelWindow_Win32::LowLevelWindow_Win32() {
   ASSERT(g_HGLRC == nullptr);
-  ASSERT(g_HGLRC_Background == nullptr);
   ASSERT(g_HGL_Module == nullptr);
 
   GraphicsWindow::Initialize(false);
@@ -223,8 +216,6 @@ std::string LowLevelWindow_Win32::TryVideoMode(
       wglMakeCurrent(nullptr, nullptr);
       wglDeleteContext(g_HGLRC);
       g_HGLRC = nullptr;
-      wglDeleteContext(g_HGLRC_Background);
-      g_HGLRC_Background = nullptr;
     }
 
     bNewDeviceOut = true;
@@ -261,19 +252,6 @@ std::string LowLevelWindow_Win32::TryVideoMode(
       return hr_ssprintf(err, "wglCreateContext");
     }
 
-    g_HGLRC_Background = wglCreateContext(GraphicsWindow::GetHDC());
-    if (g_HGLRC_Background == nullptr) {
-      DWORD err = GetLastError();
-      DestroyGraphicsWindowAndOpenGLContext();
-      return hr_ssprintf(err, "wglCreateContext");
-    }
-
-    if (!wglShareLists(g_HGLRC, g_HGLRC_Background)) {
-      LOG->Warn(werr_ssprintf(GetLastError(), "wglShareLists failed").c_str());
-      wglDeleteContext(g_HGLRC_Background);
-      g_HGLRC_Background = nullptr;
-    }
-
     if (!wglMakeCurrent(GraphicsWindow::GetHDC(), g_HGLRC)) {
       DWORD err = GetLastError();
       DestroyGraphicsWindowAndOpenGLContext();
@@ -281,23 +259,6 @@ std::string LowLevelWindow_Win32::TryVideoMode(
     }
   }
   return std::string();  // we set the video mode successfully
-}
-
-bool LowLevelWindow_Win32::SupportsThreadedRendering() {
-  return g_HGLRC_Background != nullptr;
-}
-
-void LowLevelWindow_Win32::BeginConcurrentRendering() {
-  if (!wglMakeCurrent(GraphicsWindow::GetHDC(), g_HGLRC_Background)) {
-    DWORD err = GetLastError();
-    const char* errToPrint = hr_ssprintf(err, "wglMakeCurrent").c_str();
-    LOG->Warn(errToPrint);
-    FAIL_M(errToPrint);
-  }
-}
-
-void LowLevelWindow_Win32::EndConcurrentRendering() {
-  wglMakeCurrent(nullptr, nullptr);
 }
 
 static LocalizedString OPENGL_NOT_AVAILABLE(

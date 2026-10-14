@@ -184,10 +184,8 @@ class RageSemaphore {
   ~RageSemaphore();
 
   std::string GetName() const { return m_sName; }
-  int GetValue() const;
   void Post();
   void Wait(bool bFailOnTimeout = true);
-  bool TryWait();
 
  private:
   SemaImpl* m_pSema;

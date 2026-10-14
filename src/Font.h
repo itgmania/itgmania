@@ -174,7 +174,6 @@ class Font {
 
   void Load(const std::string& sFontOrTextureFilePath, std::string sChars);
   void Unload();
-  void Reload();
 
   // Load font-wide settings.
   void CapsOnly();

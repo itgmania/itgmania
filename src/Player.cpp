@@ -315,7 +315,6 @@ Player::Player(NoteData& nd, bool bVisibleParts) : m_NoteData(nd) {
   m_pSecondaryScoreDisplay = nullptr;
   m_pPrimaryScoreKeeper = nullptr;
   m_pSecondaryScoreKeeper = nullptr;
-  m_pInventory = nullptr;
   m_pIterNeedsTapJudging = nullptr;
   m_pIterNeedsHoldJudging = nullptr;
   m_pIterUncrossedRows = nullptr;
@@ -363,8 +362,8 @@ void Player::Init(
     const std::string& sType, PlayerState* pPlayerState,
     PlayerStageStats* pPlayerStageStats, LifeMeter* pLM,
     CombinedLifeMeter* pCombinedLM, ScoreDisplay* pScoreDisplay,
-    ScoreDisplay* pSecondaryScoreDisplay, Inventory* pInventory,
-    ScoreKeeper* pPrimaryScoreKeeper, ScoreKeeper* pSecondaryScoreKeeper) {
+    ScoreDisplay* pSecondaryScoreDisplay, ScoreKeeper* pPrimaryScoreKeeper,
+    ScoreKeeper* pSecondaryScoreKeeper) {
   GRAY_ARROWS_Y_STANDARD.Load(sType, "ReceptorArrowsYStandard");
   GRAY_ARROWS_Y_REVERSE.Load(sType, "ReceptorArrowsYReverse");
   ATTACK_DISPLAY_X.Load(sType, ATTACK_DISPLAY_X_NAME, NUM_PLAYERS, 2);
@@ -437,7 +436,6 @@ void Player::Init(
   m_pCombinedLifeMeter = pCombinedLM;
   m_pScoreDisplay = pScoreDisplay;
   m_pSecondaryScoreDisplay = pSecondaryScoreDisplay;
-  m_pInventory = pInventory;
   m_pPrimaryScoreKeeper = pPrimaryScoreKeeper;
   m_pSecondaryScoreKeeper = pSecondaryScoreKeeper;
 

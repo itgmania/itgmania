@@ -96,17 +96,6 @@ void RageSurfaceUtils::GetRGBAV(
   }
 }
 
-void RageSurfaceUtils::GetRGBAV(
-    const uint8_t* p, const RageSurface* src, uint8_t* v) {
-  uint32_t pixel = decodepixel(p, src->format->BytesPerPixel);
-  if (src->format->BytesPerPixel == 1)  // paletted
-  {
-    memcpy(v, &src->format->palette->colors[pixel], sizeof(RageSurfaceColor));
-  } else {  // RGBA
-    GetRGBAV(pixel, src, v);
-  }
-}
-
 // Inverse of GetRawRGBAV.
 uint32_t RageSurfaceUtils::SetRawRGBAV(
     const RageSurfaceFormat* fmt, const uint8_t* v) {
@@ -127,12 +116,6 @@ uint32_t RageSurfaceUtils::SetRGBAV(
          (v[1] >> fmt->Loss[1]) << fmt->Shift[1] |
          (v[2] >> fmt->Loss[2]) << fmt->Shift[2] |
          (v[3] >> fmt->Loss[3]) << fmt->Shift[3];
-}
-
-void RageSurfaceUtils::SetRGBAV(
-    uint8_t* p, const RageSurface* src, const uint8_t* v) {
-  uint32_t pixel = SetRGBAV(src->format, v);
-  encodepixel(p, src->format->BytesPerPixel, pixel);
 }
 
 void RageSurfaceUtils::GetBitsPerChannel(

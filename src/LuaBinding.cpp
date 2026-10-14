@@ -335,18 +335,6 @@ LuaClass::LuaClass(const LuaClass& cpy) : LuaTable(cpy) {
   DeepCopy();
 }
 
-LuaClass& LuaClass::operator=(const LuaClass& cpy) {
-  LuaTable::operator=(cpy);
-
-  if (!IsSet()) {
-    return *this;
-  }
-
-  DeepCopy();
-
-  return *this;
-}
-
 LuaClass::~LuaClass() {
   if (LUA == nullptr) {
     return;

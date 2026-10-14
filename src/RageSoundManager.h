@@ -41,8 +41,7 @@ class RageSoundManager {
   bool Pause(RageSoundBase* snd, bool bPause); /* used by RageSound */
   bool GetPlayingPosition(
       const RageSoundBase* snd, int& iSourceFrame,
-      RageTimer* pTimer = nullptr);             /* used by RageSound */
-  int64_t GetPosition(RageTimer* pTimer) const; /* used by RageSound */
+      RageTimer* pTimer = nullptr); /* used by RageSound */
   float GetPlayLatency() const;
   int GetDriverSampleRate() const;
 

@@ -96,7 +96,6 @@ class CourseID {
   XNode* CreateNode() const;
   void LoadFromNode(const XNode* pNode);
   void FromPath(std::string _sPath) { sPath = _sPath; }
-  std::string ToString() const;
   bool IsValid() const;
 
  private:

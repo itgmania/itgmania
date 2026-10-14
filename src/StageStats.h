@@ -25,11 +25,6 @@ class StageStats {
    * @param pn the PlayerNumber to check. */
   void AssertValid(PlayerNumber pn) const;
 
-  /**
-   * @brief Ensure that the Player is valid.
-   * @param pn the PlayerNumber to check. */
-  void AssertValid(PlayerNumber pn, bool bRoutine) const;
-
   void AddStats(const StageStats& other);  // accumulate
 
   bool OnePassed() const;

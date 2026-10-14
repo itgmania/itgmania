@@ -16,18 +16,12 @@ class DialogDriver {
     printf("Error: %s\n", sMessage.c_str());
   }
   virtual void OK(std::string sMessage, std::string sID) {}
-  virtual Dialog::Result OKCancel(std::string sMessage, std::string sID) {
-    return Dialog::ok;
-  }
   virtual Dialog::Result AbortRetryIgnore(
       std::string sMessage, std::string sID) {
     return Dialog::ignore;
   }
   virtual Dialog::Result AbortRetry(std::string sMessage, std::string sID) {
     return Dialog::abort;
-  }
-  virtual Dialog::Result YesNo(std::string sMessage, std::string sID) {
-    return Dialog::no;
   }
 
   virtual std::string Init() { return std::string(); }

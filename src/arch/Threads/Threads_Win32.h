@@ -64,16 +64,11 @@ class SemaImpl_Win32 : public SemaImpl {
  public:
   SemaImpl_Win32(int iInitialValue);
   ~SemaImpl_Win32();
-  int GetValue() const { return m_iCounter; }
   void Post();
   bool Wait();
-  bool TryWait();
 
  private:
   HANDLE sem;
-
-  // We have to track the count ourself, since Windows gives no way to query it.
-  int m_iCounter;
 };
 
 #endif

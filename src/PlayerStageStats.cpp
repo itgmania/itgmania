@@ -306,21 +306,6 @@ float PlayerStageStats::GetPercentDancePoints() const {
   return MakePercentScore(m_iActualDancePoints, m_iPossibleDancePoints);
 }
 
-float PlayerStageStats::GetCurMaxPercentDancePoints() const {
-  if (m_iPossibleDancePoints == 0) {
-    return 0;  // div/0
-  }
-
-  if (m_iCurPossibleDancePoints == m_iPossibleDancePoints) {
-    return 1;  // correct for rounding error
-  }
-
-  float fCurMaxPercentDancePoints =
-      m_iCurPossibleDancePoints / (float)m_iPossibleDancePoints;
-
-  return fCurMaxPercentDancePoints;
-}
-
 // TODO: Make this use lua. Let more judgments be possible. -Wolfman2000
 int PlayerStageStats::GetLessonScoreActual() const {
   int iScore = 0;

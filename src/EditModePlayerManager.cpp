@@ -26,7 +26,7 @@ void EditModePlayerManager::AddPlayers(const NoteData& note_data) {
     PlayerPlus& player = *players_[pn];
     player->Init(
         "Player", GAMESTATE->m_pPlayerState[pn], nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, nullptr, nullptr);
+        nullptr, nullptr, nullptr, nullptr);
     player.Load(note_data);
 
     // We set the actor alias here instead of the name to maintain
