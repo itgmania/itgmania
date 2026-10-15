@@ -6,6 +6,7 @@
 //
 
 #include "InputHandler_NSEvent.hpp"
+#include "InputFilter.h"
 #include "archutils/Darwin/CocoaEventDispatcher.h"
 #include "global.h"
 
@@ -149,6 +150,13 @@ void InputHandler_NSEvent::InitKeyCodeMap() {
 
 void InputHandler_NSEvent::HandleEvent(NSEvent* e) {
   NSEventType type = [e type];
+
+  if (type == NSEventTypeMouseMoved) {
+    NSPoint mouseLocation = [e locationInWindow];
+    INPUTFILTER->UpdateCursorLocation(mouseLocation.x, mouseLocation.y);
+    return;
+  }
+
   if (type != NSEventTypeKeyDown && type != NSEventTypeKeyUp && type != NSEventTypeFlagsChanged) {
     return;
   }
