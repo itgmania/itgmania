@@ -2,7 +2,7 @@ if(NOT MSVC)
   return()
 endif()
 
-set(TEXTURE_DIR "${SM_SRC_DIR}/Texture Font Generator")
+set(TEXTURE_DIR "${SM_ROOT_DIR}/Utils/texture-font-generator")
 
 list(APPEND TEXTURE_SRC
             "${TEXTURE_DIR}/stdafx.cpp"
