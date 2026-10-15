@@ -4,7 +4,6 @@
 #include <cstdint>
 
 /* This is the low-level implementation; you probably want RageThreads. */
-class RageMutex;
 class RageTimer;
 
 class ThreadImpl {
@@ -24,9 +23,7 @@ class ThreadImpl {
 
 class MutexImpl {
  public:
-  RageMutex* m_Parent;
-
-  MutexImpl(RageMutex* pParent) : m_Parent(pParent) {}
+  MutexImpl() {}
   virtual ~MutexImpl() {}
 
   /* Lock the mutex. If mutex timeouts are implemented, and the mutex
@@ -67,7 +64,7 @@ class SemaImpl {
 // These functions must be implemented by the thread implementation.
 ThreadImpl* MakeThread(int (*fn)(void*), void* data, uint64_t* piThreadID);
 ThreadImpl* MakeThisThread();
-MutexImpl* MakeMutex(RageMutex* pParent);
+MutexImpl* MakeMutex();
 EventImpl* MakeEvent(MutexImpl* pMutex);
 SemaImpl* MakeSemaphore(int iInitialValue);
 uint64_t GetThisThreadId();

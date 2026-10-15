@@ -329,10 +329,6 @@ void ScreenSelectMaster::Init() {
   m_bDoubleChoiceNoSound = false;
 }
 
-std::string ScreenSelectMaster::GetDefaultChoice() {
-  return DEFAULT_CHOICE.GetValue();
-}
-
 void ScreenSelectMaster::BeginScreen() {
   // TODO: Move default choice to ScreenSelect
   int iDefaultChoice = -1;

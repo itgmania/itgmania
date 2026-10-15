@@ -578,17 +578,11 @@ class Actor : public MessageSubscriber {
   virtual float GetVertAlign() { return m_fVertAlign; }
 
   // effects
-#if defined(SSC_FUTURES)
-  void StopEffects();
-  Effect GetEffect(int i) const { return m_Effects[i]; }
-#else
   void StopEffect() { m_Effect = no_effect; }
   Effect GetEffect() const { return m_Effect; }
-#endif
   float GetSecsIntoEffect() const { return m_fSecsIntoEffect; }
   float GetEffectDelta() const { return m_fEffectDelta; }
 
-  // todo: account for SSC_FUTURES by adding an effect as an arg to each one -aj
   void SetEffectColor1(RageColor c) { m_effectColor1 = c; }
   void SetEffectColor2(RageColor c) { m_effectColor2 = c; }
   void RecalcEffectPeriod();
@@ -784,11 +778,7 @@ class Actor : public MessageSubscriber {
   float m_fVertAlign;
 
   // Stuff for effects
-#if defined(SSC_FUTURES)  // be able to stack effects
-  std::vector<Effect> m_Effects;
-#else  // compatibility
   Effect m_Effect;
-#endif
   float m_fSecsIntoEffect;
   float m_fEffectDelta;
 
@@ -810,7 +800,6 @@ class Actor : public MessageSubscriber {
    * follow the effect clock.  Actor::Update must be called first. */
   float GetEffectDeltaTime() const { return m_fEffectDelta; }
 
-  // todo: account for SSC_FUTURES by having these be vectors too -aj
   RageColor m_effectColor1;
   RageColor m_effectColor2;
   RageVector3 m_vEffectMagnitude;

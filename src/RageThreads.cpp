@@ -468,7 +468,7 @@ void Checkpoints::GetLogs(char* pBuf, int iSize, const char* delim) {
  */
 
 RageMutex::RageMutex(const std::string& name)
-    : m_pMutex(MakeMutex(this)),
+    : m_pMutex(MakeMutex()),
       m_sName(name),
       m_LockedBy(GetInvalidThreadId()),
       m_LockCnt(0) {

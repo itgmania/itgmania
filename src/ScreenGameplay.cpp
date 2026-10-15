@@ -1957,40 +1957,6 @@ void ScreenGameplay::Update(float fDeltaTime) {
         }
       }
 
-      // update 2d dancing characters
-      FOREACH_EnabledPlayerNumberInfo(m_vPlayerInfo, pi) {
-        DancingCharacters* pCharacter = nullptr;
-        if (m_pSongBackground) {
-          pCharacter = m_pSongBackground->GetDancingCharacters();
-        }
-        if (pCharacter != nullptr) {
-          TapNoteScore tns = pi->m_pPlayer->GetLastTapNoteScore();
-
-          ANIM_STATES_2D state = AS2D_MISS;
-
-          switch (tns) {
-            case TNS_W4:
-            case TNS_W3:
-              state = AS2D_GOOD;
-              break;
-            case TNS_W2:
-            case TNS_W1:
-              state = AS2D_GREAT;
-              break;
-            default:
-              state = AS2D_MISS;
-              break;
-          }
-
-          if (state == AS2D_GREAT &&
-              pi->GetPlayerState()->m_HealthState == HealthState_Hot) {
-            state = AS2D_FEVER;
-          }
-
-          pCharacter->Change2DAnimState(pi->m_pn, state);
-        }
-      }
-
       // Check for enemy death in enemy battle
       static float fLastSeenEnemyHealth = 1;
       if (fLastSeenEnemyHealth != GAMESTATE->m_fOpponentHealthPercent) {
@@ -2839,27 +2805,6 @@ void ScreenGameplay::HandleScreenMessage(const ScreenMessage SM) {
     }
   } else if (SM == SM_LeaveGameplay) {
     GAMESTATE->m_DanceDuration = GAMESTATE->m_DanceStartTime.Ago();
-    // update dancing characters for win / lose
-    DancingCharacters* pDancers = nullptr;
-    if (m_pSongBackground) {
-      pDancers = m_pSongBackground->GetDancingCharacters();
-    }
-    if (pDancers) {
-      FOREACH_EnabledPlayerNumberInfo(m_vPlayerInfo, pi) {
-        // XXX: In battle modes, switch( GAMESTATE->GetStageResult(p) ).
-        if (pi->GetPlayerStageStats()->m_bFailed) {
-          pDancers->Change2DAnimState(pi->m_pn, AS2D_FAIL);  // fail anim
-        } else if (
-            pi->m_pLifeMeter &&
-            pi->GetPlayerState()->m_HealthState == HealthState_Hot) {
-          pDancers->Change2DAnimState(
-              pi->m_pn, AS2D_WINFEVER);  // full life pass anim
-        } else {
-          pDancers->Change2DAnimState(pi->m_pn, AS2D_WIN);  // pass anim
-        }
-      }
-    }
-
     // End round.
     if (m_DancingState == STATE_OUTRO) {  // ScreenGameplay already ended
       return;                             // ignore

@@ -30,7 +30,7 @@ class MutexImpl_Win32 : public MutexImpl {
   friend class EventImpl_Win32;
 
  public:
-  MutexImpl_Win32(RageMutex* parent);
+  MutexImpl_Win32();
   ~MutexImpl_Win32();
 
   bool Lock();

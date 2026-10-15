@@ -469,11 +469,6 @@ static inline int GetIntValue(CFTypeRef r) {
   return ret;
 }
 
-float ArchHooks_MacOSX::GetDisplayAspectRatio() {
-  NSScreen* screen = [NSScreen mainScreen];
-  return screen.frame.size.width / screen.frame.size.height;
-}
-
 /*
  * (c) 2003-2006 Steve Checkoway
  * All rights reserved.

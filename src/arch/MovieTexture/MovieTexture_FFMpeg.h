@@ -73,8 +73,6 @@ class MovieDecoder_FFMpeg : public MovieDecoder {
 
   int GetFrame(RageSurface* surface_out) override;
 
-  int DecodeFrame() override { return 0; }
-
   int DecodeMovie() override;
   bool IsCurrentFrameReady() override;
 

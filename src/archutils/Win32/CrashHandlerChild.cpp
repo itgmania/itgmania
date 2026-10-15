@@ -19,10 +19,7 @@
 #include "ProductInfo.h"
 #include "RageFileDriverDeflate.h"
 #include "RageUtil.h"
-#include "XmlFile.h"
-#include "XmlFileUtil.h"
 #include "arch/ArchHooks/ArchHooks.h"
-#include "archutils/Win32/CrashHandlerNetworking.h"
 #include "archutils/Win32/DialogUtil.h"
 #include "archutils/Win32/ErrorStrings.h"
 #include "archutils/Win32/RestartProgram.h"
@@ -580,65 +577,29 @@ bool ReadCrashDataFromParent(int iFD, CompleteCrashData& Data) {
  * which language to use. Since these strings won't be pulled from the theme,
  * defer loading them until we use them. XXX */
 static LocalizedString A_CRASH_HAS_OCCURRED;
-static LocalizedString REPORTING_THE_PROBLEM;
 static LocalizedString CLOSE;
-static LocalizedString CANCEL;
-static LocalizedString VIEW_UPDATE;
-static LocalizedString UPDATE_IS_AVAILABLE;
-static LocalizedString UPDATE_IS_NOT_AVAILABLE;
-static LocalizedString ERROR_SENDING_REPORT;
-
-// #define AUTOMATED_CRASH_REPORTS
-#define CRASH_REPORT_HOST "example.com"
-#define CRASH_REPORT_PORT 80
-#define CRASH_REPORT_PATH "/report.cgi"
 
 void LoadLocalizedStrings() {
-#if defined(AUTOMATED_CRASH_REPORTS)
-  A_CRASH_HAS_OCCURRED.Load(
-      "CrashHandler",
-      "A crash has occurred.  Would you like to automatically report the "
-      "problem and check for updates?");
-#else
   A_CRASH_HAS_OCCURRED.Load(
       "CrashHandler",
       "A crash has occurred.  Diagnostic information has been saved to a file "
       "called \"crashinfo.txt\" in the game program directory.");
-#endif
-  REPORTING_THE_PROBLEM.Load(
-      "CrashHandler", "Reporting the problem and checking for updates ...");
   CLOSE.Load("CrashHandler", "&Close");
-  CANCEL.Load("CrashHandler", "&Cancel");
-  VIEW_UPDATE.Load("CrashHandler", "View &update");
-  UPDATE_IS_AVAILABLE.Load("CrashHandler", "An update is available.");
-  UPDATE_IS_NOT_AVAILABLE.Load(
-      "CrashHandler",
-      "The error has been reported.  No updates are available.");
-  ERROR_SENDING_REPORT.Load(
-      "CrashHandler", "An error was encountered sending the report.");
 }
 
 class CrashDialog : public WindowsDialogBox {
  public:
   CrashDialog();
-  ~CrashDialog();
+  ~CrashDialog() = default;
 
  protected:
   virtual INT_PTR HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 
  private:
   void SetDialogInitial();
-
-  NetworkPostData* m_pPost;
-  std::string m_sUpdateURL;
 };
 
-CrashDialog::CrashDialog() {
-  LoadLocalizedStrings();
-  m_pPost = nullptr;
-}
-
-CrashDialog::~CrashDialog() { delete m_pPost; }
+CrashDialog::CrashDialog() { LoadLocalizedStrings(); }
 
 void CrashDialog::SetDialogInitial() {
   HWND hDlg = GetHwnd();
@@ -681,17 +642,6 @@ INT_PTR CrashDialog::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
     case WM_COMMAND:
       switch (LOWORD(wParam)) {
         case IDC_BUTTON_CLOSE:
-          if (m_pPost != nullptr) {
-            // Cancel reporting, and revert the dialog as if "report" had not
-            // been pressed.
-            m_pPost->Cancel();
-            KillTimer(hDlg, 0);
-
-            SetDialogInitial();
-            RageUtil::SafeDelete(m_pPost);
-            return TRUE;
-          }
-
           // Close the dialog.
           EndDialog(hDlg, FALSE);
           return TRUE;
@@ -730,74 +680,6 @@ INT_PTR CrashDialog::HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
           break;
       }
       break;
-    case WM_TIMER: {
-      if (m_pPost == nullptr) {
-        break;
-      }
-
-      float fProgress = m_pPost->GetProgress();
-      SendDlgItemMessage(
-          hDlg, IDC_PROGRESS, PBM_SETPOS, int(fProgress * 100), 0);
-
-      if (m_pPost->IsFinished()) {
-        KillTimer(hDlg, 0);
-
-        /* Grab the result, which is the data output from the HTTP request.
-         * It's simple XML. */
-        std::string sResult = m_pPost->GetResult();
-        std::string sError = m_pPost->GetError();
-        if (sError.empty() && sResult.empty()) {
-          sError = "No data received";
-        }
-
-        RageUtil::SafeDelete(m_pPost);
-
-        XNode xml;
-        if (sError.empty()) {
-          XmlFileUtil::Load(&xml, sResult, sError);
-          if (!sError.empty()) {
-            sError = ssprintf("Error parsing response: %s", sError.c_str());
-            xml.Clear();
-          }
-        }
-
-        int iID;
-        if (!sError.empty()) {
-          /* On error, don't show the "report" button again. If the submission
-           * was actually successful, then it'd be too easy to accidentally spam
-           * the server by holding down the button. */
-          SetWindowText(
-              GetDlgItem(hDlg, IDC_MAIN_TEXT),
-              ERROR_SENDING_REPORT.GetValue().c_str());
-        } else if (xml.GetChildValue("UpdateAvailable", m_sUpdateURL)) {
-          SetWindowText(
-              GetDlgItem(hDlg, IDC_MAIN_TEXT),
-              UPDATE_IS_AVAILABLE.GetValue().c_str());
-          SetWindowText(
-              GetDlgItem(hDlg, IDC_BUTTON_AUTO_REPORT),
-              VIEW_UPDATE.GetValue().c_str());
-          ShowWindow(GetDlgItem(hDlg, IDC_BUTTON_AUTO_REPORT), true);
-        } else if (xml.GetChildValue("ReportId", iID)) {
-          SetWindowText(
-              GetDlgItem(hDlg, IDC_MAIN_TEXT),
-              UPDATE_IS_NOT_AVAILABLE.GetValue().c_str());
-        } else {
-          SetWindowText(
-              GetDlgItem(hDlg, IDC_MAIN_TEXT),
-              ERROR_SENDING_REPORT.GetValue().c_str());
-        }
-
-        if (xml.GetChildValue("ReportId", iID)) {
-          char sBuf[1024];
-          GetWindowText(hDlg, sBuf, 1024);
-          SetWindowText(hDlg, ssprintf("%s (#%i)", sBuf, iID).c_str());
-        }
-
-        ShowWindow(GetDlgItem(hDlg, IDC_PROGRESS), false);
-        SetWindowText(
-            GetDlgItem(hDlg, IDC_BUTTON_CLOSE), CLOSE.GetValue().c_str());
-      }
-    }
   }
 
   return FALSE;
@@ -824,11 +706,7 @@ void ChildProcess() {
   SymbolLookup::g_hParent = nullptr;
 
   CrashDialog cd;
-#if defined(AUTOMATED_CRASH_REPORTS)
-  cd.Run(IDD_REPORT_CRASH);
-#else
   cd.Run(IDD_DISASM_CRASH);
-#endif
 }
 
 }  // namespace

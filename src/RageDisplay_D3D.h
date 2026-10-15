@@ -41,7 +41,6 @@ class RageDisplay_D3D : public RageDisplay {
   int GetMaxTextureSize() const;
   void SetTextureFiltering(TextureUnit tu, bool b);
   bool IsZWriteEnabled() const;
-  bool IsZTestEnabled() const;
   void SetZWrite(bool b);
   void SetZBias(float f);
   void SetZTestMode(ZTestMode mode);

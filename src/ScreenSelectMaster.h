@@ -37,7 +37,6 @@ class ScreenSelectMaster : public ScreenSelect {
   ScreenSelectMaster();
   //~ScreenSelectMaster();
   virtual void Init();
-  virtual std::string GetDefaultChoice();
   virtual void BeginScreen();
 
   virtual bool MenuLeft(const InputEventPlus& input);

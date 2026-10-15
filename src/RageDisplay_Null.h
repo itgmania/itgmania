@@ -44,7 +44,6 @@ class RageDisplay_Null : public RageDisplay {
   int GetMaxTextureSize() const { return 2048; }
   void SetTextureFiltering(TextureUnit, bool) {}
   bool IsZWriteEnabled() const { return false; }
-  bool IsZTestEnabled() const { return false; }
   void SetZWrite(bool) {}
   void SetZBias(float) {}
   void SetZTestMode(ZTestMode) {}

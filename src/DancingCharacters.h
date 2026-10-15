@@ -4,25 +4,8 @@
 #include <array>
 
 #include "ActorFrame.h"
-#include "AutoActor.h"
 #include "PlayerNumber.h"
-#include "RageTimer.h"
 class Model;
-
-/** @brief The different animation states for the dancer. */
-enum ANIM_STATES_2D {
-  AS2D_IDLE = 0, /**< The dancer is idle. */
-  AS2D_MISS,     /**< The dancer just missed a note. */
-  AS2D_GOOD,     /**< The dancer is doing a good job. */
-  AS2D_GREAT,    /**< The dancer is doing a great job. */
-  AS2D_FEVER,    /**< The dancer is on fire! */
-  AS2D_FAIL,     /**< The dancer has failed. */
-  AS2D_WIN,      /**< The dancer has won. */
-  AS2D_WINFEVER, /**< The dancer has won while on fire. */
-  AS2D_IGNORE,   /**< This is a special case -- so that we can timer to idle
-                    again. */
-  AS2D_MAXSTATES /**< A count of the maximum number of states. */
-};
 
 /** @brief Characters that react to how the players are doing. */
 class DancingCharacters : public ActorFrame {
@@ -35,7 +18,6 @@ class DancingCharacters : public ActorFrame {
   virtual void Update(float fDelta);
   virtual void DrawPrimitives();
   bool m_bDrawDangerLight;
-  void Change2DAnimState(PlayerNumber pn, int iState);
 
  protected:
   std::array<Model*, NUM_PLAYERS> m_pCharacter;
@@ -49,18 +31,6 @@ class DancingCharacters : public ActorFrame {
   float m_fCameraHeightEnd;
   float m_fThisCameraStartBeat;
   float m_fThisCameraEndBeat;
-
-  std::array<AutoActor, NUM_PLAYERS> m_bgIdle;
-  std::array<AutoActor, NUM_PLAYERS> m_bgMiss;
-  std::array<AutoActor, NUM_PLAYERS> m_bgGood;
-  std::array<AutoActor, NUM_PLAYERS> m_bgGreat;
-  std::array<AutoActor, NUM_PLAYERS> m_bgFever;
-  std::array<AutoActor, NUM_PLAYERS> m_bgFail;
-  std::array<AutoActor, NUM_PLAYERS> m_bgWin;
-  std::array<AutoActor, NUM_PLAYERS> m_bgWinFever;
-  std::array<RageTimer, NUM_PLAYERS> m_2DIdleTimer;
-
-  std::array<int, NUM_PLAYERS> m_i2DAnimState;
 };
 
 #endif

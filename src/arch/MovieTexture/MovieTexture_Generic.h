@@ -32,9 +32,6 @@ class MovieDecoder {
   virtual void Rewind() = 0;
   virtual void Rollover() = 0;
 
-  // Decode the next frame.
-  // Return 1 on success, 0 on EOF, -1 on fatal error, -2 on cancel.
-  virtual int DecodeFrame() = 0;
   virtual int DecodeMovie() = 0;
 
   // Returns true if the frame we want to display has been decoded already.

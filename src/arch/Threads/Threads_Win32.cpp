@@ -23,8 +23,7 @@ static void InitThreadIdMutex() {
     return;
   }
 
-  std::unique_ptr<MutexImpl_Win32> temp =
-      std::make_unique<MutexImpl_Win32>(nullptr);
+  std::unique_ptr<MutexImpl_Win32> temp = std::make_unique<MutexImpl_Win32>();
   g_ThreadIdMutexInitialized = true;
 
   g_pThreadIdMutex = std::move(temp);
@@ -193,7 +192,7 @@ ThreadImpl* MakeThread(
   return thread.release();
 }
 
-MutexImpl_Win32::MutexImpl_Win32(RageMutex* pParent) : MutexImpl(pParent) {
+MutexImpl_Win32::MutexImpl_Win32() {
   mutex = CreateMutex(nullptr, false, nullptr);
   ASSERT_M(mutex != nullptr, werr_ssprintf(GetLastError(), "CreateMutex"));
 }
@@ -265,9 +264,7 @@ uint64_t GetThisThreadId() { return GetCurrentThreadId(); }
 
 uint64_t GetInvalidThreadId() { return 0; }
 
-MutexImpl* MakeMutex(RageMutex* pParent) {
-  return new MutexImpl_Win32(pParent);
-}
+MutexImpl* MakeMutex() { return new MutexImpl_Win32(); }
 
 EventImpl_Win32::EventImpl_Win32(MutexImpl_Win32* pParent) {
   m_pParent = pParent;

@@ -8,9 +8,6 @@
 
 /* This API works like backtrace_pointers(), to retrieve a stack trace. */
 
-#if defined(CPU_PPC)
-struct Frame;
-#endif
 /* This contains the information necessary to backtrace a thread. */
 struct BacktraceContext {
 #if defined(CPU_X86) || defined(CPU_X86_64) || defined(__APPLE__)
@@ -19,11 +16,6 @@ struct BacktraceContext {
 
 #if defined(UNIX) || defined(MACOSX)
   pid_t pid;
-#endif
-
-#if defined(CPU_PPC)
-  const Frame* FramePtr;
-  const void* PC;
 #endif
 };
 

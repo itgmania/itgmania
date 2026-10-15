@@ -32,7 +32,7 @@ class MutexImpl_Pthreads : public MutexImpl {
   friend class EventImpl_Pthreads;
 
  public:
-  MutexImpl_Pthreads(RageMutex* parent);
+  MutexImpl_Pthreads();
   ~MutexImpl_Pthreads();
 
   bool Lock();
@@ -58,21 +58,6 @@ class EventImpl_Pthreads : public EventImpl {
   pthread_cond_t m_Cond;
 };
 
-#if 0
-class SemaImpl_Pthreads: public SemaImpl
-{
-public:
-	SemaImpl_Pthreads( int iInitialValue );
-	~SemaImpl_Pthreads();
-	int GetValue() const;
-	void Post();
-	bool Wait();
-	bool TryWait();
-
-private:
-	sem_t sem;
-};
-#else
 class SemaImpl_Pthreads : public SemaImpl {
  public:
   SemaImpl_Pthreads(int iInitialValue);
@@ -85,8 +70,6 @@ class SemaImpl_Pthreads : public SemaImpl {
   pthread_mutex_t m_Mutex;
   unsigned m_iValue;
 };
-
-#endif
 
 #endif
 

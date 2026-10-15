@@ -133,18 +133,6 @@ bool GetThreadBacktraceContext(uint64_t ThreadID, BacktraceContext* ctx) {
   ctx->bp = (void*)regs.ebp;
   ctx->sp = (void*)regs.esp;
 #endif
-#elif defined(CPU_PPC)
-  errno = 0;
-  ctx->FramePtr = (const Frame*)ptrace(
-      PTRACE_PEEKUSER, pid_t(ThreadID), (void*)(PT_R1 << 2), 0);
-  if (errno) {
-    return false;
-  }
-  ctx->PC =
-      (void*)ptrace(PTRACE_PEEKUSER, pid_t(ThreadID), (void*)(PT_NIP << 2), 0);
-  if (errno) {
-    return false;
-  }
 #elif defined(CPU_AARCH64)
   // NYI
   return false;

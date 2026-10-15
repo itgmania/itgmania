@@ -153,8 +153,7 @@ class OptionRow : public ActorFrame {
   int m_iChoiceInRowWithFocus[NUM_PLAYERS];  // this choice has input focus
   // Only one will true at a time if m_pHand->m_Def.bMultiSelect
   std::vector<bool>
-      m_vbSelected[NUM_PLAYERS];      // size = m_pHand->m_Def.choices.size()
-  Actor::TweenState m_tsDestination;  // this should approach m_tsDestination.
+      m_vbSelected[NUM_PLAYERS];  // size = m_pHand->m_Def.choices.size()
 
  public:
   void SetDestination(Actor::TweenState& ts, bool bTween);

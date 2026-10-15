@@ -20,7 +20,6 @@
  * being developed.
  */
 const std::string INI_FILE = "Pack.ini";
-const int INI_VERSION = 2;
 
 Group::Group(
     const std::string& sDir, const std::string& sGroupDirName,

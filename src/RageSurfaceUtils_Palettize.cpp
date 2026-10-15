@@ -66,7 +66,6 @@ struct acolorhash_hash {
 #define MAXCOLORS 32767
 #define FS_SCALE 1024 /* Floyd-Steinberg scaling factor */
 
-/* #define REP_AVERAGE_COLORS */
 #define REP_AVERAGE_PIXELS
 
 static acolorhist_item* mediancut(
@@ -434,23 +433,6 @@ static acolorhist_item* mediancut(
    * method is used by switching the commenting on the REP_ defines at
    * the beginning of this source file. */
   for (int bi = 0; bi < boxes; ++bi) {
-#ifdef REP_AVERAGE_COLORS
-    int indx = bv[bi].ind;
-    int clrs = bv[bi].colors;
-    long r = 0, g = 0, b = 0, a = 0;
-
-    for (i = 0; i < clrs; ++i) {
-      r += PAM_GETR(achv[indx + i].acolor);
-      g += PAM_GETG(achv[indx + i].acolor);
-      b += PAM_GETB(achv[indx + i].acolor);
-      a += PAM_GETA(achv[indx + i].acolor);
-    }
-    r = r / clrs;
-    g = g / clrs;
-    b = b / clrs;
-    a = a / clrs;
-    PAM_ASSIGN(acolormap[bi].acolor, r, g, b, a);
-#endif  // REP_AVERAGE_COLORS
 #ifdef REP_AVERAGE_PIXELS
     int indx = bv[bi].ind;
     int clrs = bv[bi].colors;

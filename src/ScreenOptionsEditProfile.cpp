@@ -94,10 +94,6 @@ void ScreenOptionsEditProfile::ExportOptions(
   }
 }
 
-void ScreenOptionsEditProfile::GoToNextScreen() {}
-
-void ScreenOptionsEditProfile::GoToPrevScreen() {}
-
 void ScreenOptionsEditProfile::HandleScreenMessage(const ScreenMessage SM) {
   if (SM == SM_GoToNextScreen) {
     PROFILEMAN->SaveLocalProfile(GAMESTATE->m_sEditLocalProfileID);

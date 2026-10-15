@@ -81,7 +81,6 @@ class RageDisplay_Legacy : public RageDisplay {
   uintptr_t GetRenderTarget();
   void SetRenderTarget(uintptr_t iHandle, bool bPreserveTexture);
   bool IsZWriteEnabled() const;
-  bool IsZTestEnabled() const;
   void SetZWrite(bool b);
   void SetZBias(float f);
   void SetZTestMode(ZTestMode mode);
@@ -104,10 +103,7 @@ class RageDisplay_Legacy : public RageDisplay {
   void DeleteCompiledGeometry(RageCompiledGeometry* p);
 
   // hacks for cell-shaded models
-  virtual void SetPolygonMode(PolygonMode pm);
   virtual void SetLineWidth(float fWidth);
-
-  std::string GetTextureDiagnostics(uintptr_t id) const;
 
  protected:
   void DrawQuadsInternal(const RageSpriteVertex v[], int iNumVerts);

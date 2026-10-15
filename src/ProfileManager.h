@@ -159,9 +159,6 @@ class ProfileManager {
   // on a memory card.
   std::string m_sProfileDir[NUM_PLAYERS];
 
-  // MemoryCardProfileImportSubdirs name, if the profile was imported.
-  std::string m_sProfileDirImportedFrom[NUM_PLAYERS];
-
   std::string m_stats_prefix;
 
   bool m_bWasLoadedFromMemoryCard[NUM_PLAYERS];

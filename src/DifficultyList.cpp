@@ -56,7 +56,6 @@ void StepsDisplayList::LoadFromNode(const XNode* pNode) {
 
   ITEMS_SPACING_Y.Load(m_sName, "ItemsSpacingY");
   NUM_SHOWN_ITEMS.Load(m_sName, "NumShownItems");
-  CAPITALIZE_DIFFICULTY_NAMES.Load(m_sName, "CapitalizeDifficultyNames");
   MOVE_COMMAND.Load(m_sName, "MoveCommand");
 
   m_Lines.resize(MAX_METERS);

@@ -106,7 +106,6 @@ class Player : public ActorFrame {
 
   void FadeToFail();
   void CacheAllUsedNoteSkins();
-  TapNoteScore GetLastTapNoteScore() const { return m_LastTapNoteScore; }
   void ApplyWaitingTransforms();
   void SetPaused(bool bPaused) { m_bPaused = bPaused; }
 
@@ -206,7 +205,6 @@ class Player : public ActorFrame {
 
   AttackDisplay* m_pAttackDisplay;
 
-  TapNoteScore m_LastTapNoteScore;
   LifeMeter* m_pLifeMeter;
   CombinedLifeMeter* m_pCombinedLifeMeter;
   ScoreDisplay* m_pScoreDisplay;
@@ -237,8 +235,6 @@ class Player : public ActorFrame {
   ThemeMetric<float> GRAY_ARROWS_Y_STANDARD;
   ThemeMetric<float> GRAY_ARROWS_Y_REVERSE;
   ThemeMetric2D<float> ATTACK_DISPLAY_X;
-  ThemeMetric<float> ATTACK_DISPLAY_Y;
-  ThemeMetric<float> ATTACK_DISPLAY_Y_REVERSE;
   ThemeMetric<float> HOLD_JUDGMENT_Y_STANDARD;
   ThemeMetric<float> HOLD_JUDGMENT_Y_REVERSE;
   ThemeMetric<int> BRIGHT_GHOST_COMBO_THRESHOLD;
