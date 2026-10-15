@@ -42,9 +42,6 @@ std::unique_ptr<SaveSignals> saved_sigs;
 static int signals[] = {SIGALRM, SIGBUS,    SIGFPE,  SIGHUP,  SIGILL,
                         SIGINT,  SIGABRT,   SIGQUIT, SIGSEGV, SIGTRAP,
                         SIGTERM, SIGVTALRM, SIGXCPU, SIGXFSZ,
-#if defined(HAVE_DECL_SIGPWR) && HAVE_DECL_SIGPWR
-                        SIGPWR,
-#endif
 #if defined(HAVE_DECL_SIGUSR1) && HAVE_DECL_SIGUSR1
                         SIGUSR1,
 #endif

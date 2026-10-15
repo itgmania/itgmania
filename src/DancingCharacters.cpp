@@ -21,23 +21,6 @@
 
 int Neg1OrPos1();
 
-#define DC_X(choice) \
-  THEME->GetMetricF( \
-      "DancingCharacters", ssprintf("2DCharacterXP%d", choice + 1))
-#define DC_Y(choice) \
-  THEME->GetMetricF( \
-      "DancingCharacters", ssprintf("2DCharacterYP%d", choice + 1))
-
-/*
- * TODO:
- * - Metrics/Lua for lighting and camera sweeping.
- * - Ability to load secondary elements i.e. stages.
- * - Remove support for 2D characters (Lua can do it).
- * - Cleanup!
- *
- * -- Colby
- */
-
 #define CAMERA_REST_DISTANCE THEME->GetMetricF("DancingCamera", "RestDistance")
 #define CAMERA_REST_LOOK_AT_HEIGHT \
   THEME->GetMetricF("DancingCamera", "RestHeight")
@@ -73,12 +56,8 @@ const ThemeMetric<RageColor> LIGHT_DIFFUSE_COLOR(
 // This is for Danger and Failed colors.
 const ThemeMetric<RageColor> LIGHT_ADANGER_COLOR(
     "DancingCamera", "AmbientDangerColor");
-const ThemeMetric<RageColor> LIGHT_AFAILED_COLOR(
-    "DancingCamera", "AmbientFailedColor");
 const ThemeMetric<RageColor> LIGHT_DDANGER_COLOR(
     "DancingCamera", "DiffuseDangerColor");
-const ThemeMetric<RageColor> LIGHT_DFAILED_COLOR(
-    "DancingCamera", "DiffuseFailedColor");
 
 // This is to make positioning of said light.
 #define LIGHTING_X THEME->GetMetricF("DancingCamera", "LightX")
@@ -110,8 +89,6 @@ DancingCharacters::DancingCharacters()
       m_fThisCameraEndBeat(0) {
   FOREACH_PlayerNumber(p) {
     m_pCharacter[p] = new Model;
-    m_2DIdleTimer[p].SetZero();
-    m_i2DAnimState[p] = AS2D_IDLE;  // start on idle state
     if (!GAMESTATE->IsPlayerEnabled(p)) {
       continue;
     }
@@ -119,73 +96,6 @@ DancingCharacters::DancingCharacters()
     Character* pChar = GAMESTATE->m_pCurCharacters[p];
     if (!pChar) {
       continue;
-    }
-
-    // load in any potential 2D stuff
-    std::string sCharacterDirectory = pChar->m_sCharDir;
-    std::string sCurrentAnim;
-    sCurrentAnim = sCharacterDirectory + "2DIdle";
-    if (DoesFileExist(
-            sCurrentAnim + "/BGAnimation.ini"))  // check 2D Idle BGAnim exists
-    {
-      m_bgIdle[p].Load(sCurrentAnim);
-      m_bgIdle[p]->SetXY(DC_X(p), DC_Y(p));
-    }
-
-    sCurrentAnim = sCharacterDirectory + "2DMiss";
-    if (DoesFileExist(
-            sCurrentAnim + "/BGAnimation.ini"))  // check 2D Idle BGAnim exists
-    {
-      m_bgMiss[p].Load(sCurrentAnim);
-      m_bgMiss[p]->SetXY(DC_X(p), DC_Y(p));
-    }
-
-    sCurrentAnim = sCharacterDirectory + "2DGood";
-    if (DoesFileExist(
-            sCurrentAnim + "/BGAnimation.ini"))  // check 2D Idle BGAnim exists
-    {
-      m_bgGood[p].Load(sCurrentAnim);
-      m_bgGood[p]->SetXY(DC_X(p), DC_Y(p));
-    }
-
-    sCurrentAnim = sCharacterDirectory + "2DGreat";
-    if (DoesFileExist(
-            sCurrentAnim + "/BGAnimation.ini"))  // check 2D Idle BGAnim exists
-    {
-      m_bgGreat[p].Load(sCurrentAnim);
-      m_bgGreat[p]->SetXY(DC_X(p), DC_Y(p));
-    }
-
-    sCurrentAnim = sCharacterDirectory + "2DFever";
-    if (DoesFileExist(
-            sCurrentAnim + "/BGAnimation.ini"))  // check 2D Idle BGAnim exists
-    {
-      m_bgFever[p].Load(sCurrentAnim);
-      m_bgFever[p]->SetXY(DC_X(p), DC_Y(p));
-    }
-
-    sCurrentAnim = sCharacterDirectory + "2DFail";
-    if (DoesFileExist(
-            sCurrentAnim + "/BGAnimation.ini"))  // check 2D Idle BGAnim exists
-    {
-      m_bgFail[p].Load(sCurrentAnim);
-      m_bgFail[p]->SetXY(DC_X(p), DC_Y(p));
-    }
-
-    sCurrentAnim = sCharacterDirectory + "2DWin";
-    if (DoesFileExist(
-            sCurrentAnim + "/BGAnimation.ini"))  // check 2D Idle BGAnim exists
-    {
-      m_bgWin[p].Load(sCurrentAnim);
-      m_bgWin[p]->SetXY(DC_X(p), DC_Y(p));
-    }
-
-    sCurrentAnim = sCharacterDirectory + "2DWinFever";
-    if (DoesFileExist(
-            sCurrentAnim + "/BGAnimation.ini"))  // check 2D Idle BGAnim exists
-    {
-      m_bgWinFever[p].Load(sCurrentAnim);
-      m_bgWinFever[p]->SetXY(DC_X(p), DC_Y(p));
     }
 
     if (pChar->GetModelPath().empty()) {
@@ -327,56 +237,6 @@ void DancingCharacters::Update(float fDelta) {
     m_fThisCameraStartBeat = (float)iCurBeat;
     m_fThisCameraEndBeat = float(iCurBeat + AMM_BEATS_TIL_NEXTCAMERA);
   }
-  /*
-  // is there any of this still around? This block of code is _ugly_. -Colby
-  // update any 2D stuff
-  FOREACH_PlayerNumber( p )
-  {
-          if( m_bgIdle[p].IsLoaded() )
-          {
-                  if( m_bgIdle[p].IsLoaded() && m_i2DAnimState[p] == AS2D_IDLE )
-                          m_bgIdle[p]->Update( fDelta );
-                  if( m_bgMiss[p].IsLoaded() && m_i2DAnimState[p] == AS2D_MISS )
-                          m_bgMiss[p]->Update( fDelta );
-                  if( m_bgGood[p].IsLoaded() && m_i2DAnimState[p] == AS2D_GOOD )
-                          m_bgGood[p]->Update( fDelta );
-                  if( m_bgGreat[p].IsLoaded() && m_i2DAnimState[p] == AS2D_GREAT
-  ) m_bgGreat[p]->Update( fDelta ); if( m_bgFever[p].IsLoaded() &&
-  m_i2DAnimState[p] == AS2D_FEVER ) m_bgFever[p]->Update( fDelta ); if(
-  m_bgFail[p].IsLoaded() && m_i2DAnimState[p] == AS2D_FAIL )
-                          m_bgFail[p]->Update( fDelta );
-                  if( m_bgWin[p].IsLoaded() && m_i2DAnimState[p] == AS2D_WIN )
-                          m_bgWin[p]->Update( fDelta );
-                  if( m_bgWinFever[p].IsLoaded() && m_i2DAnimState[p] ==
-  AS2D_WINFEVER ) m_bgWinFever[p]->Update(fDelta);
-
-                  if(m_i2DAnimState[p] != AS2D_IDLE) // if we're not in idle
-  state, start a timer to return us to idle
-                  {
-                          // never return to idle state if we have failed /
-  passed (i.e. completed) the song if(m_i2DAnimState[p] != AS2D_WINFEVER &&
-  m_i2DAnimState[p] != AS2D_FAIL && m_i2DAnimState[p] != AS2D_WIN)
-                          {
-                                  if(m_2DIdleTimer[p].IsZero())
-                                          m_2DIdleTimer[p].Touch();
-                                  if(!m_2DIdleTimer[p].IsZero() &&
-  m_2DIdleTimer[p].Ago() > 1.0f)
-                                  {
-                                          m_2DIdleTimer[p].SetZero();
-                                          m_i2DAnimState[p] = AS2D_IDLE;
-                                  }
-                          }
-                  }
-          }
-  }
-  */
-}
-
-void DancingCharacters::Change2DAnimState(PlayerNumber pn, int iState) {
-  ASSERT(pn < NUM_PLAYERS);
-  ASSERT(iState < AS2D_MAXSTATES);
-
-  m_i2DAnimState[pn] = iState;
 }
 
 void DancingCharacters::DrawPrimitives() {
@@ -436,30 +296,6 @@ void DancingCharacters::DrawPrimitives() {
   }
 
   DISPLAY->CameraPopMatrix();
-
-  /*
-  // Ugly! -Colby
-  // now draw any potential 2D stuff
-  FOREACH_PlayerNumber( p )
-  {
-          if(m_bgIdle[p].IsLoaded() && m_i2DAnimState[p] == AS2D_IDLE)
-                  m_bgIdle[p]->Draw();
-          if(m_bgMiss[p].IsLoaded() && m_i2DAnimState[p] == AS2D_MISS)
-                  m_bgMiss[p]->Draw();
-          if(m_bgGood[p].IsLoaded() && m_i2DAnimState[p] == AS2D_GOOD)
-                  m_bgGood[p]->Draw();
-          if(m_bgGreat[p].IsLoaded() && m_i2DAnimState[p] == AS2D_GREAT)
-                  m_bgGreat[p]->Draw();
-          if(m_bgFever[p].IsLoaded() && m_i2DAnimState[p] == AS2D_FEVER)
-                  m_bgFever[p]->Draw();
-          if(m_bgWinFever[p].IsLoaded() && m_i2DAnimState[p] == AS2D_WINFEVER)
-                  m_bgWinFever[p]->Draw();
-          if(m_bgWin[p].IsLoaded() && m_i2DAnimState[p] == AS2D_WIN)
-                  m_bgWin[p]->Draw();
-          if(m_bgFail[p].IsLoaded() && m_i2DAnimState[p] == AS2D_FAIL)
-                  m_bgFail[p]->Draw();
-  }
-   */
 }
 
 /*	2018 Jose Varela

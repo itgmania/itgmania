@@ -9,7 +9,6 @@ struct BacktraceNames {
   intptr_t Address;
   int Offset;
   void FromAddr(void* const p);
-  void FromString(std::string str);
   void Demangle();
   std::string Format() const;
   BacktraceNames() : Address(0), Offset(0) {}

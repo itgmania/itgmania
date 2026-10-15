@@ -10,8 +10,6 @@ class ArchHooks_MacOSX : public ArchHooks {
   void Init();
   std::string GetArchName() const;
   void DumpDebugInfo();
-  std::string GetPreferredLanguage();
-  float GetDisplayAspectRatio();
 };
 
 #ifdef ARCH_HOOKS

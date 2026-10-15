@@ -18,13 +18,6 @@
 
 #if defined(_WIN32)
 #include "zlib.h"
-#if defined(_MSC_VER)
-#if defined(BINARY_ZDL)
-#pragma comment(lib, "zdll.lib")
-// #else
-// #pragma comment(lib, "zlib.lib")
-#endif
-#endif
 #elif defined(MACOSX)
 #include "zlib.h"
 #else

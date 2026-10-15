@@ -1,5 +1,14 @@
 #include "RageSoundReader_Vorbisfile.h"
 
+#include <vorbis/vorbisfile.h>
+
+#include <algorithm>
+#include <cerrno>
+#include <cstdarg>
+#include <cstddef>
+#include <cstring>
+#include <string>
+
 #include "RageException.h"
 #include "RageFileBasic.h"
 #include "RageLog.h"
@@ -10,20 +19,6 @@
 #include "global.h"
 #include "ogg/os_types.h"
 #include "vorbis/codec.h"
-
-#if defined(INTEGER_VORBIS)
-#include <tremor/ivorbisfile.h>
-
-#include <algorithm>
-#include <string>
-#else
-#include <vorbis/vorbisfile.h>
-#endif
-
-#include <cerrno>
-#include <cstdarg>
-#include <cstddef>
-#include <cstring>
 
 static size_t OggRageFile_read_func(
     void* ptr, size_t size, size_t nmemb, void* datasource) {
@@ -140,11 +135,7 @@ RageSoundReader_FileReader::OpenResult RageSoundReader_Vorbisfile::Open(
 }
 
 int RageSoundReader_Vorbisfile::GetLength() const {
-#if defined(INTEGER_VORBIS)
-  int len = ov_time_total(vf, -1);
-#else
   int len = int(ov_time_total(vf, -1) * 1000);
-#endif
   if (len == OV_EINVAL) {
     RageException::Throw(
         "RageSoundReader_Vorbisfile::GetLength: ov_time_total returned "
@@ -211,13 +202,8 @@ int RageSoundReader_Vorbisfile::Read(float* buf, int iFrames) {
 
     if (iFramesRead == 0) {
       int bstream;
-#if defined(INTEGER_VORBIS)
-      int ret = ov_read(
-          vf, (char*)buf, iFrames * channels * sizeof(int16_t), &bstream);
-#else  // float vorbis decoder
       float** pcm;
       int ret = ov_read_float(vf, &pcm, iFrames, &bstream);
-#endif
 
       {
         vorbis_info* vi = ov_info(vf, -1);
@@ -243,19 +229,6 @@ int RageSoundReader_Vorbisfile::Read(float* buf, int iFrames) {
         continue;
       }
 
-#if defined(INTEGER_VORBIS)
-      if (ret > 0) {
-        int iSamplesRead = ret / sizeof(int16_t);
-        iFramesRead = iSamplesRead / channels;
-
-        /* Convert in reverse, so we can do it in-place. */
-        const int16_t* pIn = (int16_t*)buf;
-        float* pOut = (float*)buf;
-        for (int i = iSamplesRead - 1; i >= 0; --i) {
-          pOut[i] = pIn[i] / 32768.0f;
-        }
-      }
-#else
       if (ret > 0) {
         iFramesRead = ret;
 
@@ -270,7 +243,6 @@ int RageSoundReader_Vorbisfile::Read(float* buf, int iFrames) {
           }
         }
       }
-#endif
     }
 
     read_offset += iFramesRead;

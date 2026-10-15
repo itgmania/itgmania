@@ -60,8 +60,6 @@ OptionRow::OptionRow(const OptionRowType* pSource) {
 
   Clear();
   this->AddChild(&m_Frame);
-
-  m_tsDestination.Init();
 }
 
 OptionRow::~OptionRow() { Clear(); }

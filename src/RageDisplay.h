@@ -308,7 +308,6 @@ class RageDisplay {
   virtual void SetRenderTarget(
       uintptr_t /* iHandle */, bool /* bPreserveTexture */ = true) {}
 
-  virtual bool IsZTestEnabled() const = 0;
   virtual bool IsZWriteEnabled() const = 0;
   virtual void SetZWrite(bool) = 0;
   virtual void SetZTestMode(ZTestMode) = 0;
@@ -353,7 +352,6 @@ class RageDisplay {
   } /* alias. upper-left, upper-right, lower-left, lower-right */
 
   // hacks for cell-shaded models
-  virtual void SetPolygonMode(PolygonMode) {}
   virtual void SetLineWidth(float) {}
 
   enum GraphicsFileFormat {
@@ -364,9 +362,6 @@ class RageDisplay {
   };
   bool SaveScreenshot(const std::string& sPath, GraphicsFileFormat format);
 
-  virtual std::string GetTextureDiagnostics(uintptr_t /* id */) const {
-    return std::string();
-  }
   virtual RageSurface*
   CreateScreenshot() = 0;  // allocates a surface.  Caller must delete it.
   virtual RageSurface* GetTexture(uintptr_t /* iTexture */) {

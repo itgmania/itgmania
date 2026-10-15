@@ -42,10 +42,6 @@ void ScreenSelectLanguage::Init() {
   ScreenSelectMaster::Init();
 }
 
-std::string ScreenSelectLanguage::GetDefaultChoice() {
-  return HOOKS->GetPreferredLanguage();
-}
-
 void ScreenSelectLanguage::BeginScreen() { ScreenSelectMaster::BeginScreen(); }
 
 bool ScreenSelectLanguage::MenuStart(const InputEventPlus& input) {

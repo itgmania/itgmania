@@ -1152,14 +1152,6 @@ bool SMLoader::LoadEditFromFile(
   return LoadEditFromMsd(msd, sEditFilePath, slot, bAddStepsToSong, givenSong);
 }
 
-bool SMLoader::LoadEditFromBuffer(
-    const std::string& sBuffer, const std::string& sEditFilePath,
-    ProfileSlot slot, Song* givenSong) {
-  MsdFile msd;
-  msd.ReadFromString(sBuffer, true);  // unescape
-  return LoadEditFromMsd(msd, sEditFilePath, slot, true, givenSong);
-}
-
 bool SMLoader::LoadEditFromMsd(
     const MsdFile& msd, const std::string& sEditFilePath, ProfileSlot slot,
     bool bAddStepsToSong, Song* givenSong /* = nullptr */) {

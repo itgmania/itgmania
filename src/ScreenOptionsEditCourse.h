@@ -23,9 +23,6 @@ class ScreenOptionsEditCourse : public ScreenOptions {
   virtual void ImportOptions(int row, const std::vector<PlayerNumber>& vpns);
   virtual void ExportOptions(int row, const std::vector<PlayerNumber>& vpns);
 
-  virtual void GoToNextScreen();
-  virtual void GoToPrevScreen();
-
   virtual void HandleScreenMessage(const ScreenMessage SM);
   virtual void AfterChangeRow(PlayerNumber pn);
   virtual void AfterChangeValueInRow(int iRow, PlayerNumber pn);

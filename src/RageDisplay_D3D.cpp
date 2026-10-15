@@ -1208,12 +1208,6 @@ void RageDisplay_D3D::SetZBias(float f) {
   g_pd3dDevice->SetViewport(&viewData);
 }
 
-bool RageDisplay_D3D::IsZTestEnabled() const {
-  DWORD b;
-  g_pd3dDevice->GetRenderState(D3DRS_ZFUNC, &b);
-  return b != D3DCMP_ALWAYS;
-}
-
 void RageDisplay_D3D::SetZWrite(bool b) {
   g_pd3dDevice->SetRenderState(D3DRS_ZWRITEENABLE, b);
 }

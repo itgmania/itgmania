@@ -78,14 +78,6 @@ enum ZTestMode {
 };
 LuaDeclareType(ZTestMode);
 
-enum PolygonMode {
-  POLYGON_FILL,
-  POLYGON_LINE,
-  NUM_PolygonMode,
-  PolygonMode_Invalid
-};
-LuaDeclareType(PolygonMode);
-
 enum TextGlowMode {
   TextGlowMode_Inner,
   TextGlowMode_Stroke,

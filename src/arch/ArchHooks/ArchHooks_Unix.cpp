@@ -190,9 +190,6 @@ void ArchHooks_Unix::DumpDebugInfo() {
 
   LOG->Info("Crash backtrace component: %s", BACKTRACE_METHOD_TEXT);
   LOG->Info("Crash lookup component: %s", BACKTRACE_LOOKUP_METHOD_TEXT);
-#if defined(BACKTRACE_DEMANGLE_METHOD_TEXT)
-  LOG->Info("Crash demangle component: %s", BACKTRACE_DEMANGLE_METHOD_TEXT);
-#endif
 
   LOG->Info("Runtime library: %s", LibcVersion().c_str());
   LOG->Info("libavcodec: %#x (%u)", avcodec_version(), avcodec_version());

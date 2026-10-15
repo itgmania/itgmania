@@ -17,7 +17,6 @@ class ArchHooks_Unix : public ArchHooks {
   int64_t GetSystemTimeInMicroseconds();
 
   void MountInitialFilesystems(const std::string& sDirOfExecutable);
-  float GetDisplayAspectRatio() { return 4.0f / 3; }
 
   static clockid_t GetClock();
 

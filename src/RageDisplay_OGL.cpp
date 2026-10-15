@@ -1947,12 +1947,6 @@ bool RageDisplay_Legacy::IsZWriteEnabled() const {
   return a;
 }
 
-bool RageDisplay_Legacy::IsZTestEnabled() const {
-  GLenum a;
-  glGetIntegerv(GL_DEPTH_FUNC, (GLint*)&a);
-  return a != GL_ALWAYS;
-}
-
 void RageDisplay_Legacy::ClearZBuffer() {
   bool write = IsZWriteEnabled();
   SetZWrite(true);
@@ -2666,55 +2660,7 @@ void RageDisplay_Legacy::SetRenderTarget(
   }
 }
 
-void RageDisplay_Legacy::SetPolygonMode(PolygonMode pm) {
-  GLenum m;
-  switch (pm) {
-    case POLYGON_FILL:
-      m = GL_FILL;
-      break;
-    case POLYGON_LINE:
-      m = GL_LINE;
-      break;
-    default:
-      FAIL_M(ssprintf("Invalid PolygonMode: %i", pm));
-  }
-  glPolygonMode(GL_FRONT_AND_BACK, m);
-}
-
 void RageDisplay_Legacy::SetLineWidth(float fWidth) { glLineWidth(fWidth); }
-
-std::string RageDisplay_Legacy::GetTextureDiagnostics(
-    uintptr_t iTexture) const {
-  /*
-          s << (bGenerateMipMaps? "gluBuild2DMipmaps":"glTexImage2D");
-          s << "(format " << GLToString(glTexFormat) <<
-                          ", " << pImg->w << "x" <<  pImg->h <<
-                          ", format " << GLToString(iFormat) <<
-                          ", type " << GLToString(glImageType) <<
-                          ", pixfmt " << pixfmt <<
-                          ", imgpixfmt " << SurfacePixFmt <<
-                          ")";
-          LOG->Trace( "%s", s.str().c_str() );
-
-  glBindTexture( GL_TEXTURE_2D, iTexture );
-
-          GLint iWidth;
-          glGetTexLevelParameteriv( GL_TEXTURE_2D, 0, GLenum(GL_TEXTURE_WIDTH),
-  (GLint *) &iWidth ); GLint iHeight; glGetTexLevelParameteriv( GL_TEXTURE_2D,
-  0, GLenum(GL_TEXTURE_HEIGHT), (GLint *) &iHeight ); GLint iFormat;
-          glGetTexLevelParameteriv( GL_TEXTURE_2D, 0,
-  GLenum(GL_TEXTURE_INTERNAL_FORMAT), (GLint *) &iFormat );
-
-          GL_CHECK_ERROR( "glGetTexLevelParameteriv(GL_TEXTURE_INTERNAL_FORMAT)"
-  ); if (iFormat != glTexFormat)
-          {
-                  sError = ssprintf( "Expected format %s, got %s instead",
-                                  GLToString(glTexFormat).c_str(),
-  GLToString(iFormat).c_str() ); break;
-          }
-*/
-  return std::string();
-}
 
 /*
  * XXX: Things like this only have to be set once per context - making

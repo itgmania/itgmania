@@ -318,11 +318,6 @@ bool ProfileManager::LoadProfileFromMemoryCard(
     ProfileLoadResult res = LoadProfile(pn, sDir, true);
     if (res == ProfileLoadResult_Success) {
       m_bNewProfile[pn] = false;
-      /* If importing, store the directory we imported from, for display
-       * purposes. */
-      if (i > 0) {
-        m_sProfileDirImportedFrom[pn] = asDirsToTry[i];
-      }
       break;
     }
 
@@ -434,7 +429,6 @@ void ProfileManager::UnloadProfile(PlayerNumber pn) {
     return;
   }
   m_sProfileDir[pn] = "";
-  m_sProfileDirImportedFrom[pn] = "";
   m_bWasLoadedFromMemoryCard[pn] = false;
   m_bLastLoadWasTamperedOrCorrupt[pn] = false;
   m_bLastLoadWasFromLastGood[pn] = false;

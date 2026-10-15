@@ -32,7 +32,6 @@ class LifeMeterBattery : public LifeMeter {
   virtual bool IsHot() const;
   virtual bool IsFailing() const;
   virtual float GetLife() const;
-  virtual int GetRemainingLives() const;
 
   virtual void BroadcastLifeChanged(bool lost_life);
 

@@ -163,15 +163,6 @@ void ArchHooks_Win32::UnBoostPriority() {
   SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
 }
 
-float ArchHooks_Win32::GetDisplayAspectRatio() {
-  DEVMODE dm;
-  ZERO(dm);
-  dm.dmSize = sizeof(dm);
-  BOOL bResult = EnumDisplaySettings(nullptr, ENUM_REGISTRY_SETTINGS, &dm);
-  ASSERT(bResult != 0);
-  return dm.dmPelsWidth / (float)dm.dmPelsHeight;
-}
-
 std::string ArchHooks_Win32::GetClipboard() {
   HGLOBAL hgl;
   LPTSTR lpstr;

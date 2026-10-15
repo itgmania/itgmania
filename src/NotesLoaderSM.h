@@ -64,9 +64,6 @@ struct SMLoader {
   virtual bool LoadEditFromFile(
       std::string sEditFilePath, ProfileSlot slot, bool bAddStepsToSong,
       Song* givenSong = nullptr);
-  virtual bool LoadEditFromBuffer(
-      const std::string& sBuffer, const std::string& sEditFilePath,
-      ProfileSlot slot, Song* givenSong = nullptr);
   virtual bool LoadEditFromMsd(
       const MsdFile& msd, const std::string& sEditFilePath, ProfileSlot slot,
       bool bAddStepsToSong, Song* givenSong = nullptr);

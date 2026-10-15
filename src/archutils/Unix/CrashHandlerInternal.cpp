@@ -52,10 +52,6 @@ const char* SignalName(int signo) {
       return "CPU limit exceeded";
     case SIGXFSZ:
       return "File size limit exceeded";
-#if defined(HAVE_DECL_SIGPWR) && HAVE_DECL_SIGPWR
-    case SIGPWR:
-      return "Power failure restart";
-#endif
 #if defined(HAVE_DECL_SIGUSR1) && HAVE_DECL_SIGUSR1
     case SIGUSR1:
       return "Forced crash";

@@ -129,8 +129,7 @@ ThreadImpl* MakeThread(
   return thread;
 }
 
-MutexImpl_Pthreads::MutexImpl_Pthreads(RageMutex* pParent)
-    : MutexImpl(pParent) {
+MutexImpl_Pthreads::MutexImpl_Pthreads() {
   pthread_mutex_init(&mutex, nullptr);
 }
 
@@ -204,9 +203,7 @@ uint64_t GetThisThreadId() { return GetCurrentThreadId(); }
 
 uint64_t GetInvalidThreadId() { return 0; }
 
-MutexImpl* MakeMutex(RageMutex* pParent) {
-  return new MutexImpl_Pthreads(pParent);
-}
+MutexImpl* MakeMutex() { return new MutexImpl_Pthreads(); }
 
 /* Check if condattr_setclock is supported, and supports the clock that
  * RageTimer selected. */

@@ -37,7 +37,6 @@ class StepsDisplayList : public ActorFrame {
 
   ThemeMetric<float> ITEMS_SPACING_Y;
   ThemeMetric<int> NUM_SHOWN_ITEMS;
-  ThemeMetric<bool> CAPITALIZE_DIFFICULTY_NAMES;
   ThemeMetric<apActorCommands> MOVE_COMMAND;
 
   AutoActor m_Cursors[NUM_PLAYERS];

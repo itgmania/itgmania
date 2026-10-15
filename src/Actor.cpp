@@ -104,13 +104,7 @@ void Actor::InitState() {
 
   m_fHorizAlign = 0.5f;
   m_fVertAlign = 0.5f;
-#if defined(SSC_FUTURES)
-  for (unsigned i = 0; i < m_Effects.size(); ++i) {
-    m_Effects[i] = no_effect;
-  }
-#else
   m_Effect = no_effect;
-#endif
   m_fSecsIntoEffect = 0;
   m_fEffectDelta = 0;
   SetEffectPeriod(default_effect_period);
@@ -214,14 +208,7 @@ Actor::Actor(const Actor& cpy) : MessageSubscriber(cpy) {
 
   CPY(m_fHorizAlign);
   CPY(m_fVertAlign);
-#if defined(SSC_FUTURES)
-  // I'm a bit worried about this -aj
-  for (unsigned i = 0; i < cpy.m_Effects.size(); ++i) {
-    m_Effects.push_back((*cpy.m_Effects[i]));
-  }
-#else
   CPY(m_Effect);
-#endif
   CPY(m_fSecsIntoEffect);
   CPY(m_fEffectDelta);
   CPY(m_effect_ramp_to_half);
@@ -292,11 +279,7 @@ Actor& Actor::operator=(Actor other) {
 
   SWAP(m_fHorizAlign);
   SWAP(m_fVertAlign);
-#if defined(SSC_FUTURES)
-  SWAP(M_Effects);
-#else
   SWAP(m_Effect);
-#endif
   SWAP(m_fSecsIntoEffect);
   SWAP(m_fEffectDelta);
   SWAP(m_effect_ramp_to_half);
@@ -493,7 +476,6 @@ void Actor::PreDraw()  // calculate actor properties
   // Somthing below may set m_pTempState to tempState
   m_pTempState = &m_current;
 
-  // todo: account for SSC_FUTURES -aj
   if (m_Effect == no_effect) {
   } else {
     m_pTempState = &m_current_with_effects;
@@ -1197,7 +1179,6 @@ void Actor::ResetEffectTimeIfDifferent(Effect new_effect) {
 void Actor::SetEffectDiffuseBlink(
     float fEffectPeriodSeconds, RageColor c1, RageColor c2) {
   ASSERT(fEffectPeriodSeconds > 0);
-  // todo: account for SSC_FUTURES -aj
   ResetEffectTimeIfDifferent(diffuse_blink);
   SetEffectPeriod(fEffectPeriodSeconds);
   m_effectColor1 = c1;
@@ -1207,7 +1188,6 @@ void Actor::SetEffectDiffuseBlink(
 void Actor::SetEffectDiffuseShift(
     float fEffectPeriodSeconds, RageColor c1, RageColor c2) {
   ASSERT(fEffectPeriodSeconds > 0);
-  // todo: account for SSC_FUTURES -aj
   ResetEffectTimeIfDifferent(diffuse_shift);
   SetEffectPeriod(fEffectPeriodSeconds);
   m_effectColor1 = c1;
@@ -1217,7 +1197,6 @@ void Actor::SetEffectDiffuseShift(
 void Actor::SetEffectDiffuseRamp(
     float fEffectPeriodSeconds, RageColor c1, RageColor c2) {
   ASSERT(fEffectPeriodSeconds > 0);
-  // todo: account for SSC_FUTURES -aj
   ResetEffectTimeIfDifferent(diffuse_ramp);
   SetEffectPeriod(fEffectPeriodSeconds);
   m_effectColor1 = c1;
@@ -1227,7 +1206,6 @@ void Actor::SetEffectDiffuseRamp(
 void Actor::SetEffectGlowBlink(
     float fEffectPeriodSeconds, RageColor c1, RageColor c2) {
   ASSERT(fEffectPeriodSeconds > 0);
-  // todo: account for SSC_FUTURES -aj
   ResetEffectTimeIfDifferent(glow_blink);
   SetEffectPeriod(fEffectPeriodSeconds);
   m_effectColor1 = c1;
@@ -1237,7 +1215,6 @@ void Actor::SetEffectGlowBlink(
 void Actor::SetEffectGlowShift(
     float fEffectPeriodSeconds, RageColor c1, RageColor c2) {
   ASSERT(fEffectPeriodSeconds > 0);
-  // todo: account for SSC_FUTURES -aj
   ResetEffectTimeIfDifferent(glow_shift);
   SetEffectPeriod(fEffectPeriodSeconds);
   m_effectColor1 = c1;
@@ -1247,7 +1224,6 @@ void Actor::SetEffectGlowShift(
 void Actor::SetEffectGlowRamp(
     float fEffectPeriodSeconds, RageColor c1, RageColor c2) {
   ASSERT(fEffectPeriodSeconds > 0);
-  // todo: account for SSC_FUTURES -aj
   ResetEffectTimeIfDifferent(glow_ramp);
   SetEffectPeriod(fEffectPeriodSeconds);
   m_effectColor1 = c1;
@@ -1256,14 +1232,12 @@ void Actor::SetEffectGlowRamp(
 
 void Actor::SetEffectRainbow(float fEffectPeriodSeconds) {
   ASSERT(fEffectPeriodSeconds > 0);
-  // todo: account for SSC_FUTURES -aj
   ResetEffectTimeIfDifferent(rainbow);
   SetEffectPeriod(fEffectPeriodSeconds);
 }
 
 void Actor::SetEffectWag(float fPeriod, RageVector3 vect) {
   ASSERT(fPeriod > 0);
-  // todo: account for SSC_FUTURES -aj
   ResetEffectTimeIfDifferent(wag);
   SetEffectPeriod(fPeriod);
   m_vEffectMagnitude = vect;
@@ -1271,7 +1245,6 @@ void Actor::SetEffectWag(float fPeriod, RageVector3 vect) {
 
 void Actor::SetEffectBounce(float fPeriod, RageVector3 vect) {
   ASSERT(fPeriod > 0);
-  // todo: account for SSC_FUTURES -aj
   m_Effect = bounce;
   SetEffectPeriod(fPeriod);
   m_vEffectMagnitude = vect;
@@ -1280,7 +1253,6 @@ void Actor::SetEffectBounce(float fPeriod, RageVector3 vect) {
 
 void Actor::SetEffectBob(float fPeriod, RageVector3 vect) {
   ASSERT(fPeriod > 0);
-  // todo: account for SSC_FUTURES -aj
   if (m_Effect != bob || GetEffectPeriod() != fPeriod) {
     m_Effect = bob;
     SetEffectPeriod(fPeriod);
@@ -1290,20 +1262,17 @@ void Actor::SetEffectBob(float fPeriod, RageVector3 vect) {
 }
 
 void Actor::SetEffectSpin(RageVector3 vect) {
-  // todo: account for SSC_FUTURES -aj
   m_Effect = spin;
   m_vEffectMagnitude = vect;
 }
 
 void Actor::SetEffectVibrate(RageVector3 vect) {
-  // todo: account for SSC_FUTURES -aj
   m_Effect = vibrate;
   m_vEffectMagnitude = vect;
 }
 
 void Actor::SetEffectPulse(float fPeriod, float fMinZoom, float fMaxZoom) {
   ASSERT(fPeriod > 0);
-  // todo: account for SSC_FUTURES -aj
   m_Effect = pulse;
   SetEffectPeriod(fPeriod);
   m_vEffectMagnitude[0] = fMinZoom;

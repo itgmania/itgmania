@@ -340,10 +340,6 @@ void ScreenOptionsEditCourse::ExportOptions(
   EditCourseUtil::UpdateAndSetTrail();
 }
 
-void ScreenOptionsEditCourse::GoToNextScreen() {}
-
-void ScreenOptionsEditCourse::GoToPrevScreen() {}
-
 void ScreenOptionsEditCourse::HandleScreenMessage(const ScreenMessage SM) {
   if (SM == SM_ExportOptions) {
     // g_Workout.m_vpSongs.clear();

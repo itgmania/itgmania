@@ -1,8 +1,6 @@
 #ifndef CRYPT_HELPERS_H
 #define CRYPT_HELPERS_H
 
-#if !defined(DISABLE_CRYPTO)
-
 // tomcrypt_cfg.h redefines malloc, realloc, calloc
 #pragma warning(push)
 #pragma warning(disable : 4565)
@@ -28,7 +26,5 @@ class RSAKeyWrapper {
 
   rsa_key m_Key;
 };
-
-#endif
 
 #endif

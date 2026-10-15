@@ -237,13 +237,6 @@ float LifeMeterBattery::GetLife() const {
   return float(m_iLivesLeft) /
          m_pPlayerState->m_PlayerOptions.GetSong().m_BatteryLives;
 }
-int LifeMeterBattery::GetRemainingLives() const {
-  if (!m_pPlayerState->m_PlayerOptions.GetSong().m_BatteryLives) {
-    return 1;
-  }
-
-  return m_iLivesLeft;
-}
 void LifeMeterBattery::Refresh() {
   m_textNumLives.SetText(
       ssprintf(LIVES_FORMAT.GetValue().c_str(), m_iLivesLeft));

@@ -63,32 +63,6 @@ static bool HashFile(RageFileBasic& f, unsigned char buf_hash[20], int iHash) {
   return true;
 }
 
-#if defined(DISABLE_CRYPTO)
-CryptManager::CryptManager() {}
-CryptManager::~CryptManager() {}
-void CryptManager::GenerateRSAKey(
-    unsigned int keyLength, std::string privFilename, std::string pubFilename) {
-}
-void CryptManager::SignFileToFile(
-    std::string sPath, std::string sSignatureFile) {}
-bool CryptManager::VerifyFileWithFile(
-    std::string sPath, std::string sSignatureFile, std::string sPublicKeyFile) {
-  return true;
-}
-bool CryptManager::VerifyFileWithFile(
-    std::string sPath, std::string sSignatureFile) {
-  return true;
-}
-
-void CryptManager::GetRandomBytes(void* pData, int iBytes) {
-  uint8_t* pBuf = (uint8_t*)pData;
-  while (iBytes--) {
-    *pBuf++ = (uint8_t)RandomInt(256);
-  }
-}
-
-#else
-
 static const int KEY_LENGTH = 1024;
 #define MAX_SIGNATURE_SIZE_BYTES 1024  // 1 KB
 
@@ -380,7 +354,6 @@ void CryptManager::GetRandomBytes(void* pData, int iBytes) {
       (unsigned char*)pData, iBytes, &g_pPRNG->m_PRNG);
   ASSERT(iRet == iBytes);
 }
-#endif
 
 std::string CryptManager::GetMD5ForFile(std::string fn) {
   RageFile file;

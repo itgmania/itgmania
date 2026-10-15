@@ -367,8 +367,6 @@ void Player::Init(
   GRAY_ARROWS_Y_STANDARD.Load(sType, "ReceptorArrowsYStandard");
   GRAY_ARROWS_Y_REVERSE.Load(sType, "ReceptorArrowsYReverse");
   ATTACK_DISPLAY_X.Load(sType, ATTACK_DISPLAY_X_NAME, NUM_PLAYERS, 2);
-  ATTACK_DISPLAY_Y.Load(sType, "AttackDisplayY");
-  ATTACK_DISPLAY_Y_REVERSE.Load(sType, "AttackDisplayYReverse");
   HOLD_JUDGMENT_Y_STANDARD.Load(sType, "HoldJudgmentYStandard");
   HOLD_JUDGMENT_Y_REVERSE.Load(sType, "HoldJudgmentYReverse");
   BRIGHT_GHOST_COMBO_THRESHOLD.Load(sType, "BrightGhostComboThreshold");
@@ -685,7 +683,6 @@ void Player::Load() {
   // Figured this is probably a little expensive so let's cache it
   m_bTickHolds = TICK_HOLDS;
 
-  m_LastTapNoteScore = TNS_None;
   // The editor can start playing in the middle of the song.
   const int iNoteRow =
       BeatToNoteRowNotRounded(m_pPlayerState->m_Position.m_fSongBeat);
@@ -802,15 +799,6 @@ void Player::Load() {
     m_pAttackDisplay->SetX(
         ATTACK_DISPLAY_X.GetValue(pn, bPlayerUsingBothSides) - 40);
   }
-  // set this in Update //m_pAttackDisplay->SetY( bReverse ?
-  // ATTACK_DISPLAY_Y_REVERSE : ATTACK_DISPLAY_Y );
-
-  // set this in Update
-  // m_pJudgment->SetX( JUDGMENT_X.GetValue(pn,bPlayerUsingBothSides) );
-  // m_pJudgment->SetY( bReverse ? JUDGMENT_Y_REVERSE : JUDGMENT_Y );
-
-  // Need to set Y positions of all these elements in Update since
-  // they change depending on PlayerOptions.
 
   // Load keysounds.  If sounds are already loaded (as in the editor), don't
   // reload them.
@@ -2639,7 +2627,6 @@ void Player::Step(
       }
     }
 
-    m_LastTapNoteScore = score;
     if (GAMESTATE->GetCurrentGame()->m_bCountNotesSeparately) {
       if (pTN->type != TapNoteType_Mine) {
         const bool bBlind =
@@ -3126,10 +3113,6 @@ void Player::HandleTapRowScore(unsigned row) {
       m_pPlayerStageStats ? m_pPlayerStageStats->m_iCurCombo : 0;
   const unsigned int iOldMissCombo =
       m_pPlayerStageStats ? m_pPlayerStageStats->m_iCurMissCombo : 0;
-
-  if (scoreOfLastTap == TNS_Miss) {
-    m_LastTapNoteScore = TNS_Miss;
-  }
 
   for (int track = 0; track < m_NoteData.GetNumTracks(); ++track) {
     const TapNote& tn = m_NoteData.GetTapNote(track, row);
