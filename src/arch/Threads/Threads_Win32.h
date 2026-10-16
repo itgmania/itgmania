@@ -38,7 +38,9 @@ class MutexImpl_Win32 : public MutexImpl {
   void Unlock();
 
  private:
-  HANDLE mutex;
+  // https://learn.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-setcriticalsectionspincount
+  static constexpr DWORD kSpinCount = 4096;
+  CRITICAL_SECTION mutex;
 };
 
 class EventImpl_Win32 : public EventImpl {
@@ -53,11 +55,7 @@ class EventImpl_Win32 : public EventImpl {
 
  private:
   MutexImpl_Win32* m_pParent;
-
-  int m_iNumWaiting;
-  CRITICAL_SECTION m_iNumWaitingLock;
-  HANDLE m_WakeupSema;
-  HANDLE m_WaitersDone;
+  CONDITION_VARIABLE m_ThreadConditionVariable;
 };
 
 class SemaImpl_Win32 : public SemaImpl {
