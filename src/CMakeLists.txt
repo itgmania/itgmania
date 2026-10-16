@@ -607,3 +607,73 @@ if(WITH_CLUB_FANTASTIC)
             DESTINATION "${SM_INSTALL_DESTINATION}/Songs")
   endif()
 endif()
+
+if(BUILD_TESTING AND LINUX)
+  set(SM_TEST_ENGINE_SRC ${SMDATA_ALL_FILES_SRC})
+  list(REMOVE_ITEM SM_TEST_ENGINE_SRC "Main.cpp")
+
+  add_library(sm_test_engine OBJECT ${SM_TEST_ENGINE_SRC})
+
+  get_target_property(SM_TEST_COMPILE_DEFINITIONS "${SM_EXE_NAME}" COMPILE_DEFINITIONS)
+  get_target_property(SM_TEST_COMPILE_OPTIONS "${SM_EXE_NAME}" COMPILE_OPTIONS)
+  get_target_property(SM_TEST_COMPILE_FLAGS "${SM_EXE_NAME}" COMPILE_FLAGS)
+  get_target_property(SM_TEST_INCLUDE_DIRS "${SM_EXE_NAME}" INCLUDE_DIRECTORIES)
+  get_target_property(SM_TEST_CXX_STANDARD "${SM_EXE_NAME}" CXX_STANDARD)
+  get_target_property(SM_TEST_CXX_EXTENSIONS "${SM_EXE_NAME}" CXX_EXTENSIONS)
+
+  set_target_properties(sm_test_engine PROPERTIES
+    CXX_STANDARD "${SM_TEST_CXX_STANDARD}"
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS "${SM_TEST_CXX_EXTENSIONS}"
+    COMPILE_FLAGS "${SM_TEST_COMPILE_FLAGS}"
+  )
+  target_compile_definitions(sm_test_engine PRIVATE ${SM_TEST_COMPILE_DEFINITIONS})
+  target_compile_options(sm_test_engine PRIVATE ${SM_TEST_COMPILE_OPTIONS})
+  target_include_directories(sm_test_engine PRIVATE ${SM_TEST_INCLUDE_DIRS})
+  target_link_libraries(sm_test_engine PRIVATE ${SMDATA_LINK_LIB})
+  add_dependencies(sm_test_engine ffmpeg)
+
+  function(sm_add_test test_name)
+    add_executable(${test_name}
+      "tests/${test_name}.cpp"
+      "tests/test_misc.cpp"
+    )
+    set_target_properties(${test_name} PROPERTIES
+      CXX_STANDARD "${SM_TEST_CXX_STANDARD}"
+      CXX_STANDARD_REQUIRED ON
+      CXX_EXTENSIONS "${SM_TEST_CXX_EXTENSIONS}"
+      COMPILE_FLAGS "${SM_TEST_COMPILE_FLAGS}"
+      RUNTIME_OUTPUT_DIRECTORY "${SM_ROOT_DIR}"
+    )
+    target_compile_definitions(${test_name} PRIVATE ${SM_TEST_COMPILE_DEFINITIONS})
+    target_compile_options(${test_name} PRIVATE ${SM_TEST_COMPILE_OPTIONS})
+    target_include_directories(${test_name} PRIVATE ${SM_TEST_INCLUDE_DIRS})
+    target_link_libraries(${test_name} PRIVATE sm_test_engine ${SMDATA_LINK_LIB})
+    add_dependencies(${test_name} ffmpeg)
+    add_test(NAME ${test_name} COMMAND ${test_name})
+    set_tests_properties(${test_name} PROPERTIES WORKING_DIRECTORY "${SM_ROOT_DIR}")
+  endfunction()
+
+  sm_add_test(test_file_readers)
+  sm_add_test(test_file_errors)
+  sm_add_test(test_timing_data)
+  sm_add_test(test_threads)
+  target_link_options(test_threads PRIVATE -rdynamic)
+
+  # (Non-working at the moment due to missing audio resources)
+  # sm_add_test(test_audio_readers)
+
+  set(SM_TEST_FILE_READER_DATA_DIR "${PROJECT_BINARY_DIR}/testdata/file_readers")
+  file(MAKE_DIRECTORY "${SM_TEST_FILE_READER_DATA_DIR}")
+  add_test(NAME test_file_readers_create_fixtures
+    COMMAND test_file_readers -c
+  )
+  set_tests_properties(test_file_readers_create_fixtures PROPERTIES
+    FIXTURES_SETUP file_reader_fixtures
+    WORKING_DIRECTORY "${SM_TEST_FILE_READER_DATA_DIR}"
+  )
+  set_tests_properties(test_file_readers PROPERTIES
+    FIXTURES_REQUIRED file_reader_fixtures
+    WORKING_DIRECTORY "${SM_TEST_FILE_READER_DATA_DIR}"
+  )
+endif()
