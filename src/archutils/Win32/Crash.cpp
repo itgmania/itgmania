@@ -245,6 +245,7 @@ void RunChild() {
         FALSE, DUPLICATE_SAME_ACCESS);
 
     WriteToChild(hToStdin, &hTargetHandle, sizeof(hTargetHandle));
+    CloseHandle(hTargetHandle);
   }
 
   // 1. Write the CrashData.
@@ -309,6 +310,14 @@ void RunChild() {
     WriteToChild(hToStdin, &iSize, sizeof(iSize));
     WriteToChild(hToStdin, szName, iSize);
   }
+
+  WaitForSingleObject(
+      hProcess, INFINITE);  // wait for CrashHandlerChild to complete to avoid
+                            // leaving behind a zombie process
+
+  CloseHandle(hProcess);
+  CloseHandle(hToStdin);
+  CloseHandle(hFromStdout);
 }
 
 static DWORD WINAPI MainExceptionHandler(LPVOID lpParameter) {
