@@ -151,8 +151,8 @@ bool StartChild(HANDLE& hProcess, HANDLE& hToStdin, HANDLE& hFromStdout) {
     sa.bInheritHandle = true;
     sa.lpSecurityDescriptor = nullptr;
 
-    CreatePipe(&si.hStdInput, &hToStdin, &sa, 0);
-    CreatePipe(&hFromStdout, &si.hStdOutput, &sa, 0);
+    CreatePipe(&si.hStdInput, &hToStdin, &sa, 1024 * 64);
+    CreatePipe(&hFromStdout, &si.hStdOutput, &sa, 1024 * 64);
     SetHandleInformation(hToStdin, HANDLE_FLAG_INHERIT, 0);
     SetHandleInformation(hFromStdout, HANDLE_FLAG_INHERIT, 0);
   }
@@ -245,13 +245,14 @@ void RunChild() {
         FALSE, DUPLICATE_SAME_ACCESS);
 
     WriteToChild(hToStdin, &hTargetHandle, sizeof(hTargetHandle));
+    CloseHandle(hTargetHandle);
   }
 
   // 1. Write the CrashData.
   WriteToChild(hToStdin, &g_CrashInfo, sizeof(g_CrashInfo));
 
   // 2. Write info.
-  const TCHAR* p = RageLog::GetInfo();
+  const char* p = RageLog::GetInfo();
   int iSize = static_cast<int>(strlen(p));
   WriteToChild(hToStdin, &iSize, sizeof(iSize));
   WriteToChild(hToStdin, p, iSize);
@@ -264,7 +265,7 @@ void RunChild() {
 
   // 4. Write RecentLogs.
   int cnt = 0;
-  const TCHAR* ps[1024];
+  const char* ps[1024];
   while (cnt < 1024 && (ps[cnt] = RageLog::GetRecentLog(cnt)) != nullptr) {
     ++cnt;
   }
@@ -277,7 +278,7 @@ void RunChild() {
   }
 
   // 5. Write CHECKPOINTs.
-  static TCHAR buf[1024 * 32];
+  static char buf[1024 * 32];
   Checkpoints::GetLogs(buf, sizeof(buf), "$$");
   iSize = static_cast<int>(strlen(buf)) + 1;
   WriteToChild(hToStdin, &iSize, sizeof(iSize));
@@ -301,7 +302,7 @@ void RunChild() {
       break;
     }
 
-    TCHAR szName[MAX_PATH];
+    char szName[MAX_PATH];
     if (!CrashGetModuleBaseName(hMod, szName)) {
       strcpy(szName, "???");
     }
@@ -309,6 +310,14 @@ void RunChild() {
     WriteToChild(hToStdin, &iSize, sizeof(iSize));
     WriteToChild(hToStdin, szName, iSize);
   }
+
+  WaitForSingleObject(
+      hProcess, INFINITE);  // wait for CrashHandlerChild to complete to avoid
+                            // leaving behind a zombie process
+
+  CloseHandle(hProcess);
+  CloseHandle(hToStdin);
+  CloseHandle(hFromStdout);
 }
 
 static DWORD WINAPI MainExceptionHandler(LPVOID lpParameter) {
