@@ -3,8 +3,13 @@ local Color2 = color(Var "Color2");
 
 local t = Def.ActorFrame {
 	Def.Sprite {
-		OnCommand=function(self)
+		InitCommand=function(self)
 			self:LoadFromCurrentSongBackground()
+		end;
+		OnCommand=function(self)
+			if not self:GetTexture() then
+				self:LoadFromCurrentSongBackground()
+			end
 			self:xy(SCREEN_CENTER_X,SCREEN_CENTER_Y)
 			self:scale_or_crop_background();
 			self:diffuse(Color1)
