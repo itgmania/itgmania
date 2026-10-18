@@ -1158,6 +1158,10 @@ bool SSCLoader::LoadEditFromMsd(
 
         if (reused_steps_info.ssc_format) {
           if (reused_steps_info.has_own_timing) {
+            // Edits from a profile are loaded after their song, so take the
+            // group sync offset the song's timing already carries.
+            stepsTiming.m_fBeat0GroupOffsetInSeconds =
+                pSong->m_SongTiming.m_fBeat0GroupOffsetInSeconds;
             pNewNotes->m_Timing = stepsTiming;
           }
           pNewNotes->SetSMNoteData(sParams[1]);
