@@ -9,7 +9,9 @@
 // clang-format on
 
 #include <algorithm>
+#include <cmath>
 #include <cwctype>
+#include <limits>
 #include <string>
 
 #include "PrefsManager.h"
@@ -22,6 +24,20 @@
 REGISTER_SOUND_DRIVER_CLASS2("WASAPI", WASAPI);
 
 namespace {
+// The performance counter in microseconds: the time base of the timestamps
+// IAudioClock::GetPosition returns (in 100 ns units).
+int64_t NowQpcUs() {
+  static const int64_t iFreq = []() {
+    LARGE_INTEGER f;
+    QueryPerformanceFrequency(&f);
+    return static_cast<int64_t>(f.QuadPart);
+  }();
+  LARGE_INTEGER now;
+  QueryPerformanceCounter(&now);
+  const int64_t iTicks = now.QuadPart;
+  return (iTicks / iFreq) * 1000000 + (iTicks % iFreq) * 1000000 / iFreq;
+}
+
 bool ContainsNoCase(
     const std::wstring& sHaystack, const std::wstring& sNeedle) {
   auto it = std::search(
@@ -94,6 +110,7 @@ RageSoundDriver_WASAPI::RageSoundDriver_WASAPI()
       m_pRenderClient(nullptr),
       m_pAudioClock(nullptr),
       m_iAudioClockFreq(0),
+      m_iPeriodFrames(0),
       m_hAudioEvent(INVALID_HANDLE_VALUE),
       m_bShutdownMixerThread(false),
       m_bOwnsComInit(false) {}
@@ -287,6 +304,14 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
     return false;
   }
 
+  REFERENCE_TIME hnsPeriod = 0;
+  if (FAILED(m_pAudioClient->GetDevicePeriod(&hnsPeriod, nullptr)) ||
+      hnsPeriod <= 0) {
+    hnsPeriod = 100000;  // the usual 10 ms
+  }
+  m_iPeriodFrames = static_cast<int>(hnsPeriod * m_iSampleRate / 10000000);
+  m_Clock.Reset(m_iSampleRate, m_iPeriodFrames);
+
   LOG->Info(
       "WASAPI: Shared mode, %d channels, %d Hz, %s, buffer size %d frames",
       m_iChannels, m_iSampleRate, m_bFloat ? "Float" : "Int16",
@@ -373,6 +398,17 @@ void RageSoundDriver_WASAPI::MixerThread() {
       continue;
     }
 
+    // Stamp the consumption as soon as it is read.
+    const int64_t iEventUs = NowQpcUs();
+    UINT64 iClockPosition = 0, iClockQpc = 0;
+    const bool bClock =
+        SUCCEEDED(m_pAudioClock->GetPosition(&iClockPosition, &iClockQpc));
+    m_Clock.AddEvent(
+        iEventUs, iHardwareFrame - padding, bClock,
+        static_cast<int64_t>(
+            iClockPosition * (UINT64)m_iSampleRate / m_iAudioClockFreq),
+        static_cast<int64_t>(iClockQpc / 10));
+
     UINT32 framesAvailable = m_iBufferSizeFrames - padding;
     if (framesAvailable == 0) {
       continue;
@@ -422,7 +458,117 @@ void RageSoundDriver_WASAPI::MixerThread() {
   m_pAudioClient->Stop();
 }
 
+void RageSoundDriver_WASAPI::ConsumedClock::Reset(
+    int iSampleRate, int iPeriodFrames) {
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  m_iSampleRate = iSampleRate;
+  m_iPeriodFrames = std::max(iPeriodFrames, 1);
+  m_iCalibrationSeen = 0;
+  m_iCalibrationTries = 0;
+  m_iLatencyFrames = 0;
+  m_bCalibrated = false;
+  m_iHistoryCount = 0;
+  m_iHistoryNext = 0;
+  m_iLowEvents = 0;
+}
+
+void RageSoundDriver_WASAPI::ConsumedClock::AddEvent(
+    int64_t iEventUs, int64_t iConsumedFrames, bool bClockValid,
+    int64_t iClockFrames, int64_t iClockUs) {
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  const double fFramesPerUs = m_iSampleRate / 1000000.0;
+  if (!m_bCalibrated) {
+    // The first events fill the engine's buffers.
+    constexpr int kSkipEvents = 20;
+    if (++m_iCalibrationSeen <= kSkipEvents) {
+      return;
+    }
+    // Compare like with like: positions follow the most prompt event, so
+    // take the most prompt consumption reading and the most advanced clock
+    // reading (a clock that moves in steps lags between them), each against
+    // its own timestamp.
+    if (m_iCalibrationSeen == kSkipEvents + 1) {
+      m_fBestConsumed = -std::numeric_limits<double>::infinity();
+      m_fBestClock = -std::numeric_limits<double>::infinity();
+    }
+    m_fBestConsumed = std::max(
+        m_fBestConsumed, static_cast<double>(iConsumedFrames) -
+                             fFramesPerUs * static_cast<double>(iEventUs));
+    if (bClockValid) {
+      m_fBestClock = std::max(
+          m_fBestClock, static_cast<double>(iClockFrames) -
+                            fFramesPerUs * static_cast<double>(iClockUs));
+    }
+    if (m_iCalibrationSeen < kSkipEvents + kCalibrationEvents) {
+      return;
+    }
+    const double fLatency = m_fBestConsumed - m_fBestClock;
+    // Audio can't be heard before the engine takes it, and no engine holds
+    // a second of it; outside that the clock was already off, so try again.
+    constexpr int kMaxTries = 5;
+    const bool bSane = fLatency >= 0 && fLatency <= m_iSampleRate;
+    if (!bSane && ++m_iCalibrationTries < kMaxTries) {
+      m_iCalibrationSeen = kSkipEvents;
+      return;
+    }
+    m_iLatencyFrames = bSane ? std::llround(fLatency)
+                             : 2 * static_cast<int64_t>(m_iPeriodFrames);
+    m_bCalibrated = true;
+  }
+
+  const double fValue =
+      static_cast<double>(iConsumedFrames - m_iLatencyFrames) -
+      fFramesPerUs * static_cast<double>(iEventUs);
+  if (m_iHistoryCount > 0) {
+    const double fBest =
+        *std::max_element(m_History, m_History + m_iHistoryCount);
+    // A late event reads low once; when the engine stopped taking audio for a
+    // while, every event after it reads low, and the older events no longer
+    // describe playback.
+    if (fValue < fBest - 1.5 * m_iPeriodFrames) {
+      if (++m_iLowEvents >= 2) {
+        m_History[0] = m_fLastValue;
+        m_iHistoryNext = 1;
+        m_iHistoryCount = 1;
+        m_iLowEvents = 0;
+      }
+    } else {
+      m_iLowEvents = 0;
+    }
+  }
+  m_fLastValue = fValue;
+  m_History[m_iHistoryNext] = fValue;
+  m_iHistoryNext = (m_iHistoryNext + 1) % kHistory;
+  m_iHistoryCount = std::min(m_iHistoryCount + 1, kHistory);
+  m_iLastConsumed = iConsumedFrames;
+}
+
+int64_t RageSoundDriver_WASAPI::ConsumedClock::GetPosition(
+    int64_t iNowUs) const {
+  std::lock_guard<std::mutex> lock(m_Mutex);
+  if (!m_bCalibrated || m_iHistoryCount == 0) {
+    return -1;
+  }
+  const double fFramesPerUs = m_iSampleRate / 1000000.0;
+  const double fBest =
+      *std::max_element(m_History, m_History + m_iHistoryCount);
+  double fPosition = fBest + fFramesPerUs * static_cast<double>(iNowUs);
+  // Until the next event the engine has only what it already took, so if it
+  // stalls, playback stops at the end of that.
+  const double fLimit =
+      static_cast<double>(m_iLastConsumed - m_iLatencyFrames) +
+      static_cast<double>(
+          std::max<int64_t>(m_iLatencyFrames, 2 * m_iPeriodFrames));
+  fPosition = std::min(fPosition, fLimit);
+  return std::max<int64_t>(std::llround(std::floor(fPosition)), 0);
+}
+
 int64_t RageSoundDriver_WASAPI::GetPosition() const {
+  const int64_t iConsumedPosition = m_Clock.GetPosition(NowQpcUs());
+  if (iConsumedPosition >= 0) {
+    return iConsumedPosition;
+  }
+
   UINT64 position = 0;
   if (FAILED(m_pAudioClock->GetPosition(&position, nullptr))) {
     return 0;
