@@ -466,11 +466,13 @@ void Steps::CalculateMeasureInfo(const NoteData& tempNoteData) {
   m_NotesPerMeasure.clear();
   m_NpsPerMeasure.clear();
   m_PeakNps.clear();
+  m_StreamBreakdown.clear();
 
   for (MeasureInfo& mi : measureInfoPerPlayer) {
     m_NotesPerMeasure.push_back(mi.notesPerMeasure);
     m_NpsPerMeasure.push_back(mi.npsPerMeasure);
     m_PeakNps.push_back(mi.peakNps);
+    m_StreamBreakdown.push_back(StreamBreakdown::Calculate(mi.notesPerMeasure));
   }
 }
 
@@ -602,6 +604,8 @@ void Steps::DeAutogen(bool bCopyNoteData) {
       Real()->m_NpsPerMeasure.begin(), Real()->m_NpsPerMeasure.end());
   m_NotesPerMeasure.assign(
       Real()->m_NotesPerMeasure.begin(), Real()->m_NotesPerMeasure.end());
+  m_StreamBreakdown.assign(
+      Real()->m_StreamBreakdown.begin(), Real()->m_StreamBreakdown.end());
 
   m_sCredit = Real()->m_sCredit;
   parent = nullptr;
@@ -739,6 +743,11 @@ void Steps::SetNpsPerMeasure(std::vector<std::vector<float>>& npsPerMeasure) {
 void Steps::SetNotesPerMeasure(std::vector<std::vector<int>>& notesPerMeasure) {
   DeAutogen();
   m_NotesPerMeasure.assign(notesPerMeasure.begin(), notesPerMeasure.end());
+}
+
+void Steps::SetStreamBreakdown(std::vector<StreamBreakdown>& streamBreakdown) {
+  DeAutogen();
+  m_StreamBreakdown.assign(streamBreakdown.begin(), streamBreakdown.end());
 }
 
 void Steps::SetPeakNps(std::vector<float>& peakNps) {
@@ -908,6 +917,21 @@ const std::vector<int>& Steps::GetNotesPerMeasure(PlayerNumber pn) const {
   }
 }
 
+const StreamBreakdown& Steps::GetStreamBreakdown(PlayerNumber pn) const {
+  // m_StreamBreakdown will only have separate sets of values per-player if
+  // the steps type has different steps for each player (eg dance-couples,
+  // dance-routine). Otherwise, it will only have one copy of the values (which
+  // will be the case for like 99.9% of charts).
+  static const StreamBreakdown EMPTY_BREAKDOWN;
+  if (Real()->m_StreamBreakdown.size() == 0) {
+    return EMPTY_BREAKDOWN;
+  } else if (Real()->m_StreamBreakdown.size() <= pn) {
+    return Real()->m_StreamBreakdown[PLAYER_1];
+  } else {
+    return Real()->m_StreamBreakdown[pn];
+  }
+}
+
 const std::vector<NoteAnnotation>& Steps::GetNoteAnnotations(
     PlayerNumber pn) const {
   // For couples/routine charts, this functions the same as GetNotesPerMeasure
@@ -1014,6 +1038,28 @@ class LunaSteps : public Luna<Steps> {
       pn = Enum::Check<PlayerNumber>(L, 1);
     }
     lua_pushnumber(L, p->GetPeakNps(pn));
+    return 1;
+  }
+
+  static int GetStreamBreakdown(T* p, lua_State* L) {
+    PlayerNumber pn = PLAYER_1;
+    if (!lua_isnoneornil(L, 1)) {
+      pn = Enum::Check<PlayerNumber>(L, 1);
+    }
+    const StreamBreakdown& breakdown = p->GetStreamBreakdown(pn);
+
+    lua_createtable(L, 0, 3);
+    lua_createtable(L, static_cast<int>(breakdown.texts.size()), 0);
+    for (size_t i = 0; i < breakdown.texts.size(); ++i) {
+      lua_pushlstring(L, breakdown.texts[i].data(), breakdown.texts[i].size());
+      lua_rawseti(L, -2, static_cast<int>(i) + 1);
+    }
+    lua_setfield(L, -2, "Texts");
+
+    lua_pushinteger(L, breakdown.totalStreamMeasures);
+    lua_setfield(L, -2, "TotalStream");
+    lua_pushinteger(L, breakdown.totalBreakMeasures);
+    lua_setfield(L, -2, "TotalBreak");
     return 1;
   }
 
@@ -1203,6 +1249,7 @@ class LunaSteps : public Luna<Steps> {
     ADD_METHOD(GetColumnCues);
     ADD_METHOD(GetNpsPerMeasure);
     ADD_METHOD(GetNotesPerMeasure);
+    ADD_METHOD(GetStreamBreakdown);
     ADD_METHOD(GetPeakNps);
     ADD_METHOD(GetGrooveStatsHash);
     ADD_METHOD(GetGrooveStatsHashVersion);

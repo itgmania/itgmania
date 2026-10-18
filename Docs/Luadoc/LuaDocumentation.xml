@@ -6398,6 +6398,14 @@ local spr = Def.Sprite{
 	<Function name='GetPeakNps' return='float' arguments='PlayerNumber pn'>
 		Returns the highest notes-per-second value of the chart for player <code>pn</code>.
 	</Function>
+	<Function name='GetStreamBreakdown' return='table' arguments='PlayerNumber pn'>
+		Returns cached stream breakdown data for the chart for player <code>pn</code>.
+		A measure is considered part of a stream when it has at least 16 notes.<br />
+		The returned table contains:<br />
+		<code>Texts</code>: An array of three strings with the breakdown text at minimization levels 0, 1, and 2 (indices 1 through 3). An empty string means the chart has no stream measures.<br />
+		<code>TotalStream</code>: The total number of stream measures in the chart.<br />
+		<code>TotalBreak</code>: The total number of break measures in the chart.
+	</Function>
 	<Function name='HasAttacks' return='bool' arguments=''>
 		Returns <code>true</code> if the Steps has any attacks.
 	</Function>

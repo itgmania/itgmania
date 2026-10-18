@@ -77,6 +77,7 @@ list(APPEND SM_DATA_NOTEDATA_SRC
             "TechCounts.cpp"
             "TechCountsCategory.cpp"
             "MeasureInfo.cpp"
+            "StreamBreakdown.cpp"
             "StepParityGenerator.cpp"
             "StepParityDatastructs.cpp"
             "StepParityCost.cpp")
@@ -90,6 +91,7 @@ list(APPEND SM_DATA_NOTEDATA_HPP
             "TechCounts.h"
             "TechCountsCategory.h"
             "MeasureInfo.h"
+            "StreamBreakdown.h"
             "StepParityGenerator.h"
             "StepParityDatastructs.h"
             "StepParityCost.h")
