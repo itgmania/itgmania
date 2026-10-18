@@ -2025,6 +2025,7 @@
 			<Function name='GetPeakNps'/>
 			<Function name='GetRadarValues'/>
 			<Function name='GetStepsType'/>
+			<Function name='GetStreamBreakdown'/>
 			<Function name='GetTimingData'/>
 			<Function name='HasAttacks'/>
 			<Function name='HasSignificantTimingChanges'/>
