@@ -37,6 +37,10 @@ class RageSoundDriver_JACK : public RageSoundDriver {
   std::atomic<int64_t> cycle_start_{kUnseeded};
   int64_t Widen(jack_nframes_t frames) const;
 
+  // Frames between our output ports and the speakers, from the latency
+  // callback. What a cycle writes is heard this much after the cycle starts.
+  std::atomic<int64_t> playback_latency_{0};
+
   // Helper for Init()
   std::string ConnectPorts();
 
@@ -45,6 +49,8 @@ class RageSoundDriver_JACK : public RageSoundDriver {
   static int ProcessTrampoline(jack_nframes_t nframes, void* arg);
   int SampleRateCallback(jack_nframes_t nframes);
   static int SampleRateTrampoline(jack_nframes_t nframes, void* arg);
+  void LatencyCallback(jack_latency_callback_mode_t mode);
+  static void LatencyTrampoline(jack_latency_callback_mode_t mode, void* arg);
 };
 
 #endif
