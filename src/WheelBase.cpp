@@ -435,17 +435,33 @@ void WheelBase::RebuildWheelItems(int dist) {
 
   // iIndex is now the index of the lowest WheelItem to draw
 
-  if (dist != INT_MAX) {
-    // Shift items and refresh only those that have changed.
-    CircularShift(items, dist);
-  }
-
-  for (int i = 0; i < (int)items.size(); i++) {
+  auto load_item = [&](int i) {
     int index = first_visible_index + i;
     wrap(index, data.size());
     const WheelItemBaseData* p_data = data[index];
-    WheelItemBase* display = items[i];
-    display->LoadFromWheelItemData(p_data, index, i);
+    items[i]->LoadFromWheelItemData(p_data, index, i);
+  };
+
+  if (dist == INT_MAX) {
+    for (int i = 0; i < (int)items.size(); i++) {
+      load_item(i);
+    }
+    return;
+  }
+
+  CircularShift(items, dist);
+
+  // Only the items that wrapped around the ends of the wheel have changed.
+  const int num_items = (int)items.size();
+  const int num_wrapped = std::min(std::abs(dist), num_items);
+  if (dist > 0) {
+    for (int i = num_items - num_wrapped; i < num_items; i++) {
+      load_item(i);
+    }
+  } else if (dist < 0) {
+    for (int i = 0; i < num_wrapped; i++) {
+      load_item(i);
+    }
   }
 }
 
