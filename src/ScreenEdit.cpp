@@ -7095,6 +7095,8 @@ void ScreenEdit::HandleTimingDataInformationChoice(
       } else {
         GAMESTATE->m_pCurSong->m_SongTiming = clipboardFullTiming;
       }
+      // The clipboard may come from a song in another pack.
+      GAMESTATE->m_pCurSong->ApplyGroupSyncOffset();
       SetDirty(true);
       break;
     }
