@@ -246,6 +246,24 @@ Group::Group(
   m_iYearReleased = StringToInt(GetPackIniValue(values, "Year"));
 }
 
+bool Group::ReloadSyncOffset() {
+  if (m_sPath.empty()) {
+    return false;
+  }
+
+  const std::string sPackIniPath = m_sPath + "/" + INI_FILE;
+  PackIniValues values;
+  // A file that is there but can't be read leaves the offset as it was.
+  if (FILEMAN->DoesFileExist(sPackIniPath) &&
+      !ReadPackIni(sPackIniPath, values)) {
+    return false;
+  }
+
+  const float fOldOffset = m_fSyncOffset;
+  m_fSyncOffset = GetPackIniSyncOffset(values, sPackIniPath);
+  return m_fSyncOffset != fOldOffset;
+}
+
 #include "LuaBinding.h"
 
 class LunaGroup : public Luna<Group> {
