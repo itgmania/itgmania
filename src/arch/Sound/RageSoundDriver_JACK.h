@@ -3,6 +3,7 @@
 
 #include <jack/jack.h>
 
+#include <atomic>
 #include <cstdint>
 #include <string>
 
@@ -26,6 +27,15 @@ class RageSoundDriver_JACK : public RageSoundDriver {
   jack_port_t* port_r;
 
   int sample_rate;
+
+  // JACK frame times are 32-bit and wrap after 2^32 frames of server uptime
+  // (about 25 hours at 48 kHz), after which ClampHardwareFrame would hold the
+  // song still. cycle_start_ is the current cycle's start widened to 64 bits
+  // (kUnseeded until the first cycle); Widen() widens any nearby frame time
+  // against it.
+  static constexpr int64_t kUnseeded = INT64_MIN;
+  std::atomic<int64_t> cycle_start_{kUnseeded};
+  int64_t Widen(jack_nframes_t frames) const;
 
   // Helper for Init()
   std::string ConnectPorts();

@@ -181,8 +181,18 @@ std::string RageSoundDriver_JACK::ConnectPorts() {
   return ret;
 }
 
+int64_t RageSoundDriver_JACK::Widen(jack_nframes_t frames) const {
+  const int64_t base = cycle_start_.load();
+  if (base == kUnseeded) {
+    // No cycle has run yet: the raw frame time, as before.
+    return static_cast<int64_t>(frames);
+  }
+  return base +
+         static_cast<int32_t>(frames - static_cast<jack_nframes_t>(base));
+}
+
 int64_t RageSoundDriver_JACK::GetPosition() const {
-  return jack_frame_time(client);
+  return Widen(jack_frame_time(client));
 }
 
 int RageSoundDriver_JACK::GetSampleRate() const {
@@ -197,7 +207,13 @@ int RageSoundDriver_JACK::ProcessCallback(jack_nframes_t nframes) {
   bufs[0] = (jack_default_audio_sample_t*)jack_port_get_buffer(port_l, nframes);
   bufs[1] = (jack_default_audio_sample_t*)jack_port_get_buffer(port_r, nframes);
 
-  jack_time_t now = jack_last_frame_time(client);
+  // Seed the 64-bit count from the first cycle's own frame time: before
+  // activation, jack_frame_time can return 0 (PipeWire's JACK does), and a
+  // base of 0 would widen a frame time past 2^31 to a negative position.
+  const jack_nframes_t raw = jack_last_frame_time(client);
+  const int64_t now =
+      cycle_start_.load() == kUnseeded ? static_cast<int64_t>(raw) : Widen(raw);
+  cycle_start_ = now;
 
   MixDeinterlaced(bufs, 2, nframes, now, now + nframes * 2);
 
