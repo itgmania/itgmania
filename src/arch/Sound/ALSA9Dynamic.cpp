@@ -56,7 +56,13 @@ std::string LoadALSA() {
       goto error;                                \
     }                                            \
   }
+#define OPTIONAL_FUNC(ret, name, proto)          \
+  d##name = (name##_f)dlsym(Handle, "__" #name); \
+  if (!d##name) {                                \
+    d##name = (name##_f)dlsym(Handle, #name);    \
+  }
 #include "ALSA9Functions.h"
+#undef OPTIONAL_FUNC
 #undef FUNC
 
   return "";
