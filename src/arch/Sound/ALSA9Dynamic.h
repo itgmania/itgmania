@@ -35,11 +35,11 @@
     *ptr = (snd_ctl_card_info_t*)alloca(dsnd_ctl_card_info_sizeof()); \
     memset(*ptr, 0, dsnd_ctl_card_info_sizeof());                     \
   }
-#define dsnd_pcm_status_alloca(ptr)                            \
-  do {                                                         \
-    ptr = (snd_pcm_status_t*)alloca(dsnd_pcm_status_sizeof()); \
-    memset(*ptr, 0, dsnd_pcm_status_sizeof());                 \
-  } while (0)
+#define dsnd_pcm_status_alloca(ptr)                             \
+  {                                                             \
+    *ptr = (snd_pcm_status_t*)alloca(dsnd_pcm_status_sizeof()); \
+    memset(*ptr, 0, dsnd_pcm_status_sizeof());                  \
+  }
 
 std::string LoadALSA();
 void UnloadALSA();
