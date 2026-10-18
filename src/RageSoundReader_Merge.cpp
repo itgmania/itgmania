@@ -75,7 +75,7 @@ void RageSoundReader_Merge::Finish(int iPreferredSampleRate) {
    */
   m_iSampleRate = GetSampleRateInternal();
   if (m_iSampleRate == -1) {
-    for (RageSoundReader* it : m_aSounds) {
+    for (RageSoundReader*& it : m_aSounds) {
       RageSoundReader_Resample_Good* pResample =
           new RageSoundReader_Resample_Good(it, iPreferredSampleRate);
       it = pResample;
@@ -86,7 +86,7 @@ void RageSoundReader_Merge::Finish(int iPreferredSampleRate) {
 
   /* If we have two channels, and any sounds have only one, convert them by
    * adding a Pan filter. */
-  for (RageSoundReader* it : m_aSounds) {
+  for (RageSoundReader*& it : m_aSounds) {
     if (it->GetNumChannels() != this->GetNumChannels()) {
       it = new RageSoundReader_Pan(it);
     }
