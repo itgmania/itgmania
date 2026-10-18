@@ -5,7 +5,12 @@
 #include <audioclient.h>
 #include <ksmedia.h>
 #include <mmdeviceapi.h>
+#include <functiondiscoverykeys_devpkey.h>
 // clang-format on
+
+#include <algorithm>
+#include <cwctype>
+#include <string>
 
 #include "PrefsManager.h"
 #include "RageLog.h"
@@ -15,6 +20,70 @@
 #include "global.h"
 
 REGISTER_SOUND_DRIVER_CLASS2("WASAPI", WASAPI);
+
+namespace {
+bool ContainsNoCase(
+    const std::wstring& sHaystack, const std::wstring& sNeedle) {
+  auto it = std::search(
+      sHaystack.begin(), sHaystack.end(), sNeedle.begin(), sNeedle.end(),
+      [](wchar_t a, wchar_t b) {
+        return std::towlower(a) == std::towlower(b);
+      });
+  return it != sHaystack.end();
+}
+
+// The first active render endpoint whose friendly name contains sWant, or
+// whose id is sWant (case insensitive), so the game can play to a particular
+// output without it being the Windows default: e.g. "Speakers (Realtek" to go
+// around an audio enhancer that is the default device. Null if none matches.
+IMMDevice* FindRenderEndpoint(
+    IMMDeviceEnumerator* pEnumerator, const std::string& sWant) {
+  IMMDeviceCollection* pCollection = nullptr;
+  if (FAILED(pEnumerator->EnumAudioEndpoints(
+          eRender, DEVICE_STATE_ACTIVE, &pCollection))) {
+    return nullptr;
+  }
+  const std::wstring sWantW = RStringToWstring(sWant);
+  IMMDevice* pFound = nullptr;
+  UINT iCount = 0;
+  pCollection->GetCount(&iCount);
+  for (UINT i = 0; i < iCount && pFound == nullptr; ++i) {
+    IMMDevice* pDevice = nullptr;
+    if (FAILED(pCollection->Item(i, &pDevice))) {
+      continue;
+    }
+    std::wstring sName, sId;
+    LPWSTR pId = nullptr;
+    if (SUCCEEDED(pDevice->GetId(&pId))) {
+      sId = pId;
+      CoTaskMemFree(pId);
+    }
+    IPropertyStore* pProps = nullptr;
+    if (SUCCEEDED(pDevice->OpenPropertyStore(STGM_READ, &pProps))) {
+      PROPVARIANT name;
+      PropVariantInit(&name);
+      if (SUCCEEDED(pProps->GetValue(PKEY_Device_FriendlyName, &name)) &&
+          name.vt == VT_LPWSTR) {
+        sName = name.pwszVal;
+      }
+      PropVariantClear(&name);
+      pProps->Release();
+    }
+    // The name by substring; the id only whole, since every id contains
+    // digits a short value would match.
+    const bool bIdMatch =
+        sId.size() == sWantW.size() && ContainsNoCase(sId, sWantW);
+    if (ContainsNoCase(sName, sWantW) || bIdMatch) {
+      pFound = pDevice;
+      LOG->Info("WASAPI: using \"%s\"", WStringToRString(sName).c_str());
+    } else {
+      pDevice->Release();
+    }
+  }
+  pCollection->Release();
+  return pFound;
+}
+}  // namespace
 
 RageSoundDriver_WASAPI::RageSoundDriver_WASAPI()
     : m_iSampleRate(0),
@@ -85,13 +154,29 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
   }
 
   IMMDevice* pDevice = nullptr;
-  hr = pEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice);
-  pEnumerator->Release();
+  const std::string sDevice = PREFSMAN->m_iSoundDevice.Get();
+  // WaveOut reads SoundDevice as device numbers ("2" or "1,3"); a value like
+  // that left over from WaveOut isn't an endpoint name.
+  const bool bDeviceNumbers =
+      sDevice.find_first_not_of("0123456789, ") == std::string::npos;
+  if (!sDevice.empty() && !bDeviceNumbers) {
+    pDevice = FindRenderEndpoint(pEnumerator, sDevice);
+    if (pDevice == nullptr) {
+      LOG->Warn(
+          "WASAPI: no output matches SoundDevice \"%s\"; using the default",
+          sDevice.c_str());
+    }
+  }
+  hr = pDevice != nullptr
+           ? S_OK
+           : pEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &pDevice);
   if (FAILED(hr)) {
+    pEnumerator->Release();
     sError = hr_ssprintf(hr, "GetDefaultAudioEndpoint failed");
     FreeWASAPI();
     return false;
   }
+  pEnumerator->Release();
 
   hr = pDevice->Activate(
       __uuidof(IAudioClient), CLSCTX_ALL, nullptr, (void**)&m_pAudioClient);

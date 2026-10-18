@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <cwctype>
 #include <string>
 
 #include "PrefsManager.h"
@@ -122,9 +123,72 @@ DSound::DSound() {
   m_pDS = nullptr;
 }
 
+namespace {
+// The device whose description contains the SoundDevice preference (case
+// insensitive), so the game can play to a particular output without it being
+// the Windows default: e.g. "Speakers (Realtek" to go around an audio
+// enhancer that is the default device.
+struct DeviceSearch {
+  std::wstring sWant;
+  std::wstring sFound;
+  GUID guid;
+  bool bFound = false;
+};
+
+bool ContainsNoCase(
+    const std::wstring& sHaystack, const std::wstring& sNeedle) {
+  auto it = std::search(
+      sHaystack.begin(), sHaystack.end(), sNeedle.begin(), sNeedle.end(),
+      [](wchar_t a, wchar_t b) {
+        return std::towlower(a) == std::towlower(b);
+      });
+  return it != sHaystack.end();
+}
+
+// WaveOut reads SoundDevice as a list of device numbers ("2" or "1,3"); a
+// value like that left over from WaveOut isn't a DirectSound device name.
+bool IsDeviceNumberList(const std::string& s) {
+  return s.find_first_not_of("0123456789, ") == std::string::npos;
+}
+
+BOOL CALLBACK FindDeviceCallback(
+    LPGUID lpGuid, LPCWSTR lpcstrDescription, LPCWSTR /*lpcstrModule*/,
+    LPVOID lpContext) {
+  DeviceSearch* pSearch = static_cast<DeviceSearch*>(lpContext);
+  // lpGuid is null for the "Primary Sound Driver" entry.
+  if (lpGuid == nullptr || !ContainsNoCase(lpcstrDescription, pSearch->sWant)) {
+    return TRUE;
+  }
+  pSearch->guid = *lpGuid;
+  pSearch->sFound = lpcstrDescription;
+  pSearch->bFound = true;
+  return FALSE;
+}
+}  // namespace
+
 std::string DSound::Init() {
   HRESULT hr;
-  if (FAILED(hr = DirectSoundCreate(nullptr, &m_pDS, nullptr))) {
+  GUID deviceGuid;
+  LPGUID pDeviceGuid = nullptr;
+  const std::string sDevice = PREFSMAN->m_iSoundDevice.Get();
+  if (!sDevice.empty() && !IsDeviceNumberList(sDevice)) {
+    DeviceSearch search;
+    search.sWant = RStringToWstring(sDevice);
+    DirectSoundEnumerateW(FindDeviceCallback, &search);
+    if (search.bFound) {
+      deviceGuid = search.guid;
+      pDeviceGuid = &deviceGuid;
+      LOG->Info(
+          "DirectSound: using \"%s\"", WStringToRString(search.sFound).c_str());
+    } else {
+      LOG->Warn(
+          "DirectSound: no device matches SoundDevice \"%s\"; using the "
+          "default",
+          sDevice.c_str());
+    }
+  }
+
+  if (FAILED(hr = DirectSoundCreate(pDeviceGuid, &m_pDS, nullptr))) {
     return hr_ssprintf(hr, "DirectSoundCreate");
   }
 
