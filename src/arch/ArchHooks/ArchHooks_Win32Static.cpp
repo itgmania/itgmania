@@ -46,8 +46,13 @@ int64_t ArchHooks::GetSystemTimeInMicroseconds() {
   LARGE_INTEGER current_time;
   QueryPerformanceCounter(&current_time);
 
-  // Calculate the elapsed time in microseconds.
-  return (current_time.QuadPart * 1000000LL) / g_liFrequency.QuadPart;
+  // Convert to microseconds without overflowing: QuadPart * 1000000 passes
+  // INT64_MAX once the counter reaches 9.22e12 ticks, which is 10.7 days of
+  // uptime at the usual 10 MHz (and a Fast Startup shutdown doesn't reset
+  // uptime), after which the clock jumps by days in the middle of a session.
+  const int64_t ticks = current_time.QuadPart;
+  const int64_t freq = g_liFrequency.QuadPart;
+  return (ticks / freq) * 1000000LL + (ticks % freq) * 1000000LL / freq;
 }
 
 static std::string GetMountDir(const std::string& sDirOfExecutable) {
