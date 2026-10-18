@@ -1,9 +1,7 @@
 #include "RageSoundReader_Merge.h"
 
 #include <algorithm>
-#include <cmath>
 #include <cstddef>
-#include <iterator>
 #include <string>
 #include <vector>
 
@@ -141,31 +139,6 @@ bool RageSoundReader_Merge::SetProperty(
   return bRet;
 }
 
-static float Difference(float a, float b) { return std::abs(a - b); }
-static int Difference(int a, int b) { return std::abs(a - b); }
-
-/*
- * If the audio position drifts apart further than ERROR_CORRECTION_THRESHOLD
- * frames, attempt to resync it.
- *
- * Frames are expressed as whole numbers, and the ratio between source and
- * stream frames is floating point.  We can't read a specific number of source
- * frames, only stream frames.  If a stream is early by 15 source frames, we'll
- * convert that to stream frames for reading; this rounds back to an integer, so
- * it isn't exact.  (The amount of error should be no more than the ratio; if we
- * have a ratio of 10, then reading 10 stream frames should advance the stream
- * by 100-110 frames.  The ratio is normally less than 5.)
- *
- * ERROR_CORRECTION_THRESHOLD should be greater than the maximum rate in use, so
- * we can always resync the stream back to within the tolerance of the
- * threshold.
- *
- * In the pathological case, if this is too low we may never resync properly,
- * each attempt to resync leapfrogging past the previous.
- */
-
-static const int ERROR_CORRECTION_THRESHOLD = 16;
-
 /* As we iterate through the sound tree, we'll find that we need data from
  * different sounds; a sound may be needed by more than one other sound. */
 int RageSoundReader_Merge::Read(float* pBuffer, int iFrames) {
@@ -174,47 +147,24 @@ int RageSoundReader_Merge::Read(float* pBuffer, int iFrames) {
   }
 
   /*
-   * All sounds which are active should stay aligned; each GetNextSourceFrame
-   * should not come out of sync.  Accomodate small rounding errors.  A larger
-   * inconsistency happens may be a bug, such as sounds at different speeds.
+   * The sounds start together and are read for the same number of frames, so
+   * they stay aligned; the first one sets the position and rate we report.
+   * Don't compare the others against it: a speed change that keeps the pitch
+   * picks each sound's slices by its own content, so their positions and
+   * ratios differ from block to block (by up to a quarter of the stretcher's
+   * window), without drifting apart.
    */
-  std::vector<int> aNextSourceFrames(m_aSounds.size());
-  std::vector<float> aRatios(m_aSounds.size());
-
-  for (size_t i = 0; i < m_aSounds.size(); ++i) {
-    aNextSourceFrames[i] = m_aSounds[i]->GetNextSourceFrame();
-    aRatios[i] = m_aSounds[i]->GetStreamToSourceRatio();
-  }
-
-  /* GetNextSourceFrame for each active sound should be the same.  If any
-   * differ, delay the later sounds until the earlier ones catch back up to put
-   * them back in sync. */
-  int iEarliestSound = std::distance(
-      aNextSourceFrames.begin(),
-      std::min_element(aNextSourceFrames.begin(), aNextSourceFrames.end()));
+  int iNextSourceFrame = m_aSounds[0]->GetNextSourceFrame();
+  float fRatio = m_aSounds[0]->GetStreamToSourceRatio();
 
   /* Normally, m_iNextSourceFrame should already be aligned with the
-   * GetNextSourceFrame of our sounds.  If it's not, adjust it and return. */
-  if (m_iNextSourceFrame != aNextSourceFrames[iEarliestSound] ||
-      m_fCurrentStreamToSourceRatio != aRatios[iEarliestSound]) {
-    m_iNextSourceFrame = aNextSourceFrames[iEarliestSound];
-    m_fCurrentStreamToSourceRatio = aRatios[iEarliestSound];
+   * GetNextSourceFrame of the first sound.  If it's not, adjust it and return.
+   */
+  if (m_iNextSourceFrame != iNextSourceFrame ||
+      m_fCurrentStreamToSourceRatio != fRatio) {
+    m_iNextSourceFrame = iNextSourceFrame;
+    m_fCurrentStreamToSourceRatio = fRatio;
     return 0;
-  }
-
-  int iMinPosition = aNextSourceFrames[iEarliestSound];
-  for (size_t i = 0; i < m_aSounds.size(); ++i) {
-    if (Difference(aNextSourceFrames[i], iMinPosition) >
-        ERROR_CORRECTION_THRESHOLD) {
-      /* A sound is being delayed to resync it; clamp the number of frames we
-       * read now, so we don't advance past it. */
-      int iMaxSourceFramesToRead = aNextSourceFrames[i] - iMinPosition;
-      int iMaxStreamFramesToRead = static_cast<int>(
-          (iMaxSourceFramesToRead / m_fCurrentStreamToSourceRatio) + 0.5);
-      iFrames = std::min(iFrames, iMaxStreamFramesToRead);
-      //			LOG->Warn( "RageSoundReader_Merge: sound
-      // positions moving at different rates" );
-    }
   }
 
   // Read directly if there's only one sound
@@ -232,55 +182,43 @@ int RageSoundReader_Merge::Read(float* pBuffer, int iFrames) {
   float Buffer[2048];
   iFrames = std::min(iFrames, static_cast<int>(ARRAYLEN(Buffer) / m_iChannels));
 
-  /* Read iFrames from each sound. */
-  for (size_t i = 0; i < m_aSounds.size(); ++i) {
+  /* Read the first sound once, like the single sound above, so the position
+   * and rate we report hold for everything we return.  It returns no data
+   * when its rate is about to change. */
+  ASSERT(m_aSounds[0]->GetNumChannels() == m_iChannels);
+  iFrames = m_aSounds[0]->Read(Buffer, iFrames);
+  if (iFrames <= 0) {
+    return iFrames;
+  }
+  mix.write(Buffer, iFrames * m_iChannels);
+
+  /* Read as many frames from each of the others, retrying when it returns no
+   * data at its own block or rate changes.  If one ends or fails, it's silent
+   * for the rest of this read. */
+  for (size_t i = 1; i < m_aSounds.size(); ++i) {
     RageSoundReader* pSound = m_aSounds[i];
     ASSERT(pSound->GetNumChannels() == m_iChannels);
 
     int iFramesRead = 0;
     while (iFramesRead < iFrames) {
-      //			if( i == 0 )
-      // LOG->Trace( "*** %i", Difference(aNextSourceFrames[i],
-      // m_iNextSourceFrame + std::lrint(iFramesRead * aRatios[i])) );
-
-      // if( Difference(aNextSourceFrames[i], m_iNextSourceFrame +
-      // static_cast<int>((iFramesRead * aRatios[i]) + 0.5)) >
-      // ERROR_CORRECTION_THRESHOLD )
-      // {
-      // LOG->Trace("Sound positions moving at different rates");
-      // break;
-      // }
-
-      int iGotFrames = pSound->Read(Buffer, iFrames - iFramesRead);
-      aNextSourceFrames[i] = m_aSounds[i]->GetNextSourceFrame();
-      aRatios[i] = m_aSounds[i]->GetStreamToSourceRatio();
-      //	LOG->Trace( "read %i from %i; %i -> %i", iGotFrames, i, oldf,
-      // aNextSourceFrames[i] );
+      int iGotFrames = pSound->RetriedRead(Buffer, iFrames - iFramesRead);
       if (iGotFrames < 0) {
-        if (i == 0) {
-          return iGotFrames;
-        }
         break;
       }
 
-      mix.SetWriteOffset(iFramesRead * pSound->GetNumChannels());
-      mix.write(Buffer, iGotFrames * pSound->GetNumChannels());
+      mix.SetWriteOffset(iFramesRead * m_iChannels);
+      mix.write(Buffer, iGotFrames * m_iChannels);
       iFramesRead += iGotFrames;
-
-      if (Difference(aRatios[i], m_fCurrentStreamToSourceRatio) > 0.001f) {
-        break;
-      }
     }
   }
 
   /* Read mixed frames into the output buffer. */
-  int iMaxFramesRead = mix.size() / m_iChannels;
   mix.read(pBuffer);
 
   m_iNextSourceFrame +=
-      static_cast<int>((iMaxFramesRead * m_fCurrentStreamToSourceRatio) + 0.5);
+      static_cast<int>((iFrames * m_fCurrentStreamToSourceRatio) + 0.5);
 
-  return iMaxFramesRead;
+  return iFrames;
 }
 
 int RageSoundReader_Merge::GetLength() const {
