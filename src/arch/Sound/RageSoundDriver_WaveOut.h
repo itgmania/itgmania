@@ -6,6 +6,7 @@
 #include <mmsystem.h>
 // clang-format on
 
+#include <atomic>
 #include <cstdint>
 #include <string>
 
@@ -40,7 +41,10 @@ class RageSoundDriver_WaveOut : public RageSoundDriver {
   WAVEHDR wo_buffers_[kMaximumNumBlocks];
   int wo_samplerate_;
   bool wo_shutdown_;
-  int wo_last_cursor_position_;
+  // Frames handed to waveOut since the device was opened. 64-bit: the mixer
+  // writes nonstop, so an int ran out after 12-13 hours of uptime. Read by
+  // GetPosition on other threads to widen waveOut's 32-bit position.
+  std::atomic<int64_t> wo_last_cursor_position_;
   bool wo_init_success_;
   int wo_frames_per_block_;
   int wo_num_blocks_;
