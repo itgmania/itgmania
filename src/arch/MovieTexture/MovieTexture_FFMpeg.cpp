@@ -1,7 +1,9 @@
 #include "MovieTexture_FFMpeg.h"
 
+#include <algorithm>
 #include <cerrno>
 #include <chrono>
+#include <cmath>
 #include <cstdarg>
 #include <cstddef>
 #include <cstdint>
@@ -146,10 +148,9 @@ void MovieDecoder_FFMpeg::Init() {
   av_stream_codec_ = nullptr;
   av_io_context_ = nullptr;
   av_buffer_ = nullptr;
-  timestamp_offset_ = 0.0f;
+  timestamp_origin_ = AV_NOPTS_VALUE;
   last_pts_ = 0.0f;
   last_duration_ = 0.0f;
-  first_pts_seen_ = false;
   target_width_ = 0;
   target_height_ = 0;
   target_pitch_ = 0;
@@ -160,7 +161,10 @@ void MovieDecoder_FFMpeg::Init() {
 }
 
 void MovieDecoder_FFMpeg::Cancel() {
-  cancel_ = true;
+  {
+    std::lock_guard<std::mutex> lock(queue_mutex_);
+    cancel_ = true;
+  }
   can_produce_cv_.notify_all();
   can_consume_cv_.notify_all();
 }
@@ -193,34 +197,49 @@ bool MovieDecoder_FFMpeg::EndOfMovie() {
   return end_of_movie_ && ready_queue_.empty();
 }
 
-// Seek back to the beginning of the video stream and reset decoder buffers.
-void MovieDecoder_FFMpeg::SeekToStart() {
-  if (av_format_context_ && av_stream_) {
-    // Reset custom AVIO flags so subsequent av_read_frame calls don't
-    // immediately return AVERROR_EOF
-    if (av_format_context_->pb) {
-      av_format_context_->pb->eof_reached = 0;
-      av_format_context_->pb->error = 0;
-      avcodec::avio_flush(av_format_context_->pb);
-    }
-    int64_t start_pts =
-        (av_stream_->start_time != AV_NOPTS_VALUE) ? av_stream_->start_time : 0;
-    int ret = avcodec::av_seek_frame(
-        av_format_context_, av_stream_->index, start_pts,
-        AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_FRAME);
-    if (ret < 0) {
-      // Fallback: attempt seeking to absolute timestamp 0
-      avcodec::av_seek_frame(
-          av_format_context_, av_stream_->index, 0, AVSEEK_FLAG_BACKWARD);
-    }
-    if (av_stream_codec_) {
-      avcodec::avcodec_flush_buffers(av_stream_codec_);
+// Called by the worker or with the worker joined. Seek timestamps remain
+// relative to the original first image, including after keyframe jumps.
+bool MovieDecoder_FFMpeg::SeekInput(float seconds) {
+  const int64_t start =
+      av_stream_->start_time == AV_NOPTS_VALUE ? 0 : av_stream_->start_time;
+  int64_t target = start;
+  if (seconds > 0 && timestamp_origin_ != AV_NOPTS_VALUE) {
+    const double requested = static_cast<double>(timestamp_origin_) +
+                             seconds / av_q2d(av_stream_->time_base);
+    if (std::isfinite(requested) &&
+        requested > static_cast<double>(std::numeric_limits<int64_t>::min()) &&
+        requested < static_cast<double>(std::numeric_limits<int64_t>::max())) {
+      target = static_cast<int64_t>(requested);
     }
   }
-  first_pts_seen_ = false;
-  timestamp_offset_ = 0.0f;
-  last_pts_ = 0.0f;
-  last_duration_ = 0.0f;
+  int result = avcodec::av_seek_frame(
+      av_format_context_, av_stream_->index, target, AVSEEK_FLAG_BACKWARD);
+  if (result < 0 && target != start) {
+    result = avcodec::av_seek_frame(
+        av_format_context_, av_stream_->index, start, AVSEEK_FLAG_BACKWARD);
+  }
+  if (result < 0) {
+    // Some MP4 edit lists leave the opening sample out of the seekable
+    // keyframe index. Recover from the beginning, then decode forward to the
+    // requested time.
+    result = avcodec::av_seek_frame(
+        av_format_context_, av_stream_->index, start,
+        AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY);
+  }
+  if (result < 0) {
+    LOG->Warn("Could not seek movie input");
+    return false;
+  }
+  avcodec::avcodec_flush_buffers(av_stream_codec_);
+  avcodec::av_frame_free(&pending_frame_);
+  last_pts_ = 0;
+  last_duration_ = 0;
+  return true;
+}
+
+bool MovieDecoder_FFMpeg::SeekToStart() {
+  end_of_movie_ = false;
+  return SeekInput(0);
 }
 
 void MovieDecoder_FFMpeg::HandleReset() {
@@ -248,31 +267,19 @@ float MovieDecoder_FFMpeg::CalculatePTS(avcodec::AVFrame* frame) {
   if (pts == AV_NOPTS_VALUE) {
     pts = frame->pkt_dts;
   }
-
-  float seconds = 0.0f;
-  if (pts != AV_NOPTS_VALUE && av_stream_ && av_stream_->time_base.den > 0) {
-    seconds = static_cast<float>(pts * av_q2d(av_stream_->time_base));
-  } else {
+  float seconds = last_pts_ + last_duration_;
+  if (pts != AV_NOPTS_VALUE && av_stream_->time_base.den > 0) {
+    if (timestamp_origin_ == AV_NOPTS_VALUE) {
+      timestamp_origin_ = pts;
+    }
+    seconds = static_cast<float>(
+        (pts - timestamp_origin_) * av_q2d(av_stream_->time_base));
+  }
+  seconds = std::max(seconds, 0.0f);
+  // Preserve beta's handling of backward timestamp anomalies in legacy files.
+  if (seconds < last_pts_) {
     seconds = last_pts_ + last_duration_;
   }
-
-  if (!first_pts_seen_) {
-    first_pts_seen_ = true;
-    timestamp_offset_ = seconds;
-  }
-
-  seconds -= timestamp_offset_;
-  if (seconds < 0.0f) {
-    seconds = 0.0f;
-  }
-
-  // Guarantee strictly monotonic presentation timestamps. If legacy containers
-  // (e.g. AVI files with B-frames) report backward timestamp anomalies, advance
-  // smoothly using frame duration.
-  if (first_pts_seen_ && seconds < last_pts_) {
-    seconds = last_pts_ + last_duration_;
-  }
-
   last_pts_ = seconds;
   return seconds;
 }
@@ -406,7 +413,17 @@ int MovieDecoder_FFMpeg::DecodeMovie() {
       frame_buf = std::make_unique<ConvertedFrame>();
     }
 
-    int ret = ReadAndDecodeNextFrame(packet, raw_frame);
+    const bool had_pending = pending_frame_ != nullptr;
+    float frame_pts = pending_pts_;
+    float frame_duration = pending_duration_;
+    int ret = 0;
+    if (had_pending) {
+      avcodec::av_frame_unref(raw_frame);
+      avcodec::av_frame_move_ref(raw_frame, pending_frame_);
+      avcodec::av_frame_free(&pending_frame_);
+    } else {
+      ret = ReadAndDecodeNextFrame(packet, raw_frame);
+    }
     if (ret < 0) {
       if (ret == -3) {
         HandleReset();
@@ -439,8 +456,10 @@ int MovieDecoder_FFMpeg::DecodeMovie() {
       break;
     }
 
-    float frame_pts = CalculatePTS(raw_frame);
-    float frame_duration = CalculateDuration(raw_frame);
+    if (!had_pending) {
+      frame_pts = CalculatePTS(raw_frame);
+      frame_duration = CalculateDuration(raw_frame);
+    }
 
     ConvertFrame(raw_frame, *frame_buf);
     frame_buf->pts = frame_pts;
@@ -635,6 +654,7 @@ std::string MovieDecoder_FFMpeg::OpenCodec() {
 // double-free issues. av_format_context_->pb is nulled before
 // avformat_close_input to prevent premature buffer deallocation.
 void MovieDecoder_FFMpeg::Close() {
+  avcodec::av_frame_free(&pending_frame_);
   if (av_sws_context_) {
     avcodec::sws_freeContext(av_sws_context_);
     av_sws_context_ = nullptr;
@@ -668,6 +688,117 @@ void MovieDecoder_FFMpeg::Close() {
   std::lock_guard<std::mutex> lock(queue_mutex_);
   ready_queue_.clear();
   frame_pool_.clear();
+}
+
+float MovieDecoder_FFMpeg::Seek(float seconds, bool loop) {
+  // Generic has stopped and joined the worker. Discarded images are decoded
+  // without color conversion; only the selected image enters beta's pool.
+  cancel_ = false;
+  reset_ = false;
+  if (!std::isfinite(seconds)) {
+    return -1;
+  }
+  seconds = std::max(seconds, 0.0f);
+  const float duration =
+      av_stream_->duration > 0
+          ? static_cast<float>(
+                av_stream_->duration * av_q2d(av_stream_->time_base))
+          : 0;
+  if (loop && duration > 0) {
+    seconds = std::fmod(seconds, duration);
+  }
+  {
+    std::lock_guard<std::mutex> lock(queue_mutex_);
+    ready_queue_.clear();
+    end_of_movie_ = false;
+  }
+  auto free_frame = [](avcodec::AVFrame* frame) {
+    avcodec::av_frame_free(&frame);
+  };
+  auto free_packet = [](avcodec::AVPacket* packet) {
+    avcodec::av_packet_free(&packet);
+  };
+  std::unique_ptr<avcodec::AVFrame, decltype(free_frame)> current(
+      avcodec::av_frame_alloc(), free_frame);
+  std::unique_ptr<avcodec::AVFrame, decltype(free_frame)> next(
+      avcodec::av_frame_alloc(), free_frame);
+  std::unique_ptr<avcodec::AVPacket, decltype(free_packet)> packet(
+      avcodec::av_packet_alloc(), free_packet);
+  if (!current || !next || !packet) {
+    return -1;
+  }
+  // Learn the original first PTS before jumping. Resetting PTS to zero at the
+  // destination keyframe would desynchronize both seeks and subsequent loops.
+  if (timestamp_origin_ == AV_NOPTS_VALUE) {
+    if (!SeekToStart() ||
+        ReadAndDecodeNextFrame(packet.get(), current.get()) != 0) {
+      return -1;
+    }
+    CalculatePTS(current.get());
+  }
+  const float seek_seconds =
+      duration > 0 ? std::min(seconds, std::max(duration - 0.001f, 0.0f))
+                   : seconds;
+  avcodec::av_packet_unref(packet.get());
+  if (!SeekInput(seek_seconds) ||
+      ReadAndDecodeNextFrame(packet.get(), current.get()) != 0) {
+    return -1;
+  }
+  float pts = CalculatePTS(current.get());
+  float frame_duration = CalculateDuration(current.get());
+  // Bad indexes must not push the first displayed image past the requested
+  // time.
+  if (pts > seconds && seek_seconds > 0) {
+    avcodec::av_packet_unref(packet.get());
+    if (!SeekToStart() ||
+        ReadAndDecodeNextFrame(packet.get(), current.get()) != 0) {
+      return -1;
+    }
+    pts = CalculatePTS(current.get());
+    frame_duration = CalculateDuration(current.get());
+  }
+  while (true) {
+    const int result = ReadAndDecodeNextFrame(packet.get(), next.get());
+    if (result != 0 && result != AVERROR_EOF) {
+      return -1;
+    }
+    const bool last = result == AVERROR_EOF;
+    const float next_pts =
+        last ? pts + frame_duration : CalculatePTS(next.get());
+    const float next_duration = last ? 0 : CalculateDuration(next.get());
+    if (last && loop && seconds >= next_pts && next_pts > 0) {
+      return Seek(std::fmod(seconds, next_pts), false);
+    }
+    if (last || pts >= seconds || next_pts > seconds) {
+      auto selected = std::make_unique<ConvertedFrame>();
+      ConvertFrame(current.get(), *selected);
+      selected->pts = pts;
+      selected->duration = frame_duration;
+      selected->is_last_frame = last;
+      if (!last) {
+        pending_frame_ = avcodec::av_frame_clone(next.get());
+        if (!pending_frame_) {
+          return -1;
+        }
+        pending_pts_ = next_pts;
+        pending_duration_ = next_duration;
+      }
+      // A pending packet is only possible with a decoder violating FFmpeg's
+      // send/receive contract; do not silently lose it across the worker
+      // restart.
+      if (packet->size > 0) {
+        avcodec::av_frame_free(&pending_frame_);
+        return -1;
+      }
+      std::lock_guard<std::mutex> lock(queue_mutex_);
+      ready_queue_.push_back(std::move(selected));
+      return last ? std::min(seconds, next_pts) : seconds;
+    }
+    avcodec::av_frame_unref(current.get());
+    avcodec::av_frame_move_ref(current.get(), next.get());
+    pts = next_pts;
+    frame_duration = next_duration;
+  }
 }
 
 RageSurface* MovieDecoder_FFMpeg::CreateCompatibleSurface(

@@ -4479,10 +4479,9 @@ void ScreenEdit::TransitionEditState(EditState em) {
         pSteps->SetNoteData(m_NoteDataEdit);
         m_pSong->ReCalculateStepStatsAndLastSecond(false);
 
-        // TODO: Background videos don't support seeking, when they do, make
-        // sure to load the appropriate part of the video.
         m_Background.Unload();
         m_Background.LoadFromSong(m_pSong);
+        m_Background.SeekToCurrentTime();
 
         m_Foreground.Unload();
         m_Foreground.LoadFromSong(m_pSong);
