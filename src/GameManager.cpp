@@ -1677,6 +1677,10 @@ const StepsTypeInfo& GameManager::GetStepsTypeInfo(StepsType st) {
 StepsType GameManager::StringToStepsType(std::string sStepsType) {
   MakeLower(sStepsType);
 
+  if (sStepsType == "pump-double-p") {
+    return StepsType_pump_routine;
+  }
+
   for (int i = 0; i < NUM_StepsType; i++) {
     if (g_StepsTypeInfos[i].szName == sStepsType) {
       return StepsType(i);
