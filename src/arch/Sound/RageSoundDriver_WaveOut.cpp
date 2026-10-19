@@ -87,7 +87,11 @@ bool RageSoundDriver_WaveOut::GetData() {
   /* Call the callback. */
   this->Mix(
       (int16_t*)wo_buffers_[b].lpData, kBlockSizeFrames,
-      wo_last_cursor_position_, GetPosition());
+      wo_last_cursor_position_.load(), GetPosition());
+
+  /* Count the block before handing it over, so the written count is never
+   * behind what the device can be playing (GetPosition relies on that). */
+  wo_last_cursor_position_ += kBlockSizeFrames;
 
   MMRESULT ret =
       waveOutWrite(waveout_handle_, &wo_buffers_[b], sizeof(wo_buffers_[b]));
@@ -97,9 +101,6 @@ bool RageSoundDriver_WaveOut::GetData() {
       FAIL_M(wo_ssprintf(ret, "waveOutWrite failed"));
     }
   }
-
-  /* Increment wo_last_cursor_position_. */
-  wo_last_cursor_position_ += kBlockSizeFrames;
 
   return true;
 }
@@ -113,14 +114,40 @@ void RageSoundDriver_WaveOut::SetupDecodingThread() {
 }
 
 int64_t RageSoundDriver_WaveOut::GetPosition() const {
+  // Ask for bytes: winmm keeps a 32-bit byte count, and on some systems the
+  // sample count it derives from it overflows at 2^27 frames (about 50
+  // minutes); either way the raw position wraps and ClampHardwareFrame would
+  // then hold the song still.
   MMTIME tm;
-  tm.wType = TIME_SAMPLES;
+  tm.wType = TIME_BYTES;
   MMRESULT ret = waveOutGetPosition(waveout_handle_, &tm, sizeof(tm));
   if (ret != MMSYSERR_NOERROR) {
     FAIL_M(wo_ssprintf(ret, "waveOutGetPosition failed").c_str());
   }
 
-  return tm.u.sample;
+  // Widen it against the 64-bit count of frames written: the frame playing
+  // trails that by no more than the queued blocks, so it is the written
+  // count minus the distance back to the device's position, taken modulo
+  // 2^32 bytes (or 2^32 samples, if the driver insists on giving samples).
+  const int64_t iWritten = wo_last_cursor_position_.load();
+  if (tm.wType == TIME_BYTES) {
+    const uint32_t iBehindBytes =
+        static_cast<uint32_t>(iWritten * kBytesPerFrame) - tm.u.cb;
+    return iWritten - iBehindBytes / kBytesPerFrame;
+  }
+  if (tm.wType == TIME_SAMPLES) {
+    const uint32_t iBehind =
+        static_cast<uint32_t>(iWritten) - static_cast<uint32_t>(tm.u.sample);
+    return iWritten - iBehind;
+  }
+  // Neither: song time would run ahead of the audio by the queue, but keeps
+  // moving.
+  static bool bWarned = false;
+  if (!bWarned) {
+    bWarned = true;
+    LOG->Warn("waveOutGetPosition returned time format %u", tm.wType);
+  }
+  return iWritten;
 }
 
 RageSoundDriver_WaveOut::RageSoundDriver_WaveOut()
