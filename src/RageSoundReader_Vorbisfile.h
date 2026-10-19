@@ -25,11 +25,19 @@ class RageSoundReader_Vorbisfile : public RageSoundReader_FileReader {
   RageSoundReader_Vorbisfile* Copy() const;
 
  private:
+  int GetDecoderFrame() const;
+
   OggVorbis_File* vf;
   bool eof;
   std::string filename;
   int read_offset;
   unsigned channels;
+
+  /* Positive granule position at which the first logical stream starts
+   * (ov_pcm_tell numbering minus ours), and how much of it libvorbisfile is
+   * currently adding to ov_pcm_tell. See GetDecoderFrame. */
+  int start_granule;
+  int tell_bias;
 };
 
 #endif
