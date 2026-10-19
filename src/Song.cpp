@@ -268,7 +268,14 @@ void Song::SetSongDirAndGroup(
     ASSERT(m_sGroupName != "");
   } else {
     LOG->Trace("Loading song from profile2.");
-    m_sGroupName = sDir.substr(1, sDir.find('/', 1) - 1);
+    m_sGroupName =
+        PROFILEMAN->GetProfile(from_profile)->GetCustomSongsGroupNamePrefix();
+
+    bool isSubFolder = sDirectoryParts.size() > 6;
+    if (isSubFolder) {
+      std::string subFolderName = sDirectoryParts[sDirectoryParts.size() - 3];
+      m_sGroupName += (" - " + subFolderName);
+    }
   }
   m_LoadedFromProfile = from_profile;
 }
