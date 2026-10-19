@@ -458,7 +458,9 @@ RageTextureID ImageCache::LoadCachedImage(
   }
 
   /* It's not in a texture.  Do we have it loaded? */
-  if (g_ImagePathToImage.find(image_path) == g_ImagePathToImage.end()) {
+if (g_ImagePathToImage.find(image_path) == g_ImagePathToImage.end() &&
+      !LoadOnDemandImage(
+          GetImageCachePath(sImageDir, image_path), image_path)) {
     /* Oops, the image is missing.  Warn and continue. */
     if (PREFSMAN->image_cache_ != IMGCACHE_OFF) {
       LOG->Warn("Image cache for '%s' wasn't loaded", image_path.c_str());
