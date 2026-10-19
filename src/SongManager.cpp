@@ -492,6 +492,8 @@ void SongManager::LoadSongDir(
   // We need to keep track of previously loaded groups so we don't delete them
   // if we're only loading additions.
   std::unordered_set<Group*> alreadyLoadedGroups;
+  // Previously loaded groups whose Pack.ini now gives a different sync offset.
+  std::vector<std::string> groupsWithNewSyncOffset;
 
   // An entry for each song that we need to load across all packs.
   std::vector<SongToLoad> songsToLoad{};
@@ -519,6 +521,13 @@ void SongManager::LoadSongDir(
     const auto groupIter = m_mapNameToGroup.find(sGroupDirName);
     if (groupIter != m_mapNameToGroup.end()) {
       alreadyLoadedGroups.insert(groupIter->second);
+      // Only loading additions keeps a group from an earlier load, and its
+      // Pack.ini may have been written or changed since. Read the sync offset
+      // again now, before the new songs take it, so the pack doesn't end up
+      // playing two offsets at once.
+      if (groupIter->second->ReloadSyncOffset()) {
+        groupsWithNewSyncOffset.push_back(sGroupDirName);
+      }
     } else {
       m_mapNameToGroup[sGroupDirName] = new Group(sDir, sGroupDirName);
     }
@@ -644,6 +653,13 @@ void SongManager::LoadSongDir(
   // Wait for all of the threads to exit.
   for (int i = 0; i < threadCount; i++) {
     threads[i].join();
+  }
+
+  // The songs loaded before still carry the group's old sync offset.
+  for (const std::string& sGroupDirName : groupsWithNewSyncOffset) {
+    for (Song* pSong : m_mapSongGroupIndex[sGroupDirName]) {
+      pSong->ApplyGroupSyncOffset();
+    }
   }
 
   // Mostly unchanged group finalizing work.

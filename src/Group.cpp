@@ -21,6 +21,37 @@
  */
 const std::string INI_FILE = "Pack.ini";
 
+namespace {
+
+// Sets fOffset from a Pack.ini SyncOffset value. NULL and ITG are the only
+// valid values; an empty one leaves fOffset alone, and anything else is
+// reported and leaves it alone too.
+void ApplySyncOffsetValue(
+    const std::string& sValue, const std::string& sPackIniPath,
+    const char* sCaller, float& fOffset) {
+  // If the Pack.ini is specified as SyncOffset=ITG (regardless of the
+  // m_DefaultSyncOffset value, we need to always remove the 9ms ITG
+  // bias.
+  //
+  // Otherwise, if SyncOffset=NULL, we don't need to do anything since
+  // it's already NULL synced, which is what we shift everything to.
+  if (sValue.empty()) {
+    return;
+  }
+  if (sValue == "NULL") {
+    fOffset = 0.0f;
+  } else if (sValue == "ITG") {
+    fOffset = -0.009f;
+  } else {
+    LOG->Warn(
+        "%s: Invalid SyncOffset value: %s in Pack.ini file \"%s\". Valid "
+        "values are NULL and ITG. Using default value.",
+        sCaller, sValue.c_str(), sPackIniPath.c_str());
+  }
+}
+
+}  // namespace
+
 Group::Group(
     const std::string& sDir, const std::string& sGroupDirName,
     bool bFromProfile) {
@@ -52,8 +83,7 @@ Group::Group(
   //
   // We can start with that as our default value, and potentially update it
   // below.
-  m_fSyncOffset =
-      (PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL) ? 0.0f : -0.009f;
+  m_fSyncOffset = GetDefaultSyncOffset();
   m_bHasPackIni = false;
   m_iYearReleased = 0;
   m_sBannerPath = "";
@@ -102,24 +132,7 @@ Group::Group(
       std::string sValue = "";
       ini.GetValue("Group", "SyncOffset", sValue);
       Trim(sValue);
-      // If the Pack.ini is specified as SyncOffset=ITG (regardless of the
-      // m_DefaultSyncOffset value, we need to always remove the 9ms ITG
-      // bias.
-      //
-      // Otherwise, if SyncOffset=NULL, we don't need to do anything since
-      // it's already NULL synced, which is what we shift everything to.
-      if (!sValue.empty()) {
-        if (sValue == "NULL") {
-          m_fSyncOffset = 0.0f;
-        } else if (sValue == "ITG") {
-          m_fSyncOffset = -0.009f;
-        } else {
-          LOG->Warn(
-              "Group::Group: Invalid SyncOffset value: %s in Pack.ini file "
-              "\"%s\". Valid values are NULL and ITG. Using default value.",
-              sValue.c_str(), sPackIniPath.c_str());
-        }
-      }
+      ApplySyncOffsetValue(sValue, sPackIniPath, "Group::Group", m_fSyncOffset);
 
       ini.GetValue("Group", "Year", m_iYearReleased);
     } else {
@@ -129,6 +142,48 @@ Group::Group(
           sPackIniPath.c_str());
     }
   }
+}
+
+bool Group::ReloadSyncOffset() {
+  if (m_sPath.empty()) {
+    return false;
+  }
+
+  const std::string sPackIniPath = m_sPath + "/" + INI_FILE;
+  float fOffset = GetDefaultSyncOffset();
+  if (FILEMAN->DoesFileExist(sPackIniPath)) {
+    IniFile ini;
+    if (!ini.ReadFile(sPackIniPath)) {
+      // A file that is there but can't be read leaves the offset as it was.
+      LOG->Warn(
+          "Group::ReloadSyncOffset: Failed to read Pack.ini file at '%s': %s",
+          sPackIniPath.c_str(), ini.GetError().c_str());
+      return false;
+    }
+
+    // As when the group was loaded, SyncOffset counts only with a Version.
+    std::string sVersion = "";
+    ini.GetValue("Group", "Version", sVersion);
+    Trim(sVersion);
+    if (!sVersion.empty()) {
+      std::string sValue = "";
+      ini.GetValue("Group", "SyncOffset", sValue);
+      Trim(sValue);
+      ApplySyncOffsetValue(
+          sValue, sPackIniPath, "Group::ReloadSyncOffset", fOffset);
+    }
+  }
+
+  const float fOldOffset = m_fSyncOffset;
+  m_fSyncOffset = fOffset;
+  return m_fSyncOffset != fOldOffset;
+}
+
+float Group::GetDefaultSyncOffset() {
+  // The m_DefaultSyncOffset preference corresponds to what offset the user
+  // would like to assume as a "default" for packs without a Pack.ini. If it
+  // is set to ITG, we remove the 9ms ITG bias from those packs.
+  return (PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL) ? 0.0f : -0.009f;
 }
 
 #include "LuaBinding.h"

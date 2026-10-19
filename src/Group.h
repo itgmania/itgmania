@@ -67,6 +67,21 @@ class Group {
   float GetSyncOffset() const { return m_fSyncOffset; };
 
   /**
+   * @brief Read the SyncOffset from the group's Pack.ini again, by the same
+   * rules as when the group was loaded, for when the file may have changed
+   * since. The other Pack.ini values are left alone.
+   *
+   * @return true if the sync offset changed, false otherwise.
+   */
+  bool ReloadSyncOffset();
+
+  /**
+   * @brief The sync offset of a pack whose Pack.ini doesn't set one, from the
+   * DefaultSyncOffset preference.
+   */
+  static float GetDefaultSyncOffset();
+
+  /**
    * @brief Whether the group has a Pack.ini file.
    *
    * @return true if the group has a Pack.ini file, false otherwise.

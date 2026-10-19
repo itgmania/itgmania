@@ -111,6 +111,17 @@ class Song {
   void TidyUpData(bool fromCache = false);
 
   /**
+   * @brief The sync offset of the song's group (from its Pack.ini), or the
+   * DefaultSyncOffset preference when the song has no group.
+   */
+  float GetGroupSyncOffset() const;
+  /**
+   * @brief Copy the group sync offset into the song timing and the timing of
+   * every Steps. Call it again whenever the group's offset changes.
+   */
+  void ApplyGroupSyncOffset();
+
+  /**
    * @brief Normalize background changes parsed from an SM/SSC simfile.
    */
   void FixupBackgroundChanges();
