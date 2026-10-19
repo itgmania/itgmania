@@ -171,6 +171,14 @@ void TrimOnDemandImages() {
 }
 }  // namespace
 
+std::string ImageCache::GetImageCachePath(
+    std::string sImageDir, std::string sImagePath) {
+  return SongCacheIndex::GetCacheFilePath(sImageDir, sImagePath);
+}
+
+// LoadCachedImage lazy loads images when we're in on-demand mode
+void ImageCache::Demand(std::string sImageDir) { ++g_iDemandRefcount; }
+
 /* Release images loaded on demand. */
 void ImageCache::Undemand(std::string sImageDir) {
   --g_iDemandRefcount;
@@ -195,6 +203,13 @@ void ImageCache::LoadImage(std::string sImageDir, std::string sImagePath) {
   }
   if (PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_PRELOAD &&
       PREFSMAN->m_ImageCache != IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
+    return;
+  }
+
+  if (PREFSMAN->m_ImageCache == IMGCACHE_LOW_RES_LOAD_ON_DEMAND) {
+    if (!DoesFileExist(GetImageCachePath(sImageDir, sImagePath))) {
+      CacheImageInternal(sImageDir, sImagePath);
+    }
     return;
   }
 
