@@ -763,6 +763,7 @@ void SongManager::PreloadSongImages() {
 
 void SongManager::FreeSongs() {
   m_sSongGroupNames.clear();
+  m_sSongGroupBannerPaths.clear();
   m_mapSongsByDifficulty.clear();
   m_mapPreferredSectionToSongs.clear();
 
