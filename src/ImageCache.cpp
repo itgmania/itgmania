@@ -122,6 +122,97 @@ void ImageCache::Demand(std::string image_dir) {
   }
 }
 
+// Helpers for IMGCACHE_LOW_RES_LOAD_ON_DEMAND (FIFO with a memory limit).
+namespace {
+struct OnDemandUse {
+  RageTextureID id;  // the ID the image's texture is registered under
+  uint64_t lastUsed;
+};
+
+// Keyed like g_ImagePathToImage. Only holds entries for on-demand images.
+std::map<std::string, OnDemandUse> g_OnDemandUse;
+uint64_t g_iOnDemandUseSequence = 0;
+
+bool IsOnDemandMode() {
+  return PREFSMAN->image_cache_ == IMGCACHE_LOW_RES_LOAD_ON_DEMAND;
+}
+
+size_t SurfaceBytes(const RageSurface* pImage) {
+  return static_cast<size_t>(pImage->pitch) * pImage->h;
+}
+
+// Reads the cache file into g_ImagePathToImage. Returns false if not in
+// on-demand mode or if the cache file couldn't be loaded.
+// The caller must hold g_ImageCacheMutex.
+bool LoadOnDemandImage(
+    const std::string& sCachePath, const std::string& sImagePath) {
+  if (!IsOnDemandMode()) {
+    return false;
+  }
+
+  RageSurface* pImage = RageSurfaceUtils::LoadSurface(sCachePath);
+  if (pImage == nullptr) {
+    return false;
+  }
+
+  g_ImagePathToImage[sImagePath] = pImage;
+  return true;
+}
+
+void TouchOnDemandImage(
+    const std::string& sImagePath, const RageTextureID& id) {
+  if (IsOnDemandMode()) {
+    g_OnDemandUse[sImagePath] = {id, ++g_iOnDemandUseSequence};
+  }
+}
+
+// The caller must hold g_ImageCacheMutex.
+void TrimOnDemandImages() {
+  if (!IsOnDemandMode()) {
+    return;
+  }
+
+  const uint64_t maxMemory =
+      static_cast<uint64_t>(
+          std::max(0, PREFSMAN->m_iMaxOnDemandImageMemoryMB.Get())) *
+      1024 * 1024;
+  size_t totalSize = 0;
+  for (auto it = g_OnDemandUse.begin(); it != g_OnDemandUse.end();) {
+    const auto image = g_ImagePathToImage.find(it->first);
+    if (image == g_ImagePathToImage.end()) {
+      it = g_OnDemandUse.erase(it);  // image was freed elsewhere
+      continue;
+    }
+    totalSize += SurfaceBytes(image->second);
+    ++it;
+  }
+
+  while (static_cast<uint64_t>(totalSize) > maxMemory) {
+    auto oldest = g_OnDemandUse.end();
+    for (auto it = g_OnDemandUse.begin(); it != g_OnDemandUse.end(); ++it) {
+      if (TEXTUREMAN->IsTextureRegistered(it->second.id)) {
+        continue;
+      }
+      if (oldest == g_OnDemandUse.end() ||
+          it->second.lastUsed < oldest->second.lastUsed) {
+        oldest = it;
+      }
+    }
+
+    if (oldest == g_OnDemandUse.end()) {
+      break;  // everything left is in use
+    }
+
+    const auto image = g_ImagePathToImage.find(oldest->first);
+    totalSize -= SurfaceBytes(image->second);
+    delete image->second;
+    g_ImagePathToImage.erase(image);
+    g_OnDemandUse.erase(oldest);
+
+  }
+}
+}  // namespace
+
 /* Release images loaded on demand. */
 void ImageCache::Undemand(std::string image_dir) {
   --g_iDemandRefcount;
