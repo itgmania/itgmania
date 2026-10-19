@@ -20,6 +20,7 @@ RageSoundDriver_WASAPI::RageSoundDriver_WASAPI()
     : m_iSampleRate(0),
       m_iBufferSizeFrames(0),
       m_bFloat(true),
+      m_iChannels(2),
       m_pAudioClient(nullptr),
       m_pRenderClient(nullptr),
       m_pAudioClock(nullptr),
@@ -111,7 +112,13 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
   }
 
   m_iSampleRate = pwfx->nSamplesPerSec;
-  int iChannels = pwfx->nChannels;
+  m_iChannels = pwfx->nChannels;
+  if (m_iChannels < 2) {
+    sError = ssprintf("Unsupported channel count: %d", m_iChannels);
+    CoTaskMemFree(pwfx);
+    FreeWASAPI();
+    return false;
+  }
 
   if (pwfx->wFormatTag != WAVE_FORMAT_EXTENSIBLE) {
     sError = ssprintf("Unsupported format tag: %d", pwfx->wFormatTag);
@@ -197,7 +204,7 @@ bool RageSoundDriver_WASAPI::InitWASAPI(std::string& sError) {
 
   LOG->Info(
       "WASAPI: Shared mode, %d channels, %d Hz, %s, buffer size %d frames",
-      iChannels, m_iSampleRate, m_bFloat ? "Float" : "Int16",
+      m_iChannels, m_iSampleRate, m_bFloat ? "Float" : "Int16",
       m_iBufferSizeFrames);
 
   return true;
@@ -223,6 +230,23 @@ std::string RageSoundDriver_WASAPI::Init() {
 int RageSoundDriver_WASAPI::MixerThread_start(void* p) {
   ((RageSoundDriver_WASAPI*)p)->MixerThread();
   return 0;
+}
+
+// Copies interleaved stereo frames into a buffer of m_iChannels channels: left
+// and right go to the first two channels (front left and right in every
+// standard WAVEFORMATEXTENSIBLE layout) and the rest are silent.
+template <typename T>
+static void SpreadStereoTo(
+    const T* pStereo, T* pOut, UINT32 iFrames, int iChannels) {
+  for (UINT32 i = 0; i < iFrames; ++i) {
+    pOut[0] = pStereo[0];
+    pOut[1] = pStereo[1];
+    for (int c = 2; c < iChannels; ++c) {
+      pOut[c] = T(0);
+    }
+    pStereo += 2;
+    pOut += iChannels;
+  }
 }
 
 void RageSoundDriver_WASAPI::MixerThread() {
@@ -278,11 +302,28 @@ void RageSoundDriver_WASAPI::MixerThread() {
 
     int64_t iCurrentFrame = GetPosition();
 
-    if (m_bFloat) {
-      this->Mix((float*)pData, framesAvailable, iHardwareFrame, iCurrentFrame);
-    } else {
+    if (m_iChannels == 2) {
+      if (m_bFloat) {
+        this->Mix(
+            (float*)pData, framesAvailable, iHardwareFrame, iCurrentFrame);
+      } else {
+        this->Mix(
+            (int16_t*)pData, framesAvailable, iHardwareFrame, iCurrentFrame);
+      }
+    } else if (m_bFloat) {
+      // Mix() writes stereo frames; put them on the device's front left and
+      // right and silence its other channels.
+      m_StereoFloat.resize(framesAvailable * 2);
       this->Mix(
-          (int16_t*)pData, framesAvailable, iHardwareFrame, iCurrentFrame);
+          m_StereoFloat.data(), framesAvailable, iHardwareFrame, iCurrentFrame);
+      SpreadStereoTo(
+          m_StereoFloat.data(), (float*)pData, framesAvailable, m_iChannels);
+    } else {
+      m_StereoInt16.resize(framesAvailable * 2);
+      this->Mix(
+          m_StereoInt16.data(), framesAvailable, iHardwareFrame, iCurrentFrame);
+      SpreadStereoTo(
+          m_StereoInt16.data(), (int16_t*)pData, framesAvailable, m_iChannels);
     }
 
     hr = m_pRenderClient->ReleaseBuffer(framesAvailable, 0);

@@ -6,6 +6,8 @@
 // clang-format on
 
 #include <atomic>
+#include <cstdint>
+#include <vector>
 
 #include "RageSoundDriver.h"
 #include "RageThreads.h"
@@ -31,6 +33,12 @@ class RageSoundDriver_WASAPI : public RageSoundDriver {
   int m_iSampleRate;
   UINT32 m_iBufferSizeFrames;
   bool m_bFloat;  // true if we are using float, false if 16-bit PCM
+  // Channels in the shared-mode mix format. The mixer makes stereo; when the
+  // device runs more channels (a 5.1/7.1 speaker setup, some headsets), it
+  // mixes into these buffers and spreads the result over the device's.
+  int m_iChannels;
+  std::vector<float> m_StereoFloat;
+  std::vector<int16_t> m_StereoInt16;
 
   IAudioClient* m_pAudioClient;
   IAudioRenderClient* m_pRenderClient;
