@@ -180,6 +180,7 @@ class PrefsManager {
   Preference<bool> m_bDelayedTextureDelete;
   Preference<bool> m_bDelayedModelDelete;
   Preference<ImageCacheMode> m_ImageCache;
+  Preference<int> m_iMaxOnDemandImageMemoryMB;
   Preference<bool> m_bFastLoad;
   Preference<std::string> m_NeverCacheList;
 
