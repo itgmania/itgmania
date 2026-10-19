@@ -309,6 +309,7 @@ void ImageCache::UnloadAllImages() {
   }
 
   g_ImagePathToImage.clear();
+  g_OnDemandUse.clear();
 }
 
 ImageCache::ImageCache() : delay_save_cache_(false) { ReadFromDisk(); }
@@ -468,6 +469,8 @@ if (g_ImagePathToImage.find(image_path) == g_ImagePathToImage.end() &&
     return id;
   }
 
+  TouchOnDemandImage(sImagePath, ID);
+
   /* This is a reference to a pointer.  ImageTexture's ctor may change it
    * when converting; this way, the conversion will end up in the map so we
    * only have to convert once. */
@@ -496,6 +499,7 @@ if (g_ImagePathToImage.find(image_path) == g_ImagePathToImage.end() &&
   id.policy_ = RageTextureID::TEX_VOLATILE;
   TEXTUREMAN->RegisterTexture(id, texture);
   TEXTUREMAN->UnloadTexture(texture);
+  TrimOnDemandImages();
 
   return id;
 }
