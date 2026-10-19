@@ -18,6 +18,7 @@ class Background : public ActorFrame {
 
   virtual void LoadFromSong(const Song* song);
   virtual void Unload();
+  void SeekToCurrentTime();
 
   void FadeToActualBrightness();
   void SetBrightness(float brightness);  // overrides pref and Cover

@@ -27,6 +27,7 @@
 #include "PrefsManager.h"
 #include "Quad.h"
 #include "RageDisplay.h"
+#include "RageTexture.h"
 #include "RageTextureID.h"
 #include "RageTextureManager.h"
 #include "RageTypes.h"
@@ -34,6 +35,7 @@
 #include "RageUtil/RandomNumbers.h"
 #include "ScreenDimensions.h"
 #include "Song.h"
+#include "Sprite.h"
 #include "StatsManager.h"
 #include "Steps.h"
 #include "ThemeManager.h"
@@ -97,6 +99,7 @@ class BackgroundImpl : public ActorFrame {
 
   virtual void LoadFromSong(const Song* song);
   virtual void Unload();
+  void SeekToCurrentTime();
 
   virtual void Update(float delta_time);
   virtual void DrawPrimitives();
@@ -903,6 +906,36 @@ void BackgroundImpl::Update(float delta_time) {
   last_music_seconds_ = GAMESTATE->position_.music_seconds_;
 }
 
+static void SeekBackgroundMovies(Actor* actor, float seconds) {
+  if (auto* sprite = dynamic_cast<Sprite*>(actor)) {
+    RageTexture* texture = sprite->GetTexture();
+    if (texture && texture->IsAMovie()) {
+      texture->SetPosition(seconds);
+    }
+  }
+  if (auto* frame = dynamic_cast<ActorFrame*>(actor)) {
+    for (Actor* child : frame->GetChildren()) {
+      SeekBackgroundMovies(child, seconds);
+    }
+  }
+}
+
+void BackgroundImpl::SeekToCurrentTime() {
+  // Select the active segments and run On/GainFocus before positioning movies.
+  Update(0);
+  for (auto& layer : layer_) {
+    if (layer.cur_bg_change_index_ < 0 || !layer.current_bga_) {
+      continue;
+    }
+    const auto& change = layer.bg_changes_[layer.cur_bg_change_index_];
+    const float start =
+        song_->song_timing_.GetElapsedTimeFromBeat(change.start_beat_);
+    const float elapsed =
+        std::max(GAMESTATE->position_.music_seconds_ - start, 0.0f);
+    SeekBackgroundMovies(layer.current_bga_, elapsed * change.rate_);
+  }
+}
+
 void BackgroundImpl::DrawPrimitives() {
   if (g_fBGBrightness == 0.0f) {
     return;
@@ -1055,6 +1088,7 @@ Background::~Background() { RageUtil::SafeDelete(impl_); }
 void Background::Init() { impl_->Init(); }
 void Background::LoadFromSong(const Song* song) { impl_->LoadFromSong(song); }
 void Background::Unload() { impl_->Unload(); }
+void Background::SeekToCurrentTime() { impl_->SeekToCurrentTime(); }
 void Background::FadeToActualBrightness() { impl_->FadeToActualBrightness(); }
 void Background::SetBrightness(float brightness) {
   impl_->SetBrightness(brightness);
