@@ -419,14 +419,9 @@ bool Song::LoadFromSongDir(
   // cases. SInce there are cases where TidyUpData isn't called, we still want
   // to guarantee the m_fBeat0GroupOffsetInSeconds is always set so we do that
   // here.
-  float fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
-  if (SONGMAN->GetGroupFromName(m_sGroupName) != nullptr) {
-    fOffset = SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset();
-  }
-  m_SongTiming.m_fBeat0GroupOffsetInSeconds = fOffset;
+  ApplyGroupSyncOffset();
 
   for (Steps* s : m_vpSteps) {
-    s->m_Timing.m_fBeat0GroupOffsetInSeconds = fOffset;
     if (m_LoadedFromProfile != ProfileSlot_Invalid) {
       s->ChangeFilenamesForCustomSong();
     }
@@ -472,16 +467,9 @@ bool Song::ReloadFromSongDir(std::string sDir) {
   copy.RemoveAutoGenNotes();
   *this = copy;
 
-  if (SONGMAN->GetGroup(this) != nullptr) {
-    m_SongTiming.m_fBeat0GroupOffsetInSeconds =
-        SONGMAN->GetGroup(this)->GetSyncOffset();
-  } else {
-    m_SongTiming.m_fBeat0GroupOffsetInSeconds =
-        PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
-    LOG->Warn(
-        "Song %s has no group, using default sync offset.",
-        m_sMainTitle.c_str());
-  }
+  // copy.LoadFromSongDir already applied it, but make sure the song and its
+  // steps carry the group offset before they are copied onto the old pointers.
+  ApplyGroupSyncOffset();
 
   /* Go through the steps, first setting their Song pointer to this song
    * (instead of the copy used above), and constructing a map to let us
@@ -493,21 +481,6 @@ bool Song::ReloadFromSongDir(std::string sDir) {
     StepsID id;
     id.FromSteps(*it);
     mNewSteps[id] = *it;
-
-    // Reapply the Group Offset if the steps have their own timing data.
-    if (mNewSteps[id]->m_Timing.empty()) {
-      continue;
-    }
-    if (SONGMAN->GetGroup(this) != nullptr) {
-      mNewSteps[id]->m_Timing.m_fBeat0GroupOffsetInSeconds =
-          SONGMAN->GetGroup(this)->GetSyncOffset();
-    } else {
-      mNewSteps[id]->m_Timing.m_fBeat0GroupOffsetInSeconds =
-          PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
-      LOG->Warn(
-          "Song %s has no group, using default sync offset.",
-          m_sMainTitle.c_str());
-    }
   }
 
   // Now we wipe out the new pointers, which were shallow copied and not deep
@@ -643,6 +616,23 @@ void Song::TidyUpData(bool from_cache) {
   Song::TidyUpData(from_cache, std::set<std::string>());
 }
 
+float Song::GetGroupSyncOffset() const {
+  const Group* pGroup = SONGMAN->GetGroupFromName(m_sGroupName);
+  return pGroup != nullptr ? pGroup->GetSyncOffset()
+                           : Group::GetDefaultSyncOffset();
+}
+
+void Song::ApplyGroupSyncOffset() {
+  // The offset is kept apart from m_fBeat0OffsetInSeconds so it is never
+  // written to the simfile or the cache; it has to be set again after every
+  // load and whenever the group's offset changes.
+  const float fOffset = GetGroupSyncOffset();
+  m_SongTiming.m_fBeat0GroupOffsetInSeconds = fOffset;
+  for (Steps* s : m_vpSteps) {
+    s->m_Timing.m_fBeat0GroupOffsetInSeconds = fOffset;
+  }
+}
+
 // Songs in BlacklistImages will never be autodetected as song images.
 void Song::TidyUpData(
     bool from_cache, const std::set<std::string>& blacklistedImages) {
@@ -666,19 +656,13 @@ void Song::TidyUpData(
   CHECKPOINT_M("Looking for images...");
 
   m_SongTiming.TidyUpData(false);
-
-  // Apply the group offset to the song timing before we do anything else.
-  float fOffset = PREFSMAN->m_DefaultSyncOffset == SyncOffset_NULL ? 0 : -0.009;
-  if (SONGMAN->GetGroupFromName(m_sGroupName) != nullptr) {
-    fOffset = SONGMAN->GetGroupFromName(m_sGroupName)->GetSyncOffset();
-  }
-  m_SongTiming.m_fBeat0GroupOffsetInSeconds = fOffset;
-
   for (Steps* s : m_vpSteps) {
     s->m_Timing.TidyUpData(true);
-    // Apply the group offset to the step timing as well.
-    s->m_Timing.m_fBeat0GroupOffsetInSeconds = fOffset;
   }
+
+  // Apply the group offset to the song and step timing before we do anything
+  // else.
+  ApplyGroupSyncOffset();
 
   if (!from_cache) {
     if (this->m_sArtist == "The Dancing Monkeys Project" &&
