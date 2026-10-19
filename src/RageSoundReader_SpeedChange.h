@@ -39,6 +39,8 @@ class RageSoundReader_SpeedChange : public RageSoundReader_Filter {
   void Reset();
 
   int GetCursorAvail() const;
+  float GetHeardRatio() const;
+  float GetBlockRatio() const;
 
   int GetWindowSizeFrames() const;
   int GetToleranceFrames() const { return GetWindowSizeFrames() / 4; }
@@ -57,6 +59,10 @@ class RageSoundReader_SpeedChange : public RageSoundReader_Filter {
   float m_fSpeedRatio;
   float m_fTrailingSpeedRatio;
   float m_fErrorFrames;
+
+  /* How far the position we report is ahead of the sound at the start of the
+   * block; see GetBlockRatio(). */
+  float m_fPositionLead;
 };
 
 #endif

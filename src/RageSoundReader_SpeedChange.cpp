@@ -48,6 +48,7 @@ void RageSoundReader_SpeedChange::Reset() {
   m_iUncorrelatedPos = 0;
   m_iPos = 0;
   m_fErrorFrames = 0;
+  m_fPositionLead = 0;
 }
 
 static int FindClosestMatch(
@@ -143,6 +144,7 @@ void RageSoundReader_SpeedChange::EraseData(int iFramesToDelete) {
     }
     ASSERT(c.m_iCorrelatedPos >= iFramesToDelete);
     c.m_iCorrelatedPos -= iFramesToDelete;
+    c.m_iLastCorrelatedPos -= iFramesToDelete;
   }
 }
 
@@ -154,13 +156,33 @@ int RageSoundReader_SpeedChange::Step() {
   /* If m_iPos is non-zero, we just finished playing a previous block, so
    * advance forward. */
   if (m_iPos) {
+    /* If GetBlockRatio() kept the position we reported for that block ahead of
+     * the sound, carry the difference into the next block, so it can catch
+     * up. */
+    if (m_fPositionLead > 0 || GetBlockRatio() != GetHeardRatio()) {
+      float fLastCorrelatedPos = 0;
+      float fNextPos = 0;
+      for (size_t i = 0; i < m_Channels.size(); ++i) {
+        fLastCorrelatedPos += m_Channels[i].m_iLastCorrelatedPos;
+        fNextPos += m_Channels[i].m_iCorrelatedPos + m_iPos;
+      }
+      fLastCorrelatedPos /= m_Channels.size();
+      fNextPos /= m_Channels.size();
+      float fReportedPos =
+          fLastCorrelatedPos + m_fPositionLead + m_iPos * GetBlockRatio();
+      m_fPositionLead = std::max(0.0f, fReportedPos - fNextPos);
+    }
+
     /* Advance m_iCorrelatedPos past the data that was just copied, to point to
      * the sound that we would have played if we had continued copying at that
-     * point. */
+     * point.  Until a new slice is found, that's what we'll play, so point
+     * m_iLastCorrelatedPos there too; if we stop early (EOF or an error), the
+     * next block continues it instead of fading from a stale position. */
     for (size_t i = 0; i < m_Channels.size(); ++i) {
       ASSERT(
           m_Channels[i].m_iCorrelatedPos + m_iPos <= m_iDataBufferAvailFrames);
       m_Channels[i].m_iCorrelatedPos += m_iPos;
+      m_Channels[i].m_iLastCorrelatedPos = m_Channels[i].m_iCorrelatedPos;
     }
 
     /* Advance m_iUncorrelatedPos to the position we'd prefer to continue
@@ -178,7 +200,7 @@ int RageSoundReader_SpeedChange::Step() {
   }
 
   /* Update m_fTrailingSpeedRatio.  Do this after advancing m_iUncorrelatedPos,
-   * so changes to m_iUncorrelatedPos line up with GetNextSourceFrame. */
+   * so the block we just played advances it by the ratio it was played at. */
   m_fTrailingSpeedRatio = m_fSpeedRatio;
 
   /* We don't need any data before the earlier of m_iUncorrelatedPos or
@@ -252,49 +274,51 @@ int RageSoundReader_SpeedChange::GetCursorAvail() const {
 }
 
 int RageSoundReader_SpeedChange::Read(float* pBuf, int iFrames) {
-  for (;;) {
-    if (m_iDataBufferAvailFrames == 0 &&
-        m_fTrailingSpeedRatio == m_fSpeedRatio && m_fSpeedRatio == 1.0f) {
-      /* Fast path: the buffer is empty, and we're not scaling the audio.  Read
-       * directly into the output buffer, to eliminate memory and copying
-       * overhead. */
-      return m_pSource->Read(pBuf, iFrames);
-    }
-
-    int iCursorAvail = GetCursorAvail();
-
-    if (iCursorAvail == 0) {
-      int iRet = Step();
-      if (iRet < 0) {
-        return iRet;
-      }
-      if (!GetCursorAvail()) {
-        return END_OF_FILE;
-      }
-      continue;
-    }
-
-    /* copy GetWindowSizeFrames() from iCorrelatedPos */
-    int iFramesLen = iFrames;
-    int iFramesAvail = std::min(iCursorAvail, iFramesLen);
-
-    iFrames -= iFramesAvail;
-    int iFramesRead = iFramesAvail;
-
-    int iWindowSizeFrames = GetWindowSizeFrames();
-    while (iFramesAvail--) {
-      for (size_t i = 0; i < m_Channels.size(); ++i) {
-        ChannelInfo& c = m_Channels[i];
-        float i1 = c.m_DataBuffer[c.m_iCorrelatedPos + m_iPos];
-        float i2 = c.m_DataBuffer[c.m_iLastCorrelatedPos + m_iPos];
-        *pBuf++ = SCALE(m_iPos, 0, iWindowSizeFrames, i2, i1);
-      }
-
-      ++m_iPos;
-    }
-
-    return iFramesRead;
+  if (m_iDataBufferAvailFrames == 0 && m_fTrailingSpeedRatio == m_fSpeedRatio &&
+      m_fSpeedRatio == 1.0f) {
+    /* Fast path: the buffer is empty, and we're not scaling the audio.  Read
+     * directly into the output buffer, to eliminate memory and copying
+     * overhead. */
+    return m_pSource->Read(pBuf, iFrames);
   }
+
+  int iCursorAvail = GetCursorAvail();
+
+  if (iCursorAvail == 0) {
+    int iRet = Step();
+    if (iRet < 0) {
+      return iRet;
+    }
+    if (!GetCursorAvail()) {
+      return END_OF_FILE;
+    }
+
+    /* The ratio of the new block isn't known until Step() finds its slice.
+     * Return no data, so the caller gets the new block's position and ratio
+     * before reading it. */
+    return 0;
+  }
+
+  /* copy GetWindowSizeFrames() from iCorrelatedPos */
+  int iFramesLen = iFrames;
+  int iFramesAvail = std::min(iCursorAvail, iFramesLen);
+
+  iFrames -= iFramesAvail;
+  int iFramesRead = iFramesAvail;
+
+  int iWindowSizeFrames = GetWindowSizeFrames();
+  while (iFramesAvail--) {
+    for (size_t i = 0; i < m_Channels.size(); ++i) {
+      ChannelInfo& c = m_Channels[i];
+      float i1 = c.m_DataBuffer[c.m_iCorrelatedPos + m_iPos];
+      float i2 = c.m_DataBuffer[c.m_iLastCorrelatedPos + m_iPos];
+      *pBuf++ = SCALE(m_iPos, 0, iWindowSizeFrames, i2, i1);
+    }
+
+    ++m_iPos;
+  }
+
+  return iFramesRead;
 }
 
 /* We prefer to be able to seek precisely, so seeking to a position produces
@@ -316,26 +340,61 @@ bool RageSoundReader_SpeedChange::SetProperty(
   return RageSoundReader_Filter::SetProperty(sProperty, fValue);
 }
 
+/* Each block crossfades from the slice we were playing (m_iLastCorrelatedPos)
+ * into the new one (m_iCorrelatedPos), and the next block continues the new
+ * slice from m_iCorrelatedPos + GetWindowSizeFrames().  The sound heard moves
+ * linearly between those over the block; return how many source frames it
+ * moves per output frame, averaged over channels. */
+float RageSoundReader_SpeedChange::GetHeardRatio() const {
+  float fDistance = 0;
+  for (size_t i = 0; i < m_Channels.size(); ++i) {
+    const ChannelInfo& c = m_Channels[i];
+    fDistance += c.m_iCorrelatedPos - c.m_iLastCorrelatedPos;
+  }
+  fDistance /= m_Channels.size();
+
+  int iWindowSizeFrames = GetWindowSizeFrames();
+  return (iWindowSizeFrames + fDistance) / iWindowSizeFrames;
+}
+
+/* Return the ratio we report for this block: the heard ratio, less what it
+ * takes to catch up with the sound if the reported position is
+ * m_fPositionLead frames ahead of it.  The heard ratio varies around the speed
+ * by up to a quarter, so below about 0.25x the new slice can start before the
+ * old one, and the sound heard moves backwards.  Positions must not, so keep
+ * the ratio above a quarter of the speed, and catch up in later blocks. */
+float RageSoundReader_SpeedChange::GetBlockRatio() const {
+  float fRatio = GetHeardRatio() - m_fPositionLead / GetWindowSizeFrames();
+  return std::max(fRatio, m_fTrailingSpeedRatio / 4);
+}
+
 int RageSoundReader_SpeedChange::GetNextSourceFrame() const {
-  float fRatio = m_fTrailingSpeedRatio;
+  /* Return the position of the sound being heard, m_iPos into the crossfade.
+   * Don't extrapolate from m_iUncorrelatedPos: that's only where we started
+   * searching for the new slice.  A slice is loudest a window after it
+   * starts, so that would run ahead of the audio by about
+   * GetWindowSizeFrames() * (ratio - 1) frames. */
+  float fLastCorrelatedPos = 0;
+  for (size_t i = 0; i < m_Channels.size(); ++i) {
+    fLastCorrelatedPos += m_Channels[i].m_iLastCorrelatedPos;
+  }
+  fLastCorrelatedPos /= m_Channels.size();
+  float fPos = fLastCorrelatedPos + m_fPositionLead + m_iPos * GetBlockRatio();
 
   int iSourceFrame = RageSoundReader_Filter::GetNextSourceFrame();
-  int iPos = static_cast<int>((m_iPos * fRatio) + 0.5);
-
   iSourceFrame -= m_iDataBufferAvailFrames;
-  iSourceFrame += m_iUncorrelatedPos + iPos;
+  iSourceFrame += static_cast<int>(fPos + 0.5f);
   return iSourceFrame;
 }
 
 float RageSoundReader_SpeedChange::GetStreamToSourceRatio() const {
-  /* If the ratio has changed and GetCursorAvail() is 0, the new ratio will
-   * become the real ratio on the next read.  Otherwise, we'll continue using
-   * our old ratio for a bit longer. */
+  /* If GetCursorAvail() is 0, the next read starts a new block, with the new
+   * ratio if it has changed; it returns no data, so the caller sees the
+   * block's real ratio before reading it. */
   if (GetCursorAvail() == 0) {
     return m_fSpeedRatio * RageSoundReader_Filter::GetStreamToSourceRatio();
   } else {
-    return m_fTrailingSpeedRatio *
-           RageSoundReader_Filter::GetStreamToSourceRatio();
+    return GetBlockRatio() * RageSoundReader_Filter::GetStreamToSourceRatio();
   }
 }
 
