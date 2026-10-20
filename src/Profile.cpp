@@ -72,6 +72,7 @@ const std::string EDIT_COURSES_SUBDIR = "EditCourses/";
 // const std::string UPLOAD_SUBDIR         = "Upload/";
 const std::string RIVAL_SUBDIR = "Rivals/";
 const std::string SONGS_SUBDIR = "Songs/";
+const std::string PACKS_SUBDIR = "Packs/";
 
 ThemeMetric<bool> SHOW_COIN_DATA("Profile", "ShowCoinData");
 static Preference<bool> g_bProfileDataCompress("ProfileDataCompress", false);
@@ -1186,92 +1187,65 @@ void Profile::LoadSongsFromDir(
     return;
   }
 
-  std::string songs_folder = dir + "Songs";
-
-  if (!FILEMAN->DoesFileExist(songs_folder)) {
-    LOG->Trace("No songs folder in profile.");
-    return;
-  }
-
-  LOG->Trace("Found songs folder in profile.");
   RageTimer song_load_start_time;
   song_load_start_time.Touch();
 
-  // first level -> can be packs or single songs
-  std::vector<std::string> first_level_folders;
-  FILEMAN->GetDirListing(songs_folder + "/*", first_level_folders, true, true);
-
-  // Songs empty
-  if (first_level_folders.empty()) {
-    LOG->Trace("No custom songs in profile.");
-    return;
-  }
-
-  StripCvsAndSvn(first_level_folders);
-  StripMacResourceForks(first_level_folders);
-
   m_groups.clear();
-  m_groups.emplace_back(new Group(songs_folder, "", prof_slot));
 
-  std::vector<std::string> all_songs_dirs;
-
-  for (const std::string& folder_first_level : first_level_folders) {
-    std::vector<std::string> second_level_folders;
-
-    FILEMAN->GetDirListing(
-        folder_first_level + "/*", second_level_folders, true, true);
-
-    // no second level -> is a song folder
-    if (second_level_folders.empty()) {
-      all_songs_dirs.push_back(folder_first_level);
-    }
-    // is a pack
-    else {
-      // create group -> need to check at the end if has songs
-      m_groups.emplace_back(new Group(
-          folder_first_level, Basename(folder_first_level), prof_slot));
-
-      all_songs_dirs.insert(
-          all_songs_dirs.end(), second_level_folders.begin(),
-          second_level_folders.end());
-    }
+  // Songs contains loose songs, Packs contains packs of songs
+  m_groups.push_back(new Group(dir + "Songs", "", prof_slot));
+  std::vector<std::string> pack_dirs;
+  FILEMAN->GetDirListing(dir + PACKS_SUBDIR + "*", pack_dirs, true, true);
+  StripCvsAndSvn(pack_dirs);
+  StripMacResourceForks(pack_dirs);
+  for (const std::string& pack_dir : pack_dirs) {
+    m_groups.push_back(new Group(pack_dir, Basename(pack_dir), prof_slot));
   }
-
-  LOG->Trace("Found %i songs in profile.", int(all_songs_dirs.size()));
 
   // Only songs that are successfully loaded count towards the limit. -Kyz
-  for (std::string& song_dir : all_songs_dirs) {
-    if (m_songs.size() >= PREFSMAN->m_custom_songs_max_count) {
+  auto load_limit_reached = [&]() {
+    return m_songs.size() >= PREFSMAN->m_custom_songs_max_count ||
+           song_load_start_time.Ago() > PREFSMAN->m_custom_songs_load_timeout;
+  };
+
+  for (const Group* group : m_groups) {
+    // Don't keep listing pack directories once no more songs can load.
+    if (load_limit_reached()) {
       break;
     }
-    if (song_load_start_time.Ago() > PREFSMAN->m_custom_songs_load_timeout) {
-      break;
+
+    std::vector<std::string> song_dirs;
+    FILEMAN->GetDirListing(group->GetPath() + "/*", song_dirs, true, true);
+    StripCvsAndSvn(song_dirs);
+    StripMacResourceForks(song_dirs);
+    LOG->Trace(
+        "Found %zu song directories in profile group %s.", song_dirs.size(),
+        group->GetGroupName().c_str());
+
+    for (const std::string& song_dir : song_dirs) {
+      if (load_limit_reached()) {
+        break;
+      }
+
+      auto song = std::make_unique<Song>();
+      if (!song->LoadFromSongDir(
+              song_dir, false, prof_slot, group->GetGroupName())) {
+        LOG->Trace("Song %s failed to load.", song_dir.c_str());
+        continue;
+      }
+
+      song->SetEnabled(true);
+      m_songs.push_back(song.get());
+
+      // link songs with groupName to find them easily
+      songsGroups[song->m_sGroupName].push_back(song.release());
     }
-
-    auto song = std::make_unique<Song>();
-    if (!song->LoadFromSongDir(song_dir, false, prof_slot)) {
-      LOG->Trace("Song %s failed to load.", song_dir.c_str());
-      continue;
-    }
-
-    song->SetEnabled(true);
-    m_songs.push_back(song.get());
-
-    // link songs with groupName to find them easily
-    songsGroups[song->m_sGroupName].push_back(song.release());
   }
 
   float load_time = song_load_start_time.Ago();
   LOG->Trace(
       "Successfully loaded %zu songs in %.6f from profile.", m_songs.size(),
       load_time);
-
-  // no songs
-  if (m_songs.empty()) {
-    m_groups.clear();
-    LOG->Trace("No valid songs were loaded.");
-    return;
-  }
 
   // Remove groups with no songs
   for (int i = int(m_groups.size()) - 1; i >= 0; --i) {
@@ -1470,6 +1444,7 @@ bool Profile::SaveAllToDir(std::string sDir, bool bSignData) const {
   }
   if (PREFSMAN->m_custom_songs_enable) {
     FILEMAN->CreateDir(sDir + SONGS_SUBDIR);
+    FILEMAN->CreateDir(sDir + PACKS_SUBDIR);
   }
   FILEMAN->CreateDir(sDir + SCREENSHOTS_SUBDIR);
   FILEMAN->CreateDir(sDir + RIVAL_SUBDIR);

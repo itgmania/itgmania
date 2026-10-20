@@ -80,12 +80,14 @@ class Song {
    *
    * This assumes that there is no song present right now.
    * @param sDir the song directory from which to load.
+   * @param profile_group group name for a profile song when from_profile is set
    *
    * TODO: make this a static factory method.
    */
   bool LoadFromSongDir(
       std::string sDir, bool load_autosave = false,
-      ProfileSlot from_profile = ProfileSlot_Invalid);
+      ProfileSlot from_profile = ProfileSlot_Invalid,
+      const std::string& profile_group = "");
   // This one takes the effort to reuse Steps pointers as best as it can
   bool ReloadFromSongDir(std::string sDir);
   bool ReloadFromSongDir() { return ReloadFromSongDir(GetSongDir()); }
@@ -337,8 +339,10 @@ class Song {
 
   /**
    * @brief Derive the song directory, name, group, and source profile from a
-   * directory. sDir must end in a slash. */
-  void SetSongDirAndGroup(const std::string& sDir, ProfileSlot from_profile);
+   * directory and profile group. sDir must end in a slash. */
+  void SetSongDirAndGroup(
+      const std::string& sDir, ProfileSlot from_profile,
+      const std::string& profile_group);
 
  public:
   const std::vector<BackgroundChange>& GetBackgroundChanges(
